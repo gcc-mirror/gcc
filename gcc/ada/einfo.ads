@@ -1359,11 +1359,6 @@ package Einfo is
 --       be RCI entities, so the flag Is_Remote_Call_Interface will always
 --       be set if this flag is set.
 
---    Has_Anon_Block_Suffix (Flag201)
---       Present in all entities. Set if the entity is nested within one or
---       more anonymous blocks and the Chars field contains a name with an
---       anonymous block suffix (see Exp_Dbug for further details).
-
 --    Has_Anonymous_Master (Flag253)
 --       Present in units (top-level functions and procedures, library-level
 --       packages). Set to True if the associated unit contains a heterogeneous
@@ -1638,13 +1633,6 @@ package Einfo is
 --       5. N_Range_Constraint - when the range expression uses the
 --          discriminant of the enclosing type.
 
---    Has_Persistent_BSS (Flag188)
---       Present in all entities. Set True for entities to which a valid
---       pragma Persistent_BSS applies. Note that although the pragma is
---       only meaningful for objects, we set it for all entities in a unit
---       to which the pragma applies, as well as the unit entity itself, for
---       convenience in propagating the flag to contained entities.
-
 --    Has_Postconditions (Flag240)
 --      Present in subprogram entities. Set if postconditions are active for
 --      the procedure, and a _postconditions procedure has been generated.
@@ -1830,13 +1818,6 @@ package Einfo is
 --       clause attribute. Used to prevent multiple Stream_Size clauses for a
 --       given entity, and also whether it is necessary to check for a stream
 --       size clause.
-
---    Has_Subprogram_Descriptor (Flag93)
---       This flag is set on entities for which zero-cost exception subprogram
---       descriptors can be generated (subprograms and library level package
---       declarations and bodies). It indicates that a subprogram descriptor
---       has been generated, and is used to suppress generation of multiple
---       descriptors (e.g. when instantiating generic bodies).
 
 --    Has_Task (Flag30) [base type only]
 --       Present in all type entities. Set on task types themselves, and also
@@ -4783,14 +4764,12 @@ package Einfo is
    --    Can_Never_Be_Null                   (Flag38)
    --    Checks_May_Be_Suppressed            (Flag31)
    --    Debug_Info_Off                      (Flag166)
-   --    Has_Anon_Block_Suffix               (Flag201)
    --    Has_Convention_Pragma               (Flag119)
    --    Has_Delayed_Aspects                 (Flag200)
    --    Has_Delayed_Freeze                  (Flag18)
    --    Has_Fully_Qualified_Name            (Flag173)
    --    Has_Gigi_Rep_Item                   (Flag82)
    --    Has_Homonym                         (Flag56)
-   --    Has_Persistent_BSS                  (Flag188)
    --    Has_Pragma_Elaborate_Body           (Flag150)
    --    Has_Pragma_Inline                   (Flag157)
    --    Has_Pragma_Inline_Always            (Flag230)
@@ -5297,7 +5276,6 @@ package Einfo is
    --    Has_Nested_Block_With_Handler       (Flag101)
    --    Has_Postconditions                  (Flag240)
    --    Has_Recursive_Call                  (Flag143)
-   --    Has_Subprogram_Descriptor           (Flag93)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
@@ -5487,7 +5465,6 @@ package Einfo is
    --    Has_Forward_Instantiation           (Flag175)
    --    Has_Master_Entity                   (Flag21)
    --    Has_RACW                            (Flag214)  (non-generic case only)
-   --    Has_Subprogram_Descriptor           (Flag93)
    --    In_Package_Body                     (Flag48)
    --    In_Use                              (Flag8)
    --    Is_Instantiated                     (Flag126)
@@ -5508,7 +5485,6 @@ package Einfo is
    --    Finalizer                           (Node24)   (non-generic case only)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Has_Anonymous_Master                (Flag253)
-   --    Has_Subprogram_Descriptor           (Flag93)
    --    Scope_Depth                         (synth)
 
    --  E_Private_Type
@@ -5566,7 +5542,6 @@ package Einfo is
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
    --    Has_Postconditions                  (Flag240)
-   --    Has_Subprogram_Descriptor           (Flag93)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Asynchronous                     (Flag81)
    --    Is_Called                           (Flag102)  (non-generic case only)
@@ -6136,7 +6111,6 @@ package Einfo is
    function Has_Aliased_Components              (Id : E) return B;
    function Has_Alignment_Clause                (Id : E) return B;
    function Has_All_Calls_Remote                (Id : E) return B;
-   function Has_Anon_Block_Suffix               (Id : E) return B;
    function Has_Anonymous_Master                (Id : E) return B;
    function Has_Atomic_Components               (Id : E) return B;
    function Has_Biased_Representation           (Id : E) return B;
@@ -6173,7 +6147,6 @@ package Einfo is
    function Has_Non_Standard_Rep                (Id : E) return B;
    function Has_Object_Size_Clause              (Id : E) return B;
    function Has_Per_Object_Constraint           (Id : E) return B;
-   function Has_Persistent_BSS                  (Id : E) return B;
    function Has_Postconditions                  (Id : E) return B;
    function Has_Pragma_Controlled               (Id : E) return B;
    function Has_Pragma_Elaborate_Body           (Id : E) return B;
@@ -6205,7 +6178,6 @@ package Einfo is
    function Has_Static_Discriminants            (Id : E) return B;
    function Has_Storage_Size_Clause             (Id : E) return B;
    function Has_Stream_Size_Clause              (Id : E) return B;
-   function Has_Subprogram_Descriptor           (Id : E) return B;
    function Has_Task                            (Id : E) return B;
    function Has_Thunks                          (Id : E) return B;
    function Has_Unchecked_Union                 (Id : E) return B;
@@ -6728,7 +6700,6 @@ package Einfo is
    procedure Set_Has_Aliased_Components          (Id : E; V : B := True);
    procedure Set_Has_Alignment_Clause            (Id : E; V : B := True);
    procedure Set_Has_All_Calls_Remote            (Id : E; V : B := True);
-   procedure Set_Has_Anon_Block_Suffix           (Id : E; V : B := True);
    procedure Set_Has_Anonymous_Master            (Id : E; V : B := True);
    procedure Set_Has_Atomic_Components           (Id : E; V : B := True);
    procedure Set_Has_Biased_Representation       (Id : E; V : B := True);
@@ -6764,7 +6735,6 @@ package Einfo is
    procedure Set_Has_Non_Standard_Rep            (Id : E; V : B := True);
    procedure Set_Has_Object_Size_Clause          (Id : E; V : B := True);
    procedure Set_Has_Per_Object_Constraint       (Id : E; V : B := True);
-   procedure Set_Has_Persistent_BSS              (Id : E; V : B := True);
    procedure Set_Has_Postconditions              (Id : E; V : B := True);
    procedure Set_Has_Pragma_Controlled           (Id : E; V : B := True);
    procedure Set_Has_Pragma_Elaborate_Body       (Id : E; V : B := True);
@@ -6797,7 +6767,6 @@ package Einfo is
    procedure Set_Has_Static_Discriminants        (Id : E; V : B := True);
    procedure Set_Has_Storage_Size_Clause         (Id : E; V : B := True);
    procedure Set_Has_Stream_Size_Clause          (Id : E; V : B := True);
-   procedure Set_Has_Subprogram_Descriptor       (Id : E; V : B := True);
    procedure Set_Has_Task                        (Id : E; V : B := True);
    procedure Set_Has_Thunks                      (Id : E; V : B := True);
    procedure Set_Has_Unchecked_Union             (Id : E; V : B := True);
@@ -7432,7 +7401,6 @@ package Einfo is
    pragma Inline (Has_Aliased_Components);
    pragma Inline (Has_Alignment_Clause);
    pragma Inline (Has_All_Calls_Remote);
-   pragma Inline (Has_Anon_Block_Suffix);
    pragma Inline (Has_Anonymous_Master);
    pragma Inline (Has_Atomic_Components);
    pragma Inline (Has_Biased_Representation);
@@ -7468,7 +7436,6 @@ package Einfo is
    pragma Inline (Has_Non_Standard_Rep);
    pragma Inline (Has_Object_Size_Clause);
    pragma Inline (Has_Per_Object_Constraint);
-   pragma Inline (Has_Persistent_BSS);
    pragma Inline (Has_Postconditions);
    pragma Inline (Has_Pragma_Controlled);
    pragma Inline (Has_Pragma_Elaborate_Body);
@@ -7501,7 +7468,6 @@ package Einfo is
    pragma Inline (Has_Static_Discriminants);
    pragma Inline (Has_Storage_Size_Clause);
    pragma Inline (Has_Stream_Size_Clause);
-   pragma Inline (Has_Subprogram_Descriptor);
    pragma Inline (Has_Task);
    pragma Inline (Has_Thunks);
    pragma Inline (Has_Unchecked_Union);
@@ -7879,7 +7845,6 @@ package Einfo is
    pragma Inline (Set_Has_Aliased_Components);
    pragma Inline (Set_Has_Alignment_Clause);
    pragma Inline (Set_Has_All_Calls_Remote);
-   pragma Inline (Set_Has_Anon_Block_Suffix);
    pragma Inline (Set_Has_Anonymous_Master);
    pragma Inline (Set_Has_Atomic_Components);
    pragma Inline (Set_Has_Biased_Representation);
@@ -7915,7 +7880,6 @@ package Einfo is
    pragma Inline (Set_Has_Non_Standard_Rep);
    pragma Inline (Set_Has_Object_Size_Clause);
    pragma Inline (Set_Has_Per_Object_Constraint);
-   pragma Inline (Set_Has_Persistent_BSS);
    pragma Inline (Set_Has_Postconditions);
    pragma Inline (Set_Has_Pragma_Controlled);
    pragma Inline (Set_Has_Pragma_Elaborate_Body);
@@ -7948,7 +7912,6 @@ package Einfo is
    pragma Inline (Set_Has_Static_Discriminants);
    pragma Inline (Set_Has_Storage_Size_Clause);
    pragma Inline (Set_Has_Stream_Size_Clause);
-   pragma Inline (Set_Has_Subprogram_Descriptor);
    pragma Inline (Set_Has_Task);
    pragma Inline (Set_Has_Thunks);
    pragma Inline (Set_Has_Unchecked_Union);
