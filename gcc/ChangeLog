@@ -1,3 +1,15 @@
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
+	* omp-low.c (extract_omp_for_data): Use signed_type_for.
+	(expand_omp_for_generic): Likewise.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	* tree-vect-stmts.c (vect_gen_perm_mask): Use type_for_mode.
+	* tree-vect-slp.c (vect_transform_slp_perm_load): Likewise.
+	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop):
+	Use unsigned_type_for.
+	(vect_create_cond_for_align_checks): Use signed_type_for.
+
 2012-03-07  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/52203
