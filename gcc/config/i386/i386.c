@@ -13743,6 +13743,7 @@ get_some_local_dynamic_name (void)
    ; -- print a semicolon (after prefixes due to bug in older gas).
    ~ -- print "i" if TARGET_AVX2, "f" otherwise.
    @ -- print a segment register of thread base pointer load
+   ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
  */
 
 void
@@ -14248,6 +14249,11 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  putc (TARGET_AVX2 ? 'i' : 'f', file);
 	  return;
 
+	case '^':
+	  if (TARGET_64BIT && Pmode != word_mode)
+	    fputs ("addr32 ", file);
+	  return;
+
 	default:
 	    output_operand_lossage ("invalid operand code '%c'", code);
 	}
@@ -14387,8 +14393,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 static bool
 ix86_print_operand_punct_valid_p (unsigned char code)
 {
-  return (code == '@' || code == '*' || code == '+'
-	  || code == '&' || code == ';' || code == '~');
+  return (code == '@' || code == '*' || code == '+' || code == '&'
+	  || code == ';' || code == '~' || code == '^');
 }
 
 /* Print a memory operand whose address is ADDR.  */
