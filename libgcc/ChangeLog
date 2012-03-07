@@ -1,3 +1,15 @@
+2012-03-07  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.c: Rename "atomic_" prefix to
+	"arch_atomic_".
+	(atomic_xor): Rename and move definition to
+	config/tilepro/atomic.h.
+	(atomic_nand): Ditto.
+	* config/tilepro/atomic.h: Rename "atomic_" prefix to
+	"arch_atomic_".
+	(arch_atomic_xor): Move from config/tilepro/atomic.c.
+	(arch_atomic_nand): Ditto.
+
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52507
