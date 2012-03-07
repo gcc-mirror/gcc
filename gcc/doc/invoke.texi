@@ -19891,9 +19891,8 @@ Only one precompiled header can be used in a particular compilation.
 
 @item
 A precompiled header can't be used once the first C token is seen.  You
-can have preprocessor directives before a precompiled header; you can
-even include a precompiled header from inside another header, so long as
-there are no C tokens before the @code{#include}.
+can have preprocessor directives before a precompiled header; you cannot
+include a precompiled header from inside another header.
 
 @item
 The precompiled header file must be produced for the same language as

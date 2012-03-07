@@ -1,3 +1,10 @@
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
+	PR pch/52518
+	PR pch/38987
+	* doc/invoke.texi (Precompiled Headers): Remove sentence that
+	suggests you can include PCHs from inside another header.
+
 2012-03-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/52515
