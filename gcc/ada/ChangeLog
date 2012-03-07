@@ -1,3 +1,7 @@
+2012-03-07  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.adb, einfo.ads: Remove unused entity flags.
+
 2012-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat_ugn.texi (Inline Assembler): Fix swapping of Input and
