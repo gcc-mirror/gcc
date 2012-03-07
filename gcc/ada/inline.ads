@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,11 +109,6 @@ package Inline is
      Table_Initial        => Alloc.Pending_Instantiations_Initial,
      Table_Increment      => Alloc.Pending_Instantiations_Increment,
      Table_Name           => "Pending_Descriptor");
-
-   Analyzing_Inlined_Bodies : Boolean;
-   --  This flag is set False by the call to Initialize, and then is set
-   --  True by the call to Analyze_Inlined_Bodies. It is used to suppress
-   --  generation of subprogram descriptors for inlined bodies.
 
    -----------------
    -- Subprograms --

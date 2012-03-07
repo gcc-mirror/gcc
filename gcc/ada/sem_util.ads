@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1115,6 +1115,9 @@ package Sem_Util is
    --  to guarantee this in all cases. Note that it is more possible to give
    --  correct answer if the tree is fully analyzed.
 
+   function Must_Inline (Subp : Entity_Id) return Boolean;
+   --  Return true if Subp must be inlined by the frontend
+
    function Needs_One_Actual (E : Entity_Id) return Boolean;
    --  Returns True if a function has defaults for all but its first
    --  formal. Used in Ada 2005 mode to solve the syntactic ambiguity that
@@ -1306,6 +1309,9 @@ package Sem_Util is
 
    procedure Reset_Analyzed_Flags (N : Node_Id);
    --  Reset the Analyzed flags in all nodes of the tree whose root is N
+
+   function Returns_Unconstrained_Type (Subp : Entity_Id) return Boolean;
+   --  Return true if Subp is a function that returns an unconstrained type
 
    function Safe_To_Capture_Value
      (N    : Node_Id;

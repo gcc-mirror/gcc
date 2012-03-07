@@ -1,3 +1,45 @@
+2012-03-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): If the object
+	declaration has an init expression then stop the analysis of the
+	object declaration if the expression which initializes the object
+	is a call to an inlined function which returns an unconstrained
+	and has been expanded into a procedure call.
+	* sem_ch5.adb (Has_Call_Using_Secondary_Stack): Add missing
+	support to handle selected components.
+	* sem_ch6.ads (Cannot_Inline): Adding parameter Is_Serious plus
+	documentation.
+	* sem_ch6.adb (Check_And_Build_Body_To_Inline): New
+	subprogram which implements the checks required by the
+	new rules for frontend inlining and builds the body to inline.
+	(Analyze_Subprogram_Body_Helper): Move code that
+	checks inlining of subprogram that has nested subprogram
+	to Check_And_Build_Body_To_Inline.  Replace call to
+	Build_Body_To_Inline by call to the new subprogram
+	Check_And_Build_Body_To_Inline.
+	(Cannot_Inline): New implementation.
+	* sem_ch12.adb (Analyze_Package_Instantiation.Must_Inline_Subp):
+	New subprogram.
+	* sem_util.ad[sb] (Must_Inline): New subprogram.
+	(Returns_Unconstrained_Type): New subprogram.
+	* sem_res.adb (Resolve_Call): Do not create a transient scope
+	for inlined calls.
+	* inline.ads (Analyzing_Inlined_Bodies): Remove unreferenced variable.
+	* inline.adb (Analyze_Inlined_Bodies, Initialize): Remove setting
+	to false the variable Analyzing_Inlined_Bodies.  Fix comments.
+	* exp_ch4.adb (Expand_N_Allocator): Fix handling of finalization master.
+	* exp_ch6.ads (List_Inlining_Info): New subprogram.
+	* exp_ch6.adb (Expand_Call.Do_Inline): New subprogram.
+	(Expand_Call.Do_Inline_Always): New subprogram.
+	(In_Unfrozen_Instance): Move the declaration of this subprogram.
+	(Expand_Inlined_Call.Reset_Dispatching_Calls): New subprogram.
+	(Expand_Inlined_Call): Adding new support for inlining functions
+	that return unconstrained types.
+	(List_Inlining_Info): New subprogram.
+	* debug.adb Document flags -gnatd.j and -gnatd.k
+	* gnat1drv.adb Add call to generate the new listing of inlined
+	calls and calls passed to the backend.
+
 2012-03-07  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch5.adb, s-vaflop.adb, s-taprop-vms.adb, exp_ch6.adb,

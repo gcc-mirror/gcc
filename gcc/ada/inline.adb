@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -642,11 +642,9 @@ package body Inline is
          end if;
       end Is_Ancestor_Of_Main;
 
-   --  Start of processing for  Analyze_Inlined_Bodies
+   --  Start of processing for Analyze_Inlined_Bodies
 
    begin
-      Analyzing_Inlined_Bodies := False;
-
       if Serious_Errors_Detected = 0 then
          Push_Scope (Standard_Standard);
 
@@ -669,8 +667,8 @@ package body Inline is
                Comp_Unit := Parent (Comp_Unit);
             end loop;
 
-            --  Load the body, unless it the main unit, or is an instance whose
-            --  body has already been analyzed.
+            --  Load the body, unless it is the main unit, or is an instance
+            --  whose body has already been analyzed.
 
             if Present (Comp_Unit)
               and then Comp_Unit /= Cunit (Main_Unit)
@@ -1035,7 +1033,6 @@ package body Inline is
 
    procedure Initialize is
    begin
-      Analyzing_Inlined_Bodies := False;
       Pending_Descriptor.Init;
       Pending_Instantiations.Init;
       Inlined_Bodies.Init;
