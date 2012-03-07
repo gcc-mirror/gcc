@@ -4119,7 +4119,8 @@ package body Sem_Ch6 is
      (Msg        : String;
       N          : Node_Id;
       Subp       : Entity_Id;
-      Is_Serious : Boolean := False) is
+      Is_Serious : Boolean := False)
+   is
    begin
       pragma Assert (Msg (Msg'Last) = '?');
 

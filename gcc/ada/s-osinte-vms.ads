@@ -449,6 +449,12 @@ package System.OS_Interface is
    function pthread_mutex_unlock (mutex : access pthread_mutex_t) return int;
    pragma Import (C, pthread_mutex_unlock, "PTHREAD_MUTEX_UNLOCK");
 
+   function pthread_mutex_setname_np
+     (attr : access pthread_mutex_t;
+      name : System.Address;
+      mbz  : System.Address) return int;
+   pragma Import (C, pthread_mutex_setname_np, "PTHREAD_MUTEX_SETNAME_NP");
+
    function pthread_condattr_init
      (attr : access pthread_condattr_t) return int;
    pragma Import (C, pthread_condattr_init, "PTHREAD_CONDATTR_INIT");

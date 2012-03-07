@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -254,6 +254,12 @@ package System.OS_Interface is
 
    function getpid return pid_t;
    pragma Import (C, getpid, "getpid");
+
+   PR_SET_NAME : constant := 15;
+
+   function prctl
+     (option : int; arg2, arg3, arg4, arg5 : unsigned_long := 0) return int;
+   pragma Import (C, prctl);
 
    -------------
    -- Threads --

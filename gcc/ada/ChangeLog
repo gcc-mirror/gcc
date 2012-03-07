@@ -1,3 +1,22 @@
+2012-03-07  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb, exp_ch4.adb, exp_ch6.adb, sem_ch6.adb: Minor
+	reformatting.
+
+2012-03-07  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: gnatpp: fix paragraph about sources with
+	preprocessor directives.
+
+2012-03-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-linux.ads, s-taprop-linux.adb (prctl): New function.
+	(Enter_Task): Call prctl when relevant.
+
+2012-03-07  Tristan Gingold  <gingold@adacore.com>
+
+	* s-osinte-vms.ads: pthread_mutex_setname_np: new function.
+
 2012-03-07  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Process_Formals): a generic subprogram with

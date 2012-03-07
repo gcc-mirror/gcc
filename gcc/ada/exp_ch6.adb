@@ -2290,12 +2290,11 @@ package body Exp_Ch6 is
       --------------------------
 
       function In_Unfrozen_Instance (E : Entity_Id) return Boolean is
-         S : Entity_Id := E;
+         S : Entity_Id;
 
       begin
-         while Present (S)
-           and then S /= Standard_Standard
-         loop
+         S := E;
+         while Present (S) and then S /= Standard_Standard loop
             if Is_Generic_Instance (S)
               and then Present (Freeze_Node (S))
               and then not Analyzed (Freeze_Node (S))
@@ -2353,9 +2352,7 @@ package body Exp_Ch6 is
          Res : constant Node_Id := Duplicate_Subexpr (From);
       begin
          if Is_Access_Type (Etype (From)) then
-            return
-              Make_Explicit_Dereference (Sloc (From),
-                Prefix => Res);
+            return Make_Explicit_Dereference (Sloc (From), Prefix => Res);
          else
             return Res;
          end if;
@@ -3702,7 +3699,6 @@ package body Exp_Ch6 is
          --  Handle inlining (old semantics)
 
          if Is_Inlined (Subp) and then not Debug_Flag_Dot_K then
-
             Inlined_Subprogram : declare
                Bod         : Node_Id;
                Must_Inline : Boolean := False;
@@ -4078,7 +4074,7 @@ package body Exp_Ch6 is
 
       Targ : Node_Id;
       --  The target of the call. If context is an assignment statement then
-      --  this is the left-hand side of the assignment; else it is a temporary
+      --  this is the left-hand side of the assignment, else it is a temporary
       --  to which the return value is assigned prior to rewriting the call.
 
       Targ1 : Node_Id;
@@ -4115,8 +4111,8 @@ package body Exp_Ch6 is
       procedure Reset_Dispatching_Calls (N : Node_Id);
       --  In subtree N search for occurrences of dispatching calls that use the
       --  Ada 2005 Object.Operation notation and the object is a formal of the
-      --  inlined subprogram; in all the found occurrences reset the entity
-      --  associated with Operation.
+      --  inlined subprogram. Reset the entity associated with Operation in all
+      --  the found occurrences.
 
       procedure Rewrite_Function_Call (N : Node_Id; Blk : Node_Id);
       --  If the function body is a single expression, replace call with
@@ -4355,9 +4351,10 @@ package body Exp_Ch6 is
       procedure Reset_Dispatching_Calls (N : Node_Id) is
 
          function Do_Reset (N : Node_Id) return Traverse_Result;
+         --  Comment required ???
 
          --------------
-         -- Do_Check --
+         -- Do_Reset --
          --------------
 
          function Do_Reset (N : Node_Id) return Traverse_Result is
@@ -4377,10 +4374,13 @@ package body Exp_Ch6 is
 
          function Do_Reset_Calls is new Traverse_Func (Do_Reset);
 
-         --  Start of processing for Reset_Dispatching_Calls
+         --  Local variables
 
          Dummy : constant Traverse_Result := Do_Reset_Calls (N);
          pragma Unreferenced (Dummy);
+
+         --  Start of processing for Reset_Dispatching_Calls
+
       begin
          null;
       end Reset_Dispatching_Calls;
@@ -5073,8 +5073,7 @@ package body Exp_Ch6 is
 
       if Is_Unc_Decl then
 
-         --  No action needed since the return statement has been already
-         --  removed!
+         --  No action needed since return statement has been already removed!
 
          null;
 

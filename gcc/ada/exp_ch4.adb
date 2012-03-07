@@ -3529,17 +3529,15 @@ package body Exp_Ch4 is
       --  Expand_Allocator_Expression inherit the proper type attributes.
 
       if (Ekind (PtrT) = E_Anonymous_Access_Type
-            or else
-              (Is_Itype (PtrT) and then No (Finalization_Master (PtrT))))
+           or else
+             (Is_Itype (PtrT) and then No (Finalization_Master (PtrT))))
         and then Needs_Finalization (Dtyp)
       then
          --  Anonymous access-to-controlled types allocate on the global pool.
          --  Do not set this attribute on .NET/JVM since those targets do not
          --  support pools.
 
-         if No (Associated_Storage_Pool (PtrT))
-           and then VM_Target = No_VM
-         then
+         if No (Associated_Storage_Pool (PtrT)) and then VM_Target = No_VM then
             Set_Associated_Storage_Pool
               (PtrT, Get_Global_Pool_For_Access_Type (PtrT));
          end if;
