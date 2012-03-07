@@ -1024,12 +1024,14 @@ go_debug_dwarf_files = \
 	go/debug/dwarf/buf.go \
 	go/debug/dwarf/const.go \
 	go/debug/dwarf/entry.go \
+	go/debug/dwarf/line.go \
 	go/debug/dwarf/open.go \
 	go/debug/dwarf/type.go \
 	go/debug/dwarf/unit.go
 go_debug_elf_files = \
 	go/debug/elf/elf.go \
-	go/debug/elf/file.go
+	go/debug/elf/file.go \
+	go/debug/elf/runtime.go
 go_debug_gosym_files = \
 	go/debug/gosym/pclntab.go \
 	go/debug/gosym/symtab.go

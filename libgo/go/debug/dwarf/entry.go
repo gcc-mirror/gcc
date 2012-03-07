@@ -246,6 +246,15 @@ func (d *Data) Reader() *Reader {
 	return r
 }
 
+// unitReader returns a new reader starting at a specific unit.
+func (d *Data) unitReader(i int) *Reader {
+	r := &Reader{d: d}
+	r.unit = i
+	u := &d.unit[i]
+	r.b = makeBuf(d, "info", u.off, u.data, u.addrsize)
+	return r
+}
+
 // Seek positions the Reader at offset off in the encoded entry stream.
 // Offset 0 can be used to denote the first entry.
 func (r *Reader) Seek(off Offset) {

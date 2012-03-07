@@ -211,22 +211,3 @@ runtime_cputicks(void)
   return 0;
 #endif
 }
-
-struct funcline_go_return
-{
-  String retfile;
-  int32 retline;
-};
-
-struct funcline_go_return
-runtime_funcline_go(void *f, uintptr targetpc)
-  __asm__("libgo_runtime.runtime.funcline_go");
-
-struct funcline_go_return
-runtime_funcline_go(void *f __attribute__((unused)),
-		    uintptr targetpc __attribute__((unused)))
-{
-  struct funcline_go_return ret;
-  runtime_memclr(&ret, sizeof ret);
-  return ret;
-}

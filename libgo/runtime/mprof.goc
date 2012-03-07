@@ -225,11 +225,7 @@ runtime_MProf_Malloc(void *p, uintptr size)
 		return;
 
 	m->nomemprof++;
-#if 0
 	nstk = runtime_callers(1, stk, 32);
-#else
-	nstk = 0;
-#endif
 	runtime_lock(&proflock);
 	b = stkbucket(stk, nstk, true);
 	b->recent_allocs++;
