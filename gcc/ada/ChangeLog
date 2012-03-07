@@ -1,3 +1,21 @@
+2012-03-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): a generic subprogram with
+	a formal incomplete type does not require a freeze node.
+
+2012-03-07  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads: Minor reformatting.
+
+2012-03-07  Geert Bosch  <bosch@adacore.com>
+
+	* targparm.ads: New target parameter Atomic_Sync_Default,
+	defaulting to True.
+	* targparm.adb (Get_Target_Parameters): Add processing for
+	Atomic_Sync_Default.
+	* gnat1drv.adb (Adjust_Global_Switches): Adjust Supress_Options
+	based on ASD.
+
 2012-03-07  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): If the object

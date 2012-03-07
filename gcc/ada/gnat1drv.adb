@@ -345,6 +345,13 @@ procedure Gnat1drv is
          Suppress_Options (Overflow_Check) := True;
       end if;
 
+      --  Set default for atomic synchronization. As this synchronization
+      --  between atomic accesses can be expensive, and not typically needed
+      --  on some targets, an optional target parameter can turn the option
+      --  off. Note Atomic Synchronization is implemented as check.
+
+      Suppress_Options (Atomic_Synchronization) := not Atomic_Sync_Default;
+
       --  Set switch indicating if we can use N_Expression_With_Actions
 
       --  Debug flag -gnatd.X decisively sets usage on

@@ -1094,7 +1094,7 @@ package Sem_Util is
    --  and the one in Nmake are both potentially use-visible, it will cause
    --  a compilation error. Note that type and value are irrelevant.
 
-   N_Return_Statement : constant := -2**33;
+   N_Return_Statement : constant := -2 ** 33;
    --  Attempt to prevent accidental uses of N_Return_Statement; similar to
    --  Make_Return_Statement above.
 
