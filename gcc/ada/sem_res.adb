@@ -8278,13 +8278,6 @@ package body Sem_Res is
    begin
       if not Alfa_Mode then
 
-         --  If expansion is enabled, analysis is delayed until the expresssion
-         --  is rewritten as a loop.
-
-         if Operating_Mode /= Check_Semantics then
-            return;
-         end if;
-
          --  The loop structure is already resolved during its analysis, only
          --  the resolution of the condition needs to be done. Expansion is
          --  disabled so that checks and other generated code are inserted in

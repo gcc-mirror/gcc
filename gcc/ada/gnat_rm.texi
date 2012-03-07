@@ -71,7 +71,7 @@ AdaCore
 * About This Guide::
 * Implementation Defined Pragmas::
 * Implementation Defined Attributes::
-* Implementation Defined Restrictions::
+* Standard and Implementation Defined Restrictions::
 * Implementation Advice::
 * Implementation Defined Characteristics::
 * Intrinsic Subprograms::
@@ -289,7 +289,7 @@ Implementation Defined Attributes
 * Wchar_T_Size::
 * Word_Size::
 
-Implementation Defined Restrictions
+Standard and Implementation Defined Restrictions
 
 * Partition-Wide Restrictions::
 * Program Unit Level Restrictions::
@@ -650,7 +650,7 @@ implementation-dependent attributes, which can be used to extend and
 enhance the functionality of the compiler.
 
 @item
-@ref{Implementation Defined Restrictions}, lists GNAT
+@ref{Standard and Implementation Defined Restrictions}, lists GNAT
 implementation-dependent restrictions, which can be used to extend and
 enhance the functionality of the compiler.
 
@@ -6919,8 +6919,8 @@ package @code{Interfaces.C}.
 @code{Standard'Word_Size} (@code{Standard} is the only permissible
 prefix) provides the value @code{System.Word_Size}.
 
-@node Implementation Defined Restrictions
-@chapter Implementation Defined Restrictions
+@node Standard and Implementation Defined Restrictions
+@chapter Standard and Implementation Defined Restrictions
 
 @noindent
 All RM defined Restriction identifiers are implemented:
@@ -9935,7 +9935,7 @@ See documentation in the sources of the run time mentioned in paragraph
 @code{Restrictions}.  See 13.12(7).
 @end cartouche
 @noindent
-@xref{Implementation Defined Restrictions}.
+@xref{Standard and Implementation Defined Restrictions}.
 
 @sp 1
 @cartouche

@@ -7916,14 +7916,9 @@ package body Exp_Ch4 is
             Make_Exit_Statement (Loc)));
 
       if Present (Loop_Parameter_Specification (N)) then
-         I_Scheme :=
-           Make_Iteration_Scheme (Loc,
-              Loop_Parameter_Specification =>
-                Loop_Parameter_Specification (N));
+         I_Scheme := Relocate_Node (Parent (Loop_Parameter_Specification (N)));
       else
-         I_Scheme :=
-           Make_Iteration_Scheme (Loc,
-             Iterator_Specification => Iterator_Specification (N));
+         I_Scheme := Relocate_Node (Parent (Iterator_Specification (N)));
       end if;
 
       Append_To (Actions,
