@@ -1,3 +1,8 @@
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
+	* convert.c (strip_float_extensions): Move ...
+	* tree.c (strip_float_extensions): ... here.
+
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52484
