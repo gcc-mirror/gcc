@@ -1790,6 +1790,12 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
 {
   Location bloc = Linemap::predeclared_location();
 
+  if (gogo->specific_type_functions_are_written())
+    {
+      go_assert(saw_errors());
+      return;
+    }
+
   Named_object* hash_fn = gogo->start_function(hash_name, hash_fntype, false,
 					       bloc);
   gogo->start_block(bloc);
