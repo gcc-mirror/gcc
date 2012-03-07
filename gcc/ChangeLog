@@ -1,3 +1,11 @@
+2012-03-07  Oleg Endo  <olegendo@gcc.gnu.org>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/52503
+	* config/sh/sh.opt (msoft-atomic): Use Var instead of Mask.
+	* config/sh/linux.h (TARGET_DEFAULT): Remove MASK_SOFT_ATOMIC.
+	(SUBTARGET_OVERRIDE_OPTIONS): Define.
+
 2012-03-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (x86_64_zext_general_operand): New.
