@@ -1,3 +1,14 @@
+2012-03-07  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.c (tilegx_expand_prologue): Don't generate
+	REG_CFA_* notes for the stack pointer.
+	(tilegx_expand_epilogue): Restore stack pointer by adjusting it by
+	EH_RETURN_STACKADJ_RTX.
+	* config/tilepro/tilepro.c (tilepro_expand_prologue): Don't
+	generate REG_CFA_* notes for the stack pointer.
+	(tilepro_expand_epilogue): Restore stack pointer by adjusting it
+	by EH_RETURN_STACKADJ_RTX.
+
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/invoke.texi (AVR Built-in Macros): Correct condition for

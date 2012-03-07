@@ -3881,9 +3881,8 @@ tilegx_expand_prologue (void)
     {
       /* Copy the old stack pointer aside so we can save it later.  */
       sp_copy_regno = next_scratch_regno--;
-      insn = FRP (emit_move_insn (gen_rtx_REG (Pmode, sp_copy_regno),
-				  stack_pointer_rtx));
-      add_reg_note (insn, REG_CFA_REGISTER, NULL_RTX);
+      emit_move_insn (gen_rtx_REG (Pmode, sp_copy_regno),
+		      stack_pointer_rtx);
     }
 
   if (tilegx_current_function_is_leaf ())
@@ -3925,8 +3924,8 @@ tilegx_expand_prologue (void)
 	}
 
       /* Save our frame pointer for backtrace chaining.  */
-      FRP (frame_emit_store (sp_copy_regno, STACK_POINTER_REGNUM,
-			     chain_addr, cfa, cfa_offset));
+      emit_insn (gen_movdi (gen_frame_mem (DImode, chain_addr),
+			    gen_rtx_REG (DImode, sp_copy_regno)));
     }
 
   /* Compute where to start storing registers we need to save.  */
@@ -4067,16 +4066,7 @@ tilegx_expand_epilogue (bool sibcall_p)
 
   emit_insn (gen_blockage ());
 
-  if (crtl->calls_eh_return)
-    {
-      rtx r = compute_frame_addr (-total_size + UNITS_PER_WORD,
-				  &next_scratch_regno);
-      insn = emit_move_insn (gen_lowpart (DImode, stack_pointer_rtx),
-			     gen_frame_mem (DImode, r));
-      RTX_FRAME_RELATED_P (insn) = 1;
-      REG_NOTES (insn) = cfa_restores;
-    }
-  else if (frame_pointer_needed)
+  if (frame_pointer_needed)
     {
       /* Restore the old stack pointer by copying from the frame
          pointer.  */
@@ -4098,6 +4088,16 @@ tilegx_expand_epilogue (bool sibcall_p)
     {
       insn = emit_sp_adjust (total_size, &next_scratch_regno, true,
 			     cfa_restores);
+    }
+
+  if (crtl->calls_eh_return)
+    {
+      if (TARGET_32BIT)
+	emit_insn (gen_sp_adjust_32bit (stack_pointer_rtx, stack_pointer_rtx,
+					EH_RETURN_STACKADJ_RTX));
+      else
+	emit_insn (gen_sp_adjust (stack_pointer_rtx, stack_pointer_rtx,
+				  EH_RETURN_STACKADJ_RTX));
     }
 
   /* Restore the old frame pointer.  */
