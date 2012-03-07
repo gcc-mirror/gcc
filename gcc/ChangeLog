@@ -1,3 +1,9 @@
+2012-03-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (x86_64_zext_general_operand): New.
+	* config/i386/i386.md (*zero_extendsidi2_rex64): Change operand 1
+	predicate to x86_64_zext_general_operand.  Accept "Z" constraint.
+
 2012-03-07  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/tilegx.c (tilegx_expand_prologue): Don't generate
