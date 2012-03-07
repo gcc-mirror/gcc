@@ -1,3 +1,10 @@
+2012-03-07  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	PR target/51417
+	* Makefile.in: Let install-gcc-ar depend on installdirs, gcc-ar$(exeext),
+	gcc-nm$(exeext), gcc-ranlib$(exeext).
+	Don't double canonicalize if cross-compiling.
+
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52506

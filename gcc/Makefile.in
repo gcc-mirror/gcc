@@ -4807,20 +4807,18 @@ install-collect2: collect2 installdirs
 install-lto-wrapper: lto-wrapper$(exeext)
 	$(INSTALL_PROGRAM) lto-wrapper$(exeext) $(DESTDIR)$(libexecsubdir)/lto-wrapper$(exeext)
 
-install-gcc-ar:
-	set -e ; \
-	for i in ar nm ranlib ; do \
-	  install_name=`echo gcc-$$i|sed '$(program_transform_name)'`$(exeext) ;\
-	  target_install_name=$(target_noncanonical)-`echo gcc-$$i|sed '$(program_transform_name)'`$(exeext) ; \
-	  binname=gcc-$$i$(exeext) ; \
-	  rm -f $(DESTDIR)$(bindir)/$$install_name ; \
-	  rm -f $(DESTDIR)$(bindir)/$$target_install_name ; \
-	  $(INSTALL_PROGRAM) $$binname $(DESTDIR)$(bindir)/$$install_name ;\
-	  if test -f $(DESTDIR)$(bindir)$$target_install_name ; then \
+install-gcc-ar: installdirs gcc-ar$(exeext) gcc-nm$(exeext) gcc-ranlib$(exeext)
+	for i in gcc-ar gcc-nm gcc-ranlib; do \
+	  install_name=`echo $$i|sed '$(program_transform_name)'` ;\
+	  target_install_name=$(target_noncanonical)-`echo $$i|sed '$(program_transform_name)'` ; \
+	  rm -f $(DESTDIR)$(bindir)/$$install_name$(exeext) ; \
+	  $(INSTALL_PROGRAM) $$i$(exeext) $(DESTDIR)$(bindir)/$$install_name$(exeext) ;\
+	  if test -f gcc-cross$(exeext); then \
 	    :; \
 	  else \
+	    rm -f $(DESTDIR)$(bindir)/$$target_install_name$(exeext); \
 	    ( cd $(DESTDIR)$(bindir) && \
-	      $(LN) $$install_name $$target_install_name ) ; \
+	      $(LN) $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
 	  fi ; \
 	done
 
