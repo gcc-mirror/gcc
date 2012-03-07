@@ -1102,11 +1102,9 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	  = lvalue_required_p (gnat_node, gnu_result_type, true,
 			       address_of_constant, Is_Aliased (gnat_temp));
 
-      /* ??? We need to unshare the initializer if the object is external
-	 as such objects are not marked for unsharing if we are not at the
-	 global level.  This should be fixed in add_decl_expr.  */
+      /* Finally retrieve the initializer if this is deemed valid.  */
       if ((constant_only && !address_of_constant) || !require_lvalue)
-	gnu_result = unshare_expr (DECL_INITIAL (gnu_result));
+	gnu_result = DECL_INITIAL (gnu_result);
     }
 
   /* The GNAT tree has the type of a function set to its result type, so we
@@ -7113,10 +7111,10 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 
   gnu_stmt = build1 (DECL_EXPR, void_type_node, gnu_decl);
 
-  /* If we are global, we don't want to actually output the DECL_EXPR for
-     this decl since we already have evaluated the expressions in the
+  /* If we are external or global, we don't want to output the DECL_EXPR for
+     this DECL node since we already have evaluated the expressions in the
      sizes and positions as globals and doing it again would be wrong.  */
-  if (global_bindings_p ())
+  if (DECL_EXTERNAL (gnu_decl) || global_bindings_p ())
     {
       /* Mark everything as used to prevent node sharing with subprograms.
 	 Note that walk_tree knows how to deal with TYPE_DECL, but neither
@@ -7135,7 +7133,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	       && !TYPE_FAT_POINTER_P (type))
 	MARK_VISITED (TYPE_ADA_SIZE (type));
     }
-  else if (!DECL_EXTERNAL (gnu_decl))
+  else
     add_stmt_with_node (gnu_stmt, gnat_entity);
 
   /* If this is a variable and an initializer is attached to it, it must be

@@ -1,3 +1,9 @@
+2012-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Don't unshare initializer.
+	(add_decl_expr): Mark external DECLs as used.
+	* gcc-interface/utils.c (convert) <CONSTRUCTOR>: Copy the vector.
+
 2012-03-07  Tristan Gingold  <gingold@adacore.com>
 
 	* s-ransee-vms.adb: New file.
