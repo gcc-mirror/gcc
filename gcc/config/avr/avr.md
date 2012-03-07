@@ -436,6 +436,7 @@
 (define_insn_and_split "xload<mode>_A"
   [(set (match_operand:MOVMODE 0 "register_operand" "=r")
         (match_operand:MOVMODE 1 "memory_operand"    "m"))
+   (clobber (reg:MOVMODE 22))
    (clobber (reg:QI 21))
    (clobber (reg:HI REG_Z))]
   "can_create_pseudo_p()
