@@ -2131,6 +2131,7 @@ ENDF __load_4
 #if defined (L_xload_1)
 DEFUN __xload_1
 #if defined (__AVR_HAVE_LPMX__) && !defined (__AVR_HAVE_ELPM__)
+    sbrc    HHI8, 7
     ld      D0, Z
     sbrs    HHI8, 7
     lpm     D0, Z

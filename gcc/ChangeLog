@@ -1,5 +1,12 @@
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/52505
+	* config/avr/avr.c (avr_out_xload): Don't read unintentionally
+	from RAM.
+	* config/avr/avr.md (xload_8): Adjust insn length.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/52461
 	* gcc/config/avr/avr.c (avr_out_lpm): Clear RAMPZ after usage
 	if RAMPZ affects reading from RAM.
