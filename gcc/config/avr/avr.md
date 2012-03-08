@@ -1098,15 +1098,16 @@
    (set_attr "adjust_len" "addto_sp")])
 
 (define_insn "*addhi3"
-  [(set (match_operand:HI 0 "register_operand"          "=r,d,d")
-        (plus:HI (match_operand:HI 1 "register_operand" "%0,0,0")
-                 (match_operand:HI 2 "nonmemory_operand" "r,s,n")))]
+  [(set (match_operand:HI 0 "register_operand"          "=r,d,!w,d")
+        (plus:HI (match_operand:HI 1 "register_operand" "%0,0,0 ,0")
+                 (match_operand:HI 2 "nonmemory_operand" "r,s,IJ,n")))]
   ""
   {
     static const char * const asm_code[] =
       {
         "add %A0,%A2\;adc %B0,%B2",
         "subi %A0,lo8(-(%2))\;sbci %B0,hi8(-(%2))",
+        "",
         ""
       };
 
@@ -1115,9 +1116,9 @@
 
     return avr_out_plus_noclobber (operands, NULL, NULL);
   }
-  [(set_attr "length" "2,2,2")
-   (set_attr "adjust_len" "*,*,out_plus_noclobber")
-   (set_attr "cc" "set_n,set_czn,out_plus_noclobber")])
+  [(set_attr "length" "2,2,2,2")
+   (set_attr "adjust_len" "*,*,out_plus_noclobber,out_plus_noclobber")
+   (set_attr "cc" "set_n,set_czn,out_plus_noclobber,out_plus_noclobber")])
 
 ;; Adding a constant to NO_LD_REGS might have lead to a reload of
 ;; that constant to LD_REGS.  We don't add a scratch to *addhi3
@@ -1155,10 +1156,10 @@
               (clobber (match_dup 2))])])
 
 (define_insn "addhi3_clobber"
-  [(set (match_operand:HI 0 "register_operand"           "=d,l")
-        (plus:HI (match_operand:HI 1 "register_operand"  "%0,0")
-                 (match_operand:HI 2 "const_int_operand"  "n,n")))
-   (clobber (match_scratch:QI 3                          "=X,&d"))]
+  [(set (match_operand:HI 0 "register_operand"           "=!w,d,r")
+        (plus:HI (match_operand:HI 1 "register_operand"   "%0,0,0")
+                 (match_operand:HI 2 "const_int_operand"  "IJ,n,n")))
+   (clobber (match_scratch:QI 3                           "=X,X,&d"))]
   ""
   {
     gcc_assert (REGNO (operands[0]) == REGNO (operands[1]));
