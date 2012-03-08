@@ -9973,6 +9973,14 @@ avr_out_movmem (rtx insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
 
 /* Helper for __builtin_avr_delay_cycles */
 
+static rtx
+avr_mem_clobber (void)
+{
+  rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (mem) = 1;
+  return mem;
+}
+
 static void
 avr_expand_delay_cycles (rtx operands0)
 {
@@ -9984,7 +9992,8 @@ avr_expand_delay_cycles (rtx operands0)
     {
       loop_count = ((cycles - 9) / 6) + 1;
       cycles_used = ((loop_count - 1) * 6) + 9;
-      emit_insn (gen_delay_cycles_4 (gen_int_mode (loop_count, SImode)));
+      emit_insn (gen_delay_cycles_4 (gen_int_mode (loop_count, SImode),
+                                     avr_mem_clobber()));
       cycles -= cycles_used;
     }
   
@@ -9994,7 +10003,8 @@ avr_expand_delay_cycles (rtx operands0)
       if (loop_count > 0xFFFFFF)
         loop_count = 0xFFFFFF;
       cycles_used = ((loop_count - 1) * 5) + 7;
-      emit_insn (gen_delay_cycles_3 (gen_int_mode (loop_count, SImode)));
+      emit_insn (gen_delay_cycles_3 (gen_int_mode (loop_count, SImode),
+                                     avr_mem_clobber()));
       cycles -= cycles_used;
     }
   
@@ -10004,7 +10014,8 @@ avr_expand_delay_cycles (rtx operands0)
       if (loop_count > 0xFFFF)
         loop_count = 0xFFFF;
       cycles_used = ((loop_count - 1) * 4) + 5;
-      emit_insn (gen_delay_cycles_2 (gen_int_mode (loop_count, HImode)));
+      emit_insn (gen_delay_cycles_2 (gen_int_mode (loop_count, HImode),
+                                     avr_mem_clobber()));
       cycles -= cycles_used;
     }
   
@@ -10014,7 +10025,8 @@ avr_expand_delay_cycles (rtx operands0)
       if (loop_count > 255) 
         loop_count = 255;
       cycles_used = loop_count * 3;
-      emit_insn (gen_delay_cycles_1 (gen_int_mode (loop_count, QImode)));
+      emit_insn (gen_delay_cycles_1 (gen_int_mode (loop_count, QImode),
+                                     avr_mem_clobber()));
       cycles -= cycles_used;
       }
   
