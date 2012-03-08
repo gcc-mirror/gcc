@@ -69,6 +69,8 @@ extern void go_write_export_data (const char *, unsigned int);
 
 extern const char *go_read_export_data (int, off_t, char **, size_t *, int *);
 
+extern GTY(()) tree go_non_zero_struct;
+
 #if defined(__cplusplus) && !defined(ENABLE_BUILD_WITH_CXX)
 } /* End extern "C".  */
 #endif
