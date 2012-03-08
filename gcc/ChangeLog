@@ -1,3 +1,8 @@
+2012-03-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*addhi3, addhi3_clobber): Add "w" alternative
+	for constants in [-63,63].
+
 2012-03-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52530
