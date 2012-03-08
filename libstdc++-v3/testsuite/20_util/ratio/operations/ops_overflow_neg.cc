@@ -42,9 +42,9 @@ test02()
 // { dg-error "required from here" "" { target *-*-* } 29 }
 // { dg-error "required from here" "" { target *-*-* } 36 }
 // { dg-error "required from here" "" { target *-*-* } 38 }
-// { dg-error "overflow in addition" "" { target *-*-* } 432 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 104 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 100 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 102 }
+// { dg-error "overflow in addition" "" { target *-*-* } 429 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 97 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 99 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 101 }
 // { dg-prune-output "out of range" }
 // { dg-prune-output "not usable in a constant expression" }
