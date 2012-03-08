@@ -1,3 +1,9 @@
+2012-03-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52433
+	* include/debug/safe_iterator.h (_Safe_iterator): Add debug checks
+	to move constructor and move assignment operator.
+
 2012-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_algobase.h (iter_swap): In C++11 mode simply
