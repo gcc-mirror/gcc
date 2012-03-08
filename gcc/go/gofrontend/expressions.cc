@@ -284,8 +284,10 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
 	   || SCALAR_FLOAT_TYPE_P(lhs_type_tree)
 	   || COMPLEX_FLOAT_TYPE_P(lhs_type_tree))
     return fold_convert_loc(location.gcc_location(), lhs_type_tree, rhs_tree);
-  else if (TREE_CODE(lhs_type_tree) == RECORD_TYPE
-	   && TREE_CODE(TREE_TYPE(rhs_tree)) == RECORD_TYPE)
+  else if ((TREE_CODE(lhs_type_tree) == RECORD_TYPE
+	    && TREE_CODE(TREE_TYPE(rhs_tree)) == RECORD_TYPE)
+	   || (TREE_CODE(lhs_type_tree) == ARRAY_TYPE
+	       && TREE_CODE(TREE_TYPE(rhs_tree)) == ARRAY_TYPE))
     {
       // This conversion must be permitted by Go, or we wouldn't have
       // gotten here.
