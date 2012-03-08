@@ -1,3 +1,15 @@
+2012-03-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Update to Doxygen 1.8.0.
+	* include/bits/locale_facets.h: Adjust markup to avoid warnings.
+	* include/ext/pb_ds/assoc_container.hpp: Same.
+	* include/ext/pb_ds/priority_queue.hpp: Same.
+	* include/std/fstream: Same.
+	* include/std/ratio: Same.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Adjust line
+	numbers.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Same.
+
 2012-03-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/52433
@@ -121,7 +133,7 @@
 	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
 
 2012-03-01  Benjamin Kosnik  <bkoz@redhat.com>
-            Ramana Radhakrishnan <ramana@gcc.gnu.org>
+	    Ramana Radhakrishnan <ramana@gcc.gnu.org>
 
 	PR libstdc++/51785
 	* acinclude.m4 (GLIBCXX_CHECK_STDIO_PROTO): New.

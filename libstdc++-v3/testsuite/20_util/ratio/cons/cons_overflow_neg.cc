@@ -49,7 +49,7 @@ test04()
 // { dg-error "required from here" "" { target *-*-* } 34 }
 // { dg-error "required from here" "" { target *-*-* } 40 }
 // { dg-error "required from here" "" { target *-*-* } 46 }
-// { dg-error "denominator cannot be zero" "" { target *-*-* } 268 }
-// { dg-error "out of range" "" { target *-*-* } 269 }
+// { dg-error "denominator cannot be zero" "" { target *-*-* } 265 }
+// { dg-error "out of range" "" { target *-*-* } 266 }
 // { dg-error "overflow in constant expression" "" { target *-*-* } 61 }
 // { dg-prune-output "not a member" }
