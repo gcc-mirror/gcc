@@ -843,7 +843,9 @@ Gogo::write_globals()
 		  this->backend()->global_variable_set_init(var,
 							    tree_to_expr(init));
 		}
-	      else if (is_sink)
+	      else if (is_sink
+		       || int_size_in_bytes(TREE_TYPE(init)) == 0
+		       || int_size_in_bytes(TREE_TYPE(vec[i])) == 0)
 		var_init_tree = init;
 	      else
 		var_init_tree = fold_build2_loc(no->location().gcc_location(),
