@@ -3724,7 +3724,8 @@ foo:	nop
 
     gcc_GAS_CHECK_FEATURE([R_386_TLS_LDM_PLT reloc],
         gcc_cv_as_ix86_tlsldmplt,,,
-	[call    tls_ld@tlsldmplt],
+	[tls_ld:
+	 call    tls_ld@tlsldmplt],
 	[if test x$gcc_cv_ld != x \
 	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
 	   gcc_cv_as_ix86_tlsldmplt=yes
