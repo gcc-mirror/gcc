@@ -566,9 +566,9 @@
 
 ;; Test for a valid operand for indirect branch.
 (define_predicate "indirect_branch_operand"
-  (if_then_else (match_test "TARGET_X32")
-    (match_operand 0 "register_operand")
-    (match_operand 0 "nonimmediate_operand")))
+  (ior (match_operand 0 "register_operand")
+       (and (not (match_test "TARGET_X32"))
+	    (match_operand 0 "memory_operand"))))
 
 ;; Test for a valid operand for a call instruction.
 (define_predicate "call_insn_operand"
