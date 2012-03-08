@@ -1,3 +1,12 @@
+2012-03-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52530
+	Revert:
+	2012-03-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_print_operand_address): Only handle
+	zero-extended DImode addresses.
+
 2012-03-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_as_ix86_tlsldmplt): Add label.
