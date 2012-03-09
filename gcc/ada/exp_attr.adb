@@ -5672,7 +5672,8 @@ package body Exp_Attr is
            Attribute_Definite                     |
            Attribute_Null_Parameter               |
            Attribute_Passed_By_Reference          |
-           Attribute_Pool_Address                 =>
+           Attribute_Pool_Address                 |
+           Attribute_Scalar_Storage_Order         =>
          null;
 
       --  The following attributes are also handled by the back end, but return
