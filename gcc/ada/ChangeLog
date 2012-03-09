@@ -1,3 +1,20 @@
+2012-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_VAX_FLOATING_POINT_P): Move around.
+	(TYPE_UNCONSTRAINED_ARRAY): Adjust comment.
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Pool_Address>: Tidy
+	up.  Add comment and use canonical predicate for thin pointers.
+	(gnat_to_gnu) <N_Free_Statement>: Tidy up and reorder.  Add comment
+	and use canonical predicate for thin pointers.
+	* gcc-interface/utils.c (convert_to_fat_pointer): Remove superfluous
+	'else' and use standard name.
+	(convert_to_thin_pointer): Delete.
+	(convert) <POINTER_TYPE>: Do the difference in sizetype directly and
+	change obsolete idioms.  Do not call above function.
+	(unchecked_convert): Fix formatting.
+	* gcc-interface/utils2.c (build_unary_op) <INDIRECT_REF>: In the thin
+	pointer case, use byte_position to get the field position.
+
 2012-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not set flags on the

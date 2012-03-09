@@ -1398,7 +1398,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	    if (TREE_CODE (operand) == POINTER_PLUS_EXPR
 		&& integer_zerop
 		   (size_binop (PLUS_EXPR, TREE_OPERAND (operand, 1),
-				DECL_FIELD_OFFSET (TYPE_FIELDS (rec_type))))
+				byte_position (TYPE_FIELDS (rec_type))))
 		&& TREE_CODE (TREE_OPERAND (operand, 0)) == NOP_EXPR)
 	      {
 		operand = TREE_OPERAND (TREE_OPERAND (operand, 0), 0);
