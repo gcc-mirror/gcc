@@ -1,3 +1,71 @@
+2012-03-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/formatter.h (enum _Debug_msg_id): Add
+	__msg_self_move_assign.
+	* include/debug/macros.h (__glibcxx_check_self_move_assign): Add.
+	* src/c++11/debug.cc (_S_debug_messages): Update.
+	* include/debug/safe_iterator.h (_Safe_iterator<>::operator=
+	(_Safe_iterator&&)): Add check for self move assignment.
+	* include/debug/set.h: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/forward_list: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/vector: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/string: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* testsuite/21_strings/debug/self_move_assign_neg.cc: New.
+	* testsuite/21_strings/debug/iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/
+	self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/
+	self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/map/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+
 2012-03-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/user.cfg.in: Update to Doxygen 1.8.0.

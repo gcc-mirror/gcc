@@ -1,7 +1,7 @@
 // Debugging mode support code -*- C++ -*-
 
 // Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-// 2011 Free Software Foundation, Inc.
+// 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -177,7 +177,8 @@ namespace __gnu_debug
     // std::unordered_container::local_iterator
     "attempt to compare local iterators from different unordered container"
     " buckets",
-    "function requires a non-empty iterator range [%1.name;, %2.name;)"
+    "function requires a non-empty iterator range [%1.name;, %2.name;)",
+    "attempt to self move assign"
   };
 
   void

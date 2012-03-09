@@ -1,6 +1,6 @@
 // Debug-mode error formatting implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -109,7 +109,9 @@ namespace __gnu_debug
     __msg_valid_range2,
     // unordered sequence local iterators
     __msg_local_iter_compare_bad,
-    __msg_non_empty_range
+    __msg_non_empty_range,
+    // self move assign
+    __msg_self_move_assign
   };
 
   class _Error_formatter

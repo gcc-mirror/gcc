@@ -158,6 +158,7 @@ namespace __debug
       vector&
       operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
       {
+	__glibcxx_check_self_move_assign(__x);
 	_Base::operator=(std::move(__x));
 	this->_M_invalidate_all();
 	_M_update_guaranteed_capacity();
