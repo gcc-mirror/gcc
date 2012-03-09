@@ -1,5 +1,10 @@
 2012-03-09  Tristan Gingold  <gingold@adacore.com>
 
+	* config/vms/vms-crtlmap.map: Add comments.
+	Add entries needed to build Ada RTS.
+
+2012-03-09  Tristan Gingold  <gingold@adacore.com>
+
 	* ginclude/stddef.h: Do not define __size_t on VMS.
 
 2012-03-09  Tristan Gingold  <gingold@adacore.com>
