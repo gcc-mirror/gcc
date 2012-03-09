@@ -1,3 +1,15 @@
+2012-03-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Make-lang.in (convert.o): Depend on convert.h.
+	* convert.c: Header and comment cleanups.
+	(gfc_thruthvalue_conversion): Rename static function
+	to truthvalue_conversion.  Do not use 'internal_error' from here,
+	use 'gcc_unreachable' instead.
+	(convert): Do not use 'error' for conversions to void, use
+	'gcc_unreachable' instead.  Likewise for conversions to non-scalar
+	types.  Do not hanlde ENUMERAL_TYPE, the front end never creates them.
+	Clean up #if 0 code.
+
 2012-03-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52469
