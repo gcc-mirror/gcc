@@ -1,5 +1,9 @@
 2012-03-09  Tristan Gingold  <gingold@adacore.com>
 
+	* ginclude/stddef.h: Do not define __size_t on VMS.
+
+2012-03-09  Tristan Gingold  <gingold@adacore.com>
+
 	* c-tree.h (c_default_pointer_mode): New variable.
 	* c-decl.c (c_default_pointer_mode): New variable.
 	(c_build_pointer_type): New function.
