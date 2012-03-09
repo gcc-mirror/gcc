@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  Version used on OpenVMS systems, where Clock accuracy is too low for
---  RM A.5.2 (45).
+--  RM A.5.2(45).
 
 with Interfaces; use Interfaces;
 

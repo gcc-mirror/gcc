@@ -6751,18 +6751,18 @@ package body Sem_Util is
    -----------------------
 
    function Is_Bounded_String (T : Entity_Id) return Boolean is
-      --  Check whether T is ultimately derived from Ada.Strings.-
-      --  Superbounded.Super_String, or one of the [Wide_]Wide_
-      --  versions. This will be True for all the Bounded_String types in
-      --  instances of the Generic_Bounded_Length generics, and for types
-      --  derived from those.
-
       Under : constant Entity_Id := Underlying_Type (Root_Type (T));
+
    begin
-      return Present (Under) and then
-        (Is_RTE (Root_Type (Under), RO_SU_Super_String)
-           or else Is_RTE (Root_Type (Under), RO_WI_Super_String)
-           or else Is_RTE (Root_Type (Under), RO_WW_Super_String));
+      --  Check whether T is ultimately derived from Ada.Strings.Superbounded.
+      --  Super_String, or one of the [Wide_]Wide_ versions. This will
+      --  be True for all the Bounded_String types in instances of the
+      --  Generic_Bounded_Length generics, and for types derived from those.
+
+      return Present (Under)
+        and then (Is_RTE (Root_Type (Under), RO_SU_Super_String) or else
+                  Is_RTE (Root_Type (Under), RO_WI_Super_String) or else
+                  Is_RTE (Root_Type (Under), RO_WW_Super_String));
    end Is_Bounded_String;
 
    -----------------------------
@@ -9422,13 +9422,14 @@ package body Sem_Util is
 
    function Must_Inline (Subp : Entity_Id) return Boolean is
    begin
-      --  AAMP and VM targets have no support for inlining in the backend.
-      --  Hence we do as much inlining as possible in the front end.
-
       return
         (Optimization_Level = 0
-           or else AAMP_On_Target
-           or else VM_Target /= No_VM)
+
+          --  AAMP and VM targets have no support for inlining in the backend.
+          --  Hence we do as much inlining as possible in the front end.
+
+          or else AAMP_On_Target
+          or else VM_Target /= No_VM)
         and then Has_Pragma_Inline (Subp)
         and then (Has_Pragma_Inline_Always (Subp) or else Front_End_Inlining);
    end Must_Inline;

@@ -771,6 +771,7 @@ package body System.Task_Primitives.Operations is
          declare
             Task_Name : String (1 .. Parameters.Max_Task_Image_Length + 1);
             Result    : int;
+
          begin
             --  Set thread name to ease debugging
 

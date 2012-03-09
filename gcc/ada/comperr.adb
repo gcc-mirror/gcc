@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -477,7 +477,7 @@ package body Comperr is
          Name_Len := K;
       end Decode_Name_Buffer;
 
-   --  Start of processing for Decode_Name_Buffer
+   --  Start of processing for Delete_SCIL_Files
 
    begin
       --  If parsing was not successful, no Main_Unit is available, so return
@@ -498,6 +498,13 @@ package body Comperr is
 
          when N_Package_Body =>
             Unit_Name := Corresponding_Spec (Main);
+
+         when N_Package_Renaming_Declaration =>
+            Unit_Name := Defining_Unit_Name (Main);
+
+         when N_Generic_Package_Declaration =>
+            --  No SCIL file generated for generic package declarations
+            return;
 
          --  Should never happen, but can be ignored in production
 

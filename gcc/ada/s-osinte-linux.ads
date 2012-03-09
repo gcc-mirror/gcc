@@ -258,7 +258,8 @@ package System.OS_Interface is
    PR_SET_NAME : constant := 15;
 
    function prctl
-     (option : int; arg2, arg3, arg4, arg5 : unsigned_long := 0) return int;
+     (option                 : int;
+      arg2, arg3, arg4, arg5 : unsigned_long := 0) return int;
    pragma Import (C, prctl);
 
    -------------

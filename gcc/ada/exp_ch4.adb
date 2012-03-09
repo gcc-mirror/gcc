@@ -2504,12 +2504,12 @@ package body Exp_Ch4 is
                Op : constant Node_Id := Find_Primitive_Eq;
 
             begin
+               --  Use user-defined primitive if it exists, otherwise use
+               --  predefined equality.
+
                if Present (Op) then
                   return Op;
                else
-
-               --  Use predefined equality if no user-defined primitive exists
-
                   return Make_Op_Eq (Loc, Lhs, Rhs);
                end if;
             end;

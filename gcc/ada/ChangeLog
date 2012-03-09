@@ -1,3 +1,18 @@
+2012-03-09  Robert Dewar  <dewar@adacore.com>
+
+	* s-osinte-linux.ads, sem_util.adb, s-taprop-linux.adb, exp_ch4.adb,
+	a-strsup.ads, sem_ch6.adb, a-stwisu.ads, exp_ch3.adb,
+	a-stzsup.ads: Minor reformatting.
+
+2012-03-09  Thomas Quinot  <quinot@adacore.com>
+
+	* s-ransee-vms.adb: Minor reformatting.
+
+2012-03-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* comperr.adb (Delete_SCIL_Files): Fix handling of
+	N_Package_Renaming_Declaration and N_Generic_Package_Declaration.
+
 2012-03-09  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (Check_Body_To_Inline): In AAMP and VM targets
