@@ -1,3 +1,29 @@
+2012-03-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (setup_incoming_varargs_64): Use word_mode
+	with integer parameters in registers.
+	(gen_push): Push register in word_mode instead of Pmode.
+	(ix86_emit_save_regs): Likewise.
+	(ix86_emit_save_regs_using_mov): Save integer registers in
+	word_mode.
+	(gen_pop): Pop register in word_mode instead of Pmode.
+	(ix86_emit_restore_regs_using_pop): Likewise.
+	(ix86_expand_prologue): Replace Pmode with word_mode for push
+	immediate.  Use ix86_gen_pro_epilogue_adjust_stack.  Save and
+	restore RAX and R10 in word_mode.
+	(ix86_emit_restore_regs_using_mov): Restore integer registers
+	in word_mode.
+	(ix86_expand_split_stack_prologue): Save R10_REG and restore in
+	word_mode.
+	(ix86_split_to_parts): Use word_mode with PUT_MODE for push.
+	(ix86_split_long_move): Likewise.
+
+	* config/i386/i386.md (W): New.
+	(*push<mode>2_prologue): Replace :P with :W.
+	(*pop<mode>1): Likewise.
+	(*pop<mode>1_epilogue): Likewise.
+	(push/pop peephole2): Use word_mode scratch registers.
+
 2012-03-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (indirect_branch_operand): Simplify.
