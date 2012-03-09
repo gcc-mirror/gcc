@@ -74,9 +74,17 @@ func (d *Data) readUnitLine(i int, u *unit) error {
 				// TODO: Handle AttrRanges and .debug_ranges.
 				_ = f
 			}
-			if off, ok := e.Val(AttrStmtList).(int64); ok {
-				u.lineoff = Offset(off)
-				setLineOff = true
+			val := e.Val(AttrStmtList)
+			if val != nil {
+				if off, ok := val.(int64); ok {
+					u.lineoff = Offset(off)
+					setLineOff = true
+				} else if off, ok := val.(Offset); ok {
+					u.lineoff = off
+					setLineOff = true
+				} else {
+					return errors.New("unrecognized format for DW_ATTR_stmt_list")
+				}
 			}
 			if dir, ok := e.Val(AttrCompDir).(string); ok {
 				u.dir = dir
@@ -177,15 +185,15 @@ func (d *Data) parseLine(u *unit) error {
 	if u.lineoff+1 == 0 {
 		return errors.New("unknown line offset")
 	}
-	b := makeBuf(d, "line", u.lineoff, d.line, u.addrsize)
+	b := makeBuf(d, u, "line", u.lineoff, d.line[u.lineoff:])
 	len := uint64(b.uint32())
-	offSize := 4
+	dwarf64 := false
 	if len == 0xffffffff {
 		len = b.uint64()
-		offSize = 8
+		dwarf64 = true
 	}
 	end := b.off + Offset(len)
-	hdr := d.parseLineHdr(u, &b, offSize)
+	hdr := d.parseLineHdr(u, &b, dwarf64)
 	if b.err == nil {
 		d.parseLineProgram(u, &b, hdr, end)
 	}
@@ -193,14 +201,20 @@ func (d *Data) parseLine(u *unit) error {
 }
 
 // parseLineHdr parses a line number program header.
-func (d *Data) parseLineHdr(u *unit, b *buf, offSize int) (hdr lineHdr) {
+func (d *Data) parseLineHdr(u *unit, b *buf, dwarf64 bool) (hdr lineHdr) {
 	hdr.version = b.uint16()
 	if hdr.version < 2 || hdr.version > 4 {
 		b.error("unsupported DWARF version " + strconv.Itoa(int(hdr.version)))
 		return
 	}
 
-	b.bytes(offSize) // header length
+	var hlen Offset
+	if dwarf64 {
+		hlen = Offset(b.uint64())
+	} else {
+		hlen = Offset(b.uint32())
+	}
+	end := b.off + hlen
 
 	hdr.minInsnLen = b.uint8()
 	if hdr.version < 4 {
@@ -239,6 +253,10 @@ func (d *Data) parseLineHdr(u *unit, b *buf, offSize int) (hdr lineHdr) {
 		b.uint() // file's last mtime
 		b.uint() // file length
 		hdr.files = append(hdr.files, f)
+	}
+
+	if end > b.off {
+		b.bytes(int(end - b.off))
 	}
 
 	return
@@ -296,6 +314,7 @@ func (d *Data) parseLineProgram(u *unit, b *buf, hdr lineHdr, end Offset) {
 				u.lines = append(u.lines, lines...)
 				lineInfo = resetLineInfo
 				lines = nil
+				newLineInfo = true
 			case LineExtSetAddress:
 				address = b.addr()
 			case LineExtDefineFile:
