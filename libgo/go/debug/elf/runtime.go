@@ -129,7 +129,7 @@ func openExecutable() {
 // and line number for a PC value.
 func funcFileLine(pc uintptr, function *string, file *string, line *int) bool {
 	openExecutable()
-	if executable.dwarf == nil {
+	if executable == nil || executable.dwarf == nil {
 		return false
 	}
 	f, ln, err := executable.dwarf.FileLine(uint64(pc))
