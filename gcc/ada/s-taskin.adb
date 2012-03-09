@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -137,6 +137,7 @@ package body System.Tasking is
       T.Common.Fall_Back_Handler        := null;
       T.Common.Specific_Handler         := null;
       T.Common.Debug_Events             := (others => False);
+      T.Common.Task_Image_Len           := 0;
 
       if T.Common.Parent = null then
 

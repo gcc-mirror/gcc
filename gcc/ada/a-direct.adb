@@ -514,10 +514,10 @@ package body Ada.Directories is
    begin
       Local_Get_Current_Dir (Buffer'Address, Path_Len'Address);
 
-      --  We need to resolve links because of A.16(47), since we must not
-      --  return alternative names for files
-      return Normalize_Pathname (Buffer (1 .. Path_Len));
+      --  We need to resolve links because of RM A.16(47), which requires
+      --  that we not return alternative names for files.
 
+      return Normalize_Pathname (Buffer (1 .. Path_Len));
    end Current_Directory;
 
    ----------------------

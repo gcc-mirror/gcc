@@ -1,3 +1,24 @@
+2012-03-09  Robert Dewar  <dewar@adacore.com>
+
+	* a-direct.adb, comperr.adb, freeze.adb: Minor reformatting.
+
+2012-03-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taskin.adb (Initialize_ATCB): Set Task_Image_Len to
+	0 so that we never access this field uninitialized (e.g. in
+	Task_Primitives.Operations.Enter_Task for the environment task).
+
+2012-03-09  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop):
+	Call to Expand_Iterator_Loop_Over_Array added.
+	(Expand_Iterator_Loop_Over_Array): New routine. Expansion of
+	"of" iterator loop over arrays. Multidimensional array case added.
+
+2012-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* uintp.ads: Fix minor pasto in comment.
+
 2012-03-09  Vasiliy Fofanov  <fofanov@adacore.com>
 
 	* a-direct.adb: Do not strip the trailing directory separator
