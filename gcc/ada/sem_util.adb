@@ -9422,7 +9422,13 @@ package body Sem_Util is
 
    function Must_Inline (Subp : Entity_Id) return Boolean is
    begin
-      return Optimization_Level = 0
+      --  AAMP and VM targets have no support for inlining in the backend.
+      --  Hence we do as much inlining as possible in the front end.
+
+      return
+        (Optimization_Level = 0
+           or else AAMP_On_Target
+           or else VM_Target /= No_VM)
         and then Has_Pragma_Inline (Subp)
         and then (Has_Pragma_Inline_Always (Subp) or else Front_End_Inlining);
    end Must_Inline;
