@@ -41,16 +41,17 @@ with Ada.Strings.Maps;
 package Ada.Strings.Superbounded is
    pragma Preelaborate;
 
+   --  Type Bounded_String in Ada.Strings.Bounded.Generic_Bounded_Length is
+   --  derived from Super_String, with the constraint of the maximum length.
+
    type Super_String (Max_Length : Positive) is record
       Current_Length : Natural := 0;
       Data           : String (1 .. Max_Length);
-      --  A previous version had a default initial value for Data, which is no
-      --  longer necessary, because we now special-case this type in the
-      --  compiler, so "=" composes properly for descendants of this
-      --  type. Leaving it out is more efficient.
+      --  A previous version had a default initial value for Data, which is
+      --  no longer necessary, because we now special-case this type in the
+      --  compiler, so "=" composes properly for descendants of this type.
+      --  Leaving it out is more efficient.
    end record;
-   --  Type Bounded_String in Ada.Strings.Bounded.Generic_Bounded_Length is
-   --  derived from this type, with the constraint of the maximum length.
 
    --  The subprograms defined for Super_String are similar to those
    --  defined for Bounded_String, except that they have different names, so
