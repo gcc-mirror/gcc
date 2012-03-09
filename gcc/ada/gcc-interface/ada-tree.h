@@ -124,16 +124,16 @@ do {							 \
     || TREE_CODE (NODE) == ENUMERAL_TYPE)	    \
    && TYPE_BY_REFERENCE_P (NODE))
 
+/* For INTEGER_TYPE, nonzero if this really represents a VAX
+   floating-point type.  */
+#define TYPE_VAX_FLOATING_POINT_P(NODE) \
+  TYPE_LANG_FLAG_3 (INTEGER_TYPE_CHECK (NODE))
+
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this is the
    type for an object whose type includes its template in addition to
    its value (only true for RECORD_TYPE).  */
 #define TYPE_CONTAINS_TEMPLATE_P(NODE) \
   TYPE_LANG_FLAG_3 (RECORD_OR_UNION_CHECK (NODE))
-
-/* For INTEGER_TYPE, nonzero if this really represents a VAX
-   floating-point type.  */
-#define TYPE_VAX_FLOATING_POINT_P(NODE) \
-  TYPE_LANG_FLAG_3 (INTEGER_TYPE_CHECK (NODE))
 
 /* True if NODE is a thin pointer.  */
 #define TYPE_IS_THIN_POINTER_P(NODE)			\
@@ -328,8 +328,10 @@ do {						   \
   SET_TYPE_LANG_SPECIFIC (POINTER_TYPE_CHECK (NODE), X)
 
 /* For a RECORD_TYPE that is a fat pointer, this is the type for the
-   unconstrained object.  Likewise for a RECORD_TYPE that is pointed
-   to by a thin pointer.  */
+   unconstrained array.  Likewise for a RECORD_TYPE that is pointed
+   to by a thin pointer, if it is made for the unconstrained array
+   type itself; the field is NULL_TREE if the RECORD_TYPE is made
+   for a constrained subtype of the array type.  */
 #define TYPE_UNCONSTRAINED_ARRAY(NODE) \
   GET_TYPE_LANG_SPECIFIC (RECORD_TYPE_CHECK (NODE))
 #define SET_TYPE_UNCONSTRAINED_ARRAY(NODE, X) \
