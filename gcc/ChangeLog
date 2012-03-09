@@ -1,3 +1,9 @@
+2012-03-09  Jiangning Liu  <jiangning.liu@arm.com>
+
+	* tree-scalar-evolution (interpret_rhs_expr): generate chrec for
+	array reference and component reference.
+	(analyze_scalar_evolution_for_address_of): New.
+
 2012-03-08  Jie Zhang  <jzhang918@gmail.com>
 
 	PR target/49862
