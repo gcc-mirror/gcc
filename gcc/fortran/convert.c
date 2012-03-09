@@ -1,5 +1,5 @@
-/* Language-level data type conversion for GNU C.
-   Copyright (C) 1987, 1988, 1991, 1998, 2002, 2007, 2008, 2010
+/* Data type conversion
+   Copyright (C) 1987, 1988, 1991, 1998, 2002, 2007, 2008, 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -19,62 +19,23 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-/* This file contains the functions for converting C expressions
-   to different data types.  The only entry point is `convert'.
-   Every language front end must have a `convert' function
-   but what kind of conversions it does will depend on the language.  */
-
-/* copied from the f77 frontend I think */
-
-/* copied from c-convert.c without significant modification*/
-/* Change of width--truncation and extension of integers or reals--
-   is represented with NOP_EXPR.  Proper functioning of many things
-   assumes that no other conversions can be NOP_EXPRs.
-*/
-
-/* I've added support for WITH_RECORD_EXPR.  */
+/* This file contains the functions for converting expressions to
+   different data types for the translation of the gfortran internal
+   representation to GIMPLE.  The only entry point is `convert'.  */
 
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "flags.h"
 #include "convert.h"
-#include "diagnostic-core.h"	/* For error.  */
-#include "gfortran.h"
-#include "trans.h"
-
-/*
-   Conversion between integer and pointer is represented with CONVERT_EXPR.
-   Converting integer to real uses FLOAT_EXPR
-   and real to integer uses FIX_TRUNC_EXPR.
-
-   Here is a list of all the functions that assume that widening and
-   narrowing is always done with a NOP_EXPR:
-     In convert.c, convert_to_integer.
-     In c-typeck.c, build_binary_op (boolean ops), and
-	c_common_truthvalue_conversion.
-     In expr.c: expand_expr, for operands of a MULT_EXPR.
-     In fold-const.c: fold.
-     In tree.c: get_narrower and get_unwidened.  */
-
-/* Subroutines of `convert'.  */
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
-   or validate its data type for an `if' or `while' statement or ?..: exp.
+   or validate its data type for a GIMPLE `if' or `while' statement.
 
-   This preparation consists of taking the ordinary
-   representation of an expression expr and producing a valid tree
-   boolean expression describing whether expr is nonzero.  We could
-   simply always do build_binary_op (NE_EXPR, expr, boolean_false_node, 1),
-   but we optimize comparisons, &&, ||, and !.
-
-   The resulting type should always be `boolean_type_node'.
-   This is much simpler than the corresponding C version because we have a
-   distinct boolean type.  */
+   The resulting type should always be `boolean_type_node'.  */
 
 static tree
-gfc_truthvalue_conversion (tree expr)
+truthvalue_conversion (tree expr)
 {
   switch (TREE_CODE (TREE_TYPE (expr)))
     {
@@ -101,7 +62,7 @@ gfc_truthvalue_conversion (tree expr)
 				expr, build_int_cst (TREE_TYPE (expr), 0));
 
     default:
-      internal_error ("Unexpected type in truthvalue_conversion");
+      gcc_unreachable ();
     }
 }
 
@@ -110,50 +71,33 @@ gfc_truthvalue_conversion (tree expr)
    is always TYPE.  This function implements all reasonable
    conversions; callers should filter out those that are
    not permitted by the language being compiled.  */
-/* We are assuming that given a SIMPLE val, the result will be a SIMPLE rhs.
-   If this is not the case, we will abort with an internal error.  */
+
 tree
 convert (tree type, tree expr)
 {
   tree e = expr;
-  enum tree_code code = TREE_CODE (type);
+  enum tree_code code;
 
-  if (type == TREE_TYPE (expr)
-      || TREE_CODE (expr) == ERROR_MARK
-      || code == ERROR_MARK || TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
+  if (type == TREE_TYPE (expr))
     return expr;
+
+  if (TREE_CODE (type) == ERROR_MARK
+      || TREE_CODE (expr) == ERROR_MARK
+      || TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
+    return expr;
+
+  gcc_checking_assert (TREE_CODE (TREE_TYPE (expr)) != VOID_TYPE);
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
     return fold_build1_loc (input_location, NOP_EXPR, type, expr);
-  if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
-    return error_mark_node;
-  if (TREE_CODE (TREE_TYPE (expr)) == VOID_TYPE)
-    {
-      error ("void value not ignored as it ought to be");
-      return error_mark_node;
-    }
+
+  code = TREE_CODE (type);
   if (code == VOID_TYPE)
     return fold_build1_loc (input_location, CONVERT_EXPR, type, e);
-#if 0
-  /* This is incorrect.  A truncation can't be stripped this way.
-     Extensions will be stripped by the use of get_unwidened.  */
-  if (TREE_CODE (expr) == NOP_EXPR)
-    return convert (type, TREE_OPERAND (expr, 0));
-#endif
-  if (code == INTEGER_TYPE || code == ENUMERAL_TYPE)
-    return fold (convert_to_integer (type, e));
   if (code == BOOLEAN_TYPE)
-    {
-      e = gfc_truthvalue_conversion (e);
-
-      /* If we have a NOP_EXPR, we must fold it here to avoid
-	 infinite recursion between fold () and convert ().  */
-      if (TREE_CODE (e) == NOP_EXPR)
-	return fold_build1_loc (input_location, NOP_EXPR, type,
-				TREE_OPERAND (e, 0));
-      else
-	return fold_build1_loc (input_location, NOP_EXPR, type, e);
-    }
+    return truthvalue_conversion (e);
+  if (code == INTEGER_TYPE)
+    return fold (convert_to_integer (type, e));
   if (code == POINTER_TYPE || code == REFERENCE_TYPE)
     return fold (convert_to_pointer (type, e));
   if (code == REAL_TYPE)
@@ -163,6 +107,6 @@ convert (tree type, tree expr)
   if (code == VECTOR_TYPE)
     return fold (convert_to_vector (type, e));
 
-  error ("conversion to non-scalar type requested");
-  return error_mark_node;
+  gcc_unreachable ();
 }
+
