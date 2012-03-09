@@ -1,3 +1,21 @@
+2012-03-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52530
+	* config/i386/i386.c (ix86_print_operand): Handle 'E' operand modifier.
+	(ix86_print_operand_address): Handle UNSPEC_LEA_ADDR. Do not fallback
+	to set code to 'q'.
+	* config/i386/i386.md (UNSPEC_LEA_ADDR): New unspec.
+	(*movdi_internal_rex64): Use %E operand modifier for lea.
+	(*movsi_internal): Ditto.
+	(*lea_1): Ditto.
+	(*lea<mode>_2): Ditto.
+	(*lea_{3,4,5,6}_zext): Ditto.
+	(*tls_global_dynamic_32_gnu): Ditto.
+	(*tls_global_dynamic_64): Ditto.
+	(*tls_dynamic_gnu2_lea_32): Ditto.
+	(*tls_dynamic_gnu2_lea_64): Ditto.
+	(pro_epilogue_adjust_stack_<mode>_add): Ditto.
+
 2012-03-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/linux64.h (OPTION_TARGET_CPU_DEFAULT): Do not
@@ -64,8 +82,7 @@
 2012-03-08  Jie Zhang  <jzhang918@gmail.com>
 
 	PR target/49862
-	* config/bfin/bfin.c (hwloop_optimize): Fix unused variable
-	warnings.
+	* config/bfin/bfin.c (hwloop_optimize): Fix unused variable warnings.
 	(hwloop_pattern_reg): Fix set but not used warning.
 	(bfin_reorg_loops): Remove unused parameter.
 	(bfin_reorg): Update use of bfin_reorg_loops.
@@ -76,8 +93,7 @@
 	with integer parameters in registers.
 	(gen_push): Push register in word_mode instead of Pmode.
 	(ix86_emit_save_regs): Likewise.
-	(ix86_emit_save_regs_using_mov): Save integer registers in
-	word_mode.
+	(ix86_emit_save_regs_using_mov): Save integer registers in word_mode.
 	(gen_pop): Pop register in word_mode instead of Pmode.
 	(ix86_emit_restore_regs_using_pop): Likewise.
 	(ix86_expand_prologue): Replace Pmode with word_mode for push
