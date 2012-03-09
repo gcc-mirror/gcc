@@ -304,6 +304,36 @@ vms_c_register_pragma (void)
   c_register_pragma (NULL, "__extern_prefix", vms_pragma_extern_prefix);
 }
 
+/* Canonicalize the filename (remove directory prefix, force the .h extension),
+   and append it to the directory to create the path, but don't
+   turn / into // or // into ///; // may be a namespace escape.  */
+
+static char *
+vms_construct_include_filename (const char *fname, cpp_dir *dir)
+{
+  size_t dlen, flen;
+  char *path;
+  const char *fbasename = lbasename (fname);
+  size_t i;
+
+  dlen = dir->len;
+  flen = strlen (fbasename) + 2;
+  path = XNEWVEC (char, dlen + 1 + flen + 1);
+  memcpy (path, dir->name, dlen);
+  if (dlen && !IS_DIR_SEPARATOR (path[dlen - 1]))
+    path[dlen++] = '/';
+  for (i = 0; i < flen; i++)
+    if (fbasename[i] == '.')
+      break;
+    else
+      path[dlen + i] = TOLOWER (fbasename[i]);
+  path[dlen + i + 0] = '.';
+  path[dlen + i + 1] = 'h';
+  path[dlen + i + 2] = 0;
+
+  return path;
+}
+
 /* Standard modules list.  */
 static const char * const vms_std_modules[] = { "rtldef", "starlet_c", NULL };
 
@@ -341,7 +371,7 @@ vms_c_register_includes (const char *sysroot,
               p->next = NULL;
               p->name = path;
               p->sysp = 1;
-              p->construct = 0;
+              p->construct = vms_construct_include_filename;
               p->user_supplied_p = 0;
               add_cpp_dir_path (p, SYSTEM);
             }

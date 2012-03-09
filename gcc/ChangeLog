@@ -1,3 +1,8 @@
+2012-03-09  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-c.c (vms_construct_include_filename): New function.
+	(vms_c_register_includes): Reference it.
+
 2012-03-09  Andrew Pinski  <apinski@cavium.com>
 
 	PR middle-end/51988
@@ -7,8 +12,8 @@
 	value_replacement instead of just the singleton one.
 	(value_replacement): Change return type to int.  Return 0 instead of
 	false.
-	Allow the middle basic block to contain more than just the definings
-	tatement. 
+	Allow the middle basic block to contain more than just the defining
+	statement.
 	Handle non empty middle basic blocks.
 	* Makefile.in (tree-ssa-phiopt.o): Add tree-pretty-print.h.
 
