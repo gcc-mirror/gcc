@@ -1,3 +1,8 @@
+2012-03-09  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::assignment_statement): Convert the rhs
+	to the lhs type if necessary.
+
 2012-03-08  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::init_statement): Don't initialize a

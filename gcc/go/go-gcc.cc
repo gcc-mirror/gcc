@@ -918,6 +918,30 @@ Gcc_backend::assignment_statement(Bexpression* lhs, Bexpression* rhs,
     return this->compound_statement(this->expression_statement(lhs),
 				    this->expression_statement(rhs));
 
+  // Sometimes the same unnamed Go type can be created multiple times
+  // and thus have multiple tree representations.  Make sure this does
+  // not confuse the middle-end.
+  if (TREE_TYPE(lhs_tree) != TREE_TYPE(rhs_tree))
+    {
+      tree lhs_type_tree = TREE_TYPE(lhs_tree);
+      gcc_assert(TREE_CODE(lhs_type_tree) == TREE_CODE(TREE_TYPE(rhs_tree)));
+      if (POINTER_TYPE_P(lhs_type_tree)
+	  || INTEGRAL_TYPE_P(lhs_type_tree)
+	  || SCALAR_FLOAT_TYPE_P(lhs_type_tree)
+	  || COMPLEX_FLOAT_TYPE_P(lhs_type_tree))
+	rhs_tree = fold_convert_loc(location.gcc_location(), lhs_type_tree,
+				    rhs_tree);
+      else if (TREE_CODE(lhs_type_tree) == RECORD_TYPE
+	       || TREE_CODE(lhs_type_tree) == ARRAY_TYPE)
+	{
+	  gcc_assert(int_size_in_bytes(lhs_type_tree)
+		     == int_size_in_bytes(TREE_TYPE(rhs_tree)));
+	  rhs_tree = fold_build1_loc(location.gcc_location(),
+				     VIEW_CONVERT_EXPR,
+				     lhs_type_tree, rhs_tree);
+	}
+    }
+
   return this->make_statement(fold_build2_loc(location.gcc_location(),
                                               MODIFY_EXPR,
 					      void_type_node,
