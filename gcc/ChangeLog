@@ -1,5 +1,20 @@
 2012-03-09  Tristan Gingold  <gingold@adacore.com>
 
+	* c-tree.h (c_default_pointer_mode): New variable.
+	* c-decl.c (c_default_pointer_mode): New variable.
+	(c_build_pointer_type): New function.
+	(grokdeclarator): Call c_build_pointer_type instead
+	of build_pointer_type.
+
+	* config/vms/vms-c.c: Include c-tree.h
+	(saved_pointer_mode): New variable.
+	(handle_pragma_pointer_size): New function.
+	(vms_pragma_pointer_size, vms_pragma_required_pointer_size): Likewise.
+	(vms_c_register_pragma): Register __pointer_size and
+	__required_pointer_size pragmas.
+
+2012-03-09  Tristan Gingold  <gingold@adacore.com>
+
 	* config/vms/vms-c.c (vms_construct_include_filename): New function.
 	(vms_c_register_includes): Reference it.
 

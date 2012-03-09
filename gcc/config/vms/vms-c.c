@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-common.h"
+#include "c-tree.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "tm_p.h"
@@ -283,6 +284,70 @@ vms_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
     }
 }
 
+/* #pragma __pointer_size  */
+
+static enum machine_mode saved_pointer_mode;
+
+static void
+handle_pragma_pointer_size (const char *pragma_name)
+{
+  enum cpp_ttype tok;
+  tree x;
+
+  tok = pragma_lex (&x);
+  if (tok == CPP_NAME)
+    {
+      const char *op = IDENTIFIER_POINTER (x);
+
+      if (!strcmp (op, "__save"))
+        saved_pointer_mode = c_default_pointer_mode;
+      else if (!strcmp (op, "__restore"))
+        c_default_pointer_mode = saved_pointer_mode;
+      else if (!strcmp (op, "__short"))
+        c_default_pointer_mode = SImode;
+      else if (!strcmp (op, "__long"))
+        c_default_pointer_mode = DImode;
+      else
+        error ("malformed %<#pragma %s%>, ignoring", pragma_name);
+    }
+  else if (tok == CPP_NUMBER)
+    {
+      int val;
+
+      if (TREE_CODE (x) == INTEGER_CST)
+        val = TREE_INT_CST_LOW (x);
+      else
+        val = -1;
+
+      if (val == 32)
+        c_default_pointer_mode = SImode;
+      else if (val == 64)
+        c_default_pointer_mode = DImode;
+      else
+        error ("invalid constant in %<#pragma %s%>", pragma_name);
+    }
+  else
+    {
+      error ("malformed %<#pragma %s%>, ignoring", pragma_name);
+    }
+}
+
+static void
+vms_pragma_pointer_size (cpp_reader * ARG_UNUSED (dummy))
+{
+  /* Ignore if 32 bit only.  */
+  if (POINTER_SIZE != 64)
+    return;
+
+  handle_pragma_pointer_size ("pointer_size");
+}
+
+static void
+vms_pragma_required_pointer_size (cpp_reader * ARG_UNUSED (dummy))
+{
+  handle_pragma_pointer_size ("required_pointer_size");
+}
+
 /* Add vms-specific pragma.  */
 
 void
@@ -298,6 +363,10 @@ vms_c_register_pragma (void)
                                     vms_pragma_nomember_alignment);
   c_register_pragma_with_expansion (NULL, "nomember_alignment",
                                     vms_pragma_nomember_alignment);
+  c_register_pragma (NULL, "__pointer_size",
+                     vms_pragma_pointer_size);
+  c_register_pragma (NULL, "__required_pointer_size",
+                     vms_pragma_required_pointer_size);
   c_register_pragma (NULL, "__extern_model", vms_pragma_extern_model);
   c_register_pragma (NULL, "extern_model", vms_pragma_extern_model);
   c_register_pragma (NULL, "__message", vms_pragma_message);
