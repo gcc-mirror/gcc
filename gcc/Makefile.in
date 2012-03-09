@@ -2355,7 +2355,7 @@ tree-ssa-phiopt.o : tree-ssa-phiopt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(TM_P_H) $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_DUMP_H) langhooks.h $(FLAGS_H) \
    $(DIAGNOSTIC_H) $(TIMEVAR_H) pointer-set.h domwalk.h $(CFGLOOP_H) \
-   $(TREE_DATA_REF_H)
+   $(TREE_DATA_REF_H) tree-pretty-print.h
 tree-nrv.o : tree-nrv.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FUNCTION_H) $(BASIC_BLOCK_H) $(FLAGS_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TIMEVAR_H) $(TREE_DUMP_H) $(TREE_PASS_H) \

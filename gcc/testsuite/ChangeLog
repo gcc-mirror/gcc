@@ -1,3 +1,9 @@
+2012-03-09  Andrew Pinski  <apinski@cavium.com>
+
+	PR middle-end/51988
+	* gcc.dg/tree-ssa/phi-opt-8.c: New testcase.
+	* gcc.dg/tree-ssa/phi-opt-9.c: New testcase.
+
 2012-03-09  Jiangning Liu  <jiangning.liu@arm.com>
 
 	* gcc.dg/tree-ssa/scev-3.c: New.

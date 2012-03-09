@@ -1,3 +1,17 @@
+2012-03-09  Andrew Pinski  <apinski@cavium.com>
+
+	PR middle-end/51988
+	* tree-ssa-phiopt.c: Include tree-pretty-print.h for
+	print_generic_expr.
+	(tree_ssa_phiopt_worker): Go through all the PHIs for
+	value_replacement instead of just the singleton one.
+	(value_replacement): Change return type to int.  Return 0 instead of
+	false.
+	Allow the middle basic block to contain more than just the definings
+	tatement. 
+	Handle non empty middle basic blocks.
+	* Makefile.in (tree-ssa-phiopt.o): Add tree-pretty-print.h.
+
 2012-03-09  Jiangning Liu  <jiangning.liu@arm.com>
 
 	* tree-scalar-evolution (interpret_rhs_expr): generate chrec for
