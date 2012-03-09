@@ -131,6 +131,7 @@ namespace __debug
       {
 	// NB: DR 1204.
 	// NB: DR 675.
+	__glibcxx_check_self_move_assign(__list);
 	clear();
 	swap(__list);
 	return *this;

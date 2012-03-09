@@ -1,6 +1,6 @@
 // Debugging set implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -120,6 +120,7 @@ namespace __debug
       {
 	// NB: DR 1204.
 	// NB: DR 675.
+	__glibcxx_check_self_move_assign(__x);
 	clear();
 	swap(__x);
 	return *this;
