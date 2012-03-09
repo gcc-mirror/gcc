@@ -120,7 +120,7 @@ package Snames is
    Name_uY : constant Name_Id := First_Name_Id + Character'Pos ('Y');
    Name_uZ : constant Name_Id := First_Name_Id + Character'Pos ('Z');
 
-   --  Note: the following table is read by the utility program XSNAMES and
+   --  Note: the following table is read by the utility program XSNAMES, and
    --  its format should not be changed without coordinating with this program.
 
    N : constant Name_Id := First_Name_Id + 256;
@@ -826,6 +826,7 @@ package Snames is
    Name_Safe_Last                      : constant Name_Id := N + $;
    Name_Safe_Small                     : constant Name_Id := N + $; -- Ada 83
    Name_Same_Storage                   : constant Name_Id := N + $; -- Ada 12
+   Name_Scalar_Storage_Order           : constant Name_Id := N + $; -- GNAT
    Name_Scale                          : constant Name_Id := N + $;
    Name_Scaling                        : constant Name_Id := N + $;
    Name_Signed_Zeros                   : constant Name_Id := N + $;
@@ -1387,6 +1388,7 @@ package Snames is
       Attribute_Safe_Last,
       Attribute_Safe_Small,
       Attribute_Same_Storage,
+      Attribute_Scalar_Storage_Order,
       Attribute_Scale,
       Attribute_Scaling,
       Attribute_Signed_Zeros,

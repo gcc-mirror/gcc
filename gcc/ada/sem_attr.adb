@@ -4442,6 +4442,35 @@ package body Sem_Attr is
          Check_Object_Reference (E1);
          Set_Etype (N, Standard_Boolean);
 
+      --------------------------
+      -- Scalar_Storage_Order --
+      --------------------------
+
+      when Attribute_Scalar_Storage_Order => Scalar_Storage_Order :
+      begin
+         Check_E0;
+         Check_Type;
+
+         if not Is_Record_Type (P_Type) then
+            Error_Attr_P ("prefix of % attribute must be record type");
+         end if;
+
+         if Bytes_Big_Endian xor Reverse_Storage_Order (P_Type) then
+            Rewrite (N,
+              New_Occurrence_Of (RTE (RE_High_Order_First), Loc));
+         else
+            Rewrite (N,
+              New_Occurrence_Of (RTE (RE_Low_Order_First), Loc));
+         end if;
+
+         Set_Etype (N, RTE (RE_Bit_Order));
+         Resolve (N);
+
+         --  Reset incorrect indication of staticness
+
+         Set_Is_Static_Expression (N, False);
+      end Scalar_Storage_Order;
+
       -----------
       -- Scale --
       -----------
@@ -7963,6 +7992,7 @@ package body Sem_Attr is
            Attribute_Priority                   |
            Attribute_Read                       |
            Attribute_Result                     |
+           Attribute_Scalar_Storage_Order       |
            Attribute_Simple_Storage_Pool        |
            Attribute_Storage_Pool               |
            Attribute_Storage_Size               |

@@ -1,3 +1,23 @@
+2012-03-09  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* a-direct.adb: Do not strip the trailing directory separator
+	from path, as this is already done inside Normalize_Pathname;
+	doing it again produces the wrong result on Windows for the
+	drive's root dir (i.e. "X:\" becomes "X:").
+
+2012-03-09  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_attr.adb, freeze.adb, sem_attr.adb, aspects.adb, aspects.ads,
+	sem_ch13.adb, snames.ads-tmpl (Exp_Attr.Expand_N_Attribute_Reference):
+	Add Attribute_Scalar_Storage_Order.
+	(Sem_Attr.Analyze_Attribute, Eval_Attribute): Ditto.
+	(Aspects): Add Aspect_Scalar_Storage_Order (Snames): Add
+	Name_Scalar_Storage_Order and Attribute_Scalar_Storage_Order.
+	(Sem_Ch13.Analyze_Attribute_Definition_Clause): Add processing
+	for Scalar_Storage_Order.
+	(Freeze): If Scalar_Storage_Order is specified, check that it
+	is compatible with Bit_Order.
+
 2012-03-09  Robert Dewar  <dewar@adacore.com>
 
 	* s-osinte-linux.ads, sem_util.adb, s-taprop-linux.adb, exp_ch4.adb,

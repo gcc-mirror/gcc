@@ -278,6 +278,7 @@ package body Aspects is
     Aspect_Pure_12                      => Aspect_Pure_12,
     Aspect_Remote_Call_Interface        => Aspect_Remote_Call_Interface,
     Aspect_Remote_Types                 => Aspect_Remote_Types,
+    Aspect_Scalar_Storage_Order         => Aspect_Scalar_Storage_Order,
     Aspect_Shared_Passive               => Aspect_Shared_Passive,
     Aspect_Universal_Data               => Aspect_Universal_Data,
     Aspect_Input                        => Aspect_Input,
