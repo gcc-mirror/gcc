@@ -435,7 +435,7 @@ func (d *Data) Type(off Offset) (Type, error) {
 					goto Error
 				}
 				if loc, ok := kid.Val(AttrDataMemberLoc).([]byte); ok {
-					b := makeBuf(d, "location", 0, loc, d.addrsize)
+					b := makeBuf(d, nil, "location", 0, loc)
 					if b.uint8() != opPlusUconst {
 						err = DecodeError{"info", kid.Offset, "unexpected opcode"}
 						goto Error
