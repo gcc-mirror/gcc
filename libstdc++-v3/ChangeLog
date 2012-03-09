@@ -1,3 +1,12 @@
+2012-03-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<char,true>::_M_initialize_moneypunct): Throw caught
+	exception again.
+	(moneypunct<char,false>::_M_initialize_moneypunct): Likewise.
+	* testsuite/22_locale/locale/cons/12352.cc: Also test en_US
+	locale.
+
 2012-03-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_global/cstdio: Remove extraneous extern.
