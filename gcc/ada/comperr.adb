@@ -502,8 +502,9 @@ package body Comperr is
          when N_Package_Renaming_Declaration =>
             Unit_Name := Defining_Unit_Name (Main);
 
+         --  No SCIL file generated for generic package declarations
+
          when N_Generic_Package_Declaration =>
-            --  No SCIL file generated for generic package declarations
             return;
 
          --  Should never happen, but can be ignored in production

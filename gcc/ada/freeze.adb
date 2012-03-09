@@ -2136,8 +2136,7 @@ package body Freeze is
                   (Rec, Attribute_Scalar_Storage_Order);
 
          if Present (ADC)
-              and then
-            Reverse_Bit_Order (Rec) /= Reverse_Storage_Order (Rec)
+           and then Reverse_Bit_Order (Rec) /= Reverse_Storage_Order (Rec)
          then
             if Bytes_Big_Endian = not Reverse_Storage_Order (Rec) then
                Error_Msg_N
@@ -2147,7 +2146,6 @@ package body Freeze is
                Error_Msg_N
                  ("Scalar_Storage_Order Low_Order_First is inconsistent with"
                   & " Bit_Order", ADC);
-
             end if;
          end if;
 
