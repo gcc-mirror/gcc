@@ -1,6 +1,6 @@
 // std::moneypunct implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -339,6 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      delete [] __group;
 	      delete [] __ps;
 	      delete [] __ns;
+	      __throw_exception_again;
 	    }
 
 	  char __pprecedes = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
@@ -489,6 +490,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      delete [] __group;
 	      delete [] __ps;
 	      delete [] __ns;
+	      __throw_exception_again;
 	    }
 
 	  char __pprecedes = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));

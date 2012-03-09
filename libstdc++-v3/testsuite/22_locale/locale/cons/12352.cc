@@ -1,4 +1,5 @@
 // { dg-require-namedlocale "" }
+// { dg-require-namedlocale "en_US" }
 
 // Copyright (C) 2003, 2005, 2009 Free Software Foundation
 //
@@ -104,6 +105,9 @@ void test01(int iters)
 	    {
 	      std::locale loc1 = std::locale("");
 	      std::locale loc2(loc1, std::locale::classic(),
+			       std::locale::numeric);
+	      std::locale loc3 = std::locale("en_US");
+	      std::locale loc4(loc3, std::locale::classic(),
 			       std::locale::numeric);
 	    }
 	  catch (std::exception&)
