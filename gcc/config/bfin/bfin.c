@@ -3411,14 +3411,12 @@ static bool
 hwloop_optimize (hwloop_info loop)
 {
   basic_block bb;
-  hwloop_info inner;
   rtx insn, last_insn;
   rtx loop_init, start_label, end_label;
   rtx iter_reg, scratchreg, scratch_init, scratch_init_insn;
   rtx lc_reg, lt_reg, lb_reg;
   rtx seq, seq_end;
   int length;
-  unsigned ix;
   bool clobber0, clobber1;
 
   if (loop->depth > MAX_LOOP_DEPTH)
@@ -3840,12 +3838,11 @@ hwloop_fail (hwloop_info loop)
 static rtx
 hwloop_pattern_reg (rtx insn)
 {
-  rtx pat, reg;
+  rtx reg;
 
   if (!JUMP_P (insn) || recog_memoized (insn) != CODE_FOR_loop_end)
     return NULL_RTX;
 
-  pat = PATTERN (insn);
   reg = SET_DEST (XVECEXP (PATTERN (insn), 0, 1));
   if (!REG_P (reg))
     return NULL_RTX;
@@ -3864,7 +3861,7 @@ static struct hw_doloop_hooks bfin_doloop_hooks =
    hardware loops are generated.  */
 
 static void
-bfin_reorg_loops (FILE *dump_file)
+bfin_reorg_loops (void)
 {
   reorg_loops (true, &bfin_doloop_hooks);
 }
@@ -4601,7 +4598,7 @@ bfin_reorg (void)
 
   /* Doloop optimization */
   if (cfun->machine->has_hardware_loops)
-    bfin_reorg_loops (dump_file);
+    bfin_reorg_loops ();
 
   workaround_speculation ();
 

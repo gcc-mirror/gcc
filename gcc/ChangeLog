@@ -1,3 +1,12 @@
+2012-03-08  Jie Zhang  <jzhang918@gmail.com>
+
+	PR target/49862
+	* config/bfin/bfin.c (hwloop_optimize): Fix unused variable
+	warnings.
+	(hwloop_pattern_reg): Fix set but not used warning.
+	(bfin_reorg_loops): Remove unused parameter.
+	(bfin_reorg): Update use of bfin_reorg_loops.
+
 2012-03-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (setup_incoming_varargs_64): Use word_mode
