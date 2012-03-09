@@ -1,3 +1,12 @@
+2012-03-09  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Check_Body_To_Inline): In AAMP and VM targets
+	use frontend inlining at all optimization levels.
+	* sem_util.adb (Must_Inline): In AAMP and VM targets, given that
+	there is no inlining support in the backend, use also frontend
+	inlining when compiling with optimizations enabled.
+	* exp_ch6.adb (Expand_Call): Minor code reorganization.
+
 2012-03-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (TYPE_VAX_FLOATING_POINT_P): Move around.
@@ -503,7 +512,6 @@
 	assignment to a classwide type whose type is limited, as
 	can happen in an instantiation in programs that run afoul or
 	AI05-0087.
-
 
 2012-02-17  Ed Schonberg  <schonberg@adacore.com>
 

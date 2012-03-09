@@ -3790,10 +3790,7 @@ package body Exp_Ch6 is
                Spec : constant Node_Id := Unit_Declaration_Node (Subp);
 
             begin
-               if Optimization_Level > 0 then
-                  Do_Inline (Subp, Orig_Subp);
-
-               elsif Must_Inline (Subp) then
+               if Must_Inline (Subp) then
                   if In_Extended_Main_Code_Unit (Call_Node)
                     and then In_Same_Extended_Unit (Sloc (Spec), Loc)
                     and then not Has_Completion (Subp)
@@ -3805,6 +3802,9 @@ package body Exp_Ch6 is
                   else
                      Do_Inline_Always (Subp, Orig_Subp);
                   end if;
+
+               elsif Optimization_Level > 0 then
+                  Do_Inline (Subp, Orig_Subp);
                end if;
 
                --  The call may have been inlined or may have been passed to

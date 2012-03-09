@@ -4888,9 +4888,13 @@ package body Sem_Ch6 is
          Remove (Body_To_Analyze);
 
          --  Keep separate checks needed when compiling without optimizations
+         --  AAMP and VM targets have no support for inlining in the backend
+         --  and hence we use frontend inlining at all optimization levels.
 
-         if Optimization_Level = 0 then
-
+         if Optimization_Level = 0
+           or else AAMP_On_Target
+           or else VM_Target /= No_VM
+         then
             --  Cannot inline functions whose body has a call that returns an
             --  unconstrained type since the secondary stack is involved, and
             --  it is not worth inlining.
