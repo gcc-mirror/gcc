@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "-fno-common" { target hppa*-*-hpux* } } */
 
 extern void abort (void);
 
