@@ -1,3 +1,7 @@
+2012-03-10  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* convert.c (convert): Fold BOOLEAN_TYPE types to the proper variant.
+
 2012-03-09  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Make-lang.in (convert.o): Depend on convert.h.
