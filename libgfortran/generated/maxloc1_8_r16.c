@@ -80,7 +80,7 @@ maxloc1_8_r16 (gfc_array_i8 * const restrict retarray,
 	extent[n] = 0;
     }
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       size_t alloc_size, str;
 
@@ -101,7 +101,7 @@ maxloc1_8_r16 (gfc_array_i8 * const restrict retarray,
       alloc_size = sizeof (GFC_INTEGER_8) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
 
-      retarray->data = internal_malloc_size (alloc_size);
+      retarray->base_addr = internal_malloc_size (alloc_size);
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
@@ -131,8 +131,8 @@ maxloc1_8_r16 (gfc_array_i8 * const restrict retarray,
 	return;
     }
 
-  base = array->data;
-  dest = retarray->data;
+  base = array->base_addr;
+  dest = retarray->base_addr;
 
   continue_loop = 1;
   while (continue_loop)
@@ -243,7 +243,7 @@ mmaxloc1_8_r16 (gfc_array_i8 * const restrict retarray,
   if (len <= 0)
     return;
 
-  mbase = mask->data;
+  mbase = mask->base_addr;
 
   mask_kind = GFC_DESCRIPTOR_SIZE (mask);
 
@@ -279,7 +279,7 @@ mmaxloc1_8_r16 (gfc_array_i8 * const restrict retarray,
 	extent[n] = 0;
     }
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       size_t alloc_size, str;
 
@@ -307,7 +307,7 @@ mmaxloc1_8_r16 (gfc_array_i8 * const restrict retarray,
 	  return;
 	}
       else
-	retarray->data = internal_malloc_size (alloc_size);
+	retarray->base_addr = internal_malloc_size (alloc_size);
 
     }
   else
@@ -332,8 +332,8 @@ mmaxloc1_8_r16 (gfc_array_i8 * const restrict retarray,
 	return;
     }
 
-  dest = retarray->data;
-  base = array->data;
+  dest = retarray->base_addr;
+  base = array->base_addr;
 
   while (base)
     {
@@ -472,7 +472,7 @@ smaxloc1_8_r16 (gfc_array_i8 * const restrict retarray,
 	extent[n] = 0;
     }
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       size_t alloc_size, str;
 
@@ -500,7 +500,7 @@ smaxloc1_8_r16 (gfc_array_i8 * const restrict retarray,
 	  return;
 	}
       else
-	retarray->data = internal_malloc_size (alloc_size);
+	retarray->base_addr = internal_malloc_size (alloc_size);
     }
   else
     {
@@ -532,7 +532,7 @@ smaxloc1_8_r16 (gfc_array_i8 * const restrict retarray,
       dstride[n] = GFC_DESCRIPTOR_STRIDE(retarray,n);
     }
 
-  dest = retarray->data;
+  dest = retarray->base_addr;
 
   while(1)
     {

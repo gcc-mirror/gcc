@@ -1,9 +1,9 @@
 `/* Special implementation of the SPREAD intrinsic
-   Copyright 2008, 2009 Free Software Foundation, Inc.
+   Copyright 2008, 2009, 2012 Free Software Foundation, Inc.
    Contributed by Thomas Koenig <tkoenig@gcc.gnu.org>, based on
    spread_generic.c written by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -68,7 +68,7 @@ spread_'rtype_code` ('rtype` *ret, const 'rtype` *source,
 
   ncopies = pncopies;
 
-  if (ret->data == NULL)
+  if (ret->base_addr == NULL)
     {
 
       size_t ub, stride;
@@ -103,7 +103,7 @@ spread_'rtype_code` ('rtype` *ret, const 'rtype` *source,
       ret->offset = 0;
 
       /* internal_malloc_size allocates a single byte for zero size.  */
-      ret->data = internal_malloc_size (rs * sizeof('rtype_name`));
+      ret->base_addr = internal_malloc_size (rs * sizeof('rtype_name`));
       if (rs <= 0)
         return;
     }
@@ -182,8 +182,8 @@ spread_'rtype_code` ('rtype` *ret, const 'rtype` *source,
     }
   sstride0 = sstride[0];
   rstride0 = rstride[0];
-  rptr = ret->data;
-  sptr = source->data;
+  rptr = ret->base_addr;
+  sptr = source->base_addr;
 
   while (sptr)
     {
@@ -243,9 +243,9 @@ spread_scalar_'rtype_code` ('rtype` *ret, const 'rtype_name` *source,
   if (along > 1)
     runtime_error ("dim outside of rank in spread()");
 
-  if (ret->data == NULL)
+  if (ret->base_addr == NULL)
     {
-      ret->data = internal_malloc_size (ncopies * sizeof ('rtype_name`));
+      ret->base_addr = internal_malloc_size (ncopies * sizeof ('rtype_name`));
       ret->offset = 0;
       GFC_DIMENSION_SET(ret->dim[0], 0, ncopies - 1, 1);
     }
@@ -256,7 +256,7 @@ spread_scalar_'rtype_code` ('rtype` *ret, const 'rtype_name` *source,
 	runtime_error ("dim too large in spread()");
     }
 
-  dest = ret->data;
+  dest = ret->base_addr;
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
   for (n = 0; n < ncopies; n++)

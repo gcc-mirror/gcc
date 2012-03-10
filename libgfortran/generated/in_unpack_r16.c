@@ -1,8 +1,8 @@
 /* Helper function for repacking arrays.
-   Copyright 2003, 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2003, 2006, 2007, 2009, 2012 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -43,7 +43,7 @@ internal_unpack_r16 (gfc_array_r16 * d, const GFC_REAL_16 * src)
   GFC_REAL_16 * restrict dest;
   int n;
 
-  dest = d->data;
+  dest = d->base_addr;
   if (src == dest || !src)
     return;
 

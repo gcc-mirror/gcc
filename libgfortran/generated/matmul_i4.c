@@ -1,8 +1,8 @@
 /* Implementation of the MATMUL intrinsic
-   Copyright 2002, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2006, 2007, 2009, 2012 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -101,7 +101,7 @@ matmul_i4 (gfc_array_i4 * const restrict retarray,
      dimensioned [count, 1], so ycount=1.
   */
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       if (GFC_DESCRIPTOR_RANK (a) == 1)
         {
@@ -123,7 +123,7 @@ matmul_i4 (gfc_array_i4 * const restrict retarray,
 			    GFC_DESCRIPTOR_EXTENT(retarray,0));
         }
 
-      retarray->data
+      retarray->base_addr
 	= internal_malloc_size (sizeof (GFC_INTEGER_4) * size0 ((array_t *) retarray));
       retarray->offset = 0;
     }
@@ -226,9 +226,9 @@ matmul_i4 (gfc_array_i4 * const restrict retarray,
       ycount = GFC_DESCRIPTOR_EXTENT(b,1);
     }
 
-  abase = a->data;
-  bbase = b->data;
-  dest = retarray->data;
+  abase = a->base_addr;
+  bbase = b->base_addr;
+  dest = retarray->base_addr;
 
 
   /* Now that everything is set up, we're performing the multiplication

@@ -83,7 +83,7 @@ any_l1 (gfc_array_l1 * const restrict retarray,
 	extent[n] = 0;
     }
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       size_t alloc_size, str;
 
@@ -111,7 +111,7 @@ any_l1 (gfc_array_l1 * const restrict retarray,
 	  return;
 	}
       else
-	retarray->data = internal_malloc_size (alloc_size);
+	retarray->base_addr = internal_malloc_size (alloc_size);
     }
   else
     {
@@ -145,7 +145,7 @@ any_l1 (gfc_array_l1 * const restrict retarray,
 	return;
     }
 
-  base = array->data;
+  base = array->base_addr;
 
   if (src_kind == 1 || src_kind == 2 || src_kind == 4 || src_kind == 8
 #ifdef HAVE_GFC_LOGICAL_16
@@ -159,7 +159,7 @@ any_l1 (gfc_array_l1 * const restrict retarray,
   else
     internal_error (NULL, "Funny sized logical array in ANY intrinsic");
 
-  dest = retarray->data;
+  dest = retarray->base_addr;
 
   continue_loop = 1;
   while (continue_loop)
