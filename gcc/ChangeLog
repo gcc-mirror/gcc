@@ -1,5 +1,10 @@
 2012-03-09  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/invoke.texi: Use correct names/markup for "GCC", "GDB", "ld",
+	and related program names.
+
+2012-03-09  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/invoke.texi: Use correct names for "DWARF", "stabs", and "ELF".
 
 2012-03-09  Uros Bizjak  <ubizjak@gmail.com>

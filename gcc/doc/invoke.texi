@@ -1303,7 +1303,7 @@ option.
 @item @var{language}
 This will display the options supported for @var{language}, where
 @var{language} is the name of one of the languages supported in this
-version of GCC.
+version of GCC@.
 
 @item @samp{common}
 This will display the options that are common to all languages.
@@ -2746,7 +2746,7 @@ which is controlled by the separate C/C++ dialect option flags.  When
 this option is used with the Objective-C or Objective-C++ compiler,
 any Objective-C syntax that is not recognized by GCC 4.0 is rejected.
 This is useful if you need to make sure that your Objective-C code can
-be compiled with older versions of GCC.
+be compiled with older versions of GCC@.
 
 @item -freplace-objc-classes
 @opindex freplace-objc-classes
@@ -2898,7 +2898,7 @@ are not inherently erroneous but that are risky or suggest there
 may have been an error.
 
 The following language-independent options do not enable specific
-warnings but control the kinds of diagnostics produced by GCC.
+warnings but control the kinds of diagnostics produced by GCC@.
 
 @table @gcctabopt
 @cindex syntax checking
@@ -4415,7 +4415,7 @@ when applied ensure that two sequences that look the same are turned into
 the same sequence.  GCC can warn you if you are using identifiers that
 have not been normalized; this option controls that warning.
 
-There are four levels of warning supported by GCC.  The default is
+There are four levels of warning supported by GCC@.  The default is
 @option{-Wnormalized=nfc}, which warns about any identifier that is
 not in the ISO 10646 ``C'' normalized form, @dfn{NFC}.  NFC is the
 recommended form for most uses.
@@ -7936,7 +7936,7 @@ The current implementation of LTO makes no
 attempt to generate bytecode that is portable between different
 types of hosts.  The bytecode files are versioned and there is a
 strict version check, so bytecode files generated in one version of
-GCC will not work with an older/newer version of GCC.
+GCC will not work with an older/newer version of GCC@.
 
 Link-time optimization does not work well with generation of debugging
 information.  Combining @option{-flto} with
@@ -8010,7 +8010,8 @@ and is ignored at link time.
 
 @option{-fno-fat-lto-objects} improves compilation time over plain LTO, but
 requires the complete toolchain to be aware of LTO. It requires a linker with
-linker plugin support for basic functionality.  Additionally, nm, ar and ranlib
+linker plugin support for basic functionality.  Additionally,
+@command{nm}, @command{ar} and @command{ranlib}
 need to support linker plugins to allow a full-featured build environment
 (capable of building static libraries etc).
 
@@ -8584,7 +8585,7 @@ when modulo scheduling a loop.  Larger values can exponentially increase
 compilation time.
 
 @item max-inline-insns-single
-Several parameters control the tree inliner used in gcc.
+Several parameters control the tree inliner used in GCC@.
 This number sets the maximum number of instructions (counted in GCC's
 internal representation) in a single function that the tree inliner
 will consider for inlining.  This only affects functions declared
@@ -9631,7 +9632,7 @@ This option specifies where to find the executables, libraries,
 include files, and data files of the compiler itself.
 
 The compiler driver program runs one or more of the subprograms
-@file{cpp}, @file{cc1}, @file{as} and @file{ld}.  It tries
+@command{cpp}, @command{cc1}, @command{as} and @command{ld}.  It tries
 @var{prefix} as a prefix for each program it tries to run, both with and
 without @samp{@var{machine}/@var{version}/} (@pxref{Target Options}).
 
@@ -9671,9 +9672,9 @@ with boot-strapping the compiler.
 @item -specs=@var{file}
 @opindex specs
 Process @var{file} after the compiler reads in the standard @file{specs}
-file, in order to override the defaults which the @file{gcc} driver
-program uses when determining what switches to pass to @file{cc1},
-@file{cc1plus}, @file{as}, @file{ld}, etc.  More than one
+file, in order to override the defaults which the @command{gcc} driver
+program uses when determining what switches to pass to @command{cc1},
+@command{cc1plus}, @command{as}, @command{ld}, etc.  More than one
 @option{-specs=@var{file}} can be specified on the command line, and they
 are processed in order, from left to right.
 
@@ -10932,12 +10933,12 @@ These options are defined for AVR implementations:
 @opindex mmcu
 Specify Atmel AVR instruction set architectures (ISA) or MCU type.
 
-For a complete list of @var{mcu} values that are supported by avr-gcc,
+For a complete list of @var{mcu} values that are supported by @command{avr-gcc},
 see the compiler output when called with the @code{--help=target}
 command line option.
 The default for this option is@tie{}@code{avr2}.
 
-avr-gcc supports the following AVR devices and ISAs:
+GCC supports the following AVR devices and ISAs:
 
 @table @code
 
@@ -11270,7 +11271,7 @@ prologue/epilogue will save/restore that SFR and initialize it with
 zero in case the ISR code might (implicitly) use it.
 
 @item
-RAM larger than 64@tie{KiB} is not supported by avr-gcc.
+RAM larger than 64@tie{KiB} is not supported by GCC for AVR targets.
 If you use inline assembler to read from locations outside the
 16-bit address range and change one of the @code{RAMP} registers,
 you must reset it to zero after the access.
@@ -11279,8 +11280,8 @@ you must reset it to zero after the access.
 
 @subsubsection AVR Built-in Macros
 
-avr-gcc defines several built-in macros so that the user code can test
-for presence of absence of features.  Almost any of the following
+GCC defines several built-in macros so that the user code can test
+for the presence or absence of features.  Almost any of the following
 built-in macros are deduced from device capabilities and thus
 triggered by the @code{-mmcu=} command-line option.
 
@@ -11809,7 +11810,7 @@ The linker for shared libraries, @file{/usr/bin/libtool}, will fail
 and print an error if asked to create a shared library with a less
 restrictive subtype than its input files (for instance, trying to put
 a @samp{ppc970} object file in a @samp{ppc7400} library).  The linker
-for executables, @file{ld}, will quietly give the executable the most
+for executables, @command{ld}, will quietly give the executable the most
 restrictive subtype of any of its input files.
 
 @table @gcctabopt
@@ -11899,7 +11900,7 @@ switch to conform to a non-default data model.
 @opindex ffix-and-continue
 @opindex findirect-data
 Generate code suitable for fast turn around development.  Needed to
-enable gdb to dynamically load @code{.o} files into already running
+enable GDB to dynamically load @code{.o} files into already running
 programs.  @option{-findirect-data} and @option{-ffix-and-continue}
 are provided for backwards compatibility.
 
@@ -12954,11 +12955,13 @@ options are available under HP-UX and HI-UX@.
 
 @item -mgnu-ld
 @opindex mgnu-ld
-Use GNU ld specific options.  This passes @option{-shared} to ld when
+Use options specific to GNU @command{ld}.
+This passes @option{-shared} to @command{ld} when
 building a shared library.  It is the default when GCC is configured,
 explicitly or implicitly, with the GNU linker.  This option does not
-have any affect on which ld is called, it only changes what parameters
-are passed to that ld.  The ld that is called is determined by the
+affect which @command{ld} is called; it only changes what parameters
+are passed to that @command{ld}.
+The @command{ld} that is called is determined by the
 @option{--with-ld} configure option, GCC's program search path, and
 finally by the user's @env{PATH}.  The linker used by GCC can be printed
 using @samp{which `gcc -print-prog-name=ld`}.  This option is only available
@@ -12966,12 +12969,14 @@ on the 64-bit HP-UX GCC, i.e.@: configured with @samp{hppa*64*-*-hpux*}.
 
 @item -mhp-ld
 @opindex mhp-ld
-Use HP ld specific options.  This passes @option{-b} to ld when building
-a shared library and passes @option{+Accept TypeMismatch} to ld on all
+Use options specific to HP @command{ld}.
+This passes @option{-b} to @command{ld} when building
+a shared library and passes @option{+Accept TypeMismatch} to @command{ld} on all
 links.  It is the default when GCC is configured, explicitly or
-implicitly, with the HP linker.  This option does not have any affect on
-which ld is called, it only changes what parameters are passed to that
-ld.  The ld that is called is determined by the @option{--with-ld}
+implicitly, with the HP linker.  This option does not affect
+which @command{ld} is called; it only changes what parameters are passed to that
+@command{ld}.
+The @command{ld} that is called is determined by the @option{--with-ld}
 configure option, GCC's program search path, and finally by the user's
 @env{PATH}.  The linker used by GCC can be printed using @samp{which
 `gcc -print-prog-name=ld`}.  This option is only available on the 64-bit
@@ -14542,7 +14547,7 @@ architectures are selected according to Freescale's ISA classification
 and the permissible values are: @samp{isaa}, @samp{isaaplus},
 @samp{isab} and @samp{isac}.
 
-gcc defines a macro @samp{__mcf@var{arch}__} whenever it is generating
+GCC defines a macro @samp{__mcf@var{arch}__} whenever it is generating
 code for a ColdFire target.  The @var{arch} in this macro is one of the
 @option{-march} arguments given above.
 
@@ -14589,7 +14594,7 @@ below, which also classifies the CPUs into families:
 @var{arch} is compatible with @var{cpu}.  Other combinations of
 @option{-mcpu} and @option{-march} are rejected.
 
-gcc defines the macro @samp{__mcf_cpu_@var{cpu}} when ColdFire target
+GCC defines the macro @samp{__mcf_cpu_@var{cpu}} when ColdFire target
 @var{cpu} is selected.  It also defines @samp{__mcf_family_@var{family}},
 where the value of @var{family} is given by the table above.
 
@@ -14608,14 +14613,14 @@ to run relatively well on 68020, 68030 and 68040 targets.
 as well.  These two options select the same tuning decisions as
 @option{-m68020-40} and @option{-m68020-60} respectively.
 
-gcc defines the macros @samp{__mc@var{arch}} and @samp{__mc@var{arch}__}
+GCC defines the macros @samp{__mc@var{arch}} and @samp{__mc@var{arch}__}
 when tuning for 680x0 architecture @var{arch}.  It also defines
 @samp{mc@var{arch}} unless either @option{-ansi} or a non-GNU @option{-std}
-option is used.  If gcc is tuning for a range of architectures,
+option is used.  If GCC is tuning for a range of architectures,
 as selected by @option{-mtune=68020-40} or @option{-mtune=68020-60},
 it defines the macros for every architecture in the range.
 
-gcc also defines the macro @samp{__m@var{uarch}__} when tuning for
+GCC also defines the macro @samp{__m@var{uarch}__} when tuning for
 ColdFire microarchitecture @var{uarch}, where @var{uarch} is one
 of the arguments given above.
 
@@ -14763,7 +14768,7 @@ architectures.  Otherwise, the default is taken from the target CPU
 example, the default is ``off'' for @option{-mcpu=5206} and ``on'' for
 @option{-mcpu=5206e}.
 
-gcc defines the macro @samp{__mcfhwdiv__} when this option is enabled.
+GCC defines the macro @samp{__mcfhwdiv__} when this option is enabled.
 
 @item -mshort
 @opindex mshort
@@ -15836,7 +15841,7 @@ assembler files (with a @samp{.s} suffix) when assembling them.
 @opindex mfix-24k
 @opindex mno-fix-24k
 Work around the 24K E48 (lost data on stores during refill) errata.
-The workarounds are implemented by the assembler rather than by GCC.
+The workarounds are implemented by the assembler rather than by GCC@.
 
 @item -mfix-r4000
 @itemx -mno-fix-r4000
@@ -16687,14 +16692,18 @@ of a Cell microcode instruction is a variable shift.
 
 @item -msecure-plt
 @opindex msecure-plt
-Generate code that allows ld and ld.so to build executables and shared
-libraries with non-exec .plt and .got sections.  This is a PowerPC
+Generate code that allows @command{ld} and @command{ld.so}
+to build executables and shared
+libraries with non-executable @code{.plt} and @code{.got} sections.
+This is a PowerPC
 32-bit SYSV ABI option.
 
 @item -mbss-plt
 @opindex mbss-plt
-Generate code that uses a BSS .plt section that ld.so fills in, and
-requires .plt and .got sections that are both writable and executable.
+Generate code that uses a BSS @code{.plt} section that @command{ld.so}
+fills in, and
+requires @code{.plt} and @code{.got}
+sections that are both writable and executable.
 This is a PowerPC 32-bit SYSV ABI option.
 
 @item -misel
@@ -17322,9 +17331,9 @@ when the linker is known to generate glue.
 @opindex mtls-markers
 @opindex mno-tls-markers
 Mark (do not mark) calls to @code{__tls_get_addr} with a relocation
-specifying the function argument.  The relocation allows ld to
+specifying the function argument.  The relocation allows the linker to
 reliably associate function call with argument setup instructions for
-TLS optimization, which in turn allows gcc to better schedule the
+TLS optimization, which in turn allows GCC to better schedule the
 sequence.
 
 @item -pthread
@@ -18123,7 +18132,7 @@ specified separated by a comma.
 @item -madjust-unroll
 @opindex madjust-unroll
 Throttle unrolling to avoid thrashing target registers.
-This option only has an effect if the gcc code base supports the
+This option only has an effect if the GCC code base supports the
 TARGET_ADJUST_UNROLL_MAX target hook.
 
 @item -mindexed-addressing
