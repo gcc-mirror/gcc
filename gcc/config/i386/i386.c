@@ -11524,6 +11524,11 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   else
     disp = addr;			/* displacement */
 
+  /* Since address override works only on the (reg32) part in fs:(reg32),
+     we can't use it as memory operand.  */
+  if (Pmode != word_mode && seg == SEG_FS && (base || index))
+    return 0;
+
   if (index)
     {
       if (REG_P (index))
@@ -12616,6 +12621,17 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
 	      dest = gen_reg_rtx (Pmode);
 	      emit_insn (gen_tls_initial_exec_64_sun (dest, x));
+	      return dest;
+	    }
+	  else if (Pmode == SImode)
+	    {
+	      /* Always generate
+			movl %fs:0, %reg32
+			addl xgottpoff(%rip), %reg32
+		 to support linker IE->LE optimization and avoid
+		 fs:(%reg32) as memory operand.  */
+	      dest = gen_reg_rtx (Pmode);
+	      emit_insn (gen_tls_initial_exec_x32 (dest, x));
 	      return dest;
 	    }
 
