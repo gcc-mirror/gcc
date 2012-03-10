@@ -1,3 +1,7 @@
+2012-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/torture/pr52407.c: Add -fno-common option on hppa*-*-hpux*.
+
 2012-03-09  Andrew Pinski  <apinski@cavium.com>
 
 	PR middle-end/51988
