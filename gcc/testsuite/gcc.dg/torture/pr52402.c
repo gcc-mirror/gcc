@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-w -Wno-psabi" } */
 /* { dg-require-effective-target int32plus } */
+/* { dg-xfail-run-if "pr52450" { { hppa*-*-hpux* } && { ! lp64 } } } */
 
 typedef int v4si __attribute__((vector_size(16)));
 struct T { v4si i[2]; int j; } __attribute__((packed));
