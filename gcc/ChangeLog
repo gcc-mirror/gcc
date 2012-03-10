@@ -1,3 +1,9 @@
+2012-03-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR rtl-optimization/52528
+	* combine.c (can_combine_p): Add setting of subst_low_luid
+	before call to expand_field_assignment().
+
 2012-03-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi: Use correct names/markup for "GCC", "GDB", "ld",
