@@ -14,7 +14,7 @@ import (
 )
 
 // If an IPv6 tunnel is running, we can try dialing a real IPv6 address.
-var ipv6 = flag.Bool("ipv6", false, "assume ipv6 tunnel is present")
+var testIPv6 = flag.Bool("ipv6", false, "assume ipv6 tunnel is present")
 
 // fd is already connected to the destination, port 80.
 // Run an HTTP request to fetch the appropriate page.
@@ -42,9 +42,8 @@ func doDial(t *testing.T, network, addr string) {
 }
 
 func TestLookupCNAME(t *testing.T) {
-	if testing.Short() {
-		// Don't use external network.
-		t.Logf("skipping external network test during -short")
+	if testing.Short() || !*testExternal {
+		t.Logf("skipping test to avoid external network")
 		return
 	}
 	cname, err := LookupCNAME("www.google.com")
@@ -67,9 +66,8 @@ var googleaddrsipv4 = []string{
 }
 
 func TestDialGoogleIPv4(t *testing.T) {
-	if testing.Short() {
-		// Don't use external network.
-		t.Logf("skipping external network test during -short")
+	if testing.Short() || !*testExternal {
+		t.Logf("skipping test to avoid external network")
 		return
 	}
 
@@ -124,13 +122,12 @@ var googleaddrsipv6 = []string{
 }
 
 func TestDialGoogleIPv6(t *testing.T) {
-	if testing.Short() {
-		// Don't use external network.
-		t.Logf("skipping external network test during -short")
+	if testing.Short() || !*testExternal {
+		t.Logf("skipping test to avoid external network")
 		return
 	}
 	// Only run tcp6 if the kernel will take it.
-	if !*ipv6 || !supportsIPv6 {
+	if !*testIPv6 || !supportsIPv6 {
 		return
 	}
 

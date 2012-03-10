@@ -88,60 +88,6 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
   if (add_to_globals)
     this->add_named_object(no);
 
-  // Typeof.
-  Type* empty_interface = Type::make_empty_interface_type(bloc);
-  Typed_identifier_list* parameters = new Typed_identifier_list;
-  parameters->push_back(Typed_identifier("i", empty_interface, bloc));
-  results = new Typed_identifier_list;
-  results->push_back(Typed_identifier("", empty_interface, bloc));
-  fntype = Type::make_function_type(NULL, parameters, results, bloc);
-  no = bindings->add_function_declaration("Typeof", package, fntype, bloc);
-  if (add_to_globals)
-    this->add_named_object(no);
-
-  // Reflect.
-  parameters = new Typed_identifier_list;
-  parameters->push_back(Typed_identifier("it", empty_interface, bloc));
-  results = new Typed_identifier_list;
-  results->push_back(Typed_identifier("", empty_interface, bloc));
-  results->push_back(Typed_identifier("", pointer_type, bloc));
-  fntype = Type::make_function_type(NULL, parameters, results, bloc);
-  no = bindings->add_function_declaration("Reflect", package, fntype, bloc);
-  if (add_to_globals)
-    this->add_named_object(no);
-
-  // Unreflect.
-  parameters = new Typed_identifier_list;
-  parameters->push_back(Typed_identifier("typ", empty_interface, bloc));
-  parameters->push_back(Typed_identifier("addr", pointer_type, bloc));
-  results = new Typed_identifier_list;
-  results->push_back(Typed_identifier("", empty_interface, bloc));
-  fntype = Type::make_function_type(NULL, parameters, results, bloc);
-  no = bindings->add_function_declaration("Unreflect", package, fntype, bloc);
-  if (add_to_globals)
-    this->add_named_object(no);
-
-  // New.
-  parameters = new Typed_identifier_list;
-  parameters->push_back(Typed_identifier("typ", empty_interface, bloc));
-  results = new Typed_identifier_list;
-  results->push_back(Typed_identifier("", pointer_type, bloc));
-  fntype = Type::make_function_type(NULL, parameters, results, bloc);
-  no = bindings->add_function_declaration("New", package, fntype, bloc);
-  if (add_to_globals)
-    this->add_named_object(no);
-
-  // NewArray.
-  parameters = new Typed_identifier_list;
-  parameters->push_back(Typed_identifier("typ", empty_interface, bloc));
-  parameters->push_back(Typed_identifier("n", int_type, bloc));
-  results = new Typed_identifier_list;
-  results->push_back(Typed_identifier("", pointer_type, bloc));
-  fntype = Type::make_function_type(NULL, parameters, results, bloc);
-  no = bindings->add_function_declaration("NewArray", package, fntype, bloc);
-  if (add_to_globals)
-    this->add_named_object(no);
-
   if (!this->imported_unsafe_)
     {
       go_imported_unsafe();

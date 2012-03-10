@@ -184,6 +184,21 @@ runtime_fastrand1(void)
 	return x;
 }
 
+static struct root_list runtime_roots =
+{ NULL,
+  { { &syscall_Envs, sizeof syscall_Envs },
+    { &os_Args, sizeof os_Args },
+    { NULL, 0 } },
+};
+
+void
+runtime_check(void)
+{
+	__go_register_gc_roots(&runtime_roots);
+
+	runtime_initsig ();
+}
+
 int64
 runtime_cputicks(void)
 {
@@ -195,23 +210,4 @@ runtime_cputicks(void)
   // FIXME: implement for other processors.
   return 0;
 #endif
-}
-
-struct funcline_go_return
-{
-  String retfile;
-  int32 retline;
-};
-
-struct funcline_go_return
-runtime_funcline_go(void *f, uintptr targetpc)
-  __asm__("libgo_runtime.runtime.funcline_go");
-
-struct funcline_go_return
-runtime_funcline_go(void *f __attribute__((unused)),
-		    uintptr targetpc __attribute__((unused)))
-{
-  struct funcline_go_return ret;
-  runtime_memclr(&ret, sizeof ret);
-  return ret;
 }

@@ -9,15 +9,16 @@
 #include "go-type.h"
 #include "interface.h"
 
-/* Implement unsafe.New.  */
+/* Implement unsafe_New, called from the reflect package.  */
 
-void *New (struct __go_empty_interface type) asm ("libgo_unsafe.unsafe.New");
+void *unsafe_New (struct __go_empty_interface type)
+  asm ("libgo_reflect.reflect.unsafe_New");
 
 /* The dynamic type of the argument will be a pointer to a type
    descriptor.  */
 
 void *
-New (struct __go_empty_interface type)
+unsafe_New (struct __go_empty_interface type)
 {
   const struct __go_type_descriptor *descriptor;
 

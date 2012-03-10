@@ -6,15 +6,37 @@ package gosym
 
 import (
 	"debug/elf"
+	"fmt"
 	"os"
+	"os/exec"
 	"runtime"
+	"strings"
 	"testing"
 )
 
+var pclinetestBinary string
+
 func dotest() bool {
 	// For now, only works on ELF platforms.
-	// TODO: convert to work with new go tool
-	return false && runtime.GOOS == "linux" && runtime.GOARCH == "amd64"
+	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
+		return false
+	}
+	if pclinetestBinary != "" {
+		return true
+	}
+	// This command builds pclinetest from pclinetest.asm;
+	// the resulting binary looks like it was built from pclinetest.s,
+	// but we have renamed it to keep it away from the go tool.
+	pclinetestBinary = os.TempDir() + "/pclinetest"
+	command := fmt.Sprintf("go tool 6a -o %s.6 pclinetest.asm && go tool 6l -E main -o %s %s.6",
+		pclinetestBinary, pclinetestBinary, pclinetestBinary)
+	cmd := exec.Command("sh", "-c", command)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		panic(err)
+	}
+	return true
 }
 
 func getTable(t *testing.T) *Table {
@@ -149,7 +171,7 @@ func TestPCLine(t *testing.T) {
 		return
 	}
 
-	f, tab := crack("_test/pclinetest", t)
+	f, tab := crack(pclinetestBinary, t)
 	text := f.Section(".text")
 	textdat, err := text.Data()
 	if err != nil {
@@ -163,10 +185,13 @@ func TestPCLine(t *testing.T) {
 		file, line, fn := tab.PCToLine(pc)
 		off := pc - text.Addr // TODO(rsc): should not need off; bug in 8g
 		wantLine += int(textdat[off])
+		t.Logf("off is %d", off)
 		if fn == nil {
 			t.Errorf("failed to get line of PC %#x", pc)
-		} else if len(file) < 12 || file[len(file)-12:] != "pclinetest.s" || line != wantLine || fn != sym {
-			t.Errorf("expected %s:%d (%s) at PC %#x, got %s:%d (%s)", "pclinetest.s", wantLine, sym.Name, pc, file, line, fn.Name)
+		} else if !strings.HasSuffix(file, "pclinetest.asm") {
+			t.Errorf("expected %s (%s) at PC %#x, got %s (%s)", "pclinetest.asm", sym.Name, pc, file, fn.Name)
+		} else if line != wantLine || fn != sym {
+			t.Errorf("expected :%d (%s) at PC %#x, got :%d (%s)", wantLine, sym.Name, pc, line, fn.Name)
 		}
 	}
 

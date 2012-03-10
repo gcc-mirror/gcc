@@ -232,7 +232,7 @@ var builtins = map[string]interface{}{
 	"printf": fmt.Sprintf,
 }
 
-func TestParse(t *testing.T) {
+func testParse(doCopy bool, t *testing.T) {
 	for _, test := range parseTests {
 		tmpl, err := New(test.name).Parse(test.input, "", "", make(map[string]*Tree), builtins)
 		switch {
@@ -249,11 +249,25 @@ func TestParse(t *testing.T) {
 			}
 			continue
 		}
-		result := tmpl.Root.String()
+		var result string
+		if doCopy {
+			result = tmpl.Root.Copy().String()
+		} else {
+			result = tmpl.Root.String()
+		}
 		if result != test.result {
 			t.Errorf("%s=(%q): got\n\t%v\nexpected\n\t%v", test.name, test.input, result, test.result)
 		}
 	}
+}
+
+func TestParse(t *testing.T) {
+	testParse(false, t)
+}
+
+// Same as TestParse, but we copy the node first
+func TestParseCopy(t *testing.T) {
+	testParse(true, t)
 }
 
 type isEmptyTest struct {
@@ -273,6 +287,9 @@ var isEmptyTests = []isEmptyTest{
 }
 
 func TestIsEmpty(t *testing.T) {
+	if !IsEmptyTree(nil) {
+		t.Errorf("nil tree is not empty")
+	}
 	for _, test := range isEmptyTests {
 		tree, err := New("root").Parse(test.input, "", "", make(map[string]*Tree), nil)
 		if err != nil {

@@ -5,15 +5,23 @@
 package http_test
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"net"
 	. "net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
+	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -56,18 +64,18 @@ func TestServeFile(t *testing.T) {
 	req.Method = "GET"
 
 	// straight GET
-	_, body := getBody(t, req)
+	_, body := getBody(t, "straight get", req)
 	if !equal(body, file) {
 		t.Fatalf("body mismatch: got %q, want %q", body, file)
 	}
 
 	// Range tests
-	for _, rt := range ServeFileRangeTests {
+	for i, rt := range ServeFileRangeTests {
 		req.Header.Set("Range", "bytes="+rt.r)
 		if rt.r == "" {
 			req.Header["Range"] = nil
 		}
-		r, body := getBody(t, req)
+		r, body := getBody(t, fmt.Sprintf("test %d", i), req)
 		if r.StatusCode != rt.code {
 			t.Errorf("range=%q: StatusCode=%d, want %d", rt.r, r.StatusCode, rt.code)
 		}
@@ -124,7 +132,7 @@ func TestFileServerCleans(t *testing.T) {
 	ch := make(chan string, 1)
 	fs := FileServer(&testFileSystem{func(name string) (File, error) {
 		ch <- name
-		return nil, os.ENOENT
+		return nil, errors.New("file does not exist")
 	}})
 	tests := []struct {
 		reqPath, openArg string
@@ -144,12 +152,19 @@ func TestFileServerCleans(t *testing.T) {
 	}
 }
 
+func mustRemoveAll(dir string) {
+	err := os.RemoveAll(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func TestFileServerImplicitLeadingSlash(t *testing.T) {
 	tempDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		t.Fatalf("TempDir: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer mustRemoveAll(tempDir)
 	if err := ioutil.WriteFile(filepath.Join(tempDir, "foo.txt"), []byte("Hello world"), 0644); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
@@ -164,6 +179,7 @@ func TestFileServerImplicitLeadingSlash(t *testing.T) {
 		if err != nil {
 			t.Fatalf("ReadAll %s: %v", suffix, err)
 		}
+		res.Body.Close()
 		return string(b)
 	}
 	if s := get("/bar/"); !strings.Contains(s, ">foo.txt<") {
@@ -298,7 +314,6 @@ func TestServeIndexHtml(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer res.Body.Close()
 		b, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			t.Fatal("reading Body:", err)
@@ -306,19 +321,148 @@ func TestServeIndexHtml(t *testing.T) {
 		if s := string(b); s != want {
 			t.Errorf("for path %q got %q, want %q", path, s, want)
 		}
+		res.Body.Close()
 	}
 }
 
-func getBody(t *testing.T, req Request) (*Response, []byte) {
+func TestServeContent(t *testing.T) {
+	type req struct {
+		name    string
+		modtime time.Time
+		content io.ReadSeeker
+	}
+	ch := make(chan req, 1)
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		p := <-ch
+		ServeContent(w, r, p.name, p.modtime, p.content)
+	}))
+	defer ts.Close()
+
+	css, err := os.Open("testdata/style.css")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer css.Close()
+
+	ch <- req{"style.css", time.Time{}, css}
+	res, err := Get(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if g, e := res.Header.Get("Content-Type"), "text/css; charset=utf-8"; g != e {
+		t.Errorf("style.css: content type = %q, want %q", g, e)
+	}
+	if g := res.Header.Get("Last-Modified"); g != "" {
+		t.Errorf("want empty Last-Modified; got %q", g)
+	}
+
+	fi, err := css.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ch <- req{"style.html", fi.ModTime(), css}
+	res, err = Get(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if g, e := res.Header.Get("Content-Type"), "text/html; charset=utf-8"; g != e {
+		t.Errorf("style.html: content type = %q, want %q", g, e)
+	}
+	if g := res.Header.Get("Last-Modified"); g == "" {
+		t.Errorf("want non-empty last-modified")
+	}
+}
+
+// verifies that sendfile is being used on Linux
+func TestLinuxSendfile(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Logf("skipping; linux-only test")
+		return
+	}
+	_, err := exec.LookPath("strace")
+	if err != nil {
+		t.Logf("skipping; strace not found in path")
+		return
+	}
+
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	lnf, err := ln.(*net.TCPListener).File()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+
+	var buf bytes.Buffer
+	child := exec.Command("strace", "-f", os.Args[0], "-test.run=TestLinuxSendfileChild")
+	child.ExtraFiles = append(child.ExtraFiles, lnf)
+	child.Env = append([]string{"GO_WANT_HELPER_PROCESS=1"}, os.Environ()...)
+	child.Stdout = &buf
+	child.Stderr = &buf
+	err = child.Start()
+	if err != nil {
+		t.Logf("skipping; failed to start straced child: %v", err)
+		return
+	}
+
+	res, err := Get(fmt.Sprintf("http://%s/", ln.Addr()))
+	if err != nil {
+		t.Fatalf("http client error: %v", err)
+	}
+	_, err = io.Copy(ioutil.Discard, res.Body)
+	if err != nil {
+		t.Fatalf("client body read error: %v", err)
+	}
+	res.Body.Close()
+
+	// Force child to exit cleanly.
+	Get(fmt.Sprintf("http://%s/quit", ln.Addr()))
+	child.Wait()
+
+	rx := regexp.MustCompile(`sendfile(64)?\(\d+,\s*\d+,\s*NULL,\s*\d+\)\s*=\s*\d+\s*\n`)
+	rxResume := regexp.MustCompile(`<\.\.\. sendfile(64)? resumed> \)\s*=\s*\d+\s*\n`)
+	out := buf.String()
+	if !rx.MatchString(out) && !rxResume.MatchString(out) {
+		t.Errorf("no sendfile system call found in:\n%s", out)
+	}
+}
+
+func getBody(t *testing.T, testName string, req Request) (*Response, []byte) {
 	r, err := DefaultClient.Do(&req)
 	if err != nil {
-		t.Fatal(req.URL.String(), "send:", err)
+		t.Fatalf("%s: for URL %q, send error: %v", testName, req.URL.String(), err)
 	}
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		t.Fatal("reading Body:", err)
+		t.Fatalf("%s: for URL %q, reading body: %v", testName, req.URL.String(), err)
 	}
 	return r, b
+}
+
+// TestLinuxSendfileChild isn't a real test. It's used as a helper process
+// for TestLinuxSendfile.
+func TestLinuxSendfileChild(*testing.T) {
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		return
+	}
+	defer os.Exit(0)
+	fd3 := os.NewFile(3, "ephemeral-port-listener")
+	ln, err := net.FileListener(fd3)
+	if err != nil {
+		panic(err)
+	}
+	mux := NewServeMux()
+	mux.Handle("/", FileServer(Dir("testdata")))
+	mux.HandleFunc("/quit", func(ResponseWriter, *Request) {
+		os.Exit(0)
+	})
+	s := &Server{Handler: mux}
+	err = s.Serve(ln)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func equal(a, b []byte) bool {

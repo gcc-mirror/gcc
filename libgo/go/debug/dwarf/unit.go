@@ -12,17 +12,38 @@ import "strconv"
 type unit struct {
 	base     Offset // byte offset of header within the aggregate info
 	off      Offset // byte offset of data within the aggregate info
+	lineoff  Offset // byte offset of data within the line info
 	data     []byte
 	atable   abbrevTable
 	addrsize int
+	version  int
+	dwarf64  bool // True for 64-bit DWARF format
+	dir      string
+	pc       []addrRange   // PC ranges in this compilation unit
+	lines    []mapLineInfo // PC -> line mapping
+}
+
+// A range is an address range.
+type addrRange struct {
+	low  uint64
+	high uint64
 }
 
 func (d *Data) parseUnits() ([]unit, error) {
 	// Count units.
 	nunit := 0
-	b := makeBuf(d, "info", 0, d.info, 0)
+	b := makeBuf(d, nil, "info", 0, d.info)
 	for len(b.data) > 0 {
-		b.skip(int(b.uint32()))
+		len := b.uint32()
+		if len == 0xffffffff {
+			len64 := b.uint64()
+			if len64 != uint64(int(len64)) {
+				b.error("unit length overflow")
+				break
+			}
+			len = uint32(len64)
+		}
+		b.skip(int(len))
 		nunit++
 	}
 	if b.err != nil {
@@ -30,13 +51,18 @@ func (d *Data) parseUnits() ([]unit, error) {
 	}
 
 	// Again, this time writing them down.
-	b = makeBuf(d, "info", 0, d.info, 0)
+	b = makeBuf(d, nil, "info", 0, d.info)
 	units := make([]unit, nunit)
 	for i := range units {
 		u := &units[i]
 		u.base = b.off
 		n := b.uint32()
-		if vers := b.uint16(); vers != 2 {
+		if n == 0xffffffff {
+			u.dwarf64 = true
+			n = uint32(b.uint64())
+		}
+		vers := b.uint16()
+		if vers < 2 || vers > 4 {
 			b.error("unsupported DWARF version " + strconv.Itoa(int(vers)))
 			break
 		}
@@ -47,6 +73,7 @@ func (d *Data) parseUnits() ([]unit, error) {
 			}
 			break
 		}
+		u.version = int(vers)
 		u.atable = atable
 		u.addrsize = int(b.uint8())
 		u.off = b.off

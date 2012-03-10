@@ -48,6 +48,7 @@ typedef unsigned int uintptr __attribute__ ((mode (pointer)));
 
 typedef	uint8			bool;
 typedef	uint8			byte;
+typedef	struct	Func		Func;
 typedef	struct	G		G;
 typedef	union	Lock		Lock;
 typedef	struct	M		M;
@@ -143,6 +144,8 @@ struct	G
 	M*	lockedm;
 	M*	idlem;
 	// int32	sig;
+	int32	writenbuf;
+	byte*	writebuf;
 	// uintptr	sigcode0;
 	// uintptr	sigcode1;
 	// uintptr	sigpc;
@@ -174,6 +177,7 @@ struct	M
 	MCache	*mcache;
 	G*	lockedg;
 	G*	idleg;
+	uintptr	createstack[32];	// Stack that created this thread.
 	M*	nextwaitm;	// next M waiting for lock
 	uintptr	waitsema;	// semaphore for parking on locks
 	uint32	waitsemacount;
@@ -187,11 +191,23 @@ struct	SigTab
 };
 enum
 {
-	SigCatch = 1<<0,
-	SigIgnore = 1<<1,
-	SigRestart = 1<<2,
-	SigQueue = 1<<3,
-	SigPanic = 1<<4,
+	SigNotify = 1<<0,	// let signal.Notify have signal, even if from kernel
+	SigKill = 1<<1,		// if signal.Notify doesn't take it, exit quietly
+	SigThrow = 1<<2,	// if signal.Notify doesn't take it, exit loudly
+	SigPanic = 1<<3,	// if the signal is from the kernel, panic
+	SigDefault = 1<<4,	// if the signal isn't explicitly requested, don't monitor it
+};
+
+#ifndef NSIG
+#define NSIG 32
+#endif
+
+// NOTE(rsc): keep in sync with extern.go:/type.Func.
+// Eventually, the loaded symbol table should be closer to this form.
+struct	Func
+{
+	String	name;
+	uintptr	entry;	// entry pc
 };
 
 /* Macros.  */
@@ -271,7 +287,8 @@ void	runtime_throw(const char*) __attribute__ ((noreturn));
 void	runtime_panicstring(const char*) __attribute__ ((noreturn));
 void*	runtime_mal(uintptr);
 void	runtime_schedinit(void);
-void	runtime_initsig(int32);
+void	runtime_initsig(void);
+void	runtime_sigenable(uint32 sig);
 String	runtime_gostringnocopy(const byte*);
 void*	runtime_mstart(void*);
 G*	runtime_malg(int32, byte**, size_t*);
@@ -285,11 +302,13 @@ void	runtime_entersyscall(void) __asm__("libgo_syscall.syscall.entersyscall");
 void	runtime_exitsyscall(void) __asm__("libgo_syscall.syscall.exitsyscall");
 void	siginit(void);
 bool	__go_sigsend(int32 sig);
+int32	runtime_callers(int32, uintptr*, int32);
 int64	runtime_nanotime(void);
 int64	runtime_cputicks(void);
 
 void	runtime_stoptheworld(void);
 void	runtime_starttheworld(bool);
+extern uint32 runtime_worldsema;
 G*	__go_go(void (*pfn)(void*), void*);
 
 /*
@@ -336,9 +355,26 @@ void	runtime_futexsleep(uint32*, uint32, int64);
 void	runtime_futexwakeup(uint32*, uint32);
 
 /*
+ * low level C-called
+ */
+#define runtime_mmap mmap
+#define runtime_munmap munmap
+#define runtime_madvise madvise
+#define runtime_memclr(buf, size) __builtin_memset((buf), 0, (size))
+#define runtime_getcallerpc(p) __builtin_return_address(0)
+
+#ifdef __rtems__
+void __wrap_rtems_task_variable_add(void **);
+#endif
+
+/*
  * runtime go-called
  */
 void	runtime_panic(Eface);
+struct __go_func_type;
+void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,
+		  void **, void **)
+  asm ("libgo_reflect.reflect.call");
 
 /* Functions.  */
 #define runtime_panic __go_panic
@@ -351,8 +387,6 @@ void	runtime_panic(Eface);
 #define runtime_exit(s) exit(s)
 MCache*	runtime_allocmcache(void);
 void	free(void *v);
-struct __go_func_type;
-bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *);
 #define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
@@ -362,6 +396,11 @@ bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *
 #define runtime_atomicloadp(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
 #define runtime_atomicstorep(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
 
+struct __go_func_type;
+bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *);
+#define runtime_getcallersp(p) __builtin_frame_address(1)
+int32	runtime_mcount(void);
+int32	runtime_gcount(void);
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void);
 void	runtime_ready(G*);
@@ -374,29 +413,55 @@ void	runtime_resetcpuprofiler(int32);
 void	runtime_setcpuprofilerate(void(*)(uintptr*, int32), int32);
 void	runtime_usleep(uint32);
 
+/*
+ * runtime c-called (but written in Go)
+ */
+void	runtime_newError(String, Eface*);
+void	runtime_printany(Eface)
+     __asm__("libgo_runtime.runtime.Printany");
+void	runtime_newTypeAssertionError(const String*, const String*, const String*, const String*, Eface*)
+     __asm__("libgo_runtime.runtime.NewTypeAssertionError");
+void	runtime_newErrorString(String, Eface*)
+     __asm__("libgo_runtime.runtime.NewErrorString");
+
+/*
+ * wrapped for go users
+ */
 void	runtime_semacquire(uint32 volatile *);
 void	runtime_semrelease(uint32 volatile *);
+String	runtime_signame(int32 sig);
 int32	runtime_gomaxprocsfunc(int32 n);
 void	runtime_procyield(uint32);
 void	runtime_osyield(void);
 void	runtime_LockOSThread(void) __asm__("libgo_runtime.runtime.LockOSThread");
 void	runtime_UnlockOSThread(void) __asm__("libgo_runtime.runtime.UnlockOSThread");
 
-/*
- * low level C-called
- */
-#define runtime_mmap mmap
-#define runtime_munmap munmap
-#define runtime_madvise madvise
-#define runtime_memclr(buf, size) __builtin_memset((buf), 0, (size))
+uintptr	runtime_memlimit(void);
 
-struct __go_func_type;
-void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,
-		  void **, void **)
-  asm ("libgo_reflect.reflect.call");
-
-#ifdef __rtems__
-void __wrap_rtems_task_variable_add(void **);
-#endif
+// If appropriate, ask the operating system to control whether this
+// thread should receive profiling signals.  This is only necessary on OS X.
+// An operating system should not deliver a profiling signal to a
+// thread that is not actually executing (what good is that?), but that's
+// what OS X prefers to do.  When profiling is turned on, we mask
+// away the profiling signal when threads go to sleep, so that OS X
+// is forced to deliver the signal to a thread that's actually running.
+// This is a no-op on other systems.
+void	runtime_setprof(bool);
 
 void	runtime_time_scan(void (*)(byte*, int64));
+
+void	runtime_setsig(int32, bool, bool);
+#define runtime_setitimer setitimer
+
+void	runtime_check(void);
+
+// A list of global variables that the garbage collector must scan.
+struct root_list {
+	struct root_list *next;
+	struct root {
+		void *decl;
+		size_t size;
+	} roots[];
+};
+
+void	__go_register_gc_roots(struct root_list*);

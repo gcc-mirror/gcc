@@ -4,31 +4,13 @@
 
 package sync
 
-import (
-	"runtime"
-	"sync/atomic"
-)
+import "sync/atomic"
 
 // A WaitGroup waits for a collection of goroutines to finish.
 // The main goroutine calls Add to set the number of
 // goroutines to wait for.  Then each of the goroutines
 // runs and calls Done when finished.  At the same time,
 // Wait can be used to block until all goroutines have finished.
-//
-// For example:
-//
-//   for i := 0; i < n; i++ {
-//       if !condition(i) {
-//           continue
-//       }
-//       wg.Add(1)
-//       go func() {
-//           // Do something.
-//           wg.Done()
-//       }()
-//   }
-//   wg.Wait()
-// 
 type WaitGroup struct {
 	m       Mutex
 	counter int32
@@ -60,7 +42,7 @@ func (wg *WaitGroup) Add(delta int) {
 	}
 	wg.m.Lock()
 	for i := int32(0); i < wg.waiters; i++ {
-		runtime.Semrelease(wg.sema)
+		runtime_Semrelease(wg.sema)
 	}
 	wg.waiters = 0
 	wg.sema = nil
@@ -93,5 +75,5 @@ func (wg *WaitGroup) Wait() {
 	}
 	s := wg.sema
 	wg.m.Unlock()
-	runtime.Semacquire(s)
+	runtime_Semacquire(s)
 }

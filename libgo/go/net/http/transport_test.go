@@ -16,6 +16,8 @@ import (
 	. "net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -441,11 +443,7 @@ func TestRoundTripGzip(t *testing.T) {
 		}
 		if accept == "gzip" {
 			rw.Header().Set("Content-Encoding", "gzip")
-			gz, err := gzip.NewWriter(rw)
-			if err != nil {
-				t.Errorf("gzip NewWriter: %v", err)
-				return
-			}
+			gz := gzip.NewWriter(rw)
 			gz.Write([]byte(responseBody))
 			gz.Close()
 		} else {
@@ -512,7 +510,7 @@ func TestTransportGzip(t *testing.T) {
 				rw.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
 			}()
 		}
-		gz, _ := gzip.NewWriter(w)
+		gz := gzip.NewWriter(w)
 		gz.Write([]byte(testString))
 		if req.FormValue("body") == "large" {
 			io.CopyN(gz, rand.Reader, nRandBytes)
@@ -636,6 +634,70 @@ func TestTransportGzipRecursive(t *testing.T) {
 	}
 }
 
+// tests that persistent goroutine connections shut down when no longer desired.
+func TestTransportPersistConnLeak(t *testing.T) {
+	gotReqCh := make(chan bool)
+	unblockCh := make(chan bool)
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		gotReqCh <- true
+		<-unblockCh
+		w.Header().Set("Content-Length", "0")
+		w.WriteHeader(204)
+	}))
+	defer ts.Close()
+
+	tr := &Transport{}
+	c := &Client{Transport: tr}
+
+	n0 := runtime.NumGoroutine()
+
+	const numReq = 25
+	didReqCh := make(chan bool)
+	for i := 0; i < numReq; i++ {
+		go func() {
+			res, err := c.Get(ts.URL)
+			didReqCh <- true
+			if err != nil {
+				t.Errorf("client fetch error: %v", err)
+				return
+			}
+			res.Body.Close()
+		}()
+	}
+
+	// Wait for all goroutines to be stuck in the Handler.
+	for i := 0; i < numReq; i++ {
+		<-gotReqCh
+	}
+
+	nhigh := runtime.NumGoroutine()
+
+	// Tell all handlers to unblock and reply.
+	for i := 0; i < numReq; i++ {
+		unblockCh <- true
+	}
+
+	// Wait for all HTTP clients to be done.
+	for i := 0; i < numReq; i++ {
+		<-didReqCh
+	}
+
+	tr.CloseIdleConnections()
+	time.Sleep(100 * time.Millisecond)
+	runtime.GC()
+	runtime.GC() // even more.
+	nfinal := runtime.NumGoroutine()
+
+	growth := nfinal - n0
+
+	// We expect 0 or 1 extra goroutine, empirically.  Allow up to 5.
+	// Previously we were leaking one per numReq.
+	t.Logf("goroutine growth: %d -> %d -> %d (delta: %d)", n0, nhigh, nfinal, growth)
+	if int(growth) > 5 {
+		t.Error("too many new goroutines")
+	}
+}
+
 type fooProto struct{}
 
 func (fooProto) RoundTrip(req *Request) (*Response, error) {
@@ -663,6 +725,36 @@ func TestTransportAltProto(t *testing.T) {
 	body := string(bodyb)
 	if e := "You wanted foo://bar.com/path"; body != e {
 		t.Errorf("got response %q, want %q", body, e)
+	}
+}
+
+var proxyFromEnvTests = []struct {
+	env     string
+	wanturl string
+	wanterr error
+}{
+	{"127.0.0.1:8080", "http://127.0.0.1:8080", nil},
+	{"http://127.0.0.1:8080", "http://127.0.0.1:8080", nil},
+	{"https://127.0.0.1:8080", "https://127.0.0.1:8080", nil},
+	{"", "<nil>", nil},
+}
+
+func TestProxyFromEnvironment(t *testing.T) {
+	os.Setenv("HTTP_PROXY", "")
+	os.Setenv("http_proxy", "")
+	os.Setenv("NO_PROXY", "")
+	os.Setenv("no_proxy", "")
+	for i, tt := range proxyFromEnvTests {
+		os.Setenv("HTTP_PROXY", tt.env)
+		req, _ := NewRequest("GET", "http://example.com", nil)
+		url, err := ProxyFromEnvironment(req)
+		if g, e := fmt.Sprintf("%v", err), fmt.Sprintf("%v", tt.wanterr); g != e {
+			t.Errorf("%d. got error = %q, want %q", i, g, e)
+			continue
+		}
+		if got := fmt.Sprintf("%s", url); got != tt.wanturl {
+			t.Errorf("%d. got URL = %q, want %q", i, url, tt.wanturl)
+		}
 	}
 }
 

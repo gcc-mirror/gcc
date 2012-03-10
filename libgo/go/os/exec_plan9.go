@@ -8,28 +8,19 @@ import (
 	"errors"
 	"runtime"
 	"syscall"
+	"time"
 )
 
-// StartProcess starts a new process with the program, arguments and attributes
-// specified by name, argv and attr.
-func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err error) {
+func startProcess(name string, argv []string, attr *ProcAttr) (p *Process, err error) {
 	sysattr := &syscall.ProcAttr{
 		Dir: attr.Dir,
 		Env: attr.Env,
 		Sys: attr.Sys,
 	}
 
-	// Create array of integer (system) fds.
-	intfd := make([]int, len(attr.Files))
-	for i, f := range attr.Files {
-		if f == nil {
-			intfd[i] = -1
-		} else {
-			intfd[i] = f.Fd()
-		}
+	for _, f := range attr.Files {
+		sysattr.Files = append(sysattr.Files, f.Fd())
 	}
-
-	sysattr.Files = intfd
 
 	pid, h, e := syscall.StartProcess(name, argv, sysattr)
 	if e != nil {
@@ -46,7 +37,7 @@ func (note Plan9Note) String() string {
 	return string(note)
 }
 
-func (p *Process) Signal(sig Signal) error {
+func (p *Process) signal(sig Signal) error {
 	if p.done {
 		return errors.New("os: process already finished")
 	}
@@ -60,8 +51,7 @@ func (p *Process) Signal(sig Signal) error {
 	return e
 }
 
-// Kill causes the Process to exit immediately.
-func (p *Process) Kill() error {
+func (p *Process) kill() error {
 	f, e := OpenFile("/proc/"+itoa(p.Pid)+"/ctl", O_WRONLY, 0)
 	if e != nil {
 		return NewSyscallError("kill", e)
@@ -71,32 +61,11 @@ func (p *Process) Kill() error {
 	return e
 }
 
-// Exec replaces the current process with an execution of the
-// named binary, with arguments argv and environment envv.
-// If successful, Exec never returns.  If it fails, it returns an error.
-// ForkExec is almost always a better way to execute a program.
-func Exec(name string, argv []string, envv []string) error {
-	e := syscall.Exec(name, argv, envv)
-	if e != nil {
-		return &PathError{"exec", name, e}
-	}
-
-	return nil
-}
-
-// Waitmsg stores the information about an exited process as reported by Wait.
-type Waitmsg struct {
-	syscall.Waitmsg
-}
-
-// Wait waits for the Process to exit or stop, and then returns a
-// Waitmsg describing its status and an error, if any. The options
-// (WNOHANG etc.) affect the behavior of the Wait call.
-func (p *Process) Wait(options int) (w *Waitmsg, err error) {
+func (p *Process) wait() (ps *ProcessState, err error) {
 	var waitmsg syscall.Waitmsg
 
 	if p.Pid == -1 {
-		return nil, EINVAL
+		return nil, ErrInvalid
 	}
 
 	for true {
@@ -112,25 +81,14 @@ func (p *Process) Wait(options int) (w *Waitmsg, err error) {
 		}
 	}
 
-	return &Waitmsg{waitmsg}, nil
-}
-
-// Wait waits for process pid to exit or stop, and then returns a
-// Waitmsg describing its status and an error, if any. The options
-// (WNOHANG etc.) affect the behavior of the Wait call.
-// Wait is equivalent to calling FindProcess and then Wait
-// and Release on the result.
-func Wait(pid int, options int) (w *Waitmsg, err error) {
-	p, e := FindProcess(pid)
-	if e != nil {
-		return nil, e
+	ps = &ProcessState{
+		pid:    waitmsg.Pid,
+		status: &waitmsg,
 	}
-	defer p.Release()
-	return p.Wait(options)
+	return ps, nil
 }
 
-// Release releases any resources associated with the Process.
-func (p *Process) Release() error {
+func (p *Process) release() error {
 	// NOOP for Plan 9.
 	p.Pid = -1
 	// no need for a finalizer anymore
@@ -143,9 +101,44 @@ func findProcess(pid int) (p *Process, err error) {
 	return newProcess(pid, 0), nil
 }
 
-func (w *Waitmsg) String() string {
-	if w == nil {
+// ProcessState stores information about a process, as reported by Wait.
+type ProcessState struct {
+	pid    int              // The process's id.
+	status *syscall.Waitmsg // System-dependent status info.
+}
+
+// Pid returns the process id of the exited process.
+func (p *ProcessState) Pid() int {
+	return p.pid
+}
+
+func (p *ProcessState) exited() bool {
+	return p.status.Exited()
+}
+
+func (p *ProcessState) success() bool {
+	return p.status.ExitStatus() == 0
+}
+
+func (p *ProcessState) sys() interface{} {
+	return p.status
+}
+
+func (p *ProcessState) sysUsage() interface{} {
+	return p.status
+}
+
+func (p *ProcessState) userTime() time.Duration {
+	return time.Duration(p.status.Time[0]) * time.Millisecond
+}
+
+func (p *ProcessState) systemTime() time.Duration {
+	return time.Duration(p.status.Time[1]) * time.Millisecond
+}
+
+func (p *ProcessState) String() string {
+	if p == nil {
 		return "<nil>"
 	}
-	return "exit status: " + w.Msg
+	return "exit status: " + p.status.Msg
 }

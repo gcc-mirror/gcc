@@ -239,16 +239,6 @@ func TestEscape(t *testing.T) {
 	}
 }
 
-func TestHTMLEscape(t *testing.T) {
-	b, err := MarshalForHTML("foobarbaz<>&quux")
-	if err != nil {
-		t.Fatalf("MarshalForHTML error: %v", err)
-	}
-	if !bytes.Equal(b, []byte(`"foobarbaz\u003c\u003e\u0026quux"`)) {
-		t.Fatalf("Unexpected encoding of \"<>&\": %s", b)
-	}
-}
-
 // WrongString is a struct that's misusing the ,string modifier.
 type WrongString struct {
 	Message string `json:"result,string"`
@@ -617,5 +607,34 @@ func TestRefUnmarshal(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %+v, want %+v", got, want)
+	}
+}
+
+// Test that anonymous fields are ignored.
+// We may assign meaning to them later.
+func TestAnonymous(t *testing.T) {
+	type S struct {
+		T
+		N int
+	}
+
+	data, err := Marshal(new(S))
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	want := `{"N":0}`
+	if string(data) != want {
+		t.Fatalf("Marshal = %#q, want %#q", string(data), want)
+	}
+
+	var s S
+	if err := Unmarshal([]byte(`{"T": 1, "T": {"Y": 1}, "N": 2}`), &s); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	if s.N != 2 {
+		t.Fatal("Unmarshal: did not set N")
+	}
+	if s.T.Y != 0 {
+		t.Fatal("Unmarshal: did set T.Y")
 	}
 }

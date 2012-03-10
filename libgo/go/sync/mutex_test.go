@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// GOMAXPROCS=10 gotest
+// GOMAXPROCS=10 go test
 
 package sync_test
 
@@ -15,8 +15,8 @@ import (
 
 func HammerSemaphore(s *uint32, loops int, cdone chan bool) {
 	for i := 0; i < loops; i++ {
-		runtime.Semacquire(s)
-		runtime.Semrelease(s)
+		Runtime_Semacquire(s)
+		Runtime_Semrelease(s)
 	}
 	cdone <- true
 }

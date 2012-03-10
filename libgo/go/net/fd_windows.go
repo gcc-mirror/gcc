@@ -5,6 +5,7 @@
 package net
 
 import (
+	"errors"
 	"io"
 	"os"
 	"runtime"
@@ -272,11 +273,27 @@ func (fd *netFD) connect(ra syscall.Sockaddr) error {
 	return syscall.Connect(fd.sysfd, ra)
 }
 
+var errClosing = errors.New("use of closed network connection")
+
 // Add a reference to this fd.
-func (fd *netFD) incref() {
+// If closing==true, mark the fd as closing.
+// Returns an error if the fd cannot be used.
+func (fd *netFD) incref(closing bool) error {
+	if fd == nil {
+		return errClosing
+	}
 	fd.sysmu.Lock()
+	if fd.closing {
+		fd.sysmu.Unlock()
+		return errClosing
+	}
 	fd.sysref++
+	if closing {
+		fd.closing = true
+	}
+	closing = fd.closing
 	fd.sysmu.Unlock()
+	return nil
 }
 
 // Remove a reference to this FD and close if we've been asked to do so (and
@@ -284,7 +301,17 @@ func (fd *netFD) incref() {
 func (fd *netFD) decref() {
 	fd.sysmu.Lock()
 	fd.sysref--
-	if fd.closing && fd.sysref == 0 && fd.sysfd != syscall.InvalidHandle {
+	// NOTE(rsc): On Unix we check fd.sysref == 0 here before closing,
+	// but on Windows we have no way to wake up the blocked I/O other
+	// than closing the socket (or calling Shutdown, which breaks other
+	// programs that might have a reference to the socket).  So there is
+	// a small race here that we might close fd.sysfd and then some other
+	// goroutine might start a read of fd.sysfd (having read it before we
+	// write InvalidHandle to it), which might refer to some other file
+	// if the specific handle value gets reused.  I think handle values on
+	// Windows are not reused as aggressively as file descriptors on Unix,
+	// so this might be tolerable.
+	if fd.closing && fd.sysfd != syscall.InvalidHandle {
 		// In case the user has set linger, switch to blocking mode so
 		// the close blocks.  As long as this doesn't happen often, we
 		// can handle the extra OS processes.  Otherwise we'll need to
@@ -299,20 +326,16 @@ func (fd *netFD) decref() {
 }
 
 func (fd *netFD) Close() error {
-	if fd == nil || fd.sysfd == syscall.InvalidHandle {
-		return os.EINVAL
+	if err := fd.incref(true); err != nil {
+		return err
 	}
-
-	fd.incref()
-	syscall.Shutdown(fd.sysfd, syscall.SHUT_RDWR)
-	fd.closing = true
 	fd.decref()
 	return nil
 }
 
 func (fd *netFD) shutdown(how int) error {
 	if fd == nil || fd.sysfd == syscall.InvalidHandle {
-		return os.EINVAL
+		return syscall.EINVAL
 	}
 	err := syscall.Shutdown(fd.sysfd, how)
 	if err != nil {
@@ -346,14 +369,16 @@ func (o *readOp) Name() string {
 
 func (fd *netFD) Read(buf []byte) (int, error) {
 	if fd == nil {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	fd.rio.Lock()
 	defer fd.rio.Unlock()
-	fd.incref()
+	if err := fd.incref(false); err != nil {
+		return 0, err
+	}
 	defer fd.decref()
 	if fd.sysfd == syscall.InvalidHandle {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	var o readOp
 	o.Init(fd, buf, 'r')
@@ -383,18 +408,17 @@ func (o *readFromOp) Name() string {
 
 func (fd *netFD) ReadFrom(buf []byte) (n int, sa syscall.Sockaddr, err error) {
 	if fd == nil {
-		return 0, nil, os.EINVAL
+		return 0, nil, syscall.EINVAL
 	}
 	if len(buf) == 0 {
 		return 0, nil, nil
 	}
 	fd.rio.Lock()
 	defer fd.rio.Unlock()
-	fd.incref()
-	defer fd.decref()
-	if fd.sysfd == syscall.InvalidHandle {
-		return 0, nil, os.EINVAL
+	if err := fd.incref(false); err != nil {
+		return 0, nil, err
 	}
+	defer fd.decref()
 	var o readFromOp
 	o.Init(fd, buf, 'r')
 	o.rsan = int32(unsafe.Sizeof(o.rsa))
@@ -423,15 +447,14 @@ func (o *writeOp) Name() string {
 
 func (fd *netFD) Write(buf []byte) (int, error) {
 	if fd == nil {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	fd.wio.Lock()
 	defer fd.wio.Unlock()
-	fd.incref()
-	defer fd.decref()
-	if fd.sysfd == syscall.InvalidHandle {
-		return 0, os.EINVAL
+	if err := fd.incref(false); err != nil {
+		return 0, err
 	}
+	defer fd.decref()
 	var o writeOp
 	o.Init(fd, buf, 'w')
 	return iosrv.ExecIO(&o, fd.wdeadline)
@@ -455,17 +478,19 @@ func (o *writeToOp) Name() string {
 
 func (fd *netFD) WriteTo(buf []byte, sa syscall.Sockaddr) (int, error) {
 	if fd == nil {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	if len(buf) == 0 {
 		return 0, nil
 	}
 	fd.wio.Lock()
 	defer fd.wio.Unlock()
-	fd.incref()
+	if err := fd.incref(false); err != nil {
+		return 0, err
+	}
 	defer fd.decref()
 	if fd.sysfd == syscall.InvalidHandle {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	var o writeToOp
 	o.Init(fd, buf, 'w')
@@ -493,10 +518,9 @@ func (o *acceptOp) Name() string {
 }
 
 func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (*netFD, error) {
-	if fd == nil || fd.sysfd == syscall.InvalidHandle {
-		return nil, os.EINVAL
+	if err := fd.incref(false); err != nil {
+		return nil, err
 	}
-	fd.incref()
 	defer fd.decref()
 
 	// Get new socket.
@@ -554,10 +578,12 @@ func (fd *netFD) dup() (*os.File, error) {
 	return nil, os.NewSyscallError("dup", syscall.EWINDOWS)
 }
 
+var errNoSupport = errors.New("address family not supported")
+
 func (fd *netFD) ReadMsg(p []byte, oob []byte) (n, oobn, flags int, sa syscall.Sockaddr, err error) {
-	return 0, 0, 0, nil, os.EAFNOSUPPORT
+	return 0, 0, 0, nil, errNoSupport
 }
 
 func (fd *netFD) WriteMsg(p []byte, oob []byte, sa syscall.Sockaddr) (n int, oobn int, err error) {
-	return 0, 0, os.EAFNOSUPPORT
+	return 0, 0, errNoSupport
 }

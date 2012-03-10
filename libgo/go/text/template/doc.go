@@ -3,8 +3,10 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package template implements data-driven templates for generating textual output
-such as HTML.
+Package template implements data-driven templates for generating textual output.
+
+To generate HTML output, see package html/template, which has the same interface
+as this package but automatically secures HTML output against certain attacks.
 
 Templates are executed by applying them to a data structure. Annotations in the
 template refer to elements of the data structure (typically a field of a struct
@@ -19,6 +21,20 @@ The input text for a template is UTF-8-encoded text in any format.
 Actions may not span newlines, although comments can.
 
 Once constructed, a template may be executed safely in parallel.
+
+Here is a trivial example that prints "17 items are made of wool".
+
+	type Inventory struct {
+		Material string
+		Count    uint
+	}
+	sweaters := Inventory{"wool", 17}
+	tmpl, err := template.New("test").Parse("{{.Count}} items are made of {{.Material}}")
+	if err != nil { panic(err) }
+	err = tmpl.Execute(os.Stdout, sweaters)
+	if err != nil { panic(err) }
+
+More intricate examples appear below.
 
 Actions
 
@@ -134,6 +150,10 @@ An argument is a simple value, denoted by one of the following.
 
 Arguments may evaluate to any type; if they are pointers the implementation
 automatically indirects to the base type when required.
+If an evaluation yields a function value, such as a function-valued
+field of a struct, the function is not invoked automatically, but it
+can be used as a truth value for an if action and the like. To invoke
+it, use the call function, defined below.
 
 A pipeline is a possibly chained sequence of "commands". A command is a simple
 value (argument) or a function or method call, possibly with multiple arguments:
@@ -233,6 +253,17 @@ Predefined global functions are named as follows.
 		first empty argument or the last argument, that is,
 		"and x y" behaves as "if x then y else x". All the
 		arguments are evaluated.
+	call
+		Returns the result of calling the first argument, which
+		must be a function, with the remaining arguments as parameters.
+		Thus "call .X.Y 1 2" is, in Go notation, dot.X.Y(1, 2) where
+		Y is a func-valued field, map entry, or the like.
+		The first argument must be the result of an evaluation
+		that yields a value of function type (as distinct from
+		a predefined function such as print). The function must
+		return either one or two result values, the second of which
+		is of type error. If the arguments don't match the function
+		or the returned error value is non-nil, execution stops.
 	html
 		Returns the escaped HTML equivalent of the textual
 		representation of its arguments.
@@ -301,7 +332,7 @@ produce the text
 By construction, a template may reside in only one association. If it's
 necessary to have a template addressable from multiple associations, the
 template definition must be parsed multiple times to create distinct *Template
-values.
+values, or must be copied with the Clone or AddParseTree method.
 
 Parse may be called multiple times to assemble the various associated templates;
 see the ParseFiles and ParseGlob functions and methods for simple ways to parse

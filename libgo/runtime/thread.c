@@ -4,6 +4,8 @@
 
 #include <errno.h>
 #include <signal.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #include "runtime.h"
 #include "go-assert.h"
@@ -138,6 +140,7 @@ runtime_minit(void)
 	byte* stack;
 	size_t stacksize;
 	stack_t ss;
+	sigset_t sigs;
 
 	// Initialize signal handling.
 	runtime_m()->gsignal = runtime_malg(32*1024, &stack, &stacksize);	// OS X wants >=8K, Linux >=2K
@@ -146,4 +149,34 @@ runtime_minit(void)
 	ss.ss_size = stacksize;
 	if(sigaltstack(&ss, nil) < 0)
 		*(int *)0xf1 = 0xf1;
+	if (sigemptyset(&sigs) != 0)
+		runtime_throw("sigemptyset");
+	sigprocmask(SIG_SETMASK, &sigs, nil);
+}
+
+uintptr
+runtime_memlimit(void)
+{
+	struct rlimit rl;
+	uintptr used;
+
+	if(getrlimit(RLIMIT_AS, &rl) != 0)
+		return 0;
+	if(rl.rlim_cur >= 0x7fffffff)
+		return 0;
+
+	// Estimate our VM footprint excluding the heap.
+	// Not an exact science: use size of binary plus
+	// some room for thread stacks.
+	used = (64<<20);
+	if(used >= rl.rlim_cur)
+		return 0;
+
+	// If there's not at least 16 MB left, we're probably
+	// not going to be able to do much.  Treat as no limit.
+	rl.rlim_cur -= used;
+	if(rl.rlim_cur < (16<<20))
+		return 0;
+
+	return rl.rlim_cur - used;
 }

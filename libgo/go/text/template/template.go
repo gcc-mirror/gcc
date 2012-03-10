@@ -69,9 +69,9 @@ func (t *Template) init() {
 // templates. The actual representation is not copied, but the name space of
 // associated templates is, so further calls to Parse in the copy will add
 // templates to the copy but not to the original. Clone can be used to prepare
-// common templates and use them with variant definitions for other templates by
-// adding the variants after the clone is made.
-func (t *Template) Clone() *Template {
+// common templates and use them with variant definitions for other templates
+// by adding the variants after the clone is made.
+func (t *Template) Clone() (*Template, error) {
 	nt := t.copy(nil)
 	nt.init()
 	nt.tmpl[t.name] = nt
@@ -89,7 +89,7 @@ func (t *Template) Clone() *Template {
 	for k, v := range t.execFuncs {
 		nt.execFuncs[k] = v
 	}
-	return nt
+	return nt, nil
 }
 
 // copy returns a shallow copy of t, with common set to the argument.
@@ -178,10 +178,11 @@ func (t *Template) Parse(text string) (*Template, error) {
 			tmpl = t.New(name)
 		}
 		// Even if t == tmpl, we need to install it in the common.tmpl map.
-		if err := t.associate(tmpl); err != nil {
+		if replace, err := t.associate(tmpl, tree); err != nil {
 			return nil, err
+		} else if replace {
+			tmpl.Tree = tree
 		}
-		tmpl.Tree = tree
 		tmpl.leftDelim = t.leftDelim
 		tmpl.rightDelim = t.rightDelim
 	}
@@ -191,22 +192,23 @@ func (t *Template) Parse(text string) (*Template, error) {
 // associate installs the new template into the group of templates associated
 // with t. It is an error to reuse a name except to overwrite an empty
 // template. The two are already known to share the common structure.
-func (t *Template) associate(new *Template) error {
+// The boolean return value reports wither to store this tree as t.Tree.
+func (t *Template) associate(new *Template, tree *parse.Tree) (bool, error) {
 	if new.common != t.common {
 		panic("internal error: associate not common")
 	}
 	name := new.name
 	if old := t.tmpl[name]; old != nil {
 		oldIsEmpty := parse.IsEmptyTree(old.Root)
-		newIsEmpty := new.Tree != nil && parse.IsEmptyTree(new.Root)
-		if !oldIsEmpty && !newIsEmpty {
-			return fmt.Errorf("template: redefinition of template %q", name)
-		}
+		newIsEmpty := parse.IsEmptyTree(tree.Root)
 		if newIsEmpty {
 			// Whether old is empty or not, new is empty; no reason to replace old.
-			return nil
+			return false, nil
+		}
+		if !oldIsEmpty {
+			return false, fmt.Errorf("template: redefinition of template %q", name)
 		}
 	}
 	t.tmpl[name] = new
-	return nil
+	return true, nil
 }

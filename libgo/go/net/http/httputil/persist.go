@@ -13,12 +13,12 @@ import (
 	"net"
 	"net/http"
 	"net/textproto"
-	"os"
 	"sync"
 )
 
 var (
 	ErrPersistEOF = &http.ProtocolError{ErrorString: "persistent connection closed"}
+	ErrClosed     = &http.ProtocolError{ErrorString: "connection closed by user"}
 	ErrPipeline   = &http.ProtocolError{ErrorString: "pipeline error"}
 )
 
@@ -191,7 +191,7 @@ func (sc *ServerConn) Write(req *http.Request, resp *http.Response) error {
 	}
 	if sc.c == nil { // connection closed by user in the meantime
 		defer sc.lk.Unlock()
-		return os.EBADF
+		return ErrClosed
 	}
 	c := sc.c
 	if sc.nread <= sc.nwritten {
@@ -383,7 +383,7 @@ func (cc *ClientConn) Read(req *http.Request) (resp *http.Response, err error) {
 	// Make sure body is fully consumed, even if user does not call body.Close
 	if lastbody != nil {
 		// body.Close is assumed to be idempotent and multiple calls to
-		// it should return the error that its first invokation
+		// it should return the error that its first invocation
 		// returned.
 		err = lastbody.Close()
 		if err != nil {

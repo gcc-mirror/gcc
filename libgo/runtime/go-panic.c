@@ -27,7 +27,7 @@ __printpanics (struct __go_panic_stack *p)
       fprintf (stderr, "\t");
     }
   fprintf (stderr, "panic: ");
-  printany (p->__arg);
+  runtime_printany (p->__arg);
   if (p->__was_recovered)
     fprintf (stderr, " [recovered]");
   fputc ('\n', stderr);

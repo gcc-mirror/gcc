@@ -153,7 +153,7 @@ const (
 //
 // md2WithRSAEncryption OBJECT IDENTIFIER ::= { pkcs-1 2 }
 //
-// md5WithRSAEncryption OBJECT IDENTIFER ::= { pkcs-1 4 }
+// md5WithRSAEncryption OBJECT IDENTIFIER ::= { pkcs-1 4 }
 //
 // sha-1WithRSAEncryption OBJECT IDENTIFIER ::= { pkcs-1 5 }
 // 
@@ -172,9 +172,9 @@ const (
 //
 // RFC 5758 3.1 DSA Signature Algorithms
 //
-// dsaWithSha356 OBJECT IDENTIFER ::= {
+// dsaWithSha256 OBJECT IDENTIFIER ::= {
 //    joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101)
-//    algorithms(4) id-dsa-with-sha2(3) 2}
+//    csor(3) algorithms(4) id-dsa-with-sha2(3) 2}
 //
 var (
 	oidSignatureMD2WithRSA    = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 2}
@@ -327,13 +327,9 @@ type Certificate struct {
 	PolicyIdentifiers []asn1.ObjectIdentifier
 }
 
-// UnsupportedAlgorithmError results from attempting to perform an operation
-// that involves algorithms that are not currently implemented.
-type UnsupportedAlgorithmError struct{}
-
-func (UnsupportedAlgorithmError) Error() string {
-	return "cannot verify signature: algorithm unimplemented"
-}
+// ErrUnsupportedAlgorithm results from attempting to perform an operation that
+// involves algorithms that are not currently implemented.
+var ErrUnsupportedAlgorithm = errors.New("crypto/x509: cannot verify signature: algorithm unimplemented")
 
 // ConstraintViolationError results when a requested usage is not permitted by
 // a certificate. For example: checking a signature when the public key isn't a
@@ -341,7 +337,7 @@ func (UnsupportedAlgorithmError) Error() string {
 type ConstraintViolationError struct{}
 
 func (ConstraintViolationError) Error() string {
-	return "invalid signature: parent certificate cannot sign this kind of certificate"
+	return "crypto/x509: invalid signature: parent certificate cannot sign this kind of certificate"
 }
 
 func (c *Certificate) Equal(other *Certificate) bool {
@@ -366,7 +362,7 @@ func (c *Certificate) CheckSignatureFrom(parent *Certificate) (err error) {
 	}
 
 	if parent.PublicKeyAlgorithm == UnknownPublicKeyAlgorithm {
-		return UnsupportedAlgorithmError{}
+		return ErrUnsupportedAlgorithm
 	}
 
 	// TODO(agl): don't ignore the path length constraint.
@@ -389,12 +385,12 @@ func (c *Certificate) CheckSignature(algo SignatureAlgorithm, signed, signature 
 	case SHA512WithRSA:
 		hashType = crypto.SHA512
 	default:
-		return UnsupportedAlgorithmError{}
+		return ErrUnsupportedAlgorithm
 	}
 
 	h := hashType.New()
 	if h == nil {
-		return UnsupportedAlgorithmError{}
+		return ErrUnsupportedAlgorithm
 	}
 
 	h.Write(signed)
@@ -416,7 +412,7 @@ func (c *Certificate) CheckSignature(algo SignatureAlgorithm, signed, signature 
 		}
 		return
 	}
-	return UnsupportedAlgorithmError{}
+	return ErrUnsupportedAlgorithm
 }
 
 // CheckCRLSignature checks that the signature in crl is from c.
@@ -795,7 +791,7 @@ var (
 )
 
 func buildExtensions(template *Certificate) (ret []pkix.Extension, err error) {
-	ret = make([]pkix.Extension, 7 /* maximum number of elements. */ )
+	ret = make([]pkix.Extension, 7 /* maximum number of elements. */)
 	n := 0
 
 	if template.KeyUsage != 0 {

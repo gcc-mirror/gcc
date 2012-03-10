@@ -7,26 +7,20 @@
 package os
 
 import (
-	"runtime"
 	"syscall"
 )
 
-type UnixSignal int32
-
-func (sig UnixSignal) String() string {
-	s := runtime.Signame(int32(sig))
-	if len(s) > 0 {
-		return s
+func startProcess(name string, argv []string, attr *ProcAttr) (p *Process, err error) {
+	// Double-check existence of the directory we want
+	// to chdir into.  We can make the error clearer this way.
+	if attr != nil && attr.Dir != "" {
+		if _, err := Stat(attr.Dir); err != nil {
+			pe := err.(*PathError)
+			pe.Op = "chdir"
+			return nil, pe
+		}
 	}
-	return "UnixSignal"
-}
 
-// StartProcess starts a new process with the program, arguments and attributes
-// specified by name, argv and attr.
-//
-// StartProcess is a low-level interface. The os/exec package provides
-// higher-level interfaces.
-func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err error) {
 	sysattr := &syscall.ProcAttr{
 		Dir: attr.Dir,
 		Env: attr.Env,
@@ -46,54 +40,36 @@ func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err e
 	return newProcess(pid, h), nil
 }
 
-// Kill causes the Process to exit immediately.
-func (p *Process) Kill() error {
-	return p.Signal(UnixSignal(syscall.SIGKILL))
+func (p *Process) kill() error {
+	return p.Signal(Kill)
 }
 
-// Exec replaces the current process with an execution of the
-// named binary, with arguments argv and environment envv.
-// If successful, Exec never returns.  If it fails, it returns an error.
-//
-// To run a child process, see StartProcess (for a low-level interface)
-// or the os/exec package (for higher-level interfaces).
-func Exec(name string, argv []string, envv []string) error {
-	if envv == nil {
-		envv = Environ()
-	}
-	e := syscall.Exec(name, argv, envv)
-	if e != nil {
-		return &PathError{"exec", name, e}
-	}
-	return nil
+// ProcessState stores information about a process, as reported by Wait.
+type ProcessState struct {
+	pid    int                // The process's id.
+	status syscall.WaitStatus // System-dependent status info.
+	rusage *syscall.Rusage
 }
 
-// TODO(rsc): Should os implement its own syscall.WaitStatus
-// wrapper with the methods, or is exposing the underlying one enough?
-//
-// TODO(rsc): Certainly need to have Rusage struct,
-// since syscall one might have different field types across
-// different OS.
-
-// Waitmsg stores the information about an exited process as reported by Wait.
-type Waitmsg struct {
-	Pid                int             // The process's id.
-	syscall.WaitStatus                 // System-dependent status info.
-	Rusage             *syscall.Rusage // System-dependent resource usage info.
+// Pid returns the process id of the exited process.
+func (p *ProcessState) Pid() int {
+	return p.pid
 }
 
-// Wait waits for process pid to exit or stop, and then returns a
-// Waitmsg describing its status and an error, if any. The options
-// (WNOHANG etc.) affect the behavior of the Wait call.
-// Wait is equivalent to calling FindProcess and then Wait
-// and Release on the result.
-func Wait(pid int, options int) (w *Waitmsg, err error) {
-	p, e := FindProcess(pid)
-	if e != nil {
-		return nil, e
-	}
-	defer p.Release()
-	return p.Wait(options)
+func (p *ProcessState) exited() bool {
+	return p.status.Exited()
+}
+
+func (p *ProcessState) success() bool {
+	return p.status.ExitStatus() == 0
+}
+
+func (p *ProcessState) sys() interface{} {
+	return p.status
+}
+
+func (p *ProcessState) sysUsage() interface{} {
+	return p.rusage
 }
 
 // Convert i to decimal string.
@@ -123,26 +99,26 @@ func itod(i int) string {
 	return string(b[bp:])
 }
 
-func (w *Waitmsg) String() string {
-	if w == nil {
+func (p *ProcessState) String() string {
+	if p == nil {
 		return "<nil>"
 	}
-	// TODO(austin) Use signal names when possible?
+	status := p.Sys().(syscall.WaitStatus)
 	res := ""
 	switch {
-	case w.Exited():
-		res = "exit status " + itod(w.ExitStatus())
-	case w.Signaled():
-		res = "signal " + itod(w.Signal())
-	case w.Stopped():
-		res = "stop signal " + itod(w.StopSignal())
-		if w.StopSignal() == syscall.SIGTRAP && w.TrapCause() != 0 {
-			res += " (trap " + itod(w.TrapCause()) + ")"
+	case status.Exited():
+		res = "exit status " + itod(status.ExitStatus())
+	case status.Signaled():
+		res = "signal " + itod(int(status.Signal()))
+	case status.Stopped():
+		res = "stop signal " + itod(int(status.StopSignal()))
+		if status.StopSignal() == syscall.SIGTRAP && status.TrapCause() != 0 {
+			res += " (trap " + itod(status.TrapCause()) + ")"
 		}
-	case w.Continued():
+	case status.Continued():
 		res = "continued"
 	}
-	if w.CoreDump() {
+	if status.CoreDump() {
 		res += " (core dumped)"
 	}
 	return res

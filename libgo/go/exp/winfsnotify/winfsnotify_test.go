@@ -7,6 +7,7 @@
 package winfsnotify
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -115,7 +116,13 @@ func TestNotifyClose(t *testing.T) {
 		t.Fatal("double Close() test failed: second Close() call didn't return")
 	}
 
-	err := watcher.Watch("_test")
+	dir, err := ioutil.TempDir("", "wininotify")
+	if err != nil {
+		t.Fatalf("TempDir failed: %s", err)
+	}
+	defer os.RemoveAll(dir)
+
+	err = watcher.Watch(dir)
 	if err == nil {
 		t.Fatal("expected error on Watch() after Close(), got nil")
 	}

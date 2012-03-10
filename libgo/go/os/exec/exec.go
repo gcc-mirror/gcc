@@ -68,7 +68,7 @@ type Cmd struct {
 	// new process. It does not include standard input, standard output, or
 	// standard error. If non-nil, entry i becomes file descriptor 3+i.
 	//
-	// BUG: on OS X 10.6, child processes may sometimes inherit extra fds.
+	// BUG: on OS X 10.6, child processes may sometimes inherit unwanted fds.
 	// http://golang.org/issue/2603
 	ExtraFiles []*os.File
 
@@ -78,6 +78,10 @@ type Cmd struct {
 
 	// Process is the underlying process, once started.
 	Process *os.Process
+
+	// ProcessState contains information about an exited process,
+	// available after a call to Wait or Run.
+	ProcessState *os.ProcessState
 
 	err             error // last error (from LookPath, stdin, stdout, stderr)
 	finished        bool  // when Wait was called
@@ -262,11 +266,11 @@ func (c *Cmd) Start() error {
 
 // An ExitError reports an unsuccessful exit by a command.
 type ExitError struct {
-	*os.Waitmsg
+	*os.ProcessState
 }
 
 func (e *ExitError) Error() string {
-	return e.Waitmsg.String()
+	return e.ProcessState.String()
 }
 
 // Wait waits for the command to exit.
@@ -287,7 +291,8 @@ func (c *Cmd) Wait() error {
 		return errors.New("exec: Wait was already called")
 	}
 	c.finished = true
-	msg, err := c.Process.Wait(0)
+	state, err := c.Process.Wait()
+	c.ProcessState = state
 
 	var copyError error
 	for _ = range c.goroutine {
@@ -302,8 +307,8 @@ func (c *Cmd) Wait() error {
 
 	if err != nil {
 		return err
-	} else if !msg.Exited() || msg.ExitStatus() != 0 {
-		return &ExitError{msg}
+	} else if !state.Success() {
+		return &ExitError{state}
 	}
 
 	return copyError

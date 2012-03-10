@@ -152,7 +152,7 @@ func (d Weekday) String() string { return days[d] }
 // rely heavily on division and modulus by positive constants.  For
 // calendrical calculations we want these divisions to round down, even
 // for negative values, so that the remainder is always positive, but
-// Go's division (like most hardware divison instructions) rounds to
+// Go's division (like most hardware division instructions) rounds to
 // zero.  We can still do those computations and then adjust the result
 // for a negative numerator, but it's annoying to write the adjustment
 // over and over.  Instead, we can change to a different epoch so long
@@ -384,6 +384,15 @@ type Duration int64
 
 // Common durations.  There is no definition for units of Day or larger
 // to avoid confusion across daylight savings time zone transitions.
+//
+// To count the number of units in a Duration, divide:
+//	second := time.Second
+//	fmt.Print(int64(second/time.Millisecond)) // prints 1000
+//
+// To convert an integer number of units to a Duration, multiply:
+//	seconds := 10
+//	fmt.Print(time.Duration(seconds)*time.Second) // prints 10s
+//
 const (
 	Nanosecond  Duration = 1
 	Microsecond          = 1000 * Nanosecond
@@ -758,10 +767,6 @@ func (t Time) UnixNano() int64 {
 	return (t.sec+internalToUnix)*1e9 + int64(t.nsec)
 }
 
-type gobError string
-
-func (g gobError) Error() string { return string(g) }
-
 const timeGobVersion byte = 1
 
 // GobEncode implements the gob.GobEncoder interface.
@@ -841,46 +846,17 @@ func (t *Time) GobDecode(buf []byte) error {
 // MarshalJSON implements the json.Marshaler interface.
 // Time is formatted as RFC3339.
 func (t Time) MarshalJSON() ([]byte, error) {
-	yearInt := t.Year()
-	if yearInt < 0 || yearInt > 9999 {
+	if y := t.Year(); y < 0 || y >= 10000 {
 		return nil, errors.New("Time.MarshalJSON: year outside of range [0,9999]")
 	}
-
-	// We need a four-digit year, but Format produces variable-width years.
-	year := itoa(yearInt)
-	year = "0000"[:4-len(year)] + year
-
-	var formattedTime string
-	if t.nsec == 0 {
-		// RFC3339, no fractional second
-		formattedTime = t.Format("-01-02T15:04:05Z07:00")
-	} else {
-		// RFC3339 with fractional second
-		formattedTime = t.Format("-01-02T15:04:05.000000000Z07:00")
-
-		// Trim trailing zeroes from fractional second.
-		const nanoEnd = 24 // Index of last digit of fractional second
-		var i int
-		for i = nanoEnd; formattedTime[i] == '0'; i-- {
-			// Seek backwards until first significant digit is found.
-		}
-
-		formattedTime = formattedTime[:i+1] + formattedTime[nanoEnd+1:]
-	}
-
-	buf := make([]byte, 0, 1+len(year)+len(formattedTime)+1)
-	buf = append(buf, '"')
-	buf = append(buf, year...)
-	buf = append(buf, formattedTime...)
-	buf = append(buf, '"')
-	return buf, nil
+	return []byte(t.Format(`"` + RFC3339Nano + `"`)), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 // Time is expected in RFC3339 format.
 func (t *Time) UnmarshalJSON(data []byte) (err error) {
-	*t, err = Parse("\""+RFC3339+"\"", string(data))
 	// Fractional seconds are handled implicitly by Parse.
+	*t, err = Parse(`"`+RFC3339+`"`, string(data))
 	return
 }
 

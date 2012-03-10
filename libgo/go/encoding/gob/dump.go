@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build ignore
+
 package main
 
 // Need to compile package gob with debug.go to build this program.
+// See comments in debug.go for how to do this.
 
 import (
 	"encoding/gob"

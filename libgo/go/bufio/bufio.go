@@ -23,7 +23,6 @@ var (
 	ErrInvalidUnreadRune = errors.New("bufio: invalid use of UnreadRune")
 	ErrBufferFull        = errors.New("bufio: buffer full")
 	ErrNegativeCount     = errors.New("bufio: negative count")
-	errInternal          = errors.New("bufio: internal error")
 )
 
 // Buffered input.
@@ -106,9 +105,12 @@ func (b *Reader) Peek(n int) ([]byte, error) {
 	if m > n {
 		m = n
 	}
-	err := b.readErr()
-	if m < n && err == nil {
-		err = ErrBufferFull
+	var err error
+	if m < n {
+		err = b.readErr()
+		if err == nil {
+			err = ErrBufferFull
+		}
 	}
 	return b.buf[b.r : b.r+m], err
 }

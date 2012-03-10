@@ -9,16 +9,16 @@
 #include "go-type.h"
 #include "interface.h"
 
-/* Implement unsafe.NewArray.  */
+/* Implement unsafe_NewArray, called from the reflect package.  */
 
-void *NewArray (struct __go_empty_interface type, int n)
-  asm ("libgo_unsafe.unsafe.NewArray");
+void *unsafe_NewArray (struct __go_empty_interface type, int n)
+  asm ("libgo_reflect.reflect.unsafe_NewArray");
 
 /* The dynamic type of the argument will be a pointer to a type
    descriptor.  */
 
 void *
-NewArray (struct __go_empty_interface type, int n)
+unsafe_NewArray (struct __go_empty_interface type, int n)
 {
   const struct __go_type_descriptor *descriptor;
 

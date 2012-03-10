@@ -9,6 +9,7 @@ package net
 import (
 	"errors"
 	"os"
+	"syscall"
 	"time"
 )
 
@@ -20,17 +21,17 @@ type UDPConn struct {
 
 // SetDeadline implements the Conn SetDeadline method.
 func (c *UDPConn) SetDeadline(t time.Time) error {
-	return os.EPLAN9
+	return syscall.EPLAN9
 }
 
 // SetReadDeadline implements the Conn SetReadDeadline method.
 func (c *UDPConn) SetReadDeadline(t time.Time) error {
-	return os.EPLAN9
+	return syscall.EPLAN9
 }
 
 // SetWriteDeadline implements the Conn SetWriteDeadline method.
 func (c *UDPConn) SetWriteDeadline(t time.Time) error {
-	return os.EPLAN9
+	return syscall.EPLAN9
 }
 
 // UDP-specific methods.
@@ -43,7 +44,7 @@ func (c *UDPConn) SetWriteDeadline(t time.Time) error {
 // after a fixed time limit; see SetDeadline and SetReadDeadline.
 func (c *UDPConn) ReadFromUDP(b []byte) (n int, addr *UDPAddr, err error) {
 	if !c.ok() {
-		return 0, nil, os.EINVAL
+		return 0, nil, syscall.EINVAL
 	}
 	if c.data == nil {
 		c.data, err = os.OpenFile(c.dir+"/data", os.O_RDWR, 0)
@@ -69,7 +70,7 @@ func (c *UDPConn) ReadFromUDP(b []byte) (n int, addr *UDPAddr, err error) {
 // ReadFrom implements the PacketConn ReadFrom method.
 func (c *UDPConn) ReadFrom(b []byte) (n int, addr Addr, err error) {
 	if !c.ok() {
-		return 0, nil, os.EINVAL
+		return 0, nil, syscall.EINVAL
 	}
 	return c.ReadFromUDP(b)
 }
@@ -82,7 +83,7 @@ func (c *UDPConn) ReadFrom(b []byte) (n int, addr Addr, err error) {
 // On packet-oriented connections, write timeouts are rare.
 func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (n int, err error) {
 	if !c.ok() {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	if c.data == nil {
 		c.data, err = os.OpenFile(c.dir+"/data", os.O_RDWR, 0)
@@ -106,11 +107,11 @@ func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (n int, err error) {
 // WriteTo implements the PacketConn WriteTo method.
 func (c *UDPConn) WriteTo(b []byte, addr Addr) (n int, err error) {
 	if !c.ok() {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	a, ok := addr.(*UDPAddr)
 	if !ok {
-		return 0, &OpError{"write", c.dir, addr, os.EINVAL}
+		return 0, &OpError{"write", c.dir, addr, syscall.EINVAL}
 	}
 	return c.WriteToUDP(b, a)
 }
@@ -191,5 +192,5 @@ func ListenUDP(net string, laddr *UDPAddr) (c *UDPConn, err error) {
 // the interface to join.  ListenMulticastUDP uses default
 // multicast interface if ifi is nil.
 func ListenMulticastUDP(net string, ifi *Interface, gaddr *UDPAddr) (*UDPConn, error) {
-	return nil, os.EPLAN9
+	return nil, syscall.EPLAN9
 }

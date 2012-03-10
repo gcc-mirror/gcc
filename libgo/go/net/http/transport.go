@@ -76,7 +76,9 @@ type Transport struct {
 // ProxyFromEnvironment returns the URL of the proxy to use for a
 // given request, as indicated by the environment variables
 // $HTTP_PROXY and $NO_PROXY (or $http_proxy and $no_proxy).
-// Either URL or an error is returned.
+// An error is returned if the proxy environment is invalid.
+// A nil URL and nil error are returned if no proxy is defined in the
+// environment, or a proxy should not be used for the given request.
 func ProxyFromEnvironment(req *Request) (*url.URL, error) {
 	proxy := getenvEitherCase("HTTP_PROXY")
 	if proxy == "" {
@@ -85,15 +87,15 @@ func ProxyFromEnvironment(req *Request) (*url.URL, error) {
 	if !useProxy(canonicalAddr(req.URL)) {
 		return nil, nil
 	}
-	proxyURL, err := url.ParseRequest(proxy)
-	if err != nil {
-		return nil, errors.New("invalid proxy address")
-	}
-	if proxyURL.Host == "" {
-		proxyURL, err = url.ParseRequest("http://" + proxy)
-		if err != nil {
-			return nil, errors.New("invalid proxy address")
+	proxyURL, err := url.Parse(proxy)
+	if err != nil || proxyURL.Scheme == "" {
+		if u, err := url.Parse("http://" + proxy); err == nil {
+			proxyURL = u
+			err = nil
 		}
+	}
+	if err != nil {
+		return nil, fmt.Errorf("invalid proxy address %q: %v", proxy, err)
 	}
 	return proxyURL, nil
 }
@@ -235,15 +237,19 @@ func (cm *connectMethod) proxyAuth() string {
 	return ""
 }
 
-func (t *Transport) putIdleConn(pconn *persistConn) {
+// putIdleConn adds pconn to the list of idle persistent connections awaiting
+// a new request.
+// If pconn is no longer needed or not in a good state, putIdleConn
+// returns false.
+func (t *Transport) putIdleConn(pconn *persistConn) bool {
 	t.lk.Lock()
 	defer t.lk.Unlock()
 	if t.DisableKeepAlives || t.MaxIdleConnsPerHost < 0 {
 		pconn.close()
-		return
+		return false
 	}
 	if pconn.isBroken() {
-		return
+		return false
 	}
 	key := pconn.cacheKey
 	max := t.MaxIdleConnsPerHost
@@ -252,9 +258,10 @@ func (t *Transport) putIdleConn(pconn *persistConn) {
 	}
 	if len(t.idleConn[key]) >= max {
 		pconn.close()
-		return
+		return false
 	}
 	t.idleConn[key] = append(t.idleConn[key], pconn)
+	return true
 }
 
 func (t *Transport) getIdleConn(cm *connectMethod) (pconn *persistConn) {
@@ -565,7 +572,9 @@ func (pc *persistConn) readLoop() {
 				lastbody = resp.Body
 				waitForBodyRead = make(chan bool)
 				resp.Body.(*bodyEOFSignal).fn = func() {
-					pc.t.putIdleConn(pc)
+					if !pc.t.putIdleConn(pc) {
+						alive = false
+					}
 					waitForBodyRead <- true
 				}
 			} else {
@@ -578,7 +587,9 @@ func (pc *persistConn) readLoop() {
 				// read it (even though it'll just be 0, EOF).
 				lastbody = nil
 
-				pc.t.putIdleConn(pc)
+				if !pc.t.putIdleConn(pc) {
+					alive = false
+				}
 			}
 		}
 

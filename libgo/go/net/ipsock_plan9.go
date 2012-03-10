@@ -10,6 +10,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"syscall"
 	"time"
 )
 
@@ -83,7 +84,7 @@ func (c *plan9Conn) ok() bool { return c != nil && c.ctl != nil }
 // Read implements the Conn Read method.
 func (c *plan9Conn) Read(b []byte) (n int, err error) {
 	if !c.ok() {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	if c.data == nil {
 		c.data, err = os.OpenFile(c.dir+"/data", os.O_RDWR, 0)
@@ -102,7 +103,7 @@ func (c *plan9Conn) Read(b []byte) (n int, err error) {
 // Write implements the Conn Write method.
 func (c *plan9Conn) Write(b []byte) (n int, err error) {
 	if !c.ok() {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	if c.data == nil {
 		c.data, err = os.OpenFile(c.dir+"/data", os.O_RDWR, 0)
@@ -116,7 +117,7 @@ func (c *plan9Conn) Write(b []byte) (n int, err error) {
 // Close closes the connection.
 func (c *plan9Conn) Close() error {
 	if !c.ok() {
-		return os.EINVAL
+		return syscall.EINVAL
 	}
 	err := c.ctl.Close()
 	if err != nil {
@@ -148,17 +149,17 @@ func (c *plan9Conn) RemoteAddr() Addr {
 
 // SetDeadline implements the Conn SetDeadline method.
 func (c *plan9Conn) SetDeadline(t time.Time) error {
-	return os.EPLAN9
+	return syscall.EPLAN9
 }
 
 // SetReadDeadline implements the Conn SetReadDeadline method.
 func (c *plan9Conn) SetReadDeadline(t time.Time) error {
-	return os.EPLAN9
+	return syscall.EPLAN9
 }
 
 // SetWriteDeadline implements the Conn SetWriteDeadline method.
 func (c *plan9Conn) SetWriteDeadline(t time.Time) error {
-	return os.EPLAN9
+	return syscall.EPLAN9
 }
 
 func startPlan9(net string, addr Addr) (ctl *os.File, dest, proto, name string, err error) {
@@ -280,7 +281,7 @@ func (l *plan9Listener) Accept() (c Conn, err error) {
 
 func (l *plan9Listener) Close() error {
 	if l == nil || l.ctl == nil {
-		return os.EINVAL
+		return syscall.EINVAL
 	}
 	return l.ctl.Close()
 }

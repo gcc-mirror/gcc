@@ -11,20 +11,20 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
+	"go/build"
 	"go/token"
 	"io"
 	"math/big"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strconv"
+	"strings"
 	"text/scanner"
 )
 
 const trace = false // set to true for debugging
 
 var (
-	pkgRoot = filepath.Join(runtime.GOROOT(), "pkg", runtime.GOOS+"_"+runtime.GOARCH)
 	pkgExts = [...]string{".a", ".5", ".6", ".8"}
 )
 
@@ -39,8 +39,15 @@ func findPkg(path string) (filename, id string) {
 	var noext string
 	switch path[0] {
 	default:
-		// "x" -> "$GOROOT/pkg/$GOOS_$GOARCH/x.ext", "x"
-		noext = filepath.Join(pkgRoot, path)
+		// "x" -> "$GOPATH/pkg/$GOOS_$GOARCH/x.ext", "x"
+		bp, _ := build.Import(path, "", build.FindOnly)
+		if bp.PkgObj == "" {
+			return
+		}
+		noext = bp.PkgObj
+		if strings.HasSuffix(noext, ".a") {
+			noext = noext[:len(noext)-2]
+		}
 
 	case '.':
 		// "./x" -> "/this/directory/x.ext", "/this/directory/x"
@@ -739,7 +746,7 @@ func (p *gcParser) parseVarDecl() {
 }
 
 // FuncBody = "{" ... "}" .
-// 
+//
 func (p *gcParser) parseFuncBody() {
 	p.expect('{')
 	for i := 1; i > 0; p.next() {

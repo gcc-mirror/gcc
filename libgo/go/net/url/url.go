@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package URL parses URLs and implements query escaping.
+// Package url parses URLs and implements query escaping.
 // See RFC 3986.
 package url
 
@@ -321,19 +321,28 @@ func split(s string, c byte, cutc bool) (string, string) {
 }
 
 // Parse parses rawurl into a URL structure.
-// The string rawurl is assumed not to have a #fragment suffix.
-// (Web browsers strip #fragment before sending the URL to a web server.)
 // The rawurl may be relative or absolute.
 func Parse(rawurl string) (url *URL, err error) {
-	return parse(rawurl, false)
+	// Cut off #frag
+	u, frag := split(rawurl, '#', true)
+	if url, err = parse(u, false); err != nil {
+		return nil, err
+	}
+	if frag == "" {
+		return url, nil
+	}
+	if url.Fragment, err = unescape(frag, encodeFragment); err != nil {
+		return nil, &Error{"parse", rawurl, err}
+	}
+	return url, nil
 }
 
-// ParseRequest parses rawurl into a URL structure.  It assumes that
-// rawurl was received from an HTTP request, so the rawurl is interpreted
+// ParseRequestURI parses rawurl into a URL structure.  It assumes that
+// rawurl was received in an HTTP request, so the rawurl is interpreted
 // only as an absolute URI or an absolute path.
 // The string rawurl is assumed not to have a #fragment suffix.
 // (Web browsers strip #fragment before sending the URL to a web server.)
-func ParseRequest(rawurl string) (url *URL, err error) {
+func ParseRequestURI(rawurl string) (url *URL, err error) {
 	return parse(rawurl, true)
 }
 
@@ -413,22 +422,6 @@ func parseAuthority(authority string) (user *Userinfo, host string, err error) {
 		user = UserPassword(username, password)
 	}
 	return
-}
-
-// ParseWithReference is like Parse but allows a trailing #fragment.
-func ParseWithReference(rawurlref string) (url *URL, err error) {
-	// Cut off #frag
-	rawurl, frag := split(rawurlref, '#', true)
-	if url, err = Parse(rawurl); err != nil {
-		return nil, err
-	}
-	if frag == "" {
-		return url, nil
-	}
-	if url.Fragment, err = unescape(frag, encodeFragment); err != nil {
-		return nil, &Error{"parse", rawurlref, err}
-	}
-	return url, nil
 }
 
 // String reassembles the URL into a valid URL string.
@@ -589,15 +582,15 @@ func (u *URL) IsAbs() bool {
 	return u.Scheme != ""
 }
 
-// Parse parses a URL in the context of a base URL.  The URL in ref
+// Parse parses a URL in the context of the receiver.  The provided URL
 // may be relative or absolute.  Parse returns nil, err on parse
 // failure, otherwise its return value is the same as ResolveReference.
-func (base *URL) Parse(ref string) (*URL, error) {
+func (u *URL) Parse(ref string) (*URL, error) {
 	refurl, err := Parse(ref)
 	if err != nil {
 		return nil, err
 	}
-	return base.ResolveReference(refurl), nil
+	return u.ResolveReference(refurl), nil
 }
 
 // ResolveReference resolves a URI reference to an absolute URI from
@@ -606,13 +599,13 @@ func (base *URL) Parse(ref string) (*URL, error) {
 // URL instance, even if the returned URL is identical to either the
 // base or reference. If ref is an absolute URL, then ResolveReference
 // ignores base and returns a copy of ref.
-func (base *URL) ResolveReference(ref *URL) *URL {
+func (u *URL) ResolveReference(ref *URL) *URL {
 	if ref.IsAbs() {
 		url := *ref
 		return &url
 	}
 	// relativeURI = ( net_path | abs_path | rel_path ) [ "?" query ]
-	url := *base
+	url := *u
 	url.RawQuery = ref.RawQuery
 	url.Fragment = ref.Fragment
 	if ref.Opaque != "" {
@@ -632,7 +625,7 @@ func (base *URL) ResolveReference(ref *URL) *URL {
 		url.Path = ref.Path
 	} else {
 		// The "rel_path" case.
-		path := resolvePath(base.Path, ref.Path)
+		path := resolvePath(u.Path, ref.Path)
 		if !strings.HasPrefix(path, "/") {
 			path = "/" + path
 		}

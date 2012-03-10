@@ -7,20 +7,19 @@ package norm
 import "unicode/utf8"
 
 type input interface {
-	skipASCII(p int) int
+	skipASCII(p, max int) int
 	skipNonStarter(p int) int
 	appendSlice(buf []byte, s, e int) []byte
 	copySlice(buf []byte, s, e int)
-	charinfo(p int) (uint16, int)
-	decomposeNFC(p int) uint16
-	decomposeNFKC(p int) uint16
+	charinfoNFC(p int) (uint16, int)
+	charinfoNFKC(p int) (uint16, int)
 	hangul(p int) rune
 }
 
 type inputString string
 
-func (s inputString) skipASCII(p int) int {
-	for ; p < len(s) && s[p] < utf8.RuneSelf; p++ {
+func (s inputString) skipASCII(p, max int) int {
+	for ; p < max && s[p] < utf8.RuneSelf; p++ {
 	}
 	return p
 }
@@ -42,16 +41,12 @@ func (s inputString) copySlice(buf []byte, b, e int) {
 	copy(buf, s[b:e])
 }
 
-func (s inputString) charinfo(p int) (uint16, int) {
-	return charInfoTrie.lookupString(string(s[p:]))
+func (s inputString) charinfoNFC(p int) (uint16, int) {
+	return nfcTrie.lookupString(string(s[p:]))
 }
 
-func (s inputString) decomposeNFC(p int) uint16 {
-	return nfcDecompTrie.lookupStringUnsafe(string(s[p:]))
-}
-
-func (s inputString) decomposeNFKC(p int) uint16 {
-	return nfkcDecompTrie.lookupStringUnsafe(string(s[p:]))
+func (s inputString) charinfoNFKC(p int) (uint16, int) {
+	return nfkcTrie.lookupString(string(s[p:]))
 }
 
 func (s inputString) hangul(p int) rune {
@@ -64,8 +59,8 @@ func (s inputString) hangul(p int) rune {
 
 type inputBytes []byte
 
-func (s inputBytes) skipASCII(p int) int {
-	for ; p < len(s) && s[p] < utf8.RuneSelf; p++ {
+func (s inputBytes) skipASCII(p, max int) int {
+	for ; p < max && s[p] < utf8.RuneSelf; p++ {
 	}
 	return p
 }
@@ -84,16 +79,12 @@ func (s inputBytes) copySlice(buf []byte, b, e int) {
 	copy(buf, s[b:e])
 }
 
-func (s inputBytes) charinfo(p int) (uint16, int) {
-	return charInfoTrie.lookup(s[p:])
+func (s inputBytes) charinfoNFC(p int) (uint16, int) {
+	return nfcTrie.lookup(s[p:])
 }
 
-func (s inputBytes) decomposeNFC(p int) uint16 {
-	return nfcDecompTrie.lookupUnsafe(s[p:])
-}
-
-func (s inputBytes) decomposeNFKC(p int) uint16 {
-	return nfkcDecompTrie.lookupUnsafe(s[p:])
+func (s inputBytes) charinfoNFKC(p int) (uint16, int) {
+	return nfkcTrie.lookup(s[p:])
 }
 
 func (s inputBytes) hangul(p int) rune {

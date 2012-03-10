@@ -50,6 +50,9 @@ func TestYCbCr(t *testing.T) {
 				testYCbCr(t, r, subsampleRatio, delta)
 			}
 		}
+		if testing.Short() {
+			break
+		}
 	}
 }
 

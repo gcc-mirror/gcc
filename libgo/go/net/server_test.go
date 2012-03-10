@@ -83,7 +83,7 @@ func connect(t *testing.T, network, addr string, isEmpty bool) {
 	}
 
 	// Send explicit ending for unixpacket.
-	// Older Linux kernels do stop reads on close.
+	// Older Linux kernels do not stop reads on close.
 	if network == "unixpacket" {
 		fd.Write([]byte("END"))
 	}
@@ -95,7 +95,7 @@ func doTest(t *testing.T, network, listenaddr, dialaddr string) {
 	t.Logf("Test %q %q %q", network, listenaddr, dialaddr)
 	switch listenaddr {
 	case "", "0.0.0.0", "[::]", "[::ffff:0.0.0.0]":
-		if testing.Short() || avoidMacFirewall {
+		if testing.Short() || !*testExternal {
 			t.Logf("skip wildcard listen during short test")
 			return
 		}
@@ -115,16 +115,13 @@ func doTest(t *testing.T, network, listenaddr, dialaddr string) {
 }
 
 func TestTCPServer(t *testing.T) {
-	if runtime.GOOS != "openbsd" {
-		doTest(t, "tcp", "", "127.0.0.1")
-	}
+	doTest(t, "tcp", "", "127.0.0.1")
 	doTest(t, "tcp", "0.0.0.0", "127.0.0.1")
 	doTest(t, "tcp", "127.0.0.1", "127.0.0.1")
 	doTest(t, "tcp4", "", "127.0.0.1")
 	doTest(t, "tcp4", "0.0.0.0", "127.0.0.1")
 	doTest(t, "tcp4", "127.0.0.1", "127.0.0.1")
 	if supportsIPv6 {
-		doTest(t, "tcp", "", "[::1]")
 		doTest(t, "tcp", "[::]", "[::1]")
 		doTest(t, "tcp", "[::1]", "[::1]")
 		doTest(t, "tcp6", "", "[::1]")

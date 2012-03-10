@@ -356,7 +356,7 @@ func TestWalk(t *testing.T) {
 
 	// Test permission errors.  Only possible if we're not root
 	// and only on some file systems (AFS, FAT).  To avoid errors during
-	// all.bash on those file systems, skip during gotest -short.
+	// all.bash on those file systems, skip during go test -short.
 	if os.Getuid() > 0 && !testing.Short() {
 		// introduce 2 errors: chmod top-level directories to 0
 		os.Chmod(filepath.Join(tree.name, tree.entries[1].name), 0)
@@ -558,6 +558,7 @@ var EvalSymlinksTestDirs = []EvalSymlinksTest{
 	{"test/dir/link3", "../../"},
 	{"test/link1", "../test"},
 	{"test/link2", "dir"},
+	{"test/linkabs", "/"},
 }
 
 var EvalSymlinksTests = []EvalSymlinksTest{
@@ -570,6 +571,7 @@ var EvalSymlinksTests = []EvalSymlinksTest{
 	{"test/link2/..", "test"},
 	{"test/dir/link3", "."},
 	{"test/link2/link3/test", "test"},
+	{"test/linkabs", "/"},
 }
 
 var EvalSymlinksAbsWindowsTests = []EvalSymlinksTest{
@@ -628,6 +630,9 @@ func TestEvalSymlinks(t *testing.T) {
 	for _, d := range tests {
 		path := simpleJoin(tmpDir, d.path)
 		dest := simpleJoin(tmpDir, d.dest)
+		if filepath.IsAbs(d.dest) {
+			dest = d.dest
+		}
 		if p, err := filepath.EvalSymlinks(path); err != nil {
 			t.Errorf("EvalSymlinks(%q) error: %v", d.path, err)
 		} else if filepath.Clean(p) != filepath.Clean(dest) {

@@ -163,3 +163,15 @@ func Mmap(fd int, offset int64, length int, prot int, flags int) (data []byte, e
 func Munmap(b []byte) (err error) {
 	return mapper.Munmap(b)
 }
+
+// A Signal is a number describing a process signal.
+// It implements the os.Signal interface.
+type Signal int
+
+func (s Signal) Signal() {}
+
+func Signame(s Signal) string
+
+func (s Signal) String() string {
+	return Signame(s)
+}

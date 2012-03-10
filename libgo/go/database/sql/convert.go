@@ -17,8 +17,8 @@ import (
 // subsetTypeArgs takes a slice of arguments from callers of the sql
 // package and converts them into a slice of the driver package's
 // "subset types".
-func subsetTypeArgs(args []interface{}) ([]interface{}, error) {
-	out := make([]interface{}, len(args))
+func subsetTypeArgs(args []interface{}) ([]driver.Value, error) {
+	out := make([]driver.Value, len(args))
 	for n, arg := range args {
 		var err error
 		out[n], err = driver.DefaultParameterConverter.ConvertValue(arg)
@@ -90,8 +90,8 @@ func convertAssign(dest, src interface{}) error {
 		return nil
 	}
 
-	if scanner, ok := dest.(ScannerInto); ok {
-		return scanner.ScanInto(src)
+	if scanner, ok := dest.(Scanner); ok {
+		return scanner.Scan(src)
 	}
 
 	dpv := reflect.ValueOf(dest)
@@ -110,6 +110,14 @@ func convertAssign(dest, src interface{}) error {
 	}
 
 	switch dv.Kind() {
+	case reflect.Ptr:
+		if src == nil {
+			dv.Set(reflect.Zero(dv.Type()))
+			return nil
+		} else {
+			dv.Set(reflect.New(dv.Type().Elem()))
+			return convertAssign(dv.Interface(), src)
+		}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		s := asString(src)
 		i64, err := strconv.ParseInt(s, 10, dv.Type().Bits())

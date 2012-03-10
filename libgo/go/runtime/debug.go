@@ -26,23 +26,11 @@ func GOMAXPROCS(n int) int
 // NumCPU returns the number of logical CPUs on the local machine.
 func NumCPU() int
 
-// Cgocalls returns the number of cgo calls made by the current process.
-func Cgocalls() int64
+// NumCgoCall returns the number of cgo calls made by the current process.
+func NumCgoCall() int64
 
-// Goroutines returns the number of goroutines that currently exist.
-func Goroutines() int32
-
-// Alloc allocates a block of the given size.
-// FOR TESTING AND DEBUGGING ONLY.
-func Alloc(uintptr) *byte
-
-// Free frees the block starting at the given pointer.
-// FOR TESTING AND DEBUGGING ONLY.
-func Free(*byte)
-
-// Lookup returns the base and size of the block containing the given pointer.
-// FOR TESTING AND DEBUGGING ONLY.
-func Lookup(*byte) (*byte, uintptr)
+// NumGoroutine returns the number of goroutines that currently exist.
+func NumGoroutine() int
 
 // MemProfileRate controls the fraction of memory allocations
 // that are recorded and reported in the memory profile.
@@ -95,10 +83,43 @@ func (r *MemProfileRecord) Stack() []uintptr {
 // where r.AllocBytes > 0 but r.AllocBytes == r.FreeBytes.
 // These are sites where memory was allocated, but it has all
 // been released back to the runtime.
+//
 // Most clients should use the runtime/pprof package or
 // the testing package's -test.memprofile flag instead
 // of calling MemProfile directly.
 func MemProfile(p []MemProfileRecord, inuseZero bool) (n int, ok bool)
+
+// A StackRecord describes a single execution stack.
+type StackRecord struct {
+	Stack0 [32]uintptr // stack trace for this record; ends at first 0 entry
+}
+
+// Stack returns the stack trace associated with the record,
+// a prefix of r.Stack0.
+func (r *StackRecord) Stack() []uintptr {
+	for i, v := range r.Stack0 {
+		if v == 0 {
+			return r.Stack0[0:i]
+		}
+	}
+	return r.Stack0[0:]
+}
+
+// ThreadCreateProfile returns n, the number of records in the thread creation profile.
+// If len(p) >= n, ThreadCreateProfile copies the profile into p and returns n, true.
+// If len(p) < n, ThreadCreateProfile does not change p and returns n, false.
+//
+// Most clients should use the runtime/pprof package instead
+// of calling ThreadCreateProfile directly.
+func ThreadCreateProfile(p []StackRecord) (n int, ok bool)
+
+// GoroutineProfile returns n, the number of records in the active goroutine stack profile.
+// If len(p) >= n, GoroutineProfile copies the profile into p and returns n, true.
+// If len(p) < n, GoroutineProfile does not change p and returns n, false.
+//
+// Most clients should use the runtime/pprof package instead
+// of calling GoroutineProfile directly.
+func GoroutineProfile(p []StackRecord) (n int, ok bool)
 
 // CPUProfile returns the next chunk of binary CPU profiling stack trace data,
 // blocking until data is available.  If profiling is turned off and all the profile
@@ -116,3 +137,9 @@ func CPUProfile() []byte
 // the testing package's -test.cpuprofile flag instead of calling
 // SetCPUProfileRate directly.
 func SetCPUProfileRate(hz int)
+
+// Stack formats a stack trace of the calling goroutine into buf
+// and returns the number of bytes written to buf.
+// If all is true, Stack formats stack traces of all other goroutines
+// into buf after the trace for the current goroutine.
+func Stack(buf []byte, all bool) int

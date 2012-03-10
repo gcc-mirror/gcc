@@ -193,7 +193,7 @@ func TestClone(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	clone := root.Clone()
+	clone := Must(root.Clone())
 	// Add variants to both.
 	_, err = root.Parse(cloneText3)
 	if err != nil {
@@ -264,6 +264,12 @@ func TestRedefinition(t *testing.T) {
 	var err error
 	if tmpl, err = New("tmpl1").Parse(`{{define "test"}}foo{{end}}`); err != nil {
 		t.Fatalf("parse 1: %v", err)
+	}
+	if _, err = tmpl.Parse(`{{define "test"}}bar{{end}}`); err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "redefinition") {
+		t.Fatalf("expected redefinition error; got %v", err)
 	}
 	if _, err = tmpl.New("tmpl2").Parse(`{{define "test"}}bar{{end}}`); err == nil {
 		t.Fatal("expected error")

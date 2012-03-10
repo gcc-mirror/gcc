@@ -6,7 +6,9 @@ package types
 
 import (
 	"go/ast"
+	"go/build"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -31,7 +33,7 @@ func init() {
 		gcPath = gcName
 		return
 	}
-	gcPath = filepath.Join(runtime.GOROOT(), "/bin/tool/", gcName)
+	gcPath = filepath.Join(build.ToolDir, gcName)
 }
 
 func compile(t *testing.T, dirname, filename string) {
@@ -61,7 +63,7 @@ func testPath(t *testing.T, path string) bool {
 const maxTime = 3 * time.Second
 
 func testDir(t *testing.T, dir string, endTime time.Time) (nimports int) {
-	dirname := filepath.Join(pkgRoot, dir)
+	dirname := filepath.Join(runtime.GOROOT(), "pkg", runtime.GOOS+"_"+runtime.GOARCH, dir)
 	list, err := ioutil.ReadDir(dirname)
 	if err != nil {
 		t.Errorf("testDir(%s): %s", dirname, err)
@@ -90,6 +92,13 @@ func testDir(t *testing.T, dir string, endTime time.Time) (nimports int) {
 }
 
 func TestGcImport(t *testing.T) {
+	// On cross-compile builds, the path will not exist.
+	// Need to use GOHOSTOS, which is not available.
+	if _, err := os.Stat(gcPath); err != nil {
+		t.Logf("skipping test: %v", err)
+		return
+	}
+
 	compile(t, "testdata", "exports.go")
 
 	nimports := 0

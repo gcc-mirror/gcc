@@ -159,7 +159,11 @@ runtime_notesleep(Note *n)
 		return;
 	}
 	// Queued.  Sleep.
+	if(m->profilehz > 0)
+		runtime_setprof(false);
 	runtime_semasleep(-1);
+	if(m->profilehz > 0)
+		runtime_setprof(true);
 }
 
 void
@@ -185,12 +189,16 @@ runtime_notetsleep(Note *n, int64 ns)
 		return;
 	}
 
+	if(m->profilehz > 0)
+		runtime_setprof(false);
 	deadline = runtime_nanotime() + ns;
 	for(;;) {
 		// Registered.  Sleep.
 		if(runtime_semasleep(ns) >= 0) {
 			// Acquired semaphore, semawakeup unregistered us.
 			// Done.
+			if(m->profilehz > 0)
+				runtime_setprof(true);
 			return;
 		}
 
@@ -202,6 +210,9 @@ runtime_notetsleep(Note *n, int64 ns)
 		// Deadline hasn't arrived.  Keep sleeping.
 		ns = deadline - now;
 	}
+
+	if(m->profilehz > 0)
+		runtime_setprof(true);
 
 	// Deadline arrived.  Still registered.  Semaphore not acquired.
 	// Want to give up and return, but have to unregister first,

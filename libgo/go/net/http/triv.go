@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build ignore
+
 package main
 
 import (
@@ -106,7 +108,6 @@ func DateServer(rw http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(rw, "fork/exec: %s\n", err)
 		return
 	}
-	defer p.Release()
 	io.Copy(rw, r)
 	wait, err := p.Wait(0)
 	if err != nil {
