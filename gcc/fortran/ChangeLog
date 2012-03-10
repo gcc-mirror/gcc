@@ -1,3 +1,9 @@
+2012-03-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52469
+	* trans-types.c (gfc_get_function_type): Handle backend_decl
+	of a procedure pointer.
+
 2012-02-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52386
