@@ -1,10 +1,10 @@
 /* Implementation of the RANDOM intrinsics
-   Copyright 2002, 2004, 2005, 2006, 2007, 2009, 2010
+   Copyright 2002, 2004, 2005, 2006, 2007, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Lars Segerlund <seger@linuxmail.org>
    and Steve Kargl.
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -368,7 +368,7 @@ arandom_r4 (gfc_array_r4 *x)
   GFC_UINTEGER_4 kiss;
   int n;
 
-  dest = x->data;
+  dest = x->base_addr;
 
   dim = GFC_DESCRIPTOR_RANK (x);
 
@@ -435,7 +435,7 @@ arandom_r8 (gfc_array_r8 *x)
   GFC_UINTEGER_8 kiss;
   int n;
 
-  dest = x->data;
+  dest = x->base_addr;
 
   dim = GFC_DESCRIPTOR_RANK (x);
 
@@ -505,7 +505,7 @@ arandom_r10 (gfc_array_r10 *x)
   GFC_UINTEGER_8 kiss;
   int n;
 
-  dest = x->data;
+  dest = x->base_addr;
 
   dim = GFC_DESCRIPTOR_RANK (x);
 
@@ -577,7 +577,7 @@ arandom_r16 (gfc_array_r16 *x)
   GFC_UINTEGER_8 kiss1, kiss2;
   int n;
 
-  dest = x->data;
+  dest = x->base_addr;
 
   dim = GFC_DESCRIPTOR_RANK (x);
 
@@ -697,7 +697,7 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
       /*  We copy the seed given by the user.  */
       for (i = 0; i < kiss_size; i++)
 	memcpy (seed + i * sizeof(GFC_UINTEGER_4),
-		&(put->data[(kiss_size - 1 - i) * GFC_DESCRIPTOR_STRIDE(put,0)]),
+		&(put->base_addr[(kiss_size - 1 - i) * GFC_DESCRIPTOR_STRIDE(put,0)]),
 		sizeof(GFC_UINTEGER_4));
 
       /* We put it after scrambling the bytes, to paper around users who
@@ -721,7 +721,7 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 
       /*  Then copy it back to the user variable.  */
       for (i = 0; i < kiss_size; i++)
-	memcpy (&(get->data[(kiss_size - 1 - i) * GFC_DESCRIPTOR_STRIDE(get,0)]),
+	memcpy (&(get->base_addr[(kiss_size - 1 - i) * GFC_DESCRIPTOR_STRIDE(get,0)]),
                seed + i * sizeof(GFC_UINTEGER_4),
                sizeof(GFC_UINTEGER_4));
     }
@@ -763,7 +763,7 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
 
       /*  This code now should do correct strides.  */
       for (i = 0; i < kiss_size / 2; i++)
-	memcpy (&kiss_seed[2*i], &(put->data[i * GFC_DESCRIPTOR_STRIDE(put,0)]),
+	memcpy (&kiss_seed[2*i], &(put->base_addr[i * GFC_DESCRIPTOR_STRIDE(put,0)]),
 		sizeof (GFC_UINTEGER_8));
     }
 
@@ -780,7 +780,7 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
 
       /*  This code now should do correct strides.  */
       for (i = 0; i < kiss_size / 2; i++)
-	memcpy (&(get->data[i * GFC_DESCRIPTOR_STRIDE(get,0)]), &kiss_seed[2*i],
+	memcpy (&(get->base_addr[i * GFC_DESCRIPTOR_STRIDE(get,0)]), &kiss_seed[2*i],
 		sizeof (GFC_UINTEGER_8));
     }
 

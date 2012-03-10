@@ -1,8 +1,8 @@
 `/* Implementation of the EOSHIFT intrinsic
-   Copyright 2002, 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2007, 2009, 2012 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -86,11 +86,11 @@ eoshift3 (gfc_array_char * const restrict ret,
   else
     which = 0;
 
-  if (ret->data == NULL)
+  if (ret->base_addr == NULL)
     {
       int i;
 
-      ret->data = internal_malloc_size (size * arraysize);
+      ret->base_addr = internal_malloc_size (size * arraysize);
       ret->offset = 0;
       ret->dtype = array->dtype;
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
@@ -109,7 +109,7 @@ eoshift3 (gfc_array_char * const restrict ret,
 
         }
       /* internal_malloc_size allocates a single byte for zero size.  */
-      ret->data = internal_malloc_size (size * arraysize);
+      ret->base_addr = internal_malloc_size (size * arraysize);
 
     }
   else if (unlikely (compile_options.bounds_check))
@@ -171,11 +171,11 @@ eoshift3 (gfc_array_char * const restrict ret,
   sstride0 = sstride[0];
   hstride0 = hstride[0];
   bstride0 = bstride[0];
-  rptr = ret->data;
-  sptr = array->data;
-  hptr = h->data;
+  rptr = ret->base_addr;
+  sptr = array->base_addr;
+  hptr = h->base_addr;
   if (bound)
-    bptr = bound->data;
+    bptr = bound->base_addr;
   else
     bptr = NULL;
 

@@ -1,8 +1,8 @@
 /* Implementation of the TRANSPOSE intrinsic
-   Copyright 2003, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2003, 2005, 2006, 2007, 2009, 2012 Free Software Foundation, Inc.
    Contributed by Tobias Schlüter
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -49,7 +49,7 @@ transpose_c16 (gfc_array_c16 * const restrict ret,
 
   assert (GFC_DESCRIPTOR_RANK (source) == 2);
 
-  if (ret->data == NULL)
+  if (ret->base_addr == NULL)
     {
       assert (GFC_DESCRIPTOR_RANK (ret) == 2);
       assert (ret->dtype == source->dtype);
@@ -60,7 +60,7 @@ transpose_c16 (gfc_array_c16 * const restrict ret,
       GFC_DIMENSION_SET(ret->dim[1], 0, GFC_DESCRIPTOR_EXTENT(source,0) - 1,
 			GFC_DESCRIPTOR_EXTENT(source, 1));
 
-      ret->data = internal_malloc_size (sizeof (GFC_COMPLEX_16) * size0 ((array_t *) ret));
+      ret->base_addr = internal_malloc_size (sizeof (GFC_COMPLEX_16) * size0 ((array_t *) ret));
       ret->offset = 0;
     } else if (unlikely (compile_options.bounds_check))
     {
@@ -94,8 +94,8 @@ transpose_c16 (gfc_array_c16 * const restrict ret,
   rxstride = GFC_DESCRIPTOR_STRIDE(ret,0);
   rystride = GFC_DESCRIPTOR_STRIDE(ret,1);
 
-  rptr = ret->data;
-  sptr = source->data;
+  rptr = ret->base_addr;
+  sptr = source->base_addr;
 
   for (y=0; y < ycount; y++)
     {

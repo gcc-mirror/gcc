@@ -1,6 +1,6 @@
 /* Implementation of the ETIME intrinsic.
-   Copyright (C) 2004, 2005, 2006, 2007, 2009, 2011 Free Software
-   Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2009, 2011, 2012
+   Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargls@comcast.net>.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -52,7 +52,7 @@ etime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
       tt = (GFC_REAL_4)-1.0;
     }
 
-  tp = t->data;
+  tp = t->base_addr;
 
   *tp = tu;
   tp += GFC_DESCRIPTOR_STRIDE(t,0);

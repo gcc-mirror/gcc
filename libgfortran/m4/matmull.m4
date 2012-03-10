@@ -1,8 +1,8 @@
 `/* Implementation of the MATMUL intrinsic
-   Copyright 2002, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2006, 2007, 2009, 2012 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -66,7 +66,7 @@ matmul_'rtype_code` ('rtype` * const restrict retarray,
   assert (GFC_DESCRIPTOR_RANK (a) == 2
           || GFC_DESCRIPTOR_RANK (b) == 2);
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       if (GFC_DESCRIPTOR_RANK (a) == 1)
         {
@@ -88,7 +88,7 @@ matmul_'rtype_code` ('rtype` * const restrict retarray,
 			    GFC_DESCRIPTOR_EXTENT(retarray,0));
         }
           
-      retarray->data
+      retarray->base_addr
 	= internal_malloc_size (sizeof ('rtype_name`) * size0 ((array_t *) retarray));
       retarray->offset = 0;
     }
@@ -134,7 +134,7 @@ matmul_'rtype_code` ('rtype` * const restrict retarray,
 	  }
       }
 
-  abase = a->data;
+  abase = a->base_addr;
   a_kind = GFC_DESCRIPTOR_SIZE (a);
 
   if (a_kind == 1 || a_kind == 2 || a_kind == 4 || a_kind == 8
@@ -146,7 +146,7 @@ matmul_'rtype_code` ('rtype` * const restrict retarray,
   else
     internal_error (NULL, "Funny sized logical array");
 
-  bbase = b->data;
+  bbase = b->base_addr;
   b_kind = GFC_DESCRIPTOR_SIZE (b);
 
   if (b_kind == 1 || b_kind == 2 || b_kind == 4 || b_kind == 8
@@ -158,7 +158,7 @@ matmul_'rtype_code` ('rtype` * const restrict retarray,
   else
     internal_error (NULL, "Funny sized logical array");
 
-  dest = retarray->data;
+  dest = retarray->base_addr;
 '
 sinclude(`matmul_asm_'rtype_code`.m4')dnl
 `

@@ -1,8 +1,8 @@
 /* Helper function for repacking arrays.
-   Copyright 2003, 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2003, 2006, 2007, 2009, 2012 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -73,12 +73,12 @@ internal_pack_4 (gfc_array_i4 * source)
     }
 
   if (packed)
-    return source->data;
+    return source->base_addr;
 
   /* Allocate storage for the destination.  */
   destptr = (GFC_INTEGER_4 *)internal_malloc_size (ssize * sizeof (GFC_INTEGER_4));
   dest = destptr;
-  src = source->data;
+  src = source->base_addr;
   stride0 = stride[0];
 
 
