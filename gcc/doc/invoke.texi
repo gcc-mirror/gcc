@@ -4756,7 +4756,7 @@ factor of two.
 @item -fno-debug-types-section
 @opindex fno-debug-types-section
 @opindex fdebug-types-section
-By default when using DWARF v4 or higher type DIEs will be put into
+By default when using DWARF Version 4 or higher type DIEs will be put into
 their own .debug_types section instead of making them part of the
 .debug_info section.  It is more efficient to put them in a separate
 comdat sections since the linker will then be able to remove duplicates.
@@ -4794,7 +4794,7 @@ Produce debugging information in DWARF format (if that is
 supported).  This is the format used by DBX on IRIX 6.  The value
 of @var{version} may be either 2, 3 or 4; the default version is 2.
 
-Note that with DWARF version 2 some ports require, and will always
+Note that with DWARF Version 2 some ports require, and will always
 use, some non-conflicting DWARF 3 extensions in the unwind tables.
 
 Version 4 may require GDB 7.0 and @option{-fvar-tracking-assignments}
@@ -4919,9 +4919,9 @@ other than debugging the compiler proper.
 
 @item -feliminate-dwarf2-dups
 @opindex feliminate-dwarf2-dups
-Compress DWARF2 debugging information by eliminating duplicated
+Compress DWARF 2 debugging information by eliminating duplicated
 information about each symbol.  This option only makes sense when
-generating DWARF2 debugging information with @option{-gdwarf-2}.
+generating DWARF 2 debugging information with @option{-gdwarf-2}.
 
 @item -femit-struct-debug-baseonly
 Emit debug information for struct-like types
@@ -6096,7 +6096,7 @@ is used when GCC itself is being built.)  @xref{Spec Files}.
 
 @item -feliminate-unused-debug-types
 @opindex feliminate-unused-debug-types
-Normally, when producing DWARF2 output, GCC will emit debugging
+Normally, when producing DWARF 2 output, GCC will emit debugging
 information for all types declared in a compilation
 unit, regardless of whether or not they are actually used
 in that compilation unit.  Sometimes this is useful, such as
@@ -11764,7 +11764,7 @@ is default.
 @item -msim
 @opindex msim
 Links the library libsim.a which is in compatible with simulator. Applicable
-to elf compiler only.
+to ELF compiler only.
 
 @item -mint32
 @opindex mint32
@@ -11851,7 +11851,7 @@ warn about constructs contained within header files found via
 
 @item -gused
 @opindex gused
-Emit debugging information for symbols that are used.  For STABS
+Emit debugging information for symbols that are used.  For stabs
 debugging format, this enables @option{-feliminate-unused-debug-symbols}.
 This is by default ON@.
 
@@ -17651,7 +17651,7 @@ type. This is the default.
 Store (do not store) the address of the caller's frame as backchain pointer
 into the callee's stack frame.
 A backchain may be needed to allow debugging using tools that do not understand
-DWARF-2 call frame information.
+DWARF 2 call frame information.
 When @option{-mno-packed-stack} is in effect, the backchain pointer is stored
 at the bottom of the stack frame; when @option{-mpacked-stack} is in effect,
 the backchain is placed into the topmost word of the 96/160 byte register
@@ -19156,7 +19156,7 @@ that needs this handling would enable it on your behalf.
 
 @item -fasynchronous-unwind-tables
 @opindex fasynchronous-unwind-tables
-Generate unwind table in dwarf2 format, if supported by target machine.  The
+Generate unwind table in DWARF 2 format, if supported by target machine.  The
 table is exact at each instruction boundary, so it can be used for stack
 unwinding from asynchronous events (such as debugger or garbage collector).
 
