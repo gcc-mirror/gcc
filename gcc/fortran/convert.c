@@ -95,7 +95,8 @@ convert (tree type, tree expr)
   if (code == VOID_TYPE)
     return fold_build1_loc (input_location, CONVERT_EXPR, type, e);
   if (code == BOOLEAN_TYPE)
-    return truthvalue_conversion (e);
+    return fold_build1_loc (input_location, NOP_EXPR, type,
+			    truthvalue_conversion (e));
   if (code == INTEGER_TYPE)
     return fold (convert_to_integer (type, e));
   if (code == POINTER_TYPE || code == REFERENCE_TYPE)
