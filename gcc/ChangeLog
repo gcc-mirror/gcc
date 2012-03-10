@@ -1,3 +1,13 @@
+2012-03-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Disallow fs:(reg)
+	if Pmode != word_mode.
+	(legitimize_tls_address): Call gen_tls_initial_exec_x32 if
+	Pmode == SImode for x32.
+
+	* config/i386/i386.md (UNSPEC_TLS_IE_X32): New.
+	(tls_initial_exec_x32): Likewise.
+
 2012-03-10  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR rtl-optimization/52528
