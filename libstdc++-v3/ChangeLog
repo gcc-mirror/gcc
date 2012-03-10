@@ -1,5 +1,8 @@
 2012-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Remove TLS
+	symbols added in last change.
+
 	PR libstdc++/52456
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
 
