@@ -21025,14 +21025,9 @@ ix86_adjust_counter (rtx countreg, HOST_WIDE_INT value)
 rtx
 ix86_zero_extend_to_Pmode (rtx exp)
 {
-  rtx r;
-  if (GET_MODE (exp) == VOIDmode)
-    return force_reg (Pmode, exp);
-  if (GET_MODE (exp) == Pmode)
-    return copy_to_mode_reg (Pmode, exp);
-  r = gen_reg_rtx (Pmode);
-  emit_insn (gen_zero_extendsidi2 (r, exp));
-  return r;
+  if (GET_MODE (exp) != Pmode)
+    exp = convert_to_mode (Pmode, exp, 1);
+  return force_reg (Pmode, exp);
 }
 
 /* Divide COUNTREG by SCALE.  */

@@ -1,3 +1,8 @@
+2012-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_zero_extend_to_Pmode): Rewrite using
+	convert_to_mode.
+
 2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_trampoline_init): Use movl for 64bit if
@@ -5,8 +10,7 @@
 
 2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.c (x86_this_parameter): Replace DImode with
-	Pmode.
+	* config/i386/i386.c (x86_this_parameter): Replace DImode with Pmode.
 
 2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
 
