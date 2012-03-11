@@ -31971,7 +31971,7 @@ x86_this_parameter (tree function)
         parm_regs = x86_64_ms_abi_int_parameter_registers;
       else
         parm_regs = x86_64_int_parameter_registers;
-      return gen_rtx_REG (DImode, parm_regs[aggr]);
+      return gen_rtx_REG (Pmode, parm_regs[aggr]);
     }
 
   nregs = ix86_function_regparm (type, function);
