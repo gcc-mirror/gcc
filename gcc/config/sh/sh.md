@@ -9679,37 +9679,88 @@ mov.l\\t1f,r0\\n\\
 ;; If the constant -1 can be CSE-ed or lifted out of a loop it effectively
 ;; becomes a one instruction operation.  Moreover, care must be taken that
 ;; the insn can still be combined with inverted compare and branch code
-;; around it.
-;; The expander will reserve the constant -1, the insn makes the whole thing
-;; combinable, the splitter finally emits the insn if it was not combined 
-;; away.
-;; Notice that when using the negc variant the T bit also gets inverted.
+;; around it.  On the other hand, if a function returns the complement of
+;; a previous comparison result in the T bit, the xor #1,r0 approach might
+;; lead to better code.
 
 (define_expand "movnegt"
-  [(set (match_dup 1) (const_int -1))
-   (parallel [(set (match_operand:SI 0 "arith_reg_dest" "")
-		   (xor:SI (reg:SI T_REG) (const_int 1)))
-   (use (match_dup 1))])]
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(xor:SI (reg:SI T_REG) (const_int 1)))]
   ""
-{
-  operands[1] = gen_reg_rtx (SImode);
-})
-
-(define_insn_and_split "*movnegt"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(xor:SI (reg:SI T_REG) (const_int 1)))
-   (use (match_operand:SI 1 "arith_reg_operand" "r"))]
-  "TARGET_SH1"
-  "#"
-  "&& 1"
-  [(const_int 0)]
 {
   if (TARGET_SH2A)
     emit_insn (gen_movrt (operands[0]));
   else
-    emit_insn (gen_negc (operands[0], operands[1]));
+    {
+      rtx val = force_reg (SImode, gen_int_mode (-1, SImode));
+      emit_insn (gen_movrt_negc (operands[0], val));
+    }
   DONE;
-}
+})
+
+(define_insn "movrt_negc"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(xor:SI (reg:SI T_REG) (const_int 1)))
+   (set (reg:SI T_REG) (const_int 1))
+   (use (match_operand:SI 1 "arith_reg_operand" "r"))]
+  "TARGET_SH1"
+  "negc	%1,%0"
+  [(set_attr "type" "arith")])
+
+;; The *negnegt patterns help the combine pass to figure out how to fold 
+;; an explicit double T bit negation.
+(define_insn_and_split "*negnegt"
+  [(set (reg:SI T_REG)
+	(eq:SI (subreg:QI (xor:SI (reg:SI T_REG) (const_int 1)) 3)
+        (const_int 0)))]
+  "! TARGET_LITTLE_ENDIAN"
+  "#"
+  ""
+  [(const_int 0)])
+
+(define_insn_and_split "*negnegt"
+  [(set (reg:SI T_REG)
+	(eq:SI (subreg:QI (xor:SI (reg:SI T_REG) (const_int 1)) 0)
+        (const_int 0)))]
+  "TARGET_LITTLE_ENDIAN"
+  "#"
+  ""
+  [(const_int 0)])
+
+;; The *movtt patterns improve code at -O1.
+(define_insn_and_split "*movtt"
+  [(set (reg:SI T_REG)
+	(eq:SI (zero_extend:SI (subreg:QI (reg:SI T_REG) 3))
+        (const_int 1)))]
+  "! TARGET_LITTLE_ENDIAN"
+  "#"
+  ""
+  [(const_int 0)])
+
+(define_insn_and_split "*movtt"
+  [(set (reg:SI T_REG)
+	(eq:SI (zero_extend:SI (subreg:QI (reg:SI T_REG) 0))
+        (const_int 1)))]
+  "TARGET_LITTLE_ENDIAN"
+  "#"
+  ""
+  [(const_int 0)])
+
+;; The *movt_qi patterns help the combine pass convert a movrt_negc pattern
+;; into a movt Rn, xor #1 Rn pattern.  This can happen when e.g. a function
+;; returns the inverted T bit value.
+(define_insn "*movt_qi"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(zero_extend:SI (subreg:QI (reg:SI T_REG) 3)))]
+  "! TARGET_LITTLE_ENDIAN"
+  "movt	%0"
+  [(set_attr "type" "arith")])
+
+(define_insn "*movt_qi"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(zero_extend:SI (subreg:QI (reg:SI T_REG) 0)))]
+  "TARGET_LITTLE_ENDIAN"
+  "movt	%0"
   [(set_attr "type" "arith")])
 
 (define_expand "cstoresf4"

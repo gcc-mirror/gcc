@@ -1,3 +1,11 @@
+2012-03-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md (movnegt): Expand into respective insns immediately.
+	Use movrt_negc instead of negc pattern for non-SH2A.
+	(*movnegt): Remove.
+	(*movrt_negc, *negnegt, *movtt, *movt_qi): New insns and splits.
+
 2012-03-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_decompose_address): Disallow fs:(reg)
