@@ -22990,13 +22990,13 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       && !local_symbolic_operand (XEXP (fnaddr, 0), VOIDmode))
     fnaddr = gen_rtx_MEM (QImode, construct_plt_address (XEXP (fnaddr, 0)));
   else if (sibcall
-	   ? !sibcall_insn_operand (XEXP (fnaddr, 0), Pmode)
-	   : !call_insn_operand (XEXP (fnaddr, 0), Pmode))
+	   ? !sibcall_insn_operand (XEXP (fnaddr, 0), word_mode)
+	   : !call_insn_operand (XEXP (fnaddr, 0), word_mode))
     {
       fnaddr = XEXP (fnaddr, 0);
-      if (GET_MODE (fnaddr) != Pmode)
-	fnaddr = convert_to_mode (Pmode, fnaddr, 1);
-      fnaddr = gen_rtx_MEM (QImode, copy_to_mode_reg (Pmode, fnaddr));
+      if (GET_MODE (fnaddr) != word_mode)
+	fnaddr = convert_to_mode (word_mode, fnaddr, 1);
+      fnaddr = gen_rtx_MEM (QImode, copy_to_mode_reg (word_mode, fnaddr));
     }
 
   vec_len = 0;
