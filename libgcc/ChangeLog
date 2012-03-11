@@ -1,3 +1,8 @@
+2012-03-11  Michael Hope  <michael.hope@linaro.org>
+
+       * longlong.h [ARM] (add_ssaaaa, sub_ddmmss, umul_ppmm): Enable
+       for Thumb-2.
+
 2012-03-07  Walter Lee  <walt@tilera.com>
 
 	* config/tilepro/atomic.c: Rename "atomic_" prefix to
