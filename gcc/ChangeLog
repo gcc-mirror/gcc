@@ -1,3 +1,9 @@
+2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_movmem): Use word_mode for size
+	needed for loop.
+	(ix86_expand_setmem): Likewise.
+
 2012-03-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_zero_extend_to_Pmode): Rewrite using
