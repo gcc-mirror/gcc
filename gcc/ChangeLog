@@ -1,6 +1,7 @@
-2012-03-11  Uros Bizjak  <ubizjak@gmail.com>
+2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
-        * config/i386/predicates.md (call_insn_operand): Allow
+	* config/i386/predicates.md (call_insn_operand): Allow
 	constant_call_address_operand in Pmode only.
 	(sibcall_insn_operand): Ditto.
 	* config/i386/i386.md (*call): Use W mode iterator instead of P mode.
