@@ -1,4 +1,9 @@
 2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (lwp_slwpcb): Check Pmode instead of
+	TARGET_64BIT.
+
+2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (call_insn_operand): Allow
