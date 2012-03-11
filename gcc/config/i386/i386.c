@@ -22055,11 +22055,11 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       gcc_unreachable ();
     case loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (Pmode);
+      size_needed = GET_MODE_SIZE (word_mode);
       break;
     case unrolled_loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (Pmode) * (TARGET_64BIT ? 4 : 2);
+      size_needed = GET_MODE_SIZE (word_mode) * (TARGET_64BIT ? 4 : 2);
       break;
     case rep_prefix_8_byte:
       size_needed = 8;
@@ -22225,13 +22225,13 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       break;
     case loop:
       expand_set_or_movmem_via_loop (dst, src, destreg, srcreg, NULL,
-				     count_exp, Pmode, 1, expected_size);
+				     count_exp, word_mode, 1, expected_size);
       break;
     case unrolled_loop:
       /* Unroll only by factor of 2 in 32bit mode, since we don't have enough
 	 registers for 4 temporaries anyway.  */
       expand_set_or_movmem_via_loop (dst, src, destreg, srcreg, NULL,
-				     count_exp, Pmode, TARGET_64BIT ? 4 : 2,
+				     count_exp, word_mode, TARGET_64BIT ? 4 : 2,
 				     expected_size);
       break;
     case rep_prefix_8_byte:
@@ -22443,11 +22443,11 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       gcc_unreachable ();
     case loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (Pmode);
+      size_needed = GET_MODE_SIZE (word_mode);
       break;
     case unrolled_loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (Pmode) * 4;
+      size_needed = GET_MODE_SIZE (word_mode) * 4;
       break;
     case rep_prefix_8_byte:
       size_needed = 8;
@@ -22618,11 +22618,11 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       break;
     case loop:
       expand_set_or_movmem_via_loop (dst, NULL, destreg, NULL, promoted_val,
-				     count_exp, Pmode, 1, expected_size);
+				     count_exp, word_mode, 1, expected_size);
       break;
     case unrolled_loop:
       expand_set_or_movmem_via_loop (dst, NULL, destreg, NULL, promoted_val,
-				     count_exp, Pmode, 4, expected_size);
+				     count_exp, word_mode, 4, expected_size);
       break;
     case rep_prefix_8_byte:
       expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
