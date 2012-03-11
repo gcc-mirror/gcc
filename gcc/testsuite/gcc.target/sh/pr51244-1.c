@@ -13,20 +13,20 @@ testfunc_00 (int a, int b, int c, int d)
 }
 
 int
-testfunc_01 (int a, char* p, int b, int c)
+testfunc_01 (int a, int b, int c, int d)
 {
-  return (a == b && a == c) ? b : c;
+  return (a == b || a == d) ? b : c;
 }
 
 int
-testfunc_02 (int a, char* p, int b, int c)
+testfunc_02 (int a, int b, int c, int d)
 {
-  return (a == b && a == c) ? b : c;
+  return (a == b && a == d) ? b : c;
 }
 
 int
-testfunc_03 (int a, char* p, int b, int c)
+testfunc_03 (int a, int b, int c, int d)
 {
-  return (a != b && a != c) ? b : c;
+  return (a != b && a != d) ? b : c;
 }
 

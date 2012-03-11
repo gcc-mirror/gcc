@@ -1,3 +1,8 @@
+2012-03-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* gcc.target/sh/pr51244-1.c: Fix thinkos.
+
 2012-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/52450
