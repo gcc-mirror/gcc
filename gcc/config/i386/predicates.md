@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-32 and x86-64.
-;; Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+;; Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -571,15 +571,18 @@
 	    (match_operand 0 "memory_operand"))))
 
 ;; Test for a valid operand for a call instruction.
-(define_predicate "call_insn_operand"
-  (ior (match_operand 0 "constant_call_address_operand")
+;; Allow constant call address operands in Pmode only.
+(define_special_predicate "call_insn_operand"
+  (ior (match_test "constant_call_address_operand
+		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "call_register_no_elim_operand")
        (and (not (match_test "TARGET_X32"))
 	    (match_operand 0 "memory_operand"))))
 
 ;; Similarly, but for tail calls, in which we cannot allow memory references.
-(define_predicate "sibcall_insn_operand"
-  (ior (match_operand 0 "constant_call_address_operand")
+(define_special_predicate "sibcall_insn_operand"
+  (ior (match_test "constant_call_address_operand
+		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "register_no_elim_operand")))
 
 ;; Match exactly zero.

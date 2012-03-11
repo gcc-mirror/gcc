@@ -1,3 +1,23 @@
+2012-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
+        * config/i386/predicates.md (call_insn_operand): Allow
+	constant_call_address_operand in Pmode only.
+	(sibcall_insn_operand): Ditto.
+	* config/i386/i386.md (*call): Use W mode iterator instead of P mode.
+	(*call_vzeroupper): Ditto.
+	(*sibcall): Ditto.
+	(*sibcall_vzeroupper): Ditto.
+	(*call_value): Ditto.
+	(*call_value_vzeroupper): Ditto.
+	(*sibcall_value): Ditto.
+	(*sibcall_value_vzeroupper): Ditto.
+	(*indirect_jump): Ditto.
+	(*tablejump_1): Ditto.
+	(indirect_jump): Convert memory address to word mode for TARGET_X32.
+	(tablejump): Ditto.
+	* config/i386/i386.c (ix86_expand_call): Convert indirect operands
+	to word mode.
+
 2012-03-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244
@@ -11,7 +31,7 @@
 	* config/i386/i386.c (ix86_decompose_address): Disallow fs:(reg)
 	if Pmode != word_mode.
 	(legitimize_tls_address): Call gen_tls_initial_exec_x32 if
-	Pmode == SImode for x32.
+	Pmode == SImode for TARGET_X32.
 
 	* config/i386/i386.md (UNSPEC_TLS_IE_X32): New.
 	(tls_initial_exec_x32): Likewise.
@@ -1873,7 +1893,7 @@
 
 	PR target/52146
 	* config/i386/i386.c (ix86_legitimate_address_p): Disallow
-	negative constant address for x32.
+	negative constant address for TARGET_X32.
 
 2012-02-10  Richard Henderson  <rth@redhat.com>
 
