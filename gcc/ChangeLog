@@ -1,5 +1,10 @@
 2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_trampoline_init): Use movl for 64bit if
+	ptr_mode == SImode.  Replace DImode with Pmode or ptr_mode.
+
+2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (x86_this_parameter): Replace DImode with
 	Pmode.
 

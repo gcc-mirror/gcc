@@ -24309,10 +24309,13 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       /* Load the function address to r11.  Try to load address using
 	 the shorter movl instead of movabs.  We may want to support
 	 movq for kernel mode, but kernel does not use trampolines at
-	 the moment.  */
-      if (x86_64_zext_immediate_operand (fnaddr, VOIDmode))
+	 the moment.  FNADDR is a 32bit address and may not be in
+	 DImode when ptr_mode == SImode.  Always use movl in this
+	 case.  */
+      if (ptr_mode == SImode
+	  || x86_64_zext_immediate_operand (fnaddr, VOIDmode))
 	{
-	  fnaddr = copy_to_mode_reg (DImode, fnaddr);
+	  fnaddr = copy_to_mode_reg (Pmode, fnaddr);
 
 	  mem = adjust_address (m_tramp, HImode, offset);
 	  emit_move_insn (mem, gen_int_mode (0xbb41, HImode));
@@ -24331,9 +24334,9 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	  offset += 10;
 	}
 
-      /* Load static chain using movabs to r10.  Use the
-	 shorter movl instead of movabs for x32.  */
-      if (TARGET_X32)
+      /* Load static chain using movabs to r10.  Use the shorter movl
+         instead of movabs when ptr_mode == SImode.  */
+      if (ptr_mode == SImode)
 	{
 	  opcode = 0xba41;
 	  size = 6;
