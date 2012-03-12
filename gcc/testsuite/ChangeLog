@@ -1,5 +1,8 @@
 2012-03-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/51721
+	* gcc.dg/tree-ssa/vrp64.c: New test.
+
 	PR tree-optimization/52533
 	* gcc.c-torture/compile/pr52533.c: New test.
 
