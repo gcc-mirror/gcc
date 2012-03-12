@@ -1,3 +1,12 @@
+2012-03-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	* gcc.target/avr/torture/addr-space-1.h: New file.
+	* gcc.target/avr/torture/addr-space-g.h: New test.
+	* gcc.target/avr/torture/addr-space-0.h: New test.
+	* gcc.target/avr/torture/addr-space-1.h: New test.
+	* gcc.target/avr/torture/addr-space-x.h: New test.
+	
 2012-03-12  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.dg/tree-ssa/phi-opt-7.c: New testcase.
