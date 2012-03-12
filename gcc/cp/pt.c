@@ -13943,11 +13943,35 @@ tsubst_copy_and_build (tree t,
       }
 
     case COND_EXPR:
-      return build_x_conditional_expr
-	(RECUR (TREE_OPERAND (t, 0)),
-	 RECUR (TREE_OPERAND (t, 1)),
-	 RECUR (TREE_OPERAND (t, 2)),
-         complain);
+      {
+	tree cond = RECUR (TREE_OPERAND (t, 0));
+	tree exp1, exp2;
+
+	if (TREE_CODE (cond) == INTEGER_CST)
+	  {
+	    if (integer_zerop (cond))
+	      {
+		++c_inhibit_evaluation_warnings;
+		exp1 = RECUR (TREE_OPERAND (t, 1));
+		--c_inhibit_evaluation_warnings;
+		exp2 = RECUR (TREE_OPERAND (t, 2));
+	      }
+	    else
+	      {
+		exp1 = RECUR (TREE_OPERAND (t, 1));
+		++c_inhibit_evaluation_warnings;
+		exp2 = RECUR (TREE_OPERAND (t, 2));
+		--c_inhibit_evaluation_warnings;
+	      }
+	  }
+	else
+	  {
+	    exp1 = RECUR (TREE_OPERAND (t, 1));
+	    exp2 = RECUR (TREE_OPERAND (t, 2));
+	  }
+
+	return build_x_conditional_expr (cond, exp1, exp2, complain);
+      }
 
     case PSEUDO_DTOR_EXPR:
       return finish_pseudo_destructor_expr
