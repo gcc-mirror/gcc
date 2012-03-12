@@ -1,3 +1,12 @@
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (signed_or_unsigned_type_for): Use
+	build_nonstandard_integer_type.
+	(signed_type_for): Adjust documentation.
+	(unsigned_type_for): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Use standard names
+	for non-standard integer types if available.
+
 2012-03-12  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/vms.opt: Add vms-opts.h header.
