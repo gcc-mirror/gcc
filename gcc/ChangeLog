@@ -1,3 +1,20 @@
+2012-03-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2012-03-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/linux64.h (OPTION_TARGET_CPU_DEFAULT): Do not
+	redefine to be NULL if the current bit-size is different from the
+	configured bit-size.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): If the
+	cpu is defaulted, use PROCESSOR_DEFAULT and PROCESSOR_DEFAULT64 to
+	set the default tuning.  Add asserts to make sure the cpu and tune
+	indexes are defined.  Fix tests for cpu/tune index to use >= 0 to
+	test whether the index is set, instead of > 0.
+	(rs6000_file_start): Do not reset the default cpu if the current
+	bit-size is different from the configured bit-size.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, i?86-*-solaris2.[89]): Update

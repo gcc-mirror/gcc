@@ -2596,6 +2596,7 @@ static bool
 rs6000_option_override_internal (bool global_init_p)
 {
   bool ret = true;
+  bool have_cpu = false;
   const char *default_cpu = OPTION_TARGET_CPU_DEFAULT;
   int set_masks;
   int cpu_index;
@@ -2652,43 +2653,55 @@ rs6000_option_override_internal (bool global_init_p)
   /* Don't override by the processor default if given explicitly.  */
   set_masks &= ~target_flags_explicit;
 
-  /* Identify the processor type.  */
-  if (!default_cpu)
-    {
-      if (TARGET_POWERPC64)
-	default_cpu = "powerpc64";
-      else if (TARGET_POWERPC)
-	default_cpu = "powerpc";
-    }
-
   /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
      the cpu in a target attribute or pragma, but did not specify a tuning
      option, use the cpu for the tuning option rather than the option specified
      with -mtune on the command line.  */
-  if (rs6000_cpu_index > 0)
-    cpu_index = rs6000_cpu_index;
-  else if (main_target_opt != NULL && main_target_opt->x_rs6000_cpu_index > 0)
-    rs6000_cpu_index = cpu_index = main_target_opt->x_rs6000_cpu_index;
-  else
-    rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (default_cpu);
-
-  if (rs6000_tune_index > 0)
-    tune_index = rs6000_tune_index;
-  else
-    rs6000_tune_index = tune_index = cpu_index;
-
-  if (cpu_index >= 0)
+  if (rs6000_cpu_index >= 0)
     {
-      target_flags &= ~set_masks;
-      target_flags |= (processor_target_table[cpu_index].target_enable
-		       & set_masks);
+      cpu_index = rs6000_cpu_index;
+      have_cpu = true;
+    }
+  else if (main_target_opt != NULL && main_target_opt->x_rs6000_cpu_index >= 0)
+    {
+      rs6000_cpu_index = cpu_index = main_target_opt->x_rs6000_cpu_index;
+      have_cpu = true;
+    }
+  else
+    {
+      if (!default_cpu)
+	default_cpu = (TARGET_POWERPC64 ? "powerpc64" : "powerpc");
+
+      rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (default_cpu);
     }
 
-  rs6000_cpu = ((tune_index >= 0)
-		? processor_target_table[tune_index].processor
-		: (TARGET_POWERPC64
-		   ? PROCESSOR_DEFAULT64
-		   : PROCESSOR_DEFAULT));
+  gcc_assert (cpu_index >= 0);
+
+  target_flags &= ~set_masks;
+  target_flags |= (processor_target_table[cpu_index].target_enable
+		   & set_masks);
+
+  if (rs6000_tune_index >= 0)
+    tune_index = rs6000_tune_index;
+  else if (have_cpu)
+    rs6000_tune_index = tune_index = cpu_index;
+  else
+    {
+      size_t i;
+      enum processor_type tune_proc
+	= (TARGET_POWERPC64 ? PROCESSOR_DEFAULT64 : PROCESSOR_DEFAULT);
+
+      tune_index = -1;
+      for (i = 0; i < ARRAY_SIZE (processor_target_table); i++)
+	if (processor_target_table[i].processor == tune_proc)
+	  {
+	    rs6000_tune_index = tune_index = i;
+	    break;
+	  }
+    }
+
+  gcc_assert (tune_index >= 0);
+  rs6000_cpu = processor_target_table[tune_index].processor;
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
       || rs6000_cpu == PROCESSOR_PPCE500MC || rs6000_cpu == PROCESSOR_PPCE500MC64)
@@ -4022,11 +4035,6 @@ rs6000_file_start (void)
   rs6000_default_cpu = TARGET_CPU_DEFAULT;
 
   default_file_start ();
-
-#ifdef TARGET_BI_ARCH
-  if ((TARGET_DEFAULT ^ target_flags) & MASK_64BIT)
-    rs6000_default_cpu = 0;
-#endif
 
   if (flag_verbose_asm)
     {
