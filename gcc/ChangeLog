@@ -1,3 +1,8 @@
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* doc/invoke.texi (VMS Options): Merge Alpha/VMS and IA-64/VMS
+	Options.  Mention -mpointer-size.
+
 2012-03-12  Richard Guenther  <rguenther@suse.de>
 
 	* config/alpha/alpha.c (alpha_gimplify_va_arg): Use
