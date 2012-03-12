@@ -1,5 +1,17 @@
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config.gcc (mips*-*-openbsd*): Remove.
+	* config/mips/openbsd.h: Remove.
+	* config/mips/sdb.h: Remove.
+
+	* config/mips/mips.h (SDB_OUTPUT_SOURCE_LINE): Remove.
+	* config/mips/mips.c (sdb_label_count): Remove.
+	(mips_debugger_offset): Remove #if 0 code.
+	(mips_output_function_prologue) [SDB_DEBUGGING_INFO]: Remove.
+	* config/mips/sde.h (SDB_DEBUGGING_INFO): Don't undef.
+
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* doc/install.texi (Specific, i?86-*-solaris2.[89]): Update
 	binutils reference.
 	(Specific, i?86-*-solaris2.10): Remove GCC 4.0 reference.

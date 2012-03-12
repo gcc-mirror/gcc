@@ -2551,10 +2551,6 @@ do									\
   }									\
 while (0)
 
-/* Use .loc directives for SDB line numbers.  */
-#define SDB_OUTPUT_SOURCE_LINE(STREAM, LINE)			\
-  fprintf (STREAM, "\t.loc\t%d %d\n", num_source_filenames, LINE)
-
 /* The MIPS implementation uses some labels for its own purpose.  The
    following lists what labels are created, and are all formed by the
    pattern $L[a-z].*.  The machine independent portion of GCC creates
