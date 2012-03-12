@@ -1,3 +1,12 @@
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
+        * tree-sra.c (create_access_replacement): Only rename the
+        replacement if we can rewrite it into SSA form.  Properly
+        mark register typed replacements that we cannot rewrite
+        with TREE_ADDRESSABLE.
+	* tree-cfg.c (verify_expr): Fix BIT_FIELD_REF verification
+	for aggregate or BLKmode results.
+
 2012-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52533
