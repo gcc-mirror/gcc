@@ -4855,6 +4855,13 @@ match_procedure_decl (void)
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
+  if (proc_if && proc_if->attr.is_bind_c && !current_attr.is_bind_c)
+    {
+      current_attr.is_bind_c = 1;
+      has_name_equals = 0;
+      curr_binding_label = NULL;
+    }
+
   /* Get procedure symbols.  */
   for(num=1;;num++)
     {

@@ -1,3 +1,9 @@
+2012-03-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52542
+	* decl.c (match_procedure_decl): If the interface
+	is bind(C), the procedure is as well.
+
 2012-03-10  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* convert.c (convert): Fold BOOLEAN_TYPE types to the proper variant.
