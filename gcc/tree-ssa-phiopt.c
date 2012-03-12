@@ -193,6 +193,33 @@ tree_ssa_cs_elim (void)
   return tree_ssa_phiopt_worker (true);
 }
 
+/* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
+
+static gimple
+single_non_singleton_phi_for_edges (gimple_seq seq, edge e0, edge e1)
+{
+  gimple_stmt_iterator i;
+  gimple phi = NULL;
+  if (gimple_seq_singleton_p (seq))
+    return gsi_stmt (gsi_start (seq));
+  for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
+    {
+      gimple p = gsi_stmt (i);
+      /* If the PHI arguments are equal then we can skip this PHI. */
+      if (operand_equal_for_phi_arg_p (gimple_phi_arg_def (p, e0->dest_idx),
+				       gimple_phi_arg_def (p, e1->dest_idx)))
+	continue;
+
+      /* If we already have a PHI that has the two edge arguments are
+	 different, then return it is not a singleton for these PHIs. */
+      if (phi)
+	return NULL;
+
+      phi = p;
+    }
+  return phi;
+}
+
 /* For conditional store replacement we need a temporary to
    put the old contents of the memory in.  */
 static tree condstoretemp;
@@ -316,6 +343,7 @@ tree_ssa_phiopt_worker (bool do_store_elim)
 	  gimple_seq phis = phi_nodes (bb2);
 	  gimple_stmt_iterator gsi;
 	  bool candorest = true;
+
 	  /* Value replacement can work with more than one PHI
 	     so try that first. */
 	  for (gsi = gsi_start (phis); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -333,21 +361,8 @@ tree_ssa_phiopt_worker (bool do_store_elim)
 
 	  if (!candorest)
 	    continue;
-	  /* Check to make sure that there is only one non-virtual PHI node.
-	     TODO: we could do it with more than one iff the other PHI nodes
-	     have the same elements for these two edges.  */
-	  phi = NULL;
-	  for (gsi = gsi_start (phis); !gsi_end_p (gsi); gsi_next (&gsi))
-	    {
-	      if (!is_gimple_reg (gimple_phi_result (gsi_stmt (gsi))))
-		continue;
-	      if (phi)
-		{
-		  phi = NULL;
-		  break;
-		}
-	      phi = gsi_stmt (gsi);
-	    }
+	  
+	  phi = single_non_singleton_phi_for_edges (phis, e1, e2);
 	  if (!phi)
 	    continue;
 
@@ -447,6 +462,8 @@ empty_block_p (basic_block bb)
 {
   /* BB must have no executable statements.  */
   gimple_stmt_iterator gsi = gsi_after_labels (bb);
+  if (phi_nodes (bb))
+    return false;
   if (gsi_end_p (gsi))
     return true;
   if (is_gimple_debug (gsi_stmt (gsi)))
@@ -736,10 +753,11 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	arg = arg1;
 
       /* If the middle basic block was empty or is defining the
-	 PHI arguments and this is a singleton phi then we can remove
-         the middle basic block. */
+	 PHI arguments and this is a single phi where the args are different
+	 for the edges e0 and e1 then we can remove the middle basic block. */
       if (emtpy_or_with_defined_p
-	  && gimple_seq_singleton_p (phi_nodes (gimple_bb (phi))))
+	  && single_non_singleton_phi_for_edges (phi_nodes (gimple_bb (phi)),
+							    e0, e1))
 	{
           replace_phi_edge_with_variable (cond_bb, e1, phi, arg);
 	  /* Note that we optimized this PHI.  */
@@ -754,7 +772,8 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	    {
 	      fprintf (dump_file, "PHI ");
 	      print_generic_expr (dump_file, gimple_phi_result (phi), 0);
-	      fprintf (dump_file, " reduced for COND_EXPR in block %d to ", cond_bb->index);
+	      fprintf (dump_file, " reduced for COND_EXPR in block %d to ",
+		       cond_bb->index);
 	      print_generic_expr (dump_file, arg, 0);
 	      fprintf (dump_file, ".\n");
             }

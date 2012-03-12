@@ -1,3 +1,10 @@
+2012-03-12  Andrew Pinski  <apinski@cavium.com>
+
+	* tree-ssa-phiopt.c (single_non_singleton_phi_for_edges): New function.
+	(tree_ssa_phiopt_worker): Use single_non_singleton_phi_for_edges.
+	(value_replacement): Likewise.
+	(empty_block_p): Check also if the PHIs for the block are empty.
+
 2012-03-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52148
