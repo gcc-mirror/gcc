@@ -4442,6 +4442,24 @@ hppa_expand_epilogue (void)
     }
 }
 
+bool
+pa_can_use_return_insn (void)
+{
+  if (!reload_completed)
+    return false;
+
+  if (frame_pointer_needed)
+    return false;
+
+  if (df_regs_ever_live_p (2))
+    return false;
+
+  if (crtl->profile)
+    return false;
+
+  return compute_frame_size (get_frame_size (), 0) == 0;
+}
+
 rtx
 hppa_pic_save_rtx (void)
 {

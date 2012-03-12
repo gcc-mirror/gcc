@@ -6671,6 +6671,20 @@
 
 ;; Unconditional and other jump instructions.
 
+;; Trivial return used when no epilogue is needed.
+(define_insn "return"
+  [(return)
+   (use (reg:SI 2))]
+  "pa_can_use_return_insn ()"
+  "*
+{
+  if (TARGET_PA_20)
+    return \"bve%* (%%r2)\";
+  return \"bv%* %%r0(%%r2)\";
+}"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
 ;; This is used for most returns.
 (define_insn "return_internal"
   [(return)
@@ -6719,11 +6733,8 @@
   rtx x;
 
   /* Try to use the trivial return first.  Else use the full epilogue.  */
-  if (reload_completed
-      && !frame_pointer_needed
-      && !df_regs_ever_live_p (2)
-      && (compute_frame_size (get_frame_size (), 0) ? 0 : 1))
-    x = gen_return_internal ();
+  if (pa_can_use_return_insn ())
+    x = gen_return ();
   else
     {
       hppa_expand_epilogue ();

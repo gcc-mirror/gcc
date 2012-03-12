@@ -1,5 +1,14 @@
 2012-03-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	Backport from mainline
+	2011-09-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR Bug middle-end/50232
+	* config/pa/pa.md (return): Define "return" insn pattern.
+	(epilogue): Use it when no epilogue is needed.
+	* config/pa/pa.c (pa_can_use_return_insn): New function.
+	* config/pa/pa-protos.h (pa_can_use_return_insn): Declare.
+
 	Backport for mainline
 	2012-01-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
