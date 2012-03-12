@@ -5488,7 +5488,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 
   /* VMS descriptors are themselves passed by reference.  */
   if (mech == By_Short_Descriptor ||
-      (mech == By_Descriptor && TARGET_ABI_OPEN_VMS && !TARGET_MALLOC64))
+      (mech == By_Descriptor && TARGET_ABI_OPEN_VMS && !flag_vms_malloc64))
     gnu_param_type
       = build_pointer_type (build_vms_descriptor32 (gnu_param_type,
 						    Mechanism (gnat_param),

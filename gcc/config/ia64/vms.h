@@ -28,11 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Need .debug_line info generated from gcc and gas.  */
 #undef TARGET_DEFAULT
-#if POINTER_SIZE == 64
-#define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_GNU_AS | MASK_MALLOC64)
-#else
 #define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_GNU_AS)
-#endif
 
 #define VMS_DEBUG_MAIN_POINTER "TRANSFER$BREAK$GO"
 

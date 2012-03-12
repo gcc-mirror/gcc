@@ -160,9 +160,11 @@ vms_patch_builtins (void)
           alt[1 + nlen + 2] = 0;
           vms_add_crtl_xlat (alt, nlen + 3, res, rlen + nlen);
 
-          use_64 = (((n->flags & VMS_CRTL_64) && POINTER_SIZE == 64)
+          use_64 = (((n->flags & VMS_CRTL_64)
+                     && flag_vms_pointer_size == VMS_POINTER_SIZE_64)
                     || ((n->flags & VMS_CRTL_MALLOC)
-                        && TARGET_MALLOC64));
+                        && flag_vms_malloc64
+                        && flag_vms_pointer_size != VMS_POINTER_SIZE_NONE));
           if (!use_64)
             vms_add_crtl_xlat (n->name, nlen, res, rlen + nlen);
 

@@ -1,3 +1,8 @@
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* config/alpha/t-vms: Define HOST_LIBGCC2_CFLAGS.
+	* config/ia64/t-vms: Likewise.
+
 2012-03-11  Michael Hope  <michael.hope@linaro.org>
 
        * longlong.h [ARM] (add_ssaaaa, sub_ddmmss, umul_ppmm): Enable
