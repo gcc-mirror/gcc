@@ -8,7 +8,7 @@
 	Update binutils reference.
 	Update Sun as/GNU ld caveat.
 	Document binutils largefile requirement for LTO plugin.
-	Remove referent to alternate libpthread.
+	Remove reference to alternate libpthread.
 
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
