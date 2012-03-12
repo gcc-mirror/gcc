@@ -3567,7 +3567,7 @@ The Sun assembler in Solaris 8 and 9 has several bugs and limitations.
 While GCC works around them, several features are missing, so it is
 @c FIXME: which ones?
 recommended to use the GNU assembler instead.  There is no bundled
-version, but the current version, from GNU binutils 2.21, is known to
+version, but the current version, from GNU binutils 2.22, is known to
 work.
 
 Solaris@tie{}2/x86 doesn't support the execution of SSE/SSE2 instructions
@@ -3583,8 +3583,7 @@ you have the patch installed, you can configure GCC with an appropriate
 <hr />
 @end html
 @heading @anchor{ix86-x-solaris210}i?86-*-solaris2.10
-Use this for Solaris 10 or later on x86 and x86-64 systems.  This
-configuration is supported by GCC 4.0 and later versions only.  Starting
+Use this for Solaris 10 or later on x86 and x86-64 systems.  Starting
 with GCC 4.7, there is also a 64-bit @samp{amd64-*-solaris2.1[0-9]*} or
 @samp{x86_64-*-solaris2.1[0-9]*} configuration that corresponds to
 @samp{sparcv9-sun-solaris2*}.
@@ -3593,7 +3592,7 @@ It is recommended that you configure GCC to use the GNU assembler, in
 @file{/usr/sfw/bin/gas}.  The versions included in Solaris 10, from GNU
 binutils 2.15, and Solaris 11, from GNU binutils 2.19, work fine,
 although the current version, from GNU binutils
-2.21, is known to work, too.  Recent versions of the Sun assembler in
+2.22, is known to work, too.  Recent versions of the Sun assembler in
 @file{/usr/ccs/bin/as} work almost as well, though.
 @c FIXME: as patch requirements?
 
@@ -3601,7 +3600,7 @@ For linking, the Sun linker, is preferred.  If you want to use the GNU
 linker instead, which is available in @file{/usr/sfw/bin/gld}, note that
 due to a packaging bug the version in Solaris 10, from GNU binutils
 2.15, cannot be used, while the version in Solaris 11, from GNU binutils
-2.19, works, as does the latest version, from GNU binutils 2.21.
+2.19, works, as does the latest version, from GNU binutils 2.22.
 
 To use GNU @command{as}, configure with the options
 @option{--with-gnu-as --with-as=@//usr/@/sfw/@/bin/@/gas}.  It may be necessary
@@ -4172,8 +4171,10 @@ Support for Solaris 8 has been obsoleted in GCC 4.7, but can still be
 enabled by configuring with @option{--enable-obsolete}.  Support will be
 removed in GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
 
-Sun does not ship a C compiler with Solaris 2, though you can download
-the Sun Studio compilers for free.  Alternatively,
+Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
+you can download the Sun Studio compilers for free.  In Solaris 10 and
+11, GCC 3.4.3 is available in @command{/usr/sfw/bin/gcc}.  Solaris 11
+also provides GCC 4.5.2 in @command{/usr/gcc/4.5/bin/gcc}.  Alternatively,
 you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
 
@@ -4216,17 +4217,19 @@ We recommend the use of the Sun assembler or the GNU assembler, in
 conjunction with the Sun linker.  The GNU @command{as}
 versions included in Solaris 10, from GNU binutils 2.15, and Solaris 11,
 from GNU binutils 2.19, are known to work.  They can be found in
-@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.21)
+@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.22)
 are known to work as well.  Note that your mileage may vary
 if you use a combination of the GNU tools and the Sun tools: while the
 combination GNU @command{as} + Sun @command{ld} should reasonably work,
-the reverse combination Sun @command{as} + GNU @command{ld} is known to
-cause memory corruption at runtime in some cases for C++ programs.
+the reverse combination Sun @command{as} + GNU @command{ld} may fail to
+build or cause memory corruption at runtime in some cases for C++ programs.
 @c FIXME: still?
 GNU @command{ld} usually works as well, although the version included in
 Solaris 10 cannot be used due to several bugs.  Again, the current
-version (2.21) is known to work, but generally lacks platform specific
-features, so better stay with Sun @command{ld}.
+version (2.22) is known to work, but generally lacks platform specific
+features, so better stay with Sun @command{ld}.  To use the LTO linker
+plugin (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU
+binutils @emph{must} be configured with @option{--enable-largefile}.
 
 To enable symbol versioning in @samp{libstdc++} with Sun @command{ld},
 you need to have any version of GNU @command{c++filt}, which is part of
@@ -4257,10 +4260,10 @@ There are patches for Solaris 8 (117350-12 or newer for SPARC,
 117351-12 or newer for Intel) and Solaris 9 (117171-11 or newer for
 SPARC, 117172-11 or newer for Intel) that address this problem.
 
-Solaris@tie{}8 provides an alternate implementation of the thread libraries,
-@samp{libpthread} and @samp{libthread}.  They are required for TLS
-support and have been made the default in Solaris@tie{}9, so they are always
-used on Solaris@tie{}8.
+Solaris@tie{}8 provides an alternate implementation of the thread
+library @samp{libthread}.  It is required for TLS support and has
+been made the default in Solaris@tie{}9, so it is always used on
+Solaris@tie{}8.
 
 Thread-local storage (TLS) is supported in Solaris@tie{}8 and 9, but requires
 some patches.  The @samp{libthread} patches provide the
