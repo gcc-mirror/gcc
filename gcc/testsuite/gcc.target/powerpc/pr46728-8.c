@@ -1,4 +1,5 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-options "-O2 -ffast-math -fno-inline -fno-unroll-loops -lm -mpowerpc-gpopt" } */
 
 #include <math.h>
