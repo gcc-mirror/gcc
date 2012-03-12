@@ -8983,7 +8983,7 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
 
 /* Implement `MODE_CODE_BASE_REG_CLASS'.  */
 
-reg_class_t
+enum reg_class
 avr_mode_code_base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
                               addr_space_t as, RTX_CODE outer_code,
                               RTX_CODE index_code ATTRIBUTE_UNUSED)
