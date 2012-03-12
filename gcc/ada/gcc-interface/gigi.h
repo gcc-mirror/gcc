@@ -736,10 +736,6 @@ extern tree build_unc_object_type_from_ptr (tree thin_fat_ptr_type,
 					    tree object_type, tree name,
 					    bool debug_info_p);
 
-/* Shift the component offsets within an unconstrained object TYPE to make it
-   suitable for use as a designated type for thin pointers.  */
-extern void shift_unc_components_for_thin_pointers (tree type);
-
 /* Update anything previously pointing to OLD_TYPE to point to NEW_TYPE.  In
    the normal case this is just two adjustments, but we have more to do
    if NEW is an UNCONSTRAINED_ARRAY_TYPE.  */

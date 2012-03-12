@@ -2280,13 +2280,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			  gnu_fat_type, NULL, !Comes_From_Source (gnat_entity),
 			  debug_info_p, gnat_entity);
 
-	/* Create the type to be used as what a thin pointer designates:
-	   a record type for the object and its template with the fields
-	   shifted to have the template at a negative offset.  */
+	/* Create the type to be designated by thin pointers: a record type for
+	   the array and its template.  We used to shift the fields to have the
+	   template at a negative offset, but this was somewhat of a kludge; we
+	   now shift thin pointer values explicitly but only those which have a
+	   TYPE_UNCONSTRAINED_ARRAY attached to the designated RECORD_TYPE.  */
 	tem = build_unc_object_type (gnu_template_type, tem,
 				     create_concat_name (gnat_name, "XUT"),
 				     debug_info_p);
-	shift_unc_components_for_thin_pointers (tem);
 
 	SET_TYPE_UNCONSTRAINED_ARRAY (tem, gnu_type);
 	TYPE_OBJECT_RECORD_TYPE (gnu_type) = tem;
