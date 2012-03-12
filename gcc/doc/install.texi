@@ -3175,7 +3175,7 @@ or applying the patch in
 the OS version used, you need a data segment size between 512 MB and
 1 GB, so simply use @command{ulimit -Sd unlimited}.
 
-As of GNU binutils 2.21, neither GNU @command{as} nor GNU @command{ld}
+As of GNU binutils 2.22, neither GNU @command{as} nor GNU @command{ld}
 are supported on Tru64 UNIX, so you must not configure GCC with
 @option{--with-gnu-as} or @option{--with-gnu-ld}.
 
@@ -4066,7 +4066,7 @@ Look for @file{/usr/lib64/libc.so.1} to see if you
 have the 64-bit libraries installed.
 
 GCC must be configured with GNU @command{as}.  The latest version, from GNU
-binutils 2.21, is known to work.  On the other hand, bootstrap fails
+binutils 2.22, is known to work.  On the other hand, bootstrap fails
 with GNU @command{ld} at least since GNU binutils 2.17.
 
 The @option{--enable-libgcj}

@@ -1,3 +1,9 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, alpha*-dec-osf5.1): Update binutils
+	reference.
+	(Specific, mips-sgi-irix6): Likewise.
+
 2012-03-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_as_ix86_tlsldmplt): Add label.
