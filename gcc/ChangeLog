@@ -1,3 +1,8 @@
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
+	* config/arm/arm.c (neon_dereference_pointer): Do not call
+	covert during RTL expansion.
+
 2012-03-12  Tristan Gingold  <gingold@adacore.com>
 
 	* doc/invoke.texi (VMS Options): Merge Alpha/VMS and IA-64/VMS
