@@ -1,3 +1,8 @@
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* ginclude/stddef.h: Adjust previous patch.  Use __VMS__ instead
+	of VMS.
+
 2012-03-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (setcc + movzbl to xor + setcc peephole2):
