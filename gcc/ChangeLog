@@ -1,3 +1,15 @@
+2012-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Properly
+	set ix86_gen_leave and ix86_gen_monitor.  Check Pmode == DImode,
+	instead of TARGET_64BIT, to set ix86_gen_add3, ix86_gen_sub3,
+	ix86_gen_one_cmpl2, ix86_gen_andsp,
+	ix86_gen_allocate_stack_worker, ix86_gen_adjust_stack_and_probe
+	and ix86_gen_probe_stack_range.
+
+	* config/i386/sse.md (sse3_monitor64): Renamed to ...
+	(sse3_monitor64_<mode>): This.
+
 2012-03-12  Tristan Gingold  <gingold@adacore.com>
 
 	* config/ia64/ia64.c (ia64_function_arg_1): Move code around.
