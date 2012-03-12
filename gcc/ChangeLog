@@ -1,5 +1,11 @@
 2012-03-12  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR other/52545
+	* output.h (SECTION_EXCLUDE, SECTION_MACH_DEP): Don't use
+	SECTION_MACH_DEP reserved bits for SECTION_EXCLUDE.
+
+2012-03-12  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/52499
 	* config/avr/avr.c (avr_mode_code_base_reg_class): Change return
 	type from reg_class_t to enum reg_class.
