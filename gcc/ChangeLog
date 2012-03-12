@@ -1,5 +1,10 @@
 2012-03-12  Richard Guenther  <rguenther@suse.de>
 
+	* config/alpha/alpha.c (alpha_gimplify_va_arg): Use
+	build_nonstandard_integer_type.
+
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
 	* tree.c (signed_or_unsigned_type_for): Use
 	build_nonstandard_integer_type.
 	(signed_type_for): Adjust documentation.

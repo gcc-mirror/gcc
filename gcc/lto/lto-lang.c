@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "lto-streamer.h"
 
+static tree lto_type_for_size (unsigned, int);
+
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_const_attribute (tree *, tree, tree, int, bool *);
@@ -523,7 +525,7 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
 static tree
 builtin_type_for_size (int size, bool unsignedp)
 {
-  tree type = lang_hooks.types.type_for_size (size, unsignedp);
+  tree type = lto_type_for_size (size, unsignedp);
   return type ? type : error_mark_node;
 }
 

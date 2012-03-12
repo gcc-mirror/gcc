@@ -6228,7 +6228,7 @@ alpha_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
      offset field so that it's the proper width for pointer arithmetic.  */
   base = get_formal_tmp_var (base_field, pre_p);
 
-  t = fold_convert (lang_hooks.types.type_for_size (64, 0), offset_field);
+  t = fold_convert (build_nonstandard_integer_type (64, 0), offset_field);
   offset = get_initialized_tmp_var (t, pre_p, NULL);
 
   indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);

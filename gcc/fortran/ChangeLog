@@ -1,3 +1,7 @@
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
+	* f95-lang.c (builtin_type_for_size): Use gfc_type_for_size.
+
 2012-03-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52542
