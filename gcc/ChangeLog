@@ -1,3 +1,11 @@
+2012-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52533
+	* tree-vrp.c (register_edge_assert_for_2): Use double_int
+	type for mask, only handle shifts by non-zero in-range
+	shift count, for LE_EXPR and GT_EXPR if new_val is
+	maximum, don't add the assertion.
+
 2012-02-12  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* doc/invoke.texi: Document -mrtm option.

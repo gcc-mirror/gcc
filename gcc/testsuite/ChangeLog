@@ -1,3 +1,8 @@
+2012-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52533
+	* gcc.c-torture/compile/pr52533.c: New test.
+
 2012-03-12  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/rtm-xabort-1.c: New.
