@@ -1,3 +1,12 @@
+2012-03-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52562
+	* libsupc++/typeinfo (type_info::name, before, operator==,
+	operator!=): Mark noexcept in C++11 mode.
+	* libsupc++/tinfo.cc (type_info::operator==): Adjust.
+	* libsupc++/tinfo2.cc (type_info::before): Likewise.
+	* testsuite/18_support/type_info/52562.cc: New.
+
 2012-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Remove TLS
