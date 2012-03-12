@@ -1,3 +1,8 @@
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/ia64.c (ia64_function_arg_1): Move code around.
+	(ia64_function_arg_advance): Ditto.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc (mips*-*-openbsd*): Remove.

@@ -4491,6 +4491,15 @@ ia64_function_arg_1 (cumulative_args_t cum_v, enum machine_mode mode,
   if (cum->words + offset >= MAX_ARGUMENT_SLOTS)
     return 0;
 
+  /* On OpenVMS argument is either in Rn or Fn.  */
+  if (TARGET_ABI_OPEN_VMS)
+    {
+      if (FLOAT_MODE_P (mode))
+	return gen_rtx_REG (mode, FR_ARG_FIRST + cum->words);
+      else
+	return gen_rtx_REG (mode, basereg + cum->words);
+    }
+
   /* Check for and handle homogeneous FP aggregates.  */
   if (type)
     hfa_mode = hfa_element_mode (type, 0);
@@ -4577,15 +4586,6 @@ ia64_function_arg_1 (cumulative_args_t cum_v, enum machine_mode mode,
       return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
     }
   
-  /* On OpenVMS variable argument is either in Rn or Fn.  */
-  else if (TARGET_ABI_OPEN_VMS && named == 0)
-    {
-      if (FLOAT_MODE_P (mode))
-	return gen_rtx_REG (mode, FR_ARG_FIRST + cum->words);
-      else
-	return gen_rtx_REG (mode, basereg + cum->words);
-    }
-
   /* Integral and aggregates go in general registers.  If we have run out of
      FR registers, then FP values must also go in general registers.  This can
      happen when we have a SFmode HFA.  */
@@ -4736,6 +4736,14 @@ ia64_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
   cum->atypes[cum->words] = ia64_arg_type (mode);
   cum->words += words + offset;
 
+  /* On OpenVMS argument is either in Rn or Fn.  */
+  if (TARGET_ABI_OPEN_VMS)
+    {
+      cum->int_regs = cum->words;
+      cum->fp_regs = cum->words;
+      return;
+    }
+
   /* Check for and handle homogeneous FP aggregates.  */
   if (type)
     hfa_mode = hfa_element_mode (type, 0);
@@ -4774,13 +4782,6 @@ ia64_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 	}
 
       cum->fp_regs = fp_regs;
-    }
-
-  /* On OpenVMS variable argument is either in Rn or Fn.  */
-  else if (TARGET_ABI_OPEN_VMS && named == 0)
-    {
-      cum->int_regs = cum->words;
-      cum->fp_regs = cum->words;
     }
 
   /* Integral and aggregates go in general registers.  So do TFmode FP values.
