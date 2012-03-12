@@ -1,5 +1,17 @@
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* doc/install.texi (Specific, i?86-*-solaris2.[89]): Update
+	binutils reference.
+	(Specific, i?86-*-solaris2.10): Remove GCC 4.0 reference.
+	Update binutils references.
+	(Specific, *-*-solaris2*): Mention bundled GCC in Solaris 10 and 11.
+	Update binutils reference.
+	Update Sun as/GNU ld caveat.
+	Document binutils largefile requirement for LTO plugin.
+	Remove reference to alternate libpthread.
+
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* doc/install.texi (Specific, alpha*-dec-osf5.1): Update binutils
 	reference.
 	(Specific, mips-sgi-irix6): Likewise.
