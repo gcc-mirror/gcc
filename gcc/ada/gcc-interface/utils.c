@@ -3411,27 +3411,6 @@ build_unc_object_type_from_ptr (tree thin_fat_ptr_type, tree object_type,
   return
     build_unc_object_type (template_type, object_type, name, debug_info_p);
 }
-
-/* Shift the component offsets within an unconstrained object TYPE to make it
-   suitable for use as a designated type for thin pointers.  */
-
-void
-shift_unc_components_for_thin_pointers (tree type)
-{
-  /* Thin pointer values designate the ARRAY data of an unconstrained object,
-     allocated past the BOUNDS template.  The designated type is adjusted to
-     have ARRAY at position zero and the template at a negative offset, so
-     that COMPONENT_REFs on (*thin_ptr) designate the proper location.  */
-
-  tree bounds_field = TYPE_FIELDS (type);
-  tree array_field  = DECL_CHAIN (TYPE_FIELDS (type));
-
-  DECL_FIELD_OFFSET (bounds_field)
-    = size_binop (MINUS_EXPR, size_zero_node, byte_position (array_field));
-
-  DECL_FIELD_OFFSET (array_field) = size_zero_node;
-  DECL_FIELD_BIT_OFFSET (array_field) = bitsize_zero_node;
-}
 
 /* Update anything previously pointing to OLD_TYPE to point to NEW_TYPE.
    In the normal case this is just two adjustments, but we have more to
@@ -3616,7 +3595,18 @@ convert_to_fat_pointer (tree type, tree expr)
       if (TREE_CODE (expr) == ADDR_EXPR)
 	expr = TREE_OPERAND (expr, 0);
       else
-	expr = build1 (INDIRECT_REF, TREE_TYPE (etype), expr);
+	{
+	  /* If we have a TYPE_UNCONSTRAINED_ARRAY attached to the RECORD_TYPE,
+	     the thin pointer value has been shifted so we first need to shift
+	     it back to get the template address.  */
+	  if (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)))
+	    expr
+	      = build_binary_op (POINTER_PLUS_EXPR, etype, expr,
+				 fold_build1 (NEGATE_EXPR, sizetype,
+					      byte_position
+					      (DECL_CHAIN (field))));
+	  expr = build1 (INDIRECT_REF, TREE_TYPE (etype), expr);
+	}
 
       template_tree = build_component_ref (expr, NULL_TREE, field, false);
       expr = build_unary_op (ADDR_EXPR, NULL_TREE,
@@ -4103,12 +4093,19 @@ convert (tree type, tree expr)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       /* If converting between two thin pointers, adjust if needed to account
-	 for any differing offsets, since one of them might be negative.  */
+	 for differing offsets from the base pointer, depending on whether
+	 there is a TYPE_UNCONSTRAINED_ARRAY attached to the record type.  */
       if (TYPE_IS_THIN_POINTER_P (etype) && TYPE_IS_THIN_POINTER_P (type))
 	{
-	  tree byte_diff
-	    = size_diffop (byte_position (TYPE_FIELDS (TREE_TYPE (etype))),
-			   byte_position (TYPE_FIELDS (TREE_TYPE (type))));
+	  tree etype_pos
+	    = TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)) != NULL_TREE
+	      ? byte_position (DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (etype))))
+	      : size_zero_node;
+	  tree type_pos
+	    = TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type)) != NULL_TREE
+	      ? byte_position (DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (type))))
+	      : size_zero_node;
+	  tree byte_diff = size_diffop (type_pos, etype_pos);
 
 	  expr = build1 (NOP_EXPR, type, expr);
 	  if (integer_zerop (byte_diff))

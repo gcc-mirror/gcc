@@ -1,3 +1,17 @@
+2012-03-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (shift_unc_components_for_thin_pointers): Kill.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Remove call
+	to above function.
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Pool_Address>: Adjust
+	handling of thin pointers.
+	<Attr_Descriptor_Size>: Likewise.
+	(gnat_to_gnu) <N_Free_Statement>: Likewise.
+	* gcc-interface/utils.c (shift_unc_components_for_thin_pointers): Kill.
+	(convert_to_fat_pointer): Adjust handling of thin pointers.
+	(convert) <POINTER_TYPE>: Likewise.
+	* gcc-interface/utils2.c (build_unary_op) <INDIRECT_REF>: Likewise.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Makefile.in (alpha*-dec-osf*): Remove.

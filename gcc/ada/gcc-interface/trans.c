@@ -1439,7 +1439,10 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  gnu_ptr
 	    = build_binary_op (POINTER_PLUS_EXPR, TREE_TYPE (gnu_ptr),
 			       gnu_ptr,
-			       byte_position (TYPE_FIELDS (gnu_obj_type)));
+			       fold_build1 (NEGATE_EXPR, sizetype,
+					    byte_position
+					    (DECL_CHAIN
+					     TYPE_FIELDS ((gnu_obj_type)))));
 
 	gnu_result = convert (gnu_result_type, gnu_ptr);
       }
@@ -1950,12 +1953,10 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       gnu_type = TREE_TYPE (gnu_prefix);
       gcc_assert (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE);
 
-      /* What we want is the offset of the ARRAY field in the record that the
-        thin pointer designates, but the components have been shifted so this
-        is actually the opposite of the offset of the BOUNDS field.  */
+      /* What we want is the offset of the ARRAY field in the record
+	 that the thin pointer designates.  */
       gnu_type = TYPE_OBJECT_RECORD_TYPE (gnu_type);
-      gnu_result = size_binop (MINUS_EXPR, bitsize_zero_node,
-                               bit_position (TYPE_FIELDS (gnu_type)));
+      gnu_result = bit_position (DECL_CHAIN (TYPE_FIELDS (gnu_type)));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
       prefix_unused = true;
       break;
@@ -6622,7 +6623,10 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_ptr
 	      = build_binary_op (POINTER_PLUS_EXPR, TREE_TYPE (gnu_ptr),
 				 gnu_ptr,
-				 byte_position (TYPE_FIELDS (gnu_obj_type)));
+				 fold_build1 (NEGATE_EXPR, sizetype,
+					      byte_position
+					      (DECL_CHAIN
+					       TYPE_FIELDS ((gnu_obj_type)))));
 
 	  /* If we have a special dynamic constrained subtype on the node, use
 	     it to compute the size; otherwise, use the designated subtype.  */
