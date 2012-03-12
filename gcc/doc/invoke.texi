@@ -174,7 +174,7 @@ in the following sections.
 -aux-info @var{filename} -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
 -fhosted  -ffreestanding -fopenmp -fms-extensions -fplan9-extensions @gol
--trigraphs  -no-integrated-cpp  -traditional  -traditional-cpp @gol
+-trigraphs  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
 -funsigned-bitfields  -funsigned-char}
@@ -433,7 +433,7 @@ Objective-C and Objective-C++ Dialects}.
 -M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  @gol
 -P  -fdebug-cpp -ftrack-macro-expansion -fworking-directory @gol
 -remap -trigraphs  -undef  -U@var{macro}  @gol
--Wp,@var{option} -Xpreprocessor @var{option}}
+-Wp,@var{option} -Xpreprocessor @var{option} -no-integrated-cpp}
 
 @item Assembler Option
 @xref{Assembler Options,,Passing Options to the Assembler}.
@@ -1793,17 +1793,6 @@ supported for C, not C++.
 @opindex trigraphs
 Support ISO C trigraphs.  The @option{-ansi} option (and @option{-std}
 options for strict ISO C conformance) implies @option{-trigraphs}.
-
-@item -no-integrated-cpp
-@opindex no-integrated-cpp
-Performs a compilation in two passes: preprocessing and compiling.  This
-option allows a user supplied "cc1", "cc1plus", or "cc1obj" via the
-@option{-B} option.  The user supplied compilation step can then add in
-an additional preprocessing step after normal preprocessing but before
-compiling.  The default is to use the integrated cpp (internal cpp)
-
-The semantics of this option will change if "cc1", "cc1plus", and
-"cc1obj" are merged.
 
 @cindex traditional C language
 @cindex C language, traditional
@@ -9300,6 +9289,21 @@ recognize.
 
 If you want to pass an option that takes an argument, you must use
 @option{-Xpreprocessor} twice, once for the option and once for the argument.
+
+@item -no-integrated-cpp
+@opindex no-integrated-cpp
+Perform preprocessing as a separate pass before compilation.
+By default, GCC performs preprocessing as an integrated part of
+input tokenization and parsing.
+If this option is provided, the appropriate language front end
+(@command{cc1}, @command{cc1plus}, or @command{cc1obj} for C, C++,
+and Objective-C, respectively) is instead invoked twice,
+once for preprocessing only and once for actual compilation
+of the preprocessed input.
+This option may be useful in conjunction with the @option{-B} or
+@option{-wrapper} options to specify an alternate preprocessor or
+perform additional processing of the program source between
+normal preprocessing and compilation.
 @end table
 
 @include cppopts.texi
