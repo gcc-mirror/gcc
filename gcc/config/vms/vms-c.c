@@ -335,8 +335,8 @@ handle_pragma_pointer_size (const char *pragma_name)
 static void
 vms_pragma_pointer_size (cpp_reader * ARG_UNUSED (dummy))
 {
-  /* Ignore if 32 bit only.  */
-  if (POINTER_SIZE != 64)
+  /* Ignore if no -mpointer-size option.  */
+  if (flag_vms_pointer_size == VMS_POINTER_SIZE_NONE)
     return;
 
   handle_pragma_pointer_size ("pointer_size");
@@ -447,5 +447,22 @@ vms_c_register_includes (const char *sysroot,
           else
             free (path);
         }
+    }
+}
+
+void
+vms_c_common_override_options (void)
+{
+  /* Initialize c_default_pointer_mode.  */
+  switch (flag_vms_pointer_size)
+    {
+    case VMS_POINTER_SIZE_NONE:
+      break;
+    case VMS_POINTER_SIZE_32:
+      c_default_pointer_mode = SImode;
+      break;
+    case VMS_POINTER_SIZE_64:
+      c_default_pointer_mode = DImode;
+      break;
     }
 }

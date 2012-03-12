@@ -999,13 +999,11 @@ extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
    intrusive preprocessor directives.  */
 #ifndef TARGET_ABI_OPEN_VMS
 #define TARGET_ABI_OPEN_VMS 0
-#endif
 
-/* VMS macro set by default, when clear forces 32bit mallocs and 32bit
+/* VMS option set by default, when clear forces 32bit mallocs and 32bit
    Descriptors. Always used in combination with TARGET_ABI_OPEN_VMS
    so no effect on non-VMS systems.  */
-#ifndef TARGET_MALLOC64
-#define TARGET_MALLOC64 0
+#define flag_vms_malloc64 0
 #endif
 
 /* Convenient shortcuts.  */

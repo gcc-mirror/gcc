@@ -1,3 +1,10 @@
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_param): Use flag_vms_malloc64
+	instead of TARGET_MALLOC64.
+	* gcc-interface/gigi.h (flag_vms_malloc64): Define instead
+	of TARGET_MALLOC64.
+
 2012-03-09  Robert Dewar  <dewar@adacore.com>
 
 	* a-direct.adb, comperr.adb, freeze.adb: Minor reformatting.
