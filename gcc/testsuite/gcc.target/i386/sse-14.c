@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm" } */
 
 #include <mm_malloc.h>
 
@@ -18,6 +18,10 @@
 #include <x86intrin.h>
 
 #define _CONCAT(x,y) x ## y
+
+#define test_0(func, type, imm)						\
+  type _CONCAT(_,func) (int const I)					\
+  { return func (imm); }
 
 #define test_1(func, type, op1_type, imm)				\
   type _CONCAT(_,func) (op1_type A, int const I)			\
@@ -95,6 +99,7 @@ test_1 (_mm256_round_ps, __m256, __m256, 1)
 test_1 (_cvtss_sh, unsigned short, float, 1)
 test_1 (_mm_cvtps_ph, __m128i, __m128, 1)
 test_1 (_mm256_cvtps_ph, __m128i, __m256, 1)
+test_0 (_xabort, void, 1)
 
 /* wmmintrin.h */
 test_1 (_mm_aeskeygenassist_si128, __m128i, __m128i, 1)

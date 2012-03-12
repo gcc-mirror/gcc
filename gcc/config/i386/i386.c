@@ -2682,6 +2682,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mfsgsbase",	OPTION_MASK_ISA_FSGSBASE },
     { "-mrdrnd",	OPTION_MASK_ISA_RDRND },
     { "-mf16c",		OPTION_MASK_ISA_F16C },
+    { "-mrtm",		OPTION_MASK_ISA_RTM },
   };
 
   /* Flag options.  */
@@ -2930,6 +2931,7 @@ ix86_option_override_internal (bool main_args_p)
 #define PTA_XOP		 	(HOST_WIDE_INT_1 << 29)
 #define PTA_AVX2		(HOST_WIDE_INT_1 << 30)
 #define PTA_BMI2	 	(HOST_WIDE_INT_1 << 31)
+#define PTA_RTM		 	(HOST_WIDE_INT_1 << 32)
 /* if this reaches 64, need to widen struct pta flags below */
 
   static struct pta
@@ -2988,7 +2990,7 @@ ix86_option_override_internal (bool main_args_p)
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX | PTA_AVX2
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
 	| PTA_RDRND | PTA_F16C | PTA_BMI | PTA_BMI2 | PTA_LZCNT
-        | PTA_FMA | PTA_MOVBE},
+        | PTA_FMA | PTA_MOVBE | PTA_RTM},
       {"atom", PROCESSOR_ATOM, CPU_ATOM,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16 | PTA_MOVBE},
@@ -3355,6 +3357,9 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_F16C
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_F16C))
 	  ix86_isa_flags |= OPTION_MASK_ISA_F16C;
+	if (processor_alias_table[i].flags & PTA_RTM
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_RTM))
+	  ix86_isa_flags |= OPTION_MASK_ISA_RTM;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -4155,6 +4160,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("fsgsbase",	OPT_mfsgsbase),
     IX86_ATTR_ISA ("rdrnd",	OPT_mrdrnd),
     IX86_ATTR_ISA ("f16c",	OPT_mf16c),
+    IX86_ATTR_ISA ("rtm",	OPT_mrtm),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -25643,6 +25649,12 @@ enum ix86_builtins
 
   IX86_BUILTIN_CLZS,
 
+  /* RTM */
+  IX86_BUILTIN_XBEGIN,
+  IX86_BUILTIN_XEND,
+  IX86_BUILTIN_XABORT,
+  IX86_BUILTIN_XTEST,
+
   /* BMI instructions.  */
   IX86_BUILTIN_BEXTR32,
   IX86_BUILTIN_BEXTR64,
@@ -25981,6 +25993,11 @@ static const struct builtin_description bdesc_special_args[] =
   { OPTION_MASK_ISA_FSGSBASE | OPTION_MASK_ISA_64BIT, CODE_FOR_wrfsbasedi, "__builtin_ia32_wrfsbase64", IX86_BUILTIN_WRFSBASE64, UNKNOWN, (int) VOID_FTYPE_UINT64 },
   { OPTION_MASK_ISA_FSGSBASE | OPTION_MASK_ISA_64BIT, CODE_FOR_wrgsbasesi, "__builtin_ia32_wrgsbase32", IX86_BUILTIN_WRGSBASE32, UNKNOWN, (int) VOID_FTYPE_UNSIGNED },
   { OPTION_MASK_ISA_FSGSBASE | OPTION_MASK_ISA_64BIT, CODE_FOR_wrgsbasedi, "__builtin_ia32_wrgsbase64", IX86_BUILTIN_WRGSBASE64, UNKNOWN, (int) VOID_FTYPE_UINT64 },
+
+  /* RTM */
+  { OPTION_MASK_ISA_RTM, CODE_FOR_xbegin, "__builtin_ia32_xbegin", IX86_BUILTIN_XBEGIN, UNKNOWN, (int) UNSIGNED_FTYPE_VOID },
+  { OPTION_MASK_ISA_RTM, CODE_FOR_xend, "__builtin_ia32_xend", IX86_BUILTIN_XEND, UNKNOWN, (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_RTM, CODE_FOR_xtest, "__builtin_ia32_xtest", IX86_BUILTIN_XTEST, UNKNOWN, (int) INT_FTYPE_VOID },
 };
 
 /* Builtins with variable number of arguments.  */
@@ -27427,6 +27444,10 @@ ix86_init_mmx_sse_builtins (void)
 	       V8SI_FTYPE_V8SI_PCINT_V4DI_V8SI_INT,
 	       IX86_BUILTIN_GATHERALTDIV8SI);
 
+  /* RTM.  */
+  def_builtin (OPTION_MASK_ISA_RTM, "__builtin_ia32_xabort",
+	       VOID_FTYPE_UNSIGNED, IX86_BUILTIN_XABORT);
+
   /* MMX access to the vec_init patterns.  */
   def_builtin_const (OPTION_MASK_ISA_MMX, "__builtin_ia32_vec_init_v2si",
 		     V2SI_FTYPE_INT_INT, IX86_BUILTIN_VEC_INIT_V2SI);
@@ -28866,6 +28887,8 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = store;
       memory = 0;
       break;
+
+    case INT_FTYPE_VOID:
     case UINT64_FTYPE_VOID:
     case UNSIGNED_FTYPE_VOID:
       nargs = 0;
@@ -29662,6 +29685,19 @@ rdrand_step:
 	target = subtarget;
 
       return target;
+
+    case IX86_BUILTIN_XABORT:
+      icode = CODE_FOR_xabort;
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+      mode0 = insn_data[icode].operand[0].mode;
+      if (!insn_data[icode].operand[0].predicate (op0, mode0))
+	{
+	  error ("the xabort's argument must be an 8-bit immediate");
+	  return const0_rtx;
+	}
+      emit_insn (gen_xabort (op0));
+      return 0;
 
     default:
       break;

@@ -18,6 +18,10 @@
 
 #define _CONCAT(x,y) x ## y
 
+#define test_0(func, type, imm)						\
+  type _CONCAT(_,func) (int const I)					\
+  { return func (imm); }
+
 #define test_1(func, type, op1_type, imm)				\
   type _CONCAT(_,func) (op1_type A, int const I)			\
   { return func (A, imm); }
@@ -46,7 +50,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -159,9 +163,9 @@ test_4 (_mm_cmpestro, int, __m128i, int, __m128i, int, 1)
 test_4 (_mm_cmpestrs, int, __m128i, int, __m128i, int, 1)
 test_4 (_mm_cmpestrz, int, __m128i, int, __m128i, int, 1)
 
-/* immintrin.h (AVX/AVX2/RDRND/FSGSBASE/F16C) */
+/* immintrin.h (AVX/AVX2/RDRND/FSGSBASE/F16C/RTM) */
 #ifdef DIFFERENT_PRAGMAS
-#pragma GCC target ("avx,avx2,rdrnd,fsgsbase,f16c")
+#pragma GCC target ("avx,avx2,rdrnd,fsgsbase,f16c,rtm")
 #endif
 #include <immintrin.h>
 test_1 (_cvtss_sh, unsigned short, float, 1)
@@ -240,6 +244,9 @@ test_2 ( _mm_i32gather_epi32, __m128i, int const *, __m128i, 1)
 test_2 ( _mm256_i32gather_epi32, __m256i, int const *, __m256i, 1)
 test_2 ( _mm_i64gather_epi32, __m128i, int const *, __m128i, 1)
 test_2 ( _mm256_i64gather_epi32, __m128i, int const *, __m256i, 1)
+
+/* rtmintrin.h */
+test_0 ( _xabort, void, 1)
 
 /* wmmintrin.h (AES/PCLMUL).  */
 #ifdef DIFFERENT_PRAGMAS
