@@ -254,7 +254,6 @@ case ${target} in
  | arm*-*-uclinux*			\
  | arm*-wince-pe*			\
  | mips-sgi-irix6.5			\
- | mips*-*-openbsd*			\
  | score-*				\
  | *-*-solaris2.8*			\
  )
@@ -1746,17 +1745,6 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
         esac
 	test x$with_llsc != x || with_llsc=yes
-	;;
-mips*-*-openbsd*)
-	tm_defines="${tm_defines} OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_OBJECT OBSD_HAS_CORRECT_SPECS"
-	target_cpu_default="MASK_ABICALLS"
-	tm_file="mips/mips.h openbsd.h openbsd-stdint.h openbsd-libpthread.h mips/openbsd.h mips/sdb.h"
-	extra_options="${extra_options} openbsd.opt"
-	case ${target} in
-	mips*el-*-openbsd*)
-	    tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=0";;
-	*)  tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=MASK_BIG_ENDIAN";;
-        esac
 	;;
 mips*-sde-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/sde.h"

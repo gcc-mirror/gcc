@@ -743,8 +743,6 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	tmake_file="${tmake_file} t-crtfm mips/t-mips16"
 	md_unwind_header=mips/linux-unwind.h
 	;;
-mips*-*-openbsd*)
-	;;
 mips*-sde-elf*)
 	tmake_file="$tmake_file mips/t-crtstuff mips/t-mips16"
 	case "${with_newlib}" in
