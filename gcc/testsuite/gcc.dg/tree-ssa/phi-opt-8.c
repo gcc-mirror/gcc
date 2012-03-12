@@ -19,7 +19,7 @@ int f(int t, int c)
    but currently is not as PHI-OPT does not reduce the t PHI as we have
    two phis.  Note this is fixed with
    http://gcc.gnu.org/ml/gcc-patches/2012-01/msg01195.html .  */
-/* { dg-final { scan-tree-dump-not "if" "phiopt1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-not "if" "phiopt1" } } */
 /* { dg-final { scan-tree-dump "g .t_\[0-9\]*.D.," "optimized" } } */
 /* { dg-final { scan-tree-dump-not "PHI" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "phiopt1" } } */

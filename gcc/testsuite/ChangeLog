@@ -1,3 +1,7 @@
+2012-03-12  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.dg/tree-ssa/phi-opt-7.c: New testcase.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/abi/rtti3.C: Remove alpha*-dec-osf* handling.
