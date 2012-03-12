@@ -98,15 +98,15 @@ namespace std
 
     /** Returns an @e implementation-defined byte string; this is not
      *  portable between compilers!  */
-    const char* name() const
+    const char* name() const _GLIBCXX_NOEXCEPT
     { return __name[0] == '*' ? __name + 1 : __name; }
 
 #if !__GXX_TYPEINFO_EQUALITY_INLINE
     // In old abi, or when weak symbols are not supported, there can
     // be multiple instances of a type_info object for one
     // type. Uniqueness must use the _name value, not object address.
-    bool before(const type_info& __arg) const;
-    bool operator==(const type_info& __arg) const;
+    bool before(const type_info& __arg) const _GLIBCXX_NOEXCEPT;
+    bool operator==(const type_info& __arg) const _GLIBCXX_NOEXCEPT;
 #else
   #if !__GXX_MERGED_TYPEINFO_NAMES
     /** Returns true if @c *this precedes @c __arg in the implementation's
@@ -114,12 +114,12 @@ namespace std
     // Even with the new abi, on systems that support dlopen
     // we can run into cases where type_info names aren't merged,
     // so we still need to do string comparison.
-    bool before(const type_info& __arg) const
+    bool before(const type_info& __arg) const _GLIBCXX_NOEXCEPT
     { return (__name[0] == '*' && __arg.__name[0] == '*')
 	? __name < __arg.__name
 	: __builtin_strcmp (__name, __arg.__name) < 0; }
 
-    bool operator==(const type_info& __arg) const
+    bool operator==(const type_info& __arg) const _GLIBCXX_NOEXCEPT
     {
       return ((__name == __arg.__name)
 	      || (__name[0] != '*' &&
@@ -128,14 +128,14 @@ namespace std
   #else
     // On some targets we can rely on type_info's NTBS being unique,
     // and therefore address comparisons are sufficient.
-    bool before(const type_info& __arg) const
+    bool before(const type_info& __arg) const _GLIBCXX_NOEXCEPT
     { return __name < __arg.__name; }
 
-    bool operator==(const type_info& __arg) const
+    bool operator==(const type_info& __arg) const _GLIBCXX_NOEXCEPT
     { return __name == __arg.__name; }
   #endif
 #endif
-    bool operator!=(const type_info& __arg) const
+    bool operator!=(const type_info& __arg) const _GLIBCXX_NOEXCEPT
     { return !operator==(__arg); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
