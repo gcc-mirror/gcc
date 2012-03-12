@@ -1,3 +1,8 @@
+2012-03-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (setcc + movzbl to xor + setcc peephole2):
+	Also convert sequences with CC setting arithmetic instruction.
+
 2012-03-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Option Summary): Move -no-integrated-cpp
