@@ -1,3 +1,9 @@
+2012-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*tls_global_dynamic_64_<mode>): Remove :P
+	on tls_symbolic_operand.
+	(tls_global_dynamic_64_<mode>): Likewise.
+
 2012-03-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR other/52545
