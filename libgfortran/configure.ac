@@ -484,7 +484,7 @@ LIBGFOR_CHECK_FLOAT128
 # Check for GNU libc feenableexcept
 AC_CHECK_LIB([m],[feenableexcept],[have_feenableexcept=yes AC_DEFINE([HAVE_FEENABLEEXCEPT],[1],[libm includes feenableexcept])])
 
-# At least for glibc and Tru64, clock_gettime is in librt.  But don't
+# At least for glibc, clock_gettime is in librt.  But don't
 # pull that in if it still doesn't give us the function we want.  This
 # test is copied from libgomp, and modified to not link in -lrt as
 # libgfortran calls clock_gettime via a weak reference if it's found

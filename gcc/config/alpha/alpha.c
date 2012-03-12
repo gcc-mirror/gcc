@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -4673,7 +4673,7 @@ struct GTY(()) machine_function
   /* For OSF.  */
   const char *some_ld_name;
 
-  /* For TARGET_LD_BUGGY_LDGP.  */
+  /* For flag_reorder_blocks_and_partition.  */
   rtx gp_save_rtx;
 
   /* For VMS condition handlers.  */
@@ -7859,10 +7859,8 @@ alpha_start_function (FILE *file, const char *fnname,
   HOST_WIDE_INT sa_size;
   /* Complete stack size needed.  */
   unsigned HOST_WIDE_INT frame_size;
-  /* The maximum debuggable frame size (512 Kbytes using Tru64 as).  */
-  unsigned HOST_WIDE_INT max_frame_size = TARGET_ABI_OSF && !TARGET_GAS
-					  ? 524288
-					  : 1UL << 31;
+  /* The maximum debuggable frame size.  */
+  unsigned HOST_WIDE_INT max_frame_size = 1UL << 31;
   /* Offset from base reg to register save area.  */
   HOST_WIDE_INT reg_offset;
   char *entry_label = (char *) alloca (strlen (fnname) + 6);

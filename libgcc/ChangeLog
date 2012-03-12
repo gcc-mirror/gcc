@@ -1,3 +1,16 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host: Remove alpha*-dec-osf5.1* handling.
+	* config/alpha/gthr-posix.c: Remove.
+	* config/alpha/libgcc-osf5.ver: Remove.
+	* config/alpha/osf5-unwind.h: Remove.
+	* config/alpha/t-osf-pthread: Remove.
+	* config/alpha/t-slibgcc-osf: Remove.
+	* config/t-crtfm (crtfastmath.o): Remove -frandom-seed.
+	* gthr-posix.h [!_REENTRANT && __osf__] (_REENTRANT): Don't define.
+	[__osf__ && _PTHREAD_USE_MANGLED_NAMES_]: Remove.
+	* mkmap-flat.awk: Remove osf_export handling.
+
 2012-03-12  Richard Guenther  <rguenther@suse.de>
 
 	* gthr.h (__GTHREAD_MUTEX_INIT_FUNCTION): Adjust specification.

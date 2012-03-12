@@ -4,8 +4,7 @@ load_lib gcc-dg.exp
 load_lib gcc-gdb-test.exp
 
 # Disable on darwin until radr://7264615 is resolved.
-# Disable on Tru64 UNIX (PR testsuite/48251).
-if { [istarget *-*-darwin*] || [istarget alpha*-dec-osf*] } {
+if { [istarget *-*-darwin*] } {
   return
 }
 

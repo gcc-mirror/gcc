@@ -1,6 +1,6 @@
 // posix-signal.h - Catch runtime signals and turn them into exceptions.
 
-/* Copyright (C) 1998, 1999, 2000, 2009, 2011  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2009, 2011, 2012 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -20,8 +20,7 @@ details.  */
    SA_SIGINFO being set or fail if so.  Cf. gcc/ada/init.c
    (__gnat_install_handler) for details.  */
 
-#if (defined __alpha__ && defined __osf__) \
-  || (defined __sun__ && defined __svr4__)
+#if defined __sun__ && defined __svr4__
 #define SA_FLAGS SA_NODEFER | SA_SIGINFO
 #elif defined __sgi__
 #define SA_FLAGS SA_NODEFER

@@ -7,8 +7,7 @@
    So: If we know how, ask the kernel to deliver SIGBUS instead so
    that the test case visibly fails.  */
    
-#if defined(__alpha__) && (defined(__linux__) || defined(__osf__))
-#ifdef __linux__
+#if defined(__alpha__) && defined(__linux__)
 #include <asm/sysinfo.h>
 #include <asm/unistd.h>
 
@@ -19,11 +18,6 @@ setsysinfo(unsigned long op, void *buffer, unsigned long size,
   syscall(__NR_osf_setsysinfo, op, buffer, size, start, arg, flag);
 }
 
-#else
-#include <sys/sysinfo.h>
-#include <sys/proc.h>
-#endif
-   
 static void __attribute__((constructor))
 trap_unaligned(void)
 {

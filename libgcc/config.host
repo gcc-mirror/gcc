@@ -266,8 +266,7 @@ case ${host} in
 esac
 
 case ${host} in
-*-*-darwin* | *-*-freebsd* | *-*-netbsd* | *-*-openbsd* | *-*-solaris2* | \
-  alpha*-dec-osf5.1*)
+*-*-darwin* | *-*-freebsd* | *-*-netbsd* | *-*-openbsd* | *-*-solaris2*)
   enable_execute_stack=enable-execute-stack-mprotect.c
   ;;
 i[34567]86-*-mingw* | x86_64-*-mingw*)
@@ -293,16 +292,6 @@ alpha*-*-netbsd*)
 	;;
 alpha*-*-openbsd*)
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee"
-	;;
-alpha*-dec-osf5.1*)
-	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee t-crtfm t-slibgcc alpha/t-slibgcc-osf"
-	case ${target_thread_file} in
-	  posix)
-	    tmake_file="${tmake_file} alpha/t-osf-pthread"
-	    ;;
-	esac
-	extra_parts="${extra_parts} crtfastmath.o"
-	md_unwind_header=alpha/osf5-unwind.h
 	;;
 alpha64-dec-*vms*)
 	tmake_file="$tmake_file alpha/t-alpha alpha/t-ieee alpha/t-vms t-slibgcc-vms"

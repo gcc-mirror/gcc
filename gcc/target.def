@@ -2721,11 +2721,6 @@ DEFHOOKPOD
  "",
  bool, false)
 
-DEFHOOKPOD
-(handle_pragma_extern_prefix,
-"True if @code{#pragma extern_prefix} is to be supported.",
- bool, 0)
-
 /* True if the target is allowed to reorder memory accesses unless
    synchronization is explicitly requested.  */
 DEFHOOKPOD

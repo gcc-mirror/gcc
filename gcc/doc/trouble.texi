@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+@c 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -20,7 +20,6 @@ where people's opinions differ as to what is best.
 
 @menu
 * Actual Bugs::         Bugs we will fix later.
-* Cross-Compiler Problems:: Common problems of cross compiling with GCC.
 * Interoperation::      Problems using GCC with other compilers,
                         and with certain linkers, assemblers and debuggers.
 * Incompatibilities::   GCC is incompatible with traditional C.
@@ -44,19 +43,6 @@ The @code{fixincludes} script interacts badly with automounters; if the
 directory of system header files is automounted, it tends to be
 unmounted while @code{fixincludes} is running.  This would seem to be a
 bug in the automounter.  We don't know any good way to work around it.
-@end itemize
-
-@node Cross-Compiler Problems
-@section Cross-Compiler Problems
-
-You may run into problems with cross compilation on certain machines,
-for several reasons.
-
-@itemize @bullet
-@item
-At present, the program @file{mips-tfile} which adds debug
-support to object files on Tru64 UNIX systems does not work in a cross
-compile environment.
 @end itemize
 
 @node Interoperation

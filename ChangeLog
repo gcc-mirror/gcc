@@ -1,3 +1,10 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* MAINTAINERS (OS Port Maintainers): Remove osf.
+	* configure.ac (enable_libgomp): Remove *-*-osf*.
+	(with_stabs): Remove alpha*-*-osf*.
+	* configure: Regenerate.
+
 2012-03-05  Tristan Gingold  <gingold@adacore.com>
 
 	* configure.ac: Enable gdb and readline for ia64*-*-*vms*.

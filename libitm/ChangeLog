@@ -1,3 +1,8 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.tgt (*-*-osf*): Remove.
+	* configure: Regenerate.
+
 2012-03-05  Torvald Riegel  <triegel@redhat.com>
 
 	* dispatch.h (CREATE_DISPATCH_METHODS_MEM): Don't execute

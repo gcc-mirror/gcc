@@ -1,7 +1,7 @@
 /* Implements exception handling.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -1419,7 +1419,7 @@ finish_eh_generation (void)
   break_superblocks ();
 
   if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ
-      /* Kludge for Alpha/Tru64 (see alpha_gp_save_rtx).  */
+      /* Kludge for Alpha (see alpha_gp_save_rtx).  */
       || single_succ_edge (ENTRY_BLOCK_PTR)->insns.r)
     commit_edge_insertions ();
 

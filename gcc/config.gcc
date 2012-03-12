@@ -246,8 +246,7 @@ case ${target} in
    arm*-*-*eabi*			\
  )
      ;;
-   alpha*-dec-osf5.1*			\
- | arm*-*-ecos-elf			\
+   arm*-*-ecos-elf			\
  | arm*-*-elf				\
  | arm*-*-freebsd*			\
  | arm*-*-linux*			\
@@ -787,30 +786,6 @@ alpha*-*-openbsd*)
 	extra_options="${extra_options} openbsd.opt alpha/elf.opt"
 	# default x-alpha is only appropriate for dec-osf.
 	target_cpu_default="MASK_GAS"
-	;;
-alpha*-dec-osf5.1*)
-	if test x$stabs = xyes
-	then
-		tm_file="${tm_file} dbx.h"
-	fi
-	# mips-tfile and mips-tdump are only used with the native assembler
-	# and require the Tru64 UNIX <a.out.h>, so only build native.
-	if test x$gas != xyes && test x${host} = x${target}
-	then
-		extra_passes="mips-tfile mips-tdump"
-	fi
-	use_collect2=yes
-	tmake_file="t-slibgcc"
-	tm_file="${tm_file} alpha/osf5.h"
-	tm_defines="${tm_defines} TARGET_SUPPORT_ARCH=1"
-	extra_options="${extra_options} rpath.opt alpha/osf5.opt"
-	extra_headers=va_list.h
-	use_gcc_stdint=provide
-	case ${enable_threads} in
-	  "" | yes | posix)
-	    thread_file='posix'
-	    ;;
-	esac
 	;;
 alpha*-dec-*vms*)
 	tm_file="${tm_file} vms/vms.h alpha/vms.h"

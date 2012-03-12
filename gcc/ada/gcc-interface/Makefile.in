@@ -1454,34 +1454,6 @@ ifeq ($(strip $(filter-out rtems%,$(osys))),)
   s-interr.adb<s-interr-hwint.adb
 endif
 
-ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)
-  LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<a-intnam-tru64.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
-  s-intman.adb<s-intman-posix.adb \
-  s-mastop.adb<s-mastop-tru64.adb \
-  s-osinte.adb<s-osinte-tru64.adb \
-  s-osinte.ads<s-osinte-tru64.ads \
-  s-osprim.adb<s-osprim-unix.adb \
-  s-taprop.adb<s-taprop-tru64.adb \
-  s-tasinf.ads<s-tasinf-tru64.ads \
-  s-taspri.ads<s-taspri-tru64.ads \
-  s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  s-traceb.adb<s-traceb-mastop.adb \
-  system.ads<system-tru64.ads \
-  $(ATOMICS_TARGET_PAIRS) \
-  $(ATOMICS_BUILTINS_TARGET_PAIRS)
-
-  TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-tru64.adb
-
-  EH_MECHANISM=-gcc
-  GMEM_LIB=gmemlib
-  MISCLIB = -lexc
-  THREADSLIB = -lpthread -lmach -lexc -lrt
-  GNATLIB_SHARED = gnatlib-shared-default
-  LIBRARY_VERSION := $(LIB_VERSION)
-endif
-
 ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(host))),)
 
 soext  = .exe

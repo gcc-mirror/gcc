@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+   2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -160,9 +160,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #endif
 #ifndef TARGET_PROFILING_NEEDS_GP
 #define TARGET_PROFILING_NEEDS_GP 0
-#endif
-#ifndef TARGET_LD_BUGGY_LDGP
-#define TARGET_LD_BUGGY_LDGP 0
 #endif
 #ifndef TARGET_FIXUP_EV5_PREFETCH
 #define TARGET_FIXUP_EV5_PREFETCH 0

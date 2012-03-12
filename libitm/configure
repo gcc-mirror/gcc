@@ -17332,7 +17332,6 @@ else
   if test "$cross_compiling" = yes; then :
 
 case "${host}" in
-  alpha*-dec-osf*) ac_cv_have_elf_style_weakref=no ;;
   *-apple-darwin[89]*) ac_cv_have_elf_style_weakref=no ;;
   *) ac_cv_have_elf_style_weakref=yes;;
 esac

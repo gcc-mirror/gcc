@@ -1,3 +1,10 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Remove #pragma extern_prefix
+	handling.
+	* c-pragma.c (handle_pragma_extern_prefix): Remove.
+	(init_pragma): Don't register extern_prefix.
+
 2012-03-12  Richard Guenther  <rguenther@suse.de>
 
 	* c-common.c (c_common_get_narrower): Use c_common_type_for_size.

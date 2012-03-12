@@ -2949,7 +2949,6 @@ The @uref{http://www.mingw.org/,,MinGW} project.
 Written Word} offers binaries for
 AIX 4.3.3, 5.1 and 5.2,
 IRIX 6.5,
-Tru64 UNIX 4.0D and 5.1,
 GNU/Linux (i386),
 HP-UX 10.20, 11.00, and 11.11, and
 Solaris/SPARC 2.5.1, 2.6, 7, 8, 9 and 10.
@@ -3160,54 +3159,10 @@ Systems using processors that implement the DEC Alpha architecture and
 are running the DEC/Compaq/HP Unix (DEC OSF/1, Digital UNIX, or Compaq/HP
 Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
 
-Support for Tru64 UNIX V5.1 has been obsoleted in GCC 4.7, but can still
-be enabled by configuring with @option{--enable-obsolete}.  Support will
-be removed in GCC 4.8.  As of GCC 4.6, support for Tru64 UNIX V4.0 and
-V5.0 has been removed.  As of GCC 3.2, versions before
-@code{alpha*-dec-osf4} are no longer supported.  (These are the versions
-which identify themselves as DEC OSF/1.)
-
-On Tru64 UNIX, virtual memory exhausted bootstrap failures
-may be fixed by reconfiguring Kernel Virtual Memory and Swap parameters
-per the @command{/usr/sbin/sys_check} Tuning Suggestions,
-or applying the patch in
-@uref{http://gcc.gnu.org/ml/gcc/2002-08/msg00822.html}.  Depending on
-the OS version used, you need a data segment size between 512 MB and
-1 GB, so simply use @command{ulimit -Sd unlimited}.
-
-As of GNU binutils 2.21, neither GNU @command{as} nor GNU @command{ld}
-are supported on Tru64 UNIX, so you must not configure GCC with
-@option{--with-gnu-as} or @option{--with-gnu-ld}.
-
-Cross-compilers for the Tru64 UNIX target currently do not work because
-the auxiliary programs @command{mips-tdump} and @command{mips-tfile} can't
-be compiled on anything but Tru64 UNIX.
-
-GCC writes a @samp{.verstamp} directive to the assembler output file
-unless it is built as a cross-compiler.  It gets the version to use from
-the system header file @file{/usr/include/stamp.h}.  If you install a
-new version of Tru64 UNIX, you should rebuild GCC to pick up the new version
-stamp.
-
-GCC now supports both the native (ECOFF) debugging format used by DBX
-and GDB and an encapsulated STABS format for use only with GDB@.  See the
-discussion of the @option{--with-stabs} option of @file{configure} above
-for more information on these formats and how to select them.
-@c FIXME: does this work at all?  If so, perhaps make default.
-
-There is a bug in DEC's assembler that produces incorrect line numbers
-for ECOFF format when the @samp{.align} directive is used.  To work
-around this problem, GCC will not emit such alignment directives
-while writing ECOFF format debugging information even if optimization is
-being performed.  Unfortunately, this has the very undesirable
-side-effect that code addresses when @option{-O} is specified are
-different depending on whether or not @option{-g} is also specified.
-
-To avoid this behavior, specify @option{-gstabs+} and use GDB instead of
-DBX@.  DEC is now aware of this problem with the assembler and hopes to
-provide a fix shortly.
-
-@c FIXME: still applicable?
+Support for Tru64 UNIX V5.1 has been removed in GCC 4.8.  As of GCC 4.6,
+support for Tru64 UNIX V4.0 and V5.0 has been removed.  As of GCC 3.2,
+versions before @code{alpha*-dec-osf4} are no longer supported.  (These
+are the versions which identify themselves as DEC OSF/1.)
 
 @html
 <hr />

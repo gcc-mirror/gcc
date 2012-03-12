@@ -277,9 +277,6 @@ EOF
 	  rm -f conftest conftest.c
 	fi
 	;;
-  alpha*-dec-osf*)
-	can_unwind_signal=yes
-	;;
   i[34567]86*-kfreebsd*-gnu | x86_64*-kfreebsd*-gnu)
         libgcj_ld_symbolic='-Wl,-Bsymbolic'
         slow_pthread_self=

@@ -12,8 +12,7 @@ TEST=all-gcc
 #
 # v850e1-elf is rejected by config.sub
 LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
-  alpha-dec-osf5.1OPT-enable-obsolete alpha64-dec-vms alpha-dec-vms \
-  am33_2.0-linux \
+  alpha64-dec-vms alpha-dec-vms am33_2.0-linux \
   arm-wrs-vxworks arm-freebsd6 arm-netbsdelf arm-linux \
   arm-linux-androideabi arm-uclinux_eabi arm-ecos-elf arm-eabi \
   arm-symbianelf arm-rtems arm-elf arm-wince-pe avr-rtems avr-elf \

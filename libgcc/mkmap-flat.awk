@@ -1,5 +1,6 @@
 # Generate a flat list of symbols to export.
-#	Copyright (C) 2007, 2008, 2009, 2011  Free Software Foundation, Inc.
+#	Copyright (C) 2007, 2008, 2009, 2011, 2012
+#	Free Software Foundation, Inc.
 #	Contributed by Richard Henderson <rth@cygnus.com>
 #
 # This file is part of GCC.
@@ -20,8 +21,6 @@
 
 # Options:
 #   "-v leading_underscore=1" : Symbols in map need leading underscore.
-#   "-v osf_export=1"	      : Create -input file for Tru64 UNIX linker
-#				instead of map file.
 #   "-v pe_dll=1"             : Create .DEF file for Windows PECOFF
 #                               DLL link instead of map file.
 
@@ -100,10 +99,6 @@ END {
   }
 
   for (sym in export)
-    if (def[sym] || (pe_dll && def["_" sym])) {
-      if (!osf_export)
-	print sym;
-      else
-	print "-exported_symbol " sym;
-    }
+    if (def[sym] || (pe_dll && def["_" sym]))
+      print sym;
 }

@@ -1,3 +1,10 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.tgt (alpha*-dec-osf*): Remove.
+
+	* config/osf/sem.h: Remove.
+	* config/posix/lock.c (_XOPEN_SOURCE): Define unconditionally.
+
 2012-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/linux/sparc/futex.h (cpu_relax): Read from CC register.

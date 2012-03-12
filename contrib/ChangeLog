@@ -1,3 +1,7 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config-list.mk (LIST): Remove alpha-dec-osf5.1.
+
 2012-03-02   Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management/validate_failures.py (class TestResult): Fix

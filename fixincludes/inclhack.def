@@ -586,63 +586,6 @@ fix = {
 
 
 /*
- *  Obey __PRAGMA_EXTERN_PREFIX for Tru64 UNIX V4/5 headers.
- */
-fix = {
-    hackname  = alpha___extern_prefix;
-    select    = "(.*)(defined\\(__DECC\\)|def[ \t]*__DECC)[ \t]*\n"
-                "(#[ \t]*pragma[ \t]*extern_prefix.*)";
-
-    mach      = "alpha*-dec-osf*";
-    c_fix     = format;
-    c_fix_arg = "%1 (defined(__DECC) || defined(__PRAGMA_EXTERN_PREFIX))\n%3";
-
-    test_text = "#ifdef  __DECC\n"
-		"#pragma extern_prefix \"_P\"\n"
-		"#   if defined(__DECC)\n"
-		"#     pragma extern_prefix \"_E\"\n"
-		"# if !defined(_LIBC_POLLUTION_H_) && defined(__DECC)\n"
-		"#  pragma extern_prefix \"\"";
-};
-
-
-/*
- *  Obey __PRAGMA_EXTERN_PREFIX for Tru64 UNIX V4/5 <standards.h>.
- */
-fix = {
-    hackname  = alpha___extern_prefix_standards;
-    files     = standards.h;
-    select    = ".*!defined\\(_LIBC_POLLUTION_H_\\) && !defined\\(__DECC\\)";
-
-    mach      = "alpha*-dec-osf*";
-    c_fix     = format;
-    c_fix_arg = "%0 && !defined(__PRAGMA_EXTERN_PREFIX)";
-
-    test_text = "#if (_ISO_C_SOURCE>=19990L) "
-                "&& !defined(_LIBC_POLLUTION_H_) && !defined(__DECC)";
-};
-
-
-/*
- *  Obey __PRAGMA_EXTERN_PREFIX for Tru64 UNIX V5 <sys/mount.h> and
- *  <sys/stat.h>.  The tests for __DECC are special in various ways, so
- *  alpha__extern_prefix cannot be used.
- */
-fix = {
-    hackname  = alpha___extern_prefix_sys_stat;
-    files     = sys/stat.h;
-    files     = sys/mount.h;
-    select    = "#[ \t]*if[ \t]*defined\\(__DECC\\)";
-
-    mach      = "alpha*-dec-osf5*";
-    c_fix     = format;
-    c_fix_arg = "%0 || defined(__PRAGMA_EXTERN_PREFIX)";
-
-    test_text = "#   if defined(__DECC)";
-};
-
-
-/*
  *  Fix assert macro in assert.h on Alpha OSF/1.
  *  The superfluous int cast breaks C++.
  */
@@ -654,37 +597,6 @@ fix = {
     c_fix_arg = "%1(EX)";
     test_text = '#define assert(EX) (((int) (EX)) ? (void)0 '
                 ': __assert(#EX, __FILE__, __LINE__))';
-};
-
-
-/*
- *  Fix #defines under Alpha OSF/1:
- *  The following files contain '#pragma extern_prefix "_FOO"' followed by
- *  a '#define something(x,y,z) _FOOsomething(x,y,z)'.  The intent of these
- *  statements is to reduce namespace pollution.  While these macros work
- *  properly in most cases, they don't allow you to take a pointer to the
- *  "something" being modified.  To get around this limitation, change these
- *  statements to be of the form '#define something _FOOsomething'.
- *
- *  sed ain't egrep, lesson 2463:  sed can use self-referential
- *  regular expressions.  In the substitute expression below,
- *  "\\1" and "\\2" refer to subexpressions found earlier in the
- *  same match.  So, we continue to use sed.  "extern_prefix" will
- *  be a rare match anyway...
- */
-fix = {
-    hackname = alpha_bad_lval;
-
-    select   = "^[ \t]*#[ \t]*pragma[ \t]+extern_prefix";
-    mach      = "alpha*-dec-osf*";
-
-    sed      =
-        "s/^[ \t]*#[ \t]*define[ \t][ \t]*\\([^(]*\\)\\(([^)]*)\\)[ \t]*"
-               "\\(_.*\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/";
-
-    test_text = '#pragma extern_prefix "_FOO"'"\n"
-                "#define something(x,y,z) _FOOsomething(x,y,z)\n"
-                "#define mumble _FOOmumble";
 };
 
 
@@ -725,99 +637,6 @@ fix = {
     c_fix     = format;
     c_fix_arg = "#ifndef __mips64";
     test_text = "#ifndef(__mips64) /* bogus */\nextern int foo;\n#endif";
-};
-
-
-/*
- *  Obey __PRAGMA_EXTERN_PREFIX for Tru64 UNIX <pthread.h>.
- */
-fix = {
-    hackname  = alpha_pthread;
-    files     = pthread.h;
-    select    = "((#[ \t]*if)([ \t]*defined[ \t]*\\(_PTHREAD_ENV_DECC\\)"
-                "|def _PTHREAD_ENV_DECC)(.*))\n"
-		"(#[ \t]*define _PTHREAD_USE_PTDNAM_)";
-
-    mach      = "alpha*-dec-osf*";
-    c_fix     = format;
-    c_fix_arg = "%2 defined (_PTHREAD_ENV_DECC)%4 "
-                "|| defined (__PRAGMA_EXTERN_PREFIX)\n%5";
-
-    test_text = "#  if defined (_PTHREAD_ENV_DECC) "
-                      "|| defined (_PTHREAD_ENV_EPCC)\n"
-		"#   define _PTHREAD_USE_PTDNAM_\n"
-		"#  endif\n"
-		"#  ifdef _PTHREAD_ENV_DECC\n"
-		"#   define _PTHREAD_USE_PTDNAM_\n"
-		"#  endif";
-};
-
-
-/*
- *  Recognize GCC in Tru64 UNIX V5.1B <pthread.h>.
- */
-fix = {
-    hackname  = alpha_pthread_gcc;
-    files     = pthread.h;
-    select    = "#else\n# error <pthread.h>: unrecognized compiler.";
-
-    mach      = "alpha*-dec-osf*";
-    c_fix     = format;
-    c_fix_arg = "#elif defined (__GNUC__)\n"
-		"# define _PTHREAD_ENV_GCC\n"
-    		"%0";
-
-    test_text = "# define _PTHREAD_ENV_INTELC\n"
-		"#else\n"
-		"# error <pthread.h>: unrecognized compiler.\n"
-		"#endif";
-};
-
-
-/*
- * Compaq Tru64 v5.1 defines all of its PTHREAD_*_INITIALIZER macros
- * incorrectly, specifying less fields in the initializers than are
- * defined in the corresponding structure types.  Use of these macros
- * in user code results in spurious warnings.
- */
-fix = {
-    hackname  = alpha_pthread_init;
-    files     = pthread.h;
-    select    = ' \* @\(#\).RCSfile: pthread\.h,v \$'
-                ' .Revision: 1\.1\.33\.21 \$ \(DEC\)'
-                ' .Date: 2000/08/15 15:30:13 \$';
-    mach      = "alpha*-dec-osf*";
-    sed       = "s@MVALID\\(.*\\)A}@MVALID\\1A, 0, 0, 0, 0, 0, 0 }@\n"
-                "s@MVALID\\(.*\\)_}@MVALID\\1_, 0, 0, 0, 0 }@\n"
-                "s@CVALID\\(.*\\)A}@CVALID\\1A, 0, 0, 0, 0 }@\n"
-                "s@CVALID\\(.*\\)_}@CVALID\\1_, 0, 0 }@\n"
-                "s@WVALID\\(.*\\)A}@WVALID\\1A, 0, 0, 0, 0, 0, 0, 0, 0, 0 }@\n"
-                "s@WVALID\\(.*\\)_}@WVALID\\1_, 0, 0, 0, 0, 0, 0, 0 }@\n";
-    test_text = <<- _EOText_
-	/*
-	 * @(#)_RCSfile: pthread.h,v $ _Revision: 1.1.33.21 $ (DEC) _Date: 2000/08/15 15:30:13 $
-	 */
-	#ifndef _PTHREAD_NOMETER_STATIC
-	# define PTHREAD_MUTEX_INITIALIZER \
-	    {_PTHREAD_MSTATE_CONFIG, _PTHREAD_MVALID | _PTHREAD_MVF_STA}
-	# define PTHREAD_COND_INITIALIZER \
-	    {_PTHREAD_CSTATE_SLOW, _PTHREAD_CVALID | _PTHREAD_CVF_STA}
-	# define PTHREAD_MUTEX_INITWITHNAME_NP(_n_,_a_) \
-	    {_PTHREAD_MSTATE_CONFIG, _PTHREAD_MVALID | _PTHREAD_MVF_STA, _n_, _a_}
-	# define PTHREAD_COND_INITWITHNAME_NP(_n_,_a_) \
-	    {_PTHREAD_CSTATE_SLOW, _PTHREAD_CVALID | _PTHREAD_CVF_STA, _n_, _a_}
-	#else
-	# define PTHREAD_MUTEX_INITIALIZER {0, _PTHREAD_MVALID | _PTHREAD_MVF_STA}
-	# define PTHREAD_MUTEX_INITWITHNAME_NP(_n_,_a_) \
-	    {0, _PTHREAD_MVALID | _PTHREAD_MVF_STA, _n_, _a_}
-	# define PTHREAD_COND_INITWITHNAME_NP(_n_,_a_) \
-	    {0, _PTHREAD_CVALID | _PTHREAD_CVF_STA, _n_, _a_}
-	#endif
-
-	#define PTHREAD_RWLOCK_INITIALIZER {_PTHREAD_RWVALID | _PTHREAD_RWVF_STA}
-	#define PTHREAD_RWLOCK_INITWITHNAME_NP(_n_,_a_) \
-	        {_PTHREAD_RWVALID | _PTHREAD_RWVF_STA, _n_, _a_}
-	_EOText_;
 };
 
 

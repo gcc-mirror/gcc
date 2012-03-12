@@ -195,8 +195,6 @@ GCC_WARN_CXXFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 # flex output may yield harmless "no previous prototype" warnings
 build/gengtype-lex.o-warn = -Wno-error
 gengtype-lex.o-warn = -Wno-error
-# mips-tfile.c contains -Wcast-qual warnings.
-mips-tfile.o-warn = -Wno-error
 expmed.o-warn = -Wno-error
 
 # All warnings have to be shut off in stage1 if the compiler used then
@@ -1467,8 +1465,7 @@ ALL_HOST_FRONTEND_OBJS = $(C_OBJS) \
 
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(OBJS-libcommon-target) @TREEBROWSER@ main.o gccspec.o cppspec.o \
-  $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) mips-tfile.o mips-tdump.o \
-  $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
+  $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
 
 # This lists all host object files, whether they are included in this
 # compilation or not.
@@ -3450,22 +3447,6 @@ $(common_out_object_file): $(common_out_file) $(CONFIG_H) $(SYSTEM_H) \
     $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(OPTS_H) $(TM_H) $(TM_P_H) $(MACHMODE_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  $< $(OUTPUT_OPTION)
-
-# Build auxiliary files that support ecoff format.
-mips-tfile: mips-tfile.o $(LIBDEPS)
-	$(LINKER) $(LINKERFLAGS) $(LDFLAGS) -o $@ \
-		mips-tfile.o $(LIBS)
-
-mips-tfile.o : mips-tfile.c $(CONFIG_H) $(SYSTEM_H) \
-   version.h $(srcdir)/../include/getopt.h $(GSTAB_H) intl.h
-
-mips-tdump: mips-tdump.o $(LIBDEPS)
-	$(LINKER) $(LINKERFLAGS) $(LDFLAGS) -o $@ \
-		mips-tdump.o $(LIBS)
-
-mips-tdump.o : mips-tdump.c $(CONFIG_H) $(SYSTEM_H) \
-   version.h $(srcdir)/../include/getopt.h stab.def
-
 #
 # Generate header and source files from the machine description,
 # and compile them.
