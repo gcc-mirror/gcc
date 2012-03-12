@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2004, 2005, 2006, 2007  Free Software Foundation
+/* Copyright (C) 2003, 2004, 2005, 2006, 2007, 2012  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -277,7 +277,7 @@ gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
 	                                  JvNewStringUTF("Accept timed out"));
     }
 
-  new_socket = _Jv_accept (native_fd, (sockaddr*) &u, &addrlen);
+  new_socket = ::accept (native_fd, (sockaddr*) &u, &addrlen);
 
   if (new_socket < 0)
     goto error;

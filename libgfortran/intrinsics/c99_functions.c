@@ -1,5 +1,5 @@
 /* Implementation of various C99 functions 
-   Copyright (C) 2004, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2009, 2010, 2012 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -41,19 +41,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define cabsl __gfc_cabsl
 #endif
         
-/* Tru64's <math.h> declares a non-C99 compliant implementation of cabs,
-   which takes two floating point arguments instead of a single complex.
-   To work around this we redirect cabs{,f,l} calls to __gfc_cabs{,f,l}.  */
-
-#ifdef __osf__
-#undef HAVE_CABS
-#undef HAVE_CABSF
-#undef HAVE_CABSL
-#define cabs __gfc_cabs
-#define cabsf __gfc_cabsf
-#define cabsl __gfc_cabsl
-#endif
-
 /* On a C99 system "I" (with I*I = -1) should be defined in complex.h;
    if not, we define a fallback version here.  */
 #ifndef I

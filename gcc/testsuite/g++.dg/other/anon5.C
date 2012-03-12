@@ -1,5 +1,5 @@
 // PR c++/34094
-// { dg-do link { target { ! { *-*-darwin* *-*-hpux* *-*-solaris2.* alpha*-dec-osf* mips-sgi-irix* } } } }
+// { dg-do link { target { ! { *-*-darwin* *-*-hpux* *-*-solaris2.* mips-sgi-irix* } } } }
 // { dg-options "-g" }
 
 namespace {

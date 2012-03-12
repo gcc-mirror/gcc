@@ -483,7 +483,7 @@ if test x$enable_libgomp = x ; then
 	;;
     *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly*)
 	;;
-    *-*-solaris2* | *-*-irix6* | *-*-osf* | *-*-hpux11*)
+    *-*-solaris2* | *-*-irix6* | *-*-hpux11*)
 	;;
     *-*-darwin* | *-*-aix*)
 	;;
@@ -2336,7 +2336,7 @@ if test x${with_stabs} = x ; then
   case "${target}" in
   mips*-*-irix[[56]]*)
     ;;
-  mips*-*-* | alpha*-*-osf*)
+  mips*-*-*)
     with_stabs=yes;
     extra_host_args="${extra_host_args} --with-stabs"
     ;;

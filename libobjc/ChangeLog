@@ -1,3 +1,10 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (enable_objc_gc): Remove alpha*-dec-osf* handling.
+	* configure: Regenerate.
+
+	* thr.c (_XOPEN_SOURCE): Define unconditionally.
+
 2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.

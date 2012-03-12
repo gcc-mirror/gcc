@@ -1,3 +1,11 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Remove Tru64 reference.
+	* acinclude.m4 (LIBGFOR_GTHREAD_WEAK): Remove alpha*-dec-osf*
+	handling.
+	* configure: Regenerate.
+	* intrinsics/c99_functions.c [__osf__]: Remove.
+
 2012-03-10  Tobias Burnus  <burnus@net-b.de>
 
 	* libgfortran.h (descriptor_dimension, GFC_DIMENSION_LBOUND,

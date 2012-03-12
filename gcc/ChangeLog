@@ -1,3 +1,41 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (alpha*-dec-osf5.1*): Remove.
+	* config.host (alpha*-dec-osf*): Remove.
+	* configure.ac (*-*-osf*): Remove.
+	(alpha*-dec-osf*): Remove.
+	* configure: Regenerate.
+
+	* config/alpha/host-osf.c, config/alpha/osf5.h,
+	config/alpha/osf5.opt, config/alpha/va_list.h, config/alpha/x-osf:
+	Remove.
+
+	* config/alpha/alpha.h (TARGET_LD_BUGGY_LDGP): Remove.
+	* config/alpha/alpha.c (struct machine_function): Update comment.
+	(alpha_start_function): Remove Tru64 UNIX as handling for
+	max_frame_size.
+	* config/alpha/alpha.md ("exception_receiver"): Remove
+	TARGET_LD_BUGGY_LDGP.
+	("*exception_receiver_2"): Likewise.
+	* except.c (finish_eh_generation): Remove Tru64 reference.
+	* ginclude/stdarg.h [_HIDDEN_VA_LIST]: Don't undef _VA_LIST.
+	* system.h (TARGET_HANDLE_PRAGMA_EXTERN_PREFIX): Poison.
+	* target.def (handle_pragma_extern_prefix): Remove.
+
+	* Makefile.in (mips-tfile.o-warn): Remove.
+	(ALL_HOST_BACKEND_OBJS): Remove mips-tfile.o, mips-tdump.o.
+	(mips-tfile, mips-tfile.o, mips-tdump, mips-tdump.o): Remove.
+	* mips-tdump.c, mips-tfile.c: Remove.
+
+	* doc/extend.texi (Symbol-Renaming Pragmas): Remove #pragma
+	extern_prefix.
+	* doc/install.texi (Binaries): Remove Tru64 UNIX reference.
+	(Specific, alpha*-dec-osf5.1): Note removal.
+	* doc/tm.texi.in (Misc, TARGET_HANDLE_PRAGMA_EXTERN_PREFIX):
+	Remove.
+	* doc/tm.texi: Regenerate.
+	* doc/trouble.texi (Cross-Compiler Problems): Remove.
+
 2012-03-12  Richard Guenther  <rguenther@suse.de>
 
 	* config/arm/arm.c (neon_dereference_pointer): Do not call

@@ -1,6 +1,6 @@
 /* Define builtin-in macros for the C family front ends.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -885,9 +885,6 @@ c_cpp_builtins (cpp_reader *pfile)
 
   /* Show the availability of some target pragmas.  */
   cpp_define (pfile, "__PRAGMA_REDEFINE_EXTNAME");
-
-  if (targetm.handle_pragma_extern_prefix)
-    cpp_define (pfile, "__PRAGMA_EXTERN_PREFIX");
 
   /* Make the choice of the stack protector runtime visible to source code.
      The macro names and values here were chosen for compatibility with an

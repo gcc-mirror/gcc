@@ -25196,7 +25196,7 @@ $as_echo "#define HAVE_FEENABLEEXCEPT 1" >>confdefs.h
 fi
 
 
-# At least for glibc and Tru64, clock_gettime is in librt.  But don't
+# At least for glibc, clock_gettime is in librt.  But don't
 # pull that in if it still doesn't give us the function we want.  This
 # test is copied from libgomp, and modified to not link in -lrt as
 # libgfortran calls clock_gettime via a weak reference if it's found
@@ -25564,7 +25564,7 @@ $as_echo "#define SUPPORTS_WEAK 1" >>confdefs.h
 
   fi
   case "$host" in
-    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* | alpha*-dec-osf* )
+    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* )
 
 $as_echo "#define GTHREAD_USE_WEAK 0" >>confdefs.h
 

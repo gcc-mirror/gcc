@@ -279,13 +279,6 @@ case "${host_os}" in
   netbsd*)
     os_include_dir="os/bsd/netbsd"
     ;;
-  osf*)
-    os_include_dir="os/osf"
-    # libstdc++.so relies on emutls on Tru64 UNIX, which only works with the
-    # real functions implemented in libpthread.so, not with the dummies in
-    # libgcc, so always pass -lpthread.
-    OPT_LDFLAGS="${OPT_LDFLAGS} -lpthread"
-    ;;
   qnx6.[12]*)
     os_include_dir="os/qnx/qnx6.1"
     c_model=c

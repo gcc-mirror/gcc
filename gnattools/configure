@@ -2076,9 +2076,6 @@ case "${target}" in
     mlib-tgt-specific.adb<mlib-tgt-specific-aix.adb \
     indepsw.adb<indepsw-aix.adb"
     ;;
-  alpha*-dec-osf*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-tru64.adb"
-    ;;
   alpha*-dec-vms* | alpha*-dec-openvms* | alpha*-dec-vms* \
   | alpha*-hp-vms* | alpha*-hp-openvms* | alpha*-hp-vms*)
     TOOLS_TARGET_PAIRS="\

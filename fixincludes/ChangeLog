@@ -1,3 +1,22 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (alpha___extern_prefix): Remove.
+	(alpha___extern_prefix_standards): Remove.
+	(alpha___extern_prefix_sys_stat): Remove.
+	(alpha_bad_lval): Remove.
+	(alpha_pthread): Remove.
+	(alpha_pthread_gcc): Remove.
+	(alpha_pthread_init): Remove.
+	* fixincl.x: Regenerate.
+	* tests/base/pthread.h [ALPHA_PTHREAD_CHECK]: Remove.
+	[ALPHA_PTHREAD_GCC_CHECK]: Remove.
+	[ALPHA_PTHREAD_INIT_CHECK]: Remove.
+	* tests/base/standards.h: Remove.
+	* tests/base/sys/stat.h [ALPHA___EXTERN_PREFIX_SYS_STAT_CHECK]:
+	Remove.
+	* tests/base/testing.h [ALPHA___EXTERN_PREFIX_CHECK]: Remove.
+	[ALPHA_BAD_LVAL_CHECK]: Remove.
+
 2012-03-12  Tristan Gingold  <gingold@adacore.com>
 
 	* inclhack.def (vms_use_quoted_include,vms_add_missing_braces)

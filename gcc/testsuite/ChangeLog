@@ -1,3 +1,51 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/abi/rtti3.C: Remove alpha*-dec-osf* handling.
+	* g++.dg/abi/thunk4.C: Likewise.
+	* g++.dg/cdce3.C: Don't skip on*-dec-osf5*.
+	Adapt line numbers.
+	* g++.dg/compat/struct-layout-1_generate.c: Remove alpha*-dec-osf*
+	handling.
+	* g++.dg/cpp0x/constexpr-rom.C: Likewise.
+	* g++.dg/eh/spbp.C: Likewise.
+	* g++.dg/ext/label13.C: Likewise.
+	* g++.dg/guality/guality.exp: Likewise.
+	* g++.dg/other/anon5.C: Likewise.
+	* g++.dg/other/pragma-ep-1.C: Remove.
+	* g++.dg/warn/miss-format-1.C: Remove alpha*-dec-osf* handling.
+	* g++.dg/warn/pr31246.C: Likewise.
+	* g++.dg/warn/weak1.C: Likewise.
+	* g++.old-deja/g++.eh/badalloc1.C: Likewise.
+	* g++.old-deja/g++.ext/attrib5.C: Likewise.
+	* gcc.c-torture/compile/limits-declparen.c: Likewise.
+	* gcc.c-torture/compile/limits-pointer.c: Likewise.
+	* gcc.c-torture/execute/20001229-1.c: Remove __osf__ handling.
+	* gcc.dg/attr-weakref-1.c: Remove alpha*-dec-osf* handling.
+	* gcc.dg/c99-stdint-6.c: Remove alpha*-dec-osf5* handling.
+	* gcc.dg/c99-tgmath-1.c: Likewise.
+	* gcc.dg/c99-tgmath-2.c: Likewise.
+	* gcc.dg/c99-tgmath-3.c: Likewise.
+	* gcc.dg/c99-tgmath-4.c: Likewise.
+	* gcc.dg/compat/struct-layout-1_generate.c: Remove alpha*-dec-osf*
+	handling.
+	* gcc.dg/debug/pr49032.c: Likewise.
+	* gcc.dg/guality/guality.exp: Likewise.
+	* gcc.dg/intmax_t-1.c: Likewise.
+	* gcc.dg/pr48616.c: Likewise.
+	* gcc.dg/pragma-ep-1.c: Remove.
+	* gcc.dg/pragma-ep-2.c: Remove.
+	* gcc.dg/pragma-ep-3.c: Remove.
+	* gcc.dg/torture/pr47917.c: Remove alpha*-dec-osf5* handling.
+	* gcc.dg/tree-ssa/pr42585.c: Remove alpha*-dec-osf* handling.
+	* gcc.misc-tests/gcov-14.c: Likewise.
+	* gfortran.dg/guality/guality.exp: Likewise.
+	* lib/target-supports.exp (check_weak_available): Likewise.
+	(add_options_for_tls): Likewise.
+	(check_ascii_locale_available): Likewise.
+	* obj-c++.dg/dwarf-2.mm: Likewise.
+	* objc.dg/dwarf-1.m: Likewise.
+	* objc.dg/dwarf-2.m: Likewise.
+
 2012-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51721

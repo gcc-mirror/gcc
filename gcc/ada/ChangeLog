@@ -1,3 +1,31 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (alpha*-dec-osf*): Remove.
+	* a-intnam-tru64.ads, mlib-tgt-specific-tru64.adb,
+	s-mastop-tru64.adb, s-osinte-tru64.adb, s-osinte-tru64.ads,
+	s-taprop-tru64.adb, s-tasinf-tru64.ads, s-taspri-tru64.ads,
+	system-tru64.ads: Remove.
+
+	* adaint.c (__gnat_number_of_cpus) [__alpha__ && __osf__]:
+	Remove.
+	[IS_CROSS] [!(__alpha__ && __osf__)]: Remove.
+	* env.c [__alpha__ && __osf__]: Remove.
+	* gsocket.h (_OSF_SOURCE): Remove.
+	(HAVE_THREAD_SAFE_GETxxxBYyyy) [__osf__]: Remove.
+	* init.c [__alpha__ && __osf__]: Remove.
+	* link.c [__osf__]: Remove.
+	* s-oscons-tmplt.c [__alpha__ && __osf__]: Remove.
+	[__osf__ && !_SS_MAXSIZE]: Remove.
+	* sysdep.c [__osf__]: Remove.
+	* terminals.c [__alpha__ && __osf__]: Remove.
+	[OSF1]: Remove.
+
+	* g-traceb.ads: Remove Tru64 reference.
+	* g-trasym.ads: Likewise.
+	* gnat_ugn.texi (Linking a Mixed C++ & Ada Program): Likewise.
+	(Summary of Run-Time Configurations): Likewise.
+	* memtrack.adb: Likewise.
+
 2012-03-12  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_param): Use flag_vms_malloc64

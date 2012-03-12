@@ -10758,10 +10758,6 @@ Define this macro if macros should be expanded in the
 arguments of @samp{#pragma pack}.
 @end defmac
 
-@deftypevr {Target Hook} bool TARGET_HANDLE_PRAGMA_EXTERN_PREFIX
-True if @code{#pragma extern_prefix} is to be supported.
-@end deftypevr
-
 @defmac TARGET_DEFAULT_PACK_STRUCT
 If your target requires a structure packing default other than 0 (meaning
 the machine default), define this macro to the necessary value (in bytes).

@@ -1,4 +1,4 @@
-// Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation
+// Copyright (C) 2006, 2007, 2008, 2009, 2012 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,8 +17,8 @@
 
 // 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
 
-// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* mips-sgi-irix6* } }
-// { dg-options "-pthread -std=gnu++0x" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* mips-sgi-irix6* } }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* mips-sgi-irix6* } }
+// { dg-options "-pthread -std=gnu++0x" { target *-*-freebsd* *-*-netbsd* *-*-linux* mips-sgi-irix6* } }
 // { dg-options "-pthreads -std=gnu++0x" { target *-*-solaris* } }
 // { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
 

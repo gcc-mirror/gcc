@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2008-2011, AdaCore                     *
+ *                     Copyright (C) 2008-2012, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -976,9 +976,6 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
  || defined (__DragonFly__)
 #   define FREEBSD
 #endif
-#if defined (__alpha__) && defined (__osf__)
-#   define OSF1
-#endif
 #if defined (__mips) && defined (__sgi)
 #   define IRIX
 #endif
@@ -1048,18 +1045,6 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 #define USE_CLONE_DEVICE "/dev/ptmx"
 #elif defined (_AIX)
 #define USE_CLONE_DEVICE "/dev/ptc"
-#elif defined (OSF1)
-/* On Tru64, the systems offers various interfaces to open a terminal:
-    - /dev/ptmx: this the system V driver (stream based),
-    - /dev/ptmx_bsd: the non stream based clone device,
-    - the openpty function which use BSD interface.
-
-   Using directly /dev/ptmx_bsd on Tru64 5.1B seems to consume all the
-   available slave ptys (why ?). When using openpty it seems that the function
-   handles the creation of entries in /dev/pts when necessary and so avoid this
-   starvation issue. The pty man entry suggests also to use openpty.
-*/
-#define USE_OPENPTY
 #elif defined (__hpux__)
 /* On HP-UX we use the streamed version. Using the non streamed version is not
    recommanded (through "/dev/ptym/clone"). Indeed it seems that there are

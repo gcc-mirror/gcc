@@ -1,4 +1,5 @@
-/* Copyright (C) 1989, 1997, 1998, 1999, 2000, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1997, 1998, 1999, 2000, 2009, 2012
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,10 +59,6 @@ typedef __builtin_va_list __gnuc_va_list;
    va_list.  stdio.h needs to have access to that data type, 
    but must not use that name.  It should use the name __gnuc_va_list,
    which is safe because it is reserved for the implementation.  */
-
-#ifdef _HIDDEN_VA_LIST  /* On OSF1, this means varargs.h is "half-loaded".  */
-#undef _VA_LIST
-#endif
 
 #ifdef _BSD_VA_LIST
 #undef _BSD_VA_LIST
