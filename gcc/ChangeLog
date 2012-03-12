@@ -1,3 +1,9 @@
+2012-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51721
+	* tree-vrp.c (register_edge_assert_for_2): Add asserts for unsvar
+	if (int) unsvar cmp CST.
+
 2012-03-12  Richard Guenther  <rguenther@suse.de>
 
         * tree-sra.c (create_access_replacement): Only rename the
