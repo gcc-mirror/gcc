@@ -3753,11 +3753,23 @@ ix86_option_override_internal (bool main_args_p)
   if (TARGET_64BIT)
     {
       ix86_gen_leave = gen_leave_rex64;
+      if (Pmode == DImode)
+	ix86_gen_monitor = gen_sse3_monitor64_di;
+      else
+	ix86_gen_monitor = gen_sse3_monitor64_si;
+    }
+  else
+    {
+      ix86_gen_leave = gen_leave;
+      ix86_gen_monitor = gen_sse3_monitor;
+    }
+
+  if (Pmode == DImode)
+    {
       ix86_gen_add3 = gen_adddi3;
       ix86_gen_sub3 = gen_subdi3;
       ix86_gen_sub3_carry = gen_subdi3_carry;
       ix86_gen_one_cmpl2 = gen_one_cmpldi2;
-      ix86_gen_monitor = gen_sse3_monitor64;
       ix86_gen_andsp = gen_anddi3;
       ix86_gen_allocate_stack_worker = gen_allocate_stack_worker_probe_di;
       ix86_gen_adjust_stack_and_probe = gen_adjust_stack_and_probedi;
@@ -3765,12 +3777,10 @@ ix86_option_override_internal (bool main_args_p)
     }
   else
     {
-      ix86_gen_leave = gen_leave;
       ix86_gen_add3 = gen_addsi3;
       ix86_gen_sub3 = gen_subsi3;
       ix86_gen_sub3_carry = gen_subsi3_carry;
       ix86_gen_one_cmpl2 = gen_one_cmplsi2;
-      ix86_gen_monitor = gen_sse3_monitor;
       ix86_gen_andsp = gen_andsi3;
       ix86_gen_allocate_stack_worker = gen_allocate_stack_worker_probe_si;
       ix86_gen_adjust_stack_and_probe = gen_adjust_stack_and_probesi;
