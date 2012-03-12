@@ -1,3 +1,10 @@
+2012-03-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52148
+	* config/avr/avr.c (avr_out_movmem): Fix typo in output template
+	for the case ADDR_SPACE_FLASH and AVR_HAVE_LPMX introduced in
+	r184615 from 2012-02-28.
+
 2012-03-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_gen_tls_global_dynamic_64): New.

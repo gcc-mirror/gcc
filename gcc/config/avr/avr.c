@@ -9924,7 +9924,7 @@ avr_out_movmem (rtx insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
     case ADDR_SPACE_FLASH:
 
       if (AVR_HAVE_LPMX)
-        avr_asm_len ("lpm %2,%Z+", xop, plen, 1);
+        avr_asm_len ("lpm %2,Z+", xop, plen, 1);
       else
         avr_asm_len ("lpm" CR_TAB
                      "adiw r30,1", xop, plen, 2);
