@@ -26675,7 +26675,7 @@ rs6000_function_value (const_tree valtype,
 
   mode = TYPE_MODE (valtype);
   if ((INTEGRAL_TYPE_P (valtype) && GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
-      || POINTER_TYPE_P (valtype))
+      || (POINTER_TYPE_P (valtype) && !upc_shared_type_p (TREE_TYPE (valtype))))
     mode = TARGET_32BIT ? SImode : DImode;
 
   if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT && TARGET_FPRS)

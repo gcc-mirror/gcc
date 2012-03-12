@@ -1,3 +1,8 @@
+2012-03-12  Gary Funck  <gary@intrepid.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_value): Do not over-ride
+	the mode for a pointer for upc-pointer-to-shared types.
+
 2012-03-04  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 184900 into gupc branch.
