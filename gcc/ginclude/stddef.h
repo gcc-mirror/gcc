@@ -203,7 +203,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #if (defined (__FreeBSD__) && (__FreeBSD__ >= 5)) \
   || defined(__FreeBSD_kernel__)
 /* __size_t is a typedef on FreeBSD 5, must not trash it. */
-#elif defined (VMS)
+#elif defined (__VMS__)
 /* __size_t is also a typedef on VMS.  */
 #else
 #define __size_t
