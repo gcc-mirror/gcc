@@ -1,3 +1,15 @@
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* inclhack.def (vms_use_quoted_include,vms_add_missing_braces)
+	(vms_do_not_redeclare_hostalias, vms_decc_builtin)
+	(vms_no_64bit_getopt, vms_forward_declare_struct)
+	(vms_use_fast_setjmp): New fixes.
+	* fixincl.x: Regenerate.
+	* tests/base/rtldef/string.h: Update.
+	* tests/base/rtldef/if.h, tests/base/rtldef/resolv.h,
+	* tests/base/rtldef/setjmp.h, tests/base/rtldef/signal.h,
+	* tests/base/rtldef/stdio.h, tests/base/rtldef/wait.h: New files.
+
 2012-01-11  Bruce Korb <bkorb@gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Andreas Tobler  <andreast@fgznet.ch>
