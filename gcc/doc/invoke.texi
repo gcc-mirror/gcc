@@ -569,9 +569,6 @@ Objective-C and Objective-C++ Dialects}.
 -msmall-text  -mlarge-text @gol
 -mmemory-latency=@var{time}}
 
-@emph{DEC Alpha/VMS Options}
-@gccoptlist{-mvms-return-codes -mdebug-main=@var{prefix} -mmalloc64}
-
 @emph{FR30 Options}
 @gccoptlist{-msmall-model -mno-lsim}
 
@@ -669,9 +666,6 @@ Objective-C and Objective-C++ Dialects}.
 -msched-stop-bits-after-every-cycle -msched-count-spec-in-critical-path @gol
 -msel-sched-dont-check-control-spec -msched-fp-mem-deps-zero-cost @gol
 -msched-max-memory-insns-hard-limit -msched-max-memory-insns=@var{max-insns}}
-
-@emph{IA-64/VMS Options}
-@gccoptlist{-mvms-return-codes -mdebug-main=@var{prefix} -mmalloc64}
 
 @emph{LM32 Options}
 @gccoptlist{-mbarrel-shift-enabled -mdivide-enabled -mmultiply-enabled @gol
@@ -946,6 +940,10 @@ See RS/6000 and PowerPC Options.
 
 @emph{VAX Options}
 @gccoptlist{-mg  -mgnu  -munix}
+
+@emph{VMS Options}
+@gccoptlist{-mvms-return-codes -mdebug-main=@var{prefix} -mmalloc64 @gol
+-mpointer-size=@var{size}}
 
 @emph{VxWorks Options}
 @gccoptlist{-mrtp  -non-static  -Bstatic  -Bdynamic @gol
@@ -4817,8 +4815,8 @@ Allow using extensions of later DWARF standard version than selected with
 
 @item -gvms
 @opindex gvms
-Produce debugging information in VMS debug format (if that is
-supported).  This is the format used by DEBUG on VMS systems.
+Produce debugging information in Alpha/VMS debug format (if that is
+supported).  This is the format used by DEBUG on Alpha/VMS systems.
 
 @item -g@var{level}
 @itemx -ggdb@var{level}
@@ -10332,7 +10330,6 @@ platform.
 * CR16 Options::
 * Darwin Options::
 * DEC Alpha Options::
-* DEC Alpha/VMS Options::
 * FR30 Options::
 * FRV Options::
 * GNU/Linux Options::
@@ -10341,7 +10338,6 @@ platform.
 * i386 and x86-64 Options::
 * i386 and x86-64 Windows Options::
 * IA-64 Options::
-* IA-64/VMS Options::
 * LM32 Options::
 * M32C Options::
 * M32R/D Options::
@@ -10369,6 +10365,7 @@ platform.
 * TILEPro Options::
 * V850 Options::
 * VAX Options::
+* VMS Options::
 * VxWorks Options::
 * x86-64 Options::
 * Xstormy16 Options::
@@ -12393,27 +12390,6 @@ Note that L3 is only valid for EV5.
 @end table
 @end table
 
-@node DEC Alpha/VMS Options
-@subsection DEC Alpha/VMS Options
-
-These @samp{-m} options are defined for the DEC Alpha/VMS implementations:
-
-@table @gcctabopt
-@item -mvms-return-codes
-@opindex mvms-return-codes
-Return VMS condition codes from main.  The default is to return POSIX
-style condition (e.g.@: error) codes.
-
-@item -mdebug-main=@var{prefix}
-@opindex mdebug-main=@var{prefix}
-Flag the first routine whose name starts with @var{prefix} as the main
-routine for the debugger.
-
-@item -mmalloc64
-@opindex mmalloc64
-Default to 64-bit memory allocation routines.
-@end table
-
 @node FR30 Options
 @subsection FR30 Options
 @cindex FR30 Options
@@ -14325,27 +14301,6 @@ Otherwise, the limit is ``soft'', meaning that non-memory operations
 are preferred when the limit is reached, but memory operations may still
 be scheduled.
 
-@end table
-
-@node IA-64/VMS Options
-@subsection IA-64/VMS Options
-
-These @samp{-m} options are defined for the IA-64/VMS implementations:
-
-@table @gcctabopt
-@item -mvms-return-codes
-@opindex mvms-return-codes
-Return VMS condition codes from @code{main}. The default is to return POSIX-style
-condition (e.g.@ error) codes.
-
-@item -mdebug-main=@var{prefix}
-@opindex mdebug-main=@var{prefix}
-Flag the first routine whose name starts with @var{prefix} as the main
-routine for the debugger.
-
-@item -mmalloc64
-@opindex mmalloc64
-Default to 64-bit memory allocation routines.
 @end table
 
 @node LM32 Options
@@ -18939,6 +18894,34 @@ will assemble with the GNU assembler.
 @item -mg
 @opindex mg
 Output code for G-format floating-point numbers instead of D-format.
+@end table
+
+@node VMS Options
+@subsection VMS Options
+
+These @samp{-m} options are defined for the VMS implementations:
+
+@table @gcctabopt
+@item -mvms-return-codes
+@opindex mvms-return-codes
+Return VMS condition codes from @code{main}. The default is to return POSIX-style
+condition (e.g.@ error) codes.
+
+@item -mdebug-main=@var{prefix}
+@opindex mdebug-main=@var{prefix}
+Flag the first routine whose name starts with @var{prefix} as the main
+routine for the debugger.
+
+@item -mmalloc64
+@opindex mmalloc64
+Default to 64-bit memory allocation routines.
+
+@item -mpointer-size=@var{size}
+@opindex -mpointer-size=@var{size}
+Set the default size of pointers. Possible options for @var{size} are
+@samp{32} or @samp{short} for 32 bit pointers, @samp{64} or @samp{long}
+for 64 bit pointers, and @samp{no} for supporting only 32 bit pointers.
+The later option disables @code{pragma pointer_size}.
 @end table
 
 @node VxWorks Options
