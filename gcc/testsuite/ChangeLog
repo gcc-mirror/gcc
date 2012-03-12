@@ -1,3 +1,15 @@
+2012-03-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/46728
+	* gcc.target/powerpc/pr46728-4.c: Use preferred syntax.
+	* gcc.target/powerpc/pr46728-5.c: Likewise.
+	* gcc.target/powerpc/pr46728-8.c: Likewise.
+	* gcc.target/powerpc/pr46728-10.c: Likewise.
+	* gcc.target/powerpc/pr46728-11.c: Likewise.
+	* gcc.target/powerpc/pr46728-13.c: Likewise.
+	* gcc.target/powerpc/pr46728-14.c: Likewise.
+	* gcc.target/powerpc/pr46728-15.c: Likewise.
+
 2012-03-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52299
