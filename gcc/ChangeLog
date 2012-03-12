@@ -1,3 +1,13 @@
+2012-03-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Option Summary): Move -no-integrated-cpp
+	from C Language Options to Preprocessor Options.
+	(C Dialect Options): Move -no-integrated-cpp documentation
+	from here...
+	(Preprocessor Options): ...to here.  Rewrite the description
+	so it makes more sense, and remove discussion of merging
+	front ends.
+
 2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_movmem): Use word_mode for size
