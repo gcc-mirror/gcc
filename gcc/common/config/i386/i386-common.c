@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
   (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_AVX_SET)
 #define OPTION_MASK_ISA_AVX2_SET \
   (OPTION_MASK_ISA_AVX2 | OPTION_MASK_ISA_AVX_SET)
+#define OPTION_MASK_ISA_RTM_SET OPTION_MASK_ISA_RTM
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -121,6 +122,7 @@ along with GCC; see the file COPYING3.  If not see
    | OPTION_MASK_ISA_AVX2_UNSET)
 #define OPTION_MASK_ISA_FMA_UNSET OPTION_MASK_ISA_FMA
 #define OPTION_MASK_ISA_AVX2_UNSET OPTION_MASK_ISA_AVX2
+#define OPTION_MASK_ISA_RTM_UNSET OPTION_MASK_ISA_RTM
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -306,6 +308,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_FMA_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA_UNSET;
+	}
+      return true;
+
+    case OPT_mrtm:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_RTM_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_RTM_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_RTM_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_RTM_UNSET;
 	}
       return true;
 

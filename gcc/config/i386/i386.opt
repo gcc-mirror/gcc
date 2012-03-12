@@ -573,3 +573,7 @@ Split 32-byte AVX unaligned load
 mavx256-split-unaligned-store
 Target Report Mask(AVX256_SPLIT_UNALIGNED_STORE) Save
 Split 32-byte AVX unaligned store
+
+mrtm
+Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
+Support RTM built-in functions and code generation

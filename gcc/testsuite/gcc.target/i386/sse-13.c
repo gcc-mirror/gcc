@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm" } */
 
 #include <mm_malloc.h>
 
@@ -180,4 +180,5 @@
 #define __builtin_ia32_gatherdiv4si(X, Y, Z, K, M) __builtin_ia32_gatherdiv4si(X, Y, Z, K, 1)
 #define __builtin_ia32_gatherdiv4si256(X, Y, Z, K, M) __builtin_ia32_gatherdiv4si256(X, Y, Z, K, 1)
 
-#include <x86intrin.h>
+/* rtmintrin.h */
+#define __builtin_ia32_xabort (N) __builtin_ia32_xabort (1)
