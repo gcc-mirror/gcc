@@ -1,3 +1,8 @@
+2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Prevent %fs:(%reg)
+	addresses only when %reg is not in word mode.
+
 2012-03-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/microblaze/microblaze.md: Fix typo.
