@@ -1,3 +1,8 @@
+2012-03-13  Martin Jambor  <mjambor@suse.cz>
+
+	* expr.c (expand_assignment): Handle misaligned scalar writes to
+	memory through top-level MEM_REFs by calling store_bit_field.
+
 2012-03-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52134
