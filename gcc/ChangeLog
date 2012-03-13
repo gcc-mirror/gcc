@@ -1,3 +1,11 @@
+2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (tls_symbolic_operand): Declare as
+	special predicate.
+	(tls_modbase_operand): Ditto.
+	* config/i386/i386.md: Remove mode from tls_symbolic_operand and
+	tls_modbase_operand predicates.
+
 2012-03-13  Martin Jambor  <mjambor@suse.cz>
 
 	* expr.c (expand_assignment): Handle misaligned scalar writes to
