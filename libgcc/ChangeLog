@@ -1,3 +1,8 @@
+2012-03-13  Richard Guenther  <rguenther@suse.de>
+
+	* gthr-posix.h: Remove duplicate __GTHREAD_MUTEX_INIT_FUNCTION
+	and __gthread_mutex_init_function definitions.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (mips*-*-openbsd*): Remove.

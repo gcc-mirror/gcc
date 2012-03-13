@@ -72,7 +72,6 @@ typedef struct timespec __gthread_time_t;
 
 #ifdef _GTHREAD_USE_MUTEX_INIT_FUNC
 # undef __GTHREAD_MUTEX_INIT
-# define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
 #endif
 #ifdef _GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC
 # undef __GTHREAD_RECURSIVE_MUTEX_INIT
@@ -702,21 +701,11 @@ __gthread_setspecific (__gthread_key_t __key, const void *__ptr)
   return __gthrw_(pthread_setspecific) (__key, __ptr);
 }
 
-#ifdef _GTHREAD_USE_MUTEX_INIT_FUNC
 static inline void
 __gthread_mutex_init_function (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     __gthrw_(pthread_mutex_init) (__mutex, NULL);
-}
-#endif
-
-static inline int
-__gthread_mutex_init_function (__gthread_mutex_t *__mutex)
-{
-  if (__gthread_active_p ())
-    return __gthrw_(pthread_mutex_init) (__mutex, NULL);
-  return 0;
 }
 
 static inline int
