@@ -23121,7 +23121,7 @@ ix86_split_call_vzeroupper (rtx insn, rtx vzeroupper)
 const char *
 ix86_output_call_insn (rtx insn, rtx call_op)
 {
-  bool direct_p = constant_call_address_operand (call_op, Pmode);
+  bool direct_p = constant_call_address_operand (call_op, VOIDmode);
   bool seh_nop_p = false;
   const char *xasm;
 

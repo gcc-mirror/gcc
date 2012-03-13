@@ -1,5 +1,14 @@
 2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/predicates.md (constant_call_address_operand): Declare
+	as special predicate.  Update all uses.
+	* config/i386/i386.md: Remove mode from constant_call_address_operand
+	predicates.
+	* config/i386/i386.c (ix86_output_call_insn): Call
+	constant_call_address_operand with VOIDmode.
+
+2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.c (ix86_decompose_address): Handle subregs of
 	AND zero extended address correctly.
 
