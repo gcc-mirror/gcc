@@ -1,5 +1,11 @@
 2012-03-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/microblaze/microblaze.md: Fix typo.
+	* tree-if-conv.c: Likewise.
+	* tree-vect-patterns.c: Likewise.
+
+2012-03-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.gcc (extra_passes): Remove.
 	* configure.ac (extra_passes): Don't substitute.
 	* configure: Regenerate.

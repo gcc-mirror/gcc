@@ -84,7 +84,7 @@ begin
     for I in B'Range loop
 	if B (I).all /= Stream_Element
 			   (Ident_Int (Integer (I)) * Ident_Int (3)) then
-	    Failed ("Unable to build access values desginating elements " &
+	    Failed ("Unable to build access values designating elements " &
 		    "of a Stream_Element_Array");
 	end if;
     end loop;

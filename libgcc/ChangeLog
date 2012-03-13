@@ -1,3 +1,7 @@
+2012-03-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/arm/crtn.S: Fix typo.
+
 2012-03-13  Richard Guenther  <rguenther@suse.de>
 
 	* libgcov.c: Remove stdio.h include and NULL un-define.
