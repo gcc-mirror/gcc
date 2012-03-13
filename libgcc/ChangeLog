@@ -1,5 +1,9 @@
 2012-03-13  Richard Guenther  <rguenther@suse.de>
 
+	* libgcov.c: Remove stdio.h include and NULL un-define.
+
+2012-03-13  Richard Guenther  <rguenther@suse.de>
+
 	PR target/52569
 	* unwind-dw2-fde.c: Make avoid-include-gthr.h hacks work again.
 
