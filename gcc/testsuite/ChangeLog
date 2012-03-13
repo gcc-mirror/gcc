@@ -1,3 +1,7 @@
+2012-03-13  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/misaligned-expand-2.c: New test.
+
 2012-03-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52134
