@@ -1,3 +1,8 @@
+2012-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/52577
+	* gcc.dg/Wunused-var-3.c: New test.
+
 2012-03-13  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/misaligned-expand-2.c: New test.

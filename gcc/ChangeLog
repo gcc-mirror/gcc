@@ -1,5 +1,9 @@
 2012-03-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/52577
+	* c-parser.c (c_parser_postfix_expression)
+	<case RID_BUILTIN_SHUFFLE>: Call mark_exp_read on argument values.
+
 	* config/i386/smmintrin.h: Avoid /* within a comment.
 	* config/i386/nmmintrin.h: Likewise.
 
