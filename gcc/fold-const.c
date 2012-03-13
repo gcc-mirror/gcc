@@ -11398,6 +11398,20 @@ fold_binary_loc (location_t loc,
 			      fold_convert_loc (loc, type, arg0));
 	}
 
+      /* Fold (X * Y) & -(1 << CST) to X * Y if Y is a constant
+         multiple of 1 << CST.  */
+      if (TREE_CODE (arg1) == INTEGER_CST)
+	{
+	  double_int cst1 = tree_to_double_int (arg1);
+	  double_int ncst1 = double_int_ext (double_int_neg (cst1),
+					     TYPE_PRECISION (TREE_TYPE (arg1)),
+					     TYPE_UNSIGNED (TREE_TYPE (arg1)));
+	  if (double_int_equal_p (double_int_and (cst1, ncst1), ncst1)
+	      && multiple_of_p (type, arg0,
+				double_int_to_tree (TREE_TYPE (arg1), ncst1)))
+	    return fold_convert_loc (loc, type, arg0);
+	}
+
       /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,
 	 ((A & N) + B) & M -> (A + B) & M
 	 Similarly if (N & M) == 0,
