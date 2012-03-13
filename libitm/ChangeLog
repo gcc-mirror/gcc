@@ -1,3 +1,9 @@
+2012-03-13  Torvald Riegel  <triegel@redhat.com>
+
+	PR libitm/52526
+	* config/linux/rwlock.cc (GTM::gtm_rwlock::read_lock): Fix lost
+	wake-up.
+
 2012-03-02  Torvald Riegel  <triegel@redhat.com>
 
 	* libitm.texi: Link to specification and add a usage example.
