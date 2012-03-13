@@ -11563,8 +11563,10 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	return 0;
     }
 
-  if (seg != SEG_DEFAULT && (base || index)
-      && !TARGET_TLS_INDIRECT_SEG_REFS)
+/* Address override works only on the (%reg) part of %fs:(%reg).  */
+  if (seg != SEG_DEFAULT
+      && ((base && GET_MODE (base) != word_mode)
+	  || (index && GET_MODE (index) != word_mode)))
     return 0;
 
   /* Extract the integral value of scale.  */
