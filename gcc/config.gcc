@@ -129,10 +129,8 @@
 #			such a system header; otherwise "none", do not
 #			provide such a header at all.
 #
-#  extra_passes		List of extra executables compiled for this target
-#			machine, used for compiling from source to object.
-#
-#  extra_programs	Like extra_passes, but these are used when linking.
+#  extra_programs	List of extra executables compiled for this target
+#			machine, used when linking.
 #
 #  extra_options	List of target-dependent .opt files.
 #
@@ -205,7 +203,6 @@ user_headers_inc_next_pre=
 user_headers_inc_next_post=
 use_gcc_tgmath=yes
 use_gcc_stdint=none
-extra_passes=
 extra_programs=
 extra_objs=
 extra_gcc_objs=
