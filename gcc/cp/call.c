@@ -1325,7 +1325,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 
       /* Give this a better rank if it's a promotion.  */
       if (same_type_p (to, type_promotes_to (from))
-	  && conv->u.next->rank <= cr_promotion)
+	  && next_conversion (conv)->rank <= cr_promotion)
 	conv->rank = cr_promotion;
     }
   else if (fcode == VECTOR_TYPE && tcode == VECTOR_TYPE
@@ -1335,7 +1335,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	   && is_properly_derived_from (from, to))
     {
       if (conv->kind == ck_rvalue)
-	conv = conv->u.next;
+	conv = next_conversion (conv);
       conv = build_conv (ck_base, to, conv);
       /* The derived-to-base conversion indicates the initialization
 	 of a parameter with base type from an object of a derived
@@ -3697,7 +3697,7 @@ build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
 	break;
 
       case ck_std:
-	t = conv->u.next->type;
+	t = next_conversion (conv)->type;
 	if (INTEGRAL_OR_ENUMERATION_TYPE_P (t))
 	  break;
 
@@ -5145,7 +5145,7 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	     objects directly.  */
 	  conv = cand->convs[0];
 	  if (conv->kind == ck_ref_bind)
-	    conv = conv->u.next;
+	    conv = next_conversion (conv);
 	  arg1 = convert_like (conv, arg1, complain);
 
 	  if (arg2)
@@ -5159,14 +5159,14 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 
 	      conv = cand->convs[1];
 	      if (conv->kind == ck_ref_bind)
-		conv = conv->u.next;
+		conv = next_conversion (conv);
 	      arg2 = convert_like (conv, arg2, complain);
 	    }
 	  if (arg3)
 	    {
 	      conv = cand->convs[2];
 	      if (conv->kind == ck_ref_bind)
-		conv = conv->u.next;
+		conv = next_conversion (conv);
 	      arg3 = convert_like (conv, arg3, complain);
 	    }
 
@@ -5806,7 +5806,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       break;
     };
 
-  expr = convert_like_real (convs->u.next, expr, fn, argnum,
+  expr = convert_like_real (next_conversion (convs), expr, fn, argnum,
 			    convs->kind == ck_ref_bind ? -1 : 1,
 			    convs->kind == ck_ref_bind ? issue_conversion_warnings : false, 
 			    c_cast_p,
@@ -5859,7 +5859,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       {
 	tree ref_type = totype;
 
-	if (convs->bad_p && !convs->u.next->bad_p)
+	if (convs->bad_p && !next_conversion (convs)->bad_p)
 	  {
 	    gcc_assert (TYPE_REF_IS_RVALUE (ref_type)
 			&& real_lvalue_p (expr));
@@ -5889,7 +5889,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    cp_lvalue_kind lvalue = real_lvalue_p (expr);
 
 	    gcc_assert (same_type_ignoring_top_level_qualifiers_p
-			(type, convs->u.next->type));
+			(type, next_conversion (convs)->type));
 	    if (!CP_TYPE_CONST_NON_VOLATILE_P (type)
 		&& !TYPE_REF_IS_RVALUE (ref_type))
 	      {
@@ -7424,13 +7424,13 @@ is_subseq (conversion *ics1, conversion *ics2)
 
   while (ics1->kind == ck_rvalue
 	 || ics1->kind == ck_lvalue)
-    ics1 = ics1->u.next;
+    ics1 = next_conversion (ics1);
 
   while (1)
     {
       while (ics2->kind == ck_rvalue
 	     || ics2->kind == ck_lvalue)
-	ics2 = ics2->u.next;
+	ics2 = next_conversion (ics2);
 
       if (ics2->kind == ck_user
 	  || ics2->kind == ck_ambig
@@ -7443,12 +7443,12 @@ is_subseq (conversion *ics1, conversion *ics2)
 	   sequences.  */
 	return false;
 
-      ics2 = ics2->u.next;
+      ics2 = next_conversion (ics2);
 
       if (ics2->kind == ics1->kind
 	  && same_type_p (ics2->type, ics1->type)
-	  && same_type_p (ics2->u.next->type,
-			  ics1->u.next->type))
+	  && same_type_p (next_conversion (ics2)->type,
+			  next_conversion (ics1)->type))
 	return true;
     }
 }
@@ -7496,9 +7496,9 @@ maybe_handle_implicit_object (conversion **ics)
       reference_type = build_reference_type (reference_type);
 
       if (t->kind == ck_qual)
-	t = t->u.next;
+	t = next_conversion (t);
       if (t->kind == ck_ptr)
-	t = t->u.next;
+	t = next_conversion (t);
       t = build_identity_conv (TREE_TYPE (t->type), NULL_TREE);
       t = direct_reference_binding (reference_type, t);
       t->this_p = 1;
@@ -7517,7 +7517,7 @@ maybe_handle_ref_bind (conversion **ics)
   if ((*ics)->kind == ck_ref_bind)
     {
       conversion *old_ics = *ics;
-      *ics = old_ics->u.next;
+      *ics = next_conversion (old_ics);
       (*ics)->user_conv_p = old_ics->user_conv_p;
       return old_ics;
     }
@@ -7625,11 +7625,11 @@ compare_ics (conversion *ics1, conversion *ics2)
       conversion *t1;
       conversion *t2;
 
-      for (t1 = ics1; t1->kind != ck_user; t1 = t1->u.next)
+      for (t1 = ics1; t1->kind != ck_user; t1 = next_conversion (t1))
 	if (t1->kind == ck_ambig || t1->kind == ck_aggr
 	    || t1->kind == ck_list)
 	  break;
-      for (t2 = ics2; t2->kind != ck_user; t2 = t2->u.next)
+      for (t2 = ics2; t2->kind != ck_user; t2 = next_conversion (t2))
 	if (t2->kind == ck_ambig || t2->kind == ck_aggr
 	    || t2->kind == ck_list)
 	  break;
@@ -7674,12 +7674,12 @@ compare_ics (conversion *ics1, conversion *ics2)
 
       t1 = ics1;
       while (t1->kind != ck_identity)
-	t1 = t1->u.next;
+	t1 = next_conversion (t1);
       from_type1 = t1->type;
 
       t2 = ics2;
       while (t2->kind != ck_identity)
-	t2 = t2->u.next;
+	t2 = next_conversion (t2);
       from_type2 = t2->type;
     }
 
@@ -7941,7 +7941,7 @@ compare_ics (conversion *ics1, conversion *ics2)
 static tree
 source_type (conversion *t)
 {
-  for (;; t = t->u.next)
+  for (;; t = next_conversion (t))
     {
       if (t->kind == ck_user
 	  || t->kind == ck_ambig
@@ -8039,11 +8039,11 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
 	      && TREE_CODE (t2->type) == INTEGER_TYPE
 	      && (TYPE_PRECISION (t1->type)
 		  == TYPE_PRECISION (t2->type))
-	      && (TYPE_UNSIGNED (t1->u.next->type)
-		  || (TREE_CODE (t1->u.next->type)
+	      && (TYPE_UNSIGNED (next_conversion (t1)->type)
+		  || (TREE_CODE (next_conversion (t1)->type)
 		      == ENUMERAL_TYPE)))
 	    {
-	      tree type = t1->u.next->type;
+	      tree type = next_conversion (t1)->type;
 	      tree type1, type2;
 	      struct z_candidate *w, *l;
 	      if (comp > 0)
