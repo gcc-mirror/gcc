@@ -491,11 +491,11 @@
        (match_operand 0 "local_symbolic_operand")))
 
 ;; Test for various thread-local symbols.
-(define_predicate "tls_symbolic_operand"
+(define_special_predicate "tls_symbolic_operand"
   (and (match_code "symbol_ref")
        (match_test "SYMBOL_REF_TLS_MODEL (op)")))
 
-(define_predicate "tls_modbase_operand"
+(define_special_predicate "tls_modbase_operand"
   (and (match_code "symbol_ref")
        (match_test "op == ix86_tls_module_base ()")))
 
