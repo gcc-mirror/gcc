@@ -1,5 +1,10 @@
 2012-03-13  Richard Guenther  <rguenther@suse.de>
 
+	PR target/52569
+	* unwind-dw2-fde.c: Make avoid-include-gthr.h hacks work again.
+
+2012-03-13  Richard Guenther  <rguenther@suse.de>
+
 	* gthr-single.h (__GTHREAD_MUTEX_INIT_FUNCTION): Fix definition.
 
 2012-03-13  Richard Guenther  <rguenther@suse.de>
