@@ -1,3 +1,9 @@
+2012-03-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52134
+	* fold-const.c (fold_binary_loc): Fold (X * Y) & -(1 << CST) to X * Y
+	if Y is a constant multiple of 1 << CST.
+
 2012-03-13  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52488
