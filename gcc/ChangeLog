@@ -1,3 +1,8 @@
+2012-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/smmintrin.h: Avoid /* within a comment.
+	* config/i386/nmmintrin.h: Likewise.
+
 2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (xbegin): Remove constraint from expander.
