@@ -1,3 +1,7 @@
+2012-03-13  Release Manager
+
+	* GCC 4.4.7 released.
+
 2011-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/50888
