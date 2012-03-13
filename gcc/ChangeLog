@@ -1,3 +1,14 @@
+2012-03-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (extra_passes): Remove.
+	* configure.ac (extra_passes): Don't substitute.
+	* configure: Regenerate.
+	* Makefile.in (EXTRA_PASSES): Remove.
+	(GCC_PASSES): Remove $(EXTRA_PASSES).
+	(MOSTLYCLEANFILES): Likewise.
+	(native): Likewise.
+	(install-common): Likewise.
+
 2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (TARGET_TLS_INDIRECT_SEG_REFS): New.

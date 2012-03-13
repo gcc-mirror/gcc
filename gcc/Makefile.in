@@ -670,11 +670,8 @@ INHIBIT_LIBC_CFLAGS = -Dinhibit_libc
 endif
 
 # List of extra executables that should be compiled for this target machine
-# that are used for compiling from source code to object code.
+# that are used when linking.
 # The rules for compiling them should be in the t-* file for the machine.
-EXTRA_PASSES =@extra_passes@
-
-# Like EXTRA_PASSES, but these are used when linking.
 EXTRA_PROGRAMS = @extra_programs@
 
 # List of extra object files that should be compiled and linked with
@@ -724,7 +721,7 @@ COMPILERS = cc1$(exeext) @all_compilers@
 
 # List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
-GCC_PASSES=xgcc$(exeext) cc1$(exeext) specs $(EXTRA_PASSES)
+GCC_PASSES=xgcc$(exeext) cc1$(exeext) specs
 
 # Directory to link to, when using the target `maketest'.
 DIR = ../gcc
@@ -1481,7 +1478,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  tm-preds.h tm-constrs.h checksum-options \
  tree-check.h min-insn-modes.c insn-modes.c insn-modes.h \
  genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
- xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
+ xgcc$(exeext) cpp$(exeext) cc1$(exeext) \
  $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) gcc-ar$(exeext) gcc-nm$(exeext) \
  gcc-ranlib$(exeext) \
@@ -1717,7 +1714,7 @@ rest.encap: lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status auto-host.h build-@POSUB@ $(LANGUAGES) \
-	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(COLLECT2) lto-wrapper$(exeext) \
+	$(EXTRA_PROGRAMS) $(COLLECT2) lto-wrapper$(exeext) \
 	gcc-ar$(exeext) gcc-nm$(exeext) gcc-ranlib$(exeext)
 
 ifeq ($(enable_plugin),yes)
@@ -4561,7 +4558,7 @@ install-common: native lang.install-common installdirs
 	  else true; \
 	  fi; \
 	done
-	for file in $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(COLLECT2) ..; do \
+	for file in $(EXTRA_PROGRAMS) $(COLLECT2) ..; do \
 	  if [ x"$$file" != x.. ]; then \
 	    rm -f $(DESTDIR)$(libexecsubdir)/$$file; \
 	    $(INSTALL_PROGRAM) $$file $(DESTDIR)$(libexecsubdir)/$$file; \
