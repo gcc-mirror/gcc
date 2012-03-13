@@ -467,6 +467,9 @@ extern int x86_prefetch_sse;
 #define TARGET_TLS_DIRECT_SEG_REFS_DEFAULT 0
 #endif
 
+/* Address override works only on the (%reg) part of %fs:(%reg).  */
+#define TARGET_TLS_INDIRECT_SEG_REFS (Pmode == word_mode)
+
 /* Fence to use after loop using storent.  */
 
 extern tree x86_mfence;
