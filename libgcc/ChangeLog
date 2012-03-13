@@ -1,3 +1,8 @@
+2012-03-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* unwind-dw2.c (_Unwind_SetGRValue): Assert DWARF register size
+	<= saved reg size.
+
 2012-03-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/arm/crtn.S: Fix typo.
