@@ -6,7 +6,7 @@
 
 package syscall
 
-func entersyscall()
-func exitsyscall()
+func Entersyscall()
+func Exitsyscall()
 func GetErrno() Errno
 func SetErrno(Errno)
