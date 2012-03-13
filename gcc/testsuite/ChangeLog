@@ -1,3 +1,9 @@
+2012-03-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/48596
+	* gcc.target/sh/pr48596.c: Move accidentally added new test case to ...
+	* gcc.c-torture/compile/pr48596.c: ... here.
+
 2012-01-30  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51641

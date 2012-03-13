@@ -1,7 +1,4 @@
-/* Check that the following code compiles without errors.  */
-/* { dg-do compile { target "sh*-*-*" } } */
-/* { dg-options "-O1" } */
-
+/* PR target/48596  */
 enum { nrrdCenterUnknown, nrrdCenterNode, nrrdCenterCell, nrrdCenterLast };
 typedef struct { int size; int center; }  NrrdAxis;
 typedef struct { int dim; NrrdAxis axis[10]; } Nrrd;
