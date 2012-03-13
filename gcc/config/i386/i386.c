@@ -11552,11 +11552,6 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   else
     disp = addr;			/* displacement */
 
-  /* Since address override works only on the (reg32) part in fs:(reg32),
-     we can't use it as memory operand.  */
-  if (Pmode != word_mode && seg == SEG_FS && (base || index))
-    return 0;
-
   if (index)
     {
       if (REG_P (index))
@@ -11567,6 +11562,10 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       else
 	return 0;
     }
+
+  if (seg != SEG_DEFAULT && (base || index)
+      && !TARGET_TLS_INDIRECT_SEG_REFS)
+    return 0;
 
   /* Extract the integral value of scale.  */
   if (scale_rtx)
@@ -12696,7 +12695,9 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
       if (TARGET_64BIT || TARGET_ANY_GNU_TLS)
 	{
-          base = get_thread_pointer (for_mov || !TARGET_TLS_DIRECT_SEG_REFS);
+          base = get_thread_pointer (for_mov
+				     || !(TARGET_TLS_DIRECT_SEG_REFS
+					  && TARGET_TLS_INDIRECT_SEG_REFS));
 	  off = force_reg (Pmode, off);
 	  return gen_rtx_PLUS (Pmode, base, off);
 	}
@@ -12716,7 +12717,9 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
       if (TARGET_64BIT || TARGET_ANY_GNU_TLS)
 	{
-	  base = get_thread_pointer (for_mov || !TARGET_TLS_DIRECT_SEG_REFS);
+	  base = get_thread_pointer (for_mov
+				     || !(TARGET_TLS_DIRECT_SEG_REFS
+					  && TARGET_TLS_INDIRECT_SEG_REFS));
 	  return gen_rtx_PLUS (Pmode, base, off);
 	}
       else
@@ -13249,7 +13252,8 @@ ix86_delegitimize_tls_address (rtx orig_x)
   rtx x = orig_x, unspec;
   struct ix86_address addr;
 
-  if (!TARGET_TLS_DIRECT_SEG_REFS)
+  if (!(TARGET_TLS_DIRECT_SEG_REFS
+	&& TARGET_TLS_INDIRECT_SEG_REFS))
     return orig_x;
   if (MEM_P (x))
     x = XEXP (x, 0);
