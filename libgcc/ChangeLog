@@ -1,3 +1,7 @@
+2012-03-13  Release Manager
+
+	* GCC 4.4.7 released.
+
 2011-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/64/sfp-machine.h (ASM_INVALID): New define.
