@@ -51,9 +51,6 @@ extern tree gnat_to_gnu_field_decl (Entity_Id gnat_entity);
    the GCC type corresponding to that entity.  */
 extern tree gnat_to_gnu_type (Entity_Id gnat_entity);
 
-/* Wrap up compilation of T, a TYPE_DECL, possibly deferring it.  */
-extern void rest_of_type_decl_compilation (tree t);
-
 /* Start a new statement group chained to the previous group.  */
 extern void start_stmt_group (void);
 
@@ -739,10 +736,6 @@ extern tree build_unc_object_type_from_ptr (tree thin_fat_ptr_type,
 					    tree object_type, tree name,
 					    bool debug_info_p);
 
-/* Shift the component offsets within an unconstrained object TYPE to make it
-   suitable for use as a designated type for thin pointers.  */
-extern void shift_unc_components_for_thin_pointers (tree type);
-
 /* Update anything previously pointing to OLD_TYPE to point to NEW_TYPE.  In
    the normal case this is just two adjustments, but we have more to do
    if NEW is an UNCONSTRAINED_ARRAY_TYPE.  */
@@ -1002,13 +995,11 @@ extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
    intrusive preprocessor directives.  */
 #ifndef TARGET_ABI_OPEN_VMS
 #define TARGET_ABI_OPEN_VMS 0
-#endif
 
-/* VMS macro set by default, when clear forces 32bit mallocs and 32bit
+/* VMS option set by default, when clear forces 32bit mallocs and 32bit
    Descriptors. Always used in combination with TARGET_ABI_OPEN_VMS
    so no effect on non-VMS systems.  */
-#ifndef TARGET_MALLOC64
-#define TARGET_MALLOC64 0
+#define flag_vms_malloc64 0
 #endif
 
 /* Convenient shortcuts.  */

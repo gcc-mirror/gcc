@@ -310,7 +310,7 @@ begin
 
       when Pragma_Ada_83 =>
          Ada_Version := Ada_83;
-         Ada_Version_Explicit := Ada_Version;
+         Ada_Version_Explicit := Ada_83;
 
       ------------
       -- Ada_95 --
@@ -322,7 +322,7 @@ begin
 
       when Pragma_Ada_95 =>
          Ada_Version := Ada_95;
-         Ada_Version_Explicit := Ada_Version;
+         Ada_Version_Explicit := Ada_95;
 
       ---------------------
       -- Ada_05/Ada_2005 --

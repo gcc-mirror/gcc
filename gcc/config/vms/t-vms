@@ -17,12 +17,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-STMP_FIXPROTO =
-STMP_FIXINC =
 LIMITS_H_TEST = false
-
-# Under VMS, directory names cannot contain dots.
-version:=$(shell echo $(BASEVER_c) | sed -e 's/\./_/g')
 
 vms-crtlmap.h: $(srcdir)/config/vms/vms-crtlmap.map  \
   $(srcdir)/config/vms/make-crtlmap.awk

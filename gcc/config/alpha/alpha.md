@@ -1,6 +1,6 @@
 ;; Machine description for DEC Alpha for GNU C compiler
 ;; Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-;; 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+;; 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
 ;; Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
@@ -5869,13 +5869,13 @@
 ;; calculation, a jump to original landing pad is emitted in the place of the
 ;; original landing pad.  Since landing pad is moved, RA-relative GP
 ;; calculation in the prologue of landing pad breaks.  To solve this problem,
-;; we use alternative GP load approach, as in the case of TARGET_LD_BUGGY_LDGP.
+;; we use alternative GP load approach.
 
 (define_expand "exception_receiver"
   [(unspec_volatile [(match_dup 0)] UNSPECV_EHR)]
   "TARGET_ABI_OSF"
 {
-  if (TARGET_LD_BUGGY_LDGP || flag_reorder_blocks_and_partition)
+  if (flag_reorder_blocks_and_partition)
     operands[0] = alpha_gp_save_rtx ();
   else
     operands[0] = const0_rtx;
@@ -5883,8 +5883,7 @@
 
 (define_insn "*exception_receiver_2"
   [(unspec_volatile [(match_operand:DI 0 "memory_operand" "m")] UNSPECV_EHR)]
-  "TARGET_ABI_OSF 
-   && (TARGET_LD_BUGGY_LDGP || flag_reorder_blocks_and_partition)"
+  "TARGET_ABI_OSF && flag_reorder_blocks_and_partition"
   "ldq $29,%0"
   [(set_attr "type" "ild")])
 

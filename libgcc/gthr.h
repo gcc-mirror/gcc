@@ -52,11 +52,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      		to initialize __gthread_mutex_t to get a fast
 		non-recursive mutex.
      __GTHREAD_MUTEX_INIT_FUNCTION
-     		some systems can't initialize a mutex without a
-		function call.  On such systems, define this to a
-		function which looks like this:
+		to initialize __gthread_mutex_t to get a fast
+		non-recursive mutex.
+		Define this to a function which looks like this:
 		  void __GTHREAD_MUTEX_INIT_FUNCTION (__gthread_mutex_t *)
-		Don't define __GTHREAD_MUTEX_INIT in this case
+     		Some systems can't initialize a mutex without a
+		function call.  Don't define __GTHREAD_MUTEX_INIT in this case.
      __GTHREAD_RECURSIVE_MUTEX_INIT
      __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION
      		as above, but for a recursive mutex.

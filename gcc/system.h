@@ -1,7 +1,7 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009, 2010, 2011
+   2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -890,7 +890,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	TARGET_PROMOTE_FUNCTION_ARGS TARGET_PROMOTE_FUNCTION_RETURN \
 	LANG_HOOKS_MISSING_ARGUMENT LANG_HOOKS_HASH_TYPES \
 	TARGET_HANDLE_OFAST TARGET_OPTION_OPTIMIZATION \
-        TARGET_IRA_COVER_CLASSES TARGET_HELP
+	TARGET_IRA_COVER_CLASSES TARGET_HELP \
+	TARGET_HANDLE_PRAGMA_EXTERN_PREFIX
 
 /* Arrays that were deleted in favor of a functional interface.  */
  #pragma GCC poison built_in_decls implicit_built_in_decls

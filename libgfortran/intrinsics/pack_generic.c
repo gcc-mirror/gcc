@@ -1,9 +1,9 @@
 /* Generic implementation of the PACK intrinsic
-   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2009, 2010
+   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -96,8 +96,8 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 
   dim = GFC_DESCRIPTOR_RANK (array);
 
-  sptr = array->data;
-  mptr = mask->data;
+  sptr = array->base_addr;
+  mptr = mask->base_addr;
 
   /* Use the same loop for all logical types, by using GFC_LOGICAL_1
      and using shifting to address size and endian issues.  */
@@ -129,7 +129,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
   if (mstride[0] == 0)
     mstride[0] = mask_kind;
 
-  if (ret->data == NULL || unlikely (compile_options.bounds_check))
+  if (ret->base_addr == NULL || unlikely (compile_options.bounds_check))
     {
       /* Count the elements, either for allocating memory or
 	 for bounds checking.  */
@@ -147,14 +147,14 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 	  total = count_0 (mask);
 	}
 
-      if (ret->data == NULL)
+      if (ret->base_addr == NULL)
 	{
 	  /* Setup the array descriptor.  */
 	  GFC_DIMENSION_SET(ret->dim[0], 0, total-1, 1);
 
 	  ret->offset = 0;
 	  /* internal_malloc_size allocates a single byte for zero size.  */
-	  ret->data = internal_malloc_size (size * total);
+	  ret->base_addr = internal_malloc_size (size * total);
 
 	  if (total == 0)
 	    return;      /* In this case, nothing remains to be done.  */
@@ -177,7 +177,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
     rstride0 = size;
   sstride0 = sstride[0];
   mstride0 = mstride[0];
-  rptr = ret->data;
+  rptr = ret->base_addr;
 
   while (sptr && mptr)
     {
@@ -222,14 +222,14 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
   if (vector)
     {
       n = GFC_DESCRIPTOR_EXTENT(vector,0);
-      nelem = ((rptr - ret->data) / rstride0);
+      nelem = ((rptr - ret->base_addr) / rstride0);
       if (n > nelem)
         {
           sstride0 = GFC_DESCRIPTOR_STRIDE_BYTES(vector,0);
           if (sstride0 == 0)
             sstride0 = size;
 
-          sptr = vector->data + sstride0 * nelem;
+          sptr = vector->base_addr + sstride0 * nelem;
           n -= nelem;
           while (n--)
             {
@@ -358,8 +358,8 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 	 the unpack functions.  */
 
     case GFC_DTYPE_DERIVED_2:
-      if (GFC_UNALIGNED_2(ret->data) || GFC_UNALIGNED_2(array->data)
-	  || (vector && GFC_UNALIGNED_2(vector->data)))
+      if (GFC_UNALIGNED_2(ret->base_addr) || GFC_UNALIGNED_2(array->base_addr)
+	  || (vector && GFC_UNALIGNED_2(vector->base_addr)))
 	break;
       else
 	{
@@ -369,8 +369,8 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 	}
 
     case GFC_DTYPE_DERIVED_4:
-      if (GFC_UNALIGNED_4(ret->data) || GFC_UNALIGNED_4(array->data)
-	  || (vector && GFC_UNALIGNED_4(vector->data)))
+      if (GFC_UNALIGNED_4(ret->base_addr) || GFC_UNALIGNED_4(array->base_addr)
+	  || (vector && GFC_UNALIGNED_4(vector->base_addr)))
 	break;
       else
 	{
@@ -380,8 +380,8 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 	}
 
     case GFC_DTYPE_DERIVED_8:
-      if (GFC_UNALIGNED_8(ret->data) || GFC_UNALIGNED_8(array->data)
-	  || (vector && GFC_UNALIGNED_8(vector->data)))
+      if (GFC_UNALIGNED_8(ret->base_addr) || GFC_UNALIGNED_8(array->base_addr)
+	  || (vector && GFC_UNALIGNED_8(vector->base_addr)))
 	break;
       else
 	{
@@ -392,8 +392,8 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 
 #ifdef HAVE_GFC_INTEGER_16
     case GFC_DTYPE_DERIVED_16:
-      if (GFC_UNALIGNED_16(ret->data) || GFC_UNALIGNED_16(array->data)
-	  || (vector && GFC_UNALIGNED_16(vector->data)))
+      if (GFC_UNALIGNED_16(ret->base_addr) || GFC_UNALIGNED_16(array->base_addr)
+	  || (vector && GFC_UNALIGNED_16(vector->base_addr)))
 	break;
       else
 	{
@@ -481,11 +481,11 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
   sstride0 = sstride[0];
 
   if (ssize != 0)
-    sptr = array->data;
+    sptr = array->base_addr;
   else
     sptr = NULL;
 
-  if (ret->data == NULL)
+  if (ret->base_addr == NULL)
     {
       /* Allocate the memory for the result.  */
 
@@ -520,7 +520,7 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
 
       ret->offset = 0;
 
-      ret->data = internal_malloc_size (size * total);
+      ret->base_addr = internal_malloc_size (size * total);
 
       if (total == 0)
 	return;
@@ -529,7 +529,7 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
   rstride0 = GFC_DESCRIPTOR_STRIDE_BYTES(ret,0);
   if (rstride0 == 0)
     rstride0 = size;
-  rptr = ret->data;
+  rptr = ret->base_addr;
 
   /* The remaining possibilities are now:
        If MASK is .TRUE., we have to copy the source array into the
@@ -577,14 +577,14 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
   if (vector)
     {
       n = GFC_DESCRIPTOR_EXTENT(vector,0);
-      nelem = ((rptr - ret->data) / rstride0);
+      nelem = ((rptr - ret->base_addr) / rstride0);
       if (n > nelem)
         {
           sstride0 = GFC_DESCRIPTOR_STRIDE_BYTES(vector,0);
           if (sstride0 == 0)
             sstride0 = size;
 
-          sptr = vector->data + sstride0 * nelem;
+          sptr = vector->base_addr + sstride0 * nelem;
           n -= nelem;
           while (n--)
             {

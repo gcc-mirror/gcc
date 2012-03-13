@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    MIPS SDE version.
-   Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -66,9 +66,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef DEFAULT_SIGNED_CHAR
 #define DEFAULT_SIGNED_CHAR 0
-
-/* SDE-MIPS won't ever support SDB debugging info.  */
-#undef SDB_DEBUGGING_INFO
 
 /* Describe how we implement __builtin_eh_return.  */
 

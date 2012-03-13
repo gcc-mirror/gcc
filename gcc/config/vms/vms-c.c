@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-common.h"
+#include "c-tree.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "tm_p.h"
@@ -125,6 +126,8 @@ vms_pragma_nomember_alignment (cpp_reader *pfile ATTRIBUTE_UNUSED)
         maximum_field_alignment = 4 * BITS_PER_UNIT;
       else if (strcmp (arg, "quadword") == 0)
         maximum_field_alignment = 8 * BITS_PER_UNIT;
+      else if (strcmp (arg, "octaword") == 0)
+        maximum_field_alignment = 16 * BITS_PER_UNIT;
       else
         {
           error ("unhandled alignment for '#pragma nomember_alignment'");
@@ -145,17 +148,33 @@ vms_pragma_nomember_alignment (cpp_reader *pfile ATTRIBUTE_UNUSED)
     }
 }
 
-/* The 'extern model' for public data.  */
+/* The 'extern model' for public data.  This drives how the following
+   declarations are handled:
+   1) extern int name;
+   2) int name;
+   3) int name = 5;
+   See below for the behaviour as implemented by the native compiler.
+*/
 
 enum extern_model_kind
 {
-  /* Create one overlaid section per variable.  */
+  /* Create one overlaid section per variable.  All the above declarations (1,
+      2 and 3) are handled the same way: they create an overlaid section named
+      NAME (and initialized only for 3).  No global symbol is created.
+      This is the VAX C behavior.  */
   extern_model_common_block,
 
-  /* Like unix: multiple not-initialized declarations are allowed.  */
+  /* Like unix: multiple not-initialized declarations are allowed.
+     Only one initialized definition (case 3) is allows, but multiple
+     uninitialize definition (case 2) are allowed.
+     For case 2, this creates both a section named NAME and a global symbol.
+     For case 3, this creates a conditional global symbol defenition and a
+     conditional section definition.
+     This is the traditional UNIX C behavior.  */
   extern_model_relaxed_refdef,
 
-  /* Like -fno-common.  */
+  /* Like -fno-common.  Only one definition (cases 2 and 3) are allowed.
+     This is the ANSI-C model.  */
   extern_model_strict_refdef,
 
   /* Declarations creates symbols without storage.  */
@@ -192,6 +211,8 @@ vms_pragma_extern_model (cpp_reader *pfile ATTRIBUTE_UNUSED)
     saved_extern_model = current_extern_model;
   else if (strcmp (arg, "restore") == 0)
     current_extern_model = saved_extern_model;
+  else if (strcmp (arg, "relaxed_refdef") == 0)
+    current_extern_model = extern_model_relaxed_refdef;
   else if (strcmp (arg, "strict_refdef") == 0)
     current_extern_model = extern_model_strict_refdef;
   else if (strcmp (arg, "common_block") == 0)
@@ -263,6 +284,70 @@ vms_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
     }
 }
 
+/* #pragma __pointer_size  */
+
+static enum machine_mode saved_pointer_mode;
+
+static void
+handle_pragma_pointer_size (const char *pragma_name)
+{
+  enum cpp_ttype tok;
+  tree x;
+
+  tok = pragma_lex (&x);
+  if (tok == CPP_NAME)
+    {
+      const char *op = IDENTIFIER_POINTER (x);
+
+      if (!strcmp (op, "__save"))
+        saved_pointer_mode = c_default_pointer_mode;
+      else if (!strcmp (op, "__restore"))
+        c_default_pointer_mode = saved_pointer_mode;
+      else if (!strcmp (op, "__short"))
+        c_default_pointer_mode = SImode;
+      else if (!strcmp (op, "__long"))
+        c_default_pointer_mode = DImode;
+      else
+        error ("malformed %<#pragma %s%>, ignoring", pragma_name);
+    }
+  else if (tok == CPP_NUMBER)
+    {
+      int val;
+
+      if (TREE_CODE (x) == INTEGER_CST)
+        val = TREE_INT_CST_LOW (x);
+      else
+        val = -1;
+
+      if (val == 32)
+        c_default_pointer_mode = SImode;
+      else if (val == 64)
+        c_default_pointer_mode = DImode;
+      else
+        error ("invalid constant in %<#pragma %s%>", pragma_name);
+    }
+  else
+    {
+      error ("malformed %<#pragma %s%>, ignoring", pragma_name);
+    }
+}
+
+static void
+vms_pragma_pointer_size (cpp_reader * ARG_UNUSED (dummy))
+{
+  /* Ignore if no -mpointer-size option.  */
+  if (flag_vms_pointer_size == VMS_POINTER_SIZE_NONE)
+    return;
+
+  handle_pragma_pointer_size ("pointer_size");
+}
+
+static void
+vms_pragma_required_pointer_size (cpp_reader * ARG_UNUSED (dummy))
+{
+  handle_pragma_pointer_size ("required_pointer_size");
+}
+
 /* Add vms-specific pragma.  */
 
 void
@@ -274,14 +359,48 @@ vms_c_register_pragma (void)
   c_register_pragma (NULL, "standard", vms_pragma_standard);
   c_register_pragma (NULL, "__member_alignment", vms_pragma_member_alignment);
   c_register_pragma (NULL, "member_alignment", vms_pragma_member_alignment);
-  c_register_pragma (NULL, "__nomember_alignment",
-                     vms_pragma_nomember_alignment);
-  c_register_pragma (NULL, "nomember_alignment",
-                     vms_pragma_nomember_alignment);
+  c_register_pragma_with_expansion (NULL, "__nomember_alignment",
+                                    vms_pragma_nomember_alignment);
+  c_register_pragma_with_expansion (NULL, "nomember_alignment",
+                                    vms_pragma_nomember_alignment);
+  c_register_pragma (NULL, "__pointer_size",
+                     vms_pragma_pointer_size);
+  c_register_pragma (NULL, "__required_pointer_size",
+                     vms_pragma_required_pointer_size);
   c_register_pragma (NULL, "__extern_model", vms_pragma_extern_model);
   c_register_pragma (NULL, "extern_model", vms_pragma_extern_model);
   c_register_pragma (NULL, "__message", vms_pragma_message);
   c_register_pragma (NULL, "__extern_prefix", vms_pragma_extern_prefix);
+}
+
+/* Canonicalize the filename (remove directory prefix, force the .h extension),
+   and append it to the directory to create the path, but don't
+   turn / into // or // into ///; // may be a namespace escape.  */
+
+static char *
+vms_construct_include_filename (const char *fname, cpp_dir *dir)
+{
+  size_t dlen, flen;
+  char *path;
+  const char *fbasename = lbasename (fname);
+  size_t i;
+
+  dlen = dir->len;
+  flen = strlen (fbasename) + 2;
+  path = XNEWVEC (char, dlen + 1 + flen + 1);
+  memcpy (path, dir->name, dlen);
+  if (dlen && !IS_DIR_SEPARATOR (path[dlen - 1]))
+    path[dlen++] = '/';
+  for (i = 0; i < flen; i++)
+    if (fbasename[i] == '.')
+      break;
+    else
+      path[dlen + i] = TOLOWER (fbasename[i]);
+  path[dlen + i + 0] = '.';
+  path[dlen + i + 1] = 'h';
+  path[dlen + i + 2] = 0;
+
+  return path;
 }
 
 /* Standard modules list.  */
@@ -321,12 +440,29 @@ vms_c_register_includes (const char *sysroot,
               p->next = NULL;
               p->name = path;
               p->sysp = 1;
-              p->construct = 0;
+              p->construct = vms_construct_include_filename;
               p->user_supplied_p = 0;
               add_cpp_dir_path (p, SYSTEM);
             }
           else
             free (path);
         }
+    }
+}
+
+void
+vms_c_common_override_options (void)
+{
+  /* Initialize c_default_pointer_mode.  */
+  switch (flag_vms_pointer_size)
+    {
+    case VMS_POINTER_SIZE_NONE:
+      break;
+    case VMS_POINTER_SIZE_32:
+      c_default_pointer_mode = SImode;
+      break;
+    case VMS_POINTER_SIZE_64:
+      c_default_pointer_mode = DImode;
+      break;
     }
 }

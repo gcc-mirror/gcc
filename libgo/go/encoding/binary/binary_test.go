@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package binary
+package binary_test
 
 import (
 	"bytes"
+	. "encoding/binary"
 	"io"
 	"math"
 	"reflect"
@@ -187,7 +188,7 @@ func BenchmarkReadStruct(b *testing.B) {
 	bsr := &byteSliceReader{}
 	var buf bytes.Buffer
 	Write(&buf, BigEndian, &s)
-	n := dataSize(reflect.ValueOf(s))
+	n := DataSize(reflect.ValueOf(s))
 	b.SetBytes(int64(n))
 	t := s
 	b.ResetTimer()

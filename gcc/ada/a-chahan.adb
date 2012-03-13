@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -422,14 +422,12 @@ package body Ada.Characters.Handling is
    end To_Basic;
 
    function To_Basic (Item : String) return String is
-      Result : String (1 .. Item'Length);
-
    begin
-      for J in Item'Range loop
-         Result (J - (Item'First - 1)) := Value (Basic_Map, Item (J));
-      end loop;
-
-      return Result;
+      return Result : String (1 .. Item'Length) do
+         for J in Item'Range loop
+            Result (J - (Item'First - 1)) := Value (Basic_Map, Item (J));
+         end loop;
+      end return;
    end To_Basic;
 
    ------------------
@@ -485,14 +483,12 @@ package body Ada.Characters.Handling is
    end To_Lower;
 
    function To_Lower (Item : String) return String is
-      Result : String (1 .. Item'Length);
-
    begin
-      for J in Item'Range loop
-         Result (J - (Item'First - 1)) := Value (Lower_Case_Map, Item (J));
-      end loop;
-
-      return Result;
+      return Result : String (1 .. Item'Length) do
+         for J in Item'Range loop
+            Result (J - (Item'First - 1)) := Value (Lower_Case_Map, Item (J));
+         end loop;
+      end return;
    end To_Lower;
 
    ---------------
@@ -527,14 +523,12 @@ package body Ada.Characters.Handling is
    function To_Upper
      (Item : String) return String
    is
-      Result : String (1 .. Item'Length);
-
    begin
-      for J in Item'Range loop
-         Result (J - (Item'First - 1)) := Value (Upper_Case_Map, Item (J));
-      end loop;
-
-      return Result;
+      return Result : String (1 .. Item'Length) do
+         for J in Item'Range loop
+            Result (J - (Item'First - 1)) := Value (Upper_Case_Map, Item (J));
+         end loop;
+      end return;
    end To_Upper;
 
    -----------------------

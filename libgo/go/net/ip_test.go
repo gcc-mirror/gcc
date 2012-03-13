@@ -6,6 +6,7 @@ package net
 
 import (
 	"bytes"
+	_ "debug/elf"
 	"reflect"
 	"runtime"
 	"testing"

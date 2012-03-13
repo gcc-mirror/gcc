@@ -3740,7 +3740,7 @@ resolve_args (VEC(tree,gc) *args, tsubst_flags_t complain)
 	    error ("invalid use of void expression");
 	  return NULL;
 	}
-      else if (invalid_nonstatic_memfn_p (arg, tf_warning_or_error))
+      else if (invalid_nonstatic_memfn_p (arg, complain))
 	return NULL;
     }
   return args;

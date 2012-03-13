@@ -678,13 +678,13 @@ package body Exp_Attr is
 
       case Id is
 
-         --  Attributes related to Ada 2012 iterators (placeholder ???)
+      --  Attributes related to Ada 2012 iterators (placeholder ???)
 
-         when Attribute_Constant_Indexing    => null;
-         when Attribute_Default_Iterator     => null;
-         when Attribute_Implicit_Dereference => null;
-         when Attribute_Iterator_Element     => null;
-         when Attribute_Variable_Indexing    => null;
+      when Attribute_Constant_Indexing    => null;
+      when Attribute_Default_Iterator     => null;
+      when Attribute_Implicit_Dereference => null;
+      when Attribute_Iterator_Element     => null;
+      when Attribute_Variable_Indexing    => null;
 
       ------------
       -- Access --
@@ -5672,7 +5672,8 @@ package body Exp_Attr is
            Attribute_Definite                     |
            Attribute_Null_Parameter               |
            Attribute_Passed_By_Reference          |
-           Attribute_Pool_Address                 =>
+           Attribute_Pool_Address                 |
+           Attribute_Scalar_Storage_Order         =>
          null;
 
       --  The following attributes are also handled by the back end, but return

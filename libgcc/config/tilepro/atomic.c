@@ -63,18 +63,12 @@ post_atomic_barrier (int model)
 
 #define __unused __attribute__((unused))
 
-/* Provide additional methods not implemented by atomic.h. */
-#define atomic_xor(mem, mask) \
-  __atomic_update_cmpxchg(mem, mask, __old ^ __value)
-#define atomic_nand(mem, mask) \
-  __atomic_update_cmpxchg(mem, mask, ~(__old & __value))
-
 #define __atomic_fetch_and_do(type, size, opname)		\
 type								\
 __atomic_fetch_##opname##_##size(type* p, type i, int model)	\
 {								\
   pre_atomic_barrier(model);					\
-  type rv = atomic_##opname(p, i);				\
+  type rv = arch_atomic_##opname(p, i);				\
   post_atomic_barrier(model);					\
   return rv;							\
 }
@@ -96,7 +90,7 @@ type								\
 __atomic_##opname##_fetch_##size(type* p, type i, int model)	\
 {								\
   pre_atomic_barrier(model);					\
-  type rv = atomic_##opname(p, i) op i;				\
+  type rv = arch_atomic_##opname(p, i) op i;			\
   post_atomic_barrier(model);					\
   return rv;							\
 }
@@ -120,7 +114,7 @@ __atomic_compare_exchange_##size(volatile type* ptr, type* oldvalp,	\
 {									\
   type oldval = *oldvalp;						\
   pre_atomic_barrier(models);						\
-  type retval = atomic_val_compare_and_exchange(ptr, oldval, newval);	\
+  type retval = arch_atomic_val_compare_and_exchange(ptr, oldval, newval); \
   post_atomic_barrier(models);						\
   bool success = (retval == oldval);					\
   *oldvalp = retval;							\
@@ -131,7 +125,7 @@ type									\
 __atomic_exchange_##size(volatile type* ptr, type val, int model)	\
 {									\
   pre_atomic_barrier(model);						\
-  type retval = atomic_exchange(ptr, val);				\
+  type retval = arch_atomic_exchange(ptr, val);				\
   post_atomic_barrier(model);						\
   return retval;							\
 }
@@ -159,7 +153,7 @@ __atomic_compare_exchange_##size(volatile type* ptr, type* guess,	\
   type oldval = (oldword >> shift) & valmask;				\
   if (__builtin_expect((oldval == *guess), 1)) {			\
     unsigned int word = (oldword & bgmask) | ((val & valmask) << shift); \
-    oldword = atomic_val_compare_and_exchange(p, oldword, word);	\
+    oldword = arch_atomic_val_compare_and_exchange(p, oldword, word);	\
     oldval = (oldword >> shift) & valmask;				\
   }									\
   post_atomic_barrier(models);						\
@@ -187,7 +181,7 @@ proto									\
     oldval = (oldword >> shift) & valmask;				\
     val = expr;								\
     unsigned int word = (oldword & bgmask) | ((val & valmask) << shift); \
-    xword = atomic_val_compare_and_exchange(p, oldword, word);          \
+    xword = arch_atomic_val_compare_and_exchange(p, oldword, word);	\
   } while (__builtin_expect(xword != oldword, 0));			\
   bottom								\
 }

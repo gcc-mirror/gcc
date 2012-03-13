@@ -25,8 +25,8 @@ class java::io::File : public ::java::lang::Object
 {
 
   jlong attr(jint);
-  jboolean _access(jint);
-  jboolean _stat(jint);
+  jboolean access(jint);
+  jboolean stat(jint);
   static void init_native();
 public:
   virtual jboolean canRead();

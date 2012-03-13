@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *         Copyright (C) 2004-2011, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2004-2012, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -51,11 +51,6 @@
 #ifndef _ALL_SOURCE
 #define _ALL_SOURCE 1
 /* For AIX */
-#endif
-
-#ifndef _OSF_SOURCE
-#define _OSF_SOURCE 1
-/* For Tru64 */
 #endif
 
 /** No system header may be included prior to this point since on some targets
@@ -204,7 +199,7 @@
 #endif
 
 #if defined (_AIX) || defined (__FreeBSD__) || defined (__hpux__) || \
-    defined (__osf__) || defined (_WIN32) || defined (__APPLE__)
+    defined (_WIN32) || defined (__APPLE__)
 # define HAVE_THREAD_SAFE_GETxxxBYyyy 1
 
 #elif defined (sgi) || defined (linux) || defined (__GLIBC__) || \

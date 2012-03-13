@@ -4265,9 +4265,10 @@ invoke_aftermath_hooks (fence_t fence, rtx best_insn, int issue_more)
   return issue_more;
 }
 
-/* Estimate the cost of issuing INSN on DFA state STATE.  */
+/* Estimate the cost of issuing INSN on DFA state STATE.  Write to PEMPTY
+   true when INSN does not change the processor state.  */
 static int
-estimate_insn_cost (rtx insn, state_t state)
+estimate_insn_cost (rtx insn, state_t state, bool *pempty)
 {
   static state_t temp = NULL;
   int cost;
@@ -4277,6 +4278,8 @@ estimate_insn_cost (rtx insn, state_t state)
 
   memcpy (temp, state, dfa_state_size);
   cost = state_transition (temp, insn);
+  if (pempty)
+    *pempty = (memcmp (temp, state, dfa_state_size) == 0);
 
   if (cost < 0)
     return 0;
@@ -4307,7 +4310,7 @@ get_expr_cost (expr_t expr, fence_t fence)
 	return 0;
     }
   else
-    return estimate_insn_cost (insn, FENCE_STATE (fence));
+    return estimate_insn_cost (insn, FENCE_STATE (fence), NULL);
 }
 
 /* Find the best insn for scheduling, either via max_issue or just take
@@ -7020,7 +7023,7 @@ reset_sched_cycles_in_current_ebb (void)
     {
       int cost, haifa_cost;
       int sort_p;
-      bool asm_p, real_insn, after_stall, all_issued;
+      bool asm_p, real_insn, after_stall, all_issued, empty;
       int clock;
 
       if (!INSN_P (insn))
@@ -7047,7 +7050,7 @@ reset_sched_cycles_in_current_ebb (void)
 	    haifa_cost = 0;
 	}
       else
-        haifa_cost = estimate_insn_cost (insn, curr_state);
+        haifa_cost = estimate_insn_cost (insn, curr_state, &empty);
 
       /* Stall for whatever cycles we've stalled before.  */
       after_stall = 0;
@@ -7081,7 +7084,7 @@ reset_sched_cycles_in_current_ebb (void)
               if (!after_stall
                   && real_insn
                   && haifa_cost > 0
-                  && estimate_insn_cost (insn, curr_state) == 0)
+                  && estimate_insn_cost (insn, curr_state, NULL) == 0)
                 break;
 
               /* When the data dependency stall is longer than the DFA stall,
@@ -7093,7 +7096,7 @@ reset_sched_cycles_in_current_ebb (void)
               if ((after_stall || all_issued)
                   && real_insn
                   && haifa_cost == 0)
-                haifa_cost = estimate_insn_cost (insn, curr_state);
+                haifa_cost = estimate_insn_cost (insn, curr_state, NULL);
             }
 
 	  haifa_clock += i;
@@ -7125,7 +7128,8 @@ reset_sched_cycles_in_current_ebb (void)
       if (real_insn)
 	{
 	  cost = state_transition (curr_state, insn);
-	  issued_insns++;
+	  if (!empty)
+	    issued_insns++;
 
           if (sched_verbose >= 2)
 	    {

@@ -1,3 +1,392 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.host: Remove osf* handling.
+	* config/os/osf: Remove.
+	* doc/xml/manual/using.xml: Remove OSF reference.
+
+	* testsuite/18_support/pthread_guard.cc: Remove alpha*-*-osf* handling.
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc: Likewise.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+	* testsuite/21_strings/basic_string/pthread18185.cc: Likewise.
+	* testsuite/21_strings/basic_string/pthread4.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise.
+	* testsuite/23_containers/list/pthread1.cc: Likewise.
+	* testsuite/23_containers/list/pthread5.cc: Likewise.
+	* testsuite/23_containers/map/pthread6.cc: Likewise.
+	* testsuite/23_containers/vector/debug/multithreaded_swap.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/pthread2.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/pthread3.cc: Likewise.
+	* testsuite/30_threads/async/42819.cc: Likewise.
+	* testsuite/30_threads/async/49668.cc: Likewise.
+	* testsuite/30_threads/async/any.cc: Likewise.
+	* testsuite/30_threads/async/async.cc: Likewise.
+	* testsuite/30_threads/async/launch.cc: Likewise.
+	* testsuite/30_threads/async/sync.cc: Likewise.
+	* testsuite/30_threads/call_once/39909.cc: Likewise.
+	* testsuite/30_threads/call_once/49668.cc: Likewise.
+	* testsuite/30_threads/call_once/call_once1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/cons/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/2.cc:	Likewise.
+	* testsuite/30_threads/condition_variable/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/condition_variable_any/50862.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/cons/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/members/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/members/2.cc: Likewise.
+	* testsuite/30_threads/future/cons/move.cc: Likewise.
+	* testsuite/30_threads/future/members/45133.cc: Likewise.
+	* testsuite/30_threads/future/members/get.cc: Likewise.
+	* testsuite/30_threads/future/members/get2.cc: Likewise.
+	* testsuite/30_threads/future/members/share.cc: Likewise.
+	* testsuite/30_threads/future/members/valid.cc: Likewise.
+	* testsuite/30_threads/future/members/wait.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/lock/1.cc: Likewise.
+	* testsuite/30_threads/lock/2.cc: Likewise.
+	* testsuite/30_threads/lock/3.cc: Likewise.
+	* testsuite/30_threads/lock/4.cc: Likewise.
+	* testsuite/30_threads/lock_guard/cons/1.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/mutex/dest/destructor_locked.cc: Likewise.
+	* testsuite/30_threads/mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/mutex/native_handle/typesizes.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/packaged_task/49668.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/1.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/3.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/alloc.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/move.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/move_assign.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/get_future.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/get_future2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke3.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke4.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke5.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/reset.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/reset2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/swap.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/valid.cc: Likewise.
+	* testsuite/30_threads/promise/cons/1.cc: Likewise.
+	* testsuite/30_threads/promise/cons/alloc.cc: Likewise.
+	* testsuite/30_threads/promise/cons/move.cc: Likewise.
+	* testsuite/30_threads/promise/cons/move_assign.cc: Likewise.
+	* testsuite/30_threads/promise/members/get_future.cc: Likewise.
+	* testsuite/30_threads/promise/members/get_future2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value3.cc: Likewise.
+	* testsuite/30_threads/promise/members/swap.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/dest/destructor_locked.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/dest/destructor_locked.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/native_handle/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/2.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/3.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/2.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/shared_future/cons/move.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/45133.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get2.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/valid.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/this_thread/1.cc: Likewise.
+	* testsuite/30_threads/this_thread/2.cc: Likewise.
+	* testsuite/30_threads/this_thread/3.cc: Likewise.
+	* testsuite/30_threads/this_thread/4.cc: Likewise.
+	* testsuite/30_threads/thread/cons/1.cc: Likewise.
+	* testsuite/30_threads/thread/cons/2.cc: Likewise.
+	* testsuite/30_threads/thread/cons/3.cc: Likewise.
+	* testsuite/30_threads/thread/cons/4.cc: Likewise.
+	* testsuite/30_threads/thread/cons/49668.cc: Likewise.
+	* testsuite/30_threads/thread/cons/5.cc: Likewise.
+	* testsuite/30_threads/thread/cons/6.cc: Likewise.
+	* testsuite/30_threads/thread/cons/7.cc: Likewise.
+	* testsuite/30_threads/thread/cons/8.cc: Likewise.
+	* testsuite/30_threads/thread/cons/9.cc: Likewise.
+	* testsuite/30_threads/thread/cons/moveable.cc: Likewise.
+	* testsuite/30_threads/thread/members/1.cc: Likewise.
+	* testsuite/30_threads/thread/members/2.cc: Likewise.
+	* testsuite/30_threads/thread/members/3.cc: Likewise.
+	* testsuite/30_threads/thread/members/4.cc: Likewise.
+	* testsuite/30_threads/thread/members/5.cc: Likewise.
+	* testsuite/30_threads/thread/members/hardware_concurrency.cc: Likewise.
+	* testsuite/30_threads/thread/swap/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/dest/destructor_locked.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/native_handle/typesizes.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/3.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/try_lock/3.cc: Likewise.
+	* testsuite/30_threads/try_lock/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/5.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/6.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/modifiers/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/modifiers/2.cc: Likewise.
+	* testsuite/ext/rope/pthread7-rope.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/default_weaktoshared.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/mutex_weaktoshared.cc:
+	Likewise.
+
+2012-03-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52562
+	* libsupc++/typeinfo (type_info::name, before, operator==,
+	operator!=): Mark noexcept in C++11 mode.
+	* libsupc++/tinfo.cc (type_info::operator==): Adjust.
+	* libsupc++/tinfo2.cc (type_info::before): Likewise.
+	* testsuite/18_support/type_info/52562.cc: New.
+
+2012-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Remove TLS
+	symbols added in last change.
+
+	PR libstdc++/52456
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
+2012-03-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<char,true>::_M_initialize_moneypunct): Throw caught
+	exception again.
+	(moneypunct<char,false>::_M_initialize_moneypunct): Likewise.
+	* testsuite/22_locale/locale/cons/12352.cc: Also test en_US
+	locale.
+
+2012-03-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/formatter.h (enum _Debug_msg_id): Add
+	__msg_self_move_assign.
+	* include/debug/macros.h (__glibcxx_check_self_move_assign): Add.
+	* src/c++11/debug.cc (_S_debug_messages): Update.
+	* include/debug/safe_iterator.h (_Safe_iterator<>::operator=
+	(_Safe_iterator&&)): Add check for self move assignment.
+	* include/debug/set.h: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/forward_list: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/vector: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/string: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* testsuite/21_strings/debug/self_move_assign_neg.cc: New.
+	* testsuite/21_strings/debug/iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/
+	self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/
+	self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/
+	iterator_self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/map/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+
+2012-03-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Update to Doxygen 1.8.0.
+	* include/bits/locale_facets.h: Adjust markup to avoid warnings.
+	* include/ext/pb_ds/assoc_container.hpp: Same.
+	* include/ext/pb_ds/priority_queue.hpp: Same.
+	* include/std/fstream: Same.
+	* include/std/ratio: Same.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Adjust line
+	numbers.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Same.
+
+2012-03-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52433
+	* include/debug/safe_iterator.h (_Safe_iterator): Add debug checks
+	to move constructor and move assignment operator.
+
+2012-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h (iter_swap): In C++11 mode simply
+	call swap.
+	* include/bits/stl_bvector.h (swap(_Bit_reference,
+	_Bit_reference), swap(_Bit_reference, bool&),
+	swap(bool&, _Bit_reference)): Add.
+	* testsuite/23_containers/vector/bool/swap.cc: New.
+
+2012-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43813
+	* include/bits/stl_iterator_base_types.h (_RequireInputIter): New.
+	* include/ext/vstring.h (__versa_string<>::__versa_string
+	(_InputIterator, _InputIterator, const _Alloc&),
+	__versa_string<>::append(_InputIterator, _InputIterator),
+	__versa_string<>::assign(_InputIterator, _InputIterator),
+	__versa_string<>::insert(iterator, _InputIterator,
+	_InputIterator), __versa_string<>::replace(iterator, iterator,
+	_InputIterator, _InputIterator)): Use it.
+	* include/bits/stl_list.h (list<>::list(_InputIterator,
+	_InputIterator, const allocator_type&), list<>::assign(_InputIterator,
+	_InputIterator), list<>::insert(iterator, _InputIterator,
+	_InputIterator)): Likewise.
+	* include/bits/stl_vector.h (vector<>::vector(_InputIterator,
+	_InputIterator, const allocator_type&), vector<>::assign(_InputIterator,
+	_InputIterator), vectort<>::insert(iterator, _InputIterator,
+	_InputIterator)): Likewise.
+	* include/bits/stl_deque.h (deque<>::deque(_InputIterator,
+	_InputIterator, const allocator_type&), deque<>::deque(_InputIterator,
+	_InputIterator), deque<>::insert(iterator, _InputIterator,
+	_InputIterator)): Likewise.
+	* include/bits/stl_bvector.h (vector<>::vector(_InputIterator,
+	_InputIterator, const allocator_type&), vector<>::deque(_InputIterator,
+	_InputIterator), vector<>::insert(iterator, _InputIterator,
+	_InputIterator)): Likewise.
+	* include/bits/forward_list.h (forward_list<>::forward_list
+	(_InputIterator, _InputIterator, const allocator_type&),
+	forward_list<>::assign(_InputIterator, _InputIterator),
+	forward_list<>::insert_after(const_iterator, _InputIterator,
+	_InputIterator)): Likewise.
+	(forward_list<>::_M_initialize_dispatch(,, __true_type): Remove.
+	(forward_list<>::_M_range_initialize): Add, adjust everywhere.
+	* include/bits/forward_list.tcc: Adjust.
+	* include/debug/forward_list: Adjust.
+	* include/debug/vector: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/list: Likewise.
+	* testsuite/ext/vstring/requirements/do_the_right_thing.cc: New.
+	* testsuite/23_containers/forward_list/requirements/
+	do_the_right_thing.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/
+	do_the_right_thing.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/
+	do_the_right_thing.cc: Likewise.
+	* testsuite/23_containers/list/requirements/
+	do_the_right_thing.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2012-03-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/52433
@@ -24,7 +413,7 @@
 	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
 
 2012-03-01  Benjamin Kosnik  <bkoz@redhat.com>
-            Ramana Radhakrishnan <ramana@gcc.gnu.org>
+	    Ramana Radhakrishnan <ramana@gcc.gnu.org>
 
 	PR libstdc++/51785
 	* acinclude.m4 (GLIBCXX_CHECK_STDIO_PROTO): New.

@@ -9,11 +9,6 @@
 
 
 
-#if defined( ALPHA___EXTERN_PREFIX_SYS_STAT_CHECK )
-#   if defined(__DECC) || defined(__PRAGMA_EXTERN_PREFIX)
-#endif  /* ALPHA___EXTERN_PREFIX_SYS_STAT_CHECK */
-
-
 #if defined( GLIBC_C99_INLINE_2_CHECK )
 #ifdef __GNUC_GNU_INLINE__
 extern

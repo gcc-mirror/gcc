@@ -53,4 +53,8 @@ Compile code that relies on Cygwin DLL wrappers to support C++ operator new/dele
 posix
 Driver
 
+fwritable-relocated-rdata
+Common Report Var(flag_writable_rel_rdata) Init(0)
+Put relocated read-only data into .data section.
+
 ; Retain blank line above

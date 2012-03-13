@@ -1123,11 +1123,11 @@ expand_prologue (void)
           emit_push_sfr (rampy_rtx, false /* frame-related */, true /* clr */);
         }
 
-      if (AVR_HAVE_RAMPZ 
+      if (AVR_HAVE_RAMPZ
           && TEST_HARD_REG_BIT (set, REG_Z)
           && TEST_HARD_REG_BIT (set, REG_Z + 1))
         {
-          emit_push_sfr (rampz_rtx, false /* frame-related */, true /* clr */);
+          emit_push_sfr (rampz_rtx, false /* frame-related */, AVR_HAVE_RAMPD);
         }
     }  /* is_interrupt is_signal */
 
@@ -1347,12 +1347,12 @@ expand_epilogue (bool sibcall_p)
       /* Restore RAMPZ/Y/X/D using tmp_reg as scratch.
          The conditions to restore them must be tha same as in prologue.  */
       
-      if (AVR_HAVE_RAMPX
-          && TEST_HARD_REG_BIT (set, REG_X)
-          && TEST_HARD_REG_BIT (set, REG_X + 1))
+      if (AVR_HAVE_RAMPZ
+          && TEST_HARD_REG_BIT (set, REG_Z)
+          && TEST_HARD_REG_BIT (set, REG_Z + 1))
         {
           emit_pop_byte (TMP_REGNO);
-          emit_move_insn (rampx_rtx, tmp_reg_rtx);
+          emit_move_insn (rampz_rtx, tmp_reg_rtx);
         }
 
       if (AVR_HAVE_RAMPY
@@ -1364,12 +1364,12 @@ expand_epilogue (bool sibcall_p)
           emit_move_insn (rampy_rtx, tmp_reg_rtx);
         }
 
-      if (AVR_HAVE_RAMPZ
-          && TEST_HARD_REG_BIT (set, REG_Z)
-          && TEST_HARD_REG_BIT (set, REG_Z + 1))
+      if (AVR_HAVE_RAMPX
+          && TEST_HARD_REG_BIT (set, REG_X)
+          && TEST_HARD_REG_BIT (set, REG_X + 1))
         {
           emit_pop_byte (TMP_REGNO);
-          emit_move_insn (rampz_rtx, tmp_reg_rtx);
+          emit_move_insn (rampx_rtx, tmp_reg_rtx);
         }
 
       if (AVR_HAVE_RAMPD)
@@ -2762,7 +2762,14 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
       break; /* POST_INC */
 
     } /* switch CODE (addr) */
+
+  if (xop[4] == xstring_e && AVR_HAVE_RAMPD)
+    {
+      /* Reset RAMPZ to 0 so that EBI devices don't read garbage from RAM */
       
+      avr_asm_len ("out __RAMPZ__,__zero_reg__", xop, plen, 1);
+    }
+
   return "";
 }
 
@@ -2782,8 +2789,9 @@ avr_out_xload (rtx insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
   if (plen)
     *plen = 0;
 
-  avr_asm_len ("ld %3,%a2" CR_TAB
-               "sbrs %1,7", xop, plen, 2);
+  avr_asm_len ("sbrc %1,7" CR_TAB
+               "ld %3,%a2" CR_TAB
+               "sbrs %1,7", xop, plen, 3);
 
   avr_asm_len (AVR_HAVE_LPMX ? "lpm %3,%a2" : "lpm", xop, plen, 1);
 
@@ -8975,7 +8983,7 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
 
 /* Implement `MODE_CODE_BASE_REG_CLASS'.  */
 
-reg_class_t
+enum reg_class
 avr_mode_code_base_reg_class (enum machine_mode mode ATTRIBUTE_UNUSED,
                               addr_space_t as, RTX_CODE outer_code,
                               RTX_CODE index_code ATTRIBUTE_UNUSED)
@@ -9916,7 +9924,7 @@ avr_out_movmem (rtx insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
     case ADDR_SPACE_FLASH:
 
       if (AVR_HAVE_LPMX)
-        avr_asm_len ("lpm %2,%Z+", xop, plen, 1);
+        avr_asm_len ("lpm %2,Z+", xop, plen, 1);
       else
         avr_asm_len ("lpm" CR_TAB
                      "adiw r30,1", xop, plen, 2);
@@ -9965,6 +9973,14 @@ avr_out_movmem (rtx insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
 
 /* Helper for __builtin_avr_delay_cycles */
 
+static rtx
+avr_mem_clobber (void)
+{
+  rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (mem) = 1;
+  return mem;
+}
+
 static void
 avr_expand_delay_cycles (rtx operands0)
 {
@@ -9976,7 +9992,8 @@ avr_expand_delay_cycles (rtx operands0)
     {
       loop_count = ((cycles - 9) / 6) + 1;
       cycles_used = ((loop_count - 1) * 6) + 9;
-      emit_insn (gen_delay_cycles_4 (gen_int_mode (loop_count, SImode)));
+      emit_insn (gen_delay_cycles_4 (gen_int_mode (loop_count, SImode),
+                                     avr_mem_clobber()));
       cycles -= cycles_used;
     }
   
@@ -9986,7 +10003,8 @@ avr_expand_delay_cycles (rtx operands0)
       if (loop_count > 0xFFFFFF)
         loop_count = 0xFFFFFF;
       cycles_used = ((loop_count - 1) * 5) + 7;
-      emit_insn (gen_delay_cycles_3 (gen_int_mode (loop_count, SImode)));
+      emit_insn (gen_delay_cycles_3 (gen_int_mode (loop_count, SImode),
+                                     avr_mem_clobber()));
       cycles -= cycles_used;
     }
   
@@ -9996,7 +10014,8 @@ avr_expand_delay_cycles (rtx operands0)
       if (loop_count > 0xFFFF)
         loop_count = 0xFFFF;
       cycles_used = ((loop_count - 1) * 4) + 5;
-      emit_insn (gen_delay_cycles_2 (gen_int_mode (loop_count, HImode)));
+      emit_insn (gen_delay_cycles_2 (gen_int_mode (loop_count, HImode),
+                                     avr_mem_clobber()));
       cycles -= cycles_used;
     }
   
@@ -10006,7 +10025,8 @@ avr_expand_delay_cycles (rtx operands0)
       if (loop_count > 255) 
         loop_count = 255;
       cycles_used = loop_count * 3;
-      emit_insn (gen_delay_cycles_1 (gen_int_mode (loop_count, QImode)));
+      emit_insn (gen_delay_cycles_1 (gen_int_mode (loop_count, QImode),
+                                     avr_mem_clobber()));
       cycles -= cycles_used;
       }
   

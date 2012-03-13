@@ -651,7 +651,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   gcc_assert (t == SUCCESS);
 
   /* Create the init statement list.  */
-  pushlevel (0);
+  pushlevel ();
   if (GFC_DESCRIPTOR_TYPE_P (type)
       && GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
     {
@@ -691,13 +691,13 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   else
     stmt = gfc_trans_assignment (e1, e2, false, false);
   if (TREE_CODE (stmt) != BIND_EXPR)
-    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
+    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   else
-    poplevel (0, 0, 0);
+    poplevel (0, 0);
   OMP_CLAUSE_REDUCTION_INIT (c) = stmt;
 
   /* Create the merge statement list.  */
-  pushlevel (0);
+  pushlevel ();
   if (GFC_DESCRIPTOR_TYPE_P (type)
       && GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
     {
@@ -714,9 +714,9 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   else
     stmt = gfc_trans_assignment (e3, e4, false, true);
   if (TREE_CODE (stmt) != BIND_EXPR)
-    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
+    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   else
-    poplevel (0, 0, 0);
+    poplevel (0, 0);
   OMP_CLAUSE_REDUCTION_MERGE (c) = stmt;
 
   /* And stick the placeholder VAR_DECL into the clause as well.  */
@@ -1001,20 +1001,20 @@ gfc_trans_omp_code (gfc_code *code, bool force_empty)
 {
   tree stmt;
 
-  pushlevel (0);
+  pushlevel ();
   stmt = gfc_trans_code (code);
   if (TREE_CODE (stmt) != BIND_EXPR)
     {
       if (!IS_EMPTY_STMT (stmt) || force_empty)
 	{
-	  tree block = poplevel (1, 0, 0);
+	  tree block = poplevel (1, 0);
 	  stmt = build3_v (BIND_EXPR, NULL, stmt, block);
 	}
       else
-	poplevel (0, 0, 0);
+	poplevel (0, 0);
     }
   else
-    poplevel (0, 0, 0);
+    poplevel (0, 0);
   return stmt;
 }
 
@@ -1501,7 +1501,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 
   if (pblock != &block)
     {
-      pushlevel (0);
+      pushlevel ();
       gfc_start_block (&block);
     }
 
@@ -1612,12 +1612,12 @@ gfc_trans_omp_parallel_do (gfc_code *code)
   if (!do_clauses.ordered && do_clauses.sched_kind != OMP_SCHED_STATIC)
     pblock = &block;
   else
-    pushlevel (0);
+    pushlevel ();
   stmt = gfc_trans_omp_do (code, pblock, &do_clauses, omp_clauses);
   if (TREE_CODE (stmt) != BIND_EXPR)
-    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
+    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   else
-    poplevel (0, 0, 0);
+    poplevel (0, 0);
   stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
 		     omp_clauses);
   OMP_PARALLEL_COMBINED (stmt) = 1;
@@ -1638,12 +1638,12 @@ gfc_trans_omp_parallel_sections (gfc_code *code)
   gfc_start_block (&block);
   omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 				       code->loc);
-  pushlevel (0);
+  pushlevel ();
   stmt = gfc_trans_omp_sections (code, &section_clauses);
   if (TREE_CODE (stmt) != BIND_EXPR)
-    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
+    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   else
-    poplevel (0, 0, 0);
+    poplevel (0, 0);
   stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
 		     omp_clauses);
   OMP_PARALLEL_COMBINED (stmt) = 1;
@@ -1664,12 +1664,12 @@ gfc_trans_omp_parallel_workshare (gfc_code *code)
   gfc_start_block (&block);
   omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 				       code->loc);
-  pushlevel (0);
+  pushlevel ();
   stmt = gfc_trans_omp_workshare (code, &workshare_clauses);
   if (TREE_CODE (stmt) != BIND_EXPR)
-    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
+    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   else
-    poplevel (0, 0, 0);
+    poplevel (0, 0);
   stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
 		     omp_clauses);
   OMP_PARALLEL_COMBINED (stmt) = 1;
@@ -1763,7 +1763,7 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 
   code = code->block->next;
 
-  pushlevel (0);
+  pushlevel ();
 
   gfc_start_block (&block);
   pblock = &block;
@@ -1892,14 +1892,14 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
     {
       if (!IS_EMPTY_STMT (stmt))
 	{
-	  tree bindblock = poplevel (1, 0, 0);
+	  tree bindblock = poplevel (1, 0);
 	  stmt = build3_v (BIND_EXPR, NULL, stmt, bindblock);
 	}
       else
-	poplevel (0, 0, 0);
+	poplevel (0, 0);
     }
   else
-    poplevel (0, 0, 0);
+    poplevel (0, 0);
 
   if (IS_EMPTY_STMT (stmt) && !clauses->nowait)
     stmt = gfc_trans_omp_barrier ();

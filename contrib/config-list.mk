@@ -12,8 +12,7 @@ TEST=all-gcc
 #
 # v850e1-elf is rejected by config.sub
 LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
-  alpha-dec-osf5.1OPT-enable-obsolete alpha64-dec-vms alpha-dec-vms \
-  am33_2.0-linux \
+  alpha64-dec-vms alpha-dec-vms am33_2.0-linux \
   arm-wrs-vxworks arm-freebsd6 arm-netbsdelf arm-linux \
   arm-linux-androideabi arm-uclinux_eabi arm-ecos-elf arm-eabi \
   arm-symbianelf arm-rtems arm-elf arm-wince-pe avr-rtems avr-elf \
@@ -40,7 +39,7 @@ LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
   mips-sgi-irix6.5OPT-with-stabsOPT-enable-threads=posixOPT-enable-obsolete \
   mips-netbsd \
   mips64el-st-linux-gnu mips64octeon-linux mipsisa64r2-linux \
-  mipsisa32r2-linux-gnu mips-openbsd mipsisa64r2-sde-elf mipsisa32-elfoabi \
+  mipsisa32r2-linux-gnu mipsisa64r2-sde-elf mipsisa32-elfoabi \
   mipsisa64-elfoabi mipsisa64r2el-elf mipsisa64sr71k-elf mipsisa64sb1-elf \
   mipsel-elf mips64-elf mips64vr-elf mips64orion-elf mips-rtems \
   mips-wrs-vxworks mipstx39-elf mmix-knuth-mmixware mn10300-elf moxie-elf \

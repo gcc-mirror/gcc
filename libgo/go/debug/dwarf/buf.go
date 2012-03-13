@@ -13,17 +13,17 @@ import (
 
 // Data buffer being decoded.
 type buf struct {
-	dwarf    *Data
-	order    binary.ByteOrder
-	name     string
-	off      Offset
-	data     []byte
-	addrsize int
-	err      error
+	dwarf *Data
+	u     *unit
+	order binary.ByteOrder
+	name  string
+	off   Offset
+	data  []byte
+	err   error
 }
 
-func makeBuf(d *Data, name string, off Offset, data []byte, addrsize int) buf {
-	return buf{d, d.order, name, off, data, addrsize, nil}
+func makeBuf(d *Data, u *unit, name string, off Offset, data []byte) buf {
+	return buf{d, u, d.order, name, off, data, nil}
 }
 
 func (b *buf) uint8() uint8 {
@@ -121,15 +121,17 @@ func (b *buf) int() int64 {
 
 // Address-sized uint.
 func (b *buf) addr() uint64 {
-	switch b.addrsize {
-	case 1:
-		return uint64(b.uint8())
-	case 2:
-		return uint64(b.uint16())
-	case 4:
-		return uint64(b.uint32())
-	case 8:
-		return uint64(b.uint64())
+	if b.u != nil {
+		switch b.u.addrsize {
+		case 1:
+			return uint64(b.uint8())
+		case 2:
+			return uint64(b.uint16())
+		case 4:
+			return uint64(b.uint32())
+		case 8:
+			return uint64(b.uint64())
+		}
 	}
 	b.error("unknown address size")
 	return 0

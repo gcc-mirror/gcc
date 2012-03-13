@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2009, Free Software Foundation, Inc.            --
+--          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -122,18 +122,21 @@ private
    --  The following operations are either relatively simple compared to the
    --  expense of returning unconstrained arrays, or are just function wrappers
    --  calling procedures implementing the actual operation. By having the
-   --  front end always inline these, the expense of the unconstrained returns
+   --  front end inline these, the expense of the unconstrained returns
    --  can be avoided.
 
-   pragma Inline_Always ("+");
-   pragma Inline_Always ("-");
-   pragma Inline_Always ("*");
-   pragma Inline_Always ("/");
-   pragma Inline_Always ("abs");
-   pragma Inline_Always (Eigenvalues);
-   pragma Inline_Always (Inverse);
-   pragma Inline_Always (Solve);
-   pragma Inline_Always (Transpose);
-   pragma Inline_Always (Unit_Matrix);
-   pragma Inline_Always (Unit_Vector);
+   --  Note: We use an extended return statement in their implementation to
+   --  allow the frontend to inline these functions.
+
+   pragma Inline ("+");
+   pragma Inline ("-");
+   pragma Inline ("*");
+   pragma Inline ("/");
+   pragma Inline ("abs");
+   pragma Inline (Eigenvalues);
+   pragma Inline (Inverse);
+   pragma Inline (Solve);
+   pragma Inline (Transpose);
+   pragma Inline (Unit_Matrix);
+   pragma Inline (Unit_Vector);
 end Ada.Numerics.Generic_Real_Arrays;

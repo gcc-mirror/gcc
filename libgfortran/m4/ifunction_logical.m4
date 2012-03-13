@@ -1,6 +1,6 @@
 dnl Support macro file for intrinsic functions.
 dnl Contains the generic sections of the array functions.
-dnl This file is part of the GNU Fortran 95 Runtime Library (libgfortran)
+dnl This file is part of the GNU Fortran Runtime Library (libgfortran)
 dnl Distributed under the GNU GPL with exception.  See COPYING for details.
 dnl
 dnl Pass the implementation for a single section as the parameter to
@@ -71,7 +71,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 	extent[n] = 0;
     }
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       size_t alloc_size, str;
 
@@ -99,7 +99,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 	  return;
 	}
       else
-	retarray->data = internal_malloc_size (alloc_size);
+	retarray->base_addr = internal_malloc_size (alloc_size);
     }
   else
     {
@@ -133,7 +133,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 	return;
     }
 
-  base = array->data;
+  base = array->base_addr;
 
   if (src_kind == 1 || src_kind == 2 || src_kind == 4 || src_kind == 8
 #ifdef HAVE_GFC_LOGICAL_16
@@ -147,7 +147,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   else
     internal_error (NULL, "Funny sized logical array in u_name intrinsic");
 
-  dest = retarray->data;
+  dest = retarray->base_addr;
 
   continue_loop = 1;
   while (continue_loop)

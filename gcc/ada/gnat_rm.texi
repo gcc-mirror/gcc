@@ -71,7 +71,7 @@ AdaCore
 * About This Guide::
 * Implementation Defined Pragmas::
 * Implementation Defined Attributes::
-* Implementation Defined Restrictions::
+* Standard and Implementation Defined Restrictions::
 * Implementation Advice::
 * Implementation Defined Characteristics::
 * Intrinsic Subprograms::
@@ -289,7 +289,7 @@ Implementation Defined Attributes
 * Wchar_T_Size::
 * Word_Size::
 
-Implementation Defined Restrictions
+Standard and Implementation Defined Restrictions
 
 * Partition-Wide Restrictions::
 * Program Unit Level Restrictions::
@@ -650,7 +650,7 @@ implementation-dependent attributes, which can be used to extend and
 enhance the functionality of the compiler.
 
 @item
-@ref{Implementation Defined Restrictions}, lists GNAT
+@ref{Standard and Implementation Defined Restrictions}, lists GNAT
 implementation-dependent restrictions, which can be used to extend and
 enhance the functionality of the compiler.
 
@@ -1202,10 +1202,22 @@ pragma Assertion_Policy (CHECK | DISABLE | IGNORE);
 @end smallexample
 
 @noindent
-If the argument is @code{CHECK}, then pragma @code{Assert} is enabled.
-If the argument is @code{IGNORE}, then pragma @code{Assert} is ignored.
+If the argument is @code{CHECK}, then assertions are enabled.
+If the argument is @code{IGNORE}, then assertions are ignored.
 This pragma overrides the effect of the @option{-gnata} switch on the
 command line.
+
+Assertions are of three kinds:
+
+@itemize @bullet
+@item
+Pragma @code{Assert}.
+@item
+In Ada 2012, all assertions defined in the RM as aspects: preconditions,
+postconditions, type invariants and (sub)type predicates.
+@item
+Corresponding pragmas for type invariants and (sub)type predicates.
+@end itemize
 
 The implementation defined policy @code{DISABLE} is like
 @code{IGNORE} except that it completely disables semantic
@@ -1423,17 +1435,20 @@ pragma Check_Policy (Critical_Error, OFF);
 @noindent
 is given, then subsequent @code{Check} pragmas whose first argument is also
 @code{Critical_Error} will be disabled. The special identifier @code{Assertion}
-controls the behavior of normal @code{Assert} pragmas (thus a pragma
+controls the behavior of normal assertions (thus a pragma
 @code{Check_Policy} with this identifier is similar to the normal
 @code{Assertion_Policy} pragma except that it can appear within a
 declarative part).
 
 The special identifiers @code{Precondition} and @code{Postcondition} control
-the status of preconditions and postconditions. If a @code{Precondition} pragma
+the status of preconditions and postconditions given as pragmas.
+If a @code{Precondition} pragma
 is encountered, it is ignored if turned off by a @code{Check_Policy} specifying
 that @code{Precondition} checks are @code{Off} or @code{Ignored}. Similarly use
 of the name @code{Postcondition} controls whether @code{Postcondition} pragmas
-are recognized.
+are recognized. Note that preconditions and postconditions given as aspects
+are controlled differently, either by the @code{Assertion_Policy} pragma or
+by the @code{Check_Policy} pragma with identifier @code{Assertion}.
 
 The check policy is @code{OFF} to turn off corresponding checks, and @code{ON}
 to turn on corresponding checks. The default for a set of checks for which no
@@ -6904,8 +6919,8 @@ package @code{Interfaces.C}.
 @code{Standard'Word_Size} (@code{Standard} is the only permissible
 prefix) provides the value @code{System.Word_Size}.
 
-@node Implementation Defined Restrictions
-@chapter Implementation Defined Restrictions
+@node Standard and Implementation Defined Restrictions
+@chapter Standard and Implementation Defined Restrictions
 
 @noindent
 All RM defined Restriction identifiers are implemented:
@@ -9920,7 +9935,7 @@ See documentation in the sources of the run time mentioned in paragraph
 @code{Restrictions}.  See 13.12(7).
 @end cartouche
 @noindent
-@xref{Implementation Defined Restrictions}.
+@xref{Standard and Implementation Defined Restrictions}.
 
 @sp 1
 @cartouche

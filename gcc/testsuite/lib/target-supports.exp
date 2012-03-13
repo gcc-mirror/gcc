@@ -233,12 +233,6 @@ proc check_weak_available { } {
         return 1
     }
 
-    # DEC OSF/1/Digital UNIX/Tru64 UNIX supports it
-
-    if { [istarget alpha*-dec-osf*] } {
-	return 1
-    }
-
     # Windows targets Cygwin and MingW32 support it
 
     if { [istarget *-*-cygwin*] || [istarget *-*-mingw*] } {
@@ -584,11 +578,6 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
 # Add to FLAGS all the target-specific flags needed to use thread-local storage.
 
 proc add_options_for_tls { flags } {
-    # Tru64 UNIX uses emutls, which relies on a couple of pthread functions
-    # which only live in libpthread, so always pass -pthread for TLS.
-    if { [istarget alpha*-dec-osf*] } {
-	return "$flags -pthread"
-    }
     # On Solaris 8 and 9, __tls_get_addr/___tls_get_addr only lives in
     # libthread, so always pass -pthread for native TLS.
     # Need to duplicate native TLS check from
@@ -993,8 +982,8 @@ proc check_iconv_available { test_what } {
 # Return 1 if an ASCII locale is supported on this host, 0 otherwise.
 
 proc check_ascii_locale_available { } {
-    if { ([ishost alpha*-dec-osf*] || [ishost mips-sgi-irix*]) } {
-	# Neither Tru64 UNIX nor IRIX support an ASCII locale.
+    if { ([ishost mips-sgi-irix*]) } {
+	# IRIX doesn't support an ASCII locale.
 	return 0
     } else {
 	return 1

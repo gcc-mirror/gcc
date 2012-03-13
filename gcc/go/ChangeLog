@@ -1,3 +1,19 @@
+2012-03-09  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::assignment_statement): Convert the rhs
+	to the lhs type if necessary.
+
+2012-03-08  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::init_statement): Don't initialize a
+	zero-sized variable.
+	(go_non_zero_struct): New global variable.
+	(Gcc_backend::non_zero_size_type): New function.
+	(Gcc_backend::global_variable): Don't build an assignment for a
+	zero-sized value.
+	* go-c.h (go_non_zero_struct): Declare.
+	* config-lang.in (gtfiles): Add go-c.h.
+
 2012-02-29  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (class Gcc_tree): Add set_tree method.

@@ -149,7 +149,6 @@ unswitch_loops (void)
     {
       unswitch_single_loop (loop, NULL_RTX, 0);
 #ifdef ENABLE_CHECKING
-      verify_dominators (CDI_DOMINATORS);
       verify_loop_structure ();
 #endif
     }

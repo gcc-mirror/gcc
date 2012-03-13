@@ -7,3 +7,5 @@ vms-dwarf2eh.o: $(srcdir)/config/alpha/vms-dwarf2eh.S
 	$(gcc_compile) -c -x assembler-with-cpp $<
 
 LIB2ADD += $(srcdir)/config/alpha/vms-gcc_shell_handler.c
+
+HOST_LIBGCC2_CFLAGS=-mpointer-size=64

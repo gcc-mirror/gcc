@@ -1318,6 +1318,9 @@ verify_loop_structure (void)
   loop_iterator li;
   struct loop_exit *exit, *mexit;
 
+  /* We need up-to-date dominators, verify them.  */
+  verify_dominators (CDI_DOMINATORS);
+
   /* Check sizes.  */
   sizes = XCNEWVEC (unsigned, num);
   sizes[0] = 2;

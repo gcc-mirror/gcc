@@ -33,17 +33,15 @@ with Ada.Numerics; use Ada.Numerics;
 
 package body System.Generic_Array_Operations is
 
-   --  The local function Check_Unit_Last computes the index of the last
-   --  element returned by Unit_Vector or Unit_Matrix. A separate function is
-   --  needed to allow raising Constraint_Error before declaring the function
-   --  result variable. The result variable needs to be declared first, to
-   --  allow front-end inlining.
-
    function Check_Unit_Last
      (Index : Integer;
       Order : Positive;
       First : Integer) return Integer;
    pragma Inline_Always (Check_Unit_Last);
+   --  Compute index of last element returned by Unit_Vector or Unit_Matrix.
+   --  A separate function is needed to allow raising Constraint_Error before
+   --  declaring the function result variable. The result variable needs to be
+   --  declared first, to allow front-end inlining.
 
    --------------
    -- Diagonal --
@@ -51,14 +49,12 @@ package body System.Generic_Array_Operations is
 
    function Diagonal (A : Matrix) return Vector is
       N : constant Natural := Natural'Min (A'Length (1), A'Length (2));
-      R : Vector (A'First (1) .. A'First (1) + N - 1);
-
    begin
-      for J in 0 .. N - 1 loop
-         R (R'First + J) := A (A'First (1) + J, A'First (2) + J);
-      end loop;
-
-      return R;
+      return R : Vector (A'First (1) .. A'First (1) + N - 1) do
+         for J in 0 .. N - 1 loop
+            R (R'First + J) := A (A'First (1) + J, A'First (2) + J);
+         end loop;
+      end return;
    end Diagonal;
 
    --------------------------
@@ -69,9 +65,9 @@ package body System.Generic_Array_Operations is
    begin
       if A'Length (1) /= A'Length (2) then
          raise Constraint_Error with "matrix is not square";
+      else
+         return A'Length (1);
       end if;
-
-      return A'Length (1);
    end Square_Matrix_Length;
 
    ---------------------
@@ -112,6 +108,10 @@ package body System.Generic_Array_Operations is
          Factor : Scalar);
       --  Elementary row operation that subtracts Factor * M (Source, <>) from
       --  M (Target, <>)
+
+      -------------
+      -- Sub_Row --
+      -------------
 
       procedure Sub_Row
         (M      : in out Matrix;
@@ -257,6 +257,10 @@ package body System.Generic_Array_Operations is
          procedure Swap (X, Y : in out Scalar);
          --  Exchange the values of X and Y
 
+         ----------
+         -- Swap --
+         ----------
+
          procedure Swap (X, Y : in out Scalar) is
             T : constant Scalar := X;
          begin
@@ -386,16 +390,14 @@ package body System.Generic_Array_Operations is
    ----------------------------------
 
    function Matrix_Elementwise_Operation (X : X_Matrix) return Result_Matrix is
-      R : Result_Matrix (X'Range (1), X'Range (2));
-
    begin
-      for J in R'Range (1) loop
-         for K in R'Range (2) loop
-            R (J, K) := Operation (X (J, K));
+      return R : Result_Matrix (X'Range (1), X'Range (2)) do
+         for J in R'Range (1) loop
+            for K in R'Range (2) loop
+               R (J, K) := Operation (X (J, K));
+            end loop;
          end loop;
-      end loop;
-
-      return R;
+      end return;
    end Matrix_Elementwise_Operation;
 
    ----------------------------------
@@ -403,14 +405,12 @@ package body System.Generic_Array_Operations is
    ----------------------------------
 
    function Vector_Elementwise_Operation (X : X_Vector) return Result_Vector is
-      R : Result_Vector (X'Range);
-
    begin
-      for J in R'Range loop
-         R (J) := Operation (X (J));
-      end loop;
-
-      return R;
+      return R : Result_Vector (X'Range) do
+         for J in R'Range loop
+            R (J) := Operation (X (J));
+         end loop;
+      end return;
    end Vector_Elementwise_Operation;
 
    -----------------------------------------
@@ -421,29 +421,27 @@ package body System.Generic_Array_Operations is
      (Left  : Left_Matrix;
       Right : Right_Matrix) return Result_Matrix
    is
-      R : Result_Matrix (Left'Range (1), Left'Range (2));
-
    begin
-      if Left'Length (1) /= Right'Length (1)
-           or else
-         Left'Length (2) /= Right'Length (2)
-      then
-         raise Constraint_Error with
-           "matrices are of different dimension in elementwise operation";
-      end if;
+      return R : Result_Matrix (Left'Range (1), Left'Range (2)) do
+         if Left'Length (1) /= Right'Length (1)
+              or else
+            Left'Length (2) /= Right'Length (2)
+         then
+            raise Constraint_Error with
+              "matrices are of different dimension in elementwise operation";
+         end if;
 
-      for J in R'Range (1) loop
-         for K in R'Range (2) loop
-            R (J, K) :=
-              Operation
-                (Left (J, K),
-                 Right
-                   (J - R'First (1) + Right'First (1),
-                    K - R'First (2) + Right'First (2)));
+         for J in R'Range (1) loop
+            for K in R'Range (2) loop
+               R (J, K) :=
+                 Operation
+                   (Left (J, K),
+                    Right
+                      (J - R'First (1) + Right'First (1),
+                       K - R'First (2) + Right'First (2)));
+            end loop;
          end loop;
-      end loop;
-
-      return R;
+      end return;
    end Matrix_Matrix_Elementwise_Operation;
 
    ------------------------------------------------
@@ -451,33 +449,31 @@ package body System.Generic_Array_Operations is
    ------------------------------------------------
 
    function Matrix_Matrix_Scalar_Elementwise_Operation
-     (X    : X_Matrix;
-      Y    : Y_Matrix;
-      Z    : Z_Scalar) return Result_Matrix
+     (X : X_Matrix;
+      Y : Y_Matrix;
+      Z : Z_Scalar) return Result_Matrix
    is
-      R : Result_Matrix (X'Range (1), X'Range (2));
-
    begin
-      if X'Length (1) /= Y'Length (1)
-           or else
-         X'Length (2) /= Y'Length (2)
-      then
-         raise Constraint_Error with
-           "matrices are of different dimension in elementwise operation";
-      end if;
+      return R : Result_Matrix (X'Range (1), X'Range (2)) do
+         if X'Length (1) /= Y'Length (1)
+              or else
+            X'Length (2) /= Y'Length (2)
+         then
+            raise Constraint_Error with
+              "matrices are of different dimension in elementwise operation";
+         end if;
 
-      for J in R'Range (1) loop
-         for K in R'Range (2) loop
-            R (J, K) :=
-              Operation
-                (X (J, K),
-                 Y (J - R'First (1) + Y'First (1),
-                    K - R'First (2) + Y'First (2)),
-                 Z);
+         for J in R'Range (1) loop
+            for K in R'Range (2) loop
+               R (J, K) :=
+                 Operation
+                   (X (J, K),
+                    Y (J - R'First (1) + Y'First (1),
+                       K - R'First (2) + Y'First (2)),
+                    Z);
+            end loop;
          end loop;
-      end loop;
-
-      return R;
+      end return;
    end Matrix_Matrix_Scalar_Elementwise_Operation;
 
    -----------------------------------------
@@ -488,19 +484,17 @@ package body System.Generic_Array_Operations is
      (Left  : Left_Vector;
       Right : Right_Vector) return Result_Vector
    is
-      R : Result_Vector (Left'Range);
-
    begin
-      if Left'Length /= Right'Length then
-         raise Constraint_Error with
-           "vectors are of different length in elementwise operation";
-      end if;
+      return R : Result_Vector (Left'Range) do
+         if Left'Length /= Right'Length then
+            raise Constraint_Error with
+              "vectors are of different length in elementwise operation";
+         end if;
 
-      for J in R'Range loop
-         R (J) := Operation (Left (J), Right (J - R'First + Right'First));
-      end loop;
-
-      return R;
+         for J in R'Range loop
+            R (J) := Operation (Left (J), Right (J - R'First + Right'First));
+         end loop;
+      end return;
    end Vector_Vector_Elementwise_Operation;
 
    ------------------------------------------------
@@ -510,21 +504,18 @@ package body System.Generic_Array_Operations is
    function Vector_Vector_Scalar_Elementwise_Operation
      (X : X_Vector;
       Y : Y_Vector;
-      Z : Z_Scalar) return Result_Vector
-   is
-      R : Result_Vector (X'Range);
-
+      Z : Z_Scalar) return Result_Vector is
    begin
-      if X'Length /= Y'Length then
-         raise Constraint_Error with
-           "vectors are of different length in elementwise operation";
-      end if;
+      return R : Result_Vector (X'Range) do
+         if X'Length /= Y'Length then
+            raise Constraint_Error with
+              "vectors are of different length in elementwise operation";
+         end if;
 
-      for J in R'Range loop
-         R (J) := Operation (X (J), Y (J - X'First + Y'First), Z);
-      end loop;
-
-      return R;
+         for J in R'Range loop
+            R (J) := Operation (X (J), Y (J - X'First + Y'First), Z);
+         end loop;
+      end return;
    end Vector_Vector_Scalar_Elementwise_Operation;
 
    -----------------------------------------
@@ -535,16 +526,14 @@ package body System.Generic_Array_Operations is
      (Left  : Left_Matrix;
       Right : Right_Scalar) return Result_Matrix
    is
-      R : Result_Matrix (Left'Range (1), Left'Range (2));
-
    begin
-      for J in R'Range (1) loop
-         for K in R'Range (2) loop
-            R (J, K) := Operation (Left (J, K), Right);
+      return R : Result_Matrix (Left'Range (1), Left'Range (2)) do
+         for J in R'Range (1) loop
+            for K in R'Range (2) loop
+               R (J, K) := Operation (Left (J, K), Right);
+            end loop;
          end loop;
-      end loop;
-
-      return R;
+      end return;
    end Matrix_Scalar_Elementwise_Operation;
 
    -----------------------------------------
@@ -555,14 +544,12 @@ package body System.Generic_Array_Operations is
      (Left  : Left_Vector;
       Right : Right_Scalar) return Result_Vector
    is
-      R : Result_Vector (Left'Range);
-
    begin
-      for J in R'Range loop
-         R (J) := Operation (Left (J), Right);
-      end loop;
-
-      return R;
+      return R : Result_Vector (Left'Range) do
+         for J in R'Range loop
+            R (J) := Operation (Left (J), Right);
+         end loop;
+      end return;
    end Vector_Scalar_Elementwise_Operation;
 
    -----------------------------------------
@@ -573,16 +560,14 @@ package body System.Generic_Array_Operations is
      (Left  : Left_Scalar;
       Right : Right_Matrix) return Result_Matrix
    is
-      R : Result_Matrix (Right'Range (1), Right'Range (2));
-
    begin
-      for J in R'Range (1) loop
-         for K in R'Range (2) loop
-            R (J, K) := Operation (Left, Right (J, K));
+      return R : Result_Matrix (Right'Range (1), Right'Range (2)) do
+         for J in R'Range (1) loop
+            for K in R'Range (2) loop
+               R (J, K) := Operation (Left, Right (J, K));
+            end loop;
          end loop;
-      end loop;
-
-      return R;
+      end return;
    end Scalar_Matrix_Elementwise_Operation;
 
    -----------------------------------------
@@ -593,14 +578,12 @@ package body System.Generic_Array_Operations is
      (Left  : Left_Scalar;
       Right : Right_Vector) return Result_Vector
    is
-      R : Result_Vector (Right'Range);
-
    begin
-      for J in R'Range loop
-         R (J) := Operation (Left, Right (J));
-      end loop;
-
-      return R;
+      return R : Result_Vector (Right'Range) do
+         for J in R'Range loop
+            R (J) := Operation (Left, Right (J));
+         end loop;
+      end return;
    end Scalar_Vector_Elementwise_Operation;
 
    ----------
@@ -662,31 +645,30 @@ package body System.Generic_Array_Operations is
      (Left  : Left_Matrix;
       Right : Right_Matrix) return Result_Matrix
    is
-      R : Result_Matrix (Left'Range (1), Right'Range (2));
-
    begin
-      if Left'Length (2) /= Right'Length (1) then
-         raise Constraint_Error with
-           "incompatible dimensions in matrix multiplication";
-      end if;
+      return R : Result_Matrix (Left'Range (1), Right'Range (2)) do
+         if Left'Length (2) /= Right'Length (1) then
+            raise Constraint_Error with
+              "incompatible dimensions in matrix multiplication";
+         end if;
 
-      for J in R'Range (1) loop
-         for K in R'Range (2) loop
-            declare
-               S : Result_Scalar := Zero;
+         for J in R'Range (1) loop
+            for K in R'Range (2) loop
+               declare
+                  S : Result_Scalar := Zero;
 
-            begin
-               for M in Left'Range (2) loop
-                  S := S + Left (J, M) *
-                             Right (M - Left'First (2) + Right'First (1), K);
-               end loop;
+               begin
+                  for M in Left'Range (2) loop
+                     S := S + Left (J, M) *
+                                Right
+                                  (M - Left'First (2) + Right'First (1), K);
+                  end loop;
 
-               R (J, K) := S;
-            end;
+                  R (J, K) := S;
+               end;
+            end loop;
          end loop;
-      end loop;
-
-      return R;
+      end return;
    end  Matrix_Matrix_Product;
 
    ----------------------------
@@ -766,28 +748,27 @@ package body System.Generic_Array_Operations is
      (Left  : Matrix;
       Right : Right_Vector) return Result_Vector
    is
-      R : Result_Vector (Left'Range (1));
-
    begin
-      if Left'Length (2) /= Right'Length then
-         raise Constraint_Error with
-            "incompatible dimensions in matrix-vector multiplication";
-      end if;
+      return R : Result_Vector (Left'Range (1)) do
+         if Left'Length (2) /= Right'Length then
+            raise Constraint_Error with
+              "incompatible dimensions in matrix-vector multiplication";
+         end if;
 
-      for J in Left'Range (1) loop
-         declare
-            S : Result_Scalar := Zero;
+         for J in Left'Range (1) loop
+            declare
+               S : Result_Scalar := Zero;
 
-         begin
-            for K in Left'Range (2) loop
-               S := S + Left (J, K) * Right (K - Left'First (2) + Right'First);
-            end loop;
+            begin
+               for K in Left'Range (2) loop
+                  S := S + Left (J, K)
+                         * Right (K - Left'First (2) + Right'First);
+               end loop;
 
-            R (J) := S;
-         end;
-      end loop;
-
-      return R;
+               R (J) := S;
+            end;
+         end loop;
+      end return;
    end Matrix_Vector_Product;
 
    -------------------
@@ -798,16 +779,14 @@ package body System.Generic_Array_Operations is
      (Left  : Left_Vector;
       Right : Right_Vector) return Matrix
    is
-      R : Matrix (Left'Range, Right'Range);
-
    begin
-      for J in R'Range (1) loop
-         for K in R'Range (2) loop
-            R (J, K) := Left (J) * Right (K);
+      return R : Matrix (Left'Range, Right'Range) do
+         for J in R'Range (1) loop
+            for K in R'Range (2) loop
+               R (J, K) := Left (J) * Right (K);
+            end loop;
          end loop;
-      end loop;
-
-      return R;
+      end return;
    end Outer_Product;
 
    -----------------
@@ -845,7 +824,8 @@ package body System.Generic_Array_Operations is
    procedure Update_Matrix_With_Matrix (X : in out X_Matrix; Y : Y_Matrix) is
    begin
       if X'Length (1) /= Y'Length (1)
-        or else X'Length (2) /= Y'Length (2)
+           or else
+         X'Length (2) /= Y'Length (2)
       then
          raise Constraint_Error with
            "matrices are of different dimension in update operation";
@@ -884,17 +864,16 @@ package body System.Generic_Array_Operations is
       First_1 : Integer := 1;
       First_2 : Integer := 1) return Matrix
    is
-      R : Matrix (First_1 .. Check_Unit_Last (First_1, Order, First_1),
-                  First_2 .. Check_Unit_Last (First_2, Order, First_2));
-
    begin
-      R := (others => (others => Zero));
+      return R : Matrix (First_1 .. Check_Unit_Last (First_1, Order, First_1),
+                         First_2 .. Check_Unit_Last (First_2, Order, First_2))
+      do
+         R := (others => (others => Zero));
 
-      for J in 0 .. Order - 1 loop
-         R (First_1 + J, First_2 + J) := One;
-      end loop;
-
-      return R;
+         for J in 0 .. Order - 1 loop
+            R (First_1 + J, First_2 + J) := One;
+         end loop;
+      end return;
    end Unit_Matrix;
 
    -----------------
@@ -906,11 +885,11 @@ package body System.Generic_Array_Operations is
       Order : Positive;
       First : Integer := 1) return Vector
    is
-      R : Vector (First .. Check_Unit_Last (Index, Order, First));
    begin
-      R := (others => Zero);
-      R (Index) := One;
-      return R;
+      return R : Vector (First .. Check_Unit_Last (Index, Order, First)) do
+         R := (others => Zero);
+         R (Index) := One;
+      end return;
    end Unit_Vector;
 
    ---------------------------
@@ -921,28 +900,27 @@ package body System.Generic_Array_Operations is
      (Left  : Left_Vector;
       Right : Matrix) return Result_Vector
    is
-      R : Result_Vector (Right'Range (2));
-
    begin
-      if Left'Length /= Right'Length (2) then
-         raise Constraint_Error with
-           "incompatible dimensions in vector-matrix multiplication";
-      end if;
+      return R : Result_Vector (Right'Range (2)) do
+         if Left'Length /= Right'Length (2) then
+            raise Constraint_Error with
+              "incompatible dimensions in vector-matrix multiplication";
+         end if;
 
-      for J in Right'Range (2) loop
-         declare
-            S : Result_Scalar := Zero;
+         for J in Right'Range (2) loop
+            declare
+               S : Result_Scalar := Zero;
 
-         begin
-            for K in Right'Range (1) loop
-               S := S + Left (J - Right'First (1) + Left'First) * Right (K, J);
-            end loop;
+            begin
+               for K in Right'Range (1) loop
+                  S := S + Left (J - Right'First (1)
+                                   + Left'First) * Right (K, J);
+               end loop;
 
-            R (J) := S;
-         end;
-      end loop;
-
-      return R;
+               R (J) := S;
+            end;
+         end loop;
+      end return;
    end Vector_Matrix_Product;
 
 end System.Generic_Array_Operations;

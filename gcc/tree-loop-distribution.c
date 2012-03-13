@@ -1293,7 +1293,9 @@ tree_loop_distribution (void)
 	    fprintf (dump_file, "Loop %d is the same.\n", num);
 	}
 
+#ifdef ENABLE_CHECKING
       verify_loop_structure ();
+#endif
 
       VEC_free (gimple, heap, work_list);
     }

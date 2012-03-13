@@ -1,3 +1,88 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (mips*-*-openbsd*): Remove.
+
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host: Remove alpha*-dec-osf5.1* handling.
+	* config/alpha/gthr-posix.c: Remove.
+	* config/alpha/libgcc-osf5.ver: Remove.
+	* config/alpha/osf5-unwind.h: Remove.
+	* config/alpha/t-osf-pthread: Remove.
+	* config/alpha/t-slibgcc-osf: Remove.
+	* config/t-crtfm (crtfastmath.o): Remove -frandom-seed.
+	* gthr-posix.h [!_REENTRANT && __osf__] (_REENTRANT): Don't define.
+	[__osf__ && _PTHREAD_USE_MANGLED_NAMES_]: Remove.
+	* mkmap-flat.awk: Remove osf_export handling.
+
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
+	* gthr.h (__GTHREAD_MUTEX_INIT_FUNCTION): Adjust specification.
+	* gthr-posix.h (__GTHREAD_MUTEX_INIT_FUNCTION): Define.
+	(__gthread_mutex_init_function): New function.
+	* gthr-single.h (__GTHREAD_MUTEX_INIT_FUNCTION): Define.
+
+	PR gcov/49484
+	* libgcov.c: Include gthr.h.
+	(__gcov_flush_mx): New global variable.
+	(init_mx, init_mx_once): New functions.
+	(__gcov_flush): Protect self with a mutex.
+	(__gcov_fork): Re-initialize mutex after forking.
+	* unwind-dw2-fde.c: Change condition under which to use
+	__GTHREAD_MUTEX_INIT_FUNCTION.
+
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* config/alpha/t-vms: Define HOST_LIBGCC2_CFLAGS.
+	* config/ia64/t-vms: Likewise.
+
+2012-03-11  Michael Hope  <michael.hope@linaro.org>
+
+       * longlong.h [ARM] (add_ssaaaa, sub_ddmmss, umul_ppmm): Enable
+       for Thumb-2.
+
+2012-03-07  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.c: Rename "atomic_" prefix to
+	"arch_atomic_".
+	(atomic_xor): Rename and move definition to
+	config/tilepro/atomic.h.
+	(atomic_nand): Ditto.
+	* config/tilepro/atomic.h: Rename "atomic_" prefix to
+	"arch_atomic_".
+	(arch_atomic_xor): Move from config/tilepro/atomic.c.
+	(arch_atomic_nand): Ditto.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52507
+	* config/avr/lib1funcs.S (__movmemx_hi): Fix loop label in RAM-part.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52505
+	* config/avr/lib1funcs.S (__xload_1): Don't read unintentionally
+	from RAM.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52461
+	PR target/52508
+	* config/avr/lib1funcs.S (__do_copy_data): Clear RAMPZ after usage
+	if RAMPZ affects reading from RAM.
+	(__tablejump_elpm__): Ditto.
+	(.xload): Ditto.
+	(__movmemx_hi): Ditto.
+	(__do_global_ctors): Right condition for RAMPZ usage is "have ELPM".
+	(__do_global_dtors): Ditto.
+	(__xload_1, __xload_2, __xload_3, __xload_4): Ditto.
+	(__movmemx_hi): Ditto.
+
+2012-03-05  Richard Henderson  <rth@redhat.com>
+
+	* longlong.h [ARM] (umul_ppmm): Use umull for arm3m and later.
+	[ARM] (count_trailing_zeros): Use the builtin.
+
 2012-03-01  Kai Tietz  <ktietz@redhat.com>
 
 	* soft-fp: Imported from glibc upstream.

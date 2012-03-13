@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2005-2011, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2005-2012, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -28,14 +28,6 @@
  * Extensive contributions were provided by Ada Core Technologies Inc.      *
  *                                                                          *
  ****************************************************************************/
-
-/* Tru64 UNIX V4.0F <stdlib.h> declares unsetenv() only if AES_SOURCE (which
-   is plain broken, this should be _AES_SOURCE instead as everywhere else;
-   Tru64 UNIX V5.1B declares it only if _BSD.  */
-#if defined (__alpha__) && defined (__osf__)
-#define AES_SOURCE
-#define _BSD
-#endif
 
 #ifdef __cplusplus
 extern "C" {

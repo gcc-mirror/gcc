@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -514,18 +514,10 @@ package body Ada.Directories is
    begin
       Local_Get_Current_Dir (Buffer'Address, Path_Len'Address);
 
-      declare
-         --  We need to resolve links because of A.16(47), since we must not
-         --  return alternative names for files
-         Cur : constant String := Normalize_Pathname (Buffer (1 .. Path_Len));
+      --  We need to resolve links because of RM A.16(47), which requires
+      --  that we not return alternative names for files.
 
-      begin
-         if Cur'Length > 1 and then Cur (Cur'Last) = Dir_Separator then
-            return Cur (1 .. Cur'Last - 1);
-         else
-            return Cur;
-         end if;
-      end;
+      return Normalize_Pathname (Buffer (1 .. Path_Len));
    end Current_Directory;
 
    ----------------------

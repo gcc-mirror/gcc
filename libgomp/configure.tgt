@@ -133,11 +133,6 @@ case "${target}" in
 	XLDFLAGS="${XLDFLAGS} -lpthread"
 	;;
 
-  alpha*-dec-osf*)
-	# Use Tru64 UNIX-specific sem.h version.
-	config_path="osf posix"
-	;;
-
   mips-sgi-irix6*)
 	# Need to link with -lpthread so libgomp.so is self-contained.
 	XLDFLAGS="${XLDFLAGS} -lpthread"

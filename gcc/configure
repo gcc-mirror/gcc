@@ -23891,11 +23891,6 @@ case "$target" in
     # with TLS support are in use, native TLS cannot work.
     set_have_as_tls=no
     ;;
-  *-*-osf*)
-    # Tru64 UNIX loader and libc.so lack TLS support, so even if gas and
-    # gld with TLS support are in use, native TLS cannot work.
-    set_have_as_tls=no
-    ;;
   # TLS was introduced in the Solaris 9 FCS release and backported to
   # Solaris 8 patches.  Support for GNU-style TLS on x86 was only
   # introduced in Solaris 9 4/04, replacing the earlier Sun style that Sun
@@ -24083,12 +24078,6 @@ elif test x$gcc_cv_ld != x; then
       gcc_cv_ld_static_dynamic=yes
   else
     case "$target" in
-      # Tru64 UNIX support -noso/-so_archive instead of -Bstatic/-Bdynamic.
-      alpha*-dec-osf*)
-        gcc_cv_ld_static_dynamic=yes
-	gcc_cv_ld_static_option="-noso"
-	gcc_cv_ld_dynamic_option="-so_archive"
-        ;;
       # HP-UX ld uses -a flags to select between shared and archive.
       *-*-hpux*)
 	if test x"$gnu_ld" = xno; then
@@ -24209,7 +24198,7 @@ $as_echo "$gcc_cv_lto_plugin" >&6; }
 
 case "$target" in
   # All TARGET_ABI_OSF targets.
-  alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)
+  alpha*-*-linux* | alpha*-*-*bsd*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for explicit relocation support" >&5
 $as_echo_n "checking assembler for explicit relocation support... " >&6; }
 if test "${gcc_cv_as_alpha_explicit_relocs+set}" = set; then :
@@ -25176,7 +25165,8 @@ if test "${gcc_cv_as_ix86_tlsldmplt+set}" = set; then :
 else
   gcc_cv_as_ix86_tlsldmplt=no
   if test x$gcc_cv_as != x; then
-    $as_echo 'call    tls_ld@tlsldmplt' > conftest.s
+    $as_echo 'tls_ld:
+	 call    tls_ld@tlsldmplt' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5

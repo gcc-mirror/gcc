@@ -195,8 +195,6 @@ GCC_WARN_CXXFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 # flex output may yield harmless "no previous prototype" warnings
 build/gengtype-lex.o-warn = -Wno-error
 gengtype-lex.o-warn = -Wno-error
-# mips-tfile.c contains -Wcast-qual warnings.
-mips-tfile.o-warn = -Wno-error
 expmed.o-warn = -Wno-error
 
 # All warnings have to be shut off in stage1 if the compiler used then
@@ -1468,8 +1466,7 @@ ALL_HOST_FRONTEND_OBJS = $(C_OBJS) \
 
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(OBJS-libcommon-target) @TREEBROWSER@ main.o gccspec.o cppspec.o \
-  $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) mips-tfile.o mips-tdump.o \
-  $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
+  $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
 
 # This lists all host object files, whether they are included in this
 # compilation or not.
@@ -2360,7 +2357,7 @@ tree-ssa-phiopt.o : tree-ssa-phiopt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(TM_P_H) $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_DUMP_H) langhooks.h $(FLAGS_H) \
    $(DIAGNOSTIC_H) $(TIMEVAR_H) pointer-set.h domwalk.h $(CFGLOOP_H) \
-   $(TREE_DATA_REF_H)
+   $(TREE_DATA_REF_H) tree-pretty-print.h
 tree-nrv.o : tree-nrv.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FUNCTION_H) $(BASIC_BLOCK_H) $(FLAGS_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TIMEVAR_H) $(TREE_DUMP_H) $(TREE_PASS_H) \
@@ -3455,22 +3452,6 @@ $(common_out_object_file): $(common_out_file) $(CONFIG_H) $(SYSTEM_H) \
     $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(OPTS_H) $(TM_H) $(TM_P_H) $(MACHMODE_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  $< $(OUTPUT_OPTION)
-
-# Build auxiliary files that support ecoff format.
-mips-tfile: mips-tfile.o $(LIBDEPS)
-	$(LINKER) $(LINKERFLAGS) $(LDFLAGS) -o $@ \
-		mips-tfile.o $(LIBS)
-
-mips-tfile.o : mips-tfile.c $(CONFIG_H) $(SYSTEM_H) \
-   version.h $(srcdir)/../include/getopt.h $(GSTAB_H) intl.h
-
-mips-tdump: mips-tdump.o $(LIBDEPS)
-	$(LINKER) $(LINKERFLAGS) $(LDFLAGS) -o $@ \
-		mips-tdump.o $(LIBS)
-
-mips-tdump.o : mips-tdump.c $(CONFIG_H) $(SYSTEM_H) \
-   version.h $(srcdir)/../include/getopt.h stab.def
-
 #
 # Generate header and source files from the machine description,
 # and compile them.
@@ -3500,8 +3481,8 @@ insn-automata.o : insn-automata.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
 insn-emit.o : insn-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)	\
   $(RTL_H) $(TM_P_H) $(FUNCTION_H) $(EXPR_H) $(OPTABS_H) 		\
   dfp.h $(FLAGS_H) output.h insn-config.h hard-reg-set.h $(RECOG_H)	\
-  $(RESOURCE_H) reload.h $(DIAGNOSTIC_CORE_H) $(REGS_H) tm-constrs.h $(GGC_H)	\
-  $(BASIC_BLOCK_H) $(INTEGRATE_H)
+  $(RESOURCE_H) reload.h $(DIAGNOSTIC_CORE_H) $(REGS_H) tm-constrs.h	\
+  $(GGC_H) $(BASIC_BLOCK_H) $(INTEGRATE_H) $(TARGET_H)
 insn-enums.o : insn-enums.c $(CONFIG_H) $(SYSTEM_H) insn-constants.h
 insn-extract.o : insn-extract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
   $(TM_H) $(RTL_H) $(DIAGNOSTIC_CORE_H) insn-config.h $(RECOG_H)
@@ -4812,20 +4793,18 @@ install-collect2: collect2 installdirs
 install-lto-wrapper: lto-wrapper$(exeext)
 	$(INSTALL_PROGRAM) lto-wrapper$(exeext) $(DESTDIR)$(libexecsubdir)/lto-wrapper$(exeext)
 
-install-gcc-ar:
-	set -e ; \
-	for i in ar nm ranlib ; do \
-	  install_name=`echo gcc-$$i|sed '$(program_transform_name)'`$(exeext) ;\
-	  target_install_name=$(target_noncanonical)-`echo gcc-$$i|sed '$(program_transform_name)'`$(exeext) ; \
-	  binname=gcc-$$i$(exeext) ; \
-	  rm -f $(DESTDIR)$(bindir)/$$install_name ; \
-	  rm -f $(DESTDIR)$(bindir)/$$target_install_name ; \
-	  $(INSTALL_PROGRAM) $$binname $(DESTDIR)$(bindir)/$$install_name ;\
-	  if test -f $(DESTDIR)$(bindir)$$target_install_name ; then \
+install-gcc-ar: installdirs gcc-ar$(exeext) gcc-nm$(exeext) gcc-ranlib$(exeext)
+	for i in gcc-ar gcc-nm gcc-ranlib; do \
+	  install_name=`echo $$i|sed '$(program_transform_name)'` ;\
+	  target_install_name=$(target_noncanonical)-`echo $$i|sed '$(program_transform_name)'` ; \
+	  rm -f $(DESTDIR)$(bindir)/$$install_name$(exeext) ; \
+	  $(INSTALL_PROGRAM) $$i$(exeext) $(DESTDIR)$(bindir)/$$install_name$(exeext) ;\
+	  if test -f gcc-cross$(exeext); then \
 	    :; \
 	  else \
+	    rm -f $(DESTDIR)$(bindir)/$$target_install_name$(exeext); \
 	    ( cd $(DESTDIR)$(bindir) && \
-	      $(LN) $$install_name $$target_install_name ) ; \
+	      $(LN) $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
 	  fi ; \
 	done
 

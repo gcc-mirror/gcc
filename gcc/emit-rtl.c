@@ -117,6 +117,12 @@ FIXED_VALUE_TYPE fconst1[MAX_FCONST1];
 
 rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 
+/* Standard pieces of rtx, to be substituted directly into things.  */
+rtx pc_rtx;
+rtx ret_rtx;
+rtx simple_return_rtx;
+rtx cc0_rtx;
+
 /* A hash table storing CONST_INTs whose absolute value is greater
    than MAX_SAVED_CONST_INT.  */
 
@@ -5536,10 +5542,6 @@ init_emit_regs (void)
   init_reg_modes_target ();
 
   /* Assign register numbers to the globally defined register rtx.  */
-  pc_rtx = gen_rtx_fmt_ (PC, VOIDmode);
-  ret_rtx = gen_rtx_fmt_ (RETURN, VOIDmode);
-  simple_return_rtx = gen_rtx_fmt_ (SIMPLE_RETURN, VOIDmode);
-  cc0_rtx = gen_rtx_fmt_ (CC0, VOIDmode);
   stack_pointer_rtx = gen_raw_REG (Pmode, STACK_POINTER_REGNUM);
   frame_pointer_rtx = gen_raw_REG (Pmode, FRAME_POINTER_REGNUM);
   hard_frame_pointer_rtx = gen_raw_REG (Pmode, HARD_FRAME_POINTER_REGNUM);
@@ -5855,6 +5857,11 @@ init_emit_once (void)
   const_tiny_rtx[0][(int) BImode] = const0_rtx;
   if (STORE_FLAG_VALUE == 1)
     const_tiny_rtx[1][(int) BImode] = const1_rtx;
+
+  pc_rtx = gen_rtx_fmt_ (PC, VOIDmode);
+  ret_rtx = gen_rtx_fmt_ (RETURN, VOIDmode);
+  simple_return_rtx = gen_rtx_fmt_ (SIMPLE_RETURN, VOIDmode);
+  cc0_rtx = gen_rtx_fmt_ (CC0, VOIDmode);
 }
 
 /* Produce exact duplicate of insn INSN after AFTER.

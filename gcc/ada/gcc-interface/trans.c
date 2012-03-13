@@ -1102,11 +1102,9 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	  = lvalue_required_p (gnat_node, gnu_result_type, true,
 			       address_of_constant, Is_Aliased (gnat_temp));
 
-      /* ??? We need to unshare the initializer if the object is external
-	 as such objects are not marked for unsharing if we are not at the
-	 global level.  This should be fixed in add_decl_expr.  */
+      /* Finally retrieve the initializer if this is deemed valid.  */
       if ((constant_only && !address_of_constant) || !require_lvalue)
-	gnu_result = unshare_expr (DECL_INITIAL (gnu_result));
+	gnu_result = DECL_INITIAL (gnu_result);
     }
 
   /* The GNAT tree has the type of a function set to its result type, so we
@@ -1417,14 +1415,14 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
     case Attr_Pool_Address:
       {
-	tree gnu_obj_type;
 	tree gnu_ptr = gnu_prefix;
+	tree gnu_obj_type;
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
-	/* If this is an unconstrained array, we know the object has been
-	   allocated with the template in front of the object.  So compute
-	   the template address.  */
+	/* If this is fat pointer, the object must have been allocated with the
+	   template in front of the array.  So compute the template address; do
+	   it by converting to a thin pointer.  */
 	if (TYPE_IS_FAT_POINTER_P (TREE_TYPE (gnu_ptr)))
 	  gnu_ptr
 	    = convert (build_pointer_type
@@ -1433,16 +1431,18 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 		       gnu_ptr);
 
 	gnu_obj_type = TREE_TYPE (TREE_TYPE (gnu_ptr));
-	if (TREE_CODE (gnu_obj_type) == RECORD_TYPE
-	    && TYPE_CONTAINS_TEMPLATE_P (gnu_obj_type))
-	  {
-	    tree gnu_char_ptr_type
-	      = build_pointer_type (unsigned_char_type_node);
-	    tree gnu_pos = byte_position (TYPE_FIELDS (gnu_obj_type));
-	    gnu_ptr = convert (gnu_char_ptr_type, gnu_ptr);
-	    gnu_ptr = build_binary_op (POINTER_PLUS_EXPR, gnu_char_ptr_type,
-				       gnu_ptr, gnu_pos);
-	  }
+
+	/* If this is a thin pointer, the object must have been allocated with
+	   the template in front of the array.  So compute the template address
+	   and return it.  */
+	if (TYPE_IS_THIN_POINTER_P (TREE_TYPE (gnu_ptr)))
+	  gnu_ptr
+	    = build_binary_op (POINTER_PLUS_EXPR, TREE_TYPE (gnu_ptr),
+			       gnu_ptr,
+			       fold_build1 (NEGATE_EXPR, sizetype,
+					    byte_position
+					    (DECL_CHAIN
+					     TYPE_FIELDS ((gnu_obj_type)))));
 
 	gnu_result = convert (gnu_result_type, gnu_ptr);
       }
@@ -1953,12 +1953,10 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       gnu_type = TREE_TYPE (gnu_prefix);
       gcc_assert (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE);
 
-      /* What we want is the offset of the ARRAY field in the record that the
-        thin pointer designates, but the components have been shifted so this
-        is actually the opposite of the offset of the BOUNDS field.  */
+      /* What we want is the offset of the ARRAY field in the record
+	 that the thin pointer designates.  */
       gnu_type = TYPE_OBJECT_RECORD_TYPE (gnu_type);
-      gnu_result = size_binop (MINUS_EXPR, bitsize_zero_node,
-                               bit_position (TYPE_FIELDS (gnu_type)));
+      gnu_result = bit_position (DECL_CHAIN (TYPE_FIELDS (gnu_type)));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
       prefix_unused = true;
       break;
@@ -6595,23 +6593,20 @@ gnat_to_gnu (Node_Id gnat_node)
 	{
 	  tree gnu_ptr = gnat_to_gnu (Expression (gnat_node));
 	  tree gnu_ptr_type = TREE_TYPE (gnu_ptr);
-	  tree gnu_obj_type;
-	  tree gnu_actual_obj_type = 0;
-	  tree gnu_obj_size;
+	  tree gnu_obj_type, gnu_actual_obj_type;
 
-	  /* If this is a thin pointer, we must dereference it to create
-	     a fat pointer, then go back below to a thin pointer.  The
-	     reason for this is that we need a fat pointer someplace in
-	     order to properly compute the size.  */
+	  /* If this is a thin pointer, we must first dereference it to create
+	     a fat pointer, then go back below to a thin pointer.  The reason
+	     for this is that we need to have a fat pointer someplace in order
+	     to properly compute the size.  */
 	  if (TYPE_IS_THIN_POINTER_P (TREE_TYPE (gnu_ptr)))
 	    gnu_ptr = build_unary_op (ADDR_EXPR, NULL_TREE,
 				      build_unary_op (INDIRECT_REF, NULL_TREE,
 						      gnu_ptr));
 
-	  /* If this is an unconstrained array, we know the object must
-	     have been allocated with the template in front of the object.
-	     So pass the template address, but get the total size.  Do this
-	     by converting to a thin pointer.  */
+	  /* If this is a fat pointer, the object must have been allocated with
+	     the template in front of the array.  So pass the template address,
+	     and get the total size; do it by converting to a thin pointer.  */
 	  if (TYPE_IS_FAT_POINTER_P (TREE_TYPE (gnu_ptr)))
 	    gnu_ptr
 	      = convert (build_pointer_type
@@ -6621,6 +6616,20 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	  gnu_obj_type = TREE_TYPE (TREE_TYPE (gnu_ptr));
 
+	  /* If this is a thin pointer, the object must have been allocated with
+	     the template in front of the array.  So pass the template address,
+	     and get the total size.  */
+	  if (TYPE_IS_THIN_POINTER_P (TREE_TYPE (gnu_ptr)))
+	    gnu_ptr
+	      = build_binary_op (POINTER_PLUS_EXPR, TREE_TYPE (gnu_ptr),
+				 gnu_ptr,
+				 fold_build1 (NEGATE_EXPR, sizetype,
+					      byte_position
+					      (DECL_CHAIN
+					       TYPE_FIELDS ((gnu_obj_type)))));
+
+	  /* If we have a special dynamic constrained subtype on the node, use
+	     it to compute the size; otherwise, use the designated subtype.  */
 	  if (Present (Actual_Designated_Subtype (gnat_node)))
 	    {
 	      gnu_actual_obj_type
@@ -6636,21 +6645,10 @@ gnat_to_gnu (Node_Id gnat_node)
 	  else
 	    gnu_actual_obj_type = gnu_obj_type;
 
-	  gnu_obj_size = TYPE_SIZE_UNIT (gnu_actual_obj_type);
-
-	  if (TREE_CODE (gnu_obj_type) == RECORD_TYPE
-	      && TYPE_CONTAINS_TEMPLATE_P (gnu_obj_type))
-	    {
-	      tree gnu_char_ptr_type
-		= build_pointer_type (unsigned_char_type_node);
-	      tree gnu_pos = byte_position (TYPE_FIELDS (gnu_obj_type));
-	      gnu_ptr = convert (gnu_char_ptr_type, gnu_ptr);
-	      gnu_ptr = build_binary_op (POINTER_PLUS_EXPR, gnu_char_ptr_type,
-					 gnu_ptr, gnu_pos);
-	    }
-
 	  gnu_result
-	      = build_call_alloc_dealloc (gnu_ptr, gnu_obj_size, gnu_obj_type,
+	      = build_call_alloc_dealloc (gnu_ptr,
+					  TYPE_SIZE_UNIT (gnu_actual_obj_type),
+					  gnu_obj_type,
 					  Procedure_To_Call (gnat_node),
 					  Storage_Pool (gnat_node),
 					  gnat_node);
@@ -7113,10 +7111,10 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 
   gnu_stmt = build1 (DECL_EXPR, void_type_node, gnu_decl);
 
-  /* If we are global, we don't want to actually output the DECL_EXPR for
-     this decl since we already have evaluated the expressions in the
+  /* If we are external or global, we don't want to output the DECL_EXPR for
+     this DECL node since we already have evaluated the expressions in the
      sizes and positions as globals and doing it again would be wrong.  */
-  if (global_bindings_p ())
+  if (DECL_EXTERNAL (gnu_decl) || global_bindings_p ())
     {
       /* Mark everything as used to prevent node sharing with subprograms.
 	 Note that walk_tree knows how to deal with TYPE_DECL, but neither
@@ -7135,7 +7133,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	       && !TYPE_FAT_POINTER_P (type))
 	MARK_VISITED (TYPE_ADA_SIZE (type));
     }
-  else if (!DECL_EXTERNAL (gnu_decl))
+  else
     add_stmt_with_node (gnu_stmt, gnat_entity);
 
   /* If this is a variable and an initializer is attached to it, it must be

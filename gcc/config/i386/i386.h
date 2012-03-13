@@ -75,6 +75,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_FSGSBASE	OPTION_ISA_FSGSBASE
 #define TARGET_RDRND	OPTION_ISA_RDRND
 #define TARGET_F16C	OPTION_ISA_F16C
+#define TARGET_RTM      OPTION_ISA_RTM
 
 #define TARGET_LP64	(TARGET_64BIT && !TARGET_X32)
 
@@ -465,6 +466,9 @@ extern int x86_prefetch_sse;
 #ifndef TARGET_TLS_DIRECT_SEG_REFS_DEFAULT
 #define TARGET_TLS_DIRECT_SEG_REFS_DEFAULT 0
 #endif
+
+/* Address override works only on the (%reg) part of %fs:(%reg).  */
+#define TARGET_TLS_INDIRECT_SEG_REFS (Pmode == word_mode)
 
 /* Fence to use after loop using storent.  */
 

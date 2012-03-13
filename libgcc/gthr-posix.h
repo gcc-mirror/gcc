@@ -1,7 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,11 +33,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __GTHREADS 1
 #define __GTHREADS_CXX0X 1
 
-/* Some implementations of <pthread.h> require this to be defined.  */
-#if !defined(_REENTRANT) && defined(__osf__)
-#define _REENTRANT 1
-#endif
-
 #include <pthread.h>
 
 #if ((defined(_LIBOBJC) || defined(_LIBOBJC_WEAK)) \
@@ -63,6 +58,7 @@ typedef struct timespec __gthread_time_t;
 #define __GTHREAD_HAS_COND	1
 
 #define __GTHREAD_MUTEX_INIT PTHREAD_MUTEX_INITIALIZER
+#define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
 #define __GTHREAD_ONCE_INIT PTHREAD_ONCE_INIT
 #if defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER)
 #define __GTHREAD_RECURSIVE_MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER
@@ -104,39 +100,6 @@ typedef struct timespec __gthread_time_t;
 /* Typically, __gthrw_foo is a weak reference to symbol foo.  */
 #define __gthrw(name) __gthrw2(__gthrw_ ## name,name,name)
 
-/* On Tru64, /usr/include/pthread.h uses #pragma extern_prefix "__" to
-   map a subset of the POSIX pthread API to mangled versions of their
-   names.  */
-#if defined(__osf__) && defined(_PTHREAD_USE_MANGLED_NAMES_)
-#define __gthrw3(name) __gthrw2(__gthrw_ ## name, __ ## name, name)
-__gthrw3(pthread_once)
-__gthrw3(pthread_getspecific)
-__gthrw3(pthread_setspecific)
-
-__gthrw3(pthread_create)
-__gthrw3(pthread_join)
-__gthrw3(pthread_detach)
-__gthrw3(pthread_equal)
-__gthrw3(pthread_self)
-__gthrw3(pthread_cancel)
-__gthrw3(sched_yield)
-
-__gthrw3(pthread_mutex_lock)
-__gthrw3(pthread_mutex_trylock)
-#if _GTHREAD_USE_MUTEX_TIMEDLOCK
-__gthrw3(pthread_mutex_timedlock)
-#endif
-__gthrw3(pthread_mutex_unlock)
-__gthrw3(pthread_mutex_init)
-__gthrw3(pthread_mutex_destroy)
-
-__gthrw3(pthread_cond_init)
-__gthrw3(pthread_cond_broadcast)
-__gthrw3(pthread_cond_signal)
-__gthrw3(pthread_cond_wait)
-__gthrw3(pthread_cond_timedwait)
-__gthrw3(pthread_cond_destroy)
-#else
 __gthrw(pthread_once)
 __gthrw(pthread_getspecific)
 __gthrw(pthread_setspecific)
@@ -166,7 +129,6 @@ __gthrw(pthread_cond_signal)
 __gthrw(pthread_cond_wait)
 __gthrw(pthread_cond_timedwait)
 __gthrw(pthread_cond_destroy)
-#endif
 
 __gthrw(pthread_key_create)
 __gthrw(pthread_key_delete)
@@ -177,11 +139,7 @@ __gthrw(pthread_mutexattr_destroy)
 
 #if defined(_LIBOBJC) || defined(_LIBOBJC_WEAK)
 /* Objective-C.  */
-#if defined(__osf__) && defined(_PTHREAD_USE_MANGLED_NAMES_)
-__gthrw3(pthread_exit)
-#else
 __gthrw(pthread_exit)
-#endif /* __osf__ && _PTHREAD_USE_MANGLED_NAMES_ */
 #ifdef _POSIX_PRIORITY_SCHEDULING
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
 __gthrw(sched_get_priority_max)
@@ -752,6 +710,14 @@ __gthread_mutex_init_function (__gthread_mutex_t *__mutex)
     __gthrw_(pthread_mutex_init) (__mutex, NULL);
 }
 #endif
+
+static inline int
+__gthread_mutex_init_function (__gthread_mutex_t *__mutex)
+{
+  if (__gthread_active_p ())
+    return __gthrw_(pthread_mutex_init) (__mutex, NULL);
+  return 0;
+}
 
 static inline int
 __gthread_mutex_destroy (__gthread_mutex_t *__mutex)

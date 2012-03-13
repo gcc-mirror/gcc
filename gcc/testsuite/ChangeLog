@@ -1,3 +1,198 @@
+2012-03-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/46728
+	* gcc.target/powerpc/pr46728-4.c: Use preferred syntax.
+	* gcc.target/powerpc/pr46728-5.c: Likewise.
+	* gcc.target/powerpc/pr46728-8.c: Likewise.
+	* gcc.target/powerpc/pr46728-10.c: Likewise.
+	* gcc.target/powerpc/pr46728-11.c: Likewise.
+	* gcc.target/powerpc/pr46728-13.c: Likewise.
+	* gcc.target/powerpc/pr46728-14.c: Likewise.
+	* gcc.target/powerpc/pr46728-15.c: Likewise.
+
+2012-03-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52299
+	* g++.dg/warn/Wdiv-by-zero-bogus.C: New.
+
+2012-03-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/46728
+	* gcc.target/powerpc/pr46728-4.c: Skip for powerpc*-*-darwin*.
+	* gcc.target/powerpc/pr46728-5.c: Likewise.
+	* gcc.target/powerpc/pr46728-8.c: Likewise.
+	* gcc.target/powerpc/pr46728-10.c: Likewise.
+	* gcc.target/powerpc/pr46728-11.c: Likewise.
+	* gcc.target/powerpc/pr46728-13.c: Likewise.
+	* gcc.target/powerpc/pr46728-14.c: Likewise.
+	* gcc.target/powerpc/pr46728-15.c: Likewise.
+
+2012-03-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	* gcc.target/avr/torture/addr-space-1.h: New file.
+	* gcc.target/avr/torture/addr-space-g.h: New test.
+	* gcc.target/avr/torture/addr-space-0.h: New test.
+	* gcc.target/avr/torture/addr-space-1.h: New test.
+	* gcc.target/avr/torture/addr-space-x.h: New test.
+
+2012-03-12  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.dg/tree-ssa/phi-opt-7.c: New testcase.
+
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/abi/rtti3.C: Remove alpha*-dec-osf* handling.
+	* g++.dg/abi/thunk4.C: Likewise.
+	* g++.dg/cdce3.C: Don't skip on*-dec-osf5*.
+	Adapt line numbers.
+	* g++.dg/compat/struct-layout-1_generate.c: Remove alpha*-dec-osf*
+	handling.
+	* g++.dg/cpp0x/constexpr-rom.C: Likewise.
+	* g++.dg/eh/spbp.C: Likewise.
+	* g++.dg/ext/label13.C: Likewise.
+	* g++.dg/guality/guality.exp: Likewise.
+	* g++.dg/other/anon5.C: Likewise.
+	* g++.dg/other/pragma-ep-1.C: Remove.
+	* g++.dg/warn/miss-format-1.C: Remove alpha*-dec-osf* handling.
+	* g++.dg/warn/pr31246.C: Likewise.
+	* g++.dg/warn/weak1.C: Likewise.
+	* g++.old-deja/g++.eh/badalloc1.C: Likewise.
+	* g++.old-deja/g++.ext/attrib5.C: Likewise.
+	* gcc.c-torture/compile/limits-declparen.c: Likewise.
+	* gcc.c-torture/compile/limits-pointer.c: Likewise.
+	* gcc.c-torture/execute/20001229-1.c: Remove __osf__ handling.
+	* gcc.dg/attr-weakref-1.c: Remove alpha*-dec-osf* handling.
+	* gcc.dg/c99-stdint-6.c: Remove alpha*-dec-osf5* handling.
+	* gcc.dg/c99-tgmath-1.c: Likewise.
+	* gcc.dg/c99-tgmath-2.c: Likewise.
+	* gcc.dg/c99-tgmath-3.c: Likewise.
+	* gcc.dg/c99-tgmath-4.c: Likewise.
+	* gcc.dg/compat/struct-layout-1_generate.c: Remove alpha*-dec-osf*
+	handling.
+	* gcc.dg/debug/pr49032.c: Likewise.
+	* gcc.dg/guality/guality.exp: Likewise.
+	* gcc.dg/intmax_t-1.c: Likewise.
+	* gcc.dg/pr48616.c: Likewise.
+	* gcc.dg/pragma-ep-1.c: Remove.
+	* gcc.dg/pragma-ep-2.c: Remove.
+	* gcc.dg/pragma-ep-3.c: Remove.
+	* gcc.dg/torture/pr47917.c: Remove alpha*-dec-osf5* handling.
+	* gcc.dg/tree-ssa/pr42585.c: Remove alpha*-dec-osf* handling.
+	* gcc.misc-tests/gcov-14.c: Likewise.
+	* gfortran.dg/guality/guality.exp: Likewise.
+	* lib/target-supports.exp (check_weak_available): Likewise.
+	(add_options_for_tls): Likewise.
+	(check_ascii_locale_available): Likewise.
+	* obj-c++.dg/dwarf-2.mm: Likewise.
+	* objc.dg/dwarf-1.m: Likewise.
+	* objc.dg/dwarf-2.m: Likewise.
+
+2012-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51721
+	* gcc.dg/tree-ssa/vrp64.c: New test.
+
+	PR tree-optimization/52533
+	* gcc.c-torture/compile/pr52533.c: New test.
+
+2012-03-12  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/rtm-xabort-1.c: New.
+	* gcc.target/i386/rtm-xbegin-1.c: Ditto.
+	* gcc.target/i386/rtm-xend-1.c: Ditto.
+	* gcc.target/i386/rtm-xtest-1.c: Ditto.
+	* gcc.target/i386/sse-12.c: Test RTM intrinsics.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
+2012-03-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52542
+	* gfortran.dg/proc_ptr_35.f90: New.
+
+2012-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52530
+	* gcc.dg/torture/pr52530.c: New test.
+
+2012-03-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* gcc.target/sh/pr51244-1.c: Fix thinkos.
+
+2012-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/52450
+	* gcc.dg/torture/pr52402.c: Skip execution on 32-bit hppa*-*-hpux*.
+
+	* gcc.dg/torture/pr52407.c: Add -fno-common option on hppa*-*-hpux*.
+
+2012-03-09  Andrew Pinski  <apinski@cavium.com>
+
+	PR middle-end/51988
+	* gcc.dg/tree-ssa/phi-opt-8.c: New testcase.
+	* gcc.dg/tree-ssa/phi-opt-9.c: New testcase.
+
+2012-03-09  Jiangning Liu  <jiangning.liu@arm.com>
+
+	* gcc.dg/tree-ssa/scev-3.c: New.
+	* gcc.dg/tree-ssa/scev-4.c: New.
+
+2012-03-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52469
+	* gfortran.dg/proc_ptr_34.f90
+
+2012-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52521
+	* g++.dg/cpp0x/udlit-mangle.C: New.
+
+2012-03-06  Pat Haugen <pthaugen@us.ibm.com>
+
+	* gcc.dg/torture/va-arg-25.c: Fix typo for powerpc64-*-* check.
+
+2012-03-06  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52493
+	* gcc.dg/torture/pr52493.c: New testcase.
+
+2012-03-06  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/52097
+	* gcc.dg/lto/pr52097_0.c: New testcase.
+
+2012-03-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* gcc.target/sh/pr51244-1.c: New.
+	* gcc.target/sh/pr51244-2.c: New.
+	* gcc.target/sh/pr51244-3.c: New.
+
+2012-03-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51930
+	* g++.dg/ext/visibility/template11.C: New.
+
+	* g++.dg/cpp0x/implicit13.C: New.
+
+2012-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51721
+	* gcc.dg/tree-ssa/vrp63.c: New test.
+	* gcc.dg/pr51721.c: New test.
+
+2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50981
+	* gfortran.dg/elemental_optional_args_5.f03: Add subcomponent actual
+	argument checks.
+
 2012-03-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/52146

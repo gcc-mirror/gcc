@@ -2181,12 +2181,8 @@ determine_visibility (tree decl)
 		      ? TYPE_ATTRIBUTES (TREE_TYPE (decl))
 		      : DECL_ATTRIBUTES (decl));
       
-      if (args != error_mark_node
-	  /* Template argument visibility outweighs #pragma or namespace
-	     visibility, but not an explicit attribute.  */
-	  && !lookup_attribute ("visibility", attribs))
+      if (args != error_mark_node)
 	{
-	  int depth = TMPL_ARGS_DEPTH (args);
 	  tree pattern = DECL_TEMPLATE_RESULT (TI_TEMPLATE (tinfo));
 
 	  if (!DECL_VISIBILITY_SPECIFIED (decl))
@@ -2202,10 +2198,31 @@ determine_visibility (tree decl)
 		}
 	    }
 
-	  /* FIXME should TMPL_ARGS_DEPTH really return 1 for null input? */
-	  if (args && depth > template_class_depth (class_type))
-	    /* Limit visibility based on its template arguments.  */
-	    constrain_visibility_for_template (decl, args);
+	  if (args
+	      /* Template argument visibility outweighs #pragma or namespace
+		 visibility, but not an explicit attribute.  */
+	      && !lookup_attribute ("visibility", attribs))
+	    {
+	      int depth = TMPL_ARGS_DEPTH (args);
+	      int class_depth = 0;
+	      if (class_type && CLASSTYPE_TEMPLATE_INFO (class_type))
+		class_depth = TMPL_ARGS_DEPTH (CLASSTYPE_TI_ARGS (class_type));
+	      if (DECL_VISIBILITY_SPECIFIED (decl))
+		{
+		  /* A class template member with explicit visibility
+		     overrides the class visibility, so we need to apply
+		     all the levels of template args directly.  */
+		  int i;
+		  for (i = 1; i <= depth; ++i)
+		    {
+		      tree lev = TMPL_ARGS_LEVEL (args, i);
+		      constrain_visibility_for_template (decl, lev);
+		    }
+		}
+	      else if (depth > class_depth)
+		/* Limit visibility based on its template arguments.  */
+		constrain_visibility_for_template (decl, args);
+	    }
 	}
     }
 

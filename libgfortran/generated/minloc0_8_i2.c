@@ -53,12 +53,12 @@ minloc0_8_i2 (gfc_array_i8 * const restrict retarray,
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
       retarray->offset = 0;
-      retarray->data = internal_malloc_size (sizeof (GFC_INTEGER_8) * rank);
+      retarray->base_addr = internal_malloc_size (sizeof (GFC_INTEGER_8) * rank);
     }
   else
     {
@@ -68,7 +68,7 @@ minloc0_8_i2 (gfc_array_i8 * const restrict retarray,
     }
 
   dstride = GFC_DESCRIPTOR_STRIDE(retarray,0);
-  dest = retarray->data;
+  dest = retarray->base_addr;
   for (n = 0; n < rank; n++)
     {
       sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
@@ -83,7 +83,7 @@ minloc0_8_i2 (gfc_array_i8 * const restrict retarray,
 	}
     }
 
-  base = array->data;
+  base = array->base_addr;
 
   /* Initialize the return value.  */
   for (n = 0; n < rank; n++)
@@ -194,12 +194,12 @@ mminloc0_8_i2 (gfc_array_i8 * const restrict retarray,
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank - 1, 1);
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
       retarray->offset = 0;
-      retarray->data = internal_malloc_size (sizeof (GFC_INTEGER_8) * rank);
+      retarray->base_addr = internal_malloc_size (sizeof (GFC_INTEGER_8) * rank);
     }
   else
     {
@@ -215,7 +215,7 @@ mminloc0_8_i2 (gfc_array_i8 * const restrict retarray,
 
   mask_kind = GFC_DESCRIPTOR_SIZE (mask);
 
-  mbase = mask->data;
+  mbase = mask->base_addr;
 
   if (mask_kind == 1 || mask_kind == 2 || mask_kind == 4 || mask_kind == 8
 #ifdef HAVE_GFC_LOGICAL_16
@@ -227,7 +227,7 @@ mminloc0_8_i2 (gfc_array_i8 * const restrict retarray,
     runtime_error ("Funny sized logical array");
 
   dstride = GFC_DESCRIPTOR_STRIDE(retarray,0);
-  dest = retarray->data;
+  dest = retarray->base_addr;
   for (n = 0; n < rank; n++)
     {
       sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
@@ -243,7 +243,7 @@ mminloc0_8_i2 (gfc_array_i8 * const restrict retarray,
 	}
     }
 
-  base = array->data;
+  base = array->base_addr;
 
   /* Initialize the return value.  */
   for (n = 0; n < rank; n++)
@@ -362,12 +362,12 @@ sminloc0_8_i2 (gfc_array_i8 * const restrict retarray,
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
       retarray->offset = 0;
-      retarray->data = internal_malloc_size (sizeof (GFC_INTEGER_8) * rank);
+      retarray->base_addr = internal_malloc_size (sizeof (GFC_INTEGER_8) * rank);
     }
   else if (unlikely (compile_options.bounds_check))
     {
@@ -376,7 +376,7 @@ sminloc0_8_i2 (gfc_array_i8 * const restrict retarray,
     }
 
   dstride = GFC_DESCRIPTOR_STRIDE(retarray,0);
-  dest = retarray->data;
+  dest = retarray->base_addr;
   for (n = 0; n<rank; n++)
     dest[n * dstride] = 0 ;
 }

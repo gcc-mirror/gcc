@@ -1,3 +1,7 @@
+2013-03-05  Richard Guenther  <rguenther@suse.de>
+
+	* crontab: Remove 4.3 branch from the list of snapshots to make.
+
 2012-03-02  Richard Guenther  <rguenther@suse.de>
 
 	* crontab: Fix day-of-week.

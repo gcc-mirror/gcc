@@ -1,3 +1,897 @@
+2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_TLS_INDIRECT_SEG_REFS): New.
+	* config/i386/i386.c (ix86_decompose_address): Use
+	TARGET_TLS_INDIRECT_SEG_REFS to prevent %fs:(%reg) addresses.
+	(legitimize_tls_address): Use TARGET_TLS_INDIRECT_SEG_REFS to load
+	thread pointer to a register.
+
+2012-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*tls_global_dynamic_64_<mode>): Remove :P
+	on tls_symbolic_operand.
+	(tls_global_dynamic_64_<mode>): Likewise.
+
+2012-03-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR other/52545
+	* output.h (SECTION_EXCLUDE, SECTION_MACH_DEP): Don't use
+	SECTION_MACH_DEP reserved bits for SECTION_EXCLUDE.
+
+2012-03-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52499
+	* config/avr/avr.c (avr_mode_code_base_reg_class): Change return
+	type from reg_class_t to enum reg_class.
+	* config/avr/avr-protos.h (avr_mode_code_base_reg_class): Ditto.
+
+2012-03-12  Andrew Pinski  <apinski@cavium.com>
+
+	* tree-ssa-phiopt.c (single_non_singleton_phi_for_edges): New function.
+	(tree_ssa_phiopt_worker): Use single_non_singleton_phi_for_edges.
+	(value_replacement): Likewise.
+	(empty_block_p): Check also if the PHIs for the block are empty.
+
+2012-03-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52148
+	* config/avr/avr.c (avr_out_movmem): Fix typo in output template
+	for the case ADDR_SPACE_FLASH and AVR_HAVE_LPMX introduced in
+	r184615 from 2012-02-28.
+
+2012-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_gen_tls_global_dynamic_64): New.
+	(ix86_gen_tls_local_dynamic_base_64): Likewise.
+	(ix86_option_override_internal): Set ix86_gen_tls_global_dynamic_64
+	and ix86_gen_tls_local_dynamic_base_64.
+	(legitimize_tls_address): Use ix86_gen_tls_global_dynamic_64 and
+	ix86_gen_tls_local_dynamic_base_64.
+
+	* config/i386/i386.md (*tls_global_dynamic_64): Renamed to ...
+	(*tls_global_dynamic_64_<mode>): This.
+	(tls_global_dynamic_64): Renamed to ...
+	(tls_global_dynamic_64_<mode>): This.
+	(*tls_local_dynamic_base_64): Renamed to ...
+	(*tls_local_dynamic_base_64_<mode>): This.
+	(tls_local_dynamic_base_64): Renamed to ...
+	(tls_local_dynamic_base_64_<mode>): This.
+
+2012-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Properly
+	set ix86_gen_leave and ix86_gen_monitor.  Check Pmode == DImode,
+	instead of TARGET_64BIT, to set ix86_gen_add3, ix86_gen_sub3,
+	ix86_gen_one_cmpl2, ix86_gen_andsp,
+	ix86_gen_allocate_stack_worker, ix86_gen_adjust_stack_and_probe
+	and ix86_gen_probe_stack_range.
+
+	* config/i386/sse.md (sse3_monitor64): Renamed to ...
+	(sse3_monitor64_<mode>): This.
+
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/ia64.c (ia64_function_arg_1): Move code around.
+	(ia64_function_arg_advance): Ditto.
+
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (mips*-*-openbsd*): Remove.
+	* config/mips/openbsd.h: Remove.
+	* config/mips/sdb.h: Remove.
+
+	* config/mips/mips.h (SDB_OUTPUT_SOURCE_LINE): Remove.
+	* config/mips/mips.c (sdb_label_count): Remove.
+	(mips_debugger_offset): Remove #if 0 code.
+	(mips_output_function_prologue) [SDB_DEBUGGING_INFO]: Remove.
+	* config/mips/sde.h (SDB_DEBUGGING_INFO): Don't undef.
+
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, i?86-*-solaris2.[89]): Update
+	binutils reference.
+	(Specific, i?86-*-solaris2.10): Remove GCC 4.0 reference.
+	Update binutils references.
+	(Specific, *-*-solaris2*): Mention bundled GCC in Solaris 10 and 11.
+	Update binutils reference.
+	Update Sun as/GNU ld caveat.
+	Document binutils largefile requirement for LTO plugin.
+	Remove reference to alternate libpthread.
+
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (alpha*-dec-osf5.1*): Remove.
+	* config.host (alpha*-dec-osf*): Remove.
+	* configure.ac (*-*-osf*): Remove.
+	(alpha*-dec-osf*): Remove.
+	* configure: Regenerate.
+
+	* config/alpha/host-osf.c, config/alpha/osf5.h,
+	config/alpha/osf5.opt, config/alpha/va_list.h, config/alpha/x-osf:
+	Remove.
+
+	* config/alpha/alpha.h (TARGET_LD_BUGGY_LDGP): Remove.
+	* config/alpha/alpha.c (struct machine_function): Update comment.
+	(alpha_start_function): Remove Tru64 UNIX as handling for
+	max_frame_size.
+	* config/alpha/alpha.md ("exception_receiver"): Remove
+	TARGET_LD_BUGGY_LDGP.
+	("*exception_receiver_2"): Likewise.
+	* except.c (finish_eh_generation): Remove Tru64 reference.
+	* ginclude/stdarg.h [_HIDDEN_VA_LIST]: Don't undef _VA_LIST.
+	* system.h (TARGET_HANDLE_PRAGMA_EXTERN_PREFIX): Poison.
+	* target.def (handle_pragma_extern_prefix): Remove.
+
+	* Makefile.in (mips-tfile.o-warn): Remove.
+	(ALL_HOST_BACKEND_OBJS): Remove mips-tfile.o, mips-tdump.o.
+	(mips-tfile, mips-tfile.o, mips-tdump, mips-tdump.o): Remove.
+	* mips-tdump.c, mips-tfile.c: Remove.
+
+	* doc/extend.texi (Symbol-Renaming Pragmas): Remove #pragma
+	extern_prefix.
+	* doc/install.texi (Binaries): Remove Tru64 UNIX reference.
+	(Specific, alpha*-dec-osf5.1): Note removal.
+	* doc/tm.texi.in (Misc, TARGET_HANDLE_PRAGMA_EXTERN_PREFIX):
+	Remove.
+	* doc/tm.texi: Regenerate.
+	* doc/trouble.texi (Cross-Compiler Problems): Remove.
+
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
+	* config/arm/arm.c (neon_dereference_pointer): Do not call
+	covert during RTL expansion.
+
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* doc/invoke.texi (VMS Options): Merge Alpha/VMS and IA-64/VMS
+	Options.  Mention -mpointer-size.
+
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
+	* config/alpha/alpha.c (alpha_gimplify_va_arg): Use
+	build_nonstandard_integer_type.
+
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (signed_or_unsigned_type_for): Use
+	build_nonstandard_integer_type.
+	(signed_type_for): Adjust documentation.
+	(unsigned_type_for): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Use standard names
+	for non-standard integer types if available.
+
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms.opt: Add vms-opts.h header.
+	(mmalloc64): Use flag_vms_malloc64 flag instead of MALLOC64
+	target mask.
+	(-mvms-return-codes): Document.
+	(-mpointer-size): New option.
+	(vms_pointer_size): Add enumeration.
+	* config/vms/vms-opts.h: New file.
+	* config/vms/vms.h (TARGET_OS_CPP_BUILTINS): Define
+	__INITIAL_POINTER_SIZE.
+	(POINTER_SIZE, SIZE_TYPE, PTRDIFF_TYPE): Adjust definition.
+	(C_COMMON_OVERRIDE_OPTIONS): Define.
+	(DWARF2_ADDR_SIZE): Define.
+	* config/vms/vms.c (vms_patch_builtins): Adjust condition.
+	* config/vms/vms-protos.h (vms_c_common_override_options):
+	New prototype.
+	* config/vms/vms-c.c (vms_pragma_pointer_size): Ignore pragma
+	if -mno-pointer-size.
+	(vms_c_common_override_options): New function.
+	* config/ia64/vms.h (TARGET_DEFAULT): Remove MASK_MALLOC64.
+	* config/alpha/vms.h (TARGET_DEFAULT): Remove MASK_MALLOC64.
+	(MALLOC_ABI_ALIGNMENT): Use flag_vms_malloc64
+	and flag_vms_pointer_size.
+	(MASK_RETURN_ADDR): Set according to flag_vms_pointer_size.
+	* config.gcc (*-*-*vms*): Define xm_file.
+	(alpha*-dec-*vms*): Do not define xm_file.
+	(alpha64-dec-*vms*): Remove.
+	(ia64-hp-*vms*): Do not define xm_file.  Simplify tm_file
+	and tmake_file.
+
+2012-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51721
+	* tree-vrp.c (register_edge_assert_for_2): Add asserts for unsvar
+	if (int) unsvar cmp CST.
+
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
+        * tree-sra.c (create_access_replacement): Only rename the
+        replacement if we can rewrite it into SSA form.  Properly
+        mark register typed replacements that we cannot rewrite
+        with TREE_ADDRESSABLE.
+	* tree-cfg.c (verify_expr): Fix BIT_FIELD_REF verification
+	for aggregate or BLKmode results.
+
+2012-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52533
+	* tree-vrp.c (register_edge_assert_for_2): Use double_int
+	type for mask, only handle shifts by non-zero in-range
+	shift count, for LE_EXPR and GT_EXPR if new_val is
+	maximum, don't add the assertion.
+
+2012-02-12  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* doc/invoke.texi: Document -mrtm option.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_RTM_SET):
+	New.
+	(OPTION_MASK_ISA_RTM_UNSET): Ditto.
+	(ix86_handle_option): Handle OPT_mrtm.
+	* config.gcc (i[34567]86-*-*): Add rtmintrin.h and
+	xtestintrin.h.
+	(x86_64-*-*): Ditto.
+	* i386-builtin-types.def (INT_FTYPE_VOID): New.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__RTM__ if needed.
+	(ix86_target_string): Define -mrtm option.
+	(PTA_RTM): New.
+	(ix86_option_override_internal): Extend "corei7-avx" with
+	RTM option. Handle new option.
+	(ix86_valid_target_attribute_inner_p): Add OPT_mrtm.
+	(ix86_builtins): Add IX86_BUILTIN_XBEGIN, IX86_BUILTIN_XEND,
+	IX86_BUILTIN_XTEST.
+	(bdesc_special_args): Ditto.
+	(ix86_init_mmx_sse_builtins): Add IX86_BUILTIN_XABORT.
+	(ix86_expand_special_args_builtin): Handle new built-in type.
+	(ix86_expand_builtin): Handle XABORT instruction.
+	* config/i386/i386.h (TARGET_RTM): New.
+	* config/i386/i386.md (UNSPECV_XBEGIN): New.
+	(UNSPECV_XEND): Ditto.
+	(UNSPECV_XABORT): Ditto.
+	(UNSPECV_XTEST): Ditto.
+	(xbegin): Ditto.
+	(xbegin_1): Ditto.
+	(xend): Ditto.
+	(xabort): Ditto
+	(xtest): Ditto.
+	(xtest_1): Ditto.
+	* config/i386/i386.opt (mrtm): New.
+	* config/i386/immintrin.h: Include rtmintrin.h and
+	xtestintrin.h.
+	* config/i386/rtmintrin.h: New header.
+	* config/i386/xtestintrin.h: Ditto.
+
+2012-03-12  Tristan Gingold  <gingold@adacore.com>
+
+	* ginclude/stddef.h: Adjust previous patch.  Use __VMS__ instead
+	of VMS.
+
+2012-03-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (setcc + movzbl to xor + setcc peephole2):
+	Also convert sequences with CC setting arithmetic instruction.
+
+2012-03-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Option Summary): Move -no-integrated-cpp
+	from C Language Options to Preprocessor Options.
+	(C Dialect Options): Move -no-integrated-cpp documentation
+	from here...
+	(Preprocessor Options): ...to here.  Rewrite the description
+	so it makes more sense, and remove discussion of merging
+	front ends.
+
+2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_movmem): Use word_mode for size
+	needed for loop.
+	(ix86_expand_setmem): Likewise.
+
+2012-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_zero_extend_to_Pmode): Rewrite using
+	convert_to_mode.
+
+2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_trampoline_init): Use movl for 64bit if
+	ptr_mode == SImode.  Replace DImode with Pmode or ptr_mode.
+
+2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (x86_this_parameter): Replace DImode with Pmode.
+
+2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (lwp_slwpcb): Check Pmode instead of
+	TARGET_64BIT.
+
+2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (call_insn_operand): Allow
+	constant_call_address_operand in Pmode only.
+	(sibcall_insn_operand): Ditto.
+	* config/i386/i386.md (*call): Use W mode iterator instead of P mode.
+	(*call_vzeroupper): Ditto.
+	(*sibcall): Ditto.
+	(*sibcall_vzeroupper): Ditto.
+	(*call_value): Ditto.
+	(*call_value_vzeroupper): Ditto.
+	(*sibcall_value): Ditto.
+	(*sibcall_value_vzeroupper): Ditto.
+	(*indirect_jump): Ditto.
+	(*tablejump_1): Ditto.
+	(indirect_jump): Convert memory address to word mode for TARGET_X32.
+	(tablejump): Ditto.
+	* config/i386/i386.c (ix86_expand_call): Convert indirect operands
+	to word mode.
+
+2012-03-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md (movnegt): Expand into respective insns immediately.
+	Use movrt_negc instead of negc pattern for non-SH2A.
+	(*movnegt): Remove.
+	(*movrt_negc, *negnegt, *movtt, *movt_qi): New insns and splits.
+
+2012-03-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Disallow fs:(reg)
+	if Pmode != word_mode.
+	(legitimize_tls_address): Call gen_tls_initial_exec_x32 if
+	Pmode == SImode for TARGET_X32.
+
+	* config/i386/i386.md (UNSPEC_TLS_IE_X32): New.
+	(tls_initial_exec_x32): Likewise.
+
+2012-03-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR rtl-optimization/52528
+	* combine.c (can_combine_p): Add setting of subst_low_luid
+	before call to expand_field_assignment().
+
+2012-03-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi: Use correct names/markup for "GCC", "GDB", "ld",
+	and related program names.
+
+2012-03-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi: Use correct names for "DWARF", "stabs", and "ELF".
+
+2012-03-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52530
+	* config/i386/i386.c (ix86_print_operand): Handle 'E' operand modifier.
+	(ix86_print_operand_address): Handle UNSPEC_LEA_ADDR. Do not fallback
+	to set code to 'q'.
+	* config/i386/i386.md (UNSPEC_LEA_ADDR): New unspec.
+	(*movdi_internal_rex64): Use %E operand modifier for lea.
+	(*movsi_internal): Ditto.
+	(*lea_1): Ditto.
+	(*lea<mode>_2): Ditto.
+	(*lea_{3,4,5,6}_zext): Ditto.
+	(*tls_global_dynamic_32_gnu): Ditto.
+	(*tls_global_dynamic_64): Ditto.
+	(*tls_dynamic_gnu2_lea_32): Ditto.
+	(*tls_dynamic_gnu2_lea_64): Ditto.
+	(pro_epilogue_adjust_stack_<mode>_add): Ditto.
+
+2012-03-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/linux64.h (OPTION_TARGET_CPU_DEFAULT): Do not
+	redefine to be NULL if the current bit-size is different from the
+	configured bit-size.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): If the
+	cpu is defaulted, use PROCESSOR_DEFAULT and PROCESSOR_DEFAULT64 to
+	set the default tuning.  Add asserts to make sure the cpu and tune
+	indexes are defined.  Fix tests for cpu/tune index to use >= 0 to
+	test whether the index is set, instead of > 0.
+	(rs6000_file_start): Do not reset the default cpu if the current
+	bit-size is different from the configured bit-size.
+
+2012-03-09  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-crtlmap.map: Add comments.
+	Add entries needed to build Ada RTS.
+
+2012-03-09  Tristan Gingold  <gingold@adacore.com>
+
+	* ginclude/stddef.h: Do not define __size_t on VMS.
+
+2012-03-09  Tristan Gingold  <gingold@adacore.com>
+
+	* c-tree.h (c_default_pointer_mode): New variable.
+	* c-decl.c (c_default_pointer_mode): New variable.
+	(c_build_pointer_type): New function.
+	(grokdeclarator): Call c_build_pointer_type instead
+	of build_pointer_type.
+
+	* config/vms/vms-c.c: Include c-tree.h
+	(saved_pointer_mode): New variable.
+	(handle_pragma_pointer_size): New function.
+	(vms_pragma_pointer_size, vms_pragma_required_pointer_size): Likewise.
+	(vms_c_register_pragma): Register __pointer_size and
+	__required_pointer_size pragmas.
+
+2012-03-09  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-c.c (vms_construct_include_filename): New function.
+	(vms_c_register_includes): Reference it.
+
+2012-03-09  Andrew Pinski  <apinski@cavium.com>
+
+	PR middle-end/51988
+	* tree-ssa-phiopt.c: Include tree-pretty-print.h for
+	print_generic_expr.
+	(tree_ssa_phiopt_worker): Go through all the PHIs for
+	value_replacement instead of just the singleton one.
+	(value_replacement): Change return type to int.  Return 0 instead of
+	false.
+	Allow the middle basic block to contain more than just the defining
+	statement.
+	Handle non empty middle basic blocks.
+	* Makefile.in (tree-ssa-phiopt.o): Add tree-pretty-print.h.
+
+2012-03-09  Jiangning Liu  <jiangning.liu@arm.com>
+
+	* tree-scalar-evolution (interpret_rhs_expr): generate chrec for
+	array reference and component reference.
+	(analyze_scalar_evolution_for_address_of): New.
+
+2012-03-08  Jie Zhang  <jzhang918@gmail.com>
+
+	PR target/49862
+	* config/bfin/bfin.c (hwloop_optimize): Fix unused variable warnings.
+	(hwloop_pattern_reg): Fix set but not used warning.
+	(bfin_reorg_loops): Remove unused parameter.
+	(bfin_reorg): Update use of bfin_reorg_loops.
+
+2012-03-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (setup_incoming_varargs_64): Use word_mode
+	with integer parameters in registers.
+	(gen_push): Push register in word_mode instead of Pmode.
+	(ix86_emit_save_regs): Likewise.
+	(ix86_emit_save_regs_using_mov): Save integer registers in word_mode.
+	(gen_pop): Pop register in word_mode instead of Pmode.
+	(ix86_emit_restore_regs_using_pop): Likewise.
+	(ix86_expand_prologue): Replace Pmode with word_mode for push
+	immediate.  Use ix86_gen_pro_epilogue_adjust_stack.  Save and
+	restore RAX and R10 in word_mode.
+	(ix86_emit_restore_regs_using_mov): Restore integer registers
+	in word_mode.
+	(ix86_expand_split_stack_prologue): Save R10_REG and restore in
+	word_mode.
+	(ix86_split_to_parts): Use word_mode with PUT_MODE for push.
+	(ix86_split_long_move): Likewise.
+
+	* config/i386/i386.md (W): New.
+	(*push<mode>2_prologue): Replace :P with :W.
+	(*pop<mode>1): Likewise.
+	(*pop<mode>1_epilogue): Likewise.
+	(push/pop peephole2): Use word_mode scratch registers.
+
+2012-03-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (indirect_branch_operand): Simplify.
+
+2012-03-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*addhi3, addhi3_clobber): Add "w" alternative
+	for constants in [-63,63].
+
+2012-03-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52530
+	Revert:
+	2012-03-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_print_operand_address): Only handle
+	zero-extended DImode addresses.
+
+2012-03-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_ix86_tlsldmplt): Add label.
+	* configure: Regenerate.
+
+2012-03-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52496
+	* config/avr/avr.c (avr_mem_clobber): New static function.
+	(avr_expand_delay_cycles): Add memory clobber operand to
+	delay_cycles_1, delay_cycles_2, delay_cycles_3, delay_cycles_4.
+	* config/avr/avr.md (unspec): Add UNSPEC_MEMORY_BARRIER.
+	(enable_interrupt, disable_interrupt): New expander.
+	(nopv, sleep, wdr): New expanders.
+	(delay_cycles_1): Add memory clobber.
+	(delay_cycles_2): Add memory clobber.
+	(delay_cycles_3): Add memory clobber.
+	(delay_cycles_4): Add memory clobber.
+	(cli_sei): New insn from former "enable_interrupt",
+	"disable_interrupt" with memory clobber.
+	(*wdt): New insn from former "wdt" with memory clobber.
+	(*nopv): Similar, but for "nopv".
+	(*sleep): Similar, but for "sleep".
+
+2012-03-07  Oleg Endo  <olegendo@gcc.gnu.org>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/52503
+	* config/sh/sh.opt (msoft-atomic): Use Var instead of Mask.
+	* config/sh/linux.h (TARGET_DEFAULT): Remove MASK_SOFT_ATOMIC.
+	(SUBTARGET_OVERRIDE_OPTIONS): Define.
+
+2012-03-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (x86_64_zext_general_operand): New.
+	* config/i386/i386.md (*zero_extendsidi2_rex64): Change operand 1
+	predicate to x86_64_zext_general_operand.  Accept "Z" constraint.
+
+2012-03-07  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.c (tilegx_expand_prologue): Don't generate
+	REG_CFA_* notes for the stack pointer.
+	(tilegx_expand_epilogue): Restore stack pointer by adjusting it by
+	EH_RETURN_STACKADJ_RTX.
+	* config/tilepro/tilepro.c (tilepro_expand_prologue): Don't
+	generate REG_CFA_* notes for the stack pointer.
+	(tilepro_expand_epilogue): Restore stack pointer by adjusting it
+	by EH_RETURN_STACKADJ_RTX.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Built-in Macros): Correct condition for
+	when __AVR_3_BYTE_PC__ is defined.
+
+2012-03-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_print_operand_punct_valid_p): Add '^'.
+	(ix86_print_operand): Handle '^'.
+	* config/i386/i386.md (*strmovdi_rex_1): Macroize memory operands
+	using P mode iterator.  Add %^ to asm template to conditionally emit
+	addr32 prefix.
+	(*rep_movdi_rex64): Ditto.
+	(*strsetdi_rex_1): Ditto.
+	(*rep_stosdi_rex64): Ditto.
+	(*strmov{si,hi,qi}_1): Add %^ to asm template to
+	conditionally emit addr32 prefix.
+	(*rep_mov{si,qi}): Ditto.
+	(*strset{si,hi,qi}): Ditto.
+	(*rep_stos{si,qi}): Ditto.
+	(*cmpstrnqi_nz_1): Ditto.
+	(*cmpstrnqi_1): Ditto.
+	(*strlenqi_1): Ditto.
+
+2012-03-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (function_value_64): Return pointers in
+	word_mode instead of Pmode.
+	(ix86_promote_function_mode): Likewise.
+
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
+	* coverage.c (get_gcov_type): Use type_for_mode.
+	(get_gcov_unsigned_t): Likewise.
+	* expr.c (store_constructor): Use type_for_mode.
+	(try_casesi): Likewise.
+	* tree-ssa-loop-ivopts.c (add_standard_iv_candidates_for_size): Remove.
+	(add_standard_iv_candidates): Use standard type trees.
+	* dojump.c (do_jump): Remove dead code.
+
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
+	* c-typeck.c (pointer_diff): Use c_common_type_for_size.
+
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
+	* convert.c (strip_float_extensions): Move ...
+	* tree.c (strip_float_extensions): ... here.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52484
+	* config/avr/avr.md (xload<mode>_A): Add R22... to register footprint.
+
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
+	* omp-low.c (extract_omp_for_data): Use signed_type_for.
+	(expand_omp_for_generic): Likewise.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	* tree-vect-stmts.c (vect_gen_perm_mask): Use type_for_mode.
+	* tree-vect-slp.c (vect_transform_slp_perm_load): Likewise.
+	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop):
+	Use unsigned_type_for.
+	(vect_create_cond_for_align_checks): Use signed_type_for.
+
+2012-03-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/52203
+	* sel-sched.c (estimate_insn_cost): New parameter pempty.  Adjust
+	all callers to pass NULL except ...
+	(reset_sched_cycles_in_current_ebb): ... here, save the value
+	in new variable 'empty'.  Increase issue_rate only for
+	non-empty insns.
+
+2012-03-07  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	PR target/51417
+	* Makefile.in: Let install-gcc-ar depend on installdirs,
+	gcc-ar$(exeext), gcc-nm$(exeext), gcc-ranlib$(exeext).
+	Don't double canonicalize if cross-compiling.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52506
+	* gcc/config/avr/avr.c (expand_epilogue): Fix order of restoration
+	to: RAMPZ, RAMPY, RAMPX, RAMPD.
+	(expand_prologue): Only clear RAMPZ if it has effect on RAM-read.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52505
+	* config/avr/avr.c (avr_out_xload): Don't read unintentionally
+	from RAM.
+	* config/avr/avr.md (xload_8): Adjust insn length.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52461
+	* gcc/config/avr/avr.c (avr_out_lpm): Clear RAMPZ after usage
+	if RAMPZ affects reading from RAM.
+
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
+	PR pch/52518
+	PR pch/38987
+	* doc/invoke.texi (Precompiled Headers): Remove sentence that
+	suggests you can include PCHs from inside another header.
+
+2012-03-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/52515
+	* rtl.h (pc_rtx, cc0_rtx, ret_rtx, simple_return_rtx): Add GTY markers.
+
+2012-03-07  Kai Tietz  <ktietz@redhat.com>
+
+	* doc/invoke.texi (fwritable-relocated-rdata): Document
+	new Cygwin/MinGW target option.
+	* config/i386/winnt.c (i386_pe_unique_section): Ignore
+	reloc if flag -fwritable-relocated-rdata is not set.
+	(i386_pe_section_type_flags): Likewise.
+	* config/i386/cygming.opt (fwritable-relocated-rdata):
+	Add new flag variable flag_writable_rel_rdata.
+
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Check actual
+	precision against gimple constraints.
+
+2012-03-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/52372
+	* rtl.h (pc_rtx, ret_rtx, simple_return_rtx, cc0_rtx): Redefine as
+	variables.
+	(GR_PC, GR_CC0, GR_RETURN, GR_SIMPLE_RETURN): Delete.
+	* emit-rtl.c (pc_rtx, ret_rtx, simple_return_rtx, cc0_rtx): New
+	variables.
+	(init_emit_regs): Move associated initialization to...
+	(init_emit_once): ...here.
+
+2012-03-06  Richard Henderson  <rth@redhat.com>
+
+	* config/m68k/m68k.h (ISA_HAS_TAS): New.
+	* config/m68k/sync.md (atomic_test_and_set): Use it.
+	(atomic_test_and_set_1): Likewise.
+
+2012-03-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/50310
+	* config/rs6000/vector.md (vector_uneq<mode>): Add support for
+	UNEQ, LTGT, ORDERED, and UNORDERED IEEE vector comparisons.
+	(vector_ltgt<mode>): Likewise.
+	(vector_ordered<mode>): Likewise.
+	(vector_unordered<mode>): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_vector_compare_inner): Likewise.
+
+2012-03-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem.c: New typedef for tm_region_p.
+	Define vector types for tm_region_p.
+	(tm_region_init): Replace region_worklist to a vector called
+	bb_regions.
+
+2012-03-06  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (build_fold_addr_expr_with_type_loc): Fold
+	MEM_REF with constant pointer operand.
+
+2012-03-06  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52493
+	* tree-ssa-alias.c (ptr_derefs_may_alias_p): Robustify.
+
+2012-03-06  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-c.c (vms_pragma_nomember_alignment): Handle octaword.
+	(external_model_kind): Improve documentation.
+	(vms_pragma_extern_model): Handle relaxed_redef.
+	(vms_c_register_pragma): Allow expansion for nomember_alignment.
+
+2012-03-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options): -mmcu=: Document the XMEGA cores.
+	Explain RAMPD, RAMPX, RAMPDY, RAMPZ usage by avr-gcc.
+	Some more notes on EIND usage and reorder EIND subsection.
+
+2012-03-06  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms.c (VMS_CRTL_LDBL): Rename from VMS_CRTL_PRNTF.
+	* config/vms/vms-crtlmap.map: Rename PRNTF to LDBL.
+
+2012-03-06  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/t-vmsnative (version): Define.
+	* config/vms/t-vms (STMP_FIXPROTO, STMP_FIXINC, version): Remove.
+
+2012-03-06  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/52250
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Try harder to find a bb
+	to put note list into.  Unconditionally call move_bb_info.
+	(move_bb_info): Do not assert the blocks being in the same region,
+	just drop the note list if they are not.
+
+2012-03-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.c (sh_expand_t_scc): Remove SH2A special case
+	and use unified expansion logic.
+	* config/sh/sh.md (xorsi3_movrt): Rename to movrt.  Move
+	closer to the existing movt insn.
+	(negc): Rename insn to *negc.  Add new expander.
+	(movnegt): Use xor pattern for T bit negation.  Reserve helper
+	constant for negc pattern.
+	(*movnegt): New insn and splitter.
+
+2012-03-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* c-typeck.c (pointer_diff): Check for POINTER_PLUS_EXPR, not
+	PLUS_EXPR.
+
+2012-03-05  Richard Henderson  <rth@redhat.com>
+
+	* genemit.c (main): Include "target.h" in insn-emit.c.
+	* Makefile.in (insn-emit.o): Depend on TARGET_H.
+	* config/sh/sync.md (atomic_test_and_set): Reference
+	targetm.atomic_test_and_set_trueval instead of
+	TARGET_ATOMIC_TEST_AND_SET_TRUEVAL.
+
+2012-03-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_function_value_regno_p):
+	Make static.
+
+2012-03-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* langhooks.c (add_builtin_type): New function.
+	* langhooks.h (add_builtin_type): Export it.
+	* config/mep/mep.c (mep_init_builtins): Use it.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Use it.
+
+2012-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/51902
+	* tree.h (BLOCK_SAME_RANGE): Define.
+	* function.c (block_fragments_nreverse): Clear BLOCK_SAME_RANGE
+	if BLOCK_FRAGMENT_CHAIN is non-NULL, but has it cleared.
+	Also clear BLOCK_SAME_RANGE if fragment chain's supercontext fragment
+	isn't equal to supercontext fragment's fragment chain.
+	Adjust BLOCK_SUPERCONTEXT to point to supercontext fragment's
+	fragment origin.
+	(blocks_nreverse_all): Likewise.
+	(reorder_blocks_1): Compute BLOCK_SAME_RANGE bits.  Set
+	BLOCK_SUPERCONTEXT to supercontext fragment instead of
+	supercontext fragment's fragment origin.
+	* dwarf2out.c (add_high_low_attributes): If stmt has the same
+	range as its parent (or parents thereof etc.), use the parent's
+	DW_AT_ranges value instead of creating a new .debug_ranges range.
+
+2012-03-05  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/52242
+	Revert: 2011-11-26  Richard Henderson  <rth@redhat.com>
+	* omp-low.c (expand_omp_atomic): Assume anything aligned to
+	BIGGEST_ALIGNMENT is aligned.
+
+2012-03-05  Richard Henderson  <rth@redhat.com>
+
+	* config/sh/sh.h (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): Move...
+	* config/sh/sh.c: ... here.
+
+2012-03-05  Richard Henderson  <rth@redhat.com>
+
+	PR target/52481
+	* config/m68k/sync.md (atomic_test_and_set): Use expand_simple_unop
+	instead of calling negqi2 directly.
+
+2012-03-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/52463
+	* trans-mem.c (tm_region_init): Use last_basic_block.
+
+2012-03-05  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): New hook.
+	* config/sh/sync.md (atomic_test_and_set): New expander.
+	(tasb, atomic_test_and_set_soft): New insns.
+	* config/sh/sh.opt (menable-tas): New option.
+	* doc/invoke.texi (SH Options): Document it.
+
+2012-03-05  Richard Guenther  <rguenther@suse.de>
+
+	* cfgloop.c (verify_loop_structure): Verify dominators before
+	using them.
+	* graphite-clast-to-gimple.c (graphite_verify): Do not verify
+	dominators from here.
+	* graphite-scop-detection.c (create_sese_edges): Likewise.
+	* loop-doloop.c (doloop_optimize_loops): Likewise.
+	* loop-init.c (loop_optimizer_init): Likewise.
+	* loop-unroll.c (unroll_and_peel_loops): Likewise.
+	* loop-unswitch.c (unswitch_loops): Likewise.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Likewise.
+	* tree-parloops.c (parallelize_loops): Likewise.  Verify
+	only when checking is enabled.
+	* tree-loop-distribution.c (tree_loop_distribution): Likewise.
+
+2012-03-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* genautomata.c (parse_automata_opt): New static function.
+	(initiate_automaton_gen): Remove all option handling code.  Remove
+	argc argument.  All callers changed.
+	(main): Call init_rtx_reader_args_cb with the new function as argument.
+
+2012-03-05  Richard Guenther  <rguenther@suse.de>
+
+	* cfgexpand.c (gimple_expand_cfg): Free dominator info.
+	* tree-if-conv.c (combine_blocks): Free post-dominator info
+	after breaking it.
+	* tree-parloops.c (create_parallel_loop): Free and re-compute
+	dominator info after breaking it.
+
+2012-03-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52353
+	* optabs.h (trapv_unoptab_p): New function.
+	(trapv_binoptab_p): Likewise.
+	* optabs.c (expand_binop): Use emit_libcall_block_1 with
+	a proper equiv_may_trap argument.
+	(expand_unop): Likewise.
+	(emit_libcall_block_1): Take extra argument whether the
+	instruction may trap.  Renamed from ...
+	(emit_libcall_block): ... this.  New wrapper.
+
+2012-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51721
+	* tree-vrp.c (register_edge_assert_for_2): If comparing
+	lhs of right shift by constant with an integer constant,
+	add ASSERT_EXPRs for the rhs1 of the right shift.
+
+	* cfgrtl.c (cfg_layout_merge_blocks): Cleanup.
+
+2012-03-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (integer_zerop): Handle VECTOR_CSTs.
+	(integer_onep): Likewise.
+	(integer_all_onesp): Likewise.
+
+2012-03-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*umaddqihi4.2): New insn-and-split.
+
+2012-03-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (pro_epilogue_adjust_stack): Check Pmode
+	instead of TARGET_64BIT.
+
 2012-03-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_prologue): Check Pmode to set
@@ -7,6 +901,11 @@
 
 	* config/i386/i386.c (ix86_print_operand_address): Only handle
 	zero-extended DImode addresses.
+
+2012-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_print_operand) <case '+'>: Declare
+	taken and cputaken as bool.
 
 2012-03-04  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -817,6 +1716,10 @@
 	* gimple-fold.c (gimplify_and_update_call_from_tree): Add
 	vdef also to non-pure/const call stmts in the sequence.
 
+2012-02-21  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-ld.c (main): Fix IDENTIFICATION padding.
+
 2012-02-20  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (load_pcrel_sym<P:mode>): Explain why we
@@ -1293,7 +2196,7 @@
 
 	PR target/52146
 	* config/i386/i386.c (ix86_legitimate_address_p): Disallow
-	negative constant address for x32.
+	negative constant address for TARGET_X32.
 
 2012-02-10  Richard Henderson  <rth@redhat.com>
 

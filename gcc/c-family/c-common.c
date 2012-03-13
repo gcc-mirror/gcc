@@ -1882,9 +1882,8 @@ c_common_get_narrower (tree op, int *unsignedp_ptr)
       /* C++0x scoped enumerations don't implicitly convert to integral
 	 type; if we stripped an explicit conversion to a larger type we
 	 need to replace it so common_type will still work.  */
-      tree type = (lang_hooks.types.type_for_size
-		   (TYPE_PRECISION (TREE_TYPE (op)),
-		    TYPE_UNSIGNED (TREE_TYPE (op))));
+      tree type = c_common_type_for_size (TYPE_PRECISION (TREE_TYPE (op)),
+					  TYPE_UNSIGNED (TREE_TYPE (op)));
       op = fold_convert (type, op);
     }
   return op;
@@ -9325,7 +9324,7 @@ c_common_mark_addressable_vec (tree t)
 tree
 builtin_type_for_size (int size, bool unsignedp)
 {
-  tree type = lang_hooks.types.type_for_size (size, unsignedp);
+  tree type = c_common_type_for_size (size, unsignedp);
   return type ? type : error_mark_node;
 }
 

@@ -42,8 +42,9 @@ along with GCC; see the file COPYING3.  If not see
    rule.  */
 #define VMS_CRTL_BSD44	(1 << 3)
 
-/* Prepend x before the name for printf like functions.  */
-#define VMS_CRTL_PRNTF	(1 << 4)
+/* Prepend x before the name for if 128 bit long doubles are enabled.  This
+   concern mostly 'printf'-like functions.  */
+#define VMS_CRTL_LDBL	(1 << 4)
 
 /* Prepend ga_ for global data.  */
 #define VMS_CRTL_GLOBAL (1 << 5)
@@ -135,7 +136,7 @@ vms_patch_builtins (void)
       if (n->flags & VMS_CRTL_FLOAT)
         res[rlen++] = 't';
 
-      if (n->flags & VMS_CRTL_PRNTF)
+      if (n->flags & VMS_CRTL_LDBL)
         res[rlen++] = 'x';
 
       nlen = strlen (n->name);
@@ -159,9 +160,11 @@ vms_patch_builtins (void)
           alt[1 + nlen + 2] = 0;
           vms_add_crtl_xlat (alt, nlen + 3, res, rlen + nlen);
 
-          use_64 = (((n->flags & VMS_CRTL_64) && POINTER_SIZE == 64)
+          use_64 = (((n->flags & VMS_CRTL_64)
+                     && flag_vms_pointer_size == VMS_POINTER_SIZE_64)
                     || ((n->flags & VMS_CRTL_MALLOC)
-                        && TARGET_MALLOC64));
+                        && flag_vms_malloc64
+                        && flag_vms_pointer_size != VMS_POINTER_SIZE_NONE));
           if (!use_64)
             vms_add_crtl_xlat (n->name, nlen, res, rlen + nlen);
 

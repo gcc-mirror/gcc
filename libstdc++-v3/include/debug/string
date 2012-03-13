@@ -155,6 +155,7 @@ namespace __gnu_debug
     basic_string&
     operator=(basic_string&& __str)
     {
+      __glibcxx_check_self_move_assign(__str);
       *static_cast<_Base*>(this) = std::move(__str);
       this->_M_invalidate_all();
       return *this;

@@ -1,6 +1,6 @@
 /* Common declarations for all of libgfortran.
    Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
@@ -322,7 +322,7 @@ internal_proto(big_endian);
 typedef struct descriptor_dimension
 {
   index_type _stride;
-  index_type _lbound;
+  index_type lower_bound;
   index_type _ubound;
 }
 
@@ -330,7 +330,7 @@ descriptor_dimension;
 
 #define GFC_ARRAY_DESCRIPTOR(r, type) \
 struct {\
-  type *data;\
+  type *base_addr;\
   size_t offset;\
   index_type dtype;\
   descriptor_dimension dim[r];\
@@ -375,26 +375,26 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
 #define GFC_DESCRIPTOR_TYPE(desc) (((desc)->dtype & GFC_DTYPE_TYPE_MASK) \
                                    >> GFC_DTYPE_TYPE_SHIFT)
 #define GFC_DESCRIPTOR_SIZE(desc) ((desc)->dtype >> GFC_DTYPE_SIZE_SHIFT)
-#define GFC_DESCRIPTOR_DATA(desc) ((desc)->data)
+#define GFC_DESCRIPTOR_DATA(desc) ((desc)->base_addr)
 #define GFC_DESCRIPTOR_DTYPE(desc) ((desc)->dtype)
 
-#define GFC_DIMENSION_LBOUND(dim) ((dim)._lbound)
+#define GFC_DIMENSION_LBOUND(dim) ((dim).lower_bound)
 #define GFC_DIMENSION_UBOUND(dim) ((dim)._ubound)
 #define GFC_DIMENSION_STRIDE(dim) ((dim)._stride)
-#define GFC_DIMENSION_EXTENT(dim) ((dim)._ubound + 1 - (dim)._lbound)
+#define GFC_DIMENSION_EXTENT(dim) ((dim)._ubound + 1 - (dim).lower_bound)
 #define GFC_DIMENSION_SET(dim,lb,ub,str) \
   do \
     { \
-      (dim)._lbound = lb;			\
+      (dim).lower_bound = lb;			\
       (dim)._ubound = ub;			\
       (dim)._stride = str;			\
     } while (0)
 	    
 
-#define GFC_DESCRIPTOR_LBOUND(desc,i) ((desc)->dim[i]._lbound)
+#define GFC_DESCRIPTOR_LBOUND(desc,i) ((desc)->dim[i].lower_bound)
 #define GFC_DESCRIPTOR_UBOUND(desc,i) ((desc)->dim[i]._ubound)
 #define GFC_DESCRIPTOR_EXTENT(desc,i) ((desc)->dim[i]._ubound + 1 \
-				      - (desc)->dim[i]._lbound)
+				      - (desc)->dim[i].lower_bound)
 #define GFC_DESCRIPTOR_EXTENT_BYTES(desc,i) \
   (GFC_DESCRIPTOR_EXTENT(desc,i) * GFC_DESCRIPTOR_SIZE(desc))
 

@@ -14141,10 +14141,9 @@ adding a call to the @code{.init} section.
 @node Symbol-Renaming Pragmas
 @subsection Symbol-Renaming Pragmas
 
-For compatibility with the Solaris and Tru64 UNIX system headers, GCC
+For compatibility with the Solaris system headers, GCC
 supports two @code{#pragma} directives which change the name used in
-assembly for a given declaration.  @code{#pragma extern_prefix} is only
-available on platforms whose system headers need it. To get this effect
+assembly for a given declaration. To get this effect
 on all platforms supported by GCC, use the asm labels extension (@pxref{Asm
 Labels}).
 
@@ -14155,19 +14154,9 @@ Labels}).
 This pragma gives the C function @var{oldname} the assembly symbol
 @var{newname}.  The preprocessor macro @code{__PRAGMA_REDEFINE_EXTNAME}
 will be defined if this pragma is available (currently on all platforms).
-
-@item extern_prefix @var{string}
-@cindex pragma, extern_prefix
-
-This pragma causes all subsequent external function and variable
-declarations to have @var{string} prepended to their assembly symbols.
-This effect may be terminated with another @code{extern_prefix} pragma
-whose argument is an empty string.  The preprocessor macro
-@code{__PRAGMA_EXTERN_PREFIX} will be defined if this pragma is
-available (currently only on Tru64 UNIX)@.
 @end table
 
-These pragmas and the asm labels extension interact in a complicated
+This pragma and the asm labels extension interact in a complicated
 manner.  Here are some corner cases you may want to be aware of.
 
 @enumerate
@@ -14186,17 +14175,6 @@ the name does not change.
 
 @item The @var{oldname} used by @code{#pragma redefine_extname} is
 always the C-language name.
-
-@item If @code{#pragma extern_prefix} is in effect, and a declaration
-occurs with an asm label attached, the prefix is silently ignored for
-that declaration.
-
-@item If @code{#pragma extern_prefix} and @code{#pragma redefine_extname}
-apply to the same declaration, whichever triggered first wins, and a
-warning issues if they contradict each other.  (We would like to have
-@code{#pragma redefine_extname} always win, for consistency with asm
-labels, but if @code{#pragma extern_prefix} triggers first we have no
-way of knowing that that happened.)
 @end enumerate
 
 @node Structure-Packing Pragmas

@@ -4362,6 +4362,8 @@ gimple_expand_cfg (void)
 
   /* Some backends want to know that we are expanding to RTL.  */
   currently_expanding_to_rtl = 1;
+  /* Dominators are not kept up-to-date as we may create new basic-blocks.  */
+  free_dominance_info (CDI_DOMINATORS);
 
   rtl_profile_for_bb (ENTRY_BLOCK_PTR);
 

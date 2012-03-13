@@ -478,15 +478,15 @@ fi
 
 posix_based_os="yes"
 case "${target}" in
-*-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
-    ;;
-*-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly*)
-    ;;
-*-*-solaris2* | *-*-irix6* | *-*-osf* | *-*-hpux11*)
-    ;;
-*-*-darwin* | *-*-aix*)
-    ;;
-*)
+    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
+	;;
+    *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly*)
+	;;
+    *-*-solaris2* | *-*-irix6* | *-*-hpux11*)
+	;;
+    *-*-darwin* | *-*-aix*)
+	;;
+    *)
     posix_based_os="no"
     ;;
 esac
@@ -938,8 +938,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs libgui itcl ld"
     ;;
   ia64*-*-*vms*)
-    # No gdb or ld support yet.
-    noconfigdirs="$noconfigdirs readline libgui itcl gdb ld"
+    # No ld support yet.
+    noconfigdirs="$noconfigdirs libgui itcl ld"
     ;;
   i[[3456789]]86-w64-mingw*)
     ;;
@@ -2370,7 +2370,7 @@ if test x${with_stabs} = x ; then
   case "${target}" in
   mips*-*-irix[[56]]*)
     ;;
-  mips*-*-* | alpha*-*-osf*)
+  mips*-*-*)
     with_stabs=yes;
     extra_host_args="${extra_host_args} --with-stabs"
     ;;

@@ -5,3 +5,5 @@ crtinitS.o: $(srcdir)/config/ia64/vms-crtinit.S
 	$(gcc_compile) -c -x assembler-with-cpp $<
 
 LIB2ADDEH += $(srcdir)/config/ia64/fde-vms.c
+
+HOST_LIBGCC2_CFLAGS=-mpointer-size=64

@@ -1,6 +1,6 @@
 `/* Implementation of the BESSEL_JN and BESSEL_YN transformational
    function using a recurrence algorithm.
-   Copyright 2010 Free Software Foundation, Inc.
+   Copyright 2010, 2012 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -52,11 +52,11 @@ bessel_jn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2, 'rtype_na
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
-  if (ret->data == NULL)
+  if (ret->base_addr == NULL)
     {
       size_t size = n2 < n1 ? 0 : n2-n1+1; 
       GFC_DIMENSION_SET(ret->dim[0], 0, size-1, 1);
-      ret->data = internal_malloc_size (sizeof ('rtype_name`) * size);
+      ret->base_addr = internal_malloc_size (sizeof ('rtype_name`) * size);
       ret->offset = 0;
     }
 
@@ -73,21 +73,20 @@ bessel_jn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2, 'rtype_na
 
   if (unlikely (x == 0))
     {
-      ret->data[0] = 1;
+      ret->base_addr[0] = 1;
       for (i = 1; i <= n2-n1; i++)
-        ret->data[i*stride] = 0;
+        ret->base_addr[i*stride] = 0;
       return;
     }
 
-  ret->data = ret->data;
   last1 = MATHFUNC(jn) (n2, x);
-  ret->data[(n2-n1)*stride] = last1;
+  ret->base_addr[(n2-n1)*stride] = last1;
 
   if (n1 == n2)
     return;
 
   last2 = MATHFUNC(jn) (n2 - 1, x);
-  ret->data[(n2-n1-1)*stride] = last2;
+  ret->base_addr[(n2-n1-1)*stride] = last2;
 
   if (n1 + 1 == n2)
     return;
@@ -96,9 +95,9 @@ bessel_jn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2, 'rtype_na
 
   for (i = n2-n1-2; i >= 0; i--)
     {
-      ret->data[i*stride] = x2rev * (i+1+n1) * last2 - last1;
+      ret->base_addr[i*stride] = x2rev * (i+1+n1) * last2 - last1;
       last1 = last2;
-      last2 = ret->data[i*stride];
+      last2 = ret->base_addr[i*stride];
     }
 }
 
@@ -120,11 +119,11 @@ bessel_yn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2,
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
-  if (ret->data == NULL)
+  if (ret->base_addr == NULL)
     {
       size_t size = n2 < n1 ? 0 : n2-n1+1; 
       GFC_DIMENSION_SET(ret->dim[0], 0, size-1, 1);
-      ret->data = internal_malloc_size (sizeof ('rtype_name`) * size);
+      ret->base_addr = internal_malloc_size (sizeof ('rtype_name`) * size);
       ret->offset = 0;
     }
 
@@ -143,22 +142,22 @@ bessel_yn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2,
     {
       for (i = 0; i <= n2-n1; i++)
 #if defined('rtype_name`_INFINITY)
-        ret->data[i*stride] = -'rtype_name`_INFINITY;
+        ret->base_addr[i*stride] = -'rtype_name`_INFINITY;
 #else
-        ret->data[i*stride] = -'rtype_name`_HUGE;
+        ret->base_addr[i*stride] = -'rtype_name`_HUGE;
 #endif
       return;
     }
 
-  ret->data = ret->data;
+  ret->base_addr = ret->base_addr;
   last1 = MATHFUNC(yn) (n1, x);
-  ret->data[0] = last1;
+  ret->base_addr[0] = last1;
 
   if (n1 == n2)
     return;
 
   last2 = MATHFUNC(yn) (n1 + 1, x);
-  ret->data[1*stride] = last2;
+  ret->base_addr[1*stride] = last2;
 
   if (n1 + 1 == n2)
     return;
@@ -170,14 +169,14 @@ bessel_yn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2,
 #if defined('rtype_name`_INFINITY)
       if (unlikely (last2 == -'rtype_name`_INFINITY))
 	{
-	  ret->data[i*stride] = -'rtype_name`_INFINITY;
+	  ret->base_addr[i*stride] = -'rtype_name`_INFINITY;
 	}
       else
 #endif
 	{
-	  ret->data[i*stride] = x2rev * (i-1+n1) * last2 - last1;
+	  ret->base_addr[i*stride] = x2rev * (i-1+n1) * last2 - last1;
 	  last1 = last2;
-	  last2 = ret->data[i*stride];
+	  last2 = ret->base_addr[i*stride];
 	}
     }
 }

@@ -3968,6 +3968,20 @@ package body Sem_Res is
                   Error_Msg_N
                     ("invalid implicit conversion for access parameter", A);
                end if;
+
+               --  If the actual is an access selected component of a variable,
+               --  the call may modify its designated object. It is reasonable
+               --  to treat this as a potential modification of the enclosing
+               --  record, to prevent spurious warnings that it should be
+               --  declared as a constant, because intuitively programmers
+               --  regard the designated subcomponent as part of the record.
+
+               if Nkind (A) = N_Selected_Component
+                 and then Is_Entity_Name (Prefix (A))
+                 and then not Is_Constant_Object (Entity (Prefix (A)))
+               then
+                  Note_Possible_Modification (A, Sure => False);
+               end if;
             end if;
 
             --  Check bad case of atomic/volatile argument (RM C.6(12))
@@ -5597,6 +5611,15 @@ package body Sem_Res is
         and then Has_Pragma_Inline_Always (Nam)
         and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration
         and then Present (Body_To_Inline (Unit_Declaration_Node (Nam)))
+        and then not Debug_Flag_Dot_K
+      then
+         null;
+
+      elsif Is_Inlined (Nam)
+        and then Has_Pragma_Inline (Nam)
+        and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration
+        and then Present (Body_To_Inline (Unit_Declaration_Node (Nam)))
+        and then Debug_Flag_Dot_K
       then
          null;
 
@@ -8263,13 +8286,6 @@ package body Sem_Res is
    procedure Resolve_Quantified_Expression (N : Node_Id; Typ : Entity_Id) is
    begin
       if not Alfa_Mode then
-
-         --  If expansion is enabled, analysis is delayed until the expresssion
-         --  is rewritten as a loop.
-
-         if Operating_Mode /= Check_Semantics then
-            return;
-         end if;
 
          --  The loop structure is already resolved during its analysis, only
          --  the resolution of the condition needs to be done. Expansion is

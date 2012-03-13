@@ -463,6 +463,8 @@ AC_CHECK_HEADERS([linux/filter.h linux/netlink.h linux/rtnetlink.h], [], [],
 
 AC_CACHE_CHECK([whether <ustat.h> can be used],
 [libgo_cv_c_ustat_h],
+[CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE $OSCFLAGS"
 AC_COMPILE_IFELSE(
 [AC_LANG_SOURCE([
 #include <sys/types.h>
@@ -470,7 +472,8 @@ AC_COMPILE_IFELSE(
 #include <linux/filter.h>
 #endif
 #include <ustat.h>
-])], [libgo_cv_c_ustat_h=yes], [libgo_cv_c_ustat_h=no]))
+])], [libgo_cv_c_ustat_h=yes], [libgo_cv_c_ustat_h=no])
+CFLAGS=$CFLAGS_hold])
 if test $libgo_cv_c_ustat_h = yes; then
   AC_DEFINE(HAVE_USTAT_H, 1,
     [Define to 1 if you have the <ustat.h> header file and it works.])

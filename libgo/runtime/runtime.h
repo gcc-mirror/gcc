@@ -48,6 +48,7 @@ typedef unsigned int uintptr __attribute__ ((mode (pointer)));
 
 typedef	uint8			bool;
 typedef	uint8			byte;
+typedef	struct	Func		Func;
 typedef	struct	G		G;
 typedef	union	Lock		Lock;
 typedef	struct	M		M;
@@ -200,6 +201,14 @@ enum
 #ifndef NSIG
 #define NSIG 32
 #endif
+
+// NOTE(rsc): keep in sync with extern.go:/type.Func.
+// Eventually, the loaded symbol table should be closer to this form.
+struct	Func
+{
+	String	name;
+	uintptr	entry;	// entry pc
+};
 
 /* Macros.  */
 
@@ -427,6 +436,8 @@ void	runtime_osyield(void);
 void	runtime_LockOSThread(void) __asm__("libgo_runtime.runtime.LockOSThread");
 void	runtime_UnlockOSThread(void) __asm__("libgo_runtime.runtime.UnlockOSThread");
 
+uintptr	runtime_memlimit(void);
+
 // If appropriate, ask the operating system to control whether this
 // thread should receive profiling signals.  This is only necessary on OS X.
 // An operating system should not deliver a profiling signal to a
@@ -441,3 +452,16 @@ void	runtime_time_scan(void (*)(byte*, int64));
 
 void	runtime_setsig(int32, bool, bool);
 #define runtime_setitimer setitimer
+
+void	runtime_check(void);
+
+// A list of global variables that the garbage collector must scan.
+struct root_list {
+	struct root_list *next;
+	struct root {
+		void *decl;
+		size_t size;
+	} roots[];
+};
+
+void	__go_register_gc_roots(struct root_list*);

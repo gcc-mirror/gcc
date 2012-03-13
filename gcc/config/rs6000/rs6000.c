@@ -2596,6 +2596,7 @@ static bool
 rs6000_option_override_internal (bool global_init_p)
 {
   bool ret = true;
+  bool have_cpu = false;
   const char *default_cpu = OPTION_TARGET_CPU_DEFAULT;
   int set_masks;
   int cpu_index;
@@ -2652,43 +2653,55 @@ rs6000_option_override_internal (bool global_init_p)
   /* Don't override by the processor default if given explicitly.  */
   set_masks &= ~target_flags_explicit;
 
-  /* Identify the processor type.  */
-  if (!default_cpu)
-    {
-      if (TARGET_POWERPC64)
-	default_cpu = "powerpc64";
-      else if (TARGET_POWERPC)
-	default_cpu = "powerpc";
-    }
-
   /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
      the cpu in a target attribute or pragma, but did not specify a tuning
      option, use the cpu for the tuning option rather than the option specified
      with -mtune on the command line.  */
-  if (rs6000_cpu_index > 0)
-    cpu_index = rs6000_cpu_index;
-  else if (main_target_opt != NULL && main_target_opt->x_rs6000_cpu_index > 0)
-    rs6000_cpu_index = cpu_index = main_target_opt->x_rs6000_cpu_index;
-  else
-    rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (default_cpu);
-
-  if (rs6000_tune_index > 0)
-    tune_index = rs6000_tune_index;
-  else
-    rs6000_tune_index = tune_index = cpu_index;
-
-  if (cpu_index >= 0)
+  if (rs6000_cpu_index >= 0)
     {
-      target_flags &= ~set_masks;
-      target_flags |= (processor_target_table[cpu_index].target_enable
-		       & set_masks);
+      cpu_index = rs6000_cpu_index;
+      have_cpu = true;
+    }
+  else if (main_target_opt != NULL && main_target_opt->x_rs6000_cpu_index >= 0)
+    {
+      rs6000_cpu_index = cpu_index = main_target_opt->x_rs6000_cpu_index;
+      have_cpu = true;
+    }
+  else
+    {
+      if (!default_cpu)
+	default_cpu = (TARGET_POWERPC64 ? "powerpc64" : "powerpc");
+
+      rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (default_cpu);
     }
 
-  rs6000_cpu = ((tune_index >= 0)
-		? processor_target_table[tune_index].processor
-		: (TARGET_POWERPC64
-		   ? PROCESSOR_DEFAULT64
-		   : PROCESSOR_DEFAULT));
+  gcc_assert (cpu_index >= 0);
+
+  target_flags &= ~set_masks;
+  target_flags |= (processor_target_table[cpu_index].target_enable
+		   & set_masks);
+
+  if (rs6000_tune_index >= 0)
+    tune_index = rs6000_tune_index;
+  else if (have_cpu)
+    rs6000_tune_index = tune_index = cpu_index;
+  else
+    {
+      size_t i;
+      enum processor_type tune_proc
+	= (TARGET_POWERPC64 ? PROCESSOR_DEFAULT64 : PROCESSOR_DEFAULT);
+
+      tune_index = -1;
+      for (i = 0; i < ARRAY_SIZE (processor_target_table); i++)
+	if (processor_target_table[i].processor == tune_proc)
+	  {
+	    rs6000_tune_index = tune_index = i;
+	    break;
+	  }
+    }
+
+  gcc_assert (tune_index >= 0);
+  rs6000_cpu = processor_target_table[tune_index].processor;
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
       || rs6000_cpu == PROCESSOR_PPCE500MC || rs6000_cpu == PROCESSOR_PPCE500MC64)
@@ -4022,11 +4035,6 @@ rs6000_file_start (void)
   rs6000_default_cpu = TARGET_CPU_DEFAULT;
 
   default_file_start ();
-
-#ifdef TARGET_BI_ARCH
-  if ((TARGET_DEFAULT ^ target_flags) & MASK_64BIT)
-    rs6000_default_cpu = 0;
-#endif
 
   if (flag_verbose_asm)
     {
@@ -11567,25 +11575,17 @@ rs6000_init_builtins (void)
   builtin_mode_to_type[V16QImode][0] = V16QI_type_node;
   builtin_mode_to_type[V16QImode][1] = unsigned_V16QI_type_node;
 
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__bool char"),
-		      bool_char_type_node);
+  tdecl = add_builtin_type ("__bool char", bool_char_type_node);
   TYPE_NAME (bool_char_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__bool short"),
-		      bool_short_type_node);
+
+  tdecl = add_builtin_type ("__bool short", bool_short_type_node);
   TYPE_NAME (bool_short_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__bool int"),
-		      bool_int_type_node);
+
+  tdecl = add_builtin_type ("__bool int", bool_int_type_node);
   TYPE_NAME (bool_int_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("__pixel"),
-		      pixel_type_node);
+
+  tdecl = add_builtin_type ("__pixel", pixel_type_node);
   TYPE_NAME (pixel_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
   bool_V16QI_type_node = build_vector_type (bool_char_type_node, 16);
   bool_V8HI_type_node = build_vector_type (bool_short_type_node, 8);
@@ -11593,88 +11593,50 @@ rs6000_init_builtins (void)
   bool_V2DI_type_node = build_vector_type (bool_long_type_node, 2);
   pixel_V8HI_type_node = build_vector_type (pixel_type_node, 8);
 
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__vector unsigned char"),
-		      unsigned_V16QI_type_node);
+  tdecl = add_builtin_type ("__vector unsigned char", unsigned_V16QI_type_node);
   TYPE_NAME (unsigned_V16QI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector signed char"),
-		      V16QI_type_node);
+
+  tdecl = add_builtin_type ("__vector signed char", V16QI_type_node);
   TYPE_NAME (V16QI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector __bool char"),
-		      bool_V16QI_type_node);
+
+  tdecl = add_builtin_type ("__vector __bool char", bool_V16QI_type_node);
   TYPE_NAME ( bool_V16QI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector unsigned short"),
-		      unsigned_V8HI_type_node);
+  tdecl = add_builtin_type ("__vector unsigned short", unsigned_V8HI_type_node);
   TYPE_NAME (unsigned_V8HI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector signed short"),
-		      V8HI_type_node);
+
+  tdecl = add_builtin_type ("__vector signed short", V8HI_type_node);
   TYPE_NAME (V8HI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__vector __bool short"),
-		      bool_V8HI_type_node);
+
+  tdecl = add_builtin_type ("__vector __bool short", bool_V8HI_type_node);
   TYPE_NAME (bool_V8HI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__vector unsigned int"),
-		      unsigned_V4SI_type_node);
+  tdecl = add_builtin_type ("__vector unsigned int", unsigned_V4SI_type_node);
   TYPE_NAME (unsigned_V4SI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector signed int"),
-		      V4SI_type_node);
+
+  tdecl = add_builtin_type ("__vector signed int", V4SI_type_node);
   TYPE_NAME (V4SI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector __bool int"),
-		      bool_V4SI_type_node);
+
+  tdecl = add_builtin_type ("__vector __bool int", bool_V4SI_type_node);
   TYPE_NAME (bool_V4SI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector float"),
-		      V4SF_type_node);
+  tdecl = add_builtin_type ("__vector float", V4SF_type_node);
   TYPE_NAME (V4SF_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector __pixel"),
-		      pixel_V8HI_type_node);
+
+  tdecl = add_builtin_type ("__vector __pixel", pixel_V8HI_type_node);
   TYPE_NAME (pixel_V8HI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-		      TYPE_DECL, get_identifier ("__vector double"),
-		      V2DF_type_node);
+  tdecl = add_builtin_type ("__vector double", V2DF_type_node);
   TYPE_NAME (V2DF_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-		      TYPE_DECL, get_identifier ("__vector long"),
-		      V2DI_type_node);
+  tdecl = add_builtin_type ("__vector long", V2DI_type_node);
   TYPE_NAME (V2DI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-		      TYPE_DECL, get_identifier ("__vector unsigned long"),
-		      unsigned_V2DI_type_node);
+  tdecl = add_builtin_type ("__vector unsigned long", unsigned_V2DI_type_node);
   TYPE_NAME (unsigned_V2DI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-		      TYPE_DECL, get_identifier ("__vector __bool long"),
-		      bool_V2DI_type_node);
+  tdecl = add_builtin_type ("__vector __bool long", bool_V2DI_type_node);
   TYPE_NAME (bool_V2DI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
   /* Paired and SPE builtins are only available if you build a compiler with
      the appropriate options, so only create those builtins with the
@@ -11843,10 +11805,7 @@ spe_init_builtins (void)
                                 signed_char_type_node,
                                 NULL_TREE);
 
-  (*lang_hooks.decls.pushdecl)
-    (build_decl (BUILTINS_LOCATION, TYPE_DECL,
-		 get_identifier ("__ev64_opaque__"),
-		 opaque_V2SI_type_node));
+  add_builtin_type ("__ev64_opaque__", opaque_V2SI_type_node);
 
   /* Initialize irregular SPE builtins.  */
 
@@ -16126,6 +16085,10 @@ rs6000_emit_vector_compare_inner (enum rtx_code code, rtx op0, rtx op1)
     case EQ:
     case GT:
     case GTU:
+    case ORDERED:
+    case UNORDERED:
+    case UNEQ:
+    case LTGT:
       mask = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (VOIDmode,
 			      mask,

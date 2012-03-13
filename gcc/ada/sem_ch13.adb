@@ -1064,24 +1064,25 @@ package body Sem_Ch13 is
 
                --  Aspects corresponding to attribute definition clauses
 
-               when Aspect_Address             |
-                    Aspect_Alignment           |
-                    Aspect_Bit_Order           |
-                    Aspect_Component_Size      |
-                    Aspect_External_Tag        |
-                    Aspect_Input               |
-                    Aspect_Machine_Radix       |
-                    Aspect_Object_Size         |
-                    Aspect_Output              |
-                    Aspect_Read                |
-                    Aspect_Size                |
-                    Aspect_Small               |
-                    Aspect_Simple_Storage_Pool |
-                    Aspect_Storage_Pool        |
-                    Aspect_Storage_Size        |
-                    Aspect_Stream_Size         |
-                    Aspect_Value_Size          |
-                    Aspect_Write               =>
+               when Aspect_Address              |
+                    Aspect_Alignment            |
+                    Aspect_Bit_Order            |
+                    Aspect_Component_Size       |
+                    Aspect_External_Tag         |
+                    Aspect_Input                |
+                    Aspect_Machine_Radix        |
+                    Aspect_Object_Size          |
+                    Aspect_Output               |
+                    Aspect_Read                 |
+                    Aspect_Scalar_Storage_Order |
+                    Aspect_Size                 |
+                    Aspect_Small                |
+                    Aspect_Simple_Storage_Pool  |
+                    Aspect_Storage_Pool         |
+                    Aspect_Storage_Size         |
+                    Aspect_Stream_Size          |
+                    Aspect_Value_Size           |
+                    Aspect_Write                =>
 
                   --  Construct the attribute definition clause
 
@@ -2988,6 +2989,40 @@ package body Sem_Ch13 is
          when Attribute_Read =>
             Analyze_Stream_TSS_Definition (TSS_Stream_Read);
             Set_Has_Specified_Stream_Read (Ent);
+
+         --------------------------
+         -- Scalar_Storage_Order --
+         --------------------------
+
+         --  Scalar_Storage_Order attribute definition clause
+
+         when Attribute_Scalar_Storage_Order => Scalar_Storage_Order : declare
+         begin
+            if not Is_Record_Type (U_Ent) then
+               Error_Msg_N
+                 ("Scalar_Storage_Order can only be defined for record type",
+                  Nam);
+
+            elsif Duplicate_Clause then
+               null;
+
+            else
+               Analyze_And_Resolve (Expr, RTE (RE_Bit_Order));
+
+               if Etype (Expr) = Any_Type then
+                  return;
+
+               elsif not Is_Static_Expression (Expr) then
+                  Flag_Non_Static_Expr
+                    ("Scalar_Storage_Order requires static expression!", Expr);
+
+               else
+                  if (Expr_Value (Expr) = 0) /= Bytes_Big_Endian then
+                     Set_Reverse_Storage_Order (U_Ent, True);
+                  end if;
+               end if;
+            end if;
+         end Scalar_Storage_Order;
 
          ----------
          -- Size --
@@ -6147,7 +6182,7 @@ package body Sem_Ch13 is
          when Aspect_Address =>
             T := RTE (RE_Address);
 
-         when Aspect_Bit_Order =>
+         when Aspect_Bit_Order | Aspect_Scalar_Storage_Order =>
             T := RTE (RE_Bit_Order);
 
          when Aspect_CPU =>

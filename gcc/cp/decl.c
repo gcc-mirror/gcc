@@ -4216,17 +4216,20 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
         error ("%<constexpr%> cannot be used for type declarations");
     }
 
-  if (declspecs->attributes)
+  if (declspecs->attributes && warn_attributes)
     {
-      location_t loc = input_location;
+      location_t loc;
       if (!CLASSTYPE_TEMPLATE_INSTANTIATION (declared_type))
-	/* For a non-template class, use the name location; for a template
-	   class (an explicit instantiation), use the current location.  */
-	input_location = location_of (declared_type);
-      warning (0, "attribute ignored in declaration of %q#T", declared_type);
-      warning (0, "attribute for %q#T must follow the %qs keyword",
-	       declared_type, class_key_or_enum_as_string (declared_type));
-      input_location = loc;
+	/* For a non-template class, use the name location.  */
+	loc = location_of (declared_type);
+      else
+	/* For a template class (an explicit instantiation), use the
+	   current location.  */
+	loc = input_location;
+      warning_at (loc, OPT_Wattributes, "attribute ignored in declaration "
+		  "of %q#T", declared_type);
+      inform (loc, "attribute for %q#T must follow the %qs keyword",
+	      declared_type, class_key_or_enum_as_string (declared_type));
     }
 
   return declared_type;

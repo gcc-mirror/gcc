@@ -1,8 +1,8 @@
 /* Implementation of the ISO_C_BINDING library helper functions.
-   Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009, 2010, 2012 Free Software Foundation, Inc.
    Contributed by Christopher Rickett.
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -100,7 +100,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_u0) (void *c_ptr_in,
 
       f_ptr_out->offset = str;
       shapeSize = 0;
-      p = shape->data;
+      p = shape->base_addr;
       size = GFC_DESCRIPTOR_SIZE(shape);
 
       source_stride = GFC_DESCRIPTOR_STRIDE_BYTES(shape,0);

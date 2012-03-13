@@ -2709,9 +2709,8 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
 
   /* The generic VEC_PERM_EXPR code always uses an integral type of the
      same size as the vector element being permuted.  */
-  mask_element_type
-    = lang_hooks.types.type_for_size
-    (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (vectype))), 1);
+  mask_element_type = lang_hooks.types.type_for_mode
+		(int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))), 1);
   mask_type = get_vectype_for_scalar_type (mask_element_type);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
   mask = XALLOCAVEC (unsigned char, nunits);

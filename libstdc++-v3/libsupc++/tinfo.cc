@@ -1,6 +1,6 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
 // Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-// 2003, 2004, 2005, 2006, 2007, 2009
+// 2003, 2004, 2005, 2006, 2007, 2009, 2012
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -36,7 +36,7 @@ std::type_info::
 
 // We can't rely on common symbols being shared between shared objects.
 bool std::type_info::
-operator== (const std::type_info& arg) const
+operator== (const std::type_info& arg) const _GLIBCXX_NOEXCEPT
 {
 #if __GXX_MERGED_TYPEINFO_NAMES
   return name () == arg.name ();

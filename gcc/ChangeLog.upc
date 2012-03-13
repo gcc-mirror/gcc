@@ -1,3 +1,13 @@
+2012-03-13  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 185278 into gupc branch.
+	* c-decl.c (c_build_pointer_type): For UPC pointer-to-shared types
+	call build_pointer_type() to apply UPC-specific qualifiers.
+	* top-level/configure.ac: factor the checking for posix hostst
+	out of the libgomp section so that it can also be used by libgupc.
+	* top-level/configure: Re-generate.
+	* DEV-PHASE: bump to 4.8.0-1.
+
 2012-03-12  Gary Funck  <gary@intrepid.com>
 
 	* config/rs6000/rs6000.c (rs6000_function_value): Do not over-ride

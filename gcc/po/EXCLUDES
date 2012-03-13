@@ -1,4 +1,5 @@
-# Copyright (C) 2001, 2004, 2009, 2010, 2011 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2004, 2009, 2010, 2011, 2012
+# Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -53,8 +54,3 @@ genrecog.c
 gensupport.c
 gensupport.h
 read-md.c
-
-#   These files are not yet internationalized, because they contain
-#   many strings that require a lot of analysis, and are little-used.
-mips-tdump.c
-mips-tfile.c

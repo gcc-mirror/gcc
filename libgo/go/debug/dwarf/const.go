@@ -207,6 +207,11 @@ const (
 	formRef8        format = 0x14
 	formRefUdata    format = 0x15
 	formIndirect    format = 0x16
+	// following are defined in DWARF 4
+	formSecOffset   format = 0x17
+	formExprLoc     format = 0x18
+	formFlagPresent format = 0x19
+	formRefSig8     format = 0x20
 )
 
 // A Tag is the classification (the type) of an Entry.
@@ -430,4 +435,31 @@ const (
 	encUnsigned       = 0x07
 	encUnsignedChar   = 0x08
 	encImaginaryFloat = 0x09
+)
+
+// Line number opcodes.
+const (
+	LineExtendedOp     = 0
+	LineCopy           = 1
+	LineAdvancePC      = 2
+	LineAdvanceLine    = 3
+	LineSetFile        = 4
+	LineSetColumn      = 5
+	LineNegateStmt     = 6
+	LineSetBasicBlock  = 7
+	LineConstAddPC     = 8
+	LineFixedAdvancePC = 9
+	// next 3 are DWARF 3
+	LineSetPrologueEnd   = 10
+	LineSetEpilogueBegin = 11
+	LineSetISA           = 12
+)
+
+// Line number extended opcodes.
+const (
+	LineExtEndSequence = 1
+	LineExtSetAddress  = 2
+	LineExtDefineFile  = 3
+	// next 1 is DWARF 4
+	LineExtSetDiscriminator = 4
 )

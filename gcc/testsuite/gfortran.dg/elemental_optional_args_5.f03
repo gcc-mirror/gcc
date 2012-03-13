@@ -115,6 +115,111 @@ call sub_t (v, tp, .false.)
 if (s /= 3) call abort()
 if (any (v /= [9, 33])) call abort()
 
+call sub_t (s, ca, .false.)
+call sub_t (v, ca, .false.)
+!print *, s, v
+if (s /= 3) call abort()
+if (any (v /= [9, 33])) call abort()
+
+call sub_t (s, cp, .false.)
+call sub_t (v, cp, .false.)
+!print *, s, v
+if (s /= 3) call abort()
+if (any (v /= [9, 33])) call abort()
+
+! SCALAR COMPONENTS: alloc/assoc
+
+allocate (ta, tp, ca, cp)
+ta%a = 4
+tp%a = 5
+ca%a = 6
+cp%a = 7
+
+call sub_t (s, ta, .true.)
+call sub_t (v, ta, .true.)
+!print *, s, v
+if (s /= 4*2) call abort()
+if (any (v /= [4*2, 4*2])) call abort()
+
+call sub_t (s, tp, .true.)
+call sub_t (v, tp, .true.)
+!print *, s, v
+if (s /= 5*2) call abort()
+if (any (v /= [5*2, 5*2])) call abort()
+
+call sub_t (s, ca, .true.)
+call sub_t (v, ca, .true.)
+!print *, s, v
+if (s /= 6*2) call abort()
+if (any (v /= [6*2, 6*2])) call abort()
+
+call sub_t (s, cp, .true.)
+call sub_t (v, cp, .true.)
+!print *, s, v
+if (s /= 7*2) call abort()
+if (any (v /= [7*2, 7*2])) call abort()
+
+! ARRAY COMPONENTS: Non alloc/assoc
+
+v = [9, 33]
+
+call sub_t (v, taa, .false.)
+!print *, v
+if (any (v /= [9, 33])) call abort()
+
+call sub_t (v, tpa, .false.)
+!print *, v
+if (any (v /= [9, 33])) call abort()
+
+call sub_t (v, caa, .false.)
+!print *, v
+if (any (v /= [9, 33])) call abort()
+
+call sub_t (v, cpa, .false.)
+!print *, v
+if (any (v /= [9, 33])) call abort()
+
+deallocate(ta, tp, ca, cp)
+
+
+! ARRAY COMPONENTS: alloc/assoc
+
+allocate (taa(2), tpa(2))
+taa(1:2)%a = [44, 444]
+tpa(1:2)%a = [55, 555]
+allocate (caa(2), source=[t(66), t(666)])
+allocate (cpa(2), source=[t(77), t(777)])
+
+select type (caa)
+type is (t)
+  if (any (caa(:)%a /= [66, 666])) call abort()
+end select
+
+select type (cpa)
+type is (t)
+  if (any (cpa(:)%a /= [77, 777])) call abort()
+end select
+
+call sub_t (v, taa, .true.)
+!print *, v
+if (any (v /= [44*2, 444*2])) call abort()
+
+call sub_t (v, tpa, .true.)
+!print *, v
+if (any (v /= [55*2, 555*2])) call abort()
+
+
+call sub_t (v, caa, .true.)
+!print *, v
+if (any (v /= [66*2, 666*2])) call abort()
+
+call sub_t (v, cpa, .true.)
+!print *, v
+if (any (v /= [77*2, 777*2])) call abort()
+
+deallocate (taa, tpa, caa, cpa)
+
+
 contains
 
   elemental subroutine sub1 (x, y, alloc)

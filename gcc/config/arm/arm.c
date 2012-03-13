@@ -20637,9 +20637,8 @@ neon_dereference_pointer (tree exp, enum machine_mode mem_mode,
   array_type = build_array_type (elem_type, build_index_type (upper_bound));
 
   /* Dereference EXP using that type.  */
-  exp = convert (build_pointer_type (array_type), exp);
   return fold_build2 (MEM_REF, array_type, exp,
-		      build_int_cst (TREE_TYPE (exp), 0));
+		      build_int_cst (build_pointer_type (array_type), 0));
 }
 
 /* Expand a Neon builtin.  */

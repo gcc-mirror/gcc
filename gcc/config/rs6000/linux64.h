@@ -159,15 +159,6 @@ extern int dot_symbols;
     }								\
   while (0)
 
-#ifdef	RS6000_BI_ARCH
-
-#undef	OPTION_TARGET_CPU_DEFAULT
-#define	OPTION_TARGET_CPU_DEFAULT \
-  (((TARGET_DEFAULT ^ target_flags) & MASK_64BIT) \
-   ? (char *) 0 : TARGET_CPU_DEFAULT)
-
-#endif
-
 #undef	ASM_DEFAULT_SPEC
 #undef	ASM_SPEC
 #undef	LINK_OS_LINUX_SPEC

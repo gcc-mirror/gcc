@@ -25,6 +25,7 @@
 
 with Aspects;  use Aspects;
 with Atree;    use Atree;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -3294,6 +3295,11 @@ package body Sem_Ch12 is
       --  but it is simpler than detecting the need for the body at the point
       --  of inlining, when the context of the instance is not available.
 
+      function Must_Inline_Subp return Boolean;
+      --  If inlining is active and the generic contains inlined subprograms,
+      --  return True if some of the inlined subprograms must be inlined by
+      --  the frontend.
+
       -----------------------
       -- Delay_Descriptors --
       -----------------------
@@ -3332,6 +3338,34 @@ package body Sem_Ch12 is
 
          return False;
       end Might_Inline_Subp;
+
+      ----------------------
+      -- Must_Inline_Subp --
+      ----------------------
+
+      function Must_Inline_Subp return Boolean is
+         E : Entity_Id;
+
+      begin
+         if not Inline_Processing_Required then
+            return False;
+
+         else
+            E := First_Entity (Gen_Unit);
+            while Present (E) loop
+               if Is_Subprogram (E)
+                 and then Is_Inlined (E)
+                 and then Must_Inline (E)
+               then
+                  return True;
+               end if;
+
+               Next_Entity (E);
+            end loop;
+         end if;
+
+         return False;
+      end Must_Inline_Subp;
 
       --  Local declarations
 
@@ -3613,7 +3647,16 @@ package body Sem_Ch12 is
               and then Might_Inline_Subp
               and then not Is_Actual_Pack
             then
-               if Front_End_Inlining
+               if not Debug_Flag_Dot_K
+                 and then Front_End_Inlining
+                 and then (Is_In_Main_Unit (N)
+                            or else In_Main_Context (Current_Scope))
+                 and then Nkind (Parent (N)) /= N_Compilation_Unit
+               then
+                  Inline_Now := True;
+
+               elsif Debug_Flag_Dot_K
+                 and then Must_Inline_Subp
                  and then (Is_In_Main_Unit (N)
                             or else In_Main_Context (Current_Scope))
                  and then Nkind (Parent (N)) /= N_Compilation_Unit
@@ -7159,12 +7202,22 @@ package body Sem_Ch12 is
       end if;
 
       --  At this point either both nodes came from source or we approximated
-      --  their source locations through neighbouring source statements. There
-      --  is no need to look at the top level locations of P1 and P2 because
-      --  both nodes are in the same list and whether the enclosing context is
-      --  instantiated is irrelevant.
+      --  their source locations through neighbouring source statements.
 
-      return Sloc (P1) < Sloc (P2);
+      --  When two nodes come from the same instance, they have identical top
+      --  level locations. To determine proper relation within the tree, check
+      --  their locations within the template.
+
+      if Top_Level_Location (Sloc (P1)) = Top_Level_Location (Sloc (P2)) then
+         return Sloc (P1) < Sloc (P2);
+
+      --  The two nodes either come from unrelated instances or do not come
+      --  from instantiated code at all.
+
+      else
+         return Top_Level_Location (Sloc (P1))
+              < Top_Level_Location (Sloc (P2));
+      end if;
    end Earlier;
 
    ----------------------

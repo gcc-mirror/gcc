@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2011, AdaCore                     --
+--                     Copyright (C) 1999-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@
 --     GNU/Linux x86, x86_64, ia64
 --     FreeBSD x86, x86_64
 --     Solaris sparc and x86
---     Tru64
 --     OpenVMS Alpha and ia64
 --     Windows
 

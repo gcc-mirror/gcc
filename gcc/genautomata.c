@@ -9285,46 +9285,45 @@ base_file_name (const char *file_name)
   return file_name + directory_name_length + 1;
 }
 
+/* A function passed as argument to init_rtx_reader_args_cb.  It parses the
+   options available for genautomata.  Returns true if the option was
+   recognized.  */
+static bool
+parse_automata_opt (const char *str)
+{
+  if (strcmp (str, NO_MINIMIZATION_OPTION) == 0)
+    no_minimization_flag = 1;
+  else if (strcmp (str, TIME_OPTION) == 0)
+    time_flag = 1;
+  else if (strcmp (str, STATS_OPTION) == 0)
+    stats_flag = 1;
+  else if (strcmp (str, V_OPTION) == 0)
+    v_flag = 1;
+  else if (strcmp (str, W_OPTION) == 0)
+    w_flag = 1;
+  else if (strcmp (str, NDFA_OPTION) == 0)
+    ndfa_flag = 1;
+  else if (strcmp (str, COLLAPSE_OPTION) == 0)
+    collapse_flag = 1;
+  else if (strcmp (str, PROGRESS_OPTION) == 0)
+    progress_flag = 1;
+  else if (strcmp (str, "-split") == 0)
+    {
+      fatal ("option `-split' has not been implemented yet\n");
+      /* split_argument = atoi (argument_vect [i + 1]); */
+    }
+  else
+    return false;
+
+  return true;
+}
+
 /* The following is top level function to initialize the work of
    pipeline hazards description translator.  */
 static void
-initiate_automaton_gen (int argc, char **argv)
+initiate_automaton_gen (char **argv)
 {
   const char *base_name;
-  int i;
-
-  ndfa_flag = 0;
-  split_argument = 0;  /* default value */
-  no_minimization_flag = 0;
-  time_flag = 0;
-  stats_flag = 0;
-  v_flag = 0;
-  w_flag = 0;
-  progress_flag = 0;
-  for (i = 2; i < argc; i++)
-    if (strcmp (argv [i], NO_MINIMIZATION_OPTION) == 0)
-      no_minimization_flag = 1;
-    else if (strcmp (argv [i], TIME_OPTION) == 0)
-      time_flag = 1;
-    else if (strcmp (argv [i], STATS_OPTION) == 0)
-      stats_flag = 1;
-    else if (strcmp (argv [i], V_OPTION) == 0)
-      v_flag = 1;
-    else if (strcmp (argv [i], W_OPTION) == 0)
-      w_flag = 1;
-    else if (strcmp (argv [i], NDFA_OPTION) == 0)
-      ndfa_flag = 1;
-    else if (strcmp (argv [i], COLLAPSE_OPTION) == 0)
-      collapse_flag = 1;
-    else if (strcmp (argv [i], PROGRESS_OPTION) == 0)
-      progress_flag = 1;
-    else if (strcmp (argv [i], "-split") == 0)
-      {
-	if (i + 1 >= argc)
-	  fatal ("-split has no argument.");
-	fatal ("option `-split' has not been implemented yet\n");
-	/* split_argument = atoi (argument_vect [i + 1]); */
-      }
 
   /* Initialize IR storage.  */
   obstack_init (&irp);
@@ -9620,10 +9619,10 @@ main (int argc, char **argv)
 
   progname = "genautomata";
 
-  if (!init_rtx_reader_args (argc, argv))
+  if (!init_rtx_reader_args_cb (argc, argv, parse_automata_opt))
     return (FATAL_EXIT_CODE);
 
-  initiate_automaton_gen (argc, argv);
+  initiate_automaton_gen (argv);
   while (1)
     {
       int lineno;

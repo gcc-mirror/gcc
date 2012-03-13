@@ -13,10 +13,11 @@
 # - map lines consist in an identifier optionnaly followed by at most 2
 #   space-separated flags.
 # Flags are:
-#  FLOAT: will be prefixed by 'x'
-#  64: There is a 64-bit variant
-#  BSD44: name will be prefixed by __bsd44__
-#  PRNTF: a 't' prefix will be added.
+#  FLOAT: will be prefixed by 't'/'g'/'d'.
+#  64: There is a 64-bit variant.
+#  GLOBAL: name will be prefixed by ga_
+#  BSD44: name will be prefixed by __bsd44__.
+#  LDBL: a 'x' prefix will be added if 128 bit long doubles are enabled.
 #  MALLOC: malloc related function.
 #
 # Keep entries alpha-sorted - this is enforced by the awk script.
@@ -25,24 +26,36 @@ __32_signal
 __32_ssignal
 __64_signal
 __64_ssignal
+__posix__exit
+__posix_exit
+__posix_kill
+__posix_long_gid_kill
+__unix_getuid
+__utc_fstat
 __utc_localtime
-__utc_localtime_t
+__utc_localtime_r
+__utc_lstat
 __utc_stat
+__utc_strftime
 __utc_time
 __utctz_gmtime
 __utctz_localtime
-__utctz_localtime_t
+__utctz_localtime_r
 abort
 abs
 accept
 access
 acos          FLOAT
 alarm
+asctime
+asctime_r
 asin          FLOAT
 atan          FLOAT
 atan2         FLOAT
 atexit
+atof          FLOAT
 atoi
+atol
 atoll
 atoq
 basename      64
@@ -53,38 +66,55 @@ bzero
 calloc        64 MALLOC
 ceil          FLOAT
 chdir
+chmod
 chown
 clearerr
 clock
 close
+closedir
 connect
 cos           FLOAT
 ctermid       64
 ctime
+dlclose
+dlerror
+dlopen
+dlsym
 dup
 dup2
 environ       GLOBAL
+execv
+execve
+execvp
 exit
 exp           FLOAT
 fabs          FLOAT
 fclose
+fcntl
 fdopen
+feof
+ferror
 fflush
 ffs
 fgetc
+fgetname      64 MALLOC
 fgets         64
+fileno
 floor         FLOAT
 fopen
-fprintf       FLOAT PRNTF
+fpathconf
+fprintf       FLOAT LDBL
 fputc
 fputs
 fread
 free
 freopen
+frexp        FLOAT
 fseek
 ftell
 fwrite
 getc
+getchar
 getcwd        64
 getegid
 getenv
@@ -92,10 +122,14 @@ geteuid
 getgid
 gethostbyaddr
 gethostbyname
+getname
 getpagesize
 getpid
+getpwent
+getpwnam
 getservbyname
 getservbyport
+getsockopt
 gettimeofday
 getuid
 gmtime
@@ -103,16 +137,29 @@ htons
 iconv
 index         64
 ioctl
+isalnum
+isalpha
+isapipe
+isascii
 isatty
+iscntrl
 isdigit
+isgraph
 islower
 isprint
+ispunct
 isspace
 isupper
+isxdigit
 kill
+ldexp         FLOAT
+locale
+localeconv
 localtime
+localtime_r
 log           FLOAT
 log10         FLOAT
+longjmp
 lseek
 malloc        64 MALLOC
 mbstowcs      64
@@ -126,75 +173,100 @@ mkstemp
 mktemp        64
 mmap          64
 munmap
+nanosleep
 nl_langinfo
 open
+opendir
+pathconf
 pclose
 perror
+pipe
 popen
 pow           FLOAT
-printf        FLOAT PRNTF
+printf        FLOAT LDBL
 putc
 putchar
 putenv
 puts
 qsort         64
+raise
 random
 read
+readdir
 realloc       64 MALLOC
 recv
 recvfrom
 recvmsg       BSD44 64
+remove
 rename
 rewind
 rindex        64
 rmdir
+scanf         FLOAT LDBL
+select
 send
 sendmsg       BSD44 64
 sendto
+setbuf
 setenv
 setlocale
+setpwent
+setsockopt
 setvbuf
+siglongjmp
 signal
+sigsetjmp
 sigsetmask
 sin           FLOAT
-snprintf      FLOAT PRNTF
+sleep
+snprintf      FLOAT LDBL
 socket
-sprintf	      FLOAT PRNTF
+sprintf	      FLOAT LDBL
 sqrt          FLOAT
+sscanf        FLOAT LDBL
 stat
 strcasecmp
 strcat        64
 strchr        64
 strcmp
 strcpy        64
+strcspn
 strdup        64 MALLOC
 strerror
 strlen
 strncasecmp
+strncat       64
 strncmp
 strncpy       64
+strpbrk       64
 strrchr       64
+strspn
 strstr        64
 strtod        64 FLOAT
+strtok        64 MALLOC
+strtok_r      64 MALLOC
 strtol        64
 strtoul       64
 sysconf
 system
 tan           FLOAT
+tempnam
 time
 times
 tmpfile
 tmpnam        64
 tolower
 toupper
+ttyname
 umask
 ungetc
 unlink
+usleep
 utime
-vfprintf      FLOAT PRNTF
-vprintf       FLOAT PRNTF
-vsnprintf     FLOAT PRNTF
-vsprintf      FLOAT PRNTF
+vfprintf      FLOAT LDBL
+vprintf       FLOAT LDBL
+vsnprintf     FLOAT LDBL
+vsprintf      FLOAT LDBL
 wait
 waitpid
 wcswidth

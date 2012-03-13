@@ -55,7 +55,6 @@ graphite_verify (void)
 {
 #ifdef ENABLE_CHECKING
   verify_loop_structure ();
-  verify_dominators (CDI_DOMINATORS);
   verify_loop_closed_ssa (true);
 #endif
 }

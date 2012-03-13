@@ -3359,11 +3359,6 @@ case "$target" in
     # with TLS support are in use, native TLS cannot work.
     set_have_as_tls=no
     ;;
-  *-*-osf*)
-    # Tru64 UNIX loader and libc.so lack TLS support, so even if gas and
-    # gld with TLS support are in use, native TLS cannot work.
-    set_have_as_tls=no
-    ;;
   # TLS was introduced in the Solaris 9 FCS release and backported to
   # Solaris 8 patches.  Support for GNU-style TLS on x86 was only
   # introduced in Solaris 9 4/04, replacing the earlier Sun style that Sun
@@ -3478,12 +3473,6 @@ elif test x$gcc_cv_ld != x; then
       gcc_cv_ld_static_dynamic=yes
   else
     case "$target" in
-      # Tru64 UNIX support -noso/-so_archive instead of -Bstatic/-Bdynamic.
-      alpha*-dec-osf*)
-        gcc_cv_ld_static_dynamic=yes
-	gcc_cv_ld_static_option="-noso"
-	gcc_cv_ld_dynamic_option="-so_archive"
-        ;;
       # HP-UX ld uses -a flags to select between shared and archive.
       *-*-hpux*)
 	if test x"$gnu_ld" = xno; then
@@ -3590,7 +3579,7 @@ AC_MSG_RESULT($gcc_cv_lto_plugin)
 
 case "$target" in
   # All TARGET_ABI_OSF targets.
-  alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)
+  alpha*-*-linux* | alpha*-*-*bsd*)
     gcc_GAS_CHECK_FEATURE([explicit relocation support],
 	gcc_cv_as_alpha_explicit_relocs, [2,12,0],,
 [	.set nomacro
@@ -3900,7 +3889,8 @@ foo:	nop
 
     gcc_GAS_CHECK_FEATURE([R_386_TLS_LDM_PLT reloc],
         gcc_cv_as_ix86_tlsldmplt,,,
-	[call    tls_ld@tlsldmplt],
+	[tls_ld:
+	 call    tls_ld@tlsldmplt],
 	[if test x$gcc_cv_ld != x \
 	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
 	   gcc_cv_as_ix86_tlsldmplt=yes

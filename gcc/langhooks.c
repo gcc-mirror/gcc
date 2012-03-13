@@ -605,6 +605,16 @@ lhd_builtin_function (tree decl)
   return decl;
 }
 
+/* Create a builtin type.  */
+
+tree
+add_builtin_type (const char *name, tree type)
+{
+  tree   id = get_identifier (name);
+  tree decl = build_decl (BUILTINS_LOCATION, TYPE_DECL, id, type);
+  return lang_hooks.decls.pushdecl (decl);
+}
+
 /* LTO hooks.  */
 
 /* Used to save and restore any previously active section.  */

@@ -1,6 +1,7 @@
 # -*- makefile -*-
 # Top level makefile fragment for GNU gfortran, the GNU Fortran 95 compiler.
-# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+# 2011, 2012
 # Free Software Foundation, Inc.
 # Contributed by Paul Brook <paul@nowt.org
 # and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -347,7 +348,7 @@ fortran/f95-lang.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
   $(TM_H) debug.h langhooks.h $(FLAGS_H) $(EXPR_H) $(LANGHOOKS_DEF_H) \
   libfuncs.h expr.h $(DIAGNOSTIC_H)
 fortran/scanner.o: toplev.h fortran/cpp.h
-fortran/convert.o: $(GFORTRAN_TRANS_DEPS)
+fortran/convert.o: $(GFORTRAN_TRANS_DEPS) convert.h
 fortran/frontend-passes.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans.o: $(GFORTRAN_TRANS_DEPS) tree-iterator.h
 fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h \

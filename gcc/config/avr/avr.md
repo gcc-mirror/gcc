@@ -69,6 +69,7 @@
    UNSPEC_COPYSIGN
    UNSPEC_IDENTITY
    UNSPEC_INSERT_BITS
+   UNSPEC_MEMORY_BARRIER
    ])
 
 (define_c_enum "unspecv"
@@ -363,6 +364,11 @@
 ;;========================================================================
 ;; Move stuff around
 
+;; "loadqi_libgcc"
+;; "loadhi_libgcc"
+;; "loadpsi_libgcc"    
+;; "loadsi_libgcc"    
+;; "loadsf_libgcc"    
 (define_expand "load<mode>_libgcc"
   [(set (match_dup 3)
         (match_dup 2))
@@ -377,7 +383,12 @@
     operands[1] = replace_equiv_address (operands[1], operands[3]);
     set_mem_addr_space (operands[1], ADDR_SPACE_FLASH);
   })
-    
+
+;; "load_qi_libgcc"
+;; "load_hi_libgcc"
+;; "load_psi_libgcc"    
+;; "load_si_libgcc"    
+;; "load_sf_libgcc"    
 (define_insn "load_<mode>_libgcc"
   [(set (reg:MOVMODE 22)
         (match_operand:MOVMODE 0 "memory_operand" "m,m"))]
@@ -418,9 +429,15 @@
     DONE;
   })
 
+;; "xloadqi_A"
+;; "xloadhi_A"
+;; "xloadpsi_A"
+;; "xloadsi_A"
+;; "xloadsf_A"
 (define_insn_and_split "xload<mode>_A"
   [(set (match_operand:MOVMODE 0 "register_operand" "=r")
         (match_operand:MOVMODE 1 "memory_operand"    "m"))
+   (clobber (reg:MOVMODE 22))
    (clobber (reg:QI 21))
    (clobber (reg:HI REG_Z))]
   "can_create_pseudo_p()
@@ -461,7 +478,7 @@
   {
     return avr_out_xload (insn, operands, NULL);
   }
-  [(set_attr "length" "3,4")
+  [(set_attr "length" "4,4")
    (set_attr "adjust_len" "*,xload")
    (set_attr "isa" "lpmx,lpm")
    (set_attr "cc" "none")])
@@ -1081,15 +1098,16 @@
    (set_attr "adjust_len" "addto_sp")])
 
 (define_insn "*addhi3"
-  [(set (match_operand:HI 0 "register_operand"          "=r,d,d")
-        (plus:HI (match_operand:HI 1 "register_operand" "%0,0,0")
-                 (match_operand:HI 2 "nonmemory_operand" "r,s,n")))]
+  [(set (match_operand:HI 0 "register_operand"          "=r,d,!w,d")
+        (plus:HI (match_operand:HI 1 "register_operand" "%0,0,0 ,0")
+                 (match_operand:HI 2 "nonmemory_operand" "r,s,IJ,n")))]
   ""
   {
     static const char * const asm_code[] =
       {
         "add %A0,%A2\;adc %B0,%B2",
         "subi %A0,lo8(-(%2))\;sbci %B0,hi8(-(%2))",
+        "",
         ""
       };
 
@@ -1098,9 +1116,9 @@
 
     return avr_out_plus_noclobber (operands, NULL, NULL);
   }
-  [(set_attr "length" "2,2,2")
-   (set_attr "adjust_len" "*,*,out_plus_noclobber")
-   (set_attr "cc" "set_n,set_czn,out_plus_noclobber")])
+  [(set_attr "length" "2,2,2,2")
+   (set_attr "adjust_len" "*,*,out_plus_noclobber,out_plus_noclobber")
+   (set_attr "cc" "set_n,set_czn,out_plus_noclobber,out_plus_noclobber")])
 
 ;; Adding a constant to NO_LD_REGS might have lead to a reload of
 ;; that constant to LD_REGS.  We don't add a scratch to *addhi3
@@ -1138,10 +1156,10 @@
               (clobber (match_dup 2))])])
 
 (define_insn "addhi3_clobber"
-  [(set (match_operand:HI 0 "register_operand"           "=d,l")
-        (plus:HI (match_operand:HI 1 "register_operand"  "%0,0")
-                 (match_operand:HI 2 "const_int_operand"  "n,n")))
-   (clobber (match_scratch:QI 3                          "=X,&d"))]
+  [(set (match_operand:HI 0 "register_operand"           "=!w,d,r")
+        (plus:HI (match_operand:HI 1 "register_operand"   "%0,0,0")
+                 (match_operand:HI 2 "const_int_operand"  "IJ,n,n")))
+   (clobber (match_scratch:QI 3                           "=X,X,&d"))]
   ""
   {
     gcc_assert (REGNO (operands[0]) == REGNO (operands[1]));
@@ -1691,6 +1709,29 @@
    (set_attr "cc" "clobber")])
 
 ;; Handle small constants
+
+;; Special case of a += 2*b as frequently seen with accesses to int arrays.
+;; This is shorter, faster than MUL and has lower register pressure.
+
+(define_insn_and_split "*umaddqihi4.2"
+  [(set (match_operand:HI 0 "register_operand"                                  "=r")
+        (plus:HI (mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                          (const_int 2))
+                 (match_operand:HI 2 "register_operand"                          "r")))]
+  "!reload_completed
+   && !reg_overlap_mentioned_p (operands[0], operands[1])"
+  { gcc_unreachable(); }
+  "&& 1"
+  [(set (match_dup 0)
+        (match_dup 2))
+   ; *addhi3_zero_extend
+   (set (match_dup 0)
+        (plus:HI (zero_extend:HI (match_dup 1))
+                 (match_dup 0)))
+   ; *addhi3_zero_extend
+   (set (match_dup 0)
+        (plus:HI (zero_extend:HI (match_dup 1))
+                 (match_dup 0)))])
 
 ;; "umaddqihi4.uconst"
 ;; "maddqihi4.sconst"
@@ -5198,18 +5239,36 @@
    (set_attr "length" "1")])
 
 ;; Enable Interrupts
-(define_insn "enable_interrupt"
-  [(unspec_volatile [(const_int 1)] UNSPECV_ENABLE_IRQS)]
+(define_expand "enable_interrupt"
+  [(clobber (const_int 0))]
   ""
-  "sei"
-  [(set_attr "length" "1")
-   (set_attr "cc" "none")])
+  {
+    rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (mem) = 1;
+    emit_insn (gen_cli_sei (const1_rtx, mem));
+    DONE;
+  })
 
 ;; Disable Interrupts
-(define_insn "disable_interrupt"
-  [(unspec_volatile [(const_int 0)] UNSPECV_ENABLE_IRQS)]
+(define_expand "disable_interrupt"
+  [(clobber (const_int 0))]
   ""
-  "cli"
+  {
+    rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (mem) = 1;
+    emit_insn (gen_cli_sei (const0_rtx, mem));
+    DONE;
+  })
+
+(define_insn "cli_sei"
+  [(unspec_volatile [(match_operand:QI 0 "const_int_operand" "L,P")]
+                    UNSPECV_ENABLE_IRQS)
+   (set (match_operand:BLK 1 "" "")
+	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))]
+  ""
+  "@
+	cli
+	sei"
   [(set_attr "length" "1")
    (set_attr "cc" "none")])
 
@@ -5316,10 +5375,12 @@
   [(unspec_volatile [(match_operand:QI 0 "const_int_operand" "n")
                      (const_int 1)]
                     UNSPECV_DELAY_CYCLES)
-   (clobber (match_scratch:QI 1 "=&d"))]
+   (set (match_operand:BLK 1 "" "")
+	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))
+   (clobber (match_scratch:QI 2 "=&d"))]
   ""
-  "ldi %1,lo8(%0)
-	1: dec %1
+  "ldi %2,lo8(%0)
+	1: dec %2
 	brne 1b"
   [(set_attr "length" "3")
    (set_attr "cc" "clobber")])
@@ -5328,11 +5389,13 @@
   [(unspec_volatile [(match_operand:HI 0 "const_int_operand" "n")
                      (const_int 2)]
                     UNSPECV_DELAY_CYCLES)
-   (clobber (match_scratch:HI 1 "=&w"))]
+   (set (match_operand:BLK 1 "" "")
+	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))
+   (clobber (match_scratch:HI 2 "=&w"))]
   ""
-  "ldi %A1,lo8(%0)
-	ldi %B1,hi8(%0)
-	1: sbiw %A1,1
+  "ldi %A2,lo8(%0)
+	ldi %B2,hi8(%0)
+	1: sbiw %A2,1
 	brne 1b"
   [(set_attr "length" "4")
    (set_attr "cc" "clobber")])
@@ -5341,16 +5404,18 @@
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
                      (const_int 3)]
                     UNSPECV_DELAY_CYCLES)
-   (clobber (match_scratch:QI 1 "=&d"))
+   (set (match_operand:BLK 1 "" "")
+	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
-   (clobber (match_scratch:QI 3 "=&d"))]
+   (clobber (match_scratch:QI 3 "=&d"))
+   (clobber (match_scratch:QI 4 "=&d"))]
   ""
-  "ldi %1,lo8(%0)
-	ldi %2,hi8(%0)
-	ldi %3,hlo8(%0)
-	1: subi %1,1
-	sbci %2,0
+  "ldi %2,lo8(%0)
+	ldi %3,hi8(%0)
+	ldi %4,hlo8(%0)
+	1: subi %2,1
 	sbci %3,0
+	sbci %4,0
 	brne 1b"
   [(set_attr "length" "7")
    (set_attr "cc" "clobber")])
@@ -5359,19 +5424,21 @@
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
                      (const_int 4)]
                     UNSPECV_DELAY_CYCLES)
-   (clobber (match_scratch:QI 1 "=&d"))
+   (set (match_operand:BLK 1 "" "")
+	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
    (clobber (match_scratch:QI 3 "=&d"))
-   (clobber (match_scratch:QI 4 "=&d"))]
+   (clobber (match_scratch:QI 4 "=&d"))
+   (clobber (match_scratch:QI 5 "=&d"))]
   ""
-  "ldi %1,lo8(%0)
-	ldi %2,hi8(%0)
-	ldi %3,hlo8(%0)
-	ldi %4,hhi8(%0)
-	1: subi %1,1
-	sbci %2,0
+  "ldi %2,lo8(%0)
+	ldi %3,hi8(%0)
+	ldi %4,hlo8(%0)
+	ldi %5,hhi8(%0)
+	1: subi %2,1
 	sbci %3,0
 	sbci %4,0
+	sbci %5,0
 	brne 1b"
   [(set_attr "length" "9")
    (set_attr "cc" "clobber")])
@@ -5757,9 +5824,22 @@
 ;; CPU instructions
 
 ;; NOP taking 1 or 2 Ticks 
-(define_insn "nopv"
+(define_expand "nopv"
+  [(parallel [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "")] 
+                               UNSPECV_NOP)
+              (set (match_dup 1)
+                   (unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))])]
+  ""
+  {
+    operands[1] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (operands[1]) = 1;
+  })
+
+(define_insn "*nopv"
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "P,K")] 
-                    UNSPECV_NOP)]
+                    UNSPECV_NOP)
+   (set (match_operand:BLK 1 "" "")
+	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))]
   ""
   "@
 	nop
@@ -5768,16 +5848,40 @@
    (set_attr "cc" "none")])
 
 ;; SLEEP
-(define_insn "sleep"
-  [(unspec_volatile [(const_int 0)] UNSPECV_SLEEP)]
+(define_expand "sleep"
+  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_SLEEP)
+              (set (match_dup 0)
+                   (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))])]
+  ""
+  {
+    operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (operands[0]) = 1;
+  })
+
+(define_insn "*sleep"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SLEEP)
+   (set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
   ""
   "sleep"
   [(set_attr "length" "1")
    (set_attr "cc" "none")])
  
 ;; WDR
-(define_insn "wdr"
-  [(unspec_volatile [(const_int 0)] UNSPECV_WDR)]
+(define_expand "wdr"
+  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_WDR)
+              (set (match_dup 0)
+                   (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))])]
+  ""
+  {
+    operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (operands[0]) = 1;
+  })
+
+(define_insn "*wdr"
+  [(unspec_volatile [(const_int 0)] UNSPECV_WDR)
+   (set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
   ""
   "wdr"
   [(set_attr "length" "1")

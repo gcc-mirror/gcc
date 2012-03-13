@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,12 +85,6 @@ pragma Style_Checks ("M32766");
  **/
 #define _XOPEN_SOURCE 500
 
-#elif defined (__alpha__) && defined (__osf__)
-/** For Tru64 UNIX, _XOPEN_SOURCE must be defined, otherwise CLOCK_REALTIME
- ** is not defined.
- **/
-#define _XOPEN_SOURCE 500
-
 #elif defined (__mips) && defined (__sgi)
 /** For IRIX 6, _XOPEN5 must be defined and _XOPEN_IOV_MAX must be used as
  ** IOV_MAX, otherwise IOV_MAX is not defined.  IRIX 5 has neither.
@@ -110,14 +104,6 @@ pragma Style_Checks ("M32766");
 #include <limits.h>
 #include <fcntl.h>
 #include <time.h>
-
-#if defined (__alpha__) && defined (__osf__)
-/** Tru64 is unable to do vector IO operations with default value of IOV_MAX,
- ** so its value is redefined to a small one which is known to work properly.
- **/
-#undef IOV_MAX
-#define IOV_MAX 16
-#endif
 
 #if defined (__VMS)
 /** VMS is unable to do vector IO operations with default value of IOV_MAX,
@@ -975,15 +961,6 @@ CND(AF_INET, "IPv4 address family")
  ** Its TCP/IP stack is in transition.  It has newer .h files but no IPV6 yet.
  **/
 #if defined(__rtems__)
-# undef AF_INET6
-#endif
-
-/**
- ** Tru64 UNIX V4.0F defines AF_INET6 without IPv6 support, specifically
- ** without struct sockaddr_in6.  We use _SS_MAXSIZE (used for the definition
- ** of struct sockaddr_storage on Tru64 UNIX V5.1) to detect this.
- **/
-#if defined(__osf__) && !defined(_SS_MAXSIZE)
 # undef AF_INET6
 #endif
 

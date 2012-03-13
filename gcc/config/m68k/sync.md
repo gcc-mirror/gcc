@@ -60,10 +60,13 @@
   [(match_operand:QI 0 "register_operand" "")		;; bool success output
    (match_operand:QI 1 "memory_operand" "")		;; memory
    (match_operand:SI 2 "const_int_operand" "")]		;; model
-  ""
+  "ISA_HAS_TAS"
 {
-  emit_insn (gen_atomic_test_and_set_1 (operands[0], operands[1]));
-  emit_insn (gen_negqi2 (operands[0], operands[0]));
+  rtx t = gen_reg_rtx (QImode);
+  emit_insn (gen_atomic_test_and_set_1 (t, operands[1]));
+  t = expand_simple_unop (QImode, NEG, t, operands[0], 0);
+  if (t != operands[0])
+    emit_move_insn (operands[0], t);
   DONE;
 })
 
@@ -74,5 +77,5 @@
 	  UNSPECV_TAS_1))
    (set (match_dup 1)
 	(unspec_volatile:QI [(match_dup 1)] UNSPECV_TAS_2))]
-  ""
+  "ISA_HAS_TAS"
   "tas %1\;sne %0")

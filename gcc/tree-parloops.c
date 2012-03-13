@@ -1740,6 +1740,10 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   gimple_set_location (stmt, loc);
   gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
 
+  /* After the above dom info is hosed.  Re-compute it.  */
+  free_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
+
   return paral_bb;
 }
 
@@ -2222,10 +2226,11 @@ parallelize_loops (void)
       }
       gen_parallel_loop (loop, reduction_list,
 			 n_threads, &niter_desc);
+#ifdef ENABLE_CHECKING
       verify_flow_info ();
-      verify_dominators (CDI_DOMINATORS);
       verify_loop_structure ();
       verify_loop_closed_ssa (true);
+#endif
     }
 
   free_stmt_vec_info_vec ();

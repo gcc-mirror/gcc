@@ -792,13 +792,15 @@ func (v Value) CanInterface() bool {
 	return v.flag&(flagMethod|flagRO) == 0
 }
 
-// Interface returns v's value as an interface{}.
+// Interface returns v's current value as an interface{}.
+// It is equivalent to:
+//	var i interface{} = (v's underlying value)
 // If v is a method obtained by invoking Value.Method
 // (as opposed to Type.Method), Interface cannot return an
 // interface value, so it panics.
 // It also panics if the Value was obtained by accessing
 // unexported struct fields.
-func (v Value) Interface() interface{} {
+func (v Value) Interface() (i interface{}) {
 	return valueInterface(v, true)
 }
 
@@ -834,6 +836,16 @@ func valueInterface(v Value, safe bool) interface{} {
 	var eface emptyInterface
 	eface.typ = v.typ.runtimeType()
 	eface.word = v.iword()
+
+	if v.flag&flagIndir != 0 && v.typ.size > ptrSize {
+		// eface.word is a pointer to the actual data,
+		// which might be changed.  We need to return
+		// a pointer to unchanging data, so make a copy.
+		ptr := unsafe_New(v.typ)
+		memmove(ptr, unsafe.Pointer(eface.word), v.typ.size)
+		eface.word = iword(ptr)
+	}
+
 	return *(*interface{})(unsafe.Pointer(&eface))
 }
 

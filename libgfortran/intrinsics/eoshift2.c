@@ -1,8 +1,8 @@
 /* Generic implementation of the EOSHIFT intrinsic
-   Copyright 2002, 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2007, 2009, 2012 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -71,7 +71,7 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 
   arraysize = size0 ((array_t *) array);
 
-  if (ret->data == NULL)
+  if (ret->base_addr == NULL)
     {
       int i;
 
@@ -92,7 +92,7 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 	  GFC_DIMENSION_SET(ret->dim[i], 0, ub, str);
 
           /* internal_malloc_size allocates a single byte for zero size.  */
-	  ret->data = internal_malloc_size (size * arraysize);
+	  ret->base_addr = internal_malloc_size (size * arraysize);
 
         }
     }
@@ -149,8 +149,8 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
   rstride0 = rstride[0];
   sstride0 = sstride[0];
   bstride0 = bstride[0];
-  rptr = ret->data;
-  sptr = array->data;
+  rptr = ret->base_addr;
+  sptr = array->base_addr;
 
   if ((shift >= 0 ? shift : -shift ) > len)
     {
@@ -166,7 +166,7 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
     }
   
   if (bound)
-    bptr = bound->data;
+    bptr = bound->base_addr;
   else
     bptr = NULL;
 

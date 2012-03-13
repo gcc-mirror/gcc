@@ -220,7 +220,6 @@ static tree compute_related_constant (tree, tree);
 static tree split_plus (tree, tree *);
 static tree float_type_for_precision (int, enum machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
-static tree convert_to_thin_pointer (tree, tree);
 static bool potential_alignment_gap (tree, tree, tree);
 static void process_attributes (tree, struct attrib *);
 
@@ -1056,15 +1055,8 @@ rest_of_record_type_compilation (tree record_type)
       TYPE_FIELDS (new_record_type)
 	= nreverse (TYPE_FIELDS (new_record_type));
 
-      /* We used to explicitly invoke rest_of_type_decl_compilation on the
-	 parallel type for the sake of STABS.  We don't do it any more, so
-	 as to ensure that the parallel type be processed after the type
-	 by the debug back-end and, thus, prevent it from interfering with
-	 the processing of a recursive type.  */
       add_parallel_type (TYPE_STUB_DECL (record_type), new_record_type);
     }
-
-  rest_of_type_decl_compilation (TYPE_STUB_DECL (record_type));
 }
 
 /* Append PARALLEL_TYPE on the chain of parallel types for decl.  */
@@ -1354,21 +1346,10 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
   if (!named)
     TYPE_STUB_DECL (type) = type_decl;
 
-  /* Pass the type declaration to the debug back-end unless this is an
-     UNCONSTRAINED_ARRAY_TYPE that the back-end does not support, or a
-     type for which debugging information was not requested, or else an
-     ENUMERAL_TYPE or RECORD_TYPE (except for fat pointers) which are
-     handled separately.  And do not pass dummy types either.  */
+  /* Do not generate debug info for UNCONSTRAINED_ARRAY_TYPE that the
+     back-end doesn't support, and for others if we don't need to.  */
   if (code == UNCONSTRAINED_ARRAY_TYPE || !debug_info_p)
     DECL_IGNORED_P (type_decl) = 1;
-  else if (code != ENUMERAL_TYPE
-	   && (code != RECORD_TYPE || TYPE_FAT_POINTER_P (type))
-	   && !((code == POINTER_TYPE || code == REFERENCE_TYPE)
-		&& TYPE_IS_DUMMY_P (TREE_TYPE (type)))
-	   && !(code == RECORD_TYPE
-		&& TYPE_IS_DUMMY_P
-		   (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (type))))))
-    rest_of_type_decl_compilation (type_decl);
 
   return type_decl;
 }
@@ -3430,27 +3411,6 @@ build_unc_object_type_from_ptr (tree thin_fat_ptr_type, tree object_type,
   return
     build_unc_object_type (template_type, object_type, name, debug_info_p);
 }
-
-/* Shift the component offsets within an unconstrained object TYPE to make it
-   suitable for use as a designated type for thin pointers.  */
-
-void
-shift_unc_components_for_thin_pointers (tree type)
-{
-  /* Thin pointer values designate the ARRAY data of an unconstrained object,
-     allocated past the BOUNDS template.  The designated type is adjusted to
-     have ARRAY at position zero and the template at a negative offset, so
-     that COMPONENT_REFs on (*thin_ptr) designate the proper location.  */
-
-  tree bounds_field = TYPE_FIELDS (type);
-  tree array_field  = DECL_CHAIN (TYPE_FIELDS (type));
-
-  DECL_FIELD_OFFSET (bounds_field)
-    = size_binop (MINUS_EXPR, size_zero_node, byte_position (array_field));
-
-  DECL_FIELD_OFFSET (array_field) = size_zero_node;
-  DECL_FIELD_BIT_OFFSET (array_field) = bitsize_zero_node;
-}
 
 /* Update anything previously pointing to OLD_TYPE to point to NEW_TYPE.
    In the normal case this is just two adjustments, but we have more to
@@ -3530,12 +3490,6 @@ update_pointer_to (tree old_type, tree new_type)
 	    if (TYPE_NULL_BOUNDS (t))
 	      TREE_TYPE (TREE_OPERAND (TYPE_NULL_BOUNDS (t), 0)) = new_type;
 	  }
-
-      /* If we have adjusted named types, finalize them.  This is necessary
-	 since we had forced a DWARF typedef for them in gnat_pushdecl.  */
-      for (ptr = TYPE_POINTER_TO (old_type); ptr; ptr = TYPE_NEXT_PTR_TO (ptr))
-	if (TYPE_NAME (ptr) && TREE_CODE (TYPE_NAME (ptr)) == TYPE_DECL)
-	  rest_of_type_decl_compilation (TYPE_NAME (ptr));
 
       /* Chain REF and its variants at the end.  */
       new_ref = TYPE_REFERENCE_TO (new_type);
@@ -3632,21 +3586,32 @@ convert_to_fat_pointer (tree type, tree expr)
       return t;
     }
 
-  /* If EXPR is a thin pointer, make template and data from the record..  */
-  else if (TYPE_IS_THIN_POINTER_P (etype))
+  /* If EXPR is a thin pointer, make template and data from the record.  */
+  if (TYPE_IS_THIN_POINTER_P (etype))
     {
-      tree fields = TYPE_FIELDS (TREE_TYPE (etype));
+      tree field = TYPE_FIELDS (TREE_TYPE (etype));
 
       expr = gnat_protect_expr (expr);
       if (TREE_CODE (expr) == ADDR_EXPR)
 	expr = TREE_OPERAND (expr, 0);
       else
-	expr = build1 (INDIRECT_REF, TREE_TYPE (etype), expr);
+	{
+	  /* If we have a TYPE_UNCONSTRAINED_ARRAY attached to the RECORD_TYPE,
+	     the thin pointer value has been shifted so we first need to shift
+	     it back to get the template address.  */
+	  if (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)))
+	    expr
+	      = build_binary_op (POINTER_PLUS_EXPR, etype, expr,
+				 fold_build1 (NEGATE_EXPR, sizetype,
+					      byte_position
+					      (DECL_CHAIN (field))));
+	  expr = build1 (INDIRECT_REF, TREE_TYPE (etype), expr);
+	}
 
-      template_tree = build_component_ref (expr, NULL_TREE, fields, false);
+      template_tree = build_component_ref (expr, NULL_TREE, field, false);
       expr = build_unary_op (ADDR_EXPR, NULL_TREE,
 			     build_component_ref (expr, NULL_TREE,
-						  DECL_CHAIN (fields), false));
+						  DECL_CHAIN (field), false));
     }
 
   /* Otherwise, build the constructor for the template.  */
@@ -3671,27 +3636,6 @@ convert_to_fat_pointer (tree type, tree expr)
 			  build_unary_op (ADDR_EXPR, NULL_TREE,
 					  template_tree));
   return gnat_build_constructor (type, v);
-}
-
-/* Convert to a thin pointer type, TYPE.  The only thing we know how to convert
-   is something that is a fat pointer, so convert to it first if it EXPR
-   is not already a fat pointer.  */
-
-static tree
-convert_to_thin_pointer (tree type, tree expr)
-{
-  if (!TYPE_IS_FAT_POINTER_P (TREE_TYPE (expr)))
-    expr
-      = convert_to_fat_pointer
-	(TREE_TYPE (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type))), expr);
-
-  /* We get the pointer to the data and use a NOP_EXPR to make it the
-     proper GCC type.  */
-  expr = build_component_ref (expr, NULL_TREE, TYPE_FIELDS (TREE_TYPE (expr)),
-			      false);
-  expr = build1 (NOP_EXPR, type, expr);
-
-  return expr;
 }
 
 /* Create an expression whose value is that of EXPR,
@@ -3894,6 +3838,8 @@ convert (tree type, tree expr)
 	{
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;
+	  CONSTRUCTOR_ELTS (expr)
+	    = VEC_copy (constructor_elt, gc, CONSTRUCTOR_ELTS (expr));
 	  return expr;
 	}
 
@@ -4146,33 +4092,32 @@ convert (tree type, tree expr)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      /* If converting between two pointers to records denoting
-	 both a template and type, adjust if needed to account
-	 for any differing offsets, since one might be negative.  */
+      /* If converting between two thin pointers, adjust if needed to account
+	 for differing offsets from the base pointer, depending on whether
+	 there is a TYPE_UNCONSTRAINED_ARRAY attached to the record type.  */
       if (TYPE_IS_THIN_POINTER_P (etype) && TYPE_IS_THIN_POINTER_P (type))
 	{
-	  tree bit_diff
-	    = size_diffop (bit_position (TYPE_FIELDS (TREE_TYPE (etype))),
-			   bit_position (TYPE_FIELDS (TREE_TYPE (type))));
-	  tree byte_diff
-	    = size_binop (CEIL_DIV_EXPR, bit_diff, sbitsize_unit_node);
+	  tree etype_pos
+	    = TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)) != NULL_TREE
+	      ? byte_position (DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (etype))))
+	      : size_zero_node;
+	  tree type_pos
+	    = TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type)) != NULL_TREE
+	      ? byte_position (DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (type))))
+	      : size_zero_node;
+	  tree byte_diff = size_diffop (type_pos, etype_pos);
+
 	  expr = build1 (NOP_EXPR, type, expr);
-	  TREE_CONSTANT (expr) = TREE_CONSTANT (TREE_OPERAND (expr, 0));
 	  if (integer_zerop (byte_diff))
 	    return expr;
 
 	  return build_binary_op (POINTER_PLUS_EXPR, type, expr,
-				  fold (convert (sizetype, byte_diff)));
+				  fold_convert (sizetype, byte_diff));
 	}
 
-      /* If converting to a thin pointer, handle specially.  */
-      if (TYPE_IS_THIN_POINTER_P (type)
-	  && TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type)))
-	return convert_to_thin_pointer (type, expr);
-
-      /* If converting fat pointer to normal pointer, get the pointer to the
-	 array and then convert it.  */
-      else if (TYPE_IS_FAT_POINTER_P (etype))
+      /* If converting fat pointer to normal or thin pointer, get the pointer
+	 to the array and then convert it.  */
+      if (TYPE_IS_FAT_POINTER_P (etype))
 	expr
 	  = build_component_ref (expr, NULL_TREE, TYPE_FIELDS (etype), false);
 
@@ -4543,7 +4488,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      Likewise for a conversion to an unconstrained array.  */
   if ((((INTEGRAL_TYPE_P (type)
 	 && !(code == INTEGER_TYPE && TYPE_VAX_FLOATING_POINT_P (type)))
-	|| (POINTER_TYPE_P (type) && ! TYPE_IS_THIN_POINTER_P (type))
+	|| (POINTER_TYPE_P (type) && !TYPE_IS_THIN_POINTER_P (type))
 	|| (code == RECORD_TYPE && TYPE_JUSTIFIED_MODULAR_P (type)))
        && ((INTEGRAL_TYPE_P (etype)
 	    && !(ecode == INTEGER_TYPE && TYPE_VAX_FLOATING_POINT_P (etype)))

@@ -407,8 +407,7 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 	      tree itype = TREE_TYPE (loop->v);
 
 	      if (POINTER_TYPE_P (itype))
-		itype
-		  = lang_hooks.types.type_for_size (TYPE_PRECISION (itype), 0);
+		itype = signed_type_for (itype);
 	      t = build_int_cst (itype, (loop->cond_code == LT_EXPR ? -1 : 1));
 	      t = fold_build2_loc (loc,
 			       PLUS_EXPR, itype,
@@ -3772,7 +3771,7 @@ expand_omp_for_generic (struct omp_region *region,
 	  tree itype = TREE_TYPE (fd->loops[i].v);
 
 	  if (POINTER_TYPE_P (itype))
-	    itype = lang_hooks.types.type_for_size (TYPE_PRECISION (itype), 0);
+	    itype = signed_type_for (itype);
 	  t = build_int_cst (itype, (fd->loops[i].cond_code == LT_EXPR
 				     ? -1 : 1));
 	  t = fold_build2 (PLUS_EXPR, itype,
@@ -3836,8 +3835,7 @@ expand_omp_for_generic (struct omp_region *region,
 	  && TYPE_PRECISION (type) != TYPE_PRECISION (fd->iter_type))
 	{
 	  /* Avoid casting pointers to integer of a different size.  */
-	  tree itype
-	    = lang_hooks.types.type_for_size (TYPE_PRECISION (type), 0);
+	  tree itype = signed_type_for (type);
 	  t1 = fold_convert (fd->iter_type, fold_convert (itype, fd->loop.n2));
 	  t0 = fold_convert (fd->iter_type, fold_convert (itype, fd->loop.n1));
 	}
@@ -3904,8 +3902,7 @@ expand_omp_for_generic (struct omp_region *region,
   if (bias)
     t = fold_build2 (MINUS_EXPR, fd->iter_type, t, bias);
   if (POINTER_TYPE_P (type))
-    t = fold_convert (lang_hooks.types.type_for_size (TYPE_PRECISION (type),
-						      0), t);
+    t = fold_convert (signed_type_for (type), t);
   t = fold_convert (type, t);
   t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE,
 				false, GSI_CONTINUE_LINKING);
@@ -3916,8 +3913,7 @@ expand_omp_for_generic (struct omp_region *region,
   if (bias)
     t = fold_build2 (MINUS_EXPR, fd->iter_type, t, bias);
   if (POINTER_TYPE_P (type))
-    t = fold_convert (lang_hooks.types.type_for_size (TYPE_PRECISION (type),
-						      0), t);
+    t = fold_convert (signed_type_for (type), t);
   t = fold_convert (type, t);
   iend = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 				   false, GSI_CONTINUE_LINKING);
@@ -3932,7 +3928,7 @@ expand_omp_for_generic (struct omp_region *region,
 	  tree vtype = TREE_TYPE (fd->loops[i].v), itype;
 	  itype = vtype;
 	  if (POINTER_TYPE_P (vtype))
-	    itype = lang_hooks.types.type_for_size (TYPE_PRECISION (vtype), 0);
+	    itype = signed_type_for (vtype);
 	  t = fold_build2 (TRUNC_MOD_EXPR, type, tem, counts[i]);
 	  t = fold_convert (itype, t);
 	  t = fold_build2 (MULT_EXPR, itype, t,
@@ -4162,7 +4158,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 
   itype = type = TREE_TYPE (fd->loop.v);
   if (POINTER_TYPE_P (type))
-    itype = lang_hooks.types.type_for_size (TYPE_PRECISION (type), 0);
+    itype = signed_type_for (type);
 
   entry_bb = region->entry;
   cont_bb = region->cont;
@@ -4379,7 +4375,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
 
   itype = type = TREE_TYPE (fd->loop.v);
   if (POINTER_TYPE_P (type))
-    itype = lang_hooks.types.type_for_size (TYPE_PRECISION (type), 0);
+    itype = signed_type_for (type);
 
   entry_bb = region->entry;
   se = split_block (entry_bb, last_stmt (entry_bb));
@@ -5504,9 +5500,7 @@ expand_omp_atomic (struct omp_region *region)
       unsigned int align = TYPE_ALIGN_UNIT (type);
 
       /* __sync builtins require strict data alignment.  */
-      /* ??? Assume BIGGEST_ALIGNMENT *is* aligned.  */
-      if (exact_log2 (align) >= index
-	  || align * BITS_PER_UNIT >= BIGGEST_ALIGNMENT)
+      if (exact_log2 (align) >= index)
 	{
 	  /* Atomic load.  */
 	  if (loaded_val == stored_val

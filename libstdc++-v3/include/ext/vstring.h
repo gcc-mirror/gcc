@@ -1,6 +1,6 @@
 // Versatile string -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -238,7 +238,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __end  End of range.
        *  @param  __a  Allocator to use (default is default allocator).
        */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<class _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<class _InputIterator>
+#endif
         __versa_string(_InputIterator __beg, _InputIterator __end,
 		       const _Alloc& __a = _Alloc())
 	: __vstring_base(__beg, __end, __a) { }
@@ -762,7 +767,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Appends characters in the range [first,last) to this string.
        */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<class _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<class _InputIterator>
+#endif
         __versa_string&
         append(_InputIterator __first, _InputIterator __last)
         { return this->replace(_M_iend(), _M_iend(), __first, __last); }
@@ -886,7 +896,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Sets value of string to characters in the range
        *  [first,last).
       */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<class _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<class _InputIterator>
+#endif
         __versa_string&
         assign(_InputIterator __first, _InputIterator __last)
         { return this->replace(_M_ibegin(), _M_iend(), __first, __last); }
@@ -931,7 +946,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  thrown.  The value of the string doesn't change if an error
        *  is thrown.
       */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<class _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<class _InputIterator>
+#endif
         void
         insert(iterator __p, _InputIterator __beg, _InputIterator __end)
         { this->replace(__p, __p, __beg, __end); }
@@ -1367,6 +1387,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  of result exceeds max_size(), length_error is thrown.  The
        *  value of the string doesn't change if an error is thrown.
       */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<class _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+        __versa_string&
+        replace(iterator __i1, iterator __i2,
+		_InputIterator __k1, _InputIterator __k2)
+        {
+	  _GLIBCXX_DEBUG_PEDASSERT(_M_ibegin() <= __i1 && __i1 <= __i2
+				   && __i2 <= _M_iend());
+	  __glibcxx_requires_valid_range(__k1, __k2);
+	  return this->_M_replace_dispatch(__i1, __i2, __k1, __k2,
+					   std::__false_type());
+	}
+#else
       template<class _InputIterator>
         __versa_string&
         replace(iterator __i1, iterator __i2,
@@ -1378,6 +1412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  typedef typename std::__is_integer<_InputIterator>::__type _Integral;
 	  return this->_M_replace_dispatch(__i1, __i2, __k1, __k2, _Integral());
 	}
+#endif
 
       // Specializations for the common case of pointer and iterator:
       // useful to avoid the overhead of temporary buffering in _M_replace.

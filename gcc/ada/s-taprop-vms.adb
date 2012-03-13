@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -780,6 +780,8 @@ package body System.Task_Primitives.Operations is
       function Thread_Body_Access is new
         Ada.Unchecked_Conversion (System.Aux_DEC.Short_Address, Thread_Body);
 
+      Task_Name : String (1 .. System.Parameters.Max_Task_Image_Length + 1);
+
    begin
       --  Since the initial signal mask of a thread is inherited from the
       --  creator, we need to set our local signal mask to mask all signals
@@ -808,6 +810,19 @@ package body System.Task_Primitives.Operations is
         pthread_attr_setinheritsched
           (Attributes'Access, PTHREAD_EXPLICIT_SCHED);
       pragma Assert (Result = 0);
+
+      if T.Common.Task_Image_Len > 0 then
+
+         --  Set thread name to ease debugging
+
+         Task_Name (1 .. T.Common.Task_Image_Len) :=
+           T.Common.Task_Image (1 .. T.Common.Task_Image_Len);
+         Task_Name (T.Common.Task_Image_Len + 1) := ASCII.NUL;
+
+         Result := pthread_attr_setname_np
+           (Attributes'Access, Task_Name'Address, Null_Address);
+         pragma Assert (Result = 0);
+      end if;
 
       --  Note: the use of Unrestricted_Access in the following call is needed
       --  because otherwise we have an error of getting a access-to-volatile

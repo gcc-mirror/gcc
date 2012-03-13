@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a OpenVMS/Alpha version of this package
+--  This is the OpenVMS version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
@@ -40,26 +40,8 @@ pragma Polling (Off);
 --  tasking operations. It causes infinite loops and other problems.
 
 with Interfaces.C; use Interfaces.C;
-with System.Machine_Code; use System.Machine_Code;
 
 package body System.OS_Interface is
-
-   ------------------
-   -- pthread_self --
-   ------------------
-
-   function pthread_self return pthread_t is
-      use ASCII;
-      Self : pthread_t;
-
-   begin
-      Asm ("call_pal 0x9e" & LF & HT &
-           "bis $31, $0, %0",
-           Outputs  => pthread_t'Asm_Output ("=r", Self),
-           Clobber  => "$0",
-           Volatile => True);
-      return Self;
-   end pthread_self;
 
    -----------------
    -- sched_yield --

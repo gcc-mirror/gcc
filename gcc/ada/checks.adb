@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Pakd; use Exp_Pakd;
+with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Elists;   use Elists;
 with Eval_Fat; use Eval_Fat;
@@ -1778,10 +1779,29 @@ package body Checks is
    ---------------------------
 
    procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id) is
+      S : Entity_Id;
    begin
       if Present (Predicate_Function (Typ)) then
-         Insert_Action (N,
-           Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));
+
+         --  A predicate check does not apply within internally generated
+         --  subprograms, such as TSS functions.
+
+         S := Current_Scope;
+         while Present (S)
+           and then not Is_Subprogram (S)
+         loop
+            S := Scope (S);
+         end loop;
+
+         if Present (S)
+           and then Get_TSS_Name (S) /= TSS_Null
+         then
+            return;
+
+         else
+            Insert_Action (N,
+              Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));
+         end if;
       end if;
    end Apply_Predicate_Check;
 

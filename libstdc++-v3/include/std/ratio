@@ -63,9 +63,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   template<intmax_t _Pn, intmax_t _Qn>
-    struct __static_gcd;
- 
-  template<intmax_t _Pn, intmax_t _Qn>
     struct __static_gcd
     : __static_gcd<_Qn, (_Pn % _Qn)>
     { };

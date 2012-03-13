@@ -1,6 +1,6 @@
 // natFileWin32.cc - Native part of File class for Win32.
 
-/* Copyright (C) 1998, 1999, 2002, 2003  Free Software Foundation, Inc.
+/* Copyright (C) 1998, 1999, 2002, 2003, 2012 Free Software Foundation, Inc.
 
    This file is part of libgcj.
 
@@ -38,7 +38,7 @@ details.  */
 #define WIN32_EPOCH_MILLIS 11644473600000LL
 
 jboolean
-java::io::File::_access (jint query)
+java::io::File::access (jint query)
 {
   JV_TEMP_STRING_WIN32 (canon, getCanonicalPath());
   if (!canon)
@@ -63,7 +63,7 @@ java::io::File::_access (jint query)
 }
 
 jboolean
-java::io::File::_stat (jint query)
+java::io::File::stat (jint query)
 {
   JV_TEMP_STRING_WIN32 (canon, getCanonicalPath());
   if (!canon)

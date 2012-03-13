@@ -1088,7 +1088,7 @@ case "$THREADS" in
 	THREADLDFLAGS=-pthread
 	THREADSPEC=-lpthread
 	;;
-     alpha*-dec-osf* | hppa*-hp-hpux*)
+     hppa*-hp-hpux*)
 	THREADCXXFLAGS=-pthread
 	# boehm-gc needs some functions from librt, so link that too.
 	THREADLIBS='-lpthread -lrt'
@@ -1732,7 +1732,7 @@ SYSDEP_SOURCES=
 SIGNAL_HANDLER_AUX=
 
 case "${host}" in
- alpha*-dec-osf* | mips-sgi-irix* | *-*-solaris2*)
+ mips-sgi-irix* | *-*-solaris2*)
     SIGNAL_HANDLER=include/posix-signal.h
     ;;
  i?86-*-linux*)

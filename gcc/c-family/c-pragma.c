@@ -1,6 +1,6 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
    Copyright (C) 1992, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -372,7 +372,7 @@ handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
 
 /* GCC supports two #pragma directives for renaming the external
    symbol associated with a declaration (DECL_ASSEMBLER_NAME), for
-   compatibility with the Solaris and Tru64 system headers.  GCC also
+   compatibility with the Solaris and VMS system headers.  GCC also
    has its own notation for this, __asm__("name") annotations.
 
    Corner cases of these features and their interaction:
@@ -497,27 +497,6 @@ add_to_renaming_pragma_list (tree oldname, tree newname)
 
 /* The current prefix set by #pragma extern_prefix.  */
 GTY(()) tree pragma_extern_prefix;
-
-/* #pragma extern_prefix "prefix" */
-static void
-handle_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
-{
-  tree prefix, x;
-  enum cpp_ttype t;
-
-  if (pragma_lex (&prefix) != CPP_STRING)
-    GCC_BAD ("malformed #pragma extern_prefix, ignored");
-  t = pragma_lex (&x);
-  if (t != CPP_EOF)
-    warning (OPT_Wpragmas, "junk at end of %<#pragma extern_prefix%>");
-
-  if (targetm.handle_pragma_extern_prefix)
-    /* Note that the length includes the null terminator.  */
-    pragma_extern_prefix = (TREE_STRING_LENGTH (prefix) > 1 ? prefix : NULL);
-  else if (warn_unknown_pragmas > in_system_header)
-    warning (OPT_Wunknown_pragmas,
-	     "#pragma extern_prefix not supported on this target");
-}
 
 /* variables used to implement #pragma upc semantics */
 #ifndef UPC_CMODE_STACK_INCREMENT
@@ -1626,7 +1605,6 @@ init_pragma (void)
 
   c_register_pragma_with_expansion (0, "redefine_extname",
 				    handle_pragma_redefine_extname);
-  c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);
 
   c_register_pragma_with_expansion (0, "message", handle_pragma_message);
 

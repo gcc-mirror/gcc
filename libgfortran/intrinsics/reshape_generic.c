@@ -1,8 +1,8 @@
 /* Generic implementation of the RESHAPE intrinsic
-   Copyright 2002, 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2006, 2007, 2009, 2012 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -75,7 +75,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
 
   for (n = 0; n < rdim; n++)
     {
-      shape_data[n] = shape->data[n * GFC_DESCRIPTOR_STRIDE(shape,0)];
+      shape_data[n] = shape->base_addr[n * GFC_DESCRIPTOR_STRIDE(shape,0)];
       if (shape_data[n] <= 0)
 	{
 	  shape_data[n] = 0;
@@ -83,7 +83,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
 	}
     }
 
-  if (ret->data == NULL)
+  if (ret->base_addr == NULL)
     {
       index_type alloc_size;
 
@@ -103,7 +103,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
       else
 	alloc_size = rs * size;
 
-      ret->data = internal_malloc_size (alloc_size);
+      ret->base_addr = internal_malloc_size (alloc_size);
 
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }
@@ -132,7 +132,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
           else
             psize = 0;
         }
-      pptr = pad->data;
+      pptr = pad->base_addr;
     }
   else
     {
@@ -182,7 +182,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
 
 	  for (n = 0; n < rdim; n++)
 	    {
-	      v = order->data[n * GFC_DESCRIPTOR_STRIDE(order,0)] - 1;
+	      v = order->base_addr[n * GFC_DESCRIPTOR_STRIDE(order,0)] - 1;
 
 	      if (v < 0 || v >= rdim)
 		runtime_error("Value %ld out of range in ORDER argument"
@@ -201,7 +201,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
   for (n = 0; n < rdim; n++)
     {
       if (order)
-        dim = order->data[n * GFC_DESCRIPTOR_STRIDE(order,0)] - 1;
+        dim = order->base_addr[n * GFC_DESCRIPTOR_STRIDE(order,0)] - 1;
       else
         dim = n;
 
@@ -245,12 +245,12 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
       rsize *= size;
       ssize *= size;
       psize *= size;
-      reshape_packed (ret->data, rsize, source->data, ssize,
-		      pad ? pad->data : NULL, psize);
+      reshape_packed (ret->base_addr, rsize, source->base_addr, ssize,
+		      pad ? pad->base_addr : NULL, psize);
       return;
     }
-  rptr = ret->data;
-  src = sptr = source->data;
+  rptr = ret->base_addr;
+  src = sptr = source->base_addr;
   rstride0 = rstride[0] * size;
   sstride0 = sstride[0] * size;
 

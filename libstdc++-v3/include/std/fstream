@@ -232,7 +232,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  If a file is already open, this function immediately fails.
        *  Otherwise it tries to open the file named @a __s using the flags
-       *  given in @a mode.
+       *  given in @a __mode.
        *
        *  Table 92, adapted here, gives the relation between openmode
        *  combinations and the equivalent fopen() flags.
@@ -619,8 +619,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  Null terminated string specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
-       *  @c ios_base::out|ios_base::trunc is automatically included in
-       *  @p __mode.
+       *  @c ios_base::out | @c ios_base::trunc is automatically included in
+       *  @a __mode.
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.
@@ -640,7 +640,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  std::string specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
-       *  @c ios_base::out|ios_base::trunc is automatically included in
+       *  @c ios_base::out | @c ios_base::trunc is automatically included in
        *  @a __mode.
        */
       explicit

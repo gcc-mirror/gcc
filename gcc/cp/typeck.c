@@ -2884,7 +2884,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 				   complain),
 	       cp_build_array_ref (loc, TREE_OPERAND (array, 2), idx,
 				   complain),
-	       tf_warning_or_error);
+	       complain);
       protected_set_expr_location (ret, loc);
       return ret;
 
@@ -5033,7 +5033,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       build_ptrmemfunc_type (argtype);
       val = build_ptrmemfunc (argtype, val, 0,
 			      /*c_cast_p=*/false,
-			      tf_warning_or_error);
+			      complain);
     }
 
   return val;
@@ -5781,11 +5781,11 @@ convert_ptrmem (tree type, tree expr, bool allow_inverse_p,
 				     EQ_EXPR,
 				     expr,
 				     build_int_cst (TREE_TYPE (expr), -1),
-				     tf_warning_or_error);
+				     complain);
 	  op1 = build_nop (ptrdiff_type_node, expr);
 	  op2 = cp_build_binary_op (input_location,
 				    PLUS_EXPR, op1, delta,
-				    tf_warning_or_error);
+				    complain);
 
 	  expr = fold_build3_loc (input_location,
 			      COND_EXPR, ptrdiff_type_node, cond, op1, op2);
@@ -7208,7 +7208,7 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
 	    return pfn;
 	  else if (integer_zerop (n))
 	    return build_reinterpret_cast (to_type, pfn, 
-                                           tf_warning_or_error);
+                                           complain);
 	}
 
       if (TREE_SIDE_EFFECTS (pfn))
@@ -7229,9 +7229,9 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
       if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_delta)
 	n = cp_build_binary_op (input_location,
 				LSHIFT_EXPR, n, integer_one_node,
-				tf_warning_or_error);
+				complain);
       delta = cp_build_binary_op (input_location,
-				  PLUS_EXPR, delta, n, tf_warning_or_error);
+				  PLUS_EXPR, delta, n, complain);
       return build_ptrmemfunc1 (to_type, delta, npfn);
     }
 
@@ -7245,7 +7245,7 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
     }
 
   if (type_unknown_p (pfn))
-    return instantiate_type (type, pfn, tf_warning_or_error);
+    return instantiate_type (type, pfn, complain);
 
   fn = TREE_OPERAND (pfn, 0);
   gcc_assert (TREE_CODE (fn) == FUNCTION_DECL

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2012, Free Software Foundation, Inc.         --
 --                       (Version for Alpha OpenVMS)                        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
@@ -202,15 +202,6 @@ package body System.Vax_Float_Operations is
    end S_To_F;
 
    ------------
-   -- T_To_D --
-   ------------
-
-   function T_To_D (X : T) return D is
-   begin
-      return G_To_D (T_To_G (X));
-   end T_To_D;
-
-   ------------
    -- T_To_G --
    ------------
 
@@ -222,6 +213,15 @@ package body System.Vax_Float_Operations is
       Asm ("stg %1,%0", G'Asm_Output ("=m", B), T'Asm_Input ("f", A));
       return B;
    end T_To_G;
+
+   ------------
+   -- T_To_D --
+   ------------
+
+   function T_To_D (X : T) return D is
+   begin
+      return G_To_D (T_To_G (X));
+   end T_To_D;
 
    -----------
    -- Abs_F --

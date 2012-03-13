@@ -80,6 +80,14 @@
 #include <f16cintrin.h>
 #endif
 
+#ifdef __RTM__
+#include <rtmintrin.h>
+#endif
+
+#ifdef __RTM__
+#include <xtestintrin.h>
+#endif
+
 #ifdef __RDRND__
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

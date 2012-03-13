@@ -2405,28 +2405,26 @@ add_candidate (struct ivopts_data *data,
     add_autoinc_candidates (data, base, step, important, use);
 }
 
-/* Add a standard "0 + 1 * iteration" iv candidate for a
-   type with SIZE bits.  */
-
-static void
-add_standard_iv_candidates_for_size (struct ivopts_data *data,
-				     unsigned int size)
-{
-  tree type = lang_hooks.types.type_for_size (size, true);
-  add_candidate (data, build_int_cst (type, 0), build_int_cst (type, 1),
-		 true, NULL);
-}
-
 /* Adds standard iv candidates.  */
 
 static void
 add_standard_iv_candidates (struct ivopts_data *data)
 {
-  add_standard_iv_candidates_for_size (data, INT_TYPE_SIZE);
+  add_candidate (data, integer_zero_node, integer_one_node, true, NULL);
 
   /* The same for a double-integer type if it is still fast enough.  */
-  if (BITS_PER_WORD >= INT_TYPE_SIZE * 2)
-    add_standard_iv_candidates_for_size (data, INT_TYPE_SIZE * 2);
+  if (TYPE_PRECISION
+        (long_integer_type_node) > TYPE_PRECISION (integer_type_node)
+      && TYPE_PRECISION (long_integer_type_node) <= BITS_PER_WORD)
+    add_candidate (data, build_int_cst (long_integer_type_node, 0),
+		   build_int_cst (long_integer_type_node, 1), true, NULL);
+
+  /* The same for a double-integer type if it is still fast enough.  */
+  if (TYPE_PRECISION
+        (long_long_integer_type_node) > TYPE_PRECISION (long_integer_type_node)
+      && TYPE_PRECISION (long_long_integer_type_node) <= BITS_PER_WORD)
+    add_candidate (data, build_int_cst (long_long_integer_type_node, 0),
+		   build_int_cst (long_long_integer_type_node, 1), true, NULL);
 }
 
 

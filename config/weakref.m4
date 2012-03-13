@@ -38,7 +38,6 @@ int main ()
 }
 ]])], ac_cv_have_elf_style_weakref=yes, ac_cv_have_elf_style_weakref=no, [
 case "${host}" in
-  alpha*-dec-osf*) ac_cv_have_elf_style_weakref=no ;;
   *-apple-darwin[[89]]*) ac_cv_have_elf_style_weakref=no ;;
   *) ac_cv_have_elf_style_weakref=yes;;
 esac])CFLAGS="$weakref_m4_saved_CFLAGS"])

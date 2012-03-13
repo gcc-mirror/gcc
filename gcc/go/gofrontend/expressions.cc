@@ -205,9 +205,6 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
 				   Type* rhs_type, tree rhs_tree,
 				   Location location)
 {
-  if (lhs_type == rhs_type)
-    return rhs_tree;
-
   if (lhs_type->is_error() || rhs_type->is_error())
     return error_mark_node;
 
@@ -220,7 +217,7 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
   if (lhs_type_tree == error_mark_node)
     return error_mark_node;
 
-  if (lhs_type->interface_type() != NULL)
+  if (lhs_type != rhs_type && lhs_type->interface_type() != NULL)
     {
       if (rhs_type->interface_type() == NULL)
 	return Expression::convert_type_to_interface(context, lhs_type,
@@ -231,7 +228,7 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
 							  rhs_type, rhs_tree,
 							  false, location);
     }
-  else if (rhs_type->interface_type() != NULL)
+  else if (lhs_type != rhs_type && rhs_type->interface_type() != NULL)
     return Expression::convert_interface_to_type(context, lhs_type, rhs_type,
 						 rhs_tree, location);
   else if (lhs_type->is_slice_type() && rhs_type->is_nil_type())
@@ -284,13 +281,21 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
 	   || SCALAR_FLOAT_TYPE_P(lhs_type_tree)
 	   || COMPLEX_FLOAT_TYPE_P(lhs_type_tree))
     return fold_convert_loc(location.gcc_location(), lhs_type_tree, rhs_tree);
-  else if (TREE_CODE(lhs_type_tree) == RECORD_TYPE
-	   && TREE_CODE(TREE_TYPE(rhs_tree)) == RECORD_TYPE)
+  else if ((TREE_CODE(lhs_type_tree) == RECORD_TYPE
+	    && TREE_CODE(TREE_TYPE(rhs_tree)) == RECORD_TYPE)
+	   || (TREE_CODE(lhs_type_tree) == ARRAY_TYPE
+	       && TREE_CODE(TREE_TYPE(rhs_tree)) == ARRAY_TYPE))
     {
+      // Avoid confusion from zero sized variables which may be
+      // represented as non-zero-sized.
+      if (int_size_in_bytes(lhs_type_tree) == 0
+	  || int_size_in_bytes(TREE_TYPE(rhs_tree)) == 0)
+	return rhs_tree;
+
       // This conversion must be permitted by Go, or we wouldn't have
       // gotten here.
       go_assert(int_size_in_bytes(lhs_type_tree)
-		 == int_size_in_bytes(TREE_TYPE(rhs_tree)));
+		== int_size_in_bytes(TREE_TYPE(rhs_tree)));
       return fold_build1_loc(location.gcc_location(), VIEW_CONVERT_EXPR,
                              lhs_type_tree, rhs_tree);
     }

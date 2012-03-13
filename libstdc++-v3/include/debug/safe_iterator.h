@@ -1,6 +1,6 @@
 // Safe iterator implementation  -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2009, 2010, 2011
+// Copyright (C) 2003, 2004, 2005, 2006, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -176,6 +176,11 @@ namespace __gnu_debug
        */
       _Safe_iterator(_Safe_iterator&& __x) : _M_current()
       {
+	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
+			      || __x._M_current == _Iterator(),
+			      _M_message(__msg_init_copy_singular)
+			      ._M_iterator(*this, "this")
+			      ._M_iterator(__x, "other"));
 	std::swap(_M_current, __x._M_current);
 	this->_M_attach(__x._M_sequence);
 	__x._M_detach();
@@ -229,6 +234,14 @@ namespace __gnu_debug
       _Safe_iterator&
       operator=(_Safe_iterator&& __x)
       {
+	_GLIBCXX_DEBUG_VERIFY(this != &__x,
+			      _M_message(__msg_self_move_assign)
+			      ._M_iterator(*this, "this"));
+	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
+			      || __x._M_current == _Iterator(),
+			      _M_message(__msg_copy_singular)
+			      ._M_iterator(*this, "this")
+			      ._M_iterator(__x, "other"));
 	_M_current = __x._M_current;
 	_M_attach(__x._M_sequence);
 	__x._M_detach();

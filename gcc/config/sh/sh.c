@@ -575,6 +575,11 @@ static const struct attribute_spec sh_attribute_table[] =
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION    (SYMBOL_FLAG_MACH_DEP << 0)
 
+/* The tas.b instruction sets the 7th bit in the byte, i.e. 0x80.  This value
+   is used by optabs.c atomic op expansion code as well as in sync.md.  */
+#undef TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
+#define TARGET_ATOMIC_TEST_AND_SET_TRUEVAL 0x80
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Implement TARGET_OPTION_OVERRIDE macro.  Validate and override 
@@ -11883,15 +11888,8 @@ sh_expand_t_scc (rtx operands[])
   val = INTVAL (op1);
   if ((code == EQ && val == 1) || (code == NE && val == 0))
     emit_insn (gen_movt (result));
-  else if (TARGET_SH2A && ((code == EQ && val == 0)
-			    || (code == NE && val == 1)))
-    emit_insn (gen_xorsi3_movrt (result));
   else if ((code == EQ && val == 0) || (code == NE && val == 1))
-    {
-      emit_clobber (result);
-      emit_insn (gen_subc (result, result, result));
-      emit_insn (gen_addsi3 (result, result, const1_rtx));
-    }
+   emit_insn (gen_movnegt (result));
   else if (code == EQ || code == NE)
     emit_insn (gen_move_insn (result, GEN_INT (code == NE)));
   else

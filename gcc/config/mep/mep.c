@@ -6059,33 +6059,17 @@ mep_init_builtins (void)
   v4uhi_type_node = build_vector_type (unsigned_intHI_type_node, 4);
   v2usi_type_node = build_vector_type (unsigned_intSI_type_node, 2);
 
-  (*lang_hooks.decls.pushdecl)
-    (build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("cp_data_bus_int"),
-		 cp_data_bus_int_type_node));
+  add_builtin_type ("cp_data_bus_int", cp_data_bus_int_type_node);
 
-  (*lang_hooks.decls.pushdecl)
-    (build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("cp_vector"),
-		 opaque_vector_type_node));
+  add_builtin_type ("cp_vector", opaque_vector_type_node);
 
-  (*lang_hooks.decls.pushdecl)
-    (build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("cp_v8qi"),
-		 v8qi_type_node));
-  (*lang_hooks.decls.pushdecl)
-    (build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("cp_v4hi"),
-		 v4hi_type_node));
-  (*lang_hooks.decls.pushdecl)
-    (build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("cp_v2si"),
-		 v2si_type_node));
+  add_builtin_type ("cp_v8qi", v8qi_type_node);
+  add_builtin_type ("cp_v4hi", v4hi_type_node);
+  add_builtin_type ("cp_v2si", v2si_type_node);
 
-  (*lang_hooks.decls.pushdecl)
-    (build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("cp_v8uqi"),
-		 v8uqi_type_node));
-  (*lang_hooks.decls.pushdecl)
-    (build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("cp_v4uhi"),
-		 v4uhi_type_node));
-  (*lang_hooks.decls.pushdecl)
-    (build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("cp_v2usi"),
-		 v2usi_type_node));
+  add_builtin_type ("cp_v8uqi", v8uqi_type_node);
+  add_builtin_type ("cp_v4uhi", v4uhi_type_node);
+  add_builtin_type ("cp_v2usi", v2usi_type_node);
 
   /* Intrinsics like mep_cadd3 are implemented with two groups of
      instructions, one which uses UNSPECs and one which uses a specific

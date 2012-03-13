@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,7 +61,6 @@
 --    HP-UX
 --    Irix
 --    Solaris
---    Tru64
 --    Alpha OpenVMS
 
 --  NOTE FOR FUTURE PLATFORMS SUPPORT: It is assumed that type Duration is

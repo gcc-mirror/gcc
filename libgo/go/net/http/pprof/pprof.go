@@ -35,6 +35,7 @@ package pprof
 import (
 	"bufio"
 	"bytes"
+	_ "debug/elf"
 	"fmt"
 	"html/template"
 	"io"

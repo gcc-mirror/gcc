@@ -79,7 +79,7 @@ product_i1 (gfc_array_i1 * const restrict retarray,
 	extent[n] = 0;
     }
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       size_t alloc_size, str;
 
@@ -100,7 +100,7 @@ product_i1 (gfc_array_i1 * const restrict retarray,
       alloc_size = sizeof (GFC_INTEGER_1) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
 
-      retarray->data = internal_malloc_size (alloc_size);
+      retarray->base_addr = internal_malloc_size (alloc_size);
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
@@ -130,8 +130,8 @@ product_i1 (gfc_array_i1 * const restrict retarray,
 	return;
     }
 
-  base = array->data;
-  dest = retarray->data;
+  base = array->base_addr;
+  dest = retarray->base_addr;
 
   continue_loop = 1;
   while (continue_loop)
@@ -221,7 +221,7 @@ mproduct_i1 (gfc_array_i1 * const restrict retarray,
   if (len <= 0)
     return;
 
-  mbase = mask->data;
+  mbase = mask->base_addr;
 
   mask_kind = GFC_DESCRIPTOR_SIZE (mask);
 
@@ -257,7 +257,7 @@ mproduct_i1 (gfc_array_i1 * const restrict retarray,
 	extent[n] = 0;
     }
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       size_t alloc_size, str;
 
@@ -285,7 +285,7 @@ mproduct_i1 (gfc_array_i1 * const restrict retarray,
 	  return;
 	}
       else
-	retarray->data = internal_malloc_size (alloc_size);
+	retarray->base_addr = internal_malloc_size (alloc_size);
 
     }
   else
@@ -310,8 +310,8 @@ mproduct_i1 (gfc_array_i1 * const restrict retarray,
 	return;
     }
 
-  dest = retarray->data;
-  base = array->data;
+  dest = retarray->base_addr;
+  base = array->base_addr;
 
   while (base)
     {
@@ -417,7 +417,7 @@ sproduct_i1 (gfc_array_i1 * const restrict retarray,
 	extent[n] = 0;
     }
 
-  if (retarray->data == NULL)
+  if (retarray->base_addr == NULL)
     {
       size_t alloc_size, str;
 
@@ -445,7 +445,7 @@ sproduct_i1 (gfc_array_i1 * const restrict retarray,
 	  return;
 	}
       else
-	retarray->data = internal_malloc_size (alloc_size);
+	retarray->base_addr = internal_malloc_size (alloc_size);
     }
   else
     {
@@ -477,7 +477,7 @@ sproduct_i1 (gfc_array_i1 * const restrict retarray,
       dstride[n] = GFC_DESCRIPTOR_STRIDE(retarray,n);
     }
 
-  dest = retarray->data;
+  dest = retarray->base_addr;
 
   while(1)
     {

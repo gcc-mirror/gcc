@@ -1,3 +1,66 @@
+2012-03-12  Richard Guenther  <rguenther@suse.de>
+
+	* f95-lang.c (builtin_type_for_size): Use gfc_type_for_size.
+
+2012-03-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52542
+	* decl.c (match_procedure_decl): If the interface
+	is bind(C), the procedure is as well.
+
+2012-03-10  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* convert.c (convert): Fold BOOLEAN_TYPE types to the proper variant.
+
+2012-03-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Make-lang.in (convert.o): Depend on convert.h.
+	* convert.c: Header and comment cleanups.
+	(gfc_thruthvalue_conversion): Rename static function
+	to truthvalue_conversion.  Do not use 'internal_error' from here,
+	use 'gcc_unreachable' instead.
+	(convert): Do not use 'error' for conversions to void, use
+	'gcc_unreachable' instead.  Likewise for conversions to non-scalar
+	types.  Do not hanlde ENUMERAL_TYPE, the front end never creates them.
+	Clean up #if 0 code.
+
+2012-03-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52469
+	* trans-types.c (gfc_get_function_type): Handle backend_decl
+	of a procedure pointer.
+
+2012-03-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* f95-lang.c (yyerror, yylex): Remove.
+	(clear_binding_stack): Remove, fold into its only user.
+	(LANG_HOOKS_PRINT_IDENTIFIER): Do not re-define.
+	(ridpointers): Remove.
+	(gfc_eh_initialized_p): Make static.
+	(gfc_truthvalue_conversion): Move to convert.c.
+	(gfc_be_parse_file): Clear binding level stack when done.
+	(gfc_print_identifier): Remove.
+	(pushlevel): Remove ignored 'ignore' argument.  Update all callers.
+	(poplevel): Remove unused 'reverse' argument.  Update all callers.
+	(ggc_p): Remove.
+	(gfc_builtin_function): Make static. Do not attempt to make RTL for
+	builtin functions.
+	* convert.c (gfc_truthvalue_conversion): Moved here from f95-lang.c,
+	and made static.
+	* trans.h (pushlevel, poplevel): Adjust prototypes.
+	(gfc_truthvalue_conversion, gfc_builtin_function): Remove prototypes.
+	* trans-openmp.c: Update calls to pushlevel and poplevel.
+	* trans.c: Likewise.
+	* trans-decl.c: Likewise.
+
+2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50981
+	* gfortran.h (gfc_is_class_container_ref): New prototype.
+	* class.c (gfc_is_class_container_ref): New function.
+	* trans-expr.c (gfc_conv_procedure_call): Add a "_data" component
+	reference to polymorphic actual arguments.
+
 2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50981

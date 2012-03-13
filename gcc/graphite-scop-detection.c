@@ -1026,7 +1026,6 @@ create_sese_edges (VEC (sd_region, heap) *regions)
 
 #ifdef ENABLE_CHECKING
   verify_loop_structure ();
-  verify_dominators (CDI_DOMINATORS);
   verify_ssa (false);
 #endif
 }

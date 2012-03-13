@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,12 +44,17 @@ package Ada.Strings.Wide_Superbounded is
 
    Wide_NUL : constant Wide_Character := Wide_Character'Val (0);
 
+   --  Ada.Strings.Wide_Bounded.Generic_Bounded_Length.Wide_Bounded_String is
+   --  derived from Super_String, with the constraint of the maximum length.
+
    type Super_String (Max_Length : Positive) is record
       Current_Length : Natural := 0;
-      Data           : Wide_String (1 .. Max_Length) := (others => Wide_NUL);
+      Data           : Wide_String (1 .. Max_Length);
+      --  A previous version had a default initial value for Data, which is
+      --  no longer necessary, because we now special-case this type in the
+      --  compiler, so "=" composes properly for descendants of this type.
+      --  Leaving it out is more efficient.
    end record;
-   --  Ada.Strings.Wide_Bounded.Generic_Bounded_Length.Wide_Bounded_String is
-   --  derived from this type, with the constraint of the maximum length.
 
    --  The subprograms defined for Super_String are similar to those defined
    --  for Bounded_Wide_String, except that they have different names, so that

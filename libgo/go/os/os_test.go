@@ -528,7 +528,6 @@ func exec(t *testing.T, dir, cmd string, args []string, expect string) {
 	if err != nil {
 		t.Fatalf("StartProcess: %v", err)
 	}
-	defer p.Release()
 	w.Close()
 
 	var b bytes.Buffer
@@ -846,7 +845,6 @@ func run(t *testing.T, cmd []string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer p.Release()
 	w.Close()
 
 	var b bytes.Buffer
@@ -1010,5 +1008,40 @@ func TestNilProcessStateString(t *testing.T) {
 	s := ps.String()
 	if s != "<nil>" {
 		t.Errorf("(*ProcessState)(nil).String() = %q, want %q", s, "<nil>")
+	}
+}
+
+func TestSameFile(t *testing.T) {
+	fa, err := Create("a")
+	if err != nil {
+		t.Fatalf("Create(a): %v", err)
+	}
+	defer Remove(fa.Name())
+	fa.Close()
+	fb, err := Create("b")
+	if err != nil {
+		t.Fatalf("Create(b): %v", err)
+	}
+	defer Remove(fb.Name())
+	fb.Close()
+
+	ia1, err := Stat("a")
+	if err != nil {
+		t.Fatalf("Stat(a): %v", err)
+	}
+	ia2, err := Stat("a")
+	if err != nil {
+		t.Fatalf("Stat(a): %v", err)
+	}
+	if !SameFile(ia1, ia2) {
+		t.Errorf("files should be same")
+	}
+
+	ib, err := Stat("b")
+	if err != nil {
+		t.Fatalf("Stat(b): %v", err)
+	}
+	if SameFile(ia1, ib) {
+		t.Errorf("files should be different")
 	}
 }

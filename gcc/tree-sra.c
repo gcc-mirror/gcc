@@ -1924,13 +1924,19 @@ create_access_replacement (struct access *access, bool rename)
 
   repl = create_tmp_var (access->type, "SR");
   add_referenced_var (repl);
-  if (rename)
+  if (!access->grp_partial_lhs
+      && rename)
     mark_sym_for_renaming (repl);
 
-  if (!access->grp_partial_lhs
-      && (TREE_CODE (access->type) == COMPLEX_TYPE
-	  || TREE_CODE (access->type) == VECTOR_TYPE))
-    DECL_GIMPLE_REG_P (repl) = 1;
+  if (TREE_CODE (access->type) == COMPLEX_TYPE
+      || TREE_CODE (access->type) == VECTOR_TYPE)
+    {
+      if (!access->grp_partial_lhs)
+	DECL_GIMPLE_REG_P (repl) = 1;
+    }
+  else if (access->grp_partial_lhs
+	   && is_gimple_reg_type (access->type))
+    TREE_ADDRESSABLE (repl) = 1;
 
   DECL_SOURCE_LOCATION (repl) = DECL_SOURCE_LOCATION (access->base);
   DECL_ARTIFICIAL (repl) = 1;

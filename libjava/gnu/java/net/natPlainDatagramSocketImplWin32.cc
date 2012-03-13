@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2006 Free Software Foundation
+/* Copyright (C) 2003, 2006, 2012 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -545,8 +545,6 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
       len = sizeof (struct in_addr);
       ptr = (const char *) &u.addr;
     }
-// Tru64 UNIX V5.0 has struct sockaddr_in6, but no IPV6_MULTICAST_IF
-#if defined (HAVE_INET6) && defined (IPV6_MULTICAST_IF)
   else if (len == 16)
     {
       level = IPPROTO_IPV6;
@@ -555,7 +553,6 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
       len = sizeof (struct in6_addr);
       ptr = (const char *) &u.addr6;
     }
-#endif
   else
     throw
       new ::java::net::SocketException (JvNewStringUTF ("invalid length"));

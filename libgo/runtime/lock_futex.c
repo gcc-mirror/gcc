@@ -118,8 +118,12 @@ runtime_notewakeup(Note *n)
 void
 runtime_notesleep(Note *n)
 {
+	if(runtime_m()->profilehz > 0)
+		runtime_setprof(false);
 	while(runtime_atomicload(&n->key) == 0)
 		runtime_futexsleep(&n->key, 0, -1);
+	if(runtime_m()->profilehz > 0)
+		runtime_setprof(true);
 }
 
 void
@@ -135,14 +139,18 @@ runtime_notetsleep(Note *n, int64 ns)
 	if(runtime_atomicload(&n->key) != 0)
 		return;
 
+	if(runtime_m()->profilehz > 0)
+		runtime_setprof(false);
 	deadline = runtime_nanotime() + ns;
 	for(;;) {
 		runtime_futexsleep(&n->key, 0, ns);
 		if(runtime_atomicload(&n->key) != 0)
-			return;
+			break;
 		now = runtime_nanotime();
 		if(now >= deadline)
-			return;
+			break;
 		ns = deadline - now;
 	}
+	if(runtime_m()->profilehz > 0)
+		runtime_setprof(true);
 }

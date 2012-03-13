@@ -1,3 +1,8 @@
+2012-03-05  Jason Merrill  <jason@redhat.com>
+
+	* objc-map.c (objc_map_private_resize, objc_map_alloc_ggc): Don't
+	call _stat functions without MEM_STAT_INFO.
+
 2011-11-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc-next-runtime-abi-01.c (objc_eh_personality): Use gcc personality

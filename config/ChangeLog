@@ -1,3 +1,8 @@
+2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* weakref.m4 (GCC_CHECK_ELF_STYLE_WEAKREF): Remove
+	alpha*-dec-osf*.
+
 2012-01-22  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/mh-interix: Remove as unneeded.

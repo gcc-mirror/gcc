@@ -747,7 +747,6 @@ doloop_optimize_loops (void)
   iv_analysis_done ();
 
 #ifdef ENABLE_CHECKING
-  verify_dominators (CDI_DOMINATORS);
   verify_loop_structure ();
 #endif
 }
