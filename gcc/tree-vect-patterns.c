@@ -462,7 +462,7 @@ vect_handle_widen_op_by_const (gimple stmt, enum tree_code code,
 
    where type 'TYPE' is at least double the size of type 'type'.
 
-   Also detect unsgigned cases:
+   Also detect unsigned cases:
 
      unsigned type a_t, b_t;
      unsigned TYPE u_prod_T;

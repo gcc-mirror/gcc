@@ -1,3 +1,7 @@
+2012-03-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* ada/acats/tests/cd/cdd1001.a (CDD1001): Fix typo.
+
 2012-03-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/46728
