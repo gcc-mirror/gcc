@@ -1,5 +1,10 @@
 2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_decompose_address): Handle subregs of
+	AND zero extended address correctly.
+
+2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/predicates.md (tls_symbolic_operand): Declare as
 	special predicate.
 	(tls_modbase_operand): Ditto.
