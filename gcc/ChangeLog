@@ -1,3 +1,10 @@
+2012-03-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52488
+	* config/avr/avr.c (avr_prologue_setup_frame): Cut down stack
+	offset (size) to a value the insns can deal with.
+	(expand_epilogue): Ditto.
+
 2012-03-13  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* config/arm/neon.ml (ops): Fixup expected instructions for

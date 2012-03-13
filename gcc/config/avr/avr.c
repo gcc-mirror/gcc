@@ -827,7 +827,11 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
   bool isr_p = cfun->machine->is_interrupt || cfun->machine->is_signal;
   int live_seq = sequent_regs_live ();
 
+  HOST_WIDE_INT size_max
+    = (HOST_WIDE_INT) GET_MODE_MASK (AVR_HAVE_8BIT_SP ? QImode : Pmode);
+
   bool minimize = (TARGET_CALL_PROLOGUES
+                   && size < size_max
                    && live_seq
                    && !isr_p
                    && !cfun->machine->is_OS_task
@@ -933,6 +937,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               leaf function and thus X has already been saved.  */
               
           int irq_state = -1;
+          HOST_WIDE_INT size_cfa = size;
           rtx fp_plus_insns, fp, my_fp;
 
           gcc_assert (frame_pointer_needed
@@ -951,6 +956,27 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               my_fp = all_regs_rtx[FRAME_POINTER_REGNUM];
             }
 
+          /* Cut down size and avoid size = 0 so that we don't run
+             into ICE like PR52488 in the remainder.  */
+
+          if (size > size_max)
+            {
+              /* Don't error so that insane code from newlib still compiles
+                 and does not break building newlib.  As PR51345 is implemented
+                 now, there are multilib variants with -mtiny-stack.
+                 
+                 If user wants sanity checks he can use -Wstack-usage=
+                 or similar options.
+
+                 For CFA we emit the original, non-saturated size so that
+                 the generic machinery is aware of the real stack usage and
+                 will print the above diagnostic as expected.  */
+              
+              size = size_max;
+            }
+
+          size = trunc_int_for_mode (size, GET_MODE (my_fp));
+          
           /************  Method 1: Adjust frame pointer  ************/
           
           start_sequence ();
@@ -975,7 +1001,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, fp,
-                                         plus_constant (fp, -size)));
+                                         plus_constant (fp, -size_cfa)));
             }
           
           /* Copy to stack pointer.  Note that since we've already
@@ -1003,7 +1029,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, stack_pointer_rtx,
                                          plus_constant (stack_pointer_rtx,
-                                                        -size)));
+                                                        -size_cfa)));
             }
           
           fp_plus_insns = get_insns ();
@@ -1026,7 +1052,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, stack_pointer_rtx,
                                          plus_constant (stack_pointer_rtx,
-                                                        -size)));
+                                                        -size_cfa)));
               if (frame_pointer_needed)
                 {
                   insn = emit_move_insn (fp, stack_pointer_rtx);
@@ -1048,7 +1074,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               emit_insn (fp_plus_insns);
             }
 
-          cfun->machine->stack_usage += size;
+          cfun->machine->stack_usage += size_cfa;
         } /* !minimize && size != 0 */
     } /* !minimize */
 }
@@ -1261,6 +1287,7 @@ expand_epilogue (bool sibcall_p)
       int irq_state = -1;
       rtx fp, my_fp;
       rtx fp_plus_insns;
+      HOST_WIDE_INT size_max;
 
       gcc_assert (frame_pointer_needed
                   || !isr_p
@@ -1277,6 +1304,13 @@ expand_epilogue (bool sibcall_p)
                   
           my_fp = all_regs_rtx[FRAME_POINTER_REGNUM];
         }
+
+      /* For rationale see comment in prologue generation.  */
+
+      size_max = (HOST_WIDE_INT) GET_MODE_MASK (GET_MODE (my_fp));
+      if (size > size_max)
+        size = size_max;
+      size = trunc_int_for_mode (size, GET_MODE (my_fp));
               
       /********** Method 1: Adjust fp register  **********/
               
