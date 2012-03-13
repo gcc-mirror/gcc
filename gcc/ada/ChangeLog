@@ -1,5 +1,9 @@
 2012-03-13  Tristan Gingold  <gingold@adacore.com>
 
+	* gcc-interface/gigi.h (flag_vms_malloc64): Refine condition.
+
+2012-03-13  Tristan Gingold  <gingold@adacore.com>
+
 	* sysdep.c: Adjust condition after removal of __osf__.
 
 2012-03-12  Eric Botcazou  <ebotcazou@adacore.com>
