@@ -1,5 +1,9 @@
 2012-03-13  Richard Guenther  <rguenther@suse.de>
 
+	* gthr-single.h (__GTHREAD_MUTEX_INIT_FUNCTION): Fix definition.
+
+2012-03-13  Richard Guenther  <rguenther@suse.de>
+
 	* gthr-posix.h: Remove duplicate __GTHREAD_MUTEX_INIT_FUNCTION
 	and __gthread_mutex_init_function definitions.
 
