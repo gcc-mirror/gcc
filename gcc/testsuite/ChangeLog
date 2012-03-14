@@ -1,3 +1,9 @@
+2012-03-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49468
+	* gcc.target/sh/pr49468-si.c: Make dg-skip-if not the first directive.
+	* gcc.target/sh/pr49468-di.c: Likewise.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/warn/miss-format-1.C: Remove *-*-solaris2.8 handling.
