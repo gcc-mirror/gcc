@@ -1,6 +1,7 @@
-// Specific definitions for Solaris 8+  -*- C++ -*-
+// Specific definitions for Solaris 9+  -*- C++ -*-
 
-// Copyright (C) 2000, 2002, 2005, 2009, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2005, 2009, 2011, 2012
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,11 +30,8 @@
 // file will come before all others.
 
 #if __cplusplus >= 199711L
-// Overloads in <iso/math_iso.h> and <iso/stdlib_iso.h> changed with
-// Solaris 8 patches.  Since <bits/c++config.h> includes
-// <bits/os_defines.h> before configure results,
-// __CORRECT_ISO_CPP_MATH_H_PROTO[12] and __CORRECT_ISO_CPP_STDLIB_H_PROTO
-// must be defined via acinclude.m4.
+#define __CORRECT_ISO_CPP_MATH_H_PROTO
+#define __CORRECT_ISO_CPP_STDLIB_H_PROTO
 #define __CORRECT_ISO_CPP_STRING_H_PROTO
 #define __CORRECT_ISO_CPP_WCHAR_H_PROTO
 #endif

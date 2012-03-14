@@ -1,5 +1,45 @@
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/os/solaris/solaris2.8: Rename to ...
+	* config/os/solaris/solaris2.9: ... this.
+	* config/abi/post/solaris2.8: Rename to ...
+	* config/abi/post/solaris2.9: ... this.
+	* configure.host (os_include_dir): Remove solaris2.8.
+	Reflect renaming.
+	(abi_baseline_pair): Remove *-*-solaris2.8.
+	Reflect renaming.
+
+	* configure.ac (GLIBCXX_CHECK_MATH_PROTO): Remove
+	(GLIBCXX_CHECK_STDLIB_PROTO): Remove.
+	* acinclude.m4 (GLIBCXX_CHECK_MATH_PROTO): Remove
+	(GLIBCXX_CHECK_STDLIB_PROTO): Remove.
+	(GLIBCXX_CHECK_GTHREADS): Remove Solaris 8 handling.
+	* crossconfig.m4 (GLIBCXX_CROSSCONFIG): Remove *-solaris2.8
+	handling.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+	* config/os/solaris/solaris2.9/os_defines.h
+	(__CORRECT_ISO_CPP_MATH_H_PROTO): Define.
+	(__CORRECT_ISO_CPP_STDLIB_H_PROTO): Define.
+	* include/c_global/cmath: Rename __CORRECT_ISO_CPP_MATH_H_PROTO1
+	to __CORRECT_ISO_CPP_MATH_H_PROTO.
+	[!__CORRECT_ISO_CPP_MATH_H_PROTO2]: Remove.
+	* include/tr1/cmath: Rename __CORRECT_ISO_CPP_MATH_H_PROTO1 to
+	__CORRECT_ISO_CPP_MATH_H_PROTO.
+
+	* doc/xml/manual/configure.xml (Configure, --enable-libstdcxx-threads):
+	Remove Solaris 8 reference.
+
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Don't xfail on *-*-solaris2.8.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/12.cc:
+	Likewise.
+	* testsuite/ext/enc_filebuf/char/13598.cc: Don't xfail on
+	*-*-solaris2.8.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.host (irix6.5*): Remove.
 	* config/os/irix: Remove.
 	* config/io/basic_file_stdio.cc (__basic_file<char>::showmanyc())

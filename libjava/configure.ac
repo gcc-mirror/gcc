@@ -1086,16 +1086,8 @@ case "$THREADS" in
 	THREADLIBS='-lpthread -lrt'
 	THREADSPEC='-lpthread -lrt'
 	;;
-     *-*-solaris2.8)
-	# Always use alternate thread library on Solaris 8.  Need libthread
-	# for TLS support.
-	# Need -Wl,-R to get it through libtool ...
-	THREADLIBS='-L/usr/lib/lwp$(MULTISUBDIR) -Wl,-R -Wl,/usr/lib/lwp$(MULTISUBDIR) -lpthread -lthread'
-	# ... while ld only accepts -R.
-	THREADSPEC='-L/usr/lib/lwp%{m64:/64} -R/usr/lib/lwp%{m64:/64} -lpthread -lthread'
-        ;;
      *-*-solaris2.9)
-	# As on Solaris 8, need libthread for TLS support.
+	# Need libthread for TLS support.
 	THREADLIBS='-lpthread -lthread'
 	THREADSPEC='-lpthread -lthread'
 	;;

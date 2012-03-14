@@ -2382,7 +2382,7 @@ fix = {
     files     = math.h;
     select    = "struct exception";
     /*
-     * This should be bypassed on __cplusplus, but some supposedly C++ C++
+     * This should be bypassed on __cplusplus, but some supposedly C++
      * aware headers, such as Solaris 8 and 9, don't wrap their struct
      * exception either.  So currently we bypass only for glibc, based on a
      * comment in the fixed glibc header.  Ick.
@@ -2926,26 +2926,6 @@ fix = {
 
 
 /*
- * Solaris 8 PTHREAD_COND_INITIALIZER lacks the __pthread_cond_magic field.
- * COND_MAGIC is only defined in <synch.h> and pollutes the namespace, so
- * use the value literally instead.
- */
-fix = {
-    hackname = solaris_cond_init;
-    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files = pthread.h;
-    mach = '*-*-solaris2.8';
-    c_fix = format;
-    c_fix_arg = "%1, 0x4356%2";
-    c_fix_arg = "^(#define[ \t]+PTHREAD_COND_INITIALIZER[ \t]+"
-                "\\{.*0)(\\},[ \t]*0\\}.*)$";
-    test_text =
-    '#pragma ident	"@(#)pthread.h	1.29	01/07/07 SMI"'"\n"
-    '#define	PTHREAD_COND_INITIALIZER	{{{0}, 0}, 0}	/* = DEFAULTCV */';
-};
-
-
-/*
  *  g++ rejects functions declared with both C and C++ linkage.
  */
 fix = {
@@ -3422,13 +3402,13 @@ fix = {
 
 
 /*
- * On Solaris 8 and 9, __va_list needs to become a typedef for
+ * On Solaris 9, __va_list needs to become a typedef for
  * __builtin_va_list to make -Wmissing-format-attribute work.
  */
 fix = {
     hackname = solaris_sys_va_list;
     files    = sys/va_list.h;
-    mach     = '*-*-solaris2.[89]';
+    mach     = '*-*-solaris2.9';
     select   = "#if.*__STDC__.*\n"
 	       "typedef void \\*__va_list;\n"
 	       "#else\n"

@@ -1,5 +1,13 @@
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* inclhack.def (math_exception): Remove duplicate.
+	(solaris_cond_init): Remove.
+	(solaris_sys_va_list): Remove Solaris 8 support.
+	* fixincl.x: Regenerate.
+	* tests/base/pthread.h [SOLARIS_COND_INIT_CHECK]: Remove.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* inclhack.def (broken_cabs): Remove IRIX and SunOS 4 support.
 	(irix___restrict): Remove.
 	(irix___generic1): Remove.

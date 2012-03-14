@@ -1,5 +1,28 @@
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config.gcc (enable_obsolete): Remove *-*-solaris2.8*.
+	(*-*-solaris2.[0-8], *-*-solaris2.[0-8].*): Mark unsupported.
+	(i[34567]86-*-solaris2*, x86_64-*-solaris2.1[0-9]*): Remove
+	Solaris 8 support.
+	* configure.ac (gcc_cv_ld_hidden): Remove *-*-solaris2.8*.
+	(ld_tls_support): Remove Solaris 8 references.
+	(lwp_dir, lwp_spec): Remove support for alternate thread library.
+	* acinclude.m4 (gcc_cv_initfini_array): Remove *-*-solaris2.*
+	tests.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+	* config/sol2.h (LINK_SPEC): Remove LIB_THREAD_LDFLAGS_SPEC.
+	* config/i386/sol2.h: Remove Solaris 8 references.
+
+	* doc/install.texi (Specific, i?86-*-solaris2.[89]): Rename to ...
+	(i?86-*-solaris2.9): ... this.
+	Remove Solaris 8 references.
+	(Specific, *-*-solaris2*): Document Solaris 8 removal.
+	Remove Solaris 8 references.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.gcc (enable_obsolete): Remove mips-sgi-irix6.5.
 	(mips-sgi-irix6.5*): Remove.
 	* config.host (mips-sgi-irix*): Remove.

@@ -1,6 +1,6 @@
 // TR1 cmath -*- C++ -*-
 
-// Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -563,12 +563,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Note: we deal with fabs in a special way, because an using std::fabs
   // would bring in also the overloads for complex types, which in C++0x
   // mode have a different return type.
-  // With __CORRECT_ISO_CPP_MATH_H_PROTO1, math.h imports std::fabs in the
+  // With __CORRECT_ISO_CPP_MATH_H_PROTO, math.h imports std::fabs in the
   // global namespace after the declarations of the float / double / long
   // double overloads but before the std::complex overloads.
   using ::fabs;
 
-#ifndef __CORRECT_ISO_CPP_MATH_H_PROTO1
+#ifndef __CORRECT_ISO_CPP_MATH_H_PROTO
   inline float
   fabs(float __x)
   { return __builtin_fabsf(__x); }

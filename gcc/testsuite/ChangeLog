@@ -1,5 +1,20 @@
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* g++.dg/warn/miss-format-1.C: Remove *-*-solaris2.8 handling.
+	* gcc.dg/c99-stdint-6.c: Likewise.
+	* gcc.dg/lto/20090210_0.c: Likewise.
+	* gcc.dg/pr28796-2.c: Don't skip on sparc*-sun-solaris2.8.
+	* gcc.dg/pragma-init-fini.c: Don't skip on i?86-*-solaris2.8.
+	* gcc.dg/pragma-init-fini-2.c: Likewise.
+	* gcc.dg/torture/pr47917.c: Remove *-*-solaris2.8 handling.
+	* gcc.target/i386/pr22076.c: Remove i?86-*-solaris2.8 handling.
+	* gcc.target/i386/pr22152.c: Likewise.
+	* gcc.target/i386/vect8-ret.c: Likewise.
+	* lib/target-supports.exp (add_options_for_tls): Remove Solaris 8
+	handling.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* g++.dg/other/anon5.C: Don't skip on mips-sgi-irix*.
 	* g++.dg/tree-prof/partition1.C: Likewise.
 	* g++.dg/tree-prof/partition2.C: Likewise.

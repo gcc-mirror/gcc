@@ -251,7 +251,6 @@ case ${target} in
  | arm*-*-uclinux*			\
  | arm*-wince-pe*			\
  | score-*				\
- | *-*-solaris2.8*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -282,9 +281,9 @@ case ${target} in
  | *-*-rtemsaout*			\
  | *-*-rtemscoff*			\
  | *-*-solaris2				\
- | *-*-solaris2.[0-7]			\
- | *-*-solaris2.[0-7].*			\
- | *-*-sysv*		\
+ | *-*-solaris2.[0-8]			\
+ | *-*-solaris2.[0-8].*			\
+ | *-*-sysv*				\
  | vax-*-vms*				\
  )
 	echo "*** Configuration ${target} not supported" 1>&2
@@ -1321,9 +1320,8 @@ i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 	# Set default arch_32 to pentium4, tune_32 to generic like the other
 	# i386 targets, although config.guess defaults to i386-pc-solaris2*.
 	case ${target} in
-	*-*-solaris2.[89]*)
-		# Solaris 8 and 9/x86 cannot execute SSE/SSE2 instructions by
-		# default.
+	*-*-solaris2.9*)
+		# Solaris 9/x86 cannot execute SSE/SSE2 instructions by default.
 		with_arch_32=${with_arch_32:-pentiumpro}
 		;;
 	*)
