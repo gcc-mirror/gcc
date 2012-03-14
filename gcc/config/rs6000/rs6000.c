@@ -7452,6 +7452,9 @@ call_ABI_of_interest (tree fndecl)
       /* Interesting functions that we are emitting in this object file.  */
       c_node = cgraph_get_node (fndecl);
       c_node = cgraph_function_or_thunk_node (c_node, NULL);
+      if (c_node == NULL)
+	return true;
+
       return !cgraph_only_called_directly_p (c_node);
     }
   return false;
