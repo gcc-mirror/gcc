@@ -1,3 +1,7 @@
+2012-03-13  Terry Guo  <terry.guo@arm.com>
+
+	* testsuite/Makefile.in (TEST_GCC_EXEC_PREFIX): New.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.host: Remove osf* handling.
