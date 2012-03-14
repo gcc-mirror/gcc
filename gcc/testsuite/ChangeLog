@@ -1,5 +1,13 @@
 2012-03-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/52571
+	* gcc.dg/vect/vect-2.c: Initialize arrays.
+	* gcc.dg/vect/no-section-anchors-vect-34.c: Likewise.
+	* gcc.target/i386/recip-vec-divf.c: Use -fno-common.
+	* gcc.target/i386/recip-vec-sqrtf.c: Likewise.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/52080
 	PR middle-end/52097
 	PR middle-end/48124

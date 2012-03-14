@@ -1,5 +1,13 @@
 2012-03-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/52571
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Move
+	flag_section_anchors check ...
+	(vect_can_force_dr_alignment_p): ... here.  Do not re-align
+	DECL_COMMON variables.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
 	* tree.h (DECL_BIT_FIELD_REPRESENTATIVE): New define.
 	* stor-layout.c (start_bitfield_representative): New function.
 	(finish_bitfield_representative): Likewise.
