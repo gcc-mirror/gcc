@@ -1,5 +1,13 @@
 2012-03-14  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/52582
+	* gimple-fold.c (canonicalize_constructor_val): Make sure
+	we have a cgraph node for a FUNCTION_DECL that comes from
+	a constructor.
+	(gimple_get_virt_method_for_binfo): Likewise.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/52571
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Move
 	flag_section_anchors check ...
