@@ -1,5 +1,25 @@
 2012-03-14  Richard Guenther  <rguenther@suse.de>
 
+	* tree.h (DECL_BIT_FIELD_REPRESENTATIVE): New define.
+	* stor-layout.c (start_bitfield_representative): New function.
+	(finish_bitfield_representative): Likewise.
+	(finish_bitfield_layout): Likewise.
+	(finish_record_layout): Call finish_bitfield_layout.
+	* tree.c (free_lang_data_in_decl): Only free DECL_QUALIFIER
+	for QUAL_UNION_TYPE fields.
+	* tree-streamer-in.c (lto_input_ts_field_decl_tree_pointers):
+	Stream DECL_BIT_FIELD_REPRESENTATIVE.
+	* tree-streamer-out.c (write_ts_field_decl_tree_pointers): Likewise.
+
+	PR middle-end/52080
+	PR middle-end/52097
+	PR middle-end/48124
+	* expr.c (get_bit_range): Unconditionally extract bitrange
+	from DECL_BIT_FIELD_REPRESENTATIVE.
+	(expand_assignment): Adjust call to get_bit_range.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/52578
 	* fold-const.c (fold_unary_loc): Fold (T1)(T2)x to (T1)x if
 	the outermost conversion is a sign-change only.
