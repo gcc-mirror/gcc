@@ -7843,10 +7843,13 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    return fold_build1_loc (loc, code, type, TREE_OPERAND (op0, 0));
 
 	  /* If we have a sign-extension of a zero-extended value, we can
-	     replace that by a single zero-extension.  */
+	     replace that by a single zero-extension.  Likewise if the
+	     final conversion does not change precision we can drop the
+	     intermediate conversion.  */
 	  if (inside_int && inter_int && final_int
-	      && inside_prec < inter_prec && inter_prec < final_prec
-	      && inside_unsignedp && !inter_unsignedp)
+	      && ((inside_prec < inter_prec && inter_prec < final_prec
+		   && inside_unsignedp && !inter_unsignedp)
+		  || final_prec == inter_prec))
 	    return fold_build1_loc (loc, code, type, TREE_OPERAND (op0, 0));
 
 	  /* Two conversions in a row are not needed unless:
@@ -10335,10 +10338,21 @@ fold_binary_loc (location_t loc,
 
 		  if (TREE_CODE (tmp0) == NEGATE_EXPR)
 		    tmp0 = TREE_OPERAND (tmp0, 0);
+		  if (CONVERT_EXPR_P (tmp0)
+		      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp0, 0)))
+		      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (tmp0, 0)))
+			  <= TYPE_PRECISION (type)))
+		    tmp0 = TREE_OPERAND (tmp0, 0);
 		  if (TREE_CODE (tmp1) == NEGATE_EXPR)
 		    tmp1 = TREE_OPERAND (tmp1, 0);
+		  if (CONVERT_EXPR_P (tmp1)
+		      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp1, 0)))
+		      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (tmp1, 0)))
+			  <= TYPE_PRECISION (type)))
+		    tmp1 = TREE_OPERAND (tmp1, 0);
 		  /* The only case we can still associate with two variables
-		     is if they are the same, modulo negation.  */
+		     is if they are the same, modulo negation and bit-pattern
+		     preserving conversions.  */
 		  if (!operand_equal_p (tmp0, tmp1, 0))
 		    ok = false;
 		}
