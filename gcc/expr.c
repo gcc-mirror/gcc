@@ -4530,49 +4530,16 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	   != CODE_FOR_nothing)
 	  || SLOW_UNALIGNED_ACCESS (mode, align)))
     {
-      addr_space_t as
-	= TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (to, 0))));
-      struct expand_operand ops[2];
-      enum machine_mode address_mode;
-      rtx reg, op0, mem;
+      rtx reg, mem;
 
       reg = expand_expr (from, NULL_RTX, VOIDmode, EXPAND_NORMAL);
       reg = force_not_mem (reg);
-
-      if (TREE_CODE (to) == MEM_REF)
-	{
-	  tree base = TREE_OPERAND (to, 0);
-	  address_mode = targetm.addr_space.address_mode (as);
-	  op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-	  op0 = convert_memory_address_addr_space (address_mode, op0, as);
-	  if (!integer_zerop (TREE_OPERAND (to, 1)))
-	    {
-	      rtx off
-		= immed_double_int_const (mem_ref_offset (to), address_mode);
-	      op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
-	    }
-	  op0 = memory_address_addr_space (mode, op0, as);
-	  mem = gen_rtx_MEM (mode, op0);
-	  set_mem_attributes (mem, to, 0);
-	  set_mem_addr_space (mem, as);
-	}
-      else if (TREE_CODE (to) == TARGET_MEM_REF)
-	{
-	  struct mem_address addr;
-	  get_address_description (to, &addr);
-	  op0 = addr_for_mem_ref (&addr, as, true);
-	  op0 = memory_address_addr_space (mode, op0, as);
-	  mem = gen_rtx_MEM (mode, op0);
-	  set_mem_attributes (mem, to, 0);
-	  set_mem_addr_space (mem, as);
-	}
-      else
-	gcc_unreachable ();
-      if (TREE_THIS_VOLATILE (to))
-	MEM_VOLATILE_P (mem) = 1;
+      mem = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
       if (icode != CODE_FOR_nothing)
 	{
+	  struct expand_operand ops[2];
+
 	  create_fixed_operand (&ops[0], mem);
 	  create_input_operand (&ops[1], reg, mode);
 	  /* The movmisalign<mode> pattern cannot fail, else the assignment
@@ -4624,31 +4591,11 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  && ((icode = optab_handler (movmisalign_optab, mode))
 	      != CODE_FOR_nothing))
 	{
-	  enum machine_mode address_mode;
-	  rtx op0;
 	  struct expand_operand ops[2];
-	  addr_space_t as = TYPE_ADDR_SPACE
-	      (TREE_TYPE (TREE_TYPE (TREE_OPERAND (tem, 0))));
-	  tree base = TREE_OPERAND (tem, 0);
 
 	  misalignp = true;
 	  to_rtx = gen_reg_rtx (mode);
-
-	  address_mode = targetm.addr_space.address_mode (as);
-	  op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-	  op0 = convert_memory_address_addr_space (address_mode, op0, as);
-	  if (!integer_zerop (TREE_OPERAND (tem, 1)))
-	    {
-	      rtx off = immed_double_int_const (mem_ref_offset (tem),
-						address_mode);
-	      op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
-	    }
-	  op0 = memory_address_addr_space (mode, op0, as);
-	  mem = gen_rtx_MEM (mode, op0);
-	  set_mem_attributes (mem, tem, 0);
-	  set_mem_addr_space (mem, as);
-	  if (TREE_THIS_VOLATILE (tem))
-	    MEM_VOLATILE_P (mem) = 1;
+	  mem = expand_expr (tem, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
 	  /* If the misaligned store doesn't overwrite all bits, perform
 	     rmw cycle on MEM.  */
@@ -4666,7 +4613,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
       else
 	{
 	  misalignp = false;
-	  to_rtx = expand_normal (tem);
+	  to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, EXPAND_WRITE);
 	}
 
       /* If the bitfield is volatile, we want to access it in the
@@ -9302,7 +9249,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	set_mem_attributes (temp, exp, 0);
 	set_mem_addr_space (temp, as);
 	align = get_object_or_type_alignment (exp);
-	if (mode != BLKmode
+	if (modifier != EXPAND_WRITE
+	    && mode != BLKmode
 	    && align < GET_MODE_ALIGNMENT (mode)
 	    /* If the target does not have special handling for unaligned
 	       loads of mode then it can use regular moves for them.  */
@@ -9390,7 +9338,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	set_mem_addr_space (temp, as);
 	if (TREE_THIS_VOLATILE (exp))
 	  MEM_VOLATILE_P (temp) = 1;
-	if (mode != BLKmode
+	if (modifier != EXPAND_WRITE
+	    && mode != BLKmode
 	    && align < GET_MODE_ALIGNMENT (mode)
 	    /* If the target does not have special handling for unaligned
 	       loads of mode then it can use regular moves for them.  */
