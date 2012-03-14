@@ -1,3 +1,7 @@
+2012-03-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h: Fix comments.
+
 2012-03-13  Terry Guo  <terry.guo@arm.com>
 
 	* testsuite/Makefile.in (TEST_GCC_EXEC_PREFIX): New.
