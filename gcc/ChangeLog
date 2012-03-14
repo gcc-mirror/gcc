@@ -1,5 +1,81 @@
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/alpha/alpha.c [HAVE_STAMP_H]: Remove.
+	(alpha_file_start) [MS_STAMP]: Remove.
+
+	* config/alpha/elf.h (TARGET_GAS): Remove.
+	* config/alpha/freebsd.h (TARGET_DEFAULT): Remove.
+	* config/alpha/linux.h (TARGET_DEFAULT): Remove.
+	* config/alpha/netbsd.h (TARGET_DEFAULT): Remove.
+	* config/alpha/vms.h (TARGET_DEFAULT): Remove.
+	* config.gcc (alpha*-*-linux*): Remove target_cpu_default.
+	(alpha*-*-freebsd*): Likewise.
+	(alpha*-*-netbsd*): Likewise.
+	(alpha*-*-openbsd*): Likewise.
+	(alpha*-*-*): Remove target_cpu_default2.
+	* config/alpha/alpha.c (alpha_output_filename): Remove !TARGET_GAS
+	handling.
+	* config/alpha/alpha.h (TARGET_AS_CAN_SUBTRACT_LABELS): Remove.
+	(TARGET_AS_SLASH_BEFORE_SUFFIX): Remove.
+	* config/alpha/alpha.c (print_operand): Always assume
+	TARGET_AS_SLASH_BEFORE_SUFFIX.
+	* config/alpha/alpha.md ("*builtin_setjmp_receiver_er_sl_1"):
+	Remove TARGET_AS_CAN_SUBTRACT_LABELS.
+	("*builtin_setjmp_receiver_er_1"): Remove.
+	* config/alpha/alpha.opt (malpha-as): Remove.
+	(mgas): Ignore.
+	* doc/invoke.texi (Option Summary, DEC Alpha Options): Remove
+	-malpha-as, -mgas.
+	Remove DEC Unix reference.
+
+	* config/alpha/alpha.h (OBJECT_FORMAT_COFF): Remove.
+	(EXTENDED_COFF): Remove.
+	* config/alpha/elf.h (OBJECT_FORMAT_COFF): Don't undef.
+	(EXTENDED_COFF): Don't undef.
+	* config/alpha/alpha.c (alpha_file_start): Always assume
+	OBJECT_FORMAT_ELF.
+	Don't set targetm.asm_file_start_file_directive.
+	[!OBJECT_FORMAT_ELF]: Remove.
+	(TARGET_ASM_FILE_START_FILE_DIRECTIVE): Remove.
+
+	* config/alpha/alpha.h (SDB_DEBUGGING_INFO): Remove.
+	(DBX_DEBUGGING_INFO): Remove.
+	(MIPS_DEBUGGING_INFO): Remove.
+	(PREFERRED_DEBUGGING_TYPE): Remove.
+	(DBX_OUTPUT_SOURCE_LINE): Remove.
+	(SDB_OUTPUT_SOURCE_LINE): Remove.
+	(DBX_CONTIN_LENGTH): Remove.
+	(NO_DBX_FUNCTION_END): Remove.
+	(ASM_STABS_OP): Remove.
+	(ASM_STABN_OP): Remove.
+	(ASM_STABD_OP): Remove.
+	(SDB_ALLOW_FORWARD_REFERENCES): Remove.
+	(SDB_ALLOW_UNKNOWN_REFERENCES): Remove.
+	(PUT_SDB_DEF): Remove.
+	(PUT_SDB_PLAIN_DEF): Remove.
+	(PUT_SDB_TYPE): Remove.
+	(sdb_label_count): Remove.
+	(PUT_SDB_BLOCK_START): Remove.
+	(PUT_SDB_BLOCK_END): Remove.
+	(PUT_SDB_FUNCTION_START): Remove.
+	(PUT_SDB_FUNCTION_END): Remove.
+	(PUT_SDB_EPILOGUE_END): Remove.
+	* config/alpha/elf.h (SDB_DEBUGGING_INFO): Don't undef.
+	(MIPS_DEBUGGING_INFO): Don't undef.
+	(DBX_DEBUGGING_INFO): Don't undef.
+	* config/alpha/vms.h (SDB_DEBUGGING_INFO): Don't undef.
+	(MIPS_DEBUGGING_INFO): Don't undef.
+	(DBX_DEBUGGING_INFO): Don't undef.
+	* config/alpha/freebsd.h (DBX_CONTIN_CHAR): Remove.
+	* config/alpha/alpha.c (alpha_option_override): Remove SDB_DEBUG
+	handling.
+	(alpha_start_function): Likewise.
+	(sdb_label_count): Remove.
+	(alpha_output_filename): Remove DBX_DEBUG handling.
+	(alpha_file_start): Likewise.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.gcc (enable_obsolete): Remove *-*-solaris2.8*.
 	(*-*-solaris2.[0-8], *-*-solaris2.[0-8].*): Mark unsupported.
 	(i[34567]86-*-solaris2*, x86_64-*-solaris2.1[0-9]*): Remove

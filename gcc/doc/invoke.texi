@@ -558,7 +558,7 @@ Objective-C and Objective-C++ Dialects}.
 -mkernel -mone-byte-bool}
 
 @emph{DEC Alpha Options}
-@gccoptlist{-mno-fp-regs  -msoft-float  -malpha-as  -mgas @gol
+@gccoptlist{-mno-fp-regs  -msoft-float @gol
 -mieee  -mieee-with-inexact  -mieee-conformant @gol
 -mfp-trap-mode=@var{mode}  -mfp-rounding-mode=@var{mode} @gol
 -mtrap-precision=@var{mode}  -mbuild-constants @gol
@@ -12212,8 +12212,7 @@ This option marks the generated code as IEEE conformant.  You must not
 use this option unless you also specify @option{-mtrap-precision=i} and either
 @option{-mfp-trap-mode=su} or @option{-mfp-trap-mode=sui}.  Its only effect
 is to emit the line @samp{.eflag 48} in the function prologue of the
-generated assembly file.  Under DEC Unix, this has the effect that
-IEEE-conformant math library routines will be linked in.
+generated assembly file.
 
 @item -mbuild-constants
 @opindex mbuild-constants
@@ -12228,13 +12227,6 @@ using code, even if it takes more instructions (the maximum is six).
 You would typically use this option to build a shared library dynamic
 loader.  Itself a shared library, it must relocate itself in memory
 before it can find the variables and constants in its own data segment.
-
-@item -malpha-as
-@itemx -mgas
-@opindex malpha-as
-@opindex mgas
-Select whether to generate code to be assembled by the vendor-supplied
-assembler (@option{-malpha-as}) or by the GNU assembler @option{-mgas}.
 
 @item -mbwx
 @itemx -mno-bwx
