@@ -1,5 +1,13 @@
 2012-03-14  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/52584
+	* tree-vect-generic.c (type_for_widest_vector_mode): Take
+	element type instead of mode, use build_vector_type_for_mode
+	instead of the langhook, build a vector of proper signedness.
+	(expand_vector_operations_1): Adjust.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/52582
 	* gimple-fold.c (canonicalize_constructor_val): Make sure
 	we have a cgraph node for a FUNCTION_DECL that comes from
