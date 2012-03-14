@@ -1,3 +1,7 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* intrinsics/c99_functions.c [__sgi__ && !HAVE_COMPLEX_H]: Remove.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Remove Tru64 reference.

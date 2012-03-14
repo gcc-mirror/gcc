@@ -1,3 +1,58 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (enable_obsolete): Remove mips-sgi-irix6.5.
+	(mips-sgi-irix6.5*): Remove.
+	* config.host (mips-sgi-irix*): Remove.
+	* configure.ac (enable_fixed_point): Remove mips*-sgi-irix*.
+	(set_have_as_tls): Remove *-*-irix6*.
+	(gcc_cv_ld_static_dynamic): Remove mips-sgi-irix6*.
+	* configure: Regenerate.
+
+	* config/mips/iris6.h: Remove.
+	* config/mips/iris6.opt: Remove.
+	* config/mips/t-irix6: Remove.
+
+	* config/mips/mips.h (TARGET_GPWORD): Remove IRIX 6 N64 handling.
+	(TARGET_IRIX6): Remove.
+	(TARGET_CPU_CPP_BUILTINS): Remove IRIX 6 handling.
+	Don't define LANGUAGE_C, _LANGUAGE_C for Objective-C.
+	* config/mips/mips.c (mips_build_builtin_va_list): Remove IRIX 6
+	handling.
+	(mips_file_start): Likewise.
+	* config/mips/mips-protos.h (irix_asm_output_align): Remove.
+
+	* config/mips/driver-native.c [__sgi__]: Remove.
+	(host_detect_local_cpu) [__sgi__]: Remove.
+
+	* config/mips/gnu-user.h: Remove iris5.h reference.
+
+	* config/mips/mips-modes.def: Remove IRIX 6 reference.
+	* config/mips/gnu-user64.h (MIPS_TFMODE_FORMAT): Remove.
+	* config/mips/mips.c (mips_option_override) [MIPS_TFMODE_FORMAT]:
+	Remove.
+
+	* gcc.c (main): Move asm_debug initialization ...
+	(asm_debug): ... here.
+
+	* ginclude/stddef.h (__STDDEF_H__): Don't define.
+
+	* defaults.h (LINK_ELIMINATE_DUPLICATE_LDIRECTORIES): Remove.
+	* system.h (LINK_ELIMINATE_DUPLICATE_LDIRECTORIES): Poison.
+	* collect2.c [LINK_ELIMINATE_DUPLICATE_LDIRECTORIES]: Remove.
+	(main) [LINK_ELIMINATE_DUPLICATE_LDIRECTORIES]: Remove.
+	[LINK_ELIMINATE_DUPLICATE_LDIRECTORIES] (is_in_args): Remove.
+	* doc/tm.texi.in (Driver, LINK_ELIMINATE_DUPLICATE_LDIRECTORIES):
+	Remove.
+	* doc/tm.texi: Regenerate.
+
+	* doc/invoke.texi (Debugging Options, -gdwarf-<version>): Remove
+	IRIX 6 reference.
+	(MIPS Options, -march): Remove IRIX reference.
+	* doc/install.texi (Binaries, SGI IRIX): Remove.
+	(Specific, mips-sgi-irix6): Document IRIX 6.5 removal, remove rest
+	of section.
+	* doc/trouble.texi (Interoperation): Remove -lgl_s handling.
+
 2012-03-14  Martin Jambor  <mjambor@suse.cz>
 
 	* expr.c (expand_assignment): Use expand_expr with EXPAND_WRITE

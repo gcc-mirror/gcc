@@ -2063,9 +2063,6 @@ case "${target}" in
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
     indepsw.adb<indepsw-gnu.adb"
     ;;
-  mips-sgi-irix*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-irix.adb"
-    ;;
   hppa*-hp-hpux10*) # Unlike hpux11
     ;;
   hppa*-hp-hpux11*)

@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
-/* { dg-skip-if "PR middle-end/47405" { mips-sgi-irix* } } */
 
 extern void abort (void);
 

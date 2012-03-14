@@ -34,7 +34,6 @@
 --  The full capability is currently supported on the following targets:
 
 --     HP-UX ia64
---     IRIX
 --     GNU/Linux x86, x86_64, ia64
 --     FreeBSD x86, x86_64
 --     Solaris sparc and x86

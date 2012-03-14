@@ -59,7 +59,6 @@
 --    AIX
 --    GNU/Linux
 --    HP-UX
---    Irix
 --    Solaris
 --    Alpha OpenVMS
 

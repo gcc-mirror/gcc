@@ -1,3 +1,47 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (mips-sgi-irix6*): Remove.
+
+	* a-intnam-irix.ads, mlib-tgt-specific-irix.adb,
+	s-intman-irix.adb, s-mastop-irix.adb, s-osinte-irix.adb,
+	s-osinte-irix.ads, s-proinf-irix-athread.adb,
+	s-proinf-irix-athread.ads, s-taprop-irix.adb, s-tasinf-irix.ads,
+	system-irix-n32.ads, system-irix-n64.ads, system-irix-o32.ads:
+	Remove.
+
+	* adaint.c [__mips && __sgi]: Remove.
+	(__gnat_number_of_cpus) [__mips && __sgi]: Remove.
+	[IS_CROSS && !(__mips && __sgi)]: Remove.
+	* adaint.h [sgi && _LFAPI]: Remove.
+	* cstreams.c (__gnat_full_name) [sgi]: Remove.
+	* env.c (__gnat_unsetenv) [__mips && __sgi]: Remove.
+	(__gnat_clearenv) [__mips && __sgi]: Remove.
+	* errno.c (_SGI_MP_SOURCE): Remove.
+	* gsocket.h [sgi]: Remove.
+	* init.c: Remove IRIX reference.
+	[sgi]: Remove.
+	* link.c [sgi]: Remove.
+	* s-oscons-tmplt.c [__mips && __sgi] (IOV_MAX): Don't define.
+	(main) [__mips && __sgi] (MAX_tv_sec): Don't define.
+	(CLOCK_SGI_FAST, CLOCK_SGI_CYCLE): Remove.
+	* sysdep.c [sgi]: Remove.
+	(getc_immediate_common) [sgi]: Remove.
+	(__gnat_localtime_tzoff) [sgi]: Remove.
+	* terminals.c [__mips && __sgi] (IRIX): Don't define.
+	[IRIX] (USE_GETPTY): Don't define.
+	(allocate_pty_desc) [USE_GETPTY]: Remove.
+
+	* g-traceb.ads: Remove IRIX reference.
+	* g-trasym.ads: Likewise.
+	* memtrack.adb: Likewise.
+	* s-interr-sigaction.adb: Likewise.
+
+	* gnat_rm.texi (Implementation Advice): Remove SGI info.
+	(Implementation Defined Characteristics): Likewise.
+	* gnat_ugn.texi (Summary of Run-Time Configurations, mips-irix):
+	Remove.
+	(Irix-Specific Considerations): Remove.
+
 2012-03-13  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/gigi.h (flag_vms_malloc64): Refine condition.

@@ -84,15 +84,6 @@ pragma Style_Checks ("M32766");
 /** For Linux _XOPEN_SOURCE must be defined, otherwise IOV_MAX is not defined
  **/
 #define _XOPEN_SOURCE 500
-
-#elif defined (__mips) && defined (__sgi)
-/** For IRIX 6, _XOPEN5 must be defined and _XOPEN_IOV_MAX must be used as
- ** IOV_MAX, otherwise IOV_MAX is not defined.  IRIX 5 has neither.
- **/
-#ifdef _XOPEN_IOV_MAX
-#define _XOPEN5
-#define IOV_MAX _XOPEN_IOV_MAX
-#endif
 #endif
 
 /* Include gsocket.h before any system header so it can redefine FD_SETSIZE */
@@ -1233,11 +1224,11 @@ CND(SIZEOF_tv_usec, "tv_usec")
 */
 
 /**
- ** On Solaris and IRIX, field tv_sec in struct timeval has an undocumented
+ ** On Solaris, field tv_sec in struct timeval has an undocumented
  ** hard-wired limit of 100 million.
  ** On IA64 HP-UX the limit is 2**31 - 1.
  **/
-#if defined (sun) || (defined (__mips) && defined (__sgi))
+#if defined (sun)
 # define MAX_tv_sec "100_000_000"
 
 #elif defined (__hpux__)
@@ -1346,11 +1337,6 @@ CND(CLOCK_MONOTONIC, "System monotonic clock")
 
 #ifdef CLOCK_FASTEST
 CND(CLOCK_FASTEST, "Fastest clock")
-#endif
-
-#if defined (__sgi)
-CND(CLOCK_SGI_FAST,  "SGI fast clock")
-CND(CLOCK_SGI_CYCLE, "SGI CPU clock")
 #endif
 
 #ifndef CLOCK_THREAD_CPUTIME_ID

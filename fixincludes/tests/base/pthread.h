@@ -70,13 +70,6 @@
 #endif  /* GLIBC_MUTEX_INIT_CHECK */
 
 
-#if defined( IRIX_PTHREAD_INIT_CHECK )
-#define PTHREAD_MUTEX_INITIALIZER	{ { 0 } }
-#define PTHREAD_COND_INITIALIZER	{ { 0 } }
-#define PTHREAD_RWLOCK_INITIALIZER	{ { 0 } }
-#endif  /* IRIX_PTHREAD_INIT_CHECK */
-
-
 #if defined( PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK )
 extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask);
 #endif  /* PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK */

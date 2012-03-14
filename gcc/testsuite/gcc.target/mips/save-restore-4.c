@@ -1,6 +1,5 @@
 /* Check that we can use the save instruction to save $16, $17 and $31.  */
 /* { dg-options "(-mips16) isa_rev>=1 -mabi=32 -O2" } */
-/* { dg-skip-if "PR target/46610" { mips-sgi-irix6* } } */
 
 void bar (void);
 

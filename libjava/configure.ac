@@ -961,17 +961,9 @@ esac
 AC_CACHE_CHECK([for --no-merge-exidx-entries], [libgcj_cv_exidx],
   [saved_ldflags="$LDFLAGS"
    LDFLAGS="${LDFLAGS} -Wl,--no-merge-exidx-entries"
-   # The IRIX 6 ld doesn't recognize --no-merge-exidx-entries, but only
-   # warns about unknown options, which breaks the testsuite.  So enable
-   # AC_LANG_WERROR, but there's currently (autoconf 2.64) no way to turn
-   # it off again.  As a workaround, save and restore werror flag like
-   # AC_PATH_XTRA.
-   ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag=$ac_[]_AC_LANG_ABBREV[]_werror_flag
-   AC_LANG_WERROR
    AC_LINK_IFELSE([int main(void){ return 0;} ],
 		      [eval "libgcj_cv_exidx=yes"],
 		      [eval "libgcj_cv_exidx=no"])
-   ac_[]_AC_LANG_ABBREV[]_werror_flag=$ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag
    LDFLAGS="${saved_ldflags}"]
 )
 if test "${libgcj_cv_exidx}" = "yes"; then
@@ -1481,10 +1473,6 @@ else
    # requires -ldl.
    if test "$GC" = boehm; then
       case "${host}" in
-          mips-sgi-irix6*)
-	    # While IRIX 6 has libdl for the O32 and N32 ABIs, the N64 one is
-	    # missing.  It's unnecessary anyway since dlopen lives in libc.
-	    ;;
 	  *-*-darwin*)
 	    ;;
 	  *)
@@ -1636,7 +1624,7 @@ TL_AC_GXX_INCLUDE_DIR
 # BSD_COMP is defined; just including sys/filio.h is simpler.
 # We avoid AC_HEADER_DIRENT since we really only care about dirent.h
 # for now.  If you change this, you also must update natFile.cc.
-AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h sys/types.h fcntl.h \
+AC_CHECK_HEADERS([unistd.h sys/time.h sys/types.h fcntl.h \
 		  sys/ioctl.h sys/filio.h sys/stat.h sys/select.h \
 		  sys/socket.h netinet/in.h arpa/inet.h netdb.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
@@ -1732,7 +1720,7 @@ SYSDEP_SOURCES=
 SIGNAL_HANDLER_AUX=
 
 case "${host}" in
- mips-sgi-irix* | *-*-solaris2*)
+ *-*-solaris2*)
     SIGNAL_HANDLER=include/posix-signal.h
     ;;
  i?86-*-linux*)

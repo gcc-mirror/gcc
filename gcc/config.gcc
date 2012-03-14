@@ -250,7 +250,6 @@ case ${target} in
  | arm*-*-rtems*			\
  | arm*-*-uclinux*			\
  | arm*-wince-pe*			\
- | mips-sgi-irix6.5			\
  | score-*				\
  | *-*-solaris2.8*			\
  )
@@ -1682,26 +1681,6 @@ microblaze*-*-*)
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
         tmake_file="${tmake_file} microblaze/t-microblaze"
         ;;
-mips-sgi-irix6.5*)
-	tm_file="elfos.h ${tm_file} mips/iris6.h"
-	tmake_file="mips/t-irix6 t-slibgcc"
-	extra_options="${extra_options} rpath.opt mips/iris6.opt"
-	target_cpu_default="MASK_ABICALLS"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
-	# Only IRIX Development Foundation 1.3 for IRIX 6.5 provides stdint.h.
-	use_gcc_stdint=wrap
-	if test "x$stabs" = xyes
-	then
-		tm_file="${tm_file} dbx.h"
-	fi
-	if test "x$gnu_ld" = xyes
-	then
-		tm_defines="${tm_defines} IRIX_USING_GNU_LD"
-	fi
-	case ${enable_threads}:${have_pthread_h} in
-	  "":yes | yes:yes ) thread_file=posix ;;
-	esac
-	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"

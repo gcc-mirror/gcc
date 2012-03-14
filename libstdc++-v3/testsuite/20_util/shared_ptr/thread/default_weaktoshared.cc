@@ -17,8 +17,8 @@
 
 // 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
 
-// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* mips-sgi-irix6* } }
-// { dg-options "-pthread -std=gnu++0x" { target *-*-freebsd* *-*-netbsd* *-*-linux* mips-sgi-irix6* } }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* } }
+// { dg-options "-pthread -std=gnu++0x" { target *-*-freebsd* *-*-netbsd* *-*-linux* } }
 // { dg-options "-pthreads -std=gnu++0x" { target *-*-solaris* } }
 // { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
 

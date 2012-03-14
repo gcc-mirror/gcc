@@ -24,11 +24,6 @@ details.  */
 #include <errno.h>
 #include <string.h>
 
-#if HAVE_BSTRING_H
-// Needed for bzero, implicitly used by FD_ZERO on IRIX 5.2 
-#include <bstring.h>
-#endif
-
 #include <gcj/cni.h>
 #include <gcj/javaprims.h>
 #include <gnu/java/net/PlainSocketImpl.h>

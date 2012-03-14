@@ -251,7 +251,7 @@ __gnat_ttyname (int filedes)
 }
 #endif
 
-#if defined (linux) || defined (sun) || defined (sgi) \
+#if defined (linux) || defined (sun) \
   || defined (WINNT) \
   || defined (__MACHTEN__) || defined (__hpux__) || defined (_AIX) \
   || (defined (__svr4__) && defined (i386)) || defined (__Lynx__) \
@@ -309,7 +309,7 @@ getc_immediate_common (FILE *stream,
                        int *avail,
                        int waiting)
 {
-#if defined (linux) || defined (sun) || defined (sgi) \
+#if defined (linux) || defined (sun) \
     || defined (__CYGWIN32__) || defined (__MACHTEN__) || defined (__hpux__) \
     || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
     || defined (__Lynx__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
@@ -329,7 +329,7 @@ getc_immediate_common (FILE *stream,
       /* Set RAW mode, with no echo */
       termios_rec.c_lflag = termios_rec.c_lflag & ~ICANON & ~ECHO;
 
-#if defined(linux) || defined (sun) || defined (sgi) \
+#if defined(linux) || defined (sun) \
     || defined (__MACHTEN__) || defined (__hpux__) \
     || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
     || defined (__Lynx__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
@@ -780,8 +780,8 @@ __gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
 {
   struct tm tp;
 
-/* AIX, HPUX, SGI Irix, Sun Solaris */
-#if defined (_AIX) || defined (__hpux__) || defined (sgi) || defined (sun)
+/* AIX, HPUX, Sun Solaris */
+#if defined (_AIX) || defined (__hpux__) || defined (sun)
 {
   (*Lock_Task) ();
 

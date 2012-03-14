@@ -599,7 +599,6 @@ ac_includes_default="\
 #endif"
 
 enable_option_checking=no
-ac_c_werror_flag=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
@@ -13359,7 +13358,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13362 "configure"
+#line 13361 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13465,7 +13464,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13468 "configure"
+#line 13467 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19458,7 +19457,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 19461 "configure"
+#line 19460 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -20576,14 +20575,6 @@ if test "${libgcj_cv_exidx+set}" = set; then :
 else
   saved_ldflags="$LDFLAGS"
    LDFLAGS="${LDFLAGS} -Wl,--no-merge-exidx-entries"
-   # The IRIX 6 ld doesn't recognize --no-merge-exidx-entries, but only
-   # warns about unknown options, which breaks the testsuite.  So enable
-   # AC_LANG_WERROR, but there's currently (autoconf 2.64) no way to turn
-   # it off again.  As a workaround, save and restore werror flag like
-   # AC_PATH_XTRA.
-   ac_xsave_c_werror_flag=$ac_c_werror_flag
-
-ac_c_werror_flag=yes
    if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
@@ -20598,7 +20589,6 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-   ac_c_werror_flag=$ac_xsave_c_werror_flag
    LDFLAGS="${saved_ldflags}"
 
 fi
@@ -23146,10 +23136,6 @@ fi
    # requires -ldl.
    if test "$GC" = boehm; then
       case "${host}" in
-          mips-sgi-irix6*)
-	    # While IRIX 6 has libdl for the O32 and N32 ABIs, the N64 one is
-	    # missing.  It's unnecessary anyway since dlopen lives in libc.
-	    ;;
 	  *-*-darwin*)
 	    ;;
 	  *)
@@ -23883,7 +23869,7 @@ esac
 # BSD_COMP is defined; just including sys/filio.h is simpler.
 # We avoid AC_HEADER_DIRENT since we really only care about dirent.h
 # for now.  If you change this, you also must update natFile.cc.
-for ac_header in unistd.h bstring.h sys/time.h sys/types.h fcntl.h \
+for ac_header in unistd.h sys/time.h sys/types.h fcntl.h \
 		  sys/ioctl.h sys/filio.h sys/stat.h sys/select.h \
 		  sys/socket.h netinet/in.h arpa/inet.h netdb.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
@@ -24220,7 +24206,7 @@ SYSDEP_SOURCES=
 SIGNAL_HANDLER_AUX=
 
 case "${host}" in
- mips-sgi-irix* | *-*-solaris2*)
+ *-*-solaris2*)
     SIGNAL_HANDLER=include/posix-signal.h
     ;;
  i?86-*-linux*)

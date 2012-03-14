@@ -1,6 +1,6 @@
 /* Definitions of various defaults for tm.h macros.
    Copyright (C) 1992, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2007, 2008, 2009, 2010, 2011
+   2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
@@ -349,13 +349,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 1
 #endif /* SUPPORTS_INIT_PRIORITY */
-
-/* If duplicate library search directories can be removed from a
-   linker command without changing the linker's semantics, give this
-   symbol a nonzero.  */
-#ifndef LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
-#define LINK_ELIMINATE_DUPLICATE_LDIRECTORIES 0
-#endif /* LINK_ELIMINATE_DUPLICATE_LDIRECTORIES */
 
 /* If we have a definition of INCOMING_RETURN_ADDR_RTX, assume that
    the rest of the DWARF 2 frame unwind support is also provided.  */
