@@ -1,3 +1,11 @@
+2012-03-14  Martin Jambor  <mjambor@suse.cz>
+
+	* expr.c (expand_assignment): Use expand_expr with EXPAND_WRITE
+	when expanding MEM_REFs, MEM_TARGET_REFs and handled_component
+	bases.
+	(expand_expr_real_1): Do not handle misalignment if modifier is
+	EXPAND_WRITE.
+
 2012-03-14  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52584
