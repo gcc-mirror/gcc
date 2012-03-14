@@ -634,7 +634,7 @@ Objective-C and Objective-C++ Dialects}.
 -mveclibabi=@var{type} -mvect8-ret-in-mem @gol
 -mpc32 -mpc64 -mpc80 -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
--mcmodel=@var{code-model} -mabi=@var{name} @gol
+-mcmodel=@var{code-model} -mabi=@var{name} -maddress-mode=@var{mode} @gol
 -m32 -m64 -mx32 -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store}
@@ -13929,6 +13929,18 @@ be statically or dynamically linked.
 @opindex mcmodel=large
 Generate code for the large model.  This model makes no assumptions
 about addresses and sizes of sections.
+
+@item -maddress-mode=long
+@opindex maddress-mode=long
+Generate code for long address mode.  This is only supported for 64-bit
+and x32 environments.  It is the default address mode for 64-bit
+environments.
+
+@item -maddress-mode=short
+@opindex maddress-mode=short
+Generate code for short address mode.  This is only supported for 32-bit
+and x32 environments.  It is the default address mode for 32-bit and
+x32 environments.
 @end table
 
 @node i386 and x86-64 Windows Options

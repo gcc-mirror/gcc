@@ -1,3 +1,18 @@
+2012-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/50797
+	* config/i386/i386-opts.h (pmode): New.
+
+	* config/i386/i386.c (ix86_option_override_internal): Properly
+	check and set ix86_pmode.
+
+	* config/i386/i386.h (Pmode): Check ix86_pmode instead of
+	TARGET_64BIT.
+
+	* config/i386/i386.opt (maddress-mode=): New.
+
+	* doc/invoke.texi: Document -maddress-mode=short|long for x86.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* dwarf2cfi.c (def_cfa_0): Remove MIPS_DEBUGGING_INFO handling.
