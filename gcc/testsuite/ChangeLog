@@ -1,5 +1,15 @@
 2012-03-14  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/52080
+	PR middle-end/52097
+	PR middle-end/48124
+	* gcc.dg/torture/pr48124-1.c: New testcase.
+	* gcc.dg/torture/pr48124-2.c: Likewise.
+	* gcc.dg/torture/pr48124-3.c: Likewise.
+	* gcc.dg/torture/pr48124-4.c: Likewise.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/52578
 	* gcc.dg/pr52578.c: New testcase.
 
