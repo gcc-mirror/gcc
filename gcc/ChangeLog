@@ -1,5 +1,26 @@
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* dwarf2cfi.c (def_cfa_0): Remove MIPS_DEBUGGING_INFO handling.
+	(dwarf2out_do_cfi_asm): Likewise.
+	* dwarf2out.c (output_call_frame_info): Remove MIPS_DEBUGGING_INFO
+	handling.
+	(add_data_member_location_attribute): Likewise.
+	(gen_array_type_die): Likewise.
+	(gen_subprogram_die): Likewise.
+	(gen_producer_string): Likewise.
+	* sdbout.c (sdbout_begin_prologue): Declare unconditionally.
+	Remove MIPS_DEBUGGING_INFO handling.
+	(sdb_debug_hooks): Likewise.
+	(sdbout_begin_block): Likewise.
+	(sdbout_end_block): Likewise.
+	(sdbout_begin_prologue): Likewise.
+	(sdbout_start_source_file): Likewise.
+	(sdbout_end_source_file): Likewise.
+	(sdbout_init): Likewise.
+	* system.h (MIPS_DEBUGGING_INFO): Poison.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/alpha/alpha.c [HAVE_STAMP_H]: Remove.
 	(alpha_file_start) [MS_STAMP]: Remove.
 
