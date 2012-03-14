@@ -131,17 +131,25 @@ canonicalize_constructor_val (tree cval)
   if (TREE_CODE (cval) == ADDR_EXPR)
     {
       tree base = get_base_address (TREE_OPERAND (cval, 0));
+      if (!base)
+	return NULL_TREE;
 
-      if (base
-	  && (TREE_CODE (base) == VAR_DECL
-	      || TREE_CODE (base) == FUNCTION_DECL)
+      if ((TREE_CODE (base) == VAR_DECL
+	   || TREE_CODE (base) == FUNCTION_DECL)
 	  && !can_refer_decl_in_current_unit_p (base))
 	return NULL_TREE;
-      if (base && TREE_CODE (base) == VAR_DECL)
+      if (TREE_CODE (base) == VAR_DECL)
 	{
 	  TREE_ADDRESSABLE (base) = 1;
 	  if (cfun && gimple_referenced_vars (cfun))
 	    add_referenced_var (base);
+	}
+      else if (TREE_CODE (base) == FUNCTION_DECL)
+	{
+	  /* Make sure we create a cgraph node for functions we'll reference.
+	     They can be non-existent if the reference comes from an entry
+	     of an external vtable for example.  */
+	  cgraph_get_create_node (base);
 	}
       /* Fixup types in global initializers.  */
       if (TREE_TYPE (TREE_TYPE (cval)) != TREE_TYPE (TREE_OPERAND (cval, 0)))
@@ -3114,6 +3122,11 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
      possibility too late.  */
   if (!can_refer_decl_in_current_unit_p (fn))
     return NULL_TREE;
+
+  /* Make sure we create a cgraph node for functions we'll reference.
+     They can be non-existent if the reference comes from an entry
+     of an external vtable for example.  */
+  cgraph_get_create_node (fn);
 
   return fn;
 }
