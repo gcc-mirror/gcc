@@ -75,16 +75,6 @@ extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask);
 #endif  /* PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK */
 
 
-#if defined( SOLARIS_COND_INIT_CHECK )
-#pragma ident	"@(#)pthread.h	1.29	01/07/07 SMI"
-#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
-#define	PTHREAD_COND_INITIALIZER	{{{0}, 0, 0x4356}, 0}	/* = DEFAULTCV */
-#else
-#define	PTHREAD_COND_INITIALIZER	{{{0}, 0, 0x4356}, {0}}	/* = DEFAULTCV */
-#endif
-#endif  /* SOLARIS_COND_INIT_CHECK */
-
-
 #if defined( SOLARIS_MUTEX_INIT_2_CHECK )
 #ident "@(#)pthread.h  1.26  98/04/12 SMI"
 #if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)

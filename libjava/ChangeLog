@@ -1,5 +1,10 @@
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (THREADLIBS): Remove *-*-solaris2.8 handling.
+	* configure: Regenerate.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac (libgcj_cv_exidx): Remove IRIX 6 ld workaround.
 	(mips-sgi-irix6*): Remove.
 	(mips-sgi-irix*): Remove.

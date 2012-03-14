@@ -1606,12 +1606,6 @@
 #endif
 
 
-/* Define to the linker flags to use for -pthread. */
-#ifndef USED_FOR_TARGET
-#undef LIB_THREAD_LDFLAGS_SPEC
-#endif
-
-
 /* Define to the library containing __tls_get_addr/___tls_get_addr. */
 #ifndef USED_FOR_TARGET
 #undef LIB_TLS_SPEC

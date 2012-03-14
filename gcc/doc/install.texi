@@ -3014,7 +3014,7 @@ information are.
 @item
 @uref{#ix86-x-linux,,i?86-*-linux*}
 @item
-@uref{#ix86-x-solaris289,,i?86-*-solaris2.[89]}
+@uref{#ix86-x-solaris289,,i?86-*-solaris2.9}
 @item
 @uref{#ix86-x-solaris210,,i?86-*-solaris2.10}
 @item
@@ -3551,8 +3551,8 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @html
 <hr />
 @end html
-@heading @anchor{ix86-x-solaris289}i?86-*-solaris2.[89]
-The Sun assembler in Solaris 8 and 9 has several bugs and limitations.
+@heading @anchor{ix86-x-solaris29}i?86-*-solaris2.9
+The Sun assembler in Solaris 9 has several bugs and limitations.
 While GCC works around them, several features are missing, so it is
 @c FIXME: which ones?
 recommended to use the GNU assembler instead.  There is no bundled
@@ -3562,9 +3562,9 @@ work.
 Solaris@tie{}2/x86 doesn't support the execution of SSE/SSE2 instructions
 before Solaris@tie{}9 4/04, even if the CPU supports them.  Programs will
 receive @code{SIGILL} if they try.  The fix is available both in
-Solaris@tie{}9 Update@tie{}6 and kernel patch 112234-12 or newer.  There is no
-corresponding patch for Solaris 8.  To avoid this problem,
-@option{-march} defaults to @samp{pentiumpro} on Solaris 8 and 9.  If
+Solaris@tie{}9 Update@tie{}6 and kernel patch 112234-12 or newer.  To
+avoid this problem,
+@option{-march} defaults to @samp{pentiumpro} on Solaris 9.  If
 you have the patch installed, you can configure GCC with an appropriate
 @option{--with-arch} option, but need GNU @command{as} for SSE2 support.
 
@@ -4066,9 +4066,8 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @heading @anchor{x-x-solaris2}*-*-solaris2*
 
-Support for Solaris 8 has been obsoleted in GCC 4.7, but can still be
-enabled by configuring with @option{--enable-obsolete}.  Support will be
-removed in GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
+Support for Solaris 8 has removed in GCC 4.8.  Support for Solaris 7 has
+been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
 you can download the Sun Studio compilers for free.  In Solaris 10 and
@@ -4141,13 +4140,6 @@ newer: @command{g++} will complain that types are missing.  These headers
 assume that omitting the type means @code{int}; this assumption worked for
 C90 but is wrong for C++, and is now wrong for C99 also.
 
-@command{g++} accepts such (invalid) constructs with the option
-@option{-fpermissive}; it will assume that any missing type is @code{int}
-(as defined by C90).
-
-There are patches for Solaris 8 (108652-24 or newer for SPARC,
-108653-22 for Intel) that fix this bug.
-
 Sun bug 4927647 sometimes causes random spurious testsuite failures
 related to missing diagnostic output.  This bug doesn't affect GCC
 itself, rather it is a kernel bug triggered by the @command{expect}
@@ -4155,27 +4147,19 @@ program which is used only by the GCC testsuite driver.  When the bug
 causes the @command{expect} program to miss anticipated output, extra
 testsuite failures appear.
 
-There are patches for Solaris 8 (117350-12 or newer for SPARC,
-117351-12 or newer for Intel) and Solaris 9 (117171-11 or newer for
+There are patches for Solaris 9 (117171-11 or newer for
 SPARC, 117172-11 or newer for Intel) that address this problem.
 
-Solaris@tie{}8 provides an alternate implementation of the thread
-library @samp{libthread}.  It is required for TLS support and has
-been made the default in Solaris@tie{}9, so it is always used on
-Solaris@tie{}8.
-
-Thread-local storage (TLS) is supported in Solaris@tie{}8 and 9, but requires
+Thread-local storage (TLS) is supported in Solaris@tie{}9, but requires
 some patches.  The @samp{libthread} patches provide the
 @code{__tls_get_addr} (SPARC, 64-bit x86) resp.@ @code{___tls_get_addr}
-(32-bit x86) functions.  On Solaris@tie{}8, you need 108993-26 or newer on
-SPARC, 108994-26 or newer on Intel.  On Solaris@tie{}9, the necessary support
+(32-bit x86) functions.  On Solaris@tie{}9, the necessary support
 on SPARC is present since FCS, while 114432-05 or newer is required on
-Intel.  Additionally, on Solaris@tie{}8, patch 109147-14 or newer on SPARC or
-109148-22 or newer on Intel are required for the Sun @command{ld} and
-runtime linker (@command{ld.so.1}) support.  Again, Solaris@tie{}9/SPARC
-works since FCS, while 113986-02 is required on Intel.  The linker
+Intel.  Additionally, on Solaris@tie{}9/x86, patch 113986-02 or newer is
+required for the Sun @command{ld} and runtime linker (@command{ld.so.1})
+support, while Solaris@tie{}9/SPARC works since FCS.  The linker
 patches must be installed even if GNU @command{ld} is used. Sun
-@command{as} in Solaris@tie{}8 and 9 doesn't support the necessary
+@command{as} in Solaris@tie{}9 doesn't support the necessary
 relocations, so GNU @command{as} must be used.  The @command{configure}
 script checks for those prerequisites and automatically enables TLS
 support if they are met.  Although those minimal patch versions should

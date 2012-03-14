@@ -1,6 +1,6 @@
 /* CPP Library - lexical analysis.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -267,7 +267,6 @@ search_line_acc_char (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 /* Disable on Solaris 2/x86 until the following problems can be properly
    autoconfed:
 
-   The Solaris 8 assembler cannot assemble SSE2/SSE4.2 insns.
    The Solaris 9 assembler cannot assemble SSE4.2 insns.
    Before Solaris 9 Update 6, SSE insns cannot be executed.
    The Solaris 10+ assembler tags objects with the instruction set

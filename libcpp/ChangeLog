@@ -1,3 +1,7 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lex.c: Remove Solaris 8 reference.
+
 2012-02-14  Walter Lee  <walt@tilera.com>
 
 	* configure.ac: Require 64-bit hwint for tilegx and tilepro.
