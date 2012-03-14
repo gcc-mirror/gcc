@@ -387,12 +387,6 @@ the effect you need.  Overriding this macro may be avoidable by overriding
 @code{LINK_GCC_C_SEQUENCE_SPEC} instead.
 @end defmac
 
-@defmac LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
-A nonzero value causes @command{collect2} to remove duplicate @option{-L@var{directory}} search
-directories from linking commands.  Do not give it a nonzero value if
-removing duplicate search directories changes the linker's semantics.
-@end defmac
-
 @deftypevr {Common Target Hook} bool TARGET_ALWAYS_STRIP_DOTDOT
 True if @file{..} components should always be removed from directory names computed relative to GCC's internal directories, false (default) if such components should be preserved and directory names containing them passed to other tools such as the linker.
 @end deftypevr

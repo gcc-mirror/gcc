@@ -43,9 +43,6 @@
 /* Define if you have u_int32_t */
 #undef HAVE_BSD_INT32_DEFINED
 
-/* Define to 1 if you have the <bstring.h> header file. */
-#undef HAVE_BSTRING_H
-
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 

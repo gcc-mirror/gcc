@@ -1,3 +1,7 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Make-lang.in (doc/g++.1): Remove IRIX 6.5 reference.
+
 2012-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/52521

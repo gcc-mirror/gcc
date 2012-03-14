@@ -289,10 +289,6 @@ EOF
 	sysdeps_dir=i386
 	DIVIDESPEC=-f%{m32:no-}use-divide-subroutine
 	;;
-  mips-sgi-irix6* )
-	can_unwind_signal=yes
-	sysdeps_dir=mips
-	;;
   arm*-linux* )
 	slow_pthread_self=no
 	can_unwind_signal=no

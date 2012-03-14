@@ -2926,16 +2926,6 @@ Solaris 2 (SPARC, Intel):
 @end itemize
 
 @item
-SGI IRIX:
-@itemize
-@item
-@uref{http://nekochan.net/,,Nekoware}
-
-@item
-@uref{http://jupiterrise.com/tgcware/,,TGCware}
-@end itemize
-
-@item
 Microsoft Windows:
 @itemize
 @item
@@ -2948,7 +2938,6 @@ The @uref{http://www.mingw.org/,,MinGW} project.
 @uref{ftp://ftp.thewrittenword.com/packages/by-name/,,The
 Written Word} offers binaries for
 AIX 4.3.3, 5.1 and 5.2,
-IRIX 6.5,
 GNU/Linux (i386),
 HP-UX 10.20, 11.00, and 11.11, and
 Solaris/SPARC 2.5.1, 2.6, 7, 8, 9 and 10.
@@ -3944,99 +3933,9 @@ Support for IRIX 5 has been removed in GCC 4.6.
 @end html
 @heading @anchor{mips-sgi-irix6}mips-sgi-irix6
 
-Support for IRIX 6.5 has been obsoleted in GCC 4.7, but can still be
-enabled by configuring with @option{--enable-obsolete}.  Support will be
-removed in GCC 4.8.  Support for IRIX 6 releases before 6.5 has been
-removed in GCC 4.6, as well as support for the O32 ABI.  It is
-@emph{strongly} recommended to upgrade to at least IRIX 6.5.18.  This
-release introduced full ISO C99 support, though for the N32 and N64 ABIs
-only.
-
-To build and use GCC on IRIX 6.5, you need the IRIX Development Foundation
-(IDF) and IRIX Development Libraries (IDL).  They are included with the
-IRIX 6.5 media.
-
-If you are using SGI's MIPSpro @command{cc} as your bootstrap compiler, you must
-ensure that the N32 ABI is in use.  To test this, compile a simple C
-file with @command{cc} and then run @command{file} on the
-resulting object file.  The output should look like:
-
-@smallexample
-test.o: ELF N32 MSB @dots{}
-@end smallexample
-
-@noindent
-If you see:
-
-@smallexample
-test.o: ELF 32-bit MSB @dots{}
-@end smallexample
-
-@noindent
-or
-
-@smallexample
-test.o: ELF 64-bit MSB @dots{}
-@end smallexample
-
-@noindent
-then your version of @command{cc} uses the O32 or N64 ABI by default.  You
-should set the environment variable @env{CC} to @samp{cc -n32}
-before configuring GCC@.
-
-If you want the resulting @command{gcc} to run on old 32-bit systems
-with the MIPS R4400 CPU, you need to ensure that only code for the @samp{mips3}
-instruction set architecture (ISA) is generated.  While GCC 3.x does
-this correctly, both GCC 2.95 and SGI's MIPSpro @command{cc} may change
-the ISA depending on the machine where GCC is built.  Using one of them
-as the bootstrap compiler may result in @samp{mips4} code, which won't run at
-all on @samp{mips3}-only systems.  For the test program above, you should see:
-
-@smallexample
-test.o: ELF N32 MSB mips-3 @dots{}
-@end smallexample
-
-@noindent
-If you get:
-
-@smallexample
-test.o: ELF N32 MSB mips-4 @dots{}
-@end smallexample
-
-@noindent
-instead, you should set the environment variable @env{CC} to @samp{cc
--n32 -mips3} or @samp{gcc -mips3} respectively before configuring GCC@.
-
-MIPSpro C 7.4 may cause bootstrap failures, due to a bug when inlining
-@code{memcmp}.  Either add @code{-U__INLINE_INTRINSICS} to the @env{CC}
-environment variable as a workaround or upgrade to MIPSpro C 7.4.1m.
-
-GCC on IRIX 6.5 is usually built to support the N32 and N64 ABIs.  If
-you build GCC on a system that doesn't have the N64 libraries installed
-or cannot run 64-bit binaries,
-you need to configure with @option{--disable-multilib} so GCC doesn't
-try to use them.
-Look for @file{/usr/lib64/libc.so.1} to see if you
-have the 64-bit libraries installed.
-
-GCC must be configured with GNU @command{as}.  The latest version, from GNU
-binutils 2.21, is known to work.  On the other hand, bootstrap fails
-with GNU @command{ld} at least since GNU binutils 2.17.
-
-The @option{--enable-libgcj}
-option is disabled by default: IRIX 6 uses a very low default limit
-(20480) for the command line length.  Although @command{libtool} contains a
-workaround for this problem, at least the N64 @samp{libgcj} is known not
-to build despite this, running into an internal error of the native
-@command{ld}.  A sure fix is to increase this limit (@samp{ncargs}) to
-its maximum of 262144 bytes.  If you have root access, you can use the
-@command{systune} command to do this.
-@c FIXME: does this work with current libtool?
-
-@code{wchar_t} support in @samp{libstdc++} is not available for old
-IRIX 6.5.x releases, @math{x < 19}.  The problem cannot be autodetected
-and in order to build GCC for such targets you need to configure with
-@option{--disable-wchar_t}.
+Support for IRIX 6.5 has been removed in GCC 4.8.  Support for IRIX 6
+releases before 6.5 has been removed in GCC 4.6, as well as support for
+the O32 ABI.
 
 @html
 <hr />

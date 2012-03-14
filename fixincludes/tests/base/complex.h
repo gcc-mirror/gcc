@@ -21,12 +21,6 @@
 #endif  /* HPUX_IMAGINARY_I_CHECK */
 
 
-#if defined( IRIX_COMPLEX_CHECK )
-#define _Complex_I (__extension__ 1.0iF)
-#define I _Complex_I
-#endif  /* IRIX_COMPLEX_CHECK */
-
-
 #if defined( SOLARIS_COMPLEX_CHECK )
 #define _Complex_I (__extension__ 1.0iF)
 #define	complex		_Complex

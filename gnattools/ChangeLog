@@ -1,3 +1,8 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (mips-sgi-irix*): Remove.
+	* configure: Regenerate.
+
 2011-10-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.in (LOOSE_WARN): Delete.

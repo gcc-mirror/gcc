@@ -1,3 +1,50 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/other/anon5.C: Don't skip on mips-sgi-irix*.
+	* g++.dg/tree-prof/partition1.C: Likewise.
+	* g++.dg/tree-prof/partition2.C: Likewise.
+	* g++.old-deja/g++.other/init19.C: Remove mips-sgi-irix*
+	handling.
+	* gcc.c-torture/compile/labels-3.c: Remove dg-options.
+	* gcc.c-torture/execute/20010724-1.c: Remove.
+	* gcc.c-torture/execute/20010724-1.x: Remove.
+	* gcc.c-torture/execute/20040208-2.c: Remove.
+	* gcc.c-torture/execute/20040208-2.x: Remove.
+	* gcc.c-torture/execute/ieee/20000320-1.c [__mips__ && __sgi__]:
+	Remove.
+	(main) [__mips__ && __sgi__]: Remove.
+	* gcc.c-torture/execute/ieee/copysign1.c: Remove IRIX reference.
+	* gcc.c-torture/execute/ieee/copysign2.c: Likewise.
+	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.x: Remove
+	mips-sgi-irix6* handling.
+	* gcc.dg/cpp/assert4.c [__mips__]: Remove __sgi__, sgi.
+	* gcc.dg/torture/20090618-1.c: Don't skip on mips-sgi-irix*.
+	* gcc.dg/torture/builtin-frexp-1.c: Remove mips*-*-irix6*
+	handling.
+	* gcc.dg/torture/builtin-logb-1.c: Likewise.
+	* gcc.dg/torture/pr47917.c: Remove mips-sgi-irix6.5 handling.
+	* gcc.dg/tree-ssa/ssa-store-ccp-3.c: Don't skip on mips*-*-irix*.
+	* gcc.misc-tests/linkage.exp: Remove mips-sgi-irix6* handling.
+	* gcc.target/mips/args-1.c [!__sgi__]: Remove.
+	* gcc.target/mips/interrupt_handler-2.c: Don't skip on
+	mips-sgi-irix6*.
+	* gcc.target/mips/interrupt_handler-3.c: Likewise.
+	* gcc.target/mips/save-restore-1.c: Don't skip on mips-sgi-irix6*.
+	* gcc.target/mips/save-restore-3.c: Likewise.
+	* gcc.target/mips/save-restore-4.c: Likewise.
+	* gcc.target/mips/save-restore-5.c: Likewise.
+	* gfortran.dg/g77/cabs.f: Don't xfail on mips-sgi-irix6*.
+	* lib/prune.exp (prune_gcc_output): Remove pruning of IRIX 6 ld
+	messages.
+	* lib/target-libpath.exp (set_ld_library_path_env_vars): Remove
+	IRIX 6 handling.
+	(restore_ld_library_path_env_vars): Likewise.
+	* lib/target-supports.exp (check_profiling_available): Remove
+	mips*-*-irix* handling.
+	(check_ascii_locale_available): Remove mips-sgi-irix* handling.
+	(add_options_for_c99_runtime): Remove mips-sgi-irix6.5* handling.
+	* objc.dg/stabs-1.m: Don't xfail on mips-sgi-irix6.5.
+
 2012-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/52582

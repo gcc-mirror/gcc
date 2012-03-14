@@ -17,8 +17,8 @@
 
 // TR1 2.2.2 Template class shared_ptr [tr.util.smartptr.shared]
 
-// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* mips-sgi-irix6* } }
-// { dg-options "-pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* mips-sgi-irix6* } }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* } }
 // { dg-options "-pthreads" { target *-*-solaris* } }
 
 #include <tr1/memory>

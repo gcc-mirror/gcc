@@ -1,6 +1,5 @@
 /* Check that we don't try to save the same register twice.  */
 /* { dg-options "(-mips16) isa_rev>=1 -mgp32 -O2" } */
-/* { dg-skip-if "PR target/46610" { mips-sgi-irix6* } } */
 
 int bar (int, int, int, int);
 void frob (void);

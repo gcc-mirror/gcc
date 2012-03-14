@@ -1,5 +1,4 @@
 c { dg-do run }
-c { dg-xfail-run-if "PR target/16292" { mips-sgi-irix6* } { -O0 } }
       program cabs_1
       complex      z0
       real         r0

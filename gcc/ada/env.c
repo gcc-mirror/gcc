@@ -229,11 +229,10 @@ void __gnat_unsetenv (char *name) {
   /* Not implemented */
   return;
 #elif defined (__hpux__) || defined (sun) \
-     || (defined (__mips) && defined (__sgi)) \
      || (defined (__vxworks) && ! defined (__RTP__)) \
      || defined (_AIX) || defined (__Lynx__)
 
-  /* On Solaris, HP-UX and IRIX there is no function to clear an environment
+  /* On Solaris and HP-UX there is no function to clear an environment
      variable. So we look for the variable in the environ table and delete it
      by setting the entry to NULL. This can clearly cause some memory leaks
      but free cannot be used on this context as not all strings in the environ
@@ -287,9 +286,9 @@ void __gnat_clearenv (void) {
 #if defined (VMS)
   /* not implemented */
   return;
-#elif defined (sun) || (defined (__mips) && defined (__sgi)) \
+#elif defined (sun) \
    || (defined (__vxworks) && ! defined (__RTP__)) || defined (__Lynx__)
-  /* On Solaris, IRIX, VxWorks (not RTPs), and Lynx there is no system
+  /* On Solaris, VxWorks (not RTPs), and Lynx there is no system
      call to unset a variable or to clear the environment so set all
      the entries in the environ table to NULL (see comment in
      __gnat_unsetenv for more explanation). */

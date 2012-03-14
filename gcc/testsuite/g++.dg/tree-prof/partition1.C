@@ -1,6 +1,5 @@
 /* { dg-require-effective-target freorder } */
 /* { dg-options "-O2 -freorder-blocks-and-partition" } */
-/* { dg-skip-if "PR target/47683" { mips-sgi-irix* } } */
 
 struct A { A () __attribute__((noinline)); ~A () __attribute__((noinline)); };
 A::A () { asm volatile ("" : : : "memory"); }

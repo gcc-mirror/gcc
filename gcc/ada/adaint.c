@@ -62,7 +62,7 @@ extern "C" {
 
 #endif /* VxWorks */
 
-#if (defined (__mips) && defined (__sgi)) || defined (__APPLE__)
+#if defined (__APPLE__)
 #include <unistd.h>
 #endif
 
@@ -2470,9 +2470,6 @@ __gnat_number_of_cpus (void)
 #if defined (linux) || defined (sun) || defined (AIX) || defined (__APPLE__)
   cores = (int) sysconf (_SC_NPROCESSORS_ONLN);
 
-#elif (defined (__mips) && defined (__sgi))
-  cores = (int) sysconf (_SC_NPROC_ONLN);
-
 #elif defined (__hpux__)
   struct pst_dynamic psd;
   if (pstat_getdynamic (&psd, sizeof (psd), 1, 0) != -1)
@@ -3541,8 +3538,7 @@ _flush_cache()
       && ! defined (__APPLE__) \
       && ! defined (_AIX) \
       && ! defined (VMS) \
-      && ! defined (__MINGW32__) \
-      && ! (defined (__mips) && defined (__sgi)))
+      && ! defined (__MINGW32__))
 
 /* Dummy function to satisfy g-trasym.o. See the preprocessor conditional
    just above for a list of native platforms that provide a non-dummy

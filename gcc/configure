@@ -7131,16 +7131,7 @@ else
       ;;
 
     mips*-*-*)
-      case $host in
-	mips*-sgi-irix*)
-	  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: fixed-point is not supported on IRIX, ignored" >&5
-$as_echo "$as_me: WARNING: fixed-point is not supported on IRIX, ignored" >&2;}
-	  enable_fixed_point=no
-	  ;;
-	*)
-	  enable_fixed_point=yes
-	  ;;
-      esac
+      enable_fixed_point=yes
       ;;
     *)
       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: fixed-point is not supported for this target, ignored" >&5
@@ -17969,7 +17960,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17972 "configure"
+#line 17963 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18075,7 +18066,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18078 "configure"
+#line 18069 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23620,11 +23611,6 @@ if test $gcc_cv_as_tls = yes; then
 fi
 fi
 case "$target" in
-  *-*-irix6*)
-    # IRIX 6.5 rld and libc.so lack TLS support, so even if gas and gld
-    # with TLS support are in use, native TLS cannot work.
-    set_have_as_tls=no
-    ;;
   # TLS was introduced in the Solaris 9 FCS release and backported to
   # Solaris 8 patches.  Support for GNU-style TLS on x86 was only
   # introduced in Solaris 9 4/04, replacing the earlier Sun style that Sun
@@ -23820,10 +23806,6 @@ elif test x$gcc_cv_ld != x; then
 	  gcc_cv_ld_dynamic_option="-adefault"
 	fi
 	;;
-      # IRIX 6 ld supports -Bstatic/-Bdynamic.
-      mips-sgi-irix6*)
-        gcc_cv_ld_static_dynamic=yes
-        ;;
       # Solaris 2 ld always supports -Bstatic/-Bdynamic.
       *-*-solaris2*)
         gcc_cv_ld_static_dynamic=yes

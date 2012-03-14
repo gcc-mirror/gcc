@@ -1,5 +1,5 @@
 /* Definitions for MIPS systems using GNU userspace and n32/64 abi.
-   Copyright 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
+   Copyright 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -52,9 +52,3 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX (TARGET_OLDABI ? "$" : ".")
-
-/* GNU/Linux doesn't use the same floating-point format that IRIX uses
-   for long double.  There's no need to override this here, since
-   ieee_quad_format is the default, but let's put this here to make
-   sure nobody thinks we just forgot to set it to something else.  */
-#define MIPS_TFMODE_FORMAT mips_quad_format

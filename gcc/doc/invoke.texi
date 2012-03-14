@@ -4778,9 +4778,8 @@ assembler (GAS) to fail with an error.
 
 @item -gdwarf-@var{version}
 @opindex gdwarf-@var{version}
-Produce debugging information in DWARF format (if that is
-supported).  This is the format used by DBX on IRIX 6.  The value
-of @var{version} may be either 2, 3 or 4; the default version is 2.
+Produce debugging information in DWARF format (if that is supported).
+The value of @var{version} may be either 2, 3 or 4; the default version is 2.
 
 Note that with DWARF Version 2 some ports require, and will always
 use, some non-conflicting DWARF 3 extensions in the unwind tables.
@@ -15260,7 +15259,7 @@ The special value @samp{from-abi} selects the
 most compatible architecture for the selected ABI (that is,
 @samp{mips1} for 32-bit ABIs and @samp{mips3} for 64-bit ABIs)@.
 
-Native Linux/GNU and IRIX toolchains also support the value @samp{native},
+The native Linux/GNU toolchain also supports the value @samp{native},
 which selects the best architecture option for the host processor.
 @option{-march=native} has no effect if GCC does not recognize
 the processor.

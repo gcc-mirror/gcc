@@ -1,7 +1,7 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
@@ -322,9 +322,6 @@ static void write_c_file_glob (FILE *, const char *);
 #endif
 #ifdef SCAN_LIBRARIES
 static void scan_libraries (const char *);
-#endif
-#if LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
-static int is_in_args (const char *, const char **, const char **);
 #endif
 #ifdef COLLECT_EXPORT_LIST
 #if 0
@@ -1524,15 +1521,6 @@ main (int argc, char **argv)
 	    case 'L':
 	      add_prefix (&cmdline_lib_dirs, arg+2);
 	      break;
-#else
-#if LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
-	    case 'L':
-	      if (is_in_args (arg,
-			      CONST_CAST2 (const char **, char **, ld1_argv),
-			      ld1 - 1))
-		--ld1;
-	      break;
-#endif /* LINK_ELIMINATE_DUPLICATE_LDIRECTORIES */
 #endif
 
 	    case 'o':
@@ -2234,22 +2222,6 @@ write_list (FILE *stream, const char *prefix, struct id *list)
       list = list->next;
     }
 }
-
-#if LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
-/* Given a STRING, return nonzero if it occurs in the list in range
-   [ARGS_BEGIN,ARGS_END).  */
-
-static int
-is_in_args (const char *string, const char **args_begin,
-	    const char **args_end)
-{
-  const char **args_pointer;
-  for (args_pointer = args_begin; args_pointer != args_end; ++args_pointer)
-    if (strcmp (string, *args_pointer) == 0)
-      return 1;
-  return 0;
-}
-#endif /* LINK_ELIMINATE_DUPLICATE_LDIRECTORIES */
 
 #ifdef COLLECT_EXPORT_LIST
 /* This function is really used only on AIX, but may be useful.  */

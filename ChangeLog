@@ -1,3 +1,12 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* MAINTAINERS (OS Port Maintainers): Remove irix.
+	* configure.ac (enable_libgomp): Remove *-*-irix6*.
+	(unsupported_languages): Remove mips-sgi-irix6.*.
+	(noconfigdirs): Don't add ${libgcj} for mips*-*-irix6*.
+	(with_stabs): Remove.
+	* configure: Regenerate.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* MAINTAINERS (OS Port Maintainers): Remove osf.

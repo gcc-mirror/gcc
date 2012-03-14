@@ -25,13 +25,3 @@
 #endif
 
 #endif  /* HPUX11_EXTERN_SENDPATH_CHECK */
-
-
-#if defined( IRIX_SOCKLEN_T_CHECK )
-#define _SOCKLEN_T
-#if _NO_XOPEN4 && _NO_XOPEN5
-typedef int socklen_t;
-#else
-typedef u_int32_t socklen_t;
-#endif /* _NO_XOPEN4 && _NO_XOPEN5 */
-#endif  /* IRIX_SOCKLEN_T_CHECK */

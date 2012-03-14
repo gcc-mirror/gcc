@@ -1,3 +1,7 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.tgt (*-*-irix6*): Remove.
+
 2012-03-13  Torvald Riegel  <triegel@redhat.com>
 
 	PR libitm/52526
