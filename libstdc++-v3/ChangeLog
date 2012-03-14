@@ -185,10 +185,10 @@
 	* testsuite/30_threads/unique_lock/modifiers/1.cc: Likewise.
 	* testsuite/30_threads/unique_lock/modifiers/2.cc: Likewise.
 	* testsuite/ext/rope/pthread7-rope.cc: Likewise.
-	* testsuite/tr1/2_general_utilities/shared_ptr/thread/default_weaktoshared.cc:
-	Likewise.
-	* testsuite/tr1/2_general_utilities/shared_ptr/thread/mutex_weaktoshared.cc:
-	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	default_weaktoshared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	mutex_weaktoshared.cc: Likewise.
 
 	* testsuite/23_containers/vector/capacity/resize/1.cc: Remove
 	dg-options for mips*-*-irix6*.
@@ -389,10 +389,10 @@
 	* testsuite/30_threads/unique_lock/modifiers/1.cc: Likewise.
 	* testsuite/30_threads/unique_lock/modifiers/2.cc: Likewise.
 	* testsuite/ext/rope/pthread7-rope.cc: Likewise.
-	* testsuite/tr1/2_general_utilities/shared_ptr/thread/default_weaktoshared.cc:
-	Likewise.
-	* testsuite/tr1/2_general_utilities/shared_ptr/thread/mutex_weaktoshared.cc:
-	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	default_weaktoshared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	mutex_weaktoshared.cc: Likewise.
 
 2012-03-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
