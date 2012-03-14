@@ -1,6 +1,6 @@
 ; Options for the DEC Alpha port of the compiler
 ;
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2012 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -27,12 +27,8 @@ Target Report Mask(FPREGS)
 Use fp registers
 
 mgas
-Target RejectNegative Mask(GAS)
-Assume GAS
-
-malpha-as
-Target RejectNegative InverseMask(GAS)
-Do not assume GAS
+Target Ignore
+Does nothing. Preserved for backward compatibility.
 
 mieee-conformant
 Target RejectNegative Mask(IEEE_CONFORMANT)
