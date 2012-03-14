@@ -71,6 +71,11 @@ enum cmodel {
   CM_LARGE_PIC	/* No assumptions.  */
 };
 
+enum pmode {
+  PMODE_SI,	/* Pmode == SImode. */
+  PMODE_DI 	/* Pmode == DImode. */
+};
+
 enum asm_dialect {
   ASM_ATT,
   ASM_INTEL

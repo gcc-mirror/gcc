@@ -3172,6 +3172,17 @@ ix86_option_override_internal (bool main_args_p)
   else
     ix86_arch_specified = 1;
 
+  if (global_options_set.x_ix86_pmode)
+    {
+      if ((TARGET_LP64 && ix86_pmode == PMODE_SI)
+	   || (!TARGET_64BIT && ix86_pmode == PMODE_DI))
+	error ("address mode %qs not supported in the %s bit mode",
+	       TARGET_64BIT ? "short" : "long",
+	       TARGET_64BIT ? "64" : "32");
+    }
+  else
+    ix86_pmode = TARGET_LP64 ? PMODE_DI : PMODE_SI;
+
   if (!global_options_set.x_ix86_abi)
     ix86_abi = DEFAULT_ABI;
 
