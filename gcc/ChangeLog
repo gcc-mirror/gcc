@@ -1,3 +1,14 @@
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52578
+	* fold-const.c (fold_unary_loc): Fold (T1)(T2)x to (T1)x if
+	the outermost conversion is a sign-change only.
+	(fold_binary_loc): Disregard widening and sign-changing
+	conversions when we determine if two variables are equal
+	for reassociation.
+	* tree-ssa-forwprop.c (combine_conversions): Fold (T1)(T2)x to
+	(T1)x if the outermost conversion is a sign-change only.
+
 2012-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:
