@@ -1,3 +1,7 @@
+2012-03-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* lib/fortran-modules.exp: New file which was forgotten in r185430.
+
 2012-03-15  Ira Rosen  <irar@il.ibm.com>
 	    Ulrich Weigand  <ulrich.weigand@linaro.org>
 
