@@ -1,3 +1,7 @@
+2012-03-15  Tristan Gingold  <gingold@adacore.com>
+
+	* README (EXAMPLES OF FIXES): Update.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (math_exception): Remove duplicate.
