@@ -3960,11 +3960,28 @@ package body Exp_Util is
       ----------------------------------
 
       function Initialized_By_Ctrl_Function (N : Node_Id) return Boolean is
-         Expr : constant Node_Id := Original_Node (Expression (N));
+         Expr : Node_Id := Original_Node (Expression (N));
+
       begin
+         if Nkind (Expr) = N_Function_Call then
+            Expr := Name (Expr);
+         end if;
+
+         --  The function call may appear in object.operation format. Strip
+         --  all prefixes and retrieve the function name.
+
+         loop
+            if Nkind (Expr) = N_Selected_Component then
+               Expr := Selector_Name (Expr);
+            else
+               exit;
+            end if;
+         end loop;
+
          return
-            Nkind (Expr) = N_Function_Call
-              and then Needs_Finalization (Etype (Expr));
+           Nkind_In (Expr, N_Expanded_Name, N_Identifier)
+             and then Ekind (Entity (Expr)) = E_Function
+             and then Needs_Finalization (Etype (Entity (Expr)));
       end Initialized_By_Ctrl_Function;
 
       ----------------------

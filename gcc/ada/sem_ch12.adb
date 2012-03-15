@@ -10433,7 +10433,11 @@ package body Sem_Ch12 is
             Abandon_Instantiation (Actual);
          end if;
 
-         Check_Mode_Conformant
+         --  In Ada 2012, actuals for access_to_subprograms must be subtype
+         --  conformant with the generic formal. Previous to AI05-288 only mode
+         --  conformance was required.
+
+         Check_Subtype_Conformant
            (Designated_Type (Act_T),
             Designated_Type (A_Gen_T),
             Actual,

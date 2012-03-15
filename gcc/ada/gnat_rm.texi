@@ -3212,12 +3212,14 @@ pragma Invariant
 @end smallexample
 
 @noindent
-This pragma provides exactly the same capabilities as the Invariant aspect
-defined in AI05-0146-1, and in the Ada 2012 Reference Manual. The Invariant
-aspect is fully implemented in Ada 2012 mode, but since it requires the use
-of the aspect syntax, which is not available exception in 2012 mode, it is
-not possible to use the Invariant aspect in earlier versions of Ada. However
-the Invariant pragma may be used in any version of Ada.
+This pragma provides exactly the same capabilities as the Type_Invariant aspect
+defined in AI05-0146-1, and in the Ada 2012 Reference Manual. The
+Type_Invariant aspect is fully implemented in Ada 2012 mode, but since it
+requires the use of the aspect syntax, which is not available except in 2012
+mode, it is not possible to use the Type_Invariant aspect in earlier versions
+of Ada. However the Invariant pragma may be used in any version of Ada. Also
+note that the aspect Invariant is a synonym in GNAT for the aspect
+Type_Invariant, but there is no pragma Type_Invariant.
 
 The pragma must appear within the visible part of the package specification,
 after the type to which its Entity argument appears. As with the Invariant
@@ -3233,7 +3235,7 @@ in Ada 2012 mode, but you cannot have both an invariant aspect and an
 invariant pragma for the same entity.
 
 For further details on the use of this pragma, see the Ada 2012 documentation
-of the Invariant aspect.
+of the Type_Invariant aspect.
 
 @node Pragma Keep_Names
 @unnumberedsec Pragma Keep_Names
@@ -17378,7 +17380,7 @@ A complete description of the AIs may be found in
 @item @code{Favor_Top_Level} @tab               -- GNAT
 @item @code{Inline} @tab
 @item @code{Inline_Always} @tab                 -- GNAT
-@item @code{Invariant} @tab
+@item @code{Invariant} @tab                     -- GNAT
 @item @code{Machine_Radix} @tab
 @item @code{No_Return} @tab
 @item @code{Object_Size} @tab                   -- GNAT
@@ -17398,6 +17400,7 @@ A complete description of the AIs may be found in
 @item @code{Suppress} @tab
 @item @code{Suppress_Debug_Info} @tab           -- GNAT
 @item @code{Test_Case} @tab                     -- GNAT
+@item @code{Type_Invariant} @tab
 @item @code{Unchecked_Union} @tab
 @item @code{Universal_Aliasing} @tab            -- GNAT
 @item @code{Unmodified} @tab                    -- GNAT
@@ -18418,8 +18421,8 @@ A complete description of the AIs may be found in
 
 @noindent
   Type invariants may be specified for private types using the aspect notation.
-  Aspect @code{Invariant} may be specified for any private type,
-  @code{Invariant'Class} can
+  Aspect @code{Type_Invariant} may be specified for any private type,
+  @code{Type_Invariant'Class} can
   only be specified for tagged types, and is inherited by any descendent of the
   tagged types. The invariant is a boolean expression that is tested for being
   true in the following situations: conversions to the private type, object
@@ -18427,6 +18430,8 @@ A complete description of the AIs may be found in
   [@b{in}] @b{out}
   parameters and returned result on return from any primitive operation for
   the type that is visible to a client.
+  GNAT defines the synonyms @code{Invariant} for @code{Type_Invariant} and
+  @code{Invariant'Class} for @code{Type_Invariant'Class}.
 
 @noindent
   RM References:  13.03.03 (00)

@@ -4829,10 +4829,12 @@ package body Exp_Ch3 is
                   --  object renaming declaration ---because these identifiers
                   --  were previously added by Enter_Name to the current scope.
                   --  We must preserve the homonym chain of the source entity
-                  --  as well.
+                  --  as well. We must also preserve the kind of the entity,
+                  --  which may be a constant.
 
                   Set_Chars (Defining_Identifier (N), Chars (Def_Id));
                   Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
+                  Set_Ekind (Defining_Identifier (N), Ekind (Def_Id));
                   Exchange_Entities (Defining_Identifier (N), Def_Id);
                end;
             end if;
