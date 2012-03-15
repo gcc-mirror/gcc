@@ -260,8 +260,8 @@ package body Sem_Prag is
 
       Preanalyze_CTC_Args
         (N,
-         Get_Requires_From_Case_Pragma (N),
-         Get_Ensures_From_Case_Pragma (N));
+         Get_Requires_From_CTC_Pragma (N),
+         Get_Ensures_From_CTC_Pragma (N));
 
       --  Remove the subprogram from the scope stack now that the pre-analysis
       --  of the expressions in the contract case or test case is done.
@@ -1465,13 +1465,13 @@ package body Sem_Prag is
             --  same name associated to this subprogram.
 
             declare
-               Name : constant String_Id := Get_Name_From_Case_Pragma (N);
+               Name : constant String_Id := Get_Name_From_CTC_Pragma (N);
                CTC  : Node_Id;
 
             begin
                CTC := Spec_CTC_List (Contract (S));
                while Present (CTC) loop
-                  if String_Equal (Name, Get_Name_From_Case_Pragma (CTC)) then
+                  if String_Equal (Name, Get_Name_From_CTC_Pragma (CTC)) then
                      Error_Msg_Sloc := Sloc (CTC);
                      Error_Pragma ("name for pragma% is already used#");
                   end if;

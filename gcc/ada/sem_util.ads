@@ -538,7 +538,7 @@ package Sem_Util is
    --  If expression N references a part of an object, return this object.
    --  Otherwise return Empty. Expression N should have been resolved already.
 
-   function Get_Ensures_From_Case_Pragma (N : Node_Id) return Node_Id;
+   function Get_Ensures_From_CTC_Pragma (N : Node_Id) return Node_Id;
    --  Return the Ensures component of Contract_Case or Test_Case pragma N, or
    --  Empty otherwise.
 
@@ -573,9 +573,8 @@ package Sem_Util is
    --  is the innermost visible entity with the given name. See the body of
    --  Sem_Ch8 for further details on handling of entity visibility.
 
-   function Get_Name_From_Case_Pragma (N : Node_Id) return String_Id;
+   function Get_Name_From_CTC_Pragma (N : Node_Id) return String_Id;
    --  Return the Name component of Contract_Case or Test_Case pragma N
-   --  Bad name, Case_Pragma is meaningless to me ???
 
    function Get_Pragma_Id (N : Node_Id) return Pragma_Id;
    pragma Inline (Get_Pragma_Id);
@@ -592,7 +591,7 @@ package Sem_Util is
    --  not a renamed entity, returns its argument. It is an error to call this
    --  with any other kind of entity.
 
-   function Get_Requires_From_Case_Pragma (N : Node_Id) return Node_Id;
+   function Get_Requires_From_CTC_Pragma (N : Node_Id) return Node_Id;
    --  Return the Requires component of Contract_Case or Test_Case pragma N, or
    --  Empty otherwise.
 

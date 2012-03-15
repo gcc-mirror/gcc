@@ -4490,11 +4490,11 @@ package body Sem_Util is
       end if;
    end Get_Enum_Lit_From_Pos;
 
-   ----------------------------------
-   -- Get_Ensures_From_Case_Pragma --
-   ----------------------------------
+   ---------------------------------
+   -- Get_Ensures_From_CTC_Pragma --
+   ---------------------------------
 
-   function Get_Ensures_From_Case_Pragma (N : Node_Id) return Node_Id is
+   function Get_Ensures_From_CTC_Pragma (N : Node_Id) return Node_Id is
       Args : constant List_Id := Pragma_Argument_Associations (N);
       Res  : Node_Id;
 
@@ -4514,7 +4514,7 @@ package body Sem_Util is
       end if;
 
       return Res;
-   end Get_Ensures_From_Case_Pragma;
+   end Get_Ensures_From_CTC_Pragma;
 
    ------------------------
    -- Get_Generic_Entity --
@@ -4602,16 +4602,16 @@ package body Sem_Util is
       return Entity_Id (Get_Name_Table_Info (Id));
    end Get_Name_Entity_Id;
 
-   -------------------------------
-   -- Get_Name_From_Case_Pragma --
-   -------------------------------
+   ------------------------------
+   -- Get_Name_From_CTC_Pragma --
+   ------------------------------
 
-   function Get_Name_From_Case_Pragma (N : Node_Id) return String_Id is
+   function Get_Name_From_CTC_Pragma (N : Node_Id) return String_Id is
       Arg : constant Node_Id :=
               Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
    begin
       return Strval (Expr_Value_S (Arg));
-   end Get_Name_From_Case_Pragma;
+   end Get_Name_From_CTC_Pragma;
 
    -------------------
    -- Get_Pragma_Id --
@@ -4656,11 +4656,11 @@ package body Sem_Util is
       return R;
    end Get_Renamed_Entity;
 
-   -----------------------------------
-   -- Get_Requires_From_Case_Pragma --
-   -----------------------------------
+   ----------------------------------
+   -- Get_Requires_From_CTC_Pragma --
+   ----------------------------------
 
-   function Get_Requires_From_Case_Pragma (N : Node_Id) return Node_Id is
+   function Get_Requires_From_CTC_Pragma (N : Node_Id) return Node_Id is
       Args : constant List_Id := Pragma_Argument_Associations (N);
       Res  : Node_Id;
 
@@ -4677,7 +4677,7 @@ package body Sem_Util is
       end if;
 
       return Res;
-   end Get_Requires_From_Case_Pragma;
+   end Get_Requires_From_CTC_Pragma;
 
    -------------------------
    -- Get_Subprogram_Body --

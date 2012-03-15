@@ -29,6 +29,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Expander; use Expander;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Itypes;   use Itypes;
@@ -3442,7 +3443,19 @@ package body Sem_Ch4 is
          Set_Parent (Iterator_Specification (Iterator), Iterator);
       end if;
 
-      Analyze (Condition (N));
+      if Needs_Expansion then
+
+         --  The full analysis will be performed during the expansion of the
+         --  quantified expression, only a preanalysis of the condition needs
+         --  to be done.
+
+         Expander_Mode_Save_And_Set (False);
+         Analyze (Condition (N));
+         Expander_Mode_Restore;
+      else
+         Analyze (Condition (N));
+      end if;
+
       End_Scope;
 
       Set_Etype (N, Standard_Boolean);
