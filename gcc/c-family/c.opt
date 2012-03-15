@@ -1035,6 +1035,10 @@ ftabstop=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger
 -ftabstop=<number>	Distance between tab stops for column reporting
 
+ftemplate-backtrace-limit=
+C++ ObjC++ Joined RejectNegative UInteger Var(template_backtrace_limit) Init(10)
+Set the maximum number of template instantiation notes for a single warning or error
+
 ftemplate-depth-
 C++ ObjC++ Joined RejectNegative Undocumented Alias(ftemplate-depth=)
 
