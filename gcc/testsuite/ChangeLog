@@ -1,3 +1,9 @@
+2012-03-15  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <apinski@cavium.com>
+
+	PR middle-end/52592
+	* gcc.dg/pr52592.c: New test.
+
 2012-03-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* gfortran.fortran-torture/compile/compile.exp: Simplify.

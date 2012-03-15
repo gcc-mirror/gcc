@@ -1,3 +1,11 @@
+2012-03-15  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <apinski@cavium.com>
+
+	PR middle-end/52592
+	* builtins.c (expand_builtin_int_roundingfn_2): If expanding
+	BUILT_IN_IR{INT,OUND}* using optab fails, emit lr{int,ound}*
+	calls instead of __builtin_ir{int,ound}*.
+
 2012-03-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* doc/sourcebuild.texi (cleanup-modules, keep-modules): Update
