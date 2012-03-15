@@ -84,18 +84,16 @@ new_pattern_def_seq (stmt_vec_info stmt_info, gimple stmt)
   append_pattern_def_seq (stmt_info, stmt);
 }
 
-/* Function widened_name_p
-
-   Check whether NAME, an ssa-name used in USE_STMT,
-   is a result of a type-promotion, such that:
+/* Check whether NAME, an ssa-name used in USE_STMT,
+   is a result of a type promotion or demotion, such that:
      DEF_STMT: NAME = NOP (name0)
-   where the type of name0 (HALF_TYPE) is smaller than the type of NAME.
+   where the type of name0 (ORIG_TYPE) is smaller/bigger than the type of NAME.
    If CHECK_SIGN is TRUE, check that either both types are signed or both are
    unsigned.  */
 
 static bool
-widened_name_p (tree name, gimple use_stmt, tree *half_type, gimple *def_stmt,
-		bool check_sign)
+type_conversion_p (tree name, gimple use_stmt, bool check_sign,
+		   tree *orig_type, gimple *def_stmt, bool *promotion)
 {
   tree dummy;
   gimple dummy_gimple;
@@ -118,21 +116,27 @@ widened_name_p (tree name, gimple use_stmt, tree *half_type, gimple *def_stmt,
       && dt != vect_external_def && dt != vect_constant_def)
     return false;
 
-  if (! *def_stmt)
+  if (!*def_stmt)
     return false;
 
   if (!is_gimple_assign (*def_stmt))
     return false;
 
-  if (gimple_assign_rhs_code (*def_stmt) != NOP_EXPR)
+  if (!CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (*def_stmt)))
     return false;
 
   oprnd0 = gimple_assign_rhs1 (*def_stmt);
 
-  *half_type = TREE_TYPE (oprnd0);
-  if (!INTEGRAL_TYPE_P (type) || !INTEGRAL_TYPE_P (*half_type)
-      || ((TYPE_UNSIGNED (type) != TYPE_UNSIGNED (*half_type)) && check_sign)
-      || (TYPE_PRECISION (type) < (TYPE_PRECISION (*half_type) * 2)))
+  *orig_type = TREE_TYPE (oprnd0);
+  if (!INTEGRAL_TYPE_P (type) || !INTEGRAL_TYPE_P (*orig_type)
+      || ((TYPE_UNSIGNED (type) != TYPE_UNSIGNED (*orig_type)) && check_sign))
+    return false;
+
+  if (TYPE_PRECISION (type) >= (TYPE_PRECISION (*orig_type) * 2))
+    *promotion = true;
+  else if (TYPE_PRECISION (*orig_type) >= (TYPE_PRECISION (type) * 2))
+    *promotion = false;
+  else
     return false;
 
   if (!vect_is_simple_use (oprnd0, *def_stmt, loop_vinfo,
@@ -214,6 +218,7 @@ vect_recog_dot_prod_pattern (VEC (gimple, heap) **stmts, tree *type_in,
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop;
   tree var;
+  bool promotion;
 
   if (!loop_info)
     return NULL;
@@ -277,7 +282,9 @@ vect_recog_dot_prod_pattern (VEC (gimple, heap) **stmts, tree *type_in,
         return NULL;
       stmt = last_stmt;
 
-      if (widened_name_p (oprnd0, stmt, &half_type, &def_stmt, true))
+      if (type_conversion_p (oprnd0, stmt, true, &half_type, &def_stmt,
+                               &promotion)
+         && promotion)
         {
           stmt = def_stmt;
           oprnd0 = gimple_assign_rhs1 (stmt);
@@ -334,10 +341,14 @@ vect_recog_dot_prod_pattern (VEC (gimple, heap) **stmts, tree *type_in,
       if (!types_compatible_p (TREE_TYPE (oprnd0), prod_type)
           || !types_compatible_p (TREE_TYPE (oprnd1), prod_type))
         return NULL;
-      if (!widened_name_p (oprnd0, stmt, &half_type0, &def_stmt, true))
+      if (!type_conversion_p (oprnd0, stmt, true, &half_type0, &def_stmt,
+                                &promotion)
+          || !promotion)
         return NULL;
       oprnd00 = gimple_assign_rhs1 (def_stmt);
-      if (!widened_name_p (oprnd1, stmt, &half_type1, &def_stmt, true))
+      if (!type_conversion_p (oprnd0, stmt, true, &half_type1, &def_stmt,
+                                &promotion)
+          || !promotion)
         return NULL;
       oprnd01 = gimple_assign_rhs1 (def_stmt);
       if (!types_compatible_p (half_type0, half_type1))
@@ -552,6 +563,7 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
   int dummy_int;
   VEC (tree, heap) *dummy_vec;
   bool op1_ok;
+  bool promotion;
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -571,12 +583,15 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
     return NULL;
 
   /* Check argument 0.  */
-  if (!widened_name_p (oprnd0, last_stmt, &half_type0, &def_stmt0, false))
-    return NULL;
+  if (!type_conversion_p (oprnd0, last_stmt, false, &half_type0, &def_stmt0,
+                         &promotion)
+      || !promotion)
+     return NULL;
   /* Check argument 1.  */
-  op1_ok = widened_name_p (oprnd1, last_stmt, &half_type1, &def_stmt1, false);
+  op1_ok = type_conversion_p (oprnd1, last_stmt, false, &half_type1,
+                              &def_stmt1, &promotion);
 
-  if (op1_ok)
+  if (op1_ok && promotion)
     {
       oprnd0 = gimple_assign_rhs1 (def_stmt0);
       oprnd1 = gimple_assign_rhs1 (def_stmt1);
@@ -816,6 +831,7 @@ vect_recog_widen_sum_pattern (VEC (gimple, heap) **stmts, tree *type_in,
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop;
   tree var;
+  bool promotion;
 
   if (!loop_info)
     return NULL;
@@ -855,8 +871,10 @@ vect_recog_widen_sum_pattern (VEC (gimple, heap) **stmts, tree *type_in,
      Left to check that oprnd0 is defined by a cast from type 'type' to type
      'TYPE'.  */
 
-  if (!widened_name_p (oprnd0, last_stmt, &half_type, &stmt, true))
-    return NULL;
+  if (!type_conversion_p (oprnd0, last_stmt, true, &half_type, &stmt,
+                          &promotion)
+      || !promotion)
+     return NULL;
 
   oprnd0 = gimple_assign_rhs1 (stmt);
   *type_in = half_type;
@@ -922,6 +940,7 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (vinfo_for_stmt (stmt));
   bb_vec_info bb_info = STMT_VINFO_BB_VINFO (vinfo_for_stmt (stmt));
   struct loop *loop = NULL;
+  bool promotion;
 
   if (loop_info)
     loop = LOOP_VINFO_LOOP (loop_info);
@@ -956,7 +975,9 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
   else
     {
       first = true;
-      if (!widened_name_p (oprnd, stmt, &half_type, &def_stmt, false)
+      if (!type_conversion_p (oprnd, stmt, false, &half_type, &def_stmt,
+                               &promotion)
+         || !promotion
           || !gimple_bb (def_stmt)
           || (loop && !flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
 	  || (!loop && gimple_bb (def_stmt) != BB_VINFO_BB (bb_info)
@@ -1350,6 +1371,7 @@ vect_recog_widen_shift_pattern (VEC (gimple, heap) **stmts,
   VEC (tree, heap) * dummy_vec;
   gimple use_stmt = NULL;
   bool over_widen = false;
+  bool promotion;
 
   if (!is_gimple_assign (last_stmt) || !vinfo_for_stmt (last_stmt))
     return NULL;
@@ -1404,8 +1426,10 @@ vect_recog_widen_shift_pattern (VEC (gimple, heap) **stmts,
     return NULL;
 
   /* Check operand 0: it has to be defined by a type promotion.  */
-  if (!widened_name_p (oprnd0, last_stmt, &half_type0, &def_stmt0, false))
-    return NULL;
+  if (!type_conversion_p (oprnd0, last_stmt, false, &half_type0, &def_stmt0,
+                          &promotion)
+      || !promotion)
+     return NULL;
 
   /* Check operand 1: has to be positive.  We check that it fits the type
      in vect_handle_widen_op_by_const ().  */
@@ -1847,9 +1871,9 @@ vect_recog_sdivmod_pow2_pattern (VEC (gimple, heap) **stmts,
      S1  a_T = x_t CMP y_t ? b_T : c_T;
 
    where type 'TYPE' is an integral type which has different size
-   from 'type'.  b_T and c_T are constants and if 'TYPE' is wider
+   from 'type'.  b_T and c_T are either constants (and if 'TYPE' is wider
    than 'type', the constants need to fit into an integer type
-   with the same width as 'type'.
+   with the same width as 'type') or results of conversion from 'type'.
 
    Input:
 
@@ -1874,11 +1898,15 @@ vect_recog_mixed_size_cond_pattern (VEC (gimple, heap) **stmts, tree *type_in,
   gimple last_stmt = VEC_index (gimple, *stmts, 0);
   tree cond_expr, then_clause, else_clause;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt), def_stmt_info;
-  tree type, vectype, comp_vectype, itype, vecitype;
+  tree type, vectype, comp_vectype, itype = NULL_TREE, vecitype;
   enum machine_mode cmpmode;
   gimple pattern_stmt, def_stmt;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
+  tree orig_type0 = NULL_TREE, orig_type1 = NULL_TREE;
+  gimple def_stmt0 = NULL, def_stmt1 = NULL;
+  bool promotion;
+  tree comp_scalar_type;
 
   if (!is_gimple_assign (last_stmt)
       || gimple_assign_rhs_code (last_stmt) != COND_EXPR
@@ -1889,19 +1917,50 @@ vect_recog_mixed_size_cond_pattern (VEC (gimple, heap) **stmts, tree *type_in,
   then_clause = gimple_assign_rhs2 (last_stmt);
   else_clause = gimple_assign_rhs3 (last_stmt);
 
-  if (TREE_CODE (then_clause) != INTEGER_CST
-      || TREE_CODE (else_clause) != INTEGER_CST)
-    return NULL;
-
   if (!COMPARISON_CLASS_P (cond_expr))
     return NULL;
 
-  comp_vectype
-    = get_vectype_for_scalar_type (TREE_TYPE (TREE_OPERAND (cond_expr, 0)));
+  comp_scalar_type = TREE_TYPE (TREE_OPERAND (cond_expr, 0));
+  comp_vectype = get_vectype_for_scalar_type (comp_scalar_type);
   if (comp_vectype == NULL_TREE)
     return NULL;
 
   type = gimple_expr_type (last_stmt);
+  if (types_compatible_p (type, comp_scalar_type)
+      || ((TREE_CODE (then_clause) != INTEGER_CST
+	   || TREE_CODE (else_clause) != INTEGER_CST)
+	  && !INTEGRAL_TYPE_P (comp_scalar_type))
+      || !INTEGRAL_TYPE_P (type))
+    return NULL;
+
+  if ((TREE_CODE (then_clause) != INTEGER_CST
+       && !type_conversion_p (then_clause, last_stmt, false, &orig_type0,
+                              &def_stmt0, &promotion))
+      || (TREE_CODE (else_clause) != INTEGER_CST
+          && !type_conversion_p (else_clause, last_stmt, false, &orig_type1,
+                                 &def_stmt1, &promotion)))
+    return NULL;
+
+  if (orig_type0 && orig_type1
+      && !types_compatible_p (orig_type0, orig_type1))
+    return NULL;
+
+  if (orig_type0)
+    {
+      if (!types_compatible_p (orig_type0, comp_scalar_type))
+	return NULL;
+      then_clause = gimple_assign_rhs1 (def_stmt0);
+      itype = orig_type0;
+    }
+
+  if (orig_type1)
+    {
+      if (!types_compatible_p (orig_type1, comp_scalar_type))
+	return NULL;
+      else_clause = gimple_assign_rhs1 (def_stmt1);
+      itype = orig_type1;
+    }
+
   cmpmode = GET_MODE_INNER (TYPE_MODE (comp_vectype));
 
   if (GET_MODE_BITSIZE (TYPE_MODE (type)) == GET_MODE_BITSIZE (cmpmode))
@@ -1914,8 +1973,10 @@ vect_recog_mixed_size_cond_pattern (VEC (gimple, heap) **stmts, tree *type_in,
   if (expand_vec_cond_expr_p (vectype, comp_vectype))
     return NULL;
 
-  itype = build_nonstandard_integer_type (GET_MODE_BITSIZE (cmpmode),
-					  TYPE_UNSIGNED (type));
+  if (itype == NULL_TREE)
+    itype = build_nonstandard_integer_type (GET_MODE_BITSIZE (cmpmode),
+  					    TYPE_UNSIGNED (type));
+
   if (itype == NULL_TREE
       || GET_MODE_BITSIZE (TYPE_MODE (itype)) != GET_MODE_BITSIZE (cmpmode))
     return NULL;
@@ -1929,8 +1990,10 @@ vect_recog_mixed_size_cond_pattern (VEC (gimple, heap) **stmts, tree *type_in,
 
   if (GET_MODE_BITSIZE (TYPE_MODE (type)) > GET_MODE_BITSIZE (cmpmode))
     {
-      if (!int_fits_type_p (then_clause, itype)
-	  || !int_fits_type_p (else_clause, itype))
+      if ((TREE_CODE (then_clause) == INTEGER_CST
+	   && !int_fits_type_p (then_clause, itype))
+	  || (TREE_CODE (else_clause) == INTEGER_CST
+	      && !int_fits_type_p (else_clause, itype)))
 	return NULL;
     }
 
