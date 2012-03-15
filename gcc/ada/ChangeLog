@@ -1,3 +1,23 @@
+2012-03-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Initialized_By_Ctrl_Function): Do not loop over
+	selector names as the function call always appears at the top selected
+	component.
+
+2012-03-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Access_Subprogram_Instance): keep
+	Mode_Conformance check for older versions of the language.
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* gnat_ugn.texi Document the extension of option -gnatw.t.
+	* sem_ch3.adb (Analyze_Declaration): Check for suspicious
+	contracts only after contract cases have been semantically
+	analyzed.
+	* sem_ch6.adb (Check_Subprogram_Contract): Consider also Ensures
+	components of contract cases for detecting suspicious contracts.
+
 2012-03-15  Yannick Moy  <moy@adacore.com>
 
 	* aspects.adb, aspects.ads (Aspect_Id): New GNAT aspect

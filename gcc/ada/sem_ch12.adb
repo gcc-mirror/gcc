@@ -10433,17 +10433,29 @@ package body Sem_Ch12 is
             Abandon_Instantiation (Actual);
          end if;
 
-         --  In accordance with AI05-288 (which is an Ada 2012 AI that is a
-         --  binding intepretation to be applied to previous versions of Ada
-         --  as well as Ada 2012), actuals for access_to_subprograms must be
+         --  According to AI05-288, actuals for access_to_subprograms must be
          --  subtype conformant with the generic formal. Previous to AI05-288
          --  only mode conformance was required.
 
-         Check_Subtype_Conformant
-           (Designated_Type (Act_T),
-            Designated_Type (A_Gen_T),
-            Actual,
-            Get_Inst => True);
+         --  This is a binding interpretation that applies to previous versions
+         --  of the language, but for now we retain the milder check in order
+         --  to preserve ACATS tests.
+         --  These will be protested eventually ???
+
+         if Ada_Version < Ada_2012 then
+            Check_Mode_Conformant
+              (Designated_Type (Act_T),
+               Designated_Type (A_Gen_T),
+               Actual,
+               Get_Inst => True);
+
+         else
+            Check_Subtype_Conformant
+              (Designated_Type (Act_T),
+               Designated_Type (A_Gen_T),
+               Actual,
+               Get_Inst => True);
+         end if;
 
          if Ekind (Base_Type (Act_T)) = E_Access_Protected_Subprogram_Type then
             if Ekind (A_Gen_T) = E_Access_Subprogram_Type then
