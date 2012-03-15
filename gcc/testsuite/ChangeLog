@@ -1,3 +1,10 @@
+2012-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52267
+	* gcc.dg/pr52267.c: New test.
+	* gcc.dg/tree-ssa/vrp65.c: New test.
+	* gcc.dg/tree-ssa/vrp66.c: New test.
+
 2012-03-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52580

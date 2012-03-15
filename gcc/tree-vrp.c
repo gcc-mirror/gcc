@@ -4338,6 +4338,34 @@ extract_code_and_val_from_cond_with_ops (tree name, enum tree_code cond_code,
   return true;
 }
 
+/* Find out smallest RES where RES > VAL && (RES & MASK) == RES, if any
+   (otherwise return VAL).  VAL and MASK must be zero-extended for
+   precision PREC.  If SGNBIT is non-zero, first xor VAL with SGNBIT
+   (to transform signed values into unsigned) and at the end xor
+   SGNBIT back.  */
+
+static double_int
+masked_increment (double_int val, double_int mask, double_int sgnbit,
+		  unsigned int prec)
+{
+  double_int bit = double_int_one, res;
+  unsigned int i;
+
+  val = double_int_xor (val, sgnbit);
+  for (i = 0; i < prec; i++, bit = double_int_add (bit, bit))
+    {
+      res = mask;
+      if (double_int_zero_p (double_int_and (res, bit)))
+	continue;
+      res = double_int_sub (bit, double_int_one);
+      res = double_int_and_not (double_int_add (val, bit), res);
+      res = double_int_and (res, mask);
+      if (double_int_ucmp (res, val) > 0)
+	return double_int_xor (res, sgnbit);
+    }
+  return double_int_xor (val, sgnbit);
+}
+
 /* Try to register an edge assertion for SSA name NAME on edge E for
    the condition COND contributing to the conditional jump pointed to by BSI.
    Invert the condition COND if INVERT is true.
@@ -4466,7 +4494,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
       && TREE_CODE (val) == INTEGER_CST)
     {
       gimple def_stmt = SSA_NAME_DEF_STMT (name);
-      tree name2 = NULL_TREE, cst2 = NULL_TREE;
+      tree name2 = NULL_TREE, names[2], cst2 = NULL_TREE;
       tree val2 = NULL_TREE;
       double_int mask = double_int_zero;
       unsigned int prec = TYPE_PRECISION (TREE_TYPE (val));
@@ -4589,6 +4617,248 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      register_new_assert_for (name2, tmp, new_comp_code, new_val,
 				       NULL, e, bsi);
 	      retval = true;
+	    }
+	}
+
+      /* Add asserts for NAME cmp CST and NAME being defined as
+	 NAME = NAME2 & CST2.
+
+	 Extract CST2 from the and.  */
+      names[0] = NULL_TREE;
+      names[1] = NULL_TREE;
+      cst2 = NULL_TREE;
+      if (is_gimple_assign (def_stmt)
+	  && gimple_assign_rhs_code (def_stmt) == BIT_AND_EXPR)
+	{
+	  name2 = gimple_assign_rhs1 (def_stmt);
+	  cst2 = gimple_assign_rhs2 (def_stmt);
+	  if (TREE_CODE (name2) == SSA_NAME
+	      && INTEGRAL_TYPE_P (TREE_TYPE (name2))
+	      && TREE_CODE (cst2) == INTEGER_CST
+	      && !integer_zerop (cst2)
+	      && prec <= 2 * HOST_BITS_PER_WIDE_INT
+	      && (prec > 1
+		  || TYPE_UNSIGNED (TREE_TYPE (val))))
+	    {
+	      gimple def_stmt2 = SSA_NAME_DEF_STMT (name2);
+	      if (gimple_assign_cast_p (def_stmt2))
+		{
+		  names[1] = gimple_assign_rhs1 (def_stmt2);
+		  if (!CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt2))
+		      || !INTEGRAL_TYPE_P (TREE_TYPE (names[1]))
+		      || (TYPE_PRECISION (TREE_TYPE (name2))
+			  != TYPE_PRECISION (TREE_TYPE (names[1])))
+		      || !live_on_edge (e, names[1])
+		      || has_single_use (names[1]))
+		    names[1] = NULL_TREE;
+		}
+	      if (live_on_edge (e, name2)
+		  && !has_single_use (name2))
+		names[0] = name2;
+	    }
+	}
+      if (names[0] || names[1])
+	{
+	  double_int minv, maxv = double_int_zero, valv, cst2v;
+	  double_int tem, sgnbit;
+	  bool valid_p = false, valn = false, cst2n = false;
+	  enum tree_code ccode = comp_code;
+
+	  valv = double_int_zext (tree_to_double_int (val), prec);
+	  cst2v = double_int_zext (tree_to_double_int (cst2), prec);
+	  if (!TYPE_UNSIGNED (TREE_TYPE (val)))
+	    {
+	      valn = double_int_negative_p (double_int_sext (valv, prec));
+	      cst2n = double_int_negative_p (double_int_sext (cst2v, prec));
+	    }
+	  /* If CST2 doesn't have most significant bit set,
+	     but VAL is negative, we have comparison like
+	     if ((x & 0x123) > -4) (always true).  Just give up.  */
+	  if (!cst2n && valn)
+	    ccode = ERROR_MARK;
+	  if (cst2n)
+	    sgnbit = double_int_zext (double_int_lshift (double_int_one,
+							 prec - 1, prec,
+							 false), prec);
+	  else
+	    sgnbit = double_int_zero;
+	  minv = double_int_and (valv, cst2v);
+	  switch (ccode)
+	    {
+	    case EQ_EXPR:
+	      /* Minimum unsigned value for equality is VAL & CST2
+		 (should be equal to VAL, otherwise we probably should
+		 have folded the comparison into false) and
+		 maximum unsigned value is VAL | ~CST2.  */
+	      maxv = double_int_ior (valv, double_int_not (cst2v));
+	      maxv = double_int_zext (maxv, prec);
+	      valid_p = true;
+	      break;
+	    case NE_EXPR:
+	      tem = double_int_ior (valv, double_int_not (cst2v));
+	      tem = double_int_zext (tem, prec);
+	      /* If VAL is 0, handle (X & CST2) != 0 as (X & CST2) > 0U.  */
+	      if (double_int_zero_p (valv))
+		{
+		  cst2n = false;
+		  sgnbit = double_int_zero;
+		  goto gt_expr;
+		}
+	      /* If (VAL | ~CST2) is all ones, handle it as
+		 (X & CST2) < VAL.  */
+	      if (double_int_equal_p (tem, double_int_mask (prec)))
+		{
+		  cst2n = false;
+		  valn = false;
+		  sgnbit = double_int_zero;
+		  goto lt_expr;
+		}
+	      if (!cst2n
+		  && double_int_negative_p (double_int_sext (cst2v, prec)))
+		sgnbit = double_int_zext (double_int_lshift (double_int_one,
+							     prec - 1, prec,
+							     false), prec);
+	      if (!double_int_zero_p (sgnbit))
+		{
+		  if (double_int_equal_p (valv, sgnbit))
+		    {
+		      cst2n = true;
+		      valn = true;
+		      goto gt_expr;
+		    }
+		  if (double_int_equal_p (tem, double_int_mask (prec - 1)))
+		    {
+		      cst2n = true;
+		      goto lt_expr;
+		    }
+		  if (!cst2n)
+		    sgnbit = double_int_zero;
+		}
+	      break;
+	    case GE_EXPR:
+	      /* Minimum unsigned value for >= if (VAL & CST2) == VAL
+		 is VAL and maximum unsigned value is ~0.  For signed
+		 comparison, if CST2 doesn't have most significant bit
+		 set, handle it similarly.  If CST2 has MSB set,
+		 the minimum is the same, and maximum is ~0U/2.  */
+	      if (!double_int_equal_p (minv, valv))
+		{
+		  /* If (VAL & CST2) != VAL, X & CST2 can't be equal to
+		     VAL.  */
+		  minv = masked_increment (valv, cst2v, sgnbit, prec);
+		  if (double_int_equal_p (minv, valv))
+		    break;
+		}
+	      maxv = double_int_mask (prec - (cst2n ? 1 : 0));
+	      valid_p = true;
+	      break;
+	    case GT_EXPR:
+	    gt_expr:
+	      /* Find out smallest MINV where MINV > VAL
+		 && (MINV & CST2) == MINV, if any.  If VAL is signed and
+		 CST2 has MSB set, compute it biased by 1 << (prec - 1).  */
+	      minv = masked_increment (valv, cst2v, sgnbit, prec);
+	      if (double_int_equal_p (minv, valv))
+		break;
+	      maxv = double_int_mask (prec - (cst2n ? 1 : 0));
+	      valid_p = true;
+	      break;
+	    case LE_EXPR:
+	      /* Minimum unsigned value for <= is 0 and maximum
+		 unsigned value is VAL | ~CST2 if (VAL & CST2) == VAL.
+		 Otherwise, find smallest VAL2 where VAL2 > VAL
+		 && (VAL2 & CST2) == VAL2 and use (VAL2 - 1) | ~CST2
+		 as maximum.
+		 For signed comparison, if CST2 doesn't have most
+		 significant bit set, handle it similarly.  If CST2 has
+		 MSB set, the maximum is the same and minimum is INT_MIN.  */
+	      if (double_int_equal_p (minv, valv))
+		maxv = valv;
+	      else
+		{
+		  maxv = masked_increment (valv, cst2v, sgnbit, prec);
+		  if (double_int_equal_p (maxv, valv))
+		    break;
+		  maxv = double_int_sub (maxv, double_int_one);
+		}
+	      maxv = double_int_ior (maxv, double_int_not (cst2v));
+	      maxv = double_int_zext (maxv, prec);
+	      minv = sgnbit;
+	      valid_p = true;
+	      break;
+	    case LT_EXPR:
+	    lt_expr:
+	      /* Minimum unsigned value for < is 0 and maximum
+		 unsigned value is (VAL-1) | ~CST2 if (VAL & CST2) == VAL.
+		 Otherwise, find smallest VAL2 where VAL2 > VAL
+		 && (VAL2 & CST2) == VAL2 and use (VAL2 - 1) | ~CST2
+		 as maximum.
+		 For signed comparison, if CST2 doesn't have most
+		 significant bit set, handle it similarly.  If CST2 has
+		 MSB set, the maximum is the same and minimum is INT_MIN.  */
+	      if (double_int_equal_p (minv, valv))
+		{
+		  if (double_int_equal_p (valv, sgnbit))
+		    break;
+		  maxv = valv;
+		}
+	      else
+		{
+		  maxv = masked_increment (valv, cst2v, sgnbit, prec);
+		  if (double_int_equal_p (maxv, valv))
+		    break;
+		}
+	      maxv = double_int_sub (maxv, double_int_one);
+	      maxv = double_int_ior (maxv, double_int_not (cst2v));
+	      maxv = double_int_zext (maxv, prec);
+	      minv = sgnbit;
+	      valid_p = true;
+	      break;
+	    default:
+	      break;
+	    }
+	  if (valid_p
+	      && !double_int_equal_p (double_int_zext (double_int_sub (maxv,
+								       minv),
+						       prec),
+				      double_int_mask (prec)))
+	    {
+	      tree tmp, new_val, type;
+	      int i;
+
+	      for (i = 0; i < 2; i++)
+		if (names[i])
+		  {
+		    double_int maxv2 = maxv;
+		    tmp = names[i];
+		    type = TREE_TYPE (names[i]);
+		    if (!TYPE_UNSIGNED (type))
+		      {
+			type = build_nonstandard_integer_type (prec, 1);
+			tmp = build1 (NOP_EXPR, type, names[i]);
+		      }
+		    if (!double_int_zero_p (minv))
+		      {
+			tmp = build2 (PLUS_EXPR, type, tmp,
+				      double_int_to_tree (type,
+							  double_int_neg (minv)));
+			maxv2 = double_int_sub (maxv, minv);
+		      }
+		    new_val = double_int_to_tree (type, maxv2);
+
+		    if (dump_file)
+		      {
+			fprintf (dump_file, "Adding assert for ");
+			print_generic_expr (dump_file, names[i], 0);
+			fprintf (dump_file, " from ");
+			print_generic_expr (dump_file, tmp, 0);
+			fprintf (dump_file, "\n");
+		      }
+
+		    register_new_assert_for (names[i], tmp, LE_EXPR,
+					     new_val, NULL, e, bsi);
+		    retval = true;
+		  }
 	    }
 	}
     }

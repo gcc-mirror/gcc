@@ -1,3 +1,10 @@
+2012-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52267
+	* tree-vrp.c (masked_increment): New function.
+	(register_edge_assert_for_2): Derive ASSERT_EXPRs
+	from (X & CST1) cmp CST2 tests.
+
 2012-03-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52580
