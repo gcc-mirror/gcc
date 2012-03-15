@@ -1,3 +1,8 @@
+2012-03-15  Tristan Gingold  <gingold@adacore.com>
+
+	* dwarf2out.c (gen_subprogram_die): Require dwarf unwinding to
+	use DW_OP_call_frame_cfa.
+
 2012-03-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/50797
