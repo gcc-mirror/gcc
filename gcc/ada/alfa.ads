@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,7 +70,7 @@ package Alfa is
    --  subprogram declaration and body, when both present, define two different
    --  scopes.
 
-   --    FD dependency-number filename
+   --    FD dependency-number filename (-> unit-filename)?
 
    --      This header precedes scope information for the unit identified by
    --      dependency number and file name. The dependency number is the index
@@ -88,6 +88,8 @@ package Alfa is
    --      corresponding D line, but it is convenient at least for human
    --      reading of the Alfa information, and means that the Alfa information
    --      can stand on its own without needing other parts of the ALI file.
+
+   --      The optional unit filename is given only for subunits.
 
    --    FS . scope line type col entity (-> spec-file . spec-scope)?
 
@@ -313,6 +315,10 @@ package Alfa is
    type Alfa_File_Record is record
       File_Name : String_Ptr;
       --  Pointer to file name in ALI file
+
+      Unit_File_Name : String_Ptr;
+      --  Pointer to file name for unit in ALI file, when File_Name refers to a
+      --  subunit. Otherwise null.
 
       File_Num : Nat;
       --  Dependency number in ALI file

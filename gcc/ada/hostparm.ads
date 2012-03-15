@@ -69,11 +69,6 @@ package Hostparm is
    --  of file names in the library, must be at least Max_Line_Length, but
    --  can be larger.
 
-   Max_Instantiations : constant := 8000;
-   --  Maximum number of instantiations permitted (to stop runaway cases
-   --  of nested instantiations). These situations probably only occur in
-   --  specially concocted test cases.
-
    Tag_Errors : constant Boolean := False;
    --  If set to true, then brief form error messages will be prefaced by
    --  the string "error:". Used as default for Opt.Unique_Error_Tag.

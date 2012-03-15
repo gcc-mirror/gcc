@@ -1,3 +1,44 @@
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads: Add entry for translating -gnateinn to
+	/MAX_INSTANTIATIONS for VMS.
+	* hostparm.ads (Max_Instantiations): Moved to Opt.
+	* opt.ads (Maximum_Instantiations): Moved from Hostparm, and renamed.
+	* sem_ch12.adb (Maximum_Instantiations): New name of
+	Max_Instantiations (Analyze_Package_Instantiation): Change error
+	msg for too many instantiations (mention -gnateinn switch).
+	* switch-c.adb (Scan_Front_End_Switches): Implement -gnateinn switch.
+	* switch.ads: Minor comment update.
+	* usage.adb (Usage): Output line for -maxeinn switch.
+	* vms_data.ads: Add entry for MAX_INSTANTIATIONS (-gnateinn).
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* alfa.ads Update the decription of ALI sections.
+	(Alfa_File_Record): Add a component Unit_File_Name to store the
+	unit file name for subunits.
+	* get_alfa.adb, put_alfa.adb Adapt to the possible presence of
+	a unit file name.
+	* lib-xref-alfa.adb (Add_Alfa_File): For subunits, retrieve the
+	file name of the unit.
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Check_Subprogram_Contract): Do
+	not issue warning on missing 'Result in postcondition if all
+	postconditions and contract-cases already get a warning for only
+	referring to pre-state.
+
+2012-03-15  Bob Duff  <duff@adacore.com>
+
+	* debug.adb: Add new debug switch -gnatd.U, which disables the
+	support added below, in case someone trips over a cycle, and needs
+	to disable this.
+	* sem_attr.adb (Analyze_Access_Attribute):
+	Treat Subp'Access as a call for elaboration purposes.
+	* sem_elab.ads, sem_elab.adb (Check_Elab_Call): Add support
+	for Subp'Access.
+
 2012-03-15  Vincent Pucci  <pucci@adacore.com>
 
 	* sem.ads, sem.adb (Preanalyze): New routine.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1926,11 +1926,14 @@ package VMS_Data is
    --   When using a project file, GNAT MAKE creates a temporary mapping file
    --   and communicates it to the compiler using this switch.
 
-   S_GCC_Multi   : aliased constant S := "/MULTI_UNIT_INDEX=#"             &
-                                            "-gnateI#";
-   --        /MULTI_UNIT_INDEX=nnn
+   S_GCC_MaxI    : aliased constant S := "/MAX_INSTANTIATIONS=#"           &
+                                            "-gnatei#";
+
+   --        /MAX_INSTANTIATIONS=nnn
    --
-   --   Specify the index of the unit to compile in a multi-unit source file.
+   --   Specify the maximum number of instantiations permitted. The default
+   --   value is 8000, which is probably enough for all programs except those
+   --   containing some kind of runaway unintended instantiation loop.
 
    S_GCC_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="         &
                                             "DEFAULT "                     &
@@ -1950,6 +1953,12 @@ package VMS_Data is
    --
    --      HIGH        A great number of messages are output, most of them not
    --                  being useful for the user.
+
+   S_GCC_Multi   : aliased constant S := "/MULTI_UNIT_INDEX=#"             &
+                                            "-gnateI#";
+   --        /MULTI_UNIT_INDEX=nnn
+   --
+   --   Specify the index of the unit to compile in a multi-unit source file.
 
    S_GCC_Nesting  : aliased constant S := "/MAX_NESTING=#"                 &
                                              "-gnatyL#";
@@ -3585,6 +3594,7 @@ package VMS_Data is
                      S_GCC_Output  'Access,
                      S_GCC_Machine 'Access,
                      S_GCC_Mapping 'Access,
+                     S_GCC_MaxI    'Access,
                      S_GCC_Multi   'Access,
                      S_GCC_Mess    'Access,
                      S_GCC_Nesting 'Access,

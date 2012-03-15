@@ -28,6 +28,7 @@ with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Eval_Fat;
@@ -54,6 +55,7 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Dim;  use Sem_Dim;
 with Sem_Dist; use Sem_Dist;
+with Sem_Elab; use Sem_Elab;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -642,6 +644,13 @@ package body Sem_Attr is
 
             else
                Kill_Current_Values;
+            end if;
+
+            --  Treat as call for elaboration purposes and we are all
+            --  done. Suppress this treatment under debug flag.
+
+            if not Debug_Flag_Dot_UU then
+               Check_Elab_Call (N);
             end if;
 
             return;

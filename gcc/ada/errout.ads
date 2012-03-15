@@ -380,6 +380,9 @@ package Errout is
    Gname8 : aliased constant String := "gnat2012";
    Vname8 : aliased constant String := "2012";
 
+   Gname9 : aliased constant String := "gnateinn";
+   Vname9 : aliased constant String := "MAX_INSTANTIATIONS=nn";
+
    type Cstring_Ptr is access constant String;
 
    Gnames : array (Nat range <>) of Cstring_Ptr :=
@@ -390,7 +393,8 @@ package Errout is
                Gname5'Access,
                Gname6'Access,
                Gname7'Access,
-               Gname8'Access);
+               Gname8'Access,
+               Gname9'Access);
 
    Vnames : array (Nat range <>) of Cstring_Ptr :=
               (Vname1'Access,
@@ -400,7 +404,8 @@ package Errout is
                Vname5'Access,
                Vname6'Access,
                Vname7'Access,
-               Vname8'Access);
+               Vname8'Access,
+               Vname9'Access);
 
    -----------------------------------------------------
    -- Global Values Used for Error Message Insertions --

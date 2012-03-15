@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,6 +214,8 @@ package body Alfa is
 
       S : constant Source_File_Index := Source_Index (U);
 
+      File_Name, Unit_File_Name : String_Ptr;
+
    begin
       --  Source file could be inexistant as a result of an error, if option
       --  gnatQ is used.
@@ -275,12 +277,23 @@ package body Alfa is
       --  Make entry for new file in file table
 
       Get_Name_String (Reference_Name (S));
+      File_Name := new String'(Name_Buffer (1 .. Name_Len));
+
+      --  For subunits, also retrieve the file name of the unit
+
+      if Present (Cunit (Unit (S)))
+        and then Nkind (Unit (Cunit (Unit (S)))) = N_Subunit
+      then
+         Get_Name_String (Reference_Name (Main_Source_File));
+         Unit_File_Name := new String'(Name_Buffer (1 .. Name_Len));
+      end if;
 
       Alfa_File_Table.Append (
-        (File_Name  => new String'(Name_Buffer (1 .. Name_Len)),
-         File_Num   => D,
-         From_Scope => From,
-         To_Scope   => Alfa_Scope_Table.Last));
+        (File_Name      => File_Name,
+         Unit_File_Name => Unit_File_Name,
+         File_Num       => D,
+         From_Scope     => From,
+         To_Scope       => Alfa_Scope_Table.Last));
    end Add_Alfa_File;
 
    --------------------
