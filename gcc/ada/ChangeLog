@@ -1,3 +1,8 @@
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, sem_prag.ads, sem_util.ads, sem_attr.adb, sem_ch6.adb,
+	sem_warn.adb: Minor reformatting.
+
 2012-03-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb (Initialized_By_Ctrl_Function): Do not loop over
