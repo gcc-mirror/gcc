@@ -182,6 +182,11 @@
 #			the --with-sysroot configure option or the
 #			--sysroot command line option is used this
 #			will be relative to the sysroot.
+# target_type_format_char 
+# 			The default character to be used for formatting
+#			the attribute in a
+#			.type symbol_name, ${t_t_f_c}<property>
+#			directive.
 
 # The following variables are used in each case-construct to build up the
 # outgoing variables:
@@ -232,6 +237,7 @@ target_gtfiles=
 need_64bit_hwint=
 need_64bit_isa=
 native_system_header_dir=/usr/include
+target_type_format_char='@'
 
 # Don't carry these over build->host->target.  Please.
 xm_file=
@@ -314,6 +320,7 @@ am33_2.0-*-linux*)
 arm*-*-*)
 	cpu_type=arm
 	extra_headers="mmintrin.h arm_neon.h"
+	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
 	extra_options="${extra_options} arm/arm-tables.opt"

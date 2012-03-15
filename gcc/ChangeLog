@@ -1,3 +1,11 @@
+2012-03-13  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* config.gcc (target_type_format_char): New. Document it. Set it for
+        arm*-*-* .
+	* configure.ac (gnu_unique_option): Use target_type_format_char in test.
+        Comment rationale.
+	* configure: Regenerate .
+
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52267

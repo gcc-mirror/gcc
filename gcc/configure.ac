@@ -4113,7 +4113,8 @@ Valid choices are 'yes' and 'no'.]) ;;
   esac],
  [gcc_GAS_CHECK_FEATURE([gnu_unique_object], gcc_cv_as_gnu_unique_object,
    [elf,2,19,52],,
-   [.type foo, @gnu_unique_object],,
+   [.type foo, '$target_type_format_char'gnu_unique_object],,
+# We need to unquote above to to use the definition from config.gcc.
 # Also check for ld.so support, i.e. glibc 2.11 or higher.
    [[if test x$host = x$build -a x$host = x$target &&
        ldd --version 2>/dev/null &&
