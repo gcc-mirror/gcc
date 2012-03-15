@@ -1,0 +1,98 @@
+#   Copyright (C) 2012 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# helper to deal with fortran modules
+
+# Remove files for specified Fortran modules.
+proc cleanup-modules { modlist } {
+    global clean
+    foreach mod [concat $modlist $clean] {
+	set m [string tolower $mod].mod
+	verbose "cleanup-module `$m'" 2
+	if [is_remote host] {
+	    remote_file host delete $m
+	}
+	remote_file build delete $m
+    }
+}
+
+proc keep-modules { modlist } {
+    global clean
+    # if the modlist is empty, keep everything
+    if {[llength $modlist] < 1} {
+	set clean {}
+    } else {
+	set cleansed {}
+	foreach cl $clean {
+	    if {[lsearch $cl $modlist] < 0} {
+		lappend cleansed $cl
+	    }
+	}
+	if {[llength $clean] == [llength $cleansed]} {
+	    warning "keep-modules had no effect?! Possible typo in module name."
+	}
+	set clean $cleansed
+    }
+}
+
+# collect all module names from a source-file
+proc list-module-names { files } {
+    global clean
+    set clean {}
+    foreach file $files {
+	foreach mod [list-module-names-1 $file] {
+	    if {[lsearch $clean $mod] < 0} {
+		lappend clean $mod
+	    }
+	}
+    }
+    return [join $clean " "]
+}
+
+proc list-module-names-1 { file } {
+    set result {}
+    set tmp [grep $file "^\[ \t\]*((#)?\[ \t\]*include|\[mM\]\[oO\]\[dD\]\[uU\]\[lL\]\[eE\](?!\[ \t\]+\[pP\]\[rR\]\[oO\]\[cC\]\[eE\]\[dD\]\[uU\]\[rR\]\[eE\]\[ \t\]+))\[ \t\]+.*" line]
+    if {![string match "" $tmp]} {
+	foreach i $tmp {
+	    regexp "(\[0-9\]+)\[ \t\]+(?:(?:#)?\[ \t\]*include\[ \t\]+)\[\"\](\[^\"\]*)\[\"\]" $i dummy lineno include_file
+	    if {[info exists include_file]} {
+		set dir [file dirname $file]
+		set inc "$dir/$include_file"
+		unset include_file
+		if {![file readable $inc]} {
+		    warning "Line $lineno includes unreadable file `$inc'"
+		    continue
+		}
+		verbose "Line $lineno includes `$inc'" 3
+		foreach mod [list-module-names-1 $inc] {
+		    if {[lsearch $result $mod] < 0} {
+			lappend result $mod
+		    }
+		}
+		continue
+	    }
+	    regexp "(\[0-9\]+)\[ \t\]+(?:(\[mM\]\[oO\]\[dD\]\[uU\]\[lL\]\[eE\]\[ \t\]+(?!\[pP\]\[rR\]\[oO\]\[cC\]\[eE\]\[dD\]\[uU\]\[rR\]\[eE\]\[ \t\]+)))(\[^ \t;\]*)" $i i lineno keyword mod
+	    if {![info exists lineno]} {
+		continue
+	    }
+	    verbose "Line $lineno mentions module `$mod'" 3
+	    if {[lsearch $result $mod] < 0} {
+		lappend result $mod
+	    }
+	}
+    }
+    return $result
+}
