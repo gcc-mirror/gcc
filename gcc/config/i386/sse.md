@@ -80,7 +80,6 @@
 
   ;; For AVX2 support
   UNSPEC_VPERMSI
-  UNSPEC_VPERMDF
   UNSPEC_VPERMSF
   UNSPEC_VPERMTI
   UNSPEC_GATHER
@@ -11889,19 +11888,6 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-(define_insn "avx2_permv4df"
-  [(set (match_operand:V4DF 0 "register_operand" "=x")
-	(unspec:V4DF
-	  [(match_operand:V4DF 1 "register_operand" "xm")
-	   (match_operand:SI 2 "const_0_to_255_operand" "n")]
-	  UNSPEC_VPERMDF))]
-  "TARGET_AVX2"
-  "vpermpd\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "OI")])
-
 (define_insn "avx2_permvarv8sf"
   [(set (match_operand:V8SF 0 "register_operand" "=x")
 	(unspec:V8SF
@@ -11914,25 +11900,25 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-(define_expand "avx2_permv4di"
-  [(match_operand:V4DI 0 "register_operand" "")
-   (match_operand:V4DI 1 "nonimmediate_operand" "")
+(define_expand "avx2_perm<mode>"
+  [(match_operand:VI8F_256 0 "register_operand" "")
+   (match_operand:VI8F_256 1 "nonimmediate_operand" "")
    (match_operand:SI 2 "const_0_to_255_operand" "")]
   "TARGET_AVX2"
 {
   int mask = INTVAL (operands[2]);
-  emit_insn (gen_avx2_permv4di_1 (operands[0], operands[1],
-				  GEN_INT ((mask >> 0) & 3),
-				  GEN_INT ((mask >> 2) & 3),
-				  GEN_INT ((mask >> 4) & 3),
-				  GEN_INT ((mask >> 6) & 3)));
+  emit_insn (gen_avx2_perm<mode>_1 (operands[0], operands[1],
+				    GEN_INT ((mask >> 0) & 3),
+				    GEN_INT ((mask >> 2) & 3),
+				    GEN_INT ((mask >> 4) & 3),
+				    GEN_INT ((mask >> 6) & 3)));
   DONE;
 })
 
-(define_insn "avx2_permv4di_1"
-  [(set (match_operand:V4DI 0 "register_operand" "=x")
-	(vec_select:V4DI
-	  (match_operand:V4DI 1 "nonimmediate_operand" "xm")
+(define_insn "avx2_perm<mode>_1"
+  [(set (match_operand:VI8F_256 0 "register_operand" "=x")
+	(vec_select:VI8F_256
+	  (match_operand:VI8F_256 1 "nonimmediate_operand" "xm")
 	  (parallel [(match_operand 2 "const_0_to_3_operand" "")
 		     (match_operand 3 "const_0_to_3_operand" "")
 		     (match_operand 4 "const_0_to_3_operand" "")
@@ -11945,11 +11931,11 @@
   mask |= INTVAL (operands[4]) << 4;
   mask |= INTVAL (operands[5]) << 6;
   operands[2] = GEN_INT (mask);
-  return "vpermq\t{%2, %1, %0|%0, %1, %2}";
+  return "vperm<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}";
 }
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "OI")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "avx2_permv2ti"
   [(set (match_operand:V4DI 0 "register_operand" "=x")
