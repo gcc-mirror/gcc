@@ -1273,9 +1273,12 @@ package body Sem_Attr is
          Check_Ada_2012_Attribute;
          Check_Discrete_Type;
 
-         if not Is_Static_Subtype (P_Type) then
-            Error_Attr_P ("prefix of % attribute must be a static subtype");
-         end if;
+         --  Freeze the subtype now, so that the following test for predicates
+         --  works (we set the predicates stuff up at freeze time)
+
+         Insert_Actions (N, Freeze_Entity (P_Type, P));
+
+         --  Now test for dynamic predicate
 
          if Has_Predicates (P_Type)
            and then No (Static_Predicate (P_Type))
@@ -1283,6 +1286,14 @@ package body Sem_Attr is
             Error_Attr_P
               ("prefix of % attribute may not have dynamic predicate");
          end if;
+
+         --  Check non-static subtype
+
+         if not Is_Static_Subtype (P_Type) then
+            Error_Attr_P ("prefix of % attribute must be a static subtype");
+         end if;
+
+         --  Test case for no values
 
          if Expr_Value (Type_Low_Bound (P_Type)) >
             Expr_Value (Type_High_Bound (P_Type))

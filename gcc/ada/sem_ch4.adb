@@ -3449,6 +3449,12 @@ package body Sem_Ch4 is
          --  quantified expression, only a preanalysis of the condition needs
          --  to be done.
 
+         --  This is weird and irregular code for several reasons. First, doing
+         --  an Analyze with no Resolve is very suspicious, how can this be
+         --  right for the overloaded case ??? Second, doing two calls to
+         --  analyze on the same node is peculiar ??? Why can't we use the
+         --  normal Preanalyze calls here ???
+
          Expander_Mode_Save_And_Set (False);
          Analyze (Condition (N));
          Expander_Mode_Restore;
