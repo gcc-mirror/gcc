@@ -6937,6 +6937,10 @@ package body Sem_Ch6 is
       Attribute_Result_Mentioned : Boolean := False;
       --  Whether attribute 'Result is mentioned in a postcondition
 
+      No_Warning_On_Some_Postcondition : Boolean := False;
+      --  Whether there exists a postcondition or a contract-case without a
+      --  corresponding warning.
+
       Post_State_Mentioned : Boolean := False;
       --  Whether some expression mentioned in a postcondition can have a
       --  different value in the post-state than in the pre-state.
@@ -7081,7 +7085,9 @@ package body Sem_Ch6 is
                Post_State_Mentioned := False;
                Ignored := Find_Post_State (Arg);
 
-               if not Post_State_Mentioned then
+               if Post_State_Mentioned then
+                  No_Warning_On_Some_Postcondition := True;
+               else
                   Error_Msg_N ("?`Ensures` component refers only to pre-state",
                                Prag);
                end if;
@@ -7133,7 +7139,9 @@ package body Sem_Ch6 is
                   Post_State_Mentioned := False;
                   Ignored := Find_Post_State (Arg);
 
-                  if not Post_State_Mentioned then
+                  if Post_State_Mentioned then
+                     No_Warning_On_Some_Postcondition := True;
+                  else
                      Error_Msg_N
                        ("?postcondition refers only to pre-state", Prag);
                   end if;
@@ -7177,12 +7185,15 @@ package body Sem_Ch6 is
       end if;
 
       --  Issue warning for functions whose postcondition does not mention
-      --  'Result after all postconditions have been processed.
+      --  'Result after all postconditions have been processed, and provided
+      --  all postconditions do not already get a warning that they only refer
+      --  to pre-state.
 
       if Ekind_In (Spec_Id, E_Function, E_Generic_Function)
         and then (Present (Last_Postcondition)
                    or else Present (Last_Contract_Case))
         and then not Attribute_Result_Mentioned
+        and then No_Warning_On_Some_Postcondition
       then
          if Present (Last_Postcondition) then
             if Present (Last_Contract_Case) then
