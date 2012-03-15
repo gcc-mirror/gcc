@@ -3305,6 +3305,11 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
   tree prefix_attrs;
   tree postfix_attrs = NULL_TREE;
   bool dummy = false;
+
+  /* Accept #pragmas between parameter declarations.  */
+  while (c_parser_next_token_is (parser, CPP_PRAGMA))
+    c_parser_pragma (parser, pragma_external);
+
   if (!c_parser_next_token_starts_declspecs (parser))
     {
       c_token *token = c_parser_peek_token (parser);

@@ -1,5 +1,10 @@
 2012-03-15  Tristan Gingold  <gingold@adacore.com>
 
+	* c-parser.c (c_parser_parameter_declaration): Handle #pragma
+	before a parameter.
+
+2012-03-15  Tristan Gingold  <gingold@adacore.com>
+
 	* dwarf2out.c (gen_subprogram_die): Require dwarf unwinding to
 	use DW_OP_call_frame_cfa.
 
