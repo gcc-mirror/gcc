@@ -314,7 +314,7 @@ EXAMPLES OF FIXES:
     GCC.  But you can also:
 
         cd ${top_builddir}/gcc
-        rm -rf fixinc.sh include/ stmp-fixinc
+        rm -rf include-fixed/ stmp-fixinc
         make stmp-fixinc
 
     I would really recommend, however:
