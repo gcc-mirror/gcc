@@ -1,3 +1,13 @@
+2012-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52568
+	* config/i386/sse.md (UNSPEC_VPERMDF): Remove.
+	(avx2_permv4df): Remove.
+	(avx2_permv4di): Macroize into...
+	(avx2_perm<mode>): ... this using VI8F_256 iterator.
+	(avx2_permv4di_1): Macroize into...
+	(avx2_perm<mode>_1): ... this using VI8F_256 iterator.
+
 2012-03-15  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* combine.c (apply_distributive_law): Do not distribute SUBREG.
