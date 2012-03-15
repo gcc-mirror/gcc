@@ -376,28 +376,24 @@ build_round_expr (tree arg, tree restype)
 {
   tree argtype;
   tree fn;
-  bool longlong;
   int argprec, resprec;
 
   argtype = TREE_TYPE (arg);
   argprec = TYPE_PRECISION (argtype);
   resprec = TYPE_PRECISION (restype);
 
-  /* Depending on the type of the result, choose the long int intrinsic
-     (lround family) or long long intrinsic (llround).  We might also
-     need to convert the result afterwards.  */
-  if (resprec <= LONG_TYPE_SIZE)
-    longlong = false;
+  /* Depending on the type of the result, choose the int intrinsic
+     (iround, available only as a builtin), long int intrinsic (lround
+     family) or long long intrinsic (llround).  We might also need to
+     convert the result afterwards.  */
+  if (resprec <= INT_TYPE_SIZE)
+    fn = builtin_decl_for_precision (BUILT_IN_IROUND, argprec);
+  else if (resprec <= LONG_TYPE_SIZE)
+    fn = builtin_decl_for_precision (BUILT_IN_LROUND, argprec);
   else if (resprec <= LONG_LONG_TYPE_SIZE)
-    longlong = true;
-  else
-    gcc_unreachable ();
-
-  /* Now, depending on the argument type, we choose between intrinsics.  */
-  if (longlong)
     fn = builtin_decl_for_precision (BUILT_IN_LLROUND, argprec);
   else
-    fn = builtin_decl_for_precision (BUILT_IN_LROUND, argprec);
+    gcc_unreachable ();
 
   return fold_convert (restype, build_call_expr_loc (input_location,
 						 fn, 1, arg));
@@ -623,7 +619,7 @@ gfc_build_intrinsic_lib_fndecls (void)
        q-suffixed functions.  */
 
     tree type, complex_type, func_1, func_2, func_cabs, func_frexp;
-    tree func_lround, func_llround, func_scalbn, func_cpow;
+    tree func_iround, func_lround, func_llround, func_scalbn, func_cpow;
 
     memset (quad_decls, 0, sizeof(tree) * (END_BUILTINS + 1));
 
@@ -631,6 +627,9 @@ gfc_build_intrinsic_lib_fndecls (void)
     complex_type = complex_float128_type_node;
     /* type (*) (type) */
     func_1 = build_function_type_list (type, type, NULL_TREE);
+    /* int (*) (type) */
+    func_iround = build_function_type_list (integer_type_node,
+					    type, NULL_TREE);
     /* long (*) (type) */
     func_lround = build_function_type_list (long_integer_type_node,
 					    type, NULL_TREE);

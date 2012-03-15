@@ -1,3 +1,12 @@
+2012-03-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* f95-lang.c (gfc_init_builtin_functions): Initialize
+	BUILT_IN_IROUND.
+	* mathbuiltins.def: Add IROUND.
+	* trans-intrinsic.c (build_round_expr): Use BUILT_IN_IROUND if
+	type size matches.
+	(gfc_build_intrinsic_lib_fndecls): Build iround functions.
+
 2012-03-12  Richard Guenther  <rguenther@suse.de>
 
 	* f95-lang.c (builtin_type_for_size): Use gfc_type_for_size.
