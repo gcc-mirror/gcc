@@ -1,3 +1,7 @@
+2012-03-15  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* combine.c (apply_distributive_law): Do not distribute SUBREG.
+
 2012-03-15  Ira Rosen  <irar@il.ibm.com>
 	    Ulrich Weigand  <ulrich.weigand@linaro.org>
 
