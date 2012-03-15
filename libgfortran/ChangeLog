@@ -1,3 +1,24 @@
+2012-03-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/52434
+        PR libfortran/48878
+        PR libfortran/38199
+        * io/unit.c (get_internal_unit): Default to ROUND_UNSPECIFIED.
+        (init_units): Likewise.
+        * io/write_float.def (determine_precision): New function.
+        (output_float): Take into account buffer with %f format, no need
+        for our own rounding if unspecified or processor specified
+        rounding.
+        (DTOA): Simplify format string, add parameters.
+        (FDTOA): New macros similar to DTOA, but using %f format.
+        (OUTPUT_FLOAT_FMT_G): Stack allocate newf, determine correct
+        precision and fill buffer.
+        (EN_PREC): New macro.
+        (determine_en_precision): New function.
+        (WRITE_FLOAT): For G format, move buffer filling into
+        output_float_FMT_G, use FDTOA for F format.
+        (write_float): Increase buffer due to F format.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* intrinsics/c99_functions.c [__sgi__ && !HAVE_COMPLEX_H]: Remove.
