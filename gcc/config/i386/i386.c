@@ -36638,6 +36638,73 @@ expand_vec_perm_interleave3 (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement
+   a single vector permutation using a single intra-lane vector
+   permutation, vperm2f128 swapping the lanes and vblend* insn blending
+   the non-swapped and swapped vectors together.  */
+
+static bool
+expand_vec_perm_vperm2f128_vblend (struct expand_vec_perm_d *d)
+{
+  struct expand_vec_perm_d dfirst, dsecond;
+  unsigned i, j, msk, nelt = d->nelt, nelt2 = nelt / 2;
+  rtx seq;
+  bool ok;
+  rtx (*blend) (rtx, rtx, rtx, rtx) = NULL;
+
+  if (!TARGET_AVX
+      || TARGET_AVX2
+      || (d->vmode != V8SFmode && d->vmode != V4DFmode)
+      || d->op0 != d->op1)
+    return false;
+
+  dfirst = *d;
+  for (i = 0; i < nelt; i++)
+    dfirst.perm[i] = 0xff;
+  for (i = 0, msk = 0; i < nelt; i++)
+    {
+      j = (d->perm[i] & nelt2) ? i | nelt2 : i & ~nelt2;
+      if (dfirst.perm[j] != 0xff && dfirst.perm[j] != d->perm[i])
+	return false;
+      dfirst.perm[j] = d->perm[i];
+      if (j != i)
+	msk |= (1 << i);
+    }
+  for (i = 0; i < nelt; i++)
+    if (dfirst.perm[i] == 0xff)
+      dfirst.perm[i] = i;
+
+  if (!d->testing_p)
+    dfirst.target = gen_reg_rtx (dfirst.vmode);
+
+  start_sequence ();
+  ok = expand_vec_perm_1 (&dfirst);
+  seq = get_insns ();
+  end_sequence ();
+
+  if (!ok)
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  emit_insn (seq);
+
+  dsecond = *d;
+  dsecond.op0 = dfirst.target;
+  dsecond.op1 = dfirst.target;
+  dsecond.target = gen_reg_rtx (dsecond.vmode);
+  for (i = 0; i < nelt; i++)
+    dsecond.perm[i] = i ^ nelt2;
+
+  ok = expand_vec_perm_1 (&dsecond);
+  gcc_assert (ok);
+
+  blend = d->vmode == V8SFmode ? gen_avx_blendps256 : gen_avx_blendpd256;
+  emit_insn (blend (d->target, dfirst.target, dsecond.target, GEN_INT (msk)));
+  return true;
+}
+
 /* A subroutine of expand_vec_perm_even_odd_1.  Implement the double-word
    permutation with two pshufb insns and an ior.  We should have already
    failed all two instruction sequences.  */
@@ -37287,6 +37354,9 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     return true;
 
   if (expand_vec_perm_interleave3 (d))
+    return true;
+
+  if (expand_vec_perm_vperm2f128_vblend (d))
     return true;
 
   /* Try sequences of four instructions.  */

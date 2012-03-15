@@ -1,3 +1,11 @@
+2012-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52568
+	* gcc.dg/torture/vshuf-4.inc: Add two new tests.
+	* gcc.dg/torture/vshuf-8.inc: Likewise.
+	* gcc.dg/torture/vshuf-16.inc: Likewise.
+	* gcc.dg/torture/vshuf-32.inc: Likewise.
+
 2012-03-15  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/torture/pr52582.C: New.
