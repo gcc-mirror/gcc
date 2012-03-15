@@ -1,3 +1,9 @@
+2012-03-15  Ira Rosen  <irar@il.ibm.com>
+	    Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* gcc.dg/vect/bb-slp-pattern-1.c: New test.
+	* gcc.dg/vect/bb-slp-pattern-2.c: New test.
+
 2012-03-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR libfortran/52434

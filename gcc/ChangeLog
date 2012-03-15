@@ -1,3 +1,33 @@
+2012-03-15  Ira Rosen  <irar@il.ibm.com>
+	    Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* tree-vectorizer.h (vect_pattern_recog): Add new argument.
+	* tree-vect-loop.c (vect_analyze_loop_2): Update call to
+	vect_pattern_recog.
+	* tree-vect-patterns.c (widened_name_p): Pass basic block
+	info to vect_is_simple_use.
+	(vect_recog_dot_prod_pattern): Fail for basic blocks.
+	(vect_recog_widen_sum_pattern): Likewise.
+	(vect_handle_widen_op_by_const): Support basic blocks.
+	(vect_operation_fits_smaller_type,
+	vect_recog_over_widening_pattern): Likewise.
+	(vect_recog_vector_vector_shift_pattern): Support basic blocks.
+	Update call to vect_is_simple_use.
+	(vect_recog_mixed_size_cond_pattern): Support basic blocks.
+	Add printing.
+	(check_bool_pattern): Add an argument, update call to
+	vect_is_simple_use and the recursive calls.
+	(vect_recog_bool_pattern): Update relevant function calls.
+	Add printing.
+	(vect_mark_pattern_stmts): Update calls to new_stmt_vec_info.
+	(vect_pattern_recog_1): Check for reduction only in loops.
+	(vect_pattern_recog): Add new argument.  Support basic blocks.
+	* tree-vect-stmts.c (vectorizable_conversion): Pass basic block
+	info to vect_is_simple_use_1.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Support basic
+	blocks.
+	(vect_slp_analyze_bb_1): Call vect_pattern_recog.
+
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
 	    Andrew Pinski  <apinski@cavium.com>
 
