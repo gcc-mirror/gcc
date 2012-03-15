@@ -1,3 +1,11 @@
+2012-03-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/52434
+        PR libfortran/48878
+        PR libfortran/38199
+        * gfortran.dg/edit_real_1.f90: Don't assume roundTiesToAway.
+        * gfortran.dg/round_1.f03: Likewise.
+
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
 	    Andrew Pinski  <apinski@cavium.com>
 
