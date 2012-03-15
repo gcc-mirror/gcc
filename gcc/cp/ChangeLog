@@ -1,3 +1,8 @@
+2012-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52582
+	* method.c (implicitly_declare_fn): Set DECL_EXTERNAL.
+
 2012-03-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/44783
