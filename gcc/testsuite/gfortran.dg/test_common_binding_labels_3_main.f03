@@ -10,5 +10,4 @@ program main
   use test_common_binding_labels_3_main
   use test_common_binding_labels_3 ! { dg-error "collides" }
 end program main
-
-! { dg-final { cleanup-modules "test_common_binding_labels_3_main test_common_binding_labels_3" } }
+! { dg-final { cleanup-modules "test_common_binding_labels_3" } }

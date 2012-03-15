@@ -10,5 +10,4 @@ contains
     one = 1
   end function one
 end module binding_label_tests_11
-
-! Do not use dg-final to cleanup-modules
+! { dg-final { keep-modules "" } }

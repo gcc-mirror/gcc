@@ -111,10 +111,12 @@ proc gfortran-dg-runtest { testcases default-extra-flags } {
 	}
 
 	set nshort [file tail [file dirname $test]]/[file tail $test]
+	list-module-names $test
 
 	foreach flags $option_list {
 	    verbose "Testing $nshort, $flags" 1
 	    dg-test $test $flags ${default-extra-flags}
+	    cleanup-modules ""
 	}
     }
 
@@ -171,6 +173,7 @@ proc gfortran-dg-debug-runtest { target_compile trivial opt_opts testcases } {
        }
 
        set nshort [file tail [file dirname $test]]/[file tail $test]
+	list-module-names $test
 
        foreach flags $DEBUG_TORTURE_OPTIONS {
            set doit 1
@@ -179,6 +182,7 @@ proc gfortran-dg-debug-runtest { target_compile trivial opt_opts testcases } {
            if { $doit } {
                verbose -log "Testing $nshort, $flags" 1
                dg-test $test $flags ""
+		cleanup-modules ""
            }
        }
     }

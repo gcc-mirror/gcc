@@ -15,5 +15,4 @@ program main
   use binding_label_tests_11 ! { dg-error "collides" }
   use binding_label_tests_11_main
 end program main
-
-! { dg-final { cleanup-modules "binding_label_tests_11_main binding_label_tests_11" } }
+! { dg-final { cleanup-modules "binding_label_tests_11" } }

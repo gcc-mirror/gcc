@@ -27,5 +27,4 @@
   end select
   print *, i
 end
-
-! { dg-final { cleanup-modules "m m2 m3" } }
+! { dg-final { cleanup-modules "m m2" } }

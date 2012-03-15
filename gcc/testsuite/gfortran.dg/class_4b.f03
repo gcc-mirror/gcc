@@ -13,3 +13,4 @@ module m2
   type, extends(t) :: t2
   end type t2
 end module m2
+! { dg-final { keep-modules "m2" } }

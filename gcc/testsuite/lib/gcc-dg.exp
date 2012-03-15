@@ -29,6 +29,7 @@ load_lib prune.exp
 load_lib libgloss.exp
 load_lib target-libpath.exp
 load_lib torture-options.exp
+load_lib fortran-modules.exp
 
 # We set LC_ALL and LANG to C so that we get the same error messages as expected.
 setenv LC_ALL C
@@ -570,13 +571,6 @@ proc cleanup-saved-temps { args } {
 		remove-build-file "[file rootname [file tail $srcfile]].gk$suffix"
 	    }
 	}
-    }
-}
-
-# Remove files for specified Fortran modules.
-proc cleanup-modules { modlist } {
-    foreach modname $modlist {
-	remove-build-file [string tolower $modname].mod
     }
 }
 

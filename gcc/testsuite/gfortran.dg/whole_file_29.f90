@@ -24,4 +24,4 @@ contains
   end subroutine syntax_init_from_ifile
 end module syntax_rules
 end
-! { dg-final { cleanup-modules "syntax_rules ifiles iso_red" } }
+! { dg-final { cleanup-modules "iso_red" } }
