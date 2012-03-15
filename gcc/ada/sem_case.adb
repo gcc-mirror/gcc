@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -530,8 +530,8 @@ package body Sem_Case is
    begin
       if Case_Table'Last = 0 then
 
-         --  Special case: only an others case is present.
-         --  The others case covers the full range of the type.
+         --  Special case: only an others case is present. The others case
+         --  covers the full range of the type.
 
          if Is_Static_Subtype (Choice_Type) then
             Choice := New_Occurrence_Of (Choice_Type, Loc);
@@ -543,8 +543,8 @@ package body Sem_Case is
          return;
       end if;
 
-      --  Establish the bound values for the choice depending upon whether
-      --  the type of the case statement is static or not.
+      --  Establish the bound values for the choice depending upon whether the
+      --  type of the case statement is static or not.
 
       if Is_OK_Static_Subtype (Choice_Type) then
          Exp_Lo := Type_Low_Bound (Choice_Type);

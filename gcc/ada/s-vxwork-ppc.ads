@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software;  you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,9 +44,9 @@ package System.VxWorks is
    type Fpr_Array is array (1 .. FP_NUM_DREGS) of IC.double;
 
    type FP_CONTEXT is record
-      fpr   : Fpr_Array;
-      fpcsr : IC.int;
-      pad   : IC.int;
+      fpr       : Fpr_Array;
+      fpcsr     : IC.int;
+      fpcsrCopy : IC.int;
    end record;
    pragma Convention (C, FP_CONTEXT);
 

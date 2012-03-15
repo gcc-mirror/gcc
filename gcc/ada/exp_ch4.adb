@@ -7891,9 +7891,22 @@ package body Exp_Ch4 is
       Cond         : Node_Id;
       Decl         : Node_Id;
       I_Scheme     : Node_Id;
+      Original_N   : Node_Id;
       Test         : Node_Id;
 
    begin
+      --  Retrieve the original quantified expression (non analyzed)
+
+      if Present (Loop_Parameter_Specification (N)) then
+         Original_N := Parent (Parent (Loop_Parameter_Specification (N)));
+      else
+         Original_N := Parent (Parent (Iterator_Specification (N)));
+      end if;
+
+      --  Rewrite N with the original quantified expression
+
+      Rewrite (N, Original_N);
+
       Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Tnn,
@@ -7903,13 +7916,6 @@ package body Exp_Ch4 is
       Append_To (Actions, Decl);
 
       Cond := Relocate_Node (Condition (N));
-
-      --  Reset flag analyzed in the condition to force its analysis. Required
-      --  since the previous analysis was done with expansion disabled (see
-      --  Resolve_Quantified_Expression) and hence checks were not inserted
-      --  and record comparisons have not been expanded.
-
-      Reset_Analyzed_Flags (Cond);
 
       if Is_Universal then
          Cond := Make_Op_Not (Loc, Cond);
@@ -7926,9 +7932,14 @@ package body Exp_Ch4 is
             Make_Exit_Statement (Loc)));
 
       if Present (Loop_Parameter_Specification (N)) then
-         I_Scheme := Relocate_Node (Parent (Loop_Parameter_Specification (N)));
+         I_Scheme :=
+           Make_Iteration_Scheme (Loc,
+              Loop_Parameter_Specification =>
+                Loop_Parameter_Specification (N));
       else
-         I_Scheme := Relocate_Node (Parent (Iterator_Specification (N)));
+         I_Scheme :=
+           Make_Iteration_Scheme (Loc,
+             Iterator_Specification => Iterator_Specification (N));
       end if;
 
       Append_To (Actions,

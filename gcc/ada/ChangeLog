@@ -1,3 +1,40 @@
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch6.adb, einfo.ads, sem_eval.adb, sem_eval.ads,
+	sem_case.adb: Minor reformatting.
+
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Add handling
+	of First_Valid/Last_Valid.
+	* sem_attr.adb (Check_First_Last_Valid): New procedure
+	(Analyze_Attribute): Add handling of First_Valid and Last_Valid
+	(Eval_Attribute): ditto.
+	* snames.ads-tmpl: Add entries for First_Valid and Last_Valid.
+
+2012-03-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Predicated_Loop): Suppress warnings on
+	loop variable, for the unusual case where the range has a single
+	element and the loop variable has no visible assignment to it.
+
+2012-03-15  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Quantified_Expression): Expand the
+	original quantified expression node.
+	* sem_ch4.adb (Analyze_Quantified_Expression): Properly analyze
+	the quantified expression and preserve the original non-analyzed
+	quantified expression when an expansion is needed.
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Special treatment
+	for quantified expressions.
+	(Analyze_Iterator_Specification): Special treatment for quantified
+	expressions.
+
+2012-03-15  Ed Falis  <falis@adacore.com>
+
+	* s-vxwork-ppc.ads: Update FP_CONTEXT so name of former pad
+	field matches VxWorks headers.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Makefile.in (mips-sgi-irix6*): Remove.

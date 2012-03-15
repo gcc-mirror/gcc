@@ -3759,6 +3759,14 @@ package body Exp_Ch5 is
             Set_Analyzed (Loop_Id, False);
             Set_Ekind    (Loop_Id, E_Variable);
 
+            --  In most loops the loop variable is assigned in various
+            --  alternatives in the body. However, in the rare case when
+            --  the range specifies a single element, the loop variable
+            --  may trigger a spurious warning that is could be constant.
+            --  This warning might as well be suppressed.
+
+            Set_Warnings_Off (Loop_Id);
+
             --  Loop to create branches of case statement
 
             Alts := New_List;

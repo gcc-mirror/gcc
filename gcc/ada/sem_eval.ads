@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,7 +196,15 @@ package Sem_Eval is
 
    function Is_Static_Subtype (Typ : Entity_Id) return Boolean;
    --  Determines whether a subtype fits the definition of an Ada static
-   --  subtype as given in (RM 4.9(26)).
+   --  subtype as given in (RM 4.9(26)). Important note: This check does not
+   --  include the Ada 2012 case of a non-static predicate which results in an
+   --  otherwise static subtype being non-static. Such a subtype will return
+   --  True for this test, so if the distinction is important, the caller must
+   --  deal with this.
+   --
+   --  Implementation note: an attempt to include this Ada 2012 case failed,
+   --  since it appears that this routine is called in some cases before the
+   --  Static_Predicate field is set ???
 
    function Is_OK_Static_Subtype (Typ : Entity_Id) return Boolean;
    --  Like Is_Static_Subtype but also makes sure that the bounds of the
