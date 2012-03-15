@@ -1,3 +1,7 @@
+2012-03-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* EXCLUDES (mips-tdump.c, mips-tfile.c): Remove.
