@@ -10932,6 +10932,11 @@ package body Sem_Ch6 is
       Plist : List_Id := No_List;
       --  List of generated postconditions
 
+      function Grab_CC return Node_Id;
+      --  Prag contains an analyzed contract case pragma. This function copies
+      --  relevant components of the pragma, creates the corresponding Check
+      --  pragma and returns the Check pragma as the result.
+
       function Grab_PPC (Pspec : Entity_Id := Empty) return Node_Id;
       --  Prag contains an analyzed precondition or postcondition pragma. This
       --  function copies the pragma, changes it to the corresponding Check
@@ -10953,6 +10958,87 @@ package body Sem_Ch6 is
       --  contains the declaration of the private type). A True value means
       --  that an invariant check is required (for an IN OUT parameter, or
       --  the returned value of a function.
+
+      -------------
+      -- Grab_CC --
+      -------------
+
+      function Grab_CC return Node_Id is
+         CP   : Node_Id;
+         Req  : Node_Id;
+         Ens  : Node_Id;
+         Post : Node_Id;
+         Loc  : constant Source_Ptr := Sloc (Prag);
+
+         --  Similarly to postcondition, the string is "failed xx from yy"
+         --  where xx is in all lower case. The reason for this different
+         --  wording compared to other Check cases is that the failure is not
+         --  at the point of occurrence of the pragma, unlike the other Check
+         --  cases.
+
+         Msg  : constant String :=
+                  "failed contract case from " & Build_Location_String (Loc);
+
+      begin
+         --  Copy the Requires and Ensures expressions
+
+         Req  := New_Copy_Tree (
+                   Expression (Get_Requires_From_Case_Pragma (Prag)),
+                   New_Scope => Current_Scope);
+
+         Ens  := New_Copy_Tree (
+                   Expression (Get_Ensures_From_Case_Pragma (Prag)),
+                   New_Scope => Current_Scope);
+
+         --  Build the postcondition (not Requires'Old or else Ensures)
+
+         Post := Make_Or_Else (Loc,
+                   Left_Opnd  => Make_Op_Not (Loc,
+                                   Make_Attribute_Reference (Loc,
+                                     Prefix         => Req,
+                                     Attribute_Name => Name_Old)),
+                   Right_Opnd => Ens);
+
+         --  For a contract case pragma within a generic, generate a
+         --  postcondition pragma for later expansion. This is also used
+         --  when an error was detected, thus setting Expander_Active to False.
+
+         if not Expander_Active then
+            CP := Make_Pragma (Loc,
+                    Chars => Name_Postcondition,
+                    Pragma_Argument_Associations => New_List (
+                      Make_Pragma_Argument_Association (Loc,
+                        Chars      => Name_Check,
+                        Expression => Post),
+
+                      Make_Pragma_Argument_Association (Loc,
+                        Chars      => Name_Message,
+                        Expression => Make_String_Literal (Loc, Msg))));
+
+         --  Otherwise, create the Check pragma
+
+         else
+            CP := Make_Pragma (Loc,
+                    Chars => Name_Check,
+                    Pragma_Argument_Associations => New_List (
+                      Make_Pragma_Argument_Association (Loc,
+                        Chars      => Name_Name,
+                        Expression =>
+                          Make_Identifier (Loc, Name_Postcondition)),
+
+                      Make_Pragma_Argument_Association (Loc,
+                        Chars      => Name_Check,
+                        Expression => Post),
+
+                      Make_Pragma_Argument_Association (Loc,
+                        Chars      => Name_Message,
+                        Expression => Make_String_Literal (Loc, Msg))));
+         end if;
+
+         --  Return the Postcondition or Check pragma
+
+         return CP;
+      end Grab_CC;
 
       --------------
       -- Grab_PPC --
@@ -11005,7 +11091,8 @@ package body Sem_Ch6 is
          Set_Comes_From_Source (CP, False);
 
          --  For a postcondition pragma within a generic, preserve the pragma
-         --  for later expansion.
+         --  for later expansion. This is also used when an error was detected,
+         --  thus setting Expander_Active to False.
 
          if Nam = Name_Postcondition
            and then not Expander_Active
@@ -11328,6 +11415,11 @@ package body Sem_Ch6 is
 
       if Present (Spec_Id) then
          Spec_Postconditions : declare
+            procedure Process_Contract_Cases (Spec : Node_Id);
+            --  This processes the Spec_CTC_List from Spec, processing any
+            --  contract-case from the list. The caller has checked that
+            --  Spec_CTC_List is non-Empty.
+
             procedure Process_Post_Conditions
               (Spec  : Node_Id;
                Class : Boolean);
@@ -11335,6 +11427,34 @@ package body Sem_Ch6 is
             --  postconditions from the list. If Class is True, then only
             --  postconditions marked with Class_Present are considered.
             --  The caller has checked that Spec_PPC_List is non-Empty.
+
+            ----------------------------
+            -- Process_Contract_Cases --
+            ----------------------------
+
+            procedure Process_Contract_Cases (Spec : Node_Id) is
+            begin
+               --  Loop through Contract_Case pragmas from spec
+
+               Prag := Spec_CTC_List (Contract (Spec));
+               loop
+                  if Pragma_Name (Prag) = Name_Contract_Case then
+                     if Plist = No_List then
+                        Plist := Empty_List;
+                     end if;
+
+                     if not Expander_Active then
+                        Prepend (Grab_CC, Declarations (N));
+                     else
+                        Append (Grab_CC, Plist);
+                     end if;
+                  end if;
+
+                  Prag := Next_Pragma (Prag);
+                  exit when No (Prag);
+               end loop;
+
+            end Process_Contract_Cases;
 
             -----------------------------
             -- Process_Post_Conditions --
@@ -11380,6 +11500,14 @@ package body Sem_Ch6 is
          --  Start of processing for Spec_Postconditions
 
          begin
+            --  Process postconditions expressed as contract-cases
+
+            if Present (Spec_CTC_List (Contract (Spec_Id))) then
+               Process_Contract_Cases (Spec_Id);
+            end if;
+
+            --  Process spec postconditions
+
             if Present (Spec_PPC_List (Contract (Spec_Id))) then
                Process_Post_Conditions (Spec_Id, Class => False);
             end if;

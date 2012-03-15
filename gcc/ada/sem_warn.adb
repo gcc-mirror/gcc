@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1749,7 +1749,7 @@ package body Sem_Warn is
 
                      function Within_Postcondition return Boolean;
                      --  Returns True iff N is within a Postcondition or
-                     --  Ensures component in a Test_Case.
+                     --  Ensures component in a Contract_Case or Test_Case.
 
                      --------------------------
                      -- Within_Postcondition --
@@ -1770,9 +1770,11 @@ package body Sem_Warn is
                               P := Parent (Nod);
 
                               if Nkind (P) = N_Pragma
-                                and then Pragma_Name (P) = Name_Test_Case
                                 and then
-                                  Nod = Get_Ensures_From_Test_Case_Pragma (P)
+                                  (Pragma_Name (P) = Name_Contract_Case
+                                     or else Pragma_Name (P) = Name_Test_Case)
+                                and then
+                                  Nod = Get_Ensures_From_Case_Pragma (P)
                               then
                                  return True;
                               end if;

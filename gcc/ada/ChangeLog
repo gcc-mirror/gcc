@@ -1,3 +1,29 @@
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* aspects.adb, aspects.ads (Aspect_Id): New GNAT aspect
+	Aspect_Contract_Case.
+	* gnat_rm.texi Document the new pragma/aspect
+	Contract_Case. Correct the documentation of the existing
+	pragma/aspect Test_Case with the new semantics.
+	* sem_attr.adb (Analyze_Attribute): Allow use of 'Result in the
+	Ensures component of a Contract_Case pragma.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Check new aspect
+	and translate it into a pragma.
+	(Check_Aspect_At_Freeze_Point): Take into account the new aspect.
+	* sem_ch3.adb, sinfo.adb, sinfo.ads Renaming of TC (for test case)
+	into CTC (for contract and test case).
+	* sem_ch6.adb (Process_PPCs): Generate Check pragmas from
+	Contract_Case pragmas, similarly to what is done already for
+	postconditions.
+	* sem_prag.adb, sem_prag.ads (Check_Contract_Or_Test_Case):
+	Renaming of Check_Test_Case.
+	(Analyze_Pragma, Sig_Flags): Take into account the new pragma.
+	* sem_util.adb, sem_util.ads Renaming to take into account the
+	new pragma, so that functions which applied only to Test_Case
+	now apply to both Test_Case and Contract_Case.
+	* par-prag.adb, sem_warn.adb, snames.ads-tmpl Take into account
+	the new pragma.
+
 2012-03-15  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.ads: Minor comment updates.

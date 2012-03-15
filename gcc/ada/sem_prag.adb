@@ -181,10 +181,10 @@ package body Sem_Prag is
    --  original one, following the renaming chain) is returned. Otherwise the
    --  entity is returned unchanged. Should be in Einfo???
 
-   procedure Preanalyze_TC_Args (N, Arg_Req, Arg_Ens : Node_Id);
+   procedure Preanalyze_CTC_Args (N, Arg_Req, Arg_Ens : Node_Id);
    --  Preanalyze the boolean expressions in the Requires and Ensures arguments
-   --  of a Test_Case pragma if present (possibly Empty). We treat these as
-   --  spec expressions (i.e. similar to a default expression).
+   --  of a Contract_Case or Test_Case pragma if present (possibly Empty). We
+   --  treat these as spec expressions (i.e. similar to a default expression).
 
    procedure rv;
    --  This is a dummy function called by the processing for pragma Reviewable.
@@ -637,15 +637,16 @@ package body Sem_Prag is
       --  that the constraint is static as required by the restrictions for
       --  Unchecked_Union.
 
-      procedure Check_Test_Case;
-      --  Called to process a test-case pragma. The treatment is similar to the
-      --  one for pre- and postcondition in Check_Precondition_Postcondition,
-      --  except the placement rules for the test-case pragma are stricter.
-      --  This pragma may only occur after a subprogram spec declared directly
-      --  in a package spec unit. In this case, the pragma is chained to the
-      --  subprogram in question (using Spec_TC_List and Next_Pragma) and
-      --  analysis of the pragma is delayed till the end of the spec. In
-      --  all other cases, an error message for bad placement is given.
+      procedure Check_Contract_Or_Test_Case;
+      --  Called to process a contract-case or test-case pragma. The
+      --  treatment is similar to the one for pre- and postcondition in
+      --  Check_Precondition_Postcondition, except the placement rules for the
+      --  contract-case and test-case pragmas are stricter. These pragmas may
+      --  only occur after a subprogram spec declared directly in a package
+      --  spec unit. In this case, the pragma is chained to the subprogram in
+      --  question (using Spec_CTC_List and Next_Pragma) and analysis of the
+      --  pragma is delayed till the end of the spec. In all other cases, an
+      --  error message for bad placement is given.
 
       procedure Check_Valid_Configuration_Pragma;
       --  Legality checks for placement of a configuration pragma
@@ -2113,24 +2114,25 @@ package body Sem_Prag is
          end case;
       end Check_Static_Constraint;
 
-      ---------------------
-      -- Check_Test_Case --
-      ---------------------
+      ---------------------------------
+      -- Check_Contract_Or_Test_Case --
+      ---------------------------------
 
-      procedure Check_Test_Case is
+      procedure Check_Contract_Or_Test_Case is
          P  : Node_Id;
          PO : Node_Id;
 
-         procedure Chain_TC (PO : Node_Id);
+         procedure Chain_CTC (PO : Node_Id);
          --  If PO is a [generic] subprogram declaration node, then the
-         --  test-case applies to this subprogram and the processing for the
-         --  pragma is completed. Otherwise the pragma is misplaced.
+         --  contract-case or test-case applies to this subprogram and the
+         --  processing for the pragma is completed. Otherwise the pragma
+         --  is misplaced.
 
-         --------------
-         -- Chain_TC --
-         --------------
+         ---------------
+         -- Chain_CTC --
+         ---------------
 
-         procedure Chain_TC (PO : Node_Id) is
+         procedure Chain_CTC (PO : Node_Id) is
             S   : Entity_Id;
 
          begin
@@ -2166,21 +2168,21 @@ package body Sem_Prag is
             --  in this analysis, allowing forward references. The analysis
             --  happens at the end of Analyze_Declarations.
 
-            --  There should not be another test case with the same name
-            --  associated to this subprogram.
+            --  There should not be another contract-case or test-case with the
+            --  same name associated to this subprogram.
 
             declare
-               Name : constant String_Id := Get_Name_From_Test_Case_Pragma (N);
-               TC   : Node_Id;
+               Name : constant String_Id := Get_Name_From_Case_Pragma (N);
+               CTC   : Node_Id;
 
             begin
-               TC := Spec_TC_List (Contract (S));
-               while Present (TC) loop
+               CTC := Spec_CTC_List (Contract (S));
+               while Present (CTC) loop
 
                   if String_Equal
-                    (Name, Get_Name_From_Test_Case_Pragma (TC))
+                    (Name, Get_Name_From_Case_Pragma (CTC))
                   then
-                     Error_Msg_Sloc := Sloc (TC);
+                     Error_Msg_Sloc := Sloc (CTC);
 
                      if From_Aspect_Specification (N) then
                         Error_Pragma ("name for aspect% is already used#");
@@ -2189,24 +2191,24 @@ package body Sem_Prag is
                      end if;
                   end if;
 
-                  TC := Next_Pragma (TC);
+                  CTC := Next_Pragma (CTC);
                end loop;
             end;
 
-            --  Chain spec TC pragma to list for subprogram
+            --  Chain spec CTC pragma to list for subprogram
 
-            Set_Next_Pragma (N, Spec_TC_List (Contract (S)));
-            Set_Spec_TC_List (Contract (S), N);
-         end Chain_TC;
+            Set_Next_Pragma (N, Spec_CTC_List (Contract (S)));
+            Set_Spec_CTC_List (Contract (S), N);
+         end Chain_CTC;
 
-      --  Start of processing for Check_Test_Case
+      --  Start of processing for Check_Contract_Or_Test_Case
 
       begin
          if not Is_List_Member (N) then
             Pragma_Misplaced;
          end if;
 
-         --  Test cases should only appear in package spec unit
+         --  Contract-case or test-case should only appear in package spec unit
 
          if Get_Source_Unit (N) = No_Unit
            or else not Nkind_In (Sinfo.Unit (Cunit (Get_Source_Unit (N))),
@@ -2224,9 +2226,9 @@ package body Sem_Prag is
 
             --  If the previous node is a generic subprogram, do not go to to
             --  the original node, which is the unanalyzed tree: we need to
-            --  attach the test-case to the analyzed version at this point.
-            --  They get propagated to the original tree when analyzing the
-            --  corresponding body.
+            --  attach the contract-case or test-case to the analyzed version
+            --  at this point. They get propagated to the original tree when
+            --  analyzing the corresponding body.
 
             if Nkind (P) not in N_Generic_Declaration then
                PO := Original_Node (P);
@@ -2258,7 +2260,7 @@ package body Sem_Prag is
                Pragma_Misplaced;
 
             else
-               Chain_TC (PO);
+               Chain_CTC (PO);
                return;
             end if;
          end loop;
@@ -2266,7 +2268,7 @@ package body Sem_Prag is
          --  If we fall through, pragma was misplaced
 
          Pragma_Misplaced;
-      end Check_Test_Case;
+      end Check_Contract_Or_Test_Case;
 
       --------------------------------------
       -- Check_Valid_Configuration_Pragma --
@@ -13904,18 +13906,21 @@ package body Sem_Prag is
             end if;
          end Task_Storage;
 
-         ---------------
-         -- Test_Case --
-         ---------------
+         -------------------------------
+         -- Contract_Case | Test_Case --
+         -------------------------------
 
-         --  pragma Test_Case ([Name     =>] Static_String_EXPRESSION
+         --  pragma (Contract_Case | Test_Case)
+         --                   ([Name     =>] Static_String_EXPRESSION
          --                   ,[Mode     =>] MODE_TYPE
          --                  [, Requires =>  Boolean_EXPRESSION]
          --                  [, Ensures  =>  Boolean_EXPRESSION]);
 
          --  MODE_TYPE ::= Nominal | Robustness
 
-         when Pragma_Test_Case => Test_Case : declare
+         when Pragma_Contract_Case |
+              Pragma_Test_Case =>
+         Contract_Or_Test_Case : declare
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (2);
@@ -13947,8 +13952,8 @@ package body Sem_Prag is
                Check_Identifier_Is_One_Of (Arg3, Name_Requires, Name_Ensures);
             end if;
 
-            Check_Test_Case;
-         end Test_Case;
+            Check_Contract_Or_Test_Case;
+         end Contract_Or_Test_Case;
 
          --------------------------
          -- Thread_Local_Storage --
@@ -14819,11 +14824,11 @@ package body Sem_Prag is
       when Pragma_Exit => null;
    end Analyze_Pragma;
 
-   -----------------------------
-   -- Analyze_TC_In_Decl_Part --
-   -----------------------------
+   ------------------------------
+   -- Analyze_CTC_In_Decl_Part --
+   ------------------------------
 
-   procedure Analyze_TC_In_Decl_Part (N : Node_Id; S : Entity_Id) is
+   procedure Analyze_CTC_In_Decl_Part (N : Node_Id; S : Entity_Id) is
    begin
       --  Install formals and push subprogram spec onto scope stack so that we
       --  can see the formals from the pragma.
@@ -14834,15 +14839,15 @@ package body Sem_Prag is
       --  Preanalyze the boolean expressions, we treat these as spec
       --  expressions (i.e. similar to a default expression).
 
-      Preanalyze_TC_Args (N,
-                          Get_Requires_From_Test_Case_Pragma (N),
-                          Get_Ensures_From_Test_Case_Pragma (N));
+      Preanalyze_CTC_Args (N,
+                           Get_Requires_From_Case_Pragma (N),
+                           Get_Ensures_From_Case_Pragma (N));
 
       --  Remove the subprogram from the scope stack now that the pre-analysis
-      --  of the expressions in the test-case is done.
+      --  of the expressions in the contract-case or test-case is done.
 
       End_Scope;
-   end Analyze_TC_In_Decl_Part;
+   end Analyze_CTC_In_Decl_Part;
 
    --------------------
    -- Check_Disabled --
@@ -15077,6 +15082,7 @@ package body Sem_Prag is
       Pragma_Complete_Representation        =>  0,
       Pragma_Complex_Representation         =>  0,
       Pragma_Component_Alignment            => -1,
+      Pragma_Contract_Case                  => -1,
       Pragma_Controlled                     =>  0,
       Pragma_Convention                     =>  0,
       Pragma_Convention_Identifier          =>  0,
@@ -15431,11 +15437,11 @@ package body Sem_Prag is
       end if;
    end Make_Aspect_For_PPC_In_Gen_Sub_Decl;
 
-   ------------------------
-   -- Preanalyze_TC_Args --
-   ------------------------
+   -------------------------
+   -- Preanalyze_CTC_Args --
+   -------------------------
 
-   procedure Preanalyze_TC_Args (N, Arg_Req, Arg_Ens : Node_Id) is
+   procedure Preanalyze_CTC_Args (N, Arg_Req, Arg_Ens : Node_Id) is
    begin
       --  Preanalyze the boolean expressions, we treat these as spec
       --  expressions (i.e. similar to a default expression).
@@ -15465,7 +15471,7 @@ package body Sem_Prag is
               (Original_Node (Get_Pragma_Arg (Arg_Ens)), Standard_Boolean);
          end if;
       end if;
-   end Preanalyze_TC_Args;
+   end Preanalyze_CTC_Args;
 
    --------------------------------------
    -- Process_Compilation_Unit_Pragmas --

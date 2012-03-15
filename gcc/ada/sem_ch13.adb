@@ -1450,83 +1450,87 @@ package body Sem_Ch13 is
                   Set_Is_Delayed_Aspect (Aspect);
                   Delay_Required := True;
 
-               when Aspect_Test_Case => declare
-                  Args      : List_Id;
-                  Comp_Expr : Node_Id;
-                  Comp_Assn : Node_Id;
-                  New_Expr  : Node_Id;
+               when Aspect_Contract_Case |
+                    Aspect_Test_Case     =>
+                  declare
+                     Args      : List_Id;
+                     Comp_Expr : Node_Id;
+                     Comp_Assn : Node_Id;
+                     New_Expr  : Node_Id;
 
-               begin
-                  Args := New_List;
+                  begin
+                     Args := New_List;
 
-                  if Nkind (Parent (N)) = N_Compilation_Unit then
-                     Error_Msg_N
-                       ("incorrect placement of aspect `Test_Case`", E);
-                     goto Continue;
-                  end if;
-
-                  if Nkind (Expr) /= N_Aggregate then
-                     Error_Msg_NE
-                       ("wrong syntax for aspect `Test_Case` for &", Id, E);
-                     goto Continue;
-                  end if;
-
-                  --  Make pragma expressions refer to the original aspect
-                  --  expressions through the Original_Node link. This is used
-                  --  in semantic analysis for ASIS mode, so that the original
-                  --  expression also gets analyzed.
-
-                  Comp_Expr := First (Expressions (Expr));
-                  while Present (Comp_Expr) loop
-                     New_Expr := Relocate_Node (Comp_Expr);
-                     Set_Original_Node (New_Expr, Comp_Expr);
-                     Append
-                       (Make_Pragma_Argument_Association (Sloc (Comp_Expr),
-                          Expression => New_Expr),
-                       Args);
-                     Next (Comp_Expr);
-                  end loop;
-
-                  Comp_Assn := First (Component_Associations (Expr));
-                  while Present (Comp_Assn) loop
-                     if List_Length (Choices (Comp_Assn)) /= 1
-                       or else
-                         Nkind (First (Choices (Comp_Assn))) /= N_Identifier
-                     then
-                        Error_Msg_NE
-                          ("wrong syntax for aspect `Test_Case` for &", Id, E);
+                     if Nkind (Parent (N)) = N_Compilation_Unit then
+                        Error_Msg_Name_1 := Nam;
+                        Error_Msg_N ("incorrect placement of aspect `%`", E);
                         goto Continue;
                      end if;
 
-                     New_Expr := Relocate_Node (Expression (Comp_Assn));
-                     Set_Original_Node (New_Expr, Expression (Comp_Assn));
-                     Append (Make_Pragma_Argument_Association (
-                       Sloc       => Sloc (Comp_Assn),
-                       Chars      => Chars (First (Choices (Comp_Assn))),
-                       Expression => New_Expr),
-                       Args);
-                     Next (Comp_Assn);
-                  end loop;
+                     if Nkind (Expr) /= N_Aggregate then
+                        Error_Msg_Name_1 := Nam;
+                        Error_Msg_NE
+                          ("wrong syntax for aspect `%` for &", Id, E);
+                        goto Continue;
+                     end if;
 
-                  --  Build the test-case pragma
+                     --  Make pragma expressions refer to the original aspect
+                     --  expressions through the Original_Node link. This is
+                     --  used in semantic analysis for ASIS mode, so that the
+                     --  original expression also gets analyzed.
 
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Test_Case),
-                      Pragma_Argument_Associations =>
-                        Args);
+                     Comp_Expr := First (Expressions (Expr));
+                     while Present (Comp_Expr) loop
+                        New_Expr := Relocate_Node (Comp_Expr);
+                        Set_Original_Node (New_Expr, Comp_Expr);
+                        Append
+                          (Make_Pragma_Argument_Association (Sloc (Comp_Expr),
+                           Expression => New_Expr),
+                           Args);
+                        Next (Comp_Expr);
+                     end loop;
 
-                  Set_From_Aspect_Specification (Aitem, True);
-                  Set_Corresponding_Aspect (Aitem, Aspect);
-                  Set_Is_Delayed_Aspect (Aspect);
+                     Comp_Assn := First (Component_Associations (Expr));
+                     while Present (Comp_Assn) loop
+                        if List_Length (Choices (Comp_Assn)) /= 1
+                          or else
+                            Nkind (First (Choices (Comp_Assn))) /= N_Identifier
+                        then
+                           Error_Msg_Name_1 := Nam;
+                           Error_Msg_NE
+                             ("wrong syntax for aspect `%` for &", Id, E);
+                           goto Continue;
+                        end if;
 
-                  --  Insert immediately after the entity declaration
+                        New_Expr := Relocate_Node (Expression (Comp_Assn));
+                        Set_Original_Node (New_Expr, Expression (Comp_Assn));
+                        Append (Make_Pragma_Argument_Association (
+                          Sloc       => Sloc (Comp_Assn),
+                          Chars      => Chars (First (Choices (Comp_Assn))),
+                          Expression => New_Expr),
+                          Args);
+                        Next (Comp_Assn);
+                     end loop;
 
-                  Insert_After (N, Aitem);
+                     --  Build the contract-case or test-case pragma
 
-                  goto Continue;
-               end;
+                     Aitem :=
+                       Make_Pragma (Loc,
+                                    Pragma_Identifier            =>
+                                      Make_Identifier (Sloc (Id), Nam),
+                                    Pragma_Argument_Associations =>
+                                      Args);
+
+                     Set_From_Aspect_Specification (Aitem, True);
+                     Set_Corresponding_Aspect (Aitem, Aspect);
+                     Set_Is_Delayed_Aspect (Aspect);
+
+                     --  Insert immediately after the entity declaration
+
+                     Insert_After (N, Aitem);
+
+                     goto Continue;
+                  end;
 
                when Aspect_Dimension =>
                   Analyze_Aspect_Dimension (N, Id, Expr);
@@ -6158,7 +6162,13 @@ package body Sem_Ch13 is
          when Boolean_Aspects =>
             raise Program_Error;
 
-         --  Test_Case aspect applies to entries and subprograms, hence should
+         --  Contract_Case aspects apply to subprograms, hence should never be
+         --  delayed.
+
+         when Aspect_Contract_Case =>
+            raise Program_Error;
+
+         --  Test_Case aspects apply to entries and subprograms, hence should
          --  never be delayed.
 
          when Aspect_Test_Case =>
