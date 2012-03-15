@@ -3390,14 +3390,25 @@ package body Sem_Ch4 is
    -----------------------------------
 
    procedure Analyze_Quantified_Expression (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-      Ent : constant Entity_Id :=
-              New_Internal_Entity
-                (E_Loop, Current_Scope, Sloc (N), 'L');
+      Loc             : constant Source_Ptr := Sloc (N);
+      Ent             : constant Entity_Id :=
+                          New_Internal_Entity
+                            (E_Loop, Current_Scope, Sloc (N), 'L');
+      Needs_Expansion : constant Boolean :=
+                          Operating_Mode /= Check_Semantics
+                            and then not Alfa_Mode;
 
-      Iterator : Node_Id;
+      Iterator   : Node_Id;
+      Original_N : Node_Id;
 
    begin
+      --  Preserve the original node used for the expansion of the quantified
+      --  expression.
+
+      if Needs_Expansion then
+         Original_N := Copy_Separate_Tree (N);
+      end if;
+
       Set_Etype  (Ent, Standard_Void_Type);
       Set_Scope  (Ent, Current_Scope);
       Set_Parent (Ent, N);
@@ -3433,7 +3444,15 @@ package body Sem_Ch4 is
 
       Analyze (Condition (N));
       End_Scope;
+
       Set_Etype (N, Standard_Boolean);
+
+      --  Attach the original node to the iteration scheme created above
+
+      if Needs_Expansion then
+         Set_Etype (Original_N, Standard_Boolean);
+         Set_Parent (Iterator, Original_N);
+      end if;
    end Analyze_Quantified_Expression;
 
    -------------------

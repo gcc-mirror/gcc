@@ -128,7 +128,8 @@ package body Ch6 is
    --  other subprogram constructs.
 
    --  EXPRESSION_FUNCTION ::=
-   --    FUNCTION SPECIFICATION IS (EXPRESSION);
+   --    FUNCTION SPECIFICATION IS (EXPRESSION)
+   --      [ASPECT_SPECIFICATIONS];
 
    --  The value in Pf_Flags indicates which of these possible declarations
    --  is acceptable to the caller:
