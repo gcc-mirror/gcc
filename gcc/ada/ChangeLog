@@ -1,3 +1,11 @@
+2012-03-15  Vincent Pucci  <pucci@adacore.com>
+
+	* sem.ads, sem.adb (Preanalyze): New routine.
+	* sem_ch4.adb (Analyze_Quantified_Expression): Call to the
+	Preanalyze routine in Sem added.  Renaming of Needs_Expansion
+	into Need_Preanalysis.
+	* sem_ch6.adb (Preanalyze): Removed.
+
 2012-03-15  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch4.adb (Analyze_Quantified_Expression): Add comment.

@@ -4280,11 +4280,6 @@ package body Sem_Ch6 is
       --  analysis of the non-inlined body will handle these pragmas properly).
       --  A new internal name is associated with Body_To_Inline.
 
-      procedure Preanalyze (N : Node_Id);
-      --  Performs a pre-analysis of node N. During pre-analysis no expansion
-      --  is carried out for N or its children. For more info on pre-analysis
-      --  read the spec of Sem.
-
       procedure Split_Unconstrained_Function
         (N       : Node_Id;
          Spec_Id : Entity_Id);
@@ -5058,23 +5053,6 @@ package body Sem_Ch6 is
             Make_Defining_Identifier (Sloc (N), New_Internal_Name ('P')));
          Set_Corresponding_Spec (Body_To_Inline, Empty);
       end Generate_Body_To_Inline;
-
-      ----------------
-      -- Preanalyze --
-      ----------------
-
-      procedure Preanalyze (N : Node_Id) is
-         Save_Full_Analysis : constant Boolean := Full_Analysis;
-
-      begin
-         Full_Analysis := False;
-         Expander_Mode_Save_And_Set (False);
-
-         Analyze (N);
-
-         Expander_Mode_Restore;
-         Full_Analysis := Save_Full_Analysis;
-      end Preanalyze;
 
       ----------------------------------
       -- Split_Unconstrained_Function --
