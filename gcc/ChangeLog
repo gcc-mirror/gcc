@@ -1,6 +1,21 @@
 2012-03-15  Ira Rosen  <irar@il.ibm.com>
 	    Ulrich Weigand  <ulrich.weigand@linaro.org>
 
+	* tree-vect-patterns.c (widened_name_p): Rename to ...
+	(type_conversion_p): ... this.  Add new argument to determine
+	if it's a promotion or demotion operation.  Check for
+	CONVERT_EXPR_CODE_P instead of NOP_EXPR.
+	(vect_recog_dot_prod_pattern): Call type_conversion_p instead
+	widened_name_p.
+	(vect_recog_widen_mult_pattern, vect_recog_widen_sum_pattern,
+	vect_operation_fits_smaller_type, vect_recog_widen_shift_pattern):
+	Likewise.
+	(vect_recog_mixed_size_cond_pattern): Likewise and allow
+	non-constant then and else clauses.
+
+2012-03-15  Ira Rosen  <irar@il.ibm.com>
+	    Ulrich Weigand  <ulrich.weigand@linaro.org>
+
 	* tree-vectorizer.h (vect_pattern_recog): Add new argument.
 	* tree-vect-loop.c (vect_analyze_loop_2): Update call to
 	vect_pattern_recog.
