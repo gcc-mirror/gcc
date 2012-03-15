@@ -3090,7 +3090,7 @@ $ gnatlink ada_unit file1.o file2.o --LINK=./my_script
 @end smallexample
 
 If the @code{zero cost} exception mechanism is used, and the platform
-doesn't support automatic registration of exception tables (e.g.@: HP-UX,
+doesn't support automatic registration of exception tables (e.g.@: HP-UX
 or AIX), the simple approach described above will not work and
 a pre-linking phase using GNAT will be necessary.
 
@@ -5442,8 +5442,8 @@ when such pragmas should be used.
 @emph{List inherited aspects.}
 @cindex @option{-gnatw.l} (@command{gcc})
 This switch causes the compiler to list inherited invariants,
-preconditions, and postconditions from Invariant'Class, Pre'Class, and
-Post'Class aspects. Also list inherited subtype predicates.
+preconditions, and postconditions from Type_Invariant'Class, Invariant'Class,
+Pre'Class, and Post'Class aspects. Also list inherited subtype predicates.
 These messages are not automatically turned on by the use of @option{-gnatwa}.
 
 @item -gnatw.L

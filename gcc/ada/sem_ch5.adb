@@ -2087,10 +2087,9 @@ package body Sem_Ch5 is
 
                Check_Controlled_Array_Attribute (DS);
 
-               --  The index is not processed during the analysis of a
-               --  quantified expression but delayed to its expansion where the
-               --  quantified expression is transformed into an expression with
-               --  actions.
+               --  The index is not processed during analysis of a quantified
+               --  expression but delayed to its expansion where the quantified
+               --  expression is transformed into an expression with actions.
 
                if Nkind (Parent (N)) /= N_Quantified_Expression
                  or else Operating_Mode = Check_Semantics

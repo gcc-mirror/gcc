@@ -7251,14 +7251,16 @@ package body Sem_Ch6 is
      (New_Id                   : Entity_Id;
       Old_Id                   : Entity_Id;
       Err_Loc                  : Node_Id := Empty;
-      Skip_Controlling_Formals : Boolean := False)
+      Skip_Controlling_Formals : Boolean := False;
+      Get_Inst                 : Boolean := False)
    is
       Result : Boolean;
       pragma Warnings (Off, Result);
    begin
       Check_Conformance
         (New_Id, Old_Id, Subtype_Conformant, True, Result, Err_Loc,
-         Skip_Controlling_Formals => Skip_Controlling_Formals);
+         Skip_Controlling_Formals => Skip_Controlling_Formals,
+         Get_Inst                 => Get_Inst);
    end Check_Subtype_Conformant;
 
    ---------------------------

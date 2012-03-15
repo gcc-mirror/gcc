@@ -1,5 +1,36 @@
 2012-03-15  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch5.adb: Minor reformatting.
+
+2012-03-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): When rewriting the
+	declaration of a class-wide object, retain the Ekind to prevent
+	subsequent misuse of constants.
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Minor correction of invariant
+	terminology.
+
+2012-03-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Initialized_By_Ctrl_Function): Add code to
+	process the case when a function call appears in object.operation
+	format.
+
+2012-03-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.ads, sem_ch6.adb (Check_Subtype_Conformant): add
+	Get_Inst formal, so that conformance within an instantiation
+	follows renamings of formals. This is similar to what is already
+	done in Check_Mode_conformant.
+	* sem_ch12.adb (Vailidate_Access_Subprogram_Instance): check that
+	formal and actual are subtype conformant. Previously only mode
+	conformance was required.
+
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
 	* par-ch6.adb, einfo.ads, sem_eval.adb, sem_eval.ads,
 	sem_case.adb: Minor reformatting.
 
