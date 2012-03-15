@@ -18,4 +18,4 @@ program t
   type(sysvector_t), target :: sol
   solution => sol
 end program t
-! { dg-final { cleanup-modules "system_defs_m convecreac_m" } }
+! { dg-final { cleanup-modules "system_defs_m" } }

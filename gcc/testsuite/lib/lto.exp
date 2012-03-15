@@ -499,7 +499,10 @@ proc lto-execute { src1 sid } {
 	verbose "$testcase not supported on this target, skipping it" 3
 	return
     }
-
+    # Should be safe for non-fortran too but be paranoid..
+    if {$sid eq "f_lto"} {
+	list-module-names $src_list
+    }
     regsub "_0.*" $testcase "" testcase
 
     # Set up the base name of executable files so they'll be unique.
@@ -577,6 +580,10 @@ proc lto-execute { src1 sid } {
 	if { ![string compare "run" $compile_type] \
 	     || ![string compare "link" $compile_type] } {
 	    file_on_host delete $execname
+	}
+	# Should be safe for non-fortran too but be paranoid..
+	if {$sid eq "f_lto"} {
+	    cleanup-modules ""
 	}
     }
 }

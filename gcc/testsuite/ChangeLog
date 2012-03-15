@@ -1,3 +1,34 @@
+2012-03-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* gfortran.fortran-torture/compile/compile.exp: Simplify.
+	* gfortran.fortran-torture/execute/execute.exp: Likewise.
+	* lib/gcc-dg.exp (cleanup-modules): Move to ..
+	* lib/fortran-modules.exp: .. this new file. Adjust users.
+	* lib/gfortran-dg.exp (gfortran-dg-runtest,
+	gfortran-dg-debug-runtest): Call cleanup-modules.
+	* lib/fortran-torture.exp (fortran-torture-execute,
+	fortran-torture): Likewise.
+	* gfortran.dg/coarray/caf.exp: Likewise.
+	* lib/lto.exp: Likewise.
+	* gfortran.dg/class_4a.f03: Adjust cleanup-modules and keep-modules.
+	* gfortran.dg/class_4b.f03: Likewise.
+	* gfortran.dg/class_4c.f03: Likewise.
+	* gfortran.dg/class_45a.f03: Likewise.
+	* gfortran.dg/binding_label_tests_10.f03: Likewise.
+	* gfortran.dg/binding_label_tests_10_main.f03: Likewise.
+	* gfortran.dg/binding_label_tests_11.f03: Likewise.
+	* gfortran.dg/binding_label_tests_11_main.f03: Likewise.
+	* gfortran.dg/binding_label_tests_13.f03: Likewise.
+	* gfortran.dg/binding_label_tests_13_main.f03: Likewise.
+	* gfortran.dg/test_common_binding_labels_2.f03: Likewise.
+	* gfortran.dg/test_common_binding_labels_2_main.f03: Likewise.
+	* gfortran.dg/test_common_binding_labels_3.f03: Likewise.
+	* gfortran.dg/test_common_binding_labels_3_main.f03: Likewise.
+	* gfortran.dg/whole_file_28.f90: Likewise.
+	* gfortran.dg/whole_file_29.f90: Likewise.
+	* gfortran.dg/whole_file_30.f90: Likewise.
+	* gfortran.dg/whole_file_31.f90: Likewise.
+
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52267

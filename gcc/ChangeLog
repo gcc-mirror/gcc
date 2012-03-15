@@ -1,9 +1,14 @@
+2012-03-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* doc/sourcebuild.texi (cleanup-modules, keep-modules): Update
+	documentation.
+
 2012-03-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* config.gcc (target_type_format_char): New. Document it. Set it for
-        arm*-*-* .
+	arm*-*-* .
 	* configure.ac (gnu_unique_option): Use target_type_format_char in test.
-        Comment rationale.
+	Comment rationale.
 	* configure: Regenerate .
 
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>

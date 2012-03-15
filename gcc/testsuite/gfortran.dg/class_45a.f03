@@ -26,3 +26,4 @@ contains
   end function basicGet
 
 end module G_Nodes
+! { dg-final { keep-modules "" } }

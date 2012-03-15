@@ -28,71 +28,8 @@ load_lib torture-options.exp
 torture-init
 set-torture-options [get-fortran-torture-options]
 
-foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f]] {
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] {
     # If we're only testing specific files and this isn't one of them, skip it.
-    if ![runtest_file_p $runtests $testcase] then {
-	continue
-    }
-    fortran-torture $testcase
-}
-
-foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.F]] {
-    if ![runtest_file_p $runtests $testcase] then {
-	continue
-    }
-    fortran-torture $testcase
-}
-
-foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f90]] {
-    if ![runtest_file_p $runtests $testcase] then {
-	continue
-    }
-    fortran-torture $testcase
-}
-
-foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.F90]] {
-    if ![runtest_file_p $runtests $testcase] then {
-	continue
-    }
-    fortran-torture $testcase
-}
-
-foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f95]] {
-    if ![runtest_file_p $runtests $testcase] then {
-	continue
-    }
-    fortran-torture $testcase
-}
-
-foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.F95]] {
-    if ![runtest_file_p $runtests $testcase] then {
-	continue
-    }
-    fortran-torture $testcase
-}
-
-foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f03]] {
-    if ![runtest_file_p $runtests $testcase] then {
-	continue
-    }
-    fortran-torture $testcase
-}
-
-foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.F03]] {
-    if ![runtest_file_p $runtests $testcase] then {
-	continue
-    }
-    fortran-torture $testcase
-}
-
-foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f08]] {
-    if ![runtest_file_p $runtests $testcase] then {
-	continue
-    }
-    fortran-torture $testcase
-}
-
-foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.F08]] {
     if ![runtest_file_p $runtests $testcase] then {
 	continue
     }

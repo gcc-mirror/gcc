@@ -21,6 +21,7 @@
 # based on f-torture.exp, which was written by Rob Savoye.
 
 load_lib target-supports.exp
+load_lib fortran-modules.exp
 
 # Return the list of options to use for fortran torture tests.
 # The default option list can be overridden by
@@ -218,6 +219,7 @@ proc fortran-torture-execute { src } {
     if [string match "/*" $testcase] {
 	set testcase "[file tail [file dirname $src]]/[file tail $src]"
     }
+    list-module-names $src
 
     # Walk the list of options and copmile and run the testcase for all
     # options that are not explicitly disabled by the .x script (if present).
@@ -332,6 +334,7 @@ proc fortran-torture-execute { src } {
         }
 	$status "$testcase execution, $option"
     }
+    cleanup-modules ""
 }
 
 
@@ -390,7 +393,8 @@ proc fortran-torture { args } {
 	    return
 	}
     }
-   
+    list-module-names $src
+
     # loop through all the options
     set option_list $torture_with_loops
     foreach option $option_list {
@@ -406,6 +410,7 @@ proc fortran-torture { args } {
 	}
 
 	fortran-torture-compile $src "$option $options"
+	cleanup-modules ""
     }
 }
 

@@ -6,5 +6,4 @@ module binding_label_tests_10
   implicit none
   integer(c_int), bind(c,name="c_one") :: one
 end module binding_label_tests_10
-
-! Do not use dg-final to cleanup-modules
+! { dg-final { keep-modules "" } }

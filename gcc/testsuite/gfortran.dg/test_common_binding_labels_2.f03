@@ -12,4 +12,4 @@ module test_common_binding_labels_2
   integer(c_int) :: i
   bind(c, name="") /com2/
 end module test_common_binding_labels_2
-
+! { dg-final { keep-modules "" } }
