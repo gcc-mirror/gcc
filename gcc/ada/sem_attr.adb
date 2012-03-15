@@ -4260,7 +4260,7 @@ package body Sem_Attr is
             then
                declare
                   Arg_Ens : constant Node_Id :=
-                              Get_Ensures_From_Case_Pragma (Prag);
+                              Get_Ensures_From_CTC_Pragma (Prag);
                   Arg     : Node_Id;
 
                begin

@@ -1775,7 +1775,7 @@ package body Sem_Warn is
                                      or else
                                    Pragma_Name (P) = Name_Test_Case)
                                 and then
-                                  Nod = Get_Ensures_From_Case_Pragma (P)
+                                  Nod = Get_Ensures_From_CTC_Pragma (P)
                               then
                                  return True;
                               end if;

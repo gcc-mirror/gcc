@@ -1,3 +1,16 @@
+2012-03-15  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch4.adb (Analyze_Quantified_Expression):
+	Preanalyze the condition when the quantified expression will be
+	further expanded.
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb, sem_util.adb, sem_util.ads, sem_attr.adb, sem_ch6.adb,
+	sem_warn.adb: Minor refactoring, renaming Case_Pragma in CTC_Pragma,
+	to refer to both Test_Case pragma and Contract_Case pragma (same
+	acronym as in Spec_CTC_List).
+
 2012-03-15  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, sem_prag.ads, sem_util.ads, sem_attr.adb, sem_ch6.adb,

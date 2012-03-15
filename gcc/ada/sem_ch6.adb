@@ -7079,7 +7079,7 @@ package body Sem_Ch6 is
          loop
             --  Retrieve the Ensures component of the contract-case, if any
 
-            Arg := Get_Ensures_From_Case_Pragma (Prag);
+            Arg := Get_Ensures_From_CTC_Pragma (Prag);
 
             if Pragma_Name (Prag) = Name_Contract_Case then
 
@@ -11058,11 +11058,11 @@ package body Sem_Ch6 is
          --  Copy the Requires and Ensures expressions
 
          Req  := New_Copy_Tree
-                   (Expression (Get_Requires_From_Case_Pragma (Prag)),
+                   (Expression (Get_Requires_From_CTC_Pragma (Prag)),
                     New_Scope => Current_Scope);
 
          Ens  := New_Copy_Tree
-                   (Expression (Get_Ensures_From_Case_Pragma (Prag)),
+                   (Expression (Get_Ensures_From_CTC_Pragma (Prag)),
                     New_Scope => Current_Scope);
 
          --  Build the postcondition (not Requires'Old or else Ensures)
