@@ -1,4 +1,4 @@
-2012-03-13  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+2012-03-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* config.gcc (target_type_format_char): New. Document it. Set it for
         arm*-*-* .
