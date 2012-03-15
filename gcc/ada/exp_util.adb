@@ -3967,16 +3967,11 @@ package body Exp_Util is
             Expr := Name (Expr);
          end if;
 
-         --  The function call may appear in object.operation format. Strip
-         --  all prefixes and retrieve the function name.
+         --  The function call may appear in object.operation format
 
-         loop
-            if Nkind (Expr) = N_Selected_Component then
-               Expr := Selector_Name (Expr);
-            else
-               exit;
-            end if;
-         end loop;
+         if Nkind (Expr) = N_Selected_Component then
+            Expr := Selector_Name (Expr);
+         end if;
 
          return
            Nkind_In (Expr, N_Expanded_Name, N_Identifier)
