@@ -4256,10 +4256,12 @@ package body Sem_Attr is
                  ("% attribute can only appear in postcondition of function",
                   P);
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
+            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Case
+              or else Get_Pragma_Id (Prag) = Pragma_Test_Case
+            then
                declare
                   Arg_Ens : constant Node_Id :=
-                              Get_Ensures_From_Test_Case_Pragma (Prag);
+                              Get_Ensures_From_Case_Pragma (Prag);
                   Arg     : Node_Id;
 
                begin
@@ -4269,7 +4271,13 @@ package body Sem_Attr is
                   end loop;
 
                   if Arg /= Arg_Ens then
-                     Error_Attr ("% attribute misplaced inside Test_Case", P);
+                     if Get_Pragma_Id (Prag) = Pragma_Contract_Case then
+                        Error_Attr
+                          ("% attribute misplaced inside contract case", P);
+                     else
+                        Error_Attr
+                          ("% attribute misplaced inside test case", P);
+                     end if;
                   end if;
                end;
 
