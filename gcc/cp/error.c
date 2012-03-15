@@ -3076,10 +3076,20 @@ print_instantiation_partial_context (diagnostic_context *context,
 
   t = t0;
 
-  if (n_total >= 12) 
+  if (template_backtrace_limit
+      && n_total > template_backtrace_limit) 
     {
-      int skip = n_total - 10;
-      for (n = 0; n < 5; n++)
+      int skip = n_total - template_backtrace_limit;
+      int head = template_backtrace_limit / 2;
+
+      /* Avoid skipping just 1.  If so, skip 2.  */
+      if (skip == 1)
+       {
+         skip = 2;
+         head = (template_backtrace_limit - 1) / 2;
+       }
+     
+      for (n = 0; n < head; n++)
 	{
 	  gcc_assert (t != NULL);
 	  if (loc != t->locus)
@@ -3088,17 +3098,19 @@ print_instantiation_partial_context (diagnostic_context *context,
 	  loc = t->locus;
 	  t = t->next;
 	}
-      if (t != NULL && skip > 1)
+      if (t != NULL && skip > 0)
 	{
 	  expanded_location xloc;
 	  xloc = expand_location (loc);
 	  if (context->show_column)
 	    pp_verbatim (context->printer,
-			 _("%s:%d:%d:   [ skipping %d instantiation contexts ]\n"),
+			 _("%s:%d:%d:   [ skipping %d instantiation contexts, "
+			   "use -ftemplate-backtrace-limit=0 to disable ]\n"),
 			 xloc.file, xloc.line, xloc.column, skip);
 	  else
 	    pp_verbatim (context->printer,
-			 _("%s:%d:   [ skipping %d instantiation contexts ]\n"),
+			 _("%s:%d:   [ skipping %d instantiation contexts, "
+			   "use -ftemplate-backtrace-limit=0 to disable ]\n"),
 			 xloc.file, xloc.line, skip);
 	  
 	  do {

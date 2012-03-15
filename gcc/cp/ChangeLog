@@ -1,3 +1,9 @@
+2012-03-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/44783
+	* error.c (print_instantiation_partial_context): Use
+	template_backtrace_limit.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (doc/g++.1): Remove IRIX 6.5 reference.
@@ -13,10 +19,10 @@
 
 	PR c++/51641
 	* cp-tree.h (template_type_parameter_p): Declare new function.
-    	(parameter_of_template_p): Remove
-    	* pt.c (template_type_parameter_p): Define new function.
     	(parameter_of_template_p): Remove.
-    	* name-lookup.c (binding_to_template_parms_of_scope_p): Don't rely
+	* pt.c (template_type_parameter_p): Define new function.
+    	(parameter_of_template_p): Remove.
+	* name-lookup.c (binding_to_template_parms_of_scope_p): Don't rely
     	on parameter_of_template_p anymore.  Compare the level of the
     	template parameter to the depth of the template.
 
