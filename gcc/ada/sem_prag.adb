@@ -696,7 +696,8 @@ package body Sem_Prag is
       pragma No_Return (Error_Pragma);
       --  Outputs error message for current pragma. The message contains a %
       --  that will be replaced with the pragma name, and the flag is placed
-      --  on the pragma itself. Pragma_Exit is then raised.
+      --  on the pragma itself. Pragma_Exit is then raised. Note: this routine
+      --  calls Fix_Error (see spec of that function for details).
 
       procedure Error_Pragma_Arg (Msg : String; Arg : Node_Id);
       pragma No_Return (Error_Pragma_Arg);
@@ -707,7 +708,8 @@ package body Sem_Prag is
       --  in which case the flag is placed directly on the expression. The
       --  message is placed using Error_Msg_N, so the message may also contain
       --  an & insertion character which will reference the given Arg value.
-      --  After placing the message, Pragma_Exit is raised.
+      --  After placing the message, Pragma_Exit is raised. Note: this routine
+      --  calls Fix_Error (see spec of that function for details).
 
       procedure Error_Pragma_Arg (Msg1, Msg2 : String; Arg : Node_Id);
       pragma No_Return (Error_Pragma_Arg);
@@ -723,14 +725,16 @@ package body Sem_Prag is
       --  on the identifier. The message is placed using Error_Msg_N so
       --  the message may also contain an & insertion character which will
       --  reference the identifier. After placing the message, Pragma_Exit
-      --  is raised.
+      --  is raised. Note: this routine calls Fix_Error (see spec of that
+      --  function for details).
 
       procedure Error_Pragma_Ref (Msg : String; Ref : Entity_Id);
       pragma No_Return (Error_Pragma_Ref);
       --  Outputs error message for current pragma. The message may contain
       --  a % that will be replaced with the pragma name. The parameter Ref
       --  must be an entity whose name can be referenced by & and sloc by #.
-      --  After placing the message, Pragma_Exit is raised.
+      --  After placing the message, Pragma_Exit is raised. Note: this routine
+      --  calls Fix_Error (see spec of that function for details).
 
       function Find_Lib_Unit_Name return Entity_Id;
       --  Used for a library unit pragma to find the entity to which the

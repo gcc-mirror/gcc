@@ -1,3 +1,10 @@
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb (Analyze_Quantified_Expression): Add comment.
+	* sem_prag.adb: Minor comment additions.
+	* sem_attr.adb (Check_First_Last_Valid): Make sure prefix type
+	is frozen.
+
 2012-03-15  Vincent Pucci  <pucci@adacore.com>
 
 	* sem_ch4.adb (Analyze_Quantified_Expression):
