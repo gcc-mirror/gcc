@@ -575,6 +575,7 @@ package Sem_Util is
 
    function Get_Name_From_Case_Pragma (N : Node_Id) return String_Id;
    --  Return the Name component of Contract_Case or Test_Case pragma N
+   --  Bad name, Case_Pragma is meaningless to me ???
 
    function Get_Pragma_Id (N : Node_Id) return Pragma_Id;
    pragma Inline (Get_Pragma_Id);
