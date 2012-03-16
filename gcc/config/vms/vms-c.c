@@ -466,3 +466,19 @@ vms_c_common_override_options (void)
       break;
     }
 }
+
+/* The default value for _CRTL_VER macro.  */
+
+int
+vms_c_get_crtl_ver (void)
+{
+  return VMS_DEFAULT_CRTL_VER;
+}
+
+/* The default value for _VMS_VER macro.  */
+
+int
+vms_c_get_vms_ver (void)
+{
+  return VMS_DEFAULT_VMS_VER;
+}

@@ -289,3 +289,7 @@ do {                                                \
 
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE vms_valid_pointer_mode
+
+/* Default values for _CRTL_VER and _VMS_VER.  */
+#define VMS_DEFAULT_CRTL_VER 70320000
+#define VMS_DEFAULT_VMS_VER 70320000

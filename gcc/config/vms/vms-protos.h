@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 /* vms-c.c  */
 extern void vms_c_register_pragma (void);
 extern void vms_c_common_override_options (void);
+extern int vms_c_get_crtl_ver (void);
+extern int vms_c_get_vms_ver (void);
 
 /* vms.c  */
 void vms_patch_builtins (void);
