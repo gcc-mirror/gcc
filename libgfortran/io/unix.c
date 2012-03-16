@@ -401,17 +401,21 @@ raw_close (unix_stream * s)
   return retval;
 }
 
+static const struct stream_vtable raw_vtable = {
+  .read = (void *) raw_read,
+  .write = (void *) raw_write,
+  .seek = (void *) raw_seek,
+  .tell = (void *) raw_tell,
+  .size = (void *) raw_size,
+  .trunc = (void *) raw_truncate,
+  .close = (void *) raw_close,
+  .flush = (void *) raw_flush 
+};
+
 static int
 raw_init (unix_stream * s)
 {
-  s->st.read = (void *) raw_read;
-  s->st.write = (void *) raw_write;
-  s->st.seek = (void *) raw_seek;
-  s->st.tell = (void *) raw_tell;
-  s->st.size = (void *) raw_size;
-  s->st.trunc = (void *) raw_truncate;
-  s->st.close = (void *) raw_close;
-  s->st.flush = (void *) raw_flush;
+  s->st.vptr = &raw_vtable;
 
   s->buffer = NULL;
   return 0;
@@ -619,17 +623,21 @@ buf_close (unix_stream * s)
   return raw_close (s);
 }
 
+static const struct stream_vtable buf_vtable = {
+  .read = (void *) buf_read,
+  .write = (void *) buf_write,
+  .seek = (void *) buf_seek,
+  .tell = (void *) buf_tell,
+  .size = (void *) buf_size,
+  .trunc = (void *) buf_truncate,
+  .close = (void *) buf_close,
+  .flush = (void *) buf_flush 
+};
+
 static int
 buf_init (unix_stream * s)
 {
-  s->st.read = (void *) buf_read;
-  s->st.write = (void *) buf_write;
-  s->st.seek = (void *) buf_seek;
-  s->st.tell = (void *) buf_tell;
-  s->st.size = (void *) buf_size;
-  s->st.trunc = (void *) buf_truncate;
-  s->st.close = (void *) buf_close;
-  s->st.flush = (void *) buf_flush;
+  s->st.vptr = &buf_vtable;
 
   s->buffer = get_mem (BUFFER_SIZE);
   return 0;
@@ -872,6 +880,31 @@ mem_close (unix_stream * s)
   return 0;
 }
 
+static const struct stream_vtable mem_vtable = {
+  .read = (void *) mem_read,
+  .write = (void *) mem_write,
+  .seek = (void *) mem_seek,
+  .tell = (void *) mem_tell,
+  /* buf_size is not a typo, we just reuse an identical
+     implementation.  */
+  .size = (void *) buf_size,
+  .trunc = (void *) mem_truncate,
+  .close = (void *) mem_close,
+  .flush = (void *) mem_flush 
+};
+
+static const struct stream_vtable mem4_vtable = {
+  .read = (void *) mem_read4,
+  .write = (void *) mem_write4,
+  .seek = (void *) mem_seek,
+  .tell = (void *) mem_tell,
+  /* buf_size is not a typo, we just reuse an identical
+     implementation.  */
+  .size = (void *) buf_size,
+  .trunc = (void *) mem_truncate,
+  .close = (void *) mem_close,
+  .flush = (void *) mem_flush 
+};
 
 /*********************************************************************
   Public functions -- A reimplementation of this module needs to
@@ -895,16 +928,7 @@ open_internal (char *base, int length, gfc_offset offset)
   s->logical_offset = 0;
   s->active = s->file_length = length;
 
-  s->st.close = (void *) mem_close;
-  s->st.seek = (void *) mem_seek;
-  s->st.tell = (void *) mem_tell;
-  /* buf_size is not a typo, we just reuse an identical
-     implementation.  */
-  s->st.size = (void *) buf_size;
-  s->st.trunc = (void *) mem_truncate;
-  s->st.read = (void *) mem_read;
-  s->st.write = (void *) mem_write;
-  s->st.flush = (void *) mem_flush;
+  s->st.vptr = &mem_vtable;
 
   return (stream *) s;
 }
@@ -926,16 +950,7 @@ open_internal4 (char *base, int length, gfc_offset offset)
   s->logical_offset = 0;
   s->active = s->file_length = length;
 
-  s->st.close = (void *) mem_close;
-  s->st.seek = (void *) mem_seek;
-  s->st.tell = (void *) mem_tell;
-  /* buf_size is not a typo, we just reuse an identical
-     implementation.  */
-  s->st.size = (void *) buf_size;
-  s->st.trunc = (void *) mem_truncate;
-  s->st.read = (void *) mem_read4;
-  s->st.write = (void *) mem_write4;
-  s->st.flush = (void *) mem_flush;
+  s->st.vptr = &mem4_vtable;
 
   return (stream *) s;
 }
