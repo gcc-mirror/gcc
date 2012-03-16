@@ -4218,8 +4218,8 @@ removed in GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
 you can download the Sun Studio compilers for free.  In Solaris 10 and
-11, GCC 3.4.3 is available in @command{/usr/sfw/bin/gcc}.  Solaris 11
-also provides GCC 4.5.2 in @command{/usr/gcc/4.5/bin/gcc}.  Alternatively,
+11, GCC 3.4.3 is available as @command{/usr/sfw/bin/gcc}.  Solaris 11
+also provides GCC 4.5.2 as @command{/usr/gcc/4.5/bin/gcc}.  Alternatively,
 you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
 
