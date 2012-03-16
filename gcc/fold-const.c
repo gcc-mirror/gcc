@@ -7530,6 +7530,8 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
       return native_interpret_int (type, ptr, len);
 
     case REAL_TYPE:
@@ -7546,6 +7548,27 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
     }
 }
 
+/* Returns true if we can interpret the contents of a native encoding
+   as TYPE.  */
+
+static bool
+can_native_interpret_type_p (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+    case REAL_TYPE:
+    case COMPLEX_TYPE:
+    case VECTOR_TYPE:
+      return true;
+    default:
+      return false;
+    }
+}
 
 /* Fold a VIEW_CONVERT_EXPR of a constant expression EXPR to type
    TYPE at compile-time.  If we're unable to perform the conversion
@@ -13977,6 +14000,40 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && TYPE_PRECISION (TREE_TYPE (arg0)) == tree_low_cst (arg1, 1)
 	  && integer_zerop (op2))
 	return fold_convert_loc (loc, type, arg0);
+
+      /* On constants we can use native encode/interpret to constant
+         fold (nearly) all BIT_FIELD_REFs.  */
+      if (CONSTANT_CLASS_P (arg0)
+	  && can_native_interpret_type_p (type)
+	  && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (arg0)), 1)
+	  /* This limitation should not be necessary, we just need to
+	     round this up to mode size.  */
+	  && tree_low_cst (op1, 1) % BITS_PER_UNIT == 0
+	  /* Need bit-shifting of the buffer to relax the following.  */
+	  && tree_low_cst (op2, 1) % BITS_PER_UNIT == 0)
+	{
+	  unsigned HOST_WIDE_INT bitpos = tree_low_cst (op1, 2);
+	  unsigned HOST_WIDE_INT bitsize = tree_low_cst (op1, 1);
+	  unsigned HOST_WIDE_INT clen;
+	  clen = tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (arg0)), 1);
+	  /* ???  We cannot tell native_encode_expr to start at
+	     some random byte only.  So limit us to a reasonable amount
+	     of work.  */
+	  if (clen <= 4096)
+	    {
+	      unsigned char *b = XALLOCAVEC (unsigned char, clen);
+	      unsigned HOST_WIDE_INT len = native_encode_expr (arg0, b, clen);
+	      if (len > 0
+		  && len * BITS_PER_UNIT >= bitpos + bitsize)
+		{
+		  tree v = native_interpret_expr (type,
+						  b + bitpos / BITS_PER_UNIT,
+						  bitsize / BITS_PER_UNIT);
+		  if (v)
+		    return v;
+		}
+	    }
+	}
 
       return NULL_TREE;
 

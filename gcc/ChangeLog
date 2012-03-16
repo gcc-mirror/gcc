@@ -1,5 +1,13 @@
 2012-03-16  Richard Guenther  <rguenther@suse.de>
 
+	* fold-const.c (native_interpret_expr): Also support POINTER_TYPE
+	and REFERENCE_TYPE interpretations.
+	(can_native_interpret_type_p): New function.
+	(fold_ternary_loc): Use native encode/interpret to fold
+	BIT_FIELD_REFs of constants.
+
+2012-03-16  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/52584
 	* fold-const.c (fold_ternary_loc): Fold vector typed BIT_FIELD_REFs
 	of vector constants and constructors.
