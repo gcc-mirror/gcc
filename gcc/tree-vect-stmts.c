@@ -1271,9 +1271,13 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
         if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "Create vector_cst. nunits = %d", nunits);
 
-        vec_cst = build_vector_from_val (vector_type,
-					 fold_convert (TREE_TYPE (vector_type),
-						       op));
+	if (!types_compatible_p (TREE_TYPE (vector_type), TREE_TYPE (op)))
+	  {
+	    op = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type), op);
+	    gcc_assert (op && CONSTANT_CLASS_P (op));
+	  }
+
+        vec_cst = build_vector_from_val (vector_type, op);
         return vect_init_vector (stmt, vec_cst, vector_type, NULL);
       }
 
@@ -5909,7 +5913,7 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
       print_generic_expr (vect_dump, operand, TDF_SLIM);
     }
 
-  if (TREE_CODE (operand) == INTEGER_CST || TREE_CODE (operand) == REAL_CST)
+  if (CONSTANT_CLASS_P (operand))
     {
       *dt = vect_constant_def;
       return true;

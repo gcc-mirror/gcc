@@ -1,4 +1,10 @@
 2012-03-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Use
+	VIEW_CONVERT_EXPR to convert constants.
+	(vect_is_simple_use): Treat all constants as vec_constant_def.
+
+2012-03-16  Richard Guenther  <rguenther@suse.de>
 	Kai Tietz  <ktietz@redhat.com>
 
 	PR middle-end/48814
