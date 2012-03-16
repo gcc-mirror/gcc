@@ -2706,12 +2706,12 @@ const_hash_1 (const tree exp)
 
     case VECTOR_CST:
       {
-	tree link;
+	unsigned i;
 
-	hi = 7 + TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp));
+	hi = 7 + VECTOR_CST_NELTS (exp);
 
-	for (link = TREE_VECTOR_CST_ELTS (exp); link; link = TREE_CHAIN (link))
-	    hi = hi * 563 + const_hash_1 (TREE_VALUE (link));
+	for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
+	  hi = hi * 563 + const_hash_1 (VECTOR_CST_ELT (exp, i));
 
 	return hi;
       }
@@ -2846,21 +2846,15 @@ compare_constant (const tree t1, const tree t2)
 
     case VECTOR_CST:
       {
-        tree link1, link2;
+	unsigned i;
 
-        if (TYPE_VECTOR_SUBPARTS (TREE_TYPE (t1))
-	    != TYPE_VECTOR_SUBPARTS (TREE_TYPE (t2)))
+        if (VECTOR_CST_NELTS (t1) != VECTOR_CST_NELTS (t2))
 	  return 0;
 
-	link2 = TREE_VECTOR_CST_ELTS (t2);
-	for (link1 = TREE_VECTOR_CST_ELTS (t1);
-	     link1;
-	     link1 = TREE_CHAIN (link1))
-	  {
-	    if (!compare_constant (TREE_VALUE (link1), TREE_VALUE (link2)))
-	      return 0;
-	    link2 = TREE_CHAIN (link2);
-	  }
+	for (i = 0; i < VECTOR_CST_NELTS (t1); ++i)
+	  if (!compare_constant (VECTOR_CST_ELT (t1, i),
+				 VECTOR_CST_ELT (t2, i)))
+	    return 0;
 
 	return 1;
       }
@@ -3014,8 +3008,7 @@ copy_constant (tree exp)
 		     copy_constant (TREE_OPERAND (exp, 0)));
 
     case VECTOR_CST:
-      return build_vector (TREE_TYPE (exp),
-			   copy_list (TREE_VECTOR_CST_ELTS (exp)));
+      return build_vector (TREE_TYPE (exp), VECTOR_CST_ELTS (exp));
 
     case CONSTRUCTOR:
       {
@@ -4595,8 +4588,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	case VECTOR_CST:
 	  {
 	    int elt_size;
-	    tree link;
-	    unsigned int nalign;
+	    unsigned int i, nalign;
 	    enum machine_mode inner;
 
 	    inner = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
@@ -4604,12 +4596,11 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 
 	    elt_size = GET_MODE_SIZE (inner);
 
-	    link = TREE_VECTOR_CST_ELTS (exp);
-	    output_constant (TREE_VALUE (link), elt_size, align);
+	    output_constant (VECTOR_CST_ELT (exp, 0), elt_size, align);
 	    thissize = elt_size;
-	    while ((link = TREE_CHAIN (link)) != NULL)
+	    for (i = 1; i < VECTOR_CST_NELTS (exp); ++i)
 	      {
-		output_constant (TREE_VALUE (link), elt_size, nalign);
+		output_constant (VECTOR_CST_ELT (exp, i), elt_size, nalign);
 		thissize += elt_size;
 	      }
 	    break;

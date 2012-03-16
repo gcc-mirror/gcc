@@ -1372,7 +1372,15 @@ pp_c_initializer_list (c_pretty_printer *pp, tree e)
 
     case VECTOR_TYPE:
       if (TREE_CODE (e) == VECTOR_CST)
-	pp_c_expression_list (pp, TREE_VECTOR_CST_ELTS (e));
+	{
+	  unsigned i;
+	  for (i = 0; i < VECTOR_CST_NELTS (e); ++i)
+	    {
+	      if (i > 0)
+		pp_separate_with (pp, ',');
+	      pp_expression (pp, VECTOR_CST_ELT (e, i));
+	    }
+	}
       else
 	break;
       return;

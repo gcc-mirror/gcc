@@ -2205,15 +2205,15 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   VEC (gimple, heap) *stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   gimple stmt = VEC_index (gimple, stmts, 0);
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
-  int nunits;
+  unsigned nunits;
   tree vec_cst;
-  tree t = NULL_TREE;
-  int j, number_of_places_left_in_vector;
+  tree *elts;
+  unsigned j, number_of_places_left_in_vector;
   tree vector_type;
   tree vop;
   int group_size = VEC_length (gimple, stmts);
   unsigned int vec_num, i;
-  int number_of_copies = 1;
+  unsigned number_of_copies = 1;
   VEC (tree, heap) *voprnds = VEC_alloc (tree, heap, number_of_vectors);
   bool constant_p, is_store;
   tree neutral_op = NULL;
@@ -2307,6 +2307,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   number_of_copies = least_common_multiple (nunits, group_size) / group_size;
 
   number_of_places_left_in_vector = nunits;
+  elts = XALLOCAVEC (tree, nunits);
   for (j = 0; j < number_of_copies; j++)
     {
       for (i = group_size - 1; VEC_iterate (gimple, stmts, i, stmt); i--)
@@ -2361,21 +2362,27 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
             }
 
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
-          t = tree_cons (NULL_TREE, op, t);
-
           number_of_places_left_in_vector--;
+	  elts[number_of_places_left_in_vector] = op;
 
           if (number_of_places_left_in_vector == 0)
             {
               number_of_places_left_in_vector = nunits;
 
 	      if (constant_p)
-		vec_cst = build_vector (vector_type, t);
+		vec_cst = build_vector (vector_type, elts);
 	      else
-		vec_cst = build_constructor_from_list (vector_type, t);
+		{
+		  VEC(constructor_elt,gc) *v;
+		  unsigned k;
+		  v = VEC_alloc (constructor_elt, gc, nunits);
+		  for (k = 0; k < nunits; ++k)
+		    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[k]);
+		  vec_cst = build_constructor (vector_type, v);
+		}
               VEC_quick_push (tree, voprnds,
-                              vect_init_vector (stmt, vec_cst, vector_type, NULL));
-              t = NULL_TREE;
+                              vect_init_vector (stmt, vec_cst,
+						vector_type, NULL));
             }
         }
     }
@@ -2383,9 +2390,9 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   /* Since the vectors are created in the reverse order, we should invert
      them.  */
   vec_num = VEC_length (tree, voprnds);
-  for (j = vec_num - 1; j >= 0; j--)
+  for (j = vec_num; j != 0; j--)
     {
-      vop = VEC_index (tree, voprnds, j);
+      vop = VEC_index (tree, voprnds, j - 1);
       VEC_quick_push (tree, *vec_oprnds, vop);
     }
 
@@ -2777,7 +2784,8 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
 
               if (index == nunits)
                 {
-		  tree mask_vec = NULL;
+		  tree mask_vec, *mask_elts;
+		  int l;
 
 		  if (!can_vec_perm_p (mode, false, mask))
 		    {
@@ -2791,12 +2799,10 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
 		      return false;
 		    }
 
-		  while (--index >= 0)
-		    {
-		      tree t = build_int_cst (mask_element_type, mask[index]);
-		      mask_vec = tree_cons (NULL, t, mask_vec);
-		    }
-		  mask_vec = build_vector (mask_type, mask_vec);
+		  mask_elts = XALLOCAVEC (tree, nunits);
+		  for (l = 0; l < nunits; ++l)
+		    mask_elts[l] = build_int_cst (mask_element_type, mask[l]);
+		  mask_vec = build_vector (mask_type, mask_elts);
 		  index = 0;
 
                   if (!analyze_only)

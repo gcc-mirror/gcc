@@ -1,3 +1,43 @@
+2012-03-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (TREE_VECTOR_CST_ELTS): Remove.
+	(VECTOR_CST_NELTS, VECTOR_CST_ELTS, VECTOR_CST_ELT): New defines.
+	(struct tree_vector): Remove elements member, add variable size
+	elts array member.
+	(build_vector_stat): Declare.
+	(build_vector): Define in terms of build_vector_stat.
+	* tree.c (build_vector): Rename to ...
+	(build_vector_stat): ... this.  Take array of trees as parameter.
+	(build_vector_from_ctor): Adjust.
+	(integer_zerop, integer_onep, integer_all_onesp, iterative_hash_expr,
+	initializer_zerop): Adjust.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* expr.c (categorize_ctor_elements_1, expand_expr_real_1,
+	const_vector_from_tree): Likewise.
+	* fold-const.c (const_binop, operand_equal_p, native_encode_vector,
+	native_interpret_vector, fold_unary_loc, vec_cst_ctor_to_array,
+	fold_vec_perm, fold_binary_loc, fold_ternary_loc): Likewise.
+	* tree-streamer-in.c (streamer_alloc_tree): Handle TS_VECTOR.
+	(lto_input_ts_vector_tree_pointers): Adjust.
+	* tree-streamer-out.c (streamer_write_tree_header): Handle TS_VECTOR.
+	(write_ts_vector_tree_pointers): Adjust.
+	* varasm.c (const_hash_1, compare_constant, copy_constant,
+	output_constant): Adjust.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Adjust.
+	* print-tree.c (print_node): Adjust.
+	* tree-pretty-print.c (dump_generic_node): Adjust.
+	* tree-vect-generic.c (uniform_vector_p, vector_element,
+	lower_vec_perm): Adjust.
+	* tree-vect-loop.c (get_initial_def_for_reduction): Adjust.
+	* tree-vect-slp.c (vect_get_constant_vectors,
+	vect_transform_slp_perm_load): Adjust.
+	* tree-vect-stmts.c (vect_gen_perm_mask): Adjust.
+	* expmed.c (make_tree): Adjust.
+	* config/i386/i386.c (ix86_expand_builtin): Adjust.
+	* config/sparc/sparc.c (sparc_handle_vis_mul8x16): Adjust interface
+	and implementation.
+	(sparc_fold_builtin): Adjust.
+
 2012-03-16  Tristan Gingold  <gingold@adacore.com>
 
 	* config.gcc (*-*-*vms*): Define use_gcc_stdint and tm_file.

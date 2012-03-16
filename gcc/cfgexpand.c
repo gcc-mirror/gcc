@@ -3354,9 +3354,22 @@ expand_debug_expr (tree exp)
       return op0;
 
     case VECTOR_CST:
-      exp = build_constructor_from_list (TREE_TYPE (exp),
-					 TREE_VECTOR_CST_ELTS (exp));
-      /* Fall through.  */
+      {
+	unsigned i;
+
+	op0 = gen_rtx_CONCATN
+	  (mode, rtvec_alloc (TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp))));
+
+	for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
+	  {
+	    op1 = expand_debug_expr (VECTOR_CST_ELT (exp, i));
+	    if (!op1)
+	      return NULL;
+	    XVECEXP (op0, 0, i) = op1;
+	  }
+
+	return op0;
+      }
 
     case CONSTRUCTOR:
       if (TREE_CLOBBER_P (exp))

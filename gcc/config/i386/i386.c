@@ -29653,12 +29653,10 @@ rdrand_step:
 	{
 	  if (TREE_CODE (arg3) == VECTOR_CST)
 	    {
-	      tree elt;
 	      unsigned int negative = 0;
-	      for (elt = TREE_VECTOR_CST_ELTS (arg3);
-		   elt; elt = TREE_CHAIN (elt))
+	      for (i = 0; i < VECTOR_CST_NELTS (arg3); ++i)
 		{
-		  tree cst = TREE_VALUE (elt);
+		  tree cst = VECTOR_CST_ELT (arg3, i);
 		  if (TREE_CODE (cst) == INTEGER_CST
 		      && tree_int_cst_sign_bit (cst))
 		    negative++;

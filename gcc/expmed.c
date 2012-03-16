@@ -4970,18 +4970,18 @@ make_tree (tree type, rtx x)
       {
 	int units = CONST_VECTOR_NUNITS (x);
 	tree itype = TREE_TYPE (type);
-	tree t = NULL_TREE;
+	tree *elts;
 	int i;
 
-
 	/* Build a tree with vector elements.  */
+	elts = XALLOCAVEC (tree, units);
 	for (i = units - 1; i >= 0; --i)
 	  {
 	    rtx elt = CONST_VECTOR_ELT (x, i);
-	    t = tree_cons (NULL_TREE, make_tree (itype, elt), t);
+	    elts[i] = make_tree (itype, elt);
 	  }
 
-	return build_vector (type, t);
+	return build_vector (type, elts);
       }
 
     case PLUS:

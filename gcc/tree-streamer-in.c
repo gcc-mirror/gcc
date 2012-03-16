@@ -473,6 +473,14 @@ streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
       HOST_WIDE_INT len = streamer_read_hwi (ib);
       result = make_tree_vec (len);
     }
+  else if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
+    {
+      HOST_WIDE_INT len = streamer_read_hwi (ib);
+      result = ggc_alloc_zone_cleared_tree_node_stat (&tree_zone,
+						      (len - 1) * sizeof (tree)
+						      + sizeof (struct tree_vector));
+      TREE_SET_CODE (result, VECTOR_CST);
+    }
   else if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
     {
       unsigned HOST_WIDE_INT len = streamer_read_uhwi (ib);
@@ -525,7 +533,9 @@ static void
 lto_input_ts_vector_tree_pointers (struct lto_input_block *ib,
 				   struct data_in *data_in, tree expr)
 {
-  TREE_VECTOR_CST_ELTS (expr) = streamer_read_chain (ib, data_in);
+  unsigned i;
+  for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+    VECTOR_CST_ELT (expr, i) = stream_read_tree (ib, data_in);
 }
 
 

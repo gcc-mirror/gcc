@@ -514,7 +514,7 @@ static void sparc_vis_init_builtins (void);
 static rtx sparc_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static tree sparc_fold_builtin (tree, int, tree *, bool);
 static int sparc_vis_mul8x16 (int, int);
-static tree sparc_handle_vis_mul8x16 (int, tree, tree, tree);
+static void sparc_handle_vis_mul8x16 (tree *, int, tree, tree, tree);
 static void sparc_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				   HOST_WIDE_INT, tree);
 static bool sparc_can_output_mi_thunk (const_tree, HOST_WIDE_INT,
@@ -9897,67 +9897,57 @@ sparc_vis_mul8x16 (int e8, int e16)
   return (e8 * e16 + 128) / 256;
 }
 
-/* Multiply the vector elements in ELTS0 to the elements in ELTS1 as specified
-   by FNCODE.  All of the elements in ELTS0 and ELTS1 lists must be integer
-   constants.  A tree list with the results of the multiplications is returned,
-   and each element in the list is of INNER_TYPE.  */
+/* Multiply the VECTOR_CSTs CST0 and CST1 as specified by FNCODE and put
+   the result into the array N_ELTS, whose elements are of INNER_TYPE.  */
 
-static tree
-sparc_handle_vis_mul8x16 (int fncode, tree inner_type, tree elts0, tree elts1)
+static void
+sparc_handle_vis_mul8x16 (tree *n_elts, int fncode, tree inner_type,
+			  tree cst0, tree cst1)
 {
-  tree n_elts = NULL_TREE;
+  unsigned i, num = VECTOR_CST_NELTS (cst0);
   int scale;
 
   switch (fncode)
     {
     case CODE_FOR_fmul8x16_vis:
-      for (; elts0 && elts1;
-	   elts0 = TREE_CHAIN (elts0), elts1 = TREE_CHAIN (elts1))
+      for (i = 0; i < num; ++i)
 	{
 	  int val
-	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (TREE_VALUE (elts0)),
-				 TREE_INT_CST_LOW (TREE_VALUE (elts1)));
-	  n_elts = tree_cons (NULL_TREE,
-			      build_int_cst (inner_type, val),
-			      n_elts);
+	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
+				 TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, i)));
+	  n_elts[i] = build_int_cst (inner_type, val);
 	}
       break;
 
     case CODE_FOR_fmul8x16au_vis:
-      scale = TREE_INT_CST_LOW (TREE_VALUE (elts1));
+      scale = TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, 0));
 
-      for (; elts0; elts0 = TREE_CHAIN (elts0))
+      for (i = 0; i < num; ++i)
 	{
 	  int val
-	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (TREE_VALUE (elts0)),
+	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
 				 scale);
-	  n_elts = tree_cons (NULL_TREE,
-			      build_int_cst (inner_type, val),
-			      n_elts);
+	  n_elts[i] = build_int_cst (inner_type, val);
 	}
       break;
 
     case CODE_FOR_fmul8x16al_vis:
-      scale = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (elts1)));
+      scale = TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, 0));
 
-      for (; elts0; elts0 = TREE_CHAIN (elts0))
+      for (i = 0; i < num; ++i)
 	{
 	  int val
-	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (TREE_VALUE (elts0)),
+	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
 				 scale);
-	  n_elts = tree_cons (NULL_TREE,
-			      build_int_cst (inner_type, val),
-			      n_elts);
+	  n_elts[i] = build_int_cst (inner_type, val);
 	}
       break;
 
     default:
       gcc_unreachable ();
     }
-
-  return nreverse (n_elts);
-
 }
+
 /* Handle TARGET_FOLD_BUILTIN target hook.
    Fold builtin functions for SPARC intrinsics.  If IGNORE is true the
    result of the function call is ignored.  NULL_TREE is returned if the
@@ -10001,17 +9991,15 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
       if (TREE_CODE (arg0) == VECTOR_CST)
 	{
 	  tree inner_type = TREE_TYPE (rtype);
-	  tree elts = TREE_VECTOR_CST_ELTS (arg0);
-	  tree n_elts = NULL_TREE;
+	  tree *n_elts;
+	  unsigned i;
 
-	  for (; elts; elts = TREE_CHAIN (elts))
-	    {
-	      unsigned int val = TREE_INT_CST_LOW (TREE_VALUE (elts)) << 4;
-	      n_elts = tree_cons (NULL_TREE,
-				  build_int_cst (inner_type, val),
-				  n_elts);
-	    }
-	  return build_vector (rtype, nreverse (n_elts));
+	  n_elts = XALLOCAVEC (tree, VECTOR_CST_NELTS (arg0));
+	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
+	    n_elts[i] = build_int_cst (inner_type,
+				       TREE_INT_CST_LOW
+				         (VECTOR_CST_ELT (arg0, i)) << 4);
+	  return build_vector (rtype, n_elts);
 	}
       break;
 
@@ -10026,11 +10014,8 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
       if (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == VECTOR_CST)
 	{
 	  tree inner_type = TREE_TYPE (rtype);
-	  tree elts0 = TREE_VECTOR_CST_ELTS (arg0);
-	  tree elts1 = TREE_VECTOR_CST_ELTS (arg1);
-	  tree n_elts = sparc_handle_vis_mul8x16 (icode, inner_type, elts0,
-						  elts1);
-
+	  tree *n_elts = XALLOCAVEC (tree, VECTOR_CST_NELTS (arg0));
+	  sparc_handle_vis_mul8x16 (n_elts, icode, inner_type, arg0, arg1);
 	  return build_vector (rtype, n_elts);
 	}
       break;
@@ -10043,18 +10028,15 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 
       if (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == VECTOR_CST)
 	{
-	  tree elts0 = TREE_VECTOR_CST_ELTS (arg0);
-	  tree elts1 = TREE_VECTOR_CST_ELTS (arg1);
-	  tree n_elts = NULL_TREE;
-
-	  for (; elts0 && elts1;
-	       elts0 = TREE_CHAIN (elts0), elts1 = TREE_CHAIN (elts1))
+	  tree *n_elts = XALLOCAVEC (tree, 2 * VECTOR_CST_NELTS (arg0));
+	  unsigned i;
+	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
 	    {
-	      n_elts = tree_cons (NULL_TREE, TREE_VALUE (elts0), n_elts);
-	      n_elts = tree_cons (NULL_TREE, TREE_VALUE (elts1), n_elts);
+	      n_elts[2*i] = VECTOR_CST_ELT (arg0, i);
+	      n_elts[2*i+1] = VECTOR_CST_ELT (arg1, i);
 	    }
 
-	  return build_vector (rtype, nreverse (n_elts));
+	  return build_vector (rtype, n_elts);
 	}
       break;
 
@@ -10073,17 +10055,17 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	  int overflow = 0;
 	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (arg2);
 	  HOST_WIDE_INT high = TREE_INT_CST_HIGH (arg2);
-	  tree elts0 = TREE_VECTOR_CST_ELTS (arg0);
-	  tree elts1 = TREE_VECTOR_CST_ELTS (arg1);
+	  unsigned i;
 
-	  for (; elts0 && elts1;
-	       elts0 = TREE_CHAIN (elts0), elts1 = TREE_CHAIN (elts1))
+	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
 	    {
 	      unsigned HOST_WIDE_INT
-		low0 = TREE_INT_CST_LOW (TREE_VALUE (elts0)),
-		low1 = TREE_INT_CST_LOW (TREE_VALUE (elts1));
-	      HOST_WIDE_INT high0 = TREE_INT_CST_HIGH (TREE_VALUE (elts0));
-	      HOST_WIDE_INT high1 = TREE_INT_CST_HIGH (TREE_VALUE (elts1));
+		low0 = TREE_INT_CST_LOW (VECTOR_CST_ELT (arg0, i)),
+		low1 = TREE_INT_CST_LOW (VECTOR_CST_ELT (arg1, i));
+	      HOST_WIDE_INT
+		high0 = TREE_INT_CST_HIGH (VECTOR_CST_ELT (arg0, i));
+	      HOST_WIDE_INT
+		high1 = TREE_INT_CST_HIGH (VECTOR_CST_ELT (arg1, i));
 
 	      unsigned HOST_WIDE_INT l;
 	      HOST_WIDE_INT h;
