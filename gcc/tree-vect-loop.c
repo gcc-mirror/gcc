@@ -3041,6 +3041,8 @@ get_initial_def_for_induction (gimple iv_phi)
     }
   else
     {
+      VEC(constructor_elt,gc) *v;
+
       /* iv_loop is the loop to be vectorized. Create:
 	 vec_init = [X, X+S, X+2*S, X+3*S] (S = step_expr, X = init_expr)  */
       new_var = vect_get_new_vect_var (scalar_type, vect_scalar_var, "var_");
@@ -3053,8 +3055,8 @@ get_initial_def_for_induction (gimple iv_phi)
 	  gcc_assert (!new_bb);
 	}
 
-      t = NULL_TREE;
-      t = tree_cons (NULL_TREE, new_name, t);
+      v = VEC_alloc (constructor_elt, gc, nunits);
+      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_name);
       for (i = 1; i < nunits; i++)
 	{
 	  /* Create: new_name_i = new_name + step_expr  */
@@ -3073,10 +3075,10 @@ get_initial_def_for_induction (gimple iv_phi)
 	      fprintf (vect_dump, "created new init_stmt: ");
 	      print_gimple_stmt (vect_dump, init_stmt, 0, TDF_SLIM);
 	    }
-	  t = tree_cons (NULL_TREE, new_name, t);
+	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_name);
 	}
       /* Create a vector from [new_name_0, new_name_1, ..., new_name_nunits-1]  */
-      vec = build_constructor_from_list (vectype, nreverse (t));
+      vec = build_constructor (vectype, v);
       vec_init = vect_init_vector (iv_phi, vec, vectype, NULL);
     }
 

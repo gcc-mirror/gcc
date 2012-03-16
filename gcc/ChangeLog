@@ -1,3 +1,12 @@
+2012-03-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-loop.c (get_initial_def_for_induction): Use
+	build_constructor directly.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Use
+	build_vector_from_val.
+	* tree.c (build_vector_from_val): Avoid creating a constructor
+	first when we want a constant vector.
+
 2012-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, *-*-solaris2*): Improve wording.
