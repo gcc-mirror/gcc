@@ -1,3 +1,7 @@
+2012-03-16  Richard Guenther  <rguenther@suse.de>
+
+	* c-pretty-print.c (pp_c_initializer_list): Adjust.
+
 2012-03-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/44783

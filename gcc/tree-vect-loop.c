@@ -3305,7 +3305,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree def_for_init;
   tree init_def;
-  tree t = NULL_TREE;
+  tree *elts;
   int i;
   bool nested_in_vect_loop = false;
   tree init_value;
@@ -3386,23 +3386,31 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
           def_for_init = build_int_cst (scalar_type, int_init_val);
 
         /* Create a vector of '0' or '1' except the first element.  */
+	elts = XALLOCAVEC (tree, nunits);
         for (i = nunits - 2; i >= 0; --i)
-          t = tree_cons (NULL_TREE, def_for_init, t);
+	  elts[i + 1] = def_for_init;
 
         /* Option1: the first element is '0' or '1' as well.  */
         if (adjustment_def)
           {
-            t = tree_cons (NULL_TREE, def_for_init, t);
-            init_def = build_vector (vectype, t);
+	    elts[0] = def_for_init;
+            init_def = build_vector (vectype, elts);
             break;
           }
 
         /* Option2: the first element is INIT_VAL.  */
-        t = tree_cons (NULL_TREE, init_value, t);
+	elts[0] = init_val;
         if (TREE_CONSTANT (init_val))
-          init_def = build_vector (vectype, t);
+          init_def = build_vector (vectype, elts);
         else
-          init_def = build_constructor_from_list (vectype, t);
+	  {
+	    VEC(constructor_elt,gc) *v;
+	    v = VEC_alloc (constructor_elt, gc, nunits);
+	    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init_val);
+	    for (i = 1; i < nunits; ++i)
+	      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[i]);
+	    init_def = build_constructor (vectype, v);
+	  }
 
         break;
 

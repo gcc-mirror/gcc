@@ -1112,13 +1112,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case VECTOR_CST:
       {
-	tree elt;
+	unsigned i;
 	pp_string (buffer, "{ ");
-	for (elt = TREE_VECTOR_CST_ELTS (node); elt; elt = TREE_CHAIN (elt))
+	for (i = 0; i < VECTOR_CST_NELTS (node); ++i)
 	  {
-	    dump_generic_node (buffer, TREE_VALUE (elt), spc, flags, false);
-	    if (TREE_CHAIN (elt))
+	    if (i != 0)
 	      pp_string (buffer, ", ");
+	    dump_generic_node (buffer, VECTOR_CST_ELT (node, i),
+			       spc, flags, false);
 	  }
 	pp_string (buffer, " }");
       }
