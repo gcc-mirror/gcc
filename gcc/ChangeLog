@@ -1,3 +1,17 @@
+2012-03-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52603
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Clarify
+	comment.
+
+	Revert
+	2012-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52571
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Move
+	flag_section_anchors check ...
+	(vect_can_force_dr_alignment_p): ... here.
+
 2012-03-16  Martin Jambor  <mjambor@suse.cz>
 
 	* expr.c (expand_expr_real_1): handle misaligned scalar reads from
