@@ -872,7 +872,12 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
   if (!base_aligned)
     {
-      if (!vect_can_force_dr_alignment_p (base, TYPE_ALIGN (vectype)))
+      /* Do not change the alignment of global variables here if
+	 flag_section_anchors is enabled as we already generated
+	 RTL for other functions.  Most global variables should
+	 have been aligned during the IPA increase_alignment pass.  */
+      if (!vect_can_force_dr_alignment_p (base, TYPE_ALIGN (vectype))
+	  || (TREE_STATIC (base) && flag_section_anchors))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
@@ -4552,11 +4557,6 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
     return false;
 
   if (TREE_ASM_WRITTEN (decl))
-    return false;
-
-  /* Do not change the alignment of global variables if flag_section_anchors
-     is enabled.  */
-  if (TREE_STATIC (decl) && flag_section_anchors)
     return false;
 
   if (TREE_STATIC (decl))
