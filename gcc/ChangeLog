@@ -1,5 +1,11 @@
 2012-03-16  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/52584
+	* fold-const.c (fold_ternary_loc): Fold vector typed BIT_FIELD_REFs
+	of vector constants and constructors.
+
+2012-03-16  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Use
 	VIEW_CONVERT_EXPR to convert constants.
 	(vect_is_simple_use): Treat all constants as vec_constant_def.

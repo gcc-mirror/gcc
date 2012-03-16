@@ -13920,22 +13920,55 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
     case BIT_FIELD_REF:
       if ((TREE_CODE (arg0) == VECTOR_CST
 	   || TREE_CODE (arg0) == CONSTRUCTOR)
-	  && type == TREE_TYPE (TREE_TYPE (arg0)))
+	  && (type == TREE_TYPE (TREE_TYPE (arg0))
+	      || (TREE_CODE (type) == VECTOR_TYPE
+		  && TREE_TYPE (type) == TREE_TYPE (TREE_TYPE (arg0)))))
 	{
-	  unsigned HOST_WIDE_INT width = tree_low_cst (arg1, 1);
+	  tree eltype = TREE_TYPE (TREE_TYPE (arg0));
+	  unsigned HOST_WIDE_INT width = tree_low_cst (TYPE_SIZE (eltype), 1);
+	  unsigned HOST_WIDE_INT n = tree_low_cst (arg1, 1);
 	  unsigned HOST_WIDE_INT idx = tree_low_cst (op2, 1);
 
-	  if (width != 0
-	      && simple_cst_equal (arg1, TYPE_SIZE (type)) == 1
+	  if (n != 0
 	      && (idx % width) == 0
-	      && (idx = idx / width)
-		 < TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)))
+	      && (n % width) == 0
+	      && ((idx + n) / width) <= TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)))
 	    {
-	      if (TREE_CODE (arg0) == VECTOR_CST)
-		return VECTOR_CST_ELT (arg0, idx);
-	      else if (idx < CONSTRUCTOR_NELTS (arg0))
-		return CONSTRUCTOR_ELT (arg0, idx)->value;
-	      return build_zero_cst (type);
+	      idx = idx / width;
+	      n = n / width;
+	      if (TREE_CODE (type) == VECTOR_TYPE)
+		{
+		  if (TREE_CODE (arg0) == VECTOR_CST)
+		    {
+		      tree *vals = XALLOCAVEC (tree, n);
+		      unsigned i;
+		      for (i = 0; i < n; ++i)
+			vals[i] = VECTOR_CST_ELT (arg0, idx + i);
+		      return build_vector (type, vals);
+		    }
+		  else
+		    {
+		      VEC(constructor_elt, gc) *vals;
+		      unsigned i;
+		      if (CONSTRUCTOR_NELTS (arg0) == 0)
+			return build_constructor (type, NULL);
+		      vals = VEC_alloc (constructor_elt, gc, n);
+		      for (i = 0; i < n && idx + i < CONSTRUCTOR_NELTS (arg0);
+			   ++i)
+			CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
+						CONSTRUCTOR_ELT
+						  (arg0, idx + i)->value);
+		      return build_constructor (type, vals);
+		    }
+		}
+	      else if (n == 1)
+		{
+		  if (TREE_CODE (arg0) == VECTOR_CST)
+		    return VECTOR_CST_ELT (arg0, idx);
+		  else if (idx < CONSTRUCTOR_NELTS (arg0))
+		    return CONSTRUCTOR_ELT (arg0, idx)->value;
+		  return build_zero_cst (type);
+		}
 	    }
 	}
 
