@@ -1,3 +1,8 @@
+2012-03-16  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/vms-unwind.h: Remove ulong (and replace
+	it by unw_reg where used).  Define unw_reg with __int64.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sol2-unwind.h (x86_fallback_frame_state): Remove
