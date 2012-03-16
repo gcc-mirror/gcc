@@ -383,10 +383,11 @@ build_round_expr (tree arg, tree restype)
   resprec = TYPE_PRECISION (restype);
 
   /* Depending on the type of the result, choose the int intrinsic
-     (iround, available only as a builtin), long int intrinsic (lround
-     family) or long long intrinsic (llround).  We might also need to
-     convert the result afterwards.  */
-  if (resprec <= INT_TYPE_SIZE)
+     (iround, available only as a builtin, therefore cannot use it for
+     __float128), long int intrinsic (lround family) or long long
+     intrinsic (llround).  We might also need to convert the result
+     afterwards.  */
+  if (resprec <= INT_TYPE_SIZE && argprec <= LONG_DOUBLE_TYPE_SIZE)
     fn = builtin_decl_for_precision (BUILT_IN_IROUND, argprec);
   else if (resprec <= LONG_TYPE_SIZE)
     fn = builtin_decl_for_precision (BUILT_IN_LROUND, argprec);
