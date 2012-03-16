@@ -1765,6 +1765,9 @@ finish_bitfield_representative (tree repr, tree field)
 	     - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1)
 	     + tree_low_cst (DECL_SIZE (field), 1));
 
+  /* Round up bitsize to multiples of BITS_PER_UNIT.  */
+  bitsize = (bitsize + BITS_PER_UNIT - 1) & ~(BITS_PER_UNIT - 1);
+
   /* Now nothing tells us how to pad out bitsize ...  */
   nextf = DECL_CHAIN (field);
   while (nextf && TREE_CODE (nextf) != FIELD_DECL)
@@ -1787,12 +1790,16 @@ finish_bitfield_representative (tree repr, tree field)
     {
       /* ???  If you consider that tail-padding of this struct might be
          re-used when deriving from it we cannot really do the following
-	 and thus need to set maxsize to bitsize?  */
+	 and thus need to set maxsize to bitsize?  Also we cannot
+	 generally rely on maxsize to fold to an integer constant, so
+	 use bitsize as fallback for this case.  */
       tree maxsize = size_diffop (TYPE_SIZE_UNIT (DECL_CONTEXT (field)),
 				  DECL_FIELD_OFFSET (repr));
-      gcc_assert (host_integerp (maxsize, 1));
-      maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
-		    - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+      if (host_integerp (maxsize, 1))
+	maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
+		      - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+      else
+	maxbitsize = bitsize;
     }
 
   /* Only if we don't artificially break up the representative in
@@ -1800,9 +1807,6 @@ finish_bitfield_representative (tree repr, tree field)
      overlapping representatives.  And all representatives start
      at byte offset.  */
   gcc_assert (maxbitsize % BITS_PER_UNIT == 0);
-
-  /* Round up bitsize to multiples of BITS_PER_UNIT.  */
-  bitsize = (bitsize + BITS_PER_UNIT - 1) & ~(BITS_PER_UNIT - 1);
 
   /* Find the smallest nice mode to use.  */
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;

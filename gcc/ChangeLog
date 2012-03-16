@@ -1,3 +1,9 @@
+2012-03-16  Richard Guenther  <rguenther@suse.de>
+
+	* stor-layout.c (finish_bitfield_representative): Fall back
+	to the conservative maximum size if we cannot compute the
+	size of the tail padding.
+
 2012-03-16  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/vms.h (TARGET_OS_CPP_BUILTINS): Define

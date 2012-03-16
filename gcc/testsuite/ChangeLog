@@ -1,3 +1,7 @@
+2012-03-16  Richard Guenther  <rguenther@suse.de>
+
+	* gnat.dg/specs/pack7.ads: New testcase.
+
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52568
