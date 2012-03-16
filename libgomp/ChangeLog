@@ -1,3 +1,7 @@
+2012-03-16  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* testsuite/lib/libgomp.exp: load fortran-modules.exp
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.tgt (mips-sgi-irix6*): Remove.
