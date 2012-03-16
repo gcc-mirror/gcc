@@ -1,4 +1,12 @@
 2012-03-16  Richard Guenther  <rguenther@suse.de>
+	Kai Tietz  <ktietz@redhat.com>
+
+	PR middle-end/48814
+	* gimplify.c (gimplify_self_mod_expr): Evaluate postfix
+	side-effects completely in the pre-queue and use a temporary
+	for the result.
+
+2012-03-16  Richard Guenther  <rguenther@suse.de>
 
 	* stor-layout.c (finish_bitfield_representative): Fall back
 	to the conservative maximum size if we cannot compute the

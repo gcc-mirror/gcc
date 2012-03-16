@@ -2265,17 +2265,18 @@ gimplify_self_mod_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       arith_code = POINTER_PLUS_EXPR;
     }
 
-  t1 = build2 (arith_code, TREE_TYPE (*expr_p), lhs, rhs);
-
   if (postfix)
     {
-      gimplify_assign (lvalue, t1, orig_post_p);
+      tree t2 = get_initialized_tmp_var (lhs, pre_p, NULL);
+      t1 = build2 (arith_code, TREE_TYPE (*expr_p), t2, rhs);
+      gimplify_assign (lvalue, t1, pre_p);
       gimplify_seq_add_seq (orig_post_p, post);
-      *expr_p = lhs;
+      *expr_p = t2;
       return GS_ALL_DONE;
     }
   else
     {
+      t1 = build2 (arith_code, TREE_TYPE (*expr_p), lhs, rhs);
       *expr_p = build2 (MODIFY_EXPR, TREE_TYPE (lvalue), lvalue, t1);
       return GS_OK;
     }

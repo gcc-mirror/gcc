@@ -1,4 +1,14 @@
 2012-03-16  Richard Guenther  <rguenther@suse.de>
+	Kai Tietz  <ktietz@redhat.com>
+
+	PR middle-end/48814
+	* gcc.c-torture/execute/pr48814-1.c: New test.
+	* gcc.c-torture/execute/pr48814-2.c: New test.
+	* gcc.dg/tree-ssa/assign-1.c: New test.
+	* gcc.dg/tree-ssa/assign-2.c: New test.
+	* gcc.dg/tree-ssa/assign-3.c: New test.
+
+2012-03-16  Richard Guenther  <rguenther@suse.de>
 
 	* gnat.dg/specs/pack7.ads: New testcase.
 
