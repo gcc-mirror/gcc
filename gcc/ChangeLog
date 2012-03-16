@@ -1,3 +1,9 @@
+2012-03-16  Tristan Gingold  <gingold@adacore.com>
+
+	* config.host (alpha64-dec-*vms*, alpha*-dec-*vms*)
+	(ia64-hp-*vms*): Replaced by ...
+	(*-*-*vms*): ... This new entry.
+
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52568

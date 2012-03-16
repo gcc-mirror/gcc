@@ -185,22 +185,6 @@ esac
 
 # Machine-specific settings.
 case ${host} in
-  alpha64-dec-*vms*)
-    host_xm_file="vms/xm-vms.h vms/xm-vms64.h"
-    host_xmake_file=vms/x-vms
-    host_exeext=.exe
-    host_can_use_collect2=no
-    prefix=/gnu
-    local_prefix=/gnu/local
-    ;;
-  alpha*-dec-*vms*)
-    host_xm_file="vms/xm-vms.h"
-    host_xmake_file=vms/x-vms
-    host_exeext=.exe
-    host_can_use_collect2=no
-    prefix=/gnu
-    local_prefix=/gnu/local
-    ;;
   hppa1.0-*-hpux10* | hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
     out_host_hook_obj=host-hpux.o
     host_xmake_file="${host_xmake_file} x-hpux"
@@ -262,14 +246,6 @@ case ${host} in
     out_host_hook_obj="${out_host_hook_obj} host-i386-darwin.o"
     host_xmake_file="${host_xmake_file} i386/x-darwin"
     ;;
-  ia64-hp-*vms*)
-    host_xm_file="vms/xm-vms.h vms/xm-vms64.h"
-    host_xmake_file=vms/x-vms
-    host_exeext=.exe
-    host_can_use_collect2=no
-    prefix=/gnu
-    local_prefix=/gnu/local
-    ;;
   powerpc-*-beos*)
     host_can_use_collect2=no
     ;;
@@ -296,5 +272,11 @@ case ${host} in
     use_long_long_for_widest_fast_int=yes
     out_host_hook_obj=host-hpux.o
     host_xmake_file="${host_xmake_file} x-hpux"
+    ;;
+  *-*-*vms*)
+    host_xm_file="vms/xm-vms.h"
+    host_xmake_file=vms/x-vms
+    host_exeext=.exe
+    host_can_use_collect2=no
     ;;
 esac
