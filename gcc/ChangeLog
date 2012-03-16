@@ -1,3 +1,8 @@
+2012-03-16  Martin Jambor  <mjambor@suse.cz>
+
+	* expr.c (expand_expr_real_1): handle misaligned scalar reads from
+	memory through MEM_REFs by calling extract_bit_field.
+
 2012-03-16  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (native_interpret_expr): Also support POINTER_TYPE

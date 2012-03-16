@@ -9347,21 +9347,27 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  MEM_VOLATILE_P (temp) = 1;
 	if (modifier != EXPAND_WRITE
 	    && mode != BLKmode
-	    && align < GET_MODE_ALIGNMENT (mode)
-	    /* If the target does not have special handling for unaligned
-	       loads of mode then it can use regular moves for them.  */
-	    && ((icode = optab_handler (movmisalign_optab, mode))
-		!= CODE_FOR_nothing))
+	    && align < GET_MODE_ALIGNMENT (mode))
 	  {
-	    struct expand_operand ops[2];
+	    if ((icode = optab_handler (movmisalign_optab, mode))
+		!= CODE_FOR_nothing)
+	      {
+		struct expand_operand ops[2];
 
-	    /* We've already validated the memory, and we're creating a
-	       new pseudo destination.  The predicates really can't fail,
-	       nor can the generator.  */
-	    create_output_operand (&ops[0], NULL_RTX, mode);
-	    create_fixed_operand (&ops[1], temp);
-	    expand_insn (icode, 2, ops);
-	    return ops[0].value;
+		/* We've already validated the memory, and we're creating a
+		   new pseudo destination.  The predicates really can't fail,
+		   nor can the generator.  */
+		create_output_operand (&ops[0], NULL_RTX, mode);
+		create_fixed_operand (&ops[1], temp);
+		expand_insn (icode, 2, ops);
+		return ops[0].value;
+	      }
+	    else if (SLOW_UNALIGNED_ACCESS (mode, align))
+	      temp = extract_bit_field (temp, GET_MODE_BITSIZE (mode),
+					0, TYPE_UNSIGNED (TREE_TYPE (exp)),
+					true, (modifier == EXPAND_STACK_PARM
+					       ? NULL_RTX : target),
+					mode, mode);
 	  }
 	return temp;
       }
