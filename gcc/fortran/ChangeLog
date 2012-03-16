@@ -1,3 +1,8 @@
+2012-03-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans-intrinsic.c (build_round_expr): Don't use BUILT_IN_IROUND
+	for __float128.
+
 2012-03-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* f95-lang.c (gfc_init_builtin_functions): Initialize
