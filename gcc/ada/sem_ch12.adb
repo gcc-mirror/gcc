@@ -34,7 +34,6 @@ with Exp_Disp; use Exp_Disp;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Freeze;   use Freeze;
-with Hostparm;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
@@ -3784,8 +3783,10 @@ package body Sem_Ch12 is
             --  Here is a defence against a ludicrous number of instantiations
             --  caused by a circular set of instantiation attempts.
 
-            if Pending_Instantiations.Last > Hostparm.Max_Instantiations then
-               Error_Msg_N ("too many instantiations", N);
+            if Pending_Instantiations.Last > Maximum_Instantiations then
+               Error_Msg_Uint_1 := UI_From_Int (Maximum_Instantiations);
+               Error_Msg_N ("too many instantiations, exceeds max of^", N);
+               Error_Msg_N ("\limit can be changed using -gnateinn switch", N);
                raise Unrecoverable_Error;
             end if;
 
@@ -10433,11 +10434,29 @@ package body Sem_Ch12 is
             Abandon_Instantiation (Actual);
          end if;
 
-         Check_Mode_Conformant
-           (Designated_Type (Act_T),
-            Designated_Type (A_Gen_T),
-            Actual,
-            Get_Inst => True);
+         --  According to AI05-288, actuals for access_to_subprograms must be
+         --  subtype conformant with the generic formal. Previous to AI05-288
+         --  only mode conformance was required.
+
+         --  This is a binding interpretation that applies to previous versions
+         --  of the language, but for now we retain the milder check in order
+         --  to preserve ACATS tests.
+         --  These will be protested eventually ???
+
+         if Ada_Version < Ada_2012 then
+            Check_Mode_Conformant
+              (Designated_Type (Act_T),
+               Designated_Type (A_Gen_T),
+               Actual,
+               Get_Inst => True);
+
+         else
+            Check_Subtype_Conformant
+              (Designated_Type (Act_T),
+               Designated_Type (A_Gen_T),
+               Actual,
+               Get_Inst => True);
+         end if;
 
          if Ekind (Base_Type (Act_T)) = E_Access_Protected_Subprogram_Type then
             if Ekind (A_Gen_T) = E_Access_Subprogram_Type then

@@ -1,5 +1,5 @@
 /* If-conversion for vectorizer.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Devang Patel <dpatel@apple.com>
 
@@ -712,7 +712,7 @@ if_convertible_gimple_assign_stmt_p (gimple stmt,
 /* Return true when STMT is if-convertible.
 
    A statement is if-convertible if:
-   - it is an if-convertible GIMPLE_ASSGIN,
+   - it is an if-convertible GIMPLE_ASSIGN,
    - it is a GIMPLE_LABEL or a GIMPLE_COND.  */
 
 static bool

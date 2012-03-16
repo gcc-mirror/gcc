@@ -661,15 +661,7 @@ AC_ARG_ENABLE(fixed-point,
       ;;
 
     mips*-*-*)
-      case $host in
-	mips*-sgi-irix*)
-	  AC_MSG_WARN([fixed-point is not supported on IRIX, ignored])
-	  enable_fixed_point=no
-	  ;;
-	*)
-	  enable_fixed_point=yes
-	  ;;
-      esac
+      enable_fixed_point=yes
       ;;
     *)
       AC_MSG_WARN([fixed-point is not supported for this target, ignored])
@@ -2529,15 +2521,6 @@ else
       hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
-      *-*-solaris2.8*)
-        # .hidden support was backported to Solaris 8, starting with ld
-	# version 1.276.
-	if test "$ld_vers_minor" -ge 276; then
-	  gcc_cv_ld_hidden=yes
-	else
-	  gcc_cv_ld_hidden=no
-	fi
-	;;
       *-*-solaris2.9* | *-*-solaris2.1[0-9]*)
 	# Support for .hidden in Sun ld appeared in Solaris 9 FCS, but
 	# .symbolic was only added in Solaris 9 12/02.
@@ -3354,15 +3337,9 @@ else
   [set_have_as_tls=yes])
 fi
 case "$target" in
-  *-*-irix6*)
-    # IRIX 6.5 rld and libc.so lack TLS support, so even if gas and gld
-    # with TLS support are in use, native TLS cannot work.
-    set_have_as_tls=no
-    ;;
-  # TLS was introduced in the Solaris 9 FCS release and backported to
-  # Solaris 8 patches.  Support for GNU-style TLS on x86 was only
-  # introduced in Solaris 9 4/04, replacing the earlier Sun style that Sun
-  # ld and GCC don't support any longer.
+  # TLS was introduced in the Solaris 9 FCS release.  Support for GNU-style
+  # TLS on x86 was only introduced in Solaris 9 4/04, replacing the earlier
+  # Sun style that Sun ld and GCC don't support any longer.
   *-*-solaris2.*)
     AC_MSG_CHECKING(linker and ld.so.1 TLS support)
     ld_tls_support=no
@@ -3373,14 +3350,6 @@ case "$target" in
       ld_tls_support=yes
     else
       case "$target" in
-        # Solaris 8/x86 ld has GNU style TLS support since version 1.280.
-        i?86-*-solaris2.8)
-          min_tls_ld_vers_minor=280
-          ;;
-        # Solaris 8/SPARC ld has TLS support since version 1.272.
-        sparc*-*-solaris2.8)
-          min_tls_ld_vers_minor=272
-          ;;
 	# Solaris 9/x86 ld has GNU style TLS support since version 1.374.
         i?86-*-solaris2.9)
           min_tls_ld_vers_minor=374
@@ -3404,28 +3373,6 @@ case "$target" in
     LIBS=
     LDFLAGS=
 
-    AC_MSG_CHECKING(alternate thread library)
-    case "$target" in
-      # TLS support was backported to Solaris 8 patches, but only lives in
-      # the alternate thread library which became the default in Solaris 9. 
-      # We want to always use that, irrespective of TLS support.
-      *-*-solaris2.8)
-        # Take multilib subdir into account.  There's no spec to handle
-	# this.  The 64 symlink exists since Solaris 8.
-        lwp_dir=/usr/lib/lwp
-	lwp_spec="-L$lwp_dir%{m64:/64} -R$lwp_dir%{m64:/64}"
-        LDFLAGS="-L$lwp_dir -R$lwp_dir"
-        ;;
-      *-*-solaris2*)
-        lwp_dir="none"
-	lwp_spec=""
-	;;
-    esac    
-    # Always define LIB_THREAD_LDFLAGS_SPEC, even without TLS support.
-    AC_DEFINE_UNQUOTED(LIB_THREAD_LDFLAGS_SPEC, "$lwp_spec",
-        [Define to the linker flags to use for -pthread.])
-    AC_MSG_RESULT($lwp_dir)
-
     AC_MSG_CHECKING(library containing $tga_func)
     # Before Solaris 10, __tls_get_addr (SPARC/x64) resp. ___tls_get_addr
     # (32-bit x86) only lived in libthread, so check for that.  Keep
@@ -3435,13 +3382,6 @@ case "$target" in
     if test $set_have_as_tls = no; then
       LIBS=
     fi
-    # Even without TLS support on Solaris 8, explicitly link with libthread
-    # to guarantee that the alternate thread library is used.
-    case "$target" in
-      *-*-solaris2.8)
-	LIBS=-lthread
-	;;
-    esac
     # Always define LIB_TLS_SPEC, even without TLS support.
     AC_DEFINE_UNQUOTED(LIB_TLS_SPEC, "$LIBS",
         [Define to the library containing __tls_get_addr/___tls_get_addr.])
@@ -3481,10 +3421,6 @@ elif test x$gcc_cv_ld != x; then
 	  gcc_cv_ld_dynamic_option="-adefault"
 	fi
 	;;
-      # IRIX 6 ld supports -Bstatic/-Bdynamic.
-      mips-sgi-irix6*)
-        gcc_cv_ld_static_dynamic=yes
-        ;;
       # Solaris 2 ld always supports -Bstatic/-Bdynamic.
       *-*-solaris2*)
         gcc_cv_ld_static_dynamic=yes
@@ -4353,7 +4289,8 @@ Valid choices are 'yes' and 'no'.]) ;;
   esac],
  [gcc_GAS_CHECK_FEATURE([gnu_unique_object], gcc_cv_as_gnu_unique_object,
    [elf,2,19,52],,
-   [.type foo, @gnu_unique_object],,
+   [.type foo, '$target_type_format_char'gnu_unique_object],,
+# We need to unquote above to to use the definition from config.gcc.
 # Also check for ld.so support, i.e. glibc 2.11 or higher.
    [[if test x$host = x$build -a x$host = x$target &&
        ldd --version 2>/dev/null &&
@@ -5150,7 +5087,6 @@ AC_SUBST(user_headers_inc_next_pre)
 AC_SUBST(user_headers_inc_next_post)
 AC_SUBST(extra_headers_list)
 AC_SUBST(extra_objs)
-AC_SUBST(extra_passes)
 AC_SUBST(extra_programs)
 AC_SUBST(float_h_file)
 AC_SUBST(gcc_config_arguments)

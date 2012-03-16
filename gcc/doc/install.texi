@@ -2926,16 +2926,6 @@ Solaris 2 (SPARC, Intel):
 @end itemize
 
 @item
-SGI IRIX:
-@itemize
-@item
-@uref{http://nekochan.net/,,Nekoware}
-
-@item
-@uref{http://jupiterrise.com/tgcware/,,TGCware}
-@end itemize
-
-@item
 Microsoft Windows:
 @itemize
 @item
@@ -2948,7 +2938,6 @@ The @uref{http://www.mingw.org/,,MinGW} project.
 @uref{ftp://ftp.thewrittenword.com/packages/by-name/,,The
 Written Word} offers binaries for
 AIX 4.3.3, 5.1 and 5.2,
-IRIX 6.5,
 GNU/Linux (i386),
 HP-UX 10.20, 11.00, and 11.11, and
 Solaris/SPARC 2.5.1, 2.6, 7, 8, 9 and 10.
@@ -3025,7 +3014,7 @@ information are.
 @item
 @uref{#ix86-x-linux,,i?86-*-linux*}
 @item
-@uref{#ix86-x-solaris289,,i?86-*-solaris2.[89]}
+@uref{#ix86-x-solaris289,,i?86-*-solaris2.9}
 @item
 @uref{#ix86-x-solaris210,,i?86-*-solaris2.10}
 @item
@@ -3562,8 +3551,8 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @html
 <hr />
 @end html
-@heading @anchor{ix86-x-solaris289}i?86-*-solaris2.[89]
-The Sun assembler in Solaris 8 and 9 has several bugs and limitations.
+@heading @anchor{ix86-x-solaris29}i?86-*-solaris2.9
+The Sun assembler in Solaris 9 has several bugs and limitations.
 While GCC works around them, several features are missing, so it is
 @c FIXME: which ones?
 recommended to use the GNU assembler instead.  There is no bundled
@@ -3573,9 +3562,9 @@ work.
 Solaris@tie{}2/x86 doesn't support the execution of SSE/SSE2 instructions
 before Solaris@tie{}9 4/04, even if the CPU supports them.  Programs will
 receive @code{SIGILL} if they try.  The fix is available both in
-Solaris@tie{}9 Update@tie{}6 and kernel patch 112234-12 or newer.  There is no
-corresponding patch for Solaris 8.  To avoid this problem,
-@option{-march} defaults to @samp{pentiumpro} on Solaris 8 and 9.  If
+Solaris@tie{}9 Update@tie{}6 and kernel patch 112234-12 or newer.  To
+avoid this problem,
+@option{-march} defaults to @samp{pentiumpro} on Solaris 9.  If
 you have the patch installed, you can configure GCC with an appropriate
 @option{--with-arch} option, but need GNU @command{as} for SSE2 support.
 
@@ -3944,99 +3933,9 @@ Support for IRIX 5 has been removed in GCC 4.6.
 @end html
 @heading @anchor{mips-sgi-irix6}mips-sgi-irix6
 
-Support for IRIX 6.5 has been obsoleted in GCC 4.7, but can still be
-enabled by configuring with @option{--enable-obsolete}.  Support will be
-removed in GCC 4.8.  Support for IRIX 6 releases before 6.5 has been
-removed in GCC 4.6, as well as support for the O32 ABI.  It is
-@emph{strongly} recommended to upgrade to at least IRIX 6.5.18.  This
-release introduced full ISO C99 support, though for the N32 and N64 ABIs
-only.
-
-To build and use GCC on IRIX 6.5, you need the IRIX Development Foundation
-(IDF) and IRIX Development Libraries (IDL).  They are included with the
-IRIX 6.5 media.
-
-If you are using SGI's MIPSpro @command{cc} as your bootstrap compiler, you must
-ensure that the N32 ABI is in use.  To test this, compile a simple C
-file with @command{cc} and then run @command{file} on the
-resulting object file.  The output should look like:
-
-@smallexample
-test.o: ELF N32 MSB @dots{}
-@end smallexample
-
-@noindent
-If you see:
-
-@smallexample
-test.o: ELF 32-bit MSB @dots{}
-@end smallexample
-
-@noindent
-or
-
-@smallexample
-test.o: ELF 64-bit MSB @dots{}
-@end smallexample
-
-@noindent
-then your version of @command{cc} uses the O32 or N64 ABI by default.  You
-should set the environment variable @env{CC} to @samp{cc -n32}
-before configuring GCC@.
-
-If you want the resulting @command{gcc} to run on old 32-bit systems
-with the MIPS R4400 CPU, you need to ensure that only code for the @samp{mips3}
-instruction set architecture (ISA) is generated.  While GCC 3.x does
-this correctly, both GCC 2.95 and SGI's MIPSpro @command{cc} may change
-the ISA depending on the machine where GCC is built.  Using one of them
-as the bootstrap compiler may result in @samp{mips4} code, which won't run at
-all on @samp{mips3}-only systems.  For the test program above, you should see:
-
-@smallexample
-test.o: ELF N32 MSB mips-3 @dots{}
-@end smallexample
-
-@noindent
-If you get:
-
-@smallexample
-test.o: ELF N32 MSB mips-4 @dots{}
-@end smallexample
-
-@noindent
-instead, you should set the environment variable @env{CC} to @samp{cc
--n32 -mips3} or @samp{gcc -mips3} respectively before configuring GCC@.
-
-MIPSpro C 7.4 may cause bootstrap failures, due to a bug when inlining
-@code{memcmp}.  Either add @code{-U__INLINE_INTRINSICS} to the @env{CC}
-environment variable as a workaround or upgrade to MIPSpro C 7.4.1m.
-
-GCC on IRIX 6.5 is usually built to support the N32 and N64 ABIs.  If
-you build GCC on a system that doesn't have the N64 libraries installed
-or cannot run 64-bit binaries,
-you need to configure with @option{--disable-multilib} so GCC doesn't
-try to use them.
-Look for @file{/usr/lib64/libc.so.1} to see if you
-have the 64-bit libraries installed.
-
-GCC must be configured with GNU @command{as}.  The latest version, from GNU
-binutils 2.21, is known to work.  On the other hand, bootstrap fails
-with GNU @command{ld} at least since GNU binutils 2.17.
-
-The @option{--enable-libgcj}
-option is disabled by default: IRIX 6 uses a very low default limit
-(20480) for the command line length.  Although @command{libtool} contains a
-workaround for this problem, at least the N64 @samp{libgcj} is known not
-to build despite this, running into an internal error of the native
-@command{ld}.  A sure fix is to increase this limit (@samp{ncargs}) to
-its maximum of 262144 bytes.  If you have root access, you can use the
-@command{systune} command to do this.
-@c FIXME: does this work with current libtool?
-
-@code{wchar_t} support in @samp{libstdc++} is not available for old
-IRIX 6.5.x releases, @math{x < 19}.  The problem cannot be autodetected
-and in order to build GCC for such targets you need to configure with
-@option{--disable-wchar_t}.
+Support for IRIX 6.5 has been removed in GCC 4.8.  Support for IRIX 6
+releases before 6.5 has been removed in GCC 4.6, as well as support for
+the O32 ABI.
 
 @html
 <hr />
@@ -4167,9 +4066,8 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @heading @anchor{x-x-solaris2}*-*-solaris2*
 
-Support for Solaris 8 has been obsoleted in GCC 4.7, but can still be
-enabled by configuring with @option{--enable-obsolete}.  Support will be
-removed in GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
+Support for Solaris 8 has removed in GCC 4.8.  Support for Solaris 7 has
+been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
 you can download the Sun Studio compilers for free.  In Solaris 10 and
@@ -4242,13 +4140,6 @@ newer: @command{g++} will complain that types are missing.  These headers
 assume that omitting the type means @code{int}; this assumption worked for
 C90 but is wrong for C++, and is now wrong for C99 also.
 
-@command{g++} accepts such (invalid) constructs with the option
-@option{-fpermissive}; it will assume that any missing type is @code{int}
-(as defined by C90).
-
-There are patches for Solaris 8 (108652-24 or newer for SPARC,
-108653-22 for Intel) that fix this bug.
-
 Sun bug 4927647 sometimes causes random spurious testsuite failures
 related to missing diagnostic output.  This bug doesn't affect GCC
 itself, rather it is a kernel bug triggered by the @command{expect}
@@ -4256,27 +4147,19 @@ program which is used only by the GCC testsuite driver.  When the bug
 causes the @command{expect} program to miss anticipated output, extra
 testsuite failures appear.
 
-There are patches for Solaris 8 (117350-12 or newer for SPARC,
-117351-12 or newer for Intel) and Solaris 9 (117171-11 or newer for
+There are patches for Solaris 9 (117171-11 or newer for
 SPARC, 117172-11 or newer for Intel) that address this problem.
 
-Solaris@tie{}8 provides an alternate implementation of the thread
-library @samp{libthread}.  It is required for TLS support and has
-been made the default in Solaris@tie{}9, so it is always used on
-Solaris@tie{}8.
-
-Thread-local storage (TLS) is supported in Solaris@tie{}8 and 9, but requires
+Thread-local storage (TLS) is supported in Solaris@tie{}9, but requires
 some patches.  The @samp{libthread} patches provide the
 @code{__tls_get_addr} (SPARC, 64-bit x86) resp.@ @code{___tls_get_addr}
-(32-bit x86) functions.  On Solaris@tie{}8, you need 108993-26 or newer on
-SPARC, 108994-26 or newer on Intel.  On Solaris@tie{}9, the necessary support
+(32-bit x86) functions.  On Solaris@tie{}9, the necessary support
 on SPARC is present since FCS, while 114432-05 or newer is required on
-Intel.  Additionally, on Solaris@tie{}8, patch 109147-14 or newer on SPARC or
-109148-22 or newer on Intel are required for the Sun @command{ld} and
-runtime linker (@command{ld.so.1}) support.  Again, Solaris@tie{}9/SPARC
-works since FCS, while 113986-02 is required on Intel.  The linker
+Intel.  Additionally, on Solaris@tie{}9/x86, patch 113986-02 or newer is
+required for the Sun @command{ld} and runtime linker (@command{ld.so.1})
+support, while Solaris@tie{}9/SPARC works since FCS.  The linker
 patches must be installed even if GNU @command{ld} is used. Sun
-@command{as} in Solaris@tie{}8 and 9 doesn't support the necessary
+@command{as} in Solaris@tie{}9 doesn't support the necessary
 relocations, so GNU @command{as} must be used.  The @command{configure}
 script checks for those prerequisites and automatically enables TLS
 support if they are met.  Although those minimal patch versions should

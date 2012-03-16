@@ -1,3 +1,47 @@
+2012-03-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.h (struct stream): Rename to stream_vtable.
+	(struct stream): New struct definition.
+	(sread): Dereference vtable pointer.
+	(swrite): Likewise.
+	(sseek): Likewise.
+	(struncate): Likewise.
+	(sflush): Likewise.
+	(sclose): Likewise.
+	* io/unix.c (raw_vtable): New variable.
+	(buf_vtable): Likewise.
+	(mem_vtable): Likewise.
+	(mem4_vtable): Likewise.
+	(raw_init): Assign vtable pointer.
+	(buf_init): Likewise.
+	(open_internal): Likewise.
+	(open_internal4): Likewise.
+
+2012-03-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/52434
+        PR libfortran/48878
+        PR libfortran/38199
+        * io/unit.c (get_internal_unit): Default to ROUND_UNSPECIFIED.
+        (init_units): Likewise.
+        * io/write_float.def (determine_precision): New function.
+        (output_float): Take into account buffer with %f format, no need
+        for our own rounding if unspecified or processor specified
+        rounding.
+        (DTOA): Simplify format string, add parameters.
+        (FDTOA): New macros similar to DTOA, but using %f format.
+        (OUTPUT_FLOAT_FMT_G): Stack allocate newf, determine correct
+        precision and fill buffer.
+        (EN_PREC): New macro.
+        (determine_en_precision): New function.
+        (WRITE_FLOAT): For G format, move buffer filling into
+        output_float_FMT_G, use FDTOA for F format.
+        (write_float): Increase buffer due to F format.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* intrinsics/c99_functions.c [__sgi__ && !HAVE_COMPLEX_H]: Remove.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Remove Tru64 reference.

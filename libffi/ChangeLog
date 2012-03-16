@@ -1,3 +1,9 @@
+2012-03-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* src/sh/ffi.c (ffi_prep_closure_loc): Don't ASSERT ABI test,
+	just return FFI_BAD_ABI when things are wrong.
+	* src/sh64/ffi.c (ffi_prep_closure_loc): Ditto.
+
 2012-03-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* src/x86/ffi64.c (ffi_call): Cast the return value to unsigned

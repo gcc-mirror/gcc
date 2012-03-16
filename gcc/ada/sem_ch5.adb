@@ -2087,7 +2087,16 @@ package body Sem_Ch5 is
 
                Check_Controlled_Array_Attribute (DS);
 
-               Make_Index (DS, LP, In_Iter_Schm => True);
+               --  The index is not processed during analysis of a quantified
+               --  expression but delayed to its expansion where the quantified
+               --  expression is transformed into an expression with actions.
+
+               if Nkind (Parent (N)) /= N_Quantified_Expression
+                 or else Operating_Mode = Check_Semantics
+                 or else Alfa_Mode
+               then
+                  Make_Index (DS, LP, In_Iter_Schm => True);
+               end if;
 
                Set_Ekind (Id, E_Loop_Parameter);
 
@@ -2097,14 +2106,7 @@ package body Sem_Ch5 is
                --  because the second one may be created in a different scope,
                --  e.g. a precondition procedure, leading to a crash in GIGI.
 
-               --  Note that if the parent node is a quantified expression,
-               --  this preservation is delayed until the expansion of the
-               --  quantified expression where the node is rewritten as an
-               --  expression with actions.
-
-               if (No (Etype (Id)) or else Etype (Id) = Any_Type)
-                 and then Nkind (Parent (N)) /= N_Quantified_Expression
-               then
+               if No (Etype (Id)) or else Etype (Id) = Any_Type then
                   Set_Etype (Id, Etype (DS));
                end if;
 
@@ -2241,14 +2243,14 @@ package body Sem_Ch5 is
       --  If domain of iteration is an expression, create a declaration for
       --  it, so that finalization actions are introduced outside of the loop.
       --  The declaration must be a renaming because the body of the loop may
-      --  assign to elements.
-
-      --  Note that if the parent node is a quantified expression, this
-      --  declaration is created during the expansion of the quantified
-      --  expression where the node is rewritten as an expression with actions.
+      --  assign to elements. In case of a quantified expression, this
+      --  declaration is delayed to its expansion where the node is rewritten
+      --  as an expression with actions.
 
       if not Is_Entity_Name (Iter_Name)
-        and then Nkind (Parent (Parent (N))) /= N_Quantified_Expression
+        and then (Nkind (Parent (Parent (N))) /= N_Quantified_Expression
+                   or else Operating_Mode = Check_Semantics
+                   or else Alfa_Mode)
       then
          declare
             Id   : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);

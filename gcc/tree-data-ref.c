@@ -3460,6 +3460,7 @@ subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
   unsigned int i;
   tree last_conflicts;
   struct subscript *subscript;
+  tree res = NULL_TREE;
 
   for (i = 0; VEC_iterate (subscript_p, DDR_SUBSCRIPTS (ddr), i, subscript);
        i++)
@@ -3471,40 +3472,43 @@ subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
 				      &overlaps_a, &overlaps_b,
 				      &last_conflicts, loop_nest);
 
+      if (SUB_CONFLICTS_IN_A (subscript))
+	free_conflict_function (SUB_CONFLICTS_IN_A (subscript));
+      if (SUB_CONFLICTS_IN_B (subscript))
+	free_conflict_function (SUB_CONFLICTS_IN_B (subscript));
+
+      SUB_CONFLICTS_IN_A (subscript) = overlaps_a;
+      SUB_CONFLICTS_IN_B (subscript) = overlaps_b;
+      SUB_LAST_CONFLICT (subscript) = last_conflicts;
+
+      /* If there is any undetermined conflict function we have to
+         give a conservative answer in case we cannot prove that
+	 no dependence exists when analyzing another subscript.  */
       if (CF_NOT_KNOWN_P (overlaps_a)
  	  || CF_NOT_KNOWN_P (overlaps_b))
  	{
- 	  finalize_ddr_dependent (ddr, chrec_dont_know);
-	  dependence_stats.num_dependence_undetermined++;
-	  free_conflict_function (overlaps_a);
-	  free_conflict_function (overlaps_b);
-	  return false;
+	  res = chrec_dont_know;
+	  continue;
  	}
 
+      /* When there is a subscript with no dependence we can stop.  */
       else if (CF_NO_DEPENDENCE_P (overlaps_a)
  	       || CF_NO_DEPENDENCE_P (overlaps_b))
  	{
- 	  finalize_ddr_dependent (ddr, chrec_known);
-	  dependence_stats.num_dependence_independent++;
-	  free_conflict_function (overlaps_a);
-	  free_conflict_function (overlaps_b);
-	  return false;
- 	}
-
-      else
- 	{
-	  if (SUB_CONFLICTS_IN_A (subscript))
-	    free_conflict_function (SUB_CONFLICTS_IN_A (subscript));
-	  if (SUB_CONFLICTS_IN_B (subscript))
-	    free_conflict_function (SUB_CONFLICTS_IN_B (subscript));
-
- 	  SUB_CONFLICTS_IN_A (subscript) = overlaps_a;
- 	  SUB_CONFLICTS_IN_B (subscript) = overlaps_b;
-	  SUB_LAST_CONFLICT (subscript) = last_conflicts;
+	  res = chrec_known;
+	  break;
  	}
     }
 
-  return true;
+  if (res == NULL_TREE)
+    return true;
+
+  if (res == chrec_known)
+    dependence_stats.num_dependence_independent++;
+  else
+    dependence_stats.num_dependence_undetermined++;
+  finalize_ddr_dependent (ddr, res);
+  return false;
 }
 
 /* Computes the conflicting iterations in LOOP_NEST, and initialize DDR.  */

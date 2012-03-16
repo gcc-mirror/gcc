@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -643,6 +643,11 @@ package Sem is
    --  as the result of a scope suppress pragma. If Checks_May_Be_Suppressed
    --  is False, then the status of the check can be determined simply by
    --  examining Scope_Checks (C), so this routine is not called in that case.
+
+   procedure Preanalyze (N : Node_Id);
+   --  Performs a pre-analysis of node N. During pre-analysis no expansion is
+   --  carried out for N or its children. For more info on pre-analysis read
+   --  the spec of Sem.
 
    generic
       with procedure Action (Item : Node_Id);

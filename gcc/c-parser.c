@@ -1,7 +1,7 @@
 /* Parser for C and Objective-C.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011,
+   2012 Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
    influenced by and fragments based on the C++ parser.
@@ -3343,6 +3343,11 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
   tree prefix_attrs;
   tree postfix_attrs = NULL_TREE;
   bool dummy = false;
+
+  /* Accept #pragmas between parameter declarations.  */
+  while (c_parser_next_token_is (parser, CPP_PRAGMA))
+    c_parser_pragma (parser, pragma_external);
+
   if (!c_parser_next_token_starts_declspecs (parser))
     {
       c_token *token = c_parser_peek_token (parser);
@@ -6885,6 +6890,8 @@ c_parser_postfix_expression (c_parser *parser)
 	case RID_BUILTIN_SHUFFLE:
 	  {
 	    VEC(c_expr_t,gc) *cexpr_list;
+	    unsigned int i;
+	    c_expr_t *p;
 
 	    c_parser_consume_token (parser);
 	    if (!c_parser_get_builtin_args (parser,
@@ -6894,6 +6901,9 @@ c_parser_postfix_expression (c_parser *parser)
 		expr.value = error_mark_node;
 		break;
 	      }
+
+	    FOR_EACH_VEC_ELT (c_expr_t, cexpr_list, i, p)
+	      mark_exp_read (p->value);
 
 	    if (VEC_length (c_expr_t, cexpr_list) == 2)
 	      expr.value =

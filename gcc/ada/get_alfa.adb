@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,6 +50,9 @@ procedure Get_Alfa is
    Name_Len : Natural := 0;
    --  Local string used to store name of File/entity scanned as
    --  Name_Str (1 .. Name_Len).
+
+   File_Name : String_Ptr;
+   Unit_File_Name : String_Ptr;
 
    -----------------------
    -- Local Subprograms --
@@ -236,15 +239,32 @@ begin
             Skip_Spaces;
             Cur_File := Get_Nat;
             Skip_Spaces;
+
             Get_Name;
+            File_Name := new String'(Name_Str (1 .. Name_Len));
+            Skip_Spaces;
+
+            --  Scan out unit file name when present (for subunits)
+
+            if Nextc = '-' then
+               Skipc;
+               Check ('>');
+               Skip_Spaces;
+               Get_Name;
+               Unit_File_Name := new String'(Name_Str (1 .. Name_Len));
+
+            else
+               Unit_File_Name := null;
+            end if;
 
             --  Make new File table entry (will fill in To_Scope later)
 
             Alfa_File_Table.Append (
-              (File_Name  => new String'(Name_Str (1 .. Name_Len)),
-               File_Num   => Cur_File,
-               From_Scope => Alfa_Scope_Table.Last + 1,
-               To_Scope   => 0));
+              (File_Name      => File_Name,
+               Unit_File_Name => Unit_File_Name,
+               File_Num       => Cur_File,
+               From_Scope     => Alfa_Scope_Table.Last + 1,
+               To_Scope       => 0));
 
             --  Initialize counter for scopes
 

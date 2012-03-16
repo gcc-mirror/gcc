@@ -35,8 +35,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined(inhibit_libc)
 #define IN_LIBGCOV (-1)
 #else
-#undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
-#include <stdio.h>
 #define IN_LIBGCOV 1
 #if defined(L_gcov)
 #define GCOV_LINKAGE /* nothing */

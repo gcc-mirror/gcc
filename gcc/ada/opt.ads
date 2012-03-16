@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -931,6 +931,12 @@ package Opt is
    --  extension, as set by the appropriate switch. If no switch is given,
    --  then this value is initialized by Osint to the appropriate value.
 
+   Maximum_Instantiations : Int := 8000;
+   --  GNAT
+   --  Maximum number of instantiations permitted (to stop runaway cases
+   --  of nested instantiations). These situations probably only occur in
+   --  specially concocted test cases. Can be modified by -gnateinn switch.
+
    Maximum_Processes : Positive := 1;
    --  GNATMAKE, GPRMAKE, GPRBUILD
    --  Maximum number of processes that should be spawned to carry out
@@ -939,12 +945,6 @@ package Opt is
    Minimal_Recompilation : Boolean := False;
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested
-
-   Special_Exception_Package_Used : Boolean := False;
-   --  GNAT
-   --  Set to True if either of the unit GNAT.Most_Recent_Exception or
-   --  GNAT.Exception_Traces is with'ed. Used to inhibit transformation of
-   --  local raise statements into gotos in the presence of either package.
 
    Multiple_Unit_Index : Int;
    --  GNAT
@@ -1181,6 +1181,12 @@ package Opt is
    Short_Descriptors : Boolean := False;
    --  GNAT
    --  Set True if a pragma Short_Descriptors applies to the current unit.
+
+   Special_Exception_Package_Used : Boolean := False;
+   --  GNAT
+   --  Set to True if either of the unit GNAT.Most_Recent_Exception or
+   --  GNAT.Exception_Traces is with'ed. Used to inhibit transformation of
+   --  local raise statements into gotos in the presence of either package.
 
    Sprint_Line_Limit : Nat := 72;
    --  GNAT

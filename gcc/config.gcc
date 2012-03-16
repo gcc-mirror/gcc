@@ -129,10 +129,8 @@
 #			such a system header; otherwise "none", do not
 #			provide such a header at all.
 #
-#  extra_passes		List of extra executables compiled for this target
-#			machine, used for compiling from source to object.
-#
-#  extra_programs	Like extra_passes, but these are used when linking.
+#  extra_programs	List of extra executables compiled for this target
+#			machine, used when linking.
 #
 #  extra_options	List of target-dependent .opt files.
 #
@@ -184,6 +182,11 @@
 #			the --with-sysroot configure option or the
 #			--sysroot command line option is used this
 #			will be relative to the sysroot.
+# target_type_format_char 
+# 			The default character to be used for formatting
+#			the attribute in a
+#			.type symbol_name, ${t_t_f_c}<property>
+#			directive.
 
 # The following variables are used in each case-construct to build up the
 # outgoing variables:
@@ -205,7 +208,6 @@ user_headers_inc_next_pre=
 user_headers_inc_next_post=
 use_gcc_tgmath=yes
 use_gcc_stdint=none
-extra_passes=
 extra_programs=
 extra_objs=
 extra_gcc_objs=
@@ -235,6 +237,7 @@ target_gtfiles=
 need_64bit_hwint=
 need_64bit_isa=
 native_system_header_dir=/usr/include
+target_type_format_char='@'
 
 # Don't carry these over build->host->target.  Please.
 xm_file=
@@ -253,9 +256,7 @@ case ${target} in
  | arm*-*-rtems*			\
  | arm*-*-uclinux*			\
  | arm*-wince-pe*			\
- | mips-sgi-irix6.5			\
  | score-*				\
- | *-*-solaris2.8*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -286,9 +287,9 @@ case ${target} in
  | *-*-rtemsaout*			\
  | *-*-rtemscoff*			\
  | *-*-solaris2				\
- | *-*-solaris2.[0-7]			\
- | *-*-solaris2.[0-7].*			\
- | *-*-sysv*		\
+ | *-*-solaris2.[0-8]			\
+ | *-*-solaris2.[0-8].*			\
+ | *-*-sysv*				\
  | vax-*-vms*				\
  )
 	echo "*** Configuration ${target} not supported" 1>&2
@@ -319,6 +320,7 @@ am33_2.0-*-linux*)
 arm*-*-*)
 	cpu_type=arm
 	extra_headers="mmintrin.h arm_neon.h"
+	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
 	extra_options="${extra_options} arm/arm-tables.opt"
@@ -766,25 +768,21 @@ case ${target} in
 alpha*-*-linux*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
 	extra_options="${extra_options} alpha/elf.opt"
-	target_cpu_default="MASK_GAS"
 	;;
 alpha*-*-freebsd*)
 	tm_file="${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
 	extra_options="${extra_options} alpha/elf.opt"
-	target_cpu_default="MASK_GAS"
 	;;
 alpha*-*-netbsd*)
 	tm_file="${tm_file} netbsd.h alpha/elf.h netbsd-elf.h alpha/netbsd.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt \
 		       alpha/elf.opt"
-	target_cpu_default="MASK_GAS"
 	;;
 alpha*-*-openbsd*)
 	tm_defines="${tm_defines} OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_FUNCTION_SIZE OBSD_HAS_DECLARE_OBJECT"
 	tm_file="alpha/alpha.h alpha/elf.h openbsd.h openbsd-stdint.h alpha/openbsd.h openbsd-libpthread.h"
 	extra_options="${extra_options} openbsd.opt alpha/elf.opt"
 	# default x-alpha is only appropriate for dec-osf.
-	target_cpu_default="MASK_GAS"
 	;;
 alpha*-dec-*vms*)
 	tm_file="${tm_file} vms/vms.h alpha/vms.h"
@@ -1325,9 +1323,8 @@ i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 	# Set default arch_32 to pentium4, tune_32 to generic like the other
 	# i386 targets, although config.guess defaults to i386-pc-solaris2*.
 	case ${target} in
-	*-*-solaris2.[89]*)
-		# Solaris 8 and 9/x86 cannot execute SSE/SSE2 instructions by
-		# default.
+	*-*-solaris2.9*)
+		# Solaris 9/x86 cannot execute SSE/SSE2 instructions by default.
 		with_arch_32=${with_arch_32:-pentiumpro}
 		;;
 	*)
@@ -1685,26 +1682,6 @@ microblaze*-*-*)
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
         tmake_file="${tmake_file} microblaze/t-microblaze"
         ;;
-mips-sgi-irix6.5*)
-	tm_file="elfos.h ${tm_file} mips/iris6.h"
-	tmake_file="mips/t-irix6 t-slibgcc"
-	extra_options="${extra_options} rpath.opt mips/iris6.opt"
-	target_cpu_default="MASK_ABICALLS"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
-	# Only IRIX Development Foundation 1.3 for IRIX 6.5 provides stdint.h.
-	use_gcc_stdint=wrap
-	if test "x$stabs" = xyes
-	then
-		tm_file="${tm_file} dbx.h"
-	fi
-	if test "x$gnu_ld" = xyes
-	then
-		tm_defines="${tm_defines} IRIX_USING_GNU_LD"
-	fi
-	case ${enable_threads}:${have_pthread_h} in
-	  "":yes | yes:yes ) thread_file=posix ;;
-	esac
-	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
@@ -3433,13 +3410,6 @@ esac
 # Set some miscellaneous flags for particular targets.
 target_cpu_default2=
 case ${target} in
-	alpha*-*-*)
-		if test x$gas = xyes
-		then
-			target_cpu_default2="MASK_GAS"
-		fi
-		;;
-
 	arm*-*-*)
 		if test x$target_cpu_cname = x
 		then

@@ -976,9 +976,6 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
  || defined (__DragonFly__)
 #   define FREEBSD
 #endif
-#if defined (__mips) && defined (__sgi)
-#   define IRIX
-#endif
 
 /* Include every system header we need */
 #define _GNU_SOURCE
@@ -1025,7 +1022,6 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
       1- using a cloning device (USE_CLONE_DEVICE)
       2- getpt                  (USE_GETPT)
       3- openpty                (USE_OPENPTY)
-      4- _getpty                (USE_GETPTY)
 
    When using the cloning device method, the macro USE_CLONE_DEVICE should
    contains a full path to the adequate device.
@@ -1037,8 +1033,6 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 /* Configurable part */
 #if defined (__APPLE__) || defined (FREEBSD)
 #define USE_OPENPTY
-#elif defined (IRIX)
-#define USE_GETPTY
 #elif defined (linux)
 #define USE_GETPT
 #elif defined (sun)
@@ -1093,9 +1087,6 @@ allocate_pty_desc (pty_desc **desc) {
   master_fd = getpt ();
 #elif defined (USE_OPENPTY)
   status = openpty (&master_fd, &slave_fd, NULL, NULL, NULL);
-#elif defined (USE_GETPTY)
-  slave_name = _getpty (&master_fd, O_RDWR | O_NDELAY, 0600, 0);
-  if (slave_name == NULL) status = -1;
 #elif defined (USE_CLONE_DEVICE)
   master_fd = open (USE_CLONE_DEVICE, O_RDWR | O_NONBLOCK, 0);
 #else

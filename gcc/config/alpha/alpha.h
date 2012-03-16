@@ -146,12 +146,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define TARGET_ABI_OPEN_VMS	0
 #define TARGET_ABI_OSF		(!TARGET_ABI_OPEN_VMS)
 
-#ifndef TARGET_AS_CAN_SUBTRACT_LABELS
-#define TARGET_AS_CAN_SUBTRACT_LABELS TARGET_GAS
-#endif
-#ifndef TARGET_AS_SLASH_BEFORE_SUFFIX
-#define TARGET_AS_SLASH_BEFORE_SUFFIX TARGET_GAS
-#endif
 #ifndef TARGET_CAN_FAULT_IN_PROLOGUE
 #define TARGET_CAN_FAULT_IN_PROLOGUE 0
 #endif
@@ -1154,23 +1148,10 @@ do {						\
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) \
   print_operand_address((FILE), (ADDR))
 
-/* Tell collect that the object format is ECOFF.  */
-#define OBJECT_FORMAT_COFF
-#define EXTENDED_COFF
-
 /* If we use NM, pass -g to it so it only lists globals.  */
 #define NM_FLAGS "-pg"
 
 /* Definitions for debugging.  */
-
-#define SDB_DEBUGGING_INFO 1		/* generate info for mips-tfile */
-#define DBX_DEBUGGING_INFO 1		/* generate embedded stabs */
-#define MIPS_DEBUGGING_INFO 1		/* MIPS specific debugging info */
-
-#ifndef PREFERRED_DEBUGGING_TYPE	/* assume SDB_DEBUGGING_INFO */
-#define PREFERRED_DEBUGGING_TYPE  SDB_DEBUG
-#endif
-
 
 /* Correct the offset of automatic variables and arguments.  Note that
    the Alpha debug format wants all automatic variables and arguments
@@ -1191,99 +1172,11 @@ extern long alpha_auto_offset;
   ((GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0) + alpha_auto_offset)
 #define DEBUGGER_ARG_OFFSET(OFFSET, X) (OFFSET + alpha_arg_offset)
 
-/* mips-tfile doesn't understand .stabd directives.  */
-#define DBX_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER) do {	\
-  dbxout_begin_stabn_sline (LINE);				\
-  dbxout_stab_value_internal_label ("LM", &COUNTER);		\
-} while (0)
-
-/* We want to use MIPS-style .loc directives for SDB line numbers.  */
-extern int num_source_filenames;
-#define SDB_OUTPUT_SOURCE_LINE(STREAM, LINE)	\
-  fprintf (STREAM, "\t.loc\t%d %d\n", num_source_filenames, LINE)
-
 #define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME)			\
   alpha_output_filename (STREAM, NAME)
 
-/* mips-tfile.c limits us to strings of one page.  We must underestimate this
-   number, because the real length runs past this up to the next
-   continuation point.  This is really a dbxout.c bug.  */
-#define DBX_CONTIN_LENGTH 3000
-
 /* By default, turn on GDB extensions.  */
 #define DEFAULT_GDB_EXTENSIONS 1
-
-/* Stabs-in-ECOFF can't handle dbxout_function_end().  */
-#define NO_DBX_FUNCTION_END 1
-
-/* If we are smuggling stabs through the ALPHA ECOFF object
-   format, put a comment in front of the .stab<x> operation so
-   that the ALPHA assembler does not choke.  The mips-tfile program
-   will correctly put the stab into the object file.  */
-
-#define ASM_STABS_OP	((TARGET_GAS) ? "\t.stabs\t" : " #.stabs\t")
-#define ASM_STABN_OP	((TARGET_GAS) ? "\t.stabn\t" : " #.stabn\t")
-#define ASM_STABD_OP	((TARGET_GAS) ? "\t.stabd\t" : " #.stabd\t")
-
-/* Forward references to tags are allowed.  */
-#define SDB_ALLOW_FORWARD_REFERENCES
-
-/* Unknown tags are also allowed.  */
-#define SDB_ALLOW_UNKNOWN_REFERENCES
-
-#define PUT_SDB_DEF(a)					\
-do {							\
-  fprintf (asm_out_file, "\t%s.def\t",			\
-	   (TARGET_GAS) ? "" : "#");			\
-  ASM_OUTPUT_LABELREF (asm_out_file, a); 		\
-  fputc (';', asm_out_file);				\
-} while (0)
-
-#define PUT_SDB_PLAIN_DEF(a)				\
-do {							\
-  fprintf (asm_out_file, "\t%s.def\t.%s;",		\
-	   (TARGET_GAS) ? "" : "#", (a));		\
-} while (0)
-
-#define PUT_SDB_TYPE(a)					\
-do {							\
-  fprintf (asm_out_file, "\t.type\t0x%x;", (a));	\
-} while (0)
-
-/* For block start and end, we create labels, so that
-   later we can figure out where the correct offset is.
-   The normal .ent/.end serve well enough for functions,
-   so those are just commented out.  */
-
-extern int sdb_label_count;		/* block start/end next label # */
-
-#define PUT_SDB_BLOCK_START(LINE)			\
-do {							\
-  fprintf (asm_out_file,				\
-	   "$Lb%d:\n\t%s.begin\t$Lb%d\t%d\n",		\
-	   sdb_label_count,				\
-	   (TARGET_GAS) ? "" : "#",			\
-	   sdb_label_count,				\
-	   (LINE));					\
-  sdb_label_count++;					\
-} while (0)
-
-#define PUT_SDB_BLOCK_END(LINE)				\
-do {							\
-  fprintf (asm_out_file,				\
-	   "$Le%d:\n\t%s.bend\t$Le%d\t%d\n",		\
-	   sdb_label_count,				\
-	   (TARGET_GAS) ? "" : "#",			\
-	   sdb_label_count,				\
-	   (LINE));					\
-  sdb_label_count++;					\
-} while (0)
-
-#define PUT_SDB_FUNCTION_START(LINE)
-
-#define PUT_SDB_FUNCTION_END(LINE)
-
-#define PUT_SDB_EPILOGUE_END(NAME) ((void)(NAME))
 
 /* The system headers under Alpha systems are generally C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C

@@ -3682,13 +3682,14 @@ package Einfo is
 
 --    Static_Predicate (List25)
 --       Present in discrete types/subtypes with predicates (Has_Predicates
---       set True). Points to a list of expression and N_Range nodes that
---       represent the predicate in canonical form. The canonical form has
---       entries sorted in ascending order, with all duplicates eliminated,
---       and adjacent ranges coalesced, so that there is always a gap in the
---       values between successive entries. The entries in this list are
---       fully analyzed and typed with the base type of the subtype. Note
---       that all entries are static and have values within the subtype range.
+--       set True). Set if the type/subtype has a static predicate. Points to
+--       a list of expression and N_Range nodes that represent the predicate
+--       in canonical form. The canonical form has entries sorted in ascending
+--       order, with duplicates eliminated, and adjacent ranges coalesced, so
+--       that there is always a gap in the values between successive entries.
+--       The entries in this list are fully analyzed and typed with the base
+--       type of the subtype. Note that all entries are static and have values
+--       within the subtype range.
 
 --    Storage_Size_Variable (Node15) [implementation base type only]
 --       Present in access types and task type entities. This flag is set

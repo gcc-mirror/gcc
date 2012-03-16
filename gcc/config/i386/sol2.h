@@ -1,6 +1,6 @@
 /* Target definitions for GCC for Intel 80386 running Solaris 2
    Copyright (C) 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   2004, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
 This file is part of GCC.
@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Augment i386/unix.h version to return 8-byte vectors in memory, matching
    Sun Studio compilers until version 12, the only ones supported on
-   Solaris 8 and 9.  */
+   Solaris 9.  */
 #undef TARGET_SUBTARGET_DEFAULT
 #define TARGET_SUBTARGET_DEFAULT \
 	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_VECT8_RETURNS)
@@ -63,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define ASM_CPU_SPEC ""
  
-/* Don't include ASM_PIC_SPEC.  While the Solaris 8 and 9 assembler accepts
+/* Don't include ASM_PIC_SPEC.  While the Solaris 9 assembler accepts
    -K PIC, it gives many warnings:
 	R_386_32 relocation is used for symbol "<symbol>"
    GNU as doesn't recognize -K at all.  */

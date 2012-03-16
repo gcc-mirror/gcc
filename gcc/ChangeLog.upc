@@ -1,3 +1,8 @@
+2012-03-16  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 185454 into gupc branch.
+	Incorporates a libgcc fix for builds on Darwin.
+
 2012-03-13  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 185278 into gupc branch.

@@ -879,11 +879,6 @@ output_call_frame_info (int for_eh)
 
   if (for_eh && targetm.terminate_dw2_eh_frame_info)
     dw2_asm_output_data (4, 0, "End of Table");
-#ifdef MIPS_DEBUGGING_INFO
-  /* Work around Irix 6 assembler bug whereby labels at the end of a section
-     get a value of 0.  Putting .align 0 after the label fixes it.  */
-  ASM_OUTPUT_ALIGN (asm_out_file, 0);
-#endif
 
   /* Turn off app to make assembly quicker.  */
   if (flag_debug_asm)
@@ -14372,16 +14367,7 @@ add_data_member_location_attribute (dw_die_ref die, tree decl)
 	  /* The DWARF2 standard says that we should assume that the structure
 	     address is already on the stack, so we can specify a structure
 	     field address by using DW_OP_plus_uconst.  */
-
-#ifdef MIPS_DEBUGGING_INFO
-	  /* ??? The SGI dwarf reader does not handle the DW_OP_plus_uconst
-	     operator correctly.  It works only if we leave the offset on the
-	     stack.  */
-	  op = DW_OP_constu;
-#else
 	  op = DW_OP_plus_uconst;
-#endif
-
 	  loc_descr = new_loc_descr (op, offset, 0);
 	}
     }
@@ -16417,17 +16403,6 @@ gen_array_type_die (tree type, dw_die_ref context_die)
       return;
     }
 
-  /* ??? The SGI dwarf reader fails for array of array of enum types
-     (e.g. const enum machine_mode insn_operand_mode[2][10]) unless the inner
-     array type comes before the outer array type.  We thus call gen_type_die
-     before we new_die and must prevent nested array types collapsing for this
-     target.  */
-
-#ifdef MIPS_DEBUGGING_INFO
-  gen_type_die (TREE_TYPE (type), context_die);
-  collapse_nested_arrays = false;
-#endif
-
   array_die = new_die (DW_TAG_array_type, scope_die, type);
   add_name_attribute (array_die, type_tag (type));
   equate_type_number_to_die (type, array_die);
@@ -16453,14 +16428,6 @@ gen_array_type_die (tree type, dw_die_ref context_die)
   add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_row_major);
 #endif
 
-#ifdef MIPS_DEBUGGING_INFO
-  /* The SGI compilers handle arrays of unknown bound by setting
-     AT_declaration and not emitting any subrange DIEs.  */
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && ! TYPE_DOMAIN (type))
-    add_AT_flag (array_die, DW_AT_declaration, 1);
-  else
-#endif
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
       /* For VECTOR_TYPEs we use an array die with appropriate bounds.  */
@@ -16482,10 +16449,6 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 	  break;
 	element_type = TREE_TYPE (element_type);
       }
-
-#ifndef MIPS_DEBUGGING_INFO
-  gen_type_die (element_type, context_die);
-#endif
 
   add_type_attribute (array_die, element_type, 0, 0, context_die);
 
@@ -17519,11 +17482,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    }
 	}
 
-#ifdef MIPS_DEBUGGING_INFO
-      /* Add a reference to the FDE for this routine.  */
-      add_AT_fde_ref (subr_die, DW_AT_MIPS_fde, cfun->fde->fde_index);
-#endif
-
       cfa_fb_offset = CFA_FRAME_BASE_OFFSET (decl);
 
       /* We define the "frame base" as the function's CFA.  This is more
@@ -17534,7 +17492,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 (3) We can at least reuse the code inspection and interpretation
 	 code that determines the CFA position at various points in the
 	 function.  */
-      if (dwarf_version >= 3)
+      if (dwarf_version >= 3 && targetm.debug_unwind_info () == UI_DWARF2)
 	{
 	  dw_loc_descr_ref op = new_loc_descr (DW_OP_call_frame_cfa, 0, 0);
 	  add_AT_loc (subr_die, DW_AT_frame_base, op);
@@ -18494,24 +18452,6 @@ gen_producer_string (void)
   tail = producer;
   sprintf (tail, "%s %s", language_string, version_string);
   tail += plen;
-
-  if (!dwarf_record_gcc_switches)
-    {
-#ifdef MIPS_DEBUGGING_INFO
-      /* The MIPS/SGI compilers place the 'cc' command line options in the
-	 producer string.  The SGI debugger looks for -g, -g1, -g2, or -g3;
-	 if they do not appear in the producer string, the debugger reaches
-	 the conclusion that the object file is stripped and has no debugging
-	 information.  To get the MIPS/SGI debugger to believe that there is
-	 debugging information in the object file, we add a -g to the producer
-	 string.  */
-      if (debug_info_level > DINFO_LEVEL_TERSE)
-	{
-	  memcpy (tail, " -g", 3);
-	  tail += 3;
-	}
-#endif
-    }
 
   FOR_EACH_VEC_ELT (dchar_p, switches, j, p)
     {

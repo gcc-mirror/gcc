@@ -1,3 +1,8 @@
+2012-03-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/44783
+	* c.opt (ftemplate-backtrace-limit) Add.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Remove #pragma extern_prefix

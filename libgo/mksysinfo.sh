@@ -834,7 +834,15 @@ fi | sed -e 's/type _statfs64/type Statfs_t/' \
     >> ${OUT}
 
 # The timex struct.
-grep '^type _timex ' gen-sysinfo.go | \
+timex=`grep '^type _timex ' gen-sysinfo.go || true`
+if test "$timex" = ""; then
+  timex=`grep '^// type _timex ' gen-sysinfo.go || true`
+  if test "$timex" != ""; then
+    timex=`echo $timex | sed -e 's|// ||' -e 's/INVALID-bit-field/int32/g'`
+  fi
+fi
+if test "$timex" != ""; then
+  echo "$timex" | \
     sed -e 's/_timex/Timex/' \
       -e 's/modes/Modes/' \
       -e 's/offset/Offset/' \
@@ -858,6 +866,7 @@ grep '^type _timex ' gen-sysinfo.go | \
       -e 's/tai/Tai/' \
       -e 's/_timeval/Timeval/' \
     >> ${OUT}
+fi
 
 # The rlimit struct.
 grep '^type _rlimit ' gen-sysinfo.go | \

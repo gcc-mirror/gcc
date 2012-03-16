@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for Alpha Linux-based GNU systems.
    Copyright (C) 1996, 1997, 1998, 2002, 2003, 2004, 2005, 2006, 2007, 2009,
-   2010, 2011 Free Software Foundation, Inc.
+   2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson.
 
 This file is part of GCC.
@@ -19,9 +19,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_FPREGS | MASK_GAS)
 
 #define TARGET_OS_CPP_BUILTINS()				\
     do {							\

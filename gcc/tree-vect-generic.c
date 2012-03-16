@@ -471,13 +471,13 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
 				    gimple_assign_rhs2 (assign), code);
 }
 
-/* Return a type for the widest vector mode whose components are of mode
-   INNER_MODE, or NULL_TREE if none is found.
-   SATP is true for saturating fixed-point types.  */
+/* Return a type for the widest vector mode whose components are of type
+   TYPE, or NULL_TREE if none is found.  */
 
 static tree
-type_for_widest_vector_mode (enum machine_mode inner_mode, optab op, int satp)
+type_for_widest_vector_mode (tree type, optab op)
 {
+  enum machine_mode inner_mode = TYPE_MODE (type);
   enum machine_mode best_mode = VOIDmode, mode;
   int best_nunits = 0;
 
@@ -503,13 +503,7 @@ type_for_widest_vector_mode (enum machine_mode inner_mode, optab op, int satp)
   if (best_mode == VOIDmode)
     return NULL_TREE;
   else
-    {
-      /* For fixed-point modes, we need to pass satp as the 2nd parameter.  */
-      if (ALL_FIXED_POINT_MODE_P (best_mode))
-	return lang_hooks.types.type_for_mode (best_mode, satp);
-
-      return lang_hooks.types.type_for_mode (best_mode, 1);
-    }
+    return build_vector_type_for_mode (type, best_mode);
 }
 
 
@@ -856,8 +850,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (!VECTOR_MODE_P (TYPE_MODE (type)) && op)
     {
       tree vector_compute_type
-        = type_for_widest_vector_mode (TYPE_MODE (TREE_TYPE (type)), op,
-				       TYPE_SATURATING (TREE_TYPE (type)));
+        = type_for_widest_vector_mode (TREE_TYPE (type), op);
       if (vector_compute_type != NULL_TREE
 	  && (TYPE_VECTOR_SUBPARTS (vector_compute_type)
 	      < TYPE_VECTOR_SUBPARTS (compute_type))

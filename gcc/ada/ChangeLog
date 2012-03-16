@@ -1,3 +1,248 @@
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads: Add entry for translating -gnateinn to
+	/MAX_INSTANTIATIONS for VMS.
+	* hostparm.ads (Max_Instantiations): Moved to Opt.
+	* opt.ads (Maximum_Instantiations): Moved from Hostparm, and renamed.
+	* sem_ch12.adb (Maximum_Instantiations): New name of
+	Max_Instantiations (Analyze_Package_Instantiation): Change error
+	msg for too many instantiations (mention -gnateinn switch).
+	* switch-c.adb (Scan_Front_End_Switches): Implement -gnateinn switch.
+	* switch.ads: Minor comment update.
+	* usage.adb (Usage): Output line for -maxeinn switch.
+	* vms_data.ads: Add entry for MAX_INSTANTIATIONS (-gnateinn).
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* alfa.ads Update the decription of ALI sections.
+	(Alfa_File_Record): Add a component Unit_File_Name to store the
+	unit file name for subunits.
+	* get_alfa.adb, put_alfa.adb Adapt to the possible presence of
+	a unit file name.
+	* lib-xref-alfa.adb (Add_Alfa_File): For subunits, retrieve the
+	file name of the unit.
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Check_Subprogram_Contract): Do
+	not issue warning on missing 'Result in postcondition if all
+	postconditions and contract-cases already get a warning for only
+	referring to pre-state.
+
+2012-03-15  Bob Duff  <duff@adacore.com>
+
+	* debug.adb: Add new debug switch -gnatd.U, which disables the
+	support added below, in case someone trips over a cycle, and needs
+	to disable this.
+	* sem_attr.adb (Analyze_Access_Attribute):
+	Treat Subp'Access as a call for elaboration purposes.
+	* sem_elab.ads, sem_elab.adb (Check_Elab_Call): Add support
+	for Subp'Access.
+
+2012-03-15  Vincent Pucci  <pucci@adacore.com>
+
+	* sem.ads, sem.adb (Preanalyze): New routine.
+	* sem_ch4.adb (Analyze_Quantified_Expression): Call to the
+	Preanalyze routine in Sem added.  Renaming of Needs_Expansion
+	into Need_Preanalysis.
+	* sem_ch6.adb (Preanalyze): Removed.
+
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb (Analyze_Quantified_Expression): Add comment.
+	* sem_prag.adb: Minor comment additions.
+	* sem_attr.adb (Check_First_Last_Valid): Make sure prefix type
+	is frozen.
+
+2012-03-15  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch4.adb (Analyze_Quantified_Expression):
+	Preanalyze the condition when the quantified expression will be
+	further expanded.
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb, sem_util.adb, sem_util.ads, sem_attr.adb, sem_ch6.adb,
+	sem_warn.adb: Minor refactoring, renaming Case_Pragma in CTC_Pragma,
+	to refer to both Test_Case pragma and Contract_Case pragma (same
+	acronym as in Spec_CTC_List).
+
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, sem_prag.ads, sem_util.ads, sem_attr.adb, sem_ch6.adb,
+	sem_warn.adb: Minor reformatting.
+
+2012-03-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Initialized_By_Ctrl_Function): Do not loop over
+	selector names as the function call always appears at the top selected
+	component.
+
+2012-03-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Access_Subprogram_Instance): keep
+	Mode_Conformance check for older versions of the language.
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* gnat_ugn.texi Document the extension of option -gnatw.t.
+	* sem_ch3.adb (Analyze_Declaration): Check for suspicious
+	contracts only after contract cases have been semantically
+	analyzed.
+	* sem_ch6.adb (Check_Subprogram_Contract): Consider also Ensures
+	components of contract cases for detecting suspicious contracts.
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* aspects.adb, aspects.ads (Aspect_Id): New GNAT aspect
+	Aspect_Contract_Case.
+	* gnat_rm.texi Document the new pragma/aspect
+	Contract_Case. Correct the documentation of the existing
+	pragma/aspect Test_Case with the new semantics.
+	* sem_attr.adb (Analyze_Attribute): Allow use of 'Result in the
+	Ensures component of a Contract_Case pragma.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Check new aspect
+	and translate it into a pragma.
+	(Check_Aspect_At_Freeze_Point): Take into account the new aspect.
+	* sem_ch3.adb, sinfo.adb, sinfo.ads Renaming of TC (for test case)
+	into CTC (for contract and test case).
+	* sem_ch6.adb (Process_PPCs): Generate Check pragmas from
+	Contract_Case pragmas, similarly to what is done already for
+	postconditions.
+	* sem_prag.adb, sem_prag.ads (Check_Contract_Or_Test_Case):
+	Renaming of Check_Test_Case.
+	(Analyze_Pragma, Sig_Flags): Take into account the new pragma.
+	* sem_util.adb, sem_util.ads Renaming to take into account the
+	new pragma, so that functions which applied only to Test_Case
+	now apply to both Test_Case and Contract_Case.
+	* par-prag.adb, sem_warn.adb, snames.ads-tmpl Take into account
+	the new pragma.
+
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.ads: Minor comment updates.
+	* sem_ch12.adb: Minor comment clarification.
+
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb: Minor reformatting.
+
+2012-03-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): When rewriting the
+	declaration of a class-wide object, retain the Ekind to prevent
+	subsequent misuse of constants.
+
+2012-03-15  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Minor correction of invariant
+	terminology.
+
+2012-03-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Initialized_By_Ctrl_Function): Add code to
+	process the case when a function call appears in object.operation
+	format.
+
+2012-03-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.ads, sem_ch6.adb (Check_Subtype_Conformant): add
+	Get_Inst formal, so that conformance within an instantiation
+	follows renamings of formals. This is similar to what is already
+	done in Check_Mode_conformant.
+	* sem_ch12.adb (Vailidate_Access_Subprogram_Instance): check that
+	formal and actual are subtype conformant. Previously only mode
+	conformance was required.
+
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch6.adb, einfo.ads, sem_eval.adb, sem_eval.ads,
+	sem_case.adb: Minor reformatting.
+
+2012-03-15  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Add handling
+	of First_Valid/Last_Valid.
+	* sem_attr.adb (Check_First_Last_Valid): New procedure
+	(Analyze_Attribute): Add handling of First_Valid and Last_Valid
+	(Eval_Attribute): ditto.
+	* snames.ads-tmpl: Add entries for First_Valid and Last_Valid.
+
+2012-03-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Predicated_Loop): Suppress warnings on
+	loop variable, for the unusual case where the range has a single
+	element and the loop variable has no visible assignment to it.
+
+2012-03-15  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Quantified_Expression): Expand the
+	original quantified expression node.
+	* sem_ch4.adb (Analyze_Quantified_Expression): Properly analyze
+	the quantified expression and preserve the original non-analyzed
+	quantified expression when an expansion is needed.
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Special treatment
+	for quantified expressions.
+	(Analyze_Iterator_Specification): Special treatment for quantified
+	expressions.
+
+2012-03-15  Ed Falis  <falis@adacore.com>
+
+	* s-vxwork-ppc.ads: Update FP_CONTEXT so name of former pad
+	field matches VxWorks headers.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (mips-sgi-irix6*): Remove.
+
+	* a-intnam-irix.ads, mlib-tgt-specific-irix.adb,
+	s-intman-irix.adb, s-mastop-irix.adb, s-osinte-irix.adb,
+	s-osinte-irix.ads, s-proinf-irix-athread.adb,
+	s-proinf-irix-athread.ads, s-taprop-irix.adb, s-tasinf-irix.ads,
+	system-irix-n32.ads, system-irix-n64.ads, system-irix-o32.ads:
+	Remove.
+
+	* adaint.c [__mips && __sgi]: Remove.
+	(__gnat_number_of_cpus) [__mips && __sgi]: Remove.
+	[IS_CROSS && !(__mips && __sgi)]: Remove.
+	* adaint.h [sgi && _LFAPI]: Remove.
+	* cstreams.c (__gnat_full_name) [sgi]: Remove.
+	* env.c (__gnat_unsetenv) [__mips && __sgi]: Remove.
+	(__gnat_clearenv) [__mips && __sgi]: Remove.
+	* errno.c (_SGI_MP_SOURCE): Remove.
+	* gsocket.h [sgi]: Remove.
+	* init.c: Remove IRIX reference.
+	[sgi]: Remove.
+	* link.c [sgi]: Remove.
+	* s-oscons-tmplt.c [__mips && __sgi] (IOV_MAX): Don't define.
+	(main) [__mips && __sgi] (MAX_tv_sec): Don't define.
+	(CLOCK_SGI_FAST, CLOCK_SGI_CYCLE): Remove.
+	* sysdep.c [sgi]: Remove.
+	(getc_immediate_common) [sgi]: Remove.
+	(__gnat_localtime_tzoff) [sgi]: Remove.
+	* terminals.c [__mips && __sgi] (IRIX): Don't define.
+	[IRIX] (USE_GETPTY): Don't define.
+	(allocate_pty_desc) [USE_GETPTY]: Remove.
+
+	* g-traceb.ads: Remove IRIX reference.
+	* g-trasym.ads: Likewise.
+	* memtrack.adb: Likewise.
+	* s-interr-sigaction.adb: Likewise.
+
+	* gnat_rm.texi (Implementation Advice): Remove SGI info.
+	(Implementation Defined Characteristics): Likewise.
+	* gnat_ugn.texi (Summary of Run-Time Configurations, mips-irix):
+	Remove.
+	(Irix-Specific Considerations): Remove.
+
+2012-03-13  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/gigi.h (flag_vms_malloc64): Refine condition.
+
+2012-03-13  Tristan Gingold  <gingold@adacore.com>
+
+	* sysdep.c: Adjust condition after removal of __osf__.
+
 2012-03-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (shift_unc_components_for_thin_pointers): Kill.

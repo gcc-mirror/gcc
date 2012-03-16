@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2" } */
-/* { dg-options "-O2 -msse2 -mno-vect8-ret-in-mem" { target i?86-*-solaris2.[89] *-*-vxworks* } } */
+/* { dg-options "-O2 -msse2 -mno-vect8-ret-in-mem" { target i?86-*-solaris2.9 *-*-vxworks* } } */
 /* { dg-additional-options "-mabi=sysv" { target x86_64-*-mingw* } } */
 
 #include <mmintrin.h>

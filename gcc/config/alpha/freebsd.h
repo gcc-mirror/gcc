@@ -1,5 +1,5 @@
 /* Definitions for DEC Alpha/AXP running FreeBSD using the ELF format
-   Copyright (C) 2000, 2002, 2004, 2005, 2007, 2010, 2011
+   Copyright (C) 2000, 2002, 2004, 2005, 2007, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
@@ -56,20 +56,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_ELF	1
 
-#undef  TARGET_DEFAULT
-#define TARGET_DEFAULT	(MASK_FPREGS | MASK_GAS)
-
 #undef HAS_INIT_SECTION
 
 /* Show that we need a GP when profiling.  */
 #undef  TARGET_PROFILING_NEEDS_GP
 #define TARGET_PROFILING_NEEDS_GP 1
-
-/* This is the char to use for continuation (in case we need to turn
-   continuation back on).  */
-
-#undef  DBX_CONTIN_CHAR
-#define DBX_CONTIN_CHAR	'?'
 
 /* Don't default to pcc-struct-return, we want to retain compatibility with
    older FreeBSD releases AND pcc-struct-return may not be reentrant.  */

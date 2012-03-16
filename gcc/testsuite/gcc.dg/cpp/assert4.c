@@ -1,4 +1,6 @@
-/* Copyright (C) 2003, 2006, 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2003, 2006, 2008, 2009, 2011, 2012
+   Free Software Foundation, Inc.
+
    Test builtin preprocessor assertions.
    By Kaveh Ghazi <ghazi@caip.rutgers.edu>.  */
 
@@ -273,11 +275,10 @@
 #endif
 
 #if defined __mips__
-# if !#cpu(mips) || (defined __sgi__ && !#machine(sgi)) \
-  || (!defined __sgi__ && !#machine(mips))
+# if !#cpu(mips)
 #  error
 # endif
-#elif #cpu(mips) || #machine(sgi) || #machine(mips)
+#elif #cpu(mips) || #machine(mips)
 # error
 #endif
 

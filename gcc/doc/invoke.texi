@@ -192,7 +192,8 @@ in the following sections.
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -fno-pretty-templates @gol
--frepo  -fno-rtti  -fstats  -ftemplate-depth=@var{n} @gol
+-frepo  -fno-rtti  -fstats  -ftemplate-backtrace-limit=@var{n} @gol
+-ftemplate-depth=@var{n} @gol
 -fno-threadsafe-statics -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
@@ -558,7 +559,7 @@ Objective-C and Objective-C++ Dialects}.
 -mkernel -mone-byte-bool}
 
 @emph{DEC Alpha Options}
-@gccoptlist{-mno-fp-regs  -msoft-float  -malpha-as  -mgas @gol
+@gccoptlist{-mno-fp-regs  -msoft-float @gol
 -mieee  -mieee-with-inexact  -mieee-conformant @gol
 -mfp-trap-mode=@var{mode}  -mfp-rounding-mode=@var{mode} @gol
 -mtrap-precision=@var{mode}  -mbuild-constants @gol
@@ -634,7 +635,7 @@ Objective-C and Objective-C++ Dialects}.
 -mveclibabi=@var{type} -mvect8-ret-in-mem @gol
 -mpc32 -mpc64 -mpc80 -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
--mcmodel=@var{code-model} -mabi=@var{name} @gol
+-mcmodel=@var{code-model} -mabi=@var{name} -maddress-mode=@var{mode} @gol
 -m32 -m64 -mx32 -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store}
@@ -2123,6 +2124,11 @@ defined in the C++ standard; basically, a value that can be
 represented in the minimum number of bits needed to represent all the
 enumerators).  This assumption may not be valid if the program uses a
 cast to convert an arbitrary integer value to the enumerated type.
+
+@item -ftemplate-backtrace-limit=@var{n}
+@opindex ftemplate-backtrace-limit
+Set the maximum number of template instantiation notes for a single
+warning or error to @var{n}.  The default value is 10.
 
 @item -ftemplate-depth=@var{n}
 @opindex ftemplate-depth
@@ -4778,9 +4784,8 @@ assembler (GAS) to fail with an error.
 
 @item -gdwarf-@var{version}
 @opindex gdwarf-@var{version}
-Produce debugging information in DWARF format (if that is
-supported).  This is the format used by DBX on IRIX 6.  The value
-of @var{version} may be either 2, 3 or 4; the default version is 2.
+Produce debugging information in DWARF format (if that is supported).
+The value of @var{version} may be either 2, 3 or 4; the default version is 2.
 
 Note that with DWARF Version 2 some ports require, and will always
 use, some non-conflicting DWARF 3 extensions in the unwind tables.
@@ -12213,8 +12218,7 @@ This option marks the generated code as IEEE conformant.  You must not
 use this option unless you also specify @option{-mtrap-precision=i} and either
 @option{-mfp-trap-mode=su} or @option{-mfp-trap-mode=sui}.  Its only effect
 is to emit the line @samp{.eflag 48} in the function prologue of the
-generated assembly file.  Under DEC Unix, this has the effect that
-IEEE-conformant math library routines will be linked in.
+generated assembly file.
 
 @item -mbuild-constants
 @opindex mbuild-constants
@@ -12229,13 +12233,6 @@ using code, even if it takes more instructions (the maximum is six).
 You would typically use this option to build a shared library dynamic
 loader.  Itself a shared library, it must relocate itself in memory
 before it can find the variables and constants in its own data segment.
-
-@item -malpha-as
-@itemx -mgas
-@opindex malpha-as
-@opindex mgas
-Select whether to generate code to be assembled by the vendor-supplied
-assembler (@option{-malpha-as}) or by the GNU assembler @option{-mgas}.
 
 @item -mbwx
 @itemx -mno-bwx
@@ -13938,6 +13935,18 @@ be statically or dynamically linked.
 @opindex mcmodel=large
 Generate code for the large model.  This model makes no assumptions
 about addresses and sizes of sections.
+
+@item -maddress-mode=long
+@opindex maddress-mode=long
+Generate code for long address mode.  This is only supported for 64-bit
+and x32 environments.  It is the default address mode for 64-bit
+environments.
+
+@item -maddress-mode=short
+@opindex maddress-mode=short
+Generate code for short address mode.  This is only supported for 32-bit
+and x32 environments.  It is the default address mode for 32-bit and
+x32 environments.
 @end table
 
 @node i386 and x86-64 Windows Options
@@ -15260,7 +15269,7 @@ The special value @samp{from-abi} selects the
 most compatible architecture for the selected ABI (that is,
 @samp{mips1} for 32-bit ABIs and @samp{mips3} for 64-bit ABIs)@.
 
-Native Linux/GNU and IRIX toolchains also support the value @samp{native},
+The native Linux/GNU toolchain also supports the value @samp{native},
 which selects the best architecture option for the host processor.
 @option{-march=native} has no effect if GCC does not recognize
 the processor.

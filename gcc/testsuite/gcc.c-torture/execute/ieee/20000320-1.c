@@ -1,6 +1,3 @@
-#if defined(__mips__) && defined(__sgi__)
-#include <sys/fpu.h>
-#endif /* defined(__mips__) && defined(__sgi__) */
 #if __INT_MAX__ != 2147483647 || (__LONG_LONG_MAX__ != 9223372036854775807ll && __LONG_MAX__ != 9223372036854775807ll)
 int main(void) { exit (0); }
 #else
@@ -34,15 +31,6 @@ void c(ull d, ul f)
 
 int main()
 {
-#if defined(__mips__) && defined(__sgi__)
-  /* Many MIPS chips round denormalized floating point numbers to zero
-     rather than follow the IEEE standard.  Change the rounding mode
-     to correspond to the IEEE rounding mode that rounds numbers to
-     the nearest representable mode, the most common IEEE rounding
-     mode.  */
-  set_fpc_csr(0);
-#endif /* defined(__mips__) && defined(__sgi__) */
-
   if (sizeof (float) != sizeof (ul)
       || sizeof (double) != sizeof (ull))
     exit (0);

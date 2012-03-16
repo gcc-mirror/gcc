@@ -12,3 +12,4 @@ module m
   type t
   end type t
 end module m
+! { dg-final { keep-modules "m" } }

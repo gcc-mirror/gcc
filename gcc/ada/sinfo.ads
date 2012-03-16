@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6969,7 +6969,7 @@ package Sinfo is
       --  N_Contract
       --  Sloc points to the subprogram's name
       --  Spec_PPC_List (Node1) (set to Empty if none)
-      --  Spec_TC_List (Node2) (set to Empty if none)
+      --  Spec_CTC_List (Node2) (set to Empty if none)
 
       --  Spec_PPC_List points to a list of Precondition and Postcondition
       --  pragma nodes for preconditions and postconditions declared in the
@@ -6978,11 +6978,12 @@ package Sinfo is
       --  Note that this includes precondition/postcondition pragmas generated
       --  to correspond to Pre/Post aspects.
 
-      --  Spec_TC_List points to a list of Test_Case pragma nodes for
-      --  test-cases declared in the spec of the entry/subprogram. The last
-      --  pragma encountered is at the head of this list, so it is in reverse
-      --  order of textual appearance. Note that this includes test-case
-      --  pragmas generated to correspond to Test_Case aspects.
+      --  Spec_CTC_List points to a list of Contract_Case and Test_Case pragma
+      --  nodes for contract-cases and test-cases declared in the spec of the
+      --  entry/subprogram. The last pragma encountered is at the head of this
+      --  list, so it is in reverse order of textual appearance. Note that
+      --  this includes contract-case and test-case pragmas generated from
+      --  Contract_Case and Test_Case aspects.
 
       -------------------
       -- Expanded_Name --
@@ -8963,7 +8964,7 @@ package Sinfo is
    function Spec_PPC_List
      (N : Node_Id) return Node_Id;    -- Node1
 
-   function Spec_TC_List
+   function Spec_CTC_List
      (N : Node_Id) return Node_Id;    -- Node2
 
    function Specification
@@ -9944,7 +9945,7 @@ package Sinfo is
    procedure Set_Spec_PPC_List
      (N : Node_Id; Val : Node_Id);            -- Node1
 
-   procedure Set_Spec_TC_List
+   procedure Set_Spec_CTC_List
      (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Specification
@@ -11590,7 +11591,7 @@ package Sinfo is
 
      N_Contract =>
        (1 => False,   --  Spec_PPC_List (Node1)
-        2 => False,   --  Spec_TC_List (Node2)
+        2 => False,   --  Spec_CTC_List (Node2)
         3 => False,   --  unused
         4 => False,   --  unused
         5 => False),  --  unused
@@ -12084,7 +12085,7 @@ package Sinfo is
    pragma Inline (Shift_Count_OK);
    pragma Inline (Source_Type);
    pragma Inline (Spec_PPC_List);
-   pragma Inline (Spec_TC_List);
+   pragma Inline (Spec_CTC_List);
    pragma Inline (Specification);
    pragma Inline (Split_PPC);
    pragma Inline (Statements);
@@ -12407,7 +12408,7 @@ package Sinfo is
    pragma Inline (Set_Shift_Count_OK);
    pragma Inline (Set_Source_Type);
    pragma Inline (Set_Spec_PPC_List);
-   pragma Inline (Set_Spec_TC_List);
+   pragma Inline (Set_Spec_CTC_List);
    pragma Inline (Set_Specification);
    pragma Inline (Set_Split_PPC);
    pragma Inline (Set_Statements);

@@ -1,6 +1,6 @@
 // 2000-12-19 bkoz
 
-// Copyright (C) 2000, 2002, 2003, 2004, 2009 Free Software Foundation
+// Copyright (C) 2000, 2002, 2003, 2004, 2009, 2012 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,12 +18,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // 27.4.2.5 ios_base storage functions
-
-// XXX This test will not work for some versions of irix6 because of
-// XXX bug(s) in libc malloc for very large allocations.  However
-// XXX -lmalloc seems to work.
-// See http://gcc.gnu.org/ml/gcc/2002-05/msg01012.html
-// { dg-options "-lmalloc" { target mips*-*-irix6* } }
 
 #include <sstream>
 #include <iostream>

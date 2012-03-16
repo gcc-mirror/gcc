@@ -461,23 +461,7 @@ changequote([,])dnl
 #  error The C library not known to support .init_array/.fini_array
 # endif
 #endif
-])],[
-    case "${target}" in
-      *-*-solaris2.8*)
-	# .init_array/.fini_array support was introduced in Solaris 8
-	# patches 109147-08 (sparc) and 109148-08 (x86).  Since ld.so.1 and
-	# ld are guaranteed to be updated in lockstep, we can check ld -V
-	# instead.  Unfortunately, proper ld version numbers were only
-	# introduced in rev. -14, so we check for that.
-  	if test "$gcc_cv_sun_ld_vers_minor" -lt 272; then
-	  gcc_cv_initfini_array=no
-	fi
-      ;;
-      *-*-solaris2.9* | *-*-solaris2.1[[0-9]]*)
-        # .init_array/.fini_array support is present since Solaris 9 FCS.
-        ;;
-    esac
-], [gcc_cv_initfini_array=no]);;
+])],, [gcc_cv_initfini_array=no]);;
     esac
   else
     AC_MSG_CHECKING(cross compile... guessing)

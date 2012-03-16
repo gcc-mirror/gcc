@@ -1,6 +1,6 @@
 /* Output variables, constants and external declarations, for GNU compiler.
    Copyright (C) 1996, 1997, 1998, 2000, 2001, 2002, 2004, 2005, 2007, 2008,
-   2009, 2010, 2011
+   2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -42,9 +42,6 @@ along with GCC; see the file COPYING3.  If not see
       else					\
         builtin_define ("__IEEE_FLOAT");	\
     } while (0)
-
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_FPREGS | MASK_GAS)
 
 #define VMS_DEBUG_MAIN_POINTER "TRANSFER$BREAK$GO"
 
@@ -203,10 +200,6 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 /* Control how constructors and destructors are emitted.  */
 #define TARGET_ASM_CONSTRUCTOR  vms_asm_out_constructor
 #define TARGET_ASM_DESTRUCTOR   vms_asm_out_destructor
-
-#undef SDB_DEBUGGING_INFO
-#undef MIPS_DEBUGGING_INFO
-#undef DBX_DEBUGGING_INFO
 
 #define DWARF2_DEBUGGING_INFO 1
 #define VMS_DEBUGGING_INFO 1

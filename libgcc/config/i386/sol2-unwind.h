@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for AMD x86-64 and x86.
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -144,55 +144,23 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
   mcontext_t *mctx;
   long new_cfa;
 
-  if (/* Solaris 8 - single-threaded
+  if (/* Solaris 9 - single-threaded
 	----------------------------
-	<sigacthandler+17>:  mov    0x10(%ebp),%esi
-	<sigacthandler+20>:  push   %esi
-	<sigacthandler+21>:  pushl  0xc(%ebp)
-	<sigacthandler+24>:  mov    0x8(%ebp),%ecx
-	<sigacthandler+27>:  push   %ecx
-	<sigacthandler+28>:  mov    offset(%ebx),%eax
-	<sigacthandler+34>:  call   *(%eax,%ecx,4)
-	<sigacthandler+37>:  add    $0xc,%esp        <--- PC
-	<sigacthandler+40>:  push   %esi ... */
-      (*(unsigned long *)(pc - 20) == 0x5610758b
-       && *(unsigned long *)(pc - 16) == 0x8b0c75ff
-       && *(unsigned long *)(pc - 12) == 0x8b51084d
-       && *(unsigned char *)(pc - 8)  == 0x83
-       && *(unsigned long *)(pc - 4)  == 0x8814ff00
-       && *(unsigned long *)(pc - 0)  == 0x560cc483)
-
-      || /* Solaris 8 - multi-threaded
-	   ---------------------------
-	   <__sighndlr+0>:      push   %ebp
-	   <__sighndlr+1>:      mov    %esp,%ebp
-	   <__sighndlr+3>:      pushl  0x10(%ebp)
-	   <__sighndlr+6>:      pushl  0xc(%ebp)
-	   <__sighndlr+9>:      pushl  0x8(%ebp)
-	   <__sighndlr+12>:     call   *0x14(%ebp)
-	   <__sighndlr+15>:     leave               <--- PC  */
-	 (*(unsigned long *)(pc - 15) == 0xffec8b55
-	  && *(unsigned long *)(pc - 11) == 0x75ff1075
-	  && *(unsigned long *)(pc - 7)  == 0x0875ff0c
-	  && *(unsigned long *)(pc - 3)  == 0xc91455ff)
-
-      || /* Solaris 9 - single-threaded
-	   ----------------------------
-           <sigacthandler+16>:    mov    0x244(%ebx),%ecx
-	   <sigacthandler+22>:    mov    0x8(%ebp),%eax
-	   <sigacthandler+25>:    mov    (%ecx,%eax,4),%ecx
-	   <sigacthandler+28>:    pushl  0x10(%ebp)
-	   <sigacthandler+31>:    pushl  0xc(%ebp)
-	   <sigacthandler+34>:    push   %eax
-	   <sigacthandler+35>:    call   *%ecx
-	   <sigacthandler+37>:    add    $0xc,%esp	<--- PC
-	   <sigacthandler+40>:    pushl  0x10(%ebp) */
-         (*(unsigned long *)(pc - 21) == 0x2448b8b
-	  && *(unsigned long *)(pc - 17) == 0x458b0000
-	  && *(unsigned long *)(pc - 13) == 0x810c8b08
-	  && *(unsigned long *)(pc - 9)  == 0xff1075ff
-	  && *(unsigned long *)(pc - 5)  == 0xff500c75
-	  && *(unsigned long *)(pc - 1)  == 0xcc483d1)
+         <sigacthandler+16>:    mov    0x244(%ebx),%ecx
+	 <sigacthandler+22>:    mov    0x8(%ebp),%eax
+	 <sigacthandler+25>:    mov    (%ecx,%eax,4),%ecx
+	 <sigacthandler+28>:    pushl  0x10(%ebp)
+	 <sigacthandler+31>:    pushl  0xc(%ebp)
+	 <sigacthandler+34>:    push   %eax
+	 <sigacthandler+35>:    call   *%ecx
+	 <sigacthandler+37>:    add    $0xc,%esp	<--- PC
+	 <sigacthandler+40>:    pushl  0x10(%ebp) */
+      (*(unsigned long *)(pc - 21) == 0x2448b8b
+       && *(unsigned long *)(pc - 17) == 0x458b0000
+       && *(unsigned long *)(pc - 13) == 0x810c8b08
+       && *(unsigned long *)(pc - 9)  == 0xff1075ff
+       && *(unsigned long *)(pc - 5)  == 0xff500c75
+       && *(unsigned long *)(pc - 1)  == 0xcc483d1)
 
       || /* Solaris 9 - multi-threaded, Solaris 10
 	   ---------------------------------------

@@ -22,8 +22,6 @@ details.  */
 
 #if defined __sun__ && defined __svr4__
 #define SA_FLAGS SA_NODEFER | SA_SIGINFO
-#elif defined __sgi__
-#define SA_FLAGS SA_NODEFER
 #else
 #error Must define SA_FLAGS.
 #endif

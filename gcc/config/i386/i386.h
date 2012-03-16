@@ -1748,7 +1748,7 @@ do {							\
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode (TARGET_64BIT ? DImode : SImode)
+#define Pmode (ix86_pmode == PMODE_DI ? DImode : SImode)
 
 /* A C expression whose value is zero if pointers that need to be extended
    from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and

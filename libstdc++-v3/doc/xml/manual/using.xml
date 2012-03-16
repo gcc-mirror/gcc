@@ -1182,12 +1182,6 @@ A quick read of the relevant part of the GCC
 	    </para>
 	  </listitem>
 	  <listitem>
-	    <para>
-	      IRIX ld:
-              <literal>-Wl,-rpath,</literal><filename class="directory">destdir/lib</filename>
-	    </para>
-	  </listitem>
-	  <listitem>
 	  <para>
 	    Solaris ld:
             <literal>-Wl,-R</literal><filename class="directory">destdir/lib</filename>

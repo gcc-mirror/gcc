@@ -126,9 +126,9 @@ case ${host} in
 	;;
     esac
     ;;
-  mips*-*-linux* | mips-sgi-irix*)
+  mips*-*-linux*)
     case ${target} in
-      mips*-*-linux* | mips-sgi-irix*)
+      mips*-*-linux*)
 	host_extra_gcc_objs="driver-native.o"
 	host_xmake_file="${host_xmake_file} mips/x-native"
       ;;

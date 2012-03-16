@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha w/ELF.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson (rth@tamu.edu).
 
 This file is part of GCC.
@@ -19,14 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef OBJECT_FORMAT_COFF
-#undef EXTENDED_COFF
 #define OBJECT_FORMAT_ELF
-
-/* ??? Move all SDB stuff from alpha.h to osf.h.  */
-#undef SDB_DEBUGGING_INFO
-#undef MIPS_DEBUGGING_INFO
-#undef DBX_DEBUGGING_INFO
 
 #define DWARF2_DEBUGGING_INFO 1
 
@@ -371,10 +364,6 @@ do {									\
 
 #undef  STRING_ASM_OP
 #define STRING_ASM_OP	"\t.string\t"
-
-/* GAS is the only Alpha/ELF assembler.  */
-#undef  TARGET_GAS
-#define TARGET_GAS	(1)
 
 /* Provide a STARTFILE_SPEC appropriate for ELF.  Here we add the
    (even more) magical crtbegin.o file which provides part of the

@@ -1,5 +1,5 @@
 /* MIPS extra machine modes. 
-   Copyright (C) 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2007, 2008, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 RESET_FLOAT_FORMAT (SF, mips_single_format);
 RESET_FLOAT_FORMAT (DF, mips_double_format);
 
-/* Irix6 will override this via MIPS_TFMODE_FORMAT.  */
 FLOAT_MODE (TF, 16, mips_quad_format);
 
 /* Vector modes.  */

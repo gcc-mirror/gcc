@@ -36,44 +36,25 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 static int
 sparc64_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 {
-  if (/* Solaris 8 - single-threaded
+  if (/* Solaris 9 - single-threaded
 	----------------------------
-	<sigacthandler+24>:  add  %g5, %o7, %o2
-	<sigacthandler+28>:  ldx  [ %o2 + 0xfa0 ], %g5
-	<sigacthandler+32>:  sra  %i0, 0, %o0
-	<sigacthandler+36>:  sllx  %o0, 3, %g4
+	The pattern changes slightly in different versions of the
+	operating system, so we skip the comparison against pc[-6] for
+	Solaris 9.
+
+	<sigacthandler+24>:  sra  %i0, 0, %l1
+
+	Solaris 9 5/02:
+	<sigacthandler+28>:  ldx  [ %o2 + 0xf68 ], %g5
+	Solaris 9 9/05:
+	<sigacthandler+28>:  ldx  [ %o2 + 0xe50 ], %g5
+
+	<sigacthandler+32>:  sllx  %l1, 3, %g4
+	<sigacthandler+36>:  mov  %l1, %o0
 	<sigacthandler+40>:  ldx  [ %g4 + %g5 ], %l0
 	<sigacthandler+44>:  call  %l0
 	<sigacthandler+48>:  mov  %i2, %o2
-	<sigacthandler+52>:  cmp  %i3, 8	<--- PC  */
-      (   pc[-7] == 0x9401400f
-       && pc[-6] == 0xca5aafa0
-       && pc[-5] == 0x913e2000
-       && pc[-4] == 0x892a3003
-       && pc[-3] == 0xe0590005
-       && pc[-2] == 0x9fc40000
-       && pc[-1] == 0x9410001a
-       && pc[ 0] == 0x80a6e008)
-
-      || /* Solaris 9 - single-threaded
-	   ----------------------------
-	   The pattern changes slightly in different versions of the
-	   operating system, so we skip the comparison against pc[-6] for
-	   Solaris 9.
-
-	   <sigacthandler+24>:  sra  %i0, 0, %l1
-
-	   Solaris 9 5/02:
-	   <sigacthandler+28>:  ldx  [ %o2 + 0xf68 ], %g5
-	   Solaris 9 9/05:
-	   <sigacthandler+28>:  ldx  [ %o2 + 0xe50 ], %g5
-
-	   <sigacthandler+32>:  sllx  %l1, 3, %g4
-	   <sigacthandler+36>:  mov  %l1, %o0
-	   <sigacthandler+40>:  ldx  [ %g4 + %g5 ], %l0
-	   <sigacthandler+44>:  call  %l0
-	   <sigacthandler+48>:  mov  %i2, %o2
-	   <sigacthandler+52>:  cmp  %l1, 8	<--- PC  */
+	<sigacthandler+52>:  cmp  %l1, 8	<--- PC  */
       (   pc[-7] == 0xa33e2000
        /* skip pc[-6] */
        && pc[-5] == 0x892c7003
@@ -147,8 +128,7 @@ sparc64_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 	}
 
       else if (cuh_pattern == 0x9410001a || cuh_pattern == 0x94100013)
-	/* This matches the call_user_handler pattern for Solaris 9 and
-	   for Solaris 8 running inside Solaris Containers respectively
+	/* This matches the call_user_handler pattern for Solaris 9.
 	   We need to move up three frames:
 
 		<signal handler>	<-- context->cfa
@@ -158,17 +138,6 @@ sparc64_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 		<kernel>
 	*/
 	*nframes = 3;
-
-      else /* cuh_pattern == 0xe0272010 */
-	/* This is the default Solaris 8 case.
-	   We need to move up two frames:
-
-		<signal handler>	<-- context->cfa
-		__sighndlr
-		sigacthandler
-		<kernel>
-	*/
-	*nframes = 2;
 
       return 1;
     }
@@ -211,8 +180,8 @@ sparc64_frob_update_context (struct _Unwind_Context *context,
 static int
 sparc_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 {
-  if (/* Solaris 8, 9 - single-threaded
-        -------------------------------
+  if (/* Solaris 9 - single-threaded
+        ----------------------------
 	The pattern changes slightly in different versions of the operating
 	system, so we skip the comparison against pc[-6].
 
@@ -241,37 +210,6 @@ sparc_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 
 		<signal handler>	<-- context->cfa
 		sigacthandler
-		<kernel>
-      */
-      *nframes = 1;
-      return 1;
-    }
-
-  if (/* Solaris 8 - multi-threaded
-	---------------------------
-	<__libthread_segvhdlr+212>:  clr  %o2
-	<__libthread_segvhdlr+216>:  ld  [ %fp + -28 ], %l0
-	<__libthread_segvhdlr+220>:  mov  %i4, %o0
-	<__libthread_segvhdlr+224>:  mov  %i1, %o1
-	<__libthread_segvhdlr+228>:  call  %l0
-	<__libthread_segvhdlr+232>:  mov  %i2, %o2
-	<__libthread_segvhdlr+236>:  ret		<--- PC
-	<__libthread_segvhdlr+240>:  restore
-	<__libthread_segvhdlr+244>:  cmp  %o1, 0  */
-         pc[-6] == 0x94102000
-      && pc[-5] == 0xe007bfe4
-      && pc[-4] == 0x9010001c
-      && pc[-3] == 0x92100019
-      && pc[-2] == 0x9fc40000
-      && pc[-1] == 0x9410001a
-      && pc[ 0] == 0x81c7e008
-      && pc[ 1] == 0x81e80000
-      && pc[ 2] == 0x80a26000)
-    {
-      /* We need to move up one frame:
-
-		<signal handler>	<-- context->cfa
-		__libthread_segvhdlr
 		<kernel>
       */
       *nframes = 1;
@@ -332,8 +270,7 @@ sparc_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 	}
 
       else if (cuh_pattern == 0x9410001a || cuh_pattern == 0x9410001b)
-	/* This matches the call_user_handler pattern for Solaris 9 and
-	   for Solaris 8 running inside Solaris Containers respectively.
+	/* This matches the call_user_handler pattern for Solaris 9.
 	   We need to move up three frames:
 
 		<signal handler>	<-- context->cfa
@@ -343,17 +280,6 @@ sparc_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 		<kernel>
 	*/
 	*nframes = 3;
-
-      else /* cuh_pattern == 0x90100018 */
-	/* This is the default Solaris 8 case.
-	   We need to move up two frames:
-
-		<signal handler>	<-- context->cfa
-		__sighndlr
-		sigacthandler
-		<kernel>
-	*/
-	*nframes = 2;
 
       return 1;
     }

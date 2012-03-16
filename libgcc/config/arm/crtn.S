@@ -1,4 +1,4 @@
-#   Copyright (C) 2001, 2004, 2008, 2009, 2010, 2011
+#   Copyright (C) 2001, 2004, 2008, 2009, 2010, 2011, 2012
 #   Free Software Foundation, Inc.
 #   Written By Nick Clifton
 # 
@@ -47,7 +47,7 @@
 	#
 	# Note - we do not try any fancy optimizations of the return
 	# sequences here, it is just not worth it.  Instead keep things
-	# simple.  Restore all the save resgisters, including the link
+	# simple.  Restore all the save registers, including the link
 	# register and then perform the correct function return instruction.
 	# We also save/restore r3 to ensure stack alignment.
 .macro FUNC_END

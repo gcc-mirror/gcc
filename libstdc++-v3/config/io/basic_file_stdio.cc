@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2009, 2010
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2009, 2010, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -339,11 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifndef _GLIBCXX_NO_IOCTL
 #ifdef FIONREAD
     // Pipes and sockets.    
-#ifdef _GLIBCXX_FIONREAD_TAKES_OFF_T
-    off_t __num = 0;
-#else
     int __num = 0;
-#endif
     int __r = ioctl(this->fd(), FIONREAD, &__num);
     if (!__r && __num >= 0)
       return __num; 

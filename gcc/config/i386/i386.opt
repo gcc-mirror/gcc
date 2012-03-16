@@ -159,6 +159,20 @@ Enum(cmodel) String(32) Value(CM_32)
 EnumValue
 Enum(cmodel) String(kernel) Value(CM_KERNEL)
 
+maddress-mode=
+Target RejectNegative Joined Enum(pmode) Var(ix86_pmode) Init(PMODE_SI)
+Use given address mode
+
+Enum
+Name(pmode) Type(enum pmode)
+Known address mode (for use with the -maddress-mode= option):
+
+EnumValue
+Enum(pmode) String(short) Value(PMODE_SI)
+
+EnumValue
+Enum(pmode) String(long) Value(PMODE_DI)
+
 mcpu=
 Target RejectNegative Joined Undocumented Alias(mtune=) Warn(%<-mcpu=%> is deprecated; use %<-mtune=%> or %<-march=%> instead)
 

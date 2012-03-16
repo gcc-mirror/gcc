@@ -10,3 +10,4 @@ module iso_red
   end type varying_string
 end module iso_red
 ! DO NOT CLEAN UP THE MODULE FILE - whole_file_29.f90 does it.
+! { dg-final { keep-modules "" } }

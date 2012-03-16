@@ -12,5 +12,4 @@ contains
     use binding_label_tests_13 ! { dg-error "collides" }
   end subroutine c_sub
 end module binding_label_tests_13_main
-! { dg-final { cleanup-modules "binding_label_tests_13 binding_label_tests_13_main" } }
-
+! { dg-final { cleanup-modules "binding_label_tests_13" } }

@@ -202,7 +202,7 @@
     defined (_WIN32) || defined (__APPLE__)
 # define HAVE_THREAD_SAFE_GETxxxBYyyy 1
 
-#elif defined (sgi) || defined (linux) || defined (__GLIBC__) || \
+#elif defined (linux) || defined (__GLIBC__) || \
      (defined (sun) && defined (__SVR4) && !defined (__vxworks)) || \
       defined(__rtems__)
 # define HAVE_GETxxxBYyyy_R 1

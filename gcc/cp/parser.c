@@ -1,6 +1,6 @@
 /* C++ Parser.
    Copyright (C) 2000, 2001, 2002, 2003, 2004,
-   2005, 2007, 2008, 2009, 2010, 2011  Free Software Foundation, Inc.
+   2005, 2007, 2008, 2009, 2010, 2011, 2012  Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -3581,7 +3581,13 @@ lookup_literal_operator (tree name, VEC(tree,gc) *args)
 				       TREE_TYPE (tparm))))
 		found = false;
 	    }
-	  if (found)
+	  if (found
+	      && ix == VEC_length (tree, args)
+	      /* May be this should be sufficient_parms_p instead,
+		 depending on how exactly should user-defined literals
+		 work in presence of default arguments on the literal
+		 operator parameters.  */
+	      && argtypes == void_list_node)
 	    return fn;
 	}
     }

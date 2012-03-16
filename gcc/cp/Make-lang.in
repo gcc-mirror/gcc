@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU C++.
 #   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-#   2005, 2007, 2008, 2009, 2010, 2011
+#   2005, 2007, 2008, 2009, 2010, 2011, 2012
 #   Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -196,8 +196,8 @@ c++.install-common: installdirs
 	  fi ; \
 	fi
 
-# We can't use links because not everyone supports them, and we can't use
-# .so because Irix 6.5 doesn't support them.  So just copy the manpage.
+# We can't use links because not everyone supports them.  So just copy the
+# manpage.
 doc/g++.1: doc/gcc.1
 	cp $< doc/g++.1
 

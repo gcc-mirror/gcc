@@ -466,15 +466,6 @@ proc check_profiling_available { test_what } {
 	return 0
     }
 
-    # Support for -p on irix relies on libprof1.a which doesn't appear to
-    # exist on any irix6 system currently posting testsuite results.
-    # Support for -pg on irix relies on gcrt1.o which doesn't exist yet.
-    # See: http://gcc.gnu.org/ml/gcc/2002-10/msg00169.html
-    if { [istarget mips*-*-irix*]
-         && ($test_what == "-p" || $test_what == "-pg") } {
-	return 0
-    }
-
     # We don't yet support profiling for MIPS16.
     if { [istarget mips*-*-*]
 	 && ![check_effective_target_nomips16]
@@ -578,11 +569,11 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
 # Add to FLAGS all the target-specific flags needed to use thread-local storage.
 
 proc add_options_for_tls { flags } {
-    # On Solaris 8 and 9, __tls_get_addr/___tls_get_addr only lives in
+    # On Solaris 9, __tls_get_addr/___tls_get_addr only lives in
     # libthread, so always pass -pthread for native TLS.
     # Need to duplicate native TLS check from
     # check_effective_target_tls_native to avoid recursion.
-    if { [istarget *-*-solaris2.\[89\]*] &&
+    if { [istarget *-*-solaris2.9*] &&
 	 [check_no_messages_and_pattern tls_native "!emutls" assembly {
 	     __thread int i;
 	     int f (void) { return i; }
@@ -982,12 +973,7 @@ proc check_iconv_available { test_what } {
 # Return 1 if an ASCII locale is supported on this host, 0 otherwise.
 
 proc check_ascii_locale_available { } {
-    if { ([ishost mips-sgi-irix*]) } {
-	# IRIX doesn't support an ASCII locale.
-	return 0
-    } else {
-	return 1
-    }
+    return 1
 }
 
 # Return true if named sections are supported on this target.
@@ -4120,9 +4106,6 @@ proc check_effective_target_fd_truncate { } {
 
 proc add_options_for_c99_runtime { flags } {
     if { [istarget *-*-solaris2*] } {
-	return "$flags -std=c99"
-    }
-    if { [istarget mips-sgi-irix6.5*] } {
 	return "$flags -std=c99"
     }
     if { [istarget powerpc-*-darwin*] } {

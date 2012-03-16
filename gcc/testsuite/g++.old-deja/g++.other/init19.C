@@ -1,4 +1,4 @@
-// { dg-do run { xfail { { ! cxa_atexit } && { ! { mips-sgi-irix* *-*-solaris2* } } } } }
+// { dg-do run { xfail { { ! cxa_atexit } && { ! *-*-solaris2* } } } }
 #include <stdlib.h>
 
 #define assert(x) do { if (! (x)) abort(); } while (0)

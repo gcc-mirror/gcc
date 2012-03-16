@@ -584,7 +584,6 @@ Platform-Specific Information for the Run-Time Libraries
 * Solaris-Specific Considerations::
 * Linux-Specific Considerations::
 * AIX-Specific Considerations::
-* Irix-Specific Considerations::
 * RTX-Specific Considerations::
 * HP-UX-Specific Considerations::
 
@@ -3091,7 +3090,7 @@ $ gnatlink ada_unit file1.o file2.o --LINK=./my_script
 @end smallexample
 
 If the @code{zero cost} exception mechanism is used, and the platform
-doesn't support automatic registration of exception tables (e.g.@: HP-UX,
+doesn't support automatic registration of exception tables (e.g.@: HP-UX
 or AIX), the simple approach described above will not work and
 a pre-linking phase using GNAT will be necessary.
 
@@ -5443,8 +5442,8 @@ when such pragmas should be used.
 @emph{List inherited aspects.}
 @cindex @option{-gnatw.l} (@command{gcc})
 This switch causes the compiler to list inherited invariants,
-preconditions, and postconditions from Invariant'Class, Pre'Class, and
-Post'Class aspects. Also list inherited subtype predicates.
+preconditions, and postconditions from Type_Invariant'Class, Invariant'Class,
+Pre'Class, and Post'Class aspects. Also list inherited subtype predicates.
 These messages are not automatically turned on by the use of @option{-gnatwa}.
 
 @item -gnatw.L
@@ -5697,9 +5696,11 @@ This switch suppresses warnings for tracking of deleted conditional code.
 @emph{Activate warnings on suspicious contracts.}
 @cindex @option{-gnatw.t} (@command{gcc})
 This switch activates warnings on suspicious postconditions (whether a
-pragma @code{Postcondition} or a @code{Post} aspect in Ada 2012). A
-function postcondition is suspicious when it does not mention the result
-of the function. A procedure postcondition is suspicious when it only
+pragma @code{Postcondition} or a @code{Post} aspect in Ada 2012)
+and suspicious contract cases (pragma @code{Contract_Case}). A
+function postcondition or contract case is suspicious when no postcondition
+or contract case for this function mentions the result of the function.
+A procedure postcondition or contract case is suspicious when it only
 refers to the pre-state of the procedure, because in that case it should
 rather be expressed as a precondition. The default is that such warnings
 are not generated. This warning can also be turned on using @option{-gnatwa}.
@@ -22150,7 +22151,6 @@ information about several specific platforms.
 * Solaris-Specific Considerations::
 * Linux-Specific Considerations::
 * AIX-Specific Considerations::
-* Irix-Specific Considerations::
 * RTX-Specific Considerations::
 * HP-UX-Specific Considerations::
 @end menu
@@ -22186,11 +22186,6 @@ information about several specific platforms.
 @item @b{ia64-sgi_linux}
 @item @code{@ @ }@i{rts-native (default)}
 @item @code{@ @ @ @ }Tasking    @tab pthread library
-@item @code{@ @ @ @ }Exceptions @tab ZCX
-@*
-@item @b{mips-irix}
-@item @code{@ @ }@i{rts-native (default)}
-@item @code{@ @ @ @ }Tasking    @tab native IRIX threads
 @item @code{@ @ @ @ }Exceptions @tab ZCX
 @*
 @item @b{pa-hpux}
@@ -22480,24 +22475,6 @@ to @code{GNAT.Sockets.Get_Host_By_Name} or
 occurs in the environment task, or use @code{pragma Storage_Size} to
 specify a sufficiently large size for the stack of the task that contains
 this call.
-
-@node Irix-Specific Considerations
-@section Irix-Specific Considerations
-@cindex Irix libraries
-
-@noindent
-The GCC support libraries coming with the Irix compiler have moved to
-their canonical place with respect to the general Irix ABI related
-conventions. Running applications built with the default shared GNAT
-run-time now requires the LD_LIBRARY_PATH environment variable to
-include this location. A possible way to achieve this is to issue the
-following command line on a bash prompt:
-
-@smallexample
-@group
-$  LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`dirname \`gcc --print-file-name=libgcc_s.so\``
-@end group
-@end smallexample
 
 @node RTX-Specific Considerations
 @section RTX-Specific Considerations

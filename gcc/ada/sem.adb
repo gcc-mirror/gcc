@@ -1288,6 +1288,23 @@ package body Sem is
       Scope_Stack.Release;
    end Lock;
 
+   ----------------
+   -- Preanalyze --
+   ----------------
+
+   procedure Preanalyze (N : Node_Id) is
+      Save_Full_Analysis : constant Boolean := Full_Analysis;
+
+   begin
+      Full_Analysis := False;
+      Expander_Mode_Save_And_Set (False);
+
+      Analyze (N);
+
+      Expander_Mode_Restore;
+      Full_Analysis := Save_Full_Analysis;
+   end Preanalyze;
+
    --------------------------------------
    -- Push_Global_Suppress_Stack_Entry --
    --------------------------------------

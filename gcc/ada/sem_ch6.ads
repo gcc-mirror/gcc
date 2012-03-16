@@ -28,7 +28,8 @@ package Sem_Ch6 is
 
    type Conformance_Type is
      (Type_Conformant, Mode_Conformant, Subtype_Conformant, Fully_Conformant);
-   pragma Ordered (Conformance_Type);
+   --  pragma Ordered (Conformance_Type);
+   --  Why is above line commented out ???
    --  Conformance type used in conformance checks between specs and bodies,
    --  and for overriding. The literals match the RM definitions of the
    --  corresponding terms. This is an ordered type, since each conformance
@@ -141,14 +142,18 @@ package Sem_Ch6 is
      (New_Id                   : Entity_Id;
       Old_Id                   : Entity_Id;
       Err_Loc                  : Node_Id := Empty;
-      Skip_Controlling_Formals : Boolean := False);
+      Skip_Controlling_Formals : Boolean := False;
+      Get_Inst                 : Boolean := False);
    --  Check that two callable entities (subprograms, entries, literals)
    --  are subtype conformant, post error message if not (RM 6.3.1(16)),
    --  the flag being placed on the Err_Loc node if it is specified, and
    --  on the appropriate component of the New_Id construct if not.
    --  Skip_Controlling_Formals is True when checking the conformance of
    --  a subprogram that implements an interface operation. In that case,
-   --  only the non-controlling formals can (and must) be examined.
+   --  only the non-controlling formals can (and must) be examined. The
+   --  argument Get_Inst is set to True when this is a check against a
+   --  formal access-to-subprogram type, indicating that mapping of types
+   --  is needed.
 
    procedure Check_Type_Conformant
      (New_Id  : Entity_Id;
@@ -166,8 +171,10 @@ package Sem_Ch6 is
       Get_Inst : Boolean := False) return Boolean;
    --  Check that the types of two formal parameters are conforming. In most
    --  cases this is just a name comparison, but within an instance it involves
-   --  generic actual types, and in the presence of anonymous access types it
-   --  must examine the designated types.
+   --  generic actual types, and in the presence of anonymous access types
+   --  it must examine the designated types. The argument Get_Inst is set to
+   --  True when this is a check against a formal access-to-subprogram type,
+   --  indicating that mapping of types is needed.
 
    procedure Create_Extra_Formals (E : Entity_Id);
    --  For each parameter of a subprogram or entry that requires an additional

@@ -68,7 +68,7 @@ program edit_real_1
   if (s .ne. '12.345E-01z') call abort
   ! E format, negative scale factor
   s = x
-  write (s, '(-2PE10.4,A)') 1.25, "z"
+  write (s, '(-2PE10.4,A)') 1.250001, "z"
   if (s .ne. '0.0013E+03z') call abort
   ! E format, single digit precision
   s = x

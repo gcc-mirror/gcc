@@ -10,11 +10,6 @@ details.  */
 #include <platform.h>
 #include <string.h>
 
-#if HAVE_BSTRING_H
-// Needed for bzero, implicitly used by FD_ZERO on IRIX 5.2
-#include <bstring.h>
-#endif
-
 #include <gnu/java/net/PlainDatagramSocketImpl.h>
 #include <java/io/IOException.h>
 #include <java/net/BindException.h>

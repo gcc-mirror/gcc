@@ -1,3 +1,46 @@
+2012-03-15  Tristan Gingold  <gingold@adacore.com>
+
+	* README (EXAMPLES OF FIXES): Update.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (math_exception): Remove duplicate.
+	(solaris_cond_init): Remove.
+	(solaris_sys_va_list): Remove Solaris 8 support.
+	* fixincl.x: Regenerate.
+	* tests/base/pthread.h [SOLARIS_COND_INIT_CHECK]: Remove.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (broken_cabs): Remove IRIX and SunOS 4 support.
+	(irix___restrict): Remove.
+	(irix___generic1): Remove.
+	(irix___generic2): Remove.
+	(irix_asm_apostrophe): Remove.
+	(irix_complex): Remove.
+	(irix_pthread_init): Remove.
+	(irix_socklen_t): Remove.
+	(irix_stdint_c99_mode): Remove.
+	(irix_stdint_c99_types): Remove.
+	(irix_stdint_c99_macros): Remove.
+	(irix_stdio_va_list): Remove IRIX 6.5 support.
+	(irix_wcsftime): Remove.
+	(stdio_va_list): Remove IRIX 6.5 support.
+	(svr4_profil): Remove IRIX bypass.
+	* fixincl.x: Regenerate.
+
+	* tests/base/complex.h [IRIX_COMPLEX_CHECK]: Remove.
+	* tests/base/internal/math_core.h: Remove.
+	* tests/base/internal/sgimacros.h: Remove.
+	* tests/base/internal/wchar_core.h: Remove.
+	* tests/base/math.h [BROKEN_CABS_CHECK]: Remove IRIX and SunOS 4
+	support.
+	* tests/base/pthread.h [IRIX_PTHREAD_INIT_CHECK]: Remove.
+	* tests/base/stdint-irix65.h: Remove.
+	* tests/base/stdint.h [IRIX_STDINT_C99_MODE_CHECK]: Remove.
+	* tests/base/sys/asm.h: Remove.
+	* tests/base/sys/socket.h [IRIX_SOCKLEN_T_CHECK]: Remove.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (alpha___extern_prefix): Remove.

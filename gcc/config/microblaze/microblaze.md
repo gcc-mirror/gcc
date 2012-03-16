@@ -1,5 +1,5 @@
 ;; microblaze.md -- Machine description for Xilinx MicroBlaze processors.
-;; Copyright 2009, 2010 Free Software Foundation, Inc.
+;; Copyright 2009, 2010, 2012 Free Software Foundation, Inc.
 
 ;; Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -1024,7 +1024,7 @@
   }
 )
 
-;; Added for status resgisters 
+;; Added for status registers
 (define_insn "movsi_status"
   [(set (match_operand:SI 0 "register_operand" "=d,d,z")
         (match_operand:SI 1 "register_operand" "z,d,d"))]

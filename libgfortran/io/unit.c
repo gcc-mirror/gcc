@@ -453,7 +453,7 @@ get_internal_unit (st_parameter_dt *dtp)
   iunit->flags.decimal = DECIMAL_POINT;
   iunit->flags.encoding = ENCODING_DEFAULT;
   iunit->flags.async = ASYNC_NO;
-  iunit->flags.round = ROUND_COMPATIBLE;
+  iunit->flags.round = ROUND_UNSPECIFIED;
 
   /* Initialize the data transfer parameters.  */
 
@@ -543,7 +543,7 @@ init_units (void)
       u->flags.decimal = DECIMAL_POINT;
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
-      u->flags.round = ROUND_COMPATIBLE;
+      u->flags.round = ROUND_UNSPECIFIED;
      
       u->recl = options.default_recl;
       u->endfile = NO_ENDFILE;
@@ -573,7 +573,7 @@ init_units (void)
       u->flags.decimal = DECIMAL_POINT;
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
-      u->flags.round = ROUND_COMPATIBLE;
+      u->flags.round = ROUND_UNSPECIFIED;
 
       u->recl = options.default_recl;
       u->endfile = AT_ENDFILE;
@@ -603,7 +603,7 @@ init_units (void)
       u->flags.decimal = DECIMAL_POINT;
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
-      u->flags.round = ROUND_COMPATIBLE;
+      u->flags.round = ROUND_UNSPECIFIED;
 
       u->recl = options.default_recl;
       u->endfile = AT_ENDFILE;

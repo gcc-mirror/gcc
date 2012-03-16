@@ -1,6 +1,6 @@
 /* Dwarf2 Call Frame Information helper routines.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -724,8 +724,6 @@ def_cfa_0 (dw_cfa_location *old_cfa, dw_cfa_location *new_cfa)
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
       cfi->dw_cfi_oprnd1.dw_cfi_offset = new_cfa->offset;
     }
-
-#ifndef MIPS_DEBUGGING_INFO  /* SGI dbx thinks this means no offset.  */
   else if (new_cfa->offset == old_cfa->offset
 	   && old_cfa->reg != INVALID_REGNUM
 	   && !new_cfa->indirect
@@ -737,8 +735,6 @@ def_cfa_0 (dw_cfa_location *old_cfa, dw_cfa_location *new_cfa)
       cfi->dw_cfi_opc = DW_CFA_def_cfa_register;
       cfi->dw_cfi_oprnd1.dw_cfi_reg_num = new_cfa->reg;
     }
-#endif
-
   else if (new_cfa->indirect == 0)
     {
       /* Construct a "DW_CFA_def_cfa <register> <offset>" instruction,
@@ -3387,10 +3383,6 @@ bool
 dwarf2out_do_cfi_asm (void)
 {
   int enc;
-
-#ifdef MIPS_DEBUGGING_INFO
-  return false;
-#endif
 
   if (saved_do_cfi_asm != 0)
     return saved_do_cfi_asm > 0;

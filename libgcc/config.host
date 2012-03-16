@@ -726,11 +726,6 @@ microblaze*-*-*)
         tmake_file="microblaze/t-microblaze t-fdpbit"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
 	;;
-mips-sgi-irix6.5*)
-	tmake_file="$tmake_file mips/t-irix6 t-crtfm mips/t-tpbit t-slibgcc mips/t-slibgcc-irix"
-	extra_parts="crtbegin.o crtend.o crtfastmath.o irix-crti.o irix-crtn.o"
-	md_unwind_header=mips/irix6-unwind.h
-	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips64*-*-linux* | mipsisa64*-*-linux*)

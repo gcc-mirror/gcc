@@ -35,6 +35,17 @@ package Sem_Prag is
    -- Subprograms --
    -----------------
 
+   procedure Analyze_Pragma (N : Node_Id);
+   --  Analyze procedure for pragma reference node N
+
+   procedure Analyze_CTC_In_Decl_Part (N : Node_Id; S : Entity_Id);
+   --  Special analyze routine for contract-case and test-case pragmas that
+   --  appears within a declarative part where the pragma is associated with
+   --  a subprogram specification. N is the pragma node, and S is the entity
+   --  for the related subprogram. This procedure does a preanalysis of the
+   --  expressions in the pragma as "spec expressions" (see section in Sem
+   --  "Handling of Default and Per-Object Expressions...").
+
    procedure Analyze_PPC_In_Decl_Part (N : Node_Id; S : Entity_Id);
    --  Special analyze routine for precondition/postcondition pragma that
    --  appears within a declarative part where the pragma is associated
@@ -42,17 +53,6 @@ package Sem_Prag is
    --  entity for the related subprogram. This procedure does a preanalysis
    --  of the expressions in the pragma as "spec expressions" (see section
    --  in Sem "Handling of Default and Per-Object Expressions...").
-
-   procedure Analyze_Pragma (N : Node_Id);
-   --  Analyze procedure for pragma reference node N
-
-   procedure Analyze_TC_In_Decl_Part (N : Node_Id; S : Entity_Id);
-   --  Special analyze routine for test-case pragma that appears within a
-   --  declarative part where the pragma is associated with a subprogram
-   --  specification. N is the pragma node, and S is the entity for the related
-   --  subprogram. This procedure does a preanalysis of the expressions in the
-   --  pragma as "spec expressions" (see section in Sem "Handling of Default
-   --  and Per-Object Expressions...").
 
    function Check_Disabled (Nam : Name_Id) return Boolean;
    --  This function is used in connection with pragmas Assertion, Check,

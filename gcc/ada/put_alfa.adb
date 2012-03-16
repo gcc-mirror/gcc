@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,18 @@ begin
          for N in F.File_Name'Range loop
             Write_Info_Char (F.File_Name (N));
          end loop;
+
+         --  If file is a subunit, print the file name for the unit
+
+         if F.Unit_File_Name /= null then
+            Write_Info_Char (' ');
+            Write_Info_Char ('-');
+            Write_Info_Char ('>');
+            Write_Info_Char (' ');
+            for N in F.Unit_File_Name'Range loop
+               Write_Info_Char (F.Unit_File_Name (N));
+            end loop;
+         end if;
 
          Write_Info_Terminate;
 

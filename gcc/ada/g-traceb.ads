@@ -60,7 +60,6 @@
 --     AiX PowerPC
 --     HP-UX
 --     GNU/Linux x86
---     Irix MIPS
 --     LynxOS x86
 --     Solaris x86
 --     Solaris sparc

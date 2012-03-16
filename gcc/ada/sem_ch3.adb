@@ -2196,19 +2196,26 @@ package body Sem_Ch3 is
                Spec := Specification (Original_Node (Decl));
                Sent := Defining_Unit_Name (Spec);
 
+               --  Analyze preconditions and postconditions
+
                Prag := Spec_PPC_List (Contract (Sent));
                while Present (Prag) loop
                   Analyze_PPC_In_Decl_Part (Prag, Sent);
                   Prag := Next_Pragma (Prag);
                end loop;
 
-               Check_Subprogram_Contract (Sent);
+               --  Analyze contract-cases and test-cases
 
-               Prag := Spec_TC_List (Contract (Sent));
+               Prag := Spec_CTC_List (Contract (Sent));
                while Present (Prag) loop
-                  Analyze_TC_In_Decl_Part (Prag, Sent);
+                  Analyze_CTC_In_Decl_Part (Prag, Sent);
                   Prag := Next_Pragma (Prag);
                end loop;
+
+               --  At this point, entities have been attached to identifiers.
+               --  This is required to be able to detect suspicious contracts.
+
+               Check_Subprogram_Contract (Sent);
             end if;
 
             Next (Decl);

@@ -1,3 +1,11 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config-list.mk (LIST): Remove mips-sgi-irix6.5.
+
+2012-03-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gennews (files): Add files for GCC 4.7.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config-list.mk (LIST): Remove mips-openbsd.

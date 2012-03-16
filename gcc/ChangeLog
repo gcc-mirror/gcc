@@ -1,3 +1,458 @@
+2012-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52568
+	* config/i386/i386.c (expand_vec_perm_vperm2f128_vblend): New
+	function.
+	(ix86_expand_vec_perm_const_1): Use it.
+
+	PR target/52568
+	* config/i386/sse.md (UNSPEC_VPERMDF): Remove.
+	(avx2_permv4df): Remove.
+	(avx2_permv4di): Macroize into...
+	(avx2_perm<mode>): ... this using VI8F_256 iterator.
+	(avx2_permv4di_1): Macroize into...
+	(avx2_perm<mode>_1): ... this using VI8F_256 iterator.
+
+2012-03-15  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* combine.c (apply_distributive_law): Do not distribute SUBREG.
+
+2012-03-15  Ira Rosen  <irar@il.ibm.com>
+	    Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* tree-vect-patterns.c (widened_name_p): Rename to ...
+	(type_conversion_p): ... this.  Add new argument to determine
+	if it's a promotion or demotion operation.  Check for
+	CONVERT_EXPR_CODE_P instead of NOP_EXPR.
+	(vect_recog_dot_prod_pattern): Call type_conversion_p instead
+	widened_name_p.
+	(vect_recog_widen_mult_pattern, vect_recog_widen_sum_pattern,
+	vect_operation_fits_smaller_type, vect_recog_widen_shift_pattern):
+	Likewise.
+	(vect_recog_mixed_size_cond_pattern): Likewise and allow
+	non-constant then and else clauses.
+
+2012-03-15  Ira Rosen  <irar@il.ibm.com>
+	    Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* tree-vectorizer.h (vect_pattern_recog): Add new argument.
+	* tree-vect-loop.c (vect_analyze_loop_2): Update call to
+	vect_pattern_recog.
+	* tree-vect-patterns.c (widened_name_p): Pass basic block
+	info to vect_is_simple_use.
+	(vect_recog_dot_prod_pattern): Fail for basic blocks.
+	(vect_recog_widen_sum_pattern): Likewise.
+	(vect_handle_widen_op_by_const): Support basic blocks.
+	(vect_operation_fits_smaller_type,
+	vect_recog_over_widening_pattern): Likewise.
+	(vect_recog_vector_vector_shift_pattern): Support basic blocks.
+	Update call to vect_is_simple_use.
+	(vect_recog_mixed_size_cond_pattern): Support basic blocks.
+	Add printing.
+	(check_bool_pattern): Add an argument, update call to
+	vect_is_simple_use and the recursive calls.
+	(vect_recog_bool_pattern): Update relevant function calls.
+	Add printing.
+	(vect_mark_pattern_stmts): Update calls to new_stmt_vec_info.
+	(vect_pattern_recog_1): Check for reduction only in loops.
+	(vect_pattern_recog): Add new argument.  Support basic blocks.
+	* tree-vect-stmts.c (vectorizable_conversion): Pass basic block
+	info to vect_is_simple_use_1.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Support basic
+	blocks.
+	(vect_slp_analyze_bb_1): Call vect_pattern_recog.
+
+2012-03-15  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <apinski@cavium.com>
+
+	PR middle-end/52592
+	* builtins.c (expand_builtin_int_roundingfn_2): If expanding
+	BUILT_IN_IR{INT,OUND}* using optab fails, emit lr{int,ound}*
+	calls instead of __builtin_ir{int,ound}*.
+
+2012-03-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* doc/sourcebuild.texi (cleanup-modules, keep-modules): Update
+	documentation.
+
+2012-03-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* config.gcc (target_type_format_char): New. Document it. Set it for
+	arm*-*-* .
+	* configure.ac (gnu_unique_option): Use target_type_format_char in test.
+	Comment rationale.
+	* configure: Regenerate .
+
+2012-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52267
+	* tree-vrp.c (masked_increment): New function.
+	(register_edge_assert_for_2): Derive ASSERT_EXPRs
+	from (X & CST1) cmp CST2 tests.
+
+2012-03-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52580
+	* tree-data-ref.c (subscript_dependence_tester_1): Check
+	all dimensions for non-conflicting access functions.
+
+2012-03-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/44783
+	* doc/invoke.texi [C++ Language Options]: Document
+	-ftemplate-backtrace-limit.
+
+2012-03-15  Tristan Gingold  <gingold@adacore.com>
+
+	* c-parser.c (c_parser_parameter_declaration): Handle #pragma
+	before a parameter.
+
+2012-03-15  Tristan Gingold  <gingold@adacore.com>
+
+	* dwarf2out.c (gen_subprogram_die): Require dwarf unwinding to
+	use DW_OP_call_frame_cfa.
+
+2012-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/50797
+	* config/i386/i386-opts.h (pmode): New.
+
+	* config/i386/i386.c (ix86_option_override_internal): Properly
+	check and set ix86_pmode.
+
+	* config/i386/i386.h (Pmode): Check ix86_pmode instead of
+	TARGET_64BIT.
+
+	* config/i386/i386.opt (maddress-mode=): New.
+
+	* doc/invoke.texi: Document -maddress-mode=short|long for x86.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dwarf2cfi.c (def_cfa_0): Remove MIPS_DEBUGGING_INFO handling.
+	(dwarf2out_do_cfi_asm): Likewise.
+	* dwarf2out.c (output_call_frame_info): Remove MIPS_DEBUGGING_INFO
+	handling.
+	(add_data_member_location_attribute): Likewise.
+	(gen_array_type_die): Likewise.
+	(gen_subprogram_die): Likewise.
+	(gen_producer_string): Likewise.
+	* sdbout.c (sdbout_begin_prologue): Declare unconditionally.
+	Remove MIPS_DEBUGGING_INFO handling.
+	(sdb_debug_hooks): Likewise.
+	(sdbout_begin_block): Likewise.
+	(sdbout_end_block): Likewise.
+	(sdbout_begin_prologue): Likewise.
+	(sdbout_start_source_file): Likewise.
+	(sdbout_end_source_file): Likewise.
+	(sdbout_init): Likewise.
+	* system.h (MIPS_DEBUGGING_INFO): Poison.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/alpha.c [HAVE_STAMP_H]: Remove.
+	(alpha_file_start) [MS_STAMP]: Remove.
+
+	* config/alpha/elf.h (TARGET_GAS): Remove.
+	* config/alpha/freebsd.h (TARGET_DEFAULT): Remove.
+	* config/alpha/linux.h (TARGET_DEFAULT): Remove.
+	* config/alpha/netbsd.h (TARGET_DEFAULT): Remove.
+	* config/alpha/vms.h (TARGET_DEFAULT): Remove.
+	* config.gcc (alpha*-*-linux*): Remove target_cpu_default.
+	(alpha*-*-freebsd*): Likewise.
+	(alpha*-*-netbsd*): Likewise.
+	(alpha*-*-openbsd*): Likewise.
+	(alpha*-*-*): Remove target_cpu_default2.
+	* config/alpha/alpha.c (alpha_output_filename): Remove !TARGET_GAS
+	handling.
+	* config/alpha/alpha.h (TARGET_AS_CAN_SUBTRACT_LABELS): Remove.
+	(TARGET_AS_SLASH_BEFORE_SUFFIX): Remove.
+	* config/alpha/alpha.c (print_operand): Always assume
+	TARGET_AS_SLASH_BEFORE_SUFFIX.
+	* config/alpha/alpha.md ("*builtin_setjmp_receiver_er_sl_1"):
+	Remove TARGET_AS_CAN_SUBTRACT_LABELS.
+	("*builtin_setjmp_receiver_er_1"): Remove.
+	* config/alpha/alpha.opt (malpha-as): Remove.
+	(mgas): Ignore.
+	* doc/invoke.texi (Option Summary, DEC Alpha Options): Remove
+	-malpha-as, -mgas.
+	Remove DEC Unix reference.
+
+	* config/alpha/alpha.h (OBJECT_FORMAT_COFF): Remove.
+	(EXTENDED_COFF): Remove.
+	* config/alpha/elf.h (OBJECT_FORMAT_COFF): Don't undef.
+	(EXTENDED_COFF): Don't undef.
+	* config/alpha/alpha.c (alpha_file_start): Always assume
+	OBJECT_FORMAT_ELF.
+	Don't set targetm.asm_file_start_file_directive.
+	[!OBJECT_FORMAT_ELF]: Remove.
+	(TARGET_ASM_FILE_START_FILE_DIRECTIVE): Remove.
+
+	* config/alpha/alpha.h (SDB_DEBUGGING_INFO): Remove.
+	(DBX_DEBUGGING_INFO): Remove.
+	(MIPS_DEBUGGING_INFO): Remove.
+	(PREFERRED_DEBUGGING_TYPE): Remove.
+	(DBX_OUTPUT_SOURCE_LINE): Remove.
+	(SDB_OUTPUT_SOURCE_LINE): Remove.
+	(DBX_CONTIN_LENGTH): Remove.
+	(NO_DBX_FUNCTION_END): Remove.
+	(ASM_STABS_OP): Remove.
+	(ASM_STABN_OP): Remove.
+	(ASM_STABD_OP): Remove.
+	(SDB_ALLOW_FORWARD_REFERENCES): Remove.
+	(SDB_ALLOW_UNKNOWN_REFERENCES): Remove.
+	(PUT_SDB_DEF): Remove.
+	(PUT_SDB_PLAIN_DEF): Remove.
+	(PUT_SDB_TYPE): Remove.
+	(sdb_label_count): Remove.
+	(PUT_SDB_BLOCK_START): Remove.
+	(PUT_SDB_BLOCK_END): Remove.
+	(PUT_SDB_FUNCTION_START): Remove.
+	(PUT_SDB_FUNCTION_END): Remove.
+	(PUT_SDB_EPILOGUE_END): Remove.
+	* config/alpha/elf.h (SDB_DEBUGGING_INFO): Don't undef.
+	(MIPS_DEBUGGING_INFO): Don't undef.
+	(DBX_DEBUGGING_INFO): Don't undef.
+	* config/alpha/vms.h (SDB_DEBUGGING_INFO): Don't undef.
+	(MIPS_DEBUGGING_INFO): Don't undef.
+	(DBX_DEBUGGING_INFO): Don't undef.
+	* config/alpha/freebsd.h (DBX_CONTIN_CHAR): Remove.
+	* config/alpha/alpha.c (alpha_option_override): Remove SDB_DEBUG
+	handling.
+	(alpha_start_function): Likewise.
+	(sdb_label_count): Remove.
+	(alpha_output_filename): Remove DBX_DEBUG handling.
+	(alpha_file_start): Likewise.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (enable_obsolete): Remove *-*-solaris2.8*.
+	(*-*-solaris2.[0-8], *-*-solaris2.[0-8].*): Mark unsupported.
+	(i[34567]86-*-solaris2*, x86_64-*-solaris2.1[0-9]*): Remove
+	Solaris 8 support.
+	* configure.ac (gcc_cv_ld_hidden): Remove *-*-solaris2.8*.
+	(ld_tls_support): Remove Solaris 8 references.
+	(lwp_dir, lwp_spec): Remove support for alternate thread library.
+	* acinclude.m4 (gcc_cv_initfini_array): Remove *-*-solaris2.*
+	tests.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+	* config/sol2.h (LINK_SPEC): Remove LIB_THREAD_LDFLAGS_SPEC.
+	* config/i386/sol2.h: Remove Solaris 8 references.
+
+	* doc/install.texi (Specific, i?86-*-solaris2.[89]): Rename to ...
+	(i?86-*-solaris2.9): ... this.
+	Remove Solaris 8 references.
+	(Specific, *-*-solaris2*): Document Solaris 8 removal.
+	Remove Solaris 8 references.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (enable_obsolete): Remove mips-sgi-irix6.5.
+	(mips-sgi-irix6.5*): Remove.
+	* config.host (mips-sgi-irix*): Remove.
+	* configure.ac (enable_fixed_point): Remove mips*-sgi-irix*.
+	(set_have_as_tls): Remove *-*-irix6*.
+	(gcc_cv_ld_static_dynamic): Remove mips-sgi-irix6*.
+	* configure: Regenerate.
+
+	* config/mips/iris6.h: Remove.
+	* config/mips/iris6.opt: Remove.
+	* config/mips/t-irix6: Remove.
+
+	* config/mips/mips.h (TARGET_GPWORD): Remove IRIX 6 N64 handling.
+	(TARGET_IRIX6): Remove.
+	(TARGET_CPU_CPP_BUILTINS): Remove IRIX 6 handling.
+	Don't define LANGUAGE_C, _LANGUAGE_C for Objective-C.
+	* config/mips/mips.c (mips_build_builtin_va_list): Remove IRIX 6
+	handling.
+	(mips_file_start): Likewise.
+	* config/mips/mips-protos.h (irix_asm_output_align): Remove.
+
+	* config/mips/driver-native.c [__sgi__]: Remove.
+	(host_detect_local_cpu) [__sgi__]: Remove.
+
+	* config/mips/gnu-user.h: Remove iris5.h reference.
+
+	* config/mips/mips-modes.def: Remove IRIX 6 reference.
+	* config/mips/gnu-user64.h (MIPS_TFMODE_FORMAT): Remove.
+	* config/mips/mips.c (mips_option_override) [MIPS_TFMODE_FORMAT]:
+	Remove.
+
+	* gcc.c (main): Move asm_debug initialization ...
+	(asm_debug): ... here.
+
+	* ginclude/stddef.h (__STDDEF_H__): Don't define.
+
+	* defaults.h (LINK_ELIMINATE_DUPLICATE_LDIRECTORIES): Remove.
+	* system.h (LINK_ELIMINATE_DUPLICATE_LDIRECTORIES): Poison.
+	* collect2.c [LINK_ELIMINATE_DUPLICATE_LDIRECTORIES]: Remove.
+	(main) [LINK_ELIMINATE_DUPLICATE_LDIRECTORIES]: Remove.
+	[LINK_ELIMINATE_DUPLICATE_LDIRECTORIES] (is_in_args): Remove.
+	* doc/tm.texi.in (Driver, LINK_ELIMINATE_DUPLICATE_LDIRECTORIES):
+	Remove.
+	* doc/tm.texi: Regenerate.
+
+	* doc/invoke.texi (Debugging Options, -gdwarf-<version>): Remove
+	IRIX 6 reference.
+	(MIPS Options, -march): Remove IRIX reference.
+	* doc/install.texi (Binaries, SGI IRIX): Remove.
+	(Specific, mips-sgi-irix6): Document IRIX 6.5 removal, remove rest
+	of section.
+	* doc/trouble.texi (Interoperation): Remove -lgl_s handling.
+
+2012-03-14  Martin Jambor  <mjambor@suse.cz>
+
+	* expr.c (expand_assignment): Use expand_expr with EXPAND_WRITE
+	when expanding MEM_REFs, MEM_TARGET_REFs and handled_component
+	bases.
+	(expand_expr_real_1): Do not handle misalignment if modifier is
+	EXPAND_WRITE.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52584
+	* tree-vect-generic.c (type_for_widest_vector_mode): Take
+	element type instead of mode, use build_vector_type_for_mode
+	instead of the langhook, build a vector of proper signedness.
+	(expand_vector_operations_1): Adjust.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52582
+	* gimple-fold.c (canonicalize_constructor_val): Make sure
+	we have a cgraph node for a FUNCTION_DECL that comes from
+	a constructor.
+	(gimple_get_virt_method_for_binfo): Likewise.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52571
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Move
+	flag_section_anchors check ...
+	(vect_can_force_dr_alignment_p): ... here.  Do not re-align
+	DECL_COMMON variables.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (DECL_BIT_FIELD_REPRESENTATIVE): New define.
+	* stor-layout.c (start_bitfield_representative): New function.
+	(finish_bitfield_representative): Likewise.
+	(finish_bitfield_layout): Likewise.
+	(finish_record_layout): Call finish_bitfield_layout.
+	* tree.c (free_lang_data_in_decl): Only free DECL_QUALIFIER
+	for QUAL_UNION_TYPE fields.
+	* tree-streamer-in.c (lto_input_ts_field_decl_tree_pointers):
+	Stream DECL_BIT_FIELD_REPRESENTATIVE.
+	* tree-streamer-out.c (write_ts_field_decl_tree_pointers): Likewise.
+
+	PR middle-end/52080
+	PR middle-end/52097
+	PR middle-end/48124
+	* expr.c (get_bit_range): Unconditionally extract bitrange
+	from DECL_BIT_FIELD_REPRESENTATIVE.
+	(expand_assignment): Adjust call to get_bit_range.
+
+2012-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52578
+	* fold-const.c (fold_unary_loc): Fold (T1)(T2)x to (T1)x if
+	the outermost conversion is a sign-change only.
+	(fold_binary_loc): Disregard widening and sign-changing
+	conversions when we determine if two variables are equal
+	for reassociation.
+	* tree-ssa-forwprop.c (combine_conversions): Fold (T1)(T2)x to
+	(T1)x if the outermost conversion is a sign-change only.
+
+2012-03-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+	2012-03-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (constant_call_address_operand): Declare
+	as special predicate.  Update all uses.
+
+2012-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/52577
+	* c-parser.c (c_parser_postfix_expression)
+	<case RID_BUILTIN_SHUFFLE>: Call mark_exp_read on argument values.
+
+	* config/i386/smmintrin.h: Avoid /* within a comment.
+	* config/i386/nmmintrin.h: Likewise.
+
+2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (xbegin): Remove constraint from expander.
+
+2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (constant_call_address_operand): Declare
+	as special predicate.  Update all uses.
+	* config/i386/i386.md: Remove mode from constant_call_address_operand
+	predicates.
+	* config/i386/i386.c (ix86_output_call_insn): Call
+	constant_call_address_operand with VOIDmode.
+
+2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Handle subregs of
+	AND zero extended address correctly.
+
+2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (tls_symbolic_operand): Declare as
+	special predicate.
+	(tls_modbase_operand): Ditto.
+	* config/i386/i386.md: Remove mode from tls_symbolic_operand and
+	tls_modbase_operand predicates.
+
+2012-03-13  Martin Jambor  <mjambor@suse.cz>
+
+	* expr.c (expand_assignment): Handle misaligned scalar writes to
+	memory through top-level MEM_REFs by calling store_bit_field.
+
+2012-03-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52134
+	* fold-const.c (fold_binary_loc): Fold (X * Y) & -(1 << CST) to X * Y
+	if Y is a constant multiple of 1 << CST.
+
+2012-03-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52488
+	* config/avr/avr.c (avr_prologue_setup_frame): Cut down stack
+	offset (size) to a value the insns can deal with.
+	(expand_epilogue): Ditto.
+
+2012-03-13  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* config/arm/neon.ml (ops): Fixup expected instructions for
+	unsigned vector compares.
+
+2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Prevent %fs:(%reg)
+	addresses only when %reg is not in word mode.
+
+2012-03-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/microblaze/microblaze.md: Fix typo.
+	* tree-if-conv.c: Likewise.
+	* tree-vect-patterns.c: Likewise.
+
+2012-03-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (extra_passes): Remove.
+	* configure.ac (extra_passes): Don't substitute.
+	* configure: Regenerate.
+	* Makefile.in (EXTRA_PASSES): Remove.
+	(GCC_PASSES): Remove $(EXTRA_PASSES).
+	(MOSTLYCLEANFILES): Likewise.
+	(native): Likewise.
+	(install-common): Likewise.
+
 2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (TARGET_TLS_INDIRECT_SEG_REFS): New.

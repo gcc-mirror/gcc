@@ -872,10 +872,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
   if (!base_aligned)
     {
-      /* Do not change the alignment of global variables if
-	 flag_section_anchors is enabled.  */
-      if (!vect_can_force_dr_alignment_p (base, TYPE_ALIGN (vectype))
-	  || (TREE_STATIC (base) && flag_section_anchors))
+      if (!vect_can_force_dr_alignment_p (base, TYPE_ALIGN (vectype)))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
@@ -4546,10 +4543,20 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   if (TREE_CODE (decl) != VAR_DECL)
     return false;
 
-  if (DECL_EXTERNAL (decl))
+  /* We cannot change alignment of common or external symbols as another
+     translation unit may contain a definition with lower alignment.  
+     The rules of common symbol linking mean that the definition
+     will override the common symbol.  */
+  if (DECL_EXTERNAL (decl)
+      || DECL_COMMON (decl))
     return false;
 
   if (TREE_ASM_WRITTEN (decl))
+    return false;
+
+  /* Do not change the alignment of global variables if flag_section_anchors
+     is enabled.  */
+  if (TREE_STATIC (decl) && flag_section_anchors)
     return false;
 
   if (TREE_STATIC (decl))

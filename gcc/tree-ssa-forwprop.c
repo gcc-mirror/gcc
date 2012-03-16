@@ -2285,10 +2285,13 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	}
 
       /* If we have a sign-extension of a zero-extended value, we can
-	 replace that by a single zero-extension.  */
+	 replace that by a single zero-extension.  Likewise if the
+	 final conversion does not change precision we can drop the
+	 intermediate conversion.  */
       if (inside_int && inter_int && final_int
-	  && inside_prec < inter_prec && inter_prec < final_prec
-	  && inside_unsignedp && !inter_unsignedp)
+	  && ((inside_prec < inter_prec && inter_prec < final_prec
+	       && inside_unsignedp && !inter_unsignedp)
+	      || final_prec == inter_prec))
 	{
 	  gimple_assign_set_rhs1 (stmt, defop0);
 	  update_stmt (stmt);

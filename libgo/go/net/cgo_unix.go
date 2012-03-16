@@ -75,7 +75,10 @@ func cgoLookupPort(net, service string) (port int, err error, completed bool) {
 	}
 
 	s := syscall.StringBytePtr(service)
-	if libc_getaddrinfo(nil, s, &hints, &res) == 0 {
+	syscall.Entersyscall()
+	gerrno := libc_getaddrinfo(nil, s, &hints, &res)
+	syscall.Exitsyscall()
+	if gerrno == 0 {
 		defer libc_freeaddrinfo(res)
 		for r := res; r != nil; r = r.Ai_next {
 			switch r.Ai_family {
@@ -108,7 +111,9 @@ func cgoLookupIPCNAME(name string) (addrs []IP, cname string, err error, complet
 	hints.Ai_flags = int32((syscall.AI_ALL | syscall.AI_V4MAPPED | syscall.AI_CANONNAME) & cgoAddrInfoMask())
 
 	h := syscall.StringBytePtr(name)
+	syscall.Entersyscall()
 	gerrno := libc_getaddrinfo(h, nil, &hints, &res)
+	syscall.Exitsyscall()
 	if gerrno != 0 {
 		var str string
 		if gerrno == syscall.EAI_NONAME {

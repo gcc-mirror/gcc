@@ -74,6 +74,32 @@ gtm_rwlock::read_lock (gtm_thread *tx)
 	  atomic_thread_fence (memory_order_seq_cst);
 	  if (writers.load (memory_order_relaxed))
 	    futex_wait(&readers, 1);
+	  else
+	    {
+	      // There is no writer, actually.  However, we can have enabled
+	      // a futex_wait in other readers by previously setting readers
+	      // to 1, so we have to wake them up because there is no writer
+	      // that will do that.  We don't know whether the wake-up is
+	      // really necessary, but we can get lost wake-up situations
+	      // otherwise.
+	      // No additional barrier nor a nonrelaxed load is required due
+	      // to coherency constraints.  write_unlock() checks readers to
+	      // see if any wake-up is necessary, but it is not possible that
+	      // a reader's store prevents a required later writer wake-up;
+	      // If the waking reader's store (value 0) is in modification
+	      // order after the waiting readers store (value 1), then the
+	      // latter will have to read 0 in the futex due to coherency
+	      // constraints and the happens-before enforced by the futex
+	      // (paragraph 6.10 in the standard, 6.19.4 in the Batty et al
+	      // TR); second, the writer will be forced to read in
+	      // modification order too due to Dekker-style synchronization
+	      // with the waiting reader (see write_unlock()).
+	      // ??? Can we avoid the wake-up if readers is zero (like in
+	      // write_unlock())?  Anyway, this might happen too infrequently
+	      // to improve performance significantly.
+	      readers.store (0, memory_order_relaxed);
+	      futex_wake(&readers, INT_MAX);
+	    }
 	}
 
       // And we try again to acquire a read lock.

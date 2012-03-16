@@ -1,3 +1,25 @@
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (THREADLIBS): Remove *-*-solaris2.8 handling.
+	* configure: Regenerate.
+
+2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (libgcj_cv_exidx): Remove IRIX 6 ld workaround.
+	(mips-sgi-irix6*): Remove.
+	(mips-sgi-irix*): Remove.
+	(AC_CHECK_HEADERS): Remove bstring.h.
+	* configure: Regenerate.
+	* include/config.h.in: Regenerate.
+	* configure.host (mips-sgi-irix6*): Remove.
+
+	* include/posix-signal.h [__sgi__]: Remove.
+
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc
+	[HAVE_BSTRING_H]: Remove.
+	* gnu/java/net/natPlainDatagramSocketImplWin32.cc: Likewise.
+	* gnu/java/net/natPlainSocketImplPosix.cc: Likewise.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (alpha*-dec-osf*): Remove.

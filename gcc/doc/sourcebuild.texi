@@ -2107,8 +2107,39 @@ Removes coverage data files generated for this test.
 @item cleanup-ipa-dump @var{suffix}
 Removes IPA dump files generated for this test.
 
-@item cleanup-modules
-Removes Fortran module files generated for this test.
+@item cleanup-modules "@var{list-of-extra-modules}"
+Removes Fortran module files generated for this test, excluding the
+module names listed in keep-modules.
+Cleaning up module files is usually done automatically by the testsuite
+by looking at the source files and removing the modules after the test
+has been executed.
+@smallexample
+module MoD1
+end module MoD1
+module Mod2
+end module Mod2
+module moD3
+end module moD3
+module mod4
+end module mod4
+! @{ dg-final @{ cleanup-modules "mod1 mod2" @} @} ! redundant
+! @{ dg-final @{ keep-modules "mod3 mod4" @} @}
+@end smallexample
+
+@item keep-modules "@var{list-of-modules-not-to-delete}"
+Whitespace separated list of module names that should not be deleted by
+cleanup-modules.
+If the list of modules is empty, all modules defined in this file are kept.
+@smallexample
+module maybe_unneeded
+end module maybe_unneeded
+module keep1
+end module keep1
+module keep2
+end module keep2
+! @{ dg-final @{ keep-modules "keep1 keep2" @} @} ! just keep these two
+! @{ dg-final @{ keep-modules "" @} @} ! keep all
+@end smallexample
 
 @item cleanup-profile-file
 Removes profiling files generated for this test.

@@ -9290,36 +9290,22 @@ apply_distributive_law (rtx x)
       /* This is also a multiply, so it distributes over everything.  */
       break;
 
-    case SUBREG:
-      /* Non-paradoxical SUBREGs distributes over all operations,
-	 provided the inner modes and byte offsets are the same, this
-	 is an extraction of a low-order part, we don't convert an fp
-	 operation to int or vice versa, this is not a vector mode,
-	 and we would not be converting a single-word operation into a
-	 multi-word operation.  The latter test is not required, but
-	 it prevents generating unneeded multi-word operations.  Some
-	 of the previous tests are redundant given the latter test,
-	 but are retained because they are required for correctness.
+    /* This used to handle SUBREG, but this turned out to be counter-
+       productive, since (subreg (op ...)) usually is not handled by
+       insn patterns, and this "optimization" therefore transformed
+       recognizable patterns into unrecognizable ones.  Therefore the
+       SUBREG case was removed from here.
 
-	 We produce the result slightly differently in this case.  */
+       It is possible that distributing SUBREG over arithmetic operations
+       leads to an intermediate result than can then be optimized further,
+       e.g. by moving the outer SUBREG to the other side of a SET as done
+       in simplify_set.  This seems to have been the original intent of
+       handling SUBREGs here.
 
-      if (GET_MODE (SUBREG_REG (lhs)) != GET_MODE (SUBREG_REG (rhs))
-	  || SUBREG_BYTE (lhs) != SUBREG_BYTE (rhs)
-	  || ! subreg_lowpart_p (lhs)
-	  || (GET_MODE_CLASS (GET_MODE (lhs))
-	      != GET_MODE_CLASS (GET_MODE (SUBREG_REG (lhs))))
-	  || paradoxical_subreg_p (lhs)
-	  || VECTOR_MODE_P (GET_MODE (lhs))
-	  || GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))) > UNITS_PER_WORD
-	  /* Result might need to be truncated.  Don't change mode if
-	     explicit truncation is needed.  */
-	  || !TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (x),
-					     GET_MODE (SUBREG_REG (lhs))))
-	return x;
-
-      tem = simplify_gen_binary (code, GET_MODE (SUBREG_REG (lhs)),
-				 SUBREG_REG (lhs), SUBREG_REG (rhs));
-      return gen_lowpart (GET_MODE (x), tem);
+       However, with current GCC this does not appear to actually happen,
+       at least on major platforms.  If some case is found where removing
+       the SUBREG case here prevents follow-on optimizations, distributing
+       SUBREGs ought to be re-added at that place, e.g. in simplify_set.  */
 
     default:
       return x;

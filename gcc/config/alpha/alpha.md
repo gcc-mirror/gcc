@@ -5855,15 +5855,9 @@
 
 (define_insn "*builtin_setjmp_receiver_er_sl_1"
   [(unspec_volatile [(match_operand 0 "" "")] UNSPECV_SETJMPR_ER)]
-  "TARGET_ABI_OSF && TARGET_EXPLICIT_RELOCS && TARGET_AS_CAN_SUBTRACT_LABELS"
+  "TARGET_ABI_OSF && TARGET_EXPLICIT_RELOCS"
   "lda $27,$LSJ%=-%l0($27)\n$LSJ%=:")
   
-(define_insn "*builtin_setjmp_receiver_er_1"
-  [(unspec_volatile [(match_operand 0 "" "")] UNSPECV_SETJMPR_ER)]
-  "TARGET_ABI_OSF && TARGET_EXPLICIT_RELOCS"
-  "br $27,$LSJ%=\n$LSJ%=:"
-  [(set_attr "type" "ibr")])
-
 ;; When flag_reorder_blocks_and_partition is in effect, compiler puts
 ;; exception landing pads in a cold section.  To prevent inter-section offset
 ;; calculation, a jump to original landing pad is emitted in the place of the

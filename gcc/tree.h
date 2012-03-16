@@ -3143,6 +3143,11 @@ struct GTY(()) tree_decl_with_rtl {
 #define DECL_BIT_FIELD_TYPE(NODE) \
   (FIELD_DECL_CHECK (NODE)->field_decl.bit_field_type)
 
+/* In a FIELD_DECL of a RECORD_TYPE, this is a pointer to the storage
+   representative FIELD_DECL.  */
+#define DECL_BIT_FIELD_REPRESENTATIVE(NODE) \
+  (FIELD_DECL_CHECK (NODE)->field_decl.qualifier)
+
 /* For a FIELD_DECL in a QUAL_UNION_TYPE, records the expression, which
    if nonzero, indicates that the field occupies the type.  */
 #define DECL_QUALIFIER(NODE) (FIELD_DECL_CHECK (NODE)->field_decl.qualifier)

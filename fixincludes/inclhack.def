@@ -780,10 +780,6 @@ fix = {
 /*
  *  Remove `extern double cabs' declarations from math.h.
  *  This conflicts with C99.  Discovered on AIX.
- *  IRIX 5 and IRIX 6 before 6.5.18 (where C99 support was introduced)
- *  declares cabs() to take a struct __cabs_s argument.
- *  SunOS4 has its cabs() declaration followed by a comment which
- *  terminates on the following line.
  *  Darwin hides its broken cabs in architecture-specific subdirs.
  */
 fix = {
@@ -799,11 +795,7 @@ fix = {
                 "#else\n"
                 "extern     double   cabs();\n"
                 "#endif\n"
-                "extern double cabs ( _Complex z );\n"
-                "extern double cabs(); /* This is a comment\n"
-                "                         and it ends here. */\n"
-                "extern double	cabs(struct __cabs_s);\n"
-                "extern long double cabsl( struct __cabsl_s );";
+                "extern double cabs ( _Complex z );";
 };
 
 
@@ -2243,110 +2235,6 @@ fix = {
 
 
 /*
- *  IRIX 6.5.1[89] <internal/sgimacros.h> unconditionally defines
- *  __restrict as restrict iff __c99.  This is wrong for C++, which
- *  needs many C99 features, but only supports __restrict.
- */
-fix = {
-    hackname  = irix___restrict;
-    files     = internal/sgimacros.h;
-    select    = "(#ifdef __c99\n)(#[ \t]*define __restrict restrict)";
-
-    mach      = "mips-sgi-irix6.5";
-    c_fix     = format;
-    c_fix_arg = "%1"
-		"#  ifndef __cplusplus\n%2\n#  endif";
-
-    test_text = "#ifdef __c99\n#  define __restrict restrict";
-};
-
-/*
- * IRIX 6.5.22 <internal/math_core.h> uses the SGI c99 __generic() intrinsic
- * to define the fpclasify, isfinite, isinf, isnan, isnormal and signbit 
- * functions.
- *
- * This was probably introduced around IRIX 6.5.18
- */
-fix = {
-    hackname  = irix___generic1;
-    files     = internal/math_core.h;
-    mach      = "mips-sgi-irix6.5";
-    select    = "#define ([a-z]+)\\(x\\) *__generic.*";
-
-    c_fix     = format;
-    c_fix_arg = "extern int %1(double);\n"
-		"extern int %1f(float);\n"
-		"extern int %1l(long double);\n"
-		"#define %1(x) (sizeof(x) == sizeof(double) ? _%1(x) \\\n"
-		"               : sizeof(x) == sizeof(float) ? _%1f(x) \\\n"
-		"               : _%1l(x))\n";
-
-    test_text = 
-      "#define isnan(x) __generic(x,,, _isnan, _isnanf, _isnanl,,,)(x)\n";
-};
-
-
-/* Likewise <internal/math_core.h> on IRIX 6.5.19 and later uses the SGI
-   compiler's __generic intrinsic to define isgreater, isgreaterequal,
-   isless, islessequal, islessgreater and isunordered functions.  */
-fix = {
-    hackname  = irix___generic2;
-    files     = internal/math_core.h;
-    mach      = "mips-sgi-irix6.5";
-    select    = "#define ([a-z]+)\\(x,y\\) *__generic.*";
-
-    c_fix     = format;
-    c_fix_arg = "#define %1(x,y) \\\n"
-		"  ((sizeof(x)<=4 && sizeof(y)<=4) ? _%1f(x,y) \\\n"
-		"   : (sizeof(x)<=8 && sizeof(y)<=8) ? _%1(x,y) \\\n"
-		"   : _%1l(x,y))\n";
-
-    test_text = 
-      "#define isless(x,y)         __generic(x,y,, _isless, _islessf, _islessl,,,)(x,y)";
-};
-
-
-/*
- *  IRIX 5.2's <sys/asm.h> contains an asm comment with a contraction
- *  that causes the assembly preprocessor to complain about an
- *  unterminated character constant.
- */
-fix = {
-    hackname  = irix_asm_apostrophe;
-    files     = sys/asm.h;
-
-    select    = "^[ \t]*#.*[Ww]e're";
-    c_fix     = format;
-    c_fix_arg = "%1 are";
-    c_fix_arg = "^([ \t]*#.*[Ww]e)'re";
-    test_text = "\t# and we're on vacation";
-};
-
-
-/*
- * IRIX 6.5 complex.h defines _Complex_I and _Imaginary_I in terms of __I__,
- * which is a MIPSpro compiler builtin.  Remove _Imaginary_I and imaginary
- * definitions which are not supported by GCC. 
- */
-fix = {
-    hackname  = irix_complex;
-    mach      = "mips-sgi-irix6.5";
-    files     = complex.h;
-    select    = "#define[ \t]_Complex_I[ \t]\\(\\(float[ \t]_Complex\\)[ \t]\\(__I__\\)\\)";
-    sed	      = "s/#define[ \t]_Complex_I[ \t]((float[ \t]_Complex)[ \t](__I__))/"
-		"#define _Complex_I (__extension__ 1.0iF)/";
-    sed	      = "/#define[ \t]imaginary[ \t]_Imaginary/d";
-    sed	      = "/#define[ \t]_Imaginary_I/d";
-    sed       = "s/#define[ \t]I[ \t]_Imaginary_I/#define I _Complex_I/";
-    test_text = "#define _Complex_I ((float _Complex) (__I__))\n"
-		"#define imaginary _Imaginary\n"
-		"// #define _Imaginary_I ((float _Imaginary) 1)\n"
-		"#define _Imaginary_I __I__\n"
-		"#define I _Imaginary_I";
-};
-
-
-/*
  *  Non-traditional "const" declaration in Irix's limits.h.
  */
 fix = {
@@ -2360,181 +2248,18 @@ fix = {
 
 
 /*
- *  IRIX 6.5 PTHREAD_*_INITIALIZER need an additional level of braces in
- *  <pthread.h>.
- */
-fix = {
-    hackname    = irix_pthread_init;
-    files       = pthread.h;
-    select      = "^(#define[ \t]+PTHREAD_.*_INITIALIZER[ \t]+)(\\{ 0 \\})";
-
-    mach	= "mips-sgi-irix6.5";
-    c_fix       = format;
-    c_fix_arg   = "%1{ %2 }";
-    test_text   = "#define PTHREAD_MUTEX_INITIALIZER	{ 0 }\n"
-		  "#define PTHREAD_COND_INITIALIZER	{ 0 }\n"
-		  "#define PTHREAD_RWLOCK_INITIALIZER	{ 0 }";
-};
-
-
-/*
- *  IRIX 6.5.1[78] <sys/socket.h> has a broken definition of socklen_t.
- *  Various socket function prototypes use different types instead,
- *  depending on the API in use (BSD, XPG4/5), but the socklen_t
- *  definition doesn't reflect this (SGI Bug Id 864477, fixed in
- *  IRIX 6.5.19).
- */
-fix = {
-    hackname  = irix_socklen_t;
-    files     = sys/socket.h;
-    select    = "(#define _SOCKLEN_T\n)(typedef u_int32_t socklen_t;)";
-
-    mach      = "mips-sgi-irix6.5";
-    c_fix     = format;
-    c_fix_arg = "%1"
-    		"#if _NO_XOPEN4 && _NO_XOPEN5\n"
-    		"typedef int socklen_t;\n"
-		"#else\n"
-    		"%2\n"
-    		"#endif /* _NO_XOPEN4 && _NO_XOPEN5 */";
-
-    test_text = "#define _SOCKLEN_T\ntypedef u_int32_t socklen_t;";
-};
-
-/*
- *  IRIX 6.5 <stdint.h> only works with ISO C99 and errors out
- *  otherwise.
- */
-fix = {
-    hackname  = irix_stdint_c99_mode;
-    files     = stdint.h;
-    select = "(#ifndef __c99\n)(#error This header file is to be used only for c99 mode compilations)";
-
-    mach      = "mips-sgi-irix6.5";
-    c_fix  = format;
-    c_fix_arg = "#if 0\n"
-	        "%2";
-    test_text =
-    "#ifndef __c99\n#error This header file is to be used only for c99 mode compilations\n#else";
-};
-
-
-/*
- *  IRIX 6.5 <stdint.h> has some *_MIN/MAX constants whose types don't
- *  match the corresponding types, as required by ISO C99.
- */
-fix = {
-    hackname  = irix_stdint_c99_types;
-    files     = stdint-irix65.h, stdint.h;
-    mach      = "mips-sgi-irix6.5";
-    sed       = "s@^#define INT64_MIN.*(-0x7fffffffffffffff - 1)$@"
-                "#define INT64_MIN               (-0x7fffffffffffffffLL - 1)@";
-    sed       = "s@^#define INT64_MAX.*0x7fffffffffffffff$@"
-                "#define INT64_MAX               0x7fffffffffffffffLL@";
-    sed       = "s@^#define UINT32_MAX.*0xffffffff$@"
-                "#define UINT32_MAX              0xffffffffU@";
-    sed       = "s@^#define UINT64_MAX.*0xffffffffffffffff$@"
-                "#define UINT64_MAX              0xffffffffffffffffULL@";
-    sed       = "s@^#define INTPTR_MIN.*INT32_MIN$@"
-                "#define INTPTR_MIN              (-0x7fffffffL - 1)@";
-    sed       = "s@^#define INTPTR_MAX.*INT32_MAX$@"
-                "#define INTPTR_MAX              0x7fffffffL@";
-    sed       = "s@^#define UINTPTR_MAX.*UINT32_MAX$@"
-                "#define UINTPTR_MAX             0xffffffffUL@";
-    sed       = "s@^#define INTPTR_MIN.*INT64_MIN@"
-                "#define INTPTR_MIN              (-0x7fffffffffffffffL - 1)@";
-    sed       = "s@^#define INTPTR_MAX.*INT64_MAX$@"
-                "#define INTPTR_MAX              0x7fffffffffffffffL@";
-    sed       = "s@^#define UINTPTR_MAX.*UINT64_MAX$@"
-                "#define UINTPTR_MAX             0xffffffffffffffffUL@";
-    sed       = "s@^#define PTRDIFF_MIN.*INT64_MIN$@"
-                "#define PTRDIFF_MIN             (-0x7fffffffffffffffL - 1)@";
-    sed       = "s@^#define PTRDIFF_MAX.*INT64_MAX$@"
-                "#define PTRDIFF_MAX             0x7fffffffffffffffL@";
-    sed       = "s@^#define SIZE_MAX.*UINT64_MAX$@"
-                "#define SIZE_MAX                0xffffffffffffffffUL@";
-    test_text = "#define INT64_MIN               (-0x7fffffffffffffff - 1)\n"
-                "#define INT64_MAX               0x7fffffffffffffff\n"
-                "#define UINT32_MAX              0xffffffff\n"
-                "#define UINT64_MAX              0xffffffffffffffff\n"
-                "#define INTPTR_MIN              INT32_MIN\n"
-                "#define INTPTR_MAX              INT32_MAX\n"
-                "#define UINTPTR_MAX             UINT32_MAX\n"
-                "#define INTPTR_MIN              INT64_MIN\n"
-                "#define INTPTR_MAX              INT64_MAX\n"
-                "#define UINTPTR_MAX             UINT64_MAX\n"
-                "#define PTRDIFF_MIN             INT64_MIN\n"
-                "#define PTRDIFF_MAX             INT64_MAX\n"
-                "#define SIZE_MAX                UINT64_MAX";
-};
-
-
-/*
- *  IRIX 6.5 <stdint.h> uses casts in some macros which cannot thus be used
- *  in preprocessor tests, although ISO C99 requires this.
- */
-fix = {
-    hackname  = irix_stdint_c99_macros;
-    files     = stdint-irix65.h, stdint.h;
-    mach      = "mips-sgi-irix6.5";
-    sed       = "s@^#define INT8_C(x).*int.*_t.*$@#define INT8_C(x)               (x)@";
-    sed       = "s@^#define INT16_C(x).*int.*_t.*$@#define INT16_C(x)              (x)@";
-    sed       = "s@^#define INT32_C(x).*int.*_t.*$@#define INT32_C(x)              (x)@";
-    sed       = "s@^#define INT64_C(x).*int.*_t.*$@#define INT64_C(x)              (x ## LL)@";
-    sed       = "s@^#define UINT8_C(x).*int.*_t.*$@#define UINT8_C(x)              (x)@";
-    sed       = "s@^#define UINT16_C(x).*int.*_t.*$@#define UINT16_C(x)             (x)@";
-    sed       = "s@^#define UINT32_C(x).*int.*_t.*$@#define UINT32_C(x)             (x ## U)@";
-    sed       = "s@^#define UINT64_C(x).*int.*_t.*$@#define UINT64_C(x)             (x ## ULL)@";
-    sed       = "s@^#define INTMAX_C(x).*int.*_t.*$@#define INTMAX_C(x)             (x ## LL)@";
-    sed       = "s@^#define UINTMAX_C(x).*int.*_t.*$@#define UINTMAX_C(x)            (x ## ULL)@";
-    test_text = "#define INT8_C(x)               (int_least8_t)(x)\n"
-                "#define INT16_C(x)              (int_least16_t)(x)\n"
-                "#define INT32_C(x)              (int_least32_t)(x)\n"
-                "#define INT64_C(x)              (int_least64_t)(x)\n"
-                "#define UINT8_C(x)              (uint_least8_t)(x)\n"
-                "#define UINT16_C(x)             (uint_least16_t)(x)\n"
-                "#define UINT32_C(x)             (uint_least32_t)(x)\n"
-                "#define UINT64_C(x)             (uint_least64_t)(x)\n"
-                "#define INTMAX_C(x)             (intmax_t)(x)\n"
-                "#define UINTMAX_C(x)            (uintmax_t)(x)";
-};
-
-
-/*
- *  IRIX 5.x's stdio.h and IRIX 6.5's internal/stdio_core.h declare
- *  some functions that take a va_list as
+ *  IRIX 5.x's stdio.h declares some functions that take a va_list as
  *  taking char *.  However, GCC uses void * for va_list, so
  *  calling vfprintf with a va_list fails in C++.  */
 fix = {
     hackname  = irix_stdio_va_list;
     files     = stdio.h;
-    files     = internal/stdio_core.h;
 
     select = '/\* va_list \*/ char \*';
     c_fix  = format;
     c_fix_arg = "__gnuc_va_list";
     test_text =
     "extern int printf( const char *, /* va_list */ char * );";
-};
-
-
-/*
- *  IRIX 6.5.19 <internal/wchar_core.h> provides the XPG4 variant of
- *  wcsftime by default.  ISO C99 requires the XPG5 variant instead.
- */
-fix = {
-    hackname  = irix_wcsftime;
-    files     = internal/wchar_core.h;
-    select    = "#if _NO_XOPEN5\n(extern size_t[ \t]+wcsftime.*const char \*.*)";
-
-    mach      = "mips-sgi-irix6.5";
-    c_fix     = format;
-    c_fix_arg = "#if _NO_XOPEN5 && !defined(__c99)\n%1";
-
-    test_text = "#if _NO_XOPEN5\n"
-		"extern size_t wcsftime(wchar_t *, "
-		"__SGI_LIBC_NAMESPACE_QUALIFIER size_t, const char *, "
-		"const struct tm *);";
 };
 
 
@@ -2657,7 +2382,7 @@ fix = {
     files     = math.h;
     select    = "struct exception";
     /*
-     * This should be bypassed on __cplusplus, but some supposedly C++ C++
+     * This should be bypassed on __cplusplus, but some supposedly C++
      * aware headers, such as Solaris 8 and 9, don't wrap their struct
      * exception either.  So currently we bypass only for glibc, based on a
      * comment in the fixed glibc header.  Ick.
@@ -3201,26 +2926,6 @@ fix = {
 
 
 /*
- * Solaris 8 PTHREAD_COND_INITIALIZER lacks the __pthread_cond_magic field.
- * COND_MAGIC is only defined in <synch.h> and pollutes the namespace, so
- * use the value literally instead.
- */
-fix = {
-    hackname = solaris_cond_init;
-    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files = pthread.h;
-    mach = '*-*-solaris2.8';
-    c_fix = format;
-    c_fix_arg = "%1, 0x4356%2";
-    c_fix_arg = "^(#define[ \t]+PTHREAD_COND_INITIALIZER[ \t]+"
-                "\\{.*0)(\\},[ \t]*0\\}.*)$";
-    test_text =
-    '#pragma ident	"@(#)pthread.h	1.29	01/07/07 SMI"'"\n"
-    '#define	PTHREAD_COND_INITIALIZER	{{{0}, 0}, 0}	/* = DEFAULTCV */';
-};
-
-
-/*
  *  g++ rejects functions declared with both C and C++ linkage.
  */
 fix = {
@@ -3697,13 +3402,13 @@ fix = {
 
 
 /*
- * On Solaris 8 and 9, __va_list needs to become a typedef for
+ * On Solaris 9, __va_list needs to become a typedef for
  * __builtin_va_list to make -Wmissing-format-attribute work.
  */
 fix = {
     hackname = solaris_sys_va_list;
     files    = sys/va_list.h;
-    mach     = '*-*-solaris2.[89]';
+    mach     = '*-*-solaris2.9';
     select   = "#if.*__STDC__.*\n"
 	       "typedef void \\*__va_list;\n"
 	       "#else\n"
@@ -3767,15 +3472,11 @@ fix = {
  *  of __gnuc_va_list, __DJ_va_list, or _G_va_list is taken to
  *  indicate that the header knows what it's doing -- under SUSv2,
  *  stdio.h is required to define va_list, and we shouldn't break
- *  that.  On IRIX 6.5, internal/wchar_core.h used to get its
- *  definition of va_list from stdio.h.  Since this doesn't happen any
- *  longer, use __gnuc_va_list there, too.
+ *  that.
  */
 fix = {
     hackname = stdio_va_list;
     files    = stdio.h;
-    files    = internal/stdio_core.h;
-    files    = internal/wchar_core.h;
     bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list';
     /* 
      * On Solaris 10, the definition in 
@@ -4151,9 +3852,6 @@ fix = {
 
     select    =
     'profil\(unsigned short \*, unsigned int, unsigned int, unsigned int\)';
-    /* The fix is wrong on IRIX 5/6 and creates a conflict with another
-       prototype in <sys/profil.h>.  */
-    bypass    = 'Silicon Graphics';
     c_fix     = format;
     c_fix_arg = 'profil(unsigned short *, size_t, int, unsigned int)';
 

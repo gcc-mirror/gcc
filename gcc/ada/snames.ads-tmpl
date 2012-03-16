@@ -448,6 +448,7 @@ package Snames is
    Name_Common_Object                  : constant Name_Id := N + $; -- GNAT
    Name_Complete_Representation        : constant Name_Id := N + $; -- GNAT
    Name_Complex_Representation         : constant Name_Id := N + $; -- GNAT
+   Name_Contract_Case                  : constant Name_Id := N + $; -- GNAT
    Name_Controlled                     : constant Name_Id := N + $;
    Name_Convention                     : constant Name_Id := N + $;
    Name_CPP_Class                      : constant Name_Id := N + $; -- GNAT
@@ -770,6 +771,7 @@ package Snames is
    Name_Fast_Math                      : constant Name_Id := N + $; -- GNAT
    Name_First                          : constant Name_Id := N + $;
    Name_First_Bit                      : constant Name_Id := N + $;
+   Name_First_Valid                    : constant Name_Id := N + $; -- Ada 12
    Name_Fixed_Value                    : constant Name_Id := N + $; -- GNAT
    Name_Fore                           : constant Name_Id := N + $;
    Name_Has_Access_Values              : constant Name_Id := N + $; -- GNAT
@@ -784,6 +786,7 @@ package Snames is
    Name_Large                          : constant Name_Id := N + $; -- Ada 83
    Name_Last                           : constant Name_Id := N + $;
    Name_Last_Bit                       : constant Name_Id := N + $;
+   Name_Last_Valid                     : constant Name_Id := N + $; -- Ada 12
    Name_Leading_Part                   : constant Name_Id := N + $;
    Name_Length                         : constant Name_Id := N + $;
    Name_Machine_Emax                   : constant Name_Id := N + $;
@@ -1332,6 +1335,7 @@ package Snames is
       Attribute_Fast_Math,
       Attribute_First,
       Attribute_First_Bit,
+      Attribute_First_Valid,
       Attribute_Fixed_Value,
       Attribute_Fore,
       Attribute_Has_Access_Values,
@@ -1346,6 +1350,7 @@ package Snames is
       Attribute_Large,
       Attribute_Last,
       Attribute_Last_Bit,
+      Attribute_Last_Valid,
       Attribute_Leading_Part,
       Attribute_Length,
       Attribute_Machine_Emax,
@@ -1619,6 +1624,7 @@ package Snames is
       Pragma_Common_Object,
       Pragma_Complete_Representation,
       Pragma_Complex_Representation,
+      Pragma_Contract_Case,
       Pragma_Controlled,
       Pragma_Convention,
       Pragma_CPP_Class,

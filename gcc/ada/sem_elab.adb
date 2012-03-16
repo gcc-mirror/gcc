@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,7 +180,7 @@ package body Sem_Elab is
       Inter_Unit_Only   : Boolean;
       Generate_Warnings : Boolean := True;
       In_Init_Proc      : Boolean := False);
-   --  This is the internal recursive routine that is called to check for a
+   --  This is the internal recursive routine that is called to check for
    --  possible elaboration error. The argument N is a subprogram call or
    --  generic instantiation to be checked, and E is the entity of the called
    --  subprogram, or instantiated generic unit. The flag Outer_Scope is the
@@ -188,8 +188,11 @@ package body Sem_Elab is
    --  call is only to be checked in the case where it is to another unit (and
    --  skipped if within a unit). Generate_Warnings is set to False to suppress
    --  warning messages about missing pragma Elaborate_All's. These messages
-   --  are not wanted for inner calls in the dynamic model. Flag In_Init_Proc
-   --  should be set whenever the current context is a type init proc.
+   --  are not wanted for inner calls in the dynamic model. Note that an
+   --  instance of the Access attribute applied to a subprogram also generates
+   --  a call to this procedure (since the referenced subprogram may be called
+   --  later indirectly). Flag In_Init_Proc should be set whenever the current
+   --  context is a type init proc.
 
    procedure Check_Bad_Instantiation (N : Node_Id);
    --  N is a node for an instantiation (if called with any other node kind,
@@ -269,6 +272,13 @@ package body Sem_Elab is
    procedure Set_C_Scope;
    --  On entry C_Scope is set to some scope. On return, C_Scope is reset
    --  to be the enclosing compilation unit of this scope.
+
+   function Get_Referenced_Ent (N : Node_Id) return Entity_Id;
+   --  N is either a function or procedure call or an access attribute that
+   --  references a subprogram. This call retrieves the relevant entity. If
+   --  this is a call to a protected subprogram, the entity is a selected
+   --  component. The callable entity may be absent, in which case Empty is
+   --  returned. This happens with non-analyzed calls in nested generics.
 
    procedure Set_Elaboration_Constraint
     (Call : Node_Id;
@@ -827,14 +837,19 @@ package body Sem_Elab is
          --  the init proc is in the root package, and we start from the entity
          --  of the name in the call.
 
-         if Is_Entity_Name (Name (N))
-           and then Is_Init_Proc (Entity (Name (N)))
-           and then not In_Same_Extended_Unit (N, Entity (Name (N)))
-         then
-            W_Scope := Scope (Entity (Name (N)));
-         else
-            W_Scope := E;
-         end if;
+         declare
+            Ent : constant Entity_Id := Get_Referenced_Ent (N);
+         begin
+            if Is_Init_Proc (Ent)
+              and then not In_Same_Extended_Unit (N, Ent)
+            then
+               W_Scope := Scope (Ent);
+            else
+               W_Scope := E;
+            end if;
+         end;
+
+         --  Now loop through scopes to get to the enclosing compilation unit
 
          while not Is_Compilation_Unit (W_Scope) loop
             W_Scope := Scope (W_Scope);
@@ -1126,36 +1141,6 @@ package body Sem_Elab is
       Ent : Entity_Id;
       P   : Node_Id;
 
-      function Get_Called_Ent return Entity_Id;
-      --  Retrieve called entity. If this is a call to a protected subprogram,
-      --  entity is a selected component. The callable entity may be absent,
-      --  in which case there is no check to perform. This happens with
-      --  non-analyzed calls in nested generics.
-
-      --------------------
-      -- Get_Called_Ent --
-      --------------------
-
-      function Get_Called_Ent return Entity_Id is
-         Nam : Node_Id;
-
-      begin
-         Nam := Name (N);
-
-         if No (Nam) then
-            return Empty;
-
-         elsif Nkind (Nam) = N_Selected_Component then
-            return Entity (Selector_Name (Nam));
-
-         elsif not Is_Entity_Name (Nam) then
-            return Empty;
-
-         else
-            return Entity (Nam);
-         end if;
-      end Get_Called_Ent;
-
    --  Start of processing for Check_Elab_Call
 
    begin
@@ -1174,11 +1159,12 @@ package body Sem_Elab is
       then
          Check_Restriction (No_Entry_Calls_In_Elaboration_Code, N);
 
-      --  Nothing to do if this is not a call (happens in some error
-      --  conditions, and in some cases where rewriting occurs).
+      --  Nothing to do if this is not a call or attribute reference (happens
+      --  in some error conditions, and in some cases where rewriting occurs).
 
       elsif Nkind (N) /= N_Function_Call
         and then Nkind (N) /= N_Procedure_Call_Statement
+        and then Nkind (N) /= N_Attribute_Reference
       then
          return;
 
@@ -1267,6 +1253,7 @@ package body Sem_Elab is
             if Comes_From_Source (N)
               and then In_Preelaborated_Unit
               and then not In_Inlined_Body
+              and then Nkind (N) /= N_Attribute_Reference
             then
                --  This is a warning in GNAT mode allowing such calls to be
                --  used in the predefined library with appropriate care.
@@ -1352,12 +1339,10 @@ package body Sem_Elab is
 
                      elsif Dynamic_Elaboration_Checks then
 
-                        --  This is a rather new check, going into version
-                        --  3.14a1 for the first time (V1.80 of this unit), so
-                        --  we provide a debug flag to enable it. That way we
-                        --  have an easy work around for regressions that are
-                        --  caused by this new check. This debug flag can be
-                        --  removed later.
+                        --  We provide a debug flag to disable this check. That
+                        --  way we have an easy work around for regressions
+                        --  that are caused by this new check. This debug flag
+                        --  can be removed later.
 
                         if Debug_Flag_DD then
                            return;
@@ -1373,7 +1358,7 @@ package body Sem_Elab is
                         --  but we need to capture local suppress pragmas
                         --  that may inhibit checks on this call.
 
-                        Ent := Get_Called_Ent;
+                        Ent := Get_Referenced_Ent (N);
 
                         if No (Ent) then
                            return;
@@ -1400,7 +1385,7 @@ package body Sem_Elab is
          end if;
       end if;
 
-      Ent := Get_Called_Ent;
+      Ent := Get_Referenced_Ent (N);
 
       if No (Ent) then
          return;
@@ -2012,6 +1997,20 @@ package body Sem_Elab is
 
             return OK;
 
+         --  If we have an access attribute for a subprogram, check
+         --  it. Suppress this behavior under debug flag.
+
+         elsif not Debug_Flag_Dot_UU
+           and then Nkind (N) = N_Attribute_Reference
+           and then (Attribute_Name (N) = Name_Access
+                       or else
+                     Attribute_Name (N) = Name_Unrestricted_Access)
+           and then Is_Entity_Name (Prefix (N))
+           and then Is_Subprogram (Entity (Prefix (N)))
+         then
+            Check_Elab_Call (N, Outer_Scope);
+            return OK;
+
          --  If we have a generic instantiation, check it
 
          elsif Nkind (N) in N_Generic_Instantiation then
@@ -2604,6 +2603,34 @@ package body Sem_Elab is
       Activate_Elaborate_All_Desirable (Call, Elab_Unit);
       Set_Suppress_Elaboration_Warnings (Elab_Unit, True);
    end Set_Elaboration_Constraint;
+
+   ------------------------
+   -- Get_Referenced_Ent --
+   ------------------------
+
+   function Get_Referenced_Ent (N : Node_Id) return Entity_Id is
+      Nam : Node_Id;
+
+   begin
+      if Nkind (N) = N_Attribute_Reference then
+         Nam := Prefix (N);
+      else
+         Nam := Name (N);
+      end if;
+
+      if No (Nam) then
+         return Empty;
+
+      elsif Nkind (Nam) = N_Selected_Component then
+         return Entity (Selector_Name (Nam));
+
+      elsif not Is_Entity_Name (Nam) then
+         return Empty;
+
+      else
+         return Entity (Nam);
+      end if;
+   end Get_Referenced_Ent;
 
    ----------------------
    -- Has_Generic_Body --

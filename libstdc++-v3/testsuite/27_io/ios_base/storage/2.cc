@@ -1,6 +1,6 @@
 // 2000-12-19 bkoz
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2012
 // Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -19,12 +19,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // 27.4.2.5 ios_base storage functions
-
-// XXX This test will not work for some versions of irix6 because of
-// XXX bug(s) in libc malloc for very large allocations.  However
-// XXX -lmalloc seems to work.
-// See http://gcc.gnu.org/ml/gcc/2002-05/msg01012.html
-// { dg-options "-lmalloc" { target mips*-*-irix6* } }
 
 // This fails on some versions of Darwin 8 because malloc doesn't return
 // NULL even if an allocation fails (filed as Radar 3884894).

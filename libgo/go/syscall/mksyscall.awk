@@ -190,7 +190,7 @@ BEGIN {
     }
 
     if (blocking) {
-	print "\tentersyscall()"
+	print "\tEntersyscall()"
     }
 
     printf("\t")
@@ -240,7 +240,7 @@ BEGIN {
     }
 
     if (blocking) {
-	print "\texitsyscall()"
+	print "\tExitsyscall()"
     }
 
     if (gofnresults != "") {

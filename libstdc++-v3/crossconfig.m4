@@ -198,7 +198,7 @@ case "${host}" in
     ;;
   *-solaris*)
     case "$target" in
-      *-solaris2.8 | *-solaris2.9 | *-solaris2.10)
+      *-solaris2.9 | *-solaris2.10)
          GLIBCXX_CHECK_LINKER_FEATURES
          AC_DEFINE(HAVE_MBSTATE_T)
          AC_DEFINE(HAVE_FINITE)

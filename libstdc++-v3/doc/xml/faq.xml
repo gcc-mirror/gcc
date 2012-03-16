@@ -372,9 +372,8 @@
     <para>
     The exact environment variable to use will depend on your
     platform, e.g. DYLD_LIBRARY_PATH for Darwin,
-    LD_LIBRARY_PATH_32/LD_LIBRARY_PATH_64 for Solaris 32-/64-bit,
-    LD_LIBRARYN32_PATH/LD_LIBRARY64_PATH for Irix N32/64-bit ABIs and
-    SHLIB_PATH for HP-UX.
+    LD_LIBRARY_PATH_32/LD_LIBRARY_PATH_64 for Solaris 32-/64-bit
+    and SHLIB_PATH for HP-UX.
     </para>
     <para>
     See the man pages for <command>ld</command>, <command>ldd</command>

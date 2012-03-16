@@ -61,15 +61,18 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] 
     set option_list [list { -O2 } ]
 
     set nshort [file tail [file dirname $test]]/[file tail $test]
+    list-module-names $test
 
     foreach flags $option_list {
 	verbose "Testing $nshort (single), $flags" 1
 	dg-test $test "-fcoarray=single $flags" "" 
+	cleanup-modules ""
     }
 
     foreach flags $option_list {
 	verbose "Testing $nshort (libcaf_single), $flags" 1
 	dg-test $test "-fcoarray=lib $flags -lcaf_single" ""
+	cleanup-modules ""
     }
 }
 torture-finish

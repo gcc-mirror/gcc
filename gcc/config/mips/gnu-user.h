@@ -1,6 +1,6 @@
 /* Definitions for MIPS systems using GNU userspace.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2010, 2011 Free Software Foundation, Inc.
+   2007, 2008, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUBTARGET_CC1_SPEC
 #define SUBTARGET_CC1_SPEC "%{profile:-p}"
 
-/* From iris5.h */
 /* -G is incompatible with -KPIC which is the default, so only allow objects
    in the small data section if the user explicitly asks for it.  */
 #undef MIPS_DEFAULT_GVALUE

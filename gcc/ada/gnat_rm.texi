@@ -15,7 +15,7 @@
 @setfilename gnat_rm.info
 
 @copying
-Copyright @copyright{} 1995-2008, Free Software Foundation, Inc.
+Copyright @copyright{} 1995-2012, Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -120,6 +120,7 @@ Implementation Defined Pragmas
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
+* Pragma Contract_Case::
 * Pragma Convention_Identifier::
 * Pragma CPP_Class::
 * Pragma CPP_Constructor::
@@ -855,6 +856,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
+* Pragma Contract_Case::
 * Pragma Convention_Identifier::
 * Pragma CPP_Class::
 * Pragma CPP_Constructor::
@@ -1703,6 +1705,108 @@ representation.
 If the alignment for a record or array type is not specified (using
 pragma @code{Pack}, pragma @code{Component_Alignment}, or a record rep
 clause), the GNAT uses the default alignment as described previously.
+
+@node Pragma Contract_Case
+@unnumberedsec Pragma Contract_Case
+@cindex Contract cases
+@findex Contract_Case
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Contract_Case (
+   [Name     =>] static_string_Expression
+  ,[Mode     =>] (Nominal | Robustness)
+ [, Requires =>  Boolean_Expression]
+ [, Ensures  =>  Boolean_Expression]);
+@end smallexample
+
+@noindent
+The @code{Contract_Case} pragma allows defining fine-grain specifications
+that can complement or replace the contract given by a precondition and a
+postcondition. Additionally, the @code{Contract_Case} pragma can be used
+by testing and formal verification tools. The compiler checks its validity and,
+depending on the assertion policy at the point of declaration of the pragma,
+it may insert a check in the executable. For code generation, the contract
+case
+
+@smallexample @c ada
+pragma Contract_Case (
+   Name     => ...
+   Mode     => ...
+   Requires => R,
+   Ensures  => E);
+@end smallexample
+
+@noindent
+is equivalent to
+
+@smallexample @c ada
+pragma Postcondition (not R'Old or else E);
+@end smallexample
+
+@noindent
+which is also equivalent to (in Ada 2012)
+
+@smallexample @c ada
+pragma Postcondition (if R'Old then E);
+@end smallexample
+
+@noindent
+expressing that, whenever condition @code{R} is satisfied on entry to the
+subprogram, condition @code{E} should be fulfilled on exit to the subprogram.
+
+A precondition @code{P} and postcondition @code{Q} can also be
+expressed as contract cases:
+
+@smallexample @c ada
+pragma Contract_Case (
+   Name     => "Replace precondition",
+   Mode     => Nominal,
+   Requires => not P,
+   Ensures  => False);
+pragma Contract_Case (
+   Name     => "Replace postcondition",
+   Mode     => Nominal,
+   Requires => P,
+   Ensures  => Q);
+@end smallexample
+
+@code{Contract_Case} pragmas may only appear immediately following the
+(separate) declaration of a subprogram in a package declaration, inside
+a package spec unit. Only other pragmas may intervene (that is appear
+between the subprogram declaration and a contract case).
+
+The compiler checks that boolean expressions given in @code{Requires} and
+@code{Ensures} are valid, where the rules for @code{Requires} are the
+same as the rule for an expression in @code{Precondition} and the rules
+for @code{Ensures} are the same as the rule for an expression in
+@code{Postcondition}. In particular, attributes @code{'Old} and
+@code{'Result} can only be used within the @code{Ensures}
+expression. The following is an example of use within a package spec:
+
+@smallexample @c ada
+package Math_Functions is
+   ...
+   function Sqrt (Arg : Float) return Float;
+   pragma Contract_Case (Name     => "Small argument",
+                         Mode     => Nominal,
+                         Requires => Arg < 100,
+                         Ensures  => Sqrt'Result < 10);
+   ...
+end Math_Functions;
+@end smallexample
+
+@noindent
+The meaning of a contract case is that, whenever the associated subprogram is
+executed in a context where @code{Requires} holds, then @code{Ensures}
+should hold when the subprogram returns. Mode @code{Nominal} indicates
+that the input context should also satisfy the precondition of the
+subprogram, and the output context should also satisfy its
+postcondition. More @code{Robustness} indicates that the precondition and
+postcondition of the subprogram should be ignored for this contract case,
+which is mostly useful when testing such a contract using a testing tool
+that understands contract cases.
 
 @node Pragma Convention_Identifier
 @unnumberedsec Pragma Convention_Identifier
@@ -3212,12 +3316,14 @@ pragma Invariant
 @end smallexample
 
 @noindent
-This pragma provides exactly the same capabilities as the Invariant aspect
-defined in AI05-0146-1, and in the Ada 2012 Reference Manual. The Invariant
-aspect is fully implemented in Ada 2012 mode, but since it requires the use
-of the aspect syntax, which is not available exception in 2012 mode, it is
-not possible to use the Invariant aspect in earlier versions of Ada. However
-the Invariant pragma may be used in any version of Ada.
+This pragma provides exactly the same capabilities as the Type_Invariant aspect
+defined in AI05-0146-1, and in the Ada 2012 Reference Manual. The
+Type_Invariant aspect is fully implemented in Ada 2012 mode, but since it
+requires the use of the aspect syntax, which is not available except in 2012
+mode, it is not possible to use the Type_Invariant aspect in earlier versions
+of Ada. However the Invariant pragma may be used in any version of Ada. Also
+note that the aspect Invariant is a synonym in GNAT for the aspect
+Type_Invariant, but there is no pragma Type_Invariant.
 
 The pragma must appear within the visible part of the package specification,
 after the type to which its Entity argument appears. As with the Invariant
@@ -3233,7 +3339,7 @@ in Ada 2012 mode, but you cannot have both an invariant aspect and an
 invariant pragma for the same entity.
 
 For further details on the use of this pragma, see the Ada 2012 documentation
-of the Invariant aspect.
+of the Type_Invariant aspect.
 
 @node Pragma Keep_Names
 @unnumberedsec Pragma Keep_Names
@@ -5236,9 +5342,12 @@ pragma Test_Case (
 
 @noindent
 The @code{Test_Case} pragma allows defining fine-grain specifications
-for use by testing and verification tools. The compiler checks its
-validity but the presence of pragma @code{Test_Case} does not lead to
-any modification of the code generated by the compiler.
+for use by testing tools. Its syntax is similar to the syntax of the
+@code{Contract_Case} pragma, which is used for both testing and
+formal verification.
+The compiler checks the validity of the @code{Test_Case} pragma, but its
+presence does not lead to any modification of the code generated by the
+compiler, contrary to the treatment of the @code{Contract_Case} pragma.
 
 @code{Test_Case} pragmas may only appear immediately following the
 (separate) declaration of a subprogram in a package declaration, inside
@@ -5259,19 +5368,19 @@ package Math_Functions is
    function Sqrt (Arg : Float) return Float;
    pragma Test_Case (Name     => "Test 1",
                      Mode     => Nominal,
-                     Requires => Arg < 100,
+                     Requires => Arg < 10000,
                      Ensures  => Sqrt'Result < 10);
    ...
 end Math_Functions;
 @end smallexample
 
 @noindent
-The meaning of a test case is that, if the associated subprogram is
-executed in a context where @code{Requires} holds, then @code{Ensures}
-should hold when the subprogram returns. Mode @code{Nominal} indicates
-that the input context should satisfy the precondition of the
-subprogram, and the output context should then satisfy its
-postcondition. More @code{Robustness} indicates that the pre- and
+The meaning of a test case is that there is at least one context where
+@code{Requires} holds such that, if the associated subprogram is executed in
+that context, then @code{Ensures} holds when the subprogram returns.
+Mode @code{Nominal} indicates that the input context should also satisfy the
+precondition of the subprogram, and the output context should also satisfy its
+postcondition. More @code{Robustness} indicates that the precondition and
 postcondition of the subprogram should be ignored for this test case.
 
 @node Pragma Thread_Local_Storage
@@ -8928,10 +9037,6 @@ of interrupt blocking.
 Whenever possible, the implementation should allow interrupt handlers to
 be called directly by the hardware.
 @end cartouche
-@c SGI info:
-@ignore
-This is never possible under IRIX, so this is followed by default.
-@end ignore
 Followed on any target where the underlying operating system permits
 such direct calls.
 
@@ -9244,11 +9349,6 @@ A requirement for conforming Ada compilers is that they provide
 documentation describing how the implementation deals with each of these
 issues.  In this chapter, you will find each point in Annex M listed
 followed by a description in italic font of how GNAT
-@c SGI info:
-@ignore
-in the ProDev Ada
-implementation on IRIX 5.3 operating system or greater
-@end ignore
 handles the implementation dependence.
 
 You can use this chapter as a guide to minimizing implementation
@@ -10515,11 +10615,6 @@ object does not keep its processor busy.
 on task dispatching.  See D.2.1(9).
 @end cartouche
 @noindent
-@c SGI info
-@ignore
-Tasks map to IRIX threads, and the dispatching policy is as defined by
-the IRIX implementation of threads.
-@end ignore
 Tasks map to threads in the threads package used by GNAT@.  Where possible
 and appropriate, these threads correspond to native threads of the
 underlying operating system.
@@ -10550,11 +10645,6 @@ of delay expirations for lower priority tasks.
 @strong{100}.  Implementation-defined task dispatching.  See D.2.2(18).
 @end cartouche
 @noindent
-@c SGI info:
-@ignore
-Tasks map to IRIX threads, and the dispatching policy is as defined by
-the IRIX implementation of threads.
-@end ignore
 The policy is the same as that of the underlying threads implementation.
 
 @sp 1
@@ -17392,12 +17482,13 @@ A complete description of the AIs may be found in
 @item @code{Atomic_Components} @tab
 @item @code{Bit_Order} @tab
 @item @code{Component_Size} @tab
+@item @code{Contract_Case} @tab                 -- GNAT
 @item @code{Discard_Names} @tab
 @item @code{External_Tag} @tab
 @item @code{Favor_Top_Level} @tab               -- GNAT
 @item @code{Inline} @tab
 @item @code{Inline_Always} @tab                 -- GNAT
-@item @code{Invariant} @tab
+@item @code{Invariant} @tab                     -- GNAT
 @item @code{Machine_Radix} @tab
 @item @code{No_Return} @tab
 @item @code{Object_Size} @tab                   -- GNAT
@@ -17417,6 +17508,7 @@ A complete description of the AIs may be found in
 @item @code{Suppress} @tab
 @item @code{Suppress_Debug_Info} @tab           -- GNAT
 @item @code{Test_Case} @tab                     -- GNAT
+@item @code{Type_Invariant} @tab
 @item @code{Unchecked_Union} @tab
 @item @code{Universal_Aliasing} @tab            -- GNAT
 @item @code{Unmodified} @tab                    -- GNAT
@@ -18437,8 +18529,8 @@ A complete description of the AIs may be found in
 
 @noindent
   Type invariants may be specified for private types using the aspect notation.
-  Aspect @code{Invariant} may be specified for any private type,
-  @code{Invariant'Class} can
+  Aspect @code{Type_Invariant} may be specified for any private type,
+  @code{Type_Invariant'Class} can
   only be specified for tagged types, and is inherited by any descendent of the
   tagged types. The invariant is a boolean expression that is tested for being
   true in the following situations: conversions to the private type, object
@@ -18446,6 +18538,8 @@ A complete description of the AIs may be found in
   [@b{in}] @b{out}
   parameters and returned result on return from any primitive operation for
   the type that is visible to a client.
+  GNAT defines the synonyms @code{Invariant} for @code{Type_Invariant} and
+  @code{Invariant'Class} for @code{Type_Invariant'Class}.
 
 @noindent
   RM References:  13.03.03 (00)

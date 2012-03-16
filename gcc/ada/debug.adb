@@ -138,7 +138,7 @@ package body Debug is
    --  d.R
    --  d.S  Force Optimize_Alignment (Space)
    --  d.T  Force Optimize_Alignment (Time)
-   --  d.U
+   --  d.U  Ignore indirect calls for static elaboration
    --  d.V
    --  d.W  Print out debugging information for Walk_Library_Items
    --  d.X  Use Expression_With_Actions
@@ -641,6 +641,12 @@ package body Debug is
    --  d.S  Force Optimize_Alignment (Space) mode as the default
 
    --  d.T  Force Optimize_Alignment (Time) mode as the default
+
+   --  d.U  Ignore indirect calls for static elaboration. The static
+   --       elaboration model is conservative, especially regarding indirect
+   --       calls. If you say Proc'Access, it will assume you might call
+   --       Proc. This can cause elaboration cycles at bind time. This flag
+   --       reverts to the behavior of earlier compilers.
 
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in

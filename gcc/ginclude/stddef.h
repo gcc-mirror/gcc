@@ -1,4 +1,4 @@
-/* Copyright (C) 1989, 1997, 1998, 1999, 2000, 2002, 2004, 2009, 2011
+/* Copyright (C) 1989, 1997, 1998, 1999, 2000, 2002, 2004, 2009, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -41,8 +41,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define _STDDEF_H_
 /* snaroff@next.com says the NeXT needs this.  */
 #define _ANSI_STDDEF_H
-/* Irix 5.1 needs this.  */
-#define __STDDEF_H__
 #endif
 
 #ifndef __sys_stdtypes_h

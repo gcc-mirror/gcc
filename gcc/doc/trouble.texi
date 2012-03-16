@@ -75,12 +75,6 @@ causes static variable destructors (currently used only in C++) not to
 be run.
 
 @item
-On some SGI systems, when you use @option{-lgl_s} as an option,
-it gets translated magically to @samp{-lgl_s -lX11_s -lc_s}.
-Naturally, this does not happen when you use GCC@.
-You must specify all three options explicitly.
-
-@item
 On a SPARC, GCC aligns all values of type @code{double} on an 8-byte
 boundary, and it expects every @code{double} to be so aligned.  The Sun
 compiler usually gives @code{double} values 8-byte alignment, with one

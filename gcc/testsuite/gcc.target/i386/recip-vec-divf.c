@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ffast-math -ftree-vectorize -msse -mfpmath=sse -mrecip" } */
+/* { dg-options "-O2 -ffast-math -ftree-vectorize -msse -mfpmath=sse -mrecip -fno-common" } */
 
 float a[4];
 float b[4];

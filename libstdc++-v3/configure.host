@@ -254,15 +254,6 @@ case "${host_os}" in
   hpux*)
     os_include_dir="os/hpux"
     ;;
-  irix6.5*)
-    os_include_dir="os/irix/irix6.5"
-    atomicity_dir=os/irix
-    atomic_word_dir=os/irix
-    # libstdc++.so relies on emutls on IRIX, which only works with the
-    # real functions implemented in libpthread.so, not with the stubs in
-    # libc, so always pass -lpthread.
-    OPT_LDFLAGS="${OPT_LDFLAGS} -lpthread"
-    ;;
   mingw32*)
     case "$host" in
       *-w64-*)
@@ -289,8 +280,8 @@ case "${host_os}" in
     echo "Please specify the full version of Solaris, ie. solaris2.9 " 1>&2
     exit 1
     ;;
-  solaris2.[89] | solaris2.1[0-9])
-    os_include_dir="os/solaris/solaris2.8"
+  solaris2.9 | solaris2.1[0-9])
+    os_include_dir="os/solaris/solaris2.9"
     ;;
   tpf)
     os_include_dir="os/tpf"
@@ -341,8 +332,8 @@ case "${host}" in
   powerpc*-*-darwin*)
     port_specific_symbol_files="\$(srcdir)/../config/os/bsd/darwin/ppc-extra.ver"
     ;;
-  *-*-solaris2.[89])
-    abi_baseline_pair=solaris2.8
+  *-*-solaris2.9)
+    abi_baseline_pair=solaris2.9
     abi_baseline_subdir_switch=--print-multi-os-directory
     ;;
   *-*-solaris2.1[0-9])
