@@ -157,3 +157,7 @@ STATIC func_ptr __CTOR_LIST__[1]                                             \
 /* IA64 VMS doesn't fully support COMDAT sections.  */
 
 #define SUPPORTS_ONE_ONLY 0
+
+/* Default values for _CRTL_VER and _VMS_VER.  */
+#define VMS_DEFAULT_CRTL_VER 80300000
+#define VMS_DEFAULT_VMS_VER 80300000

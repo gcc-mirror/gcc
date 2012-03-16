@@ -21,19 +21,21 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_OBJECT_SUFFIX ".obj"
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
-#define TARGET_OS_CPP_BUILTINS()                                \
-  do {                                                          \
-    builtin_define_std ("vms");                                 \
-    builtin_define_std ("VMS");                                 \
-    builtin_assert ("system=vms");                              \
-    SUBTARGET_OS_CPP_BUILTINS();                                \
-    builtin_define ("__int64=long long");                       \
-    if (flag_vms_pointer_size == VMS_POINTER_SIZE_32)           \
-      builtin_define ("__INITIAL_POINTER_SIZE=32");             \
-    else if (flag_vms_pointer_size == VMS_POINTER_SIZE_64)      \
-      builtin_define ("__INITIAL_POINTER_SIZE=64");             \
-    if (POINTER_SIZE == 64)                                     \
-      builtin_define ("__LONG_POINTERS=1");                     \
+#define TARGET_OS_CPP_BUILTINS()					 \
+  do {									 \
+    builtin_define_std ("vms");						 \
+    builtin_define_std ("VMS");						 \
+    builtin_assert ("system=vms");					 \
+    SUBTARGET_OS_CPP_BUILTINS();					 \
+    builtin_define ("__int64=long long");				 \
+    if (flag_vms_pointer_size == VMS_POINTER_SIZE_32)			 \
+      builtin_define ("__INITIAL_POINTER_SIZE=32");			 \
+    else if (flag_vms_pointer_size == VMS_POINTER_SIZE_64)		 \
+      builtin_define ("__INITIAL_POINTER_SIZE=64");			 \
+    if (POINTER_SIZE == 64)						 \
+      builtin_define ("__LONG_POINTERS=1");				 \
+    builtin_define_with_int_value ("__CRTL_VER", vms_c_get_crtl_ver ()); \
+    builtin_define_with_int_value ("__VMS_VER", vms_c_get_vms_ver ());   \
   } while (0)
 
 extern void vms_c_register_includes (const char *, const char *, int);

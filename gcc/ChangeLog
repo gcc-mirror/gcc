@@ -1,3 +1,16 @@
+2012-03-16  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms.h (TARGET_OS_CPP_BUILTINS): Define
+	__CRTL_VER and __VMS_VER.
+	* config/vms/vms-protos.h: Declare vms_c_get_crtl_ver
+	and vms_c_get_vms_ver.
+	* config/vms/vms-c.c (vms_c_get_crtl_ver, vms_c_get_vms_ver): New
+	functions.
+	* config/alpha/vms.h (VMS_DEFAULT_CRTL_VER)
+	(VMS_DEFAULT_VMS_VER): Define.
+	* config/ia64/vms.h (VMS_DEFAULT_CRTL_VER)
+	(VMS_DEFAULT_VMS_VER): Define.
+
 2012-03-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-loop.c (get_initial_def_for_induction): Use
