@@ -1,3 +1,9 @@
+2012-03-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/52608
+	* io/write_float.def (output_float): Move removal of initial zeros
+	until after the scale factor has been applied.
+
 2012-03-16  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/unix.h (struct stream): Rename to stream_vtable.
