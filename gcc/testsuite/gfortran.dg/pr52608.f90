@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR 52608
 ! Testcase reduced from NIST testsuite FM110
 program fm110_snippet
