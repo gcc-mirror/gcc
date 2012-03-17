@@ -1,3 +1,9 @@
+2012-03-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52585
+	* trans-intrinsic.c (gfc_conv_associated): Fix handling of
+	procpointer dummy arguments.
+
 2012-03-16  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* trans-intrinsic.c (build_round_expr): Don't use BUILT_IN_IROUND

@@ -5761,10 +5761,14 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
       /* No optional target.  */
       if (ss1 == gfc_ss_terminator)
         {
-          /* A pointer to a scalar.  */
-          arg1se.want_pointer = 1;
-          gfc_conv_expr (&arg1se, arg1->expr);
-          tmp2 = arg1se.expr;
+	  /* A pointer to a scalar.  */
+	  arg1se.want_pointer = 1;
+	  gfc_conv_expr (&arg1se, arg1->expr);
+	  if (arg1->expr->symtree->n.sym->attr.proc_pointer
+	      && arg1->expr->symtree->n.sym->attr.dummy)
+	    arg1se.expr = build_fold_indirect_ref_loc (input_location,
+						       arg1se.expr);
+	  tmp2 = arg1se.expr;
         }
       else
         {
@@ -5794,12 +5798,21 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 
       if (ss1 == gfc_ss_terminator)
         {
-          /* A pointer to a scalar.  */
-          gcc_assert (ss2 == gfc_ss_terminator);
-          arg1se.want_pointer = 1;
-          gfc_conv_expr (&arg1se, arg1->expr);
-          arg2se.want_pointer = 1;
-          gfc_conv_expr (&arg2se, arg2->expr);
+	  /* A pointer to a scalar.  */
+	  gcc_assert (ss2 == gfc_ss_terminator);
+	  arg1se.want_pointer = 1;
+	  gfc_conv_expr (&arg1se, arg1->expr);
+	  if (arg1->expr->symtree->n.sym->attr.proc_pointer
+	      && arg1->expr->symtree->n.sym->attr.dummy)
+	    arg1se.expr = build_fold_indirect_ref_loc (input_location,
+						       arg1se.expr);
+
+	  arg2se.want_pointer = 1;
+	  gfc_conv_expr (&arg2se, arg2->expr);
+	  if (arg2->expr->symtree->n.sym->attr.proc_pointer
+	      && arg2->expr->symtree->n.sym->attr.dummy)
+	    arg2se.expr = build_fold_indirect_ref_loc (input_location,
+						       arg2se.expr);
 	  gfc_add_block_to_block (&se->pre, &arg1se.pre);
 	  gfc_add_block_to_block (&se->post, &arg1se.post);
           tmp = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
