@@ -1,7 +1,7 @@
 2012-03-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/52608
-	* gfortran.dh/pr52608.f90: New test.
+	* gfortran.dg/pr52608.f90: New test.
 
 2012-03-17  Tobias Burnus  <burnus@net-b.de>
 
