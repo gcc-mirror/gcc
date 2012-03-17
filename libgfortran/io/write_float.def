@@ -180,12 +180,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       /* Make sure the decimal point is a '.'; depending on the
 	 locale, this might not be the case otherwise.  */
       digits[nbefore] = '.';
-      if (digits[0] == '0' && nbefore == 1)
-	{
-	  digits++;
-	  nbefore--;
-	  ndigits--;
-	}
       if (p != 0)
 	{
 	  if (p > 0)
@@ -227,6 +221,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	{
 	  nzero = nzero_real = 0;
 	  nafter = d;
+	}
+
+      while (digits[0] == '0' && nbefore > 0)
+	{
+	  digits++;
+	  nbefore--;
+	  ndigits--;
 	}
 
       expchar = 0;
