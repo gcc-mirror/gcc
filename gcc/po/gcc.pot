@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2012-03-03 12:02+0000\n"
+"POT-Creation-Date: 2012-03-18 14:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2655,18 +2655,18 @@ msgid "invalid %%r value"
 msgstr ""
 
 #: config/alpha/alpha.c:5083 config/ia64/ia64.c:5245
-#: config/rs6000/rs6000.c:15008 config/xtensa/xtensa.c:2350
+#: config/rs6000/rs6000.c:15019 config/xtensa/xtensa.c:2350
 #, c-format
 msgid "invalid %%R value"
 msgstr ""
 
-#: config/alpha/alpha.c:5089 config/rs6000/rs6000.c:14927
+#: config/alpha/alpha.c:5089 config/rs6000/rs6000.c:14938
 #: config/xtensa/xtensa.c:2317
 #, c-format
 msgid "invalid %%N value"
 msgstr ""
 
-#: config/alpha/alpha.c:5097 config/rs6000/rs6000.c:14955
+#: config/alpha/alpha.c:5097 config/rs6000/rs6000.c:14966
 #, c-format
 msgid "invalid %%P value"
 msgstr ""
@@ -2681,12 +2681,12 @@ msgstr ""
 msgid "invalid %%L value"
 msgstr ""
 
-#: config/alpha/alpha.c:5152 config/rs6000/rs6000.c:14909
+#: config/alpha/alpha.c:5152 config/rs6000/rs6000.c:14920
 #, c-format
 msgid "invalid %%m value"
 msgstr ""
 
-#: config/alpha/alpha.c:5160 config/rs6000/rs6000.c:14917
+#: config/alpha/alpha.c:5160 config/rs6000/rs6000.c:14928
 #, c-format
 msgid "invalid %%M value"
 msgstr ""
@@ -2697,7 +2697,7 @@ msgid "invalid %%U value"
 msgstr ""
 
 #: config/alpha/alpha.c:5212 config/alpha/alpha.c:5223
-#: config/rs6000/rs6000.c:15016
+#: config/rs6000/rs6000.c:15027
 #, c-format
 msgid "invalid %%s value"
 msgstr ""
@@ -2707,7 +2707,7 @@ msgstr ""
 msgid "invalid %%C value"
 msgstr ""
 
-#: config/alpha/alpha.c:5271 config/rs6000/rs6000.c:14774
+#: config/alpha/alpha.c:5271 config/rs6000/rs6000.c:14785
 #, c-format
 msgid "invalid %%E value"
 msgstr ""
@@ -2718,7 +2718,7 @@ msgid "unknown relocation unspec"
 msgstr ""
 
 #: config/alpha/alpha.c:5305 config/cr16/cr16.c:1537
-#: config/rs6000/rs6000.c:15382 config/spu/spu.c:1744
+#: config/rs6000/rs6000.c:15393 config/spu/spu.c:1744
 #, c-format
 msgid "invalid %%xn code"
 msgstr ""
@@ -3202,7 +3202,7 @@ msgstr ""
 msgid "invalid %%P operand"
 msgstr ""
 
-#: config/iq2000/iq2000.c:3138 config/rs6000/rs6000.c:14945
+#: config/iq2000/iq2000.c:3138 config/rs6000/rs6000.c:14956
 #, c-format
 msgid "invalid %%p value"
 msgstr ""
@@ -3281,7 +3281,7 @@ msgid "post-increment address is not a register"
 msgstr ""
 
 #: config/m32r/m32r.c:2321 config/m32r/m32r.c:2335
-#: config/rs6000/rs6000.c:24537
+#: config/rs6000/rs6000.c:24548
 msgid "bad address"
 msgstr ""
 
@@ -3328,19 +3328,19 @@ msgstr ""
 msgid "letter %c was found & insn was not CONST_INT"
 msgstr ""
 
-#: config/mips/mips.c:7703 config/mips/mips.c:7724 config/mips/mips.c:7844
+#: config/mips/mips.c:7709 config/mips/mips.c:7730 config/mips/mips.c:7850
 #, c-format
 msgid "'%%%c' is not a valid operand prefix"
 msgstr ""
 
-#: config/mips/mips.c:7781 config/mips/mips.c:7788 config/mips/mips.c:7795
-#: config/mips/mips.c:7802 config/mips/mips.c:7862 config/mips/mips.c:7876
-#: config/mips/mips.c:7889 config/mips/mips.c:7898
+#: config/mips/mips.c:7787 config/mips/mips.c:7794 config/mips/mips.c:7801
+#: config/mips/mips.c:7808 config/mips/mips.c:7868 config/mips/mips.c:7882
+#: config/mips/mips.c:7895 config/mips/mips.c:7904
 #, c-format
 msgid "invalid use of '%%%c'"
 msgstr ""
 
-#: config/mips/mips.c:8120
+#: config/mips/mips.c:8126
 msgid "mips_debugger_offset called with non stack/frame/arg pointer"
 msgstr ""
 
@@ -3416,115 +3416,115 @@ msgstr ""
 msgid "Try running '%s' in the shell to raise its limit.\n"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2745
+#: config/rs6000/rs6000.c:2758
 msgid "-mvsx requires hardware floating point"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2750
+#: config/rs6000/rs6000.c:2763
 msgid "-mvsx and -mpaired are incompatible"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2755
+#: config/rs6000/rs6000.c:2768
 msgid "-mvsx used with little endian code"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2757
+#: config/rs6000/rs6000.c:2770
 msgid "-mvsx needs indexed addressing"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2761
+#: config/rs6000/rs6000.c:2774
 msgid "-mvsx and -mno-altivec are incompatible"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2763
+#: config/rs6000/rs6000.c:2776
 msgid "-mno-altivec disables vsx"
 msgstr ""
 
-#: config/rs6000/rs6000.c:7316
+#: config/rs6000/rs6000.c:7324
 msgid "bad move"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14755
+#: config/rs6000/rs6000.c:14766
 #, c-format
 msgid "invalid %%c value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14783
+#: config/rs6000/rs6000.c:14794
 #, c-format
 msgid "invalid %%f value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14792
+#: config/rs6000/rs6000.c:14803
 #, c-format
 msgid "invalid %%F value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14801
+#: config/rs6000/rs6000.c:14812
 #, c-format
 msgid "invalid %%G value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14836
+#: config/rs6000/rs6000.c:14847
 #, c-format
 msgid "invalid %%j code"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14846
+#: config/rs6000/rs6000.c:14857
 #, c-format
 msgid "invalid %%J code"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14856
+#: config/rs6000/rs6000.c:14867
 #, c-format
 msgid "invalid %%k value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14871 config/xtensa/xtensa.c:2336
+#: config/rs6000/rs6000.c:14882 config/xtensa/xtensa.c:2336
 #, c-format
 msgid "invalid %%K value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14935
+#: config/rs6000/rs6000.c:14946
 #, c-format
 msgid "invalid %%O value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:14982
+#: config/rs6000/rs6000.c:14993
 #, c-format
 msgid "invalid %%q value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:15026
+#: config/rs6000/rs6000.c:15037
 #, c-format
 msgid "invalid %%S value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:15066
+#: config/rs6000/rs6000.c:15077
 #, c-format
 msgid "invalid %%T value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:15076
+#: config/rs6000/rs6000.c:15087
 #, c-format
 msgid "invalid %%u value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:15085 config/xtensa/xtensa.c:2306
+#: config/rs6000/rs6000.c:15096 config/xtensa/xtensa.c:2306
 #, c-format
 msgid "invalid %%v value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:15184 config/xtensa/xtensa.c:2357
+#: config/rs6000/rs6000.c:15195 config/xtensa/xtensa.c:2357
 #, c-format
 msgid "invalid %%x value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:15330
+#: config/rs6000/rs6000.c:15341
 #, c-format
 msgid "invalid %%y value, try using the 'Z' constraint"
 msgstr ""
 
-#: config/rs6000/rs6000.c:26947
+#: config/rs6000/rs6000.c:26958
 msgid "AltiVec argument passed to unprototyped function"
 msgstr ""
 
@@ -3613,25 +3613,25 @@ msgstr ""
 msgid "invalid operand for code: '%c'"
 msgstr ""
 
-#: config/sh/sh.c:1026
+#: config/sh/sh.c:1031
 #, c-format
 msgid "invalid operand to %%R"
 msgstr ""
 
-#: config/sh/sh.c:1053
+#: config/sh/sh.c:1058
 #, c-format
 msgid "invalid operand to %%S"
 msgstr ""
 
-#: config/sh/sh.c:9137
+#: config/sh/sh.c:9142
 msgid "created and used with different architectures / ABIs"
 msgstr ""
 
-#: config/sh/sh.c:9139
+#: config/sh/sh.c:9144
 msgid "created and used with different ABIs"
 msgstr ""
 
-#: config/sh/sh.c:9141
+#: config/sh/sh.c:9146
 msgid "created and used with different endianness"
 msgstr ""
 
@@ -4841,6 +4841,14 @@ msgstr ""
 msgid "consider using '-pg' instead of '-p' with gprof(1)"
 msgstr ""
 
+#: ada/gcc-interface/lang-specs.h:34
+msgid "-c or -S required for Ada"
+msgstr ""
+
+#: ada/gcc-interface/lang-specs.h:52
+msgid "-c required for gnat2why"
+msgstr ""
+
 #: config/rx/rx.h:57
 msgid "-mas100-syntax is incompatible with -gdwarf"
 msgstr ""
@@ -4853,10 +4861,6 @@ msgstr ""
 #: config/sparc/netbsd-elf.h:109 config/sparc/netbsd-elf.h:118
 #: config/sparc/sol2.h:201 config/sparc/sol2.h:207
 msgid "may not use both -m32 and -m64"
-msgstr ""
-
-#: config/s390/tpf.h:116
-msgid "static is not supported on TPF-OS"
 msgstr ""
 
 #: config/pa/pa64-hpux.h:30 config/pa/pa64-hpux.h:33 config/pa/pa64-hpux.h:42
@@ -4873,10 +4877,6 @@ msgstr ""
 msgid "  profiling support are only provided in archive format"
 msgstr ""
 
-#: config/mips/mips.h:1169
-msgid "may not use both -EB and -EL"
-msgstr ""
-
 #: config/lynx.h:70
 msgid "cannot use mthreads and mlegacy-threads together"
 msgstr ""
@@ -4885,17 +4885,17 @@ msgstr ""
 msgid "cannot use mshared and static together"
 msgstr ""
 
-#: ada/gcc-interface/lang-specs.h:34
-msgid "-c or -S required for Ada"
-msgstr ""
-
-#: ada/gcc-interface/lang-specs.h:52
-msgid "-c required for gnat2why"
-msgstr ""
-
 #: config/i386/mingw-w64.h:83 config/i386/mingw32.h:116
 #: config/i386/cygwin.h:114
 msgid "shared and mdll are not compatible"
+msgstr ""
+
+#: config/s390/tpf.h:116
+msgid "static is not supported on TPF-OS"
+msgstr ""
+
+#: config/mips/mips.h:1169
+msgid "may not use both -EB and -EL"
 msgstr ""
 
 #: config/mips/r3900.h:38
@@ -4908,15 +4908,6 @@ msgstr ""
 
 #: config/sol2-bi.h:108 config/sol2-bi.h:113
 msgid "does not support multilib"
-msgstr ""
-
-#: objc/lang-specs.h:31 objc/lang-specs.h:42
-msgid "GNU Objective C no longer supports traditional compilation"
-msgstr ""
-
-#: objc/lang-specs.h:56
-msgid ""
-"objc-cpp-output is deprecated; please use objective-c-cpp-output instead"
 msgstr ""
 
 #: config/arm/arm.h:157
@@ -4975,9 +4966,13 @@ msgstr ""
 msgid "-private_bundle not allowed with -dynamiclib"
 msgstr ""
 
-#: objcp/lang-specs.h:58
+#: objc/lang-specs.h:31 objc/lang-specs.h:42
+msgid "GNU Objective C no longer supports traditional compilation"
+msgstr ""
+
+#: objc/lang-specs.h:56
 msgid ""
-"objc++-cpp-output is deprecated; please use objective-c++-cpp-output instead"
+"objc-cpp-output is deprecated; please use objective-c-cpp-output instead"
 msgstr ""
 
 #: config/vax/netbsd-elf.h:51
@@ -5002,6 +4997,11 @@ msgstr ""
 
 #: config/rs6000/darwin.h:96
 msgid " conflicting code gen style switches are used"
+msgstr ""
+
+#: objcp/lang-specs.h:58
+msgid ""
+"objc++-cpp-output is deprecated; please use objective-c++-cpp-output instead"
 msgstr ""
 
 #: config/vax/vax.h:50 config/vax/vax.h:51
@@ -12204,221 +12204,221 @@ msgstr ""
 msgid "Create a position independent executable"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:912
+#: go/gofrontend/expressions.cc:917
 msgid "invalid use of type"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:2273 go/gofrontend/expressions.cc:2991
+#: go/gofrontend/expressions.cc:2278 go/gofrontend/expressions.cc:2996
 msgid "floating point constant truncated to integer"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:2871 go/gofrontend/expressions.cc:2941
-#: go/gofrontend/expressions.cc:2957
+#: go/gofrontend/expressions.cc:2876 go/gofrontend/expressions.cc:2946
+#: go/gofrontend/expressions.cc:2962
 msgid "constant refers to itself"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:4552
+#: go/gofrontend/expressions.cc:4557
 msgid "expected numeric type"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:4559
+#: go/gofrontend/expressions.cc:4564
 msgid "expected integer or boolean type"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:4566
+#: go/gofrontend/expressions.cc:4571
 msgid "invalid operand for unary %<&%>"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:4575
+#: go/gofrontend/expressions.cc:4580
 msgid "expected pointer"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:6311 go/gofrontend/expressions.cc:6562
-#: go/gofrontend/expressions.cc:6580
+#: go/gofrontend/expressions.cc:6316 go/gofrontend/expressions.cc:6567
+#: go/gofrontend/expressions.cc:6585
 msgid "incompatible types in binary expression"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:6594
+#: go/gofrontend/expressions.cc:6599
 msgid "shift of non-integer operand"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:6599
+#: go/gofrontend/expressions.cc:6604
 msgid "shift count not unsigned integer"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:6609
+#: go/gofrontend/expressions.cc:6614
 msgid "negative shift count"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7317
+#: go/gofrontend/expressions.cc:7322
 msgid "object is not a method"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7326
+#: go/gofrontend/expressions.cc:7331
 msgid "method type does not match object type"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7606
+#: go/gofrontend/expressions.cc:7611
 msgid "invalid use of %<...%> with builtin function"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7668 go/gofrontend/expressions.cc:7725
-#: go/gofrontend/expressions.cc:7770 go/gofrontend/expressions.cc:8497
-#: go/gofrontend/expressions.cc:8642 go/gofrontend/expressions.cc:8685
-#: go/gofrontend/expressions.cc:8741 go/gofrontend/expressions.cc:9919
-#: go/gofrontend/expressions.cc:9938
+#: go/gofrontend/expressions.cc:7673 go/gofrontend/expressions.cc:7730
+#: go/gofrontend/expressions.cc:7775 go/gofrontend/expressions.cc:8502
+#: go/gofrontend/expressions.cc:8647 go/gofrontend/expressions.cc:8690
+#: go/gofrontend/expressions.cc:8746 go/gofrontend/expressions.cc:9924
+#: go/gofrontend/expressions.cc:9943
 msgid "not enough arguments"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7670 go/gofrontend/expressions.cc:7727
-#: go/gofrontend/expressions.cc:8502 go/gofrontend/expressions.cc:8625
-#: go/gofrontend/expressions.cc:8647 go/gofrontend/expressions.cc:8690
-#: go/gofrontend/expressions.cc:8743 go/gofrontend/expressions.cc:9633
-#: go/gofrontend/expressions.cc:9924 go/gofrontend/expressions.cc:9945
+#: go/gofrontend/expressions.cc:7675 go/gofrontend/expressions.cc:7732
+#: go/gofrontend/expressions.cc:8507 go/gofrontend/expressions.cc:8630
+#: go/gofrontend/expressions.cc:8652 go/gofrontend/expressions.cc:8695
+#: go/gofrontend/expressions.cc:8748 go/gofrontend/expressions.cc:9638
+#: go/gofrontend/expressions.cc:9929 go/gofrontend/expressions.cc:9950
 msgid "too many arguments"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7729
+#: go/gofrontend/expressions.cc:7734
 msgid "argument 1 must be a map"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7796
+#: go/gofrontend/expressions.cc:7801
 msgid "invalid type for make function"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7810
+#: go/gofrontend/expressions.cc:7815
 msgid "length required when allocating a slice"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7824
+#: go/gofrontend/expressions.cc:7829
 msgid "bad size for make"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7839
+#: go/gofrontend/expressions.cc:7844
 msgid "bad capacity when making slice"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:7850
+#: go/gofrontend/expressions.cc:7855
 msgid "too many arguments to make"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8544
+#: go/gofrontend/expressions.cc:8549
 msgid "argument must be array or slice or channel"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8554
+#: go/gofrontend/expressions.cc:8559
 msgid "argument must be string or array or slice or map or channel"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8600
+#: go/gofrontend/expressions.cc:8605
 msgid "unsupported argument type to builtin function"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8611
+#: go/gofrontend/expressions.cc:8616
 msgid "argument must be channel"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8613
+#: go/gofrontend/expressions.cc:8618
 msgid "cannot close receive-only channel"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8633
+#: go/gofrontend/expressions.cc:8638
 msgid "argument must be a field reference"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8660
+#: go/gofrontend/expressions.cc:8665
 msgid "left argument must be a slice"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8668
+#: go/gofrontend/expressions.cc:8673
 msgid "element types must be the same"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8673
+#: go/gofrontend/expressions.cc:8678
 msgid "first argument must be []byte"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8676
+#: go/gofrontend/expressions.cc:8681
 msgid "second argument must be slice or string"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8717
+#: go/gofrontend/expressions.cc:8722
 msgid "argument 2 has invalid type"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8733
+#: go/gofrontend/expressions.cc:8738
 msgid "argument must have complex type"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8751
+#: go/gofrontend/expressions.cc:8756
 msgid "complex arguments must have identical types"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:8753
+#: go/gofrontend/expressions.cc:8758
 msgid "complex arguments must have floating-point type"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:9882 go/gofrontend/expressions.cc:10313
+#: go/gofrontend/expressions.cc:9887 go/gofrontend/expressions.cc:10318
 msgid "expected function"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:9901
+#: go/gofrontend/expressions.cc:9906
 msgid "incompatible type for receiver"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:10322 go/gofrontend/expressions.cc:10336
+#: go/gofrontend/expressions.cc:10327 go/gofrontend/expressions.cc:10341
 msgid "number of results does not match number of values"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:10640 go/gofrontend/expressions.cc:11060
+#: go/gofrontend/expressions.cc:10645 go/gofrontend/expressions.cc:11065
 msgid "index must be integer"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:10646 go/gofrontend/expressions.cc:11064
+#: go/gofrontend/expressions.cc:10651 go/gofrontend/expressions.cc:11069
 msgid "slice end must be integer"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:10701
+#: go/gofrontend/expressions.cc:10706
 msgid "slice of unaddressable value"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:11292
+#: go/gofrontend/expressions.cc:11297
 msgid "incompatible type for map index"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:11640
+#: go/gofrontend/expressions.cc:11645
 msgid "expected interface or pointer to interface"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:12177
+#: go/gofrontend/expressions.cc:12182
 msgid "too many expressions for struct"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:12190
+#: go/gofrontend/expressions.cc:12195
 msgid "too few expressions for struct"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:12470
+#: go/gofrontend/expressions.cc:12475
 msgid "too many elements in composite literal"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:13739 go/gofrontend/expressions.cc:13747
+#: go/gofrontend/expressions.cc:13744 go/gofrontend/expressions.cc:13752
 msgid "invalid unsafe.Pointer conversion"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:13752 go/gofrontend/statements.cc:1539
+#: go/gofrontend/expressions.cc:13757 go/gofrontend/statements.cc:1539
 msgid "type assertion only valid for interface types"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:13764
+#: go/gofrontend/expressions.cc:13769
 msgid "impossible type assertion: type does not implement interface"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:13948 go/gofrontend/statements.cc:1387
+#: go/gofrontend/expressions.cc:13953 go/gofrontend/statements.cc:1387
 msgid "expected channel"
 msgstr ""
 
-#: go/gofrontend/expressions.cc:13953 go/gofrontend/statements.cc:1392
+#: go/gofrontend/expressions.cc:13958 go/gofrontend/statements.cc:1392
 msgid "invalid receive on send-only channel"
 msgstr ""
 
@@ -12512,71 +12512,71 @@ msgstr ""
 msgid "cannot use type %s as type %s"
 msgstr ""
 
-#: go/gofrontend/types.cc:3199
+#: go/gofrontend/types.cc:3205
 msgid "different receiver types"
 msgstr ""
 
-#: go/gofrontend/types.cc:3219 go/gofrontend/types.cc:3232
-#: go/gofrontend/types.cc:3247
+#: go/gofrontend/types.cc:3225 go/gofrontend/types.cc:3238
+#: go/gofrontend/types.cc:3253
 msgid "different number of parameters"
 msgstr ""
 
-#: go/gofrontend/types.cc:3240
+#: go/gofrontend/types.cc:3246
 msgid "different parameter types"
 msgstr ""
 
-#: go/gofrontend/types.cc:3255
+#: go/gofrontend/types.cc:3261
 msgid "different varargs"
 msgstr ""
 
-#: go/gofrontend/types.cc:3264 go/gofrontend/types.cc:3277
-#: go/gofrontend/types.cc:3292
+#: go/gofrontend/types.cc:3270 go/gofrontend/types.cc:3283
+#: go/gofrontend/types.cc:3298
 msgid "different number of results"
 msgstr ""
 
-#: go/gofrontend/types.cc:3285
+#: go/gofrontend/types.cc:3291
 msgid "different result types"
 msgstr ""
 
-#: go/gofrontend/types.cc:4237
+#: go/gofrontend/types.cc:4247
 #, c-format
 msgid "implicit assignment of %s%s%s hidden field %s%s%s"
 msgstr ""
 
-#: go/gofrontend/types.cc:6641
+#: go/gofrontend/types.cc:6651
 #, c-format
 msgid "need explicit conversion; missing method %s%s%s"
 msgstr ""
 
-#: go/gofrontend/types.cc:6658 go/gofrontend/types.cc:6800
+#: go/gofrontend/types.cc:6668 go/gofrontend/types.cc:6810
 #, c-format
 msgid "incompatible type for method %s%s%s"
 msgstr ""
 
-#: go/gofrontend/types.cc:6662 go/gofrontend/types.cc:6804
+#: go/gofrontend/types.cc:6672 go/gofrontend/types.cc:6814
 #, c-format
 msgid "incompatible type for method %s%s%s (%s)"
 msgstr ""
 
-#: go/gofrontend/types.cc:6741 go/gofrontend/types.cc:6754
+#: go/gofrontend/types.cc:6751 go/gofrontend/types.cc:6764
 msgid "pointer to interface type has no methods"
 msgstr ""
 
-#: go/gofrontend/types.cc:6743 go/gofrontend/types.cc:6756
+#: go/gofrontend/types.cc:6753 go/gofrontend/types.cc:6766
 msgid "type has no methods"
 msgstr ""
 
-#: go/gofrontend/types.cc:6777
+#: go/gofrontend/types.cc:6787
 #, c-format
 msgid "ambiguous method %s%s%s"
 msgstr ""
 
-#: go/gofrontend/types.cc:6780
+#: go/gofrontend/types.cc:6790
 #, c-format
 msgid "missing method %s%s%s"
 msgstr ""
 
-#: go/gofrontend/types.cc:6820
+#: go/gofrontend/types.cc:6830
 #, c-format
 msgid "method %s%s%s requires a pointer"
 msgstr ""
@@ -12644,152 +12644,152 @@ msgstr ""
 msgid "invalid third argument to %<__builtin_prefetch%>; using zero"
 msgstr ""
 
-#: builtins.c:4214 gimplify.c:2407
+#: builtins.c:4243 gimplify.c:2407
 #, gcc-internal-format
 msgid "too few arguments to function %<va_start%>"
 msgstr ""
 
-#: builtins.c:4372
+#: builtins.c:4401
 #, gcc-internal-format
 msgid "first argument to %<va_arg%> not of type %<va_list%>"
 msgstr ""
 
-#: builtins.c:4388
+#: builtins.c:4417
 #, gcc-internal-format
 msgid "%qT is promoted to %qT when passed through %<...%>"
 msgstr ""
 
-#: builtins.c:4393
+#: builtins.c:4422
 #, gcc-internal-format
 msgid "(so you should pass %qT not %qT to %<va_arg%>)"
 msgstr ""
 
 #. We can, however, treat "undefined" any way we please.
 #. Call abort to encourage the user to fix the program.
-#: builtins.c:4400 c-typeck.c:2787
+#: builtins.c:4429 c-typeck.c:2787
 #, gcc-internal-format
 msgid "if this code is reached, the program will abort"
 msgstr ""
 
-#: builtins.c:4527
+#: builtins.c:4556
 #, gcc-internal-format
 msgid "invalid argument to %<__builtin_frame_address%>"
 msgstr ""
 
-#: builtins.c:4529
+#: builtins.c:4558
 #, gcc-internal-format
 msgid "invalid argument to %<__builtin_return_address%>"
 msgstr ""
 
-#: builtins.c:4542
+#: builtins.c:4571
 #, gcc-internal-format
 msgid "unsupported argument to %<__builtin_frame_address%>"
 msgstr ""
 
-#: builtins.c:4544
+#: builtins.c:4573
 #, gcc-internal-format
 msgid "unsupported argument to %<__builtin_return_address%>"
 msgstr ""
 
-#: builtins.c:4808
+#: builtins.c:4837
 #, gcc-internal-format
 msgid "both arguments to %<__builtin___clear_cache%> must be pointers"
 msgstr ""
 
-#: builtins.c:4908
+#: builtins.c:4937
 #, gcc-internal-format
 msgid "trampoline generated for nested function %qD"
 msgstr ""
 
-#: builtins.c:5204 builtins.c:5217
+#: builtins.c:5233 builtins.c:5246
 #, gcc-internal-format
 msgid "%qD changed semantics in GCC 4.4"
 msgstr ""
 
-#: builtins.c:5316
+#: builtins.c:5345
 #, gcc-internal-format
 msgid "invalid memory model argument to builtin"
 msgstr ""
 
-#: builtins.c:5336
+#: builtins.c:5365
 #, gcc-internal-format
 msgid "invalid memory model for %<__atomic_exchange%>"
 msgstr ""
 
-#: builtins.c:5372
+#: builtins.c:5401
 #, gcc-internal-format
 msgid "invalid failure memory model for %<__atomic_compare_exchange%>"
 msgstr ""
 
-#: builtins.c:5378
+#: builtins.c:5407
 #, gcc-internal-format
 msgid ""
 "failure memory model cannot be stronger than success memory model for "
 "%<__atomic_compare_exchange%>"
 msgstr ""
 
-#: builtins.c:5424
+#: builtins.c:5453
 #, gcc-internal-format
 msgid "invalid memory model for %<__atomic_load%>"
 msgstr ""
 
-#: builtins.c:5454 builtins.c:5560
+#: builtins.c:5483 builtins.c:5589
 #, gcc-internal-format
 msgid "invalid memory model for %<__atomic_store%>"
 msgstr ""
 
-#: builtins.c:5669
+#: builtins.c:5698
 #, gcc-internal-format
 msgid "non-constant argument 1 to __atomic_always_lock_free"
 msgstr ""
 
-#: builtins.c:5711
+#: builtins.c:5740
 #, gcc-internal-format
 msgid "non-integer argument 1 to __atomic_is_lock_free"
 msgstr ""
 
 #. All valid uses of __builtin_va_arg_pack () are removed during
 #. inlining.
-#: builtins.c:5994 expr.c:9989
+#: builtins.c:6023 expr.c:9989
 #, gcc-internal-format
 msgid "%Kinvalid use of %<__builtin_va_arg_pack ()%>"
 msgstr ""
 
 #. All valid uses of __builtin_va_arg_pack_len () are removed during
 #. inlining.
-#: builtins.c:6000
+#: builtins.c:6029
 #, gcc-internal-format
 msgid "%Kinvalid use of %<__builtin_va_arg_pack_len ()%>"
 msgstr ""
 
-#: builtins.c:6239
+#: builtins.c:6268
 #, gcc-internal-format
 msgid "%<__builtin_longjmp%> second argument must be 1"
 msgstr ""
 
-#: builtins.c:7084
+#: builtins.c:7113
 #, gcc-internal-format
 msgid "target format does not support infinity"
 msgstr ""
 
-#: builtins.c:12065
+#: builtins.c:12094
 #, gcc-internal-format
 msgid "%<va_start%> used in function with fixed args"
 msgstr ""
 
-#: builtins.c:12073
+#: builtins.c:12102
 #, gcc-internal-format
 msgid "wrong number of arguments to function %<va_start%>"
 msgstr ""
 
 #. Evidently an out of date version of <stdarg.h>; can't validate
 #. va_start's second argument, but can still work as intended.
-#: builtins.c:12086
+#: builtins.c:12115
 #, gcc-internal-format
 msgid "%<__builtin_next_arg%> called without an argument"
 msgstr ""
 
-#: builtins.c:12091
+#: builtins.c:12120
 #, gcc-internal-format
 msgid "wrong number of arguments to function %<__builtin_next_arg%>"
 msgstr ""
@@ -12799,44 +12799,44 @@ msgstr ""
 #. argument.  We just warn and set the arg to be the last
 #. argument so that we will get wrong-code because of
 #. it.
-#: builtins.c:12121
+#: builtins.c:12150
 #, gcc-internal-format
 msgid "second parameter of %<va_start%> not last named argument"
 msgstr ""
 
-#: builtins.c:12131
+#: builtins.c:12160
 #, gcc-internal-format
 msgid ""
 "undefined behaviour when second parameter of %<va_start%> is declared with "
 "%<register%> storage"
 msgstr ""
 
-#: builtins.c:12367
+#: builtins.c:12396
 #, gcc-internal-format
 msgid "%Kfirst argument of %D must be a pointer, second integer constant"
 msgstr ""
 
-#: builtins.c:12380
+#: builtins.c:12409
 #, gcc-internal-format
 msgid "%Klast argument of %D is not integer constant between 0 and 3"
 msgstr ""
 
-#: builtins.c:12425 builtins.c:12576 builtins.c:12633
+#: builtins.c:12454 builtins.c:12605 builtins.c:12662
 #, gcc-internal-format
 msgid "%Kcall to %D will always overflow destination buffer"
 msgstr ""
 
-#: builtins.c:12566
+#: builtins.c:12595
 #, gcc-internal-format
 msgid "%Kcall to %D might overflow destination buffer"
 msgstr ""
 
-#: builtins.c:12654
+#: builtins.c:12683
 #, gcc-internal-format
 msgid "%Kattempt to free a non-heap object %qD"
 msgstr ""
 
-#: builtins.c:12657
+#: builtins.c:12686
 #, gcc-internal-format
 msgid "%Kattempt to free a non-heap object"
 msgstr ""
@@ -18343,18 +18343,18 @@ msgid ""
 "critical region may not be nested inside a critical region with the same name"
 msgstr ""
 
-#: omp-low.c:7014 cp/decl.c:2885 cp/parser.c:9853 cp/parser.c:9873
+#: omp-low.c:7012 cp/decl.c:2885 cp/parser.c:9853 cp/parser.c:9873
 #, gcc-internal-format
 msgid "invalid exit from OpenMP structured block"
 msgstr ""
 
-#: omp-low.c:7016 omp-low.c:7021
+#: omp-low.c:7014 omp-low.c:7019
 #, gcc-internal-format
 msgid "invalid entry to OpenMP structured block"
 msgstr ""
 
 #. Otherwise, be vague and lazy, but efficient.
-#: omp-low.c:7024
+#: omp-low.c:7022
 #, gcc-internal-format
 msgid "invalid branch to/from an OpenMP structured block"
 msgstr ""
@@ -18452,14 +18452,14 @@ msgstr ""
 msgid "section anchors must be disabled when toplevel reorder is disabled"
 msgstr ""
 
-#: opts.c:721 config/darwin.c:3002 config/sh/sh.c:804
+#: opts.c:721 config/darwin.c:3002 config/sh/sh.c:809
 #, gcc-internal-format
 msgid ""
 "-freorder-blocks-and-partition does not work with exceptions on this "
 "architecture"
 msgstr ""
 
-#: opts.c:736 config/sh/sh.c:812
+#: opts.c:736 config/sh/sh.c:817
 #, gcc-internal-format
 msgid ""
 "-freorder-blocks-and-partition does not support unwind info on this "
@@ -18826,8 +18826,8 @@ msgid "can%'t use %qs as a fixed register"
 msgstr ""
 
 #: reginfo.c:864 config/ia64/ia64.c:5749 config/ia64/ia64.c:5756
-#: config/pa/pa.c:424 config/pa/pa.c:431 config/sh/sh.c:8744
-#: config/sh/sh.c:8751 config/spu/spu.c:5198 config/spu/spu.c:5205
+#: config/pa/pa.c:424 config/pa/pa.c:431 config/sh/sh.c:8749
+#: config/sh/sh.c:8756 config/spu/spu.c:5198 config/spu/spu.c:5205
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown register name: %s"
 msgstr ""
@@ -19362,7 +19362,7 @@ msgid ""
 "or %<transaction_may_cancel_outer%>"
 msgstr ""
 
-#: trans-mem.c:664 trans-mem.c:4189
+#: trans-mem.c:664 trans-mem.c:4191
 #, gcc-internal-format
 msgid "unsafe function call %qD within atomic transaction"
 msgstr ""
@@ -19377,7 +19377,7 @@ msgstr ""
 msgid "unsafe indirect function call within atomic transaction"
 msgstr ""
 
-#: trans-mem.c:682 trans-mem.c:4122
+#: trans-mem.c:682 trans-mem.c:4124
 #, gcc-internal-format
 msgid "unsafe function call %qD within %<transaction_safe%> function"
 msgstr ""
@@ -19392,7 +19392,7 @@ msgstr ""
 msgid "unsafe indirect function call within %<transaction_safe%> function"
 msgstr ""
 
-#: trans-mem.c:707 trans-mem.c:4161
+#: trans-mem.c:707 trans-mem.c:4163
 #, gcc-internal-format
 msgid "asm not allowed in atomic transaction"
 msgstr ""
@@ -19427,7 +19427,7 @@ msgstr ""
 msgid "outer transaction in %<transaction_safe%> function"
 msgstr ""
 
-#: trans-mem.c:3787
+#: trans-mem.c:3789
 #, gcc-internal-format
 msgid "%Kasm not allowed in %<transaction_safe%> function"
 msgstr ""
@@ -20545,7 +20545,7 @@ msgstr ""
 #: config/darwin.c:1942 config/arm/arm.c:5007 config/arm/arm.c:5035
 #: config/arm/arm.c:5052 config/avr/avr.c:6846 config/h8300/h8300.c:5418
 #: config/h8300/h8300.c:5442 config/i386/i386.c:4944 config/i386/i386.c:31845
-#: config/ia64/ia64.c:734 config/rs6000/rs6000.c:24324 config/spu/spu.c:4035
+#: config/ia64/ia64.c:734 config/rs6000/rs6000.c:24335 config/spu/spu.c:4035
 #: ada/gcc-interface/utils.c:5488 lto/lto-lang.c:215
 #, gcc-internal-format
 msgid "%qE attribute ignored"
@@ -23608,9 +23608,9 @@ msgstr ""
 #: config/i386/i386.c:31746 config/i386/i386.c:31797 config/i386/i386.c:31870
 #: config/m68k/m68k.c:725 config/mcore/mcore.c:3076 config/mep/mep.c:4011
 #: config/mep/mep.c:4025 config/mep/mep.c:4099 config/rl78/rl78.c:478
-#: config/rs6000/rs6000.c:24250 config/rx/rx.c:2502 config/sh/sh.c:8885
-#: config/sh/sh.c:8903 config/sh/sh.c:8932 config/sh/sh.c:9014
-#: config/sh/sh.c:9037 config/spu/spu.c:3977 config/stormy16/stormy16.c:2200
+#: config/rs6000/rs6000.c:24261 config/rx/rx.c:2502 config/sh/sh.c:8890
+#: config/sh/sh.c:8908 config/sh/sh.c:8937 config/sh/sh.c:9019
+#: config/sh/sh.c:9042 config/spu/spu.c:3977 config/stormy16/stormy16.c:2200
 #: config/v850/v850.c:2057
 #, gcc-internal-format
 msgid "%qE attribute only applies to functions"
@@ -24225,7 +24225,7 @@ msgstr ""
 msgid "-mno-fentry isn%'t compatible with SEH"
 msgstr ""
 
-#: config/i386/i386.c:3861 config/rs6000/rs6000.c:3318
+#: config/i386/i386.c:3861 config/rs6000/rs6000.c:3331
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown option for -mrecip=%s"
 msgstr ""
@@ -24473,7 +24473,7 @@ msgstr ""
 msgid "the last argument must be a 32-bit immediate"
 msgstr ""
 
-#: config/i386/i386.c:28995 config/rs6000/rs6000.c:10540
+#: config/i386/i386.c:28995 config/rs6000/rs6000.c:10551
 #, gcc-internal-format
 msgid "selector must be an integer constant in the range 0..%wi"
 msgstr ""
@@ -24513,7 +24513,7 @@ msgstr ""
 msgid "ms_abi and sysv_abi attributes are not compatible"
 msgstr ""
 
-#: config/i386/i386.c:31855 config/rs6000/rs6000.c:24333
+#: config/i386/i386.c:31855 config/rs6000/rs6000.c:24344
 #, gcc-internal-format
 msgid "%qE incompatible attribute ignored"
 msgstr ""
@@ -24584,13 +24584,13 @@ msgstr ""
 msgid "%qE attribute requires a string constant argument"
 msgstr ""
 
-#: config/ia64/ia64.c:5737 config/pa/pa.c:412 config/sh/sh.c:8733
+#: config/ia64/ia64.c:5737 config/pa/pa.c:412 config/sh/sh.c:8738
 #: config/spu/spu.c:5187
 #, gcc-internal-format
 msgid "value of -mfixed-range must have form REG1-REG2"
 msgstr ""
 
-#: config/ia64/ia64.c:5764 config/pa/pa.c:439 config/sh/sh.c:8759
+#: config/ia64/ia64.c:5764 config/pa/pa.c:439 config/sh/sh.c:8764
 #: config/spu/spu.c:5213
 #, gcc-internal-format, gfc-internal-format
 msgid "%s-%s is an empty range"
@@ -24662,7 +24662,7 @@ msgid "%qE attribute is not supported for R8C target"
 msgstr ""
 
 #. The argument must be a constant integer.
-#: config/m32c/m32c.c:3169 config/sh/sh.c:8940 config/sh/sh.c:9046
+#: config/m32c/m32c.c:3169 config/sh/sh.c:8945 config/sh/sh.c:9051
 #, gcc-internal-format
 msgid "%qE attribute argument not an integer constant"
 msgstr ""
@@ -24717,7 +24717,7 @@ msgstr ""
 msgid "interrupt_thread is available only on fido"
 msgstr ""
 
-#: config/m68k/m68k.c:1072 config/rs6000/rs6000.c:18610
+#: config/m68k/m68k.c:1072 config/rs6000/rs6000.c:18621
 #, gcc-internal-format
 msgid "stack limit expression is not supported"
 msgstr ""
@@ -25006,116 +25006,116 @@ msgstr ""
 msgid "-mxl-multiply-high requires -mno-xl-soft-mul"
 msgstr ""
 
-#: config/mips/mips.c:1276 config/mips/mips.c:1278
+#: config/mips/mips.c:1282 config/mips/mips.c:1284
 #, gcc-internal-format
 msgid "%qs attribute only applies to functions"
 msgstr ""
 
-#: config/mips/mips.c:1288
+#: config/mips/mips.c:1294
 #, gcc-internal-format
 msgid "%qE cannot have both %<mips16%> and %<nomips16%> attributes"
 msgstr ""
 
-#: config/mips/mips.c:1310 config/mips/mips.c:1313
+#: config/mips/mips.c:1316 config/mips/mips.c:1319
 #, gcc-internal-format
 msgid "%qE redeclared with conflicting %qs attributes"
 msgstr ""
 
-#: config/mips/mips.c:6564
+#: config/mips/mips.c:6570
 #, gcc-internal-format
 msgid "cannot handle inconsistent calls to %qs"
 msgstr ""
 
-#: config/mips/mips.c:9517
+#: config/mips/mips.c:9523
 #, gcc-internal-format
 msgid "the %<interrupt%> attribute requires a MIPS32r2 processor"
 msgstr ""
 
-#: config/mips/mips.c:9519
+#: config/mips/mips.c:9525
 #, gcc-internal-format
 msgid "the %<interrupt%> attribute requires %<-msoft-float%>"
 msgstr ""
 
-#: config/mips/mips.c:9521
+#: config/mips/mips.c:9527
 #, gcc-internal-format
 msgid "interrupt handlers cannot be MIPS16 functions"
 msgstr ""
 
-#: config/mips/mips.c:13583
+#: config/mips/mips.c:13589
 #, gcc-internal-format
 msgid "invalid argument to built-in function"
 msgstr ""
 
-#: config/mips/mips.c:13783
+#: config/mips/mips.c:13789
 #, gcc-internal-format
 msgid "built-in function %qE not supported for MIPS16"
 msgstr ""
 
-#: config/mips/mips.c:14375
+#: config/mips/mips.c:14381
 #, gcc-internal-format
 msgid "%qs does not support MIPS16 code"
 msgstr ""
 
-#: config/mips/mips.c:15617
+#: config/mips/mips.c:15623
 #, gcc-internal-format
 msgid "MIPS16 PIC for ABIs other than o32 and o64"
 msgstr ""
 
-#: config/mips/mips.c:15620
+#: config/mips/mips.c:15626
 #, gcc-internal-format
 msgid "MIPS16 -mxgot code"
 msgstr ""
 
-#: config/mips/mips.c:15623
+#: config/mips/mips.c:15629
 #, gcc-internal-format
 msgid "hard-float MIPS16 code for ABIs other than o32 and o64"
 msgstr ""
 
-#: config/mips/mips.c:15812
+#: config/mips/mips.c:15818
 #, gcc-internal-format
 msgid ""
 "%<-%s%> conflicts with the other architecture options, which specify a %s "
 "processor"
 msgstr ""
 
-#: config/mips/mips.c:15822
+#: config/mips/mips.c:15828
 #, gcc-internal-format
 msgid "%<-march=%s%> is not compatible with the selected ABI"
 msgstr ""
 
-#: config/mips/mips.c:15837
+#: config/mips/mips.c:15843
 #, gcc-internal-format
 msgid "%<-mgp64%> used with a 32-bit processor"
 msgstr ""
 
-#: config/mips/mips.c:15839
+#: config/mips/mips.c:15845
 #, gcc-internal-format
 msgid "%<-mgp32%> used with a 64-bit ABI"
 msgstr ""
 
-#: config/mips/mips.c:15841
+#: config/mips/mips.c:15847
 #, gcc-internal-format
 msgid "%<-mgp64%> used with a 32-bit ABI"
 msgstr ""
 
-#: config/mips/mips.c:15857 config/mips/mips.c:15859 config/mips/mips.c:15950
+#: config/mips/mips.c:15863 config/mips/mips.c:15865 config/mips/mips.c:15956
 #, gcc-internal-format, gfc-internal-format
 msgid "unsupported combination: %s"
 msgstr ""
 
-#: config/mips/mips.c:15863
+#: config/mips/mips.c:15869
 #, gcc-internal-format
 msgid ""
 "%<-mgp32%> and %<-mfp64%> can only be combined if the target supports the "
 "mfhc1 and mthc1 instructions"
 msgstr ""
 
-#: config/mips/mips.c:15866
+#: config/mips/mips.c:15872
 #, gcc-internal-format
 msgid "%<-mgp32%> and %<-mfp64%> can only be combined when using the o32 ABI"
 msgstr ""
 
-#: config/mips/mips.c:15889 config/mips/mips.c:15891 config/mips/mips.c:15904
+#: config/mips/mips.c:15895 config/mips/mips.c:15897 config/mips/mips.c:15910
 #, gcc-internal-format
 msgid "%qs is incompatible with %qs"
 msgstr ""
@@ -25125,57 +25125,57 @@ msgstr ""
 #. effort to support the combination of 32-bit GOT entries
 #. and 64-bit pointers, so we treat the abicalls case as
 #. an error.
-#: config/mips/mips.c:15898
+#: config/mips/mips.c:15904
 #, gcc-internal-format
 msgid "the combination of %qs and %qs is incompatible with %qs"
 msgstr ""
 
-#: config/mips/mips.c:15944
+#: config/mips/mips.c:15950
 #, gcc-internal-format
 msgid "the %qs architecture does not support branch-likely instructions"
 msgstr ""
 
-#: config/mips/mips.c:15984
+#: config/mips/mips.c:15990
 #, gcc-internal-format
 msgid "%<-mno-gpopt%> needs %<-mexplicit-relocs%>"
 msgstr ""
 
-#: config/mips/mips.c:15992 config/mips/mips.c:15995
+#: config/mips/mips.c:15998 config/mips/mips.c:16001
 #, gcc-internal-format
 msgid "cannot use small-data accesses for %qs"
 msgstr ""
 
-#: config/mips/mips.c:16009
+#: config/mips/mips.c:16015
 #, gcc-internal-format
 msgid "%<-mips3d%> requires %<-mpaired-single%>"
 msgstr ""
 
-#: config/mips/mips.c:16018
+#: config/mips/mips.c:16024
 #, gcc-internal-format
 msgid "%qs must be used with %qs"
 msgstr ""
 
-#: config/mips/mips.c:16025
+#: config/mips/mips.c:16031
 #, gcc-internal-format
 msgid "the %qs architecture does not support paired-single instructions"
 msgstr ""
 
-#: config/mips/mips.c:16031
+#: config/mips/mips.c:16037
 #, gcc-internal-format
 msgid "%qs requires a target that provides the %qs instruction"
 msgstr ""
 
-#: config/mips/mips.c:16136
+#: config/mips/mips.c:16142
 #, gcc-internal-format
 msgid "%qs requires branch-likely instructions"
 msgstr ""
 
-#: config/mips/mips.c:16140
+#: config/mips/mips.c:16146
 #, gcc-internal-format
 msgid "the %qs architecture does not support the synci instruction"
 msgstr ""
 
-#: config/mips/mips.c:16590
+#: config/mips/mips.c:16596
 #, gcc-internal-format
 msgid "mips16 function profiling"
 msgstr ""
@@ -25480,302 +25480,302 @@ msgstr ""
 msgid "-m64 requires PowerPC64 architecture, enabling"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2615
+#: config/rs6000/rs6000.c:2616
 #, gcc-internal-format
 msgid ""
 "-malign-power is not supported for 64-bit Darwin; it is incompatible with "
 "the installed C and C++ libraries"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2621
+#: config/rs6000/rs6000.c:2622
 #, gcc-internal-format
 msgid "not configured for SPE ABI"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2697
+#: config/rs6000/rs6000.c:2710
 #, gcc-internal-format
 msgid "AltiVec not supported in this target"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2699
+#: config/rs6000/rs6000.c:2712
 #, gcc-internal-format
 msgid "SPE not supported in this target"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2726
+#: config/rs6000/rs6000.c:2739
 #, gcc-internal-format
 msgid "-mmultiple is not supported on little endian systems"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2733
+#: config/rs6000/rs6000.c:2746
 #, gcc-internal-format
 msgid "-mstring is not supported on little endian systems"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2839
+#: config/rs6000/rs6000.c:2852
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown vectorization library ABI type (%s) for -mveclibabi= switch"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2851
+#: config/rs6000/rs6000.c:2864
 #, gcc-internal-format
 msgid "target attribute or pragma changes long double size"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2872 config/rs6000/rs6000.c:2887
+#: config/rs6000/rs6000.c:2885 config/rs6000/rs6000.c:2900
 #, gcc-internal-format
 msgid "target attribute or pragma changes AltiVec ABI"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2904
+#: config/rs6000/rs6000.c:2917
 #, gcc-internal-format
 msgid "target attribute or pragma changes darwin64 ABI"
 msgstr ""
 
-#: config/rs6000/rs6000.c:2945
+#: config/rs6000/rs6000.c:2958
 #, gcc-internal-format
 msgid "target attribute or pragma changes SPE ABI"
 msgstr ""
 
-#: config/rs6000/rs6000.c:3268
+#: config/rs6000/rs6000.c:3281
 #, gcc-internal-format
 msgid "target attribute or pragma changes single precision floating point"
 msgstr ""
 
-#: config/rs6000/rs6000.c:3271
+#: config/rs6000/rs6000.c:3284
 #, gcc-internal-format
 msgid "target attribute or pragma changes double precision floating point"
 msgstr ""
 
-#: config/rs6000/rs6000.c:7412
+#: config/rs6000/rs6000.c:7420
 #, gcc-internal-format
 msgid ""
 "GCC vector returned by reference: non-standard ABI extension with no "
 "compatibility guarantee"
 msgstr ""
 
-#: config/rs6000/rs6000.c:7550
+#: config/rs6000/rs6000.c:7561
 #, gcc-internal-format
 msgid ""
 "cannot return value in vector register because altivec instructions are "
 "disabled, use -maltivec to enable them"
 msgstr ""
 
-#: config/rs6000/rs6000.c:7893
+#: config/rs6000/rs6000.c:7904
 #, gcc-internal-format
 msgid ""
 "cannot pass argument in vector register because altivec instructions are "
 "disabled, use -maltivec to enable them"
 msgstr ""
 
-#: config/rs6000/rs6000.c:8819
+#: config/rs6000/rs6000.c:8830
 #, gcc-internal-format
 msgid ""
 "GCC vector passed by reference: non-standard ABI extension with no "
 "compatibility guarantee"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9448
+#: config/rs6000/rs6000.c:9459
 #, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function %s already processed"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9821
+#: config/rs6000/rs6000.c:9832
 #, gcc-internal-format
 msgid "argument 1 must be a 5-bit signed literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9924 config/rs6000/rs6000.c:10941
+#: config/rs6000/rs6000.c:9935 config/rs6000/rs6000.c:10952
 #, gcc-internal-format
 msgid "argument 2 must be a 5-bit unsigned literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:9963
+#: config/rs6000/rs6000.c:9974
 #, gcc-internal-format
 msgid "argument 1 of __builtin_altivec_predicate must be a constant"
 msgstr ""
 
-#: config/rs6000/rs6000.c:10015
+#: config/rs6000/rs6000.c:10026
 #, gcc-internal-format
 msgid "argument 1 of __builtin_altivec_predicate is out of range"
 msgstr ""
 
-#: config/rs6000/rs6000.c:10272
+#: config/rs6000/rs6000.c:10283
 #, gcc-internal-format
 msgid "argument 3 must be a 4-bit unsigned literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:10290
+#: config/rs6000/rs6000.c:10301
 #, gcc-internal-format
 msgid "argument 3 must be a 2-bit unsigned literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:10302
+#: config/rs6000/rs6000.c:10313
 #, gcc-internal-format
 msgid "argument 3 must be a 1-bit unsigned literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:10485
+#: config/rs6000/rs6000.c:10496
 #, gcc-internal-format
 msgid "argument to %qs must be a 2-bit unsigned literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:10626
+#: config/rs6000/rs6000.c:10637
 #, gcc-internal-format
 msgid "unresolved overload for Altivec builtin %qF"
 msgstr ""
 
-#: config/rs6000/rs6000.c:10732
+#: config/rs6000/rs6000.c:10743
 #, gcc-internal-format
 msgid "argument to dss must be a 2-bit unsigned literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:11061
+#: config/rs6000/rs6000.c:11072
 #, gcc-internal-format
 msgid "argument 1 of __builtin_paired_predicate must be a constant"
 msgstr ""
 
-#: config/rs6000/rs6000.c:11108
+#: config/rs6000/rs6000.c:11119
 #, gcc-internal-format
 msgid "argument 1 of __builtin_paired_predicate is out of range"
 msgstr ""
 
-#: config/rs6000/rs6000.c:11133
+#: config/rs6000/rs6000.c:11144
 #, gcc-internal-format
 msgid "argument 1 of __builtin_spe_predicate must be a constant"
 msgstr ""
 
-#: config/rs6000/rs6000.c:11205
+#: config/rs6000/rs6000.c:11216
 #, gcc-internal-format
 msgid "argument 1 of __builtin_spe_predicate is out of range"
 msgstr ""
 
-#: config/rs6000/rs6000.c:11287
+#: config/rs6000/rs6000.c:11298
 #, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s is only valid for the cell processor"
 msgstr ""
 
-#: config/rs6000/rs6000.c:11289
+#: config/rs6000/rs6000.c:11300
 #, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mvsx option"
 msgstr ""
 
-#: config/rs6000/rs6000.c:11291
+#: config/rs6000/rs6000.c:11302
 #, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -maltivec option"
 msgstr ""
 
-#: config/rs6000/rs6000.c:11293
+#: config/rs6000/rs6000.c:11304
 #, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mpaired option"
 msgstr ""
 
-#: config/rs6000/rs6000.c:11295
+#: config/rs6000/rs6000.c:11306
 #, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mspe option"
 msgstr ""
 
-#: config/rs6000/rs6000.c:11297
+#: config/rs6000/rs6000.c:11308
 #, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s is not supported with the current options"
 msgstr ""
 
-#: config/rs6000/rs6000.c:12557
+#: config/rs6000/rs6000.c:12568
 #, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function %s had no type"
 msgstr ""
 
-#: config/rs6000/rs6000.c:12564
+#: config/rs6000/rs6000.c:12575
 #, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function %s had an unexpected return type %s"
 msgstr ""
 
-#: config/rs6000/rs6000.c:12580
+#: config/rs6000/rs6000.c:12591
 #, gcc-internal-format, gfc-internal-format
 msgid ""
 "internal error: builtin function %s, argument %d had unexpected argument "
 "type %s"
 msgstr ""
 
-#: config/rs6000/rs6000.c:18580
+#: config/rs6000/rs6000.c:18591
 #, gcc-internal-format
 msgid "stack frame too large"
 msgstr ""
 
-#: config/rs6000/rs6000.c:22054
+#: config/rs6000/rs6000.c:22065
 #, gcc-internal-format
 msgid "no profiling of 64-bit code for this ABI"
 msgstr ""
 
-#: config/rs6000/rs6000.c:24039
+#: config/rs6000/rs6000.c:24050
 #, gcc-internal-format
 msgid ""
 "You cannot take the address of a nested function if you use the -mno-"
 "pointers-to-nested-functions option."
 msgstr ""
 
-#: config/rs6000/rs6000.c:24120
+#: config/rs6000/rs6000.c:24131
 #, gcc-internal-format
 msgid "use of %<long double%> in AltiVec types is invalid"
 msgstr ""
 
-#: config/rs6000/rs6000.c:24122
+#: config/rs6000/rs6000.c:24133
 #, gcc-internal-format
 msgid "use of boolean types in AltiVec types is invalid"
 msgstr ""
 
-#: config/rs6000/rs6000.c:24124
+#: config/rs6000/rs6000.c:24135
 #, gcc-internal-format
 msgid "use of %<complex%> in AltiVec types is invalid"
 msgstr ""
 
-#: config/rs6000/rs6000.c:24126
+#: config/rs6000/rs6000.c:24137
 #, gcc-internal-format
 msgid "use of decimal floating point types in AltiVec types is invalid"
 msgstr ""
 
-#: config/rs6000/rs6000.c:24132
+#: config/rs6000/rs6000.c:24143
 #, gcc-internal-format
 msgid ""
 "use of %<long%> in AltiVec types is invalid for 64-bit code without -mvsx"
 msgstr ""
 
-#: config/rs6000/rs6000.c:24135
+#: config/rs6000/rs6000.c:24146
 #, gcc-internal-format
 msgid "use of %<long%> in AltiVec types is deprecated; use %<int%>"
 msgstr ""
 
-#: config/rs6000/rs6000.c:24140
+#: config/rs6000/rs6000.c:24151
 #, gcc-internal-format
 msgid "use of %<long long%> in AltiVec types is invalid without -mvsx"
 msgstr ""
 
-#: config/rs6000/rs6000.c:24143
+#: config/rs6000/rs6000.c:24154
 #, gcc-internal-format
 msgid "use of %<double%> in AltiVec types is invalid without -mvsx"
 msgstr ""
 
-#: config/rs6000/rs6000.c:26982
+#: config/rs6000/rs6000.c:26993
 #, gcc-internal-format, gfc-internal-format
 msgid "emitting microcode insn %s\t[%s] #%d"
 msgstr ""
 
-#: config/rs6000/rs6000.c:26986
+#: config/rs6000/rs6000.c:26997
 #, gcc-internal-format, gfc-internal-format
 msgid "emitting conditional microcode insn %s\t[%s] #%d"
 msgstr ""
 
-#: config/rs6000/rs6000.c:27210
+#: config/rs6000/rs6000.c:27221
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid cpu \"%s\" for %s\"%s\"%s"
 msgstr ""
 
-#: config/rs6000/rs6000.c:27213
+#: config/rs6000/rs6000.c:27224
 #, gcc-internal-format, gfc-internal-format
 msgid "%s\"%s\"%s is not allowed"
 msgstr ""
 
-#: config/rs6000/rs6000.c:27215
+#: config/rs6000/rs6000.c:27226
 #, gcc-internal-format, gfc-internal-format
 msgid "%s\"%s\"%s is invalid"
 msgstr ""
@@ -26016,65 +26016,65 @@ msgstr ""
 msgid "%qs uses dynamic stack allocation"
 msgstr ""
 
-#: config/sh/sh.c:770
+#: config/sh/sh.c:775
 #, gcc-internal-format
 msgid "ignoring -fschedule-insns because of exception handling bug"
 msgstr ""
 
-#: config/sh/sh.c:791
+#: config/sh/sh.c:796
 #, gcc-internal-format
 msgid ""
 "unwind tables currently require either a frame pointer or -maccumulate-"
 "outgoing-args for correctness"
 msgstr ""
 
-#: config/sh/sh.c:7655
+#: config/sh/sh.c:7660
 #, gcc-internal-format
 msgid "__builtin_saveregs not supported by this subtarget"
 msgstr ""
 
-#: config/sh/sh.c:8821
+#: config/sh/sh.c:8826
 #, gcc-internal-format
 msgid "%qE attribute only applies to interrupt functions"
 msgstr ""
 
-#: config/sh/sh.c:8879
+#: config/sh/sh.c:8884
 #, gcc-internal-format
 msgid "%qE attribute is supported only for SH2A"
 msgstr ""
 
-#: config/sh/sh.c:8909
+#: config/sh/sh.c:8914
 #, gcc-internal-format
 msgid "attribute interrupt_handler is not compatible with -m5-compact"
 msgstr ""
 
-#: config/sh/sh.c:8926
+#: config/sh/sh.c:8931
 #, gcc-internal-format
 msgid "%qE attribute only applies to SH2A"
 msgstr ""
 
-#: config/sh/sh.c:8948
+#: config/sh/sh.c:8953
 #, gcc-internal-format
 msgid "%qE attribute argument should be between 0 to 255"
 msgstr ""
 
 #. The argument must be a constant string.
-#: config/sh/sh.c:9021
+#: config/sh/sh.c:9026
 #, gcc-internal-format
 msgid "%qE attribute argument not a string constant"
 msgstr ""
 
-#: config/sh/sh.c:11594
+#: config/sh/sh.c:11599
 #, gcc-internal-format
 msgid "r0 needs to be available as a call-clobbered register"
 msgstr ""
 
-#: config/sh/sh.c:11615
+#: config/sh/sh.c:11620
 #, gcc-internal-format
 msgid "need a second call-clobbered general purpose register"
 msgstr ""
 
-#: config/sh/sh.c:11623
+#: config/sh/sh.c:11628
 #, gcc-internal-format
 msgid "need a call-clobbered target register"
 msgstr ""
@@ -30944,42 +30944,42 @@ msgid ""
 "use of an undeclared name is deprecated)"
 msgstr ""
 
-#: cp/mangle.c:2024
+#: cp/mangle.c:2022
 #, gcc-internal-format
 msgid "mangling typeof, use decltype instead"
 msgstr ""
 
-#: cp/mangle.c:2028
+#: cp/mangle.c:2026
 #, gcc-internal-format
 msgid "mangling __underlying_type"
 msgstr ""
 
-#: cp/mangle.c:2252
+#: cp/mangle.c:2250
 #, gcc-internal-format
 msgid "mangling unknown fixed point type"
 msgstr ""
 
-#: cp/mangle.c:2811
+#: cp/mangle.c:2809
 #, gcc-internal-format, gfc-internal-format
 msgid "mangling %C"
 msgstr ""
 
-#: cp/mangle.c:2886
+#: cp/mangle.c:2884
 #, gcc-internal-format
 msgid "omitted middle operand to %<?:%> operand cannot be mangled"
 msgstr ""
 
-#: cp/mangle.c:2950
+#: cp/mangle.c:2948
 #, gcc-internal-format
 msgid "string literal in function template signature"
 msgstr ""
 
-#: cp/mangle.c:3239
+#: cp/mangle.c:3237
 #, gcc-internal-format
 msgid "the mangled name of %qD will change in a future version of GCC"
 msgstr ""
 
-#: cp/mangle.c:3383
+#: cp/mangle.c:3381
 #, gcc-internal-format
 msgid "-fabi-version=6 (or =0) avoids this error with a change in mangling"
 msgstr ""
