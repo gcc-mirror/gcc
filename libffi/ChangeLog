@@ -4,6 +4,12 @@
 	just return FFI_BAD_ABI when things are wrong.
 	* src/sh64/ffi.c (ffi_prep_closure_loc): Ditto.
 
+2012-03-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	* src/powerpc/aix_closure.S (ffi_closure_ASM): Adjust for Darwin64
+	change to return value of ffi_closure_helper_DARWIN and load type
+	from return type.
+
 2012-03-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* src/x86/ffi64.c (ffi_call): Cast the return value to unsigned
