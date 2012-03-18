@@ -46,7 +46,7 @@
 })
 
 (define_insn "*sse2_lfence"
-  [(set (match_operand:BLK 0 "" "")
+  [(set (match_operand:BLK 0)
 	(unspec:BLK [(match_dup 0)] UNSPEC_LFENCE))]
   "TARGET_SSE2"
   "lfence"
@@ -65,7 +65,7 @@
 })
 
 (define_insn "*sse_sfence"
-  [(set (match_operand:BLK 0 "" "")
+  [(set (match_operand:BLK 0)
 	(unspec:BLK [(match_dup 0)] UNSPEC_SFENCE))]
   "TARGET_SSE || TARGET_3DNOW_A"
   "sfence"
@@ -84,7 +84,7 @@
 })
 
 (define_insn "mfence_sse2"
-  [(set (match_operand:BLK 0 "" "")
+  [(set (match_operand:BLK 0)
 	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
   "TARGET_64BIT || TARGET_SSE2"
   "mfence"
@@ -94,7 +94,7 @@
    (set_attr "memory" "unknown")])
 
 (define_insn "mfence_nosse"
-  [(set (match_operand:BLK 0 "" "")
+  [(set (match_operand:BLK 0)
 	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))
    (clobber (reg:CC FLAGS_REG))]
   "!(TARGET_64BIT || TARGET_SSE2)"
@@ -102,7 +102,7 @@
   [(set_attr "memory" "unknown")])
 
 (define_expand "mem_thread_fence"
-  [(match_operand:SI 0 "const_int_operand" "")]		;; model
+  [(match_operand:SI 0 "const_int_operand")]		;; model
   ""
 {
   /* Unless this is a SEQ_CST fence, the i386 memory model is strong
@@ -142,9 +142,9 @@
    ])
 
 (define_expand "atomic_load<mode>"
-  [(set (match_operand:ATOMIC 0 "register_operand" "")
-	(unspec:ATOMIC [(match_operand:ATOMIC 1 "memory_operand" "")
-			(match_operand:SI 2 "const_int_operand" "")]
+  [(set (match_operand:ATOMIC 0 "register_operand")
+	(unspec:ATOMIC [(match_operand:ATOMIC 1 "memory_operand")
+			(match_operand:SI 2 "const_int_operand")]
 		       UNSPEC_MOVA))]
   ""
 {
@@ -200,9 +200,9 @@
 })
 
 (define_expand "atomic_store<mode>"
-  [(set (match_operand:ATOMIC 0 "memory_operand" "")
-	(unspec:ATOMIC [(match_operand:ATOMIC 1 "register_operand" "")
-			(match_operand:SI 2 "const_int_operand" "")]
+  [(set (match_operand:ATOMIC 0 "memory_operand")
+	(unspec:ATOMIC [(match_operand:ATOMIC 1 "register_operand")
+			(match_operand:SI 2 "const_int_operand")]
 		       UNSPEC_MOVA))]
   ""
 {
@@ -305,14 +305,14 @@
    (set_attr "mode" "DI")])
 
 (define_expand "atomic_compare_and_swap<mode>"
-  [(match_operand:QI 0 "register_operand" "")		;; bool success output
-   (match_operand:SWI124 1 "register_operand" "")	;; oldval output
-   (match_operand:SWI124 2 "memory_operand" "")		;; memory
-   (match_operand:SWI124 3 "register_operand" "")	;; expected input
-   (match_operand:SWI124 4 "register_operand" "")	;; newval input
-   (match_operand:SI 5 "const_int_operand" "")		;; is_weak
-   (match_operand:SI 6 "const_int_operand" "")		;; success model
-   (match_operand:SI 7 "const_int_operand" "")]		;; failure model
+  [(match_operand:QI 0 "register_operand")	;; bool success output
+   (match_operand:SWI124 1 "register_operand")	;; oldval output
+   (match_operand:SWI124 2 "memory_operand")	;; memory
+   (match_operand:SWI124 3 "register_operand")	;; expected input
+   (match_operand:SWI124 4 "register_operand")	;; newval input
+   (match_operand:SI 5 "const_int_operand")	;; is_weak
+   (match_operand:SI 6 "const_int_operand")	;; success model
+   (match_operand:SI 7 "const_int_operand")]	;; failure model
   "TARGET_CMPXCHG"
 {
   emit_insn (gen_atomic_compare_and_swap_single<mode>
@@ -332,14 +332,14 @@
 (define_mode_attr DCASHMODE [(DI "SI") (TI "DI")])
 
 (define_expand "atomic_compare_and_swap<mode>"
-  [(match_operand:QI 0 "register_operand" "")		;; bool success output
-   (match_operand:CASMODE 1 "register_operand" "")	;; oldval output
-   (match_operand:CASMODE 2 "memory_operand" "")	;; memory
-   (match_operand:CASMODE 3 "register_operand" "")	;; expected input
-   (match_operand:CASMODE 4 "register_operand" "")	;; newval input
-   (match_operand:SI 5 "const_int_operand" "")		;; is_weak
-   (match_operand:SI 6 "const_int_operand" "")		;; success model
-   (match_operand:SI 7 "const_int_operand" "")]		;; failure model
+  [(match_operand:QI 0 "register_operand")	;; bool success output
+   (match_operand:CASMODE 1 "register_operand")	;; oldval output
+   (match_operand:CASMODE 2 "memory_operand")	;; memory
+   (match_operand:CASMODE 3 "register_operand")	;; expected input
+   (match_operand:CASMODE 4 "register_operand")	;; newval input
+   (match_operand:SI 5 "const_int_operand")	;; is_weak
+   (match_operand:SI 6 "const_int_operand")	;; success model
+   (match_operand:SI 7 "const_int_operand")]	;; failure model
   "TARGET_CMPXCHG"
 {
   if (<MODE>mode == DImode && TARGET_64BIT)
@@ -448,7 +448,7 @@
   [(set (match_operand:SWI 0 "register_operand" "=<r>")
 	(unspec_volatile:SWI
 	  [(match_operand:SWI 1 "memory_operand" "+m")
-	   (match_operand:SI 3 "const_int_operand" "")]		;; model
+	   (match_operand:SI 3 "const_int_operand")]		;; model
 	  UNSPECV_XCHG))
    (set (match_dup 1)
 	(plus:SWI (match_dup 1)
@@ -461,12 +461,12 @@
 ;; __sync_fetch_and_add (x, -N) == N into just lock {add,sub,inc,dec}
 ;; followed by testing of flags instead of lock xadd and comparisons.
 (define_peephole2
-  [(set (match_operand:SWI 0 "register_operand" "")
-	(match_operand:SWI 2 "const_int_operand" ""))
+  [(set (match_operand:SWI 0 "register_operand")
+	(match_operand:SWI 2 "const_int_operand"))
    (parallel [(set (match_dup 0)
 		   (unspec_volatile:SWI
-		     [(match_operand:SWI 1 "memory_operand" "")
-		      (match_operand:SI 4 "const_int_operand" "")]
+		     [(match_operand:SWI 1 "memory_operand")
+		      (match_operand:SI 4 "const_int_operand")]
 		     UNSPECV_XCHG))
 	      (set (match_dup 1)
 		   (plus:SWI (match_dup 1)
@@ -474,7 +474,7 @@
 	      (clobber (reg:CC FLAGS_REG))])
    (set (reg:CCZ FLAGS_REG)
 	(compare:CCZ (match_dup 0)
-		     (match_operand:SWI 3 "const_int_operand" "")))]
+		     (match_operand:SWI 3 "const_int_operand")))]
   "peep2_reg_dead_p (3, operands[0])
    && (unsigned HOST_WIDE_INT) INTVAL (operands[2])
       == -(unsigned HOST_WIDE_INT) INTVAL (operands[3])
@@ -492,7 +492,7 @@
   [(set (reg:CCZ FLAGS_REG)
 	(compare:CCZ (unspec_volatile:SWI
 		       [(match_operand:SWI 0 "memory_operand" "+m")
-		        (match_operand:SI 3 "const_int_operand" "")]
+		        (match_operand:SI 3 "const_int_operand")]
 		       UNSPECV_XCHG)
 		     (match_operand:SWI 2 "const_int_operand" "i")))
    (set (match_dup 0)
@@ -521,7 +521,7 @@
   [(set (match_operand:SWI 0 "register_operand" "=<r>")		;; output
 	(unspec_volatile:SWI
 	  [(match_operand:SWI 1 "memory_operand" "+m")		;; memory
-	   (match_operand:SI 3 "const_int_operand" "")]		;; model
+	   (match_operand:SI 3 "const_int_operand")]		;; model
 	  UNSPECV_XCHG))
    (set (match_dup 1)
 	(match_operand:SWI 2 "register_operand" "0"))]		;; input
@@ -533,7 +533,7 @@
 	(unspec_volatile:SWI
 	  [(plus:SWI (match_dup 0)
 		     (match_operand:SWI 1 "nonmemory_operand" "<r><i>"))
-	   (match_operand:SI 2 "const_int_operand" "")]		;; model
+	   (match_operand:SI 2 "const_int_operand")]		;; model
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
@@ -557,7 +557,7 @@
 	(unspec_volatile:SWI
 	  [(minus:SWI (match_dup 0)
 		      (match_operand:SWI 1 "nonmemory_operand" "<r><i>"))
-	   (match_operand:SI 2 "const_int_operand" "")]		;; model
+	   (match_operand:SI 2 "const_int_operand")]		;; model
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
@@ -581,7 +581,7 @@
 	(unspec_volatile:SWI
 	  [(any_logic:SWI (match_dup 0)
 			  (match_operand:SWI 1 "nonmemory_operand" "<r><i>"))
-	   (match_operand:SI 2 "const_int_operand" "")]		;; model
+	   (match_operand:SI 2 "const_int_operand")]		;; model
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
