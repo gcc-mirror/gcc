@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2012-01-27 16:12+0000\n"
+"POT-Creation-Date: 2012-03-18 14:03+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -75,7 +75,7 @@ msgid "%.*s is not a valid universal character"
 msgstr ""
 
 #: charset.c:1056
-#: lex.c:1052
+#: lex.c:1051
 msgid "'$' in identifier or number"
 msgstr ""
 
@@ -409,7 +409,7 @@ msgid "unterminated #%s"
 msgstr ""
 
 #: directives-only.c:222
-#: lex.c:2133
+#: lex.c:2132
 #: traditional.c:163
 msgid "unterminated comment"
 msgstr ""
@@ -713,100 +713,100 @@ msgid ""
 "the target requires %lu bits"
 msgstr ""
 
-#: lex.c:846
+#: lex.c:845
 msgid "backslash and newline separated by space"
 msgstr ""
 
-#: lex.c:851
+#: lex.c:850
 msgid "backslash-newline at end of file"
 msgstr ""
 
-#: lex.c:867
+#: lex.c:866
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr ""
 
-#: lex.c:875
+#: lex.c:874
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr ""
 
-#: lex.c:924
+#: lex.c:923
 msgid "\"/*\" within comment"
 msgstr ""
 
-#: lex.c:982
+#: lex.c:981
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr ""
 
-#: lex.c:991
+#: lex.c:990
 msgid "null character(s) ignored"
 msgstr ""
 
-#: lex.c:1028
+#: lex.c:1027
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr ""
 
-#: lex.c:1031
+#: lex.c:1030
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr ""
 
-#: lex.c:1099
-#: lex.c:1176
+#: lex.c:1098
+#: lex.c:1175
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.c:1107
-#: lex.c:1184
+#: lex.c:1106
+#: lex.c:1183
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.c:1113
-#: lex.c:1190
+#: lex.c:1112
+#: lex.c:1189
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:1334
+#: lex.c:1333
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:1337
+#: lex.c:1336
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr ""
 
-#: lex.c:1460
-#: lex.c:1482
+#: lex.c:1459
+#: lex.c:1481
 msgid "unterminated raw string"
 msgstr ""
 
-#: lex.c:1601
+#: lex.c:1600
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.c:1604
+#: lex.c:1603
 #, c-format
 msgid "missing terminating %c character"
 msgstr ""
 
-#: lex.c:2144
+#: lex.c:2143
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:2146
+#: lex.c:2145
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:2151
+#: lex.c:2150
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:2471
+#: lex.c:2470
 #, c-format
 msgid "unspellable token %s"
 msgstr ""
