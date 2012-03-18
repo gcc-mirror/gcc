@@ -1,3 +1,12 @@
+2012-03-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Remove empty predicates and/or constraints.
+	* config/i386/sync.md: Ditto.
+	* config/i386/sse.md: Ditto.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/pentium.md: Ditto.
+	* config/i386/athlon.md: Ditto.
+
 2012-03-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52603
@@ -38,7 +47,7 @@
 	(vect_is_simple_use): Treat all constants as vec_constant_def.
 
 2012-03-16  Richard Guenther  <rguenther@suse.de>
-	Kai Tietz  <ktietz@redhat.com>
+	    Kai Tietz  <ktietz@redhat.com>
 
 	PR middle-end/48814
 	* gimplify.c (gimplify_self_mod_expr): Evaluate postfix
@@ -131,8 +140,7 @@
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52568
-	* config/i386/i386.c (expand_vec_perm_vperm2f128_vblend): New
-	function.
+	* config/i386/i386.c (expand_vec_perm_vperm2f128_vblend): New function.
 	(ix86_expand_vec_perm_const_1): Use it.
 
 	PR target/52568
@@ -209,8 +217,8 @@
 
 	* config.gcc (target_type_format_char): New. Document it. Set it for
 	arm*-*-* .
-	* configure.ac (gnu_unique_option): Use target_type_format_char in test.
-	Comment rationale.
+	* configure.ac (gnu_unique_option): Use target_type_format_char
+	in test.  Comment rationale.
 	* configure: Regenerate .
 
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
@@ -363,8 +371,7 @@
 	* configure.ac (gcc_cv_ld_hidden): Remove *-*-solaris2.8*.
 	(ld_tls_support): Remove Solaris 8 references.
 	(lwp_dir, lwp_spec): Remove support for alternate thread library.
-	* acinclude.m4 (gcc_cv_initfini_array): Remove *-*-solaris2.*
-	tests.
+	* acinclude.m4 (gcc_cv_initfini_array): Remove *-*-solaris2.* tests.
 	* configure: Regenerate.
 	* config.in: Regenerate.
 
@@ -435,8 +442,7 @@
 2012-03-14  Martin Jambor  <mjambor@suse.cz>
 
 	* expr.c (expand_assignment): Use expand_expr with EXPAND_WRITE
-	when expanding MEM_REFs, MEM_TARGET_REFs and handled_component
-	bases.
+	when expanding MEM_REFs, MEM_TARGET_REFs and handled_component bases.
 	(expand_expr_real_1): Do not handle misalignment if modifier is
 	EXPAND_WRITE.
 
@@ -451,9 +457,8 @@
 2012-03-14  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52582
-	* gimple-fold.c (canonicalize_constructor_val): Make sure
-	we have a cgraph node for a FUNCTION_DECL that comes from
-	a constructor.
+	* gimple-fold.c (canonicalize_constructor_val): Make sure we have
+	a cgraph node for a FUNCTION_DECL that comes from a constructor.
 	(gimple_get_virt_method_for_binfo): Likewise.
 
 2012-03-14  Richard Guenther  <rguenther@suse.de>
@@ -647,9 +652,8 @@
 	* config/i386/i386.c (ix86_option_override_internal): Properly
 	set ix86_gen_leave and ix86_gen_monitor.  Check Pmode == DImode,
 	instead of TARGET_64BIT, to set ix86_gen_add3, ix86_gen_sub3,
-	ix86_gen_one_cmpl2, ix86_gen_andsp,
-	ix86_gen_allocate_stack_worker, ix86_gen_adjust_stack_and_probe
-	and ix86_gen_probe_stack_range.
+	ix86_gen_one_cmpl2, ix86_gen_andsp, ix86_gen_allocate_stack_worker,
+	ix86_gen_adjust_stack_and_probe and ix86_gen_probe_stack_range.
 
 	* config/i386/sse.md (sse3_monitor64): Renamed to ...
 	(sse3_monitor64_<mode>): This.
@@ -691,9 +695,8 @@
 	(alpha*-dec-osf*): Remove.
 	* configure: Regenerate.
 
-	* config/alpha/host-osf.c, config/alpha/osf5.h,
-	config/alpha/osf5.opt, config/alpha/va_list.h, config/alpha/x-osf:
-	Remove.
+	* config/alpha/host-osf.c, config/alpha/osf5.h, config/alpha/osf5.opt,
+	config/alpha/va_list.h, config/alpha/x-osf: Remove.
 
 	* config/alpha/alpha.h (TARGET_LD_BUGGY_LDGP): Remove.
 	* config/alpha/alpha.c (struct machine_function): Update comment.
@@ -784,10 +787,9 @@
 
 2012-03-12  Richard Guenther  <rguenther@suse.de>
 
-        * tree-sra.c (create_access_replacement): Only rename the
-        replacement if we can rewrite it into SSA form.  Properly
-        mark register typed replacements that we cannot rewrite
-        with TREE_ADDRESSABLE.
+	* tree-sra.c (create_access_replacement): Only rename the replacement
+	if we can rewrite it into SSA form.  Properly mark register typed
+	replacements that we cannot rewrite with TREE_ADDRESSABLE.
 	* tree-cfg.c (verify_expr): Fix BIT_FIELD_REF verification
 	for aggregate or BLKmode results.
 
@@ -802,8 +804,7 @@
 2012-02-12  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* doc/invoke.texi: Document -mrtm option.
-	* common/config/i386/i386-common.c (OPTION_MASK_ISA_RTM_SET):
-	New.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_RTM_SET): New.
 	(OPTION_MASK_ISA_RTM_UNSET): Ditto.
 	(ix86_handle_option): Handle OPT_mrtm.
 	* config.gcc (i[34567]86-*-*): Add rtmintrin.h and
@@ -814,8 +815,8 @@
 	__RTM__ if needed.
 	(ix86_target_string): Define -mrtm option.
 	(PTA_RTM): New.
-	(ix86_option_override_internal): Extend "corei7-avx" with
-	RTM option. Handle new option.
+	(ix86_option_override_internal): Extend "corei7-avx" with RTM option.
+	Handle new option.
 	(ix86_valid_target_attribute_inner_p): Add OPT_mrtm.
 	(ix86_builtins): Add IX86_BUILTIN_XBEGIN, IX86_BUILTIN_XEND,
 	IX86_BUILTIN_XTEST.
@@ -835,15 +836,14 @@
 	(xtest): Ditto.
 	(xtest_1): Ditto.
 	* config/i386/i386.opt (mrtm): New.
-	* config/i386/immintrin.h: Include rtmintrin.h and
-	xtestintrin.h.
+	* config/i386/immintrin.h: Include rtmintrin.h and xtestintrin.h.
 	* config/i386/rtmintrin.h: New header.
 	* config/i386/xtestintrin.h: Ditto.
 
 2012-03-12  Tristan Gingold  <gingold@adacore.com>
 
-	* ginclude/stddef.h: Adjust previous patch.  Use __VMS__ instead
-	of VMS.
+	* ginclude/stddef.h: Adjust previous patch.
+	Use __VMS__ instead of VMS.
 
 2012-03-12  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -857,8 +857,7 @@
 	(C Dialect Options): Move -no-integrated-cpp documentation
 	from here...
 	(Preprocessor Options): ...to here.  Rewrite the description
-	so it makes more sense, and remove discussion of merging
-	front ends.
+	so it makes more sense, and remove discussion of merging front ends.
 
 2012-03-11  H.J. Lu  <hongjiu.lu@intel.com>
 
