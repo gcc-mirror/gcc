@@ -5749,6 +5749,28 @@ check_for_casting_away_constness (tree src_type, tree dest_type,
     }
 }
 
+/*
+  Warns if the cast from expression EXPR to type TYPE is useless.
+ */
+void
+maybe_warn_about_useless_cast (tree type, tree expr, tsubst_flags_t complain)
+{
+  if (warn_useless_cast
+      && complain & tf_warning
+      && c_inhibit_evaluation_warnings == 0)
+    {
+      if (REFERENCE_REF_P (expr))
+	expr = TREE_OPERAND (expr, 0);
+
+      if ((TREE_CODE (type) == REFERENCE_TYPE
+	   && (TYPE_REF_IS_RVALUE (type)
+	       ? xvalue_p (expr) : real_lvalue_p (expr))
+	   && same_type_p (TREE_TYPE (expr), TREE_TYPE (type)))
+	  || same_type_p (TREE_TYPE (expr), type))
+	warning (OPT_Wuseless_cast, "useless cast to type %qT", type);
+    }
+}
+
 /* Convert EXPR (an expression with pointer-to-member type) to TYPE
    (another pointer-to-member type in the same hierarchy) and return
    the converted expression.  If ALLOW_INVERSE_P is permitted, a
@@ -6078,7 +6100,11 @@ build_static_cast (tree type, tree expr, tsubst_flags_t complain)
   result = build_static_cast_1 (type, expr, /*c_cast_p=*/false, &valid_p,
                                 complain);
   if (valid_p)
-    return result;
+    {
+      if (result != error_mark_node)
+	maybe_warn_about_useless_cast (type, expr, complain);
+      return result;
+    }
 
   if (complain & tf_error)
     error ("invalid static_cast from type %qT to type %qT",
@@ -6305,6 +6331,8 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 tree
 build_reinterpret_cast (tree type, tree expr, tsubst_flags_t complain)
 {
+  tree r;
+
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
@@ -6319,8 +6347,11 @@ build_reinterpret_cast (tree type, tree expr, tsubst_flags_t complain)
       return convert_from_reference (t);
     }
 
-  return build_reinterpret_cast_1 (type, expr, /*c_cast_p=*/false,
-				   /*valid_p=*/NULL, complain);
+  r = build_reinterpret_cast_1 (type, expr, /*c_cast_p=*/false,
+				/*valid_p=*/NULL, complain);
+  if (r != error_mark_node)
+    maybe_warn_about_useless_cast (type, expr, complain);
+  return r;
 }
 
 /* Perform a const_cast from EXPR to TYPE.  If the cast is valid,
@@ -6464,6 +6495,8 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
 tree
 build_const_cast (tree type, tree expr, tsubst_flags_t complain)
 {
+  tree r;
+
   if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;
 
@@ -6478,8 +6511,10 @@ build_const_cast (tree type, tree expr, tsubst_flags_t complain)
       return convert_from_reference (t);
     }
 
-  return build_const_cast_1 (type, expr, complain,
-			     /*valid_p=*/NULL);
+  r = build_const_cast_1 (type, expr, complain, /*valid_p=*/NULL);
+  if (r != error_mark_node)
+    maybe_warn_about_useless_cast (type, expr, complain);
+  return r;
 }
 
 /* Like cp_build_c_cast, but for the c-common bits.  */
@@ -6567,7 +6602,11 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
   result = build_const_cast_1 (type, value, complain & tf_warning,
 			       &valid_p);
   if (valid_p)
-    return result;
+    {
+      if (result != error_mark_node)
+	maybe_warn_about_useless_cast (type, value, complain);
+      return result;
+    }
 
   /* Or a static cast.  */
   result = build_static_cast_1 (type, value, /*c_cast_p=*/true,
@@ -6580,10 +6619,12 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
      const_cast.  */
   if (valid_p
       /* A valid cast may result in errors if, for example, a
-	 conversion to am ambiguous base class is required.  */
+	 conversion to an ambiguous base class is required.  */
       && !error_operand_p (result))
     {
       tree result_type;
+
+      maybe_warn_about_useless_cast (type, value, complain);
 
       /* Non-class rvalues always have cv-unqualified type.  */
       if (!CLASS_TYPE_P (type))

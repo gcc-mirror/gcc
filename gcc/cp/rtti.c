@@ -1,6 +1,6 @@
 /* RunTime Type Identification
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
@@ -774,6 +774,8 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 tree
 build_dynamic_cast (tree type, tree expr, tsubst_flags_t complain)
 {
+  tree r;
+
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
@@ -784,9 +786,12 @@ build_dynamic_cast (tree type, tree expr, tsubst_flags_t complain)
       return convert_from_reference (expr);
     }
 
-  return convert_from_reference (build_dynamic_cast_1 (type, expr, complain));
+  r = convert_from_reference (build_dynamic_cast_1 (type, expr, complain));
+  if (r != error_mark_node)
+    maybe_warn_about_useless_cast (type, expr, complain);
+  return r;
 }
-
+
 /* Return the runtime bit mask encoding the qualifiers of TYPE.  */
 
 static int

@@ -13444,7 +13444,7 @@ tsubst_copy_and_build (tree t,
     case STATIC_CAST_EXPR:
       {
 	tree type;
-	tree op;
+	tree op, r = NULL_TREE;
 
 	type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	if (integral_constant_expression_p
@@ -13458,21 +13458,30 @@ tsubst_copy_and_build (tree t,
 
 	op = RECUR (TREE_OPERAND (t, 0));
 
+	++c_inhibit_evaluation_warnings;
 	switch (TREE_CODE (t))
 	  {
 	  case CAST_EXPR:
-	    return build_functional_cast (type, op, complain);
+	    r = build_functional_cast (type, op, complain);
+	    break;
 	  case REINTERPRET_CAST_EXPR:
-	    return build_reinterpret_cast (type, op, complain);
+	    r = build_reinterpret_cast (type, op, complain);
+	    break;
 	  case CONST_CAST_EXPR:
-	    return build_const_cast (type, op, complain);
+	    r = build_const_cast (type, op, complain);
+	    break;
 	  case DYNAMIC_CAST_EXPR:
-	    return build_dynamic_cast (type, op, complain);
+	    r = build_dynamic_cast (type, op, complain);
+	    break;
 	  case STATIC_CAST_EXPR:
-	    return build_static_cast (type, op, complain);
+	    r = build_static_cast (type, op, complain);
+	    break;
 	  default:
 	    gcc_unreachable ();
 	  }
+	--c_inhibit_evaluation_warnings;
+
+	return r;
       }
 
     case POSTDECREMENT_EXPR:

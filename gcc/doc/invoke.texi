@@ -274,8 +274,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
 -Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
--Wvariadic-macros -Wvector-operation-performance -Wvla 
--Wvolatile-register-var  -Wwrite-strings -Wzero-as-null-pointer-constant}
+-Wuseless-cast -Wvariadic-macros -Wvector-operation-performance @gol
+-Wvla -Wvolatile-register-var  -Wwrite-strings -Wzero-as-null-pointer-constant}
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -4198,6 +4198,11 @@ types. @option{-Wconversion-null} is enabled by default.
 @opindex Wno-zero-as-null-pointer-constant
 Warn when a literal '0' is used as null pointer constant.  This can
 be useful to facilitate the conversion to @code{nullptr} in C++11.
+
+@item -Wuseless-cast @r{(C++ and Objective-C++ only)}
+@opindex Wuseless-cast
+@opindex Wno-useless-cast
+Warn when an expression is casted to its own type.
 
 @item -Wempty-body
 @opindex Wempty-body

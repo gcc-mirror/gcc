@@ -1,3 +1,8 @@
+2012-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/14710
+	* doc/invoke.texi: Document -Wuseless-cast.
+
 2012-03-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.def (REALPART_EXPR, IMAGPART_EXPR, VIEW_CONVERT_EXPR): Move.
