@@ -2613,8 +2613,8 @@ expand_builtin_cexpi (tree exp, rtx target)
 
       op1 = assign_temp (TREE_TYPE (arg), 0, 1, 1);
       op2 = assign_temp (TREE_TYPE (arg), 0, 1, 1);
-      op1a = copy_to_mode_reg (Pmode, XEXP (op1, 0));
-      op2a = copy_to_mode_reg (Pmode, XEXP (op2, 0));
+      op1a = copy_addr_to_reg (XEXP (op1, 0));
+      op2a = copy_addr_to_reg (XEXP (op2, 0));
       top1 = make_tree (build_pointer_type (TREE_TYPE (arg)), op1a);
       top2 = make_tree (build_pointer_type (TREE_TYPE (arg)), op2a);
 
@@ -4580,7 +4580,7 @@ expand_builtin_frame_address (tree fndecl, tree exp)
 
       if (!REG_P (tem)
 	  && ! CONSTANT_P (tem))
-	tem = copy_to_mode_reg (Pmode, tem);
+	tem = copy_addr_to_reg (tem);
       return tem;
     }
 }

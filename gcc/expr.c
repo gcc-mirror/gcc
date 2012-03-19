@@ -1343,8 +1343,8 @@ emit_block_move_via_libcall (rtx dst, rtx src, rtx size, bool tailcall)
      pseudos.  We can then place those new pseudos into a VAR_DECL and
      use them later.  */
 
-  dst_addr = copy_to_mode_reg (Pmode, XEXP (dst, 0));
-  src_addr = copy_to_mode_reg (Pmode, XEXP (src, 0));
+  dst_addr = copy_addr_to_reg (XEXP (dst, 0));
+  src_addr = copy_addr_to_reg (XEXP (src, 0));
 
   dst_addr = convert_memory_address (ptr_mode, dst_addr);
   src_addr = convert_memory_address (ptr_mode, src_addr);
@@ -2719,7 +2719,7 @@ set_storage_via_libcall (rtx object, rtx size, rtx val, bool tailcall)
   /* Emit code to copy OBJECT and SIZE into new pseudos.  We can then
      place those into new pseudos into a VAR_DECL and use them later.  */
 
-  object = copy_to_mode_reg (Pmode, XEXP (object, 0));
+  object = copy_addr_to_reg (XEXP (object, 0));
 
   size_mode = TYPE_MODE (sizetype);
   size = convert_to_mode (size_mode, size, 1);

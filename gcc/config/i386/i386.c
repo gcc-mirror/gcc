@@ -22101,8 +22101,8 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   gcc_assert (alg != no_stringop);
   if (!count)
     count_exp = copy_to_mode_reg (GET_MODE (count_exp), count_exp);
-  destreg = copy_to_mode_reg (Pmode, XEXP (dst, 0));
-  srcreg = copy_to_mode_reg (Pmode, XEXP (src, 0));
+  destreg = copy_addr_to_reg (XEXP (dst, 0));
+  srcreg = copy_addr_to_reg (XEXP (src, 0));
   switch (alg)
     {
     case libcall:
@@ -22490,7 +22490,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   gcc_assert (alg != no_stringop);
   if (!count)
     count_exp = copy_to_mode_reg (counter_mode (count_exp), count_exp);
-  destreg = copy_to_mode_reg (Pmode, XEXP (dst, 0));
+  destreg = copy_addr_to_reg (XEXP (dst, 0));
   switch (alg)
     {
     case libcall:
@@ -24368,7 +24368,7 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       if (ptr_mode == SImode
 	  || x86_64_zext_immediate_operand (fnaddr, VOIDmode))
 	{
-	  fnaddr = copy_to_mode_reg (Pmode, fnaddr);
+	  fnaddr = copy_addr_to_reg (fnaddr);
 
 	  mem = adjust_address (m_tramp, HImode, offset);
 	  emit_move_insn (mem, gen_int_mode (0xbb41, HImode));
