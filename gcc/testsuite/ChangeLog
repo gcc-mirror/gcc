@@ -1,5 +1,9 @@
 2012-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* g++.dg/warn/Wuseless-cast.C: Extend.
+
+2012-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/14710
 	* g++.dg/warn/Wuseless-cast.C: New.
 

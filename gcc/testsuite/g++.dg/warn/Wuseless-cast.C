@@ -58,6 +58,8 @@ template<typename T>
     dynamic_cast<A&>(t);
   }
 
+A prvalue();
+
 void f()
 {
   int n; 
@@ -90,6 +92,10 @@ void f()
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   (int&&)(42);
   static_cast<int&&>(42);
+
+  (A&&)(prvalue());
+  const_cast<A&&>(prvalue());
+  static_cast<A&&>(prvalue());
 #endif
 
   A a;
