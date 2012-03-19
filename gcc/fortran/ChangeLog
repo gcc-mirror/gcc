@@ -1,3 +1,11 @@
+2012-03-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/52559
+	* error.c (gfc_widechar_display_length): Consider tabs as
+	one character wide, as they're displayed as spaces.
+	(show_locus): Move tab handling to...
+	(print_wide_char_into_buffer): ... here.
+
 2012-03-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52585
