@@ -11514,6 +11514,10 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	      scale = 1 << scale;
 	      break;
 
+	    case ZERO_EXTEND:
+	      op = XEXP (op, 0);
+	      /* FALLTHRU */
+
 	    case UNSPEC:
 	      if (XINT (op, 1) == UNSPEC_TP
 	          && TARGET_TLS_DIRECT_SEG_REFS
@@ -12483,15 +12487,20 @@ legitimize_pic_address (rtx orig, rtx reg)
 /* Load the thread pointer.  If TO_REG is true, force it into a register.  */
 
 static rtx
-get_thread_pointer (bool to_reg)
+get_thread_pointer (enum machine_mode tp_mode, bool to_reg)
 {
   rtx tp = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, const0_rtx), UNSPEC_TP);
 
-  if (GET_MODE (tp) != Pmode)
-    tp = convert_to_mode (Pmode, tp, 1);
+  if (GET_MODE (tp) != tp_mode)
+    {
+      gcc_assert (GET_MODE (tp) == SImode);
+      gcc_assert (tp_mode == DImode);
+
+      tp = gen_rtx_ZERO_EXTEND (tp_mode, tp);
+    }
 
   if (to_reg)
-    tp = copy_addr_to_reg (tp);
+    tp = copy_to_mode_reg (tp_mode, tp);
 
   return tp;
 }
@@ -12543,6 +12552,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 {
   rtx dest, base, off;
   rtx pic = NULL_RTX, tp = NULL_RTX;
+  enum machine_mode tp_mode = Pmode;
   int type;
 
   switch (model)
@@ -12568,7 +12578,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	  else
 	    emit_insn (gen_tls_dynamic_gnu2_32 (dest, x, pic));
 
-	  tp = get_thread_pointer (true);
+	  tp = get_thread_pointer (Pmode, true);
 	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, tp, dest));
 
 	  set_unique_reg_note (get_last_insn (), REG_EQUAL, x);
@@ -12618,7 +12628,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	  else
 	    emit_insn (gen_tls_dynamic_gnu2_32 (base, tmp, pic));
 
-	  tp = get_thread_pointer (true);
+	  tp = get_thread_pointer (Pmode, true);
 	  set_unique_reg_note (get_last_insn (), REG_EQUAL,
 			       gen_rtx_MINUS (Pmode, tmp, tp));
 	}
@@ -12674,18 +12684,10 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	      emit_insn (gen_tls_initial_exec_64_sun (dest, x));
 	      return dest;
 	    }
-	  else if (Pmode == SImode)
-	    {
-	      /* Always generate
-			movl %fs:0, %reg32
-			addl xgottpoff(%rip), %reg32
-		 to support linker IE->LE optimization and avoid
-		 fs:(%reg32) as memory operand.  */
-	      dest = gen_reg_rtx (Pmode);
-	      emit_insn (gen_tls_initial_exec_x32 (dest, x));
-	      return dest;
-	    }
 
+	  /* Generate DImode references to avoid %fs:(%reg32)
+	     problems and linker IE->LE relaxation bug.  */
+	  tp_mode = DImode;
 	  pic = NULL;
 	  type = UNSPEC_GOTNTPOFF;
 	}
@@ -12708,24 +12710,23 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	  type = UNSPEC_INDNTPOFF;
 	}
 
-      off = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x), type);
-      off = gen_rtx_CONST (Pmode, off);
+      off = gen_rtx_UNSPEC (tp_mode, gen_rtvec (1, x), type);
+      off = gen_rtx_CONST (tp_mode, off);
       if (pic)
-	off = gen_rtx_PLUS (Pmode, pic, off);
-      off = gen_const_mem (Pmode, off);
+	off = gen_rtx_PLUS (tp_mode, pic, off);
+      off = gen_const_mem (tp_mode, off);
       set_mem_alias_set (off, ix86_GOT_alias_set ());
 
       if (TARGET_64BIT || TARGET_ANY_GNU_TLS)
 	{
-          base = get_thread_pointer (for_mov
-				     || !(TARGET_TLS_DIRECT_SEG_REFS
-					  && TARGET_TLS_INDIRECT_SEG_REFS));
-	  off = force_reg (Pmode, off);
-	  return gen_rtx_PLUS (Pmode, base, off);
+	  base = get_thread_pointer (tp_mode,
+				     for_mov || !TARGET_TLS_DIRECT_SEG_REFS);
+	  off = force_reg (tp_mode, off);
+	  return gen_rtx_PLUS (tp_mode, base, off);
 	}
       else
 	{
-	  base = get_thread_pointer (true);
+	  base = get_thread_pointer (Pmode, true);
 	  dest = gen_reg_rtx (Pmode);
 	  emit_insn (ix86_gen_sub3 (dest, base, off));
 	}
@@ -12739,14 +12740,13 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
       if (TARGET_64BIT || TARGET_ANY_GNU_TLS)
 	{
-	  base = get_thread_pointer (for_mov
-				     || !(TARGET_TLS_DIRECT_SEG_REFS
-					  && TARGET_TLS_INDIRECT_SEG_REFS));
+	  base = get_thread_pointer (Pmode,
+				     for_mov || !TARGET_TLS_DIRECT_SEG_REFS);
 	  return gen_rtx_PLUS (Pmode, base, off);
 	}
       else
 	{
-	  base = get_thread_pointer (true);
+	  base = get_thread_pointer (Pmode, true);
 	  dest = gen_reg_rtx (Pmode);
 	  emit_insn (ix86_gen_sub3 (dest, base, off));
 	}
@@ -13274,8 +13274,7 @@ ix86_delegitimize_tls_address (rtx orig_x)
   rtx x = orig_x, unspec;
   struct ix86_address addr;
 
-  if (!(TARGET_TLS_DIRECT_SEG_REFS
-	&& TARGET_TLS_INDIRECT_SEG_REFS))
+  if (!TARGET_TLS_DIRECT_SEG_REFS)
     return orig_x;
   if (MEM_P (x))
     x = XEXP (x, 0);
