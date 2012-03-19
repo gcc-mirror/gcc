@@ -1,3 +1,16 @@
+2012-03-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Detect an allocator generated
+	by the build-in-place machinery where the designated type is
+	indefinite, but the underlying type is not. Do not emit errors
+	related to missing initialization in this case.
+
+2012-03-19  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for -gnateinnn switch.
+	* sem_elab.adb, put_alfa.adb, lib-xref-alfa.adb: Minor reformatting.
+	* sem_prag.adb: Minor comment update.
+
 2012-03-15  Robert Dewar  <dewar@adacore.com>
 
 	* errout.ads: Add entry for translating -gnateinn to

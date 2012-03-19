@@ -2620,13 +2620,10 @@ package body Sem_Elab is
 
       if No (Nam) then
          return Empty;
-
       elsif Nkind (Nam) = N_Selected_Component then
          return Entity (Selector_Name (Nam));
-
       elsif not Is_Entity_Name (Nam) then
          return Empty;
-
       else
          return Entity (Nam);
       end if;
