@@ -123,6 +123,7 @@
        (match_test "ival >=  -134217728 && ival <= 134217727")
        (match_test "(ival & 255) == 0")
        (match_test "TARGET_SH2A")))
+
 (define_constraint "J16"
   "0xffffffff00000000 or 0x00000000ffffffff."
   (and (match_code "const_int")
@@ -132,6 +133,11 @@
   "An unsigned 3-bit constant, as used in SH2A bclr, bset, etc."
   (and (match_code "const_int")
        (match_test "ival >= 0 && ival <= 7")))
+
+(define_constraint "K04"
+  "An unsigned 4-bit constant, as used in mov.b displacement addressing."
+  (and (match_code "const_int")
+       (match_test "ival >= 0 && ival <= 15")))
 
 (define_constraint "K08"
   "An unsigned 8-bit constant, as used in and, or, etc."
@@ -266,3 +272,11 @@
        (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
        (match_test "REG_P (XEXP (XEXP (op, 0), 0))")
        (match_test "satisfies_constraint_K12 (XEXP (XEXP (op, 0), 1))")))
+
+(define_memory_constraint "Snd"
+  "A memory reference that excludes displacement addressing."
+  (match_test "! DISP_ADDR_P (op)"))
+
+(define_memory_constraint "Sdd"
+  "A memory reference that uses displacement addressing."
+  (match_test "DISP_ADDR_P (op)"))

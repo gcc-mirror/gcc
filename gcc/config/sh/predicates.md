@@ -418,6 +418,30 @@
   return general_operand (op, mode);
 })
 
+;; Same as movsrc_operand, but rejects displacement addressing.
+
+(define_predicate "movsrc_no_disp_mem_operand"
+  (match_code "subreg,reg,const_int,const_double,mem,symbol_ref,label_ref,const,const_vector")
+{
+  if (!general_movsrc_operand (op, mode))
+    return 0;
+
+  if ((mode == QImode || mode == HImode)
+      && mode == GET_MODE (op)
+      && (MEM_P (op)
+	  || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))))
+    {
+      rtx x = XEXP ((MEM_P (op) ? op : SUBREG_REG (op)), 0);
+
+      if (GET_CODE (x) == PLUS
+	  && REG_P (XEXP (x, 0))
+	  && CONST_INT_P (XEXP (x, 1)))
+	return 0;
+    }
+
+  return 1;
+})
+
 ;; Returns 1 if OP can be a destination of a move. Same as
 ;; general_operand, but no preinc allowed.
 
