@@ -1,3 +1,13 @@
+2012-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.def (REALPART_EXPR, IMAGPART_EXPR, VIEW_CONVERT_EXPR): Move.
+	* tree.h (handled_component_p): Reorder cases.
+	* dwarf2out.c (loc_list_for_address_of_addr_expr_of_indirect_ref): Do
+	not initialize unsignedp.
+	(loc_list_from_tree): Likewise.
+	(fortran_common): Likewise.
+	* simplify-rtx.c (delegitimize_mem_from_attrs): Likewise.
+
 2012-03-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_prologue) <CM_LARGE_PIC>: Use Pmode
@@ -32,7 +42,7 @@
 
 2012-03-16  Martin Jambor  <mjambor@suse.cz>
 
-	* expr.c (expand_expr_real_1): handle misaligned scalar reads from
+	* expr.c (expand_expr_real_1): Handle misaligned scalar reads from
 	memory through MEM_REFs by calling extract_bit_field.
 
 2012-03-16  Richard Guenther  <rguenther@suse.de>

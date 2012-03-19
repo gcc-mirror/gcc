@@ -400,11 +400,6 @@ DEFTREECODE (COMPONENT_REF, "component_ref", tcc_reference, 3)
    to its mode width.  */
 DEFTREECODE (BIT_FIELD_REF, "bit_field_ref", tcc_reference, 3)
 
-/* Used only on an operand of complex type, these return
-   a value of the corresponding component type.  */
-DEFTREECODE (REALPART_EXPR, "realpart_expr", tcc_reference, 1)
-DEFTREECODE (IMAGPART_EXPR, "imagpart_expr", tcc_reference, 1)
-
 /* Array indexing.
    Operand 0 is the array; operand 1 is a (single) array index.
    Operand 2, if present, is a copy of TYPE_MIN_VALUE of the index.
@@ -416,6 +411,23 @@ DEFTREECODE (ARRAY_REF, "array_ref", tcc_reference, 4)
    starting index of the resulting array is taken from operand 1 and the size
    of the range is taken from the type of the expression.  */
 DEFTREECODE (ARRAY_RANGE_REF, "array_range_ref", tcc_reference, 4)
+
+/* Used only on an operand of complex type, these return
+   a value of the corresponding component type.  */
+DEFTREECODE (REALPART_EXPR, "realpart_expr", tcc_reference, 1)
+DEFTREECODE (IMAGPART_EXPR, "imagpart_expr", tcc_reference, 1)
+
+/* Represents viewing something of one type as being of a second type.
+   This corresponds to an "Unchecked Conversion" in Ada and roughly to
+   the idiom *(type2 *)&X in C.  The only operand is the value to be
+   viewed as being of another type.  It is undefined if the type of the
+   input and of the expression have different sizes.
+
+   This code may also be used within the LHS of a MODIFY_EXPR, in which
+   case no actual data motion may occur.  TREE_ADDRESSABLE will be set in
+   this case and GCC must abort if it could not do the operation without
+   generating insns.  */
+DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", tcc_reference, 1)
 
 /* C unary `*' or Pascal `^'.  One operand, an expression for a pointer.  */
 DEFTREECODE (INDIRECT_REF, "indirect_ref", tcc_reference, 1)
@@ -768,18 +780,6 @@ DEFTREECODE (NOP_EXPR, "nop_expr", tcc_unary, 1)
 
 /* Value is same as argument, but guaranteed not an lvalue.  */
 DEFTREECODE (NON_LVALUE_EXPR, "non_lvalue_expr", tcc_unary, 1)
-
-/* Represents viewing something of one type as being of a second type.
-   This corresponds to an "Unchecked Conversion" in Ada and roughly to
-   the idiom *(type2 *)&X in C.  The only operand is the value to be
-   viewed as being of another type.  It is undefined if the type of the
-   input and of the expression have different sizes.
-
-   This code may also be used within the LHS of a MODIFY_EXPR, in which
-   case no actual data motion may occur.  TREE_ADDRESSABLE will be set in
-   this case and GCC must abort if it could not do the operation without
-   generating insns.  */
-DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", tcc_reference, 1)
 
 /* A COMPOUND_LITERAL_EXPR represents a literal that is placed in a DECL.  The
    COMPOUND_LITERAL_EXPR_DECL_EXPR is the a DECL_EXPR containing the decl

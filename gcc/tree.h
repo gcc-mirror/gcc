@@ -5029,13 +5029,13 @@ handled_component_p (const_tree t)
 {
   switch (TREE_CODE (t))
     {
-    case BIT_FIELD_REF:
     case COMPONENT_REF:
+    case BIT_FIELD_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
-    case VIEW_CONVERT_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
       return true;
 
     default:
