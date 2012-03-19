@@ -697,6 +697,10 @@ Wzero-as-null-pointer-constant
 C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
 Warn when a literal '0' is used as null pointer
 
+Wuseless-cast
+C++ ObjC++ Var(warn_useless_cast) Warning
+Warn about useless casts
+
 ansi
 C ObjC C++ ObjC++
 A synonym for -std=c89 (for C) or -std=c++98 (for C++)
