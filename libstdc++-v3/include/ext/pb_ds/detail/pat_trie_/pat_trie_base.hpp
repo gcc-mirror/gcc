@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -50,7 +50,11 @@ namespace __gnu_pbds
     /// Base type for PATRICIA trees.
     struct pat_trie_base
     {
-      /// Three types of nodes.
+      /**
+       *  @brief  Three types of nodes.
+       *
+       *  i_node is used by _Inode, leaf_node by _Leaf, and head_node by _Head.
+       */
       enum node_type
 	{
 	  i_node,
