@@ -1,3 +1,10 @@
+2012-03-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/sh/sh.opt (madjust-unroll): Mark as ignored/obsolete.
+	* config/sh/sh.h (TARGET_OPT_DEFAULT): Don't use MASK_ADJUST_UNROLL.
+	* doc/invoke.texi (Option Summary): Remove -madjust-unroll.
+	(SH Options): Likewise.
+
 2012-03-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (get_thread_pointer): Add tp_mode argument.

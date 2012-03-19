@@ -290,7 +290,7 @@ do { \
 #endif
 
 #ifndef TARGET_OPT_DEFAULT
-#define TARGET_OPT_DEFAULT  MASK_ADJUST_UNROLL
+#define TARGET_OPT_DEFAULT  0
 #endif
 
 #define TARGET_DEFAULT \
