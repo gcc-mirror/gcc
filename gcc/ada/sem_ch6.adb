@@ -6927,23 +6927,29 @@ package body Sem_Ch6 is
 --                      Inherited_Subprograms (Spec_Id);
 --        --  List of subprograms inherited by this subprogram
 
+      --  We ignore postconditions "True" or "False" and contract-cases which
+      --  have similar Ensures components, which we call "trivial", when
+      --  issuing warnings, since these postconditions and contract-cases
+      --  purposedly ignore the post-state.
+
       Last_Postcondition : Node_Id := Empty;
-      --  Last postcondition on the subprogram, or else Empty if either no
-      --  postcondition or only inherited postconditions.
+      --  Last non-trivial postcondition on the subprogram, or else Empty if
+      --  either no non-trivial postcondition or only inherited postconditions.
 
       Last_Contract_Case : Node_Id := Empty;
-      --  Last contract-case on the subprogram, or else Empty
+      --  Last non-trivial contract-case on the subprogram, or else Empty
 
       Attribute_Result_Mentioned : Boolean := False;
-      --  Whether attribute 'Result is mentioned in a postcondition
+      --  Whether attribute 'Result is mentioned in a non-trivial postcondition
+      --  or contract-case.
 
       No_Warning_On_Some_Postcondition : Boolean := False;
-      --  Whether there exists a postcondition or a contract-case without a
-      --  corresponding warning.
+      --  Whether there exists a non-trivial postcondition or contract-case
+      --  without a corresponding warning.
 
       Post_State_Mentioned : Boolean := False;
-      --  Whether some expression mentioned in a postcondition can have a
-      --  different value in the post-state than in the pre-state.
+      --  Whether some expression mentioned in a postcondition or contract-case
+      --  can have a different value in the post-state than in the pre-state.
 
       function Check_Attr_Result (N : Node_Id) return Traverse_Result;
       --  Check if N is a reference to the attribute 'Result, and if so set
@@ -6955,6 +6961,9 @@ package body Sem_Ch6 is
       --  if so set Post_State_Mentioned and return Abandon. Return Skip on
       --  reference to attribute 'Old, in order to ignore its prefix, which
       --  is precisely evaluated in the pre-state. Otherwise return OK.
+
+      function Is_Trivial_Post_Or_Ensures (N : Node_Id) return Boolean;
+      --  Return whether node N is trivially "True" or "False"
 
       procedure Process_Contract_Cases (Spec : Node_Id);
       --  This processes the Spec_CTC_List from Spec, processing any contract
@@ -7046,13 +7055,26 @@ package body Sem_Ch6 is
          end if;
       end Check_Post_State;
 
+      --------------------------------
+      -- Is_Trivial_Post_Or_Ensures --
+      --------------------------------
+
+      function Is_Trivial_Post_Or_Ensures (N : Node_Id) return Boolean is
+      begin
+         return Is_Entity_Name (N)
+           and then (Entity (N) = Standard_True
+                       or else
+                     Entity (N) = Standard_False);
+      end Is_Trivial_Post_Or_Ensures;
+
       ----------------------------
       -- Process_Contract_Cases --
       ----------------------------
 
       procedure Process_Contract_Cases (Spec : Node_Id) is
-         Prag    : Node_Id;
-         Arg     : Node_Id;
+         Prag : Node_Id;
+         Arg  : Node_Id;
+
          Ignored : Traverse_Final_Result;
          pragma Unreferenced (Ignored);
 
@@ -7063,8 +7085,12 @@ package body Sem_Ch6 is
 
             Arg := Get_Ensures_From_CTC_Pragma (Prag);
 
-            if Pragma_Name (Prag) = Name_Contract_Case then
+            --  Ignore trivial contract-case when Ensures component is "True"
+            --  or "False".
 
+            if Pragma_Name (Prag) = Name_Contract_Case
+              and then not Is_Trivial_Post_Or_Ensures (Expression (Arg))
+            then
                --  Since contract-cases are listed in reverse order, the first
                --  contract-case in the list is the last in the source.
 
@@ -7088,8 +7114,8 @@ package body Sem_Ch6 is
                if Post_State_Mentioned then
                   No_Warning_On_Some_Postcondition := True;
                else
-                  Error_Msg_N ("?`Ensures` component refers only to pre-state",
-                               Prag);
+                  Error_Msg_N
+                    ("?`Ensures` component refers only to pre-state", Prag);
                end if;
             end if;
 
@@ -7116,8 +7142,11 @@ package body Sem_Ch6 is
          loop
             Arg := First (Pragma_Argument_Associations (Prag));
 
-            if Pragma_Name (Prag) = Name_Postcondition then
+            --  Ignore trivial postcondition of "True" or "False"
 
+            if Pragma_Name (Prag) = Name_Postcondition
+              and then not Is_Trivial_Post_Or_Ensures (Expression (Arg))
+            then
                --  Since pre- and post-conditions are listed in reverse order,
                --  the first postcondition in the list is last in the source.
 
