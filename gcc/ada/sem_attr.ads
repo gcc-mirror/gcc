@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -548,6 +548,13 @@ package Sem_Attr is
       --  the Object_Size rather than the Value_Size. For example, while
       --  Natural'Size is typically 31, the value of Natural'VADS_Size is 32.
       --  For all other types, Size and VADS_Size yield the same value.
+
+      -------------------
+      -- Valid_Scalars --
+      -------------------
+
+      Attribute_Valid_Scalars => True,
+      --  Typ'Valid_Scalars applies to ???
 
       ----------------
       -- Value_Size --

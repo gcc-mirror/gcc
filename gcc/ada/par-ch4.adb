@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,6 +81,9 @@ package body Ch4 is
    --  Called to place complaint about bad range attribute at the given
    --  source location. Terminates by raising Error_Resync.
 
+   procedure Check_Bad_Exp;
+   --  Called after scanning a**b, posts error if ** detected
+
    procedure P_Membership_Test (N : Node_Id);
    --  N is the node for a N_In or N_Not_In node whose right operand has not
    --  yet been processed. It is called just after scanning out the IN keyword.
@@ -106,6 +109,20 @@ package body Ch4 is
       Error_Msg ("range attribute cannot be used in expression!", Loc);
       Resync_Expression;
    end Bad_Range_Attribute;
+
+   -------------------
+   -- Check_Bad_Exp --
+   -------------------
+
+   procedure Check_Bad_Exp is
+   begin
+      if Token = Tok_Double_Asterisk then
+         Error_Msg_SC ("parenthesization required for '*'*");
+         Scan; -- past **
+         Discard_Junk_Node (P_Primary);
+         Check_Bad_Exp;
+      end if;
+   end Check_Bad_Exp;
 
    --------------------------
    -- 4.1  Name (also 6.4) --
@@ -1933,6 +1950,7 @@ package body Ch4 is
                Scan; -- past **
                Set_Left_Opnd (Node2, Node1);
                Set_Right_Opnd (Node2, P_Primary);
+               Check_Bad_Exp;
                Node1 := Node2;
             end if;
 
@@ -2320,6 +2338,7 @@ package body Ch4 is
             Scan; -- past **
             Set_Left_Opnd (Node2, Node1);
             Set_Right_Opnd (Node2, P_Primary);
+            Check_Bad_Exp;
             return Node2;
          else
             return Node1;

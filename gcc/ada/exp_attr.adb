@@ -5368,6 +5368,15 @@ package body Exp_Attr is
          Validity_Checks_On := Save_Validity_Checks_On;
       end Valid;
 
+      -------------------
+      -- Valid_Scalars --
+      -------------------
+
+      when Attribute_Valid_Scalars => Valid_Scalars : declare
+      begin
+         raise Program_Error;
+      end Valid_Scalars;
+
       -----------
       -- Value --
       -----------

@@ -30,7 +30,6 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Fname;    use Fname;
-with HLO;      use HLO;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Nlists;   use Nlists;
@@ -1367,7 +1366,6 @@ package body Sem is
       S_Global_Dis_Names : constant Boolean          := Global_Discard_Names;
       S_In_Spec_Expr     : constant Boolean          := In_Spec_Expression;
       S_Inside_A_Generic : constant Boolean          := Inside_A_Generic;
-      S_New_Nodes_OK     : constant Int              := New_Nodes_OK;
       S_Outer_Gen_Scope  : constant Entity_Id        := Outer_Generic_Scope;
 
       Generic_Main : constant Boolean :=
@@ -1386,8 +1384,7 @@ package body Sem is
       --  and we need to restore these saved values at the end.
 
       procedure Do_Analyze;
-      --  Procedure to analyze the compilation unit. This is called more than
-      --  once when the high level optimizer is activated.
+      --  Procedure to analyze the compilation unit
 
       ----------------
       -- Do_Analyze --
@@ -1491,15 +1488,6 @@ package body Sem is
 
       if not Analyzed (Comp_Unit) then
          Initialize_Version (Current_Sem_Unit);
-         if HLO_Active then
-            Expander_Mode_Save_And_Set (False);
-            New_Nodes_OK := 1;
-            Do_Analyze;
-            Reset_Analyzed_Flags (Comp_Unit);
-            Expander_Mode_Restore;
-            High_Level_Optimize (Comp_Unit);
-            New_Nodes_OK := 0;
-         end if;
 
          --  Do analysis, and then append the compilation unit onto the
          --  Comp_Unit_List, if appropriate. This is done after analysis,
@@ -1547,7 +1535,6 @@ package body Sem is
       GNAT_Mode            := S_GNAT_Mode;
       In_Spec_Expression   := S_In_Spec_Expr;
       Inside_A_Generic     := S_Inside_A_Generic;
-      New_Nodes_OK         := S_New_Nodes_OK;
       Outer_Generic_Scope  := S_Outer_Gen_Scope;
 
       Restore_Opt_Config_Switches (Save_Config_Switches);

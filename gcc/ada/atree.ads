@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,17 @@ package Atree is
 --  tree that is simply a syntactic representation of the program in abstract
 --  syntax tree format. Subsequent processing in the front end traverses the
 --  tree, transforming it in various ways and adding semantic information.
+
+   ----------------------
+   -- Size of Entities --
+   ----------------------
+
+   --  Currently entities are composed of 5 sequentially allocated 32-byte
+   --  nodes, considered as a single record. The following definition gives
+   --  the number of extension nodes.
+
+   Num_Extension_Nodes : Int := 4;
+   --  This value is increased by one if debug flag -gnatd.N is set
 
    ----------------------------------------
    -- Definitions of Fields in Tree Node --

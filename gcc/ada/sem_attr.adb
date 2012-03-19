@@ -5196,6 +5196,15 @@ package body Sem_Attr is
 
          Set_Etype (N, Standard_Boolean);
 
+      -------------------
+      -- Valid_Scalars --
+      -------------------
+
+      when Attribute_Valid_Scalars =>
+         Check_E0;
+         Check_Type;
+         --  More stuff TBD ???
+
       -----------
       -- Value --
       -----------
@@ -6034,7 +6043,7 @@ package body Sem_Attr is
          return;
 
       --  No other cases are foldable (they certainly aren't static, and at
-      --  the moment we don't try to fold any cases other than these three).
+      --  the moment we don't try to fold any cases other than the ones above).
 
       else
          Check_Expressions;
@@ -8145,6 +8154,7 @@ package body Sem_Attr is
            Attribute_Universal_Literal_String   |
            Attribute_Unrestricted_Access        |
            Attribute_Valid                      |
+           Attribute_Valid_Scalars              |
            Attribute_Value                      |
            Attribute_Wchar_T_Size               |
            Attribute_Wide_Value                 |
