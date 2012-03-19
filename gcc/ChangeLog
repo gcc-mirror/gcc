@@ -1,3 +1,12 @@
+2012-03-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_prologue) <CM_LARGE_PIC>: Use Pmode
+	mode consistently.  Use ix86_gen_add3.  Assert that Pmode == DImode.
+	(ix86_expand_split_stack_prologue): Use ix86_gen_add3.
+	(ix86_split_long_move): Ditto.
+	(legitimize_tls_address): Use ix86_gen_sub3.
+	(construct_plt_address): Assert that Pmode == DImode.
+
 2012-03-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Remove empty predicates and/or constraints.
