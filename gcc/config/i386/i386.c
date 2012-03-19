@@ -10458,15 +10458,19 @@ ix86_expand_prologue (void)
 	{
 	  if (ix86_cmodel == CM_LARGE_PIC)
 	    {
-              rtx tmp_reg = gen_rtx_REG (DImode, R11_REG);
-	      rtx label = gen_label_rtx ();
+	      rtx label, tmp_reg;
+
+	      gcc_assert (Pmode == DImode);
+	      label = gen_label_rtx ();
 	      emit_label (label);
 	      LABEL_PRESERVE_P (label) = 1;
+	      tmp_reg = gen_rtx_REG (Pmode, R11_REG);
 	      gcc_assert (REGNO (pic_offset_table_rtx) != REGNO (tmp_reg));
-	      insn = emit_insn (gen_set_rip_rex64 (pic_offset_table_rtx, label));
+	      insn = emit_insn (gen_set_rip_rex64 (pic_offset_table_rtx,
+						   label));
 	      insn = emit_insn (gen_set_got_offset_rex64 (tmp_reg, label));
-	      insn = emit_insn (gen_adddi3 (pic_offset_table_rtx,
-					    pic_offset_table_rtx, tmp_reg));
+	      insn = emit_insn (ix86_gen_add3 (pic_offset_table_rtx,
+					       pic_offset_table_rtx, tmp_reg));
 	    }
 	  else
             insn = emit_insn (gen_set_got_rex64 (pic_offset_table_rtx));
@@ -11196,8 +11200,8 @@ ix86_expand_split_stack_prologue (void)
       else
 	{
 	  emit_move_insn (scratch_reg, offset);
-	  emit_insn (gen_adddi3 (scratch_reg, scratch_reg,
-				 stack_pointer_rtx));
+	  emit_insn (ix86_gen_add3 (scratch_reg, scratch_reg,
+				    stack_pointer_rtx));
 	}
       current = scratch_reg;
     }
@@ -11244,6 +11248,7 @@ ix86_expand_split_stack_prologue (void)
 	{
 	  HOST_WIDE_INT argval;
 
+	  gcc_assert (Pmode == DImode);
 	  /* When using the large model we need to load the address
 	     into a register, and we've run out of registers.  So we
 	     switch to a different calling convention, and we call a
@@ -11266,7 +11271,7 @@ ix86_expand_split_stack_prologue (void)
 	      LABEL_PRESERVE_P (label) = 1;
 	      emit_insn (gen_set_rip_rex64 (reg10, label));
 	      emit_insn (gen_set_got_offset_rex64 (reg11, label));
-	      emit_insn (gen_adddi3 (reg10, reg10, reg11));
+	      emit_insn (ix86_gen_add3 (reg10, reg10, reg11));
 	      x = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, split_stack_fn_large),
 				  UNSPEC_GOT);
 	      x = gen_rtx_CONST (Pmode, x);
@@ -12722,7 +12727,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  base = get_thread_pointer (true);
 	  dest = gen_reg_rtx (Pmode);
-	  emit_insn (gen_subsi3 (dest, base, off));
+	  emit_insn (ix86_gen_sub3 (dest, base, off));
 	}
       break;
 
@@ -12743,7 +12748,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  base = get_thread_pointer (true);
 	  dest = gen_reg_rtx (Pmode);
-	  emit_insn (gen_subsi3 (dest, base, off));
+	  emit_insn (ix86_gen_sub3 (dest, base, off));
 	}
       break;
 
@@ -20626,8 +20631,8 @@ ix86_split_long_move (rtx operands[])
 	  if (nparts == 3)
 	    {
 	      if (TARGET_128BIT_LONG_DOUBLE && mode == XFmode)
-                emit_insn (gen_addsi3 (stack_pointer_rtx,
-				       stack_pointer_rtx, GEN_INT (-4)));
+                emit_insn (ix86_gen_add3 (stack_pointer_rtx,
+					  stack_pointer_rtx, GEN_INT (-4)));
 	      emit_move_insn (part[0][2], part[1][2]);
 	    }
 	  else if (nparts == 4)
@@ -22975,14 +22980,17 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
 rtx
 construct_plt_address (rtx symbol)
 {
-  rtx tmp = gen_reg_rtx (Pmode);
-  rtx unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, symbol), UNSPEC_PLTOFF);
+  rtx tmp, unspec;
 
   gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
   gcc_assert (ix86_cmodel == CM_LARGE_PIC);
+  gcc_assert (Pmode == DImode);
+
+  tmp = gen_reg_rtx (Pmode);
+  unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, symbol), UNSPEC_PLTOFF);
 
   emit_move_insn (tmp, gen_rtx_CONST (Pmode, unspec));
-  emit_insn (gen_adddi3 (tmp, tmp, pic_offset_table_rtx));
+  emit_insn (ix86_gen_add3 (tmp, tmp, pic_offset_table_rtx));
   return tmp;
 }
 
