@@ -1210,11 +1210,23 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
   ((HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) 0xffffffff) \
    || (HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) -1 << 32))
 
+#define CONST_OK_FOR_K04(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
+				 && ((HOST_WIDE_INT)(VALUE)) <= 15)
+
 #define CONST_OK_FOR_K08(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 255)
 
+#define CONST_OK_FOR_K12(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
+				 && ((HOST_WIDE_INT)(VALUE)) <= 4095)
+
 #define ZERO_EXTRACT_ANDMASK(EXTRACT_SZ_RTX, EXTRACT_POS_RTX)\
   (((1 << INTVAL (EXTRACT_SZ_RTX)) - 1) << INTVAL (EXTRACT_POS_RTX))
+
+#define DISP_ADDR_P(X) (MEM_P (X) && GET_CODE (XEXP (X, 0)) == PLUS \
+			 && REG_P (XEXP (XEXP (X, 0), 0)) \
+			 && CONST_INT_P (XEXP (XEXP (X, 0), 1)))
+
+#define DISP_ADDR_OFFSET(X) (INTVAL (XEXP (XEXP (X, 0), 1)))
 
 #if 0
 #define SECONDARY_INOUT_RELOAD_CLASS(CLASS,MODE,X,ELSE) \

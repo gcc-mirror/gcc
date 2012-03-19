@@ -3137,6 +3137,11 @@ static int
 sh_address_cost (rtx X,
 	         bool speed ATTRIBUTE_UNUSED)
 {
+  /*  SH2A supports 4 byte displacement mov insns with higher offsets.
+      Consider those as more expensive than 2 byte insns.  */
+  if (DISP_ADDR_P (X) && GET_MODE (X) == QImode)
+    return DISP_ADDR_OFFSET (X) < 16 ? 0 : 1;
+
   return (GET_CODE (X) == PLUS
 	  && ! CONSTANT_P (XEXP (X, 1))
 	  && ! TARGET_SHMEDIA ? 1 : 0);
@@ -9606,10 +9611,12 @@ sh_legitimate_index_p (enum machine_mode mode, rtx op)
 
       if (TARGET_SH2A)
 	{
-	  if (GET_MODE_SIZE (mode) == 1
-		&& (unsigned) INTVAL (op) < 4096)
+	  if (mode == QImode && (unsigned) INTVAL (op) < 4096)
 	    return true;
 	}
+
+      if (mode == QImode && (unsigned) INTVAL (op) < 16)
+	return true;
 
       if ((GET_MODE_SIZE (mode) == 4
 	   && (unsigned) INTVAL (op) < 64
@@ -9809,6 +9816,25 @@ sh_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
       if (GET_MODE_SIZE (mode) + offset - offset_base <= 64)
 	{
 	  sum = expand_binop (Pmode, add_optab, XEXP (x, 0),
+			      GEN_INT (offset_base), NULL_RTX, 0,
+			      OPTAB_LIB_WIDEN);
+
+	  return gen_rtx_PLUS (Pmode, sum, GEN_INT (offset - offset_base));
+	}
+    }
+
+  /* This could be generalized for SImode, HImode, QImode displacement
+     addressing.  */
+  if (mode == QImode && GET_CODE (x) == PLUS
+      && BASE_REGISTER_RTX_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
+    {
+      rtx index_rtx = XEXP (x, 1);
+      HOST_WIDE_INT offset = INTVAL (index_rtx);
+      HOST_WIDE_INT offset_base = offset & ~15;
+    
+      if (offset - offset_base <= 16)
+	{
+	  rtx sum = expand_binop (Pmode, add_optab, XEXP (x, 0),
 			      GEN_INT (offset_base), NULL_RTX, 0,
 			      OPTAB_LIB_WIDEN);
 
@@ -11444,8 +11470,13 @@ sh_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
 {
   /* We want to enable the use of SUBREGs as a means to
      VEC_SELECT a single element of a vector.  */
+
+  /* This effectively disallows using GENERAL_REGS for SFmode vector subregs.
+     This can be problematic when SFmode vector subregs need to be accessed
+     on the stack with displacement addressing, as it happens with -O0.
+     Thus we disallow the mode change for -O0.  */
   if (to == SFmode && VECTOR_MODE_P (from) && GET_MODE_INNER (from) == SFmode)
-    return (reg_classes_intersect_p (GENERAL_REGS, rclass));
+    return optimize ? (reg_classes_intersect_p (GENERAL_REGS, rclass)) : false;
 
   if (GET_MODE_SIZE (from) != GET_MODE_SIZE (to))
     {
@@ -11460,7 +11491,7 @@ sh_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
 	    return reg_classes_intersect_p (DF_HI_REGS, rclass);
 	}
     }
-  return 0;
+  return false;
 }
 
 /* Return true if registers in machine mode MODE will likely be
@@ -12471,6 +12502,25 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
     other register is allocated on the stack.  */
   if (rclass == FPUL_REGS && true_regnum (x) == -1)
     return GENERAL_REGS;
+
+  /* Force mov.b displacement addressing insn to use R0 as the other operand.
+     On SH2A could also just leave it alone here, which would result in a
+     4 byte move insn being generated instead.  However, for this to work
+     the insns must have the appropriate alternatives.  */
+  if (mode == QImode && rclass != R0_REGS
+      && DISP_ADDR_P (x) && DISP_ADDR_OFFSET (x) < 16)
+    return R0_REGS;
+
+  /* When reload is trying to address a QImode or HImode subreg on the stack, 
+     force any subreg byte into R0_REGS, as this is going to become a
+     displacement address.
+     We could restrict this to SUBREG_BYTE (x) > 0, but if the actual reg
+     is on the stack, the memref to it might already require a displacement
+     and that has to be added to the final address.  At this point we don't
+     know the cumulative displacement so we assume the worst case.  */
+  if ((mode == QImode || mode == HImode) && rclass != R0_REGS 
+      && GET_CODE (x) == SUBREG && true_regnum (x) == -1)
+    return R0_REGS;
 
   return NO_REGS;
 }

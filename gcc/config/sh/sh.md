@@ -4871,24 +4871,56 @@ label:
 }")
 
 (define_expand "extendqisi2"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
-	(sign_extend:SI (match_operand:QI 1 "general_extend_operand" "r,m")))]
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(sign_extend:SI (match_operand:QI 1 "general_extend_operand" "")))]
   ""
   "")
 
-(define_insn "*extendqisi2_compact"
+(define_insn "*extendqisi2_compact_reg"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
-	(sign_extend:SI (match_operand:QI 1 "general_movsrc_operand" "r,m")))]
+	(sign_extend:SI (match_operand:QI 1 "register_operand" "r,t")))]
   "TARGET_SH1"
   "@
 	exts.b	%1,%0
-	mov.b	%1,%0"
-  [(set_attr "type" "arith,load")
-   (set_attr_alternative "length"
-     [(const_int 2)
-       (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))])])
+	movt	%0"
+  [(set_attr "type" "arith,arith")])
+
+;; FIXME: Fold non-SH2A and SH2A alternatives with "enabled" attribute.
+;; See movqi insns.
+(define_insn "*extendqisi2_compact_mem_disp"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=z,r")
+	(sign_extend:SI
+	 (mem:QI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r")
+			  (match_operand:SI 2 "const_int_operand" "K04,N")))))]
+  "TARGET_SH1 && ! TARGET_SH2A && CONST_OK_FOR_K04 (INTVAL (operands[2]))"
+  "@
+	mov.b	@(%O2,%1),%0
+	mov.b	@%1,%0"
+  [(set_attr "type" "load")])
+
+(define_insn "*extendqisi2_compact_mem_disp"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=z,r,r")
+	(sign_extend:SI
+	 (mem:QI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r,r")
+			  (match_operand:SI 2 "const_int_operand" "K04,N,K12")))))]
+  "TARGET_SH2A
+   && (CONST_OK_FOR_K04 (INTVAL (operands[2]))
+       || (CONST_OK_FOR_K12 (INTVAL (operands[2]))))"
+  "@
+	mov.b	@(%O2,%1),%0
+	mov.b	@%1,%0
+	mov.b	@(%O2,%1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "2,2,4")])
+
+;; This will take care of other QImode addressing modes than displacement
+;; addressing.
+(define_insn "*extendqisi2_compact_snd"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(sign_extend:SI (match_operand:QI 1 "movsrc_no_disp_mem_operand" "Snd")))]
+  "TARGET_SH1"
+  "mov.b	%1,%0"
+  [(set_attr "type" "load")])
 
 (define_insn "*extendqisi2_media"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -4919,19 +4951,18 @@ label:
 			   subreg_lowpart_offset (SImode, GET_MODE (op1)));
 }")
 
-(define_insn "extendqihi2"
-  [(set (match_operand:HI 0 "arith_reg_dest" "=r,r")
-	(sign_extend:HI (match_operand:QI 1 "general_movsrc_operand" "r,m")))]
+(define_expand "extendqihi2"
+  [(set (match_operand:HI 0 "arith_reg_dest" "")
+	(sign_extend:HI (match_operand:QI 1 "arith_reg_operand" "")))]
+  ""
+  "")
+
+(define_insn "*extendqihi2_compact_reg"
+  [(set (match_operand:HI 0 "arith_reg_dest" "=r")
+	(sign_extend:HI (match_operand:QI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
-  "@
-	exts.b	%1,%0
-	mov.b	%1,%0"
-  [(set_attr "type" "arith,load")
-   (set_attr_alternative "length"
-     [(const_int 2)
-       (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))])])
+  "exts.b	%1,%0"
+  [(set_attr "type" "arith")])
 
 /* It would seem useful to combine the truncXi patterns into the movXi
    patterns, but unary operators are ignored when matching constraints,
@@ -5475,33 +5506,90 @@ label:
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
 
-(define_insn "movqi_i"
-  [(set (match_operand:QI 0 "general_movdst_operand" "=r,r,r,m,r,r,l")
-	(match_operand:QI 1 "general_movsrc_operand"  "r,i,m,r,t,l,r"))]
+(define_expand "movqi"
+  [(set (match_operand:QI 0 "general_operand" "")
+	(match_operand:QI 1 "general_operand" ""))]
+  ""
+  "{ if (prepare_move_operands (operands, QImode)) DONE; }")
+
+;; If movqi_reg_reg is specified as an alternative of movqi, movqi will be
+;; selected to copy QImode regs.  If one of them happens to be allocated
+;; on the stack, reload will stick to movqi insn and generate wrong
+;; displacement addressing because of the generic m alternatives.  
+;; With the movqi_reg_reg being specified before movqi it will be intially 
+;; picked to load/store regs.  If the regs regs are on the stack reload will
+;; try other insns and not stick to movqi_reg_reg.
+(define_insn "*movqi_reg_reg"
+  [(set (match_operand:QI 0 "arith_reg_dest"   "=r,r")
+	(match_operand:QI 1 "register_operand" "r,t"))]
+  "TARGET_SH1"
+  "@
+	mov	%1,%0
+	movt	%0"
+  [(set_attr "type" "move,arith")])
+
+;; FIXME: The non-SH2A and SH2A variants should be combined by adding
+;; "enabled" attribute as it is done in other targets.
+(define_insn "*movqi_store_mem_disp04"
+  [(set (mem:QI (plus:SI (match_operand:SI 0 "arith_reg_operand" "%r,r")
+			 (match_operand:SI 1 "const_int_operand" "K04,N")))
+	(match_operand:QI 2 "arith_reg_operand" "z,r"))]
+  "TARGET_SH1 && CONST_OK_FOR_K04 (INTVAL (operands[1]))"
+  "@
+	mov.b	%2,@(%O1,%0)
+	mov.b	%2,@%0"
+  [(set_attr "type" "store")])
+
+(define_insn "*movqi_store_mem_disp12"
+  [(set (mem:QI (plus:SI (match_operand:SI 0 "arith_reg_operand" "%r")
+			 (match_operand:SI 1 "const_int_operand" "K12")))
+	(match_operand:QI 2 "arith_reg_operand" "r"))]
+  "TARGET_SH2A && CONST_OK_FOR_K12 (INTVAL (operands[1]))"
+  "mov.b	%2,@(%O1,%0)"
+  [(set_attr "type" "store")
+   (set_attr "length" "4")])
+
+(define_insn "*movqi_load_mem_disp"
+  [(set (match_operand:QI 0 "arith_reg_dest" "=z,r")
+	(mem:QI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r")
+			 (match_operand:SI 2 "const_int_operand" "K04,N"))))]
+  "TARGET_SH1 && ! TARGET_SH2A && CONST_OK_FOR_K04 (INTVAL (operands[2]))"
+  "@
+	mov.b	@(%O2,%1),%0
+	mov.b	@%1,%0"
+  [(set_attr "type" "load")])
+
+(define_insn "*movqi_load_mem_disp"
+  [(set (match_operand:QI 0 "arith_reg_dest" "=z,r,r")
+	(mem:QI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r,r")
+			 (match_operand:SI 2 "const_int_operand" "K04,N,K12"))))]
+  "TARGET_SH2A
+   && (CONST_OK_FOR_K04 (INTVAL (operands[2]))
+       || CONST_OK_FOR_K12 (INTVAL (operands[2])))"
+  "@
+	mov.b	@(%O2,%1),%0
+	mov.b	@%1,%0
+	mov.b	@(%O2,%1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "2,2,4")])
+
+;; The m constraints basically allow any kind of addresses to be used with any
+;; source/target register as the other operand.  This is not true for 
+;; displacement addressing modes on anything but SH2A.  That's why the
+;; specialized load/store insns are specified above.
+(define_insn "*movqi"
+  [(set (match_operand:QI 0 "general_movdst_operand" "=r,r,m,r,l")
+	(match_operand:QI 1 "general_movsrc_operand"  "i,m,r,l,r"))]
   "TARGET_SH1
    && (arith_reg_operand (operands[0], QImode)
        || arith_reg_operand (operands[1], QImode))"
   "@
 	mov	%1,%0
-	mov	%1,%0
 	mov.b	%1,%0
 	mov.b	%1,%0
-	movt	%0
 	sts	%1,%0
 	lds	%1,%0"
- [(set_attr "type" "move,movi8,load,store,arith,prget,prset")
-  (set_attr_alternative "length"
-     [(const_int 2)
-      (const_int 2)
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
-      (const_int 2)
-      (const_int 2)
-      (const_int 2)])])
+ [(set_attr "type" "movi8,load,store,prget,prset")])
 
 (define_insn "*movqi_media"
   [(set (match_operand:QI 0 "general_movdst_operand" "=r,r,r,m")
@@ -5519,12 +5607,6 @@ label:
 	(cond [(match_test "sh_contains_memref_p (insn)")
 	       (const_string "user")]
 	      (const_string "ignore")))])
-
-(define_expand "movqi"
-  [(set (match_operand:QI 0 "general_operand" "")
-	(match_operand:QI 1 "general_operand"  ""))]
-  ""
-  "{ if (prepare_move_operands (operands, QImode)) DONE; }")
 
 (define_expand "reload_inqi"
   [(set (match_operand:SI 2 "" "=&r")
@@ -7035,14 +7117,6 @@ label:
   "TARGET_SH1"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 0) (match_dup 2))]
-  "")
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_operand:SI 1 "memory_operand" ""))
-   (clobber (reg:SI R0_REG))]
-  "TARGET_SH1"
-  [(set (match_dup 0) (match_dup 1))]
   "")
 
 ;; ------------------------------------------------------------------------
@@ -11683,6 +11757,78 @@ mov.l\\t1f,r0\\n\\
 	       (const_int 0)))]
   "TARGET_SH2"
   "dt	%0")
+
+;; The following peepholes fold load sequences for which reload was not
+;; able to generate a displacement addressing move insn.
+;; This can happen when reload has to transform a move insn 
+;; without displacement into one with displacement.  Or when reload can't
+;; fit a displacement into the insn's constraints.  In the latter case, the
+;; load destination reg remains at r0, which reload compensates by inserting
+;; another mov insn.
+
+;; Fold sequence:
+;;	mov #54,r0
+;;	mov.b @(r0,r15),r0
+;;	mov r0,r3
+;; into:
+;;	mov.b @(54,r15),r3
+;;
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(match_operand:SI 1 "const_int_operand" ""))
+   (set (match_operand:SI 2 "arith_reg_dest" "")
+	(sign_extend:SI
+	 (mem:QI (plus:SI (match_dup 0)
+			  (match_operand:SI 3 "arith_reg_operand" "")))))
+   (set (match_operand:QI 4 "arith_reg_dest" "")
+	(match_operand:QI 5 "arith_reg_operand" ""))]
+  "TARGET_SH2A
+   && CONST_OK_FOR_K12 (INTVAL (operands[1]))
+   && REGNO (operands[2]) == REGNO (operands[5])
+   && peep2_reg_dead_p (3, operands[5])"
+  [(set (match_dup 4) (mem:QI (plus:SI (match_dup 3) (match_dup 1))))]
+  "")
+
+;; Fold sequence:
+;;	mov #54,r0
+;;	mov.b @(r0,r15),r1
+;; into:
+;;	mov.b @(54,r15),r1
+;;
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(match_operand:SI 1 "const_int_operand" ""))
+   (set (match_operand:SI 2 "arith_reg_dest" "")
+	 (sign_extend:SI
+	 (mem:QI (plus:SI (match_dup 0)
+			  (match_operand:SI 3 "arith_reg_operand" "")))))]
+  "TARGET_SH2A
+   && CONST_OK_FOR_K12 (INTVAL (operands[1]))
+   && (peep2_reg_dead_p (2, operands[0])
+       || REGNO (operands[0]) == REGNO (operands[2]))"
+  [(set (match_dup 2)
+	(sign_extend:SI (mem:QI (plus:SI (match_dup 3) (match_dup 1)))))]
+  "")
+
+;; Fold sequence:
+;;	mov.b @(r0,r15),r0
+;;	mov r0,r3
+;; into:
+;;	mov.b @(r0,r15),r3
+;;
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(sign_extend:SI
+	 (mem:QI (plus:SI (match_operand:SI 1 "arith_reg_operand" "")
+			  (match_operand:SI 2 "arith_reg_operand" "")))))
+   (set (match_operand:QI 3 "arith_reg_dest" "")
+	(match_operand:QI 4 "arith_reg_operand" ""))]
+  "TARGET_SH1
+   && REGNO (operands[0]) == REGNO (operands[4])
+   && peep2_reg_dead_p (2, operands[0])"
+  [(set (match_dup 3)
+	(mem:QI (plus:SI (match_dup 1) (match_dup 2))))]
+  "")
 
 ;; These convert sequences such as `mov #k,r0; add r15,r0; mov.l @r0,rn'
 ;; to `mov #k,r0; mov.l @(r0,r15),rn'.  These sequences are generated by
