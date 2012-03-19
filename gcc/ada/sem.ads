@@ -209,10 +209,6 @@ with Types;  use Types;
 
 package Sem is
 
-   New_Nodes_OK : Int := 1;
-   --  Temporary flag for use in checking out HLO. Set non-zero if it is
-   --  OK to generate new nodes.
-
    -----------------------------
    -- Semantic Analysis Flags --
    -----------------------------

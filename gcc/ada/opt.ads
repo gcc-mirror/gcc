@@ -666,10 +666,6 @@ package Opt is
    --  Heap size for memory allocations. Valid values are 32 and 64. Only
    --  available on VMS.
 
-   HLO_Active : Boolean := False;
-   --  GNAT
-   --  True if High Level Optimizer is activated (-gnatH switch)
-
    Identifier_Character_Set : Character;
    --  GNAT
    --  This variable indicates the character set to be used for identifiers.

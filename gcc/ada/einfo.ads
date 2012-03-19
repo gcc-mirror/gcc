@@ -1277,11 +1277,13 @@ package Einfo is
 --       reflect the specified information. However, there are some items that
 --       are only reflected in the chain. These include:
 --
---          Alignment attribute definition clause
 --          Machine_Attribute pragma
 --          Link_Alias pragma
 --          Linker_Section pragma
+--          Linker_Constructor pragma
+--          Linker_Destructor pragma
 --          Weak_External pragma
+--          Thread_Local_Storage pragma
 --
 --       If any of these items are present, then the flag Has_Gigi_Rep_Item is
 --       set, indicating that Gigi should search the chain.
@@ -1530,6 +1532,7 @@ package Einfo is
 --          Linker_Constructor pragma
 --          Linker_Destructor pragma
 --          Weak_External pragma
+--          Thread_Local_Storage pragma
 --
 --       If this flag is set, then Gigi should scan the rep item chain to
 --       process any of these items that appear. At least one such item will

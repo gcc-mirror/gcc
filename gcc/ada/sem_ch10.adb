@@ -2977,7 +2977,6 @@ package body Sem_Ch10 is
    --  Start of processing for Expand_With_Clause
 
    begin
-      New_Nodes_OK := New_Nodes_OK + 1;
       Withn :=
         Make_With_Clause (Loc,
           Name => Build_Unit_Name (Nam));
@@ -3002,8 +3001,6 @@ package body Sem_Ch10 is
       if Nkind (Nam) = N_Expanded_Name then
          Expand_With_Clause (Item, Prefix (Nam), N);
       end if;
-
-      New_Nodes_OK := New_Nodes_OK - 1;
    end Expand_With_Clause;
 
    -----------------------
@@ -3165,7 +3162,6 @@ package body Sem_Ch10 is
          return;
       end if;
 
-      New_Nodes_OK := New_Nodes_OK + 1;
       Withn := Make_With_Clause (Loc, Name => Build_Unit_Name);
 
       Set_Library_Unit          (Withn, P);
@@ -3183,8 +3179,6 @@ package body Sem_Ch10 is
       if Is_Child_Spec (P_Unit) then
          Implicit_With_On_Parent (P_Unit, N);
       end if;
-
-      New_Nodes_OK := New_Nodes_OK - 1;
    end Implicit_With_On_Parent;
 
    --------------
@@ -3734,8 +3728,6 @@ package body Sem_Ch10 is
       --  Start of processing for Expand_Limited_With_Clause
 
       begin
-         New_Nodes_OK := New_Nodes_OK + 1;
-
          if Nkind (Nam) = N_Identifier then
 
             --  Create node for name of withed unit
@@ -3793,8 +3785,6 @@ package body Sem_Ch10 is
                Install_Limited_Withed_Unit (Withn);
             end if;
          end if;
-
-         New_Nodes_OK := New_Nodes_OK - 1;
       end Expand_Limited_With_Clause;
 
       ----------------------

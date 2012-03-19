@@ -6963,7 +6963,10 @@ package body Sem_Ch6 is
       --  is precisely evaluated in the pre-state. Otherwise return OK.
 
       function Is_Trivial_Post_Or_Ensures (N : Node_Id) return Boolean;
-      --  Return whether node N is trivially "True" or "False"
+      --  Return True if node N is trivially "True" or "False", and it comes
+      --  from source. In particular, nodes that are statically known "True" or
+      --  "False" by the compiler but not written as such in source code are
+      --  not considered as trivial.
 
       procedure Process_Contract_Cases (Spec : Node_Id);
       --  This processes the Spec_CTC_List from Spec, processing any contract
@@ -7064,7 +7067,8 @@ package body Sem_Ch6 is
          return Is_Entity_Name (N)
            and then (Entity (N) = Standard_True
                        or else
-                     Entity (N) = Standard_False);
+                     Entity (N) = Standard_False)
+           and then Comes_From_Source (N);
       end Is_Trivial_Post_Or_Ensures;
 
       ----------------------------

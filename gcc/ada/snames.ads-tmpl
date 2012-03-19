@@ -854,6 +854,7 @@ package Snames is
    Name_VADS_Size                      : constant Name_Id := N + $; -- GNAT
    Name_Val                            : constant Name_Id := N + $;
    Name_Valid                          : constant Name_Id := N + $;
+   Name_Valid_Scalars                  : constant Name_Id := N + $; -- GNAT
    Name_Value_Size                     : constant Name_Id := N + $; -- GNAT
    Name_Variable_Indexing              : constant Name_Id := N + $; -- GNAT
    Name_Version                        : constant Name_Id := N + $;
@@ -1418,6 +1419,7 @@ package Snames is
       Attribute_VADS_Size,
       Attribute_Val,
       Attribute_Valid,
+      Attribute_Valid_Scalars,
       Attribute_Value_Size,
       Attribute_Variable_Indexing,
       Attribute_Version,

@@ -289,6 +289,12 @@ procedure Gnat1drv is
          Ttypes.Target_Strict_Alignment := True;
       end if;
 
+      --  Increase size of allocated entities if debug flag -gnatd.N is set
+
+      if Debug_Flag_Dot_NN then
+         Atree.Num_Extension_Nodes := Atree.Num_Extension_Nodes + 1;
+      end if;
+
       --  Disable static allocation of dispatch tables if -gnatd.t or if layout
       --  is enabled. The front end's layout phase currently treats types that
       --  have discriminant-dependent arrays as not being static even when a
