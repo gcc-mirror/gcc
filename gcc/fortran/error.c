@@ -178,8 +178,8 @@ error_integer (long int i)
 static size_t
 gfc_widechar_display_length (gfc_char_t c)
 {
-  if (gfc_wide_is_printable (c))
-    /* Simple ASCII character  */
+  if (gfc_wide_is_printable (c) || c == '\t')
+    /* Printable ASCII character, or tabulation (output as a space).  */
     return 1;
   else if (c < ((gfc_char_t) 1 << 8))
     /* Displayed as \x??  */
@@ -213,10 +213,11 @@ print_wide_char_into_buffer (gfc_char_t c, char *buf)
   static const char xdigit[16] = { '0', '1', '2', '3', '4', '5', '6',
     '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-  if (gfc_wide_is_printable (c))
+  if (gfc_wide_is_printable (c) || c == '\t')
     {
       buf[1] = '\0';
-      buf[0] = (unsigned char) c;
+      /* Tabulation is output as a space.  */
+      buf[0] = (unsigned char) (c == '\t' ? ' ' : c);
       return 1;
     }
   else if (c < ((gfc_char_t) 1 << 8))
@@ -291,7 +292,7 @@ show_locus (locus *loc, int c1, int c2)
 {
   gfc_linebuf *lb;
   gfc_file *f;
-  gfc_char_t c, *p;
+  gfc_char_t *p;
   int i, offset, cmax;
 
   /* TODO: Either limit the total length and number of included files
@@ -370,12 +371,7 @@ show_locus (locus *loc, int c1, int c2)
   while (i > 0)
     {
       static char buffer[11];
-
-      c = *p++;
-      if (c == '\t')
-	c = ' ';
-
-      i -= print_wide_char_into_buffer (c, buffer);
+      i -= print_wide_char_into_buffer (*p++, buffer);
       error_string (buffer);
     }
 
