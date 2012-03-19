@@ -1,3 +1,31 @@
+2012-03-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (get_thread_pointer): Add tp_mode argument.
+	Generate ZERO_EXTEND in place if GET_MODE (tp) != tp_mode.
+	(legitimize_tls_address) <TLS_MODEL_INITIAL_EXEC>: Always generate
+	DImode UNSPEC_GOTNTPOFF references on TARGET_64BIT.
+	(ix86_decompose_address): Allow zero extended UNSPEC_TP references.
+
+	Revert:
+	2012-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_TLS_INDIRECT_SEG_REFS): New.
+	* config/i386/i386.c (ix86_decompose_address): Use
+	TARGET_TLS_INDIRECT_SEG_REFS to prevent %fs:(%reg) addresses.
+	(legitimize_tls_address): Use TARGET_TLS_INDIRECT_SEG_REFS to load
+	thread pointer to a register.
+
+	Revert:
+	2012-03-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Disallow fs:(reg)
+	if Pmode != word_mode.
+	(legitimize_tls_address): Call gen_tls_initial_exec_x32 if
+	Pmode == SImode for TARGET_X32.
+
+	* config/i386/i386.md (UNSPEC_TLS_IE_X32): New.
+	(tls_initial_exec_x32): Likewise.
+
 2012-03-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/50751
@@ -6,7 +34,7 @@
 	* config/sh/sh.c (sh_address_cost): Add SH2A special case.
 	(sh_legitimate_index_p): Allow QImode displacements for non-SH2A.
 	(sh_legitimize_address): Add QImode displacement handling.
-	(sh_cannot_change_mode_class): Disallow GENERAL_REGS for SFmode 
+	(sh_cannot_change_mode_class): Disallow GENERAL_REGS for SFmode
 	vector subregs.
 	(sh_secondary_reload): Add QImode displacement handling.
 	* config/sh/predicates.md (movsrc_no_disp_mem_operand): New predicate.
