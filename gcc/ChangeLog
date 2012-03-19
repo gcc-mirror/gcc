@@ -10,19 +10,17 @@
 	vector subregs.
 	(sh_secondary_reload): Add QImode displacement handling.
 	* config/sh/predicates.md (movsrc_no_disp_mem_operand): New predicate.
-        * config/sh/constraints.md (K04, Snd, Sdd): New constraints.
-        * config/sh/sh.md (extendqisi2): Remove constraints from 
-        expander.
-        (*extendqisi2_compact): Rename to *extendqisi2_compact_reg, 
-        restrict to register operands only.
-        (*extendqisi2_compact_mem_disp, *extendqisi2_compact_snd): New 
-        insns.
-        (extendqihi2): Change insn to expander.
-        (*extendqihi2_compact_reg): New insn.
-        (movqi_i, movqi): Replace with ... 
-        (movqi, *movqi_reg_reg, *movqi_store_mem_disp12,
-        *movqi_load_mem_disp, *movqi_load_mem_disp): ... these.
-        Add new peepholes for QImode displacement addressing.
+	* config/sh/constraints.md (K04, Snd, Sdd): New constraints.
+	* config/sh/sh.md (extendqisi2): Remove constraints from expander.
+	(*extendqisi2_compact): Rename to *extendqisi2_compact_reg, restrict
+	to register operands only.
+	(*extendqisi2_compact_mem_disp, *extendqisi2_compact_snd): New insns.
+	(extendqihi2): Change insn to expander.
+	(*extendqihi2_compact_reg): New insn.
+	(movqi_i, movqi): Replace with ...
+	(movqi, *movqi_reg_reg, *movqi_store_mem_disp12,
+	*movqi_load_mem_disp, *movqi_load_mem_disp): ... these.
+	Add new peepholes for QImode displacement addressing.
 
 2012-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
