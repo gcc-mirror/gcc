@@ -49,6 +49,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  This is precisely the allocator defined in the C++ Standard. 
    *    - all allocation calls operator new
    *    - all deallocation calls operator delete
+   *
+   *  @tparam  _Tp  Type of allocated object.
    */
   template<typename _Tp>
     class new_allocator
