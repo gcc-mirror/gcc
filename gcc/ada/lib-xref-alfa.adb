@@ -211,10 +211,10 @@ package body Alfa is
 
    procedure Add_Alfa_File (U : Unit_Number_Type; D : Nat) is
       From : Scope_Index;
+      S    : constant Source_File_Index := Source_Index (U);
 
-      S : constant Source_File_Index := Source_Index (U);
-
-      File_Name, Unit_File_Name : String_Ptr;
+      File_Name      : String_Ptr;
+      Unit_File_Name : String_Ptr;
 
    begin
       --  Source file could be inexistant as a result of an error, if option
