@@ -1,3 +1,14 @@
+2012-03-19  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Check_Subprogram_Contract): Do not emit warnings
+	on trivially True or False postconditions and Ensures components
+	of contract-cases.
+
+2012-03-19  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Fix index entry for -gnatei (now we have
+	ug_words entry).
+
 2012-03-19  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb (Get_Discriminant_Value): Instead of looking

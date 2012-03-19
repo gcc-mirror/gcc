@@ -4155,13 +4155,13 @@ Display full source path name in brief error messages.
 @cindex @option{-gnateG} (@command{gcc})
 Save result of preprocessing in a text file.
 
-@item ^-gnatei^/MAX_INSTANTIATIONS=^@var{nnn}
+@item -gnatei@var{nnn}
 @cindex @option{-gnatei} (@command{gcc})
 Set maximum number of instantiations during compilation of a single unit to
 @var{nnn}. This may be useful in increasing the default maximum of 8000 for
 the rare case when a single unit legitimately exceeds this limit.
 
-@item ^-gnateI^/MULTI_UNIT_INDEX=^@var{nnn}
+@item -gnateI@var{nnn}
 @cindex @option{-gnateI} (@command{gcc})
 Indicates that the source is a multi-unit source and that the index of the
 unit to compile is @var{nnn}. @var{nnn} needs to be a positive number and need
