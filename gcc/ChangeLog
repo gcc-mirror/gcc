@@ -1,5 +1,9 @@
 2012-03-19  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (allocate_stack): Simplify.
+
+2012-03-19  Uros Bizjak  <ubizjak@gmail.com>
+
 	* builtins.c (expand_builtin_cexpi): Use copy_addr_to_reg instead of
 	copy_to_mode_reg (Pmode, ...).
 	(expand_builtin_frame_address): Ditto.
@@ -10,7 +14,6 @@
 	(ix86_expand_setmem): Ditto.
 	(ix86_trampoline_init): DItto.
 	* config/i386/i386.md (cmpstrnsi): Ditto.
-	(allocate_stack): Ditto.
 
 2012-03-19  Sandra Loosemore  <sandra@codesourcery.com>
 
