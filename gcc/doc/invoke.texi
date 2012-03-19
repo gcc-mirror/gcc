@@ -881,7 +881,7 @@ See RS/6000 and PowerPC Options.
 -mieee  -mbitops  -misize  -minline-ic_invalidate -mpadstruct  -mspace @gol
 -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
--madjust-unroll -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
+-mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
 -maccumulate-outgoing-args -minvalid-symbols -msoft-atomic @gol
 -mbranch-cost=@var{num} -mcbranchdi -mcmpeqdi -mfused-madd -mpretend-cmove @gol
 -menable-tas}
@@ -18103,12 +18103,6 @@ A fixed register is one that the register allocator can not use.  This is
 useful when compiling kernel code.  A register range is specified as
 two registers separated by a dash.  Multiple register ranges can be
 specified separated by a comma.
-
-@item -madjust-unroll
-@opindex madjust-unroll
-Throttle unrolling to avoid thrashing target registers.
-This option only has an effect if the GCC code base supports the
-TARGET_ADJUST_UNROLL_MAX target hook.
 
 @item -mindexed-addressing
 @opindex mindexed-addressing
