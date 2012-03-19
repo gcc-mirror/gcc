@@ -1,5 +1,19 @@
 2012-03-19  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/allocator.h (std::allocator): Base class is
+	__allocator_base.
+	(uses_allocator): Add to sub-grouping.
+	* include/ext/new_allocator.h: Doxygen markup for tparm.
+
+	* config/allocator/bitmap_allocator_base.h: Use __allocator_base
+	template alias in C++11.
+	* config/allocator/malloc_allocator_base.h: Same.
+	* config/allocator/mt_allocator_base.h: Same.
+	* config/allocator/new_allocator_base.h: Same.
+	* config/allocator/pool_allocator_base.h: Same.
+
+2012-03-19  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/ext/pb_ds/detail/pat_trie_/
 	constructors_destructor_fn_imps.hpp: Increment after recursion.
 	* include/ext/pb_ds/detail/pat_trie_/pat_trie_base.hpp: Convert
