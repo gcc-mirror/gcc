@@ -1,5 +1,29 @@
 2012-03-19  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch3.adb (Get_Discriminant_Value): Instead of looking
+	at the immediate correcponsing discriminant, traverse a
+	potential chain of discriminants produced by type derivations.
+	(Root_Corresponding_Discriminant): Traverse a chain of inherited
+	discriminants and return the topmost discriminant.
+
+2012-03-19  Bob Duff  <duff@adacore.com>
+
+	* debug.adb: Minor comment change.
+	* gnat_ugn.texi: Update documentation for elaboration regarding
+	indirect calls.
+
+2012-03-19  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): In
+	the case of an object of a class-wide interface type, where the
+	declaration is rewritten as a renaming, call Set_Debug_Info_Needed
+	on the renaming entity so that Materialize_Entity will be
+	set. Also, change existing call (for other than interface cases)
+	to call Set_Debug_Info_Needed rather than Set_Needs_Debug_Info
+	(as specified for that flag).
+
+2012-03-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch4.adb (Analyze_Allocator): Detect an allocator generated
 	by the build-in-place machinery where the designated type is
 	indefinite, but the underlying type is not. Do not emit errors

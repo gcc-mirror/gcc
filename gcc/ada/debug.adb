@@ -646,7 +646,8 @@ package body Debug is
    --       elaboration model is conservative, especially regarding indirect
    --       calls. If you say Proc'Access, it will assume you might call
    --       Proc. This can cause elaboration cycles at bind time. This flag
-   --       reverts to the behavior of earlier compilers.
+   --       reverts to the behavior of earlier compilers, which ignored
+   --       indirect calls.
 
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in

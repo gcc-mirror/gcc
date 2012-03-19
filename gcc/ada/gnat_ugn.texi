@@ -601,7 +601,7 @@ Elaboration Order Handling in GNAT
 * Elaboration Issues for Library Tasks::
 * Mixing Elaboration Models::
 * What to Do If the Default Elaboration Behavior Fails::
-* Elaboration for Access-to-Subprogram Values::
+* Elaboration for Dispatching Calls::
 * Summary of Procedures for Elaboration Control::
 * Other Elaboration Order Considerations::
 
@@ -23279,7 +23279,7 @@ elaboration code in your own application).
 * Elaboration Issues for Library Tasks::
 * Mixing Elaboration Models::
 * What to Do If the Default Elaboration Behavior Fails::
-* Elaboration for Access-to-Subprogram Values::
+* Elaboration for Dispatching Calls::
 * Summary of Procedures for Elaboration Control::
 * Other Elaboration Order Considerations::
 @end menu
@@ -24936,39 +24936,22 @@ elaboration switch if your code is correct, and we assume that the
 C-tests are indeed correct (it is less efficient, but efficiency is
 not a factor in running the ACVC tests.)
 
-@node Elaboration for Access-to-Subprogram Values
-@section Elaboration for Access-to-Subprogram Values
-@cindex Access-to-subprogram
+@node Elaboration for Dispatching Calls
+@section Elaboration for Dispatching Calls
+@cindex Dispatching calls
 
 @noindent
-Access-to-subprogram types (introduced in Ada 95) complicate
-the handling of elaboration. The trouble is that it becomes
-impossible to tell at compile time which procedure
-is being called. This means that it is not possible for the binder
-to analyze the elaboration requirements in this case.
-
-If at the point at which the access value is created
-(i.e., the evaluation of @code{P'Access} for a subprogram @code{P}),
-the body of the subprogram is
-known to have been elaborated, then the access value is safe, and its use
-does not require a check. This may be achieved by appropriate arrangement
-of the order of declarations if the subprogram is in the current unit,
-or, if the subprogram is in another unit, by using pragma
-@code{Pure}, @code{Preelaborate}, or @code{Elaborate_Body}
-on the referenced unit.
-
-If the referenced body is not known to have been elaborated at the point
-the access value is created, then any use of the access value must do a
-dynamic check, and this dynamic check will fail and raise a
-@code{Program_Error} exception if the body has not been elaborated yet.
-GNAT will generate the necessary checks, and in addition, if the
-@option{-gnatwl}
-switch is set, will generate warnings that such checks are required.
-
-The use of dynamic dispatching for tagged types similarly generates
-a requirement for dynamic checks, and premature calls to any primitive
+In rare cases, the static elaboration model fails to prevent
+dispatching calls to not-yet-elaborated subprograms. In such cases, we
+fall back to run-time checks; premature calls to any primitive
 operation of a tagged type before the body of the operation has been
-elaborated, will result in the raising of @code{Program_Error}.
+elaborated will raise @code{Program_Error}.
+
+Access-to-subprogram types, however, are handled conservatively, and
+do not require run-time checks. This was not true in earlier versions
+of the compiler; you can use the @option{-gnatd.U} debug switch to
+revert to the old behavior if the new conservative behavior causes
+elaboration cycles.
 
 @node Summary of Procedures for Elaboration Control
 @section Summary of Procedures for Elaboration Control
