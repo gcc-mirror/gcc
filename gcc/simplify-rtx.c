@@ -293,7 +293,7 @@ delegitimize_mem_from_attrs (rtx x)
 	  {
 	    HOST_WIDE_INT bitsize, bitpos;
 	    tree toffset;
-	    int unsignedp = 0, volatilep = 0;
+	    int unsignedp, volatilep = 0;
 
 	    decl = get_inner_reference (decl, &bitsize, &bitpos, &toffset,
 					&mode, &unsignedp, &volatilep, false);
