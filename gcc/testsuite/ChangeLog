@@ -1,5 +1,10 @@
 2012-03-20  Georg-Johann Lay  <avr@gjlay.de>
 
+	* gcc.target/avr/progmem.h (pgm_read_char): Define depending on
+	__AVR_HAVE_LPMX__
+
+2012-03-20  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/49868
 	* gcc.target/avr/torture/addr-space-2.h: New file.
 	* gcc.target/avr/torture/addr-space-2-g.h: New test.
