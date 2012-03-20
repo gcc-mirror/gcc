@@ -35836,7 +35836,7 @@ valid_perm_using_mode_p (enum machine_mode vmode, struct expand_vec_perm_d *d)
 }
 
 /* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement D
-   in terms of pshufb, vpperm, vpermq, vpermd or vperm2i128.  */
+   in terms of pshufb, vpperm, vpermq, vpermd, vpermps or vperm2i128.  */
 
 static bool
 expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
@@ -35910,6 +35910,9 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	      if (valid_perm_using_mode_p (V8SImode, d))
 		vmode = V8SImode;
 	    }
+	  /* Or if vpermps can be used.  */
+	  else if (d->vmode == V8SFmode)
+	    vmode = V8SImode;
 
 	  if (vmode == V32QImode)
 	    {
@@ -35952,6 +35955,12 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 				gen_rtvec_v (GET_MODE_NUNITS (vmode), rperm));
   vperm = force_reg (vmode, vperm);
 
+  if (vmode == V8SImode && d->vmode == V8SFmode)
+    {
+      vmode = V8SFmode;
+      vperm = gen_lowpart (vmode, vperm);
+    }
+
   target = gen_lowpart (vmode, d->target);
   op0 = gen_lowpart (vmode, d->op0);
   if (d->op0 == d->op1)
@@ -35960,6 +35969,8 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	emit_insn (gen_ssse3_pshufbv16qi3 (target, op0, vperm));
       else if (vmode == V32QImode)
 	emit_insn (gen_avx2_pshufbv32qi3 (target, op0, vperm));
+      else if (vmode == V8SFmode)
+	emit_insn (gen_avx2_permvarv8sf (target, vperm, op0));
       else
 	emit_insn (gen_avx2_permvarv8si (target, vperm, op0));
     }
@@ -36008,20 +36019,17 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
       else if (broadcast_perm && TARGET_AVX2)
 	{
 	  /* Use vpbroadcast{b,w,d}.  */
-	  rtx op = d->op0, (*gen) (rtx, rtx) = NULL;
+	  rtx (*gen) (rtx, rtx) = NULL;
 	  switch (d->vmode)
 	    {
 	    case V32QImode:
-	      op = gen_lowpart (V16QImode, op);
-	      gen = gen_avx2_pbroadcastv32qi;
+	      gen = gen_avx2_pbroadcastv32qi_1;
 	      break;
 	    case V16HImode:
-	      op = gen_lowpart (V8HImode, op);
-	      gen = gen_avx2_pbroadcastv16hi;
+	      gen = gen_avx2_pbroadcastv16hi_1;
 	      break;
 	    case V8SImode:
-	      op = gen_lowpart (V4SImode, op);
-	      gen = gen_avx2_pbroadcastv8si;
+	      gen = gen_avx2_pbroadcastv8si_1;
 	      break;
 	    case V16QImode:
 	      gen = gen_avx2_pbroadcastv16qi;
@@ -36029,13 +36037,16 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	    case V8HImode:
 	      gen = gen_avx2_pbroadcastv8hi;
 	      break;
+	    case V8SFmode:
+	      gen = gen_avx2_vec_dupv8sf_1;
+	      break;
 	    /* For other modes prefer other shuffles this function creates.  */
 	    default: break;
 	    }
 	  if (gen != NULL)
 	    {
 	      if (!d->testing_p)
-		emit_insn (gen (d->target, op));
+		emit_insn (gen (d->target, d->op0));
 	      return true;
 	    }
 	}
@@ -36103,7 +36114,7 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
     return true;
 
   /* Try the SSSE3 pshufb or XOP vpperm or AVX2 vperm2i128,
-     vpshufb, vpermd or vpermq variable permutation.  */
+     vpshufb, vpermd, vpermps or vpermq variable permutation.  */
   if (expand_vec_perm_pshufb (d))
     return true;
 

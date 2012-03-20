@@ -1,3 +1,19 @@
+2012-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52607
+	* config/i386/i386.md ("isa" attribute): Add avx2 and noavx2.
+	("enabled" attribute): Handle avx2 and noavx2 isas.
+	* config/i386/sse.md (avx2_vec_dupv8sf_1, avx2_pbroadcast<mode>_1):
+	New insns.
+	(vec_dup<mode>): Add avx2 =x,x alternative.
+	(vec_dup<mode> splitter): Don't split if TARGET_AVX2.
+	(*avx_vperm_broadcast_<mode>): Don't split V4DFmode if TARGET_AVX2.
+	For TARGET_AVX2, V8SFmode and elt == 0 split into vbroadcastss.
+	* config/i386/i386.c (expand_vec_perm_pshufb): Emit also vpermps
+	for V8SFmode.
+	(expand_vec_perm_1): For broadcasts, use avx2_pbroadcast<mode>_1
+	if possible, handle also V8SFmode.
+
 2012-03-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/predicates.md (zero_operand, reg_or_zero_operand): New predicates.

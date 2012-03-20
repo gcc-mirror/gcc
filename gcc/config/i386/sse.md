@@ -3808,6 +3808,18 @@
     (set_attr "prefix" "vex")
     (set_attr "mode" "<MODE>")])
 
+(define_insn "avx2_vec_dupv8sf_1"
+  [(set (match_operand:V8SF 0 "register_operand" "=x")
+	(vec_duplicate:V8SF
+	  (vec_select:SF
+	    (match_operand:V8SF 1 "register_operand" "x")
+	    (parallel [(const_int 0)]))))]
+  "TARGET_AVX2"
+  "vbroadcastss\t{%x1, %0|%0, %x1}"
+  [(set_attr "type" "sselog1")
+    (set_attr "prefix" "vex")
+    (set_attr "mode" "V8SF")])
+
 (define_insn "vec_dupv4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=x,x,x")
 	(vec_duplicate:V4SF
@@ -11876,6 +11888,19 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "avx2_pbroadcast<mode>_1"
+  [(set (match_operand:VI_256 0 "register_operand" "=x")
+	(vec_duplicate:VI_256
+	  (vec_select:<ssescalarmode>
+	    (match_operand:VI_256 1 "nonimmediate_operand" "xm")
+	    (parallel [(const_int 0)]))))]
+  "TARGET_AVX2"
+  "vpbroadcast<ssemodesuffix>\t{%x1, %0|%0, %x1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn "avx2_permvarv8si"
   [(set (match_operand:V8SI 0 "register_operand" "=x")
 	(unspec:V8SI
@@ -11967,16 +11992,18 @@
   [V8SI V8SF V4DI V4DF])
 
 (define_insn "vec_dup<mode>"
-  [(set (match_operand:AVX_VEC_DUP_MODE 0 "register_operand" "=x,x")
+  [(set (match_operand:AVX_VEC_DUP_MODE 0 "register_operand" "=x,x,x")
 	(vec_duplicate:AVX_VEC_DUP_MODE
-	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "m,?x")))]
+	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "m,x,?x")))]
   "TARGET_AVX"
   "@
    vbroadcast<ssescalarmodesuffix>\t{%1, %0|%0, %1}
+   vbroadcast<ssescalarmodesuffix>\t{%x1, %0|%0, %x1}
    #"
   [(set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
+   (set_attr "isa" "*,avx2,noavx2")
    (set_attr "mode" "V8SF")])
 
 (define_insn "avx2_vbroadcasti128_<mode>"
@@ -11995,7 +12022,7 @@
   [(set (match_operand:AVX_VEC_DUP_MODE 0 "register_operand")
 	(vec_duplicate:AVX_VEC_DUP_MODE
 	  (match_operand:<ssescalarmode> 1 "register_operand")))]
-  "TARGET_AVX && reload_completed"
+  "TARGET_AVX && !TARGET_AVX2 && reload_completed"
   [(set (match_dup 2)
 	(vec_duplicate:<ssehalfvecmode> (match_dup 1)))
    (set (match_dup 0)
@@ -12057,7 +12084,7 @@
 	    [(match_operand 3 "const_int_operand" "C,n,n")])))]
   "TARGET_AVX"
   "#"
-  "&& reload_completed"
+  "&& reload_completed && (<MODE>mode != V4DFmode || !TARGET_AVX2)"
   [(set (match_dup 0) (vec_duplicate:VF_256 (match_dup 1)))]
 {
   rtx op0 = operands[0], op1 = operands[1];
@@ -12066,6 +12093,13 @@
   if (REG_P (op1))
     {
       int mask;
+
+      if (TARGET_AVX2 && elt == 0)
+	{
+	  emit_insn (gen_vec_dup<mode> (op0, gen_lowpart (<ssescalarmode>mode,
+							  op1)));
+	  DONE;
+	}
 
       /* Shuffle element we care about into all elements of the 128-bit lane.
 	 The other lane gets shuffled too, but we don't care.  */
