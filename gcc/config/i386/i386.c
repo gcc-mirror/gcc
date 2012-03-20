@@ -35535,43 +35535,88 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
+/* A cached (set (nil) (vselect (vconcat (nil) (nil)) (parallel [])))
+   insn, so that expand_vselect{,_vconcat} doesn't have to create a fresh
+   insn every time.  */
+
+static GTY(()) rtx vselect_insn;
+
+/* Initialize vselect_insn.  */
+
+static void
+init_vselect_insn (void)
+{
+  unsigned i;
+  rtx x;
+
+  x = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (MAX_VECT_LEN));
+  for (i = 0; i < MAX_VECT_LEN; ++i)
+    XVECEXP (x, 0, i) = const0_rtx;
+  x = gen_rtx_VEC_SELECT (V2DFmode, gen_rtx_VEC_CONCAT (V4DFmode, const0_rtx,
+							const0_rtx), x);
+  x = gen_rtx_SET (VOIDmode, const0_rtx, x);
+  start_sequence ();
+  vselect_insn = emit_insn (x);
+  end_sequence ();
+}
+
 /* Construct (set target (vec_select op0 (parallel perm))) and
    return true if that's a valid instruction in the active ISA.  */
 
 static bool
-expand_vselect (rtx target, rtx op0, const unsigned char *perm, unsigned nelt)
+expand_vselect (rtx target, rtx op0, const unsigned char *perm,
+		unsigned nelt, bool testing_p)
 {
-  rtx rperm[MAX_VECT_LEN], x;
-  unsigned i;
+  unsigned int i;
+  rtx x, save_vconcat;
+  int icode;
 
+  if (vselect_insn == NULL_RTX)
+    init_vselect_insn ();
+
+  x = XEXP (SET_SRC (PATTERN (vselect_insn)), 1);
+  PUT_NUM_ELEM (XVEC (x, 0), nelt);
   for (i = 0; i < nelt; ++i)
-    rperm[i] = GEN_INT (perm[i]);
+    XVECEXP (x, 0, i) = GEN_INT (perm[i]);
+  save_vconcat = XEXP (SET_SRC (PATTERN (vselect_insn)), 0);
+  XEXP (SET_SRC (PATTERN (vselect_insn)), 0) = op0;
+  PUT_MODE (SET_SRC (PATTERN (vselect_insn)), GET_MODE (target));
+  SET_DEST (PATTERN (vselect_insn)) = target;
+  icode = recog_memoized (vselect_insn);
 
-  x = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nelt, rperm));
-  x = gen_rtx_VEC_SELECT (GET_MODE (target), op0, x);
-  x = gen_rtx_SET (VOIDmode, target, x);
+  if (icode >= 0 && !testing_p)
+    emit_insn (copy_rtx (PATTERN (vselect_insn)));
 
-  x = emit_insn (x);
-  if (recog_memoized (x) < 0)
-    {
-      remove_insn (x);
-      return false;
-    }
-  return true;
+  SET_DEST (PATTERN (vselect_insn)) = const0_rtx;
+  XEXP (SET_SRC (PATTERN (vselect_insn)), 0) = save_vconcat;
+  INSN_CODE (vselect_insn) = -1;
+
+  return icode >= 0;
 }
 
 /* Similar, but generate a vec_concat from op0 and op1 as well.  */
 
 static bool
 expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
-			const unsigned char *perm, unsigned nelt)
+			const unsigned char *perm, unsigned nelt,
+			bool testing_p)
 {
   enum machine_mode v2mode;
   rtx x;
+  bool ok;
+
+  if (vselect_insn == NULL_RTX)
+    init_vselect_insn ();
 
   v2mode = GET_MODE_2XWIDER_MODE (GET_MODE (op0));
-  x = gen_rtx_VEC_CONCAT (v2mode, op0, op1);
-  return expand_vselect (target, x, perm, nelt);
+  x = XEXP (SET_SRC (PATTERN (vselect_insn)), 0);
+  PUT_MODE (x, v2mode);
+  XEXP (x, 0) = op0;
+  XEXP (x, 1) = op1;
+  ok = expand_vselect (target, x, perm, nelt, testing_p);
+  XEXP (x, 0) = const0_rtx;
+  XEXP (x, 1) = const0_rtx;
+  return ok;
 }
 
 /* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement D
@@ -35903,7 +35948,7 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 		    return true;
 		  return expand_vselect (gen_lowpart (V4DImode, d->target),
 					 gen_lowpart (V4DImode, d->op0),
-					 perm, 4);
+					 perm, 4, false);
 		}
 
 	      /* Next see if vpermd can be used.  */
@@ -36051,7 +36096,7 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	    }
 	}
 
-      if (expand_vselect (d->target, d->op0, perm2, nelt))
+      if (expand_vselect (d->target, d->op0, perm2, nelt, d->testing_p))
 	return true;
 
       /* There are plenty of patterns in sse.md that are written for
@@ -36065,7 +36110,8 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	  perm2[i] = d->perm[i] & mask;
 	  perm2[i + 1] = (d->perm[i + 1] & mask) + nelt;
 	}
-      if (expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, nelt))
+      if (expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, nelt,
+				  d->testing_p))
 	return true;
 
       /* Recognize shufps, which means adding {0, 0, nelt, nelt}.  */
@@ -36079,13 +36125,15 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	      perm2[i + 3] = (d->perm[i + 3] & mask) + nelt;
 	    }
 
-	  if (expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, nelt))
+	  if (expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, nelt,
+				      d->testing_p))
 	    return true;
 	}
     }
 
   /* Finally, try the fully general two operand permute.  */
-  if (expand_vselect_vconcat (d->target, d->op0, d->op1, d->perm, nelt))
+  if (expand_vselect_vconcat (d->target, d->op0, d->op1, d->perm, nelt,
+			      d->testing_p))
     return true;
 
   /* Recognize interleave style patterns with reversed operands.  */
@@ -36101,7 +36149,8 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	  perm2[i] = e;
 	}
 
-      if (expand_vselect_vconcat (d->target, d->op1, d->op0, perm2, nelt))
+      if (expand_vselect_vconcat (d->target, d->op1, d->op0, perm2, nelt,
+				  d->testing_p))
 	return true;
     }
 
@@ -36149,14 +36198,14 @@ expand_vec_perm_pshuflw_pshufhw (struct expand_vec_perm_d *d)
   memcpy (perm2, d->perm, 4);
   for (i = 4; i < 8; ++i)
     perm2[i] = i;
-  ok = expand_vselect (d->target, d->op0, perm2, 8);
+  ok = expand_vselect (d->target, d->op0, perm2, 8, d->testing_p);
   gcc_assert (ok);
 
   /* Emit the pshufhw.  */
   memcpy (perm2 + 4, d->perm + 4, 4);
   for (i = 0; i < 4; ++i)
     perm2[i] = i;
-  ok = expand_vselect (d->target, d->target, perm2, 8);
+  ok = expand_vselect (d->target, d->target, perm2, 8, d->testing_p);
   gcc_assert (ok);
 
   return true;
@@ -37190,7 +37239,8 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       while (vmode != V4SImode);
 
       memset (perm2, elt, 4);
-      ok = expand_vselect (gen_lowpart (V4SImode, d->target), op0, perm2, 4);
+      ok = expand_vselect (gen_lowpart (V4SImode, d->target), op0, perm2, 4,
+			   d->testing_p);
       gcc_assert (ok);
       return true;
 
