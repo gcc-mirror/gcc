@@ -2,6 +2,7 @@
 
 extern void abort (void);
 
+#if __SIZEOF_INT__ > 2
 struct foo
 {
  int *f;
@@ -9,6 +10,15 @@ struct foo
 };
 
 int baz;
+#else
+struct foo
+{
+ long *f;
+ long i;
+};
+
+long baz;
+#endif
 
 void __attribute__ ((noinline))
 bar (struct foo x)
