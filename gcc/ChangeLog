@@ -1,3 +1,9 @@
+2012-03-20  Jason Merrill  <jason@redhat.com>
+
+	* tree-streamer-in.c (streamer_alloc_tree): Call
+	ggc_alloc_zone_cleared_tree_node instead of
+	ggc_alloc_zone_cleared_tree_node_stat.
+
 2012-03-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/extend.texi (Template Instantiation): Remove anachronisms.
