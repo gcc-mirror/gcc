@@ -487,7 +487,6 @@ extern struct gimple_opt_pass pass_fixup_cfg;
 extern struct rtl_opt_pass pass_expand;
 extern struct rtl_opt_pass pass_init_function;
 extern struct rtl_opt_pass pass_jump;
-extern struct rtl_opt_pass pass_rtl_eh;
 extern struct rtl_opt_pass pass_initial_value_sets;
 extern struct rtl_opt_pass pass_unshare_all_rtl;
 extern struct rtl_opt_pass pass_instantiate_virtual_regs;

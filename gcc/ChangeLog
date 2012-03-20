@@ -1,5 +1,18 @@
 2012-03-20  Richard Guenther  <rguenther@suse.de>
 
+	* tree-pass.h (pass_rtl_eh): Remove.
+	* except.c (gate_handle_eh): Likewise.
+	(rest_of_handle_eh): Likewise.
+	(pass_rtl_eh): Likewise.
+	(finish_eh_generation): Export.
+	* except.h (finish_eh_generation): Declare.
+	* passes.c (init_optimization_passes): Remove pass_rtl_eh.
+	* cfgexpand.c (gimple_expand_cfg): Call finish_eh_generation
+	after expanding stack alignment.  Instead of compacting blocks
+	call cleanup_cfg.
+
+2012-03-20  Richard Guenther  <rguenther@suse.de>
+
 	* stor-layout.c (finish_bitfield_representative): Fallback
 	to conservative maximum size if the padding up to the next
 	field cannot be computed as a constant.

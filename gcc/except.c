@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
    gimple to eh_region mapping that had been recorded in the
    THROW_STMT_TABLE.
 
-   During pass_rtl_eh (except.c), we generate the real landing pads
+   Then, via finish_eh_generation, we generate the real landing pads
    to which the runtime will actually transfer control.  These new
    landing pads perform whatever bookkeeping is needed by the target
    backend in order to resume execution within the current function.
@@ -1406,7 +1406,7 @@ sjlj_build_landing_pads (void)
 /* After initial rtl generation, call back to finish generating
    exception support code.  */
 
-static void
+void
 finish_eh_generation (void)
 {
   basic_block bb;
@@ -1453,41 +1453,6 @@ finish_eh_generation (void)
 	}
     }
 }
-
-static bool
-gate_handle_eh (void)
-{
-  /* Nothing to do if no regions created.  */
-  return cfun->eh->region_tree != NULL;
-}
-
-/* Complete generation of exception handling code.  */
-static unsigned int
-rest_of_handle_eh (void)
-{
-  finish_eh_generation ();
-  cleanup_cfg (CLEANUP_NO_INSN_DEL);
-  return 0;
-}
-
-struct rtl_opt_pass pass_rtl_eh =
-{
- {
-  RTL_PASS,
-  "rtl_eh",                             /* name */
-  gate_handle_eh,                       /* gate */
-  rest_of_handle_eh,			/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_JUMP,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
-};
 
 /* This section handles removing dead code for flow.  */
 
