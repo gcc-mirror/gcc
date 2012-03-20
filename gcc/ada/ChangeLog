@@ -1,3 +1,11 @@
+2012-03-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* hlo.ads, hlo.adb: Removed, no longer used.
+	* gcc-interface/Make-lang.in: Remove hlo.o. Update dependencies.
+	* gcc-interface/Makefile.in: Remove EXTRA_LIBGNAT_SRCS (temporarly)
+	and compute it from EXTRA_LIBGNAT_OBJS.
+	Clean up comments, reorder LIBGNAT_SRCS and LIBGNAT_OBJS.
+
 2012-03-20  Yannick Moy  <moy@adacore.com>
 
 	* gnat_rm.texi, sem_attr.ads: Update documentation.
