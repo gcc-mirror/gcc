@@ -1,4 +1,4 @@
-2012-03-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+2012-03-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/stl_list.h (list::_M_size): Use NSDMI.
 	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
