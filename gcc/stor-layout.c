@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Data type for the expressions representing sizes of data types.
    It is the first integer type laid out.  */
-tree sizetype_tab[(int) TYPE_KIND_LAST];
+tree sizetype_tab[(int) stk_type_kind_last];
 
 /* If nonzero, this is an upper limit on alignment of structure fields.
    The value is measured in bits.  */
@@ -2389,13 +2389,13 @@ initialize_sizetypes (void)
   int precision, bprecision;
 
   /* Get sizetypes precision from the SIZE_TYPE target macro.  */
-  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
+  if (strcmp (SIZETYPE, "unsigned int") == 0)
     precision = INT_TYPE_SIZE;
-  else if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
+  else if (strcmp (SIZETYPE, "long unsigned int") == 0)
     precision = LONG_TYPE_SIZE;
-  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+  else if (strcmp (SIZETYPE, "long long unsigned int") == 0)
     precision = LONG_LONG_TYPE_SIZE;
-  else if (strcmp (SIZE_TYPE, "short unsigned int") == 0)
+  else if (strcmp (SIZETYPE, "short unsigned int") == 0)
     precision = SHORT_TYPE_SIZE;
   else
     gcc_unreachable ();

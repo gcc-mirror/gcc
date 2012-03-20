@@ -1,3 +1,21 @@
+2012-03-20  Tristan Gingold  <gingold@adacore.com>
+
+	* tree.h (enum size_type_kind): Add stk_ prefix to constants,
+	convert in lowercase.
+	(sizetype_tab, sizetype, bitsizetype, ssizetype, sbitsizetype)
+	(size_int, ssize_int, bitsize_int, sbitsize_int): Adjust.
+	* stor-layout.c (sizetype_tab): Adjust.
+	(initialize_sizetypes): Use SIZETYPE instead of SIZE_TYPE.
+	* tree-streamer.c (preload_common_nodes): Use stk_type_kind_last
+	instead of type_kind_last.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Use size_int
+	instead of size_int_kind.
+	* doc/tm.texi.in (Type Layout): Document SIZETYPE.
+	* doc/tm.texi: Regenerate.
+	* defaults.h (SIZETYPE): Provide a default value.
+	* config/vms/vms.h (SIZE_TYPE): Define as "unsigned int".
+	(SIZETYPE): Define.
+
 2012-03-20  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md: Use braced string notation where applicable.
