@@ -4452,7 +4452,7 @@ get_bit_range (unsigned HOST_WIDE_INT *bitstart,
 	       HOST_WIDE_INT bitpos)
 {
   unsigned HOST_WIDE_INT bitoffset;
-  tree field, repr, offset;
+  tree field, repr;
 
   gcc_assert (TREE_CODE (exp) == COMPONENT_REF);
 
@@ -4467,12 +4467,17 @@ get_bit_range (unsigned HOST_WIDE_INT *bitstart,
     }
 
   /* Compute the adjustment to bitpos from the offset of the field
-     relative to the representative.  */
-  offset = size_diffop (DECL_FIELD_OFFSET (field),
-			DECL_FIELD_OFFSET (repr));
-  bitoffset = (tree_low_cst (offset, 1) * BITS_PER_UNIT
-	       + tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
-	       - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+     relative to the representative.  DECL_FIELD_OFFSET of field and
+     repr are the same by construction if they are not constants,
+     see finish_bitfield_layout.  */
+  if (host_integerp (DECL_FIELD_OFFSET (field), 1)
+      && host_integerp (DECL_FIELD_OFFSET (repr), 1))
+    bitoffset = (tree_low_cst (DECL_FIELD_OFFSET (field), 1)
+		 - tree_low_cst (DECL_FIELD_OFFSET (repr), 1)) * BITS_PER_UNIT;
+  else
+    bitoffset = 0;
+  bitoffset += (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+		- tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
 
   *bitstart = bitpos - bitoffset;
   *bitend = *bitstart + tree_low_cst (DECL_SIZE (repr), 1) - 1;
