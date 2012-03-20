@@ -2114,7 +2114,7 @@
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand" "=w,w")
         (unspec:<V_cmp_result>
 	  [(match_operand:VDQW 1 "s_register_operand" "w,w")
-	   (match_operand:VDQW 2 "nonmemory_operand" "w,Dz")
+	   (match_operand:VDQW 2 "reg_or_zero_operand" "w,Dz")
 	   (match_operand:SI 3 "immediate_operand" "i,i")]
           UNSPEC_VCEQ))]
   "TARGET_NEON"
@@ -2133,7 +2133,7 @@
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand" "=w,w")
         (unspec:<V_cmp_result>
 	  [(match_operand:VDQW 1 "s_register_operand" "w,w")
-	   (match_operand:VDQW 2 "nonmemory_operand" "w,Dz")
+	   (match_operand:VDQW 2 "reg_or_zero_operand" "w,Dz")
 	   (match_operand:SI 3 "immediate_operand" "i,i")]
           UNSPEC_VCGE))]
   "TARGET_NEON"
@@ -2164,7 +2164,7 @@
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand" "=w,w")
         (unspec:<V_cmp_result>
 	  [(match_operand:VDQW 1 "s_register_operand" "w,w")
-	   (match_operand:VDQW 2 "nonmemory_operand" "w,Dz")
+	   (match_operand:VDQW 2 "reg_or_zero_operand" "w,Dz")
            (match_operand:SI 3 "immediate_operand" "i,i")]
           UNSPEC_VCGT))]
   "TARGET_NEON"
@@ -2198,7 +2198,7 @@
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand" "=w")
         (unspec:<V_cmp_result>
 	  [(match_operand:VDQW 1 "s_register_operand" "w")
-	   (match_operand:VDQW 2 "nonmemory_operand" "Dz")
+	   (match_operand:VDQW 2 "zero_operand" "Dz")
 	   (match_operand:SI 3 "immediate_operand" "i")]
           UNSPEC_VCLE))]
   "TARGET_NEON"
@@ -2215,7 +2215,7 @@
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand" "=w")
         (unspec:<V_cmp_result>
 	  [(match_operand:VDQW 1 "s_register_operand" "w")
-	   (match_operand:VDQW 2 "nonmemory_operand" "Dz")
+	   (match_operand:VDQW 2 "zero_operand" "Dz")
 	   (match_operand:SI 3 "immediate_operand" "i")]
           UNSPEC_VCLT))]
   "TARGET_NEON"
