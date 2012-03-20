@@ -5110,7 +5110,11 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	      return error_mark_node;
 	    }
 
-	  field = lookup_field_1 (type, d->cur->index, /*want_type=*/false);
+	  if (TREE_CODE (d->cur->index) == FIELD_DECL)
+	    /* We already reshaped this.  */
+	    gcc_assert (d->cur->index == field);
+	  else
+	    field = lookup_field_1 (type, d->cur->index, /*want_type=*/false);
 
 	  if (!field || TREE_CODE (field) != FIELD_DECL)
 	    {
