@@ -1,3 +1,15 @@
+2012-03-20  Richard Guenther  <rguenther@suse.de>
+
+	* stor-layout.c (finish_bitfield_representative): Fallback
+	to conservative maximum size if the padding up to the next
+	field cannot be computed as a constant.
+	(finish_bitfield_layout): If we cannot compute the distance
+	between the start of the bitfield representative and the
+	bitfield member start a new representative.
+	* expr.c (get_bit_range): The distance between the start of
+	the bitfield representative and the bitfield member is zero
+	if the field offsets are not constants.
+
 2012-03-20  Tristan Gingold  <gingold@adacore.com>
 
 	* tree.h (enum size_type_kind): Add stk_ prefix to constants,

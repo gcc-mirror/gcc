@@ -1781,10 +1781,17 @@ finish_bitfield_representative (tree repr, tree field)
 	return;
       maxsize = size_diffop (DECL_FIELD_OFFSET (nextf),
 			     DECL_FIELD_OFFSET (repr));
-      gcc_assert (host_integerp (maxsize, 1));
-      maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
-		    + tree_low_cst (DECL_FIELD_BIT_OFFSET (nextf), 1)
-		    - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+      if (host_integerp (maxsize, 1))
+	{
+	  maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
+			+ tree_low_cst (DECL_FIELD_BIT_OFFSET (nextf), 1)
+			- tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+	  /* If the group ends within a bitfield nextf does not need to be
+	     aligned to BITS_PER_UNIT.  Thus round up.  */
+	  maxbitsize = (maxbitsize + BITS_PER_UNIT - 1) & ~(BITS_PER_UNIT - 1);
+	}
+      else
+	maxbitsize = bitsize;
     }
   else
     {
@@ -1888,6 +1895,8 @@ finish_bitfield_layout (record_layout_info rli)
 	}
       else if (DECL_BIT_FIELD_TYPE (field))
 	{
+	  gcc_assert (repr != NULL_TREE);
+
 	  /* Zero-size bitfields finish off a representative and
 	     do not have a representative themselves.  This is
 	     required by the C++ memory model.  */
@@ -1895,6 +1904,24 @@ finish_bitfield_layout (record_layout_info rli)
 	    {
 	      finish_bitfield_representative (repr, prev);
 	      repr = NULL_TREE;
+	    }
+
+	  /* We assume that either DECL_FIELD_OFFSET of the representative
+	     and each bitfield member is a constant or they are equal.
+	     This is because we need to be able to compute the bit-offset
+	     of each field relative to the representative in get_bit_range
+	     during RTL expansion.
+	     If these constraints are not met, simply force a new
+	     representative to be generated.  That will at most
+	     generate worse code but still maintain correctness with
+	     respect to the C++ memory model.  */
+	  else if (!((host_integerp (DECL_FIELD_OFFSET (repr), 1)
+		      && host_integerp (DECL_FIELD_OFFSET (field), 1))
+		     || operand_equal_p (DECL_FIELD_OFFSET (repr),
+					 DECL_FIELD_OFFSET (field), 0)))
+	    {
+	      finish_bitfield_representative (repr, prev);
+	      repr = start_bitfield_representative (field);
 	    }
 	}
       else

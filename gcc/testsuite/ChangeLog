@@ -1,3 +1,10 @@
+2012-03-20  Richard Guenther  <rguenther@suse.de>
+
+	* gnat.dg/pack16.adb: New testcase.
+	* gnat.dg/pack16_pkg.ads: Likewise.
+	* gnat.dg/specs/pack8.ads: Likewise.
+	* gnat.dg/specs/pack8_pkg.ads: Likewise.
+
 2012-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/warn/Wuseless-cast.C: Extend.
