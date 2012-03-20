@@ -1,5 +1,9 @@
 2012-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/52607
+	* config/i386/i386.c (expand_vec_perm_vperm2f128): New function.
+	(ix86_expand_vec_perm_const_1): Call it.
+
 	* config/i386/i386.c (vselect_insn): New variable.
 	(init_vselect_insn): New function.
 	(expand_vselect, expand_vselect_insn): Add testing_p argument.
