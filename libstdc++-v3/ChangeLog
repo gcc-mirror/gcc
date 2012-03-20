@@ -1,3 +1,15 @@
+2012-03-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_list.h (list::_M_size): Use NSDMI.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust line numbers.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2012-03-19  Paweł Sikora  <pawel.sikora@agmk.net>
 
 	PR libstdc++/52540

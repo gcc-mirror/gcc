@@ -314,26 +314,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__detail::_List_node_base _M_node;
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-	size_t                    _M_size;
+	size_t                    _M_size = 0;
 #endif
 
 	_List_impl()
 	: _Node_alloc_type(), _M_node()
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	, _M_size(0)
-#endif
 	{ }
 
 	_List_impl(const _Node_alloc_type& __a)
 	: _Node_alloc_type(__a), _M_node()
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	, _M_size(0)
-#endif
 	{ }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 	_List_impl(_Node_alloc_type&& __a)
-	: _Node_alloc_type(std::move(__a)), _M_node(), _M_size(0)
+	: _Node_alloc_type(std::move(__a)), _M_node()
 	{ }
 #endif
       };
