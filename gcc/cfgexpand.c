@@ -4623,9 +4623,21 @@ gimple_expand_cfg (void)
   sbitmap_free (blocks);
   purge_all_dead_edges ();
 
-  compact_blocks ();
-
   expand_stack_alignment ();
+
+  /* After initial rtl generation, call back to finish generating
+     exception support code.  We need to do this before cleaning up
+     the CFG as the code does not expect dead landing pads.  */
+  if (cfun->eh->region_tree != NULL)
+    finish_eh_generation ();
+
+  /* Remove unreachable blocks, otherwise we cannot compute dominators
+     which are needed for loop state verification.  As a side-effect
+     this also compacts blocks.
+     ???  We cannot remove trivially dead insns here as for example
+     the DRAP reg on i?86 is not magically live at this point.
+     gcc.c-torture/execute/ipa-sra-2.c execution, -Os -m32 fails otherwise.  */
+  cleanup_cfg (CLEANUP_NO_INSN_DEL);
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();

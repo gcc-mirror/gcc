@@ -1431,7 +1431,6 @@ init_optimization_passes (void)
       struct opt_pass **p = &pass_rest_of_compilation.pass.sub;
       NEXT_PASS (pass_init_function);
       NEXT_PASS (pass_jump);
-      NEXT_PASS (pass_rtl_eh);
       NEXT_PASS (pass_initial_value_sets);
       NEXT_PASS (pass_unshare_all_rtl);
       NEXT_PASS (pass_instantiate_virtual_regs);
