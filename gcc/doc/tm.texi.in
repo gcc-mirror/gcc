@@ -1630,6 +1630,18 @@ If you don't define this macro, the default is @code{"long unsigned
 int"}.
 @end defmac
 
+@defmac SIZETYPE
+GCC defines internal types (@code{sizetype}, @code{ssizetype},
+@code{bitsizetype} and @code{sbitsizetype}) for expressions
+dealing with size.  This macro is a C expression for a string describing
+the name of the data type from which the precision of @code{sizetype}
+is extracted.
+
+The string has the same restrictions as @code{SIZE_TYPE} string.
+
+If you don't define this macro, the default is @code{SIZE_TYPE}.
+@end defmac
+
 @defmac PTRDIFF_TYPE
 A C expression for a string describing the name of the data type to use
 for the result of subtracting two pointers.  The typedef name

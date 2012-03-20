@@ -4787,18 +4787,19 @@ extern HOST_WIDE_INT int_byte_position (const_tree);
 
 enum size_type_kind
 {
-  SIZETYPE,		/* Normal representation of sizes in bytes.  */
-  SSIZETYPE,		/* Signed representation of sizes in bytes.  */
-  BITSIZETYPE,		/* Normal representation of sizes in bits.  */
-  SBITSIZETYPE,		/* Signed representation of sizes in bits.  */
-  TYPE_KIND_LAST};
+  stk_sizetype,		/* Normal representation of sizes in bytes.  */
+  stk_ssizetype,	/* Signed representation of sizes in bytes.  */
+  stk_bitsizetype,	/* Normal representation of sizes in bits.  */
+  stk_sbitsizetype,	/* Signed representation of sizes in bits.  */
+  stk_type_kind_last
+};
 
-extern GTY(()) tree sizetype_tab[(int) TYPE_KIND_LAST];
+extern GTY(()) tree sizetype_tab[(int) stk_type_kind_last];
 
-#define sizetype sizetype_tab[(int) SIZETYPE]
-#define bitsizetype sizetype_tab[(int) BITSIZETYPE]
-#define ssizetype sizetype_tab[(int) SSIZETYPE]
-#define sbitsizetype sizetype_tab[(int) SBITSIZETYPE]
+#define sizetype sizetype_tab[(int) stk_sizetype]
+#define bitsizetype sizetype_tab[(int) stk_bitsizetype]
+#define ssizetype sizetype_tab[(int) stk_ssizetype]
+#define sbitsizetype sizetype_tab[(int) stk_sbitsizetype]
 
 extern tree size_int_kind (HOST_WIDE_INT, enum size_type_kind);
 #define size_binop(CODE,T1,T2)\
@@ -4808,10 +4809,10 @@ extern tree size_binop_loc (location_t, enum tree_code, tree, tree);
    size_diffop_loc (UNKNOWN_LOCATION, T1, T2)
 extern tree size_diffop_loc (location_t, tree, tree);
 
-#define size_int(L) size_int_kind (L, SIZETYPE)
-#define ssize_int(L) size_int_kind (L, SSIZETYPE)
-#define bitsize_int(L) size_int_kind (L, BITSIZETYPE)
-#define sbitsize_int(L) size_int_kind (L, SBITSIZETYPE)
+#define size_int(L) size_int_kind (L, stk_sizetype)
+#define ssize_int(L) size_int_kind (L, stk_ssizetype)
+#define bitsize_int(L) size_int_kind (L, stk_bitsizetype)
+#define sbitsize_int(L) size_int_kind (L, stk_sbitsizetype)
 
 #define round_up(T,N) round_up_loc (UNKNOWN_LOCATION, T, N)
 extern tree round_up_loc (location_t, tree, int);

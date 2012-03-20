@@ -60,14 +60,17 @@ extern void vms_c_register_includes (const char *, const char *, int);
 #define POINTER_SIZE (flag_vms_pointer_size == VMS_POINTER_SIZE_NONE ? 32 : 64)
 #define POINTERS_EXTEND_UNSIGNED 0
 
-/* FIXME: It should always be a 32 bit type.  */
+/* Always a 32 bit type.  */
 #undef SIZE_TYPE
-#define SIZE_TYPE (flag_vms_pointer_size == VMS_POINTER_SIZE_NONE ? \
-		   "unsigned int" : "long long unsigned int")
+#define SIZE_TYPE  "unsigned int"
+
 /* ???: Defined as a 'int' by dec-c, but obstack.h doesn't like it.  */
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (flag_vms_pointer_size == VMS_POINTER_SIZE_NONE ? \
                       "int" : "long long int")
+
+#define SIZETYPE (flag_vms_pointer_size == VMS_POINTER_SIZE_NONE ? \
+		  "unsigned int" : "long long unsigned int")
 
 #define C_COMMON_OVERRIDE_OPTIONS vms_c_common_override_options ()
 

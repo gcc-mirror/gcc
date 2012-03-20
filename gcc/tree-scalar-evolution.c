@@ -1758,7 +1758,7 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
 	    {
 	      gcc_assert ((bitpos % BITS_PER_UNIT) == 0);
 
-	      unitpos = size_int_kind (bitpos / BITS_PER_UNIT, SIZETYPE);
+	      unitpos = size_int (bitpos / BITS_PER_UNIT);
 	      chrec3 = analyze_scalar_evolution (loop, unitpos);
 	      chrec3 = chrec_convert (TREE_TYPE (unitpos), chrec3, at_stmt);
 	      res = chrec_fold_plus (type, res, chrec3);
