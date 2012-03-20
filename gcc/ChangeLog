@@ -1,3 +1,7 @@
+2012-03-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/extend.texi (Template Instantiation): Remove anachronisms.
+
 2012-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52607
