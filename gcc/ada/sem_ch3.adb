@@ -15620,9 +15620,10 @@ package body Sem_Ch3 is
       function Root_Corresponding_Discriminant
         (Discr : Entity_Id) return Entity_Id
       is
-         D : Entity_Id := Discr;
+         D : Entity_Id;
 
       begin
+         D := Discr;
          while Present (Corresponding_Discriminant (D)) loop
             D := Corresponding_Discriminant (D);
          end loop;
