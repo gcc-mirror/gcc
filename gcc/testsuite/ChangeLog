@@ -1,3 +1,12 @@
+2012-03-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	* gcc.target/avr/torture/addr-space-2.h: New file.
+	* gcc.target/avr/torture/addr-space-2-g.h: New test.
+	* gcc.target/avr/torture/addr-space-2-0.h: New test.
+	* gcc.target/avr/torture/addr-space-2-1.h: New test.
+	* gcc.target/avr/torture/addr-space-2-x.h: New test.
+
 2012-03-20  Richard Guenther  <rguenther@suse.de>
 
 	* gnat.dg/pack16.adb: New testcase.
@@ -295,10 +304,10 @@
 
 	PR target/49868
 	* gcc.target/avr/torture/addr-space-1.h: New file.
-	* gcc.target/avr/torture/addr-space-g.h: New test.
-	* gcc.target/avr/torture/addr-space-0.h: New test.
-	* gcc.target/avr/torture/addr-space-1.h: New test.
-	* gcc.target/avr/torture/addr-space-x.h: New test.
+	* gcc.target/avr/torture/addr-space-1-g.h: New test.
+	* gcc.target/avr/torture/addr-space-1-0.h: New test.
+	* gcc.target/avr/torture/addr-space-1-1.h: New test.
+	* gcc.target/avr/torture/addr-space-1-x.h: New test.
 
 2012-03-12  Andrew Pinski  <apinski@cavium.com>
 
