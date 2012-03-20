@@ -554,7 +554,12 @@ package Sem_Attr is
       -------------------
 
       Attribute_Valid_Scalars => True,
-      --  Typ'Valid_Scalars applies to ???
+      --  Obj'Valid_Scalars applies to objects of scalar types, on which it is
+      --  equivalent to Obj'Valid, and objects of array and record types, on
+      --  which it amounts to applying 'Valid to each subcomponent of Obj. It
+      --  does not apply to prefixes of classwide type, or of a formal generic
+      --  type that has an unknown discriminant (which could be instantiated
+      --  with a classwide type).
 
       ----------------
       -- Value_Size --

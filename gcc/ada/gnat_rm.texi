@@ -285,6 +285,7 @@ Implementation Defined Attributes
 * Unconstrained_Array::
 * Universal_Literal_String::
 * Unrestricted_Access::
+* Valid_Scalars::
 * VADS_Size::
 * Value_Size::
 * Wchar_T_Size::
@@ -6035,6 +6036,7 @@ consideration, you should minimize the use of these attributes.
 * Unconstrained_Array::
 * Universal_Literal_String::
 * Unrestricted_Access::
+* Valid_Scalars::
 * VADS_Size::
 * Value_Size::
 * Wchar_T_Size::
@@ -6990,6 +6992,24 @@ context of the attribute, and may not be returned to some enclosing
 scope. For instance, a function cannot use @code{Unrestricted_Access}
 to create a unconstrained pointer and then return that value to the
 caller.
+
+@node Valid_Scalars
+@unnumberedsec Valid_Scalars
+@findex Valid_Scalars
+@noindent
+The @code{'Valid_Scalars} attribute is intended to make it easier to
+check the validity of scalar subcomponents of composite objects.  It
+is defined for any prefix @code{X} that denotes a scalar or composite
+object (after any implicit dereference), that is not of classwide type
+or of a formal generic type with an unknown discriminant.
+@code{X'Valid_Scalars} yields True if and only if @code{X'Valid}
+yields True, if @code{X} is a scalar object, or @code{Y'Valid} yields
+True for every scalar subcomponent @code{Y} of @code{X}, if @code{X}
+is a composite object. If computing the value of
+@code{X'Valid_Scalars} involves evaluations of subtype predicates, it
+is unspecified in which order these evaluations take place, or if they
+take place at all in case the result is False. The value of this
+attribute is of the predefined type Boolean.
 
 @node VADS_Size
 @unnumberedsec VADS_Size

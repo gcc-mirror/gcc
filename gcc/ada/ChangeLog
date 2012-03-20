@@ -1,3 +1,7 @@
+2012-03-20  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi, sem_attr.ads: Update documentation.
+
 2012-03-19  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch6.adb: Minor code clean up.
