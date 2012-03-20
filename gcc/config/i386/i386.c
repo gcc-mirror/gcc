@@ -36629,6 +36629,126 @@ expand_vec_perm_vpermq_perm_1 (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to expand
+   a vector permutation using two instructions, vperm2f128 resp.
+   vperm2i128 followed by any single in-lane permutation.  */
+
+static bool
+expand_vec_perm_vperm2f128 (struct expand_vec_perm_d *d)
+{
+  struct expand_vec_perm_d dfirst, dsecond;
+  unsigned i, j, nelt = d->nelt, nelt2 = nelt / 2, perm;
+  bool ok;
+
+  if (!TARGET_AVX
+      || GET_MODE_SIZE (d->vmode) != 32
+      || (d->vmode != V8SFmode && d->vmode != V4DFmode && !TARGET_AVX2))
+    return false;
+
+  dsecond = *d;
+  if (d->op0 == d->op1)
+    dsecond.op1 = gen_reg_rtx (d->vmode);
+  dsecond.testing_p = true;
+
+  /* ((perm << 2)|perm) & 0x33 is the vperm2[fi]128
+     immediate.  For perm < 16 the second permutation uses
+     d->op0 as first operand, for perm >= 16 it uses d->op1
+     as first operand.  The second operand is the result of
+     vperm2[fi]128.  */
+  for (perm = 0; perm < 32; perm++)
+    {
+      /* Ignore permutations which do not move anything cross-lane.  */
+      if (perm < 16)
+	{
+	  /* The second shuffle for e.g. V4DFmode has
+	     0123 and ABCD operands.
+	     Ignore AB23, as 23 is already in the second lane
+	     of the first operand.  */
+	  if ((perm & 0xc) == (1 << 2)) continue;
+	  /* And 01CD, as 01 is in the first lane of the first
+	     operand.  */
+	  if ((perm & 3) == 0) continue;
+	  /* And 4567, as then the vperm2[fi]128 doesn't change
+	     anything on the original 4567 second operand.  */
+	  if ((perm & 0xf) == ((3 << 2) | 2)) continue;
+	}
+      else
+	{
+	  /* The second shuffle for e.g. V4DFmode has
+	     4567 and ABCD operands.
+	     Ignore AB67, as 67 is already in the second lane
+	     of the first operand.  */
+	  if ((perm & 0xc) == (3 << 2)) continue;
+	  /* And 45CD, as 45 is in the first lane of the first
+	     operand.  */
+	  if ((perm & 3) == 2) continue;
+	  /* And 0123, as then the vperm2[fi]128 doesn't change
+	     anything on the original 0123 first operand.  */
+	  if ((perm & 0xf) == (1 << 2)) continue;
+	}
+
+      for (i = 0; i < nelt; i++)
+	{
+	  j = d->perm[i] / nelt2;
+	  if (j == ((perm >> (2 * (i >= nelt2))) & 3))
+	    dsecond.perm[i] = nelt + (i & nelt2) + (d->perm[i] & (nelt2 - 1));
+	  else if (j == (unsigned) (i >= nelt2) + 2 * (perm >= 16))
+	    dsecond.perm[i] = d->perm[i] & (nelt - 1);
+	  else
+	    break;
+	}
+
+      if (i == nelt)
+	{
+	  start_sequence ();
+	  ok = expand_vec_perm_1 (&dsecond);
+	  end_sequence ();
+	}
+      else
+	ok = false;
+
+      if (ok)
+	{
+	  if (d->testing_p)
+	    return true;
+
+	  /* Found a usable second shuffle.  dfirst will be
+	     vperm2f128 on d->op0 and d->op1.  */
+	  dsecond.testing_p = false;
+	  dfirst = *d;
+	  if (d->op0 == d->op1)
+	    dfirst.target = dsecond.op1;
+	  else
+	    dfirst.target = gen_reg_rtx (d->vmode);
+	  for (i = 0; i < nelt; i++)
+	    dfirst.perm[i] = (i & (nelt2 - 1))
+			     + ((perm >> (2 * (i >= nelt2))) & 3) * nelt2;
+
+	  ok = expand_vec_perm_1 (&dfirst);
+	  gcc_assert (ok);
+
+	  /* And dsecond is some single insn shuffle, taking
+	     d->op0 and result of vperm2f128 (if perm < 16) or
+	     d->op1 and result of vperm2f128 (otherwise).  */
+	  dsecond.op1 = dfirst.target;
+	  if (perm >= 16)
+	    dsecond.op0 = dfirst.op1;
+
+	  ok = expand_vec_perm_1 (&dsecond);
+	  gcc_assert (ok);
+
+	  return true;
+	}
+
+      /* For d->op0 == d->op1 the only useful vperm2f128 permutation
+	 is 0x10.  */
+      if (d->op0 == d->op1)
+	return false;
+    }
+
+  return false;
+}
+
 /* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to simplify
    a two vector permutation using 2 intra-lane interleave insns
    and cross-lane shuffle for 32-byte vectors.  */
@@ -37414,6 +37534,9 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     return true;
 
   if (expand_vec_perm_vpermq_perm_1 (d))
+    return true;
+
+  if (expand_vec_perm_vperm2f128 (d))
     return true;
 
   /* Try sequences of three instructions.  */
