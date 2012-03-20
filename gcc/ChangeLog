@@ -1,3 +1,8 @@
+2012-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_decompose_address) <case ZERO_EXTEND>:
+	If operand isn't UNSPEC, return 0.
+
 2012-03-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-pass.h (pass_rtl_eh): Remove.
