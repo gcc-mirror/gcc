@@ -713,7 +713,7 @@ __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
 static void
 init_mx (void)
 {
-  __GTHREAD_MUTEX_INIT_FUNCTION (&mx);
+  __GTHREAD_MUTEX_INIT_FUNCTION (&__gcov_flush_mx);
 }
 static void
 init_mx_once (void)

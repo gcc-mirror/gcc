@@ -1,3 +1,8 @@
+2012-03-20  Richard Guenther  <rguenther@suse.de>
+
+	PR gcov-profile/52627
+	* libgcov.c (init_mx): Fix mutex name.
+
 2012-03-16  Tristan Gingold  <gingold@adacore.com>
 
 	* config/ia64/vms-unwind.h: Remove ulong (and replace
