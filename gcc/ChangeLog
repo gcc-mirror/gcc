@@ -1,5 +1,15 @@
 2012-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (vselect_insn): New variable.
+	(init_vselect_insn): New function.
+	(expand_vselect, expand_vselect_insn): Add testing_p argument.
+	Call init_vselect_insn if vselect_insn is NULL.  Adjust
+	PATTERN (vselect_insn), instead of creating a new insn each time,
+	only emit a copy of it if not testing and recog has been successful.
+	(expand_vec_perm_pshufb, expand_vec_perm_1,
+	expand_vec_perm_pshuflw_pshufhw, expand_vec_perm_broadcast_1): Adjust
+	callers.
+
 	PR target/52607
 	* config/i386/i386.md ("isa" attribute): Add avx2 and noavx2.
 	("enabled" attribute): Handle avx2 and noavx2 isas.
