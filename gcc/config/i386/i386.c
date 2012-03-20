@@ -11516,6 +11516,8 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 
 	    case ZERO_EXTEND:
 	      op = XEXP (op, 0);
+	      if (GET_CODE (op) != UNSPEC)
+		return 0;
 	      /* FALLTHRU */
 
 	    case UNSPEC:
