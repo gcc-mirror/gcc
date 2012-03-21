@@ -1,3 +1,9 @@
+2012-03-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config.host: Add bits to support powerpc64-*-freebsd*.
+	* config/rs6000/freebsd-unwind.h: New file.
+	* config/rs6000/t-freebsd64: New file.
+
 2012-03-20  Richard Guenther  <rguenther@suse.de>
 
 	PR gcov-profile/52627
