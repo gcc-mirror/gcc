@@ -7239,6 +7239,13 @@ sh_expand_prologue (void)
       emit_insn (gen_shcompact_incoming_args ());
     }
 
+  /* If we are profiling, make sure no instructions are scheduled before
+     the call to mcount.  Similarly if some call instructions are swapped
+     before frame related insns, it'll confuse the unwinder because
+     currently SH has no unwind info for function epilogues.  */
+  if (crtl->profile || flag_exceptions || flag_unwind_tables)
+    emit_insn (gen_blockage ());
+
   if (flag_stack_usage_info)
     current_function_static_stack_size = stack_usage;
 }
