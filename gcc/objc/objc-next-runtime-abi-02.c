@@ -1509,7 +1509,6 @@ next_runtime_abi_02_get_category_super_ref (location_t loc ATTRIBUTE_UNUSED,
   /* ??? Do we need to add the class ref anway for zero-link?  */
   /* else do it the slow way.  */
   super_class = (inst_meth ? objc_get_class_decl : objc_get_meta_class_decl);
-  /* assemble_external (super_class); */
   super_name = my_build_string_pointer (IDENTIFIER_LENGTH (super_name) + 1,
 					IDENTIFIER_POINTER (super_name));
   /* super_class = objc_get{Meta}Class("CLASS_SUPER_NAME"); */

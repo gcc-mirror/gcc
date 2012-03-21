@@ -3553,7 +3553,6 @@ objc_build_ivar_assignment (tree outervar, tree lhs, tree rhs)
 		tree_cons (NULL_TREE, offs,
 		    NULL_TREE)));
 
-  assemble_external (func);
   return build_function_call (input_location, func, func_params);
 }
 
@@ -3566,7 +3565,6 @@ objc_build_global_assignment (tree lhs, tree rhs)
 		      build_unary_op (input_location, ADDR_EXPR, lhs, 0)),
 		    NULL_TREE));
 
-  assemble_external (objc_assign_global_decl);
   return build_function_call (input_location,
 			      objc_assign_global_decl, func_params);
 }
@@ -3580,7 +3578,6 @@ objc_build_strong_cast_assignment (tree lhs, tree rhs)
 		      build_unary_op (input_location, ADDR_EXPR, lhs, 0)),
 		    NULL_TREE));
 
-  assemble_external (objc_assign_strong_cast_decl);
   return build_function_call (input_location,
 			      objc_assign_strong_cast_decl, func_params);
 }
