@@ -14,7 +14,7 @@ foo (myint *p)
   return *p;
 }
 
-#define cst 0xdeadbeef
+#define cst (int) 0xdeadbeef
 #define NUM 8
 
 struct blah

@@ -1,3 +1,9 @@
+2012-03-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR testsuite/52641
+	* gcc.dg/misaligned-expand-1.c (cst): Cast to int.
+	* gcc.dg/misaligned-expand-2.c (cst): Likewise.
+
 2012-03-21  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.target/arm/thumb-16bit-ops.c: New file.
