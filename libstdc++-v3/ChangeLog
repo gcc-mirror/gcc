@@ -1,3 +1,8 @@
+2013-03-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Skip this test on powerpc64-*-freebsd*.
+
 2012-03-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/stl_list.h (list::_M_size): Use NSDMI.
