@@ -1,5 +1,9 @@
 2012-03-20  Jason Merrill  <jason@redhat.com>
 
+	* mangle.c (write_type): Handle 'auto'.
+	* init.c (build_new): Don't do auto deduction where it might
+	affect template mangling.
+
 	PR c++/52510
 	* decl.c (reshape_init_class): Handle repeated reshaping.
 	* search.c (lookup_field_1): Add sanity check.
