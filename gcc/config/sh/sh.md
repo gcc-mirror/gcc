@@ -10658,48 +10658,6 @@ label:
   DONE;
 })
 
-(define_expand "sindf2"
-  [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
-	(unspec:DF [(match_operand:DF 1 "fp_arith_reg_operand" "")]
-		   UNSPEC_FSINA))]
-  "TARGET_SH4A_FP && ! TARGET_FPU_SINGLE && flag_unsafe_math_optimizations"
-{
-  rtx scaled = gen_reg_rtx (DFmode);
-  rtx truncated = gen_reg_rtx (SImode);
-  rtx fsca = gen_reg_rtx (V2SFmode);
-  rtx scale_reg = force_reg (DFmode, sh_fsca_df2int ());
-  rtx sfresult = gen_reg_rtx (SFmode);
-
-  emit_df_insn (gen_muldf3 (scaled, operands[1], scale_reg));
-  emit_df_insn (gen_fix_truncdfsi2 (truncated, scaled));
-  emit_sf_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf (),
-			  get_fpscr_rtx ()));
-  emit_move_insn (sfresult, gen_rtx_SUBREG (SFmode, fsca, 0));
-  emit_df_insn (gen_extendsfdf2 (operands[0], sfresult));
-  DONE;
-})
-
-(define_expand "cosdf2"
-  [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
-	(unspec:DF [(match_operand:DF 1 "fp_arith_reg_operand" "")]
-		   UNSPEC_FCOSA))]
-  "TARGET_SH4A_FP && ! TARGET_FPU_SINGLE && flag_unsafe_math_optimizations"
-{
-  rtx scaled = gen_reg_rtx (DFmode);
-  rtx truncated = gen_reg_rtx (SImode);
-  rtx fsca = gen_reg_rtx (V2SFmode);
-  rtx scale_reg = force_reg (DFmode, sh_fsca_df2int ());
-  rtx sfresult = gen_reg_rtx (SFmode);
-
-  emit_df_insn (gen_muldf3 (scaled, operands[1], scale_reg));
-  emit_df_insn (gen_fix_truncdfsi2 (truncated, scaled));
-  emit_sf_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf (),
-			  get_fpscr_rtx ()));
-  emit_move_insn (sfresult, gen_rtx_SUBREG (SFmode, fsca, 4));
-  emit_df_insn (gen_extendsfdf2 (operands[0], sfresult));
-  DONE;
-})
-
 (define_expand "abssf2"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
 	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand" "")))]

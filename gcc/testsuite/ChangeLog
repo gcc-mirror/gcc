@@ -1,3 +1,10 @@
+2012-03-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52479
+	* gcc.target/sh/sh4a-cos.c: Remove.
+	* gcc.target/sh/sh4a-sin.c: Remove.
+	* gcc.target/sh/sh4a-sincos.c: Remove.
+
 2012-03-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.target/arm/neon/vgetQ_laneu64.c: Regenerated.
