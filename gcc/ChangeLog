@@ -1,3 +1,10 @@
+2012-03-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cse.c (invalidate_from_sets_and_clobbers, try_back_substitute_reg,
+	find_sets_in_insn, canonicalize_insn): Split out from ...
+	(cse_insn): ... here.
+	(invalidate_from_clobbers): Take an insn instead of the pattern.
+
 2012-03-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/52479
