@@ -2363,6 +2363,12 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
           number_of_places_left_in_vector--;
+	  if (constant_p
+	      && !types_compatible_p (TREE_TYPE (vector_type), TREE_TYPE (op)))
+	    {
+	      op = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type), op);
+	      gcc_assert (op && CONSTANT_CLASS_P (op));
+	    }
 	  elts[number_of_places_left_in_vector] = op;
 
           if (number_of_places_left_in_vector == 0)

@@ -1,5 +1,11 @@
 2012-03-21  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimizer/52636
+	* tree-vect-slp.c (vect_get_constant_vectors): Convert constants
+	to the appropriate type.
+
+2012-03-21  Richard Guenther  <rguenther@suse.de>
+
 	* Makefile.in (cfgexpand.o): Add $(REGS_H) and $(INTEGRATE_H)
 	dependencies.
 	* cfgexpand.c (gimple_expand_cfg): Fold in pass_init_function,
