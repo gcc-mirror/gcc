@@ -1,3 +1,14 @@
+2012-03-20  Jason Merrill  <jason@redhat.com>
+
+	* c-common.h (enum cxx_dialect): Add cxx1y.
+	* c-common.c (c_common_nodes_and_builtins): Use >= for cxx_dialect
+	test.
+	* c-cppbuiltin.c (c_cpp_builtins): Likewise.
+	* c-opts.c (c_common_post_options): Likewise.
+	(set_std_cxx1y): New.
+	(c_common_handle_option): Call it.
+	* c.opt (-std=c++1y, -std=gnu++1y): New flags.
+
 2012-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/14710

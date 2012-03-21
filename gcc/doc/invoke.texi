@@ -1597,20 +1597,36 @@ GNU dialect of ISO C11.  Support is incomplete and experimental.  The
 name @samp{gnu1x} is deprecated.
 
 @item c++98
-The 1998 ISO C++ standard plus amendments. Same as @option{-ansi} for
-C++ code.
+@itemx c++03
+The 1998 ISO C++ standard plus the 2003 technical corrigendum and some
+additional defect reports. Same as @option{-ansi} for C++ code.
 
 @item gnu++98
+@itemx gnu++03
 GNU dialect of @option{-std=c++98}.  This is the default for
 C++ code.
 
 @item c++11
+@itemx c++0x
 The 2011 ISO C++ standard plus amendments.  Support for C++11 is still
 experimental, and may change in incompatible ways in future releases.
+The name @samp{c++0x} is deprecated.
 
 @item gnu++11
+@itemx gnu++0x
 GNU dialect of @option{-std=c++11}. Support for C++11 is still
 experimental, and may change in incompatible ways in future releases.
+The name @samp{gnu++0x} is deprecated.
+
+@item c++1y
+The next revision of the ISO C++ standard, tentatively planned for
+2017.  Support is highly experimental, and will almost certainly
+change in incompatible ways in future releases.
+
+@item gnu++1y
+GNU dialect of @option{-std=c++1y}.  Support is highly experimental,
+and will almost certainly change in incompatible ways in future
+releases.
 @end table
 
 @item -fgnu89-inline

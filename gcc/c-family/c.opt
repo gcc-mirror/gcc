@@ -1215,6 +1215,10 @@ std=c++0x
 C++ ObjC++ Alias(std=c++11)
 Deprecated in favor of -std=c++11
 
+std=c++1y
+C++ ObjC++
+Conform to the ISO 201y(7?) C++ draft standard (experimental and incomplete support)
+
 std=c11
 C ObjC
 Conform to the ISO 2011 C standard (experimental and incomplete support)
@@ -1256,6 +1260,10 @@ Conform to the ISO 2011 C++ standard with GNU extensions (experimental and incom
 std=gnu++0x
 C++ ObjC++ Alias(std=gnu++11)
 Deprecated in favor of -std=gnu++11
+
+std=gnu++1y
+C++ ObjC++
+Conform to the ISO 201y(7?) C++ draft standard with GNU extensions (experimental and incomplete support)
 
 std=gnu11
 C ObjC

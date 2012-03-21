@@ -19594,7 +19594,7 @@ cp_parser_exception_specification_opt (cp_parser* parser)
 
 #if 0
   /* Enable this once a lot of code has transitioned to noexcept?  */
-  if (cxx_dialect == cxx0x && !in_system_header)
+  if (cxx_dialect >= cxx0x && !in_system_header)
     warning (OPT_Wdeprecated, "dynamic exception specifications are "
 	     "deprecated in C++0x; use %<noexcept%> instead");
 #endif

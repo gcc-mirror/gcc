@@ -1,5 +1,8 @@
 2012-03-20  Jason Merrill  <jason@redhat.com>
 
+	* lex.c (init_reswords): Use >= for cxx_dialect test.
+	* parser.c (cp_parser_exception_specification_opt): Likewise.
+
 	* mangle.c (write_type): Handle 'auto'.
 	* init.c (build_new): Don't do auto deduction where it might
 	affect template mangling.
