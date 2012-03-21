@@ -1,5 +1,7 @@
 2012-03-20  Jason Merrill  <jason@redhat.com>
 
+	* lib/target-supports.exp: Add { target c++1y }.
+
 	* g++.dg/cpp0x/auto32.C: New.
 
 2012-03-20  Georg-Johann Lay  <avr@gjlay.de>

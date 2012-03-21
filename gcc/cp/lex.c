@@ -174,7 +174,7 @@ init_reswords (void)
   tree id;
   int mask = 0;
 
-  if (cxx_dialect != cxx0x)
+  if (cxx_dialect < cxx0x)
     mask |= D_CXX0X;
   if (flag_no_asm)
     mask |= D_ASM | D_EXT;
