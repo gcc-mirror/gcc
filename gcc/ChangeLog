@@ -1,3 +1,25 @@
+2012-03-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/52543
+	PR target/52461
+	* config/avr/avr-protos.h (avr_load_lpm): New prototype.
+	* config/avr/avr.c (avr_mode_dependent_address_p): New function.
+	(TARGET_MODE_DEPENDENT_ADDRESS_P): New define.
+	(avr_load_libgcc_p): Restrict to __flash loads.
+	(avr_out_lpm): Only handle 1-byte loads from __flash.
+	(avr_load_lpm): New function.
+	(avr_find_unused_d_reg): Remove.
+	(avr_out_lpm_no_lpmx): Remove.
+	(adjust_insn_length): Handle ADJUST_LEN_LOAD_LPM.
+	* config/avr/avr.md (unspec): Add UNSPEC_LPM.
+	(load_<mode>_libgcc): Use UNSPEC_LPM instead of MEM.
+	(load_<mode>, load_<mode>_clobber): New insns.
+	(mov<mode>): For multi-byte move from non-generic
+	16-bit address spaces: Expand to load_<mode> resp.
+	load_<mode>_clobber.
+	(load<mode>_libgcc): Remove expander.
+	(split-lpmx): Remove split.
+
 2012-03-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* neon.md (neon_vget_lanev2di): Use gen_lowpart and gen_highpart.

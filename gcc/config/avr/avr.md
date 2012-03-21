@@ -63,6 +63,7 @@
   [UNSPEC_STRLEN
    UNSPEC_MOVMEM
    UNSPEC_INDEX_JMP
+   UNSPEC_LPM
    UNSPEC_FMUL
    UNSPEC_FMULS
    UNSPEC_FMULSU
@@ -140,7 +141,7 @@
   "out_bitop, out_plus, out_plus_noclobber, plus64, addto_sp,
    tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
-   xload, movmem,
+   xload, movmem, load_lpm,
    ashlqi, ashrqi, lshrqi,
    ashlhi, ashrhi, lshrhi,
    ashlsi, ashrsi, lshrsi,
@@ -364,43 +365,60 @@
 ;;========================================================================
 ;; Move stuff around
 
-;; "loadqi_libgcc"
-;; "loadhi_libgcc"
-;; "loadpsi_libgcc"    
-;; "loadsi_libgcc"    
-;; "loadsf_libgcc"    
-(define_expand "load<mode>_libgcc"
-  [(set (match_dup 3)
-        (match_dup 2))
-   (set (reg:MOVMODE 22)
-        (match_operand:MOVMODE 1 "memory_operand" ""))
-   (set (match_operand:MOVMODE 0 "register_operand" "")
-        (reg:MOVMODE 22))]
-  "avr_load_libgcc_p (operands[1])"
-  {
-    operands[3] = gen_rtx_REG (HImode, REG_Z);
-    operands[2] = force_operand (XEXP (operands[1], 0), NULL_RTX);
-    operands[1] = replace_equiv_address (operands[1], operands[3]);
-    set_mem_addr_space (operands[1], ADDR_SPACE_FLASH);
-  })
+;; Represent a load from __flash that needs libgcc support as UNSPEC.
+;; This is legal because we read from non-changing memory.
+;; For rationale see the FIXME below.
 
-;; "load_qi_libgcc"
-;; "load_hi_libgcc"
 ;; "load_psi_libgcc"    
 ;; "load_si_libgcc"    
 ;; "load_sf_libgcc"    
 (define_insn "load_<mode>_libgcc"
   [(set (reg:MOVMODE 22)
-        (match_operand:MOVMODE 0 "memory_operand" "m,m"))]
-  "avr_load_libgcc_p (operands[0])
-   && REG_P (XEXP (operands[0], 0))
-   && REG_Z == REGNO (XEXP (operands[0], 0))"
+        (unspec:MOVMODE [(reg:HI REG_Z)]
+                        UNSPEC_LPM))]
+  ""
   {
-    operands[0] = GEN_INT (GET_MODE_SIZE (<MODE>mode));
-    return "%~call __load_%0";
+    rtx n_bytes = GEN_INT (GET_MODE_SIZE (<MODE>mode));
+    output_asm_insn ("%~call __load_%0", &n_bytes);
+    return "";
   }
-  [(set_attr "length" "1,2")
-   (set_attr "isa" "rjmp,jmp")
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+
+;; Similar for inline reads from flash.  We use UNSPEC instead
+;; of MEM for the same reason as above: PR52543.
+;; $1 contains the memory segment.
+
+(define_insn "load_<mode>"
+  [(set (match_operand:MOVMODE 0 "register_operand" "=r")
+        (unspec:MOVMODE [(reg:HI REG_Z)
+                         (match_operand:QI 1 "reg_or_0_operand" "rL")]
+                        UNSPEC_LPM))]
+  "(CONST_INT_P (operands[1]) && AVR_HAVE_LPMX)
+   || (REG_P (operands[1]) && AVR_HAVE_ELPMX)"
+  {
+    return avr_load_lpm (insn, operands, NULL);
+  }
+  [(set_attr "adjust_len" "load_lpm")
+   (set_attr "cc" "clobber")])
+
+
+;; Similar to above for the complementary situation when there is no [E]LPMx.
+;; Clobber Z in that case.
+
+(define_insn "load_<mode>_clobber"
+  [(set (match_operand:MOVMODE 0 "register_operand" "=r")
+        (unspec:MOVMODE [(reg:HI REG_Z)
+                         (match_operand:QI 1 "reg_or_0_operand" "rL")]
+                        UNSPEC_LPM))
+   (clobber (reg:HI REG_Z))]
+  "!((CONST_INT_P (operands[1]) && AVR_HAVE_LPMX)
+     || (REG_P (operands[1]) && AVR_HAVE_ELPMX))"
+  {
+    return avr_load_lpm (insn, operands, NULL);
+  }
+  [(set_attr "adjust_len" "load_lpm")
    (set_attr "cc" "clobber")])
 
 
@@ -549,12 +567,55 @@
       DONE;
     }
 
+    /* For old devices without LPMx, prefer __flash loads per libcall.  */
+
     if (avr_load_libgcc_p (src))
       {
-        /* For the small devices, do loads per libgcc call.  */
-        emit_insn (gen_load<mode>_libgcc (dest, src));
+        emit_move_insn (gen_rtx_REG (Pmode, REG_Z),
+                        force_reg (Pmode, XEXP (src, 0)));
+
+        emit_insn (gen_load_<mode>_libgcc ());
+        emit_move_insn (dest, gen_rtx_REG (<MODE>mode, 22));
         DONE;
       }
+
+    /* ; FIXME:  Hack around PR rtl-optimization/52543.
+       ; lower-subreg.c splits loads from the 16-bit address spaces which
+       ; causes code bloat because each load need his setting of RAMPZ.
+       ; Moreover, the split will happen in such a way that the loads don't
+       ; take advantage of POST_INC addressing.  Thus, we use UNSPEC to
+       ; represent these loads instead.  Notice that this is legitimate
+       ; because the memory content does not change:  Loads from the same
+       ; address will yield the same value.
+       ; POST_INC addressing would make the addresses mode_dependent and could
+       ; work around that PR, too.  However, notice that it is *not* legitimate
+       ; to expand to POST_INC at expand time:  The following passes assert
+       ; that pre-/post-modify addressing is introduced by .auto_inc_dec and
+       ; does not exist before that pass.  */
+
+    if (avr_mem_flash_p (src)
+        && (GET_MODE_SIZE (<MODE>mode) > 1
+            || MEM_ADDR_SPACE (src) != ADDR_SPACE_FLASH))
+      {
+        rtx xsegment = GEN_INT (avr_addrspace[MEM_ADDR_SPACE (src)].segment);
+        if (!AVR_HAVE_ELPM)
+          xsegment = const0_rtx;
+        if (xsegment != const0_rtx)
+          xsegment = force_reg (QImode, xsegment);
+
+        emit_move_insn (gen_rtx_REG (Pmode, REG_Z),
+                        force_reg (Pmode, XEXP (src, 0)));
+
+        if ((CONST_INT_P (xsegment) && AVR_HAVE_LPMX)
+            || (REG_P (xsegment) && AVR_HAVE_ELPMX))
+          emit_insn (gen_load_<mode> (dest, xsegment));
+        else
+          emit_insn (gen_load_<mode>_clobber (dest, xsegment));
+        DONE;
+      }
+
+    /* ; The only address-space for which we use plain MEM and reload
+       ; machinery are 1-byte loads from __flash.  */
   })
 
 ;;========================================================================
@@ -692,40 +753,6 @@
   {
     operands[4] = gen_rtx_REG (HImode, REGNO (operands[2]));
     operands[5] = gen_rtx_REG (HImode, REGNO (operands[3]));
-  })
-
-;; For LPM loads from AS1 we split 
-;;    R = *Z
-;; to
-;;    R = *Z++
-;;    Z = Z - sizeof (R)
-;;
-;; so that the second instruction can be optimized out.
-
-(define_split ; "split-lpmx"
-  [(set (match_operand:HISI 0 "register_operand" "")
-        (match_operand:HISI 1 "memory_operand" ""))]
-  "reload_completed
-   && AVR_HAVE_LPMX"
-  [(set (match_dup 0)
-        (match_dup 2))
-   (set (match_dup 3)
-        (plus:HI (match_dup 3)
-                 (match_dup 4)))]
-  {
-     rtx addr = XEXP (operands[1], 0);
-
-     if (!avr_mem_flash_p (operands[1])
-         || !REG_P (addr)
-         || reg_overlap_mentioned_p (addr, operands[0]))
-       {
-         FAIL;
-       }
-
-    operands[2] = replace_equiv_address (operands[1],
-                                         gen_rtx_POST_INC (Pmode, addr));
-    operands[3] = addr;
-    operands[4] = gen_int_mode (-GET_MODE_SIZE (<MODE>mode), HImode);
   })
 
 ;;==========================================================================
