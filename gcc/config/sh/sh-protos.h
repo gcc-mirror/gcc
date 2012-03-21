@@ -39,7 +39,6 @@ enum sh_function_kind {
 
 #ifdef RTX_CODE
 extern rtx sh_fsca_sf2int (void);
-extern rtx sh_fsca_df2int (void);
 extern rtx sh_fsca_int2sf (void);
 
 /* Declare functions defined in sh.c and used in templates.  */

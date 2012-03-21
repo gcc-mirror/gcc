@@ -1,3 +1,10 @@
+2012-03-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52479
+	* config/sh/sh-protos.h (sh_fsca_df2int): Remove.
+	* config/sh/sh.c (sh_fsca_df2int_rtx, sh_fsca_df2int): Remove.
+	* config/sh/sh.md (sindf2, cosdf2): Remove.
+
 2012-03-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR/target 52642
