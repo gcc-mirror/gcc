@@ -1,3 +1,9 @@
+2012-03-21  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.c (thumb2_reorg): Add complete support
+	for 16-bit instructions.
+	* config/arm/thumb2.md: Delete obsolete flag-clobbering peepholes.
+
 2012-03-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimizer/52636
