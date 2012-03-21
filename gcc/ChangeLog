@@ -7,7 +7,7 @@
 
 2012-03-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
-	PR/target 52642
+	PR target/52642
 	* config/sh/sh.c (sh_expand_prologue): Emit blockage at the end of
 	prologue for unwinder and profiler.	
 
