@@ -75,3 +75,5 @@
   (target_flags & target_flags_explicit & MASK_RELOCATABLE)
 
 #define DBX_REGISTER_NUMBER(REGNO) rs6000_dbx_register_number (REGNO)
+
+#define POWERPC_FREEBSD
