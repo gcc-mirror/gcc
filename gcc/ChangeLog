@@ -1,3 +1,23 @@
+2012-03-21  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (cfgexpand.o): Add $(REGS_H) and $(INTEGRATE_H)
+	dependencies.
+	* cfgexpand.c (gimple_expand_cfg): Fold in pass_init_function,
+	pass_jump, pass_initial_value_sets and pass_unshare_all_rtl.
+	* passes.c (init_optimization_passes): Remove pass_init_function,
+	pass_jump, pass_initial_value_sets and pass_unshare_all_rtl.
+	* tree-pass.h (pass_init_function): Remove.
+	(pass_jump): Remove.
+	(pass_initial_value_sets): Remove.
+	(pass_unshare_all_rtl): Remove.
+	* integrate.c (pass_initial_value_sets): Remove.
+	* emit-rtl.c (pass_unshare_all_rtl): Remove.
+	* tree.h (init_function_for_compilation): Remove.
+	* function.c (init_function_for_compilation): Remove.
+	(pass_init_function): Remove.
+	* cfgcleanup.c (rest_of_handle_jump): Remove.
+	(pass_jump): Remove.
+
 2012-03-20  Jason Merrill  <jason@redhat.com>
 
 	* tree-streamer-in.c (streamer_alloc_tree): Call

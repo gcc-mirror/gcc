@@ -310,25 +310,6 @@ emit_initial_value_sets (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_initial_value_sets =
-{
- {
-  RTL_PASS,
-  "initvals",                           /* name */
-  NULL,                                 /* gate */
-  emit_initial_value_sets,              /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
-};
-
 /* If the backend knows where to allocate pseudos for hard
    register initial values, register these allocations now.  */
 void
