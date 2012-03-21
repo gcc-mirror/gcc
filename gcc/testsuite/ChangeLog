@@ -1,3 +1,7 @@
+2012-03-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto32.C: New.
+
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
 	    Andrew Pinski  <apinski@cavium.com>
 

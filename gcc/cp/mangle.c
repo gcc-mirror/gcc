@@ -1933,6 +1933,13 @@ write_type (tree type)
 	      break;
 
 	    case TEMPLATE_TYPE_PARM:
+	      if (is_auto (type))
+		{
+		  write_identifier ("Da");
+		  ++is_builtin_type;
+		  break;
+		}
+	      /* else fall through.  */
 	    case TEMPLATE_PARM_INDEX:
 	      write_template_param (type);
 	      break;

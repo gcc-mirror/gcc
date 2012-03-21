@@ -1,3 +1,9 @@
+2012-03-20  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (write_type): Handle 'auto'.
+	* init.c (build_new): Don't do auto deduction where it might
+	affect template mangling.
+
 2012-03-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52521

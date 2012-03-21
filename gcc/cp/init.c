@@ -2768,7 +2768,9 @@ build_new (VEC(tree,gc) **placement, tree type, tree nelts,
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (nelts == NULL_TREE && VEC_length (tree, *init) == 1)
+  if (nelts == NULL_TREE && VEC_length (tree, *init) == 1
+      /* Don't do auto deduction where it might affect mangling.  */
+      && (!processing_template_decl || at_function_scope_p ()))
     {
       tree auto_node = type_uses_auto (type);
       if (auto_node)
