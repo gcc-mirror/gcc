@@ -1888,10 +1888,20 @@ powerpc64-*-darwin*)
 	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
 	extra_headers=altivec.h
 	;;
-powerpc-*-freebsd*)
-	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
-	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
+powerpc*-*-freebsd*)
+	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
+	case ${host} in
+	     powerpc64*)
+	    	tm_file="${tm_file} rs6000/default64.h rs6000/freebsd64.h"
+		tmake_file="${tmake_file} rs6000/t-freebsd64"
+		extra_options="${extra_options} rs6000/linux64.opt"
+		;;
+	     *)
+	        tm_file="${tm_file} rs6000/freebsd.h"
+		;;
+	esac
 	;;
 powerpc-*-netbsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
