@@ -1,3 +1,8 @@
+2012-03-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/neon/vgetQ_laneu64.c: Regenerated.
+	* gcc.target/arm/neon/vgetQ_lanes64.c: Likewise.
+
 2012-03-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR testsuite/52641
