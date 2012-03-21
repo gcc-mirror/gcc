@@ -2720,14 +2720,24 @@
 })
 
 (define_expand "neon_vget_lanev2di"
-  [(match_operand:DI 0 "s_register_operand" "=r")
-   (match_operand:V2DI 1 "s_register_operand" "w")
-   (match_operand:SI 2 "immediate_operand" "i")
-   (match_operand:SI 3 "immediate_operand" "i")]
+  [(match_operand:DI 0 "s_register_operand" "")
+   (match_operand:V2DI 1 "s_register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")
+   (match_operand:SI 3 "immediate_operand" "")]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[2], 0, 2);
-  emit_insn (gen_vec_extractv2di (operands[0], operands[1], operands[2]));
+  switch (INTVAL (operands[2]))
+    {
+    case 0:
+      emit_move_insn (operands[0], gen_lowpart (DImode, operands[1]));
+      break;
+    case 1:
+      emit_move_insn (operands[0], gen_highpart (DImode, operands[1]));
+      break;
+    default:
+      neon_lane_bounds (operands[2], 0, 1);
+      FAIL;
+    }
   DONE;
 })
 
