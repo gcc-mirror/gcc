@@ -1,3 +1,12 @@
+2012-03-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* objc-act (objc_build_ivar_assignment): Do not call assemble_external.
+	(objc_build_global_assignment): Likewise.
+	(objc_build_strong_cast_assignment): Likewise.
+	* objc-next-runtime-abi-01.c: Cleanup commented-out assemble_external.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-gnu-runtime-abi-01.c: Likewise.
+
 2012-03-05  Jason Merrill  <jason@redhat.com>
 
 	* objc-map.c (objc_map_private_resize, objc_map_alloc_ggc): Don't
