@@ -29,6 +29,10 @@
 	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Set the
 	rs6000_current_abi for 64-bit FreeBSD to ABI_AIX.
 
+	* config/rs6000/freebsd64.h: Remove duplicated entries from last
+	commit.
+	* config/rs6000/t-freebsd64: Likewise.
+
 2012-03-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR rtl-optimization/52543
