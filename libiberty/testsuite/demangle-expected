@@ -4075,6 +4075,12 @@ decltype (new int{}) f1<int>(int)
 --format=gnu-v3
 _Zli2_wPKc
 operator"" _w(char const*)
+--format=gnu-v3
+_Z1fIiEDTnw_Dapifp_EET_
+decltype (new auto({parm#1})) f<int>(int)
+--format=gnu-v3
+_Z1fIiERDaRKT_S1_
+auto& f<int>(int const&, int)
 #
 # Ada (GNAT) tests.
 #
