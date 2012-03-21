@@ -1,3 +1,9 @@
+2012-03-21  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR/target 52642
+	* config/sh/sh.c (sh_expand_prologue): Emit blockage at the end of
+	prologue for unwinder and profiler.	
+
 2012-03-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure.ac (HAVE_LD_NO_DOT_SYMBOLS): Add powerpc64-*-freebsd*.
