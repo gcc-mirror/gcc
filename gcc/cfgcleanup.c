@@ -2982,34 +2982,6 @@ cleanup_cfg (int mode)
 }
 
 static unsigned int
-rest_of_handle_jump (void)
-{
-  if (crtl->tail_call_emit)
-    fixup_tail_calls ();
-  return 0;
-}
-
-struct rtl_opt_pass pass_jump =
-{
- {
-  RTL_PASS,
-  "sibling",                            /* name */
-  NULL,                                 /* gate */
-  rest_of_handle_jump,			/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_JUMP,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  TODO_ggc_collect,                     /* todo_flags_start */
-  TODO_verify_flow,                     /* todo_flags_finish */
- }
-};
-
-
-static unsigned int
 rest_of_handle_jump2 (void)
 {
   delete_trivially_dead_insns (get_insns (), max_reg_num ());

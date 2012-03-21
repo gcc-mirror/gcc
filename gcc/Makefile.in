@@ -3147,8 +3147,9 @@ cfgexpand.o : cfgexpand.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) \
    coretypes.h $(TREE_DUMP_H) $(EXCEPT_H) langhooks.h $(TREE_PASS_H) $(RTL_H) \
    $(DIAGNOSTIC_H) toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(FLAGS_H) debug.h $(PARAMS_H) \
-   value-prof.h $(TREE_INLINE_H) $(TARGET_H) $(SSAEXPAND_H) \
-   tree-pretty-print.h gimple-pretty-print.h $(BITMAP_H) sbitmap.h $(INSN_ATTR_H)
+   value-prof.h $(TREE_INLINE_H) $(TARGET_H) $(SSAEXPAND_H) $(REGS_H) \
+   tree-pretty-print.h gimple-pretty-print.h $(BITMAP_H) sbitmap.h \
+   $(INSN_ATTR_H) $(INTEGRATE_H)
 cfgrtl.o : cfgrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_ERROR_H) \
    $(FLAGS_H) insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h \
    output.h  $(FUNCTION_H) $(EXCEPT_H) $(TM_P_H) $(INSN_ATTR_H) \

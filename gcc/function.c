@@ -4558,33 +4558,6 @@ init_function_start (tree subr)
     warning (OPT_Waggregate_return, "function returns an aggregate");
 }
 
-/* Make sure all values used by the optimization passes have sane defaults.  */
-unsigned int
-init_function_for_compilation (void)
-{
-  reg_renumber = 0;
-  return 0;
-}
-
-struct rtl_opt_pass pass_init_function =
-{
- {
-  RTL_PASS,
-  "*init_function",                     /* name */
-  NULL,                                 /* gate */
-  init_function_for_compilation,        /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
-};
-
 
 void
 expand_main_function (void)

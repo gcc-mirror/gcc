@@ -2475,25 +2475,6 @@ unshare_all_rtl (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_unshare_all_rtl =
-{
- {
-  RTL_PASS,
-  "unshare",                            /* name */
-  NULL,                                 /* gate */
-  unshare_all_rtl,                      /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing               /* todo_flags_finish */
- }
-};
-
 
 /* Check that ORIG is not marked when it should not be and mark ORIG as in use,
    Recursively does the same for subexpressions.  */
