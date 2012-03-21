@@ -1,5 +1,12 @@
 2012-03-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/50751
+	* gcc/target/sh/pr50751-1.c: New.
+	* gcc/target/sh/pr50751-2.c: New.
+	* gcc/target/sh/pr50751-3.c: New.
+
+2012-03-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/52479
 	* gcc.target/sh/sh4a-cos.c: Remove.
 	* gcc.target/sh/sh4a-sin.c: Remove.
