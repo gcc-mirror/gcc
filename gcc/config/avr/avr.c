@@ -1457,6 +1457,22 @@ avr_cannot_modify_jumps_p (void)
 }
 
 
+/* Implement `TARGET_MODE_DEPENDENT_ADDRESS_P'.  */
+
+/* FIXME:  PSImode addresses are not mode-dependent in themselves.
+      This hook just serves to hack around PR rtl-optimization/52543 by
+      claiming that PSImode addresses (which are used for the 24-bit
+      address space __memx) were mode-dependent so that lower-subreg.s
+      will skip these addresses.  See also the similar FIXME comment along
+      with mov<mode> expanders in avr.md.  */
+
+static bool
+avr_mode_dependent_address_p (const_rtx addr)
+{
+  return GET_MODE (addr) != Pmode;
+}
+
+
 /* Helper function for `avr_legitimate_address_p'.  */
 
 static inline bool
@@ -2469,7 +2485,8 @@ avr_load_libgcc_p (rtx op)
         
   return (n_bytes > 2
           && !AVR_HAVE_LPMX
-          && avr_mem_flash_p (op));
+          && MEM_P (op)
+          && MEM_ADDR_SPACE (op) == ADDR_SPACE_FLASH);
 }
 
 /* Return true if a value of mode MODE is read by __xload_* function.  */
@@ -2484,155 +2501,6 @@ avr_xload_libgcc_p (enum machine_mode mode)
 }
 
 
-/* Find an unused d-register to be used as scratch in INSN.
-   EXCLUDE is either NULL_RTX or some register. In the case where EXCLUDE
-   is a register, skip all possible return values that overlap EXCLUDE.
-   The policy for the returned register is similar to that of
-   `reg_unused_after', i.e. the returned register may overlap the SET_DEST
-   of INSN.
-
-   Return a QImode d-register or NULL_RTX if nothing found.  */
-
-static rtx
-avr_find_unused_d_reg (rtx insn, rtx exclude)
-{
-  int regno;
-  bool isr_p = (interrupt_function_p (current_function_decl)
-                || signal_function_p (current_function_decl));
-
-  for (regno = 16; regno < 32; regno++)
-    {
-      rtx reg = all_regs_rtx[regno];
-      
-      if ((exclude
-           && reg_overlap_mentioned_p (exclude, reg))
-          || fixed_regs[regno])
-        {
-          continue;
-        }
-
-      /* Try non-live register */
-
-      if (!df_regs_ever_live_p (regno)
-          && (TREE_THIS_VOLATILE (current_function_decl)
-              || cfun->machine->is_OS_task
-              || cfun->machine->is_OS_main
-              || (!isr_p && call_used_regs[regno])))
-        {
-          return reg;
-        }
-
-      /* Any live register can be used if it is unused after.
-         Prologue/epilogue will care for it as needed.  */
-      
-      if (df_regs_ever_live_p (regno)
-          && reg_unused_after (insn, reg))
-        {
-          return reg;
-        }
-    }
-
-  return NULL_RTX;
-}
-
-
-/* Helper function for the next function in the case where only restricted
-   version of LPM instruction is available.  */
-
-static const char*
-avr_out_lpm_no_lpmx (rtx insn, rtx *xop, int *plen)
-{
-  rtx dest = xop[0];
-  rtx addr = xop[1];
-  int n_bytes = GET_MODE_SIZE (GET_MODE (dest));
-  int regno_dest;
-
-  regno_dest = REGNO (dest);
-
-  /* The implicit target register of LPM.  */
-  xop[3] = lpm_reg_rtx;
-
-  switch (GET_CODE (addr))
-    {
-    default:
-      gcc_unreachable();
-
-    case REG:
-
-      gcc_assert (REG_Z == REGNO (addr));
-
-      switch (n_bytes)
-        {
-        default:
-          gcc_unreachable();
-
-        case 1:
-          avr_asm_len ("%4lpm", xop, plen, 1);
-
-          if (regno_dest != LPM_REGNO)
-            avr_asm_len ("mov %0,%3", xop, plen, 1);
-
-          return "";
-
-        case 2:
-          if (REGNO (dest) == REG_Z)
-            return avr_asm_len ("%4lpm"      CR_TAB
-                                "push %3"    CR_TAB
-                                "adiw %2,1"  CR_TAB
-                                "%4lpm"      CR_TAB
-                                "mov %B0,%3" CR_TAB
-                                "pop %A0", xop, plen, 6);
-          
-          avr_asm_len ("%4lpm"      CR_TAB
-                       "mov %A0,%3" CR_TAB
-                       "adiw %2,1"  CR_TAB
-                       "%4lpm"      CR_TAB
-                       "mov %B0,%3", xop, plen, 5);
-                
-          if (!reg_unused_after (insn, addr))
-            avr_asm_len ("sbiw %2,1", xop, plen, 1);
-          
-          break; /* 2 */
-        }
-      
-      break; /* REG */
-
-    case POST_INC:
-
-      gcc_assert (REG_Z == REGNO (XEXP (addr, 0))
-                  && n_bytes <= 4);
-
-      if (regno_dest == LPM_REGNO)
-        avr_asm_len ("%4lpm"      CR_TAB
-                     "adiw %2,1", xop, plen, 2);
-      else
-        avr_asm_len ("%4lpm"      CR_TAB
-                     "mov %A0,%3" CR_TAB
-                     "adiw %2,1", xop, plen, 3);
-
-      if (n_bytes >= 2)
-        avr_asm_len ("%4lpm"      CR_TAB
-                     "mov %B0,%3" CR_TAB
-                     "adiw %2,1", xop, plen, 3);
-
-      if (n_bytes >= 3)
-        avr_asm_len ("%4lpm"      CR_TAB
-                     "mov %C0,%3" CR_TAB
-                     "adiw %2,1", xop, plen, 3);
-
-      if (n_bytes >= 4)
-        avr_asm_len ("%4lpm"      CR_TAB
-                     "mov %D0,%3" CR_TAB
-                     "adiw %2,1", xop, plen, 3);
-
-      break; /* POST_INC */
-      
-    } /* switch CODE (addr) */
-      
-  return "";
-}
-
-
 /* If PLEN == NULL: Ouput instructions to load a value from a memory location
    OP[1] in AS1 to register OP[0].
    If PLEN != 0 set *PLEN to the length in words of the instruction sequence.
@@ -2641,13 +2509,11 @@ avr_out_lpm_no_lpmx (rtx insn, rtx *xop, int *plen)
 static const char*
 avr_out_lpm (rtx insn, rtx *op, int *plen)
 {
-  rtx xop[6];
+  rtx xop[3];
   rtx dest = op[0];
   rtx src = SET_SRC (single_set (insn));
   rtx addr;
   int n_bytes = GET_MODE_SIZE (GET_MODE (dest));
-  int regno_dest;
-  int segment;
   RTX_CODE code;
   addr_space_t as = MEM_ADDR_SPACE (src);
 
@@ -2668,55 +2534,18 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
   gcc_assert (REG_P (dest));
   gcc_assert (REG == code || POST_INC == code);
 
+  /* Only 1-byte moves from __flash are representes as open coded
+     mov insns.  All other loads from flash are not handled here but
+     by some UNSPEC instead, see respective FIXME in machine description.  */
+  
+  gcc_assert (as == ADDR_SPACE_FLASH);
+  gcc_assert (n_bytes == 1);
+
   xop[0] = dest;
-  xop[1] = addr;
-  xop[2] = lpm_addr_reg_rtx;
-  xop[4] = xstring_empty;
-  xop[5] = tmp_reg_rtx;
+  xop[1] = lpm_addr_reg_rtx;
+  xop[2] = lpm_reg_rtx;
 
-  regno_dest = REGNO (dest);
-
-  segment = avr_addrspace[as].segment;
-
-  /* Set RAMPZ as needed.  */
-
-  if (segment)
-    {
-      xop[4] = GEN_INT (segment);
-      
-      if (xop[3] = avr_find_unused_d_reg (insn, lpm_addr_reg_rtx),
-          xop[3])
-        {
-          avr_asm_len ("ldi %3,%4" CR_TAB
-                       "out __RAMPZ__,%3", xop, plen, 2);
-        }
-      else if (segment == 1)
-        {
-          avr_asm_len ("clr %5" CR_TAB
-                       "inc %5" CR_TAB
-                       "out __RAMPZ__,%5", xop, plen, 3);
-        }
-      else
-        {
-          avr_asm_len ("mov %5,%2"         CR_TAB
-                       "ldi %2,%4"         CR_TAB
-                       "out __RAMPZ__,%2"  CR_TAB
-                       "mov %2,%5", xop, plen, 4);
-        }
-      
-      xop[4] = xstring_e;
-
-      if (!AVR_HAVE_ELPMX)
-        return avr_out_lpm_no_lpmx (insn, xop, plen);
-    }
-  else if (!AVR_HAVE_LPMX)
-    {
-      return avr_out_lpm_no_lpmx (insn, xop, plen);
-    }
-
-  /* We have [E]LPMX: Output reading from Flash the comfortable way.  */
-
-  switch (GET_CODE (addr))
+  switch (code)
     {
     default:
       gcc_unreachable();
@@ -2724,80 +2553,101 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
     case REG:
 
       gcc_assert (REG_Z == REGNO (addr));
-
-      switch (n_bytes)
-        {
-        default:
-          gcc_unreachable();
-
-        case 1:
-          return avr_asm_len ("%4lpm %0,%a2", xop, plen, 1);
-
-        case 2:
-          if (REGNO (dest) == REG_Z)
-            return avr_asm_len ("%4lpm %5,%a2+" CR_TAB
-                                "%4lpm %B0,%a2" CR_TAB
-                                "mov %A0,%5", xop, plen, 3);
-          else
-            {
-              avr_asm_len ("%4lpm %A0,%a2+" CR_TAB
-                           "%4lpm %B0,%a2", xop, plen, 2);
-                
-              if (!reg_unused_after (insn, addr))
-                avr_asm_len ("sbiw %2,1", xop, plen, 1);
-            }
-          
-          break; /* 2 */
-
-        case 3:
-
-          avr_asm_len ("%4lpm %A0,%a2+" CR_TAB
-                       "%4lpm %B0,%a2+" CR_TAB
-                       "%4lpm %C0,%a2", xop, plen, 3);
-                
-          if (!reg_unused_after (insn, addr))
-            avr_asm_len ("sbiw %2,2", xop, plen, 1);
-
-          break; /* 3 */
       
-        case 4:
-
-          avr_asm_len ("%4lpm %A0,%a2+" CR_TAB
-                       "%4lpm %B0,%a2+", xop, plen, 2);
-          
-          if (REGNO (dest) == REG_Z - 2)
-            return avr_asm_len ("%4lpm %5,%a2+" CR_TAB
-                                "%4lpm %C0,%a2"          CR_TAB
-                                "mov %D0,%5", xop, plen, 3);
-          else
-            {
-              avr_asm_len ("%4lpm %C0,%a2+" CR_TAB
-                           "%4lpm %D0,%a2", xop, plen, 2);
-                
-              if (!reg_unused_after (insn, addr))
-                avr_asm_len ("sbiw %2,3", xop, plen, 1);
-            }
-
-          break; /* 4 */
-        } /* n_bytes */
+      return AVR_HAVE_LPMX
+        ? avr_asm_len ("lpm %0,%a1", xop, plen, 1)
+        : avr_asm_len ("lpm" CR_TAB
+                       "mov %0,%2", xop, plen, 2);
       
-      break; /* REG */
-
     case POST_INC:
+      
+      gcc_assert (REG_Z == REGNO (XEXP (addr, 0)));
 
-      gcc_assert (REG_Z == REGNO (XEXP (addr, 0))
-                  && n_bytes <= 4);
+      return AVR_HAVE_LPMX
+        ? avr_asm_len ("lpm %0,%a1+", xop, plen, 1)
+        : avr_asm_len ("lpm"        CR_TAB
+                       "adiw %1, 1" CR_TAB
+                       "mov %0,%2", xop, plen, 3);
+    }
 
-      avr_asm_len                    ("%4lpm %A0,%a2+", xop, plen, 1);
-      if (n_bytes >= 2)  avr_asm_len ("%4lpm %B0,%a2+", xop, plen, 1);
-      if (n_bytes >= 3)  avr_asm_len ("%4lpm %C0,%a2+", xop, plen, 1);
-      if (n_bytes >= 4)  avr_asm_len ("%4lpm %D0,%a2+", xop, plen, 1);
+  return "";
+}
 
-      break; /* POST_INC */
 
-    } /* switch CODE (addr) */
+/* If PLEN == NULL: Ouput instructions to load $0 with a value from
+   flash address $1:Z.  If $1 = 0 we can use LPM to read, otherwise
+   use ELPM.
+   If PLEN != 0 set *PLEN to the length in words of the instruction sequence.
+   Return "".  */
 
-  if (xop[4] == xstring_e && AVR_HAVE_RAMPD)
+const char*
+avr_load_lpm (rtx insn, rtx *op, int *plen)
+{
+  rtx xop[4];
+  int n, n_bytes = GET_MODE_SIZE (GET_MODE (op[0]));
+  rtx xsegment = op[1];
+  bool clobber_z = PARALLEL == GET_CODE (PATTERN (insn));
+  bool r30_in_tmp = false;
+  
+  if (plen)
+    *plen = 0;
+  
+  xop[1] = lpm_addr_reg_rtx;
+  xop[2] = lpm_reg_rtx;
+  xop[3] = xstring_empty;
+  
+  /* Set RAMPZ as needed.  */
+  
+  if (REG_P (xsegment))
+    {
+      avr_asm_len ("out __RAMPZ__,%0", &xsegment, plen, 1);
+      xop[3] = xstring_e;
+    }
+  
+  /* Load the individual bytes from LSB to MSB.  */
+  
+  for (n = 0; n < n_bytes; n++)
+    {
+      xop[0] = all_regs_rtx[REGNO (op[0]) + n];
+      
+      if ((CONST_INT_P (xsegment) && AVR_HAVE_LPMX)
+          || (REG_P (xsegment) && AVR_HAVE_ELPMX))
+        {
+          if (n == n_bytes-1)
+            avr_asm_len ("%3lpm %0,%a1", xop, plen, 1);
+          else if (REGNO (xop[0]) == REG_Z)
+            {
+              avr_asm_len ("%3lpm %2,%a1+", xop, plen, 1);
+              r30_in_tmp = true;
+            }
+          else
+            avr_asm_len ("%3lpm %0,%a1+", xop, plen, 1);
+        }
+      else
+        {
+          gcc_assert (clobber_z);
+          
+          avr_asm_len ("%3lpm" CR_TAB
+                       "mov %0,%2", xop, plen, 2);
+
+          if (n != n_bytes-1)
+            avr_asm_len ("adiw %1,1", xop, plen, 1);
+        }
+    }
+  
+  if (r30_in_tmp)
+    avr_asm_len ("mov %1,%2", xop, plen, 1);
+  
+  if (!clobber_z
+      && n_bytes > 1
+      && !reg_unused_after (insn, lpm_addr_reg_rtx)
+      && !reg_overlap_mentioned_p (op[0], lpm_addr_reg_rtx))
+    {
+      xop[2] = GEN_INT (n_bytes-1);
+      avr_asm_len ("sbiw %1,%2", xop, plen, 1);
+    }
+  
+  if (REG_P (xsegment) && AVR_HAVE_RAMPD)
     {
       /* Reset RAMPZ to 0 so that EBI devices don't read garbage from RAM */
       
@@ -2836,13 +2686,11 @@ avr_out_xload (rtx insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
 }
 
 
-const char *
-output_movqi (rtx insn, rtx operands[], int *l)
+const char*
+output_movqi (rtx insn, rtx operands[], int *real_l)
 {
-  int dummy;
   rtx dest = operands[0];
   rtx src = operands[1];
-  int *real_l = l;
   
   if (avr_mem_flash_p (src)
       || avr_mem_flash_p (dest))
@@ -2850,10 +2698,8 @@ output_movqi (rtx insn, rtx operands[], int *l)
       return avr_out_lpm (insn, operands, real_l);
     }
 
-  if (!l)
-    l = &dummy;
-
-  *l = 1;
+  if (real_l)
+    *real_l = 1;
   
   if (register_operand (dest, QImode))
     {
@@ -2871,10 +2717,10 @@ output_movqi (rtx insn, rtx operands[], int *l)
           output_reload_in_const (operands, NULL_RTX, real_l, false);
           return "";
         }
-      else if (GET_CODE (src) == MEM)
+      else if (MEM_P (src))
 	return out_movqi_r_mr (insn, operands, real_l); /* mov r,m */
     }
-  else if (GET_CODE (dest) == MEM)
+  else if (MEM_P (dest))
     {
       rtx xop[2];
 
@@ -6575,6 +6421,7 @@ adjust_insn_length (rtx insn, int len)
     case ADJUST_LEN_MOV32: output_movsisf (insn, op, &len); break;
     case ADJUST_LEN_MOVMEM: avr_out_movmem (insn, op, &len); break;
     case ADJUST_LEN_XLOAD: avr_out_xload (insn, op, &len); break;
+    case ADJUST_LEN_LOAD_LPM: avr_load_lpm (insn, op, &len); break;
 
     case ADJUST_LEN_TSTHI: avr_out_tsthi (insn, op, &len); break;
     case ADJUST_LEN_TSTPSI: avr_out_tstpsi (insn, op, &len); break;
@@ -9610,7 +9457,8 @@ avr_addr_space_pointer_mode (addr_space_t as)
 static bool
 avr_reg_ok_for_pgm_addr (rtx reg, bool strict)
 {
-  gcc_assert (REG_P (reg));
+  if (!REG_P (reg))
+    return false;
 
   if (strict)
     {
@@ -11060,6 +10908,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
 #define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS avr_addr_space_legitimize_address
+
+#undef  TARGET_MODE_DEPENDENT_ADDRESS_P
+#define TARGET_MODE_DEPENDENT_ADDRESS_P avr_mode_dependent_address_p
 
 #undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND avr_print_operand
