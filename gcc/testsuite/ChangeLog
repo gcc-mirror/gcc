@@ -1,3 +1,8 @@
+2012-03-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52548
+	* gcc.dg/tree-ssa/ssa-pre-29.c: New testcase.
+
 2012-03-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* lib/fortran-modules.exp (list-module-names-1): Remove
