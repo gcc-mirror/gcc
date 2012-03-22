@@ -1,3 +1,8 @@
+2012-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/52671
+	* g++.dg/ext/attrib44.C: New test.
+
 2012-03-22  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/51737
