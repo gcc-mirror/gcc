@@ -1,3 +1,30 @@
+2012-03-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-03-07 mainline r185033.
+
+	PR target/52507
+	* config/avr/lib1funcs.S (__movmemx_hi): Fix loop label in RAM-part.
+
+	Backport from 2012-03-07 mainline r185031.
+
+	PR target/52505
+	* config/avr/lib1funcs.S (__xload_1): Don't read unintentionally
+	from RAM.
+
+	Backport from 2012-03-07 mainline r185030.
+
+	PR target/52461
+	PR target/52508
+	* config/avr/lib1funcs.S (__do_copy_data): Clear RAMPZ after usage
+	if RAMPZ affects reading from RAM.
+	(__tablejump_elpm__): Ditto.
+	(.xload): Ditto.
+	(__movmemx_hi): Ditto.
+	(__do_global_ctors): Right condition for RAMPZ usage is "have ELPM".
+	(__do_global_dtors): Ditto.
+	(__xload_1, __xload_2, __xload_3, __xload_4): Ditto.
+	(__movmemx_hi): Ditto.
+
 2012-03-22  Release Manager
 
 	* GCC 4.7.0 released.

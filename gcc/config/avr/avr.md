@@ -63,6 +63,7 @@
   [UNSPEC_STRLEN
    UNSPEC_MOVMEM
    UNSPEC_INDEX_JMP
+   UNSPEC_LPM
    UNSPEC_FMUL
    UNSPEC_FMULS
    UNSPEC_FMULSU
@@ -77,6 +78,7 @@
    UNSPECV_WRITE_SP
    UNSPECV_GOTO_RECEIVER
    UNSPECV_ENABLE_IRQS
+   UNSPECV_MEMORY_BARRIER
    UNSPECV_NOP
    UNSPECV_SLEEP
    UNSPECV_WDR
@@ -139,7 +141,7 @@
   "out_bitop, out_plus, out_plus_noclobber, plus64, addto_sp,
    tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
-   xload, movmem,
+   xload, movmem, load_lpm,
    ashlqi, ashrqi, lshrqi,
    ashlhi, ashrhi, lshrhi,
    ashlsi, ashrsi, lshrsi,
@@ -363,33 +365,60 @@
 ;;========================================================================
 ;; Move stuff around
 
-(define_expand "load<mode>_libgcc"
-  [(set (match_dup 3)
-        (match_dup 2))
-   (set (reg:MOVMODE 22)
-        (match_operand:MOVMODE 1 "memory_operand" ""))
-   (set (match_operand:MOVMODE 0 "register_operand" "")
-        (reg:MOVMODE 22))]
-  "avr_load_libgcc_p (operands[1])"
-  {
-    operands[3] = gen_rtx_REG (HImode, REG_Z);
-    operands[2] = force_operand (XEXP (operands[1], 0), NULL_RTX);
-    operands[1] = replace_equiv_address (operands[1], operands[3]);
-    set_mem_addr_space (operands[1], ADDR_SPACE_FLASH);
-  })
-    
+;; Represent a load from __flash that needs libgcc support as UNSPEC.
+;; This is legal because we read from non-changing memory.
+;; For rationale see the FIXME below.
+
+;; "load_psi_libgcc"    
+;; "load_si_libgcc"    
+;; "load_sf_libgcc"    
 (define_insn "load_<mode>_libgcc"
   [(set (reg:MOVMODE 22)
-        (match_operand:MOVMODE 0 "memory_operand" "m,m"))]
-  "avr_load_libgcc_p (operands[0])
-   && REG_P (XEXP (operands[0], 0))
-   && REG_Z == REGNO (XEXP (operands[0], 0))"
+        (unspec:MOVMODE [(reg:HI REG_Z)]
+                        UNSPEC_LPM))]
+  ""
   {
-    operands[0] = GEN_INT (GET_MODE_SIZE (<MODE>mode));
-    return "%~call __load_%0";
+    rtx n_bytes = GEN_INT (GET_MODE_SIZE (<MODE>mode));
+    output_asm_insn ("%~call __load_%0", &n_bytes);
+    return "";
   }
-  [(set_attr "length" "1,2")
-   (set_attr "isa" "rjmp,jmp")
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+
+;; Similar for inline reads from flash.  We use UNSPEC instead
+;; of MEM for the same reason as above: PR52543.
+;; $1 contains the memory segment.
+
+(define_insn "load_<mode>"
+  [(set (match_operand:MOVMODE 0 "register_operand" "=r")
+        (unspec:MOVMODE [(reg:HI REG_Z)
+                         (match_operand:QI 1 "reg_or_0_operand" "rL")]
+                        UNSPEC_LPM))]
+  "(CONST_INT_P (operands[1]) && AVR_HAVE_LPMX)
+   || (REG_P (operands[1]) && AVR_HAVE_ELPMX)"
+  {
+    return avr_load_lpm (insn, operands, NULL);
+  }
+  [(set_attr "adjust_len" "load_lpm")
+   (set_attr "cc" "clobber")])
+
+
+;; Similar to above for the complementary situation when there is no [E]LPMx.
+;; Clobber Z in that case.
+
+(define_insn "load_<mode>_clobber"
+  [(set (match_operand:MOVMODE 0 "register_operand" "=r")
+        (unspec:MOVMODE [(reg:HI REG_Z)
+                         (match_operand:QI 1 "reg_or_0_operand" "rL")]
+                        UNSPEC_LPM))
+   (clobber (reg:HI REG_Z))]
+  "!((CONST_INT_P (operands[1]) && AVR_HAVE_LPMX)
+     || (REG_P (operands[1]) && AVR_HAVE_ELPMX))"
+  {
+    return avr_load_lpm (insn, operands, NULL);
+  }
+  [(set_attr "adjust_len" "load_lpm")
    (set_attr "cc" "clobber")])
 
 
@@ -418,9 +447,15 @@
     DONE;
   })
 
+;; "xloadqi_A"
+;; "xloadhi_A"
+;; "xloadpsi_A"
+;; "xloadsi_A"
+;; "xloadsf_A"
 (define_insn_and_split "xload<mode>_A"
   [(set (match_operand:MOVMODE 0 "register_operand" "=r")
         (match_operand:MOVMODE 1 "memory_operand"    "m"))
+   (clobber (reg:MOVMODE 22))
    (clobber (reg:QI 21))
    (clobber (reg:HI REG_Z))]
   "can_create_pseudo_p()
@@ -461,7 +496,7 @@
   {
     return avr_out_xload (insn, operands, NULL);
   }
-  [(set_attr "length" "3,4")
+  [(set_attr "length" "4,4")
    (set_attr "adjust_len" "*,xload")
    (set_attr "isa" "lpmx,lpm")
    (set_attr "cc" "none")])
@@ -532,12 +567,55 @@
       DONE;
     }
 
+    /* For old devices without LPMx, prefer __flash loads per libcall.  */
+
     if (avr_load_libgcc_p (src))
       {
-        /* For the small devices, do loads per libgcc call.  */
-        emit_insn (gen_load<mode>_libgcc (dest, src));
+        emit_move_insn (gen_rtx_REG (Pmode, REG_Z),
+                        force_reg (Pmode, XEXP (src, 0)));
+
+        emit_insn (gen_load_<mode>_libgcc ());
+        emit_move_insn (dest, gen_rtx_REG (<MODE>mode, 22));
         DONE;
       }
+
+    /* ; FIXME:  Hack around PR rtl-optimization/52543.
+       ; lower-subreg.c splits loads from the 16-bit address spaces which
+       ; causes code bloat because each load need his setting of RAMPZ.
+       ; Moreover, the split will happen in such a way that the loads don't
+       ; take advantage of POST_INC addressing.  Thus, we use UNSPEC to
+       ; represent these loads instead.  Notice that this is legitimate
+       ; because the memory content does not change:  Loads from the same
+       ; address will yield the same value.
+       ; POST_INC addressing would make the addresses mode_dependent and could
+       ; work around that PR, too.  However, notice that it is *not* legitimate
+       ; to expand to POST_INC at expand time:  The following passes assert
+       ; that pre-/post-modify addressing is introduced by .auto_inc_dec and
+       ; does not exist before that pass.  */
+
+    if (avr_mem_flash_p (src)
+        && (GET_MODE_SIZE (<MODE>mode) > 1
+            || MEM_ADDR_SPACE (src) != ADDR_SPACE_FLASH))
+      {
+        rtx xsegment = GEN_INT (avr_addrspace[MEM_ADDR_SPACE (src)].segment);
+        if (!AVR_HAVE_ELPM)
+          xsegment = const0_rtx;
+        if (xsegment != const0_rtx)
+          xsegment = force_reg (QImode, xsegment);
+
+        emit_move_insn (gen_rtx_REG (Pmode, REG_Z),
+                        force_reg (Pmode, XEXP (src, 0)));
+
+        if ((CONST_INT_P (xsegment) && AVR_HAVE_LPMX)
+            || (REG_P (xsegment) && AVR_HAVE_ELPMX))
+          emit_insn (gen_load_<mode> (dest, xsegment));
+        else
+          emit_insn (gen_load_<mode>_clobber (dest, xsegment));
+        DONE;
+      }
+
+    /* ; The only address-space for which we use plain MEM and reload
+       ; machinery are 1-byte loads from __flash.  */
   })
 
 ;;========================================================================
@@ -675,40 +753,6 @@
   {
     operands[4] = gen_rtx_REG (HImode, REGNO (operands[2]));
     operands[5] = gen_rtx_REG (HImode, REGNO (operands[3]));
-  })
-
-;; For LPM loads from AS1 we split 
-;;    R = *Z
-;; to
-;;    R = *Z++
-;;    Z = Z - sizeof (R)
-;;
-;; so that the second instruction can be optimized out.
-
-(define_split ; "split-lpmx"
-  [(set (match_operand:HISI 0 "register_operand" "")
-        (match_operand:HISI 1 "memory_operand" ""))]
-  "reload_completed
-   && AVR_HAVE_LPMX"
-  [(set (match_dup 0)
-        (match_dup 2))
-   (set (match_dup 3)
-        (plus:HI (match_dup 3)
-                 (match_dup 4)))]
-  {
-     rtx addr = XEXP (operands[1], 0);
-
-     if (!avr_mem_flash_p (operands[1])
-         || !REG_P (addr)
-         || reg_overlap_mentioned_p (addr, operands[0]))
-       {
-         FAIL;
-       }
-
-    operands[2] = replace_equiv_address (operands[1],
-                                         gen_rtx_POST_INC (Pmode, addr));
-    operands[3] = addr;
-    operands[4] = gen_int_mode (-GET_MODE_SIZE (<MODE>mode), HImode);
   })
 
 ;;==========================================================================
@@ -1081,15 +1125,16 @@
    (set_attr "adjust_len" "addto_sp")])
 
 (define_insn "*addhi3"
-  [(set (match_operand:HI 0 "register_operand"          "=r,d,d")
-        (plus:HI (match_operand:HI 1 "register_operand" "%0,0,0")
-                 (match_operand:HI 2 "nonmemory_operand" "r,s,n")))]
+  [(set (match_operand:HI 0 "register_operand"          "=r,d,!w,d")
+        (plus:HI (match_operand:HI 1 "register_operand" "%0,0,0 ,0")
+                 (match_operand:HI 2 "nonmemory_operand" "r,s,IJ,n")))]
   ""
   {
     static const char * const asm_code[] =
       {
         "add %A0,%A2\;adc %B0,%B2",
         "subi %A0,lo8(-(%2))\;sbci %B0,hi8(-(%2))",
+        "",
         ""
       };
 
@@ -1098,9 +1143,9 @@
 
     return avr_out_plus_noclobber (operands, NULL, NULL);
   }
-  [(set_attr "length" "2,2,2")
-   (set_attr "adjust_len" "*,*,out_plus_noclobber")
-   (set_attr "cc" "set_n,set_czn,out_plus_noclobber")])
+  [(set_attr "length" "2,2,2,2")
+   (set_attr "adjust_len" "*,*,out_plus_noclobber,out_plus_noclobber")
+   (set_attr "cc" "set_n,set_czn,out_plus_noclobber,out_plus_noclobber")])
 
 ;; Adding a constant to NO_LD_REGS might have lead to a reload of
 ;; that constant to LD_REGS.  We don't add a scratch to *addhi3
@@ -1138,10 +1183,10 @@
               (clobber (match_dup 2))])])
 
 (define_insn "addhi3_clobber"
-  [(set (match_operand:HI 0 "register_operand"           "=d,l")
-        (plus:HI (match_operand:HI 1 "register_operand"  "%0,0")
-                 (match_operand:HI 2 "const_int_operand"  "n,n")))
-   (clobber (match_scratch:QI 3                          "=X,&d"))]
+  [(set (match_operand:HI 0 "register_operand"           "=!w,d,r")
+        (plus:HI (match_operand:HI 1 "register_operand"   "%0,0,0")
+                 (match_operand:HI 2 "const_int_operand"  "IJ,n,n")))
+   (clobber (match_scratch:QI 3                           "=X,X,&d"))]
   ""
   {
     gcc_assert (REGNO (operands[0]) == REGNO (operands[1]));
@@ -1691,6 +1736,29 @@
    (set_attr "cc" "clobber")])
 
 ;; Handle small constants
+
+;; Special case of a += 2*b as frequently seen with accesses to int arrays.
+;; This is shorter, faster than MUL and has lower register pressure.
+
+(define_insn_and_split "*umaddqihi4.2"
+  [(set (match_operand:HI 0 "register_operand"                                  "=r")
+        (plus:HI (mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                          (const_int 2))
+                 (match_operand:HI 2 "register_operand"                          "r")))]
+  "!reload_completed
+   && !reg_overlap_mentioned_p (operands[0], operands[1])"
+  { gcc_unreachable(); }
+  "&& 1"
+  [(set (match_dup 0)
+        (match_dup 2))
+   ; *addhi3_zero_extend
+   (set (match_dup 0)
+        (plus:HI (zero_extend:HI (match_dup 1))
+                 (match_dup 0)))
+   ; *addhi3_zero_extend
+   (set (match_dup 0)
+        (plus:HI (zero_extend:HI (match_dup 1))
+                 (match_dup 0)))])
 
 ;; "umaddqihi4.uconst"
 ;; "maddqihi4.sconst"
@@ -5198,18 +5266,36 @@
    (set_attr "length" "1")])
 
 ;; Enable Interrupts
-(define_insn "enable_interrupt"
-  [(unspec_volatile [(const_int 1)] UNSPECV_ENABLE_IRQS)]
+(define_expand "enable_interrupt"
+  [(clobber (const_int 0))]
   ""
-  "sei"
-  [(set_attr "length" "1")
-   (set_attr "cc" "none")])
+  {
+    rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (mem) = 1;
+    emit_insn (gen_cli_sei (const1_rtx, mem));
+    DONE;
+  })
 
 ;; Disable Interrupts
-(define_insn "disable_interrupt"
-  [(unspec_volatile [(const_int 0)] UNSPECV_ENABLE_IRQS)]
+(define_expand "disable_interrupt"
+  [(clobber (const_int 0))]
   ""
-  "cli"
+  {
+    rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (mem) = 1;
+    emit_insn (gen_cli_sei (const0_rtx, mem));
+    DONE;
+  })
+
+(define_insn "cli_sei"
+  [(unspec_volatile [(match_operand:QI 0 "const_int_operand" "L,P")]
+                    UNSPECV_ENABLE_IRQS)
+   (set (match_operand:BLK 1 "" "")
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))]
+  ""
+  "@
+	cli
+	sei"
   [(set_attr "length" "1")
    (set_attr "cc" "none")])
 
@@ -5316,10 +5402,12 @@
   [(unspec_volatile [(match_operand:QI 0 "const_int_operand" "n")
                      (const_int 1)]
                     UNSPECV_DELAY_CYCLES)
-   (clobber (match_scratch:QI 1 "=&d"))]
+   (set (match_operand:BLK 1 "" "")
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+   (clobber (match_scratch:QI 2 "=&d"))]
   ""
-  "ldi %1,lo8(%0)
-	1: dec %1
+  "ldi %2,lo8(%0)
+	1: dec %2
 	brne 1b"
   [(set_attr "length" "3")
    (set_attr "cc" "clobber")])
@@ -5328,11 +5416,13 @@
   [(unspec_volatile [(match_operand:HI 0 "const_int_operand" "n")
                      (const_int 2)]
                     UNSPECV_DELAY_CYCLES)
-   (clobber (match_scratch:HI 1 "=&w"))]
+   (set (match_operand:BLK 1 "" "")
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+   (clobber (match_scratch:HI 2 "=&w"))]
   ""
-  "ldi %A1,lo8(%0)
-	ldi %B1,hi8(%0)
-	1: sbiw %A1,1
+  "ldi %A2,lo8(%0)
+	ldi %B2,hi8(%0)
+	1: sbiw %A2,1
 	brne 1b"
   [(set_attr "length" "4")
    (set_attr "cc" "clobber")])
@@ -5341,16 +5431,18 @@
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
                      (const_int 3)]
                     UNSPECV_DELAY_CYCLES)
-   (clobber (match_scratch:QI 1 "=&d"))
+   (set (match_operand:BLK 1 "" "")
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
-   (clobber (match_scratch:QI 3 "=&d"))]
+   (clobber (match_scratch:QI 3 "=&d"))
+   (clobber (match_scratch:QI 4 "=&d"))]
   ""
-  "ldi %1,lo8(%0)
-	ldi %2,hi8(%0)
-	ldi %3,hlo8(%0)
-	1: subi %1,1
-	sbci %2,0
+  "ldi %2,lo8(%0)
+	ldi %3,hi8(%0)
+	ldi %4,hlo8(%0)
+	1: subi %2,1
 	sbci %3,0
+	sbci %4,0
 	brne 1b"
   [(set_attr "length" "7")
    (set_attr "cc" "clobber")])
@@ -5359,19 +5451,21 @@
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
                      (const_int 4)]
                     UNSPECV_DELAY_CYCLES)
-   (clobber (match_scratch:QI 1 "=&d"))
+   (set (match_operand:BLK 1 "" "")
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
    (clobber (match_scratch:QI 3 "=&d"))
-   (clobber (match_scratch:QI 4 "=&d"))]
+   (clobber (match_scratch:QI 4 "=&d"))
+   (clobber (match_scratch:QI 5 "=&d"))]
   ""
-  "ldi %1,lo8(%0)
-	ldi %2,hi8(%0)
-	ldi %3,hlo8(%0)
-	ldi %4,hhi8(%0)
-	1: subi %1,1
-	sbci %2,0
+  "ldi %2,lo8(%0)
+	ldi %3,hi8(%0)
+	ldi %4,hlo8(%0)
+	ldi %5,hhi8(%0)
+	1: subi %2,1
 	sbci %3,0
 	sbci %4,0
+	sbci %5,0
 	brne 1b"
   [(set_attr "length" "9")
    (set_attr "cc" "clobber")])
@@ -5757,9 +5851,23 @@
 ;; CPU instructions
 
 ;; NOP taking 1 or 2 Ticks 
-(define_insn "nopv"
+(define_expand "nopv"
+  [(parallel [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "")] 
+                               UNSPECV_NOP)
+              (set (match_dup 1)
+                   (unspec_volatile:BLK [(match_dup 1)]
+                                        UNSPECV_MEMORY_BARRIER))])]
+  ""
+  {
+    operands[1] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (operands[1]) = 1;
+  })
+
+(define_insn "*nopv"
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "P,K")] 
-                    UNSPECV_NOP)]
+                    UNSPECV_NOP)
+   (set (match_operand:BLK 1 "" "")
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))]
   ""
   "@
 	nop
@@ -5768,16 +5876,42 @@
    (set_attr "cc" "none")])
 
 ;; SLEEP
-(define_insn "sleep"
-  [(unspec_volatile [(const_int 0)] UNSPECV_SLEEP)]
+(define_expand "sleep"
+  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_SLEEP)
+              (set (match_dup 0)
+                   (unspec_volatile:BLK [(match_dup 0)]
+                                        UNSPECV_MEMORY_BARRIER))])]
+  ""
+  {
+    operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (operands[0]) = 1;
+  })
+
+(define_insn "*sleep"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SLEEP)
+   (set (match_operand:BLK 0 "" "")
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMORY_BARRIER))]
   ""
   "sleep"
   [(set_attr "length" "1")
    (set_attr "cc" "none")])
  
 ;; WDR
-(define_insn "wdr"
-  [(unspec_volatile [(const_int 0)] UNSPECV_WDR)]
+(define_expand "wdr"
+  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_WDR)
+              (set (match_dup 0)
+                   (unspec_volatile:BLK [(match_dup 0)]
+                                        UNSPECV_MEMORY_BARRIER))])]
+  ""
+  {
+    operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (operands[0]) = 1;
+  })
+
+(define_insn "*wdr"
+  [(unspec_volatile [(const_int 0)] UNSPECV_WDR)
+   (set (match_operand:BLK 0 "" "")
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMORY_BARRIER))]
   ""
   "wdr"
   [(set_attr "length" "1")
