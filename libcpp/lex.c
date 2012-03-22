@@ -629,6 +629,69 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   }
 }
 
+#elif defined (__ARM_NEON__)
+#include "arm_neon.h"
+
+static const uchar *
+search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
+{
+  const uint8x16_t repl_nl = vdupq_n_u8 ('\n');
+  const uint8x16_t repl_cr = vdupq_n_u8 ('\r');
+  const uint8x16_t repl_bs = vdupq_n_u8 ('\\');
+  const uint8x16_t repl_qm = vdupq_n_u8 ('?');
+  const uint8x16_t xmask = (uint8x16_t) vdupq_n_u64 (0x8040201008040201ULL);
+
+  unsigned int misalign, found, mask;
+  const uint8_t *p;
+  uint8x16_t data;
+
+  /* Align the source pointer.  */
+  misalign = (uintptr_t)s & 15;
+  p = (const uint8_t *)((uintptr_t)s & -16);
+  data = vld1q_u8 (p);
+
+  /* Create a mask for the bytes that are valid within the first
+     16-byte block.  The Idea here is that the AND with the mask
+     within the loop is "free", since we need some AND or TEST
+     insn in order to set the flags for the branch anyway.  */
+  mask = (-1u << misalign) & 0xffff;
+
+  /* Main loop, processing 16 bytes at a time.  */
+  goto start;
+
+  do
+    {
+      uint8x8_t l;
+      uint16x4_t m;
+      uint32x2_t n;
+      uint8x16_t t, u, v, w;
+
+      p += 16;
+      data = vld1q_u8 (p);
+      mask = 0xffff;
+
+    start:
+      t = vceqq_u8 (data, repl_nl);
+      u = vceqq_u8 (data, repl_cr);
+      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
+      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
+      t = vandq_u8 (vorrq_u8 (v, w), xmask);
+      l = vpadd_u8 (vget_low_u8 (t), vget_high_u8 (t));
+      m = vpaddl_u8 (l);
+      n = vpaddl_u16 (m);
+      
+      found = vget_lane_u32 ((uint32x2_t) vorr_u64 ((uint64x1_t) n, 
+	      vshr_n_u64 ((uint64x1_t) n, 24)), 0);
+      found &= mask;
+    }
+  while (!found);
+
+  /* FOUND contains 1 in bits for which we matched a relevant
+     character.  Conversion to the byte index is trivial.  */
+  found = __builtin_ctz (found);
+  return (const uchar *)p + found;
+}
+
 #else
 
 /* We only have one accellerated alternative.  Use a direct call so that
