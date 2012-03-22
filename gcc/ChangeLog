@@ -1,3 +1,12 @@
+2012-03-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52638
+	* tree-vect-stmts.c (vect_init_vector_1): New function, split
+	out from ...
+	(vect_init_vector): ... here.  Handle scalar vector inits.
+	(vect_get_vec_def_for_operand): Adjust.
+	(vectorizable_load): Likewise.
+
 2012-03-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config.gcc (alpha*-*-linux*): Add elfos.h to tm_file.

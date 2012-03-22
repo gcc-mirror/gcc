@@ -1136,6 +1136,52 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
     }
 }
 
+/* Insert the new stmt NEW_STMT at *GSI or at the appropriate place in
+   the loop preheader for the vectorized stmt STMT.  */
+
+static void
+vect_init_vector_1 (gimple stmt, gimple new_stmt, gimple_stmt_iterator *gsi)
+{
+
+  if (gsi)
+    vect_finish_stmt_generation (stmt, new_stmt, gsi);
+  else
+    {
+      stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+      loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+
+      if (loop_vinfo)
+        {
+          struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+	  basic_block new_bb;
+	  edge pe;
+
+          if (nested_in_vect_loop_p (loop, stmt))
+            loop = loop->inner;
+
+	  pe = loop_preheader_edge (loop);
+          new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);
+          gcc_assert (!new_bb);
+	}
+      else
+       {
+          bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
+          basic_block bb;
+          gimple_stmt_iterator gsi_bb_start;
+
+          gcc_assert (bb_vinfo);
+          bb = BB_VINFO_BB (bb_vinfo);
+          gsi_bb_start = gsi_after_labels (bb);
+          gsi_insert_before (&gsi_bb_start, new_stmt, GSI_SAME_STMT);
+       }
+    }
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    {
+      fprintf (vect_dump, "created new init_stmt: ");
+      print_gimple_stmt (vect_dump, new_stmt, 0, TDF_SLIM);
+    }
+}
 
 /* Function vect_init_vector.
 
@@ -1149,56 +1195,41 @@ tree
 vect_init_vector (gimple stmt, tree vector_var, tree vector_type,
 		  gimple_stmt_iterator *gsi)
 {
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   tree new_var;
   gimple init_stmt;
   tree vec_oprnd;
-  edge pe;
   tree new_temp;
-  basic_block new_bb;
+
+  if (TREE_CODE (TREE_TYPE (vector_var)) != VECTOR_TYPE)
+    {
+      if (!types_compatible_p (TREE_TYPE (vector_type),
+			       TREE_TYPE (vector_var)))
+	{
+	  if (CONSTANT_CLASS_P (vector_var))
+	    vector_var = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type),
+				     vector_var);
+	  else
+	    {
+	      new_var = create_tmp_reg (TREE_TYPE (vector_type), NULL);
+	      add_referenced_var (new_var);
+	      init_stmt = gimple_build_assign_with_ops (NOP_EXPR,
+							new_var, vector_var,
+							NULL_TREE);
+	      new_temp = make_ssa_name (new_var, init_stmt);
+	      gimple_assign_set_lhs (init_stmt, new_temp);
+	      vect_init_vector_1 (stmt, init_stmt, gsi);
+	      vector_var = new_temp;
+	    }
+	}
+      vector_var = build_vector_from_val (vector_type, vector_var);
+    }
 
   new_var = vect_get_new_vect_var (vector_type, vect_simple_var, "cst_");
   add_referenced_var (new_var);
   init_stmt = gimple_build_assign  (new_var, vector_var);
   new_temp = make_ssa_name (new_var, init_stmt);
   gimple_assign_set_lhs (init_stmt, new_temp);
-
-  if (gsi)
-    vect_finish_stmt_generation (stmt, init_stmt, gsi);
-  else
-    {
-      loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-
-      if (loop_vinfo)
-        {
-          struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-
-          if (nested_in_vect_loop_p (loop, stmt))
-            loop = loop->inner;
-
-	  pe = loop_preheader_edge (loop);
-          new_bb = gsi_insert_on_edge_immediate (pe, init_stmt);
-          gcc_assert (!new_bb);
-	}
-      else
-       {
-          bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
-          basic_block bb;
-          gimple_stmt_iterator gsi_bb_start;
-
-          gcc_assert (bb_vinfo);
-          bb = BB_VINFO_BB (bb_vinfo);
-          gsi_bb_start = gsi_after_labels (bb);
-          gsi_insert_before (&gsi_bb_start, init_stmt, GSI_SAME_STMT);
-       }
-    }
-
-  if (vect_print_dump_info (REPORT_DETAILS))
-    {
-      fprintf (vect_dump, "created new init_stmt: ");
-      print_gimple_stmt (vect_dump, init_stmt, 0, TDF_SLIM);
-    }
-
+  vect_init_vector_1 (stmt, init_stmt, gsi);
   vec_oprnd = gimple_assign_lhs (init_stmt);
   return vec_oprnd;
 }
@@ -1225,8 +1256,6 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   unsigned int nunits;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  tree vec_inv;
-  tree vec_cst;
   tree def;
   enum vect_def_type dt;
   bool is_simple_use;
@@ -1271,14 +1300,7 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
         if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "Create vector_cst. nunits = %d", nunits);
 
-	if (!types_compatible_p (TREE_TYPE (vector_type), TREE_TYPE (op)))
-	  {
-	    op = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type), op);
-	    gcc_assert (op && CONSTANT_CLASS_P (op));
-	  }
-
-        vec_cst = build_vector_from_val (vector_type, op);
-        return vect_init_vector (stmt, vec_cst, vector_type, NULL);
+        return vect_init_vector (stmt, op, vector_type, NULL);
       }
 
     /* Case 2: operand is defined outside the loop - loop invariant.  */
@@ -1294,8 +1316,7 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
         if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "Create vector_inv.");
 
-	vec_inv = build_vector_from_val (vector_type, def);
-        return vect_init_vector (stmt, vec_inv, vector_type, NULL);
+        return vect_init_vector (stmt, def, vector_type, NULL);
       }
 
     /* Case 3: operand is defined inside the loop.  */
@@ -4875,21 +4896,10 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      /* 4. Handle invariant-load.  */
 	      if (inv_p && !bb_vinfo)
 		{
-		  tree tem, vec_inv;
 		  gimple_stmt_iterator gsi2 = *gsi;
 		  gcc_assert (!strided_load);
 		  gsi_next (&gsi2);
-		  tem = scalar_dest;
-		  if (!useless_type_conversion_p (TREE_TYPE (vectype),
-						  TREE_TYPE (tem)))
-		    {
-		      tem = fold_convert (TREE_TYPE (vectype), tem);
-		      tem = force_gimple_operand_gsi (&gsi2, tem, true,
-						      NULL_TREE, true,
-						      GSI_SAME_STMT);
-		    }
-		  vec_inv = build_vector_from_val (vectype, tem);
-		  new_temp = vect_init_vector (stmt, vec_inv,
+		  new_temp = vect_init_vector (stmt, scalar_dest,
 					       vectype, &gsi2);
 		  new_stmt = SSA_NAME_DEF_STMT (new_temp);
 		}
