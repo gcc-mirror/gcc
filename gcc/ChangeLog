@@ -1,3 +1,9 @@
+2012-03-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52459
+	* tree-ssa-pre.c (inhibit_phi_insertion): Do not inhibit
+	PHI insertion for calls.
+
 2012-03-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cse.c (invalidate_from_sets_and_clobbers, try_back_substitute_reg,
