@@ -65,6 +65,7 @@
   sb1a
   sr71000
   xlr
+  xlp
 ])
 
 (define_c_enum "unspec" [
