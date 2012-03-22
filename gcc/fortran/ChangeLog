@@ -1,3 +1,9 @@
+2012-03-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52452
+	* resolve.c (resolve_intrinsic): Don't search for a
+	function if we know that it is a subroutine.
+
 2012-03-22  Release Manager
 
 	* GCC 4.7.0 released.
