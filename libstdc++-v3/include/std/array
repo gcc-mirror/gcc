@@ -1,6 +1,7 @@
 // <array> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -174,8 +175,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const_reference
       at(size_type __n) const
       {
-	return __n < _Nm ?
-	       _M_instance[__n] : __throw_out_of_range(__N("array::at"));
+	if (__n >= _Nm)
+	  std::__throw_out_of_range(__N("array::at"));
+	return _M_instance[__n];
       }
 #endif
 
