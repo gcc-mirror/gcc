@@ -217,9 +217,21 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
 
-#undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
     fprintf (FILE, "\t.align %d\n", LOG);
+
+/* This is how to advance the location counter by SIZE bytes.  */
+
+#define ASM_OUTPUT_SKIP(FILE,SIZE)  \
+  fprintf (FILE, "\t.space "HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE))
+
+/* This says how to output an assembler line
+   to define a global common symbol.  */
+
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
+( fputs ("\t.lcomm ", (FILE)),				\
+  assemble_name ((FILE), (NAME)),			\
+  fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE)))
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION vms_asm_named_section
