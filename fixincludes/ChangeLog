@@ -1,3 +1,9 @@
+2012-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR other/52626
+	* tests/base/pthread.h [SOLARIS_MUTEX_INIT_2_CHECK]
+	(PTHREAD_COND_INITIALIZER): Adapt for solaris_cond_init removal.
+
 2012-03-15  Tristan Gingold  <gingold@adacore.com>
 
 	* README (EXAMPLES OF FIXES): Update.
