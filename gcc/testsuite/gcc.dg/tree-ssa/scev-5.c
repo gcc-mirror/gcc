@@ -6,13 +6,13 @@ int a[1000];
 
 f(int k)
 {
-	int i;
+        long long i;
 
-	for (i=k; i<1000; i+=k) {
-		a_p = &a[i];
-		*a_p = 100;
+        for (i=k; i<1000; i+=k) {
+                a_p = &a[i];
+                *a_p = 100;
         }
 }
 
-/* { dg-final { scan-tree-dump-times "&a" 1 "optimized" { xfail lp64 } } } */
+/* { dg-final { scan-tree-dump-times "&a" 1 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
