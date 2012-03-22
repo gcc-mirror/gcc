@@ -1,4 +1,4 @@
-LIB1ASMFUNCS += _bb_init_func _call_via_rX _interwork_call_via_rX _clzsi2 _clzdi2
+LIB1ASMFUNCS += _bb_init_func _call_via_rX _interwork_call_via_rX _clzsi2 _clzdi2 _ctzsi2
 
 # These functions have __aeabi equivalents and will never be called by GCC.  
 # By putting them in LIB1ASMFUNCS, we avoid the standard libgcc2.c code being
