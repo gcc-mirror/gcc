@@ -1,3 +1,28 @@
+2012-03-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-03-20 mainline r185583.
+
+	* gcc.target/avr/progmem.h (pgm_read_char): Define depending on
+	__AVR_HAVE_LPMX__
+
+	Backport from 2012-03-20 mainline r185570.
+
+        PR target/49868
+        * gcc.target/avr/torture/addr-space-2.h: New file.
+        * gcc.target/avr/torture/addr-space-2-g.h: New test.
+        * gcc.target/avr/torture/addr-space-2-0.h: New test.
+        * gcc.target/avr/torture/addr-space-2-1.h: New test.
+        * gcc.target/avr/torture/addr-space-2-x.h: New test.
+	
+	Backport from 2012-03-12 mainline r185255.
+
+        PR target/49868
+        * gcc.target/avr/torture/addr-space-1.h: New file.
+        * gcc.target/avr/torture/addr-space-g.h: New test.
+        * gcc.target/avr/torture/addr-space-0.h: New test.
+        * gcc.target/avr/torture/addr-space-1.h: New test.
+        * gcc.target/avr/torture/addr-space-x.h: New test.
+
 2012-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
