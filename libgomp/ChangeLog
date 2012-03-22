@@ -1,3 +1,8 @@
+2012-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/52547
+	* testsuite/libgomp.c/pr52547.c: New test.
+
 2012-03-16  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* testsuite/lib/libgomp.exp: load fortran-modules.exp

@@ -1954,6 +1954,7 @@ static tree
 convert_tramp_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 			      struct walk_stmt_info *wi)
 {
+  struct nesting_info *info = (struct nesting_info *) wi->info;
   gimple stmt = gsi_stmt (*gsi);
 
   switch (gimple_code (stmt))
@@ -1966,16 +1967,33 @@ convert_tramp_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	for (i = 0; i < nargs; i++)
 	  walk_tree (gimple_call_arg_ptr (stmt, i), convert_tramp_reference_op,
 		     wi, NULL);
-
-	*handled_ops_p = true;
-	return NULL_TREE;
+	break;
       }
 
+    case GIMPLE_OMP_PARALLEL:
+    case GIMPLE_OMP_TASK:
+      {
+	tree save_local_var_chain;
+        walk_gimple_op (stmt, convert_tramp_reference_op, wi);
+	save_local_var_chain = info->new_local_var_chain;
+	info->new_local_var_chain = NULL;
+        walk_body (convert_tramp_reference_stmt, convert_tramp_reference_op,
+		   info, gimple_omp_body (stmt));
+	if (info->new_local_var_chain)
+	  declare_vars (info->new_local_var_chain,
+			gimple_seq_first_stmt (gimple_omp_body (stmt)),
+			false);
+	info->new_local_var_chain = save_local_var_chain;
+      }
+      break;
+
     default:
+      *handled_ops_p = false;
+      return NULL_TREE;
       break;
     }
 
-  *handled_ops_p = false;
+  *handled_ops_p = true;
   return NULL_TREE;
 }
 
