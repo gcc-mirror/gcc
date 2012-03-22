@@ -1,3 +1,13 @@
+2012-03-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/mips/mips-tables.opt: Update.
+	* config/mips/mips.md (processor): Add xlp.
+	* config/mips/mips-cpus.def: Add xlp.
+	* config/mips/mips.c (mips_rtx_cost_data): Add costs for XLP, copy from
+	5KF for now.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Handle xlp.
+	* doc/invoke.texi: Mention XLP.
+
 2012-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52547
