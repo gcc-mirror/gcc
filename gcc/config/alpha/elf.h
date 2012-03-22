@@ -27,8 +27,16 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Do not output a .file directive at the beginning of the input file.  */
  
-#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#undef  TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE false
+
+/* This is how to output an assembler line
+   that says to advance the location counter
+   to a multiple of 2**LOG bytes.  */
+
+#define ASM_OUTPUT_ALIGN(FILE,LOG)		\
+  if ((LOG) != 0)				\
+    fprintf (FILE, "\t.align %d\n", LOG);
 
 /* This says how to output assembler code to declare an
    uninitialized internal linkage data object.  Under SVR4,
@@ -105,10 +113,7 @@ do {									\
 	assemble_name (FILE, name);				\
 	fputs ("..ng\n", FILE);					\
       }								\
-    assemble_name(FILE, alias);					\
-    fputs(" = ", FILE);						\
-    assemble_name(FILE, name);					\
-    fputc('\n', FILE);						\
+    ASM_OUTPUT_DEF (FILE, alias, name);				\
   } while (0)
 
 /* Provide a STARTFILE_SPEC appropriate for ELF.  Here we add the

@@ -1,11 +1,20 @@
+2012-03-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.h (ASM_OUTPUT_ALIGN): Move to config/alpha/elf.h
+	(ASM_OUTPUT_SKIP): Move to config/alpha/vms.h
+	(ASM_OUTPUT_LOCAL): Ditto.
+	(ASM_OUTPUT_COMMON): Remove.
+	* config/alpha/elf.h (ASM_OUTPUT_DEF_FROM_DECLS): Use ASM_OUTPUT_DEF.
+	* config/alpha/vms.h (ASM_OUTPUT_ALIGN): Do not undefine before define.
+
 2012-03-22  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/51737
 	* cgraph.c (cgraph_remove_node_and_inline_clones): Add FORBIDDEN_NODE
 	parameter.
 	* cgraph.h (cgraph_remove_node_and_inline_clones): Update prototype.
-	* ipa-inline-transform.c (save_inline_function_body): Remove copied clone
-	if needed.
+	* ipa-inline-transform.c (save_inline_function_body): Remove
+	copied clone if needed.
 	* tree-inline.c (delete_unreachable_blocks_update_callgraph): Update.
 
 2012-03-22  Richard Guenther  <rguenther@suse.de>
@@ -33,9 +42,8 @@
 	(prune_clobbered_mems): New function.
 	(compute_antic_aux): Use it to prune ANTIC_OUT.
 	(compute_partial_antic_aux): Use it to prune PA_IN.
-	(compute_avail): Only insert expressions into EXP_GEN that
-	are not invalidated when translated up to the beginning of
-	the block.
+	(compute_avail): Only insert expressions into EXP_GEN that are not
+	invalidated when translated up to the beginning of the block.
 
 2012-03-22  Richard Guenther  <rguenther@suse.de>
 
