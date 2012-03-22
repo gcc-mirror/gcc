@@ -1,3 +1,7 @@
+2012-03-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lex.c (search_line_fast): Provide Neon-optimized version for ARM.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lex.c: Remove Solaris 8 reference.
