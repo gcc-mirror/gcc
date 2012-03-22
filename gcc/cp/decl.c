@@ -4219,7 +4219,8 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
   if (declspecs->attributes)
     {
       location_t loc = input_location;
-      if (!CLASSTYPE_TEMPLATE_INSTANTIATION (declared_type))
+      if (!CLASS_TYPE_P (declared_type)
+	  || !CLASSTYPE_TEMPLATE_INSTANTIATION (declared_type))
 	/* For a non-template class, use the name location; for a template
 	   class (an explicit instantiation), use the current location.  */
 	input_location = location_of (declared_type);
