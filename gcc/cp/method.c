@@ -1590,6 +1590,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
       DECL_DELETED_FN (fn) = deleted_p;
       DECL_DECLARED_CONSTEXPR_P (fn) = constexpr_p;
     }
+  DECL_EXTERNAL (fn) = true;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   gcc_assert (!TREE_USED (fn));
