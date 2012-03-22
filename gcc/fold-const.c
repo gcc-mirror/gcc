@@ -14012,7 +14012,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  /* Need bit-shifting of the buffer to relax the following.  */
 	  && tree_low_cst (op2, 1) % BITS_PER_UNIT == 0)
 	{
-	  unsigned HOST_WIDE_INT bitpos = tree_low_cst (op1, 2);
+	  unsigned HOST_WIDE_INT bitpos = tree_low_cst (op2, 1);
 	  unsigned HOST_WIDE_INT bitsize = tree_low_cst (op1, 1);
 	  unsigned HOST_WIDE_INT clen;
 	  clen = tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (arg0)), 1);
