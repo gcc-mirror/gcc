@@ -1,3 +1,17 @@
+2012-03-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backport from mainline:
+	2012-03-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	* src/powerpc/aix_closure.S (ffi_closure_ASM): Adjust for Darwin64
+	change to return value of ffi_closure_helper_DARWIN and load type
+	from return type.
+
+	From Tom Honermann <tom.honermann@oracle.com>:
+	* src/powerpc/aix.S: Declare .ffi_prep_args.  Insert nops after
+	branch instructions.
+	* src/powerpc/aix_closure.S: Declare .ffi_closure_helper_DARWIN.
+
 2012-03-22  Release Manager
 
 	* GCC 4.7.0 released.
