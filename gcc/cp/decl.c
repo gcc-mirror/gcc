@@ -4219,7 +4219,8 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
   if (declspecs->attributes && warn_attributes)
     {
       location_t loc;
-      if (!CLASSTYPE_TEMPLATE_INSTANTIATION (declared_type))
+      if (!CLASS_TYPE_P (declared_type)
+	  || !CLASSTYPE_TEMPLATE_INSTANTIATION (declared_type))
 	/* For a non-template class, use the name location.  */
 	loc = location_of (declared_type);
       else
