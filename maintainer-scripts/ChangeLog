@@ -1,9 +1,13 @@
-2013-03-13  Jakub Jelinek  <jakub@redhat.com>
+2012-03-23  Richard Guenther  <rguenther@suse.de>
+
+	* crontab: Enable snapshots from gcc-4_7-branch.
+
+2012-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Remove 4.4 branch from the list of snapshots to make.
 	* update_version_svn (IGNORE_BRANCHES): Add gcc-4_4-branch.
 
-2013-03-05  Richard Guenther  <rguenther@suse.de>
+2012-03-05  Richard Guenther  <rguenther@suse.de>
 
 	* crontab: Remove 4.3 branch from the list of snapshots to make.
 
