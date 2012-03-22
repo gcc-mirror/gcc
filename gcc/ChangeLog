@@ -1,3 +1,56 @@
+2012-03-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.gcc (alpha*-*-linux*): Add elfos.h to tm_file.
+	(alpha*-*-freebsd*): Ditto.
+	(alpha*-*-netbsd*): Ditto.
+	(alpha*-*-openbsd*): Ditto.
+	* config/alpha/elf.h (OBJECT_FORMAT_ELF): Remove.
+	(DWARF2_DEBUGGING_INFO): Remove.
+	(PREFERRED_DEBUGGING_TYPE): Remove.
+	(ASM_FINAL_SPEC): Remove.
+	(IDENT_ASM_OP): Remove.
+	(ASM_OUTPUT_IDENT): Remove.
+	(SKIP_ASM_OP): Remove.
+	(ASM_OUTPUT_SKIP): Remove.
+	(ALIGN_ASM_OP): Remove.
+	(ASM_OUTPUT_BEFORE_CASE_LABEL): Remove.
+	(ASM_OUTPUT_CASE_LABEL): Remove.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Remove.
+	(COMMON_ASM_OP): Remove.
+	(ASM_OUTPUT_ALIGNED_COMMON): Remove.
+	(ASCII_DATA_ASM_OP): Remove.
+	(READONLY_DATA_SECTION_ASM_OP): Remove.
+	(INIT_SECTION_ASM_OP): Remove.
+	(FINI_SECTION_ASM_OP): Remove.
+	(ASM_SECTION_START_OP): Remove.
+	(ASM_OUTPUT_SECTION_START_FILE): Remove.
+	(TARGET_ASM_NAMED_SECTION): Remove.
+	(TARGET_ASM_SELECT_SECTION): Remove.
+	(MAKE_DECL_ONE_ONLY): Remove.
+	(TYPE_ASM_OP): Remove.
+	(SIZE_ASM_OP): Remove.
+	(ASM_WEAKEN_LABEL): Remove.
+	(TYPE_OPERAND_FMT): Remove.
+	(ASM_DECLARE_RESULT): Remove.
+	(ASM_DECLARE_OBJECT_NAME): Remove.
+	(ASM_FINISH_DECLARE_OBJECT): Remove.
+	(ELF_ASCII_ESCAPES): Remove.
+	(ELF_STRING_LIMIT): Remove.
+	(STRING_ASM_OP): Remove.
+	(ASM_OUTPUT_EXTERNAL): Remove.
+	(TARGET_ASM_FILE_START_FILE_DIRECTIVE): Redefine to false.
+	* config/alpha/alpha.h (PCC_BITFIELD_TYPE_MATTERS): Undefine
+	before define.
+	(ASM_DECLARE_FUNCTION_NAME): Ditto.
+	(ASM_DECLARE_FUNCTION_SIZE): Ditto.
+	(ASM_GENERATE_INTERNAL_LABEL): Ditto.
+	(ASM_OUTPUT_SKIP): Ditto.
+	(READONLY_DATA_SECTION_ASM_OP): Remove.
+	(USER_LABEL_PREFIX): Remove.
+	(ASM_OUTPUT_ASCII): Remove.
+	(ASM_OUTPUT_CASE_LABEL): Remove.
+	(NO_DOLLAR_IN_LABEL): Undefine.
+
 2012-03-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52459
@@ -22,7 +75,7 @@
 
 	PR target/52642
 	* config/sh/sh.c (sh_expand_prologue): Emit blockage at the end of
-	prologue for unwinder and profiler.	
+	prologue for unwinder and profiler.
 
 2012-03-21  Andreas Tobler  <andreast@fgznet.ch>
 
@@ -507,8 +560,7 @@
 	(vect_pattern_recog): Add new argument.  Support basic blocks.
 	* tree-vect-stmts.c (vectorizable_conversion): Pass basic block
 	info to vect_is_simple_use_1.
-	* tree-vect-slp.c (vect_get_and_check_slp_defs): Support basic
-	blocks.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Support basic blocks.
 	(vect_slp_analyze_bb_1): Call vect_pattern_recog.
 
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
@@ -569,8 +621,7 @@
 	* config/i386/i386.c (ix86_option_override_internal): Properly
 	check and set ix86_pmode.
 
-	* config/i386/i386.h (Pmode): Check ix86_pmode instead of
-	TARGET_64BIT.
+	* config/i386/i386.h (Pmode): Check ix86_pmode instead of TARGET_64BIT.
 
 	* config/i386/i386.opt (maddress-mode=): New.
 
