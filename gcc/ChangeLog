@@ -1,3 +1,13 @@
+2012-03-22  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backported from mainline
+	2012-03-02  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/48596
+	PR target/48806
+	* config/sh/sh.c (sh_register_move_cost): Increase cost between
+	GENERAL_REGS and FP_REGS for SImode.
+
 2012-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52547
