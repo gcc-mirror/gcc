@@ -1,3 +1,13 @@
+2012-03-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/lib1funcs.asm (ctzsi2): New function.
+	* arm/t-elf (LIB1ASMFUNCS): Add _ctzsi2.
+	* arm/t-linux (LIB1ASMFUNCS): Likewise.
+	* arm/t-strongarm-elf (LIB1ASMFUNCS): Likewise.
+	* arm/t-symbian (LIB1ASMFUNCS): Likewise.
+	* arm/t-vxworks (LIB1ASMFUNCS): Likewise.
+	* arm/t-wince-pe (LIB1ASMFUNCS): Likewise.
+
 2012-03-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* config.host: Add bits to support powerpc64-*-freebsd*.
