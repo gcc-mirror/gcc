@@ -1,3 +1,15 @@
+2012-03-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52496
+	* config/avr/avr.md (unspec): Remove UNSPEC_MEMORY_BARRIER.
+	(unspecv): Add UNSPECV_MEMORY_BARRIER.
+	(cli_sei): Use unspec_volatile instead of unspec for memory barrier.
+	(delay_cycles_1, delay_cycles_2): Ditto.
+	(delay_cycles_3, delay_cycles_4): Ditto.
+	(nopv, *nopv): Ditto.
+	(sleep, *sleep): Ditto.
+	(wdr, *wdr): Ditto.
+
 2012-03-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52548

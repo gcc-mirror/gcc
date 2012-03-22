@@ -70,7 +70,6 @@
    UNSPEC_COPYSIGN
    UNSPEC_IDENTITY
    UNSPEC_INSERT_BITS
-   UNSPEC_MEMORY_BARRIER
    ])
 
 (define_c_enum "unspecv"
@@ -79,6 +78,7 @@
    UNSPECV_WRITE_SP
    UNSPECV_GOTO_RECEIVER
    UNSPECV_ENABLE_IRQS
+   UNSPECV_MEMORY_BARRIER
    UNSPECV_NOP
    UNSPECV_SLEEP
    UNSPECV_WDR
@@ -5291,7 +5291,7 @@
   [(unspec_volatile [(match_operand:QI 0 "const_int_operand" "L,P")]
                     UNSPECV_ENABLE_IRQS)
    (set (match_operand:BLK 1 "" "")
-	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))]
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))]
   ""
   "@
 	cli
@@ -5403,7 +5403,7 @@
                      (const_int 1)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))]
   ""
   "ldi %2,lo8(%0)
@@ -5417,7 +5417,7 @@
                      (const_int 2)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:HI 2 "=&w"))]
   ""
   "ldi %A2,lo8(%0)
@@ -5432,7 +5432,7 @@
                      (const_int 3)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
    (clobber (match_scratch:QI 3 "=&d"))
    (clobber (match_scratch:QI 4 "=&d"))]
@@ -5452,7 +5452,7 @@
                      (const_int 4)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
    (clobber (match_scratch:QI 3 "=&d"))
    (clobber (match_scratch:QI 4 "=&d"))
@@ -5855,7 +5855,8 @@
   [(parallel [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "")] 
                                UNSPECV_NOP)
               (set (match_dup 1)
-                   (unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))])]
+                   (unspec_volatile:BLK [(match_dup 1)]
+                                        UNSPECV_MEMORY_BARRIER))])]
   ""
   {
     operands[1] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
@@ -5866,7 +5867,7 @@
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "P,K")] 
                     UNSPECV_NOP)
    (set (match_operand:BLK 1 "" "")
-	(unspec:BLK [(match_dup 1)] UNSPEC_MEMORY_BARRIER))]
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))]
   ""
   "@
 	nop
@@ -5878,7 +5879,8 @@
 (define_expand "sleep"
   [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_SLEEP)
               (set (match_dup 0)
-                   (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))])]
+                   (unspec_volatile:BLK [(match_dup 0)]
+                                        UNSPECV_MEMORY_BARRIER))])]
   ""
   {
     operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
@@ -5888,7 +5890,7 @@
 (define_insn "*sleep"
   [(unspec_volatile [(const_int 0)] UNSPECV_SLEEP)
    (set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMORY_BARRIER))]
   ""
   "sleep"
   [(set_attr "length" "1")
@@ -5898,7 +5900,8 @@
 (define_expand "wdr"
   [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_WDR)
               (set (match_dup 0)
-                   (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))])]
+                   (unspec_volatile:BLK [(match_dup 0)]
+                                        UNSPECV_MEMORY_BARRIER))])]
   ""
   {
     operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
@@ -5908,7 +5911,7 @@
 (define_insn "*wdr"
   [(unspec_volatile [(const_int 0)] UNSPECV_WDR)
    (set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMORY_BARRIER))]
   ""
   "wdr"
   [(set_attr "length" "1")
