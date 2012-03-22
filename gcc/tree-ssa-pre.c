@@ -3242,6 +3242,10 @@ inhibit_phi_insertion (basic_block bb, pre_expr expr)
     {
       switch (op->opcode)
 	{
+	case CALL_EXPR:
+	  /* Calls are not a problem.  */
+	  return false;
+
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  if (TREE_CODE (op->op0) != SSA_NAME)
