@@ -1,5 +1,17 @@
 2012-03-22  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/52548
+	* tree-ssa-pre.c (valid_in_sets): Remove handling of invalidation
+	because of clobbers.
+	(prune_clobbered_mems): New function.
+	(compute_antic_aux): Use it to prune ANTIC_OUT.
+	(compute_partial_antic_aux): Use it to prune PA_IN.
+	(compute_avail): Only insert expressions into EXP_GEN that
+	are not invalidated when translated up to the beginning of
+	the block.
+
+2012-03-22  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/52638
 	* tree-vect-stmts.c (vect_init_vector_1): New function, split
 	out from ...

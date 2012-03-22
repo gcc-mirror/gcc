@@ -2123,16 +2123,7 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, pre_expr expr,
 	    if (!vro_valid_in_sets (set1, set2, vro))
 	      return false;
 	  }
-	if (ref->vuse)
-	  {
-	    gimple def_stmt = SSA_NAME_DEF_STMT (ref->vuse);
-	    if (!gimple_nop_p (def_stmt)
-		&& gimple_bb (def_stmt) != block
-		&& !dominated_by_p (CDI_DOMINATORS,
-				    block, gimple_bb (def_stmt)))
-	      return false;
-	  }
-	return !value_dies_in_block_x (expr, block);
+	return true;
       }
     default:
       gcc_unreachable ();
@@ -2175,6 +2166,38 @@ clean (bitmap_set_t set, basic_block block)
     {
       if (!valid_in_sets (set, NULL, expr, block))
 	bitmap_remove_from_set (set, expr);
+    }
+  VEC_free (pre_expr, heap, exprs);
+}
+
+/* Clean the set of expressions that are no longer valid in SET because
+   they are clobbered in BLOCK.  */
+
+static void
+prune_clobbered_mems (bitmap_set_t set, basic_block block)
+{
+  VEC (pre_expr, heap) *exprs = sorted_array_from_bitmap_set (set);
+  pre_expr expr;
+  int i;
+
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
+    {
+      vn_reference_t ref;
+      if (expr->kind != REFERENCE)
+	continue;
+
+      ref = PRE_EXPR_REFERENCE (expr);
+      if (ref->vuse)
+	{
+	  gimple def_stmt = SSA_NAME_DEF_STMT (ref->vuse);
+	  if (!gimple_nop_p (def_stmt)
+	      && ((gimple_bb (def_stmt) != block
+		   && !dominated_by_p (CDI_DOMINATORS,
+				       block, gimple_bb (def_stmt)))
+		  || (gimple_bb (def_stmt) == block
+		      && value_dies_in_block_x (expr, block))))
+	    bitmap_remove_from_set (set, expr);
+	}
     }
   VEC_free (pre_expr, heap, exprs);
 }
@@ -2319,6 +2342,10 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	}
       VEC_free (basic_block, heap, worklist);
     }
+
+  /* Prune expressions that are clobbered in block and thus become
+     invalid if translated from ANTIC_OUT to ANTIC_IN.  */
+  prune_clobbered_mems (ANTIC_OUT, block);
 
   /* Generate ANTIC_OUT - TMP_GEN.  */
   S = bitmap_set_subtract (ANTIC_OUT, TMP_GEN (block));
@@ -2473,6 +2500,10 @@ compute_partial_antic_aux (basic_block block,
 	}
       VEC_free (basic_block, heap, worklist);
     }
+
+  /* Prune expressions that are clobbered in block and thus become
+     invalid if translated from PA_OUT to PA_IN.  */
+  prune_clobbered_mems (PA_OUT, block);
 
   /* PA_IN starts with PA_OUT - TMP_GEN.
      Then we subtract things from ANTIC_IN.  */
@@ -4027,15 +4058,26 @@ compute_avail (void)
 		    if (vro->op2 && TREE_CODE (vro->op2) == SSA_NAME)
 		      add_to_exp_gen (block, vro->op2);
 		  }
-		result = (pre_expr) pool_alloc (pre_expr_pool);
-		result->kind = REFERENCE;
-		result->id = 0;
-		PRE_EXPR_REFERENCE (result) = ref;
 
-		get_or_alloc_expression_id (result);
-		add_to_value (get_expr_value_id (result), result);
-		if (!in_fre)
-		  bitmap_value_insert_into_set (EXP_GEN (block), result);
+		/* If the value of the call is not invalidated in
+		   this block until it is computed, add the expression
+		   to EXP_GEN.  */
+		if (!gimple_vuse (stmt)
+		    || gimple_code
+		         (SSA_NAME_DEF_STMT (gimple_vuse (stmt))) == GIMPLE_PHI
+		    || gimple_bb (SSA_NAME_DEF_STMT
+				    (gimple_vuse (stmt))) != block)
+		  {
+		    result = (pre_expr) pool_alloc (pre_expr_pool);
+		    result->kind = REFERENCE;
+		    result->id = 0;
+		    PRE_EXPR_REFERENCE (result) = ref;
+
+		    get_or_alloc_expression_id (result);
+		    add_to_value (get_expr_value_id (result), result);
+		    if (!in_fre)
+		      bitmap_value_insert_into_set (EXP_GEN (block), result);
+		  }
 		continue;
 	      }
 
@@ -4095,6 +4137,32 @@ compute_avail (void)
 			  if (vro->op2 && TREE_CODE (vro->op2) == SSA_NAME)
 			    add_to_exp_gen (block, vro->op2);
 			}
+
+		      /* If the value of the reference is not invalidated in
+			 this block until it is computed, add the expression
+			 to EXP_GEN.  */
+		      if (gimple_vuse (stmt))
+			{
+			  gimple def_stmt;
+			  bool ok = true;
+			  def_stmt = SSA_NAME_DEF_STMT (gimple_vuse (stmt));
+			  while (!gimple_nop_p (def_stmt)
+				 && gimple_code (def_stmt) != GIMPLE_PHI
+				 && gimple_bb (def_stmt) == block)
+			    {
+			      if (stmt_may_clobber_ref_p
+				    (def_stmt, gimple_assign_rhs1 (stmt)))
+				{
+				  ok = false;
+				  break;
+				}
+			      def_stmt
+				= SSA_NAME_DEF_STMT (gimple_vuse (def_stmt));
+			    }
+			  if (!ok)
+			    continue;
+			}
+
 		      result = (pre_expr) pool_alloc (pre_expr_pool);
 		      result->kind = REFERENCE;
 		      result->id = 0;
