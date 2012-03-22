@@ -1,3 +1,8 @@
+2012-03-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* lib/fortran-modules.exp (list-module-names-1): Remove
+	warning.
+
 2012-03-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/50751
