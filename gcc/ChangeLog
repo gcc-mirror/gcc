@@ -1,3 +1,11 @@
+2012-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from trunk
+	2012-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/smmintrin.h: Avoid /* within a comment.
+	* config/i386/nmmintrin.h: Likewise.
+
 2012-03-22  Richard Guenther  <rguenther@suse.de>
 
 	* BASE-VER: Set to 4.7.1.
