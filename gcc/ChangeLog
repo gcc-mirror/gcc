@@ -1,3 +1,8 @@
+2012-03-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52666
+	* fold-const.c (fold_ternary_loc): Fix typo.
+
 2012-03-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52496
