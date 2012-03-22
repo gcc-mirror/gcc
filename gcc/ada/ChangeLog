@@ -1,3 +1,7 @@
+2012-03-22  Release Manager
+
+	* GCC 4.7.0 released.
+
 2012-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (components_to_record): Add ARTIFICIAL parameter
