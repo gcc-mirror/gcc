@@ -1,3 +1,10 @@
+2012-03-23  Paweł Sikora  <pawel.sikora@agmk.net>
+
+	PR libstdc++/52540
+	* include/Makefile.am (c++config.h): Fix sed rule to not break
+	the _GLIBCXX_EXTERN_TEMPLATE redefinition.
+	* include/Makefile.in: Regenerate.
+
 2012-03-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/52433
