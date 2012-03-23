@@ -1,5 +1,5 @@
 /* SwingDemo.java -- An example of using the javax.swing UI.
-   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath examples.
 
@@ -225,7 +225,7 @@ public class Demo
     Method m = null;
     try
       {
-        m = MetalLookAndFeel.class.getMethod("getCurrentTheme", null);
+        m = MetalLookAndFeel.class.getMethod("getCurrentTheme");
       }
     catch (NoSuchMethodException nsme)
       {

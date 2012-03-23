@@ -1,5 +1,5 @@
 /* Whirlpool.java --
-   Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -67,7 +67,9 @@ import java.util.logging.Logger;
 public final class Whirlpool
     extends BaseHash
 {
-  private static final Logger log = Logger.getLogger(Whirlpool.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(Whirlpool.class.getName()) : null;
+
   private static final int BLOCK_SIZE = 64; // inner block size in bytes
 
   /** The digest of the 0-bit long message. */

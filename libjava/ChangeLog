@@ -1,3 +1,37 @@
+2012-03-16  Andrew John Hughes  <ahughes@redhat.com>
+
+	* Makefile.am: Add natVMConsole.cc.
+	* Makefile.in: Regenerated.
+	* gcj/Makefile.in: Likewise.
+	* gcj/javaprims.h: Classes updated.
+	* gnu/javax/crypto/key/dh/GnuDHKeyPairGenerator.h,
+	* gnu/javax/net/ssl/provider/CipherSuite.h,
+	* gnu/javax/net/ssl/provider/OutputSecurityParameters.h,
+	* include/Makefile.in:
+	Regenerated.
+	* java/io/Console.h,
+	* java/io/IOError.h,
+	* java/io/ObjectOutputStream$2.h:
+	Initial generation.
+	* java/io/ObjectOutputStream.h: Regenerated.
+	* java/io/VMConsole.h: Initial generation.
+	* java/io/VMConsole.java: Copied from classpath/vm/reference.
+	* java/io/natVMConsole.cc: Implemented readPassword.
+	* java/nio/channels/spi/SelectorProvider$1.h,
+	* java/security/KeyStore$1.h:
+	Initial generation.
+	* java/security/ProtectionDomain.h,
+	* java/text/DateFormatSymbols.h,
+	* java/util/HashMap.h,
+	* java/util/regex/Matcher.h,
+	* java/util/regex/Pattern.h:
+	Regenerated.
+	* javax/xml/stream/util/ReaderDelegate.h:
+	Removed.
+	* sources.am,
+	* testsuite/Makefile.in:
+	Regenerated.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (THREADLIBS): Remove *-*-solaris2.8 handling.

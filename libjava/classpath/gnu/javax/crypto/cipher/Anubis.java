@@ -1,5 +1,5 @@
 /* Anubis.java --
-   Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -67,7 +67,8 @@ import java.util.logging.Logger;
 public final class Anubis
     extends BaseCipher
 {
-  private static final Logger log = Logger.getLogger(Anubis.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(Anubis.class.getName()) : null;
   private static final int DEFAULT_BLOCK_SIZE = 16; // in bytes
   private static final int DEFAULT_KEY_SIZE = 16; // in bytes
   private static final String Sd = // p. 25 [ANUBIS]

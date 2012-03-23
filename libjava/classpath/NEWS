@@ -1,4 +1,52 @@
-New in release 0.99 (XXX XX, XXXX)
+New in release 0.99 (Mar 08, 2012)
+
+* Addition of java.util.regex.Pattern.quote.
+* Addition of java.io.IOError.
+* Addition of java.io.Console.
+* Bug fixes:
+  - PR39408: gjavah doesn't generate constants in header files where they occur in a superclass
+  - PR40590: namespace namespace broken in CNI
+  - PR40630: java.util.Scanner fails when used for charset generation by the OpenJDK build
+  - PR40653: Issue with XML stream writer and namespaces
+  - PR40663: Support Stax API 1.0.1
+  - PR39177: trunk revision 144128 - jar: internal error: java.lang.NullPointerException
+  - PR41696: java.util.zip.Inflater:finished () returns false when it should return true
+  - PR43536: CopyOnWriteArrayList bug in delete() when empty
+  - PR36560: java.util.zip: Error parsing zip file with larger files in it
+  - Restrict access to VM classes.
+  - Cleanup use of message resources.
+  - Throw exception when encrypted zip file entries are encountered.
+  - Fix infinite recursion in javax.print.attribute.standard.JobStateReasons.add.
+  - Native code cleanups in GtkToolkit.c and jcl.c.
+  - Only log when debugging is on.
+  - PR44411: System.nanoTime() is not independent of wall-clock time
+  - PR46775: Calling Policy.setPolicy with a new Policy object has no effect on the DefaultSecurityManager
+  - Use implementation of VMClass.getSimpleName from gcj.
+  - Simplify security determination in ProtectionDomain in situations where all permissions are available.
+  - PR42390: Missing Security Manager checks in classpath apis
+  - Throw NullPointerExceptions appropriately for compatibility with OpenJDK.
+  - Use Integer.parseInt in preference to Integer.decode in java.util.Formatter.
+  - Use same default capacity in java.util.HashMap as documented in OpenJDK.
+  - Check for hashcode equality before calling equals in java.util.HashMap.put
+  - Make sure match is within input data limits in java.util.regex.Matcher.find.
+  - Fix misuse of ArrayList.set in javax.swing.text.html.StyleSheet.resolveStyle.
+  - PR48131: java.util.zip.ZipException: incomplete dynamic bit lengths tree
+  - Check for negative capacity in VMDirectByteBuffer's native code.
+  - PR42823: tcp/ip sockets read/write operations causes memory leak 
+  - Generate META-INF/INDEX.LST for glibj.zip
+  - Fix issues when building with -Werror and gcc 4.6.
+  - PR40188: javah creates constants using name of superclass
+  - PR45527: gjavah encodes $ as used in inner classes as 00024 where Oracle's javah does not
+  - PR45526: gjavah does not implicitly produce header files for inner classes
+  - Fix NullPointerException for null keys in java.util.HashMap.put.
+  - Fix BEAST security issue in gnu.javax.net.ssl.provider.
+  - RH712013: pdftk crashes with java.lang.ArrayIndexOutOfBoundsException
+* Updated to libtool 2.x.
+* Lots of warning fixes / addition of generics.
+* Fix license headers in tools.
+* Normalise whitespace.
+* Maintenance work on javac detection.
+* Mark plugin as unmaintained and disable by default.
 
 New in release 0.98 (Feb 05, 2009)
 

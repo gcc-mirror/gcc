@@ -440,11 +440,14 @@ public final class Class<T>
    * @return the field
    * @throws NoSuchFieldException if the field does not exist
    * @throws SecurityException if the security check fails
+   * @throws NullPointerException if <code>fieldName</code> is null
    * @see #getDeclaredFields()
    * @since 1.1
    */
   public Field getDeclaredField(String name) throws NoSuchFieldException
   {
+    if (name == null)
+      throw new NullPointerException();
     memberAccessCheck(Member.DECLARED);
     Field[] fields = getDeclaredFields(false);
     for (int i = 0; i < fields.length; i++)
@@ -496,12 +499,15 @@ public final class Class<T>
    * @return the method
    * @throws NoSuchMethodException if the method does not exist
    * @throws SecurityException if the security check fails
+   * @throws NullPointerException if <code>methodName</code> is null
    * @see #getDeclaredMethods()
    * @since 1.1
    */
   public Method getDeclaredMethod(String methodName, Class<?>... types)
     throws NoSuchMethodException
   {
+    if (methodName == null)
+      throw new NullPointerException();
     memberAccessCheck(Member.DECLARED);
     Method match = matchMethod(getDeclaredMethods(false), methodName, types);
     if (match == null)
@@ -560,12 +566,15 @@ public final class Class<T>
    * @return the field
    * @throws NoSuchFieldException if the field does not exist
    * @throws SecurityException if the security check fails
+   * @throws NullPointerException if <code>fieldName</code> is null
    * @see #getFields()
    * @since 1.1
    */
   public Field getField(String fieldName)
     throws NoSuchFieldException
   {
+    if (fieldName == null)
+      throw new NullPointerException();
     memberAccessCheck(Member.PUBLIC);
     Field field = internalGetField(fieldName);
     if (field == null)
@@ -700,12 +709,15 @@ public final class Class<T>
    * @return the method
    * @throws NoSuchMethodException if the method does not exist
    * @throws SecurityException if the security check fails
+   * @throws NullPointerException if <code>methodName</code> is null
    * @see #getMethods()
    * @since 1.1
    */
   public Method getMethod(String methodName, Class<?>... types)
     throws NoSuchMethodException
   {
+    if (methodName == null)
+      throw new NullPointerException();
     memberAccessCheck(Member.PUBLIC);
     Method method = internalGetMethod(methodName, types);
     if (method == null)

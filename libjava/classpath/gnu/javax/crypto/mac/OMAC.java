@@ -1,5 +1,5 @@
 /* OMAC.java --
-   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -65,7 +65,8 @@ import java.util.logging.Logger;
 public class OMAC
     implements IMac
 {
-  private static final Logger log = Logger.getLogger(OMAC.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(OMAC.class.getName()) : null;
   private static final byte C1 = (byte) 0x87;
   private static final byte C2 = 0x1b;
   // Test key for OMAC-AES-128

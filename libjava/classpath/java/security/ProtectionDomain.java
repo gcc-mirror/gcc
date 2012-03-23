@@ -41,6 +41,8 @@ import gnu.classpath.SystemProperties;
 
 import gnu.java.lang.CPStringBuilder;
 
+import java.util.Enumeration;
+
 /**
  * This class represents a group of classes, along with their granted
  * permissions. The classes are identified by a {@link CodeSource}. Thus, any
@@ -70,6 +72,9 @@ public class ProtectionDomain
 
   /** Post 1.4 the policy may be refreshed! use false for pre 1.4. */
   private boolean staticBinding;
+
+  /** True if this protection domain has all permissions */
+  private boolean hasAllPermissions;
 
   /**
    * Initializes a new instance of <code>ProtectionDomain</code> representing
@@ -128,6 +133,13 @@ public class ProtectionDomain
       {
         perms = permissions;
         perms.setReadOnly();
+        /* Check if this protection domain has all permissions */
+        Enumeration<Permission> e = permissions.elements();
+        while (e.hasMoreElements())
+          {
+            if (e.nextElement() instanceof AllPermission)
+              hasAllPermissions = true;
+          }
       }
 
     this.classloader = classloader;
@@ -190,6 +202,8 @@ public class ProtectionDomain
    */
   public boolean implies(Permission permission)
   {
+    if (hasAllPermissions)
+      return true;
     if (staticBinding)
       return (perms == null ? false : perms.implies(permission));
     // Else dynamically bound.  Do we have it?
@@ -241,7 +255,15 @@ public class ProtectionDomain
     sb.append(linesep);
     if (!staticBinding) // include all but dont force loading Policy.currentPolicy
       if (Policy.isLoaded())
-        sb.append(Policy.getCurrentPolicy().getPermissions(this));
+        try
+          {
+            sb.append(Policy.getPolicy().getPermissions(this));
+          }
+        catch (SecurityException e)
+          {
+            // We are not allowed access to the policy.
+            sb.append(perms);
+          }
       else // fallback on this one's permissions
         sb.append(perms);
     else

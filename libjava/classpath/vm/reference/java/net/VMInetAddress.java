@@ -1,5 +1,5 @@
 /* VMInetAddress.java -- Class to model an Internet address
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,15 +40,16 @@ package java.net;
 
 import gnu.classpath.Configuration;
 
-import java.io.Serializable;
-
-class VMInetAddress implements Serializable
+final class VMInetAddress
 {
+
   static
   {
     if (Configuration.INIT_LOAD_LIBRARY)
       System.loadLibrary("javanet");
   }
+
+  private VMInetAddress() {} // Prohibits instantiation.
 
   /**
    * This method looks up the hostname of the local machine
@@ -58,12 +59,12 @@ class VMInetAddress implements Serializable
    *
    * @return The local hostname.
    */
-  public static native String getLocalHostname();
+  static native String getLocalHostname();
 
   /**
    * Returns the value of the special address INADDR_ANY
    */
-  public static native byte[] lookupInaddrAny() throws UnknownHostException;
+  static native byte[] lookupInaddrAny() throws UnknownHostException;
 
   /**
    * This method returns the hostname for a given IP address.  It will
@@ -75,14 +76,14 @@ class VMInetAddress implements Serializable
    *
    * @exception UnknownHostException If the reverse lookup fails
    */
-  public static native String getHostByAddr(byte[] ip)
+  static native String getHostByAddr(byte[] ip)
     throws UnknownHostException;
 
   /**
    * Returns a list of all IP addresses for a given hostname.  Will throw
    * an UnknownHostException if the hostname cannot be resolved.
    */
-  public static native byte[][] getHostByName(String hostname)
+  static native byte[][] getHostByName(String hostname)
     throws UnknownHostException;
 
   /**
@@ -93,5 +94,5 @@ class VMInetAddress implements Serializable
    *
    * @return The IP address as a byte array
    */
-  public static native byte[] aton(String address);
+  static native byte[] aton(String address);
 }

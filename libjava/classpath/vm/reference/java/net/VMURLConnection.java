@@ -1,5 +1,5 @@
 /* VMURLConnection - VM code for URLConnection
-   Copyright (C) 2006  Free Software Foundation, Inc.
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,8 @@ import java.io.InputStream;
 
 final class VMURLConnection
 {
-  public static final int LENGTH = 1024;
+
+  static final int LENGTH = 1024;
 
   static
   {
@@ -53,6 +54,8 @@ final class VMURLConnection
       System.loadLibrary("javanet");
     init();
   }
+
+  private VMURLConnection() {} // Prohibits instantiation.
 
   private static native void init();
 

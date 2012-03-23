@@ -700,11 +700,13 @@ public class File implements Serializable, Comparable<File>
    *
    * @return <code>true</code> if the file is hidden, <code>false</code>
    * otherwise.
-   *
+   * @throws SecurityException if a security manager exists and denies
+   *                           read access to this file.
    * @since 1.2
    */
   public boolean isHidden()
   {
+    checkRead();
     return VMFile.isHidden(path);
   }
 

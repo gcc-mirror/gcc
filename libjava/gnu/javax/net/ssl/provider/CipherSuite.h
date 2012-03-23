@@ -52,8 +52,8 @@ extern "Java"
 class gnu::javax::net::ssl::provider::CipherSuite : public ::java::lang::Object
 {
 
-  CipherSuite(::gnu::javax::net::ssl::provider::CipherAlgorithm *, ::gnu::javax::net::ssl::provider::KeyExchangeAlgorithm *, ::gnu::javax::net::ssl::provider::SignatureAlgorithm *, ::gnu::javax::net::ssl::provider::MacAlgorithm *, jint, jint, jint, ::java::lang::String *);
-  CipherSuite(::gnu::javax::net::ssl::provider::CipherAlgorithm *, ::gnu::javax::net::ssl::provider::KeyExchangeAlgorithm *, jboolean, ::gnu::javax::net::ssl::provider::SignatureAlgorithm *, ::gnu::javax::net::ssl::provider::MacAlgorithm *, jint, jint, jint, ::java::lang::String *);
+  CipherSuite(::gnu::javax::net::ssl::provider::CipherAlgorithm *, ::gnu::javax::net::ssl::provider::KeyExchangeAlgorithm *, ::gnu::javax::net::ssl::provider::SignatureAlgorithm *, ::gnu::javax::net::ssl::provider::MacAlgorithm *, jint, jint, jint, ::java::lang::String *, jboolean);
+  CipherSuite(::gnu::javax::net::ssl::provider::CipherAlgorithm *, ::gnu::javax::net::ssl::provider::KeyExchangeAlgorithm *, jboolean, ::gnu::javax::net::ssl::provider::SignatureAlgorithm *, ::gnu::javax::net::ssl::provider::MacAlgorithm *, jint, jint, jint, ::java::lang::String *, jboolean);
   CipherSuite(JArray< jbyte > *);
 public:
   static ::gnu::javax::net::ssl::provider::CipherSuite * forName(::java::lang::String *);
@@ -79,6 +79,7 @@ public:
   jint hashCode();
   ::java::lang::String * toString(::java::lang::String *);
   ::java::lang::String * toString();
+  jboolean isCBCMode();
 private:
   static ::java::util::List * tlsSuiteNames;
   static ::java::util::HashMap * namesToSuites;
@@ -134,6 +135,7 @@ private:
   jboolean ephemeralDH;
   jboolean exportable;
   jboolean isStream;
+  jboolean isCBCMode__;
   jint keyLength__;
   JArray< jbyte > * id__;
   ::java::lang::String * name;

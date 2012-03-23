@@ -1,5 +1,5 @@
 /* SignerInfo.java -- a SignerInfo object, from PKCS #7
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,7 +59,8 @@ import javax.security.auth.x500.X500Principal;
 
 public class SignerInfo
 {
-  private static final Logger log = Logger.getLogger(SignerInfo.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(SignerInfo.class.getName()) : null;
 
   private final BigInteger version;
   private final BigInteger serialNumber;
@@ -111,7 +112,8 @@ public class SignerInfo
       throw new BEREncodingException("malformed Version");
 
     version = (BigInteger) val.getValue();
-    log.fine("  Version: " + version);
+    if (Configuration.DEBUG)
+      log.fine("  Version: " + version);
 
     val = ber.read();
     if (!val.isConstructed())

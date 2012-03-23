@@ -15,6 +15,9 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtChoicePeer_add (JNIEnv *env, 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtChoicePeer_remove (JNIEnv *env, jobject, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtChoicePeer_select (JNIEnv *env, jobject, jint);
 
+#undef gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER
+#define gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER 3L
+
 #ifdef __cplusplus
 }
 #endif

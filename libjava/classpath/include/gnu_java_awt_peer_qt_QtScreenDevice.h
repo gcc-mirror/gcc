@@ -17,6 +17,13 @@ JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_qt_QtScreenDevice_getDpiX (JNIEnv 
 JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_qt_QtScreenDevice_getDpiY (JNIEnv *env, jobject);
 JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_qt_QtScreenDevice_depth (JNIEnv *env, jobject);
 
+#undef java_awt_GraphicsDevice_TYPE_RASTER_SCREEN
+#define java_awt_GraphicsDevice_TYPE_RASTER_SCREEN 0L
+#undef java_awt_GraphicsDevice_TYPE_PRINTER
+#define java_awt_GraphicsDevice_TYPE_PRINTER 1L
+#undef java_awt_GraphicsDevice_TYPE_IMAGE_BUFFER
+#define java_awt_GraphicsDevice_TYPE_IMAGE_BUFFER 2L
+
 #ifdef __cplusplus
 }
 #endif

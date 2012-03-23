@@ -1,5 +1,6 @@
 /* java.lang.reflect.VMArray - VM class for array manipulation by reflection.
-   Copyright (C) 1998, 1999, 2001, 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003, 2005, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +41,7 @@ package java.lang.reflect;
 
 import gnu.classpath.Configuration;
 
-class VMArray
+final class VMArray
 {
 
   static
@@ -50,6 +51,8 @@ class VMArray
         System.loadLibrary("javalangreflect");
       }
   }
+
+  private VMArray() {} // Prohibits instantiation.
 
   /**
    * Dynamically create an array of objects.

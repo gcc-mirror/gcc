@@ -95,6 +95,7 @@ private:
   void callWriteMethod(::java::lang::Object *, ::java::io::ObjectStreamClass *);
   void dumpElementln(::java::lang::String *, ::java::lang::Object *);
   void dumpElementln(::java::lang::String *);
+  static jboolean overridesMethods(::java::lang::Class *);
   static const jint BUFFER_SIZE = 1024;
   static jint defaultProtocolVersion;
   ::java::io::DataOutputStream * __attribute__((aligned(__alignof__( ::java::io::OutputStream)))) dataOutput;

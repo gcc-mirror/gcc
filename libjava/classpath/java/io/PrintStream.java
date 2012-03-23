@@ -181,10 +181,15 @@ public class PrintStream extends FilterOutputStream implements Appendable
    * @param out The <code>OutputStream</code> to write to.
    * @param auto_flush <code>true</code> to flush the stream after every
    * line, <code>false</code> otherwise
+   * @exception NullPointerException If out is null.
    */
   public PrintStream (OutputStream out, boolean auto_flush)
   {
     super (out);
+
+    if (out == null)
+      throw new NullPointerException("out is null");
+
     String encoding;
     try {
         encoding = SystemProperties.getProperty("file.encoding");
@@ -213,11 +218,18 @@ public class PrintStream extends FilterOutputStream implements Appendable
    * line, <code>false</code> otherwise
    * @param encoding The name of the character encoding to use for this
    * object.
+   * @exception NullPointerException If out or encoding is null.
    */
   public PrintStream (OutputStream out, boolean auto_flush, String encoding)
     throws UnsupportedEncodingException
   {
     super (out);
+
+    if (out == null)
+      throw new NullPointerException("out is null");
+
+    if (encoding == null)
+      throw new NullPointerException("encoding is null");
 
     new String(new byte[]{0}, encoding);    // check if encoding is supported
     this.encoding = encoding;

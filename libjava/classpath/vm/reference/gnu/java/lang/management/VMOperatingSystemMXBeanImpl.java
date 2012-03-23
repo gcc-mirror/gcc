@@ -1,5 +1,5 @@
 /* VMOperatingSystemMXBeanImpl.java - VM implementation of an OS bean
-   Copyright (C) 2006 Free Software Foundation
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,6 +55,8 @@ final class VMOperatingSystemMXBeanImpl
         System.loadLibrary("javalangmanagement");
       }
   }
+
+  private VMOperatingSystemMXBeanImpl() {} // Prohibits instantiation.
 
   /**
    * Returns the system load average from the last

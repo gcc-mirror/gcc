@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.text.spi.DateFormatSymbolsProvider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -125,9 +126,58 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
   transient String[] dateFormats;
   transient String[] timeFormats;
 
-  private static String[] getStringArray(ResourceBundle res, String name)
+  /**
+   * Compiles a string array for a property using data from each of the locales in the
+   * hierarchy as necessary.
+   *
+   * @param bundles the locale hierarchy, starting with the most specific.
+   * @param name the name of the property.
+   * @param size the size the array should be when complete.
+   * @return a completed string array.
+   */
+  private static String[] getStringArray(List<ResourceBundle> bundles, String name, int size)
   {
-    return res.getString(name).split("\u00ae");
+    return getStringArray(bundles, name, size, null);
+  }
+
+  /**
+   * Compiles a string array for a property using data from each of the locales in the
+   * hierarchy as necessary.  If non-null, the fallback array is also used for "sideways"
+   * inheritance (e.g. if there is no short name for a month, the long name is used rather
+   * than the empty string).
+   *
+   * @param bundles the locale hierarchy, starting with the most specific.
+   * @param name the name of the property.
+   * @param size the size the array should be when complete.
+   * @param fallback an array of long name fallback strings for data with both long and short names.
+   * @return a completed string array.
+   */
+  private static String[] getStringArray(List<ResourceBundle> bundles, String name, int size,
+                                         String[] fallback)
+  {
+    String[] data = new String[size];
+    Arrays.fill(data, "");
+    // Populate array with data from each locale back to the root, starting with the most specific
+    for (int a = 0; a < bundles.size(); ++a)
+      {
+        String localeData = bundles.get(a).getString(name);
+        String[] array = localeData.split("\u00ae", size);
+        for (int b = 0; b < data.length; ++b)
+          {
+            if (array.length > b && array[b] != null && data[b].isEmpty() && !array[b].isEmpty())
+              data[b] = array[b];
+          }
+      }
+    // Replace any remaining empty strings with data from the fallback array, if non-null
+    if (fallback != null && fallback.length == size)
+      {
+        for (int a = 0; a < data.length; ++a)
+          {
+            if (data[a].isEmpty() && fallback[a] != null && !fallback[a].isEmpty())
+              data[a] = fallback[a];
+          }
+      }
+    return data;
   }
 
   private String[][] getZoneStrings(ResourceBundle res, Locale locale)
@@ -264,17 +314,26 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
   public DateFormatSymbols (Locale locale)
     throws MissingResourceException
   {
+    ClassLoader ldr = ClassLoader.getSystemClassLoader();
+    List<ResourceBundle> bundles = new ArrayList<ResourceBundle>();
     ResourceBundle res
-      = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation", locale,
-                                 ClassLoader.getSystemClassLoader());
-
-    ampms = getStringArray(res, "ampms");
-    eras = getStringArray(res, "eras");
+      = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation", locale, ldr);
+    bundles.add(res);
+    Locale resLocale = res.getLocale();
+    while (resLocale != Locale.ROOT)
+      {
+        res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
+                                       LocaleHelper.getFallbackLocale(resLocale), ldr);
+        bundles.add(res);
+        resLocale = res.getLocale();
+      }
+    ampms = getStringArray(bundles, "ampms", 2);
+    eras = getStringArray(bundles, "eras", 2);
     localPatternChars = res.getString("localPatternChars");
-    months = getStringArray(res, "months");
-    shortMonths = getStringArray(res, "shortMonths");
-    shortWeekdays = getStringArray(res, "shortWeekdays");
-    weekdays = getStringArray(res, "weekdays");
+    months = getStringArray(bundles, "months", 13);
+    shortMonths = getStringArray(bundles, "shortMonths", 13, months);
+    weekdays = getStringArray(bundles, "weekdays", 8);
+    shortWeekdays = getStringArray(bundles, "shortWeekdays", 8, weekdays);
     dateFormats = formatsForKey(res, "DateFormat");
     timeFormats = formatsForKey(res, "TimeFormat");
     runtimeZoneStrings = getZoneStrings(res, locale);

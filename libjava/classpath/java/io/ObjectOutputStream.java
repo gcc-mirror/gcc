@@ -48,6 +48,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * An <code>ObjectOutputStream</code> can be used to write objects
@@ -136,6 +138,10 @@ public class ObjectOutputStream extends OutputStream
    */
   public ObjectOutputStream (OutputStream out) throws IOException
   {
+    SecurityManager secMan = System.getSecurityManager();
+    if (secMan != null && overridesMethods(getClass()))
+      secMan.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);
+
     realOutput = new DataOutputStream(out);
     blockData = new byte[ BUFFER_SIZE ];
     blockDataCount = 0;
@@ -1487,4 +1493,44 @@ public class ObjectOutputStream extends OutputStream
   private boolean dump = false;
 
   private static final boolean DEBUG = false;
+
+  /**
+   * Returns true if the given class overrides either of the
+   * methods <code>putFields</code> or <code>writeUnshared</code>.
+   *
+   * @param clazz the class to check.
+   * @return true if the class overrides one of the methods.
+   */
+  private static boolean overridesMethods(final Class<?> clazz)
+  {
+    if (clazz == ObjectOutputStream.class)
+      return false;
+
+    return AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+        public Boolean run()
+        {
+          Method[] methods = clazz.getDeclaredMethods();
+          for (int a = 0; a < methods.length; ++a)
+            {
+              String name = methods[a].getName();
+              if (name.equals("writeUnshared"))
+                {
+                  Class<?>[] paramTypes = methods[a].getParameterTypes();
+                  if (paramTypes.length == 1 &&
+                      paramTypes[0] == Object.class &&
+                      methods[a].getReturnType() == Void.class)
+                    return true;
+                }
+              else if (name.equals("putFields"))
+                {
+                  if (methods[a].getParameterTypes().length == 0 &&
+                      methods[a].getReturnType() == PutField.class)
+                    return true;
+                }
+            }
+          return false;
+        }
+      });
+  }
+
 }

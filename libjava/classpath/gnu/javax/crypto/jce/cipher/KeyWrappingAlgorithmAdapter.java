@@ -1,5 +1,5 @@
 /* KeyWrappingAlgorithmAdapter.java -- Base Adapter for Key Wrapping algorithms
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -76,7 +76,8 @@ import javax.crypto.spec.SecretKeySpec;
 abstract class KeyWrappingAlgorithmAdapter
     extends CipherSpi
 {
-  private static final Logger log = Logger.getLogger(KeyWrappingAlgorithmAdapter.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+        Logger.getLogger(KeyWrappingAlgorithmAdapter.class.getName()) : null;
   /** JCE canonical name of a null-padder. */
   private static final String NO_PADDING = "nopadding";
   /** Concrete Key Wrapping Algorithm SPI. */

@@ -104,6 +104,8 @@ public class JniHelper
           result.append("_3");
         else if (c == '/')
           result.append("_");
+        else if (c == '$')
+          result.append("_");
         else if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z')
                  || (c >= 'A' && c <= 'Z'))
           result.append(c);

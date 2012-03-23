@@ -24,6 +24,9 @@
 /* Define to 1 if you have BSD u_int32_t */
 #undef HAVE_BSD_INT32_DEFINED
 
+/* Define to 1 if you have the `clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
+
 /* Define to 1 if you have the `close' function. */
 #undef HAVE_CLOSE
 

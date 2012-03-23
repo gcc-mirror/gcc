@@ -16,6 +16,9 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtFramePeer_setMaximizedBounds 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtFramePeer_setMenu (JNIEnv *env, jobject, jobject);
 JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_qt_QtFramePeer_menuBarHeight (JNIEnv *env, jobject);
 
+#undef gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER
+#define gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER 3L
+
 #ifdef __cplusplus
 }
 #endif

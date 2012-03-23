@@ -1,5 +1,5 @@
 /* VMGarbageCollectorMXBeanImpl.java - VM interface for a GC bean
-   Copyright (C) 2006 Free Software Foundation
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,6 +51,8 @@ package gnu.java.lang.management;
  */
 final class VMGarbageCollectorMXBeanImpl
 {
+
+  private VMGarbageCollectorMXBeanImpl() {} // Prohibits instantiation.
 
   /**
    * Returns the number of collections the garbage collector

@@ -62,6 +62,7 @@ public:
   virtual JArray< jint > * encrypt(JArray< ::java::nio::ByteBuffer * > *, jint, jint, ::gnu::javax::net::ssl::provider::ContentType *, ::java::nio::ByteBuffer *);
 public: // actually package-private
   virtual ::gnu::javax::net::ssl::provider::CipherSuite * suite();
+  virtual jboolean needToSplitPayload();
 private:
   static ::gnu::classpath::debug::SystemLogger * logger;
   ::javax::crypto::Cipher * __attribute__((aligned(__alignof__( ::java::lang::Object)))) cipher;
@@ -70,6 +71,8 @@ private:
   ::gnu::javax::net::ssl::provider::SessionImpl * session;
   ::gnu::javax::net::ssl::provider::CipherSuite * suite__;
   jlong sequence;
+public: // actually package-private
+  static jboolean enableCBCProtection;
 public:
   static ::java::lang::Class class$;
 };

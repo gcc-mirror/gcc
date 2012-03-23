@@ -19,6 +19,13 @@ JNIEXPORT jobjectArray JNICALL Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevic
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeSetDisplayMode (JNIEnv *env, jobject, jobject, jint, jshort);
 JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetBounds (JNIEnv *env, jobject);
 
+#undef java_awt_GraphicsDevice_TYPE_RASTER_SCREEN
+#define java_awt_GraphicsDevice_TYPE_RASTER_SCREEN 0L
+#undef java_awt_GraphicsDevice_TYPE_PRINTER
+#define java_awt_GraphicsDevice_TYPE_PRINTER 1L
+#undef java_awt_GraphicsDevice_TYPE_IMAGE_BUFFER
+#define java_awt_GraphicsDevice_TYPE_IMAGE_BUFFER 2L
+
 #ifdef __cplusplus
 }
 #endif

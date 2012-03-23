@@ -15,6 +15,7 @@ JNIEXPORT jint JNICALL Java_java_lang_VMSystem_identityHashCode (JNIEnv *env, jc
 JNIEXPORT void JNICALL Java_java_lang_VMSystem_setIn (JNIEnv *env, jclass, jobject);
 JNIEXPORT void JNICALL Java_java_lang_VMSystem_setOut (JNIEnv *env, jclass, jobject);
 JNIEXPORT void JNICALL Java_java_lang_VMSystem_setErr (JNIEnv *env, jclass, jobject);
+JNIEXPORT jlong JNICALL Java_java_lang_VMSystem_currentTimeMillis (JNIEnv *env, jclass);
 JNIEXPORT jlong JNICALL Java_java_lang_VMSystem_nanoTime (JNIEnv *env, jclass);
 JNIEXPORT jobject JNICALL Java_java_lang_VMSystem_environ (JNIEnv *env, jclass);
 JNIEXPORT jstring JNICALL Java_java_lang_VMSystem_getenv (JNIEnv *env, jclass, jstring);

@@ -46,6 +46,8 @@ import java.nio.channels.Pipe;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * @author Michael Koch
@@ -145,14 +147,18 @@ public abstract class SelectorProvider
    * Returns the system-wide default selector provider for this invocation
    * of the Java virtual machine.
    *
-   * @return the default seletor provider
+   * @return the default selector provider
    */
   public static synchronized SelectorProvider provider()
   {
     if (systemDefaultProvider == null)
       {
-        String propertyValue =
-          System.getProperty("java.nio.channels.spi.SelectorProvider");
+        String propertyValue = AccessController.doPrivileged(new PrivilegedAction<String> () {
+            public String run()
+            {
+              return System.getProperty("java.nio.channels.spi.SelectorProvider");
+            }
+          });
 
         if (propertyValue == null || propertyValue.equals(""))
           systemDefaultProvider = new SelectorProviderImpl();

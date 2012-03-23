@@ -1,5 +1,6 @@
 /* Pattern.java -- Compiled regular expression ready to be applied.
-   Copyright (C) 2002, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2007, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,6 +37,8 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.util.regex;
+
+import gnu.java.lang.CPStringBuilder;
 
 import gnu.java.util.regex.RE;
 import gnu.java.util.regex.REException;
@@ -257,6 +260,41 @@ public final class Pattern implements Serializable
   public String pattern ()
   {
     return regex;
+  }
+
+  /**
+   * Returns a literal pattern for the specified String.
+   *
+   * @param String to return a literal pattern for.
+   * @return a literal pattern for the specified String.
+   * @exception NullPointerException if str is null.
+   * @since 1.5
+   */
+  public static String quote(String str)
+  {
+    int eInd = str.indexOf("\\E");
+    if (eInd < 0)
+      {
+        // No need to handle backslashes.
+        return "\\Q" + str + "\\E";
+      }
+
+    CPStringBuilder sb = new CPStringBuilder(str.length() + 16);
+    sb.append("\\Q"); // start quote
+
+    int pos = 0;
+    do
+      {
+        // A backslash is quoted by another backslash;
+        // 'E' is not needed to be quoted.
+        sb.append(str.substring(pos, eInd))
+          .append("\\E" + "\\\\" + "E" + "\\Q");
+        pos = eInd + 2;
+      } while ((eInd = str.indexOf("\\E", pos)) >= 0);
+
+    sb.append(str.substring(pos, str.length()))
+      .append("\\E"); // end quote
+    return sb.toString();
   }
 
   /**

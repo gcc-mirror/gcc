@@ -23,6 +23,23 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtVolatileImage_drawPixelsTrans
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtVolatileImage_drawPixelsScaledFlipped (JNIEnv *env, jobject, jobject, jint, jint, jint, jboolean, jboolean, jint, jint, jint, jint, jint, jint, jint, jint, jboolean);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtVolatileImage_copyArea (JNIEnv *env, jobject, jint, jint, jint, jint, jint, jint);
 
+#undef java_awt_image_VolatileImage_IMAGE_OK
+#define java_awt_image_VolatileImage_IMAGE_OK 0L
+#undef java_awt_image_VolatileImage_IMAGE_RESTORED
+#define java_awt_image_VolatileImage_IMAGE_RESTORED 1L
+#undef java_awt_image_VolatileImage_IMAGE_INCOMPATIBLE
+#define java_awt_image_VolatileImage_IMAGE_INCOMPATIBLE 2L
+#undef java_awt_Image_SCALE_DEFAULT
+#define java_awt_Image_SCALE_DEFAULT 1L
+#undef java_awt_Image_SCALE_FAST
+#define java_awt_Image_SCALE_FAST 2L
+#undef java_awt_Image_SCALE_SMOOTH
+#define java_awt_Image_SCALE_SMOOTH 4L
+#undef java_awt_Image_SCALE_REPLICATE
+#define java_awt_Image_SCALE_REPLICATE 8L
+#undef java_awt_Image_SCALE_AREA_AVERAGING
+#define java_awt_Image_SCALE_AREA_AVERAGING 16L
+
 #ifdef __cplusplus
 }
 #endif

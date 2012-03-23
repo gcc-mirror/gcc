@@ -95,11 +95,14 @@ class InflaterHuffmanTree
           blCount[bits]++;
       }
 
+    int max = 0;
     int code = 0;
     int treeSize = 512;
     for (int bits = 1; bits <= MAX_BITLEN; bits++)
       {
         nextCode[bits] = code;
+        if (blCount[bits] > 0)
+          max = bits;
         code += blCount[bits] << (16 - bits);
         if (bits >= 10)
           {
@@ -109,8 +112,8 @@ class InflaterHuffmanTree
             treeSize += (end - start) >> (16 - bits);
           }
       }
-    if (code != 65536)
-      throw new DataFormatException("Code lengths don't add up properly.");
+    if (code != 65536 && max > 1)
+      throw new DataFormatException("incomplete dynamic bit lengths tree");
 
     /* Now create and fill the extra tables from longest to shortest
      * bit len.  This way the sub trees will be aligned.

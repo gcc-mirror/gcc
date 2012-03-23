@@ -214,7 +214,12 @@ public class KeyStore
   {
     // Security reads every property in java.security so it
     // will return this property if it exists.
-    String tmp = Security.getProperty("keystore.type");
+    String tmp = AccessController.doPrivileged(new PrivilegedAction<String> () {
+        public String run()
+        {
+          return Security.getProperty("keystore.type");
+        }
+      });
 
     if (tmp == null)
       tmp = "gkr";

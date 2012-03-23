@@ -1360,6 +1360,7 @@ gnu/java/nio/natVMChannel.cc \
 gnu/java/nio/channels/natFileChannelImpl.cc \
 gnu/java/security/jce/prng/natVMSecureRandom.cc \
 java/io/natFile.cc \
+java/io/natVMConsole.cc \
 java/io/natVMObjectInputStream.cc \
 java/io/natVMObjectStreamClass.cc \
 java/lang/natCharacter.cc \

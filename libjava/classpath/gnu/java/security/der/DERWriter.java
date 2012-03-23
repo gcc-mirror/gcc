@@ -1,5 +1,5 @@
 /* DERWriter.java -- write Java types in DER format.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -281,9 +281,9 @@ public class DERWriter implements DER
 
   private static byte[] toUtf8(String string)
   {
-    ByteArrayOutputStream buf =
-      new ByteArrayOutputStream((int)(string.length() * 1.5));
-    for (int i = 0; i < string.length(); i++)
+    int len = string.length();
+    ByteArrayOutputStream buf = new ByteArrayOutputStream(len + (len >> 1));
+    for (int i = 0; i < len; i++)
       {
         char c = string.charAt(i);
         if (c < 0x0080)

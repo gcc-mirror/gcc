@@ -1,5 +1,5 @@
 /* EMSA_PSS.java --
-   Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -73,7 +73,8 @@ import java.util.logging.Logger;
 public class EMSA_PSS
     implements Cloneable
 {
-  private static final Logger log = Logger.getLogger(EMSA_PSS.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(EMSA_PSS.class.getName()) : null;
 
   /** The underlying hash function to use with this instance. */
   private IMessageDigest hash;

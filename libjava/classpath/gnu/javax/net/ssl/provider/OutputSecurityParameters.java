@@ -62,6 +62,17 @@ public class OutputSecurityParameters
   private final CipherSuite suite;
   private long sequence;
 
+  static final boolean enableCBCProtection;
+
+  static
+  {
+    String enabled = Util.getProperty("jsse.enableCBCProtection");
+    if (enabled == null)
+      enableCBCProtection = true;
+    else
+      enableCBCProtection = Boolean.valueOf(enabled);
+  }
+
   public OutputSecurityParameters (final Cipher cipher, final Mac mac,
                                    final Deflater deflater, SessionImpl session,
                                    CipherSuite suite)
@@ -291,4 +302,11 @@ public class OutputSecurityParameters
   {
     return suite;
   }
+
+  boolean needToSplitPayload()
+  {
+    return (session.version.compareTo(ProtocolVersion.TLS_1_1) < 0 &&
+            suite.isCBCMode() && enableCBCProtection);
+  }
+
 }

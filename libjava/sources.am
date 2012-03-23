@@ -4535,6 +4535,7 @@ classpath/java/io/CharArrayReader.java \
 classpath/java/io/CharArrayWriter.java \
 classpath/java/io/CharConversionException.java \
 classpath/java/io/Closeable.java \
+classpath/java/io/Console.java \
 classpath/java/io/DataInput.java \
 classpath/java/io/DataInputStream.java \
 classpath/java/io/DataOutput.java \
@@ -4557,6 +4558,7 @@ classpath/java/io/FilterOutputStream.java \
 classpath/java/io/FilterReader.java \
 classpath/java/io/FilterWriter.java \
 classpath/java/io/Flushable.java \
+classpath/java/io/IOError.java \
 classpath/java/io/IOException.java \
 classpath/java/io/InputStream.java \
 java/io/InputStreamReader.java \
@@ -4600,6 +4602,7 @@ classpath/java/io/StringWriter.java \
 classpath/java/io/SyncFailedException.java \
 classpath/java/io/UTFDataFormatException.java \
 classpath/java/io/UnsupportedEncodingException.java \
+java/io/VMConsole.java \
 java/io/VMObjectInputStream.java \
 java/io/VMObjectStreamClass.java \
 classpath/java/io/WriteAbortedException.java \
@@ -9507,8 +9510,8 @@ property_files = \
   classpath/resource/gnu/java/util/regex/MessagesBundle.properties \
   classpath/resource/gnu/java/util/regex/MessagesBundle_fr.properties \
   classpath/resource/gnu/java/util/regex/MessagesBundle_it.properties \
-  classpath/resource/gnu/javax/print/PrinterDialog.properties \
-  classpath/resource/gnu/javax/print/PrinterDialog_de.properties \
+  classpath/resource/gnu/javax/print/MessagesBundle.properties \
+  classpath/resource/gnu/javax/print/MessagesBundle_de.properties \
   classpath/resource/gnu/javax/security/auth/callback/MessagesBundle.properties \
   classpath/resource/java/text/metazones.properties \
   classpath/resource/java/util/iso4217.properties \

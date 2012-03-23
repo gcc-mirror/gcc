@@ -1,5 +1,5 @@
 /* Twofish.java --
-   Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -69,7 +69,8 @@ import java.util.logging.Logger;
 public final class Twofish
     extends BaseCipher
 {
-  private static final Logger log = Logger.getLogger(Twofish.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(Twofish.class.getName()) : null;
   private static final int DEFAULT_BLOCK_SIZE = 16; // in bytes
   private static final int DEFAULT_KEY_SIZE = 16; // in bytes
   private static final int MAX_ROUNDS = 16; // max # rounds (for allocating subkeys)

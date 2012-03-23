@@ -1,5 +1,5 @@
 /* VMDirectByteBuffer.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,6 +43,7 @@ import gnu.classpath.Pointer;
 
 final class VMDirectByteBuffer
 {
+
   static
   {
     // load the shared library needed for native methods.
@@ -52,12 +53,24 @@ final class VMDirectByteBuffer
       }
   }
 
-  static native Pointer allocate (int capacity);
+  private VMDirectByteBuffer() {} // Prohibits instantiation.
+
+  static native Pointer allocate(int capacity);
+
   static native void free(Pointer address);
+
   static native byte get(Pointer address, int index);
-  static native void get(Pointer address, int index, byte[] dst, int offset, int length);
+
+  static native void get(Pointer address, int index, byte[] dst, int offset,
+                         int length);
+
   static native void put(Pointer address, int index, byte value);
-  static native void put(Pointer address, int index, byte[] src, int offset, int length);
+
+  static native void put(Pointer address, int index, byte[] src, int offset,
+                         int length);
+
   static native Pointer adjustAddress(Pointer address, int offset);
-  static native void shiftDown(Pointer address, int dst_offset, int src_offset, int count);
+
+  static native void shiftDown(Pointer address, int dst_offset,
+                               int src_offset, int count);
 }
