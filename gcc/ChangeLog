@@ -1,3 +1,12 @@
+2012-03-16  Michael Hope  <michael.hope@linaro.org>
+
+	Backport from mainline
+	2011-05-05  Michael Hope  <michael.hope@linaro.org>
+
+	PR pch/45979
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for
+	__ARM_EABI__ hosts.
+
 2012-03-15  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Backport from mainline
