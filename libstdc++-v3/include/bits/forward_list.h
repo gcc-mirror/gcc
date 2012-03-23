@@ -536,8 +536,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __al  An allocator object.
        *
        *  Create a %forward_list consisting of copies of the elements
-       *  in the initializer_list @a __il.  This is linear in the number
-       *  of elements of __il.
+       *  in the initializer_list @a __il.  This is linear in __il.size().
        */
       forward_list(std::initializer_list<_Tp> __il,
                    const _Alloc& __al = _Alloc())
@@ -586,7 +585,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Replace the contents of the %forward_list with copies of the
        *  elements in the initializer_list @a __il.  This is linear in
-       *  the number of elements of __il.
+       *  __il.size().
        */
       forward_list&
       operator=(std::initializer_list<_Tp> __il)
