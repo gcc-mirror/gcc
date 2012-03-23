@@ -1,3 +1,7 @@
+2012-03-23  William Bader  <williambader@hotmail.com>
+
+	* c-lex.c (c_lex_with_flags): Avoid declarations after stmts.
+
 2012-03-20  Jason Merrill  <jason@redhat.com>
 
 	* c-common.h (enum cxx_dialect): Add cxx1y.
