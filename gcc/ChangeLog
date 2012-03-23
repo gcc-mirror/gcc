@@ -1,3 +1,7 @@
+2012-03-23  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (build_accesses_from_assign): Remove FIXME comment.
+
 2012-03-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52678
