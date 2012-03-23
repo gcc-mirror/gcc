@@ -1,3 +1,9 @@
+2012-03-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_malloc): New.
+	* fixincl.x: Regenerate.
+	* tests/base/malloc.h [AIX_MALLOC_CHECK]: New.
+	
 2012-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR other/52626
