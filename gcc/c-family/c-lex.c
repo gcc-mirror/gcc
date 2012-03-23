@@ -342,6 +342,8 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
 	if (flags & CPP_N_USERDEF)
 	  {
+	    char *str;
+	    tree literal;
 	    tree suffix_id = get_identifier (suffix);
 	    int len = tok->val.str.len - strlen (suffix);
 	    /* If this is going to be used as a C string to pass to a
@@ -350,9 +352,9 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 					    (const char *) tok->val.str.text);
 	    TREE_TYPE (num_string) = char_array_type_node;
 	    num_string = fix_string_type (num_string);
-	    char *str = CONST_CAST (char *, TREE_STRING_POINTER (num_string));
+	    str = CONST_CAST (char *, TREE_STRING_POINTER (num_string));
 	    str[len] = '\0';
-	    tree literal = build_userdef_literal (suffix_id, *value,
+	    literal = build_userdef_literal (suffix_id, *value,
 						  num_string);
 	    *value = literal;
 	  }
