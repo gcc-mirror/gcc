@@ -9,6 +9,11 @@
 
 
 
+#if defined( AIX_MALLOC_CHECK )
+#if (defined(__cplusplus) && defined(__IBMCPP__))
+#endif  /* AIX_MALLOC_CHECK */
+
+
 #if defined( SUN_MALLOC_CHECK )
 typedef void *	malloc_t;
 void	free();
