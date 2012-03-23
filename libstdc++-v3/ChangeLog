@@ -1,3 +1,7 @@
+2012-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h: Fix comments.
+
 2012-03-23  Paweł Sikora  <pawel.sikora@agmk.net>
 
 	PR libstdc++/52540
