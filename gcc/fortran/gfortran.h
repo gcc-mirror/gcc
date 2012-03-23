@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Major control parameters.  */
 
 #define GFC_MAX_SYMBOL_LEN 63   /* Must be at least 63 for F2003.  */
-#define GFC_MAX_LINE 132	/* Characters beyond this are not seen.  */
 #define GFC_LETTERS 26		/* Number of letters in the alphabet.  */
 
 #define MAX_SUBRECORD_LENGTH 2147483639   /* 2**31-9 */

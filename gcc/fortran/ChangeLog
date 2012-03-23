@@ -1,3 +1,7 @@
+2012-03-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.h (GFC_MAX_LINE): Remove unused macro.
+
 2012-03-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/52559
