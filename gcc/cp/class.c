@@ -3145,8 +3145,9 @@ check_field_decls (tree t, tree *access_decls,
 	CLASSTYPE_NON_AGGREGATE (t) = 1;
 
       /* If at least one non-static data member is non-literal, the whole
-         class becomes non-literal.  */
-      if (!literal_type_p (type))
+         class becomes non-literal.  Note: if the type is incomplete we
+	 will complain later on.  */
+      if (COMPLETE_TYPE_P (type) && !literal_type_p (type))
         CLASSTYPE_LITERAL_P (t) = false;
 
       /* A standard-layout class is a class that:
