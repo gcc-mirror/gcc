@@ -1,3 +1,8 @@
+2012-03-23  William Bader  <williambader@hotmail.com>
+
+	PR c/52682
+	* c-lex.c (c_lex_with_flags): Avoid declarations after stmts.
+
 2012-03-22  Release Manager
 
 	* GCC 4.7.0 released.
