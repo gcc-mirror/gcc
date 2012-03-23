@@ -1417,7 +1417,7 @@ epiphany_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
   return gen_rtx_REG (mode, 0);
 }
 
-bool
+static bool
 epiphany_function_value_regno_p (const unsigned int regno ATTRIBUTE_UNUSED)
 {
   return regno == 0;

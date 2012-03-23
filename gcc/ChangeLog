@@ -1,3 +1,8 @@
+2012-03-23  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_function_value_regno_p):
+	Make static.
+
 2012-03-22  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backported from mainline
