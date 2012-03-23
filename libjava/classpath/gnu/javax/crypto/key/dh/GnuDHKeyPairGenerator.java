@@ -1,5 +1,5 @@
 /* GnuDHKeyPairGenerator.java --
-   Copyright (C) 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -40,7 +40,6 @@ package gnu.javax.crypto.key.dh;
 
 import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
-import gnu.java.security.hash.Sha160;
 import gnu.java.security.key.IKeyPairGenerator;
 import gnu.java.security.util.PRNG;
 
@@ -68,7 +67,9 @@ import javax.crypto.spec.DHParameterSpec;
 public class GnuDHKeyPairGenerator
     implements IKeyPairGenerator
 {
-  private static final Logger log = Logger.getLogger(GnuDHKeyPairGenerator.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+            Logger.getLogger(GnuDHKeyPairGenerator.class.getName()) : null;
+
   /**
    * Property name of an optional {@link SecureRandom} instance to use. The
    * default is to use a classloader singleton from {@link PRNG}.
@@ -95,10 +96,8 @@ public class GnuDHKeyPairGenerator
   public static final int DEFAULT_EXPONENT_SIZE = 160;
   /** Default encoding format to use when none was specified. */
   private static final int DEFAULT_ENCODING_FORMAT = Registry.RAW_ENCODING_ID;
-  /** The SHA instance to use. */
-  private Sha160 sha = new Sha160();
   /** The optional {@link SecureRandom} instance to use. */
-  private SecureRandom rnd = null;
+  private SecureRandom rnd;
   /** The desired size in bits of the public prime (p). */
   private int l;
   /** The desired size in bits of the private exponent (x). */

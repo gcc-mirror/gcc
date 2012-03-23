@@ -1,5 +1,5 @@
 /* SRPClient.java --
-   Copyright (C) 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -87,7 +87,8 @@ public class SRPClient
     extends ClientMechanism
     implements SaslClient
 {
-  private static final Logger log = Logger.getLogger(SRPClient.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(SRPClient.class.getName()) : null;
   private String uid; // the unique key for this type of client
   private String U; // the authentication identity
   BigInteger N, g, A, B;

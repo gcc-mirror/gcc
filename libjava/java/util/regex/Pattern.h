@@ -41,6 +41,7 @@ public:
   JArray< ::java::lang::String * > * split(::java::lang::CharSequence *);
   JArray< ::java::lang::String * > * split(::java::lang::CharSequence *, jint);
   ::java::lang::String * pattern();
+  static ::java::lang::String * quote(::java::lang::String *);
   ::java::lang::String * toString();
 private:
   static const jlong serialVersionUID = 5073258162644648461LL;

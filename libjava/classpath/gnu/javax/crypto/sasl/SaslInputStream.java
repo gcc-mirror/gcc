@@ -1,5 +1,5 @@
 /* SaslInputStream.java --
-   Copyright (C) 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -57,7 +57,8 @@ import javax.security.sasl.SaslServer;
 public class SaslInputStream
     extends InputStream
 {
-  private static final Logger log = Logger.getLogger(SaslInputStream.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                Logger.getLogger(SaslInputStream.class.getName()) : null;
   private SaslClient client;
   private SaslServer server;
   private int maxRawSendSize;

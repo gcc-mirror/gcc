@@ -428,7 +428,9 @@ public class Socket
    * @exception IllegalBlockingModeException If this socket has an associated
    * channel, and the channel is in non-blocking mode
    * @exception SocketTimeoutException If the timeout is reached
-   *
+   * @throws SecurityException if the SocketAddress is an {@link InetSocketAddress}
+   *                           and a security manager is present which does not
+   *                           allow connections on the given host and port.
    * @since 1.4
    */
   public void connect(SocketAddress endpoint, int timeout)
@@ -439,6 +441,13 @@ public class Socket
 
     if (! (endpoint instanceof InetSocketAddress))
       throw new IllegalArgumentException("unsupported address type");
+
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      {
+        InetSocketAddress inetAddr = (InetSocketAddress) endpoint;
+        sm.checkConnect(inetAddr.getHostName(), inetAddr.getPort());
+      }
 
     // The Sun spec says that if we have an associated channel and
     // it is in non-blocking mode, we throw an IllegalBlockingModeException.

@@ -296,7 +296,7 @@ compile_classpath = $(vm_classes):$(top_srcdir):$(top_srcdir)/external/w3c_dom:$
 @CREATE_COLLECTIONS_TRUE@@WITH_JAR_TRUE@CREATE_COLLECTIONS_JAR = $(JAR) cf $@ $(COLLECTIONS_PREFIX)
 @BUILD_CLASS_FILES_TRUE@noinst_DATA = genclasses compile-classes resources
 @USE_PREBUILT_GLIBJ_ZIP_FALSE@@WITH_JAR_FALSE@CREATE_GLIBJ_ZIP = $(ZIP) -r -D glibj.zip gnu java javax org sun META-INF > /dev/null
-@USE_PREBUILT_GLIBJ_ZIP_FALSE@@WITH_JAR_TRUE@CREATE_GLIBJ_ZIP = $(JAR) cf glibj.zip gnu java javax org sun META-INF
+@USE_PREBUILT_GLIBJ_ZIP_FALSE@@WITH_JAR_TRUE@CREATE_GLIBJ_ZIP = $(JAR) cf glibj.zip gnu java javax org sun META-INF && $(JAR) i glibj.zip
 # endif
 EXTRA_DIST = standard.omit.in mkcollections.pl.in Makefile.gcj split-for-gcj.sh glibj.zip
 CLEANFILES = compile-classes resources classes \

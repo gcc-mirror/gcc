@@ -1,5 +1,5 @@
 /* VMRuntimeMXBeanImpl.java - VM implementation of an runtime bean
-   Copyright (C) 2006 Free Software Foundation
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,6 +47,8 @@ import gnu.classpath.SystemProperties;
  */
 final class VMRuntimeMXBeanImpl
 {
+
+  private VMRuntimeMXBeanImpl() {} // Prohibits instantiation.
 
   /**
    * Returns the command-line arguments supplied

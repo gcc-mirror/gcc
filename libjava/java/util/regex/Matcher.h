@@ -62,6 +62,7 @@ public:
   jboolean hasAnchoringBounds();
   ::java::util::regex::Matcher * useAnchoringBounds(jboolean);
   ::java::util::regex::MatchResult * toMatchResult();
+  static ::java::lang::String * quoteReplacement(::java::lang::String *);
 private:
   ::java::util::regex::Pattern * __attribute__((aligned(__alignof__( ::java::lang::Object)))) pattern__;
   ::java::lang::CharSequence * input;

@@ -1,5 +1,5 @@
 /* jcl.c
-   Copyright (C) 1998, 2005, 2006, 2008 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2005, 2006, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -42,11 +42,23 @@ exception statement from your version. */
 #include <stdio.h>
 #include <jcl.h>
 
-#ifndef __GNUC__
-  #ifndef __attribute__
-    #define __attribute__(x)	/* nothing */
-  #endif
+#if !defined(__GNUC__) && !defined(__attribute__)
+# define __attribute__(x)    /* nothing */
 #endif
+
+#if SIZEOF_VOID_P == 8
+# define JCL_POINTER_CLASSNAME "gnu/classpath/Pointer64"
+# define JCL_POINTER_DATASIGN "J"
+# define JCL_POINTER_INTTYPE jlong
+# define JCL_POINTER_GETFIELD GetLongField
+#elif SIZEOF_VOID_P == 4
+# define JCL_POINTER_CLASSNAME "gnu/classpath/Pointer32"
+# define JCL_POINTER_DATASIGN "I"
+# define JCL_POINTER_INTTYPE jint
+# define JCL_POINTER_GETFIELD GetIntField
+#else
+# error "Pointer size is not supported."
+#endif /* SIZEOF_VOID_P */
 
 /*
  * Cached Pointer class info.
@@ -54,6 +66,12 @@ exception statement from your version. */
 static jclass rawDataClass = NULL;
 static jfieldID rawData_fid = NULL;
 static jmethodID rawData_mid = NULL;
+
+/* Define JCL_NO_JNIONLOAD to build JCL without JNI_OnLoad exported.
+ * (rawDataClass and friends are initialized lazily in that case.)
+ */
+
+#ifndef JCL_NO_JNIONLOAD
 
 /*
  * JNI OnLoad constructor.
@@ -69,35 +87,23 @@ JNI_OnLoad (JavaVM *vm, void *reserved __attribute__((unused)))
       return JNI_VERSION_1_4;
     }
   env = (JNIEnv *) envp;
-#if SIZEOF_VOID_P == 8
-  rawDataClass = (*env)->FindClass (env, "gnu/classpath/Pointer64");
+
+  rawDataClass = (*env)->FindClass (env, JCL_POINTER_CLASSNAME);
   if (rawDataClass != NULL)
     rawDataClass = (*env)->NewGlobalRef (env, rawDataClass);
 
   if (rawDataClass != NULL)
     {
-      rawData_fid = (*env)->GetFieldID (env, rawDataClass, "data", "J");
-      rawData_mid = (*env)->GetMethodID (env, rawDataClass, "<init>", "(J)V");
+      rawData_fid = (*env)->GetFieldID (env, rawDataClass, "data",
+                                        JCL_POINTER_DATASIGN);
+      rawData_mid = (*env)->GetMethodID (env, rawDataClass, "<init>",
+                                         "(" JCL_POINTER_DATASIGN ")V");
     }
-#else
-#if SIZEOF_VOID_P == 4
-  rawDataClass = (*env)->FindClass (env, "gnu/classpath/Pointer32");
-  if (rawDataClass != NULL)
-    rawDataClass = (*env)->NewGlobalRef (env, rawDataClass);
-
-  if (rawDataClass != NULL)
-    {
-      rawData_fid = (*env)->GetFieldID (env, rawDataClass, "data", "I");
-      rawData_mid = (*env)->GetMethodID (env, rawDataClass, "<init>", "(I)V");
-    }
-#else
-#error "Pointer size is not supported."
-#endif /* SIZEOF_VOID_P == 4 */
-#endif /* SIZEOF_VOID_P == 8 */
 
   return JNI_VERSION_1_4;
 }
 
+#endif /* !JCL_NO_JNIONLOAD */
 
 JNIEXPORT void JNICALL
 JCL_ThrowException (JNIEnv * env, const char *className, const char *errMsg)
@@ -127,9 +133,10 @@ JCL_ThrowException (JNIEnv * env, const char *className, const char *errMsg)
 	}
       /* Removed this (more comprehensive) error string to avoid the need for
        * a static variable or allocation of a buffer for this message in this
-       * (unlikely) error case. --Fridi. 
+       * (unlikely) error case. --Fridi.
        *
-       * sprintf(errstr,"JCL: Failed to throw exception %s with message %s: could not find exception class.", className, errMsg); 
+       * sprintf(errstr,"JCL: Failed to throw exception %s with message %s:"
+       * " could not find exception class.", className, errMsg);
        */
       (*env)->ThrowNew (env, errExcClass, className);
     }
@@ -154,12 +161,12 @@ JCL_realloc (JNIEnv * env, void *ptr, size_t size)
 {
   void *orig_ptr = ptr;
   ptr = realloc (ptr, size);
-  if (ptr == 0)
+  if (ptr == NULL)
     {
-      free (orig_ptr);
+      if (orig_ptr != NULL)
+        free (orig_ptr);
       JCL_ThrowException (env, "java/lang/OutOfMemoryError",
 			  "malloc() failed.");
-      return NULL;
     }
   return (ptr);
 }
@@ -238,37 +245,76 @@ JCL_FindClass (JNIEnv * env, const char *className)
 /*
  * Build a Pointer object.
  */
-
 JNIEXPORT jobject JNICALL
 JCL_NewRawDataObject (JNIEnv * env, void *data)
 {
+#ifdef JCL_NO_JNIONLOAD
+  jclass aclass = rawDataClass;
+  jmethodID mid;
+  if (aclass == NULL)
+    {
+      aclass = (*env)->FindClass (env, JCL_POINTER_CLASSNAME);
+      if (aclass == NULL ||
+          (aclass = (*env)->NewGlobalRef (env, aclass)) == NULL)
+        {
+          JCL_ThrowException (env, "java/lang/InternalError",
+                              "Pointer class not found");
+          return NULL;
+        }
+      rawDataClass = aclass;
+    }
+  if ((mid = rawData_mid) == NULL)
+    {
+      if ((mid = (*env)->GetMethodID (env, aclass, "<init>",
+                          "(" JCL_POINTER_DATASIGN ")V")) == NULL)
+        {
+          JCL_ThrowException (env, "java/lang/InternalError",
+                              "Pointer class constructor not found");
+          return NULL;
+        }
+      rawData_mid = mid;
+    }
+  return (*env)->NewObject (env, aclass, mid, (JCL_POINTER_INTTYPE) data);
+#else
   if (rawDataClass == NULL || rawData_mid == NULL)
     {
       JCL_ThrowException (env, "java/lang/InternalError",
                           "Pointer class was not properly initialized");
       return NULL;
     }
-
-#if SIZEOF_VOID_P == 8
-  return (*env)->NewObject (env, rawDataClass, rawData_mid, (jlong) data);
-#else
-  return (*env)->NewObject (env, rawDataClass, rawData_mid, (jint) data);
+  return (*env)->NewObject (env, rawDataClass, rawData_mid,
+                            (JCL_POINTER_INTTYPE) data);
 #endif
 }
 
 JNIEXPORT void * JNICALL
 JCL_GetRawData (JNIEnv * env, jobject rawdata)
 {
+#ifdef JCL_NO_JNIONLOAD
+  jclass aclass;
+  jfieldID fid = rawData_fid;
+  if (fid == NULL)
+    {
+      aclass = rawDataClass;
+      if ((aclass == NULL && (aclass = (*env)->FindClass (env,
+                                        JCL_POINTER_CLASSNAME)) == NULL) ||
+          (fid = (*env)->GetFieldID (env, aclass, "data",
+                                     JCL_POINTER_DATASIGN)) == NULL)
+        {
+          JCL_ThrowException (env, "java/lang/InternalError",
+                              "Pointer class was not properly initialized");
+          return NULL;
+        }
+      rawData_fid = fid;
+    }
+  return (void *) (*env)->JCL_POINTER_GETFIELD (env, rawdata, fid);
+#else
   if (rawData_fid == NULL)
     {
       JCL_ThrowException (env, "java/lang/InternalError",
                           "Pointer class was not properly initialized");
       return NULL;
     }
-
-#if SIZEOF_VOID_P == 8
-  return (void *) (*env)->GetLongField (env, rawdata, rawData_fid);
-#else
-  return (void *) (*env)->GetIntField (env, rawdata, rawData_fid);
-#endif  
+  return (void *) (*env)->JCL_POINTER_GETFIELD (env, rawdata, rawData_fid);
+#endif
 }

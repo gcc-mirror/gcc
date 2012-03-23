@@ -1,5 +1,5 @@
 /* GnuPublicKeyring.java --
-   Copyright (C) 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -55,7 +55,8 @@ public class GnuPublicKeyring
     extends BaseKeyring
     implements IPublicKeyring
 {
-  private static final Logger log = Logger.getLogger(GnuPublicKeyring.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                Logger.getLogger(GnuPublicKeyring.class.getName()) : null;
   public static final int USAGE = Registry.GKR_CERTIFICATES;
 
   public GnuPublicKeyring(String mac, int macLen)

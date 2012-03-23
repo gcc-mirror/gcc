@@ -42,7 +42,7 @@ private:
   void writeObject(::java::io::ObjectOutputStream *);
   void readObject(::java::io::ObjectInputStream *);
 public: // actually package-private
-  static const jint DEFAULT_CAPACITY = 11;
+  static const jint DEFAULT_CAPACITY = 16;
   static jfloat DEFAULT_LOAD_FACTOR;
 private:
   static const jlong serialVersionUID = 362498820763181265LL;

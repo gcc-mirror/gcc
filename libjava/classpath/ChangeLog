@@ -1,8 +1,1079 @@
+2012-03-08  Andrew John Hughes  <ahughes@redhat.com>
+
+	* NEWS: Set correct release date.
+	* configure.ac: Bump to 0.99 proper.
+
+2012-03-07  Andrew John Hughes  <ahughes@redhat.com>
+
+	* tools/Makefile.am:
+	(TOOLS_JAVA_FILES): Remove duplication.
+	(dist-hook): Fail if copying fails.
+
+2012-03-07  Andrew John Hughes  <ahughes@redhat.com>
+
+	* doc/cp-tools.texinfo:
+	Move macro definition outside of if block
+	so gcctabopt is always defined.
+
+2012-02-15  Andrew John Hughes  <ahughes@redhat.com>
+
+	* native/jni/gstreamer-peer/gst_classpath_src.c,
+	(gst_classpath_src_class_init(GstClasspathSrcClass)):
+	Remove unused gstelement_class.
+
+2012-02-15  Andrew John Hughes  <ahughes@redhat.com>
+
+	* NEWS: Updated prior to release.
+
+2012-02-15  Andrew John Hughes  <ahughes@redhat.com>
+
+	* java/text/DateFormatSymbols.java:
+	(getStringArray(List,String,int,String)): Remove hack which
+	removes last character of the input data; now unnecessary.
+	* resource/gnu/java/locale/LocaleInformation.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa_DJ.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa_ER_SAAHO.properties,
+	* resource/gnu/java/locale/LocaleInformation_af.properties,
+	* resource/gnu/java/locale/LocaleInformation_ak.properties,
+	* resource/gnu/java/locale/LocaleInformation_am.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_JO.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_LB.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_QA.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_SA.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_SY.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_TN.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_YE.properties,
+	* resource/gnu/java/locale/LocaleInformation_as.properties,
+	* resource/gnu/java/locale/LocaleInformation_az.properties,
+	* resource/gnu/java/locale/LocaleInformation_az_Cyrl.properties,
+	* resource/gnu/java/locale/LocaleInformation_be.properties,
+	* resource/gnu/java/locale/LocaleInformation_bg.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn.properties,
+	* resource/gnu/java/locale/LocaleInformation_bs.properties,
+	* resource/gnu/java/locale/LocaleInformation_byn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ca.properties,
+	* resource/gnu/java/locale/LocaleInformation_cch.properties,
+	* resource/gnu/java/locale/LocaleInformation_cop.properties,
+	* resource/gnu/java/locale/LocaleInformation_cs.properties,
+	* resource/gnu/java/locale/LocaleInformation_cy.properties,
+	* resource/gnu/java/locale/LocaleInformation_da.properties,
+	* resource/gnu/java/locale/LocaleInformation_de.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_AT.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_dv.properties,
+	* resource/gnu/java/locale/LocaleInformation_dz.properties,
+	* resource/gnu/java/locale/LocaleInformation_ee.properties,
+	* resource/gnu/java/locale/LocaleInformation_el.properties,
+	* resource/gnu/java/locale/LocaleInformation_en.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_Dsrt.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_Shaw.properties,
+	* resource/gnu/java/locale/LocaleInformation_eo.properties,
+	* resource/gnu/java/locale/LocaleInformation_es.properties,
+	* resource/gnu/java/locale/LocaleInformation_et.properties,
+	* resource/gnu/java/locale/LocaleInformation_eu.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa_AF.properties,
+	* resource/gnu/java/locale/LocaleInformation_fi.properties,
+	* resource/gnu/java/locale/LocaleInformation_fil.properties,
+	* resource/gnu/java/locale/LocaleInformation_fo.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr.properties,
+	* resource/gnu/java/locale/LocaleInformation_fur.properties,
+	* resource/gnu/java/locale/LocaleInformation_ga.properties,
+	* resource/gnu/java/locale/LocaleInformation_gaa.properties,
+	* resource/gnu/java/locale/LocaleInformation_gez.properties,
+	* resource/gnu/java/locale/LocaleInformation_gl.properties,
+	* resource/gnu/java/locale/LocaleInformation_gu.properties,
+	* resource/gnu/java/locale/LocaleInformation_gv.properties,
+	* resource/gnu/java/locale/LocaleInformation_ha.properties,
+	* resource/gnu/java/locale/LocaleInformation_ha_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_haw.properties,
+	* resource/gnu/java/locale/LocaleInformation_he.properties,
+	* resource/gnu/java/locale/LocaleInformation_hi.properties,
+	* resource/gnu/java/locale/LocaleInformation_hr.properties,
+	* resource/gnu/java/locale/LocaleInformation_hu.properties,
+	* resource/gnu/java/locale/LocaleInformation_hy.properties,
+	* resource/gnu/java/locale/LocaleInformation_hy_AM_REVISED.properties,
+	* resource/gnu/java/locale/LocaleInformation_ia.properties,
+	* resource/gnu/java/locale/LocaleInformation_id.properties,
+	* resource/gnu/java/locale/LocaleInformation_ig.properties,
+	* resource/gnu/java/locale/LocaleInformation_ii.properties,
+	* resource/gnu/java/locale/LocaleInformation_is.properties,
+	* resource/gnu/java/locale/LocaleInformation_it.properties,
+	* resource/gnu/java/locale/LocaleInformation_iu.properties,
+	* resource/gnu/java/locale/LocaleInformation_ja.properties,
+	* resource/gnu/java/locale/LocaleInformation_ka.properties,
+	* resource/gnu/java/locale/LocaleInformation_kaj.properties,
+	* resource/gnu/java/locale/LocaleInformation_kam.properties,
+	* resource/gnu/java/locale/LocaleInformation_kcg.properties,
+	* resource/gnu/java/locale/LocaleInformation_kfo.properties,
+	* resource/gnu/java/locale/LocaleInformation_kk.properties,
+	* resource/gnu/java/locale/LocaleInformation_kl.properties,
+	* resource/gnu/java/locale/LocaleInformation_km.properties,
+	* resource/gnu/java/locale/LocaleInformation_kn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ko.properties,
+	* resource/gnu/java/locale/LocaleInformation_kok.properties,
+	* resource/gnu/java/locale/LocaleInformation_kpe.properties,
+	* resource/gnu/java/locale/LocaleInformation_ku_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_kw.properties,
+	* resource/gnu/java/locale/LocaleInformation_ky.properties,
+	* resource/gnu/java/locale/LocaleInformation_ln.properties,
+	* resource/gnu/java/locale/LocaleInformation_lo.properties,
+	* resource/gnu/java/locale/LocaleInformation_lt.properties,
+	* resource/gnu/java/locale/LocaleInformation_lv.properties,
+	* resource/gnu/java/locale/LocaleInformation_mk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ml.properties,
+	* resource/gnu/java/locale/LocaleInformation_mn.properties,
+	* resource/gnu/java/locale/LocaleInformation_mr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ms.properties,
+	* resource/gnu/java/locale/LocaleInformation_mt.properties,
+	* resource/gnu/java/locale/LocaleInformation_my.properties,
+	* resource/gnu/java/locale/LocaleInformation_nb.properties,
+	* resource/gnu/java/locale/LocaleInformation_ne.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl.properties,
+	* resource/gnu/java/locale/LocaleInformation_nn.properties,
+	* resource/gnu/java/locale/LocaleInformation_nr.properties,
+	* resource/gnu/java/locale/LocaleInformation_nso.properties,
+	* resource/gnu/java/locale/LocaleInformation_ny.properties,
+	* resource/gnu/java/locale/LocaleInformation_om.properties,
+	* resource/gnu/java/locale/LocaleInformation_or.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_pl.properties,
+	* resource/gnu/java/locale/LocaleInformation_ps.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt_PT.properties,
+	* resource/gnu/java/locale/LocaleInformation_ro.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru.properties,
+	* resource/gnu/java/locale/LocaleInformation_rw.properties,
+	* resource/gnu/java/locale/LocaleInformation_sa.properties,
+	* resource/gnu/java/locale/LocaleInformation_se.properties,
+	* resource/gnu/java/locale/LocaleInformation_se_FI.properties,
+	* resource/gnu/java/locale/LocaleInformation_si.properties,
+	* resource/gnu/java/locale/LocaleInformation_sid.properties,
+	* resource/gnu/java/locale/LocaleInformation_sk.properties,
+	* resource/gnu/java/locale/LocaleInformation_sl.properties,
+	* resource/gnu/java/locale/LocaleInformation_so.properties,
+	* resource/gnu/java/locale/LocaleInformation_sq.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_BA_Cyrl.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ss.properties,
+	* resource/gnu/java/locale/LocaleInformation_st.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv.properties,
+	* resource/gnu/java/locale/LocaleInformation_sw.properties,
+	* resource/gnu/java/locale/LocaleInformation_syr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ta.properties,
+	* resource/gnu/java/locale/LocaleInformation_te.properties,
+	* resource/gnu/java/locale/LocaleInformation_tg.properties,
+	* resource/gnu/java/locale/LocaleInformation_th.properties,
+	* resource/gnu/java/locale/LocaleInformation_ti.properties,
+	* resource/gnu/java/locale/LocaleInformation_ti_ER.properties,
+	* resource/gnu/java/locale/LocaleInformation_tig.properties,
+	* resource/gnu/java/locale/LocaleInformation_tn.properties,
+	* resource/gnu/java/locale/LocaleInformation_to.properties,
+	* resource/gnu/java/locale/LocaleInformation_tr.properties,
+	* resource/gnu/java/locale/LocaleInformation_trv.properties,
+	* resource/gnu/java/locale/LocaleInformation_ts.properties,
+	* resource/gnu/java/locale/LocaleInformation_tt.properties,
+	* resource/gnu/java/locale/LocaleInformation_ug.properties,
+	* resource/gnu/java/locale/LocaleInformation_uk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ur.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ve.properties,
+	* resource/gnu/java/locale/LocaleInformation_vi.properties,
+	* resource/gnu/java/locale/LocaleInformation_wal.properties,
+	* resource/gnu/java/locale/LocaleInformation_wo.properties,
+	* resource/gnu/java/locale/LocaleInformation_xh.properties,
+	* resource/gnu/java/locale/LocaleInformation_yo.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zu.properties:
+	Update locale data without trailing separator.
+
+2012-02-08  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/42390
+	* java/nio/channels/spi/SelectorProvider.java:
+	(provider()): Retrieve property value using
+	PrivilegedAction.
+	* java/security/KeyStore.java:
+	(getDefaultType()): Likewise.
+
+2012-02-06  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/42390
+	* java/net/DatagramSocket.java:
+	(connect(InetAddress,int)): Add missing security
+	checks which OpenJDK performs and we don't.  It's
+	possible to initialise a DatagramSocket with null
+	so we should also ensure we are bound.
+
+2012-02-01  Andrew John Hughes  <ahughes@redhat.com>
+
+	* resource/gnu/java/locale/LocaleInformation.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar.properties,
+	* resource/gnu/java/locale/LocaleInformation_az.properties,
+	* resource/gnu/java/locale/LocaleInformation_be.properties,
+	* resource/gnu/java/locale/LocaleInformation_bg.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ca.properties,
+	* resource/gnu/java/locale/LocaleInformation_cs.properties,
+	* resource/gnu/java/locale/LocaleInformation_cy.properties,
+	* resource/gnu/java/locale/LocaleInformation_da.properties,
+	* resource/gnu/java/locale/LocaleInformation_de.properties,
+	* resource/gnu/java/locale/LocaleInformation_ee.properties,
+	* resource/gnu/java/locale/LocaleInformation_el.properties,
+	* resource/gnu/java/locale/LocaleInformation_en.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_Dsrt.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_Shaw.properties,
+	* resource/gnu/java/locale/LocaleInformation_es.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa.properties,
+	* resource/gnu/java/locale/LocaleInformation_fi.properties,
+	* resource/gnu/java/locale/LocaleInformation_fil.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr.properties,
+	* resource/gnu/java/locale/LocaleInformation_gaa.properties,
+	* resource/gnu/java/locale/LocaleInformation_he.properties,
+	* resource/gnu/java/locale/LocaleInformation_hi.properties,
+	* resource/gnu/java/locale/LocaleInformation_hr.properties,
+	* resource/gnu/java/locale/LocaleInformation_hu.properties,
+	* resource/gnu/java/locale/LocaleInformation_is.properties,
+	* resource/gnu/java/locale/LocaleInformation_it.properties,
+	* resource/gnu/java/locale/LocaleInformation_ja.properties,
+	* resource/gnu/java/locale/LocaleInformation_ko.properties,
+	* resource/gnu/java/locale/LocaleInformation_lt.properties,
+	* resource/gnu/java/locale/LocaleInformation_lv.properties,
+	* resource/gnu/java/locale/LocaleInformation_ml.properties,
+	* resource/gnu/java/locale/LocaleInformation_my.properties,
+	* resource/gnu/java/locale/LocaleInformation_nb.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl.properties,
+	* resource/gnu/java/locale/LocaleInformation_nn.properties,
+	* resource/gnu/java/locale/LocaleInformation_pl.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt_PT.properties,
+	* resource/gnu/java/locale/LocaleInformation_ro.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru.properties,
+	* resource/gnu/java/locale/LocaleInformation_si.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv.properties,
+	* resource/gnu/java/locale/LocaleInformation_th.properties,
+	* resource/gnu/java/locale/LocaleInformation_tr.properties,
+	* resource/gnu/java/locale/LocaleInformation_uk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ur.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_vi.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zu.properties:
+	Use the 'format' context type for months and days, and avoid
+	alternatives for other elements.
+
+2012-01-30  Andrew John Hughes  <ahughes@redhat.com>
+
+	* resource/gnu/java/locale/LocaleInformation_ar.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_LB.properties,
+	* resource/gnu/java/locale/LocaleInformation_az.properties,
+	* resource/gnu/java/locale/LocaleInformation_be.properties,
+	* resource/gnu/java/locale/LocaleInformation_bg.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn_IN.properties,
+	* resource/gnu/java/locale/LocaleInformation_ca.properties,
+	* resource/gnu/java/locale/LocaleInformation_cs.properties,
+	* resource/gnu/java/locale/LocaleInformation_cy.properties,
+	* resource/gnu/java/locale/LocaleInformation_da.properties,
+	* resource/gnu/java/locale/LocaleInformation_de.properties,
+	* resource/gnu/java/locale/LocaleInformation_el.properties,
+	* resource/gnu/java/locale/LocaleInformation_en.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_Dsrt.properties,
+	* resource/gnu/java/locale/LocaleInformation_eo.properties,
+	* resource/gnu/java/locale/LocaleInformation_es.properties,
+	* resource/gnu/java/locale/LocaleInformation_et.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa.properties,
+	* resource/gnu/java/locale/LocaleInformation_fi.properties,
+	* resource/gnu/java/locale/LocaleInformation_fil.properties,
+	* resource/gnu/java/locale/LocaleInformation_fo.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ga.properties,
+	* resource/gnu/java/locale/LocaleInformation_gl.properties,
+	* resource/gnu/java/locale/LocaleInformation_gu.properties,
+	* resource/gnu/java/locale/LocaleInformation_he.properties,
+	* resource/gnu/java/locale/LocaleInformation_hi.properties,
+	* resource/gnu/java/locale/LocaleInformation_hr.properties,
+	* resource/gnu/java/locale/LocaleInformation_hu.properties,
+	* resource/gnu/java/locale/LocaleInformation_is.properties,
+	* resource/gnu/java/locale/LocaleInformation_it.properties,
+	* resource/gnu/java/locale/LocaleInformation_ja.properties,
+	* resource/gnu/java/locale/LocaleInformation_ka.properties,
+	* resource/gnu/java/locale/LocaleInformation_ko.properties,
+	* resource/gnu/java/locale/LocaleInformation_lt.properties,
+	* resource/gnu/java/locale/LocaleInformation_lv.properties,
+	* resource/gnu/java/locale/LocaleInformation_ml.properties,
+	* resource/gnu/java/locale/LocaleInformation_my.properties,
+	* resource/gnu/java/locale/LocaleInformation_nb.properties,
+	* resource/gnu/java/locale/LocaleInformation_ne.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl.properties,
+	* resource/gnu/java/locale/LocaleInformation_nn.properties,
+	* resource/gnu/java/locale/LocaleInformation_pl.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt_PT.properties,
+	* resource/gnu/java/locale/LocaleInformation_ro.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru.properties,
+	* resource/gnu/java/locale/LocaleInformation_se.properties,
+	* resource/gnu/java/locale/LocaleInformation_se_FI.properties,
+	* resource/gnu/java/locale/LocaleInformation_si.properties,
+	* resource/gnu/java/locale/LocaleInformation_sk.properties,
+	* resource/gnu/java/locale/LocaleInformation_sl.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv.properties,
+	* resource/gnu/java/locale/LocaleInformation_ta.properties,
+	* resource/gnu/java/locale/LocaleInformation_th.properties,
+	* resource/gnu/java/locale/LocaleInformation_to.properties,
+	* resource/gnu/java/locale/LocaleInformation_tr.properties,
+	* resource/gnu/java/locale/LocaleInformation_uk.properties,
+	* resource/gnu/java/locale/LocaleInformation_vi.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_Hant.properties:
+	Use the main approved value for our properties, rather than
+	just the one that happens to appear last in the XML source file.
+
+2012-01-20  Andrew John Hughes  <ahughes@redhat.com>
+
+	* resource/gnu/java/locale/LocaleInformation.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa_DJ.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa_ER.properties,
+	* resource/gnu/java/locale/LocaleInformation_af.properties,
+	* resource/gnu/java/locale/LocaleInformation_am.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar.properties,
+	* resource/gnu/java/locale/LocaleInformation_as.properties,
+	* resource/gnu/java/locale/LocaleInformation_az.properties,
+	* resource/gnu/java/locale/LocaleInformation_az_Cyrl.properties,
+	* resource/gnu/java/locale/LocaleInformation_be.properties,
+	* resource/gnu/java/locale/LocaleInformation_bg.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn_IN.properties,
+	* resource/gnu/java/locale/LocaleInformation_bs.properties,
+	* resource/gnu/java/locale/LocaleInformation_byn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ca.properties,
+	* resource/gnu/java/locale/LocaleInformation_cs.properties,
+	* resource/gnu/java/locale/LocaleInformation_cy.properties,
+	* resource/gnu/java/locale/LocaleInformation_da.properties,
+	* resource/gnu/java/locale/LocaleInformation_de.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_CH.properties,
+	* resource/gnu/java/locale/LocaleInformation_dz.properties,
+	* resource/gnu/java/locale/LocaleInformation_el.properties,
+	* resource/gnu/java/locale/LocaleInformation_en.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_Dsrt.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_IE.properties,
+	* resource/gnu/java/locale/LocaleInformation_eo.properties,
+	* resource/gnu/java/locale/LocaleInformation_es.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_AR.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_CL.properties,
+	* resource/gnu/java/locale/LocaleInformation_et.properties,
+	* resource/gnu/java/locale/LocaleInformation_eu.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa_AF.properties,
+	* resource/gnu/java/locale/LocaleInformation_fi.properties,
+	* resource/gnu/java/locale/LocaleInformation_fil.properties,
+	* resource/gnu/java/locale/LocaleInformation_fo.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr.properties,
+	* resource/gnu/java/locale/LocaleInformation_fur.properties,
+	* resource/gnu/java/locale/LocaleInformation_ga.properties,
+	* resource/gnu/java/locale/LocaleInformation_gez.properties,
+	* resource/gnu/java/locale/LocaleInformation_gez_ET.properties,
+	* resource/gnu/java/locale/LocaleInformation_gl.properties,
+	* resource/gnu/java/locale/LocaleInformation_gu.properties,
+	* resource/gnu/java/locale/LocaleInformation_ha.properties,
+	* resource/gnu/java/locale/LocaleInformation_haw.properties,
+	* resource/gnu/java/locale/LocaleInformation_he.properties,
+	* resource/gnu/java/locale/LocaleInformation_hi.properties,
+	* resource/gnu/java/locale/LocaleInformation_hr.properties,
+	* resource/gnu/java/locale/LocaleInformation_hu.properties,
+	* resource/gnu/java/locale/LocaleInformation_hy.properties,
+	* resource/gnu/java/locale/LocaleInformation_ia.properties,
+	* resource/gnu/java/locale/LocaleInformation_id.properties,
+	* resource/gnu/java/locale/LocaleInformation_ii.properties,
+	* resource/gnu/java/locale/LocaleInformation_is.properties,
+	* resource/gnu/java/locale/LocaleInformation_it.properties,
+	* resource/gnu/java/locale/LocaleInformation_ja.properties,
+	* resource/gnu/java/locale/LocaleInformation_ka.properties,
+	* resource/gnu/java/locale/LocaleInformation_kk.properties,
+	* resource/gnu/java/locale/LocaleInformation_km.properties,
+	* resource/gnu/java/locale/LocaleInformation_kn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ko.properties,
+	* resource/gnu/java/locale/LocaleInformation_kok.properties,
+	* resource/gnu/java/locale/LocaleInformation_ku.properties,
+	* resource/gnu/java/locale/LocaleInformation_ku_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ky.properties,
+	* resource/gnu/java/locale/LocaleInformation_ln.properties,
+	* resource/gnu/java/locale/LocaleInformation_lo.properties,
+	* resource/gnu/java/locale/LocaleInformation_lt.properties,
+	* resource/gnu/java/locale/LocaleInformation_lv.properties,
+	* resource/gnu/java/locale/LocaleInformation_mk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ml.properties,
+	* resource/gnu/java/locale/LocaleInformation_mn.properties,
+	* resource/gnu/java/locale/LocaleInformation_mr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ms.properties,
+	* resource/gnu/java/locale/LocaleInformation_mt.properties,
+	* resource/gnu/java/locale/LocaleInformation_my.properties,
+	* resource/gnu/java/locale/LocaleInformation_nb.properties,
+	* resource/gnu/java/locale/LocaleInformation_ne.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_nn.properties,
+	* resource/gnu/java/locale/LocaleInformation_om.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_pl.properties,
+	* resource/gnu/java/locale/LocaleInformation_ps.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt_PT.properties,
+	* resource/gnu/java/locale/LocaleInformation_ro.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru_UA.properties,
+	* resource/gnu/java/locale/LocaleInformation_rw.properties,
+	* resource/gnu/java/locale/LocaleInformation_sa.properties,
+	* resource/gnu/java/locale/LocaleInformation_se.properties,
+	* resource/gnu/java/locale/LocaleInformation_se_FI.properties,
+	* resource/gnu/java/locale/LocaleInformation_sid.properties,
+	* resource/gnu/java/locale/LocaleInformation_sk.properties,
+	* resource/gnu/java/locale/LocaleInformation_sl.properties,
+	* resource/gnu/java/locale/LocaleInformation_so.properties,
+	* resource/gnu/java/locale/LocaleInformation_sq.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_st.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv_FI.properties,
+	* resource/gnu/java/locale/LocaleInformation_sw.properties,
+	* resource/gnu/java/locale/LocaleInformation_ta.properties,
+	* resource/gnu/java/locale/LocaleInformation_te.properties,
+	* resource/gnu/java/locale/LocaleInformation_tg.properties,
+	* resource/gnu/java/locale/LocaleInformation_th.properties,
+	* resource/gnu/java/locale/LocaleInformation_ti.properties,
+	* resource/gnu/java/locale/LocaleInformation_ti_ER.properties,
+	* resource/gnu/java/locale/LocaleInformation_tig.properties,
+	* resource/gnu/java/locale/LocaleInformation_tn.properties,
+	* resource/gnu/java/locale/LocaleInformation_to.properties,
+	* resource/gnu/java/locale/LocaleInformation_tr.properties,
+	* resource/gnu/java/locale/LocaleInformation_trv.properties,
+	* resource/gnu/java/locale/LocaleInformation_ts.properties,
+	* resource/gnu/java/locale/LocaleInformation_uk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ur.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_vi.properties,
+	* resource/gnu/java/locale/LocaleInformation_wal.properties,
+	* resource/gnu/java/locale/LocaleInformation_wo.properties,
+	* resource/gnu/java/locale/LocaleInformation_xh.properties,
+	* resource/gnu/java/locale/LocaleInformation_yo.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_HK_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zu.properties:
+	Update property files so that the keys are sorted, making later
+	changes visible.  No actual data changes.
+
+2011-12-12  Andrew John Hughes  <ahughes@redhat.com>
+
+	RH712013: pdftk crashes with java.lang.ArrayIndexOutOfBoundsException
+	* java/text/DateFormatSymbols.java:
+	(getStringArray(List<ResourceBundle>, String, int)):
+	Calls getStringArray(list,string,int,null).
+	(getStringArray(List<ResourceBundle>, String, int, String[])):
+	Populate a String array with locale data.  The data
+	used is the first non-null non-empty element found
+	as we traverse the locale hierarchy. May be supplemented
+	by fallback data.
+	(DateFormatSymbols(Locale)): Get a list of all bundles up the
+	locale hierarchy, rather than just using the one specific locale.
+	Use the improved getStringArray method to populate the arrays,
+	supplying existing data where "sideways" inheritance takes place.
+
+2012-01-07  Pekka Enberg  <penberg@kernel.org>
+
+	* include/Makefile.am:
+	Add java_io_VMConsole.h.
+	* java/io/Console:
+	Add Java 1.6 java/io/Console API.
+	* java/lang/System.java:
+	(console): Add Java 1.6 console() API.
+	* vm/reference/java/io/VMConsole:
+	Add new class.
+	* native/jni/java-io/Makefile.am:
+	Add java_io_VMConsole.c.
+	* native/jni/java-io/java_io_VMConsole.c:
+	Add native helpers for java/io/Console.
+
+2012-01-05  Pekka Enberg  <penberg@kernel.org>
+
+	* java/io/IOError:
+	Add new class.
+
+2011-12-01  Andrew John Hughes  <ahughes@redhat.com>
+
+	* gnu/javax/net/ssl/provider/CipherSuite.java:
+	Pass CBC mode to the static CipherSuite instances.
+	(isCBCMode): New variable.
+	(CipherSuite(CipherAlgorithm, KeyExchangeAlgorithm,
+	SignatureAlgorithm, MacAlgorithm, int, int, int, String, boolean)):
+	Allow isCBCMode to be specified.
+	(CipherSuite(CipherAlgorithm, KeyExchangeAlgorithm, boolean,
+	SignatureAlgorithm, MacAlgorithm, int, int, int, String, boolean)):
+	Likewise.
+	(cipher()): Generalise setting of 'alg' to work with any suite
+	that does not use CBC, not just "RC4".
+	(isCBCMode()): New method.  Returns true if the CBC mode is used.
+	* gnu/javax/net/ssl/provider/OutputSecurityParameters.java:
+	(enableCBCProtection): Set to true by default of if jsse.enableCBCProtection
+	is true.
+	(needToSplitPayload()): Returns true if TLS < 1.1 is in use with
+	a CBC mode cipher and CBC protection is enabled.
+	* gnu/javax/net/ssl/provider/SSLEngineImpl.java:
+	(wrap(ByteBuffer[], int, int, ByteBuffer)): Send application data
+	as two packets (1 and n - 1) if CBC protection is enabled.
+
+2011-10-24  Pekka Enberg  <penberg@kernel.org>
+
+	* java/util/HashMap.java:
+	(put): Fix NullPointerException for null keys.
+
 2011-09-29  Jan Beulich  <jbeulich@suse.com>
 
 	* tools/Makefile.am (TOOLS_ZIP): Make writable the copied subtrees
 	asm/ and classes/.
 	* tools/Makefile.in: Re-generate.
+
+2011-09-09  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/45526: Produce header files for
+	any inner classes found.
+	* tools/gnu/classpath/tools/javah/Main.java:
+	(parsed): Set of class names that have been parsed.
+	(writeHeader(Map,Printer)): Take a general Map
+	rather than a specific HashMap.
+	(parseClasses(Iterator<Object>)): Factor out
+	the parsing of class files into a separate
+	method so it can be called recursively for
+	inner classes.
+	(getClass(String)): Remove redundant cast.
+
+2011-07-07  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/45527
+	* tools/gnu/classpath/tools/javah/JniHelper.java:
+	(mangle(String)): Replace '$' with '_' rather than
+	encoding it as hex.
+
+2011-07-07  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/40188
+	* tools/gnu/classpath/tools/javah/JniIncludePrinter.java:
+	(writeFields(ClassWrapper,JniPrintStream)): Retain a
+	reference to the original class and use it in naming
+	fields, as opposed to the class in which it occurs.
+
+2011-07-05  Pekka Enberg  <penberg@kernel.org>
+
+	* configure.ac:
+	Check for clock_gettime().
+	native/jni/java-lang/java_lang_VMSystem.c:
+	(Java_java_lang_VMSystem_nanoTime):
+	Fix compile error on systems that don't have clock_gettime().
+
+2011-06-27  Andrew John Hughes  <ahughes@redhat.com>
+
+	Fix issues with building with -Werror and gcc 4.6.
+	* native/jni/gtk-peer/GtkDragSourceContextPeer.c:
+	(Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_nativeSetCursor):
+	Remove unused ptr variable and mark env as unused.
+	(connect_signals_for_widget(GtkWidget*)): Mark w unused and don't set it.
+	(Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_nativeStartDrag):
+	Remove unused ptr variable.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_ComponentGraphics.c:
+	(Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState):
+	Remove unused width and height variables.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkRobotPeer.c:
+	(Java_gnu_java_awt_peer_gtk_GdkRobotPeer_mouseMove):
+	Check result of XTestFakeMotionEvent call.
+	(Java_gnu_java_awt_peer_gtk_GdkRobotPeer_mousePress): Likewise for
+	XTestFakeButtonEvent call.
+	(Java_gnu_java_awt_peer_gtk_GdkRobotPeer_mouseRelease): Likewise.
+	(Java_gnu_java_awt_peer_gtk_GdkRobotPeer_keyPress): Use g_message
+	instead of deprecated g_printerr.  Check result of XTestFakeKeyEvent.
+	(Java_gnu_java_awt_peer_gtk_GdkRobotPeer_keyRelease): Likewise.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.c:
+	(Java_gnu_java_awt_peer_gtk_GtkPopupMenuPeer_setupAccelGroup):
+	Completely disable code to attach parent, including use of ptr2
+	and parent argument, and reinstate original FIXME to explain why.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkVolatileImage.c:
+	(Java_gnu_java_awt_peer_gtk_GtkVolatileImage_nativeGetPixels):
+	Remove unused depth variable.
+	* native/jni/midi-alsa/gnu_javax_sound_midi_alsa_AlsaPortDevice.c,
+	(Java_gnu_javax_sound_midi_alsa_AlsaPortDevice_run_1receiver_1thread_1):
+	Check return values and throw an InternalError if a problem occurs.
+
+2011-05-29  Pekka Enberg  <penberg@kernel.org>
+
+	* lib/Makefile.am:
+	Generate META-INF/INDEX.LST for glibj.zip.
+
+2011-04-25  Pekka Enberg  <penberg@kernel.org>
+
+	* java/util/regex/Matcher.java:
+	(quoteReplacement): Implement missing Java 1.5 API method.
+
+2011-03-30  Gert Brettlecker  <gert.brettlecker@ergon.ch>
+
+	PR classpath/42823
+	* native/jni/java-net/java_net_VMInetAddress.c,
+	(Java_VMInetAddress_getHostByAddr(JNIEnv*,jclass,jarray)):
+	Free address structure after use.
+	(Java_java_net_VMInetAddress_aton(JNIEnv*,jclass,jstring)):
+	Release UTF string after use.
+
+2011-03-17  Pekka Enberg  <penberg@kernel.org>
+
+	* native/jni/java-nio/java_nio_VMDirectByteBuffer.c:
+	(Java_java_nio_VMDirectByteBuffer_allocate): Check for negative
+	capacity.
+
+2011-03-14  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/42390
+	* java/net/Socket.java:
+	(connect(SocketAddress, int)): Add missing call
+	to SecurityManager.
+
+2011-03-15  Jeroen Frijters  <jeroen@frijters.net>
+
+	PR classpath/48131
+	* java/util/zip/InflaterHuffmanTree.java:
+	(buildTree): Handle empty tree.
+
+2011-03-14  Pekka Enberg  <penberg@kernel.org>
+
+	* javax/swing/text/html/StyleSheet.java:
+	(resolveStyle()): Fix misuse of ArrayList.set().
+
+2011-02-22  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/42390
+	* java/security/ProtectionDomain.java:
+	(toString()): Don't include permissions from
+	the policy if we don't have permission to read
+	it.
+
+2011-03-02  Pekka Enberg  <penberg@kernel.org>
+
+	* java/util/regex/Matcher:
+	(find): Make sure match is within input data limits.
+
+2011-02-22  Pekka Enberg  <penberg@kernel.org>
+
+	* java/util/HashMap:
+	(put): Check for key hashCode equality before invoking
+	Object.equals() to fix compatibility issue with Jython.
+
+2011-02-22  Pekka Enberg  <penberg@kernel.org>
+
+	* java/util/HashMap:
+	(DEFAULT_CAPACITY): Make default initial capacity 16 as it is
+	defined in official Javadocs.
+
+2010-02-16  Pekka Enberg  <penberg@kernel.org>
+
+	* java/util/Formatter.java:
+	(parseInt): Use Integer.parseInt() insted of Integer.decode()
+	because the latter doesn't work with leading zeros which are
+	used in String.format() formatting, for example.
+
+2010-07-02  Ivan Maidanski  <ivmai@mail.ru>
+
+	* java/util/regex/Pattern.java:
+	(quote): Implement new 1.5 Java API method.
+
+2011-01-23  Pekka Enberg <penberg@kernel.org>
+
+	* java/io/PrintStream.java
+	(PrintStream): Throw NullPointerException if out or encoding
+	is null to be compatible with OpenJDK.
+
+2011-01-22  Pekka Enberg  <penberg@kernel.org>
+
+	* native/jni/java-lang/java_lang_VMSystem.c
+	(Java_java_lang_VMSystem_nanoTime): Fallback to
+	gettimeofday() if clock_gettime(CLOCK_MONOTONIC) fails.
+
+2011-01-22  Pekka Enberg  <penberg@kernel.org>
+
+	* native/jni/java-lang/java_lang_VMSystem.c
+	(currentTimeMillis): Rename currentTimeMillis to
+	currentTimeMicros to reflect what the function returns.
+
+2011-01-21  Pekka Enberg  <penberg@kernel.org>
+
+	* java/lang/Class.java:
+	(getDeclaredField): Throw NullPointerException instead of
+	NoSuchFieldException if name is null.
+	(getField): Likewise.
+	(getDeclaredMethod): Throw NullPointerException instead of
+	NoSuchMethodException if name is null.
+	(getMethod): Likewise.
+
+2010-12-25  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/42390
+	* java/io/File.java:
+	(isHidden()): Add and document missing
+	security check.
+
+2010-12-25  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/42390
+	* java/util/logging/LogManager.java:
+	(addPropertyChangeListener(PropertyChangeListener)):
+	Document fully.  Throw NPE in a clearer way.  Add
+	SecurityException.
+	(removePropertyChangeListener(PropertyChangeListener)):
+	Document fully. Add SecurityException.
+
+2010-12-25  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/42390
+	* java/io/ObjectOutputStream.java:
+	(ObjectOutputStream(OutputStream)): Add
+	required security check.
+	(overridesMethods(Class<?>)): Check whether
+	the subclass overrides one of the methods
+	which requires a security check.
+
+2010-12-24  Andrew John Hughes  <ahughes@redhat.com>
+
+	* java/security/ProtectionDomain.java,
+	(hasAllPermissions): Add new field.
+	(ProtectionDomain(CodeSource,PermissionCollection,
+	ClassLoader,Principal,boolean)): Check if permission
+	collection includes AllPermission and, if so, set
+	hasAllPermissions.
+	(implies(Permission)): Immediately return true if
+	hasAllPermissions is set.
+
+2006-07-21  Tom Tromey  <tromey@redhat.com>
+
+	* vm/reference/java/lang/VMClass.java:
+	(getSimpleName()): Use implementation from
+	gcj.
+
+2010-12-02  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/46775
+	* vm/reference/java/security/VMAccessController.java:
+	(DEFAULT_CONTEXT): Create ProtectionDomain with
+	four argument constructor (arguments are the same
+	as those implied by the two argument constructor).
+	(getContext()): Create ProtectionDomain instances
+	with four argument constructor using a null Principal
+	array (as before) but including the classloader, which
+	was always null before.
+
+2010-11-04  Andrew John Hughes  <ahughes@redhat.com>
+
+	* config.rpath:
+	Add file required by autogen.sh due to use
+	of AM_ICONV.
+	* m4/ax_func_which_gethostbyname_r.m4:
+	Use AC_LANG_SOURCE as suggested by warnings from
+	autoconf 2.68.
+
+2010-11-04  Andrew John Hughes  <ahughes@redhat.com>
+
+	Provide a fallback for systems without POSIX timers.
+	* native/jni/java-lang/java_lang_VMSystem.c:
+	(currentTimeMillis): New function which provides
+	the behaviour for both Java_java_lang_VMSystem_currentTimeMillis
+	and the fallback by obtaining the result of gettimeofday.
+	(Java_java_lang_VMSystem_nanoTime): Return currentTimeMillis
+	multiplied by a 1000 if a monotonic clock is unavailable.
+	(Java_java_lang_VMSystem_currentTimeMillis): Split main behaviour
+	out into currentTimeMillis and then return its result divided by a
+	1000.
+
+2010-07-08  Roland Brand  <roland.brand@ergon.ch>
+	Pekka Enberg  <penberg@kernel.org>
+
+	PR classpath/44411
+	* native/jni/java-lang/java_lang_VMSystem.c:
+	(Java_java_lang_VMSystem_nanoTime): Implement
+	using POSIX monotonic clock support and clock_gettime.
+	(Java_java_lang_VMSystem_currentTimeMillis):
+	Use old nanoTime method (which uses gettimeofday) to
+	provide the current time in milliseconds.
+	* vm/reference/java/lang/VMSystem.java:
+	(currentTimeMillis()): Make native with its own implementation
+	rather than using nanoTime, which should be
+	independent of wall-clock time.
+
+2010-05-09  Ivan Maidanski  <ivmai@mail.ru>
+
+	* gnu/java/security/Properties.java: Only
+	initialise log if Configuration.DEBUG is true.
+	* gnu/java/security/der/DERWriter.java:
+	(toUtf8(String)): Calculate 1.5 * len using
+	len + (len >> 1) to avoid multiplication by a floating-point
+	number.
+	* gnu/java/security/hash/Whirlpool.java: Only
+	initialise log if Configuration.DEBUG is true.
+	* gnu/java/security/jce/sig/EncodedKeyFactory.java: Likewise.
+	* gnu/java/security/jce/sig/SignatureAdapter.java: Likewise.
+	* gnu/java/security/key/dss/DSSKeyPairGenerator.java: Likewise.
+	* gnu/java/security/key/dss/DSSKeyPairPKCS8Codec.java: Likewise.
+	* gnu/java/security/key/rsa/RSAKeyPairGenerator.java: Likewise.
+	* gnu/java/security/key/rsa/RSAKeyPairPKCS8Codec.java: Likewise.
+	* gnu/java/security/key/rsa/RSAKeyPairX509Codec.java: Likewise.
+	* gnu/java/security/pkcs/PKCS7SignedData.java: Likewise.
+	* gnu/java/security/pkcs/SignerInfo.java: Likewise.
+	(SignerInfo(BERReader)): Only print version if Configuration.DEBUG is
+	true, as with other output.
+	* gnu/java/security/provider/PKIXCertPathValidatorImpl.java:
+	Only initialise log if Configuration.DEBUG is true.
+	* gnu/java/security/sig/rsa/EMSA_PSS.java: Likewise.
+	* gnu/java/security/sig/rsa/RSAPSSSignature.java: Likewise.
+	* gnu/java/security/x509/X509CRL.java: Likewise.
+	* gnu/java/security/x509/X509CRLEntry.java: Likewise.
+	* gnu/java/security/x509/ext/Extension.java: Likewise.
+	* gnu/javax/crypto/cipher/Anubis.java: Likewise.
+	* gnu/javax/crypto/cipher/BaseCipher.java: Likewise.
+	* gnu/javax/crypto/cipher/Khazad.java: Likewise.
+	* gnu/javax/crypto/cipher/Rijndael.java: Likewise.
+	* gnu/javax/crypto/cipher/Twofish.java: Likewise.
+	* gnu/javax/crypto/jce/cipher/KeyWrappingAlgorithmAdapter.java: Likewise.
+	* gnu/javax/crypto/jce/keyring/GnuKeyring.java: Likewise.
+	* gnu/javax/crypto/jce/params/BlockCipherParameters.java: Likewise.
+	* gnu/javax/crypto/jce/prng/ICMRandomSpi.java: Likewise.
+	* gnu/javax/crypto/jce/prng/UMacRandomSpi.java: Likewise.
+	* gnu/javax/crypto/key/dh/GnuDHKeyPairGenerator.java: Likewise.
+	(sha): Drop unused variable.
+	(rnd): Use implicit initialisation to null as with other variables.
+	* gnu/javax/crypto/key/srp6/SRPKeyPairGenerator.java:
+	Only initialise log if Configuration.DEBUG is true.
+	* gnu/javax/crypto/keyring/Entry.java: Likewise.
+	* gnu/javax/crypto/keyring/EnvelopeEntry.java: Likewise.
+	* gnu/javax/crypto/keyring/GnuPublicKeyring.java: Likewise.
+	* gnu/javax/crypto/mac/OMAC.java: Likewise.
+	* gnu/javax/crypto/pad/BasePad.java: Likewise.
+	* gnu/javax/crypto/pad/PKCS1_V1_5.java: Likewise.
+	* gnu/javax/crypto/pad/PKCS7.java: Likewise.
+	* gnu/javax/crypto/pad/TBC.java: Likewise.
+	* gnu/javax/crypto/prng/CSPRNG.java: Likewise.
+	(getSystemInstance()): Clarify bracketing of for loop
+	and ignorance of exceptions in the OTHER case.
+	* gnu/javax/crypto/sasl/SaslInputStream.java:
+	Only initialise log if Configuration.DEBUG is true.
+	* gnu/javax/crypto/sasl/SaslOutputStream.java: Likewise.
+	* gnu/javax/crypto/sasl/srp/SRPClient.java: Likewise.
+	* gnu/javax/crypto/sasl/srp/SRPServer.java: Likewise.
+	* gnu/javax/security/auth/login/ConfigFileParser.java: Likewise.
+	(map): Make final.
+	* gnu/javax/security/auth/login/ConfigFileTokenizer.java:
+	Only initialise log if Configuration.DEBUG is true.
+	(br): Make final.
+	(ConfigFileTokenizer(Reader)): Remove explicit initialisation of
+	initialised and call to superclass when superclass is Object.
+	* gnu/javax/security/auth/login/GnuConfiguration.java:
+	Only iniialise log if Configuration.DEBUG is true.
+	* java/math/BigInteger.java: Likewise.
+
+2010-04-12  Ivan Maidanski  <ivmai@mail.ru>
+
+	PR classpath/40889
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c:
+	(Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit): Convert gtktoolkit
+	value to a global reference (to be accessible in set_running_flag,
+	clear_running_flag).
+
+2010-04-12  Ivan Maidanski  <ivmai@mail.ru>
+
+        * native/jni/classpath/jcl.c:
+	Simplify attribute #ifndef block.
+	(JCL_POINTER_CLASSNAME): Define dependent on size of void*.
+	(JCL_POINTER_DATASIGN): Likewise.
+	(JCL_POINTER_INTTYPE): Likewise.
+	(JCL_POINTER_GETFIELD): Likewise.
+	(JNI_OnLoad): Define only if not JCL_NO_JNIONLOAD.
+	Use JCL_POINTER_xxx macros instead of SIZEOF_VOID_P.
+	(JCL_NewRawDataObject): Use JCL_POINTER_xxx macros instead of SIZEOF_VOID_P.
+	Initialize rawDataClass, rawData_fid, rawData_mid global variables if JCL_NO_JNIONLOAD.
+	(JCL_realloc): Don't call free() for NULL pointer.
+	(JCL_GetRawData): Use JCL_POINTER_xxx macros instead of SIZEOF_VOID_P.
+	Initialize rawDataClass, rawData_fid, rawData_mid global variables
+	if JCL_NO_JNIONLOAD.
+
+2010-07-30  Andrew Haley  <aph@redhat.com>
+
+        * javax/print/attribute/standard/JobStateReasons.java (add): Fix
+        infinite recursion with call to super.
+
+2010-07-13  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/util/zip/ZipFile.java:
+	(readEntries): Throw exception when an encrypted entry is encountered.
+
+2010-07-13  Daniel Noll  <daniel@nuix.com>
+
+	* java/util/zip/InflaterHuffmanTree.java:
+	(buildTree): Fix for #36560.
+
+2010-04-12  Ivan Maidanski  <ivmai@mail.ru>
+
+	* vm/reference/gnu/classpath/VMStackWalker.java: Make the default
+	constructor private.
+	* vm/reference/gnu/classpath/VMSystemProperties.java: Likewise and make class final.
+	* vm/reference/gnu/java/lang/VMCPStringBuilder.java: Likewise.
+	* vm/reference/gnu/java/lang/VMInstrumentationImpl.java: Likewise.
+	* vm/reference/gnu/java/lang/management/VMClassLoadingMXBeanImpl.java:
+	Likewise.
+	* vm/reference/gnu/java/lang/management/VMCompilationMXBeanImpl.java:
+	Likewise.
+	* vm/reference/gnu/java/lang/management/VMGarbageCollectorMXBeanImpl.java:
+	Likewise.
+	* vm/reference/gnu/java/lang/management/VMMemoryMXBeanImpl.java:
+	Likewise.
+	* vm/reference/gnu/java/lang/management/VMMemoryManagerMXBeanImpl.java:
+	Likewise.
+	* vm/reference/gnu/java/lang/management/VMMemoryPoolMXBeanImpl.java:
+	Likewise.
+	* vm/reference/gnu/java/lang/management/VMOperatingSystemMXBeanImpl.java:
+	Likewise.
+	* vm/reference/gnu/java/lang/management/VMRuntimeMXBeanImpl.java:
+	Likewise.
+	* vm/reference/gnu/java/lang/management/VMThreadMXBeanImpl.java:
+	Likewise.
+	* vm/reference/gnu/java/net/VMPlainDatagramSocketImpl.java: Likewise.
+	Make class non-public and add missing full stop in comment.
+	* vm/reference/gnu/java/nio/VMPipe.java: Make the default constructor private.
+	* vm/reference/gnu/java/nio/VMSelector.java: Likewise and make class non-public.
+	* vm/reference/gnu/java/security/jce/prng/VMSecureRandom.java:
+	Make the default constructor private.
+	(Spinner.stop()): Make package-private to ease access from enclosing class.
+	* vm/reference/java/io/VMFile.java: Make the default constructor private.
+	Fix punctuation in documentation.
+	(getTotalSpace(String)): Make package-private.
+	(getFreeSpace(String)): Likewise.
+	(getUsableSpace(String)): Likewise.
+	(setReadable(String,boolean,boolean)): Likewise.
+	(setExecutable(String,boolean,boolean)): Likewise.
+	(toCanonicalForm(String)): Likewise.
+	* vm/reference/java/io/VMObjectInputStream.java: Make default constructor private.
+	* vm/reference/java/io/VMObjectStreamClass.java: Likewise.
+	* vm/reference/java/lang/VMClassLoader.java: Likewise.
+	* vm/reference/java/lang/VMCompiler.java:
+	(compileClass(Class)): Make package-private.
+	(compileClasses(String)): Likewise.
+	(command(String)): Likewise.
+        (enable()): Likewise.
+        (disable()): Likewise.
+	* vm/reference/java/lang/VMDouble.java: Make constructor package-private.
+	(doubleToRawLongBits(double)): Make package-private.
+	(longBitsToDouble(long)): Likewise.
+	(toString(double, boolean)): Likewise.
+	(initIDs()): Make private.
+	(parseDouble(String)): Make package-private.
+	* vm/reference/java/lang/VMFloat.java: Make constructor package-private.
+	* vm/reference/java/lang/VMMath.java: Likewise and make class final.
+	(sin(double)): Make package-private.
+	(cos(double)): Likewise.
+	(tan(double)): Likewise.
+	(asin(double)): Likewise.
+	(acos(double)): Likewise.
+	(atan(double)): Likewise.
+	(atan2(double, double)): Likewise.
+	(exp(double)): Likewise.
+	(log(double)): Likewise.
+	(sqrt(double)): Likewise.
+	(pow(double)): Likewise.
+	(IEEEremainder(double, double)): Likewise.
+	(ceil(double)): Likewise.
+	(floor(double)): Likewise.
+	(rint(double)): Likewise.
+	(cbrt(double)): Likewise.
+        (cosh(double)): Likewise.
+        (expm1(double)): Likewise.
+        (hypot(double)): Likewise.
+        (log10(double)): Likewise.
+        (log1p(double)): Likewise.
+        (sinh(double)): Likewise.
+        (tanh(double)): Likewise.
+	* vm/reference/java/lang/VMObject.java: Make constructor package-private.
+	* vm/reference/java/lang/VMString.java: Likewise.
+	* vm/reference/java/lang/VMSystem.java: Likewise.
+	(mapLibraryName(String)): Remove the commented out function (since
+	exists in VMRuntime).
+	(currentTimeMillis()): Make package-private.
+	(nanoTime()): Likewise.
+	* vm/reference/java/lang/management/VMManagementFactory.java:
+	Make constructor package-private.
+	* vm/reference/java/lang/reflect/VMArray.java: Make constructor
+	package-private and class final.
+	* vm/reference/java/lang/reflect/VMProxy.java: Make constructor
+	package-private.
+	* vm/reference/java/net/VMInetAddress.java: Make constructor package-private
+	and class final..
+	(getLocalHostname()): Make package-private.
+	(lookupInaddrAny()): Likewise.
+	(getHostByAddr(byte[])): Likewise.
+	(getHostByName(String)): Likewise.
+	(aton(String)): Likewise.
+	* vm/reference/java/net/VMURLConnection.java: Make constructor package-private.
+	(LENGTH): Likewise.
+	* vm/reference/java/nio/VMDirectByteBuffer.java: Make constructor package-private.
+	Fix indenting.
+	* vm/reference/java/security/VMSecureRandom.java: Make constructor package-private.
+	Make the default constructor private.
+	(Spinner.stop()): Make package-private to ease access from enclosing class.
+	* vm/reference/java/util/VMTimeZone.java: Make constructor package-private.
+	* vm/reference/sun/misc/Unsafe.java: Make class final.
+	(unsafe): Make final.
+
+2010-06-21  Andrew John Hughes  <ahughes@redhat.com>
+
+	* tools/Makefile.am:
+	Fix patch to message bundles.
+
+2010-04-12  Ivan Maidanski  <ivmai@mail.ru>
+
+        * examples/gnu/classpath/examples/swing/Demo.java:
+	(mkMenuBar): Don't pass null as a second argument to getMethod() (to suppress
+	a warning).
+	* resource/gnu/javax/print/PrinterDialog.properties: Rename to
+	"MessagesBundle.properties" (to prevent class name collision
+	in case the properties file is converted to a class).
+	* resource/gnu/javax/print/PrinterDialog_de.properties: Likewise.
+	* gnu/javax/print/PrinterDialog.java (messages): Get resources from
+	"gnu.javax.print.MessagesBundle" bundle instead of
+	"gnu/javax/print/PrinterDialog" one.
+	* tools/gnu/classpath/tools/common/Messages.java (BUNDLE_NAME):
+	Convert "gnu.classpath.tools.common.Messages" to lowercase (to be
+	consistent with other tools resource bundle names and to prevent class
+	name collision in case the properties file is converted to a class).
+	* tools/resource/gnu/classpath/tools/common/Messages.properties:
+	Rename to "messages.properties".
+	* tools/resource/gnu/classpath/tools/getopt/Messages.properties:
+	Likewise.
+	* testsuite/javax.swing.text.html.parser/test/gnu/javax/swing/text/html/parser/Parser_Test.java:
+	Rename "enum" local variable to "en".
+	* testsuite/javax.swing.text.html.parser/test/gnu/javax/swing/text/html/parser/ParserTest.java:
+	Likewise.
+
+2010-06-05  Mark Wielaard  <mark@klomp.org>
+
+	* doc/cp-tools.texinfo: Move copying information in @copying section.
 
 2010-06-03  Andrew John Hughes  <ahughes@redhat.com>
 

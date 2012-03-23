@@ -163,14 +163,12 @@ static void
 gst_classpath_src_class_init (GstClasspathSrcClass *klass)
 {
   GObjectClass *gobject_class;
-  GstElementClass *gstelement_class;
   GstBaseSrcClass *gstbasesrc_class;
   GstPushSrcClass *gstpushsrc_class;
   
   GParamSpec *pspec;
 
   gobject_class = G_OBJECT_CLASS (klass);
-  gstelement_class = GST_ELEMENT_CLASS (klass);
   gstbasesrc_class = GST_BASE_SRC_CLASS (klass);
   gstpushsrc_class = GST_PUSH_SRC_CLASS (klass);
   

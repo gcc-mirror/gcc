@@ -1,5 +1,5 @@
 /* PKCS7SignedData.java -- reader/writer for PKCS#7 signedData objects
-   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -78,7 +78,8 @@ import java.util.logging.Logger;
  */
 public class PKCS7SignedData
 {
-  private static final Logger log = Logger.getLogger(PKCS7SignedData.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                Logger.getLogger(PKCS7SignedData.class.getName()) : null;
 
   public static final OID PKCS7_SIGNED_DATA = new OID("1.2.840.113549.1.7.2");
 

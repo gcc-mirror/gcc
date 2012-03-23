@@ -1,5 +1,5 @@
 /* BlockCipherParameters.java --
-   Copyright (C) 2002, 2003, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2006, 2010  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -59,7 +59,8 @@ import javax.crypto.spec.IvParameterSpec;
 public class BlockCipherParameters
     extends AlgorithmParametersSpi
 {
-  private static final Logger log = Logger.getLogger(BlockCipherParameters.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+            Logger.getLogger(BlockCipherParameters.class.getName()) : null;
   /** The underlying block cipher specification. */
   protected BlockCipherParameterSpec cipherSpec;
   private static final String DEFAULT_FORMAT = "ASN.1";

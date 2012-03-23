@@ -1,5 +1,5 @@
 /* MemoryPoolMXBeanImpl.java - VM interface for memory pool beans
-   Copyright (C) 2006 Free Software Foundation
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,6 +48,8 @@ import java.lang.management.MemoryUsage;
  */
 final class VMMemoryPoolMXBeanImpl
 {
+
+  private VMMemoryPoolMXBeanImpl() {} // Prohibits instantiation.
 
   /**
    * Returns memory usage statistics for the specified pool

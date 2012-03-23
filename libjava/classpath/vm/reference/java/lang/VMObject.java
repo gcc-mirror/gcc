@@ -1,5 +1,5 @@
 /* VMObject.java -- Reference implementation for VM hooks used by Object
-   Copyright (C) 1998, 2002, 2005  Free Software Foundation
+   Copyright (C) 1998, 2002, 2005, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,6 +46,9 @@ package java.lang;
  */
 final class VMObject
 {
+
+  private VMObject() {} // Prohibits instantiation.
+
   /**
    * Returns the runtime {@link Class} of a given Object.
    *

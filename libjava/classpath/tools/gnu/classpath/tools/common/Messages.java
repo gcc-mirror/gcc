@@ -1,5 +1,5 @@
 /* Messages.java -- i18n support for tools common code
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.util.ResourceBundle;
 class Messages
 {
   private static final String BUNDLE_NAME
-    = "gnu.classpath.tools.common.Messages"; //$NON-NLS-1$
+    = "gnu.classpath.tools.common.messages"; //$NON-NLS-1$
 
   private static final ResourceBundle RESOURCE_BUNDLE
     = ResourceBundle.getBundle(BUNDLE_NAME);

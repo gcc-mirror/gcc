@@ -100,11 +100,10 @@ public class HashMap<K, V> extends AbstractMap<K, V>
   implements Map<K, V>, Cloneable, Serializable
 {
   /**
-   * Default number of buckets. This is the value the JDK 1.3 uses. Some
-   * early documentation specified this value as 101. That is incorrect.
+   * Default number of buckets; this is currently set to 16.
    * Package visible for use by HashSet.
    */
-  static final int DEFAULT_CAPACITY = 11;
+  static final int DEFAULT_CAPACITY = 16;
 
   /**
    * The default load factor; this is explicitly specified by the spec.
@@ -344,9 +343,12 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     int idx = hash(key);
     HashEntry<K, V> e = buckets[idx];
 
+    int hash1 = key == null ? 0 : key.hashCode();
     while (e != null)
       {
-        if (equals(key, e.key))
+        int hash2 = e.key == null ? 0 : e.key.hashCode();
+
+        if ((hash1 == hash2) && equals(key, e.key))
           {
             e.access(); // Must call this for bookkeeping in LinkedHashMap.
             V r = e.value;

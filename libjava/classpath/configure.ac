@@ -6,7 +6,7 @@ dnl -----------------------------------------------------------
 dnl define([AC_CACHE_LOAD], )dnl
 dnl define([AC_CACHE_SAVE], )dnl
 
-AC_INIT([GNU Classpath],[0.99-pre],[classpath@gnu.org],[classpath])
+AC_INIT([GNU Classpath],[0.99],[classpath@gnu.org],[classpath])
 AC_CONFIG_SRCDIR(java/lang/System.java)
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -489,13 +489,15 @@ if test "x${COMPILE_JNI}" = xyes; then
   AC_EGREP_HEADER(u_int32_t, sys/types.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED, 1, [Define to 1 if you have BSD u_int32_t]))
   AC_EGREP_HEADER(u_int32_t, sys/config.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED, 1, [Define to 1 if you have BSD u_int32_t]))
 
+  AC_SEARCH_LIBS([clock_gettime], [rt])
   AC_SEARCH_LIBS([inet_pton],[nsl])
   AC_CHECK_LIB([socket], [gethostname]) 
+
   AC_CHECK_FUNCS([ftruncate fsync select \
 		  gethostname socket strerror fork pipe execve open close \
 		  lseek fstat read readv write writev htonl memset htons connect \
 		  getsockname getpeername bind listen accept \
-		  recvfrom send sendto setsockopt getsockopt time mktime \
+		  recvfrom send sendto setsockopt getsockopt time mktime clock_gettime \
 		  gethostbyname_r localtime_r \
 		  strerror_r \
                   fcntl \

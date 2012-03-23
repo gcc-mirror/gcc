@@ -17,6 +17,17 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getKerning
 JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getMetricsNative (JNIEnv *env, jobject, jint, jlong);
 JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphOutlineNative (JNIEnv *env, jobject, jint, jlong);
 
+#undef java_awt_font_GlyphVector_FLAG_COMPLEX_GLYPHS
+#define java_awt_font_GlyphVector_FLAG_COMPLEX_GLYPHS 8L
+#undef java_awt_font_GlyphVector_FLAG_HAS_POSITION_ADJUSTMENTS
+#define java_awt_font_GlyphVector_FLAG_HAS_POSITION_ADJUSTMENTS 2L
+#undef java_awt_font_GlyphVector_FLAG_HAS_TRANSFORMS
+#define java_awt_font_GlyphVector_FLAG_HAS_TRANSFORMS 1L
+#undef java_awt_font_GlyphVector_FLAG_MASK
+#define java_awt_font_GlyphVector_FLAG_MASK 15L
+#undef java_awt_font_GlyphVector_FLAG_RUN_RTL
+#define java_awt_font_GlyphVector_FLAG_RUN_RTL 4L
+
 #ifdef __cplusplus
 }
 #endif

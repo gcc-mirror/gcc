@@ -20,6 +20,17 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkImage_freePixbuf (JNIEnv *e
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkImage_createScaledPixbuf (JNIEnv *env, jobject, jobject, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkImage_createFromPixbuf (JNIEnv *env, jobject);
 
+#undef java_awt_Image_SCALE_DEFAULT
+#define java_awt_Image_SCALE_DEFAULT 1L
+#undef java_awt_Image_SCALE_FAST
+#define java_awt_Image_SCALE_FAST 2L
+#undef java_awt_Image_SCALE_SMOOTH
+#define java_awt_Image_SCALE_SMOOTH 4L
+#undef java_awt_Image_SCALE_REPLICATE
+#define java_awt_Image_SCALE_REPLICATE 8L
+#undef java_awt_Image_SCALE_AREA_AVERAGING
+#define java_awt_Image_SCALE_AREA_AVERAGING 16L
+
 #ifdef __cplusplus
 }
 #endif

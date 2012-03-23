@@ -65,6 +65,7 @@ extern "Java"
       class CharArrayWriter;
       class CharConversionException;
       class Closeable;
+      class Console;
       class DataInput;
       class DataInputStream;
       class DataOutput;
@@ -88,6 +89,7 @@ extern "Java"
       class FilterReader;
       class FilterWriter;
       class Flushable;
+      class IOError;
       class IOException;
       class InputStream;
       class InputStreamReader;
@@ -108,6 +110,7 @@ extern "Java"
       class ObjectOutput;
       class ObjectOutputStream;
       class ObjectOutputStream$1;
+      class ObjectOutputStream$2;
       class ObjectOutputStream$PutField;
       class ObjectStreamClass;
       class ObjectStreamClass$1;
@@ -142,6 +145,7 @@ extern "Java"
       class SyncFailedException;
       class UTFDataFormatException;
       class UnsupportedEncodingException;
+      class VMConsole;
       class VMObjectInputStream;
       class VMObjectStreamClass;
       class WriteAbortedException;

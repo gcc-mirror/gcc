@@ -303,20 +303,21 @@ final class VMClass
         return getComponentType(klass).getSimpleName() + "[]";
       }
     String fullName = getName(klass);
-    int pos = fullName.lastIndexOf("$");
-    if (pos == -1)
-      pos = 0;
-    else
-      {
-        ++pos;
-        while (Character.isDigit(fullName.charAt(pos)))
-          ++pos;
-      }
-    int packagePos = fullName.lastIndexOf(".", pos);
-    if (packagePos == -1)
-      return fullName.substring(pos);
-    else
-      return fullName.substring(packagePos + 1);
+    Class enclosingClass = getEnclosingClass(klass);
+    if (enclosingClass == null)
+      // It's a top level class.
+      return fullName.substring(fullName.lastIndexOf(".") + 1);
+
+    fullName = fullName.substring(enclosingClass.getName().length());
+
+    // We've carved off the enclosing class name; now we must have '$'
+    // followed optionally by digits, followed by the class name.
+    int pos = 1;
+    while (Character.isDigit(fullName.charAt(pos)))
+      ++pos;
+    fullName = fullName.substring(pos);
+
+    return fullName;
   }
 
   /**

@@ -1188,7 +1188,7 @@ public final class Formatter
       advance();
     if (start == index)
       return -1;
-    return Integer.decode(format.substring(start, index));
+    return Integer.parseInt(format.substring(start, index));
   }
 
   /**

@@ -169,6 +169,12 @@ public final class Matcher implements MatchResult
     if (match != null)
       {
         int endIndex = match.getEndIndex();
+        // Is the match within input limits?
+        if (endIndex > input.length())
+          {
+            match = null;
+            return false;
+          }
         // Are we stuck at the same position?
         if (!first && endIndex == position)
           {
@@ -606,6 +612,29 @@ public final class Matcher implements MatchResult
     if (match != null)
       snapshot.match = (REMatch) match.clone();
     return snapshot;
+  }
+
+  /**
+   * Returns a literalized string of s where characters {@code $} and {@code
+   * \\} are escaped.
+   *
+   * @param s the string to literalize.
+   * @return the literalized string.
+   * @since 1.5
+   */
+  public static String quoteReplacement(String s)
+  {
+    if (s == null)
+      throw new NullPointerException();
+    CPStringBuilder sb = new CPStringBuilder();
+    for (int i = 0; i < s.length(); i++)
+    {
+      char ch = s.charAt(i);
+      if (ch == '$' || ch == '\\')
+        sb.append('\\');
+      sb.append(ch);
+    }
+    return sb.toString();
   }
 
 }

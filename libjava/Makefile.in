@@ -358,7 +358,8 @@ am__objects_5 = $(am__objects_3) gnu/classpath/natConfiguration.lo \
 	gnu/java/nio/natVMChannel.lo \
 	gnu/java/nio/channels/natFileChannelImpl.lo \
 	gnu/java/security/jce/prng/natVMSecureRandom.lo \
-	java/io/natFile.lo java/io/natVMObjectInputStream.lo \
+	java/io/natFile.lo java/io/natVMConsole.lo \
+	java/io/natVMObjectInputStream.lo \
 	java/io/natVMObjectStreamClass.lo java/lang/natCharacter.lo \
 	java/lang/natClass.lo java/lang/natClassLoader.lo \
 	java/lang/natConcreteProcess.lo java/lang/natVMDouble.lo \
@@ -4275,6 +4276,7 @@ classpath/java/io/CharArrayReader.java \
 classpath/java/io/CharArrayWriter.java \
 classpath/java/io/CharConversionException.java \
 classpath/java/io/Closeable.java \
+classpath/java/io/Console.java \
 classpath/java/io/DataInput.java \
 classpath/java/io/DataInputStream.java \
 classpath/java/io/DataOutput.java \
@@ -4297,6 +4299,7 @@ classpath/java/io/FilterOutputStream.java \
 classpath/java/io/FilterReader.java \
 classpath/java/io/FilterWriter.java \
 classpath/java/io/Flushable.java \
+classpath/java/io/IOError.java \
 classpath/java/io/IOException.java \
 classpath/java/io/InputStream.java \
 java/io/InputStreamReader.java \
@@ -4340,6 +4343,7 @@ classpath/java/io/StringWriter.java \
 classpath/java/io/SyncFailedException.java \
 classpath/java/io/UTFDataFormatException.java \
 classpath/java/io/UnsupportedEncodingException.java \
+java/io/VMConsole.java \
 java/io/VMObjectInputStream.java \
 java/io/VMObjectStreamClass.java \
 classpath/java/io/WriteAbortedException.java \
@@ -8352,8 +8356,8 @@ property_files = \
   classpath/resource/gnu/java/util/regex/MessagesBundle.properties \
   classpath/resource/gnu/java/util/regex/MessagesBundle_fr.properties \
   classpath/resource/gnu/java/util/regex/MessagesBundle_it.properties \
-  classpath/resource/gnu/javax/print/PrinterDialog.properties \
-  classpath/resource/gnu/javax/print/PrinterDialog_de.properties \
+  classpath/resource/gnu/javax/print/MessagesBundle.properties \
+  classpath/resource/gnu/javax/print/MessagesBundle_de.properties \
   classpath/resource/gnu/javax/security/auth/callback/MessagesBundle.properties \
   classpath/resource/java/text/metazones.properties \
   classpath/resource/java/util/iso4217.properties \
@@ -8605,6 +8609,7 @@ gnu/java/nio/natVMChannel.cc \
 gnu/java/nio/channels/natFileChannelImpl.cc \
 gnu/java/security/jce/prng/natVMSecureRandom.cc \
 java/io/natFile.cc \
+java/io/natVMConsole.cc \
 java/io/natVMObjectInputStream.cc \
 java/io/natVMObjectStreamClass.cc \
 java/lang/natCharacter.cc \
@@ -9128,6 +9133,8 @@ java/io/$(DEPDIR)/$(am__dirstamp):
 	@: > java/io/$(DEPDIR)/$(am__dirstamp)
 java/io/natFile.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
+java/io/natVMConsole.lo: java/io/$(am__dirstamp) \
+	java/io/$(DEPDIR)/$(am__dirstamp)
 java/io/natVMObjectInputStream.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
 java/io/natVMObjectStreamClass.lo: java/io/$(am__dirstamp) \
@@ -9636,6 +9643,8 @@ mostlyclean-compile:
 	-rm -f gnu/java/security/jce/prng/natVMSecureRandom.lo
 	-rm -f java/io/natFile.$(OBJEXT)
 	-rm -f java/io/natFile.lo
+	-rm -f java/io/natVMConsole.$(OBJEXT)
+	-rm -f java/io/natVMConsole.lo
 	-rm -f java/io/natVMObjectInputStream.$(OBJEXT)
 	-rm -f java/io/natVMObjectInputStream.lo
 	-rm -f java/io/natVMObjectStreamClass.$(OBJEXT)
@@ -9810,6 +9819,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/channels/$(DEPDIR)/natFileChannelImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/jce/prng/$(DEPDIR)/natVMSecureRandom.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natFile.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natVMConsole.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natVMObjectInputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natVMObjectStreamClass.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/Object.Plo@am__quote@

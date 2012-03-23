@@ -1,5 +1,5 @@
 /* VMString.java -- VM Specific String methods
-   Copyright (C) 2003 Free Software Foundation
+   Copyright (C) 2003, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,6 +59,8 @@ final class VMString
    * the String will be GC'd.
    */
   private static final WeakHashMap internTable = new WeakHashMap();
+
+  private VMString() {} // Prohibits instantiation.
 
   /**
    * Fetches this String from the intern hashtable. If two Strings are

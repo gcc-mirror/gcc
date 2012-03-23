@@ -1,5 +1,5 @@
 /* GnuKeyring.java -- KeyStore adapter for a pair of private and public Keyrings
-   Copyright (C) 2003, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006, 2010  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -77,7 +77,8 @@ import javax.crypto.SecretKey;
 public class GnuKeyring
     extends KeyStoreSpi
 {
-  private static final Logger log = Logger.getLogger(GnuKeyring.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(GnuKeyring.class.getName()) : null;
   private static final String NOT_LOADED = "not loaded";
 
   /** TRUE if the keystore is loaded; FALSE otherwise. */

@@ -1,5 +1,5 @@
 /* X509CRL.java -- X.509 certificate revocation list.
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -77,7 +77,9 @@ import javax.security.auth.x500.X500Principal;
 public class X509CRL extends java.security.cert.X509CRL
   implements GnuPKIExtension
 {
-  private static final Logger log = Logger.getLogger(X509CRL.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(X509CRL.class.getName()) : null;
+
   private static final OID ID_DSA = new OID("1.2.840.10040.4.1");
   private static final OID ID_DSA_WITH_SHA1 = new OID("1.2.840.10040.4.3");
   private static final OID ID_RSA = new OID("1.2.840.113549.1.1.1");

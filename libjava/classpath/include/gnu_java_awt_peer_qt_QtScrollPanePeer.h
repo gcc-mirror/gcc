@@ -17,6 +17,9 @@ JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_qt_QtScrollPanePeer_getHScrollbarH
 JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_qt_QtScrollPanePeer_getVScrollbarWidth (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtScrollPanePeer_setScrollPosition (JNIEnv *env, jobject, jint, jint);
 
+#undef gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER
+#define gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER 3L
+
 #ifdef __cplusplus
 }
 #endif

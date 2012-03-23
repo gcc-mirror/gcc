@@ -16,6 +16,23 @@ JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GtkVolatileImage_nativeGe
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkVolatileImage_nativeCopyArea (JNIEnv *env, jobject, jlong, jint, jint, jint, jint, jint, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkVolatileImage_nativeDrawVolatile (JNIEnv *env, jobject, jlong, jlong, jint, jint, jint, jint);
 
+#undef java_awt_image_VolatileImage_IMAGE_OK
+#define java_awt_image_VolatileImage_IMAGE_OK 0L
+#undef java_awt_image_VolatileImage_IMAGE_RESTORED
+#define java_awt_image_VolatileImage_IMAGE_RESTORED 1L
+#undef java_awt_image_VolatileImage_IMAGE_INCOMPATIBLE
+#define java_awt_image_VolatileImage_IMAGE_INCOMPATIBLE 2L
+#undef java_awt_Image_SCALE_DEFAULT
+#define java_awt_Image_SCALE_DEFAULT 1L
+#undef java_awt_Image_SCALE_FAST
+#define java_awt_Image_SCALE_FAST 2L
+#undef java_awt_Image_SCALE_SMOOTH
+#define java_awt_Image_SCALE_SMOOTH 4L
+#undef java_awt_Image_SCALE_REPLICATE
+#define java_awt_Image_SCALE_REPLICATE 8L
+#undef java_awt_Image_SCALE_AREA_AVERAGING
+#define java_awt_Image_SCALE_AREA_AVERAGING 16L
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,5 +1,5 @@
 /* VMDouble.java -- VM Specific Double methods
-   Copyright (C) 2003, 2005  Free Software Foundation
+   Copyright (C) 2003, 2005, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,6 +65,8 @@ final class VMDouble
     initIDs();
   }
 
+  private VMDouble() {} // Prohibits instantiation.
+
   /**
    * Convert the double to the IEEE 754 floating-point "double format" bit
    * layout. Bit 63 (the most significant) is the sign bit, bits 62-52
@@ -79,7 +81,7 @@ final class VMDouble
    * @return the bits of the <code>double</code>
    * @see #longBitsToDouble(long)
    */
-  public static native long doubleToRawLongBits(double value);
+  static native long doubleToRawLongBits(double value);
 
   /**
    * Convert the argument in IEEE 754 floating-point "double format" bit
@@ -94,7 +96,7 @@ final class VMDouble
    * @see #doubleToLongBits(double)
    * @see #doubleToRawLongBits(double)
    */
-  public static native double longBitsToDouble(long bits);
+  static native double longBitsToDouble(long bits);
 
   /**
    * Helper method to convert to string.
@@ -103,13 +105,18 @@ final class VMDouble
    * @param isFloat true if the conversion is requested by Float (results in
    *        fewer digits)
    */
-  public static native String toString(double d, boolean isFloat);
+  static native String toString(double d, boolean isFloat);
 
   /**
    * Initialize JNI cache.  This method is called only by the
    * static initializer when using JNI.
    */
-  public static native void initIDs();
+  private static native void initIDs();
 
-  public static native double parseDouble(String str);
+  /**
+   * Parse the specified String as a double.
+   * @throws NumberFormatException if str cannot be parsed
+   * @throws NullPointerException if str is null
+   */
+  static native double parseDouble(String str);
 }

@@ -19,6 +19,19 @@ JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_nativeGra
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_copyAreaNative (JNIEnv *env, jobject, jobject, jint, jint, jint, jint, jint, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_drawVolatile (JNIEnv *env, jobject, jobject, jlong, jint, jint, jint, jint, jint, jint, jint, jint);
 
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_NEAREST
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_NEAREST 0L
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_BILINEAR
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_BILINEAR 1L
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_BICUBIC
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_BICUBIC 5L
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_SPEED
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_SPEED 2L
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_QUALITY
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_QUALITY 3L
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_DEFAULT
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_DEFAULT 4L
+
 #ifdef __cplusplus
 }
 #endif

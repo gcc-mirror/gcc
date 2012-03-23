@@ -13,6 +13,13 @@ extern "C"
 JNIEXPORT jlong JNICALL Java_gnu_java_awt_peer_qt_MainQtThread_init (JNIEnv *env, jobject, jstring, jboolean);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_MainQtThread_exec (JNIEnv *env, jobject, jlong);
 
+#undef java_lang_Thread_MIN_PRIORITY
+#define java_lang_Thread_MIN_PRIORITY 1L
+#undef java_lang_Thread_NORM_PRIORITY
+#define java_lang_Thread_NORM_PRIORITY 5L
+#undef java_lang_Thread_MAX_PRIORITY
+#define java_lang_Thread_MAX_PRIORITY 10L
+
 #ifdef __cplusplus
 }
 #endif

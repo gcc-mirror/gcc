@@ -73,127 +73,127 @@ public final class CipherSuite implements Constructed
                      KeyExchangeAlgorithm.NONE,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.NULL, 0, 0x00, 0x00,
-                     "TLS_NULL_WITH_NULL_NULL");
+                     "TLS_NULL_WITH_NULL_NULL", false);
   public static final CipherSuite TLS_RSA_WITH_NULL_MD5 =
     new CipherSuite (CipherAlgorithm.NULL,
                      KeyExchangeAlgorithm.RSA,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.MD5, 0, 0x00, 0x01,
-                     "TLS_RSA_WITH_NULL_MD5");
+                     "TLS_RSA_WITH_NULL_MD5", false);
   public static final CipherSuite TLS_RSA_WITH_NULL_SHA =
     new CipherSuite (CipherAlgorithm.NULL,
                      KeyExchangeAlgorithm.RSA,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 0, 0x00, 0x02,
-                     "TLS_RSA_WITH_NULL_SHA");
+                     "TLS_RSA_WITH_NULL_SHA", false);
   public static final CipherSuite TLS_RSA_EXPORT_WITH_RC4_40_MD5 =
     new CipherSuite (CipherAlgorithm.RC4,
                      KeyExchangeAlgorithm.RSA,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.MD5, 5, 0x00, 0x03,
-                     "TLS_RSA_EXPORT_WITH_RC4_40_MD5");
+                     "TLS_RSA_EXPORT_WITH_RC4_40_MD5", false);
   public static final CipherSuite TLS_RSA_WITH_RC4_128_MD5 =
     new CipherSuite (CipherAlgorithm.RC4,
                      KeyExchangeAlgorithm.RSA,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.MD5, 16, 0x00, 0x04,
-                     "TLS_RSA_WITH_RC4_128_MD5");
+                     "TLS_RSA_WITH_RC4_128_MD5", false);
   public static final CipherSuite TLS_RSA_WITH_RC4_128_SHA =
     new CipherSuite (CipherAlgorithm.RC4,
                      KeyExchangeAlgorithm.RSA,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 16, 0x00, 0x05,
-                     "TLS_RSA_WITH_RC4_128_SHA");
+                     "TLS_RSA_WITH_RC4_128_SHA", false);
   public static final CipherSuite TLS_RSA_EXPORT_WITH_DES40_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DES,
                      KeyExchangeAlgorithm.RSA,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 5, 0x00, 0x08,
-                     "TLS_RSA_EXPORT_WITH_DES40_CBC_SHA");
+                     "TLS_RSA_EXPORT_WITH_DES40_CBC_SHA", true);
   public static final CipherSuite TLS_RSA_WITH_DES_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DES,
                      KeyExchangeAlgorithm.RSA,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 8, 0x00, 0x09,
-                     "TLS_RSA_WITH_DES_CBC_SHA");
+                     "TLS_RSA_WITH_DES_CBC_SHA", true);
   public static final CipherSuite TLS_RSA_WITH_3DES_EDE_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DESede,
                      KeyExchangeAlgorithm.RSA,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 24, 0x00, 0x0A,
-                     "TLS_RSA_WITH_3DES_EDE_CBC_SHA");
+                     "TLS_RSA_WITH_3DES_EDE_CBC_SHA", true);
   public static final CipherSuite TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DES,
                      KeyExchangeAlgorithm.DH_DSS,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 5, 0x00, 0x0B,
-                     "TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA");
+                     "TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA", true);
   public static final CipherSuite TLS_DH_DSS_WITH_DES_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DES,
                      KeyExchangeAlgorithm.DH_DSS,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 8, 0x00, 0x0C,
-                     "TLS_DH_DSS_WITH_DES_CBC_SHA");
+                     "TLS_DH_DSS_WITH_DES_CBC_SHA", true);
   public static final CipherSuite TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DESede,
                      KeyExchangeAlgorithm.DH_DSS,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 24, 0x00, 0x0D,
-                     "TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA");
+                     "TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA", true);
   public static final CipherSuite TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DES,
                      KeyExchangeAlgorithm.DH_RSA,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 5, 0x00, 0x0E,
-                     "TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA");
+                     "TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA", true);
   public static final CipherSuite TLS_DH_RSA_WITH_DES_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DES,
                      KeyExchangeAlgorithm.DH_RSA,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 8, 0x00, 0x0F,
-                     "TLS_DH_RSA_WITH_DES_CBC_SHA");
+                     "TLS_DH_RSA_WITH_DES_CBC_SHA", true);
   public static final CipherSuite TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DESede,
                      KeyExchangeAlgorithm.DH_RSA,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 24, 0x00, 0x10,
-                     "TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA");
+                     "TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DES,
                      KeyExchangeAlgorithm.DHE_DSS, true,
                      SignatureAlgorithm.DSA,
                      MacAlgorithm.SHA, 5, 0x00, 0x11,
-                     "TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
+                     "TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_DSS_WITH_DES_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DES,
                      KeyExchangeAlgorithm.DHE_DSS, true,
                      SignatureAlgorithm.DSA,
                      MacAlgorithm.SHA, 8, 0x00, 0x12,
-                     "TLS_DHE_DSS_WITH_DES_CBC_SHA");
+                     "TLS_DHE_DSS_WITH_DES_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DESede,
                      KeyExchangeAlgorithm.DHE_DSS, true,
                      SignatureAlgorithm.DSA,
                      MacAlgorithm.SHA, 24, 0x00, 0x13,
-                     "TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA");
+                     "TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DES,
                      KeyExchangeAlgorithm.DHE_RSA, true,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 5, 0x00, 0x14,
-                     "TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA");
+                     "TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_RSA_WITH_DES_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DES,
                      KeyExchangeAlgorithm.DHE_RSA, true,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 8, 0x00, 0x15,
-                     "TLS_DHE_RSA_WITH_DES_CBC_SHA");
+                     "TLS_DHE_RSA_WITH_DES_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA =
     new CipherSuite (CipherAlgorithm.DESede,
                      KeyExchangeAlgorithm.DHE_RSA, true,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 24, 0x00, 0x16,
-                     "TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA");
+                     "TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA", true);
 
   // AES CipherSuites.
   public static final CipherSuite TLS_RSA_WITH_AES_128_CBC_SHA =
@@ -201,61 +201,61 @@ public final class CipherSuite implements Constructed
                      KeyExchangeAlgorithm.RSA,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 16, 0x00, 0x2F,
-                     "TLS_RSA_WITH_AES_128_CBC_SHA");
+                     "TLS_RSA_WITH_AES_128_CBC_SHA", true);
   public static final CipherSuite TLS_DH_DSS_WITH_AES_128_CBC_SHA =
     new CipherSuite (CipherAlgorithm.AES,
                      KeyExchangeAlgorithm.DH_DSS,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 16, 0x00, 0x30,
-                     "TLS_DH_DSS_WITH_AES_128_CBC_SHA");
+                     "TLS_DH_DSS_WITH_AES_128_CBC_SHA", true);
   public static final CipherSuite TLS_DH_RSA_WITH_AES_128_CBC_SHA =
     new CipherSuite (CipherAlgorithm.AES,
                      KeyExchangeAlgorithm.DH_RSA,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 16, 0x00, 0x31,
-                     "TLS_DH_RSA_WITH_AES_128_CBC_SHA");
+                     "TLS_DH_RSA_WITH_AES_128_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_DSS_WITH_AES_128_CBC_SHA =
     new CipherSuite (CipherAlgorithm.AES,
                      KeyExchangeAlgorithm.DHE_DSS, true,
                      SignatureAlgorithm.DSA,
                      MacAlgorithm.SHA, 16, 0x00, 0x32,
-                     "TLS_DHE_DSS_WITH_AES_128_CBC_SHA");
+                     "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_RSA_WITH_AES_128_CBC_SHA =
     new CipherSuite (CipherAlgorithm.AES,
                      KeyExchangeAlgorithm.DHE_RSA, true,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 16, 0x00, 0x33,
-                     "TLS_DHE_RSA_WITH_AES_128_CBC_SHA");
+                     "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", true);
   public static final CipherSuite TLS_RSA_WITH_AES_256_CBC_SHA =
     new CipherSuite (CipherAlgorithm.AES,
                      KeyExchangeAlgorithm.RSA,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 32, 0x00, 0x35,
-                     "TLS_RSA_WITH_AES_256_CBC_SHA");
+                     "TLS_RSA_WITH_AES_256_CBC_SHA", true);
   public static final CipherSuite TLS_DH_DSS_WITH_AES_256_CBC_SHA =
     new CipherSuite (CipherAlgorithm.AES,
                      KeyExchangeAlgorithm.DH_DSS,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 32, 0x00, 0x36,
-                     "TLS_DH_DSS_WITH_AES_256_CBC_SHA");
+                     "TLS_DH_DSS_WITH_AES_256_CBC_SHA", true);
   public static final CipherSuite TLS_DH_RSA_WITH_AES_256_CBC_SHA =
     new CipherSuite (CipherAlgorithm.AES,
                      KeyExchangeAlgorithm.DH_RSA,
                      SignatureAlgorithm.ANONYMOUS,
                      MacAlgorithm.SHA, 32, 0x00, 0x37,
-                     "TLS_DH_RSA_WITH_AES_256_CBC_SHA");
+                     "TLS_DH_RSA_WITH_AES_256_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_DSS_WITH_AES_256_CBC_SHA =
     new CipherSuite (CipherAlgorithm.AES,
                      KeyExchangeAlgorithm.DHE_DSS, true,
                      SignatureAlgorithm.DSA,
                      MacAlgorithm.SHA, 32, 0x00, 0x38,
-                     "TLS_DHE_DSS_WITH_AES_256_CBC_SHA");
+                     "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_RSA_WITH_AES_256_CBC_SHA =
     new CipherSuite (CipherAlgorithm.AES,
                      KeyExchangeAlgorithm.DHE_RSA, true,
                      SignatureAlgorithm.RSA,
                      MacAlgorithm.SHA, 32, 0x00, 0x39,
-                     "TLS_DHE_RSA_WITH_AES_256_CBC_SHA");
+                     "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", true);
 
   // Secure remote password (SRP) ciphersuites
   // Actual ID values are TBD, so these are omitted until they are specified.
@@ -320,75 +320,75 @@ public final class CipherSuite implements Constructed
                     KeyExchangeAlgorithm.PSK,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 16, 0x00, 0x8A,
-                    "TLS_PSK_WITH_RC4_128_SHA");
+                    "TLS_PSK_WITH_RC4_128_SHA", true);
   public static final CipherSuite TLS_PSK_WITH_3DES_EDE_CBC_SHA =
     new CipherSuite(CipherAlgorithm.DESede,
                     KeyExchangeAlgorithm.PSK,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 24, 0x00, 0x8B,
-                    "TLS_PSK_WITH_3DES_EDE_CBC_SHA");
+                    "TLS_PSK_WITH_3DES_EDE_CBC_SHA", true);
   public static final CipherSuite TLS_PSK_WITH_AES_128_CBC_SHA =
     new CipherSuite(CipherAlgorithm.AES,
                     KeyExchangeAlgorithm.PSK,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 16, 0x00, 0x8C,
-                    "TLS_PSK_WITH_AES_128_CBC_SHA");
+                    "TLS_PSK_WITH_AES_128_CBC_SHA", true);
   public static final CipherSuite TLS_PSK_WITH_AES_256_CBC_SHA =
     new CipherSuite(CipherAlgorithm.AES,
                     KeyExchangeAlgorithm.PSK,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 32, 0x00, 0x8D,
-                    "TLS_PSK_WITH_AES_256_CBC_SHA");
+                    "TLS_PSK_WITH_AES_256_CBC_SHA", true);
 
   public static final CipherSuite TLS_DHE_PSK_WITH_RC4_128_SHA =
     new CipherSuite(CipherAlgorithm.RC4,
                     KeyExchangeAlgorithm.DHE_PSK, true,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 16, 0x00, 0x8E,
-                    "TLS_DHE_PSK_WITH_RC4_128_SHA");
+                    "TLS_DHE_PSK_WITH_RC4_128_SHA", false);
   public static final CipherSuite TLS_DHE_PSK_WITH_3DES_EDE_CBC_SHA =
     new CipherSuite(CipherAlgorithm.DESede,
                     KeyExchangeAlgorithm.DHE_PSK, true,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 24, 0x00, 0x8F,
-                    "TLS_DHE_PSK_WITH_3DES_EDE_CBC_SHA");
+                    "TLS_DHE_PSK_WITH_3DES_EDE_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_PSK_WITH_AES_128_CBC_SHA =
     new CipherSuite(CipherAlgorithm.AES,
                     KeyExchangeAlgorithm.DHE_PSK, true,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 16, 0x00, 0x90,
-                    "TLS_DHE_PSK_WITH_AES_128_CBC_SHA");
+                    "TLS_DHE_PSK_WITH_AES_128_CBC_SHA", true);
   public static final CipherSuite TLS_DHE_PSK_WITH_AES_256_CBC_SHA =
     new CipherSuite(CipherAlgorithm.AES,
                     KeyExchangeAlgorithm.DHE_PSK, true,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 32, 0x00, 0x91,
-                    "TLS_DHE_PSK_WITH_AES_256_CBC_SHA");
+                    "TLS_DHE_PSK_WITH_AES_256_CBC_SHA", true);
 
   public static final CipherSuite TLS_RSA_PSK_WITH_RC4_128_SHA =
     new CipherSuite(CipherAlgorithm.RC4,
                     KeyExchangeAlgorithm.RSA_PSK,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 16, 0x00, 0x92,
-                    "TLS_RSA_PSK_WITH_RC4_128_SHA");
+                    "TLS_RSA_PSK_WITH_RC4_128_SHA", false);
   public static final CipherSuite TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA =
     new CipherSuite(CipherAlgorithm.DESede,
                     KeyExchangeAlgorithm.RSA_PSK,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 24, 0x00, 0x93,
-                    "TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA");
+                    "TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA", true);
   public static final CipherSuite TLS_RSA_PSK_WITH_AES_128_CBC_SHA =
     new CipherSuite(CipherAlgorithm.AES,
                     KeyExchangeAlgorithm.RSA_PSK,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 16, 0x00, 0x94,
-                    "TLS_RSA_PSK_WITH_AES_128_CBC_SHA");
+                    "TLS_RSA_PSK_WITH_AES_128_CBC_SHA", true);
   public static final CipherSuite TLS_RSA_PSK_WITH_AES_256_CBC_SHA =
     new CipherSuite(CipherAlgorithm.AES,
                     KeyExchangeAlgorithm.RSA_PSK,
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 32, 0x00, 0x95,
-                    "TLS_RSA_PSK_WITH_AES_256_CBC_SHA");
+                    "TLS_RSA_PSK_WITH_AES_256_CBC_SHA", true);
 
   // Ciphersuites from the OpenPGP extension draft.
   // These disappeared from a more recent draft.
@@ -490,6 +490,7 @@ public final class CipherSuite implements Constructed
   private final boolean ephemeralDH;
   private final boolean exportable;
   private final boolean isStream;
+  private final boolean isCBCMode;
   private final int keyLength;
   private final byte[] id;
   private final String name;
@@ -505,10 +506,11 @@ public final class CipherSuite implements Constructed
                        final int keyLength,
                        final int id1,
                        final int id2,
-                       final String name)
+                       final String name,
+                       final boolean isCBCMode)
   {
     this (cipherAlgorithm, keyExchangeAlgorithm, false, signatureAlgorithm,
-          macAlgorithm, keyLength, id1, id2, name);
+          macAlgorithm, keyLength, id1, id2, name, isCBCMode);
   }
 
   private CipherSuite (final CipherAlgorithm cipherAlgorithm,
@@ -519,7 +521,8 @@ public final class CipherSuite implements Constructed
                        final int keyLength,
                        final int id1,
                        final int id2,
-                       final String name)
+                       final String name,
+                       final boolean isCBCMode)
   {
     this.cipherAlgorithm = cipherAlgorithm;
     this.keyExchangeAlgorithm = keyExchangeAlgorithm;
@@ -529,6 +532,7 @@ public final class CipherSuite implements Constructed
     this.exportable = keyLength <= 5;
     this.isStream = (cipherAlgorithm == CipherAlgorithm.NULL
                      || cipherAlgorithm == CipherAlgorithm.RC4);
+    this.isCBCMode = isCBCMode;
     this.keyLength = keyLength;
     this.id = new byte[] { (byte) id1, (byte) id2 };
     this.name = name.intern();
@@ -549,6 +553,7 @@ public final class CipherSuite implements Constructed
     ephemeralDH = false;
     exportable = false;
     isStream = false;
+    isCBCMode = false;
     keyLength = 0;
     this.id = id;
     name = null;
@@ -598,10 +603,10 @@ public final class CipherSuite implements Constructed
       return new NullCipher ();
 
     String alg = null;
-    if (cipherAlgorithm == CipherAlgorithm.RC4)
-      alg = "RC4";
-    else
+    if (isCBCMode)
       alg = cipherAlgorithm + "/CBC/NoPadding";
+    else
+      alg = cipherAlgorithm.toString();
     GetSecurityPropertyAction gspa =
       new GetSecurityPropertyAction ("jessie.jce.provider");
     final String provider = (String) AccessController.doPrivileged (gspa);
@@ -834,4 +839,10 @@ public final class CipherSuite implements Constructed
       }
     return name;
   }
+
+  public boolean isCBCMode()
+  {
+    return isCBCMode;
+  }
+
 }

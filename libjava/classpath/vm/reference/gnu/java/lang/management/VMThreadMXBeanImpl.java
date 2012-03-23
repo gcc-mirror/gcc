@@ -1,5 +1,5 @@
 /* VMThreadMXBeanImpl.java - VM impl. of a thread bean
-   Copyright (C) 2006 Free Software Foundation
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,6 +57,8 @@ final class VMThreadMXBeanImpl
    * Cache of how many threads were found.
    */
   private static int filled;
+
+  private VMThreadMXBeanImpl() {} // Prohibits instantiation.
 
   /**
    * Returns the ids of cycles of deadlocked threads, occurring

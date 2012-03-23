@@ -15,6 +15,9 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtDialogPeer_setModal (JNIEnv *
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtDialogPeer_setBoundsNative (JNIEnv *env, jobject, jint, jint, jint, jint, jboolean);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtDialogPeer_setResizable (JNIEnv *env, jobject, jboolean);
 
+#undef gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER
+#define gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER 3L
+
 #ifdef __cplusplus
 }
 #endif

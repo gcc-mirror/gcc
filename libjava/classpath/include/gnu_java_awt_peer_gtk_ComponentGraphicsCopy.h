@@ -13,6 +13,19 @@ extern "C"
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphicsCopy_getPixbuf (JNIEnv *env, jobject, jobject, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphicsCopy_copyPixbuf (JNIEnv *env, jobject, jobject, jobject, jint, jint, jint, jint);
 
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_NEAREST
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_NEAREST 0L
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_BILINEAR
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_BILINEAR 1L
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_BICUBIC
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_INTERPOLATION_BICUBIC 5L
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_SPEED
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_SPEED 2L
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_QUALITY
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_QUALITY 3L
+#undef gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_DEFAULT
+#define gnu_java_awt_peer_gtk_CairoGraphics2D_ALPHA_INTERPOLATION_DEFAULT 4L
+
 #ifdef __cplusplus
 }
 #endif

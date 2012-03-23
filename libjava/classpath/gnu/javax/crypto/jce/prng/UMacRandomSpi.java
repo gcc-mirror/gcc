@@ -1,5 +1,5 @@
 /* UMacRandomSpi.java --
-   Copyright (C) 2001, 2002, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2006, 2010  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -57,7 +57,8 @@ import java.util.logging.Logger;
 public class UMacRandomSpi
     extends SecureRandomSpi
 {
-  private static final Logger log = Logger.getLogger(UMacRandomSpi.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                    Logger.getLogger(UMacRandomSpi.class.getName()) : null;
 
   /** Class-wide prng to generate random material for the underlying prng. */
   private static final UMacGenerator prng; // blank final
