@@ -1,6 +1,6 @@
 // Safe iterator implementation  -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2009, 2010, 2011
+// Copyright (C) 2003, 2004, 2005, 2006, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -169,6 +169,24 @@ namespace __gnu_debug
 			      ._M_iterator(__x, "other"));
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       * @brief Move construction.
+       * @post __x is singular and unattached
+       */
+      _Safe_iterator(_Safe_iterator&& __x) : _M_current()
+      {
+	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
+			      || __x._M_current == _Iterator(),
+			      _M_message(__msg_init_copy_singular)
+			      ._M_iterator(*this, "this")
+			      ._M_iterator(__x, "other"));
+	std::swap(_M_current, __x._M_current);
+	this->_M_attach(__x._M_sequence);
+	__x._M_detach();
+      }
+#endif
+
       /**
        *  @brief Converting constructor from a mutable iterator to a
        *  constant iterator.
@@ -207,6 +225,27 @@ namespace __gnu_debug
 	this->_M_attach(__x._M_sequence);
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       * @brief Move assignment.
+       * @post __x is singular and unattached
+       */
+      _Safe_iterator&
+      operator=(_Safe_iterator&& __x)
+      {
+	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
+			      || __x._M_current == _Iterator(),
+			      _M_message(__msg_copy_singular)
+			      ._M_iterator(*this, "this")
+			      ._M_iterator(__x, "other"));
+	_M_current = __x._M_current;
+	_M_attach(__x._M_sequence);
+	__x._M_detach();
+	__x._M_current = _Iterator();
+	return *this;
+      }
+#endif
 
       /**
        *  @brief Iterator dereference.
@@ -422,7 +461,9 @@ namespace __gnu_debug
       /// Is this iterator equal to the sequence's before_begin() iterator if
       /// any?
       bool _M_is_before_begin() const
-      { return _BeforeBeginHelper<_Sequence>::_M_Is(base(), _M_get_sequence()); }
+      {
+	return _BeforeBeginHelper<_Sequence>::_M_Is(base(), _M_get_sequence());
+      }
     };
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
