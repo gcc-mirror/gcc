@@ -579,6 +579,10 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 	  continue;
 	}
 
+      STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo)
+	= evolution_part_in_loop_num (access_fn, loop->num);
+      gcc_assert (STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo) != NULL_TREE);
+
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "Detected induction.");
       STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_induction_def;
