@@ -1,3 +1,15 @@
+2012-03-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52678
+	* tree-vectorizer.h (struct _stmt_vec_info): Add
+	loop_phi_evolution_part member.
+	(STMT_VINFO_LOOP_PHI_EVOLUTION_PART): New define.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Initialize
+	STMT_VINFO_LOOP_PHI_EVOLUTION_PART.
+	* tree-vect-loop-manip.c (vect_update_ivs_after_vectorizer):
+	Use the cached evolution part and the PHI nodes value from
+	the loop preheader edge instead of re-analyzing the evolution.
+
 2012-03-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/mips/mips-tables.opt: Update.

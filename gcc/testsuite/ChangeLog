@@ -1,5 +1,10 @@
 2012-03-23  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/52678
+	* gfortran.dg/pr52678.f: New testcase.
+
+2012-03-23  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/52638
 	* g++.dg/torture/pr52638.C: New testcase.
 
