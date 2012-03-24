@@ -4387,8 +4387,7 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
 	  value = expand_and (str_mode, value, const1_rtx, NULL);
 	  binop = xor_optab;
 	}
-      value = expand_shift (LSHIFT_EXPR, str_mode, value,
-			    bitpos, NULL_RTX, 1);
+      value = expand_shift (LSHIFT_EXPR, str_mode, value, bitpos, NULL_RTX, 1);
       result = expand_binop (str_mode, binop, str_rtx,
 			     value, str_rtx, 1, OPTAB_WIDEN);
       if (result != str_rtx)
@@ -4399,8 +4398,8 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
     case BIT_XOR_EXPR:
       if (TREE_CODE (op1) != INTEGER_CST)
 	break;
-      value = expand_expr (op1, NULL_RTX, GET_MODE (str_rtx), EXPAND_NORMAL);
-      value = convert_modes (GET_MODE (str_rtx),
+      value = expand_expr (op1, NULL_RTX, str_mode, EXPAND_NORMAL);
+      value = convert_modes (str_mode,
 			     TYPE_MODE (TREE_TYPE (op1)), value,
 			     TYPE_UNSIGNED (TREE_TYPE (op1)));
 
@@ -4414,16 +4413,13 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
 	}
 
       binop = code == BIT_IOR_EXPR ? ior_optab : xor_optab;
-      if (bitpos + bitsize != GET_MODE_BITSIZE (GET_MODE (str_rtx)))
+      if (bitpos + bitsize != str_bitsize)
 	{
-	  rtx mask = GEN_INT (((unsigned HOST_WIDE_INT) 1 << bitsize)
-			      - 1);
-	  value = expand_and (GET_MODE (str_rtx), value, mask,
-			      NULL_RTX);
+	  rtx mask = GEN_INT (((unsigned HOST_WIDE_INT) 1 << bitsize) - 1);
+	  value = expand_and (str_mode, value, mask, NULL_RTX);
 	}
-      value = expand_shift (LSHIFT_EXPR, GET_MODE (str_rtx), value,
-			    bitpos, NULL_RTX, 1);
-      result = expand_binop (GET_MODE (str_rtx), binop, str_rtx,
+      value = expand_shift (LSHIFT_EXPR, str_mode, value, bitpos, NULL_RTX, 1);
+      result = expand_binop (str_mode, binop, str_rtx,
 			     value, str_rtx, 1, OPTAB_WIDEN);
       if (result != str_rtx)
 	emit_move_insn (str_rtx, result);
@@ -6348,8 +6344,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 			     GET_MODE_BITSIZE (GET_MODE (temp)) - bitsize,
 			     NULL_RTX, 1);
 
-      /* Unless MODE is VOIDmode or BLKmode, convert TEMP to
-	 MODE.  */
+      /* Unless MODE is VOIDmode or BLKmode, convert TEMP to MODE.  */
       if (mode != VOIDmode && mode != BLKmode
 	  && mode != TYPE_MODE (TREE_TYPE (exp)))
 	temp = convert_modes (mode, TYPE_MODE (TREE_TYPE (exp)), temp, 1);
