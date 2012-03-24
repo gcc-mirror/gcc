@@ -1,3 +1,8 @@
+2012-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/52610
+	* config/sparc/sparc.h (ASM_CPU_SPEC): Pass -Av8 if -mcpu=leon.
+
 2012-03-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/52640
