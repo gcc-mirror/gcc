@@ -1,5 +1,10 @@
 2012-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* expr.c (optimize_bitfield_assignment_op) <BIT_IOR_EXPR>: Use str_mode
+	and str_bitsize instead of more convoluted expressions.
+
+2012-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR target/52610
 	* config/sparc/sparc.h (ASM_CPU_SPEC): Pass -Av8 if -mcpu=leon.
 
