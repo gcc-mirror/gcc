@@ -1,3 +1,8 @@
+2012-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/52656
+	* config/sparc/sparc.c (sparc_handle_vis_mul8x16): Fix pasto.
+
 2012-03-23  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (build_accesses_from_assign): Remove FIXME comment.

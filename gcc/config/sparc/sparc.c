@@ -9932,7 +9932,7 @@ sparc_handle_vis_mul8x16 (tree *n_elts, int fncode, tree inner_type,
       break;
 
     case CODE_FOR_fmul8x16al_vis:
-      scale = TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, 0));
+      scale = TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, 1));
 
       for (i = 0; i < num; ++i)
 	{
