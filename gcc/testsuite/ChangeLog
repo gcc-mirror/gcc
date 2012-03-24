@@ -1,3 +1,20 @@
+2012-03-21  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto3.C: Compile with -pedantic-errors.
+	* g++.dg/cpp0x/trailing2.C: Likewise.
+	* g++.dg/warn/pr23075.C: Change dg-warning to dg-bogus.
+	* g++.dg/cpp1y/auto-fn1.C: New.
+	* g++.dg/cpp1y/auto-fn2.C: New.
+	* g++.dg/cpp1y/auto-fn3.C: New.
+	* g++.dg/cpp1y/auto-fn4.C: New.
+	* g++.dg/cpp1y/auto-fn5.C: New.
+	* g++.dg/cpp1y/auto-fn6.C: New.
+	* g++.dg/cpp1y/auto-fn7.C: New.
+	* g++.dg/cpp1y/auto-fn8.C: New.
+	* g++.dg/cpp1y/auto-fn9.C: New.
+	* g++.dg/cpp1y/auto-fn10.C: New.
+	* g++.dg/cpp1y/auto-fn11.C: New.
+
 2012-03-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52678

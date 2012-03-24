@@ -2,5 +2,5 @@
 
 void f()
 {
-  auto val = val;  // { dg-error "auto. type used in its own initializer" }
+  auto val = val;  // { dg-error "auto" }
 }

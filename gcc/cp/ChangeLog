@@ -1,3 +1,50 @@
+2012-03-21  Jason Merrill  <jason@redhat.com>
+
+	Implement return type deduction for normal functions with -std=c++1y.
+	* cp-tree.h (FNDECL_USED_AUTO): New macro.
+	(LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P): Remove.
+	(dependent_lambda_return_type_node): Remove.
+	(CPTI_DEPENDENT_LAMBDA_RETURN_TYPE): Remove.
+	(struct language_function): Add x_auto_return_pattern field.
+	(current_function_auto_return_pattern): New.
+	(enum tsubst_flags): Add tf_partial.
+	* decl.c (decls_match): Handle auto return comparison.
+	(duplicate_decls): Adjust error message for auto return.
+	(cxx_init_decl_processing): Remove dependent_lambda_return_type_node.
+	(cp_finish_decl): Don't do auto deduction for functions.
+	(grokdeclarator): Allow auto return without trailing return type in
+	C++1y mode.
+	(check_function_type): Defer checking of deduced return type.
+	(start_preparsed_function): Set current_function_auto_return_pattern.
+	(finish_function): Set deduced return type to void if not previously
+	deduced.
+	* decl2.c (change_return_type): Handle error_mark_node.
+	(mark_used): Always instantiate functions with deduced return type.
+	Complain about use if deduction isn't done.
+	* parser.c (cp_parser_lambda_declarator_opt): Use 'auto' for
+	initial return type.
+	(cp_parser_lambda_body): Don't deduce return type in a template.
+	(cp_parser_conversion_type_id): Allow auto in C++1y.
+	* pt.c (instantiate_class_template_1): Don't mess with
+	LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P.
+	(tsubst_copy_and_build): Likewise.
+	(fn_type_unification, tsubst): Don't reduce the template parm level
+	of 'auto' during deduction.
+	(unify): Compare 'auto' specially.
+	(get_bindings): Change test.
+	(always_instantiate_p): Always instantiate functions with deduced
+	return type.
+	(do_auto_deduction): Handle error_mark_node and lambda context.
+	Don't check for use in initializer.
+	(contains_auto_r): Remove.
+	* search.c (lookup_conversions_r): Handle auto conversion function.
+	* semantics.c (lambda_return_type): Handle null return.  Don't mess
+	with dependent_lambda_return_type_node.
+	(apply_deduced_return_type): Rename from apply_lambda_return_type.
+	* typeck.c (merge_types): Handle auto.
+	(check_return_expr): Do auto deduction.
+	* typeck2.c (add_exception_specifier): Fix complain check.
+
 2012-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52487

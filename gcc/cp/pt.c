@@ -9112,12 +9112,6 @@ instantiate_class_template_1 (tree type)
       tree decl = lambda_function (type);
       if (decl)
 	{
-	  tree lambda = CLASSTYPE_LAMBDA_EXPR (type);
-	  if (LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (lambda))
-	    {
-	      apply_lambda_return_type (lambda, void_type_node);
-	      LAMBDA_EXPR_RETURN_TYPE (lambda) = NULL_TREE;
-	    }
 	  instantiate_decl (decl, false, false);
 	  maybe_add_lambda_conv_op (type);
 	}
@@ -11329,6 +11323,12 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  /* This can happen during the attempted tsubst'ing in
 	     unify.  This means that we don't yet have any information
 	     about the template parameter in question.  */
+	  return t;
+
+	/* Early in template argument deduction substitution, we don't
+	   want to reduce the level of 'auto', or it will be confused
+	   with a normal template parm in subsequent deduction.  */
+	if (is_auto (t) && (complain & tf_partial))
 	  return t;
 
 	/* If we get here, we must have been looking at a parm for a
@@ -14334,14 +14334,8 @@ tsubst_copy_and_build (tree t,
 	  = (LAMBDA_EXPR_DISCRIMINATOR (t));
 	LAMBDA_EXPR_EXTRA_SCOPE (r)
 	  = RECUR (LAMBDA_EXPR_EXTRA_SCOPE (t));
-	if (LAMBDA_EXPR_RETURN_TYPE (t) == dependent_lambda_return_type_node)
-	  {
-	    LAMBDA_EXPR_RETURN_TYPE (r) = dependent_lambda_return_type_node;
-	    LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (r) = true;
-	  }
-	else
-	  LAMBDA_EXPR_RETURN_TYPE (r)
-	    = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
+	LAMBDA_EXPR_RETURN_TYPE (r)
+	  = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
 
 	gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 		    && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
@@ -14860,7 +14854,7 @@ fn_type_unification (tree fn,
       fntype = deduction_tsubst_fntype (fn, converted_args,
 					(explain_p
 					 ? tf_warning_or_error
-					 : tf_none));
+					 : tf_none) | tf_partial);
       processing_template_decl -= incomplete;
 
       if (fntype == error_mark_node)
@@ -16275,7 +16269,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	   to see if it matches ARG.  */
 	{
 	  if (TREE_CODE (arg) == TREE_CODE (parm)
-	      && same_type_p (parm, arg))
+	      && (is_auto (parm) ? is_auto (arg)
+		  : same_type_p (parm, arg)))
 	    return unify_success (explain_p);
 	  else
 	    return unify_type_mismatch (explain_p, parm, arg);
@@ -17408,7 +17403,7 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
      The call to fn_type_unification will handle substitution into the
      FN.  */
   decl_type = TREE_TYPE (decl);
-  if (explicit_args && uses_template_parms (decl_type))
+  if (explicit_args && decl == DECL_TEMPLATE_RESULT (fn))
     {
       tree tmpl;
       tree converted_args;
@@ -18315,7 +18310,8 @@ always_instantiate_p (tree decl)
      that for "extern template" functions.  Therefore, we check
      DECL_DECLARED_INLINE_P, rather than possibly_inlined_p.  */
   return ((TREE_CODE (decl) == FUNCTION_DECL
-	   && DECL_DECLARED_INLINE_P (decl))
+	   && (DECL_DECLARED_INLINE_P (decl)
+	       || type_uses_auto (TREE_TYPE (TREE_TYPE (decl)))))
 	  /* And we need to instantiate static data members so that
 	     their initializers are available in integral constant
 	     expressions.  */
@@ -20269,20 +20265,6 @@ listify_autos (tree type, tree auto_node)
   return tsubst (type, argvec, tf_warning_or_error, NULL_TREE);
 }
 
-/* walk_tree helper for do_auto_deduction.  */
-
-static tree
-contains_auto_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		 void *type)
-{
-  /* Is this a variable with the type we're looking for?  */
-  if (DECL_P (*tp)
-      && TREE_TYPE (*tp) == type)
-    return *tp;
-  else
-    return NULL_TREE;
-}
-
 /* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
    from INIT.  AUTO_NODE is the TEMPLATE_TYPE_PARM used for 'auto' in TYPE.  */
 
@@ -20291,24 +20273,16 @@ do_auto_deduction (tree type, tree init, tree auto_node)
 {
   tree parms, tparms, targs;
   tree args[1];
-  tree decl;
   int val;
+
+  if (init == error_mark_node)
+    return error_mark_node;
 
   if (processing_template_decl
       && (TREE_TYPE (init) == NULL_TREE
 	  || BRACE_ENCLOSED_INITIALIZER_P (init)))
     /* Not enough information to try this yet.  */
     return type;
-
-  /* The name of the object being declared shall not appear in the
-     initializer expression.  */
-  decl = cp_walk_tree_without_duplicates (&init, contains_auto_r, type);
-  if (decl)
-    {
-      error ("variable %q#D with %<auto%> type used in its own "
-	     "initializer", decl);
-      return error_mark_node;
-    }
 
   /* [dcl.spec.auto]: Obtain P from T by replacing the occurrences of auto
      with either a new invented type template parameter U or, if the
@@ -20337,7 +20311,13 @@ do_auto_deduction (tree type, tree init, tree auto_node)
 	/* If type is error_mark_node a diagnostic must have been
 	   emitted by now.  Also, having a mention to '<type error>'
 	   in the diagnostic is not really useful to the user.  */
-	error ("unable to deduce %qT from %qE", type, init);
+	{
+	  if (cfun && auto_node == current_function_auto_return_pattern
+	      && LAMBDA_FUNCTION_P (current_function_decl))
+	    error ("unable to deduce lambda return type from %qE", init);
+	  else
+	    error ("unable to deduce %qT from %qE", type, init);
+	}
       return error_mark_node;
     }
 
@@ -20348,8 +20328,14 @@ do_auto_deduction (tree type, tree init, tree auto_node)
   if (TREE_TYPE (auto_node)
       && !same_type_p (TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0)))
     {
-      error ("inconsistent deduction for %qT: %qT and then %qT",
-	     auto_node, TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0));
+      if (cfun && auto_node == current_function_auto_return_pattern
+	  && LAMBDA_FUNCTION_P (current_function_decl))
+	error ("inconsistent types %qT and %qT deduced for "
+	       "lambda return type", TREE_TYPE (auto_node),
+	       TREE_VEC_ELT (targs, 0));
+      else
+	error ("inconsistent deduction for %qT: %qT and then %qT",
+	       auto_node, TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0));
       return error_mark_node;
     }
   TREE_TYPE (auto_node) = TREE_VEC_ELT (targs, 0);

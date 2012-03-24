@@ -1818,7 +1818,8 @@ add_exception_specifier (tree list, tree spec, int complain)
   else
     diag_type = DK_ERROR; /* error */
 
-  if (diag_type != DK_UNSPECIFIED && complain)
+  if (diag_type != DK_UNSPECIFIED
+      && (complain & tf_warning_or_error))
     cxx_incomplete_type_diagnostic (NULL_TREE, core, diag_type);
 
   return list;
