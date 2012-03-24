@@ -1,3 +1,13 @@
+2012-03-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/52640
+	* varasm.c: Include pointer-set.h.
+	(pending_assemble_externals_set): New pointer set.
+	(process_pending_assemble_externals): Destroy the pointer set.
+	(assemble_external): See if decl is in pending_assemble_externals_set,
+	and add it to pending_assemble_externals if necessary.
+	(init_varasm_once): Allocate pending_assemble_externals_set.
+
 2012-03-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline
