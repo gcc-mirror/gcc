@@ -2430,6 +2430,11 @@ lookup_conversions_r (tree binfo,
 	  if (!IDENTIFIER_MARKED (name))
 	    {
 	      tree type = DECL_CONV_FN_TYPE (cur);
+	      if (type_uses_auto (type))
+		{
+		  mark_used (cur);
+		  type = DECL_CONV_FN_TYPE (cur);
+		}
 
 	      if (check_hidden_convs (binfo, virtual_depth, virtualness,
 				      type, parent_convs, other_convs))

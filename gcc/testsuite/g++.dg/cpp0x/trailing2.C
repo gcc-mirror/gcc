@@ -1,6 +1,6 @@
 // PR c++/37967
 // Negative test for auto
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
 
 auto f1 () -> int;
 auto f2 ();		// { dg-error "without trailing return type" }

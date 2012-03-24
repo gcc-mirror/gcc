@@ -96,8 +96,8 @@ c-common.h, not after.
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
       STATEMENT_LIST_TRY_BLOCK (in STATEMENT_LIST)
       TYPENAME_IS_RESOLVING_P (in TYPE_NAME_TYPE)
-      LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (in LAMBDA_EXPR)
       TARGET_EXPR_DIRECT_INIT_P (in TARGET_EXPR)
+      FNDECL_USED_AUTO (in FUNCTION_DECL)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -660,11 +660,6 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_MUTABLE_P(NODE) \
   TREE_LANG_FLAG_1 (LAMBDA_EXPR_CHECK (NODE))
 
-/* True iff we should try to deduce the lambda return type from any return
-   statement.  */
-#define LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P(NODE) \
-  TREE_LANG_FLAG_2 (LAMBDA_EXPR_CHECK (NODE))
-
 /* The return type in the expression.
  * NULL_TREE indicates that none was specified.  */
 #define LAMBDA_EXPR_RETURN_TYPE(NODE) \
@@ -804,7 +799,6 @@ enum cp_tree_index
     CPTI_CLASS_TYPE,
     CPTI_UNKNOWN_TYPE,
     CPTI_INIT_LIST_TYPE,
-    CPTI_DEPENDENT_LAMBDA_RETURN_TYPE,
     CPTI_VTBL_TYPE,
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
@@ -876,7 +870,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define class_type_node			cp_global_trees[CPTI_CLASS_TYPE]
 #define unknown_type_node		cp_global_trees[CPTI_UNKNOWN_TYPE]
 #define init_list_type_node		cp_global_trees[CPTI_INIT_LIST_TYPE]
-#define dependent_lambda_return_type_node cp_global_trees[CPTI_DEPENDENT_LAMBDA_RETURN_TYPE]
 #define vtbl_type_node			cp_global_trees[CPTI_VTBL_TYPE]
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
 #define std_node			cp_global_trees[CPTI_STD]
@@ -1076,6 +1069,7 @@ struct GTY(()) language_function {
   tree x_in_charge_parm;
   tree x_vtt_parm;
   tree x_return_value;
+  tree x_auto_return_pattern;
 
   BOOL_BITFIELD returns_value : 1;
   BOOL_BITFIELD returns_null : 1;
@@ -1157,6 +1151,11 @@ struct GTY(()) language_function {
 
 #define current_function_return_value \
   (cp_function_chain->x_return_value)
+
+/* A type involving 'auto' to be used for return type deduction.  */
+
+#define current_function_auto_return_pattern \
+  (cp_function_chain->x_auto_return_pattern)
 
 /* True if NAME is the IDENTIFIER_NODE for an overloaded "operator
    new" or "operator delete".  */
@@ -3085,6 +3084,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define DECL_LOCAL_FUNCTION_P(NODE) \
   DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE))
 
+/* True if NODE was declared with auto in its return type, but it has
+   started compilation and so the return type might have been changed by
+   return type deduction; its declared return type should be found in
+   DECL_STRUCT_FUNCTION(NODE)->language->x_auto_return_pattern.  */
+#define FNDECL_USED_AUTO(NODE) \
+  TREE_LANG_FLAG_2 (FUNCTION_DECL_CHECK (NODE))
+
 /* Nonzero if NODE is a DECL which we know about but which has not
    been explicitly declared, such as a built-in function or a friend
    declared inside a class.  In the latter case DECL_HIDDEN_FRIEND_P
@@ -4144,6 +4150,8 @@ enum tsubst_flags {
 				    conversion.  */
   tf_no_access_control = 1 << 7, /* Do not perform access checks, even
 				    when issuing other errors.   */
+  tf_partial = 1 << 8,		 /* Doing initial explicit argument
+				    substitution in fn_type_unification.  */
   /* Convenient substitution flags combinations.  */
   tf_warning_or_error = tf_warning | tf_error
 };
@@ -5619,7 +5627,7 @@ extern tree lambda_capture_field_type		(tree);
 extern tree lambda_return_type			(tree);
 extern tree lambda_proxy_type			(tree);
 extern tree lambda_function			(tree);
-extern void apply_lambda_return_type            (tree, tree);
+extern void apply_deduced_return_type           (tree, tree);
 extern tree add_capture                         (tree, tree, tree, bool, bool);
 extern tree add_default_capture                 (tree, tree, tree);
 extern tree build_capture_proxy			(tree);

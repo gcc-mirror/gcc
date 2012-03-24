@@ -6,7 +6,7 @@ template<int> void
 foo ()
 {
 #pragma omp parallel for
-  for (auto i = i = 0; i<4; ++i)	// { dg-error "incomplete|unable|invalid" }
+  for (auto i = i = 0; i<4; ++i)	// { dg-error "incomplete|unable|invalid|auto" }
     ;
 }
 
