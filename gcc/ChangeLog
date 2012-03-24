@@ -1,5 +1,10 @@
 2012-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR target/52610
+	* config/sparc/sparc.h (ASM_CPU_SPEC): Pass -Av8 if -mcpu=leon.
+
+2012-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR target/52656
 	* config/sparc/sparc.c (sparc_handle_vis_mul8x16): Fix pasto.
 

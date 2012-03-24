@@ -329,6 +329,7 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=sparclite86x:-Asparclite} \
 %{mcpu=f930:-Asparclite} %{mcpu=f934:-Asparclite} \
 %{mcpu=v8:-Av8} \
+%{mcpu=leon:-Av8} \
 %{mv8plus:-Av8plus} \
 %{mcpu=v9:-Av9} \
 %{mcpu=ultrasparc:%{!mv8plus:-Av9a}} \
