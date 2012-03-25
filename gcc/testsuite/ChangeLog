@@ -1,4 +1,8 @@
-2012-03-21  Jason Merrill  <jason@redhat.com>
+2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/concat2.ad[sb]: New test.
+
+2012-03-24  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/auto3.C: Compile with -pedantic-errors.
 	* g++.dg/cpp0x/trailing2.C: Likewise.
