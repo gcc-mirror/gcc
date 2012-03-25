@@ -3263,6 +3263,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      gnu_type = make_node (RECORD_TYPE);
 	      TYPE_NAME (gnu_type) = gnu_entity_name;
+	      TYPE_PACKED (gnu_type) = TYPE_PACKED (gnu_base_type);
 
 	      /* Set the size, alignment and alias set of the new type to
 		 match that of the old one, doing required substitutions.  */
