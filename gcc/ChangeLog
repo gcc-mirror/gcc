@@ -1,3 +1,12 @@
+2012-03-24  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/51663
+	* varpool.c (varpool_finalize_decl): Handle toplevel_reorder here.
+	(decide_is_variable_needed): Do not handle toplevel reorder here.
+	* cgraph.h (varpool_can_remove_if_no_refs): Likewise.
+	* ipa.c (cgraph_remove_unreachable_nodes): Remove unreachable vars
+	even at -O0.
+
 2012-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (optimize_bitfield_assignment_op) <BIT_IOR_EXPR>: Use str_mode

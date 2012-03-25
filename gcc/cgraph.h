@@ -947,8 +947,6 @@ static inline bool
 varpool_can_remove_if_no_refs (struct varpool_node *node)
 {
   return (!node->force_output && !node->used_from_other_partition
-	  && (flag_toplevel_reorder || DECL_COMDAT (node->decl)
-	      || DECL_ARTIFICIAL (node->decl))
   	  && (DECL_COMDAT (node->decl) || !node->externally_visible));
 }
 
