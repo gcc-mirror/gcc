@@ -560,8 +560,8 @@ extern void finish_record_type (tree record_type, tree field_list,
    a parallel type is to be attached to the record type.  */
 extern void rest_of_record_type_compilation (tree record_type);
 
-/* Append PARALLEL_TYPE on the chain of parallel types for decl.  */
-extern void add_parallel_type (tree decl, tree parallel_type);
+/* Append PARALLEL_TYPE on the chain of parallel types for TYPE.  */
+extern void add_parallel_type (tree type, tree parallel_type);
 
 /* Return a FUNCTION_TYPE node.  RETURN_TYPE is the type returned by the
    subprogram.  If it is VOID_TYPE, then we are dealing with a procedure,

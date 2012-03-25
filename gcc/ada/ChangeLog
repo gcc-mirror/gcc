@@ -1,5 +1,15 @@
 2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (add_parallel_type): Take a TYPE instead of a
+	DECL and adjust.  Move around.
+	(has_parallel_type): New predicate.
+	(rest_of_record_type_compilation): Return early if the type already
+	has a parallel type.
+	* gcc-interface/gigi.h (add_parallel_type): Adjust.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust for above changes.
+
+2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (finish_record_type): Return early for padded
 	types and tidy up.
 
