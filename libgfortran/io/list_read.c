@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist input contributed by Paul Thomas
@@ -75,9 +75,8 @@ push_char (st_parameter_dt *dtp, char c)
 
   if (dtp->u.p.saved_string == NULL)
     {
-      dtp->u.p.saved_string = get_mem (SCRATCH_SIZE);
-      // memset below should be commented out.
-      memset (dtp->u.p.saved_string, 0, SCRATCH_SIZE);
+      // Plain malloc should suffice here, zeroing not needed?
+      dtp->u.p.saved_string = xcalloc (SCRATCH_SIZE, 1);
       dtp->u.p.saved_length = SCRATCH_SIZE;
       dtp->u.p.saved_used = 0;
     }
@@ -622,10 +621,7 @@ static void
 l_push_char (st_parameter_dt *dtp, char c)
 {
   if (dtp->u.p.line_buffer == NULL)
-    {
-      dtp->u.p.line_buffer = get_mem (SCRATCH_SIZE);
-      memset (dtp->u.p.line_buffer, 0, SCRATCH_SIZE);
-    }
+    dtp->u.p.line_buffer = xcalloc (SCRATCH_SIZE, 1);
 
   dtp->u.p.line_buffer[dtp->u.p.item_count++] = c;
 }
