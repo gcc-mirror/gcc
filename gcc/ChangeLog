@@ -1,6 +1,12 @@
 2012-03-24  Jan Hubicka  <jh@suse.cz>
 
 	Backport from mainline
+	PR regression/52696
+	* predict.c (predict_paths_for_bb): Fix typo.
+	
+2012-03-24  Jan Hubicka  <jh@suse.cz>
+
+	Backport from mainline
 	PR middle-end/51737
 	* cgraph.c (cgraph_remove_node_and_inline_clones): Add FORBIDDEN_NODE
 	parameter.
