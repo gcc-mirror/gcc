@@ -1779,7 +1779,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       if (debug_info_p
 	  && Is_Packed_Array_Type (gnat_entity)
 	  && present_gnu_tree (Original_Array_Type (gnat_entity)))
-	add_parallel_type (TYPE_STUB_DECL (gnu_type),
+	add_parallel_type (gnu_type,
 			   gnat_to_gnu_type
 			   (Original_Array_Type (gnat_entity)));
 
@@ -1854,7 +1854,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      /* Make the original array type a parallel type.  */
 	      if (present_gnu_tree (Original_Array_Type (gnat_entity)))
-		add_parallel_type (TYPE_STUB_DECL (gnu_type),
+		add_parallel_type (gnu_type,
 				   gnat_to_gnu_type
 				   (Original_Array_Type (gnat_entity)));
 
@@ -2637,7 +2637,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		}
 
 	      finish_record_type (gnu_bound_rec, gnu_field_list, 0, true);
-	      add_parallel_type (TYPE_STUB_DECL (gnu_type), gnu_bound_rec);
+	      add_parallel_type (gnu_type, gnu_bound_rec);
 	    }
 
 	  /* If this is a packed array type, make the original array type a
@@ -2647,7 +2647,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      if (Is_Packed_Array_Type (gnat_entity)
 		  && present_gnu_tree (Original_Array_Type (gnat_entity)))
-		add_parallel_type (TYPE_STUB_DECL (gnu_type),
+		add_parallel_type (gnu_type,
 				   gnat_to_gnu_type
 				   (Original_Array_Type (gnat_entity)));
 	      else
@@ -2655,7 +2655,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  tree gnu_base_decl
 		    = gnat_to_gnu_entity (Etype (gnat_entity), NULL_TREE, 0);
 		  if (!DECL_ARTIFICIAL (gnu_base_decl))
-		    add_parallel_type (TYPE_STUB_DECL (gnu_type),
+		    add_parallel_type (gnu_type,
 				       TREE_TYPE (TREE_TYPE (gnu_base_decl)));
 		}
 	    }
@@ -3529,8 +3529,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 							 0, 0),
 				      0, true);
 
-		  add_parallel_type (TYPE_STUB_DECL (gnu_type),
-				     gnu_subtype_marker);
+		  add_parallel_type (gnu_type, gnu_subtype_marker);
 
 		  if (definition
 		      && TREE_CODE (gnu_size_unit) != INTEGER_CST
@@ -6643,7 +6642,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 					     0, 0),
 			  0, true);
 
-      add_parallel_type (TYPE_STUB_DECL (record), marker);
+      add_parallel_type (record, marker);
 
       if (definition && size && TREE_CODE (size) != INTEGER_CST)
 	TYPE_SIZE_UNIT (marker)
