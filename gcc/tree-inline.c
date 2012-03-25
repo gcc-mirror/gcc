@@ -4947,7 +4947,7 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 	        if ((e = cgraph_edge (id->dst_node, gsi_stmt (bsi))) != NULL)
 		  {
 		    if (!e->inline_failed)
-		      cgraph_remove_node_and_inline_clones (e->callee);
+		      cgraph_remove_node_and_inline_clones (e->callee, id->dst_node);
 		    else
 	              cgraph_remove_edge (e);
 		  }
@@ -4957,8 +4957,8 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 		    {
 	              if ((e = cgraph_edge (node, gsi_stmt (bsi))) != NULL)
 			{
-		          if (!e->inline_failed)
-		            cgraph_remove_node_and_inline_clones (e->callee);
+		          if (!e->inline_failed && e->callee != id->src_node)
+		            cgraph_remove_node_and_inline_clones (e->callee, id->dst_node);
 			  else
 	                    cgraph_remove_edge (e);
 			}

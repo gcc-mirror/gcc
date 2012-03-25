@@ -2157,8 +2157,19 @@ save_inline_function_body (struct cgraph_node *node)
             first_clone->ipa_transforms_to_apply);
   first_clone->ipa_transforms_to_apply = NULL;
 
+  /* When doing recursive inlining, the clone may become unnecessary.
+     This is possible i.e. in the case when the recursive function is proved to be
+     non-throwing and the recursion happens only in the EH landing pad.
+     We can not remove the clone until we are done with saving the body.
+     Remove it now.  */
+  if (!first_clone->callers)
+    {
+      cgraph_remove_node_and_inline_clones (first_clone, NULL);
+      first_clone = NULL;
+    }
 #ifdef ENABLE_CHECKING
-  verify_cgraph_node (first_clone);
+  else
+    verify_cgraph_node (first_clone);
 #endif
   return first_clone;
 }

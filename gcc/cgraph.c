@@ -1700,19 +1700,27 @@ cgraph_remove_node (struct cgraph_node *node)
   free_nodes = node;
 }
 
-/* Remove the node from cgraph.  */
+/* Remove the node from cgraph and all inline clones inlined into it.
+   Skip however removal of FORBIDDEN_NODE and return true if it needs to be
+   removed.  This allows to call the function from outer loop walking clone
+   tree.  */
 
-void
-cgraph_remove_node_and_inline_clones (struct cgraph_node *node)
+bool
+cgraph_remove_node_and_inline_clones (struct cgraph_node *node, struct cgraph_node *forbidden_node)
 {
   struct cgraph_edge *e, *next;
+  bool found = false;
+
+  if (node == forbidden_node)
+    return true;
   for (e = node->callees; e; e = next)
     {
       next = e->next_callee;
       if (!e->inline_failed)
-        cgraph_remove_node_and_inline_clones (e->callee);
+        found |= cgraph_remove_node_and_inline_clones (e->callee, forbidden_node);
     }
   cgraph_remove_node (node);
+  return found;
 }
 
 /* Notify finalize_compilation_unit that given node is reachable.  */

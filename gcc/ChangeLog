@@ -1,3 +1,14 @@
+2012-03-24  Jan Hubicka  <jh@suse.cz>
+
+	Backport from mainline
+	PR middle-end/51737
+	* cgraph.c (cgraph_remove_node_and_inline_clones): Add FORBIDDEN_NODE
+	parameter.
+	* cgraph.h (cgraph_remove_node_and_inline_clones): Update prototype.
+	* ipa-inline-transform.c (save_inline_function_body): Remove copied clone
+	if needed.
+	* tree-inline.c (delete_unreachable_blocks_update_callgraph): Update.
+
 2012-03-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/52640
