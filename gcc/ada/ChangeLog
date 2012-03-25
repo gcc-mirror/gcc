@@ -1,5 +1,11 @@
 2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (SS_MARK_NAME): New define.
+	(gnat_to_gnu_entity) <E_Function>: Prepend leaf attribute on entities
+	whose name is SS_MARK_NAME.
+
+2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (add_parallel_type): Take a TYPE instead of a
 	DECL and adjust.  Move around.
 	(has_parallel_type): New predicate.
