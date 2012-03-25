@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2005, 2007, 2008, 2009, 2010, 2011
+/* Copyright (C) 2002, 2003, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
@@ -188,8 +188,7 @@ insert (gfc_unit *new, gfc_unit *t)
 static gfc_unit *
 insert_unit (int n)
 {
-  gfc_unit *u = get_mem (sizeof (gfc_unit));
-  memset (u, '\0', sizeof (gfc_unit));
+  gfc_unit *u = xcalloc (1, sizeof (gfc_unit));
   u->unit_number = n;
 #ifdef __GTHREAD_MUTEX_INIT
   {
@@ -385,14 +384,8 @@ get_internal_unit (st_parameter_dt *dtp)
 
   /* Allocate memory for a unit structure.  */
 
-  iunit = get_mem (sizeof (gfc_unit));
-  if (iunit == NULL)
-    {
-      generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
-      return NULL;
-    }
+  iunit = xcalloc (1, sizeof (gfc_unit));
 
-  memset (iunit, '\0', sizeof (gfc_unit));
 #ifdef __GTHREAD_MUTEX_INIT
   {
     __gthread_mutex_t tmp = __GTHREAD_MUTEX_INIT;

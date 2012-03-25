@@ -759,6 +759,10 @@ internal_proto(get_mem);
 extern void *internal_malloc_size (size_t) __attribute__ ((malloc));
 internal_proto(internal_malloc_size);
 
+extern void *xcalloc (size_t, size_t) __attribute__ ((malloc));
+internal_proto(xcalloc);
+
+
 /* environ.c */
 
 extern int check_buffered (int);

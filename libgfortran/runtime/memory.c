@@ -1,5 +1,6 @@
 /* Memory management routines.
-   Copyright 2002, 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2006, 2007, 2009, 2010, 2012 
+   Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -58,4 +59,20 @@ internal_malloc_size (size_t size)
     size = 1;
 
   return get_mem (size);
+}
+
+
+/* calloc wrapper that aborts on error.  */
+
+void *
+xcalloc (size_t nmemb, size_t size)
+{
+  if (nmemb * size == 0)
+    nmemb = size = 1;
+
+  void *p = calloc (nmemb, size);
+  if (!p)
+    os_error ("Allocating cleared memory failed");
+
+  return p;
 }

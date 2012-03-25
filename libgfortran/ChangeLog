@@ -1,3 +1,16 @@
+2012-03-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* runtime/memory.c (xcalloc): New function.
+	* libgfortran.h (xcalloc): New prototype.
+	* io/list_read.c (push_char): Use xcalloc instead of get_mem and
+	memset.
+	(l_push_char): Likewise.
+	* io/unit.c (insert_unit): Likewise.
+	(get_internal_unit): Likewise.
+	* io/unix.c (open_internal): Likewise.
+	(open_internal4): Likewise.
+	(fd_to_stream): Likewise.
+
 2012-03-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/52608

@@ -1,5 +1,5 @@
 /* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
@@ -919,13 +919,11 @@ open_internal (char *base, int length, gfc_offset offset)
 {
   unix_stream *s;
 
-  s = get_mem (sizeof (unix_stream));
-  memset (s, '\0', sizeof (unix_stream));
+  s = xcalloc (1, sizeof (unix_stream));
 
   s->buffer = base;
   s->buffer_offset = offset;
 
-  s->logical_offset = 0;
   s->active = s->file_length = length;
 
   s->st.vptr = &mem_vtable;
@@ -941,13 +939,11 @@ open_internal4 (char *base, int length, gfc_offset offset)
 {
   unix_stream *s;
 
-  s = get_mem (sizeof (unix_stream));
-  memset (s, '\0', sizeof (unix_stream));
+  s = xcalloc (1, sizeof (unix_stream));
 
   s->buffer = base;
   s->buffer_offset = offset;
 
-  s->logical_offset = 0;
   s->active = s->file_length = length;
 
   s->st.vptr = &mem4_vtable;
@@ -965,13 +961,9 @@ fd_to_stream (int fd)
   struct stat statbuf;
   unix_stream *s;
 
-  s = get_mem (sizeof (unix_stream));
-  memset (s, '\0', sizeof (unix_stream));
+  s = xcalloc (1, sizeof (unix_stream));
 
   s->fd = fd;
-  s->buffer_offset = 0;
-  s->physical_offset = 0;
-  s->logical_offset = 0;
 
   /* Get the current length of the file. */
 
