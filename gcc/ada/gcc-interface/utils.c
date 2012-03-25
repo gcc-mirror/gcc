@@ -863,12 +863,15 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 void
 rest_of_record_type_compilation (tree record_type)
 {
-  tree field_list = TYPE_FIELDS (record_type);
-  tree field;
-  enum tree_code code = TREE_CODE (record_type);
   bool var_size = false;
+  tree field;
 
-  for (field = field_list; field; field = DECL_CHAIN (field))
+  /* If this is a padded type, the bulk of the debug info has already been
+     generated for the field's type.  */
+  if (TYPE_IS_PADDING_P (record_type))
+    return;
+
+  for (field = TYPE_FIELDS (record_type); field; field = DECL_CHAIN (field))
     {
       /* We need to make an XVE/XVU record if any field has variable size,
 	 whether or not the record does.  For example, if we have a union,
@@ -879,7 +882,7 @@ rest_of_record_type_compilation (tree record_type)
       if (TREE_CODE (DECL_SIZE (field)) != INTEGER_CST
 	  /* If a field has a non-constant qualifier, the record will have
 	     variable size too.  */
-	  || (code == QUAL_UNION_TYPE
+	  || (TREE_CODE (record_type) == QUAL_UNION_TYPE
 	      && TREE_CODE (DECL_QUALIFIER (field)) != INTEGER_CST))
 	{
 	  var_size = true;
@@ -887,12 +890,9 @@ rest_of_record_type_compilation (tree record_type)
 	}
     }
 
-  /* If this record is of variable size, rename it so that the
-     debugger knows it is and make a new, parallel, record
-     that tells the debugger how the record is laid out.  See
-     exp_dbug.ads.  But don't do this for records that are padding
-     since they confuse GDB.  */
-  if (var_size && !TYPE_IS_PADDING_P (record_type))
+  /* If this record type is of variable size, make a parallel record type that
+     will tell the debugger how the former is laid out (see exp_dbug.ads).  */
+  if (var_size)
     {
       tree new_record_type
 	= make_node (TREE_CODE (record_type) == QUAL_UNION_TYPE
@@ -1052,8 +1052,7 @@ rest_of_record_type_compilation (tree record_type)
 	  prev_old_field = old_field;
 	}
 
-      TYPE_FIELDS (new_record_type)
-	= nreverse (TYPE_FIELDS (new_record_type));
+      TYPE_FIELDS (new_record_type) = nreverse (TYPE_FIELDS (new_record_type));
 
       add_parallel_type (TYPE_STUB_DECL (record_type), new_record_type);
     }

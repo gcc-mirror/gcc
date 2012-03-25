@@ -1,3 +1,8 @@
+2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (finish_record_type): Return early for padded
+	types and tidy up.
+
 2012-03-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* hlo.ads, hlo.adb: Removed, no longer used.
