@@ -370,6 +370,19 @@ fix = {
 };
 
 /*
+ *  malloc.h on AIX6 uses XLC++ specific builtin syntax
+ */
+fix = {
+    hackname  = aix_malloc;
+    mach      = "*-*-aix*";
+    files     = "malloc.h";
+    select    = "#ifdef __cplusplus";
+    c_fix     = format;
+    c_fix_arg = "#if (defined(__cplusplus) && defined(__IBMCPP__))";
+    test_text = "#ifdef __cplusplus";
+};
+
+/*
  * net/if_arp.h defines a variable fc_softc instead of adding a
  * typedef for the struct on AIX 5.2, 5.3, 6.1 and 7.1
  */

@@ -1,3 +1,9 @@
+2012-03-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_malloc): New.
+	* fixincl.x: Regenerate.
+	* tests/base/malloc.h [AIX_MALLOC_CHECK]: New.
+
 2012-03-22  Release Manager
 
 	* GCC 4.7.0 released.
