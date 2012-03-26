@@ -1,3 +1,9 @@
+2012-03-26  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* testsuite/lib/libgupc.exp: Added fortran-modules.exp 
+	for explicit load from the gcc testsuite directory. It is
+	a required file for gcc-dg.exp.
+
 2012-02-02  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* Makefile.am: Prevent install from adding suffix to the
