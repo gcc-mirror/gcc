@@ -1,3 +1,8 @@
+2012-03-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR libgcj/52694
+	* java/io/natVMConsole.cc (IUCLC): Define, if undefined.
+		
 2012-03-16  Andrew John Hughes  <ahughes@redhat.com>
 
 	* Makefile.am: Add natVMConsole.cc.

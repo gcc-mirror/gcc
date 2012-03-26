@@ -19,6 +19,10 @@ details.  */
 #include <java/io/Console.h>
 #include <java/io/VMConsole.h>
 
+#ifndef IUCLC
+#define IUCLC 0
+#endif
+
 #define TERMIOS_ECHO_IFLAGS (IUCLC|IXON|IXOFF|IXANY)
 #define TERMIOS_ECHO_LFLAGS (ECHO|ECHOE|ECHOK|ECHONL|TOSTOP)
 
