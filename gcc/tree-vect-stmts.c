@@ -1142,7 +1142,6 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
 static void
 vect_init_vector_1 (gimple stmt, gimple new_stmt, gimple_stmt_iterator *gsi)
 {
-
   if (gsi)
     vect_finish_stmt_generation (stmt, new_stmt, gsi);
   else
@@ -1185,48 +1184,48 @@ vect_init_vector_1 (gimple stmt, gimple new_stmt, gimple_stmt_iterator *gsi)
 
 /* Function vect_init_vector.
 
-   Insert a new stmt (INIT_STMT) that initializes a new vector variable with
-   the vector elements of VECTOR_VAR.  Place the initialization at BSI if it
-   is not NULL.  Otherwise, place the initialization at the loop preheader.
+   Insert a new stmt (INIT_STMT) that initializes a new variable of type
+   TYPE with the value VAL.  If TYPE is a vector type and VAL does not have
+   vector type a vector with all elements equal to VAL is created first.
+   Place the initialization at BSI if it is not NULL.  Otherwise, place the
+   initialization at the loop preheader.
    Return the DEF of INIT_STMT.
    It will be used in the vectorization of STMT.  */
 
 tree
-vect_init_vector (gimple stmt, tree vector_var, tree vector_type,
-		  gimple_stmt_iterator *gsi)
+vect_init_vector (gimple stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 {
   tree new_var;
   gimple init_stmt;
   tree vec_oprnd;
   tree new_temp;
 
-  if (TREE_CODE (TREE_TYPE (vector_var)) != VECTOR_TYPE)
+  if (TREE_CODE (type) == VECTOR_TYPE
+      && TREE_CODE (TREE_TYPE (val)) != VECTOR_TYPE)
     {
-      if (!types_compatible_p (TREE_TYPE (vector_type),
-			       TREE_TYPE (vector_var)))
+      if (!types_compatible_p (TREE_TYPE (type), TREE_TYPE (val)))
 	{
-	  if (CONSTANT_CLASS_P (vector_var))
-	    vector_var = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type),
-				     vector_var);
+	  if (CONSTANT_CLASS_P (val))
+	    val = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (type), val);
 	  else
 	    {
-	      new_var = create_tmp_reg (TREE_TYPE (vector_type), NULL);
+	      new_var = create_tmp_reg (TREE_TYPE (type), NULL);
 	      add_referenced_var (new_var);
 	      init_stmt = gimple_build_assign_with_ops (NOP_EXPR,
-							new_var, vector_var,
+							new_var, val,
 							NULL_TREE);
 	      new_temp = make_ssa_name (new_var, init_stmt);
 	      gimple_assign_set_lhs (init_stmt, new_temp);
 	      vect_init_vector_1 (stmt, init_stmt, gsi);
-	      vector_var = new_temp;
+	      val = new_temp;
 	    }
 	}
-      vector_var = build_vector_from_val (vector_type, vector_var);
+      val = build_vector_from_val (type, val);
     }
 
-  new_var = vect_get_new_vect_var (vector_type, vect_simple_var, "cst_");
+  new_var = vect_get_new_vect_var (type, vect_simple_var, "cst_");
   add_referenced_var (new_var);
-  init_stmt = gimple_build_assign  (new_var, vector_var);
+  init_stmt = gimple_build_assign  (new_var, val);
   new_temp = make_ssa_name (new_var, init_stmt);
   gimple_assign_set_lhs (init_stmt, new_temp);
   vect_init_vector_1 (stmt, init_stmt, gsi);
