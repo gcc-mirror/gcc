@@ -1,3 +1,8 @@
+2012-03-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* varasm.c (assemble_external): Assert this function is only called
+	during or after expanding to RTL.
+
 2012-03-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/50052
