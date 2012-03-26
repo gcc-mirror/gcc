@@ -1,3 +1,8 @@
+2012-03-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/50052
+	* gcc.dg/ipa/ipa-sra-2.c: Also run on strict-alignment platforms.
+
 2012-03-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52701
