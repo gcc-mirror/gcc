@@ -101,7 +101,7 @@ maxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
       alloc_size = sizeof (GFC_INTEGER_4) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
 
-      retarray->base_addr = internal_malloc_size (alloc_size);
+      retarray->base_addr = xmalloc (alloc_size);
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
@@ -307,7 +307,7 @@ mmaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	  return;
 	}
       else
-	retarray->base_addr = internal_malloc_size (alloc_size);
+	retarray->base_addr = xmalloc (alloc_size);
 
     }
   else
@@ -500,7 +500,7 @@ smaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	  return;
 	}
       else
-	retarray->base_addr = internal_malloc_size (alloc_size);
+	retarray->base_addr = xmalloc (alloc_size);
     }
   else
     {

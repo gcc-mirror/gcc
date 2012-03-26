@@ -639,7 +639,7 @@ buf_init (unix_stream * s)
 {
   s->st.vptr = &buf_vtable;
 
-  s->buffer = get_mem (BUFFER_SIZE);
+  s->buffer = xmalloc (BUFFER_SIZE);
   return 0;
 }
 
@@ -1082,7 +1082,7 @@ tempfile (st_parameter_open *opp)
     slash = "";
 
   // Take care that the template is longer in the mktemp() branch.
-  template = get_mem (tempdirlen + 23);
+  template = xmalloc (tempdirlen + 23);
 
 #ifdef HAVE_MKSTEMP
   snprintf (template, tempdirlen + 23, "%s%sgfortrantmpXXXXXX", 

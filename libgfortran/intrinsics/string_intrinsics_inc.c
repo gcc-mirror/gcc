@@ -1,5 +1,5 @@
 /* String intrinsics helper functions.
-   Copyright 2002, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2007, 2008, 2009, 2012 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -167,7 +167,7 @@ string_trim (gfc_charlen_type *len, CHARTYPE **dest, gfc_charlen_type slen,
   else
     {
       /* Allocate space for result string.  */
-      *dest = internal_malloc_size (*len * sizeof (CHARTYPE));
+      *dest = xmalloc (*len * sizeof (CHARTYPE));
 
       /* Copy string if necessary.  */
       memcpy (*dest, src, *len * sizeof (CHARTYPE));
@@ -445,7 +445,7 @@ string_minmax (gfc_charlen_type *rlen, CHARTYPE **dest, int op, int nargs, ...)
     *dest = &zero_length_string;
   else
     {
-      CHARTYPE *tmp = internal_malloc_size (*rlen * sizeof (CHARTYPE));
+      CHARTYPE *tmp = xmalloc (*rlen * sizeof (CHARTYPE));
       memcpy (tmp, res, reslen * sizeof (CHARTYPE));
       MEMSET (&tmp[reslen], ' ', *rlen - reslen);
       *dest = tmp;

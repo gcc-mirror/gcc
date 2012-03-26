@@ -3650,11 +3650,11 @@ st_set_nml_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
   namelist_info *nml;
   size_t var_name_len = strlen (var_name);
 
-  nml = (namelist_info*) get_mem (sizeof (namelist_info));
+  nml = (namelist_info*) xmalloc (sizeof (namelist_info));
 
   nml->mem_pos = var_addr;
 
-  nml->var_name = (char*) get_mem (var_name_len + 1);
+  nml->var_name = (char*) xmalloc (var_name_len + 1);
   memcpy (nml->var_name, var_name, var_name_len);
   nml->var_name[var_name_len] = '\0';
 
@@ -3668,9 +3668,9 @@ st_set_nml_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
   if (nml->var_rank > 0)
     {
       nml->dim = (descriptor_dimension*)
-		   get_mem (nml->var_rank * sizeof (descriptor_dimension));
+		   xmalloc (nml->var_rank * sizeof (descriptor_dimension));
       nml->ls = (array_loop_spec*)
-		  get_mem (nml->var_rank * sizeof (array_loop_spec));
+		  xmalloc (nml->var_rank * sizeof (array_loop_spec));
     }
   else
     {

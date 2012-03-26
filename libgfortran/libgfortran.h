@@ -753,11 +753,8 @@ internal_proto(set_fpu);
 
 /* memory.c */
 
-extern void *get_mem (size_t) __attribute__ ((malloc));
-internal_proto(get_mem);
-
-extern void *internal_malloc_size (size_t) __attribute__ ((malloc));
-internal_proto(internal_malloc_size);
+extern void *xmalloc (size_t) __attribute__ ((malloc));
+internal_proto(xmalloc);
 
 extern void *xcalloc (size_t, size_t) __attribute__ ((malloc));
 internal_proto(xcalloc);

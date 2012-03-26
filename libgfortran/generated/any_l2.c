@@ -111,7 +111,7 @@ any_l2 (gfc_array_l2 * const restrict retarray,
 	  return;
 	}
       else
-	retarray->base_addr = internal_malloc_size (alloc_size);
+	retarray->base_addr = xmalloc (alloc_size);
     }
   else
     {

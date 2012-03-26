@@ -86,8 +86,8 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
 
         }
 
-      /* internal_malloc_size allocates a single byte for zero size.  */
-      ret->base_addr = internal_malloc_size (size * arraysize);
+      /* xmalloc allocates a single byte for zero size.  */
+      ret->base_addr = xmalloc (size * arraysize);
     }
   else if (unlikely (compile_options.bounds_check))
     {

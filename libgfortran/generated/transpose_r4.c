@@ -60,7 +60,7 @@ transpose_r4 (gfc_array_r4 * const restrict ret,
       GFC_DIMENSION_SET(ret->dim[1], 0, GFC_DESCRIPTOR_EXTENT(source,0) - 1,
 			GFC_DESCRIPTOR_EXTENT(source, 1));
 
-      ret->base_addr = internal_malloc_size (sizeof (GFC_REAL_4) * size0 ((array_t *) ret));
+      ret->base_addr = xmalloc (sizeof (GFC_REAL_4) * size0 ((array_t *) ret));
       ret->offset = 0;
     } else if (unlikely (compile_options.bounds_check))
     {

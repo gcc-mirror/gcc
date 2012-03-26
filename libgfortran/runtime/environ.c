@@ -1,7 +1,8 @@
-/* Copyright (C) 2002, 2003, 2005, 2007, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2007, 2009, 2012 
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -807,7 +808,7 @@ void init_unformatted (variable * v)
     }
   else
     {
-      elist = get_mem (unit_count * sizeof (exception_t));
+      elist = xmalloc (unit_count * sizeof (exception_t));
       do_count = 0;
       p = val;
       do_parse ();
