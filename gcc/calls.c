@@ -1642,13 +1642,8 @@ rtx_for_function_call (tree fndecl, tree addr)
   /* Get the function to call, in the form of RTL.  */
   if (fndecl)
     {
-      /* If this is the first use of the function, see if we need to
-	 make an external definition for it.  */
       if (!TREE_USED (fndecl) && fndecl != current_function_decl)
-	{
-	  assemble_external (fndecl);
-	  TREE_USED (fndecl) = 1;
-	}
+	TREE_USED (fndecl) = 1;
 
       /* Get a SYMBOL_REF rtx for the function address.  */
       funexp = XEXP (DECL_RTL (fndecl), 0);
