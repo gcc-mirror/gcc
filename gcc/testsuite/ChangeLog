@@ -1,3 +1,8 @@
+2012-03-26  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	PR tree-optimization/52686
+	* gcc.target/arm/pr52686.c: New test.
+
 2012-03-26  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/torture/avr-torture.exp (AVR_TORTURE_OPTIONS):
