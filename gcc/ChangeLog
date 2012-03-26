@@ -1,3 +1,9 @@
+2012-03-26  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	PR tree-optimization/52686
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Handle
+	WIDEN_LSHIFT_EXPR.
+
 2012-03-26  Tristan Gingold  <gingold@adacore.com>
 
 	* config/alpha/vms.h (LINK_SPEC): Simplify.
