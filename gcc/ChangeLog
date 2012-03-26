@@ -1,3 +1,10 @@
+2012-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/52629
+	* reload1.c (count_pseudo): Short-circuit common case.
+	(count_spilled_pseudo): Return early for pseudos without hard regs.
+	Assert that the pseudo has got a hard reg before manipulating it.
+
 2012-03-24  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/51663
