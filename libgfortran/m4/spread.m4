@@ -102,8 +102,8 @@ spread_'rtype_code` ('rtype` *ret, const 'rtype` *source,
 	}
       ret->offset = 0;
 
-      /* internal_malloc_size allocates a single byte for zero size.  */
-      ret->base_addr = internal_malloc_size (rs * sizeof('rtype_name`));
+      /* xmalloc allocates a single byte for zero size.  */
+      ret->base_addr = xmalloc (rs * sizeof('rtype_name`));
       if (rs <= 0)
         return;
     }
@@ -245,7 +245,7 @@ spread_scalar_'rtype_code` ('rtype` *ret, const 'rtype_name` *source,
 
   if (ret->base_addr == NULL)
     {
-      ret->base_addr = internal_malloc_size (ncopies * sizeof ('rtype_name`));
+      ret->base_addr = xmalloc (ncopies * sizeof ('rtype_name`));
       ret->offset = 0;
       GFC_DIMENSION_SET(ret->dim[0], 0, ncopies - 1, 1);
     }

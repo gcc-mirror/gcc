@@ -91,8 +91,8 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 
 	  GFC_DIMENSION_SET(ret->dim[i], 0, ub, str);
 
-          /* internal_malloc_size allocates a single byte for zero size.  */
-	  ret->base_addr = internal_malloc_size (size * arraysize);
+          /* xmalloc allocates a single byte for zero size.  */
+	  ret->base_addr = xmalloc (size * arraysize);
 
         }
     }

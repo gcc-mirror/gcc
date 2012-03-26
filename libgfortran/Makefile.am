@@ -887,13 +887,13 @@ $(i_any_c): m4/any.m4 $(I_M4_DEPS2)
 $(i_count_c): m4/count.m4 $(I_M4_DEPS2)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 count.m4 > $@
 
-$(i_iall_c): m4/iall.m4 $(I_M4_DEPS)
+$(i_iall_c): m4/iall.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 iall.m4 > $@
 
-$(i_iany_c): m4/iany.m4 $(I_M4_DEPS)
+$(i_iany_c): m4/iany.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 iany.m4 > $@
 
-$(i_iparity_c): m4/iparity.m4 $(I_M4_DEPS)
+$(i_iparity_c): m4/iparity.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 iparity.m4 > $@
 
 $(i_maxloc0_c): m4/maxloc0.m4 $(I_M4_DEPS0)
@@ -926,10 +926,10 @@ $(i_matmul_c): m4/matmul.m4 $(I_M4_DEPS)
 $(i_matmull_c): m4/matmull.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmull.m4 > $@
 
-$(i_norm2_c): m4/norm2.m4 $(I_M4_DEPS)
+$(i_norm2_c): m4/norm2.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 norm2.m4 > $@
 
-$(i_parity_c): m4/parity.m4 $(I_M4_DEPS)
+$(i_parity_c): m4/parity.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 parity.m4 > $@
 
 $(i_transpose_c): m4/transpose.m4 $(I_M4_DEPS)

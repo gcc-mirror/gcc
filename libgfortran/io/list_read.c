@@ -2282,7 +2282,7 @@ nml_touch_nodes (namelist_info * nl)
 {
   index_type len = strlen (nl->var_name) + 1;
   int dim;
-  char * ext_name = (char*)get_mem (len + 1);
+  char * ext_name = (char*)xmalloc (len + 1);
   memcpy (ext_name, nl->var_name, len-1);
   memcpy (ext_name + len - 1, "%", 2);
   for (nl = nl->next; nl; nl = nl->next)
@@ -2540,7 +2540,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 
 	  case BT_DERIVED:
 	    obj_name_len = strlen (nl->var_name) + 1;
-	    obj_name = get_mem (obj_name_len+1);
+	    obj_name = xmalloc (obj_name_len+1);
 	    memcpy (obj_name, nl->var_name, obj_name_len-1);
 	    memcpy (obj_name + obj_name_len - 1, "%", 2);
 

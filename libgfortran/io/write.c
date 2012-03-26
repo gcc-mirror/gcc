@@ -1,4 +1,5 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 
+   2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist output contributed by Paul Thomas
@@ -1864,7 +1865,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	      base_var_name_len = base ? strlen (base->var_name) : 0;
 	      ext_name_len = base_name_len + base_var_name_len 
 		+ strlen (obj->var_name) + obj->var_rank * NML_DIGITS + 1;
-	      ext_name = (char*)get_mem (ext_name_len);
+	      ext_name = (char*)xmalloc (ext_name_len);
 
 	      memcpy (ext_name, base_name, base_name_len);
 	      clen = strlen (obj->var_name + base_var_name_len);
@@ -1893,7 +1894,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	      /* Now obj_name.  */
 
 	      obj_name_len = strlen (obj->var_name) + 1;
-	      obj_name = get_mem (obj_name_len+1);
+	      obj_name = xmalloc (obj_name_len+1);
 	      memcpy (obj_name, obj->var_name, obj_name_len-1);
 	      memcpy (obj_name + obj_name_len-1, "%", 2);
 

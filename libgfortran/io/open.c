@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
@@ -538,7 +538,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
 
   /* Create the unit structure.  */
 
-  u->file = get_mem (opp->file_len);
+  u->file = xmalloc (opp->file_len);
   if (u->unit_number != opp->common.unit)
     internal_error (&opp->common, "Unit number changed");
   u->s = s;

@@ -27,38 +27,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <stdlib.h>
 
-/* If GFC_CLEAR_MEMORY is defined, the memory allocation routines will
-   return memory that is guaranteed to be set to zero.  This can have
-   a severe efficiency penalty, so it should never be set if good
-   performance is desired, but it can help when you're debugging code.  */
-/* #define GFC_CLEAR_MEMORY */
 
 void *
-get_mem (size_t n)
+xmalloc (size_t n)
 {
   void *p;
 
-#ifdef GFC_CLEAR_MEMORY
-  p = (void *) calloc (1, n);
-#else
-  p = (void *) malloc (n);
-#endif
+  if (n == 0)
+    n = 1;
+
+  p = malloc (n);
+
   if (p == NULL)
     os_error ("Memory allocation failed");
 
   return p;
-}
-
-
-/* Allocate memory for internal (compiler generated) use.  */
-
-void *
-internal_malloc_size (size_t size)
-{
-  if (unlikely (size == 0))
-    size = 1;
-
-  return get_mem (size);
 }
 
 

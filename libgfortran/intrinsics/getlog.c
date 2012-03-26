@@ -1,5 +1,5 @@
 /* Implementation of the GETLOG g77 intrinsic.
-   Copyright (C) 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -86,7 +86,7 @@ PREFIX(getlog) (char * login, gfc_charlen_type login_len)
      targets; we do something simple in case the target doesn't
      support sysconf.  */
   static const size_t buflen = 1024;
-  buf = get_mem (buflen);
+  buf = xmalloc (buflen);
   err = getpwuid_r (geteuid (), &pwd, buf, buflen, &result);
   if (err != 0 || result == NULL)
     goto cleanup;

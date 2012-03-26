@@ -409,7 +409,7 @@ get_internal_unit (st_parameter_dt *dtp)
     {
       iunit->rank = GFC_DESCRIPTOR_RANK (dtp->internal_unit_desc);
       iunit->ls = (array_loop_spec *)
-	get_mem (iunit->rank * sizeof (array_loop_spec));
+	xmalloc (iunit->rank * sizeof (array_loop_spec));
       dtp->internal_unit_len *=
 	init_loop_spec (dtp->internal_unit_desc, iunit->ls, &start_record);
 
@@ -542,7 +542,7 @@ init_units (void)
       u->endfile = NO_ENDFILE;
 
       u->file_len = strlen (stdin_name);
-      u->file = get_mem (u->file_len);
+      u->file = xmalloc (u->file_len);
       memmove (u->file, stdin_name, u->file_len);
 
       fbuf_init (u, 0);
@@ -572,7 +572,7 @@ init_units (void)
       u->endfile = AT_ENDFILE;
     
       u->file_len = strlen (stdout_name);
-      u->file = get_mem (u->file_len);
+      u->file = xmalloc (u->file_len);
       memmove (u->file, stdout_name, u->file_len);
       
       fbuf_init (u, 0);
@@ -602,7 +602,7 @@ init_units (void)
       u->endfile = AT_ENDFILE;
 
       u->file_len = strlen (stderr_name);
-      u->file = get_mem (u->file_len);
+      u->file = xmalloc (u->file_len);
       memmove (u->file, stderr_name, u->file_len);
       
       fbuf_init (u, 256);  /* 256 bytes should be enough, probably not doing
@@ -759,7 +759,7 @@ filename_from_unit (int n)
   /* Get the filename.  */
   if (u != NULL)
     {
-      filename = (char *) get_mem (u->file_len + 1);
+      filename = (char *) xmalloc (u->file_len + 1);
       unpack_filename (filename, u->file, u->file_len);
       return filename;
     }

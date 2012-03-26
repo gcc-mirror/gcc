@@ -1,5 +1,5 @@
-/* Implementation of the NORM2 intrinsic
-   Copyright 2010 Free Software Foundation, Inc.
+/* Implementation of the PARITY intrinsic
+   Copyright 2010, 2012 Free Software Foundation, Inc.
    Contributed by Tobias Burnus  <burnus@net-b.de>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -101,7 +101,7 @@ parity_l1 (gfc_array_l1 * const restrict retarray,
       alloc_size = sizeof (GFC_LOGICAL_1) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
 
-      retarray->base_addr = internal_malloc_size (alloc_size);
+      retarray->base_addr = xmalloc (alloc_size);
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */

@@ -5936,13 +5936,13 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 @MAINTAINER_MODE_TRUE@$(i_count_c): m4/count.m4 $(I_M4_DEPS2)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 count.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_iall_c): m4/iall.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_iall_c): m4/iall.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 iall.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_iany_c): m4/iany.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_iany_c): m4/iany.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 iany.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_iparity_c): m4/iparity.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_iparity_c): m4/iparity.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 iparity.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_maxloc0_c): m4/maxloc0.m4 $(I_M4_DEPS0)
@@ -5975,10 +5975,10 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 @MAINTAINER_MODE_TRUE@$(i_matmull_c): m4/matmull.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmull.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_norm2_c): m4/norm2.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_norm2_c): m4/norm2.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 norm2.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_parity_c): m4/parity.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_parity_c): m4/parity.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 parity.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_transpose_c): m4/transpose.m4 $(I_M4_DEPS)
