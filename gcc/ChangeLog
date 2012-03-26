@@ -1,3 +1,18 @@
+2012-03-26  Tristan Gingold  <gingold@adacore.com>
+
+	* config/alpha/vms.h (LINK_SPEC): Simplify.
+	(STARTFILE_SPEC): Remove -mvms-return-codes handling.
+	(NAME__MAIN, SYMBOL__MAIN): Remove.
+	(VMS_DEBUG_MAIN_POINTER): Remove.
+	* config/ia64/vms.h: Likewise.
+	* config/alpha/alpha.c (alpha_start_function): Move vms_debug_main
+	code to vms.c.  Call vms_start_function.
+	* config/ia64/ia64.c (ia64_start_function): Likewise.
+	* config/vms/vms-protos.h (vms_start_function): Declare.
+	* config/vms/vms.c (vms_start_function): New function.
+	* config/vms/vms.h (MATH_LIBRARY): Define.
+	(VMS_DEBUG_MAIN_POINTER): Define.
+
 2012-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/52629

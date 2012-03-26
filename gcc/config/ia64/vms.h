@@ -30,8 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_GNU_AS)
 
-#define VMS_DEBUG_MAIN_POINTER "TRANSFER$BREAK$GO"
-
 #undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
 
@@ -55,19 +53,16 @@ do {                                          \
 } while (0)
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC \
-"%{!shared:%{mvms-return-codes:vcrt0.o%s} %{!mvms-return-codes:pcrt0.o%s} \
-    crtbegin.o%s} \
+#define STARTFILE_SPEC "%{!shared:crt0.o%s crtbegin.o%s} \
  %{!static:%{shared:crtinitS.o%s crtbeginS.o%s}}"
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC \
-"%{!shared:crtend.o%s} %{!static:%{shared:crtendS.o%s}}"
+#define ENDFILE_SPEC "%{!shared:crtend.o%s} %{!static:%{shared:crtendS.o%s}}"
 
 #define LINK_GCC_C_SEQUENCE_SPEC "%G"
 
 #undef LINK_SPEC
-#define LINK_SPEC "%{g*} %{map} %{save-temps} %{shared} %{v}"
+#define LINK_SPEC "%{g0} %{g*:-g} %{map} %{save-temps} %{shared} %{v}"
 
 #undef LIB_SPEC
 #define LIB_SPEC ""
@@ -88,9 +83,6 @@ do {								\
    functions.   */
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS ia64_vms_init_libfuncs
-
-#define NAME__MAIN "__gccmain"
-#define SYMBOL__MAIN __gccmain
 
 #define CTOR_LIST_BEGIN asm (".global\tLIB$INITIALIZE#\n");                  \
 STATIC func_ptr __CTOR_LIST__[1]                                             \

@@ -75,10 +75,15 @@ extern void vms_c_register_includes (const char *, const char *, int);
 #define C_COMMON_OVERRIDE_OPTIONS vms_c_common_override_options ()
 
 /* VMS doesn't support other sections than .text for code.  */
-
 #define TARGET_ASM_FUNCTION_SECTION vms_function_section
 
 /* Always use 8 bytes addresses in dwarf2 debug info.  The default value doesn't
    work as it may be 4 bytes, which won't match gas default (8 bytes for ia64),
    and will thus produce incorrect values.  */
 #define DWARF2_ADDR_SIZE 8
+
+/* No libm on VMS.  */
+#define MATH_LIBRARY ""
+
+/* Special VMS debugger symbol to record the entry point.  */
+#define VMS_DEBUG_MAIN_POINTER "TRANSFER$BREAK$GO"

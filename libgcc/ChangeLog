@@ -1,3 +1,13 @@
+2012-03-26  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-ucrt0.c: Update copyright years.
+	Add a sanity check.
+	(___gcc_main_flags): Declare.
+	(__main): Check flags to remap argv and exit code.
+	* config.host (*-*-*vms*): Adjust extra_parts.
+	* config/vms/t-vms (vcrt0.o, pcrt0.o): Remove.
+	(crt0.o): Add.
+
 2012-03-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/lib1funcs.asm (ctzsi2): New function.

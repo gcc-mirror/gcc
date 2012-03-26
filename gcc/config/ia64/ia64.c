@@ -3649,16 +3649,8 @@ void
 ia64_start_function (FILE *file, const char *fnname,
 		     tree decl ATTRIBUTE_UNUSED)
 {
-#if VMS_DEBUGGING_INFO
-  if (vms_debug_main
-      && debug_info_level > DINFO_LEVEL_NONE
-      && strncmp (vms_debug_main, fnname, strlen (vms_debug_main)) == 0)
-    {
-      targetm.asm_out.globalize_label (asm_out_file, VMS_DEBUG_MAIN_POINTER);
-      ASM_OUTPUT_DEF (asm_out_file, VMS_DEBUG_MAIN_POINTER, fnname);
-      dwarf2out_vms_debug_main_pointer ();
-      vms_debug_main = 0;
-    }
+#if TARGET_ABI_OPEN_VMS
+  vms_start_function (fnname);
 #endif
 
   fputs ("\t.proc ", file);

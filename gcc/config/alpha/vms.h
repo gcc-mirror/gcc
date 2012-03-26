@@ -43,8 +43,6 @@ along with GCC; see the file COPYING3.  If not see
         builtin_define ("__IEEE_FLOAT");	\
     } while (0)
 
-#define VMS_DEBUG_MAIN_POINTER "TRANSFER$BREAK$GO"
-
 #undef PCC_STATIC_STRUCT_RETURN
 
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
@@ -279,21 +277,14 @@ do {                                                \
 #else
 /* Link with vms-dwarf2.o if -g (except -g0). This causes the
    VMS link to pull all the dwarf2 debug sections together.  */
-#define LINK_SPEC "%{g:-g vms-dwarf2.o%s} %{g0} %{g1:-g1 vms-dwarf2.o%s} \
-%{g2:-g2 vms-dwarf2.o%s} %{g3:-g3 vms-dwarf2.o%s} %{shared} %{v} %{map}"
+#define LINK_SPEC "%{g0} %{g*:-g vms-dwarf2.o%s} %{shared} %{v} %{map}"
 #endif
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC \
-"%{!shared:%{mvms-return-codes:vcrt0.o%s} %{!mvms-return-codes:pcrt0.o%s} \
-    crtbegin.o%s} \
+#define STARTFILE_SPEC "%{!shared:crt0.o%s crtbegin.o%s} \
  %{!static:%{shared:crtbeginS.o%s}}"
 
-#define ENDFILE_SPEC \
-"%{!shared:crtend.o%s} %{!static:%{shared:crtendS.o%s}}"
-
-#define NAME__MAIN "__gccmain"
-#define SYMBOL__MAIN __gccmain
+#define ENDFILE_SPEC "%{!shared:crtend.o%s} %{!static:%{shared:crtendS.o%s}}"
 
 #define INIT_SECTION_ASM_OP "\t.section LIB$INITIALIZE,GBL,NOWRT"
 
