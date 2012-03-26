@@ -1,5 +1,11 @@
 2012-03-26  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/52701
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Always
+	compute and set the evolution part of PHI nodes.
+
+2012-03-26  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/52721
 	* tree-vect-stmts.c (vect_init_vector): Handle scalars.
 
