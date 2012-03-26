@@ -1,5 +1,10 @@
 2012-03-26  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* varasm.c (assemble_external): #if 0 out the new assert from the
+	previous commit, it breaks the Java and Go front ends.
+
+2012-03-26  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* toplev.c (check_global_declaration_1): Do not call assemble_external.
 	* expr.c (emit_block_move_libcall_fn): Likewise.
 	(clear_storage_libcall_fn): Likewise.
