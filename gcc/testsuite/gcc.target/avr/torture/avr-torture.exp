@@ -38,6 +38,7 @@ dg-init
 	{ -O0 } \
 	{ -O1 } \
 	{ -O2 } \
+	{ -Os -flto } \
 	{ -O2 -mcall-prologues } \
 	{ -O2 -fdata-sections } \
 	{ -O2 -fmerge-all-constants } \

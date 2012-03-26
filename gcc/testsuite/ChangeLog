@@ -1,3 +1,8 @@
+2012-03-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/avr-torture.exp (AVR_TORTURE_OPTIONS):
+	Add "-Os -flto" to list.
+
 2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/concat2.ad[sb]: New test.
