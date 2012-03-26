@@ -1375,8 +1375,7 @@ emit_block_move_via_libcall (rtx dst, rtx src, rtx size, bool tailcall)
 }
 
 /* A subroutine of emit_block_move_via_libcall.  Create the tree node
-   for the function we use for block copies.  The first time FOR_CALL
-   is true, we call assemble_external.  */
+   for the function we use for block copies.  */
 
 static GTY(()) tree block_move_fn;
 
@@ -1419,7 +1418,6 @@ emit_block_move_libcall_fn (int for_call)
     {
       emitted_extern = true;
       make_decl_rtl (block_move_fn);
-      assemble_external (block_move_fn);
     }
 
   return block_move_fn;
@@ -2747,8 +2745,7 @@ set_storage_via_libcall (rtx object, rtx size, rtx val, bool tailcall)
 }
 
 /* A subroutine of set_storage_via_libcall.  Create the tree node
-   for the function we use for block clears.  The first time FOR_CALL
-   is true, we call assemble_external.  */
+   for the function we use for block clears.  */
 
 tree block_clear_fn;
 
@@ -2791,7 +2788,6 @@ clear_storage_libcall_fn (int for_call)
     {
       emitted_extern = true;
       make_decl_rtl (block_clear_fn);
-      assemble_external (block_clear_fn);
     }
 
   return block_clear_fn;
@@ -7413,11 +7409,8 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
 	  result = XEXP (result, 0);
 
 	  /* ??? Is this needed anymore?  */
-	  if (DECL_P (exp) && !TREE_USED (exp) == 0)
-	    {
-	      assemble_external (exp);
-	      TREE_USED (exp) = 1;
-	    }
+	  if (DECL_P (exp))
+	    TREE_USED (exp) = 1;
 
 	  if (modifier != EXPAND_INITIALIZER
 	      && modifier != EXPAND_CONST_ADDRESS
@@ -9012,11 +9005,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* Ensure variable marked as used even if it doesn't go through
 	 a parser.  If it hasn't be used yet, write out an external
 	 definition.  */
-      if (! TREE_USED (exp))
-	{
-	  assemble_external (exp);
-	  TREE_USED (exp) = 1;
-	}
+      TREE_USED (exp) = 1;
 
       /* Show we haven't gotten RTL for this yet.  */
       temp = 0;
