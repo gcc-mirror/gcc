@@ -1,3 +1,10 @@
+2012-03-26  Tristan Gingold  <gingold@adacore.com>
+
+	* configure.ac: Use GCC_CHECK_MATH_FUNC for math functions.
+	* acinclude.m4: Include ../config/math.m4
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2012-03-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* runtime/memory.c (xcalloc): New function.
