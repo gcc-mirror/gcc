@@ -1,5 +1,5 @@
 /* VMS crt0 returning Unix style condition codes.
-   Copyright (C) 2001, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2009, 2010, 2012 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
 
    This file is part of GCC.
@@ -25,12 +25,16 @@
 
 #include <stdlib.h>
 
+/* Sanity check.  */
+#if __INITIAL_POINTER_SIZE != 64
+#error "vms-ucrt0.c must be compiled with -mpointer-size=64"
+#endif
+
 /* Lots of cheat to handle 32bits/64bits pointer conversions.
    We use 'long long' for 64 bits pointers and 'int' for 32 bits pointers.  */
 
-extern void decc$main (void *arg1, void *arg2, void *arg3,
-                       void *image_file_desc, void *arg5, void *arg6,
-                       int *, int *, int *);
+extern void decc$main (void *, void *, void *, void *, unsigned int,
+		       unsigned int, int *, int *, int *);
 extern int main (int, char **, char **);
 extern int _malloc32 (int);
 
@@ -40,8 +44,8 @@ extern int _malloc32 (int);
 #define MAIN_ASM_NAME
 #endif
 
-int __main (void *arg1, void *arg2, void *arg3,
-            void *image_file_desc, void *arg5, void *arg6) MAIN_ASM_NAME;
+int __main (void *, void *, void *, void *,
+	    unsigned int, unsigned int) MAIN_ASM_NAME;
 
 /* From errnodef.h, but we need to emulate the globalval.  */
 extern int C$_EXIT1;
@@ -49,79 +53,90 @@ extern int C$_EXIT1;
 /* From stsdef.h  */
 #define STS$V_MSG_NO 0x03
 #define STS$M_INHIB_MSG 0x10000000
+/* Symbol defined while main() is compiled to record the flags used.
+   (Note that the symbol defines the value, ie extract the bits from the
+    address).
+   bit 0 set for 64 bit pointers
+   bit 1 set for posix return value.  */
+extern char __gcc_main_flags;
 
 /* From ssdef.h  */
 #define SS$_NORMAL 1
+#define MAIN_FLAG_64BIT (1 << 0)
+#define MAIN_FLAG_POSIX (1 << 1)
 
 int
-__main (void *arg1, void *arg2, void *arg3,
-        void *image_file_desc, void *arg5, void *arg6)
+__main (void *progxfer, void *cli_util, void *imghdr, void *image_file_desc,
+	unsigned int linkflag, unsigned int cliflag)
 {
   int argc;
   int argv;
   int envp;
   int status;
-  int i;
-  long long *long_argv;
-  long long *long_envp;
+  char **argv64;
+  char **envp64;
+  unsigned int flags = (unsigned __int64)&__gcc_main_flags;
 
   /* The argv and envp arrays are 32 bits pointers to 32 bits pointers.  */
-  decc$main (arg1, arg2, arg3, image_file_desc,
-	     arg5, arg6, &argc, &argv, &envp);
+  decc$main (progxfer, cli_util, imghdr, image_file_desc,
+	     linkflag, cliflag, &argc, &argv, &envp);
 
-  if (sizeof (void *) == 8)
+  if (flags & MAIN_FLAG_64BIT)
     {
+      int i;
+
       /* Reallocate argv and envp with 64 bit pointers.  */
-      long_argv = (long long *)
-        (long long) _malloc32 (sizeof (long long) * (argc + 1));
+      argv64 = (char **) _malloc32 (sizeof (char *) * (argc + 1));
 
       for (i = 0; i < argc; i++)
-        long_argv[i] = ((int *) (long long) argv)[i];
+        argv64[i] = (char *) (__int64)(((int *) (__int64) argv)[i]);
 
-      long_argv[argc] = 0;
+      argv64[argc] = NULL;
 
-      for (i = 0; ((int *) (long long) envp)[i]; i++)
+      for (i = 0; ((int *) (__int64) envp)[i]; i++)
         ;
-      long_envp = (long long *)
-        (long long) _malloc32 (sizeof (long long) * (i + 1));
+      envp64 = (char **) _malloc32 (sizeof (char *) * (i + 1));
 
-      for (i = 0; ((int *) (long long) envp)[i]; i++)
-        long_envp[i] = ((int *) (long long) envp)[i];
+      for (i = 0; ((int *) (__int64) envp)[i]; i++)
+        envp64[i] = (char *)(__int64)(((int *) (__int64) envp)[i]);
 
-      long_envp[i] = 0;
+      envp64[i] = NULL;
     }
   else
     {
-      long_argv = (long long *) argv;
-      long_envp = (long long *) envp;
+      argv64 = (char **)(__int64)argv;
+      envp64 = (char **)(__int64)envp;
     }
-  status = main (argc, (char **)long_argv, (char **)long_envp);
 
-#ifdef CRT0_POSIX_EXIT
-  /* Map into a range of 0 - 255.  */
-  status = status & 255;
+  status = main (argc, argv64, envp64);
 
-  if (status > 0)
+  if (flags & MAIN_FLAG_POSIX)
     {
-      int save_status = status;
+      /* Map into a range of 0 - 255.  */
+      status &= 255;
 
-      status = (long) &C$_EXIT1 + ((status - 1) << STS$V_MSG_NO);
-
-      /* An exit failure status requires a "severe" error.  All status values
-	 are defined in errno with a successful (1) severity but can be
-	 changed to an error (2) severity by adding 1.  In addition for
-	 compatibility with UNIX exit() routines we inhibit a run-time error
-	 message from being generated on exit(1).  */
-
-      if (save_status == 1)
+      if (status != 0)
 	{
-	  status++;
-	  status |= STS$M_INHIB_MSG;
+	  int save_status = status;
+
+	  status = (__int64) &C$_EXIT1 + ((status - 1) << STS$V_MSG_NO);
+
+	  /* An exit failure status requires a "severe" error.  All
+	     status values are defined in errno with a successful (1)
+	     severity but can be changed to an error (2) severity by
+	     adding 1.  In addition for compatibility with UNIX exit()
+	     routines we inhibit a run-time error message from being
+	     generated on exit(1).  */
+
+	  if (save_status == 1)
+	    {
+	      status++;
+	      status |= STS$M_INHIB_MSG;
+	    }
 	}
+      else
+	status = SS$_NORMAL;
     }
-  else
-    status = SS$_NORMAL;
-#endif /* CRT0_POSIX_EXIT */
 
   return status;
 }

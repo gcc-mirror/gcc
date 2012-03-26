@@ -255,7 +255,7 @@ case ${host} in
   ;;
 *-*-*vms*)
   tmake_file="vms/t-vms"
-  extra_parts="vcrt0.o pcrt0.o crtbegin.o crtbeginS.o crtend.o crtendS.o"
+  extra_parts="crt0.o crtbegin.o crtbeginS.o crtend.o crtendS.o"
   ;;
 *-*-vxworks*)
   tmake_file=t-vxworks
