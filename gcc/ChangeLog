@@ -1,3 +1,8 @@
+2012-03-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52721
+	* tree-vect-stmts.c (vect_init_vector): Handle scalars.
+
 2012-03-26  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	PR tree-optimization/52686
