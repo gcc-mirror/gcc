@@ -565,11 +565,15 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
       /* Analyze the evolution function.  */
       access_fn = analyze_scalar_evolution (loop, def);
       if (access_fn)
-	STRIP_NOPS (access_fn);
-      if (access_fn && vect_print_dump_info (REPORT_DETAILS))
 	{
-	  fprintf (vect_dump, "Access function of PHI: ");
-	  print_generic_expr (vect_dump, access_fn, TDF_SLIM);
+	  STRIP_NOPS (access_fn);
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    {
+	      fprintf (vect_dump, "Access function of PHI: ");
+	      print_generic_expr (vect_dump, access_fn, TDF_SLIM);
+	    }
+	  STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo)
+	    = evolution_part_in_loop_num (access_fn, loop->num);
 	}
 
       if (!access_fn
@@ -579,8 +583,6 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 	  continue;
 	}
 
-      STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo)
-	= evolution_part_in_loop_num (access_fn, loop->num);
       gcc_assert (STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo) != NULL_TREE);
 
       if (vect_print_dump_info (REPORT_DETAILS))
