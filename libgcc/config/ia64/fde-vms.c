@@ -35,8 +35,7 @@
 #include <stdio.h>
 #include "unwind-ia64.h"
 
-#define __int64 long
-#include <vms/ossddef.h>
+#include <ossddef.h>
 #ifndef SS$_NORMAL
 #define SS$_NORMAL 1
 #endif
@@ -45,10 +44,10 @@
 
 typedef struct
 {
-  unsigned long start_offset;
-  unsigned long end_offset;
-  unsigned long info_offset;
-  unsigned long gp_value;
+  unw_word start_offset;
+  unw_word end_offset;
+  unw_word info_offset;
+  unw_word gp_value;
 }  vms_unw_table_entry;
 
 typedef unsigned long long uqword;
@@ -133,8 +132,8 @@ force_fallback_processing_for (void * pc, vms_unw_table_entry * entry)
    calls for fallback processing.  */
 
 struct unw_table_entry *
-_Unwind_FindTableEntry (void *pc, unsigned long *segment_base,
-                        unsigned long *gp, struct unw_table_entry *ent)
+_Unwind_FindTableEntry (void *pc, unw_word *segment_base,
+                        unw_word *gp, struct unw_table_entry *ent)
 {
   vms_unw_table_entry vueblock;
 
