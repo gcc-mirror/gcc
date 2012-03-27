@@ -23,7 +23,7 @@ mlinux
 Target Report RejectNegative Undocumented
 
 mno-gotplt
-Target Report RejectNegative Mask(AVOID_GOTPLT) MaskExists
+Target Report RejectNegative Mask(AVOID_GOTPLT)
 Together with -fpic and -fPIC, do not use GOTPLT references
 
 ; There's a small added setup cost with using GOTPLT references

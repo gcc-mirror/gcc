@@ -30,7 +30,7 @@ Target Report Mask(FPU)
 Use hardware FP
 
 mhard-float
-Target RejectNegative Mask(FPU) MaskExists
+Target RejectNegative Mask(FPU)
 Use hardware FP
 
 msoft-float

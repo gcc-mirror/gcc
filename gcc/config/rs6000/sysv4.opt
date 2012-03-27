@@ -66,7 +66,7 @@ Target Report RejectNegative Mask(LITTLE_ENDIAN)
 Produce little endian code
 
 mlittle
-Target Report RejectNegative Mask(LITTLE_ENDIAN) MaskExists
+Target Report RejectNegative Mask(LITTLE_ENDIAN)
 Produce little endian code
 
 mbig-endian

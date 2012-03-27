@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 mlong-double-128
-Target Report RejectNegative Mask(LONG_DOUBLE_128) MaskExists
+Target Report RejectNegative Mask(LONG_DOUBLE_128)
 Use 128-bit long double
 
 mlong-double-64
