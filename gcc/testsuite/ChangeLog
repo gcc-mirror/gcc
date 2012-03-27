@@ -1,3 +1,9 @@
+2012-03-27  Mike Stump  <mikestump@comcast.net>
+
+	PR target/52665
+	* gcc.target/i386/pr28946.c: Use -fno-ident to avoid spurious
+	failures that match branch names.
+
 2012-03-27  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
