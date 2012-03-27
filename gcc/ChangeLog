@@ -1,9 +1,17 @@
+2012-03-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52698
+	* config/i386/i386-protos.h (ix86_legitimize_reload_address):
+	New prototype.
+	* config/i386/i386.h (LEGITIMIZE_RELOAD_ADDRESS): New define.
+	* config/i386/i386.c: Include reload.h.
+	(ix86_legitimize_reload_address): New function.
+
 2012-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* opth-gen.awk: Allocated a bit for Mask and InverseMask if it
 	hasn't been allocated.  Define a target macro for Mask and
-	InverseMask if it hasn't been defined.  Remove MaskExists
-	handling.
+	InverseMask if it hasn't been defined.  Remove MaskExists handling.
 
 	* doc/options.texi: Remove MaskNeeded.
 
