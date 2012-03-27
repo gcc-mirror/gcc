@@ -1484,15 +1484,15 @@ do {									\
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)	\
   do {								\
-  if (TARGET_ILP32)						\
+  if (CASE_VECTOR_MODE == SImode)				\
     fprintf (STREAM, "\tdata4 @pcrel(.L%d)\n", VALUE);		\
   else								\
     fprintf (STREAM, "\tdata8 @pcrel(.L%d)\n", VALUE);		\
   } while (0)
 
-/* Jump tables only need 8 byte alignment.  */
+/* Jump tables only need 4 or 8 byte alignment.  */
 
-#define ADDR_VEC_ALIGN(ADDR_VEC) 3
+#define ADDR_VEC_ALIGN(ADDR_VEC) (CASE_VECTOR_MODE == SImode ? 2 : 3)
 
 
 /* Assembler Commands for Exception Regions.  */
