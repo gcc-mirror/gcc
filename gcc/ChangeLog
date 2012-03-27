@@ -1,3 +1,12 @@
+2012-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* opth-gen.awk: Allocated a bit for Mask and InverseMask if it
+	hasn't been allocated.  Define a target macro for Mask and
+	InverseMask if it hasn't been defined.  Remove MaskExists
+	handling.
+
+	* doc/options.texi: Remove MaskNeeded.
+
 2012-03-27  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR target/52667
