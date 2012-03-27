@@ -43,4 +43,4 @@ Target Mask(INEFFICIENT_WARNINGS)
 Generate warnings when inefficient code is known to be generated.
 
 minefficient
-Target Mask(INEFFICIENT_WARNINGS) MaskExists Undocumented
+Target Mask(INEFFICIENT_WARNINGS) Undocumented

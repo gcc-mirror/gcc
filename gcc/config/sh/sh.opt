@@ -316,7 +316,7 @@ Target Report RejectNegative Mask(RELAX)
 Shorten address references during linking
 
 mrenesas
-Target Mask(HITACHI) MaskExists
+Target Mask(HITACHI)
 Follow Renesas (formerly Hitachi) / SuperH calling conventions
 
 msoft-atomic

@@ -31,7 +31,7 @@ Target RejectNegative Mask(G_FLOAT)
 Generate GFLOAT double precision code
 
 mg-float
-Target RejectNegative Mask(G_FLOAT) MaskExists
+Target RejectNegative Mask(G_FLOAT)
 Generate GFLOAT double precision code
 
 mgnu

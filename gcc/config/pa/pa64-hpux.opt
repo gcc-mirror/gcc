@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 mgnu-ld
-Target RejectNegative Mask(GNU_LD) MaskExists
+Target RejectNegative Mask(GNU_LD)
 Assume code will be linked by GNU ld
 
 mhp-ld

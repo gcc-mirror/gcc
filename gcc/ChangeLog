@@ -1,3 +1,21 @@
+2012-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/arm/arm.opt (mapcs): Remove MaskExists.
+	* config/cris/linux.opt (mno-gotplt): Likewise.
+	* config/i386/i386.opt (mhard-float): Likewise.
+	(msse4): Likewise.
+	(mno-sse4): Likewise.
+	* config/m68k/m68k.opt (mhard-float): Likewise.
+	* config/mep/mep.op (mcop32): Likewise.
+	* config/pa/pa-hpux.opt (msio): Likewise.
+	* config/pa/pa64-hpux.opt (mgnu-ld): Likewise.
+	* config/picochip/picochip.opt (mlittle): Likewise.
+	* config/sh/sh.opt (mrenesas): Likewise.
+	* config/sparc/long-double-switch.opt (mlong-double-128): Likewise.
+	* config/sparc/sparc.opt (mhard-float): Likewise.
+	* config/v850/v850.opt (mv850es): Likewise.
+	* config/vax/vax.opt (mg-float): Likewise.
+
 2012-03-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/52693
