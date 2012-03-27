@@ -1,3 +1,11 @@
+2012-03-27  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50751
+	* config/sh/sh.c (sh_legitimize_address, sh_legitimize_reload_address):
+	Rearrange conditional logic.  Move displacement address calculations
+	to ...
+	(sh_find_mov_disp_adjust): ... this new function.
+
 2012-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/arm/arm.opt (mapcs): Remove MaskExists.

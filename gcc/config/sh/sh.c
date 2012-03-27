@@ -9783,13 +9783,80 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
   return orig;
 }
 
-/* Try machine-dependent ways of modifying an illegitimate address
-   to be legitimate.  If we find one, return the new, valid address.
-   Otherwise, return X.
+/* Given a (logical) mode size and an offset in bytes, try to find a the
+   appropriate displacement value for a mov insn.  On SH the displacements
+   are limited to max. 60 bytes for SImode, max. 30 bytes in HImode and max.
+   15 bytes in QImode.  To compensate this we create a new base address by
+   adding an adjustment value to it.
 
-   For the SH, if X is almost suitable for indexing, but the offset is
-   out of range, convert it into a normal form so that CSE has a chance
-   of reducing the number of address registers used.  */
+   If the originally requested offset is greater than 127 we prefer using
+   values 124..127 over 128..131 to increase opportunities to use the
+   add #imm, Rn insn.
+
+   In some cases it is possible that a requested offset might seem unaligned
+   or inappropriate for the mode size, like offset = 2 and mode size = 4.
+   This is compensated by adjusting the base address so that the effective
+   address of the displacement move insn will be aligned. 
+
+   This is not the best possible way of rebasing the base address, as it
+   does not look at other present displacement addressings around it.
+   In some cases this can create more base address adjustments than would
+   actually be necessary.  */
+
+struct disp_adjust
+{
+  rtx offset_adjust;
+  rtx mov_disp;
+  int max_mov_disp;
+};
+
+static struct disp_adjust
+sh_find_mov_disp_adjust (int mode_sz, HOST_WIDE_INT offset)
+{
+  struct disp_adjust res = { NULL_RTX, NULL_RTX, 0 };
+
+  /* The max. available mode for actual move insns is SImode.
+     Larger accesses will be split into multiple loads/stores.  */
+  const int max_mov_sz = GET_MODE_SIZE (SImode);
+
+  const int mov_insn_size = mode_sz >= max_mov_sz ? max_mov_sz : mode_sz;
+  const HOST_WIDE_INT max_disp = 15 * mov_insn_size;
+  HOST_WIDE_INT align_modifier = offset > 127 ? mov_insn_size : 0;
+
+  HOST_WIDE_INT offset_adjust;
+
+  /* In some cases this actually does happen and we must check for it.  */
+  if (mode_sz < 1 || mode_sz > 8)
+    return res;
+
+  /* FIXME: HImode with displacement addressing is not supported yet.
+     Make it purposefully fail for now.  */
+  if (mov_insn_size == 2)
+    return res;
+
+  /* Keeps the previous behavior for QImode displacement addressing.
+     This just decides how the offset is re-based.  Removing this special
+     case will result in slightly bigger code on average, but it's not that
+     bad actually.  */
+  if (mov_insn_size == 1)
+    align_modifier = 0;
+
+  res.max_mov_disp = max_disp + mov_insn_size;
+
+  offset_adjust = ((offset + align_modifier) & ~max_disp) - align_modifier;
+
+  if (mode_sz + offset - offset_adjust <= res.max_mov_disp)
+    {
+      res.offset_adjust = GEN_INT (offset_adjust);
+      res.mov_disp = GEN_INT (offset - offset_adjust);
+    }
+
+  return res;
+}
+
+/* Try to modify an illegitimate address and make it legitimate.
+   If we find one, return the new, valid address.
+   Otherwise, return the original address.  */
 
 static rtx
 sh_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
@@ -9797,66 +9864,33 @@ sh_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
   if (flag_pic)
     x = legitimize_pic_address (oldx, mode, NULL_RTX);
 
-  if (GET_CODE (x) == PLUS
-      && (GET_MODE_SIZE (mode) == 4
-	  || GET_MODE_SIZE (mode) == 8)
-      && CONST_INT_P (XEXP (x, 1))
-      && BASE_REGISTER_RTX_P (XEXP (x, 0))
-      && ! TARGET_SHMEDIA
-      && ! ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && mode == DFmode)
-      && ! (TARGET_SH2E && mode == SFmode))
+  if (TARGET_SHMEDIA)
+    return x;
+
+  if (((TARGET_SH4 || TARGET_SH2A_DOUBLE) && mode == DFmode)
+      || (TARGET_SH2E && mode == SFmode))
+    return x;
+
+  if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1))
+      && BASE_REGISTER_RTX_P (XEXP (x, 0)))
     {
-      rtx index_rtx = XEXP (x, 1);
-      HOST_WIDE_INT offset = INTVAL (index_rtx), offset_base;
-      rtx sum;
+      const int mode_sz = GET_MODE_SIZE (mode);
+      struct disp_adjust adj = sh_find_mov_disp_adjust (mode_sz,
+							INTVAL (XEXP (x, 1)));
 
-      /* On rare occasions, we might get an unaligned pointer
-	 that is indexed in a way to give an aligned address.
-	 Therefore, keep the lower two bits in offset_base.  */
-      /* Instead of offset_base 128..131 use 124..127, so that
-	 simple add suffices.  */
-      if (offset > 127)
-	offset_base = ((offset + 4) & ~60) - 4;
-      else
-	offset_base = offset & ~60;
-
-      /* Sometimes the normal form does not suit DImode.  We
-	 could avoid that by using smaller ranges, but that
-	 would give less optimized code when SImode is
-	 prevalent.  */
-      if (GET_MODE_SIZE (mode) + offset - offset_base <= 64)
-	{
-	  sum = expand_binop (Pmode, add_optab, XEXP (x, 0),
-			      GEN_INT (offset_base), NULL_RTX, 0,
-			      OPTAB_LIB_WIDEN);
-
-	  return gen_rtx_PLUS (Pmode, sum, GEN_INT (offset - offset_base));
-	}
-    }
-
-  /* This could be generalized for SImode, HImode, QImode displacement
-     addressing.  */
-  if (mode == QImode && GET_CODE (x) == PLUS
-      && BASE_REGISTER_RTX_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
-    {
-      rtx index_rtx = XEXP (x, 1);
-      HOST_WIDE_INT offset = INTVAL (index_rtx);
-      HOST_WIDE_INT offset_base = offset & ~15;
-    
-      if (offset - offset_base <= 16)
+      if (adj.offset_adjust != NULL_RTX && adj.mov_disp != NULL_RTX)
 	{
 	  rtx sum = expand_binop (Pmode, add_optab, XEXP (x, 0),
-			      GEN_INT (offset_base), NULL_RTX, 0,
-			      OPTAB_LIB_WIDEN);
-
-	  return gen_rtx_PLUS (Pmode, sum, GEN_INT (offset - offset_base));
+				  adj.offset_adjust, NULL_RTX, 0,
+				  OPTAB_LIB_WIDEN);
+	  return gen_rtx_PLUS (Pmode, sum, adj.mov_disp);
 	}
     }
 
   return x;
 }
 
-/* Attempt to replace *P, which is an address that needs reloading, with
+/* Attempt to replace *p, which is an address that needs reloading, with
    a valid memory address for an operand of mode MODE.
    Like for sh_legitimize_address, for the SH we try to get a normal form
    of the address.  That will allow inheritance of the address reloads.  */
@@ -9866,75 +9900,71 @@ sh_legitimize_reload_address (rtx *p, enum machine_mode mode, int opnum,
 			      int itype)
 {
   enum reload_type type = (enum reload_type) itype;
+  const int mode_sz = GET_MODE_SIZE (mode);
 
-  if (GET_CODE (*p) == PLUS
-      && (GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)
-      && CONST_INT_P (XEXP (*p, 1))
+  if (TARGET_SHMEDIA)
+    return false;
+
+  if (GET_CODE (*p) == PLUS && CONST_INT_P (XEXP (*p, 1))
       && MAYBE_BASE_REGISTER_RTX_P (XEXP (*p, 0), true)
-      && ! TARGET_SHMEDIA
-      && ! (TARGET_SH4 && mode == DFmode)
       && ! (mode == PSImode && type == RELOAD_FOR_INPUT_ADDRESS)
       && (ALLOW_INDEXED_ADDRESS
 	  || XEXP (*p, 0) == stack_pointer_rtx
 	  || XEXP (*p, 0) == hard_frame_pointer_rtx))
     {
-      rtx index_rtx = XEXP (*p, 1);
-      HOST_WIDE_INT offset = INTVAL (index_rtx), offset_base;
-      rtx sum;
+      const HOST_WIDE_INT offset = INTVAL (XEXP (*p, 1));
+      struct disp_adjust adj = sh_find_mov_disp_adjust (mode_sz, offset);
 
       if (TARGET_SH2A && mode == DFmode && (offset & 0x7))
 	{
 	  push_reload (*p, NULL_RTX, p, NULL,
 		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, opnum, type);
-	  goto win;
+	  return true;
 	}
+
       if (TARGET_SH2E && mode == SFmode)
 	{
 	  *p = copy_rtx (*p);
 	  push_reload (*p, NULL_RTX, p, NULL,
 		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, opnum, type);
-	  goto win;
+	  return true;
 	}
-      /* Instead of offset_base 128..131 use 124..127, so that
-	 simple add suffices.  */
-      if (offset > 127)
-	offset_base = ((offset + 4) & ~60) - 4;
-      else
-	offset_base = offset & ~60;
-      /* Sometimes the normal form does not suit DImode.  We could avoid
-	 that by using smaller ranges, but that would give less optimized
-	 code when SImode is prevalent.  */
-      if (GET_MODE_SIZE (mode) + offset - offset_base <= 64)
+
+      /* FIXME: Do not allow to legitimize QImode and HImode displacement
+	 moves because then reload has a problem figuring the constraint
+	 that the move insn target/source reg must be R0.
+	 Or maybe some handling is wrong in sh_secondary_reload for this
+	 to work properly? */
+      if ((mode_sz == 4 || mode_sz == 8)
+	  && ! (TARGET_SH4 && mode == DFmode)
+	  && adj.offset_adjust != NULL_RTX && adj.mov_disp != NULL_RTX)
 	{
-	  sum = gen_rtx_PLUS (Pmode, XEXP (*p, 0), GEN_INT (offset_base));
-	  *p = gen_rtx_PLUS (Pmode, sum, GEN_INT (offset - offset_base));
+	  rtx sum = gen_rtx_PLUS (Pmode, XEXP (*p, 0), adj.offset_adjust);
+	  *p = gen_rtx_PLUS (Pmode, sum, adj.mov_disp);
 	  push_reload (sum, NULL_RTX, &XEXP (*p, 0), NULL,
 		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, opnum, type);
-	  goto win;
+	  return true;
 	}
     }
+
   /* We must re-recognize what we created before.  */
-  else if (GET_CODE (*p) == PLUS
-	   && (GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)
-	   && GET_CODE (XEXP (*p, 0)) == PLUS
-	   && CONST_INT_P (XEXP (XEXP (*p, 0), 1))
-	   && MAYBE_BASE_REGISTER_RTX_P (XEXP (XEXP (*p, 0), 0), true)
-	   && CONST_INT_P (XEXP (*p, 1))
-	   && ! TARGET_SHMEDIA
-	   && ! (TARGET_SH2E && mode == SFmode))
+  if (GET_CODE (*p) == PLUS
+      && (mode_sz == 4 || mode_sz == 8)
+      && GET_CODE (XEXP (*p, 0)) == PLUS
+      && CONST_INT_P (XEXP (XEXP (*p, 0), 1))
+      && MAYBE_BASE_REGISTER_RTX_P (XEXP (XEXP (*p, 0), 0), true)
+      && CONST_INT_P (XEXP (*p, 1))
+      && ! (TARGET_SH2E && mode == SFmode))
     {
       /* Because this address is so complex, we know it must have
 	 been created by LEGITIMIZE_RELOAD_ADDRESS before; thus,
 	 it is already unshared, and needs no further unsharing.  */
       push_reload (XEXP (*p, 0), NULL_RTX, &XEXP (*p, 0), NULL,
 		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, opnum, type);
-      goto win;
+      return true;
     }
 
   return false;
-
- win:
-  return true;
 }
 
 /* In the name of slightly smaller debug output, and to cater to
