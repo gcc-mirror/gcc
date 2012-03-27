@@ -6,70 +6,70 @@
 /* Define to 1 if you have the `access' function. */
 #undef HAVE_ACCESS
 
-/* libm includes acos */
+/* acos is available */
 #undef HAVE_ACOS
 
-/* libm includes acosf */
+/* acosf is available */
 #undef HAVE_ACOSF
 
-/* libm includes acosh */
+/* acosh is available */
 #undef HAVE_ACOSH
 
-/* libm includes acoshf */
+/* acoshf is available */
 #undef HAVE_ACOSHF
 
-/* libm includes acoshl */
+/* acoshl is available */
 #undef HAVE_ACOSHL
 
-/* libm includes acosl */
+/* acosl is available */
 #undef HAVE_ACOSL
 
 /* Define to 1 if you have the `alarm' function. */
 #undef HAVE_ALARM
 
-/* libm includes asin */
+/* asin is available */
 #undef HAVE_ASIN
 
-/* libm includes asinf */
+/* asinf is available */
 #undef HAVE_ASINF
 
-/* libm includes asinh */
+/* asinh is available */
 #undef HAVE_ASINH
 
-/* libm includes asinhf */
+/* asinhf is available */
 #undef HAVE_ASINHF
 
-/* libm includes asinhl */
+/* asinhl is available */
 #undef HAVE_ASINHL
 
-/* libm includes asinl */
+/* asinl is available */
 #undef HAVE_ASINL
 
-/* libm includes atan */
+/* atan is available */
 #undef HAVE_ATAN
 
-/* libm includes atan2 */
+/* atan2 is available */
 #undef HAVE_ATAN2
 
-/* libm includes atan2f */
+/* atan2f is available */
 #undef HAVE_ATAN2F
 
-/* libm includes atan2l */
+/* atan2l is available */
 #undef HAVE_ATAN2L
 
-/* libm includes atanf */
+/* atanf is available */
 #undef HAVE_ATANF
 
-/* libm includes atanh */
+/* atanh is available */
 #undef HAVE_ATANH
 
-/* libm includes atanhf */
+/* atanhf is available */
 #undef HAVE_ATANHF
 
-/* libm includes atanhl */
+/* atanhl is available */
 #undef HAVE_ATANHL
 
-/* libm includes atanl */
+/* atanl is available */
 #undef HAVE_ATANL
 
 /* Define to 1 if the target supports __attribute__((alias(...))). */
@@ -84,112 +84,112 @@
 /* Define if powf is broken. */
 #undef HAVE_BROKEN_POWF
 
-/* libm includes cabs */
+/* cabs is available */
 #undef HAVE_CABS
 
-/* libm includes cabsf */
+/* cabsf is available */
 #undef HAVE_CABSF
 
-/* libm includes cabsl */
+/* cabsl is available */
 #undef HAVE_CABSL
 
-/* libm includes cacos */
+/* cacos is available */
 #undef HAVE_CACOS
 
-/* libm includes cacosf */
+/* cacosf is available */
 #undef HAVE_CACOSF
 
-/* libm includes cacosh */
+/* cacosh is available */
 #undef HAVE_CACOSH
 
-/* libm includes cacoshf */
+/* cacoshf is available */
 #undef HAVE_CACOSHF
 
-/* libm includes cacoshl */
+/* cacoshl is available */
 #undef HAVE_CACOSHL
 
-/* libm includes cacosl */
+/* cacosl is available */
 #undef HAVE_CACOSL
 
-/* libm includes carg */
+/* carg is available */
 #undef HAVE_CARG
 
-/* libm includes cargf */
+/* cargf is available */
 #undef HAVE_CARGF
 
-/* libm includes cargl */
+/* cargl is available */
 #undef HAVE_CARGL
 
-/* libm includes casin */
+/* casin is available */
 #undef HAVE_CASIN
 
-/* libm includes casinf */
+/* casinf is available */
 #undef HAVE_CASINF
 
-/* libm includes casinh */
+/* casinh is available */
 #undef HAVE_CASINH
 
-/* libm includes casinhf */
+/* casinhf is available */
 #undef HAVE_CASINHF
 
-/* libm includes casinhl */
+/* casinhl is available */
 #undef HAVE_CASINHL
 
-/* libm includes casinl */
+/* casinl is available */
 #undef HAVE_CASINL
 
-/* libm includes catan */
+/* catan is available */
 #undef HAVE_CATAN
 
-/* libm includes catanf */
+/* catanf is available */
 #undef HAVE_CATANF
 
-/* libm includes catanh */
+/* catanh is available */
 #undef HAVE_CATANH
 
-/* libm includes catanhf */
+/* catanhf is available */
 #undef HAVE_CATANHF
 
-/* libm includes catanhl */
+/* catanhl is available */
 #undef HAVE_CATANHL
 
-/* libm includes catanl */
+/* catanl is available */
 #undef HAVE_CATANL
 
-/* libm includes ccos */
+/* ccos is available */
 #undef HAVE_CCOS
 
-/* libm includes ccosf */
+/* ccosf is available */
 #undef HAVE_CCOSF
 
-/* libm includes ccosh */
+/* ccosh is available */
 #undef HAVE_CCOSH
 
-/* libm includes ccoshf */
+/* ccoshf is available */
 #undef HAVE_CCOSHF
 
-/* libm includes ccoshl */
+/* ccoshl is available */
 #undef HAVE_CCOSHL
 
-/* libm includes ccosl */
+/* ccosl is available */
 #undef HAVE_CCOSL
 
-/* libm includes ceil */
+/* ceil is available */
 #undef HAVE_CEIL
 
-/* libm includes ceilf */
+/* ceilf is available */
 #undef HAVE_CEILF
 
-/* libm includes ceill */
+/* ceill is available */
 #undef HAVE_CEILL
 
-/* libm includes cexp */
+/* cexp is available */
 #undef HAVE_CEXP
 
-/* libm includes cexpf */
+/* cexpf is available */
 #undef HAVE_CEXPF
 
-/* libm includes cexpl */
+/* cexpl is available */
 #undef HAVE_CEXPL
 
 /* Define to 1 if you have the `chdir' function. */
@@ -207,19 +207,19 @@
 /* libm includes clog */
 #undef HAVE_CLOG
 
-/* libm includes clog10 */
+/* clog10 is available */
 #undef HAVE_CLOG10
 
-/* libm includes clog10f */
+/* clog10f is available */
 #undef HAVE_CLOG10F
 
-/* libm includes clog10l */
+/* clog10l is available */
 #undef HAVE_CLOG10L
 
-/* libm includes clogf */
+/* clogf is available */
 #undef HAVE_CLOGF
 
-/* libm includes clogl */
+/* clogl is available */
 #undef HAVE_CLOGL
 
 /* Define to 1 if you have the `close' function. */
@@ -228,88 +228,88 @@
 /* Define to 1 if you have the <complex.h> header file. */
 #undef HAVE_COMPLEX_H
 
-/* libm includes copysign */
+/* copysign is available */
 #undef HAVE_COPYSIGN
 
-/* libm includes copysignf */
+/* copysignf is available */
 #undef HAVE_COPYSIGNF
 
-/* libm includes copysignl */
+/* copysignl is available */
 #undef HAVE_COPYSIGNL
 
-/* libm includes cos */
+/* cos is available */
 #undef HAVE_COS
 
-/* libm includes cosf */
+/* cosf is available */
 #undef HAVE_COSF
 
-/* libm includes cosh */
+/* cosh is available */
 #undef HAVE_COSH
 
-/* libm includes coshf */
+/* coshf is available */
 #undef HAVE_COSHF
 
-/* libm includes coshl */
+/* coshl is available */
 #undef HAVE_COSHL
 
-/* libm includes cosl */
+/* cosl is available */
 #undef HAVE_COSL
 
-/* libm includes cpow */
+/* cpow is available */
 #undef HAVE_CPOW
 
-/* libm includes cpowf */
+/* cpowf is available */
 #undef HAVE_CPOWF
 
-/* libm includes cpowl */
+/* cpowl is available */
 #undef HAVE_CPOWL
 
 /* Define if CRLF is line terminator. */
 #undef HAVE_CRLF
 
-/* libm includes csin */
+/* csin is available */
 #undef HAVE_CSIN
 
-/* libm includes csinf */
+/* csinf is available */
 #undef HAVE_CSINF
 
-/* libm includes csinh */
+/* csinh is available */
 #undef HAVE_CSINH
 
-/* libm includes csinhf */
+/* csinhf is available */
 #undef HAVE_CSINHF
 
-/* libm includes csinhl */
+/* csinhl is available */
 #undef HAVE_CSINHL
 
-/* libm includes csinl */
+/* csinl is available */
 #undef HAVE_CSINL
 
-/* libm includes csqrt */
+/* csqrt is available */
 #undef HAVE_CSQRT
 
-/* libm includes csqrtf */
+/* csqrtf is available */
 #undef HAVE_CSQRTF
 
-/* libm includes csqrtl */
+/* csqrtl is available */
 #undef HAVE_CSQRTL
 
-/* libm includes ctan */
+/* ctan is available */
 #undef HAVE_CTAN
 
-/* libm includes ctanf */
+/* ctanf is available */
 #undef HAVE_CTANF
 
-/* libm includes ctanh */
+/* ctanh is available */
 #undef HAVE_CTANH
 
-/* libm includes ctanhf */
+/* ctanhf is available */
 #undef HAVE_CTANHF
 
-/* libm includes ctanhl */
+/* ctanhl is available */
 #undef HAVE_CTANHL
 
-/* libm includes ctanl */
+/* ctanl is available */
 #undef HAVE_CTANL
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
@@ -321,22 +321,22 @@
 /* Define to 1 if you have the `dup2' function. */
 #undef HAVE_DUP2
 
-/* libm includes erf */
+/* erf is available */
 #undef HAVE_ERF
 
-/* libm includes erfc */
+/* erfc is available */
 #undef HAVE_ERFC
 
-/* libm includes erfcf */
+/* erfcf is available */
 #undef HAVE_ERFCF
 
-/* libm includes erfcl */
+/* erfcl is available */
 #undef HAVE_ERFCL
 
-/* libm includes erff */
+/* erff is available */
 #undef HAVE_ERFF
 
-/* libm includes erfl */
+/* erfl is available */
 #undef HAVE_ERFL
 
 /* Define to 1 if you have the `execl' function. */
@@ -345,22 +345,22 @@
 /* Define to 1 if you have the `execve' function. */
 #undef HAVE_EXECVE
 
-/* libm includes exp */
+/* exp is available */
 #undef HAVE_EXP
 
-/* libm includes expf */
+/* expf is available */
 #undef HAVE_EXPF
 
-/* libm includes expl */
+/* expl is available */
 #undef HAVE_EXPL
 
-/* libm includes fabs */
+/* fabs is available */
 #undef HAVE_FABS
 
-/* libm includes fabsf */
+/* fabsf is available */
 #undef HAVE_FABSF
 
-/* libm includes fabsl */
+/* fabsl is available */
 #undef HAVE_FABSL
 
 /* libm includes feenableexcept */
@@ -375,22 +375,22 @@
 /* Define to 1 if you have the <floatingpoint.h> header file. */
 #undef HAVE_FLOATINGPOINT_H
 
-/* libm includes floor */
+/* floor is available */
 #undef HAVE_FLOOR
 
-/* libm includes floorf */
+/* floorf is available */
 #undef HAVE_FLOORF
 
-/* libm includes floorl */
+/* floorl is available */
 #undef HAVE_FLOORL
 
-/* libm includes fmod */
+/* fmod is available */
 #undef HAVE_FMOD
 
-/* libm includes fmodf */
+/* fmodf is available */
 #undef HAVE_FMODF
 
-/* libm includes fmodl */
+/* fmodl is available */
 #undef HAVE_FMODL
 
 /* Define to 1 if you have the `fork' function. */
@@ -408,13 +408,13 @@
 /* fp_trap is present */
 #undef HAVE_FP_TRAP
 
-/* libm includes frexp */
+/* frexp is available */
 #undef HAVE_FREXP
 
-/* libm includes frexpf */
+/* frexpf is available */
 #undef HAVE_FREXPF
 
-/* libm includes frexpl */
+/* frexpl is available */
 #undef HAVE_FREXPL
 
 /* Define to 1 if you have the `fstat' function. */
@@ -468,13 +468,13 @@
 /* Define to 1 if you have the `gmtime_r' function. */
 #undef HAVE_GMTIME_R
 
-/* libm includes hypot */
+/* hypot is available */
 #undef HAVE_HYPOT
 
-/* libm includes hypotf */
+/* hypotf is available */
 #undef HAVE_HYPOTF
 
-/* libm includes hypotl */
+/* hypotl is available */
 #undef HAVE_HYPOTL
 
 /* Define to 1 if you have the <ieeefp.h> header file. */
@@ -486,98 +486,104 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* libm includes j0 */
+/* j0 is available */
 #undef HAVE_J0
 
-/* libm includes j0f */
+/* j0f is available */
 #undef HAVE_J0F
 
-/* libm includes j0l */
+/* j0l is available */
 #undef HAVE_J0L
 
-/* libm includes j1 */
+/* j1 is available */
 #undef HAVE_J1
 
-/* libm includes j1f */
+/* j1f is available */
 #undef HAVE_J1F
 
-/* libm includes j1l */
+/* j1l is available */
 #undef HAVE_J1L
 
-/* libm includes jn */
+/* jn is available */
 #undef HAVE_JN
 
-/* libm includes jnf */
+/* jnf is available */
 #undef HAVE_JNF
 
-/* libm includes jnl */
+/* jnl is available */
 #undef HAVE_JNL
 
 /* Define to 1 if you have the `kill' function. */
 #undef HAVE_KILL
 
-/* libm includes ldexp */
+/* ldexp is available */
 #undef HAVE_LDEXP
 
-/* libm includes ldexpf */
+/* ldexpf is available */
 #undef HAVE_LDEXPF
 
-/* libm includes ldexpl */
+/* ldexpl is available */
 #undef HAVE_LDEXPL
 
-/* libm includes lgamma */
+/* lgamma is available */
 #undef HAVE_LGAMMA
 
-/* libm includes lgammaf */
+/* lgammaf is available */
 #undef HAVE_LGAMMAF
 
-/* libm includes lgammal */
+/* lgammal is available */
 #undef HAVE_LGAMMAL
+
+/* Define to 1 if you have the `m' library (-lm). */
+#undef HAVE_LIBM
 
 /* Define to 1 if you have the `link' function. */
 #undef HAVE_LINK
 
-/* libm includes llround */
+/* llround is available */
 #undef HAVE_LLROUND
 
-/* libm includes llroundf */
+/* llroundf is available */
 #undef HAVE_LLROUNDF
 
-/* libm includes llroundl */
+/* llroundl is available */
 #undef HAVE_LLROUNDL
 
 /* Define to 1 if you have the `localtime_r' function. */
 #undef HAVE_LOCALTIME_R
 
-/* libm includes log */
+/* log is available */
 #undef HAVE_LOG
 
-/* libm includes log10 */
+/* log10 is available */
 #undef HAVE_LOG10
 
-/* libm includes log10f */
+/* log10f is available */
 #undef HAVE_LOG10F
 
-/* libm includes log10l */
+/* log10l is available */
 #undef HAVE_LOG10L
 
-/* libm includes logf */
+/* logf is available */
 #undef HAVE_LOGF
 
-/* libm includes logl */
+/* logl is available */
 #undef HAVE_LOGL
 
-/* libm includes lround */
+/* lround is available */
 #undef HAVE_LROUND
 
-/* libm includes lroundf */
+/* lroundf is available */
 #undef HAVE_LROUNDF
 
-/* libm includes lroundl */
+/* lroundl is available */
 #undef HAVE_LROUNDL
 
 /* Define to 1 if you have the `lstat' function. */
 #undef HAVE_LSTAT
+
+/* Define to 1 if you have the <math.h> header file. */
+#undef HAVE_MATH_H
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -588,13 +594,13 @@
 /* Define to 1 if you have the `mkstemp' function. */
 #undef HAVE_MKSTEMP
 
-/* libm includes nextafter */
+/* nextafter is available */
 #undef HAVE_NEXTAFTER
 
-/* libm includes nextafterf */
+/* nextafterf is available */
 #undef HAVE_NEXTAFTERF
 
-/* libm includes nextafterl */
+/* nextafterl is available */
 #undef HAVE_NEXTAFTERL
 
 /* Define to 1 if you have the `pipe' function. */
@@ -603,13 +609,13 @@
 /* Define to 1 if we have POSIX getpwuid_r which takes 5 arguments. */
 #undef HAVE_POSIX_GETPWUID_R
 
-/* libm includes pow */
+/* pow is available */
 #undef HAVE_POW
 
-/* libm includes powf */
+/* powf is available */
 #undef HAVE_POWF
 
-/* libm includes powl */
+/* powl is available */
 #undef HAVE_POWL
 
 /* Define to 1 if the system has the type `ptrdiff_t'. */
@@ -621,43 +627,43 @@
 /* Define to 1 if you have the `readlink' function. */
 #undef HAVE_READLINK
 
-/* libm includes round */
+/* round is available */
 #undef HAVE_ROUND
 
-/* libm includes roundf */
+/* roundf is available */
 #undef HAVE_ROUNDF
 
-/* libm includes roundl */
+/* roundl is available */
 #undef HAVE_ROUNDL
 
-/* libm includes scalbn */
+/* scalbn is available */
 #undef HAVE_SCALBN
 
-/* libm includes scalbnf */
+/* scalbnf is available */
 #undef HAVE_SCALBNF
 
-/* libm includes scalbnl */
+/* scalbnl is available */
 #undef HAVE_SCALBNL
 
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 
-/* libm includes sin */
+/* sin is available */
 #undef HAVE_SIN
 
-/* libm includes sinf */
+/* sinf is available */
 #undef HAVE_SINF
 
-/* libm includes sinh */
+/* sinh is available */
 #undef HAVE_SINH
 
-/* libm includes sinhf */
+/* sinhf is available */
 #undef HAVE_SINHF
 
-/* libm includes sinhl */
+/* sinhl is available */
 #undef HAVE_SINHL
 
-/* libm includes sinl */
+/* sinl is available */
 #undef HAVE_SINL
 
 /* Define to 1 if you have the `sleep' function. */
@@ -666,13 +672,13 @@
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
 
-/* libm includes sqrt */
+/* sqrt is available */
 #undef HAVE_SQRT
 
-/* libm includes sqrtf */
+/* sqrtf is available */
 #undef HAVE_SQRTF
 
-/* libm includes sqrtl */
+/* sqrtl is available */
 #undef HAVE_SQRTL
 
 /* Define to 1 if you have the `stat' function. */
@@ -735,43 +741,43 @@
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #undef HAVE_SYS_WAIT_H
 
-/* libm includes tan */
+/* tan is available */
 #undef HAVE_TAN
 
-/* libm includes tanf */
+/* tanf is available */
 #undef HAVE_TANF
 
-/* libm includes tanh */
+/* tanh is available */
 #undef HAVE_TANH
 
-/* libm includes tanhf */
+/* tanhf is available */
 #undef HAVE_TANHF
 
-/* libm includes tanhl */
+/* tanhl is available */
 #undef HAVE_TANHL
 
-/* libm includes tanl */
+/* tanl is available */
 #undef HAVE_TANL
 
-/* libm includes tgamma */
+/* tgamma is available */
 #undef HAVE_TGAMMA
 
-/* libm includes tgammaf */
+/* tgammaf is available */
 #undef HAVE_TGAMMAF
 
-/* libm includes tgammal */
+/* tgammal is available */
 #undef HAVE_TGAMMAL
 
 /* Define to 1 if you have the `times' function. */
 #undef HAVE_TIMES
 
-/* libm includes trunc */
+/* trunc is available */
 #undef HAVE_TRUNC
 
-/* libm includes truncf */
+/* truncf is available */
 #undef HAVE_TRUNCF
 
-/* libm includes truncl */
+/* truncl is available */
 #undef HAVE_TRUNCL
 
 /* Define to 1 if you have the `ttyname' function. */
@@ -801,31 +807,31 @@
 /* Define if target has a reliable stat. */
 #undef HAVE_WORKING_STAT
 
-/* libm includes y0 */
+/* y0 is available */
 #undef HAVE_Y0
 
-/* libm includes y0f */
+/* y0f is available */
 #undef HAVE_Y0F
 
-/* libm includes y0l */
+/* y0l is available */
 #undef HAVE_Y0L
 
-/* libm includes y1 */
+/* y1 is available */
 #undef HAVE_Y1
 
-/* libm includes y1f */
+/* y1f is available */
 #undef HAVE_Y1F
 
-/* libm includes y1l */
+/* y1l is available */
 #undef HAVE_Y1L
 
-/* libm includes yn */
+/* yn is available */
 #undef HAVE_YN
 
-/* libm includes ynf */
+/* ynf is available */
 #undef HAVE_YNF
 
-/* libm includes ynl */
+/* ynl is available */
 #undef HAVE_YNL
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
