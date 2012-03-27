@@ -1,3 +1,9 @@
+2012-03-27  Aurelien Buhrig  <aurelien.buhrig.gcc@gmail.com>
+
+	PR middle-end/51893
+	* expmed.c (store_bit_field_1): Fix wordnum value for big-endian
+	targets.
+
 2012-03-27  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/50751
