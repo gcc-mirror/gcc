@@ -1,3 +1,8 @@
+2012-03-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52720
+	* gcc.dg/torture/pr52720.c: New testcase.
+
 2012-03-26  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-03-26 mainline r185793.
