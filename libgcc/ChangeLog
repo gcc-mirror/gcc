@@ -1,5 +1,22 @@
 2012-03-26  Tristan Gingold  <gingold@adacore.com>
 
+	* config/ia64/unwind-ia64.h: Declare unw_word and unw_sword.
+	(unw_table_entry): Use unw_word instead of unsigned long.
+	(_Unwind_FindTableEntry): Likewise.
+	* config/ia64/fde-glibc.c (_Unwind_FindTableEntry): Likewise.
+	* config/ia64/fde-vms.c (vms_unwtable_entry): Likewise.
+	(_Unwind_FindTableEntry): Likewise.
+	* config/ia64/unwind-ia64.c (unw_reg_info, unw_reg_state)
+	(unw_labeled_state, unw_state_record, unw_stack, _Uwind_Context)
+	(set_reg, alloc_spill_area, finish_prologue, ia64_rse_slot_num)
+	(ia64_rse_is_rnat_slot, ia64_rse_rnat_addr, ia64_rse_num_regs)
+	(ia64_rse_skip_regs, ia64_copy_rbs, unw_access_gr)
+	(uw_frame_state_for, uw_update_reg_address, uw_update_context)
+	(uw_init_context_1, uw_install_context): Likewise.
+	(unw_word): Move to unwind-ia64.h
+
+2012-03-26  Tristan Gingold  <gingold@adacore.com>
+
 	* config/vms/vms-ucrt0.c: Update copyright years.
 	Add a sanity check.
 	(___gcc_main_flags): Declare.

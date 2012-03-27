@@ -22,12 +22,11 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include <vms/libicb.h>
-#include <vms/chfdef.h>
-#include <vms/chfctxdef.h>
-
-#define __int64 long long
-#include <vms/intstkdef.h>
+#define __NEW_STARLET
+#include <libicb.h>
+#include <chfdef.h>
+#include <lib_c/chfctxdef.h>
+#include <lib_c/intstkdef.h>
 
 #include <stdio.h>
 #include <string.h>
