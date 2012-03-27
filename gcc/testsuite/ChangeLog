@@ -1,3 +1,8 @@
+2012-03-27  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* gcc.target/arm/thumb-ifcvt.c: Only run for -mthumb.
+	* gcc.target/arm/thumb-16bit-ops.c: Likewise.
+
 2012-03-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/50052

@@ -1,7 +1,7 @@
 /* Check that the compiler properly uses 16-bit encodings where available.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_thumb2_ok } */
-/* { dg-options "-Os -fno-builtin" } */
+/* { dg-options "-Os -fno-builtin -mthumb" } */
 
 int
 f (int a, int b )
