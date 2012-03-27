@@ -13,7 +13,7 @@
 	hasn't been allocated.  Define a target macro for Mask and
 	InverseMask if it hasn't been defined.  Remove MaskExists handling.
 
-	* doc/options.texi: Remove MaskNeeded.
+	* doc/options.texi: Remove MaskExists.
 
 2012-03-27  Chung-Lin Tang  <cltang@codesourcery.com>
 
