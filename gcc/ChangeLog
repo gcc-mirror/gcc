@@ -1,3 +1,10 @@
+2012-03-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expmed.c (store_bit_field): Assert that BITREGION_START is a multiple
+	of a unit before computing the offset in units.
+	* expr.c (get_bit_range): Return the null range if the enclosing record
+	is part of a larger bit field.
+
 2012-03-27  Tristan Gingold  <gingold@adacore.com>
 
 	* config/ia64/vms.h (CASE_VECTOR_MODE): Define.
