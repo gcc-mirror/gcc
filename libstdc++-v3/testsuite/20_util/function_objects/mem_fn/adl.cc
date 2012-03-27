@@ -1,0 +1,44 @@
+// { dg-options "-std=gnu++0x" }
+// { dg-do compile }
+
+// Copyright (C) 2012 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
+
+#include <functional>
+
+namespace n {
+  struct X { int i; };
+  void mem_fn(int X::*);
+}
+
+using n::X;
+
+X x{};
+int X::* p = &X::i;
+
+int test01()
+{
+  auto ref = std::ref(p);
+  return ref(x);
+}
+
+int test02()
+{
+  std::function<int(X)> fun(p);
+  return fun(x);
+}
+
