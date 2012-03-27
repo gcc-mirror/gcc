@@ -1,3 +1,7 @@
+2012-03-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack17.adb: New test.
+
 2012-03-27  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* gcc.target/arm/thumb-ifcvt.c: Only run for -mthumb.
