@@ -1,17 +1,18 @@
 # Japanese messages for GNU gcc cpplib
-# Copyright (C) 2001, 2010, 2011 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2010, 2011, 2012 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Daisuke Yamashita <yamad@mb.infoweb.ne.jp>, 1999-2001
 #    Masahito Yamaga <yamaga@ipc.chiba-u.ac.jp>, 1999.
 #    IIDA Yosiaki <iida@secom.ne.jp>, 1999.
 # Yasuaki Taniguchi <yasuakit@gmail.com>, 2010, 2011.
+# Takeshi Hamasaki <hmatrjp@users.sourceforge.jp>, 2012.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.6-b20101113\n"
+"Project-Id-Version: cpplib 4.7.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-01-27 16:12+0000\n"
-"PO-Revision-Date: 2011-01-23 20:13+0900\n"
-"Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
+"PO-Revision-Date: 2012-03-26 00:07+0900\n"
+"Last-Translator: Takeshi Hamasaki <hmatrjp@users.sourceforge.jp>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -521,10 +522,8 @@ msgid "this use of \"defined\" may not be portable"
 msgstr "この \"defined\" の使用法は移植性がありません"
 
 #: expr.c:914
-#, fuzzy
-#| msgid "integer overflow in preprocessor expression"
 msgid "user-defined literal in preprocessor expression"
-msgstr "整数が前処理式内で溢れました"
+msgstr "前処理式内のユーザ定義リテラル"
 
 #: expr.c:919
 msgid "floating constant in preprocessor expression"
