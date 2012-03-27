@@ -1,3 +1,9 @@
+2012-03-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52720
+	* fold-const.c (try_move_mult_to_index): Handle &x.array more
+	explicitely.
+
 2012-03-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expmed.c (store_bit_field): Assert that BITREGION_START is a multiple
