@@ -1,3 +1,10 @@
+2012-03-27  Tristan Gingold  <gingold@adacore.com>
+
+	* configure.ac: Add description to AC_DEFINE in
+	GCC_CHECK_MATH_FUNC.
+	* configure: Regenerate
+	* config.h.in: Regenerate.
+
 2012-03-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* runtime/memory.c (get_mem): Rename to xmalloc, check for zero
