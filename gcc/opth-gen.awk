@@ -298,16 +298,25 @@ print "";
 
 for (i = 0; i < n_opts; i++) {
 	name = opt_args("Mask", flags[i])
-	vname = var_name(flags[i])
-	mask = "MASK_"
-	mask_1 = "1"
-	if (vname != "") {
-		mask = "OPTION_MASK_"
-		if (host_wide_int[vname] == "yes")
-			mask_1 = "HOST_WIDE_INT_1"
+	if (name == "") {
+		opt = opt_args("InverseMask", flags[i])
+		if (opt ~ ",")
+			name = nth_arg(0, opt)
+		else
+			name = opt
 	}
-	if (name != "" && !flag_set_p("MaskExists", flags[i]))
+	if (name != "" && mask_bits[name] == 0) {
+		mask_bits[name] = 1
+		vname = var_name(flags[i])
+		mask = "MASK_"
+		mask_1 = "1"
+		if (vname != "") {
+			mask = "OPTION_MASK_"
+			if (host_wide_int[vname] == "yes")
+				mask_1 = "HOST_WIDE_INT_1"
+		}
 		print "#define " mask name " (" mask_1 " << " masknum[vname]++ ")"
+	}
 }
 for (i = 0; i < n_extra_masks; i++) {
 	print "#define MASK_" extra_masks[i] " (1 << " masknum[""]++ ")"
@@ -330,17 +339,26 @@ print ""
 
 for (i = 0; i < n_opts; i++) {
 	name = opt_args("Mask", flags[i])
-	vname = var_name(flags[i])
-	macro = "OPTION_"
-	mask = "OPTION_MASK_"
-	if (vname == "") {
-		vname = "target_flags"
-		macro = "TARGET_"
-		mask = "MASK_"
+	if (name == "") {
+		opt = opt_args("InverseMask", flags[i])
+		if (opt ~ ",")
+			name = nth_arg(0, opt)
+		else
+			name = opt
 	}
-	if (name != "" && !flag_set_p("MaskExists", flags[i]))
+	if (name != "" && mask_macros[name] == 0) {
+		mask_macros[name] = 1
+		vname = var_name(flags[i])
+		macro = "OPTION_"
+		mask = "OPTION_MASK_"
+		if (vname == "") {
+			vname = "target_flags"
+			macro = "TARGET_"
+			mask = "MASK_"
+		}
 		print "#define " macro name \
 		      " ((" vname " & " mask name ") != 0)"
+	}
 }
 for (i = 0; i < n_extra_masks; i++) {
 	print "#define TARGET_" extra_masks[i] \
