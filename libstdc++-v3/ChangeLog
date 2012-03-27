@@ -1,5 +1,10 @@
 2012-03-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/functional (mem_fn): Qualify to prevent ADL.
+	* testsuite/20_util/function_objects/mem_fn/adl.cc: New.
+
+2012-03-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/type_traits (result_of): Fix handling of cv-quals.
 	* testsuite/20_util/result_of/1.cc: New.
 	* testsuite/20_util/result_of/2.cc: New.
