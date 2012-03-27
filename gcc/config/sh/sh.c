@@ -4751,8 +4751,12 @@ find_barrier (int num_mova, rtx mova, rtx from)
       /* Don't emit a constant table int the middle of global pointer setting,
 	 since that that would move the addressing base GOT into another table. 
 	 We need the first mov instruction before the _GLOBAL_OFFSET_TABLE_
-	 in the pool anyway, so just move up the whole constant pool.  */
-      if (last_got)
+	 in the pool anyway, so just move up the whole constant pool.
+
+	 However, avoid doing so when the last single GOT mov is the starting
+	 insn itself. Going past above the start insn would create a negative
+	 offset, causing errors.  */
+      if (last_got && last_got != orig)
         from = PREV_INSN (last_got);
 
       /* Don't insert the constant pool table at the position which

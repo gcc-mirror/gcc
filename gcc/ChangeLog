@@ -1,3 +1,9 @@
+2012-03-27  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR target/52667
+	* config/sh/sh.c (find_barrier): Add equality check of last_got
+	to avoid going above orig insn. Update comments.
+
 2012-03-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52720
