@@ -146,6 +146,10 @@ STATIC func_ptr __CTOR_LIST__[1]                                             \
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
 
+/* Code is always in P0/P1 (lower 32 bit addresses) on VMS.  */
+#undef CASE_VECTOR_MODE
+#define CASE_VECTOR_MODE SImode
+
 /* IA64 VMS doesn't fully support COMDAT sections.  */
 
 #define SUPPORTS_ONE_ONLY 0
