@@ -1054,9 +1054,14 @@ process_init_constructor_array (tree type, tree init,
     {
       tree domain = TYPE_DOMAIN (type);
       if (domain)
-	len = (TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain))
-	      - TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain))
-	      + 1);
+	len = double_int_ext
+	        (double_int_add
+		  (double_int_sub
+		    (tree_to_double_int (TYPE_MAX_VALUE (domain)),
+		     tree_to_double_int (TYPE_MIN_VALUE (domain))),
+		    double_int_one),
+		  TYPE_PRECISION (TREE_TYPE (domain)),
+		  TYPE_UNSIGNED (TREE_TYPE (domain))).low;
       else
 	unbounded = true;  /* Take as many as there are.  */
     }
