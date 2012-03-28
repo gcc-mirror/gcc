@@ -3214,10 +3214,9 @@ class Case_clauses::Hash_integer_value
 size_t
 Case_clauses::Hash_integer_value::operator()(Expression* pe) const
 {
-  Type* itype;
+  Numeric_constant nc;
   mpz_t ival;
-  mpz_init(ival);
-  if (!pe->integer_constant_value(true, ival, &itype))
+  if (!pe->numeric_constant_value(&nc) || !nc.to_int(&ival))
     go_unreachable();
   size_t ret = mpz_get_ui(ival);
   mpz_clear(ival);
@@ -3236,14 +3235,14 @@ class Case_clauses::Eq_integer_value
 bool
 Case_clauses::Eq_integer_value::operator()(Expression* a, Expression* b) const
 {
-  Type* atype;
-  Type* btype;
+  Numeric_constant anc;
   mpz_t aval;
+  Numeric_constant bnc;
   mpz_t bval;
-  mpz_init(aval);
-  mpz_init(bval);
-  if (!a->integer_constant_value(true, aval, &atype)
-      || !b->integer_constant_value(true, bval, &btype))
+  if (!a->numeric_constant_value(&anc)
+      || !anc.to_int(&aval)
+      || !b->numeric_constant_value(&bnc)
+      || !bnc.to_int(&bval))
     go_unreachable();
   bool ret = mpz_cmp(aval, bval) == 0;
   mpz_clear(aval);
@@ -3431,18 +3430,17 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
 	  Expression* e = *p;
 	  if (e->classification() != Expression::EXPRESSION_INTEGER)
 	    {
-	      Type* itype;
+	      Numeric_constant nc;
 	      mpz_t ival;
-	      mpz_init(ival);
-	      if (!(*p)->integer_constant_value(true, ival, &itype))
+	      if (!(*p)->numeric_constant_value(&nc) || !nc.to_int(&ival))
 		{
 		  // Something went wrong.  This can happen with a
 		  // negative constant and an unsigned switch value.
 		  go_assert(saw_errors());
 		  continue;
 		}
-	      go_assert(itype != NULL);
-	      e = Expression::make_integer(&ival, itype, e->location());
+	      go_assert(nc.type() != NULL);
+	      e = Expression::make_integer(&ival, nc.type(), e->location());
 	      mpz_clear(ival);
 	    }
 
