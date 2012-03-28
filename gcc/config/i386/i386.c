@@ -15831,17 +15831,18 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	  switch (GET_MODE_SIZE (mode))
 	    {
 	    case 16:
-	      /*  If we're optimizing for size, movups is the smallest.  */
 	      if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
 		{
 		  op0 = gen_lowpart (V4SFmode, op0);
 		  op1 = gen_lowpart (V4SFmode, op1);
 		  emit_insn (gen_sse_movups (op0, op1));
-		  return;
 		}
-	      op0 = gen_lowpart (V16QImode, op0);
-	      op1 = gen_lowpart (V16QImode, op1);
-	      emit_insn (gen_sse2_movdqu (op0, op1));
+	      else
+		{
+		  op0 = gen_lowpart (V16QImode, op0);
+		  op1 = gen_lowpart (V16QImode, op1);
+		  emit_insn (gen_sse2_movdqu (op0, op1));
+		}
 	      break;
 	    case 32:
 	      op0 = gen_lowpart (V32QImode, op0);
@@ -15853,16 +15854,10 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	    }
 	  break;
 	case MODE_VECTOR_FLOAT:
-	  op0 = gen_lowpart (mode, op0);
-	  op1 = gen_lowpart (mode, op1);
-
 	  switch (mode)
 	    {
 	    case V4SFmode:
 	      emit_insn (gen_sse_movups (op0, op1));
-	      break;
-	    case V8SFmode:
-	      ix86_avx256_split_vector_move_misalign (op0, op1);
 	      break;
 	    case V2DFmode:
 	      if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
@@ -15870,10 +15865,11 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 		  op0 = gen_lowpart (V4SFmode, op0);
 		  op1 = gen_lowpart (V4SFmode, op1);
 		  emit_insn (gen_sse_movups (op0, op1));
-		  return;
 		}
-	      emit_insn (gen_sse2_movupd (op0, op1));
+	      else
+		emit_insn (gen_sse2_movupd (op0, op1));
 	      break;
+	    case V8SFmode:
 	    case V4DFmode:
 	      ix86_avx256_split_vector_move_misalign (op0, op1);
 	      break;
@@ -15918,8 +15914,6 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 
 	  if (TARGET_SSE_UNALIGNED_LOAD_OPTIMAL)
 	    {
-	      op0 = gen_lowpart (V2DFmode, op0);
-	      op1 = gen_lowpart (V2DFmode, op1);
 	      emit_insn (gen_sse2_movupd (op0, op1));
 	      return;
 	    }
@@ -15984,8 +15978,8 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	  return;
 	}
 
-      /* ??? Similar to above, only less clear because of quote
-	 typeless stores unquote.  */
+      /* ??? Similar to above, only less clear
+	 because of typeless stores.  */
       if (TARGET_SSE2 && !TARGET_SSE_TYPELESS_STORES
 	  && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
         {
@@ -15998,11 +15992,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
       if (TARGET_SSE2 && mode == V2DFmode)
 	{
 	  if (TARGET_SSE_UNALIGNED_STORE_OPTIMAL)
-	    {
-	      op0 = gen_lowpart (V2DFmode, op0);
-	      op1 = gen_lowpart (V2DFmode, op1);
-	      emit_insn (gen_sse2_movupd (op0, op1));
-	    }
+	    emit_insn (gen_sse2_movupd (op0, op1));
 	  else
 	    {
 	      m = adjust_address (op0, DFmode, 0);
@@ -31399,6 +31389,10 @@ ix86_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 
   /* If MODE2 is only appropriate for an SSE register, then tie with
      any other mode acceptable to SSE registers.  */
+  if (GET_MODE_SIZE (mode2) == 32
+      && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
+    return (GET_MODE_SIZE (mode1) == 32
+	    && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1));
   if (GET_MODE_SIZE (mode2) == 16
       && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
     return (GET_MODE_SIZE (mode1) == 16

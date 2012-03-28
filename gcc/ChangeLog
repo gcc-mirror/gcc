@@ -1,3 +1,8 @@
+2012-03-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_modes_tieable_p): Handle 32bit AVX modes.
+	(ix86_expand_vector_move_misalign): Remove un-needed gen_lowpart calls.
+
 2012-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52691
@@ -16,22 +21,20 @@
 	(loop_optimizer_finalize): If loops are to be preserved only
 	clean up optional loop features.
 	(rtl_loop_done): Forcefully free loops here.
-	* cgraph.c (cgraph_release_function_body): Forcefully free
-	loops.
+	* cgraph.c (cgraph_release_function_body): Forcefully free loops.
 	* cfgexpand.c (expand_gimple_cond): Properly add new basic-blocks
 	to existing loops.
 	(construct_init_block): Likewise.
 	(construct_exit_block): Likewise.
 	(gimple_expand_cfg): Clear LOOP_CLOSED_SSA loop state.  Cleanup
 	the CFG after expanding.
-	* cfgloop.c (verify_loop_structure): Calculate or verify
-	dominators.  If we needed to calculate them, free them afterwards.
+	* cfgloop.c (verify_loop_structure): Calculate or verify dominators.
+	If we needed to calculate them, free them afterwards.
 	* tree-pass.h (PROP_loops): New define.
 	* tree-ssa-loop.c (pass_tree_loop_init): Provide PROP_loops.
 	* basic-block.h (CLEANUP_CFG_CHANGED): New.
 	* cfgcleanup.c (merge_blocks_move): Protect loop latches.
-	(cleanup_cfg): If we did something and have loops around, fix
-	them up.
+	(cleanup_cfg): If we did something and have loops around, fix them up.
 	* cse.c (rest_of_handle_cse_after_global_opts): Call cleanup_cfg
 	with CLEANUP_CFG_CHANGED.
 	* cfghooks.c (merge_blocks): If we merge a loop header into
@@ -84,8 +87,7 @@
 	PR target/52737
 	* config.gcc (tm_file): Remove avr/multilib.h.
 
-	* doc/invoke.texi (AVR Options): Adjust
-	documentation of -mtiny-stack.
+	* doc/invoke.texi (AVR Options): Adjust documentation of -mtiny-stack.
 
 	* config/avr/genmultilib.awk: Remove code to generate multilib.h.
 	(BEGIN): Use -msp8 as multilib option instead of -mtiny-stack.
