@@ -1,3 +1,7 @@
+2012-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (tree_size) <VECTOR_CST>: New case.
+
 2012-03-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_modes_tieable_p): Handle 32bit AVX modes.

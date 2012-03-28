@@ -1,3 +1,7 @@
+2012-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect7.ad[sb]: New test.
+
 2012-03-28  Paul Thomas  <pault@gcc.gnu.org>
 	Tobias Burnus  <burnus@gcc.gnu.org>
 
