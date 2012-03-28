@@ -1,5 +1,10 @@
 2012-03-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/52691
+	* tree-ssa-ccp.c (optimize_stdarg_builtin): Optimize
+	__builtin_va_start to __builtin_next_arg if the latter is
+	builtin_decl_explicit_p rather than when it is not.
+
 	PR middle-end/52750
 	* tree-vect-generic.c (vector_element): Perform multiplication
 	for pos in bitsizetype type instead of idx type.
