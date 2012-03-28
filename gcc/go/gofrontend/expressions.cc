@@ -6609,7 +6609,7 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
       if (this->code_ == BUILTIN_LEN || this->code_ == BUILTIN_CAP)
 	{
 	  Expression* arg = this->one_arg();
-	  if (!arg->is_constant())
+	  if (arg != NULL && !arg->is_constant())
 	    {
 	      Find_call_expression find_call;
 	      Expression::traverse(&arg, &find_call);
@@ -6929,7 +6929,7 @@ Expression*
 Builtin_call_expression::one_arg() const
 {
   const Expression_list* args = this->args();
-  if (args->size() != 1)
+  if (args == NULL || args->size() != 1)
     return NULL;
   return args->front();
 }
