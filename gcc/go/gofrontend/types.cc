@@ -2230,15 +2230,13 @@ Type::is_backend_type_size_known(Gogo* gogo)
 	  return true;
 	else
 	  {
-	    mpz_t ival;
-	    mpz_init(ival);
-	    Type* dummy;
-	    bool length_known = at->length()->integer_constant_value(true,
-								     ival,
-								     &dummy);
-	    mpz_clear(ival);
-	    if (!length_known)
+	    Numeric_constant nc;
+	    if (!at->length()->numeric_constant_value(&nc))
 	      return false;
+	    mpz_t ival;
+	    if (!nc.to_int(&ival))
+	      return false;
+	    mpz_clear(ival);
 	    return at->element_type()->is_backend_type_size_known(gogo);
 	  }
       }
@@ -5106,17 +5104,22 @@ Array_type::is_identical(const Array_type* t, bool errors_are_identical) const
       // Try to determine the lengths.  If we can't, assume the arrays
       // are not identical.
       bool ret = false;
-      mpz_t v1;
-      mpz_init(v1);
-      Type* type1;
-      mpz_t v2;
-      mpz_init(v2);
-      Type* type2;
-      if (l1->integer_constant_value(true, v1, &type1)
-	  && l2->integer_constant_value(true, v2, &type2))
-	ret = mpz_cmp(v1, v2) == 0;
-      mpz_clear(v1);
-      mpz_clear(v2);
+      Numeric_constant nc1, nc2;
+      if (l1->numeric_constant_value(&nc1)
+	  && l2->numeric_constant_value(&nc2))
+	{
+	  mpz_t v1;
+	  if (nc1.to_int(&v1))
+	    {
+	      mpz_t v2;
+	      if (nc2.to_int(&v2))
+		{
+		  ret = mpz_cmp(v1, v2) == 0;
+		  mpz_clear(v2);
+		}
+	      mpz_clear(v1);
+	    }
+	}
       return ret;
     }
 
@@ -5154,57 +5157,43 @@ Array_type::verify_length()
       return false;
     }
 
-  mpz_t val;
-  mpz_init(val);
-  Type* vt;
-  if (!this->length_->integer_constant_value(true, val, &vt))
+  Numeric_constant nc;
+  if (!this->length_->numeric_constant_value(&nc))
     {
-      mpfr_t fval;
-      mpfr_init(fval);
-      if (!this->length_->float_constant_value(fval, &vt))
-	{
-	  if (this->length_->type()->integer_type() != NULL
-	      || this->length_->type()->float_type() != NULL)
-	    error_at(this->length_->location(),
-		     "array bound is not constant");
-	  else
-	    error_at(this->length_->location(),
-		     "array bound is not numeric");
-	  mpfr_clear(fval);
-	  mpz_clear(val);
-	  return false;
-	}
-      if (!mpfr_integer_p(fval))
-	{
-	  error_at(this->length_->location(),
-		   "array bound truncated to integer");
-	  mpfr_clear(fval);
-	  mpz_clear(val);
-	  return false;
-	}
-      mpz_init(val);
-      mpfr_get_z(val, fval, GMP_RNDN);
-      mpfr_clear(fval);
+      if (this->length_->type()->integer_type() != NULL
+	  || this->length_->type()->float_type() != NULL)
+	error_at(this->length_->location(), "array bound is not constant");
+      else
+	error_at(this->length_->location(), "array bound is not numeric");
+      return false;
     }
 
-  if (mpz_sgn(val) < 0)
+  unsigned long val;
+  switch (nc.to_unsigned_long(&val))
     {
-      error_at(this->length_->location(), "negative array bound");
-      mpz_clear(val);
+    case Numeric_constant::NC_UL_VALID:
+      break;
+    case Numeric_constant::NC_UL_NOTINT:
+      error_at(this->length_->location(), "array bound truncated to integer");
       return false;
+    case Numeric_constant::NC_UL_NEGATIVE:
+      error_at(this->length_->location(), "negative array bound");
+      return false;
+    case Numeric_constant::NC_UL_BIG:
+      error_at(this->length_->location(), "array bound overflows");
+      return false;
+    default:
+      go_unreachable();
     }
 
   Type* int_type = Type::lookup_integer_type("int");
-  int tbits = int_type->integer_type()->bits();
-  int vbits = mpz_sizeinbase(val, 2);
-  if (vbits + 1 > tbits)
+  unsigned int tbits = int_type->integer_type()->bits();
+  if (sizeof(val) <= tbits * 8
+      && val >> (tbits - 1) != 0)
     {
       error_at(this->length_->location(), "array bound overflows");
-      mpz_clear(val);
       return false;
     }
-
-  mpz_clear(val);
 
   return true;
 }
@@ -5457,11 +5446,11 @@ Array_type::get_length_tree(Gogo* gogo)
   go_assert(this->length_ != NULL);
   if (this->length_tree_ == NULL_TREE)
     {
+      Numeric_constant nc;
       mpz_t val;
-      mpz_init(val);
-      Type* t;
-      if (this->length_->integer_constant_value(true, val, &t))
+      if (this->length_->numeric_constant_value(&nc) && nc.to_int(&val))
 	{
+	  Type* t = nc.type();
 	  if (t == NULL)
 	    t = Type::lookup_integer_type("int");
 	  else if (t->is_abstract())
@@ -5472,8 +5461,6 @@ Array_type::get_length_tree(Gogo* gogo)
 	}
       else
 	{
-	  mpz_clear(val);
-
 	  // Make up a translation context for the array length
 	  // expression.  FIXME: This won't work in general.
 	  Translate_context context(gogo, NULL, NULL, NULL);
@@ -5824,23 +5811,17 @@ Array_type::do_reflection(Gogo* gogo, std::string* ret) const
   ret->push_back('[');
   if (this->length_ != NULL)
     {
-      mpz_t val;
-      mpz_init(val);
-      Type* type;
-      if (!this->length_->integer_constant_value(true, val, &type))
-	error_at(this->length_->location(),
-		 "array length must be integer constant expression");
-      else if (mpz_cmp_si(val, 0) < 0)
-	error_at(this->length_->location(), "array length is negative");
-      else if (mpz_cmp_ui(val, mpz_get_ui(val)) != 0)
-	error_at(this->length_->location(), "array length is too large");
+      Numeric_constant nc;
+      unsigned long val;
+      if (!this->length_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&val) != Numeric_constant::NC_UL_VALID)
+	error_at(this->length_->location(), "invalid array length");
       else
 	{
 	  char buf[50];
-	  snprintf(buf, sizeof buf, "%lu", mpz_get_ui(val));
+	  snprintf(buf, sizeof buf, "%lu", val);
 	  ret->append(buf);
 	}
-      mpz_clear(val);
     }
   ret->push_back(']');
 
@@ -5856,23 +5837,17 @@ Array_type::do_mangled_name(Gogo* gogo, std::string* ret) const
   this->append_mangled_name(this->element_type_, gogo, ret);
   if (this->length_ != NULL)
     {
-      mpz_t val;
-      mpz_init(val);
-      Type* type;
-      if (!this->length_->integer_constant_value(true, val, &type))
-	error_at(this->length_->location(),
-		 "array length must be integer constant expression");
-      else if (mpz_cmp_si(val, 0) < 0)
-	error_at(this->length_->location(), "array length is negative");
-      else if (mpz_cmp_ui(val, mpz_get_ui(val)) != 0)
-	error_at(this->length_->location(), "array size is too large");
+      Numeric_constant nc;
+      unsigned long val;
+      if (!this->length_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&val) != Numeric_constant::NC_UL_VALID)
+	error_at(this->length_->location(), "invalid array length");
       else
 	{
 	  char buf[50];
-	  snprintf(buf, sizeof buf, "%lu", mpz_get_ui(val));
+	  snprintf(buf, sizeof buf, "%lu", val);
 	  ret->append(buf);
 	}
-      mpz_clear(val);
     }
   ret->push_back('e');
 }
