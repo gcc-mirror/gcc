@@ -58,8 +58,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if TARGET_64BIT_DEFAULT
 #define SPEC_32 "m32"
+#if TARGET_BI_ARCH == 2
+#define SPEC_64 "m64"
+#define SPEC_X32 "m32|m64:;"
+#else
 #define SPEC_64 "m32|mx32:;"
 #define SPEC_X32 "mx32"
+#endif
 #else
 #define SPEC_32 "m64|mx32:;"
 #define SPEC_64 "m64"
@@ -95,7 +100,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
 #if TARGET_64BIT_DEFAULT
+#if TARGET_BI_ARCH == 2
+#define MULTILIB_DEFAULTS { "mx32" }
+#else
 #define MULTILIB_DEFAULTS { "m64" }
+#endif
 #else
 #define MULTILIB_DEFAULTS { "m32" }
 #endif

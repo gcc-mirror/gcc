@@ -2657,7 +2657,6 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
      preceding options while match those first.  */
   static struct ix86_target_opts isa_opts[] =
   {
-    { "-m64",		OPTION_MASK_ISA_64BIT },
     { "-mfma4",		OPTION_MASK_ISA_FMA4 },
     { "-mfma",		OPTION_MASK_ISA_FMA },
     { "-mxop",		OPTION_MASK_ISA_XOP },
@@ -2730,6 +2729,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
   size_t len;
   size_t line_len;
   size_t sep_len;
+  const char *abi;
 
   memset (opts, '\0', sizeof (opts));
 
@@ -2746,6 +2746,21 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
       opts[num][0] = "-mtune=";
       opts[num++][1] = tune;
     }
+
+  /* Add -m32/-m64/-mx32.  */
+  if ((isa & OPTION_MASK_ISA_64BIT) != 0)
+    {
+      if ((isa & OPTION_MASK_ABI_64) != 0)
+	abi = "-m64";
+      else
+	abi = "-mx32";
+      isa &= ~ (OPTION_MASK_ISA_64BIT
+		| OPTION_MASK_ABI_64
+		| OPTION_MASK_ABI_X32);
+    }
+  else
+    abi = "-m32";
+  opts[num++][0] = abi;
 
   /* Pick out the options in isa options.  */
   for (i = 0; i < ARRAY_SIZE (isa_opts); i++)
@@ -3102,8 +3117,45 @@ ix86_option_override_internal (bool main_args_p)
   SUBSUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
+  /* Turn off both OPTION_MASK_ABI_64 and OPTION_MASK_ABI_X32 if
+     TARGET_64BIT is false.  */
+  if (!TARGET_64BIT)
+    ix86_isa_flags &= ~(OPTION_MASK_ABI_64 | OPTION_MASK_ABI_X32);
+#ifdef TARGET_BI_ARCH
+  else
+    {
+#if TARGET_BI_ARCH == 1
+      /* When TARGET_BI_ARCH == 1, by default, OPTION_MASK_ABI_64
+	 is on and OPTION_MASK_ABI_X32 is off.  We turn off
+	 OPTION_MASK_ABI_64 if OPTION_MASK_ABI_X32 is turned on by
+	 -mx32.  */
+      if (TARGET_X32)
+	ix86_isa_flags &= ~OPTION_MASK_ABI_64;
+#else
+      /* When TARGET_BI_ARCH == 2, by default, OPTION_MASK_ABI_X32 is
+	 on and OPTION_MASK_ABI_64 is off.  We turn off
+	 OPTION_MASK_ABI_X32 if OPTION_MASK_ABI_64 is turned on by
+	 -m64.  */
+      if (TARGET_LP64)
+	ix86_isa_flags &= ~OPTION_MASK_ABI_X32;
+#endif
+    }
+#endif
+
   if (TARGET_X32)
-    ix86_isa_flags |= OPTION_MASK_ISA_64BIT;
+    {
+      /* Always turn on OPTION_MASK_ISA_64BIT and turn off
+	 OPTION_MASK_ABI_64 for TARGET_X32.  */
+      ix86_isa_flags |= OPTION_MASK_ISA_64BIT;
+      ix86_isa_flags &= ~OPTION_MASK_ABI_64;
+    }
+  else if (TARGET_LP64)
+    {
+      /* Always turn on OPTION_MASK_ISA_64BIT and turn off
+	 OPTION_MASK_ABI_X32 for TARGET_LP64.  */
+      ix86_isa_flags |= OPTION_MASK_ISA_64BIT;
+      ix86_isa_flags &= ~OPTION_MASK_ABI_X32;
+    }
 
   /* -fPIC is the default for x86_64.  */
   if (TARGET_MACHO && TARGET_64BIT)
