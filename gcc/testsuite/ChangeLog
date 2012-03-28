@@ -1,3 +1,8 @@
+2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52692
+	* gcc.target/avr/torture/builtins-2.c: New test.
+
 2012-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52736

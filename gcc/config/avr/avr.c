@@ -10285,6 +10285,42 @@ enum avr_builtin_id
     AVR_BUILTIN_COUNT
   };
 
+struct GTY(()) avr_builtin_description
+{
+  enum insn_code icode;
+  const char *name;
+  int n_args;
+  tree fndecl;
+};
+
+
+/* Notice that avr_bdesc[] and avr_builtin_id are initialized in such a way
+   that a built-in's ID can be used to access the built-in by means of
+   avr_bdesc[ID]  */
+
+static GTY(()) struct avr_builtin_description
+avr_bdesc[AVR_BUILTIN_COUNT] =
+  {
+
+#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, ICODE)      \
+    { ICODE, NAME, N_ARGS, NULL_TREE },
+#include "builtins.def"  
+#undef DEF_BUILTIN
+  };
+
+
+/* Implement `TARGET_BUILTIN_DECL'.  */
+
+static tree
+avr_builtin_decl (unsigned id, bool initialize_p ATTRIBUTE_UNUSED)
+{
+  if (id < AVR_BUILTIN_COUNT)
+    return avr_bdesc[id].fndecl;
+
+  return error_mark_node;
+}
+
+
 static void
 avr_init_builtin_int24 (void)
 {
@@ -10294,6 +10330,7 @@ avr_init_builtin_int24 (void)
   (*lang_hooks.types.register_builtin_type) (int24_type, "__int24");
   (*lang_hooks.types.register_builtin_type) (uint24_type, "__uint24");
 }
+
 
 /* Implement `TARGET_INIT_BUILTINS' */
 /* Set up all builtin functions for this target.  */
@@ -10348,33 +10385,14 @@ avr_init_builtins (void)
                                   NULL);
 
 #define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, CODE)                       \
-  add_builtin_function (NAME, TYPE, ID, BUILT_IN_MD, NULL, NULL_TREE);
+  gcc_assert (ID < AVR_BUILTIN_COUNT);                                  \
+  avr_bdesc[ID].fndecl                                                  \
+    = add_builtin_function (NAME, TYPE, ID, BUILT_IN_MD, NULL, NULL_TREE);
 #include "builtins.def"  
 #undef DEF_BUILTIN
   
   avr_init_builtin_int24 ();
 }
-
-
-struct avr_builtin_description
-{
-  enum insn_code icode;
-  const char *name;
-  enum avr_builtin_id id;
-  int n_args;
-};
-
-static const struct avr_builtin_description
-avr_bdesc[] =
-  {
-
-#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, ICODE)      \
-    { ICODE, NAME, ID, N_ARGS },
-#include "builtins.def"  
-#undef DEF_BUILTIN
-
-    { CODE_FOR_nothing, NULL, 0, -1 }
-  };
 
 
 /* Subroutine of avr_expand_builtin to take care of unop insns.  */
@@ -10545,6 +10563,7 @@ avr_expand_triop_builtin (enum insn_code icode, tree exp, rtx target)
 }
 
 
+/* Implement `TARGET_EXPAND_BUILTIN'.  */
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -10557,12 +10576,14 @@ avr_expand_builtin (tree exp, rtx target,
                     enum machine_mode mode ATTRIBUTE_UNUSED,
                     int ignore ATTRIBUTE_UNUSED)
 {
-  size_t i;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   const char* bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
   unsigned int id = DECL_FUNCTION_CODE (fndecl);
+  const struct avr_builtin_description *d = &avr_bdesc[id];
   tree arg0;
   rtx op0;
+
+  gcc_assert (id < AVR_BUILTIN_COUNT);
 
   switch (id)
     {
@@ -10597,29 +10618,22 @@ avr_expand_builtin (tree exp, rtx target,
       }
     }
 
-  for (i = 0; avr_bdesc[i].name; i++)
+  /* No special treatment needed: vanilla expand.  */
+  
+  switch (d->n_args)
     {
-      const struct avr_builtin_description *d = &avr_bdesc[i];
+    case 0:
+      emit_insn ((GEN_FCN (d->icode)) (target));
+      return 0;
       
-      if (d->id == id)
-        switch (d->n_args)
-          {
-          case 0:
-            emit_insn ((GEN_FCN (d->icode)) (target));
-            return 0;
-            
-          case 1:
-            return avr_expand_unop_builtin (d->icode, exp, target);
-            
-          case 2:
-            return avr_expand_binop_builtin (d->icode, exp, target);
-            
-          case 3:
-            return avr_expand_triop_builtin (d->icode, exp, target);
-            
-          default:
-            gcc_unreachable();
-        }
+    case 1:
+      return avr_expand_unop_builtin (d->icode, exp, target);
+      
+    case 2:
+      return avr_expand_binop_builtin (d->icode, exp, target);
+      
+    case 3:
+      return avr_expand_triop_builtin (d->icode, exp, target);
     }
   
   gcc_unreachable ();
@@ -10877,6 +10891,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS avr_init_builtins
+
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL avr_builtin_decl
 
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN avr_expand_builtin
