@@ -1,5 +1,15 @@
 2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/52692
+	* config/avr/avr.c (TARGET_BUILTIN_DECL): New define.
+	(avr_builtin_decl): New static function.
+	(struct avr_builtin_description, avr_bdesc): Move up.
+	Add GTY marker. Add field fndecl. Remove redundant field id.
+	(avr_init_builtins): Initialize avr_bdesc[ID].fndecl.
+	(avr_expand_builtin): Code cleanup because .id is removed.
+
+2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/52737
 	* config.gcc (tm_file): Remove avr/multilib.h.
 
