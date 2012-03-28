@@ -2743,7 +2743,13 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
     }
   else
     {
-      if (access_has_children_p (lacc) && access_has_children_p (racc))
+      if (access_has_children_p (lacc)
+	  && access_has_children_p (racc)
+	  /* When an access represents an unscalarizable region, it usually
+	     represents accesses with variable offset and thus must not be used
+	     to generate new memory accesses.  */
+	  && !lacc->grp_unscalarizable_region
+	  && !racc->grp_unscalarizable_region)
 	{
 	  gimple_stmt_iterator orig_gsi = *gsi;
 	  enum unscalarized_data_handling refreshed;
