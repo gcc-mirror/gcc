@@ -567,8 +567,9 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
       else
         {
 	  tree size = TYPE_SIZE (vect_elt_type);
-          tree pos = fold_build2 (MULT_EXPR, TREE_TYPE (idx), idx, size);
-          return fold_build3 (BIT_FIELD_REF, vect_elt_type, vect, size, pos);
+	  tree pos = fold_build2 (MULT_EXPR, bitsizetype, bitsize_int (index),
+				  size);
+	  return fold_build3 (BIT_FIELD_REF, vect_elt_type, vect, size, pos);
         }
     }
 
