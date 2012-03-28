@@ -724,6 +724,10 @@ tree_size (const_tree node)
       return (sizeof (struct tree_vec)
 	      + (TREE_VEC_LENGTH (node) - 1) * sizeof (tree));
 
+    case VECTOR_CST:
+      return (sizeof (struct tree_vector)
+	      + (TYPE_VECTOR_SUBPARTS (TREE_TYPE (node)) - 1) * sizeof (tree));
+
     case STRING_CST:
       return TREE_STRING_LENGTH (node) + offsetof (struct tree_string, str) + 1;
 
