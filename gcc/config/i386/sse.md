@@ -5058,7 +5058,7 @@
 	  (vec_select:DF (match_dup 0) (parallel [(const_int 1)]))))]
   "TARGET_SSE2 && reload_completed"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[0] = adjust_address (operands[0], DFmode, 8);")
+  "operands[0] = adjust_address (operands[0], DFmode, 0);")
 
 ;; Not sure these two are ever used, but it doesn't hurt to have
 ;; them. -aoliva
