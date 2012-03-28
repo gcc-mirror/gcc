@@ -10577,7 +10577,8 @@ Interface_field_reference_expression::do_check_types(Gogo*)
 tree
 Interface_field_reference_expression::do_get_tree(Translate_context*)
 {
-  go_unreachable();
+  error_at(this->location(), "reference to method other than calling it");
+  return error_mark_node;
 }
 
 // Dump ast representation for an interface field reference.
