@@ -1,3 +1,30 @@
+2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52737
+	* config.gcc (tm_file): Remove avr/multilib.h.
+
+	* doc/invoke.texi (AVR Options): Adjust
+	documentation of -mtiny-stack.
+
+	* config/avr/genmultilib.awk: Remove code to generate multilib.h.
+	(BEGIN): Use -msp8 as multilib option instead of -mtiny-stack.
+	* config/avr/t-avr: Remove generation of multilib.h.
+	* config/avr/t-multilib: Regenerate.
+	* config/avr/multilib.h: Remove.
+	* config/avr/avr.opt (-msp8): New option.
+	(avr_sp8): New variable.
+	* config/avr/driver-avr.c (avr_device_to_sp8): New function.
+	* config/avr/avr.h (AVR_HAVE_SPH): New define.
+	(AVR_HAVE_8BIT_SP): Also set by avr_sp8 i.e. -msp8.
+	(avr_device_to_sp8): New prototype.
+	(EXTRA_SPEC_FUNCTIONS): Add { "device_to_sp8", avr_device_to_sp8 }
+	(DRIVER_SELF_SPECS): New define.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): New built-in defines:
+	__AVR_SP8__, __AVR_HAVE_SPH__.
+	* config/avr/avr.c (output_movhi): Use AVR_HAVE_SPH instead of
+	AVR_HAVE_8BIT_SP to decide if SP_H is present.
+	(avr_file_start): Ditto.
+
 2012-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52736

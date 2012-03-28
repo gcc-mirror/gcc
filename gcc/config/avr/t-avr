@@ -49,16 +49,10 @@ $(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh $(AVR_MCUS)
 # MULTILIB_MATCHES
 $(srcdir)/config/avr/t-multilib: s-avr-mlib; @true
 
-# Override multilib_raw[] from multilib.h
-$(srcdir)/config/avr/multilib.h: s-avr-mlib; @true
-
 s-mlib: $(srcdir)/config/avr/t-multilib
 
 s-avr-mlib: $(srcdir)/config/avr/genmultilib.awk $(AVR_MCUS)
 	$(AWK) -f $< -v FORMAT=Makefile   $< $(AVR_MCUS) > tmp-avr-mlib
-	$(AWK) -f $< -v FORMAT=multilib.h $< $(AVR_MCUS) > tmp-avr-mlib.h
-	$(SHELL) $(srcdir)/../move-if-change \
-		tmp-avr-mlib.h 	$(srcdir)/config/avr/multilib.h
 	$(SHELL) $(srcdir)/../move-if-change \
 		tmp-avr-mlib 	$(srcdir)/config/avr/t-multilib
 	$(STAMP) $@

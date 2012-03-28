@@ -25,7 +25,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __zero_reg__ r1
 #define __tmp_reg__ r0
 #define __SREG__ 0x3f
+#if defined (__AVR_HAVE_SPH__)
 #define __SP_H__ 0x3e
+#endif
 #define __SP_L__ 0x3d
 #define __RAMPZ__ 0x3B
 #define __EIND__  0x3C
@@ -1258,7 +1260,7 @@ ENDF __divmodsi4
 
 #if defined (__AVR_HAVE_JMP_CALL__)
 #   define SPEED_DIV 8
-#elif defined (__AVR_HAVE_MOVW__) && !defined (__AVR_HAVE_8BIT_SP__)
+#elif defined (__AVR_HAVE_MOVW__) && defined (__AVR_HAVE_SPH__)
 #   define SPEED_DIV 16
 #else
 #   define SPEED_DIV 0
@@ -1540,10 +1542,10 @@ DEFUN  __divdi3_moddi3
 
 4:  ;; Epilogue: Restore the Z = 12 Registers and return
     in r28, __SP_L__
-#if defined (__AVR_HAVE_8BIT_SP__)
-    clr r29
-#else
+#if defined (__AVR_HAVE_SPH__)
     in r29, __SP_H__
+#else
+    clr r29
 #endif /* #SP = 8/16 */
     ldi r30, 12
     XJMP __epilogue_restores__ + ((18 - 12) * 2)
@@ -1691,7 +1693,7 @@ DEFUN __prologue_saves__
 	push r17
 	push r28
 	push r29
-#if defined (__AVR_HAVE_8BIT_SP__)
+#if !defined (__AVR_HAVE_SPH__)
 	in	r28,__SP_L__
 	sub	r28,r26
 	out	__SP_L__,r28
@@ -1747,7 +1749,7 @@ DEFUN __epilogue_restores__
 	ldd	r16,Y+4
 	ldd	r17,Y+3
 	ldd	r26,Y+2
-#if defined (__AVR_HAVE_8BIT_SP__)
+#if !defined (__AVR_HAVE_SPH__)
 	ldd	r29,Y+1
 	add	r28,r30
 	out	__SP_L__,r28

@@ -112,3 +112,24 @@ avr_device_to_devicelib (int argc, const char **argv)
   return concat ("-l", avr_current_device->library_name, NULL);
 }
 
+const char*
+avr_device_to_sp8 (int argc, const char **argv)
+{
+  if (0 == argc)
+    return NULL;
+
+  avr_set_current_device (argv[0]);
+
+  /* Leave "avr2" and "avr25" alone.  These two architectures are
+     the only ones that mix devices with 8-bit SP and 16-bit SP.
+     -msp8 is set by mmultilib machinery.  */
+
+  if (avr_current_device->macro == NULL
+      && (avr_current_device->arch == ARCH_AVR2
+          || avr_current_device->arch == ARCH_AVR25))
+    return "";
+
+  return avr_current_device->short_sp
+    ? "-msp8"
+    : "%<msp8";
+}

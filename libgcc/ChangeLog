@@ -1,3 +1,9 @@
+2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52737
+	* config/avr/lib1funcs.S: Use __AVR_HAVE_SPH__ for SP_H checks
+	instead of __AVR_HAVE_8BIT_SP__.
+
 2012-03-26  Tristan Gingold  <gingold@adacore.com>
 
 	* config/ia64/unwind-ia64.h: Declare unw_word and unw_sword.
