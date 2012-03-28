@@ -7441,6 +7441,8 @@ Builtin_call_expression::check_one_arg()
 void
 Builtin_call_expression::do_check_types(Gogo*)
 {
+  if (this->is_error_expression())
+    return;
   switch (this->code_)
     {
     case BUILTIN_INVALID:
