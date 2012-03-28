@@ -1,3 +1,10 @@
+2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-03-28 mainline r185910.
+
+	PR target/52692
+	* gcc.target/avr/torture/builtins-2.c: New test.
+
 2012-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52736
