@@ -1,3 +1,12 @@
+2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52741
+
+	Revert r181936 from 2011-12-02 for:
+	* config/avr/libgcc.S (__prologue_saves__, __epilogue_restores__)
+	* config/avr/avr.md (movhi_sp_r_irq_off, movhi_sp_r_irq_on)
+	* config/avr/avr.c (output_movhi, avr_file_start)
+	
 2012-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52736
