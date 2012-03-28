@@ -550,7 +550,10 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	{
 	  /* If I is 0, use the low-order word in both field and target;
 	     if I is 1, use the next to lowest word; and so on.  */
-	  unsigned int wordnum = (backwards ? nwords - i - 1 : i);
+	  unsigned int wordnum = (backwards
+				  ? GET_MODE_SIZE (fieldmode) / UNITS_PER_WORD
+				  - i - 1
+				  : i);
 	  unsigned int bit_offset = (backwards
 				     ? MAX ((int) bitsize - ((int) i + 1)
 					    * BITS_PER_WORD,
