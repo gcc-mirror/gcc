@@ -7,5 +7,5 @@
  type :: t0
  end type
  class(t0) :: x  ! { dg-error "must be dummy, allocatable or pointer" }
- allocate(x)     ! { dg-error "is not a nonprocedure pointer or an allocatable variable" }
+ allocate(x)     ! { dg-error "is neither a nonprocedure pointer nor an allocatable variable" }
  end

@@ -1,3 +1,12 @@
+2012-03-28  Paul Thomas  <pault@gcc.gnu.org>
+	Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/52652
+	* gfortran.dg/allocate_class_1.f90 : Change error test.
+	* gfortran.dg/allocate_with_typespec_4.f90 : Change error test.
+	* gfortran.dg/allocate_alloc_opt_1.f90 : Change error test.
+	* gfortran.dg/deallocate_alloc_opt_1.f90 : Change error test.
+
 2012-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52691

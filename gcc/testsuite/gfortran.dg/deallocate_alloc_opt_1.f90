@@ -24,7 +24,7 @@ program a
   deallocate(i, errmsg=err) ! { dg-warning "useless without a STAT" }
   deallocate(i, stat=j, errmsg=x) ! { dg-error "must be a scalar CHARACTER" }
 
-  deallocate(err) ! { dg-error "nonprocedure pointer or an allocatable" }
+  deallocate(err) ! { dg-error "nonprocedure pointer nor an allocatable" }
 
   deallocate(error,stat=j,errmsg=error(1)) ! { dg-error "shall not be DEALLOCATEd within" }
   deallocate(i, stat = i(1))  ! { dg-error "shall not be DEALLOCATEd within" }
