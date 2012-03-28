@@ -1,3 +1,8 @@
+2012-03-28  Terry Guo  <terry.guo@arm.com>
+
+	* testsuite/Makefile.am (TEST_GCC_EXEC_PREFIX): New.
+	* testsuite/Makefile.in: Regenerated.
+
 2012-03-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/functional (mem_fn): Qualify to prevent ADL.
