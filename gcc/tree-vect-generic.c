@@ -1,5 +1,5 @@
 /* Lower vector operations to scalar operations.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -583,8 +583,9 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
       else
         {
 	  tree size = TYPE_SIZE (vect_elt_type);
-          tree pos = fold_build2 (MULT_EXPR, TREE_TYPE (idx), idx, size);
-          return fold_build3 (BIT_FIELD_REF, vect_elt_type, vect, size, pos);
+	  tree pos = fold_build2 (MULT_EXPR, bitsizetype, bitsize_int (index),
+				  size);
+	  return fold_build3 (BIT_FIELD_REF, vect_elt_type, vect, size, pos);
         }
     }
 
