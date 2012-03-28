@@ -1,3 +1,11 @@
+2012-03-28  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from mainline
+	2012-03-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/52693
+	* gcc.dg/torture/pr52693.c: New test.
+
 2012-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52736

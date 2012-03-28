@@ -1,3 +1,13 @@
+2012-03-28  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from mainline
+	2012-03-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/52693
+	* tree-sra.c (sra_modify_assign): Do not call
+	load_assign_lhs_subreplacements when working with an unscalarizable
+	region.
+
 2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52741
