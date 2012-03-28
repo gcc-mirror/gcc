@@ -1728,6 +1728,8 @@ fix_loop_structure (bitmap changed_bbs)
   if (record_exits)
     record_loop_exits ();
 
+  loops_state_clear (LOOPS_NEED_FIXUP);
+
 #ifdef ENABLE_CHECKING
   verify_loop_structure ();
 #endif

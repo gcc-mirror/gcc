@@ -727,6 +727,10 @@ rtl_can_merge_blocks (basic_block a, basic_block b)
   if (BB_PARTITION (a) != BB_PARTITION (b))
     return false;
 
+  /* Protect the loop latches.  */
+  if (current_loops && b->loop_father->latch == b)
+    return false;
+
   /* There must be exactly one edge in between the blocks.  */
   return (single_succ_p (a)
 	  && single_succ (a) == b
@@ -2784,6 +2788,10 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (a) != BB_PARTITION (b))
+    return false;
+
+  /* Protect the loop latches.  */
+  if (current_loops && b->loop_father->latch == b)
     return false;
 
   /* If we would end up moving B's instructions, make sure it doesn't fall

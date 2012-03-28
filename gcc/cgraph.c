@@ -99,6 +99,7 @@ The callgraph:
 #include "ipa-utils.h"
 #include "lto-streamer.h"
 #include "ipa-inline.h"
+#include "cfgloop.h"
 
 const char * const ld_plugin_symbol_resolution_names[]=
 {
@@ -1363,6 +1364,12 @@ cgraph_release_function_body (struct cgraph_node *node)
     {
       tree old_decl = current_function_decl;
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+      if (cfun->cfg
+	  && current_loops)
+	{
+	  cfun->curr_properties &= ~PROP_loops;
+	  loop_optimizer_finalize ();
+	}
       if (cfun->gimple_df)
 	{
 	  current_function_decl = node->decl;
@@ -1379,7 +1386,6 @@ cgraph_release_function_body (struct cgraph_node *node)
 	}
       if (cfun->value_histograms)
 	free_histograms ();
-      gcc_assert (!current_loops);
       pop_cfun();
       gimple_set_body (node->decl, NULL);
       VEC_free (ipa_opt_pass, heap,

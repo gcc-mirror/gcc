@@ -624,6 +624,7 @@ thread_block (basic_block bb, bool noloop_only)
 	{
 	  loop->header = NULL;
 	  loop->latch = NULL;
+	  loops_state_set (LOOPS_NEED_FIXUP);
 	}
     }
 
@@ -969,6 +970,7 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
 	 original header.  */
       loop->header = NULL;
       loop->latch = NULL;
+      loops_state_set (LOOPS_NEED_FIXUP);
       return thread_block (header, false);
     }
 

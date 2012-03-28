@@ -779,6 +779,11 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
   if (e->flags & EDGE_FALLTHRU)
     {
       int b_index = b->index, c_index = c->index;
+
+      /* Protect the loop latches.  */
+      if (current_loops && c->loop_father->latch == c)
+	return NULL;
+
       merge_blocks (b, c);
       update_forwarder_flag (b);
 
@@ -2975,6 +2980,23 @@ cleanup_cfg (int mode)
      going out of cfglayout mode.  */
   if (!(mode & CLEANUP_CFGLAYOUT))
     delete_dead_jumptables ();
+
+  /* ???  We probably do this way too often.  */
+  if (current_loops
+      && (changed
+	  || (mode & CLEANUP_CFG_CHANGED)))
+    {
+      bitmap changed_bbs;
+      timevar_push (TV_REPAIR_LOOPS);
+      /* The above doesn't preserve dominance info if available.  */
+      gcc_assert (!dom_info_available_p (CDI_DOMINATORS));
+      calculate_dominance_info (CDI_DOMINATORS);
+      changed_bbs = BITMAP_ALLOC (NULL);
+      fix_loop_structure (changed_bbs);
+      BITMAP_FREE (changed_bbs);
+      free_dominance_info (CDI_DOMINATORS);
+      timevar_pop (TV_REPAIR_LOOPS);
+    }
 
   timevar_pop (TV_CLEANUP_CFG);
 
