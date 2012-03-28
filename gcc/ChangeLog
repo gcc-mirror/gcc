@@ -1,3 +1,63 @@
+2012-03-28  Richard Guenther  <rguenther@suse.de>
+
+	* loop-init.c (loop_optimizer_init): If loops are preserved
+	perform incremental initialization of required loop features.
+	(loop_optimizer_finalize): If loops are to be preserved only
+	clean up optional loop features.
+	(rtl_loop_done): Forcefully free loops here.
+	* cgraph.c (cgraph_release_function_body): Forcefully free
+	loops.
+	* cfgexpand.c (expand_gimple_cond): Properly add new basic-blocks
+	to existing loops.
+	(construct_init_block): Likewise.
+	(construct_exit_block): Likewise.
+	(gimple_expand_cfg): Clear LOOP_CLOSED_SSA loop state.  Cleanup
+	the CFG after expanding.
+	* cfgloop.c (verify_loop_structure): Calculate or verify
+	dominators.  If we needed to calculate them, free them afterwards.
+	* tree-pass.h (PROP_loops): New define.
+	* tree-ssa-loop.c (pass_tree_loop_init): Provide PROP_loops.
+	* basic-block.h (CLEANUP_CFG_CHANGED): New.
+	* cfgcleanup.c (merge_blocks_move): Protect loop latches.
+	(cleanup_cfg): If we did something and have loops around, fix
+	them up.
+	* cse.c (rest_of_handle_cse_after_global_opts): Call cleanup_cfg
+	with CLEANUP_CFG_CHANGED.
+	* cfghooks.c (merge_blocks): If we merge a loop header into
+	its predecessor, update the loop structure.
+	(duplicate_block): If we copy a loop latch, adjust loop state
+	to note we may have multiple latches.
+	(delete_basic_block): Mark loops for fixup if we remove a loop.
+	* cfganal.c (forwarder_block_p): Protect loop latches, headers
+	and preheaders.
+	* cfgrtl.c (rtl_can_merge_blocks): Protect loop latches.
+	(cfg_layout_can_merge_blocks_p): Likewise.
+	* cprop.c (bypass_block): If we create a loop with multiple
+	entries, mark it for removal.
+	* except.c (emit_to_new_bb_before): Add the new basic-block
+	to existing loops.
+	* tree-eh.c (lower_resx): Likewise.
+	* omp-low.c (finalize_task_copyfn): Do not copy PROP_loops.
+	(expand_omp_taskreg): Likewise.
+	* tree-inline.c (initialize_cfun): Likewise.
+	* tree-mudflap.c (add_bb_to_loop): Prototype.
+	(mf_build_check_statement_for): Properly add new basic-blocks
+	to existing loops.
+	* tree-ssa-threadupdate.c (thread_block): Mark loops for fixup
+	if we remove a loop.
+	(thread_through_loop_header): Likewise.
+	* trans-mem.c (tm_log_emit_save_or_restores): Properly add
+	new basic-blocks to existing loops.
+	(expand_transaction): Likewise.
+	* Makefile.in (except.o): Add $(CFGLOOP_H).
+	(expr.o): Likewise.
+	(cgraph.o): Likewise.
+	(cprop.o): Likewise.
+	(cfgexpand.o): Likewise.
+	(cfganal.o): Likewise.
+	(trans-mem.o): Likewise.
+	(tree-eh.o): Likewise.
+
 2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52692

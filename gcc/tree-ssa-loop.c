@@ -92,7 +92,7 @@ struct gimple_opt_pass pass_tree_loop_init =
   0,					/* static_pass_number */
   TV_TREE_LOOP_INIT,			/* tv_id */
   PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
+  PROP_loops,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   0             			/* todo_flags_finish */

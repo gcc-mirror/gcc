@@ -1242,7 +1242,7 @@ finalize_task_copyfn (gimple task_stmt)
 
   /* Inform the callgraph about the new function.  */
   DECL_STRUCT_FUNCTION (child_fn)->curr_properties
-    = cfun->curr_properties;
+    = cfun->curr_properties & ~PROP_loops;
 
   old_fn = current_function_decl;
   push_cfun (child_cfun);
@@ -3562,7 +3562,7 @@ expand_omp_taskreg (struct omp_region *region)
 
       /* Inform the callgraph about the new function.  */
       DECL_STRUCT_FUNCTION (child_fn)->curr_properties
-	= cfun->curr_properties;
+	= cfun->curr_properties & ~PROP_loops;
       cgraph_add_new_function (child_fn, true);
 
       /* Fix the callgraph edges for child_cfun.  Those for cfun will be

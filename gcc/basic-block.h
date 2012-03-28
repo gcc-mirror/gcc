@@ -741,6 +741,7 @@ edge find_edge (basic_block, basic_block);
 #define CLEANUP_NO_INSN_DEL	16	/* Do not try to delete trivially dead
 					   insns.  */
 #define CLEANUP_CFGLAYOUT	32	/* Do cleanup in cfglayout mode.  */
+#define CLEANUP_CFG_CHANGED	64      /* The caller changed the CFG.  */
 
 /* In lcm.c */
 extern struct edge_list *pre_edge_lcm (int, sbitmap *, sbitmap *,

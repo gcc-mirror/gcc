@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "sbitmap.h"
 #include "timevar.h"
+#include "cfgloop.h"
 
 /* Store the data structures necessary for depth-first search.  */
 struct depth_first_search_dsS {
@@ -93,6 +94,17 @@ forwarder_block_p (const_basic_block bb)
   if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR
       || !single_succ_p (bb))
     return false;
+
+  /* Protect loop latches, headers and preheaders.  */
+  if (current_loops)
+    {
+      basic_block dest;
+      if (bb->loop_father->header == bb)
+	return false;
+      dest = EDGE_SUCC (bb, 0)->dest;
+      if (dest->loop_father->header == dest)
+	return false;
+    }
 
   for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = NEXT_INSN (insn))
     if (INSN_P (insn) && flow_active_insn_p (insn))

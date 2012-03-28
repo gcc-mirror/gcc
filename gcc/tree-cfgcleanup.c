@@ -793,7 +793,6 @@ repair_loop_structures (void)
 #endif
   scev_reset ();
 
-  loops_state_clear (LOOPS_NEED_FIXUP);
   timevar_pop (TV_REPAIR_LOOPS);
 }
 

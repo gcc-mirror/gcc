@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssaexpand.h"
 #include "bitmap.h"
 #include "sbitmap.h"
+#include "cfgloop.h"
 #include "regs.h" /* For reg_renumber.  */
 #include "integrate.h" /* For emit_initial_value_sets.  */
 #include "insn-attr.h" /* For INSN_SCHEDULING.  */
@@ -1940,6 +1941,8 @@ expand_gimple_cond (basic_block bb, gimple stmt)
   false_edge->flags |= EDGE_FALLTHRU;
   new_bb->count = false_edge->count;
   new_bb->frequency = EDGE_FREQUENCY (false_edge);
+  if (current_loops && bb->loop_father)
+    add_bb_to_loop (new_bb, bb->loop_father);
   new_edge = make_edge (new_bb, dest, 0);
   new_edge->probability = REG_BR_PROB_BASE;
   new_edge->count = new_bb->count;
@@ -4118,6 +4121,8 @@ construct_init_block (void)
 				   ENTRY_BLOCK_PTR);
   init_block->frequency = ENTRY_BLOCK_PTR->frequency;
   init_block->count = ENTRY_BLOCK_PTR->count;
+  if (current_loops && ENTRY_BLOCK_PTR->loop_father)
+    add_bb_to_loop (init_block, ENTRY_BLOCK_PTR->loop_father);
   if (e)
     {
       first_block = e->dest;
@@ -4185,6 +4190,8 @@ construct_exit_block (void)
 				   EXIT_BLOCK_PTR->prev_bb);
   exit_block->frequency = EXIT_BLOCK_PTR->frequency;
   exit_block->count = EXIT_BLOCK_PTR->count;
+  if (current_loops && EXIT_BLOCK_PTR->loop_father)
+    add_bb_to_loop (exit_block, EXIT_BLOCK_PTR->loop_father);
 
   ix = 0;
   while (ix < EDGE_COUNT (EXIT_BLOCK_PTR->preds))
@@ -4556,6 +4563,8 @@ gimple_expand_cfg (void)
   timevar_push (TV_POST_EXPAND);
   /* We are no longer in SSA form.  */
   cfun->gimple_df->in_ssa_p = false;
+  if (current_loops)
+    loops_state_clear (LOOP_CLOSED_SSA);
 
   /* Expansion is used by optimization passes too, set maybe_hot_insn_p
      conservatively to true until they are all profile aware.  */
