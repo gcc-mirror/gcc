@@ -938,4 +938,9 @@ grep '^type _sock_fprog ' gen-sysinfo.go | \
       -e 's/_sock_filter/SockFilter/' \
     >> ${OUT}
 
+# The Solaris 11 Update 1 _zone_net_addr_t struct.
+grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr/[16]byte/' \
+    >> ${OUT}
+
 exit $?
