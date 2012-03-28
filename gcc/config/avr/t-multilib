@@ -21,57 +21,53 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = mmcu=avr2/mmcu=avr25/mmcu=avr3/mmcu=avr31/mmcu=avr35/mmcu=avr4/mmcu=avr5/mmcu=avr51/mmcu=avr6/mmcu=avrxmega2/mmcu=avrxmega4/mmcu=avrxmega5/mmcu=avrxmega6/mmcu=avrxmega7 mtiny-stack
+MULTILIB_OPTIONS = mmcu=avr2/mmcu=avr25/mmcu=avr3/mmcu=avr31/mmcu=avr35/mmcu=avr4/mmcu=avr5/mmcu=avr51/mmcu=avr6/mmcu=avrxmega2/mmcu=avrxmega4/mmcu=avrxmega5/mmcu=avrxmega6/mmcu=avrxmega7 msp8
 
 MULTILIB_DIRNAMES =  avr2 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6 avrxmega2 avrxmega4 avrxmega5 avrxmega6 avrxmega7 tiny-stack avr25/tiny-stack
 
 MULTILIB_EXCEPTIONS = \
-	mmcu=avr3/mtiny-stack \
-	mmcu=avr31/mtiny-stack \
-	mmcu=avr35/mtiny-stack \
-	mmcu=avr4/mtiny-stack \
-	mmcu=avr5/mtiny-stack \
-	mmcu=avr51/mtiny-stack \
-	mmcu=avr6/mtiny-stack \
-	mmcu=avrxmega2/mtiny-stack \
-	mmcu=avrxmega4/mtiny-stack \
-	mmcu=avrxmega5/mtiny-stack \
-	mmcu=avrxmega6/mtiny-stack \
-	mmcu=avrxmega7/mtiny-stack
+	mmcu=avr3/msp8 \
+	mmcu=avr31/msp8 \
+	mmcu=avr35/msp8 \
+	mmcu=avr4/msp8 \
+	mmcu=avr5/msp8 \
+	mmcu=avr51/msp8 \
+	mmcu=avr6/msp8 \
+	mmcu=avrxmega2/msp8 \
+	mmcu=avrxmega4/msp8 \
+	mmcu=avrxmega5/msp8 \
+	mmcu=avrxmega6/msp8 \
+	mmcu=avrxmega7/msp8
 
 MULTILIB_MATCHES = \
-	mmcu?at90s2313=mmcu?at90s2313 \
-	mmcu?at90s2323=mmcu?at90s2323 \
-	mmcu?at90s2333=mmcu?at90s2333 \
-	mmcu?at90s2343=mmcu?at90s2343 \
-	mmcu?attiny22=mmcu?attiny22 \
-	mmcu?attiny26=mmcu?attiny26 \
-	mmcu?at90s4433=mmcu?at90s4433 \
+	mmcu?avr2=mmcu?at90s2313 \
+	mmcu?avr2=mmcu?at90s2323 \
+	mmcu?avr2=mmcu?at90s2333 \
+	mmcu?avr2=mmcu?at90s2343 \
+	mmcu?avr2=mmcu?attiny22 \
+	mmcu?avr2=mmcu?attiny26 \
+	mmcu?avr2=mmcu?at90s4414 \
+	mmcu?avr2=mmcu?at90s4433 \
+	mmcu?avr2=mmcu?at90s4434 \
+	mmcu?avr2=mmcu?at90s8515 \
+	mmcu?avr2=mmcu?at90c8534 \
+	mmcu?avr2=mmcu?at90s8535 \
 	mmcu?avr25=mmcu?ata6289 \
-	mmcu?attiny13=mmcu?attiny13 \
 	mmcu?avr25=mmcu?attiny13 \
-	mmcu?attiny13a=mmcu?attiny13a \
 	mmcu?avr25=mmcu?attiny13a \
-	mmcu?attiny2313=mmcu?attiny2313 \
 	mmcu?avr25=mmcu?attiny2313 \
-	mmcu?attiny2313a=mmcu?attiny2313a \
 	mmcu?avr25=mmcu?attiny2313a \
-	mmcu?attiny24=mmcu?attiny24 \
 	mmcu?avr25=mmcu?attiny24 \
-	mmcu?attiny24a=mmcu?attiny24a \
 	mmcu?avr25=mmcu?attiny24a \
 	mmcu?avr25=mmcu?attiny4313 \
 	mmcu?avr25=mmcu?attiny44 \
 	mmcu?avr25=mmcu?attiny44a \
 	mmcu?avr25=mmcu?attiny84 \
 	mmcu?avr25=mmcu?attiny84a \
-	mmcu?attiny25=mmcu?attiny25 \
 	mmcu?avr25=mmcu?attiny25 \
 	mmcu?avr25=mmcu?attiny45 \
 	mmcu?avr25=mmcu?attiny85 \
-	mmcu?attiny261=mmcu?attiny261 \
 	mmcu?avr25=mmcu?attiny261 \
-	mmcu?attiny261a=mmcu?attiny261a \
 	mmcu?avr25=mmcu?attiny261a \
 	mmcu?avr25=mmcu?attiny461 \
 	mmcu?avr25=mmcu?attiny461a \

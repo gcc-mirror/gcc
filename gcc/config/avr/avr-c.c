@@ -128,6 +128,12 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   else
     cpp_define (pfile, "__AVR_HAVE_16BIT_SP__");
 
+  if (avr_sp8)
+    cpp_define (pfile, "__AVR_SP8__");
+
+  if (AVR_HAVE_SPH)
+    cpp_define (pfile, "__AVR_HAVE_SPH__");
+
   if (TARGET_NO_INTERRUPTS)
     cpp_define (pfile, "__NO_INTERRUPTS__");
 

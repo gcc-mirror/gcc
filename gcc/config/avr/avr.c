@@ -963,7 +963,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
             {
               /* Don't error so that insane code from newlib still compiles
                  and does not break building newlib.  As PR51345 is implemented
-                 now, there are multilib variants with -mtiny-stack.
+                 now, there are multilib variants with -msp8.
                  
                  If user wants sanity checks he can use -Wstack-usage=
                  or similar options.
@@ -2774,7 +2774,7 @@ output_movhi (rtx insn, rtx xop[], int *plen)
             }
           else if (test_hard_reg_class (STACK_REG, src))
             {
-              return AVR_HAVE_8BIT_SP
+              return !AVR_HAVE_SPH
                 ? avr_asm_len ("in %A0,__SP_L__" CR_TAB
                                "clr %B0", xop, plen, -2)
                 
@@ -7341,7 +7341,7 @@ avr_file_start (void)
 
   /* Print I/O addresses of some SFRs used with IN and OUT.  */
 
-  if (!AVR_HAVE_8BIT_SP)
+  if (AVR_HAVE_SPH)
     fprintf (asm_out_file, "__SP_H__ = 0x%02x\n", avr_addr.sp_h - sfr_offset);
 
   fprintf (asm_out_file, "__SP_L__ = 0x%02x\n", avr_addr.sp_l - sfr_offset);

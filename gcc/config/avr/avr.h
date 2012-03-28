@@ -188,7 +188,26 @@ enum
 #define AVR_HAVE_RAMPZ (avr_current_arch->have_elpm             \
                         || avr_current_arch->have_rampd)
 #define AVR_HAVE_EIJMP_EICALL (avr_current_arch->have_eijmp_eicall)
-#define AVR_HAVE_8BIT_SP (avr_current_device->short_sp || TARGET_TINY_STACK)
+
+/* Handling of 8-bit SP versus 16-bit SP is as follows:
+
+   -msp8 is used internally to select the right multilib for targets with
+   8-bit SP.  -msp8 is set automatically by DRIVER_SELF_SPECS for devices
+   with 8-bit SP or by multilib generation machinery.  If a frame pointer is
+   needed and SP is only 8 bits wide, SP is zero-extended to get FP.
+
+   TARGET_TINY_STACK is triggered by -mtiny-stack which is a user option.
+   This option has no effect on multilib selection.  It serves to save some
+   bytes on 16-bit SP devices by only changing SP_L and leaving SP_H alone.
+
+   These two properties are reflected by built-in macros __AVR_SP8__ resp.
+   __AVR_HAVE_8BIT_SP__ and __AVR_HAVE_16BIT_SP__.  During multilib generation
+   there is always __AVR_SP8__ == __AVR_HAVE_8BIT_SP__.  */
+
+#define AVR_HAVE_8BIT_SP                                                \
+  (avr_current_device->short_sp || TARGET_TINY_STACK || avr_sp8)
+
+#define AVR_HAVE_SPH (!avr_sp8)
 
 #define AVR_2_BYTE_PC (!AVR_HAVE_EIJMP_EICALL)
 #define AVR_3_BYTE_PC (AVR_HAVE_EIJMP_EICALL)
@@ -577,13 +596,16 @@ extern const char *avr_device_to_arch (int argc, const char **argv);
 extern const char *avr_device_to_data_start (int argc, const char **argv);
 extern const char *avr_device_to_startfiles (int argc, const char **argv);
 extern const char *avr_device_to_devicelib (int argc, const char **argv);
+extern const char *avr_device_to_sp8 (int argc, const char **argv);
 
-#define EXTRA_SPEC_FUNCTIONS \
-  { "device_to_arch", avr_device_to_arch }, \
+#define EXTRA_SPEC_FUNCTIONS                            \
+  { "device_to_arch", avr_device_to_arch },             \
   { "device_to_data_start", avr_device_to_data_start }, \
-  { "device_to_startfile", avr_device_to_startfiles }, \
-  { "device_to_devicelib", avr_device_to_devicelib },
+  { "device_to_startfile", avr_device_to_startfiles },  \
+  { "device_to_devicelib", avr_device_to_devicelib },   \
+  { "device_to_sp8", avr_device_to_sp8 },
 
+#define DRIVER_SELF_SPECS " %:device_to_sp8(%{mmcu=*:%*}) "
 #define CPP_SPEC ""
 
 #define CC1_SPEC ""
