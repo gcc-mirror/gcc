@@ -11131,8 +11131,7 @@ sbiw r26, const   ; X -= const
 
 @item -mtiny-stack
 @opindex mtiny-stack
-Only use the lower 8@tie{}bits of the stack pointer and assume that the high
-byte of SP is always zero.
+Only change the lower 8@tie{}bits of the stack pointer.
 @end table
 
 @subsubsection @code{EIND} and Devices with more than 128 Ki Bytes of Flash

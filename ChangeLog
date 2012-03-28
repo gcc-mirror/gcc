@@ -1,3 +1,9 @@
+2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52737
+	* contrib/gcc_update (files_and_dependencies):
+	Remove gcc/config/avr/t-multilib from touch data.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* MAINTAINERS (OS Port Maintainers): Remove irix.
