@@ -3572,8 +3572,8 @@ gfc_match_allocate (void)
 		|| sym->ns->proc_name->attr.proc_pointer);
       if (b1 && b2 && !b3)
 	{
-	  gfc_error ("Allocate-object at %L is not a nonprocedure pointer "
-		     "or an allocatable variable", &tail->expr->where);
+	  gfc_error ("Allocate-object at %L is neither a nonprocedure pointer "
+		     "nor an allocatable variable", &tail->expr->where);
 	  goto cleanup;
 	}
 
@@ -3904,7 +3904,7 @@ gfc_match_deallocate (void)
       if (b1 && b2)
 	{
 	  gfc_error ("Allocate-object at %C is not a nonprocedure pointer "
-		     "or an allocatable variable");
+		     "nor an allocatable variable");
 	  goto cleanup;
 	}
 
