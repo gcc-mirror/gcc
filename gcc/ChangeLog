@@ -1,3 +1,8 @@
+2012-03-30  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-ssa-ccp.c (insert_clobbers_for_var): Do not assert that there
+	is a builtin_stack_save in a dominating BB.
+
 2012-03-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (avx_h<plusminus_insn>v4df3): Fix results
