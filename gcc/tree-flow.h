@@ -794,10 +794,7 @@ extern bool verify_eh_dispatch_edge (gimple);
 extern void maybe_remove_unreachable_handlers (void);
 
 /* In tree-ssa-pre.c  */
-struct pre_expr_d;
-void add_to_value (unsigned int, struct pre_expr_d *);
 void debug_value_expressions (unsigned int);
-void print_value_expressions (FILE *, unsigned int);
 
 /* In tree-ssa-sink.c  */
 bool is_hidden_global_store (gimple);

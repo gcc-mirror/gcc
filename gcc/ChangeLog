@@ -1,5 +1,15 @@
 2012-03-29  Richard Guenther  <rguenther@suse.de>
 
+	* tree-flow.h (struct pre_expr_d): Remove forward declaration.
+	(add_to_value): Remove.
+	(print_value_expressions): Likewise.
+	* tree-ssa-pre.c (add_to_value): Make static.
+	(print_value_expressions): Likewise.
+	* gimple.h (gimple_adjust_this_by_delta): Remove.
+	* gimple-fold.c (gimple_adjust_this_by_delta): Likewise.
+
+2012-03-29  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/50708
 	* double-int.h (rshift_double): Remove.
 	* double-int.c (lshift_double): Use absu_hwi to make count
