@@ -978,29 +978,6 @@ gimple_fold_builtin (gimple stmt)
   return result;
 }
 
-/* Generate code adjusting the first parameter of a call statement determined
-   by GSI by DELTA.  */
-
-void
-gimple_adjust_this_by_delta (gimple_stmt_iterator *gsi, tree delta)
-{
-  gimple call_stmt = gsi_stmt (*gsi);
-  tree parm, tmp;
-  gimple new_stmt;
-
-  delta = convert_to_ptrofftype (delta);
-  gcc_assert (gimple_call_num_args (call_stmt) >= 1);
-  parm = gimple_call_arg (call_stmt, 0);
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (parm)));
-  tmp = create_tmp_var (TREE_TYPE (parm), NULL);
-  add_referenced_var (tmp);
-
-  tmp = make_ssa_name (tmp, NULL);
-  new_stmt = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, tmp, parm, delta);
-  SSA_NAME_DEF_STMT (tmp) = new_stmt;
-  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
-  gimple_call_set_arg (call_stmt, 0, tmp);
-}
 
 /* Return a binfo to be used for devirtualization of calls based on an object
    represented by a declaration (i.e. a global or automatically allocated one)

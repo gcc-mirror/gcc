@@ -587,7 +587,7 @@ phi_trans_add (pre_expr e, pre_expr v, basic_block pred)
 
 /* Add expression E to the expression set of value id V.  */
 
-void
+static void
 add_to_value (unsigned int v, pre_expr e)
 {
   bitmap_set_t set;
@@ -1031,7 +1031,7 @@ debug_bitmap_set (bitmap_set_t set)
 
 /* Print out the expressions that have VAL to OUTFILE.  */
 
-void
+static void
 print_value_expressions (FILE *outfile, unsigned int val)
 {
   bitmap_set_t set = VEC_index (bitmap_set_t, value_expressions, val);
