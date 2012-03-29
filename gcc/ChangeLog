@@ -1,3 +1,9 @@
+2012-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/linux-android.h (ANDROID_STARTFILE_SPEC): Use
+	crtbegin_so%O%s for -shared.
+	(ANDROID_ENDFILE_SPEC): Use crtend_so%O%s for -shared.
+
 2012-03-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (struct pre_expr_d): Remove forward declaration.
