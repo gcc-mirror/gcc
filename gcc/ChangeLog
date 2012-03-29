@@ -1,3 +1,13 @@
+2012-03-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50708
+	* double-int.h (rshift_double): Remove.
+	* double-int.c (lshift_double): Use absu_hwi to make count
+	positive.
+	(rshift_double): Make static, take unsigned count argument,
+	remove handling of negative count argument.
+	(double_int_rshift): Dispatch to lshift_double.
+
 2012-03-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/biarch64.h (TARGET_64BIT_DEFAULT): Add
