@@ -32,17 +32,17 @@ toolexeclib_LTLIBRARIES = libsupc++.la
 noinst_LTLIBRARIES = libsupc++convenience.la
 
 std_HEADERS = \
-	cxxabi.h exception initializer_list new typeinfo 
+	cxxabi.h exception initializer_list new typeinfo
 
 bits_HEADERS = \
 	atomic_lockfree_defines.h cxxabi_forced.h \
-	exception_defines.h exception_ptr.h hash_bytes.h nested_exception.h 
+	exception_defines.h exception_ptr.h hash_bytes.h nested_exception.h
 
 headers = $(std_HEADERS) $(bits_HEADERS)
 
 if GLIBCXX_HOSTED
   c_sources = \
-	cp-demangle.c 
+	cp-demangle.c
 endif
 
 sources = \
@@ -95,7 +95,7 @@ sources = \
 	vmi_class_type_info.cc \
 	vterminate.cc
 
-libsupc___la_SOURCES = $(sources) $(c_sources) 
+libsupc___la_SOURCES = $(sources) $(c_sources)
 libsupc__convenience_la_SOURCES = $(sources) $(c_sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
@@ -106,9 +106,7 @@ libsupc__convenience_la_SOURCES = $(sources) $(c_sources)
 AM_CXXFLAGS = \
 	$(PIC_CXXFLAGS) \
 	$(XTEMPLATE_FLAGS) \
-	$(WARN_CXXFLAGS) \
-	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS)
+	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS)  $(CONFIG_CXXFLAGS)
 
 AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)"
@@ -125,7 +123,7 @@ C_COMPILE = \
 # LTCOMPILE is copied from LTCXXCOMPILE below.
 LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared $(LIBTOOLFLAGS) --mode=compile \
 	    $(CC) $(DEFS) $(C_INCLUDES) $(PIC_CXXFLAGS) \
-            $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+	    $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
 cp-demangle.c:
 	rm -f $@
@@ -178,9 +176,11 @@ nested_exception.o: nested_exception.cc
 #
 # We have to put --tag disable-shared after --tag CXX lest things
 # CXX undo the affect of disable-shared.
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared $(LIBTOOLFLAGS) \
-	       --mode=compile $(CXX) $(TOPLEVEL_INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) 
+LTCXXCOMPILE = \
+	$(LIBTOOL) --tag CXX --tag disable-shared \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(CXX) $(TOPLEVEL_INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
@@ -190,10 +190,11 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 # course is problematic at this point.  So, we get the top-level
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
-CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared $(LIBTOOLFLAGS) \
-	  --mode=link $(CXX) \
-	  $(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
-
+CXXLINK = \
+	$(LIBTOOL) --tag CXX --tag disable-shared \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXX) \
+	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
 
 # Install notes
 # We have to have rules modified from the default to counteract SUN make
