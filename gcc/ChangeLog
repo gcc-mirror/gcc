@@ -1,3 +1,8 @@
+2012-03-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-color.c (setup_left_conflict_sizes_p): Process all
+	conflicting objects.
+
 2012-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52760
