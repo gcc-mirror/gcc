@@ -1,3 +1,8 @@
+2012-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52746
+	* g++.dg/overload/virtual2.C: New.
+
 2012-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/vect7.ad[sb]: New test.
