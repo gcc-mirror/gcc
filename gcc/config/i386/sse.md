@@ -1175,14 +1175,14 @@
 		(parallel [(const_int 0)]))
 	      (vec_select:DF (match_dup 1) (parallel [(const_int 1)])))
 	    (plusminus:DF
-	      (vec_select:DF (match_dup 1) (parallel [(const_int 2)]))
-	      (vec_select:DF (match_dup 1) (parallel [(const_int 3)]))))
-	  (vec_concat:V2DF
-	    (plusminus:DF
 	      (vec_select:DF
 		(match_operand:V4DF 2 "nonimmediate_operand" "xm")
 		(parallel [(const_int 0)]))
-	      (vec_select:DF (match_dup 2) (parallel [(const_int 1)])))
+	      (vec_select:DF (match_dup 2) (parallel [(const_int 1)]))))
+	  (vec_concat:V2DF
+	    (plusminus:DF
+	      (vec_select:DF (match_dup 1) (parallel [(const_int 2)]))
+	      (vec_select:DF (match_dup 1) (parallel [(const_int 3)])))
 	    (plusminus:DF
 	      (vec_select:DF (match_dup 2) (parallel [(const_int 2)]))
 	      (vec_select:DF (match_dup 2) (parallel [(const_int 3)]))))))]
