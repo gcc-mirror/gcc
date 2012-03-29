@@ -1,5 +1,10 @@
 2012-03-29  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sse.md (avx_h<plusminus_insn>v4df3): Fix results
+	crossing 128bit lane boundary.
+
+2012-03-29  Uros Bizjak  <ubizjak@gmail.com>
+
 	Backported from mainline
 	2012-03-27  Uros Bizjak  <ubizjak@gmail.com>
 
