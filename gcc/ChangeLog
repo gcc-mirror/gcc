@@ -1,3 +1,9 @@
+2012-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52760
+	* tree-vect-slp.c (vect_get_constant_vectors): Convert constant_p
+	shift count for {L,R}{SHIFT,ROTATE}_EXPR to TREE_TYPE (vector_type).
+
 2012-03-29  Richard Guenther  <rguenther@suse.de>
 
 	* cgraph.h (cgraph_materialize_all_clones): Remove.
