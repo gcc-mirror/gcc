@@ -1,3 +1,25 @@
+2012-03-29  Richard Guenther  <rguenther@suse.de>
+
+	* cgraph.h (cgraph_materialize_all_clones): Remove.
+	(reset_inline_failed): Likewise.
+	* cgraphunit.c (cgraph_materialize_all_clones): Make static.
+	* cgraphbuild.c (reset_inline_failed): Remove.
+	* rtl.h (cse_main): Remove.
+	(extended_count): Likewise.
+	* cse.c (dump_class): Mark as DEBUG_FUNCTION.
+	(cse_main): Make static.
+	* combine.c (extended_count): Remove.
+	(dump_combine_stats): Mark as DEBUG_FUNCTION.
+	* basic-block.h (reorder_basic_blocks): Remove.
+	* bb-reorder.c (reorder_basic_blocks): Make static.
+	* Makefile.in (dse.o): Remove dse.h dependency.
+	* dse.h: Remove.
+	* dse.c (gate_dse): Remove.
+	(clear_alias_mode_eq): Likewise.
+	(clear_alias_mode_hash): Likewise.
+	(dse_record_singleton_alias_set): Likewise.
+	(dse_invalidate_singleton_alias_set): Likewise.
+
 2012-03-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/linux-android.h (ANDROID_STARTFILE_SPEC): Use
