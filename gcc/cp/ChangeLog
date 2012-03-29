@@ -1,3 +1,10 @@
+2012-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52746
+	* typeck.c (lookup_destructor): Clear BASELINK_QUALIFIED_P if
+	we didn't get an explicit scope.
+	* pt.c (tsubst_baselink): Likewise.
+
 2012-03-28  Richard Guenther  <rguenther@suse.de>
 
 	* typeck2.c (process_init_constructor_array): Use the proper
