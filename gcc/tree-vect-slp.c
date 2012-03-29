@@ -2337,8 +2337,23 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		    op = gimple_call_arg (stmt, op_num);
 		    break;
 
+		  case LSHIFT_EXPR:
+		  case RSHIFT_EXPR:
+		  case LROTATE_EXPR:
+		  case RROTATE_EXPR:
+		    op = gimple_op (stmt, op_num + 1);
+		    /* Unlike the other binary operators, shifts/rotates have
+		       the shift count being int, instead of the same type as
+		       the lhs, so make sure the scalar is the right type if
+		       we are dealing with vectors of
+		       long long/long/short/char.  */
+		    if (op_num == 1 && constant_p)
+		      op = fold_convert (TREE_TYPE (vector_type), op);
+		    break;
+
 		  default:
 		    op = gimple_op (stmt, op_num + 1);
+		    break;
 		}
 	    }
 
