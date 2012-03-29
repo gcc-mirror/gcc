@@ -96,23 +96,3 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
-// XXX GLIBCXX_ABI Deprecated
-// gcc-4.6.0
-// <future> export changes
-#if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC) \
-    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE) \
-    && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
-
-namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
-{
-  const std::error_category* future_category = &__future_category_instance();
-}
-
-#define _GLIBCXX_ASM_SYMVER(cur, old, version) \
-   asm (".symver " #cur "," #old "@@@" #version);
-
-_GLIBCXX_ASM_SYMVER(_ZN9__gnu_cxx15future_categoryE, _ZSt15future_category, GLIBCXX_3.4.14)
-
-#endif
-

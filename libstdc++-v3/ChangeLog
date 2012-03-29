@@ -1,3 +1,26 @@
+2012-03-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52689
+	* libsupc++/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	* libsupc++/Makefile.in: Regenerated.
+	* src/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	(libstdc___la_SOURCES): Add in compatiblity files, with content
+	that varies with -DPIC.
+	* src/Makefile.in: Regenerated.
+	* src/c++11/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	* src/c++11/Makefile.in: Regenerated.
+	* src/c++11/compatibility-atomic-c++0x.cc: Guard with PIC.
+	* src/c++11/compatibility-c++0x.cc: Same.
+	* src/c++11/future.cc: Consolidate compatibility bits into..
+	* src/c++11/mutex.cc: Consolidate compatibility bits into..
+	* src/c++11/compatibility-thread-cxx0x.cc: ...here. New.
+	* src/c++98/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	* src/c++98/Makefile.in: Regenerated.
+	* src/c++98/compatibility-ldbl.cc: Guard with PIC
+	* src/c++98/compatibility-list-2.cc: Same.
+	* src/c++98/compatibility-list.cc: Same.
+	* src/c++98/compatibility.cc: Tweak comments.
+
 2012-03-28  Terry Guo  <terry.guo@arm.com>
 
 	* testsuite/Makefile.am (TEST_GCC_EXEC_PREFIX): New.

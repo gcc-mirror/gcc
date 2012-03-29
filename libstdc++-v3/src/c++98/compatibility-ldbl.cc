@@ -1,6 +1,6 @@
 // Compatibility symbols for -mlong-double-64 compatibility -*- C++ -*-
 
-// Copyright (C) 2006, 2008, 2009, 2010, 2011
+// Copyright (C) 2006, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -26,6 +26,8 @@
 #include <locale>
 #include <cmath>
 #include <tr1/functional>
+
+#ifdef PIC
 
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
 
@@ -76,5 +78,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 // are the same, no need to duplicate them.
 extern "C" void _ZNKSt4hashIeEclEe (void)
   __attribute__((alias ("_ZNKSt3tr14hashIeEclEe")));
+
+#endif
 
 #endif
