@@ -1,3 +1,8 @@
+2012-03-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52743
+	* g++.dg/cpp0x/initlist-array3.C: New.
+
 2012-03-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52746
