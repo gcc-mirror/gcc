@@ -1,3 +1,8 @@
+2012-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/linux-unwind.h (x86_64_fallback_frame_state): Define
+	only for glibc.
+
 2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52737
