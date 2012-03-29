@@ -57,11 +57,11 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
   if (add_to_globals)
     this->add_named_type(pointer_type);
 
-  Type* int_type = this->lookup_global("int")->type_value();
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
 
   // Sizeof.
   Typed_identifier_list* results = new Typed_identifier_list;
-  results->push_back(Typed_identifier("", int_type, bloc));
+  results->push_back(Typed_identifier("", uintptr_type, bloc));
   Function_type* fntype = Type::make_function_type(NULL, NULL, results, bloc);
   fntype->set_is_builtin();
   no = bindings->add_function_declaration("Sizeof", package, fntype, bloc);
@@ -70,7 +70,7 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
 
   // Offsetof.
   results = new Typed_identifier_list;
-  results->push_back(Typed_identifier("", int_type, bloc));
+  results->push_back(Typed_identifier("", uintptr_type, bloc));
   fntype = Type::make_function_type(NULL, NULL, results, bloc);
   fntype->set_is_varargs();
   fntype->set_is_builtin();
@@ -80,7 +80,7 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
 
   // Alignof.
   results = new Typed_identifier_list;
-  results->push_back(Typed_identifier("", int_type, bloc));
+  results->push_back(Typed_identifier("", uintptr_type, bloc));
   fntype = Type::make_function_type(NULL, NULL, results, bloc);
   fntype->set_is_varargs();
   fntype->set_is_builtin();

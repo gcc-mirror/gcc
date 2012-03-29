@@ -7091,7 +7091,8 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       else
 	go_unreachable();
 
-      nc->set_unsigned_long(NULL, static_cast<unsigned long>(ret));
+      nc->set_unsigned_long(Type::lookup_integer_type("uintptr"),
+			    static_cast<unsigned long>(ret));
       return true;
     }
   else if (this->code_ == BUILTIN_OFFSETOF)
@@ -7113,7 +7114,8 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
 						   farg->field_index(),
 						   &offset))
 	return false;
-      nc->set_unsigned_long(NULL, static_cast<unsigned long>(offset));
+      nc->set_unsigned_long(Type::lookup_integer_type("uintptr"),
+			    static_cast<unsigned long>(offset));
       return true;
     }
   else if (this->code_ == BUILTIN_REAL || this->code_ == BUILTIN_IMAG)
@@ -7246,10 +7248,12 @@ Builtin_call_expression::do_type()
     case BUILTIN_CAP:
     case BUILTIN_COPY:
     case BUILTIN_LEN:
+      return Type::lookup_integer_type("int");
+
     case BUILTIN_ALIGNOF:
     case BUILTIN_OFFSETOF:
     case BUILTIN_SIZEOF:
-      return Type::lookup_integer_type("int");
+      return Type::lookup_integer_type("uintptr");
 
     case BUILTIN_CLOSE:
     case BUILTIN_DELETE:
@@ -8078,8 +8082,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	    go_assert(saw_errors());
 	    return error_mark_node;
 	  }
-	Type* int_type = Type::lookup_integer_type("int");
-	tree type = type_to_tree(int_type->get_backend(gogo));
+	Type* uintptr_type = Type::lookup_integer_type("uintptr");
+	tree type = type_to_tree(uintptr_type->get_backend(gogo));
 	return build_int_cst(type, val);
       }
 
