@@ -1294,59 +1294,6 @@ handle_alias_pairs (void)
 }
 
 
-/* Analyze the whole compilation unit once it is parsed completely.  */
-
-void
-cgraph_finalize_compilation_unit (void)
-{
-  timevar_push (TV_CGRAPH);
-
-  /* If LTO is enabled, initialize the streamer hooks needed by GIMPLE.  */
-  if (flag_lto)
-    lto_streamer_hooks_init ();
-
-  /* If we're here there's no current function anymore.  Some frontends
-     are lazy in clearing these.  */
-  current_function_decl = NULL;
-  set_cfun (NULL);
-
-  /* Do not skip analyzing the functions if there were errors, we
-     miss diagnostics for following functions otherwise.  */
-
-  /* Emit size functions we didn't inline.  */
-  finalize_size_functions ();
-
-  /* Mark alias targets necessary and emit diagnostics.  */
-  finish_aliases_1 ();
-  handle_alias_pairs ();
-
-  if (!quiet_flag)
-    {
-      fprintf (stderr, "\nAnalyzing compilation unit\n");
-      fflush (stderr);
-    }
-
-  if (flag_dump_passes)
-    dump_passes ();
-
-  /* Gimplify and lower all functions, compute reachability and
-     remove unreachable nodes.  */
-  cgraph_analyze_functions ();
-
-  /* Mark alias targets necessary and emit diagnostics.  */
-  finish_aliases_1 ();
-  handle_alias_pairs ();
-
-  /* Gimplify and lower thunks.  */
-  cgraph_analyze_functions ();
-
-  /* Finally drive the pass manager.  */
-  cgraph_optimize ();
-
-  timevar_pop (TV_CGRAPH);
-}
-
-
 /* Figure out what functions we want to assemble.  */
 
 static void
@@ -2134,124 +2081,6 @@ output_weakrefs (void)
 }
 
 
-/* Perform simple optimizations based on callgraph.  */
-
-void
-cgraph_optimize (void)
-{
-  if (seen_error ())
-    return;
-
-#ifdef ENABLE_CHECKING
-  verify_cgraph ();
-#endif
-
-  /* Frontend may output common variables after the unit has been finalized.
-     It is safe to deal with them here as they are always zero initialized.  */
-  varpool_analyze_pending_decls ();
-
-  timevar_push (TV_CGRAPHOPT);
-  if (pre_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption before IPA\n");
-      dump_memory_report (false);
-    }
-  if (!quiet_flag)
-    fprintf (stderr, "Performing interprocedural optimizations\n");
-  cgraph_state = CGRAPH_STATE_IPA;
-
-  /* Don't run the IPA passes if there was any error or sorry messages.  */
-  if (!seen_error ())
-    ipa_passes ();
-
-  /* Do nothing else if any IPA pass found errors or if we are just streaming LTO.  */
-  if (seen_error ()
-      || (!in_lto_p && flag_lto && !flag_fat_lto_objects))
-    {
-      timevar_pop (TV_CGRAPHOPT);
-      return;
-    }
-
-  /* This pass remove bodies of extern inline functions we never inlined.
-     Do this later so other IPA passes see what is really going on.  */
-  cgraph_remove_unreachable_nodes (false, dump_file);
-  cgraph_global_info_ready = true;
-  if (cgraph_dump_file)
-    {
-      fprintf (cgraph_dump_file, "Optimized ");
-      dump_cgraph (cgraph_dump_file);
-      dump_varpool (cgraph_dump_file);
-    }
-  if (post_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption after IPA\n");
-      dump_memory_report (false);
-    }
-  timevar_pop (TV_CGRAPHOPT);
-
-  /* Output everything.  */
-  (*debug_hooks->assembly_start) ();
-  if (!quiet_flag)
-    fprintf (stderr, "Assembling functions:\n");
-#ifdef ENABLE_CHECKING
-  verify_cgraph ();
-#endif
-
-  cgraph_materialize_all_clones ();
-  bitmap_obstack_initialize (NULL);
-  execute_ipa_pass_list (all_late_ipa_passes);
-  cgraph_remove_unreachable_nodes (true, dump_file);
-#ifdef ENABLE_CHECKING
-  verify_cgraph ();
-#endif
-  bitmap_obstack_release (NULL);
-  cgraph_mark_functions_to_output ();
-  output_weakrefs ();
-
-  cgraph_state = CGRAPH_STATE_EXPANSION;
-  if (!flag_toplevel_reorder)
-    cgraph_output_in_order ();
-  else
-    {
-      cgraph_output_pending_asms ();
-
-      cgraph_expand_all_functions ();
-      varpool_remove_unreferenced_decls ();
-
-      varpool_assemble_pending_decls ();
-    }
-
-  cgraph_process_new_functions ();
-  cgraph_state = CGRAPH_STATE_FINISHED;
-
-  if (cgraph_dump_file)
-    {
-      fprintf (cgraph_dump_file, "\nFinal ");
-      dump_cgraph (cgraph_dump_file);
-      dump_varpool (cgraph_dump_file);
-    }
-#ifdef ENABLE_CHECKING
-  verify_cgraph ();
-  /* Double check that all inline clones are gone and that all
-     function bodies have been released from memory.  */
-  if (!seen_error ())
-    {
-      struct cgraph_node *node;
-      bool error_found = false;
-
-      for (node = cgraph_nodes; node; node = node->next)
-	if (node->analyzed
-	    && (node->global.inlined_to
-		|| gimple_has_body_p (node->decl)))
-	  {
-	    error_found = true;
-	    dump_cgraph_node (stderr, node);
-	  }
-      if (error_found)
-	internal_error ("nodes with unreleased memory found");
-    }
-#endif
-}
 
 void
 init_cgraph (void)
@@ -2549,7 +2378,7 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
    bring all functions to memory prior compilation, but current WHOPR
    implementation does that and it is is bit easier to keep everything right in
    this order.  */
-void
+static void
 cgraph_materialize_all_clones (void)
 {
   struct cgraph_node *node;
@@ -2627,5 +2456,179 @@ cgraph_materialize_all_clones (void)
 #endif
   cgraph_remove_unreachable_nodes (false, cgraph_dump_file);
 }
+
+
+/* Perform simple optimizations based on callgraph.  */
+
+void
+cgraph_optimize (void)
+{
+  if (seen_error ())
+    return;
+
+#ifdef ENABLE_CHECKING
+  verify_cgraph ();
+#endif
+
+  /* Frontend may output common variables after the unit has been finalized.
+     It is safe to deal with them here as they are always zero initialized.  */
+  varpool_analyze_pending_decls ();
+
+  timevar_push (TV_CGRAPHOPT);
+  if (pre_ipa_mem_report)
+    {
+      fprintf (stderr, "Memory consumption before IPA\n");
+      dump_memory_report (false);
+    }
+  if (!quiet_flag)
+    fprintf (stderr, "Performing interprocedural optimizations\n");
+  cgraph_state = CGRAPH_STATE_IPA;
+
+  /* Don't run the IPA passes if there was any error or sorry messages.  */
+  if (!seen_error ())
+    ipa_passes ();
+
+  /* Do nothing else if any IPA pass found errors or if we are just streaming LTO.  */
+  if (seen_error ()
+      || (!in_lto_p && flag_lto && !flag_fat_lto_objects))
+    {
+      timevar_pop (TV_CGRAPHOPT);
+      return;
+    }
+
+  /* This pass remove bodies of extern inline functions we never inlined.
+     Do this later so other IPA passes see what is really going on.  */
+  cgraph_remove_unreachable_nodes (false, dump_file);
+  cgraph_global_info_ready = true;
+  if (cgraph_dump_file)
+    {
+      fprintf (cgraph_dump_file, "Optimized ");
+      dump_cgraph (cgraph_dump_file);
+      dump_varpool (cgraph_dump_file);
+    }
+  if (post_ipa_mem_report)
+    {
+      fprintf (stderr, "Memory consumption after IPA\n");
+      dump_memory_report (false);
+    }
+  timevar_pop (TV_CGRAPHOPT);
+
+  /* Output everything.  */
+  (*debug_hooks->assembly_start) ();
+  if (!quiet_flag)
+    fprintf (stderr, "Assembling functions:\n");
+#ifdef ENABLE_CHECKING
+  verify_cgraph ();
+#endif
+
+  cgraph_materialize_all_clones ();
+  bitmap_obstack_initialize (NULL);
+  execute_ipa_pass_list (all_late_ipa_passes);
+  cgraph_remove_unreachable_nodes (true, dump_file);
+#ifdef ENABLE_CHECKING
+  verify_cgraph ();
+#endif
+  bitmap_obstack_release (NULL);
+  cgraph_mark_functions_to_output ();
+  output_weakrefs ();
+
+  cgraph_state = CGRAPH_STATE_EXPANSION;
+  if (!flag_toplevel_reorder)
+    cgraph_output_in_order ();
+  else
+    {
+      cgraph_output_pending_asms ();
+
+      cgraph_expand_all_functions ();
+      varpool_remove_unreferenced_decls ();
+
+      varpool_assemble_pending_decls ();
+    }
+
+  cgraph_process_new_functions ();
+  cgraph_state = CGRAPH_STATE_FINISHED;
+
+  if (cgraph_dump_file)
+    {
+      fprintf (cgraph_dump_file, "\nFinal ");
+      dump_cgraph (cgraph_dump_file);
+      dump_varpool (cgraph_dump_file);
+    }
+#ifdef ENABLE_CHECKING
+  verify_cgraph ();
+  /* Double check that all inline clones are gone and that all
+     function bodies have been released from memory.  */
+  if (!seen_error ())
+    {
+      struct cgraph_node *node;
+      bool error_found = false;
+
+      for (node = cgraph_nodes; node; node = node->next)
+	if (node->analyzed
+	    && (node->global.inlined_to
+		|| gimple_has_body_p (node->decl)))
+	  {
+	    error_found = true;
+	    dump_cgraph_node (stderr, node);
+	  }
+      if (error_found)
+	internal_error ("nodes with unreleased memory found");
+    }
+#endif
+}
+
+
+/* Analyze the whole compilation unit once it is parsed completely.  */
+
+void
+cgraph_finalize_compilation_unit (void)
+{
+  timevar_push (TV_CGRAPH);
+
+  /* If LTO is enabled, initialize the streamer hooks needed by GIMPLE.  */
+  if (flag_lto)
+    lto_streamer_hooks_init ();
+
+  /* If we're here there's no current function anymore.  Some frontends
+     are lazy in clearing these.  */
+  current_function_decl = NULL;
+  set_cfun (NULL);
+
+  /* Do not skip analyzing the functions if there were errors, we
+     miss diagnostics for following functions otherwise.  */
+
+  /* Emit size functions we didn't inline.  */
+  finalize_size_functions ();
+
+  /* Mark alias targets necessary and emit diagnostics.  */
+  finish_aliases_1 ();
+  handle_alias_pairs ();
+
+  if (!quiet_flag)
+    {
+      fprintf (stderr, "\nAnalyzing compilation unit\n");
+      fflush (stderr);
+    }
+
+  if (flag_dump_passes)
+    dump_passes ();
+
+  /* Gimplify and lower all functions, compute reachability and
+     remove unreachable nodes.  */
+  cgraph_analyze_functions ();
+
+  /* Mark alias targets necessary and emit diagnostics.  */
+  finish_aliases_1 ();
+  handle_alias_pairs ();
+
+  /* Gimplify and lower thunks.  */
+  cgraph_analyze_functions ();
+
+  /* Finally drive the pass manager.  */
+  cgraph_optimize ();
+
+  timevar_pop (TV_CGRAPH);
+}
+
 
 #include "gt-cgraphunit.h"

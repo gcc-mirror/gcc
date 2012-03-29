@@ -200,20 +200,6 @@ record_eh_tables (struct cgraph_node *node, struct function *fun)
     }
 }
 
-/* Reset inlining information of all incoming call edges of NODE.  */
-
-void
-reset_inline_failed (struct cgraph_node *node)
-{
-  struct cgraph_edge *e;
-
-  for (e = node->callers; e; e = e->next_caller)
-    {
-      e->callee->global.inlined_to = NULL;
-      initialize_inline_failed (e);
-    }
-}
-
 /* Computes the frequency of the call statement so that it can be stored in
    cgraph_edge.  BB is the basic block of the call statement.  */
 int

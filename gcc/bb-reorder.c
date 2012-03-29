@@ -1903,7 +1903,7 @@ verify_hot_cold_block_grouping (void)
 /* Reorder basic blocks.  The main entry point to this file.  FLAGS is
    the set of flags to pass to cfg_layout_initialize().  */
 
-void
+static void
 reorder_basic_blocks (void)
 {
   int n_traces;

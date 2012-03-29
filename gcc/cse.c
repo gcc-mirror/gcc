@@ -653,7 +653,7 @@ fixed_base_plus_p (rtx x)
 
 /* Dump the expressions in the equivalence class indicated by CLASSP.
    This function is used only for debugging.  */
-void
+DEBUG_FUNCTION void
 dump_class (struct table_elt *classp)
 {
   struct table_elt *elt;
@@ -6519,7 +6519,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
    Return 1 if the CFG should be cleaned up because it has been modified.
    Return 0 otherwise.  */
 
-int
+static int
 cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 {
   struct cse_basic_block_data ebb_data;

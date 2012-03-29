@@ -2373,7 +2373,6 @@ extern int rtx_to_tree_code (enum rtx_code);
 
 /* In cse.c */
 extern int delete_trivially_dead_insns (rtx, int);
-extern int cse_main (rtx, int);
 extern int exp_equiv_p (const_rtx, const_rtx, int, bool);
 extern unsigned hash_rtx (const_rtx x, enum machine_mode, int *, int *, bool);
 
@@ -2456,7 +2455,6 @@ extern bool validate_subreg (enum machine_mode, enum machine_mode,
 			     const_rtx, unsigned int);
 
 /* In combine.c  */
-extern unsigned int extended_count (const_rtx, enum machine_mode, int);
 extern rtx remove_death (unsigned int, rtx);
 extern void dump_combine_stats (FILE *);
 extern void dump_combine_total_stats (FILE *);

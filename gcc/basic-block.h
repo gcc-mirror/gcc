@@ -830,9 +830,6 @@ extern bool inside_basic_block_p (const_rtx);
 extern bool control_flow_insn_p (const_rtx);
 extern rtx get_last_bb_insn (basic_block);
 
-/* In bb-reorder.c */
-extern void reorder_basic_blocks (void);
-
 /* In dominance.c */
 
 enum cdi_direction
