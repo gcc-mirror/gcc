@@ -34,7 +34,7 @@ var elen int
 func (file *File) readdirnames(n int) (names []string, err error) {
 	if elen == 0 {
 		var dummy syscall.Dirent
-		elen = (unsafe.Offsetof(dummy.Name) +
+		elen = (int(unsafe.Offsetof(dummy.Name)) +
 			libc_pathconf(syscall.StringBytePtr(file.name), syscall.PC_NAME_MAX) +
 			1)
 	}
