@@ -1,3 +1,9 @@
+2012-03-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52718
+	* decl.c (check_default_argument): With -Wzero-as-null-pointer-constant
+	warn for a zero as null pointer constant default argument.
+
 2012-03-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52685

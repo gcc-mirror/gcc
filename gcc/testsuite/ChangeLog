@@ -1,3 +1,8 @@
+2012-03-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52718
+	* g++.dg/warn/Wzero-as-null-pointer-constant-5.C: New.
+
 2012-03-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52685
