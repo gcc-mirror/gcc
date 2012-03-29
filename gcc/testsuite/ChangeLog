@@ -1,3 +1,8 @@
+2012-03-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52685
+	* g++.dg/template/inherit8.C: New.
+
 2012-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/52759

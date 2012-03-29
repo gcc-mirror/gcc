@@ -1237,12 +1237,11 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
   TREE_CHAIN (*igo_prev) = new_binfo;
   *igo_prev = new_binfo;
 
-  if (binfo)
+  if (binfo && !BINFO_DEPENDENT_BASE_P (binfo))
     {
       int ix;
       tree base_binfo;
 
-      gcc_assert (!BINFO_DEPENDENT_BASE_P (binfo));
       gcc_assert (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), type));
 
       BINFO_OFFSET (new_binfo) = BINFO_OFFSET (binfo);
@@ -1255,8 +1254,6 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
       for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
 	{
 	  tree new_base_binfo;
-
-	  gcc_assert (!BINFO_DEPENDENT_BASE_P (base_binfo));
 	  new_base_binfo = copy_binfo (base_binfo, BINFO_TYPE (base_binfo),
 				       t, igo_prev,
 				       BINFO_VIRTUAL_P (base_binfo));

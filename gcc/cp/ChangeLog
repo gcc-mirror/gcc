@@ -1,3 +1,8 @@
+2012-03-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52685
+	* tree.c (copy_binfo): Handle BINFO_DEPENDENT_BASE_P.
+
 2012-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/52759
