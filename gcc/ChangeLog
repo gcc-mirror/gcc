@@ -1,3 +1,15 @@
+2012-03-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from mainline
+	2012-03-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52698
+	* config/i386/i386-protos.h (ix86_legitimize_reload_address):
+	New prototype.
+	* config/i386/i386.h (LEGITIMIZE_RELOAD_ADDRESS): New define.
+	* config/i386/i386.c: Include reload.h.
+	(ix86_legitimize_reload_address): New function.
+
 2012-03-28  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from mainline
@@ -255,7 +267,7 @@
 
 	Backported from mainline
 	2012-03-13  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR c/52577
 	* c-parser.c (c_parser_postfix_expression)
 	<case RID_BUILTIN_SHUFFLE>: Call mark_exp_read on argument values.
@@ -344,8 +356,8 @@
 2012-03-07  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	PR target/51417
-	* Makefile.in: Let install-gcc-ar depend on installdirs, gcc-ar$(exeext),
-	gcc-nm$(exeext), gcc-ranlib$(exeext).
+	* Makefile.in: Let install-gcc-ar depend on installdirs,
+	gcc-ar$(exeext), gcc-nm$(exeext), gcc-ranlib$(exeext).
 	Don't double canonicalize if cross-compiling.
 
 2012-03-06  Aldy Hernandez  <aldyh@redhat.com>
@@ -504,7 +516,7 @@
 2012-03-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Restore built-in
-	defines for __UINT24_MAX__, __INT24_MAX__, __INT24_MIN__ 
+	defines for __UINT24_MAX__, __INT24_MAX__, __INT24_MIN__
 	unintentionally removed in r184616.
 
 2012-03-01  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
@@ -660,7 +672,7 @@
 
 	* config/avr/avr-devices.c (avr_mcu_type): Adjust NULL part
 	of initializer to changes from r184614.
-	
+
 2012-02-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52395
