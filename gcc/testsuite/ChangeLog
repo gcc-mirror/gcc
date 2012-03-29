@@ -1,3 +1,17 @@
+2012-03-28  Joey Ye  <joey.ye@arm.com>
+
+	Backported from mainline
+	2011-12-20  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR middle-end/51200
+	* gcc.target/arm/volatile-bitfields-4.c: New test.
+	* c-c++-common/abi-bf.c: New test.
+
+	2011-12-26  Joey Ye  <joey.ye@arm.com>
+
+	PR middle-end/51200
+	* gcc.dg/volatile-bitfields-2.c: New test.
+
 2012-03-28  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from mainline
