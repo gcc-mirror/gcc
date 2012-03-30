@@ -1972,11 +1972,14 @@ package body Sem_Ch5 is
                      N);
                end if;
 
-               --  Now analyze the subtype definition. If it is a range, create
-               --  temporaries for bounds.
+               --  Analyze the subtype definition and create temporaries for
+               --  the bounds. Do not evaluate the range when preanalyzing a
+               --  quantified expression because bounds expressed as function
+               --  calls with side effects will be erroneously replicated.
 
                if Nkind (DS) = N_Range
                  and then Expander_Active
+                 and then Nkind (Parent (N)) /= N_Quantified_Expression
                then
                   Process_Bounds (DS);
 
