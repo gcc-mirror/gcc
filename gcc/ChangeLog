@@ -1,3 +1,7 @@
+2012-03-30  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (gen_variable_die): Initialize off.
+
 2012-03-30  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/vms-f.c: New file.
