@@ -378,7 +378,6 @@ package body Lib.Xref is
       Def            : Source_Ptr;
       Ent            : Entity_Id;
       Ent_Scope      : Entity_Id;
-      Ent_Scope_File : Unit_Number_Type;
       Formal         : Entity_Id;
       Kind           : Entity_Kind;
       Nod            : Node_Id;
@@ -633,6 +632,16 @@ package body Lib.Xref is
            or else Typ = 'i'
            or else Typ = 'k'
            or else (Typ = 'b' and then Is_Generic_Instance (E))
+
+            --  Allow the generation of references to reads, writes and calls
+            --  in Alfa mode when the related context comes from an instance.
+
+           or else
+             (Alfa_Mode
+                and then In_Extended_Main_Code_Unit (N)
+                and then (Typ = 'm'
+                            or else Typ = 'r'
+                            or else Typ = 's'))
          then
             null;
          else
@@ -880,11 +889,12 @@ package body Lib.Xref is
 
          --  Ignore references from within an instance. The only exceptions to
          --  this are default subprograms, for which we generate an implicit
-         --  reference.
+         --  reference and compilations in Alfa_Mode.
 
          and then
            (Instantiation_Location (Sloc (N)) = No_Location
-              or else Typ = 'i')
+              or else Typ = 'i'
+              or else Alfa_Mode)
 
          --  Ignore dummy references
 
@@ -995,9 +1005,6 @@ package body Lib.Xref is
 
          --  Record reference to entity
 
-         Ref := Original_Location (Sloc (Nod));
-         Def := Original_Location (Sloc (Ent));
-
          if Actual_Typ = 'p'
            and then Is_Subprogram (Nod)
            and then Present (Overridden_Operation (Nod))
@@ -1006,6 +1013,9 @@ package body Lib.Xref is
          end if;
 
          if Alfa_Mode then
+            Ref := Sloc (Nod);
+            Def := Sloc (Ent);
+
             Ref_Scope := Alfa.Enclosing_Subprogram_Or_Package (Nod);
             Ent_Scope := Alfa.Enclosing_Subprogram_Or_Package (Ent);
 
@@ -1018,22 +1028,30 @@ package body Lib.Xref is
                return;
             end if;
 
-            Ent_Scope_File := Get_Source_Unit (Ent_Scope);
-         else
-            Ref_Scope := Empty;
-            Ent_Scope := Empty;
-            Ent_Scope_File := No_Unit;
-         end if;
+            Add_Entry
+              ((Ent      => Ent,
+                Loc       => Ref,
+                Typ       => Actual_Typ,
+                Eun       => Get_Code_Unit (Def),
+                Lun       => Get_Code_Unit (Ref),
+                Ref_Scope => Ref_Scope,
+                Ent_Scope => Ent_Scope),
+               Ent_Scope_File => Get_Code_Unit (Ent));
 
-         Add_Entry
-           ((Ent => Ent,
-             Loc => Ref,
-             Typ => Actual_Typ,
-             Eun => Get_Source_Unit (Def),
-             Lun => Get_Source_Unit (Ref),
-             Ref_Scope => Ref_Scope,
-             Ent_Scope => Ent_Scope),
-            Ent_Scope_File => Ent_Scope_File);
+         else
+            Ref := Original_Location (Sloc (Nod));
+            Def := Original_Location (Sloc (Ent));
+
+            Add_Entry
+              ((Ent      => Ent,
+                Loc       => Ref,
+                Typ       => Actual_Typ,
+                Eun       => Get_Source_Unit (Def),
+                Lun       => Get_Source_Unit (Ref),
+                Ref_Scope => Empty,
+                Ent_Scope => Empty),
+               Ent_Scope_File => No_Unit);
+         end if;
       end if;
    end Generate_Reference;
 

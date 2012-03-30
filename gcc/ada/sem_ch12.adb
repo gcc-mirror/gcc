@@ -3704,7 +3704,6 @@ package body Sem_Ch12 is
                            or else Might_Inline_Subp)
                 and then not Is_Actual_Pack
                 and then not Inline_Now
-                and then not Alfa_Mode
                 and then (Operating_Mode = Generate_Code
                            or else (Operating_Mode = Check_Semantics
                                      and then ASIS_Mode));

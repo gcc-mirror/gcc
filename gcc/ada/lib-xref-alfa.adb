@@ -1051,15 +1051,13 @@ package body Alfa is
 
       Loc       : constant Source_Ptr := Sloc (N);
       Index     : Nat;
-      Ref       : Source_Ptr;
       Ref_Scope : Entity_Id;
 
    --  Start of processing for Generate_Dereference
 
    begin
-      Ref := Original_Location (Loc);
 
-      if Ref > No_Location then
+      if Loc > No_Location then
          Drefs.Increment_Last;
          Index := Drefs.Last;
 
@@ -1075,21 +1073,21 @@ package body Alfa is
             Ref_Scope := Enclosing_Subprogram_Or_Package (N);
 
             Deref.Ent := Heap;
-            Deref.Loc := Ref;
+            Deref.Loc := Loc;
             Deref.Typ := Typ;
 
             --  It is as if the special "Heap" was defined in every scope where
             --  it is referenced.
 
-            Deref.Eun := Get_Source_Unit (Ref);
-            Deref.Lun := Get_Source_Unit (Ref);
+            Deref.Eun := Get_Code_Unit (Loc);
+            Deref.Lun := Get_Code_Unit (Loc);
 
             Deref.Ref_Scope := Ref_Scope;
             Deref.Ent_Scope := Ref_Scope;
 
             Deref_Entry.Def := No_Location;
 
-            Deref_Entry.Ent_Scope_File := Get_Source_Unit (Ref_Scope);
+            Deref_Entry.Ent_Scope_File := Get_Code_Unit (N);
          end;
       end if;
    end Generate_Dereference;
@@ -1123,6 +1121,14 @@ package body Alfa is
 
       if Nkind (Lu) = N_Subunit then
          Lu := Proper_Body (Lu);
+      end if;
+
+      --  Do not add scopes for generic units
+
+      if Nkind (Lu) = N_Package_Body
+        and then Ekind (Corresponding_Spec (Lu)) in Generic_Unit_Kind
+      then
+         return;
       end if;
 
       --  Call Process on all declarations
