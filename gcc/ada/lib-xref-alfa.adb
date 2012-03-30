@@ -73,15 +73,13 @@ package body Alfa is
      Table_Component_Type => Xref_Entry,
      Table_Index_Type     => Xref_Entry_Number,
      Table_Low_Bound      => 1,
-     Table_Initial        => Alloc.Xrefs_Initial,
-     Table_Increment      => Alloc.Xrefs_Increment,
+     Table_Initial        => Alloc.Drefs_Initial,
+     Table_Increment      => Alloc.Drefs_Increment,
      Table_Name           => "Drefs");
    --  Table of cross-references for reads and writes through explicit
    --  dereferences, that are output as reads/writes to the special variable
    --  "Heap". These references are added to the regular references when
    --  computing Alfa cross-references.
-   --
-   --  Why is Alloc.Xrefs_* used here ??? seems clearly wrong.
 
    -----------------------
    -- Local Subprograms --
@@ -338,16 +336,17 @@ package body Alfa is
 
       package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
 
-      --  Comment required for this package ???
-      --  Why is an internal package used here at all ???
+      --  Internal package to build a correspondance between entities and scope
+      --  numbers used in Alfa cross references.
 
       package Scopes is
          No_Scope : constant Nat := 0;
+
          function Get_Scope_Num (N : Entity_Id) return Nat;
-         --  Comment required ???
+         --  Return the scope number associated to entity N
 
          procedure Set_Scope_Num (N : Entity_Id; Num : Nat);
-         --  Comment required ???
+         --  Associate entity N to scope number Num
       end Scopes;
 
       ------------
@@ -395,7 +394,8 @@ package body Alfa is
       --  not suitable for local cross-references.
 
       Nrefs_Add : constant Nat := Drefs.Last;
-      --  Comment needed ???
+      --  Number of additional references which correspond to dereferences in
+      --  the source code.
 
       Rnums : array (0 .. Nrefs + Nrefs_Add) of Nat;
       --  This array contains numbers of references in the Xrefs table. This
@@ -1150,18 +1150,8 @@ package body Alfa is
       elsif Nkind (Lu) = N_Package_Body then
          Traverse_Package_Body (Lu, Process, Inside_Stubs);
 
-      --  ??? TBD
-
-      elsif Nkind (Lu) = N_Generic_Package_Declaration then
-         null;
-
-      --  ??? TBD
-
-      elsif Nkind (Lu) in N_Generic_Instantiation then
-         null;
-
       --  All other cases of compilation units (e.g. renamings), are not
-      --  declarations.
+      --  declarations, or else generic declarations which are ignored.
 
       else
          null;
@@ -1200,11 +1190,6 @@ package body Alfa is
             when N_Package_Declaration =>
                Traverse_Package_Declaration (N, Process, Inside_Stubs);
 
-            --  Generic package declaration ??? TBD
-
-            when N_Generic_Package_Declaration =>
-               null;
-
             --  Package body
 
             when N_Package_Body =>
@@ -1229,11 +1214,6 @@ package body Alfa is
             --  Subprogram declaration
 
             when N_Subprogram_Declaration =>
-               null;
-
-            --  Generic subprogram declaration ??? TBD
-
-            when N_Generic_Subprogram_Declaration =>
                null;
 
             --  Subprogram body
@@ -1321,6 +1301,8 @@ package body Alfa is
             when N_Loop_Statement =>
                Traverse_Declarations_Or_Statements
                  (Statements (N), Process, Inside_Stubs);
+
+            --  Generic declarations are ignored
 
             when others =>
                null;
