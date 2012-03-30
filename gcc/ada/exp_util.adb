@@ -4889,11 +4889,13 @@ package body Exp_Util is
       Call : Node_Id := Expr;
 
    begin
-      --  Build-in-place calls usually appear in 'reference format
+      --  Build-in-place calls usually appear in 'reference format. Note that
+      --  the accessibility check machinery may add an extra 'reference due to
+      --  side effect removal.
 
-      if Nkind (Call) = N_Reference then
+      while Nkind (Call) = N_Reference loop
          Call := Prefix (Call);
-      end if;
+      end loop;
 
       if Nkind_In (Call, N_Qualified_Expression,
                          N_Unchecked_Type_Conversion)

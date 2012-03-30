@@ -336,57 +336,30 @@ package body Alfa is
 
       package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
 
-      --  Internal package to build a correspondance between entities and scope
+      function Get_Scope_Num (N : Entity_Id) return Nat;
+      --  Return the scope number associated to entity N
+
+      procedure Set_Scope_Num (N : Entity_Id; Num : Nat);
+      --  Associate entity N to scope number Num
+
+      No_Scope : constant Nat := 0;
+      --  Initial scope counter
+
+      type Scope_Rec is record
+         Num    : Nat;
+         Entity : Entity_Id;
+      end record;
+      --  Type used to relate an entity and a scope number
+
+      package Scopes is new GNAT.HTable.Simple_HTable
+        (Header_Num => Entity_Hashed_Range,
+         Element    => Scope_Rec,
+         No_Element => (Num => No_Scope, Entity => Empty),
+         Key        => Entity_Id,
+         Hash       => Entity_Hash,
+         Equal      => "=");
+      --  Package used to build a correspondance between entities and scope
       --  numbers used in Alfa cross references.
-
-      package Scopes is
-         No_Scope : constant Nat := 0;
-
-         function Get_Scope_Num (N : Entity_Id) return Nat;
-         --  Return the scope number associated to entity N
-
-         procedure Set_Scope_Num (N : Entity_Id; Num : Nat);
-         --  Associate entity N to scope number Num
-      end Scopes;
-
-      ------------
-      -- Scopes --
-      ------------
-
-      package body Scopes is
-         type Scope is record
-            Num    : Nat;
-            Entity : Entity_Id;
-         end record;
-
-         package Scopes is new GNAT.HTable.Simple_HTable
-           (Header_Num => Entity_Hashed_Range,
-            Element    => Scope,
-            No_Element => (Num => No_Scope, Entity => Empty),
-            Key        => Entity_Id,
-            Hash       => Entity_Hash,
-            Equal      => "=");
-
-         -------------------
-         -- Get_Scope_Num --
-         -------------------
-
-         function Get_Scope_Num (N : Entity_Id) return Nat is
-         begin
-            return Scopes.Get (N).Num;
-         end Get_Scope_Num;
-
-         -------------------
-         -- Set_Scope_Num --
-         -------------------
-
-         procedure Set_Scope_Num (N : Entity_Id; Num : Nat) is
-         begin
-            Scopes.Set (K => N, E => Scope'(Num => Num, Entity => N));
-         end Set_Scope_Num;
-      end Scopes;
-
-      use Scopes;
 
       Nrefs : Nat := Xrefs.Last;
       --  Number of references in table. This value may get reset (reduced)
@@ -425,6 +398,15 @@ package body Alfa is
             when others             => return '*';
          end case;
       end Get_Entity_Type;
+
+      -------------------
+      -- Get_Scope_Num --
+      -------------------
+
+      function Get_Scope_Num (N : Entity_Id) return Nat is
+      begin
+         return Scopes.Get (N).Num;
+      end Get_Scope_Num;
 
       -----------------------
       -- Is_Alfa_Reference --
@@ -637,6 +619,15 @@ package body Alfa is
       begin
          Rnums (Nat (To)) := Rnums (Nat (From));
       end Move;
+
+      -------------------
+      -- Set_Scope_Num --
+      -------------------
+
+      procedure Set_Scope_Num (N : Entity_Id; Num : Nat) is
+      begin
+         Scopes.Set (K => N, E => Scope_Rec'(Num => Num, Entity => N));
+      end Set_Scope_Num;
 
       ------------------------
       -- Update_Scope_Range --

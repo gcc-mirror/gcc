@@ -1,3 +1,21 @@
+2012-03-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Is_Secondary_Stack_BIP_Func_Call): Handle a case where
+	a build-in-place call appears as Prefix'Reference'Reference.
+
+2012-03-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb: Minor refactoring to remove internal package.
+
+2012-03-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Preanalyze the subtype
+	definition of a loop when the context is a quantified expression.
+
+2012-03-30  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads: Minor comment update.
+
 2012-03-30  Yannick Moy  <moy@adacore.com>
 
 	* lib-xref-alfa.adb, alloc.ads, lib-xref.ads: Minor addition of
