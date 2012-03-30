@@ -1,3 +1,15 @@
+2012-03-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, sem_util.adb, exp_ch4.adb: Minor comment updates.
+
+2012-03-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Add_Alfa_File): Treat possibly 2 units at the same
+	time, putting all scopes in the same Alfa file.
+	(Add_Alfa_Xrefs): Correct errors in comparison function. Correct value
+	of Def component.
+	(Collect_Alfa): Possibly pass 2 units to Add_Alfa_File.
+
 2012-03-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb (Is_Secondary_Stack_BIP_Func_Call): Handle a case where

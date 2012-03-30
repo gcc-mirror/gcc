@@ -2777,7 +2777,7 @@ package body Exp_Ch5 is
       end loop;
 
       --  Loop through elsif parts, dealing with constant conditions and
-      --  possible expression actions that are present.
+      --  possible condition actions that are present.
 
       if Present (Elsif_Parts (N)) then
          E := First (Elsif_Parts (N));

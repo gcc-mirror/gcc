@@ -85,9 +85,12 @@ package body Alfa is
    -- Local Subprograms --
    -----------------------
 
-   procedure Add_Alfa_File (U : Unit_Number_Type; D : Nat);
-   --  Add file U and all scopes in U to the tables Alfa_File_Table and
-   --  Alfa_Scope_Table.
+   procedure Add_Alfa_File (Ubody, Uspec : Unit_Number_Type; Dspec : Nat);
+   --  Add file and corresponding scopes for unit to the tables Alfa_File_Table
+   --  and Alfa_Scope_Table. When two units are present for the same
+   --  compilation unit, as it happens for library-level instantiations of
+   --  generics, then Ubody /= Uspec, and all scopes are added to the same
+   --  Alfa file. Otherwise Ubody = Uspec.
 
    procedure Add_Alfa_Scope (N : Node_Id);
    --  Add scope N to the table Alfa_Scope_Table
@@ -128,8 +131,8 @@ package body Alfa is
    -- Add_Alfa_File --
    -------------------
 
-   procedure Add_Alfa_File (U : Unit_Number_Type; D : Nat) is
-      File : constant Source_File_Index := Source_Index (U);
+   procedure Add_Alfa_File (Ubody, Uspec : Unit_Number_Type; Dspec : Nat) is
+      File : constant Source_File_Index := Source_Index (Uspec);
       From : Scope_Index;
 
       File_Name      : String_Ptr;
@@ -145,14 +148,27 @@ package body Alfa is
 
       From := Alfa_Scope_Table.Last + 1;
 
-      --  Unit U might not have an associated compilation unit, as seen in code
+      --  Unit might not have an associated compilation unit, as seen in code
       --  filling Sdep_Table in Write_ALI.
 
-      if Present (Cunit (U)) then
+      if Present (Cunit (Ubody)) then
          Traverse_Compilation_Unit
-           (CU           => Cunit (U),
+           (CU           => Cunit (Ubody),
             Process      => Detect_And_Add_Alfa_Scope'Access,
             Inside_Stubs => False);
+      end if;
+
+      --  When two units are present for the same compilation unit, as it
+      --  happens for library-level instantiations of generics, then add all
+      --  scopes to the same Alfa file.
+
+      if Ubody /= Uspec then
+         if Present (Cunit (Uspec)) then
+            Traverse_Compilation_Unit
+              (CU           => Cunit (Uspec),
+               Process      => Detect_And_Add_Alfa_Scope'Access,
+               Inside_Stubs => False);
+         end if;
       end if;
 
       --  Update scope numbers
@@ -166,7 +182,7 @@ package body Alfa is
                S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
             begin
                S.Scope_Num := Scope_Id;
-               S.File_Num  := D;
+               S.File_Num  := Dspec;
                Scope_Id    := Scope_Id + 1;
             end;
          end loop;
@@ -199,9 +215,9 @@ package body Alfa is
       File_Name := new String'(Name_Buffer (1 .. Name_Len));
 
       --  For subunits, also retrieve the file name of the unit. Only do so if
-      --  unit U has an associated compilation unit.
+      --  unit has an associated compilation unit.
 
-      if Present (Cunit (U))
+      if Present (Cunit (Uspec))
         and then Present (Cunit (Unit (File)))
         and then Nkind (Unit (Cunit (Unit (File)))) = N_Subunit
       then
@@ -212,7 +228,7 @@ package body Alfa is
       Alfa_File_Table.Append (
         (File_Name      => File_Name,
          Unit_File_Name => Unit_File_Name,
-         File_Num       => D,
+         File_Num       => Dspec,
          From_Scope     => From,
          To_Scope       => Alfa_Scope_Table.Last));
    end Add_Alfa_File;
@@ -554,6 +570,13 @@ package body Alfa is
          elsif T1.Def /= T2.Def then
             return T1.Def < T2.Def;
 
+         --  The following should be commented, it sure looks like a test,
+         --  but it sits uncommented between the "third test" and the "fourth
+         --  test! ??? Shouldn't this in any case be an assertion ???
+
+         elsif T1.Key.Ent /= T2.Key.Ent then
+            raise Program_Error;
+
          --  Fourth test: if reference is in same unit as entity definition,
          --  sort first.
 
@@ -576,7 +599,7 @@ package body Alfa is
          then
             return True;
 
-         elsif T1.Ent_Scope_File = T1.Key.Lun
+         elsif T2.Ent_Scope_File = T2.Key.Lun
            and then T1.Key.Ref_Scope /= T2.Key.Ref_Scope
            and then T2.Key.Ent_Scope = T2.Key.Ref_Scope
          then
@@ -677,6 +700,13 @@ package body Alfa is
 
          Nrefs         := Nrefs + 1;
          Rnums (Nrefs) := Xrefs.Last;
+      end loop;
+
+      --  Capture the definition Sloc values. As in the case of normal cross
+      --  references, we have to wait until now to get the correct value.
+
+      for Index in 1 .. Nrefs loop
+         Xrefs.Table (Index).Def := Sloc (Xrefs.Table (Index).Key.Ent);
       end loop;
 
       --  Eliminate entries not appropriate for Alfa. Done prior to sorting
@@ -839,6 +869,9 @@ package body Alfa is
    ------------------
 
    procedure Collect_Alfa (Sdep_Table : Unit_Ref_Table; Num_Sdep : Nat) is
+      D1 : Nat;
+      D2 : Nat;
+
    begin
       --  Cross-references should have been computed first
 
@@ -848,8 +881,28 @@ package body Alfa is
 
       --  Generate file and scope Alfa information
 
-      for D in 1 .. Num_Sdep loop
-         Add_Alfa_File (U => Sdep_Table (D), D => D);
+      D1 := 1;
+      while D1 <= Num_Sdep loop
+
+         --  In rare cases, when treating the library-level instantiation of a
+         --  generic, two consecutive units refer to the same compilation unit
+         --  node and entity. In that case, treat them as a single unit for the
+         --  sake of Alfa cross references by passing to Add_Alfa_File.
+
+         if D1 < Num_Sdep
+           and then Cunit_Entity (Sdep_Table (D1)) =
+                    Cunit_Entity (Sdep_Table (D1 + 1))
+         then
+            D2 := D1 + 1;
+         else
+            D2 := D1;
+         end if;
+
+         Add_Alfa_File
+           (Ubody => Sdep_Table (D1),
+            Uspec => Sdep_Table (D2),
+            Dspec => D2);
+         D1 := D2 + 1;
       end loop;
 
       --  Fill in the spec information when relevant
