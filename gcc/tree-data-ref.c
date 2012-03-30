@@ -140,7 +140,7 @@ int_divides_p (int a, int b)
 
 /* Dump into FILE all the data references from DATAREFS.  */
 
-void
+static void
 dump_data_references (FILE *file, VEC (data_reference_p, heap) *datarefs)
 {
   unsigned int i;
@@ -156,27 +156,6 @@ DEBUG_FUNCTION void
 debug_data_references (VEC (data_reference_p, heap) *datarefs)
 {
   dump_data_references (stderr, datarefs);
-}
-
-/* Dump to STDERR all the dependence relations from DDRS.  */
-
-DEBUG_FUNCTION void
-debug_data_dependence_relations (VEC (ddr_p, heap) *ddrs)
-{
-  dump_data_dependence_relations (stderr, ddrs);
-}
-
-/* Dump into FILE all the dependence relations from DDRS.  */
-
-void
-dump_data_dependence_relations (FILE *file,
-				VEC (ddr_p, heap) *ddrs)
-{
-  unsigned int i;
-  struct data_dependence_relation *ddr;
-
-  FOR_EACH_VEC_ELT (ddr_p, ddrs, i, ddr)
-    dump_data_dependence_relation (file, ddr);
 }
 
 /* Print to STDERR the data_reference DR.  */
@@ -253,7 +232,7 @@ dump_conflict_function (FILE *outf, conflict_function *cf)
 
 /* Dump function for a SUBSCRIPT structure.  */
 
-void
+static void
 dump_subscript (FILE *outf, struct subscript *subscript)
 {
   conflict_function *cf = SUB_CONFLICTS_IN_A (subscript);
@@ -286,7 +265,7 @@ dump_subscript (FILE *outf, struct subscript *subscript)
 
 /* Print the classic direction vector DIRV to OUTF.  */
 
-void
+static void
 print_direction_vector (FILE *outf,
 			lambda_vector dirv,
 			int length)
@@ -331,7 +310,7 @@ print_direction_vector (FILE *outf,
 
 /* Print a vector of direction vectors.  */
 
-void
+static void
 print_dir_vectors (FILE *outf, VEC (lambda_vector, heap) *dir_vects,
 		   int length)
 {
@@ -356,9 +335,9 @@ print_lambda_vector (FILE * outfile, lambda_vector vector, int n)
 
 /* Print a vector of distance vectors.  */
 
-void
-print_dist_vectors  (FILE *outf, VEC (lambda_vector, heap) *dist_vects,
-		     int length)
+static void
+print_dist_vectors (FILE *outf, VEC (lambda_vector, heap) *dist_vects,
+		    int length)
 {
   unsigned j;
   lambda_vector v;
@@ -367,17 +346,9 @@ print_dist_vectors  (FILE *outf, VEC (lambda_vector, heap) *dist_vects,
     print_lambda_vector (outf, v, length);
 }
 
-/* Debug version.  */
-
-DEBUG_FUNCTION void
-debug_data_dependence_relation (struct data_dependence_relation *ddr)
-{
-  dump_data_dependence_relation (stderr, ddr);
-}
-
 /* Dump function for a DATA_DEPENDENCE_RELATION structure.  */
 
-void
+static void
 dump_data_dependence_relation (FILE *outf,
 			       struct data_dependence_relation *ddr)
 {
@@ -450,45 +421,33 @@ dump_data_dependence_relation (FILE *outf,
   fprintf (outf, ")\n");
 }
 
-/* Dump function for a DATA_DEPENDENCE_DIRECTION structure.  */
+/* Debug version.  */
+
+DEBUG_FUNCTION void
+debug_data_dependence_relation (struct data_dependence_relation *ddr)
+{
+  dump_data_dependence_relation (stderr, ddr);
+}
+
+/* Dump into FILE all the dependence relations from DDRS.  */
 
 void
-dump_data_dependence_direction (FILE *file,
-				enum data_dependence_direction dir)
+dump_data_dependence_relations (FILE *file,
+				VEC (ddr_p, heap) *ddrs)
 {
-  switch (dir)
-    {
-    case dir_positive:
-      fprintf (file, "+");
-      break;
+  unsigned int i;
+  struct data_dependence_relation *ddr;
 
-    case dir_negative:
-      fprintf (file, "-");
-      break;
+  FOR_EACH_VEC_ELT (ddr_p, ddrs, i, ddr)
+    dump_data_dependence_relation (file, ddr);
+}
 
-    case dir_equal:
-      fprintf (file, "=");
-      break;
+/* Dump to STDERR all the dependence relations from DDRS.  */
 
-    case dir_positive_or_negative:
-      fprintf (file, "+-");
-      break;
-
-    case dir_positive_or_equal:
-      fprintf (file, "+=");
-      break;
-
-    case dir_negative_or_equal:
-      fprintf (file, "-=");
-      break;
-
-    case dir_star:
-      fprintf (file, "*");
-      break;
-
-    default:
-      break;
-    }
+DEBUG_FUNCTION void
+debug_data_dependence_relations (VEC (ddr_p, heap) *ddrs)
+{
+  dump_data_dependence_relations (stderr, ddrs);
 }
 
 /* Dumps the distance and direction vectors in FILE.  DDRS contains
@@ -496,7 +455,7 @@ dump_data_dependence_direction (FILE *file,
    dependence vectors, or in other words the number of loops in the
    considered nest.  */
 
-void
+static void
 dump_dist_dir_vectors (FILE *file, VEC (ddr_p, heap) *ddrs)
 {
   unsigned int i, j;
@@ -526,7 +485,7 @@ dump_dist_dir_vectors (FILE *file, VEC (ddr_p, heap) *ddrs)
 
 /* Dumps the data dependence relations DDRS in FILE.  */
 
-void
+static void
 dump_ddrs (FILE *file, VEC (ddr_p, heap) *ddrs)
 {
   unsigned int i;
@@ -536,6 +495,12 @@ dump_ddrs (FILE *file, VEC (ddr_p, heap) *ddrs)
     dump_data_dependence_relation (file, ddr);
 
   fprintf (file, "\n\n");
+}
+
+DEBUG_FUNCTION void
+debug_ddrs (VEC (ddr_p, heap) *ddrs)
+{
+  dump_ddrs (stderr, ddrs);
 }
 
 /* Helper function for split_constant_offset.  Expresses OP0 CODE OP1
@@ -4236,10 +4201,24 @@ compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
   return true;
 }
 
+/* Describes a location of a memory reference.  */
+
+typedef struct data_ref_loc_d
+{
+    /* Position of the memory reference.  */
+    tree *pos;
+
+      /* True if the memory reference is read.  */
+      bool is_read;
+} data_ref_loc;
+
+DEF_VEC_O (data_ref_loc);
+DEF_VEC_ALLOC_O (data_ref_loc, heap);
+
 /* Stores the locations of memory references in STMT to REFERENCES.  Returns
    true if STMT clobbers memory, false otherwise.  */
 
-bool
+static bool
 get_references_in_stmt (gimple stmt, VEC (data_ref_loc, heap) **references)
 {
   bool clobbers_memory = false;
@@ -4708,7 +4687,7 @@ free_data_refs (VEC (data_reference_p, heap) *datarefs)
 
 /* Dump vertex I in RDG to FILE.  */
 
-void
+static void
 dump_rdg_vertex (FILE *file, struct graph *rdg, int i)
 {
   struct vertex *v = &(rdg->vertices[i]);
@@ -4744,7 +4723,8 @@ debug_rdg_vertex (struct graph *rdg, int i)
 /* Dump component C of RDG to FILE.  If DUMPED is non-null, set the
    dumped vertices to that bitmap.  */
 
-void dump_rdg_component (FILE *file, struct graph *rdg, int c, bitmap dumped)
+static void
+dump_rdg_component (FILE *file, struct graph *rdg, int c, bitmap dumped)
 {
   int i;
 
@@ -5401,20 +5381,3 @@ remove_similar_memory_refs (VEC (gimple, heap) **stmts)
   htab_delete (seen);
 }
 
-/* Returns the index of PARAMETER in the parameters vector of the
-   ACCESS_MATRIX.  If PARAMETER does not exist return -1.  */
-
-int
-access_matrix_get_index_for_parameter (tree parameter,
-				       struct access_matrix *access_matrix)
-{
-  int i;
-  VEC (tree,heap) *lambda_parameters = AM_PARAMETERS (access_matrix);
-  tree lambda_parameter;
-
-  FOR_EACH_VEC_ELT (tree, lambda_parameters, i, lambda_parameter)
-    if (lambda_parameter == parameter)
-      return i + AM_NB_INDUCTION_VARS (access_matrix);
-
-  return -1;
-}

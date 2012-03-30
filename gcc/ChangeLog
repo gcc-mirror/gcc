@@ -1,3 +1,37 @@
+2012-03-30  Richard Guenther  <rguenther@suse.de>
+
+	* tree-affine.h (print_aff): Remove.
+	* tree-affine.c (print_aff): Make static.
+	* tree-data-ref.h (access_matrix_get_index_for_parameter): Remove.
+	(get_references_in_stmt): Likewise.
+	(print_direction_vector): Likewise.
+	(print_dir_vectors): Likewise.
+	(print_dist_vectors): Likewise.
+	(dump_subscript): Likewise.
+	(dump_ddrs): Likewise.
+	(dump_dist_dir_vectors): Likewise.
+	(dump_data_references): Likewise.
+	(dump_data_dependence_relation): Likewise.
+	(dump_data_dependence_direction): Likewise.
+	(dump_rdg_vertex): Likewise.
+	(dump_rdg_component): Likewise.
+	(debug_ddrs): Declare.
+	(struct data_ref_loc_d): Move ...
+	* tree-data-ref.c (struct data_ref_loc_d): ... here.
+	(get_references_in_stmt): Make static.
+	(dump_data_references): Likewise.
+	(dump_subscript): Likewise.
+	(print_direction_vector): Likewise.
+	(print_dir_vectors): Likewise.
+	(print_dist_vectors): Likewise.
+	(dump_data_dependence_relation): Likewise.
+	(dump_dist_dir_vectors): Likewise.
+	(dump_ddrs): Likewise.
+	(dump_rdg_vertex): Likewise.
+	(dump_rdg_component): Likewise.
+	(debug_ddrs): New function.
+	(access_matrix_get_index_for_parameter): Remove.
+
 2012-03-30  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/vms.c (VMS_CRTL_FLOAT32): Rename.
