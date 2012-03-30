@@ -740,9 +740,6 @@ ia64_handle_model_attribute (tree *node, tree name, tree args,
   return NULL_TREE;
 }
 
-/* The section must have global and overlaid attributes.  */
-#define SECTION_VMS_OVERLAY SECTION_MACH_DEP
-
 /* Part of the low level implementation of DEC Ada pragma Common_Object which
    enables the shared use of variables stored in overlaid linker areas
    corresponding to the use of Fortran COMMON.  */
@@ -753,24 +750,18 @@ ia64_vms_common_object_attribute (tree *node, tree name, tree args,
 				  bool *no_add_attrs)
 {
     tree decl = *node;
-    tree id, val;
-    if (! DECL_P (decl))
-      abort ();
+    tree id;
+
+    gcc_assert (DECL_P (decl));
   
     DECL_COMMON (decl) = 1;
     id = TREE_VALUE (args);
-    if (TREE_CODE (id) == IDENTIFIER_NODE)
-      val = build_string (IDENTIFIER_LENGTH (id), IDENTIFIER_POINTER (id));
-    else if (TREE_CODE (id) == STRING_CST)
-      val = id;
-    else
+    if (TREE_CODE (id) != IDENTIFIER_NODE && TREE_CODE (id) != STRING_CST)
       {
-	warning (OPT_Wattributes,
-		 "%qE attribute requires a string constant argument", name);
+	error ("%qE attribute requires a string constant argument", name);
 	*no_add_attrs = true;
 	return NULL_TREE;
       }
-    DECL_SECTION_NAME (decl) = val;
     return NULL_TREE;
 }
 
@@ -783,50 +774,31 @@ ia64_vms_output_aligned_decl_common (FILE *file, tree decl, const char *name,
 {
   tree attr = DECL_ATTRIBUTES (decl);
 
-  /* As common_object attribute set DECL_SECTION_NAME check it before
-     looking up the attribute.  */
-  if (DECL_SECTION_NAME (decl) && attr)
+  if (attr)
     attr = lookup_attribute ("common_object", attr);
-  else
-    attr = NULL_TREE;
-
-  if (!attr)
+  if (attr)
     {
-      /*  Code from elfos.h.  */
-      fprintf (file, "%s", COMMON_ASM_OP);
-      assemble_name (file, name);
-      fprintf (file, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
-	       size, align / BITS_PER_UNIT);
+      tree id = TREE_VALUE (TREE_VALUE (attr));
+      const char *name;
+
+      if (TREE_CODE (id) == IDENTIFIER_NODE)
+        name = IDENTIFIER_POINTER (id);
+      else if (TREE_CODE (id) == STRING_CST)
+        name = TREE_STRING_POINTER (id);
+      else
+        abort ();
+
+      fprintf (file, "\t.vms_common\t\"%s\",", name);
     }
   else
-    {
-      ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
-      ASM_OUTPUT_LABEL (file, name);
-      ASM_OUTPUT_SKIP (file, size ? size : 1);
-    }
-}
+    fprintf (file, "%s", COMMON_ASM_OP);
 
-/* Definition of TARGET_ASM_NAMED_SECTION for VMS.  */
+  /*  Code from elfos.h.  */
+  assemble_name (file, name);
+  fprintf (file, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u",
+           size, align / BITS_PER_UNIT);
 
-void
-ia64_vms_elf_asm_named_section (const char *name, unsigned int flags,
-				tree decl)
-{
-  if (!(flags & SECTION_VMS_OVERLAY))
-    {
-      default_elf_asm_named_section (name, flags, decl);
-      return;
-    }
-  if (flags != (SECTION_VMS_OVERLAY | SECTION_WRITE))
-    abort ();
-
-  if (flags & SECTION_DECLARED)
-    {
-      fprintf (asm_out_file, "\t.section\t%s\n", name);
-      return;
-    }
-
-  fprintf (asm_out_file, "\t.section\t%s,\"awgO\"\n", name);
+  fputc ('\n', file);
 }
 
 static void
@@ -10535,12 +10507,6 @@ ia64_section_type_flags (tree decl, const char *name, int reloc)
       || strncmp (name, ".sbss.", 6) == 0
       || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
     flags = SECTION_SMALL;
-
-#if TARGET_ABI_OPEN_VMS
-  if (decl && DECL_ATTRIBUTES (decl)
-      && lookup_attribute ("common_object", DECL_ATTRIBUTES (decl)))
-    flags |= SECTION_VMS_OVERLAY;
-#endif
 
   flags |= default_section_type_flags (decl, name, reloc);
   return flags;

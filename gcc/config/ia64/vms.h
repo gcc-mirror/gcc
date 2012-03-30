@@ -121,9 +121,6 @@ STATIC func_ptr __CTOR_LIST__[1]                                             \
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE ia64_vms_valid_pointer_mode
 
-#undef TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION ia64_vms_elf_asm_named_section
-
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases,
    the value is constrained to be within the bounds of the declared
