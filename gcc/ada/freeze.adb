@@ -2161,8 +2161,16 @@ package body Freeze is
 
             --  Here is where we do the processing for reversed bit order
 
-            else
+            elsif not Reverse_Storage_Order (Rec) then
                Adjust_Record_For_Reverse_Bit_Order (Rec);
+
+            --  Case where we have both a reverse Bit_Order and a corresponding
+            --  Scalar_Storage_Order: leave record untouched, the back-end
+            --  will take care of required layout conversions.
+
+            else
+               null;
+
             end if;
          end if;
 
