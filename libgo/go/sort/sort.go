@@ -183,17 +183,21 @@ func quickSort(data Interface, a, b, maxDepth int) {
 	}
 }
 
+// Sort sorts data.
+// It makes one call to data.Len to determine n, and O(n*log(n)) calls to
+// data.Less and data.Swap. The sort is not guaranteed to be stable.
 func Sort(data Interface) {
-	// Switch to heapsort if depth of 2*ceil(lg(n)) is reached.
+	// Switch to heapsort if depth of 2*ceil(lg(n+1)) is reached.
 	n := data.Len()
 	maxDepth := 0
-	for 1<<uint(maxDepth) < n {
+	for i := n; i > 0; i >>= 1 {
 		maxDepth++
 	}
 	maxDepth *= 2
 	quickSort(data, 0, n, maxDepth)
 }
 
+// IsSorted reports whether data is sorted.
 func IsSorted(data Interface) bool {
 	n := data.Len()
 	for i := n - 1; i > 0; i-- {

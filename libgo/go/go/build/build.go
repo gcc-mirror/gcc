@@ -328,22 +328,22 @@ func (e *NoGoError) Error() string {
 }
 
 // Import returns details about the Go package named by the import path,
-// interpreting local import paths relative to the src directory.  If the path
-// is a local import path naming a package that can be imported using a
-// standard import path, the returned package will set p.ImportPath to
-// that path.
+// interpreting local import paths relative to the srcDir directory.
+// If the path is a local import path naming a package that can be imported
+// using a standard import path, the returned package will set p.ImportPath
+// to that path.
 //
 // In the directory containing the package, .go, .c, .h, and .s files are
 // considered part of the package except for:
 //
 //	- .go files in package documentation
-//	- files starting with _ or .
+//	- files starting with _ or . (likely editor temporary files)
 //	- files with build constraints not satisfied by the context
 //
 // If an error occurs, Import returns a non-nil error also returns a non-nil
 // *Package containing partial information.
 //
-func (ctxt *Context) Import(path string, src string, mode ImportMode) (*Package, error) {
+func (ctxt *Context) Import(path string, srcDir string, mode ImportMode) (*Package, error) {
 	p := &Package{
 		ImportPath: path,
 	}
@@ -363,11 +363,12 @@ func (ctxt *Context) Import(path string, src string, mode ImportMode) (*Package,
 
 	binaryOnly := false
 	if IsLocalImport(path) {
-		if src == "" {
+		pkga = "" // local imports have no installed path
+		if srcDir == "" {
 			return p, fmt.Errorf("import %q: import relative to unknown directory", path)
 		}
 		if !ctxt.isAbsPath(path) {
-			p.Dir = ctxt.joinPath(src, path)
+			p.Dir = ctxt.joinPath(srcDir, path)
 		}
 		// Determine canonical import path, if any.
 		if ctxt.GOROOT != "" {
@@ -640,8 +641,8 @@ func cleanImports(m map[string][]token.Position) ([]string, map[string][]token.P
 }
 
 // Import is shorthand for Default.Import.
-func Import(path, src string, mode ImportMode) (*Package, error) {
-	return Default.Import(path, src, mode)
+func Import(path, srcDir string, mode ImportMode) (*Package, error) {
+	return Default.Import(path, srcDir, mode)
 }
 
 // ImportDir is shorthand for Default.ImportDir.
@@ -874,7 +875,7 @@ func splitQuoted(s string) (r []string, err error) {
 //	!cgo (if cgo is disabled)
 //	tag (if tag is listed in ctxt.BuildTags)
 //	!tag (if tag is not listed in ctxt.BuildTags)
-//	a slash-separated list of any of these
+//	a comma-separated list of any of these
 //
 func (ctxt *Context) match(name string) bool {
 	if name == "" {
@@ -888,11 +889,11 @@ func (ctxt *Context) match(name string) bool {
 		return false
 	}
 	if strings.HasPrefix(name, "!") { // negation
-		return !ctxt.match(name[1:])
+		return len(name) > 1 && !ctxt.match(name[1:])
 	}
 
 	// Tags must be letters, digits, underscores.
-	// Unlike in Go identifiers, all digits is fine (e.g., "386").
+	// Unlike in Go identifiers, all digits are fine (e.g., "386").
 	for _, c := range name {
 		if !unicode.IsLetter(c) && !unicode.IsDigit(c) && c != '_' {
 			return false
