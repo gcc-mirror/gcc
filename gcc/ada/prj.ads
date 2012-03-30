@@ -298,9 +298,9 @@ package Prj is
    --  Type for the kind of language. All languages are file based, except Ada
    --  which is unit based.
 
-   type Dependency_File_Kind is (None, Makefile, ALI_File);
+   type Dependency_File_Kind is (None, Makefile, ALI_File, ALI_Closure);
    --  Type of dependency to be checked: no dependency file, Makefile fragment
-   --  or ALI file (for Ada).
+   --  or ALI file (for Ada). Please comment ALI_Closure ???
 
    Makefile_Dependency_Suffix : constant String := ".d";
    ALI_Dependency_Suffix      : constant String := ".ali";

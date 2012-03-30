@@ -1,3 +1,11 @@
+2012-03-30  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads: New Dependency_Kind: ALI_Closure.
+
+2012-03-30  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb: Minor reformatting.
+
 2012-03-30  Yannick Moy  <moy@adacore.com>
 
 	* lib-xref-alfa.adb (Add_Alfa_File): Take into account possible absence
