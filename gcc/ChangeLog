@@ -1,3 +1,10 @@
+2012-03-30  Richard Guenther <rguenther@suse.de>
+
+	PR middle-end/52772
+	* except.c (emit_to_new_bb_before): Move loop updating ...
+	(dw2_build_landing_pads): ... here.  Use a proper block for
+	querying the loop father.
+
 2012-03-30  Tristan Gingold  <gingold@adacore.com>
 
 	* config/ia64/ia64.c (ia64_section_type_flags): Remove
