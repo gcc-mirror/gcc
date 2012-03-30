@@ -740,6 +740,7 @@ case ${target} in
   xm_file="vms/xm-vms.h"
   c_target_objs="vms-c.o"
   cxx_target_objs="vms-c.o"
+  fortran_target_objs="vms-f.o"
   use_gcc_stdint=provide
   tm_file="${tm_file} vms/vms-stdint.h"
   if test x$gnu_ld != xyes; then
