@@ -1,5 +1,13 @@
 2012-03-30  Richard Henderson  <rth@redhat.com>
 
+	PR debug/52727
+	* combine-stack-adj.c (prev_active_insn_bb): New.
+	(next_active_insn_bb): New.
+	(force_move_args_size_note): New.
+	(combine_stack_adjustments_for_block): Use it.
+
+2012-03-30  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (struct expand_vec_perm_d): Add one_operand_p.
 	(ix86_expand_vector_init_duplicate): Initialize it.
 	(expand_vec_perm_palignr): Likewise.
