@@ -74,7 +74,7 @@ void
 runtime_panicstring(const char *s)
 {
 	Eface err;
-	
+
 	if(runtime_m()->gcing) {
 		runtime_printf("panic: %s\n", s);
 		runtime_throw("panic during gc");
@@ -101,7 +101,7 @@ runtime_goargs(void)
 {
 	String *s;
 	int32 i;
-	
+
 	// for windows implementation see "os" package
 	if(Windows)
 		return;
@@ -119,7 +119,7 @@ runtime_goenvs_unix(void)
 {
 	String *s;
 	int32 i, n;
-	
+
 	for(n=0; argv[argc+1+n] != 0; n++)
 		;
 
@@ -195,8 +195,6 @@ void
 runtime_check(void)
 {
 	__go_register_gc_roots(&runtime_roots);
-
-	runtime_initsig ();
 }
 
 int64

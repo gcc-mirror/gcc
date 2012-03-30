@@ -966,6 +966,11 @@ runtime_mstart(void* mp)
 	}
 #endif
 
+	// Install signal handlers; after minit so that minit can
+	// prepare the thread to be able to handle the signals.
+	if(m == &runtime_m0)
+		runtime_initsig();
+
 	schedule(nil);
 	return nil;
 }
