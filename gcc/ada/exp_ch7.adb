@@ -1824,15 +1824,14 @@ package body Exp_Ch7 is
                --    Obj : Access_Typ := Non_BIP_Function_Call'reference;
 
                --    Obj : Access_Typ :=
-               --            BIP_Function_Call
-               --              (..., BIPaccess => null, ...)'reference;
+               --            BIP_Function_Call (BIPalloc => 2, ...)'reference;
 
                elsif Is_Access_Type (Obj_Typ)
                  and then Needs_Finalization
                             (Available_View (Designated_Type (Obj_Typ)))
                  and then Present (Expr)
                  and then
-                   (Is_Null_Access_BIP_Func_Call (Expr)
+                   (Is_Secondary_Stack_BIP_Func_Call (Expr)
                      or else
                        (Is_Non_BIP_Func_Call (Expr)
                          and then not Is_Related_To_Func_Return (Obj_Id)))

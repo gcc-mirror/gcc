@@ -4475,74 +4475,6 @@ package body Exp_Util is
         and then Is_Library_Level_Entity (Typ);
    end Is_Library_Level_Tagged_Type;
 
-   ----------------------------------
-   -- Is_Null_Access_BIP_Func_Call --
-   ----------------------------------
-
-   function Is_Null_Access_BIP_Func_Call (Expr : Node_Id) return Boolean is
-      Call : Node_Id := Expr;
-
-   begin
-      --  Build-in-place calls usually appear in 'reference format
-
-      if Nkind (Call) = N_Reference then
-         Call := Prefix (Call);
-      end if;
-
-      if Nkind_In (Call, N_Qualified_Expression,
-                         N_Unchecked_Type_Conversion)
-      then
-         Call := Expression (Call);
-      end if;
-
-      if Is_Build_In_Place_Function_Call (Call) then
-         declare
-            Access_Nam : Name_Id := No_Name;
-            Actual     : Node_Id;
-            Param      : Node_Id;
-            Formal     : Node_Id;
-
-         begin
-            --  Examine all parameter associations of the function call
-
-            Param := First (Parameter_Associations (Call));
-            while Present (Param) loop
-               if Nkind (Param) = N_Parameter_Association
-                 and then Nkind (Selector_Name (Param)) = N_Identifier
-               then
-                  Formal := Selector_Name (Param);
-                  Actual := Explicit_Actual_Parameter (Param);
-
-                  --  Construct the name of formal BIPaccess. It is much easier
-                  --  to extract the name of the function using an arbitrary
-                  --  formal's scope rather than the Name field of Call.
-
-                  if Access_Nam = No_Name
-                    and then Present (Entity (Formal))
-                  then
-                     Access_Nam :=
-                       New_External_Name
-                         (Chars (Scope (Entity (Formal))),
-                          BIP_Formal_Suffix (BIP_Object_Access));
-                  end if;
-
-                  --  A match for BIPaccess => null has been found
-
-                  if Chars (Formal) = Access_Nam
-                    and then Nkind (Actual) = N_Null
-                  then
-                     return True;
-                  end if;
-               end if;
-
-               Next (Param);
-            end loop;
-         end;
-      end if;
-
-      return False;
-   end Is_Null_Access_BIP_Func_Call;
-
    --------------------------
    -- Is_Non_BIP_Func_Call --
    --------------------------
@@ -4948,6 +4880,75 @@ package body Exp_Util is
          return False;
       end if;
    end Is_Renamed_Object;
+
+   --------------------------------------
+   -- Is_Secondary_Stack_BIP_Func_Call --
+   --------------------------------------
+
+   function Is_Secondary_Stack_BIP_Func_Call (Expr : Node_Id) return Boolean is
+      Call : Node_Id := Expr;
+
+   begin
+      --  Build-in-place calls usually appear in 'reference format
+
+      if Nkind (Call) = N_Reference then
+         Call := Prefix (Call);
+      end if;
+
+      if Nkind_In (Call, N_Qualified_Expression,
+                         N_Unchecked_Type_Conversion)
+      then
+         Call := Expression (Call);
+      end if;
+
+      if Is_Build_In_Place_Function_Call (Call) then
+         declare
+            Access_Nam : Name_Id := No_Name;
+            Actual     : Node_Id;
+            Param      : Node_Id;
+            Formal     : Node_Id;
+
+         begin
+            --  Examine all parameter associations of the function call
+
+            Param := First (Parameter_Associations (Call));
+            while Present (Param) loop
+               if Nkind (Param) = N_Parameter_Association
+                 and then Nkind (Selector_Name (Param)) = N_Identifier
+               then
+                  Formal := Selector_Name (Param);
+                  Actual := Explicit_Actual_Parameter (Param);
+
+                  --  Construct the name of formal BIPalloc. It is much easier
+                  --  to extract the name of the function using an arbitrary
+                  --  formal's scope rather than the Name field of Call.
+
+                  if Access_Nam = No_Name
+                    and then Present (Entity (Formal))
+                  then
+                     Access_Nam :=
+                       New_External_Name
+                         (Chars (Scope (Entity (Formal))),
+                          BIP_Formal_Suffix (BIP_Alloc_Form));
+                  end if;
+
+                  --  A match for BIPalloc => 2 has been found
+
+                  if Chars (Formal) = Access_Nam
+                    and then Nkind (Actual) = N_Integer_Literal
+                    and then Intval (Actual) = Uint_2
+                  then
+                     return True;
+                  end if;
+               end if;
+
+               Next (Param);
+            end loop;
+         end;
+      end if;
+
+      return False;
+   end Is_Secondary_Stack_BIP_Func_Call;
 
    -------------------------------------
    -- Is_Tag_To_Class_Wide_Conversion --
@@ -7123,18 +7124,17 @@ package body Exp_Util is
             --    Obj : Access_Typ := Non_BIP_Function_Call'reference;
             --
             --    Obj : Access_Typ :=
-            --            BIP_Function_Call
-            --              (..., BIPaccess => null, ...)'reference;
+            --            BIP_Function_Call (BIPalloc => 2, ...)'reference;
 
             elsif Is_Access_Type (Obj_Typ)
               and then Needs_Finalization
                          (Available_View (Designated_Type (Obj_Typ)))
               and then Present (Expr)
               and then
-                (Is_Null_Access_BIP_Func_Call (Expr)
-                   or else
-                (Is_Non_BIP_Func_Call (Expr)
-                   and then not Is_Related_To_Func_Return (Obj_Id)))
+                (Is_Secondary_Stack_BIP_Func_Call (Expr)
+                  or else
+                    (Is_Non_BIP_Func_Call (Expr)
+                      and then not Is_Related_To_Func_Return (Obj_Id)))
             then
                return True;
 
