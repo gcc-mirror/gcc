@@ -390,6 +390,23 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 {
 	byte *p;
 
+
+	if(n > (uintptr)(h->arena_end - h->arena_used)) {
+		// We are in 32-bit mode, maybe we didn't use all possible address space yet.
+		// Reserve some more space.
+		byte *new_end;
+		uintptr needed;
+
+		needed = (uintptr)h->arena_used + n - (uintptr)h->arena_end;
+		// Round wanted arena size to a multiple of 256MB.
+		needed = (needed + (256<<20) - 1) & ~((256<<20)-1);
+		new_end = h->arena_end + needed;
+		if(new_end <= h->arena_start + MaxArena32) {
+			p = runtime_SysReserve(h->arena_end, new_end - h->arena_end);
+			if(p == h->arena_end)
+				h->arena_end = new_end;
+		}
+	}
 	if(n <= (uintptr)(h->arena_end - h->arena_used)) {
 		// Keep taking from our reservation.
 		p = h->arena_used;
@@ -411,7 +428,8 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 		return nil;
 
 	if(p < h->arena_start || (uintptr)(p+n - h->arena_start) >= MaxArena32) {
-		runtime_printf("runtime: memory allocated by OS not in usable range\n");
+		runtime_printf("runtime: memory allocated by OS (%p) not in usable range [%p,%p)\n",
+			p, h->arena_start, h->arena_start+MaxArena32);
 		runtime_SysFree(p, n);
 		return nil;
 	}

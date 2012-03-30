@@ -34,7 +34,7 @@ type Context struct {
 	CgoEnabled  bool     // whether cgo can be used
 	BuildTags   []string // additional tags to recognize in +build lines
 	UseAllFiles bool     // use files regardless of +build lines, file names
-	Gccgo       bool     // assume use of gccgo when computing object paths
+	Compiler    string   // compiler to assume when computing target paths
 
 	// By default, Import uses the operating system's file system calls
 	// to read directories and files.  To read from other sources,
@@ -210,6 +210,7 @@ func (ctxt *Context) SrcDirs() []string {
 // if set, or else the compiled code's GOARCH, GOOS, and GOROOT.
 var Default Context = defaultContext()
 
+// This list is also known to ../../../cmd/dist/build.c.
 var cgoEnabled = map[string]bool{
 	"darwin/386":    true,
 	"darwin/amd64":  true,
@@ -228,6 +229,7 @@ func defaultContext() Context {
 	c.GOOS = envOr("GOOS", runtime.GOOS)
 	c.GOROOT = runtime.GOROOT()
 	c.GOPATH = envOr("GOPATH", "")
+	c.Compiler = runtime.Compiler
 
 	switch os.Getenv("CGO_ENABLED") {
 	case "1":
@@ -277,11 +279,12 @@ type Package struct {
 	PkgObj     string // installed .a file
 
 	// Source files
-	GoFiles  []string // .go source files (excluding CgoFiles, TestGoFiles, XTestGoFiles)
-	CgoFiles []string // .go source files that import "C"
-	CFiles   []string // .c source files
-	HFiles   []string // .h source files
-	SFiles   []string // .s source files
+	GoFiles   []string // .go source files (excluding CgoFiles, TestGoFiles, XTestGoFiles)
+	CgoFiles  []string // .go source files that import "C"
+	CFiles    []string // .c source files
+	HFiles    []string // .h source files
+	SFiles    []string // .s source files
+	SysoFiles []string // .syso system object files to add to archive
 
 	// Cgo directives
 	CgoPkgConfig []string // Cgo pkg-config directives
@@ -314,6 +317,16 @@ func (ctxt *Context) ImportDir(dir string, mode ImportMode) (*Package, error) {
 	return ctxt.Import(".", dir, mode)
 }
 
+// NoGoError is the error used by Import to describe a directory
+// containing no Go source files.
+type NoGoError struct {
+	Dir string
+}
+
+func (e *NoGoError) Error() string {
+	return "no Go source files in " + e.Dir
+}
+
 // Import returns details about the Go package named by the import path,
 // interpreting local import paths relative to the src directory.  If the path
 // is a local import path naming a package that can be imported using a
@@ -336,11 +349,16 @@ func (ctxt *Context) Import(path string, src string, mode ImportMode) (*Package,
 	}
 
 	var pkga string
-	if ctxt.Gccgo {
+	var pkgerr error
+	switch ctxt.Compiler {
+	case "gccgo":
 		dir, elem := pathpkg.Split(p.ImportPath)
 		pkga = "pkg/gccgo/" + dir + "lib" + elem + ".a"
-	} else {
+	case "gc":
 		pkga = "pkg/" + ctxt.GOOS + "_" + ctxt.GOARCH + "/" + p.ImportPath + ".a"
+	default:
+		// Save error for end of function.
+		pkgerr = fmt.Errorf("import %q: unknown compiler %q", path, ctxt.Compiler)
 	}
 
 	binaryOnly := false
@@ -396,7 +414,7 @@ func (ctxt *Context) Import(path string, src string, mode ImportMode) (*Package,
 		if ctxt.GOROOT != "" {
 			dir := ctxt.joinPath(ctxt.GOROOT, "src", "pkg", path)
 			isDir := ctxt.isDir(dir)
-			binaryOnly = !isDir && mode&AllowBinary != 0 && ctxt.isFile(ctxt.joinPath(ctxt.GOROOT, pkga))
+			binaryOnly = !isDir && mode&AllowBinary != 0 && pkga != "" && ctxt.isFile(ctxt.joinPath(ctxt.GOROOT, pkga))
 			if isDir || binaryOnly {
 				p.Dir = dir
 				p.Goroot = true
@@ -407,7 +425,7 @@ func (ctxt *Context) Import(path string, src string, mode ImportMode) (*Package,
 		for _, root := range ctxt.gopath() {
 			dir := ctxt.joinPath(root, "src", path)
 			isDir := ctxt.isDir(dir)
-			binaryOnly = !isDir && mode&AllowBinary != 0 && ctxt.isFile(ctxt.joinPath(root, pkga))
+			binaryOnly = !isDir && mode&AllowBinary != 0 && pkga != "" && ctxt.isFile(ctxt.joinPath(root, pkga))
 			if isDir || binaryOnly {
 				p.Dir = dir
 				p.Root = root
@@ -426,14 +444,16 @@ Found:
 		}
 		p.PkgRoot = ctxt.joinPath(p.Root, "pkg")
 		p.BinDir = ctxt.joinPath(p.Root, "bin")
-		p.PkgObj = ctxt.joinPath(p.Root, pkga)
+		if pkga != "" {
+			p.PkgObj = ctxt.joinPath(p.Root, pkga)
+		}
 	}
 
 	if mode&FindOnly != 0 {
-		return p, nil
+		return p, pkgerr
 	}
 	if binaryOnly && (mode&AllowBinary) != 0 {
-		return p, nil
+		return p, pkgerr
 	}
 
 	dirs, err := ctxt.readDir(p.Dir)
@@ -467,7 +487,13 @@ Found:
 		ext := name[i:]
 		switch ext {
 		case ".go", ".c", ".s", ".h", ".S":
-			// tentatively okay
+			// tentatively okay - read to make sure
+		case ".syso":
+			// binary objects to add to package archive
+			// Likely of the form foo_windows.syso, but
+			// the name was vetted above with goodOSArchFile.
+			p.SysoFiles = append(p.SysoFiles, name)
+			continue
 		default:
 			// skip
 			continue
@@ -586,7 +612,7 @@ Found:
 		}
 	}
 	if p.Name == "" {
-		return p, fmt.Errorf("no Go source files in %s", p.Dir)
+		return p, &NoGoError{p.Dir}
 	}
 
 	p.Imports, p.ImportPos = cleanImports(imported)
@@ -601,7 +627,7 @@ Found:
 		sort.Strings(p.SFiles)
 	}
 
-	return p, nil
+	return p, pkgerr
 }
 
 func cleanImports(m map[string][]token.Position) ([]string, map[string][]token.Position) {

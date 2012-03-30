@@ -5,12 +5,34 @@
 package sql
 
 import (
+	"database/sql/driver"
 	"fmt"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
 )
+
+func init() {
+	type dbConn struct {
+		db *DB
+		c  driver.Conn
+	}
+	freedFrom := make(map[dbConn]string)
+	putConnHook = func(db *DB, c driver.Conn) {
+		for _, oc := range db.freeConn {
+			if oc == c {
+				// print before panic, as panic may get lost due to conflicting panic
+				// (all goroutines asleep) elsewhere, since we might not unlock
+				// the mutex in freeConn here.
+				println("double free of conn. conflicts are:\nA) " + freedFrom[dbConn{db, c}] + "\n\nand\nB) " + stack())
+				panic("double free of conn.")
+			}
+		}
+		freedFrom[dbConn{db, c}] = stack()
+	}
+}
 
 const fakeDBName = "foo"
 
@@ -47,9 +69,19 @@ func closeDB(t *testing.T, db *DB) {
 	}
 }
 
+// numPrepares assumes that db has exactly 1 idle conn and returns
+// its count of calls to Prepare
+func numPrepares(t *testing.T, db *DB) int {
+	if n := len(db.freeConn); n != 1 {
+		t.Fatalf("free conns = %d; want 1", n)
+	}
+	return db.freeConn[0].(*fakeConn).numPrepare
+}
+
 func TestQuery(t *testing.T) {
 	db := newTestDB(t, "people")
 	defer closeDB(t, db)
+	prepares0 := numPrepares(t, db)
 	rows, err := db.Query("SELECT|people|age,name|")
 	if err != nil {
 		t.Fatalf("Query: %v", err)
@@ -83,7 +115,10 @@ func TestQuery(t *testing.T) {
 	// And verify that the final rows.Next() call, which hit EOF,
 	// also closed the rows connection.
 	if n := len(db.freeConn); n != 1 {
-		t.Errorf("free conns after query hitting EOF = %d; want 1", n)
+		t.Fatalf("free conns after query hitting EOF = %d; want 1", n)
+	}
+	if prepares := numPrepares(t, db) - prepares0; prepares != 1 {
+		t.Errorf("executed %d Prepare statements; want 1", prepares)
 	}
 }
 
@@ -216,6 +251,7 @@ func TestStatementQueryRow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Prepare: %v", err)
 	}
+	defer stmt.Close()
 	var age int
 	for n, tt := range []struct {
 		name string
@@ -256,6 +292,7 @@ func TestExec(t *testing.T) {
 	if err != nil {
 		t.Errorf("Stmt, err = %v, %v", stmt, err)
 	}
+	defer stmt.Close()
 
 	type execTest struct {
 		args    []interface{}
@@ -297,11 +334,14 @@ func TestTxStmt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Stmt, err = %v, %v", stmt, err)
 	}
+	defer stmt.Close()
 	tx, err := db.Begin()
 	if err != nil {
 		t.Fatalf("Begin = %v", err)
 	}
-	_, err = tx.Stmt(stmt).Exec("Bobby", 7)
+	txs := tx.Stmt(stmt)
+	defer txs.Close()
+	_, err = txs.Exec("Bobby", 7)
 	if err != nil {
 		t.Fatalf("Exec = %v", err)
 	}
@@ -330,6 +370,7 @@ func TestTxQuery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer r.Close()
 
 	if !r.Next() {
 		if r.Err() != nil {
@@ -342,6 +383,22 @@ func TestTxQuery(t *testing.T) {
 	err = r.Scan(&x)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestTxQueryInvalid(t *testing.T) {
+	db := newTestDB(t, "")
+	defer closeDB(t, db)
+
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Query("SELECT|t1|name|")
+	if err == nil {
+		t.Fatal("Error expected")
 	}
 }
 
@@ -450,48 +507,48 @@ type nullTestSpec struct {
 
 func TestNullStringParam(t *testing.T) {
 	spec := nullTestSpec{"nullstring", "string", [6]nullTestRow{
-		nullTestRow{NullString{"aqua", true}, "", NullString{"aqua", true}},
-		nullTestRow{NullString{"brown", false}, "", NullString{"", false}},
-		nullTestRow{"chartreuse", "", NullString{"chartreuse", true}},
-		nullTestRow{NullString{"darkred", true}, "", NullString{"darkred", true}},
-		nullTestRow{NullString{"eel", false}, "", NullString{"", false}},
-		nullTestRow{"foo", NullString{"black", false}, nil},
+		{NullString{"aqua", true}, "", NullString{"aqua", true}},
+		{NullString{"brown", false}, "", NullString{"", false}},
+		{"chartreuse", "", NullString{"chartreuse", true}},
+		{NullString{"darkred", true}, "", NullString{"darkred", true}},
+		{NullString{"eel", false}, "", NullString{"", false}},
+		{"foo", NullString{"black", false}, nil},
 	}}
 	nullTestRun(t, spec)
 }
 
 func TestNullInt64Param(t *testing.T) {
 	spec := nullTestSpec{"nullint64", "int64", [6]nullTestRow{
-		nullTestRow{NullInt64{31, true}, 1, NullInt64{31, true}},
-		nullTestRow{NullInt64{-22, false}, 1, NullInt64{0, false}},
-		nullTestRow{22, 1, NullInt64{22, true}},
-		nullTestRow{NullInt64{33, true}, 1, NullInt64{33, true}},
-		nullTestRow{NullInt64{222, false}, 1, NullInt64{0, false}},
-		nullTestRow{0, NullInt64{31, false}, nil},
+		{NullInt64{31, true}, 1, NullInt64{31, true}},
+		{NullInt64{-22, false}, 1, NullInt64{0, false}},
+		{22, 1, NullInt64{22, true}},
+		{NullInt64{33, true}, 1, NullInt64{33, true}},
+		{NullInt64{222, false}, 1, NullInt64{0, false}},
+		{0, NullInt64{31, false}, nil},
 	}}
 	nullTestRun(t, spec)
 }
 
 func TestNullFloat64Param(t *testing.T) {
 	spec := nullTestSpec{"nullfloat64", "float64", [6]nullTestRow{
-		nullTestRow{NullFloat64{31.2, true}, 1, NullFloat64{31.2, true}},
-		nullTestRow{NullFloat64{13.1, false}, 1, NullFloat64{0, false}},
-		nullTestRow{-22.9, 1, NullFloat64{-22.9, true}},
-		nullTestRow{NullFloat64{33.81, true}, 1, NullFloat64{33.81, true}},
-		nullTestRow{NullFloat64{222, false}, 1, NullFloat64{0, false}},
-		nullTestRow{10, NullFloat64{31.2, false}, nil},
+		{NullFloat64{31.2, true}, 1, NullFloat64{31.2, true}},
+		{NullFloat64{13.1, false}, 1, NullFloat64{0, false}},
+		{-22.9, 1, NullFloat64{-22.9, true}},
+		{NullFloat64{33.81, true}, 1, NullFloat64{33.81, true}},
+		{NullFloat64{222, false}, 1, NullFloat64{0, false}},
+		{10, NullFloat64{31.2, false}, nil},
 	}}
 	nullTestRun(t, spec)
 }
 
 func TestNullBoolParam(t *testing.T) {
 	spec := nullTestSpec{"nullbool", "bool", [6]nullTestRow{
-		nullTestRow{NullBool{false, true}, true, NullBool{false, true}},
-		nullTestRow{NullBool{true, false}, false, NullBool{false, false}},
-		nullTestRow{true, true, NullBool{true, true}},
-		nullTestRow{NullBool{true, true}, false, NullBool{true, true}},
-		nullTestRow{NullBool{true, false}, true, NullBool{false, false}},
-		nullTestRow{true, NullBool{true, false}, nil},
+		{NullBool{false, true}, true, NullBool{false, true}},
+		{NullBool{true, false}, false, NullBool{false, false}},
+		{true, true, NullBool{true, true}},
+		{NullBool{true, true}, false, NullBool{true, true}},
+		{NullBool{true, false}, true, NullBool{false, false}},
+		{true, NullBool{true, false}, nil},
 	}}
 	nullTestRun(t, spec)
 }
@@ -510,6 +567,7 @@ func nullTestRun(t *testing.T, spec nullTestSpec) {
 	if err != nil {
 		t.Fatalf("prepare: %v", err)
 	}
+	defer stmt.Close()
 	if _, err := stmt.Exec(3, "chris", spec.rows[2].nullParam, spec.rows[2].notNullParam); err != nil {
 		t.Errorf("exec insert chris: %v", err)
 	}
@@ -548,4 +606,9 @@ func nullTestRun(t *testing.T, spec nullTestSpec) {
 			t.Errorf("id=%d got %#v, want %#v", id, bindValDeref, spec.rows[i].scanNullVal)
 		}
 	}
+}
+
+func stack() string {
+	buf := make([]byte, 1024)
+	return string(buf[:runtime.Stack(buf, false)])
 }

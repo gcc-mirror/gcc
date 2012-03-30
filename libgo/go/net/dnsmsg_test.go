@@ -6,6 +6,7 @@ package net
 
 import (
 	"encoding/hex"
+	"reflect"
 	"testing"
 )
 
@@ -19,6 +20,7 @@ func TestDNSParseSRVReply(t *testing.T) {
 	if !ok {
 		t.Fatalf("unpacking packet failed")
 	}
+	msg.String() // exercise this code path
 	if g, e := len(msg.answer), 5; g != e {
 		t.Errorf("len(msg.answer) = %d; want %d", g, e)
 	}
@@ -38,6 +40,16 @@ func TestDNSParseSRVReply(t *testing.T) {
 		t.Errorf("len(addrs) = %d; want %d", g, e)
 		t.Logf("addrs = %#v", addrs)
 	}
+	// repack and unpack.
+	data2, ok := msg.Pack()
+	msg2 := new(dnsMsg)
+	msg2.Unpack(data2)
+	switch {
+	case !ok:
+		t.Errorf("failed to repack message")
+	case !reflect.DeepEqual(msg, msg2):
+		t.Errorf("repacked message differs from original")
+	}
 }
 
 func TestDNSParseCorruptSRVReply(t *testing.T) {
@@ -50,6 +62,7 @@ func TestDNSParseCorruptSRVReply(t *testing.T) {
 	if !ok {
 		t.Fatalf("unpacking packet failed")
 	}
+	msg.String() // exercise this code path
 	if g, e := len(msg.answer), 5; g != e {
 		t.Errorf("len(msg.answer) = %d; want %d", g, e)
 	}
