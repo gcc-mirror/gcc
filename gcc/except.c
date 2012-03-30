@@ -918,12 +918,6 @@ emit_to_new_bb_before (rtx seq, rtx insn)
   bb = create_basic_block (seq, last, prev_bb);
   update_bb_for_insn (bb);
   bb->flags |= BB_SUPERBLOCK;
-  if (current_loops)
-    {
-      add_bb_to_loop (bb, prev_bb->loop_father);
-      if (prev_bb->loop_father->header == prev_bb)
-	prev_bb->loop_father->header = bb;
-    }
   return bb;
 }
 
@@ -995,6 +989,16 @@ dw2_build_landing_pads (void)
       e = make_edge (bb, bb->next_bb, e_flags);
       e->count = bb->count;
       e->probability = REG_BR_PROB_BASE;
+      if (current_loops)
+	{
+	  struct loop *loop = bb->next_bb->loop_father;
+	  /* If we created a pre-header block, add the new block to the
+	     outer loop, otherwise to the loop itself.  */
+	  if (bb->next_bb == loop->header)
+	    add_bb_to_loop (bb, loop_outer (loop));
+	  else
+	    add_bb_to_loop (bb, loop);
+	}
     }
 }
 
