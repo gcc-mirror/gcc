@@ -1,3 +1,9 @@
+2012-03-30  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-f.c: New file.
+	* config/vms/t-vms (vms-f.o): New rule.
+	* config.gcc (*-*-*vms*): Define fortran_target_objs.
+
 2012-03-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52754
