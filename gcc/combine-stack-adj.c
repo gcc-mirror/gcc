@@ -320,6 +320,107 @@ maybe_move_args_size_note (rtx last, rtx insn, bool after)
     add_reg_note (last, REG_ARGS_SIZE, XEXP (note, 0));
 }
 
+/* Return the next (or previous) active insn within BB.  */
+
+static rtx
+prev_active_insn_bb (basic_block bb, rtx insn)
+{
+  for (insn = PREV_INSN (insn);
+       insn != PREV_INSN (BB_HEAD (bb));
+       insn = PREV_INSN (insn))
+    if (active_insn_p (insn))
+      return insn;
+  return NULL_RTX;
+}
+
+static rtx
+next_active_insn_bb (basic_block bb, rtx insn)
+{
+  for (insn = NEXT_INSN (insn);
+       insn != NEXT_INSN (BB_END (bb));
+       insn = NEXT_INSN (insn))
+    if (active_insn_p (insn))
+      return insn;
+  return NULL_RTX;
+}
+
+/* If INSN has a REG_ARGS_SIZE note, if possible move it to PREV.  Otherwise
+   search for a nearby candidate within BB where we can stick the note.  */
+
+static void
+force_move_args_size_note (basic_block bb, rtx prev, rtx insn)
+{
+  rtx note, test, next_candidate, prev_candidate;
+
+  /* If PREV exists, tail-call to the logic in the other function.  */
+  if (prev)
+    {
+      maybe_move_args_size_note (prev, insn, false);
+      return;
+    }
+
+  /* First, make sure there's anything that needs doing.  */
+  note = find_reg_note (insn, REG_ARGS_SIZE, NULL_RTX);
+  if (note == NULL)
+    return;
+
+  /* We need to find a spot between the previous and next exception points
+     where we can place the note and "properly" deallocate the arguments.  */
+  next_candidate = prev_candidate = NULL;
+
+  /* It is often the case that we have insns in the order:
+	call
+	add sp (previous deallocation)
+	sub sp (align for next arglist)
+	push arg
+     and the add/sub cancel.  Therefore we begin by searching forward.  */
+
+  test = insn;
+  while ((test = next_active_insn_bb (bb, test)) != NULL)
+    {
+      /* Found an existing note: nothing to do.  */
+      if (find_reg_note (test, REG_ARGS_SIZE, NULL_RTX))
+        return;
+      /* Found something that affects unwinding.  Stop searching.  */
+      if (CALL_P (test) || !insn_nothrow_p (test))
+	break;
+      if (next_candidate == NULL)
+	next_candidate = test;
+    }
+
+  test = insn;
+  while ((test = prev_active_insn_bb (bb, test)) != NULL)
+    {
+      rtx tnote;
+      /* Found a place that seems logical to adjust the stack.  */
+      tnote = find_reg_note (test, REG_ARGS_SIZE, NULL_RTX);
+      if (tnote)
+	{
+	  XEXP (tnote, 0) = XEXP (note, 0);
+	  return;
+	}
+      if (prev_candidate == NULL)
+	prev_candidate = test;
+      /* Found something that affects unwinding.  Stop searching.  */
+      if (CALL_P (test) || !insn_nothrow_p (test))
+	break;
+    }
+
+  if (prev_candidate)
+    test = prev_candidate;
+  else if (next_candidate)
+    test = next_candidate;
+  else
+    {
+      /* ??? We *must* have a place, lest we ICE on the lost adjustment.
+	 Options are: dummy clobber insn, nop, or prevent the removal of
+	 the sp += 0 insn.  Defer that decision until we can prove this
+	 can actually happen.  */
+      gcc_unreachable ();
+    }
+  add_reg_note (test, REG_ARGS_SIZE, XEXP (note, 0));
+}
+
 /* Subroutine of combine_stack_adjustments, called for each basic block.  */
 
 static void
@@ -327,6 +428,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 {
   HOST_WIDE_INT last_sp_adjust = 0;
   rtx last_sp_set = NULL_RTX;
+  rtx last2_sp_set = NULL_RTX;
   struct csa_reflist *reflist = NULL;
   rtx insn, next, set;
   struct record_stack_refs_data data;
@@ -391,9 +493,8 @@ combine_stack_adjustments_for_block (basic_block bb)
 						  last_sp_adjust + this_adjust,
 						  this_adjust))
 		    {
-		      maybe_move_args_size_note (last_sp_set, insn, false);
-
 		      /* It worked!  */
+		      maybe_move_args_size_note (last_sp_set, insn, false);
 		      delete_insn (insn);
 		      last_sp_adjust += this_adjust;
 		      continue;
@@ -409,9 +510,8 @@ combine_stack_adjustments_for_block (basic_block bb)
 						  last_sp_adjust + this_adjust,
 						  -last_sp_adjust))
 		    {
-		      maybe_move_args_size_note (insn, last_sp_set, true);
-
 		      /* It worked!  */
+		      maybe_move_args_size_note (insn, last_sp_set, true);
 		      delete_insn (last_sp_set);
 		      last_sp_set = insn;
 		      last_sp_adjust += this_adjust;
@@ -424,8 +524,16 @@ combine_stack_adjustments_for_block (basic_block bb)
 	      /* Combination failed.  Restart processing from here.  If
 		 deallocation+allocation conspired to cancel, we can
 		 delete the old deallocation insn.  */
-	      if (last_sp_set && last_sp_adjust == 0)
-		delete_insn (last_sp_set);
+	      if (last_sp_set)
+		{
+		  if (last_sp_adjust == 0)
+		    {
+		      maybe_move_args_size_note (insn, last_sp_set, true);
+		      delete_insn (last_sp_set);
+		    }
+		  else
+		    last2_sp_set = last_sp_set;
+		}
 	      free_csa_reflist (reflist);
 	      reflist = NULL;
 	      last_sp_set = insn;
@@ -461,6 +569,10 @@ combine_stack_adjustments_for_block (basic_block bb)
 	      && try_apply_stack_adjustment (insn, reflist, 0,
 					     -last_sp_adjust))
 	    {
+	      if (last2_sp_set)
+		maybe_move_args_size_note (last2_sp_set, last_sp_set, false);
+	      else
+	        maybe_move_args_size_note (insn, last_sp_set, true);
 	      delete_insn (last_sp_set);
 	      free_csa_reflist (reflist);
 	      reflist = NULL;
@@ -487,16 +599,23 @@ combine_stack_adjustments_for_block (basic_block bb)
 	      || reg_mentioned_p (stack_pointer_rtx, PATTERN (insn))))
 	{
 	  if (last_sp_set && last_sp_adjust == 0)
-	    delete_insn (last_sp_set);
+	    {
+	      force_move_args_size_note (bb, last2_sp_set, last_sp_set);
+	      delete_insn (last_sp_set);
+	    }
 	  free_csa_reflist (reflist);
 	  reflist = NULL;
+	  last2_sp_set = NULL_RTX;
 	  last_sp_set = NULL_RTX;
 	  last_sp_adjust = 0;
 	}
     }
 
   if (last_sp_set && last_sp_adjust == 0)
-    delete_insn (last_sp_set);
+    {
+      force_move_args_size_note (bb, last2_sp_set, last_sp_set);
+      delete_insn (last_sp_set);
+    }
 
   if (reflist)
     free_csa_reflist (reflist);
