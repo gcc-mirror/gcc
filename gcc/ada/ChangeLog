@@ -1,3 +1,8 @@
+2012-03-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Add_Alfa_File): Take into account possible absence
+	of compilation unit for unit in Sdep_Table.
+
 2012-03-30  Thomas Quinot  <quinot@adacore.com>
 
 	* freeze.adb (Freeze_Record_Type): For a type with reversed bit
