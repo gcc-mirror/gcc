@@ -228,7 +228,7 @@ rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 
   /* Zero / sign extend all bits that are beyond the precision.  */
 
-  if (count >= (HOST_WIDE_INT)prec)
+  if (count >= prec)
     {
       *hv = signmask;
       *lv = signmask;

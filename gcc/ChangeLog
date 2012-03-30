@@ -1,5 +1,10 @@
 2012-03-30  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/52786
+	* double-int.c (rshift_double): Remove not needed cast.
+
+2012-03-30  Richard Guenther  <rguenther@suse.de>
+
 	* tree-affine.h (print_aff): Remove.
 	* tree-affine.c (print_aff): Make static.
 	* tree-data-ref.h (access_matrix_get_index_for_parameter): Remove.
