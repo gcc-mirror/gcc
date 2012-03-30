@@ -1131,6 +1131,7 @@ go_net_rpc_files = \
 	go/net/rpc/server.go
 
 go_runtime_files = \
+	go/runtime/compiler.go \
 	go/runtime/debug.go \
 	go/runtime/error.go \
 	go/runtime/extern.go \
@@ -1150,6 +1151,7 @@ go_strconv_files = \
 	go/strconv/decimal.go \
 	go/strconv/extfloat.go \
 	go/strconv/ftoa.go \
+	go/strconv/isprint.go \
 	go/strconv/itoa.go \
 	go/strconv/quote.go
 
@@ -1315,13 +1317,14 @@ go_crypto_tls_files = \
 	go/crypto/tls/handshake_server.go \
 	go/crypto/tls/key_agreement.go \
 	go/crypto/tls/prf.go \
-	go/crypto/tls/root_unix.go \
 	go/crypto/tls/tls.go
 
 go_crypto_x509_files = \
 	go/crypto/x509/cert_pool.go \
 	go/crypto/x509/pkcs1.go \
 	go/crypto/x509/pkcs8.go \
+	go/crypto/x509/root.go \
+	go/crypto/x509/root_unix.go \
 	go/crypto/x509/verify.go \
 	go/crypto/x509/x509.go
 
@@ -1677,7 +1680,8 @@ go_os_user_files = \
 go_path_filepath_files = \
 	go/path/filepath/match.go \
 	go/path/filepath/path.go \
-	go/path/filepath/path_unix.go
+	go/path/filepath/path_unix.go \
+	go/path/filepath/symlink.go
 
 go_regexp_syntax_files = \
 	go/regexp/syntax/compile.go \
