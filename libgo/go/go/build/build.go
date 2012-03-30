@@ -210,7 +210,6 @@ func (ctxt *Context) SrcDirs() []string {
 // if set, or else the compiled code's GOARCH, GOOS, and GOROOT.
 var Default Context = defaultContext()
 
-// This list is also known to ../../../cmd/dist/build.c.
 var cgoEnabled = map[string]bool{
 	"darwin/386":    true,
 	"darwin/amd64":  true,
@@ -388,7 +387,7 @@ func (ctxt *Context) Import(path string, srcDir string, mode ImportMode) (*Packa
 				// but check that using it wouldn't find something
 				// else first.
 				if ctxt.GOROOT != "" {
-					if dir := ctxt.joinPath(ctxt.GOROOT, "src", sub); ctxt.isDir(dir) {
+					if dir := ctxt.joinPath(ctxt.GOROOT, "src", "pkg", sub); ctxt.isDir(dir) {
 						goto Found
 					}
 				}
