@@ -1,3 +1,13 @@
+2012-03-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Generate_Dereference): Use Get_Code_Unit
+	instead of Get_Source_Unit to get file for reference.
+	(Traverse_Compilation_Unit): Do not add scopes for generic units.
+	* lib-xref.adb (Generate_Reference): Use Get_Code_Unit instead
+	of Get_Source_Unit to get file for reference.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Enable
+	instantiation in Alfa mode.
+
 2012-03-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Process_Declarations): Replace
