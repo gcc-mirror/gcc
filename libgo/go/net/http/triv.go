@@ -15,7 +15,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
+	"sync"
 )
 
 // hello world, the web server
@@ -28,14 +30,21 @@ func HelloServer(w http.ResponseWriter, req *http.Request) {
 
 // Simple counter server. POSTing to it will set the value.
 type Counter struct {
-	n int
+	mu sync.Mutex // protects n
+	n  int
 }
 
 // This makes Counter satisfy the expvar.Var interface, so we can export
 // it directly.
-func (ctr *Counter) String() string { return fmt.Sprintf("%d", ctr.n) }
+func (ctr *Counter) String() string {
+	ctr.mu.Lock()
+	defer ctr.mu.Unlock()
+	return fmt.Sprintf("%d", ctr.n)
+}
 
 func (ctr *Counter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	ctr.mu.Lock()
+	defer ctr.mu.Unlock()
 	switch req.Method {
 	case "GET":
 		ctr.n++
@@ -95,54 +104,36 @@ func (ch Chan) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 // exec a program, redirecting output
 func DateServer(rw http.ResponseWriter, req *http.Request) {
 	rw.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	r, w, err := os.Pipe()
-	if err != nil {
-		fmt.Fprintf(rw, "pipe: %s\n", err)
-		return
-	}
 
-	p, err := os.StartProcess("/bin/date", []string{"date"}, &os.ProcAttr{Files: []*os.File{nil, w, w}})
-	defer r.Close()
-	w.Close()
+	date, err := exec.Command("/bin/date").Output()
 	if err != nil {
-		fmt.Fprintf(rw, "fork/exec: %s\n", err)
+		http.Error(rw, err.Error(), 500)
 		return
 	}
-	io.Copy(rw, r)
-	wait, err := p.Wait(0)
-	if err != nil {
-		fmt.Fprintf(rw, "wait: %s\n", err)
-		return
-	}
-	if !wait.Exited() || wait.ExitStatus() != 0 {
-		fmt.Fprintf(rw, "date: %v\n", wait)
-		return
-	}
+	rw.Write(date)
 }
 
 func Logger(w http.ResponseWriter, req *http.Request) {
-	log.Print(req.URL.Raw)
-	w.WriteHeader(404)
-	w.Write([]byte("oops"))
+	log.Print(req.URL)
+	http.Error(w, "oops", 404)
 }
 
-var webroot = flag.String("root", "/home/rsc", "web root directory")
+var webroot = flag.String("root", os.Getenv("HOME"), "web root directory")
 
 func main() {
 	flag.Parse()
 
 	// The counter is published as a variable directly.
 	ctr := new(Counter)
-	http.Handle("/counter", ctr)
 	expvar.Publish("counter", ctr)
-
+	http.Handle("/counter", ctr)
 	http.Handle("/", http.HandlerFunc(Logger))
 	http.Handle("/go/", http.StripPrefix("/go/", http.FileServer(http.Dir(*webroot))))
-	http.Handle("/flags", http.HandlerFunc(FlagServer))
-	http.Handle("/args", http.HandlerFunc(ArgServer))
-	http.Handle("/go/hello", http.HandlerFunc(HelloServer))
 	http.Handle("/chan", ChanCreate())
-	http.Handle("/date", http.HandlerFunc(DateServer))
+	http.HandleFunc("/flags", FlagServer)
+	http.HandleFunc("/args", ArgServer)
+	http.HandleFunc("/go/hello", HelloServer)
+	http.HandleFunc("/date", DateServer)
 	err := http.ListenAndServe(":12345", nil)
 	if err != nil {
 		log.Panicln("ListenAndServe:", err)
