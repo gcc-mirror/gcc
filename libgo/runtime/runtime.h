@@ -416,7 +416,6 @@ void	runtime_usleep(uint32);
 /*
  * runtime c-called (but written in Go)
  */
-void	runtime_newError(String, Eface*);
 void	runtime_printany(Eface)
      __asm__("libgo_runtime.runtime.Printany");
 void	runtime_newTypeAssertionError(const String*, const String*, const String*, const String*, Eface*)
@@ -429,7 +428,6 @@ void	runtime_newErrorString(String, Eface*)
  */
 void	runtime_semacquire(uint32 volatile *);
 void	runtime_semrelease(uint32 volatile *);
-String	runtime_signame(int32 sig);
 int32	runtime_gomaxprocsfunc(int32 n);
 void	runtime_procyield(uint32);
 void	runtime_osyield(void);

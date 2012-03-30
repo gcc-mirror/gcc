@@ -10,23 +10,26 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
 
 type ZipTest struct {
 	Name    string
+	Source  func() (r io.ReaderAt, size int64) // if non-nil, used instead of testdata/<Name> file
 	Comment string
 	File    []ZipTestFile
 	Error   error // the error that Opening this file should return
 }
 
 type ZipTestFile struct {
-	Name    string
-	Content []byte // if blank, will attempt to compare against File
-	File    string // name of file to compare to (relative to testdata/)
-	Mtime   string // modified time in format "mm-dd-yy hh:mm:ss"
-	Mode    os.FileMode
+	Name       string
+	Content    []byte // if blank, will attempt to compare against File
+	ContentErr error
+	File       string // name of file to compare to (relative to testdata/)
+	Mtime      string // modified time in format "mm-dd-yy hh:mm:ss"
+	Mode       os.FileMode
 }
 
 // Caution: The Mtime values found for the test files should correspond to
@@ -107,6 +110,99 @@ var tests = []ZipTest{
 		Name: "unix.zip",
 		File: crossPlatform,
 	},
+	{
+		// created by Go, before we wrote the "optional" data
+		// descriptor signatures (which are required by OS X)
+		Name: "go-no-datadesc-sig.zip",
+		File: []ZipTestFile{
+			{
+				Name:    "foo.txt",
+				Content: []byte("foo\n"),
+				Mtime:   "03-08-12 16:59:10",
+				Mode:    0644,
+			},
+			{
+				Name:    "bar.txt",
+				Content: []byte("bar\n"),
+				Mtime:   "03-08-12 16:59:12",
+				Mode:    0644,
+			},
+		},
+	},
+	{
+		// created by Go, after we wrote the "optional" data
+		// descriptor signatures (which are required by OS X)
+		Name: "go-with-datadesc-sig.zip",
+		File: []ZipTestFile{
+			{
+				Name:    "foo.txt",
+				Content: []byte("foo\n"),
+				Mode:    0666,
+			},
+			{
+				Name:    "bar.txt",
+				Content: []byte("bar\n"),
+				Mode:    0666,
+			},
+		},
+	},
+	{
+		Name:   "Bad-CRC32-in-data-descriptor",
+		Source: returnCorruptCRC32Zip,
+		File: []ZipTestFile{
+			{
+				Name:       "foo.txt",
+				Content:    []byte("foo\n"),
+				Mode:       0666,
+				ContentErr: ErrChecksum,
+			},
+			{
+				Name:    "bar.txt",
+				Content: []byte("bar\n"),
+				Mode:    0666,
+			},
+		},
+	},
+	// Tests that we verify (and accept valid) crc32s on files
+	// with crc32s in their file header (not in data descriptors)
+	{
+		Name: "crc32-not-streamed.zip",
+		File: []ZipTestFile{
+			{
+				Name:    "foo.txt",
+				Content: []byte("foo\n"),
+				Mtime:   "03-08-12 16:59:10",
+				Mode:    0644,
+			},
+			{
+				Name:    "bar.txt",
+				Content: []byte("bar\n"),
+				Mtime:   "03-08-12 16:59:12",
+				Mode:    0644,
+			},
+		},
+	},
+	// Tests that we verify (and reject invalid) crc32s on files
+	// with crc32s in their file header (not in data descriptors)
+	{
+		Name:   "crc32-not-streamed.zip",
+		Source: returnCorruptNotStreamedZip,
+		File: []ZipTestFile{
+			{
+				Name:       "foo.txt",
+				Content:    []byte("foo\n"),
+				Mtime:      "03-08-12 16:59:10",
+				Mode:       0644,
+				ContentErr: ErrChecksum,
+			},
+			{
+				Name:    "bar.txt",
+				Content: []byte("bar\n"),
+				Mtime:   "03-08-12 16:59:12",
+				Mode:    0644,
+			},
+		},
+	},
 }
 
 var crossPlatform = []ZipTestFile{
@@ -139,7 +235,18 @@ func TestReader(t *testing.T) {
 }
 
 func readTestZip(t *testing.T, zt ZipTest) {
-	z, err := OpenReader("testdata/" + zt.Name)
+	var z *Reader
+	var err error
+	if zt.Source != nil {
+		rat, size := zt.Source()
+		z, err = NewReader(rat, size)
+	} else {
+		var rc *ReadCloser
+		rc, err = OpenReader(filepath.Join("testdata", zt.Name))
+		if err == nil {
+			z = &rc.Reader
+		}
+	}
 	if err != zt.Error {
 		t.Errorf("error=%v, want %v", err, zt.Error)
 		return
@@ -149,11 +256,6 @@ func readTestZip(t *testing.T, zt ZipTest) {
 	if err == ErrFormat {
 		return
 	}
-	defer func() {
-		if err := z.Close(); err != nil {
-			t.Errorf("error %q when closing zip file", err)
-		}
-	}()
 
 	// bail here if no Files expected to be tested
 	// (there may actually be files in the zip, but we don't care)
@@ -170,7 +272,7 @@ func readTestZip(t *testing.T, zt ZipTest) {
 
 	// test read of each file
 	for i, ft := range zt.File {
-		readTestFile(t, ft, z.File[i])
+		readTestFile(t, zt, ft, z.File[i])
 	}
 
 	// test simultaneous reads
@@ -179,7 +281,7 @@ func readTestZip(t *testing.T, zt ZipTest) {
 	for i := 0; i < 5; i++ {
 		for j, ft := range zt.File {
 			go func(j int, ft ZipTestFile) {
-				readTestFile(t, ft, z.File[j])
+				readTestFile(t, zt, ft, z.File[j])
 				done <- true
 			}(j, ft)
 			n++
@@ -188,26 +290,11 @@ func readTestZip(t *testing.T, zt ZipTest) {
 	for ; n > 0; n-- {
 		<-done
 	}
-
-	// test invalid checksum
-	if !z.File[0].hasDataDescriptor() { // skip test when crc32 in dd
-		z.File[0].CRC32++ // invalidate
-		r, err := z.File[0].Open()
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		var b bytes.Buffer
-		_, err = io.Copy(&b, r)
-		if err != ErrChecksum {
-			t.Errorf("%s: copy error=%v, want %v", z.File[0].Name, err, ErrChecksum)
-		}
-	}
 }
 
-func readTestFile(t *testing.T, ft ZipTestFile, f *File) {
+func readTestFile(t *testing.T, zt ZipTest, ft ZipTestFile, f *File) {
 	if f.Name != ft.Name {
-		t.Errorf("name=%q, want %q", f.Name, ft.Name)
+		t.Errorf("%s: name=%q, want %q", zt.Name, f.Name, ft.Name)
 	}
 
 	if ft.Mtime != "" {
@@ -217,11 +304,11 @@ func readTestFile(t *testing.T, ft ZipTestFile, f *File) {
 			return
 		}
 		if ft := f.ModTime(); !ft.Equal(mtime) {
-			t.Errorf("%s: mtime=%s, want %s", f.Name, ft, mtime)
+			t.Errorf("%s: %s: mtime=%s, want %s", zt.Name, f.Name, ft, mtime)
 		}
 	}
 
-	testFileMode(t, f, ft.Mode)
+	testFileMode(t, zt.Name, f, ft.Mode)
 
 	size0 := f.UncompressedSize
 
@@ -237,8 +324,10 @@ func readTestFile(t *testing.T, ft ZipTestFile, f *File) {
 	}
 
 	_, err = io.Copy(&b, r)
+	if err != ft.ContentErr {
+		t.Errorf("%s: copying contents: %v (want %v)", zt.Name, err, ft.ContentErr)
+	}
 	if err != nil {
-		t.Error(err)
 		return
 	}
 	r.Close()
@@ -264,12 +353,12 @@ func readTestFile(t *testing.T, ft ZipTestFile, f *File) {
 	}
 }
 
-func testFileMode(t *testing.T, f *File, want os.FileMode) {
+func testFileMode(t *testing.T, zipName string, f *File, want os.FileMode) {
 	mode := f.Mode()
 	if want == 0 {
-		t.Errorf("%s mode: got %v, want none", f.Name, mode)
+		t.Errorf("%s: %s mode: got %v, want none", zipName, f.Name, mode)
 	} else if mode != want {
-		t.Errorf("%s mode: want %v, got %v", f.Name, want, mode)
+		t.Errorf("%s: %s mode: want %v, got %v", zipName, f.Name, want, mode)
 	}
 }
 
@@ -293,4 +382,36 @@ func TestInvalidFiles(t *testing.T) {
 	if err != ErrFormat {
 		t.Errorf("sigs: error=%v, want %v", err, ErrFormat)
 	}
+}
+
+func messWith(fileName string, corrupter func(b []byte)) (r io.ReaderAt, size int64) {
+	data, err := ioutil.ReadFile(filepath.Join("testdata", fileName))
+	if err != nil {
+		panic("Error reading " + fileName + ": " + err.Error())
+	}
+	corrupter(data)
+	return bytes.NewReader(data), int64(len(data))
+}
+
+func returnCorruptCRC32Zip() (r io.ReaderAt, size int64) {
+	return messWith("go-with-datadesc-sig.zip", func(b []byte) {
+		// Corrupt one of the CRC32s in the data descriptor:
+		b[0x2d]++
+	})
+}
+
+func returnCorruptNotStreamedZip() (r io.ReaderAt, size int64) {
+	return messWith("crc32-not-streamed.zip", func(b []byte) {
+		// Corrupt foo.txt's final crc32 byte, in both
+		// the file header and TOC. (0x7e -> 0x7f)
+		b[0x11]++
+		b[0x9d]++
+
+		// TODO(bradfitz): add a new test that only corrupts
+		// one of these values, and verify that that's also an
+		// error. Currently, the reader code doesn't verify the
+		// fileheader and TOC's crc32 match if they're both
+		// non-zero and only the second line above, the TOC,
+		// is what matters.
+	})
 }

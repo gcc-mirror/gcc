@@ -234,6 +234,7 @@ type commonType struct {
 	kind       uint8   // enumeration for C
 	align      int8    // alignment of variable with this type
 	fieldAlign uint8   // alignment of struct field with this type
+	_          uint8   // unused/padding
 	size       uintptr // size in bytes
 	hash       uint32  // hash of type; avoids computation in hash tables
 

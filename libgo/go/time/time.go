@@ -13,7 +13,8 @@ import "errors"
 //
 // Programs using times should typically store and pass them as values,
 // not pointers.  That is, time variables and struct fields should be of
-// type time.Time, not *time.Time.
+// type time.Time, not *time.Time.  A Time value can be used by
+// multiple goroutines simultaneously.
 //
 // Time instants can be compared using the Before, After, and Equal methods.
 // The Sub method subtracts two instants, producing a Duration.
@@ -755,13 +756,13 @@ func (t Time) Zone() (name string, offset int) {
 	return
 }
 
-// Unix returns the Unix time, the number of seconds elapsed
+// Unix returns t as a Unix time, the number of seconds elapsed
 // since January 1, 1970 UTC.
 func (t Time) Unix() int64 {
 	return t.sec + internalToUnix
 }
 
-// UnixNano returns the Unix time, the number of nanoseconds elapsed
+// UnixNano returns t as a Unix time, the number of nanoseconds elapsed
 // since January 1, 1970 UTC.
 func (t Time) UnixNano() int64 {
 	return (t.sec+internalToUnix)*1e9 + int64(t.nsec)
