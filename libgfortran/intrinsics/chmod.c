@@ -141,7 +141,6 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
       rwxXstugo[6] = false;
       rwxXstugo[7] = false;
       rwxXstugo[8] = false;
-      rwxXstugo[9] = false;
       part = 0;
       set_mode = -1;
       for (; i < mode_len; i++)
