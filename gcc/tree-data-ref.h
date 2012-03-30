@@ -169,8 +169,6 @@ am_vector_index_for_loop (struct access_matrix *access_matrix, int loop_num)
   gcc_unreachable();
 }
 
-int access_matrix_get_index_for_parameter (tree, struct access_matrix *);
-
 struct data_reference
 {
   /* A pointer to the statement that contains this DR.  */
@@ -371,22 +369,6 @@ DEF_VEC_ALLOC_P(ddr_p,heap);
 #define DDR_REVERSED_P(DDR) DDR->reversed_p
 
 
-
-/* Describes a location of a memory reference.  */
-
-typedef struct data_ref_loc_d
-{
-  /* Position of the memory reference.  */
-  tree *pos;
-
-  /* True if the memory reference is read.  */
-  bool is_read;
-} data_ref_loc;
-
-DEF_VEC_O (data_ref_loc);
-DEF_VEC_ALLOC_O (data_ref_loc, heap);
-
-bool get_references_in_stmt (gimple, VEC (data_ref_loc, heap) **);
 bool dr_analyze_innermost (struct data_reference *, struct loop *);
 extern bool compute_data_dependences_for_loop (struct loop *, bool,
 					       VEC (loop_p, heap) **,
@@ -395,23 +377,13 @@ extern bool compute_data_dependences_for_loop (struct loop *, bool,
 extern bool compute_data_dependences_for_bb (basic_block, bool,
                                              VEC (data_reference_p, heap) **,
                                              VEC (ddr_p, heap) **);
-extern void print_direction_vector (FILE *, lambda_vector, int);
-extern void print_dir_vectors (FILE *, VEC (lambda_vector, heap) *, int);
-extern void print_dist_vectors (FILE *, VEC (lambda_vector, heap) *, int);
-extern void dump_subscript (FILE *, struct subscript *);
-extern void dump_ddrs (FILE *, VEC (ddr_p, heap) *);
-extern void dump_dist_dir_vectors (FILE *, VEC (ddr_p, heap) *);
+extern void debug_ddrs (VEC (ddr_p, heap) *);
 extern void dump_data_reference (FILE *, struct data_reference *);
 extern void debug_data_reference (struct data_reference *);
-extern void dump_data_references (FILE *, VEC (data_reference_p, heap) *);
 extern void debug_data_references (VEC (data_reference_p, heap) *);
 extern void debug_data_dependence_relation (struct data_dependence_relation *);
-extern void dump_data_dependence_relation (FILE *,
-					   struct data_dependence_relation *);
 extern void dump_data_dependence_relations (FILE *, VEC (ddr_p, heap) *);
 extern void debug_data_dependence_relations (VEC (ddr_p, heap) *);
-extern void dump_data_dependence_direction (FILE *,
-					    enum data_dependence_direction);
 extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (VEC (ddr_p, heap) *);
 extern void free_data_ref (data_reference_p);
@@ -567,9 +539,7 @@ typedef struct rdg_vertex
 #define RDG_MEM_WRITE_STMT(RDG, I) RDGV_HAS_MEM_WRITE (&(RDG->vertices[I]))
 #define RDG_MEM_READS_STMT(RDG, I) RDGV_HAS_MEM_READS (&(RDG->vertices[I]))
 
-void dump_rdg_vertex (FILE *, struct graph *, int);
 void debug_rdg_vertex (struct graph *, int);
-void dump_rdg_component (FILE *, struct graph *, int, bitmap);
 void debug_rdg_component (struct graph *, int);
 void dump_rdg (FILE *, struct graph *);
 void debug_rdg (struct graph *);
