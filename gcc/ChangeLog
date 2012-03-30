@@ -1,3 +1,15 @@
+2012-03-30  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms.c (VMS_CRTL_FLOAT32): Rename.
+	(VMS_CRTL_FLOAT64, VMS_CRTL_FLOAT64_VAXD): New.
+	(VMS_CRTL_FLOAT128, VMS_CRTL_DPML, VMS_CRTL_NODMPL)
+	(VMS_CRTL_32ONLY, VMS_CRTL_G_MASK, VMS_CRTL_G_NONE)
+	(VMS_CRTL_GA, VMS_CRTL_GL, VMS_CRTL_FLOATV2): New.
+	(vms_patch_builtins): Handle new flags
+	* config/vms/vms-crtlmap.map: Completed using nm on
+	c and math system libraries.
+	* config/vms/make-crtlmap.awk: Handle any number of flags.
+
 2012-03-30  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-ssa-ccp.c (insert_clobbers_for_var): Do not assert that there

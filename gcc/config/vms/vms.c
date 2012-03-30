@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "target.h"
 #include "output.h"
+#include "tm.h"
+#include "dwarf2out.h"
 
 /* Correlation of standard CRTL names with DECCRTL function names.  */
 
@@ -36,19 +38,46 @@ along with GCC; see the file COPYING3.  If not see
 /* If long pointer are enabled, use _NAME64 instead.  */
 #define VMS_CRTL_64	(1 << 1)
 
-/* Use tNAME instead.  To be applied after the previous rule.  */
-#define VMS_CRTL_FLOAT  (1 << 2)
+/* Prepend s/f before the name.  To be applied after the previous rule.
+   use 's' for S float, 'f' for IEEE 32.  */
+#define VMS_CRTL_FLOAT32  (1 << 2)
 
-/* Prepend __bsd44__ before the name.  To be applied after the P64
-   rule.  */
-#define VMS_CRTL_BSD44	(1 << 3)
+/* Prepend t/g/d before the name.  To be applied after the previous rule.
+   use 'g' for VAX G float, 'd' for VAX D float, 't' for IEEE 64.  */
+#define VMS_CRTL_FLOAT64  (1 << 3)
+
+/* Prepend d before the name, only if using VAX fp.  */
+#define VMS_CRTL_FLOAT64_VAXD  (1 << 4)
 
 /* Prepend x before the name for if 128 bit long doubles are enabled.  This
    concern mostly 'printf'-like functions.  */
-#define VMS_CRTL_LDBL	(1 << 4)
+#define VMS_CRTL_FLOAT128 (1 << 5)
 
-/* Prepend ga_ for global data.  */
-#define VMS_CRTL_GLOBAL (1 << 5)
+/* From xxx, create xxx, xxxf, xxxl using MATH$XXX_T, MATH$XXX_S
+   and MATH$XXX{_X} if DPML is used.  */
+#define VMS_CRTL_DPML (1 << 6)
+
+/* Together with DPML, it means that all variant (ie xxx, xxxf and xxxl) are
+   overridden by decc.  Without DPML, it means this is a variant (ie xxxf
+   or xxxl) of a function.  */
+#define VMS_CRTL_NODPML (1 << 7)
+
+/* Prepend __bsd44_ before the name.  To be applied after the P64
+   rule.  */
+#define VMS_CRTL_BSD44	(1 << 8)
+
+/* Define only in 32 bits mode, as this has no 64 bit variants.
+   Concerns getopt/getarg.  */
+#define VMS_CRTL_32ONLY (1 << 9)
+
+/* GLobal data prefix (ga_, gl_...)  */
+#define VMS_CRTL_G_MASK (7 << 10)
+#define VMS_CRTL_G_NONE (0 << 10)
+#define VMS_CRTL_GA	(1 << 10)
+#define VMS_CRTL_GL	(2 << 10)
+
+/* Append '_2'.  Not compatible with 64.  */
+#define VMS_CRTL_FLOATV2 (1 << 13)
 
 struct vms_crtl_name
 {
@@ -84,14 +113,14 @@ vms_add_crtl_xlat (const char *name, size_t nlen,
 {
   tree targ;
 
+  /* printf ("vms crtl: %.*s -> %.*s\n", nlen, name, id_len, id_str); */
+
   targ = get_identifier_with_length (name, nlen);
   gcc_assert (!IDENTIFIER_TRANSPARENT_ALIAS (targ));
   IDENTIFIER_TRANSPARENT_ALIAS (targ) = 1;
   TREE_CHAIN (targ) = get_identifier_with_length (id_str, id_len);
 
   VEC_safe_push (tree, gc, aliases_id, targ);
-
-  /* printf ("vms: %s (%p) -> %.*s\n", name, targ, id_len, id_str); */
 }
 
 /* Do VMS specific stuff on builtins: disable the ones that are not
@@ -116,7 +145,48 @@ vms_patch_builtins (void)
       const struct vms_crtl_name *n = &vms_crtl_names[i];
       char res[VMS_CRTL_MAXLEN + 3 + 9 + 1 + 1];
       int rlen;
-      int nlen;
+      int nlen = strlen (n->name);
+
+      /* Discard 32ONLY if using 64 bit pointers.  */
+      if ((n->flags & VMS_CRTL_32ONLY)
+	  && flag_vms_pointer_size == VMS_POINTER_SIZE_64)
+	continue;
+
+      /* Handle DPML unless overridden by decc.  */
+      if ((n->flags & VMS_CRTL_DPML)
+	  && !(n->flags & VMS_CRTL_NODPML))
+	{
+	  const char *p;
+          char alt[VMS_CRTL_MAXLEN + 3];
+
+	  memcpy (res, "MATH$", 5);
+	  rlen = 5;
+	  for (p = n->name; *p; p++)
+	    res[rlen++] = TOUPPER (*p);
+	  res[rlen++] = '_';
+	  res[rlen++] = 'T';
+
+	  /* Double version.  */
+	  if (!(n->flags & VMS_CRTL_FLOAT64))
+	    vms_add_crtl_xlat (n->name, nlen, res, rlen);
+
+	  /* Float version.  */
+	  res[rlen - 1] = 'S';
+	  memcpy (alt, n->name, nlen);
+	  alt[nlen] = 'f';
+	  vms_add_crtl_xlat (alt, nlen + 1, res, rlen);
+
+	  /* Long double version.  */
+	  res[rlen - 1] = (LONG_DOUBLE_TYPE_SIZE == 128 ? 'X' : 'T');
+	  alt[nlen] = 'l';
+	  vms_add_crtl_xlat (alt, nlen + 1, res, rlen);
+
+	  if (!(n->flags & (VMS_CRTL_FLOAT32 | VMS_CRTL_FLOAT64)))
+	    continue;
+	}
+
+      if (n->flags & VMS_CRTL_FLOAT64_VAXD)
+	continue;
 
       /* Add the dec-c prefix.  */
       memcpy (res, "decc$", 5);
@@ -124,27 +194,49 @@ vms_patch_builtins (void)
 
       if (n->flags & VMS_CRTL_BSD44)
         {
-          memcpy (res + rlen, "__bsd44__", 9);
-          rlen += 9;
+          memcpy (res + rlen, "__bsd44_", 8);
+          rlen += 8;
         }
 
-      if (n->flags & VMS_CRTL_GLOBAL)
+      if ((n->flags & VMS_CRTL_G_MASK) != VMS_CRTL_G_NONE)
         {
-          memcpy (res + rlen, "ga_", 3);
-          rlen += 3;
+	  res[rlen++] = 'g';
+	  switch (n->flags & VMS_CRTL_G_MASK)
+	    {
+	    case VMS_CRTL_GA:
+	      res[rlen++] = 'a';
+	      break;
+	    case VMS_CRTL_GL:
+	      res[rlen++] = 'l';
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  res[rlen++] = '_';
         }
 
-      if (n->flags & VMS_CRTL_FLOAT)
+      if (n->flags & VMS_CRTL_FLOAT32)
+        res[rlen++] = 'f';
+
+      if (n->flags & VMS_CRTL_FLOAT64)
         res[rlen++] = 't';
 
-      if (n->flags & VMS_CRTL_LDBL)
+      if ((n->flags & VMS_CRTL_FLOAT128) && LONG_DOUBLE_TYPE_SIZE == 128)
         res[rlen++] = 'x';
 
-      nlen = strlen (n->name);
       memcpy (res + rlen, n->name, nlen);
 
       if ((n->flags & VMS_CRTL_64) == 0)
-        vms_add_crtl_xlat (n->name, nlen, res, rlen + nlen);
+	{
+	  rlen += nlen;
+
+	  if (n->flags & VMS_CRTL_FLOATV2)
+	    {
+	      res[rlen++] = '_';
+	      res[rlen++] = '2';
+	    }
+	  vms_add_crtl_xlat (n->name, nlen, res, rlen);
+	}
       else
         {
           char alt[VMS_CRTL_MAXLEN + 3];
