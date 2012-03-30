@@ -52,6 +52,7 @@ package body Alfa is
       others             => False);
 
    --  True for each reference type used in Alfa
+
    Alfa_References : constant array (Character) of Boolean :=
      ('m' => True,
       'r' => True,
@@ -79,6 +80,8 @@ package body Alfa is
    --  dereferences, that are output as reads/writes to the special variable
    --  "Heap". These references are added to the regular references when
    --  computing Alfa cross-references.
+   --
+   --  Why is Alloc.Xrefs_* used here ??? seems clearly wrong.
 
    -----------------------
    -- Local Subprograms --
@@ -121,8 +124,7 @@ package body Alfa is
      (N            : Node_Id;
       Process      : Node_Processing;
       Inside_Stubs : Boolean);
-   --  Traverse the corresponding constructs, calling Process on all
-   --  declarations.
+   --  Traverse corresponding construct, calling Process on all declarations
 
    -------------------
    -- Add_Alfa_File --
@@ -159,13 +161,11 @@ package body Alfa is
 
       declare
          Scope_Id : Int;
-
       begin
          Scope_Id := 1;
          for Index in From .. Alfa_Scope_Table.Last loop
             declare
                S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
-
             begin
                S.Scope_Num := Scope_Id;
                S.File_Num  := D;
@@ -184,7 +184,6 @@ package body Alfa is
          for Index in From .. Alfa_Scope_Table.Last loop
             declare
                S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
-
             begin
                if S.Scope_Num /= 0 then
                   Alfa_Scope_Table.Table (Scope_Id) := S;
@@ -339,10 +338,16 @@ package body Alfa is
 
       package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
 
+      --  Comment required for this package ???
+      --  Why is an internal package used here at all ???
+
       package Scopes is
          No_Scope : constant Nat := 0;
          function Get_Scope_Num (N : Entity_Id) return Nat;
+         --  Comment required ???
+
          procedure Set_Scope_Num (N : Entity_Id; Num : Nat);
+         --  Comment required ???
       end Scopes;
 
       ------------
@@ -390,6 +395,7 @@ package body Alfa is
       --  not suitable for local cross-references.
 
       Nrefs_Add : constant Nat := Drefs.Last;
+      --  Comment needed ???
 
       Rnums : array (0 .. Nrefs + Nrefs_Add) of Nat;
       --  This array contains numbers of references in the Xrefs table. This
@@ -411,17 +417,13 @@ package body Alfa is
       ---------------------
 
       function Get_Entity_Type (E : Entity_Id) return Character is
-         C : Character;
-
       begin
          case Ekind (E) is
-            when E_Out_Parameter    => C := '<';
-            when E_In_Out_Parameter => C := '=';
-            when E_In_Parameter     => C := '>';
-            when others             => C := '*';
+            when E_Out_Parameter    => return '<';
+            when E_In_Out_Parameter => return '=';
+            when E_In_Parameter     => return '>';
+            when others             => return '*';
          end case;
-
-         return C;
       end Get_Entity_Type;
 
       -----------------------
@@ -553,7 +555,7 @@ package body Alfa is
 
          if T1.Ent_Scope_File /= T2.Ent_Scope_File then
             return Dependency_Num (T1.Ent_Scope_File) <
-              Dependency_Num (T2.Ent_Scope_File);
+                   Dependency_Num (T2.Ent_Scope_File);
 
          --  Second test: within same unit, sort by location of the scope of
          --  the entity definition.
@@ -562,7 +564,7 @@ package body Alfa is
                Get_Scope_Num (T2.Key.Ent_Scope)
          then
             return Get_Scope_Num (T1.Key.Ent_Scope) <
-              Get_Scope_Num (T2.Key.Ent_Scope);
+                   Get_Scope_Num (T2.Key.Ent_Scope);
 
          --  Third test: within same unit and scope, sort by location of
          --  entity definition.
@@ -668,7 +670,6 @@ package body Alfa is
       for Index in Alfa_Scope_Table.First .. Alfa_Scope_Table.Last loop
          declare
             S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
-
          begin
             Set_Scope_Num (S.Scope_Entity, S.Scope_Num);
          end;
@@ -706,8 +707,7 @@ package body Alfa is
               and then not Is_Global_Constant (Ref.Ent)
               and then Is_Alfa_Reference (Ref.Ent, Ref.Typ)
 
-              --  Discard references from unknown scopes, such as generic
-              --  scopes.
+              --  Discard references from unknown scopes, e.g. generic scopes
 
               and then Get_Scope_Num (Ref.Ent_Scope) /= No_Scope
               and then Get_Scope_Num (Ref.Ref_Scope) /= No_Scope
@@ -757,8 +757,7 @@ package body Alfa is
 
          begin
             if Ref.Loc /= Loc
-              or else (Prev_Typ = 'm'
-                        and then Ref.Typ = 'r')
+              or else (Prev_Typ = 'm' and then Ref.Typ = 'r')
             then
                Loc           := Ref.Loc;
                Prev_Typ      := Ref.Typ;
@@ -791,8 +790,7 @@ package body Alfa is
             --  construction of the scope table, or an erroneous scope for the
             --  current cross-reference.
 
-            pragma Assert
-              (Is_Future_Scope_Entity (Ref.Ent_Scope, Scope_Id));
+            pragma Assert (Is_Future_Scope_Entity (Ref.Ent_Scope, Scope_Id));
 
             --  Update the range of cross references to which the current scope
             --  refers to. This may be the empty range only for the first scope
@@ -898,8 +896,7 @@ package body Alfa is
                                Entity_Hash_Table.Get (Spec_Entity);
 
             begin
-               --  Spec of generic may be missing, in which case Spec_Scope is
-               --  zero.
+               --  Generic spec may be missing in which case Spec_Scope is zero
 
                if Spec_Entity /= Srec.Scope_Entity
                  and then Spec_Scope /= 0
@@ -999,7 +996,7 @@ package body Alfa is
          Result := Defining_Identifier (Result);
       end if;
 
-      --  Do no return a scope without a proper location
+      --  Do not return a scope without a proper location
 
       if Present (Result)
         and then Sloc (Result) = No_Location
@@ -1399,7 +1396,8 @@ package body Alfa is
    procedure Traverse_Subprogram_Body
      (N            : Node_Id;
       Process      : Node_Processing;
-      Inside_Stubs : Boolean) is
+      Inside_Stubs : Boolean)
+   is
    begin
       Traverse_Declarations_Or_Statements
         (Declarations (N), Process, Inside_Stubs);
