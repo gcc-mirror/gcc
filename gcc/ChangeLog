@@ -1,3 +1,9 @@
+2012-03-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52754
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Only
+	propagate arbitrary addresses into really plain dereferences.
+
 2012-03-30  Richard Guenther <rguenther@suse.de>
 
 	PR middle-end/52772
