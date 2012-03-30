@@ -1,3 +1,10 @@
+2012-03-30  Naveen H.S  <naveen.S@kpitcummins.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (push_regs): Skip banked registers when
+	resbank attribute is specified.
+	(sh_expand_epilogue): Likewise.
+
 2012-03-30  Richard Henderson  <rth@redhat.com>
 
 	PR debug/52727
