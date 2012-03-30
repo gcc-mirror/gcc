@@ -12,130 +12,483 @@
 # - Comment lines start with '#' in the first column.
 # - map lines consist in an identifier optionnaly followed by at most 2
 #   space-separated flags.
-# Flags are:
-#  FLOAT: will be prefixed by 't'/'g'/'d'.
-#  64: There is a 64-bit variant.
-#  GLOBAL: name will be prefixed by ga_
-#  BSD44: name will be prefixed by __bsd44__.
-#  LDBL: a 'x' prefix will be added if 128 bit long doubles are enabled.
-#  MALLOC: malloc related function.
+# Flags are described in vms.c (prefixed by VMS_CRTL_).
 #
 # Keep entries alpha-sorted - this is enforced by the awk script.
 #
+__32_getpwent
+__32_getpwnam
+__32_getpwuid
+__32_sigaction
 __32_signal
 __32_ssignal
+__64_getpwent
+__64_getpwnam
+__64_getpwuid
+__64_sigaction
 __64_signal
 __64_ssignal
+__assert
+__dl__xpv
+__freeaddrinfo32
+__freeaddrinfo64
+__getaddrinfo32
+__getaddrinfo64
+__getaddrinfo_compat4332
+__getaddrinfo_compat4364
+__getgrent64
+__getgrgid64
+__getgrgid_r64
+__getgrnam64
+__getgrnam_r64
+__lgamma	 FLOAT64 FLOATV2
+__lgammaf	 FLOAT32 FLOATV2
+__lgammal	 FLOAT64 FLOAT128 FLOATV2
+__long_gid___32_getpwnam
+__long_gid___32_getpwuid
+__long_gid___64_getpwnam
+__long_gid___64_getpwuid
+__long_gid_access
+__long_gid_chmod
+__long_gid_chown
+__long_gid_fchmod
+__long_gid_fchown
+__long_gid_fstat
+__long_gid_ftw
+__long_gid_getegid
+__long_gid_geteuid
+__long_gid_getgid
+__long_gid_getgroups
+__long_gid_getpwnam
+__long_gid_getpwnam_r	 64
+__long_gid_getpwuid
+__long_gid_getpwuid_r	 64
+__long_gid_getuid
+__long_gid_lchown
+__long_gid_lstat
+__long_gid_setgid
+__long_gid_setuid
+__long_gid_stat
+__non_utc_ftw
+__nw__xui
+__off64_fcntl
+__off64_fseeko
+__off64_fstat
+__off64_ftello
+__off64_ftruncate
+__off64_ftw
+__off64_long_gid_fstat
+__off64_long_gid_ftw
+__off64_long_gid_lstat
+__off64_long_gid_stat
+__off64_lseek
+__off64_lstat
+__off64_mmap	 64
+__off64_non_utc_ftw
+__off64_pread
+__off64_pwrite
+__off64_stat
+__off64_truncate
+__off64_utc_fstat
+__off64_utc_lstat
+__off64_utc_stat
+__pdam_wcsftime
+__pdam_wcstok	 64
 __posix__exit
 __posix_exit
 __posix_kill
 __posix_long_gid_kill
+__posix_system
+__posix_wait
+__read_rnd
+__recvmsg32	 BSD44
+__recvmsg64	 BSD44
+__sendmsg32	 BSD44
+__sendmsg64	 BSD44
+__short_gid___32_getpwent
+__short_gid___64_getpwent
+__short_gid_getpwent
+__std_fstat
+__std_ftw
+__std_lstat
+__std_stat
+__unix_geteuid
 __unix_getuid
+__utc_ctime
+__utc_ctime_r
 __utc_fstat
+__utc_ftime
+__utc_gmtime
+__utc_gmtime_r
 __utc_localtime
 __utc_localtime_r
 __utc_lstat
+__utc_mktime
+__utc_pdam_wcsftime
 __utc_stat
 __utc_strftime
 __utc_time
+__utc_utime
+__utc_utimes
+__utc_wcsftime
 __utctz_gmtime
+__utctz_gmtime_r
 __utctz_localtime
 __utctz_localtime_r
+__vms_pclose
+__vms_wait3
+__vms_wait4
+__vms_waitpid
+__writev32
+__writev64
+_exit
+_fstat
+a64l
 abort
 abs
-accept
+accept	 BSD44
 access
-acos          FLOAT
+acos	 FLOAT64 DPML
+acosd	FLOAT64_VAXD DPML
+acosdl	FLOAT64_VAXD
+acosh	FLOAT64_VAXD DPML
+acoshl	FLOAT64_VAXD
+acosl	FLOAT64_VAXD
 alarm
 asctime
 asctime_r
-asin          FLOAT
-atan          FLOAT
-atan2         FLOAT
+asin	 FLOAT64 DPML
+asind	FLOAT64_VAXD DPML
+asindl	FLOAT64_VAXD
+asinh	FLOAT64_VAXD DPML
+asinhl	FLOAT64_VAXD
+asinl	FLOAT64_VAXD
+atan	 FLOAT64 DPML
+atan2	 FLOAT64 DPML
+atan2l	FLOAT64_VAXD
+atand	FLOAT64_VAXD DPML
+atand2	FLOAT64_VAXD DPML
+atand2l	FLOAT64_VAXD
+atandl	FLOAT64_VAXD
+atanh	FLOAT64_VAXD DPML
+atanhl	FLOAT64_VAXD
+atanl	FLOAT64_VAXD
 atexit
-atof          FLOAT
+atof	 FLOAT64
 atoi
 atol
 atoll
 atoq
-basename      64
+basename	 64
 bcmp
 bcopy
-bsearch       64
+bind	 BSD44
+box
+# brk
+bsd_mh	 GA
+bsd_waddbytes
+bsd_waddstr
+bsearch	 64
+btowc
 bzero
-calloc        64 MALLOC
-ceil          FLOAT
+cabs	 FLOAT64 FLOATV2
+cabsf	 FLOAT32 FLOATV2
+cabsl	 FLOAT64 FLOAT128 FLOATV2
+cacos	 DPML
+cacosh	 DPML
+calloc	 64 MALLOC
+calloc_opt
+carg	DPML
+casin	DPML
+casinh	DPML
+catan	DPML
+catanh	DPML
+catclose
+catgets	 64
+catopen
+cbrt	FLOAT64_VAXD
+cbrtl	FLOAT64_VAXD
+ccos	DPML
+ccosh	DPML
+cdiv	DPML
+ceil	 FLOAT64 DPML
+ceill	FLOAT64_VAXD
+cexp	DPML
+cfree
+cfree_opt
 chdir
 chmod
 chown
 clearerr
+clearerr_unlocked
 clock
+clock_getres
+clock_gettime
+clock_settime
+clog	DPML
 close
 closedir
-connect
-cos           FLOAT
-ctermid       64
+cmul	DPML
+cols	 GA
+confstr
+connect	 BSD44
+copysign	FLOAT64_VAXD DPML
+copysignl	FLOAT64_VAXD
+cos	 FLOAT64 DPML
+cosd	FLOAT64_VAXD DPML
+cosdl	FLOAT64_VAXD
+cosh	 FLOAT64 DPML
+coshl	FLOAT64_VAXD
+cosl	FLOAT64_VAXD
+cot	FLOAT64_VAXD DPML
+cotd	FLOAT64_VAXD DPML
+cotdl	FLOAT64_VAXD
+cotl	FLOAT64_VAXD
+cpow	DPML
+creat
+crtl_init
+crypt	 64
+csin	DPML
+csinh	DPML
+csqrt   DPML
+ctan	DPML
+ctanh	DPML
+ctermid	 64
 ctime
+ctime_r
+cuserid	 64
+daylight	 GL
+delete
+delwin
+difftime	 FLOAT64
+dirname	 64
+div
 dlclose
 dlerror
 dlopen
 dlsym
+drand48	 FLOAT64
+drem	DPML
 dup
 dup2
-environ       GLOBAL
+ecvt	 FLOAT64
+encrypt
+endgrent
+endhostent
+endnetent
+endprotoent
+endpwent
+endservent
+endwin
+environ  GA
+erand48	 FLOAT64
+erf	FLOAT64_VAXD DPML
+erfc	FLOAT64_VAXD DPML
+erfcl	FLOAT64_VAXD
+erfl	FLOAT64_VAXD
+errno	 GA
+execl
+execle
+execlp
 execv
 execve
 execvp
 exit
-exp           FLOAT
-fabs          FLOAT
+exp	 FLOAT64 DPML
+expl	FLOAT64_VAXD
+expm1	FLOAT64_VAXD DPML
+expm1l	FLOAT64_VAXD
+fabs	 FLOAT64 DPML
+fabsl	FLOAT64_VAXD
+fchmod
+fchown
 fclose
 fcntl
+fcvt	 FLOAT64
 fdopen
 feof
+feof_unlocked
 ferror
+ferror_unlocked
 fflush
 ffs
 fgetc
-fgetname      64 MALLOC
-fgets         64
+fgetc_unlocked
+fgetname	 64
+fgetpos
+fgets	 64
+fgetwc
+fgetws	 64
 fileno
-floor         FLOAT
+finite	FLOAT64_VAXD DPML
+finitel	FLOAT64_VAXD
+flockfile
+floor	 FLOAT64 DPML
+floorl	FLOAT64_VAXD
+fmod	 FLOAT64 DPML NODPML FLOATV2
+fmodf	 FLOAT32 NODPML FLOATV2
+fmodl	 FLOAT64 FLOAT128 NODPML FLOATV2
+# fnmatch # Overridden by libiberty.
 fopen
+fp_class	FLOAT64_VAXD DPML
+fp_classl	FLOAT64_VAXD
 fpathconf
-fprintf       FLOAT LDBL
+fprintf	 FLOAT64 FLOAT128
+fprintf__cf	 FLOAT64 FLOAT128
 fputc
+fputc_unlocked
 fputs
+fputwc
+fputws
 fread
 free
+free_opt
+freeaddrinfo
+freehostent
 freopen
-frexp        FLOAT
+frexp	 FLOAT64 DPML
+frexpl	FLOAT64_VAXD
+fscanf	 FLOAT64 FLOAT128
 fseek
+fseeko
+fsetpos
+fstat
+fstatvfs
+fsync
 ftell
+ftello
+ftime
+ftruncate
+ftrylockfile
+ftw
+funlockfile
+fwait
+fwide
+fwprintf	 FLOAT64 FLOAT128
 fwrite
+fwscanf	 FLOAT64 FLOAT128
+gai_strerror
+gamma	 FLOAT64 FLOATV2
+gammaf	 FLOAT32 FLOATV2
+gammal	 FLOAT64 FLOAT128 FLOATV2
+gbsd_mvprintw
+gbsd_mvscanw
+gbsd_mvwprintw
+gbsd_mvwscanw
+gbsd_printw
+gbsd_scanw
+gbsd_wprintw
+gbsd_wscanw
+gcvt	 FLOAT64 64
+get_errno_addr
+get_vms_errno_addr
+getaddrinfo
+getaddrinfo_compat43
 getc
+getc_unlocked
 getchar
-getcwd        64
+getchar_unlocked
+getclock
+getcwd	 64
+getdtablesize
 getegid
 getenv
 geteuid
 getgid
-gethostbyaddr
-gethostbyname
-getname
+getgrent
+getgrgid
+getgrgid_r
+getgrnam
+getgrnam_r
+getgroups
+gethostaddr
+gethostbyaddr	 BSD44
+gethostbyname	 BSD44
+gethostent
+gethostname
+getipnodebyaddr
+getipnodebyname
+getitimer
+getlogin
+getlogin_r
+getname	 64
+getnameinfo
+getnetbyaddr
+getnetbyname
+getnetent
+getopt	32ONLY
 getpagesize
+getpeername	 BSD44
+getpgid
+getpgrp
 getpid
+getppid
+getprotobyname
+getprotobynumber
+getprotoent
 getpwent
 getpwnam
+getpwnam_r	 64
+getpwuid
+getpwuid_r	 64
+gets	 64
 getservbyname
 getservbyport
+getservent
+getsid
+getsockname	 BSD44
 getsockopt
 gettimeofday
 getuid
+getw
+getwc
+getwchar
+glob	 64
+globfree	 64
 gmtime
+gmtime_r
+gsignal
+herror
+hostalias
+hstrerror
+htonl
 htons
+hypot	 FLOAT64 DPML NODPML FLOATV2
+hypotf	 FLOAT32 NODPML FLOATV2
+hypotl	 FLOAT64 FLOAT128 NODPML FLOATV2
 iconv
-index         64
+iconv_close
+iconv_open
+if_freenameindex
+if_indextoname
+if_nameindex
+if_nametoindex
+ilogb	DPML
+index	 64
+inet6_opt_append
+inet6_opt_find
+inet6_opt_finish
+inet6_opt_get_val
+inet6_opt_init
+inet6_opt_next
+inet6_opt_set_val
+inet6_rth_add
+inet6_rth_getaddr
+inet6_rth_init
+inet6_rth_reverse
+inet6_rth_segments
+inet6_rth_space
+inet_addr
+inet_aton
+inet_lnaof
+inet_makeaddr
+inet_netof
+inet_network
+inet_ntoa
+inet_ntop
+inet_pton
+initscr
+initstate
 ioctl
 isalnum
 isalpha
@@ -146,128 +499,432 @@ iscntrl
 isdigit
 isgraph
 islower
+isnan	FLOAT64_VAXD DPML
+isnanl	FLOAT64_VAXD
 isprint
 ispunct
 isspace
 isupper
+iswalnum
+iswalpha
+iswcntrl
+iswctype
+iswdigit
+iswgraph
+iswlower
+iswprint
+iswpunct
+iswspace
+iswupper
+iswxdigit
 isxdigit
+j0	FLOAT64_VAXD DPML
+j0l	FLOAT64_VAXD
+j1	FLOAT64_VAXD DPML
+j1l	FLOAT64_VAXD
+jn	FLOAT64_VAXD DPML
+jnl	FLOAT64_VAXD
+jrand48
 kill
-ldexp         FLOAT
+l64a
+l64a_r
+labs
+lchown
+lcong48
+ldexp	 FLOAT64 DPML
+ldexpl	FLOAT64_VAXD
+ldiv
+lgamma	 FLOAT64 DPML NODPML FLOATV2
+lgammaf	 FLOAT32 NODPML FLOATV2
+lgammal	 FLOAT64 FLOAT128 NODPML FLOATV2
+lines	 GA
+link
+listen
+llabs
+lldiv
 locale
 localeconv
 localtime
 localtime_r
-log           FLOAT
-log10         FLOAT
+# ln -> log DPML
+log	 FLOAT64 FLOATV2
+log10	 FLOAT64 DPML
+log10l	FLOAT64_VAXD
+log1p	FLOAT64_VAXD DPML
+log1pl	FLOAT64_VAXD
+log2	FLOAT64_VAXD DPML
+log2l	FLOAT64_VAXD
+logb	FLOAT64_VAXD DPML
+logbl	FLOAT64_VAXD
+logf	 FLOAT32 FLOATV2
+logl	 FLOAT64 FLOAT128 FLOATV2
 longjmp
+longname 64
+lrand48
+lround	 DPML
 lseek
-malloc        64 MALLOC
-mbstowcs      64
-memchr        64
+lstat
+lwait
+malloc	 64 MALLOC
+malloc_opt
+mblen
+mbrlen
+mbrtowc
+mbsinit
+mbsrtowcs	 64
+mbstowcs
+mbtowc
+memccpy	 64
+memchr	 64
 memcmp
-memcpy        64
-memmove       64
-memset        64
+memcpy	 64
+memmove	 64
+memset	 64
 mkdir
 mkstemp
-mktemp        64
-mmap          64
+mktemp	 64
+mktime
+mmap	 64
+modf	 FLOAT64 DPML
+modfl	FLOAT64_VAXD
+mprotect
+mrand48
+msync
 munmap
+mvwaddstr
+mvwin
 nanosleep
+newwin
+nextafter	FLOAT64_VAXD DPML
+nextafterl	FLOAT64_VAXD
+nice
+nint	FLOAT64_VAXD DPML
+nintl	FLOAT64_VAXD
 nl_langinfo
+nrand48
+ntohl
+ntohs
 open
 opendir
+optarg	 GA	32ONLY
+opterr	 GL	32ONLY
+optind	 GL	32ONLY
+optopt	 GL	32ONLY
+overlay
+overwrite
 pathconf
+pause
 pclose
 perror
 pipe
+poll
 popen
-pow           FLOAT
-printf        FLOAT LDBL
+# pow DPML version ???
+pow	 FLOAT64 FLOATV2
+powf	 FLOAT32 FLOATV2
+powl	 FLOAT64 FLOAT128 FLOATV2
+pread
+printf	 FLOAT64 FLOAT128
+printf__cf	 FLOAT64 FLOAT128
+printw	 FLOAT64 FLOAT128
 putc
+putc_unlocked
 putchar
+putchar_unlocked
 putenv
 puts
-qsort         64
+putw
+putwc
+putwchar
+pwrite
+qabs
+qdiv
+qsort	 64
 raise
+rand
+rand_r
 random
 read
 readdir
-realloc       64 MALLOC
+readdir_r	 64
+readlink
+readv	 64
+realloc	 64 MALLOC
+realloc_opt
+realpath	 64
+record_read
 recv
-recvfrom
-recvmsg       BSD44 64
+recvfrom	 BSD44
+recvmsg	 BSD44
+remainder DPML
 remove
 rename
 rewind
-rindex        64
+rewinddir
+rindex	 64
+rint	FLOAT64_VAXD DPML
+rintl	FLOAT64_VAXD
 rmdir
-scanf         FLOAT LDBL
+rtl_private
+# sbrk # Makes libiberty/xmalloc.c fails to build.
+scalb	FLOAT64_VAXD DPML
+scalbl	FLOAT64_VAXD
+scanf	 FLOAT64 FLOAT128
+scanw	 FLOAT64 FLOAT128
+scroll
+seed48
+seekdir
 select
 send
-sendmsg       BSD44 64
-sendto
+sendmsg	 BSD44
+sendto	 BSD44
+set_new_handler__xpxv_v
 setbuf
 setenv
+seteuid
+setgid
+setgrent
+sethostent
+setitimer
+setkey
 setlocale
+setnetent
+setpgid
+setpgrp
+setprotoent
 setpwent
+setregid
+setreuid
+setservent
+setsid
 setsockopt
+setstate
+setuid
 setvbuf
+shm_open
+shm_unlink
+shutdown
+sigaction
+sigaddset
+sigblock
+sigdelset
+sigemptyset
+sigfillset
+sighold
+sigignore
+sigismember
 siglongjmp
+sigmask
 signal
+signgam	 GL
+sigpause
+sigpending
+sigprocmask
+sigrelse
 sigsetjmp
 sigsetmask
-sin           FLOAT
+sigstack
+sigsuspend
+sigtimedwait
+sigvec
+sigwait
+sigwaitinfo
+sin	 FLOAT64 DPML
+sincos  DPML
+sincosd DPML
+sind	FLOAT64_VAXD DPML
+sindl	FLOAT64_VAXD
+sinh	 FLOAT64 DPML
+sinhcosh DPML
+sinhl	FLOAT64_VAXD
+sinl	FLOAT64_VAXD
 sleep
-snprintf      FLOAT LDBL
+snprintf	 FLOAT64 FLOAT128
 socket
-sprintf	      FLOAT LDBL
-sqrt          FLOAT
-sscanf        FLOAT LDBL
+socketpair
+sprintf	 FLOAT64 FLOAT128
+sprintf__cf	 FLOAT64 FLOAT128
+sqrt	 FLOAT64 DPML
+sqrtl	FLOAT64_VAXD
+srand
+srand48
+srandom
+sscanf	 FLOAT64 FLOAT128
+ssignal
 stat
+statvfs
 strcasecmp
-strcat        64
-strchr        64
+strcat	 64
+strchr	 64
 strcmp
-strcpy        64
+strcoll
+strcpy	 64
 strcspn
-strdup        64 MALLOC
+strdup	 64 MALLOC
 strerror
+strfmon	 FLOAT64
+strftime
 strlen
 strncasecmp
-strncat       64
+strncat	 64
 strncmp
-strncpy       64
-strpbrk       64
-strrchr       64
+strncpy	 64
+strnlen
+strpbrk	 64
+strptime	 64
+strptime_xpg4
+strrchr	 64
+strsep	 64
 strspn
-strstr        64
-strtod        64 FLOAT
-strtok        64 MALLOC
-strtok_r      64 MALLOC
-strtol        64
-strtoul       64
+strstr	 64
+strtod	 FLOAT64 64
+strtok	 64
+strtok_r	 64
+strtol	 64
+strtoll	 64
+strtoq	 64
+strtoul	 64
+strtoull	 64
+strtouq	 64
+strxfrm
+subwin
+swab
+swprintf	 FLOAT64 FLOAT128
+swscanf	 FLOAT64 FLOAT128
+symlink
+sys_errlist	 GA
+sys_nerr	 GL
 sysconf
 system
-tan           FLOAT
+tan	 FLOAT64 DPML
+tand	FLOAT64_VAXD DPML
+tandl	FLOAT64_VAXD
+tanh	 FLOAT64 DPML
+tanhl	FLOAT64_VAXD
+tanl	FLOAT64_VAXD
+telldir
 tempnam
+tgamma  DPML
 time
 times
+timezone	 GL
 tmpfile
-tmpnam        64
+tmpnam	 64
+toascii
 tolower
+touchwin
 toupper
+towctrans
+towlower
+towupper
+trunc	FLOAT64_VAXD DPML
+truncate
+truncl	FLOAT64_VAXD
 ttyname
+ttyname_r
+tzname	 GA
+tzset
+ualarm
 umask
+uname
 ungetc
+ungetwc
 unlink
+unordered	FLOAT64_VAXD DPML
+unorderedl	FLOAT64_VAXD
+unsetenv
 usleep
 utime
-vfprintf      FLOAT LDBL
-vprintf       FLOAT LDBL
-vsnprintf     FLOAT LDBL
-vsprintf      FLOAT LDBL
+utimes
+vaxc$calloc_opt
+vaxc$cfree_opt
+vaxc$crtl_init
+vaxc$errno	 GA
+vaxc$free_opt
+vaxc$get_sdc
+vaxc$malloc_opt
+vaxc$realloc_opt
+vfprintf	 FLOAT64 FLOAT128
+vfscanf	 FLOAT64 FLOAT128
+vfwprintf	 FLOAT64 FLOAT128
+vfwscanf	 FLOAT64 FLOAT128
+vprintf	 FLOAT64 FLOAT128
+vscanf	 FLOAT64 FLOAT128
+vsnprintf	 FLOAT64 FLOAT128
+vsprintf	 FLOAT64 FLOAT128
+vsscanf	 FLOAT64 FLOAT128
+vswprintf	 FLOAT64 FLOAT128
+vswscanf	 FLOAT64 FLOAT128
+vwprintf	 FLOAT64 FLOAT128
+vwscanf	 FLOAT64 FLOAT128
+waddch
+waddstr
 wait
+wait3
+wait4
 waitpid
+wclear
+wclrattr
+wclrtobot
+wclrtoeol
+wcrtomb
+wcscat	 64
+wcschr	 64
+wcscmp
+wcscoll
+wcscpy	 64
+wcscspn
+wcsftime
+wcslen
+wcsncat	 64
+wcsncmp
+wcsncpy	 64
+wcspbrk	 64
+wcsrchr	 64
+wcsrtombs	 64
+wcsspn
+wcsstr	 64
+wcstod	 FLOAT64 64
+wcstok	 64
+wcstol	 64
+wcstombs
+wcstoul	 64
+wcswcs	 64
 wcswidth
+wcsxfrm
+wctob
+wctomb
+wctrans
+wctype
+wcwidth
+wdelch
+wdeleteln
+werase
+wgetch
+wgetstr
+winch
+winsch
+winsertln
+winsstr
+wmemchr	 64
+wmemcmp
+wmemcpy	 64
+wmemmove	 64
+wmemset	 64
+wmove
+wprintf	 FLOAT64 FLOAT128
+wprintw	 FLOAT64 FLOAT128
+wrefresh
 write
+writev
+wscanf	 FLOAT64 FLOAT128
+wscanw	 FLOAT64 FLOAT128
+wsetattr
+wstandend
+wstandout
+y0	FLOAT64_VAXD DPML
+y0l	FLOAT64_VAXD
+y1	FLOAT64_VAXD DPML
+y1l	FLOAT64_VAXD
+yn	FLOAT64_VAXD DPML
+ynl	FLOAT64_VAXD
