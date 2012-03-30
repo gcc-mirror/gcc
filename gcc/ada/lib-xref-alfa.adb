@@ -40,100 +40,16 @@ package body Alfa is
    --  Table of Alfa_Entities, True for each entity kind used in Alfa
 
    Alfa_Entities : constant array (Entity_Kind) of Boolean :=
-     (E_Void                                       => False,
-      E_Variable                                   => True,
-      E_Component                                  => False,
-      E_Constant                                   => True,
-      E_Discriminant                               => False,
-
-      E_Loop_Parameter                             => True,
-      E_In_Parameter                               => True,
-      E_Out_Parameter                              => True,
-      E_In_Out_Parameter                           => True,
-      E_Generic_In_Out_Parameter                   => False,
-
-      E_Generic_In_Parameter                       => False,
-      E_Named_Integer                              => False,
-      E_Named_Real                                 => False,
-      E_Enumeration_Type                           => False,
-      E_Enumeration_Subtype                        => False,
-
-      E_Signed_Integer_Type                        => False,
-      E_Signed_Integer_Subtype                     => False,
-      E_Modular_Integer_Type                       => False,
-      E_Modular_Integer_Subtype                    => False,
-      E_Ordinary_Fixed_Point_Type                  => False,
-
-      E_Ordinary_Fixed_Point_Subtype               => False,
-      E_Decimal_Fixed_Point_Type                   => False,
-      E_Decimal_Fixed_Point_Subtype                => False,
-      E_Floating_Point_Type                        => False,
-      E_Floating_Point_Subtype                     => False,
-
-      E_Access_Type                                => False,
-      E_Access_Subtype                             => False,
-      E_Access_Attribute_Type                      => False,
-      E_Allocator_Type                             => False,
-      E_General_Access_Type                        => False,
-
-      E_Access_Subprogram_Type                     => False,
-      E_Access_Protected_Subprogram_Type           => False,
-      E_Anonymous_Access_Subprogram_Type           => False,
-      E_Anonymous_Access_Protected_Subprogram_Type => False,
-      E_Anonymous_Access_Type                      => False,
-
-      E_Array_Type                                 => False,
-      E_Array_Subtype                              => False,
-      E_String_Type                                => False,
-      E_String_Subtype                             => False,
-      E_String_Literal_Subtype                     => False,
-
-      E_Class_Wide_Type                            => False,
-      E_Class_Wide_Subtype                         => False,
-      E_Record_Type                                => False,
-      E_Record_Subtype                             => False,
-      E_Record_Type_With_Private                   => False,
-
-      E_Record_Subtype_With_Private                => False,
-      E_Private_Type                               => False,
-      E_Private_Subtype                            => False,
-      E_Limited_Private_Type                       => False,
-      E_Limited_Private_Subtype                    => False,
-
-      E_Incomplete_Type                            => False,
-      E_Incomplete_Subtype                         => False,
-      E_Task_Type                                  => False,
-      E_Task_Subtype                               => False,
-      E_Protected_Type                             => False,
-
-      E_Protected_Subtype                          => False,
-      E_Exception_Type                             => False,
-      E_Subprogram_Type                            => False,
-      E_Enumeration_Literal                        => False,
-      E_Function                                   => True,
-
-      E_Operator                                   => True,
-      E_Procedure                                  => True,
-      E_Entry                                      => False,
-      E_Entry_Family                               => False,
-      E_Block                                      => False,
-
-      E_Entry_Index_Parameter                      => False,
-      E_Exception                                  => False,
-      E_Generic_Function                           => False,
-      E_Generic_Package                            => False,
-      E_Generic_Procedure                          => False,
-
-      E_Label                                      => False,
-      E_Loop                                       => False,
-      E_Return_Statement                           => False,
-      E_Package                                    => False,
-
-      E_Package_Body                               => False,
-      E_Protected_Object                           => False,
-      E_Protected_Body                             => False,
-      E_Task_Body                                  => False,
-      E_Subprogram_Body                            => False);
+     (E_Constant         => True,
+      E_Function         => True,
+      E_In_Out_Parameter => True,
+      E_In_Parameter     => True,
+      E_Loop_Parameter   => True,
+      E_Operator         => True,
+      E_Out_Parameter    => True,
+      E_Procedure        => True,
+      E_Variable         => True,
+      others             => False);
 
    --  True for each reference type used in Alfa
    Alfa_References : constant array (Character) of Boolean :=
@@ -148,6 +64,9 @@ package body Alfa is
    ---------------------
    -- Local Variables --
    ---------------------
+
+   Heap : Entity_Id := Empty;
+   --  A special entity which denotes the heap object
 
    package Drefs is new Table.Table (
      Table_Component_Type => Xref_Entry,
@@ -210,8 +129,8 @@ package body Alfa is
    -------------------
 
    procedure Add_Alfa_File (U : Unit_Number_Type; D : Nat) is
+      File : constant Source_File_Index := Source_Index (U);
       From : Scope_Index;
-      S    : constant Source_File_Index := Source_Index (U);
 
       File_Name      : String_Ptr;
       Unit_File_Name : String_Ptr;
@@ -220,7 +139,7 @@ package body Alfa is
       --  Source file could be inexistant as a result of an error, if option
       --  gnatQ is used.
 
-      if S = No_Source_File then
+      if File = No_Source_File then
          return;
       end if;
 
@@ -230,67 +149,64 @@ package body Alfa is
       --  filling Sdep_Table in Write_ALI.
 
       if Present (Cunit (U)) then
-         Traverse_Compilation_Unit (Cunit (U),
-                                    Detect_And_Add_Alfa_Scope'Access,
-                                    Inside_Stubs => False);
+         Traverse_Compilation_Unit
+           (CU           => Cunit (U),
+            Process      => Detect_And_Add_Alfa_Scope'Access,
+            Inside_Stubs => False);
       end if;
 
       --  Update scope numbers
 
       declare
-         Count : Nat;
+         Scope_Id : Int;
 
       begin
-         Count := 1;
-         for S in From .. Alfa_Scope_Table.Last loop
+         Scope_Id := 1;
+         for Index in From .. Alfa_Scope_Table.Last loop
             declare
-               E : Entity_Id renames Alfa_Scope_Table.Table (S).Scope_Entity;
+               S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
 
             begin
-               if Lib.Get_Source_Unit (E) = U then
-                  Alfa_Scope_Table.Table (S).Scope_Num := Count;
-                  Alfa_Scope_Table.Table (S).File_Num  := D;
-                  Count                                := Count + 1;
-
-               else
-                  --  Mark for removal a scope S which is not located in unit
-                  --  U, for example for scope inside generics that get
-                  --  instantiated.
-
-                  Alfa_Scope_Table.Table (S).Scope_Num := 0;
-               end if;
+               S.Scope_Num := Scope_Id;
+               S.File_Num  := D;
+               Scope_Id    := Scope_Id + 1;
             end;
          end loop;
       end;
 
+      --  Remove those scopes previously marked for removal
+
       declare
-         Snew : Scope_Index;
+         Scope_Id : Scope_Index;
 
       begin
-         Snew := From;
-         for S in From .. Alfa_Scope_Table.Last loop
-            --  Remove those scopes previously marked for removal
+         Scope_Id := From;
+         for Index in From .. Alfa_Scope_Table.Last loop
+            declare
+               S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
 
-            if Alfa_Scope_Table.Table (S).Scope_Num /= 0 then
-               Alfa_Scope_Table.Table (Snew) := Alfa_Scope_Table.Table (S);
-               Snew := Snew + 1;
-            end if;
+            begin
+               if S.Scope_Num /= 0 then
+                  Alfa_Scope_Table.Table (Scope_Id) := S;
+                  Scope_Id := Scope_Id + 1;
+               end if;
+            end;
          end loop;
 
-         Alfa_Scope_Table.Set_Last (Snew - 1);
+         Alfa_Scope_Table.Set_Last (Scope_Id - 1);
       end;
 
       --  Make entry for new file in file table
 
-      Get_Name_String (Reference_Name (S));
+      Get_Name_String (Reference_Name (File));
       File_Name := new String'(Name_Buffer (1 .. Name_Len));
 
       --  For subunits, also retrieve the file name of the unit. Only do so if
       --  unit U has an associated compilation unit.
 
       if Present (Cunit (U))
-        and then Present (Cunit (Unit (S)))
-        and then Nkind (Unit (Cunit (Unit (S)))) = N_Subunit
+        and then Present (Cunit (Unit (File)))
+        and then Nkind (Unit (Cunit (Unit (File)))) = N_Subunit
       then
          Get_Name_String (Reference_Name (Main_Source_File));
          Unit_File_Name := new String'(Name_Buffer (1 .. Name_Len));
@@ -384,10 +300,44 @@ package body Alfa is
    --------------------
 
    procedure Add_Alfa_Xrefs is
-      Cur_Scope_Idx   : Scope_Index;
-      From_Xref_Idx   : Xref_Index;
-      Cur_Entity      : Entity_Id;
-      Cur_Entity_Name : String_Ptr;
+      function Entity_Of_Scope (S : Scope_Index) return Entity_Id;
+      --  Return the entity which maps to the input scope index
+
+      function Get_Entity_Type (E : Entity_Id) return Character;
+      --  Return a character representing the type of entity
+
+      function Is_Alfa_Reference
+        (E   : Entity_Id;
+         Typ : Character) return Boolean;
+      --  Return whether entity reference E meets Alfa requirements. Typ is the
+      --  reference type.
+
+      function Is_Alfa_Scope (E : Entity_Id) return Boolean;
+      --  Return whether the entity or reference scope meets requirements for
+      --  being an Alfa scope.
+
+      function Is_Future_Scope_Entity
+        (E : Entity_Id;
+         S : Scope_Index) return Boolean;
+      --  Check whether entity E is in Alfa_Scope_Table at index S or higher
+
+      function Is_Global_Constant (E : Entity_Id) return Boolean;
+      --  Return True if E is a global constant for which we should ignore
+      --  reads in Alfa.
+
+      function Lt (Op1 : Natural; Op2 : Natural) return Boolean;
+      --  Comparison function for Sort call
+
+      procedure Move (From : Natural; To : Natural);
+      --  Move procedure for Sort call
+
+      procedure Update_Scope_Range
+        (S    : Scope_Index;
+         From : Xref_Index;
+         To   : Xref_Index);
+      --  Update the scope which maps to S with the new range From .. To
+
+      package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
 
       package Scopes is
          No_Scope : constant Nat := 0;
@@ -447,13 +397,144 @@ package body Alfa is
       --  for the call to sort. When we sort the table, we move the entries in
       --  Rnums around, but we do not move the original table entries.
 
-      function Lt (Op1, Op2 : Natural) return Boolean;
-      --  Comparison function for Sort call
+      ---------------------
+      -- Entity_Of_Scope --
+      ---------------------
 
-      procedure Move (From : Natural; To : Natural);
-      --  Move procedure for Sort call
+      function Entity_Of_Scope (S : Scope_Index) return Entity_Id is
+      begin
+         return Alfa_Scope_Table.Table (S).Scope_Entity;
+      end Entity_Of_Scope;
 
-      package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
+      ---------------------
+      -- Get_Entity_Type --
+      ---------------------
+
+      function Get_Entity_Type (E : Entity_Id) return Character is
+         C : Character;
+
+      begin
+         case Ekind (E) is
+            when E_Out_Parameter    => C := '<';
+            when E_In_Out_Parameter => C := '=';
+            when E_In_Parameter     => C := '>';
+            when others             => C := '*';
+         end case;
+
+         return C;
+      end Get_Entity_Type;
+
+      -----------------------
+      -- Is_Alfa_Reference --
+      -----------------------
+
+      function Is_Alfa_Reference
+        (E   : Entity_Id;
+         Typ : Character) return Boolean
+      is
+      begin
+         --  The only references of interest on callable entities are calls. On
+         --  non-callable entities, the only references of interest are reads
+         --  and writes.
+
+         if Ekind (E) in Overloadable_Kind then
+            return Typ = 's';
+
+         --  References to constant objects are not considered in Alfa section,
+         --  as these will be translated as constants in the intermediate
+         --  language for formal verification, and should therefore never
+         --  appear in frame conditions.
+
+         elsif Is_Constant_Object (E) then
+            return False;
+
+         --  Objects of Task type or protected type are not Alfa references
+
+         elsif Present (Etype (E))
+           and then Ekind (Etype (E)) in Concurrent_Kind
+         then
+            return False;
+
+         --  In all other cases, result is true for reference/modify cases,
+         --  and false for all other cases.
+
+         else
+            return Typ = 'r' or else Typ = 'm';
+         end if;
+      end Is_Alfa_Reference;
+
+      -------------------
+      -- Is_Alfa_Scope --
+      -------------------
+
+      function Is_Alfa_Scope (E : Entity_Id) return Boolean is
+      begin
+         return Present (E)
+           and then not Is_Generic_Unit (E)
+           and then Renamed_Entity (E) = Empty
+           and then Get_Scope_Num (E) /= No_Scope;
+      end Is_Alfa_Scope;
+
+      ----------------------------
+      -- Is_Future_Scope_Entity --
+      ----------------------------
+
+      function Is_Future_Scope_Entity
+        (E : Entity_Id;
+         S : Scope_Index) return Boolean
+      is
+         function Is_Past_Scope_Entity return Boolean;
+         --  Check whether entity E is in Alfa_Scope_Table at index strictly
+         --  lower than S.
+
+         --------------------------
+         -- Is_Past_Scope_Entity --
+         --------------------------
+
+         function Is_Past_Scope_Entity return Boolean is
+         begin
+            for Index in Alfa_Scope_Table.First .. S - 1 loop
+               if Alfa_Scope_Table.Table (Index).Scope_Entity = E then
+                  declare
+                     Dummy : constant Alfa_Scope_Record :=
+                               Alfa_Scope_Table.Table (Index);
+                     pragma Unreferenced (Dummy);
+                  begin
+                     return True;
+                  end;
+               end if;
+            end loop;
+
+            return False;
+         end Is_Past_Scope_Entity;
+
+      --  Start of processing for Is_Future_Scope_Entity
+
+      begin
+         for Index in S .. Alfa_Scope_Table.Last loop
+            if Alfa_Scope_Table.Table (Index).Scope_Entity = E then
+               return True;
+            end if;
+         end loop;
+
+         --  If this assertion fails, this means that the scope which we are
+         --  looking for has been treated already, which reveals a problem in
+         --  the order of cross-references.
+
+         pragma Assert (not Is_Past_Scope_Entity);
+
+         return False;
+      end Is_Future_Scope_Entity;
+
+      ------------------------
+      -- Is_Global_Constant --
+      ------------------------
+
+      function Is_Global_Constant (E : Entity_Id) return Boolean is
+      begin
+         return Ekind (E) = E_Constant
+           and then Ekind_In (Scope (E), E_Package, E_Package_Body);
+      end Is_Global_Constant;
 
       --------
       -- Lt --
@@ -492,13 +573,13 @@ package body Alfa is
          --  Fourth test: if reference is in same unit as entity definition,
          --  sort first.
 
-         elsif
-           T1.Key.Lun /= T2.Key.Lun and then T1.Ent_Scope_File = T1.Key.Lun
+         elsif T1.Key.Lun /= T2.Key.Lun
+           and then T1.Ent_Scope_File = T1.Key.Lun
          then
             return True;
 
-         elsif
-           T1.Key.Lun /= T2.Key.Lun and then T2.Ent_Scope_File = T2.Key.Lun
+         elsif T1.Key.Lun /= T2.Key.Lun
+           and then T2.Ent_Scope_File = T2.Key.Lun
          then
             return False;
 
@@ -510,6 +591,7 @@ package body Alfa is
            and then T1.Key.Ent_Scope = T1.Key.Ref_Scope
          then
             return True;
+
          elsif T1.Ent_Scope_File = T1.Key.Lun
            and then T1.Key.Ref_Scope /= T2.Key.Ref_Scope
            and then T2.Key.Ent_Scope = T2.Key.Ref_Scope
@@ -554,44 +636,52 @@ package body Alfa is
          Rnums (Nat (To)) := Rnums (Nat (From));
       end Move;
 
-      Heap : Entity_Id;
+      ------------------------
+      -- Update_Scope_Range --
+      ------------------------
+
+      procedure Update_Scope_Range
+        (S    : Scope_Index;
+         From : Xref_Index;
+         To   : Xref_Index)
+      is
+      begin
+         Alfa_Scope_Table.Table (S).From_Xref := From;
+         Alfa_Scope_Table.Table (S).To_Xref := To;
+      end Update_Scope_Range;
+
+      --  Local variables
+
+      Col        : Nat;
+      From_Index : Xref_Index;
+      Line       : Nat;
+      Loc        : Source_Ptr;
+      Prev_Typ   : Character;
+      Ref_Count  : Nat;
+      Ref_Id     : Entity_Id;
+      Ref_Name   : String_Ptr;
+      Scope_Id   : Scope_Index;
 
    --  Start of processing for Add_Alfa_Xrefs
 
    begin
-      for J in Alfa_Scope_Table.First .. Alfa_Scope_Table.Last loop
-         Set_Scope_Num (N   => Alfa_Scope_Table.Table (J).Scope_Entity,
-                        Num => Alfa_Scope_Table.Table (J).Scope_Num);
+      for Index in Alfa_Scope_Table.First .. Alfa_Scope_Table.Last loop
+         declare
+            S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
+
+         begin
+            Set_Scope_Num (S.Scope_Entity, S.Scope_Num);
+         end;
       end loop;
 
       --  Set up the pointer vector for the sort
 
-      for J in 1 .. Nrefs loop
-         Rnums (J) := J;
+      for Index in 1 .. Nrefs loop
+         Rnums (Index) := Index;
       end loop;
 
-      --  Add dereferences to the set of regular references, by creating a
-      --  special "Heap" variable for these special references.
-
-      Name_Len := Name_Of_Heap_Variable'Length;
-      Name_Buffer (1 .. Name_Len) := Name_Of_Heap_Variable;
-
-      Atree.Unlock;
-      Nlists.Unlock;
-      Heap := Make_Defining_Identifier (Standard_Location, Name_Enter);
-      Atree.Lock;
-      Nlists.Lock;
-
-      Set_Ekind         (Heap, E_Variable);
-      Set_Is_Internal   (Heap, True);
-      Set_Has_Fully_Qualified_Name (Heap);
-
-      for J in Drefs.First .. Drefs.Last loop
-         Xrefs.Append (Drefs.Table (J));
-
-         --  Set entity at this point with newly created "Heap" variable
-
-         Xrefs.Table (Xrefs.Last).Key.Ent := Heap;
+      for Index in Drefs.First .. Drefs.Last loop
+         Xrefs.Append (Drefs.Table (Index));
 
          Nrefs         := Nrefs + 1;
          Rnums (Nrefs) := Xrefs.Last;
@@ -601,261 +691,99 @@ package body Alfa is
       --  cross-references, as it discards useless references which do not have
       --  a proper format for the comparison function (like no location).
 
-      Eliminate_Before_Sort : declare
-         NR : Nat;
+      Ref_Count := Nrefs;
+      Nrefs     := 0;
 
-         function Is_Alfa_Reference
-           (E   : Entity_Id;
-            Typ : Character) return Boolean;
-         --  Return whether entity reference E meets Alfa requirements. Typ
-         --  is the reference type.
+      for Index in 1 .. Ref_Count loop
+         declare
+            Ref : Xref_Key renames Xrefs.Table (Rnums (Index)).Key;
 
-         function Is_Alfa_Scope (E : Entity_Id) return Boolean;
-         --  Return whether the entity or reference scope meets requirements
-         --  for being an Alfa scope.
-
-         function Is_Global_Constant (E : Entity_Id) return Boolean;
-         --  Return True if E is a global constant for which we should ignore
-         --  reads in Alfa.
-
-         -----------------------
-         -- Is_Alfa_Reference --
-         -----------------------
-
-         function Is_Alfa_Reference
-           (E   : Entity_Id;
-            Typ : Character) return Boolean
-         is
          begin
-            --  The only references of interest on callable entities are calls.
-            --  On non-callable entities, the only references of interest are
-            --  reads and writes.
+            if Alfa_Entities (Ekind (Ref.Ent))
+              and then Alfa_References (Ref.Typ)
+              and then Is_Alfa_Scope (Ref.Ent_Scope)
+              and then Is_Alfa_Scope (Ref.Ref_Scope)
+              and then not Is_Global_Constant (Ref.Ent)
+              and then Is_Alfa_Reference (Ref.Ent, Ref.Typ)
 
-            if Ekind (E) in Overloadable_Kind then
-               return Typ = 's';
+              --  Discard references from unknown scopes, such as generic
+              --  scopes.
 
-            --  References to constant objects are not considered in Alfa
-            --  section, as these will be translated as constants in the
-            --  intermediate language for formal verification, and should
-            --  therefore never appear in frame conditions.
-
-            elsif Is_Constant_Object (E) then
-                  return False;
-
-            --  Objects of Task type or protected type are not Alfa references
-
-            elsif Present (Etype (E))
-              and then Ekind (Etype (E)) in Concurrent_Kind
-            then
-               return False;
-
-            --  In all other cases, result is true for reference/modify cases,
-            --  and false for all other cases.
-
-            else
-               return Typ = 'r' or else Typ = 'm';
-            end if;
-         end Is_Alfa_Reference;
-
-         -------------------
-         -- Is_Alfa_Scope --
-         -------------------
-
-         function Is_Alfa_Scope (E : Entity_Id) return Boolean is
-         begin
-            return Present (E)
-              and then not Is_Generic_Unit (E)
-              and then Renamed_Entity (E) = Empty
-              and then Get_Scope_Num (E) /= No_Scope;
-         end Is_Alfa_Scope;
-
-         ------------------------
-         -- Is_Global_Constant --
-         ------------------------
-
-         function Is_Global_Constant (E : Entity_Id) return Boolean is
-         begin
-            return Ekind (E) = E_Constant
-              and then Ekind_In (Scope (E), E_Package, E_Package_Body);
-         end Is_Global_Constant;
-
-      --  Start of processing for Eliminate_Before_Sort
-
-      begin
-         NR    := Nrefs;
-         Nrefs := 0;
-
-         for J in 1 .. NR loop
-            if Alfa_Entities (Ekind (Xrefs.Table (Rnums (J)).Key.Ent))
-              and then Alfa_References (Xrefs.Table (Rnums (J)).Key.Typ)
-              and then Is_Alfa_Scope (Xrefs.Table (Rnums (J)).Key.Ent_Scope)
-              and then Is_Alfa_Scope (Xrefs.Table (Rnums (J)).Key.Ref_Scope)
-              and then not Is_Global_Constant (Xrefs.Table (Rnums (J)).Key.Ent)
-              and then Is_Alfa_Reference (Xrefs.Table (Rnums (J)).Key.Ent,
-                                          Xrefs.Table (Rnums (J)).Key.Typ)
+              and then Get_Scope_Num (Ref.Ent_Scope) /= No_Scope
+              and then Get_Scope_Num (Ref.Ref_Scope) /= No_Scope
             then
                Nrefs         := Nrefs + 1;
-               Rnums (Nrefs) := Rnums (J);
+               Rnums (Nrefs) := Rnums (Index);
             end if;
-         end loop;
-      end Eliminate_Before_Sort;
+         end;
+      end loop;
 
       --  Sort the references
 
       Sorting.Sort (Integer (Nrefs));
 
-      Eliminate_After_Sort : declare
-         NR : Nat;
+      --  Eliminate duplicate entries
 
-         Crloc : Source_Ptr;
-         --  Current reference location
+      --  We need this test for Ref_Count because if we force ALI file
+      --  generation in case of errors detected, it may be the case that
+      --  Nrefs is 0, so we should not reset it here.
 
-         Prevt : Character;
-         --  reference kind of previous reference
+      if Nrefs >= 2 then
+         Ref_Count := Nrefs;
+         Nrefs     := 1;
 
-      begin
-         --  Eliminate duplicate entries
-
-         --  We need this test for NR because if we force ALI file generation
-         --  in case of errors detected, it may be the case that Nrefs is 0, so
-         --  we should not reset it here
-
-         if Nrefs >= 2 then
-            NR    := Nrefs;
-            Nrefs := 1;
-
-            for J in 2 .. NR loop
-               if Xrefs.Table (Rnums (J)) /=
-                 Xrefs.Table (Rnums (Nrefs))
-               then
-                  Nrefs := Nrefs + 1;
-                  Rnums (Nrefs) := Rnums (J);
-               end if;
-            end loop;
-         end if;
-
-         --  Eliminate the reference if it is at the same location as the
-         --  previous one, unless it is a read-reference indicating that the
-         --  entity is an in-out actual in a call.
-
-         NR    := Nrefs;
-         Nrefs := 0;
-         Crloc := No_Location;
-         Prevt := 'm';
-
-         for J in 1 .. NR loop
-            if Xrefs.Table (Rnums (J)).Key.Loc /= Crloc
-              or else (Prevt = 'm'
-                        and then Xrefs.Table (Rnums (J)).Key.Typ = 'r')
+         for Index in 2 .. Ref_Count loop
+            if Xrefs.Table (Rnums (Index)) /=
+               Xrefs.Table (Rnums (Nrefs))
             then
-               Crloc         := Xrefs.Table (Rnums (J)).Key.Loc;
-               Prevt         := Xrefs.Table (Rnums (J)).Key.Typ;
-               Nrefs         := Nrefs + 1;
-               Rnums (Nrefs) := Rnums (J);
+               Nrefs := Nrefs + 1;
+               Rnums (Nrefs) := Rnums (Index);
             end if;
          end loop;
-      end Eliminate_After_Sort;
+      end if;
 
-      --  Initialize loop
+      --  Eliminate the reference if it is at the same location as the previous
+      --  one, unless it is a read-reference indicating that the entity is an
+      --  in-out actual in a call.
 
-      Cur_Scope_Idx  := 1;
-      From_Xref_Idx  := 1;
-      Cur_Entity     := Empty;
+      Ref_Count := Nrefs;
+      Nrefs     := 0;
+      Loc       := No_Location;
+      Prev_Typ  := 'm';
+
+      for Index in 1 .. Ref_Count loop
+         declare
+            Ref : Xref_Key renames Xrefs.Table (Rnums (Index)).Key;
+
+         begin
+            if Ref.Loc /= Loc
+              or else (Prev_Typ = 'm'
+                        and then Ref.Typ = 'r')
+            then
+               Loc           := Ref.Loc;
+               Prev_Typ      := Ref.Typ;
+               Nrefs         := Nrefs + 1;
+               Rnums (Nrefs) := Rnums (Index);
+            end if;
+         end;
+      end loop;
+
+      --  The two steps have eliminated all references, nothing to do
 
       if Alfa_Scope_Table.Last = 0 then
          return;
       end if;
 
+      Ref_Id     := Empty;
+      Scope_Id   := 1;
+      From_Index := 1;
+
       --  Loop to output references
 
       for Refno in 1 .. Nrefs loop
-         Add_One_Xref : declare
-
-            -----------------------
-            -- Local Subprograms --
-            -----------------------
-
-            function Cur_Scope return Node_Id;
-            --  Return scope entity which corresponds to index Cur_Scope_Idx in
-            --  table Alfa_Scope_Table.
-
-            function Get_Entity_Type (E : Entity_Id) return Character;
-            --  Return a character representing the type of entity
-
-            function Is_Future_Scope_Entity (E : Entity_Id) return Boolean;
-            --  Check whether entity E is in Alfa_Scope_Table at index
-            --  Cur_Scope_Idx or higher.
-
-            function Is_Past_Scope_Entity (E : Entity_Id) return Boolean;
-            --  Check whether entity E is in Alfa_Scope_Table at index strictly
-            --  lower than Cur_Scope_Idx.
-
-            ---------------
-            -- Cur_Scope --
-            ---------------
-
-            function Cur_Scope return Node_Id is
-            begin
-               return Alfa_Scope_Table.Table (Cur_Scope_Idx).Scope_Entity;
-            end Cur_Scope;
-
-            ---------------------
-            -- Get_Entity_Type --
-            ---------------------
-
-            function Get_Entity_Type (E : Entity_Id) return Character is
-               C : Character;
-            begin
-               case Ekind (E) is
-                  when E_Out_Parameter    => C := '<';
-                  when E_In_Out_Parameter => C := '=';
-                  when E_In_Parameter     => C := '>';
-                  when others             => C := '*';
-               end case;
-               return C;
-            end Get_Entity_Type;
-
-            ----------------------------
-            -- Is_Future_Scope_Entity --
-            ----------------------------
-
-            function Is_Future_Scope_Entity (E : Entity_Id) return Boolean is
-            begin
-               for J in Cur_Scope_Idx .. Alfa_Scope_Table.Last loop
-                  if E = Alfa_Scope_Table.Table (J).Scope_Entity then
-                     return True;
-                  end if;
-               end loop;
-
-               --  If this assertion fails, this means that the scope which we
-               --  are looking for has been treated already, which reveals a
-               --  problem in the order of cross-references.
-
-               pragma Assert (not Is_Past_Scope_Entity (E));
-
-               return False;
-            end Is_Future_Scope_Entity;
-
-            --------------------------
-            -- Is_Past_Scope_Entity --
-            --------------------------
-
-            function Is_Past_Scope_Entity (E : Entity_Id) return Boolean is
-            begin
-               for J in Alfa_Scope_Table.First .. Cur_Scope_Idx - 1 loop
-                  if E = Alfa_Scope_Table.Table (J).Scope_Entity then
-                     return True;
-                  end if;
-               end loop;
-
-               return False;
-            end Is_Past_Scope_Entity;
-
-            ---------------------
-            -- Local Variables --
-            ---------------------
-
-            XE  : Xref_Entry renames Xrefs.Table (Rnums (Refno));
+         declare
+            Ref_Entry : Xref_Entry renames Xrefs.Table (Rnums (Refno));
+            Ref       : Xref_Key   renames Ref_Entry.Key;
 
          begin
             --  If this assertion fails, the scope which we are looking for is
@@ -863,61 +791,58 @@ package body Alfa is
             --  construction of the scope table, or an erroneous scope for the
             --  current cross-reference.
 
-            pragma Assert (Is_Future_Scope_Entity (XE.Key.Ent_Scope));
+            pragma Assert
+              (Is_Future_Scope_Entity (Ref.Ent_Scope, Scope_Id));
 
             --  Update the range of cross references to which the current scope
             --  refers to. This may be the empty range only for the first scope
             --  considered.
 
-            if XE.Key.Ent_Scope /= Cur_Scope then
-               Alfa_Scope_Table.Table (Cur_Scope_Idx).From_Xref :=
-                 From_Xref_Idx;
-               Alfa_Scope_Table.Table (Cur_Scope_Idx).To_Xref :=
-                 Alfa_Xref_Table.Last;
-               From_Xref_Idx := Alfa_Xref_Table.Last + 1;
+            if Ref.Ent_Scope /= Entity_Of_Scope (Scope_Id) then
+               Update_Scope_Range
+                 (S    => Scope_Id,
+                  From => From_Index,
+                  To   => Alfa_Xref_Table.Last);
+
+               From_Index := Alfa_Xref_Table.Last + 1;
             end if;
 
-            while XE.Key.Ent_Scope /= Cur_Scope loop
-               Cur_Scope_Idx := Cur_Scope_Idx + 1;
-               pragma Assert (Cur_Scope_Idx <= Alfa_Scope_Table.Last);
+            while Ref.Ent_Scope /= Entity_Of_Scope (Scope_Id) loop
+               Scope_Id := Scope_Id + 1;
+               pragma Assert (Scope_Id <= Alfa_Scope_Table.Last);
             end loop;
 
-            if XE.Key.Ent /= Cur_Entity then
-               Cur_Entity_Name :=
-                 new String'(Unique_Name (XE.Key.Ent));
+            if Ref.Ent /= Ref_Id then
+               Ref_Name := new String'(Unique_Name (Ref.Ent));
             end if;
 
-            if XE.Key.Ent = Heap then
-               Alfa_Xref_Table.Append (
-                 (Entity_Name => Cur_Entity_Name,
-                  Entity_Line => 0,
-                  Etype       => Get_Entity_Type (XE.Key.Ent),
-                  Entity_Col  => 0,
-                  File_Num    => Dependency_Num (XE.Key.Lun),
-                  Scope_Num   => Get_Scope_Num (XE.Key.Ref_Scope),
-                  Line        => Int (Get_Logical_Line_Number (XE.Key.Loc)),
-                  Rtype       => XE.Key.Typ,
-                  Col         => Int (Get_Column_Number (XE.Key.Loc))));
-
+            if Ref.Ent = Heap then
+               Line := 0;
+               Col  := 0;
             else
-               Alfa_Xref_Table.Append (
-                 (Entity_Name => Cur_Entity_Name,
-                  Entity_Line => Int (Get_Logical_Line_Number (XE.Def)),
-                  Etype       => Get_Entity_Type (XE.Key.Ent),
-                  Entity_Col  => Int (Get_Column_Number (XE.Def)),
-                  File_Num    => Dependency_Num (XE.Key.Lun),
-                  Scope_Num   => Get_Scope_Num (XE.Key.Ref_Scope),
-                  Line        => Int (Get_Logical_Line_Number (XE.Key.Loc)),
-                  Rtype       => XE.Key.Typ,
-                  Col         => Int (Get_Column_Number (XE.Key.Loc))));
+               Line := Int (Get_Logical_Line_Number (Ref_Entry.Def));
+               Col  := Int (Get_Column_Number (Ref_Entry.Def));
             end if;
-         end Add_One_Xref;
+
+            Alfa_Xref_Table.Append (
+              (Entity_Name => Ref_Name,
+               Entity_Line => Line,
+               Etype       => Get_Entity_Type (Ref.Ent),
+               Entity_Col  => Col,
+               File_Num    => Dependency_Num (Ref.Lun),
+               Scope_Num   => Get_Scope_Num (Ref.Ref_Scope),
+               Line        => Int (Get_Logical_Line_Number (Ref.Loc)),
+               Rtype       => Ref.Typ,
+               Col         => Int (Get_Column_Number (Ref.Loc))));
+         end;
       end loop;
 
       --  Update the range of cross references to which the scope refers to
 
-      Alfa_Scope_Table.Table (Cur_Scope_Idx).From_Xref := From_Xref_Idx;
-      Alfa_Scope_Table.Table (Cur_Scope_Idx).To_Xref   := Alfa_Xref_Table.Last;
+      Update_Scope_Range
+        (S    => Scope_Id,
+         From => From_Index,
+         To   => Alfa_Xref_Table.Last);
    end Add_Alfa_Xrefs;
 
    ------------------
@@ -1028,9 +953,7 @@ package body Alfa is
          Result := N;
       end if;
 
-      loop
-         exit when No (Result);
-
+      while Present (Result) loop
          case Nkind (Result) is
             when N_Package_Specification =>
                Result := Defining_Unit_Name (Result);
@@ -1105,36 +1028,69 @@ package body Alfa is
      (N   : Node_Id;
       Typ : Character := 'r')
    is
-      Indx      : Nat;
+      procedure Create_Heap;
+      --  Create and decorate the special entity which denotes the heap
+
+      -----------------
+      -- Create_Heap --
+      -----------------
+
+      procedure Create_Heap is
+      begin
+         Name_Len := Name_Of_Heap_Variable'Length;
+         Name_Buffer (1 .. Name_Len) := Name_Of_Heap_Variable;
+
+         Heap := Make_Defining_Identifier (Standard_Location, Name_Enter);
+
+         Set_Ekind       (Heap, E_Variable);
+         Set_Is_Internal (Heap, True);
+         Set_Has_Fully_Qualified_Name (Heap);
+      end Create_Heap;
+
+      --  Local variables
+
+      Loc       : constant Source_Ptr := Sloc (N);
+      Index     : Nat;
       Ref       : Source_Ptr;
       Ref_Scope : Entity_Id;
 
+   --  Start of processing for Generate_Dereference
+
    begin
-      Ref := Original_Location (Sloc (N));
+      Ref := Original_Location (Loc);
 
       if Ref > No_Location then
          Drefs.Increment_Last;
-         Indx := Drefs.Last;
+         Index := Drefs.Last;
 
-         Ref_Scope := Enclosing_Subprogram_Or_Package (N);
+         declare
+            Deref_Entry : Xref_Entry renames Drefs.Table (Index);
+            Deref       : Xref_Key   renames Deref_Entry.Key;
 
-         --  Entity is filled later on with the special "Heap" variable
+         begin
+            if No (Heap) then
+               Create_Heap;
+            end if;
 
-         Drefs.Table (Indx).Key.Ent := Empty;
+            Ref_Scope := Enclosing_Subprogram_Or_Package (N);
 
-         Drefs.Table (Indx).Def := No_Location;
-         Drefs.Table (Indx).Key.Loc := Ref;
-         Drefs.Table (Indx).Key.Typ := Typ;
+            Deref.Ent := Heap;
+            Deref.Loc := Ref;
+            Deref.Typ := Typ;
 
-         --  It is as if the special "Heap" was defined in every scope where it
-         --  is referenced.
+            --  It is as if the special "Heap" was defined in every scope where
+            --  it is referenced.
 
-         Drefs.Table (Indx).Key.Eun := Get_Source_Unit (Ref);
-         Drefs.Table (Indx).Key.Lun := Get_Source_Unit (Ref);
+            Deref.Eun := Get_Source_Unit (Ref);
+            Deref.Lun := Get_Source_Unit (Ref);
 
-         Drefs.Table (Indx).Key.Ref_Scope := Ref_Scope;
-         Drefs.Table (Indx).Key.Ent_Scope := Ref_Scope;
-         Drefs.Table (Indx).Ent_Scope_File := Get_Source_Unit (Ref_Scope);
+            Deref.Ref_Scope := Ref_Scope;
+            Deref.Ent_Scope := Ref_Scope;
+
+            Deref_Entry.Def := No_Location;
+
+            Deref_Entry.Ent_Scope_File := Get_Source_Unit (Ref_Scope);
+         end;
       end if;
    end Generate_Dereference;
 

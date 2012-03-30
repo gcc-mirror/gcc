@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -161,6 +161,9 @@ package body Lib.Xref is
    --  Local Subprograms --
    ------------------------
 
+   procedure Add_Entry (Key : Xref_Key; Ent_Scope_File : Unit_Number_Type);
+   --  Add an entry to the tables of Xref_Entries, avoiding duplicates
+
    procedure Generate_Prim_Op_References (Typ : Entity_Id);
    --  For a tagged type, generate implicit references to its primitive
    --  operations, for source navigation. This is done right before emitting
@@ -169,9 +172,6 @@ package body Lib.Xref is
 
    function Lt (T1, T2 : Xref_Entry) return Boolean;
    --  Order cross-references
-
-   procedure Add_Entry (Key : Xref_Key; Ent_Scope_File : Unit_Number_Type);
-   --  Add an entry to the tables of Xref_Entries, avoiding duplicates
 
    ---------------
    -- Add_Entry --
@@ -373,23 +373,17 @@ package body Lib.Xref is
       Set_Ref : Boolean   := True;
       Force   : Boolean   := False)
    is
-      Nod : Node_Id;
-      Ref : Source_Ptr;
-      Def : Source_Ptr;
-      Ent : Entity_Id;
-
-      Actual_Typ : Character := Typ;
-
-      Ref_Scope      : Entity_Id;
+      Actual_Typ     : Character := Typ;
+      Call           : Node_Id;
+      Def            : Source_Ptr;
+      Ent            : Entity_Id;
       Ent_Scope      : Entity_Id;
       Ent_Scope_File : Unit_Number_Type;
-
-      Call   : Node_Id;
-      Formal : Entity_Id;
-      --  Used for call to Find_Actual
-
-      Kind : Entity_Kind;
-      --  If Formal is non-Empty, then its Ekind, otherwise E_Void
+      Formal         : Entity_Id;
+      Kind           : Entity_Kind;
+      Nod            : Node_Id;
+      Ref            : Source_Ptr;
+      Ref_Scope      : Entity_Id;
 
       function Get_Through_Renamings (E : Entity_Id) return Entity_Id;
       --  Get the enclosing entity through renamings, which may come from
@@ -884,11 +878,13 @@ package body Lib.Xref is
          and then Sloc (E) > No_Location
          and then Sloc (N) > No_Location
 
-         --  We ignore references from within an instance, except for default
-         --  subprograms, for which we generate an implicit reference.
+         --  Ignore references from within an instance. The only exceptions to
+         --  this are default subprograms, for which we generate an implicit
+         --  reference.
 
          and then
-           (Instantiation_Location (Sloc (N)) = No_Location or else Typ = 'i')
+           (Instantiation_Location (Sloc (N)) = No_Location
+              or else Typ = 'i')
 
          --  Ignore dummy references
 
@@ -1003,14 +999,14 @@ package body Lib.Xref is
          Def := Original_Location (Sloc (Ent));
 
          if Actual_Typ = 'p'
-           and then Is_Subprogram (N)
-           and then Present (Overridden_Operation (N))
+           and then Is_Subprogram (Nod)
+           and then Present (Overridden_Operation (Nod))
          then
             Actual_Typ := 'P';
          end if;
 
          if Alfa_Mode then
-            Ref_Scope := Alfa.Enclosing_Subprogram_Or_Package (N);
+            Ref_Scope := Alfa.Enclosing_Subprogram_Or_Package (Nod);
             Ent_Scope := Alfa.Enclosing_Subprogram_Or_Package (Ent);
 
             --  Since we are reaching through renamings in Alfa mode, we may
@@ -2433,6 +2429,8 @@ package body Lib.Xref is
          Write_Info_EOL;
       end Output_Refs;
    end Output_References;
+
+--  Start of elaboration for Lib.Xref
 
 begin
    --  Reset is necessary because Elmt_Ptr does not default to Null_Ptr,
