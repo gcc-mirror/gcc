@@ -6487,7 +6487,9 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
 	    use_movml = true;
 	}
 
-      if (use_movml)
+      if (sh_cfun_resbank_handler_p ())
+	; /* Do nothing.  */
+      else if (use_movml)
 	{
 	  rtx x, mem, reg, set;
 	  rtx sp_reg = gen_rtx_REG (SImode, STACK_POINTER_REGNUM);
@@ -7485,7 +7487,9 @@ sh_expand_epilogue (bool sibcall_p)
 		use_movml = true;
 	    }
 
-	  if (use_movml)
+	  if (sh_cfun_resbank_handler_p ())
+	    ; /* Do nothing.  */
+	  else if (use_movml)
 	    {
 	      rtx sp_reg = gen_rtx_REG (SImode, STACK_POINTER_REGNUM);
 
