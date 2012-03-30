@@ -3072,7 +3072,7 @@ package body Exp_Ch4 is
          Low_Bound := Opnd_Low_Bound (1);
 
       --  OK, we don't know the lower bound, we have to build a horrible
-      --  expression actions node of the form
+      --  conditional expression node of the form
 
       --     if Cond1'Length /= 0 then
       --        Opnd1 low bound
@@ -3998,9 +3998,9 @@ package body Exp_Ch4 is
                   end if;
                end;
 
-               --  We set the allocator as analyzed so that when we analyze the
-               --  expression actions node, we do not get an unwanted recursive
-               --  expansion of the allocator expression.
+               --  We set the allocator as analyzed so that when we analyze
+               --  the conditional expression node, we do not get an unwanted
+               --  recursive expansion of the allocator expression.
 
                Set_Analyzed (N, True);
                Nod := Relocate_Node (N);
@@ -4279,7 +4279,7 @@ package body Exp_Ch4 is
    -- Expand_N_Conditional_Expression --
    -------------------------------------
 
-   --  Deal with limited types and expression actions
+   --  Deal with limited types and condition actions
 
    procedure Expand_N_Conditional_Expression (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
