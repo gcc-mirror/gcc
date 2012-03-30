@@ -1,3 +1,8 @@
+2012-03-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libgfortran/52758
+	* intrinsics/chmod.c: Remove out-of-bound initialization of rwxXstugo.
+
 2012-03-27  Tristan Gingold  <gingold@adacore.com>
 
 	* configure.ac: Add description to AC_DEFINE in
