@@ -1,3 +1,15 @@
+2012-03-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): For the case of a
+	loop entity which is rewritten as a renaming
+	of the indexed array, explicitly mark the entity as needing
+	debug info so that Materialize entity will be set later by
+	Debug_Renaming_Declaration when the renaming is expanded.
+
+2012-03-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.ads: Update comment.
+
 2012-03-30  Vincent Celier  <celier@adacore.com>
 
 	* prj.ads: New Dependency_Kind: ALI_Closure.

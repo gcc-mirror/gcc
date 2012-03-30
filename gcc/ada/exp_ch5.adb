@@ -3303,6 +3303,14 @@ package body Exp_Ch5 is
                New_Reference_To (Component_Type (Array_Typ), Loc),
              Name                => Ind_Comp));
 
+         --  Mark the loop variable as needing debug info, so that expansion
+         --  of the renaming will result in Materialize_Entity getting set via
+         --  Debug_Renaming_Declaration. (This setting is needed here because
+         --  the setting in Freeze_Entity comes after the expansion, which is
+         --  too late. ???)
+
+         Set_Debug_Info_Needed (Id);
+
       --  for Index in Array loop
 
       --  This case utilizes the already given iterator name

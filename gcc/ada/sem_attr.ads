@@ -554,12 +554,27 @@ package Sem_Attr is
       -------------------
 
       Attribute_Valid_Scalars => True,
-      --  Obj'Valid_Scalars applies to objects of scalar types, on which it is
-      --  equivalent to Obj'Valid, and objects of array and record types, on
-      --  which it amounts to applying 'Valid to each subcomponent of Obj. It
-      --  does not apply to prefixes of classwide type, or of a formal generic
-      --  type that has an unknown discriminant (which could be instantiated
-      --  with a classwide type).
+      --  Obj'Valid_Scalars can be applied to any object. The result depends
+      --  on the type of the object:
+      --
+      --    For a scalar type, the result is the same as obj'Valid
+      --
+      --    For an array object, the result is True if the result of applying
+      --    Valid_Scalars to every component is True.
+      --
+      --    For a record object, the result is True if the result of applying
+      --    Valid_Scalars to every component is True. For class-wide types,
+      --    only the components of the base type are checked. For variant
+      --    records, only the components actually present are checked.
+      --
+      --    For all other types, the result is always True
+      --
+      --  A warning is given for a trivially True result, when the attribute
+      --  is applied to an object that is not of scalar, array, or record
+      --  type, or in the composite case if no scalar subcomponents exist. For
+      --  a variant record, the warning is given only if none of the variants
+      --  have scalar subcomponents. In addition, the warning is suppressed
+      --  for private types, or generic types in an instance.
 
       ----------------
       -- Value_Size --
