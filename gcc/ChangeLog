@@ -1,5 +1,27 @@
 2012-03-30  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (struct expand_vec_perm_d): Add one_operand_p.
+	(ix86_expand_vector_init_duplicate): Initialize it.
+	(expand_vec_perm_palignr): Likewise.
+	(ix86_expand_vec_perm_const): Likewise.
+	(ix86_vectorize_vec_perm_const_ok): Likewise.
+	(expand_vec_perm_blend): Use it.
+	(expand_vec_perm_vpermil): Likewise.
+	(expand_vec_perm_pshufb): Likewise.
+	(expand_vec_perm_1): Likewise.
+	(expand_vec_perm_pshuflw_pshufhw): Likewise.
+	(expand_vec_perm_interleave2): Likewise.
+	(expand_vec_perm_vpermq_perm_1): Likewise.
+	(expand_vec_perm_vperm2f128): Likewise.
+	(expand_vec_perm_interleave3): Likewise.
+	(expand_vec_perm_vperm2f128_vblend): Likewise.
+	(expand_vec_perm_vpshufb2_vpermq): Likewise.
+	(expand_vec_perm_vpshufb2_vpermq_even_odd): Likewise,.
+	(expand_vec_perm_broadcast): Likewise.
+	(expand_vec_perm_vpshufb4_vpermq2): Likewise.
+
+2012-03-30  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2out.c (gen_variable_die): Initialize off.
 
 2012-03-30  Tristan Gingold  <gingold@adacore.com>
