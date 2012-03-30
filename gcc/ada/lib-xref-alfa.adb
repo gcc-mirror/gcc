@@ -226,8 +226,14 @@ package body Alfa is
 
       From := Alfa_Scope_Table.Last + 1;
 
-      Traverse_Compilation_Unit (Cunit (U), Detect_And_Add_Alfa_Scope'Access,
-                                 Inside_Stubs => False);
+      --  Unit U might not have an associated compilation unit, as seen in code
+      --  filling Sdep_Table in Write_ALI.
+
+      if Present (Cunit (U)) then
+         Traverse_Compilation_Unit (Cunit (U),
+                                    Detect_And_Add_Alfa_Scope'Access,
+                                    Inside_Stubs => False);
+      end if;
 
       --  Update scope numbers
 
@@ -279,9 +285,11 @@ package body Alfa is
       Get_Name_String (Reference_Name (S));
       File_Name := new String'(Name_Buffer (1 .. Name_Len));
 
-      --  For subunits, also retrieve the file name of the unit
+      --  For subunits, also retrieve the file name of the unit. Only do so if
+      --  unit U has an associated compilation unit.
 
-      if Present (Cunit (Unit (S)))
+      if Present (Cunit (U))
+        and then Present (Cunit (Unit (S)))
         and then Nkind (Unit (Cunit (Unit (S)))) = N_Subunit
       then
          Get_Name_String (Reference_Name (Main_Source_File));
