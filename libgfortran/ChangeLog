@@ -1,7 +1,8 @@
 2012-03-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libgfortran/52758
-	* intrinsics/chmod.c: Remove out-of-bounds initialization of rwxXstugo.
+	* intrinsics/chmod.c (chmod_func): Remove out-of-bounds
+	initialization of rwxXstugo.
 
 2012-03-27  Tristan Gingold  <gingold@adacore.com>
 
