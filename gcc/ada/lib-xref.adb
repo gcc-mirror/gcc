@@ -639,9 +639,7 @@ package body Lib.Xref is
            or else
              (Alfa_Mode
                 and then In_Extended_Main_Code_Unit (N)
-                and then (Typ = 'm'
-                            or else Typ = 'r'
-                            or else Typ = 's'))
+                and then (Typ = 'm' or else Typ = 'r' or else Typ = 's'))
          then
             null;
          else
@@ -893,34 +891,25 @@ package body Lib.Xref is
 
          and then
            (Instantiation_Location (Sloc (N)) = No_Location
-              or else Typ = 'i'
-              or else Alfa_Mode)
+             or else Typ = 'i'
+             or else Alfa_Mode)
 
-         --  Ignore dummy references
+        --  Ignore dummy references
 
         and then Typ /= ' '
       then
-         if Nkind (N) = N_Identifier
-              or else
-            Nkind (N) = N_Defining_Identifier
-              or else
-            Nkind (N) in N_Op
-              or else
-            Nkind (N) = N_Defining_Operator_Symbol
-              or else
-            Nkind (N) = N_Operator_Symbol
-              or else
-            (Nkind (N) = N_Character_Literal
-              and then Sloc (Entity (N)) /= Standard_Location)
-              or else
-            Nkind (N) = N_Defining_Character_Literal
+         if Nkind_In (N, N_Identifier,
+                         N_Defining_Identifier,
+                         N_Defining_Operator_Symbol,
+                         N_Operator_Symbol,
+                         N_Defining_Character_Literal)
+           or else Nkind (N) in N_Op
+           or else (Nkind (N) = N_Character_Literal
+                     and then Sloc (Entity (N)) /= Standard_Location)
          then
             Nod := N;
 
-         elsif Nkind (N) = N_Expanded_Name
-                 or else
-               Nkind (N) = N_Selected_Component
-         then
+         elsif Nkind_In (N, N_Expanded_Name, N_Selected_Component) then
             Nod := Selector_Name (N);
 
          else

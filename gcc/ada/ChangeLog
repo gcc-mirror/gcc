@@ -1,3 +1,8 @@
+2012-03-30  Robert Dewar  <dewar@adacore.com>
+
+	* lib-xref.adb, lib-xref-alfa.adb: Minor reformatting & code
+	reorganization.
+
 2012-03-30  Yannick Moy  <moy@adacore.com>
 
 	* lib-xref-alfa.adb (Generate_Dereference): Use Get_Code_Unit
