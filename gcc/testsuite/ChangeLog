@@ -1,3 +1,8 @@
+2012-03-30  Richard Henderson <rth@redhat.com>
+
+	PR debug/52727
+	* g++.dg/opt/pr52727.C: New testcase.
+
 2012-03-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52754
