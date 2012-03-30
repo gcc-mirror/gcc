@@ -10967,8 +10967,14 @@ class Struct_construction_expression : public Expression
   Struct_construction_expression(Type* type, Expression_list* vals,
 				 Location location)
     : Expression(EXPRESSION_STRUCT_CONSTRUCTION, location),
-      type_(type), vals_(vals)
+      type_(type), vals_(vals), traverse_order_(NULL)
   { }
+
+  // Set the traversal order, used to ensure that we implement the
+  // order of evaluation rules.  Takes ownership of the argument.
+  void
+  set_traverse_order(std::vector<int>* traverse_order)
+  { this->traverse_order_ = traverse_order; }
 
   // Return whether this is a constant initializer.
   bool
@@ -10991,8 +10997,12 @@ class Struct_construction_expression : public Expression
   Expression*
   do_copy()
   {
-    return new Struct_construction_expression(this->type_, this->vals_->copy(),
-					      this->location());
+    Struct_construction_expression* ret =
+      new Struct_construction_expression(this->type_, this->vals_->copy(),
+					 this->location());
+    if (this->traverse_order_ != NULL)
+      ret->set_traverse_order(this->traverse_order_);
+    return ret;
   }
 
   tree
@@ -11010,6 +11020,9 @@ class Struct_construction_expression : public Expression
   // The list of values, in order of the fields in the struct.  A NULL
   // entry means that the field should be zero-initialized.
   Expression_list* vals_;
+  // If not NULL, the order in which to traverse vals_.  This is used
+  // so that we implement the order of evaluation rules correctly.
+  std::vector<int>* traverse_order_;
 };
 
 // Traversal.
@@ -11017,9 +11030,26 @@ class Struct_construction_expression : public Expression
 int
 Struct_construction_expression::do_traverse(Traverse* traverse)
 {
-  if (this->vals_ != NULL
-      && this->vals_->traverse(traverse) == TRAVERSE_EXIT)
-    return TRAVERSE_EXIT;
+  if (this->vals_ != NULL)
+    {
+      if (this->traverse_order_ == NULL)
+	{
+	  if (this->vals_->traverse(traverse) == TRAVERSE_EXIT)
+	    return TRAVERSE_EXIT;
+	}
+      else
+	{
+	  for (std::vector<int>::const_iterator p =
+		 this->traverse_order_->begin();
+	       p != this->traverse_order_->end();
+	       ++p)
+	    {
+	      if (Expression::traverse(&this->vals_->at(*p), traverse)
+		  == TRAVERSE_EXIT)
+		return TRAVERSE_EXIT;
+	    }
+	}
+    }
   if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
@@ -12198,6 +12228,7 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 
   size_t field_count = st->field_count();
   std::vector<Expression*> vals(field_count);
+  std::vector<int>* traverse_order = new(std::vector<int>);
   Expression_list::const_iterator p = this->vals_->begin();
   while (p != this->vals_->end())
     {
@@ -12350,6 +12381,7 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 		 type->named_type()->message_name().c_str());
 
       vals[index] = val;
+      traverse_order->push_back(index);
     }
 
   Expression_list* list = new Expression_list;
@@ -12357,7 +12389,10 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
   for (size_t i = 0; i < field_count; ++i)
     list->push_back(vals[i]);
 
-  return new Struct_construction_expression(type, list, location);
+  Struct_construction_expression* ret =
+    new Struct_construction_expression(type, list, location);
+  ret->set_traverse_order(traverse_order);
+  return ret;
 }
 
 // Lower an array composite literal.

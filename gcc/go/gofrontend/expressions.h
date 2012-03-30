@@ -842,6 +842,11 @@ class Expression_list
   bool
   contains_error() const;
 
+  // Retrieve an element by index.
+  Expression*&
+  at(size_t i)
+  { return this->entries_.at(i); }
+
   // Return the first and last elements.
   Expression*&
   front()
