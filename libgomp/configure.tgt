@@ -59,7 +59,7 @@ if test $enable_linux_futex = yes; then
     i[456]86-*-linux*)
 	config_path="linux/x86 linux posix"
 	case " ${CC} ${CFLAGS} " in
-	  *" -m64 "*)
+	  *" -m64 "*|*" -mx32 "*)
 	    ;;
 	  *)
 	    if test -z "$with_arch"; then

@@ -1,3 +1,8 @@
+2012-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/52812
+	* configure.tgt (i[456]86-*-linux*): Handle -mx32 like -m64.
+
 2012-03-16  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* testsuite/lib/libitm.exp: load fortran-modules.exp
