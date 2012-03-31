@@ -1,3 +1,8 @@
+2012-03-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/unwind-ia64.c (uw_install_context): Manually save LC
+	if it hasn't been previously saved.
+
 2012-03-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/linux-unwind.h (x86_64_fallback_frame_state): Define
