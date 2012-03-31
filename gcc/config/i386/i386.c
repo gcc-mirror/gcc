@@ -3118,8 +3118,8 @@ ix86_option_override_internal (bool main_args_p)
 #endif
 
   /* Turn off both OPTION_MASK_ABI_64 and OPTION_MASK_ABI_X32 if
-     TARGET_64BIT is false.  */
-  if (!TARGET_64BIT)
+     TARGET_64BIT_DEFAULT is true and TARGET_64BIT is false.  */
+  if (TARGET_64BIT_DEFAULT && !TARGET_64BIT)
     ix86_isa_flags &= ~(OPTION_MASK_ABI_64 | OPTION_MASK_ABI_X32);
 #ifdef TARGET_BI_ARCH
   else
