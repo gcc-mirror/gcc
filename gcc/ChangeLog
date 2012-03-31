@@ -1,3 +1,9 @@
+2012-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/52784
+	* config/i386/i386.c (ix86_option_override_internal): Don't
+	check TARGET_64BIT if TARGET_64BIT_DEFAULT is false.
+
 2012-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-cfg.c (call_can_make_abnormal_goto): New predicate.
