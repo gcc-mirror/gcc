@@ -1,3 +1,9 @@
+2012-03-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/controlled6.adb: New test.
+	* gnat.dg/controlled6_pkg.ads: New helper.
+	* gnat.dg/controlled6_pkg-iterators.ad[sb]: Likewise.
+
 2012-03-29  Meador Inge  <meadori@codesourcery.com>
 
 	PR c++/52672
