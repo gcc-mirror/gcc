@@ -1,3 +1,8 @@
+2012-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/52812
+	* configure.tgt (i[456]86-*-linux*): Handle -mx32 like -m64.
+
 2012-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52547
