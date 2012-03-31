@@ -1,3 +1,9 @@
+2012-03-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-cfg.c (call_can_make_abnormal_goto): New predicate.
+	(stmt_can_make_abnormal_goto): Use it.
+	(is_ctrl_altering_stmt): Likewise.
+
 2012-03-30  Naveen H.S  <naveen.S@kpitcummins.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 

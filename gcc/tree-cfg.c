@@ -2273,6 +2273,43 @@ gimple_cfg2vcg (FILE *file)
 			     Miscellaneous helpers
 ---------------------------------------------------------------------------*/
 
+/* Return true if T, a GIMPLE_CALL, can make an abnormal transfer of control
+   flow.  Transfers of control flow associated with EH are excluded.  */
+
+static bool
+call_can_make_abnormal_goto (gimple t)
+{
+  /* If the function has no non-local labels, then a call cannot make an
+     abnormal transfer of control.  */
+  if (!cfun->has_nonlocal_label)
+   return false;
+
+  /* Likewise if the call has no side effects.  */
+  if (!gimple_has_side_effects (t))
+    return false;
+
+  /* Likewise if the called function is leaf.  */
+  if (gimple_call_flags (t) & ECF_LEAF)
+    return false;
+
+  return true;
+}
+
+
+/* Return true if T can make an abnormal transfer of control flow.
+   Transfers of control flow associated with EH are excluded.  */
+
+bool
+stmt_can_make_abnormal_goto (gimple t)
+{
+  if (computed_goto_p (t))
+    return true;
+  if (is_gimple_call (t))
+    return call_can_make_abnormal_goto (t);
+  return false;
+}
+
+
 /* Return true if T represents a stmt that always transfers control.  */
 
 bool
@@ -2306,10 +2343,8 @@ is_ctrl_altering_stmt (gimple t)
       {
 	int flags = gimple_call_flags (t);
 
-	/* A non-pure/const call alters flow control if the current
-	   function has nonlocal labels.  */
-	if (!(flags & (ECF_CONST | ECF_PURE | ECF_LEAF))
-	    && cfun->has_nonlocal_label)
+	/* A call alters control flow if it can make an abnormal goto.  */
+	if (call_can_make_abnormal_goto (t))
 	  return true;
 
 	/* A call also alters control flow if it does not return.  */
@@ -2364,21 +2399,6 @@ simple_goto_p (gimple t)
 {
   return (gimple_code (t) == GIMPLE_GOTO
 	  && TREE_CODE (gimple_goto_dest (t)) == LABEL_DECL);
-}
-
-
-/* Return true if T can make an abnormal transfer of control flow.
-   Transfers of control flow associated with EH are excluded.  */
-
-bool
-stmt_can_make_abnormal_goto (gimple t)
-{
-  if (computed_goto_p (t))
-    return true;
-  if (is_gimple_call (t))
-    return (gimple_has_side_effects (t) && cfun->has_nonlocal_label
-	    && !(gimple_call_flags (t) & ECF_LEAF));
-  return false;
 }
 
 
