@@ -1,3 +1,12 @@
+2012-03-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Revert
+	2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (SS_MARK_NAME): New define.
+	(gnat_to_gnu_entity) <E_Function>: Prepend leaf attribute on entities
+	whose name is SS_MARK_NAME.
+
 2012-03-30  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, sem_util.adb, exp_ch4.adb: Minor comment updates.

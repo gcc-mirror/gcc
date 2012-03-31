@@ -81,9 +81,6 @@
 #define FOREIGN_FORCE_REALIGN_STACK 0
 #endif
 
-/* The (internal) name of the System.Secondary_Stack.SS_Mark function.  */
-#define SS_MARK_NAME "system__secondary_stack__ss_mark"
-
 struct incomplete
 {
   struct incomplete *next;
@@ -4407,21 +4404,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  prepend_one_attribute_to
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("force_align_arg_pointer"), NULL_TREE,
-	     gnat_entity);
-
-	/* ??? Declare System.Secondary_Stack.SS_Mark as leaf, in order to
-	   avoid creating abnormal edges in SJLJ mode, which can break the
-	   dominance relationship if there is a dynamic stack allocation.
-	   We cannot do this in System.Secondary_Stack directly since it's
-	   a compiler unit and this would introduce bootstrap path issues.  */
-	if (IDENTIFIER_LENGTH (gnu_entity_name) == strlen (SS_MARK_NAME)
-	    && IDENTIFIER_POINTER (gnu_entity_name)[0] == SS_MARK_NAME[0]
-	    && IDENTIFIER_POINTER (gnu_entity_name)[1] == SS_MARK_NAME[1]
-	    && IDENTIFIER_POINTER (gnu_entity_name)[2] == SS_MARK_NAME[2]
-	    && gnu_entity_name == get_identifier (SS_MARK_NAME))
-	  prepend_one_attribute_to
-	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
-	     get_identifier ("leaf"), NULL_TREE,
 	     gnat_entity);
 
 	/* The lists have been built in reverse.  */
