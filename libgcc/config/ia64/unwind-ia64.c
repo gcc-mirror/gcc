@@ -2171,7 +2171,19 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
 		    struct _Unwind_Context *target)
 {
   unsigned long ireg_buf[4], ireg_nat = 0, ireg_pr = 0;
+  unsigned long saved_lc;
   long i;
+
+  /* ??? LC is a fixed register so the call to __builtin_unwind_init in
+     uw_init_context doesn't cause it to be saved.  In case it isn't in
+     the user frames either, we need to manually do so here, lest it be
+     clobbered by the loop just below.  */
+  if (target->lc_loc == NULL)
+    {
+      register unsigned long lc asm ("ar.lc");
+      saved_lc = lc;
+      target->lc_loc = &saved_lc;
+    }
 
   /* Copy integer register data from the target context to a
      temporary buffer.  Do this so that we can frob AR.UNAT
