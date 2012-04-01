@@ -1716,6 +1716,16 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     __callable_functor(_Member _Class::* const &__p)
     { return std::mem_fn(__p); }
 
+  template<typename _Member, typename _Class>
+    inline _Mem_fn<_Member _Class::*>
+    __callable_functor(_Member _Class::* volatile &__p)
+    { return std::mem_fn(__p); }
+
+  template<typename _Member, typename _Class>
+    inline _Mem_fn<_Member _Class::*>
+    __callable_functor(_Member _Class::* const volatile &__p)
+    { return std::mem_fn(__p); }
+
   template<typename _Signature>
     class function;
 
