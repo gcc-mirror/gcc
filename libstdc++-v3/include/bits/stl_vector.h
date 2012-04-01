@@ -428,36 +428,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  %Vector move assignment operator.
        *  @param  __x  A %vector of identical element and allocator types.
        *
-       *  The contents of @a __x are moved into this %vector (without copying).
+       *  The contents of @a __x are moved into this %vector (without copying,
+       *  if the allocators permit it).
        *  @a __x is a valid, but unspecified %vector.
        */
       vector&
       operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
       {
-	if (_Alloc_traits::_S_propagate_on_move_assign())
-	  {
-	    // We're moving the rvalue's allocator so can move the data too.
-	    const vector __tmp(std::move(*this));     // discard existing data
-	    this->_M_impl._M_swap_data(__x._M_impl);
-	    std::__alloc_on_move(_M_get_Tp_allocator(),
-				 __x._M_get_Tp_allocator());
-	  }
-	else if (_Alloc_traits::_S_always_equal()
-	         || __x._M_get_Tp_allocator() == this->_M_get_Tp_allocator())
-	  {
-	    // The rvalue's allocator can free our storage and vice versa,
-	    // so can swap the data storage after destroying our contents.
-	    this->clear();
-	    this->_M_impl._M_swap_data(__x._M_impl);
-	  }
-	else
-	  {
-	    // The rvalue's allocator cannot be moved, or is not equal,
-	    // so we need to individually move each element.
-	    this->assign(std::__make_move_if_noexcept_iterator(__x.begin()),
-			 std::__make_move_if_noexcept_iterator(__x.end()));
-	    __x.clear();
-	  }
+        constexpr bool __move_storage =
+          _Alloc_traits::_S_propagate_on_move_assign()
+          || _Alloc_traits::_S_always_equal();
+        _M_move_assign(std::move(__x),
+                       integral_constant<bool, __move_storage>());
 	return *this;
       }
 
@@ -1363,6 +1345,39 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	std::_Destroy(__pos, this->_M_impl._M_finish, _M_get_Tp_allocator());
 	this->_M_impl._M_finish = __pos;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    private:
+      // Constant-time move assignment when source object's memory can be
+      // moved, either because the source's allocator will move too
+      // or because the allocators are equal.
+      void
+      _M_move_assign(vector&& __x, std::true_type) noexcept
+      {
+	const vector __tmp(std::move(*this));
+	this->_M_impl._M_swap_data(__x._M_impl);
+	if (_Alloc_traits::_S_propagate_on_move_assign())
+	  std::__alloc_on_move(_M_get_Tp_allocator(),
+			       __x._M_get_Tp_allocator());
+      }
+
+      // Do move assignment when it might not be possible to move source
+      // object's memory, resulting in a linear-time operation.
+      void
+      _M_move_assign(vector&& __x, std::false_type)
+      {
+	if (__x._M_get_Tp_allocator() == this->_M_get_Tp_allocator())
+	  _M_move_assign(std::move(__x), std::true_type());
+	else
+	  {
+	    // The rvalue's allocator cannot be moved and is not equal,
+	    // so we need to individually move each element.
+	    this->assign(std::__make_move_if_noexcept_iterator(__x.begin()),
+			 std::__make_move_if_noexcept_iterator(__x.end()));
+	    __x.clear();
+	  }
+      }
+#endif
     };
 
 
