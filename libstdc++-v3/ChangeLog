@@ -1,5 +1,21 @@
 2012-04-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/52591
+	* include/bits/stl_vector.h (vector::operator=(vector&&)): Dispatch
+	to _M_move_assign depending on whether allocator is moved.
+	(vector::_M_move_assign): Add overloaded functions.
+	* testsuite/23_containers/vector/52591.cc: New.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+2012-04-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/functional (__callable_functor): Overload for
 	volatile-qualified pointers.
 	* testsuite/20_util/function/10.cc: New.
