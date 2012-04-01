@@ -1,3 +1,9 @@
+2012-04-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (__callable_functor): Overload for
+	volatile-qualified pointers.
+	* testsuite/20_util/function/10.cc: New.
+
 2012-03-30  Jeffrey Yasskin  <jyasskin@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
