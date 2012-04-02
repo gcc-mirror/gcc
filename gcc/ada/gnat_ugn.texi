@@ -94,10 +94,12 @@ Texts.  A copy of the license is included in the section entitled
 
 @ifset unw
 @set PLATFORM
+@set TITLESUFFIX
 @end ifset
 
 @ifset vms
 @set PLATFORM OpenVMS
+@set TITLESUFFIX for @value{PLATFORM}
 @end ifset
 
 @c @ovar(ARG)
@@ -115,7 +117,7 @@ Texts.  A copy of the license is included in the section entitled
 @c of the @ovar macro have been expanded inline.
 
 
-@settitle @value{EDITION} User's Guide @value{PLATFORM}
+@settitle @value{EDITION} User's Guide @value{TITLESUFFIX}
 @dircategory GNU Ada tools
 @direntry
 * @value{EDITION} User's Guide: (gnat_ugn). @value{PLATFORM}
@@ -484,6 +486,7 @@ Creating Unit Tests Using gnattest
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+* Support for other platforms/run-times::
 * Current Limitations::
 
 Other Utility Programs
@@ -3077,7 +3080,7 @@ $ gnatlink ada_unit file1.o file2.o --LINK=./my_script
 Where CC is the name of the non-GNU C++ compiler.
 
 If the @code{zero cost} exception mechanism is used, and the platform
-supports automatic registration of exception tables (e.g.@: Solaris or IRIX),
+supports automatic registration of exception tables (e.g.@: Solaris),
 paths to more objects are required:
 
 @smallexample
@@ -17988,6 +17991,7 @@ default location.
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+* Support for other platforms/run-times::
 * Current Limitations::
 @end menu
 
@@ -18472,6 +18476,25 @@ gnattest -Psimple.gpr --additional-tests=additional/harness/harness.gpr \
   --harness-dir=mixing
 gnatmake -Pmixing/test_driver.gpr
 mixing/test_runner
+@end smallexample
+
+@node Support for other platforms/run-times
+@section Support for other platforms/run-times
+
+@noindent
+@command{gnattest} can be used to generate the test harness for platforms
+and run-time libraries others than the default native target with the
+default full run-time. For example, when using a limited run-time library
+such as Zero FootPrint (ZFP), a simplified harness is generated.
+
+Two variables are used to tell the underlying AUnit framework how to generate
+the test harness: @code{PLATFORM}, which identifies the target, and
+@code{RUNTIME}, used to determine the run-time library for which the harness
+is generated. For example, the following options are used to generate the
+AUnit test harness for a PowerPC ELF target using the ZFP run-time library:
+
+@smallexample
+gnattest -Psimple.gpr -XPLATFORM=powerpc-elf -XRUNTIME=zfp
 @end smallexample
 
 @node Current Limitations

@@ -1199,6 +1199,7 @@ package Snames is
    Name_Object_File_Switches               : constant Name_Id := N + $;
    Name_Object_Generated                   : constant Name_Id := N + $;
    Name_Object_List                        : constant Name_Id := N + $;
+   Name_Object_Path_Switches               : constant Name_Id := N + $;
    Name_Objects_Linked                     : constant Name_Id := N + $;
    Name_Objects_Path                       : constant Name_Id := N + $;
    Name_Objects_Path_File                  : constant Name_Id := N + $;
