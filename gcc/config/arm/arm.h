@@ -1151,16 +1151,6 @@ enum reg_class
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
   arm_small_register_classes_for_mode_p 
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS, but for the Thumb core registers and
-   immediate constants we prefer a LO_REGS class or a subset.  */
-#define PREFERRED_RELOAD_CLASS(X, CLASS)		\
-  (TARGET_32BIT ? (CLASS) :				\
-   ((CLASS) == GENERAL_REGS || (CLASS) == HI_REGS	\
-    || (CLASS) == NO_REGS || (CLASS) == STACK_REG	\
-   ? LO_REGS : (CLASS)))
-
 /* Must leave BASE_REGS reloads alone */
 #define THUMB_SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)		\
   ((CLASS) != LO_REGS && (CLASS) != BASE_REGS				\
