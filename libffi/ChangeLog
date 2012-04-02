@@ -1,3 +1,11 @@
+2012-04-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Declare double_tmp.
+	Silence casting pointer to integer of different size warning.
+	Delete goto to previously deleted label.
+	(ffi_call): Silence possibly undefined warning.
+	(ffi_closure_helper_SYSV): Declare variable type.
+
 2012-03-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* src/sh/ffi.c (ffi_prep_closure_loc): Don't ASSERT ABI test,
