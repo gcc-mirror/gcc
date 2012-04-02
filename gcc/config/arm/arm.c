@@ -82,6 +82,7 @@ static int arm_legitimate_index_p (enum machine_mode, rtx, RTX_CODE, int);
 static int thumb2_legitimate_index_p (enum machine_mode, rtx, int);
 static int thumb1_base_register_rtx_p (rtx, enum machine_mode, int);
 static rtx arm_legitimize_address (rtx, rtx, enum machine_mode);
+static reg_class_t arm_preferred_reload_class (rtx, reg_class_t);
 static rtx thumb_legitimize_address (rtx, rtx, enum machine_mode);
 inline static int thumb1_index_register_rtx_p (rtx, int);
 static bool arm_legitimate_address_p (enum machine_mode, rtx, bool);
@@ -575,6 +576,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	arm_legitimate_address_p
+
+#undef TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS arm_preferred_reload_class
 
 #undef TARGET_INVALID_PARAMETER_TYPE
 #define TARGET_INVALID_PARAMETER_TYPE arm_invalid_parameter_type
@@ -6224,6 +6228,30 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, bool strict_p)
     return thumb2_legitimate_address_p (mode, x, strict_p);
   else /* if (TARGET_THUMB1) */
     return thumb1_legitimate_address_p (mode, x, strict_p);
+}
+
+/* Worker function for TARGET_PREFERRED_RELOAD_CLASS.
+
+   Given an rtx X being reloaded into a reg required to be
+   in class CLASS, return the class of reg to actually use.
+   In general this is just CLASS, but for the Thumb core registers and
+   immediate constants we prefer a LO_REGS class or a subset.  */
+
+static reg_class_t
+arm_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
+{
+  if (TARGET_32BIT)
+    return rclass;
+  else
+    {
+      if (rclass == GENERAL_REGS
+	  || rclass == HI_REGS
+	  || rclass == NO_REGS
+	  || rclass == STACK_REG)
+	return LO_REGS;
+      else
+	return rclass;
+    }
 }
 
 /* Build the SYMBOL_REF for __tls_get_addr.  */

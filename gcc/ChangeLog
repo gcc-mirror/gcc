@@ -1,3 +1,9 @@
+2012-04-02  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/arm/arm.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/arm/arm.c (TARGET_PREFERRED_RELOAD_CLASS): Define.
+	(arm_preferred_reload_class): New function.
+
 2012-04-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52756
