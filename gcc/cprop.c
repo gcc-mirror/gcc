@@ -1916,7 +1916,7 @@ execute_rtl_cprop (void)
   changed = one_cprop_pass ();
   flag_rerun_cse_after_global_opts |= changed;
   if (changed)
-    cleanup_cfg (0);
+    cleanup_cfg (CLEANUP_CFG_CHANGED);
   return 0;
 }
 

@@ -1,5 +1,11 @@
 2012-04-02  Richard Guenther  <rguenther@suse.de>
 
+	PR rtl-optimization/52800
+	* cprop.c (execute_rtl_cprop): Call cleanup_cfg with
+	CLEANUP_CFG_CHANGED.
+
+2012-04-02  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/52803
 	* loop-init.c (gate_handle_loop2): Destroy loops here if
 	we don't enter RTL loop optimizers.
