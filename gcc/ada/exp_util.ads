@@ -521,11 +521,12 @@ package Exp_Util is
    --  False otherwise. True for an empty list. It is an error to call this
    --  routine with No_List as the argument.
 
-   function Is_Displacement_Of_Ctrl_Function_Result
+   function Is_Displacement_Of_Object_Or_Function_Result
      (Obj_Id : Entity_Id) return Boolean;
-   --  Determine whether Obj_Id is a source object that has been initialized by
-   --  a controlled function call later rewritten as a class-wide conversion of
-   --  Ada.Tags.Displace.
+   --  Determine whether Obj_Id is a source entity that has been initialized by
+   --  either a controlled function call or the assignment of another source
+   --  object. In both cases the initialization expression is rewritten as a
+   --  class-wide conversion of Ada.Tags.Displace.
 
    function Is_Finalizable_Transient
      (Decl     : Node_Id;

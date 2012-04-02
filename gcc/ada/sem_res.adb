@@ -5316,7 +5316,18 @@ package body Sem_Res is
       --  needs extending because we can generate procedure calls that need
       --  freezing.
 
-      if Is_Entity_Name (Subp) and then not In_Spec_Expression then
+      --  In Ada 2012, expression functions may be called within pre/post
+      --  conditions of subsequent functions or expression functions. Such
+      --  calls do not freeze when they appear within generated bodies, which
+      --  would place the freeze node in the wrong scope.  An expression
+      --  function is frozen in the usual fashion, by the appearance of a real
+      --  body, or at the end of a declarative part.
+
+      if Is_Entity_Name (Subp) and then not In_Spec_Expression
+        and then
+          (not Is_Expression_Function (Entity (Subp))
+            or else Scope (Entity (Subp)) = Current_Scope)
+      then
          Freeze_Expression (Subp);
       end if;
 
