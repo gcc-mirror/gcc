@@ -1,3 +1,23 @@
+2012-04-02  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb: Code clean up.
+
+2012-04-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Do not suppress
+	style checks, because the subprogram instance itself may contain
+	violations of syle rules.
+	* style.adb (Missing_Overriding): Check for missing overriding
+	indicator on a subprogram instance.
+
+2012-04-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Last_Implicit_Declaration): New routine.
+	(Process_PPCs): Insert the body of _postconditions after the
+	last internally generated declaration. This ensures that actual
+	subtypes created for formal parameters are visible and properly
+	frozen as _postconditions may reference them.
+
 2012-04-02  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.adb (First_Component_Or_Discriminant) Now applies to

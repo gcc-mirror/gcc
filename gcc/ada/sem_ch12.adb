@@ -4404,9 +4404,6 @@ package body Sem_Ch12 is
       Parent_Installed : Boolean := False;
       Renaming_List    : List_Id;
 
-      Save_Style_Check : constant Boolean := Style_Check;
-      --  Save style check mode for restore on exit
-
       procedure Analyze_Instance_And_Renamings;
       --  The instance must be analyzed in a context that includes the mappings
       --  of generic parameters into actuals. We create a package declaration
@@ -4587,11 +4584,13 @@ package body Sem_Ch12 is
 
       Instantiation_Node := N;
 
-      --  Turn off style checking in instances. If the check is enabled on the
-      --  generic unit, a warning in an instance would just be noise. If not
-      --  enabled on the generic, then a warning in an instance is just wrong.
+      --  For package instantiations we turn off style checks, because they
+      --  will have been emitted in the generic. For subprogram instantiations
+      --  we want to apply at least the check on overriding indicators so we
+      --  do not modify the style check status.
 
-      Style_Check := False;
+      --  The renaming declarations for the actuals do not come from source and
+      --  will not generate spurious warnings.
 
       Preanalyze_Actuals (N);
 
@@ -4859,8 +4858,6 @@ package body Sem_Ch12 is
          Generic_Renamings_HTable.Reset;
       end if;
 
-      Style_Check := Save_Style_Check;
-
    <<Leave>>
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
@@ -4875,8 +4872,6 @@ package body Sem_Ch12 is
          if Env_Installed then
             Restore_Env;
          end if;
-
-         Style_Check := Save_Style_Check;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------

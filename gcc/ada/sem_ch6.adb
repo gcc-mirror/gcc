@@ -11057,6 +11057,9 @@ package body Sem_Ch6 is
       --  that an invariant check is required (for an IN OUT parameter, or
       --  the returned value of a function.
 
+      function Last_Implicit_Declaration return Node_Id;
+      --  Return the last internally-generated declaration of N
+
       -------------
       -- Grab_CC --
       -------------
@@ -11306,6 +11309,50 @@ package body Sem_Ch6 is
             return TL = List_Containing (DD);
          end if;
       end Is_Public_Subprogram_For;
+
+      -------------------------------
+      -- Last_Implicit_Declaration --
+      -------------------------------
+
+      function Last_Implicit_Declaration return Node_Id is
+         Loc   : constant Source_Ptr := Sloc (N);
+         Decls : List_Id := Declarations (N);
+         Decl  : Node_Id;
+         Succ  : Node_Id;
+
+      begin
+         if No (Decls) then
+            Decls := New_List (Make_Null_Statement (Loc));
+            Set_Declarations (N, Decls);
+
+         elsif Is_Empty_List (Declarations (N)) then
+            Append_To (Decls, Make_Null_Statement (Loc));
+         end if;
+
+         --  Implicit and source declarations may be interspersed. Search for
+         --  the last implicit declaration which is either succeeded by a
+         --  source construct or is the last node in the declarative list.
+
+         Decl := First (Declarations (N));
+         while Present (Decl) loop
+            Succ := Next (Decl);
+
+            --  The current declaration is the last one, do not return Empty
+
+            if No (Succ) then
+               exit;
+
+            --  The successor is a source construct
+
+            elsif Comes_From_Source (Succ) then
+               exit;
+            end if;
+
+            Next (Decl);
+         end loop;
+
+         return Decl;
+      end Last_Implicit_Declaration;
 
    --  Start of processing for Process_PPCs
 
@@ -11712,7 +11759,7 @@ package body Sem_Ch6 is
             --  The entity for the _Postconditions procedure
 
          begin
-            Prepend_To (Declarations (N),
+            Insert_After (Last_Implicit_Declaration,
               Make_Subprogram_Body (Loc,
                 Specification =>
                   Make_Procedure_Specification (Loc,
