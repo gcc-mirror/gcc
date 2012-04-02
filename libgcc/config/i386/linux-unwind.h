@@ -54,7 +54,7 @@ x86_64_fallback_frame_state (struct _Unwind_Context *context,
 #ifdef __LP64__
 #define RT_SIGRETURN_SYSCALL	0x050f0000000fc0c7ULL
 #else
-#define RT_SIGRETURN_SYSCALL	0x050f40002006c0c7ULL
+#define RT_SIGRETURN_SYSCALL	0x050f40000201c0c7ULL
 #endif
   if (*(unsigned char *)(pc+0) == 0x48
       && *(unsigned long long *)(pc+1) == RT_SIGRETURN_SYSCALL)
