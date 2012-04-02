@@ -146,6 +146,7 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
   gpr_base.u = stacktop.u - ASM_NEEDS_REGISTERS - NUM_GPR_ARG_REGISTERS;
   intarg_count = 0;
 #ifndef __NO_FPRS__
+  double double_tmp;
   fpr_base.d = gpr_base.d - NUM_FPR_ARG_REGISTERS;
   fparg_count = 0;
   copy_space.c = ((flags & FLAG_FP_ARGUMENTS) ? fpr_base.c : gpr_base.c);
@@ -155,9 +156,9 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
   next_arg.u = stack + 2;
 
   /* Check that everything starts aligned properly.  */
-  FFI_ASSERT (((unsigned) (char *) stack & 0xF) == 0);
-  FFI_ASSERT (((unsigned) copy_space.c & 0xF) == 0);
-  FFI_ASSERT (((unsigned) stacktop.c & 0xF) == 0);
+  FFI_ASSERT (((unsigned long) (char *) stack & 0xF) == 0);
+  FFI_ASSERT (((unsigned long) copy_space.c & 0xF) == 0);
+  FFI_ASSERT (((unsigned long) stacktop.c & 0xF) == 0);
   FFI_ASSERT ((bytes & 0xF) == 0);
   FFI_ASSERT (copy_space.c >= next_arg.c);
 
@@ -211,8 +212,6 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
 
 	case FFI_TYPE_DOUBLE:
 	  /* With FFI_LINUX_SOFT_FLOAT doubles are handled like UINT64.  */
-	  if (ecif->cif->abi == FFI_LINUX_SOFT_FLOAT)
-	    goto soft_double_prep;
 	  double_tmp = **p_argv.d;
 
 	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
@@ -925,7 +924,7 @@ ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
    */
   unsigned int smst_buffer[2];
   extended_cif ecif;
-  unsigned int rsize;
+  unsigned int rsize = 0;
 
   ecif.cif = cif;
   ecif.avalue = avalue;
@@ -1132,7 +1131,7 @@ ffi_closure_helper_SYSV (ffi_closure *closure, void *rvalue,
 
 	  if (nf < 8)
 	    {
-	      temp = pfr->d;
+	      double temp = pfr->d;
 	      pfr->f = (float) temp;
 	      avalue[i] = pfr;
 	      nf++;
