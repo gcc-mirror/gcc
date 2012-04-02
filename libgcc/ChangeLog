@@ -1,3 +1,8 @@
+2012-04-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/linux-unwind.h (RT_SIGRETURN_SYSCALL): Update x32
+	system call number.
+
 2012-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/unwind-ia64.c (uw_install_context): Manually save LC
