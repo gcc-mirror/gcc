@@ -9674,6 +9674,31 @@ reg_num_sign_bit_copies_for_combine (const_rtx x, enum machine_mode mode,
   return NULL;
 }
 
+/* Return the number of "extended" bits there are in X, when interpreted
+   as a quantity in MODE whose signedness is indicated by UNSIGNEDP.  For
+   unsigned quantities, this is the number of high-order zero bits.
+   For signed quantities, this is the number of copies of the sign bit
+   minus 1.  In both case, this function returns the number of "spare"
+   bits.  For example, if two quantities for which this function returns
+   at least 1 are added, the addition is known not to overflow.
+
+   This function will always return 0 unless called during combine, which
+   implies that it must be called from a define_split.  */
+
+unsigned int
+extended_count (const_rtx x, enum machine_mode mode, int unsignedp)
+{
+  if (nonzero_sign_valid == 0)
+    return 0;
+
+  return (unsignedp
+	  ? (HWI_COMPUTABLE_MODE_P (mode)
+	     ? (unsigned int) (GET_MODE_PRECISION (mode) - 1
+			       - floor_log2 (nonzero_bits (x, mode)))
+	     : 0)
+	  : num_sign_bit_copies (x, mode) - 1);
+}
+
 /* This function is called from `simplify_shift_const' to merge two
    outer operations.  Specifically, we have already found that we need
    to perform operation *POP0 with constant *PCONST0 at the outermost
