@@ -1440,6 +1440,12 @@ package body Prj.Nmsc is
                                 From_List => Element.Value.Values,
                                 In_Tree   => Data.Tree);
 
+                        when Name_Object_Path_Switches =>
+                           Put (Into_List =>
+                                  Lang_Index.Config.Object_Path_Switches,
+                                From_List => Element.Value.Values,
+                                In_Tree   => Data.Tree);
+
                         --  Attribute Compiler_Pic_Option (<language>)
 
                         when Name_Pic_Option =>

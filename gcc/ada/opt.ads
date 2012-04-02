@@ -987,6 +987,11 @@ package Opt is
    --  GNATMAKE
    --  Set to True when an object directory is specified with option -D
 
+   Object_Path_File_Name : String_Ptr := null;
+   --  GNAT2WHY
+   --  Path of the temporary file that contains a list of object directories
+   --  passed by -gnateO=<obj_pat_file>.
+
    One_Compilation_Per_Obj_Dir : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set to True with switch --single-compile-per-obj-dir. When True, there

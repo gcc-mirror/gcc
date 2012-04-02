@@ -1,3 +1,18 @@
+2012-04-02  Jose Ruiz  <ruiz@adacore.com>
+
+	* gnat_ugn.texi: Add some minimal documentation about how to
+	use GNATtest for cross platforms.
+
+2012-04-02  Vincent Celier  <celier@adacore.com>
+
+	* opt.ads (Object_Path_File_Name): New variable.
+	* prj-attr.adb: New Compiler attribute Object_Path_Switches.
+	* prj-nmsc.adb (Process_Compiler): Recognize new attribute
+	Object_Path_Switches.
+	* snames.ads-tmpl: New standard name Object_Path_Switches.
+	* switch-c.adb (Scan_Front_End_Switches): Recognize new switch
+	-gnateO= and put its value in Opt.Object_Path_File_Name.
+
 2012-04-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Process_Declarations): Detect a case where
