@@ -323,7 +323,7 @@ package body Sem_Attr is
       --  type or a private type for which no full view has been given.
 
       procedure Check_Object_Reference (P : Node_Id);
-      --  Check that P (the prefix of the attribute) is an object reference
+      --  Check that P is an object reference
 
       procedure Check_Program_Unit;
       --  Verify that prefix of attribute N is a program unit
@@ -5202,8 +5202,13 @@ package body Sem_Attr is
 
       when Attribute_Valid_Scalars =>
          Check_E0;
-         Check_Type;
-         --  More stuff TBD ???
+         Check_Object_Reference (P);
+
+         if No_Scalar_Parts (P_Type) then
+            Error_Attr_P ("?attribute % always True, no scalars to check");
+         end if;
+
+         Set_Etype (N, Standard_Boolean);
 
       -----------
       -- Value --

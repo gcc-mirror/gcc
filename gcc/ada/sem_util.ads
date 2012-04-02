@@ -1221,6 +1221,11 @@ package Sem_Util is
    --  Note that the result produced is always an expression, not a parameter
    --  association node, even if named notation was used.
 
+   function No_Scalar_Parts (T : Entity_Id) return Boolean;
+   --  Tests if type T can be determined at compile time to have no scalar
+   --  parts in the sense of the Valid_Scalars attribute. Returns True if
+   --  this is the case, meaning that the result of Valid_Scalars is True.
+
    procedure Normalize_Actuals
      (N       : Node_Id;
       S       : Entity_Id;

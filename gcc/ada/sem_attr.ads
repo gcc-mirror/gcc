@@ -560,12 +560,18 @@ package Sem_Attr is
       --    For a scalar type, the result is the same as obj'Valid
       --
       --    For an array object, the result is True if the result of applying
-      --    Valid_Scalars to every component is True.
+      --    Valid_Scalars to every component is True. For an empty array the
+      --    result is True.
       --
       --    For a record object, the result is True if the result of applying
       --    Valid_Scalars to every component is True. For class-wide types,
       --    only the components of the base type are checked. For variant
-      --    records, only the components actually present are checked.
+      --    records, only the components actually present are checked. The
+      --    discriminants, if any, are also checked. If there are no components
+      --    or discriminants, the result is True.
+      --
+      --    For any other type that has discriminants, the result is True if
+      --    the result of applying Valid_Scalars to each discriminant is True.
       --
       --    For all other types, the result is always True
       --
@@ -574,7 +580,7 @@ package Sem_Attr is
       --  type, or in the composite case if no scalar subcomponents exist. For
       --  a variant record, the warning is given only if none of the variants
       --  have scalar subcomponents. In addition, the warning is suppressed
-      --  for private types, or generic types in an instance.
+      --  for private types, or generic formal types in an instance.
 
       ----------------
       -- Value_Size --
