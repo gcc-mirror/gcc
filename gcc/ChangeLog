@@ -1,3 +1,10 @@
+2012-04-02  Tristan Gingold  <gingold@adacore.com>
+
+	* ggc-page.c (PAGE_L1_SIZE, PAGE_L2_SIZE, LOOKUP_L1, LOOKUP_L2)
+	(ggc_allocated_p, lookup_page_table_entry, set_page_table_entry)
+	(alloc_page, init_ggc, clear_marks, struct ggc_pch_data)
+	(ggc_pch_this_base): Use uintptr_t instead of size_t.
+
 2012-03-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/52784
