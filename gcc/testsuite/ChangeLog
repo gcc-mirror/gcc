@@ -1,3 +1,9 @@
+2012-04-02  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40942
+	* g++.old-deja/g++.pt/spec40.C: Adjust to take the resolution of
+	DR 214 in account.
+
 2012-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50043

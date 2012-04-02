@@ -1,3 +1,9 @@
+2012-04-02  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40942
+	* pt.c (more_specialized_fn):  Don't apply decay conversion to
+	types of function parameters.
+
 2012-04-02  Tristan Gingold  <gingold@adacore.com>
 
 	* ggc-page.c (PAGE_L1_SIZE, PAGE_L2_SIZE, LOOKUP_L1, LOOKUP_L2)
