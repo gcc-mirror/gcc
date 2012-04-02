@@ -570,67 +570,68 @@ package body Alfa is
          elsif T1.Def /= T2.Def then
             return T1.Def < T2.Def;
 
-         --  The following should be commented, it sure looks like a test,
-         --  but it sits uncommented between the "third test" and the "fourth
-         --  test! ??? Shouldn't this in any case be an assertion ???
-
-         elsif T1.Key.Ent /= T2.Key.Ent then
-            raise Program_Error;
-
-         --  Fourth test: if reference is in same unit as entity definition,
-         --  sort first.
-
-         elsif T1.Key.Lun /= T2.Key.Lun
-           and then T1.Ent_Scope_File = T1.Key.Lun
-         then
-            return True;
-
-         elsif T1.Key.Lun /= T2.Key.Lun
-           and then T2.Ent_Scope_File = T2.Key.Lun
-         then
-            return False;
-
-         --  Fifth test: if reference is in same unit and same scope as entity
-         --  definition, sort first.
-
-         elsif T1.Ent_Scope_File = T1.Key.Lun
-           and then T1.Key.Ref_Scope /= T2.Key.Ref_Scope
-           and then T1.Key.Ent_Scope = T1.Key.Ref_Scope
-         then
-            return True;
-
-         elsif T2.Ent_Scope_File = T2.Key.Lun
-           and then T1.Key.Ref_Scope /= T2.Key.Ref_Scope
-           and then T2.Key.Ent_Scope = T2.Key.Ref_Scope
-         then
-            return False;
-
-         --  Sixth test: for same entity, sort by reference location unit
-
-         elsif T1.Key.Lun /= T2.Key.Lun then
-            return Dependency_Num (T1.Key.Lun) < Dependency_Num (T2.Key.Lun);
-
-         --  Seventh test: for same entity, sort by reference location scope
-
-         elsif Get_Scope_Num (T1.Key.Ref_Scope) /=
-               Get_Scope_Num (T2.Key.Ref_Scope)
-         then
-            return Get_Scope_Num (T1.Key.Ref_Scope) <
-              Get_Scope_Num (T2.Key.Ref_Scope);
-
-         --  Eighth test: order of location within referencing unit
-
-         elsif T1.Key.Loc /= T2.Key.Loc then
-            return T1.Key.Loc < T2.Key.Loc;
-
-         --  Finally, for two locations at the same address prefer the one that
-         --  does NOT have the type 'r', so that a modification or extension
-         --  takes preference, when there are more than one reference at the
-         --  same location. As a result, in the case of entities that are
-         --  in-out actuals, the read reference follows the modify reference.
-
          else
-            return T2.Key.Typ = 'r';
+            --  Both entities must be equal at this point
+
+            pragma Assert (T1.Key.Ent = T2.Key.Ent);
+
+            --  Fourth test: if reference is in same unit as entity definition,
+            --  sort first.
+
+            if T1.Key.Lun /= T2.Key.Lun
+              and then T1.Ent_Scope_File = T1.Key.Lun
+            then
+               return True;
+
+            elsif T1.Key.Lun /= T2.Key.Lun
+              and then T2.Ent_Scope_File = T2.Key.Lun
+            then
+               return False;
+
+            --  Fifth test: if reference is in same unit and same scope as
+            --  entity definition, sort first.
+
+            elsif T1.Ent_Scope_File = T1.Key.Lun
+              and then T1.Key.Ref_Scope /= T2.Key.Ref_Scope
+              and then T1.Key.Ent_Scope = T1.Key.Ref_Scope
+            then
+               return True;
+
+            elsif T2.Ent_Scope_File = T2.Key.Lun
+              and then T1.Key.Ref_Scope /= T2.Key.Ref_Scope
+              and then T2.Key.Ent_Scope = T2.Key.Ref_Scope
+            then
+               return False;
+
+            --  Sixth test: for same entity, sort by reference location unit
+
+            elsif T1.Key.Lun /= T2.Key.Lun then
+               return Dependency_Num (T1.Key.Lun) <
+                      Dependency_Num (T2.Key.Lun);
+
+            --  Seventh test: for same entity, sort by reference location scope
+
+            elsif Get_Scope_Num (T1.Key.Ref_Scope) /=
+                  Get_Scope_Num (T2.Key.Ref_Scope)
+            then
+               return Get_Scope_Num (T1.Key.Ref_Scope) <
+                      Get_Scope_Num (T2.Key.Ref_Scope);
+
+            --  Eighth test: order of location within referencing unit
+
+            elsif T1.Key.Loc /= T2.Key.Loc then
+               return T1.Key.Loc < T2.Key.Loc;
+
+            --  Finally, for two locations at the same address prefer the one
+            --  that does NOT have the type 'r', so that a modification or
+            --  extension takes preference, when there are more than one
+            --  reference at the same location. As a result, in the case of
+            --  entities that are in-out actuals, the read reference follows
+            --  the modify reference.
+
+            else
+               return T2.Key.Typ = 'r';
+            end if;
          end if;
       end Lt;
 
