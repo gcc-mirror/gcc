@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -510,6 +510,14 @@ package body Bindgen is
 
       if CodePeer_Mode then
          WBI ("   begin");
+
+      --  When compiling for the AAMP small library, where the standard library
+      --  is no longer suppressed, we still want to exclude the setting of the
+      --  various imported globals, which aren't present for that library.
+
+      elsif AAMP_On_Target and then Configurable_Run_Time_On_Target then
+         WBI ("   begin");
+         WBI ("      null;");
 
       --  If the standard library is suppressed, then the only global variables
       --  that might be needed (by the Ravenscar profile) are the priority and

@@ -740,15 +740,16 @@ package body Sem_Util is
       N : Node_Id) return Entity_Id
    is
       Loc  : constant Source_Ptr := Sloc (N);
-      Bas  : Entity_Id;
-      --  The base type that is to be constrained by the defaults.
-
       Disc : Entity_Id;
+
+      Bas : Entity_Id;
+      --  The base type that is to be constrained by the defaults
 
    begin
       if not Has_Discriminants (T) or else Is_Constrained (T) then
          return T;
       end if;
+
       Bas := Base_Type (T);
 
       --  If T is non-private but its base type is private, this is
@@ -757,9 +758,7 @@ package body Sem_Util is
       --  proper discriminants are to be found in the full view of
       --  the base.
 
-      if Is_Private_Type (Bas)
-        and then Present (Full_View (Bas))
-      then
+      if Is_Private_Type (Bas) and then Present (Full_View (Bas)) then
          Bas := Full_View (Bas);
       end if;
 

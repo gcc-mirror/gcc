@@ -25,6 +25,7 @@
 
 with Atree;    use Atree;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -60,6 +61,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Table;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -74,6 +76,34 @@ package body Exp_Ch9 is
    --  documented implementation restriction.
 
    Entry_Family_Bound : constant Int := 2**16;
+
+   ------------------------------
+   -- Lock Free Data Structure --
+   ------------------------------
+
+   --  A data structure used for the Lock Free (LF) implementation of protected
+   --  objects. Since a protected subprogram can only access a single protected
+   --  component in the LF implementation, this structure stores each protected
+   --  subprogram and its accessed protected component when the protected
+   --  object allows the LF implementation.
+
+   type Lock_Free_Sub_Type is record
+      Sub_Body : Node_Id;
+      Comp_Id  : Entity_Id;
+   end record;
+
+   subtype Subprogram_Id is Nat;
+
+   --  The following table used for the Lock Free implementation of protected
+   --  objects maps Lock_Free_Sub_Type to Subprogram_Id.
+
+   package LF_Sub_Table is new Table.Table (
+     Table_Component_Type => Lock_Free_Sub_Type,
+     Table_Index_Type     => Subprogram_Id,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 5,
+     Table_Increment      => 5,
+     Table_Name           => "LF_Sub_Table");
 
    -----------------------
    -- Local Subprograms --
@@ -108,6 +138,10 @@ package body Exp_Ch9 is
    --    Spec is the specification of the procedure being built.
    --    Decls is the list of declarations to be enhanced.
    --    Ent is the entity for the original entry body.
+
+   function Allow_Lock_Free_Implementation (N : Node_Id) return Boolean;
+   --  Given a protected body N, return True if N permits a lock free
+   --  implementation.
 
    function Build_Accept_Body (Astat : Node_Id) return Node_Id;
    --  Transform accept statement into a block with added exception handler.
@@ -144,6 +178,32 @@ package body Exp_Ch9 is
    --  of the range of each entry family. A single array with that size is
    --  allocated for each concurrent object of the type.
 
+   function Build_Find_Body_Index (Typ : Entity_Id) return Node_Id;
+   --  Build the function that translates the entry index in the call
+   --  (which depends on the size of entry families) into an index into the
+   --  Entry_Bodies_Array, to determine the body and barrier function used
+   --  in a protected entry call. A pointer to this function appears in every
+   --  protected object.
+
+   function Build_Find_Body_Index_Spec (Typ : Entity_Id) return Node_Id;
+   --  Build subprogram declaration for previous one
+
+   function Build_Lock_Free_Protected_Subprogram_Body
+     (N         : Node_Id;
+      Pid       : Node_Id;
+      N_Op_Spec : Node_Id) return Node_Id;
+   --  This function is used to construct the lock free version of a protected
+   --  subprogram when the protected type denoted by Pid allows the lock free
+   --  implementation. It only contains a call to the unprotected version of
+   --  the subprogram body.
+
+   function Build_Lock_Free_Unprotected_Subprogram_Body
+     (N : Node_Id;
+      Pid : Node_Id) return Node_Id;
+   --  This function is used to construct the lock free version of an
+   --  unprotected subprogram when the protected type denoted by Pid allows the
+   --  lock free implementation.
+
    function Build_Parameter_Block
      (Loc     : Source_Ptr;
       Actuals : List_Id;
@@ -168,49 +228,6 @@ package body Exp_Ch9 is
    --  are evaluated before the call is queued. E is the entry in question,
    --  and Decl is the enclosing synchronized type declaration at whose
    --  freeze point the generated body is analyzed.
-
-   function Build_Renamed_Formal_Declaration
-     (New_F          : Entity_Id;
-      Formal         : Entity_Id;
-      Comp           : Entity_Id;
-      Renamed_Formal : Node_Id) return Node_Id;
-   --  Create a renaming declaration for a formal, within a protected entry
-   --  body or an accept body. The renamed object is a component of the
-   --  parameter block that is a parameter in the entry call.
-
-   --  In Ada 2012, if the formal is an incomplete tagged type, the renaming
-   --  does not dereference the corresponding component to prevent an illegal
-   --  use of the incomplete type (AI05-0151).
-
-   procedure Build_Wrapper_Bodies
-     (Loc : Source_Ptr;
-      Typ : Entity_Id;
-      N   : Node_Id);
-   --  Ada 2005 (AI-345): Typ is either a concurrent type or the corresponding
-   --  record of a concurrent type. N is the insertion node where all bodies
-   --  will be placed. This routine builds the bodies of the subprograms which
-   --  serve as an indirection mechanism to overriding primitives of concurrent
-   --  types, entries and protected procedures. Any new body is analyzed.
-
-   procedure Build_Wrapper_Specs
-     (Loc : Source_Ptr;
-      Typ : Entity_Id;
-      N   : in out Node_Id);
-   --  Ada 2005 (AI-345): Typ is either a concurrent type or the corresponding
-   --  record of a concurrent type. N is the insertion node where all specs
-   --  will be placed. This routine builds the specs of the subprograms which
-   --  serve as an indirection mechanism to overriding primitives of concurrent
-   --  types, entries and protected procedures. Any new spec is analyzed.
-
-   function Build_Find_Body_Index (Typ : Entity_Id) return Node_Id;
-   --  Build the function that translates the entry index in the call
-   --  (which depends on the size of entry families) into an index into the
-   --  Entry_Bodies_Array, to determine the body and barrier function used
-   --  in a protected entry call. A pointer to this function appears in every
-   --  protected object.
-
-   function Build_Find_Body_Index_Spec (Typ : Entity_Id) return Node_Id;
-   --  Build subprogram declaration for previous one
 
    function Build_Protected_Entry
      (N   : Node_Id;
@@ -252,6 +269,19 @@ package body Exp_Ch9 is
    --  a cleanup handler that unlocks the object in all cases.
    --  (see Exp_Ch7.Expand_Cleanup_Actions).
 
+   function Build_Renamed_Formal_Declaration
+     (New_F          : Entity_Id;
+      Formal         : Entity_Id;
+      Comp           : Entity_Id;
+      Renamed_Formal : Node_Id) return Node_Id;
+   --  Create a renaming declaration for a formal, within a protected entry
+   --  body or an accept body. The renamed object is a component of the
+   --  parameter block that is a parameter in the entry call.
+   --
+   --  In Ada 2012, if the formal is an incomplete tagged type, the renaming
+   --  does not dereference the corresponding component to prevent an illegal
+   --  use of the incomplete type (AI05-0151).
+
    function Build_Selected_Name
      (Prefix      : Entity_Id;
       Selector    : Entity_Id;
@@ -291,6 +321,26 @@ package body Exp_Ch9 is
    --  subprogram that is called from all protected operations on the same
    --  object, including the protected version of the same subprogram.
 
+   procedure Build_Wrapper_Bodies
+     (Loc : Source_Ptr;
+      Typ : Entity_Id;
+      N   : Node_Id);
+   --  Ada 2005 (AI-345): Typ is either a concurrent type or the corresponding
+   --  record of a concurrent type. N is the insertion node where all bodies
+   --  will be placed. This routine builds the bodies of the subprograms which
+   --  serve as an indirection mechanism to overriding primitives of concurrent
+   --  types, entries and protected procedures. Any new body is analyzed.
+
+   procedure Build_Wrapper_Specs
+     (Loc : Source_Ptr;
+      Typ : Entity_Id;
+      N   : in out Node_Id);
+   --  Ada 2005 (AI-345): Typ is either a concurrent type or the corresponding
+   --  record of a concurrent type. N is the insertion node where all specs
+   --  will be placed. This routine builds the specs of the subprograms which
+   --  serve as an indirection mechanism to overriding primitives of concurrent
+   --  types, entries and protected procedures. Any new spec is analyzed.
+
    procedure Collect_Entry_Families
      (Loc          : Source_Ptr;
       Cdecls       : List_Id;
@@ -298,6 +348,10 @@ package body Exp_Ch9 is
       Conctyp      : Entity_Id);
    --  For each entry family in a concurrent type, create an anonymous array
    --  type of the right size, and add a component to the corresponding_record.
+
+   function Comp_Of (Sub_Body : Node_Id) return Entity_Id;
+   --  For the lock free implementation, return the protected component entity
+   --  referenced in Sub_Body using LF_Sub_Table.
 
    function Concurrent_Object
      (Spec_Id  : Entity_Id;
@@ -321,6 +375,26 @@ package body Exp_Ch9 is
    --  debug info and debug nodes are manually generation where necessary. This
    --  step of the expansion must to be done after private data has been moved
    --  to its final resting scope to ensure proper visibility of debug objects.
+
+   procedure Extract_Dispatching_Call
+     (N        : Node_Id;
+      Call_Ent : out Entity_Id;
+      Object   : out Entity_Id;
+      Actuals  : out List_Id;
+      Formals  : out List_Id);
+   --  Given a dispatching call, extract the entity of the name of the call,
+   --  its actual dispatching object, its actual parameters and the formal
+   --  parameters of the overridden interface-level version. If the type of
+   --  the dispatching object is an access type then an explicit dereference
+   --  is returned in Object.
+
+   procedure Extract_Entry
+     (N       : Node_Id;
+      Concval : out Node_Id;
+      Ename   : out Node_Id;
+      Index   : out Node_Id);
+   --  Given an entry call, returns the associated concurrent object,
+   --  the entry name, and the entry family index.
 
    function Family_Offset
      (Loc  : Source_Ptr;
@@ -358,26 +432,6 @@ package body Exp_Ch9 is
    --  the scope of Context_Id and Context_Decls is the declarative list of
    --  Context.
 
-   procedure Extract_Dispatching_Call
-     (N        : Node_Id;
-      Call_Ent : out Entity_Id;
-      Object   : out Entity_Id;
-      Actuals  : out List_Id;
-      Formals  : out List_Id);
-   --  Given a dispatching call, extract the entity of the name of the call,
-   --  its actual dispatching object, its actual parameters and the formal
-   --  parameters of the overridden interface-level version. If the type of
-   --  the dispatching object is an access type then an explicit dereference
-   --  is returned in Object.
-
-   procedure Extract_Entry
-     (N       : Node_Id;
-      Concval : out Node_Id;
-      Ename   : out Node_Id;
-      Index   : out Node_Id);
-   --  Given an entry call, returns the associated concurrent object,
-   --  the entry name, and the entry family index.
-
    function Find_Task_Or_Protected_Pragma
      (T : Node_Id;
       P : Name_Id) return Node_Id;
@@ -392,6 +446,9 @@ package body Exp_Ch9 is
    --  with the protection entry index in the Protected_Body_Subprogram or the
    --  Task_Body_Procedure of Spec_Id. The returned entity denotes formal
    --  parameter _E.
+
+   function Is_Exception_Safe (Subprogram : Node_Id) return Boolean;
+   --  Tell whether a given subprogram cannot raise an exception
 
    function Is_Potentially_Large_Family
      (Base_Index : Entity_Id;
@@ -761,6 +818,263 @@ package body Exp_Ch9 is
       Set_Debug_Info_Needed (Defining_Identifier (Decl));
       Prepend_To (Decls, Decl);
    end Add_Object_Pointer;
+
+   ------------------------------------
+   -- Allow_Lock_Free_Implementation --
+   ------------------------------------
+
+   --  Here are the restrictions for the Lock Free implementation
+
+   --    Implementation Restrictions on protected declaration
+
+   --       There must be only protected scalar components (at least one)
+
+   --       Component types must support an atomic compare_exchange primitive
+   --       (size equals to 1, 2, 4 or 8 bytes).
+
+   --       No entries
+
+   --    Implementation Restrictions on protected operations
+
+   --       Cannot refer to non-constant outside of the scope of the protected
+   --       operation.
+
+   --       Can only access a single protected component: all protected
+   --       component names appearing in a scope (including nested scopes)
+   --       must statically denote the same protected component.
+
+   --    Fundamental Restrictions on protected operations
+
+   --      No loop and procedure call statements
+
+   --      Any function call and attribute reference must be static
+
+   function Allow_Lock_Free_Implementation (N : Node_Id) return Boolean is
+      Decls     : constant List_Id := Declarations (N);
+      Spec      : constant Entity_Id := Corresponding_Spec (N);
+      Pro_Def   : constant Node_Id := Protected_Definition (Parent (Spec));
+      Pri_Decls : constant List_Id := Private_Declarations (Pro_Def);
+      Vis_Decls : constant List_Id := Visible_Declarations (Pro_Def);
+
+      Comp_Id      : Entity_Id;
+      Comp_Size    : Int;
+      Comp_Type    : Entity_Id;
+      No_Component : Boolean := True;
+      N_Decl       : Node_Id;
+
+      function Permit_Lock_Free (Sub_Body : Node_Id) return Boolean;
+      --  Return True if the protected subprogram body Sub_Body doesn't
+      --  prevent the lock free code expansion, i.e. Sub_Body meets all the
+      --  restrictions listed below that allow the lock free implementation.
+      --
+      --    Can only access a single protected component
+      --
+      --    No loop and procedure call statements
+
+      --    Any function call and attribute reference must be static
+
+      --    Cannot refer to non-constant outside of the scope of the protected
+      --    subprogram.
+
+      ----------------------
+      -- Permit_Lock_Free --
+      ----------------------
+
+      function Permit_Lock_Free (Sub_Body : Node_Id) return Boolean is
+         Sub_Id  : constant Entity_Id := Corresponding_Spec (Sub_Body);
+         Comp_Id : Entity_Id := Empty;
+         LF_Sub  : Lock_Free_Sub_Type;
+
+         function Check_Node (N : Node_Id) return Traverse_Result;
+         --  Check the node N meet the lock free restrictions
+
+         function Check_All_Nodes is new Traverse_Func (Check_Node);
+
+         ----------------
+         -- Check_Node --
+         ----------------
+
+         function Check_Node (N : Node_Id) return Traverse_Result is
+            Comp_Decl : Node_Id;
+            Id        : Entity_Id;
+
+         begin
+            case Nkind (N) is
+
+               --  Function call or attribute reference case
+
+               when N_Function_Call | N_Attribute_Reference =>
+
+                  --  Any function call and attribute reference must be static
+
+                  if not Is_Static_Expression (N) then
+                     return Abandon;
+                  end if;
+
+               --  Loop and procedure call statement case
+
+               when N_Procedure_Call_Statement | N_Loop_Statement =>
+                  --  No loop and procedure call statements
+                  return Abandon;
+
+               --  Identifier case
+
+               when N_Identifier =>
+                  if Present (Entity (N)) then
+                     Id := Entity (N);
+
+                     --  Cannot refer to non-constant entities outside of the
+                     --  scope of the protected subprogram.
+
+                     if Ekind (Id) in Assignable_Kind
+                       and then Sloc (Scope (Id)) > No_Location
+                       and then not Scope_Within_Or_Same (Scope (Id), Sub_Id)
+                       and then not Scope_Within_Or_Same (Scope (Id),
+                                      Protected_Body_Subprogram (Sub_Id))
+                     then
+                        return Abandon;
+                     end if;
+
+                     --  Can only access a single protected component
+
+                     if Ekind_In (Id, E_Constant, E_Variable)
+                       and then Present (Prival_Link (Id))
+                     then
+                        Comp_Decl := Parent (Prival_Link (Id));
+
+                        if Nkind (Comp_Decl) = N_Component_Declaration
+                          and then Is_List_Member (Comp_Decl)
+                          and then List_Containing (Comp_Decl) = Pri_Decls
+                        then
+                           --  Check if another protected component has already
+                           --  been accessed by the subprogram body.
+
+                           if Present (Comp_Id)
+                             and then Comp_Id /= Prival_Link (Id)
+                           then
+                              return Abandon;
+
+                           elsif not Present (Comp_Id) then
+                              Comp_Id := Prival_Link (Id);
+                           end if;
+                        end if;
+                     end if;
+                  end if;
+
+               --  Ok for all other nodes
+
+               when others => return OK;
+            end case;
+
+            return OK;
+         end Check_Node;
+
+      --  Start of processing for Permit_Lock_Free
+
+      begin
+         if Check_All_Nodes (Sub_Body) = OK then
+
+            --  Fill LF_Sub with Sub_Body and its corresponding protected
+            --  component entity and then store LF_Sub in the lock free
+            --  subprogram table LF_Sub_Table.
+
+            LF_Sub.Sub_Body := Sub_Body;
+            LF_Sub.Comp_Id := Comp_Id;
+            LF_Sub_Table.Append (LF_Sub);
+            return True;
+
+         else
+            return False;
+         end if;
+      end Permit_Lock_Free;
+
+   --  Start of processing for Allow_Lock_Free_Implementation
+
+   begin
+      --  Debug switch -gnatd9 enables Lock Free implementation
+
+      if not Debug_Flag_9 then
+         return False;
+      end if;
+
+      --  Look for any entries declared in the visible part of the protected
+      --  declaration.
+
+      N_Decl := First (Vis_Decls);
+      while Present (N_Decl) loop
+         if Nkind (N_Decl) = N_Entry_Declaration then
+            return False;
+         end if;
+
+         N_Decl := Next (N_Decl);
+      end loop;
+
+      --  Look for any entry, plus look for any scalar component declared in
+      --  the private part of the protected declaration.
+
+      N_Decl := First (Pri_Decls);
+      while Present (N_Decl) loop
+
+         --  Check at least one scalar component is declared
+
+         if Nkind (N_Decl) = N_Component_Declaration then
+            if No_Component then
+               No_Component := False;
+            end if;
+
+            Comp_Id := Defining_Identifier (N_Decl);
+            Comp_Type := Etype (Comp_Id);
+
+            --  Verify the component is a scalar
+
+            if not Is_Scalar_Type (Comp_Type) then
+               return False;
+            end if;
+
+            Comp_Size := UI_To_Int (Esize (Base_Type (Comp_Type)));
+
+            --  Check the size of the component is 8, 16, 32 or 64 bits
+
+            case Comp_Size is
+               when 8 | 16 | 32 | 64 =>
+                  null;
+               when others           =>
+                  return False;
+            end case;
+
+         --  Check there is no entry declared in the private part.
+
+         else
+            if Nkind (N_Decl) = N_Entry_Declaration then
+               return False;
+            end if;
+         end if;
+
+         N_Decl := Next (N_Decl);
+      end loop;
+
+      --  One scalar component must be present
+
+      if No_Component then
+         return False;
+      end if;
+
+      --  Ensure all protected subprograms meet the restrictions that allow the
+      --  lock free implementation.
+
+      N_Decl := First (Decls);
+      while Present (N_Decl) loop
+         if Nkind (N_Decl) = N_Subprogram_Body
+           and then not Permit_Lock_Free (N_Decl)
+         then
+            return False;
+         end if;
+
+         Next (N_Decl);
+      end loop;
+
+      return True;
+   end Allow_Lock_Free_Implementation;
 
    -----------------------
    -- Build_Accept_Body --
@@ -2720,18 +3034,16 @@ package body Exp_Ch9 is
          if No (If_St) then
             If_St :=
               Make_Implicit_If_Statement (Typ,
-                Condition => Cond,
+                Condition       => Cond,
                 Then_Statements => Stats,
-                Elsif_Parts   => New_List);
-
+                Elsif_Parts     => New_List);
             Ret := If_St;
 
          else
-            Append (
+            Append_To (Elsif_Parts (If_St),
               Make_Elsif_Part (Loc,
                 Condition => Cond,
-                Then_Statements => Stats),
-              Elsif_Parts (If_St));
+                Then_Statements => Stats));
          end if;
       end Add_If_Clause;
 
@@ -2788,7 +3100,7 @@ package body Exp_Ch9 is
       else
          --  Suppose entries e1, e2, ... have size l1, l2, ... we generate
          --  the following:
-         --
+
          --  if E <= l1 then return 1;
          --  elsif E <= l1 + l2 then return 2;
          --  ...
@@ -2834,8 +3146,8 @@ package body Exp_Ch9 is
 
       return
         Make_Subprogram_Body (Loc,
-          Specification => Spec,
-          Declarations  => Decls,
+          Specification              => Spec,
+          Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => New_List (Ret)));
@@ -2856,20 +3168,542 @@ package body Exp_Ch9 is
    begin
       return
         Make_Function_Specification (Loc,
-          Defining_Unit_Name => Id,
+          Defining_Unit_Name       => Id,
           Parameter_Specifications => New_List (
             Make_Parameter_Specification (Loc,
               Defining_Identifier => Parm1,
-              Parameter_Type =>
+              Parameter_Type      =>
                 New_Reference_To (RTE (RE_Address), Loc)),
 
             Make_Parameter_Specification (Loc,
               Defining_Identifier => Parm2,
-              Parameter_Type =>
+              Parameter_Type      =>
                 New_Reference_To (RTE (RE_Protected_Entry_Index), Loc))),
-          Result_Definition => New_Occurrence_Of (
+
+          Result_Definition        => New_Occurrence_Of (
             RTE (RE_Protected_Entry_Index), Loc));
    end Build_Find_Body_Index_Spec;
+
+   -----------------------------------------------
+   -- Build_Lock_Free_Protected_Subprogram_Body --
+   -----------------------------------------------
+
+   function Build_Lock_Free_Protected_Subprogram_Body
+     (N         : Node_Id;
+      Pid       : Node_Id;
+      N_Op_Spec : Node_Id) return Node_Id
+   is
+      Loc          : constant Source_Ptr := Sloc (N);
+      Op_Spec      : Node_Id;
+      P_Op_Spec    : Node_Id;
+      Uactuals     : List_Id;
+      Pformal      : Node_Id;
+      Unprot_Call  : Node_Id;
+      R            : Node_Id;
+      Return_Stmt  : Node_Id := Empty;    -- init to avoid gcc 3 warning
+      Exc_Safe     : Boolean;
+
+   begin
+      Op_Spec := Specification (N);
+      Exc_Safe := Is_Exception_Safe (N);
+
+      P_Op_Spec :=
+        Build_Protected_Sub_Specification (N, Pid, Protected_Mode);
+
+      --  Build a list of the formal parameters of the protected version of
+      --  the subprogram to use as the actual parameters of the unprotected
+      --  version.
+
+      Uactuals := New_List;
+      Pformal := First (Parameter_Specifications (P_Op_Spec));
+      while Present (Pformal) loop
+         Append_To (Uactuals,
+           Make_Identifier (Loc, Chars (Defining_Identifier (Pformal))));
+         Next (Pformal);
+      end loop;
+
+      --  Make a call to the unprotected version of the subprogram built above
+      --  for use by the protected version built below.
+
+      if Nkind (Op_Spec) = N_Function_Specification then
+         if Exc_Safe then
+            R := Make_Temporary (Loc, 'R');
+            Unprot_Call :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => R,
+                Constant_Present => True,
+                Object_Definition => New_Copy (Result_Definition (N_Op_Spec)),
+                Expression =>
+                  Make_Function_Call (Loc,
+                    Name => Make_Identifier (Loc,
+                      Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
+                    Parameter_Associations => Uactuals));
+
+            Return_Stmt :=
+              Make_Simple_Return_Statement (Loc,
+                Expression => New_Reference_To (R, Loc));
+
+         else
+            Unprot_Call := Make_Simple_Return_Statement (Loc,
+              Expression => Make_Function_Call (Loc,
+                Name =>
+                  Make_Identifier (Loc,
+                    Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
+                Parameter_Associations => Uactuals));
+         end if;
+
+      else
+         Unprot_Call :=
+           Make_Procedure_Call_Statement (Loc,
+             Name =>
+               Make_Identifier (Loc, Chars (Defining_Unit_Name (N_Op_Spec))),
+             Parameter_Associations => Uactuals);
+      end if;
+
+      if Nkind (Op_Spec) = N_Function_Specification
+        and then Exc_Safe
+      then
+         Unprot_Call :=
+           Make_Block_Statement (Loc,
+             Declarations               => New_List (Unprot_Call),
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Return_Stmt)));
+      end if;
+
+      return
+        Make_Subprogram_Body (Loc,
+          Declarations => Empty_List,
+          Specification => P_Op_Spec,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (Unprot_Call)));
+   end Build_Lock_Free_Protected_Subprogram_Body;
+
+   -------------------------------------------------
+   -- Build_Lock_Free_Unprotected_Subprogram_Body --
+   -------------------------------------------------
+
+   function Build_Lock_Free_Unprotected_Subprogram_Body
+     (N : Node_Id;
+      Pid : Node_Id) return Node_Id
+   is
+      Decls        : constant List_Id := Declarations (N);
+      Is_Procedure : constant Boolean :=
+                       Ekind (Corresponding_Spec (N)) = E_Procedure;
+      Loc          : constant Source_Ptr := Sloc (N);
+
+      function Ren_Comp_Id (Decls : List_Id) return Entity_Id;
+      --  Given the list of delaration Decls, return the renamed entity
+      --  of the protected component accessed by the subprogram body.
+
+      -----------------
+      -- Ren_Comp_Id --
+      -----------------
+
+      function Ren_Comp_Id (Decls : List_Id) return Entity_Id is
+         N_Decl       : Node_Id;
+         Pri_Link     : Node_Id;
+
+      begin
+         N_Decl := First (Decls);
+         while Present (N_Decl) loop
+
+            --  Look for a renaming declaration
+
+            if Nkind (N_Decl) = N_Object_Renaming_Declaration then
+               Pri_Link := Prival_Link (Defining_Identifier (N_Decl));
+
+               --  Compare the renamed entity and the accessed component entity
+               --  in the LF_Sub_Table.
+
+               if Present (Pri_Link) and then Pri_Link = Comp_Of (N) then
+                  return Defining_Identifier (N_Decl);
+               end if;
+            end if;
+
+            Next (N_Decl);
+         end loop;
+
+         return Empty;
+      end Ren_Comp_Id;
+
+      Obj_Id      : constant Entity_Id := Ren_Comp_Id (Decls);
+      At_Comp_Id  : Entity_Id;
+      At_Load_Id  : Entity_Id;
+      Copy_Id     : Entity_Id;
+      Exit_Stmt   : Node_Id;
+      Label       : Node_Id := Empty;
+      Label_Id    : Entity_Id;
+      New_Body    : Node_Id;
+      New_Decls   : List_Id;
+      New_Stmts   : List_Id;
+      Obj_Typ     : Entity_Id;
+      Old_Id      : Entity_Id;
+      Typ_Size    : Int;
+      Unsigned_Id : Entity_Id;
+
+      function Make_If (Stmt : Node_Id) return Node_Id;
+      --  Given the statement Stmt, return an if statement with Stmt at the end
+      --  of the list of statements.
+
+      procedure Process_Stmts (Stmts : List_Id);
+      --  Wrap each return and raise statements in Stmts into an if statement
+      --  generated by Make_If. Replace all references to the protected object
+      --  Obj by a reference to its copy Obj_Copy.
+
+      -------------
+      -- Make_If --
+      -------------
+
+      function Make_If (Stmt : Node_Id) return Node_Id is
+      begin
+         --  Generate (for Typ_Size = 32):
+
+         --  if System.Atomic_Primitives.Atomic_Compare_Exchange_32
+         --       (Obj'Address,
+         --        Interfaces.Unsigned_32! (Obj_Old),
+         --        Interfaces.Unsigned_32! (Obj_Copy));
+         --  then
+         --     < Stmt >
+         --  else
+         --     goto L0;
+         --  end if;
+
+         --  Check whether a label has already been created
+
+         if not Present (Label) then
+
+            --  Create a label which will point just after the last
+            --  statement of the loop statement generated in step 3.
+
+            --  Generate:
+
+            --  L0 : Label;
+
+            Label_Id :=
+              Make_Identifier (Loc, New_External_Name ('L', 0));
+
+            Set_Entity (Label_Id,
+              Make_Defining_Identifier (Loc, Chars (Label_Id)));
+            Label := Make_Label (Loc, Label_Id);
+
+            Append_To (Decls,
+              Make_Implicit_Label_Declaration (Loc,
+                Defining_Identifier => Entity (Label_Id),
+                Label_Construct     => Label));
+         end if;
+
+         return
+           Make_If_Statement (Loc,
+             Condition       =>
+               Make_Function_Call (Loc,
+                 Name                   => New_Reference_To (At_Comp_Id, Loc),
+                 Parameter_Associations => New_List (
+                   Make_Attribute_Reference (Loc,
+                     Prefix         => New_Reference_To (Obj_Id, Loc),
+                     Attribute_Name => Name_Address),
+                   Unchecked_Convert_To (Unsigned_Id,
+                     New_Reference_To (Old_Id, Loc)),
+                   Unchecked_Convert_To (Unsigned_Id,
+                     New_Reference_To (Copy_Id, Loc)))),
+
+             Then_Statements => New_List (
+               Relocate_Node (Stmt)),
+
+             Else_Statements => New_List (
+               Make_Goto_Statement (Loc,
+                 Name => New_Reference_To (Entity (Label_Id), Loc))));
+      end Make_If;
+
+      -------------------
+      -- Process_Stmts --
+      -------------------
+
+      procedure Process_Stmts (Stmts : List_Id) is
+         Stmt : Node_Id;
+
+         function Check_Node (N : Node_Id) return Traverse_Result;
+         --  Recognize a return and raise statement and wrap it into an if
+         --  statement. Replace all references to the protected object by
+         --  a reference to its copy. Reset all Analyzed flags in order to
+         --  reanalyze statments inside the new unprotected subprogram body.
+
+         procedure Process_Nodes is
+           new Traverse_Proc (Check_Node);
+
+         ----------------
+         -- Check_Node --
+         ----------------
+
+         function Check_Node (N : Node_Id) return Traverse_Result is
+         begin
+            --  In case of a procedure, wrap each return and raise statements
+            --  inside an if statement created by Make_If.
+
+            if Is_Procedure
+             and then Nkind_In (N, N_Simple_Return_Statement,
+                                   N_Extended_Return_Statement,
+                                   N_Raise_Statement)
+             and then
+               (Nkind (N) /= N_Simple_Return_Statement
+                 or else N /= Last (Stmts))
+            then
+               Rewrite (N, Make_If (N));
+               return Skip;
+
+            --  Replace all references to the protected object by a reference
+            --  to the new copy.
+
+            elsif Nkind (N) = N_Identifier
+              and then Present (Entity (N))
+              and then Entity (N) = Obj_Id
+            then
+               Rewrite (N, Make_Identifier (Loc, Chars (Copy_Id)));
+               return Skip;
+            end if;
+
+            --  We mark the node as unanalyzed in order to reanalyze it inside
+            --  the unprotected subprogram body.
+
+            Set_Analyzed (N, False);
+
+            return OK;
+         end Check_Node;
+
+      --  Start of processing for Process_Stmts
+
+      begin
+         --  Process_Nodes for each statement in Stmts
+
+         Stmt := First (Stmts);
+         while Present (Stmt) loop
+            Process_Nodes (Stmt);
+            Next (Stmt);
+         end loop;
+      end Process_Stmts;
+
+   --  Start of processing for Build_Lock_Free_Unprotected_Subprogram_Body
+
+   begin
+      New_Stmts := New_Copy_List (Statements (Handled_Statement_Sequence (N)));
+
+      --  Do the transformation only if the subprogram accesses a protected
+      --  component.
+
+      if not Present (Obj_Id) then
+         goto Continue;
+      end if;
+
+      Copy_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Obj_Id), Suffix => "_copy"));
+
+      Obj_Typ  := Etype (Obj_Id);
+      Typ_Size := UI_To_Int (Esize (Base_Type (Obj_Typ)));
+
+      Process_Stmts (New_Stmts);
+
+      --  Procedure case
+
+      if Is_Procedure then
+         case Typ_Size is
+            when 8 =>
+               At_Comp_Id  := RTE (RE_Atomic_Compare_Exchange_8);
+               At_Load_Id  := RTE (RE_Atomic_Load_8);
+               Unsigned_Id := RTE (RE_Uint8);
+
+            when 16 =>
+               At_Comp_Id  := RTE (RE_Atomic_Compare_Exchange_16);
+               At_Load_Id  := RTE (RE_Atomic_Load_16);
+               Unsigned_Id := RTE (RE_Uint16);
+
+            when 32 =>
+               At_Comp_Id  := RTE (RE_Atomic_Compare_Exchange_32);
+               At_Load_Id  := RTE (RE_Atomic_Load_32);
+               Unsigned_Id := RTE (RE_Uint32);
+
+            when 64 =>
+               At_Comp_Id  := RTE (RE_Atomic_Compare_Exchange_64);
+               At_Load_Id  := RTE (RE_Atomic_Load_64);
+               Unsigned_Id := RTE (RE_Uint64);
+            when others => null;
+         end case;
+
+         --  Generate (e.g. for Typ_Size = 32):
+
+         --  begin
+         --     loop
+         --        declare
+         --           Obj_Old  : constant Obj_Typ :=
+         --                        Obj_Typ!
+         --                          (System.Atomic_Primitives.Atomic_Load_32
+         --                            (Obj'Address));
+         --           Obj_Copy : Obj_Typ := Obj_Old;
+         --        begin
+         --           < New_Stmts >
+         --           exit when
+         --             System.Atomic_Primitives.Atomic_Compare_Exchange_32
+         --               (Obj'Address,
+         --                Interfaces.Unsigned_32! (Obj_Old),
+         --                Interfaces.Unsigned_32! (Obj_Copy));
+         --        end;
+         --     end loop;
+         --  end;
+
+         --  Step 1: Define a copy and save the old value of the protected
+         --  object. The copy replaces all the references to the object present
+         --  in the body of the procedure.
+
+         --  Generate:
+
+         --  Obj_Old  : constant Obj_Typ :=
+         --               Obj_Typ!
+         --                 (System.Atomic_Primitives.Atomic_Load_32
+         --                   (Obj'Address));
+         --  Obj_Copy : Obj_Typ := Obj_Old;
+
+         Old_Id   := Make_Defining_Identifier (Loc,
+                       New_External_Name (Chars (Obj_Id), Suffix => "_old"));
+
+         New_Decls := New_List (
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Old_Id,
+             Constant_Present    => True,
+             Object_Definition   => New_Reference_To (Obj_Typ, Loc),
+             Expression          => Unchecked_Convert_To (Obj_Typ,
+               Make_Function_Call (Loc,
+                 Name                   => New_Reference_To (At_Load_Id, Loc),
+                 Parameter_Associations => New_List (
+                   Make_Attribute_Reference (Loc,
+                     Prefix         => New_Reference_To (Obj_Id, Loc),
+                     Attribute_Name => Name_Address))))),
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Copy_Id,
+             Object_Definition   => New_Reference_To (Obj_Typ, Loc),
+             Expression          => New_Reference_To (Old_Id, Loc)));
+
+         --  Step 2: Create an exit statement of the loop statement generated
+         --  in step 3.
+
+         --  Generate (for Typ_Size = 32):
+
+         --  exit when System.Atomic_Primitives.Atomic_Compare_Exchange_32
+         --              (Obj'Address,
+         --               Interfaces.Unsigned_32! (Obj_Old),
+         --               Interfaces.Unsigned_32! (Obj_Copy));
+
+         Exit_Stmt :=
+           Make_Exit_Statement (Loc,
+             Condition =>
+               Make_Function_Call (Loc,
+                 Name                   => New_Reference_To (At_Comp_Id, Loc),
+                 Parameter_Associations => New_List (
+                   Make_Attribute_Reference (Loc,
+                     Prefix         => New_Reference_To (Obj_Id, Loc),
+                     Attribute_Name => Name_Address),
+                   Unchecked_Convert_To (Unsigned_Id,
+                     New_Reference_To (Old_Id, Loc)),
+                   Unchecked_Convert_To (Unsigned_Id,
+                     New_Reference_To (Copy_Id, Loc)))));
+
+         --  Check the last statement is a return statement
+
+         if Nkind (Last (New_Stmts)) = N_Simple_Return_Statement then
+            Rewrite (Last (New_Stmts), Exit_Stmt);
+         else
+            Append_To (New_Stmts, Exit_Stmt);
+         end if;
+
+         --  Step 3: Create the loop statement which encloses a block
+         --  declaration that contains all the statements of the original
+         --  procedure body.
+
+         --  Generate:
+
+         --  loop
+         --     declare
+         --        < New_Decls >
+         --     begin
+         --        < New_Stmts >
+         --     end;
+         --  end loop;
+
+         New_Stmts := New_List (
+           Make_Loop_Statement (Loc,
+             Statements => New_List (
+               Make_Block_Statement (Loc,
+                 Declarations               => New_Decls,
+                 Handled_Statement_Sequence =>
+                   Make_Handled_Sequence_Of_Statements (Loc,
+                     Statements => New_Stmts))),
+             End_Label  => Empty));
+
+         --  Append the label to the statements of the loop when needed
+
+         if Present (Label) then
+            Append_To (Statements (First (New_Stmts)), Label);
+         end if;
+
+      --  Function case
+
+      else
+         case Typ_Size is
+            when 8 =>
+               At_Load_Id := RTE (RE_Atomic_Load_8);
+            when 16 =>
+               At_Load_Id := RTE (RE_Atomic_Load_16);
+            when 32 =>
+               At_Load_Id := RTE (RE_Atomic_Load_32);
+            when 64 =>
+               At_Load_Id := RTE (RE_Atomic_Load_64);
+            when others => null;
+         end case;
+
+         --  Define a copy of the protected object which replaces all the
+         --  references to the object present in the body of the function.
+
+         --  Generate:
+
+         --  Obj_Copy : constant Obj_Typ :=
+         --               Obj_Typ!
+         --                 (System.Atomic_Primitives.Atomic_Load_32
+         --                   (Obj'Address));
+
+         Append_To (Decls,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Copy_Id,
+             Constant_Present => True,
+             Object_Definition => New_Reference_To (Obj_Typ, Loc),
+             Expression => Unchecked_Convert_To (Obj_Typ,
+               Make_Function_Call (Loc,
+                 Name => New_Reference_To (At_Load_Id, Loc),
+                 Parameter_Associations => New_List (
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Reference_To (Obj_Id, Loc),
+                     Attribute_Name => Name_Address))))));
+      end if;
+
+      << Continue >>
+
+      --  Add renamings for the Protection object, discriminals, privals and
+      --  the entry index constant for use by debugger.
+
+      Debug_Private_Data_Declarations (Decls);
+
+      --  Make an unprotected version of the subprogram for use within the same
+      --  object, with new name and extra parameter representing the object.
+
+      New_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Build_Protected_Sub_Specification (N, Pid, Unprotected_Mode),
+          Declarations               => Decls,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_Stmts));
+      return New_Body;
+   end Build_Lock_Free_Unprotected_Subprogram_Body;
 
    -------------------------
    -- Build_Master_Entity --
@@ -3441,102 +4275,6 @@ package body Exp_Ch9 is
       Object_Parm  : Node_Id;
       Exc_Safe     : Boolean;
       Lock_Kind    : RE_Id;
-
-      function Is_Exception_Safe (Subprogram : Node_Id) return Boolean;
-      --  Tell whether a given subprogram cannot raise an exception
-
-      -----------------------
-      -- Is_Exception_Safe --
-      -----------------------
-
-      function Is_Exception_Safe (Subprogram : Node_Id) return Boolean is
-
-         function Has_Side_Effect (N : Node_Id) return Boolean;
-         --  Return True whenever encountering a subprogram call or raise
-         --  statement of any kind in the sequence of statements
-
-         ---------------------
-         -- Has_Side_Effect --
-         ---------------------
-
-         --  What is this doing buried two levels down in exp_ch9. It seems
-         --  like a generally useful function, and indeed there may be code
-         --  duplication going on here ???
-
-         function Has_Side_Effect (N : Node_Id) return Boolean is
-            Stmt : Node_Id;
-            Expr : Node_Id;
-
-            function Is_Call_Or_Raise (N : Node_Id) return Boolean;
-            --  Indicate whether N is a subprogram call or a raise statement
-
-            ----------------------
-            -- Is_Call_Or_Raise --
-            ----------------------
-
-            function Is_Call_Or_Raise (N : Node_Id) return Boolean is
-            begin
-               return Nkind_In (N, N_Procedure_Call_Statement,
-                                   N_Function_Call,
-                                   N_Raise_Statement,
-                                   N_Raise_Constraint_Error,
-                                   N_Raise_Program_Error,
-                                   N_Raise_Storage_Error);
-            end Is_Call_Or_Raise;
-
-         --  Start of processing for Has_Side_Effect
-
-         begin
-            Stmt := N;
-            while Present (Stmt) loop
-               if Is_Call_Or_Raise (Stmt) then
-                  return True;
-               end if;
-
-               --  An object declaration can also contain a function call
-               --  or a raise statement
-
-               if Nkind (Stmt) = N_Object_Declaration then
-                  Expr := Expression (Stmt);
-
-                  if Present (Expr) and then Is_Call_Or_Raise (Expr) then
-                     return True;
-                  end if;
-               end if;
-
-               Next (Stmt);
-            end loop;
-
-            return False;
-         end Has_Side_Effect;
-
-      --  Start of processing for Is_Exception_Safe
-
-      begin
-         --  If the checks handled by the back end are not disabled, we cannot
-         --  ensure that no exception will be raised.
-
-         if not Access_Checks_Suppressed (Empty)
-           or else not Discriminant_Checks_Suppressed (Empty)
-           or else not Range_Checks_Suppressed (Empty)
-           or else not Index_Checks_Suppressed (Empty)
-           or else Opt.Stack_Checking_Enabled
-         then
-            return False;
-         end if;
-
-         if Has_Side_Effect (First (Declarations (Subprogram)))
-           or else
-              Has_Side_Effect (
-                First (Statements (Handled_Statement_Sequence (Subprogram))))
-         then
-            return False;
-         else
-            return True;
-         end if;
-      end Is_Exception_Safe;
-
-   --  Start of processing for Build_Protected_Subprogram_Body
 
    begin
       Op_Spec := Specification (N);
@@ -4697,6 +5435,21 @@ package body Exp_Ch9 is
          Next_Entity (Efam);
       end loop;
    end Collect_Entry_Families;
+
+   -------------
+   -- Comp_Of --
+   -------------
+
+   function Comp_Of (Sub_Body : Node_Id) return Entity_Id is
+   begin
+      for Sub_Id in 1 .. LF_Sub_Table.Last loop
+         if Sub_Body = LF_Sub_Table.Table (Sub_Id).Sub_Body then
+            return LF_Sub_Table.Table (Sub_Id).Comp_Id;
+         end if;
+      end loop;
+
+      return Empty;
+   end Comp_Of;
 
    -----------------------
    -- Concurrent_Object --
@@ -7715,6 +8468,9 @@ package body Exp_Ch9 is
       Loc          : constant Source_Ptr := Sloc (N);
       Pid          : constant Entity_Id  := Corresponding_Spec (N);
 
+      Lock_Free_On : constant Boolean := Allow_Lock_Free_Implementation (N);
+      --  This flag indicates whether the lock free implementation is active
+
       Current_Node : Node_Id;
       Disp_Op_Body : Node_Id;
       New_Op_Body  : Node_Id;
@@ -7843,8 +8599,14 @@ package body Exp_Ch9 is
                if not Is_Eliminated (Defining_Entity (Op_Body))
                  and then not Is_Eliminated (Corresponding_Spec (Op_Body))
                then
-                  New_Op_Body :=
-                    Build_Unprotected_Subprogram_Body (Op_Body, Pid);
+                  if Lock_Free_On then
+                     New_Op_Body :=
+                       Build_Lock_Free_Unprotected_Subprogram_Body
+                         (Op_Body, Pid);
+                  else
+                     New_Op_Body :=
+                       Build_Unprotected_Subprogram_Body (Op_Body, Pid);
+                  end if;
 
                   Insert_After (Current_Node, New_Op_Body);
                   Current_Node := New_Op_Body;
@@ -7854,6 +8616,7 @@ package body Exp_Ch9 is
                   --  appear that this is needed only if this is a visible
                   --  operation of the type, or if it is an interrupt handler,
                   --  and this was the strategy used previously in GNAT.
+
                   --  However, the operation may be exported through a 'Access
                   --  to an external caller. This is the common idiom in code
                   --  that uses the Ada 2005 Timing_Events package. As a result
@@ -7863,9 +8626,15 @@ package body Exp_Ch9 is
                   --  declaration in the protected body itself.
 
                   if Present (Corresponding_Spec (Op_Body)) then
-                     New_Op_Body :=
-                       Build_Protected_Subprogram_Body (
-                         Op_Body, Pid, Specification (New_Op_Body));
+                     if Lock_Free_On then
+                        New_Op_Body :=
+                          Build_Lock_Free_Protected_Subprogram_Body
+                            (Op_Body, Pid, Specification (New_Op_Body));
+                     else
+                        New_Op_Body :=
+                          Build_Protected_Subprogram_Body
+                            (Op_Body, Pid, Specification (New_Op_Body));
+                     end if;
 
                      Insert_After (Current_Node, New_Op_Body);
                      Analyze (New_Op_Body);
@@ -12688,6 +13457,97 @@ package body Exp_Ch9 is
       end if;
    end Install_Private_Data_Declarations;
 
+   -----------------------
+   -- Is_Exception_Safe --
+   -----------------------
+
+   function Is_Exception_Safe (Subprogram : Node_Id) return Boolean is
+
+      function Has_Side_Effect (N : Node_Id) return Boolean;
+      --  Return True whenever encountering a subprogram call or raise
+      --  statement of any kind in the sequence of statements
+
+      ---------------------
+      -- Has_Side_Effect --
+      ---------------------
+
+      --  What is this doing buried two levels down in exp_ch9. It seems like a
+      --  generally useful function, and indeed there may be code duplication
+      --  going on here ???
+
+      function Has_Side_Effect (N : Node_Id) return Boolean is
+         Stmt : Node_Id;
+         Expr : Node_Id;
+
+         function Is_Call_Or_Raise (N : Node_Id) return Boolean;
+         --  Indicate whether N is a subprogram call or a raise statement
+
+         ----------------------
+         -- Is_Call_Or_Raise --
+         ----------------------
+
+         function Is_Call_Or_Raise (N : Node_Id) return Boolean is
+         begin
+            return Nkind_In (N, N_Procedure_Call_Statement,
+                                N_Function_Call,
+                                N_Raise_Statement,
+                                N_Raise_Constraint_Error,
+                                N_Raise_Program_Error,
+                                N_Raise_Storage_Error);
+         end Is_Call_Or_Raise;
+
+      --  Start of processing for Has_Side_Effect
+
+      begin
+         Stmt := N;
+         while Present (Stmt) loop
+            if Is_Call_Or_Raise (Stmt) then
+               return True;
+            end if;
+
+            --  An object declaration can also contain a function call or a
+            --  raise statement.
+
+            if Nkind (Stmt) = N_Object_Declaration then
+               Expr := Expression (Stmt);
+
+               if Present (Expr) and then Is_Call_Or_Raise (Expr) then
+                  return True;
+               end if;
+            end if;
+
+            Next (Stmt);
+         end loop;
+
+         return False;
+      end Has_Side_Effect;
+
+   --  Start of processing for Is_Exception_Safe
+
+   begin
+      --  If the checks handled by the back end are not disabled, we cannot
+      --  ensure that no exception will be raised.
+
+      if not Access_Checks_Suppressed (Empty)
+        or else not Discriminant_Checks_Suppressed (Empty)
+        or else not Range_Checks_Suppressed (Empty)
+        or else not Index_Checks_Suppressed (Empty)
+        or else Opt.Stack_Checking_Enabled
+      then
+         return False;
+      end if;
+
+      if Has_Side_Effect (First (Declarations (Subprogram)))
+        or else
+          Has_Side_Effect
+            (First (Statements (Handled_Statement_Sequence (Subprogram))))
+      then
+         return False;
+      else
+         return True;
+      end if;
+   end Is_Exception_Safe;
+
    ---------------------------------
    -- Is_Potentially_Large_Family --
    ---------------------------------
@@ -12702,11 +13562,12 @@ package body Exp_Ch9 is
       return Scope (Base_Index) = Standard_Standard
         and then Base_Index = Base_Type (Standard_Integer)
         and then Has_Discriminants (Conctyp)
-        and then Present
-          (Discriminant_Default_Value (First_Discriminant (Conctyp)))
+        and then
+          Present (Discriminant_Default_Value (First_Discriminant (Conctyp)))
         and then
           (Denotes_Discriminant (Lo, True)
-            or else Denotes_Discriminant (Hi, True));
+             or else
+           Denotes_Discriminant (Hi, True));
    end Is_Potentially_Large_Family;
 
    -------------------------------------

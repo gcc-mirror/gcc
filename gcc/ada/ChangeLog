@@ -1,3 +1,62 @@
+2012-04-02  Yannick Moy  <moy@adacore.com>
+
+	* osint.adb, osint.ads (Add_Default_Search_Dirs): Add library
+	search dirs in file specified with option -gnateO.
+
+2012-04-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb, exp_util.adb, sem_util.adb, exp_ch4.adb: Minor
+	reformatting.
+
+2012-04-02  Olivier Hainque  <hainque@adacore.com>
+
+	* g-sse.ads: Add x86-solaris and x86_64-darwin to the set of
+	platforms where the use of this spec is supported. Add current
+	year to the copyright notice.
+	* gcc-interfaces/Makefile.in: Add g-sse.o and g-ssvety.o to
+	EXTRA_GNATRTL_NONTASKING_OBJS on x86 32/64 targets that support
+	it and where they were missing (x86-solaris, x86-freebsd,
+	x86_64-freebsd, and x86-darwin).
+
+2012-04-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* bindgen.adb (Gen_Ada_Init): When compiling for the AAMP small
+	library, where we no longer suppress the Standard_Library,
+	generate an empty body rather than the usual generation of
+	assignments to imported globals, since those aren't present in
+	the small library.
+
+2012-04-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads: Minor documentation fix.
+
+2012-04-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Conditional_Expression): Add local variables
+	Else_Typ and Then_Typ. Add missing type conversions to the "then" and
+	"else" expressions when their respective types are scalar.
+
+2012-04-02  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch9.adb: Reordering of the local subprograms. New Table
+	for the lock free implementation that maps each protected
+	subprograms with the protected component it references.
+	(Allow_Lock_Free_Implementation): New routine. Check if
+	the protected body enables the lock free implementation.
+	(Build_Lock_Free_Protected_Subprogram_Body): New routine.
+	(Build_Lock_Free_Unprotected_Subprogram_Body): New routine.
+	(Comp_Of): New routine.
+	* Makefile.rtl: Add s-atopri.o
+	* debug.adb: New compiler debug flag -gnatd9 for lock free
+	implementation.
+	* rtsfind.ads: RE_Atomic_Compare_Exchange_8,
+	RE_Atomic_Compare_Exchange_16, RE_Atomic_Compare_Exchange_32,
+	RE_Atomic_Compare_Exchange_64, RE_Atomic_Load_8,
+	RE_Atomic_Load_16, RE_Atomic_Load_32, RE_Atomic_Load_64, RE_Uint8,
+	RE_Uint16, RE_Uint32, RE_Uint64 added.
+	* s-atropi.ads: New file. Defines atomic primitives used
+	by the lock free implementation.
+
 2012-04-02  Emmanuel Briot  <briot@adacore.com>
 
 	* g-expect.adb (Expect_Internal): Fix leak of the input file descriptor.

@@ -1666,6 +1666,9 @@ package body Sem_Ch5 is
 
       if not Is_Entity_Name (Iter_Name)
         and then (Nkind (Parent (N)) /= N_Quantified_Expression
+
+                   --  The following two tests need comments ???
+
                    or else Operating_Mode = Check_Semantics
                    or else Alfa_Mode)
       then

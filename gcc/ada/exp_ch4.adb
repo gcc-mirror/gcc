@@ -7832,9 +7832,7 @@ package body Exp_Ch4 is
    begin
       --  Do validity check if validity checking operands
 
-      if Validity_Checks_On
-        and then Validity_Check_Operands
-      then
+      if Validity_Checks_On and then Validity_Check_Operands then
          Ensure_Valid (Operand);
       end if;
 
@@ -7866,7 +7864,7 @@ package body Exp_Ch4 is
    --           end if;
    --        end loop;
 
-   --  Conversely, an existentially quantified expression:
+   --  Similarly, an existentially quantified expression:
 
    --    for some X in range => Cond
 
@@ -7957,7 +7955,6 @@ package body Exp_Ch4 is
         Make_Expression_With_Actions (Loc,
           Expression => New_Occurrence_Of (Flag, Loc),
           Actions    => Actions));
-
       Analyze_And_Resolve (N, Standard_Boolean);
    end Expand_N_Quantified_Expression;
 

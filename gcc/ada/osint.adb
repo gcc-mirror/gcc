@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -444,6 +444,15 @@ package body Osint is
    --  Start of processing for Add_Default_Search_Dirs
 
    begin
+      --  If there was a -gnateO switch, add all object directories from the
+      --  file given in argument to the library search list.
+
+      if Object_Path_File_Name /= null then
+         Path_File_Name := String_Access (Object_Path_File_Name);
+         pragma Assert (Path_File_Name'Length > 0);
+         Get_Dirs_From_File (Additional_Source_Dir => False);
+      end if;
+
       --  After the locations specified on the command line, the next places
       --  to look for files are the directories specified by the appropriate
       --  environment variable. Get this value, extract the directory names
