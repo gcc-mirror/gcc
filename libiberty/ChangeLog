@@ -1,3 +1,8 @@
+2012-04-02  Tristan Gingold  <gingold@adacore.com>
+
+	* stack-limit.c: Includes ansidecl.h.
+	(stack_limit_increase): Add ATTRIBUTE_UNUSED
+
 2012-03-20  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (cplus_demangle_type): Handle 'auto'.
