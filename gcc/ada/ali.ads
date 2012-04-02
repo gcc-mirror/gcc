@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -558,6 +558,9 @@ package ALI is
 
       Limited_With : Boolean := False;
       --  True if unit is named in a limited_with_clause
+
+      Implicit_With_From_Instantiation : Boolean := False;
+      --  True if this is an implicit with from a generic instantiation
    end record;
 
    package Withs is new Table.Table (
