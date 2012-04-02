@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -324,7 +324,8 @@ package Osint is
 
    procedure Add_Default_Search_Dirs;
    --  This routine adds the default search dirs indicated by the environment
-   --  variables and sdefault package.
+   --  variables and sdefault package, as well as the library search dirs set
+   --  by option -gnateO for GNAT2WHY.
 
    procedure Add_Lib_Search_Dir (Dir : String);
    --  Add Dir at the end of the library file search path

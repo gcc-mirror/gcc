@@ -1083,6 +1083,8 @@ ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(arch) $(osys))),)
 
   TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb
 
+  EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
+
   EH_MECHANISM=-gcc
   THREADSLIB = -lposix4 -lthread
   MISCLIB = -lposix4 -lnsl -lsocket
@@ -1175,6 +1177,8 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(arch) $(osys))),)
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
     indepsw.adb<indepsw-gnu.adb
 
+  EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
+
   EH_MECHANISM=-gcc
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
@@ -1231,6 +1235,8 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb
   GNATLIB_SHARED = gnatlib-shared-dual
 
+  EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
+
   EH_MECHANISM=-gcc
   THREADSLIB= -lpthread
   GMEM_LIB = gmemlib
@@ -1258,6 +1264,8 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(arch) $(osys))),)
   TOOLS_TARGET_PAIRS = \
   mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb
   GNATLIB_SHARED = gnatlib-shared-dual
+
+  EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
 
   EH_MECHANISM=-gcc
   THREADSLIB= -lpthread
@@ -2160,6 +2168,8 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
         $(X86_TARGET_PAIRS) \
         system.ads<system-darwin-x86.ads
     endif
+
+    EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
   endif
 
   ifeq ($(strip $(filter-out %x86_64,$(arch))),)
@@ -2178,6 +2188,8 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
         $(X86_64_TARGET_PAIRS) \
         system.ads<system-darwin-x86_64.ads
     endif
+
+    EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
   endif
 
   ifeq ($(strip $(filter-out powerpc%,$(arch))),)

@@ -153,7 +153,7 @@ package body Debug is
    --  d6   Default access unconstrained to thin pointers
    --  d7   Do not output version & file time stamp in -gnatv or -gnatl mode
    --  d8   Force opposite endianness in packed stuff
-   --  d9
+   --  d9   Allow lock free implementation
 
    --  Debug flags for binder (GNATBIND)
 
@@ -709,6 +709,9 @@ package body Debug is
    --  d8   This forces the packed stuff to generate code assuming the
    --       opposite endianness from the actual correct value. Useful in
    --       testing out code generation from the packed routines.
+
+   --  d9   This allows lock free implementation for protected objects
+   --       (see Exp_Ch9).
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

@@ -3948,8 +3948,7 @@ package body Exp_Util is
      (Obj_Id : Entity_Id) return Boolean
    is
       function Is_Controlled_Function_Call (N : Node_Id) return Boolean;
-      --  Determine whether a particular node denotes a controlled function
-      --  call.
+      --  Determine if particular node denotes a controlled function call
 
       function Is_Displace_Call (N : Node_Id) return Boolean;
       --  Determine whether a particular node is a call to Ada.Tags.Displace.
@@ -4065,7 +4064,7 @@ package body Exp_Util is
           and then Is_Displace_Call (Renamed_Object (Obj_Id))
           and then
             (Is_Controlled_Function_Call (Expression (Orig_Decl))
-               or else Is_Source_Object (Expression (Orig_Decl)));
+              or else Is_Source_Object (Expression (Orig_Decl)));
    end Is_Displacement_Of_Object_Or_Function_Result;
 
    ------------------------------

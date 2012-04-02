@@ -2624,10 +2624,10 @@ package body Sem_Res is
          --  an error. We can't do this earlier, because it would cause legal
          --  cases to get errors (when some other type has an abstract "+").
 
-         if Ada_Version >= Ada_2005 and then
-           Nkind (N) in N_Op and then
-           Is_Overloaded (N) and then
-           Is_Universal_Numeric_Type (Etype (Entity (N)))
+         if Ada_Version >= Ada_2005
+           and then Nkind (N) in N_Op
+           and then Is_Overloaded (N)
+           and then Is_Universal_Numeric_Type (Etype (Entity (N)))
          then
             Get_First_Interp (N, I, It);
             while Present (It.Typ) loop
@@ -6118,15 +6118,36 @@ package body Sem_Res is
       Condition : constant Node_Id := First (Expressions (N));
       Then_Expr : constant Node_Id := Next (Condition);
       Else_Expr : Node_Id          := Next (Then_Expr);
+      Else_Typ  : Entity_Id;
+      Then_Typ  : Entity_Id;
 
    begin
       Resolve (Condition, Any_Boolean);
       Resolve (Then_Expr, Typ);
+      Then_Typ := Etype (Then_Expr);
+
+      --  When the "then" and "else" expressions are of a scalar type, insert
+      --  a conversion to ensure the generation of a constraint check.
+
+      if Is_Scalar_Type (Then_Typ)
+        and then Then_Typ /= Typ
+      then
+         Rewrite (Then_Expr, Convert_To (Typ, Then_Expr));
+         Analyze_And_Resolve (Then_Expr, Typ);
+      end if;
 
       --  If ELSE expression present, just resolve using the determined type
 
       if Present (Else_Expr) then
          Resolve (Else_Expr, Typ);
+         Else_Typ := Etype (Else_Expr);
+
+         if Is_Scalar_Type (Else_Typ)
+           and then Else_Typ /= Typ
+         then
+            Rewrite (Else_Expr, Convert_To (Typ, Else_Expr));
+            Analyze_And_Resolve (Else_Expr, Typ);
+         end if;
 
       --  If no ELSE expression is present, root type must be Standard.Boolean
       --  and we provide a Standard.True result converted to the appropriate
