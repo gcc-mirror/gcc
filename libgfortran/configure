@@ -16630,7 +16630,9 @@ fi
 $as_echo "$gcc_cv_math_func_acosf" >&6; }
   if test $gcc_cv_math_func_acosf = yes; then
 
-$as_echo "#define HAVE_ACOSF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ACOSF 1
+_ACEOF
 
   fi
 
@@ -16676,7 +16678,9 @@ fi
 $as_echo "$gcc_cv_math_func_acos" >&6; }
   if test $gcc_cv_math_func_acos = yes; then
 
-$as_echo "#define HAVE_ACOS 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ACOS 1
+_ACEOF
 
   fi
 
@@ -16722,7 +16726,9 @@ fi
 $as_echo "$gcc_cv_math_func_acosl" >&6; }
   if test $gcc_cv_math_func_acosl = yes; then
 
-$as_echo "#define HAVE_ACOSL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ACOSL 1
+_ACEOF
 
   fi
 
@@ -16768,7 +16774,9 @@ fi
 $as_echo "$gcc_cv_math_func_acoshf" >&6; }
   if test $gcc_cv_math_func_acoshf = yes; then
 
-$as_echo "#define HAVE_ACOSHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ACOSHF 1
+_ACEOF
 
   fi
 
@@ -16814,7 +16822,9 @@ fi
 $as_echo "$gcc_cv_math_func_acosh" >&6; }
   if test $gcc_cv_math_func_acosh = yes; then
 
-$as_echo "#define HAVE_ACOSH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ACOSH 1
+_ACEOF
 
   fi
 
@@ -16860,7 +16870,9 @@ fi
 $as_echo "$gcc_cv_math_func_acoshl" >&6; }
   if test $gcc_cv_math_func_acoshl = yes; then
 
-$as_echo "#define HAVE_ACOSHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ACOSHL 1
+_ACEOF
 
   fi
 
@@ -16906,7 +16918,9 @@ fi
 $as_echo "$gcc_cv_math_func_asinf" >&6; }
   if test $gcc_cv_math_func_asinf = yes; then
 
-$as_echo "#define HAVE_ASINF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ASINF 1
+_ACEOF
 
   fi
 
@@ -16952,7 +16966,9 @@ fi
 $as_echo "$gcc_cv_math_func_asin" >&6; }
   if test $gcc_cv_math_func_asin = yes; then
 
-$as_echo "#define HAVE_ASIN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ASIN 1
+_ACEOF
 
   fi
 
@@ -16998,7 +17014,9 @@ fi
 $as_echo "$gcc_cv_math_func_asinl" >&6; }
   if test $gcc_cv_math_func_asinl = yes; then
 
-$as_echo "#define HAVE_ASINL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ASINL 1
+_ACEOF
 
   fi
 
@@ -17044,7 +17062,9 @@ fi
 $as_echo "$gcc_cv_math_func_asinhf" >&6; }
   if test $gcc_cv_math_func_asinhf = yes; then
 
-$as_echo "#define HAVE_ASINHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ASINHF 1
+_ACEOF
 
   fi
 
@@ -17090,7 +17110,9 @@ fi
 $as_echo "$gcc_cv_math_func_asinh" >&6; }
   if test $gcc_cv_math_func_asinh = yes; then
 
-$as_echo "#define HAVE_ASINH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ASINH 1
+_ACEOF
 
   fi
 
@@ -17136,7 +17158,9 @@ fi
 $as_echo "$gcc_cv_math_func_asinhl" >&6; }
   if test $gcc_cv_math_func_asinhl = yes; then
 
-$as_echo "#define HAVE_ASINHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ASINHL 1
+_ACEOF
 
   fi
 
@@ -17182,7 +17206,9 @@ fi
 $as_echo "$gcc_cv_math_func_atan2f" >&6; }
   if test $gcc_cv_math_func_atan2f = yes; then
 
-$as_echo "#define HAVE_ATAN2F 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATAN2F 1
+_ACEOF
 
   fi
 
@@ -17228,7 +17254,9 @@ fi
 $as_echo "$gcc_cv_math_func_atan2" >&6; }
   if test $gcc_cv_math_func_atan2 = yes; then
 
-$as_echo "#define HAVE_ATAN2 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATAN2 1
+_ACEOF
 
   fi
 
@@ -17274,7 +17302,9 @@ fi
 $as_echo "$gcc_cv_math_func_atan2l" >&6; }
   if test $gcc_cv_math_func_atan2l = yes; then
 
-$as_echo "#define HAVE_ATAN2L 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATAN2L 1
+_ACEOF
 
   fi
 
@@ -17320,7 +17350,9 @@ fi
 $as_echo "$gcc_cv_math_func_atanf" >&6; }
   if test $gcc_cv_math_func_atanf = yes; then
 
-$as_echo "#define HAVE_ATANF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATANF 1
+_ACEOF
 
   fi
 
@@ -17366,7 +17398,9 @@ fi
 $as_echo "$gcc_cv_math_func_atan" >&6; }
   if test $gcc_cv_math_func_atan = yes; then
 
-$as_echo "#define HAVE_ATAN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATAN 1
+_ACEOF
 
   fi
 
@@ -17412,7 +17446,9 @@ fi
 $as_echo "$gcc_cv_math_func_atanl" >&6; }
   if test $gcc_cv_math_func_atanl = yes; then
 
-$as_echo "#define HAVE_ATANL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATANL 1
+_ACEOF
 
   fi
 
@@ -17458,7 +17494,9 @@ fi
 $as_echo "$gcc_cv_math_func_atanhf" >&6; }
   if test $gcc_cv_math_func_atanhf = yes; then
 
-$as_echo "#define HAVE_ATANHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATANHF 1
+_ACEOF
 
   fi
 
@@ -17504,7 +17542,9 @@ fi
 $as_echo "$gcc_cv_math_func_atanh" >&6; }
   if test $gcc_cv_math_func_atanh = yes; then
 
-$as_echo "#define HAVE_ATANH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATANH 1
+_ACEOF
 
   fi
 
@@ -17550,7 +17590,9 @@ fi
 $as_echo "$gcc_cv_math_func_atanhl" >&6; }
   if test $gcc_cv_math_func_atanhl = yes; then
 
-$as_echo "#define HAVE_ATANHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATANHL 1
+_ACEOF
 
   fi
 
@@ -17596,7 +17638,9 @@ fi
 $as_echo "$gcc_cv_math_func_cargf" >&6; }
   if test $gcc_cv_math_func_cargf = yes; then
 
-$as_echo "#define HAVE_CARGF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CARGF 1
+_ACEOF
 
   fi
 
@@ -17642,7 +17686,9 @@ fi
 $as_echo "$gcc_cv_math_func_carg" >&6; }
   if test $gcc_cv_math_func_carg = yes; then
 
-$as_echo "#define HAVE_CARG 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CARG 1
+_ACEOF
 
   fi
 
@@ -17688,7 +17734,9 @@ fi
 $as_echo "$gcc_cv_math_func_cargl" >&6; }
   if test $gcc_cv_math_func_cargl = yes; then
 
-$as_echo "#define HAVE_CARGL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CARGL 1
+_ACEOF
 
   fi
 
@@ -17734,7 +17782,9 @@ fi
 $as_echo "$gcc_cv_math_func_ceilf" >&6; }
   if test $gcc_cv_math_func_ceilf = yes; then
 
-$as_echo "#define HAVE_CEILF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CEILF 1
+_ACEOF
 
   fi
 
@@ -17780,7 +17830,9 @@ fi
 $as_echo "$gcc_cv_math_func_ceil" >&6; }
   if test $gcc_cv_math_func_ceil = yes; then
 
-$as_echo "#define HAVE_CEIL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CEIL 1
+_ACEOF
 
   fi
 
@@ -17826,7 +17878,9 @@ fi
 $as_echo "$gcc_cv_math_func_ceill" >&6; }
   if test $gcc_cv_math_func_ceill = yes; then
 
-$as_echo "#define HAVE_CEILL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CEILL 1
+_ACEOF
 
   fi
 
@@ -17872,7 +17926,9 @@ fi
 $as_echo "$gcc_cv_math_func_copysignf" >&6; }
   if test $gcc_cv_math_func_copysignf = yes; then
 
-$as_echo "#define HAVE_COPYSIGNF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COPYSIGNF 1
+_ACEOF
 
   fi
 
@@ -17918,7 +17974,9 @@ fi
 $as_echo "$gcc_cv_math_func_copysign" >&6; }
   if test $gcc_cv_math_func_copysign = yes; then
 
-$as_echo "#define HAVE_COPYSIGN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COPYSIGN 1
+_ACEOF
 
   fi
 
@@ -17964,7 +18022,9 @@ fi
 $as_echo "$gcc_cv_math_func_copysignl" >&6; }
   if test $gcc_cv_math_func_copysignl = yes; then
 
-$as_echo "#define HAVE_COPYSIGNL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COPYSIGNL 1
+_ACEOF
 
   fi
 
@@ -18010,7 +18070,9 @@ fi
 $as_echo "$gcc_cv_math_func_cosf" >&6; }
   if test $gcc_cv_math_func_cosf = yes; then
 
-$as_echo "#define HAVE_COSF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COSF 1
+_ACEOF
 
   fi
 
@@ -18056,7 +18118,9 @@ fi
 $as_echo "$gcc_cv_math_func_cos" >&6; }
   if test $gcc_cv_math_func_cos = yes; then
 
-$as_echo "#define HAVE_COS 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COS 1
+_ACEOF
 
   fi
 
@@ -18102,7 +18166,9 @@ fi
 $as_echo "$gcc_cv_math_func_cosl" >&6; }
   if test $gcc_cv_math_func_cosl = yes; then
 
-$as_echo "#define HAVE_COSL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COSL 1
+_ACEOF
 
   fi
 
@@ -18148,7 +18214,9 @@ fi
 $as_echo "$gcc_cv_math_func_ccosf" >&6; }
   if test $gcc_cv_math_func_ccosf = yes; then
 
-$as_echo "#define HAVE_CCOSF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CCOSF 1
+_ACEOF
 
   fi
 
@@ -18194,7 +18262,9 @@ fi
 $as_echo "$gcc_cv_math_func_ccos" >&6; }
   if test $gcc_cv_math_func_ccos = yes; then
 
-$as_echo "#define HAVE_CCOS 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CCOS 1
+_ACEOF
 
   fi
 
@@ -18240,7 +18310,9 @@ fi
 $as_echo "$gcc_cv_math_func_ccosl" >&6; }
   if test $gcc_cv_math_func_ccosl = yes; then
 
-$as_echo "#define HAVE_CCOSL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CCOSL 1
+_ACEOF
 
   fi
 
@@ -18286,7 +18358,9 @@ fi
 $as_echo "$gcc_cv_math_func_coshf" >&6; }
   if test $gcc_cv_math_func_coshf = yes; then
 
-$as_echo "#define HAVE_COSHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COSHF 1
+_ACEOF
 
   fi
 
@@ -18332,7 +18406,9 @@ fi
 $as_echo "$gcc_cv_math_func_cosh" >&6; }
   if test $gcc_cv_math_func_cosh = yes; then
 
-$as_echo "#define HAVE_COSH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COSH 1
+_ACEOF
 
   fi
 
@@ -18378,7 +18454,9 @@ fi
 $as_echo "$gcc_cv_math_func_coshl" >&6; }
   if test $gcc_cv_math_func_coshl = yes; then
 
-$as_echo "#define HAVE_COSHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COSHL 1
+_ACEOF
 
   fi
 
@@ -18424,7 +18502,9 @@ fi
 $as_echo "$gcc_cv_math_func_ccoshf" >&6; }
   if test $gcc_cv_math_func_ccoshf = yes; then
 
-$as_echo "#define HAVE_CCOSHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CCOSHF 1
+_ACEOF
 
   fi
 
@@ -18470,7 +18550,9 @@ fi
 $as_echo "$gcc_cv_math_func_ccosh" >&6; }
   if test $gcc_cv_math_func_ccosh = yes; then
 
-$as_echo "#define HAVE_CCOSH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CCOSH 1
+_ACEOF
 
   fi
 
@@ -18516,7 +18598,9 @@ fi
 $as_echo "$gcc_cv_math_func_ccoshl" >&6; }
   if test $gcc_cv_math_func_ccoshl = yes; then
 
-$as_echo "#define HAVE_CCOSHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CCOSHL 1
+_ACEOF
 
   fi
 
@@ -18562,7 +18646,9 @@ fi
 $as_echo "$gcc_cv_math_func_expf" >&6; }
   if test $gcc_cv_math_func_expf = yes; then
 
-$as_echo "#define HAVE_EXPF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_EXPF 1
+_ACEOF
 
   fi
 
@@ -18608,7 +18694,9 @@ fi
 $as_echo "$gcc_cv_math_func_exp" >&6; }
   if test $gcc_cv_math_func_exp = yes; then
 
-$as_echo "#define HAVE_EXP 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_EXP 1
+_ACEOF
 
   fi
 
@@ -18654,7 +18742,9 @@ fi
 $as_echo "$gcc_cv_math_func_expl" >&6; }
   if test $gcc_cv_math_func_expl = yes; then
 
-$as_echo "#define HAVE_EXPL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_EXPL 1
+_ACEOF
 
   fi
 
@@ -18700,7 +18790,9 @@ fi
 $as_echo "$gcc_cv_math_func_cexpf" >&6; }
   if test $gcc_cv_math_func_cexpf = yes; then
 
-$as_echo "#define HAVE_CEXPF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CEXPF 1
+_ACEOF
 
   fi
 
@@ -18746,7 +18838,9 @@ fi
 $as_echo "$gcc_cv_math_func_cexp" >&6; }
   if test $gcc_cv_math_func_cexp = yes; then
 
-$as_echo "#define HAVE_CEXP 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CEXP 1
+_ACEOF
 
   fi
 
@@ -18792,7 +18886,9 @@ fi
 $as_echo "$gcc_cv_math_func_cexpl" >&6; }
   if test $gcc_cv_math_func_cexpl = yes; then
 
-$as_echo "#define HAVE_CEXPL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CEXPL 1
+_ACEOF
 
   fi
 
@@ -18838,7 +18934,9 @@ fi
 $as_echo "$gcc_cv_math_func_fabsf" >&6; }
   if test $gcc_cv_math_func_fabsf = yes; then
 
-$as_echo "#define HAVE_FABSF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FABSF 1
+_ACEOF
 
   fi
 
@@ -18884,7 +18982,9 @@ fi
 $as_echo "$gcc_cv_math_func_fabs" >&6; }
   if test $gcc_cv_math_func_fabs = yes; then
 
-$as_echo "#define HAVE_FABS 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FABS 1
+_ACEOF
 
   fi
 
@@ -18930,7 +19030,9 @@ fi
 $as_echo "$gcc_cv_math_func_fabsl" >&6; }
   if test $gcc_cv_math_func_fabsl = yes; then
 
-$as_echo "#define HAVE_FABSL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FABSL 1
+_ACEOF
 
   fi
 
@@ -18976,7 +19078,9 @@ fi
 $as_echo "$gcc_cv_math_func_cabsf" >&6; }
   if test $gcc_cv_math_func_cabsf = yes; then
 
-$as_echo "#define HAVE_CABSF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CABSF 1
+_ACEOF
 
   fi
 
@@ -19022,7 +19126,9 @@ fi
 $as_echo "$gcc_cv_math_func_cabs" >&6; }
   if test $gcc_cv_math_func_cabs = yes; then
 
-$as_echo "#define HAVE_CABS 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CABS 1
+_ACEOF
 
   fi
 
@@ -19068,7 +19174,9 @@ fi
 $as_echo "$gcc_cv_math_func_cabsl" >&6; }
   if test $gcc_cv_math_func_cabsl = yes; then
 
-$as_echo "#define HAVE_CABSL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CABSL 1
+_ACEOF
 
   fi
 
@@ -19114,7 +19222,9 @@ fi
 $as_echo "$gcc_cv_math_func_floorf" >&6; }
   if test $gcc_cv_math_func_floorf = yes; then
 
-$as_echo "#define HAVE_FLOORF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FLOORF 1
+_ACEOF
 
   fi
 
@@ -19160,7 +19270,9 @@ fi
 $as_echo "$gcc_cv_math_func_floor" >&6; }
   if test $gcc_cv_math_func_floor = yes; then
 
-$as_echo "#define HAVE_FLOOR 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FLOOR 1
+_ACEOF
 
   fi
 
@@ -19206,7 +19318,9 @@ fi
 $as_echo "$gcc_cv_math_func_floorl" >&6; }
   if test $gcc_cv_math_func_floorl = yes; then
 
-$as_echo "#define HAVE_FLOORL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FLOORL 1
+_ACEOF
 
   fi
 
@@ -19252,7 +19366,9 @@ fi
 $as_echo "$gcc_cv_math_func_fmodf" >&6; }
   if test $gcc_cv_math_func_fmodf = yes; then
 
-$as_echo "#define HAVE_FMODF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FMODF 1
+_ACEOF
 
   fi
 
@@ -19298,7 +19414,9 @@ fi
 $as_echo "$gcc_cv_math_func_fmod" >&6; }
   if test $gcc_cv_math_func_fmod = yes; then
 
-$as_echo "#define HAVE_FMOD 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FMOD 1
+_ACEOF
 
   fi
 
@@ -19344,7 +19462,9 @@ fi
 $as_echo "$gcc_cv_math_func_fmodl" >&6; }
   if test $gcc_cv_math_func_fmodl = yes; then
 
-$as_echo "#define HAVE_FMODL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FMODL 1
+_ACEOF
 
   fi
 
@@ -19390,7 +19510,9 @@ fi
 $as_echo "$gcc_cv_math_func_frexpf" >&6; }
   if test $gcc_cv_math_func_frexpf = yes; then
 
-$as_echo "#define HAVE_FREXPF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FREXPF 1
+_ACEOF
 
   fi
 
@@ -19436,7 +19558,9 @@ fi
 $as_echo "$gcc_cv_math_func_frexp" >&6; }
   if test $gcc_cv_math_func_frexp = yes; then
 
-$as_echo "#define HAVE_FREXP 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FREXP 1
+_ACEOF
 
   fi
 
@@ -19482,7 +19606,9 @@ fi
 $as_echo "$gcc_cv_math_func_frexpl" >&6; }
   if test $gcc_cv_math_func_frexpl = yes; then
 
-$as_echo "#define HAVE_FREXPL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FREXPL 1
+_ACEOF
 
   fi
 
@@ -19528,7 +19654,9 @@ fi
 $as_echo "$gcc_cv_math_func_hypotf" >&6; }
   if test $gcc_cv_math_func_hypotf = yes; then
 
-$as_echo "#define HAVE_HYPOTF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_HYPOTF 1
+_ACEOF
 
   fi
 
@@ -19574,7 +19702,9 @@ fi
 $as_echo "$gcc_cv_math_func_hypot" >&6; }
   if test $gcc_cv_math_func_hypot = yes; then
 
-$as_echo "#define HAVE_HYPOT 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_HYPOT 1
+_ACEOF
 
   fi
 
@@ -19620,7 +19750,9 @@ fi
 $as_echo "$gcc_cv_math_func_hypotl" >&6; }
   if test $gcc_cv_math_func_hypotl = yes; then
 
-$as_echo "#define HAVE_HYPOTL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_HYPOTL 1
+_ACEOF
 
   fi
 
@@ -19666,7 +19798,9 @@ fi
 $as_echo "$gcc_cv_math_func_ldexpf" >&6; }
   if test $gcc_cv_math_func_ldexpf = yes; then
 
-$as_echo "#define HAVE_LDEXPF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LDEXPF 1
+_ACEOF
 
   fi
 
@@ -19712,7 +19846,9 @@ fi
 $as_echo "$gcc_cv_math_func_ldexp" >&6; }
   if test $gcc_cv_math_func_ldexp = yes; then
 
-$as_echo "#define HAVE_LDEXP 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LDEXP 1
+_ACEOF
 
   fi
 
@@ -19758,7 +19894,9 @@ fi
 $as_echo "$gcc_cv_math_func_ldexpl" >&6; }
   if test $gcc_cv_math_func_ldexpl = yes; then
 
-$as_echo "#define HAVE_LDEXPL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LDEXPL 1
+_ACEOF
 
   fi
 
@@ -19804,7 +19942,9 @@ fi
 $as_echo "$gcc_cv_math_func_logf" >&6; }
   if test $gcc_cv_math_func_logf = yes; then
 
-$as_echo "#define HAVE_LOGF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LOGF 1
+_ACEOF
 
   fi
 
@@ -19850,7 +19990,9 @@ fi
 $as_echo "$gcc_cv_math_func_log" >&6; }
   if test $gcc_cv_math_func_log = yes; then
 
-$as_echo "#define HAVE_LOG 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LOG 1
+_ACEOF
 
   fi
 
@@ -19896,7 +20038,9 @@ fi
 $as_echo "$gcc_cv_math_func_logl" >&6; }
   if test $gcc_cv_math_func_logl = yes; then
 
-$as_echo "#define HAVE_LOGL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LOGL 1
+_ACEOF
 
   fi
 
@@ -19942,7 +20086,9 @@ fi
 $as_echo "$gcc_cv_math_func_clogf" >&6; }
   if test $gcc_cv_math_func_clogf = yes; then
 
-$as_echo "#define HAVE_CLOGF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CLOGF 1
+_ACEOF
 
   fi
 
@@ -19988,7 +20134,9 @@ fi
 $as_echo "$gcc_cv_math_func_clog" >&6; }
   if test $gcc_cv_math_func_clog = yes; then
 
-$as_echo "#define HAVE_CLOG 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CLOG 1
+_ACEOF
 
   fi
 
@@ -20034,7 +20182,9 @@ fi
 $as_echo "$gcc_cv_math_func_clogl" >&6; }
   if test $gcc_cv_math_func_clogl = yes; then
 
-$as_echo "#define HAVE_CLOGL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CLOGL 1
+_ACEOF
 
   fi
 
@@ -20080,7 +20230,9 @@ fi
 $as_echo "$gcc_cv_math_func_log10f" >&6; }
   if test $gcc_cv_math_func_log10f = yes; then
 
-$as_echo "#define HAVE_LOG10F 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LOG10F 1
+_ACEOF
 
   fi
 
@@ -20126,7 +20278,9 @@ fi
 $as_echo "$gcc_cv_math_func_log10" >&6; }
   if test $gcc_cv_math_func_log10 = yes; then
 
-$as_echo "#define HAVE_LOG10 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LOG10 1
+_ACEOF
 
   fi
 
@@ -20172,7 +20326,9 @@ fi
 $as_echo "$gcc_cv_math_func_log10l" >&6; }
   if test $gcc_cv_math_func_log10l = yes; then
 
-$as_echo "#define HAVE_LOG10L 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LOG10L 1
+_ACEOF
 
   fi
 
@@ -20218,7 +20374,9 @@ fi
 $as_echo "$gcc_cv_math_func_clog10f" >&6; }
   if test $gcc_cv_math_func_clog10f = yes; then
 
-$as_echo "#define HAVE_CLOG10F 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CLOG10F 1
+_ACEOF
 
   fi
 
@@ -20264,7 +20422,9 @@ fi
 $as_echo "$gcc_cv_math_func_clog10" >&6; }
   if test $gcc_cv_math_func_clog10 = yes; then
 
-$as_echo "#define HAVE_CLOG10 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CLOG10 1
+_ACEOF
 
   fi
 
@@ -20310,7 +20470,9 @@ fi
 $as_echo "$gcc_cv_math_func_clog10l" >&6; }
   if test $gcc_cv_math_func_clog10l = yes; then
 
-$as_echo "#define HAVE_CLOG10L 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CLOG10L 1
+_ACEOF
 
   fi
 
@@ -20356,7 +20518,9 @@ fi
 $as_echo "$gcc_cv_math_func_nextafterf" >&6; }
   if test $gcc_cv_math_func_nextafterf = yes; then
 
-$as_echo "#define HAVE_NEXTAFTERF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_NEXTAFTERF 1
+_ACEOF
 
   fi
 
@@ -20402,7 +20566,9 @@ fi
 $as_echo "$gcc_cv_math_func_nextafter" >&6; }
   if test $gcc_cv_math_func_nextafter = yes; then
 
-$as_echo "#define HAVE_NEXTAFTER 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_NEXTAFTER 1
+_ACEOF
 
   fi
 
@@ -20448,7 +20614,9 @@ fi
 $as_echo "$gcc_cv_math_func_nextafterl" >&6; }
   if test $gcc_cv_math_func_nextafterl = yes; then
 
-$as_echo "#define HAVE_NEXTAFTERL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_NEXTAFTERL 1
+_ACEOF
 
   fi
 
@@ -20494,7 +20662,9 @@ fi
 $as_echo "$gcc_cv_math_func_powf" >&6; }
   if test $gcc_cv_math_func_powf = yes; then
 
-$as_echo "#define HAVE_POWF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_POWF 1
+_ACEOF
 
   fi
 
@@ -20540,7 +20710,9 @@ fi
 $as_echo "$gcc_cv_math_func_pow" >&6; }
   if test $gcc_cv_math_func_pow = yes; then
 
-$as_echo "#define HAVE_POW 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_POW 1
+_ACEOF
 
   fi
 
@@ -20586,7 +20758,9 @@ fi
 $as_echo "$gcc_cv_math_func_powl" >&6; }
   if test $gcc_cv_math_func_powl = yes; then
 
-$as_echo "#define HAVE_POWL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_POWL 1
+_ACEOF
 
   fi
 
@@ -20632,7 +20806,9 @@ fi
 $as_echo "$gcc_cv_math_func_cpowf" >&6; }
   if test $gcc_cv_math_func_cpowf = yes; then
 
-$as_echo "#define HAVE_CPOWF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CPOWF 1
+_ACEOF
 
   fi
 
@@ -20678,7 +20854,9 @@ fi
 $as_echo "$gcc_cv_math_func_cpow" >&6; }
   if test $gcc_cv_math_func_cpow = yes; then
 
-$as_echo "#define HAVE_CPOW 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CPOW 1
+_ACEOF
 
   fi
 
@@ -20724,7 +20902,9 @@ fi
 $as_echo "$gcc_cv_math_func_cpowl" >&6; }
   if test $gcc_cv_math_func_cpowl = yes; then
 
-$as_echo "#define HAVE_CPOWL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CPOWL 1
+_ACEOF
 
   fi
 
@@ -20770,7 +20950,9 @@ fi
 $as_echo "$gcc_cv_math_func_roundf" >&6; }
   if test $gcc_cv_math_func_roundf = yes; then
 
-$as_echo "#define HAVE_ROUNDF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ROUNDF 1
+_ACEOF
 
   fi
 
@@ -20816,7 +20998,9 @@ fi
 $as_echo "$gcc_cv_math_func_round" >&6; }
   if test $gcc_cv_math_func_round = yes; then
 
-$as_echo "#define HAVE_ROUND 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ROUND 1
+_ACEOF
 
   fi
 
@@ -20862,7 +21046,9 @@ fi
 $as_echo "$gcc_cv_math_func_roundl" >&6; }
   if test $gcc_cv_math_func_roundl = yes; then
 
-$as_echo "#define HAVE_ROUNDL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ROUNDL 1
+_ACEOF
 
   fi
 
@@ -20908,7 +21094,9 @@ fi
 $as_echo "$gcc_cv_math_func_lroundf" >&6; }
   if test $gcc_cv_math_func_lroundf = yes; then
 
-$as_echo "#define HAVE_LROUNDF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LROUNDF 1
+_ACEOF
 
   fi
 
@@ -20954,7 +21142,9 @@ fi
 $as_echo "$gcc_cv_math_func_lround" >&6; }
   if test $gcc_cv_math_func_lround = yes; then
 
-$as_echo "#define HAVE_LROUND 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LROUND 1
+_ACEOF
 
   fi
 
@@ -21000,7 +21190,9 @@ fi
 $as_echo "$gcc_cv_math_func_lroundl" >&6; }
   if test $gcc_cv_math_func_lroundl = yes; then
 
-$as_echo "#define HAVE_LROUNDL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LROUNDL 1
+_ACEOF
 
   fi
 
@@ -21046,7 +21238,9 @@ fi
 $as_echo "$gcc_cv_math_func_llroundf" >&6; }
   if test $gcc_cv_math_func_llroundf = yes; then
 
-$as_echo "#define HAVE_LLROUNDF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LLROUNDF 1
+_ACEOF
 
   fi
 
@@ -21092,7 +21286,9 @@ fi
 $as_echo "$gcc_cv_math_func_llround" >&6; }
   if test $gcc_cv_math_func_llround = yes; then
 
-$as_echo "#define HAVE_LLROUND 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LLROUND 1
+_ACEOF
 
   fi
 
@@ -21138,7 +21334,9 @@ fi
 $as_echo "$gcc_cv_math_func_llroundl" >&6; }
   if test $gcc_cv_math_func_llroundl = yes; then
 
-$as_echo "#define HAVE_LLROUNDL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LLROUNDL 1
+_ACEOF
 
   fi
 
@@ -21184,7 +21382,9 @@ fi
 $as_echo "$gcc_cv_math_func_scalbnf" >&6; }
   if test $gcc_cv_math_func_scalbnf = yes; then
 
-$as_echo "#define HAVE_SCALBNF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SCALBNF 1
+_ACEOF
 
   fi
 
@@ -21230,7 +21430,9 @@ fi
 $as_echo "$gcc_cv_math_func_scalbn" >&6; }
   if test $gcc_cv_math_func_scalbn = yes; then
 
-$as_echo "#define HAVE_SCALBN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SCALBN 1
+_ACEOF
 
   fi
 
@@ -21276,7 +21478,9 @@ fi
 $as_echo "$gcc_cv_math_func_scalbnl" >&6; }
   if test $gcc_cv_math_func_scalbnl = yes; then
 
-$as_echo "#define HAVE_SCALBNL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SCALBNL 1
+_ACEOF
 
   fi
 
@@ -21322,7 +21526,9 @@ fi
 $as_echo "$gcc_cv_math_func_sinf" >&6; }
   if test $gcc_cv_math_func_sinf = yes; then
 
-$as_echo "#define HAVE_SINF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SINF 1
+_ACEOF
 
   fi
 
@@ -21368,7 +21574,9 @@ fi
 $as_echo "$gcc_cv_math_func_sin" >&6; }
   if test $gcc_cv_math_func_sin = yes; then
 
-$as_echo "#define HAVE_SIN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SIN 1
+_ACEOF
 
   fi
 
@@ -21414,7 +21622,9 @@ fi
 $as_echo "$gcc_cv_math_func_sinl" >&6; }
   if test $gcc_cv_math_func_sinl = yes; then
 
-$as_echo "#define HAVE_SINL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SINL 1
+_ACEOF
 
   fi
 
@@ -21460,7 +21670,9 @@ fi
 $as_echo "$gcc_cv_math_func_csinf" >&6; }
   if test $gcc_cv_math_func_csinf = yes; then
 
-$as_echo "#define HAVE_CSINF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSINF 1
+_ACEOF
 
   fi
 
@@ -21506,7 +21718,9 @@ fi
 $as_echo "$gcc_cv_math_func_csin" >&6; }
   if test $gcc_cv_math_func_csin = yes; then
 
-$as_echo "#define HAVE_CSIN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSIN 1
+_ACEOF
 
   fi
 
@@ -21552,7 +21766,9 @@ fi
 $as_echo "$gcc_cv_math_func_csinl" >&6; }
   if test $gcc_cv_math_func_csinl = yes; then
 
-$as_echo "#define HAVE_CSINL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSINL 1
+_ACEOF
 
   fi
 
@@ -21598,7 +21814,9 @@ fi
 $as_echo "$gcc_cv_math_func_sinhf" >&6; }
   if test $gcc_cv_math_func_sinhf = yes; then
 
-$as_echo "#define HAVE_SINHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SINHF 1
+_ACEOF
 
   fi
 
@@ -21644,7 +21862,9 @@ fi
 $as_echo "$gcc_cv_math_func_sinh" >&6; }
   if test $gcc_cv_math_func_sinh = yes; then
 
-$as_echo "#define HAVE_SINH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SINH 1
+_ACEOF
 
   fi
 
@@ -21690,7 +21910,9 @@ fi
 $as_echo "$gcc_cv_math_func_sinhl" >&6; }
   if test $gcc_cv_math_func_sinhl = yes; then
 
-$as_echo "#define HAVE_SINHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SINHL 1
+_ACEOF
 
   fi
 
@@ -21736,7 +21958,9 @@ fi
 $as_echo "$gcc_cv_math_func_csinhf" >&6; }
   if test $gcc_cv_math_func_csinhf = yes; then
 
-$as_echo "#define HAVE_CSINHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSINHF 1
+_ACEOF
 
   fi
 
@@ -21782,7 +22006,9 @@ fi
 $as_echo "$gcc_cv_math_func_csinh" >&6; }
   if test $gcc_cv_math_func_csinh = yes; then
 
-$as_echo "#define HAVE_CSINH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSINH 1
+_ACEOF
 
   fi
 
@@ -21828,7 +22054,9 @@ fi
 $as_echo "$gcc_cv_math_func_csinhl" >&6; }
   if test $gcc_cv_math_func_csinhl = yes; then
 
-$as_echo "#define HAVE_CSINHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSINHL 1
+_ACEOF
 
   fi
 
@@ -21874,7 +22102,9 @@ fi
 $as_echo "$gcc_cv_math_func_sqrtf" >&6; }
   if test $gcc_cv_math_func_sqrtf = yes; then
 
-$as_echo "#define HAVE_SQRTF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SQRTF 1
+_ACEOF
 
   fi
 
@@ -21920,7 +22150,9 @@ fi
 $as_echo "$gcc_cv_math_func_sqrt" >&6; }
   if test $gcc_cv_math_func_sqrt = yes; then
 
-$as_echo "#define HAVE_SQRT 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SQRT 1
+_ACEOF
 
   fi
 
@@ -21966,7 +22198,9 @@ fi
 $as_echo "$gcc_cv_math_func_sqrtl" >&6; }
   if test $gcc_cv_math_func_sqrtl = yes; then
 
-$as_echo "#define HAVE_SQRTL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SQRTL 1
+_ACEOF
 
   fi
 
@@ -22012,7 +22246,9 @@ fi
 $as_echo "$gcc_cv_math_func_csqrtf" >&6; }
   if test $gcc_cv_math_func_csqrtf = yes; then
 
-$as_echo "#define HAVE_CSQRTF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSQRTF 1
+_ACEOF
 
   fi
 
@@ -22058,7 +22294,9 @@ fi
 $as_echo "$gcc_cv_math_func_csqrt" >&6; }
   if test $gcc_cv_math_func_csqrt = yes; then
 
-$as_echo "#define HAVE_CSQRT 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSQRT 1
+_ACEOF
 
   fi
 
@@ -22104,7 +22342,9 @@ fi
 $as_echo "$gcc_cv_math_func_csqrtl" >&6; }
   if test $gcc_cv_math_func_csqrtl = yes; then
 
-$as_echo "#define HAVE_CSQRTL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSQRTL 1
+_ACEOF
 
   fi
 
@@ -22150,7 +22390,9 @@ fi
 $as_echo "$gcc_cv_math_func_tanf" >&6; }
   if test $gcc_cv_math_func_tanf = yes; then
 
-$as_echo "#define HAVE_TANF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TANF 1
+_ACEOF
 
   fi
 
@@ -22196,7 +22438,9 @@ fi
 $as_echo "$gcc_cv_math_func_tan" >&6; }
   if test $gcc_cv_math_func_tan = yes; then
 
-$as_echo "#define HAVE_TAN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TAN 1
+_ACEOF
 
   fi
 
@@ -22242,7 +22486,9 @@ fi
 $as_echo "$gcc_cv_math_func_tanl" >&6; }
   if test $gcc_cv_math_func_tanl = yes; then
 
-$as_echo "#define HAVE_TANL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TANL 1
+_ACEOF
 
   fi
 
@@ -22288,7 +22534,9 @@ fi
 $as_echo "$gcc_cv_math_func_ctanf" >&6; }
   if test $gcc_cv_math_func_ctanf = yes; then
 
-$as_echo "#define HAVE_CTANF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CTANF 1
+_ACEOF
 
   fi
 
@@ -22334,7 +22582,9 @@ fi
 $as_echo "$gcc_cv_math_func_ctan" >&6; }
   if test $gcc_cv_math_func_ctan = yes; then
 
-$as_echo "#define HAVE_CTAN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CTAN 1
+_ACEOF
 
   fi
 
@@ -22380,7 +22630,9 @@ fi
 $as_echo "$gcc_cv_math_func_ctanl" >&6; }
   if test $gcc_cv_math_func_ctanl = yes; then
 
-$as_echo "#define HAVE_CTANL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CTANL 1
+_ACEOF
 
   fi
 
@@ -22426,7 +22678,9 @@ fi
 $as_echo "$gcc_cv_math_func_tanhf" >&6; }
   if test $gcc_cv_math_func_tanhf = yes; then
 
-$as_echo "#define HAVE_TANHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TANHF 1
+_ACEOF
 
   fi
 
@@ -22472,7 +22726,9 @@ fi
 $as_echo "$gcc_cv_math_func_tanh" >&6; }
   if test $gcc_cv_math_func_tanh = yes; then
 
-$as_echo "#define HAVE_TANH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TANH 1
+_ACEOF
 
   fi
 
@@ -22518,7 +22774,9 @@ fi
 $as_echo "$gcc_cv_math_func_tanhl" >&6; }
   if test $gcc_cv_math_func_tanhl = yes; then
 
-$as_echo "#define HAVE_TANHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TANHL 1
+_ACEOF
 
   fi
 
@@ -22564,7 +22822,9 @@ fi
 $as_echo "$gcc_cv_math_func_ctanhf" >&6; }
   if test $gcc_cv_math_func_ctanhf = yes; then
 
-$as_echo "#define HAVE_CTANHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CTANHF 1
+_ACEOF
 
   fi
 
@@ -22610,7 +22870,9 @@ fi
 $as_echo "$gcc_cv_math_func_ctanh" >&6; }
   if test $gcc_cv_math_func_ctanh = yes; then
 
-$as_echo "#define HAVE_CTANH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CTANH 1
+_ACEOF
 
   fi
 
@@ -22656,7 +22918,9 @@ fi
 $as_echo "$gcc_cv_math_func_ctanhl" >&6; }
   if test $gcc_cv_math_func_ctanhl = yes; then
 
-$as_echo "#define HAVE_CTANHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CTANHL 1
+_ACEOF
 
   fi
 
@@ -22702,7 +22966,9 @@ fi
 $as_echo "$gcc_cv_math_func_truncf" >&6; }
   if test $gcc_cv_math_func_truncf = yes; then
 
-$as_echo "#define HAVE_TRUNCF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TRUNCF 1
+_ACEOF
 
   fi
 
@@ -22748,7 +23014,9 @@ fi
 $as_echo "$gcc_cv_math_func_trunc" >&6; }
   if test $gcc_cv_math_func_trunc = yes; then
 
-$as_echo "#define HAVE_TRUNC 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TRUNC 1
+_ACEOF
 
   fi
 
@@ -22794,7 +23062,9 @@ fi
 $as_echo "$gcc_cv_math_func_truncl" >&6; }
   if test $gcc_cv_math_func_truncl = yes; then
 
-$as_echo "#define HAVE_TRUNCL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TRUNCL 1
+_ACEOF
 
   fi
 
@@ -22840,7 +23110,9 @@ fi
 $as_echo "$gcc_cv_math_func_erff" >&6; }
   if test $gcc_cv_math_func_erff = yes; then
 
-$as_echo "#define HAVE_ERFF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ERFF 1
+_ACEOF
 
   fi
 
@@ -22886,7 +23158,9 @@ fi
 $as_echo "$gcc_cv_math_func_erf" >&6; }
   if test $gcc_cv_math_func_erf = yes; then
 
-$as_echo "#define HAVE_ERF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ERF 1
+_ACEOF
 
   fi
 
@@ -22932,7 +23206,9 @@ fi
 $as_echo "$gcc_cv_math_func_erfl" >&6; }
   if test $gcc_cv_math_func_erfl = yes; then
 
-$as_echo "#define HAVE_ERFL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ERFL 1
+_ACEOF
 
   fi
 
@@ -22978,7 +23254,9 @@ fi
 $as_echo "$gcc_cv_math_func_erfcf" >&6; }
   if test $gcc_cv_math_func_erfcf = yes; then
 
-$as_echo "#define HAVE_ERFCF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ERFCF 1
+_ACEOF
 
   fi
 
@@ -23024,7 +23302,9 @@ fi
 $as_echo "$gcc_cv_math_func_erfc" >&6; }
   if test $gcc_cv_math_func_erfc = yes; then
 
-$as_echo "#define HAVE_ERFC 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ERFC 1
+_ACEOF
 
   fi
 
@@ -23070,7 +23350,9 @@ fi
 $as_echo "$gcc_cv_math_func_erfcl" >&6; }
   if test $gcc_cv_math_func_erfcl = yes; then
 
-$as_echo "#define HAVE_ERFCL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ERFCL 1
+_ACEOF
 
   fi
 
@@ -23116,7 +23398,9 @@ fi
 $as_echo "$gcc_cv_math_func_j0f" >&6; }
   if test $gcc_cv_math_func_j0f = yes; then
 
-$as_echo "#define HAVE_J0F 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_J0F 1
+_ACEOF
 
   fi
 
@@ -23162,7 +23446,9 @@ fi
 $as_echo "$gcc_cv_math_func_j0" >&6; }
   if test $gcc_cv_math_func_j0 = yes; then
 
-$as_echo "#define HAVE_J0 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_J0 1
+_ACEOF
 
   fi
 
@@ -23208,7 +23494,9 @@ fi
 $as_echo "$gcc_cv_math_func_j0l" >&6; }
   if test $gcc_cv_math_func_j0l = yes; then
 
-$as_echo "#define HAVE_J0L 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_J0L 1
+_ACEOF
 
   fi
 
@@ -23254,7 +23542,9 @@ fi
 $as_echo "$gcc_cv_math_func_j1f" >&6; }
   if test $gcc_cv_math_func_j1f = yes; then
 
-$as_echo "#define HAVE_J1F 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_J1F 1
+_ACEOF
 
   fi
 
@@ -23300,7 +23590,9 @@ fi
 $as_echo "$gcc_cv_math_func_j1" >&6; }
   if test $gcc_cv_math_func_j1 = yes; then
 
-$as_echo "#define HAVE_J1 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_J1 1
+_ACEOF
 
   fi
 
@@ -23346,7 +23638,9 @@ fi
 $as_echo "$gcc_cv_math_func_j1l" >&6; }
   if test $gcc_cv_math_func_j1l = yes; then
 
-$as_echo "#define HAVE_J1L 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_J1L 1
+_ACEOF
 
   fi
 
@@ -23392,7 +23686,9 @@ fi
 $as_echo "$gcc_cv_math_func_jnf" >&6; }
   if test $gcc_cv_math_func_jnf = yes; then
 
-$as_echo "#define HAVE_JNF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_JNF 1
+_ACEOF
 
   fi
 
@@ -23438,7 +23734,9 @@ fi
 $as_echo "$gcc_cv_math_func_jn" >&6; }
   if test $gcc_cv_math_func_jn = yes; then
 
-$as_echo "#define HAVE_JN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_JN 1
+_ACEOF
 
   fi
 
@@ -23484,7 +23782,9 @@ fi
 $as_echo "$gcc_cv_math_func_jnl" >&6; }
   if test $gcc_cv_math_func_jnl = yes; then
 
-$as_echo "#define HAVE_JNL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_JNL 1
+_ACEOF
 
   fi
 
@@ -23530,7 +23830,9 @@ fi
 $as_echo "$gcc_cv_math_func_y0f" >&6; }
   if test $gcc_cv_math_func_y0f = yes; then
 
-$as_echo "#define HAVE_Y0F 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_Y0F 1
+_ACEOF
 
   fi
 
@@ -23576,7 +23878,9 @@ fi
 $as_echo "$gcc_cv_math_func_y0" >&6; }
   if test $gcc_cv_math_func_y0 = yes; then
 
-$as_echo "#define HAVE_Y0 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_Y0 1
+_ACEOF
 
   fi
 
@@ -23622,7 +23926,9 @@ fi
 $as_echo "$gcc_cv_math_func_y0l" >&6; }
   if test $gcc_cv_math_func_y0l = yes; then
 
-$as_echo "#define HAVE_Y0L 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_Y0L 1
+_ACEOF
 
   fi
 
@@ -23668,7 +23974,9 @@ fi
 $as_echo "$gcc_cv_math_func_y1f" >&6; }
   if test $gcc_cv_math_func_y1f = yes; then
 
-$as_echo "#define HAVE_Y1F 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_Y1F 1
+_ACEOF
 
   fi
 
@@ -23714,7 +24022,9 @@ fi
 $as_echo "$gcc_cv_math_func_y1" >&6; }
   if test $gcc_cv_math_func_y1 = yes; then
 
-$as_echo "#define HAVE_Y1 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_Y1 1
+_ACEOF
 
   fi
 
@@ -23760,7 +24070,9 @@ fi
 $as_echo "$gcc_cv_math_func_y1l" >&6; }
   if test $gcc_cv_math_func_y1l = yes; then
 
-$as_echo "#define HAVE_Y1L 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_Y1L 1
+_ACEOF
 
   fi
 
@@ -23806,7 +24118,9 @@ fi
 $as_echo "$gcc_cv_math_func_ynf" >&6; }
   if test $gcc_cv_math_func_ynf = yes; then
 
-$as_echo "#define HAVE_YNF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_YNF 1
+_ACEOF
 
   fi
 
@@ -23852,7 +24166,9 @@ fi
 $as_echo "$gcc_cv_math_func_yn" >&6; }
   if test $gcc_cv_math_func_yn = yes; then
 
-$as_echo "#define HAVE_YN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_YN 1
+_ACEOF
 
   fi
 
@@ -23898,7 +24214,9 @@ fi
 $as_echo "$gcc_cv_math_func_ynl" >&6; }
   if test $gcc_cv_math_func_ynl = yes; then
 
-$as_echo "#define HAVE_YNL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_YNL 1
+_ACEOF
 
   fi
 
@@ -23944,7 +24262,9 @@ fi
 $as_echo "$gcc_cv_math_func_tgamma" >&6; }
   if test $gcc_cv_math_func_tgamma = yes; then
 
-$as_echo "#define HAVE_TGAMMA 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TGAMMA 1
+_ACEOF
 
   fi
 
@@ -23990,7 +24310,9 @@ fi
 $as_echo "$gcc_cv_math_func_tgammaf" >&6; }
   if test $gcc_cv_math_func_tgammaf = yes; then
 
-$as_echo "#define HAVE_TGAMMAF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TGAMMAF 1
+_ACEOF
 
   fi
 
@@ -24036,7 +24358,9 @@ fi
 $as_echo "$gcc_cv_math_func_tgammal" >&6; }
   if test $gcc_cv_math_func_tgammal = yes; then
 
-$as_echo "#define HAVE_TGAMMAL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TGAMMAL 1
+_ACEOF
 
   fi
 
@@ -24082,7 +24406,9 @@ fi
 $as_echo "$gcc_cv_math_func_lgamma" >&6; }
   if test $gcc_cv_math_func_lgamma = yes; then
 
-$as_echo "#define HAVE_LGAMMA 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LGAMMA 1
+_ACEOF
 
   fi
 
@@ -24128,7 +24454,9 @@ fi
 $as_echo "$gcc_cv_math_func_lgammaf" >&6; }
   if test $gcc_cv_math_func_lgammaf = yes; then
 
-$as_echo "#define HAVE_LGAMMAF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LGAMMAF 1
+_ACEOF
 
   fi
 
@@ -24174,7 +24502,9 @@ fi
 $as_echo "$gcc_cv_math_func_lgammal" >&6; }
   if test $gcc_cv_math_func_lgammal = yes; then
 
-$as_echo "#define HAVE_LGAMMAL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LGAMMAL 1
+_ACEOF
 
   fi
 
@@ -24222,7 +24552,9 @@ fi
 $as_echo "$gcc_cv_math_func_cacos" >&6; }
   if test $gcc_cv_math_func_cacos = yes; then
 
-$as_echo "#define HAVE_CACOS 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CACOS 1
+_ACEOF
 
   fi
 
@@ -24268,7 +24600,9 @@ fi
 $as_echo "$gcc_cv_math_func_cacosf" >&6; }
   if test $gcc_cv_math_func_cacosf = yes; then
 
-$as_echo "#define HAVE_CACOSF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CACOSF 1
+_ACEOF
 
   fi
 
@@ -24314,7 +24648,9 @@ fi
 $as_echo "$gcc_cv_math_func_cacosh" >&6; }
   if test $gcc_cv_math_func_cacosh = yes; then
 
-$as_echo "#define HAVE_CACOSH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CACOSH 1
+_ACEOF
 
   fi
 
@@ -24360,7 +24696,9 @@ fi
 $as_echo "$gcc_cv_math_func_cacoshf" >&6; }
   if test $gcc_cv_math_func_cacoshf = yes; then
 
-$as_echo "#define HAVE_CACOSHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CACOSHF 1
+_ACEOF
 
   fi
 
@@ -24406,7 +24744,9 @@ fi
 $as_echo "$gcc_cv_math_func_cacoshl" >&6; }
   if test $gcc_cv_math_func_cacoshl = yes; then
 
-$as_echo "#define HAVE_CACOSHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CACOSHL 1
+_ACEOF
 
   fi
 
@@ -24452,7 +24792,9 @@ fi
 $as_echo "$gcc_cv_math_func_cacosl" >&6; }
   if test $gcc_cv_math_func_cacosl = yes; then
 
-$as_echo "#define HAVE_CACOSL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CACOSL 1
+_ACEOF
 
   fi
 
@@ -24498,7 +24840,9 @@ fi
 $as_echo "$gcc_cv_math_func_casin" >&6; }
   if test $gcc_cv_math_func_casin = yes; then
 
-$as_echo "#define HAVE_CASIN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CASIN 1
+_ACEOF
 
   fi
 
@@ -24544,7 +24888,9 @@ fi
 $as_echo "$gcc_cv_math_func_casinf" >&6; }
   if test $gcc_cv_math_func_casinf = yes; then
 
-$as_echo "#define HAVE_CASINF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CASINF 1
+_ACEOF
 
   fi
 
@@ -24590,7 +24936,9 @@ fi
 $as_echo "$gcc_cv_math_func_casinh" >&6; }
   if test $gcc_cv_math_func_casinh = yes; then
 
-$as_echo "#define HAVE_CASINH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CASINH 1
+_ACEOF
 
   fi
 
@@ -24636,7 +24984,9 @@ fi
 $as_echo "$gcc_cv_math_func_casinhf" >&6; }
   if test $gcc_cv_math_func_casinhf = yes; then
 
-$as_echo "#define HAVE_CASINHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CASINHF 1
+_ACEOF
 
   fi
 
@@ -24682,7 +25032,9 @@ fi
 $as_echo "$gcc_cv_math_func_casinhl" >&6; }
   if test $gcc_cv_math_func_casinhl = yes; then
 
-$as_echo "#define HAVE_CASINHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CASINHL 1
+_ACEOF
 
   fi
 
@@ -24728,7 +25080,9 @@ fi
 $as_echo "$gcc_cv_math_func_casinl" >&6; }
   if test $gcc_cv_math_func_casinl = yes; then
 
-$as_echo "#define HAVE_CASINL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CASINL 1
+_ACEOF
 
   fi
 
@@ -24774,7 +25128,9 @@ fi
 $as_echo "$gcc_cv_math_func_catan" >&6; }
   if test $gcc_cv_math_func_catan = yes; then
 
-$as_echo "#define HAVE_CATAN 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CATAN 1
+_ACEOF
 
   fi
 
@@ -24820,7 +25176,9 @@ fi
 $as_echo "$gcc_cv_math_func_catanf" >&6; }
   if test $gcc_cv_math_func_catanf = yes; then
 
-$as_echo "#define HAVE_CATANF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CATANF 1
+_ACEOF
 
   fi
 
@@ -24866,7 +25224,9 @@ fi
 $as_echo "$gcc_cv_math_func_catanh" >&6; }
   if test $gcc_cv_math_func_catanh = yes; then
 
-$as_echo "#define HAVE_CATANH 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CATANH 1
+_ACEOF
 
   fi
 
@@ -24912,7 +25272,9 @@ fi
 $as_echo "$gcc_cv_math_func_catanhf" >&6; }
   if test $gcc_cv_math_func_catanhf = yes; then
 
-$as_echo "#define HAVE_CATANHF 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CATANHF 1
+_ACEOF
 
   fi
 
@@ -24958,7 +25320,9 @@ fi
 $as_echo "$gcc_cv_math_func_catanhl" >&6; }
   if test $gcc_cv_math_func_catanhl = yes; then
 
-$as_echo "#define HAVE_CATANHL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CATANHL 1
+_ACEOF
 
   fi
 
@@ -25004,7 +25368,9 @@ fi
 $as_echo "$gcc_cv_math_func_catanl" >&6; }
   if test $gcc_cv_math_func_catanl = yes; then
 
-$as_echo "#define HAVE_CATANL 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CATANL 1
+_ACEOF
 
   fi
 

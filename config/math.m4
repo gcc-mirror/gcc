@@ -14,10 +14,10 @@ dnl  functions).
 AC_DEFUN([GCC_CHECK_MATH_HEADERS],
 [AC_CHECK_HEADERS_ONCE(math.h complex.h)])
 
-dnl GCC_CHECK_MATH_FUNC([name],[if-present])
+dnl GCC_CHECK_MATH_FUNC([name])
 dnl
 dnl Check whether math function NAME is available on the system (by compiling
-dnl and linking a C program) and run if-present on success.
+dnl and linking a C program) and run define HAVE_name on success.
 dnl
 dnl Note that OpenVMS system insists on including complex.h before math.h
 AC_DEFUN([GCC_CHECK_MATH_FUNC],
@@ -44,6 +44,7 @@ main ()
 [gcc_cv_math_func_$1=yes],
 [gcc_cv_math_func_$1=no])])
   if test $gcc_cv_math_func_$1 = yes; then
-    $2
+    AC_DEFINE_UNQUOTED(AS_TR_CPP(HAVE_$1),[1],
+                       [Define to 1 if you have the `$1' function.])
   fi
 ])
