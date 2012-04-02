@@ -1,9 +1,16 @@
 // { dg-options "-O2 -fdump-tree-ehcleanup1-details" }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#define NOEXCEPT_FALSE noexcept (false)
+#else
+#define NOEXCEPT_FALSE
+#endif
+
 extern void can_throw ();
 class a
 {
 public:
-  ~a ()
+  ~a () NOEXCEPT_FALSE
   {
     if (0)
       can_throw ();

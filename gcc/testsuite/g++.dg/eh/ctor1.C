@@ -5,6 +5,12 @@
 
 // PR 411
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#define NOEXCEPT_FALSE noexcept (false)
+#else
+#define NOEXCEPT_FALSE
+#endif
+
 bool was_f_in_Bar_destroyed=false;
 
 struct Foo
@@ -17,7 +23,7 @@ struct Foo
 
 struct Bar
 {
-  ~Bar()
+  ~Bar() NOEXCEPT_FALSE
   {
     throw 1;
   }
