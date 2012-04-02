@@ -1,3 +1,28 @@
+2012-04-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Process_Declarations): Detect a case where
+	a source object was initialized by another source object,
+	but the expression was rewritten as a class-wide conversion
+	of Ada.Tags.Displace.
+	* exp_util.adb (Initialized_By_Ctrl_Function): Removed.
+	(Is_Controlled_Function_Call): New routine.
+	(Is_Displacement_Of_Ctrl_Function_Result): Removed.
+	(Is_Displacement_Of_Object_Or_Function_Result): New routine.
+	(Is_Source_Object): New routine.
+	(Requires_Cleanup_Actions): Detect a case where a source object was
+	initialized by another source object, but the expression was rewritten
+	as a class-wide conversion of Ada.Tags.Displace.
+	* exp_util.ads (Is_Displacement_Of_Ctrl_Function_Result): Removed.
+	(Is_Displacement_Of_Object_Or_Function_Result): New routine.
+
+2012-04-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): A call to an expression function
+	does not freeze if it appears in a different scope from the
+	expression function itself. Such calls appear in the generated
+	bodies of other expression functions, or in pre/postconditions
+	of subsequent subprograms.
+
 2012-04-02  Yannick Moy  <moy@adacore.com>
 
 	* lib-xref-alfa.adb: Code clean up.
