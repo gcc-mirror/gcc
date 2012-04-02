@@ -2815,10 +2815,11 @@ emit_register_classes_in_jcr_section (void)
   DECL_SECTION_NAME (cdecl) = build_string (strlen (JCR_SECTION_NAME),
 					    JCR_SECTION_NAME);
   DECL_ALIGN (cdecl) = POINTER_SIZE;
+  DECL_USER_ALIGN (cdecl) = 1;
   DECL_INITIAL (cdecl) = build_constructor (class_array_type, init);
   TREE_CONSTANT (DECL_INITIAL (cdecl)) = 1;
   TREE_STATIC (cdecl) = 1;
-  TREE_READONLY (cdecl) = 1;
+  TREE_READONLY (cdecl) = 0;
   TREE_CONSTANT (cdecl) = 1;
   DECL_ARTIFICIAL (cdecl) = 1;
   DECL_IGNORED_P (cdecl) = 1;
