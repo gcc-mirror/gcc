@@ -4978,6 +4978,7 @@ extern void fixup_attribute_variants		(tree);
 extern tree* decl_cloned_function_p		(const_tree, bool);
 extern void clone_function_decl			(tree, int);
 extern void adjust_clone_args			(tree);
+extern void deduce_noexcept_on_destructor       (tree);
 
 /* in cvt.c */
 extern tree convert_to_reference		(tree, tree, int, int, tree);
@@ -5264,6 +5265,8 @@ extern tree get_copy_assign			(tree);
 extern tree get_default_ctor			(tree);
 extern tree get_dtor				(tree, tsubst_flags_t);
 extern tree locate_ctor				(tree);
+extern tree implicitly_declare_fn               (special_function_kind, tree,
+						 bool);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);

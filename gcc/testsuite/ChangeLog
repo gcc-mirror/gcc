@@ -1,3 +1,13 @@
+2012-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50043
+	* g++.dg/cpp0x/noexcept17.C: New.
+	* g++.old-deja/g++.eh/cleanup1.C: Adjust.
+	* g++.dg/tree-ssa/ehcleanup-1.C: Likewise.
+	* g++.dg/cpp0x/noexcept01.C: Likewise.
+	* g++.dg/eh/init-temp1.C: Likewise.
+	* g++.dg/eh/ctor1.C: Likwise.
+
 2012-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/controlled6.adb: New test.
