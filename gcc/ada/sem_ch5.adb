@@ -76,7 +76,7 @@ package body Sem_Ch5 is
    --  messages. This variable is recursively saved on entry to processing the
    --  construct, and restored on exit.
 
-   procedure Pre_Analyze_Range (R_Copy : Node_Id);
+   procedure Preanalyze_Range (R_Copy : Node_Id);
    --  Determine expected type of range or domain of iteration of Ada 2012
    --  loop by analyzing separate copy. Do the analysis and resolution of the
    --  copy of the bound(s) with expansion disabled, to prevent the generation
@@ -1607,618 +1607,32 @@ package body Sem_Ch5 is
    ------------------------------
 
    procedure Analyze_Iteration_Scheme (N : Node_Id) is
-
-      procedure Process_Bounds (R : Node_Id);
-      --  If the iteration is given by a range, create temporaries and
-      --  assignment statements block to capture the bounds and perform
-      --  required finalization actions in case a bound includes a function
-      --  call that uses the temporary stack. We first pre-analyze a copy of
-      --  the range in order to determine the expected type, and analyze and
-      --  resolve the original bounds.
-
-      procedure Check_Controlled_Array_Attribute (DS : Node_Id);
-      --  If the bounds are given by a 'Range reference on a function call
-      --  that returns a controlled array, introduce an explicit declaration
-      --  to capture the bounds, so that the function result can be finalized
-      --  in timely fashion.
-
-      function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean;
-      --  N is the node for an arbitrary construct. This function searches the
-      --  construct N to see if any expressions within it contain function
-      --  calls that use the secondary stack, returning True if any such call
-      --  is found, and False otherwise.
-
-      --------------------
-      -- Process_Bounds --
-      --------------------
-
-      procedure Process_Bounds (R : Node_Id) is
-         Loc          : constant Source_Ptr := Sloc (N);
-         R_Copy       : constant Node_Id := New_Copy_Tree (R);
-         Lo           : constant Node_Id := Low_Bound  (R);
-         Hi           : constant Node_Id := High_Bound (R);
-         New_Lo_Bound : Node_Id;
-         New_Hi_Bound : Node_Id;
-         Typ          : Entity_Id;
-
-         function One_Bound
-           (Original_Bound : Node_Id;
-            Analyzed_Bound : Node_Id) return Node_Id;
-         --  Capture value of bound and return captured value
-
-         ---------------
-         -- One_Bound --
-         ---------------
-
-         function One_Bound
-           (Original_Bound : Node_Id;
-            Analyzed_Bound : Node_Id) return Node_Id
-         is
-            Assign : Node_Id;
-            Decl   : Node_Id;
-            Id     : Entity_Id;
-
-         begin
-            --  If the bound is a constant or an object, no need for a separate
-            --  declaration. If the bound is the result of previous expansion
-            --  it is already analyzed and should not be modified. Note that
-            --  the Bound will be resolved later, if needed, as part of the
-            --  call to Make_Index (literal bounds may need to be resolved to
-            --  type Integer).
-
-            if Analyzed (Original_Bound) then
-               return Original_Bound;
-
-            elsif Nkind_In (Analyzed_Bound, N_Integer_Literal,
-                                            N_Character_Literal)
-              or else Is_Entity_Name (Analyzed_Bound)
-            then
-               Analyze_And_Resolve (Original_Bound, Typ);
-               return Original_Bound;
-            end if;
-
-            --  Normally, the best approach is simply to generate a constant
-            --  declaration that captures the bound. However, there is a nasty
-            --  case where this is wrong. If the bound is complex, and has a
-            --  possible use of the secondary stack, we need to generate a
-            --  separate assignment statement to ensure the creation of a block
-            --  which will release the secondary stack.
-
-            --  We prefer the constant declaration, since it leaves us with a
-            --  proper trace of the value, useful in optimizations that get rid
-            --  of junk range checks.
-
-            if not Has_Call_Using_Secondary_Stack (Analyzed_Bound) then
-               Analyze_And_Resolve (Original_Bound, Typ);
-               Force_Evaluation (Original_Bound);
-               return Original_Bound;
-            end if;
-
-            Id := Make_Temporary (Loc, 'R', Original_Bound);
-
-            --  Here we make a declaration with a separate assignment
-            --  statement, and insert before loop header.
-
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Id,
-                Object_Definition   => New_Occurrence_Of (Typ, Loc));
-
-            Assign :=
-              Make_Assignment_Statement (Loc,
-                Name        => New_Occurrence_Of (Id, Loc),
-                Expression  => Relocate_Node (Original_Bound));
-
-            Insert_Actions (Parent (N), New_List (Decl, Assign));
-
-            --  Now that this temporary variable is initialized we decorate it
-            --  as safe-to-reevaluate to inform to the backend that no further
-            --  asignment will be issued and hence it can be handled as side
-            --  effect free. Note that this decoration must be done when the
-            --  assignment has been analyzed because otherwise it will be
-            --  rejected (see Analyze_Assignment).
-
-            Set_Is_Safe_To_Reevaluate (Id);
-
-            Rewrite (Original_Bound, New_Occurrence_Of (Id, Loc));
-
-            if Nkind (Assign) = N_Assignment_Statement then
-               return Expression (Assign);
-            else
-               return Original_Bound;
-            end if;
-         end One_Bound;
-
-      --  Start of processing for Process_Bounds
-
-      begin
-         Set_Parent (R_Copy, Parent (R));
-         Pre_Analyze_Range (R_Copy);
-         Typ := Etype (R_Copy);
-
-         --  If the type of the discrete range is Universal_Integer, then the
-         --  bound's type must be resolved to Integer, and any object used to
-         --  hold the bound must also have type Integer, unless the literal
-         --  bounds are constant-folded expressions with a user-defined type.
-
-         if Typ = Universal_Integer then
-            if Nkind (Lo) = N_Integer_Literal
-              and then Present (Etype (Lo))
-              and then Scope (Etype (Lo)) /= Standard_Standard
-            then
-               Typ := Etype (Lo);
-
-            elsif Nkind (Hi) = N_Integer_Literal
-              and then Present (Etype (Hi))
-              and then Scope (Etype (Hi)) /= Standard_Standard
-            then
-               Typ := Etype (Hi);
-
-            else
-               Typ := Standard_Integer;
-            end if;
-         end if;
-
-         Set_Etype (R, Typ);
-
-         New_Lo_Bound := One_Bound (Lo, Low_Bound  (R_Copy));
-         New_Hi_Bound := One_Bound (Hi, High_Bound (R_Copy));
-
-         --  Propagate staticness to loop range itself, in case the
-         --  corresponding subtype is static.
-
-         if New_Lo_Bound /= Lo
-           and then Is_Static_Expression (New_Lo_Bound)
-         then
-            Rewrite (Low_Bound (R), New_Copy (New_Lo_Bound));
-         end if;
-
-         if New_Hi_Bound /= Hi
-           and then Is_Static_Expression (New_Hi_Bound)
-         then
-            Rewrite (High_Bound (R), New_Copy (New_Hi_Bound));
-         end if;
-      end Process_Bounds;
-
-      --------------------------------------
-      -- Check_Controlled_Array_Attribute --
-      --------------------------------------
-
-      procedure Check_Controlled_Array_Attribute (DS : Node_Id) is
-      begin
-         if Nkind (DS) = N_Attribute_Reference
-            and then Is_Entity_Name (Prefix (DS))
-            and then Ekind (Entity (Prefix (DS))) = E_Function
-            and then Is_Array_Type (Etype (Entity (Prefix (DS))))
-            and then
-              Is_Controlled (
-                Component_Type (Etype (Entity (Prefix (DS)))))
-            and then Expander_Active
-         then
-            declare
-               Loc  : constant Source_Ptr := Sloc (N);
-               Arr  : constant Entity_Id := Etype (Entity (Prefix (DS)));
-               Indx : constant Entity_Id :=
-                        Base_Type (Etype (First_Index (Arr)));
-               Subt : constant Entity_Id := Make_Temporary (Loc, 'S');
-               Decl : Node_Id;
-
-            begin
-               Decl :=
-                 Make_Subtype_Declaration (Loc,
-                   Defining_Identifier => Subt,
-                   Subtype_Indication  =>
-                      Make_Subtype_Indication (Loc,
-                        Subtype_Mark  => New_Reference_To (Indx, Loc),
-                        Constraint =>
-                          Make_Range_Constraint (Loc,
-                            Relocate_Node (DS))));
-               Insert_Before (Parent (N), Decl);
-               Analyze (Decl);
-
-               Rewrite (DS,
-                  Make_Attribute_Reference (Loc,
-                    Prefix => New_Reference_To (Subt, Loc),
-                    Attribute_Name => Attribute_Name (DS)));
-               Analyze (DS);
-            end;
-         end if;
-      end Check_Controlled_Array_Attribute;
-
-      ------------------------------------
-      -- Has_Call_Using_Secondary_Stack --
-      ------------------------------------
-
-      function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean is
-
-         function Check_Call (N : Node_Id) return Traverse_Result;
-         --  Check if N is a function call which uses the secondary stack
-
-         ----------------
-         -- Check_Call --
-         ----------------
-
-         function Check_Call (N : Node_Id) return Traverse_Result is
-            Nam        : Node_Id;
-            Subp       : Entity_Id;
-            Return_Typ : Entity_Id;
-
-         begin
-            if Nkind (N) = N_Function_Call then
-               Nam := Name (N);
-
-               --  Call using access to subprogram with explicit dereference
-
-               if Nkind (Nam) = N_Explicit_Dereference then
-                  Subp := Etype (Nam);
-
-               --  Call using a selected component notation or Ada 2005 object
-               --  operation notation
-
-               elsif Nkind (Nam) = N_Selected_Component then
-                  Subp := Entity (Selector_Name (Nam));
-
-               --  Common case
-
-               else
-                  Subp := Entity (Nam);
-               end if;
-
-               Return_Typ := Etype (Subp);
-
-               if Is_Composite_Type (Return_Typ)
-                 and then not Is_Constrained (Return_Typ)
-               then
-                  return Abandon;
-
-               elsif Sec_Stack_Needed_For_Return (Subp) then
-                  return Abandon;
-               end if;
-            end if;
-
-            --  Continue traversing the tree
-
-            return OK;
-         end Check_Call;
-
-         function Check_Calls is new Traverse_Func (Check_Call);
-
-      --  Start of processing for Has_Call_Using_Secondary_Stack
-
-      begin
-         return Check_Calls (N) = Abandon;
-      end Has_Call_Using_Secondary_Stack;
-
-   --  Start of processing for Analyze_Iteration_Scheme
+      Cond      : Node_Id;
+      Iter_Spec : Node_Id;
+      Loop_Spec : Node_Id;
 
    begin
-      --  If this is a rewritten quantified expression, the iteration scheme
-      --  has been analyzed already. Do no repeat analysis because the loop
-      --  variable is already declared.
-
-      if Analyzed (N) then
-         return;
-      end if;
-
       --  For an infinite loop, there is no iteration scheme
 
       if No (N) then
          return;
       end if;
 
-      --  Iteration scheme is present
-
-      declare
-         Cond : constant Node_Id := Condition (N);
-
-      begin
-         --  For WHILE loop, verify that the condition is a Boolean expression
-         --  and resolve and check it.
-
-         if Present (Cond) then
-            Analyze_And_Resolve (Cond, Any_Boolean);
-            Check_Unset_Reference (Cond);
-            Set_Current_Value_Condition (N);
-            return;
-
-         --  For an iterator specification with "of", pre-analyze range to
-         --  capture function calls that may require finalization actions.
-
-         elsif Present (Iterator_Specification (N)) then
-            Pre_Analyze_Range (Name (Iterator_Specification (N)));
-            Analyze_Iterator_Specification (Iterator_Specification (N));
-
-         --  Else we have a FOR loop
-
-         else
-            declare
-               LP : constant Node_Id   := Loop_Parameter_Specification (N);
-               Id : constant Entity_Id := Defining_Identifier (LP);
-               DS : constant Node_Id   := Discrete_Subtype_Definition (LP);
-
-               D_Copy : Node_Id;
-
-            begin
-               Enter_Name (Id);
-
-               --  We always consider the loop variable to be referenced, since
-               --  the loop may be used just for counting purposes.
-
-               Generate_Reference (Id, N, ' ');
-
-               --  Check for the case of loop variable hiding a local variable
-               --  (used later on to give a nice warning if the hidden variable
-               --  is never assigned).
-
-               declare
-                  H : constant Entity_Id := Homonym (Id);
-               begin
-                  if Present (H)
-                    and then Enclosing_Dynamic_Scope (H) =
-                               Enclosing_Dynamic_Scope (Id)
-                    and then Ekind (H) = E_Variable
-                    and then Is_Discrete_Type (Etype (H))
-                  then
-                     Set_Hiding_Loop_Variable (H, Id);
-                  end if;
-               end;
-
-               --  Loop parameter specification must include subtype mark in
-               --  SPARK.
-
-               if Nkind (DS) = N_Range then
-                  Check_SPARK_Restriction
-                    ("loop parameter specification must include subtype mark",
-                     N);
-               end if;
-
-               --  Analyze the subtype definition and create temporaries for
-               --  the bounds. Do not evaluate the range when preanalyzing a
-               --  quantified expression because bounds expressed as function
-               --  calls with side effects will be erroneously replicated.
-
-               if Nkind (DS) = N_Range
-                 and then Expander_Active
-                 and then Nkind (Parent (N)) /= N_Quantified_Expression
-               then
-                  Process_Bounds (DS);
-
-               --  Expander not active or else range of iteration is a subtype
-               --  indication, an entity, or a function call that yields an
-               --  aggregate or a container.
-
-               else
-                  D_Copy := New_Copy_Tree (DS);
-                  Set_Parent (D_Copy, Parent (DS));
-                  Pre_Analyze_Range (D_Copy);
-
-                  --  Ada 2012: If the domain of iteration is a function call,
-                  --  it is the new iterator form.
-
-                  --  We have also implemented the shorter form : for X in S
-                  --  for Alfa use. In this case, 'Old and 'Result must be
-                  --  treated as entity names over which iterators are legal.
-
-                  if Nkind (D_Copy) = N_Function_Call
-                    or else
-                      (Alfa_Mode
-                        and then (Nkind (D_Copy) = N_Attribute_Reference
-                        and then
-                          (Attribute_Name (D_Copy) = Name_Result
-                            or else Attribute_Name (D_Copy) = Name_Old)))
-                    or else
-                      (Is_Entity_Name (D_Copy)
-                        and then not Is_Type (Entity (D_Copy)))
-                  then
-                     --  This is an iterator specification. Rewrite as such
-                     --  and analyze, to capture function calls that may
-                     --  require finalization actions.
-
-                     declare
-                        I_Spec : constant Node_Id :=
-                                   Make_Iterator_Specification (Sloc (LP),
-                                     Defining_Identifier =>
-                                       Relocate_Node (Id),
-                                     Name                => D_Copy,
-                                     Subtype_Indication  => Empty,
-                                     Reverse_Present     =>
-                                       Reverse_Present (LP));
-                     begin
-                        Set_Iterator_Specification (N, I_Spec);
-                        Set_Loop_Parameter_Specification (N, Empty);
-                        Analyze_Iterator_Specification (I_Spec);
-
-                        --  In a generic context, analyze the original domain
-                        --  of iteration, for name capture.
-
-                        if not Expander_Active then
-                           Analyze (DS);
-                        end if;
-
-                        --  Set kind of loop parameter, which may be used in
-                        --  the subsequent analysis of the condition in a
-                        --  quantified expression.
-
-                        Set_Ekind (Id, E_Loop_Parameter);
-                        return;
-                     end;
-
-                  --  Domain of iteration is not a function call, and is
-                  --  side-effect free.
-
-                  else
-                     Analyze (DS);
-                  end if;
-               end if;
-
-               if DS = Error then
-                  return;
-               end if;
-
-               --  Some additional checks if we are iterating through a type
-
-               if Is_Entity_Name (DS)
-                 and then Present (Entity (DS))
-                 and then Is_Type (Entity (DS))
-               then
-                  --  The subtype indication may denote the completion of an
-                  --  incomplete type declaration.
-
-                  if Ekind (Entity (DS)) = E_Incomplete_Type then
-                     Set_Entity (DS, Get_Full_View (Entity (DS)));
-                     Set_Etype  (DS, Entity (DS));
-                  end if;
-
-                  --  Attempt to iterate through non-static predicate
-
-                  if Is_Discrete_Type (Entity (DS))
-                    and then Present (Predicate_Function (Entity (DS)))
-                    and then No (Static_Predicate (Entity (DS)))
-                  then
-                     Bad_Predicated_Subtype_Use
-                       ("cannot use subtype& with non-static "
-                        & "predicate for loop iteration", DS, Entity (DS));
-                  end if;
-               end if;
-
-               --  Error if not discrete type
-
-               if not Is_Discrete_Type (Etype (DS)) then
-                  Wrong_Type (DS, Any_Discrete);
-                  Set_Etype (DS, Any_Type);
-               end if;
-
-               Check_Controlled_Array_Attribute (DS);
-
-               --  The index is not processed during analysis of a quantified
-               --  expression but delayed to its expansion where the quantified
-               --  expression is transformed into an expression with actions.
-
-               if Nkind (Parent (N)) /= N_Quantified_Expression
-                 or else Operating_Mode = Check_Semantics
-                 or else Alfa_Mode
-               then
-                  Make_Index (DS, LP, In_Iter_Schm => True);
-               end if;
-
-               Set_Ekind (Id, E_Loop_Parameter);
-
-               --  If the loop is part of a predicate or precondition, it may
-               --  be analyzed twice, once in the source and once on the copy
-               --  used to check conformance. Preserve the original itype
-               --  because the second one may be created in a different scope,
-               --  e.g. a precondition procedure, leading to a crash in GIGI.
-
-               if No (Etype (Id)) or else Etype (Id) = Any_Type then
-                  Set_Etype (Id, Etype (DS));
-               end if;
-
-               --  Treat a range as an implicit reference to the type, to
-               --  inhibit spurious warnings.
-
-               Generate_Reference (Base_Type (Etype (DS)), N, ' ');
-               Set_Is_Known_Valid (Id, True);
-
-               --  The loop is not a declarative part, so the only entity
-               --  declared "within" must be frozen explicitly.
-
-               declare
-                  Flist : constant List_Id := Freeze_Entity (Id, N);
-               begin
-                  if Is_Non_Empty_List (Flist) then
-                     Insert_Actions (N, Flist);
-                  end if;
-               end;
-
-               --  Check for null or possibly null range and issue warning. We
-               --  suppress such messages in generic templates and instances,
-               --  because in practice they tend to be dubious in these cases.
-
-               if Nkind (DS) = N_Range and then Comes_From_Source (N) then
-                  declare
-                     L : constant Node_Id := Low_Bound  (DS);
-                     H : constant Node_Id := High_Bound (DS);
-
-                  begin
-                     --  If range of loop is null, issue warning
-
-                     if Compile_Time_Compare
-                          (L, H, Assume_Valid => True) = GT
-                     then
-                        --  Suppress the warning if inside a generic template
-                        --  or instance, since in practice they tend to be
-                        --  dubious in these cases since they can result from
-                        --  intended parametrization.
-
-                        if not Inside_A_Generic
-                          and then not In_Instance
-                        then
-                           --  Specialize msg if invalid values could make the
-                           --  loop non-null after all.
-
-                           if Compile_Time_Compare
-                                (L, H, Assume_Valid => False) = GT
-                           then
-                              Error_Msg_N
-                                ("?loop range is null, loop will not execute",
-                                 DS);
-
-                              --  Since we know the range of the loop is null,
-                              --  set the appropriate flag to remove the loop
-                              --  entirely during expansion.
-
-                              Set_Is_Null_Loop (Parent (N));
-
-                              --  Here is where the loop could execute because
-                              --  of invalid values, so issue appropriate
-                              --  message and in this case we do not set the
-                              --  Is_Null_Loop flag since the loop may execute.
-
-                           else
-                              Error_Msg_N
-                                ("?loop range may be null, "
-                                 & "loop may not execute",
-                                 DS);
-                              Error_Msg_N
-                                ("?can only execute if invalid values "
-                                 & "are present",
-                                 DS);
-                           end if;
-                        end if;
-
-                        --  In either case, suppress warnings in the body of
-                        --  the loop, since it is likely that these warnings
-                        --  will be inappropriate if the loop never actually
-                        --  executes, which is likely.
-
-                        Set_Suppress_Loop_Warnings (Parent (N));
-
-                        --  The other case for a warning is a reverse loop
-                        --  where the upper bound is the integer literal zero
-                        --  or one, and the lower bound can be positive.
-
-                        --  For example, we have
-
-                        --     for J in reverse N .. 1 loop
-
-                        --  In practice, this is very likely to be a case of
-                        --  reversing the bounds incorrectly in the range.
-
-                     elsif Reverse_Present (LP)
-                       and then Nkind (Original_Node (H)) =
-                                                      N_Integer_Literal
-                       and then (Intval (Original_Node (H)) = Uint_0
-                                  or else
-                                    Intval (Original_Node (H)) = Uint_1)
-                     then
-                        Error_Msg_N ("?loop range may be null", DS);
-                        Error_Msg_N ("\?bounds may be wrong way round", DS);
-                     end if;
-                  end;
-               end if;
-            end;
-         end if;
-      end;
+      Cond      := Condition (N);
+      Iter_Spec := Iterator_Specification (N);
+      Loop_Spec := Loop_Parameter_Specification (N);
+
+      if Present (Cond) then
+         Analyze_And_Resolve (Cond, Any_Boolean);
+         Check_Unset_Reference (Cond);
+         Set_Current_Value_Condition (N);
+
+      elsif Present (Iter_Spec) then
+         Analyze_Iterator_Specification (Iter_Spec);
+
+      else
+         Analyze_Loop_Parameter_Specification (Loop_Spec);
+      end if;
    end Analyze_Iteration_Scheme;
 
    ------------------------------------
@@ -2236,22 +1650,22 @@ package body Sem_Ch5 is
 
    begin
       Enter_Name (Def_Id);
-
       Set_Ekind (Def_Id, E_Variable);
 
       if Present (Subt) then
          Analyze (Subt);
       end if;
 
-      --  If domain of iteration is an expression, create a declaration for
+      Preanalyze_Range (Iter_Name);
+
+      --  If the domain of iteration is an expression, create a declaration for
       --  it, so that finalization actions are introduced outside of the loop.
       --  The declaration must be a renaming because the body of the loop may
-      --  assign to elements. In case of a quantified expression, this
-      --  declaration is delayed to its expansion where the node is rewritten
-      --  as an expression with actions.
+      --  assign to elements. When the context is a quantified expression, the
+      --  renaming declaration is delayed until the expansion phase.
 
       if not Is_Entity_Name (Iter_Name)
-        and then (Nkind (Parent (Parent (N))) /= N_Quantified_Expression
+        and then (Nkind (Parent (N)) /= N_Quantified_Expression
                    or else Operating_Mode = Check_Semantics
                    or else Alfa_Mode)
       then
@@ -2445,6 +1859,571 @@ package body Sem_Ch5 is
       Set_Reachable       (E, True);
    end Analyze_Label_Entity;
 
+   ------------------------------------------
+   -- Analyze_Loop_Parameter_Specification --
+   ------------------------------------------
+
+   procedure Analyze_Loop_Parameter_Specification (N : Node_Id) is
+      Loop_Nod : constant Node_Id := Parent (Parent (N));
+
+      procedure Check_Controlled_Array_Attribute (DS : Node_Id);
+      --  If the bounds are given by a 'Range reference on a function call
+      --  that returns a controlled array, introduce an explicit declaration
+      --  to capture the bounds, so that the function result can be finalized
+      --  in timely fashion.
+
+      function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean;
+      --  N is the node for an arbitrary construct. This function searches the
+      --  construct N to see if any expressions within it contain function
+      --  calls that use the secondary stack, returning True if any such call
+      --  is found, and False otherwise.
+
+      procedure Process_Bounds (R : Node_Id);
+      --  If the iteration is given by a range, create temporaries and
+      --  assignment statements block to capture the bounds and perform
+      --  required finalization actions in case a bound includes a function
+      --  call that uses the temporary stack. We first pre-analyze a copy of
+      --  the range in order to determine the expected type, and analyze and
+      --  resolve the original bounds.
+
+      --------------------------------------
+      -- Check_Controlled_Array_Attribute --
+      --------------------------------------
+
+      procedure Check_Controlled_Array_Attribute (DS : Node_Id) is
+      begin
+         if Nkind (DS) = N_Attribute_Reference
+           and then Is_Entity_Name (Prefix (DS))
+           and then Ekind (Entity (Prefix (DS))) = E_Function
+           and then Is_Array_Type (Etype (Entity (Prefix (DS))))
+           and then
+             Is_Controlled (Component_Type (Etype (Entity (Prefix (DS)))))
+           and then Expander_Active
+         then
+            declare
+               Loc  : constant Source_Ptr := Sloc (N);
+               Arr  : constant Entity_Id := Etype (Entity (Prefix (DS)));
+               Indx : constant Entity_Id :=
+                        Base_Type (Etype (First_Index (Arr)));
+               Subt : constant Entity_Id := Make_Temporary (Loc, 'S');
+               Decl : Node_Id;
+
+            begin
+               Decl :=
+                 Make_Subtype_Declaration (Loc,
+                   Defining_Identifier => Subt,
+                   Subtype_Indication  =>
+                      Make_Subtype_Indication (Loc,
+                        Subtype_Mark => New_Reference_To (Indx, Loc),
+                        Constraint   =>
+                          Make_Range_Constraint (Loc, Relocate_Node (DS))));
+               Insert_Before (Loop_Nod, Decl);
+               Analyze (Decl);
+
+               Rewrite (DS,
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Reference_To (Subt, Loc),
+                   Attribute_Name => Attribute_Name (DS)));
+
+               Analyze (DS);
+            end;
+         end if;
+      end Check_Controlled_Array_Attribute;
+
+      ------------------------------------
+      -- Has_Call_Using_Secondary_Stack --
+      ------------------------------------
+
+      function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean is
+
+         function Check_Call (N : Node_Id) return Traverse_Result;
+         --  Check if N is a function call which uses the secondary stack
+
+         ----------------
+         -- Check_Call --
+         ----------------
+
+         function Check_Call (N : Node_Id) return Traverse_Result is
+            Nam        : Node_Id;
+            Subp       : Entity_Id;
+            Return_Typ : Entity_Id;
+
+         begin
+            if Nkind (N) = N_Function_Call then
+               Nam := Name (N);
+
+               --  Call using access to subprogram with explicit dereference
+
+               if Nkind (Nam) = N_Explicit_Dereference then
+                  Subp := Etype (Nam);
+
+               --  Call using a selected component notation or Ada 2005 object
+               --  operation notation
+
+               elsif Nkind (Nam) = N_Selected_Component then
+                  Subp := Entity (Selector_Name (Nam));
+
+               --  Common case
+
+               else
+                  Subp := Entity (Nam);
+               end if;
+
+               Return_Typ := Etype (Subp);
+
+               if Is_Composite_Type (Return_Typ)
+                 and then not Is_Constrained (Return_Typ)
+               then
+                  return Abandon;
+
+               elsif Sec_Stack_Needed_For_Return (Subp) then
+                  return Abandon;
+               end if;
+            end if;
+
+            --  Continue traversing the tree
+
+            return OK;
+         end Check_Call;
+
+         function Check_Calls is new Traverse_Func (Check_Call);
+
+      --  Start of processing for Has_Call_Using_Secondary_Stack
+
+      begin
+         return Check_Calls (N) = Abandon;
+      end Has_Call_Using_Secondary_Stack;
+
+      --------------------
+      -- Process_Bounds --
+      --------------------
+
+      procedure Process_Bounds (R : Node_Id) is
+         Loc : constant Source_Ptr := Sloc (N);
+
+         function One_Bound
+           (Original_Bound : Node_Id;
+            Analyzed_Bound : Node_Id;
+            Typ            : Entity_Id) return Node_Id;
+         --  Capture value of bound and return captured value
+
+         ---------------
+         -- One_Bound --
+         ---------------
+
+         function One_Bound
+           (Original_Bound : Node_Id;
+            Analyzed_Bound : Node_Id;
+            Typ            : Entity_Id) return Node_Id
+         is
+            Assign : Node_Id;
+            Decl   : Node_Id;
+            Id     : Entity_Id;
+
+         begin
+            --  If the bound is a constant or an object, no need for a separate
+            --  declaration. If the bound is the result of previous expansion
+            --  it is already analyzed and should not be modified. Note that
+            --  the Bound will be resolved later, if needed, as part of the
+            --  call to Make_Index (literal bounds may need to be resolved to
+            --  type Integer).
+
+            if Analyzed (Original_Bound) then
+               return Original_Bound;
+
+            elsif Nkind_In (Analyzed_Bound, N_Integer_Literal,
+                                            N_Character_Literal)
+              or else Is_Entity_Name (Analyzed_Bound)
+            then
+               Analyze_And_Resolve (Original_Bound, Typ);
+               return Original_Bound;
+            end if;
+
+            --  Normally, the best approach is simply to generate a constant
+            --  declaration that captures the bound. However, there is a nasty
+            --  case where this is wrong. If the bound is complex, and has a
+            --  possible use of the secondary stack, we need to generate a
+            --  separate assignment statement to ensure the creation of a block
+            --  which will release the secondary stack.
+
+            --  We prefer the constant declaration, since it leaves us with a
+            --  proper trace of the value, useful in optimizations that get rid
+            --  of junk range checks.
+
+            if not Has_Call_Using_Secondary_Stack (Analyzed_Bound) then
+               Analyze_And_Resolve (Original_Bound, Typ);
+               Force_Evaluation (Original_Bound);
+               return Original_Bound;
+            end if;
+
+            Id := Make_Temporary (Loc, 'R', Original_Bound);
+
+            --  Here we make a declaration with a separate assignment
+            --  statement, and insert before loop header.
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Id,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc));
+
+            Assign :=
+              Make_Assignment_Statement (Loc,
+                Name        => New_Occurrence_Of (Id, Loc),
+                Expression  => Relocate_Node (Original_Bound));
+
+            Insert_Actions (Loop_Nod, New_List (Decl, Assign));
+
+            --  Now that this temporary variable is initialized we decorate it
+            --  as safe-to-reevaluate to inform to the backend that no further
+            --  asignment will be issued and hence it can be handled as side
+            --  effect free. Note that this decoration must be done when the
+            --  assignment has been analyzed because otherwise it will be
+            --  rejected (see Analyze_Assignment).
+
+            Set_Is_Safe_To_Reevaluate (Id);
+
+            Rewrite (Original_Bound, New_Occurrence_Of (Id, Loc));
+
+            if Nkind (Assign) = N_Assignment_Statement then
+               return Expression (Assign);
+            else
+               return Original_Bound;
+            end if;
+         end One_Bound;
+
+         Hi     : constant Node_Id := High_Bound (R);
+         Lo     : constant Node_Id := Low_Bound  (R);
+         R_Copy : constant Node_Id := New_Copy_Tree (R);
+         New_Hi : Node_Id;
+         New_Lo : Node_Id;
+         Typ    : Entity_Id;
+
+      --  Start of processing for Process_Bounds
+
+      begin
+         Set_Parent (R_Copy, Parent (R));
+         Preanalyze_Range (R_Copy);
+         Typ := Etype (R_Copy);
+
+         --  If the type of the discrete range is Universal_Integer, then the
+         --  bound's type must be resolved to Integer, and any object used to
+         --  hold the bound must also have type Integer, unless the literal
+         --  bounds are constant-folded expressions with a user-defined type.
+
+         if Typ = Universal_Integer then
+            if Nkind (Lo) = N_Integer_Literal
+              and then Present (Etype (Lo))
+              and then Scope (Etype (Lo)) /= Standard_Standard
+            then
+               Typ := Etype (Lo);
+
+            elsif Nkind (Hi) = N_Integer_Literal
+              and then Present (Etype (Hi))
+              and then Scope (Etype (Hi)) /= Standard_Standard
+            then
+               Typ := Etype (Hi);
+
+            else
+               Typ := Standard_Integer;
+            end if;
+         end if;
+
+         Set_Etype (R, Typ);
+
+         New_Lo := One_Bound (Lo, Low_Bound  (R_Copy), Typ);
+         New_Hi := One_Bound (Hi, High_Bound (R_Copy), Typ);
+
+         --  Propagate staticness to loop range itself, in case the
+         --  corresponding subtype is static.
+
+         if New_Lo /= Lo
+           and then Is_Static_Expression (New_Lo)
+         then
+            Rewrite (Low_Bound (R), New_Copy (New_Lo));
+         end if;
+
+         if New_Hi /= Hi
+           and then Is_Static_Expression (New_Hi)
+         then
+            Rewrite (High_Bound (R), New_Copy (New_Hi));
+         end if;
+      end Process_Bounds;
+
+      --  Local variables
+
+      DS : constant Node_Id   := Discrete_Subtype_Definition (N);
+      Id : constant Entity_Id := Defining_Identifier (N);
+
+      DS_Copy : Node_Id;
+
+   --  Start of processing for Analyze_Loop_Parameter_Specification
+
+   begin
+      Enter_Name (Id);
+
+      --  We always consider the loop variable to be referenced, since the loop
+      --  may be used just for counting purposes.
+
+      Generate_Reference (Id, N, ' ');
+
+      --  Check for the case of loop variable hiding a local variable (used
+      --  later on to give a nice warning if the hidden variable is never
+      --  assigned).
+
+      declare
+         H : constant Entity_Id := Homonym (Id);
+      begin
+         if Present (H)
+           and then Ekind (H) = E_Variable
+           and then Is_Discrete_Type (Etype (H))
+           and then Enclosing_Dynamic_Scope (H) = Enclosing_Dynamic_Scope (Id)
+         then
+            Set_Hiding_Loop_Variable (H, Id);
+         end if;
+      end;
+
+      --  Loop parameter specification must include subtype mark in SPARK
+
+      if Nkind (DS) = N_Range then
+         Check_SPARK_Restriction
+           ("loop parameter specification must include subtype mark", N);
+      end if;
+
+      --  Analyze the subtype definition and create temporaries for the bounds.
+      --  Do not evaluate the range when preanalyzing a quantified expression
+      --  because bounds expressed as function calls with side effects will be
+      --  erroneously replicated.
+
+      if Nkind (DS) = N_Range
+        and then Expander_Active
+        and then Nkind (Parent (N)) /= N_Quantified_Expression
+      then
+         Process_Bounds (DS);
+
+      --  Either the expander not active or the range of iteration is a subtype
+      --  indication, an entity, or a function call that yields an aggregate or
+      --  a container.
+
+      else
+         DS_Copy := New_Copy_Tree (DS);
+         Set_Parent (DS_Copy, Parent (DS));
+         Preanalyze_Range (DS_Copy);
+
+         --  Ada 2012: If the domain of iteration is a function call, it is the
+         --  new iterator form.
+
+         --  We have also implemented the shorter form : for X in S for Alfa
+         --  use. In this case, 'Old and 'Result must be treated as entity
+         --  names over which iterators are legal.
+
+         if Nkind (DS_Copy) = N_Function_Call
+           or else
+             (Alfa_Mode
+               and then (Nkind (DS_Copy) = N_Attribute_Reference
+               and then
+                 (Attribute_Name (DS_Copy) = Name_Result
+                   or else Attribute_Name (DS_Copy) = Name_Old)))
+           or else
+             (Is_Entity_Name (DS_Copy)
+               and then not Is_Type (Entity (DS_Copy)))
+         then
+            --  This is an iterator specification. Rewrite it as such and
+            --  analyze it to capture function calls that may require
+            --  finalization actions.
+
+            declare
+               I_Spec : constant Node_Id :=
+                          Make_Iterator_Specification (Sloc (N),
+                            Defining_Identifier => Relocate_Node (Id),
+                            Name                => DS_Copy,
+                            Subtype_Indication  => Empty,
+                            Reverse_Present     => Reverse_Present (N));
+               Scheme : constant Node_Id := Parent (N);
+
+            begin
+               Set_Iterator_Specification (Scheme, I_Spec);
+               Set_Loop_Parameter_Specification (Scheme, Empty);
+               Analyze_Iterator_Specification (I_Spec);
+
+               --  In a generic context, analyze the original domain of
+               --  iteration, for name capture.
+
+               if not Expander_Active then
+                  Analyze (DS);
+               end if;
+
+               --  Set kind of loop parameter, which may be used in the
+               --  subsequent analysis of the condition in a quantified
+               --  expression.
+
+               Set_Ekind (Id, E_Loop_Parameter);
+               return;
+            end;
+
+         --  Domain of iteration is not a function call, and is side-effect
+         --  free.
+
+         else
+            Analyze (DS);
+         end if;
+      end if;
+
+      if DS = Error then
+         return;
+      end if;
+
+      --  Some additional checks if we are iterating through a type
+
+      if Is_Entity_Name (DS)
+        and then Present (Entity (DS))
+        and then Is_Type (Entity (DS))
+      then
+         --  The subtype indication may denote the completion of an incomplete
+         --  type declaration.
+
+         if Ekind (Entity (DS)) = E_Incomplete_Type then
+            Set_Entity (DS, Get_Full_View (Entity (DS)));
+            Set_Etype  (DS, Entity (DS));
+         end if;
+
+         --  Attempt to iterate through non-static predicate
+
+         if Is_Discrete_Type (Entity (DS))
+           and then Present (Predicate_Function (Entity (DS)))
+           and then No (Static_Predicate (Entity (DS)))
+         then
+            Bad_Predicated_Subtype_Use
+              ("cannot use subtype& with non-static predicate for loop " &
+               "iteration", DS, Entity (DS));
+         end if;
+      end if;
+
+      --  Error if not discrete type
+
+      if not Is_Discrete_Type (Etype (DS)) then
+         Wrong_Type (DS, Any_Discrete);
+         Set_Etype (DS, Any_Type);
+      end if;
+
+      Check_Controlled_Array_Attribute (DS);
+
+      Make_Index (DS, N, In_Iter_Schm => True);
+      Set_Ekind (Id, E_Loop_Parameter);
+
+      --  A quantified expression which appears in a pre- or post-condition may
+      --  be analyzed multiple times. The analysis of the range creates several
+      --  itypes which reside in different scopes depending on whether the pre-
+      --  or post-condition has been expanded. Update the type of the loop
+      --  variable to reflect the proper itype at each stage of analysis.
+
+      if No (Etype (Id))
+        or else Etype (Id) = Any_Type
+        or else
+          (Present (Etype (Id))
+             and then Is_Itype (Etype (Id))
+             and then Nkind (Parent (Loop_Nod)) = N_Expression_With_Actions
+             and then Nkind (Original_Node (Parent (Loop_Nod))) =
+                        N_Quantified_Expression)
+      then
+         Set_Etype (Id, Etype (DS));
+      end if;
+
+      --  Treat a range as an implicit reference to the type, to inhibit
+      --  spurious warnings.
+
+      Generate_Reference (Base_Type (Etype (DS)), N, ' ');
+      Set_Is_Known_Valid (Id, True);
+
+      --  The loop is not a declarative part, so the only entity declared
+      --  "within" must be frozen explicitly.
+
+      declare
+         Flist : constant List_Id := Freeze_Entity (Id, N);
+      begin
+         if Is_Non_Empty_List (Flist) then
+            Insert_Actions (N, Flist);
+         end if;
+      end;
+
+      --  Check for null or possibly null range and issue warning. We suppress
+      --  such messages in generic templates and instances, because in practice
+      --  they tend to be dubious in these cases.
+
+      if Nkind (DS) = N_Range and then Comes_From_Source (N) then
+         declare
+            L : constant Node_Id := Low_Bound  (DS);
+            H : constant Node_Id := High_Bound (DS);
+
+         begin
+            --  If range of loop is null, issue warning
+
+            if Compile_Time_Compare (L, H, Assume_Valid => True) = GT then
+
+               --  Suppress the warning if inside a generic template or
+               --  instance, since in practice they tend to be dubious in these
+               --  cases since they can result from intended parametrization.
+
+               if not Inside_A_Generic
+                 and then not In_Instance
+               then
+                  --  Specialize msg if invalid values could make the loop
+                  --  non-null after all.
+
+                  if Compile_Time_Compare
+                       (L, H, Assume_Valid => False) = GT
+                  then
+                     Error_Msg_N
+                       ("?loop range is null, loop will not execute", DS);
+
+                     --  Since we know the range of the loop is null, set the
+                     --  appropriate flag to remove the loop entirely during
+                     --  expansion.
+
+                     Set_Is_Null_Loop (Loop_Nod);
+
+                  --  Here is where the loop could execute because of invalid
+                  --  values, so issue appropriate message and in this case we
+                  --  do not set the Is_Null_Loop flag since the loop may
+                  --  execute.
+
+                  else
+                     Error_Msg_N
+                       ("?loop range may be null, loop may not execute", DS);
+                     Error_Msg_N
+                       ("?can only execute if invalid values are present", DS);
+                  end if;
+               end if;
+
+               --  In either case, suppress warnings in the body of the loop,
+               --  since it is likely that these warnings will be inappropriate
+               --  if the loop never actually executes, which is likely.
+
+               Set_Suppress_Loop_Warnings (Loop_Nod);
+
+               --  The other case for a warning is a reverse loop where the
+               --  upper bound is the integer literal zero or one, and the
+               --  lower bound can be positive.
+
+               --  For example, we have
+
+               --     for J in reverse N .. 1 loop
+
+               --  In practice, this is very likely to be a case of reversing
+               --  the bounds incorrectly in the range.
+
+            elsif Reverse_Present (N)
+              and then Nkind (Original_Node (H)) = N_Integer_Literal
+              and then
+                (Intval (Original_Node (H)) = Uint_0
+                  or else Intval (Original_Node (H)) = Uint_1)
+            then
+               Error_Msg_N ("?loop range may be null", DS);
+               Error_Msg_N ("\?bounds may be wrong way round", DS);
+            end if;
+         end;
+      end if;
+   end Analyze_Loop_Parameter_Specification;
+
    ----------------------------
    -- Analyze_Loop_Statement --
    ----------------------------
@@ -2485,7 +2464,7 @@ package body Sem_Ch5 is
             begin
                Nam_Copy := New_Copy_Tree (Nam);
                Set_Parent (Nam_Copy, Parent (Nam));
-               Pre_Analyze_Range (Nam_Copy);
+               Preanalyze_Range (Nam_Copy);
 
                --  The only two options here are iteration over a container or
                --  an array.
@@ -2504,7 +2483,7 @@ package body Sem_Ch5 is
             begin
                DS_Copy := New_Copy_Tree (DS);
                Set_Parent (DS_Copy, Parent (DS));
-               Pre_Analyze_Range (DS_Copy);
+               Preanalyze_Range (DS_Copy);
 
                --  Check for a call to Iterate ()
 
@@ -2910,11 +2889,11 @@ package body Sem_Ch5 is
       end if;
    end Check_Unreachable_Code;
 
-   -----------------------
-   -- Pre_Analyze_Range --
-   -----------------------
+   ----------------------
+   -- Preanalyze_Range --
+   ----------------------
 
-   procedure Pre_Analyze_Range (R_Copy : Node_Id) is
+   procedure Preanalyze_Range (R_Copy : Node_Id) is
       Save_Analysis : constant Boolean := Full_Analysis;
 
    begin
@@ -2980,6 +2959,6 @@ package body Sem_Ch5 is
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Analysis;
-   end Pre_Analyze_Range;
+   end Preanalyze_Range;
 
 end Sem_Ch5;

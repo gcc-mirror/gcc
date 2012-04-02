@@ -740,11 +740,27 @@ package body Sem_Util is
       N : Node_Id) return Entity_Id
    is
       Loc  : constant Source_Ptr := Sloc (N);
+      Bas  : Entity_Id;
+      --  The base type that is to be constrained by the defaults.
+
       Disc : Entity_Id;
 
    begin
       if not Has_Discriminants (T) or else Is_Constrained (T) then
          return T;
+      end if;
+      Bas := Base_Type (T);
+
+      --  If T is non-private but its base type is private, this is
+      --  the completion of a subtype declaration whose parent type
+      --  is private (see Complete_Private_Subtype in sem_ch3). The
+      --  proper discriminants are to be found in the full view of
+      --  the base.
+
+      if Is_Private_Type (Bas)
+        and then Present (Full_View (Bas))
+      then
+         Bas := Full_View (Bas);
       end if;
 
       Disc := First_Discriminant (T);
@@ -770,7 +786,7 @@ package body Sem_Util is
              Defining_Identifier => Act,
              Subtype_Indication =>
                Make_Subtype_Indication (Loc,
-                 Subtype_Mark => New_Occurrence_Of (T, Loc),
+                 Subtype_Mark => New_Occurrence_Of (Bas, Loc),
                  Constraint =>
                    Make_Index_Or_Discriminant_Constraint (Loc,
                      Constraints => Constraints)));

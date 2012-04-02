@@ -314,6 +314,9 @@ package body Sem is
          when N_Label =>
             Analyze_Label (N);
 
+         when N_Loop_Parameter_Specification =>
+            Analyze_Loop_Parameter_Specification (N);
+
          when N_Loop_Statement =>
             Analyze_Loop_Statement (N);
 
@@ -681,7 +684,6 @@ package body Sem is
            N_Generic_Association                    |
            N_Index_Or_Discriminant_Constraint       |
            N_Iteration_Scheme                       |
-           N_Loop_Parameter_Specification           |
            N_Mod_Clause                             |
            N_Modular_Type_Definition                |
            N_Ordinary_Fixed_Point_Definition        |
