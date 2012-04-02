@@ -99,7 +99,7 @@ Texts.  A copy of the license is included in the section entitled
 
 @ifset vms
 @set PLATFORM OpenVMS
-@set TITLESUFFIX for @value{PLATFORM}
+@set TITLESUFFIX for OpenVMS
 @end ifset
 
 @c @ovar(ARG)
