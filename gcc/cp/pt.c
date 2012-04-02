@@ -17132,46 +17132,6 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 	  quals2 = cp_type_quals (arg2);
 	}
 
-      if ((quals1 < 0) != (quals2 < 0))
-	{
-	  /* Only of the args is a reference, see if we should apply
-	     array/function pointer decay to it.  This is not part of
-	     DR214, but is, IMHO, consistent with the deduction rules
-	     for the function call itself, and with our earlier
-	     implementation of the underspecified partial ordering
-	     rules.  (nathan).  */
-	  if (quals1 >= 0)
-	    {
-	      switch (TREE_CODE (arg1))
-		{
-		case ARRAY_TYPE:
-		  arg1 = TREE_TYPE (arg1);
-		  /* FALLTHROUGH. */
-		case FUNCTION_TYPE:
-		  arg1 = build_pointer_type (arg1);
-		  break;
-
-		default:
-		  break;
-		}
-	    }
-	  else
-	    {
-	      switch (TREE_CODE (arg2))
-		{
-		case ARRAY_TYPE:
-		  arg2 = TREE_TYPE (arg2);
-		  /* FALLTHROUGH. */
-		case FUNCTION_TYPE:
-		  arg2 = build_pointer_type (arg2);
-		  break;
-
-		default:
-		  break;
-		}
-	    }
-	}
-
       arg1 = TYPE_MAIN_VARIANT (arg1);
       arg2 = TYPE_MAIN_VARIANT (arg2);
 
