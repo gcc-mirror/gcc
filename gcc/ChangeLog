@@ -1,5 +1,13 @@
 2012-04-02  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/52756
+	* tree-ssa-threadupdate.c (def_split_header_continue_p): New function.
+	(thread_through_loop_header): After threading through the loop latch
+	remove the split part from the loop and clear further threading
+	opportunities that would create a multiple entry loop.
+
+2012-04-02  Richard Guenther  <rguenther@suse.de>
+
 	PR rtl-optimization/52800
 	* cprop.c (execute_rtl_cprop): Call cleanup_cfg with
 	CLEANUP_CFG_CHANGED.

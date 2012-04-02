@@ -826,6 +826,17 @@ determine_bb_domination_status (struct loop *loop, basic_block bb)
   return (bb_reachable ? DOMST_DOMINATING : DOMST_LOOP_BROKEN);
 }
 
+/* Return true if BB is part of the new pre-header that is created
+   when threading the latch to DATA.  */
+
+static bool
+def_split_header_continue_p (const_basic_block bb, const void *data)
+{
+  const_basic_block new_header = (const_basic_block) data;
+  return (bb->loop_father == new_header->loop_father
+	  && bb != new_header);
+}
+
 /* Thread jumps through the header of LOOP.  Returns true if cfg changes.
    If MAY_PEEL_LOOP_HEADERS is false, we avoid threading from entry edges
    to the inside of the loop.  */
@@ -990,10 +1001,45 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
 
   if (latch->aux)
     {
+      basic_block *bblocks;
+      unsigned nblocks, i;
+
       /* First handle the case latch edge is redirected.  */
       loop->latch = thread_single_edge (latch);
       gcc_assert (single_succ (loop->latch) == tgt_bb);
       loop->header = tgt_bb;
+
+      /* Remove the new pre-header blocks from our loop.  */
+      bblocks = XCNEWVEC (basic_block, loop->num_nodes);
+      nblocks = dfs_enumerate_from (header, 0, def_split_header_continue_p,
+				    bblocks, loop->num_nodes, tgt_bb);
+      for (i = 0; i < nblocks; i++)
+	{
+	  remove_bb_from_loops (bblocks[i]);
+	  add_bb_to_loop (bblocks[i], loop_outer (loop));
+	}
+      free (bblocks);
+
+      /* Cancel remaining threading requests that would make the
+	 loop a multiple entry loop.  */
+      FOR_EACH_EDGE (e, ei, header->preds)
+	{
+	  edge e2;
+	  if (e->aux == NULL)
+	    continue;
+
+	  if (THREAD_TARGET2 (e))
+	    e2 = THREAD_TARGET2 (e);
+	  else
+	    e2 = THREAD_TARGET (e);
+
+	  if (e->src->loop_father != e2->dest->loop_father
+	      && e2->dest != loop->header)
+	    {
+	      free (e->aux);
+	      e->aux = NULL;
+	    }
+	}
 
       /* Thread the remaining edges through the former header.  */
       thread_block (header, false);
