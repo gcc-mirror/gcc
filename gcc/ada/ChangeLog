@@ -1,3 +1,13 @@
+2012-04-02  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb (First_Component_Or_Discriminant) Now applies to
+	all types with discriminants, not just records.
+	* exp_attr.adb (Expand_N_Attribute): Add Scalar_Values handling
+	for arrays, scalars and non-variant records.
+	* sem_attr.adb (Analyze_Attribute): Handle Valid_Scalars
+	* sem_attr.ads (Valid_Scalars): Update description
+	* sem_util.ads, sem_util.adb (No_Scalar_Parts): New function.
+
 2012-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Revert
