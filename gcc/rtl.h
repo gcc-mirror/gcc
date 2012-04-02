@@ -2455,6 +2455,7 @@ extern bool validate_subreg (enum machine_mode, enum machine_mode,
 			     const_rtx, unsigned int);
 
 /* In combine.c  */
+extern unsigned int extended_count (const_rtx, enum machine_mode, int);
 extern rtx remove_death (unsigned int, rtx);
 extern void dump_combine_stats (FILE *);
 extern void dump_combine_total_stats (FILE *);

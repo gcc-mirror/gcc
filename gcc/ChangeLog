@@ -1,3 +1,11 @@
+2012-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	Partially revert:
+	2012-03-29  Richard Guenther  <rguenther@suse.de>
+
+	* rtl.h (extended_count): Remove.
+	* combine.c (extended_count): Remove.
+
 2012-04-02  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/40942
