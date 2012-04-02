@@ -1,3 +1,9 @@
+2012-04-02  Tristan Gingold  <gingold@adacore.com>
+
+	* configure.ac: Use new version of GCC_CHECK_MATH_FUNC.
+	* configure: Regenerate
+	* config.h.in: Regenerate.
+
 2012-03-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libgfortran/52758
