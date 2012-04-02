@@ -158,15 +158,24 @@ loop_optimizer_finalize (void)
 static bool
 gate_handle_loop2 (void)
 {
-  return (optimize > 0
-  	  && (flag_move_loop_invariants
-              || flag_unswitch_loops
-              || flag_peel_loops
-              || flag_unroll_loops
+  if (optimize > 0
+      && (flag_move_loop_invariants
+	  || flag_unswitch_loops
+	  || flag_peel_loops
+	  || flag_unroll_loops
 #ifdef HAVE_doloop_end
-	      || (flag_branch_on_count_reg && HAVE_doloop_end)
+	  || (flag_branch_on_count_reg && HAVE_doloop_end)
 #endif
-	      ));
+	 ))
+    return true;
+  else
+    {
+      /* No longer preserve loops, remove them now.  */
+      cfun->curr_properties &= ~PROP_loops;
+      if (current_loops)
+	loop_optimizer_finalize ();
+      return false;
+    } 
 }
 
 struct rtl_opt_pass pass_loop2 =
