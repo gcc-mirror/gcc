@@ -1,3 +1,37 @@
+2012-04-02  Robert Dewar  <dewar@adacore.com>
+
+	* s-atopri.ads: Minor reformatting.
+
+2012-04-02  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb: Minor reformatting, minor code cleanup.
+
+2012-04-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): For a reference to an
+	operator symbol, set the sloc to point to the first character
+	of the operator name, and not to the initial quaote.
+	(Output_References): Ditto for the definition of an operator
+	symbol.
+
+2012-04-02  Vincent Celier  <celier@adacore.com>
+
+	* ali.adb (Scan_Ali): Recognize Z lines. Set
+	Implicit_With_From_Instantiation to True in the With_Record for
+	Z lines.
+	* ali.ads (With_Record): New Boolean component
+	Implicit_With_From_Instantiation, defaulted to False.
+	* csinfo.adb: Indicate that Implicit_With_From_Instantiation
+	is special
+	* lib-writ.adb (Write_ALI): New array Implicit_With.
+	(Collect_Withs): Set Implicit_With for the unit is it is not Yes.
+	(Write_With_Lines): Write a Z line instead of a W line if
+	Implicit_With is Yes for the unit.
+	* sem_ch12.adb (Inherit_Context): Only add a unit in the context
+	if it is not there yet.
+	* sinfo.ads: New flag Implicit_With_From_Instantiation (Flag12)
+	added.
+
 2012-04-02  Yannick Moy  <moy@adacore.com>
 
 	* osint.adb, osint.ads (Add_Default_Search_Dirs): Add library
