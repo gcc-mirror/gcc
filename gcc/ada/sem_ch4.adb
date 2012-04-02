@@ -47,7 +47,6 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Case; use Sem_Case;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Dim;  use Sem_Dim;
@@ -3403,101 +3402,38 @@ package body Sem_Ch4 is
    -----------------------------------
 
    procedure Analyze_Quantified_Expression (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-      Ent : constant Entity_Id :=
-             New_Internal_Entity (E_Loop, Current_Scope, Sloc (N), 'L');
-
-      Need_Preanalysis : constant Boolean :=
-                           Operating_Mode /= Check_Semantics
-                             and then not Alfa_Mode;
-
-      Iterator   : Node_Id;
-      Original_N : Node_Id;
+      QE_Scop : Entity_Id;
 
    begin
-      --  The approach in this procedure is very non-standard and at the
-      --  very least, extensive comments are required saying why this very
-      --  non-standard approach is needed???
-
-      --  Also general comments are needed in any case saying what is going
-      --  on here, since tree rewriting of this kind should normally be done
-      --  by the expander and not by the analyzer ??? Probably Ent, Iterator,
-      --  and Original_N, and Needs_Preanalysis, all need comments above ???
-
-      --  Preserve the original node used for the expansion of the quantified
-      --  expression.
-
-      --  This is a very unusual use of Copy_Separate_Tree, needs looking at???
-
-      if Need_Preanalysis then
-         Original_N := Copy_Separate_Tree (N);
-      end if;
-
-      Set_Etype  (Ent, Standard_Void_Type);
-      Set_Scope  (Ent, Current_Scope);
-      Set_Parent (Ent, N);
-
       Check_SPARK_Restriction ("quantified expression is not allowed", N);
 
-      --  The following seems like expansion activity done at analysis
-      --  time, which seems weird ???
+      --  Create a scope to emulate the loop-like behavior of the quantified
+      --  expression. The scope is needed to provide proper visibility of the
+      --  loop variable.
 
-      if Present (Loop_Parameter_Specification (N)) then
-         Iterator :=
-           Make_Iteration_Scheme (Loc,
-             Loop_Parameter_Specification =>
-               Loop_Parameter_Specification (N));
+      QE_Scop := New_Internal_Entity (E_Loop, Current_Scope, Sloc (N), 'L');
+      Set_Etype  (QE_Scop, Standard_Void_Type);
+      Set_Scope  (QE_Scop, Current_Scope);
+      Set_Parent (QE_Scop, N);
+
+      Push_Scope (QE_Scop);
+
+      --  All constituents are preanalyzed and resolved to avoid untimely
+      --  generation of various temporaries and types. Full analysis and
+      --  expansion is carried out when the quantified expression is
+      --  transformed into an expression with actions.
+
+      if Present (Iterator_Specification (N)) then
+         Preanalyze (Iterator_Specification (N));
       else
-         Iterator :=
-           Make_Iteration_Scheme (Loc,
-              Iterator_Specification =>
-                Iterator_Specification (N));
+         Preanalyze (Loop_Parameter_Specification (N));
       end if;
 
-      Push_Scope (Ent);
-      Set_Parent (Iterator, N);
-      Analyze_Iteration_Scheme (Iterator);
-
-      --  The loop specification may have been converted into an iterator
-      --  specification during its analysis. Update the quantified node
-      --  accordingly.
-
-      if Present (Iterator_Specification (Iterator)) then
-         Set_Iterator_Specification
-           (N, Iterator_Specification (Iterator));
-         Set_Loop_Parameter_Specification (N, Empty);
-         Set_Parent (Iterator_Specification (Iterator), Iterator);
-      end if;
-
-      if Need_Preanalysis then
-
-         --  The full analysis will be performed during the expansion of the
-         --  quantified expression, only a preanalysis of the condition needs
-         --  to be done.
-
-         --  This is strange for two reasons
-
-         --  First, there is almost no situation in which Preanalyze vs
-         --  Analyze should be conditioned on -gnatc mode (since error msgs
-         --  must be 100% unaffected by -gnatc). Seconed doing a Preanalyze
-         --  with no resolution almost certainly means that some messages are
-         --  either missed, or flagged differently in the two cases.
-
-         Preanalyze (Condition (N));
-      else
-         Analyze (Condition (N));
-      end if;
+      Preanalyze_And_Resolve (Condition (N), Standard_Boolean);
 
       End_Scope;
 
       Set_Etype (N, Standard_Boolean);
-
-      --  Attach the original node to the iteration scheme created above
-
-      if Need_Preanalysis then
-         Set_Etype (Original_N, Standard_Boolean);
-         Set_Parent (Iterator, Original_N);
-      end if;
    end Analyze_Quantified_Expression;
 
    -------------------

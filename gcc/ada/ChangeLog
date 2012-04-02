@@ -1,3 +1,50 @@
+2012-04-02  Emmanuel Briot  <briot@adacore.com>
+
+	* g-expect.adb (Expect_Internal): Fix leak of the input file descriptor.
+
+2012-04-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Quantified_Expression): Reimplemented.
+	The expansion no longer uses the copy of the original QE created
+	during analysis.
+	* sem.adb (Analyze): Add processing for loop parameter specifications.
+	* sem_ch4.adb (Analyze_Quantified_Expression): Reimplemented. The
+	routine no longer creates a copy of the original QE. All
+	constituents of a QE are now preanalyzed and resolved.
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Remove the guard which
+	bypasses all processing when the iteration scheme is related to a
+	QE. Relovate the code which analyzes loop parameter specifications
+	to a separate routine.	(Analyze_Iterator_Specification):
+	Preanalyze the iterator name. This action was originally
+	done in Analyze_Iteration_Scheme. Update the check which
+	detects an iterator specification in the context of a QE.
+	(Analyze_Loop_Parameter_Specification): New routine. This
+	procedure allows for a stand-alone analysis of a loop parameter
+	specification without the need of a parent iteration scheme. Add
+	code to update the type of the loop variable when the range
+	generates an itype and the context is a QE.
+	(Pre_Analyze_Range): Renamed to Preanalyze_Range. Update all references
+	to the routine.
+	* sem_ch5.ads: Code reformatting.
+	(Analyze_Loop_Parameter_Specification): New routine.
+	* sem_ch6.adb (Fully_Conformant_Expressions): Detect a case
+	when establishing conformance between two QEs utilizing different
+	specifications.
+	* sem_res.adb (Proper_Current_Scope): New routine.
+	(Resolve): Do not resolve a QE as there is nothing to be done now.
+	Ignore any loop scopes generated for QEs when detecting an expression
+	function as the scopes are cosmetic and do not appear in the tree.
+	(Resolve_Quantified_Expression): Removed. All resolution of
+	QE constituents is now performed during analysis. This ensures
+	that loop variables appearing in array aggregates are properly
+	resolved.
+
+2012-04-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Build_Default_Subtype): If the base type is
+	private and its full view is available, use the full view in
+	the subtype declaration.
+
 2012-04-02  Jose Ruiz  <ruiz@adacore.com>
 
 	* gnat_ugn.texi: Add some minimal documentation about how to
