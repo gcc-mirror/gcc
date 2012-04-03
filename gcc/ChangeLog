@@ -1,6 +1,15 @@
 2012-04-03  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2012-03-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52580
+	* tree-data-ref.c (subscript_dependence_tester_1): Check
+	all dimensions for non-conflicting access functions.
+
+2012-04-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2012-03-06  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52493
