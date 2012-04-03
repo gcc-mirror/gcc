@@ -316,6 +316,14 @@ h8300_option_override (void)
   static const char *const h8_pop_ops[2]  = { "pop"  , "pop.l"  };
   static const char *const h8_mov_ops[2]  = { "mov.w", "mov.l"  };
 
+#ifndef OBJECT_FORMAT_ELF
+  if (TARGET_H8300SX)
+    {
+      error ("-msx is not supported in coff");
+      target_flags |= MASK_H8300S;
+    }
+#endif
+
   if (TARGET_H8300)
     {
       cpu_type = (int) CPU_H8300;
@@ -339,9 +347,33 @@ h8300_option_override (void)
 
   if (TARGET_H8300 && TARGET_NORMAL_MODE)
     {
-      error ("-mn is used without -mh or -ms");
+      error ("-mn is used without -mh or -ms or -msx");
       target_flags ^= MASK_NORMAL_MODE;
     }
+
+  if (! TARGET_H8300S &&  TARGET_EXR)
+    {
+      error ("-mexr is used without -ms");
+      target_flags |= MASK_H8300S_1;
+    }
+
+  if (TARGET_H8300 && TARGET_INT32)
+   {
+      error ("-mint32 is not supported for H8300 and H8300L targets");
+      target_flags ^= MASK_INT32;
+   }
+
+ if ((!TARGET_H8300S  &&  TARGET_EXR) && (!TARGET_H8300SX && TARGET_EXR))
+   {
+      error ("-mexr is used without -ms or -msx");
+      target_flags |= MASK_H8300S_1;
+   }
+
+ if ((!TARGET_H8300S  &&  TARGET_NEXR) && (!TARGET_H8300SX && TARGET_NEXR))
+   {
+      warning (OPT_mno_exr, "-mno-exr valid only with -ms or -msx    \
+               - Option ignored!");
+   }
 
   /* Some of the shifts are optimized for speed by default.
      See http://gcc.gnu.org/ml/gcc-patches/2002-07/msg01858.html
@@ -795,9 +827,9 @@ h8300_expand_prologue (void)
     return;
 
   if (h8300_monitor_function_p (current_function_decl))
-    /* My understanding of monitor functions is they act just like
-       interrupt functions, except the prologue must mask
-       interrupts.  */
+ /* The monitor function act as normal functions, which means it
+    can accept parameters and return values. In addition to this, 
+    interrupts are masked in prologue and return with "rte" in epilogue. */
     emit_insn (gen_monitor_prologue ());
 
   if (frame_pointer_needed)
@@ -925,8 +957,13 @@ h8300_expand_epilogue (void)
 int
 h8300_current_function_interrupt_function_p (void)
 {
-  return (h8300_interrupt_function_p (current_function_decl)
-	  || h8300_monitor_function_p (current_function_decl));
+  return (h8300_interrupt_function_p (current_function_decl));
+}
+
+int
+h8300_current_function_monitor_function_p ()
+{
+  return (h8300_monitor_function_p (current_function_decl));
 }
 
 /* Output assembly code for the start of the file.  */

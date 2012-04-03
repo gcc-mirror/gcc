@@ -60,3 +60,12 @@ Enable the normal mode
 malign-300
 Target RejectNegative Mask(ALIGN_300)
 Use H8/300 alignment rules
+
+mexr
+Target Mask(EXR)
+Push extended registers on stack in monitor functions
+
+mno-exr
+Target Mask(NEXR)
+Do not push extended registers on stack in monitor functions
+
