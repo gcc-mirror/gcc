@@ -1,3 +1,9 @@
+2012-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52835
+	* tree-data-ref.c (build_rdg): Return NULL if
+	compute_data_dependences_for_loop failed.
+
 2012-04-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* varasm.c (initializer_constant_valid_for_bitfield_p): Return true
