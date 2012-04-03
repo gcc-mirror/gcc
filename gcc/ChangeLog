@@ -1,3 +1,17 @@
+2012-04-03  Sandeep Kumar Singh  <Sandeep.Singh2@kpitcummins.com>
+
+	* h8300/h8300.c (h8300_current_function_monitor_function_p):
+	New function. Added to check monitor functions. 
+	(h8300_option_override): Modified to generate error/warning 
+	messages for invalid combinations of different command line 
+	options.
+	* h8300/h8300.md: Generate 'rte' for monitor functions. Do not
+	save EXR on stack for monitor function in case of H8S target 
+	when "-mno-exr" is passed.
+	* h8300/h8300-protos.h 
+	(h8300_current_function_monitor_function_p): Add prototype.
+	* doc/invoke.texi: Document H8S options.
+
 2012-04-03  Tristan Gingold  <gingold@adacore.com>
 
 	* configure.ac: Use GCC_AC_FUNC_MMAP_BLACKLIST instead
