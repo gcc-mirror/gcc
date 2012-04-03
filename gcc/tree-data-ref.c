@@ -5109,20 +5109,19 @@ build_rdg (struct loop *loop,
 	   VEC (data_reference_p, heap) **datarefs)
 {
   struct graph *rdg = NULL;
-  VEC (gimple, heap) *stmts = VEC_alloc (gimple, heap, 10);
 
-  compute_data_dependences_for_loop (loop, false, loop_nest, datarefs,
-				     dependence_relations);
-
-  if (known_dependences_p (*dependence_relations))
+  if (compute_data_dependences_for_loop (loop, false, loop_nest, datarefs,
+					 dependence_relations)
+      && known_dependences_p (*dependence_relations))
     {
+      VEC (gimple, heap) *stmts = VEC_alloc (gimple, heap, 10);
       stmts_from_loop (loop, &stmts);
       rdg = build_empty_rdg (VEC_length (gimple, stmts));
       create_rdg_vertices (rdg, stmts);
       create_rdg_edges (rdg, *dependence_relations);
+      VEC_free (gimple, heap, stmts);
     }
 
-  VEC_free (gimple, heap, stmts);
   return rdg;
 }
 
