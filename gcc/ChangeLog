@@ -1,3 +1,12 @@
+2012-04-03  Tristan Gingold  <gingold@adacore.com>
+
+	* configure.ac: Use GCC_AC_FUNC_MMAP_BLACKLIST instead
+	of gcc_AC_FUNC_MMAP_BLACKLIST.
+	* acinclude.m4 (gcc_AC_FUNC_MMAP_BLACKLIST): Remove.
+	* Makefile.in (aclocal_deps): Add mmap.m4.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2012-04-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52808

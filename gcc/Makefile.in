@@ -1650,6 +1650,7 @@ aclocal_deps = \
 	$(srcdir)/../config/unwind_ipinfo.m4 \
 	$(srcdir)/../config/warnings.m4 \
 	$(srcdir)/../config/dfp.m4 \
+	$(srcdir)/../config/mmap.m4 \
 	$(srcdir)/acinclude.m4
 
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/aclocal.m4
