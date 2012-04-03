@@ -1004,8 +1004,12 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
       basic_block *bblocks;
       unsigned nblocks, i;
 
-      /* First handle the case latch edge is redirected.  */
+      /* First handle the case latch edge is redirected.  We are copying
+         the loop header but not creating a multiple entry loop.  Make the
+	 cfg manipulation code aware of that fact.  */
+      set_loop_copy (loop, loop);
       loop->latch = thread_single_edge (latch);
+      set_loop_copy (loop, NULL);
       gcc_assert (single_succ (loop->latch) == tgt_bb);
       loop->header = tgt_bb;
 
