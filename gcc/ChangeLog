@@ -1,3 +1,11 @@
+2012-04-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* varasm.c (initializer_constant_valid_for_bitfield_p): Return true
+	for REAL_CST as well.
+	(output_constructor): Use RECORD_OR_UNION_TYPE_P predicate.
+	In the bitfield case, if the value is a REAL_CST, convert it first to
+	an INTEGER_CST.
+
 2012-04-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc: Use i386/biarchx32.h instead of i386/biarch64.h
