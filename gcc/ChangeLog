@@ -1,3 +1,11 @@
+2012-04-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Use i386/biarchx32.h instead of i386/biarch64.h
+	for --with-abi={x32|mx32} or --with-multilib-list=mx32.
+	(supported_defaults): Add abi for i[34567]86-*-* and x86_64-*-*.
+
+	* config/i386/biarchx32.h: New.
+
 2012-04-02  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/arm/arm.h (PREFERRED_RELOAD_CLASS): Remove.
