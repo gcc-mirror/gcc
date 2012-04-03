@@ -6763,7 +6763,6 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
 
   STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
-  gcc_assert (POINTER_TYPE_P (subtype));
 
   if (TREE_CODE (sub) == ADDR_EXPR)
     {
