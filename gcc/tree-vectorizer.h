@@ -476,6 +476,13 @@ typedef struct _stmt_vec_info {
   tree dr_step;
   tree dr_aligned_to;
 
+  /* For loop PHI nodes, the evolution part of it.  This makes sure
+     this information is still available in vect_update_ivs_after_vectorizer
+     where we may not be able to re-analyze the PHI nodes evolution as
+     peeling for the prologue loop can make it unanalyzable.  The evolution
+     part is still correct though.  */
+  tree loop_phi_evolution_part;
+
   /* Used for various bookkeeping purposes, generally holding a pointer to
      some other stmt S that is in some way "related" to this stmt.
      Current use of this field is:
@@ -572,6 +579,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_GROUP_SAME_DR_STMT(S)   (S)->same_dr_stmt
 #define STMT_VINFO_GROUP_READ_WRITE_DEPENDENCE(S)  (S)->read_write_dep
 #define STMT_VINFO_STRIDED_ACCESS(S)      ((S)->first_element != NULL && (S)->data_ref_info)
+#define STMT_VINFO_LOOP_PHI_EVOLUTION_PART(S) (S)->loop_phi_evolution_part
 
 #define GROUP_FIRST_ELEMENT(S)          (S)->first_element
 #define GROUP_NEXT_ELEMENT(S)           (S)->next_element

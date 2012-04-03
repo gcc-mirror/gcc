@@ -236,17 +236,6 @@ ptr_derefs_may_alias_p (tree ptr1, tree ptr2)
   STRIP_NOPS (ptr1);
   STRIP_NOPS (ptr2);
 
-  /* Anything we do not explicilty handle aliases.  */
-  if ((TREE_CODE (ptr1) != SSA_NAME
-       && TREE_CODE (ptr1) != ADDR_EXPR
-       && TREE_CODE (ptr1) != POINTER_PLUS_EXPR)
-      || (TREE_CODE (ptr2) != SSA_NAME
-	  && TREE_CODE (ptr2) != ADDR_EXPR
-	  && TREE_CODE (ptr2) != POINTER_PLUS_EXPR)
-      || !POINTER_TYPE_P (TREE_TYPE (ptr1))
-      || !POINTER_TYPE_P (TREE_TYPE (ptr2)))
-    return true;
-
   /* Disregard pointer offsetting.  */
   if (TREE_CODE (ptr1) == POINTER_PLUS_EXPR)
     {
@@ -275,7 +264,7 @@ ptr_derefs_may_alias_p (tree ptr1, tree ptr2)
       if (base
 	  && (TREE_CODE (base) == MEM_REF
 	      || TREE_CODE (base) == TARGET_MEM_REF))
-	ptr1 = TREE_OPERAND (base, 0);
+	return ptr_derefs_may_alias_p (TREE_OPERAND (base, 0), ptr2);
       else if (base
 	       && DECL_P (base))
 	return ptr_deref_may_alias_decl_p (ptr2, base);
@@ -288,13 +277,20 @@ ptr_derefs_may_alias_p (tree ptr1, tree ptr2)
       if (base
 	  && (TREE_CODE (base) == MEM_REF
 	      || TREE_CODE (base) == TARGET_MEM_REF))
-	ptr2 = TREE_OPERAND (base, 0);
+	return ptr_derefs_may_alias_p (ptr1, TREE_OPERAND (base, 0));
       else if (base
 	       && DECL_P (base))
 	return ptr_deref_may_alias_decl_p (ptr1, base);
       else
 	return true;
     }
+
+  /* From here we require SSA name pointers.  Anything else aliases.  */
+  if (TREE_CODE (ptr1) != SSA_NAME
+      || TREE_CODE (ptr2) != SSA_NAME
+      || !POINTER_TYPE_P (TREE_TYPE (ptr1))
+      || !POINTER_TYPE_P (TREE_TYPE (ptr2)))
+    return true;
 
   /* We may end up with two empty points-to solutions for two same pointers.
      In this case we still want to say both pointers alias, so shortcut

@@ -1,3 +1,26 @@
+2012-04-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-03-06  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52493
+	* gcc.dg/torture/pr52493.c: New testcase.
+
+	2012-03-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52678
+	* gfortran.dg/pr52678.f: New testcase.
+
+	2012-03-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52701
+	* gfortran.dg/pr52701.f90: New testcase.
+
+	2012-03-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52754
+	* gcc.target/i386/pr52754.c: New testcase.
+
 2012-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52835
