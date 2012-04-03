@@ -17785,6 +17785,7 @@ tsubst_initializer_list (tree t, tree argvec)
             }
           else
             {
+	      tree tmp;
               decl = tsubst_copy (TREE_PURPOSE (t), argvec, 
                                   tf_warning_or_error, NULL_TREE);
 
@@ -17793,10 +17794,17 @@ tsubst_initializer_list (tree t, tree argvec)
                 in_base_initializer = 1;
 
 	      init = TREE_VALUE (t);
+	      tmp = init;
 	      if (init != void_type_node)
 		init = tsubst_expr (init, argvec,
 				    tf_warning_or_error, NULL_TREE,
 				    /*integral_constant_expression_p=*/false);
+	      if (init == NULL_TREE && tmp != NULL_TREE)
+		/* If we had an initializer but it instantiated to nothing,
+		   value-initialize the object.  This will only occur when
+		   the initializer was a pack expansion where the parameter
+		   packs used in that expansion were of length zero.  */
+		init = void_type_node;
               in_base_initializer = 0;
             }
 
