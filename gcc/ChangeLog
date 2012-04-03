@@ -1,3 +1,8 @@
+2012-04-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-sh (MULTILIB_MATCHES): Match m2a-single-only
+	to m2a-single instead of m2e.
+
 2012-04-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (get_bit_range): Add OFFSET parameter and adjust BITPOS.
