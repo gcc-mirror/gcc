@@ -1,3 +1,10 @@
+2012-04-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (get_bit_range): Add OFFSET parameter and adjust BITPOS.
+	Change type of BITOFFSET to signed.  Make sure the lower bound of
+	the computed range is non-negative by adjusting OFFSET and BITPOS.
+	(expand_assignment): Adjust call to get_bit_range.
+
 2012-04-03  Sandeep Kumar Singh  <Sandeep.Singh2@kpitcummins.com>
 
 	* h8300/h8300.c (h8300_current_function_monitor_function_p):
