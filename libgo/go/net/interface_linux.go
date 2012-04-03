@@ -64,7 +64,11 @@ func newLink(ifim *syscall.IfInfomsg, attrs []syscall.NetlinkRouteAttr) Interfac
 		case syscall.IFLA_IFNAME:
 			ifi.Name = string(a.Value[:len(a.Value)-1])
 		case syscall.IFLA_MTU:
-			ifi.MTU = int(uint32(a.Value[3])<<24 | uint32(a.Value[2])<<16 | uint32(a.Value[1])<<8 | uint32(a.Value[0]))
+			if syscall.BigEndian {
+				ifi.MTU = int(uint32(a.Value[0])<<24 | uint32(a.Value[1])<<16 | uint32(a.Value[2])<<8 | uint32(a.Value[3]))
+			} else {
+				ifi.MTU = int(uint32(a.Value[3])<<24 | uint32(a.Value[2])<<16 | uint32(a.Value[1])<<8 | uint32(a.Value[0]))
+			}
 		}
 	}
 	return ifi
@@ -196,7 +200,12 @@ func parseProcNetIGMP(path string, ifi *Interface) []Addr {
 				for i := 0; i+1 < len(f[0]); i += 2 {
 					b[i/2], _ = xtoi2(f[0][i:i+2], 0)
 				}
-				ifma := IPAddr{IP: IPv4(b[3], b[2], b[1], b[0])}
+				var ifma IPAddr
+				if syscall.BigEndian {
+					ifma = IPAddr{IP: IPv4(b[0], b[1], b[2], b[3])}
+				} else {
+					ifma = IPAddr{IP: IPv4(b[3], b[2], b[1], b[0])}
+				}
 				ifmat = append(ifmat, ifma.toAddr())
 			}
 		}
