@@ -4431,19 +4431,22 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
 /* In the C++ memory model, consecutive bit fields in a structure are
    considered one memory location.
 
-   Given a COMPONENT_REF EXP at bit position BITPOS, this function
+   Given a COMPONENT_REF EXP at position (BITPOS, OFFSET), this function
    returns the bit range of consecutive bits in which this COMPONENT_REF
-   belongs in.  The values are returned in *BITSTART and *BITEND.
-   If the access does not need to be restricted 0 is returned in
+   belongs.  The values are returned in *BITSTART and *BITEND.  *BITPOS
+   and *OFFSET may be adjusted in the process.
+
+   If the access does not need to be restricted, 0 is returned in both
    *BITSTART and *BITEND.  */
 
 static void
 get_bit_range (unsigned HOST_WIDE_INT *bitstart,
 	       unsigned HOST_WIDE_INT *bitend,
 	       tree exp,
-	       HOST_WIDE_INT bitpos)
+	       HOST_WIDE_INT *bitpos,
+	       tree *offset)
 {
-  unsigned HOST_WIDE_INT bitoffset;
+  HOST_WIDE_INT bitoffset;
   tree field, repr;
 
   gcc_assert (TREE_CODE (exp) == COMPONENT_REF);
@@ -4490,7 +4493,25 @@ get_bit_range (unsigned HOST_WIDE_INT *bitstart,
   bitoffset += (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
 		- tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
 
-  *bitstart = bitpos - bitoffset;
+  /* If the adjustment is larger than bitpos, we would have a negative bit
+     position for the lower bound and this may wreak havoc later.  This can
+     occur only if we have a non-null offset, so adjust offset and bitpos
+     to make the lower bound non-negative.  */
+  if (bitoffset > *bitpos)
+    {
+      HOST_WIDE_INT adjust = bitoffset - *bitpos;
+
+      gcc_assert ((adjust % BITS_PER_UNIT) == 0);
+      gcc_assert (*offset != NULL_TREE);
+
+      *bitpos += adjust;
+      *offset
+	= size_binop (MINUS_EXPR, *offset, size_int (adjust / BITS_PER_UNIT));
+      *bitstart = 0;
+    }
+  else
+    *bitstart = *bitpos - bitoffset;
+
   *bitend = *bitstart + tree_low_cst (DECL_SIZE (repr), 1) - 1;
 }
 
@@ -4595,7 +4616,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 
       if (TREE_CODE (to) == COMPONENT_REF
 	  && DECL_BIT_FIELD_TYPE (TREE_OPERAND (to, 1)))
-	get_bit_range (&bitregion_start, &bitregion_end, to, bitpos);
+	get_bit_range (&bitregion_start, &bitregion_end, to, &bitpos, &offset);
 
       /* If we are going to use store_bit_field and extract_bit_field,
 	 make sure to_rtx will be safe for multiple use.  */
