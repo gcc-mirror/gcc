@@ -1009,18 +1009,28 @@ duplicate_block (basic_block bb, edge e, basic_block after)
     {
       struct loop *cloop = bb->loop_father;
       struct loop *copy = get_loop_copy (cloop);
-      add_bb_to_loop (new_bb, copy ? copy : cloop);
-      /* If we copied the loop latch block but not the loop, adjust
-	 loop state.
-	 ???  If we copied the loop header block but not the loop
-	 we might either have created a loop copy or a loop with
-	 multiple entries.  In both cases we probably have to
-	 ditch the loops and arrange for a fixup.  */
+      /* If we copied the loop header block but not the loop
+	 we have created a loop with multiple entries.  Ditch the loop,
+	 add the new block to the outer loop and arrange for a fixup.  */
       if (!copy
-	  && cloop->latch == bb)
+	  && cloop->header == bb)
 	{
+	  add_bb_to_loop (new_bb, loop_outer (cloop));
+	  cloop->header = NULL;
 	  cloop->latch = NULL;
-	  loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
+	  loops_state_set (LOOPS_NEED_FIXUP);
+	}
+      else
+	{
+	  add_bb_to_loop (new_bb, copy ? copy : cloop);
+	  /* If we copied the loop latch block but not the loop, adjust
+	     loop state.  */
+	  if (!copy
+	      && cloop->latch == bb)
+	    {
+	      cloop->latch = NULL;
+	      loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
+	    }
 	}
     }
 

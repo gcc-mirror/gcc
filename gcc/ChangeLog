@@ -1,3 +1,16 @@
+2012-04-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52808
+	* tracer.c (tail_duplicate): Return whether we have duplicated
+	any block.
+	(tracer): If we have duplicated any block, cleanup the CFG.
+	* cfghooks.c (duplicate_block): If we duplicated a loop
+	header but not its loop, destroy the loop because it now has
+	multiple entries.
+	* tree-ssa-threadupdate.c (thread_through_loop_header): Tell
+	the cfg manipulation routines we are not creating a multiple
+	entry loop.
+
 2012-04-03  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/vms-c.c (vms_pragma_nomember_alignment): Handle

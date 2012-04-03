@@ -59,7 +59,6 @@ static bool better_p (const_edge, const_edge);
 static edge find_best_successor (basic_block);
 static edge find_best_predecessor (basic_block);
 static int find_trace (basic_block, basic_block *);
-static void tail_duplicate (void);
 
 /* Minimal outgoing edge probability considered for superblock formation.  */
 static int probability_cutoff;
@@ -224,7 +223,7 @@ find_trace (basic_block bb, basic_block *trace)
 /* Look for basic blocks in frequency order, construct traces and tail duplicate
    if profitable.  */
 
-static void
+static bool
 tail_duplicate (void)
 {
   fibnode_t *blocks = XCNEWVEC (fibnode_t, last_basic_block);
@@ -236,6 +235,7 @@ tail_duplicate (void)
   gcov_type cover_insns;
   int max_dup_insns;
   basic_block bb;
+  bool changed = false;
 
   /* Create an oversized sbitmap to reduce the chance that we need to
      resize it.  */
@@ -332,6 +332,7 @@ tail_duplicate (void)
 			 bb2->index, copy->index, copy->frequency);
 
 	      bb2 = copy;
+	      changed = true;
 	    }
 	  mark_bb_seen (bb2);
 	  bb = bb2;
@@ -353,6 +354,8 @@ tail_duplicate (void)
   free (trace);
   free (counts);
   fibheap_delete (heap);
+
+  return changed;
 }
 
 /* Main entry point to this file.  */
@@ -360,6 +363,8 @@ tail_duplicate (void)
 static unsigned int
 tracer (void)
 {
+  bool changed;
+
   gcc_assert (current_ir_type () == IR_GIMPLE);
 
   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
@@ -370,15 +375,14 @@ tracer (void)
     dump_flow_info (dump_file, dump_flags);
 
   /* Trace formation is done on the fly inside tail_duplicate */
-  tail_duplicate ();
+  changed = tail_duplicate ();
+  if (changed)
+    free_dominance_info (CDI_DOMINATORS);
 
-  /* FIXME: We really only need to do this when we know tail duplication
-            has altered the CFG. */
-  free_dominance_info (CDI_DOMINATORS);
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
 
-  return 0;
+  return changed ? TODO_cleanup_cfg : 0;
 }
 
 static bool
