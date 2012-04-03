@@ -1,3 +1,10 @@
+2012-04-03  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-c.c (vms_pragma_nomember_alignment): Handle
+	'byte' alignment.
+	(vms_c_common_override_options): Allow parameterless variadic
+	functions.
+
 2012-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52835
