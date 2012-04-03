@@ -94,6 +94,9 @@ cat > sysinfo.c <<EOF
 #if defined(HAVE_NET_IF_H)
 #include <net/if.h>
 #endif
+#if defined(HAVE_NET_IF_ARP_H)
+#include <net/if_arp.h>
+#endif
 #if defined(HAVE_SYS_MOUNT_H)
 #include <sys/mount.h>
 #endif
@@ -211,7 +214,7 @@ if grep '^const ___WALL = ' gen-sysinfo.go >/dev/null 2>&1 \
 fi
 
 # Networking constants.
-egrep '^const _(AF|SOCK|SOL|SO|IPPROTO|TCP|IP|IPV6)_' gen-sysinfo.go |
+egrep '^const _(AF|ARPHRD|SOCK|SOL|SO|IPPROTO|TCP|IP|IPV6)_' gen-sysinfo.go |
   sed -e 's/^\(const \)_\([^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _SOMAXCONN' gen-sysinfo.go |
   sed -e 's/^\(const \)_\(SOMAXCONN[^= ]*\)\(.*\)$/\1\2 = _\2/' \
@@ -710,6 +713,10 @@ grep '^type _rtgenmsg ' gen-sysinfo.go | \
 # The routing message flags.
 grep '^const _RTA' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTA[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _RTF' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(RTF[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _RTCF' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(RTCF[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _RTM' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTM[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
@@ -937,6 +944,10 @@ grep '^type _sock_fprog ' gen-sysinfo.go | \
       -e 's/filter/Filter/' \
       -e 's/_sock_filter/SockFilter/' \
     >> ${OUT}
+
+# The GNU/Linux filter flags.
+grep '^const _BPF_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(BPF_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The Solaris 11 Update 1 _zone_net_addr_t struct.
 grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
