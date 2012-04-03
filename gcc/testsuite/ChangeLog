@@ -1,3 +1,7 @@
+2012-04-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr5.ads: New test.
+
 2012-04-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52756
