@@ -13518,6 +13518,7 @@ finish_function (int flags)
 		  "deduced to %<void%>");
 	}
       apply_deduced_return_type (fndecl, void_type_node);
+      fntype = TREE_TYPE (fndecl);
     }
 
   /* Save constexpr function body before it gets munged by
