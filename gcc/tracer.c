@@ -52,6 +52,7 @@
 #include "tree-pass.h"
 #include "tree-flow.h"
 #include "tree-inline.h"
+#include "cfgloop.h"
 
 static int count_insns (basic_block);
 static bool ignore_bb_p (const_basic_block);
@@ -307,7 +308,13 @@ tail_duplicate (void)
 	    }
 	  traced_insns += bb2->frequency * counts [bb2->index];
 	  if (EDGE_COUNT (bb2->preds) > 1
-	      && can_duplicate_block_p (bb2))
+	      && can_duplicate_block_p (bb2)
+	      /* We have the tendency to duplicate the loop header
+	         of all do { } while loops.  Do not do that - it is
+		 not profitable and it might create a loop with multiple
+		 entries or at least rotate the loop.  */
+	      && (!current_loops
+		  || bb2->loop_father->header != bb2))
 	    {
 	      edge e;
 	      basic_block copy;

@@ -1,3 +1,10 @@
+2012-04-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52808
+	* tracer.c (tail_duplicate): Do not tail-duplicate loop header
+	blocks.
+	* Makefile.in (tracer.o): Depend on $(CFGLOOP_H).
+
 2012-04-04  Tristan Gingold  <gingold@adacore.com>
 
 	* expr.c (expand_expr_real_2): Handle larger sizetype in
