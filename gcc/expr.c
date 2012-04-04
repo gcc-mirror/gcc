@@ -7957,6 +7957,11 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	treeop1 = fold_convert_loc (loc, type,
 				    fold_convert_loc (loc, ssizetype,
 						      treeop1));
+      /* If sizetype precision is larger than pointer precision, truncate the
+	 offset to have matching modes.  */
+      else if (TYPE_PRECISION (sizetype) > TYPE_PRECISION (type))
+	treeop1 = fold_convert_loc (loc, type, treeop1);
+
     case PLUS_EXPR:
       /* If we are adding a constant, a VAR_DECL that is sp, fp, or ap, and
 	 something else, make sure we add the register to the constant and
