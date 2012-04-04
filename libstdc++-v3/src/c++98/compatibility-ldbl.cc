@@ -27,8 +27,6 @@
 #include <cmath>
 #include <tr1/functional>
 
-#ifdef PIC
-
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
 
 #ifdef __LONG_DOUBLE_128__
@@ -78,7 +76,5 @@ namespace std _GLIBCXX_VISIBILITY(default)
 // are the same, no need to duplicate them.
 extern "C" void _ZNKSt4hashIeEclEe (void)
   __attribute__((alias ("_ZNKSt3tr14hashIeEclEe")));
-
-#endif
 
 #endif

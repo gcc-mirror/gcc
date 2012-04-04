@@ -1,3 +1,11 @@
+2012-04-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Partially revert:
+	2012-03-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52689
+	* src/c++98/compatibility-ldbl.cc: Guard with PIC
+
 2012-04-02  Tristan Gingold  <gingold@adacore.com>
 
 	* crossconfig.m4 (*-*-*vms*): Add.
