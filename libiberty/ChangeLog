@@ -1,3 +1,7 @@
+2012-04-04  Tristan Gingold  <gingold@adacore.com>
+
+	* pex-unix.c (to_ptr32): Fix style.
+
 2012-04-02  Tristan Gingold  <gingold@adacore.com>
 
 	* stack-limit.c: Includes ansidecl.h.
