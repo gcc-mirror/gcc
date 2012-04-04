@@ -1479,8 +1479,13 @@ This type of expression represents the integer value @var{i}.  @var{i}
 is customarily accessed with the macro @code{INTVAL} as in
 @code{INTVAL (@var{exp})}, which is equivalent to @code{XWINT (@var{exp}, 0)}.
 
-Constants generated for modes with fewer bits than @code{HOST_WIDE_INT}
-must be sign extended to full width (e.g., with @code{gen_int_mode}).
+Constants generated for modes with fewer bits than in
+@code{HOST_WIDE_INT} must be sign extended to full width (e.g., with
+@code{gen_int_mode}).  For constants for modes with more bits than in
+@code{HOST_WIDE_INT} the implied high order bits of that constant are
+copies of the top bit.  Note however that values are neither
+inherently signed nor inherently unsigned; where necessary, signedness
+is determined by the rtl operation instead.
 
 @findex const0_rtx
 @findex const1_rtx
@@ -1510,7 +1515,13 @@ Represents either a floating-point constant of mode @var{m} or an
 integer constant too large to fit into @code{HOST_BITS_PER_WIDE_INT}
 bits but small enough to fit within twice that number of bits (GCC
 does not provide a mechanism to represent even larger constants).  In
-the latter case, @var{m} will be @code{VOIDmode}.
+the latter case, @var{m} will be @code{VOIDmode}.  For integral values
+constants for modes with more bits than twice the number in
+@code{HOST_WIDE_INT} the implied high order bits of that constant are
+copies of the top bit of @code{CONST_DOUBLE_HIGH}.  Note however that
+integral values are neither inherently signed nor inherently unsigned;
+where necessary, signedness is determined by the rtl operation
+instead.
 
 @findex CONST_DOUBLE_LOW
 If @var{m} is @code{VOIDmode}, the bits of the value are stored in

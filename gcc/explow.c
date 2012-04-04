@@ -74,14 +74,20 @@ trunc_int_for_mode (HOST_WIDE_INT c, enum machine_mode mode)
   return c;
 }
 
-/* Return an rtx for the sum of X and the integer C.  */
+/* Return an rtx for the sum of X and the integer C, given that X has
+   mode MODE.  This routine should be used instead of plus_constant
+   when they want to ensure that addition happens in a particular
+   mode, which is necessary when X can be a VOIDmode CONST_INT or
+   CONST_DOUBLE and the width of the constant is different from the
+   width of the expression.  */
+/* TODO: All callers of plus_constant should migrate to this routine,
+   and once they do, we can assert that mode is not VOIDmode.  */
 
 rtx
-plus_constant (rtx x, HOST_WIDE_INT c)
+plus_constant_mode (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 {
   RTX_CODE code;
   rtx y;
-  enum machine_mode mode;
   rtx tem;
   int all_constant = 0;
 
@@ -91,12 +97,26 @@ plus_constant (rtx x, HOST_WIDE_INT c)
  restart:
 
   code = GET_CODE (x);
-  mode = GET_MODE (x);
   y = x;
 
   switch (code)
     {
     case CONST_INT:
+      if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
+	{
+	  unsigned HOST_WIDE_INT l1 = INTVAL (x);
+	  HOST_WIDE_INT h1 = (l1 >> (HOST_BITS_PER_WIDE_INT - 1)) ? -1 : 0;
+	  unsigned HOST_WIDE_INT l2 = c;
+	  HOST_WIDE_INT h2 = c < 0 ? -1 : 0;
+	  unsigned HOST_WIDE_INT lv;
+	  HOST_WIDE_INT hv;
+
+	  if (add_double_with_sign (l1, h1, l2, h2, &lv, &hv, false))
+	    gcc_unreachable ();
+
+	  return immed_double_const (lv, hv, VOIDmode);
+	}
+
       return GEN_INT (INTVAL (x) + c);
 
     case CONST_DOUBLE:
@@ -104,11 +124,14 @@ plus_constant (rtx x, HOST_WIDE_INT c)
 	unsigned HOST_WIDE_INT l1 = CONST_DOUBLE_LOW (x);
 	HOST_WIDE_INT h1 = CONST_DOUBLE_HIGH (x);
 	unsigned HOST_WIDE_INT l2 = c;
-	HOST_WIDE_INT h2 = c < 0 ? ~0 : 0;
+	HOST_WIDE_INT h2 = c < 0 ? -1 : 0;
 	unsigned HOST_WIDE_INT lv;
 	HOST_WIDE_INT hv;
 
-	add_double (l1, h1, l2, h2, &lv, &hv);
+	if (add_double_with_sign (l1, h1, l2, h2, &lv, &hv, false))
+	  /* Sorry, we have no way to represent overflows this wide.
+	     To fix, add constant support wider than CONST_DOUBLE.  */
+	  gcc_assert (GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT);
 
 	return immed_double_const (lv, hv, VOIDmode);
       }
@@ -120,10 +143,8 @@ plus_constant (rtx x, HOST_WIDE_INT c)
       if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
 	{
-	  tem
-	    = force_const_mem (GET_MODE (x),
-			       plus_constant (get_pool_constant (XEXP (x, 0)),
-					      c));
+	  tem = plus_constant_mode (mode, get_pool_constant (XEXP (x, 0)), c);
+	  tem = force_const_mem (GET_MODE (x), tem);
 	  if (memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
 	    return tem;
 	}
@@ -142,31 +163,17 @@ plus_constant (rtx x, HOST_WIDE_INT c)
       break;
 
     case PLUS:
-      /* The interesting case is adding the integer to a sum.
-	 Look for constant term in the sum and combine
-	 with C.  For an integer constant term, we make a combined
-	 integer.  For a constant term that is not an explicit integer,
-	 we cannot really combine, but group them together anyway.
-
-	 Restart or use a recursive call in case the remaining operand is
-	 something that we handle specially, such as a SYMBOL_REF.
+      /* The interesting case is adding the integer to a sum.  Look
+	 for constant term in the sum and combine with C.  For an
+	 integer constant term or a constant term that is not an
+	 explicit integer, we combine or group them together anyway.
 
 	 We may not immediately return from the recursive call here, lest
 	 all_constant gets lost.  */
 
-      if (CONST_INT_P (XEXP (x, 1)))
+      if (CONSTANT_P (XEXP (x, 1)))
 	{
-	  c += INTVAL (XEXP (x, 1));
-
-	  if (GET_MODE (x) != VOIDmode)
-	    c = trunc_int_for_mode (c, GET_MODE (x));
-
-	  x = XEXP (x, 0);
-	  goto restart;
-	}
-      else if (CONSTANT_P (XEXP (x, 1)))
-	{
-	  x = gen_rtx_PLUS (mode, XEXP (x, 0), plus_constant (XEXP (x, 1), c));
+	  x = gen_rtx_PLUS (mode, XEXP (x, 0), plus_constant_mode (mode, XEXP (x, 1), c));
 	  c = 0;
 	}
       else if (find_constant_term_loc (&y))
@@ -176,7 +183,7 @@ plus_constant (rtx x, HOST_WIDE_INT c)
 	  rtx copy = copy_rtx (x);
 	  rtx *const_loc = find_constant_term_loc (&copy);
 
-	  *const_loc = plus_constant (*const_loc, c);
+	  *const_loc = plus_constant_mode (mode, *const_loc, c);
 	  x = copy;
 	  c = 0;
 	}
@@ -195,6 +202,14 @@ plus_constant (rtx x, HOST_WIDE_INT c)
     return gen_rtx_CONST (mode, x);
   else
     return x;
+}
+
+/* Return an rtx for the sum of X and the integer C.  */
+
+rtx
+plus_constant (rtx x, HOST_WIDE_INT c)
+{
+  return plus_constant_mode (GET_MODE (x), x, c);
 }
 
 /* If X is a sum, return a new sum like X but lacking any constant terms.

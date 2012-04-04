@@ -1,3 +1,22 @@
+2012-04-04  Mike Stump  <mikestump@comcast.net>
+
+	* doc/rtl.texi (const_double): Document as sign-extending.
+	* expmed.c (expand_mult): Ensure we don't use shift
+	incorrectly.
+	* emit-rtl.c (immed_double_int_const): Refine to state the
+	value is signed.
+	* simplify-rtx.c (mode_signbit_p): Add a fixme for wider than
+	CONST_DOUBLE integers.
+	(simplify_const_unary_operation, UNSIGNED_FLOAT): Ensure no
+	negative values are converted.  Fix conversions bigger than
+	HOST_BITS_PER_WIDE_INT.
+	(simplify_binary_operation_1): Ensure we don't use shift
+	incorrectly.
+	(simplify_immed_subreg): Sign-extend CONST_DOUBLEs.
+	* explow.c (plus_constant_mode): Add.
+	(plus_constant): Implement with plus_constant_mode.
+	* rtl.h (plus_constant_mode): Add.
+
 2012-04-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52808
