@@ -517,8 +517,11 @@ immed_double_int_const (double_int i, enum machine_mode mode)
 
 /* Return a CONST_DOUBLE or CONST_INT for a value specified as a pair
    of ints: I0 is the low-order word and I1 is the high-order word.
-   Do not use this routine for non-integer modes; convert to
-   REAL_VALUE_TYPE and use CONST_DOUBLE_FROM_REAL_VALUE.  */
+   For values that are larger than 2*HOST_BITS_PER_WIDE_INT, the
+   implied upper bits are copies of the high bit of i1.  The value
+   itself is neither signed nor unsigned.  Do not use this routine for
+   non-integer modes; convert to REAL_VALUE_TYPE and use
+   CONST_DOUBLE_FROM_REAL_VALUE.  */
 
 rtx
 immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, enum machine_mode mode)
@@ -531,10 +534,9 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, enum machine_mode mode)
 
      1) If GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT, then we use
 	gen_int_mode.
-     2) GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_WIDE_INT, but the value of
-	the integer fits into HOST_WIDE_INT anyway (i.e., i1 consists only
-	from copies of the sign bit, and sign of i0 and i1 are the same),  then
-	we return a CONST_INT for i0.
+     2) If the value of the integer fits into HOST_WIDE_INT anyway
+        (i.e., i1 consists only from copies of the sign bit, and sign
+	of i0 and i1 are the same), then we return a CONST_INT for i0.
      3) Otherwise, we create a CONST_DOUBLE for i0 and i1.  */
   if (mode != VOIDmode)
     {
@@ -546,8 +548,6 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, enum machine_mode mode)
 
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
 	return gen_int_mode (i0, mode);
-
-      gcc_assert (GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_WIDE_INT);
     }
 
   /* If this integer fits in one word, return a CONST_INT.  */

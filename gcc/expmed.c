@@ -3139,8 +3139,10 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	    {
 	      int shift = floor_log2 (CONST_DOUBLE_HIGH (op1))
 			  + HOST_BITS_PER_WIDE_INT;
-	      return expand_shift (LSHIFT_EXPR, mode, op0,
-				   shift, target, unsignedp);
+	      if (shift < 2 * HOST_BITS_PER_WIDE_INT - 1
+		  || GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT)
+		return expand_shift (LSHIFT_EXPR, mode, op0,
+				     shift, target, unsignedp);
 	    }
 	}
 
