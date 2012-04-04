@@ -1,3 +1,9 @@
+2012-04-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libitm/52854
+	* config/x86/target.h (gtm_jmpbuf): Replace long with long long
+	for x86-64.
+
 2012-04-03  Tristan Gingold  <gingold@adacore.com>
 
 	* configure: Regenerate.
