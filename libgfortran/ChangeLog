@@ -1,3 +1,7 @@
+2012-04-04  Tristan Gingold  <gingold@adacore.com>
+
+	* libgfortran.h: Include complex.h before math.h
+
 2012-04-02  Tristan Gingold  <gingold@adacore.com>
 
 	* configure.ac: Use new version of GCC_CHECK_MATH_FUNC.
