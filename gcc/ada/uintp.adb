@@ -239,7 +239,7 @@ package body Uintp is
 
    function Hash_Num (F : Int) return Hnum is
    begin
-      return Standard."mod" (F, Hnum'Range_Length);
+      return Types."mod" (F, Hnum'Range_Length);
    end Hash_Num;
 
    ---------------

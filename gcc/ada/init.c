@@ -86,6 +86,11 @@ extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 
 /* Global values computed by the binder.  */
 int   __gl_main_priority                 = -1;
+/* ??? This is needed to build the compiler with a 4.6 compiler, which is not
+   really supported but happens to essentially work except for this nit.  */
+#if (__GNUC__ * 10 + __GNUC_MINOR__ > 45)
+int   __gl_main_cpu                      = -1;
+#endif
 int   __gl_time_slice_val                = -1;
 char  __gl_wc_encoding                   = 'n';
 char  __gl_locking_policy                = ' ';

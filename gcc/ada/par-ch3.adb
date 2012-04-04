@@ -111,7 +111,6 @@ package body Ch3 is
    --  current token, and if this is the first such message issued, saves
    --  the message id in Missing_Begin_Msg, for possible later replacement.
 
-
    ---------------------------------
    -- Check_Restricted_Expression --
    ---------------------------------
@@ -2106,7 +2105,6 @@ package body Ch3 is
       Expr_Node  : Node_Id;
       Range_Node : Node_Id;
       Save_Loc   : Source_Ptr;
-
 
    --  Start of processing for P_Range_Or_Subtype_Mark
 

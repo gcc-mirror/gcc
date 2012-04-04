@@ -1,3 +1,12 @@
+2012-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from 4.6 branch
+	* init.c (__gl_main_cpu): New global variable.
+	* par-ch3.adb: Remove a couple of blank lines.
+	* types.ads (Big_String_Ptr): Don't give it zero storage size.
+	(Source_Buffer_Ptr): Likewise.
+	* uintp.adb (Hash_Num): Use "mod" operator from Types.
+
 2012-01-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/46192
