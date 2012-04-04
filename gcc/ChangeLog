@@ -1,3 +1,8 @@
+2012-04-04  Tristan Gingold  <gingold@adacore.com>
+
+	* expr.c (expand_expr_real_2): Handle larger sizetype in
+	POINTER_PLUS_EXPR.
+
 2012-04-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/t-sh (MULTILIB_MATCHES): Match m2a-single-only
