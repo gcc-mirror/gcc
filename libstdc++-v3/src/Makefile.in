@@ -914,8 +914,9 @@ build-debug: stamp-debug
 	  mv Makefile Makefile.tmp; \
 	  sed -e 's,all-local: all-once,all-local:,' \
 	      -e 's,install-data-local: install-data-once,install-data-local:,' \
-	      -e 's,src/c,src/debug/c,' \
+	      -e '/vpath/!s,src/c,src/debug/c,' \
 	  < Makefile.tmp > Makefile ; \
+	  rm -f Makefile.tmp ; \
 	  $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' \
 	  toolexeclibdir=$(glibcxx_toolexeclibdir)/debug all) ;
 
