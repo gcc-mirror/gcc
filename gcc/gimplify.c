@@ -550,6 +550,29 @@ lookup_tmp_var (tree val, bool is_formal)
   return ret;
 }
 
+/* Returns true iff T is a valid RHS for an assignment to a renamed
+   user -- or front-end generated artificial -- variable.  */
+
+static bool
+is_gimple_reg_rhs (tree t)
+{
+  return get_gimple_rhs_class (TREE_CODE (t)) != GIMPLE_INVALID_RHS;
+}
+
+/* Returns true iff T is a valid RHS for an assignment to an un-renamed
+   LHS, or for a call argument.  */
+
+static bool
+is_gimple_mem_rhs (tree t)
+{
+  /* If we're dealing with a renamable type, either source or dest must be
+     a renamed variable.  */
+  if (is_gimple_reg_type (TREE_TYPE (t)))
+    return is_gimple_val (t);
+  else
+    return is_gimple_val (t) || is_gimple_lvalue (t);
+}
+
 /* Return true if T is a CALL_EXPR or an expression that can be
    assigned to a temporary.  Note that this predicate should only be
    used during gimplification.  See the rationale for this in
@@ -4514,6 +4537,60 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 
   return ret;
 }
+
+
+/* Return true if T looks like a valid GIMPLE statement.  */
+
+static bool
+is_gimple_stmt (tree t)
+{
+  const enum tree_code code = TREE_CODE (t);
+
+  switch (code)
+    {
+    case NOP_EXPR:
+      /* The only valid NOP_EXPR is the empty statement.  */
+      return IS_EMPTY_STMT (t);
+
+    case BIND_EXPR:
+    case COND_EXPR:
+      /* These are only valid if they're void.  */
+      return TREE_TYPE (t) == NULL || VOID_TYPE_P (TREE_TYPE (t));
+
+    case SWITCH_EXPR:
+    case GOTO_EXPR:
+    case RETURN_EXPR:
+    case LABEL_EXPR:
+    case CASE_LABEL_EXPR:
+    case TRY_CATCH_EXPR:
+    case TRY_FINALLY_EXPR:
+    case EH_FILTER_EXPR:
+    case CATCH_EXPR:
+    case ASM_EXPR:
+    case STATEMENT_LIST:
+    case OMP_PARALLEL:
+    case OMP_FOR:
+    case OMP_SECTIONS:
+    case OMP_SECTION:
+    case OMP_SINGLE:
+    case OMP_MASTER:
+    case OMP_ORDERED:
+    case OMP_CRITICAL:
+    case OMP_TASK:
+      /* These are always void.  */
+      return true;
+
+    case CALL_EXPR:
+    case MODIFY_EXPR:
+    case PREDICT_EXPR:
+      /* These are valid regardless of their type.  */
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 
 /* Promote partial stores to COMPLEX variables to total stores.  *EXPR_P is
    a MODIFY_EXPR with a lhs of a REAL/IMAGPART_EXPR of a variable with
