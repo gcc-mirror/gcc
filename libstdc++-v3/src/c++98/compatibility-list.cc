@@ -24,8 +24,6 @@
 
 #include <bits/move.h>
 
-#ifdef PIC
-
 #ifndef _GLIBCXX_BEGIN_NAMESPACE_COMPAT
 # define _GLIBCXX_BEGIN_NAMESPACE_COMPAT
 #endif
@@ -146,5 +144,3 @@ _GLIBCXX_BEGIN_NAMESPACE_COMPAT
 _GLIBCXX_END_NAMESPACE_COMPAT
 
 } // namespace std
-
-#endif

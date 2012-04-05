@@ -1,3 +1,11 @@
+2012-04-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Partially revert:
+	2012-03-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52689
+	* src/c++98/compatibility-list.cc: Same.
+
 2012-04-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	PR bootstrap/52840
