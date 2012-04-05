@@ -1,3 +1,9 @@
+2012-04-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.md (arch): Add neon_onlya8 and neon_nota8.
+	(arch_enabled): Handle new arch types.
+	(one_cmpldi2): Add NEON support.
+
 2012-04-05  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (walk_gimple_op): Compute val_only for the LHS
