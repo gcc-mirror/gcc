@@ -1,3 +1,8 @@
+2012-04-05  Richard Guenther  <rguenther@suse.de>
+
+	* lto-lang.c (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Remove
+	definition.
+
 2012-03-12  Richard Guenther  <rguenther@suse.de>
 
 	* lto-lang.c (builtin_type_for_size): Use lto_type_for_size.
