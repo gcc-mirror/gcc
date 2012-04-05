@@ -257,10 +257,9 @@ dse_optimize_stmt (gimple_stmt_iterator gsi)
 	  /* Then we need to fix the operand of the consuming stmt.  */
 	  unlink_stmt_vdef (stmt);
 
-	  bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
-
 	  /* Remove the dead store.  */
-	  gsi_remove (&gsi, true);
+	  if (gsi_remove (&gsi, true))
+	    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
 
 	  /* And release any SSA_NAMEs set in this statement back to the
 	     SSA_NAME manager.  */
