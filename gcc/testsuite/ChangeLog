@@ -1,3 +1,8 @@
+2012-04-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52882
+	* gcc.target/i386/pr52882.c: New test.
+
 2012-04-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Dominique D'Humieures  <dominiq@lps.ens.fr>
 

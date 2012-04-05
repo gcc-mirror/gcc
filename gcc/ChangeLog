@@ -1,10 +1,16 @@
+2012-04-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52882
+	* config/i386/i386.c (ix86_decompose_address): Allow VOIDmode
+	CONST_INT operands, zero-extended with AND.
+
 2012-04-05  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/50751
 	* config/sh/sh.c (sh_find_mov_disp_adjust): Take machine_mode as the
 	first argument instead of mode size.  Move displacement calculations
 	to ...
-	(mov_insn_size, max_mov_insn_displacement, mov_insn_alignment_mask): 
+	(mov_insn_size, max_mov_insn_displacement, mov_insn_alignment_mask):
 	... these new functions.
 	(disp_adjust): Remove max_mov_disp field.
 	(sh_legitimate_index_p): Use max_mov_insn_displacement and
