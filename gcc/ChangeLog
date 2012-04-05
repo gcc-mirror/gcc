@@ -1,5 +1,10 @@
 2012-04-05  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-dse.c (dse_optimize_stmt): Remember the stmt
+	basic-block before removing it.
+
+2012-04-05  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssanames.c (release_dead_ssa_names): Compact the SSA
 	version namespace as we release the freelist.
 
