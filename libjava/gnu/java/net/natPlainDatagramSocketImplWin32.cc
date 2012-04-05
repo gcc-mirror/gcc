@@ -540,6 +540,7 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
       len = sizeof (struct in_addr);
       ptr = (const char *) &u.addr;
     }
+#ifdef HAVE_INET6
   else if (len == 16)
     {
       level = IPPROTO_IPV6;
@@ -548,6 +549,7 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
       len = sizeof (struct in6_addr);
       ptr = (const char *) &u.addr6;
     }
+#endif
   else
     throw
       new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
@@ -635,14 +637,14 @@ gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
         goto error;
       if (u.address.sin_family == AF_INET)
         {
-    laddr = JvNewByteArray (4);
-    memcpy (elements (laddr), &u.address.sin_addr, 4);
+	  laddr = JvNewByteArray (4);
+	  memcpy (elements (laddr), &u.address.sin_addr, 4);
         }
 #ifdef HAVE_INET6
-            else if (u.address.sin_family == AF_INET6)
+      else if (u.address.sin_family == AF_INET6)
         {
-    laddr = JvNewByteArray (16);
-    memcpy (elements (laddr), &u.address6.sin6_addr, 16);
+	  laddr = JvNewByteArray (16);
+	  memcpy (elements (laddr), &u.address6.sin6_addr, 16);
         }
 #endif
       else

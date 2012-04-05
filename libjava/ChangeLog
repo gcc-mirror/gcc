@@ -1,3 +1,11 @@
+2012-04-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgcj/52645
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc (setOption):
+	Restore HAVE_INET6 check.
+	* gnu/java/net/natPlainDatagramSocketImplWin32.cc (setOption):
+	Likewise.
+
 2012-03-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	PR libgcj/52694
