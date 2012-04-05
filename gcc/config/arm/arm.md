@@ -196,7 +196,7 @@
 ; for ARM or Thumb-2 with arm_arch6, and nov6 for ARM without
 ; arm_arch6.  This attribute is used to compute attribute "enabled",
 ; use type "any" to enable an alternative in all cases.
-(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,onlya8,nota8"
+(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,onlya8,neon_onlya8,nota8,neon_nota8"
   (const_string "any"))
 
 (define_attr "arch_enabled" "no,yes"
@@ -235,8 +235,18 @@
 	      (eq_attr "tune" "cortexa8"))
 	 (const_string "yes")
 
+	 (and (eq_attr "arch" "neon_onlya8")
+	      (eq_attr "tune" "cortexa8")
+	      (match_test "TARGET_NEON"))
+	 (const_string "yes")
+
 	 (and (eq_attr "arch" "nota8")
 	      (not (eq_attr "tune" "cortexa8")))
+	 (const_string "yes")
+
+	 (and (eq_attr "arch" "neon_nota8")
+	      (not (eq_attr "tune" "cortexa8"))
+	      (match_test "TARGET_NEON"))
 	 (const_string "yes")]
 	(const_string "no")))
 
@@ -4250,11 +4260,16 @@
   "")
 
 (define_insn_and_split "one_cmpldi2"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(not:DI (match_operand:DI 1 "s_register_operand" "0,r")))]
+  [(set (match_operand:DI 0 "s_register_operand"	 "=w,&r,&r,?w")
+	(not:DI (match_operand:DI 1 "s_register_operand" " w, 0, r, w")))]
   "TARGET_32BIT"
-  "#"
-  "TARGET_32BIT && reload_completed"
+  "@
+   vmvn\t%P0, %P1
+   #
+   #
+   vmvn\t%P0, %P1"
+  "TARGET_32BIT && reload_completed
+   && arm_general_register_operand (operands[0], DImode)"
   [(set (match_dup 0) (not:SI (match_dup 1)))
    (set (match_dup 2) (not:SI (match_dup 3)))]
   "
@@ -4264,8 +4279,10 @@
     operands[3] = gen_highpart (SImode, operands[1]);
     operands[1] = gen_lowpart (SImode, operands[1]);
   }"
-  [(set_attr "length" "8")
-   (set_attr "predicable" "yes")]
+  [(set_attr "length" "*,8,8,*")
+   (set_attr "predicable" "no,yes,yes,no")
+   (set_attr "neon_type" "neon_int_1,*,*,neon_int_1")
+   (set_attr "arch" "neon_nota8,*,*,neon_onlya8")]
 )
 
 (define_expand "one_cmplsi2"
