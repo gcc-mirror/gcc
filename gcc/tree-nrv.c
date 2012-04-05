@@ -244,6 +244,7 @@ tree_nrv (void)
 	    {
 	      unlink_stmt_vdef (stmt);
 	      gsi_remove (&gsi, true);
+	      release_defs (stmt);
 	    }
 	  else
 	    {

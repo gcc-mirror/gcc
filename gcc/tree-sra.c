@@ -2821,6 +2821,7 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	{
 	  unlink_stmt_vdef (*stmt);
 	  gsi_remove (gsi, true);
+	  release_defs (*stmt);
 	  return SRA_AM_REMOVED;
 	}
       else
@@ -2844,6 +2845,7 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       init_subtree_with_zero (acc, gsi, false, loc);
       unlink_stmt_vdef (*stmt);
       gsi_remove (gsi, true);
+      release_defs (*stmt);
       return SRA_AM_REMOVED;
     }
   else
@@ -3094,6 +3096,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	      gsi_next (gsi);
 	      unlink_stmt_vdef (*stmt);
 	      gsi_remove (&orig_gsi, true);
+	      release_defs (*stmt);
 	      sra_stats.deleted++;
 	      return SRA_AM_REMOVED;
 	    }
@@ -3114,6 +3117,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	      gcc_assert (*stmt == gsi_stmt (*gsi));
 	      unlink_stmt_vdef (*stmt);
 	      gsi_remove (gsi, true);
+	      release_defs (*stmt);
 	      sra_stats.deleted++;
 	      return SRA_AM_REMOVED;
 	    }

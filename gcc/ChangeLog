@@ -1,5 +1,16 @@
 2012-04-05  Richard Guenther  <rguenther@suse.de>
 
+	* tree-nrv.c (tree_nrv): Release VDEFs.
+	* tree-sra.c (sra_modify_constructor_assign): Likewise.
+	(sra_modify_assign): Likewise.
+	* tree-vect-stmts.c (vect_remove_stores): Likewise.
+	* tree-vect-loop.c (vect_transform_loop): Likewise.
+	* tree-ssa-dom.c (optimize_stmt): Likewise.
+	* tree-vect-slp.c (vect_schedule_slp): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_sincos): Likewise.
+
+2012-04-05  Richard Guenther  <rguenther@suse.de>
+
 	* gimple-iterator.c (gsi_remove): Return whether EH edges need to be
 	cleanup.
 	* gimple.h (gsi_remove): Adjust.

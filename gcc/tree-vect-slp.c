@@ -3043,7 +3043,9 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
            store = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (store));
           /* Free the attached stmt_vec_info and remove the stmt.  */
           gsi = gsi_for_stmt (store);
+	  unlink_stmt_vdef (store);
           gsi_remove (&gsi, true);
+	  release_defs (store);
           free_stmt_vec_info (store);
         }
     }

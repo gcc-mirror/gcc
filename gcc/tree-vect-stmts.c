@@ -5653,7 +5653,9 @@ vect_remove_stores (gimple first_stmt)
 	next = STMT_VINFO_RELATED_STMT (stmt_info);
       /* Free the attached stmt_vec_info and remove the stmt.  */
       next_si = gsi_for_stmt (next);
+      unlink_stmt_vdef (next);
       gsi_remove (&next_si, true);
+      release_defs (next);
       free_stmt_vec_info (next);
       next = tmp;
     }
