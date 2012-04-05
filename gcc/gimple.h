@@ -5095,7 +5095,7 @@ void gsi_insert_seq_after (gimple_stmt_iterator *, gimple_seq,
 			   enum gsi_iterator_update);
 void gsi_insert_seq_after_without_update (gimple_stmt_iterator *, gimple_seq,
                                           enum gsi_iterator_update);
-void gsi_remove (gimple_stmt_iterator *, bool);
+bool gsi_remove (gimple_stmt_iterator *, bool);
 gimple_stmt_iterator gsi_for_stmt (gimple);
 void gsi_move_after (gimple_stmt_iterator *, gimple_stmt_iterator *);
 void gsi_move_before (gimple_stmt_iterator *, gimple_stmt_iterator *);

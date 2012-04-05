@@ -325,9 +325,9 @@ remove_prop_source_from_use (tree name)
     bb = gimple_bb (stmt);
     gsi = gsi_for_stmt (stmt);
     unlink_stmt_vdef (stmt);
-    gsi_remove (&gsi, true);
+    if (gsi_remove (&gsi, true))
+      cfg_changed |= gimple_purge_dead_eh_edges (bb);
     release_defs (stmt);
-    cfg_changed |= gimple_purge_dead_eh_edges (bb);
 
     name = is_gimple_assign (stmt) ? gimple_assign_rhs1 (stmt) : NULL_TREE;
   } while (name && TREE_CODE (name) == SSA_NAME);

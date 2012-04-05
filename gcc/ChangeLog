@@ -1,3 +1,15 @@
+2012-04-05  Richard Guenther  <rguenther@suse.de>
+
+	* gimple-iterator.c (gsi_remove): Return whether EH edges need to be
+	cleanup.
+	* gimple.h (gsi_remove): Adjust.
+	* tree-ssa-operands.c (unlink_stmt_vdef): Optimize.
+	* tree-ssa-dom.c (optimize_stmt): Use gsi_remove result.
+	* tree-ssa-dse.c (dse_optimize_stmt): Likewise.
+	* tree-ssa-forwprop.c (remove_prop_source_from_use): Likewise.
+	* tree-ssa-math-opts.c (execute_optimize_widening_mul): Likewise.
+	* tree-ssa-pre.c (eliminate): Likewise.
+
 2012-04-04  Mike Stump  <mikestump@comcast.net>
 
 	* doc/rtl.texi (const_double): Document as sign-extending.
