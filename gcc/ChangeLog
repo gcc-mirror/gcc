@@ -1,5 +1,15 @@
 2012-04-05  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.c (walk_gimple_op): Compute val_only for the LHS
+	of an assigment in the canonical way, avoiding is_gimple_mem_rhs.
+	(is_gimple_mem_rhs, is_gimple_reg_rhs, is_gimple_stmt): Move ...
+	* gimplify.c (is_gimple_mem_rhs, is_gimple_reg_rhs, is_gimple_stmt):
+	... here and make static.
+	* gimple.h (is_gimple_mem_rhs, is_gimple_reg_rhs, is_gimple_stmt):
+	Remove.
+
+2012-04-05  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-dse.c (dse_optimize_stmt): Remember the stmt
 	basic-block before removing it.
 

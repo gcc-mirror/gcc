@@ -961,8 +961,6 @@ gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
 const char *gimple_decl_printable_name (tree, int);
 tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree);
 tree gimple_extract_devirt_binfo_from_cst (tree);
-/* Returns true iff T is a valid GIMPLE statement.  */
-extern bool is_gimple_stmt (tree);
 
 /* Returns true iff T is a scalar register variable.  */
 extern bool is_gimple_reg (tree);
@@ -996,11 +994,6 @@ extern bool is_gimple_val (tree);
 extern bool is_gimple_asm_val (tree);
 /* Returns true iff T is a valid address operand of a MEM_REF.  */
 bool is_gimple_mem_ref_addr (tree);
-/* Returns true iff T is a valid rhs for a MODIFY_EXPR where the LHS is a
-   GIMPLE temporary, a renamed user variable, or something else,
-   respectively.  */
-extern bool is_gimple_reg_rhs (tree);
-extern bool is_gimple_mem_rhs (tree);
 
 /* Returns true iff T is a valid if-statement condition.  */
 extern bool is_gimple_condexpr (tree);
