@@ -5476,8 +5476,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      else
 		{
 		  /* Free the attached stmt_vec_info and remove the stmt.  */
-		  free_stmt_vec_info (gsi_stmt (si));
+		  gimple store = gsi_stmt (si);
+		  free_stmt_vec_info (store);
+		  unlink_stmt_vdef (store);
 		  gsi_remove (&si, true);
+		  release_defs (store);
 		  continue;
 		}
 	    }

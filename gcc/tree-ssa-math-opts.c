@@ -1430,6 +1430,8 @@ execute_cse_sincos (void)
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
+		      if (gimple_vdef (stmt))
+			release_ssa_name (gimple_vdef (stmt));
 		    }
 		  break;
 
@@ -1450,6 +1452,8 @@ execute_cse_sincos (void)
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
+		      if (gimple_vdef (stmt))
+			release_ssa_name (gimple_vdef (stmt));
 		    }
 		  break;
 
@@ -1465,6 +1469,8 @@ execute_cse_sincos (void)
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
+		      if (gimple_vdef (stmt))
+			release_ssa_name (gimple_vdef (stmt));
 		    }
 		  break;
 

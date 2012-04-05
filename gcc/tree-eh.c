@@ -3268,12 +3268,12 @@ sink_clobbers (basic_block bb)
       vdef = gimple_vdef (stmt);
       if (vdef && TREE_CODE (vdef) == SSA_NAME)
 	{
+	  release_ssa_name (vdef);
 	  vdef = SSA_NAME_VAR (vdef);
 	  mark_sym_for_renaming (vdef);
 	  gimple_set_vdef (stmt, vdef);
 	  gimple_set_vuse (stmt, vdef);
 	}
-      release_defs (stmt);
       gsi_insert_before (&dgsi, stmt, GSI_SAME_STMT);
     }
 
@@ -3955,7 +3955,7 @@ cleanup_empty_eh_move_lp (basic_block bb, edge e_out,
 
   /* Delete the RESX that was matched within the empty handler block.  */
   gsi = gsi_last_bb (bb);
-  mark_virtual_ops_for_renaming (gsi_stmt (gsi));
+  unlink_stmt_vdef (gsi_stmt (gsi));
   gsi_remove (&gsi, true);
 
   /* Clean up E_OUT for the fallthru.  */

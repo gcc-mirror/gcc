@@ -2301,6 +2301,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "  Flagged to clear EH edges.\n");
 		}
+	      release_defs (stmt);
 	      return;
 	    }
 	}
