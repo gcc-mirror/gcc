@@ -302,6 +302,9 @@ static void sh_trampoline_init (rtx, tree, rtx);
 static rtx sh_trampoline_adjust_address (rtx);
 static void sh_conditional_register_usage (void);
 static bool sh_legitimate_constant_p (enum machine_mode, rtx);
+static int mov_insn_size (enum machine_mode, bool);
+static int max_mov_insn_displacement (enum machine_mode, bool);
+static int mov_insn_alignment_mask (enum machine_mode, bool);
 
 static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 
@@ -3129,22 +3132,103 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     }
 }
 
-/* Compute the cost of an address.  For the SH, all valid addresses are
-   the same cost.  Use a slightly higher cost for reg + reg addressing,
-   since it increases pressure on r0.  */
+/* Determine the size of the fundamental move insn that will be used
+   for the specified mode.  */
+
+static inline int
+mov_insn_size (enum machine_mode mode, bool consider_sh2a)
+{
+  const int mode_sz = GET_MODE_SIZE (mode);
+
+  if ((consider_sh2a && TARGET_SH2A_DOUBLE && mode == DFmode)
+      || (TARGET_FMOVD && mode == DFmode))
+    return mode_sz;
+  else
+    {
+      /* The max. available mode for actual move insns is SImode.
+	 Larger accesses will be split into multiple loads/stores.  */
+      const int max_mov_sz = GET_MODE_SIZE (SImode);
+      return mode_sz >= max_mov_sz ? max_mov_sz : mode_sz;
+    }
+}
+
+/* Determine the maximum possible displacement for a move insn for the
+   specified mode.  */
 
 static int
-sh_address_cost (rtx X,
-	         bool speed ATTRIBUTE_UNUSED)
+max_mov_insn_displacement (enum machine_mode mode, bool consider_sh2a)
 {
-  /*  SH2A supports 4 byte displacement mov insns with higher offsets.
-      Consider those as more expensive than 2 byte insns.  */
-  if (DISP_ADDR_P (X) && GET_MODE (X) == QImode)
-    return DISP_ADDR_OFFSET (X) < 16 ? 0 : 1;
+  /* The 4 byte displacement move insns are the same as the 2 byte
+     versions but take a 12 bit displacement.  All we need to do is to
+     scale the max. displacement value accordingly.  */
+  const int disp_scale = consider_sh2a ? (4095 / 15) : 1;
 
-  return (GET_CODE (X) == PLUS
-	  && ! CONSTANT_P (XEXP (X, 1))
-	  && ! TARGET_SHMEDIA ? 1 : 0);
+  /* FIXME: HImode with displacement addressing is not supported yet.
+     Make it purposefully fail for now.  */
+  if (mode == HImode)
+    return 0;
+
+  /* SH2A supports FPU move insns with 12 bit displacements.
+     Other variants to do not support any kind of displacements for
+     FPU move insns.  */
+  if (! consider_sh2a && TARGET_FPU_ANY && GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return 0;
+  else
+    {
+      const int mov_insn_sz = mov_insn_size (mode, consider_sh2a);
+      const int mode_sz = GET_MODE_SIZE (mode);
+      int r = 15 * mov_insn_sz * disp_scale;
+    
+      /* If the mov insn will be split into multiple loads/stores, the
+	 maximum possible displacement is a bit smaller.  */
+      if (mode_sz > mov_insn_sz)
+	r -= mode_sz - mov_insn_sz;
+      return r;
+    }
+}
+
+/* Determine the alignment mask for a move insn of the
+   specified mode.  */
+
+static inline int
+mov_insn_alignment_mask (enum machine_mode mode, bool consider_sh2a)
+{
+  const int mov_insn_sz = mov_insn_size (mode, consider_sh2a);
+  return mov_insn_sz > 0 ? (mov_insn_sz - 1) : 0;
+}
+
+/* Compute the cost of an address.  */
+
+static int
+sh_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
+{
+  /* 'reg + disp' addressing.  */
+  if (DISP_ADDR_P (x))
+    {
+      const HOST_WIDE_INT offset = DISP_ADDR_OFFSET (x);
+      const enum machine_mode mode = GET_MODE (x);
+
+      /* The displacement would fit into a 2 byte move insn.  */
+      if (offset > 0 && offset <= max_mov_insn_displacement (mode, false))
+	return 0;
+
+      /* The displacement would fit into a 4 byte move insn (SH2A).  */
+      if (TARGET_SH2A
+	  && offset > 0 && offset <= max_mov_insn_displacement (mode, true))
+	return 1;
+
+      /* The displacement is probably out of range and will require extra
+	 calculations.  */
+      return 2;
+    }
+
+  /* 'reg + reg' addressing.  Account a slightly higher cost because of 
+     increased pressure on R0.  */
+  if (GET_CODE (x) == PLUS && ! CONSTANT_P (XEXP (x, 1))
+      && ! TARGET_SHMEDIA)
+    return 1;
+
+  return 0;
 }
 
 /* Code to expand a shift.  */
@@ -9593,67 +9677,41 @@ sh_insn_length_adjustment (rtx insn)
 /* Return TRUE for a valid displacement for the REG+disp addressing
    with MODE.  */
 
-/* ??? The SH2e does not have the REG+disp addressing mode when loading values
-   into the FRx registers.  We implement this by setting the maximum offset
-   to zero when the value is SFmode.  This also restricts loading of SFmode
-   values into the integer registers, but that can't be helped.  */
-
-/* The SH allows a displacement in a QI or HI amode, but only when the
-   other operand is R0. GCC doesn't handle this very well, so we forgot
-   all of that.
-
-   A legitimate index for a QI or HI is 0, SI can be any number 0..63,
-   DI can be any number 0..60.  */
-
 bool
 sh_legitimate_index_p (enum machine_mode mode, rtx op)
 {
-  if (CONST_INT_P (op))
+  if (! CONST_INT_P (op))
+    return false;
+
+  if (TARGET_SHMEDIA)
     {
-      if (TARGET_SHMEDIA)
-	{
-	  int size;
+      int size;
 
-	  /* Check if this is the address of an unaligned load / store.  */
-	  if (mode == VOIDmode)
-	    return CONST_OK_FOR_I06 (INTVAL (op));
+      /* Check if this is the address of an unaligned load / store.  */
+      if (mode == VOIDmode)
+	return CONST_OK_FOR_I06 (INTVAL (op));
 
-	  size = GET_MODE_SIZE (mode);
-	  return (!(INTVAL (op) & (size - 1))
-		  && INTVAL (op) >= -512 * size
-		  && INTVAL (op) < 512 * size);
-	}
-
-      if (TARGET_SH2A)
-	{
-	  if (mode == QImode && (unsigned) INTVAL (op) < 4096)
-	    return true;
-	}
-
-      if (mode == QImode && (unsigned) INTVAL (op) < 16)
-	return true;
-
-      if ((GET_MODE_SIZE (mode) == 4
-	   && (unsigned) INTVAL (op) < 64
-	   && !(INTVAL (op) & 3)
-	   && !(TARGET_SH2E && mode == SFmode))
-	  || (GET_MODE_SIZE (mode) == 4
-	      && (unsigned) INTVAL (op) < 16383
-	      && !(INTVAL (op) & 3) && TARGET_SH2A))
-	return true;
-
-      if ((GET_MODE_SIZE (mode) == 8
-	   && (unsigned) INTVAL (op) < 60
-	   && !(INTVAL (op) & 3)
-	   && !((TARGET_SH4 || TARGET_SH2A) && mode == DFmode))
-	  || ((GET_MODE_SIZE (mode)==8)
-	      && (unsigned) INTVAL (op) < 8192
-	      && !(INTVAL (op) & (TARGET_SH2A_DOUBLE ? 7 : 3))
-	      && (TARGET_SH2A && mode == DFmode)))
-	return true;
+      size = GET_MODE_SIZE (mode);
+      return (!(INTVAL (op) & (size - 1))
+	      && INTVAL (op) >= -512 * size
+	      && INTVAL (op) < 512 * size);
     }
+  else
+    {
+      const HOST_WIDE_INT offset = INTVAL (op);
+      const int max_disp = max_mov_insn_displacement (mode, TARGET_SH2A);
+      const int align_mask = mov_insn_alignment_mask (mode, TARGET_SH2A);
 
-  return false;
+      /* If the mode does not support any displacement always return false.
+	 Even though an index of '0' is actually always valid, it will cause
+	 troubles when e.g. a DFmode move is split into two SFmode moves,
+	 where one SFmode move will have index '0' and the other move will
+	 have index '4'.  */
+       if (max_disp < 1)
+	return false;
+
+      return offset >= 0 && offset <= max_disp && (offset & align_mask) == 0;
+    }
 }
 
 /* Recognize an RTL expression that is a valid memory address for
@@ -9811,45 +9869,41 @@ struct disp_adjust
 {
   rtx offset_adjust;
   rtx mov_disp;
-  int max_mov_disp;
 };
 
 static struct disp_adjust
-sh_find_mov_disp_adjust (int mode_sz, HOST_WIDE_INT offset)
+sh_find_mov_disp_adjust (enum machine_mode mode, HOST_WIDE_INT offset)
 {
-  struct disp_adjust res = { NULL_RTX, NULL_RTX, 0 };
+  struct disp_adjust res = { NULL_RTX, NULL_RTX };
 
-  /* The max. available mode for actual move insns is SImode.
-     Larger accesses will be split into multiple loads/stores.  */
-  const int max_mov_sz = GET_MODE_SIZE (SImode);
-
-  const int mov_insn_size = mode_sz >= max_mov_sz ? max_mov_sz : mode_sz;
-  const HOST_WIDE_INT max_disp = 15 * mov_insn_size;
-  HOST_WIDE_INT align_modifier = offset > 127 ? mov_insn_size : 0;
-
+  /* Do not try to use SH2A's large displacements here, because this would
+     effectively disable the small displacement insns.  */
+  const int mode_sz = GET_MODE_SIZE (mode);
+  const int mov_insn_sz = mov_insn_size (mode, false);
+  const int max_disp = max_mov_insn_displacement (mode, false);
+  const int max_disp_next = max_disp + mov_insn_sz;
+  HOST_WIDE_INT align_modifier = offset > 127 ? mov_insn_sz : 0;
   HOST_WIDE_INT offset_adjust;
 
   /* In some cases this actually does happen and we must check for it.  */
-  if (mode_sz < 1 || mode_sz > 8)
+  if (mode_sz < 1 || mode_sz > 8 || max_disp < 1)
     return res;
 
   /* FIXME: HImode with displacement addressing is not supported yet.
      Make it purposefully fail for now.  */
-  if (mov_insn_size == 2)
+  if (mov_insn_sz == 2)
     return res;
 
   /* Keeps the previous behavior for QImode displacement addressing.
      This just decides how the offset is re-based.  Removing this special
      case will result in slightly bigger code on average, but it's not that
      bad actually.  */
-  if (mov_insn_size == 1)
+  if (mov_insn_sz == 1)
     align_modifier = 0;
-
-  res.max_mov_disp = max_disp + mov_insn_size;
 
   offset_adjust = ((offset + align_modifier) & ~max_disp) - align_modifier;
 
-  if (mode_sz + offset - offset_adjust <= res.max_mov_disp)
+  if (mode_sz + offset - offset_adjust <= max_disp_next)
     {
       res.offset_adjust = GEN_INT (offset_adjust);
       res.mov_disp = GEN_INT (offset - offset_adjust);
@@ -9878,8 +9932,7 @@ sh_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
   if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1))
       && BASE_REGISTER_RTX_P (XEXP (x, 0)))
     {
-      const int mode_sz = GET_MODE_SIZE (mode);
-      struct disp_adjust adj = sh_find_mov_disp_adjust (mode_sz,
+      struct disp_adjust adj = sh_find_mov_disp_adjust (mode,
 							INTVAL (XEXP (x, 1)));
 
       if (adj.offset_adjust != NULL_RTX && adj.mov_disp != NULL_RTX)
@@ -9917,7 +9970,7 @@ sh_legitimize_reload_address (rtx *p, enum machine_mode mode, int opnum,
 	  || XEXP (*p, 0) == hard_frame_pointer_rtx))
     {
       const HOST_WIDE_INT offset = INTVAL (XEXP (*p, 1));
-      struct disp_adjust adj = sh_find_mov_disp_adjust (mode_sz, offset);
+      struct disp_adjust adj = sh_find_mov_disp_adjust (mode, offset);
 
       if (TARGET_SH2A && mode == DFmode && (offset & 0x7))
 	{
