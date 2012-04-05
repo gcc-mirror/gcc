@@ -1,3 +1,10 @@
+2012-04-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR bootstrap/52840
+	* src/Makefile.am (build-debug): Do not adjust vpath dir, remove
+	Makefile.tmp
+	* src/Makefile.in: Adjust as per above.
+
 2012-04-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	Partially revert:
