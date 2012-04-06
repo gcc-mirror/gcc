@@ -1,3 +1,10 @@
+2012-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52596
+	* semantics.c (finish_non_static_data_member): In templates, pass
+	the decl to build_qualified_name.
+	* tree.c (lvalue_kind) [SCOPE_REF]: Handle FIELD_DECL.
+
 2012-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52845

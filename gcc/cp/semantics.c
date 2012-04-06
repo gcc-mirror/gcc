@@ -1590,7 +1590,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
   else if (processing_template_decl)
     return build_qualified_name (TREE_TYPE (decl),
 				 qualifying_scope,
-				 DECL_NAME (decl),
+				 decl,
 				 /*template_p=*/false);
   else
     {

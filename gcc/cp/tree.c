@@ -151,8 +151,14 @@ lvalue_kind (const_tree ref)
       /* A scope ref in a template, left as SCOPE_REF to support later
 	 access checking.  */
     case SCOPE_REF:
-      gcc_assert (!type_dependent_expression_p (CONST_CAST_TREE(ref)));
-      return lvalue_kind (TREE_OPERAND (ref, 1));
+      gcc_assert (!type_dependent_expression_p (CONST_CAST_TREE (ref)));
+      {
+	tree op = TREE_OPERAND (ref, 1);
+	if (TREE_CODE (op) == FIELD_DECL)
+	  return (DECL_C_BIT_FIELD (op) ? clk_bitfield : clk_ordinary);
+	else
+	  return lvalue_kind (op);
+      }
 
     case MAX_EXPR:
     case MIN_EXPR:
