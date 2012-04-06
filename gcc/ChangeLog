@@ -1,3 +1,7 @@
+2012-04-06  Matt Turner  <mattst88@gmail.com>
+
+	* doc/install.texi: Correct typo "-mno-lsc" -> "-mno-llsc".
+
 2012-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/ia64.c (ia64_load_pair_ok): Return 0 if the second member
