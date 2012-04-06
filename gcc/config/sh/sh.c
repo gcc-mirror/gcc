@@ -174,7 +174,6 @@ static void force_into (rtx, rtx);
 static void print_slot (rtx);
 static rtx add_constant (rtx, enum machine_mode, rtx);
 static void dump_table (rtx, rtx);
-static int hi_const (rtx);
 static bool broken_move (rtx);
 static bool mova_p (rtx);
 static rtx find_barrier (int, rtx, rtx);
@@ -4377,17 +4376,6 @@ dump_table (rtx start, rtx barrier)
   pool_window_last = 0;
 }
 
-/* Return nonzero if constant would be an ok source for a
-   mov.w instead of a mov.l.  */
-
-static int
-hi_const (rtx src)
-{
-  return (CONST_INT_P (src)
-	  && INTVAL (src) >= -32768
-	  && INTVAL (src) <= 32767);
-}
-
 #define MOVA_LABELREF(mova) XVECEXP (SET_SRC (PATTERN (mova)), 0, 0)
 
 /* Nonzero if the insn is a move instruction which needs to be fixed.  */
@@ -4667,7 +4655,8 @@ find_barrier (int num_mova, rtx mova, rtx from)
 	     front end will generate code to load unsigned constants into
 	     HImode targets without properly sign extending them.  */
 	  if (mode == HImode
-	      || (mode == SImode && hi_const (src) && REGNO (dst) != FPUL_REG))
+	      || (mode == SImode && satisfies_constraint_I16 (src)
+		  && REGNO (dst) != FPUL_REG))
 	    {
 	      found_hi += 2;
 	      /* We put the short constants before the long constants, so
@@ -5810,7 +5799,7 @@ sh_reorg (void)
 		  dst = SET_DEST (pat);
 		  mode = GET_MODE (dst);
 
-		  if (mode == SImode && hi_const (src)
+		  if (mode == SImode && satisfies_constraint_I16 (src)
 		      && REGNO (dst) != FPUL_REG)
 		    {
 		      int offset = 0;

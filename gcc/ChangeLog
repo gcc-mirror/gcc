@@ -1,5 +1,11 @@
 2012-04-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.c (hi_const): Remove.
+	(find_barrier, sh_reorg): Use satisfies_constraint_I16 instead
+	of hi_const.
+
+2012-04-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh-protos.h (sh_expand_t_scc): Change return type from int
 	to bool.
 	* config/sh/sh.c (sh_expand_t_scc): Likewise.
