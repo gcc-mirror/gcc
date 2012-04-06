@@ -1,3 +1,13 @@
+2012-04-05  Teresa Johnson  <tejohnson@google.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.h (ix86_tune_indices): Add
+	X86_TUNE_LCP_STALL.
+	* config/i386/i386.md (move immediate to memory peephole2):
+	Add cases for HImode move when LCP stall avoidance is needed.
+	* config/i386/i386.c (initial_ix86_tune_features): Initialize
+	X86_TUNE_LCP_STALL entry.
+
 2012-04-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52882
