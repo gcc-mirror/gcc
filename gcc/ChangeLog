@@ -1,3 +1,26 @@
+2012-04-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh-protos.h (fp_zero_operand, fp_one_operand,
+	nonpic_symbol_mentioned_p, expand_block_move, expand_ashiftrt,
+	sh_dynamicalize_shift_p, gen_shl_and, gen_shl_sext, system_reg_operand,
+	reg_unused_after, sh_can_redirect_branch, sh_need_epilogue, fldi_ok,
+	sh_hard_regno_rename_ok, sh_cfun_interrupt_handler_p,
+	sh_cfun_resbank_handler_p, sh_attr_renesas_p, sh_cfun_attr_renesas_p,
+	check_use_sfunc_addr, sh_contains_memref_p, sh_loads_bankedreg_p,
+	sh2a_is_function_vector_call): Use bool as return type.
+	(sh_pass_in_reg_p): Remove.
+	* config/sh/sh.c (broken_move, mova_p, noncall_uses_reg, high_pressure,
+	flow_dependent_p, sh2a_function_vector_p, expand_block_move,
+	expand_ashiftrt, sh_dynamicalize_shift_p, gen_shl_and, gen_shl_sext,
+	sh_need_epilogue, sh2a_is_function_vector_call, sh_attr_renesas_p,
+	sh_cfun_attr_renesas_p, sh_cfun_interrupt_handler_p,
+	sh_cfun_resbank_handler_p, system_reg_operand, fp_zero_operand,
+	fp_one_operand, fldi_ok, reg_unused_after, sh_can_redirect_branch,
+	sh_hard_regno_rename_ok, check_use_sfunc_addr, sh_contains_memref_p, 
+	sh_loads_bankedreg_p): Use bool as return type.
+	(nonpic_symbol_mentioned_p): Use bool as return type.  Remove
+	'register' modifier.
+
 2012-04-06  Matt Turner  <mattst88@gmail.com>
 
 	* doc/install.texi: Correct typo "-mno-lsc" -> "-mno-llsc".
