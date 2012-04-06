@@ -857,7 +857,11 @@ ia64_move_ok (rtx dst, rtx src)
 int
 ia64_load_pair_ok (rtx dst, rtx src)
 {
-  if (GET_CODE (dst) != REG || !FP_REGNO_P (REGNO (dst)))
+  /* ??? There is a thinko in the implementation of the "x" constraint and the
+     FP_REGS class.  The constraint will also reject (reg f30:TI) so we must
+     also return false for it.  */
+  if (GET_CODE (dst) != REG
+      || !(FP_REGNO_P (REGNO (dst)) && FP_REGNO_P (REGNO (dst) + 1)))
     return 0;
   if (GET_CODE (src) != MEM || MEM_VOLATILE_P (src))
     return 0;
