@@ -1,3 +1,17 @@
+2012-04-06  Walter Lee  <walt@tilera.com>
+
+	Backport from mainline
+	2012-03-07  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.c (tilegx_expand_prologue): Don't generate
+	REG_CFA_* notes for the stack pointer.
+	(tilegx_expand_epilogue): Restore stack pointer by adjusting it by
+	EH_RETURN_STACKADJ_RTX.
+	* config/tilepro/tilepro.c (tilepro_expand_prologue): Don't
+	generate REG_CFA_* notes for the stack pointer.
+	(tilepro_expand_epilogue): Restore stack pointer by adjusting it
+	by EH_RETURN_STACKADJ_RTX.
+	
 2012-04-06  Matt Turner  <mattst88@gmail.com>
 
 	* doc/install.texi: Correct typo "-mno-lsc" -> "-mno-llsc".
