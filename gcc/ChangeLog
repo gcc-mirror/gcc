@@ -1,3 +1,7 @@
+2012-04-06  Matt Turner  <mattst88@gmail.com>
+
+	* doc/install.texi: Correct typo "-mno-lsc" -> "-mno-llsc".
+
 2012-03-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (avx_h<plusminus_insn>v4df3): Fix results
