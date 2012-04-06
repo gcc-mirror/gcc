@@ -104,8 +104,8 @@
 
 /* 32-bit integer compare-and-exchange.  */
 static __inline __attribute__ ((always_inline))
-     int atomic_val_compare_and_exchange_4 (volatile int *mem,
-					    int oldval, int newval)
+     int arch_atomic_val_compare_and_exchange_4 (volatile int *mem,
+						 int oldval, int newval)
 {
 #ifdef __tilegx__
   __insn_mtspr (SPR_CMPEXCH_VALUE, oldval);
@@ -123,9 +123,9 @@ static __inline __attribute__ ((always_inline))
 
 /* 64-bit integer compare-and-exchange.  */
 static __inline __attribute__ ((always_inline))
-     int64_t atomic_val_compare_and_exchange_8 (volatile int64_t * mem,
-						int64_t oldval,
-						int64_t newval)
+     int64_t arch_atomic_val_compare_and_exchange_8 (volatile int64_t * mem,
+						     int64_t oldval,
+						     int64_t newval)
 {
 #ifdef __tilegx__
   __insn_mtspr (SPR_CMPEXCH_VALUE, oldval);
@@ -146,41 +146,41 @@ static __inline __attribute__ ((always_inline))
 
 /* This non-existent symbol is called for sizes other than "4" and "8",
    indicating a bug in the caller.  */
-extern int __atomic_error_bad_argument_size (void)
+extern int __arch_atomic_error_bad_argument_size (void)
   __attribute__ ((warning ("sizeof atomic argument not 4 or 8")));
 
 
-#define atomic_val_compare_and_exchange(mem, o, n)                      \
+#define arch_atomic_val_compare_and_exchange(mem, o, n)                 \
   ({                                                                    \
     (__typeof(*(mem)))(__typeof(*(mem)-*(mem)))                         \
       ((sizeof(*(mem)) == 8) ?                                          \
-       atomic_val_compare_and_exchange_8(                               \
+       arch_atomic_val_compare_and_exchange_8(                          \
          (volatile int64_t*)(mem), (__typeof((o)-(o)))(o),              \
          (__typeof((n)-(n)))(n)) :                                      \
        (sizeof(*(mem)) == 4) ?                                          \
-       atomic_val_compare_and_exchange_4(                               \
+       arch_atomic_val_compare_and_exchange_4(                          \
          (volatile int*)(mem), (__typeof((o)-(o)))(o),                  \
          (__typeof((n)-(n)))(n)) :                                      \
-       __atomic_error_bad_argument_size());                             \
+       __arch_atomic_error_bad_argument_size());                        \
   })
 
-#define atomic_bool_compare_and_exchange(mem, o, n)                     \
+#define arch_atomic_bool_compare_and_exchange(mem, o, n)                \
   ({                                                                    \
     __typeof(o) __o = (o);                                              \
     __builtin_expect(                                                   \
-      __o == atomic_val_compare_and_exchange((mem), __o, (n)), 1);      \
+      __o == arch_atomic_val_compare_and_exchange((mem), __o, (n)), 1); \
   })
 
 
 /* Loop with compare_and_exchange until we guess the correct value.
    Normally "expr" will be an expression using __old and __value.  */
-#define __atomic_update_cmpxchg(mem, value, expr)                       \
+#define __arch_atomic_update_cmpxchg(mem, value, expr)                  \
   ({                                                                    \
     __typeof(value) __value = (value);                                  \
     __typeof(*(mem)) *__mem = (mem), __old = *__mem, __guess;           \
     do {                                                                \
       __guess = __old;                                                  \
-      __old = atomic_val_compare_and_exchange(__mem, __old, (expr));    \
+      __old = arch_atomic_val_compare_and_exchange(__mem, __old, (expr));    \
     } while (__builtin_expect(__old != __guess, 0));                    \
     __old;                                                              \
   })
@@ -189,14 +189,14 @@ extern int __atomic_error_bad_argument_size (void)
 
 /* Generic atomic op with 8- or 4-byte variant.
    The _mask, _addend, and _expr arguments are ignored on tilegx.  */
-#define __atomic_update(mem, value, op, _mask, _addend, _expr)          \
+#define __arch_atomic_update(mem, value, op, _mask, _addend, _expr)     \
   ({                                                                    \
     ((__typeof(*(mem)))                                                 \
      ((sizeof(*(mem)) == 8) ? (__typeof(*(mem)-*(mem)))__insn_##op(     \
         (void *)(mem), (int64_t)(__typeof((value)-(value)))(value)) :   \
       (sizeof(*(mem)) == 4) ? (int)__insn_##op##4(                      \
         (void *)(mem), (int32_t)(__typeof((value)-(value)))(value)) :   \
-      __atomic_error_bad_argument_size()));                             \
+      __arch_atomic_error_bad_argument_size()));                        \
   })
 
 #else
@@ -211,7 +211,7 @@ extern int __atomic_error_bad_argument_size (void)
    Only 32-bit support is provided.  */
 static __inline __attribute__ ((always_inline))
      int
-     __atomic_update_4 (volatile int *mem, int mask, int addend)
+     __arch_atomic_update_4 (volatile int *mem, int mask, int addend)
 {
   int result;
   __asm__ __volatile__ ("swint1":"=R00" (result),
@@ -224,48 +224,55 @@ static __inline __attribute__ ((always_inline))
 
 /* Generic atomic op with 8- or 4-byte variant.
    The _op argument is ignored on tilepro.  */
-#define __atomic_update(mem, value, _op, mask, addend, expr)            \
+#define __arch_atomic_update(mem, value, _op, mask, addend, expr)       \
   ({                                                                    \
     (__typeof(*(mem)))(__typeof(*(mem)-*(mem)))                         \
       ((sizeof(*(mem)) == 8) ?                                          \
-       __atomic_update_cmpxchg((mem), (value), (expr)) :                \
+       __arch_atomic_update_cmpxchg((mem), (value), (expr)) :           \
        (sizeof(*(mem)) == 4) ?                                          \
-       __atomic_update_4((volatile int*)(mem), (__typeof((mask)-(mask)))(mask), \
-                         (__typeof((addend)-(addend)))(addend)) :       \
-       __atomic_error_bad_argument_size());                             \
+       __arch_atomic_update_4((volatile int*)(mem),                     \
+                              (__typeof((mask)-(mask)))(mask),          \
+                              (__typeof((addend)-(addend)))(addend)) :  \
+       __arch_atomic_error_bad_argument_size());                        \
   })
 
 #endif /* __tilegx__ */
 
 
-#define atomic_exchange(mem, newvalue) \
-  __atomic_update(mem, newvalue, exch, 0, newvalue, __value)
+#define arch_atomic_exchange(mem, newvalue) \
+  __arch_atomic_update(mem, newvalue, exch, 0, newvalue, __value)
 
-#define atomic_add(mem, value) \
-  __atomic_update(mem, value, fetchadd, -1, value, __old + __value)
+#define arch_atomic_add(mem, value) \
+  __arch_atomic_update(mem, value, fetchadd, -1, value, __old + __value)
 
-#define atomic_sub(mem, value) atomic_add((mem), -(value))
+#define arch_atomic_sub(mem, value) arch_atomic_add((mem), -(value))
 
-#define atomic_increment(mem) atomic_add((mem), 1)
+#define arch_atomic_increment(mem) arch_atomic_add((mem), 1)
 
-#define atomic_decrement(mem) atomic_add((mem), -1)
+#define arch_atomic_decrement(mem) arch_atomic_add((mem), -1)
 
-#define atomic_and(mem, mask) \
-  __atomic_update(mem, mask, fetchand, mask, 0, __old & __value)
+#define arch_atomic_and(mem, mask) \
+  __arch_atomic_update(mem, mask, fetchand, mask, 0, __old & __value)
 
-#define atomic_or(mem, mask) \
-  __atomic_update(mem, mask, fetchor, ~mask, mask, __old | __value)
+#define arch_atomic_or(mem, mask) \
+  __arch_atomic_update(mem, mask, fetchor, ~mask, mask, __old | __value)
 
-#define atomic_bit_set(mem, bit)                                        \
+#define arch_atomic_xor(mem, mask) \
+  __arch_atomic_update_cmpxchg(mem, mask, __old ^ __value)
+
+#define arch_atomic_nand(mem, mask) \
+  __arch_atomic_update_cmpxchg(mem, mask, ~(__old & __value))
+
+#define arch_atomic_bit_set(mem, bit)                                   \
   ({                                                                    \
     __typeof(*(mem)) __mask = (__typeof(*(mem)))1 << (bit);             \
-    __mask & atomic_or((mem), __mask);                                  \
+    __mask & arch_atomic_or((mem), __mask);                             \
   })
 
-#define atomic_bit_clear(mem, bit)                                      \
+#define arch_atomic_bit_clear(mem, bit)                                 \
   ({                                                                    \
     __typeof(*(mem)) __mask = (__typeof(*(mem)))1 << (bit);             \
-    __mask & atomic_and((mem), ~__mask);                                \
+    __mask & arch_atomic_and((mem), ~__mask);                           \
   })
 
 #ifdef __tilegx__
@@ -275,9 +282,9 @@ static __inline __attribute__ ((always_inline))
    This accessor is provided for compatibility with TILEPro, which
    required an explicit atomic operation for stores that needed
    to be atomic with respect to other atomic methods in this header.  */
-#define atomic_write(mem, value) ((void) (*(mem) = (value)))
+#define arch_atomic_write(mem, value) ((void) (*(mem) = (value)))
 #else
-#define atomic_write(mem, value)                                        \
+#define arch_atomic_write(mem, value)                                   \
   do {                                                                  \
     __typeof(mem) __aw_mem = (mem);                                     \
     __typeof(value) __aw_val = (value);                                 \
@@ -285,26 +292,26 @@ static __inline __attribute__ ((always_inline))
     __aw_intval = (__typeof((value) - (value)))__aw_val;                \
     switch (sizeof(*__aw_mem)) {                                        \
     case 8:                                                             \
-      __atomic_update_cmpxchg(__aw_mem, __aw_val, __value);             \
+      __arch_atomic_update_cmpxchg(__aw_mem, __aw_val, __value);        \
       break;                                                            \
     case 4:                                                             \
-      __atomic_update_4((int *)__aw_mem, 0, __aw_intval);               \
+      __arch_atomic_update_4((int *)__aw_mem, 0, __aw_intval);          \
       break;                                                            \
     case 2:                                                             \
       __aw_off = 8 * ((long)__aw_mem & 0x2);                            \
       __aw_mask = 0xffffU << __aw_off;                                  \
       __aw_mem32 = (unsigned int *)((long)__aw_mem & ~0x2);             \
       __aw_val32 = (__aw_intval << __aw_off) & __aw_mask;               \
-      __atomic_update_cmpxchg(__aw_mem32, __aw_val32,                   \
-                              (__old & ~__aw_mask) | __value);          \
+      __arch_atomic_update_cmpxchg(__aw_mem32, __aw_val32,              \
+                                   (__old & ~__aw_mask) | __value);     \
       break;                                                            \
     case 1:                                                             \
       __aw_off = 8 * ((long)__aw_mem & 0x3);                            \
       __aw_mask = 0xffU << __aw_off;                                    \
       __aw_mem32 = (unsigned int *)((long)__aw_mem & ~0x3);             \
       __aw_val32 = (__aw_intval << __aw_off) & __aw_mask;               \
-      __atomic_update_cmpxchg(__aw_mem32, __aw_val32,                   \
-                              (__old & ~__aw_mask) | __value);          \
+      __arch_atomic_update_cmpxchg(__aw_mem32, __aw_val32,              \
+                                   (__old & ~__aw_mask) | __value);     \
       break;                                                            \
     }                                                                   \
   } while (0)
@@ -315,15 +322,15 @@ static __inline __attribute__ ((always_inline))
    This macro prevents loads or stores from being moved by the compiler
    across the macro.  Any loaded value that was loaded before this
    macro must then be reloaded by the compiler.  */
-#define atomic_compiler_barrier() __asm__ __volatile__("" ::: "memory")
+#define arch_atomic_compiler_barrier() __asm__ __volatile__("" ::: "memory")
 
 /* Full memory barrier.
 
-   This macro has the semantics of atomic_compiler_barrer(), but also
+   This macro has the semantics of arch_atomic_compiler_barrer(), but also
    ensures that previous stores are visible to other cores, and that
    all previous loaded values have been placed into their target
    register on this core.  */
-#define atomic_full_barrier() __insn_mf()
+#define arch_atomic_full_barrier() __insn_mf()
 
 /* Read memory barrier.
 
@@ -335,9 +342,9 @@ static __inline __attribute__ ((always_inline))
    On current TILE chips a read barrier is implemented as a full barrier,
    but this may not be true in later versions of the architecture.
 
-   See also atomic_acquire_barrier() for the appropriate idiom to use
+   See also arch_atomic_acquire_barrier() for the appropriate idiom to use
    to ensure no reads are lifted above an atomic lock instruction.  */
-#define atomic_read_barrier() atomic_full_barrier()
+#define arch_atomic_read_barrier() arch_atomic_full_barrier()
 
 /* Write memory barrier.
 
@@ -349,9 +356,9 @@ static __inline __attribute__ ((always_inline))
    On current TILE chips a write barrier is implemented as a full barrier,
    but this may not be true in later versions of the architecture.
 
-   See also atomic_release_barrier() for the appropriate idiom to use
+   See also arch_atomic_release_barrier() for the appropriate idiom to use
    to ensure all writes are complete prior to an atomic unlock instruction.  */
-#define atomic_write_barrier() atomic_full_barrier()
+#define arch_atomic_write_barrier() arch_atomic_full_barrier()
 
 /* Lock acquisition barrier.
 
@@ -367,10 +374,10 @@ static __inline __attribute__ ((always_inline))
    This should be done after the atomic operation that actually
    acquires the lock, and in conjunction with a "control dependency"
    that checks the atomic operation result to see if the lock was
-   in fact acquired.  See the atomic_read_barrier() macro
+   in fact acquired.  See the arch_atomic_read_barrier() macro
    for a heavier-weight barrier to use in certain unusual constructs,
-   or atomic_acquire_barrier_value() if no control dependency exists.  */
-#define atomic_acquire_barrier() atomic_compiler_barrier()
+   or arch_atomic_acquire_barrier_value() if no control dependency exists.  */
+#define arch_atomic_acquire_barrier() arch_atomic_compiler_barrier()
 
 /* Lock release barrier.
 
@@ -383,7 +390,7 @@ static __inline __attribute__ ((always_inline))
    for locking, that is, when leaving a critical section.  This should
    be done before the operation (such as a store of zero) that
    actually releases the lock.  */
-#define atomic_release_barrier() atomic_write_barrier()
+#define arch_atomic_release_barrier() arch_atomic_write_barrier()
 
 /* Barrier until the read of a particular value is complete.
 
@@ -400,7 +407,7 @@ static __inline __attribute__ ((always_inline))
    atomic instruction, even if the value itself is not checked.  This
    guarantees that if the atomic instruction succeeded in taking the lock,
    the lock was held before any reads in the critical section issued.  */
-#define atomic_acquire_barrier_value(val) \
+#define arch_atomic_acquire_barrier_value(val) \
   __asm__ __volatile__("move %0, %0" :: "r"(val))
 
 /* Access the given variable in memory exactly once.
@@ -421,8 +428,9 @@ static __inline __attribute__ ((always_inline))
 
    Note that multiple uses of this macro are guaranteed to be ordered,
    i.e. the compiler will not reorder stores or loads that are wrapped
-   in atomic_access_once().  */
-#define atomic_access_once(x) (*(volatile __typeof(x) *)&(x))
+   in arch_atomic_access_once().  */
+#define arch_atomic_access_once(x) (*(volatile __typeof(x) *)&(x))
+
 
 
 #endif /* !_ATOMIC_H_ */
