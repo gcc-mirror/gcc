@@ -1194,7 +1194,7 @@ Division by zero checks use the break instruction.
 
 @item --with-llsc
 On MIPS targets, make @option{-mllsc} the default when no
-@option{-mno-lsc} option is passed.  This is the default for
+@option{-mno-llsc} option is passed.  This is the default for
 Linux-based targets, as the kernel will emulate them if the ISA does
 not provide them.
 
