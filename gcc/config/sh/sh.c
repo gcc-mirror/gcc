@@ -11998,7 +11998,7 @@ sh_get_pr_initial_val (void)
   return val;
 }
 
-int
+bool
 sh_expand_t_scc (rtx operands[])
 {
   enum rtx_code code = GET_CODE (operands[1]);
@@ -12010,21 +12010,21 @@ sh_expand_t_scc (rtx operands[])
 
   if (!REG_P (op0) || REGNO (op0) != T_REG
       || !CONST_INT_P (op1))
-    return 0;
+    return false;
   if (!REG_P (result))
     result = gen_reg_rtx (SImode);
   val = INTVAL (op1);
   if ((code == EQ && val == 1) || (code == NE && val == 0))
     emit_insn (gen_movt (result));
   else if ((code == EQ && val == 0) || (code == NE && val == 1))
-   emit_insn (gen_movnegt (result));
+    emit_insn (gen_movnegt (result));
   else if (code == EQ || code == NE)
     emit_insn (gen_move_insn (result, GEN_INT (code == NE)));
   else
-    return 0;
+    return false;
   if (result != target)
     emit_move_insn (target, result);
-  return 1;
+  return true;
 }
 
 /* INSN is an sfunc; return the rtx that describes the address used.  */

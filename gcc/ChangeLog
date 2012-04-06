@@ -1,5 +1,13 @@
 2012-04-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh-protos.h (sh_expand_t_scc): Change return type from int
+	to bool.
+	* config/sh/sh.c (sh_expand_t_scc): Likewise.
+	* config/sh/sh.md (cstoresi4, cstoredi4): Remove GET_CODE checks before
+	calling sh_expand_t_scc.
+
+2012-04-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh-protos.h (fp_zero_operand, fp_one_operand,
 	nonpic_symbol_mentioned_p, expand_block_move, expand_ashiftrt,
 	sh_dynamicalize_shift_p, gen_shl_and, gen_shl_sext, system_reg_operand,

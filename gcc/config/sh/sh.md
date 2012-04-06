@@ -9575,8 +9575,7 @@ label:
       DONE;
     }
 
-   if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
-       && sh_expand_t_scc (operands))
+   if (sh_expand_t_scc (operands))
      DONE;
 
    if (! currently_expanding_to_rtl)
@@ -9600,8 +9599,7 @@ label:
       DONE;
     }
 
-   if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
-       && sh_expand_t_scc (operands))
+   if (sh_expand_t_scc (operands))
      DONE;
 
    if (! currently_expanding_to_rtl)

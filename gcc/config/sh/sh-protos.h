@@ -117,7 +117,7 @@ extern int sh_insn_length_adjustment (rtx);
 extern bool sh_can_redirect_branch (rtx, rtx);
 extern void sh_expand_unop_v2sf (enum rtx_code, rtx, rtx);
 extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
-extern int sh_expand_t_scc (rtx *);
+extern bool sh_expand_t_scc (rtx *);
 extern rtx sh_gen_truncate (enum machine_mode, rtx, int);
 extern bool sh_vector_mode_supported_p (enum machine_mode);
 #endif /* RTX_CODE */
