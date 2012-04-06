@@ -2427,7 +2427,7 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 	      else if (TREE_CODE (rhs) == ADDR_EXPR
 		       && !is_gimple_min_invariant (rhs))
 		{
-		  HOST_WIDE_INT offset;
+		  HOST_WIDE_INT offset = 0;
 		  tree base;
 		  base = get_addr_base_and_unit_offset_1 (TREE_OPERAND (rhs, 0),
 							  &offset,

@@ -1,3 +1,7 @@
+2012-04-06  Mike Stump  <mikestump@comcast.net>
+
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Avoid warning.
+
 2012-04-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.c (hi_const): Remove.
