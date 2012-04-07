@@ -1601,7 +1601,7 @@ expand_block_move (rtx *operands)
 /* Prepare operands for a move define_expand; specifically, one of the
    operands must be in a register.  */
 
-int
+void
 prepare_move_operands (rtx operands[], enum machine_mode mode)
 {
   if ((mode == SImode || mode == DImode)
@@ -1763,8 +1763,6 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 	  operands[1] = op1;
 	}
     }
-
-  return 0;
 }
 
 enum rtx_code
