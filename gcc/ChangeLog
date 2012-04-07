@@ -1,5 +1,13 @@
 2012-04-07  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.h (high_life_started): Remove
+	* config/sh/predicates.md (general_movdst_operand): Use
+	'reload_in_progress' instead of 'high_life_started'.
+	* config/sh/sh.md (divsi_inv_call, *divsi_inv_call_combine,
+	divsi_inv_fp): Likewise.
+
+2012-04-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh-protos.h (prepare_move_operands): Return void
 	instead of int.
 	* config/sh/sh.c (prepare_move_operands): Likewise.

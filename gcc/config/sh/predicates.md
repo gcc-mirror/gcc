@@ -453,7 +453,7 @@
     return 0;
   if (mode == DImode && TARGET_SHMEDIA && GET_CODE (op) == SUBREG
       && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))) < 8
-      && ! (high_life_started || reload_completed))
+      && ! (reload_in_progress || reload_completed))
     return 0;
 
   if ((mode == QImode || mode == HImode)
