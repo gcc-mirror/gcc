@@ -1,5 +1,11 @@
 2012-04-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/52893
+	Backport from trunk
+	* gfortran.dg/function_optimize_11.f90:  New test.
+
+2012-04-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/52668
 	Backport from trunk
 	* gfortran.dg/use_only_6.f90: New test.

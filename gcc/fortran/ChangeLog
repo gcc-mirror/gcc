@@ -1,5 +1,12 @@
 2012-04-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/52893
+	Backport from trunk
+	* frontend-passes.c:  Keep track of wether we are in an implicit
+	DO loop; do not do function elimination if we are.
+
+2012-04-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/52668
 	Backport from trunk
 	* module.c:  Only mark symbols as use_only if they have been
