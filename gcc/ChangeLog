@@ -1,3 +1,12 @@
+2012-04-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh-protos.h (fp_int_operand, symbol_ref_operand,
+	general_movsrc_operand, general_movdst_operand, arith_reg_operand,
+	fp_arith_reg_operand, arith_operand, arith_reg_or_0_operand,
+	logical_operand, fpscr_operand, fpul_operand, expand_fp_branch,
+	commutative_float_operator, noncommutative_float_operator,
+	sh_handle_pragma): Remove.
+
 2012-04-06  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi:  Clean up Texinfo markup throughout the file.
