@@ -1,4 +1,4 @@
-# Mensajes en español para gcc-4.7-b20120128.
+# Mensajes en español para gcc-4.7.0.
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
@@ -7,10 +7,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.7-b20120128\n"
+"Project-Id-Version: gcc 4.7.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-03-18 14:00+0000\n"
-"PO-Revision-Date: 2012-01-31 08:34-0600\n"
+"PO-Revision-Date: 2012-03-26 10:36-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@cfuga.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "Language: es\n"
@@ -228,16 +228,14 @@ msgid "const/copy propagation disabled"
 msgstr "propagación const/copy desactivada"
 
 #: diagnostic.c:136
-#, fuzzy, c-format
-#| msgid "%s: all warnings being treated as errors\n"
+#, c-format
 msgid "%s: all warnings being treated as errors"
-msgstr "%s: todos los avisos se tratan como errores\n"
+msgstr "%s: todos los avisos se tratan como errores"
 
 #: diagnostic.c:141
-#, fuzzy, c-format
-#| msgid "%s: some warnings being treated as errors\n"
+#, c-format
 msgid "%s: some warnings being treated as errors"
-msgstr "%s: algunos avisos se tratan como errores\n"
+msgstr "%s: algunos avisos se tratan como errores"
 
 #: diagnostic.c:219
 #, c-format
@@ -413,10 +411,8 @@ msgid "  --target-help            Display target specific command line options\n
 msgstr "  --target-help            Muestra opciones de línea de órdenes específicas del objetivo\n"
 
 #: gcc.c:2961
-#, fuzzy
-#| msgid "  --help={target|optimizers|warnings|params|[^]{joined|separate|undocumented}}[,...]\n"
 msgid "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...]\n"
-msgstr "  --help={target|optimizers|warnings|params|[^]{joined|separate|undocumented}}[,...]\n"
+msgstr "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...]\n"
 
 #: gcc.c:2962
 msgid "                           Display specific types of command line options\n"
@@ -3013,10 +3009,9 @@ msgid "operand is neither a constant nor a condition code, invalid operand code 
 msgstr "el operando no es una constante ni un código de condición, código de operando 'f' inválido"
 
 #: config/i386/i386.c:14109
-#, fuzzy, c-format
-#| msgid "operand is not a condition code, invalid operand code 'D'"
+#, c-format
 msgid "operand is not an offsettable memory reference, invalid operand code 'H'"
-msgstr "el operando no es un código de condición, código de operando 'D' inválido"
+msgstr "el operando no es una referencia de memoria desplazable, código de operando 'H' inválido"
 
 #: config/i386/i386.c:14204
 #, c-format
@@ -3600,93 +3595,79 @@ msgid "invalid %%d operand"
 msgstr "operando %%d inválido"
 
 #: config/tilegx/tilegx.c:5033
-#, fuzzy, c-format
-#| msgid "invalid %%L code"
+#, c-format
 msgid "invalid %%H specifier"
-msgstr "código %%L inválido"
+msgstr "especificador %%H inválido"
 
 #: config/tilegx/tilegx.c:5069 config/tilepro/tilepro.c:4519
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%h operand"
-msgstr "operando %%P inválido"
+msgstr "operando %%h inválido"
 
 #: config/tilegx/tilegx.c:5081 config/tilepro/tilepro.c:4583
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%I operand"
-msgstr "operando %%P inválido"
+msgstr "operando %%I inválido"
 
 #: config/tilegx/tilegx.c:5095 config/tilepro/tilepro.c:4597
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%i operand"
-msgstr "operando %%P inválido"
+msgstr "operando %%i inválido"
 
 #: config/tilegx/tilegx.c:5118 config/tilepro/tilepro.c:4620
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%j operand"
-msgstr "operando %%P inválido"
+msgstr "operando %%j inválido"
 
 #: config/tilegx/tilegx.c:5149
-#, fuzzy, c-format
-#| msgid "invalid %%c operand"
+#, c-format
 msgid "invalid %%%c operand"
-msgstr "operando %%c inválido"
+msgstr "operando %%%c inválido"
 
 #: config/tilegx/tilegx.c:5164 config/tilepro/tilepro.c:4734
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%N operand"
-msgstr "operando %%P inválido"
+msgstr "operando %%N inválido"
 
 #: config/tilegx/tilegx.c:5208
-#, fuzzy, c-format
-#| msgid "invalid operand for 'b' modifier"
+#, c-format
 msgid "invalid operand for 'r' specifier"
-msgstr "operando inválido para el modificador 'b'"
+msgstr "operando inválido para el especificador 'r'"
 
 #: config/tilegx/tilegx.c:5233 config/tilepro/tilepro.c:4816
 #, c-format
 msgid "unable to print out operand yet; code == %d (%c)"
-msgstr ""
+msgstr "aún no se puede mostrar el operando; code == %d (%c)"
 
 #: config/tilepro/tilepro.c:4555
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%H operand"
-msgstr "operando %%P inválido"
+msgstr "operando %%H inválido"
 
 #: config/tilepro/tilepro.c:4659
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%L operand"
-msgstr "operando %%P inválido"
+msgstr "operando %%L inválido"
 
 #: config/tilepro/tilepro.c:4719
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%M operand"
-msgstr "operando %%P inválido"
+msgstr "operando %%M inválido"
 
 #: config/tilepro/tilepro.c:4762
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%t operand"
-msgstr "operando %%P inválido"
+msgstr "operando %%t inválido"
 
 #: config/tilepro/tilepro.c:4769
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%t operand '"
-msgstr "operando %%P inválido"
+msgstr "operando %%t inválido '"
 
 #: config/tilepro/tilepro.c:4790
-#, fuzzy, c-format
-#| msgid "invalid %%P operand"
+#, c-format
 msgid "invalid %%r operand"
-msgstr "operando %%P inválido"
+msgstr "operando %%r inválido"
 
 #: config/v850/v850.c:260
 msgid "const_double_split got a bad insn:"
@@ -5341,8 +5322,6 @@ msgid "Enable range checking during compilation"
 msgstr "Permite la revisión de rango durante la compilación"
 
 #: fortran/lang.opt:503
-#, fuzzy
-#| msgid "Interpret any REAl(4) as a REAL(8)"
 msgid "Interpret any REAL(4) as a REAL(8)"
 msgstr "Interpreta cualquier REAL(4) como un REAL(8)"
 
@@ -5351,10 +5330,8 @@ msgid "Interpret any REAL(4) as a REAL(10)"
 msgstr "Interpreta cualquier REAL(4) como un REAL(10)"
 
 #: fortran/lang.opt:511
-#, fuzzy
-#| msgid "Interpret any REAL(4) as a REAL(10)"
 msgid "Interpret any REAL(4) as a REAL(16)"
-msgstr "Interpreta cualquier REAL(4) como un REAL(10)"
+msgstr "Interpreta cualquier REAL(4) como un REAL(16)"
 
 #: fortran/lang.opt:515
 msgid "Interpret any REAL(8) as a REAL(4)"
@@ -5365,10 +5342,8 @@ msgid "Interpret any REAL(8) as a REAL(10)"
 msgstr "Interpreta cualquier REAL(8) como un REAL(10)"
 
 #: fortran/lang.opt:523
-#, fuzzy
-#| msgid "Interpret any REAL(8) as a REAL(10)"
 msgid "Interpret any REAL(8) as a REAL(16)"
-msgstr "Interpreta cualquier REAL(8) como un REAL(10)"
+msgstr "Interpreta cualquier REAL(8) como un REAL(16)"
 
 #: fortran/lang.opt:527
 msgid "Reallocate the LHS in assignments"
@@ -8798,16 +8773,12 @@ msgid "Set register to hold -1."
 msgstr "Establece el registro para conservar -1."
 
 #: config/cr16/cr16.opt:23
-#, fuzzy
-#| msgid "-msim\tUse simulator runtime"
 msgid "-msim   Use simulator runtime"
-msgstr "-msim\tUsa el simulador de tiempo de ejecución"
+msgstr "-msim   Usa el simulador de tiempo de ejecución"
 
 #: config/cr16/cr16.opt:27
-#, fuzzy
-#| msgid "Generate bit instructions"
 msgid "Generate SBIT, CBIT instructions"
-msgstr "Genera instrucciones bit"
+msgstr "Genera instrucciones SBIT, CBIT"
 
 #: config/cr16/cr16.opt:31
 msgid "Support multiply accumulate instructions"
@@ -8815,59 +8786,43 @@ msgstr "Da soporte a múltiples instrucciones de acumulador"
 
 #: config/cr16/cr16.opt:38
 msgid "Treat data references as near, far or medium. medium is default"
-msgstr ""
+msgstr "Trata las referencias a datos como near, far o medium. Por defecto es medium"
 
 #: config/cr16/cr16.opt:42
-#, fuzzy
-#| msgid "Generate code for C31 CPU"
 msgid "Generate code for CR16C architecture"
-msgstr "Genera código para el CPU C31"
+msgstr "Genera código para la arquitectura CR16C"
 
 #: config/cr16/cr16.opt:46
-#, fuzzy
-#| msgid "Generate code for GNU assembler (gas)"
 msgid "Generate code for CR16C+ architecture (Default)"
-msgstr "Genera código para el ensamblador de GNU (gas)"
+msgstr "Genera código para la arquitectura CR16C+ (Por defecto)"
 
 #: config/cr16/cr16.opt:50
-#, fuzzy
-#| msgid "Pointers are 32-bit"
 msgid "Treat integers as 32-bit."
-msgstr "Los punteros son de 32-bit"
+msgstr "Trata los enteros como 32-bit."
 
 #: config/tilegx/tilegx.opt:24 config/tilepro/tilepro.opt:29
-#, fuzzy
-#| msgid "-mcpu=\tUse features of and schedule code for given CPU"
 msgid "-mcpu=CPU\tUse features of and schedule code for given CPU"
-msgstr "-mcpu=\tUsa las características y el código de calendarizador para el CPU dado"
+msgstr "-mcpu=CPU\tUsa las características y el código de calendarizador para el CPU dado"
 
 #: config/tilegx/tilegx.opt:28
-#, fuzzy
-#| msgid "Known FR-V CPUs (for use with the -mcpu= option):"
 msgid "Known TILE-Gx CPUs (for use with the -mcpu= option):"
-msgstr "CPUs FR-V conocidos (para usar con la opción -mcpu=):"
+msgstr "CPUs TILE-Gx conocidos (para usar con la opción -mcpu=):"
 
 #: config/tilegx/tilegx.opt:35
-#, fuzzy
-#| msgid "Compile for 32-bit pointers"
 msgid "Compile with 32 bit longs and pointers."
-msgstr "Compila para punteros de 32-bit"
+msgstr "Compila con longs y punteros de 32 bit."
 
 #: config/tilegx/tilegx.opt:39
-#, fuzzy
-#| msgid "Compile for 64-bit pointers"
 msgid "Compile with 64 bit longs and pointers."
-msgstr "Compila para punteros de 64-bit"
+msgstr "Compila con longs y punteros de 64 bit."
 
 #: config/tilepro/tilepro.opt:24
 msgid "Compile with 32 bit longs and pointers, which is the only supported"
-msgstr ""
+msgstr "Compila con longs y punteros de 32 bit, el cual es el único admitido"
 
 #: config/tilepro/tilepro.opt:33
-#, fuzzy
-#| msgid "Known IQ2000 CPUs (for use with the -mcpu= option):"
 msgid "Known TILEPro CPUs (for use with the -mcpu= option):"
-msgstr "CPUs IQ2000 conocidos (para uso con la opción -mcpu=):"
+msgstr "CPUs TILEPro conocidos (para uso con la opción -mcpu=):"
 
 #: config/picochip/picochip.opt:23
 msgid "Specify which type of AE to target. This option sets the mul-type and byte-access."
@@ -9767,10 +9722,8 @@ msgid "Warn about unsuffixed float constants"
 msgstr "Avisa sobre constantes de coma flotante sin sufijo"
 
 #: c-family/c.opt:666
-#, fuzzy
-#| msgid "typedef %qD locally defined but not used"
 msgid "Warn when typedefs locally defined in a function are not used"
-msgstr "se define tipo %qD localmente pero no se usa"
+msgstr "Avisa cuando se definen typedefs localmente en una función pero no se usan"
 
 #: c-family/c.opt:670
 msgid "Warn about macros defined in the main file that are not used"
@@ -10915,25 +10868,19 @@ msgstr "Realiza la inclusión en línea indirecta"
 
 #: common.opt:1252
 msgid "Enable inlining of function declared \"inline\", disabling disables all inlining"
-msgstr ""
+msgstr "Activa la inclusión en línea de la la función declarada \"inline\", y desactiva todas las demás inclusiones en línea"
 
 #: common.opt:1256
-#, fuzzy
-#| msgid "Integrate simple functions into their callers when code size is known to not growth"
 msgid "Integrate functions into their callers when code size is known not to grow"
-msgstr "Integra las funciones simples en sus invocadores"
+msgstr "Integra las funciones en sus invocadores cuando se sabe que el tamaño del código no crece"
 
 #: common.opt:1260
-#, fuzzy
-#| msgid "Integrate functions called once into their callers"
 msgid "Integrate functions not declared \"inline\" into their callers when profitable"
-msgstr "Integra las funciones llamadas una vez en sus invocadores"
+msgstr "Integra las funciones que no se declaran \"inline\" en sus invocadores cuando es rentable"
 
 #: common.opt:1264
-#, fuzzy
-#| msgid "Integrate functions called once into their callers"
 msgid "Integrate functions only required by their single caller"
-msgstr "Integra las funciones llamadas una vez en sus invocadores"
+msgstr "Integra las funciones sólo requeridas por su invocador único"
 
 #: common.opt:1271
 msgid "-finline-limit=<number>\tLimit the size of inlined functions to <number>"
@@ -11963,10 +11910,8 @@ msgid "second argument must be slice or string"
 msgstr "el segundo argumento debe ser una rebanada o una cadena"
 
 #: go/gofrontend/expressions.cc:8722
-#, fuzzy
-#| msgid "parameter %u has void type"
 msgid "argument 2 has invalid type"
-msgstr "el parámetro %u tiene tipo void"
+msgstr "el argumento 2 es de tipo inválido"
 
 #: go/gofrontend/expressions.cc:8738
 msgid "argument must have complex type"
@@ -16479,8 +16424,7 @@ msgid "Alias has call edges"
 msgstr "Alias tiene bordes de llamada"
 
 #: cgraphunit.c:676
-#, fuzzy, gcc-internal-format
-#| msgid "Alias has non-alias refernece"
+#, gcc-internal-format
 msgid "Alias has non-alias reference"
 msgstr "Alias tiene una referencia que no es alias"
 
@@ -16545,10 +16489,9 @@ msgid "verify_cgraph_node failed"
 msgstr "falló verify_cgraph_node"
 
 #: cgraphunit.c:851
-#, fuzzy, gcc-internal-format
-#| msgid "function %q+D redeclared as inline"
+#, gcc-internal-format
 msgid "function %q+D part of alias cycle"
-msgstr "se redeclara la función %q+D como inline"
+msgstr "la función %q+D es parte de un ciclo de alias"
 
 #: cgraphunit.c:956
 #, gcc-internal-format
@@ -16581,8 +16524,7 @@ msgid "failed to reclaim unneeded function"
 msgstr "falló al reclamar una función innecesaria"
 
 #: cgraphunit.c:1447
-#, fuzzy, gcc-internal-format
-#| msgid "failed to reclaim unneeded functionin same comdat group"
+#, gcc-internal-format
 msgid "failed to reclaim unneeded function in same comdat group"
 msgstr "falló al reclamar una función innecesaria en el mismo grupo comdat"
 
@@ -18118,8 +18060,7 @@ msgid "unknown pass %s specified in -fenable"
 msgstr "se especificó el paso desconocido %s en -fenable"
 
 #: passes.c:712
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unknown pass %s specified in -fdisble"
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown pass %s specified in -fdisable"
 msgstr "se especificó el paso desconocido %s en -fdisable"
 
@@ -18939,10 +18880,9 @@ msgid "outer transaction in %<transaction_safe%> function"
 msgstr "transacción más externa en la función %<transaction_safe%>"
 
 #: trans-mem.c:3789
-#, fuzzy, gcc-internal-format
-#| msgid "asm not allowed in %<transaction_safe%> function"
+#, gcc-internal-format
 msgid "%Kasm not allowed in %<transaction_safe%> function"
-msgstr "no se permite asm en una función %<transaction_safe%>"
+msgstr "%Kno se permite asm en una función %<transaction_safe%>"
 
 #: tree-cfg.c:2616
 #, gcc-internal-format
@@ -20354,10 +20294,9 @@ msgid "visibility attribute not supported in this configuration; ignored"
 msgstr "no se admiten los atributos de visibilidad en esta configuración; descartados"
 
 #: varpool.c:486
-#, fuzzy, gcc-internal-format
-#| msgid "variable %q+D set but not used"
+#, gcc-internal-format
 msgid "variable %q+D part of alias cycle"
-msgstr "se define la variable %q+D pero no se usa"
+msgstr "la variable %q+D es parte de un ciclo de alias"
 
 #: vec.c:527
 #, gcc-internal-format, gfc-internal-format
@@ -23128,12 +23067,12 @@ msgstr "%qs parece ser un manejador de señales mal escrito"
 #: config/avr/avr.c:7060
 #, gcc-internal-format
 msgid "%qT uses address space %qs beyond flash of %qs"
-msgstr ""
+msgstr "%qT usa el espacio de direcciones %qs más allá del destello de %qs"
 
 #: config/avr/avr.c:7063
 #, gcc-internal-format
 msgid "%s %q+D uses address space %qs beyond flash of %qs"
-msgstr ""
+msgstr "%s %q+D usa el espacio de direcciones %qs más allá del destello de %qs"
 
 #: config/avr/avr.c:7070
 #, gcc-internal-format
@@ -23148,7 +23087,7 @@ msgstr "el espacio de direcciones %qs que apuntan a punteros debe ser const en %
 #: config/avr/avr.c:7111
 #, gcc-internal-format
 msgid "variable %q+D located in address space %qs beyond flash of %qs"
-msgstr ""
+msgstr "la variable %q+D se ubica en el espacio de direcciones %qs más allá del destello de %qs"
 
 #: config/avr/avr.c:7127
 #, gcc-internal-format
@@ -23264,19 +23203,17 @@ msgstr "el análisis de perfil aún no se implementa en esta arquitectura"
 #: config/cr16/cr16.c:294
 #, gcc-internal-format
 msgid "data-model=far not valid for cr16c architecture"
-msgstr ""
+msgstr "data-model=far no es válido para la arquitectura cr16c"
 
 #: config/cr16/cr16.c:297
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid thread pointer option: -mtp=%s"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid data model option -mdata-model=%s"
-msgstr "opción de puntero a hilo inválida: -mtp=%s"
+msgstr "opción de modelo de datos -mdata-model=%s inválida"
 
 #: config/cr16/cr16.h:431
-#, fuzzy, gcc-internal-format
-#| msgid "profiler support for CRX"
+#, gcc-internal-format
 msgid "profiler support for CR16"
-msgstr "soporte de análisis de perfil para CRX"
+msgstr "soporte de análisis de perfil para CR16"
 
 #. This function is for retrieving a part of an instruction name for
 #. an operator, for immediate output.  If that ever happens for
@@ -25102,7 +25039,7 @@ msgstr "no hay análisis de perfil del código de 64-bit para esta ABI"
 #: config/rs6000/rs6000.c:24050
 #, gcc-internal-format
 msgid "You cannot take the address of a nested function if you use the -mno-pointers-to-nested-functions option."
-msgstr ""
+msgstr "No se puede tomar la dirección de una función anindada si se usa la opción -mno-pointers-to-nested-functions."
 
 #: config/rs6000/rs6000.c:24131
 #, gcc-internal-format
@@ -25576,16 +25513,14 @@ msgid "__BELOW100__ attribute not allowed with auto storage class"
 msgstr "no se permite el atributo __BELOW100__ con una clase de auto almacenamiento"
 
 #: config/tilegx/tilegx.c:3397 config/tilepro/tilepro.c:3101
-#, fuzzy, gcc-internal-format
-#| msgid "bad builtin code"
+#, gcc-internal-format
 msgid "bad builtin icode"
-msgstr "código interno erróneo"
+msgstr "icode interno erróneo"
 
 #: config/tilegx/tilegx.c:3438 config/tilepro/tilepro.c:3127
-#, fuzzy, gcc-internal-format
-#| msgid "mask must be an immediate"
+#, gcc-internal-format
 msgid "operand must be an immediate of the right size"
-msgstr "la máscara debe ser un inmediato"
+msgstr "el operando debe ser un inmediato del tamaño correcto"
 
 #: config/v850/v850-c.c:67
 #, gcc-internal-format
@@ -27095,10 +27030,9 @@ msgid "ambiguous default type conversion from %qT"
 msgstr "conversión de tipo por defecto ambigua desde %qT"
 
 #: cp/cvt.c:1548
-#, fuzzy, gcc-internal-format
-#| msgid "  candidate conversions include %qD and %qD"
+#, gcc-internal-format
 msgid "  candidate conversions include %qD"
-msgstr "  las conversiones candidatas incluyen %qD y %qD"
+msgstr "  las conversiones candidatas incluyen %qD"
 
 #: cp/cvt.c:1597
 #, gcc-internal-format
@@ -27588,16 +27522,14 @@ msgid "%<constexpr%> cannot be used for type declarations"
 msgstr "%<constexpr%> no se puede usar en declaraciones de tipo"
 
 #: cp/decl.c:4226
-#, fuzzy, gcc-internal-format
-#| msgid "attribute ignored in declaration of %q+#T"
+#, gcc-internal-format
 msgid "attribute ignored in declaration of %q#T"
-msgstr "se descarta el atributo en la declaración de %q+#T"
+msgstr "se descarta el atributo en la declaración de %q#T"
 
 #: cp/decl.c:4227
-#, fuzzy, gcc-internal-format
-#| msgid "attribute for %q+#T must follow the %qs keyword"
+#, gcc-internal-format
 msgid "attribute for %q#T must follow the %qs keyword"
-msgstr "el atributo para %q+#T debe estar a continuación de la palabra clave %qs"
+msgstr "el atributo para %q#T debe estar a continuación de la palabra clave %qs"
 
 #: cp/decl.c:4296
 #, gcc-internal-format
@@ -28964,10 +28896,9 @@ msgid "default argument for parameter of type %qT has type %qT"
 msgstr "el argumento por defecto para el parámetro del tipo %qT tiene el tipo %qT"
 
 #: cp/decl.c:10588
-#, fuzzy, gcc-internal-format
-#| msgid "default argument %qE uses local variable %qD"
+#, gcc-internal-format
 msgid "default argument %qE uses %qD"
-msgstr "el argumento por defecto %qE usa la variable local %qD"
+msgstr "el argumento por defecto %qE usa %qD"
 
 #: cp/decl.c:10590
 #, gcc-internal-format
@@ -33588,10 +33519,9 @@ msgid "constexpr constructor does not have empty body"
 msgstr "el constructor constexpr no tiene cuerpo vacío"
 
 #: cp/semantics.c:6042
-#, fuzzy, gcc-internal-format
-#| msgid "defaulted default constructor does not initialize any non-static data member"
+#, gcc-internal-format
 msgid "%<constexpr%> constructor for union %qT must initialize exactly one non-static data member"
-msgstr "el constructor por defecto en efecto no inicializa ningún dato miembro que no es static"
+msgstr "el constructor %<constexpr%> para union %qT debe inicializar exactamente un dato miembro que no es static"
 
 #: cp/semantics.c:6080
 #, gcc-internal-format
@@ -35296,8 +35226,7 @@ msgid "'%s' argument of '%s' intrinsic at %L must be a POINTER"
 msgstr "El argumento '%s' del intrínseco '%s' en %L debe ser un POINTER"
 
 #: fortran/check.c:910 fortran/check.c:946 fortran/check.c:2853
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "'%s' argument of '%s' intrinsic at %L shall not be conindexed"
+#, gcc-internal-format, gfc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L shall not be coindexed"
 msgstr "El argumento '%s' del intrínseco '%s' en %L no debe ser coindizado"
 
@@ -37713,10 +37642,9 @@ msgid "In %s at %L procedures must be all FUNCTIONs as the generic name is also 
 msgstr "En %s en %L los procedimientos deben ser puras FUNCTIONs ya que el nombre genérico es también el nombre de un tipo derivado"
 
 #: fortran/interface.c:1297
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Extension: Internal procedure '%s' in %s at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: Internal procedure '%s' in %s at %L"
-msgstr "Extensión: Procedimiento interno '%s' en %s en %L"
+msgstr "Fortran 2008: Procedimiento interno '%s' en %s en %L"
 
 #: fortran/interface.c:1354 fortran/interface.c:1358
 #, gcc-internal-format, gfc-internal-format
@@ -37879,10 +37807,9 @@ msgid "Character length mismatch (%ld/%ld) between actual argument and assumed-s
 msgstr "No coincide la longitud de carácter (%ld/%ld) entre el argumento actual y el argumento dummy de forma asumida '%s' en %L"
 
 #: fortran/interface.c:2309
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Actual argument argument at %L to allocatable or pointer dummy argument '%s' must have a deferred length type parameter if and only if the dummy has one"
+#, gcc-internal-format, gfc-internal-format
 msgid "Actual argument at %L to allocatable or pointer dummy argument '%s' must have a deferred length type parameter if and only if the dummy has one"
-msgstr "El argumento actual del argumento en %L para el argumento alojable o dummy puntero '%s' debe tener un parámetro de tipo de longitud diferido si y sólo si el dummy tiene uno"
+msgstr "El argumento actual en %L para el argumento alojable o dummy puntero '%s' debe tener un parámetro de tipo de longitud diferido si y sólo si el dummy tiene uno"
 
 #: fortran/interface.c:2326
 #, gcc-internal-format, gfc-internal-format
@@ -37930,8 +37857,7 @@ msgid "Coindexed actual argument at %L to allocatable dummy '%s' requires INTENT
 msgstr "El argumento actual coindizado en %L para el dummy alojable '%s' requiere INTENT(IN)"
 
 #: fortran/interface.c:2432
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Coindexed ASYNCHRONOUS or VOLATILE actual argument at at %L requires that dummy %s' has neither ASYNCHRONOUS nor VOLATILE"
+#, gcc-internal-format, gfc-internal-format
 msgid "Coindexed ASYNCHRONOUS or VOLATILE actual argument at %L requires that dummy '%s' has neither ASYNCHRONOUS nor VOLATILE"
 msgstr "El argumento actual coindizado ASYNCHRONOUS o VOLATILE en %L requiere que el dummy '%s' no tenga ASYNCHRONOUS ni VOLATILE"
 
@@ -39165,8 +39091,7 @@ msgid "SOURCE tag at %L conflicts with the typespec at %L"
 msgstr "La etiqueta SOURCE en %L tiene conflictos con la especificación de tipo en %L"
 
 #: fortran/match.c:3663
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Fortran 2008: SOURCE tag at %L with more than a single allocate objects"
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: SOURCE tag at %L with more than a single allocate object"
 msgstr "Fortran 2008: Etiqueta SOURCE en %L con más de un objeto de alojamiento sencillo"
 
@@ -39196,8 +39121,7 @@ msgid "Allocate-object at %L with a deferred type parameter requires either a ty
 msgstr "El objeto de alojamiento en %L con un parámetro de tipo diferido requiere una especificación de tipo o una etiqueta SOURCE o una etiqueta MOLD"
 
 #: fortran/match.c:3790
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Pointer object at %C shall not be conindexed"
+#, gcc-internal-format, gfc-internal-format
 msgid "Pointer object at %C shall not be coindexed"
 msgstr "El objeto puntero en %C no debe tener un coíndice"
 
