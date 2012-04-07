@@ -2482,7 +2482,4 @@ extern int current_function_interrupt;
 2:\n" TEXT_SECTION_ASM_OP);
 #endif /* (defined CRT_BEGIN || defined CRT_END) && ! __SHMEDIA__ */
 
-/* FIXME: middle-end support for highpart optimizations is missing.  */
-#define high_life_started reload_in_progress
-
 #endif /* ! GCC_SH_H */

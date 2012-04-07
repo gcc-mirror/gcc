@@ -1991,7 +1991,7 @@
    (use (match_operand:SI 3 "register_operand" "r"))]
   "TARGET_SHMEDIA"
   "#"
-  "&& (high_life_started || reload_completed)"
+  "&& (reload_in_progress || reload_completed)"
   [(set (match_dup 0) (match_dup 3))]
   ""
   [(set_attr "highpart" "must_split")])
@@ -2021,7 +2021,7 @@
 	 UNSPEC_DIV_INV_M3))]
   "TARGET_SHMEDIA"
   "#"
-  "&& (high_life_started || reload_completed)"
+  "&& (reload_in_progress || reload_completed)"
   [(pc)]
 {
   const char *name = sh_divsi3_libfunc;
@@ -2643,7 +2643,7 @@ label:
    (clobber (match_operand:DF 8 "register_operand" "=r"))]
   "TARGET_SHMEDIA_FPU"
   "#"
-  "&& (high_life_started || reload_completed)"
+  "&& (reload_in_progress || reload_completed)"
   [(set (match_dup 0) (match_dup 3))]
   ""
   [(set_attr "highpart" "must_split")])
