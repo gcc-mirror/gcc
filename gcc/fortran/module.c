@@ -4388,9 +4388,24 @@ load_needed (pointer_info *p)
 
   /* Mark as only or rename for later diagnosis for explicitly imported
      but not used warnings; don't mark internal symbols such as __vtab,
-     __def_init etc.  */
+     __def_init etc. Only mark them if they have been explicitly loaded.  */
+
   if (only_flag && sym->name[0] != '_' && sym->name[1] != '_')
-    sym->attr.use_only = 1;
+    {
+      gfc_use_rename *u;
+
+      /* Search the use/rename list for the variable; if the variable is
+	 found, mark it.  */
+      for (u = gfc_rename_list; u; u = u->next)
+	{
+	  if (strcmp (u->use_name, sym->name) == 0)
+	    {
+	      sym->attr.use_only = 1;
+	      break;
+	    }
+	}
+    }
+
   if (p->u.rsym.renamed)
     sym->attr.use_rename = 1;
 
