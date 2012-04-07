@@ -1,3 +1,11 @@
+2012-04-06  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi:  Clean up Texinfo markup throughout the file.
+	Use @option markup on command-line options.  Use @samp markup on
+	literal keywords to options.  Use @code markup on code fragments.
+	Use other markup in preference to quotation marks in the text.
+	Add markup to some passages without any.
+
 2012-04-06  Mike Stump  <mikestump@comcast.net>
 
 	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Avoid warning.
