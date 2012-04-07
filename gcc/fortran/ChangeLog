@@ -1,3 +1,9 @@
+2012-04-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52893
+	* frontend-passes.c:  Keep track of wether we are in an implicit
+	DO loop; do not do function elimination if we are.
+
 2012-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/52668
