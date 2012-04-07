@@ -70,6 +70,10 @@ static int forall_level;
 
 static bool in_omp_workshare;
 
+/* Keep track of iterators for array constructors.  */
+
+static int iterator_level;
+
 /* Entry point - run all passes for a namespace.  So far, only an
    optimization pass is run.  */
 
@@ -177,6 +181,13 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
      lead to wrong-code in certain circumstances.  */
 
   if (forall_level > 0)
+    return 0;
+
+  /* Function elimination inside an iterator could lead to functions which
+     depend on iterator variables being moved outside.  FIXME: We should check
+     if the functions do indeed depend on the iterator variable.  */
+
+  if (iterator_level > 0)
     return 0;
 
   /* If we don't know the shape at compile time, we create an allocatable
@@ -581,6 +592,7 @@ optimize_namespace (gfc_namespace *ns)
 
   current_ns = ns;
   forall_level = 0;
+  iterator_level = 0;
   in_omp_workshare = false;
 
   gfc_code_walker (&ns->code, convert_do_while, dummy_expr_callback, NULL);
@@ -1140,9 +1152,13 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 	    for (c = gfc_constructor_first ((*e)->value.constructor); c;
 		 c = gfc_constructor_next (c))
 	      {
-		WALK_SUBEXPR (c->expr);
-		if (c->iterator != NULL)
+		if (c->iterator == NULL)
+		  WALK_SUBEXPR (c->expr);
+		else
 		  {
+		    iterator_level ++;
+		    WALK_SUBEXPR (c->expr);
+		    iterator_level --;
 		    WALK_SUBEXPR (c->iterator->var);
 		    WALK_SUBEXPR (c->iterator->start);
 		    WALK_SUBEXPR (c->iterator->end);
