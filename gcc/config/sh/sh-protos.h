@@ -64,7 +64,7 @@ extern void emit_sf_insn (rtx);
 extern void emit_df_insn (rtx);
 extern void output_pic_addr_const (FILE *, rtx);
 extern bool expand_block_move (rtx *);
-extern int prepare_move_operands (rtx[], enum machine_mode mode);
+extern void prepare_move_operands (rtx[], enum machine_mode mode);
 extern enum rtx_code prepare_cbranch_operands (rtx *, enum machine_mode mode,
 					       enum rtx_code comparison);
 extern void expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int);

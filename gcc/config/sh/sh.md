@@ -5337,8 +5337,7 @@ label:
 	(match_operand:SI 1 "general_movsrc_operand" ""))]
   ""
 {
-  if (prepare_move_operands (operands, SImode))
-    DONE;
+  prepare_move_operands (operands, SImode);
 })
 
 (define_expand "ic_invalidate_line"
@@ -5447,8 +5446,7 @@ label:
 	(match_operand:QI 1 "general_operand" ""))]
   ""
 {
-  if (prepare_move_operands (operands, QImode))
-    DONE;
+  prepare_move_operands (operands, QImode);
 })
 
 ;; If movqi_reg_reg is specified as an alternative of movqi, movqi will be
@@ -5614,8 +5612,7 @@ label:
 	(match_operand:HI 1 "general_movsrc_operand"  ""))]
   ""
 {
-  if (prepare_move_operands (operands, HImode))
-    DONE;
+  prepare_move_operands (operands, HImode);
 })
 
 (define_expand "reload_inhi"
@@ -5982,8 +5979,7 @@ label:
 	(match_operand:DI 1 "general_movsrc_operand" ""))]
   ""
 {
-  if (prepare_move_operands (operands, DImode))
-    DONE;
+  prepare_move_operands (operands, DImode);
 })
 
 (define_insn "movdf_media"
@@ -6571,8 +6567,7 @@ label:
 	(match_operand:DF 1 "general_movsrc_operand" ""))]
   ""
 {
-  if (prepare_move_operands (operands, DFmode))
-    DONE;
+  prepare_move_operands (operands, DFmode);
   if (TARGET_SHMEDIA)
     {
       if (TARGET_SHMEDIA_FPU)
@@ -6618,8 +6613,7 @@ label:
 	(match_operand:V2SF 1 "nonimmediate_operand" ""))]
   "TARGET_SHMEDIA_FPU"
 {
-  if (prepare_move_operands (operands, V2SFmode))
-    DONE;
+  prepare_move_operands (operands, V2SFmode);
 })
 
 (define_expand "addv2sf3"
@@ -6700,8 +6694,7 @@ label:
 	(match_operand:V4SF 1 "general_operand" ""))]
   "TARGET_SHMEDIA_FPU"
 {
-  if (prepare_move_operands (operands, V4SFmode))
-    DONE;
+  prepare_move_operands (operands, V4SFmode);
 })
 
 (define_insn_and_split "*movv16sf_i"
@@ -6748,8 +6741,7 @@ label:
 	(match_operand:V16SF 1 "nonimmediate_operand" "f,m,f"))]
   "TARGET_SHMEDIA_FPU"
 {
-  if (prepare_move_operands (operands, V16SFmode))
-    DONE;
+  prepare_move_operands (operands, V16SFmode);
 })
 
 (define_insn "movsf_media"
@@ -6921,8 +6913,7 @@ label:
         (match_operand:SF 1 "general_movsrc_operand" ""))]
   ""
 {
-  if (prepare_move_operands (operands, SFmode))
-    DONE;
+  prepare_move_operands (operands, SFmode);
   if (TARGET_SHMEDIA)
     {
       if (TARGET_SHMEDIA_FPU)
@@ -11774,8 +11765,7 @@ label:
 	(match_operand:V8QI 1 "general_movsrc_operand" ""))]
   "TARGET_SHMEDIA"
 {
-  if (prepare_move_operands (operands, V8QImode))
-    DONE;
+  prepare_move_operands (operands, V8QImode);
 })
 
 (define_insn "movv8qi_i"
@@ -11867,8 +11857,7 @@ label:
 	(match_operand:V2HI 1 "general_movsrc_operand" ""))]
   "TARGET_SHMEDIA"
 {
-  if (prepare_move_operands (operands, V2HImode))
-    DONE;
+  prepare_move_operands (operands, V2HImode);
 })
 
 (define_insn "movv2hi_i"
@@ -11895,8 +11884,7 @@ label:
 	(match_operand:V4HI 1 "general_movsrc_operand" ""))]
   "TARGET_SHMEDIA"
 {
-  if (prepare_move_operands (operands, V4HImode))
-    DONE;
+  prepare_move_operands (operands, V4HImode);
 })
 
 (define_insn "movv4hi_i"
@@ -11920,8 +11908,7 @@ label:
 	(match_operand:V2SI 1 "general_movsrc_operand" ""))]
   "TARGET_SHMEDIA"
 {
-  if (prepare_move_operands (operands, V2SImode))
-  DONE;
+  prepare_move_operands (operands, V2SImode);
 })
 
 (define_insn "movv2si_i"
