@@ -909,8 +909,10 @@
 		       (match_operand:DI 1 "arith_operand" "r"))
 	       (const_int 0)))]
   "TARGET_SH1"
-  "* return output_branchy_insn (EQ, \"tst\\t%S1,%S0\;bf\\t%l9\;tst\\t%R1,%R0\",
-				 insn, operands);"
+{
+  return output_branchy_insn (EQ, "tst\t%S1,%S0;bf\t%l9;tst\t%R1,%R0",
+			      insn, operands);
+}
   [(set_attr "length" "6")
    (set_attr "type" "arith3b")])
 
@@ -3156,7 +3158,6 @@ label:
 	(and:SI (match_operand:SI 1 "logical_reg_operand" "")
 		(match_operand:SI 2 "logical_operand" "")))]
   ""
-  "
 {
   if (TARGET_SH1
       && CONST_INT_P (operands[2]) && INTVAL (operands[2]) == 255)
@@ -3165,7 +3166,7 @@ label:
 				       gen_lowpart (QImode, operands[1])));
       DONE;
     }
-}")
+})
 
 (define_insn_and_split "anddi3"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r,r,r")
@@ -3179,14 +3180,13 @@ label:
   "reload_completed
    && ! logical_operand (operands[2], DImode)"
   [(const_int 0)]
-  "
 {
   if ((unsigned)INTVAL (operands[2]) == (unsigned) 0xffffffff)
     emit_insn (gen_mshflo_l_di (operands[0], operands[1], CONST0_RTX (DImode)));
   else
     emit_insn (gen_mshfhi_l_di (operands[0], CONST0_RTX (DImode), operands[1]));
   DONE;
-}"
+}
   [(set_attr "type" "arith_media")])
 
 (define_insn "andcsi3"
@@ -5638,7 +5638,9 @@ label:
   "TARGET_SH1
    && (arith_reg_operand (operands[0], DImode)
        || arith_reg_operand (operands[1], DImode))"
-  "* return output_movedouble (insn, operands, DImode);"
+{
+  return output_movedouble (insn, operands, DImode);
+}
   [(set_attr "length" "4")
    (set_attr "type" "pcload,move,load,store,move,pcload,move,move")])
 
@@ -13559,14 +13561,6 @@ label:
 }
   [(set_attr "type" "other")])
 
-(define_insn "*prefetch_i4"
-  [(prefetch (match_operand:SI 0 "register_operand" "r")
-             (match_operand:SI 1 "const_int_operand" "n")
-             (match_operand:SI 2 "const_int_operand" "n"))]
-  "(TARGET_HARD_SH4 || TARGET_SHCOMPACT) && !TARGET_VXWORKS_RTP"
-  "pref	@%0";
-  [(set_attr "type" "other")])
-
 ;; In user mode, the "pref" instruction will raise a RADDERR exception
 ;; for accesses to [0x80000000,0xffffffff].  This makes it an unsuitable
 ;; implementation of __builtin_prefetch for VxWorks RTPs.
@@ -13585,12 +13579,12 @@ label:
     operands[0] = force_reg (Pmode, operands[0]);
 })
 
-(define_insn "prefetch_m2a"
+(define_insn "*prefetch"
   [(prefetch (match_operand:SI 0 "register_operand" "r")
 	     (match_operand:SI 1 "const_int_operand" "n")
 	     (match_operand:SI 2 "const_int_operand" "n"))]
-  "TARGET_SH2A"
-  "pref\\t@%0"
+  "(TARGET_SH2A || TARGET_HARD_SH4 || TARGET_SHCOMPACT) && !TARGET_VXWORKS_RTP"
+  "pref	@%0"
   [(set_attr "type" "other")])
 
 (define_insn "alloco_i"

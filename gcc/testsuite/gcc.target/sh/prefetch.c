@@ -1,7 +1,8 @@
-/* Testcase to check generation of a SH2A specific instruction PREF @Rm.  */
+/* Testcase to check generation of a SH4 and SH2A operand cache prefetch
+   instruction PREF @Rm.  */
 /* { dg-do assemble {target sh*-*-*}}  */
 /* { dg-options "-O0" }  */
-/* { dg-skip-if "" { "sh*-*-*" } "*" "-m2a -m2a-nofpu -m2a-single -m2a-single-only" }  */
+/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m2a*" "-m4*" } }  */
 /* { dg-final { scan-assembler "pref"} }  */
 
 void
