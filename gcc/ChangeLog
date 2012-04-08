@@ -1,6 +1,7 @@
 2012-04-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
-	* config/sh/sh.md (*prefetch_i4, prefetch_m2a): Merge into ...
+	* config/sh/sh.md: Use braced string notation where applicable.
+	(*prefetch_i4, prefetch_m2a): Merge into ...
 	(*prefetch): ... this new insn.
 
 2012-04-07  Oleg Endo  <olegendo@gcc.gnu.org>
