@@ -1,3 +1,9 @@
+2012-04-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40973
+	PR fortran/52751
+	* gfortran.dg/public_private_module_2.f90: New.
+
 2012-04-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* g++.dg/warn/Wstrict-aliasing-float-ref-int-obj.C: Add labels to
