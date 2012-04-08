@@ -43,7 +43,6 @@ extern void print_generic_stmt (FILE *, tree, int);
 extern void print_generic_stmt_indented (FILE *, tree, int, int);
 extern void print_generic_expr (FILE *, tree, int);
 extern void print_generic_decl (FILE *, tree, int);
-extern void debug_c_tree (tree);
 extern void dump_omp_clauses (pretty_printer *, tree, int, int);
 extern void print_call_name (pretty_printer *, tree, int);
 extern void debug_generic_expr (tree);
@@ -55,5 +54,7 @@ extern void dump_function_header (FILE *, tree, int);
 /* In toplev.c  */
 extern bool default_tree_printer (pretty_printer *, text_info *, const char *,
 				  int, bool, bool, bool);
+/* In c-pretty-print.c  */
+extern void debug_c_tree (tree);
 
 #endif /* ! GCC_TREE_PRETTY_PRINT_H */
