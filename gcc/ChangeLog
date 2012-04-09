@@ -1,3 +1,11 @@
+2012-04-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52883
+	* config/i386/predicates.md (x86_64_zext_general_operand): Prevent
+	VOIDmode immediate operands.
+	* config/i386/constraints.md (Wz): New constraint.
+	* config/i386/i386.md (*zero_extendsidi2_rex64): Use Wz instead of Z.
+
 2012-04-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/52717
@@ -88,7 +96,7 @@
 	sh_cfun_attr_renesas_p, sh_cfun_interrupt_handler_p,
 	sh_cfun_resbank_handler_p, system_reg_operand, fp_zero_operand,
 	fp_one_operand, fldi_ok, reg_unused_after, sh_can_redirect_branch,
-	sh_hard_regno_rename_ok, check_use_sfunc_addr, sh_contains_memref_p, 
+	sh_hard_regno_rename_ok, check_use_sfunc_addr, sh_contains_memref_p,
 	sh_loads_bankedreg_p): Use bool as return type.
 	(nonpic_symbol_mentioned_p): Use bool as return type.  Remove
 	'register' modifier.
