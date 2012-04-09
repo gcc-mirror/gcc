@@ -2576,7 +2576,22 @@ proc check_effective_target_ultrasparc_vis3_hw { } {
     } "-mcpu=niagara3"]
 }
 
-# Return 1 if this is a Sparc target with VIS enabled.
+# Return 1 if this is a SPARC-V9 target.
+
+proc check_effective_target_sparc_v9 { } {
+    if { [istarget sparc*-*-*] } {
+	return [check_no_compiler_messages sparc_v9 object {
+	    int main (void) {
+		asm volatile ("return %i7+8");
+		return 0;
+	    }
+	}]
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if this is a SPARC target with VIS enabled.
 
 proc check_effective_target_sparc_vis { } {
     if { [istarget sparc*-*-*] } {
@@ -3755,7 +3770,8 @@ proc check_effective_target_sync_long_long { } {
     if { [istarget x86_64-*-*]
 	 || [istarget i?86-*-*])
 	 || [istarget arm*-*-*]
-	 || [istarget alpha*-*-*] } {
+	 || [istarget alpha*-*-*]
+	 || ([istarget sparc*-*-*] && [check_effective_target_lp64]) } {
 	return 1
     } else {
 	return 0
@@ -3800,6 +3816,10 @@ proc check_effective_target_sync_long_long_runtime { } {
 	} "" ]
     } elseif { [istarget alpha*-*-*] } {
 	return 1
+    } elseif { ([istarget sparc*-*-*]
+		 && [check_effective_target_lp64]
+		 && [check_effective_target_ultrasparc_hw]) } {
+	return 1
     } else {
 	return 0
     }
@@ -3825,8 +3845,7 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget hppa*-*linux*]
 	     || [istarget s390*-*-*] 
 	     || [istarget powerpc*-*-*]
-	     || [istarget sparc64-*-*]
-	     || [istarget sparcv9-*-*]
+	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || [check_effective_target_mips_llsc] } {
            set et_sync_int_long_saved 1
         }
@@ -3855,8 +3874,7 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget hppa*-*linux*]
 	     || [istarget s390*-*-*] 
 	     || [istarget powerpc*-*-*]
-	     || [istarget sparc64-*-*]
-	     || [istarget sparcv9-*-*]
+	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || [check_effective_target_mips_llsc] } {
            set et_sync_char_short_saved 1
         }

@@ -1,3 +1,11 @@
+2012-04-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lib/target-supports.exp (check_effective_target_sparc_v9): New.
+	(check_effective_target_sync_long_long): Add SPARC case.
+	(check_effective_target_sync_long_long_runtime): Likewise.
+	(check_effective_target_sync_int_long): Adjust SPARC case.
+	(check_effective_target_sync_char_short): Likewise.
+
 2012-04-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/52893
