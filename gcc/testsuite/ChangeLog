@@ -1,3 +1,8 @@
+2012-04-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52883
+	* gcc.target/i386/pr52883.c: New testcase.
+
 2012-04-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lib/target-supports.exp (check_effective_target_sparc_v9): New.
