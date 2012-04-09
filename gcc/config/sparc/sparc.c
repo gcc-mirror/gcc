@@ -10800,6 +10800,7 @@ sparc_file_end (void)
                                                             NULL_TREE));
 	  DECL_RESULT (decl) = build_decl (BUILTINS_LOCATION, RESULT_DECL,
 					   NULL_TREE, void_type_node);
+	  TREE_PUBLIC (decl) = 1;
 	  TREE_STATIC (decl) = 1;
 	  make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
 	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
