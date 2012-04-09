@@ -1,3 +1,11 @@
+2012-04-09  Terry Guo  <terry.guo@arm.com>
+
+	Backport from mainline
+	2012-03-28  Terry Guo  <terry.guo@arm.com>
+
+	* testsuite/Makefile.am (TEST_GCC_EXEC_PREFIX): New.
+	* testsuite/Makefile.in: Regenerated.
+
 2012-03-30  Jeffrey Yasskin  <jyasskin@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
