@@ -37,10 +37,16 @@
 ;;  P27: 1 | 2 | 8 | 16
 ;;  Pso: 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128
 ;;  Psz: ~1 | ~2 | ~4 | ~8 | ~16 | ~32 | ~64 | ~128
+;; G: Floating point 0
+;; H: Floating point 1
 ;; Q: pc relative load operand
 ;; Rxx: reserved for exotic register classes.
-;; Sxx: extra memory (storage) constraints
-;;  Sua: unaligned memory operations
+;; Sxx: extra memory constraints
+;;  Sua: unaligned memory address
+;;  Sbv: QImode address without displacement
+;;  Sbw: QImode address with 12 bit displacement
+;;  Snd: address without displacement
+;;  Sdd: address with displacement
 ;; W: vector
 ;; Z: zero in any mode
 ;;
@@ -250,11 +256,6 @@
 	    (match_test "~ival == 32")
 	    (match_test "~ival == 64")
 	    (match_test "~ival == 128"))))
-
-(define_memory_constraint "Sr0"
-  "@internal"
-  (and (match_test "memory_operand (op, GET_MODE (op))")
-       (match_test "!refers_to_regno_p (R0_REG, R0_REG + 1, op, (rtx *) 0)")))
 
 (define_memory_constraint "Sua"
   "@internal"
