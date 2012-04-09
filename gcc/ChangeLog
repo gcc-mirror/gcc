@@ -1,3 +1,9 @@
+2012-04-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/52717
+	* config/sparc/sparc.c (sparc_file_end): Set TREE_PUBLIC explicitly on
+	the DECL generated for the special GOT helper.
+
 2012-04-06  Matt Turner  <mattst88@gmail.com>
 
 	* doc/install.texi: Correct typo "-mno-lsc" -> "-mno-llsc".
