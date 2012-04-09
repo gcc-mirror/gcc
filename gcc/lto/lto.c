@@ -1444,7 +1444,8 @@ free_ltrans_partitions (void)
   VEC_free (ltrans_partition, heap, ltrans_partitions);
 }
 
-/* See all references that go to comdat objects and bring them into partition too.  */
+/* See all references that go to comdat objects and bring them into partition too.
+   Also see all aliases of the newly added entry and bring them, too.  */
 static void
 add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
 {
@@ -1453,14 +1454,44 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
   for (i = 0; ipa_ref_list_reference_iterate (refs, i, ref); i++)
     {
       if (ref->refered_type == IPA_REF_CGRAPH
-	  && DECL_COMDAT (cgraph_function_node (ipa_ref_node (ref), NULL)->decl)
+	  && (DECL_COMDAT (cgraph_function_node (ipa_ref_node (ref),
+			   NULL)->decl)
+	      || (ref->use == IPA_REF_ALIAS
+		  && lookup_attribute
+		       ("weakref", DECL_ATTRIBUTES (ipa_ref_node (ref)->decl))))
 	  && !cgraph_node_in_set_p (ipa_ref_node (ref), part->cgraph_set))
 	add_cgraph_node_to_partition (part, ipa_ref_node (ref));
       else
 	if (ref->refered_type == IPA_REF_VARPOOL
-	    && DECL_COMDAT (ipa_ref_varpool_node (ref)->decl)
-	    && !varpool_node_in_set_p (ipa_ref_varpool_node (ref), part->varpool_set))
+	    && (DECL_COMDAT (ipa_ref_varpool_node (ref)->decl)
+	        || (ref->use == IPA_REF_ALIAS
+		    && lookup_attribute
+		         ("weakref",
+			  DECL_ATTRIBUTES (ipa_ref_varpool_node (ref)->decl))))
+	    && !varpool_node_in_set_p (ipa_ref_varpool_node (ref),
+				       part->varpool_set))
 	  add_varpool_node_to_partition (part, ipa_ref_varpool_node (ref));
+    }
+  for (i = 0; ipa_ref_list_refering_iterate (refs, i, ref); i++)
+    {
+      if (ref->refering_type == IPA_REF_CGRAPH
+	  && ref->use == IPA_REF_ALIAS
+	  && !cgraph_node_in_set_p (ipa_ref_refering_node (ref),
+				    part->cgraph_set)
+	  && !lookup_attribute ("weakref",
+				DECL_ATTRIBUTES
+				  (ipa_ref_refering_node (ref)->decl)))
+	add_cgraph_node_to_partition (part, ipa_ref_refering_node (ref));
+      else
+	if (ref->refering_type == IPA_REF_VARPOOL
+	    && ref->use == IPA_REF_ALIAS
+	    && !varpool_node_in_set_p (ipa_ref_refering_varpool_node (ref),
+				       part->varpool_set)
+	    && !lookup_attribute ("weakref",
+				  DECL_ATTRIBUTES
+				    (ipa_ref_refering_varpool_node (ref)->decl)))
+	  add_varpool_node_to_partition (part,
+					 ipa_ref_refering_varpool_node (ref));
     }
 }
 
@@ -1501,9 +1532,6 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
   cgraph_node_set_iterator csi;
   struct cgraph_node *n;
 
-  /* We always decide on functions, not associated thunks and aliases.  */
-  node = cgraph_function_node (node, NULL);
-
   /* If NODE is already there, we have nothing to do.  */
   csi = cgraph_node_set_find (part->cgraph_set, node);
   if (!csi_end_p (csi))
@@ -1522,7 +1550,14 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
 	&& !cgraph_node_in_set_p (e->callee, part->cgraph_set))
       add_cgraph_node_to_partition (part, e->callee);
 
+  /* The only way to assemble non-weakref alias is to add the aliased object into
+     the unit.  */
   add_references_to_partition (part, &node->ref_list);
+  n = cgraph_function_node (node, NULL);
+  if (n != node
+      && !lookup_attribute ("weakref",
+			    DECL_ATTRIBUTES (node->decl)))
+    add_cgraph_node_to_partition (part, n);
 
   if (node->same_comdat_group)
     for (n = node->same_comdat_group; n != node; n = n->same_comdat_group)
@@ -1535,8 +1570,7 @@ static void
 add_varpool_node_to_partition (ltrans_partition part, struct varpool_node *vnode)
 {
   varpool_node_set_iterator vsi;
-
-  vnode = varpool_variable_node (vnode, NULL);
+  struct varpool_node *v;
 
   /* If NODE is already there, we have nothing to do.  */
   vsi = varpool_node_set_find (part->varpool_set, vnode);
@@ -1553,6 +1587,14 @@ add_varpool_node_to_partition (ltrans_partition part, struct varpool_node *vnode
 		 varpool_node_name (vnode));
     }
   vnode->aux = (void *)((size_t)vnode->aux + 1);
+
+  /* The only way to assemble non-weakref alias is to add the aliased object into
+     the unit.  */
+  v = varpool_variable_node (vnode, NULL);
+  if (v != vnode
+      && !lookup_attribute ("weakref",
+			    DECL_ATTRIBUTES (vnode->decl)))
+    add_varpool_node_to_partition (part, v);
 
   add_references_to_partition (part, &vnode->ref_list);
 
