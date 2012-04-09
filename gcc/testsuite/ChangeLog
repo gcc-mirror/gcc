@@ -1,3 +1,11 @@
+2012-04-09  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/52722
+	PR lto/51765
+	PR lto/52634	
+	* gcc.dg/lto/pr52634_1.c: New testcase.
+	* gcc.dg/lto/pr52634_0.c: New testcase.
+
 2012-04-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52883

@@ -1,3 +1,15 @@
+2012-04-09  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/52722
+	PR lto/51765
+	PR lto/52634	
+	* lto-cgraph.c (compute_ltrans_boundary): When alias is in the boundary,
+	add its target too.
+	* lto.c (add_references_to_partition): Add also aliased nodes.
+	(add_cgraph_node_to_partition,
+	add_varpool_node_to_partition): Work on nodes, not functions/variables;
+	when adding alias, add also the aliased object.
+
 2012-04-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52883

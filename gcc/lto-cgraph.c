@@ -799,6 +799,8 @@ compute_ltrans_boundary (struct lto_out_decl_state *state,
 	  lto_set_varpool_encoder_encode_initializer (varpool_encoder, vnode);
 	  add_references (encoder, varpool_encoder, &vnode->ref_list);
 	}
+      else if (vnode->alias || vnode->alias_of)
+        add_references (encoder, varpool_encoder, &vnode->ref_list);
     }
 
   /* Go over all the nodes again to include callees that are not in
