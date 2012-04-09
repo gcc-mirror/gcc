@@ -1,3 +1,9 @@
+2012-04-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/constraints.md: Update list of constraints in
+	comment block.
+	(Sr0): Remove unused memory constraint.
+
 2012-04-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree-pretty-print.h: Update comment.
