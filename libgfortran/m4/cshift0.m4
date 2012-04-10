@@ -98,9 +98,13 @@ cshift0_'rtype_code` ('rtype` *ret, const 'rtype` *array, ptrdiff_t shift,
   rptr = ret->base_addr;
   sptr = array->base_addr;
 
-  shift = len == 0 ? 0 : shift % (ptrdiff_t)len;
-  if (shift < 0)
-    shift += len;
+  /* Avoid the costly modulo for trivially in-bound shifts.  */
+  if (shift < 0 || shift >= len)
+    {
+      shift = len == 0 ? 0 : shift % (ptrdiff_t)len;
+      if (shift < 0)
+	shift += len;
+    }
 
   while (rptr)
     {
