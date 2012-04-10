@@ -1108,7 +1108,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
                - an expression with TREE_NO_WARNING set. (For an example of
                  such expressions, see build_over_call in call.c.)
                - automatic dereferencing of references, since the user cannot
-                 control it. (See also warn_if_unused_value() in stmt.c.)  */
+                 control it. (See also warn_if_unused_value() in c-common.c.)  */
             if (warn_unused_value
 		&& implicit != ICV_CAST
                 && (complain & tf_warning)
