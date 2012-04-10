@@ -1,3 +1,7 @@
+2012-04-10  Tristan Gingold  <gingold@adacore.com>
+
+	* gengtype.c (main): Make uintptr_t a known type.
+
 2012-04-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree-pass.h (tree_lowering_passes): Remove.
