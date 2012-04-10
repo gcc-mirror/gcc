@@ -12,6 +12,9 @@ extern "C"
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtCanvasPeer_init (JNIEnv *env, jobject);
 
+#undef gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER
+#define gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER 3L
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,0 +1,31 @@
+#rs6000/t-freebsd64
+
+# Copyright (C) 2012, Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# On FreeBSD the 32-bit libraries are found under /usr/lib32.
+# Set MULTILIB_OSDIRNAMES according to this.
+
+MULTILIB_OPTIONS        = m32 msoft-float
+MULTILIB_DIRNAMES       = 32 nof
+MULTILIB_EXTRA_OPTS     = fPIC mstrict-align
+MULTILIB_EXCEPTIONS     =
+MULTILIB_EXCLUSIONS     = !m32/msoft-float 
+MULTILIB_OSDIRNAMES	= ../lib32
+#MULTILIB_MATCHES        = $(MULTILIB_MATCHES_FLOAT)
+

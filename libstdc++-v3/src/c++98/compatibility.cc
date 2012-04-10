@@ -199,7 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 
 // NB: These symbols renames should go into the shared library only,
@@ -228,7 +228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 
 /* gcc-4.0.0
@@ -357,7 +357,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 // The rename syntax for default exported names is
 //   asm (".symver name1,exportedname@GLIBCXX_3.4")

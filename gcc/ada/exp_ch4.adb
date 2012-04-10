@@ -3072,7 +3072,7 @@ package body Exp_Ch4 is
          Low_Bound := Opnd_Low_Bound (1);
 
       --  OK, we don't know the lower bound, we have to build a horrible
-      --  expression actions node of the form
+      --  conditional expression node of the form
 
       --     if Cond1'Length /= 0 then
       --        Opnd1 low bound
@@ -3998,9 +3998,9 @@ package body Exp_Ch4 is
                   end if;
                end;
 
-               --  We set the allocator as analyzed so that when we analyze the
-               --  expression actions node, we do not get an unwanted recursive
-               --  expansion of the allocator expression.
+               --  We set the allocator as analyzed so that when we analyze
+               --  the conditional expression node, we do not get an unwanted
+               --  recursive expansion of the allocator expression.
 
                Set_Analyzed (N, True);
                Nod := Relocate_Node (N);
@@ -4279,7 +4279,7 @@ package body Exp_Ch4 is
    -- Expand_N_Conditional_Expression --
    -------------------------------------
 
-   --  Deal with limited types and expression actions
+   --  Deal with limited types and condition actions
 
    procedure Expand_N_Conditional_Expression (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
@@ -7832,9 +7832,7 @@ package body Exp_Ch4 is
    begin
       --  Do validity check if validity checking operands
 
-      if Validity_Checks_On
-        and then Validity_Check_Operands
-      then
+      if Validity_Checks_On and then Validity_Check_Operands then
          Ensure_Valid (Operand);
       end if;
 
@@ -7866,7 +7864,7 @@ package body Exp_Ch4 is
    --           end if;
    --        end loop;
 
-   --  Conversely, an existentially quantified expression:
+   --  Similarly, an existentially quantified expression:
 
    --    for some X in range => Cond
 
@@ -7884,75 +7882,79 @@ package body Exp_Ch4 is
    --  given by an iterator specification, not a loop parameter specification.
 
    procedure Expand_N_Quantified_Expression (N : Node_Id) is
-      Loc          : constant Source_Ptr := Sloc (N);
-      Is_Universal : constant Boolean := All_Present (N);
-      Actions      : constant List_Id := New_List;
-      Tnn          : constant Entity_Id := Make_Temporary (Loc, 'T', N);
-      Cond         : Node_Id;
-      Decl         : Node_Id;
-      I_Scheme     : Node_Id;
-      Original_N   : Node_Id;
-      Test         : Node_Id;
+      Actions   : constant List_Id    := New_List;
+      For_All   : constant Boolean    := All_Present (N);
+      Iter_Spec : constant Node_Id    := Iterator_Specification (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Loop_Spec : constant Node_Id    := Loop_Parameter_Specification (N);
+      Cond      : Node_Id;
+      Flag      : Entity_Id;
+      Scheme    : Node_Id;
+      Stmts     : List_Id;
 
    begin
-      --  Retrieve the original quantified expression (non analyzed)
+      --  Create the declaration of the flag which tracks the status of the
+      --  quantified expression. Generate:
 
-      if Present (Loop_Parameter_Specification (N)) then
-         Original_N := Parent (Parent (Loop_Parameter_Specification (N)));
-      else
-         Original_N := Parent (Parent (Iterator_Specification (N)));
-      end if;
+      --    Flag : Boolean := (True | False);
 
-      --  Rewrite N with the original quantified expression
+      Flag := Make_Temporary (Loc, 'T', N);
 
-      Rewrite (N, Original_N);
-
-      Decl :=
+      Append_To (Actions,
         Make_Object_Declaration (Loc,
-          Defining_Identifier => Tnn,
+          Defining_Identifier => Flag,
           Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
           Expression          =>
-            New_Occurrence_Of (Boolean_Literals (Is_Universal), Loc));
-      Append_To (Actions, Decl);
+            New_Occurrence_Of (Boolean_Literals (For_All), Loc)));
+
+      --  Construct the circuitry which tracks the status of the quantified
+      --  expression. Generate:
+
+      --    if [not] Cond then
+      --       Flag := (False | True);
+      --       exit;
+      --    end if;
 
       Cond := Relocate_Node (Condition (N));
 
-      if Is_Universal then
+      if For_All then
          Cond := Make_Op_Not (Loc, Cond);
       end if;
 
-      Test :=
+      Stmts := New_List (
         Make_Implicit_If_Statement (N,
           Condition       => Cond,
           Then_Statements => New_List (
             Make_Assignment_Statement (Loc,
-              Name       => New_Occurrence_Of (Tnn, Loc),
+              Name       => New_Occurrence_Of (Flag, Loc),
               Expression =>
-                New_Occurrence_Of (Boolean_Literals (not Is_Universal), Loc)),
-            Make_Exit_Statement (Loc)));
+                New_Occurrence_Of (Boolean_Literals (not For_All), Loc)),
+            Make_Exit_Statement (Loc))));
 
-      if Present (Loop_Parameter_Specification (N)) then
-         I_Scheme :=
+      --  Build the loop equivalent of the quantified expression
+
+      if Present (Iter_Spec) then
+         Scheme :=
            Make_Iteration_Scheme (Loc,
-              Loop_Parameter_Specification =>
-                Loop_Parameter_Specification (N));
+             Iterator_Specification => Iter_Spec);
       else
-         I_Scheme :=
+         Scheme :=
            Make_Iteration_Scheme (Loc,
-             Iterator_Specification => Iterator_Specification (N));
+             Loop_Parameter_Specification => Loop_Spec);
       end if;
 
       Append_To (Actions,
         Make_Loop_Statement (Loc,
-          Iteration_Scheme => I_Scheme,
-          Statements       => New_List (Test),
+          Iteration_Scheme => Scheme,
+          Statements       => Stmts,
           End_Label        => Empty));
+
+      --  Transform the quantified expression
 
       Rewrite (N,
         Make_Expression_With_Actions (Loc,
-          Expression => New_Occurrence_Of (Tnn, Loc),
+          Expression => New_Occurrence_Of (Flag, Loc),
           Actions    => Actions));
-
       Analyze_And_Resolve (N, Standard_Boolean);
    end Expand_N_Quantified_Expression;
 

@@ -19,93 +19,24 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define OBJECT_FORMAT_ELF
-
-#define DWARF2_DEBUGGING_INFO 1
-
-#undef  PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
-#undef ASM_FINAL_SPEC
-
-/* alpha/ doesn't use elfos.h for some reason.  */
-#define TARGET_OBJFMT_CPP_BUILTINS()		\
-  do						\
-    {						\
-	builtin_define ("__ELF__");		\
-    }						\
-  while (0)
-
 #undef  CC1_SPEC
 #define CC1_SPEC  "%{G*}"
 
 #undef  ASM_SPEC
 #define ASM_SPEC  "%{G*} %{relax:-relax} %{!gstabs*:-no-mdebug}%{gstabs*:-mdebug}"
 
-#undef  IDENT_ASM_OP
-#define IDENT_ASM_OP "\t.ident\t"
+/* Do not output a .file directive at the beginning of the input file.  */
+ 
+#undef  TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE false
 
-/* Output #ident as a .ident.  */
-#undef  ASM_OUTPUT_IDENT
-#define ASM_OUTPUT_IDENT(FILE, NAME) \
-  fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME);
+/* This is how to output an assembler line
+   that says to advance the location counter
+   to a multiple of 2**LOG bytes.  */
 
-/* This is how to allocate empty space in some section.  The .zero
-   pseudo-op is used for this on most svr4 assemblers.  */
-
-#undef  SKIP_ASM_OP
-#define SKIP_ASM_OP	"\t.zero\t"
-
-#undef  ASM_OUTPUT_SKIP
-#define ASM_OUTPUT_SKIP(FILE, SIZE) \
-  fprintf (FILE, "%s"HOST_WIDE_INT_PRINT_UNSIGNED"\n", SKIP_ASM_OP, (SIZE))
-
-/* Output the label which precedes a jumptable.  Note that for all svr4
-   systems where we actually generate jumptables (which is to say every
-   svr4 target except i386, where we use casesi instead) we put the jump-
-   tables into the .rodata section and since other stuff could have been
-   put into the .rodata section prior to any given jumptable, we have to
-   make sure that the location counter for the .rodata section gets pro-
-   perly re-aligned prior to the actual beginning of the jump table.  */
-
-#undef  ALIGN_ASM_OP
-#define ALIGN_ASM_OP "\t.align\t"
-
-#ifndef ASM_OUTPUT_BEFORE_CASE_LABEL
-#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
-  ASM_OUTPUT_ALIGN ((FILE), 2);
-#endif
-
-#undef  ASM_OUTPUT_CASE_LABEL
-#define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
-  do {									\
-    ASM_OUTPUT_BEFORE_CASE_LABEL (FILE, PREFIX, NUM, JUMPTABLE)		\
-    (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);			\
-  } while (0)
-
-/* The standard SVR4 assembler seems to require that certain builtin
-   library routines (e.g. .udiv) be explicitly declared as .globl
-   in each assembly file where they are referenced.  */
-
-#undef  ASM_OUTPUT_EXTERNAL_LIBCALL
-#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)				\
-  (*targetm.asm_out.globalize_label) (FILE, XSTR (FUN, 0))
-
-/* This says how to output assembler code to declare an
-   uninitialized external linkage data object.  Under SVR4,
-   the linker seems to want the alignment of data objects
-   to depend on their types.  We do exactly that here.  */
-
-#undef  COMMON_ASM_OP
-#define COMMON_ASM_OP	"\t.comm\t"
-
-#undef  ASM_OUTPUT_ALIGNED_COMMON
-#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
-do {									\
-  fprintf ((FILE), "%s", COMMON_ASM_OP);				\
-  assemble_name ((FILE), (NAME));					\
-  fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
-} while (0)
+#define ASM_OUTPUT_ALIGN(FILE,LOG)		\
+  if ((LOG) != 0)				\
+    fprintf (FILE, "\t.align %d\n", LOG);
 
 /* This says how to output assembler code to declare an
    uninitialized internal linkage data object.  Under SVR4,
@@ -151,66 +82,12 @@ do {									\
 #undef  MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT (((unsigned int) 1 << 28) * 8)
 
-/* This is the pseudo-op used to generate a contiguous sequence of byte
-   values from a double-quoted string WITHOUT HAVING A TERMINATING NUL
-   AUTOMATICALLY APPENDED.  This is the same for most svr4 assemblers.  */
-
-#undef  ASCII_DATA_ASM_OP
-#define ASCII_DATA_ASM_OP	"\t.ascii\t"
-
-#undef  READONLY_DATA_SECTION_ASM_OP
-#define READONLY_DATA_SECTION_ASM_OP	"\t.section\t.rodata"
 #undef  BSS_SECTION_ASM_OP
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 #undef  SBSS_SECTION_ASM_OP
 #define SBSS_SECTION_ASM_OP	"\t.section\t.sbss,\"aw\""
 #undef  SDATA_SECTION_ASM_OP
 #define SDATA_SECTION_ASM_OP	"\t.section\t.sdata,\"aw\""
-
-/* On svr4, we *do* have support for the .init and .fini sections, and we
-   can put stuff in there to be executed before and after `main'.  We let
-   crtstuff.c and other files know this by defining the following symbols.
-   The definitions say how to change sections to the .init and .fini
-   sections.  This is the same for all known svr4 assemblers.  */
-
-#undef  INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP	"\t.section\t.init"
-#undef  FINI_SECTION_ASM_OP
-#define FINI_SECTION_ASM_OP	"\t.section\t.fini"
-
-#ifdef HAVE_GAS_SUBSECTION_ORDERING
-
-#define ASM_SECTION_START_OP	"\t.subsection\t-1"
-
-/* Output assembly directive to move to the beginning of current section.  */
-#define ASM_OUTPUT_SECTION_START(FILE)	\
-  fprintf ((FILE), "%s\n", ASM_SECTION_START_OP)
-
-#endif
-
-/* Switch into a generic section.  */
-#define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
-#define TARGET_ASM_SELECT_SECTION  default_elf_select_section
-
-#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-
-/* Define the strings used for the special svr4 .type and .size directives.
-   These strings generally do not vary from one system running svr4 to
-   another, but if a given system (e.g. m88k running svr) needs to use
-   different pseudo-op names for these, they may be overridden in the
-   file which includes this one.  */
-
-#undef  TYPE_ASM_OP
-#define TYPE_ASM_OP	"\t.type\t"
-#undef  SIZE_ASM_OP
-#define SIZE_ASM_OP	"\t.size\t"
-
-/* This is how we tell the assembler that a symbol is weak.  */
-
-#undef  ASM_WEAKEN_LABEL
-#define ASM_WEAKEN_LABEL(FILE, NAME) \
-  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
-       fputc ('\n', FILE); } while (0)
 
 /* This is how we tell the assembler that two symbols have the same value.  */
 
@@ -236,134 +113,8 @@ do {									\
 	assemble_name (FILE, name);				\
 	fputs ("..ng\n", FILE);					\
       }								\
-    assemble_name(FILE, alias);					\
-    fputs(" = ", FILE);						\
-    assemble_name(FILE, name);					\
-    fputc('\n', FILE);						\
+    ASM_OUTPUT_DEF (FILE, alias, name);				\
   } while (0)
-
-/* The following macro defines the format used to output the second
-   operand of the .type assembler directive.  Different svr4 assemblers
-   expect various different forms for this operand.  The one given here
-   is just a default.  You may need to override it in your machine-
-   specific tm.h file (depending upon the particulars of your assembler).  */
-
-#undef  TYPE_OPERAND_FMT
-#define TYPE_OPERAND_FMT	"@%s"
-
-/* Write the extra assembler code needed to declare a function's result.
-   Most svr4 assemblers don't require any special declaration of the
-   result value, but there are exceptions.  */
-
-#ifndef ASM_DECLARE_RESULT
-#define ASM_DECLARE_RESULT(FILE, RESULT)
-#endif
-
-/* These macros generate the special .type and .size directives which
-   are used to set the corresponding fields of the linker symbol table
-   entries in an ELF object file under SVR4.  These macros also output
-   the starting labels for the relevant functions/objects.  */
-
-/* Write the extra assembler code needed to declare an object properly.  */
-
-#ifdef HAVE_GAS_GNU_UNIQUE_OBJECT
-#define USE_GNU_UNIQUE_OBJECT 1
-#else
-#define USE_GNU_UNIQUE_OBJECT 0
-#endif
-
-#undef  ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
-  do {									\
-    HOST_WIDE_INT size;							\
-    									\
-    /* For template static data member instantiations or		\
-       inline fn local statics and their guard variables, use		\
-       gnu_unique_object so that they will be combined even under	\
-       RTLD_LOCAL.  Don't use gnu_unique_object for typeinfo,		\
-       vtables and other read-only artificial decls.  */		\
-    if (USE_GNU_UNIQUE_OBJECT	&& DECL_ONE_ONLY (DECL)			\
-	&& (!DECL_ARTIFICIAL (DECL) || !TREE_READONLY (DECL)))		\
-      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "gnu_unique_object");	\
-    else								\
-      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");			\
-    									\
-    size_directive_output = 0;						\
-    if (!flag_inhibit_size_directive					\
-	&& (DECL) && DECL_SIZE (DECL))					\
-      {									\
-	size_directive_output = 1;					\
-	size = int_size_in_bytes (TREE_TYPE (DECL));			\
-	ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);			\
-      }									\
-    									\
-    ASM_OUTPUT_LABEL (FILE, NAME);					\
-  } while (0)
-
-/* Output the size directive for a decl in rest_of_decl_compilation
-   in the case where we did not do so before the initializer.
-   Once we find the error_mark_node, we know that the value of
-   size_directive_output was set
-   by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
-
-#undef  ASM_FINISH_DECLARE_OBJECT
-#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	\
-  do {									\
-    const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		\
-    HOST_WIDE_INT size;							\
-    if (!flag_inhibit_size_directive					\
-	&& DECL_SIZE (DECL)						\
-	&& ! AT_END && TOP_LEVEL					\
-	&& DECL_INITIAL (DECL) == error_mark_node			\
-	&& !size_directive_output					\
-	&& (size = int_size_in_bytes (TREE_TYPE (DECL))) > 0)		\
-      {									\
-	size_directive_output = 1;					\
-	ASM_OUTPUT_SIZE_DIRECTIVE (FILE, name, size);			\
-      }									\
-  } while (0)
-
-/* A table of bytes codes used by the ASM_OUTPUT_ASCII and
-   ASM_OUTPUT_LIMITED_STRING macros.  Each byte in the table
-   corresponds to a particular byte value [0..255].  For any
-   given byte value, if the value in the corresponding table
-   position is zero, the given character can be output directly.
-   If the table value is 1, the byte must be output as a \ooo
-   octal escape.  If the tables value is anything else, then the
-   byte value should be output as a \ followed by the value
-   in the table.  Note that we can use standard UN*X escape
-   sequences for many control characters, but we don't use
-   \a to represent BEL because some svr4 assemblers (e.g. on
-   the i386) don't know about that.  Also, we don't use \v
-   since some versions of gas, such as 2.2 did not accept it.  */
-
-#undef  ELF_ASCII_ESCAPES
-#define ELF_ASCII_ESCAPES \
-"\1\1\1\1\1\1\1\1btn\1fr\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
-\0\0\"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
-\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\\\0\0\0\
-\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\1\
-\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
-\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
-\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
-\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"
-
-/* Some svr4 assemblers have a limit on the number of characters which
-   can appear in the operand of a .string directive.  If your assembler
-   has such a limitation, you should define STRING_LIMIT to reflect that
-   limit.  Note that at least some svr4 assemblers have a limit on the
-   actual number of bytes in the double-quoted string, and that they
-   count each character in an escape sequence as one byte.  Thus, an
-   escape sequence like \377 would count as four bytes.
-
-   If your target assembler doesn't support the .string directive, you
-   should define this to zero.  */
-
-#undef  ELF_STRING_LIMIT
-#define ELF_STRING_LIMIT	((unsigned) 256)
-
-#undef  STRING_ASM_OP
-#define STRING_ASM_OP	"\t.string\t"
 
 /* Provide a STARTFILE_SPEC appropriate for ELF.  Here we add the
    (even more) magical crtbegin.o file which provides part of the
@@ -430,14 +181,4 @@ extern int alpha_this_gpdisp_sequence_number;
    doesn't harm to make sure that the data exists to be used later.  */
 #if defined(HAVE_LD_EH_FRAME_HDR)
 #define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
-#endif
-
-/* A C statement (sans semicolon) to output to the stdio stream STREAM
-   any text necessary for declaring the name of an external symbol
-   named NAME which is referenced in this compilation but not defined.
-   It is needed to properly support non-default visibility.  */
-
-#ifndef ASM_OUTPUT_EXTERNAL
-#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
-  default_elf_asm_output_external (FILE, DECL, NAME)
 #endif

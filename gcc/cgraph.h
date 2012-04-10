@@ -478,7 +478,7 @@ void cgraph_insert_node_to_hashtable (struct cgraph_node *node);
 void cgraph_remove_edge (struct cgraph_edge *);
 void cgraph_remove_node (struct cgraph_node *);
 void cgraph_add_to_same_comdat_group (struct cgraph_node *, struct cgraph_node *);
-void cgraph_remove_node_and_inline_clones (struct cgraph_node *);
+bool cgraph_remove_node_and_inline_clones (struct cgraph_node *, struct cgraph_node *);
 void cgraph_release_function_body (struct cgraph_node *);
 void cgraph_node_remove_callees (struct cgraph_node *node);
 struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
@@ -613,13 +613,11 @@ struct cgraph_2edge_hook_list *cgraph_add_edge_duplication_hook (cgraph_2edge_ho
 void cgraph_remove_edge_duplication_hook (struct cgraph_2edge_hook_list *);
 struct cgraph_2node_hook_list *cgraph_add_node_duplication_hook (cgraph_2node_hook, void *);
 void cgraph_remove_node_duplication_hook (struct cgraph_2node_hook_list *);
-void cgraph_materialize_all_clones (void);
 gimple cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *);
 bool cgraph_propagate_frequency (struct cgraph_node *node);
 /* In cgraphbuild.c  */
 unsigned int rebuild_cgraph_edges (void);
 void cgraph_rebuild_references (void);
-void reset_inline_failed (struct cgraph_node *);
 int compute_call_stmt_bb_frequency (tree, basic_block bb);
 
 /* In ipa.c  */
@@ -947,8 +945,6 @@ static inline bool
 varpool_can_remove_if_no_refs (struct varpool_node *node)
 {
   return (!node->force_output && !node->used_from_other_partition
-	  && (flag_toplevel_reorder || DECL_COMDAT (node->decl)
-	      || DECL_ARTIFICIAL (node->decl))
   	  && (DECL_COMDAT (node->decl) || !node->externally_visible));
 }
 

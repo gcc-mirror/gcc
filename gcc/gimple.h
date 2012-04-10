@@ -960,10 +960,7 @@ unsigned get_gimple_rhs_num_ops (enum tree_code);
 gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
 const char *gimple_decl_printable_name (tree, int);
 tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree);
-void gimple_adjust_this_by_delta (gimple_stmt_iterator *, tree);
 tree gimple_extract_devirt_binfo_from_cst (tree);
-/* Returns true iff T is a valid GIMPLE statement.  */
-extern bool is_gimple_stmt (tree);
 
 /* Returns true iff T is a scalar register variable.  */
 extern bool is_gimple_reg (tree);
@@ -997,11 +994,6 @@ extern bool is_gimple_val (tree);
 extern bool is_gimple_asm_val (tree);
 /* Returns true iff T is a valid address operand of a MEM_REF.  */
 bool is_gimple_mem_ref_addr (tree);
-/* Returns true iff T is a valid rhs for a MODIFY_EXPR where the LHS is a
-   GIMPLE temporary, a renamed user variable, or something else,
-   respectively.  */
-extern bool is_gimple_reg_rhs (tree);
-extern bool is_gimple_mem_rhs (tree);
 
 /* Returns true iff T is a valid if-statement condition.  */
 extern bool is_gimple_condexpr (tree);
@@ -5097,7 +5089,7 @@ void gsi_insert_seq_after (gimple_stmt_iterator *, gimple_seq,
 			   enum gsi_iterator_update);
 void gsi_insert_seq_after_without_update (gimple_stmt_iterator *, gimple_seq,
                                           enum gsi_iterator_update);
-void gsi_remove (gimple_stmt_iterator *, bool);
+bool gsi_remove (gimple_stmt_iterator *, bool);
 gimple_stmt_iterator gsi_for_stmt (gimple);
 void gsi_move_after (gimple_stmt_iterator *, gimple_stmt_iterator *);
 void gsi_move_before (gimple_stmt_iterator *, gimple_stmt_iterator *);

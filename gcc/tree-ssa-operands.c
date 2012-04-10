@@ -1475,18 +1475,19 @@ unlink_stmt_vdef (gimple stmt)
   imm_use_iterator iter;
   gimple use_stmt;
   tree vdef = gimple_vdef (stmt);
+  tree vuse = gimple_vuse (stmt);
 
   if (!vdef
       || TREE_CODE (vdef) != SSA_NAME)
     return;
 
-  FOR_EACH_IMM_USE_STMT (use_stmt, iter, gimple_vdef (stmt))
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, vdef)
     {
       FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-	SET_USE (use_p, gimple_vuse (stmt));
+	SET_USE (use_p, vuse);
     }
 
-  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_vdef (stmt)))
-    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_vuse (stmt)) = 1;
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vdef))
+    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse) = 1;
 }
 

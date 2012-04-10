@@ -96,6 +96,7 @@ extern int h8300_can_use_return_insn_p (void);
 extern void h8300_expand_prologue (void);
 extern void h8300_expand_epilogue (void);
 extern int h8300_current_function_interrupt_function_p (void);
+extern int h8300_current_function_monitor_function_p (void);
 extern int h8300_initial_elimination_offset (int, int);
 extern int h8300_regs_ok_for_stm (int, rtx[]);
 extern int h8300_hard_regno_rename_ok (unsigned int, unsigned int);

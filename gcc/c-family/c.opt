@@ -700,6 +700,10 @@ Wzero-as-null-pointer-constant
 C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
 Warn when a literal '0' is used as null pointer
 
+Wuseless-cast
+C++ ObjC++ Var(warn_useless_cast) Warning
+Warn about useless casts
+
 ansi
 C UPC ObjC C++ ObjC++
 A synonym for -std=c89 (for C) or -std=c++98 (for C++)
@@ -1260,6 +1264,10 @@ std=c++0x
 C++ ObjC++ Alias(std=c++11)
 Deprecated in favor of -std=c++11
 
+std=c++1y
+C++ ObjC++
+Conform to the ISO 201y(7?) C++ draft standard (experimental and incomplete support)
+
 std=c11
 C UPC ObjC
 Conform to the ISO 2011 C standard (experimental and incomplete support)
@@ -1301,6 +1309,10 @@ Conform to the ISO 2011 C++ standard with GNU extensions (experimental and incom
 std=gnu++0x
 C++ ObjC++ Alias(std=gnu++11)
 Deprecated in favor of -std=gnu++11
+
+std=gnu++1y
+C++ ObjC++
+Conform to the ISO 201y(7?) C++ draft standard with GNU extensions (experimental and incomplete support)
 
 std=gnu11
 C UPC ObjC

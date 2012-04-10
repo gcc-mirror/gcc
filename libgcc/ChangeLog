@@ -1,3 +1,77 @@
+2012-04-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/linux-unwind.h (RT_SIGRETURN_SYSCALL): Update x32
+	system call number.
+
+2012-03-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/unwind-ia64.c (uw_install_context): Manually save LC
+	if it hasn't been previously saved.
+
+2012-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/linux-unwind.h (x86_64_fallback_frame_state): Define
+	only for glibc.
+
+2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52737
+	* config/avr/lib1funcs.S: Use __AVR_HAVE_SPH__ for SP_H checks
+	instead of __AVR_HAVE_8BIT_SP__.
+
+2012-03-26  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/unwind-ia64.h: Declare unw_word and unw_sword.
+	(unw_table_entry): Use unw_word instead of unsigned long.
+	(_Unwind_FindTableEntry): Likewise.
+	* config/ia64/fde-glibc.c (_Unwind_FindTableEntry): Likewise.
+	* config/ia64/fde-vms.c (vms_unwtable_entry): Likewise.
+	(_Unwind_FindTableEntry): Likewise.
+	* config/ia64/unwind-ia64.c (unw_reg_info, unw_reg_state)
+	(unw_labeled_state, unw_state_record, unw_stack, _Uwind_Context)
+	(set_reg, alloc_spill_area, finish_prologue, ia64_rse_slot_num)
+	(ia64_rse_is_rnat_slot, ia64_rse_rnat_addr, ia64_rse_num_regs)
+	(ia64_rse_skip_regs, ia64_copy_rbs, unw_access_gr)
+	(uw_frame_state_for, uw_update_reg_address, uw_update_context)
+	(uw_init_context_1, uw_install_context): Likewise.
+	(unw_word): Move to unwind-ia64.h
+
+2012-03-26  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-ucrt0.c: Update copyright years.
+	Add a sanity check.
+	(___gcc_main_flags): Declare.
+	(__main): Check flags to remap argv and exit code.
+	* config.host (*-*-*vms*): Adjust extra_parts.
+	* config/vms/t-vms (vcrt0.o, pcrt0.o): Remove.
+	(crt0.o): Add.
+
+2012-03-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/lib1funcs.asm (ctzsi2): New function.
+	* arm/t-elf (LIB1ASMFUNCS): Add _ctzsi2.
+	* arm/t-linux (LIB1ASMFUNCS): Likewise.
+	* arm/t-strongarm-elf (LIB1ASMFUNCS): Likewise.
+	* arm/t-symbian (LIB1ASMFUNCS): Likewise.
+	* arm/t-vxworks (LIB1ASMFUNCS): Likewise.
+	* arm/t-wince-pe (LIB1ASMFUNCS): Likewise.
+
+2012-03-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config.host: Add bits to support powerpc64-*-freebsd*.
+	* config/rs6000/freebsd-unwind.h: New file.
+	* config/rs6000/t-freebsd64: New file.
+
+2012-03-20  Richard Guenther  <rguenther@suse.de>
+
+	PR gcov-profile/52627
+	* libgcov.c (init_mx): Fix mutex name.
+
+2012-03-16  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/vms-unwind.h: Remove ulong (and replace
+	it by unw_reg where used).  Define unw_reg with __int64.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sol2-unwind.h (x86_fallback_frame_state): Remove

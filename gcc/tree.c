@@ -724,6 +724,10 @@ tree_size (const_tree node)
       return (sizeof (struct tree_vec)
 	      + (TREE_VEC_LENGTH (node) - 1) * sizeof (tree));
 
+    case VECTOR_CST:
+      return (sizeof (struct tree_vector)
+	      + (TYPE_VECTOR_SUBPARTS (TREE_TYPE (node)) - 1) * sizeof (tree));
+
     case STRING_CST:
       return TREE_STRING_LENGTH (node) + offsetof (struct tree_string, str) + 1;
 
@@ -1318,21 +1322,28 @@ cst_and_fits_in_hwi (const_tree x)
    are in a list pointed to by VALS.  */
 
 tree
-build_vector (tree type, tree vals)
+build_vector_stat (tree type, tree *vals MEM_STAT_DECL)
 {
-  tree v = make_node (VECTOR_CST);
   int over = 0;
-  tree link;
   unsigned cnt = 0;
+  tree v;
+  int length = ((TYPE_VECTOR_SUBPARTS (type) - 1) * sizeof (tree)
+		+ sizeof (struct tree_vector));
 
-  TREE_VECTOR_CST_ELTS (v) = vals;
+  record_node_allocation_statistics (VECTOR_CST, length);
+
+  v = ggc_alloc_zone_cleared_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
+
+  TREE_SET_CODE (v, VECTOR_CST);
+  TREE_CONSTANT (v) = 1;
   TREE_TYPE (v) = type;
 
   /* Iterate through elements and check for overflow.  */
-  for (link = vals; link; link = TREE_CHAIN (link))
+  for (cnt = 0; cnt < TYPE_VECTOR_SUBPARTS (type); ++cnt)
     {
-      tree value = TREE_VALUE (link);
-      cnt++;
+      tree value = vals[cnt];
+
+      VECTOR_CST_ELT (v, cnt) = value;
 
       /* Don't crash if we get an address constant.  */
       if (!CONSTANT_CLASS_P (value))
@@ -1340,8 +1351,6 @@ build_vector (tree type, tree vals)
 
       over |= TREE_OVERFLOW (value);
     }
-
-  gcc_assert (cnt == TYPE_VECTOR_SUBPARTS (type));
 
   TREE_OVERFLOW (v) = over;
   return v;
@@ -1353,16 +1362,16 @@ build_vector (tree type, tree vals)
 tree
 build_vector_from_ctor (tree type, VEC(constructor_elt,gc) *v)
 {
-  tree list = NULL_TREE;
+  tree *vec = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (type));
   unsigned HOST_WIDE_INT idx;
   tree value;
 
   FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
-    list = tree_cons (NULL_TREE, value, list);
+    vec[idx] = value;
   for (; idx < TYPE_VECTOR_SUBPARTS (type); ++idx)
-    list = tree_cons (NULL_TREE,
-		      build_zero_cst (TREE_TYPE (type)), list);
-  return build_vector (type, nreverse (list));
+    vec[idx] = build_zero_cst (TREE_TYPE (type));
+
+  return build_vector (type, vec);
 }
 
 /* Build a vector of type VECTYPE where all the elements are SCs.  */
@@ -1370,7 +1379,6 @@ tree
 build_vector_from_val (tree vectype, tree sc) 
 {
   int i, nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  VEC(constructor_elt, gc) *v = NULL;
 
   if (sc == error_mark_node)
     return sc;
@@ -1384,14 +1392,20 @@ build_vector_from_val (tree vectype, tree sc)
   gcc_checking_assert (types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (sc)),
 					   TREE_TYPE (vectype)));
 
-  v = VEC_alloc (constructor_elt, gc, nunits);
-  for (i = 0; i < nunits; ++i)
-    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, sc);
-
   if (CONSTANT_CLASS_P (sc))
-    return build_vector_from_ctor (vectype, v);
-  else 
-    return build_constructor (vectype, v);
+    {
+      tree *v = XALLOCAVEC (tree, nunits);
+      for (i = 0; i < nunits; ++i)
+	v[i] = sc;
+      return build_vector (vectype, v);
+    }
+  else
+    {
+      VEC(constructor_elt, gc) *v = VEC_alloc (constructor_elt, gc, nunits);
+      for (i = 0; i < nunits; ++i)
+	CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, sc);
+      return build_constructor (vectype, v);
+    }
 }
 
 /* Return a new CONSTRUCTOR node whose type is TYPE and whose values
@@ -1727,9 +1741,9 @@ integer_zerop (const_tree expr)
 	      && integer_zerop (TREE_IMAGPART (expr)));
     case VECTOR_CST:
       {
-	tree elt;
-	for (elt = TREE_VECTOR_CST_ELTS (expr); elt; elt = TREE_CHAIN (elt))
-	  if (!integer_zerop (TREE_VALUE (elt)))
+	unsigned i;
+	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+	  if (!integer_zerop (VECTOR_CST_ELT (expr, i)))
 	    return false;
 	return true;
       }
@@ -1756,9 +1770,9 @@ integer_onep (const_tree expr)
 	      && integer_zerop (TREE_IMAGPART (expr)));
     case VECTOR_CST:
       {
-	tree elt;
-	for (elt = TREE_VECTOR_CST_ELTS (expr); elt; elt = TREE_CHAIN (elt))
-	  if (!integer_onep (TREE_VALUE (elt)))
+	unsigned i;
+	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+	  if (!integer_onep (VECTOR_CST_ELT (expr, i)))
 	    return false;
 	return true;
       }
@@ -1785,9 +1799,9 @@ integer_all_onesp (const_tree expr)
 
   else if (TREE_CODE (expr) == VECTOR_CST)
     {
-      tree elt;
-      for (elt = TREE_VECTOR_CST_ELTS (expr); elt; elt = TREE_CHAIN (elt))
-	if (!integer_all_onesp (TREE_VALUE (elt)))
+      unsigned i;
+      for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+	if (!integer_all_onesp (VECTOR_CST_ELT (expr, i)))
 	  return 0;
       return 1;
     }
@@ -7020,7 +7034,12 @@ iterative_hash_expr (const_tree t, hashval_t val)
       val = iterative_hash_expr (TREE_REALPART (t), val);
       return iterative_hash_expr (TREE_IMAGPART (t), val);
     case VECTOR_CST:
-      return iterative_hash_expr (TREE_VECTOR_CST_ELTS (t), val);
+      {
+	unsigned i;
+	for (i = 0; i < VECTOR_CST_NELTS (t); ++i)
+	  val = iterative_hash_expr (VECTOR_CST_ELT (t, i), val);
+	return val;
+      }
     case SSA_NAME:
       /* We can just compare by pointer.  */
       return iterative_hash_host_wide_int (SSA_NAME_VERSION (t), val);
@@ -9975,10 +9994,13 @@ initializer_zerop (const_tree init)
 	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_IMAGPART (init))));
 
     case VECTOR_CST:
-      for (elt = TREE_VECTOR_CST_ELTS (init); elt; elt = TREE_CHAIN (elt))
-	if (!initializer_zerop (TREE_VALUE (elt)))
-	  return false;
-      return true;
+      {
+	unsigned i;
+	for (i = 0; i < VECTOR_CST_NELTS (init); ++i)
+	  if (!initializer_zerop (VECTOR_CST_ELT (init, i)))
+	    return false;
+	return true;
+      }
 
     case CONSTRUCTOR:
       {

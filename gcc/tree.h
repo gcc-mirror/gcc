@@ -1629,11 +1629,13 @@ struct GTY(()) tree_complex {
 };
 
 /* In a VECTOR_CST node.  */
-#define TREE_VECTOR_CST_ELTS(NODE) (VECTOR_CST_CHECK (NODE)->vector.elements)
+#define VECTOR_CST_NELTS(NODE) (TYPE_VECTOR_SUBPARTS (TREE_TYPE (NODE)))
+#define VECTOR_CST_ELTS(NODE) (VECTOR_CST_CHECK (NODE)->vector.elts)
+#define VECTOR_CST_ELT(NODE,IDX) (VECTOR_CST_CHECK (NODE)->vector.elts[IDX])
 
 struct GTY(()) tree_vector {
   struct tree_typed typed;
-  tree elements;
+  tree GTY ((length ("TYPE_VECTOR_SUBPARTS (TREE_TYPE ((tree)&%h))"))) elts[1];
 };
 
 #include "symtab.h"
@@ -4486,7 +4488,8 @@ build_int_cstu (tree type, unsigned HOST_WIDE_INT cst)
 extern tree build_int_cst (tree, HOST_WIDE_INT);
 extern tree build_int_cst_type (tree, HOST_WIDE_INT);
 extern tree build_int_cst_wide (tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT);
-extern tree build_vector (tree, tree);
+extern tree build_vector_stat (tree, tree * MEM_STAT_DECL);
+#define build_vector(t,v) build_vector_stat (t, v MEM_STAT_INFO)
 extern tree build_vector_from_ctor (tree, VEC(constructor_elt,gc) *);
 extern tree build_vector_from_val (tree, tree);
 extern tree build_constructor (tree, VEC(constructor_elt,gc) *);
@@ -4943,18 +4946,19 @@ extern tree build_upc_unshared_type (tree);
 
 enum size_type_kind
 {
-  SIZETYPE,		/* Normal representation of sizes in bytes.  */
-  SSIZETYPE,		/* Signed representation of sizes in bytes.  */
-  BITSIZETYPE,		/* Normal representation of sizes in bits.  */
-  SBITSIZETYPE,		/* Signed representation of sizes in bits.  */
-  TYPE_KIND_LAST};
+  stk_sizetype,		/* Normal representation of sizes in bytes.  */
+  stk_ssizetype,	/* Signed representation of sizes in bytes.  */
+  stk_bitsizetype,	/* Normal representation of sizes in bits.  */
+  stk_sbitsizetype,	/* Signed representation of sizes in bits.  */
+  stk_type_kind_last
+};
 
-extern GTY(()) tree sizetype_tab[(int) TYPE_KIND_LAST];
+extern GTY(()) tree sizetype_tab[(int) stk_type_kind_last];
 
-#define sizetype sizetype_tab[(int) SIZETYPE]
-#define bitsizetype sizetype_tab[(int) BITSIZETYPE]
-#define ssizetype sizetype_tab[(int) SSIZETYPE]
-#define sbitsizetype sizetype_tab[(int) SBITSIZETYPE]
+#define sizetype sizetype_tab[(int) stk_sizetype]
+#define bitsizetype sizetype_tab[(int) stk_bitsizetype]
+#define ssizetype sizetype_tab[(int) stk_ssizetype]
+#define sbitsizetype sizetype_tab[(int) stk_sbitsizetype]
 
 extern tree size_int_kind (HOST_WIDE_INT, enum size_type_kind);
 #define size_binop(CODE,T1,T2)\
@@ -4964,10 +4968,10 @@ extern tree size_binop_loc (location_t, enum tree_code, tree, tree);
    size_diffop_loc (UNKNOWN_LOCATION, T1, T2)
 extern tree size_diffop_loc (location_t, tree, tree);
 
-#define size_int(L) size_int_kind (L, SIZETYPE)
-#define ssize_int(L) size_int_kind (L, SSIZETYPE)
-#define bitsize_int(L) size_int_kind (L, BITSIZETYPE)
-#define sbitsize_int(L) size_int_kind (L, SBITSIZETYPE)
+#define size_int(L) size_int_kind (L, stk_sizetype)
+#define ssize_int(L) size_int_kind (L, stk_ssizetype)
+#define bitsize_int(L) size_int_kind (L, stk_bitsizetype)
+#define sbitsize_int(L) size_int_kind (L, stk_sbitsizetype)
 
 #define round_up(T,N) round_up_loc (UNKNOWN_LOCATION, T, N)
 extern tree round_up_loc (location_t, tree, int);
@@ -5185,13 +5189,13 @@ handled_component_p (const_tree t)
 {
   switch (TREE_CODE (t))
     {
-    case BIT_FIELD_REF:
     case COMPONENT_REF:
+    case BIT_FIELD_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
-    case VIEW_CONVERT_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
       return true;
 
     default:

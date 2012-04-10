@@ -1,5 +1,5 @@
 /* VMProxy.java -- VM interface for proxy class
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -66,6 +66,8 @@ final class VMProxy
    * @see java.lang.reflect.Proxy
    */
   static boolean HAVE_NATIVE_GENERATE_PROXY_CLASS = false;
+
+  private VMProxy() {} // Prohibits instantiation.
 
   /**
    * Optional native method to replace (and speed up) the pure Java

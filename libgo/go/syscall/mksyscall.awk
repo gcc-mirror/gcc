@@ -199,6 +199,7 @@ BEGIN {
     }
     printf("c_%s(%s)\n", cfnname, args)
 
+    seterr = 0
     if (gofnresults != "") {
 	fields = split(gofnresults, goresults, ", *")
 	if (fields > 2) {
@@ -218,13 +219,17 @@ BEGIN {
 	    gotype = goparam[2]
 
 	    if (goname == "err") {
+		print "\tvar errno Errno"
+		print "\tsetErrno := false"
 		if (cfnresult ~ /^\*/) {
 		    print "\tif _r == nil {"
 		} else {
 		    print "\tif _r < 0 {"
 		}
-		print "\t\terr = GetErrno()"
+		print "\t\terrno = GetErrno()"
+		print "\t\tsetErrno = true"
 		print "\t}"
+		seterr = 1
 	    } else if (gotype == "uintptr" && cfnresult ~ /^\*/) {
 		printf("\t%s = (%s)(unsafe.Pointer(_r))\n", goname, gotype)
 	    } else {
@@ -241,6 +246,12 @@ BEGIN {
 
     if (blocking) {
 	print "\tExitsyscall()"
+    }
+
+    if (seterr) {
+	print "\tif setErrno {"
+	print "\t\terr = errno"
+	print "\t}"
     }
 
     if (gofnresults != "") {

@@ -9698,7 +9698,7 @@ extended_count (const_rtx x, enum machine_mode mode, int unsignedp)
 	     : 0)
 	  : num_sign_bit_copies (x, mode) - 1);
 }
-
+
 /* This function is called from `simplify_shift_const' to merge two
    outer operations.  Specifically, we have already found that we need
    to perform operation *POP0 with constant *PCONST0 at the outermost
@@ -13912,7 +13912,7 @@ unmentioned_reg_p (rtx equiv, rtx expr)
   return for_each_rtx (&equiv, unmentioned_reg_p_1, expr);
 }
 
-void
+DEBUG_FUNCTION void
 dump_combine_stats (FILE *file)
 {
   fprintf

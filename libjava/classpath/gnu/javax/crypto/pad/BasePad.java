@@ -1,5 +1,5 @@
 /* BasePad.java --
-   Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -52,7 +52,8 @@ import java.util.logging.Logger;
 public abstract class BasePad
     implements IPad
 {
-  private static final Logger log = Logger.getLogger(BasePad.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(BasePad.class.getName()) : null;
   /** The canonical name prefix of the padding algorithm. */
   protected String name;
   /** The block size, in bytes, for this instance. */

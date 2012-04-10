@@ -284,6 +284,7 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define STRUCTURE_SIZE_BOUNDARY 8
 
 /* A bit-field declared as `int' forces `int' alignment for the struct.  */
+#undef PCC_BITFILED_TYPE_MATTERS
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
 /* No data type wants to be aligned rounder than this.  */
@@ -700,11 +701,13 @@ extern int alpha_memory_latency;
 
 /* This macro produces the initial definition of a function.  */
 
+#undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL) \
   alpha_start_function(FILE,NAME,DECL);
 
 /* This macro closes up a function definition for the assembler.  */
 
+#undef ASM_DECLARE_FUNCTION_SIZE
 #define ASM_DECLARE_FUNCTION_SIZE(FILE,NAME,DECL) \
   alpha_end_function(FILE,NAME,DECL)
 
@@ -982,10 +985,6 @@ do {									     \
 
 #define TEXT_SECTION_ASM_OP "\t.text"
 
-/* Output before read-only data.  */
-
-#define READONLY_DATA_SECTION_ASM_OP "\t.rdata"
-
 /* Output before writable data.  */
 
 #define DATA_SECTION_ASM_OP "\t.data"
@@ -1020,102 +1019,23 @@ do {						\
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "
 
-/* The prefix to add to user-visible assembler symbols.  */
+/* Use dollar signs rather than periods in special g++ assembler names.  */
 
-#define USER_LABEL_PREFIX ""
-
-/* This is how to output a label for a jump table.  Arguments are the same as
-   for (*targetm.asm_out.internal_label), except the insn for the jump table is
-   passed.  */
-
-#define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLEINSN)	\
-{ ASM_OUTPUT_ALIGN (FILE, 2); (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM); }
+#undef NO_DOLLAR_IN_LABEL
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
    This is suitable for output with `assemble_name'.  */
 
+#undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf ((LABEL), "*$%s%ld", (PREFIX), (long)(NUM))
-
-/* We use the default ASCII-output routine, except that we don't write more
-   than 50 characters since the assembler doesn't support very long lines.  */
-
-#define ASM_OUTPUT_ASCII(MYFILE, MYSTRING, MYLENGTH) \
-  do {									      \
-    FILE *_hide_asm_out_file = (MYFILE);				      \
-    const unsigned char *_hide_p = (const unsigned char *) (MYSTRING);	      \
-    int _hide_thissize = (MYLENGTH);					      \
-    int _size_so_far = 0;						      \
-    {									      \
-      FILE *asm_out_file = _hide_asm_out_file;				      \
-      const unsigned char *p = _hide_p;					      \
-      int thissize = _hide_thissize;					      \
-      int i;								      \
-      fprintf (asm_out_file, "\t.ascii \"");				      \
-									      \
-      for (i = 0; i < thissize; i++)					      \
-	{								      \
-	  register int c = p[i];					      \
-									      \
-	  if (_size_so_far ++ > 50 && i < thissize - 4)			      \
-	    _size_so_far = 0, fprintf (asm_out_file, "\"\n\t.ascii \"");      \
-									      \
-	  if (c == '\"' || c == '\\')					      \
-	    putc ('\\', asm_out_file);					      \
-	  if (c >= ' ' && c < 0177)					      \
-	    putc (c, asm_out_file);					      \
-	  else								      \
-	    {								      \
-	      fprintf (asm_out_file, "\\%o", c);			      \
-	      /* After an octal-escape, if a digit follows,		      \
-		 terminate one string constant and start another.	      \
-		 The VAX assembler fails to stop reading the escape	      \
-		 after three digits, so this is the only way we		      \
-		 can get it to parse the data properly.  */		      \
-	      if (i < thissize - 1 && ISDIGIT (p[i + 1]))		      \
-		_size_so_far = 0, fprintf (asm_out_file, "\"\n\t.ascii \"");  \
-	  }								      \
-	}								      \
-      fprintf (asm_out_file, "\"\n");					      \
-    }									      \
-  }									      \
-  while (0)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   fprintf (FILE, "\t.gprel32 $L%d\n", (VALUE))
-
-/* This is how to output an assembler line
-   that says to advance the location counter
-   to a multiple of 2**LOG bytes.  */
-
-#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-  if ((LOG) != 0)			\
-    fprintf (FILE, "\t.align %d\n", LOG);
-
-/* This is how to advance the location counter by SIZE bytes.  */
-
-#define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.space "HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE))
-
-/* This says how to output an assembler line
-   to define a global common symbol.  */
-
-#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
-( fputs ("\t.comm ", (FILE)),			\
-  assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE)))
-
-/* This says how to output an assembler line
-   to define a local common symbol.  */
-
-#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
-( fputs ("\t.lcomm ", (FILE)),				\
-  assemble_name ((FILE), (NAME)),			\
-  fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE)))
 
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.

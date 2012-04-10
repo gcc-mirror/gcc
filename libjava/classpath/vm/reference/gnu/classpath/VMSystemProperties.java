@@ -1,5 +1,5 @@
 /* VMSystemProperties.java -- Allow the VM to set System properties.
-   Copyright (C) 2004 Free Software Foundation
+   Copyright (C) 2004, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,8 +39,11 @@ package gnu.classpath;
 
 import java.util.Properties;
 
-class VMSystemProperties
+final class VMSystemProperties
 {
+
+    private VMSystemProperties() {} // Prohibits instantiation.
+
     /**
      * Get the system properties. This is done here, instead of in System,
      * because of the bootstrap sequence. Note that the native code should

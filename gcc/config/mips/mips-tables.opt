@@ -609,3 +609,6 @@ Enum(mips_arch_opt_value) String(octeon+) Value(81) Canonical
 EnumValue
 Enum(mips_arch_opt_value) String(octeon2) Value(82) Canonical
 
+EnumValue
+Enum(mips_arch_opt_value) String(xlp) Value(83) Canonical
+

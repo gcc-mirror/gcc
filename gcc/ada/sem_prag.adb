@@ -3704,7 +3704,7 @@ package body Sem_Prag is
          Check_At_Most_N_Arguments (1);
 
          --  Modeled internally as
-         --    pragma Unsuppress (Atomic_Synchronization [,Entity])
+         --    pragma Suppress/Unsuppress (Atomic_Synchronization [,Entity])
 
          Rewrite (N,
            Make_Pragma (Loc,

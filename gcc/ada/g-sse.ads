@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,8 @@
 
 --     GNU/Linux x86 and x86_64
 --     Windows XP/Vista x86 and x86_64
+--     Solaris x86
+--     Darwin x86_64
 
 --  This unit exposes vector _component_ types together with general comments
 --  on the binding contents.

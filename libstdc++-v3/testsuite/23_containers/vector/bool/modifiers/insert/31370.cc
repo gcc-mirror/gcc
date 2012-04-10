@@ -1,4 +1,4 @@
-// Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2009, 2010, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,7 @@
 
 // 23.2.5 class vector<bool> [lib.vector.bool]
 
+// { dg-skip-if "" { powerpc64-*-freebsd* } { "*" } { "" } }
 // { dg-do run { xfail *-*-darwin8.[0-4].* } }
 
 #include <vector>

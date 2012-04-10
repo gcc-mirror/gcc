@@ -1,5 +1,5 @@
 /* CSPRNG.java -- continuously-seeded pseudo-random number generator.
-   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006, 2010  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -87,7 +87,9 @@ import java.util.logging.Logger;
 public class CSPRNG
     extends BasePRNG
 {
-  private static final Logger log = Logger.getLogger(CSPRNG.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                         Logger.getLogger(CSPRNG.class.getName()) : null;
+
   /**
    * Property name for the list of files to read for random values. The mapped
    * value is a list with the following values:
@@ -325,20 +327,24 @@ public class CSPRNG
     attrib.put(PROGRAM_SOURCES, l);
     l = new LinkedList();
     for (int i = 0; (s = getProperty(OTHER + i)) != null; i++)
-      try
-        {
-          Class c = Class.forName(s.trim());
-          l.add(c.newInstance());
-        }
-      catch (ClassNotFoundException cnfe)
-        {
-        }
-      catch (InstantiationException ie)
-        {
-        }
-      catch (IllegalAccessException iae)
-        {
-        }
+      {
+        try
+          {
+            l.add((EntropySource)Class.forName(s.trim()).newInstance());
+          }
+        catch (ClassNotFoundException cnfe)
+          {
+            // ignore
+          }
+        catch (InstantiationException ie)
+          {
+            // ignore
+          }
+        catch (IllegalAccessException iae)
+          {
+            // ignore
+          }
+      }
     attrib.put(OTHER_SOURCES, l);
     instance.init(attrib);
     return instance;

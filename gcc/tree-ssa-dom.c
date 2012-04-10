@@ -2294,15 +2294,14 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	      && rhs == cached_lhs)
 	    {
 	      basic_block bb = gimple_bb (stmt);
-	      int lp_nr = lookup_stmt_eh_lp (stmt);
 	      unlink_stmt_vdef (stmt);
-	      gsi_remove (&si, true);
-	      if (lp_nr != 0)
+	      if (gsi_remove (&si, true))
 		{
 		  bitmap_set_bit (need_eh_cleanup, bb->index);
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "  Flagged to clear EH edges.\n");
 		}
+	      release_defs (stmt);
 	      return;
 	    }
 	}

@@ -1,5 +1,5 @@
 /* BaseCipher.java --
-   Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -56,7 +56,8 @@ import java.util.logging.Logger;
 public abstract class BaseCipher
     implements IBlockCipher, IBlockCipherSpi
 {
-  private static final Logger log = Logger.getLogger(BaseCipher.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(BaseCipher.class.getName()) : null;
   /** The canonical name prefix of the cipher. */
   protected String name;
   /** The default block size, in bytes. */

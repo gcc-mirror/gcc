@@ -441,7 +441,11 @@ write_ts_common_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 static void
 write_ts_vector_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 {
-  streamer_write_chain (ob, TREE_VECTOR_CST_ELTS (expr), ref_p);
+  unsigned i;
+  /* Note that the number of elements for EXPR has already been emitted
+     in EXPR's header (see streamer_write_tree_header).  */
+  for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+    stream_write_tree (ob, VECTOR_CST_ELT (expr, i), ref_p);
 }
 
 
@@ -907,6 +911,8 @@ streamer_write_tree_header (struct output_block *ob, tree expr)
     streamer_write_string_cst (ob, ob->main_stream, expr);
   else if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     write_identifier (ob, ob->main_stream, expr);
+  else if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
+    streamer_write_hwi (ob, VECTOR_CST_NELTS (expr));
   else if (CODE_CONTAINS_STRUCT (code, TS_VEC))
     streamer_write_hwi (ob, TREE_VEC_LENGTH (expr));
   else if (CODE_CONTAINS_STRUCT (code, TS_BINFO))

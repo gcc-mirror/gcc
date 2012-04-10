@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "dbgcnt.h"
 #include "target.h"
+#include "cfgloop.h"
 
 
 /* An obstack for our working variables.  */
@@ -1610,6 +1611,17 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	      && dest != old_dest
 	      && dest != EXIT_BLOCK_PTR)
             {
+	      if (current_loops != NULL
+		  && e->src->loop_father->latch == e->src)
+		{
+		  /* ???  Now we are creating (or may create) a loop
+		     with multiple entries.  Simply mark it for
+		     removal.  Alternatively we could not do this
+		     threading.  */
+		  e->src->loop_father->header = NULL;
+		  e->src->loop_father->latch = NULL;
+		}
+
 	      redirect_edge_and_branch_force (e, dest);
 
 	      /* Copy the register setter to the redirected edge.
@@ -1904,7 +1916,7 @@ execute_rtl_cprop (void)
   changed = one_cprop_pass ();
   flag_rerun_cse_after_global_opts |= changed;
   if (changed)
-    cleanup_cfg (0);
+    cleanup_cfg (CLEANUP_CFG_CHANGED);
   return 0;
 }
 

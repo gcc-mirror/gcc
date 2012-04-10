@@ -419,11 +419,6 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   if (file)
     fprintf (file, "\n");
 
-  /* We must release unused extern inlines or sanity checking will fail.  Rest of transformations
-     are undesirable at -O0 since we do not want to remove anything.  */
-  if (!optimize)
-    return changed;
-
   if (file)
     fprintf (file, "Reclaiming variables:");
   for (vnode = varpool_nodes; vnode; vnode = vnext)
@@ -462,6 +457,10 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       }
   if (file)
     fprintf (file, "\n");
+
+  /* Rest of transformations are undesirable at -O0.  */
+  if (!optimize)
+    return changed;
 
 #ifdef ENABLE_CHECKING
   verify_cgraph ();

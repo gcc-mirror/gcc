@@ -334,10 +334,6 @@ decide_is_variable_needed (struct varpool_node *node, tree decl)
       && !DECL_EXTERNAL (decl))
     return true;
 
-  /* When not reordering top level variables, we have to assume that
-     we are going to keep everything.  */
-  if (!flag_toplevel_reorder)
-    return true;
   return false;
 }
 
@@ -405,7 +401,11 @@ varpool_finalize_decl (tree decl)
   if (node->needed)
     varpool_enqueue_needed_node (node);
   node->finalized = true;
-  if (TREE_THIS_VOLATILE (decl) || DECL_PRESERVE_P (decl))
+  if (TREE_THIS_VOLATILE (decl) || DECL_PRESERVE_P (decl)
+      /* Traditionally we do not eliminate static variables when not
+	 optimizing and when not doing toplevel reoder.  */
+      || (!flag_toplevel_reorder && !DECL_COMDAT (node->decl)
+	  && !DECL_ARTIFICIAL (node->decl)))
     node->force_output = true;
 
   if (decide_is_variable_needed (node, decl))

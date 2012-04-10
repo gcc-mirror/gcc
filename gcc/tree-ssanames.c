@@ -325,14 +325,14 @@ replace_ssa_name_symbol (tree ssa_name, tree sym)
   TREE_TYPE (ssa_name) = TREE_TYPE (sym);
 }
 
-/* Return SSA names that are unused to GGC memory.  This is used to keep
-   footprint of compiler during interprocedural optimization.
-   As a side effect the SSA_NAME_VERSION number reuse is reduced
-   so this function should not be used too often.  */
+/* Return SSA names that are unused to GGC memory and compact the SSA
+   version namespace.  This is used to keep footprint of compiler during
+   interprocedural optimization.  */
 static unsigned int
 release_dead_ssa_names (void)
 {
   tree t;
+  unsigned i, j;
   int n = VEC_length (tree, FREE_SSANAMES (cfun));
   referenced_var_iterator rvi;
 
@@ -340,14 +340,33 @@ release_dead_ssa_names (void)
      eventually dead variables so a bunch of memory is held live.  */
   FOR_EACH_REFERENCED_VAR (cfun, t, rvi)
     set_current_def (t, NULL);
+
   /* Now release the freelist.  */
   VEC_free (tree, gc, FREE_SSANAMES (cfun));
   FREE_SSANAMES (cfun) = NULL;
 
+  /* And compact the SSA number space.  We make sure to not change the
+     relative order of SSA versions.  */
+  for (i = 1, j = 1; i < VEC_length (tree, cfun->gimple_df->ssa_names); ++i)
+    {
+      tree name = ssa_name (i);
+      if (name)
+	{
+	  if (i != j)
+	    {
+	      SSA_NAME_VERSION (name) = j;
+	      VEC_replace (tree, cfun->gimple_df->ssa_names, j, name);
+	    }
+	  j++;
+	}
+    }
+  VEC_truncate (tree, cfun->gimple_df->ssa_names, j);
+
   statistics_counter_event (cfun, "SSA names released", n);
+  statistics_counter_event (cfun, "SSA name holes removed", i - j);
   if (dump_file)
-    fprintf (dump_file, "Released %i names, %.2f%%\n",
-	     n, n * 100.0 / num_ssa_names);
+    fprintf (dump_file, "Released %i names, %.2f%%, removed %i holes\n",
+	     n, n * 100.0 / num_ssa_names, i - j);
   return 0;
 }
 

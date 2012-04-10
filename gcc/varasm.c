@@ -2166,11 +2166,22 @@ static GTY(()) tree weak_decls;
 void
 assemble_external (tree decl ATTRIBUTE_UNUSED)
 {
-  /* Because most platforms do not define ASM_OUTPUT_EXTERNAL, the
-     main body of this code is only rarely exercised.  To provide some
-     testing, on all platforms, we make sure that the ASM_OUT_FILE is
-     open.  If it's not, we should not be calling this function.  */
+  /*  Make sure that the ASM_OUT_FILE is open.
+      If it's not, we should not be calling this function.  */
   gcc_assert (asm_out_file);
+
+  /* In a perfect world, the following condition would be true.
+     Sadly, the Java and Go front ends emit assembly *from the front end*,
+     bypassing the call graph.  See PR52739.  Fix before GCC 4.8.  */
+#if 0
+  /* This function should only be called if we are expanding, or have
+     expanded, to RTL.
+     Ideally, only final.c would be calling this function, but it is
+     not clear whether that would break things somehow.  See PR 17982
+     for further discussion.  */
+  gcc_assert (cgraph_state == CGRAPH_STATE_EXPANSION
+	      || cgraph_state == CGRAPH_STATE_FINISHED);
+#endif
 
   if (!DECL_P (decl) || !DECL_EXTERNAL (decl) || !TREE_PUBLIC (decl))
     return;
@@ -2706,12 +2717,12 @@ const_hash_1 (const tree exp)
 
     case VECTOR_CST:
       {
-	tree link;
+	unsigned i;
 
-	hi = 7 + TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp));
+	hi = 7 + VECTOR_CST_NELTS (exp);
 
-	for (link = TREE_VECTOR_CST_ELTS (exp); link; link = TREE_CHAIN (link))
-	    hi = hi * 563 + const_hash_1 (TREE_VALUE (link));
+	for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
+	  hi = hi * 563 + const_hash_1 (VECTOR_CST_ELT (exp, i));
 
 	return hi;
       }
@@ -2846,21 +2857,15 @@ compare_constant (const tree t1, const tree t2)
 
     case VECTOR_CST:
       {
-        tree link1, link2;
+	unsigned i;
 
-        if (TYPE_VECTOR_SUBPARTS (TREE_TYPE (t1))
-	    != TYPE_VECTOR_SUBPARTS (TREE_TYPE (t2)))
+        if (VECTOR_CST_NELTS (t1) != VECTOR_CST_NELTS (t2))
 	  return 0;
 
-	link2 = TREE_VECTOR_CST_ELTS (t2);
-	for (link1 = TREE_VECTOR_CST_ELTS (t1);
-	     link1;
-	     link1 = TREE_CHAIN (link1))
-	  {
-	    if (!compare_constant (TREE_VALUE (link1), TREE_VALUE (link2)))
-	      return 0;
-	    link2 = TREE_CHAIN (link2);
-	  }
+	for (i = 0; i < VECTOR_CST_NELTS (t1); ++i)
+	  if (!compare_constant (VECTOR_CST_ELT (t1, i),
+				 VECTOR_CST_ELT (t2, i)))
+	    return 0;
 
 	return 1;
       }
@@ -3014,8 +3019,7 @@ copy_constant (tree exp)
 		     copy_constant (TREE_OPERAND (exp, 0)));
 
     case VECTOR_CST:
-      return build_vector (TREE_TYPE (exp),
-			   copy_list (TREE_VECTOR_CST_ELTS (exp)));
+      return build_vector (TREE_TYPE (exp), VECTOR_CST_ELTS (exp));
 
     case CONSTRUCTOR:
       {
@@ -4416,6 +4420,7 @@ initializer_constant_valid_for_bitfield_p (tree value)
       }
 
     case INTEGER_CST:
+    case REAL_CST:
       return true;
 
     case VIEW_CONVERT_EXPR:
@@ -4595,8 +4600,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	case VECTOR_CST:
 	  {
 	    int elt_size;
-	    tree link;
-	    unsigned int nalign;
+	    unsigned int i, nalign;
 	    enum machine_mode inner;
 
 	    inner = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
@@ -4604,12 +4608,11 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 
 	    elt_size = GET_MODE_SIZE (inner);
 
-	    link = TREE_VECTOR_CST_ELTS (exp);
-	    output_constant (TREE_VALUE (link), elt_size, align);
+	    output_constant (VECTOR_CST_ELT (exp, 0), elt_size, align);
 	    thissize = elt_size;
-	    while ((link = TREE_CHAIN (link)) != NULL)
+	    for (i = 1; i < VECTOR_CST_NELTS (exp); ++i)
 	      {
-		output_constant (TREE_VALUE (link), elt_size, nalign);
+		output_constant (VECTOR_CST_ELT (exp, i), elt_size, nalign);
 		thissize += elt_size;
 	      }
 	    break;
@@ -5073,10 +5076,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 
       /* The element in a union constructor specifies the proper field
 	 or index.  */
-      if ((TREE_CODE (local.type) == RECORD_TYPE
-	   || TREE_CODE (local.type) == UNION_TYPE
-	   || TREE_CODE (local.type) == QUAL_UNION_TYPE)
-	  && ce->index != NULL_TREE)
+      if (RECORD_OR_UNION_TYPE_P (local.type) && ce->index != NULL_TREE)
 	local.field = ce->index;
 
       else if (TREE_CODE (local.type) == ARRAY_TYPE)
@@ -5108,9 +5108,18 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 		   || !CONSTRUCTOR_BITFIELD_P (local.field)))
 	output_constructor_regular_field (&local);
 
-      /* For a true bitfield or part of an outer one.  */
+      /* For a true bitfield or part of an outer one.  Only INTEGER_CSTs are
+	 supported for scalar fields, so we may need to convert first.  */
       else
-	output_constructor_bitfield (&local, outer);
+        {
+	  if (TREE_CODE (local.val) == REAL_CST)
+	    local.val
+	      = fold_unary (VIEW_CONVERT_EXPR,
+			    build_nonstandard_integer_type
+			    (TYPE_PRECISION (TREE_TYPE (local.val)), 0),
+			    local.val);
+	  output_constructor_bitfield (&local, outer);
+	}
     }
 
   /* If we are not at toplevel, save the pending data for our caller.

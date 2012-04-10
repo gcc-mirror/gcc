@@ -1,5 +1,5 @@
 /* PrinterDialog.java --
-   Copyright (C)  2006  Free Software Foundation, Inc.
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -1452,12 +1452,8 @@ public final class PrinterDialog extends JDialog implements ActionListener
   private boolean onlyPageDialog;
   private PrintRequestAttributeSet atts;
 
-  private final static ResourceBundle messages;
-
-  static
-  {
-    messages = ResourceBundle.getBundle("gnu/javax/print/PrinterDialog");
-  }
+  private final static ResourceBundle messages
+    = ResourceBundle.getBundle("gnu.javax.print.MessagesBundle");
 
   // TODO LowPriority: Include checks so that if a specific value formerly
   // selected is no more supported by the new service changes to the default.

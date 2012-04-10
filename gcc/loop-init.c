@@ -42,15 +42,28 @@ along with GCC; see the file COPYING3.  If not see
 void
 loop_optimizer_init (unsigned flags)
 {
-  struct loops *loops;
+  if (!current_loops)
+    {
+      struct loops *loops = ggc_alloc_cleared_loops ();
 
-  gcc_assert (!current_loops);
-  loops = ggc_alloc_cleared_loops ();
+      gcc_assert (!(cfun->curr_properties & PROP_loops));
 
-  /* Find the loops.  */
+      /* Find the loops.  */
 
-  flow_loops_find (loops);
-  current_loops = loops;
+      flow_loops_find (loops);
+      current_loops = loops;
+    }
+  else
+    {
+      gcc_assert (cfun->curr_properties & PROP_loops);
+
+      /* Ensure that the dominators are computed, like flow_loops_find does.  */
+      calculate_dominance_info (CDI_DOMINATORS);
+
+#ifdef ENABLE_CHECKING
+      verify_loop_structure ();
+#endif
+    }
 
   if (flags & LOOPS_MAY_HAVE_MULTIPLE_LATCHES)
     {
@@ -104,6 +117,22 @@ loop_optimizer_finalize (void)
   struct loop *loop;
   basic_block bb;
 
+  if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
+    release_recorded_exits ();
+
+  /* If we should preserve loop structure, do not free it but clear
+     flags that advanced properties are there as we are not preserving
+     that in full.  */
+  if (cfun->curr_properties & PROP_loops)
+    {
+      loops_state_clear (LOOP_CLOSED_SSA
+			 | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS
+			 | LOOPS_HAVE_PREHEADERS
+			 | LOOPS_HAVE_SIMPLE_LATCHES
+			 | LOOPS_HAVE_FALLTHRU_PREHEADERS);
+      return;
+    }
+
   gcc_assert (current_loops != NULL);
 
   FOR_EACH_LOOP (li, loop, 0)
@@ -112,8 +141,6 @@ loop_optimizer_finalize (void)
     }
 
   /* Clean up.  */
-  if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
-    release_recorded_exits ();
   flow_loops_free (current_loops);
   ggc_free (current_loops);
   current_loops = NULL;
@@ -131,15 +158,24 @@ loop_optimizer_finalize (void)
 static bool
 gate_handle_loop2 (void)
 {
-  return (optimize > 0
-  	  && (flag_move_loop_invariants
-              || flag_unswitch_loops
-              || flag_peel_loops
-              || flag_unroll_loops
+  if (optimize > 0
+      && (flag_move_loop_invariants
+	  || flag_unswitch_loops
+	  || flag_peel_loops
+	  || flag_unroll_loops
 #ifdef HAVE_doloop_end
-	      || (flag_branch_on_count_reg && HAVE_doloop_end)
+	  || (flag_branch_on_count_reg && HAVE_doloop_end)
 #endif
-	      ));
+	 ))
+    return true;
+  else
+    {
+      /* No longer preserve loops, remove them now.  */
+      cfun->curr_properties &= ~PROP_loops;
+      if (current_loops)
+	loop_optimizer_finalize ();
+      return false;
+    } 
 }
 
 struct rtl_opt_pass pass_loop2 =
@@ -200,6 +236,8 @@ struct rtl_opt_pass pass_rtl_loop_init =
 static unsigned int
 rtl_loop_done (void)
 {
+  /* No longer preserve loops, remove them now.  */
+  cfun->curr_properties &= ~PROP_loops;
   loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
 
@@ -223,7 +261,7 @@ struct rtl_opt_pass pass_rtl_loop_done =
   TV_LOOP,                              /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
+  PROP_loops,                           /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_verify_flow
     | TODO_verify_rtl_sharing           /* todo_flags_finish */

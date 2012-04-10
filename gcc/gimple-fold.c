@@ -978,29 +978,6 @@ gimple_fold_builtin (gimple stmt)
   return result;
 }
 
-/* Generate code adjusting the first parameter of a call statement determined
-   by GSI by DELTA.  */
-
-void
-gimple_adjust_this_by_delta (gimple_stmt_iterator *gsi, tree delta)
-{
-  gimple call_stmt = gsi_stmt (*gsi);
-  tree parm, tmp;
-  gimple new_stmt;
-
-  delta = convert_to_ptrofftype (delta);
-  gcc_assert (gimple_call_num_args (call_stmt) >= 1);
-  parm = gimple_call_arg (call_stmt, 0);
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (parm)));
-  tmp = create_tmp_var (TREE_TYPE (parm), NULL);
-  add_referenced_var (tmp);
-
-  tmp = make_ssa_name (tmp, NULL);
-  new_stmt = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, tmp, parm, delta);
-  SSA_NAME_DEF_STMT (tmp) = new_stmt;
-  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
-  gimple_call_set_arg (call_stmt, 0, tmp);
-}
 
 /* Return a binfo to be used for devirtualization of calls based on an object
    represented by a declaration (i.e. a global or automatically allocated one)
@@ -2450,7 +2427,7 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 	      else if (TREE_CODE (rhs) == ADDR_EXPR
 		       && !is_gimple_min_invariant (rhs))
 		{
-		  HOST_WIDE_INT offset;
+		  HOST_WIDE_INT offset = 0;
 		  tree base;
 		  base = get_addr_base_and_unit_offset_1 (TREE_OPERAND (rhs, 0),
 							  &offset,
@@ -2467,21 +2444,22 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 			   == TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs))))
 		{
 		  unsigned i;
-		  tree val, list;
+		  tree val, *vec;
 
-		  list = NULL_TREE;
+		  vec = XALLOCAVEC (tree,
+				    TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)));
 		  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
 		    {
 		      val = (*valueize) (val);
 		      if (TREE_CODE (val) == INTEGER_CST
 			  || TREE_CODE (val) == REAL_CST
 			  || TREE_CODE (val) == FIXED_CST)
-			list = tree_cons (NULL_TREE, val, list);
+			vec[i] = val;
 		      else
 			return NULL_TREE;
 		    }
 
-		  return build_vector (TREE_TYPE (rhs), nreverse (list));
+		  return build_vector (TREE_TYPE (rhs), vec);
 		}
 
               if (kind == tcc_reference)

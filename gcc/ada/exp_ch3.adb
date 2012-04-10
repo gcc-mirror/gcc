@@ -4820,6 +4820,17 @@ package body Exp_Ch3 is
                       Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
                       Name => Convert_Tag_To_Interface (Typ, Tag_Comp)));
 
+                  --  If the original entity comes from source, then mark the
+                  --  new entity as needing debug information, even though it's
+                  --  defined by a generated renaming that does not come from
+                  --  source, so that Materialize_Entity will be set on the
+                  --  entity when Debug_Renaming_Declaration is called during
+                  --  analysis.
+
+                  if Comes_From_Source (Def_Id) then
+                     Set_Debug_Info_Needed (Defining_Identifier (N));
+                  end if;
+
                   Analyze (N, Suppress => All_Checks);
 
                   --  Replace internal identifier of rewritten node by the
@@ -5065,7 +5076,7 @@ package body Exp_Ch3 is
             --  renaming that does not come from source.
 
             if Comes_From_Source (Defining_Identifier (N)) then
-               Set_Needs_Debug_Info (Defining_Identifier (N));
+               Set_Debug_Info_Needed (Defining_Identifier (N));
             end if;
 
             --  Now call the routine to generate debug info for the renaming

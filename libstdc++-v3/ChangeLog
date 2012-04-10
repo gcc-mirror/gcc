@@ -1,3 +1,188 @@
+2012-04-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Partially revert:
+	2012-03-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52689
+	* src/c++98/compatibility-list.cc: Same.
+
+2012-04-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR bootstrap/52840
+	* src/Makefile.am (build-debug): Do not adjust vpath dir, remove
+	Makefile.tmp
+	* src/Makefile.in: Adjust as per above.
+
+2012-04-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Partially revert:
+	2012-03-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52689
+	* src/c++98/compatibility-ldbl.cc: Guard with PIC
+
+2012-04-02  Tristan Gingold  <gingold@adacore.com>
+
+	* crossconfig.m4 (*-*-*vms*): Add.
+	* configure: Regenerate.
+
+2012-04-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52591
+	* include/bits/stl_vector.h (vector::operator=(vector&&)): Dispatch
+	to _M_move_assign depending on whether allocator is moved.
+	(vector::_M_move_assign): Add overloaded functions.
+	* testsuite/23_containers/vector/52591.cc: New.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+2012-04-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (__callable_functor): Overload for
+	volatile-qualified pointers.
+	* testsuite/20_util/function/10.cc: New.
+
+2012-03-30  Jeffrey Yasskin  <jyasskin@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52799
+	* include/bits/deque.tcc (emplace): Fix thinko, replace push_front
+	-> emplace_front, and likewise for *_back.
+	* testsuite/23_containers/deque/modifiers/emplace/52799.cc: New.
+	* testsuite/23_containers/list/modifiers/emplace/52799.cc: Likewise.
+	* testsuite/23_containers/vector/modifiers/emplace/52799.cc: Likewise.
+
+2012-03-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52689
+	* libsupc++/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	* libsupc++/Makefile.in: Regenerated.
+	* src/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	(libstdc___la_SOURCES): Add in compatiblity files, with content
+	that varies with -DPIC.
+	* src/Makefile.in: Regenerated.
+	* src/c++11/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	* src/c++11/Makefile.in: Regenerated.
+	* src/c++11/compatibility-atomic-c++0x.cc: Guard with PIC.
+	* src/c++11/compatibility-c++0x.cc: Same.
+	* src/c++11/future.cc: Consolidate compatibility bits into..
+	* src/c++11/mutex.cc: Consolidate compatibility bits into..
+	* src/c++11/compatibility-thread-cxx0x.cc: ...here. New.
+	* src/c++98/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	* src/c++98/Makefile.in: Regenerated.
+	* src/c++98/compatibility-ldbl.cc: Guard with PIC
+	* src/c++98/compatibility-list-2.cc: Same.
+	* src/c++98/compatibility-list.cc: Same.
+	* src/c++98/compatibility.cc: Tweak comments.
+
+2012-03-28  Terry Guo  <terry.guo@arm.com>
+
+	* testsuite/Makefile.am (TEST_GCC_EXEC_PREFIX): New.
+	* testsuite/Makefile.in: Regenerated.
+
+2012-03-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (mem_fn): Qualify to prevent ADL.
+	* testsuite/20_util/function_objects/mem_fn/adl.cc: New.
+
+2012-03-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/type_traits (result_of): Fix handling of cv-quals.
+	* testsuite/20_util/result_of/1.cc: New.
+	* testsuite/20_util/result_of/2.cc: New.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2012-03-23  David S. Miller  <davem@davemloft.net>
+
+	* config/abi/post/sparc-linux-gnu/baseline_symbols.txt: Update.
+
+2012-03-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/testsuite_flags.in (--cxxflags): Let CXXFLAGS set -g -O2.
+	* testsuite/lib/libstdc++.exp: Same.
+
+2012-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h: Slightly tweak two comments.
+
+2012-03-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/Makefile.am: XML output names have only .xml suffix.
+	* doc/Makefile.in: Regenerate.
+
+2012-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/array (array<>::at(size_type) const): Fix version
+	for undefined __EXCEPTIONS.
+
+2013-03-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Skip this test on powerpc64-*-freebsd*.
+
+2012-03-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_list.h (list::_M_size): Use NSDMI.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust line numbers.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+2012-03-19  Paweł Sikora  <pawel.sikora@agmk.net>
+
+	PR libstdc++/52540
+	* include/Makefile.am (c++config.h): Fix sed rule to not break
+	the _GLIBCXX_EXTERN_TEMPLATE redefinition.
+	* include/Makefile.in: Regenerate.
+
+2012-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/Makefile.in: Regenerate.
+
+2012-03-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/allocator.h (std::allocator): Base class is
+	__allocator_base.
+	(uses_allocator): Add to sub-grouping.
+	* include/ext/new_allocator.h: Doxygen markup for tparm.
+
+	* config/allocator/bitmap_allocator_base.h: Use __allocator_base
+	template alias in C++11.
+	* config/allocator/malloc_allocator_base.h: Same.
+	* config/allocator/mt_allocator_base.h: Same.
+	* config/allocator/new_allocator_base.h: Same.
+	* config/allocator/pool_allocator_base.h: Same.
+
+2012-03-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/detail/pat_trie_/
+	constructors_destructor_fn_imps.hpp: Increment after recursion.
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_base.hpp: Convert
+	node_type markup from brief.
+
+2012-03-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/52476
+	* include/bits/hashtable.h (_Hashtable<>::_M_rehash_aux): Add.
+	(_Hashtable<>::_M_rehash): Use the latter.
+	* testsuite/23_containers/unordered_multimap/insert/52476.cc: New.
+	* testsuite/23_containers/unordered_multiset/insert/52476.cc: New.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/os/solaris/solaris2.8: Rename to ...

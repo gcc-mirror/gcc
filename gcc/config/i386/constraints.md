@@ -18,7 +18,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;     B     H           T  W
+;;;     B     H           T
 ;;;           h  k          v
 
 ;; Integer register constraints.
@@ -198,6 +198,16 @@
    to fit that range (for immediate operands in sign-extending x86-64
    instructions)."
   (match_operand 0 "x86_64_immediate_operand"))
+
+;; We use W prefix to denote any number of
+;; constant-or-symbol-reference constraints
+
+(define_constraint "Wz"
+  "32-bit unsigned integer constant, or a symbolic reference known
+   to fit that range (for zero-extending conversion operations that
+   require non-VOIDmode immediate operands)."
+  (and (match_operand 0 "x86_64_zext_immediate_operand")
+       (match_test "GET_MODE (op) != VOIDmode")))
 
 (define_constraint "Z"
   "32-bit unsigned integer constant, or a symbolic reference known

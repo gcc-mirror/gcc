@@ -121,7 +121,6 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState
 {
   GdkDrawable *drawable;
   GtkWidget *widget;
-  int width, height;
   cairo_t *cr;
   void *ptr;
 
@@ -135,9 +134,6 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState
 
   drawable = widget->window;
   g_assert (drawable != NULL);
-
-  width = widget->allocation.width;
-  height = widget->allocation.height;
 
   cr = gdk_cairo_create(drawable);
 

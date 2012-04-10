@@ -102,7 +102,7 @@ Target RejectNegative Mask(V850E1)
 Compile for the v850e1 processor
 
 mv850es
-Target RejectNegative Mask(V850E1) MaskExists
+Target RejectNegative Mask(V850E1)
 Compile for the v850es variant of the v850e1
 
 mv850e2

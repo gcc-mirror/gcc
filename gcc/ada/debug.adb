@@ -131,7 +131,7 @@ package body Debug is
    --  d.K  Alfa detection only mode for gnat2why
    --  d.L  Depend on back end for limited types in conditional expressions
    --  d.M
-   --  d.N
+   --  d.N  Add node to all entities
    --  d.O  Dump internal SCO tables
    --  d.P  Previous (non-optimized) handling of length comparisons
    --  d.Q
@@ -153,7 +153,7 @@ package body Debug is
    --  d6   Default access unconstrained to thin pointers
    --  d7   Do not output version & file time stamp in -gnatv or -gnatl mode
    --  d8   Force opposite endianness in packed stuff
-   --  d9
+   --  d9   Allow lock free implementation
 
    --  Debug flags for binder (GNATBIND)
 
@@ -629,6 +629,10 @@ package body Debug is
    --       case expansion, leaving it up to the back end to handle conditional
    --       expressions correctly.
 
+   --  d.N  Enlarge entities by one node (but don't attempt to use this extra
+   --       node for storage of any flags or fields). This can be used to do
+   --       experiments on the impact of increasing entity sizes.
+
    --  d.O  Dump internal SCO tables. Before outputting the SCO information to
    --       the ALI file, the internal SCO tables (SCO_Table/SCO_Unit_Table)
    --       are dumped for debugging purposes.
@@ -646,7 +650,8 @@ package body Debug is
    --       elaboration model is conservative, especially regarding indirect
    --       calls. If you say Proc'Access, it will assume you might call
    --       Proc. This can cause elaboration cycles at bind time. This flag
-   --       reverts to the behavior of earlier compilers.
+   --       reverts to the behavior of earlier compilers, which ignored
+   --       indirect calls.
 
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in
@@ -704,6 +709,9 @@ package body Debug is
    --  d8   This forces the packed stuff to generate code assuming the
    --       opposite endianness from the actual correct value. Useful in
    --       testing out code generation from the packed routines.
+
+   --  d9   This allows lock free implementation for protected objects
+   --       (see Exp_Ch9).
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

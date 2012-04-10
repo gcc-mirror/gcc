@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -161,6 +161,9 @@ package body Lib.Xref is
    --  Local Subprograms --
    ------------------------
 
+   procedure Add_Entry (Key : Xref_Key; Ent_Scope_File : Unit_Number_Type);
+   --  Add an entry to the tables of Xref_Entries, avoiding duplicates
+
    procedure Generate_Prim_Op_References (Typ : Entity_Id);
    --  For a tagged type, generate implicit references to its primitive
    --  operations, for source navigation. This is done right before emitting
@@ -169,9 +172,6 @@ package body Lib.Xref is
 
    function Lt (T1, T2 : Xref_Entry) return Boolean;
    --  Order cross-references
-
-   procedure Add_Entry (Key : Xref_Key; Ent_Scope_File : Unit_Number_Type);
-   --  Add an entry to the tables of Xref_Entries, avoiding duplicates
 
    ---------------
    -- Add_Entry --
@@ -373,23 +373,16 @@ package body Lib.Xref is
       Set_Ref : Boolean   := True;
       Force   : Boolean   := False)
    is
-      Nod : Node_Id;
-      Ref : Source_Ptr;
-      Def : Source_Ptr;
-      Ent : Entity_Id;
-
-      Actual_Typ : Character := Typ;
-
-      Ref_Scope      : Entity_Id;
+      Actual_Typ     : Character := Typ;
+      Call           : Node_Id;
+      Def            : Source_Ptr;
+      Ent            : Entity_Id;
       Ent_Scope      : Entity_Id;
-      Ent_Scope_File : Unit_Number_Type;
-
-      Call   : Node_Id;
-      Formal : Entity_Id;
-      --  Used for call to Find_Actual
-
-      Kind : Entity_Kind;
-      --  If Formal is non-Empty, then its Ekind, otherwise E_Void
+      Formal         : Entity_Id;
+      Kind           : Entity_Kind;
+      Nod            : Node_Id;
+      Ref            : Source_Ptr;
+      Ref_Scope      : Entity_Id;
 
       function Get_Through_Renamings (E : Entity_Id) return Entity_Id;
       --  Get the enclosing entity through renamings, which may come from
@@ -639,6 +632,14 @@ package body Lib.Xref is
            or else Typ = 'i'
            or else Typ = 'k'
            or else (Typ = 'b' and then Is_Generic_Instance (E))
+
+            --  Allow the generation of references to reads, writes and calls
+            --  in Alfa mode when the related context comes from an instance.
+
+           or else
+             (Alfa_Mode
+                and then In_Extended_Main_Code_Unit (N)
+                and then (Typ = 'm' or else Typ = 'r' or else Typ = 's'))
          then
             null;
          else
@@ -884,37 +885,31 @@ package body Lib.Xref is
          and then Sloc (E) > No_Location
          and then Sloc (N) > No_Location
 
-         --  We ignore references from within an instance, except for default
-         --  subprograms, for which we generate an implicit reference.
+         --  Ignore references from within an instance. The only exceptions to
+         --  this are default subprograms, for which we generate an implicit
+         --  reference and compilations in Alfa_Mode.
 
          and then
-           (Instantiation_Location (Sloc (N)) = No_Location or else Typ = 'i')
+           (Instantiation_Location (Sloc (N)) = No_Location
+             or else Typ = 'i'
+             or else Alfa_Mode)
 
-         --  Ignore dummy references
+        --  Ignore dummy references
 
         and then Typ /= ' '
       then
-         if Nkind (N) = N_Identifier
-              or else
-            Nkind (N) = N_Defining_Identifier
-              or else
-            Nkind (N) in N_Op
-              or else
-            Nkind (N) = N_Defining_Operator_Symbol
-              or else
-            Nkind (N) = N_Operator_Symbol
-              or else
-            (Nkind (N) = N_Character_Literal
-              and then Sloc (Entity (N)) /= Standard_Location)
-              or else
-            Nkind (N) = N_Defining_Character_Literal
+         if Nkind_In (N, N_Identifier,
+                         N_Defining_Identifier,
+                         N_Defining_Operator_Symbol,
+                         N_Operator_Symbol,
+                         N_Defining_Character_Literal)
+           or else Nkind (N) in N_Op
+           or else (Nkind (N) = N_Character_Literal
+                     and then Sloc (Entity (N)) /= Standard_Location)
          then
             Nod := N;
 
-         elsif Nkind (N) = N_Expanded_Name
-                 or else
-               Nkind (N) = N_Selected_Component
-         then
+         elsif Nkind_In (N, N_Expanded_Name, N_Selected_Component) then
             Nod := Selector_Name (N);
 
          else
@@ -999,18 +994,18 @@ package body Lib.Xref is
 
          --  Record reference to entity
 
-         Ref := Original_Location (Sloc (Nod));
-         Def := Original_Location (Sloc (Ent));
-
          if Actual_Typ = 'p'
-           and then Is_Subprogram (N)
-           and then Present (Overridden_Operation (N))
+           and then Is_Subprogram (Nod)
+           and then Present (Overridden_Operation (Nod))
          then
             Actual_Typ := 'P';
          end if;
 
          if Alfa_Mode then
-            Ref_Scope := Alfa.Enclosing_Subprogram_Or_Package (N);
+            Ref := Sloc (Nod);
+            Def := Sloc (Ent);
+
+            Ref_Scope := Alfa.Enclosing_Subprogram_Or_Package (Nod);
             Ent_Scope := Alfa.Enclosing_Subprogram_Or_Package (Ent);
 
             --  Since we are reaching through renamings in Alfa mode, we may
@@ -1022,22 +1017,39 @@ package body Lib.Xref is
                return;
             end if;
 
-            Ent_Scope_File := Get_Source_Unit (Ent_Scope);
-         else
-            Ref_Scope := Empty;
-            Ent_Scope := Empty;
-            Ent_Scope_File := No_Unit;
-         end if;
+            Add_Entry
+              ((Ent      => Ent,
+                Loc       => Ref,
+                Typ       => Actual_Typ,
+                Eun       => Get_Code_Unit (Def),
+                Lun       => Get_Code_Unit (Ref),
+                Ref_Scope => Ref_Scope,
+                Ent_Scope => Ent_Scope),
+               Ent_Scope_File => Get_Code_Unit (Ent));
 
-         Add_Entry
-           ((Ent => Ent,
-             Loc => Ref,
-             Typ => Actual_Typ,
-             Eun => Get_Source_Unit (Def),
-             Lun => Get_Source_Unit (Ref),
-             Ref_Scope => Ref_Scope,
-             Ent_Scope => Ent_Scope),
-            Ent_Scope_File => Ent_Scope_File);
+         else
+            Ref := Original_Location (Sloc (Nod));
+            Def := Original_Location (Sloc (Ent));
+
+            --  If this is an operator symbol, skip the initial
+            --  quote, for navigation purposes.
+
+            if Nkind (N) = N_Defining_Operator_Symbol
+              or else Nkind (Nod) = N_Operator_Symbol
+            then
+               Ref := Ref + 1;
+            end if;
+
+            Add_Entry
+              ((Ent      => Ent,
+                Loc       => Ref,
+                Typ       => Actual_Typ,
+                Eun       => Get_Source_Unit (Def),
+                Lun       => Get_Source_Unit (Ref),
+                Ref_Scope => Empty,
+                Ent_Scope => Empty),
+               Ent_Scope_File => No_Unit);
+         end if;
       end if;
    end Generate_Reference;
 
@@ -1715,11 +1727,24 @@ package body Lib.Xref is
          --  since at the time the reference or definition is made, private
          --  types may be swapped, and the Sloc value may be incorrect. We
          --  also set up the pointer vector for the sort.
+         --  For user-defined operators we need to skip the initial
+         --  quote and point to the first character of the name, for
+         --  navigation purposes.
 
          for J in 1 .. Nrefs loop
-            Rnums (J) := J;
-            Xrefs.Table (J).Def :=
-              Original_Location (Sloc (Xrefs.Table (J).Key.Ent));
+            declare
+               E   : constant Entity_Id  := Xrefs.Table (J).Key.Ent;
+               Loc : constant Source_Ptr := Original_Location (Sloc (E));
+
+            begin
+               Rnums (J) := J;
+
+               if Nkind (E) = N_Defining_Operator_Symbol then
+                  Xrefs.Table (J).Def := Loc + 1;
+               else
+                  Xrefs.Table (J).Def := Loc;
+               end if;
+            end;
          end loop;
 
          --  Sort the references
@@ -2433,6 +2458,8 @@ package body Lib.Xref is
          Write_Info_EOL;
       end Output_Refs;
    end Output_References;
+
+--  Start of elaboration for Lib.Xref
 
 begin
    --  Reset is necessary because Elmt_Ptr does not default to Null_Ptr,

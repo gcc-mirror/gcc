@@ -768,10 +768,27 @@ public final class SSLEngineImpl extends SSLEngine
           }
         else
           {
-            inout = outsec.encrypt(sources, offset, length,
-                                   ContentType.APPLICATION_DATA, sink);
-            consumed = inout[0];
-            produced = inout[1];
+            if (outsec.needToSplitPayload())
+              {
+                inout = outsec.encrypt(sources, offset, 1,
+                                       ContentType.APPLICATION_DATA, sink);
+                consumed = inout[0];
+                produced = inout[1];
+                if (length > 1)
+                  {
+                    inout = outsec.encrypt(sources, offset+1, length-1,
+                                           ContentType.APPLICATION_DATA, sink);
+                    consumed += inout[0];
+                    produced += inout[1];
+                  }
+              }
+            else
+              {
+                inout = outsec.encrypt(sources, offset, length,
+                                       ContentType.APPLICATION_DATA, sink);
+                consumed = inout[0];
+                produced = inout[1];
+              }
           }
 
         if (Debug.DEBUG)

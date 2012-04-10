@@ -7620,7 +7620,7 @@ compare_ics (conversion *ics1, conversion *ics2)
      Specifically, we need to do the reference binding comparison at the
      end of this function.  */
 
-  if (ics1->user_conv_p || ics1->kind == ck_list)
+  if (ics1->user_conv_p || ics1->kind == ck_list || ics1->kind == ck_aggr)
     {
       conversion *t1;
       conversion *t2;

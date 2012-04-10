@@ -7866,14 +7866,7 @@ alpha_start_function (FILE *file, const char *fnname,
   int i;
 
 #if TARGET_ABI_OPEN_VMS
-  if (vms_debug_main
-      && strncmp (vms_debug_main, fnname, strlen (vms_debug_main)) == 0)
-    {
-      targetm.asm_out.globalize_label (asm_out_file, VMS_DEBUG_MAIN_POINTER);
-      ASM_OUTPUT_DEF (asm_out_file, VMS_DEBUG_MAIN_POINTER, fnname);
-      switch_to_section (text_section);
-      vms_debug_main = NULL;
-    }
+  vms_start_function (fnname);
 #endif
 
   alpha_fnname = fnname;

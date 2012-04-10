@@ -59,7 +59,7 @@ Target Report Mask(ABORT_NORETURN)
 Generate a call to abort if a noreturn function returns
 
 mapcs
-Target RejectNegative Mask(APCS_FRAME) MaskExists Undocumented
+Target RejectNegative Mask(APCS_FRAME) Undocumented
 
 mapcs-float
 Target Report Mask(APCS_FLOAT)

@@ -42,7 +42,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Redefines for option macros.  */
 
 #define TARGET_64BIT	OPTION_ISA_64BIT
-#define TARGET_X32	OPTION_ISA_X32
 #define TARGET_MMX	OPTION_ISA_MMX
 #define TARGET_3DNOW	OPTION_ISA_3DNOW
 #define TARGET_3DNOW_A	OPTION_ISA_3DNOW_A
@@ -77,7 +76,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_F16C	OPTION_ISA_F16C
 #define TARGET_RTM      OPTION_ISA_RTM
 
-#define TARGET_LP64	(TARGET_64BIT && !TARGET_X32)
+#define TARGET_LP64	OPTION_ABI_64
+#define TARGET_X32	OPTION_ABI_X32
 
 /* SSE4.1 defines round instructions */
 #define	OPTION_MASK_ISA_ROUND	OPTION_MASK_ISA_SSE4_1
@@ -262,6 +262,7 @@ enum ix86_tune_indices {
   X86_TUNE_MOVX,
   X86_TUNE_PARTIAL_REG_STALL,
   X86_TUNE_PARTIAL_FLAG_REG_STALL,
+  X86_TUNE_LCP_STALL,
   X86_TUNE_USE_HIMODE_FIOP,
   X86_TUNE_USE_SIMODE_FIOP,
   X86_TUNE_USE_MOV0,
@@ -340,6 +341,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 #define TARGET_PARTIAL_REG_STALL ix86_tune_features[X86_TUNE_PARTIAL_REG_STALL]
 #define TARGET_PARTIAL_FLAG_REG_STALL \
 	ix86_tune_features[X86_TUNE_PARTIAL_FLAG_REG_STALL]
+#define TARGET_LCP_STALL \
+	ix86_tune_features[X86_TUNE_LCP_STALL]
 #define TARGET_USE_HIMODE_FIOP	ix86_tune_features[X86_TUNE_USE_HIMODE_FIOP]
 #define TARGET_USE_SIMODE_FIOP	ix86_tune_features[X86_TUNE_USE_SIMODE_FIOP]
 #define TARGET_USE_MOV0		ix86_tune_features[X86_TUNE_USE_MOV0]
@@ -466,9 +469,6 @@ extern int x86_prefetch_sse;
 #ifndef TARGET_TLS_DIRECT_SEG_REFS_DEFAULT
 #define TARGET_TLS_DIRECT_SEG_REFS_DEFAULT 0
 #endif
-
-/* Address override works only on the (%reg) part of %fs:(%reg).  */
-#define TARGET_TLS_INDIRECT_SEG_REFS (Pmode == word_mode)
 
 /* Fence to use after loop using storent.  */
 
@@ -1632,6 +1632,17 @@ typedef struct ix86_args {
 #define MAX_REGS_PER_ADDRESS 2
 
 #define CONSTANT_ADDRESS_P(X)  constant_address_p (X)
+
+/* Try a machine-dependent way of reloading an illegitimate address
+   operand.  If we find one, push the reload and jump to WIN.  This
+   macro is used in only one place: `find_reloads_address' in reload.c.  */
+
+#define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, INDL, WIN)	\
+do {									\
+  if (ix86_legitimize_reload_address ((X), (MODE), (OPNUM),		\
+				      (int)(TYPE), (INDL)))		\
+    goto WIN;								\
+} while (0)
 
 /* If defined, a C expression to determine the base term of address X.
    This macro is used in only one place: `find_base_term' in alias.c.

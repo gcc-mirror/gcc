@@ -42,6 +42,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the <linux/ether.h> header file. */
+#undef HAVE_LINUX_ETHER_H
+
 /* Define to 1 if you have the <linux/filter.h> header file. */
 #undef HAVE_LINUX_FILTER_H
 
@@ -71,6 +74,9 @@
 
 /* Define to 1 if you have the `mknodat' function. */
 #undef HAVE_MKNODAT
+
+/* Define to 1 if you have the <net/if_arp.h> header file. */
+#undef HAVE_NET_IF_ARP_H
 
 /* Define to 1 if you have the <net/if.h> header file. */
 #undef HAVE_NET_IF_H

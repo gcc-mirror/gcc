@@ -82,6 +82,7 @@ static int arm_legitimate_index_p (enum machine_mode, rtx, RTX_CODE, int);
 static int thumb2_legitimate_index_p (enum machine_mode, rtx, int);
 static int thumb1_base_register_rtx_p (rtx, enum machine_mode, int);
 static rtx arm_legitimize_address (rtx, rtx, enum machine_mode);
+static reg_class_t arm_preferred_reload_class (rtx, reg_class_t);
 static rtx thumb_legitimize_address (rtx, rtx, enum machine_mode);
 inline static int thumb1_index_register_rtx_p (rtx, int);
 static bool arm_legitimate_address_p (enum machine_mode, rtx, bool);
@@ -575,6 +576,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	arm_legitimate_address_p
+
+#undef TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS arm_preferred_reload_class
 
 #undef TARGET_INVALID_PARAMETER_TYPE
 #define TARGET_INVALID_PARAMETER_TYPE arm_invalid_parameter_type
@@ -6224,6 +6228,30 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, bool strict_p)
     return thumb2_legitimate_address_p (mode, x, strict_p);
   else /* if (TARGET_THUMB1) */
     return thumb1_legitimate_address_p (mode, x, strict_p);
+}
+
+/* Worker function for TARGET_PREFERRED_RELOAD_CLASS.
+
+   Given an rtx X being reloaded into a reg required to be
+   in class CLASS, return the class of reg to actually use.
+   In general this is just CLASS, but for the Thumb core registers and
+   immediate constants we prefer a LO_REGS class or a subset.  */
+
+static reg_class_t
+arm_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
+{
+  if (TARGET_32BIT)
+    return rclass;
+  else
+    {
+      if (rclass == GENERAL_REGS
+	  || rclass == HI_REGS
+	  || rclass == NO_REGS
+	  || rclass == STACK_REG)
+	return LO_REGS;
+      else
+	return rclass;
+    }
 }
 
 /* Build the SYMBOL_REF for __tls_get_addr.  */
@@ -13300,47 +13328,148 @@ thumb2_reorg (void)
       FOR_BB_INSNS_REVERSE (bb, insn)
 	{
 	  if (NONJUMP_INSN_P (insn)
-	      && !REGNO_REG_SET_P (&live, CC_REGNUM))
+	      && !REGNO_REG_SET_P (&live, CC_REGNUM)
+	      && GET_CODE (PATTERN (insn)) == SET)
 	    {
+	      enum {SKIP, CONV, SWAP_CONV} action = SKIP;
 	      rtx pat = PATTERN (insn);
-	      if (GET_CODE (pat) == SET
-		  && low_register_operand (XEXP (pat, 0), SImode)
-		  && thumb_16bit_operator (XEXP (pat, 1), SImode)
-		  && low_register_operand (XEXP (XEXP (pat, 1), 0), SImode)
-		  && low_register_operand (XEXP (XEXP (pat, 1), 1), SImode))
+	      rtx dst = XEXP (pat, 0);
+	      rtx src = XEXP (pat, 1);
+	      rtx op0 = NULL_RTX, op1 = NULL_RTX;
+
+	      if (!OBJECT_P (src))
+		  op0 = XEXP (src, 0);
+
+	      if (BINARY_P (src))
+		  op1 = XEXP (src, 1);
+
+	      if (low_register_operand (dst, SImode))
 		{
-		  rtx dst = XEXP (pat, 0);
-		  rtx src = XEXP (pat, 1);
-		  rtx op0 = XEXP (src, 0);
-		  rtx op1 = (GET_RTX_CLASS (GET_CODE (src)) == RTX_COMM_ARITH
-			     ? XEXP (src, 1) : NULL);
-
-		  if (rtx_equal_p (dst, op0)
-		      || GET_CODE (src) == PLUS || GET_CODE (src) == MINUS)
+		  switch (GET_CODE (src))
 		    {
-		      rtx ccreg = gen_rtx_REG (CCmode, CC_REGNUM);
-		      rtx clobber = gen_rtx_CLOBBER (VOIDmode, ccreg);
-		      rtvec vec = gen_rtvec (2, pat, clobber);
+		    case PLUS:
+		      if (low_register_operand (op0, SImode))
+			{
+			  /* ADDS <Rd>,<Rn>,<Rm>  */
+			  if (low_register_operand (op1, SImode))
+			    action = CONV;
+			  /* ADDS <Rdn>,#<imm8>  */
+			  /* SUBS <Rdn>,#<imm8>  */
+			  else if (rtx_equal_p (dst, op0)
+				   && CONST_INT_P (op1)
+				   && IN_RANGE (INTVAL (op1), -255, 255))
+			    action = CONV;
+			  /* ADDS <Rd>,<Rn>,#<imm3>  */
+			  /* SUBS <Rd>,<Rn>,#<imm3>  */
+			  else if (CONST_INT_P (op1)
+				   && IN_RANGE (INTVAL (op1), -7, 7))
+			    action = CONV;
+			}
+		      break;
 
-		      PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode, vec);
-		      INSN_CODE (insn) = -1;
+		    case MINUS:
+		      /* RSBS <Rd>,<Rn>,#0  
+			 Not handled here: see NEG below.  */
+		      /* SUBS <Rd>,<Rn>,#<imm3>
+			 SUBS <Rdn>,#<imm8>
+			 Not handled here: see PLUS above.  */
+		      /* SUBS <Rd>,<Rn>,<Rm>  */
+		      if (low_register_operand (op0, SImode)
+			  && low_register_operand (op1, SImode))
+			    action = CONV;
+		      break;
+
+		    case MULT:
+		      /* MULS <Rdm>,<Rn>,<Rdm>
+			 As an exception to the rule, this is only used
+			 when optimizing for size since MULS is slow on all
+			 known implementations.  We do not even want to use
+			 MULS in cold code, if optimizing for speed, so we
+			 test the global flag here.  */
+		      if (!optimize_size)
+			break;
+		      /* else fall through.  */
+		    case AND:
+		    case IOR:
+		    case XOR:
+		      /* ANDS <Rdn>,<Rm>  */
+		      if (rtx_equal_p (dst, op0)
+			  && low_register_operand (op1, SImode))
+			action = CONV;
+		      else if (rtx_equal_p (dst, op1)
+			       && low_register_operand (op0, SImode))
+			action = SWAP_CONV;
+		      break;
+
+		    case ASHIFTRT:
+		    case ASHIFT:
+		    case LSHIFTRT:
+		      /* ASRS <Rdn>,<Rm> */
+		      /* LSRS <Rdn>,<Rm> */
+		      /* LSLS <Rdn>,<Rm> */
+		      if (rtx_equal_p (dst, op0)
+			  && low_register_operand (op1, SImode))
+			action = CONV;
+		      /* ASRS <Rd>,<Rm>,#<imm5> */
+		      /* LSRS <Rd>,<Rm>,#<imm5> */
+		      /* LSLS <Rd>,<Rm>,#<imm5> */
+		      else if (low_register_operand (op0, SImode)
+			       && CONST_INT_P (op1)
+			       && IN_RANGE (INTVAL (op1), 0, 31))
+			action = CONV;
+		      break;
+
+		    case ROTATERT:
+		      /* RORS <Rdn>,<Rm>  */
+		      if (rtx_equal_p (dst, op0)
+			  && low_register_operand (op1, SImode))
+			action = CONV;
+		      break;
+
+		    case NOT:
+		    case NEG:
+		      /* MVNS <Rd>,<Rm>  */
+		      /* NEGS <Rd>,<Rm>  (a.k.a RSBS)  */
+		      if (low_register_operand (op0, SImode))
+			action = CONV;
+		      break;
+
+		    case CONST_INT:
+		      /* MOVS <Rd>,#<imm8>  */
+		      if (CONST_INT_P (src)
+			  && IN_RANGE (INTVAL (src), 0, 255))
+			action = CONV;
+		      break;
+
+		    case REG:
+		      /* MOVS and MOV<c> with registers have different
+			 encodings, so are not relevant here.  */
+		      break;
+
+		    default:
+		      break;
 		    }
-		  /* We can also handle a commutative operation where the
-		     second operand matches the destination.  */
-		  else if (op1 && rtx_equal_p (dst, op1))
-		    {
-		      rtx ccreg = gen_rtx_REG (CCmode, CC_REGNUM);
-		      rtx clobber = gen_rtx_CLOBBER (VOIDmode, ccreg);
-		      rtvec vec;
+		}
 
+	      if (action != SKIP)
+		{
+		  rtx ccreg = gen_rtx_REG (CCmode, CC_REGNUM);
+		  rtx clobber = gen_rtx_CLOBBER (VOIDmode, ccreg);
+		  rtvec vec;
+
+		  if (action == SWAP_CONV)
+		    {
 		      src = copy_rtx (src);
 		      XEXP (src, 0) = op1;
 		      XEXP (src, 1) = op0;
 		      pat = gen_rtx_SET (VOIDmode, dst, src);
 		      vec = gen_rtvec (2, pat, clobber);
-		      PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode, vec);
-		      INSN_CODE (insn) = -1;
 		    }
+		  else /* action == CONV */
+		    vec = gen_rtvec (2, pat, clobber);
+
+		  PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode, vec);
+		  INSN_CODE (insn) = -1;
 		}
 	    }
 

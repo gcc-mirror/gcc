@@ -2093,7 +2093,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
   cfun->static_chain_decl = src_cfun->static_chain_decl;
   cfun->nonlocal_goto_save_area = src_cfun->nonlocal_goto_save_area;
   cfun->function_end_locus = src_cfun->function_end_locus;
-  cfun->curr_properties = src_cfun->curr_properties;
+  cfun->curr_properties = src_cfun->curr_properties & ~PROP_loops;
   cfun->last_verified = src_cfun->last_verified;
   cfun->va_list_gpr_size = src_cfun->va_list_gpr_size;
   cfun->va_list_fpr_size = src_cfun->va_list_fpr_size;
@@ -4955,7 +4955,7 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 	        if ((e = cgraph_edge (id->dst_node, gsi_stmt (bsi))) != NULL)
 		  {
 		    if (!e->inline_failed)
-		      cgraph_remove_node_and_inline_clones (e->callee);
+		      cgraph_remove_node_and_inline_clones (e->callee, id->dst_node);
 		    else
 	              cgraph_remove_edge (e);
 		  }
@@ -4966,7 +4966,7 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 	              if ((e = cgraph_edge (node, gsi_stmt (bsi))) != NULL)
 			{
 		          if (!e->inline_failed)
-		            cgraph_remove_node_and_inline_clones (e->callee);
+		            cgraph_remove_node_and_inline_clones (e->callee, id->dst_node);
 			  else
 	                    cgraph_remove_edge (e);
 			}

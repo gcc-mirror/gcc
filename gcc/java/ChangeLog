@@ -1,3 +1,16 @@
+2012-04-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* class.c (emit_register_classes_in_jcr_section): Set DECL_USER_ALIGN.
+	Clear TREE_READONLY.
+
+2012-03-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR java/52730
+	* class.c (emit_register_classes_in_jcr_section): New function.
+	(emit_Jv_RegisterClass_calls): New function, split out from ...
+	(emit_register_classes): ... here. Reorganize.  Do not call
+	output_constant.
+
 2012-01-23  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* lang.c (java_init_options_struct): Set

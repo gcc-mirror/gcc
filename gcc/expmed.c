@@ -550,7 +550,10 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	{
 	  /* If I is 0, use the low-order word in both field and target;
 	     if I is 1, use the next to lowest word; and so on.  */
-	  unsigned int wordnum = (backwards ? nwords - i - 1 : i);
+	  unsigned int wordnum = (backwards
+				  ? GET_MODE_SIZE (fieldmode) / UNITS_PER_WORD
+				  - i - 1
+				  : i);
 	  unsigned int bit_offset = (backwards
 				     ? MAX ((int) bitsize - ((int) i + 1)
 					    * BITS_PER_WORD,
@@ -828,8 +831,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   /* Under the C++0x memory model, we must not touch bits outside the
      bit region.  Adjust the address to start at the beginning of the
      bit region.  */
-  if (MEM_P (str_rtx)
-      && bitregion_start > 0)
+  if (MEM_P (str_rtx) && bitregion_start > 0)
     {
       enum machine_mode bestmode;
       enum machine_mode op_mode;
@@ -838,6 +840,8 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       op_mode = mode_for_extraction (EP_insv, 3);
       if (op_mode == MAX_MACHINE_MODE)
 	op_mode = VOIDmode;
+
+      gcc_assert ((bitregion_start % BITS_PER_UNIT) == 0);
 
       offset = bitregion_start / BITS_PER_UNIT;
       bitnum -= bitregion_start;
@@ -3135,8 +3139,10 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	    {
 	      int shift = floor_log2 (CONST_DOUBLE_HIGH (op1))
 			  + HOST_BITS_PER_WIDE_INT;
-	      return expand_shift (LSHIFT_EXPR, mode, op0,
-				   shift, target, unsignedp);
+	      if (shift < 2 * HOST_BITS_PER_WIDE_INT - 1
+		  || GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT)
+		return expand_shift (LSHIFT_EXPR, mode, op0,
+				     shift, target, unsignedp);
 	    }
 	}
 
@@ -4970,18 +4976,18 @@ make_tree (tree type, rtx x)
       {
 	int units = CONST_VECTOR_NUNITS (x);
 	tree itype = TREE_TYPE (type);
-	tree t = NULL_TREE;
+	tree *elts;
 	int i;
 
-
 	/* Build a tree with vector elements.  */
+	elts = XALLOCAVEC (tree, units);
 	for (i = units - 1; i >= 0; --i)
 	  {
 	    rtx elt = CONST_VECTOR_ELT (x, i);
-	    t = tree_cons (NULL_TREE, make_tree (itype, elt), t);
+	    elts[i] = make_tree (itype, elt);
 	  }
 
-	return build_vector (type, t);
+	return build_vector (type, elts);
       }
 
     case PLUS:

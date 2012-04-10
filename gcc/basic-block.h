@@ -741,6 +741,7 @@ edge find_edge (basic_block, basic_block);
 #define CLEANUP_NO_INSN_DEL	16	/* Do not try to delete trivially dead
 					   insns.  */
 #define CLEANUP_CFGLAYOUT	32	/* Do cleanup in cfglayout mode.  */
+#define CLEANUP_CFG_CHANGED	64      /* The caller changed the CFG.  */
 
 /* In lcm.c */
 extern struct edge_list *pre_edge_lcm (int, sbitmap *, sbitmap *,
@@ -828,9 +829,6 @@ extern void update_br_prob_note (basic_block);
 extern bool inside_basic_block_p (const_rtx);
 extern bool control_flow_insn_p (const_rtx);
 extern rtx get_last_bb_insn (basic_block);
-
-/* In bb-reorder.c */
-extern void reorder_basic_blocks (void);
 
 /* In dominance.c */
 

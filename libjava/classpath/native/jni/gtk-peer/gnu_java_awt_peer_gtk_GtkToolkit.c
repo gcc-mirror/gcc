@@ -1,6 +1,6 @@
 
 /* gtktoolkit.c -- Native portion of GtkToolkit
-   Copyright (C) 1998, 1999, 2005, 2007  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2005, 2007, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -216,6 +216,7 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
   init_dpi_conversion_factor ();
 
   gtktoolkit = (*env)->FindClass(env, "gnu/java/awt/peer/gtk/GtkMainThread");
+  gtktoolkit = (*env)->NewGlobalRef(env, gtktoolkit); /* bug fix #40889 */
   setRunningID = (*env)->GetStaticMethodID (env, gtktoolkit,
                                             "setRunning", "(Z)V");
 }

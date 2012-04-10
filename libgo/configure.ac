@@ -400,6 +400,12 @@ dnl Test if -lrt is required for sched_yield.
 AC_SEARCH_LIBS([sched_yield], [rt])
 
 AC_C_BIGENDIAN
+case $ac_cv_c_bigendian in
+  yes) GO_BIGENDIAN=true ;;
+  no) GO_BIGENDIAN=false ;;
+  *) AC_MSG_ERROR([unknown endianness]) ;;
+esac
+AC_SUBST(GO_BIGENDIAN)
 
 GCC_CHECK_UNWIND_GETIPINFO
 
@@ -453,7 +459,7 @@ no)
   ;;
 esac
 
-AC_CHECK_HEADERS(sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/reboot.h)
+AC_CHECK_HEADERS(sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/reboot.h)
 
 AC_CHECK_HEADERS([linux/filter.h linux/netlink.h linux/rtnetlink.h], [], [],
 [#ifdef HAVE_SYS_SOCKET_H

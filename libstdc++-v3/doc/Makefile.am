@@ -1,6 +1,6 @@
 ## Makefile for the doc subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+## Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -206,7 +206,7 @@ doc-install-epub: doc-epub
 # Assumes doxygen, graphviz (with dot), pdflatex installed
 doxygen_script=${top_srcdir}/scripts/run_doxygen
 doxygen_outdir = ${glibcxx_builddir}/doc/doxygen
-api_xml = ${doxygen_outdir}/xml/libstdc++-api-single.xml
+api_xml = ${doxygen_outdir}/xml/libstdc++-api.xml
 doxygen_pdf = ${doxygen_outdir}/latex/refman.pdf
 api_pdf = ${doxygen_outdir}/pdf/libstdc++-api.pdf
 
@@ -505,8 +505,8 @@ doc-xml-validate-docbook: $(xml_sources) $(xml_images)
 # XML, all one page
 # Some info on canonicalization
 # http://www.mail-archive.com/help-texinfo@gnu.org/msg00864.html
-manual_xml = ${docbook_outdir}/xml/libstdc++-manual-single.xml
-set_xml = ${docbook_outdir}/xml/libstdc++-set-single.xml
+manual_xml = ${docbook_outdir}/xml/libstdc++-manual.xml
+set_xml = ${docbook_outdir}/xml/libstdc++-set.xml
 stamp-xml-single-docbook: $(xml_sources) ${docbook_outdir}/xml
 	@echo "Generating XML single..."
 	$(XMLLINT) $(XMLLINT_FLAGS) \

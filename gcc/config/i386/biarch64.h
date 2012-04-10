@@ -25,5 +25,5 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#define TARGET_64BIT_DEFAULT OPTION_MASK_ISA_64BIT
+#define TARGET_64BIT_DEFAULT (OPTION_MASK_ISA_64BIT | OPTION_MASK_ABI_64)
 #define TARGET_BI_ARCH 1

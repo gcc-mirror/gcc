@@ -384,6 +384,8 @@ lookup_field_1 (tree type, tree name, bool want_type)
 {
   tree field;
 
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+
   if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
       || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM
       || TREE_CODE (type) == TYPENAME_TYPE)
@@ -2428,6 +2430,11 @@ lookup_conversions_r (tree binfo,
 	  if (!IDENTIFIER_MARKED (name))
 	    {
 	      tree type = DECL_CONV_FN_TYPE (cur);
+	      if (type_uses_auto (type))
+		{
+		  mark_used (cur);
+		  type = DECL_CONV_FN_TYPE (cur);
+		}
 
 	      if (check_hidden_convs (binfo, virtual_depth, virtualness,
 				      type, parent_convs, other_convs))

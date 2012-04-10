@@ -51,6 +51,13 @@ Java_java_nio_VMDirectByteBuffer_allocate
 {
   void *buffer;
 
+  if (capacity < 0)
+    {
+      JCL_ThrowException (env, "java/lang/IllegalArgumentException",
+			  "negative capacity");
+      return 0;
+    }
+
   buffer = malloc (capacity);
 
   if (buffer == NULL)

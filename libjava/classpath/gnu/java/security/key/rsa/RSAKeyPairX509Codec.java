@@ -1,5 +1,5 @@
 /* RSAKeyPairX509Codec.java -- X.509 Encoding/Decoding handler
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,7 +65,9 @@ import java.util.logging.Logger;
 public class RSAKeyPairX509Codec
     implements IKeyPairCodec
 {
-  private static final Logger log = Logger.getLogger(RSAKeyPairX509Codec.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                Logger.getLogger(RSAKeyPairX509Codec.class.getName()) : null;
+
   private static final OID RSA_ALG_OID = new OID(Registry.RSA_OID_STRING);
 
   // implicit 0-arguments constructor

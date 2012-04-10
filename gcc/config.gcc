@@ -488,6 +488,10 @@ fi
 
 case ${target} in
 i[34567]86-*-*)
+	if test "x$with_abi" != x; then
+		echo "This target does not support --with-abi."
+		exit 1
+	fi
 	if test "x$enable_cld" = xyes; then
 		tm_defines="${tm_defines} USE_IX86_CLD=1"
 	fi
@@ -497,7 +501,24 @@ i[34567]86-*-*)
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 x86_64-*-*)
-	tm_file="i386/biarch64.h ${tm_file}"
+	case ${with_abi} in
+	"")
+		if test "x$with_multilib_list" = xmx32; then
+			tm_file="i386/biarchx32.h ${tm_file}"
+		else
+			tm_file="i386/biarch64.h ${tm_file}"
+		fi
+		;;
+	64 | m64)
+		tm_file="i386/biarch64.h ${tm_file}"
+		;;
+	x32 | mx32)
+		tm_file="i386/biarchx32.h ${tm_file}"
+		;;
+	*)
+		echo "Unknown ABI used in --with-abi=$with_abi"
+		exit 1
+	esac
 	if test "x$enable_cld" = xyes; then
 		tm_defines="${tm_defines} USE_IX86_CLD=1"
 	fi
@@ -740,6 +761,9 @@ case ${target} in
   xm_file="vms/xm-vms.h"
   c_target_objs="vms-c.o"
   cxx_target_objs="vms-c.o"
+  fortran_target_objs="vms-f.o"
+  use_gcc_stdint=provide
+  tm_file="${tm_file} vms/vms-stdint.h"
   if test x$gnu_ld != xyes; then
     # Build wrappers for native case.
     extra_programs="ld\$(exeext) ar\$(exeext)"
@@ -766,21 +790,21 @@ esac
 
 case ${target} in
 alpha*-*-linux*)
-	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
+	tm_file="elfos.h ${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
 	extra_options="${extra_options} alpha/elf.opt"
 	;;
 alpha*-*-freebsd*)
-	tm_file="${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
+	tm_file="elfos.h ${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
 	extra_options="${extra_options} alpha/elf.opt"
 	;;
 alpha*-*-netbsd*)
-	tm_file="${tm_file} netbsd.h alpha/elf.h netbsd-elf.h alpha/netbsd.h"
+	tm_file="elfos.h ${tm_file} netbsd.h alpha/elf.h netbsd-elf.h alpha/netbsd.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt \
 		       alpha/elf.opt"
 	;;
 alpha*-*-openbsd*)
 	tm_defines="${tm_defines} OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_FUNCTION_SIZE OBSD_HAS_DECLARE_OBJECT"
-	tm_file="alpha/alpha.h alpha/elf.h openbsd.h openbsd-stdint.h alpha/openbsd.h openbsd-libpthread.h"
+	tm_file="elfos.h alpha/alpha.h alpha/elf.h openbsd.h openbsd-stdint.h alpha/openbsd.h openbsd-libpthread.h"
 	extra_options="${extra_options} openbsd.opt alpha/elf.opt"
 	# default x-alpha is only appropriate for dec-osf.
 	;;
@@ -896,13 +920,13 @@ arm*-wince-pe*)
 	extra_objs="pe.o"
 	;;
 avr-*-rtems*)
-	tm_file="elfos.h avr/elf.h avr/avr.h avr/multilib.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
+	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="avr/t-avr avr/t-multilib t-rtems avr/t-rtems"
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
 	;;
 avr-*-*)
-	tm_file="elfos.h avr/elf.h avr/avr.h avr/multilib.h dbxelf.h newlib-stdint.h"
+	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h newlib-stdint.h"
 	tmake_file="avr/t-avr avr/t-multilib"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
@@ -1886,10 +1910,20 @@ powerpc64-*-darwin*)
 	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
 	extra_headers=altivec.h
 	;;
-powerpc-*-freebsd*)
-	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
-	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
+powerpc*-*-freebsd*)
+	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
+	case ${host} in
+	     powerpc64*)
+	    	tm_file="${tm_file} rs6000/default64.h rs6000/freebsd64.h"
+		tmake_file="${tmake_file} rs6000/t-freebsd64"
+		extra_options="${extra_options} rs6000/linux64.opt"
+		;;
+	     *)
+	        tm_file="${tm_file} rs6000/freebsd.h"
+		;;
+	esac
 	;;
 powerpc-*-netbsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
@@ -3125,7 +3159,7 @@ case "${target}" in
 		;;
 
 	i[34567]86-*-* | x86_64-*-*)
-		supported_defaults="arch arch_32 arch_64 cpu cpu_32 cpu_64 tune tune_32 tune_64"
+		supported_defaults="abi arch arch_32 arch_64 cpu cpu_32 cpu_64 tune tune_32 tune_64"
 		for which in arch arch_32 arch_64 cpu cpu_32 cpu_64 tune tune_32 tune_64; do
 			eval "val=\$with_$which"
 			case ${val} in

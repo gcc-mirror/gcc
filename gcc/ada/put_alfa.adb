@@ -56,6 +56,7 @@ begin
             Write_Info_Char ('-');
             Write_Info_Char ('>');
             Write_Info_Char (' ');
+
             for N in F.Unit_File_Name'Range loop
                Write_Info_Char (F.Unit_File_Name (N));
             end loop;

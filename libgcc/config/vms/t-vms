@@ -1,6 +1,3 @@
-# Assemble startup files.
-vcrt0.o: $(srcdir)/config/vms/vms-ucrt0.c
-	$(gcc_compile) -c $<
-
-pcrt0.o: $(srcdir)/config/vms/vms-ucrt0.c
-	$(gcc_compile) -c -DCRT0_POSIX_EXIT $<
+# Assemble startup file.
+crt0.o: $(srcdir)/config/vms/vms-ucrt0.c
+	$(gcc_compile) -mpointer-size=64 -c $<

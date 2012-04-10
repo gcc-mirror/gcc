@@ -56,7 +56,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/math.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -5935,13 +5936,13 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 @MAINTAINER_MODE_TRUE@$(i_count_c): m4/count.m4 $(I_M4_DEPS2)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 count.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_iall_c): m4/iall.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_iall_c): m4/iall.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 iall.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_iany_c): m4/iany.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_iany_c): m4/iany.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 iany.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_iparity_c): m4/iparity.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_iparity_c): m4/iparity.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 iparity.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_maxloc0_c): m4/maxloc0.m4 $(I_M4_DEPS0)
@@ -5974,10 +5975,10 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 @MAINTAINER_MODE_TRUE@$(i_matmull_c): m4/matmull.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmull.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_norm2_c): m4/norm2.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_norm2_c): m4/norm2.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 norm2.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_parity_c): m4/parity.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_parity_c): m4/parity.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 parity.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_transpose_c): m4/transpose.m4 $(I_M4_DEPS)

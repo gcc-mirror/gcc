@@ -1,6 +1,6 @@
 // Compatibility symbols for previous versions, list bits -*- C++ -*-
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,6 +23,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <bits/move.h>
+
+#ifdef PIC
 
 #ifndef _GLIBCXX_BEGIN_NAMESPACE_COMPAT
 # define _GLIBCXX_BEGIN_NAMESPACE_COMPAT
@@ -111,3 +113,5 @@ _GLIBCXX_BEGIN_NAMESPACE_COMPAT
 _GLIBCXX_END_NAMESPACE_COMPAT
 
 } // namespace std
+
+#endif

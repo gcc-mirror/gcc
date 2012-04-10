@@ -22,12 +22,11 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include <vms/libicb.h>
-#include <vms/chfdef.h>
-#include <vms/chfctxdef.h>
-
-#define __int64 long long
-#include <vms/intstkdef.h>
+#define __NEW_STARLET
+#include <libicb.h>
+#include <chfdef.h>
+#include <lib_c/chfctxdef.h>
+#include <lib_c/intstkdef.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -49,9 +48,8 @@ extern int LIB$I64_INIT_INVO_CONTEXT (INVO_CONTEXT_BLK *, int, int);
 extern int LIB$I64_GET_CURR_INVO_CONTEXT (INVO_CONTEXT_BLK *);
 extern int LIB$I64_GET_PREV_INVO_CONTEXT (INVO_CONTEXT_BLK *);
 
-typedef unsigned long ulong;
 typedef unsigned int uint;
-typedef unsigned long uw_reg;
+typedef unsigned __int64 uw_reg;
 typedef uw_reg * uw_loc;
 
 typedef char fp_reg[16];
@@ -179,8 +177,8 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
 
   if (eh_debug)
     printf ("User frame, "
-	    "chfmech @ 0x%lx, chfsig64 @ 0x%lx, intstk @ 0x%lx\n",
-	    (ulong)chfmech, (ulong)chfsig64, (ulong)intstk);
+	    "chfmech @ 0x%p, chfsig64 @ 0x%p, intstk @ 0x%p\n",
+	    chfmech, chfsig64, intstk);
 
   /* Step 2 :
      ------------------------------------------------------------------------
@@ -239,10 +237,10 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
      trick already) and how this would be handled.  Blind alpha tentative
      below for experimentation purposes in malfunctioning cases.  */
   {
-    ulong q_bsp      = (ulong) intstk->intstk$q_bsp;
-    ulong q_bspstore = (ulong) intstk->intstk$q_bspstore;
-    ulong q_bspbase  = (ulong) intstk->intstk$q_bspbase;
-    ulong ih_bspbase = (ulong) icb->libicb$ih_bspbase;
+    uw_reg q_bsp      = (uw_reg) intstk->intstk$q_bsp;
+    uw_reg q_bspstore = (uw_reg) intstk->intstk$q_bspstore;
+    uw_reg q_bspbase  = (uw_reg) intstk->intstk$q_bspbase;
+    uw_reg ih_bspbase = (uw_reg) icb->libicb$ih_bspbase;
     
     if (eh_debug)
       printf ("q_bspstore = 0x%lx, q_bsp = 0x%lx, q_bspbase = 0x%lx\n"
@@ -254,8 +252,8 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
        nothing resulted in proper behavior.  */
     if (q_bspstore < q_bsp && ih_bspbase && try_bs_copy)
       {
-	ulong dirty_size = q_bsp - q_bspstore;
-	ulong q_rnat = (ulong) intstk->intstk$q_rnat;
+	uw_reg dirty_size = q_bsp - q_bspstore;
+	uw_reg q_rnat = (uw_reg) intstk->intstk$q_rnat;
 
 	if (eh_debug)
 	  printf ("Attempting an alternate backing store copy ...\n");

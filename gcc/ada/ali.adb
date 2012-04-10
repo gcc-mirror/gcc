@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,6 +55,7 @@ package body ALI is
       'X'    => True,   -- xref
       'S'    => True,   -- specific dispatching
       'Y'    => True,   -- limited_with
+      'Z'    => True,   -- implicit with from instantiation
       'C'    => True,   -- SCO information
       'F'    => True,   -- Alfa information
       others => False);
@@ -782,7 +783,8 @@ package body ALI is
       --  Acquire lines to be ignored
 
       if Read_Xref then
-         Ignore := ('U' | 'W' | 'Y' | 'D' | 'X' => False, others => True);
+         Ignore :=
+           ('U' | 'W' | 'Y' | 'Z' | 'D' | 'X' => False, others => True);
 
       --  Read_Lines parameter given
 
@@ -1717,7 +1719,7 @@ package body ALI is
 
          With_Loop : loop
             Check_Unknown_Line;
-            exit With_Loop when C /= 'W' and then C /= 'Y';
+            exit With_Loop when C /= 'W' and then C /= 'Y' and then C /= 'Z';
 
             if Ignore ('W') then
                Skip_Line;
@@ -1733,6 +1735,8 @@ package body ALI is
                Withs.Table (Withs.Last).Elab_All_Desirable := False;
                Withs.Table (Withs.Last).SAL_Interface      := False;
                Withs.Table (Withs.Last).Limited_With       := (C = 'Y');
+               Withs.Table (Withs.Last).Implicit_With_From_Instantiation
+                                                           := (C = 'Z');
 
                --  Generic case with no object file available
 

@@ -1,8 +1,22 @@
+2012-04-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Declare double_tmp.
+	Silence casting pointer to integer of different size warning.
+	Delete goto to previously deleted label.
+	(ffi_call): Silence possibly undefined warning.
+	(ffi_closure_helper_SYSV): Declare variable type.
+
 2012-03-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* src/sh/ffi.c (ffi_prep_closure_loc): Don't ASSERT ABI test,
 	just return FFI_BAD_ABI when things are wrong.
 	* src/sh64/ffi.c (ffi_prep_closure_loc): Ditto.
+
+2012-03-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	* src/powerpc/aix_closure.S (ffi_closure_ASM): Adjust for Darwin64
+	change to return value of ffi_closure_helper_DARWIN and load type
+	from return type.
 
 2012-03-03  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -26,10 +40,27 @@
 	windows-like hosts.
 	* configure: Rebuilt.
 
+2012-02-27  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR libffi/52223
+	* Makefile.am (FLAGS_TO_PASS): Define.
+	* Makefile.in: Regenerate.
+
 2012-02-23  Anthony Green  <green@moxielogic.com>
 
 	* src/*/ffitarget.h: Ensure that users never include ffitarget.h
 	directly.
+
+2012-02-23  Kai Tietz  <ktietz@redhat.com>
+
+	PR libffi/52221
+	* src/x86/ffi.c (ffi_closure_raw_THISCALL): New
+	prototype.
+	(ffi_prep_raw_closure_loc): Use ffi_closure_raw_THISCALL for
+	thiscall-convention.
+	(ffi_raw_call): Use ffi_prep_args_raw.
+	* src/x86/win32.S (ffi_closure_raw_THISCALL): Add
+	implementation for stub.
 
 2012-02-10  Kai Tietz  <ktietz@redhat.com>
 
@@ -255,6 +286,10 @@
 
 	* src/sparc/ffi.c (ffi_prep_closure_loc): Don't ASSERT ABI test,
 	just return FFI_BAD_ABI when things are wrong.
+
+2012-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* src/sparc/v9.S (STACKFRAME): Bump to 176.
 
 2011-02-09  Stuart Shelton  <srcshelton@gmail.com>
 
@@ -783,6 +818,13 @@
 
 	* src/pa/ffi.c (ffi_closure_inner_pa32): Handle FFI_TYPE_LONGDOUBLE
 	type on HP-UX.
+
+2012-02-13  Kai Tietz  <ktietz@redhat.com>
+
+	PR libffi/52221
+	* src/x86/ffi.c (ffi_prep_raw_closure_loc): Add thiscall
+	support for X86_WIN32.
+	(FFI_INIT_TRAMPOLINE_THISCALL): Fix displacement.
 
 2009-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 

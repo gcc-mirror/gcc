@@ -18,6 +18,9 @@ class Traverse;
 class Statement_inserter;
 class Type;
 struct Type_context;
+class Integer_type;
+class Float_type;
+class Complex_type;
 class Function_type;
 class Map_type;
 class Struct_type;
@@ -38,6 +41,7 @@ class Field_reference_expression;
 class Interface_field_reference_expression;
 class Type_guard_expression;
 class Receive_expression;
+class Numeric_constant;
 class Named_object;
 class Export;
 class Import;
@@ -342,30 +346,11 @@ class Expression
   is_constant() const
   { return this->do_is_constant(); }
 
-  // If this is not a constant expression with integral type, return
-  // false.  If it is one, return true, and set VAL to the value.  VAL
-  // should already be initialized.  If this returns true, it sets
-  // *PTYPE to the type of the value, or NULL for an abstract type.
-  // If IOTA_IS_CONSTANT is true, then an iota expression is assumed
-  // to have its final value.
+  // If this is not a numeric constant, return false.  If it is one,
+  // return true, and set VAL to hold the value.
   bool
-  integer_constant_value(bool iota_is_constant, mpz_t val, Type** ptype) const;
-
-  // If this is not a constant expression with floating point type,
-  // return false.  If it is one, return true, and set VAL to the
-  // value.  VAL should already be initialized.  If this returns true,
-  // it sets *PTYPE to the type of the value, or NULL for an abstract
-  // type.
-  bool
-  float_constant_value(mpfr_t val, Type** ptype) const;
-
-  // If this is not a constant expression with complex type, return
-  // false.  If it is one, return true, and set REAL and IMAG to the
-  // value.  REAL and IMAG should already be initialized.  If this
-  // return strue, it sets *PTYPE to the type of the value, or NULL
-  // for an abstract type.
-  bool
-  complex_constant_value(mpfr_t real, mpfr_t imag, Type** ptype) const;
+  numeric_constant_value(Numeric_constant* val) const
+  { return this->do_numeric_constant_value(val); }
 
   // If this is not a constant expression with string type, return
   // false.  If it is one, return true, and set VAL to the value.
@@ -691,22 +676,10 @@ class Expression
   do_is_constant() const
   { return false; }
 
-  // Return whether this is a constant expression of integral type,
-  // and set VAL to the value.
+  // Return whether this is a constant expression of numeric type, and
+  // set the Numeric_constant to the value.
   virtual bool
-  do_integer_constant_value(bool, mpz_t, Type**) const
-  { return false; }
-
-  // Return whether this is a constant expression of floating point
-  // type, and set VAL to the value.
-  virtual bool
-  do_float_constant_value(mpfr_t, Type**) const
-  { return false; }
-
-  // Return whether this is a constant expression of complex type, and
-  // set REAL and IMAGE to the value.
-  virtual bool
-  do_complex_constant_value(mpfr_t, mpfr_t, Type**) const
+  do_numeric_constant_value(Numeric_constant*) const
   { return false; }
 
   // Return whether this is a constant expression of string type, and
@@ -868,6 +841,11 @@ class Expression_list
   // Return true if the list contains an error expression.
   bool
   contains_error() const;
+
+  // Retrieve an element by index.
+  Expression*&
+  at(size_t i)
+  { return this->entries_.at(i); }
 
   // Return the first and last elements.
   Expression*&
@@ -1189,42 +1167,21 @@ class Binary_expression : public Expression
   right()
   { return this->right_; }
 
-  // Apply binary opcode OP to LEFT_VAL and RIGHT_VAL, setting VAL.
-  // LEFT_TYPE is the type of LEFT_VAL, RIGHT_TYPE is the type of
-  // RIGHT_VAL; LEFT_TYPE and/or RIGHT_TYPE may be NULL.  Return true
-  // if this could be done, false if not.
+  // Apply binary opcode OP to LEFT_NC and RIGHT_NC, setting NC.
+  // Return true if this could be done, false if not.  Issue errors at
+  // LOCATION as appropriate.
   static bool
-  eval_integer(Operator op, Type* left_type, mpz_t left_val,
-	       Type* right_type, mpz_t right_val, Location,
-	       mpz_t val);
+  eval_constant(Operator op, Numeric_constant* left_nc,
+		Numeric_constant* right_nc, Location location,
+		Numeric_constant* nc);
 
-  // Apply binary opcode OP to LEFT_VAL and RIGHT_VAL, setting VAL.
-  // Return true if this could be done, false if not.
+  // Compare constants LEFT_NC and RIGHT_NC according to OP, setting
+  // *RESULT.  Return true if this could be done, false if not.  Issue
+  // errors at LOCATION as appropriate.
   static bool
-  eval_float(Operator op, Type* left_type, mpfr_t left_val,
-	     Type* right_type, mpfr_t right_val, mpfr_t val,
-	     Location);
-
-  // Apply binary opcode OP to LEFT_REAL/LEFT_IMAG and
-  // RIGHT_REAL/RIGHT_IMAG, setting REAL/IMAG.  Return true if this
-  // could be done, false if not.
-  static bool
-  eval_complex(Operator op, Type* left_type, mpfr_t left_real,
-	       mpfr_t left_imag, Type* right_type, mpfr_t right_real,
-	       mpfr_t right_imag, mpfr_t real, mpfr_t imag, Location);
-
-  // Compare integer constants according to OP.
-  static bool
-  compare_integer(Operator op, mpz_t left_val, mpz_t right_val);
-
-  // Compare floating point constants according to OP.
-  static bool
-  compare_float(Operator op, Type* type, mpfr_t left_val, mpfr_t right_val);
-
-  // Compare complex constants according to OP.
-  static bool
-  compare_complex(Operator op, Type* type, mpfr_t left_real, mpfr_t left_imag,
-		  mpfr_t right_val, mpfr_t right_imag);
+  compare_constant(Operator op, Numeric_constant* left_nc,
+		   Numeric_constant* right_nc, Location location,
+		   bool* result);
 
   static Expression*
   do_import(Import*);
@@ -1246,13 +1203,7 @@ class Binary_expression : public Expression
   { return this->left_->is_constant() && this->right_->is_constant(); }
 
   bool
-  do_integer_constant_value(bool, mpz_t val, Type**) const;
-
-  bool
-  do_float_constant_value(mpfr_t val, Type**) const;
-
-  bool
-  do_complex_constant_value(mpfr_t real, mpfr_t imag, Type**) const;
+  do_numeric_constant_value(Numeric_constant*) const;
 
   void
   do_discarding_value();
@@ -1283,6 +1234,34 @@ class Binary_expression : public Expression
   do_dump_expression(Ast_dump_context*) const;
 
  private:
+  static bool
+  operation_type(Operator op, Type* left_type, Type* right_type,
+		 Type** result_type);
+
+  static bool
+  cmp_to_bool(Operator op, int cmp);
+
+  static bool
+  eval_integer(Operator op, const Numeric_constant*, const Numeric_constant*,
+	       Location, Numeric_constant*);
+
+  static bool
+  eval_float(Operator op, const Numeric_constant*, const Numeric_constant*,
+	     Location, Numeric_constant*);
+
+  static bool
+  eval_complex(Operator op, const Numeric_constant*, const Numeric_constant*,
+	       Location, Numeric_constant*);
+
+  static bool
+  compare_integer(const Numeric_constant*, const Numeric_constant*, int*);
+
+  static bool
+  compare_float(const Numeric_constant*, const Numeric_constant *, int*);
+
+  static bool
+  compare_complex(const Numeric_constant*, const Numeric_constant*, int*);
+
   Expression*
   lower_struct_comparison(Gogo*, Statement_inserter*);
 
@@ -2099,6 +2078,175 @@ class Receive_expression : public Expression
  private:
   // The channel from which we are receiving.
   Expression* channel_;
+};
+
+// A numeric constant.  This is used both for untyped constants and
+// for constants that have a type.
+
+class Numeric_constant
+{
+ public:
+  Numeric_constant()
+    : classification_(NC_INVALID), type_(NULL)
+  { }
+
+  ~Numeric_constant();
+
+  Numeric_constant(const Numeric_constant&);
+
+  Numeric_constant& operator=(const Numeric_constant&);
+
+  // Set to an unsigned long value.
+  void
+  set_unsigned_long(Type*, unsigned long);
+
+  // Set to an integer value.
+  void
+  set_int(Type*, const mpz_t);
+
+  // Set to a rune value.
+  void
+  set_rune(Type*, const mpz_t);
+
+  // Set to a floating point value.
+  void
+  set_float(Type*, const mpfr_t);
+
+  // Set to a complex value.
+  void
+  set_complex(Type*, const mpfr_t, const mpfr_t);
+
+  // Classifiers.
+  bool
+  is_int() const
+  { return this->classification_ == Numeric_constant::NC_INT; }
+
+  bool
+  is_rune() const
+  { return this->classification_ == Numeric_constant::NC_RUNE; }
+
+  bool
+  is_float() const
+  { return this->classification_ == Numeric_constant::NC_FLOAT; }
+
+  bool
+  is_complex() const
+  { return this->classification_ == Numeric_constant::NC_COMPLEX; }
+
+  // Value retrievers.  These will initialize the values as well as
+  // set them.  GET_INT is only valid if IS_INT returns true, and
+  // likewise respectively.
+  void
+  get_int(mpz_t*) const;
+
+  void
+  get_rune(mpz_t*) const;
+
+  void
+  get_float(mpfr_t*) const;
+
+  void
+  get_complex(mpfr_t*, mpfr_t*) const;
+
+  // Codes returned by to_unsigned_long.
+  enum To_unsigned_long
+  {
+    // Value is integer and fits in unsigned long.
+    NC_UL_VALID,
+    // Value is not integer.
+    NC_UL_NOTINT,
+    // Value is integer but is negative.
+    NC_UL_NEGATIVE,
+    // Value is non-negative integer but does not fit in unsigned
+    // long.
+    NC_UL_BIG
+  };
+
+  // If the value can be expressed as an integer that fits in an
+  // unsigned long, set *VAL and return NC_UL_VALID.  Otherwise return
+  // one of the other To_unsigned_long codes.
+  To_unsigned_long
+  to_unsigned_long(unsigned long* val) const;
+
+  // If the value can be expressed as an int, return true and
+  // initialize and set VAL.  This will return false for a value with
+  // an explicit float or complex type, even if the value is integral.
+  bool
+  to_int(mpz_t* val) const;
+
+  // If the value can be expressed as a float, return true and
+  // initialize and set VAL.
+  bool
+  to_float(mpfr_t* val) const;
+
+  // If the value can be expressed as a complex, return true and
+  // initialize and set VR and VI.
+  bool
+  to_complex(mpfr_t* vr, mpfr_t* vi) const;
+
+  // Get the type.
+  Type*
+  type() const;
+
+  // If the constant can be expressed in TYPE, then set the type of
+  // the constant to TYPE and return true.  Otherwise return false,
+  // and, if ISSUE_ERROR is true, issue an error message.  LOCATION is
+  // the location to use for the error.
+  bool
+  set_type(Type* type, bool issue_error, Location location);
+
+  // Return an Expression for this value.
+  Expression*
+  expression(Location) const;
+
+ private:
+  void
+  clear();
+
+  To_unsigned_long
+  mpz_to_unsigned_long(const mpz_t ival, unsigned long *val) const;
+
+  To_unsigned_long
+  mpfr_to_unsigned_long(const mpfr_t fval, unsigned long *val) const;
+
+  bool
+  check_int_type(Integer_type*, bool, Location) const;
+
+  bool
+  check_float_type(Float_type*, bool, Location) const;
+
+  bool
+  check_complex_type(Complex_type*, bool, Location) const;
+
+  // The kinds of constants.
+  enum Classification
+  {
+    NC_INVALID,
+    NC_RUNE,
+    NC_INT,
+    NC_FLOAT,
+    NC_COMPLEX
+  };
+
+  // The kind of constant.
+  Classification classification_;
+  // The value.
+  union
+  {
+    // If NC_INT or NC_RUNE.
+    mpz_t int_val;
+    // If NC_FLOAT.
+    mpfr_t float_val;
+    // If NC_COMPLEX.
+    struct
+    {
+      mpfr_t real;
+      mpfr_t imag;
+    } complex_val;
+  } u_;
+  // The type if there is one.  This will be NULL for an untyped
+  // constant.
+  Type* type_;
 };
 
 #endif // !defined(GO_EXPRESSIONS_H)

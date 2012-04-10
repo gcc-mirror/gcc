@@ -499,13 +499,15 @@ gsi_insert_after (gimple_stmt_iterator *i, gimple stmt,
    REMOVE_PERMANENTLY is true when the statement is going to be removed
    from the IL and not reinserted elsewhere.  In that case we remove the
    statement pointed to by iterator I from the EH tables, and free its
-   operand caches.  Otherwise we do not modify this information.  */
+   operand caches.  Otherwise we do not modify this information.  Returns
+   true whether EH edge cleanup is required.  */
 
-void
+bool
 gsi_remove (gimple_stmt_iterator *i, bool remove_permanently)
 {
   gimple_seq_node cur, next, prev;
   gimple stmt = gsi_stmt (*i);
+  bool require_eh_edge_purge = false;
 
   if (gimple_code (stmt) != GIMPLE_PHI)
     insert_debug_temps_for_defs (i);
@@ -517,7 +519,7 @@ gsi_remove (gimple_stmt_iterator *i, bool remove_permanently)
 
   if (remove_permanently)
     {
-      remove_stmt_from_eh_lp (stmt);
+      require_eh_edge_purge = remove_stmt_from_eh_lp (stmt);
       gimple_remove_stmt_histograms (cfun, stmt);
     }
 
@@ -537,6 +539,8 @@ gsi_remove (gimple_stmt_iterator *i, bool remove_permanently)
     gimple_seq_set_last (i->seq, prev);
 
   i->ptr = next;
+
+  return require_eh_edge_purge;
 }
 
 

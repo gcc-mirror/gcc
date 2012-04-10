@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2241,6 +2241,71 @@ package body Scng is
                Special_Character := Source (Scan_Ptr);
                Scan_Ptr := Scan_Ptr + 1;
                return;
+
+            --  Check for something looking like a preprocessor directive
+
+            elsif Source (Scan_Ptr) = '#'
+              and then (Source (Scan_Ptr + 1 .. Scan_Ptr + 2) = "if"
+                          or else
+                        Source (Scan_Ptr + 1 .. Scan_Ptr + 5) = "elsif"
+                          or else
+                        Source (Scan_Ptr + 1 .. Scan_Ptr + 4) = "else"
+                          or else
+                        Source (Scan_Ptr + 1 .. Scan_Ptr + 3) = "end")
+            then
+               Error_Msg_S
+                 ("preprocessor directive ignored, preprocessor not active");
+
+               --  Skip to end of line
+
+               loop
+                  if Source (Scan_Ptr) in Graphic_Character
+                       or else
+                     Source (Scan_Ptr) = HT
+                  then
+                     Scan_Ptr := Scan_Ptr + 1;
+
+                  --  Done if line terminator or EOF
+
+                  elsif Source (Scan_Ptr) in Line_Terminator
+                          or else
+                        Source (Scan_Ptr) = EOF
+                  then
+                     exit;
+
+                  --  If we have a wide character, we have to scan it out,
+                  --  because it might be a legitimate line terminator
+
+                  elsif Start_Of_Wide_Character then
+                     declare
+                        Wptr : constant Source_Ptr := Scan_Ptr;
+                        Code : Char_Code;
+                        Err  : Boolean;
+
+                     begin
+                        Scan_Wide (Source, Scan_Ptr, Code, Err);
+
+                        --  If not well formed wide character, then just skip
+                        --  past it and ignore it.
+
+                        if Err then
+                           Scan_Ptr := Wptr + 1;
+
+                        --  If UTF_32 terminator, terminate comment scan
+
+                        elsif Is_UTF_32_Line_Terminator (UTF_32 (Code)) then
+                           Scan_Ptr := Wptr;
+                           exit;
+                        end if;
+                     end;
+
+                  --  Else keep going (don't worry about bad comment chars
+                  --  in this context, we just want to find the end of line.
+
+                  else
+                     Scan_Ptr := Scan_Ptr + 1;
+                  end if;
+               end loop;
 
             --  Otherwise, this is an illegal character
 

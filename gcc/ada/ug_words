@@ -63,6 +63,7 @@ gcc -c          ^ GNAT COMPILE
 -gnateD         ^ /SYMBOL_PREPROCESSING
 -gnatef         ^ /FULL_PATH_IN_BRIEF_MESSAGES
 -gnateG         ^ /GENERATE_PROCESSED_SOURCE
+-gnatei         ^ /MAX_INSTANTIATIONS=
 -gnateI         ^ /MULTI_UNIT_INDEX=
 -gnatem         ^ /MAPPING_FILE
 -gnatep         ^ /DATA_PREPROCESSING

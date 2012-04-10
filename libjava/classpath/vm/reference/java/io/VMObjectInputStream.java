@@ -1,5 +1,5 @@
 /* ObjectInputStream.java -- Class used to read serialized objects
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2010
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,6 +44,7 @@ import java.lang.reflect.Constructor;
 
 final class VMObjectInputStream
 {
+
   static
   {
     if (Configuration.INIT_LOAD_LIBRARY)
@@ -51,6 +52,8 @@ final class VMObjectInputStream
         System.loadLibrary("javaio");
       }
   }
+
+  private VMObjectInputStream() {} // Prohibits instantiation.
 
   /**
    * Allocates a new Object of type clazz but without running the

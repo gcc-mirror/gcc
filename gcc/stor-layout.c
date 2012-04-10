@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Data type for the expressions representing sizes of data types.
    It is the first integer type laid out.  */
-tree sizetype_tab[(int) TYPE_KIND_LAST];
+tree sizetype_tab[(int) stk_type_kind_last];
 
 /* If nonzero, this is an upper limit on alignment of structure fields.
    The value is measured in bits.  */
@@ -1792,6 +1792,9 @@ finish_bitfield_representative (tree repr, tree field)
 	     - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1)
 	     + tree_low_cst (DECL_SIZE (field), 1));
 
+  /* Round up bitsize to multiples of BITS_PER_UNIT.  */
+  bitsize = (bitsize + BITS_PER_UNIT - 1) & ~(BITS_PER_UNIT - 1);
+
   /* Now nothing tells us how to pad out bitsize ...  */
   nextf = DECL_CHAIN (field);
   while (nextf && TREE_CODE (nextf) != FIELD_DECL)
@@ -1805,21 +1808,32 @@ finish_bitfield_representative (tree repr, tree field)
 	return;
       maxsize = size_diffop (DECL_FIELD_OFFSET (nextf),
 			     DECL_FIELD_OFFSET (repr));
-      gcc_assert (host_integerp (maxsize, 1));
-      maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
-		    + tree_low_cst (DECL_FIELD_BIT_OFFSET (nextf), 1)
-		    - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+      if (host_integerp (maxsize, 1))
+	{
+	  maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
+			+ tree_low_cst (DECL_FIELD_BIT_OFFSET (nextf), 1)
+			- tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+	  /* If the group ends within a bitfield nextf does not need to be
+	     aligned to BITS_PER_UNIT.  Thus round up.  */
+	  maxbitsize = (maxbitsize + BITS_PER_UNIT - 1) & ~(BITS_PER_UNIT - 1);
+	}
+      else
+	maxbitsize = bitsize;
     }
   else
     {
       /* ???  If you consider that tail-padding of this struct might be
          re-used when deriving from it we cannot really do the following
-	 and thus need to set maxsize to bitsize?  */
+	 and thus need to set maxsize to bitsize?  Also we cannot
+	 generally rely on maxsize to fold to an integer constant, so
+	 use bitsize as fallback for this case.  */
       tree maxsize = size_diffop (TYPE_SIZE_UNIT (DECL_CONTEXT (field)),
 				  DECL_FIELD_OFFSET (repr));
-      gcc_assert (host_integerp (maxsize, 1));
-      maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
-		    - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+      if (host_integerp (maxsize, 1))
+	maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
+		      - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+      else
+	maxbitsize = bitsize;
     }
 
   /* Only if we don't artificially break up the representative in
@@ -1827,9 +1841,6 @@ finish_bitfield_representative (tree repr, tree field)
      overlapping representatives.  And all representatives start
      at byte offset.  */
   gcc_assert (maxbitsize % BITS_PER_UNIT == 0);
-
-  /* Round up bitsize to multiples of BITS_PER_UNIT.  */
-  bitsize = (bitsize + BITS_PER_UNIT - 1) & ~(BITS_PER_UNIT - 1);
 
   /* Find the smallest nice mode to use.  */
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
@@ -1911,6 +1922,8 @@ finish_bitfield_layout (record_layout_info rli)
 	}
       else if (DECL_BIT_FIELD_TYPE (field))
 	{
+	  gcc_assert (repr != NULL_TREE);
+
 	  /* Zero-size bitfields finish off a representative and
 	     do not have a representative themselves.  This is
 	     required by the C++ memory model.  */
@@ -1918,6 +1931,24 @@ finish_bitfield_layout (record_layout_info rli)
 	    {
 	      finish_bitfield_representative (repr, prev);
 	      repr = NULL_TREE;
+	    }
+
+	  /* We assume that either DECL_FIELD_OFFSET of the representative
+	     and each bitfield member is a constant or they are equal.
+	     This is because we need to be able to compute the bit-offset
+	     of each field relative to the representative in get_bit_range
+	     during RTL expansion.
+	     If these constraints are not met, simply force a new
+	     representative to be generated.  That will at most
+	     generate worse code but still maintain correctness with
+	     respect to the C++ memory model.  */
+	  else if (!((host_integerp (DECL_FIELD_OFFSET (repr), 1)
+		      && host_integerp (DECL_FIELD_OFFSET (field), 1))
+		     || operand_equal_p (DECL_FIELD_OFFSET (repr),
+					 DECL_FIELD_OFFSET (field), 0)))
+	    {
+	      finish_bitfield_representative (repr, prev);
+	      repr = start_bitfield_representative (field);
 	    }
 	}
       else
@@ -2412,13 +2443,13 @@ initialize_sizetypes (void)
   int precision, bprecision;
 
   /* Get sizetypes precision from the SIZE_TYPE target macro.  */
-  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
+  if (strcmp (SIZETYPE, "unsigned int") == 0)
     precision = INT_TYPE_SIZE;
-  else if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
+  else if (strcmp (SIZETYPE, "long unsigned int") == 0)
     precision = LONG_TYPE_SIZE;
-  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+  else if (strcmp (SIZETYPE, "long long unsigned int") == 0)
     precision = LONG_LONG_TYPE_SIZE;
-  else if (strcmp (SIZE_TYPE, "short unsigned int") == 0)
+  else if (strcmp (SIZETYPE, "short unsigned int") == 0)
     precision = SHORT_TYPE_SIZE;
   else
     gcc_unreachable ();

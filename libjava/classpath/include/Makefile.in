@@ -420,6 +420,7 @@ gnu_java_nio_VMSelector.h \
 gnu_java_nio_charset_iconv_IconvEncoder.h \
 gnu_java_nio_charset_iconv_IconvDecoder.h \
 gnu_java_lang_management_VMOperatingSystemMXBeanImpl.h \
+java_io_VMConsole.h \
 java_io_VMFile.h \
 java_io_VMObjectInputStream.h \
 java_io_VMObjectStreamClass.h \
@@ -863,6 +864,8 @@ uninstall-am:
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.nio.VMSelector
 @CREATE_JNI_HEADERS_TRUE@gnu_java_lang_management_VMOperatingSystemMXBeanImpl.h: $(top_srcdir)/vm/reference/gnu/java/lang/management/VMOperatingSystemMXBeanImpl.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.lang.management.VMOperatingSystemMXBeanImpl
+@CREATE_JNI_HEADERS_TRUE@java_io_VMConsole.h: $(top_srcdir)/vm/reference/java/io/VMConsole.java
+@CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.io.VMConsole
 @CREATE_JNI_HEADERS_TRUE@java_io_VMFile.h: $(top_srcdir)/vm/reference/java/io/VMFile.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.io.VMFile
 @CREATE_JNI_HEADERS_TRUE@java_io_VMObjectInputStream.h: $(top_srcdir)/vm/reference/java/io/VMObjectInputStream.java

@@ -7,14 +7,13 @@
 package net
 
 import (
-	"fmt"
 	"os"
 	"syscall"
 	"unsafe"
 )
 
 // If the ifindex is zero, interfaceTable returns mappings of all
-// network interfaces.  Otheriwse it returns a mapping of a specific
+// network interfaces.  Otherwise it returns a mapping of a specific
 // interface.
 func interfaceTable(ifindex int) ([]Interface, error) {
 	tab, err := syscall.NetlinkRIB(syscall.RTM_GETLINK, syscall.AF_UNSPEC)
@@ -65,7 +64,11 @@ func newLink(ifim *syscall.IfInfomsg, attrs []syscall.NetlinkRouteAttr) Interfac
 		case syscall.IFLA_IFNAME:
 			ifi.Name = string(a.Value[:len(a.Value)-1])
 		case syscall.IFLA_MTU:
-			ifi.MTU = int(uint32(a.Value[3])<<24 | uint32(a.Value[2])<<16 | uint32(a.Value[1])<<8 | uint32(a.Value[0]))
+			if syscall.BigEndian {
+				ifi.MTU = int(uint32(a.Value[0])<<24 | uint32(a.Value[1])<<16 | uint32(a.Value[2])<<8 | uint32(a.Value[3]))
+			} else {
+				ifi.MTU = int(uint32(a.Value[3])<<24 | uint32(a.Value[2])<<16 | uint32(a.Value[1])<<8 | uint32(a.Value[0]))
+			}
 		}
 	}
 	return ifi
@@ -194,8 +197,15 @@ func parseProcNetIGMP(path string, ifi *Interface) []Addr {
 			name = f[1]
 		case len(f[0]) == 8:
 			if ifi == nil || name == ifi.Name {
-				fmt.Sscanf(f[0], "%08x", &b)
-				ifma := IPAddr{IP: IPv4(b[3], b[2], b[1], b[0])}
+				for i := 0; i+1 < len(f[0]); i += 2 {
+					b[i/2], _ = xtoi2(f[0][i:i+2], 0)
+				}
+				var ifma IPAddr
+				if syscall.BigEndian {
+					ifma = IPAddr{IP: IPv4(b[0], b[1], b[2], b[3])}
+				} else {
+					ifma = IPAddr{IP: IPv4(b[3], b[2], b[1], b[0])}
+				}
 				ifmat = append(ifmat, ifma.toAddr())
 			}
 		}
@@ -218,10 +228,11 @@ func parseProcNetIGMP6(path string, ifi *Interface) []Addr {
 			continue
 		}
 		if ifi == nil || f[1] == ifi.Name {
-			fmt.Sscanf(f[2], "%32x", &b)
+			for i := 0; i+1 < len(f[2]); i += 2 {
+				b[i/2], _ = xtoi2(f[2][i:i+2], 0)
+			}
 			ifma := IPAddr{IP: IP{b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]}}
 			ifmat = append(ifmat, ifma.toAddr())
-
 		}
 	}
 	return ifmat

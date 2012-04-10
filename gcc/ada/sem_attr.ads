@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -548,6 +548,39 @@ package Sem_Attr is
       --  the Object_Size rather than the Value_Size. For example, while
       --  Natural'Size is typically 31, the value of Natural'VADS_Size is 32.
       --  For all other types, Size and VADS_Size yield the same value.
+
+      -------------------
+      -- Valid_Scalars --
+      -------------------
+
+      Attribute_Valid_Scalars => True,
+      --  Obj'Valid_Scalars can be applied to any object. The result depends
+      --  on the type of the object:
+      --
+      --    For a scalar type, the result is the same as obj'Valid
+      --
+      --    For an array object, the result is True if the result of applying
+      --    Valid_Scalars to every component is True. For an empty array the
+      --    result is True.
+      --
+      --    For a record object, the result is True if the result of applying
+      --    Valid_Scalars to every component is True. For class-wide types,
+      --    only the components of the base type are checked. For variant
+      --    records, only the components actually present are checked. The
+      --    discriminants, if any, are also checked. If there are no components
+      --    or discriminants, the result is True.
+      --
+      --    For any other type that has discriminants, the result is True if
+      --    the result of applying Valid_Scalars to each discriminant is True.
+      --
+      --    For all other types, the result is always True
+      --
+      --  A warning is given for a trivially True result, when the attribute
+      --  is applied to an object that is not of scalar, array, or record
+      --  type, or in the composite case if no scalar subcomponents exist. For
+      --  a variant record, the warning is given only if none of the variants
+      --  have scalar subcomponents. In addition, the warning is suppressed
+      --  for private types, or generic formal types in an instance.
 
       ----------------
       -- Value_Size --

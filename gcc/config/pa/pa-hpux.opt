@@ -23,7 +23,7 @@ Variable
 int flag_pa_unix = TARGET_HPUX_11_31 ? 2003 : TARGET_HPUX_11_11 ? 1998 : TARGET_HPUX_10_10 ? 1995 : 1993
 
 msio
-Target RejectNegative Mask(SIO) MaskExists
+Target RejectNegative Mask(SIO)
 Generate cpp defines for server IO
 
 munix=93

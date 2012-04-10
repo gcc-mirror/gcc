@@ -55,7 +55,7 @@ Target Mask(COP)
 Enable MeP Coprocessor
 
 mcop32
-Target Mask(COP) MaskExists RejectNegative
+Target Mask(COP) RejectNegative
 Enable MeP Coprocessor with 32-bit registers
 
 mcop64

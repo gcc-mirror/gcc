@@ -15,6 +15,9 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtWindowPeer_toBack (JNIEnv *en
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtWindowPeer_toFront (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtWindowPeer_setTitle (JNIEnv *env, jobject, jstring);
 
+#undef gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER
+#define gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER 3L
+
 #ifdef __cplusplus
 }
 #endif

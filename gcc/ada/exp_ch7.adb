@@ -1824,15 +1824,14 @@ package body Exp_Ch7 is
                --    Obj : Access_Typ := Non_BIP_Function_Call'reference;
 
                --    Obj : Access_Typ :=
-               --            BIP_Function_Call
-               --              (..., BIPaccess => null, ...)'reference;
+               --            BIP_Function_Call (BIPalloc => 2, ...)'reference;
 
                elsif Is_Access_Type (Obj_Typ)
                  and then Needs_Finalization
                             (Available_View (Designated_Type (Obj_Typ)))
                  and then Present (Expr)
                  and then
-                   (Is_Null_Access_BIP_Func_Call (Expr)
+                   (Is_Secondary_Stack_BIP_Func_Call (Expr)
                      or else
                        (Is_Non_BIP_Func_Call (Expr)
                          and then not Is_Related_To_Func_Return (Obj_Id)))
@@ -1918,16 +1917,17 @@ package body Exp_Ch7 is
                   Processing_Actions (Has_No_Init => True);
 
                --  Detect a case where a source object has been initialized by
-               --  a controlled function call which was later rewritten as a
-               --  class-wide conversion of Ada.Tags.Displace.
+               --  a controlled function call or another object which was later
+               --  rewritten as a class-wide conversion of Ada.Tags.Displace.
 
-               --     Obj : Class_Wide_Type := Function_Call (...);
+               --     Obj1 : CW_Type := Src_Obj;
+               --     Obj2 : CW_Type := Function_Call (...);
 
-               --     Temp : ... := Function_Call (...)'reference;
-               --     Obj  : Class_Wide_Type renames
-               --              (... Ada.Tags.Displace (Temp));
+               --     Obj1 : CW_Type renames (... Ada.Tags.Displace (Src_Obj));
+               --     Tmp  : ... := Function_Call (...)'reference;
+               --     Obj2 : CW_Type renames (... Ada.Tags.Displace (Tmp));
 
-               elsif Is_Displacement_Of_Ctrl_Function_Result (Obj_Id) then
+               elsif Is_Displacement_Of_Object_Or_Function_Result (Obj_Id) then
                   Processing_Actions (Has_No_Init => True);
                end if;
 

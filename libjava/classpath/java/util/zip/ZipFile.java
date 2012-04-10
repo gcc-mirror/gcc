@@ -261,7 +261,10 @@ public class ZipFile implements ZipConstants
         if (inp.readLeInt() != CENSIG)
           throw new ZipException("Wrong Central Directory signature: " + name);
 
-        inp.skip(6);
+        inp.skip(4);
+        int flags = inp.readLeShort();
+        if ((flags & 1) != 0)
+          throw new ZipException("invalid CEN header (encrypted entry)");
         int method = inp.readLeShort();
         int dostime = inp.readLeInt();
         int crc = inp.readLeInt();

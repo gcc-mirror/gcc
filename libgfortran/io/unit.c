@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2005, 2007, 2008, 2009, 2010, 2011
+/* Copyright (C) 2002, 2003, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
@@ -188,8 +188,7 @@ insert (gfc_unit *new, gfc_unit *t)
 static gfc_unit *
 insert_unit (int n)
 {
-  gfc_unit *u = get_mem (sizeof (gfc_unit));
-  memset (u, '\0', sizeof (gfc_unit));
+  gfc_unit *u = xcalloc (1, sizeof (gfc_unit));
   u->unit_number = n;
 #ifdef __GTHREAD_MUTEX_INIT
   {
@@ -385,14 +384,8 @@ get_internal_unit (st_parameter_dt *dtp)
 
   /* Allocate memory for a unit structure.  */
 
-  iunit = get_mem (sizeof (gfc_unit));
-  if (iunit == NULL)
-    {
-      generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
-      return NULL;
-    }
+  iunit = xcalloc (1, sizeof (gfc_unit));
 
-  memset (iunit, '\0', sizeof (gfc_unit));
 #ifdef __GTHREAD_MUTEX_INIT
   {
     __gthread_mutex_t tmp = __GTHREAD_MUTEX_INIT;
@@ -416,7 +409,7 @@ get_internal_unit (st_parameter_dt *dtp)
     {
       iunit->rank = GFC_DESCRIPTOR_RANK (dtp->internal_unit_desc);
       iunit->ls = (array_loop_spec *)
-	get_mem (iunit->rank * sizeof (array_loop_spec));
+	xmalloc (iunit->rank * sizeof (array_loop_spec));
       dtp->internal_unit_len *=
 	init_loop_spec (dtp->internal_unit_desc, iunit->ls, &start_record);
 
@@ -549,7 +542,7 @@ init_units (void)
       u->endfile = NO_ENDFILE;
 
       u->file_len = strlen (stdin_name);
-      u->file = get_mem (u->file_len);
+      u->file = xmalloc (u->file_len);
       memmove (u->file, stdin_name, u->file_len);
 
       fbuf_init (u, 0);
@@ -579,7 +572,7 @@ init_units (void)
       u->endfile = AT_ENDFILE;
     
       u->file_len = strlen (stdout_name);
-      u->file = get_mem (u->file_len);
+      u->file = xmalloc (u->file_len);
       memmove (u->file, stdout_name, u->file_len);
       
       fbuf_init (u, 0);
@@ -609,7 +602,7 @@ init_units (void)
       u->endfile = AT_ENDFILE;
 
       u->file_len = strlen (stderr_name);
-      u->file = get_mem (u->file_len);
+      u->file = xmalloc (u->file_len);
       memmove (u->file, stderr_name, u->file_len);
       
       fbuf_init (u, 256);  /* 256 bytes should be enough, probably not doing
@@ -766,7 +759,7 @@ filename_from_unit (int n)
   /* Get the filename.  */
   if (u != NULL)
     {
-      filename = (char *) get_mem (u->file_len + 1);
+      filename = (char *) xmalloc (u->file_len + 1);
       unpack_filename (filename, u->file, u->file_len);
       return filename;
     }

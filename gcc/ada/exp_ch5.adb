@@ -2777,7 +2777,7 @@ package body Exp_Ch5 is
       end loop;
 
       --  Loop through elsif parts, dealing with constant conditions and
-      --  possible expression actions that are present.
+      --  possible condition actions that are present.
 
       if Present (Elsif_Parts (N)) then
          E := First (Elsif_Parts (N));
@@ -3302,6 +3302,14 @@ package body Exp_Ch5 is
              Subtype_Mark        =>
                New_Reference_To (Component_Type (Array_Typ), Loc),
              Name                => Ind_Comp));
+
+         --  Mark the loop variable as needing debug info, so that expansion
+         --  of the renaming will result in Materialize_Entity getting set via
+         --  Debug_Renaming_Declaration. (This setting is needed here because
+         --  the setting in Freeze_Entity comes after the expansion, which is
+         --  too late. ???)
+
+         Set_Debug_Info_Needed (Id);
 
       --  for Index in Array loop
 

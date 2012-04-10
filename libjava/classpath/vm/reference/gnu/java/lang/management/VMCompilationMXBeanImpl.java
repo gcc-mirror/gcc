@@ -1,5 +1,5 @@
 /* VMCompilationMXBeanImpl.java - VM implementation of a compilation bean
-   Copyright (C) 2006 Free Software Foundation
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,6 +49,8 @@ package gnu.java.lang.management;
  */
 final class VMCompilationMXBeanImpl
 {
+
+  private VMCompilationMXBeanImpl() {} // Prohibits instantiation.
 
   /**
    * Returns the number of milliseconds the JIT

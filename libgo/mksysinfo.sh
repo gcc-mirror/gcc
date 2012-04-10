@@ -94,6 +94,9 @@ cat > sysinfo.c <<EOF
 #if defined(HAVE_NET_IF_H)
 #include <net/if.h>
 #endif
+#if defined(HAVE_NET_IF_ARP_H)
+#include <net/if_arp.h>
+#endif
 #if defined(HAVE_SYS_MOUNT_H)
 #include <sys/mount.h>
 #endif
@@ -114,6 +117,9 @@ cat > sysinfo.c <<EOF
 #endif
 #if defined(HAVE_UTIME_H)
 #include <utime.h>
+#endif
+#if defined(HAVE_LINUX_ETHER_H)
+#include <linux/ether.h>
 #endif
 #if defined(HAVE_LINUX_REBOOT_H)
 #include <linux/reboot.h>
@@ -211,7 +217,7 @@ if grep '^const ___WALL = ' gen-sysinfo.go >/dev/null 2>&1 \
 fi
 
 # Networking constants.
-egrep '^const _(AF|SOCK|SOL|SO|IPPROTO|TCP|IP|IPV6)_' gen-sysinfo.go |
+egrep '^const _(AF|ARPHRD|ETH|IN|SOCK|SOL|SO|IPPROTO|TCP|IP|IPV6)_' gen-sysinfo.go |
   sed -e 's/^\(const \)_\([^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _SOMAXCONN' gen-sysinfo.go |
   sed -e 's/^\(const \)_\(SOMAXCONN[^= ]*\)\(.*\)$/\1\2 = _\2/' \
@@ -457,6 +463,10 @@ fi | sed -e 's/type _dirent64/type Dirent/' \
          -e 's/d_type/Type/' \
       >> ${OUT}
 echo "type DIR _DIR" >> ${OUT}
+
+# Values for d_type field in dirent.
+grep '^const _DT_' gen-sysinfo.go |
+  sed -e 's/^\(const \)_\(DT_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The rusage struct.
 rusage=`grep '^type _rusage struct' gen-sysinfo.go`
@@ -710,6 +720,10 @@ grep '^type _rtgenmsg ' gen-sysinfo.go | \
 # The routing message flags.
 grep '^const _RTA' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTA[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _RTF' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(RTF[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _RTCF' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(RTCF[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _RTM' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTM[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
@@ -788,15 +802,16 @@ grep '^type _termios ' gen-sysinfo.go | \
 # The termios constants.
 for n in IGNBRK BRKINT IGNPAR PARMRK INPCK ISTRIP INLCR IGNCR ICRNL IUCLC \
     IXON IXANY IXOFF IMAXBEL IUTF8 OPOST OLCUC ONLCR OCRNL ONOCR ONLRET \
-    OFILL OFDEL NLDLY NL0 NL1 CRDLY CR0 CR1 CR2 CR3 TABDLY BSDLY VTDLY \
-    FFDLY CBAUD CBAUDEX CSIZE CSTOPB CREAD PARENB PARODD HUPCL CLOCAL \
-    LOBLK CIBAUD CMSPAR CRTSCTS ISIG ICANON XCASE ECHO ECHOE ECHOK ECHONL \
-    ECHOCTL ECHOPRT ECHOKE DEFECHO FLUSHO NOFLSH TOSTOP PENDIN IEXTEN VINTR \
-    VQUIT VERASE VKILL VEOF VMIN VEOL VTIME VEOL2 VSWTCH VSTART VSTOP VSUSP \
-    VDSUSP VLNEXT VWERASE VREPRINT VDISCARD VSTATUS TCSANOW TCSADRAIN \
+    OFILL OFDEL NLDLY NL0 NL1 CRDLY CR0 CR1 CR2 CR3 CS5 CS6 CS7 CS8 TABDLY \
+    BSDLY VTDLY FFDLY CBAUD CBAUDEX CSIZE CSTOPB CREAD PARENB PARODD HUPCL \
+    CLOCAL LOBLK CIBAUD CMSPAR CRTSCTS ISIG ICANON XCASE ECHO ECHOE ECHOK \
+    ECHONL ECHOCTL ECHOPRT ECHOKE DEFECHO FLUSHO NOFLSH TOSTOP PENDIN IEXTEN \
+    VINTR VQUIT VERASE VKILL VEOF VMIN VEOL VTIME VEOL2 VSWTCH VSTART VSTOP \
+    VSUSP VDSUSP VLNEXT VWERASE VREPRINT VDISCARD VSTATUS TCSANOW TCSADRAIN \
     TCSAFLUSH TCIFLUSH TCOFLUSH TCIOFLUSH TCOOFF TCOON TCIOFF TCION B0 B50 \
     B75 B110 B134 B150 B200 B300 B600 B1200 B1800 B2400 B4800 B9600 B19200 \
-    B38400 B57600 B115200 B230400; do
+    B38400 B57600 B115200 B230400 B460800 B500000 B576000 B921600 B1000000 \
+    B1152000 B1500000 B2000000 B2500000 B3000000 B4000000; do
 
     grep "^const _$n " gen-sysinfo.go | \
 	sed -e 's/^\(const \)_\([^=]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
@@ -936,6 +951,15 @@ grep '^type _sock_fprog ' gen-sysinfo.go | \
       -e 's/len/Len/' \
       -e 's/filter/Filter/' \
       -e 's/_sock_filter/SockFilter/' \
+    >> ${OUT}
+
+# The GNU/Linux filter flags.
+grep '^const _BPF_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(BPF_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The Solaris 11 Update 1 _zone_net_addr_t struct.
+grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr/[16]byte/' \
     >> ${OUT}
 
 exit $?

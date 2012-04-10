@@ -2786,10 +2786,79 @@ emit_indirect_register_classes (tree *list_p)
   append_to_statement_list (t, list_p);
 }
 
+/* Emit a list of pointers to all classes we have emitted to JCR_SECTION.  */
+
+static void
+emit_register_classes_in_jcr_section (void)
+{
+  tree klass, cdecl, class_array_type;
+  int i;
+  int size = VEC_length (tree, registered_class);
+  VEC(constructor_elt,gc) *init = VEC_alloc (constructor_elt, gc, size);
+
+#ifndef JCR_SECTION_NAME
+  /* A target has defined TARGET_USE_JCR_SECTION,
+     but doesn't have a JCR_SECTION_NAME.  */
+  gcc_unreachable ();
+#endif
+
+  FOR_EACH_VEC_ELT (tree, registered_class, i, klass)
+    CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, build_fold_addr_expr (klass));
+
+  /* ??? I would like to use tree_output_constant_def() but there is no way
+	 to put the data in a named section name, or to set the alignment,
+	 via that function.  So do everything manually here.  */
+  class_array_type = build_prim_array_type (ptr_type_node, size);
+  cdecl = build_decl (UNKNOWN_LOCATION,
+		      VAR_DECL, get_identifier ("_Jv_JCR_SECTION_data"),
+		      class_array_type);
+  DECL_SECTION_NAME (cdecl) = build_string (strlen (JCR_SECTION_NAME),
+					    JCR_SECTION_NAME);
+  DECL_ALIGN (cdecl) = POINTER_SIZE;
+  DECL_USER_ALIGN (cdecl) = 1;
+  DECL_INITIAL (cdecl) = build_constructor (class_array_type, init);
+  TREE_CONSTANT (DECL_INITIAL (cdecl)) = 1;
+  TREE_STATIC (cdecl) = 1;
+  TREE_READONLY (cdecl) = 0;
+  TREE_CONSTANT (cdecl) = 1;
+  DECL_ARTIFICIAL (cdecl) = 1;
+  DECL_IGNORED_P (cdecl) = 1;
+  pushdecl_top_level (cdecl);
+  relayout_decl (cdecl);
+  rest_of_decl_compilation (cdecl, 1, 0);
+  mark_decl_referenced (cdecl);
+}
+
+
+/* Emit a series of calls to _Jv_RegisterClass for every class we emitted.
+   A series of calls is added to LIST_P.  */
+
+static void
+emit_Jv_RegisterClass_calls (tree *list_p)
+{
+  tree klass, t, register_class_fn;
+  int i;
+
+  t = build_function_type_list (void_type_node, class_ptr_type, NULL);
+  t = build_decl (input_location,
+		  FUNCTION_DECL, get_identifier ("_Jv_RegisterClass"), t);
+  TREE_PUBLIC (t) = 1;
+  DECL_EXTERNAL (t) = 1;
+  register_class_fn = t;
+
+  FOR_EACH_VEC_ELT (tree, registered_class, i, klass)
+    {
+      t = build_fold_addr_expr (klass);
+      t = build_call_expr (register_class_fn, 1, t);
+      append_to_statement_list (t, list_p);
+    }
+}
 
 /* Emit something to register classes at start-up time.
 
-   The preferred mechanism is through the .jcr section, which contain
+   The default mechanism is to generate instances at run-time.
+
+   An alternative mechanism is through the .jcr section, which contain
    a list of pointers to classes which get registered during constructor
    invocation time.
 
@@ -2803,55 +2872,18 @@ emit_register_classes (tree *list_p)
   if (registered_class == NULL)
     return;
 
+  /* By default, generate instances of Class at runtime.  */
   if (flag_indirect_classes)
-    {
-      emit_indirect_register_classes (list_p);
-      return;
-    }
-
+    emit_indirect_register_classes (list_p);
   /* TARGET_USE_JCR_SECTION defaults to 1 if SUPPORTS_WEAK and
      TARGET_ASM_NAMED_SECTION, else 0.  Some targets meet those conditions
      but lack suitable crtbegin/end objects or linker support.  These
      targets can override the default in tm.h to use the fallback mechanism.  */
-  if (TARGET_USE_JCR_SECTION)
-    {
-      tree klass, t;
-      int i;
-
-#ifdef JCR_SECTION_NAME
-      switch_to_section (get_section (JCR_SECTION_NAME, SECTION_WRITE, NULL));
-#else
-      /* A target has defined TARGET_USE_JCR_SECTION,
-	 but doesn't have a JCR_SECTION_NAME.  */
-      gcc_unreachable ();
-#endif
-      assemble_align (POINTER_SIZE);
-
-      FOR_EACH_VEC_ELT (tree, registered_class, i, klass)
-	{
-	  t = build_fold_addr_expr (klass);
-	  output_constant (t, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE);
-	}
-    }
+  else if (TARGET_USE_JCR_SECTION)
+    emit_register_classes_in_jcr_section ();
+  /* Use the fallback mechanism.  */
   else
-    {
-      tree klass, t, register_class_fn;
-      int i;
-
-      t = build_function_type_list (void_type_node, class_ptr_type, NULL);
-      t = build_decl (input_location,
-		      FUNCTION_DECL, get_identifier ("_Jv_RegisterClass"), t);
-      TREE_PUBLIC (t) = 1;
-      DECL_EXTERNAL (t) = 1;
-      register_class_fn = t;
-
-      FOR_EACH_VEC_ELT (tree, registered_class, i, klass)
-	{
-	  t = build_fold_addr_expr (klass);
-	  t = build_call_expr (register_class_fn, 1, t);
-	  append_to_statement_list (t, list_p);
-	}
-    }
+    emit_Jv_RegisterClass_calls (list_p);
 }
 
 /* Build a constructor for an entry in the symbol table.  */

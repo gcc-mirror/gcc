@@ -45,6 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "gimple.h"
 
+extern void add_bb_to_loop (basic_block, struct loop *);
+
 /* Internal function decls */
 
 
@@ -559,6 +561,10 @@ mf_build_check_statement_for (tree base, tree limit,
       set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
       set_immediate_dominator (CDI_DOMINATORS, join_bb, cond_bb);
     }
+
+  /* Update loop info.  */
+  if (current_loops)
+    add_bb_to_loop (then_bb, cond_bb->loop_father);
 
   /* Build our local variables.  */
   mf_elem = make_rename_temp (mf_cache_structptr_type, "__mf_elem");

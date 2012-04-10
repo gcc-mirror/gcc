@@ -13370,8 +13370,8 @@ cst_pool_loc_descr (tree loc)
 }
 
 /* Return dw_loc_list representing address of addr_expr LOC
-   by looking for innder INDIRECT_REF expression and turing it
-   into simple arithmetics.  */
+   by looking for inner INDIRECT_REF expression and turning
+   it into simple arithmetics.  */
 
 static dw_loc_list_ref
 loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev)
@@ -13379,8 +13379,7 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev)
   tree obj, offset;
   HOST_WIDE_INT bitsize, bitpos, bytepos;
   enum machine_mode mode;
-  int volatilep;
-  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (loc));
+  int unsignedp, volatilep = 0;
   dw_loc_list_ref list_ret = NULL, list_ret1 = NULL;
 
   obj = get_inner_reference (TREE_OPERAND (loc, 0),
@@ -13670,8 +13669,7 @@ loc_list_from_tree (tree loc, int want_address)
 	tree obj, offset;
 	HOST_WIDE_INT bitsize, bitpos, bytepos;
 	enum machine_mode mode;
-	int volatilep;
-	int unsignedp = TYPE_UNSIGNED (TREE_TYPE (loc));
+	int unsignedp, volatilep = 0;
 
 	obj = get_inner_reference (loc, &bitsize, &bitpos, &offset, &mode,
 				   &unsignedp, &volatilep, false);
@@ -14969,7 +14967,7 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
   enum machine_mode mode;
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
-  int volatilep = 0, unsignedp = 0;
+  int unsignedp, volatilep = 0;
 
   /* If the decl isn't a VAR_DECL, or if it isn't static, or if
      it does not have a value (the offset into the common area), or if it
@@ -17816,7 +17814,7 @@ common_block_die_table_eq (const void *x, const void *y)
 static void
 gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 {
-  HOST_WIDE_INT off;
+  HOST_WIDE_INT off = 0;
   tree com_decl;
   tree decl_or_origin = decl ? decl : origin;
   tree ultimate_origin;

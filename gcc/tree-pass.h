@@ -239,6 +239,7 @@ struct dump_file_info
 #define PROP_gimple_lomp	(1 << 8)	/* lowered OpenMP directives */
 #define PROP_cfglayout	 	(1 << 9)	/* cfglayout mode on RTL */
 #define PROP_gimple_lcx		(1 << 10)       /* lowered complex */
+#define PROP_loops		(1 << 11)	/* preserve loop structures */
 
 #define PROP_trees \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
@@ -485,11 +486,6 @@ extern struct gimple_opt_pass pass_init_datastructures;
 extern struct gimple_opt_pass pass_fixup_cfg;
 
 extern struct rtl_opt_pass pass_expand;
-extern struct rtl_opt_pass pass_init_function;
-extern struct rtl_opt_pass pass_jump;
-extern struct rtl_opt_pass pass_rtl_eh;
-extern struct rtl_opt_pass pass_initial_value_sets;
-extern struct rtl_opt_pass pass_unshare_all_rtl;
 extern struct rtl_opt_pass pass_instantiate_virtual_regs;
 extern struct rtl_opt_pass pass_rtl_fwprop;
 extern struct rtl_opt_pass pass_rtl_fwprop_addr;

@@ -1,3 +1,51 @@
+2012-04-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52751
+	* trans-decl.c (gfc_finish_var_decl): Don't set TREE_PUBLIC
+	for PRIVATE module variables without C-binding label.
+
+	PR fortran/40973
+	* trans-decl.c (build_function_decl): Ditto for procedures.
+
+2012-04-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52893
+	* frontend-passes.c:  Keep track of wether we are in an implicit
+	DO loop; do not do function elimination if we are.
+
+2012-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52668
+	* module.c:  Only mark symbols as use_only if they have been
+	imported via an only list.
+
+2012-03-28  Paul Thomas  <pault@gcc.gnu.org>
+	Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/52652
+	* match.c (gfc_match_allocate, gfc_match_deallocate): Change
+	"not.. or" to "neither.. nor".
+	* parse.c (decode_specification_statement): Correct error in
+	chpice of matching function for "allocatable".
+
+2012-03-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.h (GFC_MAX_LINE): Remove unused macro.
+
+2012-03-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/52559
+	* error.c (gfc_widechar_display_length): Consider tabs as
+	one character wide, as they're displayed as spaces.
+	(show_locus): Move tab handling to...
+	(print_wide_char_into_buffer): ... here.
+
+2012-03-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52585
+	* trans-intrinsic.c (gfc_conv_associated): Fix handling of
+	procpointer dummy arguments.
+
 2012-03-16  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* trans-intrinsic.c (build_round_expr): Don't use BUILT_IN_IROUND

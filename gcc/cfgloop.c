@@ -1317,9 +1317,13 @@ verify_loop_structure (void)
   unsigned num = number_of_loops ();
   loop_iterator li;
   struct loop_exit *exit, *mexit;
+  bool dom_available = dom_info_available_p (CDI_DOMINATORS);
 
-  /* We need up-to-date dominators, verify them.  */
-  verify_dominators (CDI_DOMINATORS);
+  /* We need up-to-date dominators, compute or verify them.  */
+  if (!dom_available)
+    calculate_dominance_info (CDI_DOMINATORS);
+  else
+    verify_dominators (CDI_DOMINATORS);
 
   /* Check sizes.  */
   sizes = XCNEWVEC (unsigned, num);
@@ -1563,6 +1567,8 @@ verify_loop_structure (void)
   gcc_assert (!err);
 
   free (sizes);
+  if (!dom_available)
+    free_dominance_info (CDI_DOMINATORS);
 }
 
 /* Returns latch edge of LOOP.  */

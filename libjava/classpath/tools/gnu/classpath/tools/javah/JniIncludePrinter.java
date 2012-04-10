@@ -1,5 +1,5 @@
 /* JniIncludePrinter.java - Generate a JNI header file
- Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007, 2011 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -63,6 +63,7 @@ public class JniIncludePrinter
   {
     klass.linkSupers();
     boolean wroteAny = false;
+    ClassWrapper headerClass = klass;
     for (; klass != null; klass = klass.superClass)
       {
         Iterator<?> i = klass.fields.iterator();
@@ -77,7 +78,7 @@ public class JniIncludePrinter
               continue;
 
             // Note that we don't want to mangle the field name.
-            String name = (JniHelper.mangle(klass.name) + "_" + field.name);
+            String name = (JniHelper.mangle(headerClass.name) + "_" + field.name);
             out.print("#undef ");
             out.println(name);
             out.print("#define ");

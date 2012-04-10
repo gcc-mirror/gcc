@@ -1,0 +1,5 @@
+HOST_LIBGCC2_CFLAGS += -mno-minimal-toc
+SHLIB_MAPFILES = libgcc-std.ver
+
+softfp_wrap_start := '\#ifndef __powerpc64__'
+softfp_wrap_end := '\#endif'

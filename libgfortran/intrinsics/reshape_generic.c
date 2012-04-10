@@ -103,7 +103,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
       else
 	alloc_size = rs * size;
 
-      ret->base_addr = internal_malloc_size (alloc_size);
+      ret->base_addr = xmalloc (alloc_size);
 
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }

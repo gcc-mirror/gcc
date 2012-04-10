@@ -666,10 +666,6 @@ package Opt is
    --  Heap size for memory allocations. Valid values are 32 and 64. Only
    --  available on VMS.
 
-   HLO_Active : Boolean := False;
-   --  GNAT
-   --  True if High Level Optimizer is activated (-gnatH switch)
-
    Identifier_Character_Set : Character;
    --  GNAT
    --  This variable indicates the character set to be used for identifiers.
@@ -990,6 +986,11 @@ package Opt is
    Object_Directory_Present : Boolean := False;
    --  GNATMAKE
    --  Set to True when an object directory is specified with option -D
+
+   Object_Path_File_Name : String_Ptr := null;
+   --  GNAT2WHY
+   --  Path of the temporary file that contains a list of object directories
+   --  passed by -gnateO=<obj_pat_file>.
 
    One_Compilation_Per_Obj_Dir : Boolean := False;
    --  GNATMAKE, GPRBUILD

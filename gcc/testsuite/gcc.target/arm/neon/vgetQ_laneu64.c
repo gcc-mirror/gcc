@@ -10,11 +10,11 @@
 
 void test_vgetQ_laneu64 (void)
 {
-  uint64_t out_uint64_t;
+  register uint64_t out_uint64_t asm ("r0");
   uint64x2_t arg0_uint64x2_t;
 
   out_uint64_t = vgetq_lane_u64 (arg0_uint64x2_t, 0);
 }
 
-/* { dg-final { scan-assembler "vmov\[ 	\]+\[rR\]\[0-9\]+, \[rR\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
+/* { dg-final { scan-assembler "((vmov)|(fmrrd))\[ 	\]+\[rR\]\[0-9\]+, \[rR\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
 /* { dg-final { cleanup-saved-temps } } */

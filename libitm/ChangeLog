@@ -1,3 +1,22 @@
+2012-04-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libitm/52854
+	* config/x86/target.h (gtm_jmpbuf): Replace long with long long
+	for x86-64.
+
+2012-04-03  Tristan Gingold  <gingold@adacore.com>
+
+	* configure: Regenerate.
+
+2012-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/52812
+	* configure.tgt (i[456]86-*-linux*): Handle -mx32 like -m64.
+
+2012-03-16  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* testsuite/lib/libitm.exp: load fortran-modules.exp
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.tgt (*-*-irix6*): Remove.

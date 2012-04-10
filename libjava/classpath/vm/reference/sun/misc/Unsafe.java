@@ -1,5 +1,5 @@
 /* Unsafe.java - Unsafe operations needed for concurrency
-   Copyright (C) 2006 Free Software Foundation
+   Copyright (C) 2006, 2010 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,10 +48,10 @@ import java.lang.reflect.Field;
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
-public class Unsafe
+public final class Unsafe
 {
   // Singleton class.
-  private static Unsafe unsafe = new Unsafe();
+  private static final Unsafe unsafe = new Unsafe();
 
   /**
    * Private default constructor to prevent creation of an arbitrary

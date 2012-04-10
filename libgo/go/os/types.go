@@ -15,7 +15,7 @@ func Getpagesize() int { return syscall.Getpagesize() }
 // A FileInfo describes a file and is returned by Stat and Lstat
 type FileInfo interface {
 	Name() string       // base name of the file
-	Size() int64        // length in bytes
+	Size() int64        // length in bytes for regular files; system-dependent for others
 	Mode() FileMode     // file mode bits
 	ModTime() time.Time // modification time
 	IsDir() bool        // abbreviation for Mode().IsDir()
@@ -58,7 +58,7 @@ const (
 
 func (m FileMode) String() string {
 	const str = "dalTLDpSugct"
-	var buf [20]byte
+	var buf [32]byte // Mode is uint32.
 	w := 0
 	for i, c := range str {
 		if m&(1<<uint(32-1-i)) != 0 {

@@ -3971,7 +3971,7 @@ Parse::if_stat()
 
   bool saw_simple_stat = false;
   Expression* cond = NULL;
-  bool saw_send_stmt;
+  bool saw_send_stmt = false;
   if (this->simple_stat_may_start_here())
     {
       cond = this->simple_stat(false, &saw_send_stmt, NULL, NULL);

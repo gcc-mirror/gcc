@@ -168,8 +168,8 @@ pack_c16 (gfc_array_c16 *ret, const gfc_array_c16 *array,
 
 	  ret->offset = 0;
 
-	  /* internal_malloc_size allocates a single byte for zero size.  */
-	  ret->base_addr = internal_malloc_size (sizeof (GFC_COMPLEX_16) * total);
+	  /* xmalloc allocates a single byte for zero size.  */
+	  ret->base_addr = xmalloc (sizeof (GFC_COMPLEX_16) * total);
 
 	  if (total == 0)
 	    return;

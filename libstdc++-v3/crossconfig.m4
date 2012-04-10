@@ -241,6 +241,12 @@ case "${host}" in
       AC_DEFINE(HAVE_ISNANL)
     fi
     ;;
+  *-*vms*)
+    # Check for available headers.
+    # Don't call GLIBCXX_CHECK_LINKER_FEATURES, VMS doesn't have a GNU ld
+    GLIBCXX_CHECK_MATH_SUPPORT
+    GLIBCXX_CHECK_STDLIB_SUPPORT
+    ;;
   *-vxworks)
     AC_DEFINE(HAVE_ACOSF)
     AC_DEFINE(HAVE_ASINF)

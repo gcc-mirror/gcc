@@ -50,7 +50,7 @@ struct E
   ~E();
 };
 
-SA (!noexcept (E()));
+SA (noexcept (E()));
 
 struct F
 {
@@ -74,7 +74,7 @@ void tf()
 }
 
 template void tf<int,true>();
-template void tf<E, false>();
+template void tf<E, true>();
 
 // Make sure that noexcept uses the declared exception-specification, not
 // any knowledge we might have about whether or not the function really

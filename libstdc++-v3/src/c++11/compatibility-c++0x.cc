@@ -1,6 +1,6 @@
 // Compatibility symbols for previous versions, C++0x bits -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,8 @@
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 # error "compatibility-c++0x.cc must be compiled with -std=gnu++0x"
 #endif
+
+#ifdef PIC
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -119,3 +121,4 @@ namespace std _GLIBCXX_VISIBILITY(default)
   } // namespace chrono
 }
 
+#endif

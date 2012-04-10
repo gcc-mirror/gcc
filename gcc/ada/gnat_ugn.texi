@@ -94,10 +94,12 @@ Texts.  A copy of the license is included in the section entitled
 
 @ifset unw
 @set PLATFORM
+@set TITLESUFFIX
 @end ifset
 
 @ifset vms
 @set PLATFORM OpenVMS
+@set TITLESUFFIX for OpenVMS
 @end ifset
 
 @c @ovar(ARG)
@@ -115,7 +117,7 @@ Texts.  A copy of the license is included in the section entitled
 @c of the @ovar macro have been expanded inline.
 
 
-@settitle @value{EDITION} User's Guide @value{PLATFORM}
+@settitle @value{EDITION} User's Guide @value{TITLESUFFIX}
 @dircategory GNU Ada tools
 @direntry
 * @value{EDITION} User's Guide: (gnat_ugn). @value{PLATFORM}
@@ -484,6 +486,7 @@ Creating Unit Tests Using gnattest
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+* Support for other platforms/run-times::
 * Current Limitations::
 
 Other Utility Programs
@@ -601,7 +604,7 @@ Elaboration Order Handling in GNAT
 * Elaboration Issues for Library Tasks::
 * Mixing Elaboration Models::
 * What to Do If the Default Elaboration Behavior Fails::
-* Elaboration for Access-to-Subprogram Values::
+* Elaboration for Dispatching Calls::
 * Summary of Procedures for Elaboration Control::
 * Other Elaboration Order Considerations::
 
@@ -3077,7 +3080,7 @@ $ gnatlink ada_unit file1.o file2.o --LINK=./my_script
 Where CC is the name of the non-GNU C++ compiler.
 
 If the @code{zero cost} exception mechanism is used, and the platform
-supports automatic registration of exception tables (e.g.@: Solaris or IRIX),
+supports automatic registration of exception tables (e.g.@: Solaris),
 paths to more objects are required:
 
 @smallexample
@@ -4155,7 +4158,13 @@ Display full source path name in brief error messages.
 @cindex @option{-gnateG} (@command{gcc})
 Save result of preprocessing in a text file.
 
-@item ^-gnateI^/MULTI_UNIT_INDEX=^@var{nnn}
+@item -gnatei@var{nnn}
+@cindex @option{-gnatei} (@command{gcc})
+Set maximum number of instantiations during compilation of a single unit to
+@var{nnn}. This may be useful in increasing the default maximum of 8000 for
+the rare case when a single unit legitimately exceeds this limit.
+
+@item -gnateI@var{nnn}
 @cindex @option{-gnateI} (@command{gcc})
 Indicates that the source is a multi-unit source and that the index of the
 unit to compile is @var{nnn}. @var{nnn} needs to be a positive number and need
@@ -17982,6 +17991,7 @@ default location.
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+* Support for other platforms/run-times::
 * Current Limitations::
 @end menu
 
@@ -18466,6 +18476,25 @@ gnattest -Psimple.gpr --additional-tests=additional/harness/harness.gpr \
   --harness-dir=mixing
 gnatmake -Pmixing/test_driver.gpr
 mixing/test_runner
+@end smallexample
+
+@node Support for other platforms/run-times
+@section Support for other platforms/run-times
+
+@noindent
+@command{gnattest} can be used to generate the test harness for platforms
+and run-time libraries others than the default native target with the
+default full run-time. For example, when using a limited run-time library
+such as Zero FootPrint (ZFP), a simplified harness is generated.
+
+Two variables are used to tell the underlying AUnit framework how to generate
+the test harness: @code{PLATFORM}, which identifies the target, and
+@code{RUNTIME}, used to determine the run-time library for which the harness
+is generated. For example, the following options are used to generate the
+AUnit test harness for a PowerPC ELF target using the ZFP run-time library:
+
+@smallexample
+gnattest -Psimple.gpr -XPLATFORM=powerpc-elf -XRUNTIME=zfp
 @end smallexample
 
 @node Current Limitations
@@ -23273,7 +23302,7 @@ elaboration code in your own application).
 * Elaboration Issues for Library Tasks::
 * Mixing Elaboration Models::
 * What to Do If the Default Elaboration Behavior Fails::
-* Elaboration for Access-to-Subprogram Values::
+* Elaboration for Dispatching Calls::
 * Summary of Procedures for Elaboration Control::
 * Other Elaboration Order Considerations::
 @end menu
@@ -24930,39 +24959,22 @@ elaboration switch if your code is correct, and we assume that the
 C-tests are indeed correct (it is less efficient, but efficiency is
 not a factor in running the ACVC tests.)
 
-@node Elaboration for Access-to-Subprogram Values
-@section Elaboration for Access-to-Subprogram Values
-@cindex Access-to-subprogram
+@node Elaboration for Dispatching Calls
+@section Elaboration for Dispatching Calls
+@cindex Dispatching calls
 
 @noindent
-Access-to-subprogram types (introduced in Ada 95) complicate
-the handling of elaboration. The trouble is that it becomes
-impossible to tell at compile time which procedure
-is being called. This means that it is not possible for the binder
-to analyze the elaboration requirements in this case.
-
-If at the point at which the access value is created
-(i.e., the evaluation of @code{P'Access} for a subprogram @code{P}),
-the body of the subprogram is
-known to have been elaborated, then the access value is safe, and its use
-does not require a check. This may be achieved by appropriate arrangement
-of the order of declarations if the subprogram is in the current unit,
-or, if the subprogram is in another unit, by using pragma
-@code{Pure}, @code{Preelaborate}, or @code{Elaborate_Body}
-on the referenced unit.
-
-If the referenced body is not known to have been elaborated at the point
-the access value is created, then any use of the access value must do a
-dynamic check, and this dynamic check will fail and raise a
-@code{Program_Error} exception if the body has not been elaborated yet.
-GNAT will generate the necessary checks, and in addition, if the
-@option{-gnatwl}
-switch is set, will generate warnings that such checks are required.
-
-The use of dynamic dispatching for tagged types similarly generates
-a requirement for dynamic checks, and premature calls to any primitive
+In rare cases, the static elaboration model fails to prevent
+dispatching calls to not-yet-elaborated subprograms. In such cases, we
+fall back to run-time checks; premature calls to any primitive
 operation of a tagged type before the body of the operation has been
-elaborated, will result in the raising of @code{Program_Error}.
+elaborated will raise @code{Program_Error}.
+
+Access-to-subprogram types, however, are handled conservatively, and
+do not require run-time checks. This was not true in earlier versions
+of the compiler; you can use the @option{-gnatd.U} debug switch to
+revert to the old behavior if the new conservative behavior causes
+elaboration cycles.
 
 @node Summary of Procedures for Elaboration Control
 @section Summary of Procedures for Elaboration Control

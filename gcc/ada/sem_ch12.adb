@@ -3704,7 +3704,6 @@ package body Sem_Ch12 is
                            or else Might_Inline_Subp)
                 and then not Is_Actual_Pack
                 and then not Inline_Now
-                and then not Alfa_Mode
                 and then (Operating_Mode = Generate_Code
                            or else (Operating_Mode = Check_Semantics
                                      and then ASIS_Mode));
@@ -4405,9 +4404,6 @@ package body Sem_Ch12 is
       Parent_Installed : Boolean := False;
       Renaming_List    : List_Id;
 
-      Save_Style_Check : constant Boolean := Style_Check;
-      --  Save style check mode for restore on exit
-
       procedure Analyze_Instance_And_Renamings;
       --  The instance must be analyzed in a context that includes the mappings
       --  of generic parameters into actuals. We create a package declaration
@@ -4588,11 +4584,13 @@ package body Sem_Ch12 is
 
       Instantiation_Node := N;
 
-      --  Turn off style checking in instances. If the check is enabled on the
-      --  generic unit, a warning in an instance would just be noise. If not
-      --  enabled on the generic, then a warning in an instance is just wrong.
+      --  For package instantiations we turn off style checks, because they
+      --  will have been emitted in the generic. For subprogram instantiations
+      --  we want to apply at least the check on overriding indicators so we
+      --  do not modify the style check status.
 
-      Style_Check := False;
+      --  The renaming declarations for the actuals do not come from source and
+      --  will not generate spurious warnings.
 
       Preanalyze_Actuals (N);
 
@@ -4860,8 +4858,6 @@ package body Sem_Ch12 is
          Generic_Renamings_HTable.Reset;
       end if;
 
-      Style_Check := Save_Style_Check;
-
    <<Leave>>
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
@@ -4876,8 +4872,6 @@ package body Sem_Ch12 is
          if Env_Installed then
             Restore_Env;
          end if;
-
-         Style_Check := Save_Style_Check;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
@@ -7767,6 +7761,9 @@ package body Sem_Ch12 is
       Item            : Node_Id;
       New_I           : Node_Id;
 
+      Clause : Node_Id;
+      OK     : Boolean;
+
    begin
       if Nkind (Parent (Gen_Decl)) = N_Compilation_Unit then
 
@@ -7788,17 +7785,30 @@ package body Sem_Ch12 is
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause then
 
-               --  Take care to prevent direct cyclic with's, which can happen
-               --  if the generic body with's the current unit. Such a case
-               --  would result in binder errors (or run-time errors if the
-               --  -gnatE switch is in effect), but we want to prevent it here,
-               --  because Sem.Walk_Library_Items doesn't like cycles. Note
-               --  that we don't bother to detect indirect cycles.
+               --  Take care to prevent direct cyclic with's.
 
                if Library_Unit (Item) /= Current_Unit then
-                  New_I := New_Copy (Item);
-                  Set_Implicit_With (New_I, True);
-                  Append (New_I, Current_Context);
+                  --  Do not add a unit if it is already in the context
+
+                  Clause := First (Current_Context);
+                  OK := True;
+                  while Present (Clause) loop
+                     if Nkind (Clause) = N_With_Clause and then
+                       Chars (Name (Clause)) = Chars (Name (Item))
+                     then
+                        OK := False;
+                        exit;
+                     end if;
+
+                     Next (Clause);
+                  end loop;
+
+                  if OK then
+                     New_I := New_Copy (Item);
+                     Set_Implicit_With (New_I, True);
+                     Set_Implicit_With_From_Instantiation (New_I, True);
+                     Append (New_I, Current_Context);
+                  end if;
                end if;
             end if;
 

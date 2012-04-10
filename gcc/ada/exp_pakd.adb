@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -509,7 +509,7 @@ package body Exp_Pakd is
       Shift  : out Node_Id);
    --  This procedure performs common processing on the N_Indexed_Component
    --  parameter given as N, whose prefix is a reference to a packed array.
-   --  This is used for the get and set when the component size is 1,2,4
+   --  This is used for the get and set when the component size is 1, 2, 4,
    --  or for other component sizes when the packed array type is a modular
    --  type (i.e. the cases that are handled with inline code).
    --
@@ -1472,10 +1472,10 @@ package body Exp_Pakd is
             end if;
          end if;
 
-         --  Now create copies removing side effects. Note that in some
-         --  complex cases, this may cause the fact that we have already
-         --  set a packed array type on Obj to get lost. So we save the
-         --  type of Obj, and make sure it is reset properly.
+         --  Now create copies removing side effects. Note that in some complex
+         --  cases, this may cause the fact that we have already set a packed
+         --  array type on Obj to get lost. So we save the type of Obj, and
+         --  make sure it is reset properly.
 
          declare
             T : constant Entity_Id := Etype (Obj);

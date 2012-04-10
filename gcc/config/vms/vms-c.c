@@ -120,7 +120,9 @@ vms_pragma_nomember_alignment (cpp_reader *pfile ATTRIBUTE_UNUSED)
       if (arg[0] == '_' && arg[1] == '_')
         arg += 2;
 
-      if (strcmp (arg, "word") == 0)
+      if (strcmp (arg, "byte") == 0)
+        maximum_field_alignment = 1 * BITS_PER_UNIT;
+      else if (strcmp (arg, "word") == 0)
         maximum_field_alignment = 2 * BITS_PER_UNIT;
       else if (strcmp (arg, "longword") == 0)
         maximum_field_alignment = 4 * BITS_PER_UNIT;
@@ -453,6 +455,9 @@ vms_c_register_includes (const char *sysroot,
 void
 vms_c_common_override_options (void)
 {
+  /* Allow variadic functions without parameters (as declared in starlet).  */
+  flag_allow_parameterless_variadic_functions = TRUE;
+
   /* Initialize c_default_pointer_mode.  */
   switch (flag_vms_pointer_size)
     {
@@ -465,4 +470,20 @@ vms_c_common_override_options (void)
       c_default_pointer_mode = DImode;
       break;
     }
+}
+
+/* The default value for _CRTL_VER macro.  */
+
+int
+vms_c_get_crtl_ver (void)
+{
+  return VMS_DEFAULT_CRTL_VER;
+}
+
+/* The default value for _VMS_VER macro.  */
+
+int
+vms_c_get_vms_ver (void)
+{
+  return VMS_DEFAULT_VMS_VER;
 }

@@ -79,8 +79,11 @@ let emit_automatics chan c_types features =
           (* The intrinsic returns a value.  We need to do explict register
              allocation for vget_low tests or they fail because of copy
              elimination.  *)
-          ((if List.mem Fixed_return_reg features then
+          ((if List.mem Fixed_vector_reg features then
               Printf.fprintf chan "  register %s out_%s asm (\"d18\");\n"
+                             return_ty return_ty
+            else if List.mem Fixed_core_reg features then
+              Printf.fprintf chan "  register %s out_%s asm (\"r0\");\n"
                              return_ty return_ty
             else
               Printf.fprintf chan "  %s out_%s;\n" return_ty return_ty);

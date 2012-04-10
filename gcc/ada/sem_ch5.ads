@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,19 +27,20 @@ with Types; use Types;
 
 package Sem_Ch5 is
 
-   procedure Analyze_Assignment                 (N : Node_Id);
-   procedure Analyze_Block_Statement            (N : Node_Id);
-   procedure Analyze_Case_Statement             (N : Node_Id);
-   procedure Analyze_Exit_Statement             (N : Node_Id);
-   procedure Analyze_Goto_Statement             (N : Node_Id);
-   procedure Analyze_If_Statement               (N : Node_Id);
-   procedure Analyze_Implicit_Label_Declaration (N : Node_Id);
-   procedure Analyze_Iterator_Specification     (N : Node_Id);
-   procedure Analyze_Iteration_Scheme           (N : Node_Id);
-   procedure Analyze_Label                      (N : Node_Id);
-   procedure Analyze_Loop_Statement             (N : Node_Id);
-   procedure Analyze_Null_Statement             (N : Node_Id);
-   procedure Analyze_Statements                 (L : List_Id);
+   procedure Analyze_Assignment                   (N : Node_Id);
+   procedure Analyze_Block_Statement              (N : Node_Id);
+   procedure Analyze_Case_Statement               (N : Node_Id);
+   procedure Analyze_Exit_Statement               (N : Node_Id);
+   procedure Analyze_Goto_Statement               (N : Node_Id);
+   procedure Analyze_If_Statement                 (N : Node_Id);
+   procedure Analyze_Implicit_Label_Declaration   (N : Node_Id);
+   procedure Analyze_Iterator_Specification       (N : Node_Id);
+   procedure Analyze_Iteration_Scheme             (N : Node_Id);
+   procedure Analyze_Label                        (N : Node_Id);
+   procedure Analyze_Loop_Parameter_Specification (N : Node_Id);
+   procedure Analyze_Loop_Statement               (N : Node_Id);
+   procedure Analyze_Null_Statement               (N : Node_Id);
+   procedure Analyze_Statements                   (L : List_Id);
 
    procedure Analyze_Label_Entity (E : Entity_Id);
    --  This procedure performs direct analysis of the label entity E. It

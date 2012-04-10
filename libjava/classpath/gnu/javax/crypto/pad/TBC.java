@@ -1,5 +1,5 @@
 /* TBC.java --
-   Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -64,7 +64,8 @@ import java.util.logging.Logger;
 public final class TBC
     extends BasePad
 {
-  private static final Logger log = Logger.getLogger(TBC.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                                Logger.getLogger(TBC.class.getName()) : null;
 
   /**
    * Trivial package-private constructor for use by the <i>Factory</i> class.

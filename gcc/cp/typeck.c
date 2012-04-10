@@ -733,6 +733,11 @@ merge_types (tree t1, tree t2)
   if (t2 == error_mark_node)
     return t1;
 
+  /* Handle merging an auto redeclaration with a previous deduced
+     return type.  */
+  if (is_auto (t1))
+    return t2;
+
   /* Merge the attributes.  */
   attributes = (*targetm.merge_type_attributes) (t1, t2);
 
@@ -2410,6 +2415,11 @@ lookup_destructor (tree object, tree scope, tree dtor_name)
 			tf_warning_or_error);
   expr = (adjust_result_of_qualified_name_lookup
 	  (expr, dtor_type, object_type));
+  if (scope == NULL_TREE)
+    /* We need to call adjust_result_of_qualified_name_lookup in case the
+       destructor names a base class, but we unset BASELINK_QUALIFIED_P so
+       that we still get virtual function binding.  */
+    BASELINK_QUALIFIED_P (expr) = false;
   return expr;
 }
 
@@ -5749,6 +5759,28 @@ check_for_casting_away_constness (tree src_type, tree dest_type,
     }
 }
 
+/*
+  Warns if the cast from expression EXPR to type TYPE is useless.
+ */
+void
+maybe_warn_about_useless_cast (tree type, tree expr, tsubst_flags_t complain)
+{
+  if (warn_useless_cast
+      && complain & tf_warning
+      && c_inhibit_evaluation_warnings == 0)
+    {
+      if (REFERENCE_REF_P (expr))
+	expr = TREE_OPERAND (expr, 0);
+
+      if ((TREE_CODE (type) == REFERENCE_TYPE
+	   && (TYPE_REF_IS_RVALUE (type)
+	       ? xvalue_p (expr) : real_lvalue_p (expr))
+	   && same_type_p (TREE_TYPE (expr), TREE_TYPE (type)))
+	  || same_type_p (TREE_TYPE (expr), type))
+	warning (OPT_Wuseless_cast, "useless cast to type %qT", type);
+    }
+}
+
 /* Convert EXPR (an expression with pointer-to-member type) to TYPE
    (another pointer-to-member type in the same hierarchy) and return
    the converted expression.  If ALLOW_INVERSE_P is permitted, a
@@ -6078,7 +6110,11 @@ build_static_cast (tree type, tree expr, tsubst_flags_t complain)
   result = build_static_cast_1 (type, expr, /*c_cast_p=*/false, &valid_p,
                                 complain);
   if (valid_p)
-    return result;
+    {
+      if (result != error_mark_node)
+	maybe_warn_about_useless_cast (type, expr, complain);
+      return result;
+    }
 
   if (complain & tf_error)
     error ("invalid static_cast from type %qT to type %qT",
@@ -6305,6 +6341,8 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 tree
 build_reinterpret_cast (tree type, tree expr, tsubst_flags_t complain)
 {
+  tree r;
+
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
@@ -6319,8 +6357,11 @@ build_reinterpret_cast (tree type, tree expr, tsubst_flags_t complain)
       return convert_from_reference (t);
     }
 
-  return build_reinterpret_cast_1 (type, expr, /*c_cast_p=*/false,
-				   /*valid_p=*/NULL, complain);
+  r = build_reinterpret_cast_1 (type, expr, /*c_cast_p=*/false,
+				/*valid_p=*/NULL, complain);
+  if (r != error_mark_node)
+    maybe_warn_about_useless_cast (type, expr, complain);
+  return r;
 }
 
 /* Perform a const_cast from EXPR to TYPE.  If the cast is valid,
@@ -6464,6 +6505,8 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
 tree
 build_const_cast (tree type, tree expr, tsubst_flags_t complain)
 {
+  tree r;
+
   if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;
 
@@ -6478,8 +6521,10 @@ build_const_cast (tree type, tree expr, tsubst_flags_t complain)
       return convert_from_reference (t);
     }
 
-  return build_const_cast_1 (type, expr, complain,
-			     /*valid_p=*/NULL);
+  r = build_const_cast_1 (type, expr, complain, /*valid_p=*/NULL);
+  if (r != error_mark_node)
+    maybe_warn_about_useless_cast (type, expr, complain);
+  return r;
 }
 
 /* Like cp_build_c_cast, but for the c-common bits.  */
@@ -6567,7 +6612,11 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
   result = build_const_cast_1 (type, value, complain & tf_warning,
 			       &valid_p);
   if (valid_p)
-    return result;
+    {
+      if (result != error_mark_node)
+	maybe_warn_about_useless_cast (type, value, complain);
+      return result;
+    }
 
   /* Or a static cast.  */
   result = build_static_cast_1 (type, value, /*c_cast_p=*/true,
@@ -6580,10 +6629,12 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
      const_cast.  */
   if (valid_p
       /* A valid cast may result in errors if, for example, a
-	 conversion to am ambiguous base class is required.  */
+	 conversion to an ambiguous base class is required.  */
       && !error_operand_p (result))
     {
       tree result_type;
+
+      maybe_warn_about_useless_cast (type, value, complain);
 
       /* Non-class rvalues always have cv-unqualified type.  */
       if (!CLASS_TYPE_P (type))
@@ -7738,9 +7789,11 @@ tree
 check_return_expr (tree retval, bool *no_warning)
 {
   tree result;
-  /* The type actually returned by the function, after any
-     promotions.  */
+  /* The type actually returned by the function.  */
   tree valtype;
+  /* The type the function is declared to return, or void if
+     the declared type is incomplete.  */
+  tree functype;
   int fn_returns_value_p;
   bool named_return_value_okay_p;
 
@@ -7771,36 +7824,48 @@ check_return_expr (tree retval, bool *no_warning)
       return NULL_TREE;
     }
 
-  /* As an extension, deduce lambda return type from a return statement
-     anywhere in the body.  */
-  if (retval && LAMBDA_FUNCTION_P (current_function_decl))
-    {
-      tree lambda = CLASSTYPE_LAMBDA_EXPR (current_class_type);
-      if (LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (lambda))
-	{
-	  tree type = lambda_return_type (retval);
-	  tree oldtype = LAMBDA_EXPR_RETURN_TYPE (lambda);
-
-	  if (oldtype == NULL_TREE)
-	    apply_lambda_return_type (lambda, type);
-	  /* If one of the answers is type-dependent, we can't do any
-	     better until instantiation time.  */
-	  else if (oldtype == dependent_lambda_return_type_node)
-	    /* Leave it.  */;
-	  else if (type == dependent_lambda_return_type_node)
-	    apply_lambda_return_type (lambda, type);
-	  else if (!same_type_p (type, oldtype))
-	    error ("inconsistent types %qT and %qT deduced for "
-		   "lambda return type", type, oldtype);
-	}
-    }
-
   if (processing_template_decl)
     {
       current_function_returns_value = 1;
       if (check_for_bare_parameter_packs (retval))
         retval = error_mark_node;
       return retval;
+    }
+
+  functype = TREE_TYPE (TREE_TYPE (current_function_decl));
+
+  /* Deduce auto return type from a return statement.  */
+  if (current_function_auto_return_pattern)
+    {
+      tree auto_node;
+      tree type;
+
+      if (!retval && !is_auto (current_function_auto_return_pattern))
+	{
+	  /* Give a helpful error message.  */
+	  error ("return-statement with no value, in function returning %qT",
+		 current_function_auto_return_pattern);
+	  inform (input_location, "only plain %<auto%> return type can be "
+		  "deduced to %<void%>");
+	  type = error_mark_node;
+	}
+      else
+	{
+	  if (!retval)
+	    retval = void_zero_node;
+	  auto_node = type_uses_auto (current_function_auto_return_pattern);
+	  type = do_auto_deduction (current_function_auto_return_pattern,
+				    retval, auto_node);
+	}
+
+      if (type == error_mark_node)
+	/* Leave it.  */;
+      else if (functype == current_function_auto_return_pattern)
+	apply_deduced_return_type (current_function_decl, type);
+      else
+	/* A mismatch should have been diagnosed in do_auto_deduction.  */
+	gcc_assert (same_type_p (type, functype));
+      functype = type;
     }
 
   /* When no explicit return-value is given in a function with a named
@@ -7816,12 +7881,11 @@ check_return_expr (tree retval, bool *no_warning)
      that's supposed to return a value.  */
   if (!retval && fn_returns_value_p)
     {
-      permerror (input_location, "return-statement with no value, in function returning %qT",
-	         valtype);
-      /* Clear this, so finish_function won't say that we reach the
-	 end of a non-void function (which we don't, we gave a
-	 return!).  */
-      current_function_returns_null = 0;
+      if (functype != error_mark_node)
+	permerror (input_location, "return-statement with no value, in "
+		   "function returning %qT", valtype);
+      /* Remember that this function did return.  */
+      current_function_returns_value = 1;
       /* And signal caller that TREE_NO_WARNING should be set on the
 	 RETURN_EXPR to avoid control reaches end of non-void function
 	 warnings in tree-cfg.c.  */
@@ -7922,14 +7986,12 @@ check_return_expr (tree retval, bool *no_warning)
      && DECL_CONTEXT (retval) == current_function_decl
      && ! TREE_STATIC (retval)
      && ! DECL_ANON_UNION_VAR_P (retval)
-     && (DECL_ALIGN (retval)
-         >= DECL_ALIGN (DECL_RESULT (current_function_decl)))
+     && (DECL_ALIGN (retval) >= DECL_ALIGN (result))
      /* The cv-unqualified type of the returned value must be the
         same as the cv-unqualified return type of the
         function.  */
      && same_type_p ((TYPE_MAIN_VARIANT (TREE_TYPE (retval))),
-                     (TYPE_MAIN_VARIANT
-                      (TREE_TYPE (TREE_TYPE (current_function_decl)))))
+                     (TYPE_MAIN_VARIANT (functype)))
      /* And the returned value must be non-volatile.  */
      && ! TYPE_VOLATILE (TREE_TYPE (retval)));
      
@@ -7954,8 +8016,6 @@ check_return_expr (tree retval, bool *no_warning)
     ;
   else
     {
-      /* The type the function is declared to return.  */
-      tree functype = TREE_TYPE (TREE_TYPE (current_function_decl));
       int flags = LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING;
 
       /* The functype's return type will have been set to void, if it
@@ -7975,10 +8035,9 @@ check_return_expr (tree retval, bool *no_warning)
 	  && DECL_CONTEXT (retval) == current_function_decl
 	  && !TREE_STATIC (retval)
 	  && same_type_p ((TYPE_MAIN_VARIANT (TREE_TYPE (retval))),
-			  (TYPE_MAIN_VARIANT
-			   (TREE_TYPE (TREE_TYPE (current_function_decl)))))
+			  (TYPE_MAIN_VARIANT (functype)))
 	  /* This is only interesting for class type.  */
-	  && CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
+	  && CLASS_TYPE_P (functype))
 	flags = flags | LOOKUP_PREFER_RVALUE;
 
       /* First convert the value to the function's return type, then

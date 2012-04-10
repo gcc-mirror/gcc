@@ -1,5 +1,5 @@
 /* GnuConfiguration.java -- GNU Classpath implementation of JAAS Configuration
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -128,7 +128,9 @@ import javax.security.auth.login.Configuration;
  */
 public final class GnuConfiguration extends Configuration
 {
-  private static final Logger log = Logger.getLogger(GnuConfiguration.class.getName());
+  private static final Logger log = gnu.java.security.Configuration.DEBUG ?
+                Logger.getLogger(GnuConfiguration.class.getName()) : null;
+
   /**
    * The internal map of login modules keyed by application name. Each entry in
    * this map is a {@link List} of {@link AppConfigurationEntry}s for that

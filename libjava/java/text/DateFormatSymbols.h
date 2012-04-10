@@ -23,7 +23,8 @@ extern "Java"
 class java::text::DateFormatSymbols : public ::java::lang::Object
 {
 
-  static JArray< ::java::lang::String * > * getStringArray(::java::util::ResourceBundle *, ::java::lang::String *);
+  static JArray< ::java::lang::String * > * getStringArray(::java::util::List *, ::java::lang::String *, jint);
+  static JArray< ::java::lang::String * > * getStringArray(::java::util::List *, ::java::lang::String *, jint, JArray< ::java::lang::String * > *);
   JArray< JArray< ::java::lang::String * > * > * getZoneStrings(::java::util::ResourceBundle *, ::java::util::Locale *);
   JArray< ::java::lang::String * > * formatsForKey(::java::util::ResourceBundle *, ::java::lang::String *);
 public:

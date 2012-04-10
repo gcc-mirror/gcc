@@ -115,7 +115,7 @@ reshape_c16 (gfc_array_c16 * const restrict ret,
       else
         alloc_size = rs * sizeof (GFC_COMPLEX_16);
 
-      ret->base_addr = internal_malloc_size (alloc_size);
+      ret->base_addr = xmalloc (alloc_size);
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }
 

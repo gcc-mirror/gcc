@@ -1444,7 +1444,7 @@ explain_implicit_non_constexpr (tree decl)
    reference argument or a non-const reference.  Returns the
    FUNCTION_DECL for the implicitly declared function.  */
 
-static tree
+tree
 implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
 {
   tree fn;

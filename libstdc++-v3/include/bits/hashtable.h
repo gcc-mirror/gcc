@@ -596,6 +596,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // reserve, if present, comes from _Rehash_base.
 
     private:
+      // Helper rehash method used when keys are unique.
+      void _M_rehash_aux(size_type __n, std::true_type);
+
+      // Helper rehash method used when keys can be non-unique.
+      void _M_rehash_aux(size_type __n, std::false_type);
+
       // Unconditionally change size of bucket array to n, restore hash policy
       // state to __state on exception.
       void _M_rehash(size_type __n, const _RehashPolicyState& __state);
@@ -1592,33 +1598,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __try
 	{
-	  _Bucket* __new_buckets = _M_allocate_buckets(__n);
-	  _Node* __p = _M_begin();
-	  _M_before_begin._M_nxt = nullptr;
-	  std::size_t __cur_bbegin_bkt;
-	  while (__p)
-	    {
-	      _Node* __next = __p->_M_next();
-	      std::size_t __new_index = _HCBase::_M_bucket_index(__p, __n);
-	      if (!__new_buckets[__new_index])
-		{
-		  __p->_M_nxt = _M_before_begin._M_nxt;
-		  _M_before_begin._M_nxt = __p;
-		  __new_buckets[__new_index] = &_M_before_begin;
-		  if (__p->_M_nxt)
-		    __new_buckets[__cur_bbegin_bkt] = __p;
-		  __cur_bbegin_bkt = __new_index;
-		}
-	      else
-		{
-		  __p->_M_nxt = __new_buckets[__new_index]->_M_nxt;
-		  __new_buckets[__new_index]->_M_nxt = __p;
-		}
-	      __p = __next;
-	    }
-	  _M_deallocate_buckets(_M_buckets, _M_bucket_count);
-	  _M_bucket_count = __n;
-	  _M_buckets = __new_buckets;
+	  _M_rehash_aux(__n, integral_constant<bool, __uk>());
 	}
       __catch(...)
 	{
@@ -1627,6 +1607,136 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_rehash_policy._M_reset(__state);
 	  __throw_exception_again;
 	}
+    }
+
+  // Rehash when there is no equivalent elements.
+  template<typename _Key, typename _Value,
+	   typename _Allocator, typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
+	   bool __chc, bool __cit, bool __uk>
+    void
+    _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
+	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
+    _M_rehash_aux(size_type __n, std::true_type)
+    {
+      _Bucket* __new_buckets = _M_allocate_buckets(__n);
+      _Node* __p = _M_begin();
+      _M_before_begin._M_nxt = nullptr;
+      std::size_t __bbegin_bkt;
+      while (__p)
+	{
+	  _Node* __next = __p->_M_next();
+	  std::size_t __bkt = _HCBase::_M_bucket_index(__p, __n);
+	  if (!__new_buckets[__bkt])
+	    {
+	      __p->_M_nxt = _M_before_begin._M_nxt;
+	      _M_before_begin._M_nxt = __p;
+	      __new_buckets[__bkt] = &_M_before_begin;
+	      if (__p->_M_nxt)
+		__new_buckets[__bbegin_bkt] = __p;
+	      __bbegin_bkt = __bkt;
+	    }
+	  else
+	    {
+	      __p->_M_nxt = __new_buckets[__bkt]->_M_nxt;
+	      __new_buckets[__bkt]->_M_nxt = __p;
+	    }
+	  __p = __next;
+	}
+      _M_deallocate_buckets(_M_buckets, _M_bucket_count);
+      _M_bucket_count = __n;
+      _M_buckets = __new_buckets;
+    }
+
+  // Rehash when there can be equivalent elements, preserve their relative
+  // order.
+  template<typename _Key, typename _Value,
+	   typename _Allocator, typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
+	   bool __chc, bool __cit, bool __uk>
+    void
+    _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
+	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
+    _M_rehash_aux(size_type __n, std::false_type)
+    {
+      _Bucket* __new_buckets = _M_allocate_buckets(__n);
+
+      _Node* __p = _M_begin();
+      _M_before_begin._M_nxt = nullptr;
+      std::size_t __bbegin_bkt;
+      std::size_t __prev_bkt;
+      _Node* __prev_p = nullptr;
+      bool __check_bucket = false;
+
+      while (__p)
+	{
+	  bool __check_now = true;
+	  _Node* __next = __p->_M_next();
+	  std::size_t __bkt = _HCBase::_M_bucket_index(__p, __n);
+
+	  if (!__new_buckets[__bkt])
+	    {
+	      __p->_M_nxt = _M_before_begin._M_nxt;
+	      _M_before_begin._M_nxt = __p;
+	      __new_buckets[__bkt] = &_M_before_begin;
+	      if (__p->_M_nxt)
+		__new_buckets[__bbegin_bkt] = __p;
+	      __bbegin_bkt = __bkt;
+	    }
+	  else
+	    {
+	      if (__prev_p && __prev_bkt == __bkt)
+		{
+		  // Previous insert was already in this bucket, we insert after
+		  // the previously inserted one to preserve equivalent elements
+		  // relative order.
+		  __p->_M_nxt = __prev_p->_M_nxt;
+		  __prev_p->_M_nxt = __p;
+
+		  // Inserting after a node in a bucket require to check that we
+		  // haven't change the bucket last node, in this case next
+		  // bucket containing its before begin node must be updated. We
+		  // schedule a check as soon as we move out of the sequence of
+		  // equivalent nodes to limit the number of checks.
+		  __check_bucket = true;
+		  __check_now = false;
+		}
+	      else
+		{
+		  __p->_M_nxt = __new_buckets[__bkt]->_M_nxt;
+		  __new_buckets[__bkt]->_M_nxt = __p;
+		}
+	    }
+	  
+	  if (__check_now && __check_bucket)
+	    {
+	      // Check if we shall update the next bucket because of insertions
+	      // into __prev_bkt bucket.
+	      if (__prev_p->_M_nxt)
+		{
+		  std::size_t __next_bkt
+		    = _HCBase::_M_bucket_index(__prev_p->_M_next(), __n);
+		  if (__next_bkt != __prev_bkt)
+		    __new_buckets[__next_bkt] = __prev_p;
+		}
+	      __check_bucket = false;
+	    }
+	  __prev_p = __p;
+	  __prev_bkt = __bkt;
+	  __p = __next;
+	}
+
+      if (__check_bucket && __prev_p->_M_nxt)
+	{
+	  std::size_t __next_bkt
+	    = _HCBase::_M_bucket_index(__prev_p->_M_next(), __n);
+	  if (__next_bkt != __prev_bkt)
+	    __new_buckets[__next_bkt] = __prev_p;
+	}
+
+      _M_deallocate_buckets(_M_buckets, _M_bucket_count);
+      _M_bucket_count = __n;
+      _M_buckets = __new_buckets;
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

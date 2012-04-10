@@ -1,5 +1,5 @@
 /* Runtime conversion of strings from one character kind to another.
-   Copyright 2008, 2009 Free Software Foundation, Inc.
+   Copyright 2008, 2009, 2012 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -44,7 +44,7 @@ convert_char1_to_char4 (gfc_char4_t **dst, gfc_charlen_type len,
   gfc_charlen_type i, l;
 
   l = len > 0 ? len : 0;
-  *dst = get_mem ((l + 1) * sizeof (gfc_char4_t));
+  *dst = xmalloc ((l + 1) * sizeof (gfc_char4_t));
 
   for (i = 0; i < l; i++)
     (*dst)[i] = src[i];
@@ -60,7 +60,7 @@ convert_char4_to_char1 (unsigned char **dst, gfc_charlen_type len,
   gfc_charlen_type i, l;
 
   l = len > 0 ? len : 0;
-  *dst = get_mem ((l + 1) * sizeof (unsigned char));
+  *dst = xmalloc ((l + 1) * sizeof (unsigned char));
 
   for (i = 0; i < l; i++)
     (*dst)[i] = src[i];

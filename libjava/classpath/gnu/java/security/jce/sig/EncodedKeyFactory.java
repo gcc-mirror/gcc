@@ -1,5 +1,5 @@
 /* EncodedKeyFactory.java -- JCE Encoded key factory Adapter
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -78,7 +78,8 @@ import javax.crypto.spec.DHPublicKeySpec;
 public class EncodedKeyFactory
     extends KeyFactorySpi
 {
-  private static final Logger log = Logger.getLogger(EncodedKeyFactory.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                Logger.getLogger(EncodedKeyFactory.class.getName()) : null;
 
   private static Object invokeConstructor(String className, Object[] params)
       throws InvalidKeySpecException

@@ -34,6 +34,7 @@
 #include "langhooks.h"
 #include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
+#include "cfgloop.h"
 
 
 #define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
@@ -1270,6 +1271,12 @@ tm_log_emit_save_or_restores (basic_block entry_block,
   cond_bb = create_empty_bb (before_bb);
   code_bb = create_empty_bb (cond_bb);
   *end_bb = create_empty_bb (code_bb);
+  if (current_loops && before_bb->loop_father)
+    {
+      add_bb_to_loop (cond_bb, before_bb->loop_father);
+      add_bb_to_loop (code_bb, before_bb->loop_father);
+      add_bb_to_loop (*end_bb, before_bb->loop_father);
+    }
   redirect_edge_pred (fallthru_edge, *end_bb);
   fallthru_edge->flags = EDGE_FALLTHRU;
   make_edge (before_bb, cond_bb, old_flags);
@@ -2682,6 +2689,8 @@ expand_transaction (struct tm_region *region)
       basic_block test_bb;
 
       test_bb = create_empty_bb (slice_bb);
+      if (current_loops && slice_bb->loop_father)
+	add_bb_to_loop (test_bb, slice_bb->loop_father);
       if (VEC_empty (tree, tm_log_save_addresses))
 	region->entry_block = test_bb;
       gsi = gsi_last_bb (test_bb);
@@ -2719,6 +2728,8 @@ expand_transaction (struct tm_region *region)
       basic_block empty_bb;
 
       region->entry_block = empty_bb = create_empty_bb (atomic_bb);
+      if (current_loops && atomic_bb->loop_father)
+	add_bb_to_loop (empty_bb, atomic_bb->loop_father);
 
       e = FALLTHRU_EDGE (atomic_bb);
       redirect_edge_pred (e, empty_bb);

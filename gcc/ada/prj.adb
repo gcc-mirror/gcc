@@ -296,7 +296,7 @@ package body Prj is
          when Makefile =>
             return Extend_Name (Source_File_Name, Makefile_Dependency_Suffix);
 
-         when ALI_File =>
+         when ALI_File | ALI_Closure =>
             return Extend_Name (Source_File_Name, ALI_Dependency_Suffix);
       end case;
    end Dependency_Name;

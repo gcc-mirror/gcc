@@ -42,10 +42,18 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "config.h"
 
 #include <stdio.h>
-#include <math.h>
 #include <stddef.h>
 #include <float.h>
 #include <stdarg.h>
+
+#if HAVE_COMPLEX_H
+/* Must appear before math.h on VMS systems.  */
+# include <complex.h>
+#else
+#define complex __complex__
+#endif
+
+#include <math.h>
 
 /* If we're support quad-precision floating-point type, include the
    header to our support library.  */
@@ -64,12 +72,6 @@ extern long double __strtold (const char *, char **);
 #define gfc_strtof strtof
 #define gfc_strtod strtod
 #define gfc_strtold strtold
-#endif
-
-#if HAVE_COMPLEX_H
-# include <complex.h>
-#else
-#define complex __complex__
 #endif
 
 #include "../gcc/fortran/libgfortran.h"
@@ -753,11 +755,12 @@ internal_proto(set_fpu);
 
 /* memory.c */
 
-extern void *get_mem (size_t) __attribute__ ((malloc));
-internal_proto(get_mem);
+extern void *xmalloc (size_t) __attribute__ ((malloc));
+internal_proto(xmalloc);
 
-extern void *internal_malloc_size (size_t) __attribute__ ((malloc));
-internal_proto(internal_malloc_size);
+extern void *xcalloc (size_t, size_t) __attribute__ ((malloc));
+internal_proto(xcalloc);
+
 
 /* environ.c */
 

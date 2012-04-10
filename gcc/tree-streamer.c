@@ -293,7 +293,7 @@ preload_common_nodes (struct streamer_tree_cache_d *cache)
     if (i != itk_char)
       record_common_node (cache, integer_types[i]);
 
-  for (i = 0; i < TYPE_KIND_LAST; i++)
+  for (i = 0; i < stk_type_kind_last; i++)
     record_common_node (cache, sizetype_tab[i]);
 
   for (i = 0; i < TI_MAX; i++)

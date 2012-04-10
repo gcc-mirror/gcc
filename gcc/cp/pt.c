@@ -9112,12 +9112,6 @@ instantiate_class_template_1 (tree type)
       tree decl = lambda_function (type);
       if (decl)
 	{
-	  tree lambda = CLASSTYPE_LAMBDA_EXPR (type);
-	  if (LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (lambda))
-	    {
-	      apply_lambda_return_type (lambda, void_type_node);
-	      LAMBDA_EXPR_RETURN_TYPE (lambda) = NULL_TREE;
-	    }
 	  instantiate_decl (decl, false, false);
 	  maybe_add_lambda_conv_op (type);
 	}
@@ -11331,6 +11325,12 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     about the template parameter in question.  */
 	  return t;
 
+	/* Early in template argument deduction substitution, we don't
+	   want to reduce the level of 'auto', or it will be confused
+	   with a normal template parm in subsequent deduction.  */
+	if (is_auto (t) && (complain & tf_partial))
+	  return t;
+
 	/* If we get here, we must have been looking at a parm for a
 	   more deeply nested template.  Make a new version of this
 	   template parameter, but with a lower level.  */
@@ -11814,6 +11814,7 @@ tsubst_baselink (tree baselink, tree object_type,
     tree optype;
     tree template_args = 0;
     bool template_id_p = false;
+    bool qualified = BASELINK_QUALIFIED_P (baselink);
 
     /* A baselink indicates a function from a base class.  Both the
        BASELINK_ACCESS_BINFO and the base class referenced may
@@ -11862,9 +11863,12 @@ tsubst_baselink (tree baselink, tree object_type,
 
     if (!object_type)
       object_type = current_class_type;
-    return adjust_result_of_qualified_name_lookup (baselink,
-						   qualifying_scope,
-						   object_type);
+
+    if (qualified)
+      baselink = adjust_result_of_qualified_name_lookup (baselink,
+							 qualifying_scope,
+							 object_type);
+    return baselink;
 }
 
 /* Like tsubst_expr for a SCOPE_REF, given by QUALIFIED_ID.  DONE is
@@ -13444,7 +13448,7 @@ tsubst_copy_and_build (tree t,
     case STATIC_CAST_EXPR:
       {
 	tree type;
-	tree op;
+	tree op, r = NULL_TREE;
 
 	type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	if (integral_constant_expression_p
@@ -13458,21 +13462,30 @@ tsubst_copy_and_build (tree t,
 
 	op = RECUR (TREE_OPERAND (t, 0));
 
+	++c_inhibit_evaluation_warnings;
 	switch (TREE_CODE (t))
 	  {
 	  case CAST_EXPR:
-	    return build_functional_cast (type, op, complain);
+	    r = build_functional_cast (type, op, complain);
+	    break;
 	  case REINTERPRET_CAST_EXPR:
-	    return build_reinterpret_cast (type, op, complain);
+	    r = build_reinterpret_cast (type, op, complain);
+	    break;
 	  case CONST_CAST_EXPR:
-	    return build_const_cast (type, op, complain);
+	    r = build_const_cast (type, op, complain);
+	    break;
 	  case DYNAMIC_CAST_EXPR:
-	    return build_dynamic_cast (type, op, complain);
+	    r = build_dynamic_cast (type, op, complain);
+	    break;
 	  case STATIC_CAST_EXPR:
-	    return build_static_cast (type, op, complain);
+	    r = build_static_cast (type, op, complain);
+	    break;
 	  default:
 	    gcc_unreachable ();
 	  }
+	--c_inhibit_evaluation_warnings;
+
+	return r;
       }
 
     case POSTDECREMENT_EXPR:
@@ -14325,14 +14338,8 @@ tsubst_copy_and_build (tree t,
 	  = (LAMBDA_EXPR_DISCRIMINATOR (t));
 	LAMBDA_EXPR_EXTRA_SCOPE (r)
 	  = RECUR (LAMBDA_EXPR_EXTRA_SCOPE (t));
-	if (LAMBDA_EXPR_RETURN_TYPE (t) == dependent_lambda_return_type_node)
-	  {
-	    LAMBDA_EXPR_RETURN_TYPE (r) = dependent_lambda_return_type_node;
-	    LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (r) = true;
-	  }
-	else
-	  LAMBDA_EXPR_RETURN_TYPE (r)
-	    = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
+	LAMBDA_EXPR_RETURN_TYPE (r)
+	  = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
 
 	gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 		    && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
@@ -14851,7 +14858,7 @@ fn_type_unification (tree fn,
       fntype = deduction_tsubst_fntype (fn, converted_args,
 					(explain_p
 					 ? tf_warning_or_error
-					 : tf_none));
+					 : tf_none) | tf_partial);
       processing_template_decl -= incomplete;
 
       if (fntype == error_mark_node)
@@ -16266,7 +16273,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	   to see if it matches ARG.  */
 	{
 	  if (TREE_CODE (arg) == TREE_CODE (parm)
-	      && same_type_p (parm, arg))
+	      && (is_auto (parm) ? is_auto (arg)
+		  : same_type_p (parm, arg)))
 	    return unify_success (explain_p);
 	  else
 	    return unify_type_mismatch (explain_p, parm, arg);
@@ -17124,46 +17132,6 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 	  quals2 = cp_type_quals (arg2);
 	}
 
-      if ((quals1 < 0) != (quals2 < 0))
-	{
-	  /* Only of the args is a reference, see if we should apply
-	     array/function pointer decay to it.  This is not part of
-	     DR214, but is, IMHO, consistent with the deduction rules
-	     for the function call itself, and with our earlier
-	     implementation of the underspecified partial ordering
-	     rules.  (nathan).  */
-	  if (quals1 >= 0)
-	    {
-	      switch (TREE_CODE (arg1))
-		{
-		case ARRAY_TYPE:
-		  arg1 = TREE_TYPE (arg1);
-		  /* FALLTHROUGH. */
-		case FUNCTION_TYPE:
-		  arg1 = build_pointer_type (arg1);
-		  break;
-
-		default:
-		  break;
-		}
-	    }
-	  else
-	    {
-	      switch (TREE_CODE (arg2))
-		{
-		case ARRAY_TYPE:
-		  arg2 = TREE_TYPE (arg2);
-		  /* FALLTHROUGH. */
-		case FUNCTION_TYPE:
-		  arg2 = build_pointer_type (arg2);
-		  break;
-
-		default:
-		  break;
-		}
-	    }
-	}
-
       arg1 = TYPE_MAIN_VARIANT (arg1);
       arg2 = TYPE_MAIN_VARIANT (arg2);
 
@@ -17399,7 +17367,7 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
      The call to fn_type_unification will handle substitution into the
      FN.  */
   decl_type = TREE_TYPE (decl);
-  if (explicit_args && uses_template_parms (decl_type))
+  if (explicit_args && decl == DECL_TEMPLATE_RESULT (fn))
     {
       tree tmpl;
       tree converted_args;
@@ -18306,7 +18274,8 @@ always_instantiate_p (tree decl)
      that for "extern template" functions.  Therefore, we check
      DECL_DECLARED_INLINE_P, rather than possibly_inlined_p.  */
   return ((TREE_CODE (decl) == FUNCTION_DECL
-	   && DECL_DECLARED_INLINE_P (decl))
+	   && (DECL_DECLARED_INLINE_P (decl)
+	       || type_uses_auto (TREE_TYPE (TREE_TYPE (decl)))))
 	  /* And we need to instantiate static data members so that
 	     their initializers are available in integral constant
 	     expressions.  */
@@ -18956,6 +18925,7 @@ tsubst_initializer_list (tree t, tree argvec)
             }
           else
             {
+	      tree tmp;
               decl = tsubst_copy (TREE_PURPOSE (t), argvec, 
                                   tf_warning_or_error, NULL_TREE);
 
@@ -18964,10 +18934,17 @@ tsubst_initializer_list (tree t, tree argvec)
                 in_base_initializer = 1;
 
 	      init = TREE_VALUE (t);
+	      tmp = init;
 	      if (init != void_type_node)
 		init = tsubst_expr (init, argvec,
 				    tf_warning_or_error, NULL_TREE,
 				    /*integral_constant_expression_p=*/false);
+	      if (init == NULL_TREE && tmp != NULL_TREE)
+		/* If we had an initializer but it instantiated to nothing,
+		   value-initialize the object.  This will only occur when
+		   the initializer was a pack expansion where the parameter
+		   packs used in that expansion were of length zero.  */
+		init = void_type_node;
               in_base_initializer = 0;
             }
 
@@ -20260,20 +20237,6 @@ listify_autos (tree type, tree auto_node)
   return tsubst (type, argvec, tf_warning_or_error, NULL_TREE);
 }
 
-/* walk_tree helper for do_auto_deduction.  */
-
-static tree
-contains_auto_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		 void *type)
-{
-  /* Is this a variable with the type we're looking for?  */
-  if (DECL_P (*tp)
-      && TREE_TYPE (*tp) == type)
-    return *tp;
-  else
-    return NULL_TREE;
-}
-
 /* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
    from INIT.  AUTO_NODE is the TEMPLATE_TYPE_PARM used for 'auto' in TYPE.  */
 
@@ -20282,24 +20245,16 @@ do_auto_deduction (tree type, tree init, tree auto_node)
 {
   tree parms, tparms, targs;
   tree args[1];
-  tree decl;
   int val;
+
+  if (init == error_mark_node)
+    return error_mark_node;
 
   if (processing_template_decl
       && (TREE_TYPE (init) == NULL_TREE
 	  || BRACE_ENCLOSED_INITIALIZER_P (init)))
     /* Not enough information to try this yet.  */
     return type;
-
-  /* The name of the object being declared shall not appear in the
-     initializer expression.  */
-  decl = cp_walk_tree_without_duplicates (&init, contains_auto_r, type);
-  if (decl)
-    {
-      error ("variable %q#D with %<auto%> type used in its own "
-	     "initializer", decl);
-      return error_mark_node;
-    }
 
   /* [dcl.spec.auto]: Obtain P from T by replacing the occurrences of auto
      with either a new invented type template parameter U or, if the
@@ -20328,7 +20283,13 @@ do_auto_deduction (tree type, tree init, tree auto_node)
 	/* If type is error_mark_node a diagnostic must have been
 	   emitted by now.  Also, having a mention to '<type error>'
 	   in the diagnostic is not really useful to the user.  */
-	error ("unable to deduce %qT from %qE", type, init);
+	{
+	  if (cfun && auto_node == current_function_auto_return_pattern
+	      && LAMBDA_FUNCTION_P (current_function_decl))
+	    error ("unable to deduce lambda return type from %qE", init);
+	  else
+	    error ("unable to deduce %qT from %qE", type, init);
+	}
       return error_mark_node;
     }
 
@@ -20339,8 +20300,14 @@ do_auto_deduction (tree type, tree init, tree auto_node)
   if (TREE_TYPE (auto_node)
       && !same_type_p (TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0)))
     {
-      error ("inconsistent deduction for %qT: %qT and then %qT",
-	     auto_node, TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0));
+      if (cfun && auto_node == current_function_auto_return_pattern
+	  && LAMBDA_FUNCTION_P (current_function_decl))
+	error ("inconsistent types %qT and %qT deduced for "
+	       "lambda return type", TREE_TYPE (auto_node),
+	       TREE_VEC_ELT (targs, 0));
+      else
+	error ("inconsistent deduction for %qT: %qT and then %qT",
+	       auto_node, TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0));
       return error_mark_node;
     }
   TREE_TYPE (auto_node) = TREE_VEC_ELT (targs, 0);

@@ -29,10 +29,37 @@ SUBDIRS = c++98 c++11
 # Cross compiler support.
 toolexeclib_LTLIBRARIES = libstdc++.la
 
-vpath % $(top_srcdir)/src
-vpath % $(top_srcdir)
+vpath % $(top_srcdir)/src/c++98
+vpath % $(top_srcdir)/src/c++11
 
-libstdc___la_SOURCES =
+if GLIBCXX_LDBL_COMPAT
+ldbl_compat_sources = compatibility-ldbl.cc
+else
+ldbl_compat_sources =
+endif
+
+if ENABLE_PARALLEL
+parallel_compat_sources = \
+	compatibility-parallel_list.cc  compatibility-parallel_list-2.cc
+else
+parallel_compat_sources =
+endif
+
+cxx98_sources = \
+	compatibility.cc \
+	compatibility-debug_list.cc \
+	compatibility-debug_list-2.cc \
+	compatibility-list.cc \
+	compatibility-list-2.cc \
+	${ldbl_compat_sources} \
+	${parallel_compat_sources}
+
+cxx11_sources = \
+	compatibility-c++0x.cc \
+	compatibility-atomic-c++0x.cc \
+	compatibility-thread-c++0x.cc
+
+libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
 
 libstdc___la_LIBADD = \
 	$(GLIBCXX_LIBS) \
@@ -52,6 +79,43 @@ libstdc___la_LDFLAGS = \
 libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
 
 
+# Use special rules for parallel mode compilation.
+PARALLEL_FLAGS = -fopenmp -D_GLIBCXX_PARALLEL -I$(glibcxx_builddir)/../libgomp
+compatibility-parallel_list.lo: compatibility-parallel_list.cc
+	$(LTCXXCOMPILE) -c $<
+compatibility-parallel_list.o: compatibility-parallel_list.cc
+	$(CXXCOMPILE) -c $<
+
+compatibility-parallel_list-2.lo: compatibility-parallel_list-2.cc
+	$(LTCXXCOMPILE) -c $<
+compatibility-parallel_list-2.o: compatibility-parallel_list-2.cc
+	$(CXXCOMPILE) -c $<
+
+# Use special rules for compatibility-ldbl.cc compilation, as we need to
+# pass -mlong-double-64.
+if GLIBCXX_LDBL_COMPAT
+compatibility-ldbl.lo: compatibility-ldbl.cc
+	$(LTCXXCOMPILE) -mlong-double-64 -c $<
+compatibility-ldbl.o: compatibility-ldbl.cc
+	$(CXXCOMPILE) -mlong-double-64 -c $<
+endif
+
+# Use special rules for C++11 files/objects.
+compatibility-c++0x.lo: compatibility-c++0x.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+compatibility-c++0x.o: compatibility-c++0x.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+compatibility-atomic-c++0x.lo: compatibility-atomic-c++0x.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+compatibility-atomic-c++0x.o: compatibility-atomic-c++0x.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+compatibility-thread-c++0x.lo: compatibility-thread-c++0x.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+compatibility-thread-c++0x.o: compatibility-thread-c++0x.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
@@ -59,12 +123,9 @@ libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
 # as the occasion calls for it.
 AM_CXXFLAGS = \
 	$(XTEMPLATE_FLAGS) \
-	$(WARN_CXXFLAGS) \
-	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS)
+	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
 
-
-# libstdc++ libtool notes
+# Libtool notes
 
 # 1) Need to explicitly set LTCXXCOMPILE so that AM_CXXFLAGS is
 # last. (That way, things like -O2 passed down from the toplevel can
@@ -82,10 +143,11 @@ AM_CXXFLAGS = \
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX \
-	       $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
-	       $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	       $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = \
+	$(LIBTOOL) --tag CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(CXX) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
@@ -95,8 +157,12 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 # course is problematic at this point.  So, we get the top-level
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
-CXXLINK = $(LIBTOOL) --tag CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
-	  $(CXX) $(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
+CXXLINK = \
+	$(LIBTOOL) --tag CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXX) \
+	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
+
 
 # Symbol versioning for shared libraries.
 if ENABLE_SYMVERS
@@ -116,7 +182,7 @@ libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 	  fi; \
 	fi
 	$(EGREP) -v '^[ 	]*#(#| |$$)' $@.tmp | \
-	  $(COMPILE) -E -P -include config.h - > $@ || (rm -f $@ ; exit 1)
+	  $(CC) -E -P -include ../config.h - > $@ || (rm -f $@ ; exit 1)
 	rm -f $@.tmp
 
 CLEANFILES = libstdc++-symbols.ver
@@ -165,7 +231,6 @@ endif
 
 
 # Control additional build primary rules.
-# EXTRA_LTLIBRARIES =
 all-once: libstdc++convenience.la $(STAMP_DEBUG)
 install-data-once: $(STAMP_INSTALL_DEBUG)
 
@@ -228,8 +293,9 @@ build-debug: stamp-debug
 	  mv Makefile Makefile.tmp; \
 	  sed -e 's,all-local: all-once,all-local:,' \
 	      -e 's,install-data-local: install-data-once,install-data-local:,' \
-	      -e 's,src/c,src/debug/c,' \
+	      -e '/vpath/!s,src/c,src/debug/c,' \
 	  < Makefile.tmp > Makefile ; \
+	  rm -f Makefile.tmp ; \
 	  $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' \
 	  toolexeclibdir=$(glibcxx_toolexeclibdir)/debug all) ;
 

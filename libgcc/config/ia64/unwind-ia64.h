@@ -18,11 +18,20 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#ifdef __VMS__
+/* On VMS, long is a 32 bit type.  */
+typedef unsigned long long unw_word;
+typedef long long unw_sword;
+#else
+typedef unsigned long unw_word;
+typedef long unw_sword;
+#endif
+
 struct unw_table_entry
 {
-  unsigned long start_offset;
-  unsigned long end_offset;
-  unsigned long info_offset;
+  unw_word start_offset;
+  unw_word end_offset;
+  unw_word info_offset;
 };
 
 /* Accessors to fields of an unwind info block header.  In this common file to
@@ -38,6 +47,6 @@ struct unw_table_entry
 #endif
 
 extern struct unw_table_entry *
-_Unwind_FindTableEntry (void *pc, unsigned long *segment_base,
-			unsigned long *gp, struct unw_table_entry *ent)
+_Unwind_FindTableEntry (void *pc, unw_word *segment_base,
+			unw_word *gp, struct unw_table_entry *ent)
 			__attribute__ ((__visibility__ ("hidden")));

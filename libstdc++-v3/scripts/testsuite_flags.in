@@ -54,7 +54,7 @@ case ${query} in
       echo ${CC}
       ;;
     --cxxflags)
-      CXXFLAGS_default="-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0"
+      CXXFLAGS_default="-D_GLIBCXX_ASSERT -fmessage-length=0"
       CXXFLAGS_config="@SECTION_FLAGS@ @CXXFLAGS@ @EXTRA_CXX_FLAGS@"
       echo ${CXXFLAGS_default} ${CXXFLAGS_config}
       ;;

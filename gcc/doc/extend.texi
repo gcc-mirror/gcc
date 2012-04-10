@@ -15162,16 +15162,7 @@ GNU/Linux or Solaris 2, or on Microsoft Windows, G++ supports the
 Borland model.  On other systems, G++ implements neither automatic
 model.
 
-A future version of G++ will support a hybrid model whereby the compiler
-will emit any instantiations for which the template definition is
-included in the compile, and store template definitions and
-instantiation context information into the object file for the rest.
-The link wrapper will extract that information as necessary and invoke
-the compiler to produce the remaining instantiations.  The linker will
-then combine duplicate instantiations.
-
-In the mean time, you have the following options for dealing with
-template instantiations:
+You have the following options for dealing with template instantiations:
 
 @enumerate
 @item
@@ -15233,9 +15224,10 @@ compile it without @option{-fno-implicit-templates} so you get all of the
 instances required by your explicit instantiations (but not by any
 other files) without having to specify them as well.
 
-G++ has extended the template instantiation syntax given in the ISO
-standard to allow forward declaration of explicit instantiations
-(with @code{extern}), instantiation of the compiler support data for a
+The ISO C++ 2011 standard allows forward declaration of explicit
+instantiations (with @code{extern}). G++ supports explicit instantiation
+declarations in C++98 mode and has extended the template instantiation
+syntax to support instantiation of the compiler support data for a
 template class (i.e.@: the vtable) without instantiating any of its
 members (with @code{inline}), and instantiation of only the static data
 members of a template class, without the support data or member

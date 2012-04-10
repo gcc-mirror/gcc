@@ -1430,6 +1430,8 @@ execute_cse_sincos (void)
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
+		      if (gimple_vdef (stmt))
+			release_ssa_name (gimple_vdef (stmt));
 		    }
 		  break;
 
@@ -1450,6 +1452,8 @@ execute_cse_sincos (void)
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
+		      if (gimple_vdef (stmt))
+			release_ssa_name (gimple_vdef (stmt));
 		    }
 		  break;
 
@@ -1465,6 +1469,8 @@ execute_cse_sincos (void)
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
+		      if (gimple_vdef (stmt))
+			release_ssa_name (gimple_vdef (stmt));
 		    }
 		  break;
 
@@ -2658,10 +2664,10 @@ execute_optimize_widening_mul (void)
 						    gimple_call_arg (stmt, 0)))
 			  {
 			    unlink_stmt_vdef (stmt);
-			    gsi_remove (&gsi, true);
-			    release_defs (stmt);
-			    if (gimple_purge_dead_eh_edges (bb))
+			    if (gsi_remove (&gsi, true)
+				&& gimple_purge_dead_eh_edges (bb))
 			      cfg_changed = true;
+			    release_defs (stmt);
 			    continue;
 			  }
 			  break;

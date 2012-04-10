@@ -1,6 +1,7 @@
 // C++11 type_traits -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1794,6 +1795,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp>
 	static _Tp _S_get(const _Class&);
       template<typename _Tp>
+	static _Tp _S_get(const volatile _Class&);
+      template<typename _Tp>
 	static decltype(*std::declval<_Tp>()) _S_get(...);
         
     public:
@@ -1813,6 +1816,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Tp>
 	static _Tp _S_get(const _Class&);
+      template<typename _Tp>
+	static _Tp _S_get(const volatile _Class&);
       template<typename _Tp>
 	static decltype(*std::declval<_Tp>()) _S_get(...);
         
@@ -1836,22 +1841,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _MemPtr, typename _Arg>
     struct _Result_of_impl<true, false, _MemPtr, _Arg>
-    : _Result_of_memobj<typename remove_reference<_MemPtr>::type, _Arg>
-    {
-      typedef typename _Result_of_memobj<
-	typename remove_reference<_MemPtr>::type, _Arg>::__type
-	__type;
-    };
+    : _Result_of_memobj<typename decay<_MemPtr>::type, _Arg>
+    { };
 
   template<typename _MemPtr, typename _Arg, typename... _ArgTypes>
     struct _Result_of_impl<false, true, _MemPtr, _Arg, _ArgTypes...>
-    : _Result_of_memfun<typename remove_reference<_MemPtr>::type, _Arg,
-                        _ArgTypes...>
-    {
-      typedef typename _Result_of_memfun<
-	typename remove_reference<_MemPtr>::type, _Arg, _ArgTypes...>::__type
-	__type;
-    };
+    : _Result_of_memfun<typename decay<_MemPtr>::type, _Arg, _ArgTypes...>
+    { };
 
   template<typename _Functor, typename... _ArgTypes>
     struct result_of<_Functor(_ArgTypes...)>

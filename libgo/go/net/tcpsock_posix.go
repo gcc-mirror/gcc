@@ -9,7 +9,6 @@
 package net
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"syscall"
@@ -30,7 +29,7 @@ func sockaddrToTCP(sa syscall.Sockaddr) Addr {
 	default:
 		if sa != nil {
 			// Diagnose when we will turn a non-nil sockaddr into a nil.
-			panic(fmt.Sprintf("unexpected type in sockaddrToTCP: %T", sa))
+			panic("unexpected type in sockaddrToTCP")
 		}
 	}
 	return nil
@@ -44,6 +43,13 @@ func (a *TCPAddr) family() int {
 		return syscall.AF_INET
 	}
 	return syscall.AF_INET6
+}
+
+func (a *TCPAddr) isWildcard() bool {
+	if a == nil || a.IP == nil {
+		return true
+	}
+	return a.IP.IsUnspecified()
 }
 
 func (a *TCPAddr) sockaddr(family int) (syscall.Sockaddr, error) {

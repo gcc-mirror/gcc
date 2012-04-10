@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,6 +196,10 @@ package body Lib.Writ is
       Elab_All_Des_Flags : array (Units.First .. Last_Unit) of Boolean;
       --  Array of flags to show which units have Elaborate_All_Desirable set
 
+      type Yes_No is (Unknown, Yes, No);
+
+      Implicit_With : array (Units.First .. Last_Unit) of Yes_No;
+
       Sdep_Table : Unit_Ref_Table (1 .. Pos (Last_Unit - Units.First + 2));
       --  Sorted table of source dependencies. One extra entry in case we
       --  have to add a dummy entry for System.
@@ -275,6 +279,15 @@ package body Lib.Writ is
 
                else
                   Set_From_With_Type (Cunit_Entity (Unum));
+               end if;
+
+               if Implicit_With (Unum) /= Yes then
+                  if Implicit_With_From_Instantiation (Item) then
+                     Implicit_With (Unum) := Yes;
+
+                  else
+                     Implicit_With (Unum) := No;
+                  end if;
                end if;
             end if;
 
@@ -552,6 +565,7 @@ package body Lib.Writ is
             Elab_All_Flags     (J) := False;
             Elab_Des_Flags     (J) := False;
             Elab_All_Des_Flags (J) := False;
+            Implicit_With      (J) := Unknown;
          end loop;
 
          Collect_Withs (Unode);
@@ -770,10 +784,14 @@ package body Lib.Writ is
             Uname  := Units.Table (Unum).Unit_Name;
             Fname  := Units.Table (Unum).Unit_File_Name;
 
-            if Ekind (Cunit_Entity (Unum)) = E_Package
+            if Implicit_With (Unum) = Yes then
+               Write_Info_Initiate ('Z');
+
+            elsif Ekind (Cunit_Entity (Unum)) = E_Package
               and then From_With_Type (Cunit_Entity (Unum))
             then
                Write_Info_Initiate ('Y');
+
             else
                Write_Info_Initiate ('W');
             end if;

@@ -325,9 +325,9 @@ remove_prop_source_from_use (tree name)
     bb = gimple_bb (stmt);
     gsi = gsi_for_stmt (stmt);
     unlink_stmt_vdef (stmt);
-    gsi_remove (&gsi, true);
+    if (gsi_remove (&gsi, true))
+      cfg_changed |= gimple_purge_dead_eh_edges (bb);
     release_defs (stmt);
-    cfg_changed |= gimple_purge_dead_eh_edges (bb);
 
     name = is_gimple_assign (stmt) ? gimple_assign_rhs1 (stmt) : NULL_TREE;
   } while (name && TREE_CODE (name) == SSA_NAME);
@@ -905,6 +905,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
          that of the pointed-to type of the address we can put the
 	 dereferenced address on the LHS preserving the original alias-type.  */
       else if (gimple_assign_lhs (use_stmt) == lhs
+	       && integer_zerop (TREE_OPERAND (lhs, 1))
 	       && useless_type_conversion_p
 	            (TREE_TYPE (TREE_OPERAND (def_rhs, 0)),
 		     TREE_TYPE (gimple_assign_rhs1 (use_stmt))))
@@ -917,9 +918,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  if (TREE_CODE (*def_rhs_basep) == MEM_REF)
 	    {
 	      new_base = TREE_OPERAND (*def_rhs_basep, 0);
-	      new_offset
-		= int_const_binop (PLUS_EXPR, TREE_OPERAND (lhs, 1),
-				   TREE_OPERAND (*def_rhs_basep, 1));
+	      new_offset = fold_convert (TREE_TYPE (TREE_OPERAND (lhs, 1)),
+					 TREE_OPERAND (*def_rhs_basep, 1));
 	    }
 	  else
 	    {
@@ -989,6 +989,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
          that of the pointed-to type of the address we can put the
 	 dereferenced address on the RHS preserving the original alias-type.  */
       else if (gimple_assign_rhs1 (use_stmt) == rhs
+	       && integer_zerop (TREE_OPERAND (rhs, 1))
 	       && useless_type_conversion_p
 		    (TREE_TYPE (gimple_assign_lhs (use_stmt)),
 		     TREE_TYPE (TREE_OPERAND (def_rhs, 0))))
@@ -1001,9 +1002,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  if (TREE_CODE (*def_rhs_basep) == MEM_REF)
 	    {
 	      new_base = TREE_OPERAND (*def_rhs_basep, 0);
-	      new_offset
-		= int_const_binop (PLUS_EXPR, TREE_OPERAND (rhs, 1),
-				   TREE_OPERAND (*def_rhs_basep, 1));
+	      new_offset = fold_convert (TREE_TYPE (TREE_OPERAND (rhs, 1)),
+					 TREE_OPERAND (*def_rhs_basep, 1));
 	    }
 	  else
 	    {

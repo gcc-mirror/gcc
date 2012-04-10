@@ -1,3 +1,8 @@
+2012-04-09  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 186243 into gupc branch.
+	Incorporates a powerpc 'ffi' fix.
+
 2012-03-16  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 185454 into gupc branch.

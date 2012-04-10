@@ -37,10 +37,16 @@
 ;;  P27: 1 | 2 | 8 | 16
 ;;  Pso: 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128
 ;;  Psz: ~1 | ~2 | ~4 | ~8 | ~16 | ~32 | ~64 | ~128
+;; G: Floating point 0
+;; H: Floating point 1
 ;; Q: pc relative load operand
 ;; Rxx: reserved for exotic register classes.
-;; Sxx: extra memory (storage) constraints
-;;  Sua: unaligned memory operations
+;; Sxx: extra memory constraints
+;;  Sua: unaligned memory address
+;;  Sbv: QImode address without displacement
+;;  Sbw: QImode address with 12 bit displacement
+;;  Snd: address without displacement
+;;  Sdd: address with displacement
 ;; W: vector
 ;; Z: zero in any mode
 ;;
@@ -123,6 +129,7 @@
        (match_test "ival >=  -134217728 && ival <= 134217727")
        (match_test "(ival & 255) == 0")
        (match_test "TARGET_SH2A")))
+
 (define_constraint "J16"
   "0xffffffff00000000 or 0x00000000ffffffff."
   (and (match_code "const_int")
@@ -132,6 +139,11 @@
   "An unsigned 3-bit constant, as used in SH2A bclr, bset, etc."
   (and (match_code "const_int")
        (match_test "ival >= 0 && ival <= 7")))
+
+(define_constraint "K04"
+  "An unsigned 4-bit constant, as used in mov.b displacement addressing."
+  (and (match_code "const_int")
+       (match_test "ival >= 0 && ival <= 15")))
 
 (define_constraint "K08"
   "An unsigned 8-bit constant, as used in and, or, etc."
@@ -245,11 +257,6 @@
 	    (match_test "~ival == 64")
 	    (match_test "~ival == 128"))))
 
-(define_memory_constraint "Sr0"
-  "@internal"
-  (and (match_test "memory_operand (op, GET_MODE (op))")
-       (match_test "!refers_to_regno_p (R0_REG, R0_REG + 1, op, (rtx *) 0)")))
-
 (define_memory_constraint "Sua"
   "@internal"
   (and (match_test "memory_operand (op, GET_MODE (op))")
@@ -266,3 +273,11 @@
        (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
        (match_test "REG_P (XEXP (XEXP (op, 0), 0))")
        (match_test "satisfies_constraint_K12 (XEXP (XEXP (op, 0), 1))")))
+
+(define_memory_constraint "Snd"
+  "A memory reference that excludes displacement addressing."
+  (match_test "! DISP_ADDR_P (op)"))
+
+(define_memory_constraint "Sdd"
+  "A memory reference that uses displacement addressing."
+  (match_test "DISP_ADDR_P (op)"))

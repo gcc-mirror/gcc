@@ -182,16 +182,19 @@ package body Sem_Elab is
       In_Init_Proc      : Boolean := False);
    --  This is the internal recursive routine that is called to check for
    --  possible elaboration error. The argument N is a subprogram call or
-   --  generic instantiation to be checked, and E is the entity of the called
-   --  subprogram, or instantiated generic unit. The flag Outer_Scope is the
-   --  outer level scope for the original call. Inter_Unit_Only is set if the
-   --  call is only to be checked in the case where it is to another unit (and
-   --  skipped if within a unit). Generate_Warnings is set to False to suppress
-   --  warning messages about missing pragma Elaborate_All's. These messages
-   --  are not wanted for inner calls in the dynamic model. Note that an
-   --  instance of the Access attribute applied to a subprogram also generates
-   --  a call to this procedure (since the referenced subprogram may be called
-   --  later indirectly). Flag In_Init_Proc should be set whenever the current
+   --  generic instantiation, or 'Access attribute reference to be checked, and
+   --  E is the entity of the called subprogram, or instantiated generic unit,
+   --  or subprogram referenced by 'Access.
+   --
+   --  The flag Outer_Scope is the outer level scope for the original call.
+   --  Inter_Unit_Only is set if the call is only to be checked in the
+   --  case where it is to another unit (and skipped if within a unit).
+   --  Generate_Warnings is set to False to suppress warning messages about
+   --  missing pragma Elaborate_All's. These messages are not wanted for
+   --  inner calls in the dynamic model. Note that an instance of the Access
+   --  attribute applied to a subprogram also generates a call to this
+   --  procedure (since the referenced subprogram may be called later
+   --  indirectly). Flag In_Init_Proc should be set whenever the current
    --  context is a type init proc.
 
    procedure Check_Bad_Instantiation (N : Node_Id);
@@ -519,6 +522,9 @@ package body Sem_Elab is
       Inst_Case : constant Boolean := Nkind (N) in N_Generic_Instantiation;
       --  Indicates if we have instantiation case
 
+      Access_Case : constant Boolean := Nkind (N) = N_Attribute_Reference;
+      --  Indicates if we have Access attribute case
+
       Caller_Unit_Internal : Boolean;
       Callee_Unit_Internal : Boolean;
 
@@ -704,9 +710,9 @@ package body Sem_Elab is
            Is_Internal_File_Name
              (Unit_File_Name (Get_Source_Unit (E_Scope)));
 
-         --  Do not give a warning if the with'ed unit is internal
-         --  and this is the generic instantiation case (this saves a
-         --  lot of hassle dealing with the Text_IO special child units)
+         --  Do not give a warning if the with'ed unit is internal and this is
+         --  the generic instantiation case (this saves a lot of hassle dealing
+         --  with the Text_IO special child units)
 
          if Callee_Unit_Internal and Inst_Case then
             return;
@@ -720,9 +726,9 @@ package body Sem_Elab is
                 (Unit_File_Name (Get_Source_Unit (C_Scope)));
          end if;
 
-         --  Do not give a warning if the with'ed unit is internal
-         --  and the caller is not internal (since the binder always
-         --  elaborates internal units first).
+         --  Do not give a warning if the with'ed unit is internal and the
+         --  caller is not internal (since the binder always elaborates
+         --  internal units first).
 
          if Callee_Unit_Internal and (not Caller_Unit_Internal) then
             return;
@@ -743,15 +749,15 @@ package body Sem_Elab is
          end if;
 
          --  If the call is in an instance, and the called entity is not
-         --  defined in the same instance, then the elaboration issue
-         --  focuses around the unit containing the template, it is
-         --  this unit which requires an Elaborate_All.
+         --  defined in the same instance, then the elaboration issue focuses
+         --  around the unit containing the template, it is this unit which
+         --  requires an Elaborate_All.
 
-         --  However, if we are doing dynamic elaboration, we need to
-         --  chase the call in the usual manner.
+         --  However, if we are doing dynamic elaboration, we need to chase the
+         --  call in the usual manner.
 
-         --  We do not handle the case of calling a generic formal correctly
-         --  in the static case. See test 4703-004 to explore this gap ???
+         --  We do not handle the case of calling a generic formal correctly in
+         --  the static case.???
 
          Inst_Caller := Instantiation (Get_Source_File_Index (Sloc (N)));
          Inst_Callee := Instantiation (Get_Source_File_Index (Sloc (Ent)));
@@ -871,6 +877,8 @@ package body Sem_Elab is
                   Ent   : Node_Or_Entity_Id);
                --  Generate a call to Error_Msg_NE with parameters Msg_D or
                --  Msg_S (for dynamic or static elaboration model), N and Ent.
+               --  Msg_D is suppressed for the attribute reference case, since
+               --  we never raise Program_Error for an attribute reference.
 
                ------------------
                -- Elab_Warning --
@@ -883,7 +891,9 @@ package body Sem_Elab is
                is
                begin
                   if Dynamic_Elaboration_Checks then
-                     Error_Msg_NE (Msg_D, N, Ent);
+                     if not Access_Case then
+                        Error_Msg_NE (Msg_D, N, Ent);
+                     end if;
                   else
                      Error_Msg_NE (Msg_S, N, Ent);
                   end if;
@@ -892,10 +902,22 @@ package body Sem_Elab is
             --  Start of processing for Generate_Elab_Warnings
 
             begin
+               --  Instantiation case
+
                if Inst_Case then
                   Elab_Warning
                     ("instantiation of& may raise Program_Error?",
                      "info: instantiation of& during elaboration?", Ent);
+
+               --  Indirect call case, warning only in static elaboration
+               --  case, because the attribute reference itself cannot raise
+               --  an exception.
+
+               elsif Access_Case then
+                  Elab_Warning
+                    ("", "info: access to& during elaboration?", Ent);
+
+               --  Subprogram call case
 
                else
                   if Nkind (Name (N)) in N_Has_Entity
@@ -922,6 +944,7 @@ package body Sem_Elab is
                     ("\missing pragma Elaborate for&?",
                      "\info: implicit pragma Elaborate for& generated?",
                      W_Scope);
+
                else
                   Elab_Warning
                     ("\missing pragma Elaborate_All for&?",
@@ -960,7 +983,8 @@ package body Sem_Elab is
                Insert_Elab_Check (N,
                  Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Elaborated,
-                   Prefix => New_Occurrence_Of (Spec_Entity (E_Scope), Loc)));
+                   Prefix         =>
+                     New_Occurrence_Of (Spec_Entity (E_Scope), Loc)));
 
                --  Prevent duplicate elaboration checks on the same call,
                --  which can happen if the body enclosing the call appears
@@ -990,9 +1014,7 @@ package body Sem_Elab is
             --  Do not generate an Elaborate_All for finalization routines
             --  which perform partial clean up as part of initialization.
 
-            elsif In_Init_Proc
-              and then Is_Finalization_Procedure (Ent)
-            then
+            elsif In_Init_Proc and then Is_Finalization_Procedure (Ent) then
                null;
 
             --  Here we need to generate an implicit elaborate all
@@ -2620,13 +2642,10 @@ package body Sem_Elab is
 
       if No (Nam) then
          return Empty;
-
       elsif Nkind (Nam) = N_Selected_Component then
          return Entity (Selector_Name (Nam));
-
       elsif not Is_Entity_Name (Nam) then
          return Empty;
-
       else
          return Entity (Nam);
       end if;

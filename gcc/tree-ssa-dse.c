@@ -232,6 +232,8 @@ dse_optimize_stmt (gimple_stmt_iterator gsi)
 				gimple_get_lhs (use_stmt), 0)))
 	  || stmt_kills_ref_p (use_stmt, gimple_assign_lhs (stmt)))
 	{
+	  basic_block bb;
+
 	  /* If use_stmt is or might be a nop assignment, e.g. for
 	     struct { ... } S a, b, *p; ...
 	     b = a; b = b;
@@ -257,10 +259,10 @@ dse_optimize_stmt (gimple_stmt_iterator gsi)
 	  /* Then we need to fix the operand of the consuming stmt.  */
 	  unlink_stmt_vdef (stmt);
 
-	  bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
-
 	  /* Remove the dead store.  */
-	  gsi_remove (&gsi, true);
+	  bb = gimple_bb (stmt);
+	  if (gsi_remove (&gsi, true))
+	    bitmap_set_bit (need_eh_cleanup, bb->index);
 
 	  /* And release any SSA_NAMEs set in this statement back to the
 	     SSA_NAME manager.  */

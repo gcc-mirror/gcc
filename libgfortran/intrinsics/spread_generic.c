@@ -1,5 +1,6 @@
 /* Generic implementation of the SPREAD intrinsic
-   Copyright 2002, 2005, 2006, 2007, 2009, 2010, 2012 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2006, 2007, 2009, 2010, 2012 
+   Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -100,7 +101,7 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
 	  GFC_DIMENSION_SET(ret->dim[n], 0, ub, stride);
 	}
       ret->offset = 0;
-      ret->base_addr = internal_malloc_size (rs * size);
+      ret->base_addr = xmalloc (rs * size);
 
       if (rs <= 0)
 	return;
@@ -245,7 +246,7 @@ spread_internal_scalar (gfc_array_char *ret, const char *source,
 
   if (ret->base_addr == NULL)
     {
-      ret->base_addr = internal_malloc_size (ncopies * size);
+      ret->base_addr = xmalloc (ncopies * size);
       ret->offset = 0;
       GFC_DIMENSION_SET(ret->dim[0], 0, ncopies - 1, 1);
     }

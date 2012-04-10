@@ -1746,11 +1746,12 @@ count_pseudo (int reg)
   int r = reg_renumber[reg];
   int nregs;
 
+  /* Ignore spilled pseudo-registers which can be here only if IRA is used.  */
+  if (ira_conflicts_p && r < 0)
+    return;
+
   if (REGNO_REG_SET_P (&pseudos_counted, reg)
-      || REGNO_REG_SET_P (&spilled_pseudos, reg)
-      /* Ignore spilled pseudo-registers which can be here only if IRA
-	 is used.  */
-      || (ira_conflicts_p && r < 0))
+      || REGNO_REG_SET_P (&spilled_pseudos, reg))
     return;
 
   SET_REGNO_REG_SET (&pseudos_counted, reg);
@@ -1827,12 +1828,17 @@ count_spilled_pseudo (int spilled, int spilled_nregs, int reg)
 {
   int freq = REG_FREQ (reg);
   int r = reg_renumber[reg];
-  int nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (reg)];
+  int nregs;
 
-  /* Ignore spilled pseudo-registers which can be here only if IRA is
-     used.  */
-  if ((ira_conflicts_p && r < 0)
-      || REGNO_REG_SET_P (&spilled_pseudos, reg)
+  /* Ignore spilled pseudo-registers which can be here only if IRA is used.  */
+  if (ira_conflicts_p && r < 0)
+    return;
+
+  gcc_assert (r >= 0);
+
+  nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (reg)];
+
+  if (REGNO_REG_SET_P (&spilled_pseudos, reg)
       || spilled + spilled_nregs <= r || r + nregs <= spilled)
     return;
 

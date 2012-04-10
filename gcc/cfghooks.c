@@ -508,6 +508,7 @@ delete_basic_block (basic_block bb)
 	{
 	  loop->header = NULL;
 	  loop->latch = NULL;
+	  loops_state_set (LOOPS_NEED_FIXUP);
 	}
 
       remove_bb_from_loops (bb);
@@ -682,8 +683,18 @@ merge_blocks (basic_block a, basic_block b)
 
   cfg_hooks->merge_blocks (a, b);
 
+  /* If we merge a loop header into its predecessor, update the loop
+     structure.  */
   if (current_loops != NULL)
-    remove_bb_from_loops (b);
+    {
+      if (b->loop_father->header == b)
+	{
+	  remove_bb_from_loops (a);
+	  add_bb_to_loop  (a, b->loop_father);
+	  a->loop_father->header = a;
+	}
+      remove_bb_from_loops (b);
+    }
 
   /* Normally there should only be one successor of A and that is B, but
      partway though the merge of blocks for conditional_execution we'll
@@ -998,7 +1009,29 @@ duplicate_block (basic_block bb, edge e, basic_block after)
     {
       struct loop *cloop = bb->loop_father;
       struct loop *copy = get_loop_copy (cloop);
-      add_bb_to_loop (new_bb, copy ? copy : cloop);
+      /* If we copied the loop header block but not the loop
+	 we have created a loop with multiple entries.  Ditch the loop,
+	 add the new block to the outer loop and arrange for a fixup.  */
+      if (!copy
+	  && cloop->header == bb)
+	{
+	  add_bb_to_loop (new_bb, loop_outer (cloop));
+	  cloop->header = NULL;
+	  cloop->latch = NULL;
+	  loops_state_set (LOOPS_NEED_FIXUP);
+	}
+      else
+	{
+	  add_bb_to_loop (new_bb, copy ? copy : cloop);
+	  /* If we copied the loop latch block but not the loop, adjust
+	     loop state.  */
+	  if (!copy
+	      && cloop->latch == bb)
+	    {
+	      cloop->latch = NULL;
+	      loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
+	    }
+	}
     }
 
   return new_bb;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -605,10 +605,13 @@ package Lib.Xref is
         (CU           : Node_Id;
          Process      : Node_Processing;
          Inside_Stubs : Boolean);
-      --  This procedure is undocumented ???
+      --  Call Process on all declarations in compilation unit CU. If
+      --  Inside_Stubs is True, then the body of stubs is also traversed.
+      --  Generic declarations are ignored.
 
       procedure Traverse_All_Compilation_Units (Process : Node_Processing);
-      --  Call Process on all declarations through all compilation units
+      --  Call Process on all declarations through all compilation units.
+      --  Generic declarations are ignored.
 
       procedure Collect_Alfa (Sdep_Table : Unit_Ref_Table; Num_Sdep : Nat);
       --  Collect Alfa information from library units (for files and scopes)

@@ -234,7 +234,8 @@ type features =
        cases.  The function supplied must return the integer to be written
        into the testcase for the argument number (0-based) supplied to it.  *)
   | Const_valuator of (int -> int)
-  | Fixed_return_reg
+  | Fixed_vector_reg
+  | Fixed_core_reg
 
 exception MixedMode of elts * elts
 
@@ -1009,7 +1010,8 @@ let ops =
     Vget_lane,
       [InfoWord;
        Disassembles_as [Use_operands [| Corereg; Corereg; Dreg |]];
-       Instruction_name ["vmov"]; Const_valuator (fun _ -> 0)],
+       Instruction_name ["vmov"; "fmrrd"]; Const_valuator (fun _ -> 0);
+       Fixed_core_reg],
       Use_operands [| Corereg; Qreg; Immed |],
       "vgetQ_lane", notype_2, [S64; U64];
 
@@ -1125,7 +1127,7 @@ let ops =
       notype_1, pf_su_8_64;
     Vget_low, [Instruction_name ["vmov"];
                Disassembles_as [Use_operands [| Dreg; Dreg |]];
-	       Fixed_return_reg],
+	       Fixed_vector_reg],
       Use_operands [| Dreg; Qreg |], "vget_low",
       notype_1, pf_su_8_32;
      Vget_low, [No_op],

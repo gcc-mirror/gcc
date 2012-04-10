@@ -73,7 +73,7 @@ proc list-module-names-1 { file } {
 		set inc "$dir/$include_file"
 		unset include_file
 		if {![file readable $inc]} {
-		    warning "Line $lineno includes unreadable file `$inc'"
+		    # We do not currently use include path search logic, punt
 		    continue
 		}
 		verbose "Line $lineno includes `$inc'" 3

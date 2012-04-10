@@ -516,6 +516,24 @@ package body Switch.C is
                        new String'(Switch_Chars (Ptr .. Max));
                      return;
 
+                  --  -gnateO= (object path file)
+
+                  when 'O' =>
+                     Store_Switch := False;
+                     Ptr := Ptr + 1;
+
+                     --  Check for '='
+
+                     if Ptr >= Max or else Switch_Chars (Ptr) /= '=' then
+                        Bad_Switch ("-gnateO");
+
+                     else
+                        Object_Path_File_Name :=
+                          new String'(Switch_Chars (Ptr + 1 .. Max));
+                     end if;
+
+                     return;
+
                   --  -gnatep (preprocessing data file)
 
                   when 'p' =>
@@ -633,12 +651,6 @@ package body Switch.C is
             when 'h' =>
                Ptr := Ptr + 1;
                Usage_Requested := True;
-
-            --  Processing for H switch
-
-            when 'H' =>
-               Ptr := Ptr + 1;
-               HLO_Active := True;
 
             --  Processing for i switch
 

@@ -300,9 +300,6 @@ extern int mul_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 extern void lshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 			   HOST_WIDE_INT, unsigned int,
 			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
-extern void rshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-			   HOST_WIDE_INT, unsigned int,
-			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
 extern int div_and_round_double (unsigned, int, unsigned HOST_WIDE_INT,
 				 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 				 HOST_WIDE_INT, unsigned HOST_WIDE_INT *,

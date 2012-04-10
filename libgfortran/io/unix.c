@@ -1,5 +1,5 @@
 /* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
@@ -639,7 +639,7 @@ buf_init (unix_stream * s)
 {
   s->st.vptr = &buf_vtable;
 
-  s->buffer = get_mem (BUFFER_SIZE);
+  s->buffer = xmalloc (BUFFER_SIZE);
   return 0;
 }
 
@@ -919,13 +919,11 @@ open_internal (char *base, int length, gfc_offset offset)
 {
   unix_stream *s;
 
-  s = get_mem (sizeof (unix_stream));
-  memset (s, '\0', sizeof (unix_stream));
+  s = xcalloc (1, sizeof (unix_stream));
 
   s->buffer = base;
   s->buffer_offset = offset;
 
-  s->logical_offset = 0;
   s->active = s->file_length = length;
 
   s->st.vptr = &mem_vtable;
@@ -941,13 +939,11 @@ open_internal4 (char *base, int length, gfc_offset offset)
 {
   unix_stream *s;
 
-  s = get_mem (sizeof (unix_stream));
-  memset (s, '\0', sizeof (unix_stream));
+  s = xcalloc (1, sizeof (unix_stream));
 
   s->buffer = base;
   s->buffer_offset = offset;
 
-  s->logical_offset = 0;
   s->active = s->file_length = length;
 
   s->st.vptr = &mem4_vtable;
@@ -965,13 +961,9 @@ fd_to_stream (int fd)
   struct stat statbuf;
   unix_stream *s;
 
-  s = get_mem (sizeof (unix_stream));
-  memset (s, '\0', sizeof (unix_stream));
+  s = xcalloc (1, sizeof (unix_stream));
 
   s->fd = fd;
-  s->buffer_offset = 0;
-  s->physical_offset = 0;
-  s->logical_offset = 0;
 
   /* Get the current length of the file. */
 
@@ -1090,7 +1082,7 @@ tempfile (st_parameter_open *opp)
     slash = "";
 
   // Take care that the template is longer in the mktemp() branch.
-  template = get_mem (tempdirlen + 23);
+  template = xmalloc (tempdirlen + 23);
 
 #ifdef HAVE_MKSTEMP
   snprintf (template, tempdirlen + 23, "%s%sgfortrantmpXXXXXX", 

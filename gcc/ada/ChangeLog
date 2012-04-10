@@ -1,3 +1,453 @@
+2012-04-02  Robert Dewar  <dewar@adacore.com>
+
+	* s-atopri.ads: Minor reformatting.
+
+2012-04-02  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb: Minor reformatting, minor code cleanup.
+
+2012-04-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): For a reference to an
+	operator symbol, set the sloc to point to the first character
+	of the operator name, and not to the initial quaote.
+	(Output_References): Ditto for the definition of an operator
+	symbol.
+
+2012-04-02  Vincent Celier  <celier@adacore.com>
+
+	* ali.adb (Scan_Ali): Recognize Z lines. Set
+	Implicit_With_From_Instantiation to True in the With_Record for
+	Z lines.
+	* ali.ads (With_Record): New Boolean component
+	Implicit_With_From_Instantiation, defaulted to False.
+	* csinfo.adb: Indicate that Implicit_With_From_Instantiation
+	is special
+	* lib-writ.adb (Write_ALI): New array Implicit_With.
+	(Collect_Withs): Set Implicit_With for the unit is it is not Yes.
+	(Write_With_Lines): Write a Z line instead of a W line if
+	Implicit_With is Yes for the unit.
+	* sem_ch12.adb (Inherit_Context): Only add a unit in the context
+	if it is not there yet.
+	* sinfo.ads: New flag Implicit_With_From_Instantiation (Flag12)
+	added.
+
+2012-04-02  Yannick Moy  <moy@adacore.com>
+
+	* osint.adb, osint.ads (Add_Default_Search_Dirs): Add library
+	search dirs in file specified with option -gnateO.
+
+2012-04-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb, exp_util.adb, sem_util.adb, exp_ch4.adb: Minor
+	reformatting.
+
+2012-04-02  Olivier Hainque  <hainque@adacore.com>
+
+	* g-sse.ads: Add x86-solaris and x86_64-darwin to the set of
+	platforms where the use of this spec is supported. Add current
+	year to the copyright notice.
+	* gcc-interfaces/Makefile.in: Add g-sse.o and g-ssvety.o to
+	EXTRA_GNATRTL_NONTASKING_OBJS on x86 32/64 targets that support
+	it and where they were missing (x86-solaris, x86-freebsd,
+	x86_64-freebsd, and x86-darwin).
+
+2012-04-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* bindgen.adb (Gen_Ada_Init): When compiling for the AAMP small
+	library, where we no longer suppress the Standard_Library,
+	generate an empty body rather than the usual generation of
+	assignments to imported globals, since those aren't present in
+	the small library.
+
+2012-04-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads: Minor documentation fix.
+
+2012-04-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Conditional_Expression): Add local variables
+	Else_Typ and Then_Typ. Add missing type conversions to the "then" and
+	"else" expressions when their respective types are scalar.
+
+2012-04-02  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch9.adb: Reordering of the local subprograms. New Table
+	for the lock free implementation that maps each protected
+	subprograms with the protected component it references.
+	(Allow_Lock_Free_Implementation): New routine. Check if
+	the protected body enables the lock free implementation.
+	(Build_Lock_Free_Protected_Subprogram_Body): New routine.
+	(Build_Lock_Free_Unprotected_Subprogram_Body): New routine.
+	(Comp_Of): New routine.
+	* Makefile.rtl: Add s-atopri.o
+	* debug.adb: New compiler debug flag -gnatd9 for lock free
+	implementation.
+	* rtsfind.ads: RE_Atomic_Compare_Exchange_8,
+	RE_Atomic_Compare_Exchange_16, RE_Atomic_Compare_Exchange_32,
+	RE_Atomic_Compare_Exchange_64, RE_Atomic_Load_8,
+	RE_Atomic_Load_16, RE_Atomic_Load_32, RE_Atomic_Load_64, RE_Uint8,
+	RE_Uint16, RE_Uint32, RE_Uint64 added.
+	* s-atropi.ads: New file. Defines atomic primitives used
+	by the lock free implementation.
+
+2012-04-02  Emmanuel Briot  <briot@adacore.com>
+
+	* g-expect.adb (Expect_Internal): Fix leak of the input file descriptor.
+
+2012-04-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Quantified_Expression): Reimplemented.
+	The expansion no longer uses the copy of the original QE created
+	during analysis.
+	* sem.adb (Analyze): Add processing for loop parameter specifications.
+	* sem_ch4.adb (Analyze_Quantified_Expression): Reimplemented. The
+	routine no longer creates a copy of the original QE. All
+	constituents of a QE are now preanalyzed and resolved.
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Remove the guard which
+	bypasses all processing when the iteration scheme is related to a
+	QE. Relovate the code which analyzes loop parameter specifications
+	to a separate routine.	(Analyze_Iterator_Specification):
+	Preanalyze the iterator name. This action was originally
+	done in Analyze_Iteration_Scheme. Update the check which
+	detects an iterator specification in the context of a QE.
+	(Analyze_Loop_Parameter_Specification): New routine. This
+	procedure allows for a stand-alone analysis of a loop parameter
+	specification without the need of a parent iteration scheme. Add
+	code to update the type of the loop variable when the range
+	generates an itype and the context is a QE.
+	(Pre_Analyze_Range): Renamed to Preanalyze_Range. Update all references
+	to the routine.
+	* sem_ch5.ads: Code reformatting.
+	(Analyze_Loop_Parameter_Specification): New routine.
+	* sem_ch6.adb (Fully_Conformant_Expressions): Detect a case
+	when establishing conformance between two QEs utilizing different
+	specifications.
+	* sem_res.adb (Proper_Current_Scope): New routine.
+	(Resolve): Do not resolve a QE as there is nothing to be done now.
+	Ignore any loop scopes generated for QEs when detecting an expression
+	function as the scopes are cosmetic and do not appear in the tree.
+	(Resolve_Quantified_Expression): Removed. All resolution of
+	QE constituents is now performed during analysis. This ensures
+	that loop variables appearing in array aggregates are properly
+	resolved.
+
+2012-04-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Build_Default_Subtype): If the base type is
+	private and its full view is available, use the full view in
+	the subtype declaration.
+
+2012-04-02  Jose Ruiz  <ruiz@adacore.com>
+
+	* gnat_ugn.texi: Add some minimal documentation about how to
+	use GNATtest for cross platforms.
+
+2012-04-02  Vincent Celier  <celier@adacore.com>
+
+	* opt.ads (Object_Path_File_Name): New variable.
+	* prj-attr.adb: New Compiler attribute Object_Path_Switches.
+	* prj-nmsc.adb (Process_Compiler): Recognize new attribute
+	Object_Path_Switches.
+	* snames.ads-tmpl: New standard name Object_Path_Switches.
+	* switch-c.adb (Scan_Front_End_Switches): Recognize new switch
+	-gnateO= and put its value in Opt.Object_Path_File_Name.
+
+2012-04-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Process_Declarations): Detect a case where
+	a source object was initialized by another source object,
+	but the expression was rewritten as a class-wide conversion
+	of Ada.Tags.Displace.
+	* exp_util.adb (Initialized_By_Ctrl_Function): Removed.
+	(Is_Controlled_Function_Call): New routine.
+	(Is_Displacement_Of_Ctrl_Function_Result): Removed.
+	(Is_Displacement_Of_Object_Or_Function_Result): New routine.
+	(Is_Source_Object): New routine.
+	(Requires_Cleanup_Actions): Detect a case where a source object was
+	initialized by another source object, but the expression was rewritten
+	as a class-wide conversion of Ada.Tags.Displace.
+	* exp_util.ads (Is_Displacement_Of_Ctrl_Function_Result): Removed.
+	(Is_Displacement_Of_Object_Or_Function_Result): New routine.
+
+2012-04-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): A call to an expression function
+	does not freeze if it appears in a different scope from the
+	expression function itself. Such calls appear in the generated
+	bodies of other expression functions, or in pre/postconditions
+	of subsequent subprograms.
+
+2012-04-02  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb: Code clean up.
+
+2012-04-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Do not suppress
+	style checks, because the subprogram instance itself may contain
+	violations of syle rules.
+	* style.adb (Missing_Overriding): Check for missing overriding
+	indicator on a subprogram instance.
+
+2012-04-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Last_Implicit_Declaration): New routine.
+	(Process_PPCs): Insert the body of _postconditions after the
+	last internally generated declaration. This ensures that actual
+	subtypes created for formal parameters are visible and properly
+	frozen as _postconditions may reference them.
+
+2012-04-02  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb (First_Component_Or_Discriminant) Now applies to
+	all types with discriminants, not just records.
+	* exp_attr.adb (Expand_N_Attribute): Add Scalar_Values handling
+	for arrays, scalars and non-variant records.
+	* sem_attr.adb (Analyze_Attribute): Handle Valid_Scalars
+	* sem_attr.ads (Valid_Scalars): Update description
+	* sem_util.ads, sem_util.adb (No_Scalar_Parts): New function.
+
+2012-03-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Revert
+	2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (SS_MARK_NAME): New define.
+	(gnat_to_gnu_entity) <E_Function>: Prepend leaf attribute on entities
+	whose name is SS_MARK_NAME.
+
+2012-03-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, sem_util.adb, exp_ch4.adb: Minor comment updates.
+
+2012-03-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Add_Alfa_File): Treat possibly 2 units at the same
+	time, putting all scopes in the same Alfa file.
+	(Add_Alfa_Xrefs): Correct errors in comparison function. Correct value
+	of Def component.
+	(Collect_Alfa): Possibly pass 2 units to Add_Alfa_File.
+
+2012-03-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Is_Secondary_Stack_BIP_Func_Call): Handle a case where
+	a build-in-place call appears as Prefix'Reference'Reference.
+
+2012-03-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb: Minor refactoring to remove internal package.
+
+2012-03-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Preanalyze the subtype
+	definition of a loop when the context is a quantified expression.
+
+2012-03-30  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads: Minor comment update.
+
+2012-03-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb, alloc.ads, lib-xref.ads: Minor addition of
+	comments and refactoring.
+
+2012-03-30  Robert Dewar  <dewar@adacore.com>
+
+	* lib-xref.adb, lib-xref-alfa.adb: Minor reformatting & code
+	reorganization.
+
+2012-03-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Generate_Dereference): Use Get_Code_Unit
+	instead of Get_Source_Unit to get file for reference.
+	(Traverse_Compilation_Unit): Do not add scopes for generic units.
+	* lib-xref.adb (Generate_Reference): Use Get_Code_Unit instead
+	of Get_Source_Unit to get file for reference.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Enable
+	instantiation in Alfa mode.
+
+2012-03-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Process_Declarations): Replace
+	the call to Is_Null_Access_BIP_Func_Call with
+	Is_Secondary_Stack_BIP_Func_Call. Update the related comment.
+	* exp_util.adb (Is_Null_Access_BIP_Func_Call): Removed.
+	(Is_Secondary_Stack_BIP_Func_Call): New routine.
+	(Requires_Cleanup_Actions): Replace
+	the call to Is_Null_Access_BIP_Func_Call with
+	Is_Secondary_Stack_BIP_Func_Call. Update the related comment.
+	* exp_util.ads (Is_Null_Access_BIP_Func_Call): Removed.
+	(Is_Secondary_Stack_BIP_Func_Call): New routine.
+
+2012-03-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb, lib-xref.adb: Code clean ups.
+
+2012-03-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): For the case of a
+	loop entity which is rewritten as a renaming
+	of the indexed array, explicitly mark the entity as needing
+	debug info so that Materialize entity will be set later by
+	Debug_Renaming_Declaration when the renaming is expanded.
+
+2012-03-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.ads: Update comment.
+
+2012-03-30  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads: New Dependency_Kind: ALI_Closure.
+
+2012-03-30  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb: Minor reformatting.
+
+2012-03-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Add_Alfa_File): Take into account possible absence
+	of compilation unit for unit in Sdep_Table.
+
+2012-03-30  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): For a type with reversed bit
+	order and reversed storage order, disable front-end relayout.
+
+2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Copy
+	the TYPE_PACKED flag from the base type.
+
+2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (SS_MARK_NAME): New define.
+	(gnat_to_gnu_entity) <E_Function>: Prepend leaf attribute on entities
+	whose name is SS_MARK_NAME.
+
+2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (add_parallel_type): Take a TYPE instead of a
+	DECL and adjust.  Move around.
+	(has_parallel_type): New predicate.
+	(rest_of_record_type_compilation): Return early if the type already
+	has a parallel type.
+	* gcc-interface/gigi.h (add_parallel_type): Adjust.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust for above changes.
+
+2012-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (finish_record_type): Return early for padded
+	types and tidy up.
+
+2012-03-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* hlo.ads, hlo.adb: Removed, no longer used.
+	* gcc-interface/Make-lang.in: Remove hlo.o. Update dependencies.
+	* gcc-interface/Makefile.in: Remove EXTRA_LIBGNAT_SRCS (temporarly)
+	and compute it from EXTRA_LIBGNAT_OBJS.
+	Clean up comments, reorder LIBGNAT_SRCS and LIBGNAT_OBJS.
+
+2012-03-20  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi, sem_attr.ads: Update documentation.
+
+2012-03-19  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb: Minor code clean up.
+
+2012-03-19  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Scan_Make_Arg): Make sure all significant -m switches
+	on the command line are counted.
+
+2012-03-19  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb (Generate_Elab_Warnings): Fix spec, fix attribute
+	reference case
+
+2012-03-19  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch4.adb (Check_Bad_Exp): New procedure
+
+2012-03-19  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb, sem_attr.adb, sem_attr.ads, snames.ads-tmpl: Add
+	initial framework for Valid_Scalars attribute.
+
+2012-03-19  Robert Dewar  <dewar@adacore.com>
+
+	* scng.adb (Scan): Recognize incorrect preprocessor directive
+
+2012-03-19  Robert Dewar  <dewar@adacore.com>
+
+	* atree.adb (Allocate_Initialize_Node): Use Num_Extension_Nodes
+	* atree.ads (Num_Extension_Nodes): New variable
+	* debug.adb: New debug flag -gnatd.N
+	* gnat1drv.adb (Adjust_Global_Switches): Adjust
+	Num_Extension_Nodes if -gnatd.N set
+
+2012-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads: Minor update to First_Rep_Item and Has_Gigi_Rep_Item
+	descriptions.
+
+2012-03-19  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads: Remove HLO_Active flag.
+	* sem.adb: Remove call of high level optimizer.
+	* sem.ads (New_Nodes_OK): Removed.
+	* sem_ch10.adb: Remove references to New_Nodes_OK.
+	* switch-c.adb: Remove handling of -gnatH switch.
+
+2012-03-19  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Check_Subprogram_Contract): Do not emit warnings
+	on trivially True or False postconditions and Ensures components
+	of contract-cases.
+
+2012-03-19  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Fix index entry for -gnatei (now we have
+	ug_words entry).
+
+2012-03-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Get_Discriminant_Value): Instead of looking
+	at the immediate correcponsing discriminant, traverse a
+	potential chain of discriminants produced by type derivations.
+	(Root_Corresponding_Discriminant): Traverse a chain of inherited
+	discriminants and return the topmost discriminant.
+
+2012-03-19  Bob Duff  <duff@adacore.com>
+
+	* debug.adb: Minor comment change.
+	* gnat_ugn.texi: Update documentation for elaboration regarding
+	indirect calls.
+
+2012-03-19  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): In
+	the case of an object of a class-wide interface type, where the
+	declaration is rewritten as a renaming, call Set_Debug_Info_Needed
+	on the renaming entity so that Materialize_Entity will be
+	set. Also, change existing call (for other than interface cases)
+	to call Set_Debug_Info_Needed rather than Set_Needs_Debug_Info
+	(as specified for that flag).
+
+2012-03-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Detect an allocator generated
+	by the build-in-place machinery where the designated type is
+	indefinite, but the underlying type is not. Do not emit errors
+	related to missing initialization in this case.
+
+2012-03-19  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for -gnateinnn switch.
+	* sem_elab.adb, put_alfa.adb, lib-xref-alfa.adb: Minor reformatting.
+	* sem_prag.adb: Minor comment update.
+
 2012-03-15  Robert Dewar  <dewar@adacore.com>
 
 	* errout.ads: Add entry for translating -gnateinn to

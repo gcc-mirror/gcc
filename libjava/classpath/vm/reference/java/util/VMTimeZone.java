@@ -1,5 +1,5 @@
 /* java.util.VMTimeZone
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007, 2010
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,6 +51,7 @@ import java.io.*;
  */
 final class VMTimeZone
 {
+
   static
   {
     if (Configuration.INIT_LOAD_LIBRARY)
@@ -58,6 +59,8 @@ final class VMTimeZone
         System.loadLibrary("javautil");
       }
   }
+
+  private VMTimeZone() {} // Prohibits instantiation.
 
   /**
    * This method returns a time zone id string which is in the form

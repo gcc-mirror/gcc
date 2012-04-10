@@ -40,7 +40,7 @@
   (cond [(eq_attr "type" "call,imul,idiv,other,multi,fcmov,fpspc,str,pop,leave")
 	   (const_string "vector")
          (and (eq_attr "type" "push")
-              (match_operand 1 "memory_operand" ""))
+              (match_operand 1 "memory_operand"))
 	   (const_string "vector")
          (and (eq_attr "type" "fmov")
 	      (and (eq_attr "memory" "load,store")
@@ -574,17 +574,17 @@
 (define_insn_reservation "athlon_movlpd_load" 0
 			 (and (eq_attr "cpu" "athlon")
 			      (and (eq_attr "type" "ssemov")
-				   (match_operand:DF 1 "memory_operand" "")))
+				   (match_operand:DF 1 "memory_operand")))
 			 "athlon-direct,athlon-fpload,athlon-fany")
 (define_insn_reservation "athlon_movlpd_load_k8" 2
 			 (and (eq_attr "cpu" "k8")
 			      (and (eq_attr "type" "ssemov")
-				   (match_operand:DF 1 "memory_operand" "")))
+				   (match_operand:DF 1 "memory_operand")))
 			 "athlon-direct,athlon-fploadk8,athlon-fstore")
 (define_insn_reservation "athlon_movsd_load_generic64" 2
 			 (and (eq_attr "cpu" "generic64")
 			      (and (eq_attr "type" "ssemov")
-				   (match_operand:DF 1 "memory_operand" "")))
+				   (match_operand:DF 1 "memory_operand")))
 			 "athlon-double,athlon-fploadk8,(athlon-fstore+athlon-fmul)")
 (define_insn_reservation "athlon_movaps_load_k8" 2
 			 (and (eq_attr "cpu" "k8,generic64")

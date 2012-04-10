@@ -14,7 +14,7 @@ foo (myint *p, unsigned int i)
   *p = i;
 }
 
-#define cst 0xdeadbeef
+#define cst (int) 0xdeadbeef
 #define NUM 8
 
 struct blah
@@ -24,8 +24,6 @@ struct blah
 };
 
 struct blah g;
-
-#define cst 0xdeadbeef
 
 int
 main (int argc, char **argv)

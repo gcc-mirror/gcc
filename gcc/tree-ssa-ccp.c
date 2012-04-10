@@ -1764,23 +1764,25 @@ gsi_prev_dom_bb_nondebug (gimple_stmt_iterator *i)
 }
 
 /* Find a BUILT_IN_STACK_SAVE dominating gsi_stmt (I), and insert
-   a clobber of VAR before each matching BUILT_IN_STACK_RESTORE.  */
+   a clobber of VAR before each matching BUILT_IN_STACK_RESTORE.
+
+   It is possible that BUILT_IN_STACK_SAVE cannot be find in a dominator when a
+   previous pass (such as DOM) duplicated it along multiple paths to a BB.  In
+   that case the function gives up without inserting the clobbers.  */
 
 static void
 insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
 {
-  bool save_found;
   gimple stmt;
   tree saved_val;
   htab_t visited = NULL;
 
-  for (save_found = false; !gsi_end_p (i); gsi_prev_dom_bb_nondebug (&i))
+  for (; !gsi_end_p (i); gsi_prev_dom_bb_nondebug (&i))
     {
       stmt = gsi_stmt (i);
 
       if (!gimple_call_builtin_p (stmt, BUILT_IN_STACK_SAVE))
 	continue;
-      save_found = true;
 
       saved_val = gimple_call_lhs (stmt);
       if (saved_val == NULL_TREE)
@@ -1792,7 +1794,6 @@ insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
 
   if (visited != NULL)
     htab_delete (visited);
-  gcc_assert (save_found);
 }
 
 /* Detects a __builtin_alloca_with_align with constant size argument.  Declares
@@ -2288,7 +2289,7 @@ optimize_stdarg_builtin (gimple call)
     case BUILT_IN_VA_START:
       if (!va_list_simple_ptr
 	  || targetm.expand_builtin_va_start != NULL
-          || builtin_decl_explicit_p (BUILT_IN_NEXT_ARG))
+	  || !builtin_decl_explicit_p (BUILT_IN_NEXT_ARG))
 	return NULL_TREE;
 
       if (gimple_call_num_args (call) != 2)

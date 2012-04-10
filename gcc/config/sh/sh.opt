@@ -206,8 +206,8 @@ Target Report Mask(ACCUMULATE_OUTGOING_ARGS)
 Reserve space for outgoing arguments in the function prologue
 
 madjust-unroll
-Target Report Mask(ADJUST_UNROLL) Condition(SUPPORT_ANY_SH5)
-Throttle unrolling to avoid thrashing target registers unless the unroll benefit outweighs this
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
 
 mb
 Target Report RejectNegative InverseMask(LITTLE_ENDIAN)
@@ -316,7 +316,7 @@ Target Report RejectNegative Mask(RELAX)
 Shorten address references during linking
 
 mrenesas
-Target Mask(HITACHI) MaskExists
+Target Mask(HITACHI)
 Follow Renesas (formerly Hitachi) / SuperH calling conventions
 
 msoft-atomic

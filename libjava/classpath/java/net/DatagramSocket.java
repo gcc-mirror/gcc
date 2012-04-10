@@ -525,7 +525,27 @@ public class DatagramSocket
 
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
-      sm.checkConnect(address.getHostAddress(), port);
+      {
+        if (address.isMulticastAddress())
+          sm.checkMulticast(address);
+        else
+          {
+            sm.checkConnect(address.getHostAddress(), port);
+            sm.checkAccept(address.getHostAddress(), port);
+          }
+      }
+
+    if (!isBound())
+      {
+        try
+          {
+            bind(new InetSocketAddress(0));
+          }
+        catch (SocketException e)
+          {
+            throw new Error("Binding socket failed.", e);
+          }
+      }
 
     try
       {

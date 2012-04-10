@@ -14,6 +14,9 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtLabelPeer_init (JNIEnv *env, 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtLabelPeer_setAlignment (JNIEnv *env, jobject, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtLabelPeer_setText (JNIEnv *env, jobject, jstring);
 
+#undef gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER
+#define gnu_java_awt_peer_qt_QtComponentPeer_POPUP_TRIGGER 3L
+
 #ifdef __cplusplus
 }
 #endif

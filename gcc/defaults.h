@@ -582,6 +582,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define SIZE_TYPE "long unsigned int"
 #endif
 
+#ifndef SIZETYPE
+#define SIZETYPE SIZE_TYPE
+#endif
+
 #ifndef PID_TYPE
 #define PID_TYPE "int"
 #endif

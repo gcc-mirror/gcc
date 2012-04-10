@@ -1,5 +1,5 @@
 /* VMMath.java -- Common mathematical functions.
-   Copyright (C) 2006  Free Software Foundation, Inc.
+   Copyright (C) 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,7 @@ package java.lang;
 
 import gnu.classpath.Configuration;
 
-class VMMath
+final class VMMath
 {
 
   static
@@ -51,6 +51,8 @@ class VMMath
       }
   }
 
+  private VMMath() {} // Prohibits instantiation.
+
   /**
    * The trigonometric function <em>sin</em>. The sine of NaN or infinity is
    * NaN, and the sine of 0 retains its sign. This is accurate within 1 ulp,
@@ -59,7 +61,7 @@ class VMMath
    * @param a the angle (in radians)
    * @return sin(a)
    */
-  public static native double sin(double a);
+  static native double sin(double a);
 
   /**
    * The trigonometric function <em>cos</em>. The cosine of NaN or infinity is
@@ -68,7 +70,7 @@ class VMMath
    * @param a the angle (in radians)
    * @return cos(a)
    */
-  public static native double cos(double a);
+  static native double cos(double a);
 
   /**
    * The trigonometric function <em>tan</em>. The tangent of NaN or infinity
@@ -78,7 +80,7 @@ class VMMath
    * @param a the angle (in radians)
    * @return tan(a)
    */
-  public static native double tan(double a);
+  static native double tan(double a);
 
   /**
    * The trigonometric function <em>arcsin</em>. The range of angles returned
@@ -89,7 +91,7 @@ class VMMath
    * @param a the sin to turn back into an angle
    * @return arcsin(a)
    */
-  public static native double asin(double a);
+  static native double asin(double a);
 
   /**
    * The trigonometric function <em>arccos</em>. The range of angles returned
@@ -100,7 +102,7 @@ class VMMath
    * @param a the cos to turn back into an angle
    * @return arccos(a)
    */
-  public static native double acos(double a);
+  static native double acos(double a);
 
   /**
    * The trigonometric function <em>arcsin</em>. The range of angles returned
@@ -112,7 +114,7 @@ class VMMath
    * @return arcsin(a)
    * @see #atan2(double, double)
    */
-  public static native double atan(double a);
+  static native double atan(double a);
 
   /**
    * A special version of the trigonometric function <em>arctan</em>, for
@@ -161,7 +163,7 @@ class VMMath
    * @return <em>theta</em> in the conversion of (x, y) to (r, theta)
    * @see #atan(double)
    */
-  public static native double atan2(double y, double x);
+  static native double atan2(double y, double x);
 
   /**
    * Take <em>e</em><sup>a</sup>.  The opposite of <code>log()</code>. If the
@@ -175,7 +177,7 @@ class VMMath
    * @see #log(double)
    * @see #pow(double, double)
    */
-  public static native double exp(double a);
+  static native double exp(double a);
 
   /**
    * Take ln(a) (the natural log).  The opposite of <code>exp()</code>. If the
@@ -191,7 +193,7 @@ class VMMath
    * @return the natural log of <code>a</code>
    * @see #exp(double)
    */
-  public static native double log(double a);
+  static native double log(double a);
 
   /**
    * Take a square root. If the argument is NaN or negative, the result is
@@ -205,7 +207,7 @@ class VMMath
    * @return the square root of the argument
    * @see #pow(double, double)
    */
-  public static native double sqrt(double a);
+  static native double sqrt(double a);
 
   /**
    * Raise a number to a power. Special cases:<ul>
@@ -275,7 +277,7 @@ class VMMath
    * @param b the power to raise it to
    * @return a<sup>b</sup>
    */
-  public static native double pow(double a, double b);
+  static native double pow(double a, double b);
 
   /**
    * Get the IEEE 754 floating point remainder on two numbers. This is the
@@ -291,7 +293,7 @@ class VMMath
    * @return the IEEE 754-defined floating point remainder of x/y
    * @see #rint(double)
    */
-  public static native double IEEEremainder(double x, double y);
+  static native double IEEEremainder(double x, double y);
 
   /**
    * Take the nearest integer that is that is greater than or equal to the
@@ -302,7 +304,7 @@ class VMMath
    * @param a the value to act upon
    * @return the nearest integer &gt;= <code>a</code>
    */
-  public static native double ceil(double a);
+  static native double ceil(double a);
 
   /**
    * Take the nearest integer that is that is less than or equal to the
@@ -312,7 +314,7 @@ class VMMath
    * @param a the value to act upon
    * @return the nearest integer &lt;= <code>a</code>
    */
-  public static native double floor(double a);
+  static native double floor(double a);
 
   /**
    * Take the nearest integer to the argument.  If it is exactly between
@@ -322,7 +324,7 @@ class VMMath
    * @param a the value to act upon
    * @return the nearest integer to <code>a</code>
    */
-  public static native double rint(double a);
+  static native double rint(double a);
 
   /**
    * <p>
@@ -342,7 +344,7 @@ class VMMath
    * @see #sqrt(double)
    * @see #pow(double, double)
    */
-  public static native double cbrt(double a);
+  static native double cbrt(double a);
 
   /**
    * <p>
@@ -362,7 +364,7 @@ class VMMath
    * @return the hyperbolic cosine of <code>a</code>.
    * @since 1.5
    */
-  public static native double cosh(double a);
+  static native double cosh(double a);
 
   /**
    * <p>
@@ -382,7 +384,7 @@ class VMMath
    * @return <code>e<sup>a</sup> - 1</code>
    * @since 1.5
    */
-  public static native double expm1(double a);
+  static native double expm1(double a);
 
   /**
    * <p>
@@ -402,7 +404,7 @@ class VMMath
    * @return the hypotenuse matching the supplied parameters.
    * @since 1.5
    */
-  public static native double hypot(double a, double b);
+  static native double hypot(double a, double b);
 
   /**
    * <p>
@@ -422,7 +424,7 @@ class VMMath
    * @return the base 10 logarithm of <code>a</code>.
    * @since 1.5
    */
-  public static native double log10(double a);
+  static native double log10(double a);
 
   /**
    * <p>
@@ -444,7 +446,7 @@ class VMMath
    * @return the natural logarithm of <code>a</code> + 1.
    * @since 1.5
    */
-  public static native double log1p(double a);
+  static native double log1p(double a);
 
   /**
    * <p>
@@ -463,7 +465,7 @@ class VMMath
    * @return the hyperbolic sine of <code>a</code>.
    * @since 1.5
    */
-  public static native double sinh(double a);
+  static native double sinh(double a);
 
   /**
    * <p>
@@ -488,6 +490,5 @@ class VMMath
    * @return the hyperbolic tangent of <code>a</code>.
    * @since 1.5
    */
-  public static native double tanh(double a);
-
+  static native double tanh(double a);
 }

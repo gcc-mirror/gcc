@@ -1,6 +1,6 @@
 /* VMInstrumentationImpl.java -- interface for the GNU implementation
    of InstrumentationImpl
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,6 +48,8 @@ import java.lang.instrument.Instrumentation;
  */
 final class VMInstrumentationImpl
 {
+
+  private VMInstrumentationImpl() {} // Prohibits instantiation.
 
   /**
    * Returns if the current JVM supports class redefinition

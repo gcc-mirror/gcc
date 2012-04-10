@@ -121,14 +121,14 @@ along with GCC; see the file COPYING3.  If not see
 
 #define PAGE_L1_BITS	(8)
 #define PAGE_L2_BITS	(32 - PAGE_L1_BITS - G.lg_pagesize)
-#define PAGE_L1_SIZE	((size_t) 1 << PAGE_L1_BITS)
-#define PAGE_L2_SIZE	((size_t) 1 << PAGE_L2_BITS)
+#define PAGE_L1_SIZE	((uintptr_t) 1 << PAGE_L1_BITS)
+#define PAGE_L2_SIZE	((uintptr_t) 1 << PAGE_L2_BITS)
 
 #define LOOKUP_L1(p) \
-  (((size_t) (p) >> (32 - PAGE_L1_BITS)) & ((1 << PAGE_L1_BITS) - 1))
+  (((uintptr_t) (p) >> (32 - PAGE_L1_BITS)) & ((1 << PAGE_L1_BITS) - 1))
 
 #define LOOKUP_L2(p) \
-  (((size_t) (p) >> G.lg_pagesize) & ((1 << PAGE_L2_BITS) - 1))
+  (((uintptr_t) (p) >> G.lg_pagesize) & ((1 << PAGE_L2_BITS) - 1))
 
 /* The number of objects per allocation page, for objects on a page of
    the indicated ORDER.  */
@@ -560,7 +560,7 @@ ggc_allocated_p (const void *p)
   base = &G.lookup[0];
 #else
   page_table table = G.lookup;
-  size_t high_bits = (size_t) p & ~ (size_t) 0xffffffff;
+  uintptr_t high_bits = (uintptr_t) p & ~ (uintptr_t) 0xffffffff;
   while (1)
     {
       if (table == NULL)
@@ -592,7 +592,7 @@ lookup_page_table_entry (const void *p)
   base = &G.lookup[0];
 #else
   page_table table = G.lookup;
-  size_t high_bits = (size_t) p & ~ (size_t) 0xffffffff;
+  uintptr_t high_bits = (uintptr_t) p & ~ (uintptr_t) 0xffffffff;
   while (table->high_bits != high_bits)
     table = table->next;
   base = &table->table[0];
@@ -617,7 +617,7 @@ set_page_table_entry (void *p, page_entry *entry)
   base = &G.lookup[0];
 #else
   page_table table;
-  size_t high_bits = (size_t) p & ~ (size_t) 0xffffffff;
+  uintptr_t high_bits = (uintptr_t) p & ~ (uintptr_t) 0xffffffff;
   for (table = G.lookup; table; table = table->next)
     if (table->high_bits == high_bits)
       goto found;
@@ -826,7 +826,7 @@ alloc_page (unsigned order)
 	alloc_size = entry_size + G.pagesize - 1;
       allocation = XNEWVEC (char, alloc_size);
 
-      page = (char *) (((size_t) allocation + G.pagesize - 1) & -G.pagesize);
+      page = (char *) (((uintptr_t) allocation + G.pagesize - 1) & -G.pagesize);
       head_slop = page - allocation;
       if (multiple_pages)
 	tail_slop = ((size_t) allocation + alloc_size) & (G.pagesize - 1);
@@ -1662,13 +1662,13 @@ init_ggc (void)
   {
     char *p = alloc_anon (NULL, G.pagesize, true);
     struct page_entry *e;
-    if ((size_t)p & (G.pagesize - 1))
+    if ((uintptr_t)p & (G.pagesize - 1))
       {
 	/* How losing.  Discard this one and try another.  If we still
 	   can't get something useful, give up.  */
 
 	p = alloc_anon (NULL, G.pagesize, true);
-	gcc_assert (!((size_t)p & (G.pagesize - 1)));
+	gcc_assert (!((uintptr_t)p & (G.pagesize - 1)));
       }
 
     /* We have a good page, might as well hold onto it...  */
@@ -1782,7 +1782,7 @@ clear_marks (void)
 	  size_t bitmap_size = BITMAP_SIZE (num_objects + 1);
 
 	  /* The data should be page-aligned.  */
-	  gcc_assert (!((size_t) p->page & (G.pagesize - 1)));
+	  gcc_assert (!((uintptr_t) p->page & (G.pagesize - 1)));
 
 	  /* Pages that aren't in the topmost context are not collected;
 	     nevertheless, we need their in-use bit vectors to store GC
@@ -2204,7 +2204,7 @@ struct ggc_pch_ondisk
 struct ggc_pch_data
 {
   struct ggc_pch_ondisk d;
-  size_t base[NUM_ORDERS];
+  uintptr_t base[NUM_ORDERS];
   size_t written[NUM_ORDERS];
 };
 
@@ -2247,7 +2247,7 @@ ggc_pch_total_size (struct ggc_pch_data *d)
 void
 ggc_pch_this_base (struct ggc_pch_data *d, void *base)
 {
-  size_t a = (size_t) base;
+  uintptr_t a = (uintptr_t) base;
   unsigned i;
 
   for (i = 0; i < NUM_ORDERS; i++)

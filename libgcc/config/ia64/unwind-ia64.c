@@ -114,20 +114,20 @@ enum unw_where
 
 struct unw_reg_info
 {
-  unsigned long val;		/* save location: register number or offset */
+  unw_word val;			/* save location: register number or offset */
   enum unw_where where;		/* where the register gets saved */
   int when;			/* when the register gets saved */
 };
 
 struct unw_reg_state {
-	struct unw_reg_state *next;	/* next (outer) element on state stack */
-	struct unw_reg_info reg[UNW_NUM_REGS];	/* register save locations */
+  struct unw_reg_state *next;	/* next (outer) element on state stack */
+  struct unw_reg_info reg[UNW_NUM_REGS];	/* register save locations */
 };
 
 struct unw_labeled_state {
-	struct unw_labeled_state *next;		/* next labeled state (or NULL) */
-	unsigned long label;			/* label for this state */
-	struct unw_reg_state saved_state;
+  struct unw_labeled_state *next;	/* next labeled state (or NULL) */
+  unw_word label;			/* label for this state */
+  struct unw_reg_state saved_state;
 };
 
 typedef struct unw_state_record
@@ -135,12 +135,12 @@ typedef struct unw_state_record
   unsigned int first_region : 1;	/* is this the first region? */
   unsigned int done : 1;		/* are we done scanning descriptors? */
   unsigned int any_spills : 1;		/* got any register spills? */
-  unsigned int in_body : 1;	/* are we inside a body? */
+  unsigned int in_body : 1;		/* are we inside a body? */
   unsigned int no_reg_stack_frame : 1;	/* Don't adjust bsp for i&l regs */
-  unsigned char *imask;		/* imask of spill_mask record or NULL */
-  unsigned long pr_val;		/* predicate values */
-  unsigned long pr_mask;	/* predicate mask */
-  long spill_offset;		/* psp-relative offset for spill base */
+  unsigned char *imask;			/* imask of spill_mask record or NULL */
+  unw_word pr_val;			/* predicate values */
+  unw_word pr_mask;			/* predicate mask */
+  unw_sword spill_offset;		/* psp-relative offset for spill base */
   int region_start;
   int region_len;
   int epilogue_start;
@@ -168,65 +168,63 @@ enum unw_nat_type
 
 struct unw_stack
 {
-  unsigned long limit;
-  unsigned long top;
+  unw_word limit;
+  unw_word top;
 };
 
 struct _Unwind_Context
 {
   /* Initial frame info.  */
-  unsigned long rnat;		/* rse nat collection */
-  unsigned long regstk_top;	/* lowest address of rbs stored register
-				   which uses context->rnat collection */
+  unw_word rnat;	/* rse nat collection */
+  unw_word regstk_top;	/* lowest address of rbs stored register
+			   which uses context->rnat collection */
 
   /* Current frame info.  */
-  unsigned long bsp;		/* backing store pointer value
-				   corresponding to psp.  */
-  unsigned long sp;		/* stack pointer value */
-  unsigned long psp;		/* previous sp value */
-  unsigned long rp;		/* return pointer */
-  unsigned long pr;		/* predicate collection */
+  unw_word bsp;		/* backing store pointer value
+			   corresponding to psp.  */
+  unw_word sp;		/* stack pointer value */
+  unw_word psp;		/* previous sp value */
+  unw_word rp;		/* return pointer */
+  unw_word pr;		/* predicate collection */
 
-  unsigned long region_start;	/* start of unwind region */
-  unsigned long gp;		/* global pointer value */
-  void *lsda;			/* language specific data area */
+  unw_word region_start;/* start of unwind region */
+  unw_word gp;		/* global pointer value */
+  void *lsda;		/* language specific data area */
 
   /* Preserved state.  */
-  unsigned long *bsp_loc;	/* previous bsp save location
-  				   Appears to be write-only?	*/
-  unsigned long *bspstore_loc;
-  unsigned long *pfs_loc;	/* Save location for pfs in current
-  				   (corr. to sp) frame.  Target
-  				   contains cfm for caller.	*/
-  unsigned long *signal_pfs_loc;/* Save location for pfs in current
-				   signal frame.  Target contains
-				   pfs for caller.  */
-  unsigned long *pri_unat_loc;
-  unsigned long *unat_loc;
-  unsigned long *lc_loc;
-  unsigned long *fpsr_loc;
+  unw_word *bsp_loc;    /* previous bsp save location
+                           Appears to be write-only?    */
+  unw_word *bspstore_loc;
+  unw_word *pfs_loc;    /* Save location for pfs in current
+                           (corr. to sp) frame.  Target
+                           contains cfm for caller.     */
+  unw_word *signal_pfs_loc;/* Save location for pfs in current
+                           signal frame.  Target contains
+                           pfs for caller.  */
+  unw_word *pri_unat_loc;
+  unw_word *unat_loc;
+  unw_word *lc_loc;
+  unw_word *fpsr_loc;
 
-  unsigned long eh_data[4];
+  unw_word eh_data[4];
 
   struct unw_ireg
   {
-    unsigned long *loc;
+    unw_word *loc;
     struct unw_ireg_nat
     {
       enum unw_nat_type type : 3;
-      signed long off : 61;		/* NaT word is at loc+nat.off */
+      unw_sword off : 61;		/* NaT word is at loc+nat.off */
     } nat;
   } ireg[32 - 2];	/* Indexed by <register number> - 2 */
 
-  unsigned long *br_loc[8];
+  unw_word *br_loc[8];
   void *fr_loc[32 - 2];
 
   /* ??? We initially point pri_unat_loc here.  The entire NAT bit
      logic needs work.  */
-  unsigned long initial_unat;
+  unw_word initial_unat;
 };
-
-typedef unsigned long unw_word;
 
 /* Implicit register save order.  See section 11.4.2.3 Rules for Using
    Unwind Descriptors, rule 3.  */
@@ -464,7 +462,7 @@ decode_abreg (unsigned char abreg, int memory)
 
 static void
 set_reg (struct unw_reg_info *reg, enum unw_where where,
-	 int when, unsigned long val)
+	 int when, unw_word val)
 {
   reg->val = val;
   reg->where = where;
@@ -473,7 +471,7 @@ set_reg (struct unw_reg_info *reg, enum unw_where where,
 }
 
 static void
-alloc_spill_area (unsigned long *offp, unsigned long regsize,
+alloc_spill_area (unw_word *offp, unw_word regsize,
 		  struct unw_reg_info *lo, struct unw_reg_info *hi)
 {
   struct unw_reg_info *reg;
@@ -512,7 +510,7 @@ static void
 finish_prologue (struct unw_state_record *sr)
 {
   struct unw_reg_info *reg;
-  unsigned long off;
+  unw_word off;
   int i;
 
   /* First, resolve implicit register save locations
@@ -1449,44 +1447,44 @@ unw_decode (unsigned char *dp, int inside_body, void *arg)
 
 /* RSE helper functions.  */
 
-static inline unsigned long
-ia64_rse_slot_num (unsigned long *addr)
+static inline unw_word
+ia64_rse_slot_num (unw_word *addr)
 {
-  return (((unsigned long) addr) >> 3) & 0x3f;
+  return (((unw_word) addr) >> 3) & 0x3f;
 }
 
 /* Return TRUE if ADDR is the address of an RNAT slot.  */
-static inline unsigned long
-ia64_rse_is_rnat_slot (unsigned long *addr)
+static inline unw_word
+ia64_rse_is_rnat_slot (unw_word *addr)
 {
   return ia64_rse_slot_num (addr) == 0x3f;
 }
 
 /* Returns the address of the RNAT slot that covers the slot at
    address SLOT_ADDR.  */
-static inline unsigned long *
-ia64_rse_rnat_addr (unsigned long *slot_addr)
+static inline unw_word *
+ia64_rse_rnat_addr (unw_word *slot_addr)
 {
-  return (unsigned long *) ((unsigned long) slot_addr | (0x3f << 3));
+  return (unw_word *) ((unw_word) slot_addr | (0x3f << 3));
 }
 
 /* Calculate the number of registers in the dirty partition starting at
    BSPSTORE with a size of DIRTY bytes.  This isn't simply DIRTY
    divided by eight because the 64th slot is used to store ar.rnat.  */
-static inline unsigned long
-ia64_rse_num_regs (unsigned long *bspstore, unsigned long *bsp)
+static inline unw_word
+ia64_rse_num_regs (unw_word *bspstore, unw_word *bsp)
 {
-  unsigned long slots = (bsp - bspstore);
+  unw_word slots = (bsp - bspstore);
 
   return slots - (ia64_rse_slot_num (bspstore) + slots)/0x40;
 }
 
 /* The inverse of the above: given bspstore and the number of
    registers, calculate ar.bsp.  */
-static inline unsigned long *
-ia64_rse_skip_regs (unsigned long *addr, long num_regs)
+static inline unw_word *
+ia64_rse_skip_regs (unw_word *addr, int num_regs)
 {
-  long delta = ia64_rse_slot_num (addr) + num_regs;
+  int delta = ia64_rse_slot_num (addr) + num_regs;
 
   if (num_regs < 0)
     delta -= 0x3e;
@@ -1501,20 +1499,20 @@ ia64_rse_skip_regs (unsigned long *addr, long num_regs)
    done with a simple memcpy as the nat collections will be
    at different relative offsets and need to be combined together.  */
 static void
-ia64_copy_rbs (struct _Unwind_Context *info, unsigned long dst,
-               unsigned long src, long len, unsigned long dst_rnat)
+ia64_copy_rbs (struct _Unwind_Context *info, unw_word dst,
+               unw_word src, unw_word len, unw_word dst_rnat)
 {
-  long count;
-  unsigned long src_rnat;
-  unsigned long shift1, shift2;
+  unw_word count;
+  unw_word src_rnat;
+  unw_word shift1, shift2;
 
   len <<= 3;
-  dst_rnat &= (1UL << ((dst >> 3) & 0x3f)) - 1;
+  dst_rnat &= (1ULL << ((dst >> 3) & 0x3f)) - 1;
   src_rnat = src >= info->regstk_top
-	     ? info->rnat : *(unsigned long *) (src | 0x1f8);
-  src_rnat &= ~((1UL << ((src >> 3) & 0x3f)) - 1);
+	     ? info->rnat : *(unw_word *) (src | 0x1f8);
+  src_rnat &= ~((1ULL << ((src >> 3) & 0x3f)) - 1);
   /* Just to make sure.  */
-  src_rnat &= ~(1UL << 63);
+  src_rnat &= ~(1ULL << 63);
   shift1 = ((dst - src) >> 3) & 0x3f;
   if ((dst & 0x1f8) < (src & 0x1f8))
     shift1--;
@@ -1529,9 +1527,9 @@ ia64_copy_rbs (struct _Unwind_Context *info, unsigned long dst,
   while (len > 0)
     {
       src_rnat = src >= info->regstk_top
-		 ? info->rnat : *(unsigned long *) (src | 0x1f8);
+		 ? info->rnat : *(unw_word *) (src | 0x1f8);
       /* Just to make sure.  */
-      src_rnat &= ~(1UL << 63);
+      src_rnat &= ~(1ULL << 63);
       count = shift2 << 3;
 first:
       if (count > len)
@@ -1540,10 +1538,10 @@ first:
       dst += count;
       src += count;
       len -= count;
-      dst_rnat |= (src_rnat << shift1) & ~(1UL << 63);
+      dst_rnat |= (src_rnat << shift1) & ~(1ULL << 63);
       if (len <= 0)
         break;
-      *(long *) dst = dst_rnat;
+      *(unw_word *) dst = dst_rnat;
       dst += 8;
       dst_rnat = 0;
       count = shift1 << 3;
@@ -1558,13 +1556,13 @@ second:
     }
   if ((dst & 0x1f8) == 0x1f8)
     {
-      *(long *) dst = dst_rnat;
+      *(unw_word *) dst = dst_rnat;
       dst += 8;
       dst_rnat = 0;
     }
   /* Set info->regstk_top to lowest rbs address which will use
      info->rnat collection.  */
-  info->regstk_top = dst & ~0x1ffUL;
+  info->regstk_top = dst & ~0x1ffULL;
   info->rnat = dst_rnat;
 }
 
@@ -1572,9 +1570,9 @@ second:
 
 static void
 unw_access_gr (struct _Unwind_Context *info, int regnum,
-	       unsigned long *val, char *nat, int write)
+	       unw_word *val, char *nat, int write)
 {
-  unsigned long *addr, *nat_addr = 0, nat_mask = 0, dummy_nat;
+  unw_word *addr, *nat_addr = 0, nat_mask = 0, dummy_nat;
   struct unw_ireg *ireg;
 
   if ((unsigned) regnum - 1 >= 127)
@@ -1623,15 +1621,15 @@ unw_access_gr (struct _Unwind_Context *info, int regnum,
 	      break;
 
 	    case UNW_NAT_MEMSTK:
-	      nat_mask = 1UL << ((long) addr & 0x1f8)/8;
+	      nat_mask = 1UL << ((unw_word) addr & 0x1f8)/8;
 	      break;
 
 	    case UNW_NAT_REGSTK:
-	      if ((unsigned long) addr >= info->regstk_top)
+	      if ((unw_word) addr >= info->regstk_top)
 		nat_addr = &info->rnat;
 	      else
 		nat_addr = ia64_rse_rnat_addr (addr);
-	      nat_mask = 1UL << ia64_rse_slot_num (addr);
+	      nat_mask = 1ULL << ia64_rse_slot_num (addr);
 	      break;
 	    }
 	}
@@ -1639,8 +1637,8 @@ unw_access_gr (struct _Unwind_Context *info, int regnum,
   else
     {
       /* Access a stacked register.  */
-      addr = ia64_rse_skip_regs ((unsigned long *) info->bsp, regnum - 32);
-      if ((unsigned long) addr >= info->regstk_top)
+      addr = ia64_rse_skip_regs ((unw_word *) info->bsp, regnum - 32);
+      if ((unw_word) addr >= info->regstk_top)
 	nat_addr = &info->rnat;
       else
 	nat_addr = ia64_rse_rnat_addr (addr);
@@ -1734,7 +1732,7 @@ void *
 _Unwind_FindEnclosingFunction (void *pc)
 {
   struct unw_table_entry *entp, ent;
-  unsigned long segment_base, gp;
+  unw_word segment_base, gp;
 
   entp = _Unwind_FindTableEntry (pc, &segment_base, &gp, &ent);
   if (entp == NULL)
@@ -1774,9 +1772,9 @@ static _Unwind_Reason_Code
 uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
   struct unw_table_entry *entp, ent;
-  unsigned long *unw, header, length;
+  unw_word *unw, header, length;
   unsigned char *insn, *insn_end;
-  unsigned long segment_base;
+  unw_word segment_base;
   struct unw_reg_info *r;
 
   memset (fs, 0, sizeof (*fs));
@@ -1815,7 +1813,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   fs->when_target = ((context->rp & -16) - context->region_start) / 16 * 3
 		    + (context->rp & 15);
 
-  unw = (unsigned long *) (entp->info_offset + segment_base);
+  unw = (unw_word *) (entp->info_offset + segment_base);
   header = *unw;
   length = UNW_LENGTH (header);
 
@@ -1912,7 +1910,7 @@ uw_update_reg_address (struct _Unwind_Context *context,
 {
   struct unw_reg_info *r = fs->curr.reg + regno;
   void *addr;
-  unsigned long rval;
+  unw_word rval;
 
   if (r->where == UNW_WHERE_NONE || r->when >= fs->when_target)
     return;
@@ -1922,12 +1920,12 @@ uw_update_reg_address (struct _Unwind_Context *context,
     {
     case UNW_WHERE_GR:
       if (rval >= 32)
-	addr = ia64_rse_skip_regs ((unsigned long *) context->bsp, rval - 32);
+	addr = ia64_rse_skip_regs ((unw_word *) context->bsp, rval - 32);
       else if (rval >= 2)
 	addr = context->ireg[rval - 2].loc;
       else if (rval == 0)
 	{
-	  static const unsigned long dummy;
+	  static const unw_word dummy;
 	  addr = (void *) &dummy;
 	}
       else
@@ -1974,7 +1972,7 @@ uw_update_reg_address (struct _Unwind_Context *context,
 	  {
 	    context->ireg[regno - UNW_REG_R2].nat.type = UNW_NAT_MEMSTK;
 	    context->ireg[regno - UNW_REG_R2].nat.off
-	      = context->pri_unat_loc - (unsigned long *) addr;
+	      = context->pri_unat_loc - (unw_word *) addr;
 	  }
 	else if (rval >= 2)
 	  {
@@ -2004,7 +2002,7 @@ uw_update_reg_address (struct _Unwind_Context *context,
       case UNW_WHERE_SPREL:
 	context->ireg[regno - UNW_REG_R2].nat.type = UNW_NAT_MEMSTK;
 	context->ireg[regno - UNW_REG_R2].nat.off
-	  = context->pri_unat_loc - (unsigned long *) addr;
+	  = context->pri_unat_loc - (unw_word *) addr;
 	break;
 
       default:
@@ -2030,13 +2028,13 @@ uw_update_reg_address (struct _Unwind_Context *context,
       context->pfs_loc = addr;
       break;
     case UNW_REG_RP:
-      context->rp = *(unsigned long *)addr;
+      context->rp = *(unw_word *)addr;
       break;
     case UNW_REG_UNAT:
       context->unat_loc = addr;
       break;
     case UNW_REG_PR:
-      context->pr = *(unsigned long *) addr;
+      context->pr = *(unw_word *) addr;
       break;
     case UNW_REG_LC:
       context->lc_loc = addr;
@@ -2046,7 +2044,7 @@ uw_update_reg_address (struct _Unwind_Context *context,
       break;
 
     case UNW_REG_PSP:
-      context->psp = *(unsigned long *)addr;
+      context->psp = *(unw_word *)addr;
       break;
 
     default:
@@ -2057,7 +2055,7 @@ uw_update_reg_address (struct _Unwind_Context *context,
 static void
 uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
-  long i;
+  int i;
 
 #ifdef MD_HANDLE_UNWABI
   MD_HANDLE_UNWABI (context, fs);
@@ -2100,10 +2098,10 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
      pfs_loc is valid.	*/
   if (!(fs -> no_reg_stack_frame))
     {
-      unsigned long pfs = *context->pfs_loc;
-      unsigned long sol = (pfs >> 7) & 0x7f;
-      context->bsp = (unsigned long)
-	ia64_rse_skip_regs ((unsigned long *) context->bsp, -sol);
+      unw_word pfs = *context->pfs_loc;
+      unw_word sol = (pfs >> 7) & 0x7f;
+      context->bsp = (unw_word)
+	ia64_rse_skip_regs ((unw_word *) context->bsp, -sol);
     }
 }
 
@@ -2132,7 +2130,7 @@ uw_init_context_1 (struct _Unwind_Context *context, void *bsp)
   /* Set psp to the caller's stack pointer.  */
   void *psp = __builtin_dwarf_cfa () - 16;
   _Unwind_FrameState fs;
-  unsigned long rnat, tmp1, tmp2;
+  unw_word rnat, tmp1, tmp2;
 
   /* Flush the register stack to memory so that we can access it.
      Get rse nat collection for the last incomplete rbs chunk of
@@ -2147,13 +2145,13 @@ uw_init_context_1 (struct _Unwind_Context *context, void *bsp)
        : "=r" (rnat), "=r" (tmp1), "=r" (tmp2));
 
   memset (context, 0, sizeof (struct _Unwind_Context));
-  context->bsp = (unsigned long) bsp;
+  context->bsp = (unw_word) bsp;
   /* Set context->regstk_top to lowest rbs address which will use
      context->rnat collection.  */
   context->regstk_top = context->bsp & ~0x1ffULL;
   context->rnat = rnat;
-  context->psp = (unsigned long) psp;
-  context->rp = (unsigned long) rp;
+  context->psp = (unw_word) psp;
+  context->rp = (unw_word) rp;
   asm ("mov %0 = sp" : "=r" (context->sp));
   asm ("mov %0 = pr" : "=r" (context->pr));
   context->pri_unat_loc = &context->initial_unat;	/* ??? */
@@ -2170,8 +2168,20 @@ static void __attribute__((noreturn))
 uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
 		    struct _Unwind_Context *target)
 {
-  unsigned long ireg_buf[4], ireg_nat = 0, ireg_pr = 0;
-  long i;
+  unw_word ireg_buf[4], ireg_nat = 0, ireg_pr = 0;
+  unw_word saved_lc;
+  int i;
+
+  /* ??? LC is a fixed register so the call to __builtin_unwind_init in
+     uw_init_context doesn't cause it to be saved.  In case it isn't in
+     the user frames either, we need to manually do so here, lest it be
+     clobbered by the loop just below.  */
+  if (target->lc_loc == NULL)
+    {
+      register unw_word lc asm ("ar.lc");
+      saved_lc = lc;
+      target->lc_loc = &saved_lc;
+    }
 
   /* Copy integer register data from the target context to a
      temporary buffer.  Do this so that we can frob AR.UNAT
@@ -2183,7 +2193,7 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
       if (t)
 	{
 	  unw_access_gr (target, i, &ireg_buf[i - 4], &nat, 0);
-          ireg_nat |= (long)nat << (((size_t)&ireg_buf[i - 4] >> 3) & 0x3f);
+          ireg_nat |= (unw_word)nat << (((size_t)&ireg_buf[i - 4] >> 3) & 0x3f);
 	  /* Set p6 - p9.  */
 	  ireg_pr |= 4L << i;
 	}
@@ -2193,12 +2203,12 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
      target function.  The value that we install below will be
      adjusted by the BR.RET instruction based on the contents
      of AR.PFS.  So we must unadjust that here.  */
-  target->bsp = (unsigned long)
-    ia64_rse_skip_regs ((unsigned long *)target->bsp,
+  target->bsp = (unw_word)
+    ia64_rse_skip_regs ((unw_word *)target->bsp,
 			(*target->pfs_loc >> 7) & 0x7f);
 
   if (target->bsp < target->regstk_top)
-    target->rnat = *ia64_rse_rnat_addr ((unsigned long *) target->bsp);
+    target->rnat = *ia64_rse_rnat_addr ((unw_word *) target->bsp);
 
   /* Provide assembly with the offsets into the _Unwind_Context.  */
   asm volatile ("uc_rnat = %0"

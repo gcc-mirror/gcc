@@ -539,7 +539,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   if (sym->attr.cray_pointee)
     return;
 
-  if(sym->attr.is_bind_c == 1)
+  if(sym->attr.is_bind_c == 1 && sym->binding_label)
     {
       /* We need to put variables that are bind(c) into the common
 	 segment of the object file, because this is what C would do.
@@ -565,7 +565,8 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       /* TODO: Don't set sym->module for result or dummy variables.  */
       gcc_assert (current_function_decl == NULL_TREE || sym->result == sym);
       /* This is the declaration of a module variable.  */
-      TREE_PUBLIC (decl) = 1;
+      if (sym->attr.access != ACCESS_PRIVATE)
+	TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
     }
 
@@ -1842,7 +1843,8 @@ build_function_decl (gfc_symbol * sym, bool global)
   DECL_EXTERNAL (fndecl) = 0;
 
   if (!current_function_decl
-      && !sym->attr.entry_master && !sym->attr.is_main_program)
+      && !sym->attr.entry_master && !sym->attr.is_main_program
+      && (sym->attr.access != ACCESS_PRIVATE || sym->binding_label))
     TREE_PUBLIC (fndecl) = 1;
 
   attributes = add_attributes_to_decl (attr, NULL_TREE);

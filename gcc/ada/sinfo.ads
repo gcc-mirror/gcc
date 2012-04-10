@@ -1226,6 +1226,9 @@ package Sinfo is
    --    'Address or 'Tag attribute. ???There are other implicit with clauses
    --    as well.
 
+   --  Implicit_With_From_Instantiation (Flag12-Sem)
+   --     Set in N_With_Clause nodes from generic instantiations.
+
    --  Import_Interface_Present (Flag16-Sem)
    --     This flag is set in an Interface or Import pragma if a matching
    --     pragma of the other kind is also present. This is used to avoid
@@ -1252,7 +1255,7 @@ package Sinfo is
    --    to the node for the spec of the instance, inserted as part of the
    --    semantic processing for instantiations in Sem_Ch12.
 
-   --  Is_Accessibility_Actual (Flag12-Sem)
+   --  Is_Accessibility_Actual (Flag13-Sem)
    --    Present in N_Parameter_Association nodes. True if the parameter is
    --    an extra actual that carries the accessibility level of the actual
    --    for an access parameter, in a function that dispatches on result and
@@ -5805,6 +5808,7 @@ package Sinfo is
       --  Elaborate_Desirable (Flag11-Sem)
       --  Private_Present (Flag15) set if with_clause has private keyword
       --  Implicit_With (Flag16-Sem)
+      --  Implicit_With_From_Instantiation (Flag12-Sem)
       --  Limited_Present (Flag17) set if LIMITED is present
       --  Limited_View_Installed (Flag18-Sem)
       --  Unreferenced_In_Spec (Flag7-Sem)
@@ -8592,6 +8596,9 @@ package Sinfo is
    function Implicit_With
      (N : Node_Id) return Boolean;    -- Flag16
 
+   function Implicit_With_From_Instantiation
+     (N : Node_Id) return Boolean;    -- Flag12
+
    function Import_Interface_Present
      (N : Node_Id) return Boolean;    -- Flag16
 
@@ -9572,6 +9579,9 @@ package Sinfo is
 
    procedure Set_Implicit_With
      (N : Node_Id; Val : Boolean := True);    -- Flag16
+
+   procedure Set_Implicit_With_From_Instantiation
+     (N : Node_Id; Val : Boolean := True);    -- Flag12
 
    procedure Set_Import_Interface_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag16
@@ -11959,6 +11969,7 @@ package Sinfo is
    pragma Inline (High_Bound);
    pragma Inline (Identifier);
    pragma Inline (Implicit_With);
+   pragma Inline (Implicit_With_From_Instantiation);
    pragma Inline (Interface_List);
    pragma Inline (Interface_Present);
    pragma Inline (Includes_Infinities);

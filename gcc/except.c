@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
    gimple to eh_region mapping that had been recorded in the
    THROW_STMT_TABLE.
 
-   During pass_rtl_eh (except.c), we generate the real landing pads
+   Then, via finish_eh_generation, we generate the real landing pads
    to which the runtime will actually transfer control.  These new
    landing pads perform whatever bookkeeping is needed by the target
    backend in order to resume execution within the current function.
@@ -144,6 +144,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "timevar.h"
 #include "tree-flow.h"
+#include "cfgloop.h"
 
 /* Provide defaults for stuff that may not be defined when using
    sjlj exceptions.  */
@@ -898,7 +899,7 @@ static basic_block
 emit_to_new_bb_before (rtx seq, rtx insn)
 {
   rtx last;
-  basic_block bb;
+  basic_block bb, prev_bb;
   edge e;
   edge_iterator ei;
 
@@ -913,7 +914,8 @@ emit_to_new_bb_before (rtx seq, rtx insn)
   last = emit_insn_before (seq, insn);
   if (BARRIER_P (last))
     last = PREV_INSN (last);
-  bb = create_basic_block (seq, last, BLOCK_FOR_INSN (insn)->prev_bb);
+  prev_bb = BLOCK_FOR_INSN (insn)->prev_bb;
+  bb = create_basic_block (seq, last, prev_bb);
   update_bb_for_insn (bb);
   bb->flags |= BB_SUPERBLOCK;
   return bb;
@@ -987,6 +989,16 @@ dw2_build_landing_pads (void)
       e = make_edge (bb, bb->next_bb, e_flags);
       e->count = bb->count;
       e->probability = REG_BR_PROB_BASE;
+      if (current_loops)
+	{
+	  struct loop *loop = bb->next_bb->loop_father;
+	  /* If we created a pre-header block, add the new block to the
+	     outer loop, otherwise to the loop itself.  */
+	  if (bb->next_bb == loop->header)
+	    add_bb_to_loop (bb, loop_outer (loop));
+	  else
+	    add_bb_to_loop (bb, loop);
+	}
     }
 }
 
@@ -1406,7 +1418,7 @@ sjlj_build_landing_pads (void)
 /* After initial rtl generation, call back to finish generating
    exception support code.  */
 
-static void
+void
 finish_eh_generation (void)
 {
   basic_block bb;
@@ -1453,41 +1465,6 @@ finish_eh_generation (void)
 	}
     }
 }
-
-static bool
-gate_handle_eh (void)
-{
-  /* Nothing to do if no regions created.  */
-  return cfun->eh->region_tree != NULL;
-}
-
-/* Complete generation of exception handling code.  */
-static unsigned int
-rest_of_handle_eh (void)
-{
-  finish_eh_generation ();
-  cleanup_cfg (CLEANUP_NO_INSN_DEL);
-  return 0;
-}
-
-struct rtl_opt_pass pass_rtl_eh =
-{
- {
-  RTL_PASS,
-  "rtl_eh",                             /* name */
-  gate_handle_eh,                       /* gate */
-  rest_of_handle_eh,			/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_JUMP,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
-};
 
 /* This section handles removing dead code for flow.  */
 

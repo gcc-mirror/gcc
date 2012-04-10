@@ -76,23 +76,18 @@ am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	misc-inst.lo ostream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.lo streambuf-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.lo
-@GLIBCXX_LDBL_COMPAT_TRUE@am__objects_3 = compatibility-ldbl.lo
-@ENABLE_PARALLEL_TRUE@am__objects_4 = parallel_settings.lo \
-@ENABLE_PARALLEL_TRUE@	compatibility-parallel_list.lo \
-@ENABLE_PARALLEL_TRUE@	compatibility-parallel_list-2.lo
-am__objects_5 = basic_file.lo c++locale.lo $(am__objects_2) \
-	$(am__objects_3) $(am__objects_4)
-am__objects_6 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
-	codecvt.lo compatibility.lo compatibility-debug_list.lo \
-	compatibility-debug_list-2.lo compatibility-list.lo \
-	compatibility-list-2.lo complex_io.lo ctype.lo globals_io.lo \
-	hash_tr1.lo hashtable_tr1.lo ios.lo ios_failure.lo ios_init.lo \
+@ENABLE_PARALLEL_TRUE@am__objects_3 = parallel_settings.lo
+am__objects_4 = basic_file.lo c++locale.lo $(am__objects_2) \
+	$(am__objects_3)
+am__objects_5 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
+	codecvt.lo complex_io.lo ctype.lo globals_io.lo hash_tr1.lo \
+	hashtable_tr1.lo ios.lo ios_failure.lo ios_init.lo \
 	ios_locale.lo list.lo locale.lo locale_init.lo \
 	locale_facets.lo localename.lo math_stubs_float.lo \
 	math_stubs_long_double.lo stdexcept.lo strstream.lo tree.lo \
 	istream.lo streambuf.lo valarray.lo $(am__objects_1) \
-	$(am__objects_5)
-am_libc__98convenience_la_OBJECTS = $(am__objects_6)
+	$(am__objects_4)
+am_libc__98convenience_la_OBJECTS = $(am__objects_5)
 libc__98convenience_la_OBJECTS = $(am_libc__98convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
@@ -315,7 +310,7 @@ WARN_CXXFLAGS = \
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
 # Convenience library for C++98 runtime.
-noinst_LTLIBRARIES = libc++98convenience.la
+noinst_LTLIBRARIES = libc++98convenience.la 
 headers = 
 
 # Source files linked in via configuration/make substitution for a
@@ -337,15 +332,10 @@ atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
 # particular host, but with ad hoc naming rules.
 host_sources_extra = \
 	basic_file.cc c++locale.cc \
-	${inst_sources} ${ldbl_compat_sources} ${parallel_sources}
+	${inst_sources} ${parallel_sources}
 
 @ENABLE_PARALLEL_FALSE@parallel_sources = 
-@ENABLE_PARALLEL_TRUE@parallel_sources = parallel_settings.cc \
-@ENABLE_PARALLEL_TRUE@		   compatibility-parallel_list.cc \
-@ENABLE_PARALLEL_TRUE@		   compatibility-parallel_list-2.cc
-
-@GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
-@GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
+@ENABLE_PARALLEL_TRUE@parallel_sources = parallel_settings.cc
 @ENABLE_EXTERN_TEMPLATE_FALSE@XTEMPLATE_FLAGS = 
 @ENABLE_EXTERN_TEMPLATE_TRUE@XTEMPLATE_FLAGS = -fno-implicit-templates
 @ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
@@ -370,11 +360,6 @@ sources = \
 	pool_allocator.cc \
 	mt_allocator.cc \
 	codecvt.cc \
-	compatibility.cc \
-	compatibility-debug_list.cc \
-	compatibility-debug_list-2.cc \
-	compatibility-list.cc \
-	compatibility-list-2.cc \
 	complex_io.cc \
 	ctype.cc \
 	globals_io.cc \
@@ -417,9 +402,7 @@ PARALLEL_FLAGS = -fopenmp -D_GLIBCXX_PARALLEL -I$(glibcxx_builddir)/../libgomp
 AM_CXXFLAGS = \
 	$(PIC_CXXFLAGS) \
 	$(XTEMPLATE_FLAGS) \
-	$(WARN_CXXFLAGS) \
-	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS)
+	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
 
 AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)"
@@ -445,9 +428,11 @@ AM_MAKEFLAGS = \
 # attempt to infer which configuration to use.
 # We have to put --tag disable-shared after --tag CXX lest things
 # CXX undo the affect of disable-shared.
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared $(LIBTOOLFLAGS) \
-	       --mode=compile $(CXX) $(TOPLEVEL_INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = \
+	$(LIBTOOL) --tag CXX --tag disable-shared \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(CXX) $(TOPLEVEL_INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
@@ -457,9 +442,11 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 # course is problematic at this point.  So, we get the top-level
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
-CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared $(LIBTOOLFLAGS) \
-	  --mode=link $(CXX) \
-	  $(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
+CXXLINK = \
+	$(LIBTOOL) --tag CXX --tag disable-shared \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXX) \
+	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
 
 all: all-am
 
@@ -726,7 +713,6 @@ basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
 
 vpath % $(top_srcdir)/src/c++98
-vpath % $(top_srcdir)
 strstream.lo: strstream.cc
 	$(LTCXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc
@@ -743,23 +729,6 @@ parallel_settings.lo: parallel_settings.cc
 	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 parallel_settings.o: parallel_settings.cc
 	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
-
-compatibility-parallel_list.lo: compatibility-parallel_list.cc
-	$(LTCXXCOMPILE) -c $<
-compatibility-parallel_list.o: compatibility-parallel_list.cc
-	$(CXXCOMPILE) -c $<
-
-compatibility-parallel_list-2.lo: compatibility-parallel_list-2.cc
-	$(LTCXXCOMPILE) -c $<
-compatibility-parallel_list-2.o: compatibility-parallel_list-2.cc
-	$(CXXCOMPILE) -c $<
-
-# Use special rules for compatibility-ldbl.cc compilation, as we need to
-# pass -mlong-double-64.
-@GLIBCXX_LDBL_COMPAT_TRUE@compatibility-ldbl.lo: compatibility-ldbl.cc
-@GLIBCXX_LDBL_COMPAT_TRUE@	$(LTCXXCOMPILE) -mlong-double-64 -c $<
-@GLIBCXX_LDBL_COMPAT_TRUE@compatibility-ldbl.o: compatibility-ldbl.cc
-@GLIBCXX_LDBL_COMPAT_TRUE@	$(CXXCOMPILE) -mlong-double-64 -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -43,8 +43,6 @@ along with GCC; see the file COPYING3.  If not see
         builtin_define ("__IEEE_FLOAT");	\
     } while (0)
 
-#define VMS_DEBUG_MAIN_POINTER "TRANSFER$BREAK$GO"
-
 #undef PCC_STATIC_STRUCT_RETURN
 
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
@@ -217,9 +215,21 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
 
-#undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
     fprintf (FILE, "\t.align %d\n", LOG);
+
+/* This is how to advance the location counter by SIZE bytes.  */
+
+#define ASM_OUTPUT_SKIP(FILE,SIZE)  \
+  fprintf (FILE, "\t.space "HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE))
+
+/* This says how to output an assembler line
+   to define a global common symbol.  */
+
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
+( fputs ("\t.lcomm ", (FILE)),				\
+  assemble_name ((FILE), (NAME)),			\
+  fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE)))
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION vms_asm_named_section
@@ -267,21 +277,14 @@ do {                                                \
 #else
 /* Link with vms-dwarf2.o if -g (except -g0). This causes the
    VMS link to pull all the dwarf2 debug sections together.  */
-#define LINK_SPEC "%{g:-g vms-dwarf2.o%s} %{g0} %{g1:-g1 vms-dwarf2.o%s} \
-%{g2:-g2 vms-dwarf2.o%s} %{g3:-g3 vms-dwarf2.o%s} %{shared} %{v} %{map}"
+#define LINK_SPEC "%{g0} %{g*:-g vms-dwarf2.o%s} %{shared} %{v} %{map}"
 #endif
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC \
-"%{!shared:%{mvms-return-codes:vcrt0.o%s} %{!mvms-return-codes:pcrt0.o%s} \
-    crtbegin.o%s} \
+#define STARTFILE_SPEC "%{!shared:crt0.o%s crtbegin.o%s} \
  %{!static:%{shared:crtbeginS.o%s}}"
 
-#define ENDFILE_SPEC \
-"%{!shared:crtend.o%s} %{!static:%{shared:crtendS.o%s}}"
-
-#define NAME__MAIN "__gccmain"
-#define SYMBOL__MAIN __gccmain
+#define ENDFILE_SPEC "%{!shared:crtend.o%s} %{!static:%{shared:crtendS.o%s}}"
 
 #define INIT_SECTION_ASM_OP "\t.section LIB$INITIALIZE,GBL,NOWRT"
 
@@ -289,3 +292,7 @@ do {                                                \
 
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE vms_valid_pointer_mode
+
+/* Default values for _CRTL_VER and _VMS_VER.  */
+#define VMS_DEFAULT_CRTL_VER 70320000
+#define VMS_DEFAULT_VMS_VER 70320000

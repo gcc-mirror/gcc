@@ -1,5 +1,5 @@
 /* VMCPStringBuilder.java -- Growable strings without locking or copying
-   Copyright (C) 2008 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,6 +71,8 @@ final class VMCPStringBuilder
           new InternalError("Could not get no-copy String constructor").initCause(e);
       }
   }
+
+  private VMCPStringBuilder() {} // Prohibits instantiation.
 
   /**
    * Convert this <code>StringBuilder</code> to a <code>String</code>. The

@@ -1,5 +1,5 @@
 /* SRPServer.java --
-   Copyright (C) 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006, 2010 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -79,7 +79,8 @@ public class SRPServer
     extends ServerMechanism
     implements SaslServer
 {
-  private static final Logger log = Logger.getLogger(SRPServer.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(SRPServer.class.getName()) : null;
   private String U = null; // client's username
   private BigInteger N, g, A, B;
   private byte[] s; // salt

@@ -99,6 +99,7 @@ The callgraph:
 #include "ipa-utils.h"
 #include "lto-streamer.h"
 #include "ipa-inline.h"
+#include "cfgloop.h"
 
 const char * const ld_plugin_symbol_resolution_names[]=
 {
@@ -1363,6 +1364,12 @@ cgraph_release_function_body (struct cgraph_node *node)
     {
       tree old_decl = current_function_decl;
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+      if (cfun->cfg
+	  && current_loops)
+	{
+	  cfun->curr_properties &= ~PROP_loops;
+	  loop_optimizer_finalize ();
+	}
       if (cfun->gimple_df)
 	{
 	  current_function_decl = node->decl;
@@ -1379,7 +1386,6 @@ cgraph_release_function_body (struct cgraph_node *node)
 	}
       if (cfun->value_histograms)
 	free_histograms ();
-      gcc_assert (!current_loops);
       pop_cfun();
       gimple_set_body (node->decl, NULL);
       VEC_free (ipa_opt_pass, heap,
@@ -1639,19 +1645,27 @@ cgraph_add_to_same_comdat_group (struct cgraph_node *new_,
     }
 }
 
-/* Remove the node from cgraph.  */
+/* Remove the node from cgraph and all inline clones inlined into it.
+   Skip however removal of FORBIDDEN_NODE and return true if it needs to be
+   removed.  This allows to call the function from outer loop walking clone
+   tree.  */
 
-void
-cgraph_remove_node_and_inline_clones (struct cgraph_node *node)
+bool
+cgraph_remove_node_and_inline_clones (struct cgraph_node *node, struct cgraph_node *forbidden_node)
 {
   struct cgraph_edge *e, *next;
+  bool found = false;
+
+  if (node == forbidden_node)
+    return true;
   for (e = node->callees; e; e = next)
     {
       next = e->next_callee;
       if (!e->inline_failed)
-        cgraph_remove_node_and_inline_clones (e->callee);
+        found |= cgraph_remove_node_and_inline_clones (e->callee, forbidden_node);
     }
   cgraph_remove_node (node);
+  return found;
 }
 
 /* Notify finalize_compilation_unit that given node is reachable.  */

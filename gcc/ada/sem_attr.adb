@@ -323,7 +323,7 @@ package body Sem_Attr is
       --  type or a private type for which no full view has been given.
 
       procedure Check_Object_Reference (P : Node_Id);
-      --  Check that P (the prefix of the attribute) is an object reference
+      --  Check that P is an object reference
 
       procedure Check_Program_Unit;
       --  Verify that prefix of attribute N is a program unit
@@ -5196,6 +5196,20 @@ package body Sem_Attr is
 
          Set_Etype (N, Standard_Boolean);
 
+      -------------------
+      -- Valid_Scalars --
+      -------------------
+
+      when Attribute_Valid_Scalars =>
+         Check_E0;
+         Check_Object_Reference (P);
+
+         if No_Scalar_Parts (P_Type) then
+            Error_Attr_P ("?attribute % always True, no scalars to check");
+         end if;
+
+         Set_Etype (N, Standard_Boolean);
+
       -----------
       -- Value --
       -----------
@@ -6034,7 +6048,7 @@ package body Sem_Attr is
          return;
 
       --  No other cases are foldable (they certainly aren't static, and at
-      --  the moment we don't try to fold any cases other than these three).
+      --  the moment we don't try to fold any cases other than the ones above).
 
       else
          Check_Expressions;
@@ -8145,6 +8159,7 @@ package body Sem_Attr is
            Attribute_Universal_Literal_String   |
            Attribute_Unrestricted_Access        |
            Attribute_Valid                      |
+           Attribute_Valid_Scalars              |
            Attribute_Value                      |
            Attribute_Wchar_T_Size               |
            Attribute_Wide_Value                 |

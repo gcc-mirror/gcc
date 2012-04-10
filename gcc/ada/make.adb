@@ -7423,6 +7423,16 @@ package body Make is
 
          Add_Switch (Argv, Program_Args, And_Save => And_Save);
 
+         --  Make sure that all significant switches -m on the command line
+         --  are counted.
+
+         if Argv'Length > 2
+           and then Argv (1 .. 2) = "-m"
+           and then Argv /= "-mieee"
+         then
+            N_M_Switch := N_M_Switch + 1;
+         end if;
+
       --  Handle non-default compiler, binder, linker, and handle --RTS switch
 
       elsif Argv'Length > 2 and then Argv (1 .. 2) = "--" then

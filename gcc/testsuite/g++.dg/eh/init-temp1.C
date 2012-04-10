@@ -1,6 +1,12 @@
 // PR c++/15764
 // { dg-do run }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#define NOEXCEPT_FALSE noexcept (false)
+#else
+#define NOEXCEPT_FALSE
+#endif
+
 extern "C" void abort (); 
  
 int thrown; 
@@ -8,7 +14,7 @@ int thrown;
 int as;
 struct a {
   a () { ++as; }
-  ~a () { --as; if (thrown++ == 0) throw 42; }
+  ~a () NOEXCEPT_FALSE { --as; if (thrown++ == 0) throw 42; }
 }; 
  
 int f (a const&) { return 1; } 

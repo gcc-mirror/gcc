@@ -1,5 +1,5 @@
 /* Extension.java -- an X.509 certificate or CRL extension.
-   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,8 @@ import java.util.logging.Logger;
 
 public class Extension
 {
-  private static final Logger log = Logger.getLogger(Extension.class.getName());
+  private static final Logger log = Configuration.DEBUG ?
+                        Logger.getLogger(Extension.class.getName()) : null;
   /**
    * This extension's object identifier.
    */

@@ -369,6 +369,7 @@ GOARCH = @GOARCH@
 GOC = @GOC@
 GOCFLAGS = $(CFLAGS)
 GOOS = @GOOS@
+GO_BIGENDIAN = @GO_BIGENDIAN@
 GO_LIBCALL_OS_ARCH_FILE = @GO_LIBCALL_OS_ARCH_FILE@
 GO_LIBCALL_OS_FILE = @GO_LIBCALL_OS_FILE@
 GO_SYSCALL_OS_ARCH_FILE = @GO_SYSCALL_OS_ARCH_FILE@
@@ -1131,6 +1132,7 @@ go_net_rpc_files = \
 	go/net/rpc/server.go
 
 go_runtime_files = \
+	go/runtime/compiler.go \
 	go/runtime/debug.go \
 	go/runtime/error.go \
 	go/runtime/extern.go \
@@ -1150,6 +1152,7 @@ go_strconv_files = \
 	go/strconv/decimal.go \
 	go/strconv/extfloat.go \
 	go/strconv/ftoa.go \
+	go/strconv/isprint.go \
 	go/strconv/itoa.go \
 	go/strconv/quote.go
 
@@ -1315,13 +1318,14 @@ go_crypto_tls_files = \
 	go/crypto/tls/handshake_server.go \
 	go/crypto/tls/key_agreement.go \
 	go/crypto/tls/prf.go \
-	go/crypto/tls/root_unix.go \
 	go/crypto/tls/tls.go
 
 go_crypto_x509_files = \
 	go/crypto/x509/cert_pool.go \
 	go/crypto/x509/pkcs1.go \
 	go/crypto/x509/pkcs8.go \
+	go/crypto/x509/root.go \
+	go/crypto/x509/root_unix.go \
 	go/crypto/x509/verify.go \
 	go/crypto/x509/x509.go
 
@@ -1677,7 +1681,8 @@ go_os_user_files = \
 go_path_filepath_files = \
 	go/path/filepath/match.go \
 	go/path/filepath/path.go \
-	go/path/filepath/path_unix.go
+	go/path/filepath/path_unix.go \
+	go/path/filepath/symlink.go
 
 go_regexp_syntax_files = \
 	go/regexp/syntax/compile.go \
@@ -2041,9 +2046,9 @@ CHECK = \
 	prefix=`if test "$(@D)" = "regexp"; then echo regexp-test; else dirname $(@D); fi`; \
 	test "$${prefix}" != "." || prefix="$(@D)"; \
 	if test "$(use_dejagnu)" = "yes"; then \
-	  $(SHELL) $(srcdir)/testsuite/gotest --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --testname="$(@D)" $(GOTESTFLAGS); \
+	  $(SHELL) $(srcdir)/testsuite/gotest --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --testname="$(@D)" --goarch="$(GOARCH)" $(GOTESTFLAGS); \
 	else \
-	  if $(SHELL) $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" $(GOTESTFLAGS) >>$@-testlog 2>&1; then \
+	  if $(SHELL) $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --goarch="$(GOARCH)" $(GOTESTFLAGS) >>$@-testlog 2>&1; then \
 	    echo "PASS: $(@D)" >> $@-testlog; \
 	    echo "PASS: $(@D)"; \
 	    echo "PASS: $(@D)" > $@-testsum; \
@@ -4367,6 +4372,7 @@ s-syscall_arch: Makefile
 	echo "package syscall" > syscall_arch.go.tmp
 	echo 'const ARCH = "'$(GOARCH)'"' >> syscall_arch.go.tmp
 	echo 'const OS = "'$(GOOS)'"' >> syscall_arch.go.tmp
+	echo 'const BigEndian = $(GO_BIGENDIAN)' >> syscall_arch.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change syscall_arch.go.tmp syscall_arch.go
 	$(STAMP) $@
 

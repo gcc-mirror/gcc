@@ -612,6 +612,7 @@ HAVE_STRERROR_R_FALSE
 HAVE_STRERROR_R_TRUE
 HAVE_SYS_MMAN_H_FALSE
 HAVE_SYS_MMAN_H_TRUE
+GO_BIGENDIAN
 PTHREAD_LIBS
 PTHREAD_CFLAGS
 NET_LIBS
@@ -11100,7 +11101,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11103 "configure"
+#line 11104 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11206,7 +11207,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11209 "configure"
+#line 11210 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14408,6 +14409,12 @@ $as_echo "#define AC_APPLE_UNIVERSAL_BUILD 1" >>confdefs.h
  presetting ac_cv_c_bigendian=no (or yes) will help" "$LINENO" 5 ;;
  esac
 
+case $ac_cv_c_bigendian in
+  yes) GO_BIGENDIAN=true ;;
+  no) GO_BIGENDIAN=false ;;
+  *) as_fn_error "unknown endianness" "$LINENO" 5 ;;
+esac
+
 
 
 
@@ -14508,7 +14515,7 @@ no)
   ;;
 esac
 
-for ac_header in sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/reboot.h
+for ac_header in sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/reboot.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"

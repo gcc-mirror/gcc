@@ -1,3 +1,15 @@
+2012-03-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_malloc): New.
+	* fixincl.x: Regenerate.
+	* tests/base/malloc.h [AIX_MALLOC_CHECK]: New.
+	
+2012-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR other/52626
+	* tests/base/pthread.h [SOLARIS_MUTEX_INIT_2_CHECK]
+	(PTHREAD_COND_INITIALIZER): Adapt for solaris_cond_init removal.
+
 2012-03-15  Tristan Gingold  <gingold@adacore.com>
 
 	* README (EXAMPLES OF FIXES): Update.

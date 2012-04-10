@@ -1,5 +1,5 @@
 /* PlainDatagramSocketImpl.java -- VM interface for DatagramSocket impl
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2010  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,7 @@ import java.net.SocketException;
  * @author Ingo Proetel (proetel@aicas.com)
  * @author Roman Kennke (kennke@aicas.com)
  */
-public final class VMPlainDatagramSocketImpl
+final class VMPlainDatagramSocketImpl
 {
   /**
    * Option id for the IP_TTL (time to live) value.
@@ -70,8 +70,10 @@ public final class VMPlainDatagramSocketImpl
       }
   }
 
+  private VMPlainDatagramSocketImpl() {} // Prohibits instantiation.
+
   /**
-   * Binds this socket to a particular port and interface
+   * Binds this socket to a particular port and interface.
    *
    * @param socket the socket object
    * @param port the port to bind to

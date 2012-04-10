@@ -23,6 +23,9 @@ JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_qt_QtFontMetrics_getMaxAdvance (JN
 JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_qt_QtFontMetrics_charWidth (JNIEnv *env, jobject, jchar);
 JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_qt_QtFontMetrics_stringWidth (JNIEnv *env, jobject, jstring);
 
+#undef java_awt_FontMetrics_serialVersionUID
+#define java_awt_FontMetrics_serialVersionUID 1681126225205050147LL
+
 #ifdef __cplusplus
 }
 #endif

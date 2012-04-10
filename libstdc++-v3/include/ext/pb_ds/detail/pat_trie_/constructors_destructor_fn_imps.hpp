@@ -1,6 +1,6 @@
  // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -188,7 +188,11 @@ recursive_copy_node(node_const_pointer p_ncp)
   __try
     {
       while (child_it != p_icp->end())
-	a_p_children[child_i++] = recursive_copy_node(*(child_it++));
+	{
+	  a_p_children[child_i] = recursive_copy_node(*(child_it));
+	  child_i++;
+	  child_it++;
+	}
       p_ret = s_inode_allocator.allocate(1);
     }
   __catch(...)

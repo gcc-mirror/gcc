@@ -406,7 +406,9 @@ runtime_schedinit(void)
 			n = maxgomaxprocs;
 		runtime_gomaxprocs = n;
 	}
-	setmcpumax(runtime_gomaxprocs);
+	// wait for the main goroutine to start before taking
+	// GOMAXPROCS into account.
+	setmcpumax(1);
 	runtime_singleproc = runtime_gomaxprocs == 1;
 
 	canaddmcpu();	// mcpu++ to account for bootstrap m
@@ -432,6 +434,8 @@ runtime_main(void)
 	// by calling runtime.LockOSThread during initialization
 	// to preserve the lock.
 	runtime_LockOSThread();
+	// From now on, newgoroutines may use non-main threads.
+	setmcpumax(runtime_gomaxprocs);
 	runtime_sched.init = true;
 	scvg = __go_go(runtime_MHeap_Scavenger, nil);
 	main_init();
@@ -443,6 +447,11 @@ runtime_main(void)
 	// to enable GC, because initializing main registers the GC
 	// roots.
 	mstats.enablegc = 1;
+
+	// The deadlock detection has false negatives.
+	// Let scvg start up, to eliminate the false negative
+	// for the trivial program func main() { select{} }.
+	runtime_gosched();
 
 	main_main();
 	runtime_exit(0);
@@ -791,6 +800,20 @@ top:
 	}
 
 	// Look for deadlock situation.
+	// There is a race with the scavenger that causes false negatives:
+	// if the scavenger is just starting, then we have
+	//	scvg != nil && grunning == 0 && gwait == 0
+	// and we do not detect a deadlock.  It is possible that we should
+	// add that case to the if statement here, but it is too close to Go 1
+	// to make such a subtle change.  Instead, we work around the
+	// false negative in trivial programs by calling runtime.gosched
+	// from the main goroutine just before main.main.
+	// See runtime_main above.
+	//
+	// On a related note, it is also possible that the scvg == nil case is
+	// wrong and should include gwait, but that does not happen in
+	// standard Go programs, which all start the scavenger.
+	//
 	if((scvg == nil && runtime_sched.grunning == 0) ||
 	   (scvg != nil && runtime_sched.grunning == 1 && runtime_sched.gwait == 0 &&
 	    (scvg->status == Grunning || scvg->status == Gsyscall))) {
@@ -961,6 +984,11 @@ runtime_mstart(void* mp)
 	  __splitstack_block_signals(&dont_block_signals, nil);
 	}
 #endif
+
+	// Install signal handlers; after minit so that minit can
+	// prepare the thread to be able to handle the signals.
+	if(m == &runtime_m0)
+		runtime_initsig();
 
 	schedule(nil);
 	return nil;

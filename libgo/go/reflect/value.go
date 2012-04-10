@@ -54,6 +54,10 @@ func memmove(adst, asrc unsafe.Pointer, n uintptr) {
 // its String method returns "<invalid Value>", and all other methods panic.
 // Most functions and methods never return an invalid value.
 // If one does, its documentation states the conditions explicitly.
+//
+// A Value can be used concurrently by multiple goroutines provided that
+// the underlying Go value can be used concurrently for the equivalent
+// direct operations.
 type Value struct {
 	// typ holds the type of the value represented by a Value.
 	typ *commonType
@@ -1619,6 +1623,15 @@ func unsafe_NewArray(Type, int) unsafe.Pointer
 func MakeSlice(typ Type, len, cap int) Value {
 	if typ.Kind() != Slice {
 		panic("reflect.MakeSlice of non-slice type")
+	}
+	if len < 0 {
+		panic("reflect.MakeSlice: negative len")
+	}
+	if cap < 0 {
+		panic("reflect.MakeSlice: negative cap")
+	}
+	if len > cap {
+		panic("reflect.MakeSlice: len > cap")
 	}
 
 	// Declare slice so that gc can see the base pointer in it.

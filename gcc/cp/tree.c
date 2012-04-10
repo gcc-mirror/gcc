@@ -1,6 +1,7 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011,
+   2012
    Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -150,8 +151,14 @@ lvalue_kind (const_tree ref)
       /* A scope ref in a template, left as SCOPE_REF to support later
 	 access checking.  */
     case SCOPE_REF:
-      gcc_assert (!type_dependent_expression_p (CONST_CAST_TREE(ref)));
-      return lvalue_kind (TREE_OPERAND (ref, 1));
+      gcc_assert (!type_dependent_expression_p (CONST_CAST_TREE (ref)));
+      {
+	tree op = TREE_OPERAND (ref, 1);
+	if (TREE_CODE (op) == FIELD_DECL)
+	  return (DECL_C_BIT_FIELD (op) ? clk_bitfield : clk_ordinary);
+	else
+	  return lvalue_kind (op);
+      }
 
     case MAX_EXPR:
     case MIN_EXPR:
@@ -272,6 +279,14 @@ lvalue_or_rvalue_with_address_p (const_tree ref)
     return false;
   else
     return (kind != clk_none);
+}
+
+/* Returns true if REF is an xvalue, false otherwise.  */
+
+bool
+xvalue_p (const_tree ref)
+{
+  return (lvalue_kind (ref) == clk_rvalueref);
 }
 
 /* Test whether DECL is a builtin that may appear in a
@@ -1228,12 +1243,11 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
   TREE_CHAIN (*igo_prev) = new_binfo;
   *igo_prev = new_binfo;
 
-  if (binfo)
+  if (binfo && !BINFO_DEPENDENT_BASE_P (binfo))
     {
       int ix;
       tree base_binfo;
 
-      gcc_assert (!BINFO_DEPENDENT_BASE_P (binfo));
       gcc_assert (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), type));
 
       BINFO_OFFSET (new_binfo) = BINFO_OFFSET (binfo);
@@ -1246,8 +1260,6 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
       for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
 	{
 	  tree new_base_binfo;
-
-	  gcc_assert (!BINFO_DEPENDENT_BASE_P (base_binfo));
 	  new_base_binfo = copy_binfo (base_binfo, BINFO_TYPE (base_binfo),
 				       t, igo_prev,
 				       BINFO_VIRTUAL_P (base_binfo));
