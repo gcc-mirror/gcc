@@ -1,3 +1,21 @@
+2012-04-10  Michael Matz  <matz@suse.de>
+
+	* m4/cshift0.m4 (cshift0_'rtype_code`): Guard use of modulo.
+
+	* generated/cshift0_c10.c: Regenerated.
+	* generated/cshift0_c16.c: Regenerated.
+	* generated/cshift0_c4.c: Regenerated.
+	* generated/cshift0_c8.c: Regenerated.
+	* generated/cshift0_i16.c: Regenerated.
+	* generated/cshift0_i1.c: Regenerated.
+	* generated/cshift0_i2.c: Regenerated.
+	* generated/cshift0_i4.c: Regenerated.
+	* generated/cshift0_i8.c: Regenerated.
+	* generated/cshift0_r10.c: Regenerated.
+	* generated/cshift0_r16.c: Regenerated.
+	* generated/cshift0_r4.c: Regenerated.
+	* generated/cshift0_r8.c: Regenerated.
+
 2012-04-04  Tristan Gingold  <gingold@adacore.com>
 
 	* libgfortran.h: Include complex.h before math.h

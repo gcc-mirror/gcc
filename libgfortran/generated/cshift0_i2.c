@@ -97,9 +97,13 @@ cshift0_i2 (gfc_array_i2 *ret, const gfc_array_i2 *array, ptrdiff_t shift,
   rptr = ret->base_addr;
   sptr = array->base_addr;
 
-  shift = len == 0 ? 0 : shift % (ptrdiff_t)len;
-  if (shift < 0)
-    shift += len;
+  /* Avoid the costly modulo for trivially in-bound shifts.  */
+  if (shift < 0 || shift >= len)
+    {
+      shift = len == 0 ? 0 : shift % (ptrdiff_t)len;
+      if (shift < 0)
+	shift += len;
+    }
 
   while (rptr)
     {
