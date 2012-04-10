@@ -1,3 +1,14 @@
+2012-04-10  Richard Guenther  <rguenther@suse.de>
+
+	* toplev.h (tree_rest_of_compilation): Remove.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+	* cgraph.h (tree_rest_of_compilation): Declare.
+	* tree-optimize.c (tree_rest_of_compilation): Move ...
+	* cgraphunit.c (tree_rest_of_compilation): ... here.
+	* cgraph.c (cgraph_add_new_function): Adjust.
+	* Makefile.in (tree-optimize.o): Adjust.
+	(cgraphunit.o): Likewise.
+
 2012-04-10  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	PR tree-optimization/52870
