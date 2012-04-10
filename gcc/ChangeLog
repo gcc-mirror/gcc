@@ -1,3 +1,14 @@
+2012-04-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree-pass.h (tree_lowering_passes): Remove.
+	* tree-optimize.c (tree_lowering_passes): Remove.
+	* cgraph.c (cgraph_add_new_function): Inline relevant parts
+	of tree_lowering_passes, avoid redundant call of early local
+	passes.
+	* cgraphunit.c (cgraph_lower_function): Fold into ...
+	(cgraph_analyze_function): ... its single caller.  Inline
+	relevant parts of tree_lowering_passes.
+
 2012-04-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/52777
