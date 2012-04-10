@@ -366,26 +366,6 @@ struct gimple_opt_pass pass_init_datastructures =
   0					/* todo_flags_finish */
  }
 };
-
-void
-tree_lowering_passes (tree fn)
-{
-  tree saved_current_function_decl = current_function_decl;
-
-  current_function_decl = fn;
-  push_cfun (DECL_STRUCT_FUNCTION (fn));
-  gimple_register_cfg_hooks ();
-  bitmap_obstack_initialize (NULL);
-  execute_pass_list (all_lowering_passes);
-  if (optimize && cgraph_global_info_ready)
-    execute_pass_list (pass_early_local_passes.pass.sub);
-  free_dominance_info (CDI_POST_DOMINATORS);
-  free_dominance_info (CDI_DOMINATORS);
-  compact_blocks ();
-  current_function_decl = saved_current_function_decl;
-  bitmap_obstack_release (NULL);
-  pop_cfun ();
-}
 
 /* For functions-as-trees languages, this performs all optimization and
    compilation for FNDECL.  */

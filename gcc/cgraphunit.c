@@ -313,20 +313,6 @@ cgraph_reset_node (struct cgraph_node *node)
   cgraph_node_remove_callees (node);
 }
 
-static void
-cgraph_lower_function (struct cgraph_node *node)
-{
-  if (node->lowered)
-    return;
-
-  if (node->nested)
-    lower_nested_functions (node->decl);
-  gcc_assert (!node->nested);
-
-  tree_lowering_passes (node->decl);
-  node->lowered = true;
-}
-
 /* DECL has been parsed.  Take it, queue it, compile it at the whim of the
    logic in effect.  If NESTED is true, then our caller cannot stand to have
    the garbage collector run at the moment.  We would need to either create
@@ -915,7 +901,23 @@ cgraph_analyze_function (struct cgraph_node *node)
 	gimplify_function_tree (decl);
       dump_function (TDI_generic, decl);
 
-      cgraph_lower_function (node);
+      /* Lower the function.  */
+      if (!node->lowered)
+	{
+	  if (node->nested)
+	    lower_nested_functions (node->decl);
+	  gcc_assert (!node->nested);
+
+	  gimple_register_cfg_hooks ();
+	  bitmap_obstack_initialize (NULL);
+	  execute_pass_list (all_lowering_passes);
+	  free_dominance_info (CDI_POST_DOMINATORS);
+	  free_dominance_info (CDI_DOMINATORS);
+	  compact_blocks ();
+	  bitmap_obstack_release (NULL);
+	  node->lowered = true;
+	}
+
       pop_cfun ();
     }
   node->analyzed = true;
