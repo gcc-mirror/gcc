@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "except.h"
 #include "plugin.h"
-#include "regset.h"	/* FIXME: For reg_obstack.  */
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
@@ -366,90 +365,3 @@ struct gimple_opt_pass pass_init_datastructures =
   0					/* todo_flags_finish */
  }
 };
-
-/* For functions-as-trees languages, this performs all optimization and
-   compilation for FNDECL.  */
-
-void
-tree_rest_of_compilation (tree fndecl)
-{
-  location_t saved_loc;
-
-  timevar_push (TV_REST_OF_COMPILATION);
-
-  gcc_assert (cgraph_global_info_ready);
-
-  /* Initialize the default bitmap obstack.  */
-  bitmap_obstack_initialize (NULL);
-
-  /* Initialize the RTL code for the function.  */
-  current_function_decl = fndecl;
-  saved_loc = input_location;
-  input_location = DECL_SOURCE_LOCATION (fndecl);
-  init_function_start (fndecl);
-
-  gimple_register_cfg_hooks ();
-
-  bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
-
-  execute_all_ipa_transforms ();
-
-  /* Perform all tree transforms and optimizations.  */
-
-  /* Signal the start of passes.  */
-  invoke_plugin_callbacks (PLUGIN_ALL_PASSES_START, NULL);
-
-  execute_pass_list (all_passes);
-
-  /* Signal the end of passes.  */
-  invoke_plugin_callbacks (PLUGIN_ALL_PASSES_END, NULL);
-
-  bitmap_obstack_release (&reg_obstack);
-
-  /* Release the default bitmap obstack.  */
-  bitmap_obstack_release (NULL);
-
-  set_cfun (NULL);
-
-  /* If requested, warn about function definitions where the function will
-     return a value (usually of some struct or union type) which itself will
-     take up a lot of stack space.  */
-  if (warn_larger_than && !DECL_EXTERNAL (fndecl) && TREE_TYPE (fndecl))
-    {
-      tree ret_type = TREE_TYPE (TREE_TYPE (fndecl));
-
-      if (ret_type && TYPE_SIZE_UNIT (ret_type)
-	  && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
-	  && 0 < compare_tree_int (TYPE_SIZE_UNIT (ret_type),
-				   larger_than_size))
-	{
-	  unsigned int size_as_int
-	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
-
-	  if (compare_tree_int (TYPE_SIZE_UNIT (ret_type), size_as_int) == 0)
-	    warning (OPT_Wlarger_than_, "size of return value of %q+D is %u bytes",
-                     fndecl, size_as_int);
-	  else
-	    warning (OPT_Wlarger_than_, "size of return value of %q+D is larger than %wd bytes",
-                     fndecl, larger_than_size);
-	}
-    }
-
-  gimple_set_body (fndecl, NULL);
-  if (DECL_STRUCT_FUNCTION (fndecl) == 0
-      && !cgraph_get_node (fndecl)->origin)
-    {
-      /* Stop pointing to the local nodes about to be freed.
-	 But DECL_INITIAL must remain nonzero so we know this
-	 was an actual function definition.
-	 For a nested function, this is done in c_pop_function_context.
-	 If rest_of_compilation set this to 0, leave it 0.  */
-      if (DECL_INITIAL (fndecl) != 0)
-	DECL_INITIAL (fndecl) = error_mark_node;
-    }
-
-  input_location = saved_loc;
-
-  ggc_collect ();
-  timevar_pop (TV_REST_OF_COMPILATION);
-}
