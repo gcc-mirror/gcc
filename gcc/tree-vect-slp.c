@@ -651,7 +651,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 		  || rhs_code != REALPART_EXPR)
 	      && (first_stmt_code != REALPART_EXPR
 		  || rhs_code != IMAGPART_EXPR)
-              && !(STMT_VINFO_STRIDED_ACCESS (vinfo_for_stmt (stmt))
+              && !(STMT_VINFO_GROUPED_ACCESS (vinfo_for_stmt (stmt))
                    && (first_stmt_code == ARRAY_REF
                        || first_stmt_code == INDIRECT_REF
                        || first_stmt_code == COMPONENT_REF
@@ -704,8 +704,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	    }
 	}
 
-      /* Strided store or load.  */
-      if (STMT_VINFO_STRIDED_ACCESS (vinfo_for_stmt (stmt)))
+      /* Grouped store or load.  */
+      if (STMT_VINFO_GROUPED_ACCESS (vinfo_for_stmt (stmt)))
 	{
 	  if (REFERENCE_CLASS_P (lhs))
 	    {
@@ -729,7 +729,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
                 {
                   if (vect_print_dump_info (REPORT_SLP))
                     {
-                      fprintf (vect_dump, "Build SLP failed: strided "
+                      fprintf (vect_dump, "Build SLP failed: grouped "
                                           "loads have gaps ");
                       print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
                     }
@@ -815,19 +815,19 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
               stop_recursion = true;
              continue;
            }
-        } /* Strided access.  */
+        } /* Grouped access.  */
       else
 	{
 	  if (TREE_CODE_CLASS (rhs_code) == tcc_reference)
 	    {
-	      /* Not strided load.  */
+	      /* Not grouped load.  */
 	      if (vect_print_dump_info (REPORT_SLP))
 		{
-		  fprintf (vect_dump, "Build SLP failed: not strided load ");
+		  fprintf (vect_dump, "Build SLP failed: not grouped load ");
 		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
 		}
 
-	      /* FORNOW: Not strided loads are not supported.  */
+	      /* FORNOW: Not grouped loads are not supported.  */
 	      vect_free_oprnd_info (&oprnds_info);
 	      return false;
 	    }
@@ -884,7 +884,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   *inside_cost += SLP_TREE_INSIDE_OF_LOOP_COST (*node);
   *outside_cost += SLP_TREE_OUTSIDE_OF_LOOP_COST (*node);
 
-  /* Strided loads were reached - stop the recursion.  */
+  /* Grouped loads were reached - stop the recursion.  */
   if (stop_recursion)
     {
       VEC_safe_push (slp_tree, heap, *loads, *node);
@@ -1109,7 +1109,7 @@ vect_slp_rearrange_stmts (slp_tree node, unsigned int group_size,
 
 /* Check if the required load permutation is supported.
    LOAD_PERMUTATION contains a list of indices of the loads.
-   In SLP this permutation is relative to the order of strided stores that are
+   In SLP this permutation is relative to the order of grouped stores that are
    the base of the SLP instance.  */
 
 static bool
@@ -1138,7 +1138,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
 
   /* In case of reduction every load permutation is allowed, since the order
      of the reduction statements is not important (as opposed to the case of
-     strided stores).  The only condition we need to check is that all the
+     grouped stores).  The only condition we need to check is that all the
      load nodes are of the same size and have the same permutation (and then
      rearrange all the nodes of the SLP instance according to this 
      permutation).  */
@@ -1444,7 +1444,7 @@ vect_find_last_store_in_slp_instance (slp_instance instance)
 }
 
 
-/* Analyze an SLP instance starting from a group of strided stores.  Call
+/* Analyze an SLP instance starting from a group of grouped stores.  Call
    vect_build_slp_tree to build a tree of packed stmts if possible.
    Return FALSE if it's impossible to SLP any stmt in the loop.  */
 
@@ -1517,7 +1517,7 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
       return false;
     }
 
-  /* Create a node (a root of the SLP tree) for the packed strided stores.  */
+  /* Create a node (a root of the SLP tree) for the packed grouped stores.  */
   scalar_stmts = VEC_alloc (gimple, heap, group_size);
   next = stmt;
   if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
@@ -1635,7 +1635,7 @@ bool
 vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 {
   unsigned int i;
-  VEC (gimple, heap) *strided_stores, *reductions = NULL, *reduc_chains = NULL;
+  VEC (gimple, heap) *grouped_stores, *reductions = NULL, *reduc_chains = NULL;
   gimple first_element;
   bool ok = false;
 
@@ -1644,15 +1644,15 @@ vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
   if (loop_vinfo)
     {
-      strided_stores = LOOP_VINFO_STRIDED_STORES (loop_vinfo);
+      grouped_stores = LOOP_VINFO_GROUPED_STORES (loop_vinfo);
       reduc_chains = LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo);
       reductions = LOOP_VINFO_REDUCTIONS (loop_vinfo);
     }
   else
-    strided_stores = BB_VINFO_STRIDED_STORES (bb_vinfo);
+    grouped_stores = BB_VINFO_GROUPED_STORES (bb_vinfo);
 
-  /* Find SLP sequences starting from groups of strided stores.  */
-  FOR_EACH_VEC_ELT (gimple, strided_stores, i, first_element)
+  /* Find SLP sequences starting from groups of grouped stores.  */
+  FOR_EACH_VEC_ELT (gimple, grouped_stores, i, first_element)
     if (vect_analyze_slp_instance (loop_vinfo, bb_vinfo, first_element))
       ok = true;
 
@@ -1810,7 +1810,7 @@ new_bb_vec_info (basic_block bb)
       set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, NULL, res));
     }
 
-  BB_VINFO_STRIDED_STORES (res) = VEC_alloc (gimple, heap, 10);
+  BB_VINFO_GROUPED_STORES (res) = VEC_alloc (gimple, heap, 10);
   BB_VINFO_SLP_INSTANCES (res) = VEC_alloc (slp_instance, heap, 2);
 
   bb->aux = res;
@@ -1844,7 +1844,7 @@ destroy_bb_vec_info (bb_vec_info bb_vinfo)
 
   free_data_refs (BB_VINFO_DATAREFS (bb_vinfo));
   free_dependence_relations (BB_VINFO_DDRS (bb_vinfo));
-  VEC_free (gimple, heap, BB_VINFO_STRIDED_STORES (bb_vinfo));
+  VEC_free (gimple, heap, BB_VINFO_GROUPED_STORES (bb_vinfo));
   VEC_free (slp_instance, heap, BB_VINFO_SLP_INSTANCES (bb_vinfo));
   free (bb_vinfo);
   bb->aux = NULL;
@@ -2859,7 +2859,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
                             unsigned int vectorization_factor)
 {
   gimple stmt;
-  bool strided_store, is_store;
+  bool grouped_store, is_store;
   gimple_stmt_iterator si;
   stmt_vec_info stmt_info;
   unsigned int vec_stmts_size, nunits, group_size;
@@ -2919,7 +2919,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 
   /* Loads should be inserted before the first load.  */
   if (SLP_INSTANCE_FIRST_LOAD_STMT (instance)
-      && STMT_VINFO_STRIDED_ACCESS (stmt_info)
+      && STMT_VINFO_GROUPED_ACCESS (stmt_info)
       && !REFERENCE_CLASS_P (gimple_get_lhs (stmt))
       && SLP_INSTANCE_LOAD_PERMUTATION (instance))
     si = gsi_for_stmt (SLP_INSTANCE_FIRST_LOAD_STMT (instance));
@@ -2929,7 +2929,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
     si = gsi_for_stmt (stmt);
 
   /* Stores should be inserted just before the last store.  */
-  if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
       && REFERENCE_CLASS_P (gimple_get_lhs (stmt)))
     { 
       gimple last_store = vect_find_last_store_in_slp_instance (instance);
@@ -2941,14 +2941,14 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   /* Mark the first element of the reduction chain as reduction to properly
      transform the node.  In the analysis phase only the last element of the
      chain is marked as reduction.  */
-  if (GROUP_FIRST_ELEMENT (stmt_info) && !STMT_VINFO_STRIDED_ACCESS (stmt_info)
+  if (GROUP_FIRST_ELEMENT (stmt_info) && !STMT_VINFO_GROUPED_ACCESS (stmt_info)
       && GROUP_FIRST_ELEMENT (stmt_info) == stmt)
     {
       STMT_VINFO_DEF_TYPE (stmt_info) = vect_reduction_def;
       STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
     }
 
-  is_store = vect_transform_stmt (stmt, &si, &strided_store, node, instance);
+  is_store = vect_transform_stmt (stmt, &si, &grouped_store, node, instance);
   return is_store;
 }
 

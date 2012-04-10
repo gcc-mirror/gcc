@@ -605,7 +605,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
         }
 
       /* When vectorizing a basic block unknown depnedence can still mean
-	 strided access.  */
+	 grouped access.  */
       if (vect_check_interleaving (dra, drb))
          return false;
 
@@ -1000,9 +1000,9 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
 
  /* For interleaved data accesses the step in the loop must be multiplied by
      the size of the interleaving group.  */
-  if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     dr_size *= GROUP_SIZE (vinfo_for_stmt (GROUP_FIRST_ELEMENT (stmt_info)));
-  if (STMT_VINFO_STRIDED_ACCESS (peel_stmt_info))
+  if (STMT_VINFO_GROUPED_ACCESS (peel_stmt_info))
     dr_peel_size *= GROUP_SIZE (peel_stmt_info);
 
   /* It can be assumed that the data refs with the same alignment as dr_peel
@@ -1062,7 +1062,7 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
       /* For interleaving, only the alignment of the first access matters. 
          Skip statements marked as not vectorizable.  */
-      if ((STMT_VINFO_STRIDED_ACCESS (stmt_info)
+      if ((STMT_VINFO_GROUPED_ACCESS (stmt_info)
            && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
           || !STMT_VINFO_VECTORIZABLE (stmt_info))
         continue;
@@ -1103,7 +1103,7 @@ vector_alignment_reachable_p (struct data_reference *dr)
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
-  if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       /* For interleaved access we peel only if number of iterations in
 	 the prolog loop ({VF - misalignment}), is a multiple of the
@@ -1288,7 +1288,7 @@ vect_peeling_hash_get_lowest_cost (void **slot, void *data)
       stmt_info = vinfo_for_stmt (stmt);
       /* For interleaving, only the alignment of the first access
          matters.  */
-      if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
+      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
           && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
         continue;
 
@@ -1503,7 +1503,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       /* For interleaving, only the alignment of the first access
          matters.  */
-      if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
+      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
           && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
         continue;
 
@@ -1745,7 +1745,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	     members of the group, therefore we divide the number of iterations
 	     by the group size.  */
 	  stmt_info = vinfo_for_stmt (DR_STMT (dr0));
-	  if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
+	  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	    npeel /= GROUP_SIZE (stmt_info);
 
           if (vect_print_dump_info (REPORT_DETAILS))
@@ -1764,7 +1764,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  stmt_info = vinfo_for_stmt (stmt);
 	  /* For interleaving, only the alignment of the first access
             matters.  */
-	  if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
+	  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
 	      && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
 	    continue;
 
@@ -1846,7 +1846,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  /* For interleaving, only the alignment of the first access
 	     matters.  */
 	  if (aligned_access_p (dr)
-	      || (STMT_VINFO_STRIDED_ACCESS (stmt_info)
+	      || (STMT_VINFO_GROUPED_ACCESS (stmt_info)
 		  && GROUP_FIRST_ELEMENT (stmt_info) != stmt))
 	    continue;
 
@@ -2041,9 +2041,9 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo,
 }
 
 
-/* Analyze groups of strided accesses: check that DR belongs to a group of
-   strided accesses of legal size, step, etc.  Detect gaps, single element
-   interleaving, and other special cases. Set strided access info.
+/* Analyze groups of accesses: check that DR belongs to a group of
+   accesses of legal size, step, etc.  Detect gaps, single element
+   interleaving, and other special cases. Set grouped access info.
    Collect groups of strided stores for further use in SLP analysis.  */
 
 static bool
@@ -2057,16 +2057,16 @@ vect_analyze_group_access (struct data_reference *dr)
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
-  HOST_WIDE_INT stride, last_accessed_element = 1;
+  HOST_WIDE_INT groupsize, last_accessed_element = 1;
   bool slp_impossible = false;
   struct loop *loop = NULL;
 
   if (loop_vinfo)
     loop = LOOP_VINFO_LOOP (loop_vinfo);
 
-  /* For interleaving, STRIDE is STEP counted in elements, i.e., the size of the
-     interleaving group (including gaps).  */
-  stride = dr_step / type_size;
+  /* For interleaving, GROUPSIZE is STEP counted in elements, i.e., the
+     size of the interleaving group (including gaps).  */
+  groupsize = dr_step / type_size;
 
   /* Not consecutive access is possible only if it is a part of interleaving.  */
   if (!GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
@@ -2078,11 +2078,11 @@ vect_analyze_group_access (struct data_reference *dr)
 	 size.  The size of the group must be a power of 2.  */
       if (DR_IS_READ (dr)
 	  && (dr_step % type_size) == 0
-	  && stride > 0
-	  && exact_log2 (stride) != -1)
+	  && groupsize > 0
+	  && exact_log2 (groupsize) != -1)
 	{
 	  GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = stmt;
-	  GROUP_SIZE (vinfo_for_stmt (stmt)) = stride;
+	  GROUP_SIZE (vinfo_for_stmt (stmt)) = groupsize;
 	  if (vect_print_dump_info (REPORT_DR_DETAILS))
 	    {
 	      fprintf (vect_dump, "Detected single element interleaving ");
@@ -2239,9 +2239,9 @@ vect_analyze_group_access (struct data_reference *dr)
             {
               slp_impossible = true;
               /* There is a gap after the last load in the group. This gap is a
-                 difference between the stride and the number of elements. When
-                 there is no gap, this difference should be 0.  */
-              GROUP_GAP (vinfo_for_stmt (stmt)) = stride - count;
+                 difference between the groupsize and the number of elements.
+		 When there is no gap, this difference should be 0.  */
+              GROUP_GAP (vinfo_for_stmt (stmt)) = groupsize - count;
             }
           else
             {
@@ -2265,27 +2265,27 @@ vect_analyze_group_access (struct data_reference *dr)
           return false;
         }
 
-      if (stride == 0)
-        stride = count;
+      if (groupsize == 0)
+        groupsize = count;
 
-      GROUP_SIZE (vinfo_for_stmt (stmt)) = stride;
+      GROUP_SIZE (vinfo_for_stmt (stmt)) = groupsize;
       if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "Detected interleaving of size %d", (int)stride);
+        fprintf (vect_dump, "Detected interleaving of size %d", (int)groupsize);
 
       /* SLP: create an SLP data structure for every interleaving group of
 	 stores for further analysis in vect_analyse_slp.  */
       if (DR_IS_WRITE (dr) && !slp_impossible)
         {
           if (loop_vinfo)
-            VEC_safe_push (gimple, heap, LOOP_VINFO_STRIDED_STORES (loop_vinfo),
+            VEC_safe_push (gimple, heap, LOOP_VINFO_GROUPED_STORES (loop_vinfo),
                            stmt);
           if (bb_vinfo)
-            VEC_safe_push (gimple, heap, BB_VINFO_STRIDED_STORES (bb_vinfo),
+            VEC_safe_push (gimple, heap, BB_VINFO_GROUPED_STORES (bb_vinfo),
                            stmt);
         }
 
       /* There is a gap in the end of the group.  */
-      if (stride - last_accessed_element > 0 && loop_vinfo)
+      if (groupsize - last_accessed_element > 0 && loop_vinfo)
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "Data access with gaps requires scalar "
@@ -2307,7 +2307,7 @@ vect_analyze_group_access (struct data_reference *dr)
 
 /* Analyze the access pattern of the data-reference DR.
    In case of non-consecutive accesses call vect_analyze_group_access() to
-   analyze groups of strided accesses.  */
+   analyze groups of accesses.  */
 
 static bool
 vect_analyze_data_ref_access (struct data_reference *dr)
@@ -2372,7 +2372,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   if (loop && nested_in_vect_loop_p (loop, stmt))
     {
       if (vect_print_dump_info (REPORT_ALIGNMENT))
-	fprintf (vect_dump, "strided access in outer loop.");
+	fprintf (vect_dump, "grouped access in outer loop.");
       return false;
     }
 
@@ -3792,13 +3792,13 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
   return vec_dest;
 }
 
-/* Function vect_strided_store_supported.
+/* Function vect_grouped_store_supported.
 
    Returns TRUE if interleave high and interleave low permutations
    are supported, and FALSE otherwise.  */
 
 bool
-vect_strided_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
+vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
   enum machine_mode mode = TYPE_MODE (vectype);
 
@@ -3806,7 +3806,7 @@ vect_strided_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
   if (exact_log2 (count) == -1)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "the size of the group of strided accesses"
+	fprintf (vect_dump, "the size of the group of accesses"
 		 " is not a power of 2");
       return false;
     }
@@ -4243,13 +4243,13 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
 }
 
 
-/* Function vect_strided_load_supported.
+/* Function vect_grouped_load_supported.
 
    Returns TRUE if even and odd permutations are supported,
    and FALSE otherwise.  */
 
 bool
-vect_strided_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
+vect_grouped_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
   enum machine_mode mode = TYPE_MODE (vectype);
 
@@ -4257,7 +4257,7 @@ vect_strided_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
   if (exact_log2 (count) == -1)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "the size of the group of strided accesses"
+	fprintf (vect_dump, "the size of the group of accesses"
 		 " is not a power of 2");
       return false;
     }
@@ -4442,7 +4442,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 }
 
 
-/* Function vect_transform_strided_load.
+/* Function vect_transform_grouped_load.
 
    Given a chain of input interleaved data-refs (in DR_CHAIN), build statements
    to perform their permutation and ascribe the result vectorized statements to
@@ -4450,7 +4450,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 */
 
 void
-vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
+vect_transform_grouped_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
 			     gimple_stmt_iterator *gsi)
 {
   VEC(tree,heap) *result_chain = NULL;
@@ -4460,16 +4460,16 @@ vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
      vectors, that are ready for vector computation.  */
   result_chain = VEC_alloc (tree, heap, size);
   vect_permute_load_chain (dr_chain, size, stmt, gsi, &result_chain);
-  vect_record_strided_load_vectors (stmt, result_chain);
+  vect_record_grouped_load_vectors (stmt, result_chain);
   VEC_free (tree, heap, result_chain);
 }
 
-/* RESULT_CHAIN contains the output of a group of strided loads that were
+/* RESULT_CHAIN contains the output of a group of grouped loads that were
    generated as part of the vectorization of STMT.  Assign the statement
    for each vector to the associated scalar statement.  */
 
 void
-vect_record_strided_load_vectors (gimple stmt, VEC(tree,heap) *result_chain)
+vect_record_grouped_load_vectors (gimple stmt, VEC(tree,heap) *result_chain)
 {
   gimple first_stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt));
   gimple next_stmt, new_stmt;
