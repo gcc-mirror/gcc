@@ -847,7 +847,7 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_MAY_ALIAS_DDRS (res) =
     VEC_alloc (ddr_p, heap,
                PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
-  LOOP_VINFO_STRIDED_STORES (res) = VEC_alloc (gimple, heap, 10);
+  LOOP_VINFO_GROUPED_STORES (res) = VEC_alloc (gimple, heap, 10);
   LOOP_VINFO_REDUCTIONS (res) = VEC_alloc (gimple, heap, 10);
   LOOP_VINFO_REDUCTION_CHAINS (res) = VEC_alloc (gimple, heap, 10);
   LOOP_VINFO_SLP_INSTANCES (res) = VEC_alloc (slp_instance, heap, 10);
@@ -923,7 +923,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
     vect_free_slp_instance (instance);
 
   VEC_free (slp_instance, heap, LOOP_VINFO_SLP_INSTANCES (loop_vinfo));
-  VEC_free (gimple, heap, LOOP_VINFO_STRIDED_STORES (loop_vinfo));
+  VEC_free (gimple, heap, LOOP_VINFO_GROUPED_STORES (loop_vinfo));
   VEC_free (gimple, heap, LOOP_VINFO_REDUCTIONS (loop_vinfo));
   VEC_free (gimple, heap, LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo));
 
@@ -5221,7 +5221,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   int i;
   tree ratio = NULL;
   int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  bool strided_store;
+  bool grouped_store;
   bool slp_scheduled = false;
   unsigned int nunits;
   tree cond_expr = NULL_TREE;
@@ -5460,11 +5460,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "transform statement.");
 
-	  strided_store = false;
-	  is_store = vect_transform_stmt (stmt, &si, &strided_store, NULL, NULL);
+	  grouped_store = false;
+	  is_store = vect_transform_stmt (stmt, &si, &grouped_store, NULL, NULL);
           if (is_store)
             {
-	      if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
+	      if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
 		{
 		  /* Interleaving. If IS_STORE is TRUE, the vectorization of the
 		     interleaving chain was completed - free all the stores in

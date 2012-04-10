@@ -1,3 +1,49 @@
+2010-04-10  Michael Matz  <matz@suse.de>
+
+	* tree-vectorizer.h (_loop_vec_info.strided_stores): Rename to
+	grouped_stores.
+	(LOOP_VINFO_STRIDED_STORES): Rename to LOOP_VINFO_GROUPED_STORES.
+	(struce _bb_vec_info.strided_stores): Rename to grouped_stores.
+	(BB_VINFO_STRIDED_STORES): Rename to BB_VINFO_GROUPED_STORES.
+	(STMT_VINFO_STRIDED_ACCESS): Rename to STMT_VINFO_GROUPED_ACCESS.
+	(vect_strided_store_supported): Rename to vect_grouped_store_supported.
+	(vect_strided_load_supported): Rename to vect_grouped_load_supported.
+	(vect_transform_strided_load): Rename to vect_transform_grouped_load.
+	(vect_record_strided_load_vectors): Rename to
+	vect_record_grouped_load_vectors.
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel):
+	Rename use of above macros.
+	(vect_verify_datarefs_alignment): Ditto.
+	(vector_alignment_reachable_p): Ditto.
+	(vect_peeling_hash_get_lowest_cost): Ditto.
+	(vect_enhance_data_refs_alignment): Ditto.
+	(vect_analyze_group_access): Ditto and rename stride to groupsize.
+	(vect_analyze_data_ref_access): Rename "strided" to "grouped".
+	(vect_strided_store_supported): Rename to vect_grouped_store_supported.
+	(vect_strided_load_supported): Rename to vect_grouped_load_supported.
+	(vect_transform_strided_load): Rename to vect_transform_grouped_load.
+	(vect_record_strided_load_vectors): Rename to
+	vect_record_grouped_load_vectors.
+	* tree-vect-loop.c (new_loop_vec_info): Rename use of above macros.
+	(destroy_loop_vec_info): Ditto.
+	(vect_transform_loop): Ditto and rename strided_store to grouped_store.
+	* tree-vect-slp.c (vect_build_slp_tree): Rename use of above macros.
+	(vect_analyze_slp): Ditto.
+	(new_bb_vec_info): Ditto.
+	(destroy_bb_vec_info): Ditto.
+	(vect_schedule_slp_instance): Ditto and rename strided_store to
+	grouped_store.
+	* tree-vect-stmts.c (vect_cost_strided_group_size): Rename to
+	vect_cost_group_size.
+	(vect_model_store_cost): Rename use of above macros and call
+	to vect_cost_strided_group_size.
+	(vect_model_load_cost): Ditto.
+	(vectorizable_store): Ditto, rename strided_store to grouped_store
+	and calls to renamed tree-vectorizer.h functions.
+	(vectorizable_load): Ditto.
+	(vect_transform_stmt): Rename use of above macros and strided_store
+	to grouped_store.
+
 2012-04-10  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h: Remove misledaing comment on ipa-ref.h.
