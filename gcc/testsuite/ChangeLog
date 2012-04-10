@@ -1,3 +1,14 @@
+2010-04-10  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/vect/vect-outer-1-big-array.c: Adjust.
+	* gcc.dg/vect/vect-outer-1.c: Adjust.
+	* gcc.dg/vect/vect-outer-1a-big-array.c: Adjust.
+	* gcc.dg/vect/vect-outer-1a.c: Adjust.
+	* gcc.dg/vect/vect-outer-1b-big-array.c: Adjust.
+	* gcc.dg/vect/vect-outer-1b.c: Adjust.
+	* gcc.dg/vect/vect-outer-2b.c: Adjust.
+	* gcc.dg/vect/vect-outer-3b.c: Adjust.
+
 2012-04-10  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	PR tree-optimization/52870
