@@ -1,5 +1,11 @@
 2012-04-10  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/52888
+	* gimple-low.c (gimple_check_call_args): Properly account for
+	compatible aggregate types.
+
+2012-04-10  Richard Guenther  <rguenther@suse.de>
+
 	* toplev.h (tree_rest_of_compilation): Remove.
 	* tree-optimize.c (tree_rest_of_compilation): Likewise.
 	* cgraph.h (tree_rest_of_compilation): Declare.
