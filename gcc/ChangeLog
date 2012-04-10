@@ -1,3 +1,8 @@
+2012-04-10  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* tree.h (warn_if_unused_value): Move declaration from here.
+	* stmt.c (warn_if_unused_value): Move definition from here.
+
 2010-04-10  Michael Matz  <matz@suse.de>
 
 	* tree-vectorizer.h (_loop_vec_info.strided_stores): Rename to
