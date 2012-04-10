@@ -142,6 +142,7 @@ varpool_node (tree decl)
   if (*slot)
     return *slot;
   node = ggc_alloc_cleared_varpool_node ();
+  node->symbol.type = SYMTAB_VARIABLE;
   node->decl = decl;
   node->order = cgraph_order++;
   node->next = varpool_nodes;

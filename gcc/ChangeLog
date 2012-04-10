@@ -1,3 +1,13 @@
+2012-04-10  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h: Remove misledaing comment on ipa-ref.h.
+	(symtab_type): New enum.
+	(symtab_node): New structure.
+	(cgraph_node, varpool_node): Add symbol base type.
+	(cgraph, varpool): New accestor functions.
+	* cgraph.c (cgraph_create_node_1): Set symbol type.
+	* varpool.c (varpool_node): Set symbol type.
+
 2012-04-10  Ulrich Weigand  <ulrich.weigand@linaro.org>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
 
