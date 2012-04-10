@@ -473,6 +473,7 @@ cgraph_create_node_1 (void)
 {
   struct cgraph_node *node = cgraph_allocate_node ();
 
+  node->symbol.type = SYMTAB_FUNCTION;
   node->next = cgraph_nodes;
   node->order = cgraph_order++;
   if (cgraph_nodes)
