@@ -1,3 +1,8 @@
+2012-04-10  Ulrich Weigand  <ulrich.weigand@linaro.org>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* fwprop.c (propagate_rtx): Also set PR_CAN_APPEAR for subregs.
+
 2012-04-10  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52888
