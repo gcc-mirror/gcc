@@ -1,3 +1,12 @@
+2012-04-09  Mike Stump  <mikestump@comcast.net>
+
+	* g++.dg/cpp0x/udlit-raw-op.C: Don't use CRLF endings.
+	* gcc.dg/tree-ssa/vrp59.c: Likewise.
+	* gcc.dg/tree-ssa/vrp60.c: Likewise.
+
+	* gcc.dg/dll-8.c: Remove execute permissions.
+	* g++.dg/ext/dllexport5.C: Likewise.
+
 2012-04-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lib/target-supports.exp (check_effective_target_sparc_v9): New.
