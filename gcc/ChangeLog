@@ -1,3 +1,8 @@
+2012-04-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/52777
+	* config/pa/pa.opt: Remove SIO and GNU_LD.
+
 2012-04-09  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/52722
