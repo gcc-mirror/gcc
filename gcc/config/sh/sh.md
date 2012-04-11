@@ -942,15 +942,10 @@
    (set (reg:SI T_REG) (eq:SI (match_dup 4) (match_dup 5)))
    (match_dup 6)]
 {
-  operands[2]
-    = gen_rtx_REG (SImode,
-		   true_regnum (operands[0]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
-  operands[3]
-    = (operands[1] == const0_rtx
-       ? const0_rtx
-       : gen_rtx_REG (SImode,
-		      true_regnum (operands[1])
-		      + (TARGET_LITTLE_ENDIAN ? 1 : 0)));
+  operands[2] = gen_highpart (SImode, operands[0]);
+  operands[3] = operands[1] == const0_rtx
+		? const0_rtx
+		: gen_highpart (SImode, operands[1]);
   operands[4] = gen_lowpart (SImode, operands[0]);
   operands[5] = gen_lowpart (SImode, operands[1]);
   operands[6] = gen_label_rtx ();
@@ -1453,13 +1448,10 @@
   "TARGET_SH1 && reload_completed"
   [(const_int 0)]
 {
-  rtx high0, high2, low0 = gen_lowpart (SImode, operands[0]);
-  high0 = gen_rtx_REG (SImode,
-		       true_regnum (operands[0])
-		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
-  high2 = gen_rtx_REG (SImode,
-		       true_regnum (operands[2])
-		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  rtx high0 = gen_highpart (SImode, operands[0]);
+  rtx high2 = gen_highpart (SImode, operands[2]);
+  rtx low0 = gen_lowpart (SImode, operands[0]);
+
   emit_insn (gen_clrt ());
   emit_insn (gen_addc (low0, low0, gen_lowpart (SImode, operands[2])));
   emit_insn (gen_addc1 (high0, high0, high2));
@@ -1581,13 +1573,10 @@
   "TARGET_SH1 && reload_completed"
   [(const_int 0)]
 {
-  rtx high0, high2, low0 = gen_lowpart (SImode, operands[0]);
-  high0 = gen_rtx_REG (SImode,
-		       true_regnum (operands[0])
-		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
-  high2 = gen_rtx_REG (SImode,
-		       true_regnum (operands[2])
-		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  rtx high0 = gen_highpart (SImode, operands[0]);
+  rtx high2 = gen_highpart (SImode, operands[2]);
+  rtx low0 = gen_lowpart (SImode, operands[0]);
+
   emit_insn (gen_clrt ());
   emit_insn (gen_subc (low0, low0, gen_lowpart (SImode, operands[2])));
   emit_insn (gen_subc1 (high0, high0, high2));
@@ -2321,7 +2310,7 @@ norm32: r25
   rtx tab_ix = operands[2];
   rtx norm32 = operands[3];
   rtx scratch0 = operands[4];
-  rtx scratch0_si = simplify_gen_subreg (SImode, scratch0, DImode, SIDI_OFF);
+  rtx scratch0_si = gen_lowpart (SImode, scratch0);
   rtx scratch1 = operands[5];
 
   emit_insn (gen_divsi_inv_qitable (scratch0, tab_base, tab_ix));
@@ -2368,7 +2357,7 @@ norm32: r25
   rtx scratch0b = operands[6];
   rtx scratch0 = operands[7];
   rtx scratch1 = operands[8];
-  rtx scratch1_si = simplify_gen_subreg (SImode, scratch1, DImode, SIDI_OFF);
+  rtx scratch1_si = gen_lowpart (SImode, scratch1);
 
   emit_insn (gen_divsi_inv_m0 (inv0, tab_base, tab_ix, norm32,
 			       scratch0a, scratch0b));
@@ -2405,7 +2394,7 @@ norm32: r25
   rtx inv1 = operands[2];
   rtx i92 = operands[3];
   rtx scratch0 = operands[4];
-  rtx scratch0_si = simplify_gen_subreg (SImode, scratch0, DImode, SIDI_OFF);
+  rtx scratch0_si = gen_lowpart (SImode, scratch0);
 
   emit_insn (gen_mulsidi3_media (scratch0, inv1, norm32));
   emit_insn (gen_ashrdi3_media (scratch0, scratch0, GEN_INT (16)));
@@ -2518,9 +2507,9 @@ norm32: r25
   rtx i2p27 = operands[7];
   rtx i43 = operands[8];
   rtx scratch0 = operands[9];
-  rtx scratch0_si = simplify_gen_subreg (SImode, scratch0, DImode, SIDI_OFF);
+  rtx scratch0_si = gen_lowpart (SImode, scratch0);
   rtx scratch1 = operands[10];
-  rtx scratch1_si = simplify_gen_subreg (SImode, scratch1, DImode, SIDI_OFF);
+  rtx scratch1_si = gen_lowpart (SImode, scratch1);
   rtx scratch2 = operands[11];
   rtx scratch3 = operands[12];
   rtx scratch4 = operands[13];
@@ -3919,17 +3908,14 @@ label:
                    (match_operand:DI 2 "const_int_operand" "n")))]
   "TARGET_SH1 && INTVAL (operands[2]) < 32"
 {
-  int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
-  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
-  rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
-  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
+  rtx low_src = gen_lowpart (SImode, operands[1]);
+  rtx high_src = gen_highpart (SImode, operands[1]);
   rtx dst = gen_reg_rtx (DImode);
-  rtx low_dst = operand_subword (dst, low_word, 1, DImode);
-  rtx high_dst = operand_subword (dst, high_word, 1, DImode);
-  rtx tmp0, tmp1;
+  rtx low_dst = gen_lowpart (SImode, dst);
+  rtx high_dst = gen_highpart (SImode, dst);
+  rtx tmp0 = gen_reg_rtx (SImode);
+  rtx tmp1 = gen_reg_rtx (SImode);
 
-  tmp0 = gen_reg_rtx (SImode);
-  tmp1 = gen_reg_rtx (SImode);
   emit_insn (gen_lshrsi3 (tmp0, low_src, GEN_INT (32 - INTVAL (operands[2]))));
   emit_insn (gen_ashlsi3 (low_dst, low_src, operands[2]));  
   emit_insn (gen_ashlsi3 (tmp1, high_src, operands[2]));  
@@ -4373,14 +4359,10 @@ label:
   "TARGET_SH1"
   [(const_int 0)]
 {
-  int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
-  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
-
-  rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
-  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
-
-  rtx low_dst = operand_subword (operands[0], low_word, 1, DImode);
-  rtx high_dst = operand_subword (operands[0], high_word, 1, DImode);
+  rtx low_src = gen_lowpart (SImode, operands[1]);
+  rtx high_src = gen_highpart (SImode, operands[1]);
+  rtx low_dst = gen_lowpart (SImode, operands[0]);
+  rtx high_dst = gen_highpart (SImode, operands[0]);
 
   emit_insn (gen_clrt ());
   emit_insn (gen_negc (low_dst, low_src));
@@ -4493,8 +4475,7 @@ label:
   "&& reload_completed"
   [(const_int 0)]
 {
-  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
-  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
+  rtx high_src = gen_highpart (SImode, operands[1]);
   emit_insn (gen_cmpgesi_t (high_src, const0_rtx));
   emit_insn (gen_negdi_cond (operands[0], operands[1], operands[1],
 			     const1_rtx));
@@ -4509,9 +4490,7 @@ label:
   "&& reload_completed"
   [(const_int 0)]
 {
-  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
-  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
-
+  rtx high_src = gen_highpart (SImode, operands[1]);
   emit_insn (gen_cmpgesi_t (high_src, const0_rtx));
   emit_insn (gen_negdi_cond (operands[0], operands[1], operands[1],
 			     const0_rtx));
@@ -4529,14 +4508,10 @@ label:
   "TARGET_SH1"
   [(const_int 0)]
 {
-  int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
-  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
-
-  rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
-  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
-
-  rtx low_dst = operand_subword (operands[0], low_word, 1, DImode);
-  rtx high_dst = operand_subword (operands[0], high_word, 1, DImode);
+  rtx low_src = gen_lowpart (SImode, operands[1]);
+  rtx high_src = gen_highpart (SImode, operands[1]);
+  rtx low_dst = gen_lowpart (SImode, operands[0]);
+  rtx high_dst = gen_highpart (SImode, operands[0]);
 
   rtx skip_neg_label = gen_label_rtx ();
 

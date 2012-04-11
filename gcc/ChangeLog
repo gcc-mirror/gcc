@@ -1,3 +1,10 @@
+2012-04-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (SIDI_OFF): Remove.
+	* config/sh/sh.md: Use gen_highpart and gen_lowpart to access
+	DImode subregs instead of gen_rtx_REG or simplifly_gen_subreg
+	or operand_subword.
+
 2012-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/52624
