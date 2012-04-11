@@ -3927,6 +3927,11 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   edge else_succ;
   int then_prob, else_prob;
 
+  /* We do not want to speculate (empty) loop latches.  */
+  if (current_loops
+      && else_bb->loop_father->latch == else_bb)
+    return FALSE;
+
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
      and cold sections.
