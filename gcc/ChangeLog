@@ -1,3 +1,11 @@
+2012-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/52894
+	* varasm.c (process_pending_assemble_externals): Set
+	pending_assemble_externals_processed true.
+	(assemble_external): Call assemble_external_real if the pending
+	assemble externals have been processed.
+
 2012-04-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/52717
