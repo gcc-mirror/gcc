@@ -17845,6 +17845,8 @@ cp_parser_class_name (cp_parser *parser,
 	decl = TYPE_NAME (decl);
     }
 
+  decl = strip_using_decl (decl);
+
   /* Check to see that it is really the name of a class.  */
   if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
       && TREE_CODE (TREE_OPERAND (decl, 0)) == IDENTIFIER_NODE
