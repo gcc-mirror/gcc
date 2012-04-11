@@ -1606,6 +1606,9 @@ rx_expand_prologue (void)
 
   rx_get_stack_layout (& low, & high, & mask, & frame_size, & stack_size);
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = frame_size + stack_size;
+
   /* If we use any of the callee-saved registers, save them now.  */
   if (mask)
     {
