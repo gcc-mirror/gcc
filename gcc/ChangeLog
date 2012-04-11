@@ -1,3 +1,13 @@
+2012-04-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/52876
+	* emit-rtl.c (set_reg_attrs_from_value): Handle arbitrary value.
+	Don't call mark_reg_pointer for incompatible pointer sign
+	extension.
+
+	* reginfo.c (reg_scan_mark_refs): Call set_reg_attrs_from_value 
+	directly.
+
 2012-04-11  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* fold-const.c (fold_unary_loc): Use GET_MODE_PRECISION for
