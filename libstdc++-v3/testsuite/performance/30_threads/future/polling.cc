@@ -1,4 +1,4 @@
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,7 @@
 
 inline bool is_ready(std::shared_future<void>& f)
 {
-  return f.wait_for(std::chrono::microseconds(1));
+  return f.wait_for(std::chrono::microseconds(1)) == std::future_status::ready;
 }
 
 void poll(std::shared_future<void> f)

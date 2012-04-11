@@ -1,5 +1,9 @@
 2012-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* testsuite/performance/30_threads/future/polling.cc: Adjust.
+
+2012-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/52591
 	* include/bits/stl_vector.h (vector::operator=(vector&&)): Dispatch
 	to _M_move_assign depending on whether allocator is moved.
