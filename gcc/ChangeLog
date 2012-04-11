@@ -1,3 +1,7 @@
+2012-04-11  Tristan Gingold  <gingold@adacore.com>
+
+	* doc/extend.texi (Type Attributes): Move paragraph.
+
 2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 24985
