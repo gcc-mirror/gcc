@@ -1,6 +1,4 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
-
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation
+// Copyright (C) 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,11 +16,23 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1137 }
+// { dg-options "-std=gnu++0x" }
+
+// libstdc++/52591
 
 #include <vector>
 
-void f()
+// As an extension we allow move-assignment of std::vector when the element
+// type is not MoveAssignable, as long as the allocator type propagates or
+// is known to always compare equal.
+
+struct C
 {
-  std::vector<std::vector<int> > v(10, 1);
+    C& operator=(C&&) = delete;
+};
+
+void test01()
+{
+    std::vector<C> a;
+    a = std::vector<C>();
 }
