@@ -1,3 +1,8 @@
+2012-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52729
+	* gfortran.dg/block_11.f90: New.
+
 2012-04-11  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.dg/stack-usage-1.c (SIZE): Define for the RL78.
@@ -20,7 +25,7 @@
 2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 24985
-        * lib/prune.exp: Add -fno-diagnostics-show-caret.
+	* lib/prune.exp: Add -fno-diagnostics-show-caret.
 
 2012-04-11  Richard Guenther  <rguenther@suse.de>
 
