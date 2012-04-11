@@ -1,5 +1,9 @@
 2012-04-11  Jason Merrill  <jason@redhat.com>
 
+	PR debug/45088
+	* decl.c (grokdeclarator): Strip the injected-class-name typedef
+	if we are building a declaration or compound type.
+
 	PR c++/52906
 	* decl.c (check_tag_decl): Don't complain about attributes if we
 	don't even have a type.
