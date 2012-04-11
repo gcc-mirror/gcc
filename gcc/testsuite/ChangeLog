@@ -1,5 +1,9 @@
 2012-04-11  Jason Merrill  <jason@redhat.com>
 
+	PR debug/45088
+	* g++.dg/debug/dwarf2/self-ref-1.C: Define virtual destructor.
+	* g++.dg/debug/dwarf2/self-ref-1.C: Likewise.
+
 	PR c++/52906
 	* g++.dg/ext/attrib45.C: New.
 
