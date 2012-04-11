@@ -1651,7 +1651,7 @@ struct sh_args {
    can ignore COUNT.  */
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
-  (((COUNT) == 0) ? sh_get_pr_initial_val () : (rtx) 0)
+  (((COUNT) == 0) ? sh_get_pr_initial_val () : NULL_RTX)
 
 /* A C expression whose value is RTL representing the location of the
    incoming return address at the beginning of any function, before the
