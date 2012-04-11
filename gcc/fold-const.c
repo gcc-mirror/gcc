@@ -7820,7 +7820,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	      && inter_prec >= inside_prec
 	      && (inter_float || inter_vec
 		  || inter_unsignedp == inside_unsignedp)
-	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
+	      && ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
 		    && TYPE_MODE (type) == TYPE_MODE (inter_type))
 	      && ! final_ptr
 	      && (! final_vec || inter_prec == inside_prec))
@@ -7857,7 +7857,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 		  == (final_unsignedp && final_prec > inter_prec))
 	      && ! (inside_ptr && inter_prec != final_prec)
 	      && ! (final_ptr && inside_prec != inter_prec)
-	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
+	      && ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
 		    && TYPE_MODE (type) == TYPE_MODE (inter_type)))
 	    return fold_build1_loc (loc, code, type, TREE_OPERAND (op0, 0));
 	}

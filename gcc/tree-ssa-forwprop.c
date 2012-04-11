@@ -1,5 +1,5 @@
 /* Forward propagation of expressions for single use variables.
-   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2274,7 +2274,7 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	  && inter_prec >= inside_prec
 	  && (inter_float || inter_vec
 	      || inter_unsignedp == inside_unsignedp)
-	  && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
+	  && ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
 		&& TYPE_MODE (type) == TYPE_MODE (inter_type))
 	  && ! final_ptr
 	  && (! final_vec || inter_prec == inside_prec))
@@ -2319,7 +2319,7 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	      == (final_unsignedp && final_prec > inter_prec))
 	  && ! (inside_ptr && inter_prec != final_prec)
 	  && ! (final_ptr && inside_prec != inter_prec)
-	  && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
+	  && ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
 		&& TYPE_MODE (type) == TYPE_MODE (inter_type)))
 	{
 	  gimple_assign_set_rhs1 (stmt, defop0);
