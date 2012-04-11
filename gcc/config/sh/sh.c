@@ -304,6 +304,7 @@ static bool sh_legitimate_constant_p (enum machine_mode, rtx);
 static int mov_insn_size (enum machine_mode, bool);
 static int max_mov_insn_displacement (enum machine_mode, bool);
 static int mov_insn_alignment_mask (enum machine_mode, bool);
+static HOST_WIDE_INT disp_addr_displacement (rtx);
 
 static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 
@@ -3160,11 +3161,6 @@ max_mov_insn_displacement (enum machine_mode mode, bool consider_sh2a)
      scale the max. displacement value accordingly.  */
   const int disp_scale = consider_sh2a ? (4095 / 15) : 1;
 
-  /* FIXME: HImode with displacement addressing is not supported yet.
-     Make it purposefully fail for now.  */
-  if (mode == HImode)
-    return 0;
-
   /* SH2A supports FPU move insns with 12 bit displacements.
      Other variants to do not support any kind of displacements for
      FPU move insns.  */
@@ -3194,15 +3190,24 @@ mov_insn_alignment_mask (enum machine_mode mode, bool consider_sh2a)
   return mov_insn_sz > 0 ? (mov_insn_sz - 1) : 0;
 }
 
+/* Return the displacement value of a displacement address.  */
+
+static inline HOST_WIDE_INT
+disp_addr_displacement (rtx x)
+{
+  gcc_assert (satisfies_constraint_Sdd (x));
+  return INTVAL (XEXP (XEXP (x, 0), 1));
+}
+
 /* Compute the cost of an address.  */
 
 static int
 sh_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 {
   /* 'reg + disp' addressing.  */
-  if (DISP_ADDR_P (x))
+  if (satisfies_constraint_Sdd (x))
     {
-      const HOST_WIDE_INT offset = DISP_ADDR_OFFSET (x);
+      const HOST_WIDE_INT offset = disp_addr_displacement (x);
       const enum machine_mode mode = GET_MODE (x);
 
       /* The displacement would fit into a 2 byte move insn.  */
@@ -9665,7 +9670,8 @@ sh_insn_length_adjustment (rtx insn)
    with MODE.  */
 
 bool
-sh_legitimate_index_p (enum machine_mode mode, rtx op)
+sh_legitimate_index_p (enum machine_mode mode, rtx op, bool consider_sh2a,
+		       bool allow_zero)
 {
   if (! CONST_INT_P (op))
     return false;
@@ -9686,15 +9692,15 @@ sh_legitimate_index_p (enum machine_mode mode, rtx op)
   else
     {
       const HOST_WIDE_INT offset = INTVAL (op);
-      const int max_disp = max_mov_insn_displacement (mode, TARGET_SH2A);
-      const int align_mask = mov_insn_alignment_mask (mode, TARGET_SH2A);
+      const int max_disp = max_mov_insn_displacement (mode, consider_sh2a);
+      const int align_mask = mov_insn_alignment_mask (mode, consider_sh2a);
 
       /* If the mode does not support any displacement always return false.
 	 Even though an index of '0' is actually always valid, it will cause
 	 troubles when e.g. a DFmode move is split into two SFmode moves,
 	 where one SFmode move will have index '0' and the other move will
 	 have index '4'.  */
-       if (max_disp < 1)
+       if (!allow_zero && max_disp < 1)
 	return false;
 
       return offset >= 0 && offset <= max_disp && (offset & align_mask) == 0;
@@ -9728,7 +9734,7 @@ sh_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 
       if (GET_MODE_SIZE (mode) <= 8
 	  && MAYBE_BASE_REGISTER_RTX_P (xop0, strict)
-	  && sh_legitimate_index_p (mode, xop1))
+	  && sh_legitimate_index_p (mode, xop1, TARGET_SH2A, false))
 	return true;
 
       if ((ALLOW_INDEXED_ADDRESS || GET_MODE (x) == DImode
@@ -9873,11 +9879,6 @@ sh_find_mov_disp_adjust (enum machine_mode mode, HOST_WIDE_INT offset)
 
   /* In some cases this actually does happen and we must check for it.  */
   if (mode_sz < 1 || mode_sz > 8 || max_disp < 1)
-    return res;
-
-  /* FIXME: HImode with displacement addressing is not supported yet.
-     Make it purposefully fail for now.  */
-  if (mov_insn_sz == 2)
     return res;
 
   /* Keeps the previous behavior for QImode displacement addressing.
@@ -12566,12 +12567,14 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   if (rclass == FPUL_REGS && true_regnum (x) == -1)
     return GENERAL_REGS;
 
-  /* Force mov.b displacement addressing insn to use R0 as the other operand.
+  /* Force mov.b / mov.w displacement addressing insn to use R0 as
+     the other operand.
      On SH2A could also just leave it alone here, which would result in a
      4 byte move insn being generated instead.  However, for this to work
      the insns must have the appropriate alternatives.  */
-  if (mode == QImode && rclass != R0_REGS
-      && DISP_ADDR_P (x) && DISP_ADDR_OFFSET (x) < 16)
+  if ((mode == QImode || mode == HImode) && rclass != R0_REGS
+      && satisfies_constraint_Sdd (x)
+      && disp_addr_displacement (x) <= max_mov_insn_displacement (mode, false))
     return R0_REGS;
 
   /* When reload is trying to address a QImode or HImode subreg on the stack, 

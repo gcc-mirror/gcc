@@ -145,15 +145,27 @@
   (and (match_code "const_int")
        (match_test "ival >= 0 && ival <= 15")))
 
+(define_constraint "K05"
+  "An unsigned 5-bit constant, as used in mov.w displacement addressing."
+  (and (match_code "const_int")
+       (match_test "ival >= 0 && ival <= 31")))
+
 (define_constraint "K08"
   "An unsigned 8-bit constant, as used in and, or, etc."
   (and (match_code "const_int")
        (match_test "ival >= 0 && ival <= 255")))
  
 (define_constraint "K12"
-  "An unsigned 12-bit constant, as used in SH2A 12-bit displacement addressing."
+  "An unsigned 12-bit constant, as used in SH2A 12-bit mov.b displacement
+   addressing."
   (and (match_code "const_int")
        (match_test "ival >= 0 && ival <= 4095")))
+
+(define_constraint "K13"
+  "An unsigned 13-bit constant, as used in SH2A 12-bit mov.w displacement
+   addressing."
+  (and (match_code "const_int")
+       (match_test "ival >= 0 && ival <= 8191")))
 
 (define_constraint "K16"
   "An unsigned 16-bit constant, as used in SHmedia shori."
@@ -262,6 +274,16 @@
   (and (match_test "memory_operand (op, GET_MODE (op))")
        (match_test "GET_CODE (XEXP (op, 0)) != PLUS")))
 
+(define_memory_constraint "Sdd"
+  "A memory reference that uses displacement addressing."
+  (and (match_test "MEM_P (op) && GET_CODE (XEXP (op, 0)) == PLUS")
+       (match_test "REG_P (XEXP (XEXP (op, 0), 0))")
+       (match_test "CONST_INT_P (XEXP (XEXP (op, 0), 1))")))
+
+(define_memory_constraint "Snd"
+  "A memory reference that excludes displacement addressing."
+  (match_test "! satisfies_constraint_Sdd (op)"))
+
 (define_memory_constraint "Sbv"
   "A memory reference, as used in SH2A bclr.b, bset.b, etc."
   (and (match_test "MEM_P (op) && GET_MODE (op) == QImode")
@@ -269,15 +291,7 @@
 
 (define_memory_constraint "Sbw"
   "A memory reference, as used in SH2A bclr.b, bset.b, etc."
-  (and (match_test "MEM_P (op) && GET_MODE (op) == QImode")
-       (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
-       (match_test "REG_P (XEXP (XEXP (op, 0), 0))")
+  (and (match_test "satisfies_constraint_Sdd (op)")
+       (match_test "GET_MODE (op) == QImode")
        (match_test "satisfies_constraint_K12 (XEXP (XEXP (op, 0), 1))")))
 
-(define_memory_constraint "Snd"
-  "A memory reference that excludes displacement addressing."
-  (match_test "! DISP_ADDR_P (op)"))
-
-(define_memory_constraint "Sdd"
-  "A memory reference that uses displacement addressing."
-  (match_test "DISP_ADDR_P (op)"))

@@ -1,5 +1,38 @@
 2012-04-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/50751
+	* config/sh/sh-protos.h (sh_legitimate_index_p): Add new arguments
+	consider_sh2a and allow_zero.
+	* config/sh/sh.c (sh_legitimate_index_p): Likewise.
+	(disp_addr_displacement): New function.
+	(sh_address_cost): Use disp_addr_displacement function instead
+	of DISP_ADDR_OFFSET.
+	(sh_legitimate_address_p): Adapt to changed
+	sh_legitimate_index_p declaration.
+	(sh_find_mov_disp_adjust): Remove HImode check.
+	(sh_secondary_reload): Add HImode case.  Use satisfies_constraint_Sdd,
+	disp_addr_displacement and max_mov_insn_displacement.
+	(max_mov_insn_displacement): Remove HImode check.
+	* config/sh/sh.h (CONST_OK_FOR_K04, CONST_OK_FOR_K12, 
+	DISP_ADDR_P, DISP_ADDR_OFFSET): Remove.
+	* config/sh/constraints.md (K05, K13): New constraints.
+	(K12): Correct comment.
+	(Sdd): Do not use DISP_ADDR_P macro.
+	(Snd, Sbw): Use satisfies_constraint_Sdd.
+	* config/sh/sh.md (extendhisi2): Remove constraints from expander.
+	(*extendhisi2_compact, movhi_i): Remove.
+	(*extendhisi2_compact_reg, *extendhisi2_compact_mem_disp,
+	*extendhisi2_compact_mem_disp, *extendhisi2_compact_snd,
+	*movhi_reg_reg, *movhi_store_mem_disp05, *movhi_store_mem_disp13,
+	*movhi_load_mem_disp, *movhi_load_mem_disp, *movhi): New insns.
+	(*extendqisi2_compact_mem_disp, *extendqisi2_compact_mem_disp,
+	*movqi_store_mem_disp04, *movqi_store_mem_disp12, *movqi_load_mem_disp,
+	*movqi_load_mem_disp): Use sh_legitimate_index_p instead of
+	CONST_OK_FOR_Kxx.
+	Add new peepholes for HImode displacement addressing.
+
+2012-04-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.h (SIDI_OFF): Remove.
 	* config/sh/sh.md: Use gen_highpart and gen_lowpart to access
 	DImode subregs instead of gen_rtx_REG or simplifly_gen_subreg
