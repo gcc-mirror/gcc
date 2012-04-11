@@ -7,7 +7,7 @@ extern void abort();
 struct st{
   int _mark;
 };
-unsigned long long t = ((int)(__SIZE_TYPE__)&(((struct st*)16)->_mark) - 32);
+unsigned long long t = ((int)(__UINTPTR_TYPE__)&(((struct st*)16)->_mark) - 32);
 
 int main()
 {

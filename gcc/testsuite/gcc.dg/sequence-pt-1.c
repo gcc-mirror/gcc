@@ -15,7 +15,7 @@ extern int fnb (int, int);
 extern int fnc (int *);
 extern int sprintf (char *, const char *, ...);
 
-typedef __SIZE_TYPE__ size_t;
+typedef __UINTPTR_TYPE__ uintptr_t;
 
 void
 foo (int a, int b, int n, int p, int *ptr, struct s *sptr,
@@ -32,9 +32,9 @@ foo (int a, int b, int n, int p, int *ptr, struct s *sptr,
   ap[++n] = bp[--n]; /* { dg-warning "undefined" "sequence point warning" } */
   cp[n][n] = cp[n][n]++; /* { dg-warning "undefined" "sequence point warning" } */
   cp[n][p] = cp[n][n++]; /* { dg-warning "undefined" "sequence point warning" } */
-  *ptr++ = (size_t)ptr++; /* { dg-warning "undefined" "sequence point warning" } */
+  *ptr++ = (uintptr_t)ptr++; /* { dg-warning "undefined" "sequence point warning" } */
   sptr->a = sptr->a++; /* { dg-warning "undefined" "sequence point warning" } */
-  sptr->a = (size_t)(sptr++); /* { dg-warning "undefined" "sequence point warning" } */
+  sptr->a = (uintptr_t)(sptr++); /* { dg-warning "undefined" "sequence point warning" } */
   *ptr++ = fn (*ptr); /* { dg-warning "undefined" "sequence point warning" } */
   a = b = a++; /* { dg-warning "undefined" "sequence point warning" } */
   b = a = --b; /* { dg-warning "undefined" "sequence point warning" } */
