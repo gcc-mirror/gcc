@@ -518,6 +518,26 @@ verify_constant_pool (JCF *jcf)
 	case CONSTANT_Utf8:
 	case CONSTANT_Unicode:
 	  break;
+	case CONSTANT_MethodHandle:
+	  n = JPOOL_USHORT1 (jcf, i);
+	  if (n < 1 || n > 9)
+	    return i;
+	  n = JPOOL_USHORT2 (jcf, i);
+	  if (n <= 0 || n >= JPOOL_SIZE(jcf))
+	    return i;
+	  break;
+	case CONSTANT_MethodType:
+	  n = JPOOL_USHORT1 (jcf, i);
+	  if (n <= 0 || n >= JPOOL_SIZE(jcf)
+	      || JPOOL_TAG (jcf, n) != CONSTANT_Utf8)
+	    return i;
+	  break;
+	case CONSTANT_InvokeDynamic:
+	  n = JPOOL_USHORT2 (jcf, i);
+	  if (n <= 0 || n >= JPOOL_SIZE(jcf)
+	      || JPOOL_TAG (jcf, n) != CONSTANT_NameAndType)
+	    return i;
+	  break;
 	default:
 	  return i;
 	}
