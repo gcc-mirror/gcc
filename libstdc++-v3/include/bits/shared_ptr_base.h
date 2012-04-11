@@ -343,6 +343,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Sp_counted_deleter(_Ptr __p, _Deleter __d, const _Alloc& __a)
       : _M_ptr(__p), _M_del(__d, __a) { }
 
+      ~_Sp_counted_deleter() noexcept { }
+
       virtual void
       _M_dispose() noexcept
       { _M_del._M_del(_M_ptr); }
@@ -400,6 +402,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  allocator_traits<_Alloc>::construct(__a, _M_impl._M_ptr,
 	      std::forward<_Args>(__args)...); // might throw
 	}
+
+      ~_Sp_counted_ptr_inplace() noexcept { }
 
       virtual void
       _M_dispose() noexcept
