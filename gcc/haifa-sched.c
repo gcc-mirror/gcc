@@ -3946,88 +3946,106 @@ static void
 prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
 		  bool shadows_only_p, bool modulo_epilogue_p)
 {
-  int i;
+  int i, pass;
   bool sched_group_found = false;
+  int min_cost_group = 1;
 
- restart:
   for (i = 0; i < ready.n_ready; i++)
     {
       rtx insn = ready_element (&ready, i);
-      int cost = 0;
-      const char *reason = "resource conflict";
-
-      if (DEBUG_INSN_P (insn))
-	continue;
-
-      if (SCHED_GROUP_P (insn) && !sched_group_found)
+      if (SCHED_GROUP_P (insn))
 	{
 	  sched_group_found = true;
-	  if (i > 0)
-	    goto restart;
+	  break;
 	}
+    }
 
-      if (sched_group_found && !SCHED_GROUP_P (insn))
+  /* Make two passes if there's a SCHED_GROUP_P insn; make sure to handle
+     such an insn first and note its cost, then schedule all other insns
+     for one cycle later.  */
+  for (pass = sched_group_found ? 0 : 1; pass < 2; )
+    {
+      int n = ready.n_ready;
+      for (i = 0; i < n; i++)
 	{
-	  cost = 1;
-	  reason = "not in sched group";
-	}
-      else if (modulo_epilogue_p && INSN_EXACT_TICK (insn) == INVALID_TICK)
-	{
-	  cost = max_insn_queue_index;
-	  reason = "not an epilogue insn";
-	}
-      else if (shadows_only_p && !SHADOW_P (insn))
-	{
-	  cost = 1;
-	  reason = "not a shadow";
-	}
-      else if (recog_memoized (insn) < 0)
-	{
-	  if (!first_cycle_insn_p
-	      && (GET_CODE (PATTERN (insn)) == ASM_INPUT
-		  || asm_noperands (PATTERN (insn)) >= 0))
-	    cost = 1;
-	  reason = "asm";
-	}
-      else if (sched_pressure_p)
-	cost = 0;
-      else
-	{
-	  int delay_cost = 0;
+	  rtx insn = ready_element (&ready, i);
+	  int cost = 0;
+	  const char *reason = "resource conflict";
 
-	  if (delay_htab)
+	  if (DEBUG_INSN_P (insn))
+	    continue;
+
+	  if (sched_group_found && !SCHED_GROUP_P (insn))
 	    {
-	      struct delay_pair *delay_entry;
-	      delay_entry
-		= (struct delay_pair *)htab_find_with_hash (delay_htab, insn,
-							    htab_hash_pointer (insn));
-	      while (delay_entry && delay_cost == 0)
+	      if (pass == 0)
+		continue;
+	      cost = min_cost_group;
+	      reason = "not in sched group";
+	    }
+	  else if (modulo_epilogue_p
+		   && INSN_EXACT_TICK (insn) == INVALID_TICK)
+	    {
+	      cost = max_insn_queue_index;
+	      reason = "not an epilogue insn";
+	    }
+	  else if (shadows_only_p && !SHADOW_P (insn))
+	    {
+	      cost = 1;
+	      reason = "not a shadow";
+	    }
+	  else if (recog_memoized (insn) < 0)
+	    {
+	      if (!first_cycle_insn_p
+		  && (GET_CODE (PATTERN (insn)) == ASM_INPUT
+		      || asm_noperands (PATTERN (insn)) >= 0))
+		cost = 1;
+	      reason = "asm";
+	    }
+	  else if (sched_pressure_p)
+	    cost = 0;
+	  else
+	    {
+	      int delay_cost = 0;
+
+	      if (delay_htab)
 		{
-		  delay_cost = estimate_shadow_tick (delay_entry);
-		  if (delay_cost > max_insn_queue_index)
-		    delay_cost = max_insn_queue_index;
-		  delay_entry = delay_entry->next_same_i1;
+		  struct delay_pair *delay_entry;
+		  delay_entry
+		    = (struct delay_pair *)htab_find_with_hash (delay_htab, insn,
+								htab_hash_pointer (insn));
+		  while (delay_entry && delay_cost == 0)
+		    {
+		      delay_cost = estimate_shadow_tick (delay_entry);
+		      if (delay_cost > max_insn_queue_index)
+			delay_cost = max_insn_queue_index;
+		      delay_entry = delay_entry->next_same_i1;
+		    }
+		}
+
+	      memcpy (temp_state, curr_state, dfa_state_size);
+	      cost = state_transition (temp_state, insn);
+	      if (cost < 0)
+		cost = 0;
+	      else if (cost == 0)
+		cost = 1;
+	      if (cost < delay_cost)
+		{
+		  cost = delay_cost;
+		  reason = "shadow tick";
 		}
 	    }
-
-	  memcpy (temp_state, curr_state, dfa_state_size);
-	  cost = state_transition (temp_state, insn);
-	  if (cost < 0)
-	    cost = 0;
-	  else if (cost == 0)
-	    cost = 1;
-	  if (cost < delay_cost)
+	  if (cost >= 1)
 	    {
-	      cost = delay_cost;
-	      reason = "shadow tick";
+	      if (SCHED_GROUP_P (insn) && cost > min_cost_group)
+		min_cost_group = cost;
+	      ready_remove (&ready, i);
+	      queue_insn (insn, cost, reason);
+	      if (i + 1 < n)
+		break;
 	    }
 	}
-      if (cost >= 1)
-	{
-	  ready_remove (&ready, i);
-	  queue_insn (insn, cost, reason);
-	  goto restart;
-	}
+      if (i == n)
+	pass++;
     }
 }
 
