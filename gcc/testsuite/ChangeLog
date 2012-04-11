@@ -1,3 +1,44 @@
+2012-04-11  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.dg/c99-const-expr-9.c (old_offsetof): Insert a cast to
+	__UINTPTR_TYPE__.
+	* gcc.c-torture/execute/pr15296.c (intptr_t): Likewise, with
+	__INTPTR_TYPE__.
+	* gcc.dg/pr14092-1.c (intptr_t): Likewise.
+	* gcc.dg/tree-ssa/foldcast-1.c (ssize_t): Likewise.
+	* gcc.dg/c90-const-expr-6.c (intptr_t): New typedef to replace ...
+	(ptrdiff_t): ... this.  All uses changed.
+	* gcc.dg/c99-const-expr-6.c (intptr_t, ptrdiff_t): Likewise.
+	* gcc.dg/torture/pta-escape-1.c (foo): Change arg type to
+	__INTPTR_TYPE__.
+	(main): Cast argument to __INTPTR_TYPE__.
+	* gcc.dg/20041106-1.c (main): Cast to __UINTPTR_TYPE__ rather than
+	size_t.
+	* gcc.dg/mallign.c (main): Likewise.
+	* gcc.dg/pr38700.c (foo): Likewise.
+	* gcc.dg/long-long-cst1.c (t): Likewise.
+	* gcc.dg/c99-const-expr-10.c (p, q, f, h, h2): Likewise.
+	* gcc.dg/array-10.c (c0, c1, c2, c3, c4, c5): Likewise.
+	* gcc.dg/pointer-arith-10.c (foo): Likewise.
+	* gcc.dg/pr25682.c (d, foo): Likewise.
+	* gcc.dg/format/cast-1.c (f): Likewise.
+	* gcc.dg/c90-const-expr-10.c
+	* gcc.dg/pr41551.c (uintptr_t): New typedef, replacing...
+	(size_t): ...this.  All uses changed.
+	* gcc.c-torture/execute/pr22098-1.c (uintptr_t): Likewise.
+	* gcc.c-torture/execute/pr22098-2.c (uintptr_t): Likewise.
+	* gcc.c-torture/execute/pr22098-3.c (uintptr_t): Likewise.
+	* gcc.dg/pr34856.c (uintptr_t): Likewise.
+	* gcc.dg/sequence-pt-1.c: Likewise.
+	* gcc.dg/c90-const-expr-9.c (uintptr_t): Likewise.
+	* gcc.dg/max-1.c (intptr_t): Likewise, replacing ssize_t.
+	* gcc.dg/pr39074.c (intptr_t): Define using __INTPTR_TYPE__.
+	* gcc.dg/pr30744-1.c (my_intptr_t): New typedef.  Replace all uses
+	of ptrdiff_t with it.
+	* gcc.dg/inline-23.c (my_intptr_t): Likewise.
+	* gcc.dg/pr37561.c (p): Use __INTPTR_TYPE__.
+	* gcc.dg/vla-11.c (foo11b): Use __UINTPTR_TYPE__.
+
 2012-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR debug/45088

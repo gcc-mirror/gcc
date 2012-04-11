@@ -3,10 +3,10 @@
 
 /* Make sure we do not ICE.  */
 
-__extension__ typedef __SIZE_TYPE__ size_t;
+__extension__ typedef __UINTPTR_TYPE__ uintptr_t;
 
 int main(void)
 {
  int var, *p = &var;
- return (double)(size_t)(p);
+ return (double)(uintptr_t)(p);
 }

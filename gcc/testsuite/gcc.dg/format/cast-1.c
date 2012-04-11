@@ -11,6 +11,6 @@ void
 f (int x)
 {
   printf("%s", x); /* { dg-warning "format" } */
-  printf((char *)(size_t)"%s", x); /* { dg-warning "format" } */
+  printf((char *)(__UINTPTR_TYPE__)"%s", x); /* { dg-warning "format" } */
   printf((char *)(char)"%s", x); /* { dg-warning "cast from pointer to integer of different size" } */
 }

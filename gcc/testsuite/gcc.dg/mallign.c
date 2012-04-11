@@ -9,7 +9,7 @@ typedef int word __attribute__((mode(word)));
 
 int main()
 {
-    if ((size_t)malloc (1) & (sizeof(word)-1))
+    if ((__UINTPTR_TYPE__)malloc (1) & (sizeof(word)-1))
 	abort ();
     return 0;
 }                                                                              

@@ -3,7 +3,7 @@
    fall-through code, while that register held a pointer used in code at
    the branch target.  */
 
-typedef int __attribute__ ((mode (__pointer__))) intptr_t;
+typedef __INTPTR_TYPE__ intptr_t;
 typedef intptr_t W;
 union u0
 {
