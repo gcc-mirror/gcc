@@ -36,7 +36,7 @@ static int jcf_parse_fields (JCF *);
 static int jcf_parse_one_method (JCF *, int);
 static int jcf_parse_methods (JCF *);
 static int jcf_parse_final_attributes (JCF *);
-static int jcf_parse_bootstrap_methods (JCF *, int );
+static int jcf_parse_bootstrap_methods (JCF *, int) ATTRIBUTE_UNUSED;
 #ifdef NEED_PEEK_ATTRIBUTE
 static int peek_attribute (JCF *, int, const char *, int);
 #endif
