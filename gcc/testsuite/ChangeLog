@@ -1,3 +1,9 @@
+2012-04-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52918
+	* g++.dg/torture/pr52918-1.C: New testcase.
+	* g++.dg/torture/pr52918-2.C: Likewise.
+
 2012-04-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52729

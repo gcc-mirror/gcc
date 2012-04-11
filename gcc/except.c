@@ -1344,6 +1344,28 @@ sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
 	e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
 	e->count = bb->count;
 	e->probability = REG_BR_PROB_BASE;
+	if (current_loops)
+	  {
+	    struct loop *loop = bb->next_bb->loop_father;
+	    /* If we created a pre-header block, add the new block to the
+	       outer loop, otherwise to the loop itself.  */
+	    if (bb->next_bb == loop->header)
+	      add_bb_to_loop (bb, loop_outer (loop));
+	    else
+	      add_bb_to_loop (bb, loop);
+	    /* ???  For multiple dispatches we will end up with edges
+	       from the loop tree root into this loop, making it a
+	       multiple-entry loop.  Discard all affected loops.  */
+	    if (num_dispatch > 1)
+	      {
+		for (loop = bb->loop_father;
+		     loop_outer (loop); loop = loop_outer (loop))
+		  {
+		    loop->header = NULL;
+		    loop->latch = NULL;
+		  }
+	      }
+	  }
 
 	disp_index++;
       }
@@ -1364,6 +1386,24 @@ sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
       e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
       e->count = bb->count;
       e->probability = REG_BR_PROB_BASE;
+      if (current_loops)
+	{
+	  struct loop *loop = bb->next_bb->loop_father;
+	  /* If we created a pre-header block, add the new block to the
+	     outer loop, otherwise to the loop itself.  */
+	  if (bb->next_bb == loop->header)
+	    add_bb_to_loop (bb, loop_outer (loop));
+	  else
+	    add_bb_to_loop (bb, loop);
+	}
+    }
+  else
+    {
+      /* We are not wiring up edges here, but as the dispatcher call
+         is at function begin simply associate the block with the
+	 outermost (non-)loop.  */
+      if (current_loops)
+	add_bb_to_loop (bb, current_loops->tree_root);
     }
 }
 

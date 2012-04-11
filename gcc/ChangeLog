@@ -1,3 +1,9 @@
+2012-04-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52918
+	* except.c (sjlj_emit_dispatch_table): Properly update loop
+	structure.
+
 2012-04-11  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_expand_prologue): Set stack use
