@@ -1,5 +1,10 @@
 2012-04-11  Richard Guenther  <rguenther@suse.de>
 
+	PR rtl-optimization/52881
+	* ifcvt.c (find_if_case_2): Avoid speculating loop latches.
+
+2012-04-11  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/52912
 	* tree-ssa-threadupdate.c (thread_block): Tell the cfg
 	manipulation code we are threading through a loop header

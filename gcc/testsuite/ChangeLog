@@ -1,5 +1,11 @@
 2012-04-11  Richard Guenther  <rguenther@suse.de>
 
+	PR rtl-optimization/52881
+	* gcc.dg/torture/pr52881.c: New testcase.
+	* gcc.dg/torture/pr52913.c: Likewise.
+
+2012-04-11  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/52912
 	* gcc.dg/torture/pr52912.c: New testcase.
 
