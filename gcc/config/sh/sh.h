@@ -2387,8 +2387,6 @@ extern int current_function_interrupt;
 
 #define MAX_FIXED_MODE_SIZE (TARGET_SH5 ? 128 : 64)
 
-#define SIDI_OFF (TARGET_LITTLE_ENDIAN ? 0 : 4)
-
 /* Better to allocate once the maximum space for outgoing args in the
    prologue rather than duplicate around each call.  */
 #define ACCUMULATE_OUTGOING_ARGS TARGET_ACCUMULATE_OUTGOING_ARGS
