@@ -4736,6 +4736,10 @@ Other shift and rotate instructions, analogous to the
 Vector shift and rotate instructions that take vectors as operand 2
 instead of a scalar type.
 
+@cindex @code{bswap@var{m}2} instruction pattern
+@item @samp{bswap@var{m}2}
+Reverse the order of bytes of operand 1 and store the result in operand 0.
+
 @cindex @code{neg@var{m}2} instruction pattern
 @cindex @code{ssneg@var{m}2} instruction pattern
 @cindex @code{usneg@var{m}2} instruction pattern

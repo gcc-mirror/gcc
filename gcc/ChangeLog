@@ -1,3 +1,29 @@
+2012-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/52624
+	* doc/extend.texi (Other Builtins): Document __builtin_bswap16.
+	(PowerPC AltiVec/VSX Built-in Functions): Remove it.
+	* doc/md.texi (Standard Names): Add bswap.
+	* builtin-types.def (BT_UINT16): New primitive type.
+	(BT_FN_UINT16_UINT16): New function type.
+	* builtins.def (BUILT_IN_BSWAP16): New.
+	* builtins.c (expand_builtin_bswap): Add TARGET_MODE argument.
+	(expand_builtin) <BUILT_IN_BSWAP16>: New case.  Pass TARGET_MODE to
+	expand_builtin_bswap.
+	(fold_builtin_bswap): Add BUILT_IN_BSWAP16 case.
+	(fold_builtin_1): Likewise.
+	(is_inexpensive_builtin): Likewise.
+	* optabs.c (expand_unop): Deal with bswap in HImode specially.  Add
+	missing bits for bswap to libcall code.
+	* tree.c (build_common_tree_nodes): Build uint16_type_node.
+	* tree.h (enum tree_index): Add TI_UINT16_TYPE.
+	(uint16_type_node): New define.
+	* config/rs6000/rs6000-builtin.def (RS6000_BUILTIN_BSWAP_HI): Delete.
+	* config/rs6000/rs6000.c (rs6000_expand_builtin): Remove handling of
+	above builtin.
+	(rs6000_init_builtins): Likewise.
+	* config/rs6000/rs6000.md (bswaphi2): Add TARGET_POWERPC predicate.
+
 2012-04-11  Tristan Gingold  <gingold@adacore.com>
 
 	* doc/extend.texi (Type Attributes): Move paragraph.

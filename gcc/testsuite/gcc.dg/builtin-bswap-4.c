@@ -16,10 +16,18 @@
     return result;							\
   }									\
 
+MAKE_FUN(16, uint16_t);
 MAKE_FUN(32, uint32_t);
 MAKE_FUN(64, uint64_t);
 
 extern void abort (void);
+
+#define NUMS16					\
+  {						\
+    0x0000,					\
+    0x1122,					\
+    0xffff,					\
+  }
 
 #define NUMS32					\
   {						\
@@ -35,6 +43,9 @@ extern void abort (void);
     0xffffffffffffffffULL,			\
   }
 
+uint16_t uint16_ts[] =
+  NUMS16;
+
 uint32_t uint32_ts[] =
   NUMS32;
 
@@ -47,6 +58,10 @@ int
 main (void)
 {
   int i;
+
+  for (i = 0; i < N(uint16_ts); i++)
+    if (__builtin_bswap16 (uint16_ts[i]) != my_bswap16 (uint16_ts[i]))
+      abort ();
 
   for (i = 0; i < N(uint32_ts); i++)
     if (__builtin_bswap32 (uint32_ts[i]) != my_bswap32 (uint32_ts[i]))

@@ -9388,6 +9388,7 @@ build_common_tree_nodes (bool signed_char, bool short_double)
   integer_ptr_type_node = build_pointer_type (integer_type_node);
 
   /* Fixed size integer types.  */
+  uint16_type_node = build_nonstandard_integer_type (16, true);
   uint32_type_node = build_nonstandard_integer_type (32, true);
   uint64_type_node = build_nonstandard_integer_type (64, true);
 
