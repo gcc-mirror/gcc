@@ -1,3 +1,8 @@
+2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 24985
+	* testsuite/lib/prune.exp: Handle caret.
+
 2012-04-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Partially revert:
