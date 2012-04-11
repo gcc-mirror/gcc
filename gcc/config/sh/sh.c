@@ -547,10 +547,12 @@ static const struct attribute_spec sh_attribute_table[] =
 #define TARGET_FRAME_POINTER_REQUIRED sh_frame_pointer_required
 
 /* Return regmode weight for insn.  */
-#define INSN_REGMODE_WEIGHT(INSN, MODE)  regmode_weight[((MODE) == SImode) ? 0 : 1][INSN_UID (INSN)]
+#define INSN_REGMODE_WEIGHT(INSN, MODE)\
+  regmode_weight[((MODE) == SImode) ? 0 : 1][INSN_UID (INSN)]
 
 /* Return current register pressure for regmode.  */
-#define CURR_REGMODE_PRESSURE(MODE) 	curr_regmode_pressure[((MODE) == SImode) ? 0 : 1]
+#define CURR_REGMODE_PRESSURE(MODE)\
+  curr_regmode_pressure[((MODE) == SImode) ? 0 : 1]
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO	sh_encode_section_info
@@ -4202,10 +4204,10 @@ dump_table (rtx start, rtx barrier)
 {
   rtx scan = barrier;
   int i;
-  int need_align = 1;
+  bool need_align = true;
   rtx lab;
   label_ref_list_t ref;
-  int have_df = 0;
+  bool have_df = false;
 
   /* Do two passes, first time dump out the HI sized constants.  */
 
@@ -4218,7 +4220,7 @@ dump_table (rtx start, rtx barrier)
 	  if (need_align)
 	    {
 	      scan = emit_insn_after (gen_align_2 (), scan);
-	      need_align = 0;
+	      need_align = false;
 	    }
 	  for (lab = p->label; lab; lab = LABEL_REFS (lab))
 	    scan = emit_label_after (lab, scan);
@@ -4231,15 +4233,15 @@ dump_table (rtx start, rtx barrier)
 	    }
 	}
       else if (p->mode == DFmode)
-	have_df = 1;
+	have_df = true;
     }
 
-  need_align = 1;
+  need_align = true;
 
   if (start)
     {
       scan = emit_insn_after (gen_align_4 (), scan);
-      need_align = 0;
+      need_align = false;
       for (; start != barrier; start = NEXT_INSN (start))
 	if (NONJUMP_INSN_P (start)
 	    && recog_memoized (start) == CODE_FOR_casesi_worker_2)
@@ -4256,7 +4258,7 @@ dump_table (rtx start, rtx barrier)
 
       scan = emit_label_after (gen_label_rtx (), scan);
       scan = emit_insn_after (gen_align_log (GEN_INT (3)), scan);
-      need_align = 0;
+      need_align = false;
 
       for (i = 0; i < pool_size; i++)
 	{
@@ -4298,7 +4300,7 @@ dump_table (rtx start, rtx barrier)
 		{
 		  scan = emit_insn_after (gen_align_log (GEN_INT (3)), scan);
 		  align_insn = scan;
-		  need_align = 0;
+		  need_align = false;
 		}
 	    case DImode:
 	      for (lab = p->label; lab; lab = LABEL_REFS (lab))
@@ -4336,7 +4338,7 @@ dump_table (rtx start, rtx barrier)
 	case SFmode:
 	  if (need_align)
 	    {
-	      need_align = 0;
+	      need_align = false;
 	      scan = emit_label_after (gen_label_rtx (), scan);
 	      scan = emit_insn_after (gen_align_4 (), scan);
 	    }
@@ -4349,7 +4351,7 @@ dump_table (rtx start, rtx barrier)
 	case DImode:
 	  if (need_align)
 	    {
-	      need_align = 0;
+	      need_align = false;
 	      scan = emit_label_after (gen_label_rtx (), scan);
 	      scan = emit_insn_after (gen_align_4 (), scan);
 	    }
@@ -4548,7 +4550,9 @@ find_barrier (int num_mova, rtx mova, rtx from)
   int hi_align = 2;
   int si_align = 2;
   int leading_mova = num_mova;
-  rtx barrier_before_mova = 0, found_barrier = 0, good_barrier = 0;
+  rtx barrier_before_mova = NULL_RTX;
+  rtx found_barrier = NULL_RTX;
+  rtx good_barrier = NULL_RTX;
   int si_limit;
   int hi_limit;
   rtx orig = from;
@@ -4882,19 +4886,19 @@ sfunc_uses_reg (rtx insn)
   rtx pattern, part, reg_part, reg;
 
   if (!NONJUMP_INSN_P (insn))
-    return 0;
+    return NULL_RTX;
   pattern = PATTERN (insn);
   if (GET_CODE (pattern) != PARALLEL || get_attr_type (insn) != TYPE_SFUNC)
-    return 0;
+    return NULL_RTX;
 
-  for (reg_part = 0, i = XVECLEN (pattern, 0) - 1; i >= 1; i--)
+  for (reg_part = NULL_RTX, i = XVECLEN (pattern, 0) - 1; i >= 1; i--)
     {
       part = XVECEXP (pattern, 0, i);
       if (GET_CODE (part) == USE && GET_MODE (XEXP (part, 0)) == SImode)
 	reg_part = part;
     }
   if (! reg_part)
-    return 0;
+    return NULL_RTX;
   reg = XEXP (reg_part, 0);
   for (i = XVECLEN (pattern, 0) - 1; i >= 0; i--)
     {
@@ -4904,7 +4908,7 @@ sfunc_uses_reg (rtx insn)
       if (reg_mentioned_p (reg, ((GET_CODE (part) == SET
 				  && REG_P (SET_DEST (part)))
 				 ? SET_SRC (part) : part)))
-	return 0;
+	return NULL_RTX;
     }
   return reg;
 }
@@ -5054,7 +5058,7 @@ regs_used (rtx x, int is_dest)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    used |= regs_used (XVECEXP (x, i, j), is_dest);
 	}
@@ -5339,7 +5343,6 @@ int
 barrier_align (rtx barrier_or_label)
 {
   rtx next = next_real_insn (barrier_or_label), pat, prev;
-  int slot, credit, jump_to_next = 0;
 
   if (! next)
     return 0;
@@ -5391,13 +5394,17 @@ barrier_align (rtx barrier_or_label)
 
       /* PREV is presumed to be the JUMP_INSN for the barrier under
 	 investigation.  Skip to the insn before it.  */
+
+      int slot, credit;
+      bool jump_to_next = false;
+
       prev = prev_real_insn (prev);
 
       for (slot = 2, credit = (1 << (CACHE_LOG - 2)) + 2;
 	   credit >= 0 && prev && NONJUMP_INSN_P (prev);
 	   prev = prev_real_insn (prev))
 	{
-	  jump_to_next = 0;
+	  jump_to_next = false;
 	  if (GET_CODE (PATTERN (prev)) == USE
 	      || GET_CODE (PATTERN (prev)) == CLOBBER)
 	    continue;
@@ -5407,7 +5414,7 @@ barrier_align (rtx barrier_or_label)
 	      if (INSN_UID (prev) == INSN_UID (next))
 		{
 	  	  /* Delay slot was filled with insn at jump target.  */
-		  jump_to_next = 1;
+		  jump_to_next = true;
 		  continue;
   		}
 	    }
@@ -8438,7 +8445,7 @@ sh_function_arg (cumulative_args_t ca_v, enum machine_mode mode,
 
       regno = (BASE_ARG_REG (mode) + ROUND_REG (*ca, mode))
 	       ^ (mode == SFmode && TARGET_SH4
-		  && TARGET_LITTLE_ENDIAN != 0
+		  && TARGET_LITTLE_ENDIAN
 		  && ! TARGET_HITACHI && ! ca->renesas_abi);
       return gen_rtx_REG (mode, regno);
 
@@ -8476,10 +8483,10 @@ sh_function_arg (cumulative_args_t ca_v, enum machine_mode mode,
 				       + ca->arg_count[(int) SH_ARG_INT]));
 	}
 
-      return 0;
+      return NULL_RTX;
     }
 
-  return 0;
+  return NULL_RTX;
 }
 
 /* Update the data in CUM to advance over an argument
@@ -8640,7 +8647,7 @@ static rtx
 sh_struct_value_rtx (tree fndecl, int incoming ATTRIBUTE_UNUSED)
 {
   if (TARGET_HITACHI || sh_attr_renesas_p (fndecl))
-    return 0;
+    return NULL_RTX;
   return gen_rtx_REG (Pmode, 2);
 }
 
@@ -9195,7 +9202,7 @@ sh_attr_renesas_p (const_tree td)
 {
   if (TARGET_HITACHI)
     return true;
-  if (td == 0)
+  if (td == NULL_TREE)
     return false;
   if (DECL_P (td))
     td = TREE_TYPE (td);
@@ -9423,7 +9430,7 @@ reg_unused_after (rtx reg, rtx insn)
 		  else
 		    return false;
 		}
-	      if (set == 0
+	      if (set == NULL_RTX
 		  && reg_overlap_mentioned_p (reg, PATTERN (this_insn)))
 		return false;
 	    }
@@ -9618,7 +9625,7 @@ sh_insn_length_adjustment (rtx insn)
       rtx body = PATTERN (insn);
       const char *templ;
       char c;
-      int maybe_label = 1;
+      bool maybe_label = true;
 
       if (GET_CODE (body) == ASM_INPUT)
 	templ = XSTR (body, 0);
@@ -9654,7 +9661,7 @@ sh_insn_length_adjustment (rtx insn)
 		  break;
 		}
 	      else if (c == '\'' || c == '"')
-		maybe_label = 0;
+		maybe_label = false;
 	      c = *templ++;
 	    }
 	  sum += ppi_adjust;
@@ -9820,7 +9827,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
   if (GET_CODE (orig) == LABEL_REF
       || (GET_CODE (orig) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (orig)))
     {
-      if (reg == 0)
+      if (reg == NULL_RTX)
 	reg = gen_reg_rtx (Pmode);
 
       emit_insn (gen_symGOTOFF2reg (reg, orig));
@@ -9828,7 +9835,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
     }
   else if (GET_CODE (orig) == SYMBOL_REF)
     {
-      if (reg == 0)
+      if (reg == NULL_RTX)
 	reg = gen_reg_rtx (Pmode);
 
       emit_insn (gen_symGOT2reg (reg, orig));
@@ -10069,7 +10076,7 @@ mark_constant_pool_use (rtx x)
 {
   rtx insn, lab, pattern;
 
-  if (x == NULL)
+  if (x == NULL_RTX)
     return x;
 
   switch (GET_CODE (x))
@@ -11347,12 +11354,12 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   enum machine_mode tmode = VOIDmode;
   int nop = 0, i;
   rtx op[4];
-  rtx pat = 0;
+  rtx pat = NULL_RTX;
 
   if (signature_args[signature][0])
     {
       if (ignore)
-	return 0;
+	return NULL_RTX;
 
       tmode = insn_data[icode].operand[0].mode;
       if (! target
@@ -11411,7 +11418,7 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       gcc_unreachable ();
     }
   if (! pat)
-    return 0;
+    return NULL_RTX;
   emit_insn (pat);
   return target;
 }
@@ -12189,7 +12196,7 @@ replace_n_hard_rtx (rtx x, rtx *replacements, int n_replacements, int modify)
 
   /* The following prevents loops occurrence when we change MEM in
      CONST_DOUBLE onto the same CONST_DOUBLE.  */
-  if (x != 0 && GET_CODE (x) == CONST_DOUBLE)
+  if (x != NULL_RTX && GET_CODE (x) == CONST_DOUBLE)
     return x;
 
   for (i = n_replacements - 1; i >= 0 ; i--)
@@ -12197,8 +12204,8 @@ replace_n_hard_rtx (rtx x, rtx *replacements, int n_replacements, int modify)
     return replacements[i*2+1];
 
   /* Allow this function to make replacements in EXPR_LISTs.  */
-  if (x == 0)
-    return 0;
+  if (x == NULL_RTX)
+    return NULL_RTX;
 
   if (GET_CODE (x) == SUBREG)
     {

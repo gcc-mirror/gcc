@@ -1,3 +1,15 @@
+2012-04-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (RETURN_ADDR_RTX): Use NULL_RTX instead of 0.
+	* config/sh/sh.c (INSN_REGMODE_WEIGHT, CURR_REGMODE_PRESSURE):
+	Fix line width.
+	(dump_table): Use bool type for need_align and have_df variables.
+	(find_barrier, sfunc_uses_reg): Use NULL_RTX instead of 0.
+	(regs_used): Remove register modifier.
+	(barrier_align): Move variables slot, credit, jump_to_next
+	into if block above for loop.  Use bool type for jump_to_next.
+	(sh_function_arg): Use NULL_RTX instead of 0.
+
 2012-04-11  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.md (rotrhi3+1): Name it rotrhi_lowpart.
