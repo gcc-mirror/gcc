@@ -1,3 +1,7 @@
+2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* lib/prune.exp (TEST_ALWAYS_FLAGS): If undefined, set to empty.
+
 2012-04-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/52876
