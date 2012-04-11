@@ -1,3 +1,8 @@
+2012-04-11  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.md (rotrhi3+1): Name it rotrhi_lowpart.
+	(bswapsi2): New expander.
+
 2012-04-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Defined to
@@ -10,7 +15,7 @@
 	Don't call mark_reg_pointer for incompatible pointer sign
 	extension.
 
-	* reginfo.c (reg_scan_mark_refs): Call set_reg_attrs_from_value 
+	* reginfo.c (reg_scan_mark_refs): Call set_reg_attrs_from_value
 	directly.
 
 2012-04-11  Bernd Schmidt  <bernds@codesourcery.com>
@@ -159,24 +164,24 @@
 2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 24985
-        * diagnostic.h (show_caret): Declare.
+	* diagnostic.h (show_caret): Declare.
 	(caret_max_width): Declare.
 	(diagnostic_show_locus): Declare.
-        * diagnostic.c (diagnostic_initialize): Initialize to false.
-        (diagnostic_show_locus): New.
-        (diagnostic_report_diagnostic): Call it.
+	* diagnostic.c (diagnostic_initialize): Initialize to false.
+	(diagnostic_show_locus): New.
+	(diagnostic_report_diagnostic): Call it.
 	(getenv_columns): New.
 	(adjust_line): New.
 	(diagnostic_set_caret_max_width): New.
-        * input.c (read_line): New.
+	* input.c (read_line): New.
 	(location_get_source_line): New.
-        * input.h (location_get_source_line): Declare.
-        * toplev.c (general_init): Initialize show_caret from options.
-        * dwarf2out.c (gen_producer_string): Handle fdiagnostics-show-caret.
-        * opts.c (common_handle_option): Likewise.
+	* input.h (location_get_source_line): Declare.
+	* toplev.c (general_init): Initialize show_caret from options.
+	* dwarf2out.c (gen_producer_string): Handle fdiagnostics-show-caret.
+	* opts.c (common_handle_option): Likewise.
 	* pretty-print.h (pp_get_prefix): New.
 	(pp_base_get_prefix): New.
-        * common.opt (fdiagnostics-show-caret): New option.
+	* common.opt (fdiagnostics-show-caret): New option.
 	* doc/invoke.texi (fdiagnostics-show-caret): Document it.
 
 2012-04-11  Richard Guenther  <rguenther@suse.de>
@@ -304,7 +309,7 @@
 
 	PR lto/52722
 	PR lto/51765
-	PR lto/52634	
+	PR lto/52634
 	* lto-cgraph.c (compute_ltrans_boundary): When alias is in the boundary,
 	add its target too.
 	* lto.c (add_references_to_partition): Add also aliased nodes.
@@ -548,14 +553,14 @@
 2012-04-03  Sandeep Kumar Singh  <Sandeep.Singh2@kpitcummins.com>
 
 	* h8300/h8300.c (h8300_current_function_monitor_function_p):
-	New function. Added to check monitor functions. 
-	(h8300_option_override): Modified to generate error/warning 
-	messages for invalid combinations of different command line 
+	New function. Added to check monitor functions.
+	(h8300_option_override): Modified to generate error/warning
+	messages for invalid combinations of different command line
 	options.
 	* h8300/h8300.md: Generate 'rte' for monitor functions. Do not
-	save EXR on stack for monitor function in case of H8S target 
+	save EXR on stack for monitor function in case of H8S target
 	when "-mno-exr" is passed.
-	* h8300/h8300-protos.h 
+	* h8300/h8300-protos.h
 	(h8300_current_function_monitor_function_p): Add prototype.
 	* doc/invoke.texi: Document H8S options.
 
