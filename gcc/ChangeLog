@@ -1,3 +1,8 @@
+2012-04-11  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* sel-sched.c (sel_global_init): Swap order of sched_rgn_init and
+	sched_init calls.
+
 2012-04-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52621
