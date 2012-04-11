@@ -1,3 +1,10 @@
+2012-04-11  Xinliang David Li  <davidxl@google.com>
+
+	* tree-passes.h: Remove TODO_dump_func.
+	* tree-ssa-tail-merge.c (tail_merge_optimize): Remove TODO_dump_func.
+	* trans-mem.c: Remove TODO_dump_func.
+	* ira.c: Remove TODO_dump_func.
+
 2012-04-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Check
