@@ -1,3 +1,26 @@
+2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 24985
+        * diagnostic.h (show_caret): Declare.
+	(caret_max_width): Declare.
+	(diagnostic_show_locus): Declare.
+        * diagnostic.c (diagnostic_initialize): Initialize to false.
+        (diagnostic_show_locus): New.
+        (diagnostic_report_diagnostic): Call it.
+	(getenv_columns): New.
+	(adjust_line): New.
+	(diagnostic_set_caret_max_width): New.
+        * input.c (read_line): New.
+	(location_get_source_line): New.
+        * input.h (location_get_source_line): Declare.
+        * toplev.c (general_init): Initialize show_caret from options.
+        * dwarf2out.c (gen_producer_string): Handle fdiagnostics-show-caret.
+        * opts.c (common_handle_option): Likewise.
+	* pretty-print.h (pp_get_prefix): New.
+	(pp_base_get_prefix): New.
+        * common.opt (fdiagnostics-show-caret): New option.
+	* doc/invoke.texi (fdiagnostics-show-caret): Document it.
+
 2012-04-11  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/52881

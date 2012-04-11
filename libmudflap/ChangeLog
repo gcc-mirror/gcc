@@ -1,3 +1,8 @@
+2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 24985
+	* testsuite/lib/libmudflap.exp: Handle caret.
+
 2012-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libmudflap/40778

@@ -1499,6 +1499,10 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fdiagnostics_show_location_:
       diagnostic_prefixing_rule (dc) = (diagnostic_prefixing_rule_t) value;
       break;
+ 
+    case OPT_fdiagnostics_show_caret:
+      dc->show_caret = value;
+      break;
 
     case OPT_fdiagnostics_show_option:
       dc->show_option_requested = value;
@@ -1539,6 +1543,7 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fmessage_length_:
       pp_set_line_maximum_length (dc->printer, value);
+      diagnostic_set_caret_max_width (dc, value);
       break;
 
     case OPT_fpack_struct_:

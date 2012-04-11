@@ -32,6 +32,12 @@ proc dg-prune-output { args } {
 proc libstdc++-dg-prune { system text } {
     global additional_prunes
 
+#    send_user "Before:$text\n"
+
+    # Ignore caret diagnostics. Unfortunately dejaGNU trims leading
+    # spaces, so one cannot rely on them being present.
+    regsub -all "(^|\n)\[^\n\]+\n *\\^\n" $text "\n" text
+
     # Cygwin warns about -ffunction-sections
     regsub -all "(^|\n)\[^\n\]*: -ffunction-sections may affect debugging on some targets\[^\n\]*" $text "" text
 
@@ -68,5 +74,6 @@ proc libstdc++-dg-prune { system text } {
 	}
     }
 
+#    send_user "After:$text\n"
     return $text
 }
