@@ -15561,14 +15561,11 @@ rs6000_generate_compare (rtx cmp, enum machine_mode mode)
 	   || code == GEU || code == LEU)
     comp_mode = CCUNSmode;
   else if ((code == EQ || code == NE)
-	   && GET_CODE (op0) == SUBREG
-	   && GET_CODE (op1) == SUBREG
-	   && SUBREG_PROMOTED_UNSIGNED_P (op0)
-	   && SUBREG_PROMOTED_UNSIGNED_P (op1))
+	   && unsigned_reg_p (op0)
+	   && (unsigned_reg_p (op1)
+	       || (CONST_INT_P (op1) && INTVAL (op1) != 0)))
     /* These are unsigned values, perhaps there will be a later
-       ordering compare that can be shared with this one.
-       Unfortunately we cannot detect the signedness of the operands
-       for non-subregs.  */
+       ordering compare that can be shared with this one.  */
     comp_mode = CCUNSmode;
   else
     comp_mode = CCmode;

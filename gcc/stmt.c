@@ -2285,7 +2285,11 @@ expand_case (gimple stmt)
 	  do_pending_stack_adjust ();
 
 	  if (MEM_P (index))
-	    index = copy_to_reg (index);
+	    {
+	      index = copy_to_reg (index);
+	      if (TREE_CODE (index_expr) == SSA_NAME)
+		set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (index_expr), index);
+	    }
 
 	  /* We generate a binary decision tree to select the
 	     appropriate target code.  This is done as follows:

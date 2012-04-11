@@ -1,7 +1,7 @@
 /* Analyze RTL for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -633,6 +633,25 @@ count_occurrences (const_rtx x, const_rtx find, int count_dest)
 	}
     }
   return count;
+}
+
+
+/* Return TRUE if OP is a register or subreg of a register that
+   holds an unsigned quantity.  Otherwise, return FALSE.  */
+
+bool
+unsigned_reg_p (rtx op)
+{
+  if (REG_P (op)
+      && REG_EXPR (op)
+      && TYPE_UNSIGNED (TREE_TYPE (REG_EXPR (op))))
+    return true;
+
+  if (GET_CODE (op) == SUBREG
+      && SUBREG_PROMOTED_UNSIGNED_P (op))
+    return true;
+
+  return false;
 }
 
 

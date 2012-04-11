@@ -9015,8 +9015,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  && stmt_is_replaceable_p (SSA_NAME_DEF_STMT (exp)))
 	g = SSA_NAME_DEF_STMT (exp);
       if (g)
-	return expand_expr_real (gimple_assign_rhs_to_tree (g), target, tmode,
-				 modifier, NULL);
+	{
+	  rtx r = expand_expr_real (gimple_assign_rhs_to_tree (g), target,
+				    tmode, modifier, NULL);
+	  if (REG_P (r) && !REG_EXPR (r))
+	    set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (exp), r);
+	  return r;
+	}
 
       ssa_name = exp;
       decl_rtl = get_rtx_for_ssa_name (ssa_name);

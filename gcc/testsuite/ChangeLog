@@ -1,3 +1,11 @@
+2012-04-11  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/16458
+	* gcc.target/powerpc/pr16458-1.c: New test.
+	* gcc.target/powerpc/pr16458-2.c: Likewise.
+	* gcc.target/powerpc/pr16458-3.c: Likewise.
+	* gcc.target/powerpc/pr16458-4.c: Likewise.
+
 2012-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/builtin-bswap-1.c: Test __builtin_bswap16 & __builtin_bswap64.
