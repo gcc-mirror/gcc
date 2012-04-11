@@ -67,7 +67,7 @@ i386 port		Richard Henderson	rth@redhat.com
 i386 port		Jan Hubicka		jh@suse.cz
 i386 port		Uros Bizjak		ubizjak@gmail.com
 ia64 port		Jim Wilson		wilson@tuliptree.org
-ia64 port		Steve Ellcey		sje@cup.hp.com
+ia64 port		Steve Ellcey		sellcey@mips.com
 iq2000 port		Nick Clifton		nickc@redhat.com
 lm32 port		Sebastien Bourdeauducq	sebastien@milkymist.org
 m32c port		DJ Delorie		dj@redhat.com
@@ -121,7 +121,7 @@ DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
 GNU/Hurd		Thomas Schwinge		thomas@schwinge.name
 hpux			John David Anglin	dave.anglin@nrc-cnrc.gc.ca
-hpux			Steve Ellcey		sje@cup.hp.com
+hpux			Steve Ellcey		sellcey@mips.com
 solaris			Rainer Orth		ro@CeBiTec.Uni-Bielefeld.DE
 netbsd			Jason Thorpe		thorpej@netbsd.org
 netbsd			Krister Walfridsson	krister.walfridsson@gmail.com
