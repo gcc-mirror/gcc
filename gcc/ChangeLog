@@ -6,6 +6,9 @@
 	* haifa-sched.c (prune_ready_list): Rework handling of SCHED_GROUP_P
 	insns so that no other insn is queued for a time before them.
 
+	* config/c6x/c6x.md (load_got_gotoff): Set op_pattern attribute to
+	unknown.
+
 2012-04-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52621
