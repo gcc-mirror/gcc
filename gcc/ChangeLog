@@ -3,6 +3,9 @@
 	* sel-sched.c (sel_global_init): Swap order of sched_rgn_init and
 	sched_init calls.
 
+	* haifa-sched.c (prune_ready_list): Rework handling of SCHED_GROUP_P
+	insns so that no other insn is queued for a time before them.
+
 2012-04-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52621
