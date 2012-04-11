@@ -926,19 +926,20 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
 	case 3:
 	case 4:
 	  if (verbosity > 0)
-	    fprintf (out, "Fieldref: %ld=", JPOOL_USHORT2 (jcf, index));
+	    fprintf (out, "Fieldref: %ld=", (long) JPOOL_USHORT2 (jcf, index));
 	  print_constant (out, jcf, JPOOL_USHORT2 (jcf, index), 0);
 	case 5:
 	case 6:
 	case 7:
 	case 8:
 	  if (verbosity > 0)
-	    fprintf (out, "Methodref: %ld=", JPOOL_USHORT2 (jcf, index));
+	    fprintf (out, "Methodref: %ld=", (long) JPOOL_USHORT2 (jcf, index));
 	  print_constant (out, jcf, JPOOL_USHORT2 (jcf, index), 0);
 	  break;
 	case 9:
 	  if (verbosity > 0)
-	    fprintf (out, "InterfaceMethodref: %ld=", JPOOL_USHORT2 (jcf, index));
+	    fprintf (out, "InterfaceMethodref: %ld=",
+		     (long) JPOOL_USHORT2 (jcf, index));
 	  print_constant (out, jcf, JPOOL_USHORT2 (jcf, index), 0);
 	  break;
 	}
@@ -946,7 +947,7 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
       }
     case CONSTANT_MethodType:
       if (verbosity > 0)
-	fprintf (out, "MethodType %ld: ", JPOOL_USHORT1 (jcf, index));
+	fprintf (out, "MethodType %ld: ", (long) JPOOL_USHORT1 (jcf, index));
       print_signature (out, jcf, JPOOL_USHORT1 (jcf, index), 0);
       break;
     case CONSTANT_InvokeDynamic:
@@ -954,7 +955,8 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
 	uint16 name_and_type = JPOOL_USHORT2 (jcf, index);
 	if (verbosity > 0)
 	  fprintf (out, "InvokeDynamic: ");
-	fprintf (out, "bootstrap_method: %ld ", JPOOL_USHORT1 (jcf, index));
+	fprintf (out, "bootstrap_method: %ld ",
+		 (long) JPOOL_USHORT1 (jcf, index));
 	if (verbosity == 2)
 	  fprintf (out, " name_and_type: %d=<", name_and_type);
 	print_constant_terse (out, jcf, name_and_type, CONSTANT_NameAndType);
