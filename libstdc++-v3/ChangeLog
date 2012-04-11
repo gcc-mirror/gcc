@@ -1,5 +1,10 @@
 2012-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/xml/manual/debug.xml (Debug Versions of Library Binary Files):
+	Re-arrange text slightly.
+
+2012-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* testsuite/performance/30_threads/future/polling.cc: Adjust.
 
 2012-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
