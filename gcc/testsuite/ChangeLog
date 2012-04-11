@@ -1,3 +1,10 @@
+2012-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/builtin-bswap-1.c: Test __builtin_bswap16 & __builtin_bswap64.
+	* gcc.dg/builtin-bswap-4.c: Test __builtin_bswap16.
+	* gcc.dg/builtin-bswap-5.c: Likewise.
+	* gcc.target/i386/builtin-bswap-4.c: New test.
+
 2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 24985

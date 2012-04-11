@@ -448,8 +448,8 @@ builtin_define_stdint_macros (void)
     builtin_define_type_max ("__INT64_MAX__", int64_type_node);
   if (uint8_type_node)
     builtin_define_type_max ("__UINT8_MAX__", uint8_type_node);
-  if (uint16_type_node)
-    builtin_define_type_max ("__UINT16_MAX__", uint16_type_node);
+  if (c_uint16_type_node)
+    builtin_define_type_max ("__UINT16_MAX__", c_uint16_type_node);
   if (c_uint32_type_node)
     builtin_define_type_max ("__UINT32_MAX__", c_uint32_type_node);
   if (c_uint64_type_node)

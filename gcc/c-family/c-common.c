@@ -5087,7 +5087,7 @@ c_common_nodes_and_builtins (void)
     uint8_type_node =
       TREE_TYPE (identifier_global_value (c_get_ident (UINT8_TYPE)));
   if (UINT16_TYPE)
-    uint16_type_node =
+    c_uint16_type_node =
       TREE_TYPE (identifier_global_value (c_get_ident (UINT16_TYPE)));
   if (UINT32_TYPE)
     c_uint32_type_node =
