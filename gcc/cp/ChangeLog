@@ -1,3 +1,9 @@
+2012-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52906
+	* decl.c (check_tag_decl): Don't complain about attributes if we
+	don't even have a type.
+
 2012-04-10  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* cvt.c (convert_to_void): Update comment.
