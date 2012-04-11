@@ -1,5 +1,10 @@
 2012-04-11  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Defined to
+	0x60000000 if __x86_64 is defined and __LP64__ isn't defined.
+
+2012-04-11  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR rtl-optimization/52876
 	* emit-rtl.c (set_reg_attrs_from_value): Handle arbitrary value.
 	Don't call mark_reg_pointer for incompatible pointer sign
