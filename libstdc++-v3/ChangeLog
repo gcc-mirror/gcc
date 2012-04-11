@@ -1,3 +1,13 @@
+2012-04-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52924
+	* include/bits/shared_ptr_base.h (_Sp_counted_deleter): Add
+	user-defined destructor.
+	(_Sp_counted_inplace): Likewise.
+	* testsuite/20_util/shared_ptr/cons/52924.cc: New.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error
+	line numbers.
+
 2012-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/debug.xml (Debug Versions of Library Binary Files):
