@@ -1730,7 +1730,7 @@ struct gimple_opt_pass pass_lower_tm =
   0,			                /* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func		        /* todo_flags_finish */
+  0,             		        /* todo_flags_finish */
  }
 };
 
@@ -2543,8 +2543,7 @@ struct gimple_opt_pass pass_tm_mark =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_update_ssa
-  | TODO_verify_ssa
-  | TODO_dump_func,			/* todo_flags_finish */
+  | TODO_verify_ssa, 			/* todo_flags_finish */
  }
 };
 
@@ -2818,8 +2817,7 @@ struct gimple_opt_pass pass_tm_edges =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_update_ssa
-  | TODO_verify_ssa
-  | TODO_dump_func,			/* todo_flags_finish */
+  | TODO_verify_ssa,			/* todo_flags_finish */
  }
 };
 
@@ -3483,7 +3481,7 @@ struct gimple_opt_pass pass_tm_memopt =
   0,			                /* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
+  0,            			/* todo_flags_finish */
  }
 };
 
@@ -5035,7 +5033,7 @@ struct simple_ipa_opt_pass pass_ipa_tm =
   0,			                /* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
+  0,             			/* todo_flags_finish */
  },
 };
 
