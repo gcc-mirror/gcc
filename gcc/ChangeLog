@@ -1,5 +1,9 @@
 2012-04-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.h: Remove old secondary reload code.
+
+2012-04-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.c (SCHED_REORDER): Merge macro into ...
 	(ready_reorder): ... this function.
 
