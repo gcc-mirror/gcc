@@ -1011,6 +1011,8 @@ evolution_function_is_invariant_rec_p (tree chrec, int loopnum)
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC)
     {
       if (CHREC_VARIABLE (chrec) == (unsigned) loopnum
+	  || flow_loop_nested_p (get_loop (loopnum),
+				 get_loop (CHREC_VARIABLE (chrec)))
 	  || !evolution_function_is_invariant_rec_p (CHREC_RIGHT (chrec),
 						     loopnum)
 	  || !evolution_function_is_invariant_rec_p (CHREC_LEFT (chrec),
@@ -1114,6 +1116,8 @@ evolution_function_is_univariate_p (const_tree chrec)
 	  break;
 
 	default:
+	  if (tree_contains_chrecs (CHREC_LEFT (chrec), NULL))
+	    return false;
 	  break;
 	}
 
@@ -1127,6 +1131,8 @@ evolution_function_is_univariate_p (const_tree chrec)
 	  break;
 
 	default:
+	  if (tree_contains_chrecs (CHREC_RIGHT (chrec), NULL))
+	    return false;
 	  break;
 	}
 
