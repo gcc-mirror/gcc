@@ -4224,7 +4224,7 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
         error ("%<constexpr%> cannot be used for type declarations");
     }
 
-  if (declspecs->attributes && warn_attributes)
+  if (declspecs->attributes && warn_attributes && declared_type)
     {
       location_t loc;
       if (!CLASS_TYPE_P (declared_type)

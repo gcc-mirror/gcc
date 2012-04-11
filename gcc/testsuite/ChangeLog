@@ -1,5 +1,8 @@
 2012-04-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52906
+	* g++.dg/ext/attrib45.C: New.
+
 	* g++.dg/eh/dtor3.C: New.
 
 2012-04-11  Richard Guenther  <rguenther@suse.de>
