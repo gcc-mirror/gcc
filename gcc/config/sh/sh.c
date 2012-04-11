@@ -10559,22 +10559,14 @@ swap_reorder (rtx *a, int n)
   a[i + 1] = insn;
 }
 
-#define SCHED_REORDER(READY, N_READY)                                	\
-  do									\
-    {									\
-      if ((N_READY) == 2)						\
-	swap_reorder (READY, N_READY);					\
-      else if ((N_READY) > 2)						\
-	qsort (READY, N_READY, sizeof (rtx), rank_for_reorder);		\
-    }									\
-  while (0)
-
-/* Sort the ready list READY by ascending priority, using the SCHED_REORDER
-   macro.  */
+/* Sort the ready list by ascending priority.  */
 static void
 ready_reorder (rtx *ready, int nready)
 {
-  SCHED_REORDER (ready, nready);
+  if (nready == 2)
+    swap_reorder (ready, nready);
+  else if (nready > 2)
+     qsort (ready, nready, sizeof (rtx), rank_for_reorder);
 }
 
 /* Count life regions of r0 for a block.  */

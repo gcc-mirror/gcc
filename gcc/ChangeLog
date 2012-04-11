@@ -1,3 +1,8 @@
+2012-04-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.c (SCHED_REORDER): Merge macro into ...
+	(ready_reorder): ... this function.
+
 2012-04-11  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* sel-sched.c (sel_global_init): Swap order of sched_rgn_init and
