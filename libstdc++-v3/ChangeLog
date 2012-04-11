@@ -1,8 +1,12 @@
+2012-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/performance/30_threads/future/polling.cc: Adjust.
+
 2012-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/forward_list.h (splice_after(const_iterator,
 	forward_list&), splice_after(const_iterator, forward_list&,
-	consst_iterator), splice_after(const_iterator, forward_list&,
+	const_iterator), splice_after(const_iterator, forward_list&,
 	const_iterator, const_iterator), merge(forward_list&),
 	merge(forward_list&, _Comp)): Add per C++11 as published (and
 	LWG 1310).
