@@ -64,8 +64,9 @@
 
 <para>
   If you would like debug symbols in libstdc++, there are two ways to
-  build libstdc++ with debug flags. The first is to run make from the
-  toplevel in a freshly-configured tree with
+  build libstdc++ with debug flags. The first is to create a separate
+  debug build by running make from the top-level of a tree
+  freshly-configured with
 </para>
 <programlisting>
      --enable-libstdcxx-debug
@@ -75,11 +76,11 @@
      --enable-libstdcxx-debug-flags='...'
 </programlisting>
 <para>
-  to create a separate debug build. Both the normal build and the
-  debug build will persist, without having to specify
-  <code>CXXFLAGS</code>, and the debug library will be installed in a
-  separate directory tree, in <code>(prefix)/lib/debug</code>. For
-  more information, look at the <link linkend="manual.intro.setup.configure">configuration</link> section.
+  Both the normal build and the debug build will persist, without
+  having to specify <code>CXXFLAGS</code>, and the debug library will
+  be installed in a separate directory tree, in <code>(prefix)/lib/debug</code>.
+  For more information, look at the
+  <link linkend="manual.intro.setup.configure">configuration</link> section.
 </para>
 
 <para>
