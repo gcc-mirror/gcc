@@ -1,3 +1,9 @@
+2012-04-11  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* fold-const.c (fold_unary_loc): Use GET_MODE_PRECISION for
+	comparisons against TYPE_PRECISION.
+	* tree-ssa-forwprop.c (combine_conversions): Likewise.
+
 2012-04-11  Xinliang David Li  <davidxl@google.com>
 
 	* tree-passes.h: Remove TODO_dump_func.
