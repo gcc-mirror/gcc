@@ -1,3 +1,11 @@
+2012-04-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50751
+	* gcc/target/sh/pr50751-4.c: New.
+	* gcc/target/sh/pr50751-5.c: New.
+	* gcc/target/sh/pr50751-6.c: New.
+	* gcc/target/sh/pr50751-7.c: New.
+
 2012-04-11  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/52465
