@@ -3113,14 +3113,6 @@ ix86_option_override_internal (bool main_args_p)
       sw = "attribute";
     }
 
-#ifdef SUBTARGET_OVERRIDE_OPTIONS
-  SUBTARGET_OVERRIDE_OPTIONS;
-#endif
-
-#ifdef SUBSUBTARGET_OVERRIDE_OPTIONS
-  SUBSUBTARGET_OVERRIDE_OPTIONS;
-#endif
-
   /* Turn off both OPTION_MASK_ABI_64 and OPTION_MASK_ABI_X32 if
      TARGET_64BIT_DEFAULT is true and TARGET_64BIT is false.  */
   if (TARGET_64BIT_DEFAULT && !TARGET_64BIT)
@@ -3160,6 +3152,14 @@ ix86_option_override_internal (bool main_args_p)
       ix86_isa_flags |= OPTION_MASK_ISA_64BIT;
       ix86_isa_flags &= ~OPTION_MASK_ABI_X32;
     }
+
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
+
+#ifdef SUBSUBTARGET_OVERRIDE_OPTIONS
+  SUBSUBTARGET_OVERRIDE_OPTIONS;
+#endif
 
   /* -fPIC is the default for x86_64.  */
   if (TARGET_MACHO && TARGET_64BIT)

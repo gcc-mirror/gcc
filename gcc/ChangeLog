@@ -1,3 +1,9 @@
+2012-04-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Check
+	SUBTARGET_OVERRIDE_OPTIONS and SUBSUBTARGET_OVERRIDE_OPTIONS
+	after TARGET_64BIT is updated.
+
 2012-04-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h: Remove old secondary reload code.
