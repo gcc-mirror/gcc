@@ -827,6 +827,9 @@ rl78_expand_prologue (void)
   if (!cfun->machine->computed)
     rl78_compute_frame_info ();
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = cfun->machine->framesize;
+
   for (i = 0; i < 16; i++)
     if (cfun->machine->need_to_push [i])
       {

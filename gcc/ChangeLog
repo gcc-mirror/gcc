@@ -1,3 +1,8 @@
+2012-04-11  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_expand_prologue): Set stack use
+	information, if requested.
+
 2012-04-11  Peter Bergner  <bergner@vnet.ibm.com>
 	    Michael Matz  <matz@suse.de>
 
@@ -26,7 +31,7 @@
 	(sh_secondary_reload): Add HImode case.  Use satisfies_constraint_Sdd,
 	disp_addr_displacement and max_mov_insn_displacement.
 	(max_mov_insn_displacement): Remove HImode check.
-	* config/sh/sh.h (CONST_OK_FOR_K04, CONST_OK_FOR_K12, 
+	* config/sh/sh.h (CONST_OK_FOR_K04, CONST_OK_FOR_K12,
 	DISP_ADDR_P, DISP_ADDR_OFFSET): Remove.
 	* config/sh/constraints.md (K05, K13): New constraints.
 	(K12): Correct comment.
