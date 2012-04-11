@@ -1,3 +1,9 @@
+2012-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52931
+	* include/bits/functional_hash.h (struct hash): Remove definition.
+	* testsuite/20_util/hash/52931.cc: New.
+
 2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 24985
