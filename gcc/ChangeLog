@@ -3,6 +3,8 @@
 	* config/rl78/rl78.c (rl78_expand_prologue): Set stack use
 	information, if requested.
 
+	* config/rx/rx.c (rx_expand_prologue): Likewise.
+
 2012-04-11  Peter Bergner  <bergner@vnet.ibm.com>
 	    Michael Matz  <matz@suse.de>
 
