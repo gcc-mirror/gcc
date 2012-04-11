@@ -1,5 +1,10 @@
 2012-04-11  Andrew Haley  <aph@redhat.com>
 
+	* jcf-reader.c (jcf_parse_bootstrap_methods): Add
+	ATTRIBUTE_UNUSED.
+
+2012-04-11  Andrew Haley  <aph@redhat.com>
+
 	* jcf.h (bootstrap_method): New.
 	(BootstrapMethods): New.
 	(JCF): Add BootstrapMethods.
