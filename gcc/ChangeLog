@@ -1,3 +1,10 @@
+2012-04-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52912
+	* tree-ssa-threadupdate.c (thread_block): Tell the cfg
+	manipulation code we are threading through a loop header
+	to an exit destination.
+
 2012-04-10  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree.h (warn_if_unused_value): Move declaration from here.
