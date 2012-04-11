@@ -1,3 +1,7 @@
+2012-04-11  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.dg/stack-usage-1.c (SIZE): Define for the RL78.
+
 2012-04-11  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/16458

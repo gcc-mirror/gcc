@@ -58,6 +58,8 @@
 #  define SIZE 224
 #elif defined (__epiphany__)
 #  define SIZE (256 - __EPIPHANY_STACK_OFFSET__)
+#elif defined (__RL78__)
+#  define SIZE 254
 #else
 #  define SIZE 256
 #endif
