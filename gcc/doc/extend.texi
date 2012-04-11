@@ -5372,6 +5372,10 @@ typeinfo node and exception handling will break.
 
 @end table
 
+To specify multiple attributes, separate them by commas within the
+double parentheses: for example, @samp{__attribute__ ((aligned (16),
+packed))}.
+
 @subsection ARM Type Attributes
 
 On those ARM targets that support @code{dllimport} (such as Symbian
@@ -5426,10 +5430,6 @@ either format.
 Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows X86
 compilers to match the native Microsoft compiler.
 @end table
-
-To specify multiple attributes, separate them by commas within the
-double parentheses: for example, @samp{__attribute__ ((aligned (16),
-packed))}.
 
 @anchor{PowerPC Type Attributes}
 @subsection PowerPC Type Attributes
