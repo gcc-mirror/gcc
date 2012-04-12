@@ -1451,3 +1451,13 @@
 
   return 1;
 })
+
+;; Return 1 if OP is a stack tie operand.
+(define_predicate "tie_operand"
+  (match_code "parallel")
+{
+  return (GET_CODE (XVECEXP (op, 0, 0)) == SET
+	  && GET_CODE (XEXP (XVECEXP (op, 0, 0), 0)) == MEM
+	  && GET_MODE (XEXP (XVECEXP (op, 0, 0), 0)) == BLKmode
+	  && XEXP (XVECEXP (op, 0, 0), 1) == const0_rtx);
+})
