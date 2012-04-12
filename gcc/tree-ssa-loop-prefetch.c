@@ -1549,7 +1549,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 
       aloop = VEC_index (loop_p, vloops, i);
       vol = estimated_stmt_executions_int (aloop);
-      if (vol < 0)
+      if (vol == -1)
 	vol = expected_loop_iterations (aloop);
       volume *= vol;
     }
@@ -1801,6 +1801,8 @@ loop_prefetch_arrays (struct loop *loop)
 
   ahead = (PREFETCH_LATENCY + time - 1) / time;
   est_niter = estimated_stmt_executions_int (loop);
+  if (est_niter == -1)
+    est_niter = max_stmt_executions_int (loop);
 
   /* Prefetching is not likely to be profitable if the trip count to ahead
      ratio is too small.  */
