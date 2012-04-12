@@ -1,3 +1,20 @@
+2012-04-13  Alan Modra  <amodra@gmail.com>
+
+	PR target/52828
+	* config/rs6000/rs6000.c (rs6000_emit_stack_tie): Rewrite with
+	tie regs on destination of sets.  Delete forward declaration.
+	(rs6000_emit_stack_reset): Update rs6000_emit_stack_tie calls.
+	(rs6000_emit_prologue): Likewise.
+	(rs6000_emit_epilogue): Likewise.  Use in place of gen_frame_tie
+	and gen_stack_tie.
+	(is_mem_ref): Use tie_operand to recognise stack ties.
+	* config/rs6000/predicates.md (tie_operand): New.
+	* config/rs6000/rs6000.md (restore_stack_block): Generate new
+	stack tie rtl.
+	(restore_stack_nonlocal): Likewise.
+	(stack_tie): Update.
+	(frame_tie): Delete.
+
 2012-04-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* tree-ssa-reassoc.c (attempt_builtin_powi_stats): Change %ld to

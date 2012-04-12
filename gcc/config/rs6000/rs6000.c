@@ -925,7 +925,6 @@ static const char *rs6000_invalid_within_doloop (const_rtx);
 static bool rs6000_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool rs6000_debug_legitimate_address_p (enum machine_mode, rtx, bool);
 static rtx rs6000_generate_compare (rtx, enum machine_mode);
-static void rs6000_emit_stack_tie (void);
 static bool spe_func_has_64bit_regs_p (void);
 static rtx gen_frame_mem_offset (enum machine_mode, rtx, int);
 static unsigned rs6000_hash_constant (rtx);
@@ -18505,12 +18504,29 @@ rs6000_aix_asm_output_dwarf_table_ref (char * frame_table_label)
    and the change to the stack pointer.  */
 
 static void
-rs6000_emit_stack_tie (void)
+rs6000_emit_stack_tie (rtx fp, bool hard_frame_needed)
 {
-  rtx mem = gen_frame_mem (BLKmode,
-			   gen_rtx_REG (Pmode, STACK_POINTER_REGNUM));
+  rtvec p;
+  int i;
+  rtx regs[3];
 
-  emit_insn (gen_stack_tie (mem));
+  i = 0;
+  regs[i++] = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+  if (hard_frame_needed)
+    regs[i++] = gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM);
+  if (!(REGNO (fp) == STACK_POINTER_REGNUM
+	|| (hard_frame_needed
+	    && REGNO (fp) == HARD_FRAME_POINTER_REGNUM)))
+    regs[i++] = fp;
+
+  p = rtvec_alloc (i);
+  while (--i >= 0)
+    {
+      rtx mem = gen_frame_mem (BLKmode, regs[i]);
+      RTVEC_ELT (p, i) = gen_rtx_SET (VOIDmode, mem, const0_rtx);
+    }
+
+  emit_insn (gen_stack_tie (gen_rtx_PARALLEL (VOIDmode, p)));
 }
 
 /* Emit the correct code for allocating stack space, as insns.
@@ -19130,7 +19146,7 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
       || (TARGET_SPE_ABI
 	  && info->spe_64bit_regs_used != 0
 	  && info->first_gp_reg_save != 32))
-    rs6000_emit_stack_tie ();
+    rs6000_emit_stack_tie (frame_reg_rtx, frame_pointer_needed);
   
   if (frame_reg_rtx != sp_reg_rtx)
     {
@@ -19350,7 +19366,7 @@ rs6000_emit_prologue (void)
 	}
       rs6000_emit_allocate_stack (info->total_size, copy_reg);
       if (frame_reg_rtx != sp_reg_rtx)
-	rs6000_emit_stack_tie ();
+	rs6000_emit_stack_tie (frame_reg_rtx, false);
     }
 
   /* Handle world saves specially here.  */
@@ -19854,7 +19870,7 @@ rs6000_emit_prologue (void)
 	sp_offset = info->total_size;
       rs6000_emit_allocate_stack (info->total_size, copy_reg);
       if (frame_reg_rtx != sp_reg_rtx)
-	rs6000_emit_stack_tie ();
+	rs6000_emit_stack_tie (frame_reg_rtx, false);
     }
 
   /* Set frame pointer, if needed.  */
@@ -20425,13 +20441,7 @@ rs6000_emit_epilogue (int sibcall)
       /* Prevent reordering memory accesses against stack pointer restore.  */
       else if (cfun->calls_alloca
 	       || offset_below_red_zone_p (-info->total_size))
-	{
-	  rtx mem1 = gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx);
-	  rtx mem2 = gen_rtx_MEM (BLKmode, sp_reg_rtx);
-	  MEM_NOTRAP_P (mem1) = 1;
-	  MEM_NOTRAP_P (mem2) = 1;
-	  emit_insn (gen_frame_tie (mem1, mem2));
-	}
+	rs6000_emit_stack_tie (frame_reg_rtx, true);
 
       insn = emit_insn (gen_add3_insn (frame_reg_rtx, hard_frame_pointer_rtx,
 				       GEN_INT (info->total_size)));
@@ -20444,11 +20454,7 @@ rs6000_emit_epilogue (int sibcall)
       /* Prevent reordering memory accesses against stack pointer restore.  */
       if (cfun->calls_alloca
 	  || offset_below_red_zone_p (-info->total_size))
-	{
-	  rtx mem = gen_rtx_MEM (BLKmode, sp_reg_rtx);
-	  MEM_NOTRAP_P (mem) = 1;
-	  emit_insn (gen_stack_tie (mem));
-	}
+	rs6000_emit_stack_tie (frame_reg_rtx, false);
       insn = emit_insn (gen_add3_insn (sp_reg_rtx, sp_reg_rtx,
 				       GEN_INT (info->total_size)));
       sp_offset = 0;
@@ -22835,8 +22841,7 @@ is_mem_ref (rtx pat)
   bool ret = false;
 
   /* stack_tie does not produce any real memory traffic.  */
-  if (GET_CODE (pat) == UNSPEC
-      && XINT (pat, 1) == UNSPEC_TIE)
+  if (tie_operand (pat, VOIDmode))
     return false;
 
   if (GET_CODE (pat) == MEM)
