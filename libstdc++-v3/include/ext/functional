@@ -1,6 +1,6 @@
 // Functional extensions -*- C++ -*-
 
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -183,7 +183,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @addtogroup SGIextensions
    */
   template <class _Tp>
-    struct identity : public std::_Identity<_Tp> {};
+    struct identity
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    : public std::unary_function<_Tp,_Tp>,
+      public std::_Identity<_Tp> {};
+#else
+    : public std::_Identity<_Tp> {};
+#endif
 
   /** @c select1st and @c select2nd are extensions provided by SGI.  Their
    *  @c operator()s
@@ -197,11 +203,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   /// An \link SGIextensions SGI extension \endlink.
   template <class _Pair>
-    struct select1st : public std::_Select1st<_Pair> {};
+    struct select1st
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    : public std::unary_function<_Pair, typename _Pair::first_type>,
+      public std::_Select1st<_Pair> {};
+#else
+    : public std::_Select1st<_Pair> {};
+#endif
 
   /// An \link SGIextensions SGI extension \endlink.
   template <class _Pair>
-    struct select2nd : public std::_Select2nd<_Pair> {};
+    struct select2nd
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    : public std::unary_function<_Pair, typename _Pair::second_type>,
+      public std::_Select2nd<_Pair> {};
+#else
+    : public std::_Select2nd<_Pair> {};
+#endif
   /** @}  */
 
   // extension documented next
