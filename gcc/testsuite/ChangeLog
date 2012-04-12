@@ -1,3 +1,8 @@
+2012-04-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52943
+	* gcc.dg/torture/pr52943.c: New testcase.
+
 2012-04-09  Mike Stump  <mikestump@comcast.net>
 
 	* g++.dg/cpp0x/udlit-raw-op.C: Don't use CRLF endings.

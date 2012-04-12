@@ -1,3 +1,13 @@
+2012-04-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52943
+	* tree-chrec.h (chrec_is_positive): Remove.
+	* tree-scalar-evolution.c (chrec_is_positive): Move ...
+	* tree-data-ref.c (chrec_is_positive): ... here.  Make static.
+	Return false for a constant zero instead of negative.
+	(analyze_siv_subscript_cst_affine): Handle zero difference
+	in the initial condition explicitely.
+
 2012-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/52894
