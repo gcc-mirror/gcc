@@ -29,8 +29,8 @@ calc_permd (int *src1, int *src2, int *dst)
   memcpy (dst, src1, 32);
   for (i = 0; i < 8; i++)
     {
-      temp = src1[i];
-      dst[i] = src2[temp & 7];
+      temp = src2[i];
+      dst[i] = src1[temp & 7];
     }
 }
 

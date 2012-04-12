@@ -79,8 +79,7 @@
   UNSPEC_VCVTPS2PH
 
   ;; For AVX2 support
-  UNSPEC_VPERMSI
-  UNSPEC_VPERMSF
+  UNSPEC_VPERMVAR
   UNSPEC_VPERMTI
   UNSPEC_GATHER
   UNSPEC_VSIBADDR
@@ -11901,26 +11900,14 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx2_permvarv8si"
-  [(set (match_operand:V8SI 0 "register_operand" "=x")
-	(unspec:V8SI
-	  [(match_operand:V8SI 1 "register_operand" "x")
-	   (match_operand:V8SI 2 "nonimmediate_operand" "xm")]
-	  UNSPEC_VPERMSI))]
+(define_insn "avx2_permvar<mode>"
+  [(set (match_operand:VI4F_256 0 "register_operand" "=x")
+	(unspec:VI4F_256
+	  [(match_operand:VI4F_256 1 "nonimmediate_operand" "xm")
+	   (match_operand:V8SI 2 "register_operand" "x")]
+	  UNSPEC_VPERMVAR))]
   "TARGET_AVX2"
-  "vpermd\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "OI")])
-
-(define_insn "avx2_permvarv8sf"
-  [(set (match_operand:V8SF 0 "register_operand" "=x")
-	(unspec:V8SF
-	  [(match_operand:V8SF 1 "register_operand" "x")
-	   (match_operand:V8SF 2 "nonimmediate_operand" "xm")]
-	  UNSPEC_VPERMSF))]
-  "TARGET_AVX2"
-  "vpermps\t{%2, %1, %0|%0, %1, %2}"
+  "vperm<ssemodesuffix>\t{%1, %2, %0|%0, %2, %1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])

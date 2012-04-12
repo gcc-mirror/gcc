@@ -1,3 +1,19 @@
+2012-04-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52932
+	* config/i386/avx2intrin.h (_mm256_permutevar8x32_ps): Change second
+	argument type to __m256i.  Update call to __builtin_ia32_permvarsf256.
+	* config/i386/sse.md (UNSPEC_VPERMVAR): New.
+	(UNSPEC_VPERMSI, UNSPEC_VPERMSF): Remove.
+	(avx2_permvarv8sf, avx2_permvarv8si): Switch operands 1 and 2.
+	(avx2_permvar<mode>): Macroize insn from avx2_permvarv8sf and
+	avx2_permvarv8si using VI4F_256 mode iterator.
+	* config/i386/i386.c (bdesc_args) <__builtin_ia32_permvarsf256>:
+	Update builtin type to V8SF_FTYPE_V8SF_V8SI.
+	(ix86_expand_vec_perm): Update calls to gen_avx2_permvarv8si and
+	gen_avx2_permvarv8sf.
+	(expand_vec_perm_pshufb): Ditto.
+
 2012-04-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/52775
@@ -200,8 +216,7 @@
 2012-04-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52918
-	* except.c (sjlj_emit_dispatch_table): Properly update loop
-	structure.
+	* except.c (sjlj_emit_dispatch_table): Properly update loop structure.
 
 2012-04-11  Nick Clifton  <nickc@redhat.com>
 
@@ -426,8 +441,7 @@
 	* tree-pass.h (tree_lowering_passes): Remove.
 	* tree-optimize.c (tree_lowering_passes): Remove.
 	* cgraph.c (cgraph_add_new_function): Inline relevant parts
-	of tree_lowering_passes, avoid redundant call of early local
-	passes.
+	of tree_lowering_passes, avoid redundant call of early local passes.
 	* cgraphunit.c (cgraph_lower_function): Fold into ...
 	(cgraph_analyze_function): ... its single caller.  Inline
 	relevant parts of tree_lowering_passes.
@@ -442,8 +456,8 @@
 	PR lto/52722
 	PR lto/51765
 	PR lto/52634
-	* lto-cgraph.c (compute_ltrans_boundary): When alias is in the boundary,
-	add its target too.
+	* lto-cgraph.c (compute_ltrans_boundary): When alias is in the
+	boundary, add its target too.
 	* lto.c (add_references_to_partition): Add also aliased nodes.
 	(add_cgraph_node_to_partition,
 	add_varpool_node_to_partition): Work on nodes, not functions/variables;
@@ -564,8 +578,7 @@
 2012-04-05  Teresa Johnson  <tejohnson@google.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.h (ix86_tune_indices): Add
-	X86_TUNE_LCP_STALL.
+	* config/i386/i386.h (ix86_tune_indices): Add X86_TUNE_LCP_STALL.
 	* config/i386/i386.md (move immediate to memory peephole2):
 	Add cases for HImode move when LCP stall avoidance is needed.
 	* config/i386/i386.c (initial_ix86_tune_features): Initialize
@@ -642,8 +655,7 @@
 2012-04-04  Mike Stump  <mikestump@comcast.net>
 
 	* doc/rtl.texi (const_double): Document as sign-extending.
-	* expmed.c (expand_mult): Ensure we don't use shift
-	incorrectly.
+	* expmed.c (expand_mult): Ensure we don't use shift incorrectly.
 	* emit-rtl.c (immed_double_int_const): Refine to state the
 	value is signed.
 	* simplify-rtx.c (mode_signbit_p): Add a fixme for wider than
@@ -651,8 +663,7 @@
 	(simplify_const_unary_operation, UNSIGNED_FLOAT): Ensure no
 	negative values are converted.  Fix conversions bigger than
 	HOST_BITS_PER_WIDE_INT.
-	(simplify_binary_operation_1): Ensure we don't use shift
-	incorrectly.
+	(simplify_binary_operation_1): Ensure we don't use shift incorrectly.
 	(simplify_immed_subreg): Sign-extend CONST_DOUBLEs.
 	* explow.c (plus_constant_mode): Add.
 	(plus_constant): Implement with plus_constant_mode.
@@ -661,8 +672,7 @@
 2012-04-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52808
-	* tracer.c (tail_duplicate): Do not tail-duplicate loop header
-	blocks.
+	* tracer.c (tail_duplicate): Do not tail-duplicate loop header blocks.
 	* Makefile.in (tracer.o): Depend on $(CFGLOOP_H).
 
 2012-04-04  Tristan Gingold  <gingold@adacore.com>
@@ -692,8 +702,8 @@
 	* h8300/h8300.md: Generate 'rte' for monitor functions. Do not
 	save EXR on stack for monitor function in case of H8S target
 	when "-mno-exr" is passed.
-	* h8300/h8300-protos.h
-	(h8300_current_function_monitor_function_p): Add prototype.
+	* h8300/h8300-protos.h (h8300_current_function_monitor_function_p):
+	Add prototype.
 	* doc/invoke.texi: Document H8S options.
 
 2012-04-03  Tristan Gingold  <gingold@adacore.com>

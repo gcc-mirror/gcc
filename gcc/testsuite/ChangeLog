@@ -1,3 +1,14 @@
+2012-04-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52932
+	* gcc.target/i386/avx2-vpermps-1.c (avx2_test): Use __m256i type for
+	second function argument.
+	* gcc.target/i386/avx2-vpermps-2.c (init_permps): Update declaration.
+	(calc_permps): Update declaration.  Calculate result correctly.
+	(avx2_test): Change src2 type to union256i_d.
+	* gcc.target/i386/avx2-vpermd-2.c (calc_permd): Calculate result
+	correctly.
+
 2012-04-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/52775
@@ -212,7 +223,7 @@
 
 	PR lto/52722
 	PR lto/51765
-	PR lto/52634	
+	PR lto/52634
 	* gcc.dg/lto/pr52634_1.c: New testcase.
 	* gcc.dg/lto/pr52634_0.c: New testcase.
 
@@ -571,7 +582,7 @@
 	int32plus.
 	* gcc.dg/torture/pr48124-4.c: Ditto:
 	* gcc.dg/torture/pr52530.c: Use long instead of int if int=16.
-	
+
 2012-03-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52510
@@ -666,11 +677,11 @@
 
 2012-03-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/52434
-        PR libfortran/48878
-        PR libfortran/38199
-        * gfortran.dg/edit_real_1.f90: Don't assume roundTiesToAway.
-        * gfortran.dg/round_1.f03: Likewise.
+	PR libfortran/52434
+	PR libfortran/48878
+	PR libfortran/38199
+	* gfortran.dg/edit_real_1.f90: Don't assume roundTiesToAway.
+	* gfortran.dg/round_1.f03: Likewise.
 
 2012-03-15  Jakub Jelinek  <jakub@redhat.com>
 	    Andrew Pinski  <apinski@cavium.com>
@@ -1833,7 +1844,7 @@
 
 2012-02-06  Andrey Belevantsev  <abel@ispras.ru>
 
-	* gcc.dg/pr48374.c: Actually add the test I forgot 
+	* gcc.dg/pr48374.c: Actually add the test I forgot
 	in the 2012-01-25 commit.
 
 2012-02-05  Thomas König  <tkoenig@gcc.gnu.org>

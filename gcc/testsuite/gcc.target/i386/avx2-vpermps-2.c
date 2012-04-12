@@ -8,7 +8,7 @@
 #define NUM 10
 
 static void
-init_permps (float *src1, float *src2, int seed)
+init_permps (float *src1, int *src2, int seed)
 {
   int i, sign = 1;
 
@@ -21,24 +21,24 @@ init_permps (float *src1, float *src2, int seed)
 }
 
 static void
-calc_permps (float *src1, float *src2, float *dst)
+calc_permps (float *src1, int *src2, float *dst)
 {
   int i;
   unsigned temp;
-  unsigned *idx = (int *) src1;
 
   memcpy (dst, src1, 32);
   for (i = 0; i < 8; i++)
     {
-      temp = idx[i];
-      dst[i] = src2[temp & 7];
+      temp = src2[i];
+      dst[i] = src1[temp & 7];
     }
 }
 
 static void
 avx2_test (void)
 {
-  union256 src1, src2, dst;
+  union256 src1, dst;
+  union256i_d src2;
   float dst_ref[8];
   int i;
 
