@@ -1,3 +1,20 @@
+2012-04-12  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* dbgcnt.def (ira_move): New counter.
+	* ira-int.h (ira_create_new_reg): Declare function.
+	(first_moveable_pseudo, last_moveable_pseudo): Declare variables.
+	* ira-emit.c (ira_create_new_reg): Renamed from craete_new_reg and
+	no longer static.  All callers changed.
+	* ira.c: Include "dbgcnt.h".
+	(rtx_moveable_p, insn_dominated_by_p, find_moveable_pseudos,
+	move_unallocated_pseudos): New static functions.
+	(first_moveable_pseudo, last_moveable_pseudo): New global variables.
+	(pseudo_replaced_reg, pseudo_move_insn): New static variables.
+	(ira): Call find_moveable_pseudos and move_unallocated_pseudos.
+	* ira-costs.c (find_costs_and_classes): Assign a memory cost of zero
+	to the pseudos generated in find_moveable_pseudos.
+	* Makefile.in (ira.o): Add $(DBGCNT_H).
+
 2012-04-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52943

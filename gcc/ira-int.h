@@ -1416,3 +1416,6 @@ ira_allocate_and_set_or_copy_costs (int **vec, enum reg_class aclass,
 	reg_costs[i] = val;
     }
 }
+
+extern rtx ira_create_new_reg (rtx);
+extern int first_moveable_pseudo, last_moveable_pseudo;
