@@ -134,7 +134,7 @@ check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
 	  normal0) \
 	    if $(SHELL) -c "$$runtest --version" > /dev/null 2>&1; then \
 	      $$runtest $(AM_RUNTESTFLAGS) $(RUNTESTDEFAULTFLAGS) \
-			$(RUNTESTFLAGS) abi.exp; \
+			$(RUNTESTFLAGS) abi.exp prettyprinters.exp; \
 	    else echo "WARNING: could not find \`runtest'" 1>&2; :;\
 	    fi; \
 	    dirs="`cd $$srcdir; echo [013-9][0-9]_*/*`";; \
