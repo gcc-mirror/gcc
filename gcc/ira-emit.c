@@ -330,8 +330,8 @@ add_to_edge_list (edge e, move_t move, bool head_p)
 
 /* Create and return new pseudo-register with the same attributes as
    ORIGINAL_REG.  */
-static rtx
-create_new_reg (rtx original_reg)
+rtx
+ira_create_new_reg (rtx original_reg)
 {
   rtx new_reg;
 
@@ -625,7 +625,7 @@ change_loop (ira_loop_tree_node_t node)
 		fprintf (ira_dump_file, "  %i vs parent %i:",
 			 ALLOCNO_HARD_REGNO (allocno),
 			 ALLOCNO_HARD_REGNO (parent_allocno));
-	      set_allocno_reg (allocno, create_new_reg (original_reg));
+	      set_allocno_reg (allocno, ira_create_new_reg (original_reg));
 	    }
 	}
     }
@@ -646,7 +646,7 @@ change_loop (ira_loop_tree_node_t node)
       if (! used_p)
 	continue;
       bitmap_set_bit (renamed_regno_bitmap, regno);
-      set_allocno_reg (allocno, create_new_reg (allocno_emit_reg (allocno)));
+      set_allocno_reg (allocno, ira_create_new_reg (allocno_emit_reg (allocno)));
     }
 }
 
@@ -852,7 +852,7 @@ modify_move_list (move_t list)
 		ALLOCNO_ASSIGNED_P (new_allocno) = true;
 		ALLOCNO_HARD_REGNO (new_allocno) = -1;
 		ALLOCNO_EMIT_DATA (new_allocno)->reg
-		  = create_new_reg (allocno_emit_reg (set_move->to));
+		  = ira_create_new_reg (allocno_emit_reg (set_move->to));
 
 		/* Make it possibly conflicting with all earlier
 		   created allocnos.  Cases where temporary allocnos
