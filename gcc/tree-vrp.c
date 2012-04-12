@@ -3420,7 +3420,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
     {
       double_int nit;
 
-      if (estimated_loop_iterations (loop, true, &nit))
+      if (max_loop_iterations (loop, &nit))
 	{
 	  value_range_t maxvr = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
 	  double_int dtmp;

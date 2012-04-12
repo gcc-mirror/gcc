@@ -1709,7 +1709,7 @@ max_stmt_executions_tree (struct loop *loop)
 {
   double_int nit;
 
-  if (!max_stmt_executions (loop, true, &nit))
+  if (!max_stmt_executions (loop, &nit))
     return chrec_dont_know;
 
   if (!double_int_fits_to_tree_p (unsigned_type_node, nit))
@@ -1791,7 +1791,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 
 		      /* Perform weak-zero siv test to see if overlap is
 			 outside the loop bounds.  */
-		      numiter = max_stmt_executions_int (loop, true);
+		      numiter = max_stmt_executions_int (loop);
 
 		      if (numiter >= 0
 			  && compare_tree_int (tmp, numiter) > 0)
@@ -1869,7 +1869,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 
 		      /* Perform weak-zero siv test to see if overlap is
 			 outside the loop bounds.  */
-		      numiter = max_stmt_executions_int (loop, true);
+		      numiter = max_stmt_executions_int (loop);
 
 		      if (numiter >= 0
 			  && compare_tree_int (tmp, numiter) > 0)
@@ -2049,10 +2049,9 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
   step_y = int_cst_value (CHREC_RIGHT (chrec_a));
   step_z = int_cst_value (CHREC_RIGHT (chrec_b));
 
-  niter_x =
-    max_stmt_executions_int (get_chrec_loop (CHREC_LEFT (chrec_a)), true);
-  niter_y = max_stmt_executions_int (get_chrec_loop (chrec_a), true);
-  niter_z = max_stmt_executions_int (get_chrec_loop (chrec_b), true);
+  niter_x = max_stmt_executions_int (get_chrec_loop (CHREC_LEFT (chrec_a)));
+  niter_y = max_stmt_executions_int (get_chrec_loop (chrec_a));
+  niter_z = max_stmt_executions_int (get_chrec_loop (chrec_b));
 
   if (niter_x < 0 || niter_y < 0 || niter_z < 0)
     {
@@ -2377,8 +2376,8 @@ analyze_subscript_affine_affine (tree chrec_a,
 	  HOST_WIDE_INT niter, niter_a, niter_b;
 	  affine_fn ova, ovb;
 
-	  niter_a = max_stmt_executions_int (get_chrec_loop (chrec_a), true);
-	  niter_b = max_stmt_executions_int (get_chrec_loop (chrec_b), true);
+	  niter_a = max_stmt_executions_int (get_chrec_loop (chrec_a));
+	  niter_b = max_stmt_executions_int (get_chrec_loop (chrec_b));
 	  niter = MIN (niter_a, niter_b);
 	  step_a = int_cst_value (CHREC_RIGHT (chrec_a));
 	  step_b = int_cst_value (CHREC_RIGHT (chrec_b));
@@ -2485,10 +2484,10 @@ analyze_subscript_affine_affine (tree chrec_a,
 
 	  if (i1 > 0 && j1 > 0)
 	    {
-	      HOST_WIDE_INT niter_a = max_stmt_executions_int
-		(get_chrec_loop (chrec_a), true);
-	      HOST_WIDE_INT niter_b = max_stmt_executions_int
-		(get_chrec_loop (chrec_b), true);
+	      HOST_WIDE_INT niter_a
+		= max_stmt_executions_int (get_chrec_loop (chrec_a));
+	      HOST_WIDE_INT niter_b
+		= max_stmt_executions_int (get_chrec_loop (chrec_b));
 	      HOST_WIDE_INT niter = MIN (niter_a, niter_b);
 
 	      /* (X0, Y0) is a solution of the Diophantine equation:
@@ -3782,7 +3781,7 @@ init_omega_for_ddr_1 (struct data_reference *dra, struct data_reference *drb,
   for (i = 0; i <= DDR_INNER_LOOP (ddr)
 	 && VEC_iterate (loop_p, DDR_LOOP_NEST (ddr), i, loopi); i++)
     {
-      HOST_WIDE_INT nbi = max_stmt_executions_int (loopi, true);
+      HOST_WIDE_INT nbi = max_stmt_executions_int (loopi);
 
       /* 0 <= loop_x */
       ineq = omega_add_zero_geq (pb, omega_black);

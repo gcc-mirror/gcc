@@ -1,3 +1,37 @@
+2012-04-12  Richard Guenther  <rguenther@suse.de>
+
+	* cfgloop.h (estimated_loop_iterations_int): Ditch
+	'conservative' parameter.
+	(max_stmt_executions_int): Likewise.
+	(estimated_loop_iterations): Likewise.
+	(max_stmt_executions): Likewise.
+	(max_loop_iterations): Declare.
+	(max_loop_iterations_int): Likewise.
+	(estimated_stmt_executions): Likewise.
+	(estimated_stmt_executions_int): Likewise.
+	* tree-ssa-loop-niter.c (estimated_loop_iterations):
+	Split parts to ...
+	(max_loop_iterations): ... this.
+	(estimated_loop_iterations_int): Split parts to ...
+	(max_loop_iterations_int): ... this.
+	(max_stmt_executions_int): Split parts to ...
+	(estimated_stmt_executions_int): ... this.
+	(max_stmt_executions): Split parts to ...
+	(estimated_stmt_executions): ... this.
+	* graphite-sese-to-poly.c (build_loop_iteration_domains): Adjust.
+	* predict.c (predict_loops): Likewise.
+	* tree-data-ref.c (max_stmt_executions_tree): Likewise.
+	(analyze_siv_subscript_cst_affine): Likewise.
+	(compute_overlap_steps_for_affine_1_2): Likewise.
+	(analyze_subscript_affine_affine): Likewise.
+	(init_omega_for_ddr_1): Likewise.
+	* tree-parloops.c (parallelize_loops): Likewise.
+	* tree-ssa-loop-ivopts.c (avg_loop_niter): Likewise.
+	(may_eliminate_iv): Likewise.
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Likewise.
+	(loop_prefetch_arrays): Likewise.
+	* tree-vrp.c (adjust_range_with_scev): Likewise.
+
 2012-04-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (RETURN_ADDR_RTX): Use NULL_RTX instead of 0.
