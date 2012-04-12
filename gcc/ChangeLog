@@ -1,3 +1,23 @@
+2012-04-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/18589
+	* tree-ssa-reassoc.c (reassociate_stats): Add two fields.
+	(operand_entry): Add count field.
+	(add_repeat_to_ops_vec): New function.
+	(completely_remove_stmt): Likewise.
+	(remove_def_if_absorbed_call): Likewise.
+	(remove_visited_stmt_chain): Remove feeding builtin pow/powi calls.
+	(acceptable_pow_call): New function.
+	(linearize_expr_tree): Look for builtin pow/powi calls and add operand
+	entries with repeat counts when found.
+	(repeat_factor_d): New struct and associated typedefs.
+	(repeat_factor_vec): New static vector variable.
+	(compare_repeat_factors): New function.
+	(get_reassoc_pow_ssa_name): Likewise.
+	(attempt_builtin_powi): Likewise.
+	(reassociate_bb): Call attempt_builtin_powi.
+	(fini_reassoc): Two new calls to statistics_counter_event.
+
 2012-04-12  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (cgraphunit.o): Add $(EXCEPT_H) dependency.

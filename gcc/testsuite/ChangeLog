@@ -1,3 +1,17 @@
+2012-04-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/18589
+	* gcc.dg/tree-ssa/pr18589-1.c: New test.
+	* gcc.dg/tree-ssa/pr18589-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr18589-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr18589-4.c: Likewise.
+	* gcc.dg/tree-ssa/pr18589-5.c: Likewise.
+	* gcc.dg/tree-ssa/pr18589-6.c: Likewise.
+	* gcc.dg/tree-ssa/pr18589-7.c: Likewise.
+	* gcc.dg/tree-ssa/pr18589-8.c: Likewise.
+	* gcc.dg/tree-ssa/pr18589-9.c: Likewise.
+	* gcc.dg/tree-ssa/pr18589-10.c: Likewise.
+
 2012-04-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52943
