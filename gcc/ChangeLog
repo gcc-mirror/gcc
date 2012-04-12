@@ -1,3 +1,28 @@
+2012-04-12  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (cgraphunit.o): Add $(EXCEPT_H) dependency.
+	* cgraph.h (tree_rest_of_compilation): Remove.
+	* cgraph.c (cgraph_add_new_function): Move ...
+	* cgraphunit.c (cgraph_add_new_function): ... here.
+	(tree_rest_of_compilation): Make static.
+	(cgraph_expand_function): Do not set cgraph_function_flags_ready.
+	* tree-optimize.c (gate_all_optimizations, pass_all_optimizations,
+	gate_all_early_local_passes, execute_all_early_local_passes,
+	pass_early_local_passes, gate_all_early_optimizations,
+	pass_all_early_optimizations): Move ...
+	* passes.c (gate_all_optimizations, pass_all_optimizations,
+	gate_all_early_local_passes, execute_all_early_local_passes,
+	pass_early_local_passes, gate_all_early_optimizations,
+	pass_all_early_optimizations): ... here.
+	* tree-optimize.c (execute_free_datastructures): Remove.
+	* tree-flow.h (execute_free_datastructures): Remove.
+	* tree-optimize.c (execute_init_datastructures,
+	pass_init_datastructures): Move ...
+	* tree-ssa.c (execute_init_datastructures,
+	pass_init_datastructures): ... here.
+	* cfgexpand.c (gimple_expand_cfg): Inline-expand call to
+	execute_free_datastructures.
+
 2012-04-12  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* dbgcnt.def (ira_move): New counter.

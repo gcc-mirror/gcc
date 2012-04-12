@@ -281,6 +281,107 @@ finish_optimization_passes (void)
   timevar_pop (TV_DUMP);
 }
 
+static unsigned int
+execute_all_early_local_passes (void)
+{
+  /* Once this pass (and its sub-passes) are complete, all functions
+     will be in SSA form.  Technically this state change is happening
+     a tad early, since the sub-passes have not yet run, but since
+     none of the sub-passes are IPA passes and do not create new
+     functions, this is ok.  We're setting this value for the benefit
+     of IPA passes that follow.  */
+  if (cgraph_state < CGRAPH_STATE_IPA_SSA)
+    cgraph_state = CGRAPH_STATE_IPA_SSA;
+  return 0;
+}
+
+/* Gate: execute, or not, all of the non-trivial optimizations.  */
+
+static bool
+gate_all_early_local_passes (void)
+{
+	  /* Don't bother doing anything if the program has errors.  */
+  return (!seen_error () && !in_lto_p);
+}
+
+struct simple_ipa_opt_pass pass_early_local_passes =
+{
+ {
+  SIMPLE_IPA_PASS,
+  "early_local_cleanups",		/* name */
+  gate_all_early_local_passes,		/* gate */
+  execute_all_early_local_passes,	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_EARLY_LOCAL,			/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_remove_functions	 		/* todo_flags_finish */
+ }
+};
+
+/* Gate: execute, or not, all of the non-trivial optimizations.  */
+
+static bool
+gate_all_early_optimizations (void)
+{
+  return (optimize >= 1
+	  /* Don't bother doing anything if the program has errors.  */
+	  && !seen_error ());
+}
+
+struct gimple_opt_pass pass_all_early_optimizations =
+{
+ {
+  GIMPLE_PASS,
+  "early_optimizations",		/* name */
+  gate_all_early_optimizations,		/* gate */
+  NULL,					/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_NONE,				/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0					/* todo_flags_finish */
+ }
+};
+
+/* Gate: execute, or not, all of the non-trivial optimizations.  */
+
+static bool
+gate_all_optimizations (void)
+{
+  return (optimize >= 1
+	  /* Don't bother doing anything if the program has errors.
+	     We have to pass down the queue if we already went into SSA */
+	  && (!seen_error () || gimple_in_ssa_p (cfun)));
+}
+
+struct gimple_opt_pass pass_all_optimizations =
+{
+ {
+  GIMPLE_PASS,
+  "*all_optimizations",			/* name */
+  gate_all_optimizations,		/* gate */
+  NULL,					/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_OPTIMIZE,				/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0					/* todo_flags_finish */
+ }
+};
+
 static bool
 gate_rest_of_compilation (void)
 {

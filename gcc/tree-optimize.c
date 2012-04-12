@@ -46,107 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "plugin.h"
 
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_optimizations (void)
-{
-  return (optimize >= 1
-	  /* Don't bother doing anything if the program has errors.
-	     We have to pass down the queue if we already went into SSA */
-	  && (!seen_error () || gimple_in_ssa_p (cfun)));
-}
-
-struct gimple_opt_pass pass_all_optimizations =
-{
- {
-  GIMPLE_PASS,
-  "*all_optimizations",			/* name */
-  gate_all_optimizations,		/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_OPTIMIZE,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
-};
-
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_early_local_passes (void)
-{
-	  /* Don't bother doing anything if the program has errors.  */
-  return (!seen_error () && !in_lto_p);
-}
-
-static unsigned int
-execute_all_early_local_passes (void)
-{
-  /* Once this pass (and its sub-passes) are complete, all functions
-     will be in SSA form.  Technically this state change is happening
-     a tad early, since the sub-passes have not yet run, but since
-     none of the sub-passes are IPA passes and do not create new
-     functions, this is ok.  We're setting this value for the benefit
-     of IPA passes that follow.  */
-  if (cgraph_state < CGRAPH_STATE_IPA_SSA)
-    cgraph_state = CGRAPH_STATE_IPA_SSA;
-  return 0;
-}
-
-struct simple_ipa_opt_pass pass_early_local_passes =
-{
- {
-  SIMPLE_IPA_PASS,
-  "early_local_cleanups",		/* name */
-  gate_all_early_local_passes,		/* gate */
-  execute_all_early_local_passes,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_EARLY_LOCAL,			/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_remove_functions	 		/* todo_flags_finish */
- }
-};
-
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_early_optimizations (void)
-{
-  return (optimize >= 1
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !seen_error ());
-}
-
-struct gimple_opt_pass pass_all_early_optimizations =
-{
- {
-  GIMPLE_PASS,
-  "early_optimizations",		/* name */
-  gate_all_early_optimizations,		/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
-};
-
 
 /* Pass: cleanup the CFG just before expanding trees to RTL.
    This is just a round of label cleanups and case node grouping
@@ -212,21 +111,6 @@ struct gimple_opt_pass pass_cleanup_cfg_post_optimizing =
   TODO_remove_unused_locals             /* todo_flags_finish */
  }
 };
-
-/* Pass: do the actions required to finish with tree-ssa optimization
-   passes.  */
-
-unsigned int
-execute_free_datastructures (void)
-{
-  free_dominance_info (CDI_DOMINATORS);
-  free_dominance_info (CDI_POST_DOMINATORS);
-
-  /* And get rid of annotations we no longer need.  */
-  delete_tree_cfg_annotations ();
-
-  return 0;
-}
 
 /* IPA passes, compilation of earlier functions or inlining
    might have changed some properties, such as marked functions nothrow,
@@ -324,36 +208,6 @@ struct gimple_opt_pass pass_fixup_cfg =
   "*free_cfg_annotations",		/* name */
   NULL,					/* gate */
   execute_fixup_cfg,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
-};
-
-/* Do the actions required to initialize internal data structures used
-   in tree-ssa optimization passes.  */
-
-static unsigned int
-execute_init_datastructures (void)
-{
-  /* Allocate hash tables, arrays and other structures.  */
-  init_tree_ssa (cfun);
-  return 0;
-}
-
-struct gimple_opt_pass pass_init_datastructures =
-{
- {
-  GIMPLE_PASS,
-  "*init_datastructures",		/* name */
-  NULL,					/* gate */
-  execute_init_datastructures,		/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */

@@ -853,7 +853,6 @@ rtx addr_for_mem_ref (struct mem_address *, addr_space_t, bool);
 void get_address_description (tree, struct mem_address *);
 tree maybe_fold_tmr (tree);
 
-unsigned int execute_free_datastructures (void);
 unsigned int execute_fixup_cfg (void);
 bool fixup_noreturn_call (gimple stmt);
 
