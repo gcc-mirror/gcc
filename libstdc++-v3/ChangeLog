@@ -1,3 +1,15 @@
+2012-04-12   Jeffrey Yasskin  <jyasskin@google.com>
+
+	PR libstdc++/52822
+	* include/bits/stl_algo.h (__stable_partition_adaptive): Avoid
+	move-assigning an object to itself by explicitly testing for
+	identity.
+	* testsuite/25_algorithms/stable_partition/pr52822.cc: Test
+	vectors, which have a destructive self-move-assignment.
+	* testsuite/25_algorithms/stable_partition/moveable.cc (test02):
+	Test with rvalstruct, which explicitly checks
+	self-move-assignment.
+
 2012-04-09  Terry Guo  <terry.guo@arm.com>
 
 	* testsuite/Makefile.am (TEST_GCC_EXEC_PREFIX): New.
