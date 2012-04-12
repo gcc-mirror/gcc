@@ -1,3 +1,9 @@
+2012-04-12  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* testsuite/Makefile.am (check_DEJAGNUnormal0): Run
+	prettyprinters.exp.
+	* testsuite/Makefile.in: Regenerated.
+
 2012-04-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/52942
