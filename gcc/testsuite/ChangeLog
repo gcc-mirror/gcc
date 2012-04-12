@@ -1,3 +1,8 @@
+2012-04-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52943
+	* gcc.dg/torture/pr52943.c: New testcase.
+
 2012-04-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/50751
