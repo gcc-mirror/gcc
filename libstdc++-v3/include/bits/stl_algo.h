@@ -244,7 +244,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
   /// This is an overload used by find_if_not() for the Input Iterator case.
   template<typename _InputIterator, typename _Predicate>
     inline _InputIterator
@@ -303,7 +302,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __last;
 	}
     }
-#endif
+
+  /// Provided for stable_partition to use.
+  template<typename _InputIterator, typename _Predicate>
+    inline _InputIterator
+    __find_if_not(_InputIterator __first, _InputIterator __last,
+		  _Predicate __pred)
+    {
+      return std::__find_if_not(__first, __last, __pred,
+				std::__iterator_category(__first));
+    }
+
+  /// Like find_if_not(), but uses and updates a count of the
+  /// remaining range length instead of comparing against an end
+  /// iterator.
+  template<typename _InputIterator, typename _Predicate, typename _Distance>
+    _InputIterator
+    __find_if_not_n(_InputIterator __first, _Distance& __len, _Predicate __pred)
+    {
+      for (; __len; --__len, ++__first)
+	if (!bool(__pred(*__first)))
+	  break;
+      return __first;
+    }
 
   // set_difference
   // set_intersection
@@ -789,8 +810,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
 	      typename iterator_traits<_InputIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
-      return std::__find_if_not(__first, __last, __pred,
-				std::__iterator_category(__first));
+      return std::__find_if_not(__first, __last, __pred);
     }
 
   /**
@@ -1784,30 +1804,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // partition
 
   /// This is a helper function...
+  /// Requires __len != 0 and !__pred(*__first),
+  /// same as __stable_partition_adaptive.
   template<typename _ForwardIterator, typename _Predicate, typename _Distance>
     _ForwardIterator
     __inplace_stable_partition(_ForwardIterator __first,
-			       _ForwardIterator __last,
 			       _Predicate __pred, _Distance __len)
     {
       if (__len == 1)
-	return __pred(*__first) ? __last : __first;
+	return __first;
       _ForwardIterator __middle = __first;
       std::advance(__middle, __len / 2);
-      _ForwardIterator __begin = std::__inplace_stable_partition(__first,
-								 __middle,
-								 __pred,
-								 __len / 2);
-      _ForwardIterator __end = std::__inplace_stable_partition(__middle, __last,
-							       __pred,
-							       __len
-							       - __len / 2);
-      std::rotate(__begin, __middle, __end);
-      std::advance(__begin, std::distance(__middle, __end));
-      return __begin;
+      _ForwardIterator __left_split =
+	std::__inplace_stable_partition(__first, __pred, __len / 2);
+      // Advance past true-predicate values to satisfy this
+      // function's preconditions.
+      _Distance __right_len = __len - __len / 2;
+      _ForwardIterator __right_split =
+	std::__find_if_not_n(__middle, __right_len, __pred);
+      if (__right_len)
+	__right_split = std::__inplace_stable_partition(__middle,
+							__pred,
+							__right_len);
+      std::rotate(__left_split, __middle, __right_split);
+      std::advance(__left_split, std::distance(__middle, __right_split));
+      return __left_split;
     }
 
   /// This is a helper function...
+  /// Requires __first != __last and !__pred(*__first)
+  /// and __len == distance(__first, __last).
+  ///
+  /// !__pred(*__first) allows us to guarantee that we don't
+  /// move-assign an element onto itself.
   template<typename _ForwardIterator, typename _Pointer, typename _Predicate,
 	   typename _Distance>
     _ForwardIterator
@@ -1821,6 +1850,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  _ForwardIterator __result1 = __first;
 	  _Pointer __result2 = __buffer;
+	  // The precondition guarantees that !__pred(*__first), so
+	  // move that element to the buffer before starting the loop.
+	  // This ensures that we only call __pred once per element.
+	  *__result2 = _GLIBCXX_MOVE(*__first);
+	  ++__result2;
+	  ++__first;
 	  for (; __first != __last; ++__first)
 	    if (__pred(*__first))
 	      {
@@ -1839,17 +1874,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  _ForwardIterator __middle = __first;
 	  std::advance(__middle, __len / 2);
-	  _ForwardIterator __begin =
+	  _ForwardIterator __left_split =
 	    std::__stable_partition_adaptive(__first, __middle, __pred,
 					     __len / 2, __buffer,
 					     __buffer_size);
-	  _ForwardIterator __end =
-	    std::__stable_partition_adaptive(__middle, __last, __pred,
-					     __len - __len / 2,
-					     __buffer, __buffer_size);
-	  std::rotate(__begin, __middle, __end);
-	  std::advance(__begin, std::distance(__middle, __end));
-	  return __begin;
+	  // Advance past true-predicate values to satisfy this
+	  // function's preconditions.
+	  _Distance __right_len = __len - __len / 2;
+	  _ForwardIterator __right_split =
+	    std::__find_if_not_n(__middle, __right_len, __pred);
+	  if (__right_len)
+	    __right_split =
+	      std::__stable_partition_adaptive(__right_split, __last, __pred,
+					       __right_len,
+					       __buffer, __buffer_size);
+	  std::rotate(__left_split, __middle, __right_split);
+	  std::advance(__left_split, std::distance(__middle, __right_split));
+	  return __left_split;
 	}
     }
 
@@ -1882,6 +1923,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
+      __first = std::__find_if_not(__first, __last, __pred);
+
       if (__first == __last)
 	return __first;
       else
@@ -1901,7 +1944,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  _DistanceType(__buf.size()));
 	else
 	  return
-	    std::__inplace_stable_partition(__first, __last, __pred,
+	    std::__inplace_stable_partition(__first, __pred,
 					 _DistanceType(__buf.requested_size()));
 	}
     }

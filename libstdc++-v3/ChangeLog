@@ -1,3 +1,22 @@
+2012-04-12   Jeffrey Yasskin  <jyasskin@google.com>
+
+	PR libstdc++/52822
+	* include/bits/stl_algo.h (__find_if_not): Expose in C++98 mode.
+	(__find_if_not_n): Like __find_if_not, but works on and updates a
+	counted range instead of a bounded range.
+	(stable_partition): Guarantee !__pred(*__first) in call to
+	__stable_partition_adaptive() or __inplace_stable_partition().
+	(__stable_partition_adaptive): Use new precondition to avoid
+	moving/copying objects onto themselves.  Guarantee new
+	precondition to recursive calls.
+	(__inplace_stable_partition): Use new precondition to simplify
+	base case, remove __last parameter.  Guarantee new precondition to
+	recursive calls.
+	* testsuite/25_algorithms/stable_partition/moveable.cc (test02):
+	Test a sequence that starts with a value matching the predicate.
+	* testsuite/25_algorithms/stable_partition/pr52822.cc: Test
+	vectors, which have a destructive self-move-assignment.
+
 2012-04-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/52942
