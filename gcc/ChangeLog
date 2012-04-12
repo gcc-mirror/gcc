@@ -1,5 +1,12 @@
 2012-04-12  Richard Guenther  <rguenther@suse.de>
 
+	* tree-parloops.c (parallelize_loops): Also consult the upper
+	bound for the number of iterations.
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Likewise.
+	(loop_prefetch_arrays): Likewise.
+
+2012-04-12  Richard Guenther  <rguenther@suse.de>
+
 	* cfgloop.h (estimated_loop_iterations_int): Ditch
 	'conservative' parameter.
 	(max_stmt_executions_int): Likewise.
