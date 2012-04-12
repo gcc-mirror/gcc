@@ -77,7 +77,6 @@ extern void for_each_scev_op (tree *, bool (*) (tree *, void *), void *);
 /* Observers.  */
 extern bool eq_evolutions_p (const_tree, const_tree);
 extern bool is_multivariate_chrec (const_tree);
-extern bool chrec_is_positive (tree, bool *);
 extern bool chrec_contains_symbols (const_tree);
 extern bool chrec_contains_symbols_defined_in_loop (const_tree, unsigned);
 extern bool chrec_contains_undetermined (const_tree);

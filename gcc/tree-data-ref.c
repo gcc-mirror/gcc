@@ -1718,6 +1718,76 @@ max_stmt_executions_tree (struct loop *loop)
   return double_int_to_tree (unsigned_type_node, nit);
 }
 
+/* Determine whether the CHREC is always positive/negative.  If the expression
+   cannot be statically analyzed, return false, otherwise set the answer into
+   VALUE.  */
+
+static bool
+chrec_is_positive (tree chrec, bool *value)
+{
+  bool value0, value1, value2;
+  tree end_value, nb_iter;
+
+  switch (TREE_CODE (chrec))
+    {
+    case POLYNOMIAL_CHREC:
+      if (!chrec_is_positive (CHREC_LEFT (chrec), &value0)
+	  || !chrec_is_positive (CHREC_RIGHT (chrec), &value1))
+	return false;
+
+      /* FIXME -- overflows.  */
+      if (value0 == value1)
+	{
+	  *value = value0;
+	  return true;
+	}
+
+      /* Otherwise the chrec is under the form: "{-197, +, 2}_1",
+	 and the proof consists in showing that the sign never
+	 changes during the execution of the loop, from 0 to
+	 loop->nb_iterations.  */
+      if (!evolution_function_is_affine_p (chrec))
+	return false;
+
+      nb_iter = number_of_latch_executions (get_chrec_loop (chrec));
+      if (chrec_contains_undetermined (nb_iter))
+	return false;
+
+#if 0
+      /* TODO -- If the test is after the exit, we may decrease the number of
+	 iterations by one.  */
+      if (after_exit)
+	nb_iter = chrec_fold_minus (type, nb_iter, build_int_cst (type, 1));
+#endif
+
+      end_value = chrec_apply (CHREC_VARIABLE (chrec), chrec, nb_iter);
+
+      if (!chrec_is_positive (end_value, &value2))
+	return false;
+
+      *value = value0;
+      return value0 == value1;
+
+    case INTEGER_CST:
+      switch (tree_int_cst_sgn (chrec))
+	{
+	case -1:
+	  *value = false;
+	  break;
+	case 1:
+	  *value = true;
+	  break;
+	default:
+	  return false;
+	}
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+
 /* Analyze a SIV (Single Index Variable) subscript where CHREC_A is a
    constant, and CHREC_B is an affine function.  *OVERLAPS_A and
    *OVERLAPS_B are initialized to the functions that describe the
@@ -1740,6 +1810,15 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
   chrec_a = chrec_convert (type, chrec_a, NULL);
   chrec_b = chrec_convert (type, chrec_b, NULL);
   difference = chrec_fold_minus (type, initial_condition (chrec_b), chrec_a);
+
+  /* Special case overlap in the first iteration.  */
+  if (integer_zerop (difference))
+    {
+      *overlaps_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
+      *overlaps_b = conflict_fn (1, affine_fn_cst (integer_zero_node));
+      *last_conflicts = integer_one_node;
+      return;
+    }
 
   if (!chrec_is_positive (initial_condition (difference), &value0))
     {
