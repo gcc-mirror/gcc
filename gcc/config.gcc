@@ -730,7 +730,7 @@ arm*-*-netbsd*)
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h linux.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
 	case $target in
-	arm*b-*)
+	arm*b-*-linux*)
 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 		;;
 	esac

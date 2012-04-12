@@ -1,3 +1,9 @@
+2012-04-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/49448
+	* config.gcc (arm*-*-linux*): Use an unambiguous pattern for
+	detecting big-endian triplets.
+
 2012-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/52894
