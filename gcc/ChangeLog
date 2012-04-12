@@ -1,3 +1,8 @@
+2012-04-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* tree-ssa-reassoc.c (attempt_builtin_powi_stats): Change %ld to
+	HOST_WIDE_INT_PRINT_DEC in format strings.
+
 2012-04-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52932
