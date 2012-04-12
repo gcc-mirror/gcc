@@ -35,6 +35,11 @@ const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
 const int B[] = {2, 4, 6, 8, 10, 12, 14, 16, 1, 3, 5, 7, 9, 11, 13, 15, 17};
 const int N = sizeof(A) / sizeof(int);
 
+// Check that starting with a true predicate works too. (PR52822)
+const int A2[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+const int B2[] = {2, 4, 6, 8, 10, 12, 14, 16, 3, 5, 7, 9, 11, 13, 15, 17};
+const int N2 = sizeof(A2) / sizeof(int);
+
 struct Pred
 {
   bool
@@ -42,7 +47,7 @@ struct Pred
   { return (x.val % 2) == 0; }
 };
 
-// 25.2.12 stable_partition()
+// 25.2.12 stable_partition(), starting with a false predicate.
 void
 test01()
 {
@@ -56,9 +61,24 @@ test01()
   VERIFY( std::equal(s1, s1 + N, B) );
 }
 
+// 25.2.12 stable_partition(), starting with a true predicate.
+void
+test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  rvalstruct s1[N2];
+  std::copy(A2, A2 + N2, s1);
+  Container con(s1, s1 + N2);
+
+  std::stable_partition(con.begin(), con.end(), Pred());
+  VERIFY( std::equal(s1, s1 + N2, B2) );
+}
+
 int
 main()
 {
   test01();
+  test02();
   return 0;
 }
