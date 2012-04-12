@@ -583,7 +583,6 @@ void cgraph_mark_if_needed (tree);
 void cgraph_analyze_function (struct cgraph_node *);
 void cgraph_finalize_compilation_unit (void);
 void cgraph_optimize (void);
-void tree_rest_of_compilation (struct cgraph_node *);
 void cgraph_mark_needed_node (struct cgraph_node *);
 void cgraph_mark_address_taken_node (struct cgraph_node *);
 void cgraph_mark_reachable_node (struct cgraph_node *);

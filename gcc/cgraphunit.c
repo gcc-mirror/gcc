@@ -142,12 +142,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "ipa-utils.h"
 #include "lto-streamer.h"
+#include "except.h"
 #include "regset.h"     /* FIXME: For reg_obstack.  */
 
 static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
 static void cgraph_expand_function (struct cgraph_node *);
 static void cgraph_output_pending_asms (void);
+static void tree_rest_of_compilation (struct cgraph_node *);
 
 FILE *cgraph_dump_file;
 
@@ -363,6 +365,92 @@ cgraph_finalize_function (tree decl, bool nested)
 
   if (!nested)
     ggc_collect ();
+}
+
+/* Add the function FNDECL to the call graph.
+   Unlike cgraph_finalize_function, this function is intended to be used
+   by middle end and allows insertion of new function at arbitrary point
+   of compilation.  The function can be either in high, low or SSA form
+   GIMPLE.
+
+   The function is assumed to be reachable and have address taken (so no
+   API breaking optimizations are performed on it).
+
+   Main work done by this function is to enqueue the function for later
+   processing to avoid need the passes to be re-entrant.  */
+
+void
+cgraph_add_new_function (tree fndecl, bool lowered)
+{
+  struct cgraph_node *node;
+  switch (cgraph_state)
+    {
+      case CGRAPH_STATE_CONSTRUCTION:
+	/* Just enqueue function to be processed at nearest occurrence.  */
+	node = cgraph_create_node (fndecl);
+	node->next_needed = cgraph_new_nodes;
+	if (lowered)
+	  node->lowered = true;
+	cgraph_new_nodes = node;
+        break;
+
+      case CGRAPH_STATE_IPA:
+      case CGRAPH_STATE_IPA_SSA:
+      case CGRAPH_STATE_EXPANSION:
+	/* Bring the function into finalized state and enqueue for later
+	   analyzing and compilation.  */
+	node = cgraph_get_create_node (fndecl);
+	node->local.local = false;
+	node->local.finalized = true;
+	node->reachable = node->needed = true;
+	if (!lowered && cgraph_state == CGRAPH_STATE_EXPANSION)
+	  {
+	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
+	    current_function_decl = fndecl;
+	    gimple_register_cfg_hooks ();
+	    bitmap_obstack_initialize (NULL);
+	    execute_pass_list (all_lowering_passes);
+	    execute_pass_list (pass_early_local_passes.pass.sub);
+	    bitmap_obstack_release (NULL);
+	    pop_cfun ();
+	    current_function_decl = NULL;
+
+	    lowered = true;
+	  }
+	if (lowered)
+	  node->lowered = true;
+	node->next_needed = cgraph_new_nodes;
+	cgraph_new_nodes = node;
+        break;
+
+      case CGRAPH_STATE_FINISHED:
+	/* At the very end of compilation we have to do all the work up
+	   to expansion.  */
+	node = cgraph_create_node (fndecl);
+	if (lowered)
+	  node->lowered = true;
+	cgraph_analyze_function (node);
+	push_cfun (DECL_STRUCT_FUNCTION (fndecl));
+	current_function_decl = fndecl;
+	gimple_register_cfg_hooks ();
+	bitmap_obstack_initialize (NULL);
+	if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
+	  execute_pass_list (pass_early_local_passes.pass.sub);
+	bitmap_obstack_release (NULL);
+	tree_rest_of_compilation (node);
+	pop_cfun ();
+	current_function_decl = NULL;
+	break;
+
+      default:
+	gcc_unreachable ();
+    }
+
+  /* Set a personality if required and we already passed EH lowering.  */
+  if (lowered
+      && (function_needs_eh_personality (DECL_STRUCT_FUNCTION (fndecl))
+	  == eh_personality_lang))
+    DECL_FUNCTION_PERSONALITY (fndecl) = lang_hooks.eh_personality ();
 }
 
 /* C99 extern inline keywords allow changing of declaration after function
@@ -1770,10 +1858,10 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
       }
 }
 
-/* For functions-as-trees languages, this performs all optimization and
-   compilation for FNDECL.  */
+/* Perform IPA transforms and all further optimizations and compilation
+   for FNDECL.  */
 
-void
+static void
 tree_rest_of_compilation (struct cgraph_node *node)
 {
   tree fndecl = node->decl;
@@ -1891,8 +1979,6 @@ cgraph_expand_function (struct cgraph_node *node)
   /* Eliminate all call edges.  This is important so the GIMPLE_CALL no longer
      points to the dead function body.  */
   cgraph_node_remove_callees (node);
-
-  cgraph_function_flags_ready = true;
 }
 
 /* Return true when CALLER_DECL should be inlined into CALLEE_DECL.  */

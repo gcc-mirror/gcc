@@ -4555,7 +4555,11 @@ gimple_expand_cfg (void)
   if (MAY_HAVE_DEBUG_INSNS)
     expand_debug_locations ();
 
-  execute_free_datastructures ();
+  /* Free stuff we no longer need after GIMPLE optimizations.  */
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
+  delete_tree_cfg_annotations ();
+
   timevar_push (TV_OUT_OF_SSA);
   finish_out_of_ssa (&SA);
   timevar_pop (TV_OUT_OF_SSA);
