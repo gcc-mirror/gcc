@@ -1,3 +1,13 @@
+2012-04-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2012-04-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/52775
+	* config/rs6000/rs6000.h (TARGET_FCFID): Add TARGET_PPC_GPOPT to
+	the list of options to enable the FCFID instruction.
+	(TARGET_EXTRA_BUILTINS): Adjust comment.
+
 2012-04-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52943
@@ -35,7 +45,7 @@
 	generate REG_CFA_* notes for the stack pointer.
 	(tilepro_expand_epilogue): Restore stack pointer by adjusting it
 	by EH_RETURN_STACKADJ_RTX.
-	
+
 2012-04-06  Matt Turner  <mattst88@gmail.com>
 
 	* doc/install.texi: Correct typo "-mno-lsc" -> "-mno-llsc".
