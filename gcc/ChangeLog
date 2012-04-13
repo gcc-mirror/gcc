@@ -1,3 +1,9 @@
+2012-04-13  Martin Jambor  <mjambor@suse.cz>
+
+	* expr.c (expand_expr_real_1): Pass type, not the expression, to
+	set_mem_attributes for a memory temporary. Do not call the function
+	for the memory temporary created for a bitfield.
+
 2012-04-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/48866
