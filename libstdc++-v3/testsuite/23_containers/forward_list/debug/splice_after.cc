@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +34,10 @@ test01()
 
   VERIFY( before == fl1.before_begin() );
   VERIFY( end == fl1.end() );
+
+  // no-op just to check that debug mode does not see any problem with it.
+  fl1.splice_after(fl1.before_begin(), std::move(fl2),
+		   fl2.before_begin(), fl2.begin());
 }
 
 int
