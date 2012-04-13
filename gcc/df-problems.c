@@ -3453,7 +3453,12 @@ df_note_bb_compute (unsigned int bb_index,
 		{
 		  if (debug_insn > 0)
 		    {
-		      dead_debug_add (&debug, use, uregno);
+		      /* We won't add REG_UNUSED or REG_DEAD notes for
+			 these, so we don't have to mess with them in
+			 debug insns either.  */
+		      if (!bitmap_bit_p (artificial_uses, uregno)
+			  && !df_ignore_stack_reg (uregno))
+			dead_debug_add (&debug, use, uregno);
 		      continue;
 		    }
 		  break;

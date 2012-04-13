@@ -1,5 +1,10 @@
 2012-04-13  Alexandre Oliva  <aoliva@redhat.com>
 
+	* df-problems.c (df_note_bb_compute): Do not take note of
+	debug uses for whose REGs we won't emit DEAD or UNUSED notes.
+
+2012-04-13  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/51570
 	* var-tracking.c (expand_depth): New type.
 	(onepart_aux, expand_loc_callback_data): Change depth type to it.
