@@ -39,7 +39,7 @@ shared-memory architectures", Dan Bonachea et al.
 
 CPU		Write fence		Read fence
 --------------------------------------------------
-Power/PowerPC	sync			isync
+Power/PowerPC	lwsync			isync
 Alpha		wmb			mb
 x86		lock; addl $0,0(%%esp)  none reqd.
 Athlon/Opteron	mfence			none reqd.
@@ -51,7 +51,7 @@ PA-RISC		SYNC			none reqd. */
 #define GUPCR_FENCE() { GUPCR_READ_FENCE (); GUPCR_WRITE_FENCE (); }
 
 #if defined (PPC) || defined (__PPC__)
-#define GUPCR_WRITE_FENCE() asm __volatile__ ("sync":::"memory")
+#define GUPCR_WRITE_FENCE() asm __volatile__ ("lwsync":::"memory")
 #define GUPCR_READ_FENCE() asm __volatile__ ("isync":::"memory")
 #elif defined (alpha)
 #define GUPCR_WRITE_FENCE() asm __volatile__ ("wmb":::"memory")

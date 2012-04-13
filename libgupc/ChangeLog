@@ -1,3 +1,10 @@
+2012-04-13  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* upc_sync.h (GUPCR_WRITE_FENCE): Change write fence
+	for PPC processors to use light weight sync instruction.
+	* upc_sysdep.c (__upc_atomic_get_bit): Introduce a read barrier
+	to force processor to discard all speculative memory fetches.
+
 2012-03-26  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* testsuite/lib/libgupc.exp: Added fortran-modules.exp 

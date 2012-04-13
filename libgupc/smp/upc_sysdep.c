@@ -30,6 +30,7 @@
 #include "upc_sysdep.h"
 #include "upc_defs.h"
 #include "upc_sup.h"
+#include "upc_sync.h"
 
 #ifdef __sgi__
 #ifndef _SC_NPROCESSORS_ONLN
@@ -129,9 +130,11 @@ __upc_atomic_cas (os_atomic_p ptr, os_atomic_t old, os_atomic_t new)
 int
 __upc_atomic_get_bit (os_atomic_p bits, int bitnum)
 {
-  os_atomic_t *word = bits + (bitnum / OS_BITS_PER_ATOMIC_WORD);
+  os_atomic_t *word_ptr = bits + (bitnum / OS_BITS_PER_ATOMIC_WORD);
   os_atomic_t bit = (1 << (bitnum % OS_BITS_PER_ATOMIC_WORD));
-  return (*word & bit) != 0;
+  os_atomic_t word = *word_ptr;
+  GUPCR_READ_FENCE();
+  return (word & bit) != 0;
 }
 
 void
