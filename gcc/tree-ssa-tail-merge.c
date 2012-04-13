@@ -1123,18 +1123,31 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
     }
 }
 
-/* Let GSI skip backwards over local defs.  */
+/* Let GSI skip backwards over local defs.  Return the earliest vuse in VUSE.
+   Return true in VUSE_ESCAPED if the vuse influenced a SSA_OP_DEF of one of the
+   processed statements.  */
 
 static void
-gsi_advance_bw_nondebug_nonlocal (gimple_stmt_iterator *gsi)
+gsi_advance_bw_nondebug_nonlocal (gimple_stmt_iterator *gsi, tree *vuse,
+				  bool *vuse_escaped)
 {
   gimple stmt;
+  tree lvuse;
 
   while (true)
     {
       if (gsi_end_p (*gsi))
 	return;
       stmt = gsi_stmt (*gsi);
+
+      lvuse = gimple_vuse (stmt);
+      if (lvuse != NULL_TREE)
+	{
+	  *vuse = lvuse;
+	  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_DEF))
+	    *vuse_escaped = true;
+	}
+
       if (!(is_gimple_assign (stmt) && local_def (gimple_get_lhs (stmt))
 	    && !gimple_has_side_effects (stmt)))
 	return;
@@ -1150,9 +1163,11 @@ find_duplicate (same_succ same_succ, basic_block bb1, basic_block bb2)
 {
   gimple_stmt_iterator gsi1 = gsi_last_nondebug_bb (bb1);
   gimple_stmt_iterator gsi2 = gsi_last_nondebug_bb (bb2);
+  tree vuse1 = NULL_TREE, vuse2 = NULL_TREE;
+  bool vuse_escaped = false;
 
-  gsi_advance_bw_nondebug_nonlocal (&gsi1);
-  gsi_advance_bw_nondebug_nonlocal (&gsi2);
+  gsi_advance_bw_nondebug_nonlocal (&gsi1, &vuse1, &vuse_escaped);
+  gsi_advance_bw_nondebug_nonlocal (&gsi2, &vuse2, &vuse_escaped);
 
   while (!gsi_end_p (gsi1) && !gsi_end_p (gsi2))
     {
@@ -1161,11 +1176,18 @@ find_duplicate (same_succ same_succ, basic_block bb1, basic_block bb2)
 
       gsi_prev_nondebug (&gsi1);
       gsi_prev_nondebug (&gsi2);
-      gsi_advance_bw_nondebug_nonlocal (&gsi1);
-      gsi_advance_bw_nondebug_nonlocal (&gsi2);
+      gsi_advance_bw_nondebug_nonlocal (&gsi1, &vuse1, &vuse_escaped);
+      gsi_advance_bw_nondebug_nonlocal (&gsi2, &vuse2, &vuse_escaped);
     }
 
   if (!(gsi_end_p (gsi1) && gsi_end_p (gsi2)))
+    return;
+
+  /* If the incoming vuses are not the same, and the vuse escaped into an
+     SSA_OP_DEF, then merging the 2 blocks will change the value of the def,
+     which potentially means the semantics of one of the blocks will be changed.
+     TODO: make this check more precise.  */
+  if (vuse_escaped && vuse1 != vuse2)
     return;
 
   if (dump_file)

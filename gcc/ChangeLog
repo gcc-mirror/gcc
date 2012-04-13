@@ -1,3 +1,11 @@
+2012-04-13  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-tail-merge.c (gsi_advance_bw_nondebug_nonlocal): Add
+	parameters vuse and vuse_escaped.
+	(find_duplicate): Init vuse1, vuse2 and vuse_escaped.  Pass to
+	gsi_advance_bw_nondebug_nonlocal.  Return if vuse_escaped and
+	vuse1 != vuse2.
+
 2012-04-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52969
