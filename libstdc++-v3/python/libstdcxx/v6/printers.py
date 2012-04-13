@@ -611,7 +611,7 @@ class StdStringPrinter:
 class Tr1HashtableIterator:
     def __init__ (self, hash):
         self.node = hash['_M_before_begin']['_M_nxt']
-        self.node_type = find_type(hash.type, '_Node').pointer()
+        self.node_type = find_type(hash.type, '__node_type').pointer()
 
     def __iter__ (self):
         return self
