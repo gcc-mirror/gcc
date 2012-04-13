@@ -1,3 +1,9 @@
+2012-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52824
+	* pt.c (any_pack_expanson_args_p): New.
+	(coerce_template_parms): Use it.
+
 2012-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52906
