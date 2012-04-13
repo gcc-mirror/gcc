@@ -1,3 +1,8 @@
+2012-04-13  Richard Guenther  <rguenther@suse.de>
+
+	PR c/52862
+	* gcc.dg/pr52862.c: New testcase.
+
 2012-04-13  Joey Ye  <joey.ye@arm.com>
 
 	* gcc.target/arm/thumb1-imm.c: New testcase.
