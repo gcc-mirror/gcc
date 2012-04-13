@@ -381,6 +381,11 @@ ix86_target_macros (void)
       cpp_define (parse_in, "__amd64__");
       cpp_define (parse_in, "__x86_64");
       cpp_define (parse_in, "__x86_64__");
+      if (TARGET_X32)
+	{
+	  cpp_define (parse_in, "_ILP32");
+	  cpp_define (parse_in, "__ILP32__");
+	}
     }
   else
     {
