@@ -1,5 +1,30 @@
 2012-04-13  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/48866
+	* df.h (enum debug_temp_where): New.
+	(dead_debug_init, dead_debug_finish) Declare.
+	(dead_debug_add, dead_debug_insert_temp): Declare.
+	(struct dead_debug_use, struct dead_debug): Moved from...
+	* df-problems.c: ... here.
+	(df_set_unused_notes_for_mw): Bind debug uses of unused regno
+	to a debug temp.
+	(df_create_unused_note): Likewise.
+	(df_set_dead_notes_for_mw): Move comment where it belongs.
+	(dead_debug_init): Export.
+	(dead_debug_reset_uses): New, factored out of...
+	(dead_debug_finish): ...this.  Export.
+	(dead_debug_reset): Remove.
+	(dead_debug_add): Export.
+	(dead_debug_insert_before): Rename to...
+	(dead_debug_insert_temp): ... this.  Add where argument.  Export.
+	Locate stored value for BEFORE_WITH_VALUE.  Avoid repeat inserts.
+	Return insertion count.
+	(df_note_bb_compute): Adjust.
+	* dce.c (word_dce_process_block): Adjust dead debug uses.
+	(dce_process_block): Likewise.
+
+2012-04-13  Alexandre Oliva  <aoliva@redhat.com>
+
 	* df-problems.c (df_note_bb_compute): Do not take note of
 	debug uses for whose REGs we won't emit DEAD or UNUSED notes.
 
