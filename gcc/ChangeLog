@@ -1,3 +1,9 @@
+2012-04-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/52939
+	* gimple-fold.c (gimple_get_virt_method_for_binfo): Bail out if
+	fold_ctor_reference returns a zero constant.
+
 2012-04-13  Enkovich Ilya  <ilya.enkovich@intel.com>
 
 	* config.gcc: Add i386/gnu-user-common.h before all
