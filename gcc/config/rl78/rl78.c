@@ -140,7 +140,7 @@ static struct opt_pass rl78_devirt_pass =
   TV_MACH_DEP,
   0, 0, 0,
   0,
-  TODO_dump_func
+  0
 };
 
 static struct register_pass_info rl78_devirt_info =
