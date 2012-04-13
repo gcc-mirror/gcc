@@ -1,3 +1,39 @@
+2012-04-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/unordered_map.h (__unordered_map): Remove.
+	(__unordered_multimap): Remove.
+	Add aliases for __umap_traits, __umap_hashtable, __ummap_traits,
+	__ummap_hashtable.
+	(unordered_map): Derive from __umap_hashtable.
+	(unordered_multimap): Derive from __ummap_hashtable.
+	* include/bits/unordered_set.h (__unordered_set): Remove.
+	(__unordered_multiset): Remove.
+	Add aliases for __uset_traits, __uset_hashtable, __umset_traits,
+	__umset_hashtable.
+	(unordered_set): Derive from __uset_hashtable.
+	(unordered_multiset): Derive from __umset_hashtable.
+	* include/bits/hashtable.h (__cache_default): New, consolidated
+	cache defaults for _Hashtable. Adjust comments for doxygen.
+	(_Hashtable): Consolidate bool template parameters into new,
+	_Traits class. Inherited base classes synthesize _Hashtable in
+	CRTP via original 10 parameters. Prefer using declarations to
+	typedefs, add __node_type, __bucket_type, etc. Push many nested
+	types down hierarchy to _Hashtable_base. Add constructors
+	necessary for top-level unordered_containers. Consolidate insert
+	member functions and logic in new base class, __detail::_Insert
+	and __detail::_Insert_base.
+	(_Hashtable::operator=(initializer_list)): Add.
+	* include/bits/hashtable_policy.h: Convert to doxygen markup.
+	(_Hashtable_traits) New. Consolidate bool template parameters here.
+	(_Insert, _Insert_base): New, consolidated insert member functions.
+	(_Map_base, _Equality, _Rehash_base): Adjust template parameters,
+	use base types.
+	(_Hashtable_base): Move type declarations useful to other base
+	classes into this class.
+	* python/libstdcxx/v6/printers.py (Tr1HashtableIterator): Update.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Adjust traits, line numbers.
+
 2012-04-12   Jeffrey Yasskin  <jyasskin@google.com>
 
 	PR libstdc++/52822
