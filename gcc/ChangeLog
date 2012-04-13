@@ -1,3 +1,16 @@
+2012-04-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/51570
+	* var-tracking.c (expand_depth): New type.
+	(onepart_aux, expand_loc_callback_data): Change depth type to it.
+	(loc_exp_dep_alloc): Adjust initializer.
+	(update_depth): Use new type.  Add entryvals.
+	(vt_expand_var_loc_chain): Take note of expansions with
+	ENTRY_VALUEs, but don't accept them right away.  Run an optional
+	second pass accepting the minimum ENTRY_VALUE count found in the
+	first pass.
+	(vt_expand_loc_callback, INIT_ELCD): Adjust.
+
 2012-04-13  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-tail-merge.c (gsi_advance_bw_nondebug_nonlocal): Add
