@@ -1,3 +1,40 @@
+2012-04-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h (splice_after(const_iterator,
+	forward_list&), splice_after(const_iterator, forward_list&,
+	consst_iterator), splice_after(const_iterator, forward_list&,
+	const_iterator, const_iterator), merge(forward_list&),
+	merge(forward_list&, _Comp)): Add per C++11 as published (and
+	LWG 1310).
+	* include/debug/forward_list: Adjust.
+
+	* include/bits/forward_list.h (splice_after(const_iterator,
+	forward_list&&, const_iterator)): Only declare.
+	(_M_transfer_after): Remove.
+	(_M_splice_after(const_iterator, forward_list&&)): Change signature.
+	(splice_after(const_iterator, forward_list&&, const_iterator,
+	const_iterator)): Use the latter.
+	* include/bits/forward_list.tcc (splice_after(const_iterator,
+	forward_list&&, const_iterator)): Define here.
+	(_M_splice_after): Define, use throughout.
+
+	* include/bits/forward_list.h (insert_after(const_iterator,
+	std::initializer_list<_Tp>)): Forward to insert_after(const_iterator,
+	_InputIterator, _InputIterator).
+	* include/bits/forward_list.tcc: Remove definition.
+
+	* testsuite/23_containers/forward_list/modifiers/6.cc: New.
+	* testsuite/23_containers/forward_list/operations/1.cc: Adjust.
+
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2012-04-12   Jeffrey Yasskin  <jyasskin@google.com>
 
 	PR libstdc++/52822
