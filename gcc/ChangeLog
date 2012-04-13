@@ -1,3 +1,13 @@
+2012-04-13  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/52203
+	PR rtl-optimization/52715
+
+	Revert the 2012-03-07 fix for PR 52203.
+	* sel-sched.c (reset_sched_cycles_in_current_ebb): Check that
+	the insn does not modify DFA right before issuing, adjust
+	issue_rate accordingly.
+
 2012-04-13  Richard Guenther  <rguenther@suse.de>
 
 	PR c/52549
