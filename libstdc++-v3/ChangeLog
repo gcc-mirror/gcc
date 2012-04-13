@@ -1,3 +1,8 @@
+2012-04-13  Laurent Alfonsi  <laurent.alfonsi@st.com>
+
+	PR libstdc++/52604
+	* src/c++98/mt_allocator.cc: (~__freelist): Reset pointer.
+
 2012-04-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/safe_iterator.h (_BeforeBeginHelper<>::
