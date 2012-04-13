@@ -8011,6 +8011,12 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
       int static_1 = DECL_STATIC_FUNCTION_P (cand1->fn);
       int static_2 = DECL_STATIC_FUNCTION_P (cand2->fn);
 
+      if (DECL_CONSTRUCTOR_P (cand1->fn)
+	  && is_list_ctor (cand1->fn) != is_list_ctor (cand2->fn))
+	/* We're comparing a near-match list constructor and a near-match
+	   non-list constructor.  Just treat them as unordered.  */
+	return 0;
+
       gcc_assert (static_1 != static_2);
 
       if (static_1)
