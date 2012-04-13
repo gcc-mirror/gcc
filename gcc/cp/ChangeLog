@@ -1,3 +1,9 @@
+2012-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52915
+	* decl2.c (finish_anon_union): Use cp_finish_decl.
+	* error.c (dump_function_name): Avoid showing anonymous "name".
+
 2012-04-11  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/52465
