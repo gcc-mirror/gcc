@@ -1,5 +1,12 @@
 2012-04-13  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/52969
+	* tree-if-conv.c (predicate_mem_writes): Properly gimplify
+	the condition for the COND_EXPR and handle predicate negation
+	by swapping the COND_EXPR arms.
+
+2012-04-13  Richard Guenther  <rguenther@suse.de>
+
 	PR c/52862
 	* convert.c (convert_to_pointer): Remove special-casing of
 	zero.

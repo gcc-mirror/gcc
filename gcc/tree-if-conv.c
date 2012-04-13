@@ -1543,10 +1543,18 @@ predicate_mem_writes (loop_p loop)
       gimple_stmt_iterator gsi;
       basic_block bb = ifc_bbs[i];
       tree cond = bb_predicate (bb);
+      bool swap;
       gimple stmt;
 
       if (is_true_predicate (cond))
 	continue;
+
+      swap = false;
+      if (TREE_CODE (cond) == TRUTH_NOT_EXPR)
+	{
+	  swap = true;
+	  cond = TREE_OPERAND (cond, 0);
+	}
 
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	if ((stmt = gsi_stmt (gsi))
@@ -1559,6 +1567,15 @@ predicate_mem_writes (loop_p loop)
 
 	    lhs = ifc_temp_var (type, unshare_expr (lhs), &gsi);
 	    rhs = ifc_temp_var (type, unshare_expr (rhs), &gsi);
+	    if (swap)
+	      {
+		tree tem = lhs;
+		lhs = rhs;
+		rhs = tem;
+	      }
+	    cond = force_gimple_operand_gsi_1 (&gsi, unshare_expr (cond),
+					       is_gimple_condexpr, NULL_TREE,
+					       true, GSI_SAME_STMT);
 	    rhs = build3 (COND_EXPR, type, unshare_expr (cond), rhs, lhs);
 	    gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	    update_stmt (stmt);
