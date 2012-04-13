@@ -1456,12 +1456,7 @@ finish_anon_union (tree anon_union_decl)
     }
 
   pushdecl (anon_union_decl);
-  if (building_stmt_list_p ()
-      && at_function_scope_p ())
-    add_decl_expr (anon_union_decl);
-  else if (!processing_template_decl)
-    rest_of_decl_compilation (anon_union_decl,
-			      toplevel_bindings_p (), at_eof);
+  cp_finish_decl (anon_union_decl, NULL_TREE, false, NULL_TREE, 0);
 }
 
 /* Auxiliary functions to make type signatures for
