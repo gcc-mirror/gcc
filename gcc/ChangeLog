@@ -1,3 +1,10 @@
+2012-04-13  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm-cores.def: Added core cortex-m0plus.
+	* config/arm/arm-tune.md: Regenerated.
+	* config/arm/arm-tables.opt: Regenerated.
+	* doc/invoke.texi: Added entry for cpu ARM cortex-m0plus.
+
 2012-04-13  Alan Modra  <amodra@gmail.com>
 
 	PR target/52828
