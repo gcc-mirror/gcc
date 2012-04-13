@@ -760,8 +760,12 @@ namespace __gnu_debug
       typedef typename _It::iterator_type _BaseIt;
 
       static bool
-      _M_Is(_BaseIt __it, const _Sequence* __seq)
+      _S_Is(_BaseIt __it, const _Sequence* __seq)
       { return __it == __seq->_M_base().cbefore_begin(); }
+
+      static bool
+      _S_Is_Beginnest(_BaseIt __it, const _Sequence* __seq)
+      { return _S_Is(__it, __seq); }
     };
 }
 

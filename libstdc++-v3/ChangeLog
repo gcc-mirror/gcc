@@ -1,3 +1,15 @@
+2012-04-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/safe_iterator.h (_BeforeBeginHelper<>::
+	_S_Is_Beginnest): Add.
+	* include/debug/forward_list (_BeforeBeginHelper<>::
+	_S_Is_Beginnest): Likewise.
+	(_Safe_iterator<>::_M_is_beginnest): Add.
+	* include/debug/safe_iterator.tcc (_Safe_iterator<>::_M_valid_range):
+	Use the latter.
+	* testsuite/23_containers/forward_list/debug/splice_after.cc:
+	Add test.
+
 2012-04-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/unordered_map.h (__unordered_map): Remove.

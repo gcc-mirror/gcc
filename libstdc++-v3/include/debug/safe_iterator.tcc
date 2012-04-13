@@ -1,6 +1,6 @@
 // Debugging iterator implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -91,10 +91,11 @@ namespace __gnu_debug
 	/* We can only test for equality, but check if one of the
 	   iterators is at an extreme. */
 	/* Optim for classic [begin, it) or [it, end) ranges, limit checks
-	 * when code is valid. */
-	if (_M_is_begin() || __rhs._M_is_end())
+	 * when code is valid.  Note, for the special case of forward_list,
+	 * before_begin replaces the role of begin.  */ 
+	if (_M_is_beginnest() || __rhs._M_is_end())
 	  return true;
-	if (_M_is_end() || __rhs._M_is_begin())
+	if (_M_is_end() || __rhs._M_is_beginnest())
 	  return false;
 
 	// Assume that this is a valid range; we can't check anything else
