@@ -1,5 +1,10 @@
 2012-04-13  Richard Guenther  <rguenther@suse.de>
 
+	PR c/52549
+	* c-typeck.c (pointer_diff): Remove bogus assert.
+
+2012-04-13  Richard Guenther  <rguenther@suse.de>
+
 	PR c/52862
 	* convert.c (convert_to_pointer): Remove special-casing of
 	zero.
