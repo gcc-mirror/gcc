@@ -320,6 +320,19 @@ typedef struct loc_exp_dep_s
 
 DEF_VEC_O (loc_exp_dep);
 
+/* This data structure holds information about the depth of a variable
+   expansion.  */
+typedef struct expand_depth_struct
+{
+  /* This measures the complexity of the expanded expression.  It
+     grows by one for each level of expansion that adds more than one
+     operand.  */
+  int complexity;
+  /* This counts the number of ENTRY_VALUE expressions in an
+     expansion.  We want to minimize their use.  */
+  int entryvals;
+} expand_depth;
+
 /* This data structure is allocated for one-part variables at the time
    of emitting notes.  */
 struct onepart_aux
@@ -338,7 +351,7 @@ struct onepart_aux
      a change notification from any of its active dependencies.  */
   rtx from;
   /* The depth of the cur_loc expression.  */
-  int depth;
+  expand_depth depth;
   /* Dependencies actively used when expand FROM into cur_loc.  */
   VEC (loc_exp_dep, none) deps;
 };
@@ -7491,7 +7504,7 @@ struct expand_loc_callback_data
 
   /* The maximum depth among the sub-expressions under expansion.
      Zero indicates no expansion so far.  */
-  int depth;
+  expand_depth depth;
 };
 
 /* Allocate the one-part auxiliary data structure for VAR, with enough
@@ -7536,7 +7549,8 @@ loc_exp_dep_alloc (variable var, int count)
       VAR_LOC_1PAUX (var) = XNEWVAR (struct onepart_aux, allocsize);
       *VAR_LOC_DEP_LSTP (var) = NULL;
       VAR_LOC_FROM (var) = NULL;
-      VAR_LOC_DEPTH (var) = 0;
+      VAR_LOC_DEPTH (var).complexity = 0;
+      VAR_LOC_DEPTH (var).entryvals = 0;
     }
   VEC_embedded_init (loc_exp_dep, VAR_LOC_DEP_VEC (var), count);
 }
@@ -7691,21 +7705,26 @@ static rtx vt_expand_loc_callback (rtx x, bitmap regs,
 /* Return the combined depth, when one sub-expression evaluated to
    BEST_DEPTH and the previous known depth was SAVED_DEPTH.  */
 
-static inline int
-update_depth (int saved_depth, int best_depth)
+static inline expand_depth
+update_depth (expand_depth saved_depth, expand_depth best_depth)
 {
   /* If we didn't find anything, stick with what we had.  */
-  if (!best_depth)
+  if (!best_depth.complexity)
     return saved_depth;
 
   /* If we found hadn't found anything, use the depth of the current
      expression.  Do NOT add one extra level, we want to compute the
      maximum depth among sub-expressions.  We'll increment it later,
      if appropriate.  */
-  if (!saved_depth)
+  if (!saved_depth.complexity)
     return best_depth;
 
-  if (saved_depth < best_depth)
+  /* Combine the entryval count so that regardless of which one we
+     return, the entryval count is accurate.  */
+  best_depth.entryvals = saved_depth.entryvals
+    = best_depth.entryvals + saved_depth.entryvals;
+
+  if (saved_depth.complexity < best_depth.complexity)
     return best_depth;
   else
     return saved_depth;
@@ -7727,12 +7746,14 @@ vt_expand_var_loc_chain (variable var, bitmap regs, void *data, bool *pendrecp)
   bool pending_recursion;
   rtx loc_from = NULL;
   struct elt_loc_list *cloc = NULL;
-  int depth = 0, saved_depth = elcd->depth;
+  expand_depth depth = { 0, 0 }, saved_depth = elcd->depth;
+  int wanted_entryvals, found_entryvals = 0;
 
   /* Clear all backlinks pointing at this, so that we're not notified
      while we're active.  */
   loc_exp_dep_clear (var);
 
+ retry:
   if (var->onepart == ONEPART_VALUE)
     {
       cselib_val *val = CSELIB_VAL_PTR (dv_as_value (var->dv));
@@ -7745,13 +7766,15 @@ vt_expand_var_loc_chain (variable var, bitmap regs, void *data, bool *pendrecp)
   first_child = result_first_child = last_child
     = VEC_length (rtx, elcd->expanding);
 
+  wanted_entryvals = found_entryvals;
+
   /* Attempt to expand each available location in turn.  */
   for (next = loc = var->n_var_parts ? var->var_part[0].loc_chain : NULL;
        loc || cloc; loc = next)
     {
       result_first_child = last_child;
 
-      if (!loc || (GET_CODE (loc->loc) == ENTRY_VALUE && cloc))
+      if (!loc)
 	{
 	  loc_from = cloc->loc;
 	  next = loc;
@@ -7767,7 +7790,7 @@ vt_expand_var_loc_chain (variable var, bitmap regs, void *data, bool *pendrecp)
 
       gcc_checking_assert (!unsuitable_loc (loc_from));
 
-      elcd->depth = 0;
+      elcd->depth.complexity = elcd->depth.entryvals = 0;
       result = cselib_expand_value_rtx_cb (loc_from, regs, EXPR_DEPTH,
 					   vt_expand_loc_callback, data);
       last_child = VEC_length (rtx, elcd->expanding);
@@ -7776,21 +7799,46 @@ vt_expand_var_loc_chain (variable var, bitmap regs, void *data, bool *pendrecp)
 	{
 	  depth = elcd->depth;
 
-	  gcc_checking_assert (depth || result_first_child == last_child);
+	  gcc_checking_assert (depth.complexity
+			       || result_first_child == last_child);
 
 	  if (last_child - result_first_child != 1)
-	    depth++;
+	    {
+	      if (!depth.complexity && GET_CODE (result) == ENTRY_VALUE)
+		depth.entryvals++;
+	      depth.complexity++;
+	    }
 
-	  if (depth <= EXPR_USE_DEPTH)
-	    break;
+	  if (depth.complexity <= EXPR_USE_DEPTH)
+	    {
+	      if (depth.entryvals <= wanted_entryvals)
+		break;
+	      else if (!found_entryvals || depth.entryvals < found_entryvals)
+		found_entryvals = depth.entryvals;
+	    }
 
 	  result = NULL;
 	}
 
       /* Set it up in case we leave the loop.  */
-      depth = 0;
+      depth.complexity = depth.entryvals = 0;
       loc_from = NULL;
       result_first_child = first_child;
+    }
+
+  if (!loc_from && wanted_entryvals < found_entryvals)
+    {
+      /* We found entries with ENTRY_VALUEs and skipped them.  Since
+	 we could not find any expansions without ENTRY_VALUEs, but we
+	 found at least one with them, go back and get an entry with
+	 the minimum number ENTRY_VALUE count that we found.  We could
+	 avoid looping, but since each sub-loc is already resolved,
+	 the re-expansion should be trivial.  ??? Should we record all
+	 attempted locs as dependencies, so that we retry the
+	 expansion should any of them change, in the hope it can give
+	 us a new entry without an ENTRY_VALUE?  */
+      VEC_truncate (rtx, elcd->expanding, first_child);
+      goto retry;
     }
 
   /* Register all encountered dependencies as active.  */
@@ -7805,7 +7853,7 @@ vt_expand_var_loc_chain (variable var, bitmap regs, void *data, bool *pendrecp)
   VAR_LOC_FROM (var) = loc_from;
   VAR_LOC_DEPTH (var) = depth;
 
-  gcc_checking_assert (!depth == !result);
+  gcc_checking_assert (!depth.complexity == !result);
 
   elcd->depth = update_depth (saved_depth, depth);
 
@@ -7893,7 +7941,7 @@ vt_expand_loc_callback (rtx x, bitmap regs,
       gcc_checking_assert (!NO_LOC_P (x));
       gcc_checking_assert (var->var_part[0].cur_loc);
       gcc_checking_assert (VAR_LOC_1PAUX (var));
-      gcc_checking_assert (VAR_LOC_1PAUX (var)->depth);
+      gcc_checking_assert (VAR_LOC_1PAUX (var)->depth.complexity);
 
       elcd->depth = update_depth (elcd->depth, VAR_LOC_1PAUX (var)->depth);
 
@@ -7967,7 +8015,7 @@ resolve_expansions_pending_recursion (VEC (rtx, stack) *pending)
       (d).vars = (v);						\
       (d).expanding = VEC_alloc (rtx, stack, 4);		\
       (d).pending = VEC_alloc (rtx, stack, 4);			\
-      (d).depth = 0;						\
+      (d).depth.complexity = (d).depth.entryvals = 0;		\
     }								\
   while (0)
 /* Finalize expand_loc_callback_data D, resolved to location L.  */
