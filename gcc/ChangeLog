@@ -1,3 +1,24 @@
+2012-04-13  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	* config.gcc: Add i386/gnu-user-common.h before all
+	i386/gnu-user.h and i386/gnu-user64.h usages.
+
+	* config/i386/gnu-user-common.h: New.
+
+	* config/i386/gnu-user.h (CPP_SPEC): Moved to gnu-user-common.h.
+	(CC1_SPEC): Likewise.
+	(ENDFILE_SPEC): Likewise.
+	(DEFAULT_PCC_STRUCT_RETURN): Likewise.
+	(TARGET_TLS_DIRECT_SEG_REFS_DEFAULT): Likewise.
+	(TARGET_OS_CPP_BUILTINS): Likewise.
+	(LIBGCC2_HAS_TF_MODE): Likewise.
+	(LIBGCC2_TF_CEXT): Likewise.
+	(TF_SIZE): Likewise.
+	(TARGET_ASM_FILE_END): Likewise.
+	(STACK_CHECK_MOVING_SP): Likewise.
+	(STACK_CHECK_STATIC_BUILTIN): Likewise.
+	* config/i386/gnu-user64.h: Likewise.
+
 2012-04-13  Martin Jambor  <mjambor@suse.cz>
 
 	* expr.c (expand_expr_real_1): Pass type, not the expression, to
