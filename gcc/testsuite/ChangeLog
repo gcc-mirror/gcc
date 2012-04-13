@@ -1,3 +1,8 @@
+2012-04-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/52939
+	* g++.dg/ipa/pr52939.C: New test.
+
 2012-04-13  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/pr52734.c: New test.
