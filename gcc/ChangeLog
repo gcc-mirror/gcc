@@ -1,3 +1,10 @@
+2012-04-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52969
+	* tree-if-conv.c (predicate_mem_writes): Properly gimplify
+	the condition for the COND_EXPR and handle predicate negation
+	by swapping the COND_EXPR arms.
+
 2012-04-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_devirt_pass): Remove use of
