@@ -1,3 +1,11 @@
+2012-04-13  Tom de Vries  <tom@codesourcery.com>
+
+	Backport from mainline r186419.
+
+	2012-04-13  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr52734.c: New test.
+
 2012-04-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52969
