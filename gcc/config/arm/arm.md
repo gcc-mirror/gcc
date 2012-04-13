@@ -5652,6 +5652,21 @@
   }"
 )
 
+;; For thumb1 split imm move [256-510] into mov [1-255] and add #255
+(define_split 
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 1 "const_int_operand" ""))]
+  "TARGET_THUMB1 && satisfies_constraint_Pe (operands[1])"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0) (plus:SI (match_dup 2) (match_dup 3)))]
+  "
+  {
+    operands[1] = GEN_INT (INTVAL (operands[1]) - 255);
+    operands[2] = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
+    operands[3] = GEN_INT (255);
+  }"
+)
+
 ;; When generating pic, we need to load the symbol offset into a register.
 ;; So that the optimizer does not confuse this with a normal symbol load
 ;; we use an unspec.  The offset will be loaded from a constant pool entry,

@@ -1,3 +1,8 @@
+2012-04-13  Joey Ye  <joey.ye@arm.com>
+
+	* config/arm/constraints.md (Pe): New constraint.
+	* config/arm/arm.md: New split for imm 256-510.
+
 2012-04-13  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm-cores.def: Added core cortex-m0plus.

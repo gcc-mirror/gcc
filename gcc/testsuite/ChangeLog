@@ -1,3 +1,7 @@
+2012-04-13  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.target/arm/thumb1-imm.c: New testcase.
+
 2012-04-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52932
