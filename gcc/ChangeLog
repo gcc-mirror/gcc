@@ -1,3 +1,8 @@
+2012-04-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-c.c (ix86_target_macros): Define _ILP32
+	and __ILP32__ for x32.
+
 2012-04-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/52939
