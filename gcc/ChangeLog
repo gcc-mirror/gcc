@@ -1,3 +1,9 @@
+2012-04-13  Richard Guenther  <rguenther@suse.de>
+
+	PR c/52862
+	* convert.c (convert_to_pointer): Remove special-casing of
+	zero.
+
 2012-04-13  Joey Ye  <joey.ye@arm.com>
 
 	* config/arm/constraints.md (Pe): New constraint.
