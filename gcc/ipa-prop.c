@@ -91,7 +91,7 @@ ipa_populate_param_decls (struct cgraph_node *node,
   tree parm;
   int param_num;
 
-  fndecl = node->decl;
+  fndecl = node->symbol.decl;
   fnargs = DECL_ARGUMENTS (fndecl);
   param_num = 0;
   for (parm = fnargs; parm; parm = DECL_CHAIN (parm))
@@ -129,7 +129,7 @@ ipa_initialize_node_params (struct cgraph_node *node)
     {
       int param_count;
 
-      param_count = count_formal_params (node->decl);
+      param_count = count_formal_params (node->symbol.decl);
       if (param_count)
 	{
 	  VEC_safe_grow_cleared (ipa_param_descriptor_t, heap,
@@ -1590,7 +1590,7 @@ static void
 ipa_analyze_params_uses (struct cgraph_node *node,
 			 struct param_analysis_info *parms_ainfo)
 {
-  tree decl = node->decl;
+  tree decl = node->symbol.decl;
   basic_block bb;
   struct function *func;
   gimple_stmt_iterator gsi;
@@ -1606,7 +1606,7 @@ ipa_analyze_params_uses (struct cgraph_node *node,
       /* For SSA regs see if parameter is used.  For non-SSA we compute
 	 the flag during modification analysis.  */
       if (is_gimple_reg (parm)
-	  && gimple_default_def (DECL_STRUCT_FUNCTION (node->decl), parm))
+	  && gimple_default_def (DECL_STRUCT_FUNCTION (node->symbol.decl), parm))
 	ipa_set_param_used (info, i, true);
     }
 
@@ -1650,8 +1650,8 @@ ipa_analyze_node (struct cgraph_node *node)
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
   info = IPA_NODE_REF (node);
-  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-  current_function_decl = node->decl;
+  push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
+  current_function_decl = node->symbol.decl;
   ipa_initialize_node_params (node);
 
   param_count = ipa_get_param_count (info);
@@ -1906,7 +1906,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	  if (new_direct_edge->call_stmt)
 	    new_direct_edge->call_stmt_cannot_inline_p
 	      = !gimple_check_call_matching_types (new_direct_edge->call_stmt,
-						   new_direct_edge->callee->decl);
+						   new_direct_edge->callee->symbol.decl);
 	  if (new_edges)
 	    {
 	      VEC_safe_push (cgraph_edge_p, heap, *new_edges,
@@ -2427,7 +2427,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 
   len = VEC_length (ipa_parm_adjustment_t, adjustments);
   vargs = VEC_alloc (tree, heap, len);
-  callee_decl = !cs ? gimple_call_fndecl (stmt) : cs->callee->decl;
+  callee_decl = !cs ? gimple_call_fndecl (stmt) : cs->callee->symbol.decl;
 
   gsi = gsi_for_stmt (stmt);
   for (i = 0; i < len; i++)

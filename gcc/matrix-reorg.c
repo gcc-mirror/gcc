@@ -446,7 +446,7 @@ may_flatten_matrices (struct cgraph_node *node)
   basic_block bb;
   gimple_stmt_iterator gsi;
 
-  decl = node->decl;
+  decl = node->symbol.decl;
   if (node->analyzed)
     {
       func = DECL_STRUCT_FUNCTION (decl);
@@ -550,7 +550,7 @@ find_matrices_decl (void)
      Check to see if it's of a candidate type and record it.  */
   for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     {
-      tree var_decl = vnode->decl;
+      tree var_decl = vnode->symbol.decl;
 
       if (!var_decl || TREE_CODE (var_decl) != VAR_DECL)
 	continue;
@@ -2279,8 +2279,8 @@ matrix_reorg (void)
 	tree temp_fn;
 
 	temp_fn = current_function_decl;
-	current_function_decl = node->decl;
-	push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+	current_function_decl = node->symbol.decl;
+	push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
 	bitmap_obstack_initialize (NULL);
 	gimple_register_cfg_hooks ();
 
@@ -2347,8 +2347,8 @@ matrix_reorg (void)
 	tree temp_fn;
 
 	temp_fn = current_function_decl;
-	current_function_decl = node->decl;
-	push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+	current_function_decl = node->symbol.decl;
+	push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
 	bitmap_obstack_initialize (NULL);
 	gimple_register_cfg_hooks ();
 	record_all_accesses_in_func ();

@@ -5431,13 +5431,13 @@ find_decl_and_mark_needed (tree decl, tree target)
   if (fnode)
     {
       cgraph_mark_needed_node (fnode);
-      return fnode->decl;
+      return fnode->symbol.decl;
     }
   else if (vnode)
     {
       varpool_mark_needed_node (vnode);
       vnode->force_output = 1;
-      return vnode->decl;
+      return vnode->symbol.decl;
     }
   else
     return NULL_TREE;
@@ -6900,20 +6900,20 @@ default_binds_local_p_1 (const_tree exp, int shlib)
       && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
     {
       struct varpool_node *vnode = varpool_get_node (exp);
-      if (vnode && resolution_local_p (vnode->resolution))
+      if (vnode && resolution_local_p (vnode->symbol.resolution))
 	resolved_locally = true;
       if (vnode
-	  && resolution_to_local_definition_p (vnode->resolution))
+	  && resolution_to_local_definition_p (vnode->symbol.resolution))
 	resolved_to_local_def = true;
     }
   else if (TREE_CODE (exp) == FUNCTION_DECL && TREE_PUBLIC (exp))
     {
       struct cgraph_node *node = cgraph_get_node (exp);
       if (node
-	  && resolution_local_p (node->resolution))
+	  && resolution_local_p (node->symbol.resolution))
 	resolved_locally = true;
       if (node
-	  && resolution_to_local_definition_p (node->resolution))
+	  && resolution_to_local_definition_p (node->symbol.resolution))
 	resolved_to_local_def = true;
     }
 
@@ -6994,15 +6994,15 @@ decl_binds_to_current_def_p (tree decl)
     {
       struct varpool_node *vnode = varpool_get_node (decl);
       if (vnode
-	  && vnode->resolution != LDPR_UNKNOWN)
-	return resolution_to_local_definition_p (vnode->resolution);
+	  && vnode->symbol.resolution != LDPR_UNKNOWN)
+	return resolution_to_local_definition_p (vnode->symbol.resolution);
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       struct cgraph_node *node = cgraph_get_node (decl);
       if (node
-	  && node->resolution != LDPR_UNKNOWN)
-	return resolution_to_local_definition_p (node->resolution);
+	  && node->symbol.resolution != LDPR_UNKNOWN)
+	return resolution_to_local_definition_p (node->symbol.resolution);
     }
   /* Otherwise we have to assume the worst for DECL_WEAK (hidden weaks
      binds locally but still can be overwritten).

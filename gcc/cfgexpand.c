@@ -1488,9 +1488,9 @@ estimated_stack_frame_size (struct cgraph_node *node)
   tree var;
   tree old_cur_fun_decl = current_function_decl;
   referenced_var_iterator rvi;
-  struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+  struct function *fn = DECL_STRUCT_FUNCTION (node->symbol.decl);
 
-  current_function_decl = node->decl;
+  current_function_decl = node->symbol.decl;
   push_cfun (fn);
 
   gcc_checking_assert (gimple_referenced_vars (fn));

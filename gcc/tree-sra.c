@@ -4644,8 +4644,8 @@ convert_callers_for_node (struct cgraph_node *node,
 
   for (cs = node->callers; cs; cs = cs->next_caller)
     {
-      current_function_decl = cs->caller->decl;
-      push_cfun (DECL_STRUCT_FUNCTION (cs->caller->decl));
+      current_function_decl = cs->caller->symbol.decl;
+      push_cfun (DECL_STRUCT_FUNCTION (cs->caller->symbol.decl));
 
       if (dump_file)
 	fprintf (dump_file, "Adjusting call (%i -> %i) %s -> %s\n",
@@ -4660,7 +4660,7 @@ convert_callers_for_node (struct cgraph_node *node,
 
   for (cs = node->callers; cs; cs = cs->next_caller)
     if (bitmap_set_bit (recomputed_callers, cs->caller->uid)
-	&& gimple_in_ssa_p (DECL_STRUCT_FUNCTION (cs->caller->decl)))
+	&& gimple_in_ssa_p (DECL_STRUCT_FUNCTION (cs->caller->symbol.decl)))
       compute_inline_parameters (cs->caller, true);
   BITMAP_FREE (recomputed_callers);
 
@@ -4699,7 +4699,7 @@ convert_callers (struct cgraph_node *node, tree old_decl,
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "Adjusting recursive call");
-	      gimple_call_set_fndecl (stmt, node->decl);
+	      gimple_call_set_fndecl (stmt, node->symbol.decl);
 	      ipa_modify_call_arguments (NULL, stmt, adjustments);
 	    }
 	}
@@ -4725,13 +4725,13 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 
   new_node = cgraph_function_versioning (node, redirect_callers, NULL, NULL,
 					 false, NULL, NULL, "isra");
-  current_function_decl = new_node->decl;
-  push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
+  current_function_decl = new_node->symbol.decl;
+  push_cfun (DECL_STRUCT_FUNCTION (new_node->symbol.decl));
 
   ipa_modify_formal_parameters (current_function_decl, adjustments, "ISRA");
   cfg_changed = ipa_sra_modify_function_body (adjustments);
   sra_ipa_reset_debug_stmts (adjustments);
-  convert_callers (new_node, node->decl, adjustments);
+  convert_callers (new_node, node->symbol.decl, adjustments);
   cgraph_make_node_local (new_node);
   return cfg_changed;
 }
@@ -4757,7 +4757,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       return false;
     }
 
-  if (!tree_versionable_function_p (node->decl))
+  if (!tree_versionable_function_p (node->symbol.decl))
     {
       if (dump_file)
 	fprintf (dump_file, "Function is not versionable.\n");
@@ -4771,7 +4771,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       return false;
     }
 
-  if ((DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))
+  if ((DECL_COMDAT (node->symbol.decl) || DECL_EXTERNAL (node->symbol.decl))
       && inline_summary(node)->size >= MAX_INLINE_INSNS_AUTO)
     {
       if (dump_file)
@@ -4794,7 +4794,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       return false;
     }
 
-  if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
+  if (TYPE_ATTRIBUTES (TREE_TYPE (node->symbol.decl)))
     return false;
 
   return true;

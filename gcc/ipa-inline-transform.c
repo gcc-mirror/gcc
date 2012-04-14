@@ -88,16 +88,16 @@ can_remove_node_now_p_1 (struct cgraph_node *node)
   /* FIXME: When address is taken of DECL_EXTERNAL function we still
      can remove its offline copy, but we would need to keep unanalyzed node in
      the callgraph so references can point to it.  */
-  return (!node->address_taken
-	  && !ipa_ref_has_aliases_p (&node->ref_list)
+  return (!node->symbol.address_taken
+	  && !ipa_ref_has_aliases_p (&node->symbol.ref_list)
 	  && cgraph_can_remove_if_no_direct_calls_p (node)
 	  /* Inlining might enable more devirtualizing, so we want to remove
 	     those only after all devirtualizable virtual calls are processed.
 	     Lacking may edges in callgraph we just preserve them post
 	     inlining.  */
-	  && (!DECL_VIRTUAL_P (node->decl)
-	      || (!DECL_COMDAT (node->decl)
-		  && !DECL_EXTERNAL (node->decl)))
+	  && (!DECL_VIRTUAL_P (node->symbol.decl)
+	      || (!DECL_COMDAT (node->symbol.decl)
+		  && !DECL_EXTERNAL (node->symbol.decl)))
 	  /* During early inlining some unanalyzed cgraph nodes might be in the
 	     callgraph and they might reffer the function in question.  */
 	  && !cgraph_new_nodes);
@@ -116,10 +116,10 @@ can_remove_node_now_p (struct cgraph_node *node, struct cgraph_edge *e)
 
   /* When we see same comdat group, we need to be sure that all
      items can be removed.  */
-  if (!node->same_comdat_group)
+  if (!node->symbol.same_comdat_group)
     return true;
-  for (next = node->same_comdat_group;
-       next != node; next = next->same_comdat_group)
+  for (next = cgraph (node->symbol.same_comdat_group);
+       next != node; next = cgraph (next->symbol.same_comdat_group))
     if ((next->callers && next->callers != e)
 	|| !can_remove_node_now_p_1 (next))
       return false;
@@ -157,20 +157,20 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	     For now we keep the ohter functions in the group in program until
 	     cgraph_remove_unreachable_functions gets rid of them.  */
 	  gcc_assert (!e->callee->global.inlined_to);
-	  if (e->callee->analyzed && !DECL_EXTERNAL (e->callee->decl))
+	  if (e->callee->analyzed && !DECL_EXTERNAL (e->callee->symbol.decl))
 	    {
 	      if (overall_size)
 	        *overall_size -= inline_summary (e->callee)->size;
 	      nfunctions_inlined++;
 	    }
 	  duplicate = false;
-	  e->callee->local.externally_visible = false;
+	  e->callee->symbol.externally_visible = false;
           update_noncloned_frequencies (e->callee, e->frequency);
 	}
       else
 	{
 	  struct cgraph_node *n;
-	  n = cgraph_clone_node (e->callee, e->callee->decl,
+	  n = cgraph_clone_node (e->callee, e->callee->symbol.decl,
 				 e->count, e->frequency,
 				 update_original, NULL, true);
 	  cgraph_redirect_edge_callee (e, n);
@@ -211,7 +211,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   gcc_assert (!callee->global.inlined_to);
 
   e->inline_failed = CIF_OK;
-  DECL_POSSIBLY_INLINED (callee->decl) = true;
+  DECL_POSSIBLY_INLINED (callee->symbol.decl) = true;
 
   to = e->caller;
   if (to->global.inlined_to)
@@ -273,13 +273,13 @@ save_inline_function_body (struct cgraph_node *node)
     fprintf (dump_file, "\nSaving body of %s for later reuse\n",
 	     cgraph_node_name (node));
  
-  gcc_assert (node == cgraph_get_node (node->decl));
+  gcc_assert (node == cgraph_get_node (node->symbol.decl));
 
   /* first_clone will be turned into real function.  */
   first_clone = node->clones;
-  first_clone->decl = copy_node (node->decl);
+  first_clone->symbol.decl = copy_node (node->symbol.decl);
   cgraph_insert_node_to_hashtable (first_clone);
-  gcc_assert (first_clone == cgraph_get_node (first_clone->decl));
+  gcc_assert (first_clone == cgraph_get_node (first_clone->symbol.decl));
 
   /* Now reshape the clone tree, so all other clones descends from
      first_clone.  */
@@ -307,8 +307,8 @@ save_inline_function_body (struct cgraph_node *node)
   if (first_clone->clones)
     for (n = first_clone->clones; n != first_clone;)
       {
-        gcc_assert (n->decl == node->decl);
-	n->decl = first_clone->decl;
+        gcc_assert (n->symbol.decl == node->symbol.decl);
+	n->symbol.decl = first_clone->symbol.decl;
 	if (n->clones)
 	  n = n->clones;
 	else if (n->next_sibling_clone)
@@ -323,15 +323,15 @@ save_inline_function_body (struct cgraph_node *node)
       }
 
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
-  tree_function_versioning (node->decl, first_clone->decl, NULL, true, NULL,
-			    false, NULL, NULL);
+  tree_function_versioning (node->symbol.decl, first_clone->symbol.decl,
+			    NULL, true, NULL, false, NULL, NULL);
 
   /* The function will be short lived and removed after we inline all the clones,
      but make it internal so we won't confuse ourself.  */
-  DECL_EXTERNAL (first_clone->decl) = 0;
-  DECL_COMDAT_GROUP (first_clone->decl) = NULL_TREE;
-  TREE_PUBLIC (first_clone->decl) = 0;
-  DECL_COMDAT (first_clone->decl) = 0;
+  DECL_EXTERNAL (first_clone->symbol.decl) = 0;
+  DECL_COMDAT_GROUP (first_clone->symbol.decl) = NULL_TREE;
+  TREE_PUBLIC (first_clone->symbol.decl) = 0;
+  DECL_COMDAT (first_clone->symbol.decl) = 0;
   VEC_free (ipa_opt_pass, heap,
             first_clone->ipa_transforms_to_apply);
   first_clone->ipa_transforms_to_apply = NULL;

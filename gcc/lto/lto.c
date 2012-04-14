@@ -208,7 +208,7 @@ lto_materialize_function (struct cgraph_node *node)
   const char *data, *name;
   size_t len;
 
-  decl = node->decl;
+  decl = node->symbol.decl;
   /* Read in functions with body (analyzed nodes)
      and also functions that are needed to produce virtual clones.  */
   if (cgraph_function_with_gimple_body_p (node) || has_analyzed_clone_p (node))
@@ -221,7 +221,7 @@ lto_materialize_function (struct cgraph_node *node)
 	 WPA mode, the body of the function is not needed.  */
       if (!flag_wpa)
 	{
-	  file_data = node->local.lto_file_data;
+	  file_data = node->symbol.lto_file_data;
 	  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
 	  /* We may have renamed the declaration, e.g., a static function.  */
@@ -1424,13 +1424,13 @@ cmp_partitions_order (const void *a, const void *b)
   int ordera = -1, orderb = -1;
 
   if (VEC_length (cgraph_node_ptr, pa->cgraph_set->nodes))
-    ordera = VEC_index (cgraph_node_ptr, pa->cgraph_set->nodes, 0)->order;
+    ordera = VEC_index (cgraph_node_ptr, pa->cgraph_set->nodes, 0)->symbol.order;
   else if (VEC_length (varpool_node_ptr, pa->varpool_set->nodes))
-    ordera = VEC_index (varpool_node_ptr, pa->varpool_set->nodes, 0)->order;
+    ordera = VEC_index (varpool_node_ptr, pa->varpool_set->nodes, 0)->symbol.order;
   if (VEC_length (cgraph_node_ptr, pb->cgraph_set->nodes))
-    orderb = VEC_index (cgraph_node_ptr, pb->cgraph_set->nodes, 0)->order;
+    orderb = VEC_index (cgraph_node_ptr, pb->cgraph_set->nodes, 0)->symbol.order;
   else if (VEC_length (varpool_node_ptr, pb->varpool_set->nodes))
-    orderb = VEC_index (varpool_node_ptr, pb->varpool_set->nodes, 0)->order;
+    orderb = VEC_index (varpool_node_ptr, pb->varpool_set->nodes, 0)->symbol.order;
   return orderb - ordera;
 }
 
@@ -1925,7 +1925,7 @@ materialize_cgraph (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
-      if (node->local.lto_file_data)
+      if (node->symbol.lto_file_data)
 	{
 	  lto_materialize_function (node);
 	  lto_stats.num_input_cgraph_nodes++;
