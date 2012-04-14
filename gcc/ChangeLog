@@ -1,3 +1,15 @@
+2012-04-14  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-tail-merge.c (stmt_local_def): New function, factored out of
+	same_succ_hash, with local_def inlined.  Use SINGLE_SSA_DEF_OPERAND.
+	Use FOR_EACH_IMM_USE_FAST instead of FOR_EACH_IMM_USE_STMT.  Remove use
+	of find_edge.
+	(gsi_advance_fw_nondebug_nonlocal): New function.
+	(local_def): Removed function.
+	(same_succ_hash): Use stmt_local_def.
+	(same_succ_equal): Use gsi_advance_fw_nondebug_nonlocal.
+	(gsi_advance_bw_nondebug_nonlocal): Use stmt_local_def.
+
 2012-04-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386-c.c (ix86_target_macros): Define _ILP32
