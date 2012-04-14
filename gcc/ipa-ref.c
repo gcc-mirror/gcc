@@ -48,15 +48,15 @@ ipa_record_reference (struct cgraph_node *refering_node,
   gcc_assert (!stmt || refering_node);
   gcc_assert (use_type != IPA_REF_ALIAS || !stmt);
 
-  list = (refering_node ? &refering_node->ref_list
-	  : &refering_varpool_node->ref_list);
+  list = (refering_node ? &refering_node->symbol.ref_list
+	  : &refering_varpool_node->symbol.ref_list);
   old_references = list->references;
   VEC_safe_grow (ipa_ref_t, gc, list->references,
 		 VEC_length (ipa_ref_t, list->references) + 1);
   ref = VEC_last (ipa_ref_t, list->references);
 
-  list2 = (refered_node ? &refered_node->ref_list
-	   : &refered_varpool_node->ref_list);
+  list2 = (refered_node ? &refered_node->symbol.ref_list
+	   : &refered_varpool_node->symbol.ref_list);
   VEC_safe_push (ipa_ref_ptr, heap, list2->refering, ref);
   ref->refered_index = VEC_length (ipa_ref_ptr, list2->refering) - 1;
   if (refering_node)

@@ -1,3 +1,8 @@
+2012-04-14  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/trans.c (finalize_nrv): Update field referenced for new
+	cgraph/varpool layout.
+
 2012-04-09  Mike Stump  <mikestump@comcast.net>
 
 	* a-assert.ads: Remove execute permission.

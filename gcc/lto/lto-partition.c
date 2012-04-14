@@ -74,19 +74,19 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
     {
       if (ref->refered_type == IPA_REF_CGRAPH
 	  && (DECL_COMDAT (cgraph_function_node (ipa_ref_node (ref),
-			   NULL)->decl)
+			   NULL)->symbol.decl)
 	      || (ref->use == IPA_REF_ALIAS
 		  && lookup_attribute
-		       ("weakref", DECL_ATTRIBUTES (ipa_ref_node (ref)->decl))))
+		       ("weakref", DECL_ATTRIBUTES (ipa_ref_node (ref)->symbol.decl))))
 	  && !cgraph_node_in_set_p (ipa_ref_node (ref), part->cgraph_set))
 	add_cgraph_node_to_partition (part, ipa_ref_node (ref));
       else
 	if (ref->refered_type == IPA_REF_VARPOOL
-	    && (DECL_COMDAT (ipa_ref_varpool_node (ref)->decl)
+	    && (DECL_COMDAT (ipa_ref_varpool_node (ref)->symbol.decl)
 	        || (ref->use == IPA_REF_ALIAS
 		    && lookup_attribute
 		         ("weakref",
-			  DECL_ATTRIBUTES (ipa_ref_varpool_node (ref)->decl))))
+			  DECL_ATTRIBUTES (ipa_ref_varpool_node (ref)->symbol.decl))))
 	    && !varpool_node_in_set_p (ipa_ref_varpool_node (ref),
 				       part->varpool_set))
 	  add_varpool_node_to_partition (part, ipa_ref_varpool_node (ref));
@@ -99,7 +99,7 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
 				    part->cgraph_set)
 	  && !lookup_attribute ("weakref",
 				DECL_ATTRIBUTES
-				  (ipa_ref_refering_node (ref)->decl)))
+				  (ipa_ref_refering_node (ref)->symbol.decl)))
 	add_cgraph_node_to_partition (part, ipa_ref_refering_node (ref));
       else
 	if (ref->refering_type == IPA_REF_VARPOOL
@@ -108,7 +108,7 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
 				       part->varpool_set)
 	    && !lookup_attribute ("weakref",
 				  DECL_ATTRIBUTES
-				    (ipa_ref_refering_varpool_node (ref)->decl)))
+				    (ipa_ref_refering_varpool_node (ref)->symbol.decl)))
 	  add_varpool_node_to_partition (part,
 					 ipa_ref_refering_varpool_node (ref));
     }
@@ -122,22 +122,22 @@ add_cgraph_node_to_partition_1 (struct cgraph_node *node, void *data)
   ltrans_partition part = (ltrans_partition) data;
 
   /* non-COMDAT aliases of COMDAT functions needs to be output just once.  */
-  if (!DECL_COMDAT (node->decl)
+  if (!DECL_COMDAT (node->symbol.decl)
       && !node->global.inlined_to
-      && node->aux)
+      && node->symbol.aux)
     {
       gcc_assert (node->thunk.thunk_p || node->alias);
       return false;
     }
 
-  if (node->aux)
+  if (node->symbol.aux)
     {
-      node->in_other_partition = 1;
+      node->symbol.in_other_partition = 1;
       if (cgraph_dump_file)
         fprintf (cgraph_dump_file, "Node %s/%i now used in multiple partitions\n",
 		 cgraph_node_name (node), node->uid);
     }
-  node->aux = (void *)((size_t)node->aux + 1);
+  node->symbol.aux = (void *)((size_t)node->symbol.aux + 1);
   cgraph_node_set_add (part->cgraph_set, node);
   return false;
 }
@@ -165,21 +165,22 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
 
   for (e = node->callees; e; e = e->next_callee)
     if ((!e->inline_failed
-	 || DECL_COMDAT (cgraph_function_node (e->callee, NULL)->decl))
+	 || DECL_COMDAT (cgraph_function_node (e->callee, NULL)->symbol.decl))
 	&& !cgraph_node_in_set_p (e->callee, part->cgraph_set))
       add_cgraph_node_to_partition (part, e->callee);
 
   /* The only way to assemble non-weakref alias is to add the aliased object into
      the unit.  */
-  add_references_to_partition (part, &node->ref_list);
+  add_references_to_partition (part, &node->symbol.ref_list);
   n = cgraph_function_node (node, NULL);
   if (n != node
       && !lookup_attribute ("weakref",
-			    DECL_ATTRIBUTES (node->decl)))
+			    DECL_ATTRIBUTES (node->symbol.decl)))
     add_cgraph_node_to_partition (part, n);
 
-  if (node->same_comdat_group)
-    for (n = node->same_comdat_group; n != node; n = n->same_comdat_group)
+  if (node->symbol.same_comdat_group)
+    for (n = cgraph (node->symbol.same_comdat_group);
+	 n != node; n = cgraph (n->symbol.same_comdat_group))
       add_cgraph_node_to_partition (part, n);
 }
 
@@ -198,28 +199,29 @@ add_varpool_node_to_partition (ltrans_partition part, struct varpool_node *vnode
 
   varpool_node_set_add (part->varpool_set, vnode);
 
-  if (vnode->aux)
+  if (vnode->symbol.aux)
     {
-      vnode->in_other_partition = 1;
+      vnode->symbol.in_other_partition = 1;
       if (cgraph_dump_file)
         fprintf (cgraph_dump_file, "Varpool node %s now used in multiple partitions\n",
 		 varpool_node_name (vnode));
     }
-  vnode->aux = (void *)((size_t)vnode->aux + 1);
+  vnode->symbol.aux = (void *)((size_t)vnode->symbol.aux + 1);
 
   /* The only way to assemble non-weakref alias is to add the aliased object into
      the unit.  */
   v = varpool_variable_node (vnode, NULL);
   if (v != vnode
       && !lookup_attribute ("weakref",
-			    DECL_ATTRIBUTES (vnode->decl)))
+			    DECL_ATTRIBUTES (vnode->symbol.decl)))
     add_varpool_node_to_partition (part, v);
 
-  add_references_to_partition (part, &vnode->ref_list);
+  add_references_to_partition (part, &vnode->symbol.ref_list);
 
-  if (vnode->same_comdat_group
-      && !varpool_node_in_set_p (vnode->same_comdat_group, part->varpool_set))
-    add_varpool_node_to_partition (part, vnode->same_comdat_group);
+  if (vnode->symbol.same_comdat_group
+      && !varpool_node_in_set_p (varpool (vnode->symbol.same_comdat_group),
+				 part->varpool_set))
+    add_varpool_node_to_partition (part, varpool (vnode->symbol.same_comdat_group));
 }
 
 /* Undo all additions until number of cgraph nodes in PARITION is N_CGRAPH_NODES
@@ -237,7 +239,7 @@ undo_partition (ltrans_partition partition, unsigned int n_cgraph_nodes,
 					    n_cgraph_nodes);
       partition->insns -= inline_summary (node)->self_size;
       cgraph_node_set_remove (partition->cgraph_set, node);
-      node->aux = (void *)((size_t)node->aux - 1);
+      node->symbol.aux = (void *)((size_t)node->symbol.aux - 1);
     }
   while (VEC_length (varpool_node_ptr, partition->varpool_set->nodes) >
 	 n_varpool_nodes)
@@ -246,7 +248,7 @@ undo_partition (ltrans_partition partition, unsigned int n_cgraph_nodes,
 					     partition->varpool_set->nodes,
 					     n_varpool_nodes);
       varpool_node_set_remove (partition->varpool_set, node);
-      node->aux = (void *)((size_t)node->aux - 1);
+      node->symbol.aux = (void *)((size_t)node->symbol.aux - 1);
     }
 }
 
@@ -265,11 +267,11 @@ partition_cgraph_node_p (struct cgraph_node *node)
   if (!node->analyzed)
     return false;
   /* Extern inlines and comdat are always only in partitions they are needed.  */
-  if (DECL_EXTERNAL (node->decl)
-      || (DECL_COMDAT (node->decl)
+  if (DECL_EXTERNAL (node->symbol.decl)
+      || (DECL_COMDAT (node->symbol.decl)
 	  && !cgraph_used_from_object_file_p (node)))
     return false;
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (node->decl)))
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
     return false;
   return true;
 }
@@ -283,12 +285,12 @@ partition_varpool_node_p (struct varpool_node *vnode)
   if (vnode->alias || !vnode->needed)
     return false;
   /* Constant pool and comdat are always only in partitions they are needed.  */
-  if (DECL_IN_CONSTANT_POOL (vnode->decl)
-      || (DECL_COMDAT (vnode->decl)
+  if (DECL_IN_CONSTANT_POOL (vnode->symbol.decl)
+      || (DECL_COMDAT (vnode->symbol.decl)
 	  && !vnode->force_output
 	  && !varpool_used_from_object_file_p (vnode)))
     return false;
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (vnode->decl)))
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (vnode->symbol.decl)))
     return false;
   return true;
 }
@@ -314,10 +316,10 @@ lto_1_to_1_map (void)
   for (node = cgraph_nodes; node; node = node->next)
     {
       if (!partition_cgraph_node_p (node)
-	  || node->aux)
+	  || node->symbol.aux)
 	continue;
 
-      file_data = node->local.lto_file_data;
+      file_data = node->symbol.lto_file_data;
 
       if (file_data)
 	{
@@ -349,9 +351,9 @@ lto_1_to_1_map (void)
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     {
       if (!partition_varpool_node_p (vnode)
-	  || vnode->aux)
+	  || vnode->symbol.aux)
 	continue;
-      file_data = vnode->lto_file_data;
+      file_data = vnode->symbol.lto_file_data;
       slot = pointer_map_contains (pmap, file_data);
       if (slot)
 	partition = (ltrans_partition) *slot;
@@ -366,9 +368,9 @@ lto_1_to_1_map (void)
       add_varpool_node_to_partition (partition, vnode);
     }
   for (node = cgraph_nodes; node; node = node->next)
-    node->aux = NULL;
+    node->symbol.aux = NULL;
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-    vnode->aux = NULL;
+    vnode->symbol.aux = NULL;
 
   /* If the cgraph is empty, create one cgraph node set so that there is still
      an output file for any variables that need to be exported in a DSO.  */
@@ -389,7 +391,7 @@ node_cmp (const void *pa, const void *pb)
 {
   const struct cgraph_node *a = *(const struct cgraph_node * const *) pa;
   const struct cgraph_node *b = *(const struct cgraph_node * const *) pb;
-  return b->order - a->order;
+  return b->symbol.order - a->symbol.order;
 }
 
 /* Helper function for qsort; sort nodes by order.  */
@@ -398,7 +400,7 @@ varpool_node_cmp (const void *pa, const void *pb)
 {
   const struct varpool_node *a = *(const struct varpool_node * const *) pa;
   const struct varpool_node *b = *(const struct varpool_node * const *) pb;
-  return b->order - a->order;
+  return b->symbol.order - a->symbol.order;
 }
 
 /* Group cgraph nodes into equally-sized partitions.
@@ -462,7 +464,7 @@ lto_balanced_map (void)
   int current_order = -1;
 
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-    gcc_assert (!vnode->aux);
+    gcc_assert (!vnode->symbol.aux);
   /* Until we have better ordering facility, use toplogical order.
      Include only nodes we will partition and compute estimate of program
      size.  Note that since nodes that are not partitioned might be put into
@@ -510,15 +512,16 @@ lto_balanced_map (void)
 
   for (i = 0; i < n_nodes; i++)
     {
-      if (order[i]->aux)
+      if (order[i]->symbol.aux)
 	continue;
 
-      current_order = order[i]->order;
+      current_order = order[i]->symbol.order;
 
       if (!flag_toplevel_reorder)
-	while (varpool_pos < n_varpool_nodes && varpool_order[varpool_pos]->order < current_order)
+	while (varpool_pos < n_varpool_nodes
+	       && varpool_order[varpool_pos]->symbol.order < current_order)
 	  {
-	    if (!varpool_order[varpool_pos]->aux)
+	    if (!varpool_order[varpool_pos]->symbol.aux)
 	      add_varpool_node_to_partition (partition, varpool_order[varpool_pos]);
 	    varpool_pos++;
 	  }
@@ -558,7 +561,7 @@ lto_balanced_map (void)
 	      cgraph_p = true;
 	      node = VEC_index (cgraph_node_ptr, partition->cgraph_set->nodes,
 				last_visited_cgraph_node);
-	      refs = &node->ref_list;
+	      refs = &node->symbol.ref_list;
 
 	      last_visited_cgraph_node++;
 
@@ -602,7 +605,7 @@ lto_balanced_map (void)
 	    {
 	      refs =
 		&VEC_index (varpool_node_ptr, partition->varpool_set->nodes,
-			    last_visited_varpool_node)->ref_list;
+			    last_visited_varpool_node)->symbol.ref_list;
 	      last_visited_varpool_node++;
 	    }
 
@@ -616,7 +619,7 @@ lto_balanced_map (void)
 		vnode = ipa_ref_varpool_node (ref);
 		if (!vnode->finalized)
 		  continue;
-		if (!vnode->aux && flag_toplevel_reorder
+		if (!vnode->symbol.aux && flag_toplevel_reorder
 		    && partition_varpool_node_p (vnode))
 		  add_varpool_node_to_partition (partition, vnode);
 		vsi = varpool_node_set_find (partition->varpool_set, vnode);
@@ -647,7 +650,7 @@ lto_balanced_map (void)
 
 		vnode = ipa_ref_refering_varpool_node (ref);
 		gcc_assert (vnode->finalized);
-		if (!vnode->aux && flag_toplevel_reorder
+		if (!vnode->symbol.aux && flag_toplevel_reorder
 		    && partition_varpool_node_p (vnode))
 		  add_varpool_node_to_partition (partition, vnode);
 		vsi = varpool_node_set_find (partition->varpool_set, vnode);
@@ -706,7 +709,7 @@ lto_balanced_map (void)
 	    }
 	  i = best_i;
  	  /* When we are finished, avoid creating empty partition.  */
-	  while (i < n_nodes - 1 && order[i + 1]->aux)
+	  while (i < n_nodes - 1 && order[i + 1]->symbol.aux)
 	    i++;
 	  if (i == n_nodes - 1)
 	    break;
@@ -740,14 +743,14 @@ lto_balanced_map (void)
   if (flag_toplevel_reorder)
     {
       for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-        if (partition_varpool_node_p (vnode) && !vnode->aux)
+        if (partition_varpool_node_p (vnode) && !vnode->symbol.aux)
 	  add_varpool_node_to_partition (partition, vnode);
     }
   else
     {
       while (varpool_pos < n_varpool_nodes)
 	{
-	  if (!varpool_order[varpool_pos]->aux)
+	  if (!varpool_order[varpool_pos]->symbol.aux)
 	    add_varpool_node_to_partition (partition, varpool_order[varpool_pos]);
 	  varpool_pos++;
 	}
@@ -761,12 +764,12 @@ lto_balanced_map (void)
 static bool
 promote_var (struct varpool_node *vnode)
 {
-  if (TREE_PUBLIC (vnode->decl) || DECL_EXTERNAL (vnode->decl))
+  if (TREE_PUBLIC (vnode->symbol.decl) || DECL_EXTERNAL (vnode->symbol.decl))
     return false;
   gcc_assert (flag_wpa);
-  TREE_PUBLIC (vnode->decl) = 1;
-  DECL_VISIBILITY (vnode->decl) = VISIBILITY_HIDDEN;
-  DECL_VISIBILITY_SPECIFIED (vnode->decl) = true;
+  TREE_PUBLIC (vnode->symbol.decl) = 1;
+  DECL_VISIBILITY (vnode->symbol.decl) = VISIBILITY_HIDDEN;
+  DECL_VISIBILITY_SPECIFIED (vnode->symbol.decl) = true;
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file,
 	    "Promoting var as hidden: %s\n", varpool_node_name (vnode));
@@ -779,11 +782,11 @@ static bool
 promote_fn (struct cgraph_node *node)
 {
   gcc_assert (flag_wpa);
-  if (TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl))
+  if (TREE_PUBLIC (node->symbol.decl) || DECL_EXTERNAL (node->symbol.decl))
     return false;
-  TREE_PUBLIC (node->decl) = 1;
-  DECL_VISIBILITY (node->decl) = VISIBILITY_HIDDEN;
-  DECL_VISIBILITY_SPECIFIED (node->decl) = true;
+  TREE_PUBLIC (node->symbol.decl) = 1;
+  DECL_VISIBILITY (node->symbol.decl) = VISIBILITY_HIDDEN;
+  DECL_VISIBILITY_SPECIFIED (node->symbol.decl) = true;
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file,
 	     "Promoting function as hidden: %s/%i\n",
@@ -822,12 +825,13 @@ lto_promote_cross_file_statics (void)
       for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
 	{
 	  struct cgraph_node *node = csi_node (csi);
-	  if (node->local.externally_visible)
+	  if (node->symbol.externally_visible)
 	    continue;
 	  if (node->global.inlined_to)
 	    continue;
-	  if ((!DECL_EXTERNAL (node->decl) && !DECL_COMDAT (node->decl))
-	      && (referenced_from_other_partition_p (&node->ref_list, set, vset)
+	  if ((!DECL_EXTERNAL (node->symbol.decl)
+	       && !DECL_COMDAT (node->symbol.decl))
+	      && (referenced_from_other_partition_p (&node->symbol.ref_list, set, vset)
 		  || reachable_from_other_partition_p (node, set)))
 	    promote_fn (node);
 	}
@@ -837,9 +841,10 @@ lto_promote_cross_file_statics (void)
 	  /* Constant pool references use internal labels and thus can not
 	     be made global.  It is sensible to keep those ltrans local to
 	     allow better optimization.  */
-	  if (!DECL_IN_CONSTANT_POOL (vnode->decl) && !DECL_COMDAT (vnode->decl)
-	      && !vnode->externally_visible && vnode->analyzed
-	      && referenced_from_other_partition_p (&vnode->ref_list,
+	  if (!DECL_IN_CONSTANT_POOL (vnode->symbol.decl)
+	      && !DECL_COMDAT (vnode->symbol.decl)
+	      && !vnode->symbol.externally_visible && vnode->analyzed
+	      && referenced_from_other_partition_p (&vnode->symbol.ref_list,
 						    set, vset))
 	    promote_var (vnode);
 	}
@@ -854,10 +859,10 @@ lto_promote_cross_file_statics (void)
 	 from this partition that are not in this partition.  This needs
 	 to be done recursively.  */
       for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-	if (const_value_known_p (vnode->decl)
-	    && DECL_INITIAL (vnode->decl)
+	if (const_value_known_p (vnode->symbol.decl)
+	    && DECL_INITIAL (vnode->symbol.decl)
 	    && !varpool_node_in_set_p (vnode, vset)
-	    && referenced_from_this_partition_p (&vnode->ref_list, set, vset)
+	    && referenced_from_this_partition_p (&vnode->symbol.ref_list, set, vset)
 	    && !pointer_set_insert (inserted, vnode))
 	VEC_safe_push (varpool_node_ptr, heap, promoted_initializers, vnode);
 
@@ -868,14 +873,14 @@ lto_promote_cross_file_statics (void)
 
 	  vnode = VEC_pop (varpool_node_ptr, promoted_initializers);
 	  for (i = 0;
-	       ipa_ref_list_reference_iterate (&vnode->ref_list, i, ref);
+	       ipa_ref_list_reference_iterate (&vnode->symbol.ref_list, i, ref);
 	       i++)
 	    {
 	      if (ref->refered_type == IPA_REF_CGRAPH)
 		{
 		  struct cgraph_node *n = ipa_ref_node (ref);
 		  gcc_assert (!n->global.inlined_to);
-		  if (!n->local.externally_visible
+		  if (!n->symbol.externally_visible
 		      && !cgraph_node_in_set_p (n, set))
 		    promote_fn (n);
 		}
@@ -888,17 +893,17 @@ lto_promote_cross_file_statics (void)
 		  /* Constant pool references use internal labels and thus
 		     cannot be made global.  It is sensible to keep those
 		     ltrans local to allow better optimization.  */
-		  if (DECL_IN_CONSTANT_POOL (v->decl))
+		  if (DECL_IN_CONSTANT_POOL (v->symbol.decl))
 		    {
 		      if (!pointer_set_insert (inserted, vnode))
 			VEC_safe_push (varpool_node_ptr, heap,
 				       promoted_initializers, v);
 		    }
-		  else if (!v->externally_visible && v->analyzed)
+		  else if (!v->symbol.externally_visible && v->analyzed)
 		    {
 		      if (promote_var (v)
-			  && DECL_INITIAL (v->decl)
-			  && const_value_known_p (v->decl)
+			  && DECL_INITIAL (v->symbol.decl)
+			  && const_value_known_p (v->symbol.decl)
 			  && !pointer_set_insert (inserted, vnode))
 			VEC_safe_push (varpool_node_ptr, heap,
 				       promoted_initializers, v);

@@ -60,9 +60,9 @@ static inline struct ipa_ref_list *
 ipa_ref_refering_ref_list (struct ipa_ref *ref)
 {
   if (ref->refering_type == IPA_REF_CGRAPH)
-    return &ipa_ref_refering_node (ref)->ref_list;
+    return &ipa_ref_refering_node (ref)->symbol.ref_list;
   else
-    return &ipa_ref_refering_varpool_node (ref)->ref_list;
+    return &ipa_ref_refering_varpool_node (ref)->symbol.ref_list;
 }
 
 /* Return reference list REF is in.  */
@@ -71,9 +71,9 @@ static inline struct ipa_ref_list *
 ipa_ref_refered_ref_list (struct ipa_ref *ref)
 {
   if (ref->refered_type == IPA_REF_CGRAPH)
-    return &ipa_ref_node (ref)->ref_list;
+    return &ipa_ref_node (ref)->symbol.ref_list;
   else
-    return &ipa_ref_varpool_node (ref)->ref_list;
+    return &ipa_ref_varpool_node (ref)->symbol.ref_list;
 }
 
 /* Return first reference in LIST or NULL if empty.  */

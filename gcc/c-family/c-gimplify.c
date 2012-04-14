@@ -100,7 +100,7 @@ c_genericize (tree fndecl)
   /* Dump all nested functions now.  */
   cgn = cgraph_get_create_node (fndecl);
   for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
-    c_genericize (cgn->decl);
+    c_genericize (cgn->symbol.decl);
 }
 
 static void

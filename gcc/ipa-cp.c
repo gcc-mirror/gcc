@@ -247,11 +247,11 @@ ipa_lat_is_single_const (struct ipcp_lattice *lat)
 static inline bool
 edge_within_scc (struct cgraph_edge *cs)
 {
-  struct ipa_dfs_info *caller_dfs = (struct ipa_dfs_info *) cs->caller->aux;
+  struct ipa_dfs_info *caller_dfs = (struct ipa_dfs_info *) cs->caller->symbol.aux;
   struct ipa_dfs_info *callee_dfs;
   struct cgraph_node *callee = cgraph_function_node (cs->callee, NULL);
 
-  callee_dfs = (struct ipa_dfs_info *) callee->aux;
+  callee_dfs = (struct ipa_dfs_info *) callee->symbol.aux;
   return (caller_dfs
 	  && callee_dfs
 	  && caller_dfs->scc_no == callee_dfs->scc_no);
@@ -450,7 +450,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
       return false;
     }
 
-  if (!optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->decl)))
+  if (!optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->symbol.decl)))
     {
       if (dump_file)
         fprintf (dump_file, "Not considering %s for cloning; "
@@ -1192,7 +1192,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
       else if (isummary->size <= MAX_INLINE_INSNS_AUTO / 2)
 	res += 15;
       else if (isummary->size <= MAX_INLINE_INSNS_AUTO
-	       || DECL_DECLARED_INLINE_P (callee->decl))
+	       || DECL_DECLARED_INLINE_P (callee->symbol.decl))
 	res += 7;
     }
 
@@ -1209,7 +1209,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 {
   if (time_benefit == 0
       || !flag_ipa_cp_clone
-      || !optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->decl)))
+      || !optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->symbol.decl)))
     return false;
 
   gcc_assert (size_cost > 0);
@@ -1532,14 +1532,14 @@ propagate_constants_topo (struct topo_info *topo)
       if (!cgraph_function_with_gimple_body_p (node))
 	continue;
 
-      node_dfs_info = (struct ipa_dfs_info *) node->aux;
+      node_dfs_info = (struct ipa_dfs_info *) node->symbol.aux;
       /* First, iteratively propagate within the strongly connected component
 	 until all lattices stabilize.  */
       v = node_dfs_info->next_cycle;
       while (v)
 	{
 	  push_node_to_stack (topo, v);
-	  v = ((struct ipa_dfs_info *) v->aux)->next_cycle;
+	  v = ((struct ipa_dfs_info *) v->symbol.aux)->next_cycle;
 	}
 
       v = node;
@@ -1568,7 +1568,7 @@ propagate_constants_topo (struct topo_info *topo)
 	    if (!edge_within_scc (cs))
 	      propagate_constants_accross_call (cs);
 
-	  v = ((struct ipa_dfs_info *) v->aux)->next_cycle;
+	  v = ((struct ipa_dfs_info *) v->symbol.aux)->next_cycle;
 	}
     }
 }
@@ -2384,20 +2384,20 @@ static void
 identify_dead_nodes (struct cgraph_node *node)
 {
   struct cgraph_node *v;
-  for (v = node; v ; v = ((struct ipa_dfs_info *) v->aux)->next_cycle)
+  for (v = node; v ; v = ((struct ipa_dfs_info *) v->symbol.aux)->next_cycle)
     if (cgraph_will_be_removed_from_program_if_no_direct_calls (v)
 	&& !cgraph_for_node_and_aliases (v,
 					 has_undead_caller_from_outside_scc_p,
 					 NULL, true))
       IPA_NODE_REF (v)->node_dead = 1;
 
-  for (v = node; v ; v = ((struct ipa_dfs_info *) v->aux)->next_cycle)
+  for (v = node; v ; v = ((struct ipa_dfs_info *) v->symbol.aux)->next_cycle)
     if (!IPA_NODE_REF (v)->node_dead)
       spread_undeadness (v);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      for (v = node; v ; v = ((struct ipa_dfs_info *) v->aux)->next_cycle)
+      for (v = node; v ; v = ((struct ipa_dfs_info *) v->symbol.aux)->next_cycle)
 	if (IPA_NODE_REF (v)->node_dead)
 	  fprintf (dump_file, "  Marking node as dead: %s/%i.\n",
 		   cgraph_node_name (v), v->uid);
@@ -2424,7 +2424,7 @@ ipcp_decision_stage (struct topo_info *topo)
 	{
 	  struct cgraph_node *v;
 	  iterate = false;
-	  for (v = node; v ; v = ((struct ipa_dfs_info *) v->aux)->next_cycle)
+	  for (v = node; v ; v = ((struct ipa_dfs_info *) v->symbol.aux)->next_cycle)
 	    if (cgraph_function_with_gimple_body_p (v)
 		&& ipcp_versionable_function_p (v))
 	      iterate |= decide_whether_version_node (v);
@@ -2496,7 +2496,8 @@ ipcp_generate_summary (void)
       {
 	/* Unreachable nodes should have been eliminated before ipcp.  */
 	gcc_assert (node->needed || node->reachable);
-	node->local.versionable = tree_versionable_function_p (node->decl);
+	node->local.versionable
+	  = tree_versionable_function_p (node->symbol.decl);
 	ipa_analyze_node (node);
       }
 }

@@ -86,7 +86,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
 	 bool (*ignore_edge) (struct cgraph_edge *))
 {
   struct cgraph_edge *edge;
-  struct ipa_dfs_info *v_info = (struct ipa_dfs_info *) v->aux;
+  struct ipa_dfs_info *v_info = (struct ipa_dfs_info *) v->symbol.aux;
 
   /* mark node as old */
   v_info->new_node = false;
@@ -107,11 +107,11 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
       if (!w || (ignore_edge && ignore_edge (edge)))
         continue;
 
-      if (w->aux
+      if (w->symbol.aux
 	  && (avail > AVAIL_OVERWRITABLE
 	      || (env->allow_overwritable && avail == AVAIL_OVERWRITABLE)))
 	{
-	  w_info = (struct ipa_dfs_info *) w->aux;
+	  w_info = (struct ipa_dfs_info *) w->symbol.aux;
 	  if (w_info->new_node)
 	    {
 	      searchc (env, w, ignore_edge);
@@ -136,7 +136,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
       struct ipa_dfs_info *x_info;
       do {
 	x = env->stack[--(env->stack_size)];
-	x_info = (struct ipa_dfs_info *) x->aux;
+	x_info = (struct ipa_dfs_info *) x->symbol.aux;
 	x_info->on_stack = false;
 	x_info->scc_no = v_info->dfn_number;
 
@@ -187,20 +187,20 @@ ipa_reduced_postorder (struct cgraph_node **order,
 	      && (avail == AVAIL_OVERWRITABLE)))
 	{
 	  /* Reuse the info if it is already there.  */
-	  struct ipa_dfs_info *info = (struct ipa_dfs_info *) node->aux;
+	  struct ipa_dfs_info *info = (struct ipa_dfs_info *) node->symbol.aux;
 	  if (!info)
 	    info = XCNEW (struct ipa_dfs_info);
 	  info->new_node = true;
 	  info->on_stack = false;
 	  info->next_cycle = NULL;
-	  node->aux = info;
+	  node->symbol.aux = info;
 
 	  splay_tree_insert (env.nodes_marked_new,
 			     (splay_tree_key)node->uid,
 			     (splay_tree_value)node);
 	}
       else
-	node->aux = NULL;
+	node->symbol.aux = NULL;
     }
   result = splay_tree_min (env.nodes_marked_new);
   while (result)
@@ -225,10 +225,10 @@ ipa_free_postorder_info (void)
   for (node = cgraph_nodes; node; node = node->next)
     {
       /* Get rid of the aux information.  */
-      if (node->aux)
+      if (node->symbol.aux)
 	{
-	  free (node->aux);
-	  node->aux = NULL;
+	  free (node->symbol.aux);
+	  node->symbol.aux = NULL;
 	}
     }
 }
@@ -262,12 +262,12 @@ ipa_reverse_postorder (struct cgraph_node **order)
      to be output and put them into order as well, so we get dependencies
      right through inline functions.  */
   for (node = cgraph_nodes; node; node = node->next)
-    node->aux = NULL;
+    node->symbol.aux = NULL;
   for (pass = 0; pass < 2; pass++)
     for (node = cgraph_nodes; node; node = node->next)
-      if (!node->aux
+      if (!node->symbol.aux
 	  && (pass
-	      || (!node->address_taken
+	      || (!node->symbol.address_taken
 		  && !node->global.inlined_to
 		  && !node->alias && !node->thunk.thunk_p
 		  && !cgraph_only_called_directly_p (node))))
@@ -276,7 +276,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
           stack[stack_size].node = node;
 	  stack[stack_size].edge = node->callers;
 	  stack[stack_size].ref = 0;
-	  node->aux = (void *)(size_t)1;
+	  node->symbol.aux = (void *)(size_t)1;
 	  while (stack_size >= 0)
 	    {
 	      while (true)
@@ -290,12 +290,12 @@ ipa_reverse_postorder (struct cgraph_node **order)
 		      /* Break possible cycles involving always-inline
 			 functions by ignoring edges from always-inline
 			 functions to non-always-inline functions.  */
-		      if (DECL_DISREGARD_INLINE_LIMITS (edge->caller->decl)
+		      if (DECL_DISREGARD_INLINE_LIMITS (edge->caller->symbol.decl)
 			  && !DECL_DISREGARD_INLINE_LIMITS
-			    (cgraph_function_node (edge->callee, NULL)->decl))
+			    (cgraph_function_node (edge->callee, NULL)->symbol.decl))
 			node2 = NULL;
 		    }
-		  for (;ipa_ref_list_refering_iterate (&stack[stack_size].node->ref_list,
+		  for (;ipa_ref_list_refering_iterate (&stack[stack_size].node->symbol.ref_list,
 						       stack[stack_size].ref,
 						       ref) && !node2;
 		       stack[stack_size].ref++)
@@ -305,12 +305,12 @@ ipa_reverse_postorder (struct cgraph_node **order)
 		    }
 		  if (!node2)
 		    break;
-		  if (!node2->aux)
+		  if (!node2->symbol.aux)
 		    {
 		      stack[++stack_size].node = node2;
 		      stack[stack_size].edge = node2->callers;
 		      stack[stack_size].ref = 0;
-		      node2->aux = (void *)(size_t)1;
+		      node2->symbol.aux = (void *)(size_t)1;
 		    }
 		}
 	      order[order_pos++] = stack[stack_size--].node;
@@ -318,7 +318,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
 	}
   free (stack);
   for (node = cgraph_nodes; node; node = node->next)
-    node->aux = NULL;
+    node->symbol.aux = NULL;
   return order_pos;
 }
 

@@ -1,3 +1,65 @@
+2012-04-14  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h: Update copyrights;
+	(symtab_node): Turn to union typedef.
+	(symtab_node_base): New structure.
+	(symtab_type): Add SYMTAB_SYMBOL tag.
+	(cgraph_node): Annotate some pinters with nested_ptr.
+	(varpool_node): Likewise.
+	(cgraph_local_info): Remove lto_file_data
+	and externally_visible.
+	(cgraph_node): Remove decl; same_comdat_group list;
+	aux; ref_list; order; address_taken; reachable_from_other_parittion,
+	in_other_partition; resolution.
+	(varpool_node): Remove decl; same_comdat_group;
+	ref_list; lto_file_data; aux; order; resolution; externally_visible;
+	used_from_other_partition; in_other_partition.
+	(symtab_node_def); New union.
+	(cgraph, varpool): Update.
+	(varpool_first_static_initializer, varpool_next_static_initializer,
+	cgraph_only_called_directly_or_aliased_p,
+	varpool_can_remove_if_no_refs, varpool_can_remove_if_no_refs,
+	varpool_all_refs_explicit_p, cgraph_alias_aliased_node,
+	varpool_alias_aliased_node, cgraph_edge_recursive_p): Update
+	field references.
+	* cgraph.c: Likewise.
+	(cgraph_hash, assembler_name_hash): Turn into symtab_node.
+	* cgraphbuild.c: Likewise.
+	* lto-symtab.c: Likewise.
+	* c-gimplify.c: Likewise.
+	* value-prof.c: Likewise.
+	* tree.c: Likewise.
+	* ipa-cp.c: Likewise.
+	* tree-emutls.c: Likewise.
+	* ipa-inline-transform.c: Likwise.
+	* ipa-reference.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* ipa-ref.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* ipa-ref-inline.h: Likewise.
+	* ipa-pure-const.c: Likewise.
+	* lto-streamer-out.c: Likewise.
+	* ipa-utils.c: Likewise.
+	* ipa-inline.c: Likewise.
+	* matrix-reorg.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-vectorizer.c: Likewise.
+	* ipa-split.c: Likewise.
+	* ipa.c: Likewise.
+	* trans-mem.c: Likewise.
+	* ipa-inline-analysis.c: Likewise.
+	* gimplify.c: Likewise.
+	* cfgexpand.c: Likewise.
+	* tree-sra.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* varasm.c: Likewise.
+	* tree-nested.c: Likewise.
+	* tree-inline.c: Likewise.
+	* tree-profile.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* passes.c: Likewise.
+	* varpool.c: Likewise.
+
 2012-04-14  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-tail-merge.c (stmt_local_def): New function, factored out of

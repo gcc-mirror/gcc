@@ -1186,7 +1186,7 @@ dump_inline_summary (FILE * f, struct cgraph_node *node)
       int i;
       fprintf (f, "Inline summary for %s/%i", cgraph_node_name (node),
 	       node->uid);
-      if (DECL_DISREGARD_INLINE_LIMITS (node->decl))
+      if (DECL_DISREGARD_INLINE_LIMITS (node->symbol.decl))
 	fprintf (f, " always_inline");
       if (s->inlinable)
 	fprintf (f, " inlinable");
@@ -1583,7 +1583,7 @@ compute_bb_predicates (struct cgraph_node *node,
 		       struct ipa_node_params *parms_info,
 		       struct inline_summary *summary)
 {
-  struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
+  struct function *my_function = DECL_STRUCT_FUNCTION (node->symbol.decl);
   bool done = false;
   basic_block bb;
 
@@ -1871,7 +1871,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
      <0,2>.  */
   basic_block bb;
   gimple_stmt_iterator bsi;
-  struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
+  struct function *my_function = DECL_STRUCT_FUNCTION (node->symbol.decl);
   int freq;
   struct inline_summary *info = inline_summary (node);
   struct predicate bb_predicate;
@@ -1906,7 +1906,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
     compute_bb_predicates (node, parms_info, info);
   FOR_EACH_BB_FN (bb, my_function)
     {
-      freq = compute_call_stmt_bb_frequency (node->decl, bb);
+      freq = compute_call_stmt_bb_frequency (node->symbol.decl, bb);
 
       /* TODO: Obviously predicates can be propagated down across CFG.  */
       if (parms_info)
@@ -2096,8 +2096,8 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
     }
 
   /* Even is_gimple_min_invariant rely on current_function_decl.  */
-  current_function_decl = node->decl;
-  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+  current_function_decl = node->symbol.decl;
+  push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
 
   /* Estimate the stack size for the function if we're optimizing.  */
   self_stack_size = optimize ? estimated_stack_frame_size (node) : 0;
@@ -2106,10 +2106,10 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info->stack_frame_offset = 0;
 
   /* Can this function be inlined at all?  */
-  info->inlinable = tree_inlinable_function_p (node->decl);
+  info->inlinable = tree_inlinable_function_p (node->symbol.decl);
 
   /* Type attributes can use parameter indices to describe them.  */
-  if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
+  if (TYPE_ATTRIBUTES (TREE_TYPE (node->symbol.decl)))
     node->local.can_change_signature = false;
   else
     {
@@ -2121,7 +2121,7 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
 	  /* Functions calling builtin_apply can not change signature.  */
 	  for (e = node->callees; e; e = e->next_callee)
 	    {
-	      tree cdecl = e->callee->decl;
+	      tree cdecl = e->callee->symbol.decl;
 	      if (DECL_BUILT_IN (cdecl)
 		  && DECL_BUILT_IN_CLASS (cdecl) == BUILT_IN_NORMAL
 		  && (DECL_FUNCTION_CODE (cdecl) == BUILT_IN_APPLY_ARGS
@@ -2879,13 +2879,13 @@ do_estimate_growth (struct cgraph_node *node)
     d.growth = d.growth < info->size ? info->size : d.growth;
   else
     {
-      if (!DECL_EXTERNAL (node->decl)
+      if (!DECL_EXTERNAL (node->symbol.decl)
 	  && cgraph_will_be_removed_from_program_if_no_direct_calls (node))
 	d.growth -= info->size;
       /* COMDAT functions are very often not shared across multiple units
 	 since they come from various template instantiations.
 	 Take this into account.  */
-      else  if (DECL_COMDAT (node->decl)
+      else  if (DECL_COMDAT (node->symbol.decl)
 		&& cgraph_can_remove_if_no_direct_calls_p (node))
 	d.growth -= (info->size
 		     * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY))
@@ -2923,8 +2923,8 @@ inline_indirect_intraprocedural_analysis (struct cgraph_node *node)
 static void
 inline_analyze_function (struct cgraph_node *node)
 {
-  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-  current_function_decl = node->decl;
+  push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
+  current_function_decl = node->symbol.decl;
 
   if (dump_file)
     fprintf (dump_file, "\nAnalyzing function: %s/%u\n",
