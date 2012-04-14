@@ -1,3 +1,48 @@
+2012-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (ssse3_plusminus): New code iterator.
+	(avx2_ph<plusminus_mnemonic>wv16hi3): Macroize insn from
+	avx2_ph{add,adds,sub,subs}wv16hi3 using ssse3_plusminus code iterator.
+	(ssse3_ph<plusminus_mnemonic>wv8hi3): Macroize insn from
+	ssse3_ph{add,adds,sub,subs}wv8hi3 using ssse3_plusminus code iterator.
+	(ssse3_ph<plusminus_mnemonic>wv4hi3): Macroize insn from
+	ssse3_ph{add,adds,sub,subs}wv4hi3 using ssse3_plusminus code iterator.
+
+	(avx2_ph<plusminus_mnemonic>dv8si3): Macroize insn from
+	avx2_ph{add,adds,sub,subs}dv8si3 using plusminus code iterator.
+	(ssse3_ph<plusminus_mnemonic>dv4si3): Macroize insn from
+	ssse3_ph{add,adds,sub,subs}dv4si3 using plusminus code iterator.
+	(ssse3_ph<plusminus_mnemonic>dv2si3): Macroize insn from
+	ssse3_ph{add,adds,sub,subs}dv2si3 using plusminus code iterator.
+
+	(xop_plus): New code iterator.
+	(macs): New code attribute.
+	(macds): Ditto.
+	(xop_p<macs><ssemodesuffix><ssemodesuffix>): Macroize insn from
+	xop_pmacs{,s}{ww,dd} using xop_plus code iterator and VI24_128 mode
+	iterator.
+	(xop_p<macs>dql): Macroize insn from xop_pmacs{,s}dql using
+	xop_plus code iterator.
+	(xop_p<macs>dqh): Macroize insn from xop_pmacs{,s}dqh using
+	xop_plus code iterator.
+	(xop_p<macs>wd): Macroize insn from xop_pmacs{,s}wd using
+	xop_plus code iterator.
+	(xop_p<madcs>wd): Macroize insn from xop_pmadcs{,s}wd using
+	xop_plus code iterator.
+
+	(xop_phadd<u>bw): Macroize insn from xop_phadd{,u}bw usign
+	any_extend code iterator.
+	(xop_phadd<u>bd): Macroize insn from xop_phadd{,u}bd usign
+	any_extend code iterator.
+	(xop_phadd<u>bq): Macroize insn from xop_phadd{,u}bq usign
+	any_extend code iterator.
+	(xop_phadd<u>wd): Macroize insn from xop_phadd{,u}wd usign
+	any_extend code iterator.
+	(xop_phadd<u>wq): Macroize insn from xop_phadd{,u}wq usign
+	any_extend code iterator.
+	(xop_phadd<u>dq): Macroize insn from xop_phadd{,u}dq usign
+	any_extend code iterator.
+
 2012-04-14  Tom de Vries  <tom@codesourcery.com>
 
 	* cfgcleanup.c (try_optimize_cfg): Replace call to delete_insn_chain by
@@ -204,8 +249,7 @@
 2012-04-13  Richard Guenther  <rguenther@suse.de>
 
 	PR c/52862
-	* convert.c (convert_to_pointer): Remove special-casing of
-	zero.
+	* convert.c (convert_to_pointer): Remove special-casing of zero.
 
 2012-04-13  Joey Ye  <joey.ye@arm.com>
 
