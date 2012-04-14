@@ -111,12 +111,11 @@ can_delete_label_p (const_rtx label)
 	  && !in_expr_list_p (forced_labels, label));
 }
 
-/* Delete INSN by patching it out.  Return the next insn.  */
+/* Delete INSN by patching it out.  */
 
-rtx
+void
 delete_insn (rtx insn)
 {
-  rtx next = NEXT_INSN (insn);
   rtx note;
   bool really_delete = true;
 
@@ -128,11 +127,22 @@ delete_insn (rtx insn)
       if (! can_delete_label_p (insn))
 	{
 	  const char *name = LABEL_NAME (insn);
+	  basic_block bb = BLOCK_FOR_INSN (insn);
+	  rtx bb_note = NEXT_INSN (insn);
 
 	  really_delete = false;
 	  PUT_CODE (insn, NOTE);
 	  NOTE_KIND (insn) = NOTE_INSN_DELETED_LABEL;
 	  NOTE_DELETED_LABEL_NAME (insn) = name;
+
+	  if (bb_note != NULL_RTX && NOTE_INSN_BASIC_BLOCK_P (bb_note)
+	      && BLOCK_FOR_INSN (bb_note) == bb)
+	    {
+	      reorder_insns_nobb (insn, insn, bb_note);
+	      BB_HEAD (bb) = bb_note;
+	      if (BB_END (bb) == bb_note)
+		BB_END (bb) = insn;
+	    }
 	}
 
       remove_node_from_expr_list (insn, &nonlocal_goto_handler_labels);
@@ -190,26 +200,22 @@ delete_insn (rtx insn)
 	    LABEL_NUSES (label)--;
 	}
     }
-
-  return next;
 }
 
 /* Like delete_insn but also purge dead edges from BB.  */
 
-rtx
+void
 delete_insn_and_edges (rtx insn)
 {
-  rtx x;
   bool purge = false;
 
   if (INSN_P (insn)
       && BLOCK_FOR_INSN (insn)
       && BB_END (BLOCK_FOR_INSN (insn)) == insn)
     purge = true;
-  x = delete_insn (insn);
+  delete_insn (insn);
   if (purge)
     purge_dead_edges (BLOCK_FOR_INSN (insn));
-  return x;
 }
 
 /* Unlink a chain of insns between START and FINISH, leaving notes
@@ -219,25 +225,26 @@ delete_insn_and_edges (rtx insn)
 void
 delete_insn_chain (rtx start, rtx finish, bool clear_bb)
 {
-  rtx next;
+  rtx prev, current;
 
   /* Unchain the insns one by one.  It would be quicker to delete all of these
      with a single unchaining, rather than one at a time, but we need to keep
      the NOTE's.  */
+  current = finish;
   while (1)
     {
-      next = NEXT_INSN (start);
-      if (NOTE_P (start) && !can_delete_note_p (start))
+      prev = PREV_INSN (current);
+      if (NOTE_P (current) && !can_delete_note_p (current))
 	;
       else
-	next = delete_insn (start);
+	delete_insn (current);
 
-      if (clear_bb && !INSN_DELETED_P (start))
-	set_block_for_insn (start, NULL);
+      if (clear_bb && !INSN_DELETED_P (current))
+	set_block_for_insn (current, NULL);
 
-      if (start == finish)
+      if (current == start)
 	break;
-      start = next;
+      current = prev;
     }
 }
 
