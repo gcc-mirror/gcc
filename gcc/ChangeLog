@@ -1,3 +1,16 @@
+2012-04-14  Tom de Vries  <tom@codesourcery.com>
+
+	* cfgcleanup.c (try_optimize_cfg): Replace call to delete_insn_chain by
+	call to delete_insn.  Remove code to reorder BASIC_BLOCK note and
+	DELETED_LABEL note, and move it to ...
+	* cfgrtl.c (delete_insn): ... here.  Change return type to void.
+	(delete_insn_and_edges): Likewise.
+	(delete_insn_chain): Handle new return type of delete_insn.  Delete
+	chain backwards rather than forwards.
+	* rtl.h (delete_insn, delete_insn_and_edges): Change return type to
+	void.
+	* cfglayout.c (fixup_reorder_chain): Delete unused label.
+
 2012-04-14  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h: Update copyrights;

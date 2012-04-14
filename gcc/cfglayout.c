@@ -857,6 +857,9 @@ fixup_reorder_chain (void)
 				       (e_taken->src, e_taken->dest));
 		  e_taken->flags |= EDGE_FALLTHRU;
 		  update_br_prob_note (bb);
+		  if (LABEL_NUSES (ret_label) == 0
+		      && single_pred_p (e_taken->dest))
+		    delete_insn (ret_label);
 		  continue;
 		}
 	    }
