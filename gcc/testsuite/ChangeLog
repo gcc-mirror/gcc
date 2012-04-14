@@ -1,5 +1,9 @@
 2012-04-14  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/superblock.c: New test.
+
+2012-04-14  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.dg/pr51879-12.c: New test.
 
 2012-04-13  Jason Merrill  <jason@redhat.com>
