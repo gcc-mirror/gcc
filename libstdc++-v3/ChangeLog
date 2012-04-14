@@ -1,3 +1,10 @@
+2012-04-14  Alan Modra  <amodra@gmail.com>
+
+	PR libstdc++/52839
+	* acinclude.m4 (_GLIBCXX_ATOMIC_BUILTINS): Do not depend on
+	glibcxx_cv_atomic_long_long.
+	* configure: Regenerate.
+
 2012-04-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/26_numerics/cmath/51083.cc: Move...
