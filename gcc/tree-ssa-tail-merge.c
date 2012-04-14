@@ -269,6 +269,67 @@ struct aux_bb_info
 #define BB_VOP_AT_EXIT(bb) (((struct aux_bb_info *)bb->aux)->vop_at_exit)
 #define BB_DEP_BB(bb) (((struct aux_bb_info *)bb->aux)->dep_bb)
 
+/* Returns true if the only effect a statement STMT has, is to define locally
+   used SSA_NAMEs.  */
+
+static bool
+stmt_local_def (gimple stmt)
+{
+  basic_block bb, def_bb;
+  imm_use_iterator iter;
+  use_operand_p use_p;
+  tree val;
+  def_operand_p def_p;
+
+  if (gimple_has_side_effects (stmt))
+    return false;
+
+  def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);
+  if (def_p == NULL)
+    return false;
+
+  val = DEF_FROM_PTR (def_p);
+  if (val == NULL_TREE || TREE_CODE (val) != SSA_NAME)
+    return false;
+
+  def_bb = gimple_bb (stmt);
+
+  FOR_EACH_IMM_USE_FAST (use_p, iter, val)
+    {
+      if (is_gimple_debug (USE_STMT (use_p)))
+	continue;
+      bb = gimple_bb (USE_STMT (use_p));
+      if (bb == def_bb)
+	continue;
+
+      if (gimple_code (USE_STMT (use_p)) == GIMPLE_PHI
+	  && EDGE_PRED (bb, PHI_ARG_INDEX_FROM_USE (use_p))->src == def_bb)
+	continue;
+
+      return false;
+    }
+
+  return true;
+}
+
+/* Let GSI skip forwards over local defs.  */
+
+static void
+gsi_advance_fw_nondebug_nonlocal (gimple_stmt_iterator *gsi)
+{
+  gimple stmt;
+
+  while (true)
+    {
+      if (gsi_end_p (*gsi))
+	return;
+      stmt = gsi_stmt (*gsi);
+      if (!stmt_local_def (stmt))
+	return;
+	gsi_next_nondebug (gsi);
+    }
+}
+
 /* VAL1 and VAL2 are either:
    - uses in BB1 and BB2, or
    - phi alternatives for BB1 and BB2.
@@ -352,39 +413,6 @@ stmt_update_dep_bb (gimple stmt)
     update_dep_bb (gimple_bb (stmt), USE_FROM_PTR (use));
 }
 
-/* Returns whether VAL is used in the same bb as in which it is defined, or
-   in the phi of a successor bb.  */
-
-static bool
-local_def (tree val)
-{
-  gimple stmt, def_stmt;
-  basic_block bb, def_bb;
-  imm_use_iterator iter;
-  bool res;
-
-  if (TREE_CODE (val) != SSA_NAME)
-    return false;
-  def_stmt = SSA_NAME_DEF_STMT (val);
-  def_bb = gimple_bb (def_stmt);
-
-  res = true;
-  FOR_EACH_IMM_USE_STMT (stmt, iter, val)
-    {
-      if (is_gimple_debug (stmt))
-	continue;
-      bb = gimple_bb (stmt);
-      if (bb == def_bb)
-	continue;
-      if (gimple_code (stmt) == GIMPLE_PHI
-	  && find_edge (def_bb, bb))
-	continue;
-      res = false;
-      BREAK_FROM_IMM_USE_STMT (iter);
-    }
-  return res;
-}
-
 /* Calculates hash value for same_succ VE.  */
 
 static hashval_t
@@ -408,8 +436,7 @@ same_succ_hash (const void *ve)
     {
       stmt = gsi_stmt (gsi);
       stmt_update_dep_bb (stmt);
-      if (is_gimple_assign (stmt) && local_def (gimple_get_lhs (stmt))
-	  && !gimple_has_side_effects (stmt))
+      if (stmt_local_def (stmt))
 	continue;
       size++;
 
@@ -525,6 +552,8 @@ same_succ_equal (const void *ve1, const void *ve2)
 
   gsi1 = gsi_start_nondebug_bb (bb1);
   gsi2 = gsi_start_nondebug_bb (bb2);
+  gsi_advance_fw_nondebug_nonlocal (&gsi1);
+  gsi_advance_fw_nondebug_nonlocal (&gsi2);
   while (!(gsi_end_p (gsi1) || gsi_end_p (gsi2)))
     {
       s1 = gsi_stmt (gsi1);
@@ -535,6 +564,8 @@ same_succ_equal (const void *ve1, const void *ve2)
 	return 0;
       gsi_next_nondebug (&gsi1);
       gsi_next_nondebug (&gsi2);
+      gsi_advance_fw_nondebug_nonlocal (&gsi1);
+      gsi_advance_fw_nondebug_nonlocal (&gsi2);
     }
 
   return 1;
@@ -1148,8 +1179,7 @@ gsi_advance_bw_nondebug_nonlocal (gimple_stmt_iterator *gsi, tree *vuse,
 	    *vuse_escaped = true;
 	}
 
-      if (!(is_gimple_assign (stmt) && local_def (gimple_get_lhs (stmt))
-	    && !gimple_has_side_effects (stmt)))
+      if (!stmt_local_def (stmt))
 	return;
       gsi_prev_nondebug (gsi);
     }
