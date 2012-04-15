@@ -29,7 +29,7 @@ void test_trivial()
   // static_assert(std::is_literal_type<tuple_type>::value, "! literal");
   static_assert(std::has_trivial_copy_constructor<tuple_type>::value,
 		"! triv copy");
-  static_assert(std::has_trivial_destructor<tuple_type>::value,
+  static_assert(std::is_trivially_destructible<tuple_type>::value,
 		"! triv destructor");
   // static_assert(std::is_standard_layout<tuple_type>::value,
   //		   "! standard layout");

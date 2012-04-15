@@ -549,7 +549,7 @@ namespace __gnu_test
 	    typedef std::has_trivial_default_constructor<_Tp> ctor_p;
 	    static_assert(ctor_p::value, "default constructor not trivial");
 
-	    typedef std::has_trivial_destructor<_Tp> dtor_p;
+	    typedef std::is_trivially_destructible<_Tp> dtor_p;
 	    static_assert(dtor_p::value, "destructor not trivial");
 	  }
 	};
