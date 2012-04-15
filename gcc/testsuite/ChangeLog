@@ -1,5 +1,8 @@
 2012-04-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52706
+	* g++.dg/cpp0x/nullptr27.C: New.
+
 	PR c++/52818
 	* g++.dg/warn/format8.C: New.
 

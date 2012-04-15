@@ -1,3 +1,8 @@
+2012-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52706
+	* mangle.c (write_type): nullptr_t is a builtin type.
+
 2012-04-14  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c: Update field referenced for new cgraph/varpool layout.
