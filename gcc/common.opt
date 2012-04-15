@@ -788,6 +788,8 @@ Driver Undocumented
 ;    argument.
 ;    First selectable in G++ 4.7.
 ;
+; 7: The version of the ABI that treats nullptr_t as a builtin type.
+;    First selectable in G++ 4.8.
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
