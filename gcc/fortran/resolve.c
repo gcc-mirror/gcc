@@ -11304,6 +11304,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
   gcc_assert (stree->n.tb->u.specific);
   proc = stree->n.tb->u.specific->n.sym;
   where = stree->n.tb->where;
+  proc->attr.public_used = 1;
 
   /* Default access should already be resolved from the parser.  */
   gcc_assert (stree->n.tb->access != ACCESS_UNKNOWN);

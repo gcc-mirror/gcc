@@ -726,6 +726,10 @@ typedef struct
   unsigned sequence:1, elemental:1, pure:1, recursive:1;
   unsigned unmaskable:1, masked:1, contained:1, mod_proc:1, abstract:1;
 
+  /* Set if a (public) symbol [e.g. generic name] exposes this symbol,
+     which is relevant for private module procedures.  */
+  unsigned public_used:1;
+
   /* This is set if a contained procedure could be declared pure.  This is
      used for certain optimizations that require the result or arguments
      cannot alias.  Note that this is zero for PURE procedures.  */
