@@ -1,3 +1,15 @@
+2012-04-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/38199
+	PR libfortran/50673
+	* intrinsics/string_intriniscs_inc.c (string_len_trim):
+	Remove prototypes for string_len_trim and move to...
+	* libgfortran.h (string_len_trim): ... here and
+	(string_len_trim_char4): ...here.
+	* io/unit.c: For non-array internal arrays where we do reading,
+	adjust the record length to the last non-blank character.
+	* io/unix.c:  Fix typo.
+
 2012-04-10  Michael Matz  <matz@suse.de>
 
 	* m4/cshift0.m4 (cshift0_'rtype_code`): Guard use of modulo.

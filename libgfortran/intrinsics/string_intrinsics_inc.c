@@ -44,9 +44,6 @@ extern void concat_string (gfc_charlen_type, CHARTYPE *,
 			   gfc_charlen_type, const CHARTYPE *);
 export_proto(concat_string);
 
-extern gfc_charlen_type string_len_trim (gfc_charlen_type, const CHARTYPE *);
-export_proto(string_len_trim);
-
 extern void adjustl (CHARTYPE *, gfc_charlen_type, const CHARTYPE *);
 export_proto(adjustl);
 
