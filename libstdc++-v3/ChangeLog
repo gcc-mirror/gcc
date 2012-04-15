@@ -1,3 +1,18 @@
+2012-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52699
+	* include/bits/random.tcc (independent_bits_engine<>::operator()())
+	Avoid various overflows; use common_type on result_type and
+	_RandomNumberEngine::result_type; avoid floating point computations;
+	other smaller tweaks.
+
+	* include/bits/random.tcc (uniform_int_distribution<>::operator())
+	Use common_type; assume _UniformRandomNumberGenerator::result_type
+	unsigned; tidy.
+
+	* include/bits/stl_algobase.h (__lg(unsigned), __lg(unsigned long),
+	__lg(unsigned long long)): Add.
+
 2012-04-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/safe_iterator.h (_BeforeBeginHelper<>::
