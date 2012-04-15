@@ -1,3 +1,13 @@
+2012-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52916
+	PR fortran/40973
+	* gfortran.h (symbol_attribute): Add public_used.
+	* interface.c (check_sym_interfaces, check_uop_interfaces,
+	gfc_check_interfaces): Set it.
+	* resolve.c (resolve_typebound_procedure): Ditto.
+	* trans-decl.c (build_function_decl): Use it.
+
 2012-04-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52729
