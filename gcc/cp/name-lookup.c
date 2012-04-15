@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
@@ -400,6 +400,9 @@ pop_binding (tree id, tree decl)
 tree
 strip_using_decl (tree decl)
 {
+  if (decl == NULL_TREE)
+    return NULL_TREE;
+
   while (TREE_CODE (decl) == USING_DECL && !DECL_DEPENDENT_P (decl))
     decl = USING_DECL_DECLS (decl);
   return decl;
@@ -4115,9 +4118,13 @@ qualify_lookup (tree val, int flags)
     return false;
   if ((flags & LOOKUP_PREFER_NAMESPACES) && TREE_CODE (val) == NAMESPACE_DECL)
     return true;
-  if ((flags & LOOKUP_PREFER_TYPES)
-      && (TREE_CODE (val) == TYPE_DECL || TREE_CODE (val) == TEMPLATE_DECL))
-    return true;
+  if (flags & LOOKUP_PREFER_TYPES)
+    {
+      tree target_val = strip_using_decl (val);
+      if (TREE_CODE (target_val) == TYPE_DECL
+	  || TREE_CODE (target_val) == TEMPLATE_DECL)
+	return true;
+    }
   if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
     return false;
   /* Look through lambda things that we shouldn't be able to see.  */
