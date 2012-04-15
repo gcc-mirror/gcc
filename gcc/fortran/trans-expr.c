@@ -5650,7 +5650,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
       && ((expr->value.function.esym
 	   && expr->value.function.esym->result->attr.pointer
 	   && !expr->value.function.esym->result->attr.dimension)
-	  || (!expr->value.function.esym
+	  || (!expr->value.function.esym && !expr->ref
 	      && expr->symtree->n.sym->attr.pointer
 	      && !expr->symtree->n.sym->attr.dimension)))
     {
