@@ -1,3 +1,22 @@
+2012-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52702
+	* include/std/type_traits (is_trivially_destructible): Add.
+	(has_trivial_destructor): Remove.
+	* testsuite/util/testsuite_common_types.h: Adjust.
+	* testsuite/20_util/tuple/requirements/dr801.cc: Likewise.
+	* testsuite/20_util/pair/requirements/dr801.cc: Likewise.
+	* testsuite/20_util/is_trivially_destructible/value.cc: New.
+	* testsuite/20_util/is_trivially_destructible/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_destructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
 2012-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/52699

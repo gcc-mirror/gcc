@@ -1147,28 +1147,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_nt_move_assignable_impl<_Tp>
     { };
 
-  /// has_trivial_default_constructor
+  /// is_trivially_constructible (still unimplemented)
+  
+  /// is_trivially_default_constructible (still unimplemented)
+
+  /// is_trivially_copy_constructible (still unimplemented)
+
+  /// is_trivially_move_constructible (still unimplemented)
+
+  /// is_trivially_assignable (still unimplemented)
+
+  /// is_trivially_copy_assignable (still unimplemented)
+
+  /// is_trivially_move_assignable (still unimplemented)
+
+  /// is_trivially_destructible
+  template<typename _Tp>
+    struct is_trivially_destructible
+    : public __and_<is_destructible<_Tp>, integral_constant<bool,
+			      __has_trivial_destructor(_Tp)>>::type
+    { };
+
+  /// has_trivial_default_constructor (temporary legacy)
   template<typename _Tp>
     struct has_trivial_default_constructor
     : public integral_constant<bool, __has_trivial_constructor(_Tp)>
     { };
 
-  /// has_trivial_copy_constructor
+  /// has_trivial_copy_constructor (temporary legacy)
   template<typename _Tp>
     struct has_trivial_copy_constructor
     : public integral_constant<bool, __has_trivial_copy(_Tp)>
     { };
 
-  /// has_trivial_copy_assign
+  /// has_trivial_copy_assign (temporary legacy)
   template<typename _Tp>
     struct has_trivial_copy_assign
     : public integral_constant<bool, __has_trivial_assign(_Tp)>
-    { };
-
-  /// has_trivial_destructor
-  template<typename _Tp>
-    struct has_trivial_destructor
-    : public integral_constant<bool, __has_trivial_destructor(_Tp)>
     { };
 
   /// has_virtual_destructor
