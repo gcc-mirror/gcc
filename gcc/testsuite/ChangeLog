@@ -1,3 +1,12 @@
+2012-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from mainline
+
+	2012-04-13  Martin Jambor  <mjambor@suse.cz>
+	PR middle-end/52939
+
+	* g++.dg/ipa/pr52939.C: New test.
+
 2012-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52380
