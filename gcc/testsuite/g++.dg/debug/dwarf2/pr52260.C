@@ -22,7 +22,7 @@ namespace A
 {
   template <typename T>
   struct I : H <T> {};
-  template <typename ...> struct J;
+  template <typename ...> struct J {};
   template <typename> struct K;
   struct L
   {
@@ -36,7 +36,7 @@ namespace A
   template <typename T, typename B2, typename ... B4>
   struct N <T (B4 ...), B2> : L::M <B2> {};
   template <typename T, typename ... B4>
-  struct K <T (B4 ...)> :J <,>, L
+  struct K <T (B4 ...)> :J <>, L
   {
     typedef T O (B4 ...);
     struct P {};

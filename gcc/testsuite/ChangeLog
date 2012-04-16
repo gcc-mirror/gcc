@@ -1,5 +1,8 @@
 2012-04-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47220
+	* g++.dg/cpp0x/variadic126.C: New.
+
 	PR c++/52380
 	* g++.dg/cpp0x/variadic125.C: New.
 
