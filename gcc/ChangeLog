@@ -1,3 +1,52 @@
+2012-04-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (symtab_node_base): Add next and previous pointers.
+	(cgraph_node): Remove next and preivous pointers.
+	(varpool_node): Likewise; remove next/previous GTY marker;
+	it is not type safe.
+	(symtab_node_def): Update GTY marker
+	(x_cgraph_nodes, cgraph_nodes): Remove.
+	(symtab_nodes): New function.
+	(cgraph_order): Rename to ...
+	(symtab_order): ... this one.
+	(symtab_register_node, symtab_unregister_node, symtab_remove_node):
+	Declare.
+	(x_varpool_nodes, varpool_nodes): Remove.
+	(FOR_EACH_STATIC_VARIABLE): Update.
+	(symtab_function_p, symtab_variable_p): New function.
+	(FOR_EACH_VARIABLE): Update.
+	(varpool_first_variable, varpool_next_variable): New functions.
+	(FOR_EACH_VARIABLE): Update.
+	(cgraph_first_defined_function): Update.
+	(cgraph_next_defined_function, cgraph_next_defined_function): Update.
+	(FOR_EACH_DEFINED_FUNCTION, FOR_EACH_FUNCTION): Update.
+	(cgraph_first_function, cgraph_next_function): New.
+	(FOR_EACH_FUNCTION): Update.
+	(cgraph_first_function_with_gimple_body,
+	cgraph_next_function_with_gimple_body): Update.
+	* symtab.c: New file.
+	* cgraph.c: Update copyright dates.
+	(x_cgraph_nodes, cgraph_order): Remove.
+	(NEXT_FREE_NODE): Update.
+	(SET_NEXT_FREE_NODE): New.
+	(cgraph_create_node_1): Remove common code.
+	(cgraph_create_node); Remove common code; call symtab_register_node.
+	(cgraph_remove_node): Remove common code; call symtab_unregister-node.
+	(cgraph_add_asm_node); update.
+	(cgraph_clone_node): Register new node.
+	* cgraphunit.c (process_function_and_variable_attributes): Update.
+	(cgraph_analyze_functions): Update.
+	(cgraph_analyze_functions): Update.
+	(cgraph_output_in_order): Update.
+	* lto-cgraph.c (input_node, input_varpool_node, input_cgraph_1): Update.
+	* ipa-inline.c (recursive_inlining); update.
+	* lto-streamer-in.c (lto_input_toplevel_asms); Update.
+	* ipa.c (cgraph_remove_unreachable_nodes): Update.
+	* Makefile.in: Add symtab.o
+	* varpool.c (x_varpool_nodes): Remove
+	(varpool_node): Remove common code; call symtab_register_node.
+	(varpool_remove_node); Remove common code; call symtab_unregister_node.
+
 2012-04-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52977

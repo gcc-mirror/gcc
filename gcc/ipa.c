@@ -329,9 +329,9 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
      Also we need to care functions that are unreachable but we need to keep them around
      for later clonning.  In this case we also turn them to unanalyzed nodes, but
      keep the body around.  */
-  for (node = cgraph_nodes; node; node = next)
+  for (node = cgraph_first_function (); node; node = next)
     {
-      next = node->next;
+      next = cgraph_next_function (node);
       if (node->symbol.aux && !node->reachable)
         {
 	  cgraph_node_remove_callees (node);
@@ -425,9 +425,9 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 
   if (file)
     fprintf (file, "Reclaiming variables:");
-  for (vnode = varpool_nodes; vnode; vnode = vnext)
+  for (vnode = varpool_first_variable (); vnode; vnode = vnext)
     {
-      vnext = vnode->next;
+      vnext = varpool_next_variable (vnode);
       if (!vnode->needed)
         {
 	  if (file)

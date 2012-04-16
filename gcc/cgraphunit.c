@@ -1085,7 +1085,8 @@ process_function_and_variable_attributes (struct cgraph_node *first,
   struct cgraph_node *node;
   struct varpool_node *vnode;
 
-  for (node = cgraph_nodes; node != first; node = node->next)
+  for (node = cgraph_first_function (); node != first;
+       node = cgraph_next_function (node))
     {
       tree decl = node->symbol.decl;
       if (DECL_PRESERVE_P (decl))
@@ -1126,7 +1127,8 @@ process_function_and_variable_attributes (struct cgraph_node *first,
      
       process_common_attributes (decl);
     }
-  for (vnode = varpool_nodes; vnode != first_var; vnode = vnode->next)
+  for (vnode = varpool_first_variable (); vnode != first_var;
+       vnode = varpool_next_variable (vnode))
     {
       tree decl = vnode->symbol.decl;
       if (DECL_PRESERVE_P (decl))
@@ -1184,13 +1186,14 @@ cgraph_analyze_functions (void)
   bitmap_obstack_initialize (NULL);
   process_function_and_variable_attributes (first_processed,
 					    first_analyzed_var);
-  first_processed = cgraph_nodes;
-  first_analyzed_var = varpool_nodes;
+  first_processed = cgraph_first_function ();
+  first_analyzed_var = varpool_first_variable ();
   varpool_analyze_pending_decls ();
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "Initial entry points:");
-      for (node = cgraph_nodes; node != first_analyzed; node = node->next)
+      for (node = cgraph_first_function (); node != first_analyzed;
+	   node = cgraph_next_function (node))
 	if (node->needed)
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n");
@@ -1255,8 +1258,8 @@ cgraph_analyze_functions (void)
          edges.  Process their attributes too.  */
       process_function_and_variable_attributes (first_processed,
 						first_analyzed_var);
-      first_processed = cgraph_nodes;
-      first_analyzed_var = varpool_nodes;
+      first_processed = cgraph_first_function ();
+      first_analyzed_var = varpool_first_variable ();
       varpool_analyze_pending_decls ();
       cgraph_process_new_functions ();
     }
@@ -1265,7 +1268,8 @@ cgraph_analyze_functions (void)
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "Unit entry points:");
-      for (node = cgraph_nodes; node != first_analyzed; node = node->next)
+      for (node = cgraph_first_function (); node != first_analyzed;
+	   node = cgraph_next_function (node))
 	if (node->needed)
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n\nInitial ");
@@ -1276,10 +1280,11 @@ cgraph_analyze_functions (void)
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "\nReclaiming functions:");
 
-  for (node = cgraph_nodes; node != first_analyzed; node = next)
+  for (node = cgraph_first_function (); node != first_analyzed;
+       node = next)
     {
       tree decl = node->symbol.decl;
-      next = node->next;
+      next = cgraph_next_function (node);
 
       if (node->local.finalized && !gimple_has_body_p (decl)
 	  && (!node->alias || !node->thunk.alias)
@@ -1309,7 +1314,7 @@ cgraph_analyze_functions (void)
       dump_varpool (cgraph_dump_file);
     }
   bitmap_obstack_release (NULL);
-  first_analyzed = cgraph_nodes;
+  first_analyzed = cgraph_first_function ();
   ggc_collect ();
 }
 
@@ -2076,7 +2081,7 @@ cgraph_output_in_order (void)
   struct varpool_node *pv;
   struct cgraph_asm_node *pa;
 
-  max = cgraph_order;
+  max = symtab_order;
   nodes = XCNEWVEC (struct cgraph_order_sort, max);
 
   varpool_analyze_pending_decls ();

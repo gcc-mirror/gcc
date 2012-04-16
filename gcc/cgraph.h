@@ -57,6 +57,10 @@ struct GTY(()) symtab_node_base
   /* File stream where this node is being written to.  */
   struct lto_file_decl_data * lto_file_data;
 
+  /* Linked list of symbol table entries starting with symtab_nodes.  */
+  symtab_node next;
+  symtab_node previous;
+
   PTR GTY ((skip)) aux;
 
   /* Set when function has address taken.
@@ -190,12 +194,6 @@ struct GTY(()) cgraph_node {
   struct symtab_node_base symbol;
   struct cgraph_edge *callees;
   struct cgraph_edge *callers;
-  struct cgraph_node *
-    GTY ((nested_ptr (union symtab_node_def, "(struct cgraph_node *)(%h)", "(symtab_node)%h")))
-    next;
-  struct cgraph_node *
-    GTY ((nested_ptr (union symtab_node_def, "(struct cgraph_node *)(%h)", "(symtab_node)%h")))
-    previous;
   /* List of edges representing indirect calls with a yet undetermined
      callee.  */
   struct cgraph_edge *indirect_calls;
@@ -417,17 +415,10 @@ DEF_VEC_ALLOC_P(cgraph_edge_p,heap);
 /* The varpool data structure.
    Each static variable decl has assigned varpool_node.  */
 
-struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
+struct GTY(()) varpool_node {
   struct symtab_node_base symbol;
   /* For aliases points to declaration DECL is alias of.  */
   tree alias_of;
-  /* Pointer to the next function in varpool_nodes.  */
-  struct varpool_node *
-    GTY ((nested_ptr (union symtab_node_def, "(struct varpool_node *)(%h)", "(symtab_node)%h")))
-    next;
-  struct varpool_node *
-    GTY ((nested_ptr (union symtab_node_def, "(struct varpool_node *)(%h)", "(symtab_node)%h")))
-    prev;
   /* Pointer to the next function in varpool_nodes_queue.  */
   struct varpool_node *
     GTY ((nested_ptr (union symtab_node_def, "(struct varpool_node *)(%h)", "(symtab_node)%h")))
@@ -467,7 +458,8 @@ struct GTY(()) cgraph_asm_node {
 };
 
 /* Symbol table entry.  */
-union GTY((desc ("%h.symbol.type"))) symtab_node_def {
+union GTY((desc ("%h.symbol.type"), chain_next ("%h.symbol.next"),
+	   chain_prev ("%h.symbol.previous"))) symtab_node_def {
   struct symtab_node_base GTY ((tag ("SYMTAB_SYMBOL"))) symbol;
   /* Use cgraph (symbol) accessor to get cgraph_node.  */
   struct cgraph_node GTY ((tag ("SYMTAB_FUNCTION"))) x_function;
@@ -475,8 +467,7 @@ union GTY((desc ("%h.symbol.type"))) symtab_node_def {
   struct varpool_node GTY ((tag ("SYMTAB_VARIABLE"))) x_variable;
 };
 
-extern GTY(()) symtab_node x_cgraph_nodes;
-#define cgraph_nodes ((struct cgraph_node *)x_cgraph_nodes)
+extern GTY(()) symtab_node symtab_nodes;
 extern GTY(()) int cgraph_n_nodes;
 extern GTY(()) int cgraph_max_uid;
 extern GTY(()) int cgraph_edge_max_uid;
@@ -501,8 +492,13 @@ extern GTY(()) symtab_node x_cgraph_nodes_queue;
 extern GTY(()) struct cgraph_node *cgraph_new_nodes;
 
 extern GTY(()) struct cgraph_asm_node *cgraph_asm_nodes;
-extern GTY(()) int cgraph_order;
+extern GTY(()) int symtab_order;
 extern bool same_body_aliases_done;
+
+/* In symtab.c  */
+void symtab_register_node (symtab_node);
+void symtab_unregister_node (symtab_node);
+void symtab_remove_node (symtab_node);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
@@ -684,9 +680,7 @@ bool cgraph_optimize_for_size_p (struct cgraph_node *);
 
 /* In varpool.c  */
 extern GTY(()) symtab_node x_varpool_nodes_queue;
-extern GTY(()) symtab_node x_varpool_nodes;
 #define varpool_nodes_queue ((struct varpool_node *)x_varpool_nodes_queue)
-#define varpool_nodes ((struct varpool_node *)x_varpool_nodes)
 
 struct varpool_node *varpool_node (tree);
 struct varpool_node *varpool_node_for_asm (tree asmname);
@@ -721,9 +715,19 @@ bool varpool_for_node_and_aliases (struct varpool_node *,
 			           void *, bool);
 void varpool_add_new_variable (tree);
 
-/* Walk all reachable static variables.  */
-#define FOR_EACH_STATIC_VARIABLE(node) \
-   for ((node) = varpool_nodes_queue; (node); (node) = (node)->next_needed)
+/* Return true when NODE is function.  */
+static inline bool
+symtab_function_p (symtab_node node)
+{
+  return node->symbol.type == SYMTAB_FUNCTION;
+}
+
+/* Return true when NODE is variable.  */
+static inline bool
+symtab_variable_p (symtab_node node)
+{
+  return node->symbol.type == SYMTAB_VARIABLE;
+}
 
 /* Return callgraph node for given symbol and check it is a function. */
 static inline struct cgraph_node *
@@ -769,13 +773,44 @@ varpool_next_static_initializer (struct varpool_node *node)
   return NULL;
 }
 
+/* Walk all reachable static variables.  */
+#define FOR_EACH_STATIC_VARIABLE(node) \
+   for ((node) = varpool_nodes_queue; (node); (node) = (node)->next_needed)
 /* Walk all static variables with initializer set.  */
 #define FOR_EACH_STATIC_INITIALIZER(node) \
    for ((node) = varpool_first_static_initializer (); (node); \
         (node) = varpool_next_static_initializer (node))
+
+/* Return first variable.  */
+static inline struct varpool_node *
+varpool_first_variable (void)
+{
+  symtab_node node;
+  for (node = symtab_nodes; node; node = node->symbol.next)
+    {
+      if (symtab_variable_p (node))
+	return varpool (node);
+    }
+  return NULL;
+}
+
+/* Return next variable after NODE.  */
+static inline struct varpool_node *
+varpool_next_variable (struct varpool_node *node)
+{
+  symtab_node node1 = (symtab_node) node->symbol.next;
+  for (; node1; node1 = node1->symbol.next)
+    {
+      if (symtab_variable_p (node1))
+	return varpool (node1);
+    }
+  return NULL;
+}
 /* Walk all variables.  */
 #define FOR_EACH_VARIABLE(node) \
-   for ((node) = varpool_nodes; (node); (node) = (node)->next)
+   for ((node) = varpool_first_variable (); \
+        (node); \
+	(node) = varpool_next_variable ((node)))
 /* Walk all variables with definitions in current unit.  */
 #define FOR_EACH_DEFINED_VARIABLE(node) \
    for ((node) = varpool_nodes_queue; (node); (node) = (node)->next_needed)
@@ -784,11 +819,11 @@ varpool_next_static_initializer (struct varpool_node *node)
 static inline struct cgraph_node *
 cgraph_first_defined_function (void)
 {
-  struct cgraph_node *node;
-  for (node = cgraph_nodes; node; node = node->next)
+  symtab_node node;
+  for (node = symtab_nodes; node; node = node->symbol.next)
     {
-      if (node->analyzed)
-	return node;
+      if (symtab_function_p (node) && cgraph (node)->analyzed)
+	return cgraph (node);
     }
   return NULL;
 }
@@ -797,10 +832,11 @@ cgraph_first_defined_function (void)
 static inline struct cgraph_node *
 cgraph_next_defined_function (struct cgraph_node *node)
 {
-  for (node = node->next; node; node = node->next)
+  symtab_node node1 = (symtab_node) node->symbol.next;
+  for (; node1; node1 = node1->symbol.next)
     {
-      if (node->analyzed)
-	return node;
+      if (symtab_function_p (node1) && cgraph (node1)->analyzed)
+	return cgraph (node1);
     }
   return NULL;
 }
@@ -808,10 +844,37 @@ cgraph_next_defined_function (struct cgraph_node *node)
 /* Walk all functions with body defined.  */
 #define FOR_EACH_DEFINED_FUNCTION(node) \
    for ((node) = cgraph_first_defined_function (); (node); \
-        (node) = cgraph_next_defined_function (node))
+        (node) = cgraph_next_defined_function ((node)))
+
+/* Return first function.  */
+static inline struct cgraph_node *
+cgraph_first_function (void)
+{
+  symtab_node node;
+  for (node = symtab_nodes; node; node = node->symbol.next)
+    {
+      if (symtab_function_p (node))
+	return cgraph (node);
+    }
+  return NULL;
+}
+
+/* Return next function.  */
+static inline struct cgraph_node *
+cgraph_next_function (struct cgraph_node *node)
+{
+  symtab_node node1 = (symtab_node) node->symbol.next;
+  for (; node1; node1 = node1->symbol.next)
+    {
+      if (symtab_function_p (node1))
+	return cgraph (node1);
+    }
+  return NULL;
+}
 /* Walk all functions.  */
 #define FOR_EACH_FUNCTION(node) \
-   for ((node) = cgraph_nodes; (node); (node) = (node)->next)
+   for ((node) = cgraph_first_function (); (node); \
+        (node) = cgraph_next_function ((node)))
 
 /* Return true when NODE is a function with Gimple body defined
    in current unit.  Functions can also be define externally or they
@@ -829,11 +892,12 @@ cgraph_function_with_gimple_body_p (struct cgraph_node *node)
 static inline struct cgraph_node *
 cgraph_first_function_with_gimple_body (void)
 {
-  struct cgraph_node *node;
-  for (node = cgraph_nodes; node; node = node->next)
+  symtab_node node;
+  for (node = symtab_nodes; node; node = node->symbol.next)
     {
-      if (cgraph_function_with_gimple_body_p (node))
-	return node;
+      if (symtab_function_p (node)
+	  && cgraph_function_with_gimple_body_p (cgraph (node)))
+	return cgraph (node);
     }
   return NULL;
 }
@@ -842,10 +906,12 @@ cgraph_first_function_with_gimple_body (void)
 static inline struct cgraph_node *
 cgraph_next_function_with_gimple_body (struct cgraph_node *node)
 {
-  for (node = node->next; node; node = node->next)
+  symtab_node node1 = node->symbol.next;
+  for (; node1; node1 = node1->symbol.next)
     {
-      if (cgraph_function_with_gimple_body_p (node))
-	return node;
+      if (symtab_function_p (node1)
+	  && cgraph_function_with_gimple_body_p (cgraph (node1)))
+	return cgraph (node1);
     }
   return NULL;
 }

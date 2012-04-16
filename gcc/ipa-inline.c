@@ -1267,10 +1267,10 @@ recursive_inlining (struct cgraph_edge *edge,
   /* Remove master clone we used for inlining.  We rely that clones inlined
      into master clone gets queued just before master clone so we don't
      need recursion.  */
-  for (node = cgraph_nodes; node != master_clone;
+  for (node = cgraph_first_function (); node != master_clone;
        node = next)
     {
-      next = node->next;
+      next = cgraph_next_function (node);
       if (node->global.inlined_to == master_clone)
 	cgraph_remove_node (node);
     }
