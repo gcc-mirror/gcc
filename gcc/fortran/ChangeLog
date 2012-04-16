@@ -1,3 +1,9 @@
+2012-04-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/52968
+	* class.c (gfc_build_class_symbol): Make sure the 'f2k_derived'
+	namespace is present.
+
 2012-04-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/51082

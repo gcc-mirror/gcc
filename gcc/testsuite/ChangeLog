@@ -1,3 +1,8 @@
+2012-04-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/52968
+	* gfortran.dg/typebound_call_23.f03: New test case.
+
 2012-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47220
