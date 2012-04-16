@@ -1,3 +1,8 @@
+2012-04-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* doc/install.texi (Specific, *-ibm-aix*): Update assembler bug
+	status.
+
 2012-04-16  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (build_ref_for_model): Create COMPONENT_REFs only for
