@@ -3489,7 +3489,7 @@ collect_candidates_for_java_method_aliases (void)
   return candidates;
 #endif
 
-  for (node = cgraph_nodes; node ; node = node->next)
+  FOR_EACH_FUNCTION (node)
     {
       tree fndecl = node->symbol.decl;
 
@@ -3523,7 +3523,7 @@ build_java_method_aliases (struct pointer_set_t *candidates)
   return;
 #endif
 
-  for (node = cgraph_nodes; node ; node = node->next)
+  FOR_EACH_FUNCTION (node)
     {
       tree fndecl = node->symbol.decl;
 

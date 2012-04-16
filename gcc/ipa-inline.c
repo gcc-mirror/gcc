@@ -1685,7 +1685,7 @@ ipa_inline (void)
 
   nnodes = ipa_reverse_postorder (order);
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     node->symbol.aux = 0;
 
   if (dump_file)
@@ -1742,7 +1742,7 @@ ipa_inline (void)
 	 to be hot.  */
       for (cold = 0; cold <= 1; cold ++)
 	{
-	  for (node = cgraph_nodes; node; node = node->next)
+	  FOR_EACH_DEFINED_FUNCTION (node)
 	    {
 	      if (want_inline_function_called_once_p (node)
 		  && (cold

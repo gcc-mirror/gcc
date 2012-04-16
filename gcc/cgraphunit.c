@@ -890,7 +890,7 @@ verify_cgraph (void)
   if (seen_error ())
     return;
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     verify_cgraph_node (node);
 }
 
@@ -1026,7 +1026,7 @@ void
 cgraph_process_same_body_aliases (void)
 {
   struct cgraph_node *node;
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     if (node->same_body_alias
 	&& !VEC_length (ipa_ref_t, node->symbol.ref_list.references))
       {
@@ -1398,11 +1398,11 @@ cgraph_mark_functions_to_output (void)
 #ifdef ENABLE_CHECKING
   bool check_same_comdat_groups = false;
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     gcc_assert (!node->process);
 #endif
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     {
       tree decl = node->symbol.decl;
       struct cgraph_edge *e;
@@ -1472,7 +1472,7 @@ cgraph_mark_functions_to_output (void)
     }
 #ifdef ENABLE_CHECKING
   if (check_same_comdat_groups)
-    for (node = cgraph_nodes; node; node = node->next)
+    FOR_EACH_FUNCTION (node)
       if (node->symbol.same_comdat_group && !node->process)
 	{
 	  tree decl = node->symbol.decl;
@@ -2081,7 +2081,7 @@ cgraph_output_in_order (void)
 
   varpool_analyze_pending_decls ();
 
-  for (pf = cgraph_nodes; pf; pf = pf->next)
+  FOR_EACH_DEFINED_FUNCTION (pf)
     {
       if (pf->process && !pf->thunk.thunk_p && !pf->alias)
 	{
@@ -2092,7 +2092,7 @@ cgraph_output_in_order (void)
 	}
     }
 
-  for (pv = varpool_nodes_queue; pv; pv = pv->next_needed)
+  FOR_EACH_DEFINED_VARIABLE (pv)
     {
       i = pv->symbol.order;
       gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
@@ -2246,14 +2246,14 @@ output_weakrefs (void)
 {
   struct cgraph_node *node;
   struct varpool_node *vnode;
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     if (node->alias && DECL_EXTERNAL (node->symbol.decl)
         && !TREE_ASM_WRITTEN (node->symbol.decl)
 	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
       assemble_alias (node->symbol.decl,
 		      node->thunk.alias ? DECL_ASSEMBLER_NAME (node->thunk.alias)
 		      : get_alias_symbol (node->symbol.decl));
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     if (vnode->alias && DECL_EXTERNAL (vnode->symbol.decl)
         && !TREE_ASM_WRITTEN (vnode->symbol.decl)
 	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (vnode->symbol.decl)))
@@ -2320,7 +2320,7 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
    new_version->analyzed = old_version->analyzed;
    new_version->local = old_version->local;
    new_version->symbol.externally_visible = false;
-   new_version->local.local = true;
+   new_version->local.local = old_version->analyzed;
    new_version->global = old_version->global;
    new_version->rtl = old_version->rtl;
    new_version->reachable = true;
@@ -2578,7 +2578,7 @@ cgraph_materialize_all_clones (void)
   while (!stabilized)
     {
       stabilized = true;
-      for (node = cgraph_nodes; node; node = node->next)
+      FOR_EACH_FUNCTION (node)
         {
 	  if (node->clone_of && node->symbol.decl != node->clone_of->symbol.decl
 	      && !gimple_has_body_p (node->symbol.decl))
@@ -2628,7 +2628,7 @@ cgraph_materialize_all_clones (void)
 	    }
 	}
     }
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     if (!node->analyzed && node->callees)
       cgraph_node_remove_callees (node);
   if (cgraph_dump_file)
@@ -2745,10 +2745,9 @@ cgraph_optimize (void)
       struct cgraph_node *node;
       bool error_found = false;
 
-      for (node = cgraph_nodes; node; node = node->next)
-	if (node->analyzed
-	    && (node->global.inlined_to
-		|| gimple_has_body_p (node->symbol.decl)))
+      FOR_EACH_DEFINED_FUNCTION (node)
+	if (node->global.inlined_to
+	    || gimple_has_body_p (node->symbol.decl))
 	  {
 	    error_found = true;
 	    dump_cgraph_node (stderr, node);

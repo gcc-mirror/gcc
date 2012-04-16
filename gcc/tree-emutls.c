@@ -741,7 +741,7 @@ ipa_lower_emutls (void)
   tls_vars = varpool_node_set_new ();
 
   /* Examine all global variables for TLS variables.  */
-  for (var = varpool_nodes; var ; var = var->next)
+  FOR_EACH_VARIABLE (var)
     if (DECL_THREAD_LOCAL_P (var->symbol.decl))
       {
 	gcc_checking_assert (TREE_STATIC (var->symbol.decl)
@@ -790,7 +790,7 @@ ipa_lower_emutls (void)
     }
 
   /* Adjust all uses of TLS variables within the function bodies.  */
-  for (func = cgraph_nodes; func; func = func->next)
+  FOR_EACH_DEFINED_FUNCTION (func)
     if (func->reachable && func->lowered)
       lower_emutls_function_body (func);
 

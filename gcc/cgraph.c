@@ -711,7 +711,7 @@ cgraph_node_for_asm (tree asmname)
       assembler_name_hash =
 	htab_create_ggc (10, hash_node_by_assembler_name, eq_assembler_name,
 			 NULL);
-      for (node = cgraph_nodes; node; node = node->next)
+      FOR_EACH_FUNCTION (node)
         if (!node->global.inlined_to)
 	  {
 	    tree name = DECL_ASSEMBLER_NAME (node->symbol.decl);
@@ -1962,7 +1962,7 @@ dump_cgraph (FILE *f)
   struct cgraph_node *node;
 
   fprintf (f, "callgraph:\n\n");
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     dump_cgraph_node (f, node);
 }
 

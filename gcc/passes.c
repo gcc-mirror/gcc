@@ -703,16 +703,12 @@ dump_passes (void)
 
   create_pass_tab();
 
-  n = cgraph_nodes;
-  while (n)
-    {
-      if (DECL_STRUCT_FUNCTION (n->symbol.decl))
-        {
-          node = n;
-          break;
-        }
-      n = n->next;
-    }
+  FOR_EACH_DEFINED_FUNCTION (n)
+    if (DECL_STRUCT_FUNCTION (n->symbol.decl))
+      {
+	node = n;
+	break;
+      }
 
   if (!node)
     return;
@@ -1662,8 +1658,8 @@ do_per_function (void (*callback) (void *data), void *data)
   else
     {
       struct cgraph_node *node;
-      for (node = cgraph_nodes; node; node = node->next)
-	if (node->analyzed && gimple_has_body_p (node->symbol.decl)
+      FOR_EACH_DEFINED_FUNCTION (node)
+	if (gimple_has_body_p (node->symbol.decl)
 	    && (!node->clone_of || node->symbol.decl != node->clone_of->symbol.decl))
 	  {
 	    push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
@@ -2346,7 +2342,7 @@ ipa_write_summaries (void)
     }
   vset = varpool_node_set_new ();
 
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     if (vnode->needed && (!vnode->alias || vnode->alias_of))
       varpool_node_set_add (vset, vnode);
 

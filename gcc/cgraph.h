@@ -773,6 +773,12 @@ varpool_next_static_initializer (struct varpool_node *node)
 #define FOR_EACH_STATIC_INITIALIZER(node) \
    for ((node) = varpool_first_static_initializer (); (node); \
         (node) = varpool_next_static_initializer (node))
+/* Walk all variables.  */
+#define FOR_EACH_VARIABLE(node) \
+   for ((node) = varpool_nodes; (node); (node) = (node)->next)
+/* Walk all variables with definitions in current unit.  */
+#define FOR_EACH_DEFINED_VARIABLE(node) \
+   for ((node) = varpool_nodes_queue; (node); (node) = (node)->next_needed)
 
 /* Return first function with body defined.  */
 static inline struct cgraph_node *
@@ -803,7 +809,9 @@ cgraph_next_defined_function (struct cgraph_node *node)
 #define FOR_EACH_DEFINED_FUNCTION(node) \
    for ((node) = cgraph_first_defined_function (); (node); \
         (node) = cgraph_next_defined_function (node))
-
+/* Walk all functions.  */
+#define FOR_EACH_FUNCTION(node) \
+   for ((node) = cgraph_nodes; (node); (node) = (node)->next)
 
 /* Return true when NODE is a function with Gimple body defined
    in current unit.  Functions can also be define externally or they

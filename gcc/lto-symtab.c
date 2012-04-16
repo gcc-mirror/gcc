@@ -761,11 +761,11 @@ lto_symtab_merge_cgraph_nodes (void)
   lto_symtab_maybe_init_hash_table ();
   htab_traverse (lto_symtab_identifiers, lto_symtab_merge_cgraph_nodes_1, NULL);
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     if ((node->thunk.thunk_p || node->alias)
 	&& node->thunk.alias)
       node->thunk.alias = lto_symtab_prevailing_decl (node->thunk.alias);
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     if (vnode->alias_of)
       vnode->alias_of = lto_symtab_prevailing_decl (vnode->alias_of);
 }

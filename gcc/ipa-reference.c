@@ -530,9 +530,8 @@ generate_summary (void)
   bm_temp = BITMAP_ALLOC (&local_info_obstack);
 
   /* Process all of the functions next.  */
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
-      analyze_function (node);
+  FOR_EACH_DEFINED_FUNCTION (node)
+    analyze_function (node);
 
   if (dump_file)
     EXECUTE_IF_SET_IN_BITMAP (all_module_statics, 0, index, bi)
@@ -544,7 +543,7 @@ generate_summary (void)
   BITMAP_FREE(bm_temp);
 
   if (dump_file)
-    for (node = cgraph_nodes; node; node = node->next)
+    FOR_EACH_DEFINED_FUNCTION (node)
       if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
 	{
 	  ipa_reference_local_vars_info_t l;
@@ -884,13 +883,13 @@ propagate (void)
     }
 
   /* Cleanup. */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
       ipa_reference_vars_info_t node_info;
       ipa_reference_global_vars_info_t node_g;
       ipa_reference_optimization_summary_t opt;
 
-      if (!node->analyzed || node->alias)
+      if (node->alias)
         continue;
 
       node_info = get_reference_vars_info (node);

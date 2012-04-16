@@ -1422,7 +1422,7 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
   /* Now compute count_materialization_scale of each node.
      During LTRANS we already have values of count_materialization_scale
      computed, so just update them.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     if (node->symbol.lto_file_data
 	&& node->symbol.lto_file_data->profile_info.runs)
       {
@@ -1501,7 +1501,7 @@ input_cgraph (void)
 
   /* Clear out the aux field that was used to store enough state to
      tell which nodes should be overwritten.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     {
       /* Some nodes may have been created by cgraph_node.  This
 	 happens when the callgraph contains nested functions.  If the

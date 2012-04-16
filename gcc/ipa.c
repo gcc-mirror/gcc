@@ -181,9 +181,9 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   if (file)
     fprintf (file, "\nReclaiming functions:");
 #ifdef ENABLE_CHECKING
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     gcc_assert (!node->symbol.aux);
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     gcc_assert (!vnode->symbol.aux);
 #endif
   varpool_reset_queue ();
@@ -191,7 +191,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
      This is mostly when they can be referenced externally.  Inline clones
      are special since their declarations are shared with master clone and thus
      cgraph_can_remove_if_no_direct_calls_and_refs_p should not be called on them.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     if (node->analyzed && !node->global.inlined_to
 	&& (!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
 	    /* Keep around virtual functions for possible devirtualization.  */
@@ -210,7 +210,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       }
 
   /* Mark variables that are obviously needed.  */
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     {
       vnode->next_needed = NULL;
       vnode->prev_needed = NULL;
@@ -405,7 +405,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    }
 	}
     }
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     {
       /* Inline clones might be kept around so their materializing allows further
          cloning.  If the function the clone is inlined into is removed, we need
@@ -441,7 +441,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 
   if (file)
     fprintf (file, "\nClearing address taken flags:");
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     if (node->symbol.address_taken
 	&& !node->symbol.used_from_other_partition)
       {
@@ -492,7 +492,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
   struct varpool_node *vnode;
   if (dump_file)
     fprintf (dump_file, "Clearing variable flags:");
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     if (vnode->finalized && varpool_all_refs_explicit_p (vnode)
 	&& (TREE_ADDRESSABLE (vnode->symbol.decl)
 	    || !TREE_READONLY (vnode->symbol.decl)))
@@ -797,7 +797,7 @@ function_and_variable_visibility (bool whole_program)
        fprintf (dump_file, "\n");
     }
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     {
       int flags = flags_from_decl_or_type (node->symbol.decl);
 
@@ -889,9 +889,9 @@ function_and_variable_visibility (bool whole_program)
 	    DECL_EXTERNAL (node->symbol.decl) = 1;
 	}
     }
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     node->local.local = cgraph_local_node_p (node);
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     {
       /* weak flag makes no sense on local variables.  */
       gcc_assert (!DECL_WEAK (vnode->symbol.decl)
@@ -921,7 +921,7 @@ function_and_variable_visibility (bool whole_program)
 		    (TYPE_ADDR_SPACE (TREE_TYPE (vnode->symbol.decl))))))
 	DECL_COMMON (vnode->symbol.decl) = 0;
     }
-  for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+  FOR_EACH_DEFINED_VARIABLE (vnode)
     {
       if (!vnode->finalized)
         continue;
@@ -946,17 +946,17 @@ function_and_variable_visibility (bool whole_program)
   if (dump_file)
     {
       fprintf (dump_file, "\nMarking local functions:");
-      for (node = cgraph_nodes; node; node = node->next)
+      FOR_EACH_DEFINED_FUNCTION (node)
 	if (node->local.local)
 	  fprintf (dump_file, " %s", cgraph_node_name (node));
       fprintf (dump_file, "\n\n");
       fprintf (dump_file, "\nMarking externally visible functions:");
-      for (node = cgraph_nodes; node; node = node->next)
+      FOR_EACH_DEFINED_FUNCTION (node)
 	if (node->symbol.externally_visible)
 	  fprintf (dump_file, " %s", cgraph_node_name (node));
       fprintf (dump_file, "\n\n");
       fprintf (dump_file, "\nMarking externally visible variables:");
-      for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+      FOR_EACH_DEFINED_VARIABLE (vnode)
 	if (vnode->symbol.externally_visible)
 	  fprintf (dump_file, " %s", varpool_node_name (vnode));
       fprintf (dump_file, "\n\n");
@@ -1012,17 +1012,17 @@ whole_program_function_and_variable_visibility (void)
 
   function_and_variable_visibility (flag_whole_program);
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     if ((node->symbol.externally_visible && !DECL_COMDAT (node->symbol.decl))
         && node->local.finalized)
       cgraph_mark_needed_node (node);
-  for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+  FOR_EACH_DEFINED_VARIABLE (vnode)
     if (vnode->symbol.externally_visible && !DECL_COMDAT (vnode->symbol.decl))
       varpool_mark_needed_node (vnode);
   if (dump_file)
     {
       fprintf (dump_file, "\nNeeded variables:");
-      for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+      FOR_EACH_DEFINED_VARIABLE (vnode)
 	if (vnode->needed)
 	  fprintf (dump_file, " %s", varpool_node_name (vnode));
       fprintf (dump_file, "\n\n");
@@ -1405,10 +1405,9 @@ static unsigned int
 ipa_cdtor_merge (void)
 {
   struct cgraph_node *node;
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed
-	&& (DECL_STATIC_CONSTRUCTOR (node->symbol.decl)
-	    || DECL_STATIC_DESTRUCTOR (node->symbol.decl)))
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (DECL_STATIC_CONSTRUCTOR (node->symbol.decl)
+	|| DECL_STATIC_DESTRUCTOR (node->symbol.decl))
        record_cdtor_fn (node);
   build_cdtor_fns ();
   VEC_free (tree, heap, static_ctors);

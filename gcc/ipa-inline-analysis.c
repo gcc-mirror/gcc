@@ -1226,8 +1226,8 @@ dump_inline_summaries (FILE *f)
 {
   struct cgraph_node *node;
 
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed && !node->global.inlined_to)
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (!node->global.inlined_to)
       dump_inline_summary (f, node);
 }
 

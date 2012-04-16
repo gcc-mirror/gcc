@@ -4769,7 +4769,7 @@ ipa_tm_execute (void)
   bitmap_obstack_initialize (&tm_obstack);
 
   /* For all local functions marked tm_callable, queue them.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     if (is_tm_callable (node->symbol.decl)
 	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       {
@@ -4778,7 +4778,7 @@ ipa_tm_execute (void)
       }
 
   /* For all local reachable functions...  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     if (node->reachable && node->lowered
 	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       {
@@ -4946,7 +4946,7 @@ ipa_tm_execute (void)
 
   /* Now validate all tm_safe functions, and all atomic regions in
      other functions.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     if (node->reachable && node->lowered
 	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       {
@@ -4994,7 +4994,7 @@ ipa_tm_execute (void)
 	    ipa_tm_transform_clone (node);
 	}
     }
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     if (node->reachable && node->lowered
 	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       {
@@ -5008,7 +5008,7 @@ ipa_tm_execute (void)
   VEC_free (cgraph_node_p, heap, irr_worklist);
   bitmap_obstack_release (&tm_obstack);
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     node->symbol.aux = NULL;
 
 #ifdef ENABLE_CHECKING

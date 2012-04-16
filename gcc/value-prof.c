@@ -1073,7 +1073,7 @@ init_node_map (void)
     VEC_safe_grow_cleared (cgraph_node_ptr, heap,
                            cgraph_node_map, get_last_funcdef_no ());
 
-  for (n = cgraph_nodes; n; n = n->next)
+  FOR_EACH_FUNCTION (n)
     {
       if (DECL_STRUCT_FUNCTION (n->symbol.decl))
         VEC_replace (cgraph_node_ptr, cgraph_node_map,
