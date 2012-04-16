@@ -1,6 +1,12 @@
 2012-04-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52975
+	* tree-if-conv.c (predicate_bbs): Do not simplify inverted
+	condition but always mark it with TRUTH_NOT_EXPR.
+ 
+2012-04-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52975
 	* tree-ssa-forwprop.c (combine_cond_exprs): New function.
 	(ssa_forward_propagate_and_combine): Call it for COND_EXPRs
 	and VEC_COND_EXPRs.  Also combine into VEC_COND_EXPRs condition.
