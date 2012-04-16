@@ -1,3 +1,16 @@
+2012-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/49152
+	* g++.dg/diagnostic/operator1.C: New.
+	* g++.dg/ext/label5.C: Adjust.
+	* g++.dg/ext/va-arg1.C: Likewise.
+	* g++.dg/other/error20.C: Likewise.
+	* g++.dg/other/error20.C: Likewise.
+	* g++.dg/other/error16.C: Likewise.
+	* g++.dg/other/error10.C: Likewise.
+	* g++.dg/parse/error30.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-err1.C: Likewise.
+
 2012-04-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51148

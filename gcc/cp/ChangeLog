@@ -1,3 +1,10 @@
+2012-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/49152
+	* call.c (op_error): Print types; when flag_diagnostics_show_caret
+	is false print expressions too.
+	(op_error_string): Add.
+
 2012-04-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51148

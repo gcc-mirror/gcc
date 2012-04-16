@@ -4149,6 +4149,28 @@ build_op_call (tree obj, VEC(tree,gc) **args, tsubst_flags_t complain)
   return ret;
 }
 
+/* Called by op_error to prepare format strings suitable for the error
+   function.  It concatenates a prefix (controlled by MATCH), ERRMSG,
+   and a suffix (controlled by NTYPES).  */
+
+static const char *
+op_error_string (const char *errmsg, int ntypes, bool match)
+{
+  const char *msg;
+
+  const char *msgp = concat (match ? G_("ambiguous overload for ")
+			           : G_("no match for "), errmsg, NULL);
+
+  if (ntypes == 3)
+    msg = concat (msgp, G_(" (operand types are %qT, %qT, and %qT)"), NULL);
+  else if (ntypes == 2)
+    msg = concat (msgp, G_(" (operand types are %qT and %qT)"), NULL);
+  else
+    msg = concat (msgp, G_(" (operand type is %qT)"), NULL);
+
+  return msg;
+}
+
 static void
 op_error (enum tree_code code, enum tree_code code2,
 	  tree arg1, tree arg2, tree arg3, bool match)
@@ -4163,58 +4185,63 @@ op_error (enum tree_code code, enum tree_code code2,
   switch (code)
     {
     case COND_EXPR:
-      if (match)
-        error ("ambiguous overload for ternary %<operator?:%> "
-               "in %<%E ? %E : %E%>", arg1, arg2, arg3);
+      if (flag_diagnostics_show_caret)
+	error (op_error_string (G_("ternary %<operator?:%>"), 3, match),
+	       TREE_TYPE (arg1), TREE_TYPE (arg2), TREE_TYPE (arg3));
       else
-        error ("no match for ternary %<operator?:%> "
-               "in %<%E ? %E : %E%>", arg1, arg2, arg3);
+	error (op_error_string (G_("ternary %<operator?:%> "
+				   "in %<%E ? %E : %E%>"), 3, match),
+	       arg1, arg2, arg3,
+	       TREE_TYPE (arg1), TREE_TYPE (arg2), TREE_TYPE (arg3));
       break;
 
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
-      if (match)
-        error ("ambiguous overload for %<operator%s%> in %<%E%s%>",
-               opname, arg1, opname);
+      if (flag_diagnostics_show_caret)
+	error (op_error_string (G_("%<operator%s%>"), 1, match),
+	       opname, TREE_TYPE (arg1));
       else
-        error ("no match for %<operator%s%> in %<%E%s%>", 
-               opname, arg1, opname);
+	error (op_error_string (G_("%<operator%s%> in %<%E%s%>"), 1, match),
+	       opname, arg1, opname, TREE_TYPE (arg1));
       break;
 
     case ARRAY_REF:
-      if (match)
-        error ("ambiguous overload for %<operator[]%> in %<%E[%E]%>", 
-               arg1, arg2);
+      if (flag_diagnostics_show_caret)
+	error (op_error_string (G_("%<operator[]%>"), 2, match),
+	       TREE_TYPE (arg1), TREE_TYPE (arg2));
       else
-        error ("no match for %<operator[]%> in %<%E[%E]%>", 
-               arg1, arg2);
+	error (op_error_string (G_("%<operator[]%> in %<%E[%E]%>"), 2, match),
+	       arg1, arg2, TREE_TYPE (arg1), TREE_TYPE (arg2));
       break;
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      if (match)
-        error ("ambiguous overload for %qs in %<%s %E%>", 
-               opname, opname, arg1);
+      if (flag_diagnostics_show_caret)
+	error (op_error_string (G_("%qs"), 1, match),
+	       opname, TREE_TYPE (arg1));
       else
-        error ("no match for %qs in %<%s %E%>",
-               opname, opname, arg1);
+	error (op_error_string (G_("%qs in %<%s %E%>"), 1, match),
+	       opname, opname, arg1, TREE_TYPE (arg1));
       break;
 
     default:
       if (arg2)
-        if (match)
-          error ("ambiguous overload for %<operator%s%> in %<%E %s %E%>",
-                  opname, arg1, opname, arg2);
-        else
-          error ("no match for %<operator%s%> in %<%E %s %E%>",
-                 opname, arg1, opname, arg2);
+	if (flag_diagnostics_show_caret)
+	  error (op_error_string (G_("%<operator%s%>"), 2, match),
+		 opname, TREE_TYPE (arg1), TREE_TYPE (arg2));
+	else
+	  error (op_error_string (G_("%<operator%s%> in %<%E %s %E%>"),
+				  2, match),
+		 opname, arg1, opname, arg2,
+		 TREE_TYPE (arg1), TREE_TYPE (arg2));
       else
-        if (match)
-          error ("ambiguous overload for %<operator%s%> in %<%s%E%>",
-                 opname, opname, arg1);
-        else
-          error ("no match for %<operator%s%> in %<%s%E%>",
-                 opname, opname, arg1);
+	if (flag_diagnostics_show_caret)
+	  error (op_error_string (G_("%<operator%s%>"), 1, match),
+		 opname, TREE_TYPE (arg1));
+	else
+	  error (op_error_string (G_("%<operator%s%> in %<%s%E%>"),
+				  1, match),
+		 opname, opname, arg1, TREE_TYPE (arg1));
       break;
     }
 }
