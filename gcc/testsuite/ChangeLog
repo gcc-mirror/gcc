@@ -1,3 +1,11 @@
+2012-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52380
+	* g++.dg/cpp0x/variadic125.C: New.
+
+	PR c++/52292
+	* g++.dg/cpp0x/variadic124.C: New.
+
 2012-04-15  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/52465
