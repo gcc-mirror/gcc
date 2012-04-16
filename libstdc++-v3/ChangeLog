@@ -1,3 +1,10 @@
+2012-04-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	    * include/ext/pb_ds/detail/pat_trie_/
+	    constructors_destructor_fn_imps.hpp: Increment after recursion.
+	    * include/ext/pb_ds/detail/pat_trie_/pat_trie_base.hpp: Convert
+	    node_type markup from brief.
+
 2012-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/52699
