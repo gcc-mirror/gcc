@@ -1,5 +1,10 @@
 2012-04-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52292
+	PR c++/52380
+	* pt.c (coerce_template_parms): Even if we aren't converting we
+	want to expand argument packs.
+
 	PR c++/52706
 	* mangle.c (write_type): nullptr_t is a builtin type.
 
