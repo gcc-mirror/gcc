@@ -313,7 +313,7 @@ lto_1_to_1_map (void)
 
   pmap = pointer_map_create ();
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
       if (!partition_cgraph_node_p (node)
 	  || node->symbol.aux)
@@ -348,7 +348,7 @@ lto_1_to_1_map (void)
       add_cgraph_node_to_partition (partition, node);
     }
 
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     {
       if (!partition_varpool_node_p (vnode)
 	  || vnode->symbol.aux)
@@ -367,9 +367,9 @@ lto_1_to_1_map (void)
 
       add_varpool_node_to_partition (partition, vnode);
     }
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     node->symbol.aux = NULL;
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     vnode->symbol.aux = NULL;
 
   /* If the cgraph is empty, create one cgraph node set so that there is still
@@ -463,7 +463,7 @@ lto_balanced_map (void)
   int npartitions;
   int current_order = -1;
 
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     gcc_assert (!vnode->symbol.aux);
   /* Until we have better ordering facility, use toplogical order.
      Include only nodes we will partition and compute estimate of program
@@ -487,13 +487,13 @@ lto_balanced_map (void)
     {
       qsort (order, n_nodes, sizeof (struct cgraph_node *), node_cmp);
 
-      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+      FOR_EACH_VARIABLE (vnode)
 	if (partition_varpool_node_p (vnode))
 	  n_varpool_nodes++;
       varpool_order = XNEWVEC (struct varpool_node *, n_varpool_nodes);
 
       n_varpool_nodes = 0;
-      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+      FOR_EACH_VARIABLE (vnode)
 	if (partition_varpool_node_p (vnode))
 	  varpool_order[n_varpool_nodes++] = vnode;
       qsort (varpool_order, n_varpool_nodes, sizeof (struct varpool_node *),
@@ -742,7 +742,7 @@ lto_balanced_map (void)
   /* Varables that are not reachable from the code go into last partition.  */
   if (flag_toplevel_reorder)
     {
-      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+      FOR_EACH_VARIABLE (vnode)
         if (partition_varpool_node_p (vnode) && !vnode->symbol.aux)
 	  add_varpool_node_to_partition (partition, vnode);
     }
@@ -858,7 +858,7 @@ lto_promote_cross_file_statics (void)
 	 referenced from all initializers of read-only vars referenced
 	 from this partition that are not in this partition.  This needs
 	 to be done recursively.  */
-      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+      FOR_EACH_VARIABLE (vnode)
 	if (const_value_known_p (vnode->symbol.decl)
 	    && DECL_INITIAL (vnode->symbol.decl)
 	    && !varpool_node_in_set_p (vnode, vset)

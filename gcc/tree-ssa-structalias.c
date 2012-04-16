@@ -6862,7 +6862,7 @@ ipa_pta_execute (void)
     }
 
   /* Build the constraints.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
       varinfo_t vi;
       /* Nodes without a body are not interesting.  Especially do not
@@ -6879,7 +6879,7 @@ ipa_pta_execute (void)
     }
 
   /* Create constraints for global variables and their initializers.  */
-  for (var = varpool_nodes; var; var = var->next)
+  FOR_EACH_VARIABLE (var)
     {
       if (var->alias)
 	continue;
@@ -6896,7 +6896,7 @@ ipa_pta_execute (void)
     }
   from = VEC_length (constraint_t, constraints);
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
       struct function *func;
       basic_block bb;
@@ -7004,7 +7004,7 @@ ipa_pta_execute (void)
   ipa_escaped_pt.ipa_escaped = 0;
 
   /* Assign the points-to sets to the SSA names in the unit.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
       tree ptr;
       struct function *fn;

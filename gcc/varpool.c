@@ -254,7 +254,7 @@ dump_varpool (FILE *f)
   struct varpool_node *node;
 
   fprintf (f, "variable pool:\n\n");
-  for (node = varpool_nodes; node; node = node->next)
+  FOR_EACH_VARIABLE (node)
     dump_varpool_node (f, node);
 }
 
@@ -272,7 +272,7 @@ varpool_node_for_asm (tree asmname)
 {
   struct varpool_node *node;
 
-  for (node = varpool_nodes; node ; node = node->next)
+  FOR_EACH_VARIABLE (node)
     if (decl_assembler_name_equal (node->symbol.decl, asmname))
       return node;
 
@@ -652,7 +652,7 @@ varpool_assemble_pending_decls (void)
      elsewhere.  */
   varpool_analyze_pending_decls ();
 
-  for (node = varpool_nodes_queue; node; node = node->next_needed)
+  FOR_EACH_DEFINED_VARIABLE (node)
     varpool_finalize_named_section_flags (node);
 
   while (varpool_nodes_queue)

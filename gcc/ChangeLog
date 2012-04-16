@@ -1,3 +1,48 @@
+2012-04-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (FOR_EACH_VARIABLE, FOR_EACH_VARIABLE, FOR_EACH_FUNCTION):
+	New macros.
+	* lto-symtab.c (lto_symtab_merge_cgraph_nodes): Use FOR_EACH
+	walkers to walk cgraph and varpool.
+	* cgraph.c (cgraph_node_for_asm): Likewise.
+	(dump_cgraph): Likewise.
+	* value-prof.c (init_node_map): Likewise.
+	* tree.c (free_lang_data_in_cgraph): Likewise.
+	* tree-emutls.c: (ipa_lower_emutls): Likewise.
+	* ipa-reference.c (generate_summary, propagate): Likewise.
+	* cgraphunit.c (verify_cgraph, cgraph_process_same_body_aliases,
+	cgraph_mark_functions_to_output, cgraph_output_in_order,
+	output_weakrefs, cgraph_materialize_all_clones,
+	cgraph_optimize): Likewise.
+	* lto-cgraph.c (merge_profile_summaries): Likewise.
+	(input_cgraph): Likewise.
+	* ipa-pure-const.c (generate_summary): Likewise.
+	(propagate): Likwise.
+	* ipa-utils.c (ipa_reduced_postorder): Likewise.
+	(ipa_free_postorder_info): Likewise.
+	(ipa_reverse_postorder): Likewise.
+	* ipa-inline.c (ipa_inline): Likewise.
+	* matrix-reorg.c (find_matrices_decl): Likewise.
+	(matrix_reorg): Likewise.
+	* tree-vectorizer.c (increase_alignment): Likewise.
+	* ipa.c (cgraph_remove_unreachable_nodes): Likewise.
+	(function_and_variable_visibility): Likewise.
+	(whole_program_function_and_variable_visibility): Likewise.
+	(ipa_cdtor_merge): Likewise.
+	* trans-mem.c (ipa_tm_execute): Likewise.
+	* ipa-inline-analysis.c (dump_inline_summaries): Likewise.
+	* ipa-prop.c (ipa_print_all_jump_functions): Likewise.
+	(ipa_print_all_params): Likewise.
+	(ipa_update_after_lto_read): Likewise.
+	* tree-profie.c (tree_profiling): Likewise.
+	* tree-ssa-structalias.c (ipa_pta_execute): Likewise.
+	* passes.c (dump_passes): Likewise.
+	(do_per_function): Likewise.
+	(ipa_write_summaries): Likewise.
+	* varpool.c (dump_varpool): Likewise.
+	(varpool_node_for_asm): Likewise.
+	(varpool_assemble_pending_decls): Likewise.
+
 2012-04-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52975

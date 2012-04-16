@@ -260,7 +260,7 @@ ipa_print_all_jump_functions (FILE *f)
   struct cgraph_node *node;
 
   fprintf (f, "\nJump functions:\n");
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     {
       ipa_print_node_jump_functions (f, node);
     }
@@ -2209,7 +2209,7 @@ ipa_print_all_params (FILE * f)
   struct cgraph_node *node;
 
   fprintf (f, "\nFunction parameters:\n");
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     ipa_print_node_params (f, node);
 }
 
@@ -3087,7 +3087,7 @@ ipa_update_after_lto_read (void)
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     if (node->analyzed)
       ipa_initialize_node_params (node);
 }
