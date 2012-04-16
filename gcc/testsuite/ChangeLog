@@ -1,3 +1,11 @@
+2012-04-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52916
+	* gfortran.dg/public_private_module_3.f90: Use dg-additional-sources
+	to include public_private_module_4.f90.
+	* gfortran.dg/public_private_module_4.f90: Skip this test on all
+	targets.
+
 2012-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/49152

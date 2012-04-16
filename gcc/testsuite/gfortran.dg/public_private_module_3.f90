@@ -1,6 +1,5 @@
-! { dg-do compile }
-!
-! To be used by public_private_module_4.f90
+! { dg-do link }
+! { dg-additional-sources public_private_module_4.f90 }
 !
 ! PR fortran/52916
 ! Cf. PR fortran/40973
