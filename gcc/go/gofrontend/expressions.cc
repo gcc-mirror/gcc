@@ -2403,8 +2403,7 @@ class Const_expression : public Expression
   do_numeric_constant_value(Numeric_constant* nc) const;
 
   bool
-  do_string_constant_value(std::string* val) const
-  { return this->constant_->const_value()->expr()->string_constant_value(val); }
+  do_string_constant_value(std::string* val) const;
 
   Type*
   do_type();
@@ -2512,6 +2511,21 @@ Const_expression::do_numeric_constant_value(Numeric_constant* nc) const
     }
 
   return r;
+}
+
+bool
+Const_expression::do_string_constant_value(std::string* val) const
+{
+  if (this->seen_)
+    return false;
+
+  Expression* e = this->constant_->const_value()->expr();
+
+  this->seen_ = true;
+  bool ok = e->string_constant_value(val);
+  this->seen_ = false;
+
+  return ok;
 }
 
 // Return the type of the const reference.
