@@ -6697,7 +6697,12 @@ coerce_template_parameter_pack (tree parms,
             TREE_VEC_ELT (packed_types, arg_idx - parm_idx);
         }
 
-      if (arg != error_mark_node)
+      if (arg == error_mark_node)
+	{
+	  if (complain & tf_error)
+	    error ("template argument %d is invalid", arg_idx + 1);
+	}
+      else
 	arg = convert_template_argument (actual_parm, 
 					 arg, new_args, complain, parm_idx,
 					 in_decl);
