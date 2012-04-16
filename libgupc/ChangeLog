@@ -1,3 +1,11 @@
+2012-04-16  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* upc_lock.c (upc_lock): Adding a fence as per the
+	language specification.  This also forces the processor to
+	discard all speculaive memory fetches.
+	(upc_lock_attempt): Ditto.
+	(upc_ulock): Ditto.
+
 2012-04-13  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc_sync.h (GUPCR_WRITE_FENCE): Change write fence

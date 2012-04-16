@@ -28,6 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "upc_config.h"
 #include "upc_sysdep.h"
+#include "upc_sync.h"
 #include "upc_defs.h"
 #include "upc_lib.h"
 #include "upc_sup.h"
@@ -80,6 +81,7 @@ upc_lock (upc_shared_ptr_t ptr)
 {
   upc_lock_p lock = __cvtaddr (ptr);
   __upc_acquire_lock (&lock->os_lock);
+  GUPCR_FENCE();
 }
 
 int
@@ -88,6 +90,8 @@ upc_lock_attempt (upc_shared_ptr_t ptr)
   upc_lock_p lock = __cvtaddr (ptr);
   int status;
   status = __upc_try_acquire_lock (&lock->os_lock);
+  if (status) 
+    GUPCR_FENCE();
   return status;
 }
 
@@ -99,6 +103,7 @@ upc_unlock (upc_shared_ptr_t ptr)
   if (!u)
     __upc_fatal ("UPC runtime not initialized");
   lock = __cvtaddr (ptr);
+  GUPCR_FENCE();
   __upc_release_lock (&lock->os_lock);
 }
 
