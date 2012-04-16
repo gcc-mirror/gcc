@@ -544,6 +544,28 @@ add_repeat_to_ops_vec (VEC(operand_entry_t, heap) **ops, tree op,
   reassociate_stats.pows_encountered++;
 }
 
+/* Add an operand entry to *OPS for the tree operand OP, giving the
+   new entry a larger rank than any other operand already in *OPS.  */
+
+static void
+add_to_ops_vec_max_rank (VEC(operand_entry_t, heap) **ops, tree op)
+{
+  operand_entry_t oe = (operand_entry_t) pool_alloc (operand_entry_pool);
+  operand_entry_t oe1;
+  unsigned i;
+  unsigned max_rank = 0;
+
+  FOR_EACH_VEC_ELT (operand_entry_t, *ops, i, oe1)
+    if (oe1->rank > max_rank)
+      max_rank = oe1->rank;
+
+  oe->op = op;
+  oe->rank = max_rank + 1;
+  oe->id = next_operand_entry_id++;
+  oe->count = 1;
+  VEC_safe_push (operand_entry_t, heap, *ops, oe);
+}
+
 /* Return true if STMT is reassociable operation containing a binary
    operation with tree code CODE, and is inside LOOP.  */
 
@@ -1200,6 +1222,7 @@ undistribute_ops_list (enum tree_code opcode,
       dcode = gimple_assign_rhs_code (oe1def);
       if ((dcode != MULT_EXPR
 	   && dcode != RDIV_EXPR)
+	  || oe1->count != 1
 	  || !is_reassociable_op (oe1def, dcode, loop))
 	continue;
 
@@ -1243,6 +1266,8 @@ undistribute_ops_list (enum tree_code opcode,
 	  oecount c;
 	  void **slot;
 	  size_t idx;
+	  if (oe1->count != 1)
+	    continue;
 	  c.oecode = oecode;
 	  c.cnt = 1;
 	  c.id = next_oecount_id++;
@@ -1311,7 +1336,7 @@ undistribute_ops_list (enum tree_code opcode,
 
 	  FOR_EACH_VEC_ELT (operand_entry_t, subops[i], j, oe1)
 	    {
-	      if (oe1->op == c->op)
+	      if (oe1->op == c->op && oe1->count == 1)
 		{
 		  SET_BIT (candidates2, i);
 		  ++nr_candidates2;
@@ -3275,8 +3300,10 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 	  gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
 	}
 
-      /* Append the result of this iteration to the ops vector.  */
-      add_to_ops_vec (ops, iter_result);
+      /* Append the result of this iteration to the ops vector.
+         Give it a rank higher than all other ranks in the ops vector
+         so that all uses of it will be forced to come after it.  */
+      add_to_ops_vec_max_rank (ops, iter_result);
 
       /* Decrement the occurrence count of each element in the product
 	 by the count found above, and remove this many copies of each
