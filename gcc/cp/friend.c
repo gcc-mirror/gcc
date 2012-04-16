@@ -239,6 +239,9 @@ make_friend_class (tree type, tree friend_type, bool complain)
 
   friend_type = cv_unqualified (friend_type);
 
+  if (check_for_bare_parameter_packs (friend_type))
+    return;
+
   if (friend_depth)
     /* If the TYPE is a template then it makes sense for it to be
        friends with itself; this means that each instantiation is
