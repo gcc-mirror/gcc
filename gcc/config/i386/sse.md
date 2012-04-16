@@ -11880,11 +11880,11 @@
 (define_insn "avx2_permvarv8si"
   [(set (match_operand:V8SI 0 "register_operand" "=x")
 	(unspec:V8SI
-	  [(match_operand:V8SI 1 "register_operand" "x")
-	   (match_operand:V8SI 2 "nonimmediate_operand" "xm")]
+	  [(match_operand:V8SI 1 "nonimmediate_operand" "xm")
+	   (match_operand:V8SI 2 "register_operand" "x")]
 	  UNSPEC_VPERMSI))]
   "TARGET_AVX2"
-  "vpermd\t{%2, %1, %0|%0, %1, %2}"
+  "vpermd\t{%1, %2, %0|%0, %2, %1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
@@ -11905,11 +11905,11 @@
 (define_insn "avx2_permvarv8sf"
   [(set (match_operand:V8SF 0 "register_operand" "=x")
 	(unspec:V8SF
-	  [(match_operand:V8SF 1 "register_operand" "x")
-	   (match_operand:V8SF 2 "nonimmediate_operand" "xm")]
+	  [(match_operand:V8SF 1 "nonimmediate_operand" "xm")
+	   (match_operand:V8SI 2 "register_operand" "x")]
 	  UNSPEC_VPERMSF))]
   "TARGET_AVX2"
-  "vpermps\t{%2, %1, %0|%0, %1, %2}"
+  "vpermps\t{%1, %2, %0|%0, %2, %1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])

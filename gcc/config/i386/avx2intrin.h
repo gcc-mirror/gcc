@@ -1034,9 +1034,9 @@ _mm256_permute4x64_pd (__m256d __X, const int __M)
 
 extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_permutevar8x32_ps (__m256 __X, __m256 __Y)
+_mm256_permutevar8x32_ps (__m256 __X, __m256i __Y)
 {
-  return (__m256) __builtin_ia32_permvarsf256 ((__v8sf)__X,(__v8sf)__Y);
+  return (__m256) __builtin_ia32_permvarsf256 ((__v8sf)__X, (__v8si)__Y);
 }
 
 #ifdef __OPTIMIZE__

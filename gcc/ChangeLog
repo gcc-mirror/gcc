@@ -1,3 +1,18 @@
+2012-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-04-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52932
+	* config/i386/avx2intrin.h (_mm256_permutevar8x32_ps): Change second
+	argument type to __m256i.  Update call to __builtin_ia32_permvarsf256.
+	* config/i386/sse.md (avx2_permvarv8sf): Change operand 1 to V8SI.
+	(avx2_permvarv8sf, avx2_permvarv8si): Switch operands 1 and 2.
+	* config/i386/i386.c (bdesc_args) <__builtin_ia32_permvarsf256>:
+	Update builtin type to V8SF_FTYPE_V8SF_V8SI.
+	(ix86_expand_vec_perm): Update calls to gen_avx2_permvarv8si and
+	gen_avx2_permvarv8sf.
+
 2012-04-16  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from mainline
