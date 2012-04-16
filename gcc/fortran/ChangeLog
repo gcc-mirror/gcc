@@ -1,3 +1,9 @@
+2012-04-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52864
+	* expr.c (gfc_check_vardef_context): Fix assignment check for
+	pointer components.
+
 2012-04-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/52968

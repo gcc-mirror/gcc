@@ -4645,9 +4645,11 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       return FAILURE;
     }
 
-  /* INTENT(IN) dummy argument.  Check this, unless the object itself is
-     the component of sub-component of a pointer.  Obviously,
-     procedure pointers are of no interest here.  */
+  /* INTENT(IN) dummy argument.  Check this, unless the object itself is the
+     component of sub-component of a pointer; we need to distinguish
+     assignment to a pointer component from pointer-assignment to a pointer
+     component.  Note that (normal) assignment to procedure pointers is not
+     possible.  */
   check_intentin = true;
   ptr_component = (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
 		  ? CLASS_DATA (sym)->attr.class_pointer : sym->attr.pointer;
@@ -4656,7 +4658,11 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       if (ptr_component && ref->type == REF_COMPONENT)
 	check_intentin = false;
       if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
-	ptr_component = true;
+	{
+	  ptr_component = true;
+	  if (!pointer)
+	    check_intentin = false;
+	}
     }
   if (check_intentin && sym->attr.intent == INTENT_IN)
     {
