@@ -1,3 +1,11 @@
+2012-04-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52975
+	* tree-ssa-forwprop.c (combine_cond_exprs): New function.
+	(ssa_forward_propagate_and_combine): Call it for COND_EXPRs
+	and VEC_COND_EXPRs.  Also combine into VEC_COND_EXPRs condition.
+	* fold-const.c (operand_equal_p): Handle TARGET_MEM_REF.
+
 2012-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (ssse3_plusminus): New code iterator.
