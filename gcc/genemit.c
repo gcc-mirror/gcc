@@ -160,9 +160,6 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
       gen_rtx_scratch (x, subroutine_type);
       return;
 
-    case ADDRESS:
-      fatal ("ADDRESS expression code used in named instruction pattern");
-
     case PC:
       printf ("pc_rtx");
       return;

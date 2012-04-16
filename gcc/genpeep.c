@@ -231,10 +231,6 @@ match_rtx (rtx x, struct link *path, int fail_label)
 	}
       return;
 
-    case ADDRESS:
-      match_rtx (XEXP (x, 0), path, fail_label);
-      return;
-
     default:
       break;
     }

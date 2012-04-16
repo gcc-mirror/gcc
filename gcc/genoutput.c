@@ -510,10 +510,6 @@ scan_operands (struct data *d, rtx part, int this_address_p,
 	scan_operands (d, XVECEXP (part, 2, i), 0, 0);
       return;
 
-    case ADDRESS:
-      scan_operands (d, XEXP (part, 0), 1, 0);
-      return;
-
     case STRICT_LOW_PART:
       scan_operands (d, XEXP (part, 0), 0, 1);
       return;
