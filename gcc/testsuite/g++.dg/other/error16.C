@@ -10,5 +10,5 @@ typedef Outer<X> XOuter;
 
 int main() {
   Outer<int>  ab;
-  ab.foo() == 1; // { dg-error "ab.Outer" }
+  ab.foo() == 1; // { dg-error "operand types are 'Outer<int>::Inner' and 'int'" }
 }
