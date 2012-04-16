@@ -1,3 +1,8 @@
+2012-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite-management/validate_failures.py (GetBuildData): Use
+	target_alias.
+
 2012-04-06  Doug Evans  <dje@google.com>
 
 	* dg-extract-results.sh: Handle KFAILs.
