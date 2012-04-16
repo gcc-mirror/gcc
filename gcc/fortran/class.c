@@ -541,8 +541,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       fclass->refs++;
       fclass->ts.type = BT_UNKNOWN;
       fclass->attr.abstract = ts->u.derived->attr.abstract;
-      if (ts->u.derived->f2k_derived)
-	fclass->f2k_derived = gfc_get_namespace (NULL, 0);
+      fclass->f2k_derived = gfc_get_namespace (NULL, 0);
       if (gfc_add_flavor (&fclass->attr, FL_DERIVED,
 	  NULL, &gfc_current_locus) == FAILURE)
 	return FAILURE;
@@ -579,8 +578,6 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       c->attr.access = ACCESS_PRIVATE;
       c->attr.pointer = 1;
     }
-  else if (!fclass->f2k_derived)
-    fclass->f2k_derived = gfc_get_namespace (NULL, 0);
 
   /* Since the extension field is 8 bit wide, we can only have
      up to 255 extension levels.  */
