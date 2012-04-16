@@ -72,7 +72,7 @@ static struct gimple_opt_pass pass_dumb_plugin_example =
     0,                                    /* properties_provided */
     0,                                    /* properties_destroyed */
     0,                                    /* todo_flags_start */
-    TODO_dump_func                        /* todo_flags_finish */
+    0					  /* todo_flags_finish */
   }
 };
 

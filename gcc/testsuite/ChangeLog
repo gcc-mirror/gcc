@@ -1,3 +1,17 @@
+2012-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/plugin-support.exp (plugin-test-execute): Properly determine
+	testcase name.
+	Use fail, pass instead of unresolved.
+	Don't log $optstr.
+
+	PR testsuite/52948
+	* g++.dg/plugin/dumb_plugin.c (pass_dumb_plugin_example): Remove
+	TODO_dump_func.
+	* g++.dg/plugin/selfassign.c (pass_warn_self_assign): Likewise.
+	* gcc.dg/plugin/one_time_plugin.c (one_pass): Likewise.
+	* gcc.dg/plugin/selfassign.c (pass_warn_self_assign): Likewise.
+
 2012-04-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/52968
