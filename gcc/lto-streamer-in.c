@@ -1225,8 +1225,8 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
     {
       struct cgraph_asm_node *node = cgraph_add_asm_node (str);
       node->order = streamer_read_hwi (&ib) + order_base;
-      if (node->order >= cgraph_order)
-	cgraph_order = node->order + 1;
+      if (node->order >= symtab_order)
+	symtab_order = node->order + 1;
     }
 
   clear_line_info (data_in);

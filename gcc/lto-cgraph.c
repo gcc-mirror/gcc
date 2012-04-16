@@ -998,8 +998,8 @@ input_node (struct lto_file_decl_data *file_data,
     node = cgraph_get_create_node (fn_decl);
 
   node->symbol.order = order;
-  if (order >= cgraph_order)
-    cgraph_order = order + 1;
+  if (order >= symtab_order)
+    symtab_order = order + 1;
 
   node->count = streamer_read_hwi (ib);
   node->count_materialization_scale = streamer_read_hwi (ib);
@@ -1069,8 +1069,8 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
   node = varpool_node (var_decl);
   node->symbol.order = order;
-  if (order >= cgraph_order)
-    cgraph_order = order + 1;
+  if (order >= symtab_order)
+    symtab_order = order + 1;
   node->symbol.lto_file_data = file_data;
 
   bp = streamer_read_bitpack (ib);
@@ -1210,7 +1210,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   unsigned i;
 
   tag = streamer_read_enum (ib, LTO_cgraph_tags, LTO_cgraph_last_tag);
-  order_base = cgraph_order;
+  order_base = symtab_order;
   while (tag)
     {
       if (tag == LTO_cgraph_edge)

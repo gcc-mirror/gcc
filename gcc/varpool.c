@@ -51,10 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Hash table used to convert declarations into nodes.  */
 static GTY((param_is (union symtab_node_def))) htab_t varpool_hash;
 
-/* The linked list of cgraph varpool nodes.
-   Linked via node->next pointer.  */
-symtab_node x_varpool_nodes;
-
 /* Queue of cgraph nodes scheduled to be lowered and output.
    The queue is maintained via mark_needed_node, linked via node->next_needed
    pointer.
@@ -146,12 +142,7 @@ varpool_node (tree decl)
   node = ggc_alloc_cleared_varpool_node ();
   node->symbol.type = SYMTAB_VARIABLE;
   node->symbol.decl = decl;
-  node->symbol.order = cgraph_order++;
-  node->next = varpool_nodes;
-  ipa_empty_ref_list (&node->symbol.ref_list);
-  if (varpool_nodes)
-    varpool (x_varpool_nodes)->prev = node;
-  x_varpool_nodes = (symtab_node)node;
+  symtab_register_node ((symtab_node)node);
   *slot = node;
   return node;
 }
@@ -165,15 +156,7 @@ varpool_remove_node (struct varpool_node *node)
   gcc_assert (*slot == node);
   htab_clear_slot (varpool_hash, slot);
   gcc_assert (!varpool_assembled_nodes_queue);
-  if (node->next)
-    node->next->prev = node->prev;
-  if (node->prev)
-    node->prev->next = node->next;
-  else
-    {
-      gcc_assert (varpool_nodes == node);
-      x_varpool_nodes = (symtab_node)node->next;
-    }
+  symtab_unregister_node ((symtab_node)node);
   if (varpool_first_unanalyzed_node == node)
     x_varpool_first_unanalyzed_node = (symtab_node)node->next_needed;
   if (node->next_needed)
@@ -190,21 +173,6 @@ varpool_remove_node (struct varpool_node *node)
       gcc_assert (varpool_nodes_queue == node);
       x_varpool_nodes_queue = (symtab_node)node->next_needed;
     }
-  if (node->symbol.same_comdat_group)
-    {
-      symtab_node prev;
-      for (prev = node->symbol.same_comdat_group;
-	   prev->symbol.same_comdat_group != (symtab_node)node;
-	   prev = prev->symbol.same_comdat_group)
-	;
-      if (node->symbol.same_comdat_group == prev)
-	prev->symbol.same_comdat_group = NULL;
-      else
-	prev->symbol.same_comdat_group = (symtab_node)node->symbol.same_comdat_group;
-      node->symbol.same_comdat_group = NULL;
-    }
-  ipa_remove_all_references (&node->symbol.ref_list);
-  ipa_remove_all_refering (&node->symbol.ref_list);
   ggc_free (node);
 }
 

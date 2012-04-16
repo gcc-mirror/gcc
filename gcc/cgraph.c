@@ -1,6 +1,6 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -124,9 +124,6 @@ static GTY((param_is (union symtab_node_def))) htab_t cgraph_hash;
 /* Hash table used to convert assembler names into nodes.  */
 static GTY((param_is (union symtab_node_def))) htab_t assembler_name_hash;
 
-/* The linked list of cgraph nodes.  */
-symtab_node x_cgraph_nodes;
-
 /* Queue of cgraph nodes scheduled to be lowered.  */
 symtab_node x_cgraph_nodes_queue;
 #define cgraph_nodes_queue ((struct cgraph_node *)x_cgraph_nodes_queue)
@@ -159,11 +156,6 @@ struct cgraph_asm_node *cgraph_asm_nodes;
 
 /* Last node in cgraph_asm_nodes.  */
 static GTY(()) struct cgraph_asm_node *cgraph_asm_last_node;
-
-/* The order index of the next cgraph node to be created.  This is
-   used so that we can sort the cgraph nodes in order by when we saw
-   them, to support -fno-toplevel-reorder.  */
-int cgraph_order;
 
 /* List of hooks triggered on cgraph_edge events.  */
 struct cgraph_edge_hook_list {
@@ -216,7 +208,8 @@ bool same_body_aliases_done;
 
 /* Macros to access the next item in the list of free cgraph nodes and
    edges. */
-#define NEXT_FREE_NODE(NODE) (NODE)->next
+#define NEXT_FREE_NODE(NODE) cgraph ((NODE)->symbol.next)
+#define SET_NEXT_FREE_NODE(NODE,NODE2) ((NODE))->symbol.next = (symtab_node)NODE2
 #define NEXT_FREE_EDGE(EDGE) (EDGE)->prev_caller
 
 /* Register HOOK to be called with DATA on each removed edge.  */
@@ -475,15 +468,8 @@ cgraph_create_node_1 (void)
   struct cgraph_node *node = cgraph_allocate_node ();
 
   node->symbol.type = SYMTAB_FUNCTION;
-  node->next = cgraph_nodes;
-  node->symbol.order = cgraph_order++;
-  if (cgraph_nodes)
-    cgraph_nodes->previous = node;
-  node->previous = NULL;
   node->frequency = NODE_FREQUENCY_NORMAL;
   node->count_materialization_scale = REG_BR_PROB_BASE;
-  ipa_empty_ref_list (&node->symbol.ref_list);
-  x_cgraph_nodes = (symtab_node)node;
   cgraph_n_nodes++;
   return node;
 }
@@ -506,6 +492,7 @@ cgraph_create_node (tree decl)
 
   node = cgraph_create_node_1 ();
   node->symbol.decl = decl;
+  symtab_register_node ((symtab_node)node);
   *slot = node;
   if (DECL_CONTEXT (decl) && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
     {
@@ -1418,8 +1405,6 @@ cgraph_remove_node (struct cgraph_node *node)
   cgraph_call_node_removal_hooks (node);
   cgraph_node_remove_callers (node);
   cgraph_node_remove_callees (node);
-  ipa_remove_all_references (&node->symbol.ref_list);
-  ipa_remove_all_refering (&node->symbol.ref_list);
   VEC_free (ipa_opt_pass, heap,
             node->ipa_transforms_to_apply);
 
@@ -1437,14 +1422,7 @@ cgraph_remove_node (struct cgraph_node *node)
 	node2 = &(*node2)->next_nested;
       *node2 = node->next_nested;
     }
-  if (node->previous)
-    node->previous->next = node->next;
-  else
-    x_cgraph_nodes = (symtab_node)node->next;
-  if (node->next)
-    node->next->previous = node->previous;
-  node->next = NULL;
-  node->previous = NULL;
+  symtab_unregister_node ((symtab_node)node);
   slot = htab_find_slot (cgraph_hash, node, NO_INSERT);
   if (*slot == node)
     {
@@ -1567,20 +1545,6 @@ cgraph_remove_node (struct cgraph_node *node)
 	}
     }
 
-  if (node->symbol.same_comdat_group)
-    {
-      symtab_node prev;
-      for (prev = node->symbol.same_comdat_group;
-	   prev->symbol.same_comdat_group != (symtab_node)node;
-	   prev = prev->symbol.same_comdat_group)
-	;
-      if (node->symbol.same_comdat_group == prev)
-	prev->symbol.same_comdat_group = NULL;
-      else
-	prev->symbol.same_comdat_group = node->symbol.same_comdat_group;
-      node->symbol.same_comdat_group = NULL;
-    }
-
   /* While all the clones are removed after being proceeded, the function
      itself is kept in the cgraph even after it is compiled.  Check whether
      we are done with this body and reclaim it proactively if this is the case.
@@ -1621,7 +1585,7 @@ cgraph_remove_node (struct cgraph_node *node)
   memset (node, 0, sizeof(*node));
   node->symbol.type = SYMTAB_FUNCTION;
   node->uid = uid;
-  NEXT_FREE_NODE (node) = free_nodes;
+  SET_NEXT_FREE_NODE (node, free_nodes);
   free_nodes = node;
 }
 
@@ -2029,7 +1993,7 @@ cgraph_add_asm_node (tree asm_str)
 
   node = ggc_alloc_cleared_cgraph_asm_node ();
   node->asm_str = asm_str;
-  node->order = cgraph_order++;
+  node->order = symtab_order++;
   node->next = NULL;
   if (cgraph_asm_nodes == NULL)
     cgraph_asm_nodes = node;
@@ -2134,6 +2098,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   unsigned i;
 
   new_node->symbol.decl = decl;
+  symtab_register_node ((symtab_node)new_node);
   new_node->origin = n->origin;
   if (new_node->origin)
     {
