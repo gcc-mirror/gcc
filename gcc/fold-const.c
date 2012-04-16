@@ -2562,6 +2562,14 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case IMAGPART_EXPR:
 	  return OP_SAME (0);
 
+	case TARGET_MEM_REF:
+	  /* Require equal extra operands and then fall thru to MEM_REF
+	     handling of the two common operands.  */
+	  if (!OP_SAME_WITH_NULL (2)
+	      || !OP_SAME_WITH_NULL (3)
+	      || !OP_SAME_WITH_NULL (4))
+	    return 0;
+	  /* Fallthru.  */
 	case MEM_REF:
 	  /* Require equal access sizes, and similar pointer types.
 	     We can have incomplete types for array references of
