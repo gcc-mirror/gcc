@@ -1,3 +1,14 @@
+2012-04-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52977
+	* tree.h (VECTOR_CST_NELTS): Adjust.
+	(struct tree_vector): Add explicit length field.
+	(make_vector_stat): Declare.
+	(make_vector): Define.
+	* tree.c (make_vector_stat): New function.
+	(build_vector_stat): Use it.
+	* tree-streamer-in.c (streamer_alloc_tree): Likewise.
+
 2012-04-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/52976
