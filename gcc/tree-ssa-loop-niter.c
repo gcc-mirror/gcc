@@ -2640,47 +2640,6 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple stmt,
   record_estimate (loop, niter_bound, max, stmt, false, realistic, upper);
 }
 
-/* Returns true if REF is a reference to an array at the end of a dynamically
-   allocated structure.  If this is the case, the array may be allocated larger
-   than its upper bound implies.  */
-
-bool
-array_at_struct_end_p (tree ref)
-{
-  tree base = get_base_address (ref);
-  tree parent, field;
-
-  /* Unless the reference is through a pointer, the size of the array matches
-     its declaration.  */
-  if (!base || (!INDIRECT_REF_P (base) && TREE_CODE (base) != MEM_REF))
-    return false;
-
-  for (;handled_component_p (ref); ref = parent)
-    {
-      parent = TREE_OPERAND (ref, 0);
-
-      if (TREE_CODE (ref) == COMPONENT_REF)
-	{
-	  /* All fields of a union are at its end.  */
-	  if (TREE_CODE (TREE_TYPE (parent)) == UNION_TYPE)
-	    continue;
-
-	  /* Unless the field is at the end of the struct, we are done.  */
-	  field = TREE_OPERAND (ref, 1);
-	  if (DECL_CHAIN (field))
-	    return false;
-	}
-
-      /* The other options are ARRAY_REF, ARRAY_RANGE_REF, VIEW_CONVERT_EXPR.
-	 In all these cases, we might be accessing the last element, and
-	 although in practice this will probably never happen, it is legal for
-	 the indices of this last element to exceed the bounds of the array.
-	 Therefore, continue checking.  */
-    }
-
-  return true;
-}
-
 /* Determine information about number of iterations a LOOP from the index
    IDX of a data reference accessed in STMT.  RELIABLE is true if STMT is
    guaranteed to be executed in every iteration of LOOP.  Callback for
