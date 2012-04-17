@@ -1,3 +1,8 @@
+2012-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50303
+	* g++.dg/cpp0x/variadic128.C: New.
+
 2012-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

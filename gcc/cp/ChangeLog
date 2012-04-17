@@ -1,3 +1,9 @@
+2012-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50303
+	* pt.c (tsubst_pack_expansion): Use tsubst_expr for template
+	template parameters.
+
 2012-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52292
