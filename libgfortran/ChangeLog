@@ -1,3 +1,10 @@
+2012-04-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR libfortran/38199
+	PR libfortran/50673
+	* io/unit.c (get_internal_unit): Properly check for the presence
+	of the format string.
+
 2012-04-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/38199

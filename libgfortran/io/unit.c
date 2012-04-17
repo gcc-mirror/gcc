@@ -419,7 +419,7 @@ get_internal_unit (st_parameter_dt *dtp)
     {
       /* If we are not processing an array, adjust the unit record length not
 	 to include trailing blanks for list-formatted reads.  */
-      if (dtp->u.p.mode == READING && dtp->format == NULL)
+      if (dtp->u.p.mode == READING && !(dtp->common.flags & IOPARM_DT_HAS_FORMAT))
 	{
 	  if (dtp->common.unit == 0)
 	    {
