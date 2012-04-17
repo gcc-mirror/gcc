@@ -1,3 +1,15 @@
+2012-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52599
+	* semantics.c (build_constexpr_constructor_member_initializers):
+	Check for function-try-block as function-body.
+
+2012-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53003
+	* parser.c (cp_parser_member_declaration): Check that
+	initializer_token_start is non null before dereferencing it.
+
 2012-04-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38543

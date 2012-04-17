@@ -5921,6 +5921,12 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
 	    break;
 	}
     }
+  else if (TREE_CODE (body) == TRY_BLOCK)
+    {
+      error ("body of %<constexpr%> constructor cannot be "
+	     "a function-try-block");
+      return error_mark_node;
+    }
   else if (EXPR_P (body))
     ok = build_data_member_initialization (body, &vec);
   else

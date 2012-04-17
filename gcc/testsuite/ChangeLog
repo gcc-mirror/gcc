@@ -1,3 +1,13 @@
+2012-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52599
+	* g++.dg/cpp0x/constexpr-ctor10.C: New.
+
+2012-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53003
+	* g++.dg/parse/crash59.C: New.
+
 2012-04-17  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/18437
