@@ -1,3 +1,9 @@
+2012-04-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53020
+	* config/i386/sync.md (atomic_<code><mode>): Rename to
+	atomic_<logic><mode>.
+
 2012-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
