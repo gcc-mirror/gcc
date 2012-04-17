@@ -22,7 +22,7 @@
 
 2012-02-05  Nenad Vukicevic  <nenad@intrepid.com>
 
-	* gupc.texi (-x upc): Add files ending with '.c' to the list 
+	* gupc.texi (-x upc): Add files ending with '.c' to the list
 	of files compiled as UPC source.
 
 2012-02-04  Nenad Vukicevic  <nenad@intrepid.com>
@@ -33,12 +33,12 @@
 2012-02-03  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc-act.c (upc_write_init_func): Disable emitting of the
-	profiling code for shared variables initialization routines. 
+	profiling code for shared variables initialization routines.
 
 2012-02-03  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* Make-lang.in: Various changes related to generating
-	man/info pages from texi source file. 
+	man/info pages from texi source file.
 	(upc.install-common): Fix for removing the upc command
 	link before install if suffix was applied.
 	(upc.install-pdf): New.
