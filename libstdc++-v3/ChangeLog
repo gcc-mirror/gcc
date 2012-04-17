@@ -1,3 +1,8 @@
+2012-04-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/util/testsuite_abi.cc (compare_symbols): Change
+	summary header to avoid confusion with DejaGnu header.
+
 2012-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/52702
