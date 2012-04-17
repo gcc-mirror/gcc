@@ -1,3 +1,9 @@
+2012-04-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53011
+	* tree-eh.c (cleanup_empty_eh_merge_phis): Properly discard
+	loops when redirecting an entry or latch edge.
+
 2012-04-17  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* sel-sched.c (sel_global_init): Revert previous change.
