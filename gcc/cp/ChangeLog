@@ -1,3 +1,24 @@
+2012-04-17  Tom de Vries  <tom@codesourcery.com>
+
+	* cp-gimplify.c (begin_bc_block): Add location parameter and use as
+	location argument to create_artificial_label.
+	(finish_bc_block): Change return type to void.  Remove body_seq
+	parameter, and add block parameter.  Append label to STMT_LIST and
+	return in block.
+	(gimplify_cp_loop, gimplify_for_stmt, gimplify_while_stmt)
+	(gimplify_do_stmt, gimplify_switch_stmt): Remove function.
+	(genericize_cp_loop, genericize_for_stmt, genericize_while_stmt)
+	(genericize_do_stmt, genericize_switch_stmt, genericize_continue_stmt)
+	(genericize_break_stmt, genericize_omp_for_stmt): New function.
+	(cp_gimplify_omp_for): Remove bc_continue processing.
+	(cp_gimplify_expr): Genericize VEC_INIT_EXPR.
+	(cp_gimplify_expr): Mark FOR_STMT, WHILE_STMT, DO_STMT, SWITCH_STMT,
+	CONTINUE_STMT, and BREAK_STMT as unreachable.
+	(cp_genericize_r): Genericize FOR_STMT, WHILE_STMT, DO_STMT,
+	SWITCH_STMT, CONTINUE_STMT, BREAK_STMT and OMP_FOR.
+	(cp_genericize_tree): New function, factored out of ...
+	(cp_genericize): ... this function.
+
 2012-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52599
