@@ -576,7 +576,7 @@
   return "lock{%;} sub{<imodesuffix>}\t{%1, %0|%0, %1}";
 })
 
-(define_insn "atomic_<code><mode>"
+(define_insn "atomic_<logic><mode>"
   [(set (match_operand:SWI 0 "memory_operand" "+m")
 	(unspec_volatile:SWI
 	  [(any_logic:SWI (match_dup 0)
