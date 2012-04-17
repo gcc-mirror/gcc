@@ -19105,7 +19105,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		     possible that this fact is an oversight in the
 		     standard, since a pure function may be defined
 		     outside of the class-specifier.  */
-		  if (initializer)
+		  if (initializer && initializer_token_start)
 		    error_at (initializer_token_start->location,
 			      "pure-specifier on function-definition");
 		  decl = cp_parser_save_member_function_body (parser,
