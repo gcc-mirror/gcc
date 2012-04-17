@@ -1,5 +1,9 @@
 2012-04-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50830
+	* pt.c (convert_template_argument): Handle template template
+	argument packs.
+
 	PR c++/50303
 	* pt.c (tsubst_pack_expansion): Use tsubst_expr for template
 	template parameters.
