@@ -2875,8 +2875,8 @@ the front ends supported by GCC@.  If @var{n} is zero, then no
 line-wrapping is done; each error message appears on a single
 line.
 
-@opindex fdiagnostics-show-location
 @item -fdiagnostics-show-location=once
+@opindex fdiagnostics-show-location
 Only meaningful in line-wrapping mode.  Instructs the diagnostic messages
 reporter to emit @emph{once} source location information; that is, in
 case the message is too long to fit on a single physical line and has to
