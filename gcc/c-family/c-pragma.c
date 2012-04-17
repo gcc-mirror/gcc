@@ -682,22 +682,28 @@ static void init_pragma_pupc (void);
 static void handle_pragma_pupc (cpp_reader *);
 
 /* Pragma pupc defaults to being on */
-static void init_pragma_pupc(void)
+static void
+init_pragma_pupc (void)
 {
   pragma_pupc_on = 1;
 }
 
-int get_upc_pupc_mode(void)
+int
+get_upc_pupc_mode (void)
 {
   return pragma_pupc_on;
 }
 
-int disable_pupc_mode(void)
+int
+disable_pupc_mode (void)
 {
+  int old_pupc = pragma_pupc_on;
   pragma_pupc_on = 0;
+  return old_pupc;
 }
 
-void set_pupc_mode(int new_pupc)
+void
+set_pupc_mode (int new_pupc)
 {
   pragma_pupc_on = new_pupc;
 }
@@ -706,7 +712,8 @@ void set_pupc_mode(int new_pupc)
  *  #pragma pupc on
  *  #pragma pupc off
  */
-static void handle_pragma_pupc (cpp_reader *dummy ATTRIBUTE_UNUSED)
+static void
+handle_pragma_pupc (cpp_reader *dummy ATTRIBUTE_UNUSED)
 {
   tree x;
   enum cpp_ttype t;

@@ -1,3 +1,11 @@
+2012-04-17  Gary Funck  <gary@intrepid.com>
+
+	* c-family/c-pragma.c (disable_pupc_mode): Return the previous
+	value of the pupc mode.  Fixes a compile-time warning.
+	* c-family/c-pragma.c (init_pragma_pupc, get_upc_pupc_mode,
+	disable_pupc_mode, set_pupc_mode, handle_pragma_pupc):
+	Improve source formatting.
+
 2012-04-09  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 186243 into gupc branch.
