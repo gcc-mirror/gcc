@@ -1,3 +1,7 @@
+2012-04-17  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* sel-sched.c (sel_global_init): Revert previous change.
+
 2012-04-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (array_at_struct_end_p): Move declaration ...
