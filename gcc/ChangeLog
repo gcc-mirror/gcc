@@ -1,3 +1,10 @@
+2012-04-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (array_at_struct_end_p): Move declaration ...
+	* tree.h (array_at_struct_end_p): ... here.
+	* tree-ssa-loop-niter.c (array_at_struct_end_p): Move ...
+	* expr.c (array_at_struct_end_p): ... here.  Rewrite.
+
 2012-04-17  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* stmt.c (cost_table_, use_cost_table, cost_table_initialize,

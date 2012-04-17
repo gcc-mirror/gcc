@@ -5068,6 +5068,8 @@ extern bool contains_packed_reference (const_tree exp);
 
 extern tree array_ref_element_size (tree);
 
+bool array_at_struct_end_p (tree);
+
 /* Return a tree representing the lower bound of the array mentioned in
    EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
 
