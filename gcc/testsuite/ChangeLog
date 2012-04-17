@@ -1,3 +1,8 @@
+2012-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50303
+	* g++.dg/cpp0x/variadic128.C: New.
+
 2012-04-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52864
