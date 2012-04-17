@@ -48,9 +48,6 @@ along with GCC; see the file COPYING3.  If not see
     All variables supposed to be output into final file needs to be
     explicitly marked by frontend via VARPOOL_FINALIZE_DECL function.  */
 
-/* Hash table used to convert declarations into nodes.  */
-static GTY((param_is (union symtab_node_def))) htab_t varpool_hash;
-
 /* Queue of cgraph nodes scheduled to be lowered and output.
    The queue is maintained via mark_needed_node, linked via node->next_needed
    pointer.
@@ -84,66 +81,20 @@ varpool_node_name (struct varpool_node *node)
   return lang_hooks.decl_printable_name (node->symbol.decl, 2);
 }
 
-/* Returns a hash code for P.  */
-static hashval_t
-hash_varpool_node (const void *p)
-{
-  const struct varpool_node *n = (const struct varpool_node *) p;
-  return (hashval_t) DECL_UID (n->symbol.decl);
-}
-
-/* Returns nonzero if P1 and P2 are equal.  */
-static int
-eq_varpool_node (const void *p1, const void *p2)
-{
-  const struct varpool_node *n1 =
-    (const struct varpool_node *) p1;
-  const struct varpool_node *n2 =
-    (const struct varpool_node *) p2;
-  return DECL_UID (n1->symbol.decl) == DECL_UID (n2->symbol.decl);
-}
-
-/* Return varpool node assigned to DECL without creating new one.  */
-struct varpool_node *
-varpool_get_node (const_tree decl)
-{
-  struct varpool_node key, **slot;
-
-  gcc_assert (TREE_CODE (decl) == VAR_DECL
-	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)));
-
-  if (!varpool_hash)
-    return NULL;
-  key.symbol.decl = CONST_CAST2 (tree, const_tree, decl);
-  slot = (struct varpool_node **)
-    htab_find_slot (varpool_hash, &key, NO_INSERT);
-  if (!slot)
-    return NULL;
-  return *slot;
-}
-
 /* Return varpool node assigned to DECL.  Create new one when needed.  */
 struct varpool_node *
 varpool_node (tree decl)
 {
-  struct varpool_node key, *node, **slot;
-
+  struct varpool_node *node = varpool_get_node (decl);
   gcc_assert (TREE_CODE (decl) == VAR_DECL
 	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl) || in_lto_p));
+  if (node)
+    return node;
 
-  if (!varpool_hash)
-    varpool_hash = htab_create_ggc (10, hash_varpool_node,
-					   eq_varpool_node, NULL);
-  key.symbol.decl = decl;
-  slot = (struct varpool_node **)
-    htab_find_slot (varpool_hash, &key, INSERT);
-  if (*slot)
-    return *slot;
   node = ggc_alloc_cleared_varpool_node ();
   node->symbol.type = SYMTAB_VARIABLE;
   node->symbol.decl = decl;
   symtab_register_node ((symtab_node)node);
-  *slot = node;
   return node;
 }
 
@@ -151,10 +102,6 @@ varpool_node (tree decl)
 void
 varpool_remove_node (struct varpool_node *node)
 {
-  void **slot;
-  slot = htab_find_slot (varpool_hash, node, NO_INSERT);
-  gcc_assert (*slot == node);
-  htab_clear_slot (varpool_hash, slot);
   gcc_assert (!varpool_assembled_nodes_queue);
   symtab_unregister_node ((symtab_node)node);
   if (varpool_first_unanalyzed_node == node)
@@ -238,12 +185,9 @@ debug_varpool (void)
 struct varpool_node *
 varpool_node_for_asm (tree asmname)
 {
-  struct varpool_node *node;
-
-  FOR_EACH_VARIABLE (node)
-    if (decl_assembler_name_equal (node->symbol.decl, asmname))
-      return node;
-
+  symtab_node node = symtab_node_for_asm (asmname);
+  if (node && symtab_variable_p (node))
+    return varpool (node);
   return NULL;
 }
 

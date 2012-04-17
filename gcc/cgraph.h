@@ -40,6 +40,7 @@ enum symtab_type
 
 union symtab_node_def;
 typedef union symtab_node_def *symtab_node;
+typedef const union symtab_node_def *const_symtab_node;
 
 /* Base of all entries in the symbol table.
    The symtab_node is inherited by cgraph and varpol nodes.  */
@@ -60,6 +61,12 @@ struct GTY(()) symtab_node_base
   /* Linked list of symbol table entries starting with symtab_nodes.  */
   symtab_node next;
   symtab_node previous;
+  /* Linked list of symbols with the same asm name.  There may be multiple
+     entries for single symbol name in the case of LTO resolutions,
+     existence of inline clones, or duplicated declaration. The last case
+     is a long standing bug frontends and builtin handling. */
+  symtab_node next_sharing_asm_name;
+  symtab_node previous_sharing_asm_name;
 
   PTR GTY ((skip)) aux;
 
@@ -499,15 +506,18 @@ extern bool same_body_aliases_done;
 void symtab_register_node (symtab_node);
 void symtab_unregister_node (symtab_node);
 void symtab_remove_node (symtab_node);
+symtab_node symtab_get_node (const_tree);
+symtab_node symtab_node_for_asm (const_tree asmname);
+void symtab_insert_node_to_hashtable (symtab_node);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
 void debug_cgraph (void);
 void dump_cgraph_node (FILE *, struct cgraph_node *);
 void debug_cgraph_node (struct cgraph_node *);
-void cgraph_insert_node_to_hashtable (struct cgraph_node *node);
 void cgraph_remove_edge (struct cgraph_edge *);
 void cgraph_remove_node (struct cgraph_node *);
+struct cgraph_node *cgraph_find_replacement_node (struct cgraph_node *);
 void cgraph_add_to_same_comdat_group (struct cgraph_node *, struct cgraph_node *);
 bool cgraph_remove_node_and_inline_clones (struct cgraph_node *, struct cgraph_node *);
 void cgraph_release_function_body (struct cgraph_node *);
@@ -518,7 +528,6 @@ struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 struct cgraph_edge *cgraph_create_indirect_edge (struct cgraph_node *, gimple,
 						 int, gcov_type, int);
 struct cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
-struct cgraph_node * cgraph_get_node (const_tree);
 struct cgraph_node * cgraph_create_node (tree);
 struct cgraph_node * cgraph_get_create_node (tree);
 struct cgraph_node * cgraph_same_body_alias (struct cgraph_node *, tree, tree);
@@ -697,7 +706,6 @@ void cgraph_make_node_local (struct cgraph_node *);
 bool cgraph_node_can_be_local_p (struct cgraph_node *);
 
 
-struct varpool_node * varpool_get_node (const_tree decl);
 void varpool_remove_node (struct varpool_node *node);
 void varpool_finalize_named_section_flags (struct varpool_node *node);
 bool varpool_assemble_pending_decls (void);
@@ -734,7 +742,7 @@ static inline struct cgraph_node *
 cgraph (symtab_node node)
 {
   gcc_checking_assert (!node || node->symbol.type == SYMTAB_FUNCTION);
-  return &node->x_function;
+  return (struct cgraph_node *)node;
 }
 
 /* Return varpool node for given symbol and check it is a variable.  */
@@ -742,9 +750,28 @@ static inline struct varpool_node *
 varpool (symtab_node node)
 {
   gcc_checking_assert (!node || node->symbol.type == SYMTAB_VARIABLE);
-  return &node->x_variable;
+  return (struct varpool_node *)node;
 }
 
+/* Return callgraph node for given symbol and check it is a function. */
+static inline struct cgraph_node *
+cgraph_get_node (const_tree decl)
+{
+  gcc_checking_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  return cgraph (symtab_get_node (decl));
+}
+
+/* Return varpool node for given symbol and check it is a function. */
+static inline struct varpool_node *
+varpool_get_node (const_tree decl)
+{
+  gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
+  return varpool (symtab_get_node (decl));
+}
+
+/* Walk all symbols.  */
+#define FOR_EACH_SYMBOL(node) \
+   for ((node) = symtab_nodes; (node); (node) = (node)->symbol.next)
 
 /* Return first reachable static variable with initializer.  */
 static inline struct varpool_node *
