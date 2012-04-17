@@ -1,3 +1,7 @@
+2012-04-17  Tom de Vries  <tom@codesourcery.com>
+
+	* g++.dg/pr51264-4.C: New test.
+
 2012-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52599
