@@ -4,13 +4,13 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1990 -pedantic-errors" } */
 
-__extension__ typedef __PTRDIFF_TYPE__ ptrdiff_t;
+__extension__ typedef __INTPTR_TYPE__ intptr_t;
 
 /* PR 29116.  */
 int n = 0, p[n * 0 + 1]; /* { dg-error "variabl|can't be evaluated" } */
 
 /* PR 31871.  */
-extern int c[1 + ((ptrdiff_t) (void *) 0)]; /* { dg-error "variab|can't be evaluated" } */
+extern int c[1 + ((intptr_t) (void *) 0)]; /* { dg-error "variab|can't be evaluated" } */
 
 /* Implicit conversions from floating-point constants are not OK,
    although explicit ones are.  */
@@ -34,7 +34,7 @@ struct s {
 };
 
 enum e {
-  E = (1 + ((ptrdiff_t) (void *) 0)), /* { dg-error "constant" } */
+  E = (1 + ((intptr_t) (void *) 0)), /* { dg-error "constant" } */
   E2 = 0
 };
 
@@ -46,7 +46,7 @@ enum f {
 void
 f (int a)
 {
-  int v[1 + ((ptrdiff_t) (void *) 0)]; /* { dg-error "variab|can't be evaluated" } */
+  int v[1 + ((intptr_t) (void *) 0)]; /* { dg-error "variab|can't be evaluated" } */
   switch (a)
     {
     case (n * 0 + 1): /* { dg-error "constant" } */

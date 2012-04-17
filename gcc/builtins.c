@@ -4626,13 +4626,15 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
   return result;
 }
 
-/* Expand a call to a bswap builtin with argument ARG0.  MODE
-   is the mode to expand with.  */
+/* Expand a call to bswap builtin in EXP.
+   Return NULL_RTX if a normal call should be emitted rather than expanding the
+   function in-line.  If convenient, the result should be placed in TARGET.
+   SUBTARGET may be used as the target for computing one of EXP's operands.  */
 
 static rtx
-expand_builtin_bswap (tree exp, rtx target, rtx subtarget)
+expand_builtin_bswap (enum machine_mode target_mode, tree exp, rtx target,
+		      rtx subtarget)
 {
-  enum machine_mode mode;
   tree arg;
   rtx op0;
 
@@ -4640,14 +4642,18 @@ expand_builtin_bswap (tree exp, rtx target, rtx subtarget)
     return NULL_RTX;
 
   arg = CALL_EXPR_ARG (exp, 0);
-  mode = TYPE_MODE (TREE_TYPE (arg));
-  op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
+  op0 = expand_expr (arg,
+		     subtarget && GET_MODE (subtarget) == target_mode
+		     ? subtarget : NULL_RTX,
+		     target_mode, EXPAND_NORMAL);
+  if (GET_MODE (op0) != target_mode)
+    op0 = convert_to_mode (target_mode, op0, 1);
 
-  target = expand_unop (mode, bswap_optab, op0, target, 1);
+  target = expand_unop (target_mode, bswap_optab, op0, target, 1);
 
   gcc_assert (target);
 
-  return convert_to_mode (mode, target, 0);
+  return convert_to_mode (target_mode, target, 1);
 }
 
 /* Expand a call to a unary builtin in EXP.
@@ -6077,10 +6083,10 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       expand_stack_restore (CALL_EXPR_ARG (exp, 0));
       return const0_rtx;
 
+    case BUILT_IN_BSWAP16:
     case BUILT_IN_BSWAP32:
     case BUILT_IN_BSWAP64:
-      target = expand_builtin_bswap (exp, target, subtarget);
-
+      target = expand_builtin_bswap (target_mode, exp, target, subtarget);
       if (target)
 	return target;
       break;
@@ -8169,7 +8175,7 @@ fold_builtin_bitop (tree fndecl, tree arg)
   return NULL_TREE;
 }
 
-/* Fold function call to builtin_bswap and the long and long long
+/* Fold function call to builtin_bswap and the short, long and long long
    variants.  Return NULL_TREE if no simplification can be made.  */
 static tree
 fold_builtin_bswap (tree fndecl, tree arg)
@@ -8182,15 +8188,15 @@ fold_builtin_bswap (tree fndecl, tree arg)
     {
       HOST_WIDE_INT hi, width, r_hi = 0;
       unsigned HOST_WIDE_INT lo, r_lo = 0;
-      tree type;
+      tree type = TREE_TYPE (TREE_TYPE (fndecl));
 
-      type = TREE_TYPE (arg);
       width = TYPE_PRECISION (type);
       lo = TREE_INT_CST_LOW (arg);
       hi = TREE_INT_CST_HIGH (arg);
 
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
+	  case BUILT_IN_BSWAP16:
 	  case BUILT_IN_BSWAP32:
 	  case BUILT_IN_BSWAP64:
 	    {
@@ -8220,9 +8226,9 @@ fold_builtin_bswap (tree fndecl, tree arg)
 	}
 
       if (width < HOST_BITS_PER_WIDE_INT)
-	return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), r_lo);
+	return build_int_cst (type, r_lo);
       else
-	return build_int_cst_wide (TREE_TYPE (TREE_TYPE (fndecl)), r_lo, r_hi);
+	return build_int_cst_wide (type, r_lo, r_hi);
     }
 
   return NULL_TREE;
@@ -10575,6 +10581,7 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
     CASE_FLT_FN (BUILT_IN_LLRINT):
       return fold_fixed_mathfn (loc, fndecl, arg0);
 
+    case BUILT_IN_BSWAP16:
     case BUILT_IN_BSWAP32:
     case BUILT_IN_BSWAP64:
       return fold_builtin_bswap (fndecl, arg0);
@@ -14339,6 +14346,7 @@ is_inexpensive_builtin (tree decl)
       case BUILT_IN_ABS:
       case BUILT_IN_ALLOCA:
       case BUILT_IN_ALLOCA_WITH_ALIGN:
+      case BUILT_IN_BSWAP16:
       case BUILT_IN_BSWAP32:
       case BUILT_IN_BSWAP64:
       case BUILT_IN_CLZ:

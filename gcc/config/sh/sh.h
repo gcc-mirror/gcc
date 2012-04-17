@@ -1210,97 +1210,11 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
   ((HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) 0xffffffff) \
    || (HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) -1 << 32))
 
-#define CONST_OK_FOR_K04(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
-				 && ((HOST_WIDE_INT)(VALUE)) <= 15)
-
 #define CONST_OK_FOR_K08(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 255)
 
-#define CONST_OK_FOR_K12(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
-				 && ((HOST_WIDE_INT)(VALUE)) <= 4095)
-
 #define ZERO_EXTRACT_ANDMASK(EXTRACT_SZ_RTX, EXTRACT_POS_RTX)\
   (((1 << INTVAL (EXTRACT_SZ_RTX)) - 1) << INTVAL (EXTRACT_POS_RTX))
-
-#define DISP_ADDR_P(X) (MEM_P (X) && GET_CODE (XEXP (X, 0)) == PLUS \
-			 && REG_P (XEXP (XEXP (X, 0), 0)) \
-			 && CONST_INT_P (XEXP (XEXP (X, 0), 1)))
-
-#define DISP_ADDR_OFFSET(X) (INTVAL (XEXP (XEXP (X, 0), 1)))
-
-#if 0
-#define SECONDARY_INOUT_RELOAD_CLASS(CLASS,MODE,X,ELSE) \
-  ((((REGCLASS_HAS_FP_REG (CLASS) 					\
-      && (REG_P (X)							\
-      && (GENERAL_OR_AP_REGISTER_P (REGNO (X))				\
-	  || (FP_REGISTER_P (REGNO (X)) && (MODE) == SImode		\
-	      && TARGET_FMOVD))))					\
-     || (REGCLASS_HAS_GENERAL_REG (CLASS) 				\
-	 && REG_P (X)							\
-	 && FP_REGISTER_P (REGNO (X))))					\
-    && ! TARGET_SHMEDIA							\
-    && ((MODE) == SFmode || (MODE) == SImode))				\
-   ? FPUL_REGS								\
-   : (((CLASS) == FPUL_REGS						\
-       || (REGCLASS_HAS_FP_REG (CLASS)					\
-	   && ! TARGET_SHMEDIA && MODE == SImode))			\
-      && (MEM_P (X)							\
-	  || (REG_P (X)							\
-	      && (REGNO (X) >= FIRST_PSEUDO_REGISTER			\
-		  || REGNO (X) == T_REG					\
-		  || system_reg_operand (X, VOIDmode)))))		\
-   ? GENERAL_REGS							\
-   : (((CLASS) == TARGET_REGS						\
-       || (TARGET_SHMEDIA && (CLASS) == SIBCALL_REGS))			\
-      && !satisfies_constraint_Csy (X)					\
-      && (!REG_P (X) || ! GENERAL_REGISTER_P (REGNO (X))))		\
-   ? GENERAL_REGS							\
-   : (((CLASS) == MAC_REGS || (CLASS) == PR_REGS)			\
-      && REG_P (X) && ! GENERAL_REGISTER_P (REGNO (X))			\
-      && (CLASS) != REGNO_REG_CLASS (REGNO (X)))			\
-   ? GENERAL_REGS							\
-   : ((CLASS) != GENERAL_REGS && REG_P (X)				\
-      && TARGET_REGISTER_P (REGNO (X)))					\
-   ? GENERAL_REGS : (ELSE))
-
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X) \
- SECONDARY_INOUT_RELOAD_CLASS(CLASS,MODE,X,NO_REGS)
-
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,X)  \
-  ((REGCLASS_HAS_FP_REG (CLASS) 					\
-    && ! TARGET_SHMEDIA							\
-    && immediate_operand ((X), (MODE))					\
-    && ! ((fp_zero_operand (X) || fp_one_operand (X))			\
-	  && (MODE) == SFmode && fldi_ok ()))				\
-   ? R0_REGS								\
-   : ((CLASS) == FPUL_REGS						\
-      && ((REG_P (X)							\
-	   && (REGNO (X) == MACL_REG || REGNO (X) == MACH_REG		\
-	       || REGNO (X) == T_REG))					\
-	  || GET_CODE (X) == PLUS))					\
-   ? GENERAL_REGS							\
-   : (CLASS) == FPUL_REGS && immediate_operand ((X), (MODE))		\
-   ? (satisfies_constraint_I08 (X)					\
-      ? GENERAL_REGS							\
-      : R0_REGS)							\
-   : ((CLASS) == FPSCR_REGS						\
-      && ((REG_P (X) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
-	  || (MEM_P (X) && GET_CODE (XEXP ((X), 0)) == PLUS)))		\
-   ? GENERAL_REGS							\
-   : (REGCLASS_HAS_FP_REG (CLASS) 					\
-      && TARGET_SHMEDIA							\
-      && immediate_operand ((X), (MODE))				\
-      && (X) != CONST0_RTX (GET_MODE (X))				\
-      && GET_MODE (X) != V4SFmode)					\
-   ? GENERAL_REGS							\
-   : (((MODE) == QImode || (MODE) == HImode)				\
-      && TARGET_SHMEDIA && inqhi_operand ((X), (MODE)))			\
-   ? GENERAL_REGS							\
-   : (TARGET_SHMEDIA && (CLASS) == GENERAL_REGS				\
-      && (GET_CODE (X) == LABEL_REF || PIC_ADDR_P (X)))			\
-   ? TARGET_REGS							\
-   : SECONDARY_INOUT_RELOAD_CLASS((CLASS),(MODE),(X), NO_REGS))
-#endif
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
@@ -1737,7 +1651,7 @@ struct sh_args {
    can ignore COUNT.  */
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
-  (((COUNT) == 0) ? sh_get_pr_initial_val () : (rtx) 0)
+  (((COUNT) == 0) ? sh_get_pr_initial_val () : NULL_RTX)
 
 /* A C expression whose value is RTL representing the location of the
    incoming return address at the beginning of any function, before the
@@ -2386,8 +2300,6 @@ extern int current_function_interrupt;
 	      : TARGET_SHMEDIA32 ? SImode : DImode);
 
 #define MAX_FIXED_MODE_SIZE (TARGET_SH5 ? 128 : 64)
-
-#define SIDI_OFF (TARGET_LITTLE_ENDIAN ? 0 : 4)
 
 /* Better to allocate once the maximum space for outgoing args in the
    prologue rather than duplicate around each call.  */

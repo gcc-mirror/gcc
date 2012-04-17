@@ -146,11 +146,11 @@ record_eh_tables (struct cgraph_node *node, struct function *fun)
 {
   eh_region i;
 
-  if (DECL_FUNCTION_PERSONALITY (node->decl))
+  if (DECL_FUNCTION_PERSONALITY (node->symbol.decl))
     {
       struct cgraph_node *per_node;
 
-      per_node = cgraph_get_create_node (DECL_FUNCTION_PERSONALITY (node->decl));
+      per_node = cgraph_get_create_node (DECL_FUNCTION_PERSONALITY (node->symbol.decl));
       ipa_record_reference (node, NULL, per_node, NULL, IPA_REF_ADDR, NULL);
       cgraph_mark_address_taken_node (per_node);
     }
@@ -427,7 +427,7 @@ rebuild_cgraph_edges (void)
   gimple_stmt_iterator gsi;
 
   cgraph_node_remove_callees (node);
-  ipa_remove_all_references (&node->ref_list);
+  ipa_remove_all_references (&node->symbol.ref_list);
 
   node->count = ENTRY_BLOCK_PTR->count;
 
@@ -475,7 +475,7 @@ cgraph_rebuild_references (void)
   struct cgraph_node *node = cgraph_get_node (current_function_decl);
   gimple_stmt_iterator gsi;
 
-  ipa_remove_all_references (&node->ref_list);
+  ipa_remove_all_references (&node->symbol.ref_list);
 
   node->count = ENTRY_BLOCK_PTR->count;
 

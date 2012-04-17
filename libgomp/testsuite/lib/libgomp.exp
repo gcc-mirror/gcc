@@ -161,6 +161,9 @@ proc libgomp_init { args } {
     # error-message parsing machinery.
     lappend ALWAYS_CFLAGS "additional_flags=-fmessage-length=0"
 
+    # Disable caret
+    lappend ALWAYS_CFLAGS "additional_flags=-fno-diagnostics-show-caret"
+
     # And, gee, turn on OpenMP.
     lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
 }

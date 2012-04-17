@@ -38,6 +38,7 @@ extern char builtins_location_check[(BUILTINS_LOCATION
 				     < RESERVED_LOCATION_COUNT) ? 1 : -1];
 
 extern expanded_location expand_location (source_location);
+extern const char * location_get_source_line(expanded_location xloc);
 
 /* Historically GCC used location_t, while cpp used source_location.
    This could be removed but it hardly seems worth the effort.  */

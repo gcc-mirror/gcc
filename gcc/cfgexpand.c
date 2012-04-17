@@ -1488,9 +1488,9 @@ estimated_stack_frame_size (struct cgraph_node *node)
   tree var;
   tree old_cur_fun_decl = current_function_decl;
   referenced_var_iterator rvi;
-  struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+  struct function *fn = DECL_STRUCT_FUNCTION (node->symbol.decl);
 
-  current_function_decl = node->decl;
+  current_function_decl = node->symbol.decl;
   push_cfun (fn);
 
   gcc_checking_assert (gimple_referenced_vars (fn));
@@ -4555,7 +4555,11 @@ gimple_expand_cfg (void)
   if (MAY_HAVE_DEBUG_INSNS)
     expand_debug_locations ();
 
-  execute_free_datastructures ();
+  /* Free stuff we no longer need after GIMPLE optimizations.  */
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
+  delete_tree_cfg_annotations ();
+
   timevar_push (TV_OUT_OF_SSA);
   finish_out_of_ssa (&SA);
   timevar_pop (TV_OUT_OF_SSA);

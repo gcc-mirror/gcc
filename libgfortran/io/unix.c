@@ -736,7 +736,7 @@ mem_alloc_w4 (stream * strm, int * len)
 }
 
 
-/* Stream read function for character(kine=1) internal units.  */
+/* Stream read function for character(kind=1) internal units.  */
 
 static ssize_t
 mem_read (stream * s, void * buf, ssize_t nbytes)

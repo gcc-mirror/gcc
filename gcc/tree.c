@@ -5076,14 +5076,14 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
   unsigned ix;
   tree t;
 
-  find_decls_types (n->decl, fld);
+  find_decls_types (n->symbol.decl, fld);
 
-  if (!gimple_has_body_p (n->decl))
+  if (!gimple_has_body_p (n->symbol.decl))
     return;
 
   gcc_assert (current_function_decl == NULL_TREE && cfun == NULL);
 
-  fn = DECL_STRUCT_FUNCTION (n->decl);
+  fn = DECL_STRUCT_FUNCTION (n->symbol.decl);
 
   /* Traverse locals. */
   FOR_EACH_LOCAL_DECL (fn, ix, t)
@@ -5139,7 +5139,7 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
 static void
 find_decls_types_in_var (struct varpool_node *v, struct free_lang_data_d *fld)
 {
-  find_decls_types (v->decl, fld);
+  find_decls_types (v->symbol.decl, fld);
 }
 
 /* If T needs an assembler name, have one created for it.  */
@@ -9474,6 +9474,7 @@ build_common_tree_nodes (bool signed_char, bool short_double)
   integer_ptr_type_node = build_pointer_type (integer_type_node);
 
   /* Fixed size integer types.  */
+  uint16_type_node = build_nonstandard_integer_type (16, true);
   uint32_type_node = build_nonstandard_integer_type (32, true);
   uint64_type_node = build_nonstandard_integer_type (64, true);
 

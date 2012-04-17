@@ -970,6 +970,22 @@ void
 set_reg_attrs_from_value (rtx reg, rtx x)
 {
   int offset;
+  bool can_be_reg_pointer = true;
+
+  /* Don't call mark_reg_pointer for incompatible pointer sign
+     extension.  */
+  while (GET_CODE (x) == SIGN_EXTEND
+	 || GET_CODE (x) == ZERO_EXTEND
+	 || GET_CODE (x) == TRUNCATE
+	 || (GET_CODE (x) == SUBREG && subreg_lowpart_p (x)))
+    {
+#if defined(POINTERS_EXTEND_UNSIGNED) && !defined(HAVE_ptr_extend)
+      if ((GET_CODE (x) == SIGN_EXTEND && POINTERS_EXTEND_UNSIGNED)
+	  || (GET_CODE (x) != SIGN_EXTEND && ! POINTERS_EXTEND_UNSIGNED))
+	can_be_reg_pointer = false;
+#endif
+      x = XEXP (x, 0);
+    }
 
   /* Hard registers can be reused for multiple purposes within the same
      function, so setting REG_ATTRS, REG_POINTER and REG_POINTER_ALIGN
@@ -983,14 +999,14 @@ set_reg_attrs_from_value (rtx reg, rtx x)
       if (MEM_OFFSET_KNOWN_P (x))
 	REG_ATTRS (reg) = get_reg_attrs (MEM_EXPR (x),
 					 MEM_OFFSET (x) + offset);
-      if (MEM_POINTER (x))
+      if (can_be_reg_pointer && MEM_POINTER (x))
 	mark_reg_pointer (reg, 0);
     }
   else if (REG_P (x))
     {
       if (REG_ATTRS (x))
 	update_reg_offset (reg, x, offset);
-      if (REG_POINTER (x))
+      if (can_be_reg_pointer && REG_POINTER (x))
 	mark_reg_pointer (reg, REGNO_POINTER_ALIGN (REGNO (x)));
     }
 }

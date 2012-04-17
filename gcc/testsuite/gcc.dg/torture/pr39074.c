@@ -2,7 +2,7 @@
 /* { dg-options "-fdump-tree-alias" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-fno-fat-lto-objects" } { "" } } */
 
-typedef __PTRDIFF_TYPE__ intptr_t;
+typedef __INTPTR_TYPE__ intptr_t;
 
 int i;
 void __attribute__((noinline))

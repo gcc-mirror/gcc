@@ -1844,7 +1844,8 @@ build_function_decl (gfc_symbol * sym, bool global)
 
   if (!current_function_decl
       && !sym->attr.entry_master && !sym->attr.is_main_program
-      && (sym->attr.access != ACCESS_PRIVATE || sym->binding_label))
+      && (sym->attr.access != ACCESS_PRIVATE || sym->binding_label
+	  || sym->attr.public_used))
     TREE_PUBLIC (fndecl) = 1;
 
   attributes = add_attributes_to_decl (attr, NULL_TREE);

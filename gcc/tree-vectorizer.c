@@ -324,7 +324,7 @@ increase_alignment (void)
        vnode;
        vnode = vnode->next_needed)
     {
-      tree vectype, decl = vnode->decl;
+      tree vectype, decl = vnode->symbol.decl;
       tree t;
       unsigned int alignment;
 

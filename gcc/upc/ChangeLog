@@ -1,3 +1,10 @@
+2012-04-16  Gary Funck  <gary@intrepid.com>
+
+	* upc-genericize.c: Adjust copyright.
+	(upc_genericize_fndecl): Adjust call graph
+	union member reference to use the newly introduced
+	'symbol' field in order to refer to 'decl'.
+
 2012-02-07  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* gupc.texi: Added entries for the directory.

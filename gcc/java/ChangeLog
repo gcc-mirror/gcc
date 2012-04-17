@@ -1,3 +1,31 @@
+2012-04-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* jcf-dump.c (print_constant): Cast JPOOL_USHORT2, JPOOL_USHORT1
+	results to long to match formats.
+
+2012-04-11  Andrew Haley  <aph@redhat.com>
+
+	* jcf-reader.c (jcf_parse_bootstrap_methods): Add
+	ATTRIBUTE_UNUSED.
+
+2012-04-11  Andrew Haley  <aph@redhat.com>
+
+	* jcf.h (bootstrap_method): New.
+	(BootstrapMethods): New.
+	(JCF): Add BootstrapMethods.
+	(enum cpool_tag): Add MethodHandle, MethodType, and InvokeDynamic.
+	* jcf-reader.c (jcf_parse_bootstrap_methods): New.
+	(jcf_parse_constant_pool): Handlers for MethodHandle, MethodType,
+	and InvokeDynamic.
+	(jcf_parse_bootstrap_methods): New.
+	* javaop.def (invokedynamic): New opcode.
+	* jcf-parse.c (get_constant): An unknown constant type should not
+	be an internal error, but a fatal one.  Make it so.
+	* jcf-dump.c (HANDLE_BOOTSTRAP_METHODS_ATTRIBUTE): New.
+	(HANDLE_END_BOOTSTRAP_METHODS): New.
+	(print_constant): Handlers for MethodHandle, MethodType, and
+	InvokeDynamic.
+
 2012-04-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* class.c (emit_register_classes_in_jcr_section): Set DECL_USER_ALIGN.

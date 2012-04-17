@@ -397,7 +397,7 @@ get_internal_unit (st_parameter_dt *dtp)
   __gthread_mutex_lock (&iunit->lock);
 
   iunit->recl = dtp->internal_unit_len;
-  
+
   /* For internal units we set the unit number to -1.
      Otherwise internal units can be mistaken for a pre-connected unit or
      some other file I/O unit.  */
@@ -414,6 +414,26 @@ get_internal_unit (st_parameter_dt *dtp)
 	init_loop_spec (dtp->internal_unit_desc, iunit->ls, &start_record);
 
       start_record *= iunit->recl;
+    }
+  else
+    {
+      /* If we are not processing an array, adjust the unit record length not
+	 to include trailing blanks for list-formatted reads.  */
+      if (dtp->u.p.mode == READING && dtp->format == NULL)
+	{
+	  if (dtp->common.unit == 0)
+	    {
+	      dtp->internal_unit_len =
+		string_len_trim (dtp->internal_unit_len, dtp->internal_unit);
+	      iunit->recl = dtp->internal_unit_len;
+	    }
+	  else
+	    {
+	      dtp->internal_unit_len =
+		string_len_trim_char4 (dtp->internal_unit_len, dtp->internal_unit);
+	      iunit->recl = dtp->internal_unit_len;
+	    }
+	}
     }
 
   /* Set initial values for unit parameters.  */

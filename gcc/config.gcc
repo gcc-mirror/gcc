@@ -1228,7 +1228,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 		# Assume modern glibc
 		default_gnu_indirect_function=yes
 		if test x$enable_targets = xall; then
-			tm_file="${tm_file} i386/x86-64.h i386/gnu-user64.h i386/linux64.h"
+			tm_file="${tm_file} i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h i386/linux64.h"
 			tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 			tmake_file="${tmake_file} i386/t-linux64"
 			x86_multilibs="${with_multilib_list}"
@@ -1263,26 +1263,26 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 				;;
 			esac
 		else
-			tm_file="${tm_file} i386/gnu-user.h i386/linux.h"
+			tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h i386/linux.h"
 		fi
 		;;
 	i[34567]86-*-knetbsd*-gnu)
-		tm_file="${tm_file} i386/gnu-user.h knetbsd-gnu.h i386/knetbsd-gnu.h"
+		tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h knetbsd-gnu.h i386/knetbsd-gnu.h"
 		;;
 	i[34567]86-*-kfreebsd*-gnu)
-		tm_file="${tm_file} i386/gnu-user.h kfreebsd-gnu.h i386/kfreebsd-gnu.h"
+		tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h kfreebsd-gnu.h i386/kfreebsd-gnu.h"
 		;;
 	i[34567]86-*-kopensolaris*-gnu)
-		tm_file="${tm_file} i386/gnu-user.h kopensolaris-gnu.h i386/kopensolaris-gnu.h"
+		tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h kopensolaris-gnu.h i386/kopensolaris-gnu.h"
 		;;
 	i[34567]86-*-gnu*)
-		tm_file="$tm_file i386/gnu-user.h gnu.h i386/gnu.h"
+		tm_file="$tm_file i386/gnu-user-common.h i386/gnu-user.h gnu.h i386/gnu.h"
 		;;
 	esac
 	;;
 x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h glibc-stdint.h \
-		 i386/x86-64.h i386/gnu-user64.h"
+		 i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h"
 	case ${target} in
 	x86_64-*-linux*)
 		tm_file="${tm_file} linux.h i386/linux64.h"

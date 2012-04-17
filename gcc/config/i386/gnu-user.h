@@ -24,15 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 /* The .file command should always begin the output.  */
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
-/* The svr4 ABI for the i386 says that records and unions are returned
-   in memory.  */
-#undef DEFAULT_PCC_STRUCT_RETURN
-#define DEFAULT_PCC_STRUCT_RETURN 1
-
-/* We arrange for the whole %gs segment to map the tls area.  */
-#undef TARGET_TLS_DIRECT_SEG_REFS_DEFAULT
-#define TARGET_TLS_DIRECT_SEG_REFS_DEFAULT MASK_TLS_DIRECT_SEG_REFS
-
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "#"
 
@@ -67,19 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
     
-#define TARGET_OS_CPP_BUILTINS()		\
-  do						\
-    {						\
-	GNU_USER_TARGET_OS_CPP_BUILTINS();	\
-    }						\
-  while (0)
-
-#undef CPP_SPEC
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
-
-#undef CC1_SPEC
-#define CC1_SPEC "%(cc1_cpu) %{profile:-p}"
-
 /* Provide a LINK_SPEC appropriate for GNU userspace.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
@@ -104,15 +82,6 @@ along with GCC; see the file COPYING3.  If not see
       %{rdynamic:-export-dynamic} \
       -dynamic-linker %(dynamic_linker)} \
       %{static:-static}}"
-
-/* Similar to standard GNU userspace, but adding -ffast-math support.  */
-#undef  ENDFILE_SPEC
-#define ENDFILE_SPEC \
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
-   %{mpc32:crtprec32.o%s} \
-   %{mpc64:crtprec64.o%s} \
-   %{mpc80:crtprec80.o%s} \
-   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named
@@ -179,20 +148,6 @@ along with GCC; see the file COPYING3.  If not see
 		   "|%0,_GLOBAL_OFFSET_TABLE_+(.-.LPR%=)}"		\
 	   : "=d"(BASE))
 #endif
-
-/* Put all *tf routines in libgcc.  */
-#undef LIBGCC2_HAS_TF_MODE
-#define LIBGCC2_HAS_TF_MODE 1
-#define LIBGCC2_TF_CEXT q
-#define TF_SIZE 113
-
-#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
-
-/* The stack pointer needs to be moved while checking the stack.  */
-#define STACK_CHECK_MOVING_SP 1
-
-/* Static stack checking is supported by means of probes.  */
-#define STACK_CHECK_STATIC_BUILTIN 1
 
 #ifdef TARGET_LIBC_PROVIDES_SSP
 /* i386 glibc provides __stack_chk_guard in %gs:0x14.  */

@@ -219,7 +219,7 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 	       cgraph_node_name (prevailing_node),
 	       prevailing_node->uid,
 	       IDENTIFIER_POINTER ((*targetm.asm_out.mangle_assembler_name)
-		 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)))));
+		 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->symbol.decl)))));
     }
 
   /* Merge node flags.  */
@@ -227,7 +227,7 @@ lto_cgraph_replace_node (struct cgraph_node *node,
     cgraph_mark_needed_node (prevailing_node);
   if (node->reachable)
     cgraph_mark_reachable_node (prevailing_node);
-  if (node->address_taken)
+  if (node->symbol.address_taken)
     {
       gcc_assert (!prevailing_node->global.inlined_to);
       cgraph_mark_address_taken_node (prevailing_node);
@@ -235,8 +235,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 
   /* Redirect all incoming edges.  */
   compatible_p
-    = types_compatible_p (TREE_TYPE (TREE_TYPE (prevailing_node->decl)),
-			  TREE_TYPE (TREE_TYPE (node->decl)));
+    = types_compatible_p (TREE_TYPE (TREE_TYPE (prevailing_node->symbol.decl)),
+			  TREE_TYPE (TREE_TYPE (node->symbol.decl)));
   for (e = node->callers; e; e = next)
     {
       next = e->next_caller;
@@ -249,7 +249,7 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 	e->call_stmt_cannot_inline_p = 1;
     }
   /* Redirect incomming references.  */
-  ipa_clone_refering (prevailing_node, NULL, &node->ref_list);
+  ipa_clone_refering (prevailing_node, NULL, &node->symbol.ref_list);
 
   /* Finally remove the replaced node.  */
   cgraph_remove_node (node);
@@ -271,11 +271,11 @@ lto_varpool_replace_node (struct varpool_node *vnode,
   gcc_assert (!vnode->finalized || prevailing_node->finalized);
   gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
 
-  ipa_clone_refering (NULL, prevailing_node, &vnode->ref_list);
+  ipa_clone_refering (NULL, prevailing_node, &vnode->symbol.ref_list);
 
   /* Be sure we can garbage collect the initializer.  */
-  if (DECL_INITIAL (vnode->decl))
-    DECL_INITIAL (vnode->decl) = error_mark_node;
+  if (DECL_INITIAL (vnode->symbol.decl))
+    DECL_INITIAL (vnode->symbol.decl) = error_mark_node;
   /* Finally remove the replaced node.  */
   varpool_remove_node (vnode);
 }
@@ -693,9 +693,9 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
      First one would disable some whole program optimizations, while
      ther second would imply to many whole program assumptions.  */
   if (prevailing->node && !flag_ltrans && !prevailing->guessed)
-    prevailing->node->resolution = prevailing->resolution;
+    prevailing->node->symbol.resolution = prevailing->resolution;
   else if (prevailing->vnode && !flag_ltrans && !prevailing->guessed)
-    prevailing->vnode->resolution = prevailing->resolution;
+    prevailing->vnode->symbol.resolution = prevailing->resolution;
   return 1;
 }
 

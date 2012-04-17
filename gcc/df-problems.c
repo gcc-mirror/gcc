@@ -2886,25 +2886,6 @@ df_whole_mw_reg_unused_p (struct df_mw_hardreg *mws,
 }
 
 
-/* Node of a linked list of uses of dead REGs in debug insns.  */
-struct dead_debug_use
-{
-  df_ref use;
-  struct dead_debug_use *next;
-};
-
-/* Linked list of the above, with a bitmap of the REGs in the
-   list.  */
-struct dead_debug
-{
-  struct dead_debug_use *head;
-  bitmap used;
-  bitmap to_rescan;
-};
-
-static void dead_debug_reset (struct dead_debug *, unsigned int);
-
-
 /* Set the REG_UNUSED notes for the multiword hardreg defs in INSN
    based on the bits in LIVE.  Do not generate notes for registers in
    artificial uses.  DO_NOT_GEN is updated so that REG_DEAD notes are
@@ -2930,7 +2911,7 @@ df_set_unused_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
     {
       unsigned int regno = mws->start_regno;
       df_set_note (REG_UNUSED, insn, mws->mw_reg);
-      dead_debug_reset (debug, regno);
+      dead_debug_insert_temp (debug, regno, insn, DEBUG_TEMP_AFTER_WITH_REG);
 
 #ifdef REG_DEAD_DEBUGGING
       df_print_note ("adding 1: ", insn, REG_NOTES (insn));
@@ -2945,7 +2926,7 @@ df_set_unused_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
 	    && !bitmap_bit_p (artificial_uses, r))
 	  {
 	    df_set_note (REG_UNUSED, insn, regno_reg_rtx[r]);
-	    dead_debug_reset (debug, r);
+	    dead_debug_insert_temp (debug, r, insn, DEBUG_TEMP_AFTER_WITH_REG);
 #ifdef REG_DEAD_DEBUGGING
 	    df_print_note ("adding 2: ", insn, REG_NOTES (insn));
 #endif
@@ -3013,12 +2994,12 @@ df_set_dead_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
 
   if (df_whole_mw_reg_dead_p (mws, live, artificial_uses, do_not_gen))
     {
-      /* Add a dead note for the entire multi word register.  */
       if (is_debug)
 	{
 	  *added_notes_p = true;
 	  return;
 	}
+      /* Add a dead note for the entire multi word register.  */
       df_set_note (REG_DEAD, insn, mws->mw_reg);
 #ifdef REG_DEAD_DEBUGGING
       df_print_note ("adding 1: ", insn, REG_NOTES (insn));
@@ -3072,7 +3053,7 @@ df_create_unused_note (rtx insn, df_ref def,
       rtx reg = (DF_REF_LOC (def))
                 ? *DF_REF_REAL_LOC (def): DF_REF_REG (def);
       df_set_note (REG_UNUSED, insn, reg);
-      dead_debug_reset (debug, dregno);
+      dead_debug_insert_temp (debug, dregno, insn, DEBUG_TEMP_AFTER_WITH_REG);
 #ifdef REG_DEAD_DEBUGGING
       df_print_note ("adding 3: ", insn, REG_NOTES (insn));
 #endif
@@ -3083,7 +3064,7 @@ df_create_unused_note (rtx insn, df_ref def,
 
 
 /* Initialize DEBUG to an empty list, and clear USED, if given.  */
-static inline void
+void
 dead_debug_init (struct dead_debug *debug, bitmap used)
 {
   debug->head = NULL;
@@ -3093,31 +3074,82 @@ dead_debug_init (struct dead_debug *debug, bitmap used)
     bitmap_clear (used);
 }
 
-/* Reset all debug insns with pending uses.  Release the bitmap in it,
-   unless it is USED.  USED must be the same bitmap passed to
-   dead_debug_init.  */
-static inline void
-dead_debug_finish (struct dead_debug *debug, bitmap used)
+/* Reset all debug uses in HEAD, and clear DEBUG->to_rescan bits of
+   each reset insn.  DEBUG is not otherwise modified.  If HEAD is
+   DEBUG->head, DEBUG->head will be set to NULL at the end.
+   Otherwise, entries from DEBUG->head that pertain to reset insns
+   will be removed, and only then rescanned.  */
+
+static void
+dead_debug_reset_uses (struct dead_debug *debug, struct dead_debug_use *head)
 {
-  struct dead_debug_use *head;
-  rtx insn = NULL;
+  bool got_head = (debug->head == head);
+  bitmap rescan;
+  struct dead_debug_use **tailp = &debug->head;
+  struct dead_debug_use *cur;
+  bitmap_iterator bi;
+  unsigned int uid;
 
-  if (debug->used != used)
-    BITMAP_FREE (debug->used);
+  if (got_head)
+    rescan = NULL;
+  else
+    rescan = BITMAP_ALLOC (NULL);
 
-  while ((head = debug->head))
+  while (head)
     {
+      struct dead_debug_use *next = head->next;
+      rtx insn;
+
       insn = DF_REF_INSN (head->use);
-      if (!head->next || DF_REF_INSN (head->next->use) != insn)
+      if (!next || DF_REF_INSN (next->use) != insn)
 	{
 	  INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
-	  df_insn_rescan_debug_internal (insn);
+	  if (got_head)
+	    df_insn_rescan_debug_internal (insn);
+	  else
+	    bitmap_set_bit (rescan, INSN_UID (insn));
 	  if (debug->to_rescan)
 	    bitmap_clear_bit (debug->to_rescan, INSN_UID (insn));
 	}
-      debug->head = head->next;
       XDELETE (head);
+      head = next;
     }
+
+  if (got_head)
+    {
+      debug->head = NULL;
+      return;
+    }
+
+  while ((cur = *tailp))
+    if (bitmap_bit_p (rescan, INSN_UID (DF_REF_INSN (cur->use))))
+      {
+	*tailp = cur->next;
+	XDELETE (cur);
+      }
+    else
+      tailp = &cur->next;
+
+  EXECUTE_IF_SET_IN_BITMAP (rescan, 0, uid, bi)
+    {
+      struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
+      if (insn_info)
+	df_insn_rescan_debug_internal (insn_info->insn);
+    }
+
+  BITMAP_FREE (rescan);
+}
+
+/* Reset all debug insns with pending uses.  Release the bitmap in it,
+   unless it is USED.  USED must be the same bitmap passed to
+   dead_debug_init.  */
+void
+dead_debug_finish (struct dead_debug *debug, bitmap used)
+{
+  if (debug->used != used)
+    BITMAP_FREE (debug->used);
+
+  dead_debug_reset_uses (debug, debug->head);
 
   if (debug->to_rescan)
     {
@@ -3134,54 +3166,9 @@ dead_debug_finish (struct dead_debug *debug, bitmap used)
     }
 }
 
-/* Reset DEBUG_INSNs with pending uses of DREGNO.  */
-static void
-dead_debug_reset (struct dead_debug *debug, unsigned int dregno)
-{
-  struct dead_debug_use **tailp = &debug->head;
-  struct dead_debug_use **insnp = &debug->head;
-  struct dead_debug_use *cur;
-  rtx insn;
-
-  if (!debug->used || !bitmap_clear_bit (debug->used, dregno))
-    return;
-
-  while ((cur = *tailp))
-    {
-      if (DF_REF_REGNO (cur->use) == dregno)
-	{
-	  *tailp = cur->next;
-	  insn = DF_REF_INSN (cur->use);
-	  INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
-	  if (debug->to_rescan == NULL)
-	    debug->to_rescan = BITMAP_ALLOC (NULL);
-	  bitmap_set_bit (debug->to_rescan, INSN_UID (insn));
-	  XDELETE (cur);
-	  /* If the current use isn't the first one attached to INSN, go back
-	     to this first use.  We assume that the uses attached to an insn
-	     are adjacent.  */                                                                       
-	  if (tailp != insnp && DF_REF_INSN ((*insnp)->use) == insn)
-	    tailp = insnp;
-	  /* Then remove all the other uses attached to INSN.  */
-	  while ((cur = *tailp) && DF_REF_INSN (cur->use) == insn)
-	    {
-	      *tailp = cur->next;
-	      XDELETE (cur);
-	    }
-	  insnp = tailp;
-	}
-      else
-	{
-	  if (DF_REF_INSN ((*insnp)->use) != DF_REF_INSN (cur->use))
-	    insnp = tailp;
-	  tailp = &(*tailp)->next;
-	}
-    }
-}
-
 /* Add USE to DEBUG.  It must be a dead reference to UREGNO in a debug
    insn.  Create a bitmap for DEBUG as needed.  */
-static inline void
+void
 dead_debug_add (struct dead_debug *debug, df_ref use, unsigned int uregno)
 {
   struct dead_debug_use *newddu = XNEW (struct dead_debug_use);
@@ -3197,23 +3184,27 @@ dead_debug_add (struct dead_debug *debug, df_ref use, unsigned int uregno)
 }
 
 /* If UREGNO is referenced by any entry in DEBUG, emit a debug insn
-   before INSN that binds the REG to a debug temp, and replace all
-   uses of UREGNO in DEBUG with uses of the debug temp.  INSN must be
-   the insn where UREGNO dies.  */
-static inline void
-dead_debug_insert_before (struct dead_debug *debug, unsigned int uregno,
-			  rtx insn)
+   before or after INSN (depending on WHERE), that binds a debug temp
+   to the widest-mode use of UREGNO, if WHERE is *_WITH_REG, or the
+   value stored in UREGNO by INSN otherwise, and replace all uses of
+   UREGNO in DEBUG with uses of the debug temp.  INSN must be where
+   UREGNO dies, if WHERE is *_BEFORE_*, or where it is set otherwise.
+   Return the number of debug insns emitted.  */
+int
+dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
+			rtx insn, enum debug_temp_where where)
 {
   struct dead_debug_use **tailp = &debug->head;
   struct dead_debug_use *cur;
   struct dead_debug_use *uses = NULL;
   struct dead_debug_use **usesp = &uses;
   rtx reg = NULL;
+  rtx breg;
   rtx dval;
   rtx bind;
 
   if (!debug->used || !bitmap_clear_bit (debug->used, uregno))
-    return;
+    return 0;
 
   /* Move all uses of uregno from debug->head to uses, setting mode to
      the widest referenced mode.  */
@@ -3237,17 +3228,114 @@ dead_debug_insert_before (struct dead_debug *debug, unsigned int uregno,
   /* We may have dangling bits in debug->used for registers that were part
      of a multi-register use, one component of which has been reset.  */
   if (reg == NULL)
-    return;
+    {
+      gcc_checking_assert (!uses);
+      return 0;
+    }
+
+  gcc_checking_assert (uses);
+
+  breg = reg;
+  /* Recover the expression INSN stores in REG.  */
+  if (where == DEBUG_TEMP_BEFORE_WITH_VALUE)
+    {
+      rtx set = single_set (insn);
+      rtx dest, src;
+
+      if (set)
+	{
+	  dest = SET_DEST (set);
+	  src = SET_SRC (set);
+	  /* Lose if the REG-setting insn is a CALL.  */
+	  if (GET_CODE (src) == CALL)
+	    {
+	      while (uses)
+		{
+		  cur = uses->next;
+		  XDELETE (uses);
+		  uses = cur;
+		}
+	      return 0;
+	    }
+	}
+
+      /* ??? Should we try to extract it from a PARALLEL?  */
+      if (!set)
+	breg = NULL;
+      /* Cool, it's the same REG, we can use SRC.  */
+      else if (dest == reg)
+	breg = copy_rtx (src);
+      else if (REG_P (dest))
+	{
+	  /* Hmm...  Something's fishy, we should be setting REG here.  */
+	  if (REGNO (dest) != REGNO (reg))
+	    breg = NULL;
+	  /* Ok, it's the same (hardware) REG, but with a different
+	     mode, so SUBREG it.  */
+	  else
+	    breg = lowpart_subreg (GET_MODE (reg), copy_rtx (src),
+				   GET_MODE (dest));
+	}
+      else if (GET_CODE (dest) == SUBREG)
+	{
+	  /* We should be setting REG here.  Lose.  */
+	  if (REGNO (SUBREG_REG (dest)) != REGNO (reg))
+	    breg = NULL;
+	  /* Lose if we're setting something other than the lowpart of
+	     REG.  */
+	  else if (!subreg_lowpart_p (dest))
+	    breg = NULL;
+	  /* If we're not overwriting all the hardware registers that
+	     setting REG in its mode would, we won't know what to bind
+	     the debug temp to.  */
+	  else if (REGNO (reg) < FIRST_PSEUDO_REGISTER
+		   && (hard_regno_nregs[REGNO (reg)][GET_MODE (reg)]
+		       != hard_regno_nregs[REGNO (reg)][GET_MODE (dest)]))
+	    breg = NULL;
+	  /* Yay, we can use SRC, just adjust its mode.  */
+	  else
+	    breg = lowpart_subreg (GET_MODE (reg), copy_rtx (src),
+				   GET_MODE (dest));
+	}
+      /* Oh well, we're out of luck.  */
+      else
+	breg = NULL;
+
+      /* We couldn't figure out the value stored in REG, so reset all
+	 of its pending debug uses.  */
+      if (!breg)
+	{
+	  dead_debug_reset_uses (debug, uses);
+	  return 0;
+	}
+    }
+
+  /* If there's a single (debug) use of an otherwise unused REG, and
+     the debug use is not part of a larger expression, then it
+     probably doesn't make sense to introduce a new debug temp.  */
+  if (where == DEBUG_TEMP_AFTER_WITH_REG && !uses->next)
+    {
+      rtx next = DF_REF_INSN (uses->use);
+
+      if (DEBUG_INSN_P (next) && reg == INSN_VAR_LOCATION_LOC (next))
+	{
+	  XDELETE (uses);
+	  return 0;
+	}
+    }
 
   /* Create DEBUG_EXPR (and DEBUG_EXPR_DECL).  */
   dval = make_debug_expr_from_rtl (reg);
 
   /* Emit a debug bind insn before the insn in which reg dies.  */
   bind = gen_rtx_VAR_LOCATION (GET_MODE (reg),
-			       DEBUG_EXPR_TREE_DECL (dval), reg,
+			       DEBUG_EXPR_TREE_DECL (dval), breg,
 			       VAR_INIT_STATUS_INITIALIZED);
 
-  bind = emit_debug_insn_before (bind, insn);
+  if (where == DEBUG_TEMP_AFTER_WITH_REG)
+    bind = emit_debug_insn_after (bind, insn);
+  else
+    bind = emit_debug_insn_before (bind, insn);
   df_insn_rescan (bind);
 
   /* Adjust all uses.  */
@@ -3265,6 +3353,8 @@ dead_debug_insert_before (struct dead_debug *debug, unsigned int uregno,
       uses = cur->next;
       XDELETE (cur);
     }
+
+  return 1;
 }
 
 /* Recompute the REG_DEAD and REG_UNUSED notes and compute register
@@ -3453,13 +3543,19 @@ df_note_bb_compute (unsigned int bb_index,
 		{
 		  if (debug_insn > 0)
 		    {
-		      dead_debug_add (&debug, use, uregno);
+		      /* We won't add REG_UNUSED or REG_DEAD notes for
+			 these, so we don't have to mess with them in
+			 debug insns either.  */
+		      if (!bitmap_bit_p (artificial_uses, uregno)
+			  && !df_ignore_stack_reg (uregno))
+			dead_debug_add (&debug, use, uregno);
 		      continue;
 		    }
 		  break;
 		}
 	      else
-		dead_debug_insert_before (&debug, uregno, insn);
+		dead_debug_insert_temp (&debug, uregno, insn,
+					DEBUG_TEMP_BEFORE_WITH_REG);
 
 	      if ( (!(DF_REF_FLAGS (use)
 		      & (DF_REF_MW_HARDREG | DF_REF_READ_WRITE)))

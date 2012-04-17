@@ -433,6 +433,7 @@
   "%|%.\\tldw\\t%$\\t*+%1[%2], %0"
   [(set_attr "type" "load")
    (set_attr "units" "d_addr")
+   (set_attr "op_pattern" "unknown")
    (set_attr "dest_regfile" "a,b")
    (set_attr "addr_regfile" "b")])
 

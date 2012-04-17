@@ -2023,6 +2023,8 @@ write_type (tree type)
 
 	    case NULLPTR_TYPE:
 	      write_string ("Dn");
+	      if (abi_version_at_least (7))
+		++is_builtin_type;
 	      break;
 
 	    case TYPEOF_TYPE:

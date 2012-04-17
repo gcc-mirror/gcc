@@ -115,7 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 static inline HOST_WIDE_INT
 avg_loop_niter (struct loop *loop)
 {
-  HOST_WIDE_INT niter = max_stmt_executions_int (loop, false);
+  HOST_WIDE_INT niter = estimated_stmt_executions_int (loop);
   if (niter == -1)
     return AVG_LOOP_NITER (loop);
 
@@ -4694,7 +4694,7 @@ may_eliminate_iv (struct ivopts_data *data,
           /* See if we can take advantage of infered loop bound information.  */
           if (data->loop_single_exit_p)
             {
-              if (!estimated_loop_iterations (loop, true, &max_niter))
+              if (!max_loop_iterations (loop, &max_niter))
                 return false;
               /* The loop bound is already adjusted by adding 1.  */
               if (double_int_ucmp (max_niter, period_value) > 0)

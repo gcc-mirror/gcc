@@ -1,3 +1,7 @@
+2012-04-11  Steve Ellcey  <sellcey@mips.com>
+
+	* MAINTAINERS: Changed email address.
+
 2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52737

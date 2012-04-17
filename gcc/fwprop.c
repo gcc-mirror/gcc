@@ -664,7 +664,12 @@ propagate_rtx (rtx x, enum machine_mode mode, rtx old_rtx, rtx new_rtx,
     return NULL_RTX;
 
   flags = 0;
-  if (REG_P (new_rtx) || CONSTANT_P (new_rtx))
+  if (REG_P (new_rtx)
+      || CONSTANT_P (new_rtx)
+      || (GET_CODE (new_rtx) == SUBREG
+	  && REG_P (SUBREG_REG (new_rtx))
+	  && (GET_MODE_SIZE (mode)
+	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (new_rtx))))))
     flags |= PR_CAN_APPEAR;
   if (!for_each_rtx (&new_rtx, varying_mem_p, NULL))
     flags |= PR_HANDLE_MEM;

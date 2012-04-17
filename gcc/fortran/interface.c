@@ -1390,6 +1390,9 @@ check_sym_interfaces (gfc_symbol *sym)
 
       for (p = sym->generic; p; p = p->next)
 	{
+	  if (sym->attr.access != ACCESS_PRIVATE)
+	    p->sym->attr.public_used = 1;
+
 	  if (p->sym->attr.mod_proc
 	      && (p->sym->attr.if_source != IFSRC_DECL
 		  || p->sym->attr.procedure))
@@ -1415,10 +1418,15 @@ check_uop_interfaces (gfc_user_op *uop)
   char interface_name[100];
   gfc_user_op *uop2;
   gfc_namespace *ns;
+  gfc_interface *p;
 
   sprintf (interface_name, "operator interface '%s'", uop->name);
   if (check_interface0 (uop->op, interface_name))
     return;
+
+  if (uop->access != ACCESS_PRIVATE)
+    for (p = uop->op; p; p = p->next)
+      p->sym->attr.public_used = 1;
 
   for (ns = gfc_current_ns; ns; ns = ns->parent)
     {
@@ -1489,6 +1497,7 @@ void
 gfc_check_interfaces (gfc_namespace *ns)
 {
   gfc_namespace *old_ns, *ns2;
+  gfc_interface *p;
   char interface_name[100];
   int i;
 
@@ -1512,6 +1521,10 @@ gfc_check_interfaces (gfc_namespace *ns)
 
       if (check_interface0 (ns->op[i], interface_name))
 	continue;
+
+      for (p = ns->op[i]; p; p = p->next)
+	p->sym->attr.public_used = 1;
+
 
       if (ns->op[i])
 	gfc_check_operator_interface (ns->op[i]->sym, (gfc_intrinsic_op) i,

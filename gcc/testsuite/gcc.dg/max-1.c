@@ -7,19 +7,16 @@
 /* m32c has varying sized pointers */
 /* { dg-skip-if "" { "m32c-*-*" } { "*" } { "-mcpu=m32c" "-mcpu=m32cm" } } */
 
-/* Kludge to make it signed. */
-#define unsigned signed
-__extension__ typedef __SIZE_TYPE__ ssize_t;
-#undef unsigned
+__extension__ typedef __INTPTR_TYPE__ intptr_t;
 
 extern void abort (void);
 
-ssize_t fff[10];
+intptr_t fff[10];
 
-void f(ssize_t a, ssize_t b)
+void f(intptr_t a, intptr_t b)
 {
-  ssize_t crcc = b;
-  ssize_t d = *((ssize_t*)(a+1));
+  intptr_t crcc = b;
+  intptr_t d = *((intptr_t*)(a+1));
   int i;
 
   a = d >= b? d:b;
@@ -32,11 +29,11 @@ void f(ssize_t a, ssize_t b)
 /* The variable a cannot be a local variable as we get better aliasing
    now and decide that the store to a is dead.  The better aliasing comes
    from better representation of pointer arithmetic. */
-ssize_t a = 10;
+intptr_t a = 10;
 int main(void)
 {
   int i;
-  f((ssize_t)(&a)-1,0);
+  f((intptr_t)(&a)-1,0);
   for(i = 0;i<10;i++)
    if (fff[i]!=10)
     abort ();

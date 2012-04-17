@@ -467,10 +467,11 @@ extern int rs6000_vector_align[];
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
    Enable 32-bit fcfid's on any of the switches for newer ISA machines or
    XILINX.  */
-#define TARGET_FCFID	(TARGET_POWERPC64 \
-			 || TARGET_POPCNTB	/* ISA 2.02 */ \
-			 || TARGET_CMPB		/* ISA 2.05 */ \
-			 || TARGET_POPCNTD	/* ISA 2.06 */ \
+#define TARGET_FCFID	(TARGET_POWERPC64				\
+			 || TARGET_PPC_GPOPT	/* 970/power4 */	\
+			 || TARGET_POPCNTB	/* ISA 2.02 */		\
+			 || TARGET_CMPB		/* ISA 2.05 */		\
+			 || TARGET_POPCNTD	/* ISA 2.06 */		\
 			 || TARGET_XILINX_FPU)
 
 #define TARGET_FCTIDZ	TARGET_FCFID
@@ -492,7 +493,7 @@ extern int rs6000_vector_align[];
 
 #define TARGET_EXTRA_BUILTINS	(!TARGET_SPE && !TARGET_PAIRED_FLOAT	 \
 				 && ((TARGET_POWERPC64			 \
-				      || TARGET_PPC_GPOPT /* 970 */	 \
+				      || TARGET_PPC_GPOPT /* 970/power4 */ \
 				      || TARGET_POPCNTB	  /* ISA 2.02 */ \
 				      || TARGET_CMPB	  /* ISA 2.05 */ \
 				      || TARGET_POPCNTD	  /* ISA 2.06 */ \

@@ -399,7 +399,7 @@ extern const unsigned int num_c_common_reswords;
 #define int32_type_node			c_global_trees[CTI_INT32_TYPE]
 #define int64_type_node			c_global_trees[CTI_INT64_TYPE]
 #define uint8_type_node			c_global_trees[CTI_UINT8_TYPE]
-#define uint16_type_node		c_global_trees[CTI_UINT16_TYPE]
+#define c_uint16_type_node		c_global_trees[CTI_UINT16_TYPE]
 #define c_uint32_type_node		c_global_trees[CTI_UINT32_TYPE]
 #define c_uint64_type_node		c_global_trees[CTI_UINT64_TYPE]
 #define int_least8_type_node		c_global_trees[CTI_INT_LEAST8_TYPE]
@@ -821,6 +821,7 @@ extern bool strict_aliasing_warning (tree, tree, tree);
 extern void warnings_for_convert_and_check (tree, tree, tree);
 extern tree convert_and_check (tree, tree);
 extern void overflow_warning (location_t, tree);
+extern bool warn_if_unused_value (const_tree, location_t);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
 extern void check_main_parameter_types (tree decl);

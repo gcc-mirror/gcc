@@ -61,6 +61,10 @@ along with GCC; see the file COPYING3.  If not see
     3. Optimization of the operand lists, eliminating things like a +
     -a, a & a, etc.
 
+    3a. Combine repeated factors with the same occurrence counts
+    into a __builtin_powi call that will later be optimized into
+    an optimal number of multiplies.
+
     4. Rewrite the expression trees we linearized and optimized so
     they are in proper rank order.
 
@@ -169,6 +173,8 @@ static struct
   int constants_eliminated;
   int ops_eliminated;
   int rewritten;
+  int pows_encountered;
+  int pows_created;
 } reassociate_stats;
 
 /* Operator, rank pair.  */
@@ -177,6 +183,7 @@ typedef struct operand_entry
   unsigned int rank;
   int id;
   tree op;
+  unsigned int count;
 } *operand_entry_t;
 
 static alloc_pool operand_entry_pool;
@@ -515,7 +522,26 @@ add_to_ops_vec (VEC(operand_entry_t, heap) **ops, tree op)
   oe->op = op;
   oe->rank = get_rank (op);
   oe->id = next_operand_entry_id++;
+  oe->count = 1;
   VEC_safe_push (operand_entry_t, heap, *ops, oe);
+}
+
+/* Add an operand entry to *OPS for the tree operand OP with repeat
+   count REPEAT.  */
+
+static void
+add_repeat_to_ops_vec (VEC(operand_entry_t, heap) **ops, tree op,
+		       HOST_WIDE_INT repeat)
+{
+  operand_entry_t oe = (operand_entry_t) pool_alloc (operand_entry_pool);
+
+  oe->op = op;
+  oe->rank = get_rank (op);
+  oe->id = next_operand_entry_id++;
+  oe->count = repeat;
+  VEC_safe_push (operand_entry_t, heap, *ops, oe);
+
+  reassociate_stats.pows_encountered++;
 }
 
 /* Return true if STMT is reassociable operation containing a binary
@@ -2049,6 +2075,32 @@ is_phi_for_stmt (gimple stmt, tree operand)
   return false;
 }
 
+/* Remove STMT, unlink its virtual defs, and release its SSA defs.  */
+
+static inline void
+completely_remove_stmt (gimple stmt)
+{
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  gsi_remove (&gsi, true);
+  unlink_stmt_vdef (stmt);
+  release_defs (stmt);
+}
+
+/* If OP is defined by a builtin call that has been absorbed by
+   reassociation, remove its defining statement completely.  */
+
+static inline void
+remove_def_if_absorbed_call (tree op)
+{
+  gimple stmt;
+
+  if (TREE_CODE (op) == SSA_NAME
+      && has_zero_uses (op)
+      && is_gimple_call ((stmt = SSA_NAME_DEF_STMT (op)))
+      && gimple_visited_p (stmt))
+    completely_remove_stmt (stmt);
+}
+
 /* Remove def stmt of VAR if VAR has zero uses and recurse
    on rhs1 operand if so.  */
 
@@ -2057,19 +2109,31 @@ remove_visited_stmt_chain (tree var)
 {
   gimple stmt;
   gimple_stmt_iterator gsi;
+  tree var2;
 
   while (1)
     {
       if (TREE_CODE (var) != SSA_NAME || !has_zero_uses (var))
 	return;
       stmt = SSA_NAME_DEF_STMT (var);
-      if (!is_gimple_assign (stmt)
-	  || !gimple_visited_p (stmt))
+      if (is_gimple_assign (stmt) && gimple_visited_p (stmt))
+	{
+	  var = gimple_assign_rhs1 (stmt);
+	  var2 = gimple_assign_rhs2 (stmt);
+	  gsi = gsi_for_stmt (stmt);
+	  gsi_remove (&gsi, true);
+	  release_defs (stmt);
+	  /* A multiply whose operands are both fed by builtin pow/powi
+	     calls must check whether to remove rhs2 as well.  */
+	  remove_def_if_absorbed_call (var2);
+	}
+      else if (is_gimple_call (stmt) && gimple_visited_p (stmt))
+	{
+	  completely_remove_stmt (stmt);
+	  return;
+	}
+      else
 	return;
-      var = gimple_assign_rhs1 (stmt);
-      gsi = gsi_for_stmt (stmt);
-      gsi_remove (&gsi, true);
-      release_defs (stmt);
     }
 }
 
@@ -2564,6 +2628,75 @@ break_up_subtract (gimple stmt, gimple_stmt_iterator *gsip)
   update_stmt (stmt);
 }
 
+/* Determine whether STMT is a builtin call that raises an SSA name
+   to an integer power and has only one use.  If so, and this is early
+   reassociation and unsafe math optimizations are permitted, place
+   the SSA name in *BASE and the exponent in *EXPONENT, and return TRUE.
+   If any of these conditions does not hold, return FALSE.  */
+
+static bool
+acceptable_pow_call (gimple stmt, tree *base, HOST_WIDE_INT *exponent)
+{
+  tree fndecl, arg1;
+  REAL_VALUE_TYPE c, cint;
+
+  if (!first_pass_instance
+      || !flag_unsafe_math_optimizations
+      || !is_gimple_call (stmt)
+      || !has_single_use (gimple_call_lhs (stmt)))
+    return false;
+
+  fndecl = gimple_call_fndecl (stmt);
+
+  if (!fndecl
+      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+    return false;
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    CASE_FLT_FN (BUILT_IN_POW):
+      *base = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+
+      if (TREE_CODE (arg1) != REAL_CST)
+	return false;
+
+      c = TREE_REAL_CST (arg1);
+
+      if (REAL_EXP (&c) > HOST_BITS_PER_WIDE_INT)
+	return false;
+
+      *exponent = real_to_integer (&c);
+      real_from_integer (&cint, VOIDmode, *exponent,
+			 *exponent < 0 ? -1 : 0, 0);
+      if (!real_identical (&c, &cint))
+	return false;
+
+      break;
+
+    CASE_FLT_FN (BUILT_IN_POWI):
+      *base = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+
+      if (!host_integerp (arg1, 0))
+	return false;
+
+      *exponent = TREE_INT_CST_LOW (arg1);
+      break;
+
+    default:
+      return false;
+    }
+
+  /* Expanding negative exponents is generally unproductive, so we don't
+     complicate matters with those.  Exponents of zero and one should
+     have been handled by expression folding.  */
+  if (*exponent < 2 || TREE_CODE (*base) != SSA_NAME)
+    return false;
+
+  return true;
+}
+
 /* Recursively linearize a binary expression that is the RHS of STMT.
    Place the operands of the expression tree in the vector named OPS.  */
 
@@ -2573,11 +2706,13 @@ linearize_expr_tree (VEC(operand_entry_t, heap) **ops, gimple stmt,
 {
   tree binlhs = gimple_assign_rhs1 (stmt);
   tree binrhs = gimple_assign_rhs2 (stmt);
-  gimple binlhsdef, binrhsdef;
+  gimple binlhsdef = NULL, binrhsdef = NULL;
   bool binlhsisreassoc = false;
   bool binrhsisreassoc = false;
   enum tree_code rhscode = gimple_assign_rhs_code (stmt);
   struct loop *loop = loop_containing_stmt (stmt);
+  tree base = NULL_TREE;
+  HOST_WIDE_INT exponent = 0;
 
   if (set_visited)
     gimple_set_visited (stmt, true);
@@ -2615,8 +2750,26 @@ linearize_expr_tree (VEC(operand_entry_t, heap) **ops, gimple stmt,
 
       if (!binrhsisreassoc)
 	{
-	  add_to_ops_vec (ops, binrhs);
-	  add_to_ops_vec (ops, binlhs);
+	  if (rhscode == MULT_EXPR
+	      && TREE_CODE (binrhs) == SSA_NAME
+	      && acceptable_pow_call (binrhsdef, &base, &exponent))
+	    {
+	      add_repeat_to_ops_vec (ops, base, exponent);
+	      gimple_set_visited (binrhsdef, true);
+	    }
+	  else
+	    add_to_ops_vec (ops, binrhs);
+
+	  if (rhscode == MULT_EXPR
+	      && TREE_CODE (binlhs) == SSA_NAME
+	      && acceptable_pow_call (binlhsdef, &base, &exponent))
+	    {
+	      add_repeat_to_ops_vec (ops, base, exponent);
+	      gimple_set_visited (binlhsdef, true);
+	    }
+	  else
+	    add_to_ops_vec (ops, binlhs);
+
 	  return;
 	}
 
@@ -2655,7 +2808,16 @@ linearize_expr_tree (VEC(operand_entry_t, heap) **ops, gimple stmt,
 				      rhscode, loop));
   linearize_expr_tree (ops, SSA_NAME_DEF_STMT (binlhs),
 		       is_associative, set_visited);
-  add_to_ops_vec (ops, binrhs);
+
+  if (rhscode == MULT_EXPR
+      && TREE_CODE (binrhs) == SSA_NAME
+      && acceptable_pow_call (SSA_NAME_DEF_STMT (binrhs), &base, &exponent))
+    {
+      add_repeat_to_ops_vec (ops, base, exponent);
+      gimple_set_visited (SSA_NAME_DEF_STMT (binrhs), true);
+    }
+  else
+    add_to_ops_vec (ops, binrhs);
 }
 
 /* Repropagate the negates back into subtracts, since no other pass
@@ -2815,6 +2977,348 @@ break_up_subtract_bb (basic_block bb)
     break_up_subtract_bb (son);
 }
 
+/* Used for repeated factor analysis.  */
+struct repeat_factor_d
+{
+  /* An SSA name that occurs in a multiply chain.  */
+  tree factor;
+
+  /* Cached rank of the factor.  */
+  unsigned rank;
+
+  /* Number of occurrences of the factor in the chain.  */
+  HOST_WIDE_INT count;
+
+  /* An SSA name representing the product of this factor and
+     all factors appearing later in the repeated factor vector.  */
+  tree repr;
+};
+
+typedef struct repeat_factor_d repeat_factor, *repeat_factor_t;
+typedef const struct repeat_factor_d *const_repeat_factor_t;
+
+DEF_VEC_O (repeat_factor);
+DEF_VEC_ALLOC_O (repeat_factor, heap);
+
+static VEC (repeat_factor, heap) *repeat_factor_vec;
+
+/* Used for sorting the repeat factor vector.  Sort primarily by
+   ascending occurrence count, secondarily by descending rank.  */
+
+static int
+compare_repeat_factors (const void *x1, const void *x2)
+{
+  const_repeat_factor_t rf1 = (const_repeat_factor_t) x1;
+  const_repeat_factor_t rf2 = (const_repeat_factor_t) x2;
+
+  if (rf1->count != rf2->count)
+    return rf1->count - rf2->count;
+
+  return rf2->rank - rf1->rank;
+}
+
+/* Get a new SSA name for register variable *TARGET of type TYPE.
+   If *TARGET is null or incompatible with TYPE, create the variable
+   first.  */
+
+static tree
+get_reassoc_pow_ssa_name (tree *target, tree type)
+{
+  if (!*target || !types_compatible_p (type, TREE_TYPE (*target)))
+    {
+      *target = create_tmp_reg (type, "reassocpow");
+      add_referenced_var (*target);
+    }
+
+  return make_ssa_name (*target, NULL);
+}
+
+/* Look for repeated operands in OPS in the multiply tree rooted at
+   STMT.  Replace them with an optimal sequence of multiplies and powi
+   builtin calls, and remove the used operands from OPS.  Push new
+   SSA names onto OPS that represent the introduced multiplies and
+   builtin calls.  */
+
+static void
+attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
+		      tree *target)
+{
+  unsigned i, j, vec_len;
+  int ii;
+  operand_entry_t oe;
+  repeat_factor_t rf1, rf2;
+  repeat_factor rfnew;
+  tree target_ssa, iter_result;
+  tree type = TREE_TYPE (gimple_get_lhs (stmt));
+  tree powi_fndecl = mathfn_built_in (type, BUILT_IN_POWI);
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  gimple mul_stmt, pow_stmt;
+
+  /* Nothing to do if BUILT_IN_POWI doesn't exist for this type and
+     target.  */
+  if (!powi_fndecl)
+    return;
+
+  /* Allocate the repeated factor vector.  */
+  repeat_factor_vec = VEC_alloc (repeat_factor, heap, 10);
+
+  /* Scan the OPS vector for all SSA names in the product and build
+     up a vector of occurrence counts for each factor.  */
+  FOR_EACH_VEC_ELT (operand_entry_t, *ops, i, oe)
+    {
+      if (TREE_CODE (oe->op) == SSA_NAME)
+	{
+	  FOR_EACH_VEC_ELT (repeat_factor, repeat_factor_vec, j, rf1)
+	    {
+	      if (rf1->factor == oe->op)
+		{
+		  rf1->count += oe->count;
+		  break;
+		}
+	    }
+
+	  if (j >= VEC_length (repeat_factor, repeat_factor_vec))
+	    {
+	      rfnew.factor = oe->op;
+	      rfnew.rank = oe->rank;
+	      rfnew.count = oe->count;
+	      rfnew.repr = NULL_TREE;
+	      VEC_safe_push (repeat_factor, heap, repeat_factor_vec, &rfnew);
+	    }
+	}
+    }
+
+  /* Sort the repeated factor vector by (a) increasing occurrence count,
+     and (b) decreasing rank.  */
+  VEC_qsort (repeat_factor, repeat_factor_vec, compare_repeat_factors);
+
+  /* It is generally best to combine as many base factors as possible
+     into a product before applying __builtin_powi to the result.
+     However, the sort order chosen for the repeated factor vector
+     allows us to cache partial results for the product of the base
+     factors for subsequent use.  When we already have a cached partial
+     result from a previous iteration, it is best to make use of it
+     before looking for another __builtin_pow opportunity.
+
+     As an example, consider x * x * y * y * y * z * z * z * z.
+     We want to first compose the product x * y * z, raise it to the
+     second power, then multiply this by y * z, and finally multiply
+     by z.  This can be done in 5 multiplies provided we cache y * z
+     for use in both expressions:
+
+        t1 = y * z
+	t2 = t1 * x
+	t3 = t2 * t2
+	t4 = t1 * t3
+	result = t4 * z
+
+     If we instead ignored the cached y * z and first multiplied by
+     the __builtin_pow opportunity z * z, we would get the inferior:
+
+        t1 = y * z
+	t2 = t1 * x
+	t3 = t2 * t2
+	t4 = z * z
+	t5 = t3 * t4
+        result = t5 * y  */
+
+  vec_len = VEC_length (repeat_factor, repeat_factor_vec);
+  
+  /* Repeatedly look for opportunities to create a builtin_powi call.  */
+  while (true)
+    {
+      HOST_WIDE_INT power;
+
+      /* First look for the largest cached product of factors from
+	 preceding iterations.  If found, create a builtin_powi for
+	 it if the minimum occurrence count for its factors is at
+	 least 2, or just use this cached product as our next 
+	 multiplicand if the minimum occurrence count is 1.  */
+      FOR_EACH_VEC_ELT (repeat_factor, repeat_factor_vec, j, rf1)
+	{
+	  if (rf1->repr && rf1->count > 0)
+	    break;
+	}
+
+      if (j < vec_len)
+	{
+	  power = rf1->count;
+
+	  if (power == 1)
+	    {
+	      iter_result = rf1->repr;
+
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  unsigned elt;
+		  repeat_factor_t rf;
+		  fputs ("Multiplying by cached product ", dump_file);
+		  for (elt = j; elt < vec_len; elt++)
+		    {
+		      rf = VEC_index (repeat_factor, repeat_factor_vec, elt);
+		      print_generic_expr (dump_file, rf->factor, 0);
+		      if (elt < vec_len - 1)
+			fputs (" * ", dump_file);
+		    }
+		  fputs ("\n", dump_file);
+		}
+	    }
+	  else
+	    {
+	      iter_result = get_reassoc_pow_ssa_name (target, type);
+	      pow_stmt = gimple_build_call (powi_fndecl, 2, rf1->repr, 
+					    build_int_cst (integer_type_node,
+							   power));
+	      gimple_call_set_lhs (pow_stmt, iter_result);
+	      gimple_set_location (pow_stmt, gimple_location (stmt));
+	      gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
+
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  unsigned elt;
+		  repeat_factor_t rf;
+		  fputs ("Building __builtin_pow call for cached product (",
+			 dump_file);
+		  for (elt = j; elt < vec_len; elt++)
+		    {
+		      rf = VEC_index (repeat_factor, repeat_factor_vec, elt);
+		      print_generic_expr (dump_file, rf->factor, 0);
+		      if (elt < vec_len - 1)
+			fputs (" * ", dump_file);
+		    }
+		  fprintf (dump_file, ")^"HOST_WIDE_INT_PRINT_DEC"\n",
+			   power);
+		}
+	    }
+	}
+      else
+	{
+	  /* Otherwise, find the first factor in the repeated factor
+	     vector whose occurrence count is at least 2.  If no such
+	     factor exists, there are no builtin_powi opportunities
+	     remaining.  */
+	  FOR_EACH_VEC_ELT (repeat_factor, repeat_factor_vec, j, rf1)
+	    {
+	      if (rf1->count >= 2)
+		break;
+	    }
+
+	  if (j >= vec_len)
+	    break;
+
+	  power = rf1->count;
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      unsigned elt;
+	      repeat_factor_t rf;
+	      fputs ("Building __builtin_pow call for (", dump_file);
+	      for (elt = j; elt < vec_len; elt++)
+		{
+		  rf = VEC_index (repeat_factor, repeat_factor_vec, elt);
+		  print_generic_expr (dump_file, rf->factor, 0);
+		  if (elt < vec_len - 1)
+		    fputs (" * ", dump_file);
+		}
+	      fprintf (dump_file, ")^"HOST_WIDE_INT_PRINT_DEC"\n", power);
+	    }
+
+	  reassociate_stats.pows_created++;
+
+	  /* Visit each element of the vector in reverse order (so that
+	     high-occurrence elements are visited first, and within the
+	     same occurrence count, lower-ranked elements are visited
+	     first).  Form a linear product of all elements in this order
+	     whose occurrencce count is at least that of element J.
+	     Record the SSA name representing the product of each element
+	     with all subsequent elements in the vector.  */
+	  if (j == vec_len - 1)
+	    rf1->repr = rf1->factor;
+	  else
+	    {
+	      for (ii = vec_len - 2; ii >= (int)j; ii--)
+		{
+		  tree op1, op2;
+
+		  rf1 = VEC_index (repeat_factor, repeat_factor_vec, ii);
+		  rf2 = VEC_index (repeat_factor, repeat_factor_vec, ii + 1);
+
+		  /* Init the last factor's representative to be itself.  */
+		  if (!rf2->repr)
+		    rf2->repr = rf2->factor;
+
+		  op1 = rf1->factor;
+		  op2 = rf2->repr;
+
+		  target_ssa = get_reassoc_pow_ssa_name (target, type);
+		  mul_stmt = gimple_build_assign_with_ops (MULT_EXPR,
+							   target_ssa,
+							   op1, op2);
+		  gimple_set_location (mul_stmt, gimple_location (stmt));
+		  gsi_insert_before (&gsi, mul_stmt, GSI_SAME_STMT);
+		  rf1->repr = target_ssa;
+
+		  /* Don't reprocess the multiply we just introduced.  */
+		  gimple_set_visited (mul_stmt, true);
+		}
+	    }
+
+	  /* Form a call to __builtin_powi for the maximum product
+	     just formed, raised to the power obtained earlier.  */
+	  rf1 = VEC_index (repeat_factor, repeat_factor_vec, j);
+	  iter_result = get_reassoc_pow_ssa_name (target, type);
+	  pow_stmt = gimple_build_call (powi_fndecl, 2, rf1->repr, 
+					build_int_cst (integer_type_node,
+						       power));
+	  gimple_call_set_lhs (pow_stmt, iter_result);
+	  gimple_set_location (pow_stmt, gimple_location (stmt));
+	  gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
+	}
+
+      /* Append the result of this iteration to the ops vector.  */
+      add_to_ops_vec (ops, iter_result);
+
+      /* Decrement the occurrence count of each element in the product
+	 by the count found above, and remove this many copies of each
+	 factor from OPS.  */
+      for (i = j; i < vec_len; i++)
+	{
+	  unsigned k = power;
+	  unsigned n;
+
+	  rf1 = VEC_index (repeat_factor, repeat_factor_vec, i);
+	  rf1->count -= power;
+	  
+	  FOR_EACH_VEC_ELT_REVERSE (operand_entry_t, *ops, n, oe)
+	    {
+	      if (oe->op == rf1->factor)
+		{
+		  if (oe->count <= k)
+		    {
+		      VEC_ordered_remove (operand_entry_t, *ops, n);
+		      k -= oe->count;
+
+		      if (k == 0)
+			break;
+		    }
+		  else
+		    {
+		      oe->count -= k;
+		      break;
+		    }
+		}
+	    }
+	}
+    }
+
+  /* At this point all elements in the repeated factor vector have a
+     remaining occurrence count of 0 or 1, and those with a count of 1
+     don't have cached representatives.  Re-sort the ops vector and
+     clean up.  */
+  VEC_qsort (operand_entry_t, *ops, sort_by_operand_rank);
+  VEC_free (repeat_factor, heap, repeat_factor_vec);
+}
+
 /* Reassociate expressions in basic block BB and its post-dominator as
    children.  */
 
@@ -2823,6 +3327,7 @@ reassociate_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
   basic_block son;
+  tree target = NULL_TREE;
 
   for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
@@ -2903,6 +3408,11 @@ reassociate_bb (basic_block bb)
 
 	      if (rhs_code == BIT_IOR_EXPR || rhs_code == BIT_AND_EXPR)
 		optimize_range_tests (rhs_code, &ops);
+
+	      if (first_pass_instance
+		  && rhs_code == MULT_EXPR
+		  && flag_unsafe_math_optimizations)
+		attempt_builtin_powi (stmt, &ops, &target);
 
 	      if (VEC_length (operand_entry_t, ops) == 1)
 		{
@@ -3054,6 +3564,10 @@ fini_reassoc (void)
 			    reassociate_stats.ops_eliminated);
   statistics_counter_event (cfun, "Statements rewritten",
 			    reassociate_stats.rewritten);
+  statistics_counter_event (cfun, "Built-in pow[i] calls encountered",
+			    reassociate_stats.pows_encountered);
+  statistics_counter_event (cfun, "Built-in powi calls created",
+			    reassociate_stats.pows_created);
 
   pointer_map_destroy (operand_rank);
   free_alloc_pool (operand_entry_pool);

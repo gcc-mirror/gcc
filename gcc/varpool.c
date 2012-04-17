@@ -49,11 +49,11 @@ along with GCC; see the file COPYING3.  If not see
     explicitly marked by frontend via VARPOOL_FINALIZE_DECL function.  */
 
 /* Hash table used to convert declarations into nodes.  */
-static GTY((param_is (struct varpool_node))) htab_t varpool_hash;
+static GTY((param_is (union symtab_node_def))) htab_t varpool_hash;
 
 /* The linked list of cgraph varpool nodes.
    Linked via node->next pointer.  */
-struct varpool_node *varpool_nodes;
+symtab_node x_varpool_nodes;
 
 /* Queue of cgraph nodes scheduled to be lowered and output.
    The queue is maintained via mark_needed_node, linked via node->next_needed
@@ -72,9 +72,11 @@ struct varpool_node *varpool_nodes;
    FIRST_UNANALYZED_NODE points to first node in queue that was not analyzed
    yet and is moved via VARPOOL_ANALYZE_PENDING_DECLS.  */
 
-struct varpool_node *varpool_nodes_queue;
-static GTY(()) struct varpool_node *varpool_last_needed_node;
-static GTY(()) struct varpool_node *varpool_first_unanalyzed_node;
+symtab_node x_varpool_nodes_queue;
+static GTY(()) symtab_node x_varpool_last_needed_node;
+#define varpool_last_needed_node ((struct varpool_node *)x_varpool_last_needed_node)
+static GTY(()) symtab_node x_varpool_first_unanalyzed_node;
+#define varpool_first_unanalyzed_node ((struct varpool_node *)x_varpool_first_unanalyzed_node)
 
 /* Lists all assembled variables to be sent to debugger output later on.  */
 static GTY(()) struct varpool_node *varpool_assembled_nodes_queue;
@@ -83,7 +85,7 @@ static GTY(()) struct varpool_node *varpool_assembled_nodes_queue;
 const char *
 varpool_node_name (struct varpool_node *node)
 {
-  return lang_hooks.decl_printable_name (node->decl, 2);
+  return lang_hooks.decl_printable_name (node->symbol.decl, 2);
 }
 
 /* Returns a hash code for P.  */
@@ -91,7 +93,7 @@ static hashval_t
 hash_varpool_node (const void *p)
 {
   const struct varpool_node *n = (const struct varpool_node *) p;
-  return (hashval_t) DECL_UID (n->decl);
+  return (hashval_t) DECL_UID (n->symbol.decl);
 }
 
 /* Returns nonzero if P1 and P2 are equal.  */
@@ -102,7 +104,7 @@ eq_varpool_node (const void *p1, const void *p2)
     (const struct varpool_node *) p1;
   const struct varpool_node *n2 =
     (const struct varpool_node *) p2;
-  return DECL_UID (n1->decl) == DECL_UID (n2->decl);
+  return DECL_UID (n1->symbol.decl) == DECL_UID (n2->symbol.decl);
 }
 
 /* Return varpool node assigned to DECL without creating new one.  */
@@ -116,7 +118,7 @@ varpool_get_node (const_tree decl)
 
   if (!varpool_hash)
     return NULL;
-  key.decl = CONST_CAST2 (tree, const_tree, decl);
+  key.symbol.decl = CONST_CAST2 (tree, const_tree, decl);
   slot = (struct varpool_node **)
     htab_find_slot (varpool_hash, &key, NO_INSERT);
   if (!slot)
@@ -136,19 +138,20 @@ varpool_node (tree decl)
   if (!varpool_hash)
     varpool_hash = htab_create_ggc (10, hash_varpool_node,
 					   eq_varpool_node, NULL);
-  key.decl = decl;
+  key.symbol.decl = decl;
   slot = (struct varpool_node **)
     htab_find_slot (varpool_hash, &key, INSERT);
   if (*slot)
     return *slot;
   node = ggc_alloc_cleared_varpool_node ();
-  node->decl = decl;
-  node->order = cgraph_order++;
+  node->symbol.type = SYMTAB_VARIABLE;
+  node->symbol.decl = decl;
+  node->symbol.order = cgraph_order++;
   node->next = varpool_nodes;
-  ipa_empty_ref_list (&node->ref_list);
+  ipa_empty_ref_list (&node->symbol.ref_list);
   if (varpool_nodes)
-    varpool_nodes->prev = node;
-  varpool_nodes = node;
+    varpool (x_varpool_nodes)->prev = node;
+  x_varpool_nodes = (symtab_node)node;
   *slot = node;
   return node;
 }
@@ -169,39 +172,39 @@ varpool_remove_node (struct varpool_node *node)
   else
     {
       gcc_assert (varpool_nodes == node);
-      varpool_nodes = node->next;
+      x_varpool_nodes = (symtab_node)node->next;
     }
   if (varpool_first_unanalyzed_node == node)
-    varpool_first_unanalyzed_node = node->next_needed;
+    x_varpool_first_unanalyzed_node = (symtab_node)node->next_needed;
   if (node->next_needed)
     node->next_needed->prev_needed = node->prev_needed;
   else if (node->prev_needed)
     {
       gcc_assert (varpool_last_needed_node);
-      varpool_last_needed_node = node->prev_needed;
+      x_varpool_last_needed_node = (symtab_node)node->prev_needed;
     }
   if (node->prev_needed)
     node->prev_needed->next_needed = node->next_needed;
   else if (node->next_needed)
     {
       gcc_assert (varpool_nodes_queue == node);
-      varpool_nodes_queue = node->next_needed;
+      x_varpool_nodes_queue = (symtab_node)node->next_needed;
     }
-  if (node->same_comdat_group)
+  if (node->symbol.same_comdat_group)
     {
-      struct varpool_node *prev;
-      for (prev = node->same_comdat_group;
-	   prev->same_comdat_group != node;
-	   prev = prev->same_comdat_group)
+      symtab_node prev;
+      for (prev = node->symbol.same_comdat_group;
+	   prev->symbol.same_comdat_group != (symtab_node)node;
+	   prev = prev->symbol.same_comdat_group)
 	;
-      if (node->same_comdat_group == prev)
-	prev->same_comdat_group = NULL;
+      if (node->symbol.same_comdat_group == prev)
+	prev->symbol.same_comdat_group = NULL;
       else
-	prev->same_comdat_group = node->same_comdat_group;
-      node->same_comdat_group = NULL;
+	prev->symbol.same_comdat_group = (symtab_node)node->symbol.same_comdat_group;
+      node->symbol.same_comdat_group = NULL;
     }
-  ipa_remove_all_references (&node->ref_list);
-  ipa_remove_all_refering (&node->ref_list);
+  ipa_remove_all_references (&node->symbol.ref_list);
+  ipa_remove_all_refering (&node->symbol.ref_list);
   ggc_free (node);
 }
 
@@ -214,11 +217,11 @@ dump_varpool_node (FILE *f, struct varpool_node *node)
 	   cgraph_function_flags_ready
 	   ? cgraph_availability_names[cgraph_variable_initializer_availability (node)]
 	   : "not-ready");
-  if (DECL_ASSEMBLER_NAME_SET_P (node->decl))
-    fprintf (f, " (asm: %s)", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
-  if (DECL_INITIAL (node->decl))
+  if (DECL_ASSEMBLER_NAME_SET_P (node->symbol.decl))
+    fprintf (f, " (asm: %s)", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->symbol.decl)));
+  if (DECL_INITIAL (node->symbol.decl))
     fprintf (f, " initialized");
-  if (TREE_ASM_WRITTEN (node->decl))
+  if (TREE_ASM_WRITTEN (node->symbol.decl))
     fprintf (f, " (asm written)");
   if (node->needed)
     fprintf (f, " needed");
@@ -228,20 +231,20 @@ dump_varpool_node (FILE *f, struct varpool_node *node)
     fprintf (f, " finalized");
   if (node->output)
     fprintf (f, " output");
-  if (node->externally_visible)
+  if (node->symbol.externally_visible)
     fprintf (f, " externally_visible");
-  if (node->resolution != LDPR_UNKNOWN)
+  if (node->symbol.resolution != LDPR_UNKNOWN)
     fprintf (f, " %s",
- 	     ld_plugin_symbol_resolution_names[(int)node->resolution]);
-  if (node->in_other_partition)
+ 	     ld_plugin_symbol_resolution_names[(int)node->symbol.resolution]);
+  if (node->symbol.in_other_partition)
     fprintf (f, " in_other_partition");
-  else if (node->used_from_other_partition)
+  else if (node->symbol.used_from_other_partition)
     fprintf (f, " used_from_other_partition");
   fprintf (f, "\n");
   fprintf (f, "  References: ");
-  ipa_dump_references (f, &node->ref_list);
+  ipa_dump_references (f, &node->symbol.ref_list);
   fprintf (f, "  Refering this var: ");
-  ipa_dump_refering (f, &node->ref_list);
+  ipa_dump_refering (f, &node->symbol.ref_list);
 }
 
 /* Dump the variable pool.  */
@@ -270,7 +273,7 @@ varpool_node_for_asm (tree asmname)
   struct varpool_node *node;
 
   for (node = varpool_nodes; node ; node = node->next)
-    if (decl_assembler_name_equal (node->decl, asmname))
+    if (decl_assembler_name_equal (node->symbol.decl, asmname))
       return node;
 
   return NULL;
@@ -286,13 +289,13 @@ varpool_enqueue_needed_node (struct varpool_node *node)
       varpool_last_needed_node->next_needed = node;
       node->prev_needed = varpool_last_needed_node;
     }
-  varpool_last_needed_node = node;
+  x_varpool_last_needed_node = (symtab_node)node;
   node->next_needed = NULL;
   if (!varpool_nodes_queue)
-    varpool_nodes_queue = node;
+    x_varpool_nodes_queue = (symtab_node)node;
   if (!varpool_first_unanalyzed_node)
-    varpool_first_unanalyzed_node = node;
-  notice_global_symbol (node->decl);
+    x_varpool_first_unanalyzed_node = (symtab_node)node;
+  notice_global_symbol (node->symbol.decl);
 }
 
 /* Notify finalize_compilation_unit that given node is reachable
@@ -301,7 +304,7 @@ void
 varpool_mark_needed_node (struct varpool_node *node)
 {
   if (!node->needed && node->finalized
-      && !TREE_ASM_WRITTEN (node->decl))
+      && !TREE_ASM_WRITTEN (node->symbol.decl))
     varpool_enqueue_needed_node (node);
   node->needed = 1;
 }
@@ -310,9 +313,9 @@ varpool_mark_needed_node (struct varpool_node *node)
 void
 varpool_reset_queue (void)
 {
-  varpool_last_needed_node = NULL;
-  varpool_nodes_queue = NULL;
-  varpool_first_unanalyzed_node = NULL;
+  x_varpool_last_needed_node = NULL;
+  x_varpool_nodes_queue = NULL;
+  x_varpool_first_unanalyzed_node = NULL;
 }
 
 /* Determine if variable DECL is needed.  That is, visible to something
@@ -404,8 +407,8 @@ varpool_finalize_decl (tree decl)
   if (TREE_THIS_VOLATILE (decl) || DECL_PRESERVE_P (decl)
       /* Traditionally we do not eliminate static variables when not
 	 optimizing and when not doing toplevel reoder.  */
-      || (!flag_toplevel_reorder && !DECL_COMDAT (node->decl)
-	  && !DECL_ARTIFICIAL (node->decl)))
+      || (!flag_toplevel_reorder && !DECL_COMDAT (node->symbol.decl)
+	  && !DECL_ARTIFICIAL (node->symbol.decl)))
     node->force_output = true;
 
   if (decide_is_variable_needed (node, decl))
@@ -425,7 +428,7 @@ varpool_add_new_variable (tree decl)
   varpool_finalize_decl (decl);
   node = varpool_node (decl);
   if (varpool_externally_visible_p (node, false))
-    node->externally_visible = true;
+    node->symbol.externally_visible = true;
 }
 
 /* Return variable availability.  See cgraph.h for description of individual
@@ -436,12 +439,12 @@ cgraph_variable_initializer_availability (struct varpool_node *node)
   gcc_assert (cgraph_function_flags_ready);
   if (!node->finalized)
     return AVAIL_NOT_AVAILABLE;
-  if (!TREE_PUBLIC (node->decl))
+  if (!TREE_PUBLIC (node->symbol.decl))
     return AVAIL_AVAILABLE;
   /* If the variable can be overwritten, return OVERWRITABLE.  Takes
      care of at least two notable extensions - the COMDAT variables
      used to share template instantiations in C++.  */
-  if (!decl_replaceable_p (node->decl))
+  if (!decl_replaceable_p (node->symbol.decl))
     return AVAIL_OVERWRITABLE;
   return AVAIL_AVAILABLE;
 }
@@ -457,12 +460,12 @@ varpool_analyze_pending_decls (void)
   while (varpool_first_unanalyzed_node)
     {
       struct varpool_node *node = varpool_first_unanalyzed_node, *next;
-      tree decl = node->decl;
+      tree decl = node->symbol.decl;
       bool analyzed = node->analyzed;
 
       varpool_first_unanalyzed_node->analyzed = true;
 
-      varpool_first_unanalyzed_node = varpool_first_unanalyzed_node->next_needed;
+      x_varpool_first_unanalyzed_node = (symtab_node)varpool_first_unanalyzed_node->next_needed;
 
       /* When reading back varpool at LTO time, we re-construct the queue in order
          to have "needed" list right by inserting all needed nodes into varpool.
@@ -483,36 +486,37 @@ varpool_analyze_pending_decls (void)
 	       n = n->analyzed ? varpool_alias_aliased_node (n) : NULL)
 	    if (n == node)
 	      {
-		error ("variable %q+D part of alias cycle", node->decl);
+		error ("variable %q+D part of alias cycle", node->symbol.decl);
 		node->alias = false;
 		continue;
 	      }
-	  if (!VEC_length (ipa_ref_t, node->ref_list.references))
+	  if (!VEC_length (ipa_ref_t, node->symbol.ref_list.references))
 	    ipa_record_reference (NULL, node, NULL, tgt, IPA_REF_ALIAS, NULL);
 	  /* C++ FE sometimes change linkage flags after producing same body aliases.  */
 	  if (node->extra_name_alias)
 	    {
-	      DECL_WEAK (node->decl) = DECL_WEAK (node->alias_of);
-	      TREE_PUBLIC (node->decl) = TREE_PUBLIC (node->alias_of);
-	      DECL_EXTERNAL (node->decl) = DECL_EXTERNAL (node->alias_of);
-	      DECL_VISIBILITY (node->decl) = DECL_VISIBILITY (node->alias_of);
-	      if (TREE_PUBLIC (node->decl))
+	      DECL_WEAK (node->symbol.decl) = DECL_WEAK (node->alias_of);
+	      TREE_PUBLIC (node->symbol.decl) = TREE_PUBLIC (node->alias_of);
+	      DECL_EXTERNAL (node->symbol.decl) = DECL_EXTERNAL (node->alias_of);
+	      DECL_VISIBILITY (node->symbol.decl) = DECL_VISIBILITY (node->alias_of);
+	      if (TREE_PUBLIC (node->symbol.decl))
 		{
-		  DECL_COMDAT (node->decl) = DECL_COMDAT (node->alias_of);
-		  DECL_COMDAT_GROUP (node->decl) = DECL_COMDAT_GROUP (node->alias_of);
-		  if (DECL_ONE_ONLY (node->alias_of) && !node->same_comdat_group)
+		  DECL_COMDAT (node->symbol.decl) = DECL_COMDAT (node->alias_of);
+		  DECL_COMDAT_GROUP (node->symbol.decl) = DECL_COMDAT_GROUP (node->alias_of);
+		  if (DECL_ONE_ONLY (node->alias_of)
+		      && !node->symbol.same_comdat_group)
 		    {
-		      node->same_comdat_group = tgt;
-		      if (!tgt->same_comdat_group)
-			tgt->same_comdat_group = node;
+		      node->symbol.same_comdat_group = (symtab_node)tgt;
+		      if (!tgt->symbol.same_comdat_group)
+			tgt->symbol.same_comdat_group = (symtab_node)node;
 		      else
 			{
-			  struct varpool_node *n;
-			  for (n = tgt->same_comdat_group;
-			       n->same_comdat_group != tgt;
-			       n = n->same_comdat_group)
+			  symtab_node n;
+			  for (n = tgt->symbol.same_comdat_group;
+			       n->symbol.same_comdat_group != (symtab_node)tgt;
+			       n = n->symbol.same_comdat_group)
 			    ;
-			  n->same_comdat_group = node;
+			  n->symbol.same_comdat_group = (symtab_node)node;
 			}
 		    }
 		}
@@ -520,11 +524,11 @@ varpool_analyze_pending_decls (void)
 	}
       else if (DECL_INITIAL (decl))
 	record_references_in_initializer (decl, analyzed);
-      if (node->same_comdat_group)
+      if (node->symbol.same_comdat_group)
 	{
-	  for (next = node->same_comdat_group;
+	  for (next = varpool (node->symbol.same_comdat_group);
 	       next != node;
-	       next = next->same_comdat_group)
+	       next = varpool (next->symbol.same_comdat_group))
 	    varpool_mark_needed_node (next);
 	}
       changed = true;
@@ -540,11 +544,11 @@ assemble_aliases (struct varpool_node *node)
 {
   int i;
   struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
+  for (i = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list, i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
 	struct varpool_node *alias = ipa_ref_refering_varpool_node (ref);
-	assemble_alias (alias->decl,
+	assemble_alias (alias->symbol.decl,
 			DECL_ASSEMBLER_NAME (alias->alias_of));
 	assemble_aliases (alias);
       }
@@ -554,11 +558,11 @@ assemble_aliases (struct varpool_node *node)
 bool
 varpool_assemble_decl (struct varpool_node *node)
 {
-  tree decl = node->decl;
+  tree decl = node->symbol.decl;
 
   if (!TREE_ASM_WRITTEN (decl)
       && !node->alias
-      && !node->in_other_partition
+      && !node->symbol.in_other_partition
       && !DECL_EXTERNAL (decl)
       && (TREE_CODE (decl) != VAR_DECL || !DECL_HAS_VALUE_EXPR_P (decl)))
     {
@@ -605,7 +609,7 @@ varpool_remove_unreferenced_decls (void)
 	  && (!varpool_can_remove_if_no_refs (node)
 	      /* We just expanded all function bodies.  See if any of
 		 them needed the variable.  */
-	      || DECL_RTL_SET_P (node->decl)))
+	      || DECL_RTL_SET_P (node->symbol.decl)))
 	varpool_mark_needed_node (node);
 
       node = next;
@@ -622,14 +626,14 @@ varpool_remove_unreferenced_decls (void)
 void
 varpool_finalize_named_section_flags (struct varpool_node *node)
 {
-  if (!TREE_ASM_WRITTEN (node->decl)
+  if (!TREE_ASM_WRITTEN (node->symbol.decl)
       && !node->alias
-      && !node->in_other_partition
-      && !DECL_EXTERNAL (node->decl)
-      && TREE_CODE (node->decl) == VAR_DECL
-      && !DECL_HAS_VALUE_EXPR_P (node->decl)
-      && DECL_SECTION_NAME (node->decl))
-    get_variable_section (node->decl, false);
+      && !node->symbol.in_other_partition
+      && !DECL_EXTERNAL (node->symbol.decl)
+      && TREE_CODE (node->symbol.decl) == VAR_DECL
+      && !DECL_HAS_VALUE_EXPR_P (node->symbol.decl)
+      && DECL_SECTION_NAME (node->symbol.decl))
+    get_variable_section (node->symbol.decl, false);
 }
 
 /* Output all variables enqueued to be assembled.  */
@@ -655,7 +659,7 @@ varpool_assemble_pending_decls (void)
     {
       struct varpool_node *node = varpool_nodes_queue;
 
-      varpool_nodes_queue = varpool_nodes_queue->next_needed;
+      x_varpool_nodes_queue = (symtab_node)(varpool_nodes_queue->next_needed);
       if (varpool_assemble_decl (node))
 	changed = true;
       else
@@ -666,7 +670,7 @@ varpool_assemble_pending_decls (void)
     }
   /* varpool_nodes_queue is now empty, clear the pointer to the last element
      in the queue.  */
-  varpool_last_needed_node = NULL;
+  x_varpool_last_needed_node = NULL;
   timevar_pop (TV_VAROUT);
   return changed;
 }
@@ -683,13 +687,13 @@ varpool_empty_needed_queue (void)
   while (varpool_nodes_queue)
     {
       struct varpool_node *node = varpool_nodes_queue;
-      varpool_nodes_queue = varpool_nodes_queue->next_needed;
+      x_varpool_nodes_queue = (symtab_node)varpool_nodes_queue->next_needed;
       node->next_needed = NULL;
       node->prev_needed = NULL;
     }
   /* varpool_nodes_queue is now empty, clear the pointer to the last element
      in the queue.  */
-  varpool_last_needed_node = NULL;
+  x_varpool_last_needed_node = NULL;
 }
 
 /* Create a new global variable of type TYPE.  */
@@ -713,7 +717,7 @@ add_new_static_var (tree type)
   add_referenced_var (new_decl);
   varpool_finalize_decl (new_decl);
 
-  return new_node->decl;
+  return new_node->symbol.decl;
 }
 
 /* Attempt to mark ALIAS as an alias to DECL.  Return TRUE if successful.
@@ -761,9 +765,9 @@ varpool_extra_name_alias (tree alias, tree decl)
 bool
 varpool_used_from_object_file_p (struct varpool_node *node)
 {
-  if (!TREE_PUBLIC (node->decl))
+  if (!TREE_PUBLIC (node->symbol.decl))
     return false;
-  if (resolution_used_from_other_file_p (node->resolution))
+  if (resolution_used_from_other_file_p (node->symbol.resolution))
     return true;
   return false;
 }
@@ -783,7 +787,7 @@ varpool_for_node_and_aliases (struct varpool_node *node,
 
   if (callback (node, data))
     return true;
-  for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
+  for (i = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list, i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
 	struct varpool_node *alias = ipa_ref_refering_varpool_node (ref);

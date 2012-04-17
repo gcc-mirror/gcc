@@ -1,3 +1,24 @@
+2012-04-14  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c: Update field referenced for new cgraph/varpool layout.
+	* lto-partition.c: Likewise.
+
+2012-04-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c: Update copyright; remove params.h, ipa-inline.h
+	and ipa-utils.h inlines; inline lto-partition.h
+	(ltrans_partition_def, ltrans_partition, add_cgraph_node_to_partition,
+	add_varpool_node_to_partition, new_partition, free_ltrans_partitions,
+	add_references_to_partition, add_cgraph_node_to_partition_1,
+	add_cgraph_node_to_partition, add_varpool_node_to_partition,
+	undo_partition, partition_cgraph_node_p, partition_varpool_node_p,
+	lto_1_to_1_map, node_cmp, varpool_node_cmp, lto_balanced_map,
+	promote_var, promote_fn, lto_promote_cross_file_statics): move to...
+	* lto-partition.c: ... here; new file.
+	* lto-partition.h: New file.
+	* Make-lang.in (lto.o): Update dependencies.
+	(lto-partition.o): New.
+
 2012-04-05  Richard Guenther  <rguenther@suse.de>
 
 	* lto-lang.c (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Remove

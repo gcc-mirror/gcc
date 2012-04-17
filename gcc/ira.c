@@ -384,7 +384,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "ira-int.h"
 #include "dce.h"
-
+#include "dbgcnt.h"
 
 struct target_ira default_target_ira;
 struct target_ira_int default_target_ira_int;
@@ -3512,7 +3512,521 @@ build_insn_chain (void)
   if (dump_file)
     print_insn_chains (dump_file);
 }
+ 
+/* Examine the rtx found in *LOC, which is read or written to as determined
+   by TYPE.  Return false if we find a reason why an insn containing this
+   rtx should not be moved (such as accesses to non-constant memory), true
+   otherwise.  */
+static bool
+rtx_moveable_p (rtx *loc, enum op_type type)
+{
+  const char *fmt;
+  rtx x = *loc;
+  enum rtx_code code = GET_CODE (x);
+  int i, j;
 
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case CONST:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST_FIXED:
+    case CONST_VECTOR:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return true;
+
+    case PC:
+      return type == OP_IN;
+
+    case CC0:
+      return false;
+
+    case REG:
+      if (x == frame_pointer_rtx)
+	return true;
+      if (HARD_REGISTER_P (x))
+	return false;
+      
+      return true;
+
+    case MEM:
+      if (type == OP_IN && MEM_READONLY_P (x))
+	return rtx_moveable_p (&XEXP (x, 0), OP_IN);
+      return false;
+
+    case SET:
+      return (rtx_moveable_p (&SET_SRC (x), OP_IN)
+	      && rtx_moveable_p (&SET_DEST (x), OP_OUT));
+
+    case STRICT_LOW_PART:
+      return rtx_moveable_p (&XEXP (x, 0), OP_OUT);
+
+    case ZERO_EXTRACT:
+    case SIGN_EXTRACT:
+      return (rtx_moveable_p (&XEXP (x, 0), type)
+	      && rtx_moveable_p (&XEXP (x, 1), OP_IN)
+	      && rtx_moveable_p (&XEXP (x, 2), OP_IN));
+
+    case CLOBBER:
+      return rtx_moveable_p (&SET_DEST (x), OP_OUT);
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if (!rtx_moveable_p (&XEXP (x, i), type))
+	    return false;
+	}
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  {
+	    if (!rtx_moveable_p (&XVECEXP (x, i, j), type))
+	      return false;
+	  }
+    }
+  return true;
+}
+
+/* A wrapper around dominated_by_p, which uses the information in UID_LUID
+   to give dominance relationships between two insns I1 and I2.  */
+static bool
+insn_dominated_by_p (rtx i1, rtx i2, int *uid_luid)
+{
+  basic_block bb1 = BLOCK_FOR_INSN (i1);
+  basic_block bb2 = BLOCK_FOR_INSN (i2);
+
+  if (bb1 == bb2)
+    return uid_luid[INSN_UID (i2)] < uid_luid[INSN_UID (i1)];
+  return dominated_by_p (CDI_DOMINATORS, bb1, bb2);
+}
+
+/* Record the range of register numbers added by find_moveable_pseudos.  */
+int first_moveable_pseudo, last_moveable_pseudo;
+
+/* These two vectors hold data for every register added by
+   find_movable_pseudos, with index 0 holding data for the
+   first_moveable_pseudo.  */
+/* The original home register.  */
+static VEC (rtx, heap) *pseudo_replaced_reg;
+/* The move instruction we added to move the value to its original home
+   register.  */
+static VEC (rtx, heap) *pseudo_move_insn;
+
+/* Look for instances where we have an instruction that is known to increase
+   register pressure, and whose result is not used immediately.  If it is
+   possible to move the instruction downwards to just before its first use,
+   split its lifetime into two ranges.  We create a new pseudo to compute the
+   value, and emit a move instruction just before the first use.  If, after
+   register allocation, the new pseudo remains unallocated, the function
+   move_unallocated_pseudos then deletes the move instruction and places
+   the computation just before the first use.
+
+   Such a move is safe and profitable if all the input registers remain live
+   and unchanged between the original computation and its first use.  In such
+   a situation, the computation is known to increase register pressure, and
+   moving it is known to at least not worsen it.
+
+   We restrict moves to only those cases where a register remains unallocated,
+   in order to avoid interfering too much with the instruction schedule.  As
+   an exception, we may move insns which only modify their input register
+   (typically induction variables), as this increases the freedom for our
+   intended transformation, and does not limit the second instruction
+   scheduler pass.  */
+   
+static void
+find_moveable_pseudos (void)
+{
+  unsigned i;
+  int max_regs = max_reg_num ();
+  int max_uid = get_max_uid ();
+  basic_block bb;
+  int *uid_luid = XNEWVEC (int, max_uid);
+  rtx *closest_uses = XNEWVEC (rtx, max_regs);
+  /* A set of registers which are live but not modified throughout a block.  */
+  bitmap_head *bb_transp_live = XNEWVEC (bitmap_head, last_basic_block);
+  /* A set of registers which only exist in a given basic block.  */
+  bitmap_head *bb_local = XNEWVEC (bitmap_head, last_basic_block);
+  /* A set of registers which are set once, in an instruction that can be
+     moved freely downwards, but are otherwise transparent to a block.  */
+  bitmap_head *bb_moveable_reg_sets = XNEWVEC (bitmap_head, last_basic_block);
+  bitmap_head live, used, set, interesting, unusable_as_input;
+  bitmap_iterator bi;
+  bitmap_initialize (&interesting, 0);
+
+  first_moveable_pseudo = max_regs;
+  VEC_free (rtx, heap, pseudo_move_insn);
+  VEC_free (rtx, heap, pseudo_replaced_reg);
+  VEC_safe_grow (rtx, heap, pseudo_move_insn, max_regs);
+  VEC_safe_grow (rtx, heap, pseudo_replaced_reg, max_regs);
+
+  df_analyze ();
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  i = 0;
+  bitmap_initialize (&live, 0);
+  bitmap_initialize (&used, 0);
+  bitmap_initialize (&set, 0);
+  bitmap_initialize (&unusable_as_input, 0);
+  FOR_EACH_BB (bb)
+    {
+      rtx insn;
+      bitmap transp = bb_transp_live + bb->index;
+      bitmap moveable = bb_moveable_reg_sets + bb->index;
+      bitmap local = bb_local + bb->index;
+
+      bitmap_initialize (local, 0);
+      bitmap_initialize (transp, 0);
+      bitmap_initialize (moveable, 0);
+      bitmap_copy (&live, df_get_live_out (bb));
+      bitmap_and_into (&live, df_get_live_in (bb));
+      bitmap_copy (transp, &live);
+      bitmap_clear (moveable);
+      bitmap_clear (&live);
+      bitmap_clear (&used);
+      bitmap_clear (&set);
+      FOR_BB_INSNS (bb, insn)
+	if (NONDEBUG_INSN_P (insn))
+	  {
+	    df_ref *u_rec, *d_rec;
+
+	    uid_luid[INSN_UID (insn)] = i++;
+	    
+	    u_rec = DF_INSN_USES (insn);
+	    d_rec = DF_INSN_DEFS (insn);
+	    if (d_rec[0] != NULL && d_rec[1] == NULL
+		&& u_rec[0] != NULL && u_rec[1] == NULL
+		&& DF_REF_REGNO (*u_rec) == DF_REF_REGNO (*d_rec)
+		&& !bitmap_bit_p (&set, DF_REF_REGNO (*u_rec))
+		&& rtx_moveable_p (&PATTERN (insn), OP_IN))
+	      {
+		unsigned regno = DF_REF_REGNO (*u_rec);
+		bitmap_set_bit (moveable, regno);
+		bitmap_set_bit (&set, regno);
+		bitmap_set_bit (&used, regno);
+		bitmap_clear_bit (transp, regno);
+		continue;
+	      }
+	    while (*u_rec)
+	      {
+		unsigned regno = DF_REF_REGNO (*u_rec);
+		bitmap_set_bit (&used, regno);
+		if (bitmap_clear_bit (moveable, regno))
+		  bitmap_clear_bit (transp, regno);
+		u_rec++;
+	      }
+
+	    while (*d_rec)
+	      {
+		unsigned regno = DF_REF_REGNO (*d_rec);
+		bitmap_set_bit (&set, regno);
+		bitmap_clear_bit (transp, regno);
+		bitmap_clear_bit (moveable, regno);
+		d_rec++;
+	      }
+	  }
+    }
+
+  bitmap_clear (&live);
+  bitmap_clear (&used);
+  bitmap_clear (&set);
+
+  FOR_EACH_BB (bb)
+    {
+      bitmap local = bb_local + bb->index;
+      rtx insn;
+
+      FOR_BB_INSNS (bb, insn)
+	if (NONDEBUG_INSN_P (insn))
+	  {
+	    rtx def_insn, closest_use, note;
+	    df_ref *def_rec, def, use;
+	    unsigned regno;
+	    bool all_dominated, all_local;
+	    enum machine_mode mode;
+
+	    def_rec = DF_INSN_DEFS (insn);
+	    /* There must be exactly one def in this insn.  */
+	    def = *def_rec;
+	    if (!def || def_rec[1] || !single_set (insn))
+	      continue;
+	    /* This must be the only definition of the reg.  We also limit
+	       which modes we deal with so that we can assume we can generate
+	       move instructions.  */
+	    regno = DF_REF_REGNO (def);
+	    mode = GET_MODE (DF_REF_REG (def));
+	    if (DF_REG_DEF_COUNT (regno) != 1
+		|| !DF_REF_INSN_INFO (def)
+		|| HARD_REGISTER_NUM_P (regno)
+		|| (!INTEGRAL_MODE_P (mode) && !FLOAT_MODE_P (mode)))
+	      continue;
+	    def_insn = DF_REF_INSN (def);
+
+	    for (note = REG_NOTES (def_insn); note; note = XEXP (note, 1))
+	      if (REG_NOTE_KIND (note) == REG_EQUIV && MEM_P (XEXP (note, 0)))
+		break;
+		
+	    if (note)
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Ignoring reg %d, has equiv memory\n",
+			   regno);
+		bitmap_set_bit (&unusable_as_input, regno);
+		continue;
+	      }
+
+	    use = DF_REG_USE_CHAIN (regno);
+	    all_dominated = true;
+	    all_local = true;
+	    closest_use = NULL_RTX;
+	    for (; use; use = DF_REF_NEXT_REG (use))
+	      {
+		rtx insn;
+		if (!DF_REF_INSN_INFO (use))
+		  {
+		    all_dominated = false;
+		    all_local = false;
+		    break;
+		  }
+		insn = DF_REF_INSN (use);
+		if (DEBUG_INSN_P (insn))
+		  continue;
+		if (BLOCK_FOR_INSN (insn) != BLOCK_FOR_INSN (def_insn))
+		  all_local = false;
+		if (!insn_dominated_by_p (insn, def_insn, uid_luid))
+		  all_dominated = false;
+		if (closest_use != insn && closest_use != const0_rtx)
+		  {
+		    if (closest_use == NULL_RTX)
+		      closest_use = insn;
+		    else if (insn_dominated_by_p (closest_use, insn, uid_luid))
+		      closest_use = insn;
+		    else if (!insn_dominated_by_p (insn, closest_use, uid_luid))
+		      closest_use = const0_rtx;
+		  }
+	      }
+	    if (!all_dominated)
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Reg %d not all uses dominated by set\n",
+			   regno);
+		continue;
+	      }
+	    if (all_local)
+	      bitmap_set_bit (local, regno);
+	    if (closest_use == const0_rtx || closest_use == NULL
+		|| next_nonnote_nondebug_insn (def_insn) == closest_use)
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Reg %d uninteresting%s\n", regno,
+			   closest_use == const0_rtx || closest_use == NULL
+			   ? " (no unique first use)" : "");
+		continue;
+	      }
+#ifdef HAVE_cc0
+	    if (reg_referenced_p (cc0_rtx, PATTERN (closest_use)))
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Reg %d: closest user uses cc0\n",
+			   regno);
+		continue;
+	      }
+#endif
+	    bitmap_set_bit (&interesting, regno);
+	    closest_uses[regno] = closest_use;
+
+	    if (dump_file && (all_local || all_dominated))
+	      {
+		fprintf (dump_file, "Reg %u:", regno);
+		if (all_local)
+		  fprintf (dump_file, " local to bb %d", bb->index);
+		if (all_dominated)
+		  fprintf (dump_file, " def dominates all uses");
+		if (closest_use != const0_rtx)
+		  fprintf (dump_file, " has unique first use");
+		fputs ("\n", dump_file);
+	      }
+	  }
+    }
+
+  EXECUTE_IF_SET_IN_BITMAP (&interesting, 0, i, bi)
+    {
+      df_ref def = DF_REG_DEF_CHAIN (i);
+      rtx def_insn = DF_REF_INSN (def);
+      basic_block def_block = BLOCK_FOR_INSN (def_insn);
+      bitmap def_bb_local = bb_local + def_block->index;
+      bitmap def_bb_moveable = bb_moveable_reg_sets + def_block->index;
+      bitmap def_bb_transp = bb_transp_live + def_block->index;
+      bool local_to_bb_p = bitmap_bit_p (def_bb_local, i);
+      rtx use_insn = closest_uses[i];
+      df_ref *def_insn_use_rec = DF_INSN_USES (def_insn);
+      bool all_ok = true;
+      bool all_transp = true;
+
+      if (!REG_P (DF_REF_REG (def)))
+	continue;
+
+      if (!local_to_bb_p)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Reg %u not local to one basic block\n",
+		     i);
+	  continue;
+	}
+      if (reg_equiv_init (i) != NULL_RTX)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Ignoring reg %u with equiv init insn\n",
+		     i);
+	  continue;
+	}
+      if (!rtx_moveable_p (&PATTERN (def_insn), OP_IN))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Found def insn %d for %d to be not moveable\n",
+		     INSN_UID (def_insn), i);
+	  continue;
+	}
+      if (dump_file)
+	fprintf (dump_file, "Examining insn %d, def for %d\n",
+		 INSN_UID (def_insn), i);
+      while (*def_insn_use_rec != NULL)
+	{
+	  df_ref use = *def_insn_use_rec;
+	  unsigned regno = DF_REF_REGNO (use);
+	  if (bitmap_bit_p (&unusable_as_input, regno))
+	    {
+	      all_ok = false;
+	      if (dump_file)
+		fprintf (dump_file, "  found unusable input reg %u.\n", regno);
+	      break;
+	    }
+	  if (!bitmap_bit_p (def_bb_transp, regno))
+	    {
+	      if (bitmap_bit_p (def_bb_moveable, regno)
+		  && !control_flow_insn_p (use_insn)
+#ifdef HAVE_cc0
+		  && !sets_cc0_p (use_insn)
+#endif
+		  )
+		{
+		  if (modified_between_p (DF_REF_REG (use), def_insn, use_insn))
+		    {
+		      rtx x = NEXT_INSN (def_insn);
+		      while (!modified_in_p (DF_REF_REG (use), x))
+			{
+			  gcc_assert (x != use_insn);
+			  x = NEXT_INSN (x);
+			}
+		      if (dump_file)
+			fprintf (dump_file, "  input reg %u modified but insn %d moveable\n",
+				 regno, INSN_UID (x));
+		      emit_insn_after (PATTERN (x), use_insn);
+		      set_insn_deleted (x);
+		    }
+		  else
+		    {
+		      if (dump_file)
+			fprintf (dump_file, "  input reg %u modified between def and use\n",
+				 regno);
+		      all_transp = false;
+		    }
+		}
+	      else
+		all_transp = false;
+	    }
+
+	  def_insn_use_rec++;
+	}
+      if (!all_ok)
+	continue;
+      if (!dbg_cnt (ira_move))
+	break;
+      if (dump_file)
+	fprintf (dump_file, "  all ok%s\n", all_transp ? " and transp" : "");
+
+      if (all_transp)
+	{
+	  rtx def_reg = DF_REF_REG (def);
+	  rtx newreg = ira_create_new_reg (def_reg);
+	  if (validate_change (def_insn, DF_REF_LOC (def), newreg, 0))
+	    {
+	      unsigned nregno = REGNO (newreg);
+	      rtx move = emit_insn_before (gen_move_insn (def_reg, newreg),
+					   use_insn);
+	      nregno -= max_regs;
+	      VEC_replace (rtx, pseudo_move_insn, nregno, move);
+	      VEC_replace (rtx, pseudo_replaced_reg, nregno, def_reg);
+	    }
+	}
+    }
+  
+  FOR_EACH_BB (bb)
+    {
+      bitmap_clear (bb_local + bb->index);
+      bitmap_clear (bb_transp_live + bb->index);
+      bitmap_clear (bb_moveable_reg_sets + bb->index);
+    }
+  bitmap_clear (&interesting);
+  bitmap_clear (&unusable_as_input);
+  free (uid_luid);
+  free (closest_uses);
+  free (bb_local);
+  free (bb_transp_live);
+  free (bb_moveable_reg_sets);
+
+  last_moveable_pseudo = max_reg_num ();
+
+  fix_reg_equiv_init();
+  regstat_free_n_sets_and_refs ();
+  regstat_free_ri ();
+  regstat_init_n_sets_and_refs ();
+  regstat_compute_ri ();
+  free_dominance_info (CDI_DOMINATORS);
+}
+
+/* Perform the second half of the transformation started in
+   find_moveable_pseudos.  We look for instances where the newly introduced
+   pseudo remains unallocated, and remove it by moving the definition to
+   just before its use, replacing the move instruction generated by
+   find_moveable_pseudos.  */
+static void
+move_unallocated_pseudos (void)
+{
+  int i;
+  for (i = first_moveable_pseudo; i < last_moveable_pseudo; i++)
+    if (reg_renumber[i] < 0)
+      {
+	df_ref def = DF_REG_DEF_CHAIN (i);
+	int idx = i - first_moveable_pseudo;
+	rtx other_reg = VEC_index (rtx, pseudo_replaced_reg, idx);
+	rtx def_insn = DF_REF_INSN (def);
+	rtx move_insn = VEC_index (rtx, pseudo_move_insn, idx);
+	rtx set;
+	rtx newinsn = emit_insn_after (PATTERN (def_insn), move_insn);
+	int success;
+
+	if (dump_file)
+	  fprintf (dump_file, "moving def of %d (insn %d now) ",
+		   REGNO (other_reg), INSN_UID (def_insn));
+
+	set = single_set (newinsn);
+	success = validate_change (newinsn, &SET_DEST (set), other_reg, 0);
+	gcc_assert (success);
+	if (dump_file)
+	  fprintf (dump_file, " %d) rather than keep unallocated replacement %d\n",
+		   INSN_UID (newinsn), i);
+	delete_insn (move_insn);
+	delete_insn (def_insn);
+	SET_REG_N_REFS (i, 0);
+      }
+}
 
 
 /* All natural loops.  */
@@ -3605,6 +4119,8 @@ ira (FILE *f)
 	  timevar_pop (TV_JUMP);
 	}
     }
+
+  find_moveable_pseudos ();
 
   max_regno_before_ira = allocated_reg_info_size = max_reg_num ();
   ira_setup_eliminable_regset ();
@@ -3716,6 +4232,7 @@ ira (FILE *f)
 	      max_regno * sizeof (struct ira_spilled_reg_stack_slot));
     }
   allocate_initial_values (reg_equivs);
+  move_unallocated_pseudos ();
 }
 
 static void
@@ -3814,7 +4331,7 @@ struct rtl_opt_pass pass_ira =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func                        /* todo_flags_finish */
+  0,                                    /* todo_flags_finish */
  }
 };
 
@@ -3840,6 +4357,6 @@ struct rtl_opt_pass pass_reload =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func | TODO_ggc_collect     /* todo_flags_finish */
+  TODO_ggc_collect                      /* todo_flags_finish */
  }
 };

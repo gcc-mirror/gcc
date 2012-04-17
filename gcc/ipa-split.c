@@ -1203,16 +1203,16 @@ split_function (struct split_point *split_point)
   /* For usual cloning it is enough to clear builtin only when signature
      changes.  For partial inlining we however can not expect the part
      of builtin implementation to have same semantic as the whole.  */
-  if (DECL_BUILT_IN (node->decl))
+  if (DECL_BUILT_IN (node->symbol.decl))
     {
-      DECL_BUILT_IN_CLASS (node->decl) = NOT_BUILT_IN;
-      DECL_FUNCTION_CODE (node->decl) = (enum built_in_function) 0;
+      DECL_BUILT_IN_CLASS (node->symbol.decl) = NOT_BUILT_IN;
+      DECL_FUNCTION_CODE (node->symbol.decl) = (enum built_in_function) 0;
     }
   cgraph_node_remove_callees (cur_node);
   if (!split_part_return_p)
-    TREE_THIS_VOLATILE (node->decl) = 1;
+    TREE_THIS_VOLATILE (node->symbol.decl) = 1;
   if (dump_file)
-    dump_function_to_file (node->decl, dump_file, dump_flags);
+    dump_function_to_file (node->symbol.decl, dump_file, dump_flags);
 
   /* Create the basic block we place call into.  It is the entry basic block
      split after last label.  */
@@ -1237,7 +1237,7 @@ split_function (struct split_point *split_point)
 					false, GSI_CONTINUE_LINKING);
 	VEC_replace (tree, args_to_pass, i, arg);
       }
-  call = gimple_build_call_vec (node->decl, args_to_pass);
+  call = gimple_build_call_vec (node->symbol.decl, args_to_pass);
   gimple_set_block (call, DECL_INITIAL (current_function_decl));
 
   /* We avoid address being taken on any variable used by split part,
@@ -1423,7 +1423,7 @@ execute_split_functions (void)
 	fprintf (dump_file, "Not splitting: not inlinable.\n");
       return 0;
     }
-  if (DECL_DISREGARD_INLINE_LIMITS (node->decl))
+  if (DECL_DISREGARD_INLINE_LIMITS (node->symbol.decl))
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: disregarding inline limits.\n");
@@ -1455,8 +1455,8 @@ execute_split_functions (void)
      called once.  It is possible that the caller is called more then once and
      then inlining would still benefit.  */
   if ((!node->callers || !node->callers->next_caller)
-      && !node->address_taken
-      && (!flag_lto || !node->local.externally_visible))
+      && !node->symbol.address_taken
+      && (!flag_lto || !node->symbol.externally_visible))
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: not called directly "

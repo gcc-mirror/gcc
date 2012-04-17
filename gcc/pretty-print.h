@@ -201,6 +201,9 @@ struct pretty_print_info
 #define pp_set_line_maximum_length(PP, L) \
    pp_base_set_line_maximum_length (pp_base (PP), L)
 #define pp_set_prefix(PP, P)    pp_base_set_prefix (pp_base (PP), P)
+#define pp_get_prefix(PP)       pp_base_get_prefix (pp_base (PP))
+static inline const char *
+pp_base_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 #define pp_destroy_prefix(PP)   pp_base_destroy_prefix (pp_base (PP))
 #define pp_remaining_character_count_for_line(PP) \
   pp_base_remaining_character_count_for_line (pp_base (PP))

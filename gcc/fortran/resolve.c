@@ -11304,6 +11304,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
   gcc_assert (stree->n.tb->u.specific);
   proc = stree->n.tb->u.specific->n.sym;
   where = stree->n.tb->where;
+  proc->attr.public_used = 1;
 
   /* Default access should already be resolved from the parser.  */
   gcc_assert (stree->n.tb->access != ACCESS_UNKNOWN);
@@ -12246,7 +12247,10 @@ resolve_symbol (gfc_symbol *sym)
   symbol_attribute class_attr;
   gfc_array_spec *as;
 
-  if (sym->attr.flavor == FL_UNKNOWN)
+  if (sym->attr.flavor == FL_UNKNOWN
+      || (sym->attr.flavor == FL_PROCEDURE && !sym->attr.intrinsic
+	  && !sym->attr.generic && !sym->attr.external
+	  && sym->attr.if_source == IFSRC_UNKNOWN))
     {
 
     /* If we find that a flavorless symbol is an interface in one of the
@@ -12270,9 +12274,10 @@ resolve_symbol (gfc_symbol *sym)
 
       /* Otherwise give it a flavor according to such attributes as
 	 it has.  */
-      if (sym->attr.external == 0 && sym->attr.intrinsic == 0)
+      if (sym->attr.flavor == FL_UNKNOWN && sym->attr.external == 0
+	  && sym->attr.intrinsic == 0)
 	sym->attr.flavor = FL_VARIABLE;
-      else
+      else if (sym->attr.flavor == FL_UNKNOWN)
 	{
 	  sym->attr.flavor = FL_PROCEDURE;
 	  if (sym->attr.dimension)

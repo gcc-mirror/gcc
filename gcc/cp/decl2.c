@@ -1456,12 +1456,7 @@ finish_anon_union (tree anon_union_decl)
     }
 
   pushdecl (anon_union_decl);
-  if (building_stmt_list_p ()
-      && at_function_scope_p ())
-    add_decl_expr (anon_union_decl);
-  else if (!processing_template_decl)
-    rest_of_decl_compilation (anon_union_decl,
-			      toplevel_bindings_p (), at_eof);
+  cp_finish_decl (anon_union_decl, NULL_TREE, false, NULL_TREE, 0);
 }
 
 /* Auxiliary functions to make type signatures for
@@ -1903,7 +1898,7 @@ maybe_emit_vtables (tree ctype)
 	{
 	  current = varpool_node (vtbl);
 	  if (last)
-	    last->same_comdat_group = current;
+	    last->symbol.same_comdat_group = (symtab_node) current;
 	  last = current;
 	  if (!first)
 	    first = current;
@@ -1911,7 +1906,7 @@ maybe_emit_vtables (tree ctype)
     }
 
   if (first != last)
-    last->same_comdat_group = first;
+    last->symbol.same_comdat_group = (symtab_node)first;
 
   /* Since we're writing out the vtable here, also write the debug
      info.  */
@@ -3496,7 +3491,7 @@ collect_candidates_for_java_method_aliases (void)
 
   for (node = cgraph_nodes; node ; node = node->next)
     {
-      tree fndecl = node->decl;
+      tree fndecl = node->symbol.decl;
 
       if (DECL_CONTEXT (fndecl)
 	  && TYPE_P (DECL_CONTEXT (fndecl))
@@ -3530,7 +3525,7 @@ build_java_method_aliases (struct pointer_set_t *candidates)
 
   for (node = cgraph_nodes; node ; node = node->next)
     {
-      tree fndecl = node->decl;
+      tree fndecl = node->symbol.decl;
 
       if (TREE_ASM_WRITTEN (fndecl)
 	  && pointer_set_contains (candidates, fndecl))
@@ -3711,7 +3706,7 @@ collect_all_refs (const char *source_file)
 static bool
 clear_decl_external (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
-  DECL_EXTERNAL (node->decl) = 0;
+  DECL_EXTERNAL (node->symbol.decl) = 0;
   return false;
 }
 
@@ -3950,10 +3945,10 @@ cp_write_global_declarations (void)
 	      /* If we mark !DECL_EXTERNAL one of the symbols in some comdat
 		 group, we need to mark all symbols in the same comdat group
 		 that way.  */
-	      if (node->same_comdat_group)
-		for (next = node->same_comdat_group;
+	      if (node->symbol.same_comdat_group)
+		for (next = cgraph (node->symbol.same_comdat_group);
 		     next != node;
-		     next = next->same_comdat_group)
+		     next = cgraph (next->symbol.same_comdat_group))
 	          cgraph_for_node_and_aliases (next, clear_decl_external,
 					       NULL, true);
 	    }

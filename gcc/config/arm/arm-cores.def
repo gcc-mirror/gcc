@@ -137,4 +137,4 @@ ARM_CORE("cortex-m4",	  cortexm4,	7EM,				 FL_LDSCHED, cortex)
 ARM_CORE("cortex-m3",	  cortexm3,	7M,				 FL_LDSCHED, cortex)
 ARM_CORE("cortex-m1",	  cortexm1,	6M,				 FL_LDSCHED, cortex)
 ARM_CORE("cortex-m0",	  cortexm0,	6M,				 FL_LDSCHED, cortex)
-
+ARM_CORE("cortex-m0plus", cortexm0plus,	6M,				 FL_LDSCHED, cortex)

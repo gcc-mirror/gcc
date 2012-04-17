@@ -404,7 +404,7 @@
       if (GET_CODE (x) == PLUS
 	  && REG_P (XEXP (x, 0))
 	  && CONST_INT_P (XEXP (x, 1)))
-	return sh_legitimate_index_p (mode, XEXP (x, 1));
+	return sh_legitimate_index_p (mode, XEXP (x, 1), TARGET_SH2A, false);
     }
 
   if (TARGET_SHMEDIA
@@ -466,7 +466,7 @@
       if (GET_CODE (x) == PLUS
 	  && REG_P (XEXP (x, 0))
 	  && CONST_INT_P (XEXP (x, 1)))
-	return sh_legitimate_index_p (mode, XEXP (x, 1));
+	return sh_legitimate_index_p (mode, XEXP (x, 1), TARGET_SH2A, false);
     }
 
   return general_operand (op, mode);

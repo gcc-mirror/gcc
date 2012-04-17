@@ -5372,6 +5372,10 @@ typeinfo node and exception handling will break.
 
 @end table
 
+To specify multiple attributes, separate them by commas within the
+double parentheses: for example, @samp{__attribute__ ((aligned (16),
+packed))}.
+
 @subsection ARM Type Attributes
 
 On those ARM targets that support @code{dllimport} (such as Symbian
@@ -5426,10 +5430,6 @@ either format.
 Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows X86
 compilers to match the native Microsoft compiler.
 @end table
-
-To specify multiple attributes, separate them by commas within the
-double parentheses: for example, @samp{__attribute__ ((aligned (16),
-packed))}.
 
 @anchor{PowerPC Type Attributes}
 @subsection PowerPC Type Attributes
@@ -8535,10 +8535,15 @@ Similar to @code{__builtin_powi}, except the argument and return types
 are @code{long double}.
 @end deftypefn
 
-@deftypefn {Built-in Function} int32_t __builtin_bswap32 (int32_t x)
+@deftypefn {Built-in Function} int16_t __builtin_bswap16 (int16_t x)
 Returns @var{x} with the order of the bytes reversed; for example,
-@code{0xaabbccdd} becomes @code{0xddccbbaa}.  Byte here always means
+@code{0xaabb} becomes @code{0xbbaa}.  Byte here always means
 exactly 8 bits.
+@end deftypefn
+
+@deftypefn {Built-in Function} int32_t __builtin_bswap32 (int32_t x)
+Similar to @code{__builtin_bswap16}, except the argument and return types
+are 32-bit.
 @end deftypefn
 
 @deftypefn {Built-in Function} int64_t __builtin_bswap64 (int64_t x)
@@ -13426,7 +13431,6 @@ float __builtin_rsqrtf (float);
 double __builtin_recipdiv (double, double);
 double __builtin_rsqrt (double);
 long __builtin_bpermd (long, long);
-int __builtin_bswap16 (int);
 @end smallexample
 
 The @code{vec_rsqrt}, @code{__builtin_rsqrt}, and

@@ -1730,7 +1730,7 @@ struct gimple_opt_pass pass_lower_tm =
   0,			                /* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func		        /* todo_flags_finish */
+  0,             		        /* todo_flags_finish */
  }
 };
 
@@ -2543,8 +2543,7 @@ struct gimple_opt_pass pass_tm_mark =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_update_ssa
-  | TODO_verify_ssa
-  | TODO_dump_func,			/* todo_flags_finish */
+  | TODO_verify_ssa, 			/* todo_flags_finish */
  }
 };
 
@@ -2818,8 +2817,7 @@ struct gimple_opt_pass pass_tm_edges =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_update_ssa
-  | TODO_verify_ssa
-  | TODO_dump_func,			/* todo_flags_finish */
+  | TODO_verify_ssa,			/* todo_flags_finish */
  }
 };
 
@@ -3483,7 +3481,7 @@ struct gimple_opt_pass pass_tm_memopt =
   0,			                /* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
+  0,            			/* todo_flags_finish */
  }
 };
 
@@ -3589,13 +3587,13 @@ get_cg_data (struct cgraph_node **node, bool traverse_aliases)
   if (traverse_aliases && (*node)->alias)
     *node = cgraph_get_node ((*node)->thunk.alias);
 
-  d = (struct tm_ipa_cg_data *) (*node)->aux;
+  d = (struct tm_ipa_cg_data *) (*node)->symbol.aux;
 
   if (d == NULL)
     {
       d = (struct tm_ipa_cg_data *)
 	obstack_alloc (&tm_obstack.obstack, sizeof (*d));
-      (*node)->aux = (void *) d;
+      (*node)->symbol.aux = (void *) d;
       memset (d, 0, sizeof (*d));
     }
 
@@ -3691,7 +3689,7 @@ static void
 ipa_tm_scan_calls_clone (struct cgraph_node *node,
 			 cgraph_node_queue *callees_p)
 {
-  struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+  struct function *fn = DECL_STRUCT_FUNCTION (node->symbol.decl);
   basic_block bb;
 
   FOR_EACH_BB_FN (bb, fn)
@@ -3720,7 +3718,7 @@ ipa_tm_note_irrevocable (struct cgraph_node *node,
 	continue;
       /* Even if we think we can go irrevocable, believe the user
 	 above all.  */
-      if (is_tm_safe_or_pure (e->caller->decl))
+      if (is_tm_safe_or_pure (e->caller->symbol.decl))
 	continue;
 
       caller = e->caller;
@@ -3977,12 +3975,12 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
   bool ret = false;
 
   /* Builtin operators (operator new, and such).  */
-  if (DECL_STRUCT_FUNCTION (node->decl) == NULL
-      || DECL_STRUCT_FUNCTION (node->decl)->cfg == NULL)
+  if (DECL_STRUCT_FUNCTION (node->symbol.decl) == NULL
+      || DECL_STRUCT_FUNCTION (node->symbol.decl)->cfg == NULL)
     return false;
 
-  current_function_decl = node->decl;
-  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+  current_function_decl = node->symbol.decl;
+  push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
   calculate_dominance_info (CDI_DOMINATORS);
 
   d = get_cg_data (&node, true);
@@ -4069,7 +4067,7 @@ ipa_tm_mayenterirr_function (struct cgraph_node *node)
   unsigned flags;
 
   d = get_cg_data (&node, true);
-  decl = node->decl;
+  decl = node->symbol.decl;
   flags = flags_from_decl_or_type (decl);
 
   /* Handle some TM builtins.  Ordinarily these aren't actually generated
@@ -4129,11 +4127,11 @@ ipa_tm_diagnose_tm_safe (struct cgraph_node *node)
   struct cgraph_edge *e;
 
   for (e = node->callees; e ; e = e->next_callee)
-    if (!is_tm_callable (e->callee->decl)
+    if (!is_tm_callable (e->callee->symbol.decl)
 	&& e->callee->local.tm_may_enter_irr)
       error_at (gimple_location (e->call_stmt),
 		"unsafe function call %qD within "
-		"%<transaction_safe%> function", e->callee->decl);
+		"%<transaction_safe%> function", e->callee->symbol.decl);
 }
 
 /* Diagnose call from atomic transactions to unmarked functions
@@ -4298,7 +4296,7 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
   if (!node->same_body_alias)
     return false;
 
-  old_decl = node->decl;
+  old_decl = node->symbol.decl;
   tm_name = tm_mangle (DECL_ASSEMBLER_NAME (old_decl));
   new_decl = build_decl (DECL_SOURCE_LOCATION (old_decl),
 			 TREE_CODE (old_decl), tm_name,
@@ -4324,7 +4322,7 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
 
   new_node = cgraph_same_body_alias (NULL, new_decl, info->new_decl);
   new_node->tm_clone = true;
-  new_node->local.externally_visible = info->old_node->local.externally_visible;
+  new_node->symbol.externally_visible = info->old_node->symbol.externally_visible;
   /* ?? Do not traverse aliases here.  */
   get_cg_data (&node, false)->clone = new_node;
 
@@ -4344,7 +4342,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
   tree new_decl, old_decl, tm_name;
   struct cgraph_node *new_node;
 
-  old_decl = old_node->decl;
+  old_decl = old_node->symbol.decl;
   new_decl = copy_node (old_decl);
 
   /* DECL_ASSEMBLER_NAME needs to be set before we call
@@ -4360,7 +4358,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
     DECL_COMDAT_GROUP (new_decl) = tm_mangle (DECL_COMDAT_GROUP (old_decl));
 
   new_node = cgraph_copy_node_for_versioning (old_node, new_decl, NULL, NULL);
-  new_node->local.externally_visible = old_node->local.externally_visible;
+  new_node->symbol.externally_visible = old_node->symbol.externally_visible;
   new_node->lowered = true;
   new_node->tm_clone = 1;
   get_cg_data (&old_node, true)->clone = new_node;
@@ -4418,7 +4416,7 @@ ipa_tm_insert_irr_call (struct cgraph_node *node, struct tm_region *region,
 	       cgraph_get_create_node
 		  (builtin_decl_explicit (BUILT_IN_TM_IRREVOCABLE)),
 		      g, 0,
-		      compute_call_stmt_bb_frequency (node->decl,
+		      compute_call_stmt_bb_frequency (node->symbol.decl,
 						      gimple_bb (g)));
 }
 
@@ -4469,7 +4467,7 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
   cgraph_create_edge (node, cgraph_get_create_node (gettm_fn), g, 0,
-		      compute_call_stmt_bb_frequency (node->decl,
+		      compute_call_stmt_bb_frequency (node->symbol.decl,
 						      gimple_bb(g)));
 
   /* Cast return value from tm_gettmclone* into appropriate function
@@ -4597,7 +4595,7 @@ ipa_tm_transform_calls_redirect (struct cgraph_node *node,
 	  return;
 	}
 
-      fndecl = new_node->decl;
+      fndecl = new_node->symbol.decl;
     }
 
   cgraph_redirect_edge_callee (e, new_node);
@@ -4691,8 +4689,8 @@ ipa_tm_transform_transaction (struct cgraph_node *node)
 
   d = get_cg_data (&node, true);
 
-  current_function_decl = node->decl;
-  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+  current_function_decl = node->symbol.decl;
+  push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
   calculate_dominance_info (CDI_DOMINATORS);
 
   for (region = d->all_tm_regions; region; region = region->next)
@@ -4735,7 +4733,7 @@ ipa_tm_transform_clone (struct cgraph_node *node)
   if (!node->callees && !d->irrevocable_blocks_clone)
     return;
 
-  current_function_decl = d->clone->decl;
+  current_function_decl = d->clone->symbol.decl;
   push_cfun (DECL_STRUCT_FUNCTION (current_function_decl));
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -4772,7 +4770,7 @@ ipa_tm_execute (void)
 
   /* For all local functions marked tm_callable, queue them.  */
   for (node = cgraph_nodes; node; node = node->next)
-    if (is_tm_callable (node->decl)
+    if (is_tm_callable (node->symbol.decl)
 	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       {
 	d = get_cg_data (&node, true);
@@ -4787,15 +4785,15 @@ ipa_tm_execute (void)
 	/* ... marked tm_pure, record that fact for the runtime by
 	   indicating that the pure function is its own tm_callable.
 	   No need to do this if the function's address can't be taken.  */
-	if (is_tm_pure (node->decl))
+	if (is_tm_pure (node->symbol.decl))
 	  {
 	    if (!node->local.local)
-	      record_tm_clone_pair (node->decl, node->decl);
+	      record_tm_clone_pair (node->symbol.decl, node->symbol.decl);
 	    continue;
 	  }
 
-	current_function_decl = node->decl;
-	push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+	current_function_decl = node->symbol.decl;
+	push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
 	calculate_dominance_info (CDI_DOMINATORS);
 
 	tm_region_init (NULL);
@@ -4833,14 +4831,14 @@ ipa_tm_execute (void)
 
       /* Some callees cannot be arbitrarily cloned.  These will always be
 	 irrevocable.  Mark these now, so that we need not scan them.  */
-      if (is_tm_irrevocable (node->decl))
+      if (is_tm_irrevocable (node->symbol.decl))
 	ipa_tm_note_irrevocable (node, &irr_worklist);
       else if (a <= AVAIL_NOT_AVAILABLE
-	       && !is_tm_safe_or_pure (node->decl))
+	       && !is_tm_safe_or_pure (node->symbol.decl))
 	ipa_tm_note_irrevocable (node, &irr_worklist);
       else if (a >= AVAIL_OVERWRITABLE)
 	{
-	  if (!tree_versionable_function_p (node->decl))
+	  if (!tree_versionable_function_p (node->symbol.decl))
 	    ipa_tm_note_irrevocable (node, &irr_worklist);
 	  else if (!d->is_irrevocable)
 	    {
@@ -4924,7 +4922,7 @@ ipa_tm_execute (void)
       for (e = node->callers; e ; e = e->next_caller)
 	{
 	  caller = e->caller;
-	  if (!is_tm_safe_or_pure (caller->decl)
+	  if (!is_tm_safe_or_pure (caller->symbol.decl)
 	      && !caller->local.tm_may_enter_irr)
 	    {
 	      d = get_cg_data (&caller, true);
@@ -4933,7 +4931,7 @@ ipa_tm_execute (void)
 	}
 
       /* Propagate back to referring aliases as well.  */
-      for (j = 0; ipa_ref_list_refering_iterate (&node->ref_list, j, ref); j++)
+      for (j = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list, j, ref); j++)
 	{
 	  caller = ref->refering.cgraph_node;
 	  if (ref->use == IPA_REF_ALIAS
@@ -4953,7 +4951,7 @@ ipa_tm_execute (void)
 	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       {
 	d = get_cg_data (&node, true);
-	if (is_tm_safe (node->decl))
+	if (is_tm_safe (node->symbol.decl))
 	  ipa_tm_diagnose_tm_safe (node);
 	else if (d->all_tm_regions)
 	  ipa_tm_diagnose_transaction (node, d->all_tm_regions);
@@ -4974,8 +4972,8 @@ ipa_tm_execute (void)
       d = get_cg_data (&node, true);
 
       if (a <= AVAIL_NOT_AVAILABLE)
-	doit = is_tm_callable (node->decl);
-      else if (a <= AVAIL_AVAILABLE && is_tm_callable (node->decl))
+	doit = is_tm_callable (node->symbol.decl);
+      else if (a <= AVAIL_AVAILABLE && is_tm_callable (node->symbol.decl))
 	doit = true;
       else if (!d->is_irrevocable
 	       && d->tm_callers_normal + d->tm_callers_clone > 0)
@@ -5011,7 +5009,7 @@ ipa_tm_execute (void)
   bitmap_obstack_release (&tm_obstack);
 
   for (node = cgraph_nodes; node; node = node->next)
-    node->aux = NULL;
+    node->symbol.aux = NULL;
 
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
@@ -5035,7 +5033,7 @@ struct simple_ipa_opt_pass pass_ipa_tm =
   0,			                /* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
+  0,             			/* todo_flags_finish */
  },
 };
 

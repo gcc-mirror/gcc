@@ -1222,17 +1222,7 @@ reg_scan_mark_refs (rtx x, rtx insn)
       /* If this is setting a register from a register or from a simple
 	 conversion of a register, propagate REG_EXPR.  */
       if (REG_P (dest) && !REG_ATTRS (dest))
-	{
-	  rtx src = SET_SRC (x);
-
-	  while (GET_CODE (src) == SIGN_EXTEND
-		 || GET_CODE (src) == ZERO_EXTEND
-		 || GET_CODE (src) == TRUNCATE
-		 || (GET_CODE (src) == SUBREG && subreg_lowpart_p (src)))
-	    src = XEXP (src, 0);
-
-	  set_reg_attrs_from_value (dest, src);
-	}
+	set_reg_attrs_from_value (dest, SET_SRC (x));
 
       /* ... fall through ...  */
 

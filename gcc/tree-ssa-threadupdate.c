@@ -661,6 +661,13 @@ thread_block (basic_block bb, bool noloop_only)
   /* We do not update dominance info.  */
   free_dominance_info (CDI_DOMINATORS);
 
+  /* We know we only thread through the loop header to loop exits.
+     Let the basic block duplication hook know we are not creating
+     a multiple entry loop.  */
+  if (noloop_only
+      && bb == bb->loop_father->header)
+    set_loop_copy (bb->loop_father, loop_outer (bb->loop_father));
+
   /* Now create duplicates of BB.
 
      Note that for a block with a high outgoing degree we can waste
@@ -691,6 +698,10 @@ thread_block (basic_block bb, bool noloop_only)
   /* Done with this block.  Clear REDIRECTION_DATA.  */
   htab_delete (redirection_data);
   redirection_data = NULL;
+
+  if (noloop_only
+      && bb == bb->loop_father->header)
+    set_loop_copy (bb->loop_father, NULL);
 
   /* Indicate to our caller whether or not any jumps were threaded.  */
   return local_info.jumps_threaded;

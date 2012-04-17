@@ -14,7 +14,7 @@ struct t {
   int b[2];
 };
 
-#define old_offsetof(TYPE, MEMBER) ((__SIZE_TYPE__) &((TYPE *)0)->MEMBER)
+#define old_offsetof(TYPE, MEMBER) ((__SIZE_TYPE__)(__UINTPTR_TYPE__) &((TYPE *)0)->MEMBER)
 
 enum e {
   E1 = old_offsetof (struct s, a), /* { dg-error "constant" } */

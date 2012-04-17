@@ -1556,6 +1556,8 @@ dump_function_name (tree t, int flags)
     {
       if (LAMBDA_TYPE_P (DECL_CONTEXT (t)))
 	name = get_identifier ("<lambda>");
+      else if (TYPE_ANONYMOUS_P (DECL_CONTEXT (t)))
+	name = get_identifier ("<constructor>");
       else
 	name = constructor_name (DECL_CONTEXT (t));
     }

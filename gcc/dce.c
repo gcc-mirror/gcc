@@ -807,6 +807,7 @@ word_dce_process_block (basic_block bb, bool redo_out)
   bitmap local_live = BITMAP_ALLOC (&dce_tmp_bitmap_obstack);
   rtx insn;
   bool block_changed;
+  struct dead_debug debug;
 
   if (redo_out)
     {
@@ -828,11 +829,24 @@ word_dce_process_block (basic_block bb, bool redo_out)
     }
 
   bitmap_copy (local_live, DF_WORD_LR_OUT (bb));
+  dead_debug_init (&debug, NULL);
 
   FOR_BB_INSNS_REVERSE (bb, insn)
-    if (NONDEBUG_INSN_P (insn))
+    if (DEBUG_INSN_P (insn))
+      {
+	df_ref *use_rec;
+	for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+	  if (DF_REF_REGNO (*use_rec) >= FIRST_PSEUDO_REGISTER
+	      && (GET_MODE_SIZE (GET_MODE (DF_REF_REAL_REG (*use_rec)))
+		  == 2 * UNITS_PER_WORD)
+	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (*use_rec))
+	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (*use_rec) + 1))
+	    dead_debug_add (&debug, *use_rec, DF_REF_REGNO (*use_rec));
+      }
+    else if (INSN_P (insn))
       {
 	bool any_changed;
+
 	/* No matter if the instruction is needed or not, we remove
 	   any regno in the defs from the live set.  */
 	any_changed = df_word_lr_simulate_defs (insn, local_live);
@@ -843,6 +857,15 @@ word_dce_process_block (basic_block bb, bool redo_out)
 	   anything in local_live.  */
 	if (marked_insn_p (insn))
 	  df_word_lr_simulate_uses (insn, local_live);
+
+	if (debug.used && !bitmap_empty_p (debug.used))
+	  {
+	    df_ref *def_rec;
+
+	    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	      dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
+				      DEBUG_TEMP_BEFORE_WITH_VALUE);
+	  }
 
 	if (dump_file)
 	  {
@@ -856,6 +879,7 @@ word_dce_process_block (basic_block bb, bool redo_out)
   if (block_changed)
     bitmap_copy (DF_WORD_LR_IN (bb), local_live);
 
+  dead_debug_finish (&debug, NULL);
   BITMAP_FREE (local_live);
   return block_changed;
 }
@@ -873,6 +897,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
   rtx insn;
   bool block_changed;
   df_ref *def_rec;
+  struct dead_debug debug;
 
   if (redo_out)
     {
@@ -896,22 +921,36 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
   bitmap_copy (local_live, DF_LR_OUT (bb));
 
   df_simulate_initialize_backwards (bb, local_live);
+  dead_debug_init (&debug, NULL);
 
   FOR_BB_INSNS_REVERSE (bb, insn)
-    if (INSN_P (insn))
+    if (DEBUG_INSN_P (insn))
+      {
+	df_ref *use_rec;
+	for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+	  if (!bitmap_bit_p (local_live, DF_REF_REGNO (*use_rec))
+	      && !bitmap_bit_p (au, DF_REF_REGNO (*use_rec)))
+	    dead_debug_add (&debug, *use_rec, DF_REF_REGNO (*use_rec));
+      }
+    else if (INSN_P (insn))
       {
 	bool needed = marked_insn_p (insn);
 
 	/* The insn is needed if there is someone who uses the output.  */
 	if (!needed)
 	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	    if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
-		|| bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
-	      {
-		needed = true;
-		mark_insn (insn, true);
-		break;
-	      }
+	    {
+	      dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
+				      DEBUG_TEMP_BEFORE_WITH_VALUE);
+
+	      if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
+		  || bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
+		{
+		  needed = true;
+		  mark_insn (insn, true);
+		  break;
+		}
+	    }
 
 	/* No matter if the instruction is needed or not, we remove
 	   any regno in the defs from the live set.  */
@@ -923,6 +962,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 	  df_simulate_uses (insn, local_live);
       }
 
+  dead_debug_finish (&debug, NULL);
   df_simulate_finalize_backwards (bb, local_live);
 
   block_changed = !bitmap_equal_p (local_live, DF_LR_IN (bb));

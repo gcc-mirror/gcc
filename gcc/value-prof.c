@@ -1075,9 +1075,9 @@ init_node_map (void)
 
   for (n = cgraph_nodes; n; n = n->next)
     {
-      if (DECL_STRUCT_FUNCTION (n->decl))
+      if (DECL_STRUCT_FUNCTION (n->symbol.decl))
         VEC_replace (cgraph_node_ptr, cgraph_node_map,
-                     DECL_STRUCT_FUNCTION (n->decl)->funcdef_no, n);
+                     DECL_STRUCT_FUNCTION (n->symbol.decl)->funcdef_no, n);
     }
 }
 
@@ -1122,7 +1122,7 @@ static bool
 check_ic_target (gimple call_stmt, struct cgraph_node *target)
 {
    location_t locus;
-   if (gimple_check_call_matching_types (call_stmt, target->decl))
+   if (gimple_check_call_matching_types (call_stmt, target->symbol.decl))
      return true;
 
    locus =  gimple_location (call_stmt);
@@ -1162,7 +1162,7 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
   SSA_NAME_DEF_STMT (tmp0) = load_stmt;
   gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 
-  tmp = fold_convert (optype, build_addr (direct_call->decl,
+  tmp = fold_convert (optype, build_addr (direct_call->symbol.decl,
 					  current_function_decl));
   load_stmt = gimple_build_assign (tmp1, tmp);
   SSA_NAME_DEF_STMT (tmp1) = load_stmt;
@@ -1175,8 +1175,8 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
   gimple_set_vuse (icall_stmt, NULL_TREE);
   update_stmt (icall_stmt);
   dcall_stmt = gimple_copy (icall_stmt);
-  gimple_call_set_fndecl (dcall_stmt, direct_call->decl);
-  dflags = flags_from_decl_or_type (direct_call->decl);
+  gimple_call_set_fndecl (dcall_stmt, direct_call->symbol.decl);
+  dflags = flags_from_decl_or_type (direct_call->symbol.decl);
   if ((dflags & ECF_NORETURN) != 0)
     gimple_call_set_lhs (dcall_stmt, NULL_TREE);
   gsi_insert_before (&gsi, dcall_stmt, GSI_SAME_STMT);
@@ -1341,7 +1341,7 @@ gimple_ic_transform (gimple stmt)
       fprintf (dump_file, "Indirect call -> direct call ");
       print_generic_expr (dump_file, gimple_call_fn (stmt), TDF_SLIM);
       fprintf (dump_file, "=> ");
-      print_generic_expr (dump_file, direct_call->decl, TDF_SLIM);
+      print_generic_expr (dump_file, direct_call->symbol.decl, TDF_SLIM);
       fprintf (dump_file, " transformation on insn ");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
       fprintf (dump_file, " to ");

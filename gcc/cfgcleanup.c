@@ -2637,20 +2637,7 @@ try_optimize_cfg (int mode)
 		      || ! label_is_jump_target_p (BB_HEAD (b),
 						   BB_END (single_pred (b)))))
 		{
-		  rtx label = BB_HEAD (b);
-
-		  delete_insn_chain (label, label, false);
-		  /* If the case label is undeletable, move it after the
-		     BASIC_BLOCK note.  */
-		  if (NOTE_KIND (BB_HEAD (b)) == NOTE_INSN_DELETED_LABEL)
-		    {
-		      rtx bb_note = NEXT_INSN (BB_HEAD (b));
-
-		      reorder_insns_nobb (label, label, bb_note);
-		      BB_HEAD (b) = bb_note;
-		      if (BB_END (b) == bb_note)
-			BB_END (b) = label;
-		    }
+		  delete_insn (BB_HEAD (b));
 		  if (dump_file)
 		    fprintf (dump_file, "Deleted label in block %i.\n",
 			     b->index);

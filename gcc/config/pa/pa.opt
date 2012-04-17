@@ -138,9 +138,3 @@ Generate PA1.1 code
 mspace-regs
 Target RejectNegative Report InverseMask(NO_SPACE_REGS)
 Do not disable space regs
-
-Mask(SIO)
-;; Generate cpp defines for server I/O.
-
-Mask(GNU_LD)
-;; Assume GNU linker by default

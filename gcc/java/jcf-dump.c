@@ -430,6 +430,23 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
   print_element_value (out, jcf, 1);					\
 }
 
+#define HANDLE_BOOTSTRAP_METHODS_ATTRIBUTE()				\
+{									\
+  COMMON_HANDLE_ATTRIBUTE(jcf, attribute_name, attribute_length);	\
+  fputc ('\n', out); jcf_parse_bootstrap_methods (jcf, attribute_length); \
+}
+
+#define HANDLE_END_BOOTSTRAP_METHODS(NUM_METHODS)			\
+  {									\
+    int i;								\
+    for (i = 0; i < NUM_METHODS; i++)					\
+      {									\
+	bootstrap_method *m = &jcf->bootstrap_methods.methods[i];	\
+	fprintf (out, "  %d: ", i);					\
+	print_constant (out, jcf, m->method_ref, 1);			\
+	fprintf (out, "\n");						\
+      }									\
+  }
 
 #define PROCESS_OTHER_ATTRIBUTE(JCF, INDEX, LENGTH) \
 { COMMON_HANDLE_ATTRIBUTE(JCF, INDEX, LENGTH); \
@@ -898,6 +915,55 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
 	fputc ('\"', out);
       }
       break;
+    case CONSTANT_MethodHandle:
+      {
+	int kind = JPOOL_USHORT1 (jcf, index);
+	if (verbosity > 0)
+	  fprintf (out, "MethodHandle kind: %d=", kind);
+	switch(kind) {
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+	  if (verbosity > 0)
+	    fprintf (out, "Fieldref: %ld=", (long) JPOOL_USHORT2 (jcf, index));
+	  print_constant (out, jcf, JPOOL_USHORT2 (jcf, index), 0);
+	case 5:
+	case 6:
+	case 7:
+	case 8:
+	  if (verbosity > 0)
+	    fprintf (out, "Methodref: %ld=", (long) JPOOL_USHORT2 (jcf, index));
+	  print_constant (out, jcf, JPOOL_USHORT2 (jcf, index), 0);
+	  break;
+	case 9:
+	  if (verbosity > 0)
+	    fprintf (out, "InterfaceMethodref: %ld=",
+		     (long) JPOOL_USHORT2 (jcf, index));
+	  print_constant (out, jcf, JPOOL_USHORT2 (jcf, index), 0);
+	  break;
+	}
+	break;
+      }
+    case CONSTANT_MethodType:
+      if (verbosity > 0)
+	fprintf (out, "MethodType %ld: ", (long) JPOOL_USHORT1 (jcf, index));
+      print_signature (out, jcf, JPOOL_USHORT1 (jcf, index), 0);
+      break;
+    case CONSTANT_InvokeDynamic:
+      {
+	uint16 name_and_type = JPOOL_USHORT2 (jcf, index);
+	if (verbosity > 0)
+	  fprintf (out, "InvokeDynamic: ");
+	fprintf (out, "bootstrap_method: %ld ",
+		 (long) JPOOL_USHORT1 (jcf, index));
+	if (verbosity == 2)
+	  fprintf (out, " name_and_type: %d=<", name_and_type);
+	print_constant_terse (out, jcf, name_and_type, CONSTANT_NameAndType);
+	if (verbosity == 2)
+	  fputc ('>', out);
+	break;
+      }
     default:
       fprintf (out, "(Unknown constant type %d)", kind);
     }

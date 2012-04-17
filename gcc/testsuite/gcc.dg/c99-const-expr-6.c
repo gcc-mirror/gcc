@@ -8,7 +8,7 @@
 int n = 0, p[n * 0 + 1]; /* { dg-error "variabl" } */
 
 /* PR 31871.  */
-extern int c[1 + ((__PTRDIFF_TYPE__) (void *) 0)]; /* { dg-error "variab" } */
+extern int c[1 + ((__INTPTR_TYPE__) (void *) 0)]; /* { dg-error "variab" } */
 
 /* Implicit conversions from floating-point constants are not OK,
    although explicit ones are.  */
@@ -32,7 +32,7 @@ struct s {
 };
 
 enum e {
-  E = (1 + ((__PTRDIFF_TYPE__) (void *) 0)), /* { dg-error "constant" } */
+  E = (1 + ((__INTPTR_TYPE__) (void *) 0)), /* { dg-error "constant" } */
   E2 = 0
 };
 

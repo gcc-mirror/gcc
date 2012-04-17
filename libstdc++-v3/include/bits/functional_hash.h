@@ -1,6 +1,7 @@
 // functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,12 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Primary class template hash.
   template<typename _Tp>
-    struct hash : public __hash_base<size_t, _Tp>
-    {
-      static_assert(sizeof(_Tp) < 0,
-		    "std::hash is not specialized for this type");
-      size_t operator()(const _Tp&) const noexcept;
-    };
+    struct hash;
 
   /// Partial specializations for pointer types.
   template<typename _Tp>

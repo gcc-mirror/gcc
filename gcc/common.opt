@@ -788,6 +788,8 @@ Driver Undocumented
 ;    argument.
 ;    First selectable in G++ 4.7.
 ;
+; 7: The version of the ABI that treats nullptr_t as a builtin type.
+;    First selectable in G++ 4.8.
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
@@ -998,6 +1000,10 @@ Enum(diagnostic_prefixing_rule) String(once) Value(DIAGNOSTICS_SHOW_PREFIX_ONCE)
 
 EnumValue
 Enum(diagnostic_prefixing_rule) String(every-line) Value(DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE)
+
+fdiagnostics-show-caret
+Common Var(flag_diagnostics_show_caret) Init(1)
+Show the source line with a caret indicating the column
 
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)

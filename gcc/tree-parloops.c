@@ -2192,12 +2192,15 @@ parallelize_loops (void)
 	     header-copied loops correctly - see PR46886.  */
 	  || !do_while_loop_p (loop))
 	continue;
-      estimated = max_stmt_executions_int (loop, false);
+
+      estimated = estimated_stmt_executions_int (loop);
+      if (estimated == -1)
+	estimated = max_stmt_executions_int (loop);
       /* FIXME: Bypass this check as graphite doesn't update the
-      count and frequency correctly now.  */
+	 count and frequency correctly now.  */
       if (!flag_loop_parallelize_all
-	  && ((estimated !=-1 
-	     && estimated <= (HOST_WIDE_INT) n_threads * MIN_PER_THREAD)
+	  && ((estimated != -1
+	       && estimated <= (HOST_WIDE_INT) n_threads * MIN_PER_THREAD)
 	      /* Do not bother with loops in cold areas.  */
 	      || optimize_loop_nest_for_size_p (loop)))
 	continue;

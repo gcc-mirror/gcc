@@ -1,3 +1,194 @@
+2012-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52702
+	* include/std/type_traits (is_trivially_destructible): Add.
+	(has_trivial_destructor): Remove.
+	* testsuite/util/testsuite_common_types.h: Adjust.
+	* testsuite/20_util/tuple/requirements/dr801.cc: Likewise.
+	* testsuite/20_util/pair/requirements/dr801.cc: Likewise.
+	* testsuite/20_util/is_trivially_destructible/value.cc: New.
+	* testsuite/20_util/is_trivially_destructible/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_trivially_destructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
+2012-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52699
+	* include/bits/random.tcc (independent_bits_engine<>::operator()())
+	Avoid various overflows; use common_type on result_type and
+	_RandomNumberEngine::result_type; avoid floating point computations;
+	other smaller tweaks.
+
+	* include/bits/random.tcc (uniform_int_distribution<>::operator())
+	Use common_type; assume _UniformRandomNumberGenerator::result_type
+	unsigned; tidy.
+
+	* include/bits/stl_algobase.h (__lg(unsigned), __lg(unsigned long),
+	__lg(unsigned long long)): Add.
+
+2012-04-14  Alan Modra  <amodra@gmail.com>
+
+	PR libstdc++/52839
+	* acinclude.m4 (_GLIBCXX_ATOMIC_BUILTINS): Do not depend on
+	glibcxx_cv_atomic_long_long.
+	* configure: Regenerate.
+
+2012-04-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/26_numerics/cmath/51083.cc: Move...
+	* testsuite/26_numerics/headers/cmath/51083.cc: ... here.
+
+2012-04-13  Laurent Alfonsi  <laurent.alfonsi@st.com>
+
+	PR libstdc++/52604
+	* src/c++98/mt_allocator.cc: (__freelist::~__freelist): Reset pointer.
+
+2012-04-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/safe_iterator.h (_BeforeBeginHelper<>::
+	_S_Is_Beginnest): Add.
+	* include/debug/forward_list (_BeforeBeginHelper<>::
+	_S_Is_Beginnest): Likewise.
+	(_Safe_iterator<>::_M_is_beginnest): Add.
+	* include/debug/safe_iterator.tcc (_Safe_iterator<>::_M_valid_range):
+	Use the latter.
+	* testsuite/23_containers/forward_list/debug/splice_after.cc:
+	Add test.
+
+2012-04-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/unordered_map.h (__unordered_map): Remove.
+	(__unordered_multimap): Remove.
+	Add aliases for __umap_traits, __umap_hashtable, __ummap_traits,
+	__ummap_hashtable.
+	(unordered_map): Derive from __umap_hashtable.
+	(unordered_multimap): Derive from __ummap_hashtable.
+	* include/bits/unordered_set.h (__unordered_set): Remove.
+	(__unordered_multiset): Remove.
+	Add aliases for __uset_traits, __uset_hashtable, __umset_traits,
+	__umset_hashtable.
+	(unordered_set): Derive from __uset_hashtable.
+	(unordered_multiset): Derive from __umset_hashtable.
+	* include/bits/hashtable.h (__cache_default): New, consolidated
+	cache defaults for _Hashtable. Adjust comments for doxygen.
+	(_Hashtable): Consolidate bool template parameters into new,
+	_Traits class. Inherited base classes synthesize _Hashtable in
+	CRTP via original 10 parameters. Prefer using declarations to
+	typedefs, add __node_type, __bucket_type, etc. Push many nested
+	types down hierarchy to _Hashtable_base. Add constructors
+	necessary for top-level unordered_containers. Consolidate insert
+	member functions and logic in new base class, __detail::_Insert
+	and __detail::_Insert_base.
+	(_Hashtable::operator=(initializer_list)): Add.
+	* include/bits/hashtable_policy.h: Convert to doxygen markup.
+	(_Hashtable_traits) New. Consolidate bool template parameters here.
+	(_Insert, _Insert_base): New, consolidated insert member functions.
+	(_Map_base, _Equality, _Rehash_base): Adjust template parameters,
+	use base types.
+	(_Hashtable_base): Move type declarations useful to other base
+	classes into this class.
+	* python/libstdcxx/v6/printers.py (Tr1HashtableIterator): Update.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Adjust traits, line numbers.
+
+2012-04-12   Jeffrey Yasskin  <jyasskin@google.com>
+
+	PR libstdc++/52822
+        * include/bits/stl_algo.h (__find_if_not): Expose in C++98 mode.
+        (__find_if_not_n): Like __find_if_not, but works on and updates a
+	counted range instead of a bounded range.
+        (stable_partition): Guarantee !__pred(*__first) in call to
+	__stable_partition_adaptive() or __inplace_stable_partition().
+        (__stable_partition_adaptive): Use new precondition to avoid
+	moving/copying objects onto themselves.  Guarantee new
+	precondition to recursive calls.
+        (__inplace_stable_partition): Use new precondition to simplify
+	base case, remove __last parameter.  Guarantee new precondition to
+	recursive calls.
+        * testsuite/25_algorithms/stable_partition/moveable.cc (test02):
+	Test a sequence that starts with a value matching the predicate.
+        * testsuite/25_algorithms/stable_partition/pr52822.cc: Test
+	vectors, which have a destructive self-move-assignment.
+
+2012-04-12  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* testsuite/Makefile.am (check_DEJAGNUnormal0): Run
+	prettyprinters.exp.
+	* testsuite/Makefile.in: Regenerated.
+
+2012-04-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52942
+	* include/bits/stl_function.h (_Identity, _Select1st, _Select2nd):
+	In C++11 mode do not derive from std::unary_function.
+	* include/ext/functional (identity, select1st, select2nd): Adjust.
+	* testsuite/23_containers/unordered_map/requirements/52942.cc: New.
+	* testsuite/23_containers/unordered_set/requirements/52942.cc: Likewise.
+
+2012-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52924
+	* include/bits/shared_ptr_base.h (_Sp_counted_deleter): Add
+	user-defined destructor.
+	(_Sp_counted_inplace): Likewise.
+	* testsuite/20_util/shared_ptr/cons/52924.cc: New.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error
+	line numbers.
+
+2012-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/debug.xml (Debug Versions of Library Binary Files):
+	Re-arrange text slightly.
+
+2012-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/performance/30_threads/future/polling.cc: Adjust.
+
+2012-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h (splice_after(const_iterator,
+	forward_list&), splice_after(const_iterator, forward_list&,
+	const_iterator), splice_after(const_iterator, forward_list&,
+	const_iterator, const_iterator), merge(forward_list&),
+	merge(forward_list&, _Comp)): Add per C++11 as published (and
+	LWG 1310).
+	* include/debug/forward_list: Adjust.
+
+	* include/bits/forward_list.h (splice_after(const_iterator,
+	forward_list&&, const_iterator)): Only declare.
+	(_M_transfer_after): Remove.
+	(_M_splice_after(const_iterator, forward_list&&)): Change signature.
+	(splice_after(const_iterator, forward_list&&, const_iterator,
+	const_iterator)): Use the latter.
+	* include/bits/forward_list.tcc (splice_after(const_iterator,
+	forward_list&&, const_iterator)): Define here.
+	(_M_splice_after): Define, use throughout.
+
+	* include/bits/forward_list.h (insert_after(const_iterator,
+	std::initializer_list<_Tp>)): Forward to insert_after(const_iterator,
+	_InputIterator, _InputIterator).
+	* include/bits/forward_list.tcc: Remove definition.
+
+	* testsuite/23_containers/forward_list/modifiers/6.cc: New.
+	* testsuite/23_containers/forward_list/operations/1.cc: Adjust.
+
+2012-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52931
+	* include/bits/functional_hash.h (struct hash): Remove definition.
+	* testsuite/20_util/hash/52931.cc: New.
+
+2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 24985
+	* testsuite/lib/prune.exp: Handle caret.
+
 2012-04-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Partially revert:

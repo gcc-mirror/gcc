@@ -230,7 +230,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Language Independent Options,,Options to Control Diagnostic Messages Formatting}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
--fno-diagnostics-show-option}
+-fno-diagnostics-show-option -fno-diagnostics-show-caret}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -2893,6 +2893,13 @@ By default, each diagnostic emitted includes text indicating the
 command-line option that directly controls the diagnostic (if such an
 option is known to the diagnostic machinery).  Specifying the
 @option{-fno-diagnostics-show-option} flag suppresses that behavior.
+
+@item -fno-diagnostics-show-caret
+@opindex fno-diagnostics-show-caret
+@opindex fdiagnostics-show-caret
+By default, each diagnostic emitted includes the original source line
+and a caret '^' indicating the column.  This option suppresses this
+information.
 
 @end table
 
@@ -10694,6 +10701,7 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-m4}, @samp{cortex-m3},
 @samp{cortex-m1},
 @samp{cortex-m0},
+@samp{cortex-m0plus},
 @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312},
 @samp{fa526}, @samp{fa626},
 @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.

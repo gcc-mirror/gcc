@@ -1,5 +1,5 @@
 /* upc-genericize.c: UPC language specific tree lowering pass
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Gary Funck <gary@intrepid.com>
      and Nenad Vukicevic <nenad@intrepid.com>.
@@ -1337,7 +1337,7 @@ upc_genericize_fndecl (tree fndecl)
   upc_genericize_function_tree (fndecl);
   cgn = cgraph_get_create_node (fndecl);
   for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-    upc_genericize_fndecl (cgn->decl);
+    upc_genericize_fndecl (cgn->symbol.decl);
 }
 
 /* Convert the tree representation of FNDECL built by the UPC front-end

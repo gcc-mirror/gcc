@@ -1113,8 +1113,8 @@ get_constant (JCF *jcf, int index)
   jcf->cpool.data[index].t = value;
   return value;
  bad:
-  internal_error ("bad value constant type %d, index %d", 
-		  JPOOL_TAG (jcf, index), index);
+  fatal_error ("bad value constant type %d, index %d", 
+	       JPOOL_TAG (jcf, index), index);
 }
 
 tree

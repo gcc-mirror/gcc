@@ -2561,7 +2561,7 @@ tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_DUMP_H) toplev.h $(DIAGNOSTIC_CORE_H) $(FUNCTION_H) langhooks.h \
    $(FLAGS_H) $(CGRAPH_H) $(PLUGIN_H) \
    $(TREE_INLINE_H) $(GGC_H) graph.h $(CGRAPH_H) \
-   $(TREE_PASS_H) $(CFGLOOP_H) $(EXCEPT_H) $(REGSET_H)
+   $(TREE_PASS_H) $(CFGLOOP_H) $(EXCEPT_H)
 
 gimplify.o : gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(GIMPLE_H) \
    $(DIAGNOSTIC_H) $(GIMPLE_H) $(TREE_INLINE_H) langhooks.h \
@@ -2927,7 +2927,7 @@ cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) $(IPA_PROP_H) \
    gt-cgraphunit.h tree-iterator.h $(COVERAGE_H) $(TREE_DUMP_H) \
    tree-pretty-print.h gimple-pretty-print.h ipa-inline.h $(IPA_UTILS_H) \
-   $(LTO_STREAMER_H)
+   $(LTO_STREAMER_H) output.h $(REGSET_H) $(EXCEPT_H)
 cgraphbuild.o : cgraphbuild.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(CGRAPH_H) intl.h pointer-set.h $(GIMPLE_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(IPA_UTILS_H) $(EXCEPT_H) \
@@ -3297,7 +3297,7 @@ ira-lives.o: ira-lives.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(DF_H) sparseset.h $(IRA_INT_H)
 ira.o: ira.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(REGS_H) $(RTL_H) $(TM_P_H) $(TARGET_H) $(FLAGS_H) $(OBSTACK_H) \
-   $(BITMAP_H) hard-reg-set.h $(BASIC_BLOCK_H) \
+   $(BITMAP_H) hard-reg-set.h $(BASIC_BLOCK_H) $(DBGCNT_H) \
    $(EXPR_H) $(RECOG_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) output.h \
    $(EXCEPT_H) reload.h toplev.h $(DIAGNOSTIC_CORE_H) $(INTEGRATE_H) $(DF_H) $(GGC_H) $(IRA_INT_H)
 regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \

@@ -942,15 +942,10 @@
    (set (reg:SI T_REG) (eq:SI (match_dup 4) (match_dup 5)))
    (match_dup 6)]
 {
-  operands[2]
-    = gen_rtx_REG (SImode,
-		   true_regnum (operands[0]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
-  operands[3]
-    = (operands[1] == const0_rtx
-       ? const0_rtx
-       : gen_rtx_REG (SImode,
-		      true_regnum (operands[1])
-		      + (TARGET_LITTLE_ENDIAN ? 1 : 0)));
+  operands[2] = gen_highpart (SImode, operands[0]);
+  operands[3] = operands[1] == const0_rtx
+		? const0_rtx
+		: gen_highpart (SImode, operands[1]);
   operands[4] = gen_lowpart (SImode, operands[0]);
   operands[5] = gen_lowpart (SImode, operands[1]);
   operands[6] = gen_label_rtx ();
@@ -1453,13 +1448,10 @@
   "TARGET_SH1 && reload_completed"
   [(const_int 0)]
 {
-  rtx high0, high2, low0 = gen_lowpart (SImode, operands[0]);
-  high0 = gen_rtx_REG (SImode,
-		       true_regnum (operands[0])
-		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
-  high2 = gen_rtx_REG (SImode,
-		       true_regnum (operands[2])
-		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  rtx high0 = gen_highpart (SImode, operands[0]);
+  rtx high2 = gen_highpart (SImode, operands[2]);
+  rtx low0 = gen_lowpart (SImode, operands[0]);
+
   emit_insn (gen_clrt ());
   emit_insn (gen_addc (low0, low0, gen_lowpart (SImode, operands[2])));
   emit_insn (gen_addc1 (high0, high0, high2));
@@ -1581,13 +1573,10 @@
   "TARGET_SH1 && reload_completed"
   [(const_int 0)]
 {
-  rtx high0, high2, low0 = gen_lowpart (SImode, operands[0]);
-  high0 = gen_rtx_REG (SImode,
-		       true_regnum (operands[0])
-		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
-  high2 = gen_rtx_REG (SImode,
-		       true_regnum (operands[2])
-		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  rtx high0 = gen_highpart (SImode, operands[0]);
+  rtx high2 = gen_highpart (SImode, operands[2]);
+  rtx low0 = gen_lowpart (SImode, operands[0]);
+
   emit_insn (gen_clrt ());
   emit_insn (gen_subc (low0, low0, gen_lowpart (SImode, operands[2])));
   emit_insn (gen_subc1 (high0, high0, high2));
@@ -2321,7 +2310,7 @@ norm32: r25
   rtx tab_ix = operands[2];
   rtx norm32 = operands[3];
   rtx scratch0 = operands[4];
-  rtx scratch0_si = simplify_gen_subreg (SImode, scratch0, DImode, SIDI_OFF);
+  rtx scratch0_si = gen_lowpart (SImode, scratch0);
   rtx scratch1 = operands[5];
 
   emit_insn (gen_divsi_inv_qitable (scratch0, tab_base, tab_ix));
@@ -2368,7 +2357,7 @@ norm32: r25
   rtx scratch0b = operands[6];
   rtx scratch0 = operands[7];
   rtx scratch1 = operands[8];
-  rtx scratch1_si = simplify_gen_subreg (SImode, scratch1, DImode, SIDI_OFF);
+  rtx scratch1_si = gen_lowpart (SImode, scratch1);
 
   emit_insn (gen_divsi_inv_m0 (inv0, tab_base, tab_ix, norm32,
 			       scratch0a, scratch0b));
@@ -2405,7 +2394,7 @@ norm32: r25
   rtx inv1 = operands[2];
   rtx i92 = operands[3];
   rtx scratch0 = operands[4];
-  rtx scratch0_si = simplify_gen_subreg (SImode, scratch0, DImode, SIDI_OFF);
+  rtx scratch0_si = gen_lowpart (SImode, scratch0);
 
   emit_insn (gen_mulsidi3_media (scratch0, inv1, norm32));
   emit_insn (gen_ashrdi3_media (scratch0, scratch0, GEN_INT (16)));
@@ -2518,9 +2507,9 @@ norm32: r25
   rtx i2p27 = operands[7];
   rtx i43 = operands[8];
   rtx scratch0 = operands[9];
-  rtx scratch0_si = simplify_gen_subreg (SImode, scratch0, DImode, SIDI_OFF);
+  rtx scratch0_si = gen_lowpart (SImode, scratch0);
   rtx scratch1 = operands[10];
-  rtx scratch1_si = simplify_gen_subreg (SImode, scratch1, DImode, SIDI_OFF);
+  rtx scratch1_si = gen_lowpart (SImode, scratch1);
   rtx scratch2 = operands[11];
   rtx scratch3 = operands[12];
   rtx scratch4 = operands[13];
@@ -3919,17 +3908,14 @@ label:
                    (match_operand:DI 2 "const_int_operand" "n")))]
   "TARGET_SH1 && INTVAL (operands[2]) < 32"
 {
-  int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
-  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
-  rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
-  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
+  rtx low_src = gen_lowpart (SImode, operands[1]);
+  rtx high_src = gen_highpart (SImode, operands[1]);
   rtx dst = gen_reg_rtx (DImode);
-  rtx low_dst = operand_subword (dst, low_word, 1, DImode);
-  rtx high_dst = operand_subword (dst, high_word, 1, DImode);
-  rtx tmp0, tmp1;
+  rtx low_dst = gen_lowpart (SImode, dst);
+  rtx high_dst = gen_highpart (SImode, dst);
+  rtx tmp0 = gen_reg_rtx (SImode);
+  rtx tmp1 = gen_reg_rtx (SImode);
 
-  tmp0 = gen_reg_rtx (SImode);
-  tmp1 = gen_reg_rtx (SImode);
   emit_insn (gen_lshrsi3 (tmp0, low_src, GEN_INT (32 - INTVAL (operands[2]))));
   emit_insn (gen_ashlsi3 (low_dst, low_src, operands[2]));  
   emit_insn (gen_ashlsi3 (tmp1, high_src, operands[2]));  
@@ -4373,14 +4359,10 @@ label:
   "TARGET_SH1"
   [(const_int 0)]
 {
-  int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
-  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
-
-  rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
-  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
-
-  rtx low_dst = operand_subword (operands[0], low_word, 1, DImode);
-  rtx high_dst = operand_subword (operands[0], high_word, 1, DImode);
+  rtx low_src = gen_lowpart (SImode, operands[1]);
+  rtx high_src = gen_highpart (SImode, operands[1]);
+  rtx low_dst = gen_lowpart (SImode, operands[0]);
+  rtx high_dst = gen_highpart (SImode, operands[0]);
 
   emit_insn (gen_clrt ());
   emit_insn (gen_negc (low_dst, low_src));
@@ -4493,8 +4475,7 @@ label:
   "&& reload_completed"
   [(const_int 0)]
 {
-  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
-  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
+  rtx high_src = gen_highpart (SImode, operands[1]);
   emit_insn (gen_cmpgesi_t (high_src, const0_rtx));
   emit_insn (gen_negdi_cond (operands[0], operands[1], operands[1],
 			     const1_rtx));
@@ -4509,9 +4490,7 @@ label:
   "&& reload_completed"
   [(const_int 0)]
 {
-  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
-  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
-
+  rtx high_src = gen_highpart (SImode, operands[1]);
   emit_insn (gen_cmpgesi_t (high_src, const0_rtx));
   emit_insn (gen_negdi_cond (operands[0], operands[1], operands[1],
 			     const0_rtx));
@@ -4529,14 +4508,10 @@ label:
   "TARGET_SH1"
   [(const_int 0)]
 {
-  int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
-  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
-
-  rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
-  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
-
-  rtx low_dst = operand_subword (operands[0], low_word, 1, DImode);
-  rtx high_dst = operand_subword (operands[0], high_word, 1, DImode);
+  rtx low_src = gen_lowpart (SImode, operands[1]);
+  rtx high_src = gen_highpart (SImode, operands[1]);
+  rtx low_dst = gen_lowpart (SImode, operands[0]);
+  rtx high_dst = gen_highpart (SImode, operands[0]);
 
   rtx skip_neg_label = gen_label_rtx ();
 
@@ -4768,20 +4743,18 @@ label:
     operands[1] = XEXP (operands[1], 0);
 })
 
+;; FIXME: Maybe fold HImode and QImode stuff with mode iterator?
 (define_expand "extendhisi2"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
-	(sign_extend:SI (match_operand:HI 1 "general_extend_operand" "r,m")))]
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(sign_extend:SI (match_operand:HI 1 "general_extend_operand" "")))]
   ""
   "")
 
-(define_insn "*extendhisi2_compact"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
-	(sign_extend:SI (match_operand:HI 1 "general_movsrc_operand" "r,m")))]
-  "TARGET_SH1"
-  "@
-	exts.w	%1,%0
-	mov.w	%1,%0"
-  [(set_attr "type" "arith,load")])
+(define_expand "extendqisi2"
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(sign_extend:SI (match_operand:QI 1 "general_extend_operand" "")))]
+  ""
+  "")
 
 (define_insn "*extendhisi2_media"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -4811,18 +4784,21 @@ label:
 			   subreg_lowpart_offset (SImode, GET_MODE (op1)));
 })
 
-(define_expand "extendqisi2"
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(sign_extend:SI (match_operand:QI 1 "general_extend_operand" "")))]
-  ""
-  "")
-
 (define_insn "*extendqisi2_compact_reg"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
 	(sign_extend:SI (match_operand:QI 1 "register_operand" "r,t")))]
   "TARGET_SH1"
   "@
 	exts.b	%1,%0
+	movt	%0"
+  [(set_attr "type" "arith,arith")])
+
+(define_insn "*extendhisi2_compact_reg"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
+	(sign_extend:SI (match_operand:HI 1 "register_operand" "r,t")))]
+  "TARGET_SH1"
+  "@
+	exts.w	%1,%0
 	movt	%0"
   [(set_attr "type" "arith,arith")])
 
@@ -4833,10 +4809,23 @@ label:
 	(sign_extend:SI
 	 (mem:QI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r")
 			  (match_operand:SI 2 "const_int_operand" "K04,N")))))]
-  "TARGET_SH1 && ! TARGET_SH2A && CONST_OK_FOR_K04 (INTVAL (operands[2]))"
+  "TARGET_SH1 && ! TARGET_SH2A
+   && sh_legitimate_index_p (QImode, operands[2], false, true)"
   "@
 	mov.b	@(%O2,%1),%0
 	mov.b	@%1,%0"
+  [(set_attr "type" "load")])
+
+(define_insn "*extendhisi2_compact_mem_disp"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=z,r")
+	(sign_extend:SI
+	 (mem:HI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r")
+			  (match_operand:SI 2 "const_int_operand" "K05,N")))))]
+  "TARGET_SH1 && ! TARGET_SH2A
+   && sh_legitimate_index_p (HImode, operands[2], false, true)"
+  "@
+	mov.w	@(%O2,%1),%0
+	mov.w	@%1,%0"
   [(set_attr "type" "load")])
 
 (define_insn "*extendqisi2_compact_mem_disp"
@@ -4844,9 +4833,7 @@ label:
 	(sign_extend:SI
 	 (mem:QI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r,r")
 			  (match_operand:SI 2 "const_int_operand" "K04,N,K12")))))]
-  "TARGET_SH2A
-   && (CONST_OK_FOR_K04 (INTVAL (operands[2]))
-       || (CONST_OK_FOR_K12 (INTVAL (operands[2]))))"
+  "TARGET_SH2A && sh_legitimate_index_p (QImode, operands[2], true, true)"
   "@
 	mov.b	@(%O2,%1),%0
 	mov.b	@%1,%0
@@ -4854,13 +4841,35 @@ label:
   [(set_attr "type" "load")
    (set_attr "length" "2,2,4")])
 
-;; This will take care of other QImode addressing modes than displacement
-;; addressing.
+(define_insn "*extendhisi2_compact_mem_disp"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=z,r,r")
+	(sign_extend:SI
+	 (mem:HI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r,r")
+			  (match_operand:SI 2 "const_int_operand" "K05,N,K13")))))]
+  "TARGET_SH2A && sh_legitimate_index_p (HImode, operands[2], true, true)"
+  "@
+	mov.w	@(%O2,%1),%0
+	mov.w	@%1,%0
+	mov.w	@(%O2,%1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "2,2,4")])
+
+;; The *_snd patterns will take care of other QImode/HImode addressing
+;; modes than displacement addressing.  They must be defined _after_ the
+;; displacement addressing patterns.  Otherwise the displacement addressing
+;; patterns will not be picked.
 (define_insn "*extendqisi2_compact_snd"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(sign_extend:SI (match_operand:QI 1 "movsrc_no_disp_mem_operand" "Snd")))]
   "TARGET_SH1"
   "mov.b	%1,%0"
+  [(set_attr "type" "load")])
+
+(define_insn "*extendhisi2_compact_snd"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(sign_extend:SI (match_operand:HI 1 "movsrc_no_disp_mem_operand" "Snd")))]
+  "TARGET_SH1"
+  "mov.w	%1,%0"
   [(set_attr "type" "load")])
 
 (define_insn "*extendqisi2_media"
@@ -5441,6 +5450,14 @@ label:
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
 
+(define_expand "movhi"
+  [(set (match_operand:HI 0 "general_movdst_operand" "")
+	(match_operand:HI 1 "general_movsrc_operand" ""))]
+  ""
+{
+  prepare_move_operands (operands, HImode);
+})
+
 (define_expand "movqi"
   [(set (match_operand:QI 0 "general_operand" "")
 	(match_operand:QI 1 "general_operand" ""))]
@@ -5456,9 +5473,19 @@ label:
 ;; With the movqi_reg_reg being specified before movqi it will be intially 
 ;; picked to load/store regs.  If the regs regs are on the stack reload will
 ;; try other insns and not stick to movqi_reg_reg.
+;; The same applies to the movhi variants.
 (define_insn "*movqi_reg_reg"
   [(set (match_operand:QI 0 "arith_reg_dest"   "=r,r")
 	(match_operand:QI 1 "register_operand" "r,t"))]
+  "TARGET_SH1"
+  "@
+	mov	%1,%0
+	movt	%0"
+  [(set_attr "type" "move,arith")])
+
+(define_insn "*movhi_reg_reg"
+  [(set (match_operand:HI 0 "arith_reg_dest"   "=r,r")
+	(match_operand:HI 1 "register_operand" "r,t"))]
   "TARGET_SH1"
   "@
 	mov	%1,%0
@@ -5471,18 +5498,37 @@ label:
   [(set (mem:QI (plus:SI (match_operand:SI 0 "arith_reg_operand" "%r,r")
 			 (match_operand:SI 1 "const_int_operand" "K04,N")))
 	(match_operand:QI 2 "arith_reg_operand" "z,r"))]
-  "TARGET_SH1 && CONST_OK_FOR_K04 (INTVAL (operands[1]))"
+  "TARGET_SH1 && sh_legitimate_index_p (QImode, operands[1], false, true)"
   "@
 	mov.b	%2,@(%O1,%0)
 	mov.b	%2,@%0"
+  [(set_attr "type" "store")])
+
+(define_insn "*movhi_store_mem_disp05"
+  [(set (mem:HI (plus:SI (match_operand:SI 0 "arith_reg_operand" "%r,r")
+			 (match_operand:SI 1 "const_int_operand" "K05,N")))
+	(match_operand:HI 2 "arith_reg_operand" "z,r"))]
+  "TARGET_SH1 && sh_legitimate_index_p (HImode, operands[1], false, true)"
+  "@
+	mov.w	%2,@(%O1,%0)
+	mov.w	%2,@%0"
   [(set_attr "type" "store")])
 
 (define_insn "*movqi_store_mem_disp12"
   [(set (mem:QI (plus:SI (match_operand:SI 0 "arith_reg_operand" "%r")
 			 (match_operand:SI 1 "const_int_operand" "K12")))
 	(match_operand:QI 2 "arith_reg_operand" "r"))]
-  "TARGET_SH2A && CONST_OK_FOR_K12 (INTVAL (operands[1]))"
+  "TARGET_SH2A && sh_legitimate_index_p (QImode, operands[1], true, true)"
   "mov.b	%2,@(%O1,%0)"
+  [(set_attr "type" "store")
+   (set_attr "length" "4")])
+
+(define_insn "*movhi_store_mem_disp13"
+  [(set (mem:HI (plus:SI (match_operand:SI 0 "arith_reg_operand" "%r")
+			 (match_operand:SI 1 "const_int_operand" "K13")))
+	(match_operand:HI 2 "arith_reg_operand" "r"))]
+  "TARGET_SH2A && sh_legitimate_index_p (HImode, operands[1], true, true)"
+  "mov.w	%2,@(%O1,%0)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
@@ -5490,23 +5536,45 @@ label:
   [(set (match_operand:QI 0 "arith_reg_dest" "=z,r")
 	(mem:QI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r")
 			 (match_operand:SI 2 "const_int_operand" "K04,N"))))]
-  "TARGET_SH1 && ! TARGET_SH2A && CONST_OK_FOR_K04 (INTVAL (operands[2]))"
+  "TARGET_SH1 && ! TARGET_SH2A
+   && sh_legitimate_index_p (QImode, operands[2], false, true)"
   "@
 	mov.b	@(%O2,%1),%0
 	mov.b	@%1,%0"
+  [(set_attr "type" "load")])
+
+(define_insn "*movhi_load_mem_disp"
+  [(set (match_operand:HI 0 "arith_reg_dest" "=z,r")
+	(mem:HI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r")
+			 (match_operand:SI 2 "const_int_operand" "K05,N"))))]
+  "TARGET_SH1 && ! TARGET_SH2A
+   && sh_legitimate_index_p (HImode, operands[2], false, true)"
+  "@
+	mov.w	@(%O2,%1),%0
+	mov.w	@%1,%0"
   [(set_attr "type" "load")])
 
 (define_insn "*movqi_load_mem_disp"
   [(set (match_operand:QI 0 "arith_reg_dest" "=z,r,r")
 	(mem:QI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r,r")
 			 (match_operand:SI 2 "const_int_operand" "K04,N,K12"))))]
-  "TARGET_SH2A
-   && (CONST_OK_FOR_K04 (INTVAL (operands[2]))
-       || CONST_OK_FOR_K12 (INTVAL (operands[2])))"
+  "TARGET_SH2A && sh_legitimate_index_p (QImode, operands[2], true, true)"
   "@
 	mov.b	@(%O2,%1),%0
 	mov.b	@%1,%0
 	mov.b	@(%O2,%1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "2,2,4")])
+
+(define_insn "*movhi_load_mem_disp"
+  [(set (match_operand:HI 0 "arith_reg_dest" "=z,r,r")
+	(mem:HI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%r,r,r")
+			 (match_operand:SI 2 "const_int_operand" "K05,N,K13"))))]
+  "TARGET_SH2A && sh_legitimate_index_p (HImode, operands[2], true, true)"
+  "@
+	mov.w	@(%O2,%1),%0
+	mov.w	@%1,%0
+	mov.w	@(%O2,%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "2,2,4")])
 
@@ -5527,6 +5595,21 @@ label:
 	sts	%1,%0
 	lds	%1,%0"
  [(set_attr "type" "movi8,load,store,prget,prset")])
+
+(define_insn "*movhi"
+  [(set (match_operand:HI 0 "general_movdst_operand" "=r,r,r,m,r,l")
+	(match_operand:HI 1 "general_movsrc_operand"  "Q,i,m,r,l,r"))]
+  "TARGET_SH1
+   && (arith_reg_operand (operands[0], HImode)
+       || arith_reg_operand (operands[1], HImode))"
+  "@
+	mov.w	%1,%0
+	mov	%1,%0
+	mov.w	%1,%0
+	mov.w	%1,%0
+	sts	%1,%0
+	lds	%1,%0"
+ [(set_attr "type" "pcload,movi8,load,store,prget,prset")])
 
 (define_insn "*movqi_media"
   [(set (match_operand:QI 0 "general_movdst_operand" "=r,r,r,m")
@@ -5560,28 +5643,6 @@ label:
   operands[3] = gen_rtx_REG (DImode, REGNO (operands[2]));
 })
 
-;; When storing r0, we have to avoid reg+reg addressing.
-(define_insn "movhi_i"
-  [(set (match_operand:HI 0 "general_movdst_operand"   "=r,r,r,r,m,r,l,r")
-	(match_operand:HI 1 "general_movsrc_operand" "Q,rI08,m,t,r,l,r,i"))]
-  "TARGET_SH1
-   && (arith_reg_operand (operands[0], HImode)
-       || arith_reg_operand (operands[1], HImode))
-   && (!MEM_P (operands[0])
-       || GET_CODE (XEXP (operands[0], 0)) != PLUS
-       || !REG_P (XEXP (XEXP (operands[0], 0), 1))
-       || ! refers_to_regno_p (R0_REG, R0_REG + 1, operands[1], (rtx *)0))"
-  "@
-	mov.w	%1,%0
-	mov	%1,%0
-	mov.w	%1,%0
-	movt	%0
-	mov.w	%1,%0
-	sts	%1,%0
-	lds	%1,%0
-	fake	%1,%0"
-  [(set_attr "type" "pcload,move,load,move,store,move,move,pcload")])
-
 (define_insn "*movhi_media"
   [(set (match_operand:HI 0 "general_movdst_operand"     "=r,r,r,r,m")
 	(match_operand:HI 1 "general_movsrc_operand" "r,I16Css,n,m,rZ"))]
@@ -5606,14 +5667,6 @@ label:
   "TARGET_SHMEDIA && reload_completed
    && ! satisfies_constraint_I16 (operands[1])"
   [(set (subreg:DI (match_dup 0) 0) (match_dup 1))])
-
-(define_expand "movhi"
-  [(set (match_operand:HI 0 "general_movdst_operand" "")
-	(match_operand:HI 1 "general_movsrc_operand"  ""))]
-  ""
-{
-  prepare_move_operands (operands, HImode);
-})
 
 (define_expand "reload_inhi"
   [(set (match_operand:SI 2 "" "=&r")
@@ -11563,10 +11616,10 @@ label:
 
 ;; Fold sequence:
 ;;	mov #54,r0
-;;	mov.b @(r0,r15),r0
+;;	mov.{b,w} @(r0,r15),r0
 ;;	mov r0,r3
 ;; into:
-;;	mov.b @(54,r15),r3
+;;	mov.{b,w} @(54,r15),r3
 ;;
 (define_peephole2
   [(set (match_operand:SI 0 "arith_reg_dest" "")
@@ -11578,17 +11631,33 @@ label:
    (set (match_operand:QI 4 "arith_reg_dest" "")
 	(match_operand:QI 5 "arith_reg_operand" ""))]
   "TARGET_SH2A
-   && CONST_OK_FOR_K12 (INTVAL (operands[1]))
+   && sh_legitimate_index_p (QImode, operands[1], true, true)
    && REGNO (operands[2]) == REGNO (operands[5])
    && peep2_reg_dead_p (3, operands[5])"
   [(set (match_dup 4) (mem:QI (plus:SI (match_dup 3) (match_dup 1))))]
   "")
 
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(match_operand:SI 1 "const_int_operand" ""))
+   (set (match_operand:SI 2 "arith_reg_dest" "")
+	(sign_extend:SI
+	 (mem:HI (plus:SI (match_dup 0)
+			  (match_operand:SI 3 "arith_reg_operand" "")))))
+   (set (match_operand:HI 4 "arith_reg_dest" "")
+	(match_operand:HI 5 "arith_reg_operand" ""))]
+  "TARGET_SH2A
+   && sh_legitimate_index_p (HImode, operands[1], true, true)
+   && REGNO (operands[2]) == REGNO (operands[5])
+   && peep2_reg_dead_p (3, operands[5])"
+  [(set (match_dup 4) (mem:HI (plus:SI (match_dup 3) (match_dup 1))))]
+  "")
+
 ;; Fold sequence:
 ;;	mov #54,r0
-;;	mov.b @(r0,r15),r1
+;;	mov.{b,w} @(r0,r15),r1
 ;; into:
-;;	mov.b @(54,r15),r1
+;;	mov.{b,w} @(54,r15),r1
 ;;
 (define_peephole2
   [(set (match_operand:SI 0 "arith_reg_dest" "")
@@ -11598,19 +11667,37 @@ label:
 	 (mem:QI (plus:SI (match_dup 0)
 			  (match_operand:SI 3 "arith_reg_operand" "")))))]
   "TARGET_SH2A
-   && CONST_OK_FOR_K12 (INTVAL (operands[1]))
+   && sh_legitimate_index_p (QImode, operands[1], true, true)
    && (peep2_reg_dead_p (2, operands[0])
        || REGNO (operands[0]) == REGNO (operands[2]))"
   [(set (match_dup 2)
 	(sign_extend:SI (mem:QI (plus:SI (match_dup 3) (match_dup 1)))))]
   "")
 
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(match_operand:SI 1 "const_int_operand" ""))
+   (set (match_operand:SI 2 "arith_reg_dest" "")
+	 (sign_extend:SI
+	 (mem:HI (plus:SI (match_dup 0)
+			  (match_operand:SI 3 "arith_reg_operand" "")))))]
+  "TARGET_SH2A
+   && sh_legitimate_index_p (HImode, operands[1], true, true)
+   && (peep2_reg_dead_p (2, operands[0])
+       || REGNO (operands[0]) == REGNO (operands[2]))"
+  [(set (match_dup 2)
+	(sign_extend:SI (mem:HI (plus:SI (match_dup 3) (match_dup 1)))))]
+  "")
+
 ;; Fold sequence:
-;;	mov.b @(r0,r15),r0
+;;	mov.{b,w} @(r0,r15),r0
 ;;	mov r0,r3
 ;; into:
-;;	mov.b @(r0,r15),r3
+;;	mov.{b,w} @(r0,r15),r3
 ;;
+;; This can happen when initially a displacement address is picked, where
+;; the destination reg is fixed to r0, and then the address is transformed
+;; into 'r0 + reg'.
 (define_peephole2
   [(set (match_operand:SI 0 "arith_reg_dest" "")
 	(sign_extend:SI
@@ -11623,6 +11710,20 @@ label:
    && peep2_reg_dead_p (2, operands[0])"
   [(set (match_dup 3)
 	(mem:QI (plus:SI (match_dup 1) (match_dup 2))))]
+  "")
+
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(sign_extend:SI
+	 (mem:HI (plus:SI (match_operand:SI 1 "arith_reg_operand" "")
+			  (match_operand:SI 2 "arith_reg_operand" "")))))
+   (set (match_operand:HI 3 "arith_reg_dest" "")
+	(match_operand:HI 4 "arith_reg_operand" ""))]
+  "TARGET_SH1
+   && REGNO (operands[0]) == REGNO (operands[4])
+   && peep2_reg_dead_p (2, operands[0])"
+  [(set (match_dup 3)
+	(mem:HI (plus:SI (match_dup 1) (match_dup 2))))]
   "")
 
 ;; These convert sequences such as `mov #k,r0; add r15,r0; mov.l @r0,rn'

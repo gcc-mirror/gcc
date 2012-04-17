@@ -501,65 +501,6 @@ compute_overall_effect_of_inner_loop (struct loop *loop, tree evolution_fn)
     return chrec_dont_know;
 }
 
-/* Determine whether the CHREC is always positive/negative.  If the expression
-   cannot be statically analyzed, return false, otherwise set the answer into
-   VALUE.  */
-
-bool
-chrec_is_positive (tree chrec, bool *value)
-{
-  bool value0, value1, value2;
-  tree end_value, nb_iter;
-
-  switch (TREE_CODE (chrec))
-    {
-    case POLYNOMIAL_CHREC:
-      if (!chrec_is_positive (CHREC_LEFT (chrec), &value0)
-	  || !chrec_is_positive (CHREC_RIGHT (chrec), &value1))
-	return false;
-
-      /* FIXME -- overflows.  */
-      if (value0 == value1)
-	{
-	  *value = value0;
-	  return true;
-	}
-
-      /* Otherwise the chrec is under the form: "{-197, +, 2}_1",
-	 and the proof consists in showing that the sign never
-	 changes during the execution of the loop, from 0 to
-	 loop->nb_iterations.  */
-      if (!evolution_function_is_affine_p (chrec))
-	return false;
-
-      nb_iter = number_of_latch_executions (get_chrec_loop (chrec));
-      if (chrec_contains_undetermined (nb_iter))
-	return false;
-
-#if 0
-      /* TODO -- If the test is after the exit, we may decrease the number of
-	 iterations by one.  */
-      if (after_exit)
-	nb_iter = chrec_fold_minus (type, nb_iter, build_int_cst (type, 1));
-#endif
-
-      end_value = chrec_apply (CHREC_VARIABLE (chrec), chrec, nb_iter);
-
-      if (!chrec_is_positive (end_value, &value2))
-	return false;
-
-      *value = value0;
-      return value0 == value1;
-
-    case INTEGER_CST:
-      *value = (tree_int_cst_sgn (chrec) == 1);
-      return true;
-
-    default:
-      return false;
-    }
-}
-
 /* Associate CHREC to SCALAR.  */
 
 static void

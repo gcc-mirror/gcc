@@ -29,7 +29,6 @@ extern unsigned int save_decoded_options_count;
 extern int toplev_main (int, char **);
 extern void rest_of_decl_compilation (tree, int, int);
 extern void rest_of_type_compilation (tree, int);
-extern void tree_rest_of_compilation (tree);
 extern void init_optimization_passes (void);
 extern void finish_optimization_passes (void);
 extern bool enable_rtl_dump_file (void);

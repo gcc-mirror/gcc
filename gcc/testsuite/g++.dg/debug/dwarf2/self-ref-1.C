@@ -5,7 +5,7 @@
 
 struct A
 {
-    virtual ~A();
+    virtual ~A(){}
 };
 
 struct B : public A

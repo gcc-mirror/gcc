@@ -564,6 +564,16 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
   VEC (tree, heap) *dummy_vec;
   bool op1_ok;
   bool promotion;
+  loop_vec_info loop_vinfo;
+  struct loop *loop = NULL;
+  bb_vec_info bb_vinfo;
+  stmt_vec_info stmt_vinfo;
+
+  stmt_vinfo = vinfo_for_stmt (last_stmt);
+  loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+  bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
+  if (loop_vinfo)
+    loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -634,6 +644,11 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
       if (nuses != 1 || !is_gimple_assign (use_stmt)
           || gimple_assign_rhs_code (use_stmt) != NOP_EXPR)
         return NULL;
+
+      if (!gimple_bb (use_stmt)
+	  || (loop && !flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+	  || (!loop && gimple_bb (use_stmt) != BB_VINFO_BB (bb_vinfo)))
+	return NULL;
 
       use_lhs = gimple_assign_lhs (use_stmt);
       use_type = TREE_TYPE (use_lhs);

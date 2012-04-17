@@ -50,6 +50,65 @@ expand_location (source_location loc)
   return xloc;
 }
 
+/* Reads one line from file into a static buffer.  */
+static const char *
+read_line (FILE *file)
+{
+  static char *string;
+  static size_t string_len;
+  size_t pos = 0;
+  char *ptr;
+
+  if (!string_len)
+    {
+      string_len = 200;
+      string = XNEWVEC (char, string_len);
+    }
+
+  while ((ptr = fgets (string + pos, string_len - pos, file)))
+    {
+      size_t len = strlen (string + pos);
+
+      if (string[pos + len - 1] == '\n')
+	{
+	  string[pos + len - 1] = 0;
+	  return string;
+	}
+      pos += len;
+      ptr = XNEWVEC (char, string_len * 2);
+      if (ptr)
+	{
+	  memcpy (ptr, string, pos);
+	  string = ptr;
+	  string_len += 2;
+	}
+      else
+	pos = 0;
+    }
+      
+  return pos ? string : NULL;
+}
+
+/* Return the physical source line that corresponds to xloc in a
+   buffer that is statically allocated.  The newline is replaced by
+   the null character.  */
+
+const char *
+location_get_source_line(expanded_location xloc)
+{
+  const char *buffer;
+  int lines = 1;
+  FILE *stream = xloc.file ? fopen (xloc.file, "r") : NULL;
+  if (!stream)
+    return NULL;
+
+  while ((buffer = read_line (stream)) && lines < xloc.line)
+    lines++;
+
+  fclose (stream);
+  return buffer;
+}
+
 #define ONE_K 1024
 #define ONE_M (ONE_K * ONE_K)
 

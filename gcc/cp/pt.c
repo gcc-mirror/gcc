@@ -6697,7 +6697,12 @@ coerce_template_parameter_pack (tree parms,
             TREE_VEC_ELT (packed_types, arg_idx - parm_idx);
         }
 
-      if (arg != error_mark_node)
+      if (arg == error_mark_node)
+	{
+	  if (complain & tf_error)
+	    error ("template argument %d is invalid", arg_idx + 1);
+	}
+      else
 	arg = convert_template_argument (actual_parm, 
 					 arg, new_args, complain, parm_idx,
 					 in_decl);
@@ -6723,6 +6728,20 @@ coerce_template_parameter_pack (tree parms,
 				       TREE_VEC_LENGTH (packed_args));
 #endif
   return argument_pack;
+}
+
+/* Returns true if the template argument vector ARGS contains
+   any pack expansions, false otherwise.  */
+
+static bool
+any_pack_expanson_args_p (tree args)
+{
+  int i;
+  if (args)
+    for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
+      if (PACK_EXPANSION_P (TREE_VEC_ELT (args, i)))
+	return true;
+  return false;
 }
 
 /* Convert all template arguments to their appropriate types, and
@@ -6790,6 +6809,7 @@ coerce_template_parms (tree parms,
   if ((nargs > nparms && !variadic_p)
       || (nargs < nparms - variadic_p
 	  && require_all_args
+	  && !any_pack_expanson_args_p (inner_args)
 	  && (!use_default_args
 	      || (TREE_VEC_ELT (parms, nargs) != error_mark_node
                   && !TREE_PURPOSE (TREE_VEC_ELT (parms, nargs))))))
@@ -6867,7 +6887,7 @@ coerce_template_parms (tree parms,
             {
               /* We don't know how many args we have yet, just
                  use the unconverted ones for now.  */
-              new_inner_args = args;
+              new_inner_args = inner_args;
               break;
             }
         }

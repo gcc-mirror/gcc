@@ -1472,102 +1472,6 @@ expand_expr_stmt (tree exp)
   free_temp_slots ();
 }
 
-/* Warn if EXP contains any computations whose results are not used.
-   Return 1 if a warning is printed; 0 otherwise.  LOCUS is the
-   (potential) location of the expression.  */
-
-int
-warn_if_unused_value (const_tree exp, location_t locus)
-{
- restart:
-  if (TREE_USED (exp) || TREE_NO_WARNING (exp))
-    return 0;
-
-  /* Don't warn about void constructs.  This includes casting to void,
-     void function calls, and statement expressions with a final cast
-     to void.  */
-  if (VOID_TYPE_P (TREE_TYPE (exp)))
-    return 0;
-
-  if (EXPR_HAS_LOCATION (exp))
-    locus = EXPR_LOCATION (exp);
-
-  switch (TREE_CODE (exp))
-    {
-    case PREINCREMENT_EXPR:
-    case POSTINCREMENT_EXPR:
-    case PREDECREMENT_EXPR:
-    case POSTDECREMENT_EXPR:
-    case MODIFY_EXPR:
-    case INIT_EXPR:
-    case TARGET_EXPR:
-    case CALL_EXPR:
-    case TRY_CATCH_EXPR:
-    case WITH_CLEANUP_EXPR:
-    case EXIT_EXPR:
-    case VA_ARG_EXPR:
-      return 0;
-
-    case BIND_EXPR:
-      /* For a binding, warn if no side effect within it.  */
-      exp = BIND_EXPR_BODY (exp);
-      goto restart;
-
-    case SAVE_EXPR:
-    case NON_LVALUE_EXPR:
-      exp = TREE_OPERAND (exp, 0);
-      goto restart;
-
-    case TRUTH_ORIF_EXPR:
-    case TRUTH_ANDIF_EXPR:
-      /* In && or ||, warn if 2nd operand has no side effect.  */
-      exp = TREE_OPERAND (exp, 1);
-      goto restart;
-
-    case COMPOUND_EXPR:
-      if (warn_if_unused_value (TREE_OPERAND (exp, 0), locus))
-	return 1;
-      /* Let people do `(foo (), 0)' without a warning.  */
-      if (TREE_CONSTANT (TREE_OPERAND (exp, 1)))
-	return 0;
-      exp = TREE_OPERAND (exp, 1);
-      goto restart;
-
-    case COND_EXPR:
-      /* If this is an expression with side effects, don't warn; this
-	 case commonly appears in macro expansions.  */
-      if (TREE_SIDE_EFFECTS (exp))
-	return 0;
-      goto warn;
-
-    case INDIRECT_REF:
-      /* Don't warn about automatic dereferencing of references, since
-	 the user cannot control it.  */
-      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == REFERENCE_TYPE)
-	{
-	  exp = TREE_OPERAND (exp, 0);
-	  goto restart;
-	}
-      /* Fall through.  */
-
-    default:
-      /* Referencing a volatile value is a side effect, so don't warn.  */
-      if ((DECL_P (exp) || REFERENCE_CLASS_P (exp))
-	  && TREE_THIS_VOLATILE (exp))
-	return 0;
-
-      /* If this is an expression which has no operands, there is no value
-	 to be unused.  There are no such language-independent codes,
-	 but front ends may define such.  */
-      if (EXPRESSION_CLASS_P (exp) && TREE_OPERAND_LENGTH (exp) == 0)
-	return 0;
-
-    warn:
-      warning_at (locus, OPT_Wunused_value, "value computed is not used");
-      return 1;
-    }
-}
-
 
 /* Generate RTL to return from the current function, with no value.
    (That is, we do not do anything about returning any value.)  */
@@ -2381,7 +2285,11 @@ expand_case (gimple stmt)
 	  do_pending_stack_adjust ();
 
 	  if (MEM_P (index))
-	    index = copy_to_reg (index);
+	    {
+	      index = copy_to_reg (index);
+	      if (TREE_CODE (index_expr) == SSA_NAME)
+		set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (index_expr), index);
+	    }
 
 	  /* We generate a binary decision tree to select the
 	     appropriate target code.  This is done as follows:

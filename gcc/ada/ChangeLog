@@ -1,3 +1,79 @@
+2012-04-14  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/trans.c (finalize_nrv): Update field referenced for new
+	cgraph/varpool layout.
+
+2012-04-09  Mike Stump  <mikestump@comcast.net>
+
+	* a-assert.ads: Remove execute permission.
+	* a-chacon.ads: Likewise.
+	* a-coteio.ads: Likewise.
+	* a-envvar.ads: Likewise.
+	* a-exetim-mingw.ads: Likewise.
+	* a-fzteio.ads: Likewise.
+	* a-izteio.ads: Likewise.
+	* a-lcteio.ads: Likewise.
+	* a-llctio.ads: Likewise.
+	* a-scteio.ads: Likewise.
+	* a-suenco.ads: Likewise.
+	* a-suenst.ads: Likewise.
+	* a-suewst.ads: Likewise.
+	* a-suezst.ads: Likewise.
+	* a-tirsfi.ads: Likewise.
+	* a-wichha.ads: Likewise.
+	* a-zchara.ads: Likewise.
+	* a-zchhan.ads: Likewise.
+	* a-zchuni.ads: Likewise.
+	* a-zrstfi.ads: Likewise.
+	* aspects.ads: Likewise.
+	* g-byorma.ads: Likewise.
+	* g-decstr.ads: Likewise.
+	* g-encstr.ads: Likewise.
+	* g-spchge.ads: Likewise.
+	* g-u3spch.ads: Likewise.
+	* g-wispch.ads: Likewise.
+	* g-zspche.ads: Likewise.
+	* namet-sp.ads: Likewise.
+	* s-os_lib.ads: Likewise.
+	* s-regexp.ads: Likewise.
+	* s-regpat.ads: Likewise.
+	* s-string.ads: Likewise.
+	* s-tasloc.ads: Likewise.
+	* s-utf_32.ads: Likewise.
+	* sem_aux.ads: Likewise.
+	* a-assert.adb: Likewise.
+	* a-chacon.adb: Likewise.
+	* a-envvar.adb: Likewise.
+	* a-exetim-mingw.adb: Likewise.
+	* a-suenco.adb: Likewise.
+	* a-suenst.adb: Likewise.
+	* a-suewst.adb: Likewise.
+	* a-suezst.adb: Likewise.
+	* a-tirsfi.adb: Likewise.
+	* a-wichha.adb: Likewise.
+	* a-zchhan.adb: Likewise.
+	* a-zchuni.adb: Likewise.
+	* a-zrstfi.adb: Likewise.
+	* aspects.adb: Likewise.
+	* g-byorma.adb: Likewise.
+	* g-decstr.adb: Likewise.
+	* g-encstr.adb: Likewise.
+	* g-spchge.adb: Likewise.
+	* g-u3spch.adb: Likewise.
+	* g-wispch.adb: Likewise.
+	* g-zspche.adb: Likewise.
+	* namet-sp.adb: Likewise.
+	* s-except.adb: Likewise.
+	* s-inmaop-vxworks.adb: Likewise.
+	* s-os_lib.adb: Likewise.
+	* s-regexp.adb: Likewise.
+	* s-regpat.adb: Likewise.
+	* s-string.adb: Likewise.
+	* s-tasloc.adb: Likewise.
+	* s-utf_32.adb: Likewise.
+	* s-wchcon.adb: Likewise.
+	* sem_aux.adb: Likewise.
+
 2012-04-02  Robert Dewar  <dewar@adacore.com>
 
 	* s-atopri.ads: Minor reformatting.

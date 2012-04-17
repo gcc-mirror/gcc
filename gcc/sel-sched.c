@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -4265,10 +4265,9 @@ invoke_aftermath_hooks (fence_t fence, rtx best_insn, int issue_more)
   return issue_more;
 }
 
-/* Estimate the cost of issuing INSN on DFA state STATE.  Write to PEMPTY
-   true when INSN does not change the processor state.  */
+/* Estimate the cost of issuing INSN on DFA state STATE.  */
 static int
-estimate_insn_cost (rtx insn, state_t state, bool *pempty)
+estimate_insn_cost (rtx insn, state_t state)
 {
   static state_t temp = NULL;
   int cost;
@@ -4278,8 +4277,6 @@ estimate_insn_cost (rtx insn, state_t state, bool *pempty)
 
   memcpy (temp, state, dfa_state_size);
   cost = state_transition (temp, insn);
-  if (pempty)
-    *pempty = (memcmp (temp, state, dfa_state_size) == 0);
 
   if (cost < 0)
     return 0;
@@ -4310,7 +4307,7 @@ get_expr_cost (expr_t expr, fence_t fence)
 	return 0;
     }
   else
-    return estimate_insn_cost (insn, FENCE_STATE (fence), NULL);
+    return estimate_insn_cost (insn, FENCE_STATE (fence));
 }
 
 /* Find the best insn for scheduling, either via max_issue or just take
@@ -7023,7 +7020,7 @@ reset_sched_cycles_in_current_ebb (void)
     {
       int cost, haifa_cost;
       int sort_p;
-      bool asm_p, real_insn, after_stall, all_issued, empty;
+      bool asm_p, real_insn, after_stall, all_issued;
       int clock;
 
       if (!INSN_P (insn))
@@ -7050,7 +7047,7 @@ reset_sched_cycles_in_current_ebb (void)
 	    haifa_cost = 0;
 	}
       else
-        haifa_cost = estimate_insn_cost (insn, curr_state, &empty);
+        haifa_cost = estimate_insn_cost (insn, curr_state);
 
       /* Stall for whatever cycles we've stalled before.  */
       after_stall = 0;
@@ -7084,7 +7081,7 @@ reset_sched_cycles_in_current_ebb (void)
               if (!after_stall
                   && real_insn
                   && haifa_cost > 0
-                  && estimate_insn_cost (insn, curr_state, NULL) == 0)
+                  && estimate_insn_cost (insn, curr_state) == 0)
                 break;
 
               /* When the data dependency stall is longer than the DFA stall,
@@ -7096,7 +7093,7 @@ reset_sched_cycles_in_current_ebb (void)
               if ((after_stall || all_issued)
                   && real_insn
                   && haifa_cost == 0)
-                haifa_cost = estimate_insn_cost (insn, curr_state, NULL);
+                haifa_cost = estimate_insn_cost (insn, curr_state);
             }
 
 	  haifa_clock += i;
@@ -7127,8 +7124,14 @@ reset_sched_cycles_in_current_ebb (void)
 
       if (real_insn)
 	{
+	  static state_t temp = NULL;
+
+	  if (!temp)
+	    temp = xmalloc (dfa_state_size);
+	  memcpy (temp, curr_state, dfa_state_size);
+
 	  cost = state_transition (curr_state, insn);
-	  if (!empty)
+	  if (memcmp (temp, curr_state, dfa_state_size))
 	    issued_insns++;
 
           if (sched_verbose >= 2)
@@ -7637,8 +7640,8 @@ sel_global_init (void)
   sel_setup_sched_infos ();
   setup_sched_dump ();
 
-  sched_rgn_init (false);
   sched_init ();
+  sched_rgn_init (false);
 
   sched_init_bbs ();
   /* Reset AFTER_RECOVERY if it has been set by the 1st scheduler pass.  */

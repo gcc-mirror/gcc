@@ -36,6 +36,7 @@ static int jcf_parse_fields (JCF *);
 static int jcf_parse_one_method (JCF *, int);
 static int jcf_parse_methods (JCF *);
 static int jcf_parse_final_attributes (JCF *);
+static int jcf_parse_bootstrap_methods (JCF *, int) ATTRIBUTE_UNUSED;
 #ifdef NEED_PEEK_ATTRIBUTE
 static int peek_attribute (JCF *, int, const char *, int);
 #endif
@@ -293,6 +294,15 @@ get_attribute (JCF *jcf, int index,
     }
   else
 #endif
+  if (MATCH_ATTRIBUTE ("BootstrapMethods"))
+    {
+#ifdef HANDLE_BOOTSTRAP_METHODS_ATTRIBUTE
+      HANDLE_BOOTSTRAP_METHODS_ATTRIBUTE();
+#else
+      JCF_SKIP (jcf, attribute_length);
+#endif
+    }
+   else
     {
 #ifdef PROCESS_OTHER_ATTRIBUTE
       PROCESS_OTHER_ATTRIBUTE(jcf, attribute_name, attribute_length);
@@ -381,6 +391,17 @@ jcf_parse_constant_pool (JCF* jcf)
 	  jcf->cpool.data[i].w = JCF_TELL(jcf) - 2;
 	  JCF_SKIP (jcf, n);
 #endif
+	  break;
+	case CONSTANT_MethodHandle:
+	  jcf->cpool.data[i].w = JCF_readu (jcf);
+	  jcf->cpool.data[i].w |= JCF_readu2 (jcf) << 16;
+	  break;
+	case CONSTANT_MethodType:
+	  jcf->cpool.data[i].w = JCF_readu2 (jcf);
+	  break;
+	case CONSTANT_InvokeDynamic:
+	  jcf->cpool.data[i].w = JCF_readu2 (jcf);
+	  jcf->cpool.data[i].w |= JCF_readu2 (jcf) << 16;
 	  break;
 	default:
 	  return i;
@@ -521,3 +542,39 @@ jcf_parse_final_attributes (JCF *jcf)
   return 0;
 }
 
+/* Read and handle the "BootstrapMethods" attribute.
+
+   Return 0 if OK.
+*/
+static int
+jcf_parse_bootstrap_methods (JCF* jcf, int attribute_length ATTRIBUTE_UNUSED)
+{
+  int i;
+  uint16 num_methods = JCF_readu2 (jcf);
+  jcf->bootstrap_methods.count = num_methods;
+  jcf->bootstrap_methods.methods
+    = (bootstrap_method *) ggc_alloc_atomic (num_methods
+					      * sizeof (bootstrap_method));
+#ifdef HANDLE_START_BOOTSTRAP_METHODS
+  HANDLE_START_BOOTSTRAP_METHODS (jcf, num_methods);
+#endif
+
+  for (i = 0; i < num_methods; i++)
+    {
+      unsigned j;
+      bootstrap_method *m = &jcf->bootstrap_methods.methods[i];
+      m->method_ref = JCF_readu2 (jcf);
+      m->num_arguments = JCF_readu2 (jcf);
+      m->bootstrap_arguments
+	= (unsigned *) ggc_alloc_atomic (m->num_arguments
+					 * sizeof (unsigned));
+      for (j = 0; j < m->num_arguments; j++)
+	m->bootstrap_arguments[j] = JCF_readu2 (jcf);
+    }
+
+#ifdef HANDLE_END_BOOTSTRAP_METHODS
+  HANDLE_END_BOOTSTRAP_METHODS (num_methods);
+#endif
+
+  return 0;
+}

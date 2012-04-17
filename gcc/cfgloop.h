@@ -279,10 +279,14 @@ extern unsigned expected_loop_iterations (const struct loop *);
 extern rtx doloop_condition_get (rtx);
 
 void estimate_numbers_of_iterations_loop (struct loop *, bool);
-HOST_WIDE_INT estimated_loop_iterations_int (struct loop *, bool);
-HOST_WIDE_INT max_stmt_executions_int (struct loop *, bool);
-bool estimated_loop_iterations (struct loop *, bool, double_int *);
-bool max_stmt_executions (struct loop *, bool, double_int *);
+bool estimated_loop_iterations (struct loop *, double_int *);
+bool max_loop_iterations (struct loop *, double_int *);
+HOST_WIDE_INT estimated_loop_iterations_int (struct loop *);
+HOST_WIDE_INT max_loop_iterations_int (struct loop *);
+bool max_stmt_executions (struct loop *, double_int *);
+bool estimated_stmt_executions (struct loop *, double_int *);
+HOST_WIDE_INT max_stmt_executions_int (struct loop *);
+HOST_WIDE_INT estimated_stmt_executions_int (struct loop *);
 
 /* Loop manipulation.  */
 extern bool can_duplicate_loop_p (const struct loop *loop);

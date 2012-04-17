@@ -140,7 +140,7 @@ static struct opt_pass rl78_devirt_pass =
   TV_MACH_DEP,
   0, 0, 0,
   0,
-  TODO_dump_func
+  0
 };
 
 static struct register_pass_info rl78_devirt_info =
@@ -826,6 +826,9 @@ rl78_expand_prologue (void)
 
   if (!cfun->machine->computed)
     rl78_compute_frame_info ();
+
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = cfun->machine->framesize;
 
   for (i = 0; i < 16; i++)
     if (cfun->machine->need_to_push [i])

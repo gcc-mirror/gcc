@@ -3052,25 +3052,28 @@ estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
    the function returns false, otherwise returns true.  */
 
 bool
-estimated_loop_iterations (struct loop *loop, bool conservative,
-			   double_int *nit)
+estimated_loop_iterations (struct loop *loop, double_int *nit)
 {
   estimate_numbers_of_iterations_loop (loop, true);
-  if (conservative)
-    {
-      if (!loop->any_upper_bound)
-	return false;
+  if (!loop->any_estimate)
+    return false;
 
-      *nit = loop->nb_iterations_upper_bound;
-    }
-  else
-    {
-      if (!loop->any_estimate)
-	return false;
+  *nit = loop->nb_iterations_estimate;
+  return true;
+}
 
-      *nit = loop->nb_iterations_estimate;
-    }
+/* Sets NIT to an upper bound for the maximum number of executions of the
+   latch of the LOOP.  If we have no reliable estimate, the function returns
+   false, otherwise returns true.  */
 
+bool
+max_loop_iterations (struct loop *loop, double_int *nit)
+{
+  estimate_numbers_of_iterations_loop (loop, true);
+  if (!loop->any_upper_bound)
+    return false;
+
+  *nit = loop->nb_iterations_upper_bound;
   return true;
 }
 
@@ -3079,12 +3082,32 @@ estimated_loop_iterations (struct loop *loop, bool conservative,
    on the number of iterations of LOOP could not be derived, returns -1.  */
 
 HOST_WIDE_INT
-estimated_loop_iterations_int (struct loop *loop, bool conservative)
+estimated_loop_iterations_int (struct loop *loop)
 {
   double_int nit;
   HOST_WIDE_INT hwi_nit;
 
-  if (!estimated_loop_iterations (loop, conservative, &nit))
+  if (!estimated_loop_iterations (loop, &nit))
+    return -1;
+
+  if (!double_int_fits_in_shwi_p (nit))
+    return -1;
+  hwi_nit = double_int_to_shwi (nit);
+
+  return hwi_nit < 0 ? -1 : hwi_nit;
+}
+
+/* Similar to max_loop_iterations, but returns the estimate only
+   if it fits to HOST_WIDE_INT.  If this is not the case, or the estimate
+   on the number of iterations of LOOP could not be derived, returns -1.  */
+
+HOST_WIDE_INT
+max_loop_iterations_int (struct loop *loop)
+{
+  double_int nit;
+  HOST_WIDE_INT hwi_nit;
+
+  if (!max_loop_iterations (loop, &nit))
     return -1;
 
   if (!double_int_fits_in_shwi_p (nit))
@@ -3099,9 +3122,9 @@ estimated_loop_iterations_int (struct loop *loop, bool conservative)
    the number of execution of the latch by one.  */
 
 HOST_WIDE_INT
-max_stmt_executions_int (struct loop *loop, bool conservative)
+max_stmt_executions_int (struct loop *loop)
 {
-  HOST_WIDE_INT nit = estimated_loop_iterations_int (loop, conservative);
+  HOST_WIDE_INT nit = max_loop_iterations_int (loop);
   HOST_WIDE_INT snit;
 
   if (nit == -1)
@@ -3113,17 +3136,54 @@ max_stmt_executions_int (struct loop *loop, bool conservative)
   return snit < 0 ? -1 : snit;
 }
 
-/* Sets NIT to the estimated number of executions of the latch of the
-   LOOP, plus one.  If CONSERVATIVE is true, we must be sure that NIT is at
-   least as large as the number of iterations.  If we have no reliable
-   estimate, the function returns false, otherwise returns true.  */
+/* Returns an estimate for the number of executions of statements
+   in the LOOP.  For statements before the loop exit, this exceeds
+   the number of execution of the latch by one.  */
+
+HOST_WIDE_INT
+estimated_stmt_executions_int (struct loop *loop)
+{
+  HOST_WIDE_INT nit = estimated_loop_iterations_int (loop);
+  HOST_WIDE_INT snit;
+
+  if (nit == -1)
+    return -1;
+
+  snit = (HOST_WIDE_INT) ((unsigned HOST_WIDE_INT) nit + 1);
+
+  /* If the computation overflows, return -1.  */
+  return snit < 0 ? -1 : snit;
+}
+
+/* Sets NIT to the estimated maximum number of executions of the latch of the
+   LOOP, plus one.  If we have no reliable estimate, the function returns
+   false, otherwise returns true.  */
 
 bool
-max_stmt_executions (struct loop *loop, bool conservative, double_int *nit)
+max_stmt_executions (struct loop *loop, double_int *nit)
 {
   double_int nit_minus_one;
 
-  if (!estimated_loop_iterations (loop, conservative, nit))
+  if (!max_loop_iterations (loop, nit))
+    return false;
+
+  nit_minus_one = *nit;
+
+  *nit = double_int_add (*nit, double_int_one);
+
+  return double_int_ucmp (*nit, nit_minus_one) > 0;
+}
+
+/* Sets NIT to the estimated number of executions of the latch of the
+   LOOP, plus one.  If we have no reliable estimate, the function returns
+   false, otherwise returns true.  */
+
+bool
+estimated_stmt_executions (struct loop *loop, double_int *nit)
+{
+  double_int nit_minus_one;
+
+  if (!estimated_loop_iterations (loop, nit))
     return false;
 
   nit_minus_one = *nit;

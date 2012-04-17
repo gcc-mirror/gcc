@@ -1,3 +1,30 @@
+2012-04-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/52968
+	* class.c (gfc_build_class_symbol): Make sure the 'f2k_derived'
+	namespace is present.
+
+2012-04-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/51082
+	* trans-expr.c (gfc_conv_expr_reference): Check if the expression is a
+	simple function call (or a more involved PPC reference).
+
+2012-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52916
+	PR fortran/40973
+	* gfortran.h (symbol_attribute): Add public_used.
+	* interface.c (check_sym_interfaces, check_uop_interfaces,
+	gfc_check_interfaces): Set it.
+	* resolve.c (resolve_typebound_procedure): Ditto.
+	* trans-decl.c (build_function_decl): Use it.
+
+2012-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52729
+	* resolve.c (resolve_symbol): Fix searching for parent NS decl.
+
 2012-04-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52751
