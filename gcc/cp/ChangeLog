@@ -1,5 +1,9 @@
 2012-04-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38543
+	* pt.c (determine_specialization): Instead of comparing the number
+	of parms, check that tsubst gives the right answer.
+
 	PR c++/50830
 	* pt.c (convert_template_argument): Handle template template
 	argument packs.

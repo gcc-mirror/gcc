@@ -1,5 +1,10 @@
 2012-04-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38543
+	* g++.dg/cpp0x/variadic131.C: New.
+
+2012-04-16  Jason Merrill  <jason@redhat.com>
+
 	PR c++/50830
 	* g++.dg/cpp0x/variadic129.C: New.
 

@@ -1860,6 +1860,7 @@ determine_specialization (tree template_id,
 	{
 	  tree decl_arg_types;
 	  tree fn_arg_types;
+	  tree insttype;
 
 	  /* In case of explicit specialization, we need to check if
 	     the number of template headers appearing in the specialization
@@ -1927,7 +1928,8 @@ determine_specialization (tree template_id,
 	       template <> void f<int>();
 	     The specialization f<int> is invalid but is not caught
 	     by get_bindings below.  */
-	  if (list_length (fn_arg_types) != list_length (decl_arg_types))
+	  if (cxx_dialect < cxx11
+	      && list_length (fn_arg_types) != list_length (decl_arg_types))
 	    continue;
 
 	  /* Function templates cannot be specializations; there are
@@ -1949,6 +1951,18 @@ determine_specialization (tree template_id,
 	    /* We cannot deduce template arguments that when used to
 	       specialize TMPL will produce DECL.  */
 	    continue;
+
+	  if (cxx_dialect >= cxx11)
+	    {
+	      /* Make sure that the deduced arguments actually work.  */
+	      insttype = tsubst (TREE_TYPE (fn), targs, tf_none, NULL_TREE);
+	      if (insttype == error_mark_node)
+		continue;
+	      fn_arg_types
+		= skip_artificial_parms_for (fn, TYPE_ARG_TYPES (insttype));
+	      if (!compparms (fn_arg_types, decl_arg_types))
+		continue;
+	    }
 
 	  /* Save this template, and the arguments deduced.  */
 	  templates = tree_cons (targs, fn, templates);
