@@ -4376,6 +4376,18 @@ process_partial_specialization (tree decl)
 						   (maintmpl)))))
     error ("partial specialization %qT does not specialize any template arguments", type);
 
+  /* A partial specialization that replaces multiple parameters of the
+     primary template with a pack expansion is less specialized for those
+     parameters.  */
+  if (nargs < DECL_NTPARMS (maintmpl))
+    {
+      error ("partial specialization is not more specialized than the "
+	     "primary template because it replaces multiple parameters "
+	     "with a pack expansion");
+      inform (DECL_SOURCE_LOCATION (maintmpl), "primary template here");
+      return decl;
+    }
+
   /* [temp.class.spec]
 
      A partially specialized non-type argument expression shall not

@@ -1,5 +1,9 @@
 2012-04-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52008
+	* pt.c (process_partial_specialization): Complain about a partial
+	specialization with fewer args than primary template parms.
+
 	PR c++/50830
 	* pt.c (convert_template_argument): Handle template template
 	argument packs.
