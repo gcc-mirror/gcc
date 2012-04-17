@@ -1,3 +1,8 @@
+2012-04-17  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-iterator.c (append_to_statement_list_1): Handle case that *list_p
+	is not a STMT_LIST.
+
 2012-04-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53020
