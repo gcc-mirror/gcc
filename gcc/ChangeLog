@@ -1,3 +1,8 @@
+2012-04-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi:  Copy-edit to put verbs in the present tense
+	when describing the current behavior of GCC.
+
 2012-04-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* genemit.c (gen_exp): Remove ADDRESS handling.
