@@ -1,3 +1,7 @@
+2012-04-17  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Remove DImode.
+
 2012-04-17  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/18437

@@ -771,8 +771,7 @@ extern unsigned rs6000_pointer_size;
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
   (STRICT_ALIGNMENT							\
    || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == TFmode	\
-	|| (MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode	\
-	|| (MODE) == DImode)						\
+	|| (MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)	\
        && (ALIGN) < 32)							\
    || (VECTOR_MODE_P ((MODE)) && (((int)(ALIGN)) < VECTOR_ALIGN (MODE))))
 
