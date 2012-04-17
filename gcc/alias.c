@@ -187,20 +187,41 @@ static void memory_modified_1 (rtx, const_rtx, void *);
    of the first set.
 
    A base address can be an ADDRESS, SYMBOL_REF, or LABEL_REF.  ADDRESS
-   expressions represent certain special values: function arguments and
-   the stack, frame, and argument pointers.
+   expressions represent three types of base:
 
-   The contents of an ADDRESS is not normally used, the mode of the
-   ADDRESS determines whether the ADDRESS is a function argument or some
-   other special value.  Pointer equality, not rtx_equal_p, determines whether
-   two ADDRESS expressions refer to the same base address.
+     1. incoming arguments.  There is just one ADDRESS to represent all
+	arguments, since we do not know at this level whether accesses
+	based on different arguments can alias.  The ADDRESS has id 0.
 
-   The only use of the contents of an ADDRESS is for determining if the
-   current function performs nonlocal memory memory references for the
-   purposes of marking the function as a constant function.  */
+     2. stack_pointer_rtx, frame_pointer_rtx, hard_frame_pointer_rtx
+	(if distinct from frame_pointer_rtx) and arg_pointer_rtx.
+	Each of these rtxes has a separate ADDRESS associated with it,
+	each with a negative id.
+
+	GCC is (and is required to be) precise in which register it
+	chooses to access a particular region of stack.  We can therefore
+	assume that accesses based on one of these rtxes do not alias
+	accesses based on another of these rtxes.
+
+     3. bases that are derived from malloc()ed memory (REG_NOALIAS).
+	Each such piece of memory has a separate ADDRESS associated
+	with it, each with an id greater than 0.
+
+   Accesses based on one ADDRESS do not alias accesses based on other
+   ADDRESSes.  Accesses based on ADDRESSes in groups (2) and (3) do not
+   alias globals either; the ADDRESSes have Pmode to indicate this.
+   The ADDRESS in group (1) _may_ alias globals; it has VOIDmode to
+   indicate this.  */
 
 static GTY(()) VEC(rtx,gc) *reg_base_value;
 static rtx *new_reg_base_value;
+
+/* The single VOIDmode ADDRESS that represents all argument bases.
+   It has id 0.  */
+static GTY(()) rtx arg_base_value;
+
+/* Used to allocate unique ids to each REG_NOALIAS ADDRESS.  */
+static int unique_id;
 
 /* We preserve the copy of old array around to avoid amount of garbage
    produced.  About 8% of garbage produced were attributed to this
@@ -993,6 +1014,43 @@ get_frame_alias_set (void)
   return frame_set;
 }
 
+/* Create a new, unique base with id ID.  */
+
+static rtx
+unique_base_value (HOST_WIDE_INT id)
+{
+  return gen_rtx_ADDRESS (Pmode, id);
+}
+
+/* Return true if accesses based on any other base value cannot alias
+   those based on X.  */
+
+static bool
+unique_base_value_p (rtx x)
+{
+  return GET_CODE (x) == ADDRESS && GET_MODE (x) == Pmode;
+}
+
+/* Return true if X is known to be a base value.  */
+
+static bool
+known_base_value_p (rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case LABEL_REF:
+    case SYMBOL_REF:
+      return true;
+
+    case ADDRESS:
+      /* Arguments may or may not be bases; we don't know for sure.  */
+      return GET_MODE (x) != VOIDmode;
+
+    default:
+      return false;
+    }
+}
+
 /* Inside SRC, the source of a SET, find a base address.  */
 
 static rtx
@@ -1049,7 +1107,7 @@ find_base_value (rtx src)
 	  && (XEXP (src, 0) == arg_pointer_rtx
 	      || (GET_CODE (XEXP (src, 0)) == PLUS
 		  && XEXP (XEXP (src, 0), 0) == arg_pointer_rtx)))
-	return gen_rtx_ADDRESS (VOIDmode, src);
+	return arg_base_value;
       return 0;
 
     case CONST:
@@ -1090,18 +1148,10 @@ find_base_value (rtx src)
 	/* If either base is named object or a special address
 	   (like an argument or stack reference), then use it for the
 	   base term.  */
-	if (src_0 != 0
-	    && (GET_CODE (src_0) == SYMBOL_REF
-		|| GET_CODE (src_0) == LABEL_REF
-		|| (GET_CODE (src_0) == ADDRESS
-		    && GET_MODE (src_0) != VOIDmode)))
+	if (src_0 != 0 && known_base_value_p (src_0))
 	  return src_0;
 
-	if (src_1 != 0
-	    && (GET_CODE (src_1) == SYMBOL_REF
-		|| GET_CODE (src_1) == LABEL_REF
-		|| (GET_CODE (src_1) == ADDRESS
-		    && GET_MODE (src_1) != VOIDmode)))
+	if (src_1 != 0 && known_base_value_p (src_1))
 	  return src_1;
 
 	/* Guess which operand is the base address:
@@ -1169,15 +1219,13 @@ find_base_value (rtx src)
   return 0;
 }
 
-/* Called from init_alias_analysis indirectly through note_stores.  */
+/* Called from init_alias_analysis indirectly through note_stores,
+   or directly if DEST is a register with a REG_NOALIAS note attached.
+   SET is null in the latter case.  */
 
 /* While scanning insns to find base values, reg_seen[N] is nonzero if
    register N has been set in this function.  */
 static char *reg_seen;
-
-/* Addresses which are known not to alias anything else are identified
-   by a unique integer.  */
-static int unique_id;
 
 static void
 record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
@@ -1223,14 +1271,14 @@ record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
     }
   else
     {
+      /* There's a REG_NOALIAS note against DEST.  */
       if (reg_seen[regno])
 	{
 	  new_reg_base_value[regno] = 0;
 	  return;
 	}
       reg_seen[regno] = 1;
-      new_reg_base_value[regno] = gen_rtx_ADDRESS (Pmode,
-						   GEN_INT (unique_id++));
+      new_reg_base_value[regno] = unique_base_value (unique_id++);
       return;
     }
 
@@ -1666,18 +1714,10 @@ find_base_term (rtx x)
 	/* If either base term is named object or a special address
 	   (like an argument or stack reference), then use it for the
 	   base term.  */
-	if (tmp1 != 0
-	    && (GET_CODE (tmp1) == SYMBOL_REF
-		|| GET_CODE (tmp1) == LABEL_REF
-		|| (GET_CODE (tmp1) == ADDRESS
-		    && GET_MODE (tmp1) != VOIDmode)))
+	if (tmp1 != 0 && known_base_value_p (tmp1))
 	  return tmp1;
 
-	if (tmp2 != 0
-	    && (GET_CODE (tmp2) == SYMBOL_REF
-		|| GET_CODE (tmp2) == LABEL_REF
-		|| (GET_CODE (tmp2) == ADDRESS
-		    && GET_MODE (tmp2) != VOIDmode)))
+	if (tmp2 != 0 && known_base_value_p (tmp2))
 	  return tmp2;
 
 	/* We could not determine which of the two operands was the
@@ -1762,12 +1802,7 @@ base_alias_check (rtx x, rtx y, enum machine_mode x_mode,
   if (GET_CODE (x_base) != ADDRESS && GET_CODE (y_base) != ADDRESS)
     return 0;
 
-  /* If one address is a stack reference there can be no alias:
-     stack references using different base registers do not alias,
-     a stack reference can not alias a parameter, and a stack reference
-     can not alias a global.  */
-  if ((GET_CODE (x_base) == ADDRESS && GET_MODE (x_base) == Pmode)
-      || (GET_CODE (y_base) == ADDRESS && GET_MODE (y_base) == Pmode))
+  if (unique_base_value_p (x_base) || unique_base_value_p (y_base))
     return 0;
 
   return 1;
@@ -2686,6 +2721,9 @@ init_alias_target (void)
 {
   int i;
 
+  if (!arg_base_value)
+    arg_base_value = gen_rtx_ADDRESS (VOIDmode, 0);
+
   memset (static_reg_base_value, 0, sizeof static_reg_base_value);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -2694,18 +2732,13 @@ init_alias_target (void)
        numbers, so translate if necessary due to register windows.  */
     if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (i))
 	&& HARD_REGNO_MODE_OK (i, Pmode))
-      static_reg_base_value[i]
-	= gen_rtx_ADDRESS (VOIDmode, gen_rtx_REG (Pmode, i));
+      static_reg_base_value[i] = arg_base_value;
 
-  static_reg_base_value[STACK_POINTER_REGNUM]
-    = gen_rtx_ADDRESS (Pmode, stack_pointer_rtx);
-  static_reg_base_value[ARG_POINTER_REGNUM]
-    = gen_rtx_ADDRESS (Pmode, arg_pointer_rtx);
-  static_reg_base_value[FRAME_POINTER_REGNUM]
-    = gen_rtx_ADDRESS (Pmode, frame_pointer_rtx);
+  static_reg_base_value[STACK_POINTER_REGNUM] = unique_base_value (-1);
+  static_reg_base_value[ARG_POINTER_REGNUM] = unique_base_value (-2);
+  static_reg_base_value[FRAME_POINTER_REGNUM] = unique_base_value (-3);
 #if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-  static_reg_base_value[HARD_FRAME_POINTER_REGNUM]
-    = gen_rtx_ADDRESS (Pmode, hard_frame_pointer_rtx);
+  static_reg_base_value[HARD_FRAME_POINTER_REGNUM] = unique_base_value (-4);
 #endif
 }
 
@@ -2791,8 +2824,8 @@ init_alias_analysis (void)
       changed = 0;
 
       /* We want to assign the same IDs each iteration of this loop, so
-	 start counting from zero each iteration of the loop.  */
-      unique_id = 0;
+	 start counting from one each iteration of the loop.  */
+      unique_id = 1;
 
       /* We're at the start of the function each iteration through the
 	 loop, so we're copying arguments.  */
