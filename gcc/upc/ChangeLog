@@ -1,3 +1,9 @@
+2012-04-17  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* gupc.texi: Fix the warning for usage of 'insertcopying'
+	before 'copying'. Minor changes to to copyright years and
+	manual info.
+
 2012-04-16  Gary Funck  <gary@intrepid.com>
 
 	* upc-genericize.c: Adjust copyright.
