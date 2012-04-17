@@ -119,11 +119,6 @@ static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
 static inline void cgraph_edge_remove_callee (struct cgraph_edge *e);
 
-/* Hash table used to convert declarations into nodes.  */
-static GTY((param_is (union symtab_node_def))) htab_t cgraph_hash;
-/* Hash table used to convert assembler names into nodes.  */
-static GTY((param_is (union symtab_node_def))) htab_t assembler_name_hash;
-
 /* Queue of cgraph nodes scheduled to be lowered.  */
 symtab_node x_cgraph_nodes_queue;
 #define cgraph_nodes_queue ((struct cgraph_node *)x_cgraph_nodes_queue)
@@ -419,26 +414,6 @@ cgraph_call_node_duplication_hooks (struct cgraph_node *node1,
   }
 }
 
-/* Returns a hash code for P.  */
-
-static hashval_t
-hash_node (const void *p)
-{
-  const struct cgraph_node *n = (const struct cgraph_node *) p;
-  return (hashval_t) DECL_UID (n->symbol.decl);
-}
-
-
-/* Returns nonzero if P1 and P2 are equal.  */
-
-static int
-eq_node (const void *p1, const void *p2)
-{
-  const struct cgraph_node *n1 = (const struct cgraph_node *) p1;
-  const struct cgraph_node *n2 = (const struct cgraph_node *) p2;
-  return DECL_UID (n1->symbol.decl) == DECL_UID (n2->symbol.decl);
-}
-
 /* Allocate new callgraph node.  */
 
 static inline struct cgraph_node *
@@ -479,41 +454,17 @@ cgraph_create_node_1 (void)
 struct cgraph_node *
 cgraph_create_node (tree decl)
 {
-  struct cgraph_node key, *node, **slot;
-
+  struct cgraph_node *node = cgraph_create_node_1 ();
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
-  if (!cgraph_hash)
-    cgraph_hash = htab_create_ggc (10, hash_node, eq_node, NULL);
-
-  key.symbol.decl = decl;
-  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key, INSERT);
-  gcc_assert (!*slot);
-
-  node = cgraph_create_node_1 ();
   node->symbol.decl = decl;
-  symtab_register_node ((symtab_node)node);
-  *slot = node;
+  symtab_register_node ((symtab_node) node);
+
   if (DECL_CONTEXT (decl) && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
     {
       node->origin = cgraph_get_create_node (DECL_CONTEXT (decl));
       node->next_nested = node->origin->nested;
       node->origin->nested = node;
-    }
-  if (assembler_name_hash)
-    {
-      void **aslot;
-      tree name = DECL_ASSEMBLER_NAME (decl);
-
-      aslot = htab_find_slot_with_hash (assembler_name_hash, name,
-					decl_assembler_name_hash (name),
-					INSERT);
-      /* We can have multiple declarations with same assembler name. For C++
-	 it is __builtin_strlen and strlen, for instance.  Do we need to
-	 record them all?  Original implementation marked just first one
-	 so lets hope for the best.  */
-      if (*aslot == NULL)
-	*aslot = node;
     }
   return node;
 }
@@ -629,100 +580,18 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
   return node;
 }
 
-/* Returns the cgraph node assigned to DECL or NULL if no cgraph node
-   is assigned.  */
-
-struct cgraph_node *
-cgraph_get_node (const_tree decl)
-{
-  struct cgraph_node key, *node = NULL, **slot;
-
-  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
-
-  if (!cgraph_hash)
-    return NULL;
-
-  key.symbol.decl = CONST_CAST2 (tree, const_tree, decl);
-
-  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key,
-						 NO_INSERT);
-
-  if (slot && *slot)
-    node = *slot;
-  return node;
-}
-
-/* Insert already constructed node into hashtable.  */
-
-void
-cgraph_insert_node_to_hashtable (struct cgraph_node *node)
-{
-  struct cgraph_node **slot;
-
-  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, node, INSERT);
-
-  gcc_assert (!*slot);
-  *slot = node;
-}
-
-/* Returns a hash code for P.  */
-
-static hashval_t
-hash_node_by_assembler_name (const void *p)
-{
-  const struct cgraph_node *n = (const struct cgraph_node *) p;
-  return (hashval_t) decl_assembler_name_hash (DECL_ASSEMBLER_NAME (n->symbol.decl));
-}
-
-/* Returns nonzero if P1 and P2 are equal.  */
-
-static int
-eq_assembler_name (const void *p1, const void *p2)
-{
-  const struct cgraph_node *n1 = (const struct cgraph_node *) p1;
-  const_tree name = (const_tree)p2;
-  return (decl_assembler_name_equal (n1->symbol.decl, name));
-}
-
 /* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
    Return NULL if there's no such node.  */
 
 struct cgraph_node *
 cgraph_node_for_asm (tree asmname)
 {
-  struct cgraph_node *node;
-  void **slot;
+  symtab_node node = symtab_node_for_asm (asmname);
 
-  if (!assembler_name_hash)
-    {
-      assembler_name_hash =
-	htab_create_ggc (10, hash_node_by_assembler_name, eq_assembler_name,
-			 NULL);
-      FOR_EACH_FUNCTION (node)
-        if (!node->global.inlined_to)
-	  {
-	    tree name = DECL_ASSEMBLER_NAME (node->symbol.decl);
-	    slot = htab_find_slot_with_hash (assembler_name_hash, name,
-					     decl_assembler_name_hash (name),
-					     INSERT);
-	    /* We can have multiple declarations with same assembler name. For C++
-	       it is __builtin_strlen and strlen, for instance.  Do we need to
-	       record them all?  Original implementation marked just first one
-	       so lets hope for the best.  */
-	    if (!*slot)
-	      *slot = node;
-	  }
-    }
-
-  slot = htab_find_slot_with_hash (assembler_name_hash, asmname,
-				   decl_assembler_name_hash (asmname),
-				   NO_INSERT);
-
-  if (slot)
-    {
-      node = (struct cgraph_node *) *slot;
-      return node;
-    }
+  /* We do not want to look at inline clones.  */
+  for (node = symtab_node_for_asm (asmname); node; node = node->symbol.next_sharing_asm_name)
+    if (symtab_function_p (node) && !cgraph(node)->global.inlined_to)
+      return cgraph (node);
   return NULL;
 }
 
@@ -1392,13 +1261,96 @@ cgraph_release_function_body (struct cgraph_node *node)
     DECL_INITIAL (node->symbol.decl) = error_mark_node;
 }
 
+/* NODE is being removed from symbol table; see if its entry can be replaced by
+   other inline clone.  */
+struct cgraph_node *
+cgraph_find_replacement_node (struct cgraph_node *node)
+{
+  struct cgraph_node *next_inline_clone, *replacement;
+
+  for (next_inline_clone = node->clones;
+       next_inline_clone
+       && next_inline_clone->symbol.decl != node->symbol.decl;
+       next_inline_clone = next_inline_clone->next_sibling_clone)
+    ;
+
+  /* If there is inline clone of the node being removed, we need
+     to put it into the position of removed node and reorganize all
+     other clones to be based on it.  */
+  if (next_inline_clone)
+    {
+      struct cgraph_node *n;
+      struct cgraph_node *new_clones;
+
+      replacement = next_inline_clone;
+
+      /* Unlink inline clone from the list of clones of removed node.  */
+      if (next_inline_clone->next_sibling_clone)
+	next_inline_clone->next_sibling_clone->prev_sibling_clone
+	  = next_inline_clone->prev_sibling_clone;
+      if (next_inline_clone->prev_sibling_clone)
+	{
+	  gcc_assert (node->clones != next_inline_clone);
+	  next_inline_clone->prev_sibling_clone->next_sibling_clone
+	    = next_inline_clone->next_sibling_clone;
+	}
+      else
+	{
+	  gcc_assert (node->clones == next_inline_clone);
+	  node->clones = next_inline_clone->next_sibling_clone;
+	}
+
+      new_clones = node->clones;
+      node->clones = NULL;
+
+      /* Copy clone info.  */
+      next_inline_clone->clone = node->clone;
+
+      /* Now place it into clone tree at same level at NODE.  */
+      next_inline_clone->clone_of = node->clone_of;
+      next_inline_clone->prev_sibling_clone = NULL;
+      next_inline_clone->next_sibling_clone = NULL;
+      if (node->clone_of)
+	{
+	  if (node->clone_of->clones)
+	    node->clone_of->clones->prev_sibling_clone = next_inline_clone;
+	  next_inline_clone->next_sibling_clone = node->clone_of->clones;
+	  node->clone_of->clones = next_inline_clone;
+	}
+
+      /* Merge the clone list.  */
+      if (new_clones)
+	{
+	  if (!next_inline_clone->clones)
+	    next_inline_clone->clones = new_clones;
+	  else
+	    {
+	      n = next_inline_clone->clones;
+	      while (n->next_sibling_clone)
+		n =  n->next_sibling_clone;
+	      n->next_sibling_clone = new_clones;
+	      new_clones->prev_sibling_clone = n;
+	    }
+	}
+
+      /* Update clone_of pointers.  */
+      n = new_clones;
+      while (n)
+	{
+	  n->clone_of = next_inline_clone;
+	  n = n->next_sibling_clone;
+	}
+      return replacement;
+    }
+  else
+    return NULL;
+}
+
 /* Remove the node from cgraph.  */
 
 void
 cgraph_remove_node (struct cgraph_node *node)
 {
-  void **slot;
-  bool kill_body = false;
   struct cgraph_node *n;
   int uid = node->uid;
 
@@ -1423,91 +1375,6 @@ cgraph_remove_node (struct cgraph_node *node)
       *node2 = node->next_nested;
     }
   symtab_unregister_node ((symtab_node)node);
-  slot = htab_find_slot (cgraph_hash, node, NO_INSERT);
-  if (*slot == node)
-    {
-      struct cgraph_node *next_inline_clone;
-
-      for (next_inline_clone = node->clones;
-      	   next_inline_clone
-	   && next_inline_clone->symbol.decl != node->symbol.decl;
-	   next_inline_clone = next_inline_clone->next_sibling_clone)
-	;
-
-      /* If there is inline clone of the node being removed, we need
-         to put it into the position of removed node and reorganize all
-	 other clones to be based on it.  */
-      if (next_inline_clone)
-	{
-	  struct cgraph_node *n;
-	  struct cgraph_node *new_clones;
-
-	  *slot = next_inline_clone;
-
-	  /* Unlink inline clone from the list of clones of removed node.  */
-	  if (next_inline_clone->next_sibling_clone)
-	    next_inline_clone->next_sibling_clone->prev_sibling_clone
-	      = next_inline_clone->prev_sibling_clone;
-	  if (next_inline_clone->prev_sibling_clone)
-	    {
-	      gcc_assert (node->clones != next_inline_clone);
-	      next_inline_clone->prev_sibling_clone->next_sibling_clone
-	        = next_inline_clone->next_sibling_clone;
-	    }
-	  else
-	    {
-	      gcc_assert (node->clones == next_inline_clone);
-	      node->clones = next_inline_clone->next_sibling_clone;
-	    }
-
-	  new_clones = node->clones;
-	  node->clones = NULL;
-
-	  /* Copy clone info.  */
-	  next_inline_clone->clone = node->clone;
-
-	  /* Now place it into clone tree at same level at NODE.  */
-	  next_inline_clone->clone_of = node->clone_of;
-	  next_inline_clone->prev_sibling_clone = NULL;
-	  next_inline_clone->next_sibling_clone = NULL;
-	  if (node->clone_of)
-	    {
-	      if (node->clone_of->clones)
-	        node->clone_of->clones->prev_sibling_clone = next_inline_clone;
-	      next_inline_clone->next_sibling_clone = node->clone_of->clones;
-	      node->clone_of->clones = next_inline_clone;
-	    }
-
-	  /* Merge the clone list.  */
-	  if (new_clones)
-	    {
-	      if (!next_inline_clone->clones)
-		next_inline_clone->clones = new_clones;
-	      else
-		{
-		  n = next_inline_clone->clones;
-		  while (n->next_sibling_clone)
-		    n =  n->next_sibling_clone;
-		  n->next_sibling_clone = new_clones;
-		  new_clones->prev_sibling_clone = n;
-		}
-	    }
-
-	  /* Update clone_of pointers.  */
-	  n = new_clones;
-	  while (n)
-	    {
-	      n->clone_of = next_inline_clone;
-	      n = n->next_sibling_clone;
-	    }
-	}
-      else
-	{
-	  htab_clear_slot (cgraph_hash, slot);
-	  kill_body = true;
-	}
-
-    }
   if (node->prev_sibling_clone)
     node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
   else if (node->clone_of)
@@ -1549,29 +1416,15 @@ cgraph_remove_node (struct cgraph_node *node)
      itself is kept in the cgraph even after it is compiled.  Check whether
      we are done with this body and reclaim it proactively if this is the case.
      */
-  if (!kill_body && *slot)
-    {
-      struct cgraph_node *n = (struct cgraph_node *) *slot;
-      if (!n->clones && !n->clone_of && !n->global.inlined_to
+  n = cgraph_get_node (node->symbol.decl);
+  if (!n
+      || (!n->clones && !n->clone_of && !n->global.inlined_to
 	  && (cgraph_global_info_ready
 	      && (TREE_ASM_WRITTEN (n->symbol.decl)
 		  || DECL_EXTERNAL (n->symbol.decl)
-		  || n->symbol.in_other_partition)))
-	kill_body = true;
-    }
-  if (assembler_name_hash)
-    {
-      tree name = DECL_ASSEMBLER_NAME (node->symbol.decl);
-      slot = htab_find_slot_with_hash (assembler_name_hash, name,
-				       decl_assembler_name_hash (name),
-				       NO_INSERT);
-      /* Inline clones are not hashed.  */
-      if (slot && *slot == node)
-        htab_clear_slot (assembler_name_hash, slot);
-    }
-
-  if (kill_body)
+		  || n->symbol.in_other_partition))))
     cgraph_release_function_body (node);
+
   node->symbol.decl = NULL;
   if (node->call_site_hash)
     {
@@ -1939,51 +1792,6 @@ debug_cgraph (void)
   dump_cgraph (stderr);
 }
 
-
-/* Set the DECL_ASSEMBLER_NAME and update cgraph hashtables.  */
-
-void
-change_decl_assembler_name (tree decl, tree name)
-{
-  struct cgraph_node *node;
-  void **slot;
-  if (!DECL_ASSEMBLER_NAME_SET_P (decl))
-    SET_DECL_ASSEMBLER_NAME (decl, name);
-  else
-    {
-      if (name == DECL_ASSEMBLER_NAME (decl))
-	return;
-
-      if (assembler_name_hash
-	  && TREE_CODE (decl) == FUNCTION_DECL
-	  && (node = cgraph_get_node (decl)) != NULL)
-	{
-	  tree old_name = DECL_ASSEMBLER_NAME (decl);
-	  slot = htab_find_slot_with_hash (assembler_name_hash, old_name,
-					   decl_assembler_name_hash (old_name),
-					   NO_INSERT);
-	  /* Inline clones are not hashed.  */
-	  if (slot && *slot == node)
-	    htab_clear_slot (assembler_name_hash, slot);
-	}
-      if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
-	  && DECL_RTL_SET_P (decl))
-	warning (0, "%D renamed after being referenced in assembly", decl);
-
-      SET_DECL_ASSEMBLER_NAME (decl, name);
-    }
-  if (assembler_name_hash
-      && TREE_CODE (decl) == FUNCTION_DECL
-      && (node = cgraph_get_node (decl)) != NULL)
-    {
-      slot = htab_find_slot_with_hash (assembler_name_hash, name,
-				       decl_assembler_name_hash (name),
-				       INSERT);
-      gcc_assert (!*slot);
-      *slot = node;
-    }
-}
-
 /* Add a top-level asm statement to the list.  */
 
 struct cgraph_asm_node *
@@ -2153,25 +1961,6 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
     n->clones->prev_sibling_clone = new_node;
   n->clones = new_node;
   new_node->clone_of = n;
-
-  if (n->symbol.decl != decl)
-    {
-      struct cgraph_node **slot;
-      slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, new_node, INSERT);
-      gcc_assert (!*slot);
-      *slot = new_node;
-      if (assembler_name_hash)
-	{
-	  void **aslot;
-	  tree name = DECL_ASSEMBLER_NAME (decl);
-
-	  aslot = htab_find_slot_with_hash (assembler_name_hash, name,
-					    decl_assembler_name_hash (name),
-					    INSERT);
-	  gcc_assert (!*aslot);
-	  *aslot = new_node;
-	}
-    }
 
   if (call_duplication_hook)
     cgraph_call_node_duplication_hooks (n, new_node);

@@ -1,3 +1,45 @@
+2012-04-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_hash, assembler_name_hash): Remove.
+	(hash_node, eq_node): Remove.
+	(cgraph_create_node): Do not handle hashtable.
+	(cgraph_get_node): Remove.
+	(cgraph_insert_node_to_hashtable): Remove.
+	(hash_node_by_assembler_name): Remove.
+	(eq_assembler_name): Remove.
+	(cgraph_node_for_asm): Rewrite.
+	(cgraph_find_replacement_node): Break out from ...
+	(cgraph_remove_node): ... here; do not maintain hashtables.
+	(change_decl_assembler_name): Remove.
+	(cgraph_clone_node): Do not maintain hashtables.
+	* cgraph.h (const_symtab_node): New typedef.
+	(cgraph_insert_node_to_hashtable): Remove.
+	(symtab_get_node, symtab_node_for_asm,
+	symtab_insert_node_to_hashtable): Declare.
+	(cgraph_find_replacement_node): Declare.
+	(cgraph_get_node, varpool_get_node): Turn into inlines.
+	(cgraph, varpool): Work sanely on NULL pointers.
+	(FOR_EACH_SYMBOL): New walker.
+	* ipa-inline-transform.c (save_inline_function_body): Use
+	symtab_insert_node_to_hashtable.
+	* symtab.c: Include ggc.h and diagnostics.h
+	(symtab_hash, assembler_name_hash): New static vars;
+	(hash_node, eq_node, hash_node_by_assembler_name,
+	eq_assembler_name, insert_to_assembler_name_hash,
+	unlink_from_assembler_name_hash): New.
+	(symtab_register_node): Update hashtables.
+	(symtab_insert_node_to_hashtable): New.
+	(symtab_unregister_node): Update hashtables.
+	(symtab_get_node): New.
+	(symtab_node_for_asm): New.
+	(change_decl_assembler_name): New.
+	* Makefile.in (symtab.o): Needs GTY.
+	* varpool.c (varpool_hash): Remove.
+	(hash_varpool_node, eq_varpool_node, varpool_get_node): Remove.
+	(varpool_node): Rewrite using varpool_get_node.
+	(varpool_remove_node): DO not maintain hashtables.
+	(varpool_node_for_asm); Rewrite.
+
 2012-04-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi:  Copy-edit to put verbs in the present tense
