@@ -98,16 +98,6 @@ struct case_node
 typedef struct case_node case_node;
 typedef struct case_node *case_node_ptr;
 
-/* These are used by estimate_case_costs and balance_case_nodes.  */
-
-/* This must be a signed type, and non-ANSI compilers lack signed char.  */
-static short cost_table_[129];
-static int use_cost_table;
-static int cost_table_initialized;
-
-/* Special care is needed because we allow -1, but TREE_INT_CST_LOW
-   is unsigned.  */
-#define COST_TABLE(I)  cost_table_[(unsigned HOST_WIDE_INT) ((I) + 1)]
 
 static int n_occurrences (int, const char *);
 static bool tree_conflicts_with_clobbers_p (tree, HARD_REG_SET *);
@@ -117,7 +107,6 @@ static bool check_unique_operand_names (tree, tree, tree);
 static char *resolve_operand_name_1 (char *, tree, tree, tree);
 static void expand_null_return_1 (void);
 static void expand_value_return (rtx);
-static int estimate_case_costs (case_node_ptr);
 static bool lshift_cheap_p (void);
 static int case_bit_test_cmp (const void *, const void *);
 static void emit_case_bit_tests (tree, tree, tree, tree, case_node_ptr, rtx);
@@ -2304,7 +2293,6 @@ expand_case (gimple stmt)
 	     decision tree an unconditional jump to the
 	     default code is emitted.  */
 
-	  use_cost_table = estimate_case_costs (case_list);
 	  balance_case_nodes (&case_list, NULL);
 	  emit_case_nodes (index, case_list, default_label, index_type);
 	  if (default_label)
@@ -2403,86 +2391,6 @@ do_jump_if_equal (enum machine_mode mode, rtx op0, rtx op1, rtx label,
 			   NULL_RTX, NULL_RTX, label, -1);
 }
 
-/* Not all case values are encountered equally.  This function
-   uses a heuristic to weight case labels, in cases where that
-   looks like a reasonable thing to do.
-
-   Right now, all we try to guess is text, and we establish the
-   following weights:
-
-	chars above space:	16
-	digits:			16
-	default:		12
-	space, punct:		8
-	tab:			4
-	newline:		2
-	other "\" chars:	1
-	remaining chars:	0
-
-   If we find any cases in the switch that are not either -1 or in the range
-   of valid ASCII characters, or are control characters other than those
-   commonly used with "\", don't treat this switch scanning text.
-
-   Return 1 if these nodes are suitable for cost estimation, otherwise
-   return 0.  */
-
-static int
-estimate_case_costs (case_node_ptr node)
-{
-  tree min_ascii = integer_minus_one_node;
-  tree max_ascii = build_int_cst (TREE_TYPE (node->high), 127);
-  case_node_ptr n;
-  int i;
-
-  /* If we haven't already made the cost table, make it now.  Note that the
-     lower bound of the table is -1, not zero.  */
-
-  if (! cost_table_initialized)
-    {
-      cost_table_initialized = 1;
-
-      for (i = 0; i < 128; i++)
-	{
-	  if (ISALNUM (i))
-	    COST_TABLE (i) = 16;
-	  else if (ISPUNCT (i))
-	    COST_TABLE (i) = 8;
-	  else if (ISCNTRL (i))
-	    COST_TABLE (i) = -1;
-	}
-
-      COST_TABLE (' ') = 8;
-      COST_TABLE ('\t') = 4;
-      COST_TABLE ('\0') = 4;
-      COST_TABLE ('\n') = 2;
-      COST_TABLE ('\f') = 1;
-      COST_TABLE ('\v') = 1;
-      COST_TABLE ('\b') = 1;
-    }
-
-  /* See if all the case expressions look like text.  It is text if the
-     constant is >= -1 and the highest constant is <= 127.  Do all comparisons
-     as signed arithmetic since we don't want to ever access cost_table with a
-     value less than -1.  Also check that none of the constants in a range
-     are strange control characters.  */
-
-  for (n = node; n; n = n->right)
-    {
-      if (tree_int_cst_lt (n->low, min_ascii)
-	  || tree_int_cst_lt (max_ascii, n->high))
-	return 0;
-
-      for (i = (HOST_WIDE_INT) TREE_INT_CST_LOW (n->low);
-	   i <= (HOST_WIDE_INT) TREE_INT_CST_LOW (n->high); i++)
-	if (COST_TABLE (i) < 0)
-	  return 0;
-    }
-
-  /* All interesting values are within the range of interesting
-     ASCII characters.  */
-  return 1;
-}
-
 /* Take an ordered list of case nodes
    and transform them into a near optimal binary tree,
    on the assumption that any target code selection value is as
@@ -2501,7 +2409,6 @@ balance_case_nodes (case_node_ptr *head, case_node_ptr parent)
   np = *head;
   if (np)
     {
-      int cost = 0;
       int i = 0;
       int ranges = 0;
       case_node_ptr *npp;
@@ -2512,14 +2419,7 @@ balance_case_nodes (case_node_ptr *head, case_node_ptr parent)
       while (np)
 	{
 	  if (!tree_int_cst_equal (np->low, np->high))
-	    {
-	      ranges++;
-	      if (use_cost_table)
-		cost += COST_TABLE (TREE_INT_CST_LOW (np->high));
-	    }
-
-	  if (use_cost_table)
-	    cost += COST_TABLE (TREE_INT_CST_LOW (np->low));
+	    ranges++;
 
 	  i++;
 	  np = np->right;
@@ -2530,37 +2430,9 @@ balance_case_nodes (case_node_ptr *head, case_node_ptr parent)
 	  /* Split this list if it is long enough for that to help.  */
 	  npp = head;
 	  left = *npp;
-	  if (use_cost_table)
-	    {
-	      /* Find the place in the list that bisects the list's total cost,
-		 Here I gets half the total cost.  */
-	      int n_moved = 0;
-	      i = (cost + 1) / 2;
-	      while (1)
-		{
-		  /* Skip nodes while their cost does not reach that amount.  */
-		  if (!tree_int_cst_equal ((*npp)->low, (*npp)->high))
-		    i -= COST_TABLE (TREE_INT_CST_LOW ((*npp)->high));
-		  i -= COST_TABLE (TREE_INT_CST_LOW ((*npp)->low));
-		  if (i <= 0)
-		    break;
-		  npp = &(*npp)->right;
-		  n_moved += 1;
-		}
-	      if (n_moved == 0)
-		{
-		  /* Leave this branch lopsided, but optimize left-hand
-		     side and fill in `parent' fields for right-hand side.  */
-		  np = *head;
-		  np->parent = parent;
-		  balance_case_nodes (&np->left, np);
-		  for (; np->right; np = np->right)
-		    np->right->parent = np;
-		  return;
-		}
-	    }
+
 	  /* If there are just three nodes, split at the middle one.  */
-	  else if (i == 3)
+	  if (i == 3)
 	    npp = &(*npp)->right;
 	  else
 	    {

@@ -1,3 +1,12 @@
+2012-04-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* stmt.c (cost_table_, use_cost_table, cost_table_initialize,
+	COST_TABLE): Remove.
+	(estimate_case_costs): Remove.
+	(expand_case): Do not call estimate_case_costs
+	to set use_cost_table.
+	(balance_case_nodes): Do not use use_cost_table.
+
 2012-04-16  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_hash, assembler_name_hash): Remove.
