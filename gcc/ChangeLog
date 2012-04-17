@@ -1,3 +1,13 @@
+2012-04-17  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/18437
+	* tree-vectorizer.h (_stmt_vec_info.stride_load_p): New member.
+	(STMT_VINFO_STRIDE_LOAD_P): New accessor.
+	(vect_check_strided_load): Declare.
+	* tree-vect-data-refs.c (vect_check_strided_load): New function.
+	(vect_analyze_data_refs): Use it to accept strided loads.
+	* tree-vect-stmts.c (vectorizable_load): Ditto and handle them.
+
 2012-04-17  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53011
