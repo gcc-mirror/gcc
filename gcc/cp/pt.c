@@ -6437,6 +6437,7 @@ convert_template_argument (tree parm,
   is_tmpl_type = 
     ((TREE_CODE (arg) == TEMPLATE_DECL
       && TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
+     || (requires_tmpl_type && TREE_CODE (arg) == TYPE_ARGUMENT_PACK)
      || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
      || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE);
 
@@ -6508,7 +6509,9 @@ convert_template_argument (tree parm,
     {
       if (requires_tmpl_type)
 	{
-	  if (TREE_CODE (TREE_TYPE (arg)) == UNBOUND_CLASS_TEMPLATE)
+	  if (template_parameter_pack_p (parm) && ARGUMENT_PACK_P (orig_arg))
+	    val = orig_arg;
+	  else if (TREE_CODE (TREE_TYPE (arg)) == UNBOUND_CLASS_TEMPLATE)
 	    /* The number of argument required is not known yet.
 	       Just accept it for now.  */
 	    val = TREE_TYPE (arg);
