@@ -1,3 +1,9 @@
+2012-04-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53020
+	* config/i386/sync.md (atomic_<code><mode>): Rename to
+	atomic_<logic><mode>.
+
 2012-04-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* rtl.def (ADDRESS): Turn operand into a HOST_WIDE_INT.
@@ -240,7 +246,7 @@
 	PR tree-optimization/52975
 	* tree-if-conv.c (predicate_bbs): Do not simplify inverted
 	condition but always mark it with TRUTH_NOT_EXPR.
- 
+
 2012-04-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52975
@@ -1540,8 +1546,7 @@
 
 	PR middle-end/50708
 	* double-int.h (rshift_double): Remove.
-	* double-int.c (lshift_double): Use absu_hwi to make count
-	positive.
+	* double-int.c (lshift_double): Use absu_hwi to make count positive.
 	(rshift_double): Make static, take unsigned count argument,
 	remove handling of negative count argument.
 	(double_int_rshift): Dispatch to lshift_double.
@@ -4168,8 +4173,7 @@
 	2012-02-20  Richard Guenther  <rguenther@suse.de>
 	PR tree-optimization/52298
 	* tree-vect-stmts.c (vectorizable_load): Properly use
-	STMT_VINFO_DR_STEP instead of DR_STEP when vectorizing
-	outer loops.
+	STMT_VINFO_DR_STEP instead of DR_STEP when vectorizing outer loops.
 
 2012-02-28  Aldy Hernandez  <aldyh@redhat.com>
 
