@@ -1,6 +1,6 @@
 // <atomic> compatibility -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010, 2011
+// Copyright (C) 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -29,6 +29,8 @@
 
 // XXX GLIBCXX_ABI Deprecated
 // gcc-4.7.0
+
+#ifdef PIC
 
 #define LOGSIZE 4
 
@@ -133,6 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
+#endif
 
 // XXX GLIBCXX_ABI Deprecated
 // gcc-4.5.0
