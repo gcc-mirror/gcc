@@ -3,7 +3,7 @@
 
 #define N 1024
 
-float a[N], b[N+3];
+float a[N+3], b[N];
 
 void
 avx_test (void)
