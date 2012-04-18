@@ -1,3 +1,7 @@
+2012-04-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/sync.md (fetchop_name): Change ior attribute to "or".
+
 2012-04-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/52976
@@ -893,8 +897,7 @@
 
 	PR rtl-optimization/52876
 	* emit-rtl.c (set_reg_attrs_from_value): Handle arbitrary value.
-	Don't call mark_reg_pointer for incompatible pointer sign
-	extension.
+	Don't call mark_reg_pointer for incompatible pointer sign extension.
 
 	* reginfo.c (reg_scan_mark_refs): Call set_reg_attrs_from_value
 	directly.
