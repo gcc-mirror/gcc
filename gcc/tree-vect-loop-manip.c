@@ -2167,6 +2167,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   struct loop *new_loop;
   unsigned int th = 0;
   int min_profitable_iters;
+  int max_iter;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_do_peeling_for_alignment ===");
@@ -2192,6 +2193,11 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
 #ifdef ENABLE_CHECKING
   slpeel_verify_cfg_after_peeling (new_loop, loop);
 #endif
+  max_iter = MAX (LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1, (int) th);
+  record_niter_bound (new_loop, shwi_to_double_int (max_iter), false, true);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Setting upper bound of nb iterations for prologue "
+	     "loop to %d\n", max_iter);
 
   /* Update number of times loop executes.  */
   n_iters = LOOP_VINFO_NITERS (loop_vinfo);

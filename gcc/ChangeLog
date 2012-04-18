@@ -1,3 +1,15 @@
+2012-04-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44688
+	* cfgloop.h (record_niter_bound): Declare.
+	* tree-ssa-loop-niter.c (record_niter_bound): Export.
+	Update the estimation with the upper bound here...
+	(estimate_numbers_of_iterations_loop): ... instead of here.
+	Do not forcefully reset a recorded upper bound.
+	* tree-vect-loop-manip.c (vect_do_peeling_for_alignment):
+	Record the maximum number of loop iterations of the
+	prologue loop.
+
 2012-04-18  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_cgraph_replace_node): Update.
