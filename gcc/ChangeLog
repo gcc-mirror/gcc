@@ -1,5 +1,14 @@
 2012-04-18  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* tree-switch-conversion.c (info): Remove global pass info.
+	(check_range, check_process_case, check_final_bb, create_temp_arrays,
+	free_temp_arrays, gather_default_values, build_constructors,
+	array_value_type, build_one_array, build_arrays, gen_def_assigns,
+	fix_phi_nodes, gen_inbound_check): Pass info around from ...
+	(process_switch): ... here.  Unify message format.  Return a const
+	char pointer to the failure reason message.
+	(do_switchconv): Unify message format.  Update process_switch usage.
+
 	* tree.def (CASE_LABEL_EXPR): Fix documentation, mention all operands.
 	* tree-cfg.c (edge_to_cases): Fix documentation.
 
