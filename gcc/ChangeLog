@@ -1,3 +1,12 @@
+2012-04-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* targhooks.c (default_case_values_threshold): Fix code style nit.
+
+	* stmt.c (add_case_node, expand_case): Move logic to remove/reduce
+	case range and type folding from here...
+	* gimplify.c (gimplify_switch_expr): ... to here.  Expect NULL_TREE
+	type, as documented in tree.def
+
 2012-04-18  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (verify_symtab, verify_symtab_node, verify_symtab_base):

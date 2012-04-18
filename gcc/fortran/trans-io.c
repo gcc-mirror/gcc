@@ -882,7 +882,8 @@ io_result (stmtblock_t * block, tree var, gfc_st_label * err_label,
 			rc, build_int_cst (TREE_TYPE (rc),
 					   IOPARM_common_libreturn_mask));
 
-  tmp = build3_v (SWITCH_EXPR, rc, tmp, NULL_TREE);
+  tmp = fold_build3_loc (input_location, SWITCH_EXPR, NULL_TREE,
+			 rc, tmp, NULL_TREE);
 
   gfc_add_expr_to_block (block, tmp);
 }

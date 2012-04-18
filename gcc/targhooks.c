@@ -1200,7 +1200,8 @@ default_target_can_inline_p (tree caller, tree callee)
    this means extra overhead for dispatch tables, which raises the
    threshold for using them.  */
 
-unsigned int default_case_values_threshold (void)
+unsigned int
+default_case_values_threshold (void)
 {
   return (HAVE_casesi ? 4 : 5);
 }

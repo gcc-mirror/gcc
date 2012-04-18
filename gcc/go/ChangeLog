@@ -1,3 +1,8 @@
+2012-04-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* go-gcc.cc (Gcc_backend::switch_statement): Build SWITCH_EXPR
+	with NULL_TREE type instead of void_type_node.
+
 2012-03-09  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::assignment_statement): Convert the rhs
