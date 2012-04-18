@@ -930,7 +930,8 @@ cgraph_analyze_function (struct cgraph_node *node)
 	    return;
 	  }
       if (!VEC_length (ipa_ref_t, node->symbol.ref_list.references))
-        ipa_record_reference (node, NULL, tgt, NULL, IPA_REF_ALIAS, NULL);
+        ipa_record_reference ((symtab_node)node, (symtab_node)tgt,
+			      IPA_REF_ALIAS, NULL);
       if (node->same_body_alias)
 	{ 
 	  DECL_VIRTUAL_P (node->symbol.decl) = DECL_VIRTUAL_P (node->thunk.alias);
@@ -1031,7 +1032,8 @@ cgraph_process_same_body_aliases (void)
 	&& !VEC_length (ipa_ref_t, node->symbol.ref_list.references))
       {
         struct cgraph_node *tgt = cgraph_get_node (node->thunk.alias);
-        ipa_record_reference (node, NULL, tgt, NULL, IPA_REF_ALIAS, NULL);
+        ipa_record_reference ((symtab_node)node, (symtab_node)tgt,
+			      IPA_REF_ALIAS, NULL);
       }
   same_body_aliases_done = true;
 }
@@ -1848,11 +1850,11 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
       }
     else
       e = e->next_caller;
-  for (i = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list,
+  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list,
 					     i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
-	struct cgraph_node *alias = ipa_ref_refering_node (ref);
+	struct cgraph_node *alias = ipa_ref_referring_node (ref);
         bool saved_written = TREE_ASM_WRITTEN (alias->thunk.alias);
 
 	/* Force assemble_alias to really output the alias this time instead

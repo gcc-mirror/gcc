@@ -21,6 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 
 struct cgraph_node;
 struct varpool_node;
+union symtab_node_def;
+typedef union symtab_node_def *symtab_node;
+typedef const union symtab_node_def *const_symtab_node;
+
 
 /* How the reference is done.  */
 enum GTY(()) ipa_ref_use
@@ -31,30 +35,13 @@ enum GTY(()) ipa_ref_use
   IPA_REF_ALIAS
 };
 
-/* Type of refering or refered type.  */
-enum GTY(()) ipa_ref_type
-{
-  IPA_REF_CGRAPH,
-  IPA_REF_VARPOOL
-};
-
-/* We can have references spanning both callgraph and varpool,
-   so all pointers needs to be of both types.  */
-union GTY(()) ipa_ref_ptr_u
-{
-  struct cgraph_node * GTY((tag ("IPA_REF_CGRAPH"))) cgraph_node;
-  struct varpool_node * GTY((tag ("IPA_REF_VARPOOL"))) varpool_node;
-};
-
 /* Record of reference in callgraph or varpool.  */
 struct GTY(()) ipa_ref
 {
-  union ipa_ref_ptr_u GTY ((desc ("%1.refering_type"))) refering;
-  union ipa_ref_ptr_u GTY ((desc ("%1.refered_type"))) refered;
+  symtab_node referring;
+  symtab_node referred;
   gimple stmt;
-  unsigned int refered_index;
-  ENUM_BITFIELD (ipa_ref_type) refering_type:1;
-  ENUM_BITFIELD (ipa_ref_type) refered_type:1;
+  unsigned int referred_index;
   ENUM_BITFIELD (ipa_ref_use) use:2;
 };
 
@@ -73,21 +60,19 @@ struct GTY(()) ipa_ref_list
   VEC(ipa_ref_t,gc) *references;
   /* Refering is vector of pointers to references.  It must not live in GGC space
      or GGC will try to mark middle of references vectors.  */
-  VEC(ipa_ref_ptr,heap) * GTY((skip)) refering;
+  VEC(ipa_ref_ptr,heap) * GTY((skip)) referring;
 };
 
-struct ipa_ref * ipa_record_reference (struct cgraph_node *,
-				       struct varpool_node *,
-				       struct cgraph_node *,
-				       struct varpool_node *,
+struct ipa_ref * ipa_record_reference (symtab_node,
+				       symtab_node,
 				       enum ipa_ref_use, gimple);
 
 void ipa_remove_reference (struct ipa_ref *);
 void ipa_remove_all_references (struct ipa_ref_list *);
-void ipa_remove_all_refering (struct ipa_ref_list *);
+void ipa_remove_all_referring (struct ipa_ref_list *);
 void ipa_dump_references (FILE *, struct ipa_ref_list *);
-void ipa_dump_refering (FILE *, struct ipa_ref_list *);
-void ipa_clone_references (struct cgraph_node *, struct varpool_node *, struct ipa_ref_list *);
-void ipa_clone_refering (struct cgraph_node *, struct varpool_node *, struct ipa_ref_list *);
+void ipa_dump_referring (FILE *, struct ipa_ref_list *);
+void ipa_clone_references (symtab_node, struct ipa_ref_list *);
+void ipa_clone_referring (symtab_node, struct ipa_ref_list *);
 bool ipa_ref_cannot_lead_to_return (struct ipa_ref *);
 bool ipa_ref_has_aliases_p (struct ipa_ref_list *);

@@ -1,3 +1,76 @@
+2012-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Update.
+	* cgraphbuild.c (record_reference, record_type_list,
+	record_eh_tables, mark_address, mark_load, mark_store): Update.
+	* cgraph.c (cgraph_same_body_alias, dump_cgraph_node,
+	cgraph_create_virtual_clone, cgraph_for_node_thunks_and_aliases):
+	Update.
+	* cgraph.h (symtab_node_def, symtab_node, const_symtab_node): Remove.
+	(cgraph_alias_aliased_node, varpool_alias_aliased_node): Update.
+	* reload.c: Fix typo in comment.
+	* rtlanal.c: Likewise.
+	* tree-emultls.c (gen_emutls_addr): Update.
+	* ipa-reference.c (analyze_function): Update.
+	* cgraphunit.c (cgraph_analyze_function,
+	cgraph_process_same_body_aliases, assemble_thunks_and_aliases):
+	Update.
+	* ipa-ref.c (ipa_record_reference): Reorg to avoid reference types.
+	(ipa_remove_reference): Likewise.
+	(ipa_remove_all_refering): Rename to ...
+	(ipa_remove_all_referring): ... this one; update.
+	(ipa_dump_references): Update.
+	(ipa_dump_referring): Update.
+	(ipa_clone_references): Update.
+	(ipa_clone_refering): Rename to ...
+	(ipa_clone_referring): ... this one; update.
+	(ipa_ref_cannot_lead_to_return): Update.
+	(ipa_ref_has_aliases_p): Update.
+	* ipa-ref.h (symtab_node_def, symtab_node, const_symtab_node): New
+	forward typedefs.
+	(ipa_ref_type): Remove.
+	(ipa_ref_ptr_u): Remove.
+	(ipa_ref): Remove referencing, refered, refered_index, refering_type
+	and refered_type; add referring, referred and referred_index.
+	(ipa_ref_list): Rename refering to referring.
+	(ipa_record_reference, ipa_remove_all_referring, ipa_dump_referring,
+	ipa_clone_references, ipa_clone_referring): Update prototypes.
+	* lto-cgraph.c (referenced_from_other_partition_p): Update.
+	(lto_output_ref): Update.
+	(add_references): Update.
+	(input_varpool_node): Update.
+	(input_refs): Update.
+	* ipa-ref-inline.h (ipa_ref_node): Update.
+	(ipa_ref_varpool_node): Update.
+	(ipa_ref_referring_node); Update.
+	(ipa_ref_referring_varpool_node): Update.
+	(ipa_ref_referring_ref_list); Update.
+	(ipa_ref_referred_ref_list): Update.
+	(ipa_ref_list_first_referring): Update.
+	(ipa_empty_ref_list): Update.
+	(ipa_ref_list_refering_iterate): Rename to ...
+	(ipa_ref_list_referring_iterate): ... this one.
+	* cse.c: Update comment.
+	* ipa-utils.c (ipa_reverse_postorder): Update.
+	* tree-ssa-alias.c: Update.
+	* ipa-inline.c (reset_edge_caches): Update.
+	(update_caller_keys): Update.
+	* ipa-inline.h: Update comments.
+	* jump.c: Update comment.
+	* alias.c: Likewise.
+	* ipa.c (process_references): Update.
+	(cgraph_remove_unreachable_nodes): Likewise.
+	(ipa_discover_readonly_nonaddressable_var): Likewise.
+	(cgraph_address_taken_from_non_vtable_p): Likewise.
+	* trans-mem.c (ipa_tm_execute): Update.
+	* simplify-rtx.c: Fix comment.
+	* rtl.c: Fix comment.
+	* symtab.c (symtab_unregister_node): Update.
+	* varpool.c (dump_varpool_node): Update.
+	(varpool_analyze_pending_decls): Update.
+	(assemble_aliases): Update.
+	(varpool_for_node_and_aliases): Update.
+
 2012-04-18  Richard Guenther  <rguenther@suse.de>
 
 	* cfgloop.h (estimate_numbers_of_iterations_loop): Remove

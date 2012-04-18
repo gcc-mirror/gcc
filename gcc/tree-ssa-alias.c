@@ -1010,7 +1010,7 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
       || CONSTANT_CLASS_P (base2))
     return false;
 
-  /* We can end up refering to code via function and label decls.
+  /* We can end up referring to code via function and label decls.
      As we likely do not properly track code aliases conservatively
      bail out.  */
   if (TREE_CODE (base1) == FUNCTION_DECL

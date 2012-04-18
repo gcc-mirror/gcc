@@ -191,7 +191,7 @@ symtab_unregister_node (symtab_node node)
 {
   void **slot;
   ipa_remove_all_references (&node->symbol.ref_list);
-  ipa_remove_all_refering (&node->symbol.ref_list);
+  ipa_remove_all_referring (&node->symbol.ref_list);
 
   if (node->symbol.same_comdat_group)
     {
@@ -429,8 +429,8 @@ dump_symtab_base (FILE *f, symtab_node node)
 
   fprintf (f, "  References: ");
   ipa_dump_references (f, &node->symbol.ref_list);
-  fprintf (f, "  Refering: ");
-  ipa_dump_refering (f, &node->symbol.ref_list);
+  fprintf (f, "  Referring: ");
+  ipa_dump_referring (f, &node->symbol.ref_list);
 }
 
 /* Dump symtab node.  */

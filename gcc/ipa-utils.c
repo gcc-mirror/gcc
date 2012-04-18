@@ -295,13 +295,13 @@ ipa_reverse_postorder (struct cgraph_node **order)
 			    (cgraph_function_node (edge->callee, NULL)->symbol.decl))
 			node2 = NULL;
 		    }
-		  for (;ipa_ref_list_refering_iterate (&stack[stack_size].node->symbol.ref_list,
+		  for (;ipa_ref_list_referring_iterate (&stack[stack_size].node->symbol.ref_list,
 						       stack[stack_size].ref,
 						       ref) && !node2;
 		       stack[stack_size].ref++)
 		    {
 		      if (ref->use == IPA_REF_ALIAS)
-			node2 = ipa_ref_refering_node (ref);
+			node2 = ipa_ref_referring_node (ref);
 		    }
 		  if (!node2)
 		    break;

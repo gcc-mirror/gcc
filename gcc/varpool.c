@@ -380,7 +380,7 @@ varpool_analyze_pending_decls (void)
 		continue;
 	      }
 	  if (!VEC_length (ipa_ref_t, node->symbol.ref_list.references))
-	    ipa_record_reference (NULL, node, NULL, tgt, IPA_REF_ALIAS, NULL);
+	    ipa_record_reference ((symtab_node)node, (symtab_node)tgt, IPA_REF_ALIAS, NULL);
 	  /* C++ FE sometimes change linkage flags after producing same body aliases.  */
 	  if (node->extra_name_alias)
 	    {
@@ -433,10 +433,10 @@ assemble_aliases (struct varpool_node *node)
 {
   int i;
   struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list, i, ref); i++)
+  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
-	struct varpool_node *alias = ipa_ref_refering_varpool_node (ref);
+	struct varpool_node *alias = ipa_ref_referring_varpool_node (ref);
 	assemble_alias (alias->symbol.decl,
 			DECL_ASSEMBLER_NAME (alias->alias_of));
 	assemble_aliases (alias);
@@ -676,10 +676,10 @@ varpool_for_node_and_aliases (struct varpool_node *node,
 
   if (callback (node, data))
     return true;
-  for (i = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list, i, ref); i++)
+  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
-	struct varpool_node *alias = ipa_ref_refering_varpool_node (ref);
+	struct varpool_node *alias = ipa_ref_referring_varpool_node (ref);
 	if (include_overwritable
 	    || cgraph_variable_initializer_availability (alias) > AVAIL_OVERWRITABLE)
           if (varpool_for_node_and_aliases (alias, callback, data,

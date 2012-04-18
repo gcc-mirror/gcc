@@ -4931,9 +4931,9 @@ ipa_tm_execute (void)
 	}
 
       /* Propagate back to referring aliases as well.  */
-      for (j = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list, j, ref); j++)
+      for (j = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, j, ref); j++)
 	{
-	  caller = ref->refering.cgraph_node;
+	  caller = cgraph (ref->referring);
 	  if (ref->use == IPA_REF_ALIAS
 	      && !caller->local.tm_may_enter_irr)
 	    {

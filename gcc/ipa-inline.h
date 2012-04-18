@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
    Conditions that are interesting for function body are collected into CONDS
    vector.  They are of simple for  function_param OP VAL, where VAL is
-   IPA invariant.  The conditions are then refered by predicates.  */
+   IPA invariant.  The conditions are then referred by predicates.  */
 
 typedef struct GTY(()) condition
   {
