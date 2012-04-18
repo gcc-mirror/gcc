@@ -1,3 +1,7 @@
+2012-04-18  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.target/arm/thumb1-imm.c: Skip it in non-thumb1 target.
+
 2012-04-18  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.target/x86_64/abi/test_passing_unions.c: Avoid undefined
