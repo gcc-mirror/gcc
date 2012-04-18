@@ -5692,7 +5692,11 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      value_dependent_expression_p.  */
   if (TYPE_PTROBV_P (type)
       && TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE)
-    expr = decay_conversion (expr);
+    {
+      expr = decay_conversion (expr, complain);
+      if (expr == error_mark_node)
+	return error_mark_node;
+    }
 
   /* If we are in a template, EXPR may be non-dependent, but still
      have a syntactic, rather than semantic, form.  For example, EXPR
@@ -5900,7 +5904,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    }
 	}
 
-      expr = decay_conversion (expr);
+      expr = decay_conversion (expr, complain);
       if (expr == error_mark_node)
 	return error_mark_node;
 
@@ -5985,7 +5989,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	 context information to decay the pointer.  */
       if (!type_unknown_p (expr_type))
 	{
-	  expr = decay_conversion (expr);
+	  expr = decay_conversion (expr, complain);
 	  if (expr == error_mark_node)
 	    return error_mark_node;
 	}

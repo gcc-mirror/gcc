@@ -263,7 +263,7 @@ check_dtor_name (tree basetype, tree name)
    pointer-to-member function.  */
 
 tree
-build_addr_func (tree function)
+build_addr_func (tree function, tsubst_flags_t complain)
 {
   tree type = TREE_TYPE (function);
 
@@ -275,12 +275,13 @@ build_addr_func (tree function)
 	{
 	  tree object = build_address (TREE_OPERAND (function, 0));
 	  return get_member_function_from_ptrfunc (&object,
-						   TREE_OPERAND (function, 1));
+						   TREE_OPERAND (function, 1),
+						   complain);
 	}
       function = build_address (function);
     }
   else
-    function = decay_conversion (function);
+    function = decay_conversion (function, complain);
 
   return function;
 }
@@ -341,7 +342,7 @@ build_call_a (tree function, int n, tree *argarray)
   tree fntype;
   int i;
 
-  function = build_addr_func (function);
+  function = build_addr_func (function, tf_warning_or_error);
 
   gcc_assert (TYPE_PTR_P (TREE_TYPE (function)));
   fntype = TREE_TYPE (TREE_TYPE (function));
@@ -4373,9 +4374,9 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
 	 since it can't have any effect and since decay_conversion
 	 does not handle that case gracefully.  */
       if (!VOID_TYPE_P (arg2_type))
-	arg2 = decay_conversion (arg2);
+	arg2 = decay_conversion (arg2, complain);
       if (!VOID_TYPE_P (arg3_type))
-	arg3 = decay_conversion (arg3);
+	arg3 = decay_conversion (arg3, complain);
       arg2_type = TREE_TYPE (arg2);
       arg3_type = TREE_TYPE (arg3);
 
@@ -5263,7 +5264,7 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     case MEMBER_REF:
       return build_m_component_ref (cp_build_indirect_ref (arg1, RO_NULL, 
                                                            complain), 
-                                    arg2);
+                                    arg2, complain);
 
       /* The caller will deal with these.  */
     case ADDR_EXPR:
@@ -5807,7 +5808,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	/* Build up the initializer_list object.  */
 	totype = complete_type (totype);
 	field = next_initializable_field (TYPE_FIELDS (totype));
-	CONSTRUCTOR_APPEND_ELT (vec, field, decay_conversion (array));
+	CONSTRUCTOR_APPEND_ELT (vec, field, decay_conversion (array, complain));
 	field = next_initializable_field (DECL_CHAIN (field));
 	CONSTRUCTOR_APPEND_ELT (vec, field, size_int (len));
 	new_ctor = build_constructor (totype, vec);
@@ -5844,7 +5845,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
   switch (convs->kind)
     {
     case ck_rvalue:
-      expr = decay_conversion (expr);
+      expr = decay_conversion (expr, complain);
+      if (expr == error_mark_node)
+	return error_mark_node;
+
       if (! MAYBE_CLASS_TYPE_P (totype))
 	return expr;
       /* Else fall through.  */
@@ -5970,7 +5974,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       }
 
     case ck_lvalue:
-      return decay_conversion (expr);
+      return decay_conversion (expr, complain);
 
     case ck_qual:
       /* Warn about deprecated conversion if appropriate.  */
@@ -6014,7 +6018,7 @@ convert_arg_to_ellipsis (tree arg)
 
      The lvalue-to-rvalue, array-to-pointer, and function-to-pointer
      standard conversions are performed.  */
-  arg = decay_conversion (arg);
+  arg = decay_conversion (arg, tf_warning_or_error);
   arg_type = TREE_TYPE (arg);
   /* [expr.call]
 
@@ -6341,7 +6345,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
      errors will be deferred until the template is instantiated.  */
   if (processing_template_decl)
     {
-      tree expr;
+      tree expr, addr;
       tree return_type;
       const tree *argarray;
       unsigned int nargs;
@@ -6363,9 +6367,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    alcarray[ix + 1] = arg;
 	  argarray = alcarray;
 	}
-      expr = build_call_array_loc (input_location,
-				   return_type, build_addr_func (fn), nargs,
-				   argarray);
+
+      addr = build_addr_func (fn, complain);
+      if (addr == error_mark_node)
+	return error_mark_node;
+      expr = build_call_array_loc (input_location, return_type,
+				   addr, nargs, argarray);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
       return convert_from_reference (expr);
@@ -6782,7 +6789,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       TREE_TYPE (fn) = t;
     }
   else
-    fn = build_addr_func (fn);
+    {
+      fn = build_addr_func (fn, complain);
+      if (fn == error_mark_node)
+	return error_mark_node;
+    }
 
   return build_cxx_call (fn, nargs, argarray);
 }
@@ -7003,7 +7014,9 @@ build_special_member_call (tree instance, tree name, VEC(tree,gc) **args,
 	 or destructor, then we fetch the VTT directly.
 	 Otherwise, we look it up using the VTT we were given.  */
       vtt = DECL_CHAIN (CLASSTYPE_VTABLES (current_class_type));
-      vtt = decay_conversion (vtt);
+      vtt = decay_conversion (vtt, complain);
+      if (vtt == error_mark_node)
+	return error_mark_node;
       vtt = build3 (COND_EXPR, TREE_TYPE (vtt),
 		    build2 (EQ_EXPR, boolean_type_node,
 			    current_in_charge_parm, integer_zero_node),
