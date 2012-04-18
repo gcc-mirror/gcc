@@ -5,7 +5,7 @@
 	* stmt.c (add_case_node, expand_case): Move logic to remove/reduce
 	case range and type folding from here...
 	* gimplify.c (gimplify_switch_expr): ... to here.  Expect NULL_TREE
-	type, as documented in tree.def
+	type, as documented in tree.def.
 
 2012-04-18  Jan Hubicka  <jh@suse.cz>
 
