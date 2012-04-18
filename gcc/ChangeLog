@@ -1,3 +1,17 @@
+2012-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (verify_symtab, verify_symtab_node, verify_symtab_base):
+	Declare.
+	* cgraphunit.c (verify_cgraph_node): Verify symtab base; do not verify 
+	cgraph hash and same comdat groups.
+	(cgraph_optimize); Verify symbol table.
+	* ipa.c (cgraph_remove_unreachable_nodes): Verify symbol table.
+	(dissolve_same_comdat_group_list): Work on symtab nodes.
+	(function_and_variable_visibility): Dissolve variable same comdat group
+	lists, too.
+	* symtab.c: Include timevar.h
+	(verify_symtab_base, verify_symtab_node, verify_symtab): New functions.
+
 2012-04-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-switch-conversion.c (info): Remove global pass info.

@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "cgraph.h"
 #include "diagnostic.h"
+#include "timevar.h"
 
 /* Hash table used to convert declarations into nodes.  */
 static GTY((param_is (union symtab_node_def))) htab_t symtab_hash;
@@ -469,6 +470,131 @@ DEBUG_FUNCTION void
 debug_symtab (void)
 {
   dump_symtab (stderr);
+}
+
+/* Verify common part of symtab nodes.  */
+
+DEBUG_FUNCTION bool
+verify_symtab_base (symtab_node node)
+{
+  bool error_found = false;
+  symtab_node hashed_node;
+
+  if (symtab_function_p (node))
+    {
+      if (TREE_CODE (node->symbol.decl) != FUNCTION_DECL)
+	{
+          error ("function symbol is not function");
+          error_found = true;
+	}
+    }
+  else if (symtab_variable_p (node))
+    {
+      if (TREE_CODE (node->symbol.decl) != VAR_DECL)
+	{
+          error ("variable symbol is not variable");
+          error_found = true;
+	}
+    }
+  else
+    {
+      error ("node has unknown type");
+      error_found = true;
+    }
+   
+  hashed_node = symtab_get_node (node->symbol.decl);
+  if (!hashed_node)
+    {
+      error ("node not found in symtab decl hashtable");
+      error_found = true;
+    }
+  if (assembler_name_hash)
+    {
+      hashed_node = symtab_node_for_asm (DECL_ASSEMBLER_NAME (node->symbol.decl));
+      if (hashed_node && hashed_node->symbol.previous_sharing_asm_name)
+	{
+          error ("assembler name hash list corrupted");
+          error_found = true;
+	}
+      while (hashed_node)
+	{
+	  if (hashed_node == node)
+	    break;
+	  hashed_node = hashed_node->symbol.next_sharing_asm_name;
+	}
+      if (!hashed_node)
+	{
+          error ("node not found in symtab assembler name hash");
+          error_found = true;
+	}
+    }
+  if (node->symbol.previous_sharing_asm_name
+      && node->symbol.previous_sharing_asm_name->symbol.next_sharing_asm_name != node)
+    {
+      error ("double linked list of assembler names corrupted");
+    }
+  if (node->symbol.same_comdat_group)
+    {
+      symtab_node n = node->symbol.same_comdat_group;
+
+      if (!DECL_ONE_ONLY (n->symbol.decl))
+	{
+	  error ("non-DECL_ONE_ONLY node in a same_comdat_group list");
+	  error_found = true;
+	}
+      if (n->symbol.type != node->symbol.type)
+	{
+	  error ("mixing different types of symbol in same comdat groups is not supported");
+	  error_found = true;
+	}
+      if (n == node)
+	{
+	  error ("node is alone in a comdat group");
+	  error_found = true;
+	}
+      do
+	{
+	  if (!n->symbol.same_comdat_group)
+	    {
+	      error ("same_comdat_group is not a circular list");
+	      error_found = true;
+	      break;
+	    }
+	  n = n->symbol.same_comdat_group;
+	}
+      while (n != node);
+    }
+  return error_found;
+}
+
+/* Verify consistency of NODE.  */
+
+DEBUG_FUNCTION void
+verify_symtab_node (symtab_node node)
+{
+  if (seen_error ())
+    return;
+
+  timevar_push (TV_CGRAPH_VERIFY);
+  if (symtab_function_p (node))
+    verify_cgraph_node (cgraph (node));
+  else
+    if (verify_symtab_base (node))
+      {
+        dump_symtab_node (stderr, node);
+        internal_error ("verify_symtab_node failed");
+      }
+  timevar_pop (TV_CGRAPH_VERIFY);
+}
+
+/* Verify symbol table for internal consistency.  */
+
+DEBUG_FUNCTION void
+verify_symtab (void)
+{
+  symtab_node node;
+  FOR_EACH_SYMBOL (node)
+   verify_symtab_node (node);
 }
 
 #include "gt-symtab.h"

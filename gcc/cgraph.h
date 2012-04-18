@@ -512,6 +512,9 @@ void debug_symtab (void);
 void dump_symtab_node (FILE *, symtab_node);
 void debug_symtab_node (symtab_node);
 void dump_symtab_base (FILE *, symtab_node);
+void verify_symtab (void);
+void verify_symtab_node (symtab_node);
+bool verify_symtab_base (symtab_node);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);

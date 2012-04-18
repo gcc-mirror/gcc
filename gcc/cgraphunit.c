@@ -577,6 +577,7 @@ verify_cgraph_node (struct cgraph_node *node)
     return;
 
   timevar_push (TV_CGRAPH_VERIFY);
+  error_found |= verify_symtab_base ((symtab_node) node);
   for (e = node->callees; e; e = e->next_callee)
     if (e->aux)
       {
@@ -663,12 +664,6 @@ verify_cgraph_node (struct cgraph_node *node)
       error_found = true;
     }
 
-  if (!cgraph_get_node (node->symbol.decl))
-    {
-      error ("node not found in cgraph_hash");
-      error_found = true;
-    }
-
   if (node->clone_of)
     {
       struct cgraph_node *n;
@@ -707,32 +702,6 @@ verify_cgraph_node (struct cgraph_node *node)
     {
       error ("double linked list of clones corrupted");
       error_found = true;
-    }
-  if (node->symbol.same_comdat_group)
-    {
-      symtab_node n = node->symbol.same_comdat_group;
-
-      if (!DECL_ONE_ONLY (n->symbol.decl))
-	{
-	  error ("non-DECL_ONE_ONLY node in a same_comdat_group list");
-	  error_found = true;
-	}
-      if (n == (symtab_node)node)
-	{
-	  error ("node is alone in a comdat group");
-	  error_found = true;
-	}
-      do
-	{
-	  if (!n->symbol.same_comdat_group)
-	    {
-	      error ("same_comdat_group is not a circular list");
-	      error_found = true;
-	      break;
-	    }
-	  n = n->symbol.same_comdat_group;
-	}
-      while (n != (symtab_node)node);
     }
 
   if (node->analyzed && node->alias)
@@ -2654,7 +2623,7 @@ cgraph_optimize (void)
     return;
 
 #ifdef ENABLE_CHECKING
-  verify_cgraph ();
+  verify_symtab ();
 #endif
 
   /* Frontend may output common variables after the unit has been finalized.
@@ -2704,7 +2673,7 @@ cgraph_optimize (void)
   if (!quiet_flag)
     fprintf (stderr, "Assembling functions:\n");
 #ifdef ENABLE_CHECKING
-  verify_cgraph ();
+  verify_symtab ();
 #endif
 
   cgraph_materialize_all_clones ();
@@ -2712,7 +2681,7 @@ cgraph_optimize (void)
   execute_ipa_pass_list (all_late_ipa_passes);
   cgraph_remove_unreachable_nodes (true, dump_file);
 #ifdef ENABLE_CHECKING
-  verify_cgraph ();
+  verify_symtab ();
 #endif
   bitmap_obstack_release (NULL);
   cgraph_mark_functions_to_output ();
@@ -2740,7 +2709,7 @@ cgraph_optimize (void)
       dump_symtab (cgraph_dump_file);
     }
 #ifdef ENABLE_CHECKING
-  verify_cgraph ();
+  verify_symtab ();
   /* Double check that all inline clones are gone and that all
      function bodies have been released from memory.  */
   if (!seen_error ())
