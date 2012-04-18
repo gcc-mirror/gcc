@@ -2494,12 +2494,12 @@ derive_constant_upper_bound_ops (tree type, tree op0,
    of iterations.  UPPER is true if we are sure the loop iterates at most
    I_BOUND times.  */
 
-static void
+void
 record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
 		    bool upper)
 {
-  /* Update the bounds only when there is no previous estimation, or when the current
-     estimation is smaller.  */
+  /* Update the bounds only when there is no previous estimation, or when the
+     current estimation is smaller.  */
   if (upper
       && (!loop->any_upper_bound
 	  || double_int_ucmp (i_bound, loop->nb_iterations_upper_bound) < 0))
@@ -2514,6 +2514,14 @@ record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
       loop->any_estimate = true;
       loop->nb_iterations_estimate = i_bound;
     }
+
+  /* If an upper bound is smaller than the realistic estimate of the
+     number of iterations, use the upper bound instead.  */
+  if (loop->any_upper_bound
+      && loop->any_estimate
+      && double_int_ucmp (loop->nb_iterations_upper_bound,
+			  loop->nb_iterations_estimate) < 0)
+    loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
 }
 
 /* Records that AT_STMT is executed at most BOUND + 1 times in LOOP.  IS_EXIT
@@ -2962,8 +2970,9 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   /* Give up if we already have tried to compute an estimation.  */
   if (loop->estimate_state != EST_NOT_COMPUTED)
     return;
+
   loop->estimate_state = EST_AVAILABLE;
-  loop->any_upper_bound = false;
+  /* Force estimate compuation but leave any existing upper bound in place.  */
   loop->any_estimate = false;
 
   exits = get_loop_exit_edges (loop);
@@ -2994,14 +3003,6 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
       bound = gcov_type_to_double_int (nit);
       record_niter_bound (loop, bound, true, false);
     }
-
-  /* If an upper bound is smaller than the realistic estimate of the
-     number of iterations, use the upper bound instead.  */
-  if (loop->any_upper_bound
-      && loop->any_estimate
-      && double_int_ucmp (loop->nb_iterations_upper_bound,
-			  loop->nb_iterations_estimate) < 0)
-    loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
 }
 
 /* Sets NIT to the estimated number of executions of the latch of the
