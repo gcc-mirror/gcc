@@ -2950,7 +2950,7 @@ gcov_type_to_double_int (gcov_type val)
    is true also use estimates derived from undefined behavior.  */
 
 void
-estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
+estimate_numbers_of_iterations_loop (struct loop *loop)
 {
   VEC (edge, heap) *exits;
   tree niter, type;
@@ -2984,8 +2984,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
     }
   VEC_free (edge, heap, exits);
 
-  if (use_undefined_p)
-    infer_loop_bounds_from_undefined (loop);
+  infer_loop_bounds_from_undefined (loop);
 
   /* If we have a measured profile, use it to estimate the number of
      iterations.  */
@@ -3013,7 +3012,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
 bool
 estimated_loop_iterations (struct loop *loop, double_int *nit)
 {
-  estimate_numbers_of_iterations_loop (loop, true);
+  estimate_numbers_of_iterations_loop (loop);
   if (!loop->any_estimate)
     return false;
 
@@ -3028,7 +3027,7 @@ estimated_loop_iterations (struct loop *loop, double_int *nit)
 bool
 max_loop_iterations (struct loop *loop, double_int *nit)
 {
-  estimate_numbers_of_iterations_loop (loop, true);
+  estimate_numbers_of_iterations_loop (loop);
   if (!loop->any_upper_bound)
     return false;
 
@@ -3155,7 +3154,7 @@ estimated_stmt_executions (struct loop *loop, double_int *nit)
 /* Records estimates on numbers of iterations of loops.  */
 
 void
-estimate_numbers_of_iterations (bool use_undefined_p)
+estimate_numbers_of_iterations (void)
 {
   loop_iterator li;
   struct loop *loop;
@@ -3166,7 +3165,7 @@ estimate_numbers_of_iterations (bool use_undefined_p)
 
   FOR_EACH_LOOP (li, loop, 0)
     {
-      estimate_numbers_of_iterations_loop (loop, use_undefined_p);
+      estimate_numbers_of_iterations_loop (loop);
     }
 
   fold_undefer_and_ignore_overflow_warnings ();
@@ -3362,7 +3361,7 @@ scev_probably_wraps_p (tree base, tree step,
 
   valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
 
-  estimate_numbers_of_iterations_loop (loop, true);
+  estimate_numbers_of_iterations_loop (loop);
   for (bound = loop->bounds; bound; bound = bound->next)
     {
       if (n_of_executions_at_most (at_stmt, bound, valid_niter))

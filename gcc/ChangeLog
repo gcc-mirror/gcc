@@ -1,3 +1,19 @@
+2012-04-18  Richard Guenther  <rguenther@suse.de>
+
+	* cfgloop.h (estimate_numbers_of_iterations_loop): Remove
+	use_undefined_p parameter.
+	* tree-flow.h (estimate_numbers_of_iterations): Likewise.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop):
+	Likewise.
+	(estimate_numbers_of_iterations): Likewise.
+	(estimated_loop_iterations): Adjust.
+	(max_loop_iterations): Likewise.
+	(scev_probably_wraps_p): Likewise.
+	* tree-ssa-loop.c (tree_ssa_loop_bounds): Likewise.
+	* tree-vrp.c (adjust_range_with_scev): Use max_stmt_executions,
+	not max_loop_iterations.
+	(execute_vrp): Remove explicit number of iterations estimation.
+
 2012-04-18  Enkovich Ilya  <ilya.enkovich@intel.com>
 
 	* config/i386/linux-common.h: New.
