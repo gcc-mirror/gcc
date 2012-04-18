@@ -19,7 +19,7 @@
 
 (define_code_iterator FETCHOP [plus minus ior xor and])
 (define_code_attr fetchop_name
-  [(plus "add") (minus "sub") (ior "ior") (xor "xor") (and "and")])
+  [(plus "add") (minus "sub") (ior "or") (xor "xor") (and "and")])
 (define_code_attr fetchop_pred
   [(plus "add_operand") (minus "reg_or_8bit_operand")
    (ior "or_operand") (xor "or_operand") (and "and_operand")])

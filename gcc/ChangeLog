@@ -1,3 +1,7 @@
+2012-04-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/sync.md (fetchop_name): Change ior attribute to "or".
+
 2012-04-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53020
