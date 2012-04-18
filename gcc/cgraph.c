@@ -528,8 +528,8 @@ cgraph_same_body_alias (struct cgraph_node *decl_node ATTRIBUTE_UNUSED, tree ali
   n = cgraph_create_function_alias (alias, decl);
   n->same_body_alias = true;
   if (same_body_aliases_done)
-    ipa_record_reference (n, NULL, cgraph_get_node (decl), NULL, IPA_REF_ALIAS,
-			  NULL);
+    ipa_record_reference ((symtab_node)n, (symtab_node)cgraph_get_node (decl),
+			  IPA_REF_ALIAS, NULL);
   return n;
 }
 
@@ -1927,7 +1927,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   for (e = n->indirect_calls; e; e = e->next_callee)
     cgraph_clone_edge (e, new_node, e->call_stmt, e->lto_stmt_uid,
 		       count_scale, freq, update_original);
-  ipa_clone_references (new_node, NULL, &n->symbol.ref_list);
+  ipa_clone_references ((symtab_node)new_node, &n->symbol.ref_list);
 
   new_node->next_sibling_clone = n->clones;
   if (n->clones)
@@ -2023,6 +2023,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   FOR_EACH_VEC_ELT (ipa_replace_map_p, tree_map, i, map)
     {
       tree var = map->new_tree;
+      symtab_node ref_node;
 
       STRIP_NOPS (var);
       if (TREE_CODE (var) != ADDR_EXPR)
@@ -2030,19 +2031,16 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
       var = get_base_var (var);
       if (!var)
 	continue;
+      if (TREE_CODE (var) != FUNCTION_DECL
+	  && TREE_CODE (var) != VAR_DECL)
+	continue;
 
       /* Record references of the future statement initializing the constant
 	 argument.  */
-      if (TREE_CODE (var) == FUNCTION_DECL)
-	{
-	  struct cgraph_node *ref_node = cgraph_get_node (var);
-	  gcc_checking_assert (ref_node);
-	  ipa_record_reference (new_node, NULL, ref_node, NULL, IPA_REF_ADDR,
-				NULL);
-	}
-      else if (TREE_CODE (var) == VAR_DECL)
-	ipa_record_reference (new_node, NULL, NULL, varpool_node (var),
-			      IPA_REF_ADDR, NULL);
+      ref_node = symtab_get_node (var);
+      gcc_checking_assert (ref_node);
+      ipa_record_reference ((symtab_node)new_node, (symtab_node)ref_node,
+			    IPA_REF_ADDR, NULL);
     }
   if (!args_to_skip)
     new_node->clone.combined_args_to_skip = old_node->clone.combined_args_to_skip;
@@ -2249,10 +2247,10 @@ cgraph_for_node_thunks_and_aliases (struct cgraph_node *node,
       if (cgraph_for_node_thunks_and_aliases (e->caller, callback, data,
 					      include_overwritable))
 	return true;
-  for (i = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list, i, ref); i++)
+  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
-	struct cgraph_node *alias = ipa_ref_refering_node (ref);
+	struct cgraph_node *alias = ipa_ref_referring_node (ref);
 	if (include_overwritable
 	    || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
 	  if (cgraph_for_node_thunks_and_aliases (alias, callback, data,
@@ -2277,10 +2275,10 @@ cgraph_for_node_and_aliases (struct cgraph_node *node,
 
   if (callback (node, data))
     return true;
-  for (i = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list, i, ref); i++)
+  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
-	struct cgraph_node *alias = ipa_ref_refering_node (ref);
+	struct cgraph_node *alias = ipa_ref_referring_node (ref);
 	if (include_overwritable
 	    || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
           if (cgraph_for_node_and_aliases (alias, callback, data,

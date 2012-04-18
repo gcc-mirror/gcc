@@ -38,10 +38,6 @@ enum symtab_type
   SYMTAB_VARIABLE
 };
 
-union symtab_node_def;
-typedef union symtab_node_def *symtab_node;
-typedef const union symtab_node_def *const_symtab_node;
-
 /* Base of all entries in the symbol table.
    The symtab_node is inherited by cgraph and varpol nodes.  */
 struct GTY(()) symtab_node_base
@@ -1166,7 +1162,7 @@ cgraph_alias_aliased_node (struct cgraph_node *n)
 
   ipa_ref_list_reference_iterate (&n->symbol.ref_list, 0, ref);
   gcc_checking_assert (ref->use == IPA_REF_ALIAS);
-  if (ref->refered_type == IPA_REF_CGRAPH)
+  if (symtab_function_p (ref->referred))
     return ipa_ref_node (ref);
   return NULL;
 }
@@ -1180,7 +1176,7 @@ varpool_alias_aliased_node (struct varpool_node *n)
 
   ipa_ref_list_reference_iterate (&n->symbol.ref_list, 0, ref);
   gcc_checking_assert (ref->use == IPA_REF_ALIAS);
-  if (ref->refered_type == IPA_REF_VARPOOL)
+  if (symtab_variable_p (ref->referred))
     return ipa_ref_varpool_node (ref);
   return NULL;
 }

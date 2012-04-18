@@ -91,7 +91,7 @@ process_references (struct ipa_ref_list *list,
   struct ipa_ref *ref;
   for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
     {
-      if (ref->refered_type == IPA_REF_CGRAPH)
+      if (symtab_function_p (ref->referred))
 	{
 	  struct cgraph_node *node = ipa_ref_node (ref);
 	  if (!node->reachable
@@ -154,7 +154,7 @@ has_addr_references_p (struct cgraph_node *node,
   int i;
   struct ipa_ref *ref;
 
-  for (i = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list,
+  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list,
 					     i, ref); i++)
     if (ref->use == IPA_REF_ADDR)
       return true;
@@ -352,14 +352,14 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  for (e = node->callers; e && !found; e = e->next_caller)
 	    if (e->caller->reachable)
 	      found = true;
-	  for (i = 0; (ipa_ref_list_refering_iterate (&node->symbol.ref_list,
+	  for (i = 0; (ipa_ref_list_referring_iterate (&node->symbol.ref_list,
 						      i, ref)
 		       && !found); i++)
-	    if (ref->refering_type == IPA_REF_CGRAPH
-		&& ipa_ref_refering_node (ref)->reachable)
+	    if (symtab_function_p (ref->referring)
+		&& ipa_ref_referring_node (ref)->reachable)
 	      found = true;
-	    else if (ref->refering_type == IPA_REF_VARPOOL
-		     && ipa_ref_refering_varpool_node (ref)->needed)
+	    else if (symtab_variable_p (ref->referring)
+		     && ipa_ref_referring_varpool_node (ref)->needed)
 	      found = true;
 
 	  /* If so, we need to keep node in the callgraph.  */
@@ -501,7 +501,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	bool address_taken = false;
 	int i;
         struct ipa_ref *ref;
-        for (i = 0; ipa_ref_list_refering_iterate (&vnode->symbol.ref_list,
+        for (i = 0; ipa_ref_list_referring_iterate (&vnode->symbol.ref_list,
 						   i, ref)
 		    && (!written || !address_taken); i++)
 	  switch (ref->use)
@@ -542,14 +542,14 @@ cgraph_address_taken_from_non_vtable_p (struct cgraph_node *node)
 {
   int i;
   struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list,
+  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list,
 					     i, ref); i++)
     if (ref->use == IPA_REF_ADDR)
       {
 	struct varpool_node *node;
-	if (ref->refering_type == IPA_REF_CGRAPH)
+	if (symtab_function_p (ref->referring))
 	  return true;
-	node = ipa_ref_refering_varpool_node (ref);
+	node = ipa_ref_referring_varpool_node (ref);
 	if (!DECL_VIRTUAL_P (node->symbol.decl))
 	  return true;
       }

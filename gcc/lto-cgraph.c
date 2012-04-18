@@ -326,18 +326,18 @@ referenced_from_other_partition_p (struct ipa_ref_list *list, cgraph_node_set se
 {
   int i;
   struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_refering_iterate (list, i, ref); i++)
+  for (i = 0; ipa_ref_list_referring_iterate (list, i, ref); i++)
     {
-      if (ref->refering_type == IPA_REF_CGRAPH)
+      if (symtab_function_p (ref->referring))
 	{
-	  if (ipa_ref_refering_node (ref)->symbol.in_other_partition
-	      || !cgraph_node_in_set_p (ipa_ref_refering_node (ref), set))
+	  if (ipa_ref_referring_node (ref)->symbol.in_other_partition
+	      || !cgraph_node_in_set_p (ipa_ref_referring_node (ref), set))
 	    return true;
 	}
       else
 	{
-	  if (ipa_ref_refering_varpool_node (ref)->symbol.in_other_partition
-	      || !varpool_node_in_set_p (ipa_ref_refering_varpool_node (ref),
+	  if (ipa_ref_referring_varpool_node (ref)->symbol.in_other_partition
+	      || !varpool_node_in_set_p (ipa_ref_referring_varpool_node (ref),
 				         vset))
 	    return true;
 	}
@@ -370,16 +370,16 @@ referenced_from_this_partition_p (struct ipa_ref_list *list, cgraph_node_set set
 {
   int i;
   struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_refering_iterate (list, i, ref); i++)
+  for (i = 0; ipa_ref_list_referring_iterate (list, i, ref); i++)
     {
-      if (ref->refering_type == IPA_REF_CGRAPH)
+      if (symtab_function_p (ref->referring))
 	{
-	  if (cgraph_node_in_set_p (ipa_ref_refering_node (ref), set))
+	  if (cgraph_node_in_set_p (ipa_ref_referring_node (ref), set))
 	    return true;
 	}
       else
 	{
-	  if (varpool_node_in_set_p (ipa_ref_refering_varpool_node (ref),
+	  if (varpool_node_in_set_p (ipa_ref_referring_varpool_node (ref),
 				     vset))
 	    return true;
 	}
@@ -614,10 +614,10 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
 {
   struct bitpack_d bp;
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, ref->refered_type, 1);
+  bp_pack_value (&bp, symtab_function_p (ref->referred), 1);
   bp_pack_value (&bp, ref->use, 2);
   streamer_write_bitpack (&bp);
-  if (ref->refered_type == IPA_REF_CGRAPH)
+  if (symtab_function_p (ref->referred))
     {
       int nref = lto_cgraph_encoder_lookup (encoder, ipa_ref_node (ref));
       gcc_assert (nref != LCC_NOT_FOUND);
@@ -674,7 +674,7 @@ add_references (lto_cgraph_encoder_t encoder,
   int i;
   struct ipa_ref *ref;
   for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
-    if (ref->refered_type == IPA_REF_CGRAPH)
+    if (symtab_function_p (ref->referred))
       add_node_to (encoder, ipa_ref_node (ref), false);
     else
       {
@@ -1108,27 +1108,26 @@ input_varpool_node (struct lto_file_decl_data *file_data,
 
 static void
 input_ref (struct lto_input_block *ib,
-	   struct cgraph_node *refering_node,
-	   struct varpool_node *refering_varpool_node,
+	   symtab_node referring_node,
 	   VEC(cgraph_node_ptr, heap) *nodes,
 	   VEC(varpool_node_ptr, heap) *varpool_nodes_vec)
 {
   struct cgraph_node *node = NULL;
   struct varpool_node *varpool_node = NULL;
   struct bitpack_d bp;
-  enum ipa_ref_type type;
+  int type;
   enum ipa_ref_use use;
 
   bp = streamer_read_bitpack (ib);
-  type = (enum ipa_ref_type) bp_unpack_value (&bp, 1);
+  type = bp_unpack_value (&bp, 1);
   use = (enum ipa_ref_use) bp_unpack_value (&bp, 2);
-  if (type == IPA_REF_CGRAPH)
+  if (type)
     node = VEC_index (cgraph_node_ptr, nodes, streamer_read_hwi (ib));
   else
     varpool_node = VEC_index (varpool_node_ptr, varpool_nodes_vec,
 			      streamer_read_hwi (ib));
-  ipa_record_reference (refering_node, refering_varpool_node,
-		        node, varpool_node, use, NULL);
+  ipa_record_reference (referring_node,
+		        node ? (symtab_node) node : (symtab_node) varpool_node, use, NULL);
 }
 
 /* Read an edge from IB.  NODES points to a vector of previously read nodes for
@@ -1324,7 +1323,7 @@ input_refs (struct lto_input_block *ib,
       node = VEC_index (cgraph_node_ptr, nodes, idx);
       while (count)
 	{
-	  input_ref (ib, node, NULL, nodes, varpool);
+	  input_ref (ib, (symtab_node) node, nodes, varpool);
 	  count--;
 	}
     }
@@ -1338,7 +1337,7 @@ input_refs (struct lto_input_block *ib,
 			streamer_read_uhwi (ib));
       while (count)
 	{
-	  input_ref (ib, NULL, node, nodes, varpool);
+	  input_ref (ib, (symtab_node) node, nodes, varpool);
 	  count--;
 	}
     }

@@ -249,7 +249,7 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 	e->call_stmt_cannot_inline_p = 1;
     }
   /* Redirect incomming references.  */
-  ipa_clone_refering (prevailing_node, NULL, &node->symbol.ref_list);
+  ipa_clone_referring ((symtab_node)prevailing_node, &node->symbol.ref_list);
 
   /* Finally remove the replaced node.  */
   cgraph_remove_node (node);
@@ -271,7 +271,7 @@ lto_varpool_replace_node (struct varpool_node *vnode,
   gcc_assert (!vnode->finalized || prevailing_node->finalized);
   gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
 
-  ipa_clone_refering (NULL, prevailing_node, &vnode->symbol.ref_list);
+  ipa_clone_referring ((symtab_node)prevailing_node, &vnode->symbol.ref_list);
 
   /* Be sure we can garbage collect the initializer.  */
   if (DECL_INITIAL (vnode->symbol.decl))

@@ -1178,7 +1178,7 @@ find_base_value (rtx src)
       return 0;
 
     case TRUNCATE:
-      /* As we do not know which address space the pointer is refering to, we can
+      /* As we do not know which address space the pointer is referring to, we can
 	 handle this only if the target does not support different pointer or
 	 address modes depending on the address space.  */
       if (!target_default_pointer_address_modes_p ())
@@ -1197,7 +1197,7 @@ find_base_value (rtx src)
 
     case ZERO_EXTEND:
     case SIGN_EXTEND:	/* used for NT/Alpha pointers */
-      /* As we do not know which address space the pointer is refering to, we can
+      /* As we do not know which address space the pointer is referring to, we can
 	 handle this only if the target does not support different pointer or
 	 address modes depending on the address space.  */
       if (!target_default_pointer_address_modes_p ())
@@ -1602,7 +1602,7 @@ find_base_term (rtx x)
       return REG_BASE_VALUE (x);
 
     case TRUNCATE:
-      /* As we do not know which address space the pointer is refering to, we can
+      /* As we do not know which address space the pointer is referring to, we can
 	 handle this only if the target does not support different pointer or
 	 address modes depending on the address space.  */
       if (!target_default_pointer_address_modes_p ())
@@ -1621,7 +1621,7 @@ find_base_term (rtx x)
 
     case ZERO_EXTEND:
     case SIGN_EXTEND:	/* Used for Alpha/NT pointers */
-      /* As we do not know which address space the pointer is refering to, we can
+      /* As we do not know which address space the pointer is referring to, we can
 	 handle this only if the target does not support different pointer or
 	 address modes depending on the address space.  */
       if (!target_default_pointer_address_modes_p ())
@@ -2363,7 +2363,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
       && ! rtx_equal_p (rtlx, rtly))
     return 1;
 
-  /* If we have MEMs refering to different address spaces (which can
+  /* If we have MEMs referring to different address spaces (which can
      potentially overlap), we cannot easily tell from the addresses
      whether the references overlap.  */
   if (MEM_P (rtlx) && MEM_P (rtly)
@@ -2471,7 +2471,7 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
   if (MEM_READONLY_P (x))
     return 0;
 
-  /* If we have MEMs refering to different address spaces (which can
+  /* If we have MEMs referring to different address spaces (which can
      potentially overlap), we cannot easily tell from the addresses
      whether the references overlap.  */
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
@@ -2589,7 +2589,7 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
   if (!writep && MEM_READONLY_P (mem))
     return 0;
 
-  /* If we have MEMs refering to different address spaces (which can
+  /* If we have MEMs referring to different address spaces (which can
      potentially overlap), we cannot easily tell from the addresses
      whether the references overlap.  */
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
@@ -2676,7 +2676,7 @@ may_alias_p (const_rtx mem, const_rtx x)
   if (MEM_READONLY_P (x))
     return 0;
 
-  /* If we have MEMs refering to different address spaces (which can
+  /* If we have MEMs referring to different address spaces (which can
      potentially overlap), we cannot easily tell from the addresses
      whether the references overlap.  */
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))

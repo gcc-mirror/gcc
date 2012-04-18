@@ -435,7 +435,7 @@ analyze_function (struct cgraph_node *fn)
   local = init_function_info (fn);
   for (i = 0; ipa_ref_list_reference_iterate (&fn->symbol.ref_list, i, ref); i++)
     {
-      if (ref->refered_type != IPA_REF_VARPOOL)
+      if (!symtab_variable_p (ref->referred))
 	continue;
       var = ipa_ref_varpool_node (ref)->symbol.decl;
       if (ipa_ref_varpool_node (ref)->symbol.externally_visible
