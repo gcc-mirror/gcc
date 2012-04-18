@@ -1,3 +1,11 @@
+2012-04-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* trans-decl.c (gfc_trans_entry_master_switch): Build SWITCH_EXPR
+	with NULL_TREE type instead of void_type_node.
+	* trans-io.c (io_result): Likewise.
+	* trans-stmt.c (gfc_trans_integer_select,
+	gfc_trans_character_select): Likewise.
+
 2012-04-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52864

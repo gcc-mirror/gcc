@@ -1822,66 +1822,25 @@ expand_stack_restore (tree var)
    fed to us in descending order from the sorted vector of case labels used
    in the tree part of the middle end.  So the list we construct is
    sorted in ascending order.  The bounds on the case range, LOW and HIGH,
-   are converted to case's index type TYPE.  */
+   are converted to case's index type TYPE.  Note that the original type
+   of the case index in the source code is usually "lost" during
+   gimplification due to type promotion, but the case labels retain the
+   original type.  */
 
 static struct case_node *
 add_case_node (struct case_node *head, tree type, tree low, tree high,
                tree label, alloc_pool case_node_pool)
 {
-  tree min_value, max_value;
   struct case_node *r;
 
-  gcc_assert (TREE_CODE (low) == INTEGER_CST);
-  gcc_assert (!high || TREE_CODE (high) == INTEGER_CST);
-
-  min_value = TYPE_MIN_VALUE (type);
-  max_value = TYPE_MAX_VALUE (type);
-
-  /* If there's no HIGH value, then this is not a case range; it's
-     just a simple case label.  But that's just a degenerate case
-     range.
-     If the bounds are equal, turn this into the one-value case.  */
-  if (!high || tree_int_cst_equal (low, high))
-    {
-      /* If the simple case value is unreachable, ignore it.  */
-      if ((TREE_CODE (min_value) == INTEGER_CST
-            && tree_int_cst_compare (low, min_value) < 0)
-	  || (TREE_CODE (max_value) == INTEGER_CST
-	      && tree_int_cst_compare (low, max_value) > 0))
-	return head;
-      low = fold_convert (type, low);
-      high = low;
-    }
-  else
-    {
-      /* If the entire case range is unreachable, ignore it.  */
-      if ((TREE_CODE (min_value) == INTEGER_CST
-            && tree_int_cst_compare (high, min_value) < 0)
-	  || (TREE_CODE (max_value) == INTEGER_CST
-	      && tree_int_cst_compare (low, max_value) > 0))
-	return head;
-
-      /* If the lower bound is less than the index type's minimum
-	 value, truncate the range bounds.  */
-      if (TREE_CODE (min_value) == INTEGER_CST
-            && tree_int_cst_compare (low, min_value) < 0)
-	low = min_value;
-      low = fold_convert (type, low);
-
-      /* If the upper bound is greater than the index type's maximum
-	 value, truncate the range bounds.  */
-      if (TREE_CODE (max_value) == INTEGER_CST
-	  && tree_int_cst_compare (high, max_value) > 0)
-	high = max_value;
-      high = fold_convert (type, high);
-    }
-
+  gcc_checking_assert (low);
+  gcc_checking_assert (! high || (TREE_TYPE (low) == TREE_TYPE (high)));
 
   /* Add this label to the chain.  Make sure to drop overflow flags.  */
   r = (struct case_node *) pool_alloc (case_node_pool);
-  r->low = build_int_cst_wide (TREE_TYPE (low), TREE_INT_CST_LOW (low),
+  r->low = build_int_cst_wide (type, TREE_INT_CST_LOW (low),
 			       TREE_INT_CST_HIGH (low));
-  r->high = build_int_cst_wide (TREE_TYPE (high), TREE_INT_CST_LOW (high),
+  r->high = build_int_cst_wide (type, TREE_INT_CST_LOW (high),
 				TREE_INT_CST_HIGH (high));
   r->code_label = label;
   r->parent = r->left = NULL;
@@ -2151,9 +2110,12 @@ expand_case (gimple stmt)
 	  gcc_assert (low);
 	  high = CASE_HIGH (elt);
 
-	  /* Discard empty ranges.  */
-	  if (high && tree_int_cst_lt (high, low))
-	    continue;
+	  /* The canonical from of a case label in GIMPLE is that a simple case
+	     has an empty CASE_HIGH.  For the casesi and tablejump expanders,
+	     the back ends want simple cases to have high == low.  */
+	  gcc_assert (! high || tree_int_cst_lt (low, high));
+	  if (! high)
+	    high = low;
 
 	  case_list = add_case_node (case_list, index_type, low, high,
                                      CASE_LABEL (elt), case_node_pool);
@@ -2199,16 +2161,10 @@ expand_case (gimple stmt)
       BITMAP_FREE (label_bitmap);
 
       /* cleanup_tree_cfg removes all SWITCH_EXPR with a single
-	 destination, such as one with a default case only.  However,
-	 it doesn't remove cases that are out of range for the switch
-	 type, so we may still get a zero here.  */
-      if (count == 0)
-	{
-	  if (default_label)
-	    emit_jump (default_label);
-          free_alloc_pool (case_node_pool);
-	  return;
-	}
+	 destination, such as one with a default case only.
+	 It also removes cases that are out of range for the switch
+	 type, so we should never get a zero here.  */
+      gcc_assert (count > 0);
 
       /* Compute span of values.  */
       range = fold_build2 (MINUS_EXPR, index_type, maxval, minval);

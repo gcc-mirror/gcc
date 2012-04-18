@@ -1087,7 +1087,7 @@ Gcc_backend::switch_statement(
   if (tv == error_mark_node)
     return this->error_statement();
   tree t = build3_loc(switch_location.gcc_location(), SWITCH_EXPR,
-                      void_type_node, tv, stmt_list, NULL_TREE);
+                      NULL_TREE, tv, stmt_list, NULL_TREE);
   return this->make_statement(t);
 }
 
