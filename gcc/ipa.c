@@ -176,7 +176,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   bool changed = false;
 
 #ifdef ENABLE_CHECKING
-  verify_cgraph ();
+  verify_symtab ();
 #endif
   if (file)
     fprintf (file, "\nReclaiming functions:");
@@ -467,7 +467,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     return changed;
 
 #ifdef ENABLE_CHECKING
-  verify_cgraph ();
+  verify_symtab ();
 #endif
 
   /* Reclaim alias pairs for functions that have disappeared from the
@@ -730,12 +730,12 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
 /* Dissolve the same_comdat_group list in which NODE resides.  */
 
 static void
-dissolve_same_comdat_group_list (struct cgraph_node *node)
+dissolve_same_comdat_group_list (symtab_node node)
 {
-  struct cgraph_node *n = node, *next;
+  symtab_node n = node, next;
   do
     {
-      next = cgraph (n->symbol.same_comdat_group);
+      next = n->symbol.same_comdat_group;
       n->symbol.same_comdat_group = NULL;
       n = next;
     }
@@ -838,7 +838,7 @@ function_and_variable_visibility (bool whole_program)
 		 all of them have to be, otherwise it is a front-end bug.  */
 	      gcc_assert (DECL_EXTERNAL (n->symbol.decl));
 #endif
-	  dissolve_same_comdat_group_list (node);
+	  dissolve_same_comdat_group_list ((symtab_node) node);
 	}
       gcc_assert ((!DECL_WEAK (node->symbol.decl)
 		  && !DECL_COMDAT (node->symbol.decl))
@@ -865,7 +865,7 @@ function_and_variable_visibility (bool whole_program)
 	       in the group and they will all be made local.  We need to
 	       dissolve the group at once so that the predicate does not
 	       segfault though. */
-	    dissolve_same_comdat_group_list (node);
+	    dissolve_same_comdat_group_list ((symtab_node) node);
 	}
 
       if (node->thunk.thunk_p
@@ -936,6 +936,8 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->symbol.decl));
 	  cgraph_make_decl_local (vnode->symbol.decl);
+	  if (vnode->symbol.same_comdat_group)
+	    dissolve_same_comdat_group_list ((symtab_node) vnode);
 	  vnode->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
      gcc_assert (TREE_STATIC (vnode->symbol.decl));
