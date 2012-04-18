@@ -1,3 +1,8 @@
+2012-04-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree.def (CASE_LABEL_EXPR): Fix documentation, mention all operands.
+	* tree-cfg.c (edge_to_cases): Fix documentation.
+
 2012-04-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/sync.md (fetchop_name): Change ior attribute to "or".

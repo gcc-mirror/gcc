@@ -56,7 +56,7 @@ static const int initial_cfg_capacity = 20;
 
 /* This hash table allows us to efficiently lookup all CASE_LABEL_EXPRs
    which use a particular edge.  The CASE_LABEL_EXPRs are chained together
-   via their TREE_CHAIN field, which we clear after we're done with the
+   via their CASE_CHAIN field, which we clear after we're done with the
    hash table to prevent problems with duplication of GIMPLE_SWITCHes.
 
    Access to this list of CASE_LABEL_EXPRs allows us to efficiently
