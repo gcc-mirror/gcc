@@ -1,3 +1,19 @@
+2012-04-18  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	* config/i386/linux-common.h: New.
+
+	* config.gcc: Add i386/linux-common.h before
+	all i386/linux.h and i386/linux64.h usages.
+
+	* config/i386/gnu-user.h (GNU_USER_TARGET_LINK_SPEC): New.
+	(LINK_SPEC): Use GNU_USER_TARGET_LINK_SPEC.
+	* config/i386/gnu-user64.h: Likewise.
+
+	* config/i386/gnu-user.common.h (GNU_USER_TARGET_CC1_SPEC): New.
+	(CC1_SPEC): Use GNU_USER_TARGET_CC1_SPEC.
+	(GNU_USER_TARGET_MATHFILE_SPEC): New.
+	(ENDFILE_SPEC): Use GNU_USER_TARGET_MATHFILE_SPEC.
+
 2012-04-18  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_node_name): Remove.

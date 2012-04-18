@@ -53,8 +53,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  %{" SPEC_X32 ":--x32} \
  %{!mno-sse2avx:%{mavx:-msse2avx}} %{msse2avx:%{!mavx:-msse2avx}}"
 
-#undef	LINK_SPEC
-#define LINK_SPEC "%{" SPEC_64 ":-m " GNU_USER_LINK_EMULATION64 "} \
+#define GNU_USER_TARGET_LINK_SPEC				   \
+                  "%{" SPEC_64 ":-m " GNU_USER_LINK_EMULATION64 "} \
                    %{" SPEC_32 ":-m " GNU_USER_LINK_EMULATION32 "} \
                    %{" SPEC_X32 ":-m " GNU_USER_LINK_EMULATIONX32 "} \
   %{shared:-shared} \
@@ -65,6 +65,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       %{" SPEC_64 ":-dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "} \
       %{" SPEC_X32 ":-dynamic-linker " GNU_USER_DYNAMIC_LINKERX32 "}} \
     %{static:-static}}"
+
+#undef	LINK_SPEC
+#define LINK_SPEC GNU_USER_TARGET_LINK_SPEC
 
 #if TARGET_64BIT_DEFAULT
 #if TARGET_BI_ARCH == 2

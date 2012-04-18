@@ -39,17 +39,23 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
+#undef GNU_USER_TARGET_CC1_SPEC
+#define GNU_USER_TARGET_CC1_SPEC "%(cc1_cpu) %{profile:-p}"
+
 #undef CC1_SPEC
-#define CC1_SPEC "%(cc1_cpu) %{profile:-p}"
+#define CC1_SPEC GNU_USER_TARGET_CC1_SPEC
 
 /* Similar to standard GNU userspace, but adding -ffast-math support.  */
-#undef  ENDFILE_SPEC
-#define ENDFILE_SPEC \
+#define GNU_USER_TARGET_MATHFILE_SPEC \
   "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
    %{mpc32:crtprec32.o%s} \
    %{mpc64:crtprec64.o%s} \
-   %{mpc80:crtprec80.o%s} \
-   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+   %{mpc80:crtprec80.o%s}"
+
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  GNU_USER_TARGET_MATHFILE_SPEC " " \
+  GNU_USER_TARGET_ENDFILE_SPEC
 
 /* Put all *tf routines in libgcc.  */
 #undef LIBGCC2_HAS_TF_MODE
