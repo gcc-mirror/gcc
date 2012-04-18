@@ -1,3 +1,13 @@
+2012-04-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/52976
+	* tree-ssa-reassoc.c (stmt_is_power_of_op): New function.
+	(decrement_power): Likewise.
+	(propagate_op_to_single_use): Likewise.
+	(zero_one_operation): Handle __builtin_pow* calls in linearized
+	expression trees; factor logic into propagate_op_to_single_use.
+	(undistribute_ops_list): Allow operands with repeat counts > 1.
+
 2012-04-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44688
