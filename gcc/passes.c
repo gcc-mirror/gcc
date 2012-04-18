@@ -1862,7 +1862,7 @@ execute_todo (unsigned int flags)
       cgraph_remove_unreachable_nodes (true, dump_file);
     }
 
-  if ((flags & TODO_dump_cgraph) && dump_file && !current_function_decl)
+  if ((flags & TODO_dump_symtab) && dump_file && !current_function_decl)
     {
       gcc_assert (!cfun);
       dump_cgraph (dump_file);

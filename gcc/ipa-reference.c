@@ -553,7 +553,7 @@ generate_summary (void)
 	  l = &get_reference_vars_info (node)->local;
 	  fprintf (dump_file,
 		   "\nFunction name:%s/%i:",
-		   cgraph_node_name (node), node->uid);
+		   cgraph_node_asm_name (node), node->symbol.order);
 	  fprintf (dump_file, "\n  locals read: ");
 	  if (l->statics_read)
 	    EXECUTE_IF_SET_IN_BITMAP (l->statics_read,
@@ -592,7 +592,7 @@ read_write_all_from_decl (struct cgraph_node *node, bool * read_all,
       *read_all = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
          fprintf (dump_file, "   %s/%i -> read all\n",
-		  cgraph_node_name (node), node->uid);
+		  cgraph_node_asm_name (node), node->symbol.order);
     }
   else
     {
@@ -602,7 +602,7 @@ read_write_all_from_decl (struct cgraph_node *node, bool * read_all,
       *write_all = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
          fprintf (dump_file, "   %s/%i -> read all, write all\n",
-		  cgraph_node_name (node), node->uid);
+		  cgraph_node_asm_name (node), node->symbol.order);
     }
 }
 
@@ -653,7 +653,7 @@ propagate (void)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Starting cycle with %s/%i\n",
-		  cgraph_node_name (node), node->uid);
+		  cgraph_node_asm_name (node), node->symbol.order);
 
       node_l = &node_info->local;
       node_g = &node_info->global;
@@ -697,7 +697,7 @@ propagate (void)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Visiting %s/%i\n",
-		      cgraph_node_name (w), w->uid);
+		      cgraph_node_asm_name (w), w->symbol.order);
 	  /* When function is overwritable, we can not assume anything.  */
 	  if (cgraph_function_body_availability (w) <= AVAIL_OVERWRITABLE)
 	    read_write_all_from_decl (w, &read_all, &write_all);
@@ -811,7 +811,7 @@ propagate (void)
 	  node_l = &node_info->local;
 	  fprintf (dump_file,
 		   "\nFunction name:%s/%i:",
-		   cgraph_node_name (node), node->uid);
+		   cgraph_node_asm_name (node), node->symbol.order);
 	  fprintf (dump_file, "\n  locals read: ");
 	  if (node_l->statics_read)
 	    EXECUTE_IF_SET_IN_BITMAP (node_l->statics_read,
@@ -837,7 +837,7 @@ propagate (void)
 		get_reference_vars_info (w);
 	      ipa_reference_local_vars_info_t w_l = &w_ri->local;
 	      fprintf (dump_file, "\n  next cycle: %s/%i ",
-		       cgraph_node_name (w), w->uid);
+		       cgraph_node_asm_name (w), w->symbol.order);
 	      fprintf (dump_file, "\n    locals read: ");
 	      if (w_l->statics_read)
 		EXECUTE_IF_SET_IN_BITMAP (w_l->statics_read,
@@ -1148,7 +1148,7 @@ ipa_reference_read_optimization_summary (void)
 	      if (dump_file)
 		fprintf (dump_file,
 			 "\nFunction name:%s/%i:\n  static not read:",
-			 cgraph_node_name (node), node->uid);
+			 cgraph_node_asm_name (node), node->symbol.order);
 
 	      /* Set the statics not read.  */
 	      v_count = streamer_read_hwi (ib);

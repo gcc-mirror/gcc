@@ -164,13 +164,13 @@ ipa_dump_references (FILE * file, struct ipa_ref_list *list)
     {
       if (ref->refered_type == IPA_REF_CGRAPH)
 	{
-	  fprintf (file, " fn:%s/%i (%s)", cgraph_node_name (ipa_ref_node (ref)),
-		   ipa_ref_node (ref)->uid,
+	  fprintf (file, " fn:%s/%i (%s)", cgraph_node_asm_name (ipa_ref_node (ref)),
+		   ipa_ref_node (ref)->symbol.order,
 		   ipa_ref_use_name [ref->use]);
 	}
       else
 	fprintf (file, " var:%s (%s)",
-		 varpool_node_name (ipa_ref_varpool_node (ref)),
+		 varpool_node_asm_name (ipa_ref_varpool_node (ref)),
 		 ipa_ref_use_name [ref->use]);
     }
   fprintf (file, "\n");
@@ -187,12 +187,12 @@ ipa_dump_refering (FILE * file, struct ipa_ref_list *list)
     {
       if (ref->refering_type == IPA_REF_CGRAPH)
 	fprintf (file, " fn:%s/%i (%s)",
-		 cgraph_node_name (ipa_ref_refering_node (ref)),
-		 ipa_ref_refering_node (ref)->uid,
+		 cgraph_node_asm_name (ipa_ref_refering_node (ref)),
+		 ipa_ref_refering_node (ref)->symbol.order,
 		 ipa_ref_use_name [ref->use]);
       else
 	fprintf (file, " var:%s (%s)",
-		 varpool_node_name (ipa_ref_refering_varpool_node (ref)),
+		 varpool_node_asm_name (ipa_ref_refering_varpool_node (ref)),
 		 ipa_ref_use_name [ref->use]);
     }
   fprintf (file, "\n");

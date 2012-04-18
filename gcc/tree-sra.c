@@ -4865,6 +4865,6 @@ struct gimple_opt_pass pass_early_ipa_sra =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_cgraph              	/* todo_flags_finish */
+  TODO_dump_symtab              	/* todo_flags_finish */
  }
 };

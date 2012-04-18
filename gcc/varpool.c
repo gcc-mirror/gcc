@@ -74,13 +74,6 @@ static GTY(()) symtab_node x_varpool_first_unanalyzed_node;
 /* Lists all assembled variables to be sent to debugger output later on.  */
 static GTY(()) struct varpool_node *varpool_assembled_nodes_queue;
 
-/* Return name of the node used in debug output.  */
-const char *
-varpool_node_name (struct varpool_node *node)
-{
-  return lang_hooks.decl_printable_name (node->symbol.decl, 2);
-}
-
 /* Return varpool node assigned to DECL.  Create new one when needed.  */
 struct varpool_node *
 varpool_node (tree decl)
@@ -127,17 +120,14 @@ varpool_remove_node (struct varpool_node *node)
 void
 dump_varpool_node (FILE *f, struct varpool_node *node)
 {
-  fprintf (f, "%s:", varpool_node_name (node));
-  fprintf (f, " availability:%s",
+  dump_symtab_base (f, (symtab_node)node);
+  fprintf (f, "  Availability: %s\n",
 	   cgraph_function_flags_ready
 	   ? cgraph_availability_names[cgraph_variable_initializer_availability (node)]
 	   : "not-ready");
-  if (DECL_ASSEMBLER_NAME_SET_P (node->symbol.decl))
-    fprintf (f, " (asm: %s)", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->symbol.decl)));
+  fprintf (f, "  Varpool flags:");
   if (DECL_INITIAL (node->symbol.decl))
     fprintf (f, " initialized");
-  if (TREE_ASM_WRITTEN (node->symbol.decl))
-    fprintf (f, " (asm written)");
   if (node->needed)
     fprintf (f, " needed");
   if (node->analyzed)
@@ -146,20 +136,7 @@ dump_varpool_node (FILE *f, struct varpool_node *node)
     fprintf (f, " finalized");
   if (node->output)
     fprintf (f, " output");
-  if (node->symbol.externally_visible)
-    fprintf (f, " externally_visible");
-  if (node->symbol.resolution != LDPR_UNKNOWN)
-    fprintf (f, " %s",
- 	     ld_plugin_symbol_resolution_names[(int)node->symbol.resolution]);
-  if (node->symbol.in_other_partition)
-    fprintf (f, " in_other_partition");
-  else if (node->symbol.used_from_other_partition)
-    fprintf (f, " used_from_other_partition");
   fprintf (f, "\n");
-  fprintf (f, "  References: ");
-  ipa_dump_references (f, &node->symbol.ref_list);
-  fprintf (f, "  Refering this var: ");
-  ipa_dump_refering (f, &node->symbol.ref_list);
 }
 
 /* Dump the variable pool.  */

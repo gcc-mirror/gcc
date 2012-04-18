@@ -1605,13 +1605,6 @@ cgraph_inline_failed_string (cgraph_inline_failed_t reason)
   return cif_string_table[reason];
 }
 
-/* Return name of the node used in debug output.  */
-const char *
-cgraph_node_name (struct cgraph_node *node)
-{
-  return lang_hooks.decl_printable_name (node->symbol.decl, 2);
-}
-
 /* Names used to print out the availability enum.  */
 const char * const cgraph_availability_names[] =
   {"unset", "not_available", "overwritable", "available", "local"};
@@ -1625,60 +1618,44 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   struct cgraph_edge *edge;
   int indirect_calls_count = 0;
 
-  fprintf (f, "%s/%i", cgraph_node_name (node), node->uid);
-  dump_addr (f, " @", (void *)node);
-  if (DECL_ASSEMBLER_NAME_SET_P (node->symbol.decl))
-    fprintf (f, " (asm: %s)",
-	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->symbol.decl)));
+  dump_symtab_base (f, (symtab_node) node);
+
   if (node->global.inlined_to)
-    fprintf (f, " (inline copy in %s/%i)",
+    fprintf (f, "  Function %s/%i is inline copy in %s/%i\n",
+	     cgraph_node_name (node),
+	     node->symbol.order,
 	     cgraph_node_name (node->global.inlined_to),
-	     node->global.inlined_to->uid);
-  if (node->symbol.same_comdat_group)
-    fprintf (f, " (same comdat group as %s/%i)",
-	     cgraph_node_name (cgraph (node->symbol.same_comdat_group)),
-	     cgraph (node->symbol.same_comdat_group)->uid);
+	     node->global.inlined_to->symbol.order);
   if (node->clone_of)
-    fprintf (f, " (clone of %s/%i)",
-	     cgraph_node_name (node->clone_of),
-	     node->clone_of->uid);
+    fprintf (f, "  Clone of %s/%i\n",
+	     cgraph_node_asm_name (node->clone_of),
+	     node->clone_of->symbol.order);
   if (cgraph_function_flags_ready)
-    fprintf (f, " availability:%s",
+    fprintf (f, "  Availability: %s\n",
 	     cgraph_availability_names [cgraph_function_body_availability (node)]);
+
+  fprintf (f, "  Function flags:");
   if (node->analyzed)
     fprintf (f, " analyzed");
-  if (node->symbol.in_other_partition)
-    fprintf (f, " in_other_partition");
   if (node->count)
     fprintf (f, " executed "HOST_WIDEST_INT_PRINT_DEC"x",
 	     (HOST_WIDEST_INT)node->count);
   if (node->origin)
-    fprintf (f, " nested in: %s", cgraph_node_name (node->origin));
+    fprintf (f, " nested in: %s", cgraph_node_asm_name (node->origin));
   if (node->needed)
     fprintf (f, " needed");
-  if (node->symbol.address_taken)
-    fprintf (f, " address_taken");
   else if (node->reachable)
     fprintf (f, " reachable");
-  else if (node->symbol.used_from_other_partition)
-    fprintf (f, " used_from_other_partition");
   if (gimple_has_body_p (node->symbol.decl))
     fprintf (f, " body");
   if (node->process)
     fprintf (f, " process");
   if (node->local.local)
     fprintf (f, " local");
-  if (node->symbol.externally_visible)
-    fprintf (f, " externally_visible");
-  if (node->symbol.resolution != LDPR_UNKNOWN)
-    fprintf (f, " %s",
- 	     ld_plugin_symbol_resolution_names[(int)node->symbol.resolution]);
   if (node->local.finalized)
     fprintf (f, " finalized");
   if (node->local.redefined_extern_inline)
     fprintf (f, " redefined_extern_inline");
-  if (TREE_ASM_WRITTEN (node->symbol.decl))
-    fprintf (f, " asm_written");
   if (node->only_called_at_startup)
     fprintf (f, " only_called_at_startup");
   if (node->only_called_at_exit)
@@ -1692,7 +1669,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 
   if (node->thunk.thunk_p)
     {
-      fprintf (f, "  thunk of %s (asm: %s) fixed offset %i virtual value %i has "
+      fprintf (f, "  Thunk of %s (asm: %s) fixed offset %i virtual value %i has "
 	       "virtual offset %i)\n",
 	       lang_hooks.decl_printable_name (node->thunk.alias, 2),
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->thunk.alias)),
@@ -1702,7 +1679,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     }
   if (node->alias && node->thunk.alias)
     {
-      fprintf (f, "  alias of %s",
+      fprintf (f, "  Alias of %s",
 	       lang_hooks.decl_printable_name (node->thunk.alias, 2));
       if (DECL_ASSEMBLER_NAME_SET_P (node->thunk.alias))
         fprintf (f, " (asm: %s)",
@@ -1710,12 +1687,12 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
       fprintf (f, "\n");
     }
   
-  fprintf (f, "  called by: ");
+  fprintf (f, "  Called by: ");
 
   for (edge = node->callers; edge; edge = edge->next_caller)
     {
-      fprintf (f, "%s/%i ", cgraph_node_name (edge->caller),
-	       edge->caller->uid);
+      fprintf (f, "%s/%i ", cgraph_node_asm_name (edge->caller),
+	       edge->caller->symbol.order);
       if (edge->count)
 	fprintf (f, "("HOST_WIDEST_INT_PRINT_DEC"x) ",
 		 (HOST_WIDEST_INT)edge->count);
@@ -1730,11 +1707,11 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	fprintf(f, "(can throw external) ");
     }
 
-  fprintf (f, "\n  calls: ");
+  fprintf (f, "\n  Calls: ");
   for (edge = node->callees; edge; edge = edge->next_callee)
     {
-      fprintf (f, "%s/%i ", cgraph_node_name (edge->callee),
-	       edge->callee->uid);
+      fprintf (f, "%s/%i ", cgraph_node_asm_name (edge->callee),
+	       edge->callee->symbol.order);
       if (!edge->inline_failed)
 	fprintf(f, "(inlined) ");
       if (edge->indirect_inlining_edge)
@@ -1749,15 +1726,11 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	fprintf(f, "(can throw external) ");
     }
   fprintf (f, "\n");
-  fprintf (f, "  References: ");
-  ipa_dump_references (f, &node->symbol.ref_list);
-  fprintf (f, "  Refering this function: ");
-  ipa_dump_refering (f, &node->symbol.ref_list);
 
   for (edge = node->indirect_calls; edge; edge = edge->next_callee)
     indirect_calls_count++;
   if (indirect_calls_count)
-    fprintf (f, "  has %i outgoing edges for indirect calls.\n",
+    fprintf (f, "  Has %i outgoing edges for indirect calls.\n",
 	     indirect_calls_count);
 }
 
