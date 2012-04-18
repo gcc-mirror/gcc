@@ -1578,7 +1578,6 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
   tree index_type = TREE_TYPE (switch_expr);
   if (index_type == NULL_TREE)
     index_type = TREE_TYPE (SWITCH_COND (switch_expr));
-  gcc_assert (INTEGRAL_TYPE_P (index_type));
 
   ret = gimplify_expr (&SWITCH_COND (switch_expr), pre_p, NULL, is_gimple_val,
                        fb_rvalue);
