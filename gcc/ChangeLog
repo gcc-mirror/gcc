@@ -1,6 +1,16 @@
 2012-04-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/52976
+	* tree-ssa-reassoc.c (add_to_ops_vec_max_rank): Delete.
+	(possibly_move_powi): New function.
+	(rewrite_expr_tree): Call possibly_move_powi.
+	(rewrite_expr_tree_parallel): Likewise.
+	(attempt_builtin_powi): Change call of add_to_ops_vec_max_rank to
+	call add_to_ops_vec instead.
+
+2012-04-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/52976
 	* tree-ssa-reassoc.c (stmt_is_power_of_op): New function.
 	(decrement_power): Likewise.
 	(propagate_op_to_single_use): Likewise.

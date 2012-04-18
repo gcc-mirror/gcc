@@ -544,28 +544,6 @@ add_repeat_to_ops_vec (VEC(operand_entry_t, heap) **ops, tree op,
   reassociate_stats.pows_encountered++;
 }
 
-/* Add an operand entry to *OPS for the tree operand OP, giving the
-   new entry a larger rank than any other operand already in *OPS.  */
-
-static void
-add_to_ops_vec_max_rank (VEC(operand_entry_t, heap) **ops, tree op)
-{
-  operand_entry_t oe = (operand_entry_t) pool_alloc (operand_entry_pool);
-  operand_entry_t oe1;
-  unsigned i;
-  unsigned max_rank = 0;
-
-  FOR_EACH_VEC_ELT (operand_entry_t, *ops, i, oe1)
-    if (oe1->rank > max_rank)
-      max_rank = oe1->rank;
-
-  oe->op = op;
-  oe->rank = max_rank + 1;
-  oe->id = next_operand_entry_id++;
-  oe->count = 1;
-  VEC_safe_push (operand_entry_t, heap, *ops, oe);
-}
-
 /* Return true if STMT is reassociable operation containing a binary
    operation with tree code CODE, and is inside LOOP.  */
 
@@ -2264,6 +2242,47 @@ remove_visited_stmt_chain (tree var)
     }
 }
 
+/* If OP is an SSA name, find its definition and determine whether it
+   is a call to __builtin_powi.  If so, move the definition prior to
+   STMT.  Only do this during early reassociation.  */
+
+static void
+possibly_move_powi (gimple stmt, tree op)
+{
+  gimple stmt2;
+  tree fndecl;
+  gimple_stmt_iterator gsi1, gsi2;
+
+  if (!first_pass_instance
+      || !flag_unsafe_math_optimizations
+      || TREE_CODE (op) != SSA_NAME)
+    return;
+  
+  stmt2 = SSA_NAME_DEF_STMT (op);
+
+  if (!is_gimple_call (stmt2)
+      || !has_single_use (gimple_call_lhs (stmt2)))
+    return;
+
+  fndecl = gimple_call_fndecl (stmt2);
+
+  if (!fndecl
+      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+    return;
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    CASE_FLT_FN (BUILT_IN_POWI):
+      break;
+    default:
+      return;
+    }
+
+  gsi1 = gsi_for_stmt (stmt);
+  gsi2 = gsi_for_stmt (stmt2);
+  gsi_move_before (&gsi2, &gsi1);
+}
+
 /* This function checks three consequtive operands in
    passed operands vector OPS starting from OPINDEX and
    swaps two operands if it is profitable for binary operation
@@ -2369,6 +2388,8 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 	      print_gimple_stmt (dump_file, stmt, 0, 0);
 	    }
 
+	  possibly_move_powi (stmt, oe1->op);
+	  possibly_move_powi (stmt, oe2->op);
 	}
       return;
     }
@@ -2414,6 +2435,8 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 	  fprintf (dump_file, " into ");
 	  print_gimple_stmt (dump_file, stmt, 0, 0);
 	}
+
+      possibly_move_powi (stmt, oe->op);
     }
   /* Recurse on the LHS of the binary operator, which is guaranteed to
      be the non-leaf side.  */
@@ -2587,6 +2610,9 @@ rewrite_expr_tree_parallel (gimple stmt, int width,
 	  fprintf (dump_file, " into ");
 	  print_gimple_stmt (dump_file, stmts[i], 0, 0);
 	}
+
+      possibly_move_powi (stmts[i], op1);
+      possibly_move_powi (stmts[i], op2);
     }
 
   remove_visited_stmt_chain (last_rhs1);
@@ -3298,6 +3324,8 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 							   power));
 	      gimple_call_set_lhs (pow_stmt, iter_result);
 	      gimple_set_location (pow_stmt, gimple_location (stmt));
+	      /* Temporarily place the call; we will move it to the
+		 correct place during rewrite_expr.  */
 	      gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3402,10 +3430,8 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 	  gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
 	}
 
-      /* Append the result of this iteration to the ops vector.
-         Give it a rank higher than all other ranks in the ops vector
-         so that all uses of it will be forced to come after it.  */
-      add_to_ops_vec_max_rank (ops, iter_result);
+      /* Append the result of this iteration to the ops vector.  */
+      add_to_ops_vec (ops, iter_result);
 
       /* Decrement the occurrence count of each element in the product
 	 by the count found above, and remove this many copies of each
