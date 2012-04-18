@@ -1,7 +1,7 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -4175,7 +4175,8 @@ build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args)
     {
       tree object_addr = cp_build_addr_expr (object, tf_warning_or_error);
       fn = TREE_OPERAND (fn, 1);
-      fn = get_member_function_from_ptrfunc (&object_addr, fn);
+      fn = get_member_function_from_ptrfunc (&object_addr, fn,
+					     tf_warning_or_error);
       VEC_safe_insert (tree, gc, *args, 0, object_addr);
     }
 

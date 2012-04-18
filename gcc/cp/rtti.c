@@ -551,7 +551,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
   if (tc == POINTER_TYPE)
     {
-      expr = decay_conversion (expr);
+      expr = decay_conversion (expr, complain);
       exprtype = TREE_TYPE (expr);
 
       /* If T is a pointer type, v shall be an rvalue of a pointer to
@@ -936,7 +936,8 @@ tinfo_base_init (tinfo_s *ti, tree target)
 
   v = VEC_alloc (constructor_elt, gc, 2);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, vtable_ptr);
-  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, decay_conversion (name_decl));
+  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+			  decay_conversion (name_decl, tf_warning_or_error));
 
   init = build_constructor (init_list_type_node, v);
   TREE_CONSTANT (init) = 1;

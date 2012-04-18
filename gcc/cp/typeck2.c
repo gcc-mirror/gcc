@@ -1,7 +1,8 @@
 /* Report error messages, build initializers, and perform
    some front-end optimizations for C++ compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012
    Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -1528,7 +1529,7 @@ build_x_arrow (tree expr, tsubst_flags_t complain)
 	last_rval = convert_from_reference (last_rval);
     }
   else
-    last_rval = decay_conversion (expr);
+    last_rval = decay_conversion (expr, complain);
 
   if (TREE_CODE (TREE_TYPE (last_rval)) == POINTER_TYPE)
     {
@@ -1557,7 +1558,7 @@ build_x_arrow (tree expr, tsubst_flags_t complain)
    already been checked out to be of aggregate type.  */
 
 tree
-build_m_component_ref (tree datum, tree component)
+build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 {
   tree ptrmem_type;
   tree objtype;
@@ -1574,18 +1575,18 @@ build_m_component_ref (tree datum, tree component)
   ptrmem_type = TREE_TYPE (component);
   if (!TYPE_PTR_TO_MEMBER_P (ptrmem_type))
     {
-      error ("%qE cannot be used as a member pointer, since it is of "
-	     "type %qT",
-	     component, ptrmem_type);
+      if (complain & tf_error)
+	error ("%qE cannot be used as a member pointer, since it is of "
+	       "type %qT", component, ptrmem_type);
       return error_mark_node;
     }
 
   objtype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));
   if (! MAYBE_CLASS_TYPE_P (objtype))
     {
-      error ("cannot apply member pointer %qE to %qE, which is of "
-	     "non-class type %qT",
-	     component, datum, objtype);
+      if (complain & tf_error)
+	error ("cannot apply member pointer %qE to %qE, which is of "
+	       "non-class type %qT", component, datum, objtype);
       return error_mark_node;
     }
 
@@ -1605,9 +1606,9 @@ build_m_component_ref (tree datum, tree component)
       if (!binfo)
 	{
 	mismatch:
-	  error ("pointer to member type %qT incompatible with object "
-		 "type %qT",
-		 type, objtype);
+	  if (complain & tf_error)
+	    error ("pointer to member type %qT incompatible with object "
+		   "type %qT", type, objtype);
 	  return error_mark_node;
 	}
       else if (binfo == error_mark_node)
@@ -1631,14 +1632,20 @@ build_m_component_ref (tree datum, tree component)
 
       /* Convert object to the correct base.  */
       if (binfo)
-	datum = build_base_path (PLUS_EXPR, datum, binfo, 1,
-				 tf_warning_or_error);
+	{
+	  datum = build_base_path (PLUS_EXPR, datum, binfo, 1, complain);
+	  if (datum == error_mark_node)
+	    return error_mark_node;
+	}
 
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */
       ptype = build_pointer_type (type);
       datum = fold_build_pointer_plus (fold_convert (ptype, datum), component);
-      datum = cp_build_indirect_ref (datum, RO_NULL, tf_warning_or_error);
+      datum = cp_build_indirect_ref (datum, RO_NULL, complain);
+      if (datum == error_mark_node)
+	return error_mark_node;
+
       /* If the object expression was an rvalue, return an rvalue.  */
       if (!is_lval)
 	datum = move (datum);

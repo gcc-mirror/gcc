@@ -1,7 +1,7 @@
 /* Handle initialization things in C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -3194,7 +3194,10 @@ build_vec_init (tree base, tree maxindex, tree init,
   if (TREE_CODE (atype) == ARRAY_TYPE)
     {
       ptype = build_pointer_type (type);
-      base = cp_convert (ptype, decay_conversion (base));
+      base = decay_conversion (base, complain);
+      if (base == error_mark_node)
+	return error_mark_node;
+      base = cp_convert (ptype, base);
     }
   else
     ptype = atype;
@@ -3243,7 +3246,9 @@ build_vec_init (tree base, tree maxindex, tree init,
     {
       if (lvalue_kind (init) & clk_rvalueref)
 	xvalue = true;
-      base2 = decay_conversion (init);
+      base2 = decay_conversion (init, complain);
+      if (base2 == error_mark_node)
+	return error_mark_node;
       itype = TREE_TYPE (base2);
       base2 = get_temp_regvar (itype, base2);
       itype = TREE_TYPE (itype);

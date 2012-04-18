@@ -1,7 +1,7 @@
 /* Language-level data type conversion for GNU C++.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -109,7 +109,7 @@ cp_convert_to_pointer (tree type, tree expr)
     {
       if (TYPE_PTRMEMFUNC_P (intype)
 	  || TREE_CODE (intype) == METHOD_TYPE)
-	return convert_member_func_to_ptr (type, expr);
+	return convert_member_func_to_ptr (type, expr, tf_warning_or_error);
       if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
 	return build_nop (type, expr);
       intype = TREE_TYPE (expr);
@@ -188,7 +188,8 @@ cp_convert_to_pointer (tree type, tree expr)
 	    {
 	      tree object = TREE_OPERAND (expr, 0);
 	      return get_member_function_from_ptrfunc (&object,
-						       TREE_OPERAND (expr, 1));
+						       TREE_OPERAND (expr, 1),
+						       tf_warning_or_error);
 	    }
 	}
       error ("cannot convert %qE from type %qT to type %qT",
@@ -550,7 +551,7 @@ force_rvalue (tree expr, tsubst_flags_t complain)
       expr = build_cplus_new (type, expr, complain);
     }
   else
-    expr = decay_conversion (expr);
+    expr = decay_conversion (expr, complain);
 
   return expr;
 }
@@ -1495,7 +1496,8 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 
       case FUNCTION_TYPE:
       case ARRAY_TYPE:
-	return (desires & WANT_POINTER) ? decay_conversion (expr)
+	return (desires & WANT_POINTER) ? decay_conversion (expr,
+							    tf_warning_or_error)
 					: NULL_TREE;
 
       case COMPLEX_TYPE:
