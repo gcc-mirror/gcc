@@ -75,13 +75,15 @@ along with GCC; see the file COPYING3.  If not see
   { "link_emulation", GNU_USER_LINK_EMULATION },\
   { "dynamic_linker", GNU_USER_DYNAMIC_LINKER }
 
-#undef	LINK_SPEC
-#define LINK_SPEC "-m %(link_emulation) %{shared:-shared} \
+#define GNU_USER_TARGET_LINK_SPEC "-m %(link_emulation) %{shared:-shared} \
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
       -dynamic-linker %(dynamic_linker)} \
       %{static:-static}}"
+
+#undef	LINK_SPEC
+#define LINK_SPEC GNU_USER_TARGET_LINK_SPEC
 
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named
