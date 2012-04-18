@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "tree-inline.h"
+#include "langhooks.h"
 #include "hashtab.h"
 #include "ggc.h"
 #include "cgraph.h"
@@ -331,6 +332,143 @@ change_decl_assembler_name (tree decl, tree name)
       if (node)
 	insert_to_assembler_name_hash (node);
     }
+}
+
+/* Return printable assembler name of NODE.
+   This function is used only for debugging.  When assembler name
+   is unknown go with identifier name.  */
+
+const char *
+symtab_node_asm_name (symtab_node node)
+{
+  if (!DECL_ASSEMBLER_NAME_SET_P (node->symbol.decl))
+    return lang_hooks.decl_printable_name (node->symbol.decl, 2);
+  return IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->symbol.decl));
+}
+
+/* Return printable identifier name.  */
+
+const char *
+symtab_node_name (symtab_node node)
+{
+  return lang_hooks.decl_printable_name (node->symbol.decl, 2);
+}
+
+static const char * const symtab_type_names[] = {"symbol", "function", "variable"};
+
+/* Dump base fields of symtab nodes.  Not to be used directly.  */
+
+void
+dump_symtab_base (FILE *f, symtab_node node)
+{
+  static const char * const visibility_types[] = {
+    "default", "protected", "hidden", "internal"
+  };
+
+  fprintf (f, "%s/%i (%s)",
+	   symtab_node_asm_name (node),
+	   node->symbol.order,
+	   symtab_node_name (node));
+  dump_addr (f, " @", (void *)node);
+  fprintf (f, "\n  Type: %s\n", symtab_type_names[node->symbol.type]);
+  fprintf (f, "  Visibility:");
+
+  if (node->symbol.in_other_partition)
+    fprintf (f, " in_other_partition");
+  if (node->symbol.used_from_other_partition)
+    fprintf (f, " used_from_other_partition");
+  if (node->symbol.resolution != LDPR_UNKNOWN)
+    fprintf (f, " %s",
+ 	     ld_plugin_symbol_resolution_names[(int)node->symbol.resolution]);
+  if (TREE_ASM_WRITTEN (node->symbol.decl))
+    fprintf (f, " asm_written");
+  if (DECL_EXTERNAL (node->symbol.decl))
+    fprintf (f, " external");
+  if (TREE_PUBLIC (node->symbol.decl))
+    fprintf (f, " public");
+  if (DECL_COMMON (node->symbol.decl))
+    fprintf (f, " common");
+  if (DECL_WEAK (node->symbol.decl))
+    fprintf (f, " weak");
+  if (DECL_DLLIMPORT_P (node->symbol.decl))
+    fprintf (f, " dll_import");
+  if (DECL_COMDAT (node->symbol.decl))
+    fprintf (f, " comdat");
+  if (DECL_COMDAT_GROUP (node->symbol.decl))
+    fprintf (f, " comdat_group:%s",
+	     IDENTIFIER_POINTER (DECL_COMDAT_GROUP (node->symbol.decl)));
+  if (DECL_ONE_ONLY (node->symbol.decl))
+    fprintf (f, " one_only");
+  if (DECL_SECTION_NAME (node->symbol.decl))
+    fprintf (f, " section_name:%s",
+	     IDENTIFIER_POINTER (DECL_SECTION_NAME (node->symbol.decl)));
+  if (DECL_VISIBILITY_SPECIFIED (node->symbol.decl))
+    fprintf (f, " visibility_specified");
+  if (DECL_VISIBILITY (node->symbol.decl))
+    fprintf (f, " visibility:%s",
+	     visibility_types [DECL_VISIBILITY (node->symbol.decl)]);
+  if (DECL_VIRTUAL_P (node->symbol.decl))
+    fprintf (f, " virtual");
+  if (DECL_ARTIFICIAL (node->symbol.decl))
+    fprintf (f, " artificial");
+  fprintf (f, "\n");
+  
+  if (node->symbol.same_comdat_group)
+    fprintf (f, "  Same comdat group as: %s/%i\n",
+	     symtab_node_asm_name (node->symbol.same_comdat_group),
+	     node->symbol.same_comdat_group->symbol.order);
+  if (node->symbol.next_sharing_asm_name)
+    fprintf (f, "  next sharing asm name: %i\n",
+	     node->symbol.same_comdat_group->symbol.order);
+  if (node->symbol.previous_sharing_asm_name)
+    fprintf (f, "  previous sharing asm name: %i\n",
+	     node->symbol.same_comdat_group->symbol.order);
+
+  if (node->symbol.address_taken)
+    fprintf (f, "  Address is taken.");
+
+  fprintf (f, "  References: ");
+  ipa_dump_references (f, &node->symbol.ref_list);
+  fprintf (f, "  Refering: ");
+  ipa_dump_refering (f, &node->symbol.ref_list);
+}
+
+/* Dump symtab node.  */
+
+void
+dump_symtab_node (FILE *f, symtab_node node)
+{
+  if (symtab_function_p (node))
+    dump_cgraph_node (f, cgraph (node));
+  else if (symtab_variable_p (node))
+    dump_varpool_node (f, varpool (node));
+}
+
+/* Dump symbol table.  */
+
+void
+dump_symtab (FILE *f)
+{
+  symtab_node node;
+  fprintf (f, "Symbol table:\n\n");
+  FOR_EACH_SYMBOL (node)
+    dump_symtab_node (f, node);
+}
+
+/* Dump symtab node NODE to stderr.  */
+
+DEBUG_FUNCTION void
+debug_symtab_node (symtab_node node)
+{
+  dump_symtab_node (stderr, node);
+}
+
+/* Dump symbol table to stderr.  */
+
+DEBUG_FUNCTION void
+debug_symtab (void)
+{
+  dump_symtab (stderr);
 }
 
 #include "gt-symtab.h"

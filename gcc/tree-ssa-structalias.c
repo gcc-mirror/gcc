@@ -6857,7 +6857,7 @@ ipa_pta_execute (void)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      dump_cgraph (dump_file);
+      dump_symtab (dump_file);
       fprintf (dump_file, "\n");
     }
 

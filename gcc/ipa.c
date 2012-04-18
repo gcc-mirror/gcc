@@ -989,7 +989,7 @@ struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_remove_functions | TODO_dump_cgraph
+  TODO_remove_functions | TODO_dump_symtab
   | TODO_ggc_collect			/* todo_flags_finish */
  }
 };
@@ -1047,7 +1047,7 @@ struct ipa_opt_pass_d pass_ipa_whole_program_visibility =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_remove_functions | TODO_dump_cgraph
+  TODO_remove_functions | TODO_dump_symtab
   | TODO_ggc_collect			/* todo_flags_finish */
  },
  NULL,					/* generate_summary */

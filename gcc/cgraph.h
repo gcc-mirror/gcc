@@ -508,7 +508,14 @@ void symtab_unregister_node (symtab_node);
 void symtab_remove_node (symtab_node);
 symtab_node symtab_get_node (const_tree);
 symtab_node symtab_node_for_asm (const_tree asmname);
+const char * symtab_node_asm_name (symtab_node);
+const char * symtab_node_name (symtab_node);
 void symtab_insert_node_to_hashtable (symtab_node);
+void dump_symtab (FILE *);
+void debug_symtab (void);
+void dump_symtab_node (FILE *, symtab_node);
+void debug_symtab_node (symtab_node);
+void dump_symtab_base (FILE *, symtab_node);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
@@ -545,7 +552,6 @@ void cgraph_update_edges_for_call_stmt (gimple, tree, gimple);
 struct cgraph_local_info *cgraph_local_info (tree);
 struct cgraph_global_info *cgraph_global_info (tree);
 struct cgraph_rtl_info *cgraph_rtl_info (tree);
-const char * cgraph_node_name (struct cgraph_node *);
 struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 					struct cgraph_node *, gimple,
 					unsigned, gcov_type, int, bool);
@@ -715,7 +721,6 @@ void varpool_remove_unreferenced_decls (void);
 void varpool_empty_needed_queue (void);
 struct varpool_node * varpool_extra_name_alias (tree, tree);
 struct varpool_node * varpool_create_variable_alias (tree, tree);
-const char * varpool_node_name (struct varpool_node *node);
 void varpool_reset_queue (void);
 bool const_value_known_p (tree);
 bool varpool_for_node_and_aliases (struct varpool_node *,
@@ -767,6 +772,34 @@ varpool_get_node (const_tree decl)
 {
   gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
   return varpool (symtab_get_node (decl));
+}
+
+/* Return asm name of cgraph node.  */
+static inline const char *
+cgraph_node_asm_name(struct cgraph_node *node)
+{
+  return symtab_node_asm_name ((symtab_node)node);
+}
+
+/* Return asm name of varpool node.  */
+static inline const char *
+varpool_node_asm_name(struct varpool_node *node)
+{
+  return symtab_node_asm_name ((symtab_node)node);
+}
+
+/* Return name of cgraph node.  */
+static inline const char *
+cgraph_node_name(struct cgraph_node *node)
+{
+  return symtab_node_name ((symtab_node)node);
+}
+
+/* Return name of varpool node.  */
+static inline const char *
+varpool_node_name(struct varpool_node *node)
+{
+  return symtab_node_name ((symtab_node)node);
 }
 
 /* Walk all symbols.  */

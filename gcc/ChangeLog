@@ -1,3 +1,40 @@
+2012-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_node_name): Remove.
+	(dump_cgraph_node): Use dump_symtab_base; reformat.
+	* cgraph.h (symtab_node_asm_name, symtab_node_name, dump_symtab,
+	debug_symtab, dump_symtab_node, debug_symtab_node, dump_symtab_base):
+	Declare.
+	(cgraph_node_name, varpool_node_name): Remove.
+	(cgraph_node_asm_name, varpool_node_asm_name,
+	cgraph_node_name, varpool_node_name): New.
+	* tree-pass.h (TODO_dump_cgraph): Rename to ...
+	(TODO_dump_symtab): ... this one.
+	* ipa-cp (pass_ipa_cp): Update.
+	* ia-reference.c (generate_summary, read_write_all_from_decl,
+	propagate, ipa_reference_read_optimization_summary): Update.
+	* cgraphunit.c (cgraph_analyze_functions): Update.
+	(cgraph_optimize): Update.
+	* ipa-ref.c (ipa_dump_references): Update.
+	(ipa_dump_refering): Update.
+	* ipa-inline.c (pass_ipa_inline): Update.
+	* matrix-reorg.c (pass_ipa_matrix_reorg): Update.
+	* ipa.c (pass_ipa_function_visibility,
+	pass_ipa_whole_program_visibility): Update.
+	* tree-sra.c (pass_early_ipa_sra): Update.
+	* symtab.c: Include langhooks.h
+	(symtab_node_asm_name): New.
+	(symtab_node_name): New.
+	(symtab_type_names): New static var.
+	(dump_symtab_base): New.
+	(dump_symtab_node, dump_symtab): New.
+	(debug_symtab_node,  debug_symtab): New.
+	* tree-ssa-structalias.c: Dump symbol table.
+	* pases.c (execute_todo): Handle TODO_dump_symtab instead
+	of TODO_dump_cgraph.
+	* varpoo.c (varpool_node_name): Remove.
+	(dump_varpool_node): Use dump_symtab_base; reformat.
+
 2012-04-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
         * doc/invoke.texi (Language Independent Options): @item should be

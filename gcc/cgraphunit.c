@@ -1273,8 +1273,7 @@ cgraph_analyze_functions (void)
 	if (node->needed)
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n\nInitial ");
-      dump_cgraph (cgraph_dump_file);
-      dump_varpool (cgraph_dump_file);
+      dump_symtab (cgraph_dump_file);
     }
 
   if (cgraph_dump_file)
@@ -1310,8 +1309,7 @@ cgraph_analyze_functions (void)
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "\n\nReclaimed ");
-      dump_cgraph (cgraph_dump_file);
-      dump_varpool (cgraph_dump_file);
+      dump_symtab (cgraph_dump_file);
     }
   bitmap_obstack_release (NULL);
   first_analyzed = cgraph_first_function ();
@@ -2690,8 +2688,7 @@ cgraph_optimize (void)
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "Optimized ");
-      dump_cgraph (cgraph_dump_file);
-      dump_varpool (cgraph_dump_file);
+      dump_symtab (cgraph_dump_file);
     }
   if (post_ipa_mem_report)
     {
@@ -2738,8 +2735,7 @@ cgraph_optimize (void)
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "\nFinal ");
-      dump_cgraph (cgraph_dump_file);
-      dump_varpool (cgraph_dump_file);
+      dump_symtab (cgraph_dump_file);
     }
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
