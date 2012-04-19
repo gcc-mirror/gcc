@@ -1,3 +1,10 @@
+2012-04-19  Jim Meyering  <meyering@redhat.com>
+
+	genmodes: remove misleading use of strncpy
+	* genmodes.c (make_complex_modes): Avoid unnecessary use of strncpy.
+	We verified above that the string(including trailing NUL) fits in buf,
+	so just use memcpy.
+
 2012-04-19  Richard Guenther  <rguenther@suse.de>
 
 	* symtab.c (dump_symtab_base): Use TREE_STRING_POINTER

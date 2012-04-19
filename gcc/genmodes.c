@@ -1,5 +1,5 @@
 /* Generate the machine mode enumeration and associated tables.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -435,11 +435,14 @@ make_complex_modes (enum mode_class cl,
 
   for (m = modes[cl]; m; m = m->next)
     {
+      size_t m_len;
+
       /* Skip BImode.  FIXME: BImode probably shouldn't be MODE_INT.  */
       if (m->precision == 1)
 	continue;
 
-      if (strlen (m->name) >= sizeof buf)
+      m_len = strlen (m->name);
+      if (m_len >= sizeof buf)
 	{
 	  error ("%s:%d:mode name \"%s\" is too long",
 		 m->file, m->line, m->name);
@@ -452,7 +455,8 @@ make_complex_modes (enum mode_class cl,
       if (cl == MODE_FLOAT)
 	{
 	  char *p, *q = 0;
-	  strncpy (buf, m->name, sizeof buf);
+	  /* We verified above that m->name+NUL fits in buf.  */
+	  memcpy (buf, m->name, m_len + 1);
 	  p = strchr (buf, 'F');
 	  if (p == 0)
 	    q = strchr (buf, 'D');
