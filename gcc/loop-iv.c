@@ -2190,8 +2190,8 @@ canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
   return true;
 }
 
-/* Tries to estimate the maximum number of iterations in LOOP, and store the
-   result in DESC.  This function is called from iv_number_of_iterations with
+/* Tries to estimate the maximum number of iterations in LOOP, and return the
+   result.  This function is called from iv_number_of_iterations with
    a number of fields in DESC already filled in.  OLD_NITER is the original
    expression for the number of iterations, before we tried to simplify it.  */
 
@@ -2207,10 +2207,7 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
     {
       nmax = INTVAL (XEXP (niter, 0));
       if (!(nmax & (nmax + 1)))
-	{
-	  desc->niter_max = nmax;
-	  return nmax;
-	}
+	return nmax;
     }
 
   get_mode_bounds (desc->mode, desc->signed_p, desc->mode, &mmin, &mmax);
@@ -2219,10 +2216,7 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
   if (GET_CODE (niter) == UDIV)
     {
       if (!CONST_INT_P (XEXP (niter, 1)))
-	{
-	  desc->niter_max = nmax;
-	  return nmax;
-	}
+	return nmax;
       inc = INTVAL (XEXP (niter, 1));
       niter = XEXP (niter, 0);
     }
@@ -2241,7 +2235,6 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
       if (dump_file)
 	fprintf (dump_file, ";; improved upper bound by one.\n");
     }
-  desc->niter_max = nmax / inc;
   return nmax / inc;
 }
 
@@ -2259,7 +2252,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   enum rtx_code cond;
   enum machine_mode mode, comp_mode;
   rtx mmin, mmax, mode_mmin, mode_mmax;
-  unsigned HOST_WIDEST_INT s, size, d, inv;
+  unsigned HOST_WIDEST_INT s, size, d, inv, max;
   HOST_WIDEST_INT up, down, inc, step_val;
   int was_sharp = false;
   rtx old_niter;
@@ -2279,6 +2272,9 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   desc->const_iter = false;
   desc->niter_expr = NULL_RTX;
   desc->niter_max = 0;
+  if (loop->any_upper_bound
+      && double_int_fits_in_uhwi_p (loop->nb_iterations_upper_bound))
+    desc->niter_max = loop->nb_iterations_upper_bound.low;
 
   cond = GET_CODE (condition);
   gcc_assert (COMPARISON_P (condition));
@@ -2547,7 +2543,10 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	  down = INTVAL (CONST_INT_P (iv0.base)
 			 ? iv0.base
 			 : mode_mmin);
-	  desc->niter_max = (up - down) / inc + 1;
+	  max = (up - down) / inc + 1;
+	  if (!desc->niter_max
+	      || max < desc->niter_max)
+	    desc->niter_max = max;
 
 	  if (iv0.step == const0_rtx)
 	    {
@@ -2762,8 +2761,10 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
     }
   else
     {
-      if (!desc->niter_max)
-	desc->niter_max = determine_max_iter (loop, desc, old_niter);
+      max = determine_max_iter (loop, desc, old_niter);
+      if (!desc->niter_max
+	  || max < desc->niter_max)
+	desc->niter_max = max;
 
       /* simplify_using_initial_values does a copy propagation on the registers
 	 in the expression for the number of iterations.  This prolongs life

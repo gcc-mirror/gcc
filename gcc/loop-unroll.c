@@ -857,7 +857,9 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
     }
 
   /* If we have profile feedback, check whether the loop rolls.  */
-  if (loop->header->count && expected_loop_iterations (loop) < 2 * nunroll)
+  if ((loop->header->count
+       && expected_loop_iterations (loop) < 2 * nunroll)
+      || desc->niter_max < 2 * nunroll)
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not unrolling loop, doesn't roll\n");
@@ -1400,8 +1402,9 @@ decide_unroll_stupid (struct loop *loop, int flags)
     }
 
   /* If we have profile feedback, check whether the loop rolls.  */
-  if (loop->header->count
-      && expected_loop_iterations (loop) < 2 * nunroll)
+  if ((loop->header->count
+       && expected_loop_iterations (loop) < 2 * nunroll)
+      || desc->niter_max < 2 * nunroll)
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not unrolling loop, doesn't roll\n");
