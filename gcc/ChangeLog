@@ -4,7 +4,6 @@
 
 2012-04-19  Jim Meyering  <meyering@redhat.com>
 
-	genmodes: remove misleading use of strncpy
 	* genmodes.c (make_complex_modes): Avoid unnecessary use of strncpy.
 	We verified above that the string(including trailing NUL) fits in buf,
 	so just use memcpy.
@@ -84,7 +83,7 @@
 
 	* cgraph.h (verify_symtab, verify_symtab_node, verify_symtab_base):
 	Declare.
-	* cgraphunit.c (verify_cgraph_node): Verify symtab base; do not verify 
+	* cgraphunit.c (verify_cgraph_node): Verify symtab base; do not verify
 	cgraph hash and same comdat groups.
 	(cgraph_optimize); Verify symbol table.
 	* ipa.c (cgraph_remove_unreachable_nodes): Verify symbol table.
