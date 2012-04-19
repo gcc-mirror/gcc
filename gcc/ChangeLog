@@ -1,3 +1,7 @@
+2012-04-19  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* config/arm/sync.md (sync_optab): Change ior attribute to "or".
+
 2012-04-19   Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/52283/37985

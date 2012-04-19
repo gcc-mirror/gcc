@@ -29,7 +29,7 @@
 (define_code_iterator syncop [plus minus ior xor and])
 
 (define_code_attr sync_optab
-  [(ior "ior") (xor "xor") (and "and") (plus "add") (minus "sub")])
+  [(ior "or") (xor "xor") (and "and") (plus "add") (minus "sub")])
 
 (define_mode_attr sync_sfx
   [(QI "b") (HI "h") (SI "") (DI "d")])
