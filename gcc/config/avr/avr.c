@@ -3476,15 +3476,16 @@ avr_out_load_psi (rtx insn, rtx *op, int *plen)
                                   "mov r27,__tmp_reg__", op, plen, -6);
             }
           
-            avr_asm_len ("adiw r26,%o1"      CR_TAB
-                         "ld r24,X+"         CR_TAB
-                         "ld r25,X+"         CR_TAB
-                         "ld r26,X", op, plen, -4);
+          avr_asm_len ("adiw r26,%o1" CR_TAB
+                       "ld %A0,X+"    CR_TAB
+                       "ld %B0,X+"    CR_TAB
+                       "ld %C0,X", op, plen, -4);
 
-            if (reg_dest != REG_X - 2)
-              avr_asm_len ("sbiw r26,%o1+2", op, plen, 1);
+          if (reg_dest != REG_W
+              && !reg_unused_after (insn, XEXP (base, 0)))
+            avr_asm_len ("sbiw r26,%o1+2", op, plen, 1);
 
-            return "";
+          return "";
         }
       
       if (reg_dest == reg_base)

@@ -1,3 +1,11 @@
+2012-04-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-04-19 mainline r186588.
+
+	PR target/53033
+	* config/avr/avr.c (avr_out_load_psi): Fix assembler template for
+	the case *(X+const).
+
 2012-04-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/sync.md (fetchop_name): Change ior attribute to "or".
