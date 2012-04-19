@@ -1534,14 +1534,13 @@ struct GTY(()) tree_complex {
 };
 
 /* In a VECTOR_CST node.  */
-#define VECTOR_CST_NELTS(NODE) (VECTOR_CST_CHECK (NODE)->vector.length)
+#define VECTOR_CST_NELTS(NODE) (TYPE_VECTOR_SUBPARTS (TREE_TYPE (NODE)))
 #define VECTOR_CST_ELTS(NODE) (VECTOR_CST_CHECK (NODE)->vector.elts)
 #define VECTOR_CST_ELT(NODE,IDX) (VECTOR_CST_CHECK (NODE)->vector.elts[IDX])
 
 struct GTY(()) tree_vector {
   struct tree_typed typed;
-  unsigned length;
-  tree GTY ((length ("%h.length"))) elts[1];
+  tree GTY ((length ("TYPE_VECTOR_SUBPARTS (TREE_TYPE ((tree)&%h))"))) elts[1];
 };
 
 #include "symtab.h"

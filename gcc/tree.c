@@ -1329,7 +1329,6 @@ make_vector_stat (unsigned len MEM_STAT_DECL)
 
   TREE_SET_CODE (t, VECTOR_CST);
   TREE_CONSTANT (t) = 1;
-  VECTOR_CST_NELTS (t) = len;
 
   return t;
 }

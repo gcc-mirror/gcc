@@ -1,3 +1,17 @@
+2012-04-19  Michael Matz  <matz@suse.de>
+
+	PR middle-end/52977
+	* tree.h (VECTOR_CST_NELTS): Use part number of types again.
+	(struct tree_vector): Adjust GTY length.
+	* tree.c (make_vector_stat): Don't set VECTOR_CST_NELTS.
+
+	* gengtype.c (struct walk_type_data): Add in_record_p and loopcounter
+	members.
+	(walk_type, <TYPE_POINTER, TYPE_ARRAY>): Handle case where our
+	caller emitted the length calulation already.
+	(walk_type, <TYPE_UNION, TYPE_STRUCT>): Emit length calculations
+	before handling any of the fields for structs.
+
 2012-04-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53031
