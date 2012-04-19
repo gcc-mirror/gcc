@@ -402,7 +402,7 @@ dump_symtab_base (FILE *f, symtab_node node)
     fprintf (f, " one_only");
   if (DECL_SECTION_NAME (node->symbol.decl))
     fprintf (f, " section_name:%s",
-	     IDENTIFIER_POINTER (DECL_SECTION_NAME (node->symbol.decl)));
+	     TREE_STRING_POINTER (DECL_SECTION_NAME (node->symbol.decl)));
   if (DECL_VISIBILITY_SPECIFIED (node->symbol.decl))
     fprintf (f, " visibility_specified");
   if (DECL_VISIBILITY (node->symbol.decl))
