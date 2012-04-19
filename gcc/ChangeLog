@@ -1,3 +1,8 @@
+2012-04-19  Richard Guenther  <rguenther@suse.de>
+
+	* ira-int.h (ira_allocno_object_iter_cond): Avoid out-of-bound
+	array access.
+
 2012-04-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/53033
