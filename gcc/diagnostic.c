@@ -714,6 +714,7 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   if (kind == DK_PERMERROR)
@@ -727,9 +728,10 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
       if (kind == DK_WARNING || kind == DK_PEDWARN)
 	diagnostic.option_index = opt;
   }
-  va_end (ap);
 
-  return report_diagnostic (&diagnostic);
+  ret = report_diagnostic (&diagnostic);
+  va_end (ap);
+  return ret;
 }
 
 /* An informative note at LOCATION.  Use this for additional details on an error
@@ -771,13 +773,15 @@ warning (int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_WARNING);
   diagnostic.option_index = opt;
 
+  ret = report_diagnostic (&diagnostic);
   va_end (ap);
-  return report_diagnostic (&diagnostic);
+  return ret;
 }
 
 /* A warning at LOCATION.  Use this for code which is correct according to the
@@ -789,12 +793,14 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_WARNING);
   diagnostic.option_index = opt;
+  ret = report_diagnostic (&diagnostic);
   va_end (ap);
-  return report_diagnostic (&diagnostic);
+  return ret;
 }
 
 /* A "pedantic" warning at LOCATION: issues a warning unless
@@ -815,12 +821,14 @@ pedwarn (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location,  DK_PEDWARN);
   diagnostic.option_index = opt;
+  ret = report_diagnostic (&diagnostic);
   va_end (ap);
-  return report_diagnostic (&diagnostic);
+  return ret;
 }
 
 /* A "permissive" error at LOCATION: issues an error unless
@@ -835,13 +843,15 @@ permerror (location_t location, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
                        permissive_error_kind (global_dc));
   diagnostic.option_index = permissive_error_option (global_dc);
+  ret = report_diagnostic (&diagnostic);
   va_end (ap);
-  return report_diagnostic (&diagnostic);
+  return ret;
 }
 
 /* A hard error: the code is definitely ill-formed, and an object file

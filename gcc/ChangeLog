@@ -1,3 +1,9 @@
+2012-04-19  Michael Matz  <matz@suse.de>
+
+	* diagnostic.c (emit_diagnostic): Move va_end call after user
+	of the va_list.
+	(warning, warning_at, pedwarn, permerror): Ditto.
+
 2012-04-19  Richard Guenther  <rguenther@suse.de>
 
 	* ira-int.h (ira_allocno_object_iter_cond): Avoid out-of-bound
