@@ -1,3 +1,13 @@
+2012-04-19  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/44688
+	* loop-iv.c (determine_max_iter): Only return max_iter.
+	(iv_number_of_iterations): Also use the recorded loop bound
+	on the maximum number of iterations.
+	* loop-unroll.c (decide_unroll_runtime_iterations): Use
+	max_iter to avoid unrolling loops that do not roll.
+	(decide_unroll_stupid): Likewise.
+
 2012-04-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* targhooks.c (default_case_values_threshold): Fix code style nit.
