@@ -1,3 +1,11 @@
+2012-04-19  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.dg/pr52283.c: New test.
+
+2012-04-19   Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/pr37985.c: New test.
+
 2012-04-19  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/44688
