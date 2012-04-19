@@ -1,3 +1,9 @@
+2012-04-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53031
+	* tree-vrp.c (adjust_range_with_scev): Revert back to
+	using max_loop_iterations.
+
 2012-04-19  Michael Matz  <matz@suse.de>
 
 	* diagnostic.c (emit_diagnostic): Move va_end call after user

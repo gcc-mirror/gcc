@@ -3420,7 +3420,9 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
     {
       double_int nit;
 
-      if (max_stmt_executions (loop, &nit))
+      /* We are only entering here for loop header PHI nodes, so using
+	 the number of latch executions is the correct thing to use.  */
+      if (max_loop_iterations (loop, &nit))
 	{
 	  value_range_t maxvr = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
 	  double_int dtmp;
