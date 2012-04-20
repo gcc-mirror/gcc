@@ -12,7 +12,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-go 2010
+@set copyrights-go 2010, 2011, 2012
 
 @copying
 @c man begin COPYRIGHT
@@ -174,6 +174,31 @@ By default @command{gccgo} will warn about functions which have one or
 more return parameters but lack an explicit @code{return} statement.
 This warning may be disabled using
 @option{-fno-require-return-statement}.
+
+@item -fgo-check-divide-zero
+@cindex @option{-fgo-check-divide-zero}
+@cindex @option{-fno-go-check-divide-zero}
+Add explicit checks for division by zero.  In Go a division (or
+modulos) by zero causes a panic.  On Unix systems this is detected in
+the runtime by catching the @code{SIGFPE} signal.  Some processors,
+such as PowerPC, do not generate a SIGFPE on division by zero.  Some
+runtimes do not generate a signal that can be caught.  On those
+systems, this option may be used.  Or the checks may be removed via
+@option{-fno-go-check-divide-zero}.  This option is currently on by
+default, but in the future may be off by default on systems that do
+not require it.
+
+@item -fgo-check-divide-overflow
+@cindex @option{-fgo-check-divide-overflow}
+@cindex @option{-fno-go-check-divide-overflow}
+Add explicit checks for division overflow.  For example, division
+overflow occurs when computing @code{INT_MIN / -1}.  In Go this should
+be wrapped, to produce @code{INT_MIN}.  Some processors, such as x86,
+generate a trap on division overflow.  On those systems, this option
+may be used.  Or the checks may be removed via
+@option{-fno-go-check-divide-overflow}.  This option is currently on
+by default, but in the future may be off by default on systems that do
+not require it.
 @end table
 
 @c man end

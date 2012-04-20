@@ -5647,6 +5647,7 @@ Binary_expression::do_get_tree(Translate_context* context)
   enum tree_code code;
   bool use_left_type = true;
   bool is_shift_op = false;
+  bool is_idiv_op = false;
   switch (this->op_)
     {
     case OPERATOR_EQEQ:
@@ -5689,11 +5690,15 @@ Binary_expression::do_get_tree(Translate_context* context)
 	if (t->float_type() != NULL || t->complex_type() != NULL)
 	  code = RDIV_EXPR;
 	else
-	  code = TRUNC_DIV_EXPR;
+	  {
+	    code = TRUNC_DIV_EXPR;
+	    is_idiv_op = true;
+	  }
       }
       break;
     case OPERATOR_MOD:
       code = TRUNC_MOD_EXPR;
+      is_idiv_op = true;
       break;
     case OPERATOR_LSHIFT:
       code = LSHIFT_EXPR;
@@ -5714,6 +5719,7 @@ Binary_expression::do_get_tree(Translate_context* context)
       go_unreachable();
     }
 
+  location_t gccloc = this->location().gcc_location();
   tree type = use_left_type ? TREE_TYPE(left) : TREE_TYPE(right);
 
   if (this->left_->type()->is_string_type())
@@ -5741,28 +5747,27 @@ Binary_expression::do_get_tree(Translate_context* context)
     }
 
   tree eval_saved = NULL_TREE;
-  if (is_shift_op)
+  if (is_shift_op
+      || (is_idiv_op && (go_check_divide_zero || go_check_divide_overflow)))
     {
       // Make sure the values are evaluated.
-      if (!DECL_P(left) && TREE_SIDE_EFFECTS(left))
+      if (!DECL_P(left))
 	{
 	  left = save_expr(left);
 	  eval_saved = left;
 	}
-      if (!DECL_P(right) && TREE_SIDE_EFFECTS(right))
+      if (!DECL_P(right))
 	{
 	  right = save_expr(right);
 	  if (eval_saved == NULL_TREE)
 	    eval_saved = right;
 	  else
-	    eval_saved = fold_build2_loc(this->location().gcc_location(),
-                                         COMPOUND_EXPR,
+	    eval_saved = fold_build2_loc(gccloc, COMPOUND_EXPR,
 					 void_type_node, eval_saved, right);
 	}
     }
 
-  tree ret = fold_build2_loc(this->location().gcc_location(),
-			     code,
+  tree ret = fold_build2_loc(gccloc, code,
 			     compute_type != NULL_TREE ? compute_type : type,
 			     left, right);
 
@@ -5780,39 +5785,116 @@ Binary_expression::do_get_tree(Translate_context* context)
       tree compare = fold_build2(LT_EXPR, boolean_type_node, right,
 				 build_int_cst_type(TREE_TYPE(right), bits));
 
-      tree overflow_result = fold_convert_loc(this->location().gcc_location(),
-					      TREE_TYPE(left),
+      tree overflow_result = fold_convert_loc(gccloc, TREE_TYPE(left),
 					      integer_zero_node);
       if (this->op_ == OPERATOR_RSHIFT
 	  && !this->left_->type()->integer_type()->is_unsigned())
 	{
 	  tree neg =
-            fold_build2_loc(this->location().gcc_location(), LT_EXPR,
-                            boolean_type_node, left,
-                            fold_convert_loc(this->location().gcc_location(),
-                                             TREE_TYPE(left),
+            fold_build2_loc(gccloc, LT_EXPR, boolean_type_node,
+			    left,
+                            fold_convert_loc(gccloc, TREE_TYPE(left),
                                              integer_zero_node));
 	  tree neg_one =
-            fold_build2_loc(this->location().gcc_location(),
-                            MINUS_EXPR, TREE_TYPE(left),
-                            fold_convert_loc(this->location().gcc_location(),
-                                             TREE_TYPE(left),
+            fold_build2_loc(gccloc, MINUS_EXPR, TREE_TYPE(left),
+                            fold_convert_loc(gccloc, TREE_TYPE(left),
                                              integer_zero_node),
-                            fold_convert_loc(this->location().gcc_location(),
-                                             TREE_TYPE(left),
+                            fold_convert_loc(gccloc, TREE_TYPE(left),
                                              integer_one_node));
 	  overflow_result =
-            fold_build3_loc(this->location().gcc_location(), COND_EXPR,
-                            TREE_TYPE(left), neg, neg_one,
-                            overflow_result);
+            fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(left),
+			    neg, neg_one, overflow_result);
 	}
 
-      ret = fold_build3_loc(this->location().gcc_location(), COND_EXPR,
-                            TREE_TYPE(left), compare, ret, overflow_result);
+      ret = fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(left),
+			    compare, ret, overflow_result);
 
       if (eval_saved != NULL_TREE)
-	ret = fold_build2_loc(this->location().gcc_location(), COMPOUND_EXPR,
-			      TREE_TYPE(ret), eval_saved, ret);
+	ret = fold_build2_loc(gccloc, COMPOUND_EXPR, TREE_TYPE(ret),
+			      eval_saved, ret);
+    }
+
+  // Add checks for division by zero and division overflow as needed.
+  if (is_idiv_op)
+    {
+      if (go_check_divide_zero)
+	{
+	  // right == 0
+	  tree check = fold_build2_loc(gccloc, EQ_EXPR, boolean_type_node,
+				       right,
+				       fold_convert_loc(gccloc,
+							TREE_TYPE(right),
+							integer_zero_node));
+
+	  // __go_runtime_error(RUNTIME_ERROR_DIVISION_BY_ZERO), 0
+	  int errcode = RUNTIME_ERROR_DIVISION_BY_ZERO;
+	  tree panic = fold_build2_loc(gccloc, COMPOUND_EXPR, TREE_TYPE(ret),
+				       Gogo::runtime_error(errcode,
+							   this->location()),
+				       fold_convert_loc(gccloc, TREE_TYPE(ret),
+							integer_zero_node));
+
+	  // right == 0 ? (__go_runtime_error(...), 0) : ret
+	  ret = fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(ret),
+				check, panic, ret);
+	}
+
+      if (go_check_divide_overflow)
+	{
+	  // right == -1
+	  // FIXME: It would be nice to say that this test is expected
+	  // to return false.
+	  tree m1 = integer_minus_one_node;
+	  tree check = fold_build2_loc(gccloc, EQ_EXPR, boolean_type_node,
+				       right,
+				       fold_convert_loc(gccloc,
+							TREE_TYPE(right),
+							m1));
+
+	  tree overflow;
+	  if (TYPE_UNSIGNED(TREE_TYPE(ret)))
+	    {
+	      // An unsigned -1 is the largest possible number, so
+	      // dividing is always 1 or 0.
+	      tree cmp = fold_build2_loc(gccloc, EQ_EXPR, boolean_type_node,
+					 left, right);
+	      if (this->op_ == OPERATOR_DIV)
+		overflow = fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(ret),
+					   cmp,
+					   fold_convert_loc(gccloc,
+							    TREE_TYPE(ret),
+							    integer_one_node),
+					   fold_convert_loc(gccloc,
+							    TREE_TYPE(ret),
+							    integer_zero_node));
+	      else
+		overflow = fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(ret),
+					   cmp,
+					   fold_convert_loc(gccloc,
+							    TREE_TYPE(ret),
+							    integer_zero_node),
+					   left);
+	    }
+	  else
+	    {
+	      // Computing left / -1 is the same as computing - left,
+	      // which does not overflow since Go sets -fwrapv.
+	      if (this->op_ == OPERATOR_DIV)
+		overflow = fold_build1_loc(gccloc, NEGATE_EXPR, TREE_TYPE(left),
+					   left);
+	      else
+		overflow = integer_zero_node;
+	    }
+	  overflow = fold_convert_loc(gccloc, TREE_TYPE(ret), overflow);
+
+	  // right == -1 ? - left : ret
+	  ret = fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(ret),
+				check, overflow, ret);
+	}
+
+      if (eval_saved != NULL_TREE)
+	ret = fold_build2_loc(gccloc, COMPOUND_EXPR, TREE_TYPE(ret),
+			      eval_saved, ret);
     }
 
   return ret;
