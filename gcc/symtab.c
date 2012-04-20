@@ -378,8 +378,6 @@ dump_symtab_base (FILE *f, symtab_node node)
     fprintf (f, " in_other_partition");
   if (node->symbol.used_from_other_partition)
     fprintf (f, " used_from_other_partition");
-  if (node->symbol.force_output)
-    fprintf (f, " force_output");
   if (node->symbol.resolution != LDPR_UNKNOWN)
     fprintf (f, " %s",
  	     ld_plugin_symbol_resolution_names[(int)node->symbol.resolution]);
