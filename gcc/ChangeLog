@@ -1,3 +1,11 @@
+2012-04-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR rtl-optimization/44214
+	* fold-const.c (exact_inverse): New function.
+	(fold_binary_loc): Fold vector and complex division by constant into
+	multiply by recripocal with flag_reciprocal_math; fold vector division
+	by constant into multiply by reciprocal with exact inverse.
+
 2012-04-20  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_cgraph_replace_node): Merge needed instead of force flags.

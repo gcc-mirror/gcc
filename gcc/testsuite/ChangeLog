@@ -1,3 +1,10 @@
+2012-04-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR rtl-optimization/44214
+	* gcc.dg/pr44214-1.c: New test.
+	* gcc.dg/pr44214-2.c: Likewise.
+	* gcc.dg/pr44214-3.c: Likewise.
+
 2012-04-20  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/torture/20120420-1.C: New testcase.
