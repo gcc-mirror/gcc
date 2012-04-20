@@ -9693,6 +9693,48 @@ fold_addr_of_array_ref_difference (location_t loc, tree type,
   return NULL_TREE;
 }
 
+/* If the real or vector real constant CST of type TYPE has an exact
+   inverse, return it, else return NULL.  */
+
+static tree
+exact_inverse (tree type, tree cst)
+{
+  REAL_VALUE_TYPE r;
+  tree unit_type, *elts;
+  enum machine_mode mode;
+  unsigned vec_nelts, i;
+
+  switch (TREE_CODE (cst))
+    {
+    case REAL_CST:
+      r = TREE_REAL_CST (cst);
+
+      if (exact_real_inverse (TYPE_MODE (type), &r))
+	return build_real (type, r);
+
+      return NULL_TREE;
+
+    case VECTOR_CST:
+      vec_nelts = VECTOR_CST_NELTS (cst);
+      elts = XALLOCAVEC (tree, vec_nelts);
+      unit_type = TREE_TYPE (type);
+      mode = TYPE_MODE (unit_type);
+
+      for (i = 0; i < vec_nelts; i++)
+	{
+	  r = TREE_REAL_CST (VECTOR_CST_ELT (cst, i));
+	  if (!exact_real_inverse (mode, &r))
+	    return NULL_TREE;
+	  elts[i] = build_real (unit_type, r);
+	}
+
+      return build_vector (type, elts);
+
+    default:
+      return NULL_TREE;
+    }
+}
+
 /* Fold a binary expression of code CODE and type TYPE with operands
    OP0 and OP1.  LOC is the location of the resulting expression.
    Return the folded expression if folding is successful.  Otherwise,
@@ -11734,23 +11776,24 @@ fold_binary_loc (location_t loc,
 	 so only do this if -freciprocal-math.  We can actually
 	 always safely do it if ARG1 is a power of two, but it's hard to
 	 tell if it is or not in a portable manner.  */
-      if (TREE_CODE (arg1) == REAL_CST)
+      if (optimize
+	  && (TREE_CODE (arg1) == REAL_CST
+	      || (TREE_CODE (arg1) == COMPLEX_CST
+		  && COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg1)))
+	      || (TREE_CODE (arg1) == VECTOR_CST
+		  && VECTOR_FLOAT_TYPE_P (TREE_TYPE (arg1)))))
 	{
 	  if (flag_reciprocal_math
-	      && 0 != (tem = const_binop (code, build_real (type, dconst1),
-					  arg1)))
+	      && 0 != (tem = const_binop (code, build_one_cst (type), arg1)))
 	    return fold_build2_loc (loc, MULT_EXPR, type, arg0, tem);
-	  /* Find the reciprocal if optimizing and the result is exact.  */
-	  if (optimize)
+	  /* Find the reciprocal if optimizing and the result is exact.
+	     TODO: Complex reciprocal not implemented.  */
+	  if (TREE_CODE (arg1) != COMPLEX_CST)
 	    {
-	      REAL_VALUE_TYPE r;
-	      r = TREE_REAL_CST (arg1);
-	      if (exact_real_inverse (TYPE_MODE(TREE_TYPE(arg0)), &r))
-		{
-		  tem = build_real (type, r);
-		  return fold_build2_loc (loc, MULT_EXPR, type,
-				      fold_convert_loc (loc, type, arg0), tem);
-		}
+	      tree inverse = exact_inverse (TREE_TYPE (arg0), arg1);
+
+	      if (inverse)
+		return fold_build2_loc (loc, MULT_EXPR, type, arg0, inverse);
 	    }
 	}
       /* Convert A/B/C to A/(B*C).  */
