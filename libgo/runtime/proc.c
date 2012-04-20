@@ -46,6 +46,8 @@ extern void __splitstack_block_signals_context (void *context[10], int *,
 # define StackMin 2 * 1024 * 1024
 #endif
 
+uintptr runtime_stacks_sys;
+
 static void schedule(G*);
 
 typedef struct Sched Sched;
@@ -1091,6 +1093,7 @@ schedule(G *gp)
 				m->lockedg = nil;
 			}
 			gp->idlem = nil;
+			runtime_memclr(&gp->context, sizeof gp->context);
 			gfput(gp);
 			if(--runtime_sched.gcount == 0)
 				runtime_exit(0);
@@ -1288,6 +1291,7 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 		*ret_stacksize = stacksize;
 		newg->gcinitial_sp = *ret_stack;
 		newg->gcstack_size = stacksize;
+		runtime_xadd(&runtime_stacks_sys, stacksize);
 #endif
 	}
 	return newg;
