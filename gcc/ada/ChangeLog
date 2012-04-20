@@ -1,3 +1,8 @@
+2012-04-20  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations): Update for new
+	force_output placement.
+
 2012-04-14  Jan Hubicka  <jh@suse.cz>
 
 	* gcc-interface/trans.c (finalize_nrv): Update field referenced for new

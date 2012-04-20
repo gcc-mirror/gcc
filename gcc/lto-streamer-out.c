@@ -1456,7 +1456,7 @@ produce_symtab (struct output_block *ob,
 	 in the LTO symbol table to prevent linker from forcing them
 	 into the output. */
       if (DECL_COMDAT (vnode->symbol.decl)
-	  && !vnode->force_output
+	  && !vnode->symbol.force_output
 	  && vnode->finalized 
 	  && DECL_VIRTUAL_P (vnode->symbol.decl))
 	continue;
@@ -1470,7 +1470,7 @@ produce_symtab (struct output_block *ob,
       if (!DECL_EXTERNAL (vnode->symbol.decl))
 	continue;
       if (DECL_COMDAT (vnode->symbol.decl)
-	  && !vnode->force_output
+	  && !vnode->symbol.force_output
 	  && vnode->finalized 
 	  && DECL_VIRTUAL_P (vnode->symbol.decl))
 	continue;

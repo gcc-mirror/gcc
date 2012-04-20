@@ -1,3 +1,58 @@
+2012-04-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Merge needed instead of force flags.
+	* cgraph.c (cgraph_add_thunk): Use mark_reachable_node.
+	(cgraph_remove_node): Update.
+	(cgraph_mark_needed_node): Remove.
+	(cgraph_mark_force_output_node): New.
+	(dump_cgraph_node): Do not dump needed flag.
+	(cgraph_node_cannot_be_local_p_1): Update.
+	(cgraph_can_remove_if_no_direct_calls_and_refs): Update.
+	* cgraph.h (symtab_node_base): Add force_output flag.
+	(cgraph_node): Remove needed flag.
+	(varpool_node): Remove force_output flag.
+	(cgraph_mark_needed_node): Remove.
+	(cgraph_mark_force_output_node): New.
+	(cgraph_only_called_directly_or_aliased_p,
+	varpool_can_remove_if_no_refs, varpool_all_refs_explicit_p): Update.
+	* ipa-cp.c (ipcp_generate_summary): Remove out of date assert.
+	* cgraphunit.c (cgraph_decide_is_function_needed): rewrite.
+	(cgraph_add_new_function); Update.
+	(cgraph_mark_if_needed); Update.
+	(verify_cgraph_node): Update.
+	(cgraph_analyze_function): Alias target is reachable.
+	(process_function_and_variable_attributes): Update: externally_visible
+	flag makes function reachable.
+	(cgraph_analyze_functions): Update dumping.
+	* lto-cgraph.c (lto_output_node, lto_output_varpool_node,
+	input_overwrite_node, input_varpool_node): Update streaming.
+	* lto-streamer-out.c (produce_symtab): Use force_output.
+	* ipa.c (process_references): Weakrefs must be processed.
+	(cgraph_remove_unreachable_nodes): Likewise; update for new
+	force_output flag.
+	(varpool_externally_visible_p); Weakrefs are externally visible
+	even if they are not.
+	(function_and_variable_visibility): Update; when processing alias
+	pair force the targets to be output.
+	(whole_program_function_and_variable_visility): Use mark_reachable_node.
+	* trans-mem.c (ipa_tm_mark_needed_node): Remove
+	(ipa_tm_mark_force_output_node): New function.
+	(ipa_tm_create_version_alias, ipa_tm_create_version): Update.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Be lax about aliases.
+	* varasm.c (mark_decl_referenced): Update.
+	(find_decl_and_mark_needed): Remove.
+	(find_decl): New function.
+	(weak_finish, finish_aliases_1, assemble_alias): Update; do not mark
+	alias targets as needed.
+	(dump_tm_clone_pairs): Update.
+	* tree-inline.c (copy_bb): Update check.
+	* symtab.c (dump_symtab_base): Dump force_output.
+	* tree-ssa-structalias.c (ipa_pta_execute): Use force_output.
+	* passes.c (execute_todo): Fix dumping.
+	* varpool.c (decide_is_variable_needed, varpool_finalize_decl): Update.
+	(varpool_analyze_pending_decls): Alias target is reachable.
+	(varpool_create_variable_alias): Finalize weakrefs.
+
 2012-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/53021

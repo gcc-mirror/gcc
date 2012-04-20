@@ -1865,7 +1865,7 @@ execute_todo (unsigned int flags)
   if ((flags & TODO_dump_symtab) && dump_file && !current_function_decl)
     {
       gcc_assert (!cfun);
-      dump_cgraph (dump_file);
+      dump_symtab (dump_file);
       /* Flush the file.  If verification fails, we won't be able to
 	 close the file before aborting.  */
       fflush (dump_file);

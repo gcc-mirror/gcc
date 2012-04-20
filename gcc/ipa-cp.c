@@ -2494,8 +2494,6 @@ ipcp_generate_summary (void)
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
       {
-	/* Unreachable nodes should have been eliminated before ipcp.  */
-	gcc_assert (node->needed || node->reachable);
 	node->local.versionable
 	  = tree_versionable_function_p (node->symbol.decl);
 	ipa_analyze_node (node);

@@ -570,7 +570,7 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
   node->local.finalized = true;
 
   if (cgraph_decide_is_function_needed (node, decl))
-    cgraph_mark_needed_node (node);
+    cgraph_mark_reachable_node (node);
 
   if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
       || (DECL_VIRTUAL_P (decl)
@@ -1362,7 +1362,7 @@ cgraph_remove_node (struct cgraph_node *node)
 
   /* Incremental inlining access removed nodes stored in the postorder list.
      */
-  node->needed = node->reachable = false;
+  node->symbol.force_output = node->reachable = false;
   for (n = node->nested; n; n = n->next_nested)
     n->origin = NULL;
   node->nested = NULL;
@@ -1518,9 +1518,9 @@ cgraph_mark_reachable_node (struct cgraph_node *node)
    external means.  */
 
 void
-cgraph_mark_needed_node (struct cgraph_node *node)
+cgraph_mark_force_output_node (struct cgraph_node *node)
 {
-  node->needed = 1;
+  node->symbol.force_output = 1;
   gcc_assert (!node->global.inlined_to);
   cgraph_mark_reachable_node (node);
 }
@@ -1642,8 +1642,6 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	     (HOST_WIDEST_INT)node->count);
   if (node->origin)
     fprintf (f, " nested in: %s", cgraph_node_asm_name (node->origin));
-  if (node->needed)
-    fprintf (f, " needed");
   else if (node->reachable)
     fprintf (f, " reachable");
   if (gimple_has_body_p (node->symbol.decl))
@@ -2134,7 +2132,7 @@ static bool
 cgraph_node_cannot_be_local_p_1 (struct cgraph_node *node,
 				 void *data ATTRIBUTE_UNUSED)
 {
-  return !(!node->needed
+  return !(!node->symbol.force_output
 	   && ((DECL_COMDAT (node->symbol.decl)
 		&& !node->symbol.same_comdat_group)
 	       || !node->symbol.externally_visible));
@@ -2570,7 +2568,7 @@ cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
   if (DECL_EXTERNAL (node->symbol.decl))
     return true;
   /* When function is needed, we can not remove it.  */
-  if (node->needed || node->symbol.used_from_other_partition)
+  if (node->symbol.force_output || node->symbol.used_from_other_partition)
     return false;
   if (DECL_STATIC_CONSTRUCTOR (node->symbol.decl)
       || DECL_STATIC_DESTRUCTOR (node->symbol.decl))

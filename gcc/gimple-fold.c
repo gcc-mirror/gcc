@@ -70,6 +70,7 @@ can_refer_decl_in_current_unit_p (tree decl)
 	 flags incorrectly.  Those variables should never
 	 be finalized.  */
       gcc_checking_assert (!(vnode = varpool_get_node (decl))
+			   || vnode->alias
 			   || !vnode->finalized);
       return false;
     }
