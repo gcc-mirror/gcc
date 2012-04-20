@@ -463,3 +463,8 @@ struct root_list {
 };
 
 void	__go_register_gc_roots(struct root_list*);
+
+// Size of stack space allocated using Go's allocator.
+// This will be 0 when using split stacks, as in that case
+// the stacks are allocated by the splitstack library.
+extern uintptr runtime_stacks_sys;
