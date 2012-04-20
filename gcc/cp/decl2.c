@@ -1894,7 +1894,7 @@ maybe_emit_vtables (tree ctype)
 	 actually marking the variable as written.  */
       if (flag_syntax_only)
 	TREE_ASM_WRITTEN (vtbl) = 1;
-      else if (DECL_COMDAT (vtbl))
+      else if (DECL_ONE_ONLY (vtbl))
 	{
 	  current = varpool_node (vtbl);
 	  if (last)

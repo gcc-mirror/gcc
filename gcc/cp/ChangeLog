@@ -1,3 +1,9 @@
+2012-04-20  Jan Hubicka  <jh@suse.cz>
+
+	PR target/53042
+	* decl2.c (maybe_emit_vtables): Do not initialize same_comdat_group
+	list when target has no support for it.
+
 2012-04-20  Michael Matz  <matz@suse.de>
 
 	* error.c (pedwarn_cxx98): Move va_end call after user
