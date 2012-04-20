@@ -1,3 +1,9 @@
+2012-04-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_loop_operations): Do not
+	vectorize loops that can never run more often than the
+	vectorization factor.
+
 2012-04-19  Jan Hubicka  <jh@suse.cz>
 
 	* symtab.c (dump_symtab_base): Fix dumping of asm lists.
