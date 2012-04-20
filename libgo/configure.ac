@@ -400,12 +400,6 @@ dnl Test if -lrt is required for sched_yield.
 AC_SEARCH_LIBS([sched_yield], [rt])
 
 AC_C_BIGENDIAN
-case $ac_cv_c_bigendian in
-  yes) GO_BIGENDIAN=true ;;
-  no) GO_BIGENDIAN=false ;;
-  *) AC_MSG_ERROR([unknown endianness]) ;;
-esac
-AC_SUBST(GO_BIGENDIAN)
 
 GCC_CHECK_UNWIND_GETIPINFO
 

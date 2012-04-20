@@ -1559,7 +1559,6 @@ s-syscall_arch: Makefile
 	echo "package syscall" > syscall_arch.go.tmp
 	echo 'const ARCH = "'$(GOARCH)'"' >> syscall_arch.go.tmp
 	echo 'const OS = "'$(GOOS)'"' >> syscall_arch.go.tmp
-	echo 'const BigEndian = $(GO_BIGENDIAN)' >> syscall_arch.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change syscall_arch.go.tmp syscall_arch.go
 	$(STAMP) $@
 
