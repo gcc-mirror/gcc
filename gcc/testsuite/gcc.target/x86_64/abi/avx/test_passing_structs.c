@@ -53,7 +53,7 @@ avx_test (void)
 
   clear_struct_registers;
   for (i = 0; i < 8; i++)
-    fregs.ymm0._m256[i] = m256s[i].x;
+    (&fregs.ymm0)[i]._m256[0] = m256s[i].x;
   num_fregs = 8;
   WRAP_CALL (check_struct_passing1)(m256s[0], m256s[1], m256s[2], m256s[3],
 				    m256s[4], m256s[5], m256s[6], m256s[7]);
