@@ -1,3 +1,7 @@
+2012-04-19  Jan Hubicka  <jh@suse.cz>
+
+	* symtab.c (dump_symtab_base): Revert accidental checkin.
+
 2012-04-20  Alan Modra  <amodra@gmail.com>
 
 	PR target/53040
