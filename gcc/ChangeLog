@@ -1,3 +1,8 @@
+2012-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* genmodes.c (make_complex_modes): Don't truncate a mode name of
+	length 7 or more when prepending a "C".  Suggested by Richard Guenther.
+
 2012-04-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR rtl-optimization/44214
