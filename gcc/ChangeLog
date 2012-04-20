@@ -1,3 +1,7 @@
+2012-04-19  Jan Hubicka  <jh@suse.cz>
+
+	* symtab.c (dump_symtab_base): Fix dumping of asm lists.
+
 2012-04-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/sync.md (fetchop_name): Change ior attribute to "or".
