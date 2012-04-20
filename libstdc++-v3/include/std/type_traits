@@ -1281,12 +1281,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       __is_convertible_helper<_From, _To>::value>
     { };
 
-  /// is_explicitly_convertible
-  template<typename _From, typename _To>
-    struct is_explicitly_convertible
-    : public is_constructible<_To, _From>
-    { };
-
 
   // const-volatile modifications.
 
