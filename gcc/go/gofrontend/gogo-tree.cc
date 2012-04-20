@@ -495,7 +495,6 @@ Gogo::write_initialization_function(tree fndecl, tree init_stmt_list)
   gimplify_function_tree(fndecl);
 
   cgraph_add_new_function(fndecl, false);
-  cgraph_mark_needed_node(cgraph_get_node(fndecl));
 
   current_function_decl = NULL_TREE;
   pop_cfun();
