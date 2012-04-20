@@ -1,3 +1,20 @@
+2012-04-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	struct siginfo vs. siginfo_t
+
+	* config/alpha/linux-unwind.h (alpha_fallback_frame_state): Use
+	siginfo_t instead of struct siginfo.
+	* config/bfin/linux-unwind.h (bfin_fallback_frame_state): Likewise.
+	* config/i386/linux-unwind.h (x86_fallback_frame_state): Likewise.
+	* config/ia64/linux-unwind.h (ia64_fallback_frame_state)
+	(ia64_handle_unwabi): Likewise.
+	* config/mips/linux-unwind.h (mips_fallback_frame_state): Likewise.
+	* config/pa/linux-unwind.h (pa32_fallback_frame_state): Likewise.
+	* config/sh/linux-unwind.h (shmedia_fallback_frame_state)
+	(sh_fallback_frame_state): Likewise.
+	* config/tilepro/linux-unwind.h (tile_fallback_frame_state): Likewise.
+	* config/xtensa/linux-unwind.h (xtensa_fallback_frame_state): Likewise.
+
 2012-04-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/linux-unwind.h (RT_SIGRETURN_SYSCALL): Update x32
