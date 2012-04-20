@@ -1,3 +1,8 @@
+2012-04-20  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-set-goarch): Recognize powerpc*-*-*.
+	(go-gc-tests): Skip nilptr.go on powerpc*-*-*.
+
 2012-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53003

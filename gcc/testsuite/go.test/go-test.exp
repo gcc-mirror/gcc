@@ -217,6 +217,13 @@ proc go-set-goarch { } {
 		return ""
 	    }
 	}
+	"powerpc*-*-*" {
+	    if [check_effective_target_ilp32] {
+		set goarch "ppc"
+	    } else {
+		set goarch "ppc64"
+	    }
+	}
 	"sparc*-*-*" {
 	    if [check_effective_target_ilp32] {
 		set goarch "sparc"
@@ -302,7 +309,7 @@ proc go-gc-tests { } {
 	}
 
 	# Handle certain tests in a target-dependant way.
-	if { [istarget "alpha*-*-*"] || [istarget "sparc*-*-solaris*"] } {
+	if { [istarget "alpha*-*-*"] || [istarget "sparc*-*-solaris*"] || [istarget "powerpc*-*-*"] } {
 	    if { [string match "*go.test/test/nilptr.go" $test] } {
 		untested $test
 		continue
