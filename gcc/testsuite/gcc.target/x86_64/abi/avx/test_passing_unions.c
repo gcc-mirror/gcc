@@ -113,7 +113,7 @@ avx_test (void)
 
   clear_struct_registers;
   for (i = 0; i < 8; i++)
-    fregs.ymm0._m256[i] = u1[i].x;
+    (&fregs.ymm0)[i]._m256[0] = u1[i].x;
   num_fregs = 8;
   check_union_passing1(u1[0], u1[1], u1[2], u1[3],
 		       u1[4], u1[5], u1[6], u1[7]);
@@ -122,7 +122,7 @@ avx_test (void)
   for (i = 0; i < 8; i++)
     {
       u2[i].x = u1[i].x;
-      fregs.ymm0._m256[i] = u2[i].x;
+      (&fregs.ymm0)[i]._m256[0] = u2[i].x;
     }
   num_fregs = 8;
   check_union_passing2(u2[0], u2[1], u2[2], u2[3],
@@ -132,7 +132,7 @@ avx_test (void)
   for (i = 0; i < 8; i++)
     {
       u3[i].x = u1[i].x;
-      fregs.ymm0._m256[i] = u3[i].x;
+      (&fregs.ymm0)[i]._m256[0] = u3[i].x;
     }
   num_fregs = 8;
   check_union_passing3(u3[0], u3[1], u3[2], u3[3],

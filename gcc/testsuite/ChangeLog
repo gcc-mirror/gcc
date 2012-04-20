@@ -1,3 +1,9 @@
+2012-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/x86_64/abi/avx/test_passing_unions.c: Avoid undefined
+	array access.
+	* gcc.target/x86_64/abi/avx/test_passing_structs.c: Likewise.
+
 2012-04-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR rtl-optimization/44214
