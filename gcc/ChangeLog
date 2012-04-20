@@ -1,3 +1,8 @@
+2012-04-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-dump.c (dequeue_and_dump) <BIT_FIELD_REF>: Dump the three child
+	nodes.
+
 2012-04-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_analyze_loop_operations): Do not
