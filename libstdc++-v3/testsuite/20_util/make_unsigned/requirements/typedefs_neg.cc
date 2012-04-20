@@ -49,5 +49,5 @@ void test01()
 // { dg-error "required from here" "" { target *-*-* } 41 }
 // { dg-error "required from here" "" { target *-*-* } 43 }
 
-// { dg-error "invalid use of incomplete type" "" { target *-*-* } 1499 }
-// { dg-error "declaration of" "" { target *-*-* } 1463 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 1493 }
+// { dg-error "declaration of" "" { target *-*-* } 1457 }
