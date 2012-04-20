@@ -1,3 +1,14 @@
+2012-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/53021
+	* alias.h (UNIQUE_BASE_VALUE_SP, UNIQUE_BASE_VALUE_ARGP,
+	UNIQUE_BASE_VALUE_FP, UNIQUE_BASE_VALUE_HFP): Define.
+	* alias.c (init_alias_targets): Use UNIQUE_BASE_VALUE_*
+	macros instead of constants.
+	* dse.c (record_store): Check for SP ADDRESS by comparing
+	XWINT to UNIQUE_BASE_VALUE_SP instead of expecting
+	XEXP to be stack_pointer_rtx.
+
 2012-04-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-copy.c (propagate_tree_value_into_stmt): Use

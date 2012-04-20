@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
@@ -1503,7 +1503,7 @@ record_store (rtx body, bb_info_t bb_info)
       if (!base_term
 	  || (GET_CODE (base_term) == ADDRESS
 	      && GET_MODE (base_term) == Pmode
-	      && XEXP (base_term, 0) == stack_pointer_rtx))
+	      && XWINT (base_term, 0) == UNIQUE_BASE_VALUE_SP))
 	insn_info->stack_pointer_based = true;
       insn_info->contains_cselib_groups = true;
 

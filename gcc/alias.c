@@ -1,6 +1,6 @@
 /* Alias analysis for GNU C
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by John Carr (jfc@mit.edu).
 
 This file is part of GCC.
@@ -2734,11 +2734,15 @@ init_alias_target (void)
 	&& HARD_REGNO_MODE_OK (i, Pmode))
       static_reg_base_value[i] = arg_base_value;
 
-  static_reg_base_value[STACK_POINTER_REGNUM] = unique_base_value (-1);
-  static_reg_base_value[ARG_POINTER_REGNUM] = unique_base_value (-2);
-  static_reg_base_value[FRAME_POINTER_REGNUM] = unique_base_value (-3);
+  static_reg_base_value[STACK_POINTER_REGNUM]
+    = unique_base_value (UNIQUE_BASE_VALUE_SP);
+  static_reg_base_value[ARG_POINTER_REGNUM]
+    = unique_base_value (UNIQUE_BASE_VALUE_ARGP);
+  static_reg_base_value[FRAME_POINTER_REGNUM]
+    = unique_base_value (UNIQUE_BASE_VALUE_FP);
 #if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-  static_reg_base_value[HARD_FRAME_POINTER_REGNUM] = unique_base_value (-4);
+  static_reg_base_value[HARD_FRAME_POINTER_REGNUM]
+    = unique_base_value (UNIQUE_BASE_VALUE_HFP);
 #endif
 }
 
