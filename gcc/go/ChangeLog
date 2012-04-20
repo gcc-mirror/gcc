@@ -1,3 +1,9 @@
+2012-04-20  Ian Lance Taylor  <iant@google.com>
+
+	* lang.opt: Add -fgo-check-divide-zero and
+	-fgo-check-divide-overflow.
+	* gccgo.texi (Invoking gccgo): Document new options.
+
 2012-04-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* go-gcc.cc (Gcc_backend::switch_statement): Build SWITCH_EXPR
