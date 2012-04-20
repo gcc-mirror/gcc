@@ -378,6 +378,8 @@ dump_symtab_base (FILE *f, symtab_node node)
     fprintf (f, " in_other_partition");
   if (node->symbol.used_from_other_partition)
     fprintf (f, " used_from_other_partition");
+  if (node->symbol.force_output)
+    fprintf (f, " force_output");
   if (node->symbol.resolution != LDPR_UNKNOWN)
     fprintf (f, " %s",
  	     ld_plugin_symbol_resolution_names[(int)node->symbol.resolution]);
@@ -420,13 +422,13 @@ dump_symtab_base (FILE *f, symtab_node node)
 	     node->symbol.same_comdat_group->symbol.order);
   if (node->symbol.next_sharing_asm_name)
     fprintf (f, "  next sharing asm name: %i\n",
-	     node->symbol.same_comdat_group->symbol.order);
+	     node->symbol.next_sharing_asm_name->symbol.order);
   if (node->symbol.previous_sharing_asm_name)
     fprintf (f, "  previous sharing asm name: %i\n",
-	     node->symbol.same_comdat_group->symbol.order);
+	     node->symbol.previous_sharing_asm_name->symbol.order);
 
   if (node->symbol.address_taken)
-    fprintf (f, "  Address is taken.");
+    fprintf (f, "  Address is taken.\n");
 
   fprintf (f, "  References: ");
   ipa_dump_references (f, &node->symbol.ref_list);
