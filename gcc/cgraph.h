@@ -77,6 +77,9 @@ struct GTY(()) symtab_node_base
   unsigned in_other_partition : 1;
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
+  /* Needed variables might become dead by optimization.  This flag
+     forces the variable to be output even if it appears dead otherwise.  */
+  unsigned force_output : 1;
 };
 
 enum availability
@@ -246,12 +249,6 @@ struct GTY(()) cgraph_node {
   /* Unique id of the node.  */
   int uid;
 
-  /* Set when function must be output for some reason.  The primary
-     use of this flag is to mark functions needed to be output for
-     non-standard reason.  Functions that are externally visible
-     or reachable from functions needed to be output are marked
-     by specialized flags.  */
-  unsigned needed : 1;
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */
   unsigned abstract_and_needed : 1;
@@ -433,9 +430,6 @@ struct GTY(()) varpool_node {
   /* Set when function must be output - it is externally visible
      or its address is taken.  */
   unsigned needed : 1;
-  /* Needed variables might become dead by optimization.  This flag
-     forces the variable to be output even if it appears dead otherwise.  */
-  unsigned force_output : 1;
   /* Set once the variable has been instantiated and its callee
      lists created.  */
   unsigned analyzed : 1;
@@ -610,7 +604,7 @@ void cgraph_mark_if_needed (tree);
 void cgraph_analyze_function (struct cgraph_node *);
 void cgraph_finalize_compilation_unit (void);
 void cgraph_optimize (void);
-void cgraph_mark_needed_node (struct cgraph_node *);
+void cgraph_mark_force_output_node (struct cgraph_node *);
 void cgraph_mark_address_taken_node (struct cgraph_node *);
 void cgraph_mark_reachable_node (struct cgraph_node *);
 bool cgraph_inline_p (struct cgraph_edge *, cgraph_inline_failed_t *reason);
@@ -1118,7 +1112,7 @@ static inline bool
 cgraph_only_called_directly_or_aliased_p (struct cgraph_node *node)
 {
   gcc_assert (!node->global.inlined_to);
-  return (!node->needed && !node->symbol.address_taken
+  return (!node->symbol.force_output && !node->symbol.address_taken
 	  && !node->symbol.used_from_other_partition
 	  && !DECL_STATIC_CONSTRUCTOR (node->symbol.decl)
 	  && !DECL_STATIC_DESTRUCTOR (node->symbol.decl)
@@ -1131,9 +1125,10 @@ cgraph_only_called_directly_or_aliased_p (struct cgraph_node *node)
 static inline bool
 varpool_can_remove_if_no_refs (struct varpool_node *node)
 {
-  return (!node->force_output && !node->symbol.used_from_other_partition
+  return (!node->symbol.force_output && !node->symbol.used_from_other_partition
   	  && (DECL_COMDAT (node->symbol.decl)
-	  || !node->symbol.externally_visible));
+	  || !node->symbol.externally_visible
+	  || DECL_EXTERNAL (node->symbol.decl)));
 }
 
 /* Return true when all references to VNODE must be visible in ipa_ref_list.
@@ -1147,7 +1142,7 @@ varpool_all_refs_explicit_p (struct varpool_node *vnode)
   return (vnode->analyzed
 	  && !vnode->symbol.externally_visible
 	  && !vnode->symbol.used_from_other_partition
-	  && !vnode->force_output);
+	  && !vnode->symbol.force_output);
 }
 
 /* Constant pool accessor function.  */

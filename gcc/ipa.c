@@ -97,6 +97,7 @@ process_references (struct ipa_ref_list *list,
 	  if (!node->reachable
 	      && node->analyzed
 	      && (!DECL_EXTERNAL (node->symbol.decl)
+		  || node->alias
 	          || before_inlining_p))
 	    node->reachable = true;
 	  enqueue_cgraph_node (node, first);
@@ -214,7 +215,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     {
       vnode->next_needed = NULL;
       vnode->prev_needed = NULL;
-      if ((vnode->analyzed || vnode->force_output)
+      if ((vnode->analyzed || vnode->symbol.force_output)
 	  && !varpool_can_remove_if_no_refs (vnode))
 	{
 	  vnode->needed = false;
@@ -254,6 +255,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		      && node->analyzed
 		      && (!e->inline_failed
 			  || !DECL_EXTERNAL (e->callee->symbol.decl)
+			  || node->alias
 			  || before_inlining_p))
 		    e->callee->reachable = true;
 		  enqueue_cgraph_node (e->callee, &first);
@@ -659,6 +661,12 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 bool
 varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
 {
+  /* Do not touch weakrefs; while they are not externally visible,
+     dropping their DECL_EXTERNAL flags confuse most
+     of code handling them.  */
+  if (vnode->alias && DECL_EXTERNAL (vnode->symbol.decl))
+    return true;
+
   if (!DECL_COMDAT (vnode->symbol.decl) && !TREE_PUBLIC (vnode->symbol.decl))
     return false;
 
@@ -700,7 +708,7 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
      is faster for dynamic linking.  Also this match logic hidding vtables
      from LTO symbol tables.  */
   if ((in_lto_p || flag_whole_program)
-      && !vnode->force_output
+      && !vnode->symbol.force_output
       && DECL_COMDAT (vnode->symbol.decl) && DECL_VIRTUAL_P (vnode->symbol.decl))
     return false;
 
@@ -776,8 +784,7 @@ function_and_variable_visibility (bool whole_program)
         {
 	  if (!node->analyzed)
 	    continue;
-	  cgraph_mark_needed_node (node);
-	  gcc_assert (node->needed);
+	  cgraph_mark_force_output_node (node);
 	  pointer_set_insert (aliased_nodes, node);
 	  if (dump_file)
 	    fprintf (dump_file, "  node %s/%i",
@@ -786,6 +793,7 @@ function_and_variable_visibility (bool whole_program)
       else if ((vnode = varpool_node_for_asm (p->target)) != NULL
 	       && !DECL_EXTERNAL (vnode->symbol.decl))
         {
+	  vnode->symbol.force_output = 1;
 	  varpool_mark_needed_node (vnode);
 	  gcc_assert (vnode->needed);
 	  pointer_set_insert (aliased_vnodes, vnode);
@@ -813,9 +821,9 @@ function_and_variable_visibility (bool whole_program)
       /* Frontends and alias code marks nodes as needed before parsing is finished.
 	 We may end up marking as node external nodes where this flag is meaningless
 	 strip it.  */
-      if (node->needed
+      if (node->symbol.force_output
 	  && (DECL_EXTERNAL (node->symbol.decl) || !node->analyzed))
-	node->needed = 0;
+	node->symbol.force_output = 0;
 
       /* C++ FE on lack of COMDAT support create local COMDAT functions
 	 (that ought to be shared but can not due to object format
@@ -1017,7 +1025,7 @@ whole_program_function_and_variable_visibility (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     if ((node->symbol.externally_visible && !DECL_COMDAT (node->symbol.decl))
         && node->local.finalized)
-      cgraph_mark_needed_node (node);
+      cgraph_mark_reachable_node (node);
   FOR_EACH_DEFINED_VARIABLE (vnode)
     if (vnode->symbol.externally_visible && !DECL_COMDAT (vnode->symbol.decl))
       varpool_mark_needed_node (vnode);

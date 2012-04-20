@@ -503,7 +503,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->local.versionable, 1);
   bp_pack_value (&bp, node->local.can_change_signature, 1);
   bp_pack_value (&bp, node->local.redefined_extern_inline, 1);
-  bp_pack_value (&bp, node->needed, 1);
+  bp_pack_value (&bp, node->symbol.force_output, 1);
   bp_pack_value (&bp, node->symbol.address_taken, 1);
   bp_pack_value (&bp, node->abstract_and_needed, 1);
   bp_pack_value (&bp, tag == LTO_cgraph_analyzed_node
@@ -566,7 +566,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   lto_output_var_decl_index (ob->decl_state, ob->main_stream, node->symbol.decl);
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, node->symbol.externally_visible, 1);
-  bp_pack_value (&bp, node->force_output, 1);
+  bp_pack_value (&bp, node->symbol.force_output, 1);
   bp_pack_value (&bp, node->finalized, 1);
   bp_pack_value (&bp, node->alias, 1);
   bp_pack_value (&bp, node->alias_of != NULL, 1);
@@ -911,7 +911,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->local.versionable = bp_unpack_value (bp, 1);
   node->local.can_change_signature = bp_unpack_value (bp, 1);
   node->local.redefined_extern_inline = bp_unpack_value (bp, 1);
-  node->needed = bp_unpack_value (bp, 1);
+  node->symbol.force_output = bp_unpack_value (bp, 1);
   node->symbol.address_taken = bp_unpack_value (bp, 1);
   node->abstract_and_needed = bp_unpack_value (bp, 1);
   node->symbol.used_from_other_partition = bp_unpack_value (bp, 1);
@@ -1075,7 +1075,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
 
   bp = streamer_read_bitpack (ib);
   node->symbol.externally_visible = bp_unpack_value (&bp, 1);
-  node->force_output = bp_unpack_value (&bp, 1);
+  node->symbol.force_output = bp_unpack_value (&bp, 1);
   node->finalized = bp_unpack_value (&bp, 1);
   node->alias = bp_unpack_value (&bp, 1);
   non_null_aliasof = bp_unpack_value (&bp, 1);

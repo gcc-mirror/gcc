@@ -214,7 +214,7 @@ bool
 decide_is_variable_needed (struct varpool_node *node, tree decl)
 {
   /* If the user told us it is used, then it must be so.  */
-  if (node->force_output)
+  if (node->symbol.force_output)
     return true;
 
   gcc_assert (!DECL_EXTERNAL (decl));
@@ -298,7 +298,7 @@ varpool_finalize_decl (tree decl)
 	 optimizing and when not doing toplevel reoder.  */
       || (!flag_toplevel_reorder && !DECL_COMDAT (node->symbol.decl)
 	  && !DECL_ARTIFICIAL (node->symbol.decl)))
-    node->force_output = true;
+    node->symbol.force_output = true;
 
   if (decide_is_variable_needed (node, decl))
     varpool_mark_needed_node (node);
@@ -410,6 +410,7 @@ varpool_analyze_pending_decls (void)
 		    }
 		}
 	    }
+   	  varpool_mark_needed_node (tgt);
 	}
       else if (DECL_INITIAL (decl))
 	record_references_in_initializer (decl, analyzed);
@@ -621,8 +622,7 @@ varpool_create_variable_alias (tree alias, tree decl)
   gcc_assert (TREE_CODE (alias) == VAR_DECL);
   alias_node = varpool_node (alias);
   alias_node->alias = 1;
-  if (!DECL_EXTERNAL (alias))
-    alias_node->finalized = 1;
+  alias_node->finalized = 1;
   alias_node->alias_of = decl;
   if ((!DECL_EXTERNAL (alias)
        && decide_is_variable_needed (alias_node, alias))

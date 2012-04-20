@@ -1,3 +1,7 @@
+2012-04-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (partition_cgraph_node_p): Use force_output.
+
 2012-04-18  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c (add_references_to_partition, lto_balanced_map):

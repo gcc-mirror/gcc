@@ -1755,7 +1755,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		     producing dead clone (for further cloning).  In all
 		     other cases we hit a bug (incorrect node sharing is the
 		     most common reason for missing edges).  */
-		  gcc_assert (dest->needed || !dest->analyzed
+		  gcc_assert (!dest->analyzed
 			      || dest->symbol.address_taken
 		  	      || !id->src_node->analyzed
 			      || !id->dst_node->analyzed);

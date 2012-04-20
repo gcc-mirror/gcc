@@ -156,56 +156,36 @@ FILE *cgraph_dump_file;
 /* Used for vtable lookup in thunk adjusting.  */
 static GTY (()) tree vtable_entry_type;
 
-/* Determine if function DECL is needed.  That is, visible to something
-   either outside this translation unit, something magic in the system
-   configury.  */
+/* Determine if function DECL is trivially needed and should stay in the
+   compilation unit.  This is used at the symbol table construction time
+   and differs from later logic removing unnecesary functions that can
+   take into account results of analysis, whole program info etc.  */
 
 bool
 cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
 {
   /* If the user told us it is used, then it must be so.  */
-  if (node->symbol.externally_visible)
+  if (node->symbol.force_output)
     return true;
 
-  /* ??? If the assembler name is set by hand, it is possible to assemble
-     the name later after finalizing the function and the fact is noticed
-     in assemble_name then.  This is arguably a bug.  */
-  if (DECL_ASSEMBLER_NAME_SET_P (decl)
-      && (!node->thunk.thunk_p && !node->same_body_alias)
-      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-    return true;
+  /* Double check that no one output the function into assembly file
+     early.  */
+  gcc_checking_assert (!DECL_ASSEMBLER_NAME_SET_P (decl)
+	               || (node->thunk.thunk_p || node->same_body_alias)
+	               ||  !TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)));
 
-  /* With -fkeep-inline-functions we are keeping all inline functions except
-     for extern inline ones.  */
-  if (flag_keep_inline_functions
-      && DECL_DECLARED_INLINE_P (decl)
-      && !DECL_EXTERNAL (decl)
-      && !DECL_DISREGARD_INLINE_LIMITS (decl))
+
+  /* Keep constructors, destructors and virtual functions.  */
+  if (DECL_STATIC_CONSTRUCTOR (decl)
+      || DECL_STATIC_DESTRUCTOR (decl)
+      || (DECL_VIRTUAL_P (decl)
+	  && optimize && (DECL_COMDAT (decl) || DECL_EXTERNAL (decl))))
      return true;
 
-  /* If we decided it was needed before, but at the time we didn't have
-     the body of the function available, then it's still needed.  We have
-     to go back and re-check its dependencies now.  */
-  if (node->needed)
-    return true;
-
   /* Externally visible functions must be output.  The exception is
-     COMDAT functions that must be output only when they are needed.
+     COMDAT functions that must be output only when they are needed.  */
 
-     When not optimizing, also output the static functions. (see
-     PR24561), but don't do so for always_inline functions, functions
-     declared inline and nested functions.  These were optimized out
-     in the original implementation and it is unclear whether we want
-     to change the behavior here.  */
-  if (((TREE_PUBLIC (decl)
-	|| (!optimize
-	    && !node->same_body_alias
-	    && !DECL_DISREGARD_INLINE_LIMITS (decl)
-	    && !DECL_DECLARED_INLINE_P (decl)
-	    && !(DECL_CONTEXT (decl)
-		 && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)))
-       && !flag_whole_program
-       && !flag_lto)
+  if (TREE_PUBLIC (decl)
       && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     return true;
 
@@ -337,22 +317,29 @@ cgraph_finalize_function (tree decl, bool nested)
   node->local.finalized = true;
   node->lowered = DECL_STRUCT_FUNCTION (decl)->cfg != NULL;
 
-  if (cgraph_decide_is_function_needed (node, decl))
-    cgraph_mark_needed_node (node);
+  /* With -fkeep-inline-functions we are keeping all inline functions except
+     for extern inline ones.  */
+  if (flag_keep_inline_functions
+      && DECL_DECLARED_INLINE_P (decl)
+      && !DECL_EXTERNAL (decl)
+      && !DECL_DISREGARD_INLINE_LIMITS (decl))
+    node->symbol.force_output = 1;
 
-  /* Since we reclaim unreachable nodes at the end of every language
-     level unit, we need to be conservative about possible entry points
-     there.  */
-  if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
-      || DECL_STATIC_CONSTRUCTOR (decl)
-      || DECL_STATIC_DESTRUCTOR (decl)
-      /* COMDAT virtual functions may be referenced by vtable from
-	 other compilation unit.  Still we want to devirtualize calls
-	 to those so we need to analyze them.
-	 FIXME: We should introduce may edges for this purpose and update
-	 their handling in unreachable function removal and inliner too.  */
-      || (DECL_VIRTUAL_P (decl)
-	  && optimize && (DECL_COMDAT (decl) || DECL_EXTERNAL (decl))))
+  /* When not optimizing, also output the static functions. (see
+     PR24561), but don't do so for always_inline functions, functions
+     declared inline and nested functions.  These were optimized out
+     in the original implementation and it is unclear whether we want
+     to change the behavior here.  */
+  if ((!optimize
+       && !node->same_body_alias
+       && !DECL_DISREGARD_INLINE_LIMITS (decl)
+       && !DECL_DECLARED_INLINE_P (decl)
+       && !(DECL_CONTEXT (decl)
+	    && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL))
+      && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+    node->symbol.force_output = 1;
+
+  if (cgraph_decide_is_function_needed (node, decl))
     cgraph_mark_reachable_node (node);
 
   /* If we've not yet emitted decl, tell the debug info about it.  */
@@ -402,7 +389,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	node = cgraph_get_create_node (fndecl);
 	node->local.local = false;
 	node->local.finalized = true;
-	node->reachable = node->needed = true;
+	node->reachable = node->symbol.force_output = true;
 	if (!lowered && cgraph_state == CGRAPH_STATE_EXPANSION)
 	  {
 	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
@@ -462,7 +449,7 @@ cgraph_mark_if_needed (tree decl)
 {
   struct cgraph_node *node = cgraph_get_node (decl);
   if (node->local.finalized && cgraph_decide_is_function_needed (node, decl))
-    cgraph_mark_needed_node (node);
+    cgraph_mark_reachable_node (node);
 }
 
 /* Return TRUE if NODE2 is equivalent to NODE or its clone.  */
@@ -601,9 +588,9 @@ verify_cgraph_node (struct cgraph_node *node)
       error ("inline clone with address taken");
       error_found = true;
     }
-  if (node->global.inlined_to && node->needed)
+  if (node->global.inlined_to && node->symbol.force_output)
     {
-      error ("inline clone is needed");
+      error ("inline clone is forced to output");
       error_found = true;
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
@@ -901,6 +888,7 @@ cgraph_analyze_function (struct cgraph_node *node)
       if (!VEC_length (ipa_ref_t, node->symbol.ref_list.references))
         ipa_record_reference ((symtab_node)node, (symtab_node)tgt,
 			      IPA_REF_ALIAS, NULL);
+      cgraph_mark_reachable_node (tgt);
       if (node->same_body_alias)
 	{ 
 	  DECL_VIRTUAL_P (node->symbol.decl) = DECL_VIRTUAL_P (node->thunk.alias);
@@ -940,7 +928,7 @@ cgraph_analyze_function (struct cgraph_node *node)
       if (node->symbol.address_taken)
 	cgraph_mark_address_taken_node (cgraph_alias_aliased_node (node));
       if (cgraph_decide_is_function_needed (node, node->symbol.decl))
-	cgraph_mark_needed_node (node);
+	cgraph_mark_reachable_node (node);
     }
   else if (node->thunk.thunk_p)
     {
@@ -1061,13 +1049,13 @@ process_function_and_variable_attributes (struct cgraph_node *first,
     {
       tree decl = node->symbol.decl;
       if (DECL_PRESERVE_P (decl))
-	cgraph_mark_needed_node (node);
+	cgraph_mark_force_output_node (node);
       if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
 	  && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl))
 	  && TREE_PUBLIC (node->symbol.decl))
 	{
 	  if (node->local.finalized)
-	    cgraph_mark_needed_node (node);
+	    cgraph_mark_reachable_node (node);
 	}
       else if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
 	{
@@ -1076,7 +1064,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 			"%<externally_visible%>"
 			" attribute have effect only on public objects");
 	  else if (node->local.finalized)
-	     cgraph_mark_needed_node (node);
+	    cgraph_mark_reachable_node (node);
 	}
       if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl))
 	  && (node->local.finalized && !node->alias))
@@ -1104,7 +1092,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
       tree decl = vnode->symbol.decl;
       if (DECL_PRESERVE_P (decl))
 	{
-	  vnode->force_output = true;
+	  vnode->symbol.force_output = true;
 	  if (vnode->finalized)
 	    varpool_mark_needed_node (vnode);
 	}
@@ -1165,7 +1153,7 @@ cgraph_analyze_functions (void)
       fprintf (cgraph_dump_file, "Initial entry points:");
       for (node = cgraph_first_function (); node != first_analyzed;
 	   node = cgraph_next_function (node))
-	if (node->needed)
+	if (cgraph_decide_is_function_needed (node, node->symbol.decl))
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n");
     }
@@ -1241,7 +1229,7 @@ cgraph_analyze_functions (void)
       fprintf (cgraph_dump_file, "Unit entry points:");
       for (node = cgraph_first_function (); node != first_analyzed;
 	   node = cgraph_next_function (node))
-	if (node->needed)
+	if (cgraph_decide_is_function_needed (node, node->symbol.decl))
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n\nInitial ");
       dump_symtab (cgraph_dump_file);

@@ -4267,9 +4267,9 @@ tm_mangle (tree old_asm_id)
 }
 
 static inline void
-ipa_tm_mark_needed_node (struct cgraph_node *node)
+ipa_tm_mark_force_output_node (struct cgraph_node *node)
 {
-  cgraph_mark_needed_node (node);
+  cgraph_mark_force_output_node (node);
   /* ??? function_and_variable_visibility will reset
      the needed bit, without actually checking.  */
   node->analyzed = 1;
@@ -4328,8 +4328,8 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
 
   record_tm_clone_pair (old_decl, new_decl);
 
-  if (info->old_node->needed)
-    ipa_tm_mark_needed_node (new_node);
+  if (info->old_node->symbol.force_output)
+    ipa_tm_mark_force_output_node (new_node);
   return false;
 }
 
@@ -4381,8 +4381,8 @@ ipa_tm_create_version (struct cgraph_node *old_node)
   record_tm_clone_pair (old_decl, new_decl);
 
   cgraph_call_function_insertion_hooks (new_node);
-  if (old_node->needed)
-    ipa_tm_mark_needed_node (new_node);
+  if (old_node->symbol.force_output)
+    ipa_tm_mark_force_output_node (new_node);
 
   /* Do the same thing, but for any aliases of the original node.  */
   {
