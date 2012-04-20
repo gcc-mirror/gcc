@@ -1235,6 +1235,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
   int min_scalar_loop_bound;
   unsigned int th;
   bool only_slp_in_loop = true, ok;
+  HOST_WIDE_INT max_niter;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_loop_operations ===");
@@ -1407,8 +1408,10 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
         "vectorization_factor = %d, niters = " HOST_WIDE_INT_PRINT_DEC,
         vectorization_factor, LOOP_VINFO_INT_NITERS (loop_vinfo));
 
-  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && (LOOP_VINFO_INT_NITERS (loop_vinfo) < vectorization_factor))
+  if ((LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+       && (LOOP_VINFO_INT_NITERS (loop_vinfo) < vectorization_factor))
+      || ((max_niter = max_stmt_executions_int (loop)) != -1
+	  && max_niter < vectorization_factor))
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
         fprintf (vect_dump, "not vectorized: iteration count too small.");
