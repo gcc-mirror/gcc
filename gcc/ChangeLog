@@ -1,3 +1,9 @@
+2012-04-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53050
+	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine):
+	Do only one transform on COND_EXPRs at the same time.
+
 2012-04-19  Jan Hubicka  <jh@suse.cz>
 
 	* symtab.c (dump_symtab_base): Revert accidental checkin.

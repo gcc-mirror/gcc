@@ -2536,9 +2536,12 @@ ssa_forward_propagate_and_combine (void)
 			 || code == VEC_COND_EXPR)
 		  {
 		    /* In this case the entire COND_EXPR is in rhs1. */
-		    changed |= forward_propagate_into_cond (&gsi);
-		    changed |= combine_cond_exprs (&gsi);
-		    stmt = gsi_stmt (gsi);
+		    if (forward_propagate_into_cond (&gsi)
+			|| combine_cond_exprs (&gsi))
+		      {
+			changed = true;
+			stmt = gsi_stmt (gsi);
+		      }
 		  }
 		else if (TREE_CODE_CLASS (code) == tcc_comparison)
 		  {
