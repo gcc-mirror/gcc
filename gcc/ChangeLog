@@ -1,3 +1,10 @@
+2012-04-20  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	Backport from mainline:
+
+	* config/arm/arm.c (arm_print_operand): Fix invalid alignment
+	hints for 'A' operand types.
+
 2012-04-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-04-19 mainline r186588.
