@@ -1,3 +1,9 @@
+2012-04-20  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_savres_rtx): Formatting.
+	(rs6000_emit_prologue, rs6000_emit_epilogue): Likewise.  Rename
+	sp_offset to frame_off.  Move world save code earlier.
+
 2012-04-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53050
