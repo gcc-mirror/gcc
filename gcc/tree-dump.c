@@ -1,6 +1,6 @@
 /* Tree-dumping functionality for intermediate representation.
    Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011 Free Software Foundation, Inc.
+   2010, 2011, 2012 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -596,6 +596,7 @@ dequeue_and_dump (dump_info_p di)
       break;
 
     case COMPONENT_REF:
+    case BIT_FIELD_REF:
       dump_child ("op 0", TREE_OPERAND (t, 0));
       dump_child ("op 1", TREE_OPERAND (t, 1));
       dump_child ("op 2", TREE_OPERAND (t, 2));
