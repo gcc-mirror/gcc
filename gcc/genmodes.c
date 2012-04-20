@@ -427,7 +427,6 @@ make_complex_modes (enum mode_class cl,
 {
   struct mode_data *m;
   struct mode_data *c;
-  char buf[8];
   enum mode_class cclass = complex_class (cl);
 
   if (cclass == MODE_RANDOM)
@@ -435,6 +434,7 @@ make_complex_modes (enum mode_class cl,
 
   for (m = modes[cl]; m; m = m->next)
     {
+      char *p, *buf;
       size_t m_len;
 
       /* Skip BImode.  FIXME: BImode probably shouldn't be MODE_INT.  */
@@ -442,40 +442,34 @@ make_complex_modes (enum mode_class cl,
 	continue;
 
       m_len = strlen (m->name);
-      if (m_len >= sizeof buf)
-	{
-	  error ("%s:%d:mode name \"%s\" is too long",
-		 m->file, m->line, m->name);
-	  continue;
-	}
+      /* The leading "1 +" is in case we prepend a "C" below.  */
+      buf = (char *) xmalloc (1 + m_len + 1);
 
       /* Float complex modes are named SCmode, etc.
 	 Int complex modes are named CSImode, etc.
          This inconsistency should be eliminated.  */
+      p = 0;
       if (cl == MODE_FLOAT)
 	{
-	  char *p, *q = 0;
-	  /* We verified above that m->name+NUL fits in buf.  */
 	  memcpy (buf, m->name, m_len + 1);
 	  p = strchr (buf, 'F');
-	  if (p == 0)
-	    q = strchr (buf, 'D');
-	  if (p == 0 && q == 0)
+	  if (p == 0 && strchr (buf, 'D') == 0)
 	    {
 	      error ("%s:%d: float mode \"%s\" has no 'F' or 'D'",
 		     m->file, m->line, m->name);
+	      free (buf);
 	      continue;
 	    }
-
-	  if (p != 0)
-	    *p = 'C';
-	  else
-	    snprintf (buf, sizeof buf, "C%s", m->name);
 	}
+      if (p != 0)
+	*p = 'C';
       else
-	snprintf (buf, sizeof buf, "C%s", m->name);
+	{
+	  buf[0] = 'C';
+	  memcpy (buf + 1, m->name, m_len + 1);
+	}
 
-      c = new_mode (cclass, xstrdup (buf), file, line);
+      c = new_mode (cclass, buf, file, line);
       c->component = m;
     }
 }
