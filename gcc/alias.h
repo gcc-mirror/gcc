@@ -1,5 +1,6 @@
 /* Exported functions from alias.c
-   Copyright (C) 2004, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2008, 2009, 2010, 2012
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -49,5 +50,12 @@ extern int nonoverlapping_memrefs_p (const_rtx, const_rtx, bool);
    can move.  Note that there are other legacy ways to create such
    memory barriers, including an address of SCRATCH.  */
 #define ALIAS_SET_MEMORY_BARRIER	((alias_set_type) -1)
+
+/* Values of XWINT (address, 0) of Pmode ADDRESS rtxes for special
+   registers.  */
+#define UNIQUE_BASE_VALUE_SP	-1
+#define UNIQUE_BASE_VALUE_ARGP	-2
+#define UNIQUE_BASE_VALUE_FP	-3
+#define UNIQUE_BASE_VALUE_HFP	-4
 
 #endif /* GCC_ALIAS_H */
