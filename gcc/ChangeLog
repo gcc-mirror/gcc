@@ -1,5 +1,20 @@
 2012-04-21  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR bootstrap/53021
+	* rtl.def (ADDRESS): Use "i" rather than "w".
+	* rtl.h (find_base_term): Delete.
+	(may_be_sp_based_p): Declare.
+	* rtl.c (rtx_code_size): Remove ADDRESS special case.
+	* alias.h (UNIQUE_BASE_VALUE_SP, UNIQUE_BASE_VALUE_ARGP)
+	(UNIQUE_BASE_VALUE_FP, UNIQUE_BASE_VALUE_HFP): Move to...
+	* alias.c: ...here.
+	(find_base_term): Make static.
+	(may_be_sp_based_p): New function.
+	* dse.c (record_store): Use it.
+	* store-motion.c (store_killed_in_insn): Likewise.
+
+2012-04-21  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* fold-const.c (fold_checksum_tree): Fix VECTOR_CST case.
 
 2012-04-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>

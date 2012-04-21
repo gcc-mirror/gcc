@@ -1499,11 +1499,7 @@ record_store (rtx body, bb_info_t bb_info)
     }
   else
     {
-      rtx base_term = find_base_term (XEXP (mem, 0));
-      if (!base_term
-	  || (GET_CODE (base_term) == ADDRESS
-	      && GET_MODE (base_term) == Pmode
-	      && XWINT (base_term, 0) == UNIQUE_BASE_VALUE_SP))
+      if (may_be_sp_based_p (XEXP (mem, 0)))
 	insn_info->stack_pointer_based = true;
       insn_info->contains_cselib_groups = true;
 
