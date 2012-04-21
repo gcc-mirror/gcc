@@ -2682,6 +2682,14 @@ build_function_call (location_t loc, tree function, tree params)
   return ret;
 }
 
+/* Give a note about the location of the declaration of DECL.  */
+
+static void inform_declaration (tree decl)
+{
+  if (decl && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_BUILT_IN (decl)))
+    inform (DECL_SOURCE_LOCATION (decl), "declared here");
+}
+
 /* Build a function call to function FUNCTION with parameters PARAMS.
    ORIGTYPES, if not NULL, is a vector of types; each element is
    either NULL or the original type of the corresponding element in
@@ -2744,7 +2752,20 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
   if (!(TREE_CODE (fntype) == POINTER_TYPE
 	&& TREE_CODE (TREE_TYPE (fntype)) == FUNCTION_TYPE))
     {
-      error_at (loc, "called object %qE is not a function", function);
+      if (!flag_diagnostics_show_caret)
+	error_at (loc,
+		  "called object %qE is not a function or function pointer",
+		  function);
+      else if (DECL_P (function))
+	{
+	  error_at (loc,
+		    "called object %qD is not a function or function pointer",
+		    function);
+	  inform_declaration (function);
+	}
+      else
+	error_at (loc,
+		  "called object is not a function or function pointer");
       return error_mark_node;
     }
 
@@ -3034,9 +3055,7 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
 	  else
 	    error_at (input_location,
 		      "too many arguments to function %qE", function);
-
-	  if (fundecl && !DECL_BUILT_IN (fundecl))
-	    inform (DECL_SOURCE_LOCATION (fundecl), "declared here");
+	  inform_declaration (fundecl);
 	  return parmnum;
 	}
 
@@ -3269,8 +3288,7 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
     {
       error_at (input_location,
 		"too few arguments to function %qE", function);
-      if (fundecl && !DECL_BUILT_IN (fundecl))
-	inform (DECL_SOURCE_LOCATION (fundecl), "declared here");
+      inform_declaration (fundecl);
       return -1;
     }
 

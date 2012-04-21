@@ -1,3 +1,9 @@
+2012-04-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 35441
+	* typeck.c (cp_build_function_call_vec): Do not pretty-print
+	expressions when caret is enabled.
+
 2012-04-20  Jan Hubicka  <jh@suse.cz>
 
 	PR target/53042

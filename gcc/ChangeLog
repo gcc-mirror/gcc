@@ -1,3 +1,11 @@
+2012-04-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 35441
+	* c-typeck.c (inform_declaration): New.
+	(build_function_call_vec):  Do not pretty-print
+	expressions when caret is enabled.
+	(convert_arguments): Use inform_declaration.
+
 2012-04-20  Jim Meyering  <meyering@redhat.com>
 
 	* genmodes.c (make_complex_modes): Don't truncate a mode name of
