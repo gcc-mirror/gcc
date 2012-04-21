@@ -3322,7 +3322,18 @@ cp_build_function_call_vec (tree function, VEC(tree,gc) **params,
 	|| TREE_CODE (function) == TEMPLATE_ID_EXPR))
     {
       if (complain & tf_error)
-	error ("%qE cannot be used as a function", original);
+	{
+	  if (!flag_diagnostics_show_caret)
+	    error_at (input_location,
+		      "%qE cannot be used as a function", original);
+	  else if (DECL_P (original))
+	    error_at (input_location,
+		      "%qD cannot be used as a function", original);
+	  else 
+	    error_at (input_location,
+		      "expression cannot be used as a function");
+	}
+
       return error_mark_node;
     }
 
