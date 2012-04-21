@@ -48,6 +48,15 @@
 /* Define to 1 if you have the <linux/filter.h> header file. */
 #undef HAVE_LINUX_FILTER_H
 
+/* Define to 1 if you have the <linux/if_addr.h> header file. */
+#undef HAVE_LINUX_IF_ADDR_H
+
+/* Define to 1 if you have the <linux/if_ether.h> header file. */
+#undef HAVE_LINUX_IF_ETHER_H
+
+/* Define to 1 if you have the <linux/if_tun.h> header file. */
+#undef HAVE_LINUX_IF_TUN_H
+
 /* Define to 1 if you have the <linux/netlink.h> header file. */
 #undef HAVE_LINUX_NETLINK_H
 
@@ -75,11 +84,29 @@
 /* Define to 1 if you have the `mknodat' function. */
 #undef HAVE_MKNODAT
 
+/* Define to 1 if you have the <netinet/if_ether.h> header file. */
+#undef HAVE_NETINET_IF_ETHER_H
+
+/* Define to 1 if you have the <netinet/in_syst.h> header file. */
+#undef HAVE_NETINET_IN_SYST_H
+
+/* Define to 1 if you have the <netinet/ip.h> header file. */
+#undef HAVE_NETINET_IP_H
+
+/* Define to 1 if you have the <netinet/ip_mroute.h> header file. */
+#undef HAVE_NETINET_IP_MROUTE_H
+
+/* Define to 1 if you have the <netpacket/packet.h> header file. */
+#undef HAVE_NETPACKET_PACKET_H
+
 /* Define to 1 if you have the <net/if_arp.h> header file. */
 #undef HAVE_NET_IF_ARP_H
 
 /* Define to 1 if you have the <net/if.h> header file. */
 #undef HAVE_NET_IF_H
+
+/* Define to 1 if you have the <net/route.h> header file. */
+#undef HAVE_NET_ROUTE_H
 
 /* Define to 1 if the system has the type `off64_t'. */
 #undef HAVE_OFF64_T
@@ -144,6 +171,12 @@
 
 /* Define to 1 if you have the <sys/epoll.h> header file. */
 #undef HAVE_SYS_EPOLL_H
+
+/* Define to 1 if you have the <sys/file.h> header file. */
+#undef HAVE_SYS_FILE_H
+
+/* Define to 1 if you have the <sys/inotify.h> header file. */
+#undef HAVE_SYS_INOTIFY_H
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H

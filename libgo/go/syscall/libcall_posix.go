@@ -268,7 +268,7 @@ func Gettimeofday(tv *Timeval) (err error) {
 //sys	Mknod(path string, mode uint32, dev int) (err error)
 //mknod(path *byte, mode Mode_t, dev _dev_t) int
 
-//sys	Mount(source string, target string, fstype string, flags int, data string) (err error)
+//sys	Mount(source string, target string, fstype string, flags uintptr, data string) (err error)
 //mount(source *byte, target *byte, fstype *byte, flags _C_long, data *byte) int
 
 //sys	Nanosleep(time *Timespec, leftover *Timespec) (err error)
