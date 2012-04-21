@@ -40,6 +40,18 @@ cat > sysinfo.c <<EOF
 #include <sys/ttold.h>
 #endif
 #include <netinet/tcp.h>
+#if defined(HAVE_NETINET_IN_SYSTM_H)
+#include <netinet/in_systm.h>
+#endif
+#if defined(HAVE_NETINET_IP_H)
+#include <netinet/ip.h>
+#endif
+#if defined(HAVE_NETINET_IP_MROUTE_H)
+#include <netinet/ip_mroute.h>
+#endif
+#if defined(HAVE_NETINET_IF_ETHER_H)
+#include <netinet/if_ether.h>
+#endif
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <termios.h>
@@ -51,6 +63,9 @@ cat > sysinfo.c <<EOF
 #endif
 #if defined(HAVE_SYS_EPOLL_H)
 #include <sys/epoll.h>
+#endif
+#if defined(HAVE_SYS_FILE_H)
+#include <sys/file.h>
 #endif
 #if defined(HAVE_SYS_MMAN_H)
 #include <sys/mman.h>
@@ -85,6 +100,15 @@ cat > sysinfo.c <<EOF
 #if defined(HAVE_LINUX_FILTER_H)
 #include <linux/filter.h>
 #endif
+#if defined(HAVE_LINUX_IF_ADDR_H)
+#include <linux/if_addr.h>
+#endif
+#if defined(HAVE_LINUX_IF_ETHER_H)
+#include <linux/if_ether.h>
+#endif
+#if defined(HAVE_LINUX_IF_TUN_H)
+#include <linux/if_tun.h>
+#endif
 #if defined(HAVE_LINUX_NETLINK_H)
 #include <linux/netlink.h>
 #endif
@@ -96,6 +120,12 @@ cat > sysinfo.c <<EOF
 #endif
 #if defined(HAVE_NET_IF_ARP_H)
 #include <net/if_arp.h>
+#endif
+#if defined(HAVE_NET_ROUTE_H)
+#include <net/route.h>
+#endif
+#if defined (HAVE_NETPACKET_PACKET_H)
+#include <netpacket/packet.h>
 #endif
 #if defined(HAVE_SYS_MOUNT_H)
 #include <sys/mount.h>
@@ -123,6 +153,9 @@ cat > sysinfo.c <<EOF
 #endif
 #if defined(HAVE_LINUX_REBOOT_H)
 #include <linux/reboot.h>
+#endif
+#if defined(HAVE_SYS_INOTIFY_H)
+#include <sys/inotify.h>
 #endif
 
 /* Constants that may only be defined as expressions on some systems,
@@ -199,6 +232,8 @@ grep '^const _MAP_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(MAP_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _MADV_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(MADV_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _MCL_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(MCL_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # Process status constants.
 grep '^const _W' gen-sysinfo.go |
@@ -700,7 +735,7 @@ grep '^type _rtmsg ' gen-sysinfo.go | \
       -e 's/rtm_src_len/Src_len/' \
       -e 's/rtm_tos/Tos/' \
       -e 's/rtm_table/Table/' \
-      -e 's/rtm_protocol/Procotol/' \
+      -e 's/rtm_protocol/Protocol/' \
       -e 's/rtm_scope/Scope/' \
       -e 's/rtm_type/Type/' \
       -e 's/rtm_flags/Flags/' \
@@ -718,6 +753,8 @@ grep '^type _rtgenmsg ' gen-sysinfo.go | \
     >> ${OUT}
 
 # The routing message flags.
+grep '^const _RT_' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(RT_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _RTA' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTA[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _RTF' gen-sysinfo.go | \
@@ -726,6 +763,10 @@ grep '^const _RTCF' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTCF[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _RTM' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTM[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _RTN' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(RTN[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _RTPROT' gen-sysinfo.go | \
+    sed -e 's/^\(const \)_\(RTPROT[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The size of the rtgenmsg struct.
 if grep 'type RtGenmsg ' ${OUT} > /dev/null 2>&1; then
@@ -818,6 +859,8 @@ for n in IGNBRK BRKINT IGNPAR PARMRK INPCK ISTRIP INLCR IGNCR ICRNL IUCLC \
 done
 
 # The mount flags
+grep '^const _MNT_' gen-sysinfo.go |
+    sed -e 's/^\(const \)_\(MNT_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _MS_' gen-sysinfo.go |
     sed -e 's/^\(const \)_\(MS_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
@@ -932,6 +975,10 @@ grep '^type _utimbuf ' gen-sysinfo.go | \
       -e 's/modtime/Modtime/' \
     >> ${OUT}
 
+# The LOCK flags for flock.
+grep '^const _LOCK_' gen-sysinfo.go |
+    sed -e 's/^\(const \)_\(LOCK_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
 # The GNU/Linux LINUX_REBOOT flags.
 grep '^const _LINUX_REBOOT_' gen-sysinfo.go |
     sed -e 's/^\(const \)_\(LINUX_REBOOT_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
@@ -956,6 +1003,14 @@ grep '^type _sock_fprog ' gen-sysinfo.go | \
 # The GNU/Linux filter flags.
 grep '^const _BPF_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(BPF_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The GNU/Linux netlink flags.
+grep '^const _NETLINK_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(NETLINK_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The GNU/Linux packet socket flags.
+grep '^const _PACKET_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(PACKET_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The Solaris 11 Update 1 _zone_net_addr_t struct.
 grep '^type _zone_net_addr_t ' gen-sysinfo.go | \

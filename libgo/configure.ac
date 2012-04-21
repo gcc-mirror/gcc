@@ -453,9 +453,9 @@ no)
   ;;
 esac
 
-AC_CHECK_HEADERS(sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/reboot.h)
+AC_CHECK_HEADERS(sys/file.h sys/mman.h syscall.h sys/epoll.h sys/inotify.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h net/route.h netpacket/packet.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/reboot.h netinet/in_syst.h netinet/ip.h netinet/ip_mroute.h netinet/if_ether.h)
 
-AC_CHECK_HEADERS([linux/filter.h linux/netlink.h linux/rtnetlink.h], [], [],
+AC_CHECK_HEADERS([linux/filter.h linux/if_addr.h linux/if_ether.h linux/if_tun.h linux/netlink.h linux/rtnetlink.h], [], [],
 [#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
