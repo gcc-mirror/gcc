@@ -1,3 +1,10 @@
+2012-04-21  Alan Modra  <amodra@gmail.com>
+
+	PR libstdc++/52839
+	* acinclude.m4 (_GLIBCXX_ATOMIC_BUILTINS): Do not depend on
+	glibcxx_cv_atomic_long_long.
+	* configure: Regenerate.
+
 2012-04-16  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	PR bootstrap/52840
