@@ -3025,7 +3025,8 @@ test -n "$target_alias" &&
 target_alias=${target_alias-$host_alias}
 
 # Handy for debugging:
-#AC_MSG_NOTICE($build / $host / $target / $host_alias / $target_alias); sleep 5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: $build / $host / $target / $host_alias / $target_alias" >&5
+$as_echo "$as_me: $build / $host / $target / $host_alias / $target_alias" >&6;}; sleep 5
 
 if test "$build" != "$host"; then
   # We are being configured with some form of cross compiler.
@@ -11497,7 +11498,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11500 "configure"
+#line 11501 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11603,7 +11604,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11606 "configure"
+#line 11607 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14961,7 +14962,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14964 "configure"
+#line 14965 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15296,7 +15297,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15299 "configure"
+#line 15300 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15331,7 +15332,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15334 "configure"
+#line 15335 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15366,7 +15367,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15369 "configure"
+#line 15370 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15402,7 +15403,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15405 "configure"
+#line 15406 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15446,11 +15447,10 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-  # Set atomicity_dir to builtins if all of above tests pass.
+  # Set atomicity_dir to builtins if all but the long long test above passes.
   if test $glibcxx_cv_atomic_bool = yes \
      && test $glibcxx_cv_atomic_short = yes \
-     && test $glibcxx_cv_atomic_int = yes \
-     && test $glibcxx_cv_atomic_long_long = yes ; then
+     && test $glibcxx_cv_atomic_int = yes; then
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS 1" >>confdefs.h
 
