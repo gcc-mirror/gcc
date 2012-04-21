@@ -14391,7 +14391,7 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx, htab_t ht)
 	  fold_checksum_tree (TREE_IMAGPART (expr), ctx, ht);
 	  break;
 	case VECTOR_CST:
-	  for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+	  for (i = 0; i < (int) VECTOR_CST_NELTS (expr); ++i)
 	    fold_checksum_tree (VECTOR_CST_ELT (expr, i), ctx, ht);
 	  break;
 	default:
