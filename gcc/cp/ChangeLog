@@ -1,3 +1,13 @@
+2012-04-21  Jan Hubicka  <jh@suse.cz>
+
+	* method.c (make_alias_for): Do not set TREE_SYMBOL_REFERENCED.
+	* decl2.c (mark_needed): Likewise.
+	(decl_needed_p): Do not test TREE_SYMBOL_REFERENCED.
+
+	* decl2.c (cxx_callgraph_analyze_expr): Remove.
+	* cp-objcp-common.h (LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR): Remove.
+	* cp-tree.h (cxx_callgraph_analyze_expr): Remove.
+
 2012-04-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 35441
