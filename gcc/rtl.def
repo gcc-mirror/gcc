@@ -110,7 +110,7 @@ DEF_RTL_EXPR(INSN_LIST, "insn_list", "ue", RTX_EXTRA)
 DEF_RTL_EXPR(SEQUENCE, "sequence", "E", RTX_EXTRA)
 
 /* Represents a non-global base address.  This is only used in alias.c.  */
-DEF_RTL_EXPR(ADDRESS, "address", "w", RTX_EXTRA)
+DEF_RTL_EXPR(ADDRESS, "address", "i", RTX_EXTRA)
 
 /* ----------------------------------------------------------------------
    Expression types used for things in the instruction chain.

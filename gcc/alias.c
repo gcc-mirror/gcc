@@ -228,6 +228,13 @@ static int unique_id;
    array.  */
 static GTY((deletable)) VEC(rtx,gc) *old_reg_base_value;
 
+/* Values of XINT (address, 0) of Pmode ADDRESS rtxes for special
+   registers.  */
+#define UNIQUE_BASE_VALUE_SP	-1
+#define UNIQUE_BASE_VALUE_ARGP	-2
+#define UNIQUE_BASE_VALUE_FP	-3
+#define UNIQUE_BASE_VALUE_HFP	-4
+
 #define static_reg_base_value \
   (this_target_rtl->x_static_reg_base_value)
 
@@ -1584,7 +1591,7 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
   return 1;
 }
 
-rtx
+static rtx
 find_base_term (rtx x)
 {
   cselib_val *val;
@@ -1738,6 +1745,16 @@ find_base_term (rtx x)
     default:
       return 0;
     }
+}
+
+/* Return true if accesses to address X may alias accesses based
+   on the stack pointer.  */
+
+bool
+may_be_sp_based_p (rtx x)
+{
+  rtx base = find_base_term (x);
+  return !base || base == static_reg_base_value[STACK_POINTER_REGNUM];
 }
 
 /* Return 0 if the addresses X and Y are known to point to different

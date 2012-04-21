@@ -395,7 +395,7 @@ store_killed_in_pat (const_rtx x, const_rtx pat, int after)
 static bool
 store_killed_in_insn (const_rtx x, const_rtx x_regs, const_rtx insn, int after)
 {
-  const_rtx reg, base, note, pat;
+  const_rtx reg, note, pat;
 
   if (! NONDEBUG_INSN_P (insn))
     return false;
@@ -410,14 +410,8 @@ store_killed_in_insn (const_rtx x, const_rtx x_regs, const_rtx insn, int after)
       /* But even a const call reads its parameters.  Check whether the
 	 base of some of registers used in mem is stack pointer.  */
       for (reg = x_regs; reg; reg = XEXP (reg, 1))
-	{
-	  base = find_base_term (XEXP (reg, 0));
-	  if (!base
-	      || (GET_CODE (base) == ADDRESS
-		  && GET_MODE (base) == Pmode
-		  && XEXP (base, 0) == stack_pointer_rtx))
-	    return true;
-	}
+	if (may_be_sp_based_p (XEXP (reg, 0)))
+	  return true;
 
       return false;
     }
