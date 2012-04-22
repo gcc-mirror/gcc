@@ -1,3 +1,10 @@
+2012-04-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53051
+	* io/list_read.c (parse_real): Support "q" for the
+	exponential.
+	* io/read.c (read_f): Ditto.
+
 2012-04-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR libfortran/38199

@@ -1026,6 +1026,8 @@ found_digit:
 	case 'E':
 	case 'd':
 	case 'D':
+	case 'q':
+	case 'Q':
 	  ++p;
 	  --w;
 	  goto exponent;
