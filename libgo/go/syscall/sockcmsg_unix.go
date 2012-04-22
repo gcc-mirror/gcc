@@ -39,7 +39,7 @@ func CmsgSpace(datalen int) int {
 }
 
 func cmsgData(cmsg *Cmsghdr) unsafe.Pointer {
-	return unsafe.Pointer(uintptr(unsafe.Pointer(cmsg)) + uintptr(SizeofCmsghdr))
+	return unsafe.Pointer(uintptr(unsafe.Pointer(cmsg)) + SizeofCmsghdr)
 }
 
 type SocketControlMessage struct {
@@ -72,7 +72,7 @@ func ParseSocketControlMessage(buf []byte) ([]SocketControlMessage, error) {
 
 func socketControlMessageHeaderAndData(buf []byte) (*Cmsghdr, []byte, error) {
 	h := (*Cmsghdr)(unsafe.Pointer(&buf[0]))
-	if int(h.Len) < SizeofCmsghdr || int(h.Len) > len(buf) {
+	if h.Len < SizeofCmsghdr || int(h.Len) > len(buf) {
 		return nil, nil, EINVAL
 	}
 	return h, buf[cmsgAlignOf(SizeofCmsghdr):], nil

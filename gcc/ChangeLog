@@ -1,3 +1,7 @@
+2012-04-22  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (go_output_typedef): Dump size of structs.
+
 2012-04-22  Razya Ladelsky  <razya@il.ibm.com>
 
 	Correcting transform_to_exit_first_loop + fix to PR46886
