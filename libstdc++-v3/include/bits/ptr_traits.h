@@ -140,14 +140,8 @@ _GLIBCXX_HAS_NESTED_TYPE(difference_type)
       /// Type used to represent the difference between two pointers
       typedef typename __ptrtr_diff_type<_Ptr>::__type  difference_type;
 
-    private:
       template<typename _Up>
         using rebind = typename __ptrtr_rebind<_Ptr, _Up>::__type;
-
-      // allocator_traits needs to use __rebind
-      template<typename> friend struct allocator_traits;
-      template<typename> friend struct pointer_traits;
-      template<typename, typename> friend class __ptrtr_rebind_helper2;
     };
 
   /**
