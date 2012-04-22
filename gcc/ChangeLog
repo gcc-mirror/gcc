@@ -1,3 +1,82 @@
+2012-04-22  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_varpool_replace_node): Do not merge needed flags.
+	* cgraphbuild.c (record_reference, record_type_list, mark_address,
+	mark_load, mark_store): Do not mark varpool nodes as needed.
+	* cgraph.c (cgraph_new_nodes): Remove.
+	(cgraph_create_function_alias): Do not mark nodes as reachable.
+	(cgraph_add_thunk): Likewise.
+	(cgraph_mark_reachable_node): Do not manage the queue.
+	* cgraph.h (cgraph_node): Remove next_needed.
+	(varpool_nodes_queue): Remove next_needed and prev_needed.
+	(x_cgraph_nodes_queue, x_cgraph_nodes_queue, cgraph_new_nodes): Remove.
+	(cgraph_new_nodes): Declare.
+	(x_varpool_nodes_queue, varpool_nodes_queue); Remove.
+	(varpool_analyze_pending_decls): Remove.
+	(varpool_analyze_node): New.
+	(varpool_mark_needed_node): Remove.
+	(varpool_first_variable, varpool_next_variable): New inlines.
+	(varpool_first_static_initializer, varpool_next_static_initializer): Update.
+	(FOR_EACH_STATIC_VARIABLE): Remove unused walker.
+	(varpool_first_defined_variable): New inline.
+	(varpool_next_defined_variable): New inline
+	(FOR_EACH_VARIABLE): Reimplement.
+	(FOR_EACH_DEFINED_VARIABLE): Reimplement.
+	* toplev.c (wrapup_global_declaration_2): Use analyzed instead of
+	needed flag.
+	* cgraphunit.c (cgraph_new_nodes): Declare here.
+	(enqueue_node): New function.
+	(cgraph_process_new_functions): update for new
+	node set; when constructing cgraph enqueue node for processing.
+	(cgraph_add_new_function): Use new node set.
+	(process_function_and_variable_attributes): Do not set varpool needed
+	flags.
+	(referred_to_p): New function.
+	(varpool_finalize_decl): Move here from varpool.c; enqueue needed node
+	when varpool is in construction.
+	(cgraph_analyze_functions): Rewrite.
+	(cgraph_expand_all_functions): Update.
+	(cgraph_output_in_order): Do not analyze pending decls; do not set needed flags.
+	(cgraph_optimize): Do not analyze pending decls.
+	* lto-cgraph.c (input_varpool_node): Clear analyzed flag for objects in other
+	partition; do not mark node as needed.
+	* dwarf2out.c (reference_to_unused): Use analyzed flag.
+	(premark_types_used_by_global_vars_helper): Likewise.
+	* ipa.c (process_references): Do not call varpool_mark_needed_node.
+	(cgraph_remove_unreachable_nodes): Do not rely on varpool and
+	cgrpah queues.
+	(function_and_variable_visibility): Do not mark node as needed.
+	(whole_program_function_and_variable_visibility): Likewise.
+	* Makefile.in (gt-varpool.h): No longer needed.
+	* passes.c (execute_one_pass, execute_ipa_pass_list): Update.
+	(ipa_write_summaries): Do not use needed flag.
+	* varpool.c: Do not include gt-varpool.h
+	(x_varpool_nodes_queue, x_varpool_last_needed_node,
+	x_varpool_last_needed_node, x_varpool_first_unanalyzed_node,
+	x_varpool_first_unanalyzed_node, varpool_assembled_nodes_queue):
+	Remove.
+	(varpool_remove_node): Do not update the lists.
+	(dump_varpool_node): Do not dump needed flag.
+	(varpool_enqueue_needed_node): Remove.
+	(varpool_mark_needed_node): Remove.
+	(varpool_reset_queue): Remove.
+	(varpool_finalize_decl): Move to cgraphunit.c
+	(varpool_analyze_node): New functions based on former
+	varpool_analyze_pending_decls.
+	(varpool_analyze_pending_decls): Remove.
+	(varpool_assemble_decl): Do not update the lists.
+	(enqueue_node): New function.
+	(varpool_remove_unreferenced_decls): Rewrite.
+	(varpool_empty_needed_queue): Remove.
+	(add_new_static_var): Do not mark node as needed.
+	(varpool_create_variable_alias): Handle expansion state
+	creation.
+	* except.c (output_ttype): Do not mark node as needed.
+	* varasm.c (mark_decl_referenced): Do not use mark_needed_node.
+	* tree-profile.c (init_ic_make_global_vars, init_ic_make_global_vars):
+	Likewise.
+	* tree-switch-conversion.c (build_one_array): Likewise.
+
 2012-04-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/44774

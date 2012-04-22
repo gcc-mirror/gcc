@@ -2342,8 +2342,8 @@ ipa_write_summaries (void)
     }
   vset = varpool_node_set_new ();
 
-  FOR_EACH_VARIABLE (vnode)
-    if (vnode->needed && (!vnode->alias || vnode->alias_of))
+  FOR_EACH_DEFINED_VARIABLE (vnode)
+    if ((!vnode->alias || vnode->alias_of))
       varpool_node_set_add (vset, vnode);
 
   ipa_write_summaries_1 (set, vset);

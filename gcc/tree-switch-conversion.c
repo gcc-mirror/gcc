@@ -625,7 +625,6 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       add_referenced_var (decl);
-      varpool_mark_needed_node (varpool_node (decl));
       varpool_finalize_decl (decl);
 
       fetch = build4 (ARRAY_REF, value_type, decl, tidx, NULL_TREE,

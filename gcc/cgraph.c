@@ -123,11 +123,6 @@ static inline void cgraph_edge_remove_callee (struct cgraph_edge *e);
 symtab_node x_cgraph_nodes_queue;
 #define cgraph_nodes_queue ((struct cgraph_node *)x_cgraph_nodes_queue)
 
-/* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
-   secondary queue used during optimization to accommodate passes that
-   may generate new functions that need to be optimized and expanded.  */
-struct cgraph_node *cgraph_new_nodes;
-
 /* Number of nodes in existence.  */
 int cgraph_n_nodes;
 
@@ -141,7 +136,7 @@ int cgraph_edge_max_uid;
 bool cgraph_global_info_ready = false;
 
 /* What state callgraph is in right now.  */
-enum cgraph_state cgraph_state = CGRAPH_STATE_CONSTRUCTION;
+enum cgraph_state cgraph_state = CGRAPH_STATE_PARSING;
 
 /* Set when the cgraph is fully build and the basic flags are computed.  */
 bool cgraph_function_flags_ready = false;
@@ -499,11 +494,6 @@ cgraph_create_function_alias (tree alias, tree decl)
   alias_node->thunk.alias = decl;
   alias_node->local.finalized = true;
   alias_node->alias = 1;
-
-  if ((TREE_PUBLIC (alias) && !DECL_COMDAT (alias) && !DECL_EXTERNAL (alias))
-      || (DECL_VIRTUAL_P (alias)
-	  && (DECL_COMDAT (alias) || DECL_EXTERNAL (alias))))
-    cgraph_mark_reachable_node (alias_node);
   return alias_node;
 }
 
@@ -539,7 +529,7 @@ cgraph_same_body_alias (struct cgraph_node *decl_node ATTRIBUTE_UNUSED, tree ali
 
 struct cgraph_node *
 cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
-		  tree alias, tree decl,
+		  tree alias, tree decl ATTRIBUTE_UNUSED,
 		  bool this_adjusting,
 		  HOST_WIDE_INT fixed_offset, HOST_WIDE_INT virtual_value,
 		  tree virtual_offset,
@@ -568,14 +558,6 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
   node->thunk.alias = real_alias;
   node->thunk.thunk_p = true;
   node->local.finalized = true;
-
-  if (cgraph_decide_is_function_needed (node, decl))
-    cgraph_mark_reachable_node (node);
-
-  if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
-      || (DECL_VIRTUAL_P (decl)
-	  && (DECL_COMDAT (decl) || DECL_EXTERNAL (decl))))
-    cgraph_mark_reachable_node (node);
 
   return node;
 }
@@ -1508,9 +1490,6 @@ cgraph_mark_reachable_node (struct cgraph_node *node)
       else
         notice_global_symbol (node->symbol.decl);
       node->reachable = 1;
-
-      node->next_needed = cgraph_nodes_queue;
-      x_cgraph_nodes_queue = (symtab_node)node;
     }
 }
 

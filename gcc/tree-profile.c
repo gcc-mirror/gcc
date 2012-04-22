@@ -87,7 +87,6 @@ init_ic_make_global_vars (void)
       decl_default_tls_model (ic_void_ptr_var);
 
   varpool_finalize_decl (ic_void_ptr_var);
-  varpool_mark_needed_node (varpool_node (ic_void_ptr_var));
 
   gcov_type_ptr = build_pointer_type (get_gcov_type ());
   ic_gcov_type_ptr_var
@@ -103,7 +102,6 @@ init_ic_make_global_vars (void)
       decl_default_tls_model (ic_gcov_type_ptr_var);
 
   varpool_finalize_decl (ic_gcov_type_ptr_var);
-  varpool_mark_needed_node (varpool_node (ic_gcov_type_ptr_var));
 }
 
 void

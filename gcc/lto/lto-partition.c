@@ -283,7 +283,7 @@ partition_cgraph_node_p (struct cgraph_node *node)
 static bool
 partition_varpool_node_p (struct varpool_node *vnode)
 {
-  if (vnode->alias || !vnode->needed)
+  if (vnode->alias || !vnode->analyzed)
     return false;
   /* Constant pool and comdat are always only in partitions they are needed.  */
   if (DECL_IN_CONSTANT_POOL (vnode->symbol.decl)

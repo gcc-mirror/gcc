@@ -1,3 +1,8 @@
+2012-04-22  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (maybe_make_one_only): Mark keyed COMDATs as USED so they
+	gets finalized.
+
 2012-04-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/44774

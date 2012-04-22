@@ -87,7 +87,6 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
 	  struct varpool_node *vnode = varpool_node (decl);
 	  if (lang_hooks.callgraph.analyze_expr)
 	    lang_hooks.callgraph.analyze_expr (&decl, walk_subtrees);
-	  varpool_mark_needed_node (vnode);
 	  ipa_record_reference ((symtab_node)ctx->varpool_node,
 				(symtab_node)vnode,
 				IPA_REF_ADDR, NULL);
@@ -130,7 +129,6 @@ record_type_list (struct cgraph_node *node, tree list)
 	  if (TREE_CODE (type) == VAR_DECL)
 	    {
 	      struct varpool_node *vnode = varpool_node (type);
-	      varpool_mark_needed_node (vnode);
 	      ipa_record_reference ((symtab_node)node,
 				    (symtab_node)vnode,
 				    IPA_REF_ADDR, NULL);
@@ -245,7 +243,6 @@ mark_address (gimple stmt, tree addr, void *data)
 
       if (lang_hooks.callgraph.analyze_expr)
 	lang_hooks.callgraph.analyze_expr (&addr, &walk_subtrees);
-      varpool_mark_needed_node (vnode);
       ipa_record_reference ((symtab_node)data,
 			    (symtab_node)vnode,
 			    IPA_REF_ADDR, stmt);
@@ -278,7 +275,6 @@ mark_load (gimple stmt, tree t, void *data)
 
       if (lang_hooks.callgraph.analyze_expr)
 	lang_hooks.callgraph.analyze_expr (&t, &walk_subtrees);
-      varpool_mark_needed_node (vnode);
       ipa_record_reference ((symtab_node)data,
 			    (symtab_node)vnode,
 			    IPA_REF_LOAD, stmt);
@@ -300,7 +296,6 @@ mark_store (gimple stmt, tree t, void *data)
 
       if (lang_hooks.callgraph.analyze_expr)
 	lang_hooks.callgraph.analyze_expr (&t, &walk_subtrees);
-      varpool_mark_needed_node (vnode);
       ipa_record_reference ((symtab_node)data,
 			    (symtab_node)vnode,
 			    IPA_REF_STORE, stmt);

@@ -4860,7 +4860,6 @@ gnat_write_global_declarations (void)
       TREE_ASM_WRITTEN (dummy_global) = 1;
       node = varpool_node (dummy_global);
       node->symbol.force_output = 1;
-      varpool_mark_needed_node (node);
 
       while (!VEC_empty (tree, types_used_by_cur_var_decl))
 	{

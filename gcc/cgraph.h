@@ -215,10 +215,6 @@ struct GTY(()) cgraph_node {
   struct cgraph_node *
     GTY ((nested_ptr (union symtab_node_def, "(struct cgraph_node *)(%h)", "(symtab_node)%h")))
     next_nested;
-  /* Pointer to the next function in cgraph_nodes_queue.  */
-  struct cgraph_node *
-    GTY ((nested_ptr (union symtab_node_def, "(struct cgraph_node *)(%h)", "(symtab_node)%h")))
-    next_needed;
   /* Pointer to the next clone.  */
   struct cgraph_node *next_sibling_clone;
   struct cgraph_node *prev_sibling_clone;
@@ -419,13 +415,6 @@ struct GTY(()) varpool_node {
   struct symtab_node_base symbol;
   /* For aliases points to declaration DECL is alias of.  */
   tree alias_of;
-  /* Pointer to the next function in varpool_nodes_queue.  */
-  struct varpool_node *
-    GTY ((nested_ptr (union symtab_node_def, "(struct varpool_node *)(%h)", "(symtab_node)%h")))
-    next_needed;
-  struct varpool_node *
-    GTY ((nested_ptr (union symtab_node_def, "(struct varpool_node *)(%h)", "(symtab_node)%h")))
-    prev_needed;
 
   /* Set when function must be output - it is externally visible
      or its address is taken.  */
@@ -471,6 +460,8 @@ extern GTY(()) int cgraph_edge_max_uid;
 extern bool cgraph_global_info_ready;
 enum cgraph_state
 {
+  /* Frontend is parsing and finalizing functions.  */
+  CGRAPH_STATE_PARSING,
   /* Callgraph is being constructed.  It is safe to add new functions.  */
   CGRAPH_STATE_CONSTRUCTION,
   /* Callgraph is built and IPA passes are being run.  */
@@ -484,9 +475,7 @@ enum cgraph_state
 };
 extern enum cgraph_state cgraph_state;
 extern bool cgraph_function_flags_ready;
-extern GTY(()) symtab_node x_cgraph_nodes_queue;
-#define cgraph_nodes_queue ((struct cgraph_node *)x_cgraph_nodes_queue)
-extern GTY(()) struct cgraph_node *cgraph_new_nodes;
+extern cgraph_node_set cgraph_new_nodes;
 
 extern GTY(()) struct cgraph_asm_node *cgraph_asm_nodes;
 extern GTY(()) int symtab_order;
@@ -687,9 +676,6 @@ bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);
 bool cgraph_optimize_for_size_p (struct cgraph_node *);
 
 /* In varpool.c  */
-extern GTY(()) symtab_node x_varpool_nodes_queue;
-#define varpool_nodes_queue ((struct varpool_node *)x_varpool_nodes_queue)
-
 struct varpool_node *varpool_node (tree);
 struct varpool_node *varpool_node_for_asm (tree asmname);
 void varpool_mark_needed_node (struct varpool_node *);
@@ -709,9 +695,8 @@ void varpool_remove_node (struct varpool_node *node);
 void varpool_finalize_named_section_flags (struct varpool_node *node);
 bool varpool_assemble_pending_decls (void);
 bool varpool_assemble_decl (struct varpool_node *node);
-bool varpool_analyze_pending_decls (void);
+void varpool_analyze_node (struct varpool_node *);
 void varpool_remove_unreferenced_decls (void);
-void varpool_empty_needed_queue (void);
 struct varpool_node * varpool_extra_name_alias (tree, tree);
 struct varpool_node * varpool_create_variable_alias (tree, tree);
 void varpool_reset_queue (void);
@@ -799,40 +784,6 @@ varpool_node_name(struct varpool_node *node)
 #define FOR_EACH_SYMBOL(node) \
    for ((node) = symtab_nodes; (node); (node) = (node)->symbol.next)
 
-/* Return first reachable static variable with initializer.  */
-static inline struct varpool_node *
-varpool_first_static_initializer (void)
-{
-  struct varpool_node *node;
-  for (node = varpool_nodes_queue; node; node = node->next_needed)
-    {
-      gcc_checking_assert (TREE_CODE (node->symbol.decl) == VAR_DECL);
-      if (DECL_INITIAL (node->symbol.decl))
-	return node;
-    }
-  return NULL;
-}
-
-/* Return next reachable static variable with initializer after NODE.  */
-static inline struct varpool_node *
-varpool_next_static_initializer (struct varpool_node *node)
-{
-  for (node = node->next_needed; node; node = node->next_needed)
-    {
-      gcc_checking_assert (TREE_CODE (node->symbol.decl) == VAR_DECL);
-      if (DECL_INITIAL (node->symbol.decl))
-	return node;
-    }
-  return NULL;
-}
-
-/* Walk all reachable static variables.  */
-#define FOR_EACH_STATIC_VARIABLE(node) \
-   for ((node) = varpool_nodes_queue; (node); (node) = (node)->next_needed)
-/* Walk all static variables with initializer set.  */
-#define FOR_EACH_STATIC_INITIALIZER(node) \
-   for ((node) = varpool_first_static_initializer (); (node); \
-        (node) = varpool_next_static_initializer (node))
 
 /* Return first variable.  */
 static inline struct varpool_node *
@@ -864,9 +815,69 @@ varpool_next_variable (struct varpool_node *node)
    for ((node) = varpool_first_variable (); \
         (node); \
 	(node) = varpool_next_variable ((node)))
+
+/* Return first reachable static variable with initializer.  */
+static inline struct varpool_node *
+varpool_first_static_initializer (void)
+{
+  symtab_node node;
+  for (node = symtab_nodes; node; node = node->symbol.next)
+    {
+      if (symtab_variable_p (node)
+	  && DECL_INITIAL (node->symbol.decl))
+	return varpool (node);
+    }
+  return NULL;
+}
+
+/* Return next reachable static variable with initializer after NODE.  */
+static inline struct varpool_node *
+varpool_next_static_initializer (struct varpool_node *node)
+{
+  symtab_node node1 = (symtab_node) node->symbol.next;
+  for (; node1; node1 = node1->symbol.next)
+    {
+      if (symtab_variable_p (node1)
+	  && DECL_INITIAL (node1->symbol.decl))
+	return varpool (node1);
+    }
+  return NULL;
+}
+
+/* Walk all static variables with initializer set.  */
+#define FOR_EACH_STATIC_INITIALIZER(node) \
+   for ((node) = varpool_first_static_initializer (); (node); \
+        (node) = varpool_next_static_initializer (node))
+
+/* Return first reachable static variable with initializer.  */
+static inline struct varpool_node *
+varpool_first_defined_variable (void)
+{
+  symtab_node node;
+  for (node = symtab_nodes; node; node = node->symbol.next)
+    {
+      if (symtab_variable_p (node) && varpool (node)->analyzed)
+	return varpool (node);
+    }
+  return NULL;
+}
+
+/* Return next reachable static variable with initializer after NODE.  */
+static inline struct varpool_node *
+varpool_next_defined_variable (struct varpool_node *node)
+{
+  symtab_node node1 = (symtab_node) node->symbol.next;
+  for (; node1; node1 = node1->symbol.next)
+    {
+      if (symtab_variable_p (node1) && varpool (node1)->analyzed)
+	return varpool (node1);
+    }
+  return NULL;
+}
 /* Walk all variables with definitions in current unit.  */
 #define FOR_EACH_DEFINED_VARIABLE(node) \
-   for ((node) = varpool_nodes_queue; (node); (node) = (node)->next_needed)
+   for ((node) = varpool_first_defined_variable (); (node); \
+        (node) = varpool_next_defined_variable (node))
 
 /* Return first function with body defined.  */
 static inline struct cgraph_node *
