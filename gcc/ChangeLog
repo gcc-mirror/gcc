@@ -1,12 +1,14 @@
 2012-04-22  Razya Ladelsky  <razya@il.ibm.com>
-	
-		 Correcting transform_to_exit_first_loop + fix to PR46886
-		 * tree-parloops.c (transform_to_exit_first_loop): Remove setting of number of iterations according to the loop pattern.
-		 Duplicate from entry to exit->src instead of loop->latch.
-		 (pallelize_loops): Remove the condition preventing do-while loops.
-		 * tree-cfg.c (bool bb_in_region_p): New.
-		 (gimple_duplicate_sese_tail): Adjust duplication of the the subloops.
-	  	 Adjust redirection of the duplicated iteration.	
+
+	Correcting transform_to_exit_first_loop + fix to PR46886
+	* tree-parloops.c (transform_to_exit_first_loop): Remove
+	setting of number of iterations according to the loop pattern.
+	Duplicate from entry to exit->src instead of loop->latch.
+	(pallelize_loops): Remove the condition preventing do-while loops.
+	* tree-cfg.c (bool bb_in_region_p): New.
+	(gimple_duplicate_sese_tail): Adjust duplication of the the subloops.
+	Adjust redirection of the duplicated iteration.
+
 2012-04-21  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR bootstrap/53021
@@ -49,7 +51,8 @@
 
 2012-04-20  Jan Hubicka  <jh@suse.cz>
 
-	* lto-symtab.c (lto_cgraph_replace_node): Merge needed instead of force flags.
+	* lto-symtab.c (lto_cgraph_replace_node): Merge needed instead of
+	force flags.
 	* cgraph.c (cgraph_add_thunk): Use mark_reachable_node.
 	(cgraph_remove_node): Update.
 	(cgraph_mark_needed_node): Remove.
@@ -66,8 +69,8 @@
 	varpool_can_remove_if_no_refs, varpool_all_refs_explicit_p): Update.
 	* ipa-cp.c (ipcp_generate_summary): Remove out of date assert.
 	* cgraphunit.c (cgraph_decide_is_function_needed): rewrite.
-	(cgraph_add_new_function); Update.
-	(cgraph_mark_if_needed); Update.
+	(cgraph_add_new_function): Update.
+	(cgraph_mark_if_needed): Update.
 	(verify_cgraph_node): Update.
 	(cgraph_analyze_function): Alias target is reachable.
 	(process_function_and_variable_attributes): Update: externally_visible
@@ -79,15 +82,17 @@
 	* ipa.c (process_references): Weakrefs must be processed.
 	(cgraph_remove_unreachable_nodes): Likewise; update for new
 	force_output flag.
-	(varpool_externally_visible_p); Weakrefs are externally visible
+	(varpool_externally_visible_p): Weakrefs are externally visible
 	even if they are not.
 	(function_and_variable_visibility): Update; when processing alias
 	pair force the targets to be output.
-	(whole_program_function_and_variable_visility): Use mark_reachable_node.
+	(whole_program_function_and_variable_visility): Use
+	mark_reachable_node.
 	* trans-mem.c (ipa_tm_mark_needed_node): Remove
 	(ipa_tm_mark_force_output_node): New function.
 	(ipa_tm_create_version_alias, ipa_tm_create_version): Update.
-	* gimple-fold.c (can_refer_decl_in_current_unit_p): Be lax about aliases.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Be lax about
+	aliases.
 	* varasm.c (mark_decl_referenced): Update.
 	(find_decl_and_mark_needed): Remove.
 	(find_decl): New function.
@@ -147,9 +152,8 @@
 
 2012-04-20  Richard Guenther  <rguenther@suse.de>
 
-	* tree-vect-loop.c (vect_analyze_loop_operations): Do not
-	vectorize loops that can never run more often than the
-	vectorization factor.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Do not vectorize
+	loops that can never run more often than the vectorization factor.
 
 2012-04-19  Jan Hubicka  <jh@suse.cz>
 
@@ -211,7 +215,7 @@
 
 	* config/arm/sync.md (sync_optab): Change ior attribute to "or".
 
-2012-04-19   Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2012-04-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/52283/37985
 	* stmt.c (warn_if_unused_value): Skip NOP_EXPR.
@@ -242,7 +246,7 @@
 	Declare.
 	* cgraphunit.c (verify_cgraph_node): Verify symtab base; do not verify
 	cgraph hash and same comdat groups.
-	(cgraph_optimize); Verify symbol table.
+	(cgraph_optimize): Verify symbol table.
 	* ipa.c (cgraph_remove_unreachable_nodes): Verify symbol table.
 	(dissolve_same_comdat_group_list): Work on symtab nodes.
 	(function_and_variable_visibility): Dissolve variable same comdat group
@@ -297,8 +301,7 @@
 	(estimate_numbers_of_iterations_loop): ... instead of here.
 	Do not forcefully reset a recorded upper bound.
 	* tree-vect-loop-manip.c (vect_do_peeling_for_alignment):
-	Record the maximum number of loop iterations of the
-	prologue loop.
+	Record the maximum number of loop iterations of the prologue loop.
 
 2012-04-18  Jan Hubicka  <jh@suse.cz>
 
@@ -344,9 +347,9 @@
 	(input_refs): Update.
 	* ipa-ref-inline.h (ipa_ref_node): Update.
 	(ipa_ref_varpool_node): Update.
-	(ipa_ref_referring_node); Update.
+	(ipa_ref_referring_node): Update.
 	(ipa_ref_referring_varpool_node): Update.
-	(ipa_ref_referring_ref_list); Update.
+	(ipa_ref_referring_ref_list): Update.
 	(ipa_ref_referred_ref_list): Update.
 	(ipa_ref_list_first_referring): Update.
 	(ipa_empty_ref_list): Update.
@@ -444,7 +447,7 @@
 
 2012-04-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-        * doc/invoke.texi (Language Independent Options): @item should be
+	* doc/invoke.texi (Language Independent Options): @item should be
 	before @opindex.
 
 2012-04-17  Richard Sandiford  <rdsandiford@googlemail.com>
@@ -557,7 +560,7 @@
 	(hash_varpool_node, eq_varpool_node, varpool_get_node): Remove.
 	(varpool_node): Rewrite using varpool_get_node.
 	(varpool_remove_node): DO not maintain hashtables.
-	(varpool_node_for_asm); Rewrite.
+	(varpool_node_for_asm): Rewrite.
 
 2012-04-16  Sandra Loosemore  <sandra@codesourcery.com>
 
@@ -573,8 +576,7 @@
 
 2012-04-16  David Edelsohn  <dje.gcc@gmail.com>
 
-	* doc/install.texi (Specific, *-ibm-aix*): Update assembler bug
-	status.
+	* doc/install.texi (Specific, *-ibm-aix*): Update assembler bug status.
 
 2012-04-16  Martin Jambor  <mjambor@suse.cz>
 
@@ -619,22 +621,23 @@
 	(NEXT_FREE_NODE): Update.
 	(SET_NEXT_FREE_NODE): New.
 	(cgraph_create_node_1): Remove common code.
-	(cgraph_create_node); Remove common code; call symtab_register_node.
+	(cgraph_create_node): Remove common code; call symtab_register_node.
 	(cgraph_remove_node): Remove common code; call symtab_unregister-node.
-	(cgraph_add_asm_node); update.
+	(cgraph_add_asm_node): Update.
 	(cgraph_clone_node): Register new node.
 	* cgraphunit.c (process_function_and_variable_attributes): Update.
 	(cgraph_analyze_functions): Update.
 	(cgraph_analyze_functions): Update.
 	(cgraph_output_in_order): Update.
-	* lto-cgraph.c (input_node, input_varpool_node, input_cgraph_1): Update.
-	* ipa-inline.c (recursive_inlining); update.
-	* lto-streamer-in.c (lto_input_toplevel_asms); Update.
+	* lto-cgraph.c (input_node, input_varpool_node, input_cgraph_1):
+	Update.
+	* ipa-inline.c (recursive_inlining): Update.
+	* lto-streamer-in.c (lto_input_toplevel_asms): Update.
 	* ipa.c (cgraph_remove_unreachable_nodes): Update.
 	* Makefile.in: Add symtab.o
 	* varpool.c (x_varpool_nodes): Remove
 	(varpool_node): Remove common code; call symtab_register_node.
-	(varpool_remove_node); Remove common code; call symtab_unregister_node.
+	(varpool_remove_node): Remove common code; call symtab_unregister_node.
 
 2012-04-16  Richard Guenther  <rguenther@suse.de>
 
@@ -788,7 +791,7 @@
 	(varpool_node): Remove decl; same_comdat_group;
 	ref_list; lto_file_data; aux; order; resolution; externally_visible;
 	used_from_other_partition; in_other_partition.
-	(symtab_node_def); New union.
+	(symtab_node_def): New union.
 	(cgraph, varpool): Update.
 	(varpool_first_static_initializer, varpool_next_static_initializer,
 	cgraph_only_called_directly_or_aliased_p,
