@@ -1,3 +1,15 @@
+2012-04-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/debug/forward_list (forward_list::splice_after): Check
+	allocators are equal.
+	* src/c++11/debug.cc: Fix spelling.
+	* testsuite/23_containers/forward_list/debug/splice_after5_neg.cc:
+	New.
+	* testsuite/23_containers/forward_list/debug/splice_after6_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after7_neg.cc:
+	Likewise.
+
 2012-04-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/53052
