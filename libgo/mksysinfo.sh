@@ -151,6 +151,9 @@ cat > sysinfo.c <<EOF
 #if defined(HAVE_LINUX_ETHER_H)
 #include <linux/ether.h>
 #endif
+#if defined(HAVE_LINUX_FS_H)
+#include <linux/fs.h>
+#endif
 #if defined(HAVE_LINUX_REBOOT_H)
 #include <linux/reboot.h>
 #endif
@@ -270,6 +273,10 @@ done
 # pathconf constants.
 grep '^const __PC' gen-sysinfo.go |
   sed -e 's/^\(const \)__\(PC[^= ]*\)\(.*\)$/\1\2 = __\2/' >> ${OUT}
+
+# The PATH_MAX constant.
+grep '^const _PATH_MAX ' gen-sysinfo.go |
+  echo 'const PathMax = _PATH_MAX' >> ${OUT}
 
 # epoll constants.
 grep '^const _EPOLL' gen-sysinfo.go |
@@ -470,9 +477,9 @@ fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/st_size/Size/' \
          -e 's/st_blksize/Blksize/' \
          -e 's/st_blocks/Blocks/' \
-         -e 's/st_atim/Atime/' \
-         -e 's/st_mtim/Mtime/' \
-         -e 's/st_ctim/Ctime/' \
+         -e 's/st_atim/Atim/' \
+         -e 's/st_mtim/Mtim/' \
+         -e 's/st_ctim/Ctim/' \
          -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec_t\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
@@ -791,6 +798,7 @@ grep '^type _in_pktinfo ' gen-sysinfo.go | \
       -e 's/ipi_ifindex/Ifindex/' \
       -e 's/ipi_spec_dst/Spec_dst/' \
       -e 's/ipi_addr/Addr/' \
+      -e 's/_in_addr/[4]byte/g' \
     >> ${OUT}
 
 # The in6_pktinfo struct.
@@ -826,7 +834,7 @@ for n in IGNBRK BRKINT IGNPAR PARMRK INPCK ISTRIP INLCR IGNCR ICRNL IUCLC \
     TCSAFLUSH TCIFLUSH TCOFLUSH TCIOFLUSH TCOOFF TCOON TCIOFF TCION B0 B50 \
     B75 B110 B134 B150 B200 B300 B600 B1200 B1800 B2400 B4800 B9600 B19200 \
     B38400 B57600 B115200 B230400 B460800 B500000 B576000 B921600 B1000000 \
-    B1152000 B1500000 B2000000 B2500000 B3000000 B4000000; do
+    B1152000 B1500000 B2000000 B2500000 B3000000 B3500000 B4000000; do
 
     grep "^const _$n " gen-sysinfo.go | \
 	sed -e 's/^\(const \)_\([^=]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
@@ -910,6 +918,8 @@ grep '^type _rlimit ' gen-sysinfo.go | \
 # The RLIMIT constants.
 grep '^const _RLIMIT_' gen-sysinfo.go |
     sed -e 's/^\(const \)_\(RLIMIT_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _RLIM_' gen-sysinfo.go |
+    sed -e 's/^\(const \)_\(RLIM_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The sysinfo struct.
 grep '^type _sysinfo ' gen-sysinfo.go | \
@@ -990,6 +1000,7 @@ grep '^type _nlmsgerr ' gen-sysinfo.go | \
     sed -e 's/_nlmsgerr/NlMsgerr/' \
       -e 's/error/Error/' \
       -e 's/msg/Msg/' \
+      -e 's/_nlmsghdr/NlMsghdr/' \
     >> ${OUT}
 
 # The GNU/Linux rtnexthop struct.
@@ -1004,6 +1015,8 @@ grep '^type _rtnexthop ' gen-sysinfo.go | \
 # The GNU/Linux netlink flags.
 grep '^const _NETLINK_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(NETLINK_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _NLA_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(NLA_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The GNU/Linux packet socket flags.
 grep '^const _PACKET_' gen-sysinfo.go | \
@@ -1018,6 +1031,7 @@ grep '^type _inotify_event ' gen-sysinfo.go | \
       -e 's/len/Len/' \
       -e 's/name/Name/' \
       -e 's/\[\]/[0]/' \
+      -e 's/\[0\]byte/[0]int8/' \
     >> ${OUT}
 
 # The Solaris 11 Update 1 _zone_net_addr_t struct.
@@ -1028,7 +1042,7 @@ grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
 # Struct sizes.
 set cmsghdr Cmsghdr ip_mreq IPMreq ip_mreqn IPMreqn ipv6_mreq IPv6Mreq \
     ifaddrmsg IfAddrmsg ifinfomsg IfInfomsg in_pktinfo Inet4Pktinfo \
-    in6_pktinfo Inet6PktInfo inotify_event InotifyEvent linger Linger \
+    in6_pktinfo Inet6Pktinfo inotify_event InotifyEvent linger Linger \
     msghdr Msghdr nlattr NlAttr nlmsgerr NlMsgerr nlmsghdr NlMsghdr \
     rtattr RtAttr rtgenmsg RtGenmsg rtmsg RtMsg rtnexthop RtNexthop \
     sock_filter SockFilter sock_fprog SockFprog ucred Ucred

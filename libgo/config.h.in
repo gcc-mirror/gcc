@@ -48,6 +48,9 @@
 /* Define to 1 if you have the <linux/filter.h> header file. */
 #undef HAVE_LINUX_FILTER_H
 
+/* Define to 1 if you have the <linux/fs.h> header file. */
+#undef HAVE_LINUX_FS_H
+
 /* Define to 1 if you have the <linux/if_addr.h> header file. */
 #undef HAVE_LINUX_IF_ADDR_H
 
