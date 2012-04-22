@@ -32,6 +32,7 @@ void test01()
   typedef typename test_type::pointer           pointer;
   typedef typename test_type::element_type      element_type;
   typedef typename test_type::difference_type   difference_type;
+  typedef typename test_type::template rebind<char> rebind_type;
 }
 
 int main()

@@ -1,5 +1,11 @@
 2012-04-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/ptr_traits.h (pointer_traits::rebind): Make public.
+	* testsuite/20_util/pointer_traits/requirements/typedefs.cc: Check
+	rebind works.
+
+2012-04-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/debug/forward_list (forward_list::splice_after): Check
 	allocators are equal.
 	* src/c++11/debug.cc: Fix spelling.
