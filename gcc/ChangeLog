@@ -1,3 +1,12 @@
+2012-04-22  Razya Ladelsky  <razya@il.ibm.com>
+	
+		 Correcting transform_to_exit_first_loop + fix to PR46886
+		 * tree-parloops.c (transform_to_exit_first_loop): Remove setting of number of iterations according to the loop pattern.
+		 Duplicate from entry to exit->src instead of loop->latch.
+		 (pallelize_loops): Remove the condition preventing do-while loops.
+		 * tree-cfg.c (bool bb_in_region_p): New.
+		 (gimple_duplicate_sese_tail): Adjust duplication of the the subloops.
+	  	 Adjust redirection of the duplicated iteration.	
 2012-04-21  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR bootstrap/53021
