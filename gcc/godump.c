@@ -1024,12 +1024,25 @@ go_output_typedef (struct godump_container *container, tree decl)
       fprintf (go_dump_file, "type _%s ",
 	       IDENTIFIER_POINTER (DECL_NAME (decl)));
       go_output_type (container);
+
+      if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
+	{
+	  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
+
+	  if (size > 0)
+	    fprintf (go_dump_file,
+		     "\nconst _sizeof_%s = " HOST_WIDE_INT_PRINT_DEC,
+		     IDENTIFIER_POINTER (DECL_NAME (decl)),
+		     size);
+	}
+
       pointer_set_insert (container->decls_seen, decl);
     }
   else if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
     {
        void **slot;
        const char *type;
+       HOST_WIDE_INT size;
 
        type = IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE ((decl))));
        /* If type defined already, skip.  */
@@ -1047,6 +1060,13 @@ go_output_typedef (struct godump_container *container, tree decl)
        fprintf (go_dump_file, "type _%s ",
 	       IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (decl))));
        go_output_type (container);
+
+       size = int_size_in_bytes (TREE_TYPE (decl));
+       if (size > 0)
+	 fprintf (go_dump_file,
+		  "\nconst _sizeof_%s = " HOST_WIDE_INT_PRINT_DEC,
+		  IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (decl))),
+		  size);
     }
   else
     return;
