@@ -19,7 +19,7 @@ func fileInfoFromStat(st *syscall.Stat_t, name string) FileInfo {
 	fs := &fileStat{
 		name:    basename(name),
 		size:    int64(st.Size),
-		modTime: timestrucToTime(st.Mtime),
+		modTime: timestrucToTime(st.Mtim),
 		sys:     st,
 	}
 	fs.mode = FileMode(st.Mode & 0777)
@@ -52,5 +52,5 @@ func timestrucToTime(ts syscall.Timestruc) time.Time {
 
 // For testing.
 func atime(fi FileInfo) time.Time {
-	return timestrucToTime(fi.(*fileStat).Sys().(*syscall.Stat_t).Atime)
+	return timestrucToTime(fi.(*fileStat).Sys().(*syscall.Stat_t).Atim)
 }
