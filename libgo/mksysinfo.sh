@@ -785,6 +785,22 @@ grep '^type _rtattr ' gen-sysinfo.go | \
       -e 's/rta_type/Type/' \
     >> ${OUT}
 
+# The in_pktinfo struct.
+grep '^type _in_pktinfo ' gen-sysinfo.go | \
+    sed -e 's/_in_pktinfo/Inet4Pktinfo/' \
+      -e 's/ipi_ifindex/Ifindex/' \
+      -e 's/ipi_spec_dst/Spec_dst/' \
+      -e 's/ipi_addr/Addr/' \
+    >> ${OUT}
+
+# The in6_pktinfo struct.
+grep '^type _in6_pktinfo ' gen-sysinfo.go | \
+    sed -e 's/_in6_pktinfo/Inet6Pktinfo/' \
+      -e 's/ipi6_addr/Addr/' \
+      -e 's/ipi6_ifindex/Ifindex/' \
+      -e 's/_in6_addr/[16]byte/' \
+    >> ${OUT}
+
 # The termios struct.
 grep '^type _termios ' gen-sysinfo.go | \
     sed -e 's/_termios/Termios/' \
@@ -962,6 +978,29 @@ grep '^type _sock_fprog ' gen-sysinfo.go | \
 grep '^const _BPF_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(BPF_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
+# The GNU/Linux nlattr struct.
+grep '^type _nlattr ' gen-sysinfo.go | \
+    sed -e 's/_nlattr/NlAttr/' \
+      -e 's/nla_len/Len/' \
+      -e 's/nla_type/Type/' \
+    >> ${OUT}
+
+# The GNU/Linux nlmsgerr struct.
+grep '^type _nlmsgerr ' gen-sysinfo.go | \
+    sed -e 's/_nlmsgerr/NlMsgerr/' \
+      -e 's/error/Error/' \
+      -e 's/msg/Msg/' \
+    >> ${OUT}
+
+# The GNU/Linux rtnexthop struct.
+grep '^type _rtnexthop ' gen-sysinfo.go | \
+    sed -e 's/_rtnexthop/RtNexthop/' \
+      -e 's/rtnh_len/Len/' \
+      -e 's/rtnh_flags/Flags/' \
+      -e 's/rtnh_hops/Hops/' \
+      -e 's/rtnh_ifindex/Ifindex/' \
+    >> ${OUT}
+
 # The GNU/Linux netlink flags.
 grep '^const _NETLINK_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(NETLINK_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
@@ -969,6 +1008,17 @@ grep '^const _NETLINK_' gen-sysinfo.go | \
 # The GNU/Linux packet socket flags.
 grep '^const _PACKET_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(PACKET_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The GNU/Linux inotify_event struct.
+grep '^type _inotify_event ' gen-sysinfo.go | \
+    sed -e 's/_inotify_event/InotifyEvent/' \
+      -e 's/wd/Wd/' \
+      -e 's/mask/Mask/' \
+      -e 's/cookie/Cookie/' \
+      -e 's/len/Len/' \
+      -e 's/name/Name/' \
+      -e 's/\[\]/[0]/' \
+    >> ${OUT}
 
 # The Solaris 11 Update 1 _zone_net_addr_t struct.
 grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
