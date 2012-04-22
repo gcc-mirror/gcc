@@ -1,3 +1,7 @@
+2012-04-22  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (build_utf8_ref): Do not mark varpool node as needed.
+
 2012-04-20  Jan Hubicka  <jh@suse.cz>
 
 	* class.c (make_local_function_alias): Do not mark symbol referenced.

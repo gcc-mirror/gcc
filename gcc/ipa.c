@@ -107,7 +107,7 @@ process_references (struct ipa_ref_list *list,
 	  struct varpool_node *node = ipa_ref_varpool_node (ref);
 	  if (!node->needed)
 	    {
-	      varpool_mark_needed_node (node);
+	      node->needed = true;
 	      enqueue_varpool_node (node, first_varpool);
 	    }
 	}
@@ -187,7 +187,6 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   FOR_EACH_VARIABLE (vnode)
     gcc_assert (!vnode->symbol.aux);
 #endif
-  varpool_reset_queue ();
   /* Mark functions whose bodies are obviously needed.
      This is mostly when they can be referenced externally.  Inline clones
      are special since their declarations are shared with master clone and thus
@@ -213,13 +212,10 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   /* Mark variables that are obviously needed.  */
   FOR_EACH_VARIABLE (vnode)
     {
-      vnode->next_needed = NULL;
-      vnode->prev_needed = NULL;
       if ((vnode->analyzed || vnode->symbol.force_output)
 	  && !varpool_can_remove_if_no_refs (vnode))
 	{
-	  vnode->needed = false;
-	  varpool_mark_needed_node (vnode);
+	  vnode->needed = true;
 	  enqueue_varpool_node (vnode, &first_varpool);
 	}
       else
@@ -315,7 +311,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		   next = varpool (next->symbol.same_comdat_group))
 		if (!next->needed)
 		  {
-		    varpool_mark_needed_node (next);
+		    next->needed = true;
 		    enqueue_varpool_node (next, &first_varpool);
 		  }
 	    }
@@ -794,8 +790,6 @@ function_and_variable_visibility (bool whole_program)
 	       && !DECL_EXTERNAL (vnode->symbol.decl))
         {
 	  vnode->symbol.force_output = 1;
-	  varpool_mark_needed_node (vnode);
-	  gcc_assert (vnode->needed);
 	  pointer_set_insert (aliased_vnodes, vnode);
 	  if (dump_file)
 	    fprintf (dump_file, "  varpool node %s",
@@ -933,10 +927,9 @@ function_and_variable_visibility (bool whole_program)
     {
       if (!vnode->finalized)
         continue;
-      if (vnode->needed
-	  && varpool_externally_visible_p
-	      (vnode, 
-	       pointer_set_contains (aliased_vnodes, vnode)))
+      if (varpool_externally_visible_p
+	    (vnode, 
+	     pointer_set_contains (aliased_vnodes, vnode)))
 	vnode->symbol.externally_visible = true;
       else
         vnode->symbol.externally_visible = false;
@@ -1018,7 +1011,6 @@ static unsigned int
 whole_program_function_and_variable_visibility (void)
 {
   struct cgraph_node *node;
-  struct varpool_node *vnode;
 
   function_and_variable_visibility (flag_whole_program);
 
@@ -1026,17 +1018,6 @@ whole_program_function_and_variable_visibility (void)
     if ((node->symbol.externally_visible && !DECL_COMDAT (node->symbol.decl))
         && node->local.finalized)
       cgraph_mark_reachable_node (node);
-  FOR_EACH_DEFINED_VARIABLE (vnode)
-    if (vnode->symbol.externally_visible && !DECL_COMDAT (vnode->symbol.decl))
-      varpool_mark_needed_node (vnode);
-  if (dump_file)
-    {
-      fprintf (dump_file, "\nNeeded variables:");
-      FOR_EACH_DEFINED_VARIABLE (vnode)
-	if (vnode->needed)
-	  fprintf (dump_file, " %s", varpool_node_name (vnode));
-      fprintf (dump_file, "\n\n");
-    }
   if (optimize)
     ipa_discover_readonly_nonaddressable_vars ();
   return 0;

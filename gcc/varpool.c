@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -48,32 +48,6 @@ along with GCC; see the file COPYING3.  If not see
     All variables supposed to be output into final file needs to be
     explicitly marked by frontend via VARPOOL_FINALIZE_DECL function.  */
 
-/* Queue of cgraph nodes scheduled to be lowered and output.
-   The queue is maintained via mark_needed_node, linked via node->next_needed
-   pointer.
-
-   LAST_NEEDED_NODE points to the end of queue, so it can be
-   maintained in forward order.  GTY is needed to make it friendly to
-   PCH.
-
-   During compilation we construct the queue of needed variables
-   twice: first time it is during cgraph construction, second time it is at the
-   end of compilation in VARPOOL_REMOVE_UNREFERENCED_DECLS so we can avoid
-   optimized out variables being output.
-
-   Each variable is thus first analyzed and then later possibly output.
-   FIRST_UNANALYZED_NODE points to first node in queue that was not analyzed
-   yet and is moved via VARPOOL_ANALYZE_PENDING_DECLS.  */
-
-symtab_node x_varpool_nodes_queue;
-static GTY(()) symtab_node x_varpool_last_needed_node;
-#define varpool_last_needed_node ((struct varpool_node *)x_varpool_last_needed_node)
-static GTY(()) symtab_node x_varpool_first_unanalyzed_node;
-#define varpool_first_unanalyzed_node ((struct varpool_node *)x_varpool_first_unanalyzed_node)
-
-/* Lists all assembled variables to be sent to debugger output later on.  */
-static GTY(()) struct varpool_node *varpool_assembled_nodes_queue;
-
 /* Return varpool node assigned to DECL.  Create new one when needed.  */
 struct varpool_node *
 varpool_node (tree decl)
@@ -95,24 +69,7 @@ varpool_node (tree decl)
 void
 varpool_remove_node (struct varpool_node *node)
 {
-  gcc_assert (!varpool_assembled_nodes_queue);
   symtab_unregister_node ((symtab_node)node);
-  if (varpool_first_unanalyzed_node == node)
-    x_varpool_first_unanalyzed_node = (symtab_node)node->next_needed;
-  if (node->next_needed)
-    node->next_needed->prev_needed = node->prev_needed;
-  else if (node->prev_needed)
-    {
-      gcc_assert (varpool_last_needed_node);
-      x_varpool_last_needed_node = (symtab_node)node->prev_needed;
-    }
-  if (node->prev_needed)
-    node->prev_needed->next_needed = node->next_needed;
-  else if (node->next_needed)
-    {
-      gcc_assert (varpool_nodes_queue == node);
-      x_varpool_nodes_queue = (symtab_node)node->next_needed;
-    }
   ggc_free (node);
 }
 
@@ -128,8 +85,6 @@ dump_varpool_node (FILE *f, struct varpool_node *node)
   fprintf (f, "  Varpool flags:");
   if (DECL_INITIAL (node->symbol.decl))
     fprintf (f, " initialized");
-  if (node->needed)
-    fprintf (f, " needed");
   if (node->analyzed)
     fprintf (f, " analyzed");
   if (node->finalized)
@@ -166,45 +121,6 @@ varpool_node_for_asm (tree asmname)
   if (node && symtab_variable_p (node))
     return varpool (node);
   return NULL;
-}
-
-/* Helper function for finalization code - add node into lists so it will
-   be analyzed and compiled.  */
-static void
-varpool_enqueue_needed_node (struct varpool_node *node)
-{
-  if (varpool_last_needed_node)
-    {
-      varpool_last_needed_node->next_needed = node;
-      node->prev_needed = varpool_last_needed_node;
-    }
-  x_varpool_last_needed_node = (symtab_node)node;
-  node->next_needed = NULL;
-  if (!varpool_nodes_queue)
-    x_varpool_nodes_queue = (symtab_node)node;
-  if (!varpool_first_unanalyzed_node)
-    x_varpool_first_unanalyzed_node = (symtab_node)node;
-  notice_global_symbol (node->symbol.decl);
-}
-
-/* Notify finalize_compilation_unit that given node is reachable
-   or needed.  */
-void
-varpool_mark_needed_node (struct varpool_node *node)
-{
-  if (!node->needed && node->finalized
-      && !TREE_ASM_WRITTEN (node->symbol.decl))
-    varpool_enqueue_needed_node (node);
-  node->needed = 1;
-}
-
-/* Reset the queue of needed nodes.  */
-void
-varpool_reset_queue (void)
-{
-  x_varpool_last_needed_node = NULL;
-  x_varpool_nodes_queue = NULL;
-  x_varpool_first_unanalyzed_node = NULL;
 }
 
 /* Determine if variable DECL is needed.  That is, visible to something
@@ -270,42 +186,6 @@ const_value_known_p (tree decl)
   return true;
 }
 
-/* Mark DECL as finalized.  By finalizing the declaration, frontend instruct the
-   middle end to output the variable to asm file, if needed or externally
-   visible.  */
-void
-varpool_finalize_decl (tree decl)
-{
-  struct varpool_node *node = varpool_node (decl);
-
-  gcc_assert (TREE_STATIC (decl));
-
-  /* The first declaration of a variable that comes through this function
-     decides whether it is global (in C, has external linkage)
-     or local (in C, has internal linkage).  So do nothing more
-     if this function has already run.  */
-  if (node->finalized)
-    {
-      if (cgraph_global_info_ready)
-	varpool_assemble_pending_decls ();
-      return;
-    }
-  if (node->needed)
-    varpool_enqueue_needed_node (node);
-  node->finalized = true;
-  if (TREE_THIS_VOLATILE (decl) || DECL_PRESERVE_P (decl)
-      /* Traditionally we do not eliminate static variables when not
-	 optimizing and when not doing toplevel reoder.  */
-      || (!flag_toplevel_reorder && !DECL_COMDAT (node->symbol.decl)
-	  && !DECL_ARTIFICIAL (node->symbol.decl)))
-    node->symbol.force_output = true;
-
-  if (decide_is_variable_needed (node, decl))
-    varpool_mark_needed_node (node);
-  if (cgraph_global_info_ready)
-    varpool_assemble_pending_decls ();
-}
-
 /* Add the variable DECL to the varpool.
    Unlike varpool_finalize_decl function is intended to be used
    by middle end and allows insertion of new variable at arbitrary point
@@ -338,93 +218,69 @@ cgraph_variable_initializer_availability (struct varpool_node *node)
   return AVAIL_AVAILABLE;
 }
 
-/* Walk the decls we marked as necessary and see if they reference new
-   variables or functions and add them into the worklists.  */
-bool
-varpool_analyze_pending_decls (void)
+void
+varpool_analyze_node (struct varpool_node *node)
 {
-  bool changed = false;
+  tree decl = node->symbol.decl;
 
-  timevar_push (TV_VARPOOL);
-  while (varpool_first_unanalyzed_node)
+  /* When reading back varpool at LTO time, we re-construct the queue in order
+     to have "needed" list right by inserting all needed nodes into varpool.
+     We however don't want to re-analyze already analyzed nodes.  */
+  if (!node->analyzed)
     {
-      struct varpool_node *node = varpool_first_unanalyzed_node, *next;
-      tree decl = node->symbol.decl;
-      bool analyzed = node->analyzed;
+      gcc_assert (!in_lto_p || cgraph_function_flags_ready);
+      /* Compute the alignment early so function body expanders are
+	 already informed about increased alignment.  */
+      align_variable (decl, 0);
+    }
+  if (node->alias && node->alias_of)
+    {
+      struct varpool_node *tgt = varpool_node (node->alias_of);
+      struct varpool_node *n;
 
-      varpool_first_unanalyzed_node->analyzed = true;
-
-      x_varpool_first_unanalyzed_node = (symtab_node)varpool_first_unanalyzed_node->next_needed;
-
-      /* When reading back varpool at LTO time, we re-construct the queue in order
-         to have "needed" list right by inserting all needed nodes into varpool.
-	 We however don't want to re-analyze already analyzed nodes.  */
-      if (!analyzed)
+      for (n = tgt; n && n->alias;
+	   n = n->analyzed ? varpool_alias_aliased_node (n) : NULL)
+	if (n == node)
+	  {
+	    error ("variable %q+D part of alias cycle", node->symbol.decl);
+	    node->alias = false;
+	    continue;
+	  }
+      if (!VEC_length (ipa_ref_t, node->symbol.ref_list.references))
+	ipa_record_reference ((symtab_node)node, (symtab_node)tgt, IPA_REF_ALIAS, NULL);
+      /* C++ FE sometimes change linkage flags after producing same body aliases.  */
+      if (node->extra_name_alias)
 	{
-	  gcc_assert (!in_lto_p || cgraph_function_flags_ready);
-          /* Compute the alignment early so function body expanders are
-	     already informed about increased alignment.  */
-          align_variable (decl, 0);
-	}
-      if (node->alias && node->alias_of)
-	{
-	  struct varpool_node *tgt = varpool_node (node->alias_of);
-          struct varpool_node *n;
-
-	  for (n = tgt; n && n->alias;
-	       n = n->analyzed ? varpool_alias_aliased_node (n) : NULL)
-	    if (n == node)
-	      {
-		error ("variable %q+D part of alias cycle", node->symbol.decl);
-		node->alias = false;
-		continue;
-	      }
-	  if (!VEC_length (ipa_ref_t, node->symbol.ref_list.references))
-	    ipa_record_reference ((symtab_node)node, (symtab_node)tgt, IPA_REF_ALIAS, NULL);
-	  /* C++ FE sometimes change linkage flags after producing same body aliases.  */
-	  if (node->extra_name_alias)
+	  DECL_WEAK (node->symbol.decl) = DECL_WEAK (node->alias_of);
+	  TREE_PUBLIC (node->symbol.decl) = TREE_PUBLIC (node->alias_of);
+	  DECL_EXTERNAL (node->symbol.decl) = DECL_EXTERNAL (node->alias_of);
+	  DECL_VISIBILITY (node->symbol.decl) = DECL_VISIBILITY (node->alias_of);
+	  if (TREE_PUBLIC (node->symbol.decl))
 	    {
-	      DECL_WEAK (node->symbol.decl) = DECL_WEAK (node->alias_of);
-	      TREE_PUBLIC (node->symbol.decl) = TREE_PUBLIC (node->alias_of);
-	      DECL_EXTERNAL (node->symbol.decl) = DECL_EXTERNAL (node->alias_of);
-	      DECL_VISIBILITY (node->symbol.decl) = DECL_VISIBILITY (node->alias_of);
-	      if (TREE_PUBLIC (node->symbol.decl))
+	      DECL_COMDAT (node->symbol.decl) = DECL_COMDAT (node->alias_of);
+	      DECL_COMDAT_GROUP (node->symbol.decl) = DECL_COMDAT_GROUP (node->alias_of);
+	      if (DECL_ONE_ONLY (node->alias_of)
+		  && !node->symbol.same_comdat_group)
 		{
-		  DECL_COMDAT (node->symbol.decl) = DECL_COMDAT (node->alias_of);
-		  DECL_COMDAT_GROUP (node->symbol.decl) = DECL_COMDAT_GROUP (node->alias_of);
-		  if (DECL_ONE_ONLY (node->alias_of)
-		      && !node->symbol.same_comdat_group)
+		  node->symbol.same_comdat_group = (symtab_node)tgt;
+		  if (!tgt->symbol.same_comdat_group)
+		    tgt->symbol.same_comdat_group = (symtab_node)node;
+		  else
 		    {
-		      node->symbol.same_comdat_group = (symtab_node)tgt;
-		      if (!tgt->symbol.same_comdat_group)
-			tgt->symbol.same_comdat_group = (symtab_node)node;
-		      else
-			{
-			  symtab_node n;
-			  for (n = tgt->symbol.same_comdat_group;
-			       n->symbol.same_comdat_group != (symtab_node)tgt;
-			       n = n->symbol.same_comdat_group)
-			    ;
-			  n->symbol.same_comdat_group = (symtab_node)node;
-			}
+		      symtab_node n;
+		      for (n = tgt->symbol.same_comdat_group;
+			   n->symbol.same_comdat_group != (symtab_node)tgt;
+			   n = n->symbol.same_comdat_group)
+			;
+		      n->symbol.same_comdat_group = (symtab_node)node;
 		    }
 		}
 	    }
-   	  varpool_mark_needed_node (tgt);
 	}
-      else if (DECL_INITIAL (decl))
-	record_references_in_initializer (decl, analyzed);
-      if (node->symbol.same_comdat_group)
-	{
-	  for (next = varpool (node->symbol.same_comdat_group);
-	       next != node;
-	       next = varpool (next->symbol.same_comdat_group))
-	    varpool_mark_needed_node (next);
-	}
-      changed = true;
     }
-  timevar_pop (TV_VARPOOL);
-  return changed;
+  else if (DECL_INITIAL (decl))
+    record_references_in_initializer (decl, node->analyzed);
+  node->analyzed = true;
 }
 
 /* Assemble thunks and aliases asociated to NODE.  */
@@ -459,11 +315,6 @@ varpool_assemble_decl (struct varpool_node *node)
       assemble_variable (decl, 0, 1, 0);
       if (TREE_ASM_WRITTEN (decl))
 	{
-	  node->next_needed = varpool_assembled_nodes_queue;
-	  node->prev_needed = NULL;
-	  if (varpool_assembled_nodes_queue)
-	    varpool_assembled_nodes_queue->prev_needed = node;
-	  varpool_assembled_nodes_queue = node;
 	  node->finalized = 1;
 	  assemble_aliases (node);
 	  return true;
@@ -473,40 +324,85 @@ varpool_assemble_decl (struct varpool_node *node)
   return false;
 }
 
-/* Optimization of function bodies might've rendered some variables as
-   unnecessary so we want to avoid these from being compiled.
+/* Add NODE to queue starting at FIRST. 
+   The queue is linked via AUX pointers and terminated by pointer to 1.  */
 
-   This is done by pruning the queue and keeping only the variables that
-   really appear needed (ie they are either externally visible or referenced
-   by compiled function). Re-doing the reachability analysis on variables
-   brings back the remaining variables referenced by these.  */
+static void
+enqueue_node (struct varpool_node *node, struct varpool_node **first)
+{
+  if (node->symbol.aux)
+    return;
+  gcc_checking_assert (*first);
+  node->symbol.aux = *first;
+  *first = node;
+}
+
+/* Optimization of function bodies might've rendered some variables as
+   unnecessary so we want to avoid these from being compiled.  Re-do
+   reachability starting from variables that are either externally visible
+   or was referred from the asm output routines.  */
+
 void
 varpool_remove_unreferenced_decls (void)
 {
-  struct varpool_node *next, *node = varpool_nodes_queue;
-
-  varpool_reset_queue ();
+  struct varpool_node *next, *node;
+  struct varpool_node *first = (struct varpool_node *)(void *)1;
+  int i;
+  struct ipa_ref *ref;
 
   if (seen_error ())
     return;
 
-  while (node)
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "Trivially needed variables:");
+  finish_aliases_1 ();
+  FOR_EACH_DEFINED_VARIABLE (node)
     {
-      next = node->next_needed;
-      node->needed = 0;
-
       if (node->analyzed
 	  && (!varpool_can_remove_if_no_refs (node)
 	      /* We just expanded all function bodies.  See if any of
 		 them needed the variable.  */
 	      || DECL_RTL_SET_P (node->symbol.decl)))
-	varpool_mark_needed_node (node);
-
-      node = next;
+	{
+	  enqueue_node (node, &first);
+          if (cgraph_dump_file)
+	    fprintf (cgraph_dump_file, " %s", varpool_node_asm_name (node));
+	}
     }
-  /* Make sure we mark alias targets as used targets.  */
-  finish_aliases_1 ();
-  varpool_analyze_pending_decls ();
+  while (first != (struct varpool_node *)(void *)1)
+    {
+      node = first;
+      first = (struct varpool_node *)first->symbol.aux;
+
+      if (node->symbol.same_comdat_group)
+	{
+	  symtab_node next;
+	  for (next = node->symbol.same_comdat_group;
+	       next != (symtab_node)node;
+	       next = next->symbol.same_comdat_group)
+	    if (symtab_variable_p (next)
+		&& varpool (next)->analyzed)
+	      enqueue_node (varpool (next), &first);
+	}
+      for (i = 0; ipa_ref_list_reference_iterate (&node->symbol.ref_list, i, ref); i++)
+	if (symtab_variable_p (ref->referred)
+	    && varpool (ref->referred)->analyzed)
+	  enqueue_node (varpool (ref->referred), &first);
+    }
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "\nRemoving variables:");
+  for (node = varpool_first_defined_variable (); node; node = next)
+    {
+      next = varpool_next_defined_variable (node);
+      if (!node->symbol.aux)
+	{
+          if (cgraph_dump_file)
+	    fprintf (cgraph_dump_file, " %s", varpool_node_asm_name (node));
+	  varpool_remove_node (node);
+	}
+    }
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "\n");
 }
 
 /* For variables in named sections make sure get_variable_section
@@ -537,53 +433,15 @@ varpool_assemble_pending_decls (void)
     return false;
 
   timevar_push (TV_VAROUT);
-  /* EH might mark decls as needed during expansion.  This should be safe since
-     we don't create references to new function, but it should not be used
-     elsewhere.  */
-  varpool_analyze_pending_decls ();
 
   FOR_EACH_DEFINED_VARIABLE (node)
     varpool_finalize_named_section_flags (node);
 
-  while (varpool_nodes_queue)
-    {
-      struct varpool_node *node = varpool_nodes_queue;
-
-      x_varpool_nodes_queue = (symtab_node)(varpool_nodes_queue->next_needed);
-      if (varpool_assemble_decl (node))
-	changed = true;
-      else
-	{
-	  node->prev_needed = NULL;
-          node->next_needed = NULL;
-	}
-    }
-  /* varpool_nodes_queue is now empty, clear the pointer to the last element
-     in the queue.  */
-  x_varpool_last_needed_node = NULL;
+  FOR_EACH_DEFINED_VARIABLE (node)
+    if (varpool_assemble_decl (node))
+      changed = true;
   timevar_pop (TV_VAROUT);
   return changed;
-}
-
-/* Remove all elements from the queue so we can re-use it for debug output.  */
-void
-varpool_empty_needed_queue (void)
-{
-  /* EH might mark decls as needed during expansion.  This should be safe since
-     we don't create references to new function, but it should not be used
-     elsewhere.  */
-  varpool_analyze_pending_decls ();
-
-  while (varpool_nodes_queue)
-    {
-      struct varpool_node *node = varpool_nodes_queue;
-      x_varpool_nodes_queue = (symtab_node)varpool_nodes_queue->next_needed;
-      node->next_needed = NULL;
-      node->prev_needed = NULL;
-    }
-  /* varpool_nodes_queue is now empty, clear the pointer to the last element
-     in the queue.  */
-  x_varpool_last_needed_node = NULL;
 }
 
 /* Create a new global variable of type TYPE.  */
@@ -603,7 +461,6 @@ add_new_static_var (tree type)
   lang_hooks.dup_lang_specific_decl (new_decl);
   create_var_ann (new_decl);
   new_node = varpool_node (new_decl);
-  varpool_mark_needed_node (new_node);
   add_referenced_var (new_decl);
   varpool_finalize_decl (new_decl);
 
@@ -624,10 +481,17 @@ varpool_create_variable_alias (tree alias, tree decl)
   alias_node->alias = 1;
   alias_node->finalized = 1;
   alias_node->alias_of = decl;
-  if ((!DECL_EXTERNAL (alias)
-       && decide_is_variable_needed (alias_node, alias))
-      || alias_node->needed)
-    varpool_mark_needed_node (alias_node);
+
+  /* Extra name alias mechanizm creates aliases really late
+     via DECL_ASSEMBLER_NAME mechanizm.
+     This is unfortunate because they are not going through the
+     standard channels.  Ensure they get output.  */
+  if (cgraph_state >= CGRAPH_STATE_IPA)
+    {
+      varpool_analyze_node (alias_node);
+      if (TREE_PUBLIC (alias))
+	alias_node->symbol.externally_visible = true;
+    }
   return alias_node;
 }
 
@@ -688,4 +552,3 @@ varpool_for_node_and_aliases (struct varpool_node *node,
       }
   return false;
 }
-#include "gt-varpool.h"

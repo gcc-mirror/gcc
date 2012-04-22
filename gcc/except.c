@@ -2814,8 +2814,6 @@ output_ttype (tree type, int tt_format, int tt_format_size)
     value = const0_rtx;
   else
     {
-      struct varpool_node *node;
-
       /* FIXME lto.  pass_ipa_free_lang_data changes all types to
 	 runtime types so TYPE should already be a runtime type
 	 reference.  When pass_ipa_free_lang data is made a default
@@ -2834,12 +2832,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
 	{
 	  type = TREE_OPERAND (type, 0);
 	  if (TREE_CODE (type) == VAR_DECL)
-	    {
-	      node = varpool_node (type);
-	      if (node)
-		varpool_mark_needed_node (node);
-	      is_public = TREE_PUBLIC (type);
-	    }
+	    is_public = TREE_PUBLIC (type);
 	}
       else
 	gcc_assert (TREE_CODE (type) == INTEGER_CST);

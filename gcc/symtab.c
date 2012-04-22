@@ -429,6 +429,11 @@ dump_symtab_base (FILE *f, symtab_node node)
 
   if (node->symbol.address_taken)
     fprintf (f, "  Address is taken.\n");
+  if (node->symbol.aux)
+    {
+      fprintf (f, "  Aux:");
+      dump_addr (f, " @", (void *)node->symbol.aux);
+    }
 
   fprintf (f, "  References: ");
   ipa_dump_references (f, &node->symbol.ref_list);

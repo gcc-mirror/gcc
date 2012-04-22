@@ -2254,7 +2254,6 @@ mark_decl_referenced (tree decl)
   else if (TREE_CODE (decl) == VAR_DECL)
     {
       struct varpool_node *node = varpool_node (decl);
-      varpool_mark_needed_node (node);
       /* C++ frontend use mark_decl_references to force COMDAT variables
          to be output that might appear dead otherwise.  */
       node->symbol.force_output = true;

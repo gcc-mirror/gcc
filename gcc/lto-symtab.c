@@ -262,12 +262,6 @@ static void
 lto_varpool_replace_node (struct varpool_node *vnode,
 			  struct varpool_node *prevailing_node)
 {
-  /* Merge node flags.  */
-  if (vnode->needed)
-    {
-      gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
-      varpool_mark_needed_node (prevailing_node);
-    }
   gcc_assert (!vnode->finalized || prevailing_node->finalized);
   gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
 

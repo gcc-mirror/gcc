@@ -1,3 +1,8 @@
+2012-04-22  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations): Do not mark
+	needed node.
+
 2012-04-20  Jan Hubicka  <jh@suse.cz>
 
 	* gcc-interface/utils.c (gnat_write_global_declarations): Update for new
