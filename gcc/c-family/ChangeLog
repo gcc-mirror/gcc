@@ -1,3 +1,19 @@
+2012-04-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/44774
+	* c.opt (Wpedantic): New.
+	(pedantic): Alias Wpedantic.
+	* c-opts.c (c_common_handle_option): Replace -pedantic with -Wpedantic.
+	(c_common_post_options): Likewise.
+	(sanitize_cpp_opts): Likewise.
+	* c-lex.c (interpret_float): Likewise.
+	* c-format.c (check_format_types): Likewise.
+	* c-common.c (pointer_int_sum): Likewise.
+	(c_sizeof_or_alignof_type): Likewise.
+	(c_add_case_label): Likewise.
+	(c_do_switch_warnings): Likewise.
+	* c-pragma.c (handle_pragma_float_const_decimal64): Likewise.
+
 2012-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52818

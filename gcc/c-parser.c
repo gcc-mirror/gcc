@@ -1238,7 +1238,7 @@ c_parser_translation_unit (c_parser *parser)
 {
   if (c_parser_next_token_is (parser, CPP_EOF))
     {
-      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
+      pedwarn (c_parser_peek_token (parser)->location, OPT_Wpedantic,
 	       "ISO C forbids an empty translation unit");
     }
   else
@@ -1336,7 +1336,7 @@ c_parser_external_declaration (c_parser *parser)
 	}
       break;
     case CPP_SEMICOLON:
-      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
+      pedwarn (c_parser_peek_token (parser)->location, OPT_Wpedantic,
 	       "ISO C does not allow extra %<;%> outside of a function");
       c_parser_consume_token (parser);
       break;
@@ -1715,7 +1715,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       /* Function definition (nested or otherwise).  */
       if (nested)
 	{
-	  pedwarn (here, OPT_pedantic, "ISO C forbids nested functions");
+	  pedwarn (here, OPT_Wpedantic, "ISO C forbids nested functions");
 	  c_push_function_context ();
 	}
       if (!start_function (specs, declarator, all_prefix_attrs))
@@ -1830,10 +1830,10 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   if (!flag_isoc11)
     {
       if (flag_isoc99)
-	pedwarn (assert_loc, OPT_pedantic,
+	pedwarn (assert_loc, OPT_Wpedantic,
 		 "ISO C99 does not support %<_Static_assert%>");
       else
-	pedwarn (assert_loc, OPT_pedantic,
+	pedwarn (assert_loc, OPT_Wpedantic,
 		 "ISO C90 does not support %<_Static_assert%>");
     }
   c_parser_consume_token (parser);
@@ -1874,7 +1874,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
     {
       value = c_fully_fold (value, false, NULL);
       if (TREE_CODE (value) == INTEGER_CST)
-	pedwarn (value_loc, OPT_pedantic, "expression in static assertion "
+	pedwarn (value_loc, OPT_Wpedantic, "expression in static assertion "
 		 "is not an integer constant expression");
     }
   if (TREE_CODE (value) != INTEGER_CST)
@@ -2292,7 +2292,7 @@ c_parser_enum_specifier (c_parser *parser)
 	  if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
 	    {
 	      if (seen_comma && !flag_isoc99)
-		pedwarn (comma_loc, OPT_pedantic, "comma at end of enumerator list");
+		pedwarn (comma_loc, OPT_Wpedantic, "comma at end of enumerator list");
 	      c_parser_consume_token (parser);
 	      break;
 	    }
@@ -2328,7 +2328,7 @@ c_parser_enum_specifier (c_parser *parser)
   if (pedantic && !COMPLETE_TYPE_P (ret.spec))
     {
       gcc_assert (ident);
-      pedwarn (enum_loc, OPT_pedantic,
+      pedwarn (enum_loc, OPT_Wpedantic,
 	       "ISO C forbids forward references to %<enum%> types");
     }
   return ret;
@@ -2463,7 +2463,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 	  /* Parse any stray semicolon.  */
 	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	    {
-	      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
+	      pedwarn (c_parser_peek_token (parser)->location, OPT_Wpedantic,
 		       "extra semicolon in struct or union specified");
 	      c_parser_consume_token (parser);
 	      continue;
@@ -2601,7 +2601,7 @@ c_parser_struct_declaration (c_parser *parser)
       tree ret;
       if (specs->typespec_kind == ctsk_none)
 	{
-	  pedwarn (decl_loc, OPT_pedantic,
+	  pedwarn (decl_loc, OPT_Wpedantic,
 		   "ISO C forbids member declarations with no members");
 	  shadow_tag_warned (specs, pedantic);
 	  ret = NULL_TREE;
@@ -2785,10 +2785,10 @@ c_parser_alignas_specifier (c_parser * parser)
   if (!flag_isoc11)
     {
       if (flag_isoc99)
-	pedwarn (loc, OPT_pedantic,
+	pedwarn (loc, OPT_Wpedantic,
 		 "ISO C99 does not support %<_Alignas%>");
       else
-	pedwarn (loc, OPT_pedantic,
+	pedwarn (loc, OPT_Wpedantic,
 		 "ISO C90 does not support %<_Alignas%>");
     }
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
@@ -3745,7 +3745,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
     really_start_incremental_init (type);
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
     {
-      pedwarn (brace_loc, OPT_pedantic, "ISO C forbids empty initializer braces");
+      pedwarn (brace_loc, OPT_Wpedantic, "ISO C forbids empty initializer braces");
     }
   else
     {
@@ -3795,7 +3795,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
       set_init_label (c_parser_peek_token (parser)->value,
 		      braced_init_obstack);
       /* Use the colon as the error location.  */
-      pedwarn (c_parser_peek_2nd_token (parser)->location, OPT_pedantic,
+      pedwarn (c_parser_peek_2nd_token (parser)->location, OPT_Wpedantic,
 	       "obsolete use of designated initializer with %<:%>");
       c_parser_consume_token (parser);
       c_parser_consume_token (parser);
@@ -3935,7 +3935,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 		  c_parser_consume_token (parser);
 		  set_init_index (first, second, braced_init_obstack);
 		  if (second)
-		    pedwarn (ellipsis_loc, OPT_pedantic,
+		    pedwarn (ellipsis_loc, OPT_Wpedantic,
 			     "ISO C forbids specifying range of elements to initialize");
 		}
 	      else
@@ -3948,14 +3948,14 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 	  if (c_parser_next_token_is (parser, CPP_EQ))
 	    {
 	      if (!flag_isoc99)
-		pedwarn (des_loc, OPT_pedantic,
+		pedwarn (des_loc, OPT_Wpedantic,
 			 "ISO C90 forbids specifying subobject to initialize");
 	      c_parser_consume_token (parser);
 	    }
 	  else
 	    {
 	      if (des_seen == 1)
-		pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
+		pedwarn (c_parser_peek_token (parser)->location, OPT_Wpedantic,
 			 "obsolete use of designated initializer without %<=%>");
 	      else
 		{
@@ -4120,7 +4120,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	    }
 	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 	}
-      pedwarn (label_loc, OPT_pedantic, "ISO C forbids label declarations");
+      pedwarn (label_loc, OPT_Wpedantic, "ISO C forbids label declarations");
     }
   /* We must now have at least one statement, label or declaration.  */
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
@@ -4156,7 +4156,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  if (last_stmt)
 	    pedwarn_c90 (loc,
 			 (pedantic && !flag_isoc99)
-			 ? OPT_pedantic
+			 ? OPT_Wpedantic
 			 : OPT_Wdeclaration_after_statement,
 			 "ISO C90 forbids mixed declarations and code");
 	  last_stmt = false;
@@ -4186,7 +4186,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	      restore_extension_diagnostics (ext);
 	      if (last_stmt)
 		pedwarn_c90 (loc, (pedantic && !flag_isoc99)
-			     ? OPT_pedantic
+			     ? OPT_Wpedantic
 			     : OPT_Wdeclaration_after_statement,
 			     "ISO C90 forbids mixed declarations and code");
 	      last_stmt = false;
@@ -5441,7 +5441,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
       tree eptype = NULL_TREE;
 
       middle_loc = c_parser_peek_token (parser)->location;
-      pedwarn (middle_loc, OPT_pedantic, 
+      pedwarn (middle_loc, OPT_Wpedantic, 
 	       "ISO C forbids omitting the middle term of a ?: expression");
       warn_for_omitted_condop (middle_loc, cond.value);
       if (TREE_CODE (cond.value) == EXCESS_PRECISION_EXPR)
@@ -6049,10 +6049,10 @@ c_parser_alignof_expression (c_parser *parser)
       && strcmp (IDENTIFIER_POINTER (alignof_spelling), "_Alignof") == 0)
     {
       if (flag_isoc99)
-	pedwarn (loc, OPT_pedantic, "ISO C99 does not support %qE",
+	pedwarn (loc, OPT_Wpedantic, "ISO C99 does not support %qE",
 		 alignof_spelling);
       else
-	pedwarn (loc, OPT_pedantic, "ISO C90 does not support %qE",
+	pedwarn (loc, OPT_Wpedantic, "ISO C90 does not support %qE",
 		 alignof_spelling);
     }
   c_parser_consume_token (parser);
@@ -6103,7 +6103,7 @@ c_parser_alignof_expression (c_parser *parser)
       mark_exp_read (expr.value);
       c_inhibit_evaluation_warnings--;
       in_alignof--;
-      pedwarn (loc, OPT_pedantic, "ISO C does not allow %<%E (expression)%>",
+      pedwarn (loc, OPT_Wpedantic, "ISO C does not allow %<%E (expression)%>",
 	       alignof_spelling);
       ret.value = c_alignof_expr (loc, expr.value);
       ret.original_code = ERROR_MARK;
@@ -6329,7 +6329,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  c_parser_compound_statement_nostart (parser);
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
-	  pedwarn (loc, OPT_pedantic,
+	  pedwarn (loc, OPT_Wpedantic,
 		   "ISO C forbids braced-groups within expressions");
 	  expr.value = c_finish_stmt_expr (brace_loc, stmt);
 	  mark_exp_read (expr.value);
@@ -6640,7 +6640,7 @@ c_parser_postfix_expression (c_parser *parser)
 		break;
 	      }
 	    if (!flag_isoc99)
-	      pedwarn (loc, OPT_pedantic,
+	      pedwarn (loc, OPT_Wpedantic,
 		       "ISO C90 does not support complex types");
 	    expr.value = build2 (COMPLEX_EXPR,
 				 build_complex_type
@@ -6819,7 +6819,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
     }
 
   if (!flag_isoc99)
-    pedwarn (start_loc, OPT_pedantic, "ISO C90 forbids compound literals");
+    pedwarn (start_loc, OPT_Wpedantic, "ISO C90 forbids compound literals");
   non_const = ((init.value && TREE_CODE (init.value) == CONSTRUCTOR)
 	       ? CONSTRUCTOR_NON_CONST (init.value)
 	       : init.original_code == C_MAYBE_CONST_EXPR);
@@ -7238,7 +7238,7 @@ c_parser_objc_class_instance_variables (c_parser *parser)
       /* Parse any stray semicolon.  */
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{
-	  pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
+	  pedwarn (c_parser_peek_token (parser)->location, OPT_Wpedantic,
 		   "extra semicolon");
 	  c_parser_consume_token (parser);
 	  continue;
@@ -7486,7 +7486,7 @@ c_parser_objc_method_definition (c_parser *parser)
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
       c_parser_consume_token (parser);
-      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
+      pedwarn (c_parser_peek_token (parser)->location, OPT_Wpedantic,
 	       "extra semicolon in method definition specified");
     }
 
@@ -7538,7 +7538,7 @@ c_parser_objc_methodprotolist (c_parser *parser)
       switch (c_parser_peek_token (parser)->type)
 	{
 	case CPP_SEMICOLON:
-	  pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
+	  pedwarn (c_parser_peek_token (parser)->location, OPT_Wpedantic,
 		   "ISO C does not allow extra %<;%> outside of a function");
 	  c_parser_consume_token (parser);
 	  break;

@@ -809,10 +809,10 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
    language standard, if you have chosen not to make them errors.
 
    Note that these diagnostics are issued independent of the setting
-   of the -pedantic command-line switch.  To get a warning enabled
+   of the -Wpedantic command-line switch.  To get a warning enabled
    only with that switch, use either "if (pedantic) pedwarn
-   (OPT_pedantic,...)" or just "pedwarn (OPT_pedantic,..)".  To get a
-   pedwarn independently of the -pedantic switch use "pedwarn (0,...)".
+   (OPT_Wpedantic,...)" or just "pedwarn (OPT_Wpedantic,..)".  To get a
+   pedwarn independently of the -Wpedantic switch use "pedwarn (0,...)".
 
    Returns true if the warning was printed, false if it was inhibited.  */
 

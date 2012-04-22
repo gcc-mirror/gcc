@@ -3306,7 +3306,7 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 		 "only available with -std=c++11 or -std=gnu++11");
 	break;
       case CPP0X_INLINE_NAMESPACES:
-	pedwarn (input_location, OPT_pedantic,
+	pedwarn (input_location, OPT_Wpedantic,
 		 "inline namespaces "
 		 "only available with -std=c++11 or -std=gnu++11");
 	break;

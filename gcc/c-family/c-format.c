@@ -2424,13 +2424,13 @@ check_format_types (format_wanted_type *types)
 	continue;
       /* If we want 'void *', allow any pointer type.
 	 (Anything else would already have got a warning.)
-	 With -pedantic, only allow pointers to void and to character
+	 With -Wpedantic, only allow pointers to void and to character
 	 types.  */
       if (wanted_type == void_type_node
 	  && (!pedantic || (i == 1 && char_type_flag)))
 	continue;
       /* Don't warn about differences merely in signedness, unless
-	 -pedantic.  With -pedantic, warn if the type is a pointer
+	 -Wpedantic.  With -Wpedantic, warn if the type is a pointer
 	 target and not a character type, and for character types at
 	 a second level of indirection.  */
       if (TREE_CODE (wanted_type) == INTEGER_TYPE

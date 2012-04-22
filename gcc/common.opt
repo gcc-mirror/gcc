@@ -307,7 +307,7 @@ Common Driver Joined Alias(o) MissingArgError(missing filename after %qs)
 Driver Alias(pass-exit-codes)
 
 -pedantic
-Common Alias(pedantic)
+Common Alias(Wpedantic)
 
 -pedantic-errors
 Common Alias(pedantic-errors)
@@ -581,6 +581,10 @@ Warn when the packed attribute has no effect on struct layout
 Wpadded
 Common Var(warn_padded) Warning
 Warn when padding is required to align structure members
+
+Wpedantic
+Common Var(pedantic) Warning
+Issue warnings needed for strict compliance to the standard
 
 Wshadow
 Common Var(warn_shadow) Warning
@@ -2292,8 +2296,7 @@ pass-exit-codes
 Driver Var(pass_exit_codes)
 
 pedantic
-Common Var(pedantic)
-Issue warnings needed for strict compliance to the standard
+Common Alias(Wpedantic)
 
 pedantic-errors
 Common Var(flag_pedantic_errors)

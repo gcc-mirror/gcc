@@ -605,17 +605,17 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
           switch (operation)
               {
               case CPO_COMPARISON:
-                pedwarn (input_location, OPT_pedantic, 
+                pedwarn (input_location, OPT_Wpedantic, 
                          "ISO C++ forbids comparison between "
                          "pointer of type %<void *%> and pointer-to-function");
                 break;
               case CPO_CONVERSION:
-                pedwarn (input_location, OPT_pedantic,
+                pedwarn (input_location, OPT_Wpedantic,
                          "ISO C++ forbids conversion between "
                          "pointer of type %<void *%> and pointer-to-function");
                 break;
               case CPO_CONDITIONAL_EXPR:
-                pedwarn (input_location, OPT_pedantic,
+                pedwarn (input_location, OPT_Wpedantic,
                          "ISO C++ forbids conditional expression between "
                          "pointer of type %<void *%> and pointer-to-function");
                 break;
@@ -1526,7 +1526,7 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
   if (TREE_CODE (type) == METHOD_TYPE)
     {
       if (complain)
-	pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+	pedwarn (input_location, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith, 
 		 "invalid application of %qs to a member function", 
 		 operator_name_info[(int) op].name);
       value = size_one_node;
@@ -2961,7 +2961,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	}
 
       if (!lvalue_p (array) && (complain & tf_error))
-	pedwarn (loc, OPT_pedantic, 
+	pedwarn (loc, OPT_Wpedantic, 
 	         "ISO C++ forbids subscripting non-lvalue array");
 
       /* Note in C++ it is valid to subscript a `register' array, since
@@ -3287,7 +3287,7 @@ cp_build_function_call_vec (tree function, VEC(tree,gc) **params,
 
       /* Convert anything with function type to a pointer-to-function.  */
       if (DECL_MAIN_P (function) && (complain & tf_error))
-	pedwarn (input_location, OPT_pedantic, 
+	pedwarn (input_location, OPT_Wpedantic, 
 		 "ISO C++ forbids calling %<::main%> from within program");
 
       function = build_addr_func (function, complain);
@@ -4935,9 +4935,9 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
     {
       /* ARM $3.4 */
       /* Apparently a lot of autoconf scripts for C++ packages do this,
-	 so only complain if -pedantic.  */
+	 so only complain if -Wpedantic.  */
       if (complain & (flag_pedantic_errors ? tf_error : tf_warning))
-	pedwarn (input_location, OPT_pedantic,
+	pedwarn (input_location, OPT_Wpedantic,
 		 "ISO C++ forbids taking address of function %<::main%>");
       else if (flag_pedantic_errors)
 	return error_mark_node;
@@ -6194,7 +6194,7 @@ convert_member_func_to_ptr (tree type, tree expr, tsubst_flags_t complain)
     return error_mark_node;
 
   if (pedantic || warn_pmf2ptr)
-    pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpmf_conversions,
+    pedwarn (input_location, pedantic ? OPT_Wpedantic : OPT_Wpmf_conversions,
 	     "converting from %qT to %qT", intype, type);
 
   if (TREE_CODE (intype) == METHOD_TYPE)

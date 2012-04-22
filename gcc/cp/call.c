@@ -4335,7 +4335,7 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
   if (!arg2)
     {
       if (complain & tf_error)
-	pedwarn (input_location, OPT_pedantic, 
+	pedwarn (input_location, OPT_Wpedantic, 
 		 "ISO C++ forbids omitting the middle term of a ?: expression");
 
       /* Make sure that lvalues remain lvalues.  See g++.oliva/ext1.C.  */

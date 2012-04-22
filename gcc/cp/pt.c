@@ -943,7 +943,7 @@ maybe_process_partial_specialization (tree type)
        /* Someday C++0x may allow for enum template specialization.  */
       if (cxx_dialect > cxx98 && TREE_CODE (type) == ENUMERAL_TYPE
 	  && CLASS_TYPE_P (context) && CLASSTYPE_USE_TEMPLATE (context))
-	pedwarn (input_location, OPT_pedantic, "template specialization "
+	pedwarn (input_location, OPT_Wpedantic, "template specialization "
 		 "of %qD not allowed by ISO C++", type);
       else
 	{
@@ -6433,7 +6433,7 @@ convert_template_argument (tree parm,
 	  if (cxx_dialect >= cxx0x)
 	    /* OK under DR 1004.  */;
 	  else if (complain & tf_warning_or_error)
-	    pedwarn (input_location, OPT_pedantic, "injected-class-name %qD"
+	    pedwarn (input_location, OPT_Wpedantic, "injected-class-name %qD"
 		     " used as template template argument", TYPE_NAME (arg));
 	  else if (flag_pedantic_errors)
 	    t = arg;
@@ -17909,7 +17909,7 @@ do_decl_instantiation (tree decl, tree storage)
   else if (storage == ridpointers[(int) RID_EXTERN])
     {
       if (!in_system_header && (cxx_dialect == cxx98))
-	pedwarn (input_location, OPT_pedantic, 
+	pedwarn (input_location, OPT_Wpedantic, 
 		 "ISO C++ 1998 forbids the use of %<extern%> on explicit "
 		 "instantiations");
       extern_p = 1;
@@ -18006,12 +18006,12 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 	  if (storage == ridpointers[(int) RID_EXTERN])
 	    {
 	      if (cxx_dialect == cxx98)
-		pedwarn (input_location, OPT_pedantic, 
+		pedwarn (input_location, OPT_Wpedantic, 
 			 "ISO C++ 1998 forbids the use of %<extern%> on "
 			 "explicit instantiations");
 	    }
 	  else
-	    pedwarn (input_location, OPT_pedantic, 
+	    pedwarn (input_location, OPT_Wpedantic, 
 		     "ISO C++ forbids the use of %qE"
 		     " on explicit instantiations", storage);
 	}
