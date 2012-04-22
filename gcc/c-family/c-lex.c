@@ -734,7 +734,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	    return error_mark_node;
 	  }
 	else
-	  pedwarn (input_location, OPT_pedantic, "non-standard suffix on floating constant");
+	  pedwarn (input_location, OPT_Wpedantic, "non-standard suffix on floating constant");
 
 	type = c_common_type_for_mode (mode, 0);
 	gcc_assert (type);

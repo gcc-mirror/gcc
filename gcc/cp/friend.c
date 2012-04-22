@@ -232,7 +232,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 
          So don't complain in C++0x mode.  */
       if (cxx_dialect < cxx0x)
-	pedwarn (input_location, complain ? 0 : OPT_pedantic,
+	pedwarn (input_location, complain ? 0 : OPT_Wpedantic,
 		 "invalid type %qT declared %<friend%>", friend_type);
       return;
     }

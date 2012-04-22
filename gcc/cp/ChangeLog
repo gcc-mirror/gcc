@@ -1,3 +1,40 @@
+2012-04-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/44774
+	* typeck.c (composite_pointer_type): Likewise.
+	(cxx_sizeof_or_alignof_type): Likewise.
+	(cp_build_array_ref): Likewise.
+	(cp_build_function_call_vec): Likewise.
+	(cp_build_addr_expr_1): Likewise.
+	(convert_member_func_to_ptr): Likewise.
+	* decl.c (check_tag_decl): Likewise.
+	(check_static_variable_definition): Likewise.
+	(compute_array_index_type): Likewise.
+	(create_array_type_for_decl): Likewise.
+	(grokdeclarator): Likewise.
+	(grok_op_properties): Likewise.
+	* error.c (maybe_warn_cpp0x): Likewise.
+	* pt.c (maybe_process_partial_specialization): Likewise.
+	(convert_template_argument): Likewise.
+	(do_decl_instantiation): Likewise.
+	(do_type_instantiation): Likewise.
+	* parser.c (cp_parser_primary_expression): Likewise.
+	(cp_parser_postfix_expression): Likewise.
+	(cp_parser_unary_expression): Likewise.
+	(cp_parser_question_colon_clause): Likewise.
+	(cp_parser_lambda_introducer): Likewise.
+	(cp_parser_lambda_declarator_opt): Likewise.
+	(cp_parser_compound_statement): Likewise.
+	(cp_parser_jump_statement): Likewise.
+	(cp_parser_declaration_seq_opt): Likewise.
+	(cp_parser_enum_specifier): Likewise.
+	(cp_parser_enumerator_list): Likewise.
+	(cp_parser_initializer_list): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	* call.c (build_conditional_expr_1): Likewise.
+	* friend.c (make_friend_class): Likewise.
+	* name-lookup.c (pushdecl_maybe_friend_1): Likewise.
+
 2012-04-21  Jan Hubicka  <jh@suse.cz>
 
 	* method.c (make_alias_for): Do not set TREE_SYMBOL_REFERENCED.

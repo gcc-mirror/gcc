@@ -39,7 +39,7 @@ included in the gfdl(7) man page.
 @c man begin SYNOPSIS
 gcc [@option{-c}|@option{-S}|@option{-E}] [@option{-std=}@var{standard}]
     [@option{-g}] [@option{-pg}] [@option{-O}@var{level}]
-    [@option{-W}@var{warn}@dots{}] [@option{-pedantic}]
+    [@option{-W}@var{warn}@dots{}] [@option{-Wpedantic}]
     [@option{-I}@var{dir}@dots{}] [@option{-L}@var{dir}@dots{}]
     [@option{-D}@var{macro}[=@var{defn}]@dots{}] [@option{-U}@var{macro}]
     [@option{-f}@var{option}@dots{}] [@option{-m}@var{machine-option}@dots{}]
@@ -234,7 +234,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
-@gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -pedantic @gol
+@gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  -Warray-bounds @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
@@ -1516,7 +1516,7 @@ such as @code{__unix__} and @code{__vax__} are also available, with or
 without @option{-ansi}.
 
 The @option{-ansi} option does not cause non-ISO programs to be
-rejected gratuitously.  For that, @option{-pedantic} is required in
+rejected gratuitously.  For that, @option{-Wpedantic} is required in
 addition to @option{-ansi}.  @xref{Warning Options}.
 
 The macro @code{__STRICT_ANSI__} is predefined when the @option{-ansi}
@@ -1550,10 +1550,10 @@ expression. On the other hand, by specifying a GNU dialect of a
 standard, all features the compiler support are enabled, even when
 those features change the meaning of the base standard and some
 strict-conforming programs may be rejected.  The particular standard
-is used by @option{-pedantic} to identify which features are GNU
+is used by @option{-Wpedantic} to identify which features are GNU
 extensions given that version of the standard. For example
-@option{-std=gnu90 -pedantic} warns about C++ style @samp{//}
-comments, while @option{-std=gnu99 -pedantic} does not.
+@option{-std=gnu90 -Wpedantic} warns about C++ style @samp{//}
+comments, while @option{-std=gnu99 -Wpedantic} does not.
 
 A value for this option must be provided; possible values are
 
@@ -2059,7 +2059,7 @@ errors if these functions are not inlined everywhere they are called.
 
 @item -fms-extensions
 @opindex fms-extensions
-Disable pedantic warnings about constructs used in MFC, such as implicit
+Disable Wpedantic warnings about constructs used in MFC, such as implicit
 int and getting a pointer to member function via non-standard syntax.
 
 @item -fno-nonansi-builtins
@@ -2994,8 +2994,10 @@ with old compilers, but if something goes wrong, the compiler
 warns that an unrecognized option is present.
 
 @table @gcctabopt
-@item -pedantic
+@item -Wpedantic
+@itemx -pedantic
 @opindex pedantic
+@opindex Wpedantic
 Issue all the warnings demanded by strict ISO C and ISO C++;
 reject all programs that use forbidden extensions, and some other
 programs that do not follow ISO C and ISO C++.  For ISO C, follows the
@@ -3007,14 +3009,14 @@ this option (though a rare few require @option{-ansi} or a
 without this option, certain GNU extensions and traditional C and C++
 features are supported as well.  With this option, they are rejected.
 
-@option{-pedantic} does not cause warning messages for use of the
+@option{-Wpedantic} does not cause warning messages for use of the
 alternate keywords whose names begin and end with @samp{__}.  Pedantic
 warnings are also disabled in the expression that follows
 @code{__extension__}.  However, only system header files should use
 these escape routes; application programs should avoid them.
 @xref{Alternate Keywords}.
 
-Some users try to use @option{-pedantic} to check programs for strict ISO
+Some users try to use @option{-Wpedantic} to check programs for strict ISO
 C conformance.  They soon find that it does not do quite what they want:
 it finds some non-ISO practices, but not all---only those for which
 ISO C @emph{requires} a diagnostic, and some others for which
@@ -3022,13 +3024,13 @@ diagnostics have been added.
 
 A feature to report any failure to conform to ISO C might be useful in
 some instances, but would require considerable additional work and would
-be quite different from @option{-pedantic}.  We don't have plans to
+be quite different from @option{-Wpedantic}.  We don't have plans to
 support such a feature in the near future.
 
 Where the standard specified with @option{-std} represents a GNU
 extended dialect of C, such as @samp{gnu90} or @samp{gnu99}, there is a
 corresponding @dfn{base standard}, the version of ISO C on which the GNU
-extended dialect is based.  Warnings from @option{-pedantic} are given
+extended dialect is based.  Warnings from @option{-Wpedantic} are given
 where they are required by the base standard.  (It does not make sense
 for such warnings to be given only for features not in the specified GNU
 C dialect, since by definition the GNU dialects of C include all
@@ -3037,7 +3039,7 @@ nothing to warn about.)
 
 @item -pedantic-errors
 @opindex pedantic-errors
-Like @option{-pedantic}, except that errors are produced rather than
+Like @option{-Wpedantic}, except that errors are produced rather than
 warnings.
 
 @item -Wall
@@ -3223,7 +3225,7 @@ libc version 2.2.  These include all ISO C90 and C99 features, as well
 as features from the Single Unix Specification and some BSD and GNU
 extensions.  Other library implementations may not support all these
 features; GCC does not support warning about features that go beyond a
-particular library's limitations.  However, if @option{-pedantic} is used
+particular library's limitations.  However, if @option{-Wpedantic} is used
 with @option{-Wformat}, warnings are given about format features not
 in the selected standard version (but not for @code{strfmon} formats,
 since those are not in any version of the C standard).  @xref{C Dialect
@@ -3366,7 +3368,7 @@ Warn if the type of @samp{main} is suspicious.  @samp{main} should be
 a function with external linkage, returning int, taking either zero
 arguments, two, or three arguments of appropriate types.  This warning
 is enabled by default in C++ and is enabled by either @option{-Wall}
-or @option{-pedantic}.
+or @option{-Wpedantic}.
 
 @item -Wmissing-braces
 @opindex Wmissing-braces
@@ -4107,7 +4109,7 @@ such assumptions.
 Disables the warnings about non-ISO @code{printf} / @code{scanf} format
 width specifiers @code{I32}, @code{I64}, and @code{I} used on Windows targets
 depending on the MS runtime, when you are using the options @option{-Wformat}
-and @option{-pedantic} without gnu-extensions.
+and @option{-Wpedantic} without gnu-extensions.
 
 @item -Wpointer-arith
 @opindex Wpointer-arith
@@ -4116,7 +4118,7 @@ Warn about anything that depends on the ``size of'' a function type or
 of @code{void}.  GNU C assigns these types a size of 1, for
 convenience in calculations with @code{void *} pointers and pointers
 to functions.  In C++, warn also when an arithmetic operation involves
-@code{NULL}.  This warning is also enabled by @option{-pedantic}.
+@code{NULL}.  This warning is also enabled by @option{-Wpedantic}.
 
 @item -Wtype-limits
 @opindex Wtype-limits
@@ -4621,7 +4623,7 @@ the search path but can't be used.
 @opindex Wlong-long
 @opindex Wno-long-long
 Warn if @samp{long long} type is used.  This is enabled by either
-@option{-pedantic} or @option{-Wtraditional} in ISO C90 and C++98
+@option{-Wpedantic} or @option{-Wtraditional} in ISO C90 and C++98
 modes.  To inhibit the warning messages, use @option{-Wno-long-long}.
 
 @item -Wvariadic-macros
@@ -4647,7 +4649,7 @@ scalar type.
 @opindex Wvla
 @opindex Wno-vla
 Warn if variable length array is used in the code.
-@option{-Wno-vla} prevents the @option{-pedantic} warning of
+@option{-Wno-vla} prevents the @option{-Wpedantic} warning of
 the variable length array.
 
 @item -Wvolatile-register-var
@@ -4673,7 +4675,7 @@ itself is likely to take inordinate amounts of time.
 @opindex Wno-pointer-sign
 Warn for pointer argument passing or assignment with different signedness.
 This option is only supported for C and Objective-C@.  It is implied by
-@option{-Wall} and by @option{-pedantic}, which can be disabled with
+@option{-Wall} and by @option{-Wpedantic}, which can be disabled with
 @option{-Wno-pointer-sign}.
 
 @item -Wstack-protector
@@ -4701,7 +4703,7 @@ not count the trailing NUL@.  In C90, the limit was 509 characters; in
 C99, it was raised to 4095.  C++98 does not specify a normative
 minimum maximum, so we do not diagnose overlength strings in C++@.
 
-This option is implied by @option{-pedantic}, and can be disabled with
+This option is implied by @option{-Wpedantic}, and can be disabled with
 @option{-Wno-overlength-strings}.
 
 @item -Wunsuffixed-float-constants @r{(C and Objective-C only)}

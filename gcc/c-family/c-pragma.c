@@ -1127,7 +1127,7 @@ handle_pragma_float_const_decimal64 (cpp_reader *ARG_UNUSED (dummy))
       return;
     }
 
-  pedwarn (input_location, OPT_pedantic,
+  pedwarn (input_location, OPT_Wpedantic,
 	   "ISO C does not support %<#pragma STDC FLOAT_CONST_DECIMAL64%>");
 
   switch (handle_stdc_pragma ("STDC FLOAT_CONST_DECIMAL64"))

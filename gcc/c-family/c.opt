@@ -557,6 +557,10 @@ Wparentheses
 C ObjC C++ ObjC++ Var(warn_parentheses) Warning
 Warn about possibly missing parentheses
 
+Wpedantic
+C ObjC C++ ObjC++ Warning
+; Documented in common.opt
+
 Wpmf-conversions
 C++ ObjC++ Var(warn_pmf2ptr) Init(1) Warning
 Warn when converting the type of pointers to member functions
@@ -1184,7 +1188,7 @@ C ObjC C++ ObjC++ Joined Separate
 ; Documented in common.opt
 
 pedantic
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Alias(Wpedantic)
 ; Documented in common.opt
 
 pedantic-errors

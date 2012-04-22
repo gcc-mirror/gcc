@@ -3858,19 +3858,19 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
-      pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+      pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 	       "pointer of type %<void *%> used in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE)
     {
-      pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+      pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 	       "pointer to a function used in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == METHOD_TYPE)
     {
-      pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+      pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 	       "pointer to member function used in arithmetic");
       size_exp = integer_one_node;
     }
@@ -4449,7 +4449,7 @@ c_sizeof_or_alignof_type (location_t loc,
       if (is_sizeof)
 	{
 	  if (complain && (pedantic || warn_pointer_arith))
-	    pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+	    pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 		     "invalid application of %<sizeof%> to a function type");
           else if (!complain)
             return error_mark_node;
@@ -4460,10 +4460,10 @@ c_sizeof_or_alignof_type (location_t loc,
 	  if (complain)
 	    {
 	      if (c_dialect_cxx ())
-		pedwarn (loc, OPT_pedantic, "ISO C++ does not permit "
+		pedwarn (loc, OPT_Wpedantic, "ISO C++ does not permit "
 			 "%<alignof%> applied to a function type");
 	      else
-		pedwarn (loc, OPT_pedantic, "ISO C does not permit "
+		pedwarn (loc, OPT_Wpedantic, "ISO C does not permit "
 			 "%<_Alignof%> applied to a function type");
 	    }
 	  value = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
@@ -4473,7 +4473,7 @@ c_sizeof_or_alignof_type (location_t loc,
     {
       if (type_code == VOID_TYPE
 	  && complain && (pedantic || warn_pointer_arith))
-	pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+	pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 		 "invalid application of %qs to a void type", op_name);
       else if (!complain)
         return error_mark_node;
@@ -5441,7 +5441,7 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
 
   /* Case ranges are a GNU extension.  */
   if (high_value)
-    pedwarn (loc, OPT_pedantic,
+    pedwarn (loc, OPT_Wpedantic,
 	     "range expressions in switch statements are non-standard");
 
   type = TREE_TYPE (cond);
@@ -5755,7 +5755,7 @@ finish_label_address_expr (tree label, location_t loc)
 {
   tree result;
 
-  pedwarn (input_location, OPT_pedantic, "taking the address of a label is non-standard");
+  pedwarn (input_location, OPT_Wpedantic, "taking the address of a label is non-standard");
 
   if (label == error_mark_node)
     return error_mark_node;

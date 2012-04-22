@@ -1,3 +1,57 @@
+2012-04-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/44774
+	* doc/invoke.texi (pedantic): Rename to Wpedantic.
+	* common.opt (Wpedantic): New.
+	(pedantic): Alias Wpedantic.
+	* diagnostic.c (warning_at): Likewise.
+	* c-decl.c (diagnose_mismatched_decls): Likewise.
+	(build_array_declarator): Likewise.
+	(mark_forward_parm_decls):
+	(check_bitfield_type_and_width): Likewise.
+	(grokdeclarator): Likewise.
+	(grokfield): Likewise.
+	(finish_struct): Likewise.
+	(build_enumerator): Likewise.
+	(store_parm_decls_oldstyle): Likewise.
+	(declspecs_add_qual): Likewise.
+	(declspecs_add_type): Likewise.
+	(finish_declspecs): Likewise.
+	* c-typeck.c (composite_type): Likewise.
+	(comp_target_types): Likewise.
+	(build_array_ref): Likewise.
+	(pointer_diff): Likewise.
+	(build_unary_op): Likewise.
+	(build_conditional_expr): Likewise.
+	(build_c_cast): Likewise.
+	(convert_for_assignment): Likewise.
+	(maybe_warn_string_init): Likewise.
+	(digest_init): Likewise.
+	(pop_init_level): Likewise.
+	(set_init_index): Likewise.
+	(c_finish_goto_label): Likewise.
+	(c_finish_return): Likewise.
+	(do_case): Likewise.
+	(build_binary_op): Likewise.
+	* c-parser.c (static): Likewise.
+	(c_parser_external_declaration): Likewise.
+	(c_parser_declaration_or_fndef): Likewise.
+	(c_parser_static_assert_declaration_no_se): Likewise.
+	(c_parser_enum_specifier): Likewise.
+	(c_parser_struct_or_union_specifier): Likewise.
+	(c_parser_struct_declaration): Likewise.
+	(c_parser_alignas_specifier): Likewise.
+	(c_parser_braced_init): Likewise.
+	(c_parser_initelt): Likewise.
+	(c_parser_compound_statement_nostart): Likewise.
+	(c_parser_conditional_expression): Likewise.
+	(c_parser_alignof_expression): Likewise.
+	(c_parser_postfix_expression): Likewise.
+	(c_parser_postfix_expression_after_paren_): Likewise.
+	(c_parser_objc_class_instance_variables): Likewise.
+	(c_parser_objc_method_definition): Likewise.
+	(c_parser_objc_methodprotolist): Likewise.
+
 2012-04-22  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (go_output_typedef): Dump size of structs.

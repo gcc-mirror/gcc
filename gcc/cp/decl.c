@@ -4193,7 +4193,7 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
       SET_ANON_AGGR_TYPE_P (declared_type);
 
       if (TREE_CODE (declared_type) != UNION_TYPE && !in_system_header)
-	pedwarn (input_location, OPT_pedantic, "ISO C++ prohibits anonymous structs");
+	pedwarn (input_location, OPT_Wpedantic, "ISO C++ prohibits anonymous structs");
     }
 
   else
@@ -7877,7 +7877,7 @@ check_static_variable_definition (tree decl, tree type)
 	   "static member %qD",
 	   decl);
   else if (!INTEGRAL_OR_ENUMERATION_TYPE_P (type))
-    pedwarn (input_location, OPT_pedantic, "ISO C++ forbids initialization of member constant "
+    pedwarn (input_location, OPT_Wpedantic, "ISO C++ forbids initialization of member constant "
 	     "%qD of non-integral type %qT", decl, type);
 
   return 0;
@@ -8050,9 +8050,9 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	  else if (in_system_header)
 	    /* Allow them in system headers because glibc uses them.  */;
 	  else if (name)
-	    pedwarn (input_location, OPT_pedantic, "ISO C++ forbids zero-size array %qD", name);
+	    pedwarn (input_location, OPT_Wpedantic, "ISO C++ forbids zero-size array %qD", name);
 	  else
-	    pedwarn (input_location, OPT_pedantic, "ISO C++ forbids zero-size array");
+	    pedwarn (input_location, OPT_Wpedantic, "ISO C++ forbids zero-size array");
 	}
     }
   else if (TREE_CONSTANT (size)
@@ -8178,7 +8178,7 @@ create_array_type_for_decl (tree name, tree type, tree size)
   /* 8.3.4/1: If the type of the identifier of D contains the auto
      type-specifier, the program is ill-formed.  */
   if (pedantic && type_uses_auto (type))
-    pedwarn (input_location, OPT_pedantic,
+    pedwarn (input_location, OPT_Wpedantic,
 	     "declaration of %qD as array of %<auto%>", name);
 
   /* If there are some types which cannot be array elements,
@@ -8773,7 +8773,7 @@ grokdeclarator (const cp_declarator *declarator,
       else if (! is_main)
 	permerror (input_location, "ISO C++ forbids declaration of %qs with no type", name);
       else if (pedantic)
-	pedwarn (input_location, OPT_pedantic,
+	pedwarn (input_location, OPT_Wpedantic,
 		 "ISO C++ forbids declaration of %qs with no type", name);
       else
 	warning (OPT_Wreturn_type,
@@ -8792,7 +8792,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  explicit_int128 = false;
 	}
       else if (pedantic && ! in_system_header)
-	pedwarn (input_location, OPT_pedantic,
+	pedwarn (input_location, OPT_Wpedantic,
 		 "ISO C++ does not support %<__int128%> for %qs", name);
     }
 
@@ -8843,7 +8843,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  ok = 1;
 	  if (!explicit_int && !defaulted_int && !explicit_char && !explicit_int128 && pedantic)
 	    {
-	      pedwarn (input_location, OPT_pedantic, 
+	      pedwarn (input_location, OPT_Wpedantic, 
 		       "long, short, signed or unsigned used invalidly for %qs",
 		       name);
 	      if (flag_pedantic_errors)
@@ -10354,11 +10354,11 @@ grokdeclarator (const cp_declarator *declarator,
 	    && pedantic)
 	  {
 	    if (storage_class == sc_static)
-	      pedwarn (input_location, OPT_pedantic, 
+	      pedwarn (input_location, OPT_Wpedantic, 
 		       "%<static%> specified invalid for function %qs "
 		       "declared out of global scope", name);
 	    else
-	      pedwarn (input_location, OPT_pedantic, 
+	      pedwarn (input_location, OPT_Wpedantic, 
 		       "%<inline%> specifier invalid for function %qs "
 		       "declared out of global scope", name);
 	  }
@@ -10452,7 +10452,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 	    if (storage_class == sc_extern && pedantic)
 	      {
-		pedwarn (input_location, OPT_pedantic, 
+		pedwarn (input_location, OPT_Wpedantic, 
 			 "cannot explicitly declare member %q#D to have "
 			 "extern linkage", decl);
 		storage_class = sc_none;
@@ -11418,7 +11418,7 @@ grok_op_properties (tree decl, bool complain)
 	    if (operator_code == POSTINCREMENT_EXPR
 		|| operator_code == POSTDECREMENT_EXPR)
 	      {
-		pedwarn (input_location, OPT_pedantic, "%qD cannot have default arguments", 
+		pedwarn (input_location, OPT_Wpedantic, "%qD cannot have default arguments", 
 			 decl);
 	      }
 	    else
