@@ -586,9 +586,6 @@ if test -n "$cmsghdr"; then
         -e 's/cmsg_type/Type/' \
         -e 's/\[\]/[0]/' \
       >> ${OUT}
-
-  # The size of the cmsghdr struct.
-  echo 'var SizeofCmsghdr = int(unsafe.Sizeof(Cmsghdr{}))' >> ${OUT}
 fi
 
 # The SCM_ flags for Cmsghdr.
@@ -603,11 +600,6 @@ grep '^type _ucred ' gen-sysinfo.go | \
       -e 's/gid/Gid/' \
     >> ${OUT}
 
-# The size of the ucred struct.
-if grep 'type Ucred ' ${OUT} >/dev/null 2>&1; then
-  echo 'var SizeofUcred = int(unsafe.Sizeof(Ucred{}))' >> ${OUT}
-fi  
-
 # The ip_mreq struct.
 grep '^type _ip_mreq ' gen-sysinfo.go | \
     sed -e 's/_ip_mreq/IPMreq/' \
@@ -620,9 +612,6 @@ grep '^type _ip_mreq ' gen-sysinfo.go | \
 if ! grep 'type IPMreq ' ${OUT} >/dev/null 2>&1; then
   echo 'type IPMreq struct { Multiaddr [4]byte; Interface [4]byte; }' >> ${OUT}
 fi
-
-# The size of the ip_mreq struct.
-echo 'var SizeofIPMreq = int(unsafe.Sizeof(IPMreq{}))' >> ${OUT}
 
 # The ipv6_mreq struct.
 grep '^type _ipv6_mreq ' gen-sysinfo.go | \
@@ -637,9 +626,6 @@ if ! grep 'type IPv6Mreq ' ${OUT} >/dev/null 2>&1; then
   echo 'type IPv6Mreq struct { Multiaddr [16]byte; Interface uint32; }' >> ${OUT}
 fi
 
-# The size of the ipv6_mreq struct.
-echo 'var SizeofIPv6Mreq = int(unsafe.Sizeof(IPv6Mreq{}))' >> ${OUT}
-
 # The ip_mreqn struct.
 grep '^type _ip_mreqn ' gen-sysinfo.go | \
     sed -e 's/_ip_mreqn/IPMreqn/' \
@@ -653,9 +639,6 @@ grep '^type _ip_mreqn ' gen-sysinfo.go | \
 if ! grep 'type IPMreqn ' ${OUT} >/dev/null 2>&1; then
   echo 'type IPMreqn struct { Multiaddr [4]byte; Interface [4]byte; Ifindex int32 }' >> ${OUT}
 fi
-
-# The size of the ip_mreqn struct.
-echo 'var SizeofIPMreqn = int(unsafe.Sizeof(IPMreqn{}))' >> ${OUT}
 
 # Try to guess the type to use for fd_set.
 fd_set=`grep '^type _fd_set ' gen-sysinfo.go || true`
@@ -722,8 +705,8 @@ grep '^const _NLM' gen-sysinfo.go | \
 
 # NLMSG_HDRLEN is defined as an expression using sizeof.
 if ! grep '^const NLMSG_HDRLEN' ${OUT} > /dev/null 2>&1; then
-  if grep '^type NlMsghdr ' ${OUT} > /dev/null 2>&1; then
-    echo 'var NLMSG_HDRLEN = int((unsafe.Sizeof(NlMsghdr{}) + (NLMSG_ALIGNTO-1)) &^ (NLMSG_ALIGNTO-1))' >> ${OUT}
+  if grep '^const _sizeof_nlmsghdr ' ${OUT} > /dev/null 2>&1; then
+    echo 'const NLMSG_HDRLEN = (_sizeof_nlmsghdr + (NLMSG_ALIGNTO-1)) &^ (NLMSG_ALIGNTO-1)' >> ${OUT}
   fi
 fi
 
@@ -740,11 +723,6 @@ grep '^type _rtmsg ' gen-sysinfo.go | \
       -e 's/rtm_type/Type/' \
       -e 's/rtm_flags/Flags/' \
     >> ${OUT}
-
-# The size of the rtmsg struct.
-if grep 'type RtMsg ' ${OUT} > /dev/null 2>&1; then
-  echo 'var SizeofRtMsg = int(unsafe.Sizeof(RtMsg{}))' >> ${OUT}
-fi
 
 # The rtgenmsg struct.
 grep '^type _rtgenmsg ' gen-sysinfo.go | \
@@ -768,11 +746,6 @@ grep '^const _RTN' gen-sysinfo.go | \
 grep '^const _RTPROT' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTPROT[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
-# The size of the rtgenmsg struct.
-if grep 'type RtGenmsg ' ${OUT} > /dev/null 2>&1; then
-  echo 'var SizeofRtGenmsg = int(unsafe.Sizeof(RtGenmsg{}))' >> ${OUT}
-fi
-
 # The ifinfomsg struct.
 grep '^type _ifinfomsg ' gen-sysinfo.go | \
     sed -e 's/_ifinfomsg/IfInfomsg/' \
@@ -795,11 +768,6 @@ grep '^const _IFNAMSIZ' gen-sysinfo.go | \
 grep '^const _SIOC' gen-sysinfo.go |
     sed -e 's/^\(const \)_\(SIOC[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
-# The size of the ifinfomsg struct.
-if grep 'type IfInfomsg ' ${OUT} > /dev/null 2>&1; then
-  echo 'var SizeofIfInfomsg = int(unsafe.Sizeof(IfInfomsg{}))' >> ${OUT}
-fi
-
 # The ifaddrmsg struct.
 grep '^type _ifaddrmsg ' gen-sysinfo.go | \
     sed -e 's/_ifaddrmsg/IfAddrmsg/' \
@@ -810,22 +778,12 @@ grep '^type _ifaddrmsg ' gen-sysinfo.go | \
       -e 's/ifa_index/Index/' \
     >> ${OUT}
 
-# The size of the ifaddrmsg struct.
-if grep 'type IfAddrmsg ' ${OUT} > /dev/null 2>&1; then
-  echo 'var SizeofIfAddrmsg = int(unsafe.Sizeof(IfAddrmsg{}))' >> ${OUT}
-fi
-
 # The rtattr struct.
 grep '^type _rtattr ' gen-sysinfo.go | \
     sed -e 's/_rtattr/RtAttr/' \
       -e 's/rta_len/Len/' \
       -e 's/rta_type/Type/' \
     >> ${OUT}
-
-# The size of the rtattr struct.
-if grep 'type RtAttr ' ${OUT} > /dev/null 2>&1; then
-  echo 'var SizeofRtAttr = int(unsafe.Sizeof(RtAttr{}))' >> ${OUT}
-fi
 
 # The termios struct.
 grep '^type _termios ' gen-sysinfo.go | \
@@ -1016,5 +974,34 @@ grep '^const _PACKET_' gen-sysinfo.go | \
 grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr/[16]byte/' \
     >> ${OUT}
+
+# Struct sizes.
+set cmsghdr Cmsghdr ip_mreq IPMreq ip_mreqn IPMreqn ipv6_mreq IPv6Mreq \
+    ifaddrmsg IfAddrmsg ifinfomsg IfInfomsg in_pktinfo Inet4Pktinfo \
+    in6_pktinfo Inet6PktInfo inotify_event InotifyEvent linger Linger \
+    msghdr Msghdr nlattr NlAttr nlmsgerr NlMsgerr nlmsghdr NlMsghdr \
+    rtattr RtAttr rtgenmsg RtGenmsg rtmsg RtMsg rtnexthop RtNexthop \
+    sock_filter SockFilter sock_fprog SockFprog ucred Ucred
+while test $# != 0; do
+    nc=$1
+    ngo=$2
+    shift
+    shift
+    if grep "^const _sizeof_$nc =" gen-sysinfo.go >/dev/null 2>&1; then
+	echo "const Sizeof$ngo = _sizeof_$nc" >> ${OUT}
+    fi
+done
+
+# In order to compile the net package, we need some sizes to exist
+# even if the types do not.
+if ! grep 'const SizeofIPMreq ' ${OUT} >/dev/null 2>&1; then
+    echo 'const SizeofIPMreq = 8' >> ${OUT}
+fi
+if ! grep 'const SizeofIPv6Mreq ' ${OUT} >/dev/null 2>&1; then
+    echo 'const SizeofIPv6Mreq = 20' >> ${OUT}
+fi
+if ! grep 'const SizeofIPMreqn ' ${OUT} >/dev/null 2>&1; then
+    echo 'const SizeofIPMreqn = 12' >> ${OUT}
+fi
 
 exit $?
