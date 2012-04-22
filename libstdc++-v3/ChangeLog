@@ -1,3 +1,10 @@
+2012-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/53067
+	* include/bits/hashtable_policy.h: Change inheritances to public.
+	* testsuite/23_containers/unordered_map/requirements/53067.cc: New.
+	* testsuite/23_containers/unordered_set/requirements/53067.cc: Likewise.
+
 2012-04-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/53027

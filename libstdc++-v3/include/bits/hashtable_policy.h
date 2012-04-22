@@ -533,7 +533,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Specialization using EBO.
   template<int _Nm, typename _Tp>
-    struct _Hashtable_ebo_helper<_Nm, _Tp, true> : private _Tp
+    struct _Hashtable_ebo_helper<_Nm, _Tp, true>
+    // See PR53067.
+    : public _Tp
     {
       _Hashtable_ebo_helper() = default;
       _Hashtable_ebo_helper(const _Tp& __tp) : _Tp(__tp)
@@ -595,8 +597,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Key, typename _Value, typename _ExtractKey, 
 	   typename _H1, typename _H2, typename _Hash>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash, false>
-    : private _Hashtable_ebo_helper<0, _ExtractKey>,
-      private _Hashtable_ebo_helper<1, _Hash>
+    // See PR53067.
+    : public  _Hashtable_ebo_helper<0, _ExtractKey>,
+      public  _Hashtable_ebo_helper<1, _Hash>
     {
     private:
       typedef _Hashtable_ebo_helper<0, _ExtractKey> _EboExtractKey;
@@ -669,9 +672,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2,
 			   _Default_ranged_hash, false>
-    : private _Hashtable_ebo_helper<0, _ExtractKey>,
-      private _Hashtable_ebo_helper<1, _H1>,
-      private _Hashtable_ebo_helper<2, _H2>
+    // See PR53067.
+    : public  _Hashtable_ebo_helper<0, _ExtractKey>,
+      public  _Hashtable_ebo_helper<1, _H1>,
+      public  _Hashtable_ebo_helper<2, _H2>
     {
     private:
       typedef _Hashtable_ebo_helper<0, _ExtractKey> _EboExtractKey;
@@ -748,9 +752,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2,
 			   _Default_ranged_hash, true>
-    : private _Hashtable_ebo_helper<0, _ExtractKey>,
-      private _Hashtable_ebo_helper<1, _H1>,
-      private _Hashtable_ebo_helper<2, _H2>
+    // See PR53067.
+    : public  _Hashtable_ebo_helper<0, _ExtractKey>,
+      public  _Hashtable_ebo_helper<1, _H1>,
+      public  _Hashtable_ebo_helper<2, _H2>
     {
     private:
       typedef _Hashtable_ebo_helper<0, _ExtractKey> _EboExtractKey;
@@ -853,9 +858,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2, typename _Hash,
 	   bool __cache_hash_code>
   struct _Hashtable_base
+  // See PR53067.
   : public  _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
 			    __cache_hash_code>,
-    private _Hashtable_ebo_helper<0, _Equal>
+    public _Hashtable_ebo_helper<0, _Equal>
   {
   private:
     typedef _Hashtable_ebo_helper<0, _Equal> _EboEqual;
@@ -906,7 +912,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2, typename _Hash>
     struct _Local_iterator_base<_Key, _Value, _ExtractKey,
 				_H1, _H2, _Hash, true>
-      : private _H2
+    // See PR53067.
+    : public _H2
     {
       _Local_iterator_base() = default;
       _Local_iterator_base(_Hash_node<_Value, true>* __p,
@@ -937,8 +944,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2, typename _Hash>
     struct _Local_iterator_base<_Key, _Value, _ExtractKey,
 				_H1, _H2, _Hash, false>
-      : private _Hash_code_base<_Key, _Value, _ExtractKey,
-				_H1, _H2, _Hash, false>
+    // See PR53067.
+    : public _Hash_code_base<_Key, _Value, _ExtractKey,
+			     _H1, _H2, _Hash, false>
     {
       _Local_iterator_base() = default;
       _Local_iterator_base(_Hash_node<_Value, false>* __p,
