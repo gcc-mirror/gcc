@@ -5595,6 +5595,20 @@ gimple_duplicate_sese_region (edge entry, edge exit,
   return true;
 }
 
+/* Checks if BB is part of the region defined by N_REGION BBS.  */
+static bool 
+bb_part_of_region_p (basic_block bb, basic_block* bbs, unsigned n_region)
+{
+  unsigned int n;
+
+  for (n = 0; n < n_region; n++)
+    {
+     if (bb == bbs[n])
+       return true;
+    }
+  return false;
+}
+
 /* Duplicates REGION consisting of N_REGION blocks.  The new blocks
    are stored to REGION_COPY in the same order in that they appear
    in REGION, if REGION_COPY is not NULL.  ENTRY is the entry to
@@ -5645,6 +5659,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
   gimple_stmt_iterator psi;
   gimple phi;
   tree def;
+  struct loop *target, *aloop, *cloop;
 
   gcc_assert (EDGE_COUNT (exit->src->succs) == 2);
   exits[0] = exit;
@@ -5655,7 +5670,16 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
 
   initialize_original_copy_tables ();
   set_loop_copy (orig_loop, loop);
-  duplicate_subloops (orig_loop, loop);
+
+  target= loop;
+  for (aloop = orig_loop->inner; aloop; aloop = aloop->next)
+    {
+      if (bb_part_of_region_p (aloop->header, region, n_region))
+	{
+	  cloop = duplicate_loop (aloop, target);
+	  duplicate_subloops (aloop, cloop);
+	}
+    }
 
   if (!region_copy)
     {
@@ -5758,7 +5782,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
 	    add_phi_arg (phi, def, e, gimple_phi_arg_location_from_edge (phi, e));
 	  }
       }
-  e = redirect_edge_and_branch (nexits[0], nexits[1]->dest);
+  e = redirect_edge_and_branch (nexits[1], nexits[0]->dest);
   PENDING_STMT (e) = NULL;
   
   /* Anything that is outside of the region, but was dominated by something

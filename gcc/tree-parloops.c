@@ -1481,8 +1481,6 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
   gimple phi, nphi, cond_stmt, stmt, cond_nit;
   gimple_stmt_iterator gsi;
   tree nit_1;
-  edge exit_1;
-  tree new_rhs;
 
   split_block_after_labels (loop->header);
   orig_header = single_succ (loop->header);
@@ -1512,41 +1510,10 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
 	}
     }
 
- /* Setting the condition towards peeling the last iteration:
-    If the block consisting of the exit condition has the latch as
-    successor, then the body of the loop is executed before
-    the exit condition is tested.  In such case, moving the
-    condition to the entry, causes that the loop will iterate
-    one less iteration (which is the wanted outcome, since we
-    peel out the last iteration).  If the body is executed after
-    the condition, moving the condition to the entry requires
-    decrementing one iteration.  */
-  exit_1 = EDGE_SUCC (exit->src, EDGE_SUCC (exit->src, 0) == exit); 
-  if (exit_1->dest == loop->latch)
-    new_rhs = gimple_cond_rhs (cond_stmt);
-  else
-  {
-    new_rhs = fold_build2 (MINUS_EXPR, TREE_TYPE (gimple_cond_rhs (cond_stmt)),
-			   gimple_cond_rhs (cond_stmt),
-			   build_int_cst (TREE_TYPE (gimple_cond_rhs (cond_stmt)), 1));
-    if (TREE_CODE (gimple_cond_rhs (cond_stmt)) == SSA_NAME)
-      {
- 	basic_block preheader;
-  	gimple_stmt_iterator gsi1;
-
-  	preheader = loop_preheader_edge(loop)->src;
-    	gsi1 = gsi_after_labels (preheader);
-	new_rhs = force_gimple_operand_gsi (&gsi1, new_rhs, true,
-					    NULL_TREE,false,GSI_CONTINUE_LINKING);
-      }
-  }
-  gimple_cond_set_rhs (cond_stmt, unshare_expr (new_rhs));
-  gimple_cond_set_lhs (cond_stmt, unshare_expr (gimple_cond_lhs (cond_stmt)));
-  
   bbs = get_loop_body_in_dom_order (loop);
 
-  for (n = 0; bbs[n] != loop->latch; n++)
-    continue;
+  for (n = 0; bbs[n] != exit->src; n++)
+   continue;
   nbbs = XNEWVEC (basic_block, n);
   ok = gimple_duplicate_sese_tail (single_succ_edge (loop->header), exit,
 				   bbs + 1, n, nbbs);
@@ -1557,7 +1524,7 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
 
   /* Other than reductions, the only gimple reg that should be copied
      out of the loop is the control variable.  */
-
+  exit = single_dom_exit (loop);
   control_name = NULL_TREE;
   for (gsi = gsi_start_phis (ex_bb); !gsi_end_p (gsi); )
     {
@@ -1573,8 +1540,6 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
          keep the phi at the reduction's keep_res field.  The
          PHI_RESULT of this phi is the resulting value of the reduction
          variable when exiting the loop.  */
-
-      exit = single_dom_exit (loop);
 
       if (htab_elements (reduction_list) > 0)
 	{
@@ -2187,10 +2152,7 @@ parallelize_loops (void)
 	  || loop_has_blocks_with_irreducible_flag (loop)
 	  || (loop_preheader_edge (loop)->src->flags & BB_IRREDUCIBLE_LOOP)
 	  /* FIXME: the check for vector phi nodes could be removed.  */
-	  || loop_has_vector_phi_nodes (loop)
-	  /* FIXME: transform_to_exit_first_loop does not handle not
-	     header-copied loops correctly - see PR46886.  */
-	  || !do_while_loop_p (loop))
+	  || loop_has_vector_phi_nodes (loop))
 	continue;
 
       estimated = estimated_stmt_executions_int (loop);
