@@ -1,3 +1,7 @@
+2012-04-23  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c (go_langhook_init): Set MPFR precision to 256.
+
 2012-04-20  Ian Lance Taylor  <iant@google.com>
 
 	* lang.opt: Add -fgo-check-divide-zero and
