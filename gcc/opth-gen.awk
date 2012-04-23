@@ -314,12 +314,14 @@ for (i = 0; i < n_opts; i++) {
 			mask = "OPTION_MASK_"
 			if (host_wide_int[vname] == "yes")
 				mask_1 = "HOST_WIDE_INT_1"
-		}
+		} else
+			extra_mask_bits[name] = 1
 		print "#define " mask name " (" mask_1 " << " masknum[vname]++ ")"
 	}
 }
 for (i = 0; i < n_extra_masks; i++) {
-	print "#define MASK_" extra_masks[i] " (1 << " masknum[""]++ ")"
+	if (extra_mask_bits[extra_masks[i]] == 0)
+		print "#define MASK_" extra_masks[i] " (1 << " masknum[""]++ ")"
 }
 
 for (var in masknum) {
@@ -355,14 +357,16 @@ for (i = 0; i < n_opts; i++) {
 			vname = "target_flags"
 			macro = "TARGET_"
 			mask = "MASK_"
+			extra_mask_macros[name] = 1
 		}
 		print "#define " macro name \
 		      " ((" vname " & " mask name ") != 0)"
 	}
 }
 for (i = 0; i < n_extra_masks; i++) {
-	print "#define TARGET_" extra_masks[i] \
-	      " ((target_flags & MASK_" extra_masks[i] ") != 0)"
+	if (extra_mask_macros[extra_masks[i]] == 0)
+		print "#define TARGET_" extra_masks[i] \
+		      " ((target_flags & MASK_" extra_masks[i] ") != 0)"
 }
 print ""
 
