@@ -7,6 +7,7 @@
 
 /* { dg-do link } */
 /* { dg-options "-ffast-math" } */
+/* { dg-skip-if "PR44214" { *-*-* } { "-O0" } { "" } } */
 
 /* Define "e" with as many bits as found in builtins.c:dconste.  */
 #define M_E  2.7182818284590452353602874713526624977572470936999595749669676277241
