@@ -1,3 +1,9 @@
+2012-04-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR regression/53076
+	* gcc.dg/torture/builtin-explog-1.c: Skip if -O0.
+	* gcc.dg/torture/builtin-power-1.c: Likewise.
+
 2012-04-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53070
