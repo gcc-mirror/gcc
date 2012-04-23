@@ -362,9 +362,6 @@ cgraph_finalize_function (tree decl, bool nested)
       && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     node->symbol.force_output = 1;
 
-  if (cgraph_decide_is_function_needed (node, decl))
-    cgraph_mark_reachable_node (node);
-
   /* If we've not yet emitted decl, tell the debug info about it.  */
   if (!TREE_ASM_WRITTEN (decl))
     (*debug_hooks->deferred_inline_function) (decl);
@@ -416,7 +413,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	node = cgraph_get_create_node (fndecl);
 	node->local.local = false;
 	node->local.finalized = true;
-	node->reachable = node->symbol.force_output = true;
+	node->symbol.force_output = true;
 	if (!lowered && cgraph_state == CGRAPH_STATE_EXPANSION)
 	  {
 	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
@@ -466,18 +463,6 @@ cgraph_add_new_function (tree fndecl, bool lowered)
       && (function_needs_eh_personality (DECL_STRUCT_FUNCTION (fndecl))
 	  == eh_personality_lang))
     DECL_FUNCTION_PERSONALITY (fndecl) = lang_hooks.eh_personality ();
-}
-
-/* C99 extern inline keywords allow changing of declaration after function
-   has been finalized.  We need to re-decide if we want to mark the function as
-   needed then.   */
-
-void
-cgraph_mark_if_needed (tree decl)
-{
-  struct cgraph_node *node = cgraph_get_node (decl);
-  if (node->local.finalized && cgraph_decide_is_function_needed (node, decl))
-    cgraph_mark_reachable_node (node);
 }
 
 /* Return TRUE if NODE2 is equivalent to NODE or its clone.  */
@@ -916,7 +901,6 @@ cgraph_analyze_function (struct cgraph_node *node)
       if (!VEC_length (ipa_ref_t, node->symbol.ref_list.references))
         ipa_record_reference ((symtab_node)node, (symtab_node)tgt,
 			      IPA_REF_ALIAS, NULL);
-      cgraph_mark_reachable_node (tgt);
       if (node->same_body_alias)
 	{ 
 	  DECL_VIRTUAL_P (node->symbol.decl) = DECL_VIRTUAL_P (node->thunk.alias);
@@ -952,11 +936,8 @@ cgraph_analyze_function (struct cgraph_node *node)
 		}
 	    }
 	}
-      cgraph_mark_reachable_node (cgraph_alias_aliased_node (node));
       if (node->symbol.address_taken)
 	cgraph_mark_address_taken_node (cgraph_alias_aliased_node (node));
-      if (cgraph_decide_is_function_needed (node, node->symbol.decl))
-	cgraph_mark_reachable_node (node);
     }
   else if (node->thunk.thunk_p)
     {
@@ -1078,21 +1059,12 @@ process_function_and_variable_attributes (struct cgraph_node *first,
       tree decl = node->symbol.decl;
       if (DECL_PRESERVE_P (decl))
 	cgraph_mark_force_output_node (node);
-      if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
-	  && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl))
-	  && TREE_PUBLIC (node->symbol.decl))
-	{
-	  if (node->local.finalized)
-	    cgraph_mark_reachable_node (node);
-	}
       else if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
 	{
 	  if (! TREE_PUBLIC (node->symbol.decl))
 	    warning_at (DECL_SOURCE_LOCATION (node->symbol.decl), OPT_Wattributes,
 			"%<externally_visible%>"
 			" attribute have effect only on public objects");
-	  else if (node->local.finalized)
-	    cgraph_mark_reachable_node (node);
 	}
       if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl))
 	  && (node->local.finalized && !node->alias))
@@ -1280,11 +1252,8 @@ cgraph_analyze_functions (void)
 		cgraph_analyze_function (cnode);
 
 	      for (edge = cnode->callees; edge; edge = edge->next_callee)
-		{
-		  cgraph_mark_reachable_node (edge->callee);
-		  if (edge->callee->local.finalized)
-		    enqueue_node ((symtab_node)edge->callee);
-		}
+		if (edge->callee->local.finalized)
+		  enqueue_node ((symtab_node)edge->callee);
 
 	      /* If decl is a clone of an abstract function, mark that abstract
 		 function so that we don't release its body. The DECL_INITIAL() of that
@@ -1300,9 +1269,7 @@ cgraph_analyze_functions (void)
 	    }
 	  else if (symtab_variable_p (node)
 		   && varpool (node)->finalized)
-	    {
-	      varpool_analyze_node (varpool (node));
-	    }
+	    varpool_analyze_node (varpool (node));
 
 	  if (node->symbol.same_comdat_group)
 	    {
@@ -1479,9 +1446,6 @@ cgraph_mark_functions_to_output (void)
 	  && !node->thunk.thunk_p
 	  && !node->alias
 	  && !node->global.inlined_to
-	  && (!cgraph_only_called_directly_p (node)
-	      || ((e || ipa_ref_has_aliases_p (&node->symbol.ref_list))
-		  && node->reachable))
 	  && !TREE_ASM_WRITTEN (decl)
 	  && !DECL_EXTERNAL (decl))
 	{
@@ -2085,7 +2049,6 @@ cgraph_expand_all_functions (void)
       node = order[i];
       if (node->process)
 	{
-	  gcc_assert (node->reachable);
 	  node->process = 0;
 	  cgraph_expand_function (node);
 	}
@@ -2370,7 +2333,6 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
    new_version->local.local = old_version->analyzed;
    new_version->global = old_version->global;
    new_version->rtl = old_version->rtl;
-   new_version->reachable = true;
    new_version->count = old_version->count;
 
    for (e = old_version->callees; e; e=e->next_callee)

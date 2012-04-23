@@ -1344,7 +1344,7 @@ cgraph_remove_node (struct cgraph_node *node)
 
   /* Incremental inlining access removed nodes stored in the postorder list.
      */
-  node->symbol.force_output = node->reachable = false;
+  node->symbol.force_output = false;
   for (n = node->nested; n; n = n->next_nested)
     n->origin = NULL;
   node->nested = NULL;
@@ -1472,27 +1472,6 @@ cgraph_remove_node_and_inline_clones (struct cgraph_node *node, struct cgraph_no
   return found;
 }
 
-/* Notify finalize_compilation_unit that given node is reachable.  */
-
-void
-cgraph_mark_reachable_node (struct cgraph_node *node)
-{
-  if (!node->reachable && node->local.finalized)
-    {
-      if (cgraph_global_info_ready)
-        {
-	  /* Verify that function does not appear to be needed out of blue
-	     during the optimization process.  This can happen for extern
-	     inlines when bodies was removed after inlining.  */
-	  gcc_assert ((node->analyzed || node->symbol.in_other_partition
-		       || DECL_EXTERNAL (node->symbol.decl)));
-	}
-      else
-        notice_global_symbol (node->symbol.decl);
-      node->reachable = 1;
-    }
-}
-
 /* Likewise indicate that a node is needed, i.e. reachable via some
    external means.  */
 
@@ -1501,7 +1480,6 @@ cgraph_mark_force_output_node (struct cgraph_node *node)
 {
   node->symbol.force_output = 1;
   gcc_assert (!node->global.inlined_to);
-  cgraph_mark_reachable_node (node);
 }
 
 /* Likewise indicate that a node is having address taken.  */
@@ -1510,7 +1488,6 @@ void
 cgraph_mark_address_taken_node (struct cgraph_node *node)
 {
   gcc_assert (!node->global.inlined_to);
-  cgraph_mark_reachable_node (node);
   /* FIXME: address_taken flag is used both as a shortcut for testing whether
      IPA_REF_ADDR reference exists (and thus it should be set on node
      representing alias we take address of) and as a test whether address
@@ -1621,8 +1598,6 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	     (HOST_WIDEST_INT)node->count);
   if (node->origin)
     fprintf (f, " nested in: %s", cgraph_node_asm_name (node->origin));
-  else if (node->reachable)
-    fprintf (f, " reachable");
   if (gimple_has_body_p (node->symbol.decl))
     fprintf (f, " body");
   if (node->process)
@@ -2048,7 +2023,6 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   new_node->symbol.externally_visible = 0;
   new_node->local.local = 1;
   new_node->lowered = true;
-  new_node->reachable = true;
 
   cgraph_call_node_duplication_hooks (old_node, new_node);
 

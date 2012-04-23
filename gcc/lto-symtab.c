@@ -225,8 +225,6 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   /* Merge node flags.  */
   if (node->symbol.force_output)
     cgraph_mark_force_output_node (prevailing_node);
-  if (node->reachable)
-    cgraph_mark_reachable_node (prevailing_node);
   if (node->symbol.address_taken)
     {
       gcc_assert (!prevailing_node->global.inlined_to);

@@ -248,13 +248,6 @@ struct GTY(()) cgraph_node {
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */
   unsigned abstract_and_needed : 1;
-  /* Set when function is reachable by call from other function
-     that is either reachable or needed.
-     This flag is computed at original cgraph construction and then
-     updated in cgraph_remove_unreachable_nodes.  Note that after
-     cgraph_remove_unreachable_nodes cgraph still can contain unreachable
-     nodes when they are needed for virtual clone instantiation.  */
-  unsigned reachable : 1;
   /* Set once the function is lowered (i.e. its CFG is built).  */
   unsigned lowered : 1;
   /* Set once the function has been instantiated and its callee
@@ -416,9 +409,6 @@ struct GTY(()) varpool_node {
   /* For aliases points to declaration DECL is alias of.  */
   tree alias_of;
 
-  /* Set when function must be output - it is externally visible
-     or its address is taken.  */
-  unsigned needed : 1;
   /* Set once the variable has been instantiated and its callee
      lists created.  */
   unsigned analyzed : 1;
@@ -589,13 +579,11 @@ VEC (cgraph_edge_p, heap) * collect_callers_of_node (struct cgraph_node *node);
 /* In cgraphunit.c  */
 extern FILE *cgraph_dump_file;
 void cgraph_finalize_function (tree, bool);
-void cgraph_mark_if_needed (tree);
 void cgraph_analyze_function (struct cgraph_node *);
 void cgraph_finalize_compilation_unit (void);
 void cgraph_optimize (void);
 void cgraph_mark_force_output_node (struct cgraph_node *);
 void cgraph_mark_address_taken_node (struct cgraph_node *);
-void cgraph_mark_reachable_node (struct cgraph_node *);
 bool cgraph_inline_p (struct cgraph_edge *, cgraph_inline_failed_t *reason);
 bool cgraph_preserve_function_body_p (struct cgraph_node *);
 void verify_cgraph (void);

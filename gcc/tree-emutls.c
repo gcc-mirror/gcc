@@ -791,7 +791,7 @@ ipa_lower_emutls (void)
 
   /* Adjust all uses of TLS variables within the function bodies.  */
   FOR_EACH_DEFINED_FUNCTION (func)
-    if (func->reachable && func->lowered)
+    if (func->lowered)
       lower_emutls_function_body (func);
 
   /* Generate the constructor for any COMMON control variables created.  */
