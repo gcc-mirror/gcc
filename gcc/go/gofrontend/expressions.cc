@@ -13620,7 +13620,13 @@ Numeric_constant::set_float(Type* type, const mpfr_t val)
   this->clear();
   this->classification_ = NC_FLOAT;
   this->type_ = type;
-  mpfr_init_set(this->u_.float_val, val, GMP_RNDN);
+  // Numeric constants do not have negative zero values, so remove
+  // them here.  They also don't have infinity or NaN values, but we
+  // should never see them here.
+  if (mpfr_zero_p(val))
+    mpfr_init_set_ui(this->u_.float_val, 0, GMP_RNDN);
+  else
+    mpfr_init_set(this->u_.float_val, val, GMP_RNDN);
 }
 
 // Set to a complex value.
