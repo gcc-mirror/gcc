@@ -943,12 +943,11 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
   enter_e->flags |= EDGE_FALSE_VALUE;
   gsi = gsi_last_bb (guard_bb);
 
-  cond = force_gimple_operand (cond, &gimplify_stmt_list, true, NULL_TREE);
+  cond = force_gimple_operand_1 (cond, &gimplify_stmt_list, is_gimple_condexpr,
+				 NULL_TREE);
   if (gimplify_stmt_list)
     gimple_seq_add_seq (&cond_expr_stmt_list, gimplify_stmt_list);
-  cond_stmt = gimple_build_cond (NE_EXPR,
-				 cond, build_int_cst (TREE_TYPE (cond), 0),
-				 NULL_TREE, NULL_TREE);
+  cond_stmt = gimple_build_cond_from_tree (cond, NULL_TREE, NULL_TREE);
   if (cond_expr_stmt_list)
     gsi_insert_seq_after (&gsi, cond_expr_stmt_list, GSI_NEW_STMT);
 
@@ -1048,7 +1047,7 @@ set_prologue_iterations (basic_block bb_before_first_loop,
   gimple newphi;
   edge e_true, e_false, e_fallthru;
   gimple cond_stmt;
-  gimple_seq gimplify_stmt_list = NULL, stmts = NULL;
+  gimple_seq stmts = NULL;
   tree cost_pre_condition = NULL_TREE;
   tree scalar_loop_iters =
     unshare_expr (LOOP_VINFO_NITERS_UNCHANGED (loop_vec_info_for_loop (loop)));
@@ -1070,21 +1069,15 @@ set_prologue_iterations (basic_block bb_before_first_loop,
 
   e_fallthru = EDGE_SUCC (then_bb, 0);
 
+  gsi = gsi_last_bb (cond_bb);
   cost_pre_condition =
     fold_build2 (LE_EXPR, boolean_type_node, scalar_loop_iters,
 	         build_int_cst (TREE_TYPE (scalar_loop_iters), th));
   cost_pre_condition =
-    force_gimple_operand (cost_pre_condition, &gimplify_stmt_list,
-			  true, NULL_TREE);
-  cond_stmt = gimple_build_cond (NE_EXPR, cost_pre_condition,
-				 build_int_cst (TREE_TYPE (cost_pre_condition),
-						0), NULL_TREE, NULL_TREE);
-
-  gsi = gsi_last_bb (cond_bb);
-  if (gimplify_stmt_list)
-    gsi_insert_seq_after (&gsi, gimplify_stmt_list, GSI_NEW_STMT);
-
-  gsi = gsi_last_bb (cond_bb);
+    force_gimple_operand_gsi_1 (&gsi, cost_pre_condition, is_gimple_condexpr,
+				NULL_TREE, false, GSI_CONTINUE_LINKING);
+  cond_stmt = gimple_build_cond_from_tree (cost_pre_condition,
+					   NULL_TREE, NULL_TREE);
   gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
 
   var = create_tmp_var (TREE_TYPE (scalar_loop_iters),
@@ -2571,25 +2564,21 @@ vect_loop_versioning (loop_vec_info loop_vinfo, bool do_versioning,
   th = conservative_cost_threshold (loop_vinfo,
 				    min_profitable_iters);
 
-  *cond_expr =
-    fold_build2 (GT_EXPR, boolean_type_node, scalar_loop_iters,
- 	         build_int_cst (TREE_TYPE (scalar_loop_iters), th));
-
-  *cond_expr = force_gimple_operand (*cond_expr, cond_expr_stmt_list,
-				     false, NULL_TREE);
+  *cond_expr = fold_build2 (GT_EXPR, boolean_type_node, scalar_loop_iters,
+			    build_int_cst (TREE_TYPE (scalar_loop_iters), th));
+  *cond_expr = force_gimple_operand_1 (*cond_expr, cond_expr_stmt_list,
+				       is_gimple_condexpr, NULL_TREE);
 
   if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo))
-      vect_create_cond_for_align_checks (loop_vinfo, cond_expr,
-					 cond_expr_stmt_list);
+    vect_create_cond_for_align_checks (loop_vinfo, cond_expr,
+				       cond_expr_stmt_list);
 
   if (LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
     vect_create_cond_for_alias_checks (loop_vinfo, cond_expr,
 				       cond_expr_stmt_list);
 
-  *cond_expr =
-    fold_build2 (NE_EXPR, boolean_type_node, *cond_expr, integer_zero_node);
-  *cond_expr =
-    force_gimple_operand (*cond_expr, &gimplify_stmt_list, true, NULL_TREE);
+  *cond_expr = force_gimple_operand_1 (*cond_expr, &gimplify_stmt_list,
+				       is_gimple_condexpr, NULL_TREE);
   gimple_seq_add_seq (cond_expr_stmt_list, gimplify_stmt_list);
 
   /* If we only needed the extra conditions and a new loop copy

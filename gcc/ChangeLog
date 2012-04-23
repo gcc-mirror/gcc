@@ -1,5 +1,13 @@
 2012-04-23  Richard Guenther  <rguenther@suse.de>
 
+	* tree-vect-loop-manip.c (slpeel_add_loop_guard): Gimplify
+	the condition using is_gimple_condexpr and avoid the not necessary
+	boolification.
+	(set_prologue_iterations): Likewise.
+	(vect_loop_versioning): Likewise.
+
+2012-04-23  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53070
 	* tree-if-conv.c (combine_blocks): Free predicates in all blocks.
 	(main_tree_if_conversion): Verify we succeeded in that.
