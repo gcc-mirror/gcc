@@ -1,3 +1,7 @@
+2012-04-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/noexcept15.C: Adjust for Rev 186726 library changes.
+
 2012-04-23  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.dg/tree-ssa/forwprop-17.c: New testcase.
