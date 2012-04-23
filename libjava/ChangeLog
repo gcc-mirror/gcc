@@ -1,3 +1,8 @@
+2012-04-23  Andrew Haley  <aph@redhat.com>
+
+	* defineclass.cc (MAJOR_1_7,  MINOR_1_7): New.
+	(parse): Allow MAJOR_1_7 classfile version.
+
 2012-04-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libgcj/52645
