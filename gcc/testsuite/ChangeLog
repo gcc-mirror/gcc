@@ -1,3 +1,8 @@
+2012-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR c/53060
+	* gcc.dg/pr53060.c: New testcase.
+
 2012-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimizations/52891
