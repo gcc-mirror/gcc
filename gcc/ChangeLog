@@ -1,3 +1,8 @@
+2012-04-23  Martin Jambor  <mjambor@suse.cz>
+
+	* expr.c (expand_expr_real_1): Remove setting parent's alias set for
+	temporaries created for a bitfield (reverting revision 122014).
+
 2012-04-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-loop-manip.c (slpeel_add_loop_guard): Gimplify
