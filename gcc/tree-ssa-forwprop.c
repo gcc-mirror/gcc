@@ -1886,6 +1886,54 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
       return true;
     }
 
+
+   /* Simplify (A & B) OP0 (C & B) to (A OP0 C) & B. */
+   if (def1_code == def2_code
+       && def1_code == BIT_AND_EXPR
+       && operand_equal_for_phi_arg_p (gimple_assign_rhs2 (def1),
+				       gimple_assign_rhs2 (def2)))
+    {
+      tree b = gimple_assign_rhs2 (def1);
+      tree a = def1_arg1;
+      tree c = def2_arg1;
+      tree inner = fold_build2 (code, TREE_TYPE (arg2), a, c);
+      /* If A OP0 C (this usually means C is the same as A) is 0
+	 then fold it down correctly. */
+      if (integer_zerop (inner))
+	{
+	  gimple_assign_set_rhs_from_tree (gsi, inner);
+	  update_stmt (stmt);
+	  return true;
+	}
+      /* If A OP0 C (this usually means C is the same as A) is a ssa_name
+	 then fold it down correctly. */
+      else if (TREE_CODE (inner) == SSA_NAME)
+	{
+      	  tree outer = fold_build2 (def1_code, TREE_TYPE (inner),
+				    inner, b);
+	  gimple_assign_set_rhs_from_tree (gsi, outer);
+	  update_stmt (stmt);
+	  return true;
+	}
+      else
+	{
+	  gimple newop;
+	  tree tem;
+	  tem = create_tmp_reg (TREE_TYPE (arg2), NULL);
+	  newop = gimple_build_assign_with_ops (code, tem, a, c);
+	  tem = make_ssa_name (tem, newop);
+	  gimple_assign_set_lhs (newop, tem);
+	  gimple_set_location (newop, gimple_location (stmt));
+	  /* Make sure to re-process the new stmt as it's walking upwards.  */
+	  gsi_insert_before (gsi, newop, GSI_NEW_STMT);
+	  gimple_assign_set_rhs1 (stmt, tem);
+	  gimple_assign_set_rhs2 (stmt, b);
+	  gimple_assign_set_rhs_code (stmt, def1_code);
+	  update_stmt (stmt);
+	  return true;
+	}
+    }
+
   /* (a | CST1) & CST2  ->  (a & CST2) | (CST1 & CST2).  */
   if (code == BIT_AND_EXPR
       && def1_code == BIT_IOR_EXPR
