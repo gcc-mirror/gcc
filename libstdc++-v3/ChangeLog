@@ -1,3 +1,10 @@
+2012-04-23  Chris Jefferson  <chris@bubblescope.net>
+
+	PR testsuite/53046
+	* testsuite/25_algorithms/stable_partition/mem_check.cc: Fix size
+	of array A.
+	* testsuite/25_algorithms/stable_sort/mem_check.cc: Likewise.
+
 2012-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/53067
