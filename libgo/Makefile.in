@@ -5410,6 +5410,7 @@ log/syslog.lo.dep: $(go_log_syslog_files)
 log/syslog.lo: $(go_log_syslog_files)
 	$(BUILDPACKAGE)
 log/syslog/syslog_c.lo: $(go_syslog_c_files) log/syslog.lo
+	@$(MKDIR_P) log/syslog
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/log/syslog/syslog_c.c
 log/syslog/check: $(CHECK_DEPS)
 	@$(MKDIR_P) log/syslog
