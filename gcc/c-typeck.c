@@ -9734,7 +9734,7 @@ build_binary_op (location_t location, enum tree_code code,
 	      sc = convert (TREE_TYPE (type0), sc);
 	      op1 = build_vector_from_val (type0, sc);
 	      if (!maybe_const)
-		op0 = c_wrap_maybe_const (op1, true);
+		op1 = c_wrap_maybe_const (op1, true);
 	      orig_type1 = type1 = TREE_TYPE (op1);
 	      code1 = TREE_CODE (type1);
 	      converted = 1;
