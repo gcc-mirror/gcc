@@ -594,33 +594,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __and_<is_array<_Tp>, __not_<extent<_Tp>>>::type
     { };
     
-  // In N3290 is_destructible does not say anything about function 
+  // In N3290 is_destructible does not say anything about function
   // types and abstract types, see LWG 2049. This implementation
-  // describes function types as trivially nothrow destructible and
-  // abstract types as destructible, iff the  explicit destructor
+  // describes function types as non-destructible and all complete
+  // object types as destructible, iff the explicit destructor
   // call expression is wellformed.
-  struct __do_is_destructible_impl_1
-  {
-    template<typename _Up>
-      struct __w { _Up __u; };
-
-    template<typename _Tp, typename
-             = decltype(declval<__w<_Tp>&>().~__w<_Tp>())>
-      static true_type __test(int);
-
-    template<typename>
-      static false_type __test(...);
-  };
-
-  template<typename _Tp>
-    struct __is_destructible_impl_1
-    : public __do_is_destructible_impl_1
-    {
-      typedef decltype(__test<_Tp>(0)) type;
-    };
-
-  // Special implementation for abstract types
-  struct __do_is_destructible_impl_2
+  struct __do_is_destructible_impl
   {
     template<typename _Tp, typename = decltype(declval<_Tp&>().~_Tp())>
       static true_type __test(int);
@@ -630,23 +609,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   template<typename _Tp>
-    struct __is_destructible_impl_2
-    : public __do_is_destructible_impl_2
+    struct __is_destructible_impl
+    : public __do_is_destructible_impl
     {
       typedef decltype(__test<_Tp>(0)) type;
     };
 
   template<typename _Tp,
            bool = __or_<is_void<_Tp>,
-                        __is_array_unknown_bounds<_Tp>>::value,
-           bool = __or_<is_reference<_Tp>, is_function<_Tp>>::value>
+                        __is_array_unknown_bounds<_Tp>,
+                        is_function<_Tp>>::value,
+           bool = __or_<is_reference<_Tp>, is_scalar<_Tp>>::value>
     struct __is_destructible_safe;
 
   template<typename _Tp>
     struct __is_destructible_safe<_Tp, false, false>
-    : public conditional<is_abstract<_Tp>::value,
-			 __is_destructible_impl_2<_Tp>,
-                         __is_destructible_impl_1<_Tp>>::type::type
+    : public __is_destructible_impl<typename
+               remove_all_extents<_Tp>::type>::type
     { };
 
   template<typename _Tp>
@@ -661,6 +640,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_destructible
     : public integral_constant<bool, (__is_destructible_safe<_Tp>::value)>
+    { };
+
+  // is_nothrow_destructible requires that is_destructible is
+  // satisfied as well.  We realize that by mimicing the
+  // implementation of is_destructible but refer to noexcept(expr)
+  // instead of decltype(expr).
+  struct __do_is_nt_destructible_impl
+  {
+    template<typename _Tp>
+      static integral_constant<bool, noexcept(declval<_Tp&>().~_Tp())>
+        __test(int);
+
+    template<typename>
+      static false_type __test(...);
+  };
+
+  template<typename _Tp>
+    struct __is_nt_destructible_impl
+    : public __do_is_nt_destructible_impl
+    {
+      typedef decltype(__test<_Tp>(0)) type;
+    };
+
+  template<typename _Tp,
+           bool = __or_<is_void<_Tp>,
+                        __is_array_unknown_bounds<_Tp>,
+                        is_function<_Tp>>::value,
+           bool = __or_<is_reference<_Tp>, is_scalar<_Tp>>::value>
+    struct __is_nt_destructible_safe;
+
+  template<typename _Tp>
+    struct __is_nt_destructible_safe<_Tp, false, false>
+    : public __is_nt_destructible_impl<typename
+               remove_all_extents<_Tp>::type>::type
+    { };
+
+  template<typename _Tp>
+    struct __is_nt_destructible_safe<_Tp, true, false>
+    : public false_type { };
+
+  template<typename _Tp>
+    struct __is_nt_destructible_safe<_Tp, false, true>
+    : public true_type { };
+
+  /// is_nothrow_destructible
+  template<typename _Tp>
+    struct is_nothrow_destructible
+    : public integral_constant<bool, (__is_nt_destructible_safe<_Tp>::value)>
     { };
 
   struct __do_is_default_constructible_impl

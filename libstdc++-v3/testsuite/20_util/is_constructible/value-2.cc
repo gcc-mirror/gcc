@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,7 @@
 #include <initializer_list>
 #include <testsuite_tr1.h>
 
-using namespace __gnu_test::construct_destruct;
+using namespace __gnu_test::construct;
 
 static_assert(std::is_constructible<int, int>::value, "Error");
 static_assert(std::is_constructible<std::nullptr_t, std::nullptr_t>::value,
@@ -753,7 +753,7 @@ static_assert(!std::is_constructible<FromArgs<std::initializer_list<int>&,
 
 static_assert(!std::is_constructible<FromArgs<std::initializer_list<int>>,
 	      int, int>::value, "Error");
-static_assert(!std::is_constructible<const 
+static_assert(!std::is_constructible<const
 	      FromArgs<std::initializer_list<int>>, int, int>::value, "Error");
 static_assert(!std::is_constructible<B[2], B, B>::value, "Error");
 static_assert(!std::is_constructible<const B[2], B, B>::value, "Error");
