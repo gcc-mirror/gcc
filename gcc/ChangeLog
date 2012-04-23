@@ -1,3 +1,11 @@
+2012-04-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*add<mode>_2): Add r/r/0 alternative.
+	(*addsi_2_zext): Ditto.
+	(*add<mode>_3): Ditto.
+	(*addsi_3_zext): Ditto.
+	(*add<mode>_5): Ditto.
+
 2012-04-23  Andrew Pinski  <apinski@cavium.com>
 
 	* tree-ssa-forwprop.c (simplify_bitwise_binary): Simplify (A & B) OP0
@@ -35,14 +43,14 @@
 	(varpool_node): Remove reachable flag.
 	(cgraph_mark_if_needed): Remove.
 	(cgraph_mark_reachable_node): Remove.
-	* tree-emutls.c (ipa_lower_emutls): Do not check
-	reachable.
+	* tree-emutls.c (ipa_lower_emutls): Do not check reachable.
 	* cgraphunit.c (cgraph_finalize_function): Do not mark node as
 	reachable.
 	(cgraph_add_new_function): Likewise.
 	(cgraph_mark_if_needed): Remove.
 	(cgraph_analyze_function): Do not set target as reachable.
-	(process_function_and_variable_attributes): Do not care about dllexport.
+	(process_function_and_variable_attributes): Do not care about
+	dllexport.
 	(cgraph_analyze_functions): Do not set reachable flags.
 	(cgraph_mark_functions_to_output): Do not check reachability.
 	(cgraph_copy_node_for_versioning): Do not set reachable flag.
@@ -52,7 +60,8 @@
 	(enqueue_cgraph_node): Use reachable pointer set.
 	(process_references): Likewise.
 	(cgraph_remove_unreachable_nodes): Likewise.
-	(whole_program_function_and_variable_visibility): Do not recompute reachable.
+	(whole_program_function_and_variable_visibility): Do not recompute
+	reachable.
 	* trans-mem.c (ipa_tm_execute): Do not check reachable flag.
 
 2012-04-23  Georg-Johann Lay  <avr@gjlay.de>
@@ -94,7 +103,8 @@
 	(varpool_analyze_node): New.
 	(varpool_mark_needed_node): Remove.
 	(varpool_first_variable, varpool_next_variable): New inlines.
-	(varpool_first_static_initializer, varpool_next_static_initializer): Update.
+	(varpool_first_static_initializer, varpool_next_static_initializer):
+	Update.
 	(FOR_EACH_STATIC_VARIABLE): Remove unused walker.
 	(varpool_first_defined_variable): New inline.
 	(varpool_next_defined_variable): New inline
@@ -114,10 +124,11 @@
 	when varpool is in construction.
 	(cgraph_analyze_functions): Rewrite.
 	(cgraph_expand_all_functions): Update.
-	(cgraph_output_in_order): Do not analyze pending decls; do not set needed flags.
+	(cgraph_output_in_order): Do not analyze pending decls; do not set
+	needed flags.
 	(cgraph_optimize): Do not analyze pending decls.
-	* lto-cgraph.c (input_varpool_node): Clear analyzed flag for objects in other
-	partition; do not mark node as needed.
+	* lto-cgraph.c (input_varpool_node): Clear analyzed flag for objects
+	in other partition; do not mark node as needed.
 	* dwarf2out.c (reference_to_unused): Use analyzed flag.
 	(premark_types_used_by_global_vars_helper): Likewise.
 	* ipa.c (process_references): Do not call varpool_mark_needed_node.
