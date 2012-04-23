@@ -1,3 +1,21 @@
+2012-04-23  Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* include/std/type_traits (is_nothrow_destructible): Implement.
+	(is_destructible): Implement LWG 2049.
+	* testsuite/util/testsuite_tr1.h: Add tests.
+	* testsuite/20_util/is_nothrow_destructible/value.cc: New.
+	* testsuite/20_util/is_nothrow_destructible/requirements/typedefs.cc:
+	* testsuite/20_util/is_nothrow_destructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_destructible/value.cc: Adjust and extend.
+	* testsuite/20_util/is_default_constructible/value.cc: Tweak.
+	* testsuite/20_util/is_constructible/value-2.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
 2012-04-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/53080
