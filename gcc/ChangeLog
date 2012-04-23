@@ -1,5 +1,9 @@
 2012-04-22  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-loop-ivopts.c (expr_invariant_in_loop_p): Bail out at NULL tree refs.
+
+2012-04-22  Jan Hubicka  <jh@suse.cz>
+
 	* lto-symtab.c (lto_varpool_replace_node): Do not merge needed flags.
 	* cgraphbuild.c (record_reference, record_type_list, mark_address,
 	mark_load, mark_store): Do not mark varpool nodes as needed.

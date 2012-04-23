@@ -1411,7 +1411,8 @@ expr_invariant_in_loop_p (struct loop *loop, tree expr)
 
   len = TREE_OPERAND_LENGTH (expr);
   for (i = 0; i < len; i++)
-    if (!expr_invariant_in_loop_p (loop, TREE_OPERAND (expr, i)))
+    if (TREE_OPERAND (expr, i)
+	&& !expr_invariant_in_loop_p (loop, TREE_OPERAND (expr, i)))
       return false;
 
   return true;
