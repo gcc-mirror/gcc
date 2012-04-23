@@ -1,3 +1,10 @@
+2012-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimizations/52891
+	* tree-vect-patterns.c (adjust_bool_pattern): Use
+	build_nonstandard_type even if rhs1 has unsigned INTEGER_TYPE,
+	but with non-standard precision.
+
 2012-04-22  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (expr_invariant_in_loop_p): Bail out at NULL tree refs.
