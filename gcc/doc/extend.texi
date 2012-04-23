@@ -1311,18 +1311,18 @@ support is available or not:
 #ifdef __FLASH
 const __flash int var = 1;
 
-int read_i (void)
+int read_var (void)
 @{
-    return i;
+    return var;
 @}
 #else
-#include <avr/pgmspace.h> /* From avr-libc */
+#include <avr/pgmspace.h> /* From AVR-LibC */
 
 const int var PROGMEM = 1;
 
-int read_i (void)
+int read_var (void)
 @{
-    return (int) pgm_read_word (&i);
+    return (int) pgm_read_word (&var);
 @}
 #endif /* __FLASH */
 @end example
@@ -1332,7 +1332,8 @@ locates data in flash but
 accesses to these data will read from generic address space, i.e.@:
 from RAM,
 so that you need special accessors like @code{pgm_read_byte}
-from @w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc}}.
+from @w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-LibC}}
+together with attribute @code{progmem}.
 
 @b{Limitations and caveats}
 
@@ -1345,7 +1346,7 @@ supports reading across the 64@tie{}KiB flash segment boundaries is
 @code{__memx}.
 
 @item
-If you use one if the @code{__flash@var{N}} address spaces
+If you use one of the @code{__flash@var{N}} address spaces
 you will have to arrange your linker skript to locate the
 @code{.progmem@var{N}.data} sections according to your needs.
 
@@ -4782,7 +4783,7 @@ of the data but not how this data is accessed.
 In order to read data located with the @code{progmem} attribute
 (inline) assembler must be used.
 @example
-/* Use custom macros from @w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc}} */
+/* Use custom macros from @w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-LibC}} */
 #include <avr/pgmspace.h> 
 
 /* Locate var in flash memory */

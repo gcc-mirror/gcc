@@ -1,3 +1,7 @@
+2012-04-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Named Address Spaces): Fix typos.
+
 2012-04-23  Richard Guenther  <rguenther@suse.de>
 
 	PR c/53060
