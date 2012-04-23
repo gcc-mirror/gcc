@@ -11,7 +11,7 @@ template<class Tp>
     constexpr single(const Tp& e)
     : elem(e) { }   // { dg-error "invalid field" }
 
-    single(single&& s) // { dg-error "not a member" }
+    single(single&& s)
     noexcept(std::is_nothrow_move_constructible<Tp>::value) 
     : elem(s.elem) { } // { dg-error "invalid field|no member" }
   };
