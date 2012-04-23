@@ -2172,7 +2172,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 			   && prototype_p (TREE_TYPE (newdecl)));
   bool old_is_prototype = (TREE_CODE (olddecl) == FUNCTION_DECL
 			   && prototype_p (TREE_TYPE (olddecl)));
-  bool extern_changed = false;
 
   /* For real parm decl following a forward decl, rechain the old decl
      in its new location and clear TREE_ASM_WRITTEN (it's not a
@@ -2443,8 +2442,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	}
     }
 
-  extern_changed = DECL_EXTERNAL (olddecl) && !DECL_EXTERNAL (newdecl);
-
   /* Merge the USED information.  */
   if (TREE_USED (olddecl))
     TREE_USED (newdecl) = 1;
@@ -2506,13 +2503,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  || (TREE_CODE (olddecl) == VAR_DECL
 	      && TREE_STATIC (olddecl))))
     make_decl_rtl (olddecl);
-
-  /* If we changed a function from DECL_EXTERNAL to !DECL_EXTERNAL,
-     and the definition is coming from the old version, cgraph needs
-     to be called again.  */
-  if (extern_changed && !new_is_definition
-      && TREE_CODE (olddecl) == FUNCTION_DECL && DECL_INITIAL (olddecl))
-    cgraph_mark_if_needed (olddecl);
 }
 
 /* Handle when a new declaration NEWDECL has the same name as an old

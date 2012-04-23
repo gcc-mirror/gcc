@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree-iterator.h"
 #include "ipa-utils.h"
+#include "pointer-set.h"
 
 /* Look for all functions inlined to NODE and update their inlined_to pointers
    to INLINED_TO.  */
@@ -57,14 +58,15 @@ update_inlined_to_pointer (struct cgraph_node *node, struct cgraph_node *inlined
    reachable.  */
 
 static void
-enqueue_cgraph_node (struct cgraph_node *node, struct cgraph_node **first)
+enqueue_cgraph_node (struct cgraph_node *node, struct cgraph_node **first,
+		     struct pointer_set_t *reachable)
 {
   /* Node is still in queue; do nothing.  */
   if (node->symbol.aux && node->symbol.aux != (void *) 2)
     return;
   /* Node was already processed as unreachable, re-enqueue
      only if it became reachable now.  */
-  if (node->symbol.aux == (void *)2 && !node->reachable)
+  if (node->symbol.aux == (void *)2 && !pointer_set_contains (reachable, node))
     return;
   node->symbol.aux = *first;
   *first = node;
@@ -85,7 +87,8 @@ static void
 process_references (struct ipa_ref_list *list,
 		    struct cgraph_node **first,
 		    struct varpool_node **first_varpool,
-		    bool before_inlining_p)
+		    bool before_inlining_p,
+		    struct pointer_set_t *reachable)
 {
   int i;
   struct ipa_ref *ref;
@@ -94,22 +97,18 @@ process_references (struct ipa_ref_list *list,
       if (symtab_function_p (ref->referred))
 	{
 	  struct cgraph_node *node = ipa_ref_node (ref);
-	  if (!node->reachable
-	      && node->analyzed
+	  if (node->analyzed
 	      && (!DECL_EXTERNAL (node->symbol.decl)
 		  || node->alias
 	          || before_inlining_p))
-	    node->reachable = true;
-	  enqueue_cgraph_node (node, first);
+	    pointer_set_insert (reachable, node);
+	  enqueue_cgraph_node (node, first, reachable);
 	}
       else
 	{
 	  struct varpool_node *node = ipa_ref_varpool_node (ref);
-	  if (!node->needed)
-	    {
-	      node->needed = true;
-	      enqueue_varpool_node (node, first_varpool);
-	    }
+	  if (!pointer_set_insert (reachable, node))
+	    enqueue_varpool_node (node, first_varpool);
 	}
     }
 }
@@ -175,6 +174,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   struct cgraph_node *node, *next;
   struct varpool_node *vnode, *vnext;
   bool changed = false;
+  struct pointer_set_t *reachable = pointer_set_create ();
 
 #ifdef ENABLE_CHECKING
   verify_symtab ();
@@ -200,14 +200,11 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		&& (DECL_COMDAT (node->symbol.decl) || DECL_EXTERNAL (node->symbol.decl)))))
       {
         gcc_assert (!node->global.inlined_to);
-	enqueue_cgraph_node (node, &first);
-	node->reachable = true;
+	enqueue_cgraph_node (node, &first, reachable);
+	pointer_set_insert (reachable, node);
       }
     else
-      {
-        gcc_assert (!node->symbol.aux);
-	node->reachable = false;
-      }
+      gcc_assert (!node->symbol.aux);
 
   /* Mark variables that are obviously needed.  */
   FOR_EACH_VARIABLE (vnode)
@@ -215,11 +212,9 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       if ((vnode->analyzed || vnode->symbol.force_output)
 	  && !varpool_can_remove_if_no_refs (vnode))
 	{
-	  vnode->needed = true;
+	  pointer_set_insert (reachable, vnode);
 	  enqueue_varpool_node (vnode, &first_varpool);
 	}
-      else
-	vnode->needed = false;
     }
 
   /* Perform reachability analysis.  As a special case do not consider
@@ -237,44 +232,39 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  struct cgraph_edge *e;
 	  node = first;
 	  first = (struct cgraph_node *) first->symbol.aux;
-	  if (!node->reachable)
+	  if (!pointer_set_contains (reachable, node))
 	    node->symbol.aux = (void *)2;
-
 	  /* If we found this node reachable, first mark on the callees
 	     reachable too, unless they are direct calls to extern inline functions
 	     we decided to not inline.  */
-	  if (node->reachable)
+	  else 
 	    {
 	      for (e = node->callees; e; e = e->next_callee)
 		{
-		  if (!e->callee->reachable
-		      && node->analyzed
+		  if (node->analyzed
 		      && (!e->inline_failed
 			  || !DECL_EXTERNAL (e->callee->symbol.decl)
 			  || node->alias
 			  || before_inlining_p))
-		    e->callee->reachable = true;
-		  enqueue_cgraph_node (e->callee, &first);
+		    pointer_set_insert (reachable, e->callee);
+		  enqueue_cgraph_node (e->callee, &first, reachable);
 		}
 	      process_references (&node->symbol.ref_list, &first,
-				  &first_varpool, before_inlining_p);
-	    }
+				  &first_varpool, before_inlining_p,
+				  reachable);
 
-	  /* If any function in a comdat group is reachable, force
-	     all other functions in the same comdat group to be
-	     also reachable.  */
-	  if (node->symbol.same_comdat_group
-	      && node->reachable
-	      && !node->global.inlined_to)
-	    {
-	      for (next = cgraph (node->symbol.same_comdat_group);
-		   next != node;
-		   next = cgraph (next->symbol.same_comdat_group))
-		if (!next->reachable)
-		  {
-		    next->reachable = true;
-		    enqueue_cgraph_node (next, &first);
-		  }
+	      /* If any function in a comdat group is reachable, force
+		 all other functions in the same comdat group to be
+		 also reachable.  */
+	      if (node->symbol.same_comdat_group
+		  && !node->global.inlined_to)
+		{
+		  for (next = cgraph (node->symbol.same_comdat_group);
+		       next != node;
+		       next = cgraph (next->symbol.same_comdat_group))
+		    if (!pointer_set_insert (reachable, next))
+		      enqueue_cgraph_node (next, &first, reachable);
+		}
 	    }
 
 	  /* We can freely remove inline clones even if they are cloned, however if
@@ -286,9 +276,9 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    {
 	      bool noninline = node->clone_of->symbol.decl != node->symbol.decl;
 	      node = node->clone_of;
-	      if (noninline && !node->reachable && !node->symbol.aux)
+	      if (noninline && !pointer_set_insert (reachable, node) && !node->symbol.aux)
 	      	{
-		  enqueue_cgraph_node (node, &first);
+		  enqueue_cgraph_node (node, &first, reachable);
 		  break;
 		}
 	    }
@@ -299,7 +289,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  first_varpool = (struct varpool_node *)first_varpool->symbol.aux;
 	  vnode->symbol.aux = NULL;
 	  process_references (&vnode->symbol.ref_list, &first,
-			      &first_varpool, before_inlining_p);
+			      &first_varpool, before_inlining_p,
+			      reachable);
 	  /* If any function in a comdat group is reachable, force
 	     all other functions in the same comdat group to be
 	     also reachable.  */
@@ -309,11 +300,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      for (next = varpool (vnode->symbol.same_comdat_group);
 		   next != vnode;
 		   next = varpool (next->symbol.same_comdat_group))
-		if (!next->needed)
-		  {
-		    next->needed = true;
-		    enqueue_varpool_node (next, &first_varpool);
-		  }
+		if (!pointer_set_insert (reachable, next))
+		  enqueue_varpool_node (next, &first_varpool);
 	    }
 	}
     }
@@ -330,7 +318,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   for (node = cgraph_first_function (); node; node = next)
     {
       next = cgraph_next_function (node);
-      if (node->symbol.aux && !node->reachable)
+      if (node->symbol.aux && !pointer_set_contains (reachable, node))
         {
 	  cgraph_node_remove_callees (node);
 	  ipa_remove_all_references (&node->symbol.ref_list);
@@ -348,16 +336,12 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    fprintf (file, " %s", cgraph_node_name (node));
 	  /* See if there is reachable caller.  */
 	  for (e = node->callers; e && !found; e = e->next_caller)
-	    if (e->caller->reachable)
+	    if (pointer_set_contains (reachable, e->caller))
 	      found = true;
 	  for (i = 0; (ipa_ref_list_referring_iterate (&node->symbol.ref_list,
 						      i, ref)
 		       && !found); i++)
-	    if (symtab_function_p (ref->referring)
-		&& ipa_ref_referring_node (ref)->reachable)
-	      found = true;
-	    else if (symtab_variable_p (ref->referring)
-		     && ipa_ref_referring_varpool_node (ref)->needed)
+	    if (pointer_set_contains (reachable, ref->referring))
 	      found = true;
 
 	  /* If so, we need to keep node in the callgraph.  */
@@ -426,7 +410,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   for (vnode = varpool_first_variable (); vnode; vnode = vnext)
     {
       vnext = varpool_next_variable (vnode);
-      if (!vnode->needed)
+      if (!pointer_set_contains (reachable, vnode))
         {
 	  if (file)
 	    fprintf (file, " %s", varpool_node_name (vnode));
@@ -471,6 +455,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   /* Reclaim alias pairs for functions that have disappeared from the
      call graph.  */
   remove_unreachable_alias_pairs ();
+  pointer_set_destroy (reachable);
 
   return changed;
 }
@@ -1010,14 +995,7 @@ gate_whole_program_function_and_variable_visibility (void)
 static unsigned int
 whole_program_function_and_variable_visibility (void)
 {
-  struct cgraph_node *node;
-
   function_and_variable_visibility (flag_whole_program);
-
-  FOR_EACH_DEFINED_FUNCTION (node)
-    if ((node->symbol.externally_visible && !DECL_COMDAT (node->symbol.decl))
-        && node->local.finalized)
-      cgraph_mark_reachable_node (node);
   if (optimize)
     ipa_discover_readonly_nonaddressable_vars ();
   return 0;

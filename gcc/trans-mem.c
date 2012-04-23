@@ -4779,7 +4779,7 @@ ipa_tm_execute (void)
 
   /* For all local reachable functions...  */
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (node->reachable && node->lowered
+    if (node->lowered
 	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       {
 	/* ... marked tm_pure, record that fact for the runtime by
@@ -4947,7 +4947,7 @@ ipa_tm_execute (void)
   /* Now validate all tm_safe functions, and all atomic regions in
      other functions.  */
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (node->reachable && node->lowered
+    if (node->lowered
 	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       {
 	d = get_cg_data (&node, true);
@@ -4995,7 +4995,7 @@ ipa_tm_execute (void)
 	}
     }
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (node->reachable && node->lowered
+    if (node->lowered
 	&& cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       {
 	d = get_cg_data (&node, true);

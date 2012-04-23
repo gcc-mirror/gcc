@@ -1,3 +1,36 @@
+2012-04-23  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Do not call
+	mark_reahcable_node.
+	* cgraph.c (cgraph_remove_node): Do not clear reachable.
+	(cgraph_mark_reachable_node): Remove.
+	(cgraph_mark_force_output_node): Do not set reachable.
+	(dump_cgraph_node): Do not dump reachable.
+	(cgraph_create_virtual_clone): Do not set reachable.
+	* cgraph.h (cgraph_node): Remove reachable flag.
+	(varpool_node): Remove reachable flag.
+	(cgraph_mark_if_needed): Remove.
+	(cgraph_mark_reachable_node): Remove.
+	* tree-emutls.c (ipa_lower_emutls): Do not check
+	reachable.
+	* cgraphunit.c (cgraph_finalize_function): Do not mark node as
+	reachable.
+	(cgraph_add_new_function): Likewise.
+	(cgraph_mark_if_needed): Remove.
+	(cgraph_analyze_function): Do not set target as reachable.
+	(process_function_and_variable_attributes): Do not care about dllexport.
+	(cgraph_analyze_functions): Do not set reachable flags.
+	(cgraph_mark_functions_to_output): Do not check reachability.
+	(cgraph_copy_node_for_versioning): Do not set reachable flag.
+	(dbxout_expand_expr): Update.
+	* c-decl.c (merge_decls): Do not track changed externs.
+	* ipa.c: Include pointer-set.h
+	(enqueue_cgraph_node): Use reachable pointer set.
+	(process_references): Likewise.
+	(cgraph_remove_unreachable_nodes): Likewise.
+	(whole_program_function_and_variable_visibility): Do not recompute reachable.
+	* trans-mem.c (ipa_tm_execute): Do not check reachable flag.
+
 2012-04-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/extend.texi (AVR Named Address Spaces): Fix typos.
