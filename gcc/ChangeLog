@@ -1,3 +1,8 @@
+2012-04-23  Andrew Pinski  <apinski@cavium.com>
+
+	* tree-ssa-forwprop.c (simplify_bitwise_binary): Simplify (A & B) OP0
+	(C & B) to (A OP0) & B.
+
 2012-04-23  Martin Jambor  <mjambor@suse.cz>
 
 	* expr.c (expand_expr_real_1): Remove setting parent's alias set for

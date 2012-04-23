@@ -1,3 +1,7 @@
+2012-04-23  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.dg/tree-ssa/forwprop-17.c: New testcase.
+
 2012-04-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR regression/53076
