@@ -1,3 +1,12 @@
+2012-04-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/53080
+	* include/std/array (tuple_element, get): static_assert I < N.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	New.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element.cc: Fix.
+
 2012-04-23  Chris Jefferson  <chris@bubblescope.net>
 
 	PR testsuite/53046
