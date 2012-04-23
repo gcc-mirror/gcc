@@ -893,7 +893,8 @@ lto_1_to_1_map (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
-      if (!partition_cgraph_node_p (node))
+      if (!partition_cgraph_node_p (node)
+	  || node->aux)
 	continue;
 
       file_data = node->local.lto_file_data;
@@ -923,13 +924,13 @@ lto_1_to_1_map (void)
 	  npartitions++;
 	}
 
-      if (!node->aux)
-        add_cgraph_node_to_partition (partition, node);
+      add_cgraph_node_to_partition (partition, node);
     }
 
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     {
-      if (!partition_varpool_node_p (vnode))
+      if (!partition_varpool_node_p (vnode)
+	  || vnode->aux)
 	continue;
       file_data = vnode->lto_file_data;
       slot = pointer_map_contains (pmap, file_data);
@@ -943,8 +944,7 @@ lto_1_to_1_map (void)
 	  npartitions++;
 	}
 
-      if (!vnode->aux)
-        add_varpool_node_to_partition (partition, vnode);
+      add_varpool_node_to_partition (partition, vnode);
     }
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;
@@ -1050,8 +1050,9 @@ lto_balanced_map (void)
 
   for (i = 0; i < n_nodes; i++)
     {
-      if (!order[i]->aux)
-        add_cgraph_node_to_partition (partition, order[i]);
+      if (order[i]->aux)
+	continue;
+      add_cgraph_node_to_partition (partition, order[i]);
       total_size -= order[i]->global.size;
 
       /* Once we added a new node to the partition, we also want to add
@@ -1231,6 +1232,8 @@ lto_balanced_map (void)
 	    }
 	  i = best_i;
  	  /* When we are finished, avoid creating empty partition.  */
+	  while (i < n_nodes - 1 && order[i + 1]->aux)
+	    i++;
 	  if (i == n_nodes - 1)
 	    break;
 	  partition = new_partition ("");
