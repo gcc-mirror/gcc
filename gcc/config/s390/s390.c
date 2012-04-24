@@ -4413,7 +4413,7 @@ s390_expand_addcc (enum rtx_code cmp_code, rtx cmp_op0, rtx cmp_op1,
       insn = gen_rtx_SET (VOIDmode, gen_rtx_REG (cc_mode, CC_REGNUM),
 			  gen_rtx_COMPARE (cc_mode, cmp_op0, cmp_op1));
       /* We use insn_invalid_p here to add clobbers if required.  */
-      ret = insn_invalid_p (emit_insn (insn));
+      ret = insn_invalid_p (emit_insn (insn), false);
       gcc_assert (!ret);
 
       /* Emit ALC instruction pattern.  */
@@ -4485,7 +4485,7 @@ s390_expand_addcc (enum rtx_code cmp_code, rtx cmp_op0, rtx cmp_op1,
       insn = gen_rtx_SET (VOIDmode, gen_rtx_REG (cc_mode, CC_REGNUM),
 			  gen_rtx_COMPARE (cc_mode, cmp_op0, cmp_op1));
       /* We use insn_invalid_p here to add clobbers if required.  */
-      ret = insn_invalid_p (emit_insn (insn));
+      ret = insn_invalid_p (emit_insn (insn), false);
       gcc_assert (!ret);
 
       /* Emit SLB instruction pattern.  */
