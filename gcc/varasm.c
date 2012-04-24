@@ -3934,6 +3934,13 @@ compute_reloc_for_constant (tree exp)
 	   tem = TREE_OPERAND (tem, 0))
 	;
 
+      if (TREE_CODE (tem) == MEM_REF
+	  && TREE_CODE (TREE_OPERAND (tem, 0)) == ADDR_EXPR)
+	{
+	  reloc = compute_reloc_for_constant (TREE_OPERAND (tem, 0));
+	  break;
+	}
+
       if (TREE_PUBLIC (tem))
 	reloc |= 2;
       else
@@ -4002,6 +4009,9 @@ output_addressed_constants (tree exp)
 
       if (CONSTANT_CLASS_P (tem) || TREE_CODE (tem) == CONSTRUCTOR)
 	output_constant_def (tem, 0);
+
+      if (TREE_CODE (tem) == MEM_REF)
+	output_addressed_constants (TREE_OPERAND (tem, 0));
       break;
 
     case PLUS_EXPR:
