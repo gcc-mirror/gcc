@@ -1,3 +1,9 @@
+2012-04-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/47197
+	* config/rs6000/rs6000-c.c (fully_fold_convert): New function.
+	(altivec_build_resolved_builtin): Call fully_fold_convert.
+
 2012-04-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/53065
