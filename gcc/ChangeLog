@@ -1,3 +1,9 @@
+2012-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/52999
+	* varasm.c (get_section): Don't ICE for section conflicts with
+	built-in section kinds.
+
 2012-04-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/sync.md (fetchop_name): Change ior attribute to "or".
