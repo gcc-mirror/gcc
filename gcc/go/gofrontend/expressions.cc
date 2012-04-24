@@ -8641,7 +8641,14 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 	new_args->push_back(*pa);
       else if (this->is_varargs_)
 	{
-	  this->report_error(_("too many arguments"));
+	  if ((*pa)->type()->is_slice_type())
+	    this->report_error(_("too many arguments"));
+	  else
+	    {
+	      error_at(this->location(),
+		       _("invalid use of %<...%> with non-slice"));
+	      this->set_is_error();
+	    }
 	  return;
 	}
       else
@@ -8886,6 +8893,9 @@ Call_expression::check_argument_type(int i, const Type* parameter_type,
 void
 Call_expression::do_check_types(Gogo*)
 {
+  if (this->classification() == EXPRESSION_ERROR)
+    return;
+
   Function_type* fntype = this->get_function_type();
   if (fntype == NULL)
     {
@@ -8921,7 +8931,17 @@ Call_expression::do_check_types(Gogo*)
     }
 
   // Note that varargs was handled by the lower_varargs() method, so
-  // we don't have to worry about it here.
+  // we don't have to worry about it here unless something is wrong.
+  if (this->is_varargs_ && !this->varargs_are_lowered_)
+    {
+      if (!fntype->is_varargs())
+	{
+	  error_at(this->location(),
+		   _("invalid use of %<...%> calling non-variadic function"));
+	  this->set_is_error();
+	  return;
+	}
+    }
 
   const Typed_identifier_list* parameters = fntype->parameters();
   if (this->args_ == NULL)
