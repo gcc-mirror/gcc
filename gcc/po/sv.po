@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.7.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-03-18 14:00+0000\n"
-"PO-Revision-Date: 2012-03-27 15:41+0200\n"
+"PO-Revision-Date: 2012-04-18 21:44+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -912,7 +912,7 @@ msgstr "%s:trasig\n"
 #: gcov.c:1203
 #, c-format
 msgid "%s:no functions found\n"
-msgstr "%s:ingen funktion funnen\n"
+msgstr "%s:inga funktioner funna\n"
 
 #: gcov.c:1222
 #, c-format
@@ -2160,7 +2160,7 @@ msgstr "Största tillåtna storleksökning för nya parametrar som ipa-sra ersä
 
 #: params.def:883
 msgid "Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs"
-msgstr "Storlek e byt efter vilken trådlokala aggregat skal instrumenteras med loggningsfunktioner istället för spara/återställ-par"
+msgstr "Storlek i byte efter vilken trådlokala aggregat skall instrumenteras med loggningsfunktioner istället för spara/återställ-par"
 
 #: params.def:890
 msgid "Maximum size of a list of values associated with each parameter for interprocedural constant propagation"
@@ -4471,7 +4471,7 @@ msgstr "Heltalsspill vid beräkning av mängden minne att allokera"
 #: fortran/trans-decl.c:4791
 #, c-format
 msgid "Actual string length does not match the declared one for dummy argument '%s' (%ld/%ld)"
-msgstr "Aktuellt stränglängd matchare inte den deklarerade för attrappargument ”%s” (%ld/%ld)"
+msgstr "Aktuell stränglängd matchar inte den deklarerade för attrappargument ”%s” (%ld/%ld)"
 
 #: fortran/trans-decl.c:4799
 #, c-format
@@ -6061,7 +6061,7 @@ msgstr "Utnyttja UltraSPARC-utökningen sammansmält multiplicera-addera"
 
 #: config/sparc/sparc.opt:82
 msgid "Use UltraSPARC Population-Count instruction"
-msgstr "Utnyttja UltraSparc:s instruktion populeringsantals"
+msgstr "Utnyttja UltraSparc:s instruktion populeringsantal"
 
 #: config/sparc/sparc.opt:86
 msgid "Pointers are 64-bit"
@@ -8757,7 +8757,7 @@ msgstr "Aktivera användning av POST_MODIFY"
 
 #: config/epiphany/epiphany.opt:68
 msgid "Set number of bytes on the stack preallocated for use by the callee."
-msgstr "Sätt antalet byt på stacken som förallokeras att användas av den anropade."
+msgstr "Sätt antalet byte på stacken som förallokeras att användas av den anropade."
 
 #: config/epiphany/epiphany.opt:72
 msgid "Assume round to nearest is selected for purposes of scheduling."
@@ -10517,7 +10517,7 @@ msgstr "Varna om profiler i -fprofile-use inte stämmer"
 
 #: common.opt:699
 msgid "Warn when a vector operation is compiled outside the SIMD"
-msgstr "Varbna när en vektoroperation kompileras utanför SIMD:n"
+msgstr "Varna när en vektoroperation kompileras utanför SIMD:n"
 
 #: common.opt:715
 msgid "-aux-info <file>\tEmit declaration information into <file>"
@@ -19892,7 +19892,7 @@ msgstr "cl_optimization-storlek stämmer inte överens i LTO-läsare och -skriva
 #: tree-streamer-out.c:364
 #, gcc-internal-format
 msgid "tree bytecode streams do not support machine specific builtin functions on this target"
-msgstr "trädbytekodströmmar stödjer inte maskinspecifika inbyggda fungerioner för detta mål"
+msgstr "trädbytekodströmmar stödjer inte maskinspecifika inbyggda funktioner för detta mål"
 
 #: tree-vect-generic.c:244
 #, gcc-internal-format
@@ -35164,7 +35164,7 @@ msgstr "Absolutvärdet av SHIFT vid %L måste vara vara mindre än eller lika me
 #: fortran/check.c:325
 #, gcc-internal-format, gfc-internal-format
 msgid "'%s' at %L must be less than or equal to BIT_SIZE('%s')"
-msgstr "”%s” vid %L får inte vara mindre än eller lika med BIT_SIZE(”%s”)"
+msgstr "”%s” vid %L måste vara mindre än eller lika med BIT_SIZE(”%s”)"
 
 #: fortran/check.c:335
 #, gcc-internal-format, gfc-internal-format
@@ -35179,7 +35179,7 @@ msgstr "%s vid %L måste vara mindre än eller lika med BIT_SIZE av INTEGER(KIND
 #: fortran/check.c:388
 #, gcc-internal-format, gfc-internal-format
 msgid "'%s + %s' at %L must be less than or equal to BIT_SIZE('%s')"
-msgstr "”%s + %s” vid %L får inte vara mindre än eller lika med BIT_SIZE(”%s”)"
+msgstr "”%s + %s” vid %L måste vara mindre än eller lika med BIT_SIZE(”%s”)"
 
 #: fortran/check.c:406
 #, gcc-internal-format, gfc-internal-format
@@ -42613,7 +42613,7 @@ msgstr "Variabeln ”%s” vid %L av TYPE(C_PTR) eller TYPE(C_FUNPTR) får inte 
 #: fortran/resolve.c:12614
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable '%s' at %L with coarray component shall be a nonpointer, nonallocatable scalar"
-msgstr "Variabeln ”%s” vid %L med co-vektorkomponent skall en skallär som inte är en pekare eller allokerbar"
+msgstr "Variabeln ”%s” vid %L med co-vektorkomponent skall vara en skalär som inte är en pekare eller allokerbar"
 
 #: fortran/resolve.c:12629
 #, gcc-internal-format, gfc-internal-format
