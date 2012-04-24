@@ -1,3 +1,8 @@
+2012-02-24  Jim Meyering  <meyering@redhat.com>
+
+	* genattrtab.c (gen_attr): Avoid NULL-deref after diagnosing
+	absence of an define_enum call.
+
 2012-04-24  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound): If

@@ -1,6 +1,6 @@
 /* Generate code from machine description to compute values of attributes.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -2993,8 +2993,9 @@ gen_attr (rtx exp, int lineno)
       if (!et || !et->md_p)
 	error_with_line (lineno, "No define_enum called `%s' defined",
 			 attr->name);
-      for (ev = et->values; ev; ev = ev->next)
-	add_attr_value (attr, ev->name);
+      if (et)
+	for (ev = et->values; ev; ev = ev->next)
+	  add_attr_value (attr, ev->name);
     }
   else if (*XSTR (exp, 1) == '\0')
     attr->is_numeric = 1;
