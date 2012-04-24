@@ -1,3 +1,9 @@
+2012-04-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53098
+	* tree-vect-loop.c (vect_analyze_loop_operations): Fixup
+	comparison sign.
+
 2012-04-24  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/33512
