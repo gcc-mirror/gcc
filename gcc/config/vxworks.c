@@ -144,4 +144,12 @@ vxworks_override_options (void)
   /* PIC is only supported for RTPs.  */
   if (flag_pic && !TARGET_VXWORKS_RTP)
     error ("PIC is only supported for RTPs");
+
+  /* Default to strict dwarf-2 to prevent potential difficulties observed with
+     non-gdb debuggers on extensions > 2.  */
+  if (dwarf_strict < 0)
+    dwarf_strict = 1;
+
+  if (dwarf_version < 0)
+    dwarf_version = 2;
 }

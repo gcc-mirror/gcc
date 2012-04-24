@@ -1380,6 +1380,10 @@ process_options (void)
   if (dwarf_strict < 0)
     dwarf_strict = 0;
 
+  /* And select a default dwarf level.  */
+  if (dwarf_version < 0)
+    dwarf_version = 2;
+
   /* A lot of code assumes write_symbols == NO_DEBUG if the debugging
      level is 0.  */
   if (debug_info_level == DINFO_LEVEL_NONE)

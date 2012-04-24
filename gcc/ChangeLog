@@ -1,3 +1,10 @@
+2012-04-24  Olivier Hainque  <hainque@adacore.com>
+
+	* common.opt (gdwarf-): Initialize dwarf_version to -1 instead of 2.
+	* toplev.c (process_options): Default to dwarf_version 2.
+	* config/vxworks.c (vxworks_override_options): Default to strict-dwarf
+	and dwarf_version 2.
+
 2012-04-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree-pretty-print.h (default_tree_printer): Do not declare.
