@@ -1,5 +1,10 @@
 2012-04-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/53084
+	* varasm.c (compute_reloc_for_constant): Handle ADDR_EXPR
+	of MEM_REF.
+	(output_addressed_constants): Likewise.
+
 	PR middle-end/52999
 	* varasm.c (get_section): Don't ICE for section conflicts with
 	built-in section kinds.
