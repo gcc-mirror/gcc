@@ -275,8 +275,9 @@ grep '^const __PC' gen-sysinfo.go |
   sed -e 's/^\(const \)__\(PC[^= ]*\)\(.*\)$/\1\2 = __\2/' >> ${OUT}
 
 # The PATH_MAX constant.
-grep '^const _PATH_MAX ' gen-sysinfo.go |
+if grep '^const _PATH_MAX ' gen-sysinfo.go >/dev/null 2>&1; then
   echo 'const PathMax = _PATH_MAX' >> ${OUT}
+fi
 
 # epoll constants.
 grep '^const _EPOLL' gen-sysinfo.go |
