@@ -1,21 +1,26 @@
 # Vietnamese translation for CPPlib.
-# Copyright © 2010 Free Software Foundation, Inc.
+# Copyright © 2012 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Clytie Siddall <clytie@riverland.net.au>, 2005-2010.
+# Trần Ngọc Quân <vnwildman@gmail.com>, 2012.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.5.0\n"
+"Project-Id-Version: cpplib-4.7.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-01-27 16:12+0000\n"
-"PO-Revision-Date: 2010-04-16 21:28+0930\n"
-"Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
-"Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
+"PO-Revision-Date: 2012-04-18 07:46+0700\n"
+"Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
+"Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
 "Language: vi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 "X-Generator: LocFactoryEditor 1.8\n"
+"X-Poedit-Language: Vietnamese\n"
+"X-Poedit-Country: VIET NAM\n"
+"X-Poedit-SourceCharset: utf-8\n"
 
 #: charset.c:674
 #, c-format
@@ -29,7 +34,7 @@ msgstr "iconv_open (mở)"
 #: charset.c:685
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
-msgstr "chưa thi hành iconv nên không thể chuyển đổi từ %s sang %s"
+msgstr "iconv chưa thực hiện nên không thể chuyển đổi từ %s sang %s"
 
 #: charset.c:781
 #, c-format
@@ -118,7 +123,7 @@ msgstr "« \\a » có nghĩa khác trong ngôn ngữ C truyền thống"
 #: charset.c:1313
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
-msgstr "dãy thoát khác ISO chuẩn: « \\%c »"
+msgstr "dãy thoát khác chuẩn ISO: « \\%c »"
 
 #: charset.c:1321
 #, c-format
@@ -195,7 +200,7 @@ msgstr "chỉ thị tiền xử lý không hợp lệ #%s"
 
 #: directives.c:550
 msgid "\"defined\" cannot be used as a macro name"
-msgstr "không thể dùng « defined » (đã xác định) như là tên vĩ lệnh"
+msgstr "không thể dùng « defined » (đã định nghĩa) như là tên vĩ lệnh"
 
 #: directives.c:556
 #, c-format
@@ -214,7 +219,7 @@ msgstr "mọi tên vĩ lệnh phải là bộ nhận diện"
 #: directives.c:611
 #, c-format
 msgid "undefining \"%s\""
-msgstr "đang hủy xác định « %s »"
+msgstr "đang hủy định nghĩa « %s »"
 
 #: directives.c:666
 msgid "missing terminating > character"
@@ -319,7 +324,7 @@ msgstr "gặp chỉ thị #pragma pop_macro sai"
 
 #: directives.c:1595
 msgid "invalid #pragma GCC poison directive"
-msgstr "gặp chỉ thị vộ hiệu hóa (poison) GCC « #pragma » không hợp lệ"
+msgstr "gặp chỉ thị vô hiệu hóa (poison) GCC « #pragma » không hợp lệ"
 
 #: directives.c:1604
 #, c-format
@@ -482,10 +487,8 @@ msgid "use of C++0x long long integer constant"
 msgstr "dùng hằng số nguyên dài dài C++0x"
 
 #: expr.c:594
-#, fuzzy
-#| msgid "use of C++0x long long integer constant"
 msgid "use of C99 long long integer constant"
-msgstr "dùng hằng số nguyên dài dài C++0x"
+msgstr "dùng hằng số nguyên dài dài C99"
 
 #: expr.c:608
 msgid "imaginary constants are a GCC extension"
@@ -505,11 +508,11 @@ msgstr "hằng số nguyên quá lớn thì không có dấu"
 
 #: expr.c:830
 msgid "missing ')' after \"defined\""
-msgstr "thiếu « ) » nằm sau « defined » (đã xác định)"
+msgstr "thiếu « ) » nằm sau « defined » (đã định nghĩa)"
 
 #: expr.c:837
 msgid "operator \"defined\" requires an identifier"
-msgstr "toán tử « defined » (đã xác định) cần đến bộ nhận diện"
+msgstr "toán tử « defined » (đã định nghĩa) cần đến bộ nhận diện"
 
 #: expr.c:845
 #, c-format
@@ -518,13 +521,11 @@ msgstr "(« %s » là một hiệu bài thay thế cho « %s » trong ngôn ng�
 
 #: expr.c:855
 msgid "this use of \"defined\" may not be portable"
-msgstr "khả năng dùng « defined » (đã xác định) có lẽ không thể mạng theo"
+msgstr "khả năng dùng « defined » (đã định nghĩa) có lẽ không thể mạng theo"
 
 #: expr.c:914
-#, fuzzy
-#| msgid "integer overflow in preprocessor expression"
 msgid "user-defined literal in preprocessor expression"
-msgstr "tràn số nguyên trong biểu thức tiền xử lý"
+msgstr "kiểu do người dùng định nghĩa trong biểu thức tiền xử lý"
 
 #: expr.c:919
 msgid "floating constant in preprocessor expression"
@@ -537,7 +538,7 @@ msgstr "gặp số ảo nằm trong biểu thức tiền xử lý"
 #: expr.c:972
 #, c-format
 msgid "\"%s\" is not defined"
-msgstr "chưa xác định « %s »"
+msgstr "chưa định nghĩa « %s »"
 
 #: expr.c:984
 msgid "assertions are a GCC extension"
@@ -550,12 +551,12 @@ msgstr "khẳng định là một phần mở rộng GCC bị phản đối"
 #: expr.c:1120 expr.c:1149
 #, c-format
 msgid "missing binary operator before token \"%s\""
-msgstr "thiếu toán từ nhị phân nằm trước hiệu bài « %s »"
+msgstr "thiếu toán tử nhị phân nằm trước thẻ bài « %s »"
 
 #: expr.c:1140
 #, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
-msgstr "hiệu bài « %s » không hợp lệ trong biểu thức tiền xử lý"
+msgstr "thẻ bài « %s » không hợp lệ trong biểu thức tiền xử lý"
 
 #: expr.c:1157
 msgid "missing expression between '(' and ')'"
@@ -790,7 +791,7 @@ msgstr "gặp chú thích đa dòng"
 #: lex.c:2471
 #, c-format
 msgid "unspellable token %s"
-msgstr "gặp hiệu bài không thể chính tả %s"
+msgstr "gặp thẻ bài không thể chính tả %s"
 
 #: macro.c:188
 #, c-format
@@ -821,7 +822,7 @@ msgstr "điều nghĩa chữ chuỗi không hợp lệ nên bỏ qua « \\ » cu
 #: macro.c:592
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
-msgstr "việc dán « %s » và « %s » không đưa ra hiệu bài tiền xử lý hợp lệ"
+msgstr "việc dán « %s » và « %s » không đưa ra thẻ bài tiền xử lý hợp lệ"
 
 #: macro.c:682
 msgid "ISO C99 requires rest arguments to be used"
@@ -850,7 +851,7 @@ msgstr "vĩ lệnh giống hàm số « %s » phải được dùng với đối
 #: macro.c:1694
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
-msgstr "đang gọi vĩ lệnh %s đối số %d: đối số vĩ lệnh còn rộng chưa được xác định tùy theo tiêu chuẩn ISO C90 và ISO C++98 "
+msgstr "đang gọi vĩ lệnh %s đối số %d: đối số vĩ lệnh còn rộng chưa được định nghĩa tùy theo tiêu chuẩn ISO C90 và ISO C++98 "
 
 #: macro.c:2596
 #, c-format
@@ -896,16 +897,16 @@ msgstr "thiếu khoảng trắng nằm sau tên vĩ lệnh"
 
 #: macro.c:2841
 msgid "'#' is not followed by a macro parameter"
-msgstr "« # » không có tham số vĩ lệnh đi theo"
+msgstr "« # » không cho phép đi theo sau một tham số vĩ lệnh"
 
 #: macro.c:2999
 #, c-format
 msgid "\"%s\" redefined"
-msgstr "« %s » đã được xác định lại"
+msgstr "« %s » bị định nghĩa lại"
 
 #: macro.c:3005
 msgid "this is the location of the previous definition"
-msgstr "đây là vị trí của lời xác định trước"
+msgstr "đây là vị trí của lời định nghĩa trước"
 
 #: macro.c:3066
 #, c-format
@@ -915,7 +916,7 @@ msgstr "đối số vĩ lệnh « %s » nên được chuyển đổi thành chu
 #: macro.c:3093
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
-msgstr "gặp kiểu băm không hợp lệ %d trong « cpp_macro_definition » (lời xác định vĩ lệnh)"
+msgstr "gặp kiểu băm không hợp lệ %d trong « cpp_macro_definition » (lời định nghĩa vĩ lệnh)"
 
 #: pch.c:88 pch.c:336 pch.c:348 pch.c:366 pch.c:372 pch.c:381 pch.c:388
 msgid "while writing precompiled header"
@@ -929,17 +930,17 @@ msgstr "%s: không được dùng vì « %.*s » không còn tin cậy lại (b�
 #: pch.c:630
 #, c-format
 msgid "%s: not used because `%.*s' not defined"
-msgstr "%s: không được dùng vì chưa xác định « %.*s »"
+msgstr "%s: không được dùng vì chưa định nghĩa « %.*s »"
 
 #: pch.c:642
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
-msgstr "%s: không được dùng vì « %.*s » đã được xác định là « %s » không phải « %.*s »"
+msgstr "%s: không được dùng vì « %.*s » đã được định nghĩa là « %s » không phải « %.*s »"
 
 #: pch.c:683
 #, c-format
 msgid "%s: not used because `%s' is defined"
-msgstr "%s: không được dùng vì « %s » đã được xác định"
+msgstr "%s: không được dùng vì « %s » đã được định nghĩa"
 
 #: pch.c:703
 #, c-format
