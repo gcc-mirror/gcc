@@ -1,3 +1,8 @@
+2012-04-23  DJ Delorie  <dj@redhat.com>
+
+	* config/s390/s390.h (LINK_SPEC): Remove, no longer needed.
+	(LIBSTDCXX): Change to CPP2.
+
 2012-04-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/52878
