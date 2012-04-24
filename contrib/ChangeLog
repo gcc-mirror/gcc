@@ -1,3 +1,8 @@
+2012-04-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* compare_tests: Append '/' to make 'find' traverse
+	symlinked directories.
+
 2012-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite-management/validate_failures.py (GetBuildData): Use
