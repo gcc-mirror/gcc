@@ -1,3 +1,10 @@
+2012-04-24  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-opt/33512
+	* gcc.dg/tree-ssa/andor-3.c: New testcase.
+	* gcc.dg/tree-ssa/andor-4.c: New testcase.
+	* gcc.dg/tree-ssa/andor-5.c: New testcase.
+
 2012-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/53084

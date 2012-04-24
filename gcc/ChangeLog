@@ -1,3 +1,12 @@
+2012-04-24  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-opt/33512
+	* tree-ssa-forwprop.c (defcodefor_name): New function.
+	(simplify_bitwise_binary): Use defcodefor_name instead of manually
+	Simplify "( X | Y) & X" to X and "( X & Y) | X" to X.
+	Simplify "(~X | Y) & X" to "X & Y" and
+	"(~X & Y) | X" to "X | Y".
+
 2012-04-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* recog.c (insn_invalid_p): Add IN_GROUP parameter and use
