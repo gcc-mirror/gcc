@@ -2212,7 +2212,7 @@ Common JoinedOrMissing Negative(gdwarf-)
 Generate debug information in COFF format
 
 gdwarf-
-Common Joined UInteger Var(dwarf_version) Init(2) Negative(gstabs)
+Common Joined UInteger Var(dwarf_version) Init(-1) Negative(gstabs)
 Generate debug information in DWARF v2 (or later) format
 
 ggdb
