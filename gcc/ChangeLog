@@ -1,4 +1,9 @@
-2012-02-24  Jim Meyering  <meyering@redhat.com>
+2012-04-24  Richard Guenther  <rguenther@suse.de>
+
+	* tree-if-conv.c (main_tree_if_conversion): Move bb under
+	ENABLE_CHECKING.
+
+2012-04-24  Jim Meyering  <meyering@redhat.com>
 
 	* genattrtab.c (gen_attr): Avoid NULL-deref after diagnosing
 	absence of an define_enum call.
