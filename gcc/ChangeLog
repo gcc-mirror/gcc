@@ -1,3 +1,20 @@
+2012-04-24  Chao-ying Fu  <fu@mips.com>
+
+	* config.gcc (mips64*-*-linux*): Append mips/linux-common.h to tm_file.
+	(mips*-*-linux*): Append mips/linux-common.h to tm_file.
+	* config/mips/gnu-user.h
+	(SUBTARGET_CC1_SPEC): Use GNU_USER_TARGET_CC1_SPEC directly.
+	(GNU_USER_TARGET_LINK_SPEC): New define.
+	(LINK_SPEC): Use GNU_USER_TARGET_LINK_SPEC.
+	(LIB_SPEC): Use GNU_USER_TARGET_LIB_SPEC directly.
+	(GNU_USER_TARGET_MATHFILE_SPEC): New define.
+	(ENDFILE_SPEC): Use GNU_USER_TARGET_MATHFILE_SPEC and
+	GNU_USER_TARGET_ENDFILE_SPEC.
+	* config/mips/gnu-user64.h (LIB_SPEC): Remove.
+	(GNU_USER_TARGET_LINK_SPEC): New define.
+	(LINK_SPEC): Use GNU_USER_TARGET_LINK_SPEC.
+	* config/mips/linux-common.h: New file.
+
 2012-04-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/47197
