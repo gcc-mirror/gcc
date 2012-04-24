@@ -25,10 +25,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "tree-diagnostic.h"
+#include "tree-pass.h" /* TDF_DIAGNOSTIC */
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "vec.h"
+#include "intl.h"
 
 /* Prints out, if necessary, the name of the current function
    that caused an error.  Called from all error and warning functions.  */
@@ -40,7 +43,7 @@ diagnostic_report_current_function (diagnostic_context *context,
   lang_hooks.print_error_function (context, input_filename, diagnostic);
 }
 
-void
+static void
 default_tree_diagnostic_starter (diagnostic_context *context,
 				 diagnostic_info *diagnostic)
 {
@@ -226,4 +229,70 @@ virt_loc_aware_diagnostic_finalizer (diagnostic_context *context,
   maybe_unwind_expanded_macro_loc (context, diagnostic,
 				   diagnostic->location,
 				   NULL);
+}
+
+/* Default tree printer.   Handles declarations only.  */
+static bool
+default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
+		      int precision, bool wide, bool set_locus, bool hash)
+{
+  tree t;
+
+  /* FUTURE: %+x should set the locus.  */
+  if (precision != 0 || wide || hash)
+    return false;
+
+  switch (*spec)
+    {
+    case 'E':
+      t = va_arg (*text->args_ptr, tree);
+      if (TREE_CODE (t) == IDENTIFIER_NODE)
+	{
+	  pp_identifier (pp, IDENTIFIER_POINTER (t));
+	  return true;
+	}
+      break;
+
+    case 'D':
+      t = va_arg (*text->args_ptr, tree);
+      if (DECL_DEBUG_EXPR_IS_FROM (t) && DECL_DEBUG_EXPR (t))
+	t = DECL_DEBUG_EXPR (t);
+      break;
+
+    case 'F':
+    case 'T':
+      t = va_arg (*text->args_ptr, tree);
+      break;
+
+    case 'K':
+      percent_K_format (text);
+      return true;
+
+    default:
+      return false;
+    }
+
+  if (set_locus && text->locus)
+    *text->locus = DECL_SOURCE_LOCATION (t);
+
+  if (DECL_P (t))
+    {
+      const char *n = DECL_NAME (t)
+        ? identifier_to_locale (lang_hooks.decl_printable_name (t, 2))
+        : _("<anonymous>");
+      pp_string (pp, n);
+    }
+  else
+    dump_generic_node (pp, t, 0, TDF_DIAGNOSTIC, 0);
+
+  return true;
+}
+
+/* Sets CONTEXT to use language independent diagnostics.  */
+void
+tree_diagnostics_defaults (diagnostic_context *context)
+{
+  diagnostic_starter (context) = default_tree_diagnostic_starter;
+  diagnostic_finalizer (context) = default_diagnostic_finalizer;
+  diagnostic_format_decoder (context) = default_tree_printer;
 }
