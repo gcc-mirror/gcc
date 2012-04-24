@@ -1,3 +1,8 @@
+2012-04-24  Andrew Pinski  <apinski@cavium.com>
+
+	* tree-ssa-forwprop.c (simplify_bitwise_binary):
+	Don't directly use def1/def2.
+
 2012-04-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53098

@@ -1913,10 +1913,10 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
    /* Simplify (A & B) OP0 (C & B) to (A OP0 C) & B. */
    if (def1_code == def2_code
        && def1_code == BIT_AND_EXPR
-       && operand_equal_for_phi_arg_p (gimple_assign_rhs2 (def1),
-				       gimple_assign_rhs2 (def2)))
+       && operand_equal_for_phi_arg_p (def1_arg2,
+				       def2_arg2))
     {
-      tree b = gimple_assign_rhs2 (def1);
+      tree b = def1_arg2;
       tree a = def1_arg1;
       tree c = def2_arg1;
       tree inner = fold_build2 (code, TREE_TYPE (arg2), a, c);
