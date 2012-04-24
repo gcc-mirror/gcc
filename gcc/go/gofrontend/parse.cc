@@ -2865,7 +2865,16 @@ Parse::primary_expr(bool may_be_sink, bool may_be_composite_lit,
     {
       if (this->peek_token()->is_op(OPERATOR_LCURLY))
 	{
-	  if (is_parenthesized)
+	  if (!may_be_composite_lit)
+	    {
+	      Type* t = ret->type();
+	      if (t->named_type() != NULL
+		  || t->forward_declaration_type() != NULL)
+		error_at(start_loc,
+			 _("parentheses required around this composite literal"
+			   "to avoid parsing ambiguity"));
+	    }
+	  else if (is_parenthesized)
 	    error_at(start_loc,
 		     "cannot parenthesize type in composite literal");
 	  ret = this->composite_lit(ret->type(), 0, ret->location());
