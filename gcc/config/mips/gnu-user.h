@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
    CC1_SPEC itself by config/linux.h, but mips.h overrides CC1_SPEC
    and provides this hook instead.  */
 #undef SUBTARGET_CC1_SPEC
-#define SUBTARGET_CC1_SPEC "%{profile:-p}"
+#define SUBTARGET_CC1_SPEC GNU_USER_TARGET_CC1_SPEC
 
 /* -G is incompatible with -KPIC which is the default, so only allow objects
    in the small data section if the user explicitly asks for it.  */
@@ -54,8 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 #define MIPS_DEFAULT_GVALUE 0
 
 /* Borrowed from sparc/linux.h */
-#undef LINK_SPEC
-#define LINK_SPEC \
+#undef GNU_USER_TARGET_LINK_SPEC
+#define GNU_USER_TARGET_LINK_SPEC \
  "%(endian_spec) \
   %{shared:-shared} \
   %{!shared: \
@@ -63,6 +63,8 @@ along with GCC; see the file COPYING3.  If not see
       %{rdynamic:-export-dynamic} \
       -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
       %{static:-static}}"
+#undef LINK_SPEC
+#define LINK_SPEC GNU_USER_TARGET_LINK_SPEC
 
 #undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC \
@@ -90,11 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_OUTPUT_REG_POP
 
 #undef LIB_SPEC
-#define LIB_SPEC "\
-%{pthread:-lpthread} \
-%{shared:-lc} \
-%{!shared: \
-  %{profile:-lc_p} %{!profile:-lc}}"
+#define LIB_SPEC GNU_USER_TARGET_LIB_SPEC
 
 #ifdef HAVE_AS_NO_SHARED
 /* Default to -mno-shared for non-PIC.  */
@@ -133,7 +131,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   LINUX_DRIVER_SELF_SPECS
 
 /* Similar to standard Linux, but adding -ffast-math support.  */
+#undef	GNU_USER_TARGET_MATHFILE_SPEC
+#define GNU_USER_TARGET_MATHFILE_SPEC \
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
-   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+  GNU_USER_TARGET_MATHFILE_SPEC " " \
+  GNU_USER_TARGET_ENDFILE_SPEC
