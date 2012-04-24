@@ -1966,6 +1966,16 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
      by ratio_mult_vf_name steps.  */
   vect_update_ivs_after_vectorizer (loop_vinfo, ratio_mult_vf_name, update_e);
 
+  if (!LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
+      && !LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
+    {
+      int max_iter = MAX (LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1, (int) th);
+      record_niter_bound (new_loop, shwi_to_double_int (max_iter), false, true);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Setting upper bound of nb iterations for epilogue "
+		 "loop to %d\n", max_iter);
+    }
+
   /* After peeling we have to reset scalar evolution analyzer.  */
   scev_reset ();
 

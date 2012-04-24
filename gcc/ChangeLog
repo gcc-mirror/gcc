@@ -1,3 +1,9 @@
+2012-04-24  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound): If
+	the epilogue loop is not re-used as unvectorized version
+	record the its maximum number of iterations.
+
 2012-04-24  Andrew Pinski  <apinski@cavium.com>
 
 	* tree-ssa-forwprop.c (simplify_bitwise_binary):
