@@ -1,3 +1,8 @@
+2012-04-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/53065
+	* config/avr/avr.h (HARD_REGNO_CALL_PART_CLOBBERED): New hook define.
+
 2012-04-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53085
