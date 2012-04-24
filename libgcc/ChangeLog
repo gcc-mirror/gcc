@@ -1,3 +1,7 @@
+2012-04-24  Chao-ying Fu  <fu@mips.com>
+
+	* unwind-dw2-fde-dip.c: Define USE_PT_GNU_EH_FRAME for BIONIC.
+
 2012-04-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	struct siginfo vs. siginfo_t
