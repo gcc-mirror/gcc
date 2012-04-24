@@ -55,8 +55,8 @@ static bool comp_except_types (tree, tree, bool);
 static bool comp_array_types (const_tree, const_tree, bool);
 static tree pointer_diff (tree, tree, tree);
 static tree get_delta_difference (tree, tree, bool, bool, tsubst_flags_t);
-static void casts_away_constness_r (tree *, tree *);
-static bool casts_away_constness (tree, tree);
+static void casts_away_constness_r (tree *, tree *, tsubst_flags_t);
+static bool casts_away_constness (tree, tree, tsubst_flags_t);
 static void maybe_warn_about_returning_address_of_local (tree);
 static tree lookup_destructor (tree, tree, tree);
 static void warn_args_num (location_t, tree, bool);
@@ -3500,7 +3500,7 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
 	      parmval = convert_for_initialization
 		(NULL_TREE, type, val, flags,
 		 ICR_ARGPASS, fndecl, i, complain);
-	      parmval = convert_for_arg_passing (type, parmval);
+	      parmval = convert_for_arg_passing (type, parmval, complain);
 	    }
 
 	  if (parmval == error_mark_node)
@@ -3517,7 +3517,7 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
 	       types.  */
 	    val = require_complete_type_sfinae (val, complain);
 	  else
-	    val = convert_arg_to_ellipsis (val);
+	    val = convert_arg_to_ellipsis (val, complain);
 
 	  VEC_replace (tree, *values, i, val);
 	}
@@ -3543,7 +3543,7 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
 	      tree parmval
 		= convert_default_arg (TREE_VALUE (typetail),
 				       TREE_PURPOSE (typetail),
-				       fndecl, i);
+				       fndecl, i, complain);
 
 	      if (parmval == error_mark_node)
 		return -1;
@@ -5782,7 +5782,7 @@ check_for_casting_away_constness (tree src_type, tree dest_type,
   if (cast == CAST_EXPR && !warn_cast_qual)
     return false;
   
-  if (!casts_away_constness (src_type, dest_type))
+  if (!casts_away_constness (src_type, dest_type, complain))
     return false;
 
   switch (cast)
@@ -5932,7 +5932,8 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       && DERIVED_FROM_P (intype, TREE_TYPE (type))
       && can_convert (build_pointer_type (TYPE_MAIN_VARIANT (intype)),
 		      build_pointer_type (TYPE_MAIN_VARIANT
-					  (TREE_TYPE (type))))
+					  (TREE_TYPE (type))),
+		      complain)
       && (c_cast_p
 	  || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
@@ -6059,7 +6060,8 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       && can_convert (build_pointer_type (TYPE_MAIN_VARIANT
 					  (TREE_TYPE (intype))),
 		      build_pointer_type (TYPE_MAIN_VARIANT
-					  (TREE_TYPE (type)))))
+					  (TREE_TYPE (type))),
+		      complain))
     {
       tree base;
 
@@ -6100,7 +6102,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 	  t1 = intype;
 	  t2 = type;
 	}
-      if (can_convert (t1, t2) || can_convert (t2, t1))
+      if (can_convert (t1, t2, complain) || can_convert (t2, t1, complain))
 	{
 	  if (!c_cast_p
 	      && check_for_casting_away_constness (intype, type,
@@ -7301,7 +7303,8 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
       tree n;
 
       if (!force
-	  && !can_convert_arg (to_type, TREE_TYPE (pfn), pfn, LOOKUP_NORMAL))
+	  && !can_convert_arg (to_type, TREE_TYPE (pfn), pfn,
+			       LOOKUP_NORMAL, complain))
 	error ("invalid conversion to type %qT from type %qT",
 	       to_type, pfn_type);
 
@@ -7566,7 +7569,7 @@ convert_for_assignment (tree type, tree rhs,
      We allow bad conversions here because by the time we get to this point
      we are committed to doing the conversion.  If we end up doing a bad
      conversion, convert_like will complain.  */
-  if (!can_convert_arg_bad (type, rhstype, rhs, flags))
+  if (!can_convert_arg_bad (type, rhstype, rhs, flags, complain))
     {
       /* When -Wno-pmf-conversions is use, we just silently allow
 	 conversions from pointers-to-members to plain pointers.  If
@@ -8419,7 +8422,7 @@ cp_apply_type_quals_to_decl (int type_quals, tree decl)
    if and only if there is no implicit conversion from T1 to T2.  */
 
 static void
-casts_away_constness_r (tree *t1, tree *t2)
+casts_away_constness_r (tree *t1, tree *t2, tsubst_flags_t complain)
 {
   int quals1;
   int quals2;
@@ -8469,7 +8472,7 @@ casts_away_constness_r (tree *t1, tree *t2)
   else
     *t2 = TREE_TYPE (*t2);
 
-  casts_away_constness_r (t1, t2);
+  casts_away_constness_r (t1, t2, complain);
   *t1 = build_pointer_type (*t1);
   *t2 = build_pointer_type (*t2);
   *t1 = cp_build_qualified_type (*t1, quals1);
@@ -8485,7 +8488,7 @@ casts_away_constness_r (tree *t1, tree *t2)
 */
 
 static bool
-casts_away_constness (tree t1, tree t2)
+casts_away_constness (tree t1, tree t2, tsubst_flags_t complain)
 {
   if (TREE_CODE (t2) == REFERENCE_TYPE)
     {
@@ -8497,7 +8500,8 @@ casts_away_constness (tree t1, tree t2)
 	 casts away constness.  */
       t1 = (TREE_CODE (t1) == REFERENCE_TYPE ? TREE_TYPE (t1) : t1);
       return casts_away_constness (build_pointer_type (t1),
-				   build_pointer_type (TREE_TYPE (t2)));
+				   build_pointer_type (TREE_TYPE (t2)),
+				   complain);
     }
 
   if (TYPE_PTRMEM_P (t1) && TYPE_PTRMEM_P (t2))
@@ -8510,7 +8514,8 @@ casts_away_constness (tree t1, tree t2)
        constness.  */
     return casts_away_constness
       (build_pointer_type (TYPE_PTRMEM_POINTED_TO_TYPE (t1)),
-       build_pointer_type (TYPE_PTRMEM_POINTED_TO_TYPE (t2)));
+       build_pointer_type (TYPE_PTRMEM_POINTED_TO_TYPE (t2)),
+       complain);
 
   /* Casting away constness is only something that makes sense for
      pointer or reference types.  */
@@ -8521,8 +8526,8 @@ casts_away_constness (tree t1, tree t2)
   /* Top-level qualifiers don't matter.  */
   t1 = TYPE_MAIN_VARIANT (t1);
   t2 = TYPE_MAIN_VARIANT (t2);
-  casts_away_constness_r (&t1, &t2);
-  if (!can_convert (t2, t1))
+  casts_away_constness_r (&t1, &t2, complain);
+  if (!can_convert (t2, t1, complain))
     return true;
 
   return false;

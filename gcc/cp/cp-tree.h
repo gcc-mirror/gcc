@@ -4862,11 +4862,13 @@ extern bool null_ptr_cst_p			(tree);
 extern bool null_member_pointer_value_p		(tree);
 extern bool sufficient_parms_p			(const_tree);
 extern tree type_decays_to			(tree);
-extern tree build_user_type_conversion		(tree, tree, int);
+extern tree build_user_type_conversion		(tree, tree, int,
+						 tsubst_flags_t);
 extern tree build_new_function_call		(tree, VEC(tree,gc) **, bool, 
 						 tsubst_flags_t);
 extern tree build_operator_new_call		(tree, VEC(tree,gc) **, tree *,
-						 tree *, tree *);
+						 tree *, tree *,
+						 tsubst_flags_t);
 extern tree build_new_method_call		(tree, tree, VEC(tree,gc) **,
 						 tree, int, tree *,
 						 tsubst_flags_t);
@@ -4878,18 +4880,21 @@ extern tree build_new_op			(enum tree_code, int, tree,
 extern tree build_op_call			(tree, VEC(tree,gc) **,
 						 tsubst_flags_t);
 extern tree build_op_delete_call		(enum tree_code, tree, tree, bool, tree, tree);
-extern bool can_convert				(tree, tree);
-extern bool can_convert_arg			(tree, tree, tree, int);
-extern bool can_convert_arg_bad			(tree, tree, tree, int);
+extern bool can_convert				(tree, tree, tsubst_flags_t);
+extern bool can_convert_arg			(tree, tree, tree, int,
+						 tsubst_flags_t);
+extern bool can_convert_arg_bad			(tree, tree, tree, int,
+						 tsubst_flags_t);
 extern bool enforce_access			(tree, tree, tree);
 extern void push_defarg_context			(tree);
 extern void pop_defarg_context			(void);
-extern tree convert_default_arg			(tree, tree, tree, int);
-extern tree convert_arg_to_ellipsis		(tree);
+extern tree convert_default_arg			(tree, tree, tree, int,
+						 tsubst_flags_t);
+extern tree convert_arg_to_ellipsis		(tree, tsubst_flags_t);
 extern tree build_x_va_arg			(tree, tree);
 extern tree cxx_type_promotes_to		(tree);
 extern tree type_passed_as			(tree);
-extern tree convert_for_arg_passing		(tree, tree);
+extern tree convert_for_arg_passing		(tree, tree, tsubst_flags_t);
 extern bool is_properly_derived_from		(tree, tree);
 extern tree initialize_reference		(tree, tree, int,
 						 tsubst_flags_t);

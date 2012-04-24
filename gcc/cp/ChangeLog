@@ -1,3 +1,47 @@
+2012-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52363
+	* call.c (tourney, perform_overload_resolution,
+	build_operator_new_call, build_user_type_conversion_1,
+	build_user_type_conversion, perform_overload_resolution,
+	add_template_candidate, add_template_candidate_real,
+	add_template_conv_candidate, add_builtin_candidates,
+	add_builtin_candidate, build_builtin_candidate,
+	add_conv_candidate, add_function_candidate, implicit_conversion,
+	reference_binding, build_list_conv, conditional_conversion,
+	add_candidates, can_convert_array, build_aggr_conv,
+	build_array_conv, build_complex_conv, conditional_conversion):
+	Add tsubst_flags_t parameter.
+	(joust): Likewise, use it to handle SFINAE as if pedantic.
+	(add_list_candidates, build_integral_nontype_arg_conv,
+	perform_overload_resolution, build_new_function_call,
+	build_operator_new_call, build_op_call_1,
+	build_conditional_expr_1, build_new_op_1, convert_like_real,
+	convert_arg_to_ellipsis, convert_default_arg,
+	convert_for_arg_passing, build_over_call,
+	build_new_method_call_1, can_convert_arg, can_convert_arg_bad,
+	perform_implicit_conversion_flags,
+	perform_direct_initialization_if_possible,
+	initialize_reference): Adjust.
+	* typeck.c (casts_away_constness, casts_away_constness_r):
+	Add tsubst_flags_t parameter.
+	(convert_arguments, check_for_casting_away_constness,
+	build_static_cast_1, build_ptrmemfunc, convert_for_assignment):
+	Adjust.
+	* decl.c (reshape_init_r, check_default_argument): Likewise.
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): Likewise.
+	* pt.c (convert_nontype_argument, check_non_deducible_conversion):
+	Likewise.
+	* init.c (build_new_1): Likewise.
+	* cvt.c (convert_to_reference, ocp_convert, build_type_conversion,
+	build_expr_type_conversion, ): Likewise.
+	* search.c (check_final_overrider): Likewise.
+	* cp-tree.h (build_user_type_conversion,
+	build_operator_new_call, can_convert, can_convert_arg,
+	can_convert_arg_bad, convert_default_arg,
+	convert_arg_to_ellipsis, convert_for_arg_passing):
+	Adjust declaration.
+
 2012-04-22  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (maybe_make_one_only): Mark keyed COMDATs as USED so they
