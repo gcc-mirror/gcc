@@ -1,3 +1,17 @@
+2012-04-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* tree-pretty-print.h (default_tree_printer): Do not declare.
+	* tree-diagnostic.c: Include tree-pretty-print.h, tree-pass.h and
+	intl.h.
+	(default_tree_diagnostic_starter): Make static.
+	(default_tree_printer): Move to here. Make static.
+	(tree_diagnostics_defaults): New.
+	* tree-diagnostic.h (default_tree_diagnostic_starter): Do not declare.
+	* tree.c (free_lang_data): Use tree_diagnostics_defaults.
+	* toplev.c: Do not include tree-pass.h.
+	(default_tree_printer): Move from here.
+	(general_init): Use tree_diagnostics_defaults.
+
 2012-04-24  Chao-ying Fu  <fu@mips.com>
 
 	* config.gcc (mips64*-*-linux*): Append mips/linux-common.h to tm_file.

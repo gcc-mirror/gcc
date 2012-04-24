@@ -74,7 +74,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "alloc-pool.h"
 #include "tree-mudflap.h"
-#include "tree-pass.h"
 #include "gimple.h"
 #include "tree-ssa-alias.h"
 #include "plugin.h"
@@ -962,63 +961,6 @@ init_asm_output (const char *name)
     }
 }
 
-/* Default tree printer.   Handles declarations only.  */
-bool
-default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
-		      int precision, bool wide, bool set_locus, bool hash)
-{
-  tree t;
-
-  /* FUTURE: %+x should set the locus.  */
-  if (precision != 0 || wide || hash)
-    return false;
-
-  switch (*spec)
-    {
-    case 'E':
-      t = va_arg (*text->args_ptr, tree);
-      if (TREE_CODE (t) == IDENTIFIER_NODE)
-	{
-	  pp_identifier (pp, IDENTIFIER_POINTER (t));
-	  return true;
-	}
-      break;
-
-    case 'D':
-      t = va_arg (*text->args_ptr, tree);
-      if (DECL_DEBUG_EXPR_IS_FROM (t) && DECL_DEBUG_EXPR (t))
-	t = DECL_DEBUG_EXPR (t);
-      break;
-
-    case 'F':
-    case 'T':
-      t = va_arg (*text->args_ptr, tree);
-      break;
-
-    case 'K':
-      percent_K_format (text);
-      return true;
-
-    default:
-      return false;
-    }
-
-  if (set_locus && text->locus)
-    *text->locus = DECL_SOURCE_LOCATION (t);
-
-  if (DECL_P (t))
-    {
-      const char *n = DECL_NAME (t)
-        ? identifier_to_locale (lang_hooks.decl_printable_name (t, 2))
-        : _("<anonymous>");
-      pp_string (pp, n);
-    }
-  else
-    dump_generic_node (pp, t, 0, TDF_DIAGNOSTIC, 0);
-
-  return true;
-}
-
 /* A helper function; used as the reallocator function for cpp's line
    table.  */
 static void *
@@ -1163,13 +1105,15 @@ general_init (const char *argv0)
   /* Initialize the diagnostics reporting machinery, so option parsing
      can give warnings and errors.  */
   diagnostic_initialize (global_dc, N_OPTS);
-  diagnostic_starter (global_dc) = default_tree_diagnostic_starter;
-  /* By default print macro expansion contexts in the diagnostic
-     finalizer -- for tokens resulting from macro macro expansion.  */
-  diagnostic_finalizer (global_dc) = virt_loc_aware_diagnostic_finalizer;
   /* Set a default printer.  Language specific initializations will
      override it later.  */
-  pp_format_decoder (global_dc->printer) = &default_tree_printer;
+  tree_diagnostics_defaults (global_dc);
+  /* FIXME: This should probably be moved to C-family
+     language-specific initializations.  */
+  /* By default print macro expansion contexts in the diagnostic
+     finalizer -- for tokens resulting from macro expansion.  */
+  diagnostic_finalizer (global_dc) = virt_loc_aware_diagnostic_finalizer;
+
   global_dc->show_caret
     = global_options_init.x_flag_diagnostics_show_caret;
   global_dc->show_option_requested
