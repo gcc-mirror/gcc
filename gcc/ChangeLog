@@ -1,3 +1,9 @@
+2012-04-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53085
+	* tree-ssa-pre.c (eliminate): Do not eliminate volatile redundant
+	stores.
+
 2012-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/53084
