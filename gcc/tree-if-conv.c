@@ -1779,7 +1779,6 @@ main_tree_if_conversion (void)
   struct loop *loop;
   bool changed = false;
   unsigned todo = 0;
-  basic_block bb;
 
   if (number_of_loops () <= 1)
     return 0;
@@ -1796,8 +1795,11 @@ main_tree_if_conversion (void)
   free_dominance_info (CDI_POST_DOMINATORS);
 
 #ifdef ENABLE_CHECKING
-  FOR_EACH_BB (bb)
-    gcc_assert (!bb->aux);
+  {
+    basic_block bb;
+    FOR_EACH_BB (bb)
+      gcc_assert (!bb->aux);
+  }
 #endif
 
   return todo;
