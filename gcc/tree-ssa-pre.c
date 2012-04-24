@@ -4409,6 +4409,7 @@ eliminate (void)
 	     has the same value number as its rhs.  If so, the store is
 	     dead.  */
 	  else if (gimple_assign_single_p (stmt)
+		   && !gimple_has_volatile_ops (stmt)
 		   && !is_gimple_reg (gimple_assign_lhs (stmt))
 		   && (TREE_CODE (rhs) == SSA_NAME
 		       || is_gimple_min_invariant (rhs)))
