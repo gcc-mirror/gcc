@@ -5266,7 +5266,8 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	 valid aggregate initialization.  */
       && !first_initializer_p
       && (same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (init))
-	  || can_convert_arg (type, TREE_TYPE (init), init, LOOKUP_NORMAL)))
+	  || can_convert_arg (type, TREE_TYPE (init), init, LOOKUP_NORMAL,
+			      complain)))
     {
       d->cur++;
       return init;
@@ -10602,7 +10603,8 @@ check_default_argument (tree decl, tree arg)
      A default argument expression is implicitly converted to the
      parameter type.  */
   if (!TREE_TYPE (arg)
-      || !can_convert_arg (decl_type, TREE_TYPE (arg), arg, LOOKUP_NORMAL))
+      || !can_convert_arg (decl_type, TREE_TYPE (arg), arg, LOOKUP_NORMAL,
+			   tf_warning_or_error))
     {
       if (decl)
 	error ("default argument for %q#D has type %qT",

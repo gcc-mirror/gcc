@@ -2381,7 +2381,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 
 	  alloc_call = build_operator_new_call (fnname, placement,
 						&size, &cookie_size,
-						&alloc_fn);
+						&alloc_fn, complain);
 	}
     }
 

@@ -408,12 +408,12 @@ convert_to_reference (tree reftype, tree expr, int convtype,
   tree rval = NULL_TREE;
   tree rval_as_conversion = NULL_TREE;
   bool can_convert_intype_to_type;
+  tsubst_flags_t complain = ((flags & LOOKUP_COMPLAIN)
+			     ? tf_warning_or_error : tf_none);
 
   if (TREE_CODE (type) == FUNCTION_TYPE
       && TREE_TYPE (expr) == unknown_type_node)
-    expr = instantiate_type (type, expr,
-			     (flags & LOOKUP_COMPLAIN)
-			     ? tf_warning_or_error : tf_none);
+    expr = instantiate_type (type, expr, complain);
 
   if (expr == error_mark_node)
     return error_mark_node;
@@ -425,7 +425,8 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 
   intype = TYPE_MAIN_VARIANT (intype);
 
-  can_convert_intype_to_type = can_convert (type, intype);
+  can_convert_intype_to_type = can_convert (type, intype, complain);
+
   if (!can_convert_intype_to_type
       && (convtype & CONV_IMPLICIT) && MAYBE_CLASS_TYPE_P (intype)
       && ! (flags & LOOKUP_NO_CONVERSION))
@@ -445,7 +446,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 	}
     }
 
-  if (((convtype & CONV_STATIC) && can_convert (intype, type))
+  if (((convtype & CONV_STATIC) && can_convert (intype, type, complain))
       || ((convtype & CONV_IMPLICIT) && can_convert_intype_to_type))
     {
       if (flags & LOOKUP_COMPLAIN)
@@ -821,7 +822,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	/* For copy-initialization, first we create a temp of the proper type
 	   with a user-defined conversion sequence, then we direct-initialize
 	   the target with the temp (see [dcl.init]).  */
-	ctor = build_user_type_conversion (type, ctor, flags);
+	ctor = build_user_type_conversion (type, ctor, flags,
+					   tf_warning_or_error);
       else
 	{
 	  VEC(tree,gc) *ctor_vec = make_tree_vector_single (ctor);
@@ -1451,7 +1453,8 @@ build_type_conversion (tree xtype, tree expr)
 {
   /* C++: check to see if we can convert this aggregate type
      into the required type.  */
-  return build_user_type_conversion (xtype, expr, LOOKUP_NORMAL);
+  return build_user_type_conversion (xtype, expr, LOOKUP_NORMAL,
+				     tf_warning_or_error);
 }
 
 /* Convert the given EXPR to one of a group of types suitable for use in an
@@ -1609,7 +1612,8 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
   if (winner)
     {
       tree type = non_reference (TREE_TYPE (TREE_TYPE (winner)));
-      return build_user_type_conversion (type, expr, LOOKUP_NORMAL);
+      return build_user_type_conversion (type, expr, LOOKUP_NORMAL,
+					 tf_warning_or_error);
     }
 
   return NULL_TREE;

@@ -6063,7 +6063,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		 "because it is of type %qT", expr, type,
 		 TREE_TYPE (expr));
 	  /* If we are just one standard conversion off, explain.  */
-	  if (can_convert (type, TREE_TYPE (expr)))
+	  if (can_convert (type, TREE_TYPE (expr), complain))
 	    inform (input_location,
 		    "standard conversions are not allowed in this context");
 	  return NULL_TREE;
@@ -15128,14 +15128,15 @@ check_non_deducible_conversion (tree parm, tree arg, int strict,
 
   if (strict == DEDUCE_CONV)
     {
-      if (can_convert_arg (type, parm, NULL_TREE, flags))
+      if (can_convert_arg (type, parm, NULL_TREE, flags,
+			   explain_p ? tf_warning_or_error : tf_none))
 	return unify_success (explain_p);
     }
   else if (strict != DEDUCE_EXACT)
     {
       if (can_convert_arg (parm, type,
 			   TYPE_P (arg) ? NULL_TREE : arg,
-			   flags))
+			   flags, explain_p ? tf_warning_or_error : tf_none))
 	return unify_success (explain_p);
     }
 
