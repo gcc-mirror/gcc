@@ -1411,7 +1411,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
   if ((LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
        && (LOOP_VINFO_INT_NITERS (loop_vinfo) < vectorization_factor))
       || ((max_niter = max_stmt_executions_int (loop)) != -1
-	  && max_niter < vectorization_factor))
+	  && (unsigned HOST_WIDE_INT) max_niter < vectorization_factor))
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
         fprintf (vect_dump, "not vectorized: iteration count too small.");
