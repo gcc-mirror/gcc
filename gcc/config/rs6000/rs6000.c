@@ -17432,8 +17432,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
     strategy |= SAVRES_MULTIPLE;
 
   if (crtl->calls_eh_return
-      || cfun->machine->ra_need_lr
-      || info->total_size > 32767)
+      || cfun->machine->ra_need_lr)
     strategy |= (SAVE_INLINE_FPRS | REST_INLINE_FPRS
 		 | SAVE_INLINE_GPRS | REST_INLINE_GPRS);
 
@@ -17454,8 +17453,8 @@ rs6000_savres_strategy (rs6000_stack_t *info,
   /* Don't bother to try to save things out-of-line if r11 is occupied
      by the static chain.  It would require too much fiddling and the
      static chain is rarely used anyway.  FPRs are saved w.r.t the stack
-     pointer on Darwin.  */
-  if (using_static_chain_p)
+     pointer on Darwin, and AIX uses r1 or r12.  */
+  if (using_static_chain_p && DEFAULT_ABI != ABI_AIX)
     strategy |= ((DEFAULT_ABI == ABI_DARWIN
 		  ? 0 : SAVE_INLINE_FPRS | REST_INLINE_FPRS)
 		 | SAVE_INLINE_GPRS);
@@ -19555,11 +19554,17 @@ rs6000_emit_prologue (void)
 	}
     }
 
-  /* If we need to save CR, put it into r12 or r11.  */
+  /* If we need to save CR, put it into r12 or r11.  Choose r12 except when
+     r12 will be needed by out-of-line gpr restore.  */
+  cr_save_regno = (DEFAULT_ABI == ABI_AIX
+		   && !(strategy & (SAVE_INLINE_GPRS
+				    | SAVE_NOINLINE_GPRS_SAVES_LR))
+		   ? 11 : 12);
   cr_save_regno = DEFAULT_ABI == ABI_AIX && !saving_GPRs_inline ? 11 : 12;
   if (!WORLD_SAVE_P (info)
       && info->cr_save_p
-      && REGNO (frame_reg_rtx) != cr_save_regno)
+      && REGNO (frame_reg_rtx) != cr_save_regno
+      && !(using_static_chain_p && cr_save_regno == 11))
     {
       rtx set;
 
