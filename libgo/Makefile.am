@@ -654,9 +654,9 @@ go_net_sockoptip_file = go/net/sockoptip_linux.go
 else
 if LIBGO_IS_SOLARIS
 go_net_cgo_file = go/net/cgo_linux.go
-go_net_sock_file = go/net/sock_linux.go
-go_net_sockopt_file = go/net/sockopt_linux.go
-go_net_sockoptip_file = go/net/sockoptip_linux.go
+go_net_sock_file = go/net/sock_solaris.go
+go_net_sockopt_file = go/net/sockopt_bsd.go
+go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_solaris.go
 else
 if LIBGO_IS_FREEBSD
 go_net_cgo_file = go/net/cgo_bsd.go

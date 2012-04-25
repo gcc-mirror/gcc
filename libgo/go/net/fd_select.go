@@ -102,7 +102,27 @@ func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err erro
 				break
 			}
 		}
-		if e != nil {
+		if e == syscall.EBADF {
+			// Some file descriptor has been closed.
+			tmpReadFds = syscall.FdSet{}
+			tmpWriteFds = syscall.FdSet{}
+			n = 0
+			for i := 0; i < p.maxFd+1; i++ {
+				if syscall.FDIsSet(i, p.readFds) {
+					var s syscall.Stat_t
+					if syscall.Fstat(i, &s) == syscall.EBADF {
+						syscall.FDSet(i, &tmpReadFds)
+						n++
+					}
+				} else if syscall.FDIsSet(i, p.writeFds) {
+					var s syscall.Stat_t
+					if syscall.Fstat(i, &s) == syscall.EBADF {
+						syscall.FDSet(i, &tmpWriteFds)
+						n++
+					}
+				}
+			}
+		} else if e != nil {
 			return -1, 0, os.NewSyscallError("select", e)
 		}
 		if n == 0 {
