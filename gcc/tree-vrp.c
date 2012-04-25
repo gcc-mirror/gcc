@@ -4565,6 +4565,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      && INTEGRAL_TYPE_P (TREE_TYPE (name2))
 	      && IN_RANGE (tree_low_cst (cst2, 1), 1, prec - 1)
 	      && prec <= 2 * HOST_BITS_PER_WIDE_INT
+	      && prec == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (val)))
 	      && live_on_edge (e, name2)
 	      && !has_single_use (name2))
 	    {
@@ -4598,8 +4599,10 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	    new_val = val2;
 	  else
 	    {
+	      double_int maxval
+		= double_int_max_value (prec, TYPE_UNSIGNED (TREE_TYPE (val)));
 	      mask = double_int_ior (tree_to_double_int (val2), mask);
-	      if (double_int_minus_one_p (double_int_sext (mask, prec)))
+	      if (double_int_equal_p (mask, maxval))
 		new_val = NULL_TREE;
 	      else
 		new_val = double_int_to_tree (TREE_TYPE (val2), mask);

@@ -1,3 +1,14 @@
+2012-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53058
+	* double-int.h (double_int_max_value, double_int_min_value): New
+	prototypes.
+	* double-int.c (double_int_max_value, double_int_min_value): New
+	functions.
+	* tree-vrp.c (register_edge_assert_for_2): Compare mask
+	for LE_EXPR or GT_EXPR with double_int_max_value
+	instead of double_int_mask.
+
 2012-04-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vect_loop_versioning): Adjust prototype.
