@@ -19302,6 +19302,29 @@ rs6000_emit_prologue (void)
   HOST_WIDE_INT frame_off = 0;
   HOST_WIDE_INT sp_off = 0;
 
+#ifdef ENABLE_CHECKING
+  /* Track and check usage of r0, r11, r12.  */
+  int reg_inuse = using_static_chain_p ? 1 << 11 : 0;
+#define START_USE(R) do \
+  {						\
+    gcc_assert ((reg_inuse & (1 << (R))) == 0);	\
+    reg_inuse |= 1 << (R);			\
+  } while (0)
+#define END_USE(R) do \
+  {						\
+    gcc_assert ((reg_inuse & (1 << (R))) != 0);	\
+    reg_inuse &= ~(1 << (R));			\
+  } while (0)
+#define NOT_INUSE(R) do \
+  {						\
+    gcc_assert ((reg_inuse & (1 << (R))) == 0);	\
+  } while (0)
+#else
+#define START_USE(R) do {} while (0)
+#define END_USE(R) do {} while (0)
+#define NOT_INUSE(R) do {} while (0)
+#endif
+
   if (flag_stack_usage_info)
     current_function_static_stack_size = info->total_size;
 
@@ -19466,6 +19489,7 @@ rs6000_emit_prologue (void)
       if (need_r11)
 	{
 	  ptr_reg = gen_rtx_REG (Pmode, 11);
+	  START_USE (11);
 	}
       else if (info->total_size < 32767)
 	frame_off = info->total_size;
@@ -19478,6 +19502,7 @@ rs6000_emit_prologue (void)
 	       || crtl->calls_eh_return)
 	{
 	  ptr_reg = gen_rtx_REG (Pmode, 12);
+	  START_USE (12);
 	}
       else
 	{
@@ -19500,7 +19525,6 @@ rs6000_emit_prologue (void)
 	}
       rs6000_emit_allocate_stack (info->total_size, ptr_reg, -frame_off);
       sp_off = info->total_size;
-      sp_off = info->total_size;
       if (frame_reg_rtx != sp_reg_rtx)
 	rs6000_emit_stack_tie (frame_reg_rtx, false);
     }
@@ -19511,6 +19535,7 @@ rs6000_emit_prologue (void)
       rtx addr, reg, mem;
 
       reg = gen_rtx_REG (Pmode, 0);
+      START_USE (0);
       insn = emit_move_insn (reg, gen_rtx_REG (Pmode, LR_REGNO));
       RTX_FRAME_RELATED_P (insn) = 1;
 
@@ -19526,6 +19551,7 @@ rs6000_emit_prologue (void)
 	  insn = emit_move_insn (mem, reg);
 	  rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 				NULL_RTX, NULL_RTX);
+	  END_USE (0);
 	}
     }
 
@@ -19538,6 +19564,7 @@ rs6000_emit_prologue (void)
       rtx set;
 
       cr_save_rtx = gen_rtx_REG (SImode, cr_save_regno);
+      START_USE (cr_save_regno);
       insn = emit_insn (gen_movesi_from_cr (cr_save_rtx));
       RTX_FRAME_RELATED_P (insn) = 1;
       /* Now, there's no way that dwarf2out_frame_debug_expr is going
@@ -19581,6 +19608,8 @@ rs6000_emit_prologue (void)
 				     /*savep=*/true, /*gpr=*/false, lr);
       rs6000_frame_related (insn, frame_reg_rtx, sp_off,
 			    NULL_RTX, NULL_RTX);
+      if (lr)
+	END_USE (0);
     }
 
   /* Save GPRs.  This is done as a PARALLEL if we are using
@@ -19625,10 +19654,15 @@ rs6000_emit_prologue (void)
 	  if (using_static_chain_p)
 	    {
 	      rtx r0 = gen_rtx_REG (Pmode, 0);
+
+	      START_USE (0);
 	      gcc_assert (info->first_gp_reg_save > 11);
 
 	      emit_move_insn (r0, spe_save_area_ptr);
 	    }
+	  else if (REGNO (frame_reg_rtx) != 11)
+	    START_USE (11);
+
 	  emit_insn (gen_addsi3 (spe_save_area_ptr,
 				 frame_reg_rtx, GEN_INT (offset)));
 	  if (!using_static_chain_p && REGNO (frame_reg_rtx) == 11)
@@ -19659,8 +19693,16 @@ rs6000_emit_prologue (void)
 	}
 
       /* Move the static chain pointer back.  */
-      if (using_static_chain_p && !spe_regs_addressable)
-	emit_move_insn (spe_save_area_ptr, gen_rtx_REG (Pmode, 0));
+      if (!spe_regs_addressable)
+	{
+	  if (using_static_chain_p)
+	    {
+	      emit_move_insn (spe_save_area_ptr, gen_rtx_REG (Pmode, 0));
+	      END_USE (0);
+	    }
+	  else if (REGNO (frame_reg_rtx) != 11)
+	    END_USE (11);
+	}
     }
   else if (!WORLD_SAVE_P (info) && !saving_GPRs_inline)
     {
@@ -19681,10 +19723,13 @@ rs6000_emit_prologue (void)
 
 	  if (ptr_set_up)
 	    frame_off = -end_save;
+	  else
+	    NOT_INUSE (ptr_regno);
 	  emit_insn (gen_add3_insn (ptr_reg, frame_reg_rtx, offset));
 	}
       else if (!ptr_set_up)
 	{
+	  NOT_INUSE (ptr_regno);
 	  emit_move_insn (ptr_reg, frame_reg_rtx);
 	}
       ptr_off = -end_save;
@@ -19695,6 +19740,8 @@ rs6000_emit_prologue (void)
 				     /*savep=*/true, /*gpr=*/true, lr);
       rs6000_frame_related (insn, ptr_reg, sp_off - ptr_off,
 			    NULL_RTX, NULL_RTX);
+      if (lr)
+	END_USE (0);
     }
   else if (!WORLD_SAVE_P (info) && using_store_multiple)
     {
@@ -19753,12 +19800,15 @@ rs6000_emit_prologue (void)
       rtx save_insn, join_insn, note;
       long toc_restore_insn;
 
-      gcc_assert (REGNO (frame_reg_rtx) != 11);
       tmp_reg = gen_rtx_REG (Pmode, 11);
       tmp_reg_si = gen_rtx_REG (SImode, 11);
       if (using_static_chain_p)
-	emit_move_insn (gen_rtx_REG (Pmode, 0), tmp_reg);
-      gcc_assert (saving_GPRs_inline && saving_FPRs_inline);
+	{
+	  START_USE (0);
+	  emit_move_insn (gen_rtx_REG (Pmode, 0), tmp_reg);
+	}
+      else
+	START_USE (11);
       emit_move_insn (tmp_reg, gen_rtx_REG (Pmode, LR_REGNO));
       /* Peek at instruction to which this function returns.  If it's
 	 restoring r2, then we know we've already saved r2.  We can't
@@ -19811,7 +19861,12 @@ rs6000_emit_prologue (void)
       RTX_FRAME_RELATED_P (join_insn) = 1;
 
       if (using_static_chain_p)
-	emit_move_insn (tmp_reg, gen_rtx_REG (Pmode, 0));
+	{
+	  emit_move_insn (tmp_reg, gen_rtx_REG (Pmode, 0));
+	  END_USE (0);
+	}
+      else
+	END_USE (11);
     }
 
   /* Save CR if we use any that must be preserved.  */
@@ -19828,6 +19883,7 @@ rs6000_emit_prologue (void)
 	{
 	  rtx set;
 
+	  START_USE (0);
 	  cr_save_rtx = gen_rtx_REG (SImode, 0);
 	  insn = emit_insn (gen_movesi_from_cr (cr_save_rtx));
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -19835,6 +19891,7 @@ rs6000_emit_prologue (void)
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, set);
 	}
       insn = emit_move_insn (mem, cr_save_rtx);
+      END_USE (REGNO (cr_save_rtx));
 
       rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 			    NULL_RTX, NULL_RTX);
@@ -19856,6 +19913,7 @@ rs6000_emit_prologue (void)
 	      && (info->vrsave_save_offset
 		  + info->total_size - frame_off) > 32767))
 	{
+	  START_USE (12);
 	  ptr_reg = gen_rtx_REG (Pmode, 12);
 	  frame_reg_rtx = ptr_reg;
 	  frame_off = -(info->altivec_save_offset + info->altivec_size);
@@ -19863,7 +19921,6 @@ rs6000_emit_prologue (void)
       else if (REGNO (frame_reg_rtx) == 1)
 	frame_off = info->total_size;
       rs6000_emit_allocate_stack (info->total_size, ptr_reg, -frame_off);
-      sp_off = info->total_size;
       sp_off = info->total_size;
       if (frame_reg_rtx != sp_reg_rtx)
 	rs6000_emit_stack_tie (frame_reg_rtx, false);
@@ -19896,6 +19953,7 @@ rs6000_emit_prologue (void)
 
 	    savereg = gen_rtx_REG (V4SImode, i);
 
+	    NOT_INUSE (0);
 	    areg = gen_rtx_REG (Pmode, 0);
 	    emit_move_insn (areg, GEN_INT (offset));
 
@@ -19928,6 +19986,7 @@ rs6000_emit_prologue (void)
       /* Get VRSAVE onto a GPR.  Note that ABI_V4 might be using r12
 	 as frame_reg_rtx and r11 as the static chain pointer for
 	 nested functions.  */
+      NOT_INUSE (0);
       reg = gen_rtx_REG (SImode, 0);
       vrsave = gen_rtx_REG (SImode, VRSAVE_REGNO);
       if (TARGET_MACHO)
