@@ -1,5 +1,40 @@
 2012-04-25  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphunit.c: Update toplevel comment.
+	(tree_rest_of_compilation): Merge into cgraph_expand_function.
+	(cgraph_analyze_function): Make static.
+	(cgraph_decide_is_function_needed): Make static.
+	(cgraph_add_new_function): Use expand_function instead of
+	rest_of_compilation.
+	(clone_of_p, verify_edge_count_and_frequency, cgraph_debug_gimple_stmt,
+	verify_edge_corresponds_to_fndecl, verify_cgraph_node, verify_cgraph):
+	Move to cgraph.c
+	(cgraph_inline_p): Remove.
+	(cgraph_preserve_function_body_p): Move to ipa-inline-transform.
+	(init_cgraph): Add comment.
+	* cgraphbuild.c (record_reference, mark_address, mark_load,
+	mark_store): Do not call analyze_expr hook.
+	* cgraph.c: Update toplevel comment.
+	(clone_of_p, verify_edge_count_and_frequency, cgraph_debug_gimple_stmt,
+	verify_edge_corresponds_to_fndecl, verify_cgraph_node, verify_cgraph):
+	Move fere from cgraphunit.c
+	(cgraph_mark_force_output_node): Move to cgraph.h
+	* cgraph.h: Reorder so the comments match the function placement.
+	(cgraph_analyze_function, cgraph_decide_is_function_needed): Remove.
+	(cgraph_mark_force_output_node): Move here from cgraph.c
+	* tree.c (free_lang_data): Do not clear analyze_expr hook.
+	* ipa-inline-transform.c (preserve_function_body_p): New function.
+	(inline_transform): Update.
+	* langhooks.c (lhd_callgraph_analyze_expr): Remove.
+	* langhooks.h (lang_hooks_for_callgraph): Remove.
+	(lang_hooks): Remove callgraph.
+	* tree-inline.c (expand_call_inline): Do not use cgraph_inline_p.
+	* varpool.c: Remove out of date comment.
+	* langhooks-def.h (lhd_callgraph_analyze_expr): Remove.
+	(LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR): Remove.
+
+2012-04-25  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/53089 
 	* cgraphunit.c (referred_to_p): Move ahead in file to avoid forward declaration.
 	(cgraph_finalize_function): Finalize them here.

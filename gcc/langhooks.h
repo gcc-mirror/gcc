@@ -43,13 +43,6 @@ struct lang_hooks_for_tree_inlining
   bool (*var_mod_type_p) (tree, tree);
 };
 
-struct lang_hooks_for_callgraph
-{
-  /* The node passed is a language-specific tree node.  If its contents
-     are relevant to use of other declarations, mark them.  */
-  tree (*analyze_expr) (tree *, int *);
-};
-
 /* The following hooks are used by tree-dump.c.  */
 
 struct lang_hooks_for_tree_dump
@@ -406,8 +399,6 @@ struct lang_hooks
   const struct attribute_spec *format_attribute_table;
 
   struct lang_hooks_for_tree_inlining tree_inlining;
-
-  struct lang_hooks_for_callgraph callgraph;
 
   struct lang_hooks_for_tree_dump tree_dump;
 

@@ -37,17 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "flags.h"
 
-/*  This file contains basic routines manipulating variable pool.
-
-    Varpool acts as interface in between the front-end and middle-end
-    and drives the decision process on what variables and when are
-    going to be compiled.
-
-    The varpool nodes are allocated lazily for declarations
-    either by frontend or at callgraph construction time.
-    All variables supposed to be output into final file needs to be
-    explicitly marked by frontend via VARPOOL_FINALIZE_DECL function.  */
-
 /* Return varpool node assigned to DECL.  Create new one when needed.  */
 struct varpool_node *
 varpool_node (tree decl)

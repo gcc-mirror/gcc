@@ -472,13 +472,6 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 }
 
 tree
-lhd_callgraph_analyze_expr (tree *tp ATTRIBUTE_UNUSED,
-			    int *walk_subtrees ATTRIBUTE_UNUSED)
-{
-  return NULL;
-}
-
-tree
 lhd_make_node (enum tree_code code)
 {
   return make_node (code);
