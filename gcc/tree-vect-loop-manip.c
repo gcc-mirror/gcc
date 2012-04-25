@@ -1907,6 +1907,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
   bool check_profitability = false;
   unsigned int th = 0;
   int min_profitable_iters;
+  int max_iter;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_do_peeling_for_loop_bound ===");
@@ -1966,15 +1967,11 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
      by ratio_mult_vf_name steps.  */
   vect_update_ivs_after_vectorizer (loop_vinfo, ratio_mult_vf_name, update_e);
 
-  if (!LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
-      && !LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
-    {
-      int max_iter = MAX (LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1, (int) th);
-      record_niter_bound (new_loop, shwi_to_double_int (max_iter), false, true);
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Setting upper bound of nb iterations for epilogue "
-		 "loop to %d\n", max_iter);
-    }
+  max_iter = MAX (LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1, (int) th);
+  record_niter_bound (new_loop, shwi_to_double_int (max_iter), false, true);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Setting upper bound of nb iterations for epilogue "
+	     "loop to %d\n", max_iter);
 
   /* After peeling we have to reset scalar evolution analyzer.  */
   scev_reset ();
@@ -2547,12 +2544,10 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
    cost model initially.
 
    The versioning precondition(s) are placed in *COND_EXPR and
-   *COND_EXPR_STMT_LIST.  If DO_VERSIONING is true versioning is
-   also performed, otherwise only the conditions are generated.  */
+   *COND_EXPR_STMT_LIST.  */
 
 void
-vect_loop_versioning (loop_vec_info loop_vinfo, bool do_versioning,
-		      tree *cond_expr, gimple_seq *cond_expr_stmt_list)
+vect_loop_versioning (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block condition_bb;
@@ -2561,6 +2556,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo, bool do_versioning,
   basic_block new_exit_bb;
   edge new_exit_e, e;
   gimple orig_phi, new_phi;
+  tree cond_expr;
+  gimple_seq cond_expr_stmt_list = NULL;
   tree arg;
   unsigned prob = 4 * REG_BR_PROB_BASE / 5;
   gimple_seq gimplify_stmt_list = NULL;
@@ -2574,30 +2571,25 @@ vect_loop_versioning (loop_vec_info loop_vinfo, bool do_versioning,
   th = conservative_cost_threshold (loop_vinfo,
 				    min_profitable_iters);
 
-  *cond_expr = fold_build2 (GT_EXPR, boolean_type_node, scalar_loop_iters,
-			    build_int_cst (TREE_TYPE (scalar_loop_iters), th));
-  *cond_expr = force_gimple_operand_1 (*cond_expr, cond_expr_stmt_list,
-				       is_gimple_condexpr, NULL_TREE);
+  cond_expr = fold_build2 (GT_EXPR, boolean_type_node, scalar_loop_iters,
+			   build_int_cst (TREE_TYPE (scalar_loop_iters), th));
+  cond_expr = force_gimple_operand_1 (cond_expr, &cond_expr_stmt_list,
+				      is_gimple_condexpr, NULL_TREE);
 
   if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo))
-    vect_create_cond_for_align_checks (loop_vinfo, cond_expr,
-				       cond_expr_stmt_list);
+    vect_create_cond_for_align_checks (loop_vinfo, &cond_expr,
+				       &cond_expr_stmt_list);
 
   if (LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
-    vect_create_cond_for_alias_checks (loop_vinfo, cond_expr,
-				       cond_expr_stmt_list);
+    vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr,
+				       &cond_expr_stmt_list);
 
-  *cond_expr = force_gimple_operand_1 (*cond_expr, &gimplify_stmt_list,
-				       is_gimple_condexpr, NULL_TREE);
-  gimple_seq_add_seq (cond_expr_stmt_list, gimplify_stmt_list);
-
-  /* If we only needed the extra conditions and a new loop copy
-     bail out here.  */
-  if (!do_versioning)
-    return;
+  cond_expr = force_gimple_operand_1 (cond_expr, &gimplify_stmt_list,
+				      is_gimple_condexpr, NULL_TREE);
+  gimple_seq_add_seq (&cond_expr_stmt_list, gimplify_stmt_list);
 
   initialize_original_copy_tables ();
-  loop_version (loop, *cond_expr, &condition_bb,
+  loop_version (loop, cond_expr, &condition_bb,
 		prob, prob, REG_BR_PROB_BASE - prob, true);
   free_original_copy_tables();
 
@@ -2629,13 +2621,11 @@ vect_loop_versioning (loop_vec_info loop_vinfo, bool do_versioning,
   /* End loop-exit-fixes after versioning.  */
 
   update_ssa (TODO_update_ssa);
-  if (*cond_expr_stmt_list)
+  if (cond_expr_stmt_list)
     {
       cond_exp_gsi = gsi_last_bb (condition_bb);
-      gsi_insert_seq_before (&cond_exp_gsi, *cond_expr_stmt_list,
+      gsi_insert_seq_before (&cond_exp_gsi, cond_expr_stmt_list,
 			     GSI_SAME_STMT);
-      *cond_expr_stmt_list = NULL;
     }
-  *cond_expr = NULL_TREE;
 }
 

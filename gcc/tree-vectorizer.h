@@ -807,7 +807,7 @@ extern LOC vect_loop_location;
    in tree-vect-loop-manip.c.  */
 extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
-extern void vect_loop_versioning (loop_vec_info, bool, tree *, gimple_seq *);
+extern void vect_loop_versioning (loop_vec_info);
 extern void vect_do_peeling_for_loop_bound (loop_vec_info, tree *,
                                             tree, gimple_seq);
 extern void vect_do_peeling_for_alignment (loop_vec_info);

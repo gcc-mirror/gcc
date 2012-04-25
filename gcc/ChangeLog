@@ -1,3 +1,12 @@
+2012-04-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_loop_versioning): Adjust prototype.
+	* tree-vect-loop.c (vect_transform_loop): Adjust.
+	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound): Record
+	the maximum number of iterations for the epilogue loop.
+	(vect_loop_versioning): Remove case re-using the peeled
+	epilogue loop.
+
 2012-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/52880
