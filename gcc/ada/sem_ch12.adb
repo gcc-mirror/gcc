@@ -7761,8 +7761,9 @@ package body Sem_Ch12 is
       Item            : Node_Id;
       New_I           : Node_Id;
 
-      Clause : Node_Id;
-      OK     : Boolean;
+      Clause   : Node_Id;
+      OK       : Boolean;
+      Lib_Unit : Node_Id;
 
    begin
       if Nkind (Parent (Gen_Decl)) = N_Compilation_Unit then
@@ -7784,17 +7785,18 @@ package body Sem_Ch12 is
          Item := First (Context_Items (Parent (Gen_Decl)));
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause then
+               Lib_Unit := Library_Unit (Item);
 
-               --  Take care to prevent direct cyclic with's.
+               --  Take care to prevent direct cyclic with's
 
-               if Library_Unit (Item) /= Current_Unit then
+               if Lib_Unit /= Current_Unit then
                   --  Do not add a unit if it is already in the context
 
                   Clause := First (Current_Context);
                   OK := True;
                   while Present (Clause) loop
                      if Nkind (Clause) = N_With_Clause and then
-                       Chars (Name (Clause)) = Chars (Name (Item))
+                       Library_Unit (Clause) = Lib_Unit
                      then
                         OK := False;
                         exit;
