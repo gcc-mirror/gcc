@@ -1,5 +1,31 @@
 2012-04-25  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (rs6000_emit_stack_reset): Delete forward
+	decl.  Move logic selecting update reg to callers.  Update all callers.
+	(rs6000_emit_allocate_stack): Add copy_off param.
+	(emit_frame_save): Don't handle reg+reg addressing.
+	(ptr_regno_for_savres): New function, extracted from..
+	(rs6000_emit_savres_rtx): ..here.  Add lr_offset param.
+	(rs6000_emit_prologue): Generate frame_ptr_rtx as we need it.
+	Set frame_reg_rtx to r11 whenever r11 is needed, and merge
+	frame offset adjustment for out-of-line save with copy from sp.
+	Simplify condition controlling whether cr is saved early or
+	late.  Use ptr_regno_for_savres to verify correct reg is set
+	up for out-of-line saves.  Pass the actual pointer reg used to
+	rs6000_emit_savres_rtx so rtl matches insns in out-of-line
+	function.  Rearrange spe vars so code is similar to that
+	elsewhere in this function.  Don't update frame_off when spe
+	save code will restore r11.  Use emit_frame_save for spe and
+	gpr saves.  Consolidate darwin out-of-line gpr setup with that
+	for other abis.  Don't assume frame_offset is zero and frame
+	reg is sp when setting up altivec reg saves, and calculate
+	exact offset requirement.
+	(rs6000_emit_epilogue): Use HOST_WIDE_INT for frame_off.  Tidy
+	spe restore code.  Consolidate darwin out-of-line gpr setup
+	with that for other abis.
+
+2012-04-25  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (rs6000_frame_related): Don't emit a
 	REG_FRAME_RELATED_EXPR note when the instruction exactly matches
 	the replacement.

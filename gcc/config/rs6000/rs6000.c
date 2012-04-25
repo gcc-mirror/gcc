@@ -951,7 +951,6 @@ static void rs6000_eliminate_indexed_memrefs (rtx operands[2]);
 static const char *rs6000_mangle_type (const_tree);
 static void rs6000_set_default_type_attributes (tree);
 static rtx rs6000_savres_routine_sym (rs6000_stack_t *, bool, bool, bool);
-static rtx rs6000_emit_stack_reset (rs6000_stack_t *, rtx, rtx, int, bool);
 static bool rs6000_reg_live_or_pic_offset_p (int);
 static tree rs6000_builtin_vectorized_libmass (tree, tree, tree);
 static tree rs6000_builtin_vectorized_function (tree, tree, tree);
@@ -18535,7 +18534,7 @@ rs6000_emit_stack_tie (rtx fp, bool hard_frame_needed)
    The generated code may use hard register 0 as a temporary.  */
 
 static void
-rs6000_emit_allocate_stack (HOST_WIDE_INT size, rtx copy_reg)
+rs6000_emit_allocate_stack (HOST_WIDE_INT size, rtx copy_reg, int copy_off)
 {
   rtx insn;
   rtx stack_reg = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
@@ -18579,7 +18578,12 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, rtx copy_reg)
     }
 
   if (copy_reg)
-    emit_move_insn (copy_reg, stack_reg);
+    {
+      if (copy_off != 0)
+	emit_insn (gen_add3_insn (copy_reg, stack_reg, GEN_INT (copy_off)));
+      else
+	emit_move_insn (copy_reg, stack_reg);
+    }
 
   if (size > 32767)
     {
@@ -18922,42 +18926,22 @@ static rtx
 emit_frame_save (rtx frame_reg, enum machine_mode mode,
 		 unsigned int regno, int offset, HOST_WIDE_INT frame_reg_to_sp)
 {
-  rtx reg, offset_rtx, insn, mem, addr, int_rtx;
-  rtx replacea, replaceb;
-
-  int_rtx = GEN_INT (offset);
+  rtx reg, insn, mem, addr;
 
   /* Some cases that need register indexed addressing.  */
-  if ((TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
-      || (TARGET_VSX && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
-      || (TARGET_E500_DOUBLE && mode == DFmode)
-      || (TARGET_SPE_ABI
-	  && SPE_VECTOR_MODE (mode)
-	  && !SPE_CONST_OFFSET_OK (offset)))
-    {
-      /* Whomever calls us must make sure r11 is available in the
-	 flow path of instructions in the prologue.  */
-      offset_rtx = gen_rtx_REG (Pmode, 11);
-      emit_move_insn (offset_rtx, int_rtx);
-
-      replacea = offset_rtx;
-      replaceb = int_rtx;
-    }
-  else
-    {
-      offset_rtx = int_rtx;
-      replacea = NULL_RTX;
-      replaceb = NULL_RTX;
-    }
+  gcc_checking_assert (!((TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
+			 || (TARGET_VSX && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
+			 || (TARGET_E500_DOUBLE && mode == DFmode)
+			 || (TARGET_SPE_ABI
+			     && SPE_VECTOR_MODE (mode)
+			     && !SPE_CONST_OFFSET_OK (offset))));
 
   reg = gen_rtx_REG (mode, regno);
-  addr = gen_rtx_PLUS (Pmode, frame_reg, offset_rtx);
+  addr = gen_rtx_PLUS (Pmode, frame_reg, GEN_INT (offset));
   mem = gen_frame_mem (mode, addr);
-
   insn = emit_move_insn (mem, reg);
-
   return rs6000_frame_related (insn, frame_reg, frame_reg_to_sp,
-			       replacea, replaceb);
+			       NULL_RTX, NULL_RTX);
 }
 
 /* Emit an offset memory reference suitable for a frame store, while
@@ -19158,15 +19142,17 @@ rs6000_savres_routine_sym (rs6000_stack_t *info, bool savep,
 }
 
 /* Emit a sequence of insns, including a stack tie if needed, for
-   resetting the stack pointer.  If SAVRES is true, then don't reset the
-   stack pointer, but move the base of the frame into r11 for use by
-   out-of-line register restore routines.  */
+   resetting the stack pointer.  If UPDT_REGNO is not 1, then don't
+   reset the stack pointer, but move the base of the frame into
+   reg UPDT_REGNO for use by out-of-line register restore routines.  */
 
 static rtx
 rs6000_emit_stack_reset (rs6000_stack_t *info,
-			 rtx sp_reg_rtx, rtx frame_reg_rtx,
-			 int sp_offset, bool savres)
+			 rtx frame_reg_rtx, HOST_WIDE_INT frame_off,
+			 unsigned updt_regno)
 {
+  rtx updt_reg_rtx;
+
   /* This blockage is needed so that sched doesn't decide to move
      the sp change before the register restores.  */
   if (DEFAULT_ABI == ABI_V4
@@ -19174,36 +19160,28 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
 	  && info->spe_64bit_regs_used != 0
 	  && info->first_gp_reg_save != 32))
     rs6000_emit_stack_tie (frame_reg_rtx, frame_pointer_needed);
-  
-  if (frame_reg_rtx != sp_reg_rtx)
-    {
-      if (sp_offset != 0)
-	{
-	  rtx dest_reg = savres ? gen_rtx_REG (Pmode, 11) : sp_reg_rtx;
-	  rtx insn = emit_insn (gen_add3_insn (dest_reg, frame_reg_rtx,
-					       GEN_INT (sp_offset)));
-	  if (!savres)
-	    return insn;
-	}
-      else if (!savres)
-	return emit_move_insn (sp_reg_rtx, frame_reg_rtx);
-    }
-  else if (sp_offset != 0)
-    {
-      /* If we are restoring registers out-of-line, we will be using the
-	 "exit" variants of the restore routines, which will reset the
-	 stack for us.	But we do need to point r11 into the right place
-	 for those routines.  */
-      rtx dest_reg = (savres
-		      ? gen_rtx_REG (Pmode, 11)
-		      : sp_reg_rtx);
 
-      rtx insn = emit_insn (gen_add3_insn (dest_reg, sp_reg_rtx,
-					   GEN_INT (sp_offset)));
-      if (!savres)
-	return insn;
-    }
+  /* If we are restoring registers out-of-line, we will be using the
+     "exit" variants of the restore routines, which will reset the
+     stack for us.  But we do need to point updt_reg into the
+     right place for those routines.  */
+  updt_reg_rtx = gen_rtx_REG (Pmode, updt_regno);
+
+  if (frame_off != 0)
+    return emit_insn (gen_add3_insn (updt_reg_rtx,
+				     frame_reg_rtx, GEN_INT (frame_off)));
+  else if (REGNO (frame_reg_rtx) != updt_regno)
+    return emit_move_insn (updt_reg_rtx, frame_reg_rtx);
+
   return NULL_RTX;
+}
+
+static inline unsigned
+ptr_regno_for_savres (bool gpr, bool lr)
+{
+  if (DEFAULT_ABI == ABI_AIX)
+    return !gpr || lr ? 1 : 12;
+  return DEFAULT_ABI == ABI_DARWIN && !gpr ? 1 : 11;
 }
 
 /* Construct a parallel rtx describing the effect of a call to an
@@ -19212,7 +19190,7 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
 
 static rtx
 rs6000_emit_savres_rtx (rs6000_stack_t *info,
-			rtx frame_reg_rtx, int save_area_offset,
+			rtx frame_reg_rtx, int save_area_offset, int lr_offset,
 			enum machine_mode reg_mode,
 			bool savep, bool gpr, bool lr)
 {
@@ -19239,9 +19217,7 @@ rs6000_emit_savres_rtx (rs6000_stack_t *info,
 
   sym = rs6000_savres_routine_sym (info, savep, gpr, lr);
   RTVEC_ELT (p, offset++) = gen_rtx_USE (VOIDmode, sym);
-  use_reg = (DEFAULT_ABI == ABI_AIX ? (gpr && !lr ? 12 : 1)
-	     : DEFAULT_ABI == ABI_DARWIN && !gpr ? 1
-	     : 11);
+  use_reg = ptr_regno_for_savres (gpr, lr);
   RTVEC_ELT (p, offset++)
     = gen_rtx_USE (VOIDmode,
 		   gen_rtx_REG (Pmode, use_reg));
@@ -19264,7 +19240,7 @@ rs6000_emit_savres_rtx (rs6000_stack_t *info,
       rtx addr, reg, mem;
       reg = gen_rtx_REG (Pmode, 0);
       addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			   GEN_INT (info->lr_save_offset));
+			   GEN_INT (lr_offset));
       mem = gen_frame_mem (Pmode, addr);
       RTVEC_ELT (p, i + offset) = gen_rtx_SET (VOIDmode, mem, reg);
     }
@@ -19311,8 +19287,8 @@ rs6000_emit_prologue (void)
   enum machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
-  rtx frame_ptr_rtx = gen_rtx_REG (Pmode, 12);
   rtx frame_reg_rtx = sp_reg_rtx;
+  unsigned int cr_save_regno;
   rtx cr_save_rtx = NULL_RTX;
   rtx insn;
   int strategy;
@@ -19485,12 +19461,14 @@ rs6000_emit_prologue (void)
 		       ? (!saving_GPRs_inline
 			  && info->spe_64bit_regs_used == 0)
 		       : (!saving_FPRs_inline || !saving_GPRs_inline));
-      rtx copy_reg = need_r11 ? gen_rtx_REG (Pmode, 11) : NULL;
+      rtx ptr_reg = NULL_RTX;
 
-      if (info->total_size < 32767)
+      if (need_r11)
+	{
+	  ptr_reg = gen_rtx_REG (Pmode, 11);
+	}
+      else if (info->total_size < 32767)
 	frame_off = info->total_size;
-      else if (need_r11)
-	frame_reg_rtx = copy_reg;
       else if (info->cr_save_p
 	       || info->lr_save_p
 	       || info->first_fp_reg_save < 64
@@ -19499,8 +19477,7 @@ rs6000_emit_prologue (void)
 	       || info->vrsave_mask != 0
 	       || crtl->calls_eh_return)
 	{
-	  copy_reg = frame_ptr_rtx;
-	  frame_reg_rtx = copy_reg;
+	  ptr_reg = gen_rtx_REG (Pmode, 12);
 	}
       else
 	{
@@ -19511,7 +19488,18 @@ rs6000_emit_prologue (void)
 	     changes to this function.  */
 	  frame_off = info->total_size;
 	}
-      rs6000_emit_allocate_stack (info->total_size, copy_reg);
+      if (ptr_reg != NULL_RTX)
+	{
+	  /* Set up the frame offset to that needed by the first
+	     out-of-line save function.  */
+	  frame_reg_rtx = ptr_reg;
+	  if (!saving_FPRs_inline && info->first_fp_reg_save < 64)
+	    gcc_checking_assert (info->fp_save_offset + info->fp_size == 0);
+	  else if (!saving_GPRs_inline && info->first_gp_reg_save < 32)
+	    frame_off = -(info->gp_save_offset + info->gp_size);
+	}
+      rs6000_emit_allocate_stack (info->total_size, ptr_reg, -frame_off);
+      sp_off = info->total_size;
       sp_off = info->total_size;
       if (frame_reg_rtx != sp_reg_rtx)
 	rs6000_emit_stack_tie (frame_reg_rtx, false);
@@ -19522,8 +19510,8 @@ rs6000_emit_prologue (void)
     {
       rtx addr, reg, mem;
 
-      insn = emit_move_insn (gen_rtx_REG (Pmode, 0),
-			     gen_rtx_REG (Pmode, LR_REGNO));
+      reg = gen_rtx_REG (Pmode, 0);
+      insn = emit_move_insn (reg, gen_rtx_REG (Pmode, LR_REGNO));
       RTX_FRAME_RELATED_P (insn) = 1;
 
       if (!(strategy & (SAVE_NOINLINE_GPRS_SAVES_LR
@@ -19531,7 +19519,6 @@ rs6000_emit_prologue (void)
 	{
 	  addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->lr_save_offset + frame_off));
-	  reg = gen_rtx_REG (Pmode, 0);
 	  mem = gen_rtx_MEM (Pmode, addr);
 	  /* This should not be of rs6000_sr_alias_set, because of
 	     __builtin_return_address.  */
@@ -19543,15 +19530,14 @@ rs6000_emit_prologue (void)
     }
 
   /* If we need to save CR, put it into r12 or r11.  */
+  cr_save_regno = DEFAULT_ABI == ABI_AIX && !saving_GPRs_inline ? 11 : 12;
   if (!WORLD_SAVE_P (info)
       && info->cr_save_p
-      && frame_reg_rtx != frame_ptr_rtx)
+      && REGNO (frame_reg_rtx) != cr_save_regno)
     {
       rtx set;
 
-      cr_save_rtx
-	= gen_rtx_REG (SImode, DEFAULT_ABI == ABI_AIX && !saving_GPRs_inline
-		       ? 11 : 12);
+      cr_save_rtx = gen_rtx_REG (SImode, cr_save_regno);
       insn = emit_insn (gen_movesi_from_cr (cr_save_rtx));
       RTX_FRAME_RELATED_P (insn) = 1;
       /* Now, there's no way that dwarf2out_frame_debug_expr is going
@@ -19582,14 +19568,18 @@ rs6000_emit_prologue (void)
     }
   else if (!WORLD_SAVE_P (info) && info->first_fp_reg_save != 64)
     {
+      bool lr = (strategy & SAVE_NOINLINE_FPRS_SAVES_LR) != 0;
+      unsigned ptr_regno = ptr_regno_for_savres (/*gpr=*/false, lr);
+
+      gcc_checking_assert (ptr_regno == REGNO (frame_reg_rtx)
+			   && info->fp_save_offset + info->fp_size == 0
+			   && frame_off == 0);
       insn = rs6000_emit_savres_rtx (info, frame_reg_rtx,
-				     info->fp_save_offset + frame_off,
+				     info->fp_save_offset,
+				     info->lr_save_offset,
 				     DFmode,
-				     /*savep=*/true, /*gpr=*/false,
-				     /*lr=*/((strategy
-					      & SAVE_NOINLINE_FPRS_SAVES_LR)
-					     != 0));
-      rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
+				     /*savep=*/true, /*gpr=*/false, lr);
+      rs6000_frame_related (insn, frame_reg_rtx, sp_off,
 			    NULL_RTX, NULL_RTX);
     }
 
@@ -19602,7 +19592,7 @@ rs6000_emit_prologue (void)
     {
       int i;
       rtx spe_save_area_ptr;
-      int save_ptr_to_sp;
+      HOST_WIDE_INT save_off;
       int ool_adjust = 0;
 
       /* Determine whether we can address all of the registers that need
@@ -19612,28 +19602,25 @@ rs6000_emit_prologue (void)
 	= (SPE_CONST_OFFSET_OK (info->spe_gp_save_offset + frame_off
 				+ reg_size * (32 - info->first_gp_reg_save - 1))
 	   && saving_GPRs_inline);
-      int spe_offset;
 
       if (spe_regs_addressable)
 	{
 	  spe_save_area_ptr = frame_reg_rtx;
-	  save_ptr_to_sp = sp_off - frame_off;
-	  spe_offset = info->spe_gp_save_offset + frame_off;
+	  save_off = frame_off;
 	}
       else
 	{
 	  /* Make r11 point to the start of the SPE save area.  We need
 	     to be careful here if r11 is holding the static chain.  If
 	     it is, then temporarily save it in r0.  */
-	  int offset;
+	  HOST_WIDE_INT offset;
 
 	  if (!saving_GPRs_inline)
 	    ool_adjust = 8 * (info->first_gp_reg_save
 			      - (FIRST_SAVRES_REGISTER + 1));
 	  offset = info->spe_gp_save_offset + frame_off - ool_adjust;
 	  spe_save_area_ptr = gen_rtx_REG (Pmode, 11);
-	  save_ptr_to_sp = sp_off - frame_off + offset;
-	  spe_offset = 0;
+	  save_off = frame_off - offset;
 
 	  if (using_static_chain_p)
 	    {
@@ -19644,7 +19631,7 @@ rs6000_emit_prologue (void)
 	    }
 	  emit_insn (gen_addsi3 (spe_save_area_ptr,
 				 frame_reg_rtx, GEN_INT (offset)));
-	  if (REGNO (frame_reg_rtx) == 11)
+	  if (!using_static_chain_p && REGNO (frame_reg_rtx) == 11)
 	    frame_off = -info->spe_gp_save_offset + ool_adjust;
 	}
 
@@ -19652,32 +19639,22 @@ rs6000_emit_prologue (void)
 	{
 	  for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	    if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
-	      {
-		rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
-		rtx offset, addr, mem;
-
-		/* We're doing all this to ensure that the offset fits into
-		   the immediate offset of 'evstdd'.  */
-		gcc_assert (SPE_CONST_OFFSET_OK (reg_size * i + spe_offset));
-
-		offset = GEN_INT (reg_size * i + spe_offset);
-		addr = gen_rtx_PLUS (Pmode, spe_save_area_ptr, offset);
-		mem = gen_rtx_MEM (V2SImode, addr);
-
-		insn = emit_move_insn (mem, reg);
-
-		rs6000_frame_related (insn, spe_save_area_ptr, save_ptr_to_sp,
-				      NULL_RTX, NULL_RTX);
-	      }
+	      emit_frame_save (spe_save_area_ptr, reg_mode,
+			       info->first_gp_reg_save + i,
+			       (info->spe_gp_save_offset + save_off
+				+ reg_size * i),
+			       sp_off - save_off);
 	}
       else
 	{
 	  insn = rs6000_emit_savres_rtx (info, spe_save_area_ptr,
-					 ool_adjust, reg_mode,
+					 info->spe_gp_save_offset + save_off,
+					 info->lr_save_offset + save_off,
+					 reg_mode,
 					 /*savep=*/true, /*gpr=*/true,
 					 /*lr=*/false);
 
-	  rs6000_frame_related (insn, spe_save_area_ptr, save_ptr_to_sp,
+	  rs6000_frame_related (insn, spe_save_area_ptr, sp_off - save_off,
 				NULL_RTX, NULL_RTX);
 	}
 
@@ -19687,45 +19664,36 @@ rs6000_emit_prologue (void)
     }
   else if (!WORLD_SAVE_P (info) && !saving_GPRs_inline)
     {
-      if (DEFAULT_ABI == ABI_DARWIN)
-	{
-	  rtx dest_reg = gen_rtx_REG (Pmode, 11);
-	  if (info->first_fp_reg_save == 64)
-	    {
-	      /* we only need a copy, no fprs were saved.  */
-	      if (dest_reg != frame_reg_rtx)
-		emit_move_insn (dest_reg, frame_reg_rtx);
-	    }
-	  else
-	    {
-	      int save_off = 8 * (64 - info->first_fp_reg_save);
-	      rtx offset = GEN_INT (frame_off - save_off);
+      bool lr = (strategy & SAVE_NOINLINE_GPRS_SAVES_LR) != 0;
+      unsigned ptr_regno = ptr_regno_for_savres (/*gpr=*/true, lr);
+      rtx ptr_reg = frame_reg_rtx;
+      bool ptr_set_up = REGNO (ptr_reg) == ptr_regno;
+      int end_save = info->gp_save_offset + info->gp_size;
+      int ptr_off;
 
-	      if (REGNO (dest_reg) == REGNO (frame_reg_rtx))
-		frame_off = save_off;
-	      emit_insn (gen_add3_insn (dest_reg, frame_reg_rtx, offset));
-	    }
-	}
+      if (!ptr_set_up)
+	ptr_reg = gen_rtx_REG (Pmode, ptr_regno);
+
       /* Need to adjust r11 (r12) if we saved any FPRs.  */
-      else if (info->first_fp_reg_save != 64)
+      if (end_save + frame_off != 0)
 	{
-	  rtx dest_reg = gen_rtx_REG (Pmode, DEFAULT_ABI == ABI_AIX ? 12 : 11);
-	  int save_off = 8 * (64 - info->first_fp_reg_save);
-	  rtx offset = GEN_INT (frame_off - save_off);
+	  rtx offset = GEN_INT (end_save + frame_off);
 
-	  if (REGNO (dest_reg) == REGNO (frame_reg_rtx))
-	    frame_off = save_off;
-	  emit_insn (gen_add3_insn (dest_reg, frame_reg_rtx, offset));
+	  if (ptr_set_up)
+	    frame_off = -end_save;
+	  emit_insn (gen_add3_insn (ptr_reg, frame_reg_rtx, offset));
 	}
-
-      insn = rs6000_emit_savres_rtx (info, frame_reg_rtx,
-				     info->gp_save_offset + frame_off,
+      else if (!ptr_set_up)
+	{
+	  emit_move_insn (ptr_reg, frame_reg_rtx);
+	}
+      ptr_off = -end_save;
+      insn = rs6000_emit_savres_rtx (info, ptr_reg,
+				     info->gp_save_offset + ptr_off,
+				     info->lr_save_offset + ptr_off,
 				     reg_mode,
-				     /*savep=*/true, /*gpr=*/true,
-				     /*lr=*/((strategy
-					      & SAVE_NOINLINE_GPRS_SAVES_LR)
-					     != 0));
-      rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
+				     /*savep=*/true, /*gpr=*/true, lr);
+      rs6000_frame_related (insn, ptr_reg, sp_off - ptr_off,
 			    NULL_RTX, NULL_RTX);
     }
   else if (!WORLD_SAVE_P (info) && using_store_multiple)
@@ -19754,20 +19722,10 @@ rs6000_emit_prologue (void)
       int i;
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
-	  {
-	    rtx addr, reg, mem;
-	    reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
-
-	    addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				 GEN_INT (info->gp_save_offset
-					  + frame_off
-					  + reg_size * i));
-	    mem = gen_frame_mem (reg_mode, addr);
-
-	    insn = emit_move_insn (mem, reg);
-	    rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
-				  NULL_RTX, NULL_RTX);
-	  }
+	  emit_frame_save (frame_reg_rtx, reg_mode,
+			   info->first_gp_reg_save + i,
+			   info->gp_save_offset + frame_off + reg_size * i,
+			   sp_off - frame_off);
     }
 
   /* ??? There's no need to emit actual instructions here, but it's the
@@ -19795,8 +19753,7 @@ rs6000_emit_prologue (void)
       rtx save_insn, join_insn, note;
       long toc_restore_insn;
 
-      gcc_assert (frame_reg_rtx == frame_ptr_rtx
-		  || frame_reg_rtx == sp_reg_rtx);
+      gcc_assert (REGNO (frame_reg_rtx) != 11);
       tmp_reg = gen_rtx_REG (Pmode, 11);
       tmp_reg_si = gen_rtx_REG (SImode, 11);
       if (using_static_chain_p)
@@ -19866,9 +19823,8 @@ rs6000_emit_prologue (void)
       /* See the large comment above about why CR2_REGNO is used.  */
       rtx magic_eh_cr_reg = gen_rtx_REG (SImode, CR2_REGNO);
 
-      /* If r12 was used to hold the original sp, copy cr into r0 now
-	 that it's free.  */
-      if (REGNO (frame_reg_rtx) == 12)
+      /* If we didn't copy cr before, do so now using r0.  */
+      if (cr_save_rtx == NULL_RTX)
 	{
 	  rtx set;
 
@@ -19889,19 +19845,25 @@ rs6000_emit_prologue (void)
   if (!WORLD_SAVE_P (info) && info->push_p
       && !(DEFAULT_ABI == ABI_V4 || crtl->calls_eh_return))
     {
-      rtx copy_reg = NULL;
+      rtx ptr_reg = NULL;
 
-      if (info->total_size < 32767)
-	frame_off = info->total_size;
-      else if (info->altivec_size != 0
-	       || info->vrsave_mask != 0)
+      /* If saving altivec regs we need to be able to address all save
+	 locations using a 16-bit offset.  */
+      if ((info->altivec_size != 0
+	   && (info->altivec_save_offset + info->altivec_size - 16
+	       + info->total_size - frame_off) > 32767)
+	  || (info->vrsave_mask != 0
+	      && (info->vrsave_save_offset
+		  + info->total_size - frame_off) > 32767))
 	{
-	  copy_reg = frame_ptr_rtx;
-	  frame_reg_rtx = copy_reg;
+	  ptr_reg = gen_rtx_REG (Pmode, 12);
+	  frame_reg_rtx = ptr_reg;
+	  frame_off = -(info->altivec_save_offset + info->altivec_size);
 	}
-      else
+      else if (REGNO (frame_reg_rtx) == 1)
 	frame_off = info->total_size;
-      rs6000_emit_allocate_stack (info->total_size, copy_reg);
+      rs6000_emit_allocate_stack (info->total_size, ptr_reg, -frame_off);
+      sp_off = info->total_size;
       sp_off = info->total_size;
       if (frame_reg_rtx != sp_reg_rtx)
 	rs6000_emit_stack_tie (frame_reg_rtx, false);
@@ -20005,13 +19967,14 @@ rs6000_emit_prologue (void)
       if (save_LR_around_toc_setup)
 	{
 	  rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
+	  rtx tmp = gen_rtx_REG (Pmode, 12);
 
-	  insn = emit_move_insn (frame_ptr_rtx, lr);
+	  insn = emit_move_insn (tmp, lr);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 
 	  rs6000_emit_load_toc_table (TRUE);
 
-	  insn = emit_move_insn (lr, frame_ptr_rtx);
+	  insn = emit_move_insn (lr, tmp);
 	  add_reg_note (insn, REG_CFA_RESTORE, lr);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
@@ -20203,7 +20166,7 @@ rs6000_emit_epilogue (int sibcall)
   int use_backchain_to_restore_sp;
   int restore_lr;
   int strategy;
-  int frame_off = 0;
+  HOST_WIDE_INT frame_off = 0;
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, 1);
   rtx frame_reg_rtx = sp_reg_rtx;
   rtx cfa_restores = NULL_RTX;
@@ -20212,6 +20175,7 @@ rs6000_emit_epilogue (int sibcall)
   enum machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
   int i;
+  unsigned ptr_regno;
 
   info = rs6000_stack_info ();
 
@@ -20628,13 +20592,10 @@ rs6000_emit_epilogue (int sibcall)
 	= (SPE_CONST_OFFSET_OK (info->spe_gp_save_offset + frame_off
 				+ reg_size * (32 - info->first_gp_reg_save - 1))
 	   && restoring_GPRs_inline);
-      int spe_offset;
-      int ool_adjust = 0;
 
-      if (spe_regs_addressable)
-	spe_offset = info->spe_gp_save_offset + frame_off;
-      else
+      if (!spe_regs_addressable)
 	{
+	  int ool_adjust = 0;
 	  rtx old_frame_reg_rtx = frame_reg_rtx;
 	  /* Make r11 point to the start of the SPE save area.  We worried about
 	     not clobbering it when we were saving registers in the prologue.
@@ -20652,12 +20613,12 @@ rs6000_emit_epilogue (int sibcall)
 	  /* Keep the invariant that frame_reg_rtx + frame_off points
 	     at the top of the stack frame.  */
 	  frame_off = -info->spe_gp_save_offset + ool_adjust;
-
-	  spe_offset = 0;
 	}
 
       if (restoring_GPRs_inline)
 	{
+	  HOST_WIDE_INT spe_offset = info->spe_gp_save_offset + frame_off;
+
 	  for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	    if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
 	      {
@@ -20677,39 +20638,39 @@ rs6000_emit_epilogue (int sibcall)
 	}
       else
 	rs6000_emit_savres_rtx (info, frame_reg_rtx,
-				ool_adjust, reg_mode,
+				info->spe_gp_save_offset + frame_off,
+				info->lr_save_offset + frame_off,
+				reg_mode,
 				/*savep=*/false, /*gpr=*/true,
 				/*lr=*/true);
     }
   else if (!restoring_GPRs_inline)
     {
       /* We are jumping to an out-of-line function.  */
-      bool can_use_exit = info->first_fp_reg_save == 64;
+      rtx ptr_reg;
+      int end_save = info->gp_save_offset + info->gp_size;
+      bool can_use_exit = end_save == 0;
+      int ptr_off;
 
       /* Emit stack reset code if we need it.  */
+      ptr_regno = ptr_regno_for_savres (/*gpr=*/true, can_use_exit);
+      ptr_reg = gen_rtx_REG (Pmode, ptr_regno);
       if (can_use_exit)
-	{
-	  rs6000_emit_stack_reset (info, sp_reg_rtx, frame_reg_rtx,
-				   frame_off, can_use_exit);
-	  if (DEFAULT_ABI == ABI_DARWIN)
-	    /* we only need a copy, no fprs were saved.  */
-	    emit_move_insn (gen_rtx_REG (Pmode, 11), frame_reg_rtx);
-
-	  if (info->cr_save_p)
-	    rs6000_restore_saved_cr (cr_save_reg, using_mtcr_multiple);
-	}
+	rs6000_emit_stack_reset (info, frame_reg_rtx, frame_off, ptr_regno);
       else
-	{
-	  rtx src_reg = gen_rtx_REG (Pmode, DEFAULT_ABI == ABI_AIX ? 12 : 11);
+	emit_insn (gen_add3_insn (ptr_reg, frame_reg_rtx,
+				  GEN_INT (end_save + frame_off)));
+      if (REGNO (frame_reg_rtx) == ptr_regno)
+	frame_off = -end_save;
 
-	  emit_insn (gen_add3_insn (src_reg, frame_reg_rtx,
-				    GEN_INT (frame_off - info->fp_size)));
-	  if (REGNO (frame_reg_rtx) == REGNO (src_reg))
-	    frame_off = info->fp_size;
-	}
+      if (can_use_exit && info->cr_save_p)
+	rs6000_restore_saved_cr (cr_save_reg, using_mtcr_multiple);
 
-      rs6000_emit_savres_rtx (info, frame_reg_rtx,
-			      info->gp_save_offset, reg_mode,
+      ptr_off = -end_save;
+      rs6000_emit_savres_rtx (info, ptr_reg,
+			      info->gp_save_offset + ptr_off,
+			      info->lr_save_offset + ptr_off,
+			      reg_mode,
 			      /*savep=*/false, /*gpr=*/true,
 			      /*lr=*/can_use_exit);
     }
@@ -20843,10 +20804,19 @@ rs6000_emit_epilogue (int sibcall)
     rs6000_restore_saved_cr (cr_save_reg, using_mtcr_multiple);
 
   /* If this is V.4, unwind the stack pointer after all of the loads
-     have been done.  */
-  insn = rs6000_emit_stack_reset (info, sp_reg_rtx, frame_reg_rtx,
-				  frame_off, !restoring_FPRs_inline);
-  if (insn)
+     have been done, or set up r11 if we are restoring fp out of line.  */
+  ptr_regno = 1;
+  if (!restoring_FPRs_inline)
+    {
+      bool lr = (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR) == 0;
+      ptr_regno = ptr_regno_for_savres (/*gpr=*/false, lr);
+    }
+
+  insn = rs6000_emit_stack_reset (info, frame_reg_rtx, frame_off, ptr_regno);
+  if (REGNO (frame_reg_rtx) == ptr_regno)
+    frame_off = 0;
+
+  if (insn && restoring_FPRs_inline)
     {
       if (cfa_restores)
 	{
