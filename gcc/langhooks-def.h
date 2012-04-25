@@ -69,7 +69,6 @@ extern void lhd_init_options (unsigned int,
 extern bool lhd_complain_wrong_lang_p (const struct cl_option *);
 extern bool lhd_handle_option (size_t, const char *, int, int, location_t,
 			       const struct cl_option_handlers *);
-extern tree lhd_callgraph_analyze_expr (tree *, int *);
 
 
 /* Declarations for tree gimplification hooks.  */
@@ -130,12 +129,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 
 #define LANG_HOOKS_TREE_INLINING_INITIALIZER { \
   LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P, \
-}
-
-#define LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR lhd_callgraph_analyze_expr
-
-#define LANG_HOOKS_CALLGRAPH_INITIALIZER { \
-  LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR \
 }
 
 /* Hooks for tree gimplification.  */
@@ -292,7 +285,6 @@ extern void lhd_end_section (void);
   LANG_HOOKS_COMMON_ATTRIBUTE_TABLE, \
   LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE, \
   LANG_HOOKS_TREE_INLINING_INITIALIZER, \
-  LANG_HOOKS_CALLGRAPH_INITIALIZER, \
   LANG_HOOKS_TREE_DUMP_INITIALIZER, \
   LANG_HOOKS_DECLS, \
   LANG_HOOKS_FOR_TYPES_INITIALIZER, \

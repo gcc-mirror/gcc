@@ -21,56 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /*  This file contains basic routines manipulating call graph
 
-The callgraph:
-
-    The call-graph is data structure designed for intra-procedural optimization
-    but it is also used in non-unit-at-a-time compilation to allow easier code
-    sharing.
-
-    The call-graph consist of nodes and edges represented via linked lists.
-    Each function (external or not) corresponds to the unique node.
-
-    The mapping from declarations to call-graph nodes is done using hash table
-    based on DECL_UID.  The call-graph nodes are created lazily using
-    cgraph_node function when called for unknown declaration.
-
-    The callgraph at the moment does not represent all indirect calls or calls
-    from other compilation units.  Flag NEEDED is set for each node that may be
-    accessed in such an invisible way and it shall be considered an entry point
-    to the callgraph.
-
-    On the other hand, the callgraph currently does contain some edges for
-    indirect calls with unknown callees which can be accessed through
-    indirect_calls field of a node.  It should be noted however that at the
-    moment only calls which are potential candidates for indirect inlining are
-    added there.
-
-    Interprocedural information:
-
-      Callgraph is place to store data needed for interprocedural optimization.
-      All data structures are divided into three components: local_info that
-      is produced while analyzing the function, global_info that is result
-      of global walking of the callgraph on the end of compilation and
-      rtl_info used by RTL backend to propagate data from already compiled
-      functions to their callers.
-
-      Moreover, each node has a uid which can be used to keep information in
-      on-the-side arrays.  UIDs are reused and therefore reasonably dense.
-
-    Inlining plans:
-
-      The function inlining information is decided in advance and maintained
-      in the callgraph as so called inline plan.
-      For each inlined call, the callee's node is cloned to represent the
-      new function copy produced by inliner.
-      Each inlined call gets a unique corresponding clone node of the callee
-      and the data structure is updated while inlining is performed, so
-      the clones are eliminated and their callee edges redirected to the
-      caller.
-
-      Each edge has "inline_failed" field.  When the field is set to NULL,
-      the call will be inlined.  When it is non-NULL it contains a reason
-      why inlining wasn't performed.  */
+    The call-graph is a data structure designed for intra-procedural optimization.
+    It represents a multi-graph where nodes are functions and edges are call sites. */
 
 #include "config.h"
 #include "system.h"
@@ -100,6 +52,7 @@ The callgraph:
 #include "lto-streamer.h"
 #include "ipa-inline.h"
 #include "cfgloop.h"
+#include "gimple-pretty-print.h"
 
 const char * const ld_plugin_symbol_resolution_names[]=
 {
@@ -1472,16 +1425,6 @@ cgraph_remove_node_and_inline_clones (struct cgraph_node *node, struct cgraph_no
   return found;
 }
 
-/* Likewise indicate that a node is needed, i.e. reachable via some
-   external means.  */
-
-void
-cgraph_mark_force_output_node (struct cgraph_node *node)
-{
-  node->symbol.force_output = 1;
-  gcc_assert (!node->global.inlined_to);
-}
-
 /* Likewise indicate that a node is having address taken.  */
 
 void
@@ -2672,4 +2615,401 @@ collect_callers_of_node (struct cgraph_node *node)
   return redirect_callers;
 }
 
+/* Return TRUE if NODE2 is equivalent to NODE or its clone.  */
+static bool
+clone_of_p (struct cgraph_node *node, struct cgraph_node *node2)
+{
+  node = cgraph_function_or_thunk_node (node, NULL);
+  node2 = cgraph_function_or_thunk_node (node2, NULL);
+  while (node != node2 && node2)
+    node2 = node2->clone_of;
+  return node2 != NULL;
+}
+
+/* Verify edge E count and frequency.  */
+
+static bool
+verify_edge_count_and_frequency (struct cgraph_edge *e)
+{
+  bool error_found = false;
+  if (e->count < 0)
+    {
+      error ("caller edge count is negative");
+      error_found = true;
+    }
+  if (e->frequency < 0)
+    {
+      error ("caller edge frequency is negative");
+      error_found = true;
+    }
+  if (e->frequency > CGRAPH_FREQ_MAX)
+    {
+      error ("caller edge frequency is too large");
+      error_found = true;
+    }
+  if (gimple_has_body_p (e->caller->symbol.decl)
+      && !e->caller->global.inlined_to
+      /* FIXME: Inline-analysis sets frequency to 0 when edge is optimized out.
+	 Remove this once edges are actualy removed from the function at that time.  */
+      && (e->frequency
+	  || (inline_edge_summary_vec
+	      && ((VEC_length(inline_edge_summary_t, inline_edge_summary_vec)
+		  <= (unsigned) e->uid)
+	          || !inline_edge_summary (e)->predicate)))
+      && (e->frequency
+	  != compute_call_stmt_bb_frequency (e->caller->symbol.decl,
+					     gimple_bb (e->call_stmt))))
+    {
+      error ("caller edge frequency %i does not match BB frequency %i",
+	     e->frequency,
+	     compute_call_stmt_bb_frequency (e->caller->symbol.decl,
+					     gimple_bb (e->call_stmt)));
+      error_found = true;
+    }
+  return error_found;
+}
+
+/* Switch to THIS_CFUN if needed and print STMT to stderr.  */
+static void
+cgraph_debug_gimple_stmt (struct function *this_cfun, gimple stmt)
+{
+  /* debug_gimple_stmt needs correct cfun */
+  if (cfun != this_cfun)
+    set_cfun (this_cfun);
+  debug_gimple_stmt (stmt);
+}
+
+/* Verify that call graph edge E corresponds to DECL from the associated
+   statement.  Return true if the verification should fail.  */
+
+static bool
+verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
+{
+  struct cgraph_node *node;
+
+  if (!decl || e->callee->global.inlined_to)
+    return false;
+  node = cgraph_get_node (decl);
+
+  /* We do not know if a node from a different partition is an alias or what it
+     aliases and therefore cannot do the former_clone_of check reliably.  */
+  if (!node || node->symbol.in_other_partition)
+    return false;
+  node = cgraph_function_or_thunk_node (node, NULL);
+
+  if ((e->callee->former_clone_of != node->symbol.decl
+       && (!node->same_body_alias
+	   || e->callee->former_clone_of != node->thunk.alias))
+      /* IPA-CP sometimes redirect edge to clone and then back to the former
+	 function.  This ping-pong has to go, eventually.  */
+      && (node != cgraph_function_or_thunk_node (e->callee, NULL))
+      && !clone_of_p (node, e->callee)
+      /* If decl is a same body alias of some other decl, allow e->callee to be
+	 a clone of a clone of that other decl too.  */
+      && (!node->same_body_alias
+	  || !clone_of_p (cgraph_get_node (node->thunk.alias), e->callee)))
+    return true;
+  else
+    return false;
+}
+
+/* Verify cgraph nodes of given cgraph node.  */
+DEBUG_FUNCTION void
+verify_cgraph_node (struct cgraph_node *node)
+{
+  struct cgraph_edge *e;
+  struct function *this_cfun = DECL_STRUCT_FUNCTION (node->symbol.decl);
+  basic_block this_block;
+  gimple_stmt_iterator gsi;
+  bool error_found = false;
+
+  if (seen_error ())
+    return;
+
+  timevar_push (TV_CGRAPH_VERIFY);
+  error_found |= verify_symtab_base ((symtab_node) node);
+  for (e = node->callees; e; e = e->next_callee)
+    if (e->aux)
+      {
+	error ("aux field set for edge %s->%s",
+	       identifier_to_locale (cgraph_node_name (e->caller)),
+	       identifier_to_locale (cgraph_node_name (e->callee)));
+	error_found = true;
+      }
+  if (node->count < 0)
+    {
+      error ("execution count is negative");
+      error_found = true;
+    }
+  if (node->global.inlined_to && node->symbol.externally_visible)
+    {
+      error ("externally visible inline clone");
+      error_found = true;
+    }
+  if (node->global.inlined_to && node->symbol.address_taken)
+    {
+      error ("inline clone with address taken");
+      error_found = true;
+    }
+  if (node->global.inlined_to && node->symbol.force_output)
+    {
+      error ("inline clone is forced to output");
+      error_found = true;
+    }
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    {
+      if (e->aux)
+	{
+	  error ("aux field set for indirect edge from %s",
+		 identifier_to_locale (cgraph_node_name (e->caller)));
+	  error_found = true;
+	}
+      if (!e->indirect_unknown_callee
+	  || !e->indirect_info)
+	{
+	  error ("An indirect edge from %s is not marked as indirect or has "
+		 "associated indirect_info, the corresponding statement is: ",
+		 identifier_to_locale (cgraph_node_name (e->caller)));
+	  cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
+	  error_found = true;
+	}
+    }
+  for (e = node->callers; e; e = e->next_caller)
+    {
+      if (verify_edge_count_and_frequency (e))
+	error_found = true;
+      if (!e->inline_failed)
+	{
+	  if (node->global.inlined_to
+	      != (e->caller->global.inlined_to
+		  ? e->caller->global.inlined_to : e->caller))
+	    {
+	      error ("inlined_to pointer is wrong");
+	      error_found = true;
+	    }
+	  if (node->callers->next_caller)
+	    {
+	      error ("multiple inline callers");
+	      error_found = true;
+	    }
+	}
+      else
+	if (node->global.inlined_to)
+	  {
+	    error ("inlined_to pointer set for noninline callers");
+	    error_found = true;
+	  }
+    }
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    if (verify_edge_count_and_frequency (e))
+      error_found = true;
+  if (!node->callers && node->global.inlined_to)
+    {
+      error ("inlined_to pointer is set but no predecessors found");
+      error_found = true;
+    }
+  if (node->global.inlined_to == node)
+    {
+      error ("inlined_to pointer refers to itself");
+      error_found = true;
+    }
+
+  if (node->clone_of)
+    {
+      struct cgraph_node *n;
+      for (n = node->clone_of->clones; n; n = n->next_sibling_clone)
+        if (n == node)
+	  break;
+      if (!n)
+	{
+	  error ("node has wrong clone_of");
+	  error_found = true;
+	}
+    }
+  if (node->clones)
+    {
+      struct cgraph_node *n;
+      for (n = node->clones; n; n = n->next_sibling_clone)
+        if (n->clone_of != node)
+	  break;
+      if (n)
+	{
+	  error ("node has wrong clone list");
+	  error_found = true;
+	}
+    }
+  if ((node->prev_sibling_clone || node->next_sibling_clone) && !node->clone_of)
+    {
+       error ("node is in clone list but it is not clone");
+       error_found = true;
+    }
+  if (!node->prev_sibling_clone && node->clone_of && node->clone_of->clones != node)
+    {
+      error ("node has wrong prev_clone pointer");
+      error_found = true;
+    }
+  if (node->prev_sibling_clone && node->prev_sibling_clone->next_sibling_clone != node)
+    {
+      error ("double linked list of clones corrupted");
+      error_found = true;
+    }
+
+  if (node->analyzed && node->alias)
+    {
+      bool ref_found = false;
+      int i;
+      struct ipa_ref *ref;
+
+      if (node->callees)
+	{
+	  error ("Alias has call edges");
+          error_found = true;
+	}
+      for (i = 0; ipa_ref_list_reference_iterate (&node->symbol.ref_list,
+						  i, ref); i++)
+	if (ref->use != IPA_REF_ALIAS)
+	  {
+	    error ("Alias has non-alias reference");
+	    error_found = true;
+	  }
+	else if (ref_found)
+	  {
+	    error ("Alias has more than one alias reference");
+	    error_found = true;
+	  }
+	else
+	  ref_found = true;
+	if (!ref_found)
+	  {
+	    error ("Analyzed alias has no reference");
+	    error_found = true;
+	  }
+    }
+  if (node->analyzed && node->thunk.thunk_p)
+    {
+      if (!node->callees)
+	{
+	  error ("No edge out of thunk node");
+          error_found = true;
+	}
+      else if (node->callees->next_callee)
+	{
+	  error ("More than one edge out of thunk node");
+          error_found = true;
+	}
+      if (gimple_has_body_p (node->symbol.decl))
+        {
+	  error ("Thunk is not supposed to have body");
+          error_found = true;
+        }
+    }
+  else if (node->analyzed && gimple_has_body_p (node->symbol.decl)
+           && !TREE_ASM_WRITTEN (node->symbol.decl)
+           && (!DECL_EXTERNAL (node->symbol.decl) || node->global.inlined_to)
+           && !flag_wpa)
+    {
+      if (this_cfun->cfg)
+	{
+	  /* The nodes we're interested in are never shared, so walk
+	     the tree ignoring duplicates.  */
+	  struct pointer_set_t *visited_nodes = pointer_set_create ();
+	  /* Reach the trees by walking over the CFG, and note the
+	     enclosing basic-blocks in the call edges.  */
+	  FOR_EACH_BB_FN (this_block, this_cfun)
+	    for (gsi = gsi_start_bb (this_block);
+                 !gsi_end_p (gsi);
+                 gsi_next (&gsi))
+	      {
+		gimple stmt = gsi_stmt (gsi);
+		if (is_gimple_call (stmt))
+		  {
+		    struct cgraph_edge *e = cgraph_edge (node, stmt);
+		    tree decl = gimple_call_fndecl (stmt);
+		    if (e)
+		      {
+			if (e->aux)
+			  {
+			    error ("shared call_stmt:");
+			    cgraph_debug_gimple_stmt (this_cfun, stmt);
+			    error_found = true;
+			  }
+			if (!e->indirect_unknown_callee)
+			  {
+			    if (verify_edge_corresponds_to_fndecl (e, decl))
+			      {
+				error ("edge points to wrong declaration:");
+				debug_tree (e->callee->symbol.decl);
+				fprintf (stderr," Instead of:");
+				debug_tree (decl);
+				error_found = true;
+			      }
+			  }
+			else if (decl)
+			  {
+			    error ("an indirect edge with unknown callee "
+				   "corresponding to a call_stmt with "
+				   "a known declaration:");
+			    error_found = true;
+			    cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
+			  }
+			e->aux = (void *)1;
+		      }
+		    else if (decl)
+		      {
+			error ("missing callgraph edge for call stmt:");
+			cgraph_debug_gimple_stmt (this_cfun, stmt);
+			error_found = true;
+		      }
+		  }
+	      }
+	  pointer_set_destroy (visited_nodes);
+	}
+      else
+	/* No CFG available?!  */
+	gcc_unreachable ();
+
+      for (e = node->callees; e; e = e->next_callee)
+	{
+	  if (!e->aux)
+	    {
+	      error ("edge %s->%s has no corresponding call_stmt",
+		     identifier_to_locale (cgraph_node_name (e->caller)),
+		     identifier_to_locale (cgraph_node_name (e->callee)));
+	      cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
+	      error_found = true;
+	    }
+	  e->aux = 0;
+	}
+      for (e = node->indirect_calls; e; e = e->next_callee)
+	{
+	  if (!e->aux)
+	    {
+	      error ("an indirect edge from %s has no corresponding call_stmt",
+		     identifier_to_locale (cgraph_node_name (e->caller)));
+	      cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
+	      error_found = true;
+	    }
+	  e->aux = 0;
+	}
+    }
+  if (error_found)
+    {
+      dump_cgraph_node (stderr, node);
+      internal_error ("verify_cgraph_node failed");
+    }
+  timevar_pop (TV_CGRAPH_VERIFY);
+}
+
+/* Verify whole cgraph structure.  */
+DEBUG_FUNCTION void
+verify_cgraph (void)
+{
+  struct cgraph_node *node;
+
+  if (seen_error ())
+    return;
+
+  FOR_EACH_FUNCTION (node)
+    verify_cgraph_node (node);
+}
 #include "gt-cgraph.h"

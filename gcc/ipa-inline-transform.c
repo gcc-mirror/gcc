@@ -353,6 +353,19 @@ save_inline_function_body (struct cgraph_node *node)
   return first_clone;
 }
 
+/* Return true when function body of DECL still needs to be kept around
+   for later re-use.  */
+bool
+preserve_function_body_p (struct cgraph_node *node)
+{
+  gcc_assert (cgraph_global_info_ready);
+  gcc_assert (!node->alias && !node->thunk.thunk_p);
+
+  /* Look if there is any clone around.  */
+  if (node->clones)
+    return true;
+  return false;
+}
 
 /* Apply inline plan to function.  */
 
@@ -369,7 +382,7 @@ inline_transform (struct cgraph_node *node)
 
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */
-  if (cgraph_preserve_function_body_p (node))
+  if (preserve_function_body_p (node))
     save_inline_function_body (node);
 
   for (e = node->callees; e; e = e->next_callee)

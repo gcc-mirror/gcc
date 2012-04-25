@@ -3807,8 +3807,9 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
     fn = DECL_ABSTRACT_ORIGIN (fn);
 
   /* Don't try to inline functions that are not well-suited to inlining.  */
-  if (!cgraph_inline_p (cg_edge, &reason))
+  if (cg_edge->inline_failed)
     {
+      reason = cg_edge->inline_failed;
       /* If this call was originally indirect, we do not want to emit any
 	 inlining related warnings or sorry messages because there are no
 	 guarantees regarding those.  */

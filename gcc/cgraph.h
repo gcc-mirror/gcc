@@ -574,37 +574,9 @@ bool cgraph_for_node_and_aliases (struct cgraph_node *,
 		                  bool (*) (struct cgraph_node *, void *),
 			          void *, bool);
 VEC (cgraph_edge_p, heap) * collect_callers_of_node (struct cgraph_node *node);
-
-
-/* In cgraphunit.c  */
-extern FILE *cgraph_dump_file;
-void cgraph_finalize_function (tree, bool);
-void cgraph_analyze_function (struct cgraph_node *);
-void cgraph_finalize_compilation_unit (void);
-void cgraph_optimize (void);
-void cgraph_mark_force_output_node (struct cgraph_node *);
-void cgraph_mark_address_taken_node (struct cgraph_node *);
-bool cgraph_inline_p (struct cgraph_edge *, cgraph_inline_failed_t *reason);
-bool cgraph_preserve_function_body_p (struct cgraph_node *);
 void verify_cgraph (void);
 void verify_cgraph_node (struct cgraph_node *);
-void cgraph_build_static_cdtor (char which, tree body, int priority);
-void cgraph_reset_static_var_maps (void);
-void init_cgraph (void);
-struct cgraph_node * cgraph_copy_node_for_versioning (struct cgraph_node *,
-		tree, VEC(cgraph_edge_p,heap)*, bitmap);
-struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
-						VEC(cgraph_edge_p,heap)*,
-						VEC(ipa_replace_map_p,gc)*,
-						bitmap, bool, bitmap,
-						basic_block, const char *);
-void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*,
-			       bool, bitmap, bool, bitmap, basic_block);
-void record_references_in_initializer (tree, bool);
-bool cgraph_process_new_functions (void);
-void cgraph_process_same_body_aliases (void);
-
-bool cgraph_decide_is_function_needed (struct cgraph_node *, tree);
+void cgraph_mark_address_taken_node (struct cgraph_node *);
 
 typedef void (*cgraph_edge_hook)(struct cgraph_edge *, void *);
 typedef void (*cgraph_node_hook)(struct cgraph_node *, void *);
@@ -631,10 +603,31 @@ struct cgraph_2node_hook_list *cgraph_add_node_duplication_hook (cgraph_2node_ho
 void cgraph_remove_node_duplication_hook (struct cgraph_2node_hook_list *);
 gimple cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *);
 bool cgraph_propagate_frequency (struct cgraph_node *node);
+
+/* In cgraphunit.c  */
+extern FILE *cgraph_dump_file;
+void cgraph_finalize_function (tree, bool);
+void cgraph_finalize_compilation_unit (void);
+void cgraph_optimize (void);
+void init_cgraph (void);
+struct cgraph_node * cgraph_copy_node_for_versioning (struct cgraph_node *,
+		tree, VEC(cgraph_edge_p,heap)*, bitmap);
+struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
+						VEC(cgraph_edge_p,heap)*,
+						VEC(ipa_replace_map_p,gc)*,
+						bitmap, bool, bitmap,
+						basic_block, const char *);
+void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*,
+			       bool, bitmap, bool, bitmap, basic_block);
+bool cgraph_process_new_functions (void);
+void cgraph_process_same_body_aliases (void);
+
+
 /* In cgraphbuild.c  */
 unsigned int rebuild_cgraph_edges (void);
 void cgraph_rebuild_references (void);
 int compute_call_stmt_bb_frequency (tree, basic_block bb);
+void record_references_in_initializer (tree, bool);
 
 /* In ipa.c  */
 bool cgraph_remove_unreachable_nodes (bool, FILE *);
@@ -646,6 +639,7 @@ void cgraph_node_set_remove (cgraph_node_set, struct cgraph_node *);
 void dump_cgraph_node_set (FILE *, cgraph_node_set);
 void debug_cgraph_node_set (cgraph_node_set);
 void free_cgraph_node_set (cgraph_node_set);
+void cgraph_build_static_cdtor (char which, tree body, int priority);
 
 varpool_node_set varpool_node_set_new (void);
 varpool_node_set_iterator varpool_node_set_find (varpool_node_set,
@@ -1283,5 +1277,15 @@ decl_is_tm_clone (const_tree fndecl)
   if (n)
     return n->tm_clone;
   return false;
+}
+
+/* Likewise indicate that a node is needed, i.e. reachable via some
+   external means.  */
+
+static inline void
+cgraph_mark_force_output_node (struct cgraph_node *node)
+{
+  node->symbol.force_output = 1;
+  gcc_checking_assert (!node->global.inlined_to);
 }
 #endif  /* GCC_CGRAPH_H  */

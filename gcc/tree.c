@@ -5244,7 +5244,6 @@ free_lang_data (void)
 
   /* Reset some langhooks.  Do not reset types_compatible_p, it may
      still be used indirectly via the get_alias_set langhook.  */
-  lang_hooks.callgraph.analyze_expr = NULL;
   lang_hooks.dwarf_name = lhd_dwarf_name;
   lang_hooks.decl_printable_name = gimple_decl_printable_name;
   /* We do not want the default decl_assembler_name implementation,
