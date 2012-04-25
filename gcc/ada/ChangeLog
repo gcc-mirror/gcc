@@ -1,3 +1,17 @@
+2012-04-25  Vincent Celier  <celier@adacore.com>
+
+	* sem_ch12.adb (Inherit_Context): Compare library units, not
+	names of units, when checking if a unit is already in the context.
+
+2012-04-25  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb: Reverse_Storage_Order must be propagated to
+	untagged derived record types.
+
+2012-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb: Adjust position of end label.
+
 2012-04-22  Jan Hubicka  <jh@suse.cz>
 
 	* gcc-interface/utils.c (gnat_write_global_declarations): Do not mark

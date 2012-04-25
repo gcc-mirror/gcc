@@ -1031,10 +1031,14 @@ package body Lib.Xref is
             Ref := Original_Location (Sloc (Nod));
             Def := Original_Location (Sloc (Ent));
 
-            --  If this is an operator symbol, skip the initial
-            --  quote, for navigation purposes.
+            --  If this is an operator symbol, skip the initial quote for
+            --  navigation purposes. This is not done for the end label,
+            --  where we want the actual position after the closing quote.
 
-            if Nkind (N) = N_Defining_Operator_Symbol
+            if Typ = 't' then
+               null;
+
+            elsif Nkind (N) = N_Defining_Operator_Symbol
               or else Nkind (Nod) = N_Operator_Symbol
             then
                Ref := Ref + 1;
