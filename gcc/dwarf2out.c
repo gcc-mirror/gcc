@@ -10167,7 +10167,9 @@ dbx_reg_number (const_rtx rtl)
     }
 #endif
 
-  return DBX_REGISTER_NUMBER (regno);
+  regno = DBX_REGISTER_NUMBER (regno);
+  gcc_assert (regno != INVALID_REGNUM);
+  return regno;
 }
 
 /* Optionally add a DW_OP_piece term to a location description expression.
