@@ -313,6 +313,68 @@
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"
  "b %z1")
 
+;; The save_vregs and restore_vregs patterns don't use memory_operand
+;; because (plus (reg) (const_int)) is not a valid vector address.
+;; This way is more compact than describing exactly what happens in
+;; the out-of-line functions, ie. loading the constant into r11/r12
+;; then using indexed addressing, and requires less editing of rtl
+;; to describe the operation to dwarf2out_frame_debug_expr.
+(define_insn "*save_vregs_<mode>_r11"
+  [(match_parallel 0 "any_parallel_operand"
+     [(clobber (reg:P 65))
+      (use (match_operand:P 1 "symbol_ref_operand" "s"))
+      (clobber (reg:P 11))
+      (use (reg:P 0))
+      (set (mem:V4SI (plus:P (match_operand:P 2 "gpc_reg_operand" "b")
+			     (match_operand:P 3 "short_cint_operand" "I")))
+	   (match_operand:V4SI 4 "gpc_reg_operand" "v"))])]
+  ""
+  "bl %1"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "*save_vregs_<mode>_r12"
+  [(match_parallel 0 "any_parallel_operand"
+     [(clobber (reg:P 65))
+      (use (match_operand:P 1 "symbol_ref_operand" "s"))
+      (clobber (reg:P 12))
+      (use (reg:P 0))
+      (set (mem:V4SI (plus:P (match_operand:P 2 "gpc_reg_operand" "b")
+			     (match_operand:P 3 "short_cint_operand" "I")))
+	   (match_operand:V4SI 4 "gpc_reg_operand" "v"))])]
+  ""
+  "bl %1"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "*restore_vregs_<mode>_r11"
+  [(match_parallel 0 "any_parallel_operand"
+     [(clobber (reg:P 65))
+      (use (match_operand:P 1 "symbol_ref_operand" "s"))
+      (clobber (reg:P 11))
+      (use (reg:P 0))
+      (set (match_operand:V4SI 2 "gpc_reg_operand" "=v")
+	   (mem:V4SI (plus:P (match_operand:P 3 "gpc_reg_operand" "b")
+			     (match_operand:P 4 "short_cint_operand" "I"))))])]
+  ""
+  "bl %1"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "*restore_vregs_<mode>_r12"
+  [(match_parallel 0 "any_parallel_operand"
+     [(clobber (reg:P 65))
+      (use (match_operand:P 1 "symbol_ref_operand" "s"))
+      (clobber (reg:P 12))
+      (use (reg:P 0))
+      (set (match_operand:V4SI 2 "gpc_reg_operand" "=v")
+	   (mem:V4SI (plus:P (match_operand:P 3 "gpc_reg_operand" "b")
+			     (match_operand:P 4 "short_cint_operand" "I"))))])]
+  ""
+  "bl %1"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
 ;; Simple binary operations.
 
 ;; add
