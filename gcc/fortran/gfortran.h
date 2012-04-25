@@ -2219,6 +2219,8 @@ typedef struct
   int warn_align_commons;
   int warn_real_q_constant;
   int warn_unused_dummy_argument;
+  int warn_realloc_lhs;
+  int warn_realloc_lhs_all;
   int max_errors;
 
   int flag_all_intrinsics;
