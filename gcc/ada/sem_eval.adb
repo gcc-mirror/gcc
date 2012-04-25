@@ -2747,7 +2747,7 @@ package body Sem_Eval is
 
                --  General case
 
-               T := Etype (First_Index (Etype (Op)));
+               T := Etype (Proper_First_Index (Etype (Op)));
 
                --  The simple case, both bounds are known at compile time
 
