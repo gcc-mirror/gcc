@@ -1,3 +1,19 @@
+2012-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (flag_debug_types_section): Default to 0.
+	(dwarf_version): Default to 4.
+	(dwarf_record_gcc_switches): Default to 1.
+	(dwarf_strict): Default to 0.
+	* toplev.c (process_options): Don't handle dwarf_strict
+	or dwarf_version here.
+	* config/vxworks.c (vxworks_override_options): Don't
+	test whether dwarf_strict or dwarf_version are negative,
+	instead test !global_options_set.x_dwarf_*.
+	* config/darwin.c (darwin_override_options): Default to
+	dwarf_version 2.
+	* doc/invoke.texi: Note that -gdwarf-4, -grecord-gcc-switches
+	and -fno-debug-types-section are now the default.
+
 2012-04-25  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c: Update toplevel comment.
