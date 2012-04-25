@@ -1,3 +1,10 @@
+2012-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/52880
+	* c-typeck.c (set_nonincremental_init,
+	set_nonincremental_init_from_string): Pass true instead of false
+	as IMPLICIT to add_pending_init.
+
 2012-04-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-04-24 mainline r186768.
