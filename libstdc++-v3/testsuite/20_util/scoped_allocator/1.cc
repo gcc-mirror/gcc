@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,7 @@ struct Element
 
   Element(const allocator_type& a = allocator_type()) : alloc(a) { }
 
-  Element(std::allocator_arg_t, const allocator_type& a, int i = 0)
+  Element(std::allocator_arg_t, const allocator_type& a, int = 0)
   : alloc(a) { }
 
   Element(std::allocator_arg_t, const allocator_type& a, const Element&)
@@ -53,6 +53,7 @@ void test01()
   alloc1_type a1(1);
   Element e;
   EltVec ev1(1, e, a1);
+  VERIFY( ev1.get_allocator().get_personality() == 1 );
   VERIFY( ev1[0].get_allocator().get_personality() == 1 );
 }
 
@@ -60,14 +61,16 @@ void test02()
 {
   bool test __attribute((unused)) = false;
 
-  typedef std::vector<Element, Element::allocator_type> EltVec;
+  typedef std::scoped_allocator_adaptor<Element::allocator_type> inner_alloc_type;
 
-  typedef std::scoped_allocator_adaptor<EltVec::allocator_type,
-	                                Element::allocator_type> alloc_type;
+  typedef std::vector<Element, inner_alloc_type> EltVec;
+
+  typedef std::scoped_allocator_adaptor<Element::allocator_type,
+                                        Element::allocator_type> alloc_type;
 
   typedef std::vector<EltVec, alloc_type> EltVecVec;
 
-  alloc_type a(1, 2);
+  alloc_type a(1, Element::allocator_type(2)); // outer=1, inner=2
   Element e;
   EltVec ev(1, e);
   EltVecVec evv(1, ev, a);
@@ -76,7 +79,7 @@ void test02()
   VERIFY( evv[0].get_allocator().get_personality() == 2 );
   VERIFY( evv[0][0].get_allocator().get_personality() == 2 );
 
-  alloc_type a2(3, 4);
+  alloc_type a2(3, Element::allocator_type(4)); // outer=3, inner=4
 
   EltVecVec evv2(evv, a2); // copy with a different allocator
 
@@ -96,4 +99,5 @@ void test02()
 int main()
 {
   test01();
+  test02();
 }

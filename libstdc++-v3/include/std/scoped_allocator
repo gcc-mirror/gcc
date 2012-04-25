@@ -1,6 +1,6 @@
 // <scoped_allocator> -*- C++ -*-
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -77,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   
   template<typename _Alloc>
     inline auto
-    __do_outermost(_Alloc& __a, _Alloc&) -> decltype(__a.outer_allocator())
+    __do_outermost(_Alloc& __a, _Alloc*) -> decltype(__a.outer_allocator())
     { return __a.outer_allocator(); }
 
   template<typename _Alloc>
@@ -87,8 +87,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Alloc>
     inline auto
-    __outermost(_Alloc& __a) -> decltype(__do_outermost(__a, __a))
-    { return __do_outermost(__a, __a); }
+    __outermost(_Alloc& __a) -> decltype(__do_outermost(__a, &__a))
+    { return __do_outermost(__a, &__a); }
 
   template<typename _OuterAlloc, typename... _InnerAllocs>
     class scoped_allocator_adaptor;

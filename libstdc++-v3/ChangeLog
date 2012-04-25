@@ -1,3 +1,9 @@
+2012-04-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/scoped_allocator (scoped_allocator::__outermost): Do
+	not pass non-POD to varargs function.
+	* testsuite/20_util/scoped_allocator/1.cc: Fix test.
+
 2012-04-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/52689
