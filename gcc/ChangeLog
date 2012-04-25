@@ -1,3 +1,21 @@
+2012-04-24  Sriraman Tallam  <tmsriram@google.com>
+
+	* config/i386/i386.c (build_processor_model_struct): New function.
+	(make_var_decl): New function.
+	(fold_builtin_cpu): New function.
+	(ix86_fold_builtin): New function.
+	(make_cpu_type_builtin): New function.
+	(ix86_init_platform_type_builtins): New function.
+	(ix86_expand_builtin): Expand new builtins by folding them.
+	(ix86_init_builtins): Make new builtins to detect CPU type.
+	(TARGET_FOLD_BUILTIN): New macro.
+	(IX86_BUILTIN_CPU_INIT): New enum value.
+	(IX86_BUILTIN_CPU_IS): New enum value.
+	(IX86_BUILTIN_CPU_SUPPORTS): New enum value.
+	* config/i386/i386-builtin-types.def: New function type.
+	* testsuite/gcc.target/builtin_target.c: New testcase.
+	* doc/extend.texi: Document builtins.
+
 2012-04-24  Olivier Hainque  <hainque@adacore.com>
 
 	* common.opt (gdwarf-): Initialize dwarf_version to -1 instead of 2.
