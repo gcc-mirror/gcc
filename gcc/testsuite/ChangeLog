@@ -1,3 +1,10 @@
+2012-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/52979
+	* gcc.c-torture/compile/pr52979-1.c: New test.
+	* gcc.c-torture/execute/pr52979-1.c: New test.
+	* gcc.c-torture/execute/pr52979-2.c: New test.
+
 2012-04-25  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.target/i386/l_fma_float_5.c: Adjust.
