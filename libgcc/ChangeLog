@@ -1,3 +1,10 @@
+2012-04-25  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/crtsavevr.S: New file.
+	* config/rs6000/crtrestvr.S: New file.
+	* config/rs6000/t-savresfgpr: Build the above.
+	* config/rs6000/t-netbsd: Likewise.
+
 2012-04-24  Sriraman Tallam  <tmsriram@google.com>
 
 	* libgcc/config/i386/i386-cpuinfo.c: Set __cpu_vendor always.

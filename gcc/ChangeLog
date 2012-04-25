@@ -1,5 +1,39 @@
 2012-04-25  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000 (SAVE_INLINE_VRS, REST_INLINE_VRS,
+	V_SAVE_INLINE, SAVRES_LR, SAVRES_SAVE, SAVRES_REG,
+	SAVRES_GPR, SAVRES_FPR, SAVRES_VR): Define.
+	(no_global_regs_above): Delete.
+	(no_global_regs): New function.
+	(rs6000_savres_strategy): Handle vector regs.  Use proper lr_save_p
+	value for load multiple test.
+	(savres_routine_syms): Increase size.
+	(rs6000_savres_routine_name, rs6000_savres_routine_sym,
+	ptr_regno_for_savres, rs6000_emit_savres_rtx): Pass in int selector
+	rather than a number of boolean flags.  Update all callers.
+	(rs6000_savres_routine_name): Generate vector save/restore names.
+	(rs6000_savres_routine_sym): Handle vector regs.  Delete forward decl.
+	(ptr_regno_for_savres, rs6000_emit_savres_rtx): Likewise.
+	(rs6000_emit_prologue): Delete saving_FPRs_inline, saving_GPRs_inline
+	and using_store_multiple.  Expand uses.  Don't always use r11 as
+	frame reg when needed for out-of-line saves.  Set up initial offset
+	for out-of-line vector saves when buying stack frame.  Handle pointer
+	reg setup for out-of-line fp save.  Emit call to out-of-line vector
+	save function.  Choose r11 or r12 for vrsave reg when available for
+	better scheduling.
+	(rs6000_output_function_prologue): Don't emit .extern for ELF.
+	(rs6000_emit_epilogue): Choose a better frame reg when restoring
+	from back-chain to suit out-of-line vector restore functions.  Emit
+	call to out-of-line vector restore function.  Adjust register used
+	for cr restore.  Tweak pointer register setup for gpr restore.
+	* config/rs6000/rs6000.h (FIRST_SAVED_GP_REGNO): Take into account
+	FIXED_R13.
+	* config/rs6000/sysv4.h (FP_SAVE_INLINE, GP_SAVE_INLINE): Simplify.
+	(V_SAVE_INLINE): Define.
+	* config/rs6000/altivec.md (save_vregs_*, restore_vregs_*): New insns.
+
+2012-04-25  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (rs6000_savres_strategy): Allow
 	out-of-line save/restore for large frames.  Don't disable
 	out-of-line saves on ABI_AIX when using static chain reg.
