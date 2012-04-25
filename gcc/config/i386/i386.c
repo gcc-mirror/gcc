@@ -25855,6 +25855,11 @@ enum ix86_builtins
   /* CFString built-in for darwin */
   IX86_BUILTIN_CFSTRING,
 
+  /* Builtins to get CPU type and supported features. */
+  IX86_BUILTIN_CPU_INIT,
+  IX86_BUILTIN_CPU_IS,
+  IX86_BUILTIN_CPU_SUPPORTS,
+
   IX86_BUILTIN_MAX
 };
 
@@ -27673,6 +27678,334 @@ ix86_init_mmx_sse_builtins (void)
     }
 }
 
+/* This builds the processor_model struct type defined in
+   libgcc/config/i386/i386-cpuinfo.c  */
+
+static tree
+build_processor_model_struct (void)
+{
+  const char *field_name[] = {"__cpu_vendor", "__cpu_type", "__cpu_subtype",
+			      "__cpu_features"};
+  tree field = NULL_TREE, field_chain = NULL_TREE;
+  int i;
+  tree type = make_node (RECORD_TYPE);
+
+  /* The first 3 fields are unsigned int.  */
+  for (i = 0; i < 3; ++i)
+    {
+      field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			  get_identifier (field_name[i]), unsigned_type_node);
+      if (field_chain != NULL_TREE)
+	DECL_CHAIN (field) = field_chain;
+      field_chain = field;
+    }
+
+  /* The last field is an array of unsigned integers of size one.  */
+  field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+		      get_identifier (field_name[3]),
+		      build_array_type (unsigned_type_node,
+					build_index_type (size_one_node)));
+  if (field_chain != NULL_TREE)
+    DECL_CHAIN (field) = field_chain;
+  field_chain = field;
+
+  finish_builtin_struct (type, "__processor_model", field_chain, NULL_TREE);
+  return type;
+}
+
+/* Returns a extern, comdat VAR_DECL of type TYPE and name NAME. */
+
+static tree
+make_var_decl (tree type, const char *name)
+{
+  tree new_decl;
+
+  new_decl = build_decl (UNKNOWN_LOCATION,
+	                 VAR_DECL,
+	  	         get_identifier(name),
+		         type);
+
+  DECL_EXTERNAL (new_decl) = 1;
+  TREE_STATIC (new_decl) = 1;
+  TREE_PUBLIC (new_decl) = 1;
+  DECL_INITIAL (new_decl) = 0;
+  DECL_ARTIFICIAL (new_decl) = 0;
+  DECL_PRESERVE_P (new_decl) = 1;
+
+  make_decl_one_only (new_decl, DECL_ASSEMBLER_NAME (new_decl));
+  assemble_variable (new_decl, 0, 0, 0);
+
+  return new_decl;
+}
+
+/* FNDECL is a __builtin_cpu_is or a __builtin_cpu_supports call that is folded
+   into an integer defined in libgcc/config/i386/i386-cpuinfo.c */
+
+static tree
+fold_builtin_cpu (tree fndecl, tree *args)
+{
+  unsigned int i;
+  enum ix86_builtins fn_code = (enum ix86_builtins)
+				DECL_FUNCTION_CODE (fndecl);
+  tree param_string_cst = NULL;
+
+  /* This is the order of bit-fields in __processor_features in
+     i386-cpuinfo.c */
+  enum processor_features
+  {
+    F_CMOV = 0,
+    F_MMX,
+    F_POPCNT,
+    F_SSE,
+    F_SSE2,
+    F_SSE3,
+    F_SSSE3,
+    F_SSE4_1,
+    F_SSE4_2,
+    F_AVX,
+    F_MAX
+  };
+
+  /* These are the values for vendor types and cpu types  and subtypes
+     in i386-cpuinfo.c.  Cpu types and subtypes should be subtracted by
+     the corresponding start value.  */
+  enum processor_model
+  {
+    M_INTEL = 1,
+    M_AMD,
+    M_CPU_TYPE_START,
+    M_INTEL_ATOM,
+    M_INTEL_CORE2,
+    M_INTEL_COREI7,
+    M_AMDFAM10H,
+    M_AMDFAM15H,
+    M_CPU_SUBTYPE_START,
+    M_INTEL_COREI7_NEHALEM,
+    M_INTEL_COREI7_WESTMERE,
+    M_INTEL_COREI7_SANDYBRIDGE,
+    M_AMDFAM10H_BARCELONA,
+    M_AMDFAM10H_SHANGHAI,
+    M_AMDFAM10H_ISTANBUL,
+    M_AMDFAM15H_BDVER1,
+    M_AMDFAM15H_BDVER2
+  };
+
+  static struct _arch_names_table
+    {
+      const char *const name;
+      const enum processor_model model;
+    }
+  const arch_names_table[] =
+    {
+      {"amd", M_AMD},
+      {"intel", M_INTEL},
+      {"atom", M_INTEL_ATOM},
+      {"core2", M_INTEL_CORE2},
+      {"corei7", M_INTEL_COREI7},
+      {"nehalem", M_INTEL_COREI7_NEHALEM},
+      {"westmere", M_INTEL_COREI7_WESTMERE},
+      {"sandybridge", M_INTEL_COREI7_SANDYBRIDGE},
+      {"amdfam10h", M_AMDFAM10H},
+      {"barcelona", M_AMDFAM10H_BARCELONA},
+      {"shanghai", M_AMDFAM10H_SHANGHAI},
+      {"istanbul", M_AMDFAM10H_ISTANBUL},
+      {"amdfam15h", M_AMDFAM15H},
+      {"bdver1", M_AMDFAM15H_BDVER1},
+      {"bdver2", M_AMDFAM15H_BDVER2},
+    };
+
+  static struct _isa_names_table
+    {
+      const char *const name;
+      const enum processor_features feature;
+    }
+  const isa_names_table[] =
+    {
+      {"cmov",   F_CMOV},
+      {"mmx",    F_MMX},
+      {"popcnt", F_POPCNT},
+      {"sse",    F_SSE},
+      {"sse2",   F_SSE2},
+      {"sse3",   F_SSE3},
+      {"ssse3",  F_SSSE3},
+      {"sse4.1", F_SSE4_1},
+      {"sse4.2", F_SSE4_2},
+      {"avx",    F_AVX}
+    };
+
+  static tree __processor_model_type = NULL_TREE;
+  static tree __cpu_model_var = NULL_TREE;
+
+  if (__processor_model_type == NULL_TREE)
+    __processor_model_type = build_processor_model_struct ();
+
+  if (__cpu_model_var == NULL_TREE)
+    __cpu_model_var = make_var_decl (__processor_model_type,
+				     "__cpu_model");
+
+  gcc_assert ((args != NULL) && (*args != NULL));
+
+  param_string_cst = *args;
+  while (param_string_cst
+	 && TREE_CODE (param_string_cst) !=  STRING_CST)
+    {
+      /* *args must be a expr that can contain other EXPRS leading to a
+	 STRING_CST.   */
+      if (!EXPR_P (param_string_cst))
+ 	{
+	  error ("Parameter to builtin must be a string constant or literal");
+	  return integer_zero_node;
+	}
+      param_string_cst = TREE_OPERAND (EXPR_CHECK (param_string_cst), 0);
+    }
+
+  gcc_assert (param_string_cst);
+
+  if (fn_code == IX86_BUILTIN_CPU_IS)
+    {
+      tree ref;
+      tree field;
+      unsigned int field_val = 0;
+      unsigned int NUM_ARCH_NAMES
+	= sizeof (arch_names_table) / sizeof (struct _arch_names_table);
+
+      for (i = 0; i < NUM_ARCH_NAMES; i++)
+	if (strcmp (arch_names_table[i].name,
+	    TREE_STRING_POINTER (param_string_cst)) == 0)
+	  break;
+
+      if (i == NUM_ARCH_NAMES)
+	{
+	  error ("Parameter to builtin not valid: %s",
+	         TREE_STRING_POINTER (param_string_cst));
+	  return integer_zero_node;
+	}
+
+      field = TYPE_FIELDS (__processor_model_type);
+      field_val = arch_names_table[i].model;
+
+      /* CPU types are stored in the next field.  */
+      if (field_val > M_CPU_TYPE_START
+	  && field_val < M_CPU_SUBTYPE_START)
+	{
+	  field = DECL_CHAIN (field);
+	  field_val -= M_CPU_TYPE_START;
+	}
+
+      /* CPU subtypes are stored in the next field.  */
+      if (field_val > M_CPU_SUBTYPE_START)
+	{
+	  field = DECL_CHAIN ( DECL_CHAIN (field));
+	  field_val -= M_CPU_SUBTYPE_START;
+	}
+
+      /* Get the appropriate field in __cpu_model.  */
+      ref =  build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
+		     field, NULL_TREE);
+
+      /* Check the value.  */
+      return build2 (EQ_EXPR, unsigned_type_node, ref,
+		     build_int_cstu (unsigned_type_node, field_val));
+    }
+  else if (fn_code == IX86_BUILTIN_CPU_SUPPORTS)
+    {
+      tree ref;
+      tree array_elt;
+      tree field;
+      unsigned int field_val = 0;
+      unsigned int NUM_ISA_NAMES
+	= sizeof (isa_names_table) / sizeof (struct _isa_names_table);
+
+      for (i = 0; i < NUM_ISA_NAMES; i++)
+	if (strcmp (isa_names_table[i].name,
+	    TREE_STRING_POINTER (param_string_cst)) == 0)
+	  break;
+
+      if (i == NUM_ISA_NAMES)
+	{
+	  error ("Parameter to builtin not valid: %s",
+	       	 TREE_STRING_POINTER (param_string_cst));
+	  return integer_zero_node;
+	}
+
+      field = TYPE_FIELDS (__processor_model_type);
+      /* Get the last field, which is __cpu_features.  */
+      while (DECL_CHAIN (field))
+        field = DECL_CHAIN (field);
+
+      /* Get the appropriate field: __cpu_model.__cpu_features  */
+      ref =  build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
+		     field, NULL_TREE);
+
+      /* Access the 0th element of __cpu_features array.  */
+      array_elt = build4 (ARRAY_REF, unsigned_type_node, ref,
+			  integer_zero_node, NULL_TREE, NULL_TREE);
+
+      field_val = (1 << isa_names_table[i].feature);
+      /* Return __cpu_model.__cpu_features[0] & field_val  */
+      return build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
+		     build_int_cstu (unsigned_type_node, field_val));
+    }
+  gcc_unreachable ();
+}
+
+static tree
+ix86_fold_builtin (tree fndecl, int n_args,
+		   tree *args, bool ignore ATTRIBUTE_UNUSED)
+{
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    {
+      enum ix86_builtins fn_code = (enum ix86_builtins)
+				   DECL_FUNCTION_CODE (fndecl);
+      if (fn_code ==  IX86_BUILTIN_CPU_IS
+	  || fn_code == IX86_BUILTIN_CPU_SUPPORTS)
+	{
+	  gcc_assert (n_args == 1);
+          return fold_builtin_cpu (fndecl, args);
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Make builtins to detect cpu type and features supported.  NAME is
+   the builtin name, CODE is the builtin code, and FTYPE is the function
+   type of the builtin.  */
+
+static void
+make_cpu_type_builtin (const char* name, int code,
+		       enum ix86_builtin_func_type ftype, bool is_const)
+{
+  tree decl;
+  tree type;
+
+  type = ix86_get_builtin_func_type (ftype);
+  decl = add_builtin_function (name, type, code, BUILT_IN_MD,
+			       NULL, NULL_TREE);
+  gcc_assert (decl != NULL_TREE);
+  ix86_builtins[(int) code] = decl;
+  TREE_READONLY (decl) = is_const;
+}
+
+/* Make builtins to get CPU type and features supported.  The created
+   builtins are :
+
+   __builtin_cpu_init (), to detect cpu type and features,
+   __builtin_cpu_is ("<CPUNAME>"), to check if cpu is of type <CPUNAME>,
+   __builtin_cpu_supports ("<FEATURE>"), to check if cpu supports <FEATURE>
+   */
+
+static void
+ix86_init_platform_type_builtins (void)
+{
+  make_cpu_type_builtin ("__builtin_cpu_init", IX86_BUILTIN_CPU_INIT,
+			 INT_FTYPE_VOID, false);
+  make_cpu_type_builtin ("__builtin_cpu_is", IX86_BUILTIN_CPU_IS,
+			 INT_FTYPE_PCCHAR, true);
+  make_cpu_type_builtin ("__builtin_cpu_supports", IX86_BUILTIN_CPU_SUPPORTS,
+			 INT_FTYPE_PCCHAR, true);
+}
+
 /* Internal method for ix86_init_builtins.  */
 
 static void
@@ -27755,6 +28088,9 @@ ix86_init_builtins (void)
   tree t;
 
   ix86_init_builtin_types ();
+
+  /* Builtins to get CPU type and features. */
+  ix86_init_platform_type_builtins ();
 
   /* TFmode support builtins.  */
   def_builtin_const (0, "__builtin_infq",
@@ -29373,6 +29709,28 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   rtx op0, op1, op2, op3, op4, pat;
   enum machine_mode mode0, mode1, mode2, mode3, mode4;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+
+  /* For CPU builtins that can be folded, fold first and expand the fold.  */
+  switch (fcode)
+    {
+    case IX86_BUILTIN_CPU_INIT:
+      {
+	/* Make it call __cpu_indicator_init in libgcc. */
+	tree call_expr, fndecl, type;
+        type = build_function_type_list (integer_type_node, NULL_TREE); 
+	fndecl = build_fn_decl ("__cpu_indicator_init", type);
+	call_expr = build_call_expr (fndecl, 0); 
+	return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+      }
+    case IX86_BUILTIN_CPU_IS:
+    case IX86_BUILTIN_CPU_SUPPORTS:
+      {
+	tree arg0 = CALL_EXPR_ARG (exp, 0);
+	tree fold_expr = fold_builtin_cpu (fndecl, &arg0);
+	gcc_assert (fold_expr != NULL_TREE);
+	return expand_expr (fold_expr, target, mode, EXPAND_NORMAL);
+      }
+    }
 
   /* Determine whether the builtin function is available under the current ISA.
      Originally the builtin was not created if it wasn't applicable to the
@@ -39099,6 +39457,9 @@ ix86_autovectorize_vector_sizes (void)
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST ix86_build_builtin_va_list
+
+#undef TARGET_FOLD_BUILTIN
+#define TARGET_FOLD_BUILTIN ix86_fold_builtin
 
 #undef TARGET_ENUM_VA_LIST_P
 #define TARGET_ENUM_VA_LIST_P ix86_enum_va_list

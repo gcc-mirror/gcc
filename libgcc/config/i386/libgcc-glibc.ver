@@ -147,6 +147,10 @@ GCC_4.3.0 {
   __trunctfxf2
   __unordtf2
 }
+
+GCC_4.8.0 {
+  __cpu_model
+}
 %else
 GCC_4.4.0 {
   __addtf3
@@ -182,5 +186,9 @@ GCC_4.4.0 {
 }
 GCC_4.5.0 {
   __extendxftf2
+}
+
+GCC_4.8.0 {
+  __cpu_model
 }
 %endif

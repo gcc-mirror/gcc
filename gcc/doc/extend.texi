@@ -9419,6 +9419,144 @@ Similar to @code{__builtin_huge_val}, except the return type is @code{__float128
 @findex __builtin_huge_valq
 @end table
 
+The following built-in functions are always available and can be used to
+check the target platform type.
+
+@deftypefn {Built-in Function} void __builtin_cpu_init (void)
+This function runs the CPU detection code to check the type of CPU and the
+features supported.  This builtin needs to be invoked along with the builtins
+to check CPU type and features, @code{__builtin_cpu_is} and
+@code{__builtin_cpu_supports}, only when used in a function that will be
+executed before any constructors are called.  The CPU detection code is
+automatically executed in a very high priority constructor.
+
+For example, this function has to be used in @code{ifunc} resolvers which
+check for CPU type using the builtins, @code{__builtin_cpu_is}
+and @code{__builtin_cpu_supports}.
+@smallexample
+
+static void (*resolve_memcpy (void)) (void)
+@{
+  // ifunc resolvers fire before constructors, explicitly call the init
+  // function.
+  __builtin_cpu_init ();
+  if (__builtin_cpu_supports ("ssse3"))
+    return ssse3_memcpy; // super fast memcpy with ssse3 instructions.
+  else
+    return default_memcpy;
+@}
+
+void *memcpy (void *, const void *, size_t)
+     __attribute__ ((ifunc ("resolve_memcpy")));
+@end smallexample
+
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_cpu_is (const char *@var{cpuname})
+This function returns a positive integer if the runtime cpu is of type @var{cpuname}
+ and returns @code{0} otherwise. The following cpu names can be detected:
+
+@table @samp
+@item intel
+Intel CPU.
+
+@item atom
+Intel ATOM CPU.
+
+@item core2
+Intel Core2 CPU.
+
+@item corei7
+Intel Corei7 CPU.
+
+@item nehalem
+Intel Corei7 Nehalem CPU.
+
+@item westmere
+Intel Corei7 Westmere CPU.
+
+@item sandybridge
+Intel Corei7 Sandybridge CPU.
+
+@item amd
+AMD CPU.
+
+@item amdfam10h
+AMD family 10h CPU.
+
+@item barcelona
+AMD family 10h Barcelona CPU.
+
+@item shanghai
+AMD family 10h Shanghai CPU.
+
+@item istanbul
+AMD family 10h Istanbul CPU.
+
+@item amdfam15h
+AMD family 15h CPU.
+
+@item bdver1
+AMD family 15h Bulldozer version 1.
+
+@item bdver2
+AMD family 15h Bulldozer version 2.
+@end table
+
+Here is an example:
+@smallexample
+if (__builtin_cpu_is ("corei7"))
+  @{
+     do_corei7 (); //Corei7 specific implementation.
+  @}
+else
+  @{
+     do_generic (); //Generic implementation.
+  @}
+@end smallexample
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_cpu_supports (const char *@var{feature})
+This function returns a postive integer if the runtime cpu supports @var{feature}
+ and returns @code{0} otherwise. The following features can be detected:
+
+@table @samp
+@item cmov
+CMOV instruction.
+@item mmx
+MMX instructions.
+@item popcnt
+POPCNT instruction.
+@item sse
+SSE instructions.
+@item sse2
+SSE2 instructions.
+@item sse3
+SSE3 instructions.
+@item ssse3
+SSSE3 instructions.
+@item sse4.1
+SSE4.1 instructions.
+@item sse4.2
+SSE4.2 instructions.
+@item avx
+AVX instructions.
+@end table
+
+Here is an example:
+@smallexample
+if (__builtin_cpu_supports ("popcnt"))
+  @{
+     asm("popcnt %1,%0" : "=r"(count) : "rm"(n) : "cc");
+  @}
+else
+  @{
+     count = generic_countbits (n); //generic implementation.
+  @}
+@end smallexample
+@end deftypefn
+
+
 The following built-in functions are made available by @option{-mmmx}.
 All of them generate the machine instruction that is part of the name.
 
