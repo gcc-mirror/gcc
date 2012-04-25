@@ -1,3 +1,8 @@
+2012-04-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/53120
+	* gcc.dg/torture/pr53120.c: New test.
+
 2012-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52979
