@@ -1731,9 +1731,9 @@ package body Lib.Xref is
          --  since at the time the reference or definition is made, private
          --  types may be swapped, and the Sloc value may be incorrect. We
          --  also set up the pointer vector for the sort.
-         --  For user-defined operators we need to skip the initial
-         --  quote and point to the first character of the name, for
-         --  navigation purposes.
+
+         --  For user-defined operators we need to skip the initial quote and
+         --  point to the first character of the name, for navigation purposes.
 
          for J in 1 .. Nrefs loop
             declare

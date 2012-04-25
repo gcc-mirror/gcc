@@ -197,8 +197,9 @@ package body Lib.Writ is
       --  Array of flags to show which units have Elaborate_All_Desirable set
 
       type Yes_No is (Unknown, Yes, No);
-
       Implicit_With : array (Units.First .. Last_Unit) of Yes_No;
+      --  Indicates if an implicit with has been given for the unit. Yes if
+      --  certainly present, no if certainly absent, unkonwn if not known.
 
       Sdep_Table : Unit_Ref_Table (1 .. Pos (Last_Unit - Units.First + 2));
       --  Sorted table of source dependencies. One extra entry in case we
@@ -284,7 +285,6 @@ package body Lib.Writ is
                if Implicit_With (Unum) /= Yes then
                   if Implicit_With_From_Instantiation (Item) then
                      Implicit_With (Unum) := Yes;
-
                   else
                      Implicit_With (Unum) := No;
                   end if;

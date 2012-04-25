@@ -7755,6 +7755,7 @@ package body Sem_Ch3 is
 
          declare
             Parent_Full : Entity_Id;
+
          begin
             --  Ekind (Parent_Base) is not necessarily E_Record_Type since
             --  Parent_Base can be a private type or private extension. Go
