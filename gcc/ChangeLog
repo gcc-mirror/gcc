@@ -1,3 +1,14 @@
+2012-04-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-04-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*add<mode>_2): Add r/r/0 alternative.
+	(*addsi_2_zext): Ditto.
+	(*add<mode>_3): Ditto.
+	(*addsi_3_zext): Ditto.
+	(*add<mode>_5): Ditto.
+
 2012-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/52880
