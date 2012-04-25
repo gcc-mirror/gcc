@@ -256,16 +256,25 @@ __cpu_indicator_init (void)
 
   /* Assume cpuid insn present. Run in level 0 to get vendor id. */
   if (!__get_cpuid_output (0, &eax, &ebx, &ecx, &edx))
-    return -1;
+    {
+      __cpu_model.__cpu_vendor = VENDOR_OTHER;
+      return -1;
+    }
 
   vendor = ebx;
   max_level = eax;
 
   if (max_level < 1)
-    return -1;
+    {
+      __cpu_model.__cpu_vendor = VENDOR_OTHER;
+      return -1;
+    }
 
   if (!__get_cpuid_output (1, &eax, &ebx, &ecx, &edx))
-    return -1;
+    {
+      __cpu_model.__cpu_vendor = VENDOR_OTHER;
+      return -1;
+    }
 
   model = (eax >> 4) & 0x0f;
   family = (eax >> 8) & 0x0f;

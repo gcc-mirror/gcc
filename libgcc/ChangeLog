@@ -1,5 +1,9 @@
 2012-04-24  Sriraman Tallam  <tmsriram@google.com>
 
+	* libgcc/config/i386/i386-cpuinfo.c: Set __cpu_vendor always.
+
+2012-04-24  Sriraman Tallam  <tmsriram@google.com>
+
 	* libgcc/config/i386/i386-cpuinfo.c: New file.
 	* libgcc/config/i386/t-cpuinfo: New file.
 	* libgcc/config.host: Include t-cpuinfo.
