@@ -361,6 +361,8 @@ _Jv_DefineClass (jclass klass, jbyteArray data, jint offset, jint length,
 #define MINOR_1_5  0
 #define MAJOR_1_6 50
 #define MINOR_1_6  0
+#define MAJOR_1_7 51
+#define MINOR_1_7  0
 
 void
 _Jv_ClassReader::parse ()
@@ -371,8 +373,8 @@ _Jv_ClassReader::parse ()
 
   int minor_version = read2u ();
   int major_version = read2u ();
-  if (major_version < MAJOR_1_1 || major_version > MAJOR_1_6
-      || (major_version == MAJOR_1_6 && minor_version > MINOR_1_6))
+  if (major_version < MAJOR_1_1 || major_version > MAJOR_1_7
+      || (major_version == MAJOR_1_7 && minor_version > MINOR_1_7))
     throw_class_format_error ("unrecognized class file version");
   is_15 = (major_version >= MAJOR_1_5);
 

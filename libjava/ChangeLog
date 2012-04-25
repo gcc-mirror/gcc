@@ -1,3 +1,8 @@
+2012-04-23  Andrew Haley  <aph@redhat.com>
+
+	* defineclass.cc (MAJOR_1_7,  MINOR_1_7): New.
+	(parse): Allow MAJOR_1_7 classfile version.
+
 2012-03-22  Release Manager
 
 	* GCC 4.7.0 released.
