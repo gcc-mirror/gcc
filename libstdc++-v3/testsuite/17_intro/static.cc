@@ -1,6 +1,6 @@
 // { dg-do link }
-// { dg-require-effective-target static }
-// { dg-options "-static -std=gnu++11" }
+// { dg-require-static-libstdcxx }
+// { dg-options "-static-libstdc++ -std=gnu++11" }
 
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //
@@ -25,7 +25,7 @@
 
 int main()
 {
-  std::locale c = std::locale::global();
+  std::locale c __attribute__((unused)) = std::locale::classic();
   std::cout << "i am old-skool\n";
   return 0;
 }

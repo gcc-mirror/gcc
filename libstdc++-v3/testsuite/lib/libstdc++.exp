@@ -1693,5 +1693,49 @@ proc check_v3_target_nprocs { } {
     return $et_nprocs
 }
 
+proc check_v3_target_static_libstdcxx { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_static_libstdcxx
+
+    global tool
+
+    if [info exists et_static_libstdcxx] {
+	verbose "check_v3_target_static_libstdcxx: using cached result" 2
+    } else {
+	set et_static_libstdcxx 0
+
+	# Set up and link a C++0x test program that depends
+	# on static linking
+	set src static-maybe[pid].cc
+
+	set f [open $src "w"]
+        puts $f "#include <iostream>"
+	puts $f "int main() {"
+	puts $f "int i(415);"
+	puts $f "std::cout<< i << std::endl;"
+	puts $f "return 0; }"
+	puts $f ""
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -static-libstdc++"
+
+	set lines [v3_target_compile $src /dev/null executable ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, link succeeded.
+	    set et_static_libstdcxx 1
+	} else {
+	    verbose "check_v3_target_static_libstdcxx: compilation failed" 2
+	}
+    }
+    verbose "check_v3_target_static_libstdcxx: $et_static_libstdcxx" 2
+    return $et_static_libstdcxx
+}
+
+
 
 set additional_prunes ""
