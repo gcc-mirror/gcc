@@ -1,3 +1,13 @@
+2012-04-25  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_frame_related): Don't emit a
+	REG_FRAME_RELATED_EXPR note when the instruction exactly matches
+	the replacement.
+	(emit_frame_save): Delete frame_ptr param.  Rename total_size to
+	frame_reg_to_sp.
+	(rs6000_emit_prologue): Add sp_off.  Update rs6000_frame_related
+	and emit_frame_save calls.  Cope with possibly missing note.
+
 2012-04-24  Sriraman Tallam  <tmsriram@google.com>
 
 	* config/i386/i386.c (build_processor_model_struct): New function.
