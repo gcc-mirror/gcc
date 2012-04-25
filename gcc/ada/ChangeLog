@@ -1,3 +1,35 @@
+2012-04-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch9.adb: Add comments on the usage of the
+	lock-free data structures.
+
+2012-04-25  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_intr.adb (Expand_Shift): Convert the left
+	operand and the operator when the type of the call differs from
+	the type of the operator.
+
+2012-04-25  Geert Bosch  <bosch@adacore.com>
+
+	* stand.ads: Minor comment fix.
+
+2012-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb (Analyze_Slice): Handle the case where the prefix
+	is a string literal. Retrieve the first index from the base type
+	when slicing a string literal.
+	* sem_ch12.adb (Check_Private_View): Move the initialization
+	of the type inside the loop to reflect the changing index.
+	* sem_eval.adb (Eval_Relational_Op): Retrieve the first index
+	from the base type when dealing with a string literal.
+	* sem_res.adb (Resolve_Slice): Retrieve the first index from
+	the base type when slicing a string literal.
+	* sem_util.adb (Is_Internally_Generated_Renaming): New routine.
+	(Is_Object_Reference): String literals may act
+	as object references only when they are renamed internally.
+	(Proper_First_Index): New routine.
+	* sem_util.ads (Proper_First_Index): New routine.
+
 2012-04-25  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, csinfo.adb, lib-writ.adb, sem_ch12.adb,

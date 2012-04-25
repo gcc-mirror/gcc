@@ -9003,7 +9003,7 @@ package body Sem_Res is
       --  necessary. Else resolve the bounds, and apply needed checks.
 
       if not Is_Entity_Name (Drange) then
-         Index := First_Index (Array_Type);
+         Index := Proper_First_Index (Array_Type);
          Resolve (Drange, Base_Type (Etype (Index)));
 
          if Nkind (Drange) = N_Range then

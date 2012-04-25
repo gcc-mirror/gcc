@@ -81,16 +81,24 @@ package body Exp_Ch9 is
    -- Lock Free Data Structure --
    ------------------------------
 
+   --  A lock-free subprogram is a protected routine which references a unique
+   --  protected scalar component and does not contain statements that cause
+   --  side effects. Due to this restricted behavior, all references to shared
+   --  data from within the subprogram can be synchronized through the use of
+   --  atomic operations rather than relying on locks.
+
    type Lock_Free_Subprogram is record
       Sub_Body : Node_Id;
-      Comp_Id  : Entity_Id;
-   end record;
-   --  This data structure and its fields must be documented, ALL global
-   --  data structures must be documented. We never rely on guessing what
-   --  things mean from their names.
+      --  Reference to the body of a protected subprogram which meets the lock-
+      --  free requirements.
 
-   --  The following table establishes a relation between a subprogram body and
-   --  an unique protected component referenced in this body.
+      Comp_Id : Entity_Id;
+      --  Reference to the scalar component referenced from within Sub_Body
+   end record;
+
+   --  This table establishes a relation between a protected subprogram body
+   --  and a unique component it references. The table is used when building
+   --  the lock-free versions of a protected subprogram body.
 
    package Lock_Free_Subprogram_Table is new Table.Table (
      Table_Component_Type => Lock_Free_Subprogram,

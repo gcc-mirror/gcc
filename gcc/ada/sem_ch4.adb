@@ -4514,9 +4514,9 @@ package body Sem_Ch4 is
               ("type is not one-dimensional array in slice prefix", N);
 
          elsif not
-           Has_Compatible_Type (D, Etype (First_Index (Array_Type)))
+           Has_Compatible_Type (D, Etype (Proper_First_Index (Array_Type)))
          then
-            Wrong_Type (D, Etype (First_Index (Array_Type)));
+            Wrong_Type (D, Etype (Proper_First_Index (Array_Type)));
 
          else
             Set_Etype (N, Array_Type);

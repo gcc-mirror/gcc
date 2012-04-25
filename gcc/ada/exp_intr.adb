@@ -650,20 +650,20 @@ package body Exp_Intr is
    --  and Resolve. Such shift operator nodes will not be seen by Expand_Shift.
 
    procedure Expand_Shift (N : Node_Id; E : Entity_Id; K : Node_Kind) is
-      Loc   : constant Source_Ptr := Sloc (N);
-      Typ   : constant Entity_Id  := Etype (N);
+      Entyp : constant Entity_Id  := Etype (E);
       Left  : constant Node_Id    := First_Actual (N);
+      Loc   : constant Source_Ptr := Sloc (N);
       Right : constant Node_Id    := Next_Actual (Left);
       Ltyp  : constant Node_Id    := Etype (Left);
       Rtyp  : constant Node_Id    := Etype (Right);
+      Typ   : constant Entity_Id  := Etype (N);
       Snode : Node_Id;
 
    begin
       Snode := New_Node (K, Loc);
-      Set_Left_Opnd  (Snode, Relocate_Node (Left));
       Set_Right_Opnd (Snode, Relocate_Node (Right));
       Set_Chars      (Snode, Chars (E));
-      Set_Etype      (Snode, Base_Type (Typ));
+      Set_Etype      (Snode, Base_Type (Entyp));
       Set_Entity     (Snode, E);
 
       if Compile_Time_Known_Value (Type_High_Bound (Rtyp))
@@ -672,12 +672,30 @@ package body Exp_Intr is
          Set_Shift_Count_OK (Snode, True);
       end if;
 
-      --  Do the rewrite. Note that we don't call Analyze and Resolve on
-      --  this node, because it already got analyzed and resolved when
-      --  it was a function call!
+      if Typ = Entyp then
 
-      Rewrite (N, Snode);
-      Set_Analyzed (N);
+         --  Note that we don't call Analyze and Resolve on this node, because
+         --  it already got analyzed and resolved when it was a function call.
+
+         Set_Left_Opnd (Snode, Relocate_Node (Left));
+         Rewrite (N, Snode);
+         Set_Analyzed (N);
+
+      else
+
+         --  If the context type is not the type of the operator, it is an
+         --  inherited operator for a derived type. Wrap the node in a
+         --  conversion so that it is type-consistent for possible further
+         --  expansion (e.g. within a lock-free protected type).
+
+         Set_Left_Opnd (Snode,
+           Unchecked_Convert_To (Base_Type (Entyp), Relocate_Node (Left)));
+         Rewrite (N, Unchecked_Convert_To (Typ, Snode));
+
+         --  Analyze and resolve result formed by conversion to target type
+
+         Analyze_And_Resolve (N, Typ);
+      end if;
    end Expand_Shift;
 
    ------------------------

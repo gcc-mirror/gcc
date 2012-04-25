@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -460,12 +460,12 @@ package Stand is
    -----------------
 
    procedure Tree_Read;
-   --  Initializes entity values in this package from the current tree
-   --  file using Osint.Tree_Read. Note that Tree_Read includes all the
-   --  initialization that is carried out by Create_Standard.
+   --  Initializes entity values in this package from the current tree file
+   --  using Tree_IO. Note that Tree_Read includes all the initialization that
+   --  is carried out by Create_Standard.
 
    procedure Tree_Write;
    --  Writes out the entity values in this package to the current tree file
-   --  using Osint.Tree_Write.
+   --  using Tree_IO.
 
 end Stand;

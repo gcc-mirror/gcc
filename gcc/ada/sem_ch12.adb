@@ -6128,8 +6128,9 @@ package body Sem_Ch12 is
 
             begin
                Indx := First_Index (T);
-               Typ  := Base_Type (Etype (Indx));
                while Present (Indx) loop
+                  Typ := Base_Type (Etype (Indx));
+
                   if Is_Private_Type (Typ)
                     and then Present (Full_View (Typ))
                   then
