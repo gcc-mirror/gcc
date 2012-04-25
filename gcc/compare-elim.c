@@ -563,10 +563,26 @@ try_eliminate_compare (struct comparison *cmp)
      Validate that PREV_CLOBBER itself does in fact refer to IN_A.  Do
      recall that we've already validated the shape of PREV_CLOBBER.  */
   x = XVECEXP (PATTERN (insn), 0, 0);
-  if (!rtx_equal_p (SET_DEST (x), in_a))
+  if (rtx_equal_p (SET_DEST (x), in_a))
+    cmp_src = SET_SRC (x);
+
+  /* Also check operations with implicit extensions, e.g.:
+     [(set (reg:DI)
+	   (zero_extend:DI (plus:SI (reg:SI)(reg:SI))))
+      (set (reg:CCZ flags)
+	   (compare:CCZ
+	     (plus:SI (reg:SI)(reg:SI))
+	     (const_int 0)))]				*/
+  else if (REG_P (SET_DEST (x))
+	   && REG_P (in_a)
+	   && REGNO (SET_DEST (x)) == REGNO (in_a)
+	   && (GET_CODE (SET_SRC (x)) == ZERO_EXTEND
+	       || GET_CODE (SET_SRC (x)) == SIGN_EXTEND)
+	   && GET_MODE (XEXP (SET_SRC (x), 0)) == GET_MODE (in_a))
+    cmp_src = XEXP (SET_SRC (x), 0);
+  else
     return false;
-  cmp_src = SET_SRC (x);
-  
+
   /* Determine if we ought to use a different CC_MODE here.  */
   flags = maybe_select_cc_mode (cmp, cmp_src, cmp->in_b);
   if (flags == NULL)

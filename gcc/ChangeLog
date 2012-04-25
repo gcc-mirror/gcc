@@ -1,3 +1,8 @@
+2012-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* compare-elim.c (try_eliminate_compare): Also handle operands with
+	implicit extensions.
+
 2012-04-25  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000 (SAVE_INLINE_VRS, REST_INLINE_VRS,
@@ -205,8 +210,7 @@
 2012-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/53084
-	* varasm.c (compute_reloc_for_constant): Handle ADDR_EXPR
-	of MEM_REF.
+	* varasm.c (compute_reloc_for_constant): Handle ADDR_EXPR of MEM_REF.
 	(output_addressed_constants): Likewise.
 
 	PR middle-end/52999
