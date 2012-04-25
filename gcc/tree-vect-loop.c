@@ -5229,7 +5229,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   unsigned int nunits;
   tree cond_expr = NULL_TREE;
   gimple_seq cond_expr_stmt_list = NULL;
-  bool do_peeling_for_loop_bound;
   gimple stmt, pattern_stmt;
   gimple_seq pattern_def_seq = NULL;
   gimple_stmt_iterator pattern_def_si = gsi_start (NULL);
@@ -5244,17 +5243,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
     vect_do_peeling_for_alignment (loop_vinfo);
 
-  do_peeling_for_loop_bound
-    = (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-       || (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-	   && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0)
-       || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo));
-
   if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
       || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
-    vect_loop_versioning (loop_vinfo,
-			  !do_peeling_for_loop_bound,
-			  &cond_expr, &cond_expr_stmt_list);
+    vect_loop_versioning (loop_vinfo);
 
   /* If the loop has a symbolic number of iterations 'n' (i.e. it's not a
      compile time constant), or it is a constant that doesn't divide by the
@@ -5264,7 +5255,10 @@ vect_transform_loop (loop_vec_info loop_vinfo)
      will remain scalar and will compute the remaining (n%VF) iterations.
      (VF is the vectorization factor).  */
 
-  if (do_peeling_for_loop_bound)
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+       || (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	   && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0)
+       || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
     vect_do_peeling_for_loop_bound (loop_vinfo, &ratio,
 				    cond_expr, cond_expr_stmt_list);
   else
