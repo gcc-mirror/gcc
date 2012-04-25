@@ -1,3 +1,22 @@
+2012-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, csinfo.adb, lib-writ.adb, sem_ch12.adb,
+	lib-xref.adb: Minor reformatting.
+
+2012-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb: Rename Lock_Free_Sub_Type
+	to Lock_Free_Subprogram. Remove type Subprogram_Id.
+	Rename LF_Sub_Table to Lock_Free_Subprogram_Table.
+	(Allow_Lock_Free_Implementation): Renamed to
+	Allows_Lock_Free_Implementation.  Update the comment on
+	lock-free restrictions. Code clean up and restructuring.
+	(Build_Lock_Free_Protected_Subprogram_Body): Update the
+	profile and related comments. Code clean up and restructuring.
+	(Build_Lock_Free_Unprotected_Subprogram_Body): Update the
+	profile and related comments. Code clean up and restructuring.
+	(Comp_Of): Removed.
+
 2012-04-25  Vincent Celier  <celier@adacore.com>
 
 	* sem_ch12.adb (Inherit_Context): Compare library units, not

@@ -7790,6 +7790,7 @@ package body Sem_Ch12 is
                --  Take care to prevent direct cyclic with's
 
                if Lib_Unit /= Current_Unit then
+
                   --  Do not add a unit if it is already in the context
 
                   Clause := First (Current_Context);
