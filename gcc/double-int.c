@@ -1,5 +1,5 @@
 /* Operations with long integers.
-   Copyright (C) 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2009, 2010, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -614,6 +614,26 @@ double_int_mask (unsigned prec)
     }
 
   return mask;
+}
+
+/* Returns a maximum value for signed or unsigned integer
+   of precision PREC.  */
+
+double_int
+double_int_max_value (unsigned int prec, bool uns)
+{
+  return double_int_mask (prec - (uns ? 0 : 1));
+}
+
+/* Returns a minimum value for signed or unsigned integer
+   of precision PREC.  */
+
+double_int
+double_int_min_value (unsigned int prec, bool uns)
+{
+  if (uns)
+    return double_int_zero;
+  return double_int_lshift (double_int_one, prec - 1, prec, false);
 }
 
 /* Clears the bits of CST over the precision PREC.  If UNS is false, the bits
