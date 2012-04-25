@@ -414,6 +414,13 @@ dump_symtab_base (FILE *f, symtab_node node)
     fprintf (f, " virtual");
   if (DECL_ARTIFICIAL (node->symbol.decl))
     fprintf (f, " artificial");
+  if (TREE_CODE (node->symbol.decl) == FUNCTION_DECL)
+    {
+      if (DECL_STATIC_CONSTRUCTOR (node->symbol.decl))
+	fprintf (f, " constructor");
+      if (DECL_STATIC_DESTRUCTOR (node->symbol.decl))
+	fprintf (f, " destructor");
+    }
   fprintf (f, "\n");
   
   if (node->symbol.same_comdat_group)
