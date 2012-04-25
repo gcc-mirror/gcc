@@ -1,3 +1,16 @@
+2012-04-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52196
+	* lang.opt (Wrealloc-lhs, Wrealloc-lhs-all): New flags.
+	* gfortran.h (gfc_option_t): Add them.
+	* options.c (gfc_init_options, gfc_post_options,
+	gfc_handle_option): Handle them.
+	* invoke.texi: Document them.
+	* trans-expr.c (realloc_lhs_warning): New function.
+	(gfc_trans_arrayfunc_assign,
+	alloc_scalar_allocatable_for_assignment,
+	gfc_trans_assignment_1): Use it.
+
 2012-04-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* trans-decl.c (gfc_trans_entry_master_switch): Build SWITCH_EXPR

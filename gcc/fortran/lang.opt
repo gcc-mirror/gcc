@@ -250,6 +250,14 @@ Wreal-q-constant
 Fortran Warning
 Warn about real-literal-constants with 'q' exponent-letter
 
+Wrealloc-lhs
+Fortran Warning
+Warn when a left-hand-side array variable is reallocated
+
+Wrealloc-lhs-all
+Fortran Warning
+Warn when a left-hand-side variable is reallocated
+
 Wreturn-type
 Fortran Warning
 ; Documented in C

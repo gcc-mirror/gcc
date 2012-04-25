@@ -581,6 +581,19 @@ assign:
 /* End of prototype trans-class.c  */
 
 
+static void
+realloc_lhs_warning (bt type, bool array, locus *where)
+{
+  if (array && type != BT_CLASS && type != BT_DERIVED
+      && gfc_option.warn_realloc_lhs)
+    gfc_warning ("Code for reallocating the allocatable array at %L will "
+		 "be added", where);
+  else if (gfc_option.warn_realloc_lhs_all)
+    gfc_warning ("Code for reallocating the allocatable variable at %L "
+		 "will be added", where);
+}
+
+
 static tree gfc_trans_structure_assign (tree dest, gfc_expr * expr);
 static void gfc_apply_interface_mapping_to_expr (gfc_interface_mapping *,
 						 gfc_expr *);
@@ -6479,6 +6492,8 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
 	&& !(expr2->value.function.esym
 	    && expr2->value.function.esym->result->attr.allocatable))
     {
+      realloc_lhs_warning (expr1->ts.type, true, &expr1->where);
+
       if (!expr2->value.function.isym)
 	{
 	  realloc_lhs_loop_for_fcn_call (&se, &expr1->where, &ss, &loop);
@@ -6740,6 +6755,8 @@ alloc_scalar_allocatable_for_assignment (stmtblock_t *block,
   if (!expr2 || expr2->rank)
     return;
 
+  realloc_lhs_warning (expr2->ts.type, false, &expr2->where);
+
   /* Since this is a scalar lhs, we can afford to do this.  That is,
      there is no risk of side effects being repeated.  */
   gfc_init_se (&lse, NULL);
@@ -6988,7 +7005,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     {
       /* F2003: Add the code for reallocation on assignment.  */
       if (gfc_option.flag_realloc_lhs
-	    && is_scalar_reallocatable_lhs (expr1))
+	  && is_scalar_reallocatable_lhs (expr1))
 	alloc_scalar_allocatable_for_assignment (&block, rse.string_length,
 						 expr1, expr2);
 
@@ -7031,8 +7048,10 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       if (gfc_option.flag_realloc_lhs
 	    && gfc_is_reallocatable_lhs (expr1)
 	    && !gfc_expr_attr (expr1).codimension
-	    && !gfc_is_coindexed (expr1))
+	    && !gfc_is_coindexed (expr1)
+	    && expr2->rank)
 	{
+	  realloc_lhs_warning (expr1->ts.type, true, &expr1->where);
 	  ompws_flags &= ~OMPWS_SCALARIZER_WS;
 	  tmp = gfc_alloc_allocatable_for_assignment (&loop, expr1, expr2);
 	  if (tmp != NULL_TREE)
