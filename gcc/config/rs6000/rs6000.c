@@ -18752,13 +18752,35 @@ output_probe_stack_range (rtx reg1, rtx reg2)
    with (plus:P (reg 1) VAL), and with REG2 replaced with RREG if REG2
    is not NULL.  It would be nice if dwarf2out_frame_debug_expr could
    deduce these equivalences by itself so it wasn't necessary to hold
-   its hand so much.  */
+   its hand so much.  Don't be tempted to always supply d2_f_d_e with
+   the actual cfa register, ie. r31 when we are using a hard frame
+   pointer.  That fails when saving regs off r1, and sched moves the
+   r31 setup past the reg saves.  */
 
 static rtx
 rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
 		      rtx reg2, rtx rreg)
 {
   rtx real, temp;
+
+  if (REGNO (reg) == STACK_POINTER_REGNUM && reg2 == NULL_RTX)
+    {
+      /* No need for any replacement.  Just set RTX_FRAME_RELATED_P.  */
+      int i;
+
+      gcc_checking_assert (val == 0);
+      real = PATTERN (insn);
+      if (GET_CODE (real) == PARALLEL)
+	for (i = 0; i < XVECLEN (real, 0); i++)
+	  if (GET_CODE (XVECEXP (real, 0, i)) == SET)
+	    {
+	      rtx set = XVECEXP (real, 0, i);
+
+	      RTX_FRAME_RELATED_P (set) = 1;
+	    }
+      RTX_FRAME_RELATED_P (insn) = 1;
+      return insn;
+    }
 
   /* copy_rtx will not make unique copies of registers, so we need to
      ensure we don't have unwanted sharing here.  */
@@ -18773,10 +18795,13 @@ rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
   if (reg2 != NULL_RTX)
     real = replace_rtx (real, reg2, rreg);
 
-  real = replace_rtx (real, reg,
-		      gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode,
-							STACK_POINTER_REGNUM),
-				    GEN_INT (val)));
+  if (REGNO (reg) == STACK_POINTER_REGNUM)
+    gcc_checking_assert (val == 0);
+  else
+    real = replace_rtx (real, reg,
+			gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode,
+							  STACK_POINTER_REGNUM),
+				      GEN_INT (val)));
 
   /* We expect that 'real' is either a SET or a PARALLEL containing
      SETs (and possibly other stuff).  In a PARALLEL, all the SETs
@@ -18894,8 +18919,8 @@ generate_set_vrsave (rtx reg, rs6000_stack_t *info, int epiloguep)
    Save REGNO into [FRAME_REG + OFFSET] in mode MODE.  */
 
 static rtx
-emit_frame_save (rtx frame_reg, rtx frame_ptr, enum machine_mode mode,
-		 unsigned int regno, int offset, HOST_WIDE_INT total_size)
+emit_frame_save (rtx frame_reg, enum machine_mode mode,
+		 unsigned int regno, int offset, HOST_WIDE_INT frame_reg_to_sp)
 {
   rtx reg, offset_rtx, insn, mem, addr, int_rtx;
   rtx replacea, replaceb;
@@ -18931,7 +18956,8 @@ emit_frame_save (rtx frame_reg, rtx frame_ptr, enum machine_mode mode,
 
   insn = emit_move_insn (mem, reg);
 
-  return rs6000_frame_related (insn, frame_ptr, total_size, replacea, replaceb);
+  return rs6000_frame_related (insn, frame_reg, frame_reg_to_sp,
+			       replacea, replaceb);
 }
 
 /* Emit an offset memory reference suitable for a frame store, while
@@ -19296,7 +19322,9 @@ rs6000_emit_prologue (void)
   int using_static_chain_p = (cfun->static_chain_decl != NULL_TREE
 			      && df_regs_ever_live_p (STATIC_CHAIN_REGNUM)
 			      && call_used_regs[STATIC_CHAIN_REGNUM]);
+  /* Offset to top of frame for frame_reg and sp respectively.  */
   HOST_WIDE_INT frame_off = 0;
+  HOST_WIDE_INT sp_off = 0;
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = info->total_size;
@@ -19437,9 +19465,9 @@ rs6000_emit_prologue (void)
       }
 
       insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
-      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+      rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 			    treg, GEN_INT (-info->total_size));
-      frame_off = info->total_size;
+      sp_off = frame_off = info->total_size;
     }
 
   strategy = info->savres_strategy;
@@ -19484,6 +19512,7 @@ rs6000_emit_prologue (void)
 	  frame_off = info->total_size;
 	}
       rs6000_emit_allocate_stack (info->total_size, copy_reg);
+      sp_off = info->total_size;
       if (frame_reg_rtx != sp_reg_rtx)
 	rs6000_emit_stack_tie (frame_reg_rtx, false);
     }
@@ -19508,7 +19537,7 @@ rs6000_emit_prologue (void)
 	     __builtin_return_address.  */
 
 	  insn = emit_move_insn (mem, reg);
-	  rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+	  rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 				NULL_RTX, NULL_RTX);
 	}
     }
@@ -19544,12 +19573,12 @@ rs6000_emit_prologue (void)
       for (i = 0; i < 64 - info->first_fp_reg_save; i++)
 	if (df_regs_ever_live_p (info->first_fp_reg_save + i)
 	    && ! call_used_regs[info->first_fp_reg_save + i])
-	  emit_frame_save (frame_reg_rtx, frame_ptr_rtx,
+	  emit_frame_save (frame_reg_rtx,
 			   (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
 			    ? DFmode : SFmode),
 			   info->first_fp_reg_save + i,
 			   info->fp_save_offset + frame_off + 8 * i,
-			   info->total_size);
+			   sp_off - frame_off);
     }
   else if (!WORLD_SAVE_P (info) && info->first_fp_reg_save != 64)
     {
@@ -19560,7 +19589,7 @@ rs6000_emit_prologue (void)
 				     /*lr=*/((strategy
 					      & SAVE_NOINLINE_FPRS_SAVES_LR)
 					     != 0));
-      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+      rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 			    NULL_RTX, NULL_RTX);
     }
 
@@ -19588,7 +19617,7 @@ rs6000_emit_prologue (void)
       if (spe_regs_addressable)
 	{
 	  spe_save_area_ptr = frame_reg_rtx;
-	  save_ptr_to_sp = info->total_size - frame_off;
+	  save_ptr_to_sp = sp_off - frame_off;
 	  spe_offset = info->spe_gp_save_offset + frame_off;
 	}
       else
@@ -19603,7 +19632,7 @@ rs6000_emit_prologue (void)
 			      - (FIRST_SAVRES_REGISTER + 1));
 	  offset = info->spe_gp_save_offset + frame_off - ool_adjust;
 	  spe_save_area_ptr = gen_rtx_REG (Pmode, 11);
-	  save_ptr_to_sp = info->total_size - frame_off + offset;
+	  save_ptr_to_sp = sp_off - frame_off + offset;
 	  spe_offset = 0;
 
 	  if (using_static_chain_p)
@@ -19696,7 +19725,7 @@ rs6000_emit_prologue (void)
 				     /*lr=*/((strategy
 					      & SAVE_NOINLINE_GPRS_SAVES_LR)
 					     != 0));
-      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+      rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 			    NULL_RTX, NULL_RTX);
     }
   else if (!WORLD_SAVE_P (info) && using_store_multiple)
@@ -19717,7 +19746,7 @@ rs6000_emit_prologue (void)
 	  RTVEC_ELT (p, i) = gen_rtx_SET (VOIDmode, mem, reg);
 	}
       insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
-      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+      rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 			    NULL_RTX, NULL_RTX);
     }
   else if (!WORLD_SAVE_P (info))
@@ -19736,7 +19765,7 @@ rs6000_emit_prologue (void)
 	    mem = gen_frame_mem (reg_mode, addr);
 
 	    insn = emit_move_insn (mem, reg);
-	    rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+	    rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 				  NULL_RTX, NULL_RTX);
 	  }
     }
@@ -19753,9 +19782,9 @@ rs6000_emit_prologue (void)
 	  if (regno == INVALID_REGNUM)
 	    break;
 
-	  emit_frame_save (frame_reg_rtx, frame_ptr_rtx, reg_mode, regno,
+	  emit_frame_save (frame_reg_rtx, reg_mode, regno,
 			   info->ehrd_offset + frame_off + reg_size * (int) i,
-			   info->total_size);
+			   sp_off - frame_off);
 	}
     }
 
@@ -19798,9 +19827,9 @@ rs6000_emit_prologue (void)
       JUMP_LABEL (jump) = toc_save_done;
       LABEL_NUSES (toc_save_done) += 1;
 
-      save_insn = emit_frame_save (frame_reg_rtx, frame_ptr_rtx, reg_mode,
+      save_insn = emit_frame_save (frame_reg_rtx, reg_mode,
 				   TOC_REGNUM, frame_off + 5 * reg_size,
-				   info->total_size);
+				   sp_off - frame_off);
 
       emit_label (toc_save_done);
 
@@ -19813,8 +19842,11 @@ rs6000_emit_prologue (void)
 	 code that minimizes the number of DW_CFA_advance opcodes better
 	 freedom in placing the annotations.  */
       note = find_reg_note (save_insn, REG_FRAME_RELATED_EXPR, NULL);
-      gcc_assert (note);
-      remove_note (save_insn, note);
+      if (note)
+	remove_note (save_insn, note);
+      else
+	note = alloc_reg_note (REG_FRAME_RELATED_EXPR,
+			       copy_rtx (PATTERN (save_insn)), NULL_RTX);
       RTX_FRAME_RELATED_P (save_insn) = 0;
 
       join_insn = emit_insn (gen_blockage ());
@@ -19848,7 +19880,7 @@ rs6000_emit_prologue (void)
 	}
       insn = emit_move_insn (mem, cr_save_rtx);
 
-      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+      rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 			    NULL_RTX, NULL_RTX);
     }
 
@@ -19870,6 +19902,7 @@ rs6000_emit_prologue (void)
       else
 	frame_off = info->total_size;
       rs6000_emit_allocate_stack (info->total_size, copy_reg);
+      sp_off = info->total_size;
       if (frame_reg_rtx != sp_reg_rtx)
 	rs6000_emit_stack_tie (frame_reg_rtx, false);
     }
@@ -19910,7 +19943,7 @@ rs6000_emit_prologue (void)
 
 	    insn = emit_move_insn (mem, savereg);
 
-	    rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+	    rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 				  areg, GEN_INT (offset));
 	  }
     }
