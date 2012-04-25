@@ -7060,10 +7060,12 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
 	    /* Do not warn about initializing with ` = {0}'.  */
 	    && !constructor_zeroinit)
 	  {
-	    push_member_name (constructor_unfilled_fields);
-	    warning_init (OPT_Wmissing_field_initializers,
-                          "missing initializer");
-	    RESTORE_SPELLING_DEPTH (constructor_depth);
+	    if (warning_at (input_location, OPT_Wmissing_field_initializers,
+			    "missing initializer for field %qD of %qT",
+			    constructor_unfilled_fields,
+			    constructor_type))
+	      inform (DECL_SOURCE_LOCATION (constructor_unfilled_fields),
+		      "%qT declared here", constructor_unfilled_fields);
 	  }
     }
 

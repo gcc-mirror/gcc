@@ -1,3 +1,7 @@
+2012-04-25  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-typeck.c (pop_init_level): Improve diagnostics.
+
 2012-04-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* compare-elim.c (try_eliminate_compare): Also handle operands with

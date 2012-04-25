@@ -42,4 +42,4 @@ struct multilevel M =
   { .n = 9 },			/* { dg-bogus "initialization of union" } */
   /* "string here" */
 };				/* { dg-warning "missing init" } */
-/* { dg-warning "near init" "near init" { target *-*-* } 44 } */
+/* { dg-message "declared here" "near init" { target *-*-* } 27 } */
