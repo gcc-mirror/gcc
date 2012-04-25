@@ -2624,7 +2624,7 @@ get_best_mode (int bitsize, int bitpos,
   if (!bitregion_end)
     maxbits = MAX_FIXED_MODE_SIZE;
   else
-    maxbits = (bitregion_end - bitregion_start) % align + 1;
+    maxbits = bitregion_end - bitregion_start + 1;
 
   /* Find the narrowest integer mode that contains the bit field.  */
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
@@ -2645,7 +2645,10 @@ get_best_mode (int bitsize, int bitpos,
 	 (Though at least one Unix compiler ignores this problem:
 	 that on the Sequent 386 machine.  */
       || MIN (unit, BIGGEST_ALIGNMENT) > align
-      || (largest_mode != VOIDmode && unit > GET_MODE_BITSIZE (largest_mode)))
+      || (largest_mode != VOIDmode && unit > GET_MODE_BITSIZE (largest_mode))
+      || unit > maxbits
+      || (bitregion_end
+	  && bitpos - (bitpos % unit) + unit > bitregion_end + 1))
     return VOIDmode;
 
   if ((SLOW_BYTE_ACCESS && ! volatilep)
@@ -2663,7 +2666,9 @@ get_best_mode (int bitsize, int bitpos,
 	      && unit <= MIN (align, BIGGEST_ALIGNMENT)
 	      && unit <= maxbits
 	      && (largest_mode == VOIDmode
-		  || unit <= GET_MODE_BITSIZE (largest_mode)))
+		  || unit <= GET_MODE_BITSIZE (largest_mode))
+	      && (bitregion_end == 0
+		  || bitpos - (bitpos % unit) + unit <= bitregion_end + 1))
 	    wide_mode = tmode;
 	}
 
