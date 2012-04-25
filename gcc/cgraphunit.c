@@ -320,6 +320,22 @@ cgraph_reset_node (struct cgraph_node *node)
   cgraph_node_remove_callees (node);
 }
 
+/* Return true when there are references to NODE.  */
+
+static bool
+referred_to_p (symtab_node node)
+{
+  int i;
+  struct ipa_ref *ref;
+
+  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, i, ref);
+       i++)
+    return true;
+  if (symtab_function_p (node) && cgraph (node)->callers)
+    return true;
+  return false;
+}
+
 /* DECL has been parsed.  Take it, queue it, compile it at the whim of the
    logic in effect.  If NESTED is true, then our caller cannot stand to have
    the garbage collector run at the moment.  We would need to either create
@@ -372,6 +388,11 @@ cgraph_finalize_function (tree decl, bool nested)
 
   if (!nested)
     ggc_collect ();
+
+  if (cgraph_state == CGRAPH_STATE_CONSTRUCTION
+      && (cgraph_decide_is_function_needed (node, decl)
+	  || referred_to_p ((symtab_node)node)))
+    enqueue_node ((symtab_node)node);
 }
 
 /* Add the function FNDECL to the call graph.
@@ -1112,22 +1133,6 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	}
       process_common_attributes (decl);
     }
-}
-
-/* Return true when there are references to NODE.  */
-
-static bool
-referred_to_p (symtab_node node)
-{
-  int i;
-  struct ipa_ref *ref;
-
-  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, i, ref);
-       i++)
-    return true;
-  if (symtab_function_p (node) && cgraph (node)->callers)
-    return true;
-  return false;
 }
 
 /* Mark DECL as finalized.  By finalizing the declaration, frontend instruct the
