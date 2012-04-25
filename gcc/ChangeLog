@@ -1,5 +1,10 @@
 2012-04-25  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (START_USE, END_USE, NOT_INUSE): Define.
+	(rs6000_emit_prologue): Use the above to catch register overlap.
+
+2012-04-25  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (rs6000_emit_stack_reset): Delete forward
 	decl.  Move logic selecting update reg to callers.  Update all callers.
 	(rs6000_emit_allocate_stack): Add copy_off param.
