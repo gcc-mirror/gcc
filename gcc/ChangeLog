@@ -1,3 +1,9 @@
+2012-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/53110
+	* config/i386/i386.md (and<mode>3): For andq $0xffffffff, reg
+	instead expand it as zero extension.
+
 2012-04-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR debug/52857
