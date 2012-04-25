@@ -967,7 +967,7 @@ Common Joined RejectNegative Var(common_deferred_options) Defer
 Map one directory name to another in debug information
 
 fdebug-types-section
-Common Report Var(flag_debug_types_section) Init(1)
+Common Report Var(flag_debug_types_section) Init(0)
 Output .debug_types section when using DWARF v4 debuginfo.
 
 ; Nonzero for -fdefer-pop: don't pop args after each function call
@@ -2212,7 +2212,7 @@ Common JoinedOrMissing Negative(gdwarf-)
 Generate debug information in COFF format
 
 gdwarf-
-Common Joined UInteger Var(dwarf_version) Init(-1) Negative(gstabs)
+Common Joined UInteger Var(dwarf_version) Init(4) Negative(gstabs)
 Generate debug information in DWARF v2 (or later) format
 
 ggdb
@@ -2220,7 +2220,7 @@ Common JoinedOrMissing
 Generate debug information in default extended format
 
 gno-record-gcc-switches
-Common RejectNegative Var(dwarf_record_gcc_switches,0) Init(0)
+Common RejectNegative Var(dwarf_record_gcc_switches,0) Init(1)
 Don't record gcc command line switches in DWARF DW_AT_producer.
 
 grecord-gcc-switches
@@ -2236,7 +2236,7 @@ Common JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format
 
 gno-strict-dwarf
-Common RejectNegative Var(dwarf_strict,0) Init(-1)
+Common RejectNegative Var(dwarf_strict,0) Init(0)
 Emit DWARF additions beyond selected version
 
 gstrict-dwarf

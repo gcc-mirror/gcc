@@ -4781,14 +4781,16 @@ normally emits debugging information for classes because using this
 option increases the size of debugging information by as much as a
 factor of two.
 
-@item -fno-debug-types-section
-@opindex fno-debug-types-section
+@item -fdebug-types-section
 @opindex fdebug-types-section
-By default when using DWARF Version 4 or higher, type DIEs are put into
+@opindex fno-debug-types-section
+When using DWARF Version 4 or higher, type DIEs can be put into
 their own @code{.debug_types} section instead of making them part of the
 @code{.debug_info} section.  It is more efficient to put them in a separate
 comdat sections since the linker can then remove duplicates.
-But not all DWARF consumers support @code{.debug_types} sections yet.
+But not all DWARF consumers support @code{.debug_types} sections yet
+and on some objects @code{.debug_types} produces larger instead of smaller
+debugging information.
 
 @item -gstabs+
 @opindex gstabs+
@@ -4819,7 +4821,8 @@ assembler (GAS) to fail with an error.
 @item -gdwarf-@var{version}
 @opindex gdwarf-@var{version}
 Produce debugging information in DWARF format (if that is supported).
-The value of @var{version} may be either 2, 3 or 4; the default version is 2.
+The value of @var{version} may be either 2, 3 or 4; the default version
+for most targets is 4.
 
 Note that with DWARF Version 2, some ports require and always
 use some non-conflicting DWARF 3 extensions in the unwind tables.
@@ -4834,12 +4837,12 @@ compiler that may affect code generation to be appended to the
 DW_AT_producer attribute in DWARF debugging information.  The options
 are concatenated with spaces separating them from each other and from
 the compiler version.  See also @option{-frecord-gcc-switches} for another
-way of storing compiler options into the object file.
+way of storing compiler options into the object file.  This is the default.
 
 @item -gno-record-gcc-switches
 @opindex gno-record-gcc-switches
 Disallow appending command-line options to the DW_AT_producer attribute
-in DWARF debugging information.  This is the default.
+in DWARF debugging information.
 
 @item -gstrict-dwarf
 @opindex gstrict-dwarf

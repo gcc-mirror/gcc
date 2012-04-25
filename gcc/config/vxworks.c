@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 2007, 2008, 2010
+   Copyright (C) 2007, 2008, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
@@ -147,9 +147,9 @@ vxworks_override_options (void)
 
   /* Default to strict dwarf-2 to prevent potential difficulties observed with
      non-gdb debuggers on extensions > 2.  */
-  if (dwarf_strict < 0)
+  if (!global_options_set.x_dwarf_strict)
     dwarf_strict = 1;
 
-  if (dwarf_version < 0)
+  if (!global_options_set.x_dwarf_version)
     dwarf_version = 2;
 }
