@@ -6090,7 +6090,7 @@ m68k_sched_variable_issue (FILE *sched_dump ATTRIBUTE_UNUSED,
 	/* Scheduling for register pressure does not always take DFA into
 	   account.  Workaround instruction buffer not being filled enough.  */
 	{
-	  gcc_assert (sched_pressure_p);
+	  gcc_assert (sched_pressure == SCHED_PRESSURE_WEIGHTED);
 	  insn_size = sched_ib.filled;
 	}
 

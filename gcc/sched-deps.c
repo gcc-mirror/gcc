@@ -2168,7 +2168,7 @@ init_insn_reg_pressure_info (rtx insn)
   static struct reg_pressure_data *pressure_info;
   rtx link;
 
-  gcc_assert (sched_pressure_p);
+  gcc_assert (sched_pressure == SCHED_PRESSURE_WEIGHTED);
 
   if (! INSN_P (insn))
     return;
@@ -2951,7 +2951,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
       || (NONJUMP_INSN_P (insn) && control_flow_insn_p (insn)))
     reg_pending_barrier = MOVE_BARRIER;
 
-  if (sched_pressure_p)
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
     {
       setup_insn_reg_uses (deps, insn);
       init_insn_reg_pressure_info (insn);
