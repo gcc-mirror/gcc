@@ -281,6 +281,13 @@ package body Prj.Attr is
    "SVresponse_file_format#" &
    "LVresponse_file_switches#" &
 
+   --  package Clean
+
+   "Pclean#" &
+   "LVswitches#" &
+   "Lasource_artifact_extensions#" &
+   "Laobject_artifact_extensions#" &
+
    --  package Cross_Reference
 
    "Pcross_reference#" &

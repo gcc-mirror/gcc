@@ -6030,10 +6030,10 @@ package body Exp_Aggr is
          end if;
 
          --  At this stage we have a suitable aggregate for handling at compile
-         --  time (the only remaining checks are that the values of expressions
-         --  in the aggregate are compile-time known, checks are performed by
+         --  time. The only remaining checks are that the values of expressions
+         --  in the aggregate are compile-time known (checks are performed by
          --  Get_Component_Val, and that any subtypes or ranges are statically
-         --  known).
+         --  known.
 
          --  If the aggregate is not fully positional at this stage, then
          --  convert it to positional form. Either this will fail, in which

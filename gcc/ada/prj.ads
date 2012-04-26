@@ -606,6 +606,12 @@ package Prj is
       Toolchain_Description : Name_Id := No_Name;
       --  Hold the value of attribute Toolchain_Description for the language
 
+      Clean_Object_Artifacts : Name_List_Index := No_Name_List;
+      --  List of object artifact extensions to be deleted by gprclean
+
+      Clean_Source_Artifacts : Name_List_Index := No_Name_List;
+      --  List of source artifact extensions to be deleted by gprclean
+
    end record;
 
    No_Language_Config : constant Language_Config :=
@@ -654,7 +660,9 @@ package Prj is
                            Binder_Required_Switches     => No_Name_List,
                            Binder_Prefix                => No_Name,
                            Toolchain_Version            => No_Name,
-                           Toolchain_Description        => No_Name);
+                           Toolchain_Description        => No_Name,
+                           Clean_Object_Artifacts       => No_Name_List,
+                           Clean_Source_Artifacts       => No_Name_List);
 
    --  The following record ???
 

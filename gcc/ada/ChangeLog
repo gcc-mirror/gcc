@@ -1,3 +1,39 @@
+2012-04-26  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb: Minor reformatting.
+
+2012-04-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Expand_Cleanup_Actions): Update the call to
+	Requires_Cleanup_Actions.
+	* exp_util.adb (Requires_Cleanup_Actions (List_Id; Boolean;
+	Boolean)): Rename formal parameter For_Package to Lib_Level to
+	better reflect its purpose. Update the related comment and all
+	occurrences of For_Package in the body.
+	(Requires_Cleanup_Actions
+	(Node_Id; Boolean)): Add new formal parameter Lib_Level. Add
+	local constant At_Lib_Level to keep monitor whether the path
+	taken from the top-most context to the current construct involves
+	package constructs. Update all calls to Requires_Cleanup_Actions.
+	* exp_util.ads (Requires_Cleanup_Actions): Add new formal
+	parameter Lib_Level and associated comment.
+
+2012-04-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): If the type of the formal is
+	a non null access type, mark the generated subtype as having a
+	delayed freeze only if the designated type is not frozen yet.
+
+2012-04-26  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New package Clean with attributes
+	Object_Artifact_Extensions and Source_Artifact_Extensions.
+	* prj-nmsc.adb (Process_Clean): Process new package Clean
+	* prj.ads (Language_Config): New components
+	Clean_Object_Artifacts and Clean_Source_Artifacts.
+	* snames.ads-tmpl: New standard names Clean,
+	Object_Artifact_Extensions and Source_Artifact_Extensions.
+
 2012-04-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Proper_First_Index): Moved from Sem_Util.

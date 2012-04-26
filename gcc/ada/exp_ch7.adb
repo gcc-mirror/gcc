@@ -3599,7 +3599,7 @@ package body Exp_Ch7 is
                                  and then VM_Target = No_VM;
 
       Actions_Required     : constant Boolean :=
-                               Requires_Cleanup_Actions (N)
+                               Requires_Cleanup_Actions (N, True)
                                  or else Is_Asynchronous_Call
                                  or else Is_Master
                                  or else Is_Protected_Body
