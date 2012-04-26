@@ -6456,6 +6456,26 @@ package body Einfo is
                 and then Present (Prival_Link (Id)));
    end Is_Prival;
 
+   ------------------------
+   -- Proper_First_Index --
+   ------------------------
+
+   function Proper_First_Index (Id : E) return E is
+      Typ : Entity_Id;
+
+   begin
+      Typ := Id;
+
+      --  The First_Index field is always empty for string literals, use the
+      --  base type instead.
+
+      if Ekind (Typ) = E_String_Literal_Subtype then
+         Typ := Base_Type (Typ);
+      end if;
+
+      return First_Index (Typ);
+   end Proper_First_Index;
+
    ----------------------------
    -- Is_Protected_Component --
    ----------------------------

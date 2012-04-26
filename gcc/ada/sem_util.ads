@@ -1284,11 +1284,6 @@ package Sem_Util is
    --  parameter Ent gives the entity to which the End_Label refers,
    --  and to which cross-references are to be generated.
 
-   function Proper_First_Index (Array_Typ : Entity_Id) return Entity_Id;
-   --  Return the First_Index attribute of an arbitrary array type unless it
-   --  is a string literal subtype in which case return the First_Index of the
-   --  base type.
-
    function References_Generic_Formal_Type (N : Node_Id) return Boolean;
    --  Returns True if the expression Expr contains any references to a
    --  generic type. This can only happen within a generic template.

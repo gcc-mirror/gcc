@@ -6031,9 +6031,9 @@ package body Exp_Aggr is
 
          --  At this stage we have a suitable aggregate for handling at compile
          --  time (the only remaining checks are that the values of expressions
-         --  in the aggregate are compile time known (check is performed by
-         --  Get_Component_Val), and that any subtypes or ranges are statically
-         --  known.
+         --  in the aggregate are compile-time known, checks are performed by
+         --  Get_Component_Val, and that any subtypes or ranges are statically
+         --  known).
 
          --  If the aggregate is not fully positional at this stage, then
          --  convert it to positional form. Either this will fail, in which
@@ -6097,12 +6097,12 @@ package body Exp_Aggr is
                   exit;
 
                elsif Is_Record_Type (Etype (Enclosing_Aggregate))
-                    and then Reverse_Storage_Order
-                               (Etype (Enclosing_Aggregate))
+                 and then Reverse_Storage_Order (Etype (Enclosing_Aggregate))
                then
                   In_Reverse_Storage_Order_Record := True;
                   exit;
                end if;
+
                Enclosing_Aggregate := Parent (Enclosing_Aggregate);
             end loop;
 
@@ -6110,9 +6110,15 @@ package body Exp_Aggr is
             --  value. For big endian we fill up the high order bits of the
             --  target value (which is a left justified modular value).
 
+            --  Above comment needs extending for the code below, which is by
+            --  the way incomprehensible, I have no idea what a xor b xor c
+            --  means, and it hurts my brain to try to figure it out???
+            --  Let's introduce a new variable, perhaps Effectively_Big_Endian
+            --  and compute it with clearer code ???
+
             if Bytes_Big_Endian
-                 xor Debug_Flag_8
-                 xor In_Reverse_Storage_Order_Record
+              xor Debug_Flag_8
+              xor In_Reverse_Storage_Order_Record
             then
                Shift := Csiz * (Len - 1);
                Incr  := -Csiz;
