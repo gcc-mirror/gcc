@@ -1,5 +1,32 @@
 2012-04-26  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.adb, einfo.ads, sem_res.adb, sem_ch4.adb,
+	sem_eval.adb: Minor reformatting.
+
+2012-04-26  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb: Minor change in error wording.
+
+2012-04-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat_ugn.texi: Documentation on dimensional analysis.
+
+2012-04-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb, einfo.ads: Remove synthesized attribute
+	Proper_First_Index along with its associations in various nodes.
+	(Proper_First_Index): Removed.
+	* sem_ch4.adb (Analyze_Slice): Alphabetize constants. Add new
+	local variable Index_Type. The index type of a string literal
+	subtype is that of the stored low bound.
+	* sem_eval (Get_Static_Length): Remove the use of Proper_First_Index.
+	* sem_res.adb (Resolve_Slice): Alphabetize constants. Add
+	new local variable Index_Type. The index type of a
+	string literal subtype is that of the stored low bound.
+	(Set_String_Literal_Subtype): Code reformatting.
+
+2012-04-26  Robert Dewar  <dewar@adacore.com>
+
 	* exp_aggr.adb: Minor reformatting.
 
 2012-04-26  Hristian Kirtchev  <kirtchev@adacore.com>

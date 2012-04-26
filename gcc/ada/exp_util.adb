@@ -157,9 +157,9 @@ package body Exp_Util is
    --    1) controlled objects
    --    2) library-level tagged types
    --
-   --  Flag Lib_Level should be set when the list comes from a construct at
-   --  the library level. Flag Nested_Constructs should be set when any nested
-   --  packages declared in L must be processed.
+   --  Lib_Level is True when the list comes from a construct at the library
+   --  level, and False otherwise. Nested_Constructs is True when any nested
+   --  packages declared in L must be processed, and False otherwise.
 
    -------------------------------------
    -- Activate_Atomic_Synchronization --
@@ -7042,8 +7042,10 @@ package body Exp_Util is
      (N         : Node_Id;
       Lib_Level : Boolean) return Boolean
    is
-      At_Lib_Level : constant Boolean := Lib_Level and then
-                       Nkind_In (N, N_Package_Body, N_Package_Specification);
+      At_Lib_Level : constant Boolean :=
+                       Lib_Level
+                         and then Nkind_In (N, N_Package_Body,
+                                               N_Package_Specification);
       --  N is at the library level if the top-most context is a package and
       --  the path taken to reach N does not inlcude non-package constructs.
 
@@ -7059,10 +7061,11 @@ package body Exp_Util is
             return
               Requires_Cleanup_Actions (Declarations (N), At_Lib_Level, True)
                 or else
-              (Present (Handled_Statement_Sequence (N))
-                and then
-              Requires_Cleanup_Actions (Statements
-                (Handled_Statement_Sequence (N)), At_Lib_Level, True));
+                  (Present (Handled_Statement_Sequence (N))
+                    and then
+                      Requires_Cleanup_Actions
+                        (Statements (Handled_Statement_Sequence (N)),
+                         At_Lib_Level, True));
 
          when N_Package_Specification =>
             return

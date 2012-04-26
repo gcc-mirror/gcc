@@ -2144,7 +2144,7 @@ package body Freeze is
             Error_Msg_Sloc := Sloc (ADC);
             Error_Msg_N
               ("scalar storage order for& specified# inconsistent with "
-               & "its bit order", Rec);
+               & "bit order", Rec);
          end if;
 
          --  Deal with Bit_Order aspect specifying a non-default bit order
