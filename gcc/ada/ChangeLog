@@ -1,3 +1,41 @@
+2012-04-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb (Check_Unreachable_Code): Skip past pragmas.
+
+2012-04-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* s-finroo.ads: Remove with clause for
+	Ada.Streams. Type Root_Controlled is now abstract tagged null
+	record. Remove internal package Stream_Attributes. Root_Controlled
+	doesn't need stream attribute redeclaration and avoids the
+	dependency on streams.
+
+2012-04-26  Tristan Gingold  <gingold@adacore.com>
+
+	* adaint.c (to_host_path_spec): Removed (unused).
+	Minor reformatting.
+
+2012-04-26  Steve Baird  <baird@adacore.com>
+
+	* gnat_rm.texi Improve description of Valid_Scalars attribute.
+
+2012-04-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Can_Override_Operator): If the formal is a
+	generic type the operator cannot be overriding.
+
+2012-04-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Spec_Reloaded_For_Body): Check whether the type
+	is declared in a package specification, and current unit is the
+	corresponding package body. The use clauses themselves may be
+	within a nested package.
+
+2012-04-26  Bob Duff  <duff@adacore.com>
+
+	* exp_ch2.adb (Param_Entity): Take into account the case where
+	the type of the entry parameter has a representation clause.
+
 2012-04-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat_ugn.texi: Tweak dimensionality doc.

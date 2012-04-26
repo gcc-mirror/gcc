@@ -7383,6 +7383,7 @@ package body Sem_Ch6 is
 
    function Can_Override_Operator (Subp : Entity_Id) return Boolean is
       Typ : Entity_Id;
+
    begin
       if Nkind (Subp) /= N_Defining_Operator_Symbol then
          return False;
@@ -7390,7 +7391,10 @@ package body Sem_Ch6 is
       else
          Typ := Base_Type (Etype (First_Formal (Subp)));
 
+         --  Check explicitly that the operation is a primitive of the type
+
          return Operator_Matches_Spec (Subp, Subp)
+           and then not Is_Generic_Type (Typ)
            and then Scope (Subp) = Scope (Typ)
            and then not Is_Class_Wide_Type (Typ);
       end if;

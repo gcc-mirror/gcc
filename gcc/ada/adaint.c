@@ -3086,11 +3086,12 @@ __gnat_to_canonical_file_list_free ()
 char *
 __gnat_translate_vms (char *src)
 {
-  static char retbuf [NAM$C_MAXRSS+1];
+  static char retbuf [NAM$C_MAXRSS + 1];
   char *srcendpos, *pos1, *pos2, *retpos;
   int disp, path_present = 0;
 
-  if (!src) return NULL;
+  if (!src)
+    return NULL;
 
   srcendpos = strchr (src, '\0');
   retpos = retbuf;
@@ -3099,112 +3100,132 @@ __gnat_translate_vms (char *src)
   pos1 = src;
   pos2 = strchr (pos1, ':');
 
-  if (pos2 && (pos2 < srcendpos) && (*(pos2 + 1) == ':')) {
-    /* There is a node name. "node_name::" becomes "node_name!" */
-    disp = pos2 - pos1;
-    strncpy (retbuf, pos1, disp);
-    retpos [disp] = '!';
-    retpos = retpos + disp + 1;
-    pos1 = pos2 + 2;
-    pos2 = strchr (pos1, ':');
-  }
+  if (pos2 && (pos2 < srcendpos) && (*(pos2 + 1) == ':'))
+    {
+      /* There is a node name. "node_name::" becomes "node_name!" */
+      disp = pos2 - pos1;
+      strncpy (retbuf, pos1, disp);
+      retpos [disp] = '!';
+      retpos = retpos + disp + 1;
+      pos1 = pos2 + 2;
+      pos2 = strchr (pos1, ':');
+    }
 
-  if (pos2) {
-    /* There is a device name. "dev_name:" becomes "/dev_name/" */
-    *(retpos++) = '/';
-    disp = pos2 - pos1;
-    strncpy (retpos, pos1, disp);
-    retpos = retpos + disp;
-    pos1 = pos2 + 1;
-    *(retpos++) = '/';
-  }
+  if (pos2)
+    {
+      /* There is a device name. "dev_name:" becomes "/dev_name/" */
+      *(retpos++) = '/';
+      disp = pos2 - pos1;
+      strncpy (retpos, pos1, disp);
+      retpos = retpos + disp;
+      pos1 = pos2 + 1;
+      *(retpos++) = '/';
+    }
   else
     /* No explicit device; we must look ahead and prepend /sys$disk/ if
        the path is absolute */
     if ((*pos1 == '[' || *pos1 == '<') && (pos1 < srcendpos)
-        && !strchr (".-]>", *(pos1 + 1))) {
-      strncpy (retpos, "/sys$disk/", 10);
-      retpos += 10;
-    }
+        && !strchr (".-]>", *(pos1 + 1)))
+      {
+        strncpy (retpos, "/sys$disk/", 10);
+        retpos += 10;
+      }
 
   /* Process the path part */
-  while (*pos1 == '[' || *pos1 == '<') {
-    path_present++;
-    pos1++;
-    if (*pos1 == ']' || *pos1 == '>') {
-      /* Special case, [] translates to '.' */
-      *(retpos++) = '.';
+  while (*pos1 == '[' || *pos1 == '<')
+    {
+      path_present++;
       pos1++;
-    }
-    else {
-      /* '[000000' means root dir. It can be present in the middle of
-         the path due to expansion of logical devices, in which case
-         we skip it */
-      if (!strncmp (pos1, "000000", 6) && path_present > 1 &&
-         (*(pos1 + 6) == ']' || *(pos1 + 6) == '>' || *(pos1 + 6) == '.')) {
-          pos1 += 6;
-          if (*pos1 == '.') pos1++;
+      if (*pos1 == ']' || *pos1 == '>')
+        {
+          /* Special case, [] translates to '.' */
+          *(retpos++) = '.';
+          pos1++;
         }
-      else if (*pos1 == '.') {
-        /* Relative path */
-        *(retpos++) = '.';
-      }
+      else
+        {
+          /* '[000000' means root dir. It can be present in the middle of
+             the path due to expansion of logical devices, in which case
+             we skip it */
+          if (!strncmp (pos1, "000000", 6) && path_present > 1 &&
+              (*(pos1 + 6) == ']' || *(pos1 + 6) == '>' || *(pos1 + 6) == '.'))
+            {
+              pos1 += 6;
+              if (*pos1 == '.') pos1++;
+            }
+          else if (*pos1 == '.')
+            {
+              /* Relative path */
+              *(retpos++) = '.';
+            }
 
-      /* There is a qualified path */
-      while (*pos1 && *pos1 != ']' && *pos1 != '>') {
-        switch (*pos1) {
-          case '.':
-            /* '.' is used to separate directories. Replace it with '/' but
-               only if there isn't already '/' just before */
-            if (*(retpos - 1) != '/') *(retpos++) = '/';
-            pos1++;
-            if (pos1 + 1 < srcendpos && *pos1 == '.' && *(pos1 + 1) == '.') {
-              /* ellipsis refers to entire subtree; replace with '**' */
-              *(retpos++) = '*'; *(retpos++) = '*'; *(retpos++) = '/';
-              pos1 += 2;
+          /* There is a qualified path */
+          while (*pos1 && *pos1 != ']' && *pos1 != '>')
+            {
+              switch (*pos1)
+                {
+                case '.':
+                  /* '.' is used to separate directories. Replace it with '/' but
+                     only if there isn't already '/' just before */
+                  if (*(retpos - 1) != '/')
+                    *(retpos++) = '/';
+                  pos1++;
+                  if (pos1 + 1 < srcendpos && *pos1 == '.' && *(pos1 + 1) == '.')
+                    {
+                      /* ellipsis refers to entire subtree; replace with '**' */
+                      *(retpos++) = '*';
+                      *(retpos++) = '*';
+                      *(retpos++) = '/';
+                      pos1 += 2;
+                    }
+                  break;
+                case '-' :
+                  /* When after '.' '[' '<' is equivalent to Unix ".." but there
+                     may be several in a row */
+                  if (*(pos1 - 1) == '.' || *(pos1 - 1) == '[' ||
+                      *(pos1 - 1) == '<')
+                    {
+                      while (*pos1 == '-')
+                        {
+                          pos1++;
+                          *(retpos++) = '.';
+                          *(retpos++) = '.';
+                          *(retpos++) = '/';
+                        }
+                      retpos--;
+                      break;
+                    }
+                  /* otherwise fall through to default */
+                default:
+                  *(retpos++) = *(pos1++);
+                }
             }
-            break;
-          case '-' :
-            /* When after '.' '[' '<' is equivalent to Unix ".." but there
-            may be several in a row */
-            if (*(pos1 - 1) == '.' || *(pos1 - 1) == '[' ||
-                *(pos1 - 1) == '<') {
-              while (*pos1 == '-') {
-                pos1++;
-                *(retpos++) = '.'; *(retpos++) = '.'; *(retpos++) = '/';
-              }
-              retpos--;
-              break;
-            }
-            /* otherwise fall through to default */
-          default:
-            *(retpos++) = *(pos1++);
+          pos1++;
         }
-      }
-      pos1++;
     }
-  }
 
-  if (pos1 < srcendpos) {
-    /* Now add the actual file name, until the version suffix if any */
-    if (path_present) *(retpos++) = '/';
-    pos2 = strchr (pos1, ';');
-    disp = pos2? (pos2 - pos1) : (srcendpos - pos1);
-    strncpy (retpos, pos1, disp);
-    retpos += disp;
-    if (pos2 && pos2 < srcendpos) {
-      /* There is a non-empty version suffix. ";<ver>" becomes ".<ver>" */
-      *retpos++ = '.';
-      disp = srcendpos - pos2 - 1;
-      strncpy (retpos, pos2 + 1, disp);
+  if (pos1 < srcendpos)
+    {
+      /* Now add the actual file name, until the version suffix if any */
+      if (path_present)
+        *(retpos++) = '/';
+      pos2 = strchr (pos1, ';');
+      disp = pos2? (pos2 - pos1) : (srcendpos - pos1);
+      strncpy (retpos, pos1, disp);
       retpos += disp;
+      if (pos2 && pos2 < srcendpos)
+        {
+          /* There is a non-empty version suffix. ";<ver>" becomes ".<ver>" */
+          *retpos++ = '.';
+          disp = srcendpos - pos2 - 1;
+          strncpy (retpos, pos2 + 1, disp);
+          retpos += disp;
+        }
     }
-  }
 
   *retpos = '\0';
 
   return retbuf;
-
 }
 
 /* Translate a VMS syntax directory specification in to Unix syntax.  If
@@ -3355,50 +3376,11 @@ __gnat_to_canonical_path_spec (char *pathspec)
 static char filename_buff [MAXPATH];
 
 static int
-translate_unix (char *name, int type)
+translate_unix (char *name, int type ATTRIBUTE_UNUSED)
 {
   strncpy (filename_buff, name, MAXPATH);
   filename_buff [MAXPATH - 1] = (char) 0;
   return 0;
-}
-
-/* Translate a Unix syntax path spec into a VMS style (comma separated list of
-   directories.  */
-
-static char *
-to_host_path_spec (char *pathspec)
-{
-  char *curr, *next, buff [MAXPATH];
-
-  if (pathspec == 0)
-    return pathspec;
-
-  /* Can't very well test for colons, since that's the Unix separator!  */
-  if (strchr (pathspec, ']') || strchr (pathspec, ','))
-    return pathspec;
-
-  new_host_pathspec[0] = 0;
-  curr = pathspec;
-
-  for (;;)
-    {
-      next = strchr (curr, ':');
-      if (next == 0)
-        next = strchr (curr, 0);
-
-      strncpy (buff, curr, next - curr);
-      buff[next - curr] = 0;
-
-      strncat (new_host_pathspec, __gnat_to_host_dir_spec (buff, 0), MAXPATH);
-      if (*next == 0)
-        break;
-      strncat (new_host_pathspec, ",", MAXPATH);
-      curr = next + 1;
-    }
-
-  new_host_pathspec [MAXPATH - 1] = (char) 0;
-
-  return new_host_pathspec;
 }
 
 /* Translate a Unix syntax directory specification into VMS syntax.  The
@@ -3592,7 +3574,8 @@ char __gnat_environment_char = '$';
    Returns 0 if operation was successful and -1 in case of error. */
 
 int
-__gnat_copy_attribs (char *from, char *to, int mode)
+__gnat_copy_attribs (char *from ATTRIBUTE_UNUSED, char *to ATTRIBUTE_UNUSED,
+                     int mode ATTRIBUTE_UNUSED)
 {
 #if defined (VMS) || (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) || \
   defined (__nucleus__)

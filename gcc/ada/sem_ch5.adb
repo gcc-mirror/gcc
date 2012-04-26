@@ -2767,6 +2767,12 @@ package body Sem_Ch5 is
          begin
             Nxt := Original_Node (Next (N));
 
+            --  Skip past pragmas
+
+            while Nkind (Nxt) = N_Pragma loop
+               Nxt := Original_Node (Next (Nxt));
+            end loop;
+
             --  If a label follows us, then we never have dead code, since
             --  someone could branch to the label, so we just ignore it, unless
             --  we are in formal mode where goto statements are not allowed.
