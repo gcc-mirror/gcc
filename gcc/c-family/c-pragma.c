@@ -579,7 +579,7 @@ handle_pragma_upc (cpp_reader * ARG_UNUSED (dummy))
 	GCC_BAD2 ("unknown action '%s' for '#pragma upc' - ignored", op);
     }
   else
-    warning (OPT_Wpragmas, "misssing parameter afer #pragma upc");
+    warning (OPT_Wpragmas, "missing parameter after #pragma upc");
 
   t = pragma_lex (&x);
   if (t != CPP_EOF)

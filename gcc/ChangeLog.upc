@@ -1,3 +1,8 @@
+2012-04-26  Gary Funck  <gary@intrepid.com>
+
+	* c-family/c-pragma.c (handle_pragma_upc):
+	Fix typo in warning message.
+
 2012-04-17  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 186486 into gupc branch.
