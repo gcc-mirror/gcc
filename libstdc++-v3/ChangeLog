@@ -1,5 +1,10 @@
 2012-04-25  Benjamin Kosnik  <bkoz@redhat.com>
 
+	*  include/bits/hashtable.h: Adjust doxygen markup for base classes.
+	*  include/bits/hashtable_policy.h: Same.
+
+2012-04-25  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/52689
 	* testsuite/17_intro/static.cc: Fix.
 	* testsuite/lib/dg-options.exp (dg-require-static-libstdcxx): New.
