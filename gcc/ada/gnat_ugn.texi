@@ -18534,6 +18534,10 @@ version 7.0.1 of GNAT onwards. The GNAT-specific aspect Dimension_System allows
 the user to define a system of units; the aspect Dimension then allows the user
 to declare dimensioned quantities within a given system.
 
+The major advantage of this model is that it does not require the declaration of
+multiple operators for all possible combinations of types: it is only necessary
+to use the proper subtypes in object declarations.
+
 The simplest way to impose dimensionality checking on a computation is to make
 use of the package System.Dim.Mks, which is part of the GNAT library. This
 package defines a floating-point type MKS_Type, for which a sequence of
@@ -18592,11 +18596,12 @@ as well as useful multiples of these units:
 
 @noindent
 The user can then define a derived unit by providing the aspect that
-specifies its dimensions within the MKS system:
+specifies its dimensions within the MKS system, as well as the string to
+be used for output of a value of that unit:
 
 @smallexample @c ada
   subtype Acceleration is Mks_Type
-    with Dimension => ("m/sec**2", 1, 0, -2, others => 0);
+    with Dimension => ("m/sec^^^2", Meter => 1, Second => -2, others => 0);
 @end smallexample
 
 @noindent
@@ -18608,11 +18613,13 @@ with System.Dim.Mks_IO; use System.Dim.Mks_IO;
 with Text_IO; use Text_IO;
 procedure Free_Fall is
   subtype Acceleration is Mks_Type
-    with Dimension => ("m/sec**2", 1, 0, -2, others => 0);
+    with Dimension => ("m/sec^^^2", 1, 0, -2, others => 0);
   G : constant acceleration := 9.81 * m / (s ** 2);
   T : Time := 10.0*s;
   Distance : Length;
 begin
+  Put ("Gravitational constant: ");
+  Put (G, Aft => 2, Exp => 0); Put_Line ("");
   Distance := 0.5 * G * T ** 2;
   Put ("distance travelled in 10 seconds of free fall ");
   Put (Distance, Aft => 2, Exp => 0);
@@ -18623,6 +18630,7 @@ end Free_Fall;
 @noindent
 Execution of this program yields:
 @smallexample
+Gravitational constant:  9.81 m/sec^^^2
 distance travelled in 10 seconds of free fall 490.50 m
 @end smallexample
 
@@ -18650,8 +18658,8 @@ are rejected with the following diagnoses:
 @end smallexample
 
 @noindent
-The dimensions of an expression are properly displayed. If we add to the
-program:
+The dimensions of an expression are properly displayed, even if there is
+no explicit subtype for it. If we add to the program:
 
 @smallexample @c ada
       Put ("Final velocity: ");
