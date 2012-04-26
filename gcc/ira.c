@@ -3983,7 +3983,8 @@ find_moveable_pseudos (void)
 
   last_moveable_pseudo = max_reg_num ();
 
-  fix_reg_equiv_init();
+  fix_reg_equiv_init ();
+  resize_reg_info ();
   regstat_free_n_sets_and_refs ();
   regstat_free_ri ();
   regstat_init_n_sets_and_refs ();
