@@ -1,5 +1,80 @@
 2012-04-26  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* sched-int.h (_haifa_insn_data): Move priority_status.
+	Add model_index.
+	(INSN_MODEL_INDEX): New macro.
+	* haifa-sched.c (insn_delay): New function.
+	(sched_regno_pressure_class): Update commentary.
+	(mark_regno_birth_or_death): Pass the liveness bitmap and
+	pressure array as arguments, instead of using curr_reg_live and
+	curr_reg_pressure.  Only update the pressure if the bit in the
+	liveness set has changed.
+	(initiate_reg_pressure_info): Always trust the live-in set for
+	SCHED_PRESSURE_MODEL.
+	(initiate_bb_reg_pressure_info): Update call to
+	mark_regno_birth_or_death.
+	(dep_list_size): Take the list as argument.
+	(calculate_reg_deaths): New function, extracted from...
+	(setup_insn_reg_pressure_info): ...here.
+	(MODEL_BAR): New macro.
+	(model_pressure_data, model_insn_info, model_pressure_limit)
+	(model_pressure_group): New structures.
+	(model_schedule, model_worklist, model_insns, model_num_insns)
+	(model_curr_point, model_before_pressure, model_next_priority):
+	New variables.
+	(MODEL_PRESSURE_DATA, MODEL_MAX_PRESSURE, MODEL_REF_PRESSURE)
+	(MODEL_INSN_INFO, MODEL_INSN): New macros.
+	(model_index, model_update_limit_points_in_group): New functions.
+	(model_update_limit_points, model_last_use_except): Likewise.
+	(model_start_update_pressure, model_update_pressure): Likewise.
+	(model_recompute, model_spill_cost, model_excess_group_cost): Likewise.
+	(model_excess_cost, model_dump_pressure_points): Likewise.
+	(model_set_excess_costs): Likewise.
+	(rank_for_schedule): Extend SCHED_PRIORITY_WEIGHTED ordering to
+	SCHED_PRIORITY_MODEL.  Use insn_delay.  Use the order in the model
+	schedule as an alternative tie-breaker.  Update the call to
+	dep_list_size.
+	(ready_sort): Call model_set_excess_costs.
+	(update_register_pressure): Update call to mark_regno_birth_or_death.
+	Rely on that function to check liveness rather than doing it here.
+	(model_classify_pressure, model_order_p, model_add_to_worklist_at)
+	(model_remove_from_worklist, model_add_to_worklist, model_promote_insn)
+	(model_add_to_schedule, model_analyze_insns, model_init_pressure_group)
+	(model_record_pressure, model_record_pressures): New functions.
+	(model_record_final_pressures, model_add_successors_to_worklist)
+	(model_promote_predecessors, model_choose_insn): Likewise.
+	(model_reset_queue_indices, model_dump_pressure_summary): Likewise.
+	(model_start_schedule, model_finalize_pressure_group): Likewise.
+	(model_end_schedule): Likewise.
+	(schedule_insn): Say when we're scheduling the next instruction
+	in the model schedule.
+	(schedule_insn): Handle SCHED_PRESSURE_MODEL.
+	(queue_to_ready): Do not add instructions that are
+	MAX_SCHED_READY_INSNS beyond the current point of the model schedule.
+	Always allow the next instruction in the model schedule to be added.
+	(debug_ready_list): Print the INSN_REG_PRESSURE_EXCESS_COST_CHANGE
+	and delay for SCHED_PRESSURE_MODEL too.
+	(prune_ready_list): Extend SCHED_PRIORITY_WEIGHTED handling to
+	SCHED_PRIORITY_MODEL, but also take the DFA into account.
+	(schedule_block): Call model_start_schedule and model_end_schedule.
+	Extend SCHED_PRIORITY_WEIGHTED stall handling to SCHED_PRIORITY_MODEL.
+	(sched_init): Extend INSN_REG_PRESSURE_EXCESS_COST_CHANGE handling
+	to SCHED_PRESSURE_MODEL, but don't allocate saved_reg_live or
+	region_ref_regs.
+	(sched_finish): Update accordingly.
+	(fix_tick_ready): Extend INSN_REG_PRESSURE_EXCESS_COST_CHANGE handling
+	to SCHED_PRESSURE_MODEL.
+	(add_jump_dependencies): Update call to dep_list_size.
+	(haifa_finish_h_i_d): Fix leak of max_reg_pressure.
+	(haifa_init_insn): Extend INSN_REG_PRESSURE_EXCESS_COST_CHANGE handling
+	to SCHED_PRESSURE_MODEL.
+	* sched-deps.c (init_insn_reg_pressure_info): Likewise, but don't
+	allocate INSN_MAX_REG_PRESSURE for SCHED_PRESSURE_MODEL.
+	(sched_analyze_insn): Extend INSN_REG_PRESSURE_EXCESS_COST_CHANGE
+	handling to SCHED_PRESSURE_MODEL.
+
+2012-04-26  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* common.opt (fsched-pressure-algorithm=): New option.
 	* flag-types.h (sched_pressure_algorithm): New enum.
 	* sched-int.h (sched_pressure_p): Replace with...
