@@ -1154,8 +1154,12 @@ package body Ada.Calendar is
       -----------------
 
       function Day_Of_Week (Date : Time) return Integer is
-         Date_N    : constant Time_Rep := Time_Rep (Date);
-         Time_Zone : constant Long_Integer := UTC_Time_Offset (Date, True);
+         Date_N : constant Time_Rep := Time_Rep (Date);
+
+         Time_Zone : constant Long_Integer := UTC_Time_Offset (Date, False);
+         --  Keep the internal usage of UTC_Time_Offset consistent with Time_Of
+         --  and Split.
+
          Ada_Low_N : Time_Rep;
          Day_Count : Long_Integer;
          Day_Dur   : Time_Dur;

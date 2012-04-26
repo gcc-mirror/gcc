@@ -1,3 +1,19 @@
+2012-04-26  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+	Remove s-traceb and tracebak objects from gnat1 and gnatbind (not used).
+	Remove s-tasdeb and s-vaflop rules (not used).
+
+2012-04-26  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/targtyps.c (WIDEST_HARDWARE_FP_SIZE): Default to
+	DOUBLE_TYPE_SIZE instead of LONG_DOUBLE_TYPE_SIZE.
+
+2012-04-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.adb (Day_Of_Week): Keep the internal
+	usage of UTC_Time_Offset consistent with Time_Of and Split.
+
 2012-04-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Do not freeze
