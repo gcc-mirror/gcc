@@ -723,8 +723,10 @@ package body Exp_Ch2 is
    --    typ!(recobj).rec.all'Constrained
 
    --  where rec is a selector whose Entry_Formal link points to the formal
+
    --  If the type of the entry parameter has a representation clause, then an
    --  extra temp is involved (see below).
+
    --  For a formal of a task entity, the formal is rewritten as a local
    --  renaming.
 

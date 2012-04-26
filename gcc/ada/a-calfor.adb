@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2006-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -431,8 +431,8 @@ package body Ada.Calendar.Formatting is
          Second    => Se,
          Sub_Sec   => Su,
          Leap_Sec  => Leap_Second,
-         Time_Zone => Tz,
-         Is_Ada_05 => True);
+         Use_TZ    => True,
+         Time_Zone => Tz);
 
       --  Validity checks
 
@@ -476,8 +476,8 @@ package body Ada.Calendar.Formatting is
          Second    => Second,
          Sub_Sec   => Sub_Second,
          Leap_Sec  => Le,
-         Time_Zone => Tz,
-         Is_Ada_05 => True);
+         Use_TZ    => True,
+         Time_Zone => Tz);
 
       --  Validity checks
 
@@ -524,8 +524,8 @@ package body Ada.Calendar.Formatting is
         Second    => Second,
         Sub_Sec   => Sub_Second,
         Leap_Sec  => Leap_Second,
-        Time_Zone => Tz,
-        Is_Ada_05 => True);
+        Use_TZ    => True,
+        Time_Zone => Tz);
 
       --  Validity checks
 
@@ -629,7 +629,7 @@ package body Ada.Calendar.Formatting is
            Sub_Sec      => Ss,
            Leap_Sec     => Leap_Second,
            Use_Day_Secs => True,
-           Is_Ada_05    => True,
+           Use_TZ       => True,
            Time_Zone    => Tz);
    end Time_Of;
 
@@ -678,7 +678,7 @@ package body Ada.Calendar.Formatting is
            Sub_Sec      => Sub_Second,
            Leap_Sec     => Leap_Second,
            Use_Day_Secs => False,
-           Is_Ada_05    => True,
+           Use_TZ       => True,
            Time_Zone    => Tz);
    end Time_Of;
 

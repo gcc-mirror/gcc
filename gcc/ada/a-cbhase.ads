@@ -153,7 +153,7 @@ package Ada.Containers.Bounded_Hashed_Sets is
 
    procedure Assign (Target : in out Set; Source : Set);
    --  If Target denotes the same object as Source, then the operation has no
-   --  effect. If the Target capacity is less then the Source length, then
+   --  effect. If the Target capacity is less than the Source length, then
    --  Assign raises Capacity_Error.  Otherwise, Assign clears Target and then
    --  copies the (active) elements from Source to Target.
 

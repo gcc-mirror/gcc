@@ -1,3 +1,42 @@
+2012-04-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Do not freeze
+	the loop variable while preanalyzing a quantified expression.
+
+2012-04-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.adb (Split, Time_Of): Rename parameter Is_Ada_05
+	to Use_TZ to better illustrate its function. Update all
+	references to the parameter.
+	(To_Ada_Time): Update the call to Formatting_Operations.Time_Of.
+	* a-calend.ads (Split, Time_Of): Rename parameter Is_Ada_05
+	to Use_TZ to better illustrate its function. Update the related
+	comment on usage.
+	* a-calend-vms.adb (Split, Time_Of): Rename parameter
+	Is_Ada_05 to Use_TZ to better illustrate its function. Update
+	all references to the parameter.
+	(To_Ada_Time): Update the call to Formatting_Operations.Time_Of.
+	* a-calend-vms.ads (Split, Time_Of): Rename parameter Is_Ada_05
+	to Use_TZ to better illustrate its function. Update the related
+	comment on usage.
+	* a-calfor.adb (Split, Time_Of): Update the call to
+	Formatting_Operations.Time_Of.
+	* sysdep.c (__gnat_localtime_tzoff): Dereference pointer
+	"is_historic" and rewrite the check as a comparison. Add a
+	comment on flag values.
+
+2012-04-26  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch2.adb, sem_ch8.adb: Minor reformatting.
+
+2012-04-26  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* a-stzunb-shared.adb, gnat_ugn.texi, a-strunb-shared.adb,
+	a-strunb-shared.ads, uintp.adb, a-stwiun-shared.adb,
+	a-stwiun-shared.ads, a-cbhama.ads, vms_data.ads, a-cobove.adb,
+	a-convec.adb, sem_ch13.adb, a-cbhase.ads: Fix common misuses of the
+	word "then" where "than" should be used in English.
+
 2012-04-26  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch5.adb (Check_Unreachable_Code): Skip past pragmas.

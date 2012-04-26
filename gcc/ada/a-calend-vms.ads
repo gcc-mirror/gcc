@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -228,11 +228,11 @@ private
          Second    : out Integer;
          Sub_Sec   : out Duration;
          Leap_Sec  : out Boolean;
-         Is_Ada_05 : Boolean;
+         Use_TZ    : Boolean;
          Time_Zone : Long_Integer);
-      --  Split a time value into its components. Set Is_Ada_05 to use the
-      --  local time zone (the value in Time_Zone is ignored) when splitting
-      --  a time value.
+      --  Split a time value into its components. Set Use_TZ to use the local
+      --  time zone (the value in Time_Zone is ignored) when splitting a time
+      --  value.
 
       function Time_Of
         (Year         : Year_Number;
@@ -245,12 +245,12 @@ private
          Sub_Sec      : Duration;
          Leap_Sec     : Boolean := False;
          Use_Day_Secs : Boolean := False;
-         Is_Ada_05    : Boolean := False;
+         Use_TZ       : Boolean := False;
          Time_Zone    : Long_Integer := 0) return Time;
       --  Given all the components of a date, return the corresponding time
       --  value. Set Use_Day_Secs to use the value in Day_Secs, otherwise the
       --  day duration will be calculated from Hour, Minute, Second and Sub_
-      --  Sec. Set Is_Ada_05 to use the local time zone (the value in formal
+      --  Sec. Set Use_TZ to use the local time zone (the value in formal
       --  Time_Zone is ignored) when building a time value and to verify the
       --  validity of a requested leap second.
 

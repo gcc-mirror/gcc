@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -883,7 +883,7 @@ package body Ada.Strings.Wide_Unbounded is
          if Count < SR.Last then
             DR.Data (1 .. Count) := SR.Data (1 .. Count);
 
-         --  Length of the source string is less then requested, copy all
+         --  Length of the source string is less than requested, copy all
          --  contents and fill others by Pad character.
 
          else
@@ -937,13 +937,13 @@ package body Ada.Strings.Wide_Unbounded is
       else
          DR := Allocate (Count);
 
-         --  Length of the source string is greater then requested, copy
+         --  Length of the source string is greater than requested, copy
          --  corresponding slice.
 
          if Count < SR.Last then
             DR.Data (1 .. Count) := SR.Data (1 .. Count);
 
-         --  Length of the source string is less the requested, copy all
+         --  Length of the source string is less than requested, copy all
          --  exists data and fill others by Pad character.
 
          else

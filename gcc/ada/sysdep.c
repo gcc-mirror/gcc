@@ -665,9 +665,11 @@ __gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
   tzi_status = GetTimeZoneInformation (&tzi);
 
   /* Processing for RTX targets or cases where we simply want to extract the
-     offset of the current time zone, regardless of the date. */
+     offset of the current time zone, regardless of the date. A value of "0"
+     for flag "is_historic" signifies that the date is NOT historic, see the
+     body of Ada.Calendar.UTC_Time_Offset. */
 
-  if (rtx_active || !is_historic) {
+  if (rtx_active || *is_historic == 0) {
     *off = tzi.Bias;
 
     /* The system is operating in the range covered by the StandardDate

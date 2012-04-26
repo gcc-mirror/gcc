@@ -5996,7 +5996,7 @@ package VMS_Data is
    --        /CONTINUATION_INDENT=nnn
    --
    --   Indentation level for continuation lines, nnn from 1 .. 9.
-   --   The default value is one less then the (normal) indentation level,
+   --   The default value is one less than the (normal) indentation level,
    --   unless the indentation is set to 1: in that case the default value for
    --   continuation line indentation is also 1.
 
@@ -6005,7 +6005,7 @@ package VMS_Data is
    --        /NO_SEPARATE_IS
    --
    --   Do not place the IS keyword on a separate line in a subprogram body in
-   --   case if the specification occupies more then one line.
+   --   case if the specification occupies more than one line.
 
    S_Pretty_Sep_Label : aliased constant S := "/SEPARATE_LABEL "           &
                                                     "--separate-label";
