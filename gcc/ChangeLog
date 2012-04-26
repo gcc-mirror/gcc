@@ -3,6 +3,15 @@
 	* PR middle-end/52997
 	* ira.c (find_moveable_pseudos): Call resize_reg_info.
 
+	PR middle-end/52940
+	* machmode.h (CLASS_HAS_WIDER_MODES_P): True for MODE_PARTIAL_INT.
+	* expr.c (convert_move): Honor unsignedp when extending partial int
+	modes.
+	* genmodes.c (complete_mode): Don't clear component field of partial
+	int modes.
+	(emit_mode_inner): Don't emit it however.
+	(calc_wider_mode): Partial int modes widen to their component.
+
 2012-04-26  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/niagara4.md: New file.

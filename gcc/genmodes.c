@@ -360,7 +360,6 @@ complete_mode (struct mode_data *m)
       m->bytesize = m->component->bytesize;
 
       m->ncomponents = 1;
-      m->component = 0;  /* ??? preserve this */
       break;
 
     case MODE_COMPLEX_INT:
@@ -821,7 +820,13 @@ calc_wider_mode (void)
 
 	  sortbuf[i] = 0;
 	  for (j = 0; j < i; j++)
-	    sortbuf[j]->next = sortbuf[j]->wider = sortbuf[j + 1];
+	    {
+	      sortbuf[j]->next = sortbuf[j + 1];
+	      if (c == MODE_PARTIAL_INT)
+		sortbuf[j]->wider = sortbuf[j]->component;
+	      else
+		sortbuf[j]->wider = sortbuf[j]->next;
+	    }
 
 	  modes[c] = sortbuf[0];
 	}
@@ -1118,7 +1123,8 @@ emit_mode_inner (void)
 
   for_all_modes (c, m)
     tagged_printf ("%smode",
-		   m->component ? m->component->name : void_mode->name,
+		   c != MODE_PARTIAL_INT && m->component
+		   ? m->component->name : void_mode->name,
 		   m->name);
 
   print_closer ();
