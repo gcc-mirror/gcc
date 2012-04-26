@@ -1,3 +1,8 @@
+2012-04-26  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* PR middle-end/52997
+	* ira.c (find_moveable_pseudos): Call resize_reg_info.
+
 2012-04-26  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/niagara4.md: New file.
