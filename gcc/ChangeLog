@@ -1,5 +1,12 @@
 2012-04-26  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* sched-deps.c (fixup_sched_groups): Rename to...
+	(chain_to_prev_insn): ...this.
+	(chain_to_prev_insn_p): New function.
+	(deps_analyze_insn): Use it instead of SCHED_GROUP_P.
+
+2012-04-26  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* sched-int.h (_haifa_insn_data): Move priority_status.
 	Add model_index.
 	(INSN_MODEL_INDEX): New macro.
