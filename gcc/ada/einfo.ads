@@ -3393,11 +3393,6 @@ package Einfo is
 --       in the shadow entity, it points to the proper location in which to
 --       restore the private view saved in the shadow.
 
---    Proper_First_Index (synthesized)
---       Applies to array types and subtypes. Returns the First_Index of the
---       type unless it is a string literal. In that case, the First_Index is
---       obtained from the base type.
-
 --    Protected_Formal (Node22)
 --       Present in formal parameters (in, in out and out parameters). Used
 --       only for formals of protected operations. References corresponding
@@ -5031,7 +5026,6 @@ package Einfo is
    --    Is_Constrained                      (Flag12)
    --    Next_Index                          (synth)
    --    Number_Dimensions                   (synth)
-   --    Proper_First_Index                  (synth)
    --    (plus type attributes)
 
    --  E_Block
@@ -5694,7 +5688,6 @@ package Einfo is
    --    Is_Constrained                      (Flag12)
    --    Next_Index                          (synth)
    --    Number_Dimensions                   (synth)
-   --    Proper_First_Index                  (synth)
    --    (plus type attributes)
 
    --  E_String_Literal_Subtype
@@ -5702,7 +5695,6 @@ package Einfo is
    --    String_Literal_Length               (Uint16)
    --    First_Index                         (Node17)   (always Empty)
    --    Packed_Array_Type                   (Node23)
-   --    Proper_First_Index                  (synth)
    --    (plus type attributes)
 
    --  E_Subprogram_Body
@@ -6540,7 +6532,6 @@ package Einfo is
    function Number_Formals                      (Id : E) return Pos;
    function Parameter_Mode                      (Id : E) return Formal_Kind;
    function Primitive_Operations                (Id : E) return L;
-   function Proper_First_Index                  (Id : E) return E;
    function Root_Type                           (Id : E) return E;
    function Safe_Emax_Value                     (Id : E) return U;
    function Safe_First_Value                    (Id : E) return R;

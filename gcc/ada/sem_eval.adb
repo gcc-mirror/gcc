@@ -554,7 +554,7 @@ package body Sem_Eval is
                if Attribute_Name (N) = Name_First then
                   return String_Literal_Low_Bound (Xtyp);
 
-               else         -- Attribute_Name (N) = Name_Last
+               else
                   return Make_Integer_Literal (Sloc (N),
                     Intval => Intval (String_Literal_Low_Bound (Xtyp))
                                 + String_Literal_Length (Xtyp));
@@ -2747,7 +2747,7 @@ package body Sem_Eval is
 
                --  General case
 
-               T := Etype (Proper_First_Index (Etype (Op)));
+               T := Etype (First_Index (Etype (Op)));
 
                --  The simple case, both bounds are known at compile time
 

@@ -753,8 +753,8 @@ package Exp_Util is
    --    1) controlled objects
    --    2) library-level tagged types
    --
-   --  The above cases require special actions on scope exit. Flag Lib_Level
-   --  is used to track whether a construct is at the library level.
+   --  These cases require special actions on scope exit. The flag Lib_Level
+   --  is set True if the construct is at library level, and False otherwise.
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean;
    --  Given the node for an N_Unchecked_Type_Conversion, return True if this

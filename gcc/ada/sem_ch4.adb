@@ -4440,9 +4440,10 @@ package body Sem_Ch4 is
    -------------------
 
    procedure Analyze_Slice (N : Node_Id) is
-      P          : constant Node_Id := Prefix (N);
       D          : constant Node_Id := Discrete_Range (N);
+      P          : constant Node_Id := Prefix (N);
       Array_Type : Entity_Id;
+      Index_Type : Entity_Id;
 
       procedure Analyze_Overloaded_Slice;
       --  If the prefix is overloaded, select those interpretations that
@@ -4513,13 +4514,18 @@ package body Sem_Ch4 is
             Error_Msg_N
               ("type is not one-dimensional array in slice prefix", N);
 
-         elsif not
-           Has_Compatible_Type (D, Etype (Proper_First_Index (Array_Type)))
-         then
-            Wrong_Type (D, Etype (Proper_First_Index (Array_Type)));
-
          else
-            Set_Etype (N, Array_Type);
+            if Ekind (Array_Type) = E_String_Literal_Subtype then
+               Index_Type := Etype (String_Literal_Low_Bound (Array_Type));
+            else
+               Index_Type := Etype (First_Index (Array_Type));
+            end if;
+
+            if not Has_Compatible_Type (D, Index_Type) then
+               Wrong_Type (D, Index_Type);
+            else
+               Set_Etype (N, Array_Type);
+            end if;
          end if;
       end if;
    end Analyze_Slice;

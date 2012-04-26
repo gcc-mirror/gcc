@@ -1096,22 +1096,22 @@ package body Prj.Nmsc is
          Element  : Package_Element;
 
          procedure Process_Binder (Arrays : Array_Id);
-         --  Process the associate array attributes of package Binder
+         --  Process the associated array attributes of package Binder
 
          procedure Process_Builder (Attributes : Variable_Id);
          --  Process the simple attributes of package Builder
 
          procedure Process_Clean  (Arrays : Array_Id);
-         --  Process the associate array attributes of package Clean
+         --  Process the associated array attributes of package Clean
 
          procedure Process_Compiler (Arrays : Array_Id);
-         --  Process the associate array attributes of package Compiler
+         --  Process the associated array attributes of package Compiler
 
          procedure Process_Naming (Attributes : Variable_Id);
          --  Process the simple attributes of package Naming
 
          procedure Process_Naming (Arrays : Array_Id);
-         --  Process the associate array attributes of package Naming
+         --  Process the associated array attributes of package Naming
 
          procedure Process_Linker (Attributes : Variable_Id);
          --  Process the simple attributes of package Linker of a
@@ -1238,7 +1238,7 @@ package body Prj.Nmsc is
             List             : String_List_Id;
 
          begin
-            --  Process the associative array attribute of package Clean
+            --  Process the associated array attributes of package Clean
 
             Current_Array_Id := Arrays;
             while Current_Array_Id /= No_Array loop
@@ -1250,8 +1250,9 @@ package body Prj.Nmsc is
 
                   --  Get the name of the language
 
-                  Lang_Index := Get_Language_From_Name
-                    (Project, Get_Name_String (Element.Index));
+                  Lang_Index :=
+                    Get_Language_From_Name
+                      (Project, Get_Name_String (Element.Index));
 
                   if Lang_Index /= No_Language_Index then
                      case Current_Array.Name is
@@ -1279,6 +1280,7 @@ package body Prj.Nmsc is
                                    From_List => List,
                                    In_Tree   => Data.Tree);
                            end if;
+
                         when others =>
                            null;
                      end case;
@@ -3291,8 +3293,8 @@ package body Prj.Nmsc is
       if Project.Library then
          Support_For_Libraries := Project.Config.Lib_Support;
 
-         if not Project.Externally_Built and then
-           Support_For_Libraries = Prj.None
+         if not Project.Externally_Built
+           and then Support_For_Libraries = Prj.None
          then
             Error_Msg
               (Data.Flags,
@@ -3481,8 +3483,8 @@ package body Prj.Nmsc is
                   end if;
 
                   if Project.Library_Kind /= Static then
-                     if not Project.Externally_Built and then
-                       Support_For_Libraries = Prj.Static_Only
+                     if not Project.Externally_Built
+                       and then Support_For_Libraries = Prj.Static_Only
                      then
                         Error_Msg
                           (Data.Flags,
