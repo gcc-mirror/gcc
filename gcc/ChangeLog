@@ -1,3 +1,11 @@
+2012-04-26  Michael Hope  <michael.hope@linaro.org>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/linux-eabi.h (GLIBC_DYNAMIC_LINKER_SOFT_FLOAT): Define.
+	(GLIBC_DYNAMIC_LINKER_HARD_FLOAT): Define.
+	(GLIBC_DYNAMIC_LINKER_DEFAULT): Define.
+	(GLIBC_DYNAMIC_LINKER):	Redefine to use the hard float path.
+
 2012-04-25  Sriraman Tallam  <tmsriram@google.com>
 
 	* doc/extend.texi: Document avx2 support.
