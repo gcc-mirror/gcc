@@ -1,3 +1,8 @@
+2012-04-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* reload.c (find_reloads): Change the loop nesting when trying an
+	alternative with swapped operands.
+
 2012-04-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc): Fix
