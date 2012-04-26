@@ -27763,6 +27763,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
     F_SSE4_1,
     F_SSE4_2,
     F_AVX,
+    F_AVX2,
     F_MAX
   };
 
@@ -27830,7 +27831,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"ssse3",  F_SSSE3},
       {"sse4.1", F_SSE4_1},
       {"sse4.2", F_SSE4_2},
-      {"avx",    F_AVX}
+      {"avx",    F_AVX},
+      {"avx2",   F_AVX2}
     };
 
   static tree __processor_model_type = NULL_TREE;
