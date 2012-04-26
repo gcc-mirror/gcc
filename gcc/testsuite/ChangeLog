@@ -1,3 +1,8 @@
+2012-04-26  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/savres.c: New test.
+	* gcc.target/powerpc/powerpc.exp: Run it.
+
 2012-04-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/53120
