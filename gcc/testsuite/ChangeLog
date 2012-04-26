@@ -1,3 +1,8 @@
+2012-04-26  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/bf-ms-layout.c: Adjust offsets to fit ms-bitfield
+	structure layout.
+
 2012-04-25  Sriraman Tallam  <tmsriram@google.com>
 
 	* testsuite/gcc.target/i386/builtin_target.c: Check avx2.
