@@ -157,11 +157,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  explicitly passed, template pattern.
    *
    *  Base class templates are: 
-   *    __detail::_Hashtable_base
-   *    __detail::_Map_base
-   *    __detail::_Insert
-   *    __detail::_Rehash_base
-   *    __detail::_Equality
+   *    - __detail::_Hashtable_base
+   *    - __detail::_Map_base
+   *    - __detail::_Insert
+   *    - __detail::_Rehash_base
+   *    - __detail::_Equality
    */
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,

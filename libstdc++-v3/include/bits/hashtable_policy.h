@@ -121,10 +121,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  struct _Hash_node_base
    *
-   * Nodes, used to wrap elements stored in the hash table.  A policy
-   * template parameter of class template _Hashtable controls whether
-   * nodes also store a hash code. In some cases (e.g. strings) this
-   * may be a performance win.
+   *  Nodes, used to wrap elements stored in the hash table.  A policy
+   *  template parameter of class template _Hashtable controls whether
+   *  nodes also store a hash code. In some cases (e.g. strings) this
+   *  may be a performance win.
    */
   struct _Hash_node_base
   {
@@ -141,7 +141,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Value, bool _Cache_hash_code>
     struct _Hash_node;
 
-  /// Specialization.
+  /**
+   *  Specialization for nodes with caches, struct _Hash_node.
+   *
+   *  Base class is __detail::_Hash_node_base.
+   */
   template<typename _Value>
     struct _Hash_node<_Value, true> : _Hash_node_base
     {
@@ -156,7 +160,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_next() const { return static_cast<_Hash_node*>(_M_nxt); }
     };
 
-  /// Specialization.
+  /**
+   *  Specialization for nodes without caches, struct _Hash_node.
+   *
+   *  Base class is __detail::_Hash_node_base.
+   */
   template<typename _Value>
     struct _Hash_node<_Value, false> : _Hash_node_base
     {
@@ -1421,8 +1429,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  Primary class template _Hashtable_base.
    *
-   *  Base class for _Hashtable. Helper class adding management of
-   *  _Equal functor to _Hash_code_base type.
+   *  Helper class adding management of _Equal functor to
+   *  _Hash_code_base type.
+   *
+   *  Base class templates are:
+   *    - __detail::_Hash_code_base
+   *    - __detail::_Hashtable_ebo_helper
    */
   template<typename _Key, typename _Value,
 	   typename _ExtractKey, typename _Equal,
