@@ -1,3 +1,19 @@
+2012-04-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+
+2012-04-26  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_aggr.adb, exp_pakd.adb (Setup_Inline_Packed_Array_Reference,
+	Packed_Array_Aggregate_Handled.Get_Component_Val):
+	Reverse bit numbering within PAT when Reverse_Storage_Order
+	applies to the enclosing record.
+
+2012-04-26  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Improve error message for
+	Scalar_Storage_Order inconsistent with Bit_Order.
+
 2012-04-25  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch9.adb: Add comments on the usage of the
