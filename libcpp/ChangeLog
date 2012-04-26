@@ -1,3 +1,10 @@
+2012-04-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* line-map.c (linemap_resolve_location): Synchronize comments with
+	those in line-map.h.
+	* include/line-map.h (linemap_resolve_location): Fix spelling in
+	comment.
+
 2012-03-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* lex.c (search_line_fast): Provide Neon-optimized version for ARM.

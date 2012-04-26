@@ -1,3 +1,9 @@
+2012-04-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc): Fix
+	comment. Delete unused parameter first_exp_point_map.
+	(virt_loc_aware_diagnostic_finalizer): Update call.
+
 2012-04-26  Michael Hope  <michael.hope@linaro.org>
 	    Richard Earnshaw  <rearnsha@arm.com>
 
