@@ -1106,6 +1106,7 @@ package Snames is
    Name_Binder                             : constant Name_Id := N + $;
    Name_Body_Suffix                        : constant Name_Id := N + $;
    Name_Builder                            : constant Name_Id := N + $;
+   Name_Clean                              : constant Name_Id := N + $;
    Name_Compiler                           : constant Name_Id := N + $;
    Name_Compiler_Command                   : constant Name_Id := N + $; -- GB
    Name_Config_Body_File_Name              : constant Name_Id := N + $;
@@ -1195,6 +1196,7 @@ package Snames is
    Name_Multi_Unit_Switches                : constant Name_Id := N + $;
    Name_Naming                             : constant Name_Id := N + $;
    Name_None                               : constant Name_Id := N + $;
+   Name_Object_Artifact_Extensions         : constant Name_Id := N + $;
    Name_Object_File_Suffix                 : constant Name_Id := N + $;
    Name_Object_File_Switches               : constant Name_Id := N + $;
    Name_Object_Generated                   : constant Name_Id := N + $;
@@ -1224,6 +1226,7 @@ package Snames is
    Name_Shared_Library_Prefix              : constant Name_Id := N + $;
    Name_Shared_Library_Suffix              : constant Name_Id := N + $;
    Name_Separate_Suffix                    : constant Name_Id := N + $;
+   Name_Source_Artifact_Extensions         : constant Name_Id := N + $;
    Name_Source_Dirs                        : constant Name_Id := N + $;
    Name_Source_File_Switches               : constant Name_Id := N + $;
    Name_Source_Files                       : constant Name_Id := N + $;
