@@ -264,7 +264,7 @@
    fpcmp,
    fpmul,fpdivs,fpdivd,
    fpsqrts,fpsqrtd,
-   fga,fgm_pack,fgm_mul,fgm_pdist,fgm_cmp,edge,edgen,gsr,array,
+   fga,fgm_pack,fgm_mul,fgm_pdist,edge,edgen,gsr,array,
    cmove,
    ialuX,
    multi,savew,flushw,iflush,trap"
@@ -7925,7 +7925,7 @@
 		      UNSPEC_FPACK16))]
   "TARGET_VIS"
   "fpack16\t%1, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "fgm_pack")
    (set_attr "fptype" "double")])
 
 (define_insn "fpackfix_vis"
@@ -7935,7 +7935,7 @@
 		      UNSPEC_FPACKFIX))]
   "TARGET_VIS"
   "fpackfix\t%1, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "fgm_pack")
    (set_attr "fptype" "double")])
 
 (define_insn "fpack32_vis"
@@ -7946,7 +7946,7 @@
                      UNSPEC_FPACK32))]
   "TARGET_VIS"
   "fpack32\t%1, %2, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "fgm_pack")
    (set_attr "fptype" "double")])
 
 (define_insn "fexpand_vis"
@@ -8008,7 +8008,7 @@
          UNSPEC_MUL8))]
   "TARGET_VIS"
   "fmul8x16\t%1, %2, %0"
-  [(set_attr "type" "fpmul")
+  [(set_attr "type" "fgm_mul")
    (set_attr "fptype" "double")])
 
 (define_insn "fmul8x16au_vis"
@@ -8018,7 +8018,7 @@
          UNSPEC_MUL16AU))]
   "TARGET_VIS"
   "fmul8x16au\t%1, %2, %0"
-  [(set_attr "type" "fpmul")
+  [(set_attr "type" "fgm_mul")
    (set_attr "fptype" "double")])
 
 (define_insn "fmul8x16al_vis"
@@ -8028,7 +8028,7 @@
          UNSPEC_MUL16AL))]
   "TARGET_VIS"
   "fmul8x16al\t%1, %2, %0"
-  [(set_attr "type" "fpmul")
+  [(set_attr "type" "fgm_mul")
    (set_attr "fptype" "double")])
 
 (define_insn "fmul8sux16_vis"
@@ -8038,7 +8038,7 @@
          UNSPEC_MUL8SU))]
   "TARGET_VIS"
   "fmul8sux16\t%1, %2, %0"
-  [(set_attr "type" "fpmul")
+  [(set_attr "type" "fgm_mul")
    (set_attr "fptype" "double")])
 
 (define_insn "fmul8ulx16_vis"
@@ -8048,7 +8048,7 @@
          UNSPEC_MUL8UL))]
   "TARGET_VIS"
   "fmul8ulx16\t%1, %2, %0"
-  [(set_attr "type" "fpmul")
+  [(set_attr "type" "fgm_mul")
    (set_attr "fptype" "double")])
 
 (define_insn "fmuld8sux16_vis"
@@ -8058,7 +8058,7 @@
          UNSPEC_MULDSU))]
   "TARGET_VIS"
   "fmuld8sux16\t%1, %2, %0"
-  [(set_attr "type" "fpmul")
+  [(set_attr "type" "fgm_mul")
    (set_attr "fptype" "double")])
 
 (define_insn "fmuld8ulx16_vis"
@@ -8068,7 +8068,7 @@
          UNSPEC_MULDUL))]
   "TARGET_VIS"
   "fmuld8ulx16\t%1, %2, %0"
-  [(set_attr "type" "fpmul")
+  [(set_attr "type" "fgm_mul")
    (set_attr "fptype" "double")])
 
 (define_expand "wrgsr_vis"
@@ -8149,7 +8149,8 @@
    (set (zero_extract:DI (reg:DI GSR_REG) (const_int 3) (const_int 0))
         (zero_extend:DI (plus:SI (match_dup 1) (match_dup 2))))]
   "TARGET_VIS"
-  "alignaddr\t%r1, %r2, %0")
+  "alignaddr\t%r1, %r2, %0"
+  [(set_attr "type" "gsr")])
 
 (define_insn "alignaddrdi_vis"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -8158,7 +8159,8 @@
    (set (zero_extract:DI (reg:DI GSR_REG) (const_int 3) (const_int 0))
         (plus:DI (match_dup 1) (match_dup 2)))]
   "TARGET_VIS"
-  "alignaddr\t%r1, %r2, %0")
+  "alignaddr\t%r1, %r2, %0"
+  [(set_attr "type" "gsr")])
 
 (define_insn "alignaddrlsi_vis"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -8168,7 +8170,8 @@
         (xor:DI (zero_extend:DI (plus:SI (match_dup 1) (match_dup 2)))
                 (const_int 7)))]
   "TARGET_VIS"
-  "alignaddrl\t%r1, %r2, %0")
+  "alignaddrl\t%r1, %r2, %0"
+  [(set_attr "type" "gsr")])
 
 (define_insn "alignaddrldi_vis"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -8178,7 +8181,8 @@
         (xor:DI (plus:DI (match_dup 1) (match_dup 2))
                 (const_int 7)))]
   "TARGET_VIS"
-  "alignaddrl\t%r1, %r2, %0")
+  "alignaddrl\t%r1, %r2, %0"
+  [(set_attr "type" "gsr")])
 
 (define_insn "pdist_vis"
   [(set (match_operand:DI 0 "register_operand" "=e")
@@ -8188,7 +8192,7 @@
          UNSPEC_PDIST))]
   "TARGET_VIS"
   "pdist\t%1, %2, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "fgm_pdist")
    (set_attr "fptype" "double")])
 
 ;; Edge instructions produce condition codes equivalent to a 'subcc'
@@ -8270,7 +8274,7 @@
 	 UNSPEC_FCMP))]
   "TARGET_VIS"
   "fcmp<code><GCM:gcm_name>\t%1, %2, %0"
-  [(set_attr "type" "fpmul")
+  [(set_attr "type" "fga")
    (set_attr "fptype" "double")])
 
 (define_expand "vcond<mode><mode>"
@@ -8460,7 +8464,8 @@
 	            (reg:DI GSR_REG)]
                    UNSPEC_CMASK8))]
   "TARGET_VIS3"
-  "cmask8\t%r0")
+  "cmask8\t%r0"
+  [(set_attr "type" "fga")])
 
 (define_insn "cmask16<P:mode>_vis"
   [(set (reg:DI GSR_REG)
@@ -8468,7 +8473,8 @@
 	            (reg:DI GSR_REG)]
                    UNSPEC_CMASK16))]
   "TARGET_VIS3"
-  "cmask16\t%r0")
+  "cmask16\t%r0"
+  [(set_attr "type" "fga")])
 
 (define_insn "cmask32<P:mode>_vis"
   [(set (reg:DI GSR_REG)
@@ -8476,7 +8482,8 @@
 	            (reg:DI GSR_REG)]
                    UNSPEC_CMASK32))]
   "TARGET_VIS3"
-  "cmask32\t%r0")
+  "cmask32\t%r0"
+  [(set_attr "type" "fga")])
 
 (define_insn "fchksm16_vis"
   [(set (match_operand:V4HI 0 "register_operand" "=e")
@@ -8484,7 +8491,8 @@
                       (match_operand:V4HI 2 "register_operand" "e")]
                      UNSPEC_FCHKSM16))]
   "TARGET_VIS3"
-  "fchksm16\t%1, %2, %0")
+  "fchksm16\t%1, %2, %0"
+  [(set_attr "type" "fga")])
 
 (define_code_iterator vis3_shift [ashift ss_ashift lshiftrt ashiftrt])
 (define_code_attr vis3_shift_insn
@@ -8497,7 +8505,8 @@
 	(vis3_shift:GCM (match_operand:GCM 1 "register_operand" "<vconstr>")
 			(match_operand:GCM 2 "register_operand" "<vconstr>")))]
   "TARGET_VIS3"
-  "<vis3_shift_insn><vbits>\t%1, %2, %0")
+  "<vis3_shift_insn><vbits>\t%1, %2, %0"
+  [(set_attr "type" "fga")])
 
 (define_insn "pdistn<mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
@@ -8505,7 +8514,9 @@
                    (match_operand:V8QI 2 "register_operand" "e")]
          UNSPEC_PDISTN))]
   "TARGET_VIS3"
-  "pdistn\t%1, %2, %0")
+  "pdistn\t%1, %2, %0"
+  [(set_attr "type" "fgm_pdist")
+   (set_attr "fptype" "double")])
 
 (define_insn "fmean16_vis"
   [(set (match_operand:V4HI 0 "register_operand" "=e")
@@ -8521,14 +8532,16 @@
                                   (const_int 1) (const_int 1)]))
           (const_int 1))))]
   "TARGET_VIS3"
-  "fmean16\t%1, %2, %0")
+  "fmean16\t%1, %2, %0"
+  [(set_attr "type" "fga")])
 
 (define_insn "fp<plusminus_insn>64_vis"
   [(set (match_operand:V1DI 0 "register_operand" "=e")
 	(plusminus:V1DI (match_operand:V1DI 1 "register_operand" "e")
 			(match_operand:V1DI 2 "register_operand" "e")))]
   "TARGET_VIS3"
-  "fp<plusminus_insn>64\t%1, %2, %0")
+  "fp<plusminus_insn>64\t%1, %2, %0"
+  [(set_attr "type" "fga")])
 
 (define_mode_iterator VASS [V4HI V2SI V2HI V1SI])
 (define_code_iterator vis3_addsub_ss [ss_plus ss_minus])
@@ -8542,7 +8555,8 @@
         (vis3_addsub_ss:VASS (match_operand:VASS 1 "register_operand" "<vconstr>")
                              (match_operand:VASS 2 "register_operand" "<vconstr>")))]
   "TARGET_VIS3"
-  "<vis3_addsub_ss_insn><vbits>\t%1, %2, %0")
+  "<vis3_addsub_ss_insn><vbits>\t%1, %2, %0"
+  [(set_attr "type" "fga")])
 
 (define_insn "fucmp<code>8<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
@@ -8550,7 +8564,8 @@
 		               (match_operand:V8QI 2 "register_operand" "e"))]
 	 UNSPEC_FUCMP))]
   "TARGET_VIS3"
-  "fucmp<code>8\t%1, %2, %0")
+  "fucmp<code>8\t%1, %2, %0"
+  [(set_attr "type" "fga")])
 
 (define_insn "*naddsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")

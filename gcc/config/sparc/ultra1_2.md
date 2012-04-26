@@ -275,7 +275,7 @@
   4
   (and (and
          (eq_attr "cpu" "ultrasparc")
-         (eq_attr "type" "fgm_pack,fgm_mul,fgm_cmp"))
+         (eq_attr "type" "fgm_pack,fgm_mul"))
        (eq_attr "fptype" "single"))
   "us1_fpm + us1_fp_single + us1_slotany, nothing*3")
 
@@ -285,7 +285,7 @@
   4
   (and (and
          (eq_attr "cpu" "ultrasparc")
-         (eq_attr "type" "fgm_pack,fgm_mul,fgm_cmp"))
+         (eq_attr "type" "fgm_pack,fgm_mul"))
        (eq_attr "fptype" "double"))
   "us1_fpm + us1_fp_double + us1_slotany, nothing*3")
 
