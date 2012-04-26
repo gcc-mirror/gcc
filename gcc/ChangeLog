@@ -1,3 +1,24 @@
+2012-04-26  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (attr type): Delete 'fgm_cmp'.
+	(fpack16_vis, fpackfix_vis, fpack32_vis): Set type to fgm_pack.
+	(fmul8x16_vis, fmul8x16au_vis, fmul8x16al_vis, fmul8sux16_vis,
+	fmul8ulx16_vis, fmuld8sux16_vis, fmuld8ulx16_vis): Set type to
+	fgm_mul.
+	(alignaddrsi_vis, alignaddrdi_vis, alignaddrlsi_vis,
+	alignaddrldi_vis): Set type to gsr.
+	(pdist_vis, pdistn<mode>_vis): Set type to fgm_pdsit.
+	(fcmp<code><GCM:gcm_name><P:mode>_vis, cmask8<P:mode>_vis,
+	cmask16<P:mode>_vis, cmask32<P:mode>_vis, fchksm16_vis,
+	v<vis3_shift_patname><mode>3, fmean16_vis,
+	fp<plusminus_insn>64_vis, <vis3_addsub_ss_patname><mode>3,
+	fucmp<code>8<P:mode>_vis): Set type to fga.
+	* config/sparc/ultra1_2.md: Remove refrences to fgm_cmp.
+	* config/sparc/niagara.md: Likewise.
+	* config/sparc/niagara2.md: Likewise.
+	* config/sparc/ultra3.md: Likewise, and fix type matching for
+	us3_ialuX reservation.
+
 2012-04-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* reload.c (find_reloads): Change the loop nesting when trying an
