@@ -166,6 +166,7 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 /* Nonzero if CLASS modes can be widened.  */
 #define CLASS_HAS_WIDER_MODES_P(CLASS)         \
   (CLASS == MODE_INT                           \
+   || CLASS == MODE_PARTIAL_INT                \
    || CLASS == MODE_FLOAT                      \
    || CLASS == MODE_DECIMAL_FLOAT              \
    || CLASS == MODE_COMPLEX_FLOAT              \
