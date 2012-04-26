@@ -29,6 +29,8 @@ fn1 ()
 
   assert (__builtin_cpu_supports ("avx") >= 0);
 
+  assert (__builtin_cpu_supports ("avx2") >= 0);
+
   /* Check CPU type.  */
   assert (__builtin_cpu_is ("amd") >= 0);
 

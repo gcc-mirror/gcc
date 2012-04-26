@@ -75,7 +75,8 @@ enum processor_features
   FEATURE_SSSE3,
   FEATURE_SSE4_1,
   FEATURE_SSE4_2,
-  FEATURE_AVX
+  FEATURE_AVX,
+  FEATURE_AVX2
 };
 
 struct __processor_model
@@ -191,8 +192,11 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
     }
 }	             	
 
+/* ECX and EDX are output of CPUID at level one.  MAX_CPUID_LEVEL is
+   the max possible level of CPUID insn.  */
 static void
-get_available_features (unsigned int ecx, unsigned int edx)
+get_available_features (unsigned int ecx, unsigned int edx,
+			int max_cpuid_level)
 {
   unsigned int features = 0;
 
@@ -216,6 +220,15 @@ get_available_features (unsigned int ecx, unsigned int edx)
     features |= (1 << FEATURE_SSE4_2);
   if (ecx & bit_AVX)
     features |= (1 << FEATURE_AVX);
+
+  /* Get Advanced Features at level 7 (eax = 7, ecx = 0). */
+  if (max_cpuid_level >= 7)
+    {
+      unsigned int eax, ebx, ecx, edx;
+      __cpuid_count (7, 0, eax, ebx, ecx, edx);
+      if (ebx & bit_AVX2)
+	features |= (1 << FEATURE_AVX2);
+    }
 
   __cpu_model.__cpu_features[0] = features;
 }
@@ -296,7 +309,7 @@ __cpu_indicator_init (void)
       /* Get CPU type.  */
       get_intel_cpu (family, model, brand_id);
       /* Find available features. */
-      get_available_features (ecx, edx);
+      get_available_features (ecx, edx, max_level);
       __cpu_model.__cpu_vendor = VENDOR_INTEL;
     }
   else if (vendor == SIG_AMD)
@@ -311,7 +324,7 @@ __cpu_indicator_init (void)
       /* Get CPU type.  */
       get_amd_cpu (family, model);
       /* Find available features. */
-      get_available_features (ecx, edx);
+      get_available_features (ecx, edx, max_level);
       __cpu_model.__cpu_vendor = VENDOR_AMD;
     }
   else
