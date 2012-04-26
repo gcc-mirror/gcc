@@ -1,4 +1,4 @@
-#   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+#   Copyright (C) 2005, 2007, 2012 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,6 +36,15 @@ dg-init
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
 	"" $DEFAULT_CFLAGS
+
+set SAVRES_TEST_OPTS [list -Os -O2 {-Os -mno-multiple} {-O2 -mno-multiple}]
+set alti ""
+if [check_vmx_hw_available] {
+    set alti "-maltivec"
+}
+torture-init
+set-torture-options $SAVRES_TEST_OPTS
+gcc-dg-runtest [list $srcdir/$subdir/savres.c] $alti
 
 # All done.
 dg-finish
