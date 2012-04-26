@@ -11652,23 +11652,6 @@ package body Sem_Util is
       Set_Sloc (Endl, Loc);
    end Process_End_Label;
 
-   ------------------------
-   -- Proper_First_Index --
-   ------------------------
-
-   function Proper_First_Index (Array_Typ : Entity_Id) return Entity_Id is
-      Typ : Entity_Id;
-
-   begin
-      Typ := Array_Typ;
-
-      if Ekind (Typ) = E_String_Literal_Subtype then
-         Typ := Base_Type (Typ);
-      end if;
-
-      return First_Index (Typ);
-   end Proper_First_Index;
-
    ------------------------------------
    -- References_Generic_Formal_Type --
    ------------------------------------

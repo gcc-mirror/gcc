@@ -1,3 +1,22 @@
+2012-04-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Proper_First_Index): Moved from Sem_Util.
+	* einfo.ads: Add new synthesized attribute Proper_First_Index
+	along with usage in nodes.
+	(Proper_First_Index): Moved from Sem_Util.
+	* sem_util.ads, sem_util.adb (Proper_First_Index): Moved to Einfo.
+
+2012-04-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* layout.adb (Layout_Component_List): Test for the case of a
+	single variant and the size of its component list was computed
+	as an integer literal, and use that size (which is in bits)
+	as is rather than converting to storage units.
+
+2012-04-26  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb: Minor reformatting.
+
 2012-04-26  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb: Minor reformatting.
