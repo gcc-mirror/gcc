@@ -62,7 +62,17 @@
 /* Use ld-linux.so.3 so that it will be possible to run "classic"
    GNU/Linux binaries on an EABI system.  */
 #undef  GLIBC_DYNAMIC_LINKER
-#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.3"
+#define GLIBC_DYNAMIC_LINKER_SOFT_FLOAT "/lib/ld-linux.so.3"
+#define GLIBC_DYNAMIC_LINKER_HARD_FLOAT "/lib/ld-linux-armhf.so.3"
+#if TARGET_DEFAULT_FLOAT_ABI == ARM_FLOAT_ABI_HARD
+#define GLIBC_DYNAMIC_LINKER_DEFAULT GLIBC_DYNAMIC_LINKER_HARD_FLOAT
+#else
+#define GLIBC_DYNAMIC_LINKER_DEFAULT GLIBC_DYNAMIC_LINKER_SOFT_FLOAT
+#endif
+#define GLIBC_DYNAMIC_LINKER \
+   "%{mfloat-abi=hard:" GLIBC_DYNAMIC_LINKER_HARD_FLOAT "} \
+    %{mfloat-abi=soft*:" GLIBC_DYNAMIC_LINKER_SOFT_FLOAT "} \
+    %{!mfloat-abi=*:" GLIBC_DYNAMIC_LINKER_DEFAULT "}"
 
 /* At this point, bpabi.h will have clobbered LINK_SPEC.  We want to
    use the GNU/Linux version, not the generic BPABI version.  */
