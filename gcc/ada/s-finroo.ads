@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,30 +31,16 @@
 
 --  This unit provides the basic support for controlled (finalizable) types
 
-with Ada.Streams;
-
 package System.Finalization_Root is
    pragma Preelaborate;
 
    --  The base for types Controlled and Limited_Controlled declared in Ada.
    --  Finalization.
 
-   type Root_Controlled is tagged null record;
+   type Root_Controlled is abstract tagged null record;
 
    procedure Adjust     (Object : in out Root_Controlled);
    procedure Finalize   (Object : in out Root_Controlled);
    procedure Initialize (Object : in out Root_Controlled);
 
-   package Stream_Attributes is
-      procedure Read
-        (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-         Item   : out Root_Controlled) is null;
-
-      procedure Write
-        (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-         Item   : Root_Controlled) is null;
-   end Stream_Attributes;
-
-   for Root_Controlled'Read  use Stream_Attributes.Read;
-   for Root_Controlled'Write use Stream_Attributes.Write;
 end System.Finalization_Root;
