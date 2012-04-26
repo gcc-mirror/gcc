@@ -1,3 +1,11 @@
+2012-04-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat_ugn.texi: Tweak dimensionality doc.
+
+2012-04-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb: Minor reformatting.
+
 2012-04-26  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.adb, einfo.ads, sem_res.adb, sem_ch4.adb,
