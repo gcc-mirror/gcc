@@ -651,7 +651,7 @@ enum location_resolution_kind
    LRK_SPELLING_LOCATION.
 
    If LOC_MAP is not NULL, *LOC_MAP is set to the map encoding the
-   returned location.  Note that if the resturned location wasn't originally
+   returned location.  Note that if the returned location wasn't originally
    encoded by a map, the *MAP is set to NULL.  This can happen if LOC
    resolves to a location reserved for the client code, like
    UNKNOWN_LOCATION or BUILTINS_LOCATION in GCC.  */

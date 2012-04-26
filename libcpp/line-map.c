@@ -1015,18 +1015,21 @@ linemap_macro_loc_to_exp_point (struct line_maps *set,
    * If LRK is set to LRK_MACRO_EXPANSION_POINT
    -------------------------------
 
-   The virtual location is resolved to the location to the locus of
-   the expansion point of the macro.
+   The virtual location is resolved to the first macro expansion point
+   that led to this macro expansion.
 
    * If LRK is set to LRK_SPELLING_LOCATION
    -------------------------------------
 
-   The virtual location is resolved to the location to the locus where
-   the token has been spelled in the source. This can follow through
-   all the macro expansions that led to the token.
+   The virtual location is resolved to the locus where the token has
+   been spelled in the source.   This can follow through all the macro
+   expansions that led to the token.
 
-   * If LRK is set to LRK_MACRO_PARM_REPLACEMENT_POINT
+   * If LRK is set to LRK_MACRO_DEFINITION_LOCATION
    --------------------------------------
+
+   The virtual location is resolved to the locus of the token in the
+   context of the macro definition.
 
    If LOC is the locus of a token that is an argument of a
    function-like macro [replacing a parameter in the replacement list
@@ -1038,8 +1041,8 @@ linemap_macro_loc_to_exp_point (struct line_maps *set,
    function-like macro, then the function behaves as if LRK was set to
    LRK_SPELLING_LOCATION.
 
-   If MAP is non-NULL, *MAP is set to the map of the resolved
-   location.  Note that if the resturned location wasn't originally
+   If LOC_MAP is not NULL, *LOC_MAP is set to the map encoding the
+   returned location.  Note that if the returned location wasn't originally
    encoded by a map, the *MAP is set to NULL.  This can happen if LOC
    resolves to a location reserved for the client code, like
    UNKNOWN_LOCATION or BUILTINS_LOCATION in GCC.  */
