@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -159,7 +159,7 @@ package body Uintp is
 
    function Sum_Digits (Left : Uint; Sign : Int) return Int;
    --  If Sign = 1 return the sum of the "digits" of Abs (Left). If the total
-   --  has more then one digit then return Sum_Digits of total.
+   --  has more than one digit then return Sum_Digits of total.
 
    function Sum_Double_Digits (Left : Uint; Sign : Int) return Int;
    --  Same as above but work in New_Base = Base * Base
@@ -1270,8 +1270,6 @@ package body Uintp is
       Discard_Quotient  : Boolean := False;
       Discard_Remainder : Boolean := False)
    is
-      pragma Warnings (Off, Quotient);
-      pragma Warnings (Off, Remainder);
    begin
       pragma Assert (Right /= Uint_0);
 

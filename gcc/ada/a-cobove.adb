@@ -2368,7 +2368,7 @@ package body Ada.Containers.Bounded_Vectors is
    begin
       --  Set_Length allows the user to set the length explicitly, instead of
       --  implicitly as a side-effect of deletion or insertion. If the
-      --  requested length is less then the current length, this is equivalent
+      --  requested length is less than the current length, this is equivalent
       --  to deleting items from the back end of the vector. If the requested
       --  length is greater than the current length, then this is equivalent to
       --  inserting "space" (nonce items) at the end.

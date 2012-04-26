@@ -13390,7 +13390,7 @@ stops.
 @cindex @option{^--no-separate-is^/NO_SEPARATE_IS^} (@command{gnatpp})
 @item ^--no-separate-is^/NO_SEPARATE_IS^
 Do not place the keyword @code{is} on a separate line in a subprogram body in
-case if the spec occupies more then one line.
+case if the spec occupies more than one line.
 
 @cindex @option{^--separate-label^/SEPARATE_LABEL^} (@command{gnatpp})
 @item ^--separate-label^/SEPARATE_LABEL^
@@ -13465,7 +13465,7 @@ Indentation level, @var{nnn} from 1@dots{}9, the default value is 3
 Indentation level for continuation lines (relative to the line being
 continued), @var{nnn} from 1@dots{}9.
 The default
-value is one less then the (normal) indentation level, unless the
+value is one less than the (normal) indentation level, unless the
 indentation is set to 1 (in which case the default value for continuation
 line indentation is also 1)
 @end table

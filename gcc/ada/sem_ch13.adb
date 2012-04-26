@@ -3187,7 +3187,7 @@ package body Sem_Ch13 is
 
             elsif Small > Delta_Value (U_Ent) then
                Error_Msg_N
-                 ("small value must not be greater then delta value", Nam);
+                 ("small value must not be greater than delta value", Nam);
 
             else
                Set_Small_Value (U_Ent, Small);
