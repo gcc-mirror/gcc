@@ -872,10 +872,10 @@ schedule_insns (void)
 
 /* Do register pressure sensitive insn scheduling if the flag is set
    up.  */
-bool sched_pressure_p;
+enum sched_pressure_algorithm sched_pressure;
 
 /* Map regno -> its pressure class.  The map defined only when
-   SCHED_PRESSURE_P is true.  */
+   SCHED_PRESSURE is SCHED_PRESSURE_WEIGHTED.  */
 enum reg_class *sched_regno_pressure_class;
 
 /* The current register pressure.  Only elements corresponding pressure
@@ -1661,7 +1661,7 @@ rank_for_schedule (const void *x, const void *y)
   /* Make sure that priority of TMP and TMP2 are initialized.  */
   gcc_assert (INSN_PRIORITY_KNOWN (tmp) && INSN_PRIORITY_KNOWN (tmp2));
 
-  if (sched_pressure_p)
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
     {
       int diff;
 
@@ -1677,7 +1677,7 @@ rank_for_schedule (const void *x, const void *y)
     }
 
 
-  if (sched_pressure_p
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED
       && (INSN_TICK (tmp2) > clock_var || INSN_TICK (tmp) > clock_var))
     {
       if (INSN_TICK (tmp) <= clock_var)
@@ -1995,7 +1995,7 @@ ready_sort (struct ready_list *ready)
   int i;
   rtx *first = ready_lastpos (ready);
 
-  if (sched_pressure_p)
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
     {
       for (i = 0; i < ready->n_ready; i++)
 	if (!DEBUG_INSN_P (first[i]))
@@ -2138,7 +2138,7 @@ update_reg_and_insn_max_reg_pressure (rtx insn)
 void
 sched_setup_bb_reg_pressure_info (basic_block bb, rtx after)
 {
-  gcc_assert (sched_pressure_p);
+  gcc_assert (sched_pressure == SCHED_PRESSURE_WEIGHTED);
   initiate_bb_reg_pressure_info (bb);
   setup_insn_max_reg_pressure (after, false);
 }
@@ -2243,7 +2243,7 @@ schedule_insn (rtx insn)
       fputc ('\n', sched_dump);
     }
 
-  if (sched_pressure_p && !DEBUG_INSN_P (insn))
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED && !DEBUG_INSN_P (insn))
     update_reg_and_insn_max_reg_pressure (insn);
 
   /* Scheduling instruction should have all its dependencies resolved and
@@ -3366,12 +3366,12 @@ debug_ready_list (struct ready_list *ready)
       fprintf (sched_dump, "  %s:%d",
 	       (*current_sched_info->print_insn) (p[i], 0),
 	       INSN_LUID (p[i]));
-      if (sched_pressure_p)
+      if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
 	fprintf (sched_dump, "(cost=%d",
 		 INSN_REG_PRESSURE_EXCESS_COST_CHANGE (p[i]));
       if (INSN_TICK (p[i]) > clock_var)
 	fprintf (sched_dump, ":delay=%d", INSN_TICK (p[i]) - clock_var);
-      if (sched_pressure_p)
+      if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
 	fprintf (sched_dump, ")");
     }
   fprintf (sched_dump, "\n");
@@ -4001,7 +4001,7 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
 		cost = 1;
 	      reason = "asm";
 	    }
-	  else if (sched_pressure_p)
+          else if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
 	    cost = 0;
 	  else
 	    {
@@ -4377,7 +4377,7 @@ schedule_block (basic_block *target_bb)
 	      fprintf (sched_dump, ";;\tReady list (t = %3d):  ",
 		       clock_var);
 	      debug_ready_list (&ready);
-	      if (sched_pressure_p)
+	      if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
 		print_curr_reg_pressure ();
 	    }
 
@@ -4420,7 +4420,8 @@ schedule_block (basic_block *target_bb)
 	  else
 	    insn = ready_remove_first (&ready);
 
-	  if (sched_pressure_p && INSN_TICK (insn) > clock_var)
+	  if (sched_pressure == SCHED_PRESSURE_WEIGHTED
+	      && INSN_TICK (insn) > clock_var)
 	    {
 	      ready_add (&ready, insn, true);
 	      advance = 1;
@@ -4497,7 +4498,7 @@ schedule_block (basic_block *target_bb)
 	    {
 	      memcpy (temp_state, curr_state, dfa_state_size);
 	      cost = state_transition (curr_state, insn);
-	      if (!sched_pressure_p)
+	      if (sched_pressure != SCHED_PRESSURE_WEIGHTED)
 		gcc_assert (cost < 0);
 	      if (memcmp (temp_state, curr_state, dfa_state_size) != 0)
 		cycle_issued_insns++;
@@ -4785,10 +4786,14 @@ sched_init (void)
   if (targetm.sched.dispatch (NULL_RTX, IS_DISPATCH_ON))
     targetm.sched.dispatch_do (NULL_RTX, DISPATCH_INIT);
 
-  sched_pressure_p = (flag_sched_pressure && ! reload_completed
-		      && common_sched_info->sched_pass_id == SCHED_RGN_PASS);
+  if (flag_sched_pressure
+      && !reload_completed
+      && common_sched_info->sched_pass_id == SCHED_RGN_PASS)
+    sched_pressure = flag_sched_pressure_algorithm;
+  else
+    sched_pressure = SCHED_PRESSURE_NONE;
 
-  if (sched_pressure_p)
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
     ira_setup_eliminable_regset ();
 
   /* Initialize SPEC_INFO.  */
@@ -4866,7 +4871,7 @@ sched_init (void)
   if (targetm.sched.init_global)
     targetm.sched.init_global (sched_dump, sched_verbose, get_max_uid () + 1);
 
-  if (sched_pressure_p)
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
     {
       int i, max_regno = max_reg_num ();
 
@@ -4983,7 +4988,7 @@ void
 sched_finish (void)
 {
   haifa_finish_h_i_d ();
-  if (sched_pressure_p)
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
     {
       if (regstat_n_sets_and_refs != NULL)
 	regstat_free_n_sets_and_refs ();
@@ -5262,7 +5267,7 @@ fix_tick_ready (rtx next)
   INSN_TICK (next) = tick;
 
   delay = tick - clock_var;
-  if (delay <= 0 || sched_pressure_p)
+  if (delay <= 0 || sched_pressure == SCHED_PRESSURE_WEIGHTED)
     delay = QUEUE_READY;
 
   change_queue_index (next, delay);
@@ -6688,7 +6693,7 @@ haifa_init_insn (rtx insn)
       /* Extend dependency caches by one element.  */
       extend_dependency_caches (1, false);
     }
-  if (sched_pressure_p)
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
     init_insn_reg_pressure_info (insn);
 }
 

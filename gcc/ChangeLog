@@ -1,3 +1,20 @@
+2012-04-26  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* common.opt (fsched-pressure-algorithm=): New option.
+	* flag-types.h (sched_pressure_algorithm): New enum.
+	* sched-int.h (sched_pressure_p): Replace with...
+	(sched_pressure): ...this new variable.
+	* haifa-sched.c (sched_pressure_p): Replace with...
+	(sched_pressure): ...this new variable.
+	(sched_regno_pressure_class, rank_for_schedule, ready_sort)
+	(update_reg_and_insn_max_reg_pressure, schedule_insn)
+	(debug_ready_list, prune_ready_list, schedule_block, sched_init)
+	(sched_finish, fix_tick_ready, haifa_init_insn): Update accordingly.
+	* sched-deps.c (init_insn_reg_pressure_info): Likewise.
+	(sched_analyze_insn): Likewise.
+	* sched-rgn.c (schedule_region): Likewise.
+	* config/m68k/m68k.c (m68k_sched_variable_issue): Likewise.
+
 2012-04-26  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* PR middle-end/52997

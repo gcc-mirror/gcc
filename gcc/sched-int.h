@@ -649,7 +649,7 @@ extern struct haifa_sched_info *current_sched_info;
 
 /* Do register pressure sensitive insn scheduling if the flag is set
    up.  */
-extern bool sched_pressure_p;
+extern enum sched_pressure_algorithm sched_pressure;
 
 /* Map regno -> its pressure class.  The map defined only when
    SCHED_PRESSURE_P is true.  */
