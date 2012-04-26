@@ -477,6 +477,7 @@
 (include "ultra3.md")
 (include "niagara.md")
 (include "niagara2.md")
+(include "niagara4.md")
 
 
 ;; Operand and operator predicates and constraints

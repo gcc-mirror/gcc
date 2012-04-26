@@ -1,5 +1,12 @@
 2012-04-26  David S. Miller  <davem@davemloft.net>
 
+	* config/sparc/niagara4.md: New file.
+	* config/sparc/sparc.md: Include it.
+	* config/sparc/sparc.c (niagara4_costs): New processor costs.
+	(sparc_option_override): Use it.
+	(sparc_use_sched_lookahead): Return 2 for niagara4.
+	(sparc_issue_rate): Likewise.
+
 	* config/sparc/sparc.md (attr type): Delete 'fgm_cmp'.
 	(fpack16_vis, fpackfix_vis, fpack32_vis): Set type to fgm_pack.
 	(fmul8x16_vis, fmul8x16au_vis, fmul8x16al_vis, fmul8sux16_vis,

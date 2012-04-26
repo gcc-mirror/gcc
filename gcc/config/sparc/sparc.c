@@ -374,6 +374,30 @@ struct processor_costs niagara3_costs = {
   0, /* shift penalty */
 };
 
+static const
+struct processor_costs niagara4_costs = {
+  COSTS_N_INSNS (5), /* int load */
+  COSTS_N_INSNS (5), /* int signed load */
+  COSTS_N_INSNS (5), /* int zeroed load */
+  COSTS_N_INSNS (5), /* float load */
+  COSTS_N_INSNS (11), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (11), /* fadd, fsub */
+  COSTS_N_INSNS (11), /* fcmp */
+  COSTS_N_INSNS (11), /* fmov, fmovr */
+  COSTS_N_INSNS (11), /* fmul */
+  COSTS_N_INSNS (24), /* fdivs */
+  COSTS_N_INSNS (37), /* fdivd */
+  COSTS_N_INSNS (24), /* fsqrts */
+  COSTS_N_INSNS (37), /* fsqrtd */
+  COSTS_N_INSNS (12), /* imul */
+  COSTS_N_INSNS (12), /* imulX */
+  0, /* imul bit factor */
+  COSTS_N_INSNS (50), /* idiv, average of 41 - 60 cycle range */
+  COSTS_N_INSNS (35), /* idivX, average of 26 - 44 cycle range */
+  COSTS_N_INSNS (1), /* movcc/movr */
+  0, /* shift penalty */
+};
+
 static const struct processor_costs *sparc_costs = &cypress_costs;
 
 #ifdef HAVE_AS_RELAX_OPTION
@@ -1157,8 +1181,10 @@ sparc_option_override (void)
       sparc_costs = &niagara2_costs;
       break;
     case PROCESSOR_NIAGARA3:
-    case PROCESSOR_NIAGARA4:
       sparc_costs = &niagara3_costs;
+      break;
+    case PROCESSOR_NIAGARA4:
+      sparc_costs = &niagara4_costs;
       break;
     case PROCESSOR_NATIVE:
       gcc_unreachable ();
@@ -8890,9 +8916,10 @@ sparc_use_sched_lookahead (void)
 {
   if (sparc_cpu == PROCESSOR_NIAGARA
       || sparc_cpu == PROCESSOR_NIAGARA2
-      || sparc_cpu == PROCESSOR_NIAGARA3
-      || sparc_cpu == PROCESSOR_NIAGARA4)
+      || sparc_cpu == PROCESSOR_NIAGARA3)
     return 0;
+  if (sparc_cpu == PROCESSOR_NIAGARA4)
+    return 2;
   if (sparc_cpu == PROCESSOR_ULTRASPARC
       || sparc_cpu == PROCESSOR_ULTRASPARC3)
     return 4;
@@ -8911,9 +8938,9 @@ sparc_issue_rate (void)
     case PROCESSOR_NIAGARA:
     case PROCESSOR_NIAGARA2:
     case PROCESSOR_NIAGARA3:
-    case PROCESSOR_NIAGARA4:
     default:
       return 1;
+    case PROCESSOR_NIAGARA4:
     case PROCESSOR_V9:
       /* Assume V9 processors are capable of at least dual-issue.  */
       return 2;
