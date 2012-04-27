@@ -10332,9 +10332,6 @@ pa_legitimate_constant_p (enum machine_mode mode, rtx x)
       && !pa_cint_ok_for_move (INTVAL (x)))
     return false;
 
-  if (function_label_operand (x, mode))
-    return false;
-
   return true;
 }
 
