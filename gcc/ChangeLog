@@ -1,3 +1,8 @@
+2012-04-25  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53130
+	* c-typeck.c (pop_init_level): Use %qD instead of %qT.
+
 2012-04-27  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/51879
