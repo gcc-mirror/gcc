@@ -3,11 +3,32 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
+/* Define to 1 if you have the `acosl' function. */
+#undef HAVE_ACOSL
+
+/* Define to 1 if you have the `asinl' function. */
+#undef HAVE_ASINL
+
+/* Define to 1 if you have the `atan2l' function. */
+#undef HAVE_ATAN2L
+
+/* Define to 1 if you have the `atanl' function. */
+#undef HAVE_ATANL
+
+/* Define to 1 if you have the `cosl' function. */
+#undef HAVE_COSL
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
 /* Define to 1 if you have the `epoll_create1' function. */
 #undef HAVE_EPOLL_CREATE1
+
+/* Define to 1 if you have the `expl' function. */
+#undef HAVE_EXPL
+
+/* Define to 1 if you have the `expm1l' function. */
+#undef HAVE_EXPM1L
 
 /* Define to 1 if you have the `faccessat' function. */
 #undef HAVE_FACCESSAT
@@ -42,6 +63,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `ldexpl' function. */
+#undef HAVE_LDEXPL
+
 /* Define to 1 if you have the <linux/ether.h> header file. */
 #undef HAVE_LINUX_ETHER_H
 
@@ -71,6 +95,15 @@
 
 /* Define to 1 if the system has the type `loff_t'. */
 #undef HAVE_LOFF_T
+
+/* Define to 1 if you have the `log10l' function. */
+#undef HAVE_LOG10L
+
+/* Define to 1 if you have the `log1pl' function. */
+#undef HAVE_LOG1PL
+
+/* Define to 1 if you have the `logl' function. */
+#undef HAVE_LOGL
 
 /* Define to 1 if you have the `matherr' function. */
 #undef HAVE_MATHERR
@@ -125,6 +158,9 @@
 
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
+
+/* Define to 1 if you have the `sinl' function. */
+#undef HAVE_SINL
 
 /* Define to 1 if you have the `splice' function. */
 #undef HAVE_SPLICE
@@ -225,6 +261,9 @@
 
 /* Define to 1 if you have the <sys/vfs.h> header file. */
 #undef HAVE_SYS_VFS_H
+
+/* Define to 1 if you have the `tanl' function. */
+#undef HAVE_TANL
 
 /* Define to 1 if you have the `tee' function. */
 #undef HAVE_TEE
