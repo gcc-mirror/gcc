@@ -242,13 +242,13 @@ disconnect_src (edge e)
       if (tmp == e)
 	{
 	  VEC_unordered_remove (edge, src->succs, ei.index);
+	  df_mark_solutions_dirty ();
 	  return;
 	}
       else
 	ei_next (&ei);
     }
 
-  df_mark_solutions_dirty ();
   gcc_unreachable ();
 }
 

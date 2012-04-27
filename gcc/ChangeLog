@@ -1,5 +1,8 @@
 2012-04-27  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* cfg.c (disconnect_src): Do df_mark_solutions_dirty in the right
+	place.
+
 	* tree-switch-conversion.c (struct switch_conv_info): Add range_max,
 	reorganize some fields and update comments.  Rename bit_test_uniq
 	and bit_test_count to uniq resp. count.  Remove bit_test_bb.
