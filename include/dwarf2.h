@@ -361,6 +361,10 @@ enum dwarf_macro_record_type
 #define DW_EH_PE_indirect	0x80
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* Return the name of a DW_TAG_ constant, or NULL if the value is not
    recognized.  */
 extern const char *get_DW_TAG_name (unsigned int tag);
@@ -384,5 +388,9 @@ extern const char *get_DW_ATE_name (unsigned int enc);
 /* Return the name of a DW_CFA_ constant, or NULL if the value is not
    recognized.  */
 extern const char *get_DW_CFA_name (unsigned int opc);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* _DWARF2_H */
