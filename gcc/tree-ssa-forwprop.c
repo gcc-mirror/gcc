@@ -2405,6 +2405,7 @@ combine_conversions (gimple_stmt_iterator *gsi)
   gimple def_stmt;
   tree op0, lhs;
   enum tree_code code = gimple_assign_rhs_code (stmt);
+  enum tree_code code2;
 
   gcc_checking_assert (CONVERT_EXPR_CODE_P (code)
 		       || code == FLOAT_EXPR
@@ -2425,7 +2426,9 @@ combine_conversions (gimple_stmt_iterator *gsi)
   if (!is_gimple_assign (def_stmt))
     return 0;
 
-  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
+  code2 = gimple_assign_rhs_code (def_stmt);
+
+  if (CONVERT_EXPR_CODE_P (code2) || code2 == FLOAT_EXPR)
     {
       tree defop0 = gimple_assign_rhs1 (def_stmt);
       tree type = TREE_TYPE (lhs);
@@ -2552,6 +2555,29 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	    gimple_assign_set_rhs_from_tree (gsi, tem);
 	  update_stmt (gsi_stmt (*gsi));
 	  return 1;
+	}
+
+      /* If we are converting an integer to a floating-point that can
+	 represent it exactly and back to an integer, we can skip the
+	 floating-point conversion.  */
+      if (inside_int && inter_float && final_int &&
+          (unsigned) significand_size (TYPE_MODE (inter_type))
+          >= inside_prec - !inside_unsignedp)
+        {
+	  if (useless_type_conversion_p (type, inside_type))
+	    {
+	      gimple_assign_set_rhs1 (stmt, unshare_expr (defop0));
+	      gimple_assign_set_rhs_code (stmt, TREE_CODE (defop0));
+	      update_stmt (stmt);
+	      return remove_prop_source_from_use (op0) ? 2 : 1;
+	    }
+	  else
+	    {
+	      gimple_assign_set_rhs1 (stmt, defop0);
+	      gimple_assign_set_rhs_code (stmt, CONVERT_EXPR);
+	      update_stmt (stmt);
+	      return remove_prop_source_from_use (op0) ? 2 : 1;
+	    }
 	}
     }
 
