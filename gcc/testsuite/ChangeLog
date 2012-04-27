@@ -1,3 +1,7 @@
+2012-04-27   Ollie Wild  <aaw@google.com>
+
+	* g++.dg/cpp0x/Wliteral-suffix.c: New test.
+
 2012-04-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.c-torture/execute/20120427-2.c: New testcase.

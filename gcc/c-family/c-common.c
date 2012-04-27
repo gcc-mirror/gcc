@@ -8820,6 +8820,7 @@ static const struct reason_option_codes_t option_codes[] = {
   {CPP_W_NORMALIZE,			OPT_Wnormalized_},
   {CPP_W_INVALID_PCH,			OPT_Winvalid_pch},
   {CPP_W_WARNING_DIRECTIVE,		OPT_Wcpp},
+  {CPP_W_LITERAL_SUFFIX,		OPT_Wliteral_suffix},
   {CPP_W_NONE,				0}
 };
 

@@ -198,8 +198,8 @@ in the following sections.
 -fno-default-inline  -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -Wabi  -Wconversion-null  -Wctor-dtor-privacy @gol
--Wdelete-non-virtual-dtor -Wnarrowing -Wnoexcept @gol
--Wnon-virtual-dtor  -Wreorder @gol
+-Wdelete-non-virtual-dtor -Wliteral-suffix -Wnarrowing @gol
+-Wnoexcept -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wstrict-null-sentinel @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
@@ -2424,6 +2424,30 @@ has virtual functions and non-virtual destructor. It is unsafe to delete
 an instance of a derived class through a pointer to a base class if the
 base class does not have a virtual destructor.  This warning is enabled
 by @option{-Wall}.
+
+@item -Wliteral-suffix @r{(C++ and Objective-C++ only)}
+@opindex Wliteral-suffix
+@opindex Wno-literal-suffix
+Warn when a string or character literal is followed by a ud-suffix which does
+not begin with an underscore.  As a conforming extension, GCC treats such
+suffixes as separate preprocessing tokens in order to maintain backwards
+compatibility with code that uses formatting macros from @code{<inttypes.h>}.
+For example:
+
+@smallexample
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+#include <stdio.h>
+
+int main() @{
+  int64_t i64 = 123;
+  printf("My int64: %"PRId64"\n", i64);
+@}
+@end smallexample
+
+In this case, @code{PRId64} is treated as a separate preprocessing token.
+
+This warning is enabled by default.
 
 @item -Wnarrowing @r{(C++ and Objective-C++ only)}
 @opindex Wnarrowing
