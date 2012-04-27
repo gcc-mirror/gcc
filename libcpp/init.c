@@ -175,6 +175,7 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   CPP_OPTION (pfile, warn_variadic_macros) = 1;
   CPP_OPTION (pfile, warn_builtin_macro_redefined) = 1;
   CPP_OPTION (pfile, warn_normalize) = normalized_C;
+  CPP_OPTION (pfile, warn_literal_suffix) = 1;
 
   /* Default CPP arithmetic to something sensible for the host for the
      benefit of dumb users like fix-header.  */

@@ -1,3 +1,9 @@
+2012-04-27   Ollie Wild  <aaw@google.com>
+
+	* c-common.c: Add CPP_W_LITERAL_SUFFIX mapping.
+	* c-opts.c (c_common_handle_option): Handle OPT_Wliteral_suffix.
+	* c.opt: Add Wliteral-suffix.
+
 2012-04-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/44774

@@ -1,3 +1,14 @@
+2012-04-27   Ollie Wild  <aaw@google.com>
+
+	* include/cpplib.h (struct cpp_options): Add new field,
+	warn_literal_suffix.
+	(CPP_W_LITERAL_SUFFIX): New enum.
+	* init.c (cpp_create_reader): Default initialization of
+	warn_literal_suffix.
+	* lex.c (lex_raw_string): Treat user-defined literals which don't
+	begin with '_' as separate tokens and produce a warning.
+	(lex_string): Ditto.
+
 2012-04-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* line-map.c (linemap_resolve_location): Synchronize comments with

@@ -1,3 +1,7 @@
+2012-04-27   Ollie Wild  <aaw@google.com>
+
+	* doc/invoke.texi (Wliteral-suffix): Document new option.
+
 2012-04-27  Tom Tromey  <tromey@redhat.com>
 
 	* dwarf2out.c (dwarf_stack_op_name): Use get_DW_OP_name.

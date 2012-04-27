@@ -449,6 +449,10 @@ Wjump-misses-init
 C ObjC Var(warn_jump_misses_init) Init(-1) Warning
 Warn when a jump misses a variable initialization
 
+Wliteral-suffix
+C++ ObjC++ Warning
+Warn when a string or character literal is followed by a ud-suffix which does not begin with an underscore.
+
 Wlogical-op
 C ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning 
 Warn when a logical operator is suspiciously always evaluating to true or false

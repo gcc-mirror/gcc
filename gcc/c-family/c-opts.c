@@ -476,6 +476,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->warn_invalid_pch = value;
       break;
 
+    case OPT_Wliteral_suffix:
+      cpp_opts->warn_literal_suffix = value;
+      break;
+
     case OPT_Wlong_long:
       cpp_opts->cpp_warn_long_long = value;
       break;
