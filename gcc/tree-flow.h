@@ -795,9 +795,6 @@ extern void maybe_remove_unreachable_handlers (void);
 /* In tree-ssa-pre.c  */
 void debug_value_expressions (unsigned int);
 
-/* In tree-ssa-sink.c  */
-bool is_hidden_global_store (gimple);
-
 /* In tree-loop-linear.c  */
 extern void linear_transform_loops (void);
 extern unsigned perfect_loop_nest_depth (struct loop *);

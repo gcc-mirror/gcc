@@ -328,6 +328,52 @@ ptr_deref_may_alias_ref_p_1 (tree ptr, ao_ref *ref)
   return true;
 }
 
+/* Return true whether REF may refer to global memory.  */
+
+bool
+ref_may_alias_global_p (tree ref)
+{
+  tree base = get_base_address (ref);
+  if (DECL_P (base))
+    return is_global_var (base);
+  else if (TREE_CODE (base) == MEM_REF
+	   || TREE_CODE (base) == TARGET_MEM_REF)
+    return ptr_deref_may_alias_global_p (TREE_OPERAND (base, 0));
+  return true;
+}
+
+/* Return true whether STMT may clobber global memory.  */
+
+bool
+stmt_may_clobber_global_p (gimple stmt)
+{
+  tree lhs;
+
+  if (!gimple_vdef (stmt))
+    return false;
+
+  /* ???  We can ask the oracle whether an artificial pointer
+     dereference with a pointer with points-to information covering
+     all global memory (what about non-address taken memory?) maybe
+     clobbered by this call.  As there is at the moment no convenient
+     way of doing that without generating garbage do some manual
+     checking instead.
+     ???  We could make a NULL ao_ref argument to the various
+     predicates special, meaning any global memory.  */
+
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_ASSIGN:
+      lhs = gimple_assign_lhs (stmt);
+      return (TREE_CODE (lhs) != SSA_NAME
+	      && ref_may_alias_global_p (lhs));
+    case GIMPLE_CALL:
+      return true;
+    default:
+      return true;
+    }
+}
+
 
 /* Dump alias information on FILE.  */
 
