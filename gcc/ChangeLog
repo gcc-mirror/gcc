@@ -1,7 +1,7 @@
 2012-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR c/51527
-	* convert.c (convert_to_integer): Avoid infinte recursion for
+	* convert.c (convert_to_integer): Avoid infinite recursion for
 	target-defined built-in types.
 
 2012-04-26  Hans-Peter Nilsson  <hp@axis.com>
