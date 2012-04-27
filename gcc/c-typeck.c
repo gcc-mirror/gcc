@@ -7065,7 +7065,7 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
 			    constructor_unfilled_fields,
 			    constructor_type))
 	      inform (DECL_SOURCE_LOCATION (constructor_unfilled_fields),
-		      "%qT declared here", constructor_unfilled_fields);
+		      "%qD declared here", constructor_unfilled_fields);
 	  }
     }
 
