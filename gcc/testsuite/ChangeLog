@@ -1,3 +1,8 @@
+2012-04-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/53138
+	* gcc.c-torture/execute/20120427-1.c: New testcase.
+
 2012-04-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR middle-end/27139
