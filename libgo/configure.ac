@@ -489,6 +489,11 @@ AC_CHECK_FUNCS(epoll_create1 faccessat fallocate fchmodat fchownat futimesat ino
 AC_TYPE_OFF_T
 AC_CHECK_TYPES([loff_t])
 
+LIBS_hold="$LIBS"
+LIBS="$LIBS -lm"
+AC_CHECK_FUNCS(cosl expl logl sinl tanl acosl asinl atanl atan2l expm1l ldexpl log10l log1pl)
+LIBS="$LIBS_hold"
+
 CFLAGS_hold="$CFLAGS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 LIBS_hold="$LIBS"

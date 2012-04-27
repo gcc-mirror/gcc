@@ -14649,6 +14649,23 @@ _ACEOF
 fi
 
 
+LIBS_hold="$LIBS"
+LIBS="$LIBS -lm"
+for ac_func in cosl expl logl sinl tanl acosl asinl atanl atan2l expm1l ldexpl log10l log1pl
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+LIBS="$LIBS_hold"
+
 CFLAGS_hold="$CFLAGS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 LIBS_hold="$LIBS"
