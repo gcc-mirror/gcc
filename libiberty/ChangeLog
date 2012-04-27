@@ -1,3 +1,10 @@
+2012-04-27  Tom Tromey  <tromey@redhat.com>
+
+	* dwarfnames.c: New file.
+	* Makefile.in (CFILES): Add dwarfnames.
+	(REQUIRED_OFILES): Add dwarfnames.
+	(./dwarfnames.$(objext)): New target.
+
 2012-04-04  Tristan Gingold  <gingold@adacore.com>
 
 	* pex-unix.c (to_ptr32): Fix style.

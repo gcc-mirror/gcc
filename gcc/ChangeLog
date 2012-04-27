@@ -1,3 +1,11 @@
+2012-04-27  Tom Tromey  <tromey@redhat.com>
+
+	* dwarf2out.c (dwarf_stack_op_name): Use get_DW_OP_name.
+	(dwarf_tag_name): Use get_DW_TAG_name.
+	(dwarf_attr_name): Use get_DW_AT_name.
+	(dwarf_form_name): Use get_DW_FORM_name.
+	* dwarf2cfi.c (dwarf_cfi_name): Use get_DW_CFA_name.
+
 2012-04-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-ssa-phiopt.c (conditional_replacement): Replace PHIs
