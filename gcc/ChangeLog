@@ -1,3 +1,15 @@
+2012-04-27  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/51879
+	* tree-ssa-sccvn.h (struct vn_reference_s): Add result_vdef field.
+	* tree-ssa-sccvn.c (mark_use_processed): New function, factored out
+	of ...
+	(defs_to_varying): ... here.  Don't set use_processed.
+	(visit_reference_op_call): Handle gimple_vdef.
+	Handle case that lhs is NULL_TREE.
+	(visit_use): Use mark_use_processed.  Handle calls with side-effect
+	using visit_reference_op_call.
+
 2012-04-26  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* sched-deps.c (fixup_sched_groups): Rename to...
