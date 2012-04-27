@@ -536,17 +536,21 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
   gimple_stmt_iterator gsi;
   edge true_edge, false_edge;
   tree new_var, new_var2;
+  bool neg;
 
   /* FIXME: Gimplification of complex type is too hard for now.  */
   if (TREE_CODE (TREE_TYPE (arg0)) == COMPLEX_TYPE
       || TREE_CODE (TREE_TYPE (arg1)) == COMPLEX_TYPE)
     return false;
 
-  /* The PHI arguments have the constants 0 and 1, then convert
-     it to the conditional.  */
+  /* The PHI arguments have the constants 0 and 1, or 0 and -1, then
+     convert it to the conditional.  */
   if ((integer_zerop (arg0) && integer_onep (arg1))
       || (integer_zerop (arg1) && integer_onep (arg0)))
-    ;
+    neg = false;
+  else if ((integer_zerop (arg0) && integer_all_onesp (arg1))
+	   || (integer_zerop (arg1) && integer_all_onesp (arg0)))
+    neg = true;
   else
     return false;
 
@@ -558,7 +562,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
      falls through into BB.
 
      There is a single PHI node at the join point (BB) and its arguments
-     are constants (0, 1).
+     are constants (0, 1) or (0, -1).
 
      So, given the condition COND, and the two PHI arguments, we can
      rewrite this PHI into non-branching code:
@@ -585,11 +589,19 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
      edge so that we know when to invert the condition below.  */
   extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
   if ((e0 == true_edge && integer_zerop (arg0))
-      || (e0 == false_edge && integer_onep (arg0))
+      || (e0 == false_edge && !integer_zerop (arg0))
       || (e1 == true_edge && integer_zerop (arg1))
-      || (e1 == false_edge && integer_onep (arg1)))
+      || (e1 == false_edge && !integer_zerop (arg1)))
     cond = fold_build1_loc (gimple_location (stmt),
-			    TRUTH_NOT_EXPR, TREE_TYPE (cond), cond);
+                            TRUTH_NOT_EXPR, TREE_TYPE (cond), cond);
+
+  if (neg)
+    {
+      cond = fold_convert_loc (gimple_location (stmt),
+                               TREE_TYPE (result), cond);
+      cond = fold_build1_loc (gimple_location (stmt),
+                              NEGATE_EXPR, TREE_TYPE (cond), cond);
+    }
 
   /* Insert our new statements at the end of conditional block before the
      COND_STMT.  */
