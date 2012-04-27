@@ -1,3 +1,8 @@
+2012-04-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/27139
+	* gcc.dg/tree-ssa/forwprop-18.c: New test.
+
 2012-04-27  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/51879

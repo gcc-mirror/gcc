@@ -1,3 +1,8 @@
+2012-04-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/27139
+	* tree-ssa-forwprop.c (combine_conversions): Handle INT->FP->INT.
+
 2012-04-25  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53130
