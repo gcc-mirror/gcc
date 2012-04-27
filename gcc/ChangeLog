@@ -1,3 +1,9 @@
+2012-04-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/52999
+	* config/pa/pa.c (pa_legitimate_constant_p): Don't put function labels
+	in constant pool.
+
 2012-04-27   Ollie Wild  <aaw@google.com>
 
 	* doc/invoke.texi (Wliteral-suffix): Document new option.
