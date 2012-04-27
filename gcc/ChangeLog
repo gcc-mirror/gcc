@@ -1,5 +1,11 @@
 2012-04-27  Paolo Bonzini  <bonzini@gnu.org>
 
+	* tree-ssa-phiopt.c (conditional_replacement): Replace PHIs
+	whose arguments are -1 and 0, by negating the result of the
+	conditional.
+
+2012-04-27  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR target/53138
 	* config/i386/i386.md (x86_mov<mode>cc_0_m1_neg): Add clobber.
 
