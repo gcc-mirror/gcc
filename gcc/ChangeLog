@@ -1,3 +1,19 @@
+2012-04-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-switch-conversion.c (struct switch_conv_info): Add range_max,
+	reorganize some fields and update comments.  Rename bit_test_uniq
+	and bit_test_count to uniq resp. count.  Remove bit_test_bb.
+	(collect_switch_conv_info): New function, collects info about a
+	GIMPLE_SWITCH into a struct switch_conv_info.
+	(check_range): Simplify to use pre-recorded info.  Fix think-o in
+	range-branch ratio check.
+	(check_process_case): Remove function.
+	(check_all_empty_except_final): New function, verifies that all
+	non-final basic blocks are empty.
+	(process_switch): Simplify to use pre-recorded info.  Call
+	collect_switch_conv_info to do that.  Assert that degenerate switch
+	statements have been cleaned up.
+
 2012-04-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR middle-end/27139
