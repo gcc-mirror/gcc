@@ -1,5 +1,9 @@
 2012-04-27  Tom Tromey  <tromey@redhat.com>
 
+	* dwarf2.h: Wrap function declarations in extern "C".
+
+2012-04-27  Tom Tromey  <tromey@redhat.com>
+
 	* dwarf2.h (enum dwarf_tag, enum dwarf_form, enum dwarf_attribute)
 	(enum dwarf_location_atom, enum dwarf_type, enum
 	dwarf_call_frame_info): Remove.
