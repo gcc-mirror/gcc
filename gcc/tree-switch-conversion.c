@@ -48,6 +48,7 @@ provided.  For example, the following code:
          default:
                 a_4 = 16;
                 b_4 = 1;
+		break;
         }
 	a_5 = PHI <a_1, a_2, a_3, a_4>
 	b_5 = PHI <b_1, b_2, b_3, b_4>
@@ -69,8 +70,8 @@ is changed into:
 	    a_7 = 16;
 	    b_7 = 1;
           }
-	  a_5 = PHI <a_6, a_7>
-	  b_b = PHI <b_6, b_7>
+	a_5 = PHI <a_6, a_7>
+	b_b = PHI <b_6, b_7>
 
 There are further constraints.  Specifically, the range of values across all
 case labels must not be bigger than SWITCH_CONVERSION_BRANCH_RATIO (default
@@ -99,24 +100,37 @@ eight) times the number of the actual switch branches. */
 /* The main structure of the pass.  */
 struct switch_conv_info
 {
-  /* The expression used to decide the switch branch.  (It is subsequently used
-     as the index to the created array.) */
+  /* The expression used to decide the switch branch.  */
   tree index_expr;
 
-  /* The following integer constants store the minimum value covered by the
-     cases.  */
+  /* The following integer constants store the minimum and maximum value
+     covered by the case labels.  */
   tree range_min;
+  tree range_max;
 
-  /* The difference between the above two numbers, i.e. The size of the array
-     that would have to be created by the transformation.  */
+  /* The difference between the above two numbers.  Stored here because it
+     is used in all the conversion heuristics, as well as for some of the
+     transformation, and it is expensive to re-compute it all the time.  */
   tree range_size;
 
-  /* Basic block that contains the actual SWITCH_EXPR.  */
+  /* Basic block that contains the actual GIMPLE_SWITCH.  */
   basic_block switch_bb;
 
-  /* All branches of the switch statement must have a single successor stored in
-     the following variable.  */
+  /* Basic block that is the target of the default case.  */
+  basic_block default_bb;
+
+  /* The single successor block of all branches out of the GIMPLE_SWITCH,
+     if such a block exists.  Otherwise NULL.  */
   basic_block final_bb;
+
+  /* The probability of the default edge in the replaced switch.  */
+  int default_prob;
+
+  /* The count of the default edge in the replaced switch.  */
+  gcov_type default_count;
+
+  /* Combined count of all other (non-default) edges in the replaced switch.  */
+  gcov_type other_count;
 
   /* Number of phi nodes in the final bb (that we'll be replacing).  */
   int phi_count;
@@ -135,15 +149,6 @@ struct switch_conv_info
      switch expression is out of range.  */
   tree *target_outbound_names;
 
-  /* The probability of the default edge in the replaced switch.  */
-  int default_prob;
-
-  /* The count of the default edge in the replaced switch.  */
-  gcov_type default_count;
-
-  /* Combined count of all other (non-default) edges in the replaced switch.  */
-  gcov_type other_count;
-
   /* The first load statement that loads a temporary from a new static array.
    */
   gimple arr_ref_first;
@@ -157,41 +162,104 @@ struct switch_conv_info
 
   /* Parameters for expand_switch_using_bit_tests.  Should be computed
      the same way as in expand_case.  */
-  unsigned int bit_test_uniq;
-  unsigned int bit_test_count;
-  basic_block bit_test_bb[2];
+  unsigned int uniq;
+  unsigned int count;
 };
+
+/* Collect information about GIMPLE_SWITCH statement SWTCH into INFO.  */
+
+static void
+collect_switch_conv_info (gimple swtch, struct switch_conv_info *info)
+{
+  unsigned int branch_num = gimple_switch_num_labels (swtch);
+  tree min_case, max_case;
+  unsigned int count, i;
+  edge e, e_default;
+  edge_iterator ei;
+
+  memset (info, 0, sizeof (*info));
+
+  /* The gimplifier has already sorted the cases by CASE_LOW and ensured there
+     is a default label which is the first in the vector.  */
+  gcc_assert (CASE_LOW (gimple_switch_label (swtch, 0)) == NULL_TREE);
+
+  /* Collect the bits we can deduce from the CFG.  */
+  info->index_expr = gimple_switch_index (swtch);
+  info->switch_bb = gimple_bb (swtch);
+  info->default_bb =
+    label_to_block (CASE_LABEL (gimple_switch_label (swtch, 0)));
+  e_default = find_edge (info->switch_bb, info->default_bb);
+  info->default_prob = e_default->probability;
+  info->default_count = e_default->count;
+  FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
+    if (e != e_default)
+      info->other_count += e->count;
+
+  /* See if there is one common successor block for all branch
+     targets.  If it exists, record it in FINAL_BB.  */
+  FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
+    {
+      if (! single_pred_p (e->dest))
+	{
+	  info->final_bb = e->dest;
+	  break;
+	}
+    }
+  if (info->final_bb)
+    FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
+      {
+	if (e->dest == info->final_bb)
+	  continue;
+
+	if (single_pred_p (e->dest)
+	    && single_succ_p (e->dest)
+	    && single_succ (e->dest) == info->final_bb)
+	  continue;
+
+	info->final_bb = NULL;
+	break;
+      }
+
+  /* Get upper and lower bounds of case values, and the covered range.  */
+  min_case = gimple_switch_label (swtch, 1);
+  max_case = gimple_switch_label (swtch, branch_num - 1);
+
+  info->range_min = CASE_LOW (min_case);
+  if (CASE_HIGH (max_case) != NULL_TREE)
+    info->range_max = CASE_HIGH (max_case);
+  else
+    info->range_max = CASE_LOW (max_case);
+
+  info->range_size =
+    int_const_binop (MINUS_EXPR, info->range_max, info->range_min);
+
+  /* Get a count of the number of case labels.  Single-valued case labels
+     simply count as one, but a case range counts double, since it may
+     require two compares if it gets lowered as a branching tree.  */
+  count = 0;
+  for (i = 1; i < branch_num; i++)
+    {
+      tree elt = gimple_switch_label (swtch, i);
+      count++;
+      if (CASE_HIGH (elt)
+	  && ! tree_int_cst_equal (CASE_LOW (elt), CASE_HIGH (elt)))
+	count++;
+    }
+  info->count = count;
+ 
+  /* Get the number of unique non-default targets out of the GIMPLE_SWITCH
+     block.  Assume a CFG cleanup would have already removed degenerate
+     switch statements, this allows us to just use EDGE_COUNT.  */
+  info->uniq = EDGE_COUNT (gimple_bb (swtch)->succs) - 1;
+}
 
 /* Checks whether the range given by individual case statements of the SWTCH
    switch statement isn't too big and whether the number of branches actually
    satisfies the size of the new array.  */
 
 static bool
-check_range (gimple swtch, struct switch_conv_info *info)
+check_range (struct switch_conv_info *info)
 {
-  tree min_case, max_case;
-  unsigned int branch_num = gimple_switch_num_labels (swtch);
-  tree range_max;
-
-  /* The gimplifier has already sorted the cases by CASE_LOW and ensured there
-     is a default label which is the first in the vector.  */
-
-  min_case = gimple_switch_label (swtch, 1);
-  info->range_min = CASE_LOW (min_case);
-
-  gcc_assert (branch_num > 1);
-  gcc_assert (CASE_LOW (gimple_switch_label (swtch, 0)) == NULL_TREE);
-  max_case = gimple_switch_label (swtch, branch_num - 1);
-  if (CASE_HIGH (max_case) != NULL_TREE)
-    range_max = CASE_HIGH (max_case);
-  else
-    range_max = CASE_LOW (max_case);
-
-  gcc_assert (info->range_min);
-  gcc_assert (range_max);
-
-  info->range_size = int_const_binop (MINUS_EXPR, range_max, info->range_min);
-
   gcc_assert (info->range_size);
   if (!host_integerp (info->range_size, 1))
     {
@@ -200,7 +268,7 @@ check_range (gimple swtch, struct switch_conv_info *info)
     }
 
   if ((unsigned HOST_WIDE_INT) tree_low_cst (info->range_size, 1)
-      > ((unsigned) branch_num * SWITCH_CONVERSION_BRANCH_RATIO))
+      > ((unsigned) info->count * SWITCH_CONVERSION_BRANCH_RATIO))
     {
       info->reason = "the maximum range-branch ratio exceeded";
       return false;
@@ -209,86 +277,24 @@ check_range (gimple swtch, struct switch_conv_info *info)
   return true;
 }
 
-/* Checks the given CS switch case whether it is suitable for conversion
-   (whether all but the default basic blocks are empty and so on).  If it is,
-   adds the case to the branch list along with values for the defined variables
-   and returns true.  Otherwise returns false.  */
+/* Checks whether all but the FINAL_BB basic blocks are empty.  */
 
 static bool
-check_process_case (tree cs, struct switch_conv_info *info)
+check_all_empty_except_final (struct switch_conv_info *info)
 {
-  tree ldecl;
-  basic_block label_bb, following_bb;
   edge e;
+  edge_iterator ei;
 
-  ldecl = CASE_LABEL (cs);
-  label_bb = label_to_block (ldecl);
-
-  e = find_edge (info->switch_bb, label_bb);
-  gcc_assert (e);
-
-  if (CASE_LOW (cs) == NULL_TREE)
+  FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
     {
-      /* Default branch.  */
-      info->default_prob = e->probability;
-      info->default_count = e->count;
-    }
-  else
-    {
-      int i;
-      info->other_count += e->count;
-      for (i = 0; i < 2; i++)
-	if (info->bit_test_bb[i] == label_bb)
-	  break;
-	else if (info->bit_test_bb[i] == NULL)
-	  {
-	    info->bit_test_bb[i] = label_bb;
-	    info->bit_test_uniq++;
-	    break;
-	  }
-      if (i == 2)
-	info->bit_test_uniq = 3;
-      if (CASE_HIGH (cs) != NULL_TREE
-	  && ! tree_int_cst_equal (CASE_LOW (cs), CASE_HIGH (cs)))
-	info->bit_test_count += 2;
-      else
-	info->bit_test_count++;
-    }
+      if (e->dest == info->final_bb)
+	continue;
 
-  if (!label_bb)
-    {
-      info->reason = "bad case - cs BB  label is NULL";
-      return false;
-    }
-
-  if (!single_pred_p (label_bb))
-    {
-      if (info->final_bb && info->final_bb != label_bb)
-	{
-	  info->reason = "bad case - a non-final BB has two predecessors";
-	  return false; /* sth complex going on in this branch  */
-	}
-
-      following_bb = label_bb;
-    }
-  else
-    {
-      if (!empty_block_p (label_bb))
+      if (!empty_block_p (e->dest))
 	{
 	  info->reason = "bad case - a non-final BB not empty";
 	  return false;
 	}
-
-      e = single_succ_edge (label_bb);
-      following_bb = single_succ (label_bb);
-    }
-
-  if (!info->final_bb)
-    info->final_bb = following_bb;
-  else if (info->final_bb != following_bb)
-    {
-      info->reason = "bad case - different final BB";
-      return false; /* the only successor is not common for all the branches */
     }
 
   return true;
@@ -878,36 +884,30 @@ gen_inbound_check (gimple swtch, struct switch_conv_info *info)
 static const char *
 process_switch (gimple swtch)
 {
-  unsigned int i, branch_num = gimple_switch_num_labels (swtch);
-  tree index_type;
   struct switch_conv_info info;
 
-  /* Operand 2 is either NULL_TREE or a vector of cases (stmt.c).  */
-  if (branch_num < 2)
-    return "switch has no labels";
+  /* Degenerate case with only a default label should never happen.  */
+  gcc_checking_assert (gimple_switch_num_labels (swtch) > 1);
 
-  info.reason = NULL;
-  info.final_bb = NULL;
-  info.switch_bb = gimple_bb (swtch);
-  info.index_expr = gimple_switch_index (swtch);
-  info.arr_ref_first = NULL;
-  info.arr_ref_last = NULL;
-  info.default_prob = 0;
-  info.default_count = 0;
-  info.other_count = 0;
-  info.bit_test_uniq = 0;
-  info.bit_test_count = 0;
-  info.bit_test_bb[0] = NULL;
-  info.bit_test_bb[1] = NULL;
+  collect_switch_conv_info (swtch, &info);
 
-  /* An ERROR_MARK occurs for various reasons including invalid data type.
-     (comment from stmt.c) */
-  index_type = TREE_TYPE (info.index_expr);
-  if (index_type == error_mark_node)
-    return "index error\n";
+  /* No error markers should reach here (they should be filtered out
+     during gimplification).  */
+  gcc_checking_assert (TREE_TYPE (info.index_expr) != error_mark_node);
+
+  /* If there is no common successor, we cannot do the transformation.  */
+  if (! info.final_bb)
+    return "no common successor to all case label target blocks found";
+
+  if (info.uniq <= 2)
+    {
+      if (expand_switch_using_bit_tests_p (info.index_expr, info.range_size,
+					   info.uniq, info.count))
+	return "expanding as bit test is preferable";
+    }
 
   /* Check the case label values are within reasonable range:  */
-  if (!check_range (swtch, &info))
+  if (!check_range (&info))
     {
       gcc_assert (info.reason);
       return info.reason;
@@ -915,26 +915,11 @@ process_switch (gimple swtch)
 
   /* For all the cases, see whether they are empty, the assignments they
      represent constant and so on...  */
-  for (i = 0; i < branch_num; i++)
-    if (!check_process_case (gimple_switch_label (swtch, i), &info))
-      {
-	gcc_assert (info.reason);
-	if (dump_file)
-	  fprintf (dump_file, "processing of case %i failed\n\t", i);
-	return info.reason;
-      }
-
-  if (info.bit_test_uniq <= 2)
+  if (! check_all_empty_except_final (&info))
     {
-      rtl_profile_for_bb (gimple_bb (swtch));
-      if (expand_switch_using_bit_tests_p (gimple_switch_index (swtch),
-					   info.range_size, info.bit_test_uniq,
-					   info.bit_test_count))
-	{
-	  return "expanding as bit test is preferable";
-	}
+      gcc_assert (info.reason);
+      return info.reason;
     }
-
   if (!check_final_bb (&info))
     {
       gcc_assert (info.reason);
