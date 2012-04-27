@@ -1,3 +1,15 @@
+2012-04-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (is_hidden_global_store): Remove.
+	* tree-ssa-sink.c (is_hidden_global_store): Likewise.
+	* tree-ssa-alias.h (ref_may_alias_global_p): Declare.
+	(stmt_may_clobber_global_p): Likewise.
+	* tree-ssa-alias.c (ref_may_alias_global_p): New function.
+	(stmt_may_clobber_global_p): Likewise.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Call
+	stmt_may_clobber_global_p.
+	* tree-ssa-dse.c (dse_possible_dead_store_p): Likewise.
+
 2012-04-27  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cfg.c (disconnect_src): Do df_mark_solutions_dirty in the right

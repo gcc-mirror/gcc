@@ -169,7 +169,7 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
 	 just pretend the stmt makes itself dead.  Otherwise fail.  */
       if (!temp)
 	{
-	  if (is_hidden_global_store (stmt))
+	  if (stmt_may_clobber_global_p (stmt))
 	    return false;
 
 	  temp = stmt;
