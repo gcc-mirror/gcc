@@ -6283,6 +6283,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	           || (storage_class == csc_static)))
           {
 	    error_at (loc, "UPC does not support shared auto variables");
+	    type = error_mark_node;
 	  }
 
 	type = c_build_qualified_type_1 (type, type_quals, upc_block_factor);

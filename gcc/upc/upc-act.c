@@ -317,7 +317,7 @@ upc_build_sync_stmt (location_t loc, tree sync_kind, tree sync_expr)
    
    The type must *not* be:
    - an error mark node
-   - an imcomplete type
+   - an incomplete type
    - a function type
    - a void type
 
@@ -363,7 +363,7 @@ upc_sizeof_type_check (const char *op_name, tree type)
    The UPC block size is the value of UPC's "layout qualifier".
    For example:
 
-   Declaration				upc_blocksizef()
+   Declaration				upc_blocksizeof()
    ----------- 				----------------
    shared int A[5*THREADS];     	1 (default) 
    shared [5] int A[5*THREADS];    	5
@@ -427,7 +427,7 @@ upc_localsizeof (location_t loc, tree type)
 	 case for declarations of types with an "indefinite"
 	 layout qualifier.  For example, given:
 	   shared [] int A[100];
-         the value returned for upc_localszieof (A)
+         the value returned for upc_localsizeof (A)
 	 will be: 100 * sizeof (int).  */
       local_size = total_size;
     }

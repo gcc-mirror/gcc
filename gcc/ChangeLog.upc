@@ -1,4 +1,12 @@
+2012-04-28  Gary Funck  <gary@intrepid.com>
+
+	* c-decl.c (grokdeclarator): Set 'type' to error node
+	after detecting "shared auto variable" error to avoid
+	downstream complications.
+	* upc-act.c: Fix a couple of spelling errors in comments.
+
 2012-04-26  Gary Funck  <gary@intrepid.com>
+
 
 	* c-family/c-pragma.c (handle_pragma_upc):
 	Fix typo in warning message.
