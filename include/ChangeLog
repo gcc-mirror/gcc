@@ -1,3 +1,7 @@
+2012-04-28  Doug Evans  <dje@google.com>
+
+	* dwarf2.def (DW_OP): Add DW_OP_GNU_addr_index.
+
 2012-04-27  Tom Tromey  <tromey@redhat.com>
 
 	* dwarf2.h: Wrap function declarations in extern "C".
