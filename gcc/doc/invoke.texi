@@ -410,7 +410,8 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-loop-if-convert-stores -ftree-loop-im @gol
 -ftree-phiprop -ftree-loop-distribution -ftree-loop-distribute-patterns @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
--ftree-parallelize-loops=@var{n} -ftree-pre -ftree-pta -ftree-reassoc @gol
+-ftree-parallelize-loops=@var{n} -ftree-pre -ftree-partial-pre -ftree-pta @gol
+-ftree-reassoc @gol
 -ftree-sink -ftree-sra -ftree-switch-conversion -ftree-tail-merge @gol
 -ftree-ter -ftree-vect-loop-version -ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
@@ -6294,8 +6295,8 @@ invoking @option{-O2} on programs that use computed gotos.
 Optimize yet more.  @option{-O3} turns on all optimizations specified
 by @option{-O2} and also turns on the @option{-finline-functions},
 @option{-funswitch-loops}, @option{-fpredictive-commoning},
-@option{-fgcse-after-reload}, @option{-ftree-vectorize} and
-@option{-fipa-cp-clone} options.
+@option{-fgcse-after-reload}, @option{-ftree-vectorize},
+@option{-ftree-partial-pre} and @option{-fipa-cp-clone} options.
 
 @item -O0
 @opindex O0
@@ -7089,6 +7090,11 @@ at @option{-O} and higher.
 @opindex ftree-pre
 Perform partial redundancy elimination (PRE) on trees.  This flag is
 enabled by default at @option{-O2} and @option{-O3}.
+
+@item -ftree-partial-pre
+@opindex ftree-partial-pre
+Make partial redundancy elimination (PRE) more aggressive.  This flag is
+enabled by default at @option{-O3}.
 
 @item -ftree-forwprop
 @opindex ftree-forwprop

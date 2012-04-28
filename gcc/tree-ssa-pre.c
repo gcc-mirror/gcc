@@ -3774,20 +3774,51 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
 		}
 	      else
 		avail[bprime->index] = edoubleprime;
-
 	    }
 
 	  /* If we can insert it, it's not the same value
 	     already existing along every predecessor, and
 	     it's defined by some predecessor, it is
 	     partially redundant.  */
-	  if (!cant_insert && by_all && dbg_cnt (treepre_insert))
+	  if (!cant_insert && by_all)
 	    {
-	      pre_stats.pa_insert++;
-	      if (insert_into_preds_of_block (block, get_expression_id (expr),
-					      avail))
-		new_stuff = true;
-	    }
+	      edge succ;
+	      bool do_insertion = false;
+
+	      /* Insert only if we can remove a later expression on a path
+		 that we want to optimize for speed.
+		 The phi node that we will be inserting in BLOCK is not free,
+		 and inserting it for the sake of !optimize_for_speed successor
+		 may cause regressions on the speed path.  */
+	      FOR_EACH_EDGE (succ, ei, block->succs)
+		{
+		  if (bitmap_set_contains_value (PA_IN (succ->dest), val))
+		    {
+		      if (optimize_edge_for_speed_p (succ))
+			do_insertion = true;
+		    }
+		}
+
+	      if (!do_insertion)
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Skipping partial partial redundancy "
+			       "for expression ");
+		      print_pre_expr (dump_file, expr);
+		      fprintf (dump_file, " (%04d), not partially anticipated "
+			       "on any to be optimized for speed edges\n", val);
+		    }
+		}
+	      else if (dbg_cnt (treepre_insert))
+		{
+		  pre_stats.pa_insert++;
+		  if (insert_into_preds_of_block (block,
+						  get_expression_id (expr),
+						  avail))
+		    new_stuff = true;
+		}	   
+	    } 
 	  free (avail);
 	}
     }
@@ -4948,7 +4979,8 @@ execute_pre (bool do_fre)
 {
   unsigned int todo = 0;
 
-  do_partial_partial = optimize > 2 && optimize_function_for_speed_p (cfun);
+  do_partial_partial =
+    flag_tree_partial_pre && optimize_function_for_speed_p (cfun);
 
   /* This has to happen before SCCVN runs because
      loop_optimizer_init may create new phis, etc.  */

@@ -2033,6 +2033,10 @@ ftree-pre
 Common Report Var(flag_tree_pre) Optimization
 Enable SSA-PRE optimization on trees
 
+ftree-partial-pre
+Common Report Var(flag_tree_partial_pre) Optimization
+In SSA-PRE optimization on trees, enable partial-partial redundancy elimination
+
 ftree-pta
 Common Report Var(flag_tree_pta) Init(1) Optimization
 Perform function-local points-to analysis on trees.

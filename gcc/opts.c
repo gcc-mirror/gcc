@@ -499,6 +499,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_3_PLUS, OPT_fgcse_after_reload, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_vectorize, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fipa_cp_clone, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_partial_pre, NULL, 1 },
 
     /* -Ofast adds optimizations to -O3.  */
     { OPT_LEVELS_FAST, OPT_ffast_math, NULL, 1 },
