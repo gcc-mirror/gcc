@@ -5450,6 +5450,11 @@ Array_type::get_length_tree(Gogo* gogo)
       mpz_t val;
       if (this->length_->numeric_constant_value(&nc) && nc.to_int(&val))
 	{
+	  if (mpz_sgn(val) < 0)
+	    {
+	      this->length_tree_ = error_mark_node;
+	      return this->length_tree_;
+	    }
 	  Type* t = nc.type();
 	  if (t == NULL)
 	    t = Type::lookup_integer_type("int");
@@ -6551,7 +6556,11 @@ bool
 Interface_type::is_identical(const Interface_type* t,
 			     bool errors_are_identical) const
 {
-  go_assert(this->methods_are_finalized_ && t->methods_are_finalized_);
+  // If methods have not been finalized, then we are asking whether
+  // func redeclarations are the same.  This is an error, so for
+  // simplicity we say they are never the same.
+  if (!this->methods_are_finalized_ || !t->methods_are_finalized_)
+    return false;
 
   // We require the same methods with the same types.  The methods
   // have already been sorted.
