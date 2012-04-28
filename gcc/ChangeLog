@@ -1,3 +1,15 @@
+2012-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Steven Bosscher  <steven@gcc.gnu.org>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR tree-optimization/38785
+	* common.opt (ftree-partial-pre): New option.
+	* doc/invoke.texi: Document it.
+	* opts.c (default_options_table): Initialize flag_tree_partial_pre.
+	* tree-ssa-pre.c (do_partial_partial_insertion): Insert only if it will
+	benefit speed path.
+	(execute_pre): Use flag_tree_partial_pre.
+
 2012-04-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/52999
