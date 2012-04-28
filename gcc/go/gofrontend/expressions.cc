@@ -9225,7 +9225,7 @@ Call_expression::set_results(Translate_context* context, tree call_tree)
       ref->set_is_lvalue();
       tree temp_tree = ref->get_tree(context);
       if (temp_tree == error_mark_node)
-	continue;
+	return error_mark_node;
 
       tree val_tree = build3_loc(loc.gcc_location(), COMPONENT_REF,
                                  TREE_TYPE(field), call_tree, field, NULL_TREE);
