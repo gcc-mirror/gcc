@@ -583,6 +583,8 @@ DW_OP (DW_OP_GNU_convert, 0xf7)
 DW_OP (DW_OP_GNU_reinterpret, 0xf9)
 /* The GNU parameter ref extension.  */
 DW_OP (DW_OP_GNU_parameter_ref, 0xfa)
+/* Extension for Fission.  See http://gcc.gnu.org/wiki/DebugFission.  */
+DW_OP (DW_OP_GNU_addr_index, 0xfb)
 /* HP extensions.  */
 DW_OP_DUP (DW_OP_HP_unknown, 0xe0) /* Ouch, the same as GNU_push_tls_address.  */
 DW_OP (DW_OP_HP_is_value, 0xe1)
