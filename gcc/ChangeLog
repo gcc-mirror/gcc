@@ -1,3 +1,9 @@
+2012-04-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/53156
+	* config/cris/cris.md (andqu): New peephole2.
+	(andu): Tweak head comment.
+
 2012-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Steven Bosscher  <steven@gcc.gnu.org>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
