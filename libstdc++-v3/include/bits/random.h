@@ -76,15 +76,78 @@ _GLIBCXX_END_NAMESPACE_VERSION
       struct _Shift<_UIntType, __w, true>
       { static const _UIntType __value = _UIntType(1) << __w; };
 
-    template<typename _Tp, _Tp __m, _Tp __a, _Tp __c, bool>
-      struct _Mod;
+    template<int __s,
+	     int __which = ((__s <= __CHAR_BIT__ * sizeof (int))
+			    + (__s <= __CHAR_BIT__ * sizeof (long))
+			    + (__s <= __CHAR_BIT__ * sizeof (long long))
+			    /* assume long long no bigger than __int128 */
+			    + (__s <= 128))>
+      struct _Select_uint_least_t
+      {
+	static_assert(__which < 0, /* needs to be dependent */
+		      "sorry, would be too much trouble for a slow result");
+      };
 
-    // Dispatch based on modulus value to prevent divide-by-zero compile-time
-    // errors when m == 0.
+    template<int __s>
+      struct _Select_uint_least_t<__s, 4>
+      { typedef unsigned int type; };
+
+    template<int __s>
+      struct _Select_uint_least_t<__s, 3>
+      { typedef unsigned long type; };
+
+    template<int __s>
+      struct _Select_uint_least_t<__s, 2>
+      { typedef unsigned long long type; };
+
+#ifdef _GLIBCXX_USE_INT128
+    template<int __s>
+      struct _Select_uint_least_t<__s, 1>
+      { typedef unsigned __int128 type; };
+#endif
+
+    // Assume a != 0, a < m, c < m, x < m.
+    template<typename _Tp, _Tp __m, _Tp __a, _Tp __c,
+	     bool __big_enough = (!(__m & (__m - 1))
+				  || (_Tp(-1) - __c) / __a >= __m - 1),
+             bool __schrage_ok = __m % __a < __m / __a>
+      struct _Mod
+      {
+	typedef typename _Select_uint_least_t<std::__lg(__a)
+					      + std::__lg(__m) + 2>::type _Tp2;
+	static _Tp
+	__calc(_Tp __x)
+	{ return static_cast<_Tp>((_Tp2(__a) * __x + __c) % __m); }
+      };
+
+    // Schrage.
+    template<typename _Tp, _Tp __m, _Tp __a, _Tp __c>
+      struct _Mod<_Tp, __m, __a, __c, false, true>
+      {
+	static _Tp
+	__calc(_Tp __x);
+      };
+
+    // Special cases:
+    // - for m == 2^n or m == 0, unsigned integer overflow is safe.
+    // - a * (m - 1) + c fits in _Tp, there is no overflow.
+    template<typename _Tp, _Tp __m, _Tp __a, _Tp __c, bool __s>
+      struct _Mod<_Tp, __m, __a, __c, true, __s>
+      {
+	static _Tp
+	__calc(_Tp __x)
+	{
+	  _Tp __res = __a * __x + __c;
+	  if (__m)
+	    __res %= __m;
+	  return __res;
+	}
+      };
+
     template<typename _Tp, _Tp __m, _Tp __a = 1, _Tp __c = 0>
       inline _Tp
       __mod(_Tp __x)
-      { return _Mod<_Tp, __m, __a, __c, __m == 0>::__calc(__x); }
+      { return _Mod<_Tp, __m, __a, __c>::__calc(__x); }
 
     /*
      * An adaptor class for converting the output of any Generator into
@@ -173,11 +236,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "substituting _UIntType not an unsigned integral type");
       static_assert(__m == 0u || (__a < __m && __c < __m),
 		    "template argument substituting __m out of bounds");
-
-      // XXX FIXME:
-      // _Mod::__calc should handle correctly __m % __a >= __m / __a too.
-      static_assert(__m % __a < __m / __a,
-		    "sorry, not implemented yet: try a smaller 'a' constant");
 
     public:
       /** The type of the generated random value. */
