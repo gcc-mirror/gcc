@@ -1,3 +1,9 @@
+2012-04-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/53156
+	* gcc.target/cris/peep2-andu2.c: Tweak expected assembly
+	code to match current output and cover new peephole2 pattern.
+
 2012-04-27   Ollie Wild  <aaw@google.com>
 
 	* g++.dg/cpp0x/Wliteral-suffix.c: New test.
