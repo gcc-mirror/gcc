@@ -1,3 +1,9 @@
+2012-04-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (function::function(F)): LWG 2132: Disable
+	constructor if argument isn't callable.
+	* testsuite/20_util/function/cons/callable.cc: New.
+
 2012-04-29  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/22200
