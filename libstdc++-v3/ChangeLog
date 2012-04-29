@@ -1,3 +1,18 @@
+2012-04-29  Marc Glisse  <marc.glisse@inria.fr>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/51795
+	* include/bits/stl_algobase.h (__lg<>(_Size)): Remove.
+	(__lg(int), __lg(unsigned), __lg(long), __lg(unsigned long),
+	__lg(long long), __lg(unsigned long long)): Define constexpr.
+	* include/bits/random.h (_Mod<>): Overcome Schrage's algorithm
+	limitations.
+	(__mod): Adjust.
+	(linear_congruential): Remove FIXME static_assert.
+	* include/bits/random.tcc (_Mod<>): Adjust.
+	* testsuite/26_numerics/random/linear_congruential_engine/operators/
+	51795.cc: New.
+
 2012-04-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/functional (function::function(F)): LWG 2132: Disable
