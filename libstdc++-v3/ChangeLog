@@ -1,7 +1,14 @@
+2012-04-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/22200
+	* include/std/limits (numeric_limits<>::is_modulo): False for
+	signed types.
+
 2012-04-25  Benjamin Kosnik  <bkoz@redhat.com>
 
-	*  include/bits/hashtable.h: Adjust doxygen markup for base classes.
-	*  include/bits/hashtable_policy.h: Same.
+	* include/bits/hashtable.h: Adjust doxygen markup for base
+	classes.
+	* include/bits/hashtable_policy.h: Same.
 
 2012-04-25  Benjamin Kosnik  <bkoz@redhat.com>
 
