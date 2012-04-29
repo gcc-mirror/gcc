@@ -1,3 +1,9 @@
+2012-04-29  Dodji Seketeli  <dodji@redhat.com>
+
+	* lex.c (lex_raw_string): Change C++ style comments into C style
+	comments.
+    	(lex_string): Likewise.
+
 2012-04-27   Ollie Wild  <aaw@google.com>
 
 	* include/cpplib.h (struct cpp_options): Add new field,

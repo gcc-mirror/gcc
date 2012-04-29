@@ -1561,7 +1561,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 	 extension by other front ends such as clang. */
       if (ISALPHA (*cur))
 	{
-	  // Raise a warning, but do not consume subsequent tokens.
+	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix))
 	    cpp_warning_with_line (pfile, CPP_W_LITERAL_SUFFIX,
 				   token->src_loc, 0,
@@ -1692,7 +1692,7 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	 extension by other front ends such as clang. */
       if (ISALPHA (*cur))
 	{
-	  // Raise a warning, but do not consume subsequent tokens.
+	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix))
 	    cpp_warning_with_line (pfile, CPP_W_LITERAL_SUFFIX,
 				   token->src_loc, 0,
