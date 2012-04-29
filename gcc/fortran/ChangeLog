@@ -1,3 +1,9 @@
+2012-04-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/53148
+	* frontend-passes.c (create_var):  If the statement has a label,
+	put the label around the block.
+
 2012-04-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52196

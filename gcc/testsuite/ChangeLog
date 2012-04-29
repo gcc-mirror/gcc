@@ -1,3 +1,8 @@
+2012-04-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/53148
+	* gfortran.dg/function_optimize_12.f90:  New test.
+
 2012-04-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/53156
