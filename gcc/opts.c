@@ -667,10 +667,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if (opts->x_flag_tm && opts->x_flag_non_call_exceptions)
     sorry ("transactional memory is not supported with non-call exceptions");
 
-  /* -Wmissing-noreturn is alias for -Wsuggest-attribute=noreturn.  */
-  if (opts->x_warn_missing_noreturn)
-    opts->x_warn_suggest_attribute_noreturn = true;
-    
   /* Unless the user has asked for section anchors, we disable toplevel
      reordering at -O0 to disable transformations that might be surprising
      to end users and to get -fno-toplevel-reorder tested.  */

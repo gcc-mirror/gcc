@@ -567,8 +567,7 @@ Common Var(warn_unsafe_loop_optimizations) Warning
 Warn if the loop cannot be optimized due to nontrivial assumptions.
 
 Wmissing-noreturn
-Common Var(warn_missing_noreturn) Warning
-Warn about functions which might be candidates for __attribute__((noreturn))
+Common Alias(Wsuggest-attribute=noreturn)
 
 Woverflow
 Common Var(warn_overflow) Init(1) Warning

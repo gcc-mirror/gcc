@@ -1,3 +1,8 @@
+2012-04-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+        * opts.c (finish_options): Do not handle -Wmissing-noreturn here.
+        * common.opt (Wmissing-noreturn): Alias of -Wsuggest-attribute=noreturn.
+
 2012-04-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/53156
