@@ -1,3 +1,8 @@
+2012-04-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53149
+        * gcc.dg/20011021-1.c: Adjust testcase.
+
 2012-04-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/53148
