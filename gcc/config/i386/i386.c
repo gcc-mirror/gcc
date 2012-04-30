@@ -32465,8 +32465,7 @@ ix86_handle_struct_attribute (tree *node, tree name,
   else
     type = node;
 
-  if (!(type && (TREE_CODE (*type) == RECORD_TYPE
-		 || TREE_CODE (*type) == UNION_TYPE)))
+  if (!(type && RECORD_OR_UNION_TYPE_P (*type)))
     {
       warning (OPT_Wattributes, "%qE attribute ignored",
 	       name);
