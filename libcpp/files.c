@@ -341,6 +341,25 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
   return valid;
 }
 
+/* Canonicalize the path to FILE.  Return the canonical form if it is
+   shorter, otherwise return NULL.  This function does NOT free the
+   memory pointed by FILE.  */
+
+static char *
+maybe_shorter_path (const char * file)
+{
+  char * file2 = lrealpath (file);
+  if (file2 && strlen (file2) < strlen (file))
+    {
+      return file2;
+    }
+  else 
+    {
+      free (file2);
+      return NULL;
+    }
+}
+
 /* Try to open the path FILE->name appended to FILE->dir.  This is
    where remap and PCH intercept the file lookup process.  Return true
    if the file was found, whether or not the open was successful.
@@ -361,10 +380,24 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
 
   if (path)
     {
-      hashval_t hv = htab_hash_string (path);
+      hashval_t hv;
       char *copy;
       void **pp;
 
+      /* We try to canonicalize system headers.  */
+      if (file->dir->sysp)
+	{
+	  char * canonical_path = maybe_shorter_path (path);
+	  if (canonical_path)
+	    {
+	      /* The canonical path was newly allocated.  Let's free the
+		 non-canonical one.  */
+	      free (path);
+	      path = canonical_path;
+	    }
+	}
+
+      hv = htab_hash_string (path);
       if (htab_find_with_hash (pfile->nonexistent_file_hash, path, hv) != NULL)
 	{
 	  file->err_no = ENOENT;
