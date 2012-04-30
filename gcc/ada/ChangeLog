@@ -1,3 +1,21 @@
+2012-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (mark_out_of_scope): Delete.
+	(destroy_gnat_to_gnu): Declare.
+	(destroy_dummy_type): Likewise.
+	* gcc-interface/decl.c (mark_out_of_scope): Delete.
+	* gcc-interface/utils.c (destroy_gnat_to_gnu): New function.
+	(destroy_dummy_type): Likewise.
+	* gcc-interface/trans.c (gnat_validate_uc_list): New variable.
+	(gigi): Call validate_unchecked_conversion on gnat_validate_uc_list
+	after the translation is completed.  Call destroy_gnat_to_gnu and
+	destroy_dummy_type at the end.
+	(Subprogram_Body_to_gnu): Do not call mark_out_of_scope.
+	(gnat_to_gnu) <N_Block_Statement>: Likewise.
+	<N_Validate_Unchecked_Conversion>: Do not process the node, only push
+	it onto gnat_validate_uc_list.
+	(validate_unchecked_conversion): New function.
+
 2012-04-26  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

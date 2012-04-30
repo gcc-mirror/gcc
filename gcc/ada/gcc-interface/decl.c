@@ -5838,44 +5838,6 @@ elaborate_entity (Entity_Id gnat_entity)
     }
 }
 
-/* Mark GNAT_ENTITY as going out of scope at this point.  Recursively mark
-   any entities on its entity chain similarly.  */
-
-void
-mark_out_of_scope (Entity_Id gnat_entity)
-{
-  Entity_Id gnat_sub_entity;
-  unsigned int kind = Ekind (gnat_entity);
-
-  /* If this has an entity list, process all in the list.  */
-  if (IN (kind, Class_Wide_Kind) || IN (kind, Concurrent_Kind)
-      || IN (kind, Private_Kind)
-      || kind == E_Block || kind == E_Entry || kind == E_Entry_Family
-      || kind == E_Function || kind == E_Generic_Function
-      || kind == E_Generic_Package || kind == E_Generic_Procedure
-      || kind == E_Loop || kind == E_Operator || kind == E_Package
-      || kind == E_Package_Body || kind == E_Procedure
-      || kind == E_Record_Type || kind == E_Record_Subtype
-      || kind == E_Subprogram_Body || kind == E_Subprogram_Type)
-    for (gnat_sub_entity = First_Entity (gnat_entity);
-	 Present (gnat_sub_entity);
-	 gnat_sub_entity = Next_Entity (gnat_sub_entity))
-      if (Scope (gnat_sub_entity) == gnat_entity
-	  && gnat_sub_entity != gnat_entity)
-	mark_out_of_scope (gnat_sub_entity);
-
-  /* Now clear this if it has been defined, but only do so if it isn't
-     a subprogram or parameter.  We could refine this, but it isn't
-     worth it.  If this is statically allocated, it is supposed to
-     hang around out of cope.  */
-  if (present_gnu_tree (gnat_entity) && !Is_Statically_Allocated (gnat_entity)
-      && kind != E_Procedure && kind != E_Function && !IN (kind, Formal_Kind))
-    {
-      save_gnu_tree (gnat_entity, NULL_TREE, true);
-      save_gnu_tree (gnat_entity, error_mark_node, true);
-    }
-}
-
 /* Relate the alias sets of GNU_NEW_TYPE and GNU_OLD_TYPE according to OP.
    If this is a multi-dimensional array type, do this recursively.
 
