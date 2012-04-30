@@ -2436,7 +2436,12 @@ cpp_get_token_with_location (cpp_reader *pfile, source_location *loc)
 int
 cpp_sys_macro_p (cpp_reader *pfile)
 {
-  cpp_hashnode *node = pfile->context->c.macro;
+  cpp_hashnode *node = NULL;
+
+  if (pfile->context->tokens_kind == TOKENS_KIND_EXTENDED)
+    node = pfile->context->c.mc->macro_node;
+  else
+    node = pfile->context->c.macro;
 
   return node && node->value.macro && node->value.macro->syshdr;
 }
