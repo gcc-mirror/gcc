@@ -704,6 +704,19 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	 case where there is a rep clause but all fields have errors and
 	 no longer have a position.  */
       TYPE_SIZE (record_type) = 0;
+
+      /* Ensure we use the traditional GCC layout for bitfields when we need
+	 to pack the record type or have a representation clause.  The other
+	 possible layout (Microsoft C compiler), if available, would prevent
+	 efficient packing in almost all cases.  */
+#ifdef TARGET_MS_BITFIELD_LAYOUT
+      if (TARGET_MS_BITFIELD_LAYOUT && TYPE_PACKED (record_type))
+	decl_attributes (&record_type,
+			 tree_cons (get_identifier ("gcc_struct"),
+				    NULL_TREE, NULL_TREE),
+			 ATTR_FLAG_TYPE_IN_PLACE);
+#endif
+
       layout_type (record_type);
     }
 

@@ -1,3 +1,8 @@
+2012-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (ix86_handle_struct_attribute): Use the proper
+	predicate to discriminate types.
+
 2012-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR c/51527

@@ -1,3 +1,9 @@
+2012-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (finish_record_type): Force the traditional GCC
+	layout for bitfields on the type if it is packed or has a representation
+	clause and an alternate layout is available.
+
 2012-04-09  Mike Stump  <mikestump@comcast.net>
 
 	* a-assert.ads: Remove execute permission.
