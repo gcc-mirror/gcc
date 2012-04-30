@@ -1,5 +1,10 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Fix -Wuninitialized for -ftrack-macro-expansion
+	* tree-ssa.c (warn_uninit): Use the spelling location of the
+	variable declaration.  Use linemap_location_before_p for source
+	locations.
+
 	Strip "<built-in>" loc from displayed expansion context
 	* input.c (expand_location_1): When expanding to spelling location
 	in a context of a macro expansion, skip reserved system header

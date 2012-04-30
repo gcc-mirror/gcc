@@ -1,5 +1,8 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Fix -Wuninitialized for -ftrack-macro-expansion
+	* gcc.dg/cpp/pragma-diagnostic-2.c: Fix this.
+
 	Strip "<built-in>" loc from displayed expansion context
 	* g++.dg/warn/Wconversion-real-integer2.C: New test.
 	* g++.dg/warn/Wconversion-real-integer-3.C: Likewise.
