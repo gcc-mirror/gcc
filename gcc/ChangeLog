@@ -1,3 +1,96 @@
+012-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (ld_plugin_symbol_resolution_names): Move to symtab.c
+	(cgraph_asm_nodes, cgraph_asm_last_node): Move to cgraphunit.c
+	(cgraph_add_to_same_comdat_group): Remove.
+	(cgraph_add_asm_node): Move to cgraphunit.c.
+	(cgraph_make_decl_local): Move to symtab.c
+	(cgraph_make_node_local_1): Update.
+	(cgraph_can_remove_if_no_direct_calls_and): Update.
+	(used_from_object_file_p): Update.
+	(resolution_used_from_other_file_p): Move to symtab.c
+	(cgraph_used_from_object_file_p): move to symtab.c
+	(verify_cgraph_node): Verify same comdat groups.
+	* cgraph.h (cgraph_asm_node): Rename to ...
+	(asm_node): ... this one.
+	(cgraph_asm_nodes): Rename to ...
+	(asm_nodes): ... this one.
+	(symtab_add_to_same_comdat_group): New function.
+	(symtab_dissolve_same_comdat_group_list): New function.
+	(symtab_used_from_object_file_p): Declare.
+	(symtab_make_decl_local): Declare.
+	(cgraph_add_to_same_comdat_group): Remove.
+	(cgraph_add_asm_node): Remove.
+	(cgraph_used_from_object_file_p, varpool_used_from_object_file_p):
+	Remove.
+	(cgraph_finalize_compilation_unit): Rename to ...
+	(finalize_compilation_unit): ... this one.
+	(cgraph_optimize): Rename to ....
+	(compile): ... this one.
+	(add_asm_node): Declare.
+	(fixup_same_cpp_alias_visibility): Declare.
+	(cgraph_make_decl_local): Remove.
+	(varpool_assemble_pending_decls): Rename to ...
+	(varpool_output_variables): ... this one.
+	(varpool_remove_unreferenced_decls): Remove.
+	* ipa-inline-transform.c (clone_inlined_nodes): Dissolve comdat groups.
+	(preserve_function_body_p): Make static.
+	* toplev.c (compile_file): Update comments;
+	update.
+	* cgraphunit.c: Update comments.
+	(cgraph_expand_all_functions): Rename to ...
+	(expand_all_functions): ... this one; update.
+	(cgraph_mark_functions_to_output): Rename to ...
+	(mark_functions_to_output): ... this one; cleanup.
+	(cgraph_output_pending_asms): Remove prototype.
+	(asm_nodes, asm_last_node): New static vars.
+	(cgraph_process_new_functions): Update.
+	(cgraph_reset_node): Cleanup; add comment.
+	(cgraph_add_new_function): Update.
+	(cgraph_output_pending_asms): Rename to ...
+	(output_asm_statements): ... this one.
+	(add_asm_node): New function.
+	(fixup_same_cpp_alias_visibility): New function based on code
+	in cgraph_analyze_function.
+	(cgraph_analyze_function): Use it.
+	(cgraph_order_sort): Update.
+	(cgraph_output_in_order): Update.
+	(cgraph_function_versioning): Update.
+	(cgraph_optimize): Rename to ...
+	(compile): ... this one; initialize streamer hooks here.
+	(cgraph_finalize_compilation_unit): Rename to ...
+	(finalize_compilation_unit): ... this one; do not initialize streamer
+	hook here.
+	* lto-streamer-out.c (lto_output_toplevel_asms): Update.
+	* dwarf2out.c: Update ocmment.
+	* optimize.c (maybe_clone_body): Use symtab_add_to_same_comdat_group.
+	* method.c (use_thunk): Likewise.
+	* semantics.c (maybe_add_lambda_conv_op): Likewise.
+	* decl2.c (maybe_emit_vtables): Likewise.	
+	(cp_write_global_declarations): Use finalize_compilation_unit.
+	* parser.c (cp_parser_asm_definition): Use add_asm_node.
+	* lto-streamer-in.c (lto_input_toplevel_asms): Use add_asm_node
+	* c-decl.c (c_write_global_declarations): Use finalize_compilation_unit.
+	* langhooks.c (write_global_declarations): Update.
+	* ipa.c (cgraph_externally_visible_p): Update.
+	(dissolve_same_comdat_group_list): Remove.
+	(function_and_variable_visibility): Update.
+	* symtab.c: Inlcude lto-streamer.h and rtl.h
+	(ld_plugin_symbol_resolution_names): New.
+	(symtab_add_to_same_comdat_group): New.
+	(symtab_dissolve_same_comdat_group_list): New.
+	(resolution_used_from_other_file_p): Move here from cgraph.c
+	(symtab_used_from_object_file_p): New.
+	(symtab_make_decl_local): New.
+	* passes.c (register_pass): Update comments.
+	* c-parser.c (c_parser_asm_definition): Update.
+	* varpool.c (varpool_analyze_node): Use fixup_same_cpp_alias_visibility.
+	(varpool_remove_unreferenced_decls): Make static.
+	(varpool_assemble_pending_decls): Rename to ...
+	(varpool_output_variables): ... this one; call
+	varpool_remove_unreferenced_decls.
+	(varpool_used_from_object_file_p): Remove.
+
 2012-04-30  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/51033

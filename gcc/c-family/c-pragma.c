@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "opts.h"
 #include "plugin.h"
+#include "cgraph.h"
 
 #define GCC_BAD(gmsgid) \
   do { warning (OPT_Wpragmas, gmsgid); return; } while (0)
@@ -311,6 +312,7 @@ maybe_apply_pending_pragma_weaks (void)
   tree alias_id, id, decl;
   int i;
   pending_weak *pe;
+  symtab_node target;
 
   FOR_EACH_VEC_ELT (pending_weak, pending_weaks, i, pe)
     {
@@ -320,13 +322,22 @@ maybe_apply_pending_pragma_weaks (void)
       if (id == NULL)
 	continue;
 
+      target = symtab_node_for_asm (id);
       decl = build_decl (UNKNOWN_LOCATION,
-			 FUNCTION_DECL, alias_id, default_function_type);
+			 target ? TREE_CODE (target->symbol.decl) : FUNCTION_DECL,
+			 alias_id, default_function_type);
 
       DECL_ARTIFICIAL (decl) = 1;
       TREE_PUBLIC (decl) = 1;
-      DECL_EXTERNAL (decl) = 1;
       DECL_WEAK (decl) = 1;
+      if (TREE_CODE (decl) == VAR_DECL)
+	TREE_STATIC (decl) = 1;
+      if (!target)
+	{
+	  error ("%q+D aliased to undefined symbol %qE",
+		 decl, id);
+	  continue;
+	}
 
       assemble_alias (decl, id);
     }

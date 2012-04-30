@@ -1830,7 +1830,7 @@ maybe_emit_vtables (tree ctype)
   tree vtbl;
   tree primary_vtbl;
   int needed = 0;
-  struct varpool_node *current = NULL, *last = NULL, *first = NULL;
+  struct varpool_node *current = NULL, *last = NULL;
 
   /* If the vtables for this class have already been emitted there is
      nothing more to do.  */
@@ -1894,15 +1894,10 @@ maybe_emit_vtables (tree ctype)
 	{
 	  current = varpool_node (vtbl);
 	  if (last)
-	    last->symbol.same_comdat_group = (symtab_node) current;
+	    symtab_add_to_same_comdat_group ((symtab_node) current, (symtab_node) last);
 	  last = current;
-	  if (!first)
-	    first = current;
 	}
     }
-
-  if (first != last)
-    last->symbol.same_comdat_group = (symtab_node)first;
 
   /* Since we're writing out the vtable here, also write the debug
      info.  */
@@ -4027,7 +4022,7 @@ cp_write_global_declarations (void)
   timevar_stop (TV_PHASE_DEFERRED);
   timevar_start (TV_PHASE_CGRAPH);
 
-  cgraph_finalize_compilation_unit ();
+  finalize_compilation_unit ();
 
   timevar_stop (TV_PHASE_CGRAPH);
   timevar_start (TV_PHASE_CHECK_DBGINFO);

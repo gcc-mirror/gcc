@@ -598,7 +598,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
     return true;
 
   /* If linker counts on us, we must preserve the function.  */
-  if (cgraph_used_from_object_file_p (node))
+  if (symtab_used_from_object_file_p ((symtab_node) node))
     return true;
   if (DECL_PRESERVE_P (node->symbol.decl))
     return true;
@@ -657,7 +657,7 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
     return true;
 
   /* If linker counts on us, we must preserve the function.  */
-  if (varpool_used_from_object_file_p (vnode))
+  if (symtab_used_from_object_file_p ((symtab_node) vnode))
     return true;
 
   if (DECL_HARD_REGISTER (vnode->symbol.decl))
@@ -678,7 +678,7 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
      Even if the linker clams the symbol is unused, never bring internal
      symbols that are declared by user as used or externally visible.
      This is needed for i.e. references from asm statements.   */
-  if (varpool_used_from_object_file_p (vnode))
+  if (symtab_used_from_object_file_p ((symtab_node) vnode))
     return true;
   if (vnode->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
@@ -714,21 +714,6 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
   if (DECL_COMDAT (vnode->symbol.decl) || DECL_WEAK (vnode->symbol.decl))
     return true;
   return false;
-}
-
-/* Dissolve the same_comdat_group list in which NODE resides.  */
-
-static void
-dissolve_same_comdat_group_list (symtab_node node)
-{
-  symtab_node n = node, next;
-  do
-    {
-      next = n->symbol.same_comdat_group;
-      n->symbol.same_comdat_group = NULL;
-      n = next;
-    }
-  while (n != node);
 }
 
 /* Mark visibility of all functions.
@@ -825,7 +810,7 @@ function_and_variable_visibility (bool whole_program)
 		 all of them have to be, otherwise it is a front-end bug.  */
 	      gcc_assert (DECL_EXTERNAL (n->symbol.decl));
 #endif
-	  dissolve_same_comdat_group_list ((symtab_node) node);
+	  symtab_dissolve_same_comdat_group_list ((symtab_node) node);
 	}
       gcc_assert ((!DECL_WEAK (node->symbol.decl)
 		  && !DECL_COMDAT (node->symbol.decl))
@@ -845,14 +830,14 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  gcc_assert (whole_program || in_lto_p
 		      || !TREE_PUBLIC (node->symbol.decl));
-	  cgraph_make_decl_local (node->symbol.decl);
+	  symtab_make_decl_local (node->symbol.decl);
 	  node->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
 	  if (node->symbol.same_comdat_group)
 	    /* cgraph_externally_visible_p has already checked all other nodes
 	       in the group and they will all be made local.  We need to
 	       dissolve the group at once so that the predicate does not
 	       segfault though. */
-	    dissolve_same_comdat_group_list ((symtab_node) node);
+	    symtab_dissolve_same_comdat_group_list ((symtab_node) node);
 	}
 
       if (node->thunk.thunk_p
@@ -921,9 +906,9 @@ function_and_variable_visibility (bool whole_program)
       if (!vnode->symbol.externally_visible)
 	{
 	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->symbol.decl));
-	  cgraph_make_decl_local (vnode->symbol.decl);
+	  symtab_make_decl_local (vnode->symbol.decl);
 	  if (vnode->symbol.same_comdat_group)
-	    dissolve_same_comdat_group_list ((symtab_node) vnode);
+	    symtab_dissolve_same_comdat_group_list ((symtab_node) vnode);
 	  vnode->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
      gcc_assert (TREE_STATIC (vnode->symbol.decl));

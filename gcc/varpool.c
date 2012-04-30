@@ -237,34 +237,13 @@ varpool_analyze_node (struct varpool_node *node)
 	  }
       if (!VEC_length (ipa_ref_t, node->symbol.ref_list.references))
 	ipa_record_reference ((symtab_node)node, (symtab_node)tgt, IPA_REF_ALIAS, NULL);
-      /* C++ FE sometimes change linkage flags after producing same body aliases.  */
       if (node->extra_name_alias)
 	{
 	  DECL_WEAK (node->symbol.decl) = DECL_WEAK (node->alias_of);
-	  TREE_PUBLIC (node->symbol.decl) = TREE_PUBLIC (node->alias_of);
 	  DECL_EXTERNAL (node->symbol.decl) = DECL_EXTERNAL (node->alias_of);
 	  DECL_VISIBILITY (node->symbol.decl) = DECL_VISIBILITY (node->alias_of);
-	  if (TREE_PUBLIC (node->symbol.decl))
-	    {
-	      DECL_COMDAT (node->symbol.decl) = DECL_COMDAT (node->alias_of);
-	      DECL_COMDAT_GROUP (node->symbol.decl) = DECL_COMDAT_GROUP (node->alias_of);
-	      if (DECL_ONE_ONLY (node->alias_of)
-		  && !node->symbol.same_comdat_group)
-		{
-		  node->symbol.same_comdat_group = (symtab_node)tgt;
-		  if (!tgt->symbol.same_comdat_group)
-		    tgt->symbol.same_comdat_group = (symtab_node)node;
-		  else
-		    {
-		      symtab_node n;
-		      for (n = tgt->symbol.same_comdat_group;
-			   n->symbol.same_comdat_group != (symtab_node)tgt;
-			   n = n->symbol.same_comdat_group)
-			;
-		      n->symbol.same_comdat_group = (symtab_node)node;
-		    }
-		}
-	    }
+	  fixup_same_cpp_alias_visibility ((symtab_node) node,
+					   (symtab_node) tgt, node->alias_of);
 	}
     }
   else if (DECL_INITIAL (decl))
@@ -331,7 +310,7 @@ enqueue_node (struct varpool_node *node, struct varpool_node **first)
    reachability starting from variables that are either externally visible
    or was referred from the asm output routines.  */
 
-void
+static void
 varpool_remove_unreferenced_decls (void)
 {
   struct varpool_node *next, *node;
@@ -413,13 +392,15 @@ varpool_finalize_named_section_flags (struct varpool_node *node)
 
 /* Output all variables enqueued to be assembled.  */
 bool
-varpool_assemble_pending_decls (void)
+varpool_output_variables (void)
 {
   bool changed = false;
   struct varpool_node *node;
 
   if (seen_error ())
     return false;
+
+  varpool_remove_unreferenced_decls ();
 
   timevar_push (TV_VAROUT);
 
@@ -499,19 +480,6 @@ varpool_extra_name_alias (tree alias, tree decl)
   alias_node = varpool_create_variable_alias (alias, decl);
   alias_node->extra_name_alias = true;
   return alias_node;
-}
-
-/* Return true when NODE is known to be used from other (non-LTO) object file.
-   Known only when doing LTO via linker plugin.  */
-
-bool
-varpool_used_from_object_file_p (struct varpool_node *node)
-{
-  if (!TREE_PUBLIC (node->symbol.decl))
-    return false;
-  if (resolution_used_from_other_file_p (node->symbol.resolution))
-    return true;
-  return false;
 }
 
 /* Call calback on NODE and aliases asociated to NODE. 

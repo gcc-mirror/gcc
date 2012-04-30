@@ -54,20 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "gimple-pretty-print.h"
 
-const char * const ld_plugin_symbol_resolution_names[]=
-{
-  "",
-  "undef",
-  "prevailing_def",
-  "prevailing_def_ironly",
-  "preempted_reg",
-  "preempted_ir",
-  "resolved_ir",
-  "resolved_exec",
-  "resolved_dyn",
-  "prevailing_def_ironly_exp"
-};
-
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
 static inline void cgraph_edge_remove_callee (struct cgraph_edge *e);
@@ -93,12 +79,6 @@ enum cgraph_state cgraph_state = CGRAPH_STATE_PARSING;
 
 /* Set when the cgraph is fully build and the basic flags are computed.  */
 bool cgraph_function_flags_ready = false;
-
-/* Linked list of cgraph asm nodes.  */
-struct cgraph_asm_node *cgraph_asm_nodes;
-
-/* Last node in cgraph_asm_nodes.  */
-static GTY(()) struct cgraph_asm_node *cgraph_asm_last_node;
 
 /* List of hooks triggered on cgraph_edge events.  */
 struct cgraph_edge_hook_list {
@@ -1377,31 +1357,6 @@ cgraph_remove_node (struct cgraph_node *node)
   free_nodes = node;
 }
 
-/* Add NEW_ to the same comdat group that OLD is in.  */
-
-void
-cgraph_add_to_same_comdat_group (struct cgraph_node *new_node,
-				 struct cgraph_node *old_node)
-{
-  gcc_assert (DECL_ONE_ONLY (old_node->symbol.decl));
-  gcc_assert (!new_node->symbol.same_comdat_group);
-  gcc_assert (new_node != old_node);
-
-  DECL_COMDAT_GROUP (new_node->symbol.decl) = DECL_COMDAT_GROUP (old_node->symbol.decl);
-  new_node->symbol.same_comdat_group = (symtab_node)old_node;
-  if (!old_node->symbol.same_comdat_group)
-    old_node->symbol.same_comdat_group = (symtab_node)new_node;
-  else
-    {
-      symtab_node n;
-      for (n = old_node->symbol.same_comdat_group;
-	   n->symbol.same_comdat_group != (symtab_node)old_node;
-	   n = n->symbol.same_comdat_group)
-	;
-      n->symbol.same_comdat_group = (symtab_node)new_node;
-    }
-}
-
 /* Remove the node from cgraph and all inline clones inlined into it.
    Skip however removal of FORBIDDEN_NODE and return true if it needs to be
    removed.  This allows to call the function from outer loop walking clone
@@ -1658,25 +1613,6 @@ DEBUG_FUNCTION void
 debug_cgraph (void)
 {
   dump_cgraph (stderr);
-}
-
-/* Add a top-level asm statement to the list.  */
-
-struct cgraph_asm_node *
-cgraph_add_asm_node (tree asm_str)
-{
-  struct cgraph_asm_node *node;
-
-  node = ggc_alloc_cleared_cgraph_asm_node ();
-  node->asm_str = asm_str;
-  node->order = symtab_order++;
-  node->next = NULL;
-  if (cgraph_asm_nodes == NULL)
-    cgraph_asm_nodes = node;
-  else
-    cgraph_asm_last_node->next = node;
-  cgraph_asm_last_node = node;
-  return node;
 }
 
 /* Return true when the DECL can possibly be inlined.  */
@@ -2047,77 +1983,6 @@ cgraph_node_can_be_local_p (struct cgraph_node *node)
 					   NULL, true));
 }
 
-/* Make DECL local.  FIXME: We shouldn't need to mess with rtl this early,
-   but other code such as notice_global_symbol generates rtl.  */
-void
-cgraph_make_decl_local (tree decl)
-{
-  rtx rtl, symbol;
-
-  if (TREE_CODE (decl) == VAR_DECL)
-    DECL_COMMON (decl) = 0;
-  else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
-
-  if (DECL_ONE_ONLY (decl) || DECL_COMDAT (decl))
-    {
-      /* It is possible that we are linking against library defining same COMDAT
-	 function.  To avoid conflict we need to rename our local name of the
-	 function just in the case WHOPR partitioning decide to make it hidden
-	 to avoid cross partition references.  */
-      if (flag_wpa)
-	{
-	  const char *old_name;
-
-	  old_name  = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-	  if (TREE_CODE (decl) == FUNCTION_DECL)
-	    {
-	      struct cgraph_node *node = cgraph_get_node (decl);
-	      change_decl_assembler_name (decl,
-					  clone_function_name (decl, "local"));
-	      if (node->symbol.lto_file_data)
-		lto_record_renamed_decl (node->symbol.lto_file_data,
-					 old_name,
-					 IDENTIFIER_POINTER
-					   (DECL_ASSEMBLER_NAME (decl)));
-	    }
-	  else if (TREE_CODE (decl) == VAR_DECL)
-	    {
-	      struct varpool_node *vnode = varpool_get_node (decl);
-	      /* change_decl_assembler_name will warn here on vtables because
-		 C++ frontend still sets TREE_SYMBOL_REFERENCED on them.  */
-	      SET_DECL_ASSEMBLER_NAME (decl,
-				       clone_function_name (decl, "local"));
-	      if (vnode->symbol.lto_file_data)
-		lto_record_renamed_decl (vnode->symbol.lto_file_data,
-					 old_name,
-					 IDENTIFIER_POINTER
-					   (DECL_ASSEMBLER_NAME (decl)));
-	    }
-	}
-      DECL_SECTION_NAME (decl) = 0;
-      DECL_COMDAT (decl) = 0;
-    }
-  DECL_COMDAT_GROUP (decl) = 0;
-  DECL_WEAK (decl) = 0;
-  DECL_EXTERNAL (decl) = 0;
-  TREE_PUBLIC (decl) = 0;
-  if (!DECL_RTL_SET_P (decl))
-    return;
-
-  /* Update rtl flags.  */
-  make_decl_rtl (decl);
-
-  rtl = DECL_RTL (decl);
-  if (!MEM_P (rtl))
-    return;
-
-  symbol = XEXP (rtl, 0);
-  if (GET_CODE (symbol) != SYMBOL_REF)
-    return;
-
-  SYMBOL_REF_WEAK (symbol) = DECL_WEAK (decl);
-}
-
 /* Call calback on NODE, thunks and aliases asociated to NODE. 
    When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
    skipped. */
@@ -2190,7 +2055,7 @@ cgraph_make_node_local_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
   gcc_checking_assert (cgraph_node_can_be_local_p (node));
   if (DECL_COMDAT (node->symbol.decl) || DECL_EXTERNAL (node->symbol.decl))
     {
-      cgraph_make_decl_local (node->symbol.decl);
+      symtab_make_decl_local (node->symbol.decl);
 
       node->symbol.externally_visible = false;
       node->local.local = true;
@@ -2472,7 +2337,7 @@ cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
   /* Only COMDAT functions can be removed if externally visible.  */
   if (node->symbol.externally_visible
       && (!DECL_COMDAT (node->symbol.decl)
-	  || cgraph_used_from_object_file_p (node)))
+	  || symtab_used_from_object_file_p ((symtab_node) node)))
     return false;
   return true;
 }
@@ -2504,7 +2369,7 @@ cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
 static bool
 used_from_object_file_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
-  return cgraph_used_from_object_file_p (node);
+  return symtab_used_from_object_file_p ((symtab_node) node);
 }
 
 /* Return true when function NODE can be expected to be removed
@@ -2537,32 +2402,6 @@ cgraph_will_be_removed_from_program_if_no_direct_calls (struct cgraph_node *node
     }
 }
 
-/* Return true when RESOLUTION indicate that linker will use
-   the symbol from non-LTO object files.  */
-
-bool
-resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution)
-{
-  return (resolution == LDPR_PREVAILING_DEF
-          || resolution == LDPR_PREEMPTED_REG
-          || resolution == LDPR_RESOLVED_EXEC
-          || resolution == LDPR_RESOLVED_DYN);
-}
-
-
-/* Return true when NODE is known to be used from other (non-LTO) object file.
-   Known only when doing LTO via linker plugin.  */
-
-bool
-cgraph_used_from_object_file_p (struct cgraph_node *node)
-{
-  gcc_assert (!node->global.inlined_to);
-  if (!TREE_PUBLIC (node->symbol.decl) || DECL_EXTERNAL (node->symbol.decl))
-    return false;
-  if (resolution_used_from_other_file_p (node->symbol.resolution))
-    return true;
-  return false;
-}
 
 /* Worker for cgraph_only_called_directly_p.  */
 
@@ -2739,6 +2578,11 @@ verify_cgraph_node (struct cgraph_node *node)
   if (node->count < 0)
     {
       error ("execution count is negative");
+      error_found = true;
+    }
+  if (node->global.inlined_to && node->symbol.same_comdat_group)
+    {
+      error ("inline clone in same comdat group list");
       error_found = true;
     }
   if (node->global.inlined_to && node->symbol.externally_visible)

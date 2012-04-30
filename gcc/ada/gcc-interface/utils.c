@@ -2036,7 +2036,6 @@ rest_of_subprog_body_compilation (tree subprog_decl)
   /* Dump functions before gimplification.  */
   dump_function (TDI_original, subprog_decl);
 
-  /* ??? This special handling of nested functions is probably obsolete.  */
   if (!decl_function_context (subprog_decl))
     cgraph_finalize_function (subprog_decl, false);
   else
@@ -4907,9 +4906,8 @@ gnat_write_global_declarations (void)
     if (TREE_CODE (iter) == TYPE_DECL)
       debug_hooks->global_decl (iter);
 
-  /* Proceed to optimize and emit assembly.
-     FIXME: shouldn't be the front end's responsibility to call this.  */
-  cgraph_finalize_compilation_unit ();
+  /* Proceed to optimize and emit assembly. */
+  finalize_compilation_unit ();
 
   /* After cgraph has had a chance to emit everything that's going to
      be emitted, output debug information for the rest of globals.  */

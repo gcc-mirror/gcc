@@ -1,3 +1,9 @@
+2012-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_main): Use compile ().
+	* lto-partition.c (partition_cgraph_node_p): Use symtab_used_from_object_file_p.
+	(partition_varpool_node_p): Likewise.
+
 2012-04-20  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c (partition_cgraph_node_p): Use force_output.

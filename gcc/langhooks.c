@@ -300,7 +300,7 @@ write_global_declarations (void)
 
   /* This lang hook is dual-purposed, and also finalizes the
      compilation unit.  */
-  cgraph_finalize_compilation_unit ();
+  finalize_compilation_unit ();
 
   /* Really define vars that have had only a tentative definition.
      Really output inline functions that must actually be callable

@@ -422,11 +422,11 @@ struct GTY(()) varpool_node {
   unsigned extra_name_alias : 1;
 };
 
-/* Every top level asm statement is put into a cgraph_asm_node.  */
+/* Every top level asm statement is put into a asm_node.  */
 
-struct GTY(()) cgraph_asm_node {
+struct GTY(()) asm_node {
   /* Next asm node.  */
-  struct cgraph_asm_node *next;
+  struct asm_node *next;
   /* String for this asm node.  */
   tree asm_str;
   /* Ordering of all cgraph nodes.  */
@@ -467,7 +467,7 @@ extern enum cgraph_state cgraph_state;
 extern bool cgraph_function_flags_ready;
 extern cgraph_node_set cgraph_new_nodes;
 
-extern GTY(()) struct cgraph_asm_node *cgraph_asm_nodes;
+extern GTY(()) struct asm_node *asm_nodes;
 extern GTY(()) int symtab_order;
 extern bool same_body_aliases_done;
 
@@ -480,6 +480,8 @@ symtab_node symtab_node_for_asm (const_tree asmname);
 const char * symtab_node_asm_name (symtab_node);
 const char * symtab_node_name (symtab_node);
 void symtab_insert_node_to_hashtable (symtab_node);
+void symtab_add_to_same_comdat_group (symtab_node, symtab_node);
+void symtab_dissolve_same_comdat_group_list (symtab_node node);
 void dump_symtab (FILE *);
 void debug_symtab (void);
 void dump_symtab_node (FILE *, symtab_node);
@@ -488,6 +490,8 @@ void dump_symtab_base (FILE *, symtab_node);
 void verify_symtab (void);
 void verify_symtab_node (symtab_node);
 bool verify_symtab_base (symtab_node);
+bool symtab_used_from_object_file_p (symtab_node);
+void symtab_make_decl_local (tree);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
@@ -497,7 +501,6 @@ void debug_cgraph_node (struct cgraph_node *);
 void cgraph_remove_edge (struct cgraph_edge *);
 void cgraph_remove_node (struct cgraph_node *);
 struct cgraph_node *cgraph_find_replacement_node (struct cgraph_node *);
-void cgraph_add_to_same_comdat_group (struct cgraph_node *, struct cgraph_node *);
 bool cgraph_remove_node_and_inline_clones (struct cgraph_node *, struct cgraph_node *);
 void cgraph_release_function_body (struct cgraph_node *);
 void cgraph_node_remove_callees (struct cgraph_node *node);
@@ -538,8 +541,6 @@ void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *);
 bool cgraph_only_called_directly_p (struct cgraph_node *);
 
-struct cgraph_asm_node *cgraph_add_asm_node (tree);
-
 bool cgraph_function_possibly_inlined_p (tree);
 void cgraph_unnest_node (struct cgraph_node *);
 
@@ -564,8 +565,6 @@ bool cgraph_can_remove_if_no_direct_calls_and_refs_p
   (struct cgraph_node *node);
 bool cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node);
 bool resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution);
-bool cgraph_used_from_object_file_p (struct cgraph_node *);
-bool varpool_used_from_object_file_p (struct varpool_node *);
 bool cgraph_for_node_thunks_and_aliases (struct cgraph_node *,
 			                 bool (*) (struct cgraph_node *, void *),
 			                 void *,
@@ -605,10 +604,11 @@ gimple cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *);
 bool cgraph_propagate_frequency (struct cgraph_node *node);
 
 /* In cgraphunit.c  */
+struct asm_node *add_asm_node (tree);
 extern FILE *cgraph_dump_file;
 void cgraph_finalize_function (tree, bool);
-void cgraph_finalize_compilation_unit (void);
-void cgraph_optimize (void);
+void finalize_compilation_unit (void);
+void compile (void);
 void init_cgraph (void);
 struct cgraph_node * cgraph_copy_node_for_versioning (struct cgraph_node *,
 		tree, VEC(cgraph_edge_p,heap)*, bitmap);
@@ -621,6 +621,7 @@ void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*,
 			       bool, bitmap, bool, bitmap, basic_block);
 bool cgraph_process_new_functions (void);
 void cgraph_process_same_body_aliases (void);
+void fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target, tree alias);
 
 
 /* In cgraphbuild.c  */
@@ -668,17 +669,15 @@ void dump_varpool_node (FILE *, struct varpool_node *);
 void varpool_finalize_decl (tree);
 bool decide_is_variable_needed (struct varpool_node *, tree);
 enum availability cgraph_variable_initializer_availability (struct varpool_node *);
-void cgraph_make_decl_local (tree);
 void cgraph_make_node_local (struct cgraph_node *);
 bool cgraph_node_can_be_local_p (struct cgraph_node *);
 
 
 void varpool_remove_node (struct varpool_node *node);
 void varpool_finalize_named_section_flags (struct varpool_node *node);
-bool varpool_assemble_pending_decls (void);
+bool varpool_output_variables (void);
 bool varpool_assemble_decl (struct varpool_node *node);
 void varpool_analyze_node (struct varpool_node *);
-void varpool_remove_unreferenced_decls (void);
 struct varpool_node * varpool_extra_name_alias (tree, tree);
 struct varpool_node * varpool_create_variable_alias (tree, tree);
 void varpool_reset_queue (void);
@@ -1288,4 +1287,5 @@ cgraph_mark_force_output_node (struct cgraph_node *node)
   node->symbol.force_output = 1;
   gcc_checking_assert (!node->global.inlined_to);
 }
+
 #endif  /* GCC_CGRAPH_H  */
