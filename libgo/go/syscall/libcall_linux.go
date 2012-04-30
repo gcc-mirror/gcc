@@ -203,7 +203,11 @@ func Getdents(fd int, buf []byte) (n int, err error) {
 		p = (*byte)(unsafe.Pointer(&_zero))
 	}
 	Entersyscall()
-	r1, _, errno := Syscall(SYS_GETDENTS64, uintptr(fd), uintptr(unsafe.Pointer(p)), uintptr(len(buf)))
+	s := SYS_GETDENTS64
+	if s == 0 {
+		s = SYS_GETDENTS
+	}
+	r1, _, errno := Syscall(uintptr(s), uintptr(fd), uintptr(unsafe.Pointer(p)), uintptr(len(buf)))
 	n = int(r1)
 	if n < 0 {
 		err = errno
