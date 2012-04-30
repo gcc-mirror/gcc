@@ -1,5 +1,17 @@
 2012-04-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): In type annotation mode,
+	do not adjust the size of a tagged type if there is a representation
+	clause on it.  Otherwise, round the adjustment up to the alignment
+	of the first field and use the appropriate helper routine.
+	(maybe_pad_type): Do not warn in type annotation mode on a tagged type.
+	(gnat_to_gnu_field): Do not error out under the same circumstances.
+	(annotate_rep): In type annotation mode, do not adjust the offset of
+	components of a tagged type with representation clause.  Otherwise,
+	round the adjustment up to the alignment of the first field.
+
+2012-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (finish_record_type): Force the traditional GCC
 	layout for bitfields on the type if it is packed or has a representation
 	clause and an alternate layout is available.
@@ -14,7 +26,7 @@
 	(destroy_dummy_type): Likewise.
 	* gcc-interface/trans.c (gnat_validate_uc_list): New variable.
 	(gigi): Call validate_unchecked_conversion on gnat_validate_uc_list
-	after the translation is completed.  Call destroy_gnat_to_gnu and
+	after the translation is completed.  Call destroy_gnat_to_gnu and
 	destroy_dummy_type at the end.
 	(Subprogram_Body_to_gnu): Do not call mark_out_of_scope.
 	(gnat_to_gnu) <N_Block_Statement>: Likewise.
