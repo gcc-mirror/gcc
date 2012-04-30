@@ -689,6 +689,10 @@ Wvariadic-macros
 C ObjC C++ ObjC++ Warning
 Do not warn about using variadic macros when -pedantic
 
+Wvarargs
+C ObjC C++ ObjC++ Warning Var(warn_varargs) Init(1)
+Warn about questionable usage of the macros used to retrieve variable arguments
+
 Wvla
 C ObjC C++ ObjC++ Var(warn_vla) Init(-1) Warning
 Warn if a variable length array is used

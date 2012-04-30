@@ -1,5 +1,11 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Add -Wvarargs option
+	* c-c++-common/Wvarargs.c: New test case.
+	* c-c++-common/Wvarargs-2.c: Likewise.
+
+2012-04-30  Dodji Seketeli  <dodji@redhat.com>
+
 	Adjust relevant test cases wrt -ftrack-macro-expansion=[0|2]
 	* objc.dg/foreach-7.m: Force the test case to run without
 	-ftrack-macro-expansion.

@@ -12127,8 +12127,8 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
 	  /* Evidently an out of date version of <stdarg.h>; can't validate
 	     va_start's second argument, but can still work as intended.  */
 	  warning_at (current_location,
-		      0,
-		      "%<__builtin_next_arg%> called without an argument");
+		      OPT_Wvarargs,
+		   "%<__builtin_next_arg%> called without an argument");
 	  return true;
 	}
       else if (nargs > 1)
@@ -12164,7 +12164,7 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
 	     argument so that we will get wrong-code because of
 	     it.  */
 	  warning_at (current_location,
-		      0,
+		      OPT_Wvarargs,
 		      "second parameter of %<va_start%> not last named argument");
 	}
 
@@ -12177,7 +12177,7 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
       else if (DECL_REGISTER (arg))
 	{
 	  warning_at (current_location,
-		      0,
+		      OPT_Wvarargs,
 		      "undefined behaviour when second parameter of "
 		      "%<va_start%> is declared with %<register%> storage");
 	}

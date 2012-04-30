@@ -1,5 +1,12 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Add -Wvarargs option
+	* builtins.c (fold_builtin_next_arg):  Use OPT_Wvarargs as an
+    	argument for the various warning_at calls.
+	* docs/invoke.texi: Update the documentation.
+
+2012-04-30  Dodji Seketeli  <dodji@redhat.com>
+
 	Switch -ftrack-macro-expansion=2 on by default.
 	* docs/cppopts.texi: Adjust for enabling -ftrack-macro-expansion=2
 	by default.

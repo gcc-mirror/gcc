@@ -1,3 +1,8 @@
+2012-04-30  Dodji Seketeli  <dodji@redhat.com>
+
+	Add -Wvarargs option
+	* c.opt (Wvarargs):  Define new option.
+
 2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c-common.c (check_function_arguments): Replace

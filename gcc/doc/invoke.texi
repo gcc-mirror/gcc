@@ -4663,6 +4663,13 @@ Warn if variadic macros are used in pedantic ISO C90 mode, or the GNU
 alternate syntax when in pedantic ISO C99 mode.  This is default.
 To inhibit the warning messages, use @option{-Wno-variadic-macros}.
 
+@item -Wvarargs
+@opindex Wvarargs
+@opindex Wno-varargs
+Warn upon questionable usage of the macros used to handle variable
+arguments like @samp{va_start}.  This is default.  To inhibit the
+warning messages, use @option{-Wno-varargs}.
+
 @item -Wvector-operation-performance
 @opindex Wvector-operation-performance
 @opindex Wno-vector-operation-performance
