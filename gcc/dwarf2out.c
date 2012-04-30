@@ -2470,7 +2470,7 @@ DEF_VEC_ALLOC_O(dw_attr_node,gc);
 typedef struct GTY((chain_circular ("%h.die_sib"))) die_struct {
   union die_symbol_or_type_node
     {
-      char * GTY ((tag ("0"))) die_symbol;
+      const char * GTY ((tag ("0"))) die_symbol;
       comdat_type_node_ref GTY ((tag ("1"))) die_type_node;
     }
   GTY ((desc ("use_debug_types"))) die_id;
@@ -5825,7 +5825,7 @@ same_die_p_wrap (dw_die_ref die1, dw_die_ref die2)
 
 /* The prefix to attach to symbols on DIEs in the current comdat debug
    info section.  */
-static char *comdat_symbol_id;
+static const char *comdat_symbol_id;
 
 /* The index of the current symbol within the current comdat CU.  */
 static unsigned int comdat_symbol_number;
@@ -7396,7 +7396,7 @@ output_abbrev_section (void)
 static inline void
 output_die_symbol (dw_die_ref die)
 {
-  char *sym = die->die_id.die_symbol;
+  const char *sym = die->die_id.die_symbol;
 
   if (sym == 0)
     return;
@@ -7678,7 +7678,7 @@ output_die (dw_die_ref die)
 	        }
 	      else
 	        {
-		  char *sym = AT_ref (a)->die_id.die_symbol;
+		  const char *sym = AT_ref (a)->die_id.die_symbol;
 		  int size;
 
 		  gcc_assert (sym);
@@ -7800,8 +7800,8 @@ output_compilation_unit_header (void)
 static void
 output_comp_unit (dw_die_ref die, int output_if_empty)
 {
-  const char *secname;
-  char *oldsym, *tmp;
+  const char *secname, *oldsym;
+  char *tmp;
 
   /* Unless we are outputting main CU, we may throw away empty ones.  */
   if (!output_if_empty && die->die_child == NULL)
