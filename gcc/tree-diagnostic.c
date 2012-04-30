@@ -166,6 +166,18 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
           linemap_resolve_location (line_table, iter->where,
                                     LRK_MACRO_DEFINITION_LOCATION, NULL);
 
+	/* Don't print trace for locations that are reserved or from
+	   within a system header.  */
+	{
+	  const struct line_map *m = NULL;
+	  source_location l = linemap_resolve_location (line_table, resolved_def_loc,
+							LRK_SPELLING_LOCATION,
+							&m);
+	  if (l < RESERVED_LOCATION_COUNT
+	      || LINEMAP_SYSP (m))
+	    continue;
+	}
+
         /* Resolve the location of the expansion point of the macro
            which expansion gave the token represented by def_loc.
            This is the locus 2/ of the earlier comment.  */

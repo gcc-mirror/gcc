@@ -1,5 +1,12 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Strip "<built-in>" loc from displayed expansion context
+	* include/line-map.h (linemap_unwind_toward_expansion): Fix typo
+	in comment.
+	(linemap_unwind_to_first_non_reserved_loc): Declare new function.
+	* line-map.c (linemap_unwind_to_first_non_reserved_loc): Define
+	new function.
+
 	Fix expansion point loc for macro-like tokens
 	* macro.c (macro_of_context): New static function.
 	(_cpp_push_token_context, push_extended_tokens_context): If the

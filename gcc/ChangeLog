@@ -1,5 +1,11 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Strip "<built-in>" loc from displayed expansion context
+	* input.c (expand_location_1): When expanding to spelling location
+	in a context of a macro expansion, skip reserved system header
+	locations.  Update comments.  * tree-diagnostic.c
+	(maybe_unwind_expanded_macro_loc): Likewise.
+
 	Make expand_location resolve to locus in main source file
 	* input.c (expand_location_1): New.  Takes a parameter to choose
 	whether to resolve the location to spelling or expansion point.
