@@ -4,7 +4,8 @@
 
 template<int... N> int foo ()
 {
-  return sizeof... N ();	// { dg-error "cannot be used as a function" }
+  return sizeof... (N ());	// { dg-error "cannot be used as a function" }
+  return sizeof... (N) ();	// { dg-error "cannot be used as a function" }
 }
 
 int bar ()

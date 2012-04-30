@@ -1,3 +1,9 @@
+2012-04-30  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/51314
+	* g++.dg/cpp0x/vt-51314.C: New test.
+	* g++.dg/cpp0x/variadic76.C: Fix.
+
 2012-04-30  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* gcc.dg/pr52283.c: Add missing dg-warning and dg-options.
