@@ -10167,7 +10167,9 @@ adjacent_mem_locations (rtx a, rtx b)
 }
 
 /* Return true if OP is a valid load or store multiple operation.  LOAD is true
-   for load operations, false for store operations.
+   for load operations, false for store operations.  CONSECUTIVE is true
+   if the register numbers in the operation must be consecutive in the register
+   bank. RETURN_PC is true if value is to be loaded in PC.
    The pattern we are trying to match for load is:
      [(SET (R_d0) (MEM (PLUS (addr) (offset))))
       (SET (R_d1) (MEM (PLUS (addr) (offset + <reg_increment>))))
@@ -10182,20 +10184,31 @@ adjacent_mem_locations (rtx a, rtx b)
          REGNO (R_dk) = REGNO (R_d0) + k.
    The pattern for store is similar.  */
 bool
-ldm_stm_operation_p (rtx op, bool load)
+ldm_stm_operation_p (rtx op, bool load, enum machine_mode mode,
+                     bool consecutive, bool return_pc)
 {
   HOST_WIDE_INT count = XVECLEN (op, 0);
   rtx reg, mem, addr;
   unsigned regno;
+  unsigned first_regno;
   HOST_WIDE_INT i = 1, base = 0, offset = 0;
   rtx elt;
   bool addr_reg_in_reglist = false;
   bool update = false;
   int reg_increment;
   int offset_adj;
+  int regs_per_val;
 
-  reg_increment = 4;
-  offset_adj = 0;
+  /* If not in SImode, then registers must be consecutive
+     (e.g., VLDM instructions for DFmode).  */
+  gcc_assert ((mode == SImode) || consecutive);
+  /* Setting return_pc for stores is illegal.  */
+  gcc_assert (!return_pc || load);
+
+  /* Set up the increments and the regs per val based on the mode.  */
+  reg_increment = GET_MODE_SIZE (mode);
+  regs_per_val = reg_increment / 4;
+  offset_adj = return_pc ? 1 : 0;
 
   if (count <= 1
       || GET_CODE (XVECEXP (op, 0, offset_adj)) != SET
@@ -10223,9 +10236,11 @@ ldm_stm_operation_p (rtx op, bool load)
 
   i = i + offset_adj;
   base = base + offset_adj;
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= i)
-    return false;
+  /* Perform a quick check so we don't blow up below. If only one reg is loaded,
+     success depends on the type: VLDM can do just one reg,
+     LDM must do at least two.  */
+  if ((count <= i) && (mode == SImode))
+      return false;
 
   elt = XVECEXP (op, 0, i - 1);
   if (GET_CODE (elt) != SET)
@@ -10246,6 +10261,7 @@ ldm_stm_operation_p (rtx op, bool load)
     return false;
 
   regno = REGNO (reg);
+  first_regno = regno;
   addr = XEXP (mem, 0);
   if (GET_CODE (addr) == PLUS)
     {
@@ -10277,10 +10293,13 @@ ldm_stm_operation_p (rtx op, bool load)
         }
 
       if (!REG_P (reg)
-          || GET_MODE (reg) != SImode
+          || GET_MODE (reg) != mode
           || REGNO (reg) <= regno
+          || (consecutive
+              && (REGNO (reg) !=
+                  (unsigned int) (first_regno + regs_per_val * (i - base))))
           || !MEM_P (mem)
-          || GET_MODE (mem) != SImode
+          || GET_MODE (mem) != mode
           || ((GET_CODE (XEXP (mem, 0)) != PLUS
 	       || !rtx_equal_p (XEXP (XEXP (mem, 0), 0), addr)
 	       || !CONST_INT_P (XEXP (XEXP (mem, 0), 1))

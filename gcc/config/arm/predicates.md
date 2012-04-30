@@ -380,13 +380,17 @@
 (define_special_predicate "load_multiple_operation"
   (match_code "parallel")
 {
- return ldm_stm_operation_p (op, /*load=*/true);
+ return ldm_stm_operation_p (op, /*load=*/true, SImode,
+                                 /*consecutive=*/false,
+                                 /*return_pc=*/false);
 })
 
 (define_special_predicate "store_multiple_operation"
   (match_code "parallel")
 {
- return ldm_stm_operation_p (op, /*load=*/false);
+ return ldm_stm_operation_p (op, /*load=*/false, SImode,
+                                 /*consecutive=*/false,
+                                 /*return_pc=*/false);
 })
 
 (define_special_predicate "multi_register_push"

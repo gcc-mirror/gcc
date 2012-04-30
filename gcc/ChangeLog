@@ -7,6 +7,11 @@
 	* config/arm/predicates.md (load_multiple_operation): Update predicate.
 	(store_multiple_operation): Likewise.
 
+	* config/arm/arm-protos.h (ldm_stm_operation_p): New parameters.
+	* config/arm/arm.c (ldm_stm_operation_p): New parameters.
+	* config/arm/predicates.md (load_multiple_operation): Add arguments.
+	(store_multiple_operation): Likewise.	
+
 2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (and<mode>3): Expand masking operations with
