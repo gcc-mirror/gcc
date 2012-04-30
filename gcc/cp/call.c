@@ -6133,7 +6133,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 /* va_arg (EXPR, TYPE) is a builtin. Make sure it is not abused.  */
 
 tree
-build_x_va_arg (tree expr, tree type)
+build_x_va_arg (source_location loc, tree expr, tree type)
 {
   if (processing_template_decl)
     return build_min (VA_ARG_EXPR, type, expr);
@@ -6159,7 +6159,7 @@ build_x_va_arg (tree expr, tree type)
       return expr;
     }
 
-  return build_va_arg (input_location, expr, type);
+  return build_va_arg (loc, expr, type);
 }
 
 /* TYPE has been given to va_arg.  Apply the default conversions which

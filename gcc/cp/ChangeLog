@@ -1,5 +1,14 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Fix va_arg type location
+	* cp-tree.h (build_x_va_arg): Take an additional location
+	parameter.
+	* call.c (build_x_va_arg): Take a loc parameter for the location
+	of the type of the va_arg expression.
+	* parser.c (cp_parser_primary_expression): Pass the type of the
+	type in the va_arg expression to build_x_va_arg.
+	* pt.c (tsubst_copy): Adjust calls to build_x_va_arg.
+
 	Make conversion warnings work on NULL with -ftrack-macro-expansion
 	* call.c (conversion_null_warnings): Use the new
 	expansion_point_location_if_in_system_header.

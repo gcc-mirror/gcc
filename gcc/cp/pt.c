@@ -12480,7 +12480,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       gcc_unreachable ();
 
     case VA_ARG_EXPR:
-      return build_x_va_arg (tsubst_copy (TREE_OPERAND (t, 0), args, complain,
+      return build_x_va_arg (EXPR_LOCATION (t),
+			     tsubst_copy (TREE_OPERAND (t, 0), args, complain,
 					  in_decl),
 			     tsubst (TREE_TYPE (t), args, complain, in_decl));
 
@@ -14313,7 +14314,8 @@ tsubst_copy_and_build (tree t,
       }
 
     case VA_ARG_EXPR:
-      return build_x_va_arg (RECUR (TREE_OPERAND (t, 0)),
+      return build_x_va_arg (EXPR_LOCATION (t),
+			     RECUR (TREE_OPERAND (t, 0)),
 			     tsubst (TREE_TYPE (t), args, complain, in_decl));
 
     case OFFSETOF_EXPR:
