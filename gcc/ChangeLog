@@ -1,3 +1,11 @@
+2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* doc/invoke.texi (Wmissing-format-attribute): Document as an
+	alias of Wsuggest-attribute=format.
+	* c-typeck.c (convert_for_assignment): Replace
+	Wmissing-format-attribute with Wsuggest-attribute=format.
+	(digest_init): Likewise.
+
 2012-04-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
         * opts.c (finish_options): Do not handle -Wmissing-noreturn here.

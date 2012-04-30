@@ -7624,7 +7624,7 @@ convert_for_assignment (tree type, tree rhs,
 	  return error_mark_node;
 	}
     }
-  if (warn_missing_format_attribute)
+  if (warn_suggest_attribute_format)
     {
       const enum tree_code codel = TREE_CODE (type);
       if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
@@ -7636,31 +7636,31 @@ convert_for_assignment (tree type, tree rhs,
 	    case ICR_ARGPASS:
 	    case ICR_DEFAULT_ARGUMENT:
 	      if (fndecl)
-		warning (OPT_Wmissing_format_attribute,
+		warning (OPT_Wsuggest_attribute_format,
 			 "parameter %qP of %qD might be a candidate "
 			 "for a format attribute", parmnum, fndecl);
 	      else
-		warning (OPT_Wmissing_format_attribute,
+		warning (OPT_Wsuggest_attribute_format,
 			 "parameter might be a candidate "
 			 "for a format attribute");
 	      break;
 	    case ICR_CONVERTING:
-	      warning (OPT_Wmissing_format_attribute,
+	      warning (OPT_Wsuggest_attribute_format,
 		       "target of conversion might be a candidate "
 		       "for a format attribute");
 	      break;
 	    case ICR_INIT:
-	      warning (OPT_Wmissing_format_attribute,
+	      warning (OPT_Wsuggest_attribute_format,
 		       "target of initialization might be a candidate "
 		       "for a format attribute");
 	      break;
 	    case ICR_RETURN:
-	      warning (OPT_Wmissing_format_attribute,
+	      warning (OPT_Wsuggest_attribute_format,
 		       "return type might be a candidate "
 		       "for a format attribute");
 	      break;
 	    case ICR_ASSIGN:
-	      warning (OPT_Wmissing_format_attribute,
+	      warning (OPT_Wsuggest_attribute_format,
 		       "left-hand side of assignment might be a candidate "
 		       "for a format attribute");
 	      break;

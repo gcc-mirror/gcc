@@ -6321,7 +6321,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
 				   TYPE_SIZE (integer_type_node)))
     val = perform_integral_promotions (val);
   if ((complain & tf_warning)
-      && warn_missing_format_attribute)
+      && warn_suggest_attribute_format)
     {
       tree rhstype = TREE_TYPE (val);
       const enum tree_code coder = TREE_CODE (rhstype);
@@ -6329,7 +6329,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
       if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
 	  && coder == codel
 	  && check_missing_format_attribute (type, rhstype))
-	warning (OPT_Wmissing_format_attribute,
+	warning (OPT_Wsuggest_attribute_format,
 		 "argument of function call might be a candidate for a format attribute");
     }
   return val;

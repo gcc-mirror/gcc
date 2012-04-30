@@ -477,9 +477,13 @@ Wmissing-field-initializers
 C ObjC C++ ObjC++ Var(warn_missing_field_initializers) Init(-1) Warning
 Warn about missing fields in struct initializers
 
-Wmissing-format-attribute
-C ObjC C++ ObjC++ Var(warn_missing_format_attribute) Warning
+Wsuggest-attribute=format
+C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
 Warn about functions which might be candidates for format attributes
+
+Wmissing-format-attribute
+C ObjC C++ ObjC++ Alias(Wsuggest-attribute=format)
+;
 
 Wmissing-include-dirs
 C ObjC C++ ObjC++ Warning
