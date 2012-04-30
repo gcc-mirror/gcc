@@ -1,3 +1,9 @@
+2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (and<mode>3): Change runtime operand mode checks
+	to compile-time "mode == <MODE>mode" checks.
+	(and splitter): Ditto.
+
 2012-04-30  Richard Henderson  <rth@redhat.com>
 
 	* config/arm/arm.md (UNSPEC_LL): New.
@@ -40,7 +46,7 @@
 	* config/arm/arm-protos.h (ldm_stm_operation_p): New parameters.
 	* config/arm/arm.c (ldm_stm_operation_p): New parameters.
 	* config/arm/predicates.md (load_multiple_operation): Add arguments.
-	(store_multiple_operation): Likewise.	
+	(store_multiple_operation): Likewise.
 
 2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
 
