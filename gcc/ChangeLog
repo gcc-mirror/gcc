@@ -1,5 +1,9 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Fix va_start related location
+	* builtins.c (fold_builtin_next_arg): Unwinds to the first
+	location in real source code.
+
 	Make conversion warnings work on NULL with -ftrack-macro-expansion
 	* input.h (expansion_point_location_if_in_system_header): Declare
 	new function.
