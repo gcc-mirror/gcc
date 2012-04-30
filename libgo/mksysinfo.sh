@@ -224,6 +224,14 @@ grep '^const _SYS_' gen-sysinfo.go | \
     echo "const $sup = _$sys" >> ${OUT}
   done
 
+# The GNU/Linux support wants to use SYS_GETDENTS64 if available.
+if ! grep '^const SYS_GETDENTS ' ${OUT} >/dev/null 2>&1; then
+  echo "const SYS_GETDENTS = 0" >> ${OUT}
+fi
+if ! grep '^const SYS_GETDENTS64 ' ${OUT} >/dev/null 2>&1; then
+  echo "const SYS_GETDENTS64 = 0" >> ${OUT}
+fi
+
 # Stat constants.
 grep '^const _S_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(S_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
