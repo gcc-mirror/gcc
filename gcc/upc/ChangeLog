@@ -1,3 +1,20 @@
+2012-04-30  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* Make-lang.in: Add year 2012 to the copyright.
+
+2012-04-30  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* gupc.c: Delete. The old GUPC driver.
+	* gupcspec.c: Add. The new GUPC driver tailored
+	after fortran/gfortranspec.c driver. Options "-n", "-inst",
+	and "-inst-functions' are not supported by the new driver.
+	Support for building gupc and xgupc remains the same.
+	* Make-lang.in (xgupc): Changes to compile gupcspec.c
+	instead of gupc.c
+	(gupc): Ditto.
+	* gupc.texi: Remove '-n', '-inst', and '-inst-functions'
+	options.
+
 2012-04-17  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* gupc.texi: Fix the warning for usage of 'insertcopying'
