@@ -1,3 +1,7 @@
+2012-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn6.ad[sb]: New test.
+
 2012-04-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 53149

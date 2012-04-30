@@ -108,10 +108,6 @@ extern Entity_Id Gigi_Equivalent_Type (Entity_Id gnat_entity);
    be elaborated at the point of its definition, but do nothing else.  */
 extern void elaborate_entity (Entity_Id gnat_entity);
 
-/* Mark GNAT_ENTITY as going out of scope at this point.  Recursively mark
-   any entities on its entity chain similarly.  */
-extern void mark_out_of_scope (Entity_Id gnat_entity);
-
 /* Get the unpadded version of a GNAT type.  */
 extern tree get_unpadded_type (Entity_Id gnat_entity);
 
@@ -504,6 +500,9 @@ extern tree convert_to_index_type (tree expr);
 /* Initialize the association of GNAT nodes to GCC trees.  */
 extern void init_gnat_to_gnu (void);
 
+/* Destroy the association of GNAT nodes to GCC trees.  */
+extern void destroy_gnat_to_gnu (void);
+
 /* GNAT_ENTITY is a GNAT tree node for a defining identifier.
    GNU_DECL is the GCC tree which is to be associated with
    GNAT_ENTITY. Such gnu tree node is always an ..._DECL node.
@@ -522,6 +521,9 @@ extern bool present_gnu_tree (Entity_Id gnat_entity);
 
 /* Initialize the association of GNAT nodes to GCC trees as dummies.  */
 extern void init_dummy_type (void);
+
+/* Destroy the association of GNAT nodes to GCC trees as dummies.  */
+extern void destroy_dummy_type (void);
 
 /* Make a dummy type corresponding to GNAT_TYPE.  */
 extern tree make_dummy_type (Entity_Id gnat_type);

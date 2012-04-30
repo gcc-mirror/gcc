@@ -109,6 +109,12 @@ bool type_annotate_only;
 /* Current filename without path.  */
 const char *ref_filename;
 
+DEF_VEC_I(Node_Id);
+DEF_VEC_ALLOC_I(Node_Id,heap);
+
+/* List of N_Validate_Unchecked_Conversion nodes in the unit.  */
+static VEC(Node_Id,heap) *gnat_validate_uc_list;
+
 /* When not optimizing, we cache the 'First, 'Last and 'Length attributes
    of unconstrained array IN parameters to avoid emitting a great deal of
    redundant instructions to recompute them each time.  */
@@ -251,6 +257,7 @@ static bool addressable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
 static tree extract_values (tree, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
+static void validate_unchecked_conversion (Node_Id);
 static tree maybe_implicit_deref (tree);
 static void set_expr_location_from_node (tree, Node_Id);
 static bool set_end_locus_from_node (tree, Node_Id);
@@ -278,6 +285,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
       Entity_Id standard_character, Entity_Id standard_long_long_float,
       Entity_Id standard_exception_type, Int gigi_operating_mode)
 {
+  Node_Id gnat_iter;
   Entity_Id gnat_literal;
   tree long_long_float_type, exception_type, t, ftype;
   tree int64_type = gnat_type_for_size (64, 0);
@@ -648,6 +656,13 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   /* Now translate the compilation unit proper.  */
   Compilation_Unit_to_gnu (gnat_root);
 
+  /* Then process the N_Validate_Unchecked_Conversion nodes.  We do this at
+     the very end to avoid having to second-guess the front-end when we run
+     into dummy nodes during the regular processing.  */
+  for (i = 0; VEC_iterate (Node_Id, gnat_validate_uc_list, i, gnat_iter); i++)
+    validate_unchecked_conversion (gnat_iter);
+  VEC_free (Node_Id, heap, gnat_validate_uc_list);
+
   /* Finally see if we have any elaboration procedures to deal with.  */
   for (info = elab_info_list; info; info = info->next)
     {
@@ -668,6 +683,10 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 	  rest_of_subprog_body_compilation (info->elab_proc);
 	}
     }
+
+  /* Destroy ourselves.  */
+  destroy_gnat_to_gnu ();
+  destroy_dummy_type ();
 
   /* We cannot track the location of errors past this point.  */
   error_gnat_node = Empty;
@@ -3480,8 +3499,6 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   /* If there is a stub associated with the function, build it now.  */
   if (DECL_FUNCTION_STUB (gnu_subprog_decl))
     build_function_stub (gnu_subprog_decl, gnat_subprog_id);
-
-  mark_out_of_scope (Defining_Unit_Name (Specification (gnat_node)));
 }
 
 /* Return true if GNAT_NODE requires atomic synchronization.  */
@@ -6036,9 +6053,6 @@ gnat_to_gnu (Node_Id gnat_node)
       add_stmt (gnat_to_gnu (Handled_Statement_Sequence (gnat_node)));
       gnat_poplevel ();
       gnu_result = end_stmt_group ();
-
-      if (Present (Identifier (gnat_node)))
-	mark_out_of_scope (Entity (Identifier (gnat_node)));
       break;
 
     case N_Exit_Statement:
@@ -6760,83 +6774,10 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Validate_Unchecked_Conversion:
-      {
-	Entity_Id gnat_target_type = Target_Type (gnat_node);
-	tree gnu_source_type = gnat_to_gnu_type (Source_Type (gnat_node));
-	tree gnu_target_type = gnat_to_gnu_type (gnat_target_type);
-
-	/* No need for any warning in this case.  */
-	if (!flag_strict_aliasing)
-	  ;
-
-	/* If the result is a pointer type, see if we are either converting
-	   from a non-pointer or from a pointer to a type with a different
-	   alias set and warn if so.  If the result is defined in the same
-	   unit as this unchecked conversion, we can allow this because we
-	   can know to make the pointer type behave properly.  */
-	else if (POINTER_TYPE_P (gnu_target_type)
-		 && !In_Same_Source_Unit (gnat_target_type, gnat_node)
-		 && !No_Strict_Aliasing (Underlying_Type (gnat_target_type)))
-	  {
-	    tree gnu_source_desig_type = POINTER_TYPE_P (gnu_source_type)
-					 ? TREE_TYPE (gnu_source_type)
-					 : NULL_TREE;
-	    tree gnu_target_desig_type = TREE_TYPE (gnu_target_type);
-
-	    if ((TYPE_IS_DUMMY_P (gnu_target_desig_type)
-		 || get_alias_set (gnu_target_desig_type) != 0)
-		&& (!POINTER_TYPE_P (gnu_source_type)
-		    || (TYPE_IS_DUMMY_P (gnu_source_desig_type)
-			!= TYPE_IS_DUMMY_P (gnu_target_desig_type))
-		    || (TYPE_IS_DUMMY_P (gnu_source_desig_type)
-			&& gnu_source_desig_type != gnu_target_desig_type)
-		    || !alias_sets_conflict_p
-			(get_alias_set (gnu_source_desig_type),
-			 get_alias_set (gnu_target_desig_type))))
-	      {
-		post_error_ne
-		  ("?possible aliasing problem for type&",
-		   gnat_node, Target_Type (gnat_node));
-		post_error
-		  ("\\?use -fno-strict-aliasing switch for references",
-		   gnat_node);
-		post_error_ne
-		  ("\\?or use `pragma No_Strict_Aliasing (&);`",
-		   gnat_node, Target_Type (gnat_node));
-	      }
-	  }
-
-	/* But if the result is a fat pointer type, we have no mechanism to
-	   do that, so we unconditionally warn in problematic cases.  */
-	else if (TYPE_IS_FAT_POINTER_P (gnu_target_type))
-	  {
-	    tree gnu_source_array_type
-	      = TYPE_IS_FAT_POINTER_P (gnu_source_type)
-		? TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_source_type)))
-		: NULL_TREE;
-	    tree gnu_target_array_type
-	      = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_target_type)));
-
-	    if ((TYPE_IS_DUMMY_P (gnu_target_array_type)
-		 || get_alias_set (gnu_target_array_type) != 0)
-		&& (!TYPE_IS_FAT_POINTER_P (gnu_source_type)
-		    || (TYPE_IS_DUMMY_P (gnu_source_array_type)
-			!= TYPE_IS_DUMMY_P (gnu_target_array_type))
-		    || (TYPE_IS_DUMMY_P (gnu_source_array_type)
-			&& gnu_source_array_type != gnu_target_array_type)
-		    || !alias_sets_conflict_p
-			(get_alias_set (gnu_source_array_type),
-			 get_alias_set (gnu_target_array_type))))
-	      {
-		post_error_ne
-		  ("?possible aliasing problem for type&",
-		   gnat_node, Target_Type (gnat_node));
-		post_error
-		  ("\\?use -fno-strict-aliasing switch for references",
-		   gnat_node);
-	      }
-	  }
-      }
+      /* The only validation we currently do on an unchecked conversion is
+	 that of aliasing assumptions.  */
+      if (flag_strict_aliasing)
+	VEC_safe_push (Node_Id, heap, gnat_validate_uc_list, gnat_node);
       gnu_result = alloc_stmt_list ();
       break;
 
@@ -8721,6 +8662,65 @@ extract_values (tree values, tree record_type)
     }
 
   return gnat_build_constructor (record_type, v);
+}
+
+/* Process a N_Validate_Unchecked_Conversion node.  */
+
+static void
+validate_unchecked_conversion (Node_Id gnat_node)
+{
+  tree gnu_source_type = gnat_to_gnu_type (Source_Type (gnat_node));
+  tree gnu_target_type = gnat_to_gnu_type (Target_Type (gnat_node));
+
+  /* If the target is a pointer type, see if we are either converting from a
+     non-pointer or from a pointer to a type with a different alias set and
+     warn if so, unless the pointer has been marked to alias everything.  */
+  if (POINTER_TYPE_P (gnu_target_type)
+      && !TYPE_REF_CAN_ALIAS_ALL (gnu_target_type))
+    {
+      tree gnu_source_desig_type = POINTER_TYPE_P (gnu_source_type)
+				   ? TREE_TYPE (gnu_source_type)
+				   : NULL_TREE;
+      tree gnu_target_desig_type = TREE_TYPE (gnu_target_type);
+      alias_set_type target_alias_set = get_alias_set (gnu_target_desig_type);
+
+      if (target_alias_set != 0
+	  && (!POINTER_TYPE_P (gnu_source_type)
+	      || !alias_sets_conflict_p (get_alias_set (gnu_source_desig_type),
+					 target_alias_set)))
+	{
+	  post_error_ne ("?possible aliasing problem for type&",
+			 gnat_node, Target_Type (gnat_node));
+	  post_error ("\\?use -fno-strict-aliasing switch for references",
+		      gnat_node);
+	  post_error_ne ("\\?or use `pragma No_Strict_Aliasing (&);`",
+			 gnat_node, Target_Type (gnat_node));
+	}
+    }
+
+  /* Likewise if the target is a fat pointer type, but we have no mechanism to
+     mitigate the problem in this case, so we unconditionally warn.  */
+  else if (TYPE_IS_FAT_POINTER_P (gnu_target_type))
+    {
+      tree gnu_source_desig_type
+	= TYPE_IS_FAT_POINTER_P (gnu_source_type)
+	  ? TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_source_type)))
+	  : NULL_TREE;
+      tree gnu_target_desig_type
+	= TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_target_type)));
+      alias_set_type target_alias_set = get_alias_set (gnu_target_desig_type);
+
+      if (target_alias_set != 0
+	  && (!TYPE_IS_FAT_POINTER_P (gnu_source_type)
+	      || !alias_sets_conflict_p (get_alias_set (gnu_source_desig_type),
+					 target_alias_set)))
+	{
+	  post_error_ne ("?possible aliasing problem for type&",
+			 gnat_node, Target_Type (gnat_node));
+	  post_error ("\\?use -fno-strict-aliasing switch for references",
+		      gnat_node);
+	}
+    }
 }
 
 /* EXP is to be treated as an array or record.  Handle the cases when it is

@@ -231,6 +231,15 @@ init_gnat_to_gnu (void)
   associate_gnat_to_gnu = ggc_alloc_cleared_vec_tree (max_gnat_nodes);
 }
 
+/* Destroy the association of GNAT nodes to GCC trees.  */
+
+void
+destroy_gnat_to_gnu (void)
+{
+  ggc_free (associate_gnat_to_gnu);
+  associate_gnat_to_gnu = NULL;
+}
+
 /* GNAT_ENTITY is a GNAT tree node for an entity.  Associate GNU_DECL, a GCC
    tree node, with GNAT_ENTITY.  If GNU_DECL is not a ..._DECL node, abort.
    If NO_CHECK is true, the latter check is suppressed.
@@ -278,6 +287,15 @@ void
 init_dummy_type (void)
 {
   dummy_node_table = ggc_alloc_cleared_vec_tree (max_gnat_nodes);
+}
+
+/* Destroy the association of GNAT nodes to GCC trees as dummies.  */
+
+void
+destroy_dummy_type (void)
+{
+  ggc_free (dummy_node_table);
+  dummy_node_table = NULL;
 }
 
 /* Make a dummy type corresponding to GNAT_TYPE.  */
