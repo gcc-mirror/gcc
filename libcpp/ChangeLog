@@ -1,3 +1,10 @@
+2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Dodji Seketeli  <dodji@seketeli.org>
+
+	PR 5297
+	* libcpp/files.c (maybe_shorter_path): New.
+	(find_file_in_dir): Use it.
+
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
 	Switch -ftrack-macro-expansion=2 on by default.
