@@ -12095,6 +12095,13 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
   tree fntype = TREE_TYPE (current_function_decl);
   int nargs = call_expr_nargs (exp);
   tree arg;
+  /* There is good chance the current input_location points inside the
+     definition of the va_start macro (perhaps on the token for
+     builtin) in a system header, so warnings will not be emitted.
+     Use the location in real source code.  */
+  source_location current_location =
+    linemap_unwind_to_first_non_reserved_loc (line_table, input_location,
+					      NULL);
 
   if (!stdarg_p (fntype))
     {
@@ -12119,7 +12126,9 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
 	{
 	  /* Evidently an out of date version of <stdarg.h>; can't validate
 	     va_start's second argument, but can still work as intended.  */
-	  warning (0, "%<__builtin_next_arg%> called without an argument");
+	  warning_at (current_location,
+		      0,
+		      "%<__builtin_next_arg%> called without an argument");
 	  return true;
 	}
       else if (nargs > 1)
@@ -12154,7 +12163,9 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
 	     argument.  We just warn and set the arg to be the last
 	     argument so that we will get wrong-code because of
 	     it.  */
-	  warning (0, "second parameter of %<va_start%> not last named argument");
+	  warning_at (current_location,
+		      0,
+		      "second parameter of %<va_start%> not last named argument");
 	}
 
       /* Undefined by C99 7.15.1.4p4 (va_start):
@@ -12164,8 +12175,12 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
          the default argument promotions, the behavior is undefined."
       */
       else if (DECL_REGISTER (arg))
-        warning (0, "undefined behaviour when second parameter of "
-                 "%<va_start%> is declared with %<register%> storage");
+	{
+	  warning_at (current_location,
+		      0,
+		      "undefined behaviour when second parameter of "
+		      "%<va_start%> is declared with %<register%> storage");
+	}
 
       /* We want to verify the second parameter just once before the tree
 	 optimizers are run and then avoid keeping it in the tree,
