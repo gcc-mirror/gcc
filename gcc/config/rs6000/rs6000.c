@@ -7398,6 +7398,11 @@ rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
       /* Otherwise fall through to more conventional ABI rules.  */
     }
 
+#if HAVE_UPC_PTS_STRUCT_REP
+  if (POINTER_TYPE_P (type) && upc_shared_type_p (TREE_TYPE (type)))
+    return true;
+#endif
+
   if (AGGREGATE_TYPE_P (type)
       && (aix_struct_return
 	  || (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 8))
@@ -8790,6 +8795,17 @@ rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 
   if (!type)
     return 0;
+
+#if HAVE_UPC_PTS_STRUCT_REP
+  if (DEFAULT_ABI == ABI_V4 && POINTER_TYPE_P (type)
+      && upc_shared_type_p (TREE_TYPE (type)))
+    {
+      if (TARGET_DEBUG_ARG)
+	fprintf (stderr, 
+		 "function_arg_pass_by_reference: V4 UPC ptr to shared\n");
+      return 1;
+    }
+#endif
 
   if (DEFAULT_ABI == ABI_V4 && AGGREGATE_TYPE_P (type))
     {

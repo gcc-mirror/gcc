@@ -1,3 +1,12 @@
+2012-04-29  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* config/rs6000/rs6000.c (rs6000_return_in_memory): Conform to
+	PPC ABI. In UPC structure pointer representation, a function
+	returns pointer to shared in memory instead of registers.
+	(rs6000_pass_by_reference): Conform to PPC ABI. In UPC structure
+	pointer representation, pointer to shared function argument
+	must be passed in memory instead of registers.
+
 2012-04-28  Gary Funck  <gary@intrepid.com>
 
 	* c-decl.c (grokdeclarator): Set 'type' to error node
@@ -6,7 +15,6 @@
 	* upc-act.c: Fix a couple of spelling errors in comments.
 
 2012-04-26  Gary Funck  <gary@intrepid.com>
-
 
 	* c-family/c-pragma.c (handle_pragma_upc):
 	Fix typo in warning message.
