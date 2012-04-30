@@ -1,3 +1,9 @@
+2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53141
+	* config/i386/i386.md (*umul<mode><dwi>3_1): Switch places of
+	constraints 0 and 1.
+
 012-04-30  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (ld_plugin_symbol_resolution_names): Move to symtab.c
@@ -35,8 +41,7 @@
 	(varpool_remove_unreferenced_decls): Remove.
 	* ipa-inline-transform.c (clone_inlined_nodes): Dissolve comdat groups.
 	(preserve_function_body_p): Make static.
-	* toplev.c (compile_file): Update comments;
-	update.
+	* toplev.c (compile_file): Update comments; update.
 	* cgraphunit.c: Update comments.
 	(cgraph_expand_all_functions): Rename to ...
 	(expand_all_functions): ... this one; update.
@@ -66,11 +71,12 @@
 	* optimize.c (maybe_clone_body): Use symtab_add_to_same_comdat_group.
 	* method.c (use_thunk): Likewise.
 	* semantics.c (maybe_add_lambda_conv_op): Likewise.
-	* decl2.c (maybe_emit_vtables): Likewise.	
+	* decl2.c (maybe_emit_vtables): Likewise.
 	(cp_write_global_declarations): Use finalize_compilation_unit.
 	* parser.c (cp_parser_asm_definition): Use add_asm_node.
 	* lto-streamer-in.c (lto_input_toplevel_asms): Use add_asm_node
-	* c-decl.c (c_write_global_declarations): Use finalize_compilation_unit.
+	* c-decl.c (c_write_global_declarations): Use
+	finalize_compilation_unit.
 	* langhooks.c (write_global_declarations): Update.
 	* ipa.c (cgraph_externally_visible_p): Update.
 	(dissolve_same_comdat_group_list): Remove.
@@ -84,7 +90,8 @@
 	(symtab_make_decl_local): New.
 	* passes.c (register_pass): Update comments.
 	* c-parser.c (c_parser_asm_definition): Update.
-	* varpool.c (varpool_analyze_node): Use fixup_same_cpp_alias_visibility.
+	* varpool.c (varpool_analyze_node): Use
+	fixup_same_cpp_alias_visibility.
 	(varpool_remove_unreferenced_decls): Make static.
 	(varpool_assemble_pending_decls): Rename to ...
 	(varpool_output_variables): ... this one; call
