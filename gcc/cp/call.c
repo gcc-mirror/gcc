@@ -5598,12 +5598,15 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   if (expr == null_node && TREE_CODE (totype) != BOOLEAN_TYPE
       && ARITHMETIC_TYPE_P (totype))
     {
+      source_location loc =
+	expansion_point_location_if_in_system_header (input_location);
+
       if (fn)
-	warning_at (input_location, OPT_Wconversion_null,
+	warning_at (loc, OPT_Wconversion_null,
 		    "passing NULL to non-pointer argument %P of %qD",
 		    argnum, fn);
       else
-	warning_at (input_location, OPT_Wconversion_null,
+	warning_at (loc, OPT_Wconversion_null,
 		    "converting to non-pointer type %qT from NULL", totype);
     }
 

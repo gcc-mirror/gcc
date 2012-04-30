@@ -1,5 +1,9 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Make conversion warnings work on NULL with -ftrack-macro-expansion
+	* g++.dg/warn/Wconversion-null-2.C: Add testing for __null,
+	alongside the previous testing for NULL.
+
 	Fix -Wuninitialized for -ftrack-macro-expansion
 	* gcc.dg/cpp/pragma-diagnostic-2.c: Fix this.
 

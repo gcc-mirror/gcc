@@ -3838,9 +3838,12 @@ cp_build_binary_op (location_t location,
 	  || (!null_ptr_cst_p (orig_op1) 
 	      && !TYPE_PTR_P (type1) && !TYPE_PTR_TO_MEMBER_P (type1)))
       && (complain & tf_warning))
-    /* Some sort of arithmetic operation involving NULL was
-       performed.  */
-    warning (OPT_Wpointer_arith, "NULL used in arithmetic");
+    {
+      source_location loc =
+	expansion_point_location_if_in_system_header (input_location);
+
+      warning_at (loc, OPT_Wpointer_arith, "NULL used in arithmetic");
+    }
 
   switch (code)
     {
