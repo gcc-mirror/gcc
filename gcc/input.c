@@ -32,16 +32,22 @@ struct line_maps *line_table;
 
 /* Expand the source location LOC into a human readable location.  If
    LOC resolves to a builtin location, the file name of the readable
-   location is set to the string "<built-in>".  */
+   location is set to the string "<built-in>". If EXPANSION_POINT_P is
+   TRUE and LOC is virtual, then it is resolved to the expansion
+   point of the involved macro.  Otherwise, it is resolved to the
+   spelling location of the token.  */
 
-expanded_location
-expand_location (source_location loc)
+static expanded_location
+expand_location_1 (source_location loc,
+		   bool expansion_point_p)
 {
   expanded_location xloc;
   const struct line_map *map;
 
   loc = linemap_resolve_location (line_table, loc,
-				  LRK_SPELLING_LOCATION, &map);
+				  expansion_point_p
+				  ? LRK_MACRO_EXPANSION_POINT
+				  : LRK_SPELLING_LOCATION, &map);
   xloc = linemap_expand_location (line_table, map, loc);
 
   if (loc <= BUILTINS_LOCATION)
@@ -108,6 +114,30 @@ location_get_source_line(expanded_location xloc)
   fclose (stream);
   return buffer;
 }
+
+/* Expand the source location LOC into a human readable location.  If
+   LOC is virtual, it resolves to the expansion point of the involved
+   macro.  If LOC resolves to a builtin location, the file name of the
+   readable location is set to the string "<built-in>".  */
+
+expanded_location
+expand_location (source_location loc)
+{
+  return expand_location_1 (loc, /*expansion_point_p=*/true);
+}
+
+/* Expand the source location LOC into a human readable location.  If
+   LOC is virtual, it resolves to the expansion location of the
+   relevant macro.  If LOC resolves to a builtin location, the file
+   name of the readable location is set to the string
+   "<built-in>".  */
+
+expanded_location
+expand_location_to_spelling_point (source_location loc)
+{
+  return expand_location_1 (loc, /*expansion_piont_p=*/false);
+}
+
 
 #define ONE_K 1024
 #define ONE_M (ONE_K * ONE_K)
