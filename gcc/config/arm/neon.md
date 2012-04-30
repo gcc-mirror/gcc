@@ -926,6 +926,45 @@
                     (const_string "neon_int_3")))]
 )
 
+(define_insn "negdi2_neon"
+  [(set (match_operand:DI 0 "s_register_operand"	 "=&w, w,r,&r")
+	(neg:DI (match_operand:DI 1 "s_register_operand" "  w, w,0, r")))
+   (clobber (match_scratch:DI 2				 "= X,&w,X, X"))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_NEON"
+  "#"
+  [(set_attr "length" "8")]
+)
+
+; Split negdi2_neon for vfp registers
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(neg:DI (match_operand:DI 1 "s_register_operand" "")))
+   (clobber (match_scratch:DI 2 ""))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_NEON && reload_completed && IS_VFP_REGNUM (REGNO (operands[0]))"
+  [(set (match_dup 2) (const_int 0))
+   (parallel [(set (match_dup 0) (minus:DI (match_dup 2) (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  {
+    if (!REG_P (operands[2]))
+      operands[2] = operands[0];
+  }
+)
+
+; Split negdi2_neon for core registers
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(neg:DI (match_operand:DI 1 "s_register_operand" "")))
+   (clobber (match_scratch:DI 2 ""))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_32BIT && reload_completed
+   && arm_general_register_operand (operands[0], DImode)"
+  [(parallel [(set (match_dup 0) (neg:DI (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+)
+
 (define_insn "*umin<mode>3_neon"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
 	(umin:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")
