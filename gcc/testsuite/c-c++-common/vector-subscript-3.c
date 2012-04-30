@@ -16,4 +16,3 @@ int test1(void)
   vector int a;
   return a[-1]; /* { dg-warning "index value is out of bound" } */
 }
-

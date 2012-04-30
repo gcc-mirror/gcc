@@ -1119,4 +1119,6 @@ struct GTY(()) tree_userdef_literal {
 
 extern tree build_userdef_literal (tree suffix_id, tree value, tree num_string);
 
+extern void convert_vector_to_pointer_for_subscript (location_t, tree*, tree);
+
 #endif /* ! GCC_C_COMMON_H */

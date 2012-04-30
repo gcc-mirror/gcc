@@ -1,5 +1,9 @@
 2012-04-30  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR c++/51033
+	* typeck.c (cp_build_array_ref): Handle VECTOR_TYPE.
+	* decl2.c (grok_array_decl): Likewise.
+
 	PR c++/51314
 	* parser.c (cp_parser_sizeof_operand): Require parentheses for
 	sizeof...

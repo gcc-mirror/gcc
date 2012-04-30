@@ -6823,7 +6823,7 @@ a = 2 * b;    /* a = @{2,2,2,2@} * b; */
 a = l + a;    /* Error, cannot convert long to int. */
 @end smallexample
 
-In C vectors can be subscripted as if the vector were an array with
+Vectors can be subscripted as if the vector were an array with
 the same number of elements and base type.  Out of bound accesses
 invoke undefined behavior at runtime.  Warnings for out of bound
 accesses for vector subscription can be enabled with

@@ -10,4 +10,3 @@ float vf(int i)
   register vector float a;
   return a[0];
 }
-

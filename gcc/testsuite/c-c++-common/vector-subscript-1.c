@@ -6,7 +6,7 @@
 
 float vf(vector float a)
 {
-  return 0[a]; /* { dg-error "subscripted value is neither array nor pointer nor vector" } */
+  return 0[a]; /* { dg-error "subscripted value is neither array nor pointer nor vector|invalid types .* for array subscript" } */
 }
 
 
@@ -14,4 +14,3 @@ float fv(vector float a)
 {
   return a[0];
 }
-

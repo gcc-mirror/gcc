@@ -2340,26 +2340,7 @@ build_array_ref (location_t loc, tree array, tree index)
 
   gcc_assert (TREE_CODE (TREE_TYPE (index)) == INTEGER_TYPE);
 
-  /* For vector[index], convert the vector to a
-     pointer of the underlying type.  */
-  if (TREE_CODE (TREE_TYPE (array)) == VECTOR_TYPE)
-    {
-      tree type = TREE_TYPE (array);
-      tree type1;
-
-      if (TREE_CODE (index) == INTEGER_CST)
-        if (!host_integerp (index, 1)
-            || ((unsigned HOST_WIDE_INT) tree_low_cst (index, 1)
-               >= TYPE_VECTOR_SUBPARTS (TREE_TYPE (array))))
-          warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
-
-      c_common_mark_addressable_vec (array);
-      type = build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
-      type = build_pointer_type (type);
-      type1 = build_pointer_type (TREE_TYPE (array));
-      array = build1 (ADDR_EXPR, type1, array);
-      array = convert (type, array);
-    }
+  convert_vector_to_pointer_for_subscript (loc, &array, index);
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {

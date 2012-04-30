@@ -1,3 +1,9 @@
+2012-04-30  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/51033
+	* c-common.c (convert_vector_to_pointer_for_subscript): New function.
+	* c-common.h (convert_vector_to_pointer_for_subscript): Declare it.
+
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
 	Add -Wvarargs option

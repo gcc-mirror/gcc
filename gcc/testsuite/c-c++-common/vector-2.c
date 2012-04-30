@@ -18,4 +18,3 @@ int f(void)
  a1 =  a1 & b1;
  a1 =  a1 ^ b1;
 }
-
