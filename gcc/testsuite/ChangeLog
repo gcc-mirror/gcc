@@ -1,3 +1,7 @@
+2012-04-30  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.dg/pr52283.c: Add missing dg-warning and dg-options.
+
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
 	Add -Wvarargs option
