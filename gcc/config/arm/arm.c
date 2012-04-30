@@ -10166,6 +10166,150 @@ adjacent_mem_locations (rtx a, rtx b)
   return 0;
 }
 
+/* Return true if OP is a valid load or store multiple operation.  LOAD is true
+   for load operations, false for store operations.
+   The pattern we are trying to match for load is:
+     [(SET (R_d0) (MEM (PLUS (addr) (offset))))
+      (SET (R_d1) (MEM (PLUS (addr) (offset + <reg_increment>))))
+       :
+       :
+      (SET (R_dn) (MEM (PLUS (addr) (offset + n * <reg_increment>))))
+     ]
+     where
+     1.  If offset is 0, first insn should be (SET (R_d0) (MEM (src_addr))).
+     2.  REGNO (R_d0) < REGNO (R_d1) < ... < REGNO (R_dn).
+     3.  If consecutive is TRUE, then for kth register being loaded,
+         REGNO (R_dk) = REGNO (R_d0) + k.
+   The pattern for store is similar.  */
+bool
+ldm_stm_operation_p (rtx op, bool load)
+{
+  HOST_WIDE_INT count = XVECLEN (op, 0);
+  rtx reg, mem, addr;
+  unsigned regno;
+  HOST_WIDE_INT i = 1, base = 0, offset = 0;
+  rtx elt;
+  bool addr_reg_in_reglist = false;
+  bool update = false;
+  int reg_increment;
+  int offset_adj;
+
+  reg_increment = 4;
+  offset_adj = 0;
+
+  if (count <= 1
+      || GET_CODE (XVECEXP (op, 0, offset_adj)) != SET
+      || (load && !REG_P (SET_DEST (XVECEXP (op, 0, offset_adj)))))
+    return false;
+
+  /* Check if this is a write-back.  */
+  elt = XVECEXP (op, 0, offset_adj);
+  if (GET_CODE (SET_SRC (elt)) == PLUS)
+    {
+      i++;
+      base = 1;
+      update = true;
+
+      /* The offset adjustment must be the number of registers being
+         popped times the size of a single register.  */
+      if (!REG_P (SET_DEST (elt))
+          || !REG_P (XEXP (SET_SRC (elt), 0))
+          || (REGNO (SET_DEST (elt)) != REGNO (XEXP (SET_SRC (elt), 0)))
+          || !CONST_INT_P (XEXP (SET_SRC (elt), 1))
+          || INTVAL (XEXP (SET_SRC (elt), 1)) !=
+             ((count - 1 - offset_adj) * reg_increment))
+        return false;
+    }
+
+  i = i + offset_adj;
+  base = base + offset_adj;
+  /* Perform a quick check so we don't blow up below.  */
+  if (count <= i)
+    return false;
+
+  elt = XVECEXP (op, 0, i - 1);
+  if (GET_CODE (elt) != SET)
+    return false;
+
+  if (load)
+    {
+      reg = SET_DEST (elt);
+      mem = SET_SRC (elt);
+    }
+  else
+    {
+      reg = SET_SRC (elt);
+      mem = SET_DEST (elt);
+    }
+
+  if (!REG_P (reg) || !MEM_P (mem))
+    return false;
+
+  regno = REGNO (reg);
+  addr = XEXP (mem, 0);
+  if (GET_CODE (addr) == PLUS)
+    {
+      if (!CONST_INT_P (XEXP (addr, 1)))
+	return false;
+
+      offset = INTVAL (XEXP (addr, 1));
+      addr = XEXP (addr, 0);
+    }
+
+  if (!REG_P (addr))
+    return false;
+
+  for (; i < count; i++)
+    {
+      elt = XVECEXP (op, 0, i);
+      if (GET_CODE (elt) != SET)
+        return false;
+
+      if (load)
+        {
+          reg = SET_DEST (elt);
+          mem = SET_SRC (elt);
+        }
+      else
+        {
+          reg = SET_SRC (elt);
+          mem = SET_DEST (elt);
+        }
+
+      if (!REG_P (reg)
+          || GET_MODE (reg) != SImode
+          || REGNO (reg) <= regno
+          || !MEM_P (mem)
+          || GET_MODE (mem) != SImode
+          || ((GET_CODE (XEXP (mem, 0)) != PLUS
+	       || !rtx_equal_p (XEXP (XEXP (mem, 0), 0), addr)
+	       || !CONST_INT_P (XEXP (XEXP (mem, 0), 1))
+	       || (INTVAL (XEXP (XEXP (mem, 0), 1)) !=
+                   offset + (i - base) * reg_increment))
+	      && (!REG_P (XEXP (mem, 0))
+		  || offset + (i - base) * reg_increment != 0)))
+        return false;
+
+      regno = REGNO (reg);
+      if (regno == REGNO (addr))
+        addr_reg_in_reglist = true;
+    }
+
+  if (load)
+    {
+      if (update && addr_reg_in_reglist)
+        return false;
+
+      /* For Thumb-1, address register is always modified - either by write-back
+         or by explicit load.  If the pattern does not describe an update,
+         then the address register must be in the list of loaded registers.  */
+      if (TARGET_THUMB1)
+        return update || addr_reg_in_reglist;
+    }
+
+  return true;
+}
+
 /* Return true iff it would be profitable to turn a sequence of NOPS loads
    or stores (depending on IS_STORE) into a load-multiple or store-multiple
    instruction.  ADD_OFFSET is nonzero if the base address register needs
