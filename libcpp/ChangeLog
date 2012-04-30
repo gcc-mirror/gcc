@@ -1,5 +1,13 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Fix expansion point loc for macro-like tokens
+	* macro.c (macro_of_context): New static function.
+	(_cpp_push_token_context, push_extended_tokens_context): If the
+	macro argument is NULL, it means we are continuing the expansion
+	of the current macro, if any.  Update comments.
+	(_cpp_pop_context): Re-enable expansion of the macro only when we
+	are really out of the context of the current expansion.
+
 	Fix token pasting with -ftrack-macro-expansion
 	* macro.c (paste_all_tokens): Put the token resulting from pasting
 	into an extended token context with -ftrack-macro-location is in
