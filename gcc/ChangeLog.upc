@@ -1,3 +1,16 @@
+2012-04-30  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* upc/gupc.c: Delete. The old GUPC driver.
+	* upc/gupcspec.c: Add. The new GUPC driver tailored
+	after fortran/gfortranspec.c driver. Options "-n", "-inst",
+	and "-inst-functions' are not supported by the new driver.
+	Support for building gupc and xgupc remains the same.
+	* upc/Make-lang.in (xgupc): Changes to compile gupcspec.c
+	instead of gupc.c
+	(gupc): Ditto.
+	* upc/gupc.texi: Remove '-n', '-inst', and '-inst-functions'
+	options.
+
 2012-04-29  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* config/rs6000/rs6000.c (rs6000_return_in_memory): Conform to

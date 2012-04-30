@@ -206,8 +206,7 @@ tells the compiler to process all of the following file names as
 UPC source code, ignoring the default language typically associated 
 with filename extensions.
 
-@item -n N
-@itemx -fupc-threads-N
+@item -fupc-threads-N
 Specify the number of threads at compile-time as @option{N}.  See the
 Number of Threads section, above.
 
@@ -249,16 +248,12 @@ errors are detected at run-time.
 @subsection Instrumentation Options
 
 @table @gcctabopt
-@item --inst
-@cindex @option{--inst}
-@itemx -fupc-instrument
+@item -fupc-instrument
 @cindex @option{-fupc-instrument}
 Instrument UPC shared accesses and library calls using GASP tool 
 support. This option implies @option{-fno-upc-inline-lib}.
 
-@item --inst-functions
-@cindex @option{--inst-functions}
-@itemx -fupc-instrument-functions
+@item -fupc-instrument-functions
 @cindex @option{-fupc-instrument-functions}
 Instrument functions calls using GASP tool support. This option implies 
 @option{-fupc-instrument} and @option{-fno-upc-inline-lib}.

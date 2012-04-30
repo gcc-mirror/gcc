@@ -84,30 +84,35 @@ cc1upc$(exeext): $(UPC_OBJS) $(C_AND_OBJC_OBJS) cc1upc-checksum.o \
 		$(UPC_OBJS) $(C_AND_OBJC_OBJS) cc1upc-checksum.o \
 		$(BACKEND) $(LIBS) $(BACKENDLIBS)
 
-xgupc$(exeext): $(srcdir)/upc/gupc.c Makefile cc1upc$(exeext) $(LIBDEPS)
+# Create xgupc driver for compiling from development tree.
+xgupc$(exeext): $(srcdir)/upc/gupcspec.c $(GCC_OBJS) $(LIBDEPS) \
+	$(CONFIG_H) coretypes.h intl.h $(OPTS_H) \
+	$(EXTRA_GCC_OBJS) libcommon-target.a
 	thisdir=`pwd` ; \
 	incdir=`cd $(srcdir)/../libgupc/include; pwd`; \
 	libdir=`dirname $${thisdir}`/$(target); \
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	    $(DRIVER_DEFINES) \
-	    "-DCOMPILER=\"xgcc\"" \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 	    "-DCOMPILER_DIR=\"$${thisdir}/\"" \
-	    "-DBIN_PATH=\"$${thisdir}\"" \
 	    "-DLIB_PATH=\"$${libdir}\"" \
 	    "-DINC_PATH=\"$${incdir}\"" \
-	    -c $(srcdir)/upc/gupc.c -o xgupc-tmp.o
-	$(CC) $(ALL_LINKERFLAGS) $(LDFLAGS) xgupc-tmp.o -o xgupc$(exeext) $(LIBS)
+	    $(INCLUDES) -c $(srcdir)/upc/gupcspec.c -o xgupc-tmp.o
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o xgupc$(exeext) \
+	  $(GCC_OBJS) xgupc-tmp.o $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
 	rm -f xgupc-tmp.o
 
-gupc$(exeext): $(srcdir)/upc/gupc.c Makefile cc1upc$(exeext) $(LIBDEPS)
-	thisdir=`pwd` ; \
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	    $(DRIVER_DEFINES) \
-	    "-DCOMPILER=\"$(GCC_INSTALL_NAME)\"" \
-	    "-DBIN_PATH=\"$(bindir)\"" \
-	    -c $(srcdir)/upc/gupc.c -o gupc-tmp.o
-	$(CC) $(ALL_LINKERFLAGS) $(LDFLAGS) gupc-tmp.o -o gupc$(exeext) $(LIBS)
-	rm -f gupc-tmp.o
+# Create the compiler driver gupc.
+gupcspec.o: $(srcdir)/upc/gupcspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) \
+	$(CONFIG_H) coretypes.h intl.h $(OPTS_H)
+	(SHLIB='$(SHLIB)'; \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
+	    $(INCLUDES) $(srcdir)/upc/gupcspec.c)
+
+GUPC_D_OBJS = $(GCC_OBJS) gupcspec.o
+gupc$(exeext): $(GUPC_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	  $(GUPC_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
 
 #
 # UPC language specific files.

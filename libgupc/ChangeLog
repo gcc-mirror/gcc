@@ -1,3 +1,9 @@
+2012-04-30  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* testsuite/libgupc.upc/upc.exp: Use '-fupc-threads'
+	option instead of '-n' as the new GUPC driver does not
+	support it.
+
 2012-04-16  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc_lock.c (upc_lock): Adding a fence as per the

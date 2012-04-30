@@ -10,7 +10,7 @@ load_lib libgupc-dg.exp
 
 # If a testcase doesn't have special options, use these.
 if ![info exists DEFAULT_CFLAGS] then {
-    set DEFAULT_CFLAGS "-O2 -n2"
+    set DEFAULT_CFLAGS "-O2 -fupc-threads-2"
 }
 
 # Initialize dg.
