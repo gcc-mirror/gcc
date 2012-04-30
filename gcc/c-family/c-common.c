@@ -8421,7 +8421,7 @@ check_function_arguments (const_tree fntype, int nargs, tree *argarray)
 
   /* Check for errors in format strings.  */
 
-  if (warn_format || warn_missing_format_attribute)
+  if (warn_format || warn_suggest_attribute_format)
     check_function_format (TYPE_ATTRIBUTES (fntype), nargs, argarray);
 
   if (warn_format)
