@@ -611,6 +611,21 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
 {
   const cpp_token *rhs = NULL;
   cpp_context *context = pfile->context;
+  source_location virt_loc = 0;
+
+  /* We must have been called on a token that appears at the left
+     hand side of a ## operator.  */
+  if (!(lhs->flags & PASTE_LEFT))
+    abort ();
+
+  if (context->tokens_kind == TOKENS_KIND_EXTENDED)
+    /* The caller must have called consume_next_token_from_context
+       right before calling us.  That has incremented the pointer to
+       the current virtual location.  So it now points to the location
+       of the token that comes right after *LHS.  We want the
+       resulting pasted token to have the location of the current
+       *LHS, though.  */
+    virt_loc = context->c.mc->cur_virt_loc[-1];
 
   do
     {
@@ -650,7 +665,18 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
   while (rhs->flags & PASTE_LEFT);
 
   /* Put the resulting token in its own context.  */
-  _cpp_push_token_context (pfile, NULL, lhs, 1);
+  if (context->tokens_kind == TOKENS_KIND_EXTENDED)
+    {
+      source_location *virt_locs = NULL;
+      _cpp_buff *token_buf = tokens_buff_new (pfile, 1, &virt_locs);
+      tokens_buff_add_token (token_buf, virt_locs, lhs,
+			     virt_loc, 0, NULL, 0);
+      push_extended_tokens_context (pfile, context->c.mc->macro_node,
+				    token_buf, virt_locs,
+				    (const cpp_token **)token_buf->base, 1);
+    }
+  else
+    _cpp_push_token_context (pfile, NULL, lhs, 1);
 }
 
 /* Returns TRUE if the number of arguments ARGC supplied in an

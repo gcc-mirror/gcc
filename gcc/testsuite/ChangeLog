@@ -1,3 +1,10 @@
+2012-04-30  Dodji Seketeli  <dodji@redhat.com>
+
+	Fix token pasting with -ftrack-macro-expansion
+	* gcc.dg/cpp/paste17.c: New test case for
+    	-ftrack-macro-expansion=2 mode only.
+	* gcc.dg/cpp/macro-exp-tracking-5.c: Likewise.
+
 2012-04-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/warn6.ad[sb]: New test.
