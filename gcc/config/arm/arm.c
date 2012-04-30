@@ -8911,11 +8911,25 @@ neon_valid_immediate (rtx op, enum machine_mode mode, int inverse,
       break;					\
     }
 
-  unsigned int i, elsize = 0, idx = 0, n_elts = CONST_VECTOR_NUNITS (op);
-  unsigned int innersize = GET_MODE_SIZE (GET_MODE_INNER (mode));
+  unsigned int i, elsize = 0, idx = 0, n_elts;
+  unsigned int innersize;
   unsigned char bytes[16];
   int immtype = -1, matches;
   unsigned int invmask = inverse ? 0xff : 0;
+  bool vector = GET_CODE (op) == CONST_VECTOR;
+
+  if (vector)
+    {
+      n_elts = CONST_VECTOR_NUNITS (op);
+      innersize = GET_MODE_SIZE (GET_MODE_INNER (mode));
+    }
+  else
+    {
+      n_elts = 1;
+      if (mode == VOIDmode)
+	mode = DImode;
+      innersize = GET_MODE_SIZE (mode);
+    }
 
   /* Vectors of float constants.  */
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
@@ -8951,7 +8965,7 @@ neon_valid_immediate (rtx op, enum machine_mode mode, int inverse,
   /* Splat vector constant out into a byte vector.  */
   for (i = 0; i < n_elts; i++)
     {
-      rtx el = CONST_VECTOR_ELT (op, i);
+      rtx el = vector ? CONST_VECTOR_ELT (op, i) : op;
       unsigned HOST_WIDE_INT elpart;
       unsigned int part, parts;
 
@@ -17573,6 +17587,19 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	      break;
 	    }
 	  /* Fall through.  */
+
+	default:
+	  output_operand_lossage ("Unsupported operand for code '%c'", code);
+	}
+      return;
+
+    /* An integer that we want to print in HEX.  */
+    case 'x':
+      switch (GET_CODE (x))
+	{
+	case CONST_INT:
+	  fprintf (stream, "#" HOST_WIDE_INT_PRINT_HEX, INTVAL (x));
+	  break;
 
 	default:
 	  output_operand_lossage ("Unsupported operand for code '%c'", code);

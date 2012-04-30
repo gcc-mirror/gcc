@@ -156,9 +156,9 @@
 (define_attr "vqh_mnem" "vadd,vmin,vmax" (const_string "vadd"))
 
 (define_insn "*neon_mov<mode>"
-  [(set (match_operand:VD 0 "nonimmediate_operand"
+  [(set (match_operand:VDX 0 "nonimmediate_operand"
 	  "=w,Uv,w, w,  ?r,?w,?r,?r, ?Us")
-	(match_operand:VD 1 "general_operand"
+	(match_operand:VDX 1 "general_operand"
 	  " w,w, Dn,Uvi, w, r, r, Usi,r"))]
   "TARGET_NEON
    && (register_operand (operands[0], <MODE>mode)
@@ -177,7 +177,7 @@
       if (width == 0)
         return "vmov.f32\t%P0, %1  @ <mode>";
       else
-        sprintf (templ, "vmov.i%d\t%%P0, %%1  @ <mode>", width);
+        sprintf (templ, "vmov.i%d\t%%P0, %%x1  @ <mode>", width);
 
       return templ;
     }

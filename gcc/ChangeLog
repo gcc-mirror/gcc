@@ -1,3 +1,15 @@
+2012-04-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.c (neon_valid_immediate): Allow const_int.
+	(arm_print_operand): Add 'x' format.
+	* config/arm/constraints.md (Dn): Allow const_int.
+	* config/arm/neon.md (neon_mov<mode>): Use VDX to allow DImode.
+	Use 'x' format to print constants.
+	* config/arm/predicates.md (imm_for_neon_mov_operand): Allow const_int.
+	* config/arm/vfp.md (movdi_vfp): Disable for const_int when neon
+	is enabled.
+	(movdi_vfp_cortexa8): Likewise.
+
 2012-04-30  Ian Bolton	<ian.bolton@arm.com>
 	    Sameera Deshpande  <sameera.deshpande@arm.com>
 	    Greta Yorsh	 <greta.yorsh@arm.com>
