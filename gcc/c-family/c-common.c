@@ -10833,4 +10833,30 @@ build_userdef_literal (tree suffix_id, tree value, tree num_string)
   return literal;
 }
 
+/* For vector[index], convert the vector to a
+   pointer of the underlying type.  */
+void
+convert_vector_to_pointer_for_subscript (location_t loc,
+					 tree* vecp, tree index)
+{
+  if (TREE_CODE (TREE_TYPE (*vecp)) == VECTOR_TYPE)
+    {
+      tree type = TREE_TYPE (*vecp);
+      tree type1;
+
+      if (TREE_CODE (index) == INTEGER_CST)
+        if (!host_integerp (index, 1)
+            || ((unsigned HOST_WIDE_INT) tree_low_cst (index, 1)
+               >= TYPE_VECTOR_SUBPARTS (type)))
+          warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
+
+      c_common_mark_addressable_vec (*vecp);
+      type = build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
+      type = build_pointer_type (type);
+      type1 = build_pointer_type (TREE_TYPE (*vecp));
+      *vecp = build1 (ADDR_EXPR, type1, *vecp);
+      *vecp = convert (type, *vecp);
+    }
+}
+
 #include "gt-c-family-c-common.h"

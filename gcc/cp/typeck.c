@@ -2915,6 +2915,8 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
       break;
     }
 
+  convert_vector_to_pointer_for_subscript (loc, &array, idx);
+
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
       tree rval, type;

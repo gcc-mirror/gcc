@@ -1,3 +1,10 @@
+2012-04-30  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/51033
+	* c-typeck.c (build_array_ref): Call
+	convert_vector_to_pointer_for_subscript.
+	* doc/extend.texi (Vector Extensions): Subscripting not just for C.
+
 2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (and<mode>3): Change runtime operand mode checks

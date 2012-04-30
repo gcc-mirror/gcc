@@ -373,7 +373,7 @@ grok_array_decl (tree array_expr, tree index_exp)
 	 It is a little-known fact that, if `a' is an array and `i' is
 	 an int, you can write `i[a]', which means the same thing as
 	 `a[i]'.  */
-      if (TREE_CODE (type) == ARRAY_TYPE)
+      if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == VECTOR_TYPE)
 	p1 = array_expr;
       else
 	p1 = build_expr_type_conversion (WANT_POINTER, array_expr, false);
