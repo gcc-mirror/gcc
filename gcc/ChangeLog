@@ -1,8 +1,14 @@
+2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (and<mode>3): Expand masking operations with
+	0xff, 0xffff or 0xffffffff immediates to corresponding zero_extend RTX.
+	(and splitter): Split to DImode zero_extend RTX for DImode operand[0].
+
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
 	Add -Wvarargs option
 	* builtins.c (fold_builtin_next_arg):  Use OPT_Wvarargs as an
-    	argument for the various warning_at calls.
+	argument for the various warning_at calls.
 	* docs/invoke.texi: Update the documentation.
 
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
@@ -18,13 +24,11 @@
 	Make conversion warnings work on NULL with -ftrack-macro-expansion
 	* input.h (expansion_point_location_if_in_system_header): Declare
 	new function.
-	* input.c (expansion_point_location_if_in_system_header): Define
-	it.
+	* input.c (expansion_point_location_if_in_system_header): Define it.
 
 	Fix -Wuninitialized for -ftrack-macro-expansion
-	* tree-ssa.c (warn_uninit): Use the spelling location of the
-	variable declaration.  Use linemap_location_before_p for source
-	locations.
+	* tree-ssa.c (warn_uninit): Use the spelling location of the variable
+	declaration.  Use linemap_location_before_p for source locations.
 
 	Strip "<built-in>" loc from displayed expansion context
 	* input.c (expand_location_1): When expanding to spelling location
@@ -61,8 +65,9 @@
 
 2012-04-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-        * opts.c (finish_options): Do not handle -Wmissing-noreturn here.
-        * common.opt (Wmissing-noreturn): Alias of -Wsuggest-attribute=noreturn.
+	* opts.c (finish_options): Do not handle -Wmissing-noreturn here.
+	* common.opt (Wmissing-noreturn): Alias of
+	-Wsuggest-attribute=noreturn.
 
 2012-04-29  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -102,9 +107,8 @@
 
 2012-04-27  Paolo Bonzini  <bonzini@gnu.org>
 
-	* tree-ssa-phiopt.c (conditional_replacement): Replace PHIs
-	whose arguments are -1 and 0, by negating the result of the
-	conditional.
+	* tree-ssa-phiopt.c (conditional_replacement): Replace PHIs whose
+	arguments are -1 and 0, by negating the result of the conditional.
 
 2012-04-27  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -289,8 +293,7 @@
 	* config/sparc/sparc.md (attr type): Delete 'fgm_cmp'.
 	(fpack16_vis, fpackfix_vis, fpack32_vis): Set type to fgm_pack.
 	(fmul8x16_vis, fmul8x16au_vis, fmul8x16al_vis, fmul8sux16_vis,
-	fmul8ulx16_vis, fmuld8sux16_vis, fmuld8ulx16_vis): Set type to
-	fgm_mul.
+	fmul8ulx16_vis, fmuld8sux16_vis, fmuld8ulx16_vis): Set type to fgm_mul.
 	(alignaddrsi_vis, alignaddrdi_vis, alignaddrlsi_vis,
 	alignaddrldi_vis): Set type to gsr.
 	(pdist_vis, pdistn<mode>_vis): Set type to fgm_pdsit.
@@ -348,8 +351,7 @@
 2012-04-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR debug/52857
-	* dwarf2out.c (dbx_reg_number): Assert return value !=
-	INVALID_REGNUM.
+	* dwarf2out.c (dbx_reg_number): Assert return value != INVALID_REGNUM.
 
 2012-04-25  Jakub Jelinek  <jakub@redhat.com>
 
@@ -404,8 +406,9 @@
 
 2012-04-25  Jan Hubicka  <jh@suse.cz>
 
-	PR middle-end/53089 
-	* cgraphunit.c (referred_to_p): Move ahead in file to avoid forward declaration.
+	PR middle-end/53089
+	* cgraphunit.c (referred_to_p): Move ahead in file to avoid
+	forward declaration.
 	(cgraph_finalize_function): Finalize them here.
 	* symtab.c (dump_symtab): Dump ctors and dtors.
 
@@ -417,8 +420,7 @@
 	Also check that unit bytes long store at bitpos / unit * unit
 	doesn't affect bits beyond bitregion_end.
 	* expmed.c (store_bit_field_1): Avoid trying insv if OP_MODE MEM
-	would not fit into bitregion_start ... bitregion_end + 1 bit
-	region.
+	would not fit into bitregion_start ... bitregion_end + 1 bit region.
 	(store_split_bit_field): Decrease unit close to end of bitregion_end
 	if access is restricted in order to avoid mutual recursion.
 
@@ -427,9 +429,8 @@
 	prototypes.
 	* double-int.c (double_int_max_value, double_int_min_value): New
 	functions.
-	* tree-vrp.c (register_edge_assert_for_2): Compare mask
-	for LE_EXPR or GT_EXPR with double_int_max_value
-	instead of double_int_mask.
+	* tree-vrp.c (register_edge_assert_for_2): Compare mask for LE_EXPR
+	or GT_EXPR with double_int_max_value instead of double_int_mask.
 
 2012-04-25  Richard Guenther  <rguenther@suse.de>
 
@@ -437,8 +438,7 @@
 	* tree-vect-loop.c (vect_transform_loop): Adjust.
 	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound): Record
 	the maximum number of iterations for the epilogue loop.
-	(vect_loop_versioning): Remove case re-using the peeled
-	epilogue loop.
+	(vect_loop_versioning): Remove case re-using the peeled epilogue loop.
 
 2012-04-25  Jakub Jelinek  <jakub@redhat.com>
 
