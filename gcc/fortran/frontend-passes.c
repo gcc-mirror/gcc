@@ -270,6 +270,16 @@ create_var (gfc_expr * e)
       inserted_block->ext.block.assoc = NULL;
 
       ns->code = *current_code;
+
+      /* If the statement has a label,  make sure it is transferred to
+	 the newly created block.  */
+
+      if ((*current_code)->here) 
+	{
+	  inserted_block->here = (*current_code)->here;
+	  (*current_code)->here = NULL;
+	}
+
       inserted_block->next = (*current_code)->next;
       changed_statement = &(inserted_block->ext.block.ns->code);
       (*current_code)->next = NULL;

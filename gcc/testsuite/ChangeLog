@@ -1,3 +1,9 @@
+2012-04-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/53148
+	Backport from trunk
+	* gfortran.dg/function_optimize_12.f90:  New test.
+
 2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

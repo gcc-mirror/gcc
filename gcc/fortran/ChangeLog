@@ -1,3 +1,10 @@
+2012-04-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/53148
+	Backport from trunk
+	* frontend-passes.c (create_var):  If the statement has a label,
+	put the label around the block.
+
 2012-04-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/52893
