@@ -1,5 +1,40 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Adjust relevant test cases wrt -ftrack-macro-expansion=[0|2]
+	* objc.dg/foreach-7.m: Force the test case to run without
+	-ftrack-macro-expansion.
+	* c-c++-common/tm/attrib-1.c: Likewise.
+	* c-c++-common/warn-ommitted-condop.c: Likewise.
+	* gcc.dg/assign-warn-1.c: Likewise.
+	* gcc.dg/assign-warn-2.c: Likewise.
+	* gcc.dg/attr-alloc_size.c: Likewise.
+	* gcc.dg/builtin-stringop-chk-1.c: Likewise.
+	* gcc.dg/builtin-stringop-chk-2.c: Likewise.
+	* gcc.dg/builtin-strncat-chk-1.c: Likewise.
+	* gcc.dg/c90-const-expr-9.c: Likewise.
+	* gcc.dg/c99-const-expr-9.c: Likewise.
+	* gcc.dg/cpp/direct2.c: Likewise.  Adjust.
+	* gcc.dg/cpp/direct2s.c: Likewise.
+	* gcc/testsuite/gcc.dg/cpp/pr28709.c: Likewise.
+	* gcc.dg/cpp/pragma-diagnostic-1.c: Likewise.
+	* gcc.dg/dfp/composite-type.c: Likewise.
+	* gcc.dg/uninit-6-O0.c: Adjust the test case and force it to run
+	with -ftrack-macro-expansion
+	* g++.dg/cpp0x/constexpr-ex3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-overflow.C: Likewise.
+	* g++.dg/ext/cleanup-1.C: Likewise.
+	* g++.dg/ext/gnu-inline-global-reject.C: Likewise.
+	* g++.dg/template/sfinae10.C: Likewise.
+	* g++.dg/tm/wrap-2.C: Likewise.
+	* g++.dg/warn/Wconversion-real-integer.C: Likewise.
+	* g++.dg/warn/Wsign-conversion.C: Likewise.
+	* g++.dg/warn/multiple-overflow-warn-1.C: Likewise.
+	* g++.old-deja/g++.mike/p10769b.C: Likewise.
+	* g++.dg/warn/Wdouble-promotion.C: Adjust the test case and force
+	it to run with -ftrack-macro-expansion.
+	* libstdc++-v3/scripts/testsuite_flags.in: By default, run the
+	test cases without -ftrack-macro-expansion.
+
 	Fix location for static class members
 	* g++.dg/template/sfinae6_neg.C: Adjust.
 

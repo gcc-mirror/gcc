@@ -1,7 +1,7 @@
 /* Test whether buffer overflow warnings for __*_chk builtins
    are emitted properly.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -std=gnu99" } */
+/* { dg-options "-O2 -std=gnu99 -ftrack-macro-expansion=0" } */
 /* { dg-options "-mstructure-size-boundary=8 -O2 -std=gnu99" { target arm*-*-* } } */
 
 extern void abort (void);

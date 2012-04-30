@@ -3,7 +3,7 @@
    expansion.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "-std=iso9899:1990 -pedantic-errors" } */
+/* { dg-options "-std=iso9899:1990 -pedantic-errors -ftrack-macro-expansion=0" } */
 
 struct s {
   int a;

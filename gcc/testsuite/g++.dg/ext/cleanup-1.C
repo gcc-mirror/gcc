@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wall" } */
+/* { dg-options "-Wall -ftrack-macro-expansion=0" } */
 /* Validate expected warnings and errors.  */
 
 #define U	__attribute__((unused))
