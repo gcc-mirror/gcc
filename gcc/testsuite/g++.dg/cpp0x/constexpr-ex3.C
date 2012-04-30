@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++0x -ftrack-macro-expansion=0" }
 
 #define SA(X) static_assert (X, #X)
 

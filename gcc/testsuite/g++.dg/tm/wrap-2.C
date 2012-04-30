@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fgnu-tm" } */
+/* { dg-options "-fgnu-tm -ftrack-macro-expansion=0" } */
 
 #define W(X)	__attribute__((transaction_wrap(X)))
 void f1(void);

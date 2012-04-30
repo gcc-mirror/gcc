@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall" } */
+/* { dg-options "-O2 -Wall -ftrack-macro-expansion=0" } */
 
 extern void abort (void);
 
