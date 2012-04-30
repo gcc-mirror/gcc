@@ -2930,7 +2930,26 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
 	       wtd->subfield_marker_routine, cast, d->val);
       if (wtd->param_prefix)
 	{
-	  oprintf (d->of, ", %s", d->prev_val[3]);
+	  if (f->u.p->kind == TYPE_SCALAR)
+	    /* The current type is a pointer to a scalar (so not
+	       considered like a pointer to instances of user defined
+	       types) and we are seeing it; it means we must be even
+	       more careful about the second argument of the
+	       SUBFIELD_MARKER_ROUTINE call.  That argument must
+	       always be the instance of the type for which
+	       write_func_for_structure was called - this really is
+	       what the function SUBFIELD_MARKER_ROUTINE expects.
+	       That is, it must be an instance of the ORIG_S type
+	       parameter of write_func_for_structure.  The convention
+	       is that that argument must be "x" in that case (as set
+	       by write_func_for_structure).  The problem is, we can't
+	       count on d->prev_val[3] to be always set to "x" in that
+	       case.  Sometimes walk_type can set it to something else
+	       (to e.g cooperate with write_array when called from
+	       write_roots).  So let's set it to "x" here then.  */
+	    oprintf (d->of, ", x");
+	  else
+	    oprintf (d->of, ", %s", d->prev_val[3]);
 	  if (d->orig_s)
 	    {
 	      oprintf (d->of, ", gt_%s_", wtd->param_prefix);
