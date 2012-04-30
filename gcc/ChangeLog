@@ -1,3 +1,8 @@
+2012-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (ix86_handle_struct_attribute): Use the proper
+	predicate to discriminate types.
+
 2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Wmissing-format-attribute): Document as an
