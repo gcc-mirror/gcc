@@ -1,5 +1,9 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Fix location for static class members
+	* decl.c (grokdeclarator): Use the location carried by the
+	declarator for the DECL of the static class member.
+
 	Fix va_arg type location
 	* cp-tree.h (build_x_va_arg): Take an additional location
 	parameter.
