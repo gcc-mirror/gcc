@@ -1,3 +1,9 @@
+2012-04-30  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (comdat_symbol_id): Add const.
+	(union die_symbol_or_type_node): Add const to die_symbol.
+	(output_die_symbol, output_die, output_comp_unit): Adjust.
+
 2012-04-30  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/arm.md (negdi2): Use gen_negdi2_neon.
