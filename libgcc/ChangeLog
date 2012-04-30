@@ -1,3 +1,12 @@
+2012-04-30  Andreas Tobler  <andreast@fgznet.ch>
+
+	Backport from mainline
+	2012-03-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config.host: Add bits to support powerpc64-*-freebsd*.
+	* config/rs6000/freebsd-unwind.h: New file.
+	* config/rs6000/t-freebsd64: New file.
+
 2012-04-28  Aurelien Jarno  <aurelien@aurel32.net>
 
 	* config.host (mips64*-*-linux*, mipsisa64*-*-linux*): Remove. 
