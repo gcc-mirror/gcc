@@ -35,7 +35,14 @@ struct line_maps *line_table;
    location is set to the string "<built-in>". If EXPANSION_POINT_P is
    TRUE and LOC is virtual, then it is resolved to the expansion
    point of the involved macro.  Otherwise, it is resolved to the
-   spelling location of the token.  */
+   spelling location of the token.
+
+   When resolving to the spelling location of the token, if the
+   resulting location is for a built-in location (that is, it has no
+   associated line/column) in the context of a macro expansion, the
+   returned location is the first one (while unwinding the macro
+   location towards its expansion point) that is in real source
+   code.  */
 
 static expanded_location
 expand_location_1 (source_location loc,
@@ -43,12 +50,29 @@ expand_location_1 (source_location loc,
 {
   expanded_location xloc;
   const struct line_map *map;
+  enum location_resolution_kind lrk = LRK_MACRO_EXPANSION_POINT;
 
-  loc = linemap_resolve_location (line_table, loc,
-				  expansion_point_p
-				  ? LRK_MACRO_EXPANSION_POINT
-				  : LRK_SPELLING_LOCATION, &map);
-  xloc = linemap_expand_location (line_table, map, loc);
+  memset (&xloc, 0, sizeof (xloc));
+
+  if (loc >= RESERVED_LOCATION_COUNT)
+    {
+      if (!expansion_point_p)
+	{
+	  /* We want to resolve LOC to its spelling location.
+
+	     But if that spelling location is a reserved location that
+	     appears in the context of a macro expansion (like for a
+	     location for a built-in token), let's consider the first
+	     location (toward the expansion point) that is not reserved;
+	     that is, the first location that is in real source code.  */
+	  loc = linemap_unwind_to_first_non_reserved_loc (line_table,
+							  loc, &map);
+	  lrk = LRK_SPELLING_LOCATION;
+	}
+      loc = linemap_resolve_location (line_table, loc,
+				      lrk, &map);
+      xloc = linemap_expand_location (line_table, map, loc);
+    }
 
   if (loc <= BUILTINS_LOCATION)
     xloc.file = loc == UNKNOWN_LOCATION ? NULL : _("<built-in>");

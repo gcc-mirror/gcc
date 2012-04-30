@@ -1,5 +1,11 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Strip "<built-in>" loc from displayed expansion context
+	* g++.dg/warn/Wconversion-real-integer2.C: New test.
+	* g++.dg/warn/Wconversion-real-integer-3.C: Likewise.
+	* g++.dg/warn/conversion-real-integer-3.h: New header used by the
+	new test above.
+
 	Fix expansion point loc for macro-like tokens
 	* gcc.dg/debug/dwarf2/pr41445-5.c: Adjust.
     	* gcc.dg/debug/dwarf2/pr41445-6.c: Likewise.
