@@ -504,7 +504,7 @@
 })
 
 (define_predicate "imm_for_neon_mov_operand"
-  (match_code "const_vector")
+  (match_code "const_vector,const_int")
 {
   return neon_immediate_valid_for_move (op, mode, NULL, NULL);
 })

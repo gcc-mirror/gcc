@@ -138,7 +138,9 @@
        (match_operand:DI 1 "di_operand"              "r,rDa,Db,Dc,mi,mi,r,r,w,w,Uvi,w"))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP && arm_tune != cortexa8
    && (   register_operand (operands[0], DImode)
-       || register_operand (operands[1], DImode))"
+       || register_operand (operands[1], DImode))
+   && !(TARGET_NEON && CONST_INT_P (operands[1])
+        && neon_immediate_valid_for_move (operands[1], DImode, NULL, NULL))"
   "*
   switch (which_alternative)
     {
@@ -187,7 +189,9 @@
        (match_operand:DI 1 "di_operand"              "r,rDa,Db,Dc,mi,mi,r,r,w,w,Uvi,w"))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP && arm_tune == cortexa8
     && (   register_operand (operands[0], DImode)
-        || register_operand (operands[1], DImode))"
+        || register_operand (operands[1], DImode))
+    && !(TARGET_NEON && CONST_INT_P (operands[1])
+	 && neon_immediate_valid_for_move (operands[1], DImode, NULL, NULL))"
   "*
   switch (which_alternative)
     {
