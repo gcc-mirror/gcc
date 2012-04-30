@@ -4891,7 +4891,7 @@ extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int,
 						 tsubst_flags_t);
 extern tree convert_arg_to_ellipsis		(tree, tsubst_flags_t);
-extern tree build_x_va_arg			(tree, tree);
+extern tree build_x_va_arg			(source_location, tree, tree);
 extern tree cxx_type_promotes_to		(tree);
 extern tree type_passed_as			(tree);
 extern tree convert_for_arg_passing		(tree, tree, tsubst_flags_t);
