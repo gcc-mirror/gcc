@@ -1476,9 +1476,9 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 
   if (node->global.inlined_to)
     fprintf (f, "  Function %s/%i is inline copy in %s/%i\n",
-	     cgraph_node_name (node),
+	     xstrdup (cgraph_node_name (node)),
 	     node->symbol.order,
-	     cgraph_node_name (node->global.inlined_to),
+	     xstrdup (cgraph_node_name (node->global.inlined_to)),
 	     node->global.inlined_to->symbol.order);
   if (node->clone_of)
     fprintf (f, "  Clone of %s/%i\n",
