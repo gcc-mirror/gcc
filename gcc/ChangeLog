@@ -1,3 +1,9 @@
+2012-04-30  Richard Henderson  <rth@redhat.com>
+
+	* config/arm/arm.md (UNSPEC_LL): New.
+	* config/arm/sync.md (atomic_loaddi, atomic_loaddi_1): New.
+	(arm_load_exclusivedi): Use %H0.
+
 2012-04-30  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (comdat_symbol_id): Add const.
