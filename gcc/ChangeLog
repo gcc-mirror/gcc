@@ -1,6 +1,6 @@
-2012-04-30  Ian Bolton	<ian.bolton at arm.com>
-	    Sameera Deshpande  <sameera.deshpande at arm.com>
-	    Greta Yorsh	 <greta.yorsh at arm.com>
+2012-04-30  Ian Bolton	<ian.bolton@arm.com>
+	    Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh	 <greta.yorsh@arm.com>
 
 	* config/arm/arm-protos.h (ldm_stm_operation_p): New declaration.
 	* config/arm/arm.c (ldm_stm_operation_p): New function.
