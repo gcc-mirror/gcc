@@ -1,3 +1,11 @@
+2012-04-30  Andreas Tobler  <andreast@fgznet.ch>
+
+	Backport from mainline
+	2012-03-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Skip this test on powerpc64-*-freebsd*.
+
 2012-04-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/scoped_allocator (scoped_allocator::__outermost): Do
