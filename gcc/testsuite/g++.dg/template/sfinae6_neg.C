@@ -21,9 +21,9 @@ no_type check_is_callable2(...);
 template<typename F, typename T1, typename T2 = T1>
 struct is_callable2
 {
-  static const bool value = 
+  static const bool value = // { dg-error "within this context" }
     (sizeof(check_is_callable2(type<F>(), type<T1>(), type<T2>()))
-     == sizeof(yes_type)); // { dg-error "within this context" }
+     == sizeof(yes_type));
 };
 
 #define JOIN( X, Y ) DO_JOIN( X, Y )
