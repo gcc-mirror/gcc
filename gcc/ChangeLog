@@ -1,5 +1,26 @@
 2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR middle-end/53136
+	* ipa-prop.c (ipa_print_node_jump_functions): Wrap multiple
+	calls to cgraph_node_name in xstrdup.
+	(ipa_make_edge_direct_to_target): Ditto.
+	* cgraph.c (dump_cgraph_node): Ditto.
+	* tree-sra.c (convert_callers_for_node): Ditto.
+	* lto-symtab.c (lto_cgraph_replace_node): Ditto.
+	* ipa-cp.c (perhaps_add_new_callers): Ditto.
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Ditto.
+	(cgraph_materialize_all_clones): Ditto.
+	* ipa-inline.c (report_inline_failed_reason): Ditto.
+	(want_early_inline_function_p): Ditto.
+	(edge_badness): Ditto.
+	(update_edge_key): Ditto.
+	(flatten_function): Ditto.
+	(ipa_inline): Ditto.
+	(inlinw_always_inline_functions): Ditto.
+	(early_inline_small_functions): Ditto.
+
+2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/53141
 	* config/i386/i386.md (*umul<mode><dwi>3_1): Switch places of
 	constraints 0 and 1.
