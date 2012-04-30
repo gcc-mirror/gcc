@@ -1,7 +1,7 @@
 2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Dodji Seketeli  <dodji@seketeli.org>
 
-	PR 5297
+	PR c++/52974
 	* libcpp/files.c (maybe_shorter_path): New.
 	(find_file_in_dir): Use it.
 
