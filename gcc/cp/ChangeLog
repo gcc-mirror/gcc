@@ -1,3 +1,9 @@
+2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* typeck.c (convert_for_assignment):  Replace
+	Wmissing-format-attribute with Wsuggest-attribute=format.
+	* call.c (convert_for_arg_passing): Likewise.
+
 2012-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53096

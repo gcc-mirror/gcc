@@ -5594,29 +5594,29 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 
       /* Check if the right-hand side has a format attribute but the
 	 left-hand side doesn't.  */
-      if (warn_missing_format_attribute
+      if (warn_suggest_attribute_format
 	  && check_missing_format_attribute (type, rhstype))
 	{
 	  switch (errtype)
 	  {
 	  case ic_argpass:
-	    warning_at (location, OPT_Wmissing_format_attribute,
+	    warning_at (location, OPT_Wsuggest_attribute_format,
 			"argument %d of %qE might be "
 			"a candidate for a format attribute",
 			parmnum, rname);
 	    break;
 	  case ic_assign:
-	    warning_at (location, OPT_Wmissing_format_attribute,
+	    warning_at (location, OPT_Wsuggest_attribute_format,
 			"assignment left-hand side might be "
 			"a candidate for a format attribute");
 	    break;
 	  case ic_init:
-	    warning_at (location, OPT_Wmissing_format_attribute,
+	    warning_at (location, OPT_Wsuggest_attribute_format,
 			"initialization left-hand side might be "
 			"a candidate for a format attribute");
 	    break;
 	  case ic_return:
-	    warning_at (location, OPT_Wmissing_format_attribute,
+	    warning_at (location, OPT_Wsuggest_attribute_format,
 			"return type might be "
 			"a candidate for a format attribute");
 	    break;
@@ -6335,7 +6335,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	pedwarn_init (init_loc, 0,
 		      "initializer element is not a constant expression");
 
-      /* Added to enable additional -Wmissing-format-attribute warnings.  */
+      /* Added to enable additional -Wsuggest-attribute=format warnings.  */
       if (TREE_CODE (TREE_TYPE (inside_init)) == POINTER_TYPE)
 	inside_init = convert_for_assignment (init_loc, type, inside_init,
 	    				      origtype,

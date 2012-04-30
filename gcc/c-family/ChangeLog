@@ -1,3 +1,11 @@
+2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wsuggest-attribute=format): New. Alias of
+	Wmissing-format-attribute.
+	* c-format.c (decode_format_type): Replace
+	Wmissing-format-attribute with Wsuggest-attribute=format.
+	(check_function_format): Likewise.
+
 2012-04-27   Ollie Wild  <aaw@google.com>
 
 	* c-common.c: Add CPP_W_LITERAL_SUFFIX mapping.

@@ -255,7 +255,7 @@ Objective-C and Objective-C++ Dialects}.
 -Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
 -Wlogical-op -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
--Wmissing-format-attribute  -Wmissing-include-dirs @gol
+-Wmissing-include-dirs @gol
 -Wno-mudflap @gol
 -Wno-multichar  -Wnonnull  -Wno-overflow @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
@@ -266,7 +266,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wsign-compare  -Wsign-conversion  -Wstack-protector @gol
 -Wstack-usage=@var{len} -Wstrict-aliasing -Wstrict-aliasing=n @gol
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
--Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{]} @gol
+-Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
+-Wmissing-format-attribute @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
 -Wsystem-headers  -Wtrampolines  -Wtrigraphs  -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas  -Wno-pragmas @gol
@@ -3860,7 +3861,7 @@ comparisons, so this warning level gives a very large number of
 false positives.
 @end table
 
-@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{]}
+@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]}
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
 Warn for cases where adding an attribute may be beneficial. The
@@ -3885,6 +3886,33 @@ returns normally if it doesn't contain an infinite loop nor returns abnormally
 by throwing, calling @code{abort()} or trapping.  This analysis requires option
 @option{-fipa-pure-const}, which is enabled by default at @option{-O} and
 higher.  Higher optimization levels improve the accuracy of the analysis.
+
+@item -Wsuggest-attribute=format
+@itemx -Wmissing-format-attribute
+@opindex Wsuggest-attribute=format
+@opindex Wmissing-format-attribute
+@opindex Wno-suggest-attribute=format
+@opindex Wno-missing-format-attribute
+@opindex Wformat
+@opindex Wno-format
+
+Warn about function pointers that might be candidates for @code{format}
+attributes.  Note these are only possible candidates, not absolute ones.
+GCC guesses that function pointers with @code{format} attributes that
+are used in assignment, initialization, parameter passing or return
+statements should have a corresponding @code{format} attribute in the
+resulting type.  I.e.@: the left-hand side of the assignment or
+initialization, the type of the parameter variable, or the return type
+of the containing function respectively should also have a @code{format}
+attribute to avoid the warning.
+
+GCC also warns about function definitions that might be
+candidates for @code{format} attributes.  Again, these are only
+possible candidates.  GCC guesses that @code{format} attributes
+might be appropriate for any function that calls a function like
+@code{vprintf} or @code{vscanf}, but this might not always be the
+case, and some functions for which @code{format} attributes are
+appropriate may not be detected.
 @end table
 
 @item -Warray-bounds
@@ -4423,29 +4451,6 @@ struct s x = @{ .f = 3, .g = 4 @};
 
 This warning is included in @option{-Wextra}.  To get other @option{-Wextra}
 warnings without this one, use @option{-Wextra -Wno-missing-field-initializers}.
-
-@item -Wmissing-format-attribute
-@opindex Wmissing-format-attribute
-@opindex Wno-missing-format-attribute
-@opindex Wformat
-@opindex Wno-format
-Warn about function pointers that might be candidates for @code{format}
-attributes.  Note these are only possible candidates, not absolute ones.
-GCC guesses that function pointers with @code{format} attributes that
-are used in assignment, initialization, parameter passing or return
-statements should have a corresponding @code{format} attribute in the
-resulting type.  I.e.@: the left-hand side of the assignment or
-initialization, the type of the parameter variable, or the return type
-of the containing function respectively should also have a @code{format}
-attribute to avoid the warning.
-
-GCC also warns about function definitions that might be
-candidates for @code{format} attributes.  Again, these are only
-possible candidates.  GCC guesses that @code{format} attributes
-might be appropriate for any function that calls a function like
-@code{vprintf} or @code{vscanf}, but this might not always be the
-case, and some functions for which @code{format} attributes are
-appropriate may not be detected.
 
 @item -Wno-multichar
 @opindex Wno-multichar
