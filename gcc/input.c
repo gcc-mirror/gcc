@@ -162,6 +162,26 @@ expand_location_to_spelling_point (source_location loc)
   return expand_location_1 (loc, /*expansion_piont_p=*/false);
 }
 
+/* If LOCATION is in a sytem header and if it's a virtual location for
+   a token coming from the expansion of a macro M, unwind it to the
+   location of the expansion point of M.  Otherwise, just return
+   LOCATION.
+
+   This is used for instance when we want to emit diagnostics about a
+   token that is located in a macro that is itself defined in a system
+   header -- e.g for the NULL macro.  In that case, if LOCATION is
+   passed to diagnostics emitting functions like warning_at as is, no
+   diagnostic won't be emitted.  */
+
+source_location
+expansion_point_location_if_in_system_header (source_location location)
+{
+  if (in_system_header_at (location))
+    location = linemap_resolve_location (line_table, location,
+					 LRK_MACRO_EXPANSION_POINT,
+					 NULL);
+  return location;
+}
 
 #define ONE_K 1024
 #define ONE_M (ONE_K * ONE_K)

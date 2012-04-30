@@ -1,3 +1,11 @@
+2012-04-30  Dodji Seketeli  <dodji@redhat.com>
+
+	Make conversion warnings work on NULL with -ftrack-macro-expansion
+	* call.c (conversion_null_warnings): Use the new
+	expansion_point_location_if_in_system_header.
+	* cvt.c (build_expr_type_conversion): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+
 2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* typeck.c (convert_for_assignment):  Replace

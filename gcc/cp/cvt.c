@@ -1472,8 +1472,13 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
   if (expr == null_node
       && (desires & WANT_INT)
       && !(desires & WANT_NULL))
-    warning_at (input_location, OPT_Wconversion_null,
-		"converting NULL to non-pointer type");
+    {
+      source_location loc =
+	expansion_point_location_if_in_system_header (input_location);
+
+      warning_at (loc, OPT_Wconversion_null,
+		  "converting NULL to non-pointer type");
+    }
 
   basetype = TREE_TYPE (expr);
 
