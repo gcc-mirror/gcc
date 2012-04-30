@@ -157,6 +157,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	     For now we keep the ohter functions in the group in program until
 	     cgraph_remove_unreachable_functions gets rid of them.  */
 	  gcc_assert (!e->callee->global.inlined_to);
+          symtab_dissolve_same_comdat_group_list ((symtab_node) e->callee);
 	  if (e->callee->analyzed && !DECL_EXTERNAL (e->callee->symbol.decl))
 	    {
 	      if (overall_size)
@@ -176,6 +177,8 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  cgraph_redirect_edge_callee (e, n);
 	}
     }
+  else
+    symtab_dissolve_same_comdat_group_list ((symtab_node) e->callee);
 
   if (e->caller->global.inlined_to)
     e->callee->global.inlined_to = e->caller->global.inlined_to;
@@ -355,7 +358,7 @@ save_inline_function_body (struct cgraph_node *node)
 
 /* Return true when function body of DECL still needs to be kept around
    for later re-use.  */
-bool
+static bool
 preserve_function_body_p (struct cgraph_node *node)
 {
   gcc_assert (cgraph_global_info_ready);

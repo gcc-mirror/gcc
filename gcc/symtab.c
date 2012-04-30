@@ -30,6 +30,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "timevar.h"
+#include "lto-streamer.h"
+#include "rtl.h"
+
+const char * const ld_plugin_symbol_resolution_names[]=
+{
+  "",
+  "undef",
+  "prevailing_def",
+  "prevailing_def_ironly",
+  "preempted_reg",
+  "preempted_ir",
+  "resolved_ir",
+  "resolved_exec",
+  "resolved_dyn",
+  "prevailing_def_ironly_exp"
+};
 
 /* Hash table used to convert declarations into nodes.  */
 static GTY((param_is (union symtab_node_def))) htab_t symtab_hash;
@@ -335,6 +351,49 @@ change_decl_assembler_name (tree decl, tree name)
     }
 }
 
+/* Add NEW_ to the same comdat group that OLD is in.  */
+
+void
+symtab_add_to_same_comdat_group (symtab_node new_node,
+				 symtab_node old_node)
+{
+  gcc_assert (DECL_ONE_ONLY (old_node->symbol.decl));
+  gcc_assert (!new_node->symbol.same_comdat_group);
+  gcc_assert (new_node != old_node);
+
+  DECL_COMDAT_GROUP (new_node->symbol.decl) = DECL_COMDAT_GROUP (old_node->symbol.decl);
+  new_node->symbol.same_comdat_group = old_node;
+  if (!old_node->symbol.same_comdat_group)
+    old_node->symbol.same_comdat_group = new_node;
+  else
+    {
+      symtab_node n;
+      for (n = old_node->symbol.same_comdat_group;
+	   n->symbol.same_comdat_group != old_node;
+	   n = n->symbol.same_comdat_group)
+	;
+      n->symbol.same_comdat_group = new_node;
+    }
+}
+
+/* Dissolve the same_comdat_group list in which NODE resides.  */
+
+void
+symtab_dissolve_same_comdat_group_list (symtab_node node)
+{
+  symtab_node n = node, next;
+
+  if (!node->symbol.same_comdat_group)
+    return;
+  do
+    {
+      next = n->symbol.same_comdat_group;
+      n->symbol.same_comdat_group = NULL;
+      n = next;
+    }
+  while (n != node);
+}
+
 /* Return printable assembler name of NODE.
    This function is used only for debugging.  When assembler name
    is unknown go with identifier name.  */
@@ -611,4 +670,82 @@ verify_symtab (void)
    verify_symtab_node (node);
 }
 
+/* Return true when RESOLUTION indicate that linker will use
+   the symbol from non-LTO object files.  */
+
+bool
+resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution)
+{
+  return (resolution == LDPR_PREVAILING_DEF
+          || resolution == LDPR_PREEMPTED_REG
+          || resolution == LDPR_RESOLVED_EXEC
+          || resolution == LDPR_RESOLVED_DYN);
+}
+
+/* Return true when NODE is known to be used from other (non-LTO) object file.
+   Known only when doing LTO via linker plugin.  */
+
+bool
+symtab_used_from_object_file_p (symtab_node node)
+{
+  if (!TREE_PUBLIC (node->symbol.decl) || DECL_EXTERNAL (node->symbol.decl))
+    return false;
+  if (resolution_used_from_other_file_p (node->symbol.resolution))
+    return true;
+  return false;
+}
+
+/* Make DECL local.  FIXME: We shouldn't need to mess with rtl this early,
+   but other code such as notice_global_symbol generates rtl.  */
+void
+symtab_make_decl_local (tree decl)
+{
+  rtx rtl, symbol;
+
+  if (TREE_CODE (decl) == VAR_DECL)
+    DECL_COMMON (decl) = 0;
+  else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+
+  if (DECL_ONE_ONLY (decl) || DECL_COMDAT (decl))
+    {
+      /* It is possible that we are linking against library defining same COMDAT
+	 function.  To avoid conflict we need to rename our local name of the
+	 function just in the case WHOPR partitioning decide to make it hidden
+	 to avoid cross partition references.  */
+      if (flag_wpa)
+	{
+	  const char *old_name;
+          symtab_node node = symtab_get_node (decl);
+	  old_name  = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+	  change_decl_assembler_name (decl,
+				      clone_function_name (decl, "local"));
+	  if (node->symbol.lto_file_data)
+	    lto_record_renamed_decl (node->symbol.lto_file_data,
+				     old_name,
+				     IDENTIFIER_POINTER
+				       (DECL_ASSEMBLER_NAME (decl)));
+	}
+      DECL_SECTION_NAME (decl) = 0;
+      DECL_COMDAT (decl) = 0;
+    }
+  DECL_COMDAT_GROUP (decl) = 0;
+  DECL_WEAK (decl) = 0;
+  DECL_EXTERNAL (decl) = 0;
+  TREE_PUBLIC (decl) = 0;
+  if (!DECL_RTL_SET_P (decl))
+    return;
+
+  /* Update rtl flags.  */
+  make_decl_rtl (decl);
+
+  rtl = DECL_RTL (decl);
+  if (!MEM_P (rtl))
+    return;
+
+  symbol = XEXP (rtl, 0);
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    return;
+
+  SYMBOL_REF_WEAK (symbol) = DECL_WEAK (decl);
+}
 #include "gt-symtab.h"

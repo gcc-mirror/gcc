@@ -20378,7 +20378,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   text_section_line_info->end_label = text_end_label;
 }
 
-/* Called before cgraph_optimize starts outputtting functions, variables
+/* Called before compile () starts outputtting functions, variables
    and toplevel asms into assembly.  */
 
 static void

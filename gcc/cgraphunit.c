@@ -39,7 +39,11 @@ along with GCC; see the file COPYING3.  If not see
       This function has same behavior as the above but is used for static
       variables.
 
-    - cgraph_finalize_compilation_unit
+    - add_asm_node
+
+      Insert new toplevel ASM statement
+
+    - finalize_compilation_unit
 
       This function is called once (source level) compilation unit is finalized
       and it will no longer change.
@@ -54,7 +58,7 @@ along with GCC; see the file COPYING3.  If not see
       The function can be called multiple times when multiple source level
       compilation units are combined.
 
-    - cgraph_optimize
+    - compile
 
       This passes control to the back-end.  Optimizations are performed and
       final assembler is generated.  This is done in the following way. Note
@@ -130,7 +134,7 @@ along with GCC; see the file COPYING3.  If not see
 	    Simple IP passes working within single program partition.
 
 	 5) Expansion
-	    (cgraph_expand_all_functions)
+	    (expand_all_functions)
 
 	    At this stage functions that needs to be output into
 	    assembler are identified and compiled in topological order
@@ -197,13 +201,18 @@ along with GCC; see the file COPYING3.  If not see
    may generate new functions that need to be optimized and expanded.  */
 cgraph_node_set cgraph_new_nodes;
 
-static void cgraph_expand_all_functions (void);
-static void cgraph_mark_functions_to_output (void);
-static void cgraph_expand_function (struct cgraph_node *);
-static void cgraph_output_pending_asms (void);
+static void expand_all_functions (void);
+static void mark_functions_to_output (void);
+static void expand_function (struct cgraph_node *);
 static void cgraph_analyze_function (struct cgraph_node *);
 
 FILE *cgraph_dump_file;
+
+/* Linked list of cgraph asm nodes.  */
+struct asm_node *asm_nodes;
+
+/* Last node in cgraph_asm_nodes.  */
+static GTY(()) struct asm_node *asm_last_node;
 
 /* Used for vtable lookup in thunk adjusting.  */
 static GTY (()) tree vtable_entry_type;
@@ -324,7 +333,7 @@ cgraph_process_new_functions (void)
 	     directly.  */
 	  node->process = 0;
           cgraph_call_function_insertion_hooks (node);
-	  cgraph_expand_function (node);
+	  expand_function (node);
 	  break;
 
 	default:
@@ -372,12 +381,12 @@ cgraph_reset_node (struct cgraph_node *node)
 static bool
 referred_to_p (symtab_node node)
 {
-  int i;
   struct ipa_ref *ref;
 
-  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, i, ref);
-       i++)
+  /* See if there are any refrences at all.  */
+  if (ipa_ref_list_referring_iterate (&node->symbol.ref_list, 0, ref))
     return true;
+  /* For functions check also calls.  */
   if (symtab_function_p (node) && cgraph (node)->callers)
     return true;
   return false;
@@ -518,7 +527,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	  execute_pass_list (pass_early_local_passes.pass.sub);
 	bitmap_obstack_release (NULL);
 	pop_cfun ();
-	cgraph_expand_function (node);
+	expand_function (node);
 	current_function_decl = NULL;
 	break;
 
@@ -533,19 +542,54 @@ cgraph_add_new_function (tree fndecl, bool lowered)
     DECL_FUNCTION_PERSONALITY (fndecl) = lang_hooks.eh_personality ();
 }
 
+/* Add a top-level asm statement to the list.  */
+
+struct asm_node *
+add_asm_node (tree asm_str)
+{
+  struct asm_node *node;
+
+  node = ggc_alloc_cleared_asm_node ();
+  node->asm_str = asm_str;
+  node->order = symtab_order++;
+  node->next = NULL;
+  if (asm_nodes == NULL)
+    asm_nodes = node;
+  else
+    asm_last_node->next = node;
+  asm_last_node = node;
+  return node;
+}
+
 /* Output all asm statements we have stored up to be output.  */
 
 static void
-cgraph_output_pending_asms (void)
+output_asm_statements (void)
 {
-  struct cgraph_asm_node *can;
+  struct asm_node *can;
 
   if (seen_error ())
     return;
 
-  for (can = cgraph_asm_nodes; can; can = can->next)
+  for (can = asm_nodes; can; can = can->next)
     assemble_asm (can->asm_str);
-  cgraph_asm_nodes = NULL;
+  asm_nodes = NULL;
+}
+
+/* C++ FE sometimes change linkage flags after producing same body aliases.  */
+void
+fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target, tree alias)
+{
+  DECL_VIRTUAL_P (node->symbol.decl) = DECL_VIRTUAL_P (alias);
+  if (TREE_PUBLIC (node->symbol.decl))
+    {
+      DECL_EXTERNAL (node->symbol.decl) = DECL_EXTERNAL (alias);
+      DECL_COMDAT (node->symbol.decl) = DECL_COMDAT (alias);
+      DECL_COMDAT_GROUP (node->symbol.decl) = DECL_COMDAT_GROUP (alias);
+      if (DECL_ONE_ONLY (alias)
+	  && !node->symbol.same_comdat_group)
+	symtab_add_to_same_comdat_group ((symtab_node)node, (symtab_node)target);
+    }
 }
 
 /* Analyze the function scheduled to be output.  */
@@ -576,39 +620,13 @@ cgraph_analyze_function (struct cgraph_node *node)
 			      IPA_REF_ALIAS, NULL);
       if (node->same_body_alias)
 	{ 
-	  DECL_VIRTUAL_P (node->symbol.decl) = DECL_VIRTUAL_P (node->thunk.alias);
 	  DECL_DECLARED_INLINE_P (node->symbol.decl)
 	     = DECL_DECLARED_INLINE_P (node->thunk.alias);
 	  DECL_DISREGARD_INLINE_LIMITS (node->symbol.decl)
 	     = DECL_DISREGARD_INLINE_LIMITS (node->thunk.alias);
+	  fixup_same_cpp_alias_visibility ((symtab_node) node, (symtab_node) tgt, node->thunk.alias);
 	}
 
-      /* Fixup visibility nonsences C++ frontend produce on same body aliases.  */
-      if (TREE_PUBLIC (node->symbol.decl) && node->same_body_alias)
-	{
-          DECL_EXTERNAL (node->symbol.decl) = DECL_EXTERNAL (node->thunk.alias);
-	  if (DECL_ONE_ONLY (node->thunk.alias))
-	    {
-	      DECL_COMDAT (node->symbol.decl) = DECL_COMDAT (node->thunk.alias);
-	      DECL_COMDAT_GROUP (node->symbol.decl) = DECL_COMDAT_GROUP (node->thunk.alias);
-	      if (DECL_ONE_ONLY (node->thunk.alias) && !node->symbol.same_comdat_group)
-		{
-		  struct cgraph_node *tgt = cgraph_get_node (node->thunk.alias);
-		  node->symbol.same_comdat_group = (symtab_node)tgt;
-		  if (!tgt->symbol.same_comdat_group)
-		    tgt->symbol.same_comdat_group = (symtab_node)node;
-		  else
-		    {
-		      symtab_node n;
-		      for (n = tgt->symbol.same_comdat_group;
-			   n->symbol.same_comdat_group != (symtab_node)tgt;
-			   n = n->symbol.same_comdat_group)
-			;
-		      n->symbol.same_comdat_group = (symtab_node)node;
-		    }
-		}
-	    }
-	}
       if (node->symbol.address_taken)
 	cgraph_mark_address_taken_node (cgraph_alias_aliased_node (node));
     }
@@ -1074,7 +1092,7 @@ handle_alias_pairs (void)
 /* Figure out what functions we want to assemble.  */
 
 static void
-cgraph_mark_functions_to_output (void)
+mark_functions_to_output (void)
 {
   struct cgraph_node *node;
 #ifdef ENABLE_CHECKING
@@ -1087,15 +1105,10 @@ cgraph_mark_functions_to_output (void)
   FOR_EACH_FUNCTION (node)
     {
       tree decl = node->symbol.decl;
-      struct cgraph_edge *e;
 
       gcc_assert (!node->process || node->symbol.same_comdat_group);
       if (node->process)
 	continue;
-
-      for (e = node->callers; e; e = e->next_caller)
-	if (e->inline_failed)
-	  break;
 
       /* We need to output all local functions that are used and not
 	 always inlined, as well as those that are reachable from
@@ -1544,7 +1557,7 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
 /* Expand function specified by NODE.  */
 
 static void
-cgraph_expand_function (struct cgraph_node *node)
+expand_function (struct cgraph_node *node)
 {
   tree decl = node->symbol.decl;
   location_t saved_loc;
@@ -1641,9 +1654,9 @@ cgraph_expand_function (struct cgraph_node *node)
   current_function_decl = NULL;
 
   /* It would make a lot more sense to output thunks before function body to get more
-     forward and lest backwarding jumps.  This is however would need solving problem
+     forward and lest backwarding jumps.  This however would need solving problem
      with comdats. See PR48668.  Also aliases must come after function itself to
-     make one pass assemblers, like one on AIX happy.  See PR 50689.
+     make one pass assemblers, like one on AIX, happy.  See PR 50689.
      FIXME: Perhaps thunks should be move before function IFF they are not in comdat
      groups.  */
   assemble_thunks_and_aliases (node);
@@ -1665,7 +1678,7 @@ cgraph_expand_function (struct cgraph_node *node)
    order).  */
 
 static void
-cgraph_expand_all_functions (void)
+expand_all_functions (void)
 {
   struct cgraph_node *node;
   struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
@@ -1687,7 +1700,7 @@ cgraph_expand_all_functions (void)
       if (node->process)
 	{
 	  node->process = 0;
-	  cgraph_expand_function (node);
+	  expand_function (node);
 	}
     }
   cgraph_process_new_functions ();
@@ -1713,7 +1726,7 @@ struct cgraph_order_sort
   {
     struct cgraph_node *f;
     struct varpool_node *v;
-    struct cgraph_asm_node *a;
+    struct asm_node *a;
   } u;
 };
 
@@ -1724,14 +1737,14 @@ struct cgraph_order_sort
    need to be output.  */
 
 static void
-cgraph_output_in_order (void)
+output_in_order (void)
 {
   int max;
   struct cgraph_order_sort *nodes;
   int i;
   struct cgraph_node *pf;
   struct varpool_node *pv;
-  struct cgraph_asm_node *pa;
+  struct asm_node *pa;
 
   max = symtab_order;
   nodes = XCNEWVEC (struct cgraph_order_sort, max);
@@ -1755,7 +1768,7 @@ cgraph_output_in_order (void)
       nodes[i].u.v = pv;
     }
 
-  for (pa = cgraph_asm_nodes; pa; pa = pa->next)
+  for (pa = asm_nodes; pa; pa = pa->next)
     {
       i = pa->order;
       gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
@@ -1775,7 +1788,7 @@ cgraph_output_in_order (void)
 	{
 	case ORDER_FUNCTION:
 	  nodes[i].u.f->process = 0;
-	  cgraph_expand_function (nodes[i].u.f);
+	  expand_function (nodes[i].u.f);
 	  break;
 
 	case ORDER_VAR:
@@ -1794,7 +1807,7 @@ cgraph_output_in_order (void)
 	}
     }
 
-  cgraph_asm_nodes = NULL;
+  asm_nodes = NULL;
   free (nodes);
 }
 
@@ -2054,7 +2067,7 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
      that is not weak also.
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
-  cgraph_make_decl_local (new_version_node->symbol.decl);
+  symtab_make_decl_local (new_version_node->symbol.decl);
   DECL_VIRTUAL_P (new_version_node->symbol.decl) = 0;
   new_version_node->symbol.externally_visible = 0;
   new_version_node->local.local = 1;
@@ -2275,7 +2288,7 @@ cgraph_materialize_all_clones (void)
 /* Perform simple optimizations based on callgraph.  */
 
 void
-cgraph_optimize (void)
+compile (void)
 {
   if (seen_error ())
     return;
@@ -2293,6 +2306,10 @@ cgraph_optimize (void)
   if (!quiet_flag)
     fprintf (stderr, "Performing interprocedural optimizations\n");
   cgraph_state = CGRAPH_STATE_IPA;
+
+  /* If LTO is enabled, initialize the streamer hooks needed by GIMPLE.  */
+  if (flag_lto)
+    lto_streamer_hooks_init ();
 
   /* Don't run the IPA passes if there was any error or sorry messages.  */
   if (!seen_error ())
@@ -2338,20 +2355,18 @@ cgraph_optimize (void)
   verify_symtab ();
 #endif
   bitmap_obstack_release (NULL);
-  cgraph_mark_functions_to_output ();
+  mark_functions_to_output ();
   output_weakrefs ();
 
   cgraph_state = CGRAPH_STATE_EXPANSION;
   if (!flag_toplevel_reorder)
-    cgraph_output_in_order ();
+    output_in_order ();
   else
     {
-      cgraph_output_pending_asms ();
+      output_asm_statements ();
 
-      cgraph_expand_all_functions ();
-      varpool_remove_unreferenced_decls ();
-
-      varpool_assemble_pending_decls ();
+      expand_all_functions ();
+      varpool_output_variables ();
     }
 
   cgraph_process_new_functions ();
@@ -2388,13 +2403,9 @@ cgraph_optimize (void)
 /* Analyze the whole compilation unit once it is parsed completely.  */
 
 void
-cgraph_finalize_compilation_unit (void)
+finalize_compilation_unit (void)
 {
   timevar_push (TV_CGRAPH);
-
-  /* If LTO is enabled, initialize the streamer hooks needed by GIMPLE.  */
-  if (flag_lto)
-    lto_streamer_hooks_init ();
 
   /* If we're here there's no current function anymore.  Some frontends
      are lazy in clearing these.  */
@@ -2432,7 +2443,7 @@ cgraph_finalize_compilation_unit (void)
   cgraph_analyze_functions ();
 
   /* Finally drive the pass manager.  */
-  cgraph_optimize ();
+  compile ();
 
   timevar_pop (TV_CGRAPH);
 }

@@ -567,7 +567,7 @@ compile_file (void)
 
   ggc_protect_identifiers = false;
 
-  /* This must also call cgraph_finalize_compilation_unit.  */
+  /* This must also call finalize_compilation_unit.  */
   lang_hooks.decls.final_write_globals ();
 
   if (seen_error ())
@@ -580,8 +580,7 @@ compile_file (void)
      basically finished.  */
   if (in_lto_p || !flag_lto || flag_fat_lto_objects)
     {
-      varpool_remove_unreferenced_decls ();
-      varpool_assemble_pending_decls ();
+      varpool_output_variables ();
       finish_aliases_2 ();
 
       /* Likewise for mudflap static object registrations.  */

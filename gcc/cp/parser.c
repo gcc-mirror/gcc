@@ -15377,7 +15377,7 @@ cp_parser_asm_definition (cp_parser* parser)
 	    }
 	}
       else
-	cgraph_add_asm_node (string);
+	add_asm_node (string);
     }
 }
 

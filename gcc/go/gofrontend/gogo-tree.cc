@@ -930,7 +930,7 @@ Gogo::write_globals()
 
   wrapup_global_declarations(vec, count);
 
-  cgraph_finalize_compilation_unit();
+  finalize_compilation_unit();
 
   check_global_declarations(vec, count);
   emit_debug_global_declarations(vec, count);

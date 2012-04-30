@@ -10040,7 +10040,7 @@ c_write_global_declarations (void)
 
   /* We're done parsing; proceed to optimize and emit assembly.
      FIXME: shouldn't be the front end's responsibility to call this.  */
-  cgraph_finalize_compilation_unit ();
+  finalize_compilation_unit ();
 
   timevar_stop (TV_PHASE_CGRAPH);
   timevar_start (TV_PHASE_DBGINFO);

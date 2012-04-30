@@ -1,3 +1,9 @@
+2012-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/utils.c (rest_of_subprog_body_compilation): Update
+	comment.
+	(gnat_write_global_declarations): Use finalize_compilation_unit.
+
 2012-04-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): In type annotation mode,

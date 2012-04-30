@@ -270,7 +270,7 @@ partition_cgraph_node_p (struct cgraph_node *node)
   if (DECL_EXTERNAL (node->symbol.decl)
       || (DECL_COMDAT (node->symbol.decl)
 	  && !node->symbol.force_output
-	  && !cgraph_used_from_object_file_p (node)))
+	  && !symtab_used_from_object_file_p ((symtab_node) node)))
     return false;
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
     return false;
@@ -289,7 +289,7 @@ partition_varpool_node_p (struct varpool_node *vnode)
   if (DECL_IN_CONSTANT_POOL (vnode->symbol.decl)
       || (DECL_COMDAT (vnode->symbol.decl)
 	  && !vnode->symbol.force_output
-	  && !varpool_used_from_object_file_p (vnode)))
+	  && !symtab_used_from_object_file_p ((symtab_node) vnode)))
     return false;
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (vnode->symbol.decl)))
     return false;

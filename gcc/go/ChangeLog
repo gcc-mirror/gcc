@@ -1,3 +1,7 @@
+2012-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* gogo-tree.cc (Gogo::write_globals): Use finalize_compilation_unit.
+
 2012-04-23  Ian Lance Taylor  <iant@google.com>
 
 	* go-lang.c (go_langhook_init): Set MPFR precision to 256.
