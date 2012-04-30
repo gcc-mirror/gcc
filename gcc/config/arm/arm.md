@@ -117,6 +117,7 @@
 			; that.
   UNSPEC_UNALIGNED_STORE ; Same for str/strh.
   UNSPEC_PIC_UNIFIED    ; Create a common pic addressing form.
+  UNSPEC_LL		; Represent an unpaired load-register-exclusive.
 ])
 
 ;; UNSPEC_VOLATILE Usage:
