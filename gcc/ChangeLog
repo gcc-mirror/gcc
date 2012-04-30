@@ -1,5 +1,11 @@
 2012-04-30  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/arm/arm.md (negdi2): Use gen_negdi2_neon.
+	* config/arm/neon.md (negdi2_neon): New insn.
+	Also add splitters for core and NEON registers.
+
+2012-04-30  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/arm/arm.c (neon_valid_immediate): Allow const_int.
 	(arm_print_operand): Add 'x' format.
 	* config/arm/constraints.md (Dn): Allow const_int.

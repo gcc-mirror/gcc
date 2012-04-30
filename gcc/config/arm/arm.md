@@ -4101,7 +4101,13 @@
 	 (neg:DI (match_operand:DI 1 "s_register_operand" "")))
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
-  ""
+  {
+    if (TARGET_NEON)
+      {
+        emit_insn (gen_negdi2_neon (operands[0], operands[1]));
+	DONE;
+      }
+  }
 )
 
 ;; The constraints here are to prevent a *partial* overlap (where %Q0 == %R1).
