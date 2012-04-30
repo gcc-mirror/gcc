@@ -1,5 +1,15 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Make expand_location resolve to locus in main source file
+	* input.c (expand_location_1): New.  Takes a parameter to choose
+	whether to resolve the location to spelling or expansion point.
+	Was factorized from ...
+	(expand_location): ... here.
+	(expand_location_to_spelling_point): New.  Implemented in terms of
+	expand_location_1.
+	* diagnostic.c (diagnostic_build_prefix): Use the new
+	expand_location_to_spelling_point instead of expand_location.
+
 	Fix PCH crash on GTYed pointer-to-scalar field of a struct
 	* gengtype.c (write_types_process_field): Force second argument of
 	the call to the PCH object hierarchy walker to be 'x'.

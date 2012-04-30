@@ -214,7 +214,7 @@ diagnostic_build_prefix (diagnostic_context *context,
     "must-not-happen"
   };
   const char *text = _(diagnostic_kind_text[diagnostic->kind]);
-  expanded_location s = expand_location (diagnostic->location);
+  expanded_location s = expand_location_to_spelling_point (diagnostic->location);
   if (diagnostic->override_column)
     s.column = diagnostic->override_column;
   gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
@@ -266,7 +266,7 @@ diagnostic_show_locus (diagnostic_context * context,
       || diagnostic->location <= BUILTINS_LOCATION)
     return;
 
-  s = expand_location(diagnostic->location);
+  s = expand_location_to_spelling_point (diagnostic->location);
   line = location_get_source_line (s);
   if (line == NULL)
     return;
