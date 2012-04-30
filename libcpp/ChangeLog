@@ -1,5 +1,9 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Switch -ftrack-macro-expansion=2 on by default.
+	* init.c (cpp_create_reader): Switch -ftrack-macro-expansion=2 on
+	by default.  Add comments.
+
 	Strip "<built-in>" loc from displayed expansion context
 	* include/line-map.h (linemap_unwind_toward_expansion): Fix typo
 	in comment.

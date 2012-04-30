@@ -174,6 +174,12 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   CPP_OPTION (pfile, warn_dollars) = 1;
   CPP_OPTION (pfile, warn_variadic_macros) = 1;
   CPP_OPTION (pfile, warn_builtin_macro_redefined) = 1;
+  /* By default, track locations of tokens resulting from macro
+     expansion.  The '2' means, track the locations with the highest
+     accuracy.  Read the comments for struct
+     cpp_options::track_macro_expansion to learn about the other
+     values.  */
+  CPP_OPTION (pfile, track_macro_expansion) = 2;
   CPP_OPTION (pfile, warn_normalize) = normalized_C;
   CPP_OPTION (pfile, warn_literal_suffix) = 1;
 

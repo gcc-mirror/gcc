@@ -1,5 +1,9 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
+	Switch -ftrack-macro-expansion=2 on by default.
+	* docs/cppopts.texi: Adjust for enabling -ftrack-macro-expansion=2
+	by default.
+
 	Fix va_start related location
 	* builtins.c (fold_builtin_next_arg): Unwinds to the first
 	location in real source code.
