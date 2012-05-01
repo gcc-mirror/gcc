@@ -1,0 +1,124 @@
+# -*- shell-script -*-
+#  Copyright (C) 2012 Free Software Foundation, Inc.
+#  Contributed by Richard Henderson <rth@redhat.com>.
+#
+#  This file is part of the GNU Atomic Library (libatomic).
+#
+#  Libatomic is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Libatomic is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+#  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
+#
+#  Under Section 7 of GPL version 3, you are granted additional
+#  permissions described in the GCC Runtime Library Exception, version
+#  3.1, as published by the Free Software Foundation.
+#
+#  You should have received a copy of the GNU General Public License and
+#  a copy of the GCC Runtime Library Exception along with this program;
+#  see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+#  <http://www.gnu.org/licenses/>.
+
+# Map the target cpu to an ARCH sub-directory.  At the same time,
+# work out any special compilation flags as necessary.
+
+case "${target_cpu}" in
+  alpha*)		ARCH=alpha ;;
+  rs6000 | powerpc*)	ARCH=powerpc ;;
+  sh*)			ARCH=sh ;;
+
+  arm*)
+	ARCH=arm
+	# ??? Detect when -march=armv7 is already enabled.
+	try_ifunc=yes
+	;;
+
+  sparc)
+	case " ${CC} ${CFLAGS} " in
+	  *" -m64 "*)
+	    ;;
+	  *)
+	    if test -z "$with_cpu"; then
+	      XCFLAGS="${XCFLAGS} -mcpu=v9"
+	    fi
+	esac
+	ARCH=sparc
+	;;
+  sparc64|sparcv9)
+	case " ${CC} ${CFLAGS} " in
+	  *" -m32 "*)
+	    XCFLAGS="${XCFLAGS} -mcpu=v9"
+	    ;;
+	esac
+	ARCH=sparc
+	;;
+
+  i[3456]86)
+	case " ${CC} ${CFLAGS} " in
+	  *" -m64 "*)
+	    ;;
+	  *)
+	    if test -z "$with_arch"; then
+	      XCFLAGS="${XCFLAGS} -march=i486 -mtune=${target_cpu}"
+	      XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
+	    fi
+	esac
+	ARCH=x86
+	# ??? Detect when -march=i686 is already enabled.
+	try_ifunc=yes
+	;;
+  x86_64)
+	case " ${CC} ${CFLAGS} " in
+	  *" -m32 "*)
+	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=generic"
+	    XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
+	    ;;
+	  *)
+	    ;;
+	esac
+	ARCH=x86
+	# ??? Detect when -mcx16 is already enabled.
+	try_ifunc=yes
+	;;
+
+  *)			ARCH="${target_cpu}" ;;
+esac
+
+# The cpu configury is always most relevant.
+if test -d ${srcdir}/config/$ARCH ; then
+  config_path="$ARCH"
+fi
+
+# Other system configury
+case "${target}" in
+  arm*-*-linux*)
+	# OS support for atomic primitives.
+	config_path="${config_path} linux/arm posix"
+	;;
+
+  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu \
+  | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* \
+  | *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11* \
+  | *-*-darwin* | *-*-aix*)
+	# POSIX system.  The OS is supported.
+	config_path="${config_path} posix"
+	;;
+
+  *-*-elf*)
+	# ??? No target OS.  We could be targeting bare-metal kernel-mode,
+	# or user-mode for some custom OS.  If the target supports TAS,
+	# we can build our own spinlocks, given there are no signals.
+	# If the target supports disabling interrupts, we can work in
+	# kernel-mode, given the system is not multi-processor.
+	UNSUPPORTED=1
+	;;
+
+  *)
+	# Who are you?
+	UNSUPPORTED=1
+	;;
+esac

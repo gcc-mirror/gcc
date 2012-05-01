@@ -1,0 +1,220 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+# Damn dejagnu for not having proper library search paths for load_lib.
+# We have to explicitly load everything that gcc-dg.exp wants to load.
+
+proc load_gcc_lib { filename } {
+    global srcdir loaded_libs
+
+    load_file $srcdir/../../gcc/testsuite/lib/$filename
+    set loaded_libs($filename) ""
+}
+
+load_lib dg.exp
+load_gcc_lib file-format.exp
+load_gcc_lib target-supports.exp
+load_gcc_lib target-supports-dg.exp
+load_gcc_lib scanasm.exp
+load_gcc_lib scandump.exp
+load_gcc_lib scanrtl.exp
+load_gcc_lib scantree.exp
+load_gcc_lib scanipa.exp
+load_gcc_lib prune.exp
+load_gcc_lib target-libpath.exp
+load_gcc_lib wrapper.exp
+load_gcc_lib gcc-defs.exp
+load_gcc_lib torture-options.exp
+load_gcc_lib timeout.exp
+load_gcc_lib timeout-dg.exp
+load_gcc_lib fortran-modules.exp
+load_gcc_lib gcc-dg.exp
+
+set dg-do-what-default run
+
+#
+# GCC_UNDER_TEST is the compiler under test.
+#
+
+set libatomic_compile_options ""
+
+#
+# libatomic_init
+#
+
+if [info exists TOOL_OPTIONS] {
+    set multilibs [get_multilibs $TOOL_OPTIONS]
+} else {
+    set multilibs [get_multilibs]
+}
+
+proc libatomic_init { args } {
+    global srcdir blddir objdir tool_root_dir
+    global libatomic_initialized
+    global tmpdir
+    global blddir
+    global gluefile wrap_flags
+    global ALWAYS_CFLAGS
+    global CFLAGS
+    global TOOL_EXECUTABLE TOOL_OPTIONS
+    global GCC_UNDER_TEST
+    global TESTING_IN_BUILD_TREE
+    global target_triplet
+    global always_ld_library_path
+
+    set blddir [lookfor_file [get_multilibs] libatomic]
+
+    # We set LC_ALL and LANG to C so that we get the same error
+    # messages as expected.
+    setenv LC_ALL C
+    setenv LANG C
+
+    if ![info exists GCC_UNDER_TEST] then {
+	if [info exists TOOL_EXECUTABLE] {
+	    set GCC_UNDER_TEST $TOOL_EXECUTABLE
+	} else {
+	    set GCC_UNDER_TEST "[find_gcc]"
+	}
+    }
+
+    if ![info exists tmpdir] {
+	set tmpdir "/tmp"
+    }
+
+    if [info exists gluefile] {
+	unset gluefile
+    }
+
+    if {![info exists CFLAGS]} {
+	set CFLAGS ""
+    }
+
+    # Locate libgcc.a so we don't need to account for different values of
+    # SHLIB_EXT on different platforms
+    set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
+    if {$gccdir != ""} {
+	set gccdir [file dirname $gccdir]
+    }
+
+    # Compute what needs to be put into LD_LIBRARY_PATH
+    set always_ld_library_path ".:${blddir}/.libs"
+
+    # Compute what needs to be added to the existing LD_LIBRARY_PATH.
+    if {$gccdir != ""} {
+	# Add AIX pthread directory first.
+	if { [llength [glob -nocomplain ${gccdir}/pthread/libgcc_s*.a]] >= 1 } {
+	    append always_ld_library_path ":${gccdir}/pthread"
+	}
+	append always_ld_library_path ":${gccdir}"
+	set compiler [lindex $GCC_UNDER_TEST 0]
+
+	if { [is_remote host] == 0 && [which $compiler] != 0 } {
+	  foreach i "[exec $compiler --print-multi-lib]" {
+	    set mldir ""
+	    regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
+	    set mldir [string trimright $mldir "\;@"]
+	    if { "$mldir" == "." } {
+	      continue
+	    }
+	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+	      append always_ld_library_path ":${gccdir}/${mldir}"
+	    }
+	  }
+	}
+    }
+
+    set ALWAYS_CFLAGS ""
+    if { $blddir != "" } {
+	lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
+	lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
+	lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
+    }
+    lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
+
+    if [istarget *-*-darwin*] {
+	lappend ALWAYS_CFLAGS "additional_flags=-shared-libgcc"
+    }
+
+    if [info exists TOOL_OPTIONS] {
+	lappend ALWAYS_CFLAGS "additional_flags=$TOOL_OPTIONS"
+    }
+
+    # Make sure that lines are not wrapped.  That can confuse the
+    # error-message parsing machinery.
+    lappend ALWAYS_CFLAGS "additional_flags=-fmessage-length=0"
+
+    # Turn off builtin support for atomics so that we test the library.
+    lappend ALWAYS_CFLAGS "additional_flags=-fno-inline-atomics"
+    lappend ALWAYS_CFLAGS "ldflags=-latomic"
+}
+
+#
+# libatomic_target_compile -- compile a source file
+#
+
+proc libatomic_target_compile { source dest type options } {
+    global blddir
+    global libatomic_compile_options
+    global gluefile wrap_flags
+    global ALWAYS_CFLAGS
+    global GCC_UNDER_TEST
+    global lang_test_file
+    global lang_library_path
+    global lang_link_flags
+
+    if { [info exists lang_test_file] } {
+	if { $blddir != "" } {
+	    lappend options "ldflags=-L${blddir}/${lang_library_path}"
+	}
+	lappend options "ldflags=${lang_link_flags}"
+    }
+
+    if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=${wrap_flags}"
+    }
+
+    lappend options "additional_flags=[libio_include_flags]"
+    lappend options "timeout=[timeout_value]"
+    lappend options "compiler=$GCC_UNDER_TEST"
+
+    set options [concat $libatomic_compile_options $options]
+
+    if [info exists ALWAYS_CFLAGS] {
+	set options [concat "$ALWAYS_CFLAGS" $options]
+    }
+
+    set options [dg-additional-files-options $options $source]
+
+    set result [target_compile $source $dest $type $options]
+
+    return $result
+}
+
+proc libatomic_option_help { } {
+    send_user " --additional_options,OPTIONS\t\tUse OPTIONS to compile the testcase files. OPTIONS should be comma-separated.\n"
+}
+
+proc libatomic_option_proc { option } {
+    if [regexp "^--additional_options," $option] {
+	global libatomic_compile_options
+	regsub "--additional_options," $option "" option
+	foreach x [split $option ","] {
+	    lappend libatomic_compile_options "additional_flags=$x"
+	}
+	return 1
+    } else {
+	return 0
+    }
+}

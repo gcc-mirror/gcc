@@ -1,0 +1,1 @@
+/* No runtime initialization needed. */
