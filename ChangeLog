@@ -1,3 +1,7 @@
+2012-05-01  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2012-04-25  Joel Brobecker  <brobecker@adacore.com>
 
 	* config.sub: Update to 2012-04-18 version from official repo.
