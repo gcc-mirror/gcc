@@ -2526,6 +2526,9 @@ extern void init_expmed (void);
 extern void expand_inc (rtx, rtx);
 extern void expand_dec (rtx, rtx);
 
+/* In lower-subreg.c */
+extern void init_lower_subreg (void);
+
 /* In gcse.c */
 extern bool can_copy_p (enum machine_mode);
 extern bool can_assign_to_reg_without_clobbers_p (rtx);

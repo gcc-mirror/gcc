@@ -1,3 +1,35 @@
+2012-05-01  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* Makefile.in (lower-subreg.o, target-globals.o): Depend on
+	lower-subreg.h.
+	* lower-subreg.h: New file.
+	* target-globals.h (this_target_lower_subreg): Declare.
+	(target_globals): Add lower_subreg;
+	(restore_target_globals): Restore this_target_lower_subreg.
+	* target-globals.c: Include it.
+	(default_target_globals): Add default_target_lower_subreg.
+	(save_target_globals): Initialize target_lower_subreg.
+	* rtl.h (init_lower_subreg): Added declaration.
+	* toplev.c (backend_init_target): Call initializer for lower-subreg
+	pass.
+	* lower-subreg.c (LOG_COSTS, FORCE_LOWERING): New macros.
+	(default_target_lower_subreg): New variable.
+	(this_target_lower_subreg): Likewise.
+	(twice_word_mode, choices): New macros.
+	(shift_cost, compute_splitting_shift, compute_costs)
+	(init_lower_subreg): New functions.
+	(resolve_simple_move): Add speed_p argument.  Check choices.
+	(find_pseudo_copy): Don't check the mode size here.
+	(resolve_simple_move): Assert the mode size.
+	(find_decomposable_shift_zext): Add speed_p argument and return
+	a bool.  Check choices.
+	(resolve_shift_zext): Add comment.
+	(dump_shift_choices, dump_choices): New functions.
+	(decompose_multiword_subregs): Dump list of profitable
+	transformations.  Add code to skip non profitable transformations.
+	Update calls to simple_move and find_decomposable_shift_zext.
+
 2012-05-01  Ian Bolton  <ian.bolton@arm.com>
             Sameera Deshpande  <sameera.deshpande@arm.com>
             Greta Yorsh  <greta.yorsh@arm.com>
