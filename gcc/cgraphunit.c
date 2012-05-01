@@ -2490,8 +2490,8 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "updating call of %s/%i -> %s/%i: ",
-	       cgraph_node_name (e->caller), e->caller->uid,
-	       cgraph_node_name (e->callee), e->callee->uid);
+	       xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
+	       xstrdup (cgraph_node_name (e->callee)), e->callee->uid);
       print_gimple_stmt (cgraph_dump_file, e->call_stmt, 0, dump_flags);
       if (e->callee->clone.combined_args_to_skip)
 	{
@@ -2577,8 +2577,8 @@ cgraph_materialize_all_clones (void)
 		  if (cgraph_dump_file)
 		    {
 		      fprintf (cgraph_dump_file, "cloning %s to %s\n",
-			       cgraph_node_name (node->clone_of),
-			       cgraph_node_name (node));
+			       xstrdup (cgraph_node_name (node->clone_of)),
+			       xstrdup (cgraph_node_name (node)));
 		      if (node->clone.tree_map)
 		        {
 			  unsigned int i;
@@ -2591,9 +2591,11 @@ cgraph_materialize_all_clones (void)
 			      replace_info = VEC_index (ipa_replace_map_p,
 			      				node->clone.tree_map,
 							i);
-			      print_generic_expr (cgraph_dump_file, replace_info->old_tree, 0);
+			      print_generic_expr (cgraph_dump_file,
+						  replace_info->old_tree, 0);
 			      fprintf (cgraph_dump_file, " -> ");
-			      print_generic_expr (cgraph_dump_file, replace_info->new_tree, 0);
+			      print_generic_expr (cgraph_dump_file,
+						  replace_info->new_tree, 0);
 			      fprintf (cgraph_dump_file, "%s%s;",
 			      	       replace_info->replace_p ? "(replace)":"",
 				       replace_info->ref_p ? "(ref)":"");
@@ -2603,12 +2605,15 @@ cgraph_materialize_all_clones (void)
 		      if (node->clone.args_to_skip)
 			{
 		          fprintf (cgraph_dump_file, "   args_to_skip: ");
-		          dump_bitmap (cgraph_dump_file, node->clone.args_to_skip);
+		          dump_bitmap (cgraph_dump_file,
+				       node->clone.args_to_skip);
 			}
 		      if (node->clone.args_to_skip)
 			{
-		          fprintf (cgraph_dump_file, "   combined_args_to_skip:");
-		          dump_bitmap (cgraph_dump_file, node->clone.combined_args_to_skip);
+		          fprintf (cgraph_dump_file,
+				   "   combined_args_to_skip:");
+		          dump_bitmap (cgraph_dump_file,
+				       node->clone.combined_args_to_skip);
 			}
 		    }
 		  cgraph_materialize_clone (node);

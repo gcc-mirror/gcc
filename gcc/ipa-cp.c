@@ -2180,8 +2180,9 @@ perhaps_add_new_callers (struct cgraph_node *node, struct ipcp_value *val)
 		  if (dump_file)
 		    fprintf (dump_file, " - adding an extra caller %s/%i"
 			     " of %s/%i\n",
-			     cgraph_node_name (cs->caller), cs->caller->uid,
-			     cgraph_node_name (val->spec_node),
+			     xstrdup (cgraph_node_name (cs->caller)),
+			     cs->caller->uid,
+			     xstrdup (cgraph_node_name (val->spec_node)),
 			     val->spec_node->uid);
 
 		  cgraph_redirect_edge_callee (cs, val->spec_node);
