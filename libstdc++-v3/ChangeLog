@@ -1,3 +1,12 @@
+2012-05-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/53115
+	* include/bits/hashtable.h
+	(_Hashtable<>::_M_rehash_aux(size_type, false_type)): Fix buckets
+	after insertion of several equivalent elements.
+	* testsuite/23_containers/unordered_multiset/insert/53115.cc: New.
+	* testsuite/23_containers/unordered_multimap/insert/53115.cc: New.
+
 2012-04-30  Andreas Tobler  <andreast@fgznet.ch>
 
 	Backport from mainline

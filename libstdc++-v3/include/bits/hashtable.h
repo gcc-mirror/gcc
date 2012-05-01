@@ -1,6 +1,7 @@
 // hashtable.h header -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1670,36 +1671,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       while (__p)
 	{
-	  bool __check_now = true;
 	  _Node* __next = __p->_M_next();
 	  std::size_t __bkt = _HCBase::_M_bucket_index(__p, __n);
 
-	  if (!__new_buckets[__bkt])
+	  if (__prev_p && __prev_bkt == __bkt)
 	    {
-	      __p->_M_nxt = _M_before_begin._M_nxt;
-	      _M_before_begin._M_nxt = __p;
-	      __new_buckets[__bkt] = &_M_before_begin;
-	      if (__p->_M_nxt)
-		__new_buckets[__bbegin_bkt] = __p;
-	      __bbegin_bkt = __bkt;
+	      // Previous insert was already in this bucket, we insert after
+	      // the previously inserted one to preserve equivalent elements
+	      // relative order.
+	      __p->_M_nxt = __prev_p->_M_nxt;
+	      __prev_p->_M_nxt = __p;
+	      
+	      // Inserting after a node in a bucket require to check that we
+	      // haven't change the bucket last node, in this case next
+	      // bucket containing its before begin node must be updated. We
+	      // schedule a check as soon as we move out of the sequence of
+	      // equivalent nodes to limit the number of checks.
+	      __check_bucket = true;
 	    }
 	  else
 	    {
-	      if (__prev_p && __prev_bkt == __bkt)
+	      if (__check_bucket)
 		{
-		  // Previous insert was already in this bucket, we insert after
-		  // the previously inserted one to preserve equivalent elements
-		  // relative order.
-		  __p->_M_nxt = __prev_p->_M_nxt;
-		  __prev_p->_M_nxt = __p;
-
-		  // Inserting after a node in a bucket require to check that we
-		  // haven't change the bucket last node, in this case next
-		  // bucket containing its before begin node must be updated. We
-		  // schedule a check as soon as we move out of the sequence of
-		  // equivalent nodes to limit the number of checks.
-		  __check_bucket = true;
-		  __check_now = false;
+		  // Check if we shall update the next bucket because of insertions
+		  // into __prev_bkt bucket.
+		  if (__prev_p->_M_nxt)
+		    {
+		      std::size_t __next_bkt
+			= _HCBase::_M_bucket_index(__prev_p->_M_next(), __n);
+		      if (__next_bkt != __prev_bkt)
+			__new_buckets[__next_bkt] = __prev_p;
+		    }
+		  __check_bucket = false;
+		}
+	      if (!__new_buckets[__bkt])
+		{
+		  __p->_M_nxt = _M_before_begin._M_nxt;
+		  _M_before_begin._M_nxt = __p;
+		  __new_buckets[__bkt] = &_M_before_begin;
+		  if (__p->_M_nxt)
+		    __new_buckets[__bbegin_bkt] = __p;
+		  __bbegin_bkt = __bkt;
 		}
 	      else
 		{
@@ -1707,20 +1719,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  __new_buckets[__bkt]->_M_nxt = __p;
 		}
 	    }
-	  
-	  if (__check_now && __check_bucket)
-	    {
-	      // Check if we shall update the next bucket because of insertions
-	      // into __prev_bkt bucket.
-	      if (__prev_p->_M_nxt)
-		{
-		  std::size_t __next_bkt
-		    = _HCBase::_M_bucket_index(__prev_p->_M_next(), __n);
-		  if (__next_bkt != __prev_bkt)
-		    __new_buckets[__next_bkt] = __prev_p;
-		}
-	      __check_bucket = false;
-	    }
+
 	  __prev_p = __p;
 	  __prev_bkt = __bkt;
 	  __p = __next;
