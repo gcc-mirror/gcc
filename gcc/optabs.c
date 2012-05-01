@@ -6643,6 +6643,9 @@ init_sync_libfuncs_1 (optab tab, const char *base, int max)
 void
 init_sync_libfuncs (int max)
 {
+  if (!flag_sync_libcalls)
+    return;
+
   init_sync_libfuncs_1 (sync_compare_and_swap_optab,
 			"__sync_val_compare_and_swap", max);
   init_sync_libfuncs_1 (sync_lock_test_and_set_optab,
