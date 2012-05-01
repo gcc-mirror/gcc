@@ -1,3 +1,12 @@
+2012-05-01  Ian Lance Taylor  <iant@google.com>
+
+	PR c/37303
+	* c-decl.c (build_compound_literal): Make the decl readonly if it
+	an array of a readonly type.
+	* gimplify.c (gimplify_compound_literal_expr): Add fallback
+	parameter.  Change all callers.  If the decl is not addressable
+	and is not an l-value, make it readonly.
+
 2012-05-01  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* ira.c (allocated_reg_info_size): New static variable.
