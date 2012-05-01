@@ -22189,7 +22189,7 @@ thumb1_extra_regs_pushed (arm_stack_offsets *offsets, bool for_prologue)
 
 /* The bits which aren't usefully expanded as rtl.  */
 const char *
-thumb_unexpanded_epilogue (void)
+thumb1_unexpanded_epilogue (void)
 {
   arm_stack_offsets *offsets;
   int regno;
