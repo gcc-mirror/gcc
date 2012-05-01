@@ -3756,7 +3756,8 @@ rhs_predicate_for (tree lhs)
    decl instead.  */
 
 static enum gimplify_status
-gimplify_compound_literal_expr (tree *expr_p, gimple_seq *pre_p)
+gimplify_compound_literal_expr (tree *expr_p, gimple_seq *pre_p,
+				fallback_t fallback)
 {
   tree decl_s = COMPOUND_LITERAL_EXPR_DECL_EXPR (*expr_p);
   tree decl = DECL_EXPR_DECL (decl_s);
@@ -3774,6 +3775,12 @@ gimplify_compound_literal_expr (tree *expr_p, gimple_seq *pre_p)
       && !TREE_THIS_VOLATILE (decl)
       && !needs_to_live_in_memory (decl))
     DECL_GIMPLE_REG_P (decl) = 1;
+
+  /* If the decl is not addressable, then it is being used in some
+     expression or on the right hand side of a statement, and it can
+     be put into a readonly data section.  */
+  if (!TREE_ADDRESSABLE (decl) && (fallback & fb_lvalue) == 0)
+    TREE_READONLY (decl) = 1;
 
   /* This decl isn't mentioned in the enclosing block, so add it to the
      list of temps.  FIXME it seems a bit of a kludge to say that
@@ -7071,7 +7078,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 
 	case COMPOUND_LITERAL_EXPR:
-	  ret = gimplify_compound_literal_expr (expr_p, pre_p);
+	  ret = gimplify_compound_literal_expr (expr_p, pre_p, fallback);
 	  break;
 
 	case MODIFY_EXPR:
