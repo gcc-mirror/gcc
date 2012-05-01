@@ -1,3 +1,9 @@
+2012-05-01  Richard Henderson  <rth@redhat.com>
+
+	* common.opt (fsync-libcalls): New.
+	* doc/invoke.texi: Document it.
+	* optabs.c (init_sync_libfuncs): Honor it.
+
 2012-05-01  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Richard Sandiford  <r.sandiford@uk.ibm.com>
 

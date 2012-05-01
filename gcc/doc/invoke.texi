@@ -990,7 +990,7 @@ See S/390 and zSeries Options.
 -fno-stack-limit -fsplit-stack @gol
 -fleading-underscore  -ftls-model=@var{model} @gol
 -ftrapv  -fwrapv  -fbounds-check @gol
--fvisibility -fstrict-volatile-bitfields}
+-fvisibility -fstrict-volatile-bitfields -fsync-libcalls}
 @end table
 
 @menu
@@ -19823,6 +19823,16 @@ that it is unaware of.
 
 The default value of this option is determined by the application binary
 interface for the target processor.
+
+@item -fsync-libcalls
+@opindex fsync-libcalls
+This option controls whether any out-of-line instance of the @code{__sync}
+family of functions may be used to implement the C++11 @code{__atomic}
+family of functions.
+
+The default value of this option is enabled, thus the only useful form
+of the option is @option{-fno-sync-libcalls}.  This option is used in
+the implementation of the @file{libatomic} runtime library.
 
 @end table
 

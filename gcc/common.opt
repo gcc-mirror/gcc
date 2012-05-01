@@ -1878,6 +1878,10 @@ fstrict-overflow
 Common Report Var(flag_strict_overflow)
 Treat signed overflow as undefined
 
+fsync-libcalls
+Common Report Var(flag_sync_libcalls) Init(1)
+Implement __atomic operations via libcalls to legacy __sync functions
+
 fsyntax-only
 Common Report Var(flag_syntax_only)
 Check for syntax errors, then stop
