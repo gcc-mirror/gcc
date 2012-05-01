@@ -10712,7 +10712,7 @@
   if (TARGET_32BIT)
     return arm_output_epilogue (NULL);
   else /* TARGET_THUMB1 */
-    return thumb_unexpanded_epilogue ();
+    return thumb1_unexpanded_epilogue ();
   "
   ; Length is absolute worst case
   [(set_attr "length" "44")

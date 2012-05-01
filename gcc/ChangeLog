@@ -1,3 +1,14 @@
+2012-05-01  Ian Bolton  <ian.bolton@arm.com>
+            Sameera Deshpande  <sameera.deshpande@arm.com>
+            Greta Yorsh  <greta.yorsh@arm.com>
+
+	* config/arm/arm-protos.h (thumb_unexpanded_epilogue): Rename to...
+        (thumb1_unexpanded_epilogue): ...this.
+	* config/arm/arm.c (thumb_unexpanded_epilogue): Rename to...
+        (thumb1_unexpanded_epilogue): ...this.
+	* config/arm/arm.md (thumb_unexpanded_epilogue): Rename to...
+        (thumb1_unexpanded_epilogue): ...this.
+
 2012-05-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/linux-eabi.h (GLIBC_DYNAMIC_LINKER_DEFAULT): Avoid ifdef
