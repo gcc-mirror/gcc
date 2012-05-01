@@ -3795,6 +3795,8 @@ proc check_effective_target_sync_long_long_runtime { } {
 		 && [check_effective_target_lp64]
 		 && [check_effective_target_ultrasparc_hw]) } {
 	return 1
+    } elseif { [check_effective_target_powerpc64] } {
+	return 1
     } else {
 	return 0
     }

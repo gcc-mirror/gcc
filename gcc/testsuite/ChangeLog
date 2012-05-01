@@ -1,3 +1,9 @@
+2012-05-01  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_sync_long_long_runtime): True for
+	check_effective_target_powerpc64.
+
 2012-04-30  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/51033
