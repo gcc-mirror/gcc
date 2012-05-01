@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gcse.h"
 #include "bb-reorder.h"
+#include "lower-subreg.h"
 
 #if SWITCHABLE_TARGET
 struct target_globals default_target_globals = {
@@ -56,7 +57,8 @@ struct target_globals default_target_globals = {
   &default_target_ira_int,
   &default_target_builtins,
   &default_target_gcse,
-  &default_target_bb_reorder
+  &default_target_bb_reorder,
+  &default_target_lower_subreg
 };
 
 struct target_globals *
@@ -79,6 +81,7 @@ save_target_globals (void)
   g->builtins = XCNEW (struct target_builtins);
   g->gcse = XCNEW (struct target_gcse);
   g->bb_reorder = XCNEW (struct target_bb_reorder);
+  g->lower_subreg = XCNEW (struct target_lower_subreg);
   restore_target_globals (g);
   init_reg_sets ();
   target_reinit ();

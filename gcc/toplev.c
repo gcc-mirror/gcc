@@ -1601,6 +1601,7 @@ backend_init_target (void)
   /* rtx_cost is mode-dependent, so cached values need to be recomputed
      on a mode change.  */
   init_expmed ();
+  init_lower_subreg ();
 
   /* We may need to recompute regno_save_code[] and regno_restore_code[]
      after a mode change as well.  */
