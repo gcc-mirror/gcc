@@ -599,7 +599,7 @@ all:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
@@ -620,6 +620,10 @@ TARGET_LIB_PATH_libgomp = $$r/$(TARGET_SUBDIR)/libgomp/.libs:
 @if target-libitm
 TARGET_LIB_PATH_libitm = $$r/$(TARGET_SUBDIR)/libitm/.libs:
 @endif target-libitm
+
+@if target-libatomic
+TARGET_LIB_PATH_libatomic = $$r/$(TARGET_SUBDIR)/libatomic/.libs:
+@endif target-libatomic
 
 
 
@@ -960,7 +964,8 @@ configure-target:  \
     maybe-configure-target-rda \
     maybe-configure-target-libada \
     maybe-configure-target-libgomp \
-    maybe-configure-target-libitm
+    maybe-configure-target-libitm \
+    maybe-configure-target-libatomic
 
 # The target built for a native non-bootstrap build.
 .PHONY: all
@@ -1108,6 +1113,7 @@ all-target: maybe-all-target-libada
 all-target: maybe-all-target-libgomp
 @endif target-libgomp-no-bootstrap
 all-target: maybe-all-target-libitm
+all-target: maybe-all-target-libatomic
 
 # Do a target for all the subdirectories.  A ``make do-X'' will do a
 # ``make X'' in all subdirectories (because, in general, there is a
@@ -1191,6 +1197,7 @@ info-target: maybe-info-target-rda
 info-target: maybe-info-target-libada
 info-target: maybe-info-target-libgomp
 info-target: maybe-info-target-libitm
+info-target: maybe-info-target-libatomic
 
 .PHONY: do-dvi
 do-dvi:
@@ -1269,6 +1276,7 @@ dvi-target: maybe-dvi-target-rda
 dvi-target: maybe-dvi-target-libada
 dvi-target: maybe-dvi-target-libgomp
 dvi-target: maybe-dvi-target-libitm
+dvi-target: maybe-dvi-target-libatomic
 
 .PHONY: do-pdf
 do-pdf:
@@ -1347,6 +1355,7 @@ pdf-target: maybe-pdf-target-rda
 pdf-target: maybe-pdf-target-libada
 pdf-target: maybe-pdf-target-libgomp
 pdf-target: maybe-pdf-target-libitm
+pdf-target: maybe-pdf-target-libatomic
 
 .PHONY: do-html
 do-html:
@@ -1425,6 +1434,7 @@ html-target: maybe-html-target-rda
 html-target: maybe-html-target-libada
 html-target: maybe-html-target-libgomp
 html-target: maybe-html-target-libitm
+html-target: maybe-html-target-libatomic
 
 .PHONY: do-TAGS
 do-TAGS:
@@ -1503,6 +1513,7 @@ TAGS-target: maybe-TAGS-target-rda
 TAGS-target: maybe-TAGS-target-libada
 TAGS-target: maybe-TAGS-target-libgomp
 TAGS-target: maybe-TAGS-target-libitm
+TAGS-target: maybe-TAGS-target-libatomic
 
 .PHONY: do-install-info
 do-install-info:
@@ -1581,6 +1592,7 @@ install-info-target: maybe-install-info-target-rda
 install-info-target: maybe-install-info-target-libada
 install-info-target: maybe-install-info-target-libgomp
 install-info-target: maybe-install-info-target-libitm
+install-info-target: maybe-install-info-target-libatomic
 
 .PHONY: do-install-pdf
 do-install-pdf:
@@ -1659,6 +1671,7 @@ install-pdf-target: maybe-install-pdf-target-rda
 install-pdf-target: maybe-install-pdf-target-libada
 install-pdf-target: maybe-install-pdf-target-libgomp
 install-pdf-target: maybe-install-pdf-target-libitm
+install-pdf-target: maybe-install-pdf-target-libatomic
 
 .PHONY: do-install-html
 do-install-html:
@@ -1737,6 +1750,7 @@ install-html-target: maybe-install-html-target-rda
 install-html-target: maybe-install-html-target-libada
 install-html-target: maybe-install-html-target-libgomp
 install-html-target: maybe-install-html-target-libitm
+install-html-target: maybe-install-html-target-libatomic
 
 .PHONY: do-installcheck
 do-installcheck:
@@ -1815,6 +1829,7 @@ installcheck-target: maybe-installcheck-target-rda
 installcheck-target: maybe-installcheck-target-libada
 installcheck-target: maybe-installcheck-target-libgomp
 installcheck-target: maybe-installcheck-target-libitm
+installcheck-target: maybe-installcheck-target-libatomic
 
 .PHONY: do-mostlyclean
 do-mostlyclean:
@@ -1893,6 +1908,7 @@ mostlyclean-target: maybe-mostlyclean-target-rda
 mostlyclean-target: maybe-mostlyclean-target-libada
 mostlyclean-target: maybe-mostlyclean-target-libgomp
 mostlyclean-target: maybe-mostlyclean-target-libitm
+mostlyclean-target: maybe-mostlyclean-target-libatomic
 
 .PHONY: do-clean
 do-clean:
@@ -1971,6 +1987,7 @@ clean-target: maybe-clean-target-rda
 clean-target: maybe-clean-target-libada
 clean-target: maybe-clean-target-libgomp
 clean-target: maybe-clean-target-libitm
+clean-target: maybe-clean-target-libatomic
 
 .PHONY: do-distclean
 do-distclean:
@@ -2049,6 +2066,7 @@ distclean-target: maybe-distclean-target-rda
 distclean-target: maybe-distclean-target-libada
 distclean-target: maybe-distclean-target-libgomp
 distclean-target: maybe-distclean-target-libitm
+distclean-target: maybe-distclean-target-libatomic
 
 .PHONY: do-maintainer-clean
 do-maintainer-clean:
@@ -2127,6 +2145,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-rda
 maintainer-clean-target: maybe-maintainer-clean-target-libada
 maintainer-clean-target: maybe-maintainer-clean-target-libgomp
 maintainer-clean-target: maybe-maintainer-clean-target-libitm
+maintainer-clean-target: maybe-maintainer-clean-target-libatomic
 
 
 # Here are the targets which correspond to the do-X targets.
@@ -2259,7 +2278,8 @@ check-target:  \
     maybe-check-target-rda \
     maybe-check-target-libada \
     maybe-check-target-libgomp \
-    maybe-check-target-libitm
+    maybe-check-target-libitm \
+    maybe-check-target-libatomic
 
 do-check:
 	@: $(MAKE); $(unstage)
@@ -2409,7 +2429,8 @@ install-target:  \
     maybe-install-target-rda \
     maybe-install-target-libada \
     maybe-install-target-libgomp \
-    maybe-install-target-libitm
+    maybe-install-target-libitm \
+    maybe-install-target-libatomic
 
 uninstall:
 	@echo "the uninstall target is not supported in this tree"
@@ -2506,7 +2527,8 @@ install-strip-target:  \
     maybe-install-strip-target-rda \
     maybe-install-strip-target-libada \
     maybe-install-strip-target-libgomp \
-    maybe-install-strip-target-libitm
+    maybe-install-strip-target-libitm \
+    maybe-install-strip-target-libatomic
 
 
 ### other supporting targets
@@ -40629,6 +40651,463 @@ maintainer-clean-target-libitm:
 
 
 
+
+
+.PHONY: configure-target-libatomic maybe-configure-target-libatomic
+maybe-configure-target-libatomic:
+@if gcc-bootstrap
+configure-target-libatomic: stage_current
+@endif gcc-bootstrap
+@if target-libatomic
+maybe-configure-target-libatomic: configure-target-libatomic
+configure-target-libatomic: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libatomic..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libatomic ; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libatomic/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libatomic/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libatomic/multilib.tmp $(TARGET_SUBDIR)/libatomic/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libatomic/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libatomic/Makefile; \
+	    mv $(TARGET_SUBDIR)/libatomic/multilib.tmp $(TARGET_SUBDIR)/libatomic/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libatomic/multilib.tmp $(TARGET_SUBDIR)/libatomic/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libatomic/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libatomic ; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	echo Configuring in $(TARGET_SUBDIR)/libatomic; \
+	cd "$(TARGET_SUBDIR)/libatomic" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libatomic/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libatomic"; \
+	libsrcdir="$$s/libatomic"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
+	  || exit 1
+@endif target-libatomic
+
+
+
+
+
+.PHONY: all-target-libatomic maybe-all-target-libatomic
+maybe-all-target-libatomic:
+@if gcc-bootstrap
+all-target-libatomic: stage_current
+@endif gcc-bootstrap
+@if target-libatomic
+TARGET-target-libatomic=all
+maybe-all-target-libatomic: all-target-libatomic
+all-target-libatomic: configure-target-libatomic
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+		$(TARGET-target-libatomic))
+@endif target-libatomic
+
+
+
+
+
+.PHONY: check-target-libatomic maybe-check-target-libatomic
+maybe-check-target-libatomic:
+@if target-libatomic
+maybe-check-target-libatomic: check-target-libatomic
+
+check-target-libatomic:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-libatomic
+
+.PHONY: install-target-libatomic maybe-install-target-libatomic
+maybe-install-target-libatomic:
+@if target-libatomic
+maybe-install-target-libatomic: install-target-libatomic
+
+install-target-libatomic: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libatomic
+
+.PHONY: install-strip-target-libatomic maybe-install-strip-target-libatomic
+maybe-install-strip-target-libatomic:
+@if target-libatomic
+maybe-install-strip-target-libatomic: install-strip-target-libatomic
+
+install-strip-target-libatomic: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libatomic
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-target-libatomic info-target-libatomic
+maybe-info-target-libatomic:
+@if target-libatomic
+maybe-info-target-libatomic: info-target-libatomic
+
+info-target-libatomic: \
+    configure-target-libatomic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           info) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-dvi-target-libatomic dvi-target-libatomic
+maybe-dvi-target-libatomic:
+@if target-libatomic
+maybe-dvi-target-libatomic: dvi-target-libatomic
+
+dvi-target-libatomic: \
+    configure-target-libatomic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-pdf-target-libatomic pdf-target-libatomic
+maybe-pdf-target-libatomic:
+@if target-libatomic
+maybe-pdf-target-libatomic: pdf-target-libatomic
+
+pdf-target-libatomic: \
+    configure-target-libatomic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing pdf in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           pdf) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-html-target-libatomic html-target-libatomic
+maybe-html-target-libatomic:
+@if target-libatomic
+maybe-html-target-libatomic: html-target-libatomic
+
+html-target-libatomic: \
+    configure-target-libatomic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           html) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-TAGS-target-libatomic TAGS-target-libatomic
+maybe-TAGS-target-libatomic:
+@if target-libatomic
+maybe-TAGS-target-libatomic: TAGS-target-libatomic
+
+TAGS-target-libatomic: \
+    configure-target-libatomic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-install-info-target-libatomic install-info-target-libatomic
+maybe-install-info-target-libatomic:
+@if target-libatomic
+maybe-install-info-target-libatomic: install-info-target-libatomic
+
+install-info-target-libatomic: \
+    configure-target-libatomic \
+    info-target-libatomic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-install-pdf-target-libatomic install-pdf-target-libatomic
+maybe-install-pdf-target-libatomic:
+@if target-libatomic
+maybe-install-pdf-target-libatomic: install-pdf-target-libatomic
+
+install-pdf-target-libatomic: \
+    configure-target-libatomic \
+    pdf-target-libatomic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-install-html-target-libatomic install-html-target-libatomic
+maybe-install-html-target-libatomic:
+@if target-libatomic
+maybe-install-html-target-libatomic: install-html-target-libatomic
+
+install-html-target-libatomic: \
+    configure-target-libatomic \
+    html-target-libatomic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-html in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-html) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-installcheck-target-libatomic installcheck-target-libatomic
+maybe-installcheck-target-libatomic:
+@if target-libatomic
+maybe-installcheck-target-libatomic: installcheck-target-libatomic
+
+installcheck-target-libatomic: \
+    configure-target-libatomic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-mostlyclean-target-libatomic mostlyclean-target-libatomic
+maybe-mostlyclean-target-libatomic:
+@if target-libatomic
+maybe-mostlyclean-target-libatomic: mostlyclean-target-libatomic
+
+mostlyclean-target-libatomic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-clean-target-libatomic clean-target-libatomic
+maybe-clean-target-libatomic:
+@if target-libatomic
+maybe-clean-target-libatomic: clean-target-libatomic
+
+clean-target-libatomic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           clean) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-distclean-target-libatomic distclean-target-libatomic
+maybe-distclean-target-libatomic:
+@if target-libatomic
+maybe-distclean-target-libatomic: distclean-target-libatomic
+
+distclean-target-libatomic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-maintainer-clean-target-libatomic maintainer-clean-target-libatomic
+maybe-maintainer-clean-target-libatomic:
+@if target-libatomic
+maybe-maintainer-clean-target-libatomic: maintainer-clean-target-libatomic
+
+maintainer-clean-target-libatomic: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libatomic" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-libatomic
+
+
+
 @if target-libmudflap
 .PHONY: check-target-libmudflap-c++
 check-target-libmudflap-c++:
@@ -42721,6 +43200,7 @@ configure-stage4-target-libgomp: maybe-all-stage4-gcc
 configure-stageprofile-target-libgomp: maybe-all-stageprofile-gcc
 configure-stagefeedback-target-libgomp: maybe-all-stagefeedback-gcc
 configure-target-libitm: stage_last
+configure-target-libatomic: stage_last
 @endif gcc-bootstrap
 
 @if gcc-no-bootstrap
@@ -42744,6 +43224,7 @@ configure-target-rda: maybe-all-gcc
 configure-target-libada: maybe-all-gcc
 configure-target-libgomp: maybe-all-gcc
 configure-target-libitm: maybe-all-gcc
+configure-target-libatomic: maybe-all-gcc
 @endif gcc-no-bootstrap
 
 
@@ -43519,6 +44000,7 @@ configure-target-rda: maybe-all-target-libgcc
 configure-target-libada: maybe-all-target-libgcc
 configure-target-libgomp: maybe-all-target-libgcc
 configure-target-libitm: maybe-all-target-libgcc
+configure-target-libatomic: maybe-all-target-libgcc
 @endif gcc-no-bootstrap
 
 
@@ -43560,6 +44042,8 @@ configure-target-libgomp: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libitm: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libitm: maybe-all-target-libstdc++-v3
+
+configure-target-libatomic: maybe-all-target-newlib maybe-all-target-libgloss
 
 
 CONFIGURE_GDB_TK = @CONFIGURE_GDB_TK@

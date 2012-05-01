@@ -144,6 +144,11 @@ libitm/Makefile.in: libitm/Makefile.am libitm/aclocal.m4
 libitm/testsuite/Makefile.in: libitm/testsuite/Makefile.am libitm/aclocal.m4
 libitm/configure: libitm/configure.ac libitm/aclocal.m4
 libitm/config.h.in: libitm/configure.ac libitm/aclocal.m4
+libatomic/aclocal.m4: libatomic/configure.ac libatomic/acinclude.m4
+libatomic/Makefile.in: libatomic/Makefile.am libatomic/aclocal.m4
+libatomic/testsuite/Makefile.in: libatomic/testsuite/Makefile.am libatomic/aclocal.m4
+libatomic/configure: libatomic/configure.ac libatomic/aclocal.m4
+libatomic/auto-config.h.in: libatomic/configure.ac libatomic/aclocal.m4
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
 configure: configure.ac config/acx.m4

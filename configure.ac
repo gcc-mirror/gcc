@@ -154,6 +154,7 @@ target_libraries="target-libgcc \
 		target-libgloss \
 		target-newlib \
 		target-libgomp \
+		target-libatomic \
 		target-libitm \
 		target-libstdc++-v3 \
 		target-libmudflap \
@@ -491,6 +492,22 @@ if test x$enable_libgomp = x ; then
 	noconfigdirs="$noconfigdirs target-libgomp"
 	;;
     esac
+fi
+
+# Disable libatomic on unsupported systems.
+if test -d ${srcdir}/libatomic; then
+    if test x$enable_libatomic = x; then
+	AC_MSG_CHECKING([for libatomic support])
+	if (srcdir=${srcdir}/libatomic; \
+		. ${srcdir}/configure.tgt; \
+		test -n "$UNSUPPORTED")
+	then
+	    AC_MSG_RESULT([no])
+	    noconfigdirs="$noconfigdirs target-libatomic"
+	else
+	    AC_MSG_RESULT([yes])
+	fi
+    fi
 fi
 
 # Disable libitm on unsupported systems.
