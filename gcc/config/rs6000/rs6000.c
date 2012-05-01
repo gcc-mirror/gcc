@@ -952,7 +952,6 @@ static void rs6000_set_default_type_attributes (tree);
 static bool rs6000_reg_live_or_pic_offset_p (int);
 static tree rs6000_builtin_vectorized_libmass (tree, tree, tree);
 static tree rs6000_builtin_vectorized_function (tree, tree, tree);
-static void rs6000_restore_saved_cr (rtx, int);
 static bool rs6000_output_addr_const_extra (FILE *, rtx);
 static void rs6000_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void rs6000_output_function_epilogue (FILE *, HOST_WIDE_INT);
@@ -20276,10 +20275,37 @@ rs6000_output_function_prologue (FILE *file,
    we restore after the pop when possible.  */
 #define ALWAYS_RESTORE_ALTIVEC_BEFORE_POP 0
 
+/* Restoring cr is a two step process: loading a reg from the frame
+   save, then moving the reg to cr.  For ABI_V4 we must let the
+   unwinder know that the stack location is no longer valid at or
+   before the stack deallocation, but we can't emit a cfa_restore for
+   cr at the stack deallocation like we do for other registers.
+   The trouble is that it is possible for the move to cr to be
+   scheduled after the stack deallocation.  So say exactly where cr
+   is located on each of the two insns.  */
+
+static rtx
+load_cr_save (int regno, rtx frame_reg_rtx, int offset, bool exit_func)
+{
+  rtx mem = gen_frame_mem_offset (SImode, frame_reg_rtx, offset);
+  rtx reg = gen_rtx_REG (SImode, regno);
+  rtx insn = emit_move_insn (reg, mem);
+
+  if (!exit_func && DEFAULT_ABI == ABI_V4)
+    {
+      rtx cr = gen_rtx_REG (SImode, CR2_REGNO);
+      rtx set = gen_rtx_SET (VOIDmode, reg, cr);
+
+      add_reg_note (insn, REG_CFA_REGISTER, set);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+  return reg;
+}
+
 /* Reload CR from REG.  */
 
 static void
-rs6000_restore_saved_cr (rtx reg, int using_mfcr_multiple)
+restore_saved_cr (rtx reg, int using_mfcr_multiple, bool exit_func)
 {
   int count = 0;
   int i;
@@ -20317,11 +20343,59 @@ rs6000_restore_saved_cr (rtx reg, int using_mfcr_multiple)
   else
     for (i = 0; i < 8; i++)
       if (df_regs_ever_live_p (CR0_REGNO+i) && ! call_used_regs[CR0_REGNO+i])
-	{
-	  emit_insn (gen_movsi_to_cr_one (gen_rtx_REG (CCmode,
-						       CR0_REGNO+i),
-					  reg));
-	}
+	emit_insn (gen_movsi_to_cr_one (gen_rtx_REG (CCmode, CR0_REGNO+i),
+					reg));
+
+  if (!exit_func && (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap))
+    {
+      rtx insn = get_last_insn ();
+      rtx cr = gen_rtx_REG (SImode, CR2_REGNO);
+
+      add_reg_note (insn, REG_CFA_RESTORE, cr);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+}
+
+/* Like cr, the move to lr instruction can be scheduled after the
+   stack deallocation, but unlike cr, its stack frame save is still
+   valid.  So we only need to emit the cfa_restore on the correct
+   instruction.  */
+
+static void
+load_lr_save (int regno, rtx frame_reg_rtx, int offset)
+{
+  rtx mem = gen_frame_mem_offset (Pmode, frame_reg_rtx, offset);
+  rtx reg = gen_rtx_REG (Pmode, regno);
+
+  emit_move_insn (reg, mem);
+}
+
+static void
+restore_saved_lr (int regno, bool exit_func)
+{
+  rtx reg = gen_rtx_REG (Pmode, regno);
+  rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
+  rtx insn = emit_move_insn (lr, reg);
+
+  if (!exit_func && flag_shrink_wrap)
+    {
+      add_reg_note (insn, REG_CFA_RESTORE, lr);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+}
+
+static rtx
+add_crlr_cfa_restore (const rs6000_stack_t *info, rtx cfa_restores)
+{
+  if (info->cr_save_p)
+    cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
+				   gen_rtx_REG (SImode, CR2_REGNO),
+				   cfa_restores);
+  if (info->lr_save_p)
+    cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
+				   gen_rtx_REG (Pmode, LR_REGNO),
+				   cfa_restores);
+  return cfa_restores;
 }
 
 /* Return true if OFFSET from stack pointer can be clobbered by signals.
@@ -20372,6 +20446,7 @@ rs6000_emit_epilogue (int sibcall)
   enum machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
   int i;
+  bool exit_func;
   unsigned ptr_regno;
 
   info = rs6000_stack_info ();
@@ -20824,22 +20899,22 @@ rs6000_emit_epilogue (int sibcall)
       emit_insn (generate_set_vrsave (reg, info, 1));
     }
 
+  /* If we exit by an out-of-line restore function on ABI_V4 then that
+     function will deallocate the stack, so we don't need to worry
+     about the unwinder restoring cr from an invalid stack frame
+     location.  */
+  exit_func = (!restoring_FPRs_inline
+	       || (!restoring_GPRs_inline
+		   && info->first_fp_reg_save == 64));
+
   /* Get the old lr if we saved it.  If we are restoring registers
      out-of-line, then the out-of-line routines can do this for us.  */
   if (restore_lr && restoring_GPRs_inline)
-    {
-      rtx mem = gen_frame_mem_offset (Pmode, frame_reg_rtx,
-				      info->lr_save_offset + frame_off);
-
-      emit_move_insn (gen_rtx_REG (Pmode, 0), mem);
-    }
+    load_lr_save (0, frame_reg_rtx, info->lr_save_offset + frame_off);
 
   /* Get the old cr if we saved it.  */
   if (info->cr_save_p)
     {
-      rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			       GEN_INT (info->cr_save_offset + frame_off));
-      rtx mem = gen_frame_mem (SImode, addr);
       unsigned cr_save_regno = 12;
 
       if (!restoring_GPRs_inline)
@@ -20857,14 +20932,14 @@ rs6000_emit_epilogue (int sibcall)
       else if (REGNO (frame_reg_rtx) == 12)
 	cr_save_regno = 11;
 
-      cr_save_reg = gen_rtx_REG (SImode, cr_save_regno);
-      emit_move_insn (cr_save_reg, mem);
+      cr_save_reg = load_cr_save (cr_save_regno, frame_reg_rtx,
+				  info->cr_save_offset + frame_off,
+				  exit_func);
     }
 
   /* Set LR here to try to overlap restores below.  */
   if (restore_lr && restoring_GPRs_inline)
-    emit_move_insn (gen_rtx_REG (Pmode, LR_REGNO),
-		    gen_rtx_REG (Pmode, 0));
+    restore_saved_lr (0, exit_func);
 
   /* Load exception handler data registers, if needed.  */
   if (crtl->calls_eh_return)
@@ -20983,7 +21058,7 @@ rs6000_emit_epilogue (int sibcall)
 	frame_off = -end_save;
 
       if (can_use_exit && info->cr_save_p)
-	rs6000_restore_saved_cr (cr_save_reg, using_mtcr_multiple);
+	restore_saved_cr (cr_save_reg, using_mtcr_multiple, true);
 
       ptr_off = -end_save;
       rs6000_emit_savres_rtx (info, ptr_reg,
@@ -21046,23 +21121,14 @@ rs6000_emit_epilogue (int sibcall)
 	 The cfa_restores must be emitted on or before the insn that
 	 invalidates the stack, and of course must not be emitted
 	 before the insn that actually does the restore.  The latter
-	 is why the LR cfa_restore condition below is a little
-	 complicated.  It's also why it is a bad idea to emit the
-	 cfa_restores as a group on the last instruction here that
-	 actually does a restore: That insn may be reordered with
-	 respect to others doing restores.  */
-      if (info->cr_save_p)
-	cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
-				       gen_rtx_REG (SImode, CR2_REGNO),
-				       cfa_restores);
+	 is why it is a bad idea to emit the cfa_restores as a group
+	 on the last instruction here that actually does a restore:
+	 That insn may be reordered with respect to others doing
+	 restores.  */
       if (flag_shrink_wrap
-	  && (restore_lr
-	      || (info->lr_save_p
-		  && !restoring_GPRs_inline
-		  && info->first_fp_reg_save == 64)))
-	cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
-				       gen_rtx_REG (Pmode, LR_REGNO),
-				       cfa_restores);
+	  && !restoring_GPRs_inline
+	  && info->first_fp_reg_save == 64)
+	cfa_restores = add_crlr_cfa_restore (info, cfa_restores);
 
       for (i = info->first_gp_reg_save; i < 32; i++)
 	if (!restoring_GPRs_inline
@@ -21086,12 +21152,8 @@ rs6000_emit_epilogue (int sibcall)
 
   if (restore_lr && !restoring_GPRs_inline)
     {
-      rtx mem = gen_frame_mem_offset (Pmode, frame_reg_rtx,
-				      info->lr_save_offset + frame_off);
-
-      emit_move_insn (gen_rtx_REG (Pmode, 0), mem);
-      emit_move_insn (gen_rtx_REG (Pmode, LR_REGNO),
-		      gen_rtx_REG (Pmode, 0));
+      load_lr_save (0, frame_reg_rtx, info->lr_save_offset + frame_off);
+      restore_saved_lr (0, exit_func);
     }
 
   /* Restore fpr's if we need to do it without calling a function.  */
@@ -21118,7 +21180,7 @@ rs6000_emit_epilogue (int sibcall)
 
   /* If we saved cr, restore it here.  Just those that were used.  */
   if (info->cr_save_p)
-    rs6000_restore_saved_cr (cr_save_reg, using_mtcr_multiple);
+    restore_saved_cr (cr_save_reg, using_mtcr_multiple, exit_func);
 
   /* If this is V.4, unwind the stack pointer after all of the loads
      have been done, or set up r11 if we are restoring fp out of line.  */
@@ -21198,11 +21260,8 @@ rs6000_emit_epilogue (int sibcall)
 	  int i;
 	  rtx sym;
 
-	  if ((DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
-	      && lr)
-	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
-					   gen_rtx_REG (Pmode, LR_REGNO),
-					   cfa_restores);
+	  if (flag_shrink_wrap)
+	    cfa_restores = add_crlr_cfa_restore (info, cfa_restores);
 
 	  sym = rs6000_savres_routine_sym (info,
 					   SAVRES_FPR | (lr ? SAVRES_LR : 0));
@@ -21221,7 +21280,7 @@ rs6000_emit_epilogue (int sibcall)
 	      reg = gen_rtx_REG (DFmode, info->first_fp_reg_save + i);
 
 	      RTVEC_ELT (p, i + 4) = gen_rtx_SET (VOIDmode, reg, mem);
-	      if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
+	      if (flag_shrink_wrap)
 		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
 					       cfa_restores);
 	    }

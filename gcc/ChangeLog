@@ -1,3 +1,14 @@
+2012-05-01  Alan Modra  <amodra@gmail.com>
+
+	PR target/53038
+	* config/rs6000/rs6000.c (load_lr_save, restore_saved_lr,
+	load_cr_save, add_crlr_cfa_restore): New functions.
+	(rs6000_restore_saved_cr): Rename to..
+	(restore_saved_cr): ..this.  Add cfa_restore notes for cr.
+	(rs6000_emit_epilogue): Use new functions.  Adjust condition
+	for emitting lr and cr cfa_restore.  Emit cfa_restores for fp
+	regs when using out-of-line restore only when shrink wrapping.
+
 2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/53136
