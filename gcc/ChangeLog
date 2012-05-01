@@ -1,3 +1,8 @@
+2012-05-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/linux-eabi.h (GLIBC_DYNAMIC_LINKER_DEFAULT): Avoid ifdef
+	comparing enumeration values.  Update comments.
+
 2012-05-01  Alan Modra  <amodra@gmail.com>
 
 	PR target/53038
