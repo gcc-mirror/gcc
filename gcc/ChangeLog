@@ -1,3 +1,13 @@
+2012-05-01  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* ira.c (allocated_reg_info_size): New static variable.
+	(expand_reg_info): Manage it. Call
+	setup_preferred_alternate_classes_for_new_pseudos.
+	(ira): Don't do it here.  Remove local allocated_reg_info_size,
+	set the global before calling find_moveable_pseudos.
+	(find_moveable_pseudos): Call expand_reg_info rather than
+	resize_reg_info.
+
 2012-05-01  Richard Henderson  <rth@redhat.com>
 
 	* common.opt (fsync-libcalls): New.
