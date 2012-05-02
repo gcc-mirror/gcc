@@ -33,11 +33,15 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash,
 	   typename _RehashPolicy, typename _Traits>
     class _Hashtable;
+
+_GLIBCXX_END_NAMESPACE_VERSION
 
 namespace __detail
 {
