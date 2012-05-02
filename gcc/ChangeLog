@@ -1,3 +1,15 @@
+2012-05-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2011-07-08 4.6-branch r176055.
+
+	PR target/46779
+	* config/avr/avr.c (avr_hard_regno_mode_ok): Rewrite.
+	In particular, allow 8-bit values in r28 and r29.
+	(avr_hard_regno_scratch_ok): Disallow any register that might be
+	part of the frame pointer.
+	(avr_hard_regno_rename_ok): Same.
+	(avr_legitimate_address_p): Don't allow SUBREGs.
+
 2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
