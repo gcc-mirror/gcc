@@ -9672,12 +9672,12 @@ grokdeclarator (const cp_declarator *declarator,
         error ("non-parameter %qs cannot be a parameter pack", name);
     }
 
-  /* Did array size calculations overflow?  */
-
+  /* Did array size calculations overflow or does the array cover more
+     than half of the address-space?  */
   if (TREE_CODE (type) == ARRAY_TYPE
       && COMPLETE_TYPE_P (type)
       && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
-      && TREE_OVERFLOW (TYPE_SIZE_UNIT (type)))
+      && ! valid_constant_size_p (TYPE_SIZE_UNIT (type)))
     {
       error ("size of array %qs is too large", name);
       /* If we proceed with the array type as it is, we'll eventually

@@ -5811,12 +5811,12 @@ grokdeclarator (const struct c_declarator *declarator,
 	}
     }
 
-  /* Did array size calculations overflow?  */
-
+  /* Did array size calculations overflow or does the array cover more
+     than half of the address-space?  */
   if (TREE_CODE (type) == ARRAY_TYPE
       && COMPLETE_TYPE_P (type)
       && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
-      && TREE_OVERFLOW (TYPE_SIZE_UNIT (type)))
+      && ! valid_constant_size_p (TYPE_SIZE_UNIT (type)))
     {
       if (name)
 	error_at (loc, "size of array %qE is too large", name);

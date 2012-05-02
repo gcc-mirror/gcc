@@ -1,3 +1,8 @@
+2012-05-02  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (grokdeclarator): Properly check for sizes that
+	cover more than half of the address-space.
+
 2012-04-30  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/51033

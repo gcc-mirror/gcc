@@ -1101,14 +1101,12 @@ bit_value_unop_1 (enum tree_code code, tree type,
 	bool uns;
 
 	/* First extend mask and value according to the original type.  */
-	uns = (TREE_CODE (rtype) == INTEGER_TYPE && TYPE_IS_SIZETYPE (rtype)
-	       ? 0 : TYPE_UNSIGNED (rtype));
+	uns = TYPE_UNSIGNED (rtype);
 	*mask = double_int_ext (rmask, TYPE_PRECISION (rtype), uns);
 	*val = double_int_ext (rval, TYPE_PRECISION (rtype), uns);
 
 	/* Then extend mask and value according to the target type.  */
-	uns = (TREE_CODE (type) == INTEGER_TYPE && TYPE_IS_SIZETYPE (type)
-	       ? 0 : TYPE_UNSIGNED (type));
+	uns = TYPE_UNSIGNED (type);
 	*mask = double_int_ext (*mask, TYPE_PRECISION (type), uns);
 	*val = double_int_ext (*val, TYPE_PRECISION (type), uns);
 	break;
@@ -1130,8 +1128,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 		   tree r1type, double_int r1val, double_int r1mask,
 		   tree r2type, double_int r2val, double_int r2mask)
 {
-  bool uns = (TREE_CODE (type) == INTEGER_TYPE
-	      && TYPE_IS_SIZETYPE (type) ? 0 : TYPE_UNSIGNED (type));
+  bool uns = TYPE_UNSIGNED (type);
   /* Assume we'll get a constant result.  Use an initial varying value,
      we fall back to varying in the end if necessary.  */
   *mask = double_int_minus_one;
@@ -1198,13 +1195,6 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	    }
 	  else if (shift < 0)
 	    {
-	      /* ???  We can have sizetype related inconsistencies in
-		 the IL.  */
-	      if ((TREE_CODE (r1type) == INTEGER_TYPE
-		   && (TYPE_IS_SIZETYPE (r1type)
-		       ? 0 : TYPE_UNSIGNED (r1type))) != uns)
-		break;
-
 	      shift = -shift;
 	      *mask = double_int_rshift (r1mask, shift,
 					 TYPE_PRECISION (type), !uns);
@@ -1316,12 +1306,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	  break;
 
 	/* For comparisons the signedness is in the comparison operands.  */
-	uns = (TREE_CODE (r1type) == INTEGER_TYPE
-	       && TYPE_IS_SIZETYPE (r1type) ? 0 : TYPE_UNSIGNED (r1type));
-	/* ???  We can have sizetype related inconsistencies in the IL.  */
-	if ((TREE_CODE (r2type) == INTEGER_TYPE
-	     && TYPE_IS_SIZETYPE (r2type) ? 0 : TYPE_UNSIGNED (r2type)) != uns)
-	  break;
+	uns = TYPE_UNSIGNED (r1type);
 
 	/* If we know the most significant bits we know the values
 	   value ranges by means of treating varying bits as zero

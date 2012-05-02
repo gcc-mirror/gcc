@@ -336,8 +336,10 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
       switch (TREE_CODE (t))
 	{
 	case PLUS_EXPR:
-	case POINTER_PLUS_EXPR:
 	  loop->step = TREE_OPERAND (t, 1);
+	  break;
+	case POINTER_PLUS_EXPR:
+	  loop->step = fold_convert (ssizetype, TREE_OPERAND (t, 1));
 	  break;
 	case MINUS_EXPR:
 	  loop->step = TREE_OPERAND (t, 1);

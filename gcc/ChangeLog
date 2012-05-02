@@ -1,3 +1,43 @@
+2012-05-02  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (div_if_zero_remainder): sizetypes no longer
+	sign-extend.
+	(int_const_binop_1): New worker for int_const_binop with
+	overflowable parameter.  Pass it through
+	to force_fit_type_double.
+	(int_const_binop): Wrap around int_const_binop_1 with overflowable
+	equal to one.
+	(size_binop_loc): Call int_const_binop_1 with overflowable equal
+	to minus one, forcing overflow detection for even unsigned types.
+	(extract_muldiv_1): Remove bogus TYPE_IS_SIZETYPE special-casing.
+	(fold_binary_loc): Call try_move_mult_to_index with signed offset.
+	* stor-layout.c (initialize_sizetypes): sizetypes no longer
+	sign-extend.
+	(layout_type): For zero-sized arrays ignore overflow on the
+	size calculations.
+	* tree-ssa-ccp.c (bit_value_unop_1): Likewise.
+	(bit_value_binop_1): Likewise.
+	* tree.c (double_int_to_tree): Likewise.
+	(double_int_fits_to_tree_p): Likewise.
+	(force_fit_type_double): Likewise.
+	(host_integerp): Likewise.
+	(int_fits_type_p): Likewise.
+	* varasm.c (output_constructor_regular_field): Sign-extend the
+	field-offset to cater for negative offsets produced by the Ada frontend.
+	* omp-low.c (extract_omp_for_data): Convert the loop step to
+	signed for pointer adjustments.
+
+2012-05-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (valid_constant_size_p): New function.
+	* tree.h (valid_constant_size_p): Declare.
+	* cfgexpand.c (expand_one_var): Adjust check for too large
+	variables by using valid_constant_size_p.
+	* varasm.c (assemble_variable): Likewise.
+
+	* c-decl.c (grokdeclarator): Properly check for sizes that
+	cover more than half of the address-space.
+
 2012-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53163
