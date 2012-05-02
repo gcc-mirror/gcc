@@ -472,7 +472,7 @@ static void
 mf_decl_cache_locals (void)
 {
   gimple g;
-  gimple_seq seq = gimple_seq_alloc ();
+  gimple_seq seq = NULL;
 
   /* Build the cache vars.  */
   mf_cache_shift_decl_l
@@ -572,7 +572,7 @@ mf_build_check_statement_for (tree base, tree limit,
   mf_limit = make_rename_temp (mf_uintptr_type, "__mf_limit");
 
   /* Build: __mf_base = (uintptr_t) <base address expression>.  */
-  seq = gimple_seq_alloc ();
+  seq = NULL;
   t = fold_convert_loc (location, mf_uintptr_type,
 			unshare_expr (base));
   t = force_gimple_operand (t, &stmts, false, NULL_TREE);
@@ -683,7 +683,7 @@ mf_build_check_statement_for (tree base, tree limit,
 
      This is the body of the conditional.  */
 
-  seq = gimple_seq_alloc ();
+  seq = NULL;
   /* u is a string, so it is already a gimple value.  */
   u = mf_file_function_line_tree (location);
   /* NB: we pass the overall [base..limit] range to mf_check.  */
@@ -704,7 +704,7 @@ mf_build_check_statement_for (tree base, tree limit,
 	  gsi_insert_seq_after (&gsi, seq, GSI_CONTINUE_LINKING);
 	  e = split_block (then_bb, g);
 	  then_bb = e->dest;
-	  seq = gimple_seq_alloc ();
+	  seq = NULL;
 	}
 
       g = gimple_build_assign (mf_cache_shift_decl_l, mf_cache_shift_decl);
@@ -1114,7 +1114,7 @@ mx_register_decls (tree decl, gimple_seq seq, location_t location)
   if (finally_stmts != NULL)
     {
       gimple stmt = gimple_build_try (seq, finally_stmts, GIMPLE_TRY_FINALLY);
-      gimple_seq new_seq = gimple_seq_alloc ();
+      gimple_seq new_seq = NULL;
 
       gimple_seq_add_stmt (&new_seq, stmt);
       return new_seq;

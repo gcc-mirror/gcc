@@ -602,7 +602,7 @@ make_new_block (struct function *fn, unsigned int index)
   bb->il.gimple = ggc_alloc_cleared_gimple_bb_info ();
   n_basic_blocks_for_function (fn)++;
   bb->flags = 0;
-  set_bb_seq (bb, gimple_seq_alloc ());
+  set_bb_seq (bb, NULL);
   return bb;
 }
 

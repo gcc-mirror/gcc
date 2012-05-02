@@ -1626,7 +1626,7 @@ ipa_analyze_params_uses (struct cgraph_node *node,
 					 visit_ref_for_mod_analysis,
 					 visit_ref_for_mod_analysis);
 	}
-      for (gsi = gsi_start (phi_nodes (bb)); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), info,
 				       visit_ref_for_mod_analysis,
 				       visit_ref_for_mod_analysis,

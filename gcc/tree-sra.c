@@ -3192,6 +3192,7 @@ initialize_parameter_reductions (void)
   gimple_seq seq = NULL;
   tree parm;
 
+  gsi = gsi_start (seq);
   for (parm = DECL_ARGUMENTS (current_function_decl);
        parm;
        parm = DECL_CHAIN (parm))
@@ -3205,12 +3206,6 @@ initialize_parameter_reductions (void)
       if (!access_vec)
 	continue;
 
-      if (!seq)
-	{
-	  seq = gimple_seq_alloc ();
-	  gsi = gsi_start (seq);
-	}
-
       for (access = VEC_index (access_p, access_vec, 0);
 	   access;
 	   access = access->next_grp)
@@ -3218,6 +3213,7 @@ initialize_parameter_reductions (void)
 				 EXPR_LOCATION (parm));
     }
 
+  seq = gsi_seq (gsi);
   if (seq)
     gsi_insert_seq_on_edge_immediate (single_succ_edge (ENTRY_BLOCK_PTR), seq);
 }

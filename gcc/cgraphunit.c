@@ -646,7 +646,7 @@ cgraph_analyze_function (struct cgraph_node *node)
 	 function we lower it, which will require gimplified nested
 	 functions, so we can end up here with an already gimplified
 	 body.  */
-      if (!gimple_body (decl))
+      if (!gimple_has_body_p (decl))
 	gimplify_function_tree (decl);
       dump_function (TDI_generic, decl);
 

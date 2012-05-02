@@ -1996,7 +1996,7 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
   edge new_edge;
   bool inserted = false;
 
-  for (si = gsi_start (phi_nodes (bb)); !gsi_end_p (si); gsi_next (&si))
+  for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
     {
       tree res, new_res;
       gimple new_phi;

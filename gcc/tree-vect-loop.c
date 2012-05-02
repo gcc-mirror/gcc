@@ -183,7 +183,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   HOST_WIDE_INT dummy;
   gimple stmt, pattern_stmt = NULL;
   gimple_seq pattern_def_seq = NULL;
-  gimple_stmt_iterator pattern_def_si = gsi_start (NULL);
+  gimple_stmt_iterator pattern_def_si = gsi_none ();
   bool analyze_pattern_stmt = false;
 
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -336,7 +336,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		    }
 		  else
 		    {
-		      pattern_def_si = gsi_start (NULL);
+		      pattern_def_si = gsi_none ();
 		      analyze_pattern_stmt = false;
 		    }
 		}
@@ -5231,7 +5231,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   gimple_seq cond_expr_stmt_list = NULL;
   gimple stmt, pattern_stmt;
   gimple_seq pattern_def_seq = NULL;
-  gimple_stmt_iterator pattern_def_si = gsi_start (NULL);
+  gimple_stmt_iterator pattern_def_si = gsi_none ();
   bool transform_pattern_stmt = false;
 
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -5409,7 +5409,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		    }
 		  else
 		    {
-		      pattern_def_si = gsi_start (NULL);
+		      pattern_def_si = gsi_none ();
 		      transform_pattern_stmt = false;
 		    }
 		}
