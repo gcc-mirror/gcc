@@ -1556,8 +1556,17 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
   /* Compute and check data dependencies in both basic blocks.  */
   then_ddrs = VEC_alloc (ddr_p, heap, 1);
   else_ddrs = VEC_alloc (ddr_p, heap, 1);
-  compute_all_dependences (then_datarefs, &then_ddrs, NULL, false);
-  compute_all_dependences (else_datarefs, &else_ddrs, NULL, false);
+  if (!compute_all_dependences (then_datarefs, &then_ddrs, NULL, false)
+      || !compute_all_dependences (else_datarefs, &else_ddrs, NULL, false))
+    {
+      free_dependence_relations (then_ddrs);
+      free_dependence_relations (else_ddrs);
+      free_data_refs (then_datarefs);
+      free_data_refs (else_datarefs);
+      VEC_free (gimple, heap, then_stores);
+      VEC_free (gimple, heap, else_stores);
+      return false;
+    }
   blocks[0] = then_bb;
   blocks[1] = else_bb;
   blocks[2] = join_bb;

@@ -1,5 +1,9 @@
 2012-05-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/53163
+	* tree-ssa-phiopt.c (cond_if_else_store_replacement): Don't ignore
+	return value from compute_all_dependences.
+
 	PR rtl-optimization/53160
 	* ree.c (combine_reaching_defs): Handle the case where cand->insn
 	has been modified by ree pass already.
