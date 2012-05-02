@@ -1,3 +1,9 @@
+2012-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/53193
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Adjust
+	dg-error line number.
+
 2012-05-01  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/53115
