@@ -661,17 +661,16 @@ update_complex_components_on_edge (edge e, tree lhs, tree r, tree i)
 static void
 update_complex_assignment (gimple_stmt_iterator *gsi, tree r, tree i)
 {
-  gimple_stmt_iterator orig_si = *gsi;
   gimple stmt;
 
-  if (gimple_in_ssa_p (cfun))
-    update_complex_components (gsi, gsi_stmt (*gsi), r, i);
-
-  gimple_assign_set_rhs_with_ops (&orig_si, COMPLEX_EXPR, r, i);
-  stmt = gsi_stmt (orig_si);
+  gimple_assign_set_rhs_with_ops (gsi, COMPLEX_EXPR, r, i);
+  stmt = gsi_stmt (*gsi);
   update_stmt (stmt);
   if (maybe_clean_eh_stmt (stmt))
     gimple_purge_dead_eh_edges (gimple_bb (stmt));
+
+  if (gimple_in_ssa_p (cfun))
+    update_complex_components (gsi, gsi_stmt (*gsi), r, i);
 }
 
 

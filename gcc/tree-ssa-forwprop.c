@@ -1202,16 +1202,18 @@ forward_propagate_addr_expr (tree name, tree rhs)
 }
 
 
-/* Forward propagate the comparison defined in STMT like
+/* Forward propagate the comparison defined in *DEFGSI like
    cond_1 = x CMP y to uses of the form
      a_1 = (T')cond_1
      a_1 = !cond_1
      a_1 = cond_1 != 0
-   Returns true if stmt is now unused.  */
+   Returns true if stmt is now unused.  Advance DEFGSI to the next
+   statement.  */
 
 static bool
-forward_propagate_comparison (gimple stmt)
+forward_propagate_comparison (gimple_stmt_iterator *defgsi)
 {
+  gimple stmt = gsi_stmt (*defgsi);
   tree name = gimple_assign_lhs (stmt);
   gimple use_stmt;
   tree tmp = NULL_TREE;
@@ -1224,18 +1226,18 @@ forward_propagate_comparison (gimple stmt)
        && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_assign_rhs1 (stmt)))
       || (TREE_CODE (gimple_assign_rhs2 (stmt)) == SSA_NAME
         && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_assign_rhs2 (stmt))))
-    return false;
+    goto bailout;
 
   /* Do not un-cse comparisons.  But propagate through copies.  */
   use_stmt = get_prop_dest_stmt (name, &name);
   if (!use_stmt
       || !is_gimple_assign (use_stmt))
-    return false;
+    goto bailout;
 
   code = gimple_assign_rhs_code (use_stmt);
   lhs = gimple_assign_lhs (use_stmt);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
-    return false;
+    goto bailout;
 
   /* We can propagate the condition into a statement that
      computes the logical negation of the comparison result.  */
@@ -1249,13 +1251,13 @@ forward_propagate_comparison (gimple stmt)
       enum tree_code inv_code;
       inv_code = invert_tree_comparison (gimple_assign_rhs_code (stmt), nans);
       if (inv_code == ERROR_MARK)
-	return false;
+	goto bailout;
 
       tmp = build2 (inv_code, TREE_TYPE (lhs), gimple_assign_rhs1 (stmt),
 		    gimple_assign_rhs2 (stmt));
     }
   else
-    return false;
+    goto bailout;
 
   gsi = gsi_for_stmt (use_stmt);
   gimple_assign_set_rhs_from_tree (&gsi, unshare_expr (tmp));
@@ -1271,8 +1273,16 @@ forward_propagate_comparison (gimple stmt)
       fprintf (dump_file, "'\n");
     }
 
+  /* When we remove stmt now the iterator defgsi goes off it's current
+     sequence, hence advance it now.  */
+  gsi_next (defgsi);
+
   /* Remove defining statements.  */
   return remove_prop_source_from_use (name);
+
+bailout:
+  gsi_next (defgsi);
+  return false;
 }
 
 
@@ -2752,9 +2762,8 @@ ssa_forward_propagate_and_combine (void)
 	    }
 	  else if (TREE_CODE_CLASS (code) == tcc_comparison)
 	    {
-	      if (forward_propagate_comparison (stmt))
+	      if (forward_propagate_comparison (&gsi))
 	        cfg_changed = true;
-	      gsi_next (&gsi);
 	    }
 	  else
 	    gsi_next (&gsi);

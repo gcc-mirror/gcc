@@ -277,7 +277,7 @@ dse_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 {
   gimple_stmt_iterator gsi;
 
-  for (gsi = gsi_last (bb_seq (bb)); !gsi_end_p (gsi); gsi_prev (&gsi))
+  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
     dse_optimize_stmt (gsi);
 }
 

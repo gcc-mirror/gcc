@@ -511,6 +511,15 @@ phi_nodes (const_basic_block bb)
   return bb->il.gimple->phi_nodes;
 }
 
+static inline gimple_seq *
+phi_nodes_ptr (const_basic_block bb)
+{
+  gcc_checking_assert (!(bb->flags & BB_RTL));
+  if (!bb->il.gimple)
+    return NULL;
+  return &bb->il.gimple->phi_nodes;
+}
+
 /* Set PHI nodes of a basic block BB to SEQ.  */
 
 static inline void

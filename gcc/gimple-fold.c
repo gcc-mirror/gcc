@@ -549,9 +549,8 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   tree lhs;
   gimple stmt, new_stmt;
   gimple_stmt_iterator i;
-  gimple_seq stmts = gimple_seq_alloc();
+  gimple_seq stmts = NULL;
   struct gimplify_ctx gctx;
-  gimple last;
   gimple laststore;
   tree reaching_vuse;
 
@@ -620,17 +619,9 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 
   /* Second iterate over the statements forward, assigning virtual
      operands to their uses.  */
-  last = NULL;
   reaching_vuse = gimple_vuse (stmt);
   for (i = gsi_start (stmts); !gsi_end_p (i); gsi_next (&i))
     {
-      /* Do not insert the last stmt in this loop but remember it
-         for replacing the original statement.  */
-      if (last)
-	{
-	  gsi_insert_before (si_p, last, GSI_NEW_STMT);
-	  gsi_next (si_p);
-	}
       new_stmt = gsi_stmt (i);
       /* The replacement can expose previously unreferenced variables.  */
       if (gimple_in_ssa_p (cfun))
@@ -642,7 +633,6 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
       gimple_set_modified (new_stmt, true);
       if (gimple_vdef (new_stmt))
 	reaching_vuse = gimple_vdef (new_stmt);
-      last = new_stmt;
     }
 
   /* If the new sequence does not do a store release the virtual
@@ -659,8 +649,8 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	}
     }
 
-  /* Finally replace rhe original statement with the last.  */
-  gsi_replace (si_p, last, false);
+  /* Finally replace the original statement with the sequence.  */
+  gsi_replace_with_seq (si_p, stmts, false);
 }
 
 /* Return the string length, maximum string length or maximum value of

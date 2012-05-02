@@ -1,7 +1,259 @@
+2012-05-02  Michael Matz  <matz@suse.de>
+
+	* coretypes.h (gimple_seq, const_gimple_seq): Typedef as gimple.
+	* gimple.h (struct gimple_seq_node_d, struct gimple_seq_d): Remove.
+	(const_gimple_seq_node): Remove.
+	(gimple_seq_node): Typedef as gimple.
+	(struct gimple_statement_base): Add next and prev members,
+	adjust all WORD markers in using structs.
+	(union gimple_statement_d): Link via gsbase.next field for GC and PCH.
+	(gimple_seq_first, gimple_seq_first_stmt, gimple_seq_last,
+	gimple_seq_last_stmt): Adjust as gimple_seq, gimple_seq_node and
+	gimple are the same.
+	(gimple_seq_set_last, gimple_seq_set_first): Don't allocate
+	gimple_seq, adjust.
+	(gimple_init_singleton): New function.
+	(gsi_start_1, gsi_last_1, gsi_end_p, gsi_one_before_end_p): Adjust.
+	(gsi_next, gsi_prev): Adjust, handle prev cyclic list correctly.
+	(gsi_stmt): Adjust.
+	(gsi_stmt_ptr): Remove.
+	(enum gimple_alloc_kind): Remove gimple_alloc_kind_seq member.
+
+	* gimple-iterator.c (update_bb_for_stmts): Take last parameter
+	again, adjust for above changes.
+	(update_call_edge_frequencies): Adjust for above changes.
+	(gsi_insert_seq_nodes_before): Rewrite for new data structure.
+	(gsi_insert_seq_nodes_after): Ditto.
+	(gsi_split_seq_after): Ditto.
+	(gsi_set_stmt): Ditto.
+	(gsi_split_seq_before): Ditto.
+	(gsi_remove): Ditto.
+	(gsi_insert_seq_before_without_update): Don't free sequence.
+	(gsi_insert_seq_after_without_update): Ditto.
+	(gsi_replace): Assert some more invariants.
+	(gsi_insert_before_without_update, gsi_insert_after_without_update):
+	Tidy.
+	(gsi_for_stmt): Don't search for stmt.
+	(gsi_insert_on_edge_immediate): Tidy.
+
+	* gimple.c (gimple_alloc_k): Remove "sequences".
+	(gimple_seq_cache): Remove.
+	(gimple_alloc_stat): Make stmt a singleton sequence.
+	(gimple_seq_alloc, gimple_seq_free): Remove.
+	(gimple_assign_set_rhs_with_ops_1): Ensure new stmt is a singleton.
+	(gimple_copy): Ditto.
+	* gimplify.c (gimplify_cleanup_point_expr): Use gsi_set_stmt,
+	create iterator from correct sequence.
+	* tree-phinodes.c (make_phi_node): Make stmt a singleton.
+
+2012-05-02  Michael Matz  <matz@suse.de>
+
+	* gimple.h (gimple_stmt_iterator <seq>): Make it be pointer to
+	gimple_seq.
+	(gimple_seq_set_last, gimple_seq_set_first): Take pointer to
+	sequence, lazily allocate it.
+	(bb_seq_addr): New function.
+	(gsi_start_1): Rename from gsi_start, but take pointer to sequence.
+	(gsi_start): Macro to wrap gsi_start_1 taking pointer of argument.
+	(gsi_none): New function.
+	(gsi_start_bb): Adjust.
+	(gsi_last_1): Rename from gsi_last, but take pointer to sequence.
+	(gsi_last): Macro to wrap gsi_last_1 taking pointer of argument.
+	(gsi_last_bb): Adjust.
+	(gsi_seq): Adjust.
+	* tree-flow-inline.h (phi_nodes_ptr): New function.
+
+	* gimple-iterator.c (gsi_insert_seq_nodes_before): Adjust to 
+	datastructure and interface change.
+	(gsi_insert_seq_before_without_update): Ditto.
+	(gsi_insert_seq_nodes_after): Ditto.
+	(gsi_insert_seq_after_without_update): Ditto.
+	(gsi_split_seq_after): Ditto, don't use gimple_seq_alloc.
+	(gsi_split_seq_before): Ditto.
+	(gsi_start_phis): Adjust.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Use
+	gsi_none.
+	(vect_transform_loop): Ditto.
+	* gimple.c (gimple_seq_add_stmt, gimple_seq_add_seq,
+	gimple_seq_copy): Don't use gimple_seq_alloc.
+	* gimplify.c (gimple_seq_add_stmt_without_update): Ditto.
+	(gimplify_seq_add_seq): Ditto.
+	* lto-streamer-in.c (make_new_block): Ditto.
+	* tree-cfg.c (create_bb): Ditto.
+	* tree-sra.c (initialize_parameter_reductions): Ditto.
+
+2012-05-02  Michael Matz  <matz@suse.de>
+
+	* gimple.h (gimple_seq_first, gimple_seq_first_stmt, gimple_seq_last,
+	gimple_seq_last_stmt, gimple_seq_set_last, gimple_seq_set_first,
+	gimple_seq_empty_p, gimple_seq_alloc_with_stmt, bb_seq,
+	set_bb_seq): Move down to after gimple_statement_d definition.
+
+2012-05-02  Michael Matz  <matz@suse.de>
+
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Use
+	gsi_replace_with_seq, instead of inserting itself.
+	* gimple-iterator.c (gsi_replace_with_seq): New function.
+	* tree-ssa-forwprop.c (forward_propagate_comparison): Take
+	iterator instead of statement, advance it.
+	(ssa_forward_propagate_and_combine): Adjust call to above.
+
+2012-05-02  Michael Matz  <matz@suse.de>
+
+	* tree-phinodes.c (add_phi_node_to_bb): Tidy, don't use
+	gimple_seq_alloc.
+	* omp-low.c (finalize_task_copyfn): Don't use gimple_seq_alloc.
+	* tree-nested.c (walk_gimple_omp_for): Ditto.
+	* trans-mem.c (lower_transaction): Ditto.
+	* tree-eh.c (do_return_redirection): Ditto.
+	(do_goto_redirection): Ditto.
+	(lower_try_finally_switch): Ditto.
+	* gimplify.c (gimplify_stmt): Ditto.
+	(gimplify_scan_omp_clauses): Ditto.
+	(gimplify_omp_for): Ditto.
+	(gimplify_function_tree): Ditto.
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Ditto.
+	* tree-mudflap.c (mf_decl_cache_locals): Ditto.
+	(mf_build_check_statement_for): Ditto.
+	(mx_register_decls): Ditto.
+	* graphite-sese-to-poly.c (remove_invariant_phi): Ditto,
+	and don't use itertors to append.
+	(insert_stmts): Ditto.
+	(insert_out_of_ssa_copy): Ditto.
+	(insert_out_of_ssa_copy_on_edge): Ditto.
+
+2012-05-02  Michael Matz  <matz@suse.de>
+
+	* gimple.h (gimple_bind_body_ptr): New function.
+	(gimple_bind_body): Use it.
+	(gimple_catch_handler): Use gimple_catch_handler_ptr.
+	(gimple_eh_filter_failure_ptr): New function.
+	(gimple_eh_filter_failure): Use it.
+	(gimple_eh_else_n_body_ptr): New function.
+	(gimple_eh_else_n_body): Use it.
+	(gimple_eh_else_e_body_ptr): New function.
+	(gimple_eh_else_e_body): Use it.
+	(gimple_try_eval_ptr): New function.
+	(gimple_try_eval): Use it.
+	(gimple_try_cleanup_ptr): New function.
+	(gimple_try_cleanup): Use it.
+	(gimple_wce_cleanup_ptr): New function.
+	(gimple_wce_cleanup): Use it.
+	(gimple_omp_body_ptr): New function.
+	(gimple_omp_body): Use it.
+	(gimple_omp_for_pre_body_ptr): New function.
+	(gimple_omp_for_pre_body): Use it.
+	(gimple_transaction_body_ptr): New function.
+	(gimple_transaction_body): Use it.
+	(gsi_split_seq_before): Adjust to return nothing and take pointer
+	to sequence.
+	(gsi_set_stmt): Declare.
+	(gsi_replace_with_seq): Declare.
+	(walk_gimple_seq_mod): Declare.
+	* function.h (struct function <gimple_body>): Use typedef gimple_seq.
+
+	* gimple-iterator.c (gsi_set_stmt): New function.
+	(gsi_split_seq_before): Return new sequence via pointer argument.
+	(gsi_replace): Use gsi_set_stmt.
+
+	* tree-ssa-loop-im.c (move_computations_stmt): First remove
+	then insert stmt.
+	* tree-complex.c (update_complex_components_on_edge): Don't
+	copy gsi.
+	* tree-phinodes.c (resize_phi_node): Don't resize stmt in-place,
+	return new stmt.
+	(reserve_phi_args_for_new_edge): Change call to above,
+	use gsi_set_stmt.
+
+	* omp-low.c (lower_omp): Change prototype to take pointer to
+	sequence.
+	(lower_rec_input_clauses): Use gimple_seq_add_seq instead of
+	iterators.  Adjust call to lower_omp.
+	(lower_lastprivate_clauses): Adjust call to lower_omp.
+	(lower_reduction_clauses): Ditto.
+	(expand_omp_taskreg): Nullify non-cfg body of child_fn.
+	(lower_omp_sections): Don't explicitely count sequence length,
+	nullify lowered bodies earlier, ensure stmts are part of only
+	one sequence, adjust call to lower_omp.
+	(lower_omp_single): Ensure stmts are part of only one sequence,
+	adjust call to lower_omp.
+	(lower_omp_master): Ditto.
+	(lower_omp_ordered): Ditto.
+	(lower_omp_critical): Ditto.
+	(lower_omp_for): Ditto.
+	(lower_omp_taskreg): Ditto, tidy.
+	(lower_omp_1): Adjust calls to lower_omp.
+	(execute_lower_omp): Ditto.
+	(lower_omp): Adjust to take pointer to sequence.
+	(diagnose_sb_2): Use walk_gimple_seq_mod.
+	(diagnose_omp_structured_block_errors): Ditto and set possibly
+	changed function body.
+	* gimple-low.c (lower_function_body): Set function body after
+	it stabilizes.
+	(lower_sequence): Adjust to take pointer to sequence.
+	(lower_omp_directive): Ensure stmt isn't put twice into the
+	sequence, adjust call to lower_sequence.
+	(lower_stmt): Adjust calls to lower_sequence.
+	(lower_gimple_bind): Ditto.
+	(gimple_try_catch_may_fallthru): Call gsi_start with lvalue.
+	* tree-nested.c (walk_body): Take pointer to sequence, use
+	walk_gimple_seq_mod.
+	(walk_function): Adjust call to walk_body, set possibly changed
+	body.
+	(walk_gimple_omp_for): Adjust calls to walk_body.
+	(convert_nonlocal_omp_clauses): Ditto.
+	(convert_nonlocal_reference_stmt): Ditto.
+	(convert_local_omp_clauses): Ditto.
+	(convert_local_reference_stmt): Ditto.
+	(convert_tramp_reference_stmt): Ditto.
+	(convert_gimple_call): Ditto.
+	(convert_nl_goto_reference): Use local iterator copy.
+	* gimple.c (walk_gimple_seq_mod): Renamed from walk_gimple_seq,
+	but taking pointer to sequence, ensure gsi_start is called with
+	callers lvalue.
+	(walk_gimple_seq): New wrapper around walk_gimple_seq_mod,
+	asserting that the sequence head didn't change.
+	(walk_gimple_stmt): Replace all calls to walk_gimple_seq with
+	walk_gimple_seq_mod.
+	* trans-mem.c (lower_transaction): Use walk_gimple_seq_mod.
+	(execute_lower_tm): Ditto, and set possibly changed body.
+	* tree-eh.c (lower_eh_constructs_1): Take pointer to sequence,
+	call gsi_start with that lvalue.
+	(replace_goto_queue_stmt_list): Ditto.
+	(replace_goto_queue_1): Adjust calls to replace_goto_queue_stmt_list.
+	(replace_goto_queue): Ditto.
+	(lower_try_finally_nofallthru): Adjust calls to lower_eh_constructs_1.
+	(lower_try_finally_onedest): Ditto.
+	(lower_try_finally_copy): Ditto.
+	(lower_try_finally_switch): Ditto.
+	(lower_try_finally): Ditto.
+	(lower_eh_filter): Ditto.
+	(lower_eh_must_not_throw): Ditto.
+	(lower_cleanup): Ditto.
+	(lower_eh_constructs_2): Ditto.
+	(lower_catch): Ditto, and ensure gsi_start is called with lvalue.
+	(lower_eh_constructs): Adjust calls to lower_eh_constructs_1, and
+	set possibly changed body.
+	(optimize_double_finally): Call gsi_start with lvalue.
+
+	* tree-cfg.c (make_blocks): Adjust call to gsi_split_seq_before.
+	(gimple_split_block): Ditto.
+	(gimple_merge_blocks): Use gsi_start_phis.
+	(move_stmt_r): Use walk_gimple_seq_mod.
+	* tree-ssa-dse.c (dse_enter_block): Use gsi_last_bb.
+	* cgraphbuild.c (build_cgraph_edges): Use gsi_start_phis.
+	(rebuild_cgraph_edges): Ditto.
+	(cgraph_rebuild_references): Ditto.
+	* ipa-prop.c (ipa_analyze_params_uses): Ditto.
+	* tree-inline.c (copy_phis_for_bb): Ditto.
+	* tree-ssa-dce.c: Ditto.
+
+	* cgraphunit.c (cgraph_analyze_function): Use gimple_has_body_p.
+
 2012-05-02  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Andi Kleen <ak@linux.intel.com>
 
-	* coretypes (MEMMODEL_MASK): New.
+	* coretypes.h (MEMMODEL_MASK): New.
 	* builtins.c (get_memmodel): Add val. Call target.memmodel_check
 	and return new variable.
 	(expand_builtin_atomic_exchange):  Mask memmodel values.

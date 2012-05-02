@@ -377,7 +377,7 @@ make_blocks (gimple_seq seq)
       if (start_new_block || stmt_starts_bb_p (stmt, prev_stmt))
 	{
 	  if (!first_stmt_of_seq)
-	    seq = gsi_split_seq_before (&i);
+	    gsi_split_seq_before (&i, &seq);
 	  bb = create_basic_block (seq, NULL, bb);
 	  start_new_block = false;
 	}
@@ -439,7 +439,7 @@ create_bb (void *h, void *e, basic_block after)
   bb->index = last_basic_block;
   bb->flags = BB_NEW;
   bb->il.gimple = ggc_alloc_cleared_gimple_bb_info ();
-  set_bb_seq (bb, h ? (gimple_seq) h : gimple_seq_alloc ());
+  set_bb_seq (bb, h ? (gimple_seq) h : NULL);
 
   /* Add the new block to the linked list of blocks.  */
   link_block (bb, after);
@@ -1655,7 +1655,6 @@ static void
 gimple_merge_blocks (basic_block a, basic_block b)
 {
   gimple_stmt_iterator last, gsi, psi;
-  gimple_seq phis = phi_nodes (b);
 
   if (dump_file)
     fprintf (dump_file, "Merging blocks %d and %d\n", a->index, b->index);
@@ -1663,7 +1662,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
   /* Remove all single-valued PHI nodes from block B of the form
      V_i = PHI <V_j> by propagating V_j to all the uses of V_i.  */
   gsi = gsi_last_bb (a);
-  for (psi = gsi_start (phis); !gsi_end_p (psi); )
+  for (psi = gsi_start_phis (b); !gsi_end_p (psi); )
     {
       gimple phi = gsi_stmt (psi);
       tree def = gimple_phi_result (phi), use = gimple_phi_arg_def (phi, 0);
@@ -5249,7 +5248,7 @@ gimple_split_block (basic_block bb, void *stmt)
      brings ugly quadratic memory consumption in the inliner.
      (We are still quadratic since we need to update stmt BB pointers,
      sadly.)  */
-  list = gsi_split_seq_before (&gsi);
+  gsi_split_seq_before (&gsi, &list);
   set_bb_seq (new_bb, list);
   for (gsi_tgt = gsi_start (list);
        !gsi_end_p (gsi_tgt); gsi_next (&gsi_tgt))
@@ -6085,8 +6084,8 @@ move_stmt_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	  p->remap_decls_p = false;
 	  *handled_ops_p = true;
 
-	  walk_gimple_seq (gimple_omp_body (stmt), move_stmt_r,
-			   move_stmt_op, wi);
+	  walk_gimple_seq_mod (gimple_omp_body_ptr (stmt), move_stmt_r,
+			       move_stmt_op, wi);
 
 	  p->remap_decls_p = save_remap_decls_p;
 	}

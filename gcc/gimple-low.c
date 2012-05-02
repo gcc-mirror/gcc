@@ -112,10 +112,6 @@ lower_function_body (void)
   i = gsi_start (lowered_body);
   lower_gimple_bind (&i, &data);
 
-  /* Once the old body has been lowered, replace it with the new
-     lowered sequence.  */
-  gimple_set_body (current_function_decl, lowered_body);
-
   i = gsi_last (lowered_body);
 
   /* If the function falls off the end, we need a null return statement.
@@ -178,6 +174,10 @@ lower_function_body (void)
       x = gimple_build_goto (disp_var);
       gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
     }
+
+  /* Once the old body has been lowered, replace it with the new
+     lowered sequence.  */
+  gimple_set_body (current_function_decl, lowered_body);
 
   gcc_assert (data.block == DECL_INITIAL (current_function_decl));
   BLOCK_SUBBLOCKS (data.block)
@@ -305,11 +305,11 @@ gimple_check_call_matching_types (gimple call_stmt, tree callee)
    do it explicitly.  DATA is passed through the recursion.  */
 
 static void
-lower_sequence (gimple_seq seq, struct lower_data *data)
+lower_sequence (gimple_seq *seq, struct lower_data *data)
 {
   gimple_stmt_iterator gsi;
 
-  for (gsi = gsi_start (seq); !gsi_end_p (gsi); )
+  for (gsi = gsi_start (*seq); !gsi_end_p (gsi); )
     lower_stmt (&gsi, data);
 }
 
@@ -324,11 +324,10 @@ lower_omp_directive (gimple_stmt_iterator *gsi, struct lower_data *data)
 
   stmt = gsi_stmt (*gsi);
 
-  lower_sequence (gimple_omp_body (stmt), data);
-  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
-  gsi_insert_seq_before (gsi, gimple_omp_body (stmt), GSI_SAME_STMT);
+  lower_sequence (gimple_omp_body_ptr (stmt), data);
+  gsi_insert_seq_after (gsi, gimple_omp_body (stmt), GSI_CONTINUE_LINKING);
   gimple_omp_set_body (stmt, NULL);
-  gsi_remove (gsi, false);
+  gsi_next (gsi);
 }
 
 
@@ -376,10 +375,10 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     case GIMPLE_TRY:
       {
 	bool try_cannot_fallthru;
-	lower_sequence (gimple_try_eval (stmt), data);
+	lower_sequence (gimple_try_eval_ptr (stmt), data);
 	try_cannot_fallthru = data->cannot_fallthru;
 	data->cannot_fallthru = false;
-	lower_sequence (gimple_try_cleanup (stmt), data);
+	lower_sequence (gimple_try_cleanup_ptr (stmt), data);
 	/* See gimple_stmt_may_fallthru for the rationale.  */
 	if (gimple_try_kind (stmt) == GIMPLE_TRY_FINALLY)
 	  {
@@ -392,17 +391,17 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 
     case GIMPLE_CATCH:
       data->cannot_fallthru = false;
-      lower_sequence (gimple_catch_handler (stmt), data);
+      lower_sequence (gimple_catch_handler_ptr (stmt), data);
       break;
 
     case GIMPLE_EH_FILTER:
       data->cannot_fallthru = false;
-      lower_sequence (gimple_eh_filter_failure (stmt), data);
+      lower_sequence (gimple_eh_filter_failure_ptr (stmt), data);
       break;
 
     case GIMPLE_EH_ELSE:
-      lower_sequence (gimple_eh_else_n_body (stmt), data);
-      lower_sequence (gimple_eh_else_e_body (stmt), data);
+      lower_sequence (gimple_eh_else_n_body_ptr (stmt), data);
+      lower_sequence (gimple_eh_else_e_body_ptr (stmt), data);
       break;
 
     case GIMPLE_NOP:
@@ -456,7 +455,7 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
       return;
 
     case GIMPLE_TRANSACTION:
-      lower_sequence (gimple_transaction_body (stmt), data);
+      lower_sequence (gimple_transaction_body_ptr (stmt), data);
       break;
 
     default:
@@ -505,7 +504,7 @@ lower_gimple_bind (gimple_stmt_iterator *gsi, struct lower_data *data)
     }
 
   record_vars (gimple_bind_vars (stmt));
-  lower_sequence (gimple_bind_body (stmt), data);
+  lower_sequence (gimple_bind_body_ptr (stmt), data);
 
   if (new_block)
     {
@@ -585,7 +584,7 @@ gimple_try_catch_may_fallthru (gimple stmt)
   if (gimple_seq_may_fallthru (gimple_try_eval (stmt)))
     return true;
 
-  i = gsi_start (gimple_try_cleanup (stmt));
+  i = gsi_start (*gimple_try_cleanup_ptr (stmt));
   switch (gimple_code (gsi_stmt (i)))
     {
     case GIMPLE_CATCH:

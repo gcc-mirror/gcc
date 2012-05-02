@@ -1570,8 +1570,8 @@ lower_transaction (gimple_stmt_iterator *gsi, struct walk_stmt_info *wi)
      us some idea of what we're dealing with.  */
   memset (&this_wi, 0, sizeof (this_wi));
   this_wi.info = (void *) &this_state;
-  walk_gimple_seq (gimple_transaction_body (stmt),
-		   lower_sequence_tm, NULL, &this_wi);
+  walk_gimple_seq_mod (gimple_transaction_body_ptr (stmt),
+		       lower_sequence_tm, NULL, &this_wi);
 
   /* If there was absolutely nothing transaction related inside the
      transaction, we may elide it.  Likewise if this is a nested
@@ -1600,7 +1600,7 @@ lower_transaction (gimple_stmt_iterator *gsi, struct walk_stmt_info *wi)
       gimple_seq n_seq, e_seq;
 
       n_seq = gimple_seq_alloc_with_stmt (g);
-      e_seq = gimple_seq_alloc ();
+      e_seq = NULL;
 
       g = gimple_build_call (builtin_decl_explicit (BUILT_IN_EH_POINTER),
 			     1, integer_zero_node);
@@ -1704,13 +1704,15 @@ static unsigned int
 execute_lower_tm (void)
 {
   struct walk_stmt_info wi;
+  gimple_seq body;
 
   /* Transactional clones aren't created until a later pass.  */
   gcc_assert (!decl_is_tm_clone (current_function_decl));
 
+  body = gimple_body (current_function_decl);
   memset (&wi, 0, sizeof (wi));
-  walk_gimple_seq (gimple_body (current_function_decl),
-		   lower_sequence_no_tm, NULL, &wi);
+  walk_gimple_seq_mod (&body, lower_sequence_no_tm, NULL, &wi);
+  gimple_set_body (current_function_decl, body);
 
   return 0;
 }

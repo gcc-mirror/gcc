@@ -72,9 +72,8 @@ struct cl_decoded_option;
 struct cl_option_handlers;
 struct diagnostic_context;
 typedef struct diagnostic_context diagnostic_context;
-struct gimple_seq_d;
-typedef struct gimple_seq_d *gimple_seq;
-typedef const struct gimple_seq_d *const_gimple_seq;
+typedef gimple gimple_seq;
+typedef gimple const_gimple_seq;
 
 /* Address space number for named address space support.  */
 typedef unsigned char addr_space_t;

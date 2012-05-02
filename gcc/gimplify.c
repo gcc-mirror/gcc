@@ -169,11 +169,7 @@ gimple_seq_add_stmt_without_update (gimple_seq *seq_p, gimple gs)
   if (gs == NULL)
     return;
 
-  if (*seq_p == NULL)
-    *seq_p = gimple_seq_alloc ();
-
   si = gsi_last (*seq_p);
-
   gsi_insert_after_without_update (&si, gs, GSI_NEW_STMT);
 }
 
@@ -199,9 +195,6 @@ gimplify_seq_add_seq (gimple_seq *dst_p, gimple_seq src)
 
   if (src == NULL)
     return;
-
-  if (*dst_p == NULL)
-    *dst_p = gimple_seq_alloc ();
 
   si = gsi_last (*dst_p);
   gsi_insert_seq_after_without_update (&si, src, GSI_NEW_STMT);
@@ -5467,8 +5460,8 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
 	      gtry = gimple_build_try (seq, gimple_wce_cleanup (wce), kind);
               /* Do not use gsi_replace here, as it may scan operands.
                  We want to do a simple structural modification only.  */
-              *gsi_stmt_ptr (&iter) = gtry;
-	      iter = gsi_start (seq);
+	      gsi_set_stmt (&iter, gtry);
+	      iter = gsi_start (gtry->gimple_try.eval);
 	    }
 	}
       else
@@ -5649,9 +5642,6 @@ bool
 gimplify_stmt (tree *stmt_p, gimple_seq *seq_p)
 {
   gimple_seq_node last;
-
-  if (!*seq_p)
-    *seq_p = gimple_seq_alloc ();
 
   last = gimple_seq_last (*seq_p);
   gimplify_expr (stmt_p, seq_p, NULL, is_gimple_stmt, fb_none);
@@ -6149,8 +6139,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      gimplify_omp_ctxp = ctx;
 	      push_gimplify_context (&gctx);
 
-	      OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c) = gimple_seq_alloc ();
-	      OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c) = gimple_seq_alloc ();
+	      OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c) = NULL;
+	      OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c) = NULL;
 
 	      gimplify_and_add (OMP_CLAUSE_REDUCTION_INIT (c),
 		  		&OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c));
@@ -6486,7 +6476,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   gimplify_and_add (OMP_FOR_PRE_BODY (for_stmt), &for_pre_body);
   OMP_FOR_PRE_BODY (for_stmt) = NULL_TREE;
 
-  for_body = gimple_seq_alloc ();
+  for_body = NULL;
   gcc_assert (TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt))
 	      == TREE_VEC_LENGTH (OMP_FOR_COND (for_stmt)));
   gcc_assert (TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt))
@@ -8322,7 +8312,7 @@ gimplify_function_tree (tree fndecl)
 
   /* The tree body of the function is no longer needed, replace it
      with the new GIMPLE body.  */
-  seq = gimple_seq_alloc ();
+  seq = NULL;
   gimple_seq_add_stmt (&seq, bind);
   gimple_set_body (fndecl, seq);
 
@@ -8371,7 +8361,7 @@ gimplify_function_tree (tree fndecl)
 
       /* Replace the current function body with the body
          wrapped in the try/finally TF.  */
-      seq = gimple_seq_alloc ();
+      seq = NULL;
       gimple_seq_add_stmt (&seq, new_bind);
       gimple_set_body (fndecl, seq);
     }
