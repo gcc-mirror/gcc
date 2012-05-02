@@ -1,3 +1,30 @@
+2012-05-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/44015
+	* include/bits/basic_ios.h: Add tparam markup for
+	* doxygen.  include/bits/basic_string.h: Same.
+	* include/bits/forward_list.h: Same.
+	* include/bits/stl_bvector.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/stl_list.h: Same.  include/bits/stl_map.h:
+	* Same.  include/bits/stl_multimap.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/stl_pair.h: Same.
+	* include/bits/stl_queue.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/stl_stack.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/bits/unordered_map.h: Same.
+	* include/bits/unordered_set.h: Same.  include/std/array:
+	* Same.  include/std/atomic: Same.  include/std/fstream:
+	* Same.  include/std/istream: Same.  include/std/ostream:
+	* Same.  include/std/sstream: Same.
+	* include/std/streambuf: Same.
+	* testsuite/23_containers/deque/requirements/dr438/*:
+          Adjust line numbers.
+	* testsuite/23_containers/list/requirements/dr438/*: Same.
+	* testsuite/23_containers/vector/requirements/dr438/*: Same.
+
 2012-05-02  DJ Delorie  <dj@redhat.com>
 
 	* crossconfig.m4: Since we know that all TPF builds are cross-

@@ -55,6 +55,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @ingroup strings
    *  @ingroup sequences
    *
+   *  @tparam _CharT  Type of character
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
+   *  @tparam _Alloc  Allocator type, defaults to allocator<_CharT>.
+   *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, a
    *  <a href="tables.html#66">reversible container</a>, and a
    *  <a href="tables.html#67">sequence</a>.  Of the

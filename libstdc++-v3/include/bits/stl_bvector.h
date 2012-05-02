@@ -500,12 +500,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  @brief  A specialization of vector for booleans which offers fixed time
    *  access to individual elements in any order.
    *
+   *  @ingroup sequences
+   *
+   *  @tparam _Alloc  Allocator type.
+   *
    *  Note that vector<bool> does not actually meet the requirements for being
    *  a container.  This is because the reference and pointer types are not
    *  really references and pointers to bool.  See DR96 for details.  @see
    *  vector for function documentation.
-   *
-   *  @ingroup sequences
    *
    *  In some terminology a %vector can be described as a dynamic
    *  C-style array, it offers fast and efficient access to individual
