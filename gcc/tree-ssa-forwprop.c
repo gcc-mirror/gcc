@@ -163,7 +163,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool forward_propagate_addr_expr (tree name, tree rhs);
 
-/* Set to true if we delete EH edges during the optimization.  */
+/* Set to true if we delete dead edges during the optimization.  */
 static bool cfg_changed;
 
 static tree rhs_to_tree (tree type, gimple stmt);
@@ -1319,6 +1319,78 @@ simplify_not_neg_expr (gimple_stmt_iterator *gsi_p)
   return false;
 }
 
+/* Helper function for simplify_gimple_switch.  Remove case labels that
+   have values outside the range of the new type.  */
+
+static void
+simplify_gimple_switch_label_vec (gimple stmt, tree index_type)
+{
+  unsigned int branch_num = gimple_switch_num_labels (stmt);
+  VEC(tree, heap) *labels = VEC_alloc (tree, heap, branch_num);
+  unsigned int i, len;
+
+  /* Collect the existing case labels in a VEC, and preprocess it as if
+     we are gimplifying a GENERIC SWITCH_EXPR.  */
+  for (i = 1; i < branch_num; i++)
+    VEC_quick_push (tree, labels, gimple_switch_label (stmt, i));
+  preprocess_case_label_vec_for_gimple (labels, index_type, NULL);
+
+  /* If any labels were removed, replace the existing case labels
+     in the GIMPLE_SWITCH statement with the correct ones.
+     Note that the type updates were done in-place on the case labels,
+     so we only have to replace the case labels in the GIMPLE_SWITCH
+     if the number of labels changed.  */
+  len = VEC_length (tree, labels);
+  if (len < branch_num - 1)
+    {
+      bitmap target_blocks;
+      edge_iterator ei;
+      edge e;
+
+      /* Corner case: *all* case labels have been removed as being
+	 out-of-range for INDEX_TYPE.  Push one label and let the
+	 CFG cleanups deal with this further.  */
+      if (len == 0)
+	{
+	  tree label, elt;
+
+	  label = CASE_LABEL (gimple_switch_default_label (stmt));
+	  elt = build_case_label (build_int_cst (index_type, 0), NULL, label);
+	  VEC_quick_push (tree, labels, elt);
+	  len = 1;
+	}
+
+      for (i = 0; i < VEC_length (tree, labels); i++)
+	gimple_switch_set_label (stmt, i + 1, VEC_index (tree, labels, i));
+      for (i++ ; i < branch_num; i++)
+	gimple_switch_set_label (stmt, i, NULL_TREE);
+      gimple_switch_set_num_labels (stmt, len + 1);
+
+      /* Cleanup any edges that are now dead.  */
+      target_blocks = BITMAP_ALLOC (NULL);
+      for (i = 0; i < gimple_switch_num_labels (stmt); i++)
+	{
+	  tree elt = gimple_switch_label (stmt, i);
+	  basic_block target = label_to_block (CASE_LABEL (elt));
+	  bitmap_set_bit (target_blocks, target->index);
+	}
+      for (ei = ei_start (gimple_bb (stmt)->succs); (e = ei_safe_edge (ei)); )
+	{
+	  if (! bitmap_bit_p (target_blocks, e->dest->index))
+	    {
+	      remove_edge (e);
+	      cfg_changed = true;
+	      free_dominance_info (CDI_DOMINATORS);
+	    }
+	  else
+	    ei_next (&ei);
+	} 
+      BITMAP_FREE (target_blocks);
+    }
+
+  VEC_free (tree, heap, labels);
+}
+
 /* STMT is a SWITCH_EXPR for which we attempt to find equivalent forms of
    the condition which we may be able to optimize better.  */
 
@@ -1344,9 +1416,6 @@ simplify_gimple_switch (gimple stmt)
 
 	      def = gimple_assign_rhs1 (def_stmt);
 
-	      /* ??? Why was Jeff testing this?  We are gimple...  */
-	      gcc_checking_assert (is_gimple_val (def));
-
 	      to = TREE_TYPE (cond);
 	      ti = TREE_TYPE (def);
 
@@ -1367,6 +1436,7 @@ simplify_gimple_switch (gimple stmt)
 	      if (!fail)
 		{
 		  gimple_switch_set_index (stmt, def);
+		  simplify_gimple_switch_label_vec (stmt, ti);
 		  update_stmt (stmt);
 		  return true;
 		}

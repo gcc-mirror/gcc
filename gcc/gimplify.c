@@ -1538,7 +1538,7 @@ gimplify_statement_list (tree *expr_p, gimple_seq *pre_p)
 
   return GS_ALL_DONE;
 }
-
+
 /* Compare two case labels.  Because the front end should already have
    made sure that case ranges do not overlap, it is enough to only compare
    the CASE_LOW values of each case label.  */
@@ -1565,8 +1565,179 @@ sort_case_labels (VEC(tree,heap)* label_vec)
 {
   VEC_qsort (tree, label_vec, compare_case_labels);
 }
+
+/* Prepare a vector of case labels to be used in a GIMPLE_SWITCH statement.
 
-/* Gimplify a SWITCH_EXPR, and collect a TREE_VEC of the labels it can
+   LABELS is a vector that contains all case labels to look at.
+
+   INDEX_TYPE is the type of the switch index expression.  Case labels
+   in LABELS are discarded if their values are not in the value range
+   covered by INDEX_TYPE.  The remaining case label values are folded
+   to INDEX_TYPE.
+
+   If a default case exists in LABELS, it is removed from LABELS and
+   returned in DEFAULT_CASEP.  If no default case exists, but the
+   case labels already cover the whole range of INDEX_TYPE, a default
+   case is returned pointing to one of the existing case labels.
+   Otherwise DEFAULT_CASEP is set to NULL_TREE.
+
+   DEFAULT_CASEP may be NULL, in which case the above comment doesn't
+   apply and no action is taken regardless of whether a default case is
+   found or not.  */
+
+void
+preprocess_case_label_vec_for_gimple (VEC(tree,heap) *labels,
+				      tree index_type,
+				      tree *default_casep)
+{
+  tree min_value, max_value;
+  tree default_case = NULL_TREE;
+  size_t i, len;
+
+  i = 0;
+  min_value = TYPE_MIN_VALUE (index_type);
+  max_value = TYPE_MAX_VALUE (index_type);
+  while (i < VEC_length (tree, labels))
+    {
+      tree elt = VEC_index (tree, labels, i);
+      tree low = CASE_LOW (elt);
+      tree high = CASE_HIGH (elt);
+      bool remove_element = FALSE;
+
+      if (low)
+	{
+	  gcc_checking_assert (TREE_CODE (low) == INTEGER_CST);
+	  gcc_checking_assert (!high || TREE_CODE (high) == INTEGER_CST);
+
+	  /* This is a non-default case label, i.e. it has a value.
+
+	     See if the case label is reachable within the range of
+	     the index type.  Remove out-of-range case values.  Turn
+	     case ranges into a canonical form (high > low strictly)
+	     and convert the case label values to the index type.
+
+	     NB: The type of gimple_switch_index() may be the promoted
+	     type, but the case labels retain the original type.  */
+
+	  if (high)
+	    {
+	      /* This is a case range.  Discard empty ranges.
+		 If the bounds or the range are equal, turn this
+		 into a simple (one-value) case.  */
+	      int cmp = tree_int_cst_compare (high, low);
+	      if (cmp < 0)
+		remove_element = TRUE;
+	      else if (cmp == 0)
+		high = NULL_TREE;
+	    }
+
+	  if (! high)
+	    {
+	      /* If the simple case value is unreachable, ignore it.  */
+	      if ((TREE_CODE (min_value) == INTEGER_CST
+		   && tree_int_cst_compare (low, min_value) < 0)
+		  || (TREE_CODE (max_value) == INTEGER_CST
+		      && tree_int_cst_compare (low, max_value) > 0))
+		remove_element = TRUE;
+	      else
+		low = fold_convert (index_type, low);
+	    }
+	  else
+	    {
+	      /* If the entire case range is unreachable, ignore it.  */
+	      if ((TREE_CODE (min_value) == INTEGER_CST
+		   && tree_int_cst_compare (high, min_value) < 0)
+		  || (TREE_CODE (max_value) == INTEGER_CST
+		      && tree_int_cst_compare (low, max_value) > 0))
+		remove_element = TRUE;
+	      else
+		{
+		  /* If the lower bound is less than the index type's
+		     minimum value, truncate the range bounds.  */
+		  if (TREE_CODE (min_value) == INTEGER_CST
+		      && tree_int_cst_compare (low, min_value) < 0)
+		    low = min_value;
+		  low = fold_convert (index_type, low);
+
+		  /* If the upper bound is greater than the index type's
+		     maximum value, truncate the range bounds.  */
+		  if (TREE_CODE (max_value) == INTEGER_CST
+		      && tree_int_cst_compare (high, max_value) > 0)
+		    high = max_value;
+		  high = fold_convert (index_type, high);
+		}
+	    }
+
+	  CASE_LOW (elt) = low;
+	  CASE_HIGH (elt) = high;
+	}
+      else
+	{
+	  gcc_assert (!default_case);
+	  default_case = elt;
+	  /* The default case must be passed separately to the
+	     gimple_build_switch routines.  But if DEFAULT_CASEP
+	     is NULL, we do not remove the default case (it would
+	     be completely lost).  */
+	  if (default_casep)
+	    remove_element = TRUE;
+	}
+
+      if (remove_element)
+	VEC_ordered_remove (tree, labels, i);
+      else
+	i++;
+    }
+  len = i;
+
+  if (!VEC_empty (tree, labels))
+    sort_case_labels (labels);
+
+  if (default_casep && !default_case)
+    {
+      /* If the switch has no default label, add one, so that we jump
+	 around the switch body.  If the labels already cover the whole
+	 range of the switch index_type, add the default label pointing
+	 to one of the existing labels.  */
+      if (len
+	  && TYPE_MIN_VALUE (index_type)
+	  && TYPE_MAX_VALUE (index_type)
+	  && tree_int_cst_equal (CASE_LOW (VEC_index (tree, labels, 0)),
+				 TYPE_MIN_VALUE (index_type)))
+	{
+	  tree low, high = CASE_HIGH (VEC_index (tree, labels, len - 1));
+	  if (!high)
+	    high = CASE_LOW (VEC_index (tree, labels, len - 1));
+	  if (tree_int_cst_equal (high, TYPE_MAX_VALUE (index_type)))
+	    {
+	      for (i = 1; i < len; i++)
+		{
+		  high = CASE_LOW (VEC_index (tree, labels, i));
+		  low = CASE_HIGH (VEC_index (tree, labels, i - 1));
+		  if (!low)
+		    low = CASE_LOW (VEC_index (tree, labels, i - 1));
+		  if ((TREE_INT_CST_LOW (low) + 1
+		       != TREE_INT_CST_LOW (high))
+		      || (TREE_INT_CST_HIGH (low)
+			  + (TREE_INT_CST_LOW (high) == 0)
+			  != TREE_INT_CST_HIGH (high)))
+		    break;
+		}
+	      if (i == len)
+		{
+		  tree label = CASE_LABEL (VEC_index (tree, labels, 0));
+		  default_case = build_case_label (NULL_TREE, NULL_TREE,
+						   label);
+		}
+	    }
+	}
+    }
+
+  if (default_casep)
+    *default_casep = default_case;
+}
+
+/* Gimplify a SWITCH_EXPR, and collect the vector of labels it can
    branch to.  */
 
 static enum gimplify_status
@@ -1588,9 +1759,7 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
     {
       VEC (tree,heap) *labels;
       VEC (tree,heap) *saved_labels;
-      tree min_value, max_value;
       tree default_case = NULL_TREE;
-      size_t i, len;
       gimple gimple_switch;
 
       /* If someone can be bothered to fill in the labels, they can
@@ -1606,155 +1775,22 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
       labels = gimplify_ctxp->case_labels;
       gimplify_ctxp->case_labels = saved_labels;
 
-      i = 0;
-      min_value = TYPE_MIN_VALUE (index_type);
-      max_value = TYPE_MAX_VALUE (index_type);
-      while (i < VEC_length (tree, labels))
-	{
-	  tree elt = VEC_index (tree, labels, i);
-	  tree low = CASE_LOW (elt);
-	  tree high = CASE_HIGH (elt);
-	  bool remove_element = FALSE;
-
-
-	  if (low)
-	    {
-	      gcc_checking_assert (TREE_CODE (low) == INTEGER_CST);
-	      gcc_checking_assert (!high || TREE_CODE (high) == INTEGER_CST);
-
-	      /* This is a non-default case label, i.e. it has a value.
-
-		 See if the case label is reachable within the range of
-		 the index type.  Remove out-of-range case values.  Turn
-		 case ranges into a canonical form (high > low strictly)
-		 and convert the case label values to the index type.
-
-		 NB: The type of gimple_switch_index() may be the promoted
-		 type, but the case labels retain the original type.  */
-
-	      if (high)
-		{
-		  /* This is a case range.  Discard empty ranges.
-		     If the bounds or the range are equal, turn this
-		     into a simple (one-value) case.  */
-		  int cmp = tree_int_cst_compare (high, low);
-		  if (cmp < 0)
-		    remove_element = TRUE;
-		  else if (cmp == 0)
-		    high = NULL_TREE;
-		}
-
-	      if (! high)
-		{
-		  /* If the simple case value is unreachable, ignore it.  */
-		  if ((TREE_CODE (min_value) == INTEGER_CST
-		       && tree_int_cst_compare (low, min_value) < 0)
-		      || (TREE_CODE (max_value) == INTEGER_CST
-			  && tree_int_cst_compare (low, max_value) > 0))
-		    remove_element = TRUE;
-		  else
-		    low = fold_convert (index_type, low);
-		}
-	      else
-		{
-		  /* If the entire case range is unreachable, ignore it.  */
-		  if ((TREE_CODE (min_value) == INTEGER_CST
-		       && tree_int_cst_compare (high, min_value) < 0)
-		      || (TREE_CODE (max_value) == INTEGER_CST
-			  && tree_int_cst_compare (low, max_value) > 0))
-		    remove_element = TRUE;
-		  else
-		    {
-		      /* If the lower bound is less than the index type's
-			 minimum value, truncate the range bounds.  */
-		      if (TREE_CODE (min_value) == INTEGER_CST
-			  && tree_int_cst_compare (low, min_value) < 0)
-			low = min_value;
-		      low = fold_convert (index_type, low);
-
-		      /* If the upper bound is greater than the index type's
-			 maximum value, truncate the range bounds.  */
-		      if (TREE_CODE (max_value) == INTEGER_CST
-			  && tree_int_cst_compare (high, max_value) > 0)
-			high = max_value;
-		      high = fold_convert (index_type, high);
-		    }
-		}
-
-	      CASE_LOW (elt) = low;
-	      CASE_HIGH (elt) = high;
-	    }
-	  else
-	    {
-	      /* The default case must be the last label in the list.  */
-	      gcc_assert (!default_case);
-	      default_case = elt;
-	      remove_element = TRUE;
-	    }
-
-	  if (remove_element)
-	    VEC_ordered_remove (tree, labels, i);
-	  else
-	    i++;
-	}
-      len = i;
-
-      if (!VEC_empty (tree, labels))
-	sort_case_labels (labels);
+      preprocess_case_label_vec_for_gimple (labels, index_type,
+					    &default_case);
 
       if (!default_case)
 	{
-	  /* If the switch has no default label, add one, so that we jump
-	     around the switch body.  If the labels already cover the whole
-	     range of the switch index_type, add the default label pointing
-	     to one of the existing labels.  */
-	  if (len
-	      && TYPE_MIN_VALUE (index_type)
-	      && TYPE_MAX_VALUE (index_type)
-	      && tree_int_cst_equal (CASE_LOW (VEC_index (tree, labels, 0)),
-				     TYPE_MIN_VALUE (index_type)))
-	    {
-	      tree low, high = CASE_HIGH (VEC_index (tree, labels, len - 1));
-	      if (!high)
-		high = CASE_LOW (VEC_index (tree, labels, len - 1));
-	      if (tree_int_cst_equal (high, TYPE_MAX_VALUE (index_type)))
-		{
-		  for (i = 1; i < len; i++)
-		    {
-		      high = CASE_LOW (VEC_index (tree, labels, i));
-		      low = CASE_HIGH (VEC_index (tree, labels, i - 1));
-		      if (!low)
-			low = CASE_LOW (VEC_index (tree, labels, i - 1));
-		      if ((TREE_INT_CST_LOW (low) + 1
-			   != TREE_INT_CST_LOW (high))
-			  || (TREE_INT_CST_HIGH (low)
-			      + (TREE_INT_CST_LOW (high) == 0)
-			      != TREE_INT_CST_HIGH (high)))
-			break;
-		    }
-		  if (i == len)
-		    {
-		      tree label = CASE_LABEL (VEC_index (tree, labels, 0));
-		      default_case = build_case_label (NULL_TREE, NULL_TREE,
-						       label);
-		    }
-		}
-	    }
+	  gimple new_default;
 
-	  if (!default_case)
-	    {
-	      gimple new_default;
-
-	      default_case
-		= build_case_label (NULL_TREE, NULL_TREE,
-				    create_artificial_label (UNKNOWN_LOCATION));
-	      new_default = gimple_build_label (CASE_LABEL (default_case));
-	      gimplify_seq_add_stmt (&switch_body_seq, new_default);
-	    }
+	  default_case
+	    = build_case_label (NULL_TREE, NULL_TREE,
+				create_artificial_label (UNKNOWN_LOCATION));
+	  new_default = gimple_build_label (CASE_LABEL (default_case));
+	  gimplify_seq_add_stmt (&switch_body_seq, new_default);
 	}
 
       gimple_switch = gimple_build_switch_vec (SWITCH_COND (switch_expr),
-                                               default_case, labels);
+					       default_case, labels);
       gimplify_seq_add_stmt (pre_p, gimple_switch);
       gimplify_seq_add_seq (pre_p, switch_body_seq);
       VEC_free(tree, heap, labels);

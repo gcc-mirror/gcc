@@ -1,3 +1,15 @@
+2012-05-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/53153
+	* gimplify.c (preprocess_case_label_vec_for_gimple): New function,
+	split out from ...
+	(gimplify_switch_expr): ... here.
+	* gimple.h (preprocess_case_label_vec_for_gimple): Add prototype.
+	* tree-ssa-forwprop.c (simplify_gimple_switch_label_vec): New function
+	to clean up case labels with values outside the index type range.
+	(simplify_gimple_switch): Call it if something changed.
+	Remove strange and unnecessary assert.
+
 2012-05-02  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (div_if_zero_remainder): sizetypes no longer
