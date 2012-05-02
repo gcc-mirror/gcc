@@ -922,6 +922,7 @@ gimple gimple_build_transaction (gimple_seq, tree);
 gimple gimple_build_predict (enum br_predictor, enum prediction);
 enum gimple_statement_structure_enum gss_for_assign (enum tree_code);
 void sort_case_labels (VEC(tree,heap) *);
+void preprocess_case_label_vec_for_gimple (VEC(tree,heap) *, tree, tree *);
 void gimple_set_body (tree, gimple_seq);
 gimple_seq gimple_body (tree);
 bool gimple_has_body_p (tree);
