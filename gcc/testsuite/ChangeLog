@@ -1,3 +1,7 @@
+2012-05-02  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/tree-ssa/pr19807.C: Adjust.
+
 2012-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53163

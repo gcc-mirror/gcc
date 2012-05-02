@@ -1992,7 +1992,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
     return;
 
   if (! dont_output_data
-      && ! host_integerp (DECL_SIZE_UNIT (decl), 1))
+      && ! valid_constant_size_p (DECL_SIZE_UNIT (decl)))
     {
       error ("size of variable %q+D is too large", decl);
       return;
@@ -4773,9 +4773,13 @@ output_constructor_regular_field (oc_local_state *local)
 
   if (local->index != NULL_TREE)
     {
+      /* Perform the index calculation in modulo arithmetic but
+	 sign-extend the result because Ada has negative DECL_FIELD_OFFSETs
+	 but we are using an unsigned sizetype.  */
+      unsigned prec = TYPE_PRECISION (sizetype);
       double_int idx = double_int_sub (tree_to_double_int (local->index),
 				       tree_to_double_int (local->min_index));
-      gcc_assert (double_int_fits_in_shwi_p (idx));
+      idx = double_int_sext (idx, prec);
       fieldpos = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (local->val)), 1)
 		  * idx.low);
     }
