@@ -350,6 +350,11 @@
 #undef HAVE_AS_IX86_SAHF
 #endif
 
+/* Define if your assembler supports HLE prefixes. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_HLE
+#endif
+
 
 /* Define if your assembler supports the swap suffix. */
 #ifndef USED_FOR_TARGET

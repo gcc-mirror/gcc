@@ -54,6 +54,7 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
   size_t tune_len = strlen (ix86_tune_string);
   int last_arch_char = ix86_arch_string[arch_len - 1];
   int last_tune_char = ix86_tune_string[tune_len - 1];
+  char hle_macro[64];
 
   /* Built-ins based on -march=.  */
   switch (arch)
@@ -293,6 +294,12 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__SSE_MATH__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE2))
     def_or_undef (parse_in, "__SSE2_MATH__");
+
+  sprintf (hle_macro, "__ATOMIC_HLE_ACQUIRE=%d", IX86_HLE_ACQUIRE);
+  def_or_undef (parse_in, hle_macro);
+
+  sprintf (hle_macro, "__ATOMIC_HLE_RELEASE=%d", IX86_HLE_RELEASE);
+  def_or_undef (parse_in, hle_macro);
 }
 
 

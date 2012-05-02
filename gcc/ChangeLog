@@ -1,3 +1,51 @@
+2012-05-02  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Andi Kleen <ak@linux.intel.com>
+
+	* coretypes (MEMMODEL_MASK): New.
+	* builtins.c (get_memmodel): Add val. Call target.memmodel_check
+	and return new variable.
+	(expand_builtin_atomic_exchange):  Mask memmodel values.
+	(expand_builtin_atomic_compare_exchange): Ditto.
+	(expand_builtin_atomic_load): Ditto.
+	(expand_builtin_atomic_store): Ditto.
+	(expand_builtin_atomic_clear): Ditto.
+	* doc/extend.texi: Mention port-dependent memory model flags.
+	* config/i386/cpuid.h (bit_HLE): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	HLE support.
+	* config/i386/i386-protos.h (ix86_generate_hle_prefix): New.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Set
+	HLE defines.
+	(ix86_target_string)<-mhle>: New.
+	(ix86_valid_target_attribute_inner_p)<OPT_mhle>: Ditto.
+	* config/i386/i386.c (ix86_target_string)<OPTION_MASK_ISA_HLE>:
+	New.
+	(ix86_valid_target_attribute_inner_p)<OPT_mhle>: Ditto.
+	(ix86_option_override_internal)<PTA_HLE>: New switch, set it
+	enabled for generic, generic64 and core-avx2.
+	(ix86_print_operand): Generate HLE lock prefixes.
+	(ix86_memmodel_check): New.
+	(TARGET_MEMMODEL_CHECK): Ditto.
+	* config/i386/i386.h (OPTION_ISA_HLE): Ditto.
+	(IX86_HLE_ACQUIRE): Ditto.
+	(IX86_HLE_RELEASE): Ditto.
+	* config/i386/i386.h (ix86_generate_hle_prefix): Ditto.
+	* config/i386/i386.opt (mhle): Ditto.
+	* config/i386/sync.md(atomic_compare_and_swap<mode>): Pass
+	success model to instruction emitter.
+	(atomic_fetch_add<mode>): Ditto.
+	(atomic_exchange<mode>): Ditto.
+	(atomic_add<mode>): Ditto.
+	(atomic_sub<mode>): Ditto.
+	(atomic_<code><mode>): Ditto.
+	(*atomic_compare_and_swap_doubledi_pic): Ditto.
+	(atomic_compare_and_swap_single<mode>): Define and use argument
+	for success model.
+	(atomic_compare_and_swap_double<mode>): Ditto.
+	* configure.ac: Check if assembler support HLE prefixes.
+	* configure: Regenerate.
+	* config.in: Ditto.
+
 2012-05-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/53153
