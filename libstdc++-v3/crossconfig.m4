@@ -222,8 +222,8 @@ case "${host}" in
     ;;
   *-tpf)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
+    SECTION_LDFLAGS='-Wl,--gc-sections $SECTION_LDFLAGS'
     AC_SUBST(SECTION_FLAGS)
-    GLIBCXX_CHECK_LINKER_FEATURES
     AC_DEFINE(HAVE_FINITE)
     AC_DEFINE(HAVE_FINITEF)
     AC_DEFINE(HAVE_FREXPF)

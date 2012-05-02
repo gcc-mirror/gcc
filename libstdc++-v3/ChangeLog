@@ -1,3 +1,10 @@
+2012-05-02  DJ Delorie  <dj@redhat.com>
+
+	* crossconfig.m4: Since we know that all TPF builds are cross-
+	builds and cannot run configuration-time link tests, do not
+	allow it; just go with known supported linker options.
+	* configure: Regenerate (called as GLIBCXX_CROSSCONFIG).
+
 2012-05-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/hashtable_policy.h: Correct namepace nesting for
