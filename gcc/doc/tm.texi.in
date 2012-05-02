@@ -11242,4 +11242,9 @@ MIPS, where add-immediate takes a 16-bit signed value,
 @code{TARGET_CONST_ANCHOR} is set to @samp{0x8000}.  The default value
 is zero, which disables this optimization.  @end deftypevr
 
+@hook TARGET_MEMMODEL_CHECK
+Validate target specific memory model mask bits. When NULL no target specific
+memory model bits are allowed.
+@end deftypefn
+
 @hook TARGET_ATOMIC_TEST_AND_SET_TRUEVAL

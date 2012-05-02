@@ -1940,6 +1940,12 @@ DEFHOOKPOD
  "",
  unsigned HOST_WIDE_INT, 0)
 
+/* Defines, which target-dependent bits (upper 16) are used by port  */
+DEFHOOK
+(memmodel_check,
+ "",
+ unsigned HOST_WIDE_INT, (unsigned HOST_WIDE_INT val), NULL)
+
 /* Functions relating to calls - argument passing, returns, etc.  */
 /* Members of struct call have no special macro prefix.  */
 HOOK_VECTOR (TARGET_CALLS, calls)

@@ -7093,7 +7093,8 @@ to the same names in the C++11 standard.  Refer there or to the
 atomic synchronization} for more detailed definitions.  These memory
 models integrate both barriers to code motion as well as synchronization
 requirements with other threads. These are listed in approximately
-ascending order of strength.
+ascending order of strength. It is also possible to use target specific
+flags for memory model flags, like Hardware Lock Elision.
 
 @table  @code
 @item __ATOMIC_RELAXED
