@@ -2152,6 +2152,10 @@ _cpp_pop_context (cpp_reader *pfile)
 {
   cpp_context *context = pfile->context;
 
+  /* We should not be popping the base context.  */
+  if (context == &pfile->base_context)
+    abort ();
+
   if (context->c.macro)
     {
       cpp_hashnode *macro;

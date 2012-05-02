@@ -1,3 +1,12 @@
+2012-05-02  Dodji Seketeli  <dodji@redhat.com>
+
+	Properly initialize cpp_context in destringize_and_run
+	* directives.c (destringize_and_run): Properly initialize the new
+	context.
+	* macro.c (_cpp_pop_context): Assert that we shouldn't try to pop
+	the initial base context, which has the same life time as the
+	current instance of cpp_file.
+
 2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Dodji Seketeli  <dodji@seketeli.org>
 
