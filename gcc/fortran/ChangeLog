@@ -1,3 +1,12 @@
+2012-05-02  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2012-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52864
+	* expr.c (gfc_check_vardef_context): Fix assignment check for
+	pointer components.
+
 2012-04-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/53148
