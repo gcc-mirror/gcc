@@ -1,3 +1,8 @@
+2012-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53160
+	* gcc.c-torture/execute/pr53160.c: New test.
+
 2012-05-01  Ian Lance Taylor  <iant@google.com>
 
 	PR c/37303
