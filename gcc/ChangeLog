@@ -1,3 +1,9 @@
+2012-05-02  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* common/config/s390/s390-common.c (s390_option_optimization_table):
+	Enable -fsched-pressure using -fsched-pressure-algorithm=model by
+	default when optimizing.
+
 2012-05-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/52605
