@@ -1,3 +1,11 @@
+2012-05-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/faq.xml: Update outdated allocator documentation.
+	* doc/xml/manual/allocator.xml: Likewise.
+	* doc/xml/manual/debug.xml: Likewise.
+	* doc/xml/manual/evolution.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+
 2012-05-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/44015
@@ -21,7 +29,7 @@
 	* Same.  include/std/sstream: Same.
 	* include/std/streambuf: Same.
 	* testsuite/23_containers/deque/requirements/dr438/*:
-          Adjust line numbers.
+	Adjust line numbers.
 	* testsuite/23_containers/list/requirements/dr438/*: Same.
 	* testsuite/23_containers/vector/requirements/dr438/*: Same.
 

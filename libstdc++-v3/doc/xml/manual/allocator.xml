@@ -103,7 +103,7 @@
     implements the simple operator new and operator delete semantics,
     while <classname>__gnu_cxx::malloc_allocator</classname>
     implements much the same thing, only with the C language functions
-    <function>std::malloc</function> and <function>free</function>.
+    <function>std::malloc</function> and <function>std::free</function>.
   </para>
 
   <para>
@@ -236,12 +236,12 @@
 
     <para>
       In use, <classname>allocator</classname> may allocate and
-      deallocate using implementation-specified strategies and
-      heuristics. Because of this, every call to an allocator object's
+      deallocate using implementation-specific strategies and
+      heuristics. Because of this, a given call to an allocator object's
       <function>allocate</function> member function may not actually
-      call the global operator new. This situation is also duplicated
-      for calls to the <function>deallocate</function> member
-      function.
+      call the global <code>operator new</code> and a given call to
+      to the <function>deallocate</function> member function may not
+      call <code>operator delete</code>.
     </para>
 
    <para>
@@ -250,7 +250,7 @@
 
    <para>
      In particular, this can make debugging memory errors more
-     difficult, especially when using third party tools like valgrind or
+     difficult, especially when using third-party tools like valgrind or
      debug versions of <function>new</function>.
    </para>
 
@@ -258,9 +258,9 @@
      There are various ways to solve this problem. One would be to use
      a custom allocator that just called operators
      <function>new</function> and <function>delete</function>
-     directly, for every allocation. (See
+     directly, for every allocation. (See the default allocator,
      <filename>include/ext/new_allocator.h</filename>, for instance.)
-     However, that option would involve changing source code to use
+     However, that option may involve changing source code to use
      a non-default allocator. Another option is to force the
      default allocator to remove caching and pools, and to directly
      allocate with every call of <function>allocate</function> and
@@ -271,8 +271,8 @@
 
 
    <para>
-     To globally disable memory caching within the library for the
-     default allocator, merely set
+     To globally disable memory caching within the library for some of
+     the optional non-default allocators, merely set
      <constant>GLIBCXX_FORCE_NEW</constant> (with any value) in the
      system's environment before running the program. If your program
      crashes with <constant>GLIBCXX_FORCE_NEW</constant> in the
@@ -472,7 +472,8 @@
        <para>
 	 A high-performance fixed-size allocator with
 	 exponentially-increasing allocations. It has its own
-	 documentation, found <link linkend="manual.ext.allocator.mt">here</link>.
+	 <link linkend="manual.ext.allocator.mt">chapter</link> 
+         in the documentation.
        </para>
      </listitem>
 
@@ -483,7 +484,8 @@
        <para>
 	 A high-performance allocator that uses a bit-map to keep track
 	 of the used and unused memory locations. It has its own
-	 documentation, found <link linkend="manual.ext.allocator.bitmap">here</link>.
+	 <link linkend="manual.ext.allocator.bitmap">chapter</link>
+         in the documentation.
        </para>
      </listitem>
    </orderedlist>
