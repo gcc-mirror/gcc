@@ -19122,7 +19122,9 @@ dwarf2out_decl (tree decl)
 	return;
 
       /* For local statics lookup proper context die.  */
-      if (TREE_STATIC (decl) && decl_function_context (decl))
+      if (TREE_STATIC (decl)
+	  && DECL_CONTEXT (decl)
+	  && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
 	context_die = lookup_decl_die (DECL_CONTEXT (decl));
 
       /* If we are in terse mode, don't generate any DIEs to represent any
