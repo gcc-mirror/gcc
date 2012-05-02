@@ -1,7 +1,7 @@
 // String based streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// 2006, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,6 +47,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief  The actual work of input and output (for std::string).
    *  @ingroup io
+   *
+   *  @tparam _CharT  Type of character stream.
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
+   *  @tparam _Alloc  Allocator type, defaults to allocator<_CharT>.
    *
    *  This class associates either or both of its input and output sequences
    *  with a sequence of characters, which can be initialized from, or made
@@ -254,6 +259,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief  Controlling input for std::string.
    *  @ingroup io
    *
+   *  @tparam _CharT  Type of character stream.
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
+   *  @tparam _Alloc  Allocator type, defaults to allocator<_CharT>.
+   *
    *  This class supports reading from objects of type std::basic_string,
    *  using the inherited functions from std::basic_istream.  To control
    *  the associated sequence, an instance of std::basic_stringbuf is used,
@@ -364,6 +374,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief  Controlling output for std::string.
    *  @ingroup io
    *
+   *  @tparam _CharT  Type of character stream.
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
+   *  @tparam _Alloc  Allocator type, defaults to allocator<_CharT>.
+   *
    *  This class supports writing to objects of type std::basic_string,
    *  using the inherited functions from std::basic_ostream.  To control
    *  the associated sequence, an instance of std::basic_stringbuf is used,
@@ -473,6 +488,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief  Controlling input and output for std::string.
    *  @ingroup io
+   *
+   *  @tparam _CharT  Type of character stream.
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
+   *  @tparam _Alloc  Allocator type, defaults to allocator<_CharT>.
    *
    *  This class supports reading from and writing to objects of type
    *  std::basic_string, using the inherited functions from

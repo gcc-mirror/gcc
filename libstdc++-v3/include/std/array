@@ -55,8 +55,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  Sets support random access iterators.
    *
-   *  @param  Tp  Type of element. Required to be a complete type.
-   *  @param  N  Number of elements.
+   *  @tparam  Tp  Type of element. Required to be a complete type.
+   *  @tparam  N  Number of elements.
   */
   template<typename _Tp, std::size_t _Nm>
     struct array

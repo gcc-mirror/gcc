@@ -83,7 +83,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Index_tuple;
 #endif
 
-  /// Struct holding two objects of arbitrary type.
+ /**
+   *  @brief Struct holding two objects of arbitrary type.
+   *
+   *  @tparam _T1  Type of first object.
+   *  @tparam _T2  Type of second object.
+   */
   template<class _T1, class _T2>
     struct pair
     {

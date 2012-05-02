@@ -1,7 +1,7 @@
 // Iostreams base classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010, 2011
+// 2006, 2007, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -52,10 +52,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return *__f;
     }
 
-  // 27.4.5  Template class basic_ios
   /**
-   *  @brief  Virtual base class for all stream classes.
+   *  @brief Template class basic_ios, virtual base class for all
+   *  stream classes. 
    *  @ingroup io
+   *
+   *  @tparam _CharT  Type of character stream.
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
    *
    *  Most of the member functions called dispatched on stream objects
    *  (e.g., @c std::cout.foo(bar);) are consolidated in this class.
