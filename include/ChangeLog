@@ -1,3 +1,8 @@
+2012-05-02  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2.def: Remove DW_FORM_GNU_ref_index,
+	replace DW_AT_GNU_ref_base with DW_AT_GNU_ranges_base.
+
 2012-04-28  Doug Evans  <dje@google.com>
 
 	* dwarf2.def (DW_OP): Add DW_OP_GNU_addr_index.
