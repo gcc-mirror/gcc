@@ -1,3 +1,8 @@
+2012-05-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/52605
+	* g++.dg/lto/pr52605_0.C: New test.
+
 2012-05-02  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/hle-cmpxchg-acq-1.c: New.
