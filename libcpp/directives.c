@@ -1741,10 +1741,7 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
   saved_cur_token = pfile->cur_token;
   saved_cur_run = pfile->cur_run;
 
-  pfile->context = XNEW (cpp_context);
-  pfile->context->c.macro = 0;
-  pfile->context->prev = 0;
-  pfile->context->next = 0;
+  pfile->context = XCNEW (cpp_context);
 
   /* Inline run_directive, since we need to delay the _cpp_pop_buffer
      until we've read all of the tokens that we want.  */
