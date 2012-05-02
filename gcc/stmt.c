@@ -2198,9 +2198,6 @@ expand_case (gimple stmt)
 	       /* RANGE may be signed, and really large ranges will show up
 		  as negative numbers.  */
 	       || compare_tree_int (range, 0) < 0
-#ifndef ASM_OUTPUT_ADDR_DIFF_ELT
-	       || flag_pic
-#endif
 	       || !flag_jump_tables
 	       || TREE_CONSTANT (index_expr)
 	       /* If neither casesi or tablejump is available, we can

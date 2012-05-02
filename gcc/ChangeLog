@@ -1,3 +1,10 @@
+2012-05-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/alpha/vms.h (SUBTARGET_OVERRIDE_OPTIONS): For pic code,
+	unset flag_jump_tables.
+	* stmt.c (expand_case): Remove special flag_pic case conditional
+	on ASM_OUTPUT_ADDR_DIFF_ELT not being defined.
+
 2012-05-02  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* common/config/s390/s390-common.c (s390_option_optimization_table):
