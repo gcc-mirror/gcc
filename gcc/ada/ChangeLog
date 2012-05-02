@@ -1,3 +1,8 @@
+2012-05-02  Pascal Obry  <obry@adacore.com>
+
+	Revert
+	2012-02-24  Dave Korn  <dave.korn.cygwin@gmail.com>
+
 2012-04-30  Jan Hubicka  <jh@suse.cz>
 
 	* gcc-interface/utils.c (rest_of_subprog_body_compilation): Update
@@ -1599,7 +1604,7 @@
 
 2012-02-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
-	* exp_ch7.adb (Create_Finalizer): Suppress elaboration checks on 
+	* exp_ch7.adb (Create_Finalizer): Suppress elaboration checks on
 	stack-related finalizers.
 
 2012-02-22  Ed Schonberg  <schonberg@adacore.com>
