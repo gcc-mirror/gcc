@@ -1,4 +1,5 @@
-/* Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
@@ -227,6 +228,7 @@ __upc_acquire_lock (lock)
 #else
   __upc_spin_until (__upc_atomic_cas ((os_atomic_p) lock, 0, 1));
 #endif
+  GUPCR_FENCE();
 }
 
 int
@@ -243,6 +245,8 @@ __upc_try_acquire_lock (lock)
 #else
   status = __upc_atomic_cas ((os_atomic_p) lock, 0, 1);
 #endif
+  if (status)
+    GUPCR_FENCE();
   return status;
 }
 
@@ -252,6 +256,7 @@ __upc_release_lock (lock)
 {
   if (!lock)
     __upc_fatal ("NULL shared pointer passed to UPC lock operation");
+  GUPCR_FENCE();
 #ifdef __sgi__
   {
     int status;

@@ -1,5 +1,5 @@
 /* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+   2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
@@ -81,18 +81,13 @@ upc_lock (upc_shared_ptr_t ptr)
 {
   upc_lock_p lock = __cvtaddr (ptr);
   __upc_acquire_lock (&lock->os_lock);
-  GUPCR_FENCE();
 }
 
 int
 upc_lock_attempt (upc_shared_ptr_t ptr)
 {
   upc_lock_p lock = __cvtaddr (ptr);
-  int status;
-  status = __upc_try_acquire_lock (&lock->os_lock);
-  if (status) 
-    GUPCR_FENCE();
-  return status;
+  return __upc_try_acquire_lock (&lock->os_lock);
 }
 
 void
@@ -103,7 +98,6 @@ upc_unlock (upc_shared_ptr_t ptr)
   if (!u)
     __upc_fatal ("UPC runtime not initialized");
   lock = __cvtaddr (ptr);
-  GUPCR_FENCE();
   __upc_release_lock (&lock->os_lock);
 }
 

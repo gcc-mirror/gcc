@@ -1,3 +1,18 @@
+2012-05-02  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Add memory fence to the low level lock support routines
+	that are called for multiple places in the run-time.
+
+	* smp/upc_sysdep.c (__upc_acquire_lock): Add a memory fence
+	once lock is acquired.
+	(__upc_try_acquire_lock): Add a memory fence is lock is
+	acquired.
+	(__upc_release_lock): Add a memory fence before releasing
+	the lock.
+	* smp/upc_lock.c (upc_lock): Remove memory fence.
+	(upc_lock_attempt): Ditto.
+	(upc_unlock): Ditto.
+
 2012-04-30  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* testsuite/libgupc.upc/upc.exp: Use '-fupc-threads'
@@ -6,7 +21,7 @@
 
 2012-04-16  Nenad Vukicevic  <nenad@intrepid.com>
 
-	* upc_lock.c (upc_lock): Adding a fence as per the
+	* smp/upc_lock.c (upc_lock): Adding a fence as per the
 	language specification.  This also forces the processor to
 	discard all speculaive memory fetches.
 	(upc_lock_attempt): Ditto.
@@ -14,14 +29,14 @@
 
 2012-04-13  Nenad Vukicevic  <nenad@intrepid.com>
 
-	* upc_sync.h (GUPCR_WRITE_FENCE): Change write fence
+	* smp/upc_sync.h (GUPCR_WRITE_FENCE): Change write fence
 	for PPC processors to use light weight sync instruction.
-	* upc_sysdep.c (__upc_atomic_get_bit): Introduce a read barrier
+	* smp/upc_sysdep.c (__upc_atomic_get_bit): Introduce a read barrier
 	to force processor to discard all speculative memory fetches.
 
 2012-03-26  Nenad Vukicevic  <nenad@intrepid.com>
 
-	* testsuite/lib/libgupc.exp: Added fortran-modules.exp 
+	* testsuite/lib/libgupc.exp: Added fortran-modules.exp
 	for explicit load from the gcc testsuite directory. It is
 	a required file for gcc-dg.exp.
 
