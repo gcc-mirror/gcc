@@ -1,3 +1,8 @@
+2012-05-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/hashtable_policy.h: Correct namepace nesting for
+	_Hashtable forward declaration.
+
 2012-05-01  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/53115
