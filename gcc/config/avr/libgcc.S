@@ -28,6 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __SP_H__ 0x3e
 #define __SP_L__ 0x3d
 #define __RAMPZ__ 0x3B
+#define __EIND__  0x3C
 
 /* Most of the functions here are called directly from avr.md
    patterns, instead of using the standard libcall mechanisms.
@@ -689,7 +690,8 @@ __tablejump__:
 	lpm
 	push	r0
 #if defined (__AVR_HAVE_EIJMP_EICALL__)
-        push    __zero_reg__
+	in   __tmp_reg__, __EIND__
+	push __tmp_reg__
 #endif
 	ret
 #endif
@@ -889,7 +891,8 @@ __tablejump_elpm__:
 	elpm
 	push	r0
 #if defined (__AVR_HAVE_EIJMP_EICALL__)
-        push    __zero_reg__
+	in      __tmp_reg__, __EIND__
+	push    __tmp_reg__
 #endif
 	ret
 #endif

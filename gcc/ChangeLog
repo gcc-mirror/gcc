@@ -1,5 +1,14 @@
 2012-05-02  Georg-Johann Lay  <avr@gjlay.de>
 
+	Backport from 2011-10-21 4.6-branch 180303.
+
+	PR target/50820
+	* config/avr/libgcc.S (__EIND__): New define to 0x3C.
+	(__tablejump__): Consistently use EIND for indirect jump/call.
+	(__tablejump_elpm__): Ditto.
+
+2012-05-02  Georg-Johann Lay  <avr@gjlay.de>
+
 	Backport from 2011-05-30 4.6-branch r174427.
 
 	PR target/45263
