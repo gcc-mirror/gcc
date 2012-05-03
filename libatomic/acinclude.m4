@@ -74,6 +74,8 @@ AC_DEFUN([LIBAT_TEST_ATOMIC_BUILTIN],[
         else
 	  eval $2=yes
         fi
+      else
+        eval $2=no
       fi
       CFLAGS="$old_CFLAGS"
     fi
