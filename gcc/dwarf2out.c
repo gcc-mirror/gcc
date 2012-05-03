@@ -2473,7 +2473,7 @@ typedef struct GTY((chain_circular ("%h.die_sib"))) die_struct {
       const char * GTY ((tag ("0"))) die_symbol;
       comdat_type_node_ref GTY ((tag ("1"))) die_type_node;
     }
-  GTY ((desc ("use_debug_types"))) die_id;
+  GTY ((desc ("%0.comdat_type_p"))) die_id;
   VEC(dw_attr_node,gc) * die_attr;
   dw_die_ref die_parent;
   dw_die_ref die_child;
@@ -2482,10 +2482,12 @@ typedef struct GTY((chain_circular ("%h.die_sib"))) die_struct {
   dw_offset die_offset;
   unsigned long die_abbrev;
   int die_mark;
-  /* Die is used and must not be pruned as unused.  */
-  int die_perennial_p;
   unsigned int decl_id;
   enum dwarf_tag die_tag;
+  /* Die is used and must not be pruned as unused.  */
+  BOOL_BITFIELD die_perennial_p : 1;
+  BOOL_BITFIELD comdat_type_p : 1; /* DIE has a type signature */
+  /* Lots of spare bits.  */
 }
 die_node;
 
@@ -4767,7 +4769,7 @@ print_die (dw_die_ref die, FILE *outfile)
   fprintf (outfile, " offset: %ld", die->die_offset);
   fprintf (outfile, " mark: %d\n", die->die_mark);
 
-  if (use_debug_types && die->die_id.die_type_node)
+  if (die->comdat_type_p)
     {
       print_spaces (outfile);
       fprintf (outfile, "  signature: ");
@@ -4819,13 +4821,13 @@ print_die (dw_die_ref die, FILE *outfile)
 	case dw_val_class_die_ref:
 	  if (AT_ref (a) != NULL)
 	    {
-	      if (use_debug_types && AT_ref (a)->die_id.die_type_node)
+	      if (AT_ref (a)->comdat_type_p)
 	        {
 		  fprintf (outfile, "die -> signature: ");
 		  print_signature (outfile,
 		  		   AT_ref (a)->die_id.die_type_node->signature);
                 }
-	      else if (! use_debug_types && AT_ref (a)->die_id.die_symbol)
+	      else if (AT_ref (a)->die_id.die_symbol)
 		fprintf (outfile, "die -> label: %s",
 		         AT_ref (a)->die_id.die_symbol);
 	      else
@@ -5653,13 +5655,17 @@ generate_type_signature (dw_die_ref die, comdat_type_node *type_node)
      type node together.  */
   memcpy (type_node->signature, &checksum[16 - DWARF_TYPE_SIGNATURE_SIZE],
           DWARF_TYPE_SIGNATURE_SIZE);
+  die->comdat_type_p = true;
   die->die_id.die_type_node = type_node;
   type_node->type_die = die;
 
   /* If the DIE is a specification, link its declaration to the type node
      as well.  */
   if (decl != NULL)
-    decl->die_id.die_type_node = type_node;
+    {
+      decl->comdat_type_p = true;
+      decl->die_id.die_type_node = type_node;
+    }
 }
 
 /* Do the location expressions look same?  */
@@ -5966,7 +5972,7 @@ assign_symbol_names (dw_die_ref die)
 {
   dw_die_ref c;
 
-  if (is_symbol_die (die))
+  if (is_symbol_die (die) && !die->comdat_type_p)
     {
       if (comdat_symbol_id)
 	{
@@ -6300,7 +6306,7 @@ clone_as_declaration (dw_die_ref die)
         }
     }
 
-  if (die->die_id.die_type_node)
+  if (die->comdat_type_p)
     add_AT_die_ref (clone, DW_AT_signature, die);
 
   add_AT_flag (clone, DW_AT_declaration, 1);
@@ -6335,6 +6341,7 @@ copy_declaration_context (dw_die_ref unit, dw_die_ref die)
 
       /* Copy the type node pointer from the new DIE to the original
          declaration DIE so we can forward references later.  */
+      decl->comdat_type_p = true;
       decl->die_id.die_type_node = die->die_id.die_type_node;
 
       remove_AT (die, DW_AT_specification);
@@ -6469,6 +6476,7 @@ remove_child_or_replace_with_skeleton (dw_die_ref unit, dw_die_ref child,
     remove_child_with_prev (child, prev);
   else
     {
+      skeleton->comdat_type_p = true;
       skeleton->die_id.die_type_node = child->die_id.die_type_node;
 
       /* If the original DIE was a specification, we need to put
@@ -6684,11 +6692,10 @@ copy_decls_walk (dw_die_ref unit, dw_die_ref die, htab_t decl_table)
       if (AT_class (a) == dw_val_class_die_ref)
         {
           dw_die_ref targ = AT_ref (a);
-          comdat_type_node_ref type_node = targ->die_id.die_type_node;
           void **slot;
           struct decl_table_entry *entry;
 
-          if (targ->die_mark != 0 || type_node != NULL)
+          if (targ->die_mark != 0 || targ->comdat_type_p)
             continue;
 
           slot = htab_find_slot_with_hash (decl_table, targ,
@@ -6829,7 +6836,7 @@ build_abbrev_table (dw_die_ref die)
     if (AT_class (a) == dw_val_class_die_ref
 	&& AT_ref (a)->die_mark == 0)
       {
-	gcc_assert (use_debug_types || AT_ref (a)->die_id.die_symbol);
+	gcc_assert (AT_ref (a)->comdat_type_p || AT_ref (a)->die_id.die_symbol);
 	set_AT_ref_external (a, 1);
       }
 
@@ -7398,6 +7405,8 @@ output_die_symbol (dw_die_ref die)
 {
   const char *sym = die->die_id.die_symbol;
 
+  gcc_assert (!die->comdat_type_p);
+
   if (sym == 0)
     return;
 
@@ -7522,7 +7531,7 @@ output_die (dw_die_ref die)
 
   /* If someone in another CU might refer to us, set up a symbol for
      them to point to.  */
-  if (! use_debug_types && die->die_id.die_symbol)
+  if (! die->comdat_type_p && die->die_id.die_symbol)
     output_die_symbol (die);
 
   dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (%#lx) %s)",
@@ -7668,7 +7677,7 @@ output_die (dw_die_ref die)
 	case dw_val_class_die_ref:
 	  if (AT_ref_external (a))
 	    {
-	      if (use_debug_types)
+	      if (AT_ref (a)->comdat_type_p)
 	        {
 	          comdat_type_node_ref type_node =
 	            AT_ref (a)->die_id.die_type_node;
@@ -19865,7 +19874,7 @@ dwarf2out_source_line (unsigned int line, const char *filename,
 static void
 dwarf2out_start_source_file (unsigned int lineno, const char *filename)
 {
-  if (flag_eliminate_dwarf2_dups && ! use_debug_types)
+  if (flag_eliminate_dwarf2_dups)
     {
       /* Record the beginning of the file for break_out_includes.  */
       dw_die_ref bincl_die;
@@ -19889,7 +19898,7 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
 static void
 dwarf2out_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
 {
-  if (flag_eliminate_dwarf2_dups && ! use_debug_types)
+  if (flag_eliminate_dwarf2_dups)
     /* Record the end of the file for break_out_includes.  */
     new_die (DW_TAG_GNU_EINCL, comp_unit_die (), NULL);
 
@@ -20481,9 +20490,8 @@ prune_unused_types_walk_attribs (dw_die_ref die)
 	  /* A reference to another DIE.
 	     Make sure that it will get emitted.
 	     If it was broken out into a comdat group, don't follow it.  */
-          if (! use_debug_types
-              || a->dw_attr == DW_AT_specification
-              || a->dw_attr_val.v.val_die_ref.die->die_id.die_type_node == NULL)
+          if (! AT_ref (a)->comdat_type_p
+              || a->dw_attr == DW_AT_specification)
 	    prune_unused_types_mark (a->dw_attr_val.v.val_die_ref.die, 1);
 	}
       /* Set the string's refcount to 0 so that prune_unused_types_mark
@@ -21852,11 +21860,6 @@ dwarf2out_finish (const char *filename)
   if (flag_eliminate_unused_debug_types)
     prune_unused_types ();
 
-  /* Generate separate CUs for each of the include files we've seen.
-     They will go into limbo_die_list.  */
-  if (flag_eliminate_dwarf2_dups && ! use_debug_types)
-    break_out_includes (comp_unit_die ());
-
   /* Generate separate COMDAT sections for type DIEs. */
   if (use_debug_types)
     {
@@ -21879,6 +21882,11 @@ dwarf2out_finish (const char *filename)
          referenced.  Prune them.  */
       prune_unused_types ();
     }
+
+  /* Generate separate CUs for each of the include files we've seen.
+     They will go into limbo_die_list.  */
+  if (flag_eliminate_dwarf2_dups)
+    break_out_includes (comp_unit_die ());
 
   /* Traverse the DIE's and add add sibling attributes to those DIE's
      that have children.  */
