@@ -2986,7 +2986,7 @@ static void htab_cu_del (void *);
 static int check_duplicate_cu (dw_die_ref, htab_t, unsigned *);
 static void record_comdat_symbol_number (dw_die_ref, htab_t, unsigned);
 static void add_sibling_attributes (dw_die_ref);
-static void build_abbrev_table (dw_die_ref);
+static void build_abbrev_table (dw_die_ref, htab_t);
 static void output_location_lists (dw_die_ref);
 static int constant_size (unsigned HOST_WIDE_INT);
 static unsigned long size_of_die (dw_die_ref);
@@ -3716,6 +3716,16 @@ add_AT_die_ref (dw_die_ref die, enum dwarf_attribute attr_kind, dw_die_ref targ_
   attr.dw_attr_val.v.val_die_ref.die = targ_die;
   attr.dw_attr_val.v.val_die_ref.external = 0;
   add_dwarf_attr (die, &attr);
+}
+
+/* Change DIE reference REF to point to NEW_DIE instead.  */
+
+static inline void
+change_AT_die_ref (dw_attr_ref ref, dw_die_ref new_die)
+{
+  gcc_assert (ref->dw_attr_val.val_class == dw_val_class_die_ref);
+  ref->dw_attr_val.v.val_die_ref.die = new_die;
+  ref->dw_attr_val.v.val_die_ref.external = 0;
 }
 
 /* Add an AT_specification attribute to a DIE, and also make the back
@@ -6277,7 +6287,12 @@ clone_as_declaration (dw_die_ref die)
   /* If the DIE is a specification, just clone its declaration DIE.  */
   decl = get_AT_ref (die, DW_AT_specification);
   if (decl != NULL)
-    return clone_die (decl);
+    {
+      clone = clone_die (decl);
+      if (die->comdat_type_p)
+	add_AT_die_ref (clone, DW_AT_signature, die);
+      return clone;
+    }
 
   clone = ggc_alloc_cleared_die_node ();
   clone->die_tag = die->die_tag;
@@ -6816,13 +6831,159 @@ output_location_lists (dw_die_ref die)
   FOR_EACH_CHILD (die, c, output_location_lists (c));
 }
 
+/* We want to limit the number of external references, because they are
+   larger than local references: a relocation takes multiple words, and
+   even a sig8 reference is always eight bytes, whereas a local reference
+   can be as small as one byte (though DW_FORM_ref is usually 4 in GCC).
+   So if we encounter multiple external references to the same type DIE, we
+   make a local typedef stub for it and redirect all references there.
+
+   This is the element of the hash table for keeping track of these
+   references.  */
+
+struct external_ref
+{
+  dw_die_ref type;
+  dw_die_ref stub;
+  unsigned n_refs;
+};
+
+/* Hash an external_ref.  */
+
+static hashval_t
+hash_external_ref (const void *p)
+{
+  const struct external_ref *r = (const struct external_ref *)p;
+  return htab_hash_pointer (r->type);
+}
+
+/* Compare external_refs.  */
+
+static int
+external_ref_eq (const void *p1, const void *p2)
+{
+  const struct external_ref *r1 = (const struct external_ref *)p1;
+  const struct external_ref *r2 = (const struct external_ref *)p2;
+  return r1->type == r2->type;
+}
+
+/* Return a pointer to the external_ref for references to DIE.  */
+
+static struct external_ref *
+lookup_external_ref (htab_t map, dw_die_ref die)
+{
+  struct external_ref ref, *ref_p;
+  void ** slot;
+
+  ref.type = die;
+  slot = htab_find_slot (map, &ref, INSERT);
+  if (*slot != HTAB_EMPTY_ENTRY)
+    return (struct external_ref *) *slot;
+
+  ref_p = XCNEW (struct external_ref);
+  ref_p->type = die;
+  *slot = ref_p;
+  return ref_p;
+}
+
+/* Subroutine of optimize_external_refs, below.
+
+   If we see a type skeleton, record it as our stub.  If we see external
+   references, remember how many we've seen.  */
+
+static void
+optimize_external_refs_1 (dw_die_ref die, htab_t map)
+{
+  dw_die_ref c;
+  dw_attr_ref a;
+  unsigned ix;
+  struct external_ref *ref_p;
+
+  if (is_type_die (die)
+      && (c = get_AT_ref (die, DW_AT_signature)))
+    {
+      /* This is a local skeleton; use it for local references.  */
+      ref_p = lookup_external_ref (map, c);
+      ref_p->stub = die;
+    }
+
+  /* Scan the DIE references, and remember any that refer to DIEs from
+     other CUs (i.e. those which are not marked).  */
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+    if (AT_class (a) == dw_val_class_die_ref
+	&& (c = AT_ref (a))->die_mark == 0
+	&& is_type_die (c))
+      {
+	ref_p = lookup_external_ref (map, c);
+	ref_p->n_refs++;
+      }
+
+  FOR_EACH_CHILD (die, c, optimize_external_refs_1 (c, map));
+}
+
+/* htab_traverse callback function for optimize_external_refs, below.  SLOT
+   points to an external_ref, DATA is the CU we're processing.  If we don't
+   already have a local stub, and we have multiple refs, build a stub.  */
+
+static int
+build_local_stub (void **slot, void *data)
+{
+  struct external_ref *ref_p = (struct external_ref *)*slot;
+  dw_die_ref cu = (dw_die_ref) data;
+  dw_die_ref type = ref_p->type;
+  dw_die_ref stub = NULL;
+
+  if (ref_p->stub == NULL && ref_p->n_refs > 1)
+    {
+      if (!dwarf_strict)
+	{
+	  /* If we aren't being strict, use a typedef with no name
+	     to just forward to the real type.  In strict DWARF, a
+	     typedef must have a name.  */
+	  stub = new_die (DW_TAG_typedef, cu, NULL_TREE);
+	  add_AT_die_ref (stub, DW_AT_type, type);
+	}
+      else if (type->comdat_type_p)
+	{
+	  /* If we refer to this type via sig8, we can use a simple
+	     declaration; this is larger than the typedef, but strictly
+	     correct.  */
+	  stub = new_die (type->die_tag, cu, NULL_TREE);
+	  add_AT_string (stub, DW_AT_name, get_AT_string (type, DW_AT_name));
+	  add_AT_flag (stub, DW_AT_declaration, 1);
+	  add_AT_die_ref (stub, DW_AT_signature, type);
+	}
+
+      if (stub)
+	{
+	  stub->die_mark++;
+	  ref_p->stub = stub;
+	}
+    }
+  return 1;
+}
+
+/* DIE is a unit; look through all the DIE references to see if there are
+   any external references to types, and if so, create local stubs for
+   them which will be applied in build_abbrev_table.  This is useful because
+   references to local DIEs are smaller.  */
+
+static htab_t
+optimize_external_refs (dw_die_ref die)
+{
+  htab_t map = htab_create (10, hash_external_ref, external_ref_eq, free);
+  optimize_external_refs_1 (die, map);
+  htab_traverse (map, build_local_stub, die);
+  return map;
+}
+
 /* The format of each DIE (and its attribute value pairs) is encoded in an
    abbreviation table.  This routine builds the abbreviation table and assigns
    a unique abbreviation id for each abbreviation entry.  The children of each
    die are visited recursively.  */
 
 static void
-build_abbrev_table (dw_die_ref die)
+build_abbrev_table (dw_die_ref die, htab_t extern_map)
 {
   unsigned long abbrev_id;
   unsigned int n_alloc;
@@ -6830,14 +6991,22 @@ build_abbrev_table (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  /* Scan the DIE references, and mark as external any that refer to
-     DIEs from other CUs (i.e. those which are not marked).  */
+  /* Scan the DIE references, and replace any that refer to
+     DIEs from other CUs (i.e. those which are not marked) with
+     the local stubs we built in optimize_external_refs.  */
   FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_die_ref
-	&& AT_ref (a)->die_mark == 0)
+	&& (c = AT_ref (a))->die_mark == 0)
       {
+	struct external_ref *ref_p;
 	gcc_assert (AT_ref (a)->comdat_type_p || AT_ref (a)->die_id.die_symbol);
-	set_AT_ref_external (a, 1);
+
+	ref_p = lookup_external_ref (extern_map, c);
+	if (ref_p->stub && ref_p->stub != die)
+	  change_AT_die_ref (a, ref_p->stub);
+	else
+	  /* We aren't changing this reference, so mark it external.  */
+	  set_AT_ref_external (a, 1);
       }
 
   for (abbrev_id = 1; abbrev_id < abbrev_die_table_in_use; ++abbrev_id)
@@ -6888,7 +7057,7 @@ build_abbrev_table (dw_die_ref die)
     }
 
   die->die_abbrev = abbrev_id;
-  FOR_EACH_CHILD (die, c, build_abbrev_table (c));
+  FOR_EACH_CHILD (die, c, build_abbrev_table (c, extern_map));
 }
 
 /* Return the power-of-two number of bytes necessary to represent VALUE.  */
@@ -7811,6 +7980,7 @@ output_comp_unit (dw_die_ref die, int output_if_empty)
 {
   const char *secname, *oldsym;
   char *tmp;
+  htab_t extern_map;
 
   /* Unless we are outputting main CU, we may throw away empty ones.  */
   if (!output_if_empty && die->die_child == NULL)
@@ -7823,7 +7993,11 @@ output_comp_unit (dw_die_ref die, int output_if_empty)
      this CU so we know which get local refs.  */
   mark_dies (die);
 
-  build_abbrev_table (die);
+  extern_map = optimize_external_refs (die);
+
+  build_abbrev_table (die, extern_map);
+
+  htab_delete (extern_map);
 
   /* Initialize the beginning DIE offset - and calculate sizes/offsets.  */
   next_die_offset = DWARF_COMPILE_UNIT_HEADER_SIZE;
@@ -7870,11 +8044,16 @@ output_comdat_type_unit (comdat_type_node *node)
 #if defined (OBJECT_FORMAT_ELF)
   tree comdat_key;
 #endif
+  htab_t extern_map;
 
   /* First mark all the DIEs in this CU so we know which get local refs.  */
   mark_dies (node->root_die);
 
-  build_abbrev_table (node->root_die);
+  extern_map = optimize_external_refs (node->root_die);
+
+  build_abbrev_table (node->root_die, extern_map);
+
+  htab_delete (extern_map);
 
   /* Initialize the beginning DIE offset - and calculate sizes/offsets.  */
   next_die_offset = DWARF_COMDAT_TYPE_UNIT_HEADER_SIZE;
