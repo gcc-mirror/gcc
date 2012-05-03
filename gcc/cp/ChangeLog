@@ -1,3 +1,10 @@
+2012-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53186
+	* call.c (build_over_call): Handle final member functions
+	and class types.
+	(build_new_method_call_1): Do not handle here.
+
 2012-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53003

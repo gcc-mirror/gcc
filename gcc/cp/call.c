@@ -6464,6 +6464,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    return error_mark_node;
 	}
 
+      /* See if the function member or the whole class type is declared
+	 final and the call can be devirtualized.  */
+      if (DECL_FINAL_P (fn)
+	  || CLASSTYPE_FINAL (TYPE_METHOD_BASETYPE (TREE_TYPE (fn))))
+	flags |= LOOKUP_NONVIRTUAL;
+
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
 	 X is called for an object that is not of type X, or of a type
 	 derived from X, the behavior is undefined.
@@ -7324,8 +7330,7 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
 	      /* Optimize away vtable lookup if we know that this function
 		 can't be overridden.  */
 	      if (DECL_VINDEX (fn) && ! (flags & LOOKUP_NONVIRTUAL)
-		  && (resolves_to_fixed_type_p (instance, 0)
-		      || DECL_FINAL_P (fn) || CLASSTYPE_FINAL (basetype)))
+		  && resolves_to_fixed_type_p (instance, 0))
 		flags |= LOOKUP_NONVIRTUAL;
               if (explicit_targs)
                 flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
