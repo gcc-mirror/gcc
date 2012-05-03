@@ -1,3 +1,12 @@
+2012-05-04  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2012-05-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/52605
+	* dwarf2out.c (dwarf2out_decl): Only lookup die representing context
+	of a variable when the contect is a function.
+
 2012-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR plugins/53126
