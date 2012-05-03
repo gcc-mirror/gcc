@@ -1,3 +1,9 @@
+2012-05-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/51712
+	* c-common.c (expr_original_type): New.
+	(shorten_compare): Do not warn for enumeration types.
+
 2012-05-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c.opt (fpermissive): Add Var(flag_permissive).

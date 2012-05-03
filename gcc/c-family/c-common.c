@@ -3481,6 +3481,15 @@ binary_op_error (location_t location, enum tree_code code,
 	    type0, type1);
 }
 
+/* Given an expression as a tree, return its original type.  Do this
+   by stripping any conversion that preserves the sign and precision.  */
+static tree
+expr_original_type (tree expr)
+{
+  STRIP_SIGN_NOPS (expr);
+  return TREE_TYPE (expr);
+}
+
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.
@@ -3506,6 +3515,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
   int real1, real2;
   tree primop0, primop1;
   enum tree_code code = *rescode_ptr;
+  location_t loc = EXPR_LOC_OR_HERE (op0);
 
   /* Throw away any conversions to wider types
      already present in the operands.  */
@@ -3726,9 +3736,11 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
       if (TREE_CODE (primop0) != INTEGER_CST)
 	{
 	  if (val == truthvalue_false_node)
-	    warning (OPT_Wtype_limits, "comparison is always false due to limited range of data type");
+	    warning_at (loc, OPT_Wtype_limits,
+			"comparison is always false due to limited range of data type");
 	  if (val == truthvalue_true_node)
-	    warning (OPT_Wtype_limits, "comparison is always true due to limited range of data type");
+	    warning_at (loc, OPT_Wtype_limits,
+			"comparison is always true due to limited range of data type");
 	}
 
       if (val != 0)
@@ -3795,29 +3807,31 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	  && TYPE_UNSIGNED (*restype_ptr))
 	{
 	  tree value = 0;
+	  /* All unsigned values are >= 0, so we warn.  However,
+	     if OP0 is a constant that is >= 0, the signedness of
+	     the comparison isn't an issue, so suppress the
+	     warning.  */
+	  bool warn = 
+	    warn_type_limits && !in_system_header
+	    && !(TREE_CODE (primop0) == INTEGER_CST
+		 && !TREE_OVERFLOW (convert (c_common_signed_type (type),
+					     primop0)))
+	    /* Do not warn for enumeration types.  */
+	    && (TREE_CODE (expr_original_type (primop0)) != ENUMERAL_TYPE);
+	  
 	  switch (code)
 	    {
 	    case GE_EXPR:
-	      /* All unsigned values are >= 0, so we warn.  However,
-		 if OP0 is a constant that is >= 0, the signedness of
-		 the comparison isn't an issue, so suppress the
-		 warning.  */
-	      if (warn_type_limits && !in_system_header
-		  && !(TREE_CODE (primop0) == INTEGER_CST
-		       && !TREE_OVERFLOW (convert (c_common_signed_type (type),
-						   primop0))))
-		warning (OPT_Wtype_limits,
-			 "comparison of unsigned expression >= 0 is always true");
+	      if (warn)
+		warning_at (loc, OPT_Wtype_limits,
+			    "comparison of unsigned expression >= 0 is always true");
 	      value = truthvalue_true_node;
 	      break;
 
 	    case LT_EXPR:
-	      if (warn_type_limits && !in_system_header
-		  && !(TREE_CODE (primop0) == INTEGER_CST
-		       && !TREE_OVERFLOW (convert (c_common_signed_type (type),
-						   primop0))))
-		warning (OPT_Wtype_limits,
-			 "comparison of unsigned expression < 0 is always false");
+	      if (warn)
+		warning_at (loc, OPT_Wtype_limits,
+			    "comparison of unsigned expression < 0 is always false");
 	      value = truthvalue_false_node;
 	      break;
 
