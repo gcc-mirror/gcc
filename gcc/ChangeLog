@@ -1,5 +1,10 @@
 2012-05-03  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/53093
+	* tree-emutls.c (new_emutls_decl): Fix handling of aliases.
+
+2012-05-03  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/53106
 	* ipa.c (cgraph_remove_unreachable_nodes): Fix handling of clones.
 

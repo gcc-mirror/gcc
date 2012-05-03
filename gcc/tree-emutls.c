@@ -338,7 +338,7 @@ new_emutls_decl (tree decl, tree alias_of)
   else 
     varpool_create_variable_alias (to,
 				   varpool_node_for_asm
-				    (DECL_ASSEMBLER_NAME (alias_of))->symbol.decl);
+				    (DECL_ASSEMBLER_NAME (DECL_VALUE_EXPR (alias_of)))->symbol.decl);
   return to;
 }
 
