@@ -1667,6 +1667,7 @@ Parse::init_vars_from_call(const Typed_identifier_list* vars, Type* type,
   // the right number of values, but it might.  Declare the variables,
   // and then assign the results of the call to them.
 
+  Named_object* first_var = NULL;
   unsigned int index = 0;
   bool any_new = false;
   for (Typed_identifier_list::const_iterator pv = vars->begin();
@@ -1674,7 +1675,22 @@ Parse::init_vars_from_call(const Typed_identifier_list* vars, Type* type,
        ++pv, ++index)
     {
       Expression* init = Expression::make_call_result(call, index);
-      this->init_var(*pv, type, init, is_coloneq, false, &any_new);
+      Named_object* no = this->init_var(*pv, type, init, is_coloneq, false,
+					&any_new);
+
+      if (this->gogo_->in_global_scope() && no->is_variable())
+	{
+	  if (first_var == NULL)
+	    first_var = no;
+	  else
+	    {
+	      // The subsequent vars have an implicit dependency on
+	      // the first one, so that everything gets initialized in
+	      // the right order and so that we detect cycles
+	      // correctly.
+	      this->gogo_->record_var_depends_on(no->var_value(), first_var);
+	    }
+	}
     }
 
   if (is_coloneq && !any_new)
