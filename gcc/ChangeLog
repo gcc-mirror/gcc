@@ -1,3 +1,7 @@
+2012-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/elf.h (MAX_OFILE_ALIGNMENT): Remove.
+
 2012-05-03  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-switch-conversion.c (gen_inbound_check): Free post-dominance
@@ -63,8 +67,7 @@
 2012-05-03  Michael Matz  <matz@suse.de>
 
 	PR bootstrap/53197
-	* tree-ssa-dse.c (dse_optimize_stmt): Take pointer to
-	iterator.
+	* tree-ssa-dse.c (dse_optimize_stmt): Take pointer to iterator.
 	(dse_enter_block): Properly iterate the whole sequence even
 	if the last statement was removed.
 
@@ -152,7 +155,7 @@
 	(gsi_seq): Adjust.
 	* tree-flow-inline.h (phi_nodes_ptr): New function.
 
-	* gimple-iterator.c (gsi_insert_seq_nodes_before): Adjust to 
+	* gimple-iterator.c (gsi_insert_seq_nodes_before): Adjust to
 	datastructure and interface change.
 	(gsi_insert_seq_before_without_update): Ditto.
 	(gsi_insert_seq_nodes_after): Ditto.
@@ -160,8 +163,7 @@
 	(gsi_split_seq_after): Ditto, don't use gimple_seq_alloc.
 	(gsi_split_seq_before): Ditto.
 	(gsi_start_phis): Adjust.
-	* tree-vect-loop.c (vect_determine_vectorization_factor): Use
-	gsi_none.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Use gsi_none.
 	(vect_transform_loop): Ditto.
 	* gimple.c (gimple_seq_add_stmt, gimple_seq_add_seq,
 	gimple_seq_copy): Don't use gimple_seq_alloc.
@@ -247,15 +249,13 @@
 
 	* tree-ssa-loop-im.c (move_computations_stmt): First remove
 	then insert stmt.
-	* tree-complex.c (update_complex_components_on_edge): Don't
-	copy gsi.
+	* tree-complex.c (update_complex_components_on_edge): Don't copy gsi.
 	* tree-phinodes.c (resize_phi_node): Don't resize stmt in-place,
 	return new stmt.
 	(reserve_phi_args_for_new_edge): Change call to above,
 	use gsi_set_stmt.
 
-	* omp-low.c (lower_omp): Change prototype to take pointer to
-	sequence.
+	* omp-low.c (lower_omp): Change prototype to take pointer to sequence.
 	(lower_rec_input_clauses): Use gimple_seq_add_seq instead of
 	iterators.  Adjust call to lower_omp.
 	(lower_lastprivate_clauses): Adjust call to lower_omp.
@@ -287,8 +287,7 @@
 	(gimple_try_catch_may_fallthru): Call gsi_start with lvalue.
 	* tree-nested.c (walk_body): Take pointer to sequence, use
 	walk_gimple_seq_mod.
-	(walk_function): Adjust call to walk_body, set possibly changed
-	body.
+	(walk_function): Adjust call to walk_body, set possibly changed body.
 	(walk_gimple_omp_for): Adjust calls to walk_body.
 	(convert_nonlocal_omp_clauses): Ditto.
 	(convert_nonlocal_reference_stmt): Ditto.
@@ -358,11 +357,10 @@
 	* config/i386/i386-c.c (ix86_target_macros_internal): Set
 	HLE defines.
 	(ix86_target_string)<-mhle>: New.
-	(ix86_valid_target_attribute_inner_p)<OPT_mhle>: Ditto.
-	* config/i386/i386.c (ix86_target_string)<OPTION_MASK_ISA_HLE>:
-	New.
-	(ix86_valid_target_attribute_inner_p)<OPT_mhle>: Ditto.
-	(ix86_option_override_internal)<PTA_HLE>: New switch, set it
+	(ix86_valid_target_attribute_inner_p) <OPT_mhle>: Ditto.
+	* config/i386/i386.c (ix86_target_string) <OPTION_MASK_ISA_HLE>: New.
+	(ix86_valid_target_attribute_inner_p) <OPT_mhle>: Ditto.
+	(ix86_option_override_internal) <PTA_HLE>: New switch, set it
 	enabled for generic, generic64 and core-avx2.
 	(ix86_print_operand): Generate HLE lock prefixes.
 	(ix86_memmodel_check): New.
@@ -424,7 +422,8 @@
 	(host_integerp): Likewise.
 	(int_fits_type_p): Likewise.
 	* varasm.c (output_constructor_regular_field): Sign-extend the
-	field-offset to cater for negative offsets produced by the Ada frontend.
+	field-offset to cater for negative offsets produced by the Ada
+	frontend.
 	* omp-low.c (extract_omp_for_data): Convert the loop step to
 	signed for pointer adjustments.
 
@@ -507,15 +506,15 @@
 	Update calls to simple_move and find_decomposable_shift_zext.
 
 2012-05-01  Ian Bolton  <ian.bolton@arm.com>
-            Sameera Deshpande  <sameera.deshpande@arm.com>
-            Greta Yorsh  <greta.yorsh@arm.com>
+	    Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh  <greta.yorsh@arm.com>
 
 	* config/arm/arm-protos.h (thumb_unexpanded_epilogue): Rename to...
-        (thumb1_unexpanded_epilogue): ...this.
+	(thumb1_unexpanded_epilogue): ...this.
 	* config/arm/arm.c (thumb_unexpanded_epilogue): Rename to...
-        (thumb1_unexpanded_epilogue): ...this.
+	(thumb1_unexpanded_epilogue): ...this.
 	* config/arm/arm.md (thumb_unexpanded_epilogue): Rename to...
-        (thumb1_unexpanded_epilogue): ...this.
+	(thumb1_unexpanded_epilogue): ...this.
 
 2012-05-01  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -551,7 +550,7 @@
 	(update_edge_key): Ditto.
 	(flatten_function): Ditto.
 	(ipa_inline): Ditto.
-	(inlinw_always_inline_functions): Ditto.
+	(inline_always_inline_functions): Ditto.
 	(early_inline_small_functions): Ditto.
 
 2012-04-30  Uros Bizjak  <ubizjak@gmail.com>
