@@ -1,5 +1,18 @@
 2012-05-03  Jason Merrill  <jason@redhat.com>
 
+	* dwarf2out.c (die_struct): Add comdat_type_p flag.  Use it instead of
+	use_debug_types to discriminate the die_id union.
+	(print_die, assign_symbol_names, copy_decls_walk): Likewise.
+	(build_abbrev_table, output_die): Likewise.
+	(prune_unused_types_walk_attribs): Likewise.
+	(generate_type_signature, copy_declaration_context): Set it.
+	(remove_child_or_replace_with_skeleton): Set it.
+	(dwarf2out_start_source_file, dwarf2out_end_source_file): Don't
+	check use_debug_types.
+	(dwarf2out_finish): Do break_out_includes after .debug_types.
+
+2012-05-03  Jason Merrill  <jason@redhat.com>
+
 	* dwarf2out.c (modified_type_die): Use scope_die_for.
 	(gen_type_die_with_usage, dwarf2out_finish): Likewise.
 	(uses_local_type_r, uses_local_type): New.
