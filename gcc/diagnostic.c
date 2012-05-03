@@ -542,7 +542,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       diagnostic->kind = DK_ERROR;
     }
 
-  if (diagnostic->option_index)
+  if (diagnostic->option_index
+      && diagnostic->option_index != permissive_error_option (context))
     {
       diagnostic_t diag_class = DK_UNSPECIFIED;
 

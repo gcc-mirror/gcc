@@ -145,10 +145,6 @@ HOST_WIDE_INT random_seed;
 
 /* -f flags.  */
 
-/* Nonzero means make permerror produce warnings instead of errors.  */
-
-int flag_permissive = 0;
-
 /* When non-NULL, indicates that whenever space is allocated on the
    stack, the resulting stack pointer must not pass this
    address---that is, for stacks that grow downward, the stack pointer

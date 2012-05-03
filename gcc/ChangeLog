@@ -1,3 +1,11 @@
+2012-05-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* flags.h (flag_permissive): Do not declare.
+	* diagnostic.c (diagnostic_report_diagnostic): Handle fpermissive
+	option specially.
+	* toplev.c (flag_permissive): Do not define.
+	* c-tree.h (system_header_p): Delete unused.
+
 2012-05-03  David S. Miller  <davem@davemloft.net>
 
 	PR target/52684

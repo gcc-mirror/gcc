@@ -1,3 +1,7 @@
+2012-05-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (fpermissive): Add Var(flag_permissive).
+
 2012-04-30  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/51033

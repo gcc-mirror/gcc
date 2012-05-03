@@ -982,7 +982,7 @@ C ObjC C++ ObjC++
 Look for and use PCH files even when preprocessing
 
 fpermissive
-C++ ObjC++
+C++ ObjC++ Var(flag_permissive)
 Downgrade conformance errors to warnings
 
 fplan9-extensions
