@@ -3286,7 +3286,7 @@ write_types (outf_p output_header, type_p structures, type_p param_structs,
 	if (stru->u.s.line.file == NULL)
 	  {
 	    fprintf (stderr, "warning: structure `%s' used but not defined\n",
-		     s->u.s.tag);
+		     stru->u.s.tag);
 	    continue;
 	  }
       }
@@ -3522,7 +3522,7 @@ write_local (outf_p output_header, type_p structures, type_p param_structs)
 	if (stru->u.s.line.file == NULL)
 	  {
 	    fprintf (stderr, "warning: structure `%s' used but not defined\n",
-		     s->u.s.tag);
+		     stru->u.s.tag);
 	    continue;
 	  }
 
