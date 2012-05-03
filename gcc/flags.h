@@ -53,9 +53,6 @@ extern void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
 extern bool final_insns_dump_p;
 
-/* Nonzero means make permerror produce warnings instead of errors.  */
-
-extern int flag_permissive;
 
 /* Other basic status info about current function.  */
 
