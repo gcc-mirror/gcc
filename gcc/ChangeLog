@@ -1,3 +1,12 @@
+2012-05-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53144
+	* tree-ssa-sccvn.c (vn_reference_lookup_or_insert_constant_for_pieces):
+	Rename to ...
+	(vn_reference_lookup_or_insert_for_pieces): ... this.  Properly deal
+	with SSA name values.
+	(vn_reference_lookup_3): Adjust callers.
+
 2012-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53163

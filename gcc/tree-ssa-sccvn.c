@@ -1348,18 +1348,19 @@ vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *vr_)
 
 /* Lookup an existing or insert a new vn_reference entry into the
    value table for the VUSE, SET, TYPE, OPERANDS reference which
-   has the constant value CST.  */
+   has the value VALUE which is either a constant or an SSA name.  */
 
 static vn_reference_t
-vn_reference_lookup_or_insert_constant_for_pieces (tree vuse,
-						   alias_set_type set,
-						   tree type,
-						   VEC (vn_reference_op_s,
-							heap) *operands,
-						   tree cst)
+vn_reference_lookup_or_insert_for_pieces (tree vuse,
+					  alias_set_type set,
+					  tree type,
+					  VEC (vn_reference_op_s,
+					       heap) *operands,
+					  tree value)
 {
   struct vn_reference_s vr1;
   vn_reference_t result;
+  unsigned value_id;
   vr1.vuse = vuse;
   vr1.operands = operands;
   vr1.type = type;
@@ -1367,10 +1368,13 @@ vn_reference_lookup_or_insert_constant_for_pieces (tree vuse,
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if (vn_reference_lookup_1 (&vr1, &result))
     return result;
+  if (TREE_CODE (value) == SSA_NAME)
+    value_id = VN_INFO (value)->value_id;
+  else
+    value_id = get_or_alloc_constant_value_id (value);
   return vn_reference_insert_pieces (vuse, set, type,
 				     VEC_copy (vn_reference_op_s, heap,
-					       operands), cst,
-				     get_or_alloc_constant_value_id (cst));
+					       operands), value, value_id);
 }
 
 /* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
@@ -1452,7 +1456,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  && offset2 + size2 >= offset + maxsize)
 	{
 	  tree val = build_zero_cst (vr->type);
-	  return vn_reference_lookup_or_insert_constant_for_pieces
+	  return vn_reference_lookup_or_insert_for_pieces
 	           (vuse, vr->set, vr->type, vr->operands, val);
 	}
     }
@@ -1473,7 +1477,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  && offset2 + size2 >= offset + maxsize)
 	{
 	  tree val = build_zero_cst (vr->type);
-	  return vn_reference_lookup_or_insert_constant_for_pieces
+	  return vn_reference_lookup_or_insert_for_pieces
 	           (vuse, vr->set, vr->type, vr->operands, val);
 	}
     }
@@ -1514,7 +1518,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 						   / BITS_PER_UNIT),
 						ref->size / BITS_PER_UNIT);
 	      if (val)
-		return vn_reference_lookup_or_insert_constant_for_pieces
+		return vn_reference_lookup_or_insert_for_pieces
 		         (vuse, vr->set, vr->type, vr->operands, val);
 	    }
 	}
@@ -1568,7 +1572,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 		    }
 		}
 	      if (val)
-		return vn_reference_lookup_or_insert_constant_for_pieces
+		return vn_reference_lookup_or_insert_for_pieces
 		         (vuse, vr->set, vr->type, vr->operands, val);
 	    }
 	}
