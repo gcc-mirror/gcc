@@ -1,5 +1,7 @@
 2012-05-03  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/debug/dwarf2/nested-3.C: Adjust pattern.
+
 	* gcc.dg/debug/dwarf2/dups-types.c: New.
 	* gcc.dg/debug/dwarf2/dups-types.h: New.
 

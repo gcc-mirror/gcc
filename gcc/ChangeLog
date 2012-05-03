@@ -1,3 +1,13 @@
+2012-05-02  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (struct external_ref, build_local_stub): New.
+	(hash_external_ref, external_ref_eq, lookup_external_ref): New.
+	(optimize_external_refs, optimize_external_refs_1): New.
+	(change_AT_die_ref): New.
+	(clone_as_declaration): Add DW_AT_signature when cloning a declaration.
+	(build_abbrev_table): Take the external refs hashtable.
+	(output_comp_unit): Get it from optimize_external_refs and pass it in.
+
 2012-05-03  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/53093
