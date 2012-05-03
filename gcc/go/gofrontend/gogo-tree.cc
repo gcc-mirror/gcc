@@ -591,10 +591,11 @@ Find_var::expression(Expression** pexpr)
   return TRAVERSE_CONTINUE;
 }
 
-// Return true if EXPR refers to VAR.
+// Return true if EXPR, PREINIT, or DEP refers to VAR.
 
 static bool
-expression_requires(Expression* expr, Block* preinit, Named_object* var)
+expression_requires(Expression* expr, Block* preinit, Named_object* dep,
+		    Named_object* var)
 {
   Find_var::Seen_objects seen_objects;
   Find_var find_var(var, &seen_objects);
@@ -602,7 +603,15 @@ expression_requires(Expression* expr, Block* preinit, Named_object* var)
     Expression::traverse(&expr, &find_var);
   if (preinit != NULL)
     preinit->traverse(&find_var);
-  
+  if (dep != NULL)
+    {
+      Expression* init = dep->var_value()->init();
+      if (init != NULL)
+	Expression::traverse(&init, &find_var);
+      if (dep->var_value()->has_pre_init())
+	dep->var_value()->preinit()->traverse(&find_var);
+    }
+
   return find_var.found();
 }
 
@@ -659,7 +668,7 @@ typedef std::list<Var_init> Var_inits;
 // variable V2 then we initialize V1 after V2.
 
 static void
-sort_var_inits(Var_inits* var_inits)
+sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 {
   Var_inits ready;
   while (!var_inits->empty())
@@ -668,6 +677,7 @@ sort_var_inits(Var_inits* var_inits)
       Named_object* var = p1->var();
       Expression* init = var->var_value()->init();
       Block* preinit = var->var_value()->preinit();
+      Named_object* dep = gogo->var_depends_on(var->var_value());
 
       // Start walking through the list to see which variables VAR
       // needs to wait for.  We can skip P1->WAITING variables--that
@@ -679,20 +689,22 @@ sort_var_inits(Var_inits* var_inits)
 
       for (; p2 != var_inits->end(); ++p2)
 	{
-	  if (expression_requires(init, preinit, p2->var()))
+	  Named_object* p2var = p2->var();
+	  if (expression_requires(init, preinit, dep, p2var))
 	    {
 	      // Check for cycles.
-	      if (expression_requires(p2->var()->var_value()->init(),
-				      p2->var()->var_value()->preinit(),
+	      if (expression_requires(p2var->var_value()->init(),
+				      p2var->var_value()->preinit(),
+				      gogo->var_depends_on(p2var->var_value()),
 				      var))
 		{
 		  error_at(var->location(),
 			   ("initialization expressions for %qs and "
 			    "%qs depend upon each other"),
 			   var->message_name().c_str(),
-			   p2->var()->message_name().c_str());
+			   p2var->message_name().c_str());
 		  inform(p2->var()->location(), "%qs defined here",
-			 p2->var()->message_name().c_str());
+			 p2var->message_name().c_str());
 		  p2 = var_inits->end();
 		}
 	      else
@@ -715,9 +727,11 @@ sort_var_inits(Var_inits* var_inits)
 	  // VAR does not depends upon any other initialization expressions.
 
 	  // Check for a loop of VAR on itself.  We only do this if
-	  // INIT is not NULL; when INIT is NULL, it means that
-	  // PREINIT sets VAR, which we will interpret as a loop.
-	  if (init != NULL && expression_requires(init, preinit, var))
+	  // INIT is not NULL and there is no dependency; when INIT is
+	  // NULL, it means that PREINIT sets VAR, which we will
+	  // interpret as a loop.
+	  if (init != NULL && dep == NULL
+	      && expression_requires(init, preinit, NULL, var))
 	    error_at(var->location(),
 		     "initialization expression for %qs depends upon itself",
 		     var->message_name().c_str());
@@ -784,7 +798,7 @@ Gogo::write_globals()
 	}
 
       // There is nothing useful we can output for constants which
-      // have ideal or non-integeral type.
+      // have ideal or non-integral type.
       if (no->is_const())
 	{
 	  Type* type = no->const_value()->type();
@@ -835,7 +849,9 @@ Gogo::write_globals()
 		;
 	      else if (TREE_CONSTANT(init))
 		{
-		  if (expression_requires(no->var_value()->init(), NULL, no))
+		  if (expression_requires(no->var_value()->init(), NULL,
+					  this->var_depends_on(no->var_value()),
+					  no))
 		    error_at(no->location(),
 			     "initialization expression for %qs depends "
 			     "upon itself",
@@ -880,6 +896,14 @@ Gogo::write_globals()
 	      else
 		var_inits.push_back(Var_init(no, var_init_tree));
 	    }
+	  else if (this->var_depends_on(no->var_value()) != NULL)
+	    {
+	      // This variable is initialized from something that is
+	      // not in its init or preinit.  This variable needs to
+	      // participate in dependency analysis sorting, in case
+	      // some other variable depends on this one.
+	      var_inits.push_back(Var_init(no, integer_zero_node));
+	    }
 
 	  if (!is_sink && no->var_value()->type()->has_pointer())
 	    var_gc.push_back(no);
@@ -897,7 +921,7 @@ Gogo::write_globals()
   // workable order.
   if (!var_inits.empty())
     {
-      sort_var_inits(&var_inits);
+      sort_var_inits(this, &var_inits);
       for (Var_inits::const_iterator p = var_inits.begin();
 	   p != var_inits.end();
 	   ++p)
