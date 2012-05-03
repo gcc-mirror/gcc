@@ -276,7 +276,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    {
 	      bool noninline = node->clone_of->symbol.decl != node->symbol.decl;
 	      node = node->clone_of;
-	      if (noninline && !pointer_set_insert (reachable, node) && !node->symbol.aux)
+	      if (noninline && !pointer_set_contains (reachable, node) && !node->symbol.aux)
 	      	{
 		  enqueue_cgraph_node (node, &first, reachable);
 		  break;
