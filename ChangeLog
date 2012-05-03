@@ -1,3 +1,7 @@
+2012-05-03  Olivier Hainque  <hainque@adacore.com>
+
+	* config/mh-ppc-aix (LDFLAGS): Quote $(CC).
+
 2012-05-01  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.def (libatomic): New target_module.
