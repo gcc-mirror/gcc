@@ -1,5 +1,13 @@
 2012-05-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR plugins/53126
+	* gcc-ar.c (main): If GCC_EXEC_PREFIX is set in env,
+	append program name to it and pass that as first argument
+	to make_relative_prefix.  Always pass standard_libexec_prefix
+	as last argument to make_relative_prefix.  If
+	make_relative_prefix returns NULL, fall back to
+	standard_libexec_prefix.
+
 	PR debug/53174
 	* tree-predcom.c (remove_stmt): Call reset_debug_uses on stmts being
 	removed.
