@@ -800,6 +800,14 @@ gen_inbound_check (gimple swtch, struct switch_conv_info *info)
   location_t loc = gimple_location (swtch);
 
   gcc_assert (info->default_values);
+
+  /* Make no effort to update the post-dominator tree.  It is actually not
+     that hard for the transformations we have performed, but it is not
+     supported by iterate_fix_dominators.
+     Freeing post-dominance info is dome early to avoid pointless work in
+     create_basic_block, which is called when we split SWITCH_BB.  */
+  free_dominance_info (CDI_POST_DOMINATORS);
+
   bb0 = gimple_bb (swtch);
 
   tidx = gimple_assign_lhs (info->arr_ref_first);
@@ -866,13 +874,32 @@ gen_inbound_check (gimple swtch, struct switch_conv_info *info)
   bb2->frequency = EDGE_FREQUENCY (e02);
   bbf->frequency = EDGE_FREQUENCY (e1f) + EDGE_FREQUENCY (e2f);
 
-  prune_bbs (bbd, info->final_bb); /* To keep calc_dfs_tree() in dominance.c
-				     happy.  */
+  /* Tidy blocks that have become unreachable.  */
+  prune_bbs (bbd, info->final_bb);
 
+  /* Fixup the PHI nodes in bbF.  */
   fix_phi_nodes (e1f, e2f, bbf, info);
 
-  free_dominance_info (CDI_DOMINATORS);
-  free_dominance_info (CDI_POST_DOMINATORS);
+  /* Fix the dominator tree, if it is available.  */
+  if (dom_info_available_p (CDI_DOMINATORS))
+    {
+      VEC (basic_block, heap) *bbs_to_fix_dom;
+
+      set_immediate_dominator (CDI_DOMINATORS, bb1, bb0);
+      set_immediate_dominator (CDI_DOMINATORS, bb2, bb0);
+      if (! get_immediate_dominator(CDI_DOMINATORS, bbf))
+	/* If bbD was the immediate dominator ...  */
+	set_immediate_dominator (CDI_DOMINATORS, bbf, bb0);
+
+      bbs_to_fix_dom = VEC_alloc (basic_block, heap, 4);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, bb0);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, bb1);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, bb2);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, bbf);
+
+      iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
+      VEC_free (basic_block, heap, bbs_to_fix_dom);
+    }
 }
 
 /* The following function is invoked on every switch statement (the current one

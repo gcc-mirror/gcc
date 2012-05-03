@@ -1,3 +1,9 @@
+2012-05-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-switch-conversion.c (gen_inbound_check): Free post-dominance
+	information as early as possible.  Update dominance info instead of
+	discarding it.
+
 2012-05-03  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (debug_bitmap_sets_for): New function.
