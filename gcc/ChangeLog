@@ -1,3 +1,8 @@
+2012-05-03  Jason Merrill  <jason@redhat.com>
+
+	* gengtype.c (write_types): Fix warning message.
+	(write_local): Likewise.
+
 2012-05-02  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (struct external_ref, build_local_stub): New.
