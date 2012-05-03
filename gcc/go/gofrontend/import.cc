@@ -669,6 +669,9 @@ Import::read_type()
 	  // This type has not yet been imported.
 	  ntype->clear_is_visible();
 
+	  if (!type->is_undefined() && type->interface_type() != NULL)
+	    this->gogo_->record_interface_type(type->interface_type());
+
 	  type = ntype;
 	}
       else if (no->is_type())
