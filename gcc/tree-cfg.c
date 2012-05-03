@@ -438,7 +438,6 @@ create_bb (void *h, void *e, basic_block after)
 
   bb->index = last_basic_block;
   bb->flags = BB_NEW;
-  bb->il.gimple = ggc_alloc_cleared_gimple_bb_info ();
   set_bb_seq (bb, h ? (gimple_seq) h : NULL);
 
   /* Add the new block to the linked list of blocks.  */
@@ -1918,7 +1917,8 @@ remove_bb (basic_block bb)
     }
 
   remove_phi_nodes_and_edges_for_unreachable_block (bb);
-  bb->il.gimple = NULL;
+  bb->il.gimple.seq = NULL;
+  bb->il.gimple.phi_nodes = NULL;
 }
 
 
@@ -4614,13 +4614,13 @@ gimple_verify_flow_info (void)
   edge e;
   edge_iterator ei;
 
-  if (ENTRY_BLOCK_PTR->il.gimple)
+  if (ENTRY_BLOCK_PTR->il.gimple.seq || ENTRY_BLOCK_PTR->il.gimple.phi_nodes)
     {
       error ("ENTRY_BLOCK has IL associated with it");
       err = 1;
     }
 
-  if (EXIT_BLOCK_PTR->il.gimple)
+  if (EXIT_BLOCK_PTR->il.gimple.seq || EXIT_BLOCK_PTR->il.gimple.phi_nodes)
     {
       error ("EXIT_BLOCK has IL associated with it");
       err = 1;

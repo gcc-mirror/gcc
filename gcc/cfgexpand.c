@@ -3730,7 +3730,8 @@ expand_gimple_basic_block (basic_block bb)
      block to be in GIMPLE, instead of RTL.  Therefore, we need to
      access the BB sequence directly.  */
   stmts = bb_seq (bb);
-  bb->il.gimple = NULL;
+  bb->il.gimple.seq = NULL;
+  bb->il.gimple.phi_nodes = NULL;
   rtl_profile_for_bb (bb);
   init_rtl_bb_info (bb);
   bb->flags |= BB_RTL;

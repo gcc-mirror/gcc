@@ -1,3 +1,33 @@
+2012-05-03  Michael Matz  <matz@suse.de>
+
+	* basic-block.h (struct rtl_bb_info, struct gimple_bb_info): Move
+	in front of basic_block_def.
+	(struct basic_block_def): Make il.gimple the full struct, not a
+	pointer.
+	(__assert_gimple_bb_smaller_rtl_bb): Asserting typedef.
+
+	* cfgexpand.c (expand_gimple_basic_block): Clear all il.gimple
+	members.
+	* gimple-iterator.c (gimple_stmt_iterator): Don't special case
+	NULL il.gimple, which can't happen anymore.
+	* gimple.h (bb_seq): il.gimple can't be NULL.
+	(bb_seq_add): Ditto.
+	(set_bb_seq): Adjust.
+	(gsi_start_bb, gsi_last_bb): Tidy.
+	* lto-streamer-in.c (make_new_block): Don't zero members that
+	are zeroed already, don't allocate a gimple_bb_info.
+	* tree-cfg.c (create_bb): Don't allocate a gimple_bb_info.
+	(remove_bb): Clear all il.gimple members.
+	(gimple_verify_flow_info): Adjust for flat il.gimple.
+	* tree-flow-inline.h (phi_nodes, phi_nodes_ptr, set_phi_nodes): Adjust.
+
+	* coretypes.h (const_gimple_seq): Remove typedef.
+	* gimple.h (gimple_seq_first): Take gimple_seq.
+	(gimple_seq_first_stmt): Ditto.
+	(gimple_seq_last): Ditto.
+	(gimple_seq_last_stmt): Ditto.
+	(gimple_seq_empty_p): Ditto.
+
 2012-05-03  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (valid_in_sets): Remove checking of trapping

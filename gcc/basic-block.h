@@ -101,8 +101,27 @@ extern const struct gcov_ctr_summary *profile_info;
 /* Declared in cfgloop.h.  */
 struct loop;
 
-/* Declared in tree-flow.h.  */
-struct rtl_bb_info;
+struct GTY(()) rtl_bb_info {
+  /* The first and last insns of the block.  */
+  rtx head_;
+  rtx end_;
+
+  /* In CFGlayout mode points to insn notes/jumptables to be placed just before
+     and after the block.   */
+  rtx header;
+  rtx footer;
+
+  /* This field is used by the bb-reorder pass.  */
+  int visited;
+};
+
+struct GTY(()) gimple_bb_info {
+  /* Sequence of statements in this block.  */
+  gimple_seq seq;
+
+  /* PHI nodes for this block.  */
+  gimple_seq phi_nodes;
+};
 
 /* A basic block is a sequence of instructions with only entry and
    only one exit.  If any one of the instructions are executed, they
@@ -149,7 +168,7 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   struct basic_block_def *next_bb;
 
   union basic_block_il_dependent {
-      struct gimple_bb_info * GTY ((tag ("0"))) gimple;
+      struct gimple_bb_info GTY ((tag ("0"))) gimple;
       struct rtl_bb_info * GTY ((tag ("1"))) rtl;
     } GTY ((desc ("((%1.flags & BB_RTL) != 0)"))) il;
 
@@ -172,27 +191,12 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   int flags;
 };
 
-struct GTY(()) rtl_bb_info {
-  /* The first and last insns of the block.  */
-  rtx head_;
-  rtx end_;
-
-  /* In CFGlayout mode points to insn notes/jumptables to be placed just before
-     and after the block.   */
-  rtx header;
-  rtx footer;
-
-  /* This field is used by the bb-reorder and tracer passes.  */
-  int visited;
-};
-
-struct GTY(()) gimple_bb_info {
-  /* Sequence of statements in this block.  */
-  gimple_seq seq;
-
-  /* PHI nodes for this block.  */
-  gimple_seq phi_nodes;
-};
+/* This ensures that struct gimple_bb_info is smaller than
+   struct rtl_bb_info, so that inlining the former into basic_block_def
+   is the better choice.  */
+typedef int __assert_gimple_bb_smaller_rtl_bb
+              [(int)sizeof(struct rtl_bb_info)
+               - (int)sizeof (struct gimple_bb_info)];
 
 DEF_VEC_P(basic_block);
 DEF_VEC_ALLOC_P(basic_block,gc);

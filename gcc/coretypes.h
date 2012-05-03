@@ -73,7 +73,6 @@ struct cl_option_handlers;
 struct diagnostic_context;
 typedef struct diagnostic_context diagnostic_context;
 typedef gimple gimple_seq;
-typedef gimple const_gimple_seq;
 
 /* Address space number for named address space support.  */
 typedef unsigned char addr_space_t;
