@@ -865,6 +865,5 @@ gimple_stmt_iterator
 gsi_start_phis (basic_block bb)
 {
   gimple_seq *pseq = phi_nodes_ptr (bb);
-  /* XXX check only necessary because ENTRY/EXIT blocks don't have il.gimple */
-  return pseq ? gsi_start_1 (pseq) : gsi_none ();
+  return gsi_start_1 (pseq);
 }

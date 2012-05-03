@@ -599,10 +599,7 @@ make_new_block (struct function *fn, unsigned int index)
   basic_block bb = alloc_block ();
   bb->index = index;
   SET_BASIC_BLOCK_FOR_FUNCTION (fn, index, bb);
-  bb->il.gimple = ggc_alloc_cleared_gimple_bb_info ();
   n_basic_blocks_for_function (fn)++;
-  bb->flags = 0;
-  set_bb_seq (bb, NULL);
   return bb;
 }
 

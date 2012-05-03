@@ -1023,7 +1023,7 @@ extern bool types_compatible_p (tree, tree);
 /* Return the first node in GIMPLE sequence S.  */
 
 static inline gimple_seq_node
-gimple_seq_first (const_gimple_seq s)
+gimple_seq_first (gimple_seq s)
 {
   return s;
 }
@@ -1032,7 +1032,7 @@ gimple_seq_first (const_gimple_seq s)
 /* Return the first statement in GIMPLE sequence S.  */
 
 static inline gimple
-gimple_seq_first_stmt (const_gimple_seq s)
+gimple_seq_first_stmt (gimple_seq s)
 {
   gimple_seq_node n = gimple_seq_first (s);
   return n;
@@ -1042,7 +1042,7 @@ gimple_seq_first_stmt (const_gimple_seq s)
 /* Return the last node in GIMPLE sequence S.  */
 
 static inline gimple_seq_node
-gimple_seq_last (const_gimple_seq s)
+gimple_seq_last (gimple_seq s)
 {
   return s ? s->gsbase.prev : NULL;
 }
@@ -1051,7 +1051,7 @@ gimple_seq_last (const_gimple_seq s)
 /* Return the last statement in GIMPLE sequence S.  */
 
 static inline gimple
-gimple_seq_last_stmt (const_gimple_seq s)
+gimple_seq_last_stmt (gimple_seq s)
 {
   gimple_seq_node n = gimple_seq_last (s);
   return n;
@@ -1079,7 +1079,7 @@ gimple_seq_set_first (gimple_seq *ps, gimple_seq_node first)
 /* Return true if GIMPLE sequence S is empty.  */
 
 static inline bool
-gimple_seq_empty_p (const_gimple_seq s)
+gimple_seq_empty_p (gimple_seq s)
 {
   return s == NULL;
 }
@@ -1110,13 +1110,13 @@ gimple_seq_alloc_with_stmt (gimple stmt)
 static inline gimple_seq
 bb_seq (const_basic_block bb)
 {
-  return (!(bb->flags & BB_RTL) && bb->il.gimple) ? bb->il.gimple->seq : NULL;
+  return (!(bb->flags & BB_RTL)) ? bb->il.gimple.seq : NULL;
 }
 
 static inline gimple_seq *
-bb_seq_addr (const_basic_block bb)
+bb_seq_addr (basic_block bb)
 {
-  return (!(bb->flags & BB_RTL) && bb->il.gimple) ? &bb->il.gimple->seq : NULL;
+  return (!(bb->flags & BB_RTL)) ? &bb->il.gimple.seq : NULL;
 }
 
 /* Sets the sequence of statements in BB to SEQ.  */
@@ -1125,7 +1125,7 @@ static inline void
 set_bb_seq (basic_block bb, gimple_seq seq)
 {
   gcc_checking_assert (!(bb->flags & BB_RTL));
-  bb->il.gimple->seq = seq;
+  bb->il.gimple.seq = seq;
 }
 
 
@@ -4975,20 +4975,9 @@ gsi_start_bb (basic_block bb)
   gimple_seq *seq;
 
   seq = bb_seq_addr (bb);
-  if (!seq)
-    /* XXX Only necessary because of ENTRY/EXIT block which don't have
-       il.gimple */
-    {
-      i.ptr = NULL;
-      i.seq = NULL;
-      i.bb = NULL;
-    }
-  else
-    {
-      i.ptr = gimple_seq_first (*seq);
-      i.seq = seq;
-      i.bb = bb;
-    }
+  i.ptr = gimple_seq_first (*seq);
+  i.seq = seq;
+  i.bb = bb;
 
   return i;
 }
@@ -5019,20 +5008,9 @@ gsi_last_bb (basic_block bb)
   gimple_seq *seq;
 
   seq = bb_seq_addr (bb);
-  if (!seq)
-    /* XXX Only necessary because of ENTRY/EXIT block which don't have
-       il.gimple */
-    {
-      i.ptr = NULL;
-      i.seq = NULL;
-      i.bb = NULL;
-    }
-  else
-    {
-      i.ptr = gimple_seq_last (*seq);
-      i.seq = seq;
-      i.bb = bb;
-    }
+  i.ptr = gimple_seq_last (*seq);
+  i.seq = seq;
+  i.bb = bb;
 
   return i;
 }
