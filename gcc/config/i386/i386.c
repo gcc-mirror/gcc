@@ -8619,6 +8619,7 @@ ix86_code_end (void)
 				       NULL_TREE, void_type_node);
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
 
 #if TARGET_MACHO
       if (TARGET_MACHO)

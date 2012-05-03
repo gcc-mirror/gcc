@@ -1,3 +1,10 @@
+2012-05-03  Jason Merrill  <jason@redhat.com>
+
+	* config/i386/i386.c (ix86_code_end): Set DECL_IGNORED_P on the
+	pc thunk.
+	* dwarf2out.c (output_aranges): Skip DECL_IGNORED_P functions.
+	(dwarf2out_finish): Likewise.
+
 2012-05-03  Martin Jambor  <mjambor@suse.cz>
 
 	* builtins.c (get_object_alignment_1): Return whether we can determine
