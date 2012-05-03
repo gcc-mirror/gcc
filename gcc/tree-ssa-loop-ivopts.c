@@ -6259,10 +6259,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	  /* As this isn't a plain copy we have to reset alignment
 	     information.  */
 	  if (SSA_NAME_PTR_INFO (comp))
-	    {
-	      SSA_NAME_PTR_INFO (comp)->align = 1;
-	      SSA_NAME_PTR_INFO (comp)->misalign = 0;
-	    }
+	    mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (comp));
 	}
     }
 

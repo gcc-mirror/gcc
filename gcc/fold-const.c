@@ -9536,7 +9536,7 @@ get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
   if (code == ADDR_EXPR)
     {
       unsigned int bitalign;
-      bitalign = get_object_alignment_1 (TREE_OPERAND (expr, 0), residue);
+      get_object_alignment_1 (TREE_OPERAND (expr, 0), &bitalign, residue);
       *residue /= BITS_PER_UNIT;
       return bitalign / BITS_PER_UNIT;
     }

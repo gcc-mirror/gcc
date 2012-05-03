@@ -513,7 +513,7 @@ get_value_from_alignment (tree expr)
 
   gcc_assert (TREE_CODE (expr) == ADDR_EXPR);
 
-  align = get_object_alignment_1 (TREE_OPERAND (expr, 0), &bitpos);
+  get_object_alignment_1 (TREE_OPERAND (expr, 0), &align, &bitpos);
   val.mask
     = double_int_and_not (POINTER_TYPE_P (type) || TYPE_UNSIGNED (type)
 			  ? double_int_mask (TYPE_PRECISION (type))
@@ -807,7 +807,6 @@ ccp_finalize (void)
     {
       tree name = ssa_name (i);
       prop_value_t *val;
-      struct ptr_info_def *pi;
       unsigned int tem, align;
 
       if (!name
@@ -823,12 +822,9 @@ ccp_finalize (void)
 	 bits the misalignment.  */
       tem = val->mask.low;
       align = (tem & -tem);
-      if (align == 1)
-	continue;
-
-      pi = get_ptr_info (name);
-      pi->align = align;
-      pi->misalign = TREE_INT_CST_LOW (val->value) & (align - 1);
+      if (align > 1)
+	set_ptr_info_alignment (get_ptr_info (name), align,
+				TREE_INT_CST_LOW (val->value) & (align - 1));
     }
 
   /* Perform substitutions based on the known constant values.  */

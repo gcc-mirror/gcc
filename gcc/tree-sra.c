@@ -1472,11 +1472,13 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
      by looking at the access mode.  That would constrain the
      alignment of base + base_offset which we would need to
      adjust according to offset.  */
-  align = get_pointer_alignment_1 (base, &misalign);
-  if (misalign == 0
-      && (TREE_CODE (prev_base) == MEM_REF
-	  || TREE_CODE (prev_base) == TARGET_MEM_REF))
-    align = MAX (align, TYPE_ALIGN (TREE_TYPE (prev_base)));
+  if (!get_pointer_alignment_1 (base, &align, &misalign))
+    {
+      gcc_assert (misalign == 0);
+      if (TREE_CODE (prev_base) == MEM_REF
+	  || TREE_CODE (prev_base) == TARGET_MEM_REF)
+	align = TYPE_ALIGN (TREE_TYPE (prev_base));
+    }
   misalign += (double_int_sext (tree_to_double_int (off),
 				TYPE_PRECISION (TREE_TYPE (off))).low
 	       * BITS_PER_UNIT);

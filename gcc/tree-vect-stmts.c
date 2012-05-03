@@ -106,15 +106,12 @@ write_vector_array (gimple stmt, gimple_stmt_iterator *gsi, tree vect,
 static tree
 create_array_ref (tree type, tree ptr, struct data_reference *first_dr)
 {
-  struct ptr_info_def *pi;
   tree mem_ref, alias_ptr_type;
 
   alias_ptr_type = reference_alias_ptr_type (DR_REF (first_dr));
   mem_ref = build2 (MEM_REF, type, ptr, build_int_cst (alias_ptr_type, 0));
   /* Arrays have the same alignment as their type.  */
-  pi = get_ptr_info (ptr);
-  pi->align = TYPE_ALIGN_UNIT (type);
-  pi->misalign = 0;
+  set_ptr_info_alignment (get_ptr_info (ptr), TYPE_ALIGN_UNIT (type), 0);
   return mem_ref;
 }
 
@@ -4029,7 +4026,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  next_stmt = first_stmt;
 	  for (i = 0; i < vec_num; i++)
 	    {
-	      struct ptr_info_def *pi;
+	      unsigned align, misalign;
 
 	      if (i > 0)
 		/* Bump the vector pointer.  */
@@ -4046,25 +4043,26 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      data_ref = build2 (MEM_REF, TREE_TYPE (vec_oprnd), dataref_ptr,
 				 build_int_cst (reference_alias_ptr_type
 						(DR_REF (first_dr)), 0));
-	      pi = get_ptr_info (dataref_ptr);
-	      pi->align = TYPE_ALIGN_UNIT (vectype);
+	      align = TYPE_ALIGN_UNIT (vectype);
 	      if (aligned_access_p (first_dr))
-		pi->misalign = 0;
+		misalign = 0;
 	      else if (DR_MISALIGNMENT (first_dr) == -1)
 		{
 		  TREE_TYPE (data_ref)
 		    = build_aligned_type (TREE_TYPE (data_ref),
 					  TYPE_ALIGN (elem_type));
-		  pi->align = TYPE_ALIGN_UNIT (elem_type);
-		  pi->misalign = 0;
+		  align = TYPE_ALIGN_UNIT (elem_type);
+		  misalign = 0;
 		}
 	      else
 		{
 		  TREE_TYPE (data_ref)
 		    = build_aligned_type (TREE_TYPE (data_ref),
 					  TYPE_ALIGN (elem_type));
-		  pi->misalign = DR_MISALIGNMENT (first_dr);
+		  misalign = DR_MISALIGNMENT (first_dr);
 		}
+	      set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
+				      misalign);
 
 	      /* Arguments are ready.  Create the new vector stmt.  */
 	      new_stmt = gimple_build_assign (data_ref, vec_oprnd);
@@ -4860,33 +4858,35 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		case dr_aligned:
 		case dr_unaligned_supported:
 		  {
-		    struct ptr_info_def *pi;
+		    unsigned int align, misalign;
+
 		    data_ref
 		      = build2 (MEM_REF, vectype, dataref_ptr,
 				build_int_cst (reference_alias_ptr_type
 					       (DR_REF (first_dr)), 0));
-		    pi = get_ptr_info (dataref_ptr);
-		    pi->align = TYPE_ALIGN_UNIT (vectype);
+		    align = TYPE_ALIGN_UNIT (vectype);
 		    if (alignment_support_scheme == dr_aligned)
 		      {
 			gcc_assert (aligned_access_p (first_dr));
-			pi->misalign = 0;
+			misalign = 0;
 		      }
 		    else if (DR_MISALIGNMENT (first_dr) == -1)
 		      {
 			TREE_TYPE (data_ref)
 			  = build_aligned_type (TREE_TYPE (data_ref),
 						TYPE_ALIGN (elem_type));
-			pi->align = TYPE_ALIGN_UNIT (elem_type);
-			pi->misalign = 0;
+			align = TYPE_ALIGN_UNIT (elem_type);
+			misalign = 0;
 		      }
 		    else
 		      {
 			TREE_TYPE (data_ref)
 			  = build_aligned_type (TREE_TYPE (data_ref),
 						TYPE_ALIGN (elem_type));
-			pi->misalign = DR_MISALIGNMENT (first_dr);
+			misalign = DR_MISALIGNMENT (first_dr);
 		      }
+		    set_ptr_info_alignment (get_ptr_info (dataref_ptr),
+					    align, misalign);
 		    break;
 		  }
 		case dr_explicit_realign:

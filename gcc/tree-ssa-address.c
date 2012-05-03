@@ -863,26 +863,26 @@ copy_ref_info (tree new_ref, tree old_ref)
 	       && SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)))
 	{
 	  struct ptr_info_def *new_pi;
+	  unsigned int align, misalign;
+
 	  duplicate_ssa_name_ptr_info
 	    (new_ptr_base, SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
 	  new_pi = SSA_NAME_PTR_INFO (new_ptr_base);
 	  /* We have to be careful about transfering alignment information.  */
-	  if (TREE_CODE (old_ref) == MEM_REF
+	  if (get_ptr_info_alignment (new_pi, &align, &misalign)
+	      && TREE_CODE (old_ref) == MEM_REF
 	      && !(TREE_CODE (new_ref) == TARGET_MEM_REF
 		   && (TMR_INDEX2 (new_ref)
 		       || (TMR_STEP (new_ref)
 			   && (TREE_INT_CST_LOW (TMR_STEP (new_ref))
-			       < new_pi->align)))))
+			       < align)))))
 	    {
-	      new_pi->misalign += double_int_sub (mem_ref_offset (old_ref),
-						  mem_ref_offset (new_ref)).low;
-	      new_pi->misalign &= (new_pi->align - 1);
+	      unsigned int inc = double_int_sub (mem_ref_offset (old_ref),
+						 mem_ref_offset (new_ref)).low;
+	      adjust_ptr_info_misalignment (new_pi, inc);
 	    }
 	  else
-	    {
-	      new_pi->align = 1;
-	      new_pi->misalign = 0;
-	    }
+	    mark_ptr_info_alignment_unknown (new_pi);
 	}
       else if (TREE_CODE (base) == VAR_DECL
 	       || TREE_CODE (base) == PARM_DECL

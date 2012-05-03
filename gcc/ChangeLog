@@ -1,3 +1,52 @@
+2012-05-03  Martin Jambor  <mjambor@suse.cz>
+
+	* builtins.c (get_object_alignment_1): Return whether we can determine
+	the alignment or conservatively assume byte alignment.  Return the
+	alignment by reference.  Use get_pointer_alignment_1 for dereference
+	alignment.
+	(get_pointer_alignment_1): Return whether we can determine the
+	alignment or conservatively assume byte alignment.  Return the
+	alignment by reference.  Use get_ptr_info_alignment to get SSA name
+	alignment.
+	(get_object_alignment): Update call to get_object_alignment_1.
+	(get_object_or_type_alignment): Likewise, fall back to type alignment
+	only when it returned false.
+	(get_pointer_alignment): Update call to get_pointer_alignment_1.
+	* fold-const.c (get_pointer_modulus_and_residue): Update call to
+	get_object_alignment_1.
+	* ipa-prop.c (ipa_modify_call_arguments): Update call to
+	get_pointer_alignment_1.
+	* tree-sra.c (build_ref_for_offset): Likewise, fall back to the type
+	of MEM_REF or TARGET_MEM_REF only when it returns false.
+	* tree-ssa-ccp.c (get_value_from_alignment): Update call to
+	get_object_alignment_1.
+	(ccp_finalize): Use set_ptr_info_alignment.
+	* tree.h (get_object_alignment_1): Update declaration.
+	(get_pointer_alignment_1): Likewise.
+	* gimple-pretty-print.c (dump_gimple_phi): Use get_ptr_info_alignment.
+	(dump_gimple_stmt): Likewise.
+	* tree-flow.h (ptr_info_def): Updated comments of fields align and
+	misalign.
+	(get_ptr_info_alignment): Declared.
+	(mark_ptr_info_alignment_unknown): Likewise.
+	(set_ptr_info_alignment): Likewise.
+	(adjust_ptr_info_misalignment): Likewise.
+	* tree-ssa-address.c (copy_ref_info): Use new access functions to get
+	and set alignment of SSA names.
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Call
+	mark_ptr_info_alignment_unknown.
+	* tree-ssanames.c (get_ptr_info_alignment): New function.
+	(mark_ptr_info_alignment_unknown): Likewise.
+	(set_ptr_info_alignment): Likewise.
+	(adjust_ptr_info_misalignment): Likewise.
+	(get_ptr_info): Call mark_ptr_info_alignment_unknown.
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Likewise.
+	(bump_vector_ptr): Likewise.
+	* tree-vect-stmts.c (create_array_ref): Use set_ptr_info_alignment.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
 2012-05-03  Michael Matz  <matz@suse.de>
 
 	* basic-block.h (struct rtl_bb_info, struct gimple_bb_info): Move
