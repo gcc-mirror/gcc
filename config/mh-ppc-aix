@@ -5,4 +5,4 @@
 # don't do it any more.
 BOOT_ADAFLAGS = -gnatapg
 BOOT_LDFLAGS = -Wl,-bbigtoc
-LDFLAGS = `case $(CC) in *gcc*) echo -Wl,-bbigtoc ;; esac;`
+LDFLAGS = `case '$(CC)' in *gcc*) echo -Wl,-bbigtoc ;; esac;`
