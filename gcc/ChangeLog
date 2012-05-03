@@ -1,3 +1,9 @@
+2012-05-03  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/53201
+	* config/i386/driver-i386.c (host_detect_local_cpu): Add space to
+	"-mno-hle".
+
 2012-05-03  Michael Matz  <matz@suse.de>
 
 	PR bootstrap/53197
