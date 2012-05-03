@@ -2069,13 +2069,6 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, pre_expr expr,
 	for (i = 0; i < nary->length; i++)
 	  if (!op_valid_in_sets (set1, set2, nary->op[i]))
 	    return false;
-	/* If the NARY may trap make sure the block does not contain
-	   a possible exit point.
-	   ???  This is overly conservative if we translate AVAIL_OUT
-	   as the available expression might be after the exit point.  */
-	if (BB_MAY_NOTRETURN (block)
-	    && vn_nary_may_trap (nary))
-	  return false;
 	return true;
       }
       break;
@@ -2140,35 +2133,44 @@ clean (bitmap_set_t set, basic_block block)
 }
 
 /* Clean the set of expressions that are no longer valid in SET because
-   they are clobbered in BLOCK.  */
+   they are clobbered in BLOCK or because they trap and may not be executed.  */
 
 static void
 prune_clobbered_mems (bitmap_set_t set, basic_block block)
 {
-  VEC (pre_expr, heap) *exprs = sorted_array_from_bitmap_set (set);
-  pre_expr expr;
-  int i;
+  bitmap_iterator bi;
+  unsigned i;
 
-  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
+  FOR_EACH_EXPR_ID_IN_SET (set, i, bi)
     {
-      vn_reference_t ref;
-      if (expr->kind != REFERENCE)
-	continue;
-
-      ref = PRE_EXPR_REFERENCE (expr);
-      if (ref->vuse)
+      pre_expr expr = expression_for_id (i);
+      if (expr->kind == REFERENCE)
 	{
-	  gimple def_stmt = SSA_NAME_DEF_STMT (ref->vuse);
-	  if (!gimple_nop_p (def_stmt)
-	      && ((gimple_bb (def_stmt) != block
-		   && !dominated_by_p (CDI_DOMINATORS,
-				       block, gimple_bb (def_stmt)))
-		  || (gimple_bb (def_stmt) == block
-		      && value_dies_in_block_x (expr, block))))
+	  vn_reference_t ref = PRE_EXPR_REFERENCE (expr);
+	  if (ref->vuse)
+	    {
+	      gimple def_stmt = SSA_NAME_DEF_STMT (ref->vuse);
+	      if (!gimple_nop_p (def_stmt)
+		  && ((gimple_bb (def_stmt) != block
+		       && !dominated_by_p (CDI_DOMINATORS,
+					   block, gimple_bb (def_stmt)))
+		      || (gimple_bb (def_stmt) == block
+			  && value_dies_in_block_x (expr, block))))
+		bitmap_remove_from_set (set, expr);
+	    }
+	}
+      else if (expr->kind == NARY)
+	{
+	  vn_nary_op_t nary = PRE_EXPR_NARY (expr);
+	  /* If the NARY may trap make sure the block does not contain
+	     a possible exit point.
+	     ???  This is overly conservative if we translate AVAIL_OUT
+	     as the available expression might be after the exit point.  */
+	  if (BB_MAY_NOTRETURN (block)
+	      && vn_nary_may_trap (nary))
 	    bitmap_remove_from_set (set, expr);
 	}
     }
-  VEC_free (pre_expr, heap, exprs);
 }
 
 static sbitmap has_abnormal_preds;
@@ -4118,6 +4120,13 @@ compute_avail (void)
 		      for (i = 0; i < nary->length; i++)
 			if (TREE_CODE (nary->op[i]) == SSA_NAME)
 			  add_to_exp_gen (block, nary->op[i]);
+
+		      /* If the NARY traps and there was a preceeding
+		         point in the block that might not return avoid
+			 adding the nary to EXP_GEN.  */
+		      if (BB_MAY_NOTRETURN (block)
+			  && vn_nary_may_trap (nary))
+			continue;
 
 		      result = (pre_expr) pool_alloc (pre_expr_pool);
 		      result->kind = NARY;

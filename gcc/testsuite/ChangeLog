@@ -1,3 +1,7 @@
+2012-05-03  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-pre-27.c: Remove XFAIL.
+
 2012-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/hle-cmpxchg-acq-1.c (dg-options): Add -march=x86-64.

@@ -1,3 +1,12 @@
+2012-05-03  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (valid_in_sets): Remove checking of trapping
+	operations.
+	(prune_clobbered_mems): Do it here.  Do not uselessly sort
+	expressions.
+	(compute_avail): Do not add possibly trapping operations to
+	EXP_GEN if they might not be executed in the block.
+
 2012-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/elf.h (MAX_OFILE_ALIGNMENT): Remove.
