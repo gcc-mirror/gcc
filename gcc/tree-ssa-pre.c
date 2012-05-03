@@ -1029,6 +1029,24 @@ debug_bitmap_set (bitmap_set_t set)
   print_bitmap_set (stderr, set, "debug", 0);
 }
 
+void debug_bitmap_sets_for (basic_block);
+
+DEBUG_FUNCTION void
+debug_bitmap_sets_for (basic_block bb)
+{
+  print_bitmap_set (stderr, AVAIL_OUT (bb), "avail_out", bb->index);
+  if (!in_fre)
+    {
+      print_bitmap_set (stderr, EXP_GEN (bb), "exp_gen", bb->index);
+      print_bitmap_set (stderr, PHI_GEN (bb), "phi_gen", bb->index);
+      print_bitmap_set (stderr, TMP_GEN (bb), "tmp_gen", bb->index);
+      print_bitmap_set (stderr, ANTIC_IN (bb), "antic_in", bb->index);
+      if (do_partial_partial)
+	print_bitmap_set (stderr, PA_IN (bb), "pa_in", bb->index);
+      print_bitmap_set (stderr, NEW_SETS (bb), "new_sets", bb->index);
+    }
+}
+
 /* Print out the expressions that have VAL to OUTFILE.  */
 
 static void
@@ -2014,57 +2032,19 @@ value_dies_in_block_x (pre_expr expr, basic_block block)
 }
 
 
-#define union_contains_value(SET1, SET2, VAL)			\
-  (bitmap_set_contains_value ((SET1), (VAL))			\
-   || ((SET2) && bitmap_set_contains_value ((SET2), (VAL))))
+/* Determine if OP is valid in SET1 U SET2, which it is when the union
+   contains its value-id.  */
 
-/* Determine if vn_reference_op_t VRO is legal in SET1 U SET2.
- */
 static bool
-vro_valid_in_sets (bitmap_set_t set1, bitmap_set_t set2,
-		   vn_reference_op_t vro)
+op_valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree op)
 {
-  if (vro->op0 && TREE_CODE (vro->op0) == SSA_NAME)
+  if (op && TREE_CODE (op) == SSA_NAME)
     {
-      struct pre_expr_d temp;
-      temp.kind = NAME;
-      temp.id = 0;
-      PRE_EXPR_NAME (&temp) = vro->op0;
-      temp.id = lookup_expression_id (&temp);
-      if (temp.id == 0)
-	return false;
-      if (!union_contains_value (set1, set2,
-				 get_expr_value_id (&temp)))
+      unsigned int value_id = VN_INFO (op)->value_id;
+      if (!bitmap_set_contains_value (set1, value_id)
+	  || (set2 && !bitmap_set_contains_value  (set2, value_id)))
 	return false;
     }
-  if (vro->op1 && TREE_CODE (vro->op1) == SSA_NAME)
-    {
-      struct pre_expr_d temp;
-      temp.kind = NAME;
-      temp.id = 0;
-      PRE_EXPR_NAME (&temp) = vro->op1;
-      temp.id = lookup_expression_id (&temp);
-      if (temp.id == 0)
-	return false;
-      if (!union_contains_value (set1, set2,
-				 get_expr_value_id (&temp)))
-	return false;
-    }
-
-  if (vro->op2 && TREE_CODE (vro->op2) == SSA_NAME)
-    {
-      struct pre_expr_d temp;
-      temp.kind = NAME;
-      temp.id = 0;
-      PRE_EXPR_NAME (&temp) = vro->op2;
-      temp.id = lookup_expression_id (&temp);
-      if (temp.id == 0)
-	return false;
-      if (!union_contains_value (set1, set2,
-				 get_expr_value_id (&temp)))
-	return false;
-    }
-
   return true;
 }
 
@@ -2087,21 +2067,8 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, pre_expr expr,
 	unsigned int i;
 	vn_nary_op_t nary = PRE_EXPR_NARY (expr);
 	for (i = 0; i < nary->length; i++)
-	  {
-	    if (TREE_CODE (nary->op[i]) == SSA_NAME)
-	      {
-		struct pre_expr_d temp;
-		temp.kind = NAME;
-		temp.id = 0;
-		PRE_EXPR_NAME (&temp) = nary->op[i];
-		temp.id = lookup_expression_id (&temp);
-		if (temp.id == 0)
-		  return false;
-		if (!union_contains_value (set1, set2,
-					   get_expr_value_id (&temp)))
-		  return false;
-	      }
-	  }
+	  if (!op_valid_in_sets (set1, set2, nary->op[i]))
+	    return false;
 	/* If the NARY may trap make sure the block does not contain
 	   a possible exit point.
 	   ???  This is overly conservative if we translate AVAIL_OUT
@@ -2120,7 +2087,9 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, pre_expr expr,
 
 	FOR_EACH_VEC_ELT (vn_reference_op_s, ref->operands, i, vro)
 	  {
-	    if (!vro_valid_in_sets (set1, set2, vro))
+	    if (!op_valid_in_sets (set1, set2, vro->op0)
+		|| !op_valid_in_sets (set1, set2, vro->op1)
+		|| !op_valid_in_sets (set1, set2, vro->op2))
 	      return false;
 	  }
 	return true;
@@ -3330,13 +3299,6 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   tree temp;
   gimple phi;
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Found partial redundancy for expression ");
-      print_pre_expr (dump_file, expr);
-      fprintf (dump_file, " (%04d)\n", val);
-    }
-
   /* Make sure we aren't creating an induction variable.  */
   if (block->loop_depth > 0 && EDGE_COUNT (block->preds) == 2)
     {
@@ -3651,11 +3613,21 @@ do_regular_insertion (basic_block block, basic_block dom)
 			       "optimized for speed edge\n", val);
 		    }
 		}
-	      else if (dbg_cnt (treepre_insert)
-		       && insert_into_preds_of_block (block,
-						      get_expression_id (expr),
-						      avail))
-		new_stuff = true;
+	      else if (dbg_cnt (treepre_insert))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Found partial redundancy for "
+			       "expression ");
+		      print_pre_expr (dump_file, expr);
+		      fprintf (dump_file, " (%04d)\n",
+			       get_expr_value_id (expr));
+		    }
+		  if (insert_into_preds_of_block (block,
+						  get_expression_id (expr),
+						  avail))
+		    new_stuff = true;
+		}
 	    }
 	  /* If all edges produce the same value and that value is
 	     an invariant, then the PHI has the same value on all
@@ -3813,6 +3785,14 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
 	      else if (dbg_cnt (treepre_insert))
 		{
 		  pre_stats.pa_insert++;
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Found partial partial redundancy "
+			       "for expression ");
+		      print_pre_expr (dump_file, expr);
+		      fprintf (dump_file, " (%04d)\n",
+			       get_expr_value_id (expr));
+		    }
 		  if (insert_into_preds_of_block (block,
 						  get_expression_id (expr),
 						  avail))
@@ -3888,6 +3868,8 @@ insert (void)
   while (new_stuff)
     {
       num_iterations++;
+      if (dump_file && dump_flags & TDF_DETAILS)
+	fprintf (dump_file, "Starting insert iteration %d\n", num_iterations);
       new_stuff = insert_aux (ENTRY_BLOCK_PTR);
     }
   statistics_histogram_event (cfun, "insert iterations", num_iterations);
