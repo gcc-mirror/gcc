@@ -1,5 +1,12 @@
 2012-05-03  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+       * gcc.dg/fixed-point/composite-type.c (dg-options): Add
+       option -ftrack-macro-expansion=0.
+       * gcc.dg/fixed-point/operator-bitwise.c (dg-options): Add
+       option -ftrack-macro-expansion=0.
+
+2012-05-03  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* gcc.dg/builtin-stringop-chk-1.c (dg-options): Replace
 	dg-options for target arm with dg-additional-options.
 
