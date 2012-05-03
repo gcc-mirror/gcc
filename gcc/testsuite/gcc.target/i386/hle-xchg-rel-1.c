@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mhle" } */
-/* { dg-final { scan-assembler "\[ \n\t\]+\(xrelease\|\.byte\[ \t\]+0xf2\)\[ \t\n\]+xchg" } } */
+/* { dg-final { scan-assembler "\[ \n\t\]+\(xrelease\|\.byte\[ \t\]+0xf3\)\[ \t\n\]+xchg" } } */
 
 int
 hle_xchg (int *p, int v)
