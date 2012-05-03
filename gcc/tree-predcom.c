@@ -1707,6 +1707,7 @@ remove_stmt (gimple stmt)
     {
       name = PHI_RESULT (stmt);
       next = single_nonlooparound_use (name);
+      reset_debug_uses (stmt);
       psi = gsi_for_stmt (stmt);
       remove_phi_node (&psi, true);
 
@@ -1728,6 +1729,7 @@ remove_stmt (gimple stmt)
       gcc_assert (TREE_CODE (name) == SSA_NAME);
 
       next = single_nonlooparound_use (name);
+      reset_debug_uses (stmt);
 
       mark_virtual_ops_for_renaming (stmt);
       gsi_remove (&bsi, true);
