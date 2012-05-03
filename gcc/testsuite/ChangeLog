@@ -1,3 +1,10 @@
+2012-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/hle-cmpxchg-acq-1.c (dg-options): Add -march=x86-64.
+	* gcc.target/i386/hle-xadd-acq-1.c (dg-options): Ditto.
+	* gcc.target/i386/hle-cmpxchg-rel-1.c (dg-options): Ditto.
+	* gcc.target/i386/hle-xadd-rel-1.c (dg-options): Ditto.
+
 2012-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/hle-xadd-rel-1.c: Match .byte 0xf3 instead of
