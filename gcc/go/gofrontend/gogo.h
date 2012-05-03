@@ -384,6 +384,23 @@ class Gogo
   void
   clear_file_scope();
 
+  // Record that VAR1 must be initialized after VAR2.  This is used
+  // when VAR2 does not appear in VAR1's INIT or PREINIT.
+  void
+  record_var_depends_on(Variable* var1, Named_object* var2)
+  {
+    go_assert(this->var_deps_.find(var1) == this->var_deps_.end());
+    this->var_deps_[var1] = var2;
+  }
+
+  // Return the variable that VAR depends on, or NULL if none.
+  Named_object*
+  var_depends_on(Variable* var) const
+  {
+    Var_deps::const_iterator p = this->var_deps_.find(var);
+    return p != this->var_deps_.end() ? p->second : NULL;
+  }
+
   // Queue up a type-specific function to be written out.  This is
   // used when a type-specific function is needed when not at the top
   // level.
@@ -639,8 +656,9 @@ class Gogo
   // Type used to map package names to packages.
   typedef std::map<std::string, Package*> Packages;
 
-  // Type used to map special names in the sys package.
-  typedef std::map<std::string, std::string> Sys_names;
+  // Type used to map variables to the function calls that set them.
+  // This is used for initialization dependency analysis.
+  typedef std::map<Variable*, Named_object*> Var_deps;
 
   // Type used to queue writing a type specific function.
   struct Specific_type_function
@@ -683,6 +701,10 @@ class Gogo
   Packages packages_;
   // The functions named "init", if there are any.
   std::vector<Named_object*> init_functions_;
+  // A mapping from variables to the function calls that initialize
+  // them, if it is not stored in the variable's init or preinit.
+  // This is used for dependency analysis.
+  Var_deps var_deps_;
   // Whether we need a magic initialization function.
   bool need_init_fn_;
   // The name of the magic initialization function.
