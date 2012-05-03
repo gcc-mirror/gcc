@@ -11723,6 +11723,9 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	}
     }
 
+  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_CC)
+    return GET_MODE (x);
+
   return CCmode;
 }
 
