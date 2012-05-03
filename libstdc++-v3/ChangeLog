@@ -1,3 +1,8 @@
+2012-05-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/testsuite_flags.in (cxxflags): Remove
+	-ftrack-macro-expansion=0.
+
 2012-05-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/faq.xml: Update outdated allocator documentation.
