@@ -2,7 +2,7 @@
    are emitted properly.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -std=gnu99 -ftrack-macro-expansion=0" } */
-/* { dg-options "-mstructure-size-boundary=8 -O2 -std=gnu99" { target arm*-*-* } } */
+/* { dg-additional-options "-mstructure-size-boundary=8" { target arm*-*-* } } */
 
 extern void abort (void);
 
