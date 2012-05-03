@@ -1,5 +1,13 @@
 2012-05-03  Jason Merrill  <jason@redhat.com>
 
+	* dwarf2out.c (modified_type_die): Use scope_die_for.
+	(gen_type_die_with_usage, dwarf2out_finish): Likewise.
+	(uses_local_type_r, uses_local_type): New.
+	(scope_die_for): Keep a type that uses a local type in local scope.
+	Use get_context_die for namespace and type scope.
+
+2012-05-03  Jason Merrill  <jason@redhat.com>
+
 	* config/i386/i386.c (ix86_code_end): Set DECL_IGNORED_P on the
 	pc thunk.
 	* dwarf2out.c (output_aranges): Skip DECL_IGNORED_P functions.
