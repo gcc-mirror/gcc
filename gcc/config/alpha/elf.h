@@ -67,21 +67,6 @@ do {									\
   ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
 } while (0)
 
-/* The biggest alignment supported by ELF in bits. 32-bit ELF 
-   supports section alignment up to (0x80000000 * 8), while 
-   64-bit ELF supports (0x8000000000000000 * 8). If this macro 
-   is not defined, the default is the largest alignment supported 
-   by 32-bit ELF and representable on a 32-bit host. Use this
-   macro to limit the alignment which can be specified using
-   the `__attribute__ ((aligned (N)))' construct.
-
-   This value is really 2^63.  Since gcc figures the alignment in bits,
-   we could only potentially get to 2^60 on suitable hosts.  Due to other
-   considerations in varasm, we must restrict this to what fits in an int.  */
-
-#undef  MAX_OFILE_ALIGNMENT
-#define MAX_OFILE_ALIGNMENT (((unsigned int) 1 << 28) * 8)
-
 #undef  BSS_SECTION_ASM_OP
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 #undef  SBSS_SECTION_ASM_OP
