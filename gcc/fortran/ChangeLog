@@ -1,3 +1,10 @@
+2012-05-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52864
+	* interface.c (compare_parameter_intent): Remove.
+	(check_intents): Remove call, handle CLASS pointer.
+	(compare_actual_formal): Handle CLASS pointer.
+
 2012-04-30  Jan Hubicka  <jh@suse.cz>
 
 	* f95-lang.c (gfc_finish): Update comments.

@@ -1,3 +1,9 @@
+2012-05-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52864
+	* gfortran.dg/pointer_intent_7.f90: New.
+	* gfortran.dg/pure_formal_3.f90: New.
+
 2012-05-02  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* gcc.target/s390/20030123-1.c: Add missing "volatile".
