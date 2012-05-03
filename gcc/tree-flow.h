@@ -136,12 +136,17 @@ struct GTY(()) ptr_info_def
      align and misalign specify low known bits of the pointer.
      ptr & (align - 1) == misalign.  */
 
-  /* The power-of-two byte alignment of the object this pointer
-     points into.  This is usually DECL_ALIGN_UNIT for decls and
-     MALLOC_ABI_ALIGNMENT for allocated storage.  */
+  /* When known, this is the power-of-two byte alignment of the object this
+     pointer points into.  This is usually DECL_ALIGN_UNIT for decls and
+     MALLOC_ABI_ALIGNMENT for allocated storage.  When the alignment is not
+     known, it is zero.  Do not access directly but use functions
+     get_ptr_info_alignment, set_ptr_info_alignment,
+     mark_ptr_info_alignment_unknown and similar.  */
   unsigned int align;
 
-  /* The byte offset this pointer differs from the above alignment.  */
+  /* When alignment is known, the byte offset this pointer differs from the
+     above alignment.  Access only through the same helper functions as align
+     above.  */
   unsigned int misalign;
 };
 
@@ -593,6 +598,13 @@ extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
 extern void release_ssa_name (tree);
 extern void release_defs (gimple);
 extern void replace_ssa_name_symbol (tree, tree);
+extern bool get_ptr_info_alignment (struct ptr_info_def *, unsigned int *,
+				    unsigned int *);
+extern void mark_ptr_info_alignment_unknown (struct ptr_info_def *);
+extern void set_ptr_info_alignment (struct ptr_info_def *, unsigned int,
+				    unsigned int);
+extern void adjust_ptr_info_misalignment (struct ptr_info_def *,
+					  unsigned int);
 
 #ifdef GATHER_STATISTICS
 extern void ssanames_print_statistics (void);

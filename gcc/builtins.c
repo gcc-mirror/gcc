@@ -263,8 +263,10 @@ called_as_built_in (tree node)
   return is_builtin_name (name);
 }
 
-/* Compute values M and N such that M divides (address of EXP - N) and
-   such that N < M.  Store N in *BITPOSP and return M.
+/* Compute values M and N such that M divides (address of EXP - N) and such
+   that N < M.  If these numbers can be determined, store M in alignp and N in
+   *BITPOSP and return true.  Otherwise return false and store BITS_PER_UNIT to
+   *alignp and any bit-offset to *bitposp.
 
    Note that the address (and thus the alignment) computed here is based
    on the address to which a symbol resolves, whereas DECL_ALIGN is based
@@ -273,14 +275,16 @@ called_as_built_in (tree node)
    the address &foo of a Thumb function foo() has the lowest bit set,
    whereas foo() itself starts on an even address.  */
 
-unsigned int
-get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
+bool
+get_object_alignment_1 (tree exp, unsigned int *alignp,
+			unsigned HOST_WIDE_INT *bitposp)
 {
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   enum machine_mode mode;
   int unsignedp, volatilep;
-  unsigned int align, inner;
+  unsigned int inner, align = BITS_PER_UNIT;
+  bool known_alignment = false;
 
   /* Get the innermost object and the constant (bitpos) and possibly
      variable (offset) offset of the access.  */
@@ -301,84 +305,97 @@ get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
 	     allows the low bit to be used as a virtual bit, we know
 	     that the address itself must be 2-byte aligned.  */
 	  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn)
-	    align = 2 * BITS_PER_UNIT;
-	  else
-	    align = BITS_PER_UNIT;
+	    {
+	      known_alignment = true;
+	      align = 2 * BITS_PER_UNIT;
+	    }
 	}
       else
-	align = DECL_ALIGN (exp);
+	{
+	  known_alignment = true;
+	  align = DECL_ALIGN (exp);
+	}
     }
   else if (CONSTANT_CLASS_P (exp))
     {
+      known_alignment = true;
       align = TYPE_ALIGN (TREE_TYPE (exp));
 #ifdef CONSTANT_ALIGNMENT
       align = (unsigned)CONSTANT_ALIGNMENT (exp, align);
 #endif
     }
   else if (TREE_CODE (exp) == VIEW_CONVERT_EXPR)
-    align = TYPE_ALIGN (TREE_TYPE (exp));
+    {
+      known_alignment = true;
+      align = TYPE_ALIGN (TREE_TYPE (exp));
+    }
   else if (TREE_CODE (exp) == INDIRECT_REF)
-    align = TYPE_ALIGN (TREE_TYPE (exp));
+    {
+      known_alignment = true;
+      align = TYPE_ALIGN (TREE_TYPE (exp));
+    }
   else if (TREE_CODE (exp) == MEM_REF)
     {
       tree addr = TREE_OPERAND (exp, 0);
-      struct ptr_info_def *pi;
+      unsigned ptr_align;
+      unsigned HOST_WIDE_INT ptr_bitpos;
+
       if (TREE_CODE (addr) == BIT_AND_EXPR
 	  && TREE_CODE (TREE_OPERAND (addr, 1)) == INTEGER_CST)
 	{
+	  known_alignment = true;
 	  align = (TREE_INT_CST_LOW (TREE_OPERAND (addr, 1))
 		    & -TREE_INT_CST_LOW (TREE_OPERAND (addr, 1)));
 	  align *= BITS_PER_UNIT;
 	  addr = TREE_OPERAND (addr, 0);
 	}
-      else
-	align = BITS_PER_UNIT;
-      if (TREE_CODE (addr) == SSA_NAME
-	  && (pi = SSA_NAME_PTR_INFO (addr)))
+
+      if (get_pointer_alignment_1 (addr, &ptr_align, &ptr_bitpos))
 	{
-	  bitpos += (pi->misalign * BITS_PER_UNIT) & ~(align - 1);
-	  align = MAX (pi->align * BITS_PER_UNIT, align);
+	  known_alignment = true;
+	  bitpos += ptr_bitpos & ~(align - 1);
+	  align = MAX (ptr_align, align);
 	}
-      else if (TREE_CODE (addr) == ADDR_EXPR)
-	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0)));
+
       bitpos += mem_ref_offset (exp).low * BITS_PER_UNIT;
     }
   else if (TREE_CODE (exp) == TARGET_MEM_REF)
     {
-      struct ptr_info_def *pi;
+      unsigned ptr_align;
+      unsigned HOST_WIDE_INT ptr_bitpos;
       tree addr = TMR_BASE (exp);
+
       if (TREE_CODE (addr) == BIT_AND_EXPR
 	  && TREE_CODE (TREE_OPERAND (addr, 1)) == INTEGER_CST)
 	{
+	  known_alignment = true;
 	  align = (TREE_INT_CST_LOW (TREE_OPERAND (addr, 1))
 		   & -TREE_INT_CST_LOW (TREE_OPERAND (addr, 1)));
 	  align *= BITS_PER_UNIT;
 	  addr = TREE_OPERAND (addr, 0);
 	}
-      else
-	align = BITS_PER_UNIT;
-      if (TREE_CODE (addr) == SSA_NAME
-	  && (pi = SSA_NAME_PTR_INFO (addr)))
+
+      if (get_pointer_alignment_1 (addr, &ptr_align, &ptr_bitpos))
 	{
-	  bitpos += (pi->misalign * BITS_PER_UNIT) & ~(align - 1);
-	  align = MAX (pi->align * BITS_PER_UNIT, align);
+	  known_alignment = true;
+	  bitpos += ptr_bitpos & ~(align - 1);
+	  align = MAX (ptr_align, align);
 	}
-      else if (TREE_CODE (addr) == ADDR_EXPR)
-	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0)));
+
       if (TMR_OFFSET (exp))
 	bitpos += TREE_INT_CST_LOW (TMR_OFFSET (exp)) * BITS_PER_UNIT;
       if (TMR_INDEX (exp) && TMR_STEP (exp))
 	{
 	  unsigned HOST_WIDE_INT step = TREE_INT_CST_LOW (TMR_STEP (exp));
 	  align = MIN (align, (step & -step) * BITS_PER_UNIT);
+	  known_alignment = true;
 	}
       else if (TMR_INDEX (exp))
-	align = BITS_PER_UNIT;
+	known_alignment = false;
+
       if (TMR_INDEX2 (exp))
-	align = BITS_PER_UNIT;
+	known_alignment = false;
     }
-  else
-    align = BITS_PER_UNIT;
 
   /* If there is a non-constant offset part extract the maximum
      alignment that can prevail.  */
@@ -418,19 +435,27 @@ get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
 	}
       else
 	{
-	  inner = MIN (inner, BITS_PER_UNIT);
+	  known_alignment = false;
 	  break;
 	}
       offset = next_offset;
     }
 
-  /* Alignment is innermost object alignment adjusted by the constant
-     and non-constant offset parts.  */
-  align = MIN (align, inner);
-  bitpos = bitpos & (align - 1);
-
+  if (known_alignment)
+    {
+      /* Alignment is innermost object alignment adjusted by the constant
+	 and non-constant offset parts.  */
+      align = MIN (align, inner);
+      bitpos = bitpos & (align - 1);
+      *alignp = align;
+    }
+  else
+    {
+      bitpos = bitpos & (BITS_PER_UNIT - 1);
+      *alignp = BITS_PER_UNIT;
+    }
   *bitposp = bitpos;
-  return align;
+  return known_alignment;
 }
 
 /* Return the alignment in bits of EXP, an object.  */
@@ -441,14 +466,13 @@ get_object_alignment (tree exp)
   unsigned HOST_WIDE_INT bitpos = 0;
   unsigned int align;
 
-  align = get_object_alignment_1 (exp, &bitpos);
+  get_object_alignment_1 (exp, &align, &bitpos);
 
   /* align and bitpos now specify known low bits of the pointer.
      ptr & (align - 1) == bitpos.  */
 
   if (bitpos != 0)
     align = (bitpos & -bitpos);
-
   return align;
 }
 
@@ -465,45 +489,57 @@ unsigned int
 get_object_or_type_alignment (tree exp)
 {
   unsigned HOST_WIDE_INT misalign;
-  unsigned int align = get_object_alignment_1 (exp, &misalign);
+  unsigned int align;
+  bool known_alignment;
 
   gcc_assert (TREE_CODE (exp) == MEM_REF || TREE_CODE (exp) == TARGET_MEM_REF);
-
+  known_alignment = get_object_alignment_1 (exp, &align, &misalign);
   if (misalign != 0)
     align = (misalign & -misalign);
-  else
-    align = MAX (TYPE_ALIGN (TREE_TYPE (exp)), align);
+  else if (!known_alignment)
+    align = TYPE_ALIGN (TREE_TYPE (exp));
 
   return align;
 }
 
-/* For a pointer valued expression EXP compute values M and N such that
-   M divides (EXP - N) and such that N < M.  Store N in *BITPOSP and return M.
+/* For a pointer valued expression EXP compute values M and N such that M
+   divides (EXP - N) and such that N < M.  If these numbers can be determined,
+   store M in alignp and N in *BITPOSP and return true.  Otherwise return false
+   and store BITS_PER_UNIT to *alignp and any bit-offset to *bitposp.
 
-   If EXP is not a pointer, 0 is returned.  */
+   If EXP is not a pointer, false is returned too.  */
 
-unsigned int
-get_pointer_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
+bool
+get_pointer_alignment_1 (tree exp, unsigned int *alignp,
+			 unsigned HOST_WIDE_INT *bitposp)
 {
   STRIP_NOPS (exp);
 
   if (TREE_CODE (exp) == ADDR_EXPR)
-    return get_object_alignment_1 (TREE_OPERAND (exp, 0), bitposp);
+    return get_object_alignment_1 (TREE_OPERAND (exp, 0), alignp, bitposp);
   else if (TREE_CODE (exp) == SSA_NAME
 	   && POINTER_TYPE_P (TREE_TYPE (exp)))
     {
+      unsigned int ptr_align, ptr_misalign;
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (exp);
-      if (!pi)
+
+      if (pi && get_ptr_info_alignment (pi, &ptr_align, &ptr_misalign))
+	{
+	  *bitposp = ptr_misalign * BITS_PER_UNIT;
+	  *alignp = ptr_align * BITS_PER_UNIT;
+	  return true;
+	}
+      else
 	{
 	  *bitposp = 0;
-	  return BITS_PER_UNIT;
+	  *alignp = BITS_PER_UNIT;
+	  return false;
 	}
-      *bitposp = pi->misalign * BITS_PER_UNIT;
-      return pi->align * BITS_PER_UNIT;
     }
 
   *bitposp = 0;
-  return POINTER_TYPE_P (TREE_TYPE (exp)) ? BITS_PER_UNIT : 0;
+  *alignp = BITS_PER_UNIT;
+  return false;
 }
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
@@ -518,8 +554,8 @@ get_pointer_alignment (tree exp)
 {
   unsigned HOST_WIDE_INT bitpos = 0;
   unsigned int align;
-  
-  align = get_pointer_alignment_1 (exp, &bitpos);
+
+  get_pointer_alignment_1 (exp, &align, &bitpos);
 
   /* align and bitpos now specify known low bits of the pointer.
      ptr & (align - 1) == bitpos.  */
