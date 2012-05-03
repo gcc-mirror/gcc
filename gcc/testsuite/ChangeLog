@@ -1,3 +1,8 @@
+2012-05-03  Richard Guenther  <rguenther@suse.de>
+
+	* gfortran.dg/pr52621.f90: Add -w to avoid diagnostic about
+	unsupported prefetching support.
+
 2012-05-03  Greta Yorsh  <Greta.Yorsh@arm.com>
 
        * gcc.dg/fixed-point/composite-type.c (dg-options): Add
