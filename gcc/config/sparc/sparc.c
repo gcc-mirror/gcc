@@ -1,7 +1,7 @@
 /* Subroutines for insn-output.c for SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
@@ -2698,7 +2698,12 @@ emit_soft_tfmode_libcall (const char *func_name, int nargs, rtx *operands)
 
 	  if (GET_CODE (this_arg) == MEM
 	      && ! force_stack_temp)
-	    this_arg = XEXP (this_arg, 0);
+	    {
+	      tree expr = MEM_EXPR (this_arg);
+	      if (expr)
+		mark_addressable (expr);
+	      this_arg = XEXP (this_arg, 0);
+	    }
 	  else if (CONSTANT_P (this_arg)
 		   && ! force_stack_temp)
 	    {
@@ -7387,7 +7392,12 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
   if (TARGET_ARCH64)
     {
       if (MEM_P (x))
-	slot0 = x;
+	{
+	  tree expr = MEM_EXPR (x);
+	  if (expr)
+	    mark_addressable (expr);
+	  slot0 = x;
+	}
       else
 	{
 	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
@@ -7395,7 +7405,12 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 	}
 
       if (MEM_P (y))
-	slot1 = y;
+	{
+	  tree expr = MEM_EXPR (y);
+	  if (expr)
+	    mark_addressable (expr);
+	  slot1 = y;
+	}
       else
 	{
 	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);

@@ -1,3 +1,10 @@
+2012-05-03  David S. Miller  <davem@davemloft.net>
+
+	PR target/52684
+	* config/sparc/sparc.c (emit_soft_tfmode_libcall): If we pass a
+	MEM directly into a libcall, mark it's MEM_EXPR as addressable.
+	(sparc_emit_float_lib_cmp): Likewise.
+
 2012-05-04  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
