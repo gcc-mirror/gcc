@@ -1,3 +1,8 @@
+2012-05-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/53199
+	* gcc.target/powwerpc/pr53199.c: New file.
+
 2012-05-03  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/debug/dwarf2/nested-3.C: Adjust pattern.
