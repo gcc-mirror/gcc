@@ -167,14 +167,21 @@ copy_md_ptr_loc (const void *new_ptr, const void *old_ptr)
 }
 
 /* If PTR is associated with a known file position, print a #line
-   directive for it.  */
+   directive for it to OUTF.  */
 
 void
-print_md_ptr_loc (const void *ptr)
+fprint_md_ptr_loc (FILE *outf, const void *ptr)
 {
   const struct ptr_loc *loc = get_md_ptr_loc (ptr);
   if (loc != 0)
-    printf ("#line %d \"%s\"\n", loc->lineno, loc->filename);
+    fprintf (outf, "#line %d \"%s\"\n", loc->lineno, loc->filename);
+}
+
+/* Special fprint_md_ptr_loc for writing to STDOUT.  */
+void
+print_md_ptr_loc (const void *ptr)
+{
+  fprint_md_ptr_loc (stdout, ptr);
 }
 
 /* Return a condition that satisfies both COND1 and COND2.  Either string
@@ -204,29 +211,37 @@ join_c_conditions (const char *cond1, const char *cond2)
   return result;
 }
 
-/* Print condition COND, wrapped in brackets.  If COND was created by
-   join_c_conditions, recursively invoke this function for the original
+/* Print condition COND to OUTF, wrapped in brackets.  If COND was created
+   by join_c_conditions, recursively invoke this function for the original
    conditions and join the result with "&&".  Otherwise print a #line
    directive for COND if its original file position is known.  */
 
 void
-print_c_condition (const char *cond)
+fprint_c_condition (FILE *outf, const char *cond)
 {
   const char **halves = (const char **) htab_find (joined_conditions, &cond);
   if (halves != 0)
     {
-      printf ("(");
-      print_c_condition (halves[1]);
-      printf (" && ");
-      print_c_condition (halves[2]);
-      printf (")");
+      fprintf (outf, "(");
+      fprint_c_condition (outf, halves[1]);
+      fprintf (outf, " && ");
+      fprint_c_condition (outf, halves[2]);
+      fprintf (outf, ")");
     }
   else
     {
-      putc ('\n', stdout);
-      print_md_ptr_loc (cond);
-      printf ("(%s)", cond);
+      fputc ('\n', outf);
+      fprint_md_ptr_loc (outf, cond);
+      fprintf (outf, "(%s)", cond);
     }
+}
+
+/* Special fprint_c_condition for writing to STDOUT.  */
+
+void
+print_c_condition (const char *cond)
+{
+  fprint_c_condition (stdout, cond);
 }
 
 /* A vfprintf-like function for reporting an error against line LINENO
