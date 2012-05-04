@@ -108,9 +108,7 @@ func (c *TCPConn) Close() error {
 	if !c.ok() {
 		return syscall.EINVAL
 	}
-	err := c.fd.Close()
-	c.fd = nil
-	return err
+	return c.fd.Close()
 }
 
 // CloseRead shuts down the reading side of the TCP connection.
@@ -359,5 +357,5 @@ func (l *TCPListener) SetDeadline(t time.Time) error {
 
 // File returns a copy of the underlying os.File, set to blocking mode.
 // It is the caller's responsibility to close f when finished.
-// Closing c does not affect f, and closing f does not affect c.
+// Closing l does not affect f, and closing f does not affect l.
 func (l *TCPListener) File() (f *os.File, err error) { return l.fd.dup() }
