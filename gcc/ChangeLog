@@ -1,3 +1,8 @@
+2012-05-04  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vect-patterns.c (vect_single_imm_use): Correct return
+	values from false to NULL.
+
 2012-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

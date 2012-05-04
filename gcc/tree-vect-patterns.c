@@ -101,10 +101,10 @@ vect_single_imm_use (gimple def_stmt)
     return NULL;
 
   if (!gimple_bb (use_stmt))
-    return false;
+    return NULL;
 
   if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-    return false;
+    return NULL;
 
   gcc_assert (vinfo_for_stmt (use_stmt));
   return use_stmt;
