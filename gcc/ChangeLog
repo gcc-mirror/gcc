@@ -1,3 +1,12 @@
+2012-05-04  Bin Cheng  <bin.cheng@arm.com>
+
+	PR rtl-optimization/52804
+	* reload1.c (reload_reg_reaches_end_p): Check whether successor
+	reload with type RELOAD_FOR_INPUT_ADDRESS kills reload register
+	of current one with type RELOAD_FOR_INPADDR_ADDRESS.
+	Same stands for reloads with type RELOAD_FOR_OUTPUT_ADDRESS and
+	RELOAD_FOR_OUTADDR_ADDRESS.
+
 2012-05-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/24985
