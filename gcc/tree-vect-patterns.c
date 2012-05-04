@@ -84,6 +84,41 @@ new_pattern_def_seq (stmt_vec_info stmt_info, gimple stmt)
   append_pattern_def_seq (stmt_info, stmt);
 }
 
+/* Check whether STMT2 is in the same loop or basic block as STMT1.
+   Which of the two applies depends on whether we're currently doing
+   loop-based or basic-block-based vectorization, as determined by
+   the vinfo_for_stmt for STMT1 (which must be defined).
+
+   If this returns true, vinfo_for_stmt for STMT2 is guaranteed
+   to be defined as well.  */
+
+static bool
+vect_same_loop_or_bb_p (gimple stmt1, gimple stmt2)
+{
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt1);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
+
+  if (!gimple_bb (stmt2))
+    return false;
+
+  if (loop_vinfo)
+    {
+      struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+      if (!flow_bb_inside_loop_p (loop, gimple_bb (stmt2)))
+	return false;
+    }
+  else
+    {
+      if (gimple_bb (stmt2) != BB_VINFO_BB (bb_vinfo)
+	  || gimple_code (stmt2) == GIMPLE_PHI)
+	return false;
+    }
+
+  gcc_assert (vinfo_for_stmt (stmt2));
+  return true;
+}
+
 /* Check whether NAME, an ssa-name used in USE_STMT,
    is a result of a type promotion or demotion, such that:
      DEF_STMT: NAME = NOP (name0)
@@ -400,16 +435,6 @@ vect_handle_widen_op_by_const (gimple stmt, enum tree_code code,
 {
   tree new_type, new_oprnd, tmp;
   gimple new_stmt;
-  loop_vec_info loop_vinfo;
-  struct loop *loop = NULL;
-  bb_vec_info bb_vinfo;
-  stmt_vec_info stmt_vinfo;
-
-  stmt_vinfo = vinfo_for_stmt (stmt);
-  loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
-  if (loop_vinfo)
-    loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   if (code != MULT_EXPR && code != LSHIFT_EXPR)
     return false;
@@ -425,12 +450,10 @@ vect_handle_widen_op_by_const (gimple stmt, enum tree_code code,
       return true;
     }
 
-  if (TYPE_PRECISION (type) < (TYPE_PRECISION (*half_type) * 4)
-      || !gimple_bb (def_stmt)
-      || (loop && !flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
-      || (!loop && gimple_bb (def_stmt) != BB_VINFO_BB (bb_vinfo)
-	  && gimple_code (def_stmt) != GIMPLE_PHI)
-      || !vinfo_for_stmt (def_stmt))
+  if (TYPE_PRECISION (type) < (TYPE_PRECISION (*half_type) * 4))
+    return false;
+
+  if (!vect_same_loop_or_bb_p (stmt, def_stmt))
     return false;
 
   /* TYPE is 4 times bigger than HALF_TYPE, try widening operation for
@@ -564,16 +587,6 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
   VEC (tree, heap) *dummy_vec;
   bool op1_ok;
   bool promotion;
-  loop_vec_info loop_vinfo;
-  struct loop *loop = NULL;
-  bb_vec_info bb_vinfo;
-  stmt_vec_info stmt_vinfo;
-
-  stmt_vinfo = vinfo_for_stmt (last_stmt);
-  loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
-  if (loop_vinfo)
-    loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -645,9 +658,7 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
           || gimple_assign_rhs_code (use_stmt) != NOP_EXPR)
         return NULL;
 
-      if (!gimple_bb (use_stmt)
-	  || (loop && !flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-	  || (!loop && gimple_bb (use_stmt) != BB_VINFO_BB (bb_vinfo)))
+      if (!vect_same_loop_or_bb_p (last_stmt, use_stmt))
 	return NULL;
 
       use_lhs = gimple_assign_lhs (use_stmt);
@@ -952,13 +963,7 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
   tree interm_type = NULL_TREE, half_type, tmp, new_oprnd, type;
   gimple def_stmt, new_stmt;
   bool first = false;
-  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (vinfo_for_stmt (stmt));
-  bb_vec_info bb_info = STMT_VINFO_BB_VINFO (vinfo_for_stmt (stmt));
-  struct loop *loop = NULL;
   bool promotion;
-
-  if (loop_info)
-    loop = LOOP_VINFO_LOOP (loop_info);
 
   *op0 = NULL_TREE;
   *op1 = NULL_TREE;
@@ -991,13 +996,9 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
     {
       first = true;
       if (!type_conversion_p (oprnd, stmt, false, &half_type, &def_stmt,
-                               &promotion)
-         || !promotion
-          || !gimple_bb (def_stmt)
-          || (loop && !flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
-	  || (!loop && gimple_bb (def_stmt) != BB_VINFO_BB (bb_info)
-	      && gimple_code (def_stmt) != GIMPLE_PHI)
-          || !vinfo_for_stmt (def_stmt))
+			      &promotion)
+	  || !promotion
+	  || !vect_same_loop_or_bb_p (stmt, def_stmt))
         return false;
     }
 
@@ -1171,16 +1172,6 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
   tree var = NULL_TREE, new_type = NULL_TREE, tmp, new_oprnd;
   bool first;
   tree type = NULL;
-  loop_vec_info loop_vinfo;
-  struct loop *loop = NULL;
-  bb_vec_info bb_vinfo;
-  stmt_vec_info stmt_vinfo;
-
-  stmt_vinfo = vinfo_for_stmt (stmt);
-  loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
-  if (loop_vinfo)
-    loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   first = true;
   while (1)
@@ -1212,9 +1203,7 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
         }
 
       if (nuses != 1 || !is_gimple_assign (use_stmt)
-          || !gimple_bb (use_stmt)
-          || (loop && !flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-	  || (!loop && gimple_bb (use_stmt) != BB_VINFO_BB (bb_vinfo)))
+	  || !vect_same_loop_or_bb_p (stmt, use_stmt))
         return NULL;
 
       /* Create pattern statement for STMT.  */
@@ -1493,6 +1482,9 @@ vect_recog_widen_shift_pattern (VEC (gimple, heap) **stmts,
 
           if (nuses != 1 || !is_gimple_assign (use_stmt)
 	      || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt)))
+	    return NULL;
+
+	  if (!vect_same_loop_or_bb_p (last_stmt, use_stmt))
 	    return NULL;
 
           use_lhs = gimple_assign_lhs (use_stmt);
