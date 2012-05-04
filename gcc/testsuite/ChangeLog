@@ -1,3 +1,9 @@
+2012-05-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53111
+	* gfortran.dg/constructor_7.f90: New.
+	* gfortran.dg/constructor_8.f90: New.
+
 2012-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53166
@@ -92,10 +98,10 @@
 
 2012-05-03  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-       * gcc.dg/fixed-point/composite-type.c (dg-options): Add
-       option -ftrack-macro-expansion=0.
-       * gcc.dg/fixed-point/operator-bitwise.c (dg-options): Add
-       option -ftrack-macro-expansion=0.
+	* gcc.dg/fixed-point/composite-type.c (dg-options): Add
+	option -ftrack-macro-expansion=0.
+	* gcc.dg/fixed-point/operator-bitwise.c (dg-options): Add
+	option -ftrack-macro-expansion=0.
 
 2012-05-03  Greta Yorsh  <Greta.Yorsh@arm.com>
 
@@ -260,11 +266,11 @@
 
 	Fix expansion point loc for macro-like tokens
 	* gcc.dg/debug/dwarf2/pr41445-5.c: Adjust.
-    	* gcc.dg/debug/dwarf2/pr41445-6.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-6.c: Likewise.
 
 	Fix token pasting with -ftrack-macro-expansion
 	* gcc.dg/cpp/paste17.c: New test case for
-    	-ftrack-macro-expansion=2 mode only.
+	-ftrack-macro-expansion=2 mode only.
 	* gcc.dg/cpp/macro-exp-tracking-5.c: Likewise.
 
 2012-04-30  Eric Botcazou  <ebotcazou@adacore.com>
@@ -274,7 +280,7 @@
 2012-04-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 53149
-        * gcc.dg/20011021-1.c: Adjust testcase.
+	* gcc.dg/20011021-1.c: Adjust testcase.
 
 2012-04-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
