@@ -1,5 +1,12 @@
 2012-05-04  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
+	* tree-vect-patterns.c (vect_single_imm_use): New function.
+	(vect_recog_widen_mult_pattern): Use it instead of open-coding loop.
+	(vect_recog_over_widening_pattern): Likewise.
+	(vect_recog_widen_shift_pattern): Likewise.
+
+2012-05-04  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
 	* tree-vect-patterns.c (vect_same_loop_or_bb_p): New function.
 	(vect_handle_widen_op_by_const): Use it instead of open-coding test.
 	(vect_recog_widen_mult_pattern): Likewise.

@@ -119,6 +119,25 @@ vect_same_loop_or_bb_p (gimple stmt1, gimple stmt2)
   return true;
 }
 
+/* If the LHS of DEF_STMT has a single use, and that statement is
+   in the same loop or basic block, return it.  */
+
+static gimple
+vect_single_imm_use (gimple def_stmt)
+{
+  tree lhs = gimple_assign_lhs (def_stmt);
+  use_operand_p use_p;
+  gimple use_stmt;
+
+  if (!single_imm_use (lhs, &use_p, &use_stmt))
+    return NULL;
+
+  if (!vect_same_loop_or_bb_p (def_stmt, use_stmt))
+    return NULL;
+
+  return use_stmt;
+}
+
 /* Check whether NAME, an ssa-name used in USE_STMT,
    is a result of a type promotion or demotion, such that:
      DEF_STMT: NAME = NOP (name0)
@@ -636,30 +655,17 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
      Use unsigned TYPE as the type for WIDEN_MULT_EXPR.  */
   if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (half_type0))
     {
-      tree lhs = gimple_assign_lhs (last_stmt), use_lhs;
-      imm_use_iterator imm_iter;
-      use_operand_p use_p;
-      int nuses = 0;
-      gimple use_stmt = NULL;
+      gimple use_stmt;
+      tree use_lhs;
       tree use_type;
 
       if (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (half_type1))
         return NULL;
 
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
-        {
-	  if (is_gimple_debug (USE_STMT (use_p)))
-	    continue;
-          use_stmt = USE_STMT (use_p);
-          nuses++;
-        }
-
-      if (nuses != 1 || !is_gimple_assign (use_stmt)
-          || gimple_assign_rhs_code (use_stmt) != NOP_EXPR)
+      use_stmt = vect_single_imm_use (last_stmt);
+      if (!use_stmt || !is_gimple_assign (use_stmt)
+	  || gimple_assign_rhs_code (use_stmt) != NOP_EXPR)
         return NULL;
-
-      if (!vect_same_loop_or_bb_p (last_stmt, use_stmt))
-	return NULL;
 
       use_lhs = gimple_assign_lhs (use_stmt);
       use_type = TREE_TYPE (use_lhs);
@@ -1165,10 +1171,7 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
 {
   gimple stmt = VEC_pop (gimple, *stmts);
   gimple pattern_stmt = NULL, new_def_stmt, prev_stmt = NULL, use_stmt = NULL;
-  tree op0, op1, vectype = NULL_TREE, lhs, use_lhs, use_type;
-  imm_use_iterator imm_iter;
-  use_operand_p use_p;
-  int nuses = 0;
+  tree op0, op1, vectype = NULL_TREE, use_lhs, use_type;
   tree var = NULL_TREE, new_type = NULL_TREE, tmp, new_oprnd;
   bool first;
   tree type = NULL;
@@ -1192,18 +1195,8 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
         }
 
       /* STMT can be performed on a smaller type.  Check its uses.  */
-      lhs = gimple_assign_lhs (stmt);
-      nuses = 0;
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
-        {
-          if (is_gimple_debug (USE_STMT (use_p)))
-            continue;
-          use_stmt = USE_STMT (use_p);
-          nuses++;
-        }
-
-      if (nuses != 1 || !is_gimple_assign (use_stmt)
-	  || !vect_same_loop_or_bb_p (stmt, use_stmt))
+      use_stmt = vect_single_imm_use (stmt);
+      if (!use_stmt || !is_gimple_assign (use_stmt))
         return NULL;
 
       /* Create pattern statement for STMT.  */
@@ -1454,12 +1447,6 @@ vect_recog_widen_shift_pattern (VEC (gimple, heap) **stmts,
      Use unsigned TYPE as the type for WIDEN_LSHIFT_EXPR.  */
   if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (half_type0))
     {
-      tree lhs = gimple_assign_lhs (last_stmt), use_lhs;
-      imm_use_iterator imm_iter;
-      use_operand_p use_p;
-      int nuses = 0;
-      tree use_type;
-
       if (over_widen)
         {
           /* In case of over-widening pattern, S4 should be ORIG_STMT itself.
@@ -1472,19 +1459,12 @@ vect_recog_widen_shift_pattern (VEC (gimple, heap) **stmts,
         }
       else
         {
-          FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
-            {
-	      if (is_gimple_debug (USE_STMT (use_p)))
-	        continue;
-      	      use_stmt = USE_STMT (use_p);
- 	      nuses++;
-            }
+	  tree use_type;
+	  tree use_lhs;
 
-          if (nuses != 1 || !is_gimple_assign (use_stmt)
+	  use_stmt = vect_single_imm_use (last_stmt);
+	  if (!use_stmt || !is_gimple_assign (use_stmt)
 	      || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt)))
-	    return NULL;
-
-	  if (!vect_same_loop_or_bb_p (last_stmt, use_stmt))
 	    return NULL;
 
           use_lhs = gimple_assign_lhs (use_stmt);
