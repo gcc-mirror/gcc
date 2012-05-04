@@ -1,5 +1,14 @@
 2012-05-04  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/53175
+	* resolve.c (resolve_variable): Set public_used
+	if a private module variable is used in a (public)
+	specification expression.
+	* trans-decl.c (gfc_finish_var_decl): Mark those
+	TREE_PUBLIC.
+
+2012-05-04  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/53111
 	* resolve.c (resolve_fl_derived): Fix -std=f95
 	diagnostic for generic vs. DT names.
