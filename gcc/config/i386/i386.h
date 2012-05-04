@@ -425,7 +425,7 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
-  X86_ARCH_CMOVE,		/* || TARGET_SSE */
+  X86_ARCH_CMOV,
   X86_ARCH_CMPXCHG,
   X86_ARCH_CMPXCHG8B,
   X86_ARCH_XADD,
@@ -436,11 +436,16 @@ enum ix86_arch_indices {
 
 extern unsigned char ix86_arch_features[X86_ARCH_LAST];
 
-#define TARGET_CMOVE		ix86_arch_features[X86_ARCH_CMOVE]
+#define TARGET_CMOV		ix86_arch_features[X86_ARCH_CMOV]
 #define TARGET_CMPXCHG		ix86_arch_features[X86_ARCH_CMPXCHG]
 #define TARGET_CMPXCHG8B	ix86_arch_features[X86_ARCH_CMPXCHG8B]
 #define TARGET_XADD		ix86_arch_features[X86_ARCH_XADD]
 #define TARGET_BSWAP		ix86_arch_features[X86_ARCH_BSWAP]
+
+/* For sane SSE instruction set generation we need fcomi instruction.
+   It is safe to enable all CMOVE instructions.  Also, RDRAND intrinsic
+   expands to a sequence that includes conditional move. */
+#define TARGET_CMOVE		(TARGET_CMOV || TARGET_SSE || TARGET_RDRND)
 
 #define TARGET_FISTTP		(TARGET_SSE3 && TARGET_80387)
 
