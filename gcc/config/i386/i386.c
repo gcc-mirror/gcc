@@ -2190,7 +2190,7 @@ unsigned char ix86_arch_features[X86_ARCH_LAST];
 /* Feature tests against the various architecture variations, used to create
    ix86_arch_features based on the processor mask.  */
 static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
-  /* X86_ARCH_CMOVE: Conditional move was added for pentiumpro.  */
+  /* X86_ARCH_CMOV: Conditional move was added for pentiumpro.  */
   ~(m_386 | m_486 | m_PENT | m_K6),
 
   /* X86_ARCH_CMPXCHG: Compare and exchange was added for 80486.  */
@@ -3504,7 +3504,7 @@ ix86_option_override_internal (bool main_args_p)
 	   -mtune (rather than -march) points us to a processor that has them.
 	   However, the VIA C3 gives a SIGILL, so we only do that for i686 and
 	   higher processors.  */
-	if (TARGET_CMOVE
+	if (TARGET_CMOV
 	    && (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE)))
 	  x86_prefetch_sse = true;
 	break;
@@ -3779,12 +3779,6 @@ ix86_option_override_internal (bool main_args_p)
 		 "for correctness", prefix, suffix);
       target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
-
-  /* For sane SSE instruction set generation we need fcomi instruction.
-     It is safe to enable all CMOVE instructions.  Also, RDRAND intrinsic
-     expands to a sequence that includes conditional move. */
-  if (TARGET_SSE || TARGET_RDRND)
-    TARGET_CMOVE = 1;
 
   /* Figure out what ASM_GENERATE_INTERNAL_LABEL builds as a prefix.  */
   {
