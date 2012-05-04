@@ -162,7 +162,8 @@ class Parse
 
   // Parser nonterminals.
   void identifier_list(Typed_identifier_list*);
-  Expression_list* expression_list(Expression*, bool may_be_sink);
+  Expression_list* expression_list(Expression*, bool may_be_sink,
+				   bool may_be_composite_lit);
   bool qualified_ident(std::string*, Named_object**);
   Type* type();
   bool type_may_start_here();
@@ -207,6 +208,7 @@ class Parse
 			 bool is_coloneq, bool type_from_init, bool* is_new);
   Named_object* create_dummy_global(Type*, Expression*, Location);
   void simple_var_decl_or_assignment(const std::string&, Location,
+				     bool may_be_composite_lit,
 				     Range_clause*, Type_switch*);
   void function_decl();
   Typed_identifier* receiver();
@@ -239,8 +241,9 @@ class Parse
   void expression_stat(Expression*);
   void send_stmt(Expression*);
   void inc_dec_stat(Expression*);
-  void assignment(Expression*, Range_clause*);
-  void tuple_assignment(Expression_list*, Range_clause*);
+  void assignment(Expression*, bool may_be_composite_lit, Range_clause*);
+  void tuple_assignment(Expression_list*, bool may_be_composite_lit,
+			Range_clause*);
   void send();
   void go_or_defer_stat();
   void return_stat();
