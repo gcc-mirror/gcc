@@ -1235,7 +1235,7 @@ tree
 upc_num_threads (void)
 {
   tree n;
-  n = flag_upc_threads ? size_int (flag_upc_threads)
+  n = flag_upc_threads ? ssize_int (flag_upc_threads)
     : lookup_name (get_identifier ("THREADS"));
   if (!n)
     {

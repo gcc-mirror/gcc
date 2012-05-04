@@ -1,3 +1,11 @@
+2012-04-04  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c (upc_num_threads): When THREADS is specified
+	statically, convert the value to a signed size type,
+	so that (for example) the thread affinity test in a
+	upc_forall() statement will work as expected for negative
+	integer index values.
+
 2012-04-30  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* Make-lang.in: Add year 2012 to the copyright.
