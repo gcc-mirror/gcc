@@ -1,3 +1,12 @@
+2012-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53228
+	* config/i386/i386.h (X86_ARCH_CMOV): Rename from X86_ARCH_CMOVE.
+	(TARGET_CMOV): Rename from TARGET_CMOVE.
+	(TARGET_CMOVE): New define.
+	* config/i386/i386.c (ix86_option_override_internal): Use TARGET_CMOV.
+	Do not set TARGET_CMOVE here.
+
 2012-05-04  Dodji Seketeli  <dodji@redhat.com>
 
 	Enable -Wunused-local-typedefs when -Wall or -Wunused is on
@@ -222,8 +231,7 @@
 	pointer.
 	(__assert_gimple_bb_smaller_rtl_bb): Asserting typedef.
 
-	* cfgexpand.c (expand_gimple_basic_block): Clear all il.gimple
-	members.
+	* cfgexpand.c (expand_gimple_basic_block): Clear all il.gimple members.
 	* gimple-iterator.c (gimple_stmt_iterator): Don't special case
 	NULL il.gimple, which can't happen anymore.
 	* gimple.h (bb_seq): il.gimple can't be NULL.
@@ -248,8 +256,7 @@
 
 	* tree-ssa-pre.c (valid_in_sets): Remove checking of trapping
 	operations.
-	(prune_clobbered_mems): Do it here.  Do not uselessly sort
-	expressions.
+	(prune_clobbered_mems): Do it here.  Do not uselessly sort expressions.
 	(compute_avail): Do not add possibly trapping operations to
 	EXP_GEN if they might not be executed in the block.
 
@@ -609,8 +616,7 @@
 	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
 	HLE support.
 	* config/i386/i386-protos.h (ix86_generate_hle_prefix): New.
-	* config/i386/i386-c.c (ix86_target_macros_internal): Set
-	HLE defines.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Set HLE defines.
 	(ix86_target_string)<-mhle>: New.
 	(ix86_valid_target_attribute_inner_p) <OPT_mhle>: Ditto.
 	* config/i386/i386.c (ix86_target_string) <OPTION_MASK_ISA_HLE>: New.
@@ -657,8 +663,7 @@
 	* fold-const.c (div_if_zero_remainder): sizetypes no longer
 	sign-extend.
 	(int_const_binop_1): New worker for int_const_binop with
-	overflowable parameter.  Pass it through
-	to force_fit_type_double.
+	overflowable parameter.  Pass it through to force_fit_type_double.
 	(int_const_binop): Wrap around int_const_binop_1 with overflowable
 	equal to one.
 	(size_binop_loc): Call int_const_binop_1 with overflowable equal
