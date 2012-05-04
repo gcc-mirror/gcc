@@ -1,3 +1,9 @@
+2012-05-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md (*movmem_short, *clrmem_short)
+	(*cmpmem_short): Move the mode check from the insn condition to
+	the match_scratch.
+
 2012-05-04  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	PR tree-optimization/52633
