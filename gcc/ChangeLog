@@ -1,3 +1,12 @@
+2012-05-04  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* tree-vect-patterns.c (vect_same_loop_or_bb_p): New function.
+	(vect_handle_widen_op_by_const): Use it instead of open-coding test.
+	(vect_recog_widen_mult_pattern): Likewise.
+	(vect_operation_fits_smaller_type): Likewise.
+	(vect_recog_over_widening_pattern): Likewise.
+	(vect_recog_widen_shift_pattern): Add to vect_same_loop_or_bb_p test.
+
 2012-05-04  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/50602
