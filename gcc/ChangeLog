@@ -1,3 +1,10 @@
+2012-05-04  Dodji Seketeli  <dodji@redhat.com>
+
+	Enable -Wunused-local-typedefs when -Wall or -Wunused is on
+	* opts.c (finish_options): Activate -Wunused-local-typedefs if
+    	-Wunused is activated.
+	* doc/invoke.texi: Update blurb of -Wunused-local-typedefs.
+
 2012-05-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (*movmem_short, *clrmem_short)
