@@ -414,6 +414,16 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	  if (j == *decoded_options_count)
 	    append_option (decoded_options, decoded_options_count, foption);
 	  break;
+
+	case OPT_freg_struct_return:
+	case OPT_fpcc_struct_return:
+	  for (j = 0; j < *decoded_options_count; ++j)
+	    if ((*decoded_options)[j].opt_index == foption->opt_index)
+	      break;
+	  if (j == *decoded_options_count)
+	    fatal ("Option %s not used consistently in all LTO input files",
+		   foption->orig_option_with_args_text);
+	  break;
 	}
     }
 }
@@ -558,6 +568,8 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_fcommon:
 	case OPT_fexceptions:
 	case OPT_fgnu_tm:
+	case OPT_freg_struct_return:
+	case OPT_fpcc_struct_return:
 	  break;
 
 	default:
@@ -617,6 +629,12 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_flto:
 	  lto_mode = LTO_MODE_WHOPR;
 	  /* We've handled these LTO options, do not pass them on.  */
+	  continue;
+
+	case OPT_freg_struct_return:
+	case OPT_fpcc_struct_return:
+	  /* Ignore these, they are determined by the input files.
+	     ???  We fail to diagnose a possible mismatch here.  */
 	  continue;
 
 	default:
