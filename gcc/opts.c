@@ -835,6 +835,10 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if (opts->x_warn_unused_value == -1)
     opts->x_warn_unused_value = opts->x_warn_unused;
 
+  /* Wunused-local-typedefs is enabled by -Wunused or -Wall.  */
+  if (opts->x_warn_unused_local_typedefs == -1)
+    opts->x_warn_unused_local_typedefs = opts->x_warn_unused;
+
   /* This replaces set_Wextra.  */
   if (opts->x_warn_uninitialized == -1)
     opts->x_warn_uninitialized = opts->x_extra_warnings;
