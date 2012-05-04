@@ -1,5 +1,34 @@
 2012-05-04  Steven Bosscher  <steven@gcc.gnu.org>
 
+	PR other/29442
+	* read-md.c (fprint_md_ptr_loc, fprint_c_condition): New functions.
+	(print_md_ptr_loc, print_c_condition): Use them.
+	* read-md.h (fprint_md_ptr_loc, fprint_c_condition): New prototypes.
+	* genattrtab.c (attr_file_name, dfa_file_name, latency_file_name,
+	attr_file, dfa_file, latency_file): New global variables.
+	(write_attr_valueq, write_attr_set, write_attr_case, write_attr_value,
+	write_upcase, write_indent, write_length_unit_log, write_test_expr,
+	write_attr_get, write_insn_cases, write_eligible_delay,
+	write_const_num_delay_slots): Accept FILE pointer and toss it around.
+	Update all callers.
+	(write_header, open_outfile, handle_arg): New funcions.
+	(make_automaton_attrs): Write prototypes as extern to the output
+	files.
+	(main): Use init_rtx_reader_args_cb with handle_arg to take 3 file
+	names from the command line.  Open the output files and write out
+	internal functions for DFA functions to dfa_file_name, insn latency
+	functions to latency_file_name, and everything else to attr_file.
+	* Makefile.in (OBJS): Add insn-dfatab.o and insn-latencytab.o.
+	(BACKEND): Build libbackend first.
+	(MOSTLYCLEANFILES): Add insn-dfatab.c and insn-latencytab.c.
+	(.PRECIOUS): Likewise.
+	(insn-dfatab.o): New rule.
+	(insn-latencytab.o): New rule.
+	(simple_rtl_generated_c): Do not include insn-attrtab.c.
+	(s-attrtab): New rule.
+
+2012-05-04  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* rtl.def (ATTR_FLAG): Remove probability indicating flags.
 	* genattr.c (main): Remove ATTR_FLAG_likely, ATTR_FLAG_unlikely,
 	ATTR_FLAG_very_likely, and ATTR_FLAG_very_unlikely.

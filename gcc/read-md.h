@@ -118,8 +118,10 @@ extern hashval_t leading_string_hash (const void *);
 extern int leading_string_eq_p (const void *, const void *);
 extern void copy_md_ptr_loc (const void *, const void *);
 extern void print_md_ptr_loc (const void *);
+extern void fprint_md_ptr_loc (FILE *, const void *);
 extern const char *join_c_conditions (const char *, const char *);
 extern void print_c_condition (const char *);
+extern void fprint_c_condition (FILE *, const char *);
 extern void message_with_line (int, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void error_with_line (int, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void fatal_with_file_and_line (const char *, ...)
