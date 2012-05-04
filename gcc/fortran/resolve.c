@@ -5124,6 +5124,19 @@ resolve_variable (gfc_expr *e)
   if (check_assumed_size_reference (sym, e))
     return FAILURE;
 
+  /* If a PRIVATE variable is used in the specification expression of the
+     result variable, it might be accessed from outside the module and can
+     thus not be TREE_PUBLIC() = 0.
+     TODO: sym->attr.public_used only has to be set for the result variable's
+     type-parameter expression and not for dummies or automatic variables.
+     Additionally, it only has to be set if the function is either PUBLIC or
+     used in a generic interface or TBP; unfortunately,
+     proc_name->attr.public_used can get set at a later stage.  */
+  if (specification_expr && sym->attr.access == ACCESS_PRIVATE
+      && !sym->attr.function && !sym->attr.use_assoc
+      && gfc_current_ns->proc_name && gfc_current_ns->proc_name->attr.function)
+    sym->attr.public_used = 1;
+
   /* Deal with forward references to entries during resolve_code, to
      satisfy, at least partially, 12.5.2.5.  */
   if (gfc_current_ns->entries
