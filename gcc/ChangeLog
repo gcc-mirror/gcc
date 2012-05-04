@@ -1,3 +1,10 @@
+2012-05-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.def (ATTR_FLAG): Remove probability indicating flags.
+	* genattr.c (main): Remove ATTR_FLAG_likely, ATTR_FLAG_unlikely,
+	ATTR_FLAG_very_likely, and ATTR_FLAG_very_unlikely.
+	* reorg.c (get_jump_flags): Do not set the removed flags.
+
 2012-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53228

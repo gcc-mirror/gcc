@@ -1268,9 +1268,7 @@ DEF_RTL_EXPR(EQ_ATTR_ALT, "eq_attr_alt", "ii", RTX_EXTRA)
    true for the insn being scheduled in reorg.
 
    genattr.c defines the following flags which can be tested by
-   (attr_flag "foo") expressions in eligible_for_delay.
-
-   forward, backward, very_likely, likely, very_unlikely, and unlikely.  */
+   (attr_flag "foo") expressions in eligible_for_delay: forward, backward.  */
 
 DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", RTX_EXTRA)
 

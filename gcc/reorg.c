@@ -903,38 +903,6 @@ get_jump_flags (rtx insn, rtx label)
   else
     flags = 0;
 
-  /* If insn is a conditional branch call mostly_true_jump to get
-     determine the branch prediction.
-
-     Non conditional branches are predicted as very likely taken.  */
-  if (JUMP_P (insn)
-      && (condjump_p (insn) || condjump_in_parallel_p (insn)))
-    {
-      int prediction;
-
-      prediction = mostly_true_jump (insn, get_branch_condition (insn, label));
-      switch (prediction)
-	{
-	case 2:
-	  flags |= (ATTR_FLAG_very_likely | ATTR_FLAG_likely);
-	  break;
-	case 1:
-	  flags |= ATTR_FLAG_likely;
-	  break;
-	case 0:
-	  flags |= ATTR_FLAG_unlikely;
-	  break;
-	case -1:
-	  flags |= (ATTR_FLAG_very_unlikely | ATTR_FLAG_unlikely);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  else
-    flags |= (ATTR_FLAG_very_likely | ATTR_FLAG_likely);
-
   return flags;
 }
 

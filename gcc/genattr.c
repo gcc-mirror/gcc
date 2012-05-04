@@ -344,14 +344,9 @@ main (int argc, char **argv)
 
   /* Output flag masks for use by reorg.
 
-     Flags are used to hold branch direction and prediction information
-     for use by eligible_for_...  */
+     Flags are used to hold branch direction for use by eligible_for_...  */
   printf("\n#define ATTR_FLAG_forward\t0x1\n");
   printf("#define ATTR_FLAG_backward\t0x2\n");
-  printf("#define ATTR_FLAG_likely\t0x4\n");
-  printf("#define ATTR_FLAG_very_likely\t0x8\n");
-  printf("#define ATTR_FLAG_unlikely\t0x10\n");
-  printf("#define ATTR_FLAG_very_unlikely\t0x20\n");
 
   puts("\n#endif /* GCC_INSN_ATTR_H */");
 
