@@ -1,3 +1,18 @@
+2012-05-04  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* configure.ac: Check for gupc driver only.
+	Use gupc driver instead of xgupc. Add -fno-upc-pre-include
+	on the command line to prevent inclusion of gcc-upc.h
+	* configure: Regenerate.
+	* Makefile.am (AM_CPPFLAGS): Add -isystem option to
+	allow compiler to find upc.h.
+	* Makefile.in: Regenerate.
+	* include/upc.h (upc_global_lock_alloc): Fix prototype.
+	(upc_all_lock_alloc): Fix prototype.
+	* include/upc_collective.h (upc_coll_init): Fix prototype.
+	* testsuite/lib/libgupc.exp: Added appropriate options to
+	compile the tests with gupc from the build tree.
+
 2012-05-02  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Add memory fence to the low level lock support routines

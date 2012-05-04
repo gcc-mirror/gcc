@@ -74,16 +74,18 @@ proc libgupc_init { args } {
       setenv LANG C.ASCII
     }
 
+    set tooldir ""
     if ![info exists GUPC_UNDER_TEST] then {
         if [info exists TOOL_EXECUTABLE] {
             set GUPC_UNDER_TEST $TOOL_EXECUTABLE
         } else {
-            set file [lookfor_file $tool_root_dir xgupc]
+            set file [lookfor_file $tool_root_dir gupc]
             if { $file == "" } {
-              set file [lookfor_file $tool_root_dir gcc/xgupc]
+              set file [lookfor_file $tool_root_dir gcc/gupc]
             }
             if { $file != "" } {
               set GUPC_UNDER_TEST $file
+	      set tooldir [file dirname $file]
             } else {
               set GUPC_UNDER_TEST [transform upc]
             }
@@ -138,11 +140,17 @@ proc libgupc_init { args } {
 
     set ALWAYS_CFLAGS ""
     if { $blddir != "" } {
-        lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
-        # targets that use libgupc.a%s in their specs need a -B option
-        # for uninstalled testing.
-        lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
+        # Add -B for gcc tools
+        if {$tooldir != ""} {
+          lappend ALWAYS_CFLAGS "additional_flags=-B${tooldir}/"
+        }
+	# Added -I for gcc-upc.h
+        lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../include"
+	# Added -I for gcc-upc-lib.h
         lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
+	# Add -B for libgupc.spec 
+        lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
+	# Added -L for libgupc.a
         lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
     }
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."

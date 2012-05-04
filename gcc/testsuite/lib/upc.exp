@@ -1,4 +1,4 @@
-#   Copyright (C) 1997, 2011 Free Software Foundation, Inc.
+#   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,7 +41,6 @@ proc upc_init { args } {
     global srcdir blddir objdir tool_root_dir
     global upc_initialized
     global tmpdir
-    global blddir
     global gluefile wrap_flags
     global ALWAYS_CFLAGS
     global CFLAGS
@@ -51,7 +50,17 @@ proc upc_init { args } {
     global target_triplet
     global always_ld_library_path
 
-    set blddir [lookfor_file [get_multilibs] gupc]
+    if [info exists TOOL_OPTIONS] {
+      set multilibs [get_multilibs $TOOL_OPTIONS]
+    } else {
+      set multilibs [get_multilibs]
+    }
+
+    # Find the build directory for gupc
+    set blddir [lookfor_file ${tool_root_dir} gupc]
+    if {$blddir != ""} {
+        set blddir [file dirname $blddir]
+    }
 
     # We set LC_ALL and LANG to C so that we get the same error
     # messages as expected.
@@ -69,9 +78,9 @@ proc upc_init { args } {
 	if [info exists TOOL_EXECUTABLE] {
 	    set GUPC_UNDER_TEST $TOOL_EXECUTABLE
 	} else {
-            set file [lookfor_file $tool_root_dir xgupc]
+            set file [lookfor_file $tool_root_dir gupc]
 	    if { $file == "" } {
-	      set file [lookfor_file $tool_root_dir gcc/xgupc]
+	      set file [lookfor_file $tool_root_dir gcc/gupc]
 	    }
 	    if { $file != "" } {
 	      set GUPC_UNDER_TEST $file
@@ -130,11 +139,15 @@ proc upc_init { args } {
     set ALWAYS_CFLAGS ""
     if { $blddir != "" } {
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
-        # targets that use libgupc.a%s in their specs need a -B option
-        # for uninstalled testing.
-        lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
-        lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
-        lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
+	# Added -I for UPC specific includes
+        set gupc_include_dir "${srcdir}/../../libgupc/include"
+        lappend ALWAYS_CFLAGS "additional_flags=-I${gupc_include_dir}"
+	# Added -I for gcc-upc-lib.h 
+        set gupc_lib_dir [lookfor_file ${multilibs} libgupc]
+        lappend ALWAYS_CFLAGS "additional_flags=-I${gupc_lib_dir}"
+	# Added -L/-B for libgupc.a and libgupc spec file
+        lappend ALWAYS_CFLAGS "ldflags=-B${gupc_lib_dir}"
+        lappend ALWAYS_CFLAGS "ldflags=-L${gupc_lib_dir}/.libs"
     }
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
 

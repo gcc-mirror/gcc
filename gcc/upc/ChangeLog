@@ -1,4 +1,12 @@
-2012-04-04  Gary Funck  <gary@intrepid.com>
+2012-05-04  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* Make-lang.in: Remove build of xgupc.
+	* gupcspecs.c (get_libgupc_path): Delete.
+	(lang_specific_driver): Remove support for building xgupc.
+	Removed code tried to add -B, -L, -isystem to the command
+	line if xgupc driver is invoked from the development tree.
+
+2012-05-04  Gary Funck  <gary@intrepid.com>
 
 	* upc-act.c (upc_num_threads): When THREADS is specified
 	statically, convert the value to a signed size type,

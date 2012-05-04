@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011
+/* Copyright (c) 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library.
    Written by Gary Funck <gary@intrepid.com>
@@ -93,7 +93,7 @@ extern void upc_all_gather_all (shared void *dst,
 extern void upc_all_gather (shared void *dst, shared const void *src,
 			    size_t nbytes, upc_flag_t sync_mode);
 
-extern void upc_coll_init ();
+extern void upc_coll_init (void);
 
 extern void upc_all_permute (shared void *dst, shared const void *src,
 			     shared const int *perm, size_t nbytes,

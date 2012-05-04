@@ -2,7 +2,7 @@
 # aclocal -I .. -I ../config && autoconf && autoheader && automake
 #
 #   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-#   2010, 2011
+#   2010, 2011, 2012
 #   Free Software Foundation, Inc. 
 #   Contributed by Gary Funck <gary@intrepid.com>
 #   Derived from libgomp/configure.ac
@@ -144,14 +144,13 @@ AC_CACHE_VAL(upc_cv_compiler_exists,
   fi
 ])
 AC_MSG_RESULT($upc_cv_compiler_exists)
-AC_MSG_CHECKING([if UPC driver, 'xgupc' and 'gupc',  has been built])
+AC_MSG_CHECKING([if UPC driver 'gupc' has been built])
 AC_CACHE_VAL(upc_cv_driver_exists,
 [ 
   upc_cv_driver_exists=yes
   if test -n "$r"; then
     if test -d "$r"/gcc; then
-      if (test -f "$r"/gcc/xgupc && test -f "$r"/gcc/gupc) \
-          || (test -f "$r"/gcc/xgupc.exe && "$r"/gcc/gupc.exe); then
+      if (test -f "$r"/gcc/gupc && test -f "$r"/gcc/gupc); then
 	true
       else
 	upc_cv_driver_exists=no
@@ -204,7 +203,7 @@ dnl The UPC compiler is used to compile some parts of the runtime
 dnl This hack makes sure that we pick up the multiflags that
 dnl may have been tacked onto the $CC command.
 if echo "$CC" | grep '/xgcc ' >/dev/null 2>&1; then
-  UPC=`echo "$CC" | sed -e 's=/xgcc =/xgupc ='`
+  UPC=`echo "$CC" | sed -e 's=/xgcc =/gupc ='`
 else
   AC_MSG_ERROR([Can't create UPC from CC because it doesn't contain the
   string '/xgcc '.  The value of CC is: "$CC"])
@@ -398,7 +397,7 @@ GUPCR_PTS_THREAD_SIZE=_STR(__UPC_THREAD_SIZE__)
   GUPCR_PTS_PACKED_REP=1
 #endif
 _ACEOF
-eval `$UPC -DNO_GCC_UPC_LIB=1 -E conftest.upc | grep '^ *GUPCR_[[A-Z0-9_]]*='`
+eval `$UPC -fno-upc-pre-include -DNO_GCC_UPC_LIB=1 -E conftest.upc | grep '^ *GUPCR_[[A-Z0-9_]]*='`
 rm -f conftest.upc
 AC_MSG_RESULT($GUPCR_PTS_REP)
 if test -z "$GUPCR_PTS_REP"; then

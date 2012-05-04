@@ -461,7 +461,8 @@ libsubinclude_HEADERS = $(UPC_HDRS) gcc-upc-lib.h
 nodist_noinst_HEADERS = 
 nodist_libsubinclude_HEADERS = 
 IN_LIB_CPPFLAGS = -DIN_GCC -DIN_TARGET_LIBS
-AM_CPPFLAGS = $(IN_LIB_CPPFLAGS) $(addprefix -I, $(search_path))
+AM_CPPFLAGS = $(IN_LIB_CPPFLAGS) $(addprefix -I, $(search_path)) \
+	$(addprefix -isystem, '.')
 AM_CFLAGS = $(WARN_CFLAGS) $(XCFLAGS)
 AM_UPCFLAGS = $(WARN_CFLAGS) $(XCFLAGS)
 SUBDIRS = testsuite

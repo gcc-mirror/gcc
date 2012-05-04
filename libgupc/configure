@@ -3322,8 +3322,8 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_cv_compiler_exists" >&5
 $as_echo "$upc_cv_compiler_exists" >&6; }
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if UPC driver, 'xgupc' and 'gupc',  has been built" >&5
-$as_echo_n "checking if UPC driver, 'xgupc' and 'gupc',  has been built... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if UPC driver 'gupc' has been built" >&5
+$as_echo_n "checking if UPC driver 'gupc' has been built... " >&6; }
 if test "${upc_cv_driver_exists+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
@@ -3331,8 +3331,7 @@ else
   upc_cv_driver_exists=yes
   if test -n "$r"; then
     if test -d "$r"/gcc; then
-      if (test -f "$r"/gcc/xgupc && test -f "$r"/gcc/gupc) \
-          || (test -f "$r"/gcc/xgupc.exe && "$r"/gcc/gupc.exe); then
+      if (test -f "$r"/gcc/gupc && test -f "$r"/gcc/gupc); then
 	true
       else
 	upc_cv_driver_exists=no
@@ -4338,7 +4337,7 @@ if test "x$GCC" = "xyes"; then
 fi
 
 if echo "$CC" | grep '/xgcc ' >/dev/null 2>&1; then
-  UPC=`echo "$CC" | sed -e 's=/xgcc =/xgupc ='`
+  UPC=`echo "$CC" | sed -e 's=/xgcc =/gupc ='`
 else
   as_fn_error "Can't create UPC from CC because it doesn't contain the
   string '/xgcc '.  The value of CC is: \"$CC\"" "$LINENO" 5
@@ -11413,7 +11412,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11416 "configure"
+#line 11415 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11519,7 +11518,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11522 "configure"
+#line 11521 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14601,7 +14600,7 @@ GUPCR_PTS_THREAD_SIZE=_STR(__UPC_THREAD_SIZE__)
   GUPCR_PTS_PACKED_REP=1
 #endif
 _ACEOF
-eval `$UPC -DNO_GCC_UPC_LIB=1 -E conftest.upc | grep '^ *GUPCR_[A-Z0-9_]*='`
+eval `$UPC -fno-upc-pre-include -DNO_GCC_UPC_LIB=1 -E conftest.upc | grep '^ *GUPCR_[A-Z0-9_]*='`
 rm -f conftest.upc
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GUPCR_PTS_REP" >&5
 $as_echo "$GUPCR_PTS_REP" >&6; }

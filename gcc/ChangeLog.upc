@@ -1,3 +1,10 @@
+2012-05-04  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* testsuite/lib/upc.exp: Use gupc instead of xgupc driver.
+	Appropriate libraries and include files are added on the
+	command line to make it possible to compile with the driver
+	from the build tree.
+
 2012-04-29  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* config/rs6000/rs6000.c (rs6000_return_in_memory): Conform to

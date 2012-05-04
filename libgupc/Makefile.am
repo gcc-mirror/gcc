@@ -58,6 +58,7 @@ search_path =   $(addprefix $(top_srcdir)/config/, $(config_path)) \
 vpath % $(strip $(search_path))
 
 AM_CPPFLAGS += $(addprefix -I, $(search_path))
+AM_CPPFLAGS += $(addprefix -isystem, '.')
 AM_CFLAGS += $(XCFLAGS)
 AM_UPCFLAGS += $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)

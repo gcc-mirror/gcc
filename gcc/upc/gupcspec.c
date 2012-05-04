@@ -36,23 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* GUPC driver - derived from fortran/gfortranspec.c. */
 
-/* This code is used to build two drivers:
-     gupc  - installed compiler driver
-     xgupc - development tree compiler driver
-   
-   "xgupc" makes it possible to use the compiler from 
-   the development tree without the necessity to add additional
-   include and library switches.  The following switches are
-   added to the command line:
-  
-     -B path_to_compiler_gcc_directory (for cc1upc)
-     -isystem path_to_libgupc_source_include_directory (for gcc-upc.h)
-     -isystem path_to_libgupc_build_directory (for gcc-upc-lib.h)
-     -B path_to_libgupc_build_directory (for libgupc.spec)
-     -L path_to_libgupc_build_directory (for libgupc.a)
-   
-   The paths above are passed in by the Makefile in compile time.  */
-
 /* The original argument list and related info is copied here.  */
 static unsigned int gupc_xargc;
 static const struct cl_decoded_option *gupc_x_decoded_options;
@@ -162,22 +145,6 @@ match_suffix (const char *s, const char *suffix)
   return start && !strncmp (start, suffix, xlen);
 }
 
-/* Return the path of the library directory,
-   where libgupc can be found.  LIB_PATH will be defined
-   when the development version of the 'upc' command is
-   being built; use that path, and add the multilib
-   suffix if required.  */
-
-static const char *
-get_libgupc_path (const char *lib_path, const char *lib_suffix)
-{
-  const char *libgupc_path = lib_path;
-  if (lib_suffix && *lib_suffix && (strcmp (lib_suffix, ".") != 0))
-    libgupc_path = concat (libgupc_path, "/", lib_suffix, END_ARGS);
-  libgupc_path = concat (libgupc_path, "/libgupc", END_ARGS);
-  return libgupc_path;
-}
-
 void
 lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 		      unsigned int *in_decoded_options_count,
@@ -193,25 +160,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   int n_infiles = 0;
   int n_outfiles = 0;
   int pre_processed = 0;
-  const char *compiler_dir = 0;
-  const char *inc_dir = 0;
-  const char *lib_dir = 0;
-  const char *lib_multilib = 0;
 
   gupc_xargc = *in_decoded_options_count;
   gupc_x_decoded_options = decoded_options;
   gupc_newargc = 0;
   gupc_new_decoded_options = decoded_options;
-
-#ifdef COMPILER_DIR
-  compiler_dir = COMPILER_DIR;
-#endif
-#ifdef INC_PATH
-  inc_dir = INC_PATH;
-#endif
-#ifdef LIB_PATH
-  lib_dir = LIB_PATH;
-#endif
 
   /* First pass through the argument list. */
 
@@ -253,12 +206,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  pre_processed = 1;
 	  break;
 
-	/* Recognize -m32 option only. Add more once we start supporting
-   	   other multilibs. */
-	case OPT_m32:
-	  lib_multilib = "32";
-	  break;
-
 	case OPT_l:
 	  ++n_infiles;
 	  break;
@@ -290,26 +237,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Start with the compiler itself. */
   append_arg (&decoded_options[0]);
 
-  if (compiler_dir)
-    {
-      append_option (OPT_B, compiler_dir, 1);
-    }
-
-  if (inc_dir && !no_std_inc && !no_upc_pre_inc)
-    {
-      /* Add -isystem for gcc-upc.h */
-      append_option (OPT_isystem, inc_dir, 1);
-    }
-  /* Find the right libgupc library. */
-  if (lib_dir)
-    lib_dir = get_libgupc_path (lib_dir, lib_multilib);
-
-  if (lib_dir && !no_std_inc && !no_upc_pre_inc)
-    {
-      /* Add -isystem for gcc-upc-lib.h */
-      append_option (OPT_isystem, lib_dir, 1);
-    }
-
   /* If there are no input files, no need for the library.  */
   if (n_infiles == 0)
     invoke_linker = 0;
@@ -335,12 +262,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	    || (pre_processed && match_suffix (decoded_options[i].arg, ".i"));
 	  const int is_upc_file =
 	    match_suffix (decoded_options[i].arg, ".upc")
-	    || match_suffix (decoded_options[i].arg, ".uph") || (pre_processed
-								 &&
-								 match_suffix
-								 (decoded_options
-								  [i].arg,
-								  ".upci"));
+	    || match_suffix (decoded_options[i].arg, ".uph")
+	    || (pre_processed && match_suffix (decoded_options [i].arg,
+	       ".upci"));
 	  if (is_c_file && !is_x_upc_in_effect && !is_x_c_in_effect)
 	    {
 	      /* Assume that .c files are in fact UPC source files */
@@ -361,13 +285,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       /* The -fupc-link switch triggers per-target libgupc compiler specs
          via %:include(libgupc.spec).  */
       append_option (OPT_fupc_link, NULL, 1);
-      if (lib_dir)
-	{
-	  /* Add -B option for libgupc.spec.  */
-	  append_option (OPT_B, lib_dir, 1);
-	  /* Add -L option libgupc.a.  */
-	  append_option (OPT_L, concat (lib_dir, "/.libs", END_ARGS), 1);
-	}
     }
 
   if (verbose && gupc_new_decoded_options != gupc_x_decoded_options)

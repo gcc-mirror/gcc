@@ -1,5 +1,5 @@
 /* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+   2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
@@ -108,8 +108,8 @@ extern shared void *upc_all_alloc (size_t, size_t);
 extern shared void *upc_local_alloc (size_t, size_t);
 extern shared void *upc_alloc (size_t);
 extern void upc_free (shared void *);
-extern upc_lock_t *upc_global_lock_alloc ();
-extern upc_lock_t *upc_all_lock_alloc ();
+extern upc_lock_t *upc_global_lock_alloc (void);
+extern upc_lock_t *upc_all_lock_alloc (void);
 extern void upc_lock (upc_lock_t *);
 extern int upc_lock_attempt (upc_lock_t *);
 extern void upc_unlock (upc_lock_t *);
