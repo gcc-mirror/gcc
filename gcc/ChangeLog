@@ -1,3 +1,15 @@
+2012-05-04  Andrew Pinski  <apinski@cavium.com>
+
+	* expr.c (get_def_for_expr_class): New function.
+	(convert_tree_comp_to_rtx): New function.
+	(expand_cond_expr_using_cmove): New function.
+	(expand_expr_real_2 <case COND_EXPR>): Call
+	expand_cond_expr_using_cmove first and return if it succeeds.
+	Remove the check for HAVE_conditional_move since we should have
+	already converted it to a conditional move.
+	* config/i386/i386.c (ix86_expand_int_movcc): Disallow comparison
+	modes of DImode for 32bits and TImode.
+
 2012-05-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR other/29442
