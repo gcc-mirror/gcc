@@ -1659,7 +1659,6 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	  {
 	    unsigned int new_val_id;
 	    pre_expr constant;
-	    bool converted = false;
 
 	    tree result = vn_reference_lookup_pieces (newvuse, ref->set,
 						      ref->type,
@@ -1668,12 +1667,29 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    if (result)
 	      VEC_free (vn_reference_op_s, heap, newoperands);
 
+	    /* We can always insert constants, so if we have a partial
+	       redundant constant load of another type try to translate it
+	       to a constant of appropriate type.  */
+	    if (result && is_gimple_min_invariant (result))
+	      {
+		tree tem = result;
+		if (!useless_type_conversion_p (ref->type, TREE_TYPE (result)))
+		  {
+		    tem = fold_unary (VIEW_CONVERT_EXPR, ref->type, result);
+		    if (tem && !is_gimple_min_invariant (tem))
+		      tem = NULL_TREE;
+		  }
+		if (tem)
+		  return get_or_alloc_expr_for_constant (tem);
+	      }
+
+	    /* If we'd have to convert things we would need to validate
+	       if we can insert the translated expression.  So fail
+	       here for now - we cannot insert an alias with a different
+	       type in the VN tables either, as that would assert.  */
 	    if (result
 		&& !useless_type_conversion_p (ref->type, TREE_TYPE (result)))
-	      {
-		result = fold_build1 (VIEW_CONVERT_EXPR, ref->type, result);
-		converted = true;
-	      }
+	      return NULL;
 	    else if (!result && newref
 		     && !useless_type_conversion_p (ref->type, newref->type))
 	      {
@@ -1681,61 +1697,11 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		return NULL;
 	      }
 
-	    if (result && is_gimple_min_invariant (result))
-	      {
-	        gcc_assert (!newoperands);
-	        return get_or_alloc_expr_for_constant (result);
-	      }
-
 	    expr = (pre_expr) pool_alloc (pre_expr_pool);
 	    expr->kind = REFERENCE;
 	    expr->id = 0;
 
-	    if (converted)
-	      {
-		vn_nary_op_t nary;
-		tree nresult;
-
-		gcc_assert (CONVERT_EXPR_P (result)
-			    || TREE_CODE (result) == VIEW_CONVERT_EXPR);
-
-		nresult = vn_nary_op_lookup_pieces (1, TREE_CODE (result),
-						    TREE_TYPE (result),
-						    &TREE_OPERAND (result, 0),
-						    &nary);
-		if (nresult && is_gimple_min_invariant (nresult))
-		  return get_or_alloc_expr_for_constant (nresult);
-
-		expr->kind = NARY;
-		if (nary)
-		  {
-		    PRE_EXPR_NARY (expr) = nary;
-		    constant = fully_constant_expression (expr);
-		    if (constant != expr)
-		      return constant;
-
-		    new_val_id = nary->value_id;
-		    get_or_alloc_expression_id (expr);
-		  }
-		else
-		  {
-		    new_val_id = get_next_value_id ();
-		    VEC_safe_grow_cleared (bitmap_set_t, heap,
-					   value_expressions,
-					   get_max_value_id() + 1);
-		    nary = vn_nary_op_insert_pieces (1, TREE_CODE (result),
-						     TREE_TYPE (result),
-						     &TREE_OPERAND (result, 0),
-						     NULL_TREE,
-						     new_val_id);
-		    PRE_EXPR_NARY (expr) = nary;
-		    constant = fully_constant_expression (expr);
-		    if (constant != expr)
-		      return constant;
-		    get_or_alloc_expression_id (expr);
-		  }
-	      }
-	    else if (newref)
+	    if (newref)
 	      {
 		PRE_EXPR_REFERENCE (expr) = newref;
 		constant = fully_constant_expression (expr);

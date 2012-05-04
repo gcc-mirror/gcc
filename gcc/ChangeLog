@@ -1,5 +1,11 @@
 2012-05-04  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/53168
+	* tree-ssa-pre.c (phi_translate_1): Only handle type-punned
+	memory reads when the result is a constant we can pun.
+
+2012-05-04  Richard Guenther  <rguenther@suse.de>
+
 	* common.opt (flto-report): Do not mark as Optimization.
 
 2012-05-04  Eric Botcazou  <ebotcazou@adacore.com>
