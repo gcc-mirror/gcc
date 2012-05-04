@@ -1,3 +1,9 @@
+2012-05-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/24985
+	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc): Show caret
+	for macro expansion.
+
 2012-05-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* flags.h (flag_permissive): Do not declare.

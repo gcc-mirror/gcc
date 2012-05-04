@@ -187,30 +187,30 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
                                     LRK_MACRO_DEFINITION_LOCATION, NULL);
 
         saved_kind = diagnostic->kind;
-        saved_prefix = context->printer->prefix;
+        saved_prefix = pp_get_prefix (context->printer);
         saved_location = diagnostic->location;
 
         diagnostic->kind = DK_NOTE;
         diagnostic->location = resolved_def_loc;
-        pp_base_set_prefix (context->printer,
-                            diagnostic_build_prefix (context,
-                                                     diagnostic));
+        pp_set_prefix (context->printer,
+                       diagnostic_build_prefix (context, diagnostic));
         pp_newline (context->printer);
         pp_printf (context->printer, "in expansion of macro '%s'",
                    linemap_map_get_macro_name (iter->map));
         pp_destroy_prefix (context->printer);
+        diagnostic_show_locus (context, diagnostic);
 
         diagnostic->location = resolved_exp_loc;
-        pp_base_set_prefix (context->printer,
-                            diagnostic_build_prefix (context,
-                                                     diagnostic));
+        pp_set_prefix (context->printer,
+                       diagnostic_build_prefix (context, diagnostic));
         pp_newline (context->printer);
-        pp_printf (context->printer, "expanded from here");
+        pp_string (context->printer, "expanded from here");
         pp_destroy_prefix (context->printer);
+        diagnostic_show_locus (context, diagnostic);
 
         diagnostic->kind = saved_kind;
         diagnostic->location = saved_location;
-        context->printer->prefix = saved_prefix;
+        pp_set_prefix (context->printer, saved_prefix);
       }
 
   VEC_free (loc_map_pair, heap, loc_vec);
