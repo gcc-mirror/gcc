@@ -18826,6 +18826,11 @@ ix86_expand_int_movcc (rtx operands[])
   rtx op0 = XEXP (operands[1], 0);
   rtx op1 = XEXP (operands[1], 1);
 
+  if (GET_MODE (op0) == TImode
+      || (GET_MODE (op0) == DImode
+	  && !TARGET_64BIT))
+    return false;
+
   start_sequence ();
   compare_op = ix86_expand_compare (code, op0, op1);
   compare_seq = get_insns ();
