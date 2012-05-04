@@ -1,3 +1,11 @@
+2012-05-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2012-05-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/53199
+	* gcc.target/powwerpc/pr53199.c: New file.
+
 2012-05-03  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
