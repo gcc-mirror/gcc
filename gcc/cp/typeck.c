@@ -4081,7 +4081,8 @@ cp_build_binary_op (location_t location,
 	  if (TREE_CODE (op0) == ADDR_EXPR
 	      && decl_with_nonnull_addr_p (TREE_OPERAND (op0, 0)))
 	    {
-	      if (complain & tf_warning)
+	      if ((complain & tf_warning)
+		  && c_inhibit_evaluation_warnings == 0)
 		warning (OPT_Waddress, "the address of %qD will never be NULL",
 			 TREE_OPERAND (op0, 0));
 	    }
@@ -4093,7 +4094,8 @@ cp_build_binary_op (location_t location,
 	  if (TREE_CODE (op1) == ADDR_EXPR 
 	      && decl_with_nonnull_addr_p (TREE_OPERAND (op1, 0)))
 	    {
-	      if (complain & tf_warning)
+	      if ((complain & tf_warning)
+		  && c_inhibit_evaluation_warnings == 0)
 		warning (OPT_Waddress, "the address of %qD will never be NULL",
 			 TREE_OPERAND (op1, 0));
 	    }

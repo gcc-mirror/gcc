@@ -1,3 +1,13 @@
+2012-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53166
+	* pt.c (instantiate_class_template_1): Increase / decrease
+	c_inhibit_evaluation_warnings around the tsubst_expr call
+	for STATIC_ASSERT_CONDITION.
+	(tsubst_expr, case STATIC_ASSERT): Likewise.
+	* typeck.c (cp_build_binary_op, case EQ_EXPR/NE_EXPR): Check
+	c_inhibit_evaluation_warnings in the OPT_Waddress warnings.
+
 2012-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53186
