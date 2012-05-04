@@ -1,5 +1,14 @@
 2012-05-04  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/50602
+	* lto-wrapper.c (merge_and_complain): Complain about mismatches
+	of -freg-struct-return and -fpcc-struct-return.
+	(run_gcc): Pass through -freg-struct-return and -fpcc-struct-return
+	from the input file options and ignore those from the link
+	command line.
+
+2012-05-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53168
 	* tree-ssa-pre.c (phi_translate_1): Only handle type-punned
 	memory reads when the result is a constant we can pun.
