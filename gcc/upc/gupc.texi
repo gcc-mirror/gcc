@@ -262,12 +262,8 @@ Instrument functions calls using GASP tool support. This option implies
 @subsection Optimization Options
 
 @table @gcctabopt
-@item -O0, -O1, -O2
-Specify the optimization level. This is a standard GCC option that is
-especially important for UPC because it enables instruction scheduling,
-which increases performance dramatically for distributed data access.
-Optimizations that involve a space-speed trade off, such as loop unrolling
-and function inlining, are not performed.  Nearly all other supported
+@item -O0, -O1, -O2, -O3
+Specify the optimization level.  Nearly all GCC supported
 optimizations are performed.
 @end table
 

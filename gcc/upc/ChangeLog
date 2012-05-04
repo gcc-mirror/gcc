@@ -1,5 +1,10 @@
 2012-05-04  Nenad Vukicevic  <nenad@intrepid.com>
 
+	* gupc.texi: Simplify the description of the optimization
+	options.
+
+2012-05-04  Nenad Vukicevic  <nenad@intrepid.com>
+
 	* Make-lang.in: Remove build of xgupc.
 	* gupcspecs.c (get_libgupc_path): Delete.
 	(lang_specific_driver): Remove support for building xgupc.
