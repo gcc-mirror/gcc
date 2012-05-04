@@ -1,3 +1,9 @@
+2012-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/48496
+	* recog.c (constrain_operands): If extra constraints are present, also
+	accept pseudo-registers with equivalent memory locations during reload.
+
 2012-05-04  Olivier Hainque  <hainque@adacore.com>
 
 	* collect2.c (may_unlink_output_file): New global.

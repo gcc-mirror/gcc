@@ -1,3 +1,8 @@
+2012-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/ia64/pr48496.c: New test.
+	* gcc.target/ia64/pr52657.c: Likewise.
+
 2012-05-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/51712
