@@ -1,3 +1,8 @@
+2012-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53166
+	* g++.dg/cpp0x/static_assert7.C: New.
+
 2012-05-04  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	PR tree-optimization/52633

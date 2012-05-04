@@ -8950,10 +8950,15 @@ instantiate_class_template_1 (tree type)
 	      /* Build new TYPE_FIELDS.  */
               if (TREE_CODE (t) == STATIC_ASSERT)
                 {
-                  tree condition = 
-                    tsubst_expr (STATIC_ASSERT_CONDITION (t), args, 
-                                 tf_warning_or_error, NULL_TREE,
-                                 /*integral_constant_expression_p=*/true);
+                  tree condition;
+ 
+		  ++c_inhibit_evaluation_warnings;
+		  condition =
+		    tsubst_expr (STATIC_ASSERT_CONDITION (t), args, 
+				 tf_warning_or_error, NULL_TREE,
+				 /*integral_constant_expression_p=*/true);
+		  --c_inhibit_evaluation_warnings;
+
                   finish_static_assert (condition,
                                         STATIC_ASSERT_MESSAGE (t), 
                                         STATIC_ASSERT_SOURCE_LOCATION (t),
@@ -13110,11 +13115,16 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case STATIC_ASSERT:
       {
-        tree condition = 
+	tree condition;
+
+	++c_inhibit_evaluation_warnings;
+        condition = 
           tsubst_expr (STATIC_ASSERT_CONDITION (t), 
                        args,
                        complain, in_decl,
                        /*integral_constant_expression_p=*/true);
+	--c_inhibit_evaluation_warnings;
+
         finish_static_assert (condition,
                               STATIC_ASSERT_MESSAGE (t),
                               STATIC_ASSERT_SOURCE_LOCATION (t),
