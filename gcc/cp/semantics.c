@@ -7757,18 +7757,16 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
     case NOP_EXPR:
       {
 	tree oldop = TREE_OPERAND (t, 0);
-	tree op = oldop;
-	tree to = TREE_TYPE (t);
-	op = cxx_eval_constant_expression (call, TREE_OPERAND (t, 0),
-					   allow_non_constant, addr,
-					   non_constant_p);
+	tree op = cxx_eval_constant_expression (call, oldop,
+						allow_non_constant, addr,
+						non_constant_p);
 	if (*non_constant_p)
 	  return t;
 	if (op == oldop)
 	  /* We didn't fold at the top so we could check for ptr-int
 	     conversion.  */
 	  return fold (t);
-	r = fold_build1 (TREE_CODE (t), to, op);
+	r = fold_build1 (TREE_CODE (t), TREE_TYPE (t), op);
 	/* Conversion of an out-of-range value has implementation-defined
 	   behavior; the language considers it different from arithmetic
 	   overflow, which is undefined.  */

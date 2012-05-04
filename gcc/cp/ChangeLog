@@ -1,5 +1,9 @@
 2012-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* semantics.c (cxx_eval_constant_expression, case CONVERT_EXPR): Tidy.
+
+2012-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/53166
 	* pt.c (instantiate_class_template_1): Increase / decrease
 	c_inhibit_evaluation_warnings around the tsubst_expr call
