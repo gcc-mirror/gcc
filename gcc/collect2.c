@@ -237,6 +237,12 @@ static const char *target_system_root = TARGET_SYSTEM_ROOT;
 static const char *target_system_root = "";
 #endif
 
+/* Whether we may unlink the output file, which should be set as soon as we
+   know we have successfully produced it.  This is typically useful to prevent
+   blindly attempting to unlink a read-only output that the target linker
+   would leave untouched.  */
+bool may_unlink_output_file = false;
+
 /* Structure to hold all the directories in which to search for files to
    execute.  */
 
@@ -2095,15 +2101,22 @@ fork_execute (const char *prog, char **argv)
   do_wait (prog, pex);
 }
 
-/* Unlink a file unless we are debugging.  */
+/* Unlink FILE unless we are debugging or this is the output_file
+   and we may not unlink it.  */
 
 static void
 maybe_unlink (const char *file)
 {
-  if (!debug)
-    unlink_if_ordinary (file);
-  else
-    notice ("[Leaving %s]\n", file);
+  if (debug)
+    {
+      notice ("[Leaving %s]\n", file);
+      return;
+    }
+
+  if (file == output_file && !may_unlink_output_file)
+    return;
+
+  unlink_if_ordinary (file);
 }
 
 /* Call maybe_unlink on the NULL-terminated list, FILE_LIST.  */

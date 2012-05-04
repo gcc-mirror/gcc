@@ -1,5 +1,12 @@
 2012-05-04  Olivier Hainque  <hainque@adacore.com>
 
+	* collect2.c (may_unlink_output_file): New global.
+	(maybe_unlink): Honor it.
+	* collect2.h: Add extern for it.
+	* tlink.c (do_tlink): Set it to true if the link succeeded.
+
+2012-05-04  Olivier Hainque  <hainque@adacore.com>
+
 	* gcc.c (eval_spec_function): Finalize/restore the current string
 	obstack state as part of the context push/pop operations.
 
