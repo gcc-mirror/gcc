@@ -126,18 +126,22 @@ Parse::identifier_list(Typed_identifier_list* til)
 
 // ExpressionList = Expression { "," Expression } .
 
+// If MAY_BE_COMPOSITE_LIT is true, an expression may be a composite
+// literal.
+
 // If MAY_BE_SINK is true, the expressions in the list may be "_".
 
 Expression_list*
-Parse::expression_list(Expression* first, bool may_be_sink)
+Parse::expression_list(Expression* first, bool may_be_sink,
+		       bool may_be_composite_lit)
 {
   Expression_list* ret = new Expression_list();
   if (first != NULL)
     ret->push_back(first);
   while (true)
     {
-      ret->push_back(this->expression(PRECEDENCE_NORMAL, may_be_sink, true,
-				      NULL));
+      ret->push_back(this->expression(PRECEDENCE_NORMAL, may_be_sink,
+				      may_be_composite_lit, NULL));
 
       const Token* token = this->peek_token();
       if (!token->is_op(OPERATOR_COMMA))
@@ -1425,7 +1429,7 @@ Parse::const_spec(Type** last_type, Expression_list** last_expr_list)
   else
     {
       this->advance_token();
-      expr_list = this->expression_list(NULL, false);
+      expr_list = this->expression_list(NULL, false, true);
       *last_type = type;
       if (*last_expr_list != NULL)
 	delete *last_expr_list;
@@ -1575,13 +1579,13 @@ Parse::var_spec(void*)
       if (this->peek_token()->is_op(OPERATOR_EQ))
 	{
 	  this->advance_token();
-	  init = this->expression_list(NULL, false);
+	  init = this->expression_list(NULL, false, true);
 	}
     }
   else
     {
       this->advance_token();
-      init = this->expression_list(NULL, false);
+      init = this->expression_list(NULL, false, true);
     }
 
   this->init_vars(&til, type, init, false, location);
@@ -1988,6 +1992,9 @@ Parse::create_dummy_global(Type* type, Expression* init,
 // In order to support both "a, b := 1, 0" and "a, b = 1, 0" we accept
 // tuple assignments here as well.
 
+// If MAY_BE_COMPOSITE_LIT is true, the expression on the right hand
+// side may be a composite literal.
+
 // If P_RANGE_CLAUSE is not NULL, then this will recognize a
 // RangeClause.
 
@@ -1997,6 +2004,7 @@ Parse::create_dummy_global(Type* type, Expression* init,
 void
 Parse::simple_var_decl_or_assignment(const std::string& name,
 				     Location location,
+				     bool may_be_composite_lit,
 				     Range_clause* p_range_clause,
 				     Type_switch* p_type_switch)
 {
@@ -2053,14 +2061,15 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 	    exprs->push_back(this->id_to_expression(p->name(),
 						    p->location()));
 
-	  Expression_list* more_exprs = this->expression_list(NULL, true);
+	  Expression_list* more_exprs =
+	    this->expression_list(NULL, true, may_be_composite_lit);
 	  for (Expression_list::const_iterator p = more_exprs->begin();
 	       p != more_exprs->end();
 	       ++p)
 	    exprs->push_back(*p);
 	  delete more_exprs;
 
-	  this->tuple_assignment(exprs, p_range_clause);
+	  this->tuple_assignment(exprs, may_be_composite_lit, p_range_clause);
 	  return;
 	}
     }
@@ -2076,11 +2085,12 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 
   Expression_list* init;
   if (p_type_switch == NULL)
-    init = this->expression_list(NULL, false);
+    init = this->expression_list(NULL, false, may_be_composite_lit);
   else
     {
       bool is_type_switch = false;
-      Expression* expr = this->expression(PRECEDENCE_NORMAL, false, true,
+      Expression* expr = this->expression(PRECEDENCE_NORMAL, false,
+					  may_be_composite_lit,
 					  &is_type_switch);
       if (is_type_switch)
 	{
@@ -2099,7 +2109,7 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
       else
 	{
 	  this->advance_token();
-	  init = this->expression_list(expr, false);
+	  init = this->expression_list(expr, false, may_be_composite_lit);
 	}
     }
 
@@ -3065,7 +3075,7 @@ Parse::call(Expression* func)
   const Token* token = this->advance_token();
   if (!token->is_op(OPERATOR_RPAREN))
     {
-      args = this->expression_list(NULL, false);
+      args = this->expression_list(NULL, false, true);
       token = this->peek_token();
       if (token->is_op(OPERATOR_ELLIPSIS))
 	{
@@ -3578,6 +3588,7 @@ Parse::simple_stat(bool may_be_composite_lit, bool* return_exp,
 	{
 	  identifier = this->gogo_->pack_hidden_name(identifier, is_exported);
 	  this->simple_var_decl_or_assignment(identifier, location,
+					      may_be_composite_lit,
 					      p_range_clause,
 					      (token->is_op(OPERATOR_COLONEQ)
 					       ? p_type_switch
@@ -3613,7 +3624,7 @@ Parse::simple_stat(bool may_be_composite_lit, bool* return_exp,
     this->inc_dec_stat(this->verify_not_sink(exp));
   else if (token->is_op(OPERATOR_COMMA)
 	   || token->is_op(OPERATOR_EQ))
-    this->assignment(exp, p_range_clause);
+    this->assignment(exp, may_be_composite_lit, p_range_clause);
   else if (token->is_op(OPERATOR_PLUSEQ)
 	   || token->is_op(OPERATOR_MINUSEQ)
 	   || token->is_op(OPERATOR_OREQ)
@@ -3625,7 +3636,8 @@ Parse::simple_stat(bool may_be_composite_lit, bool* return_exp,
 	   || token->is_op(OPERATOR_RSHIFTEQ)
 	   || token->is_op(OPERATOR_ANDEQ)
 	   || token->is_op(OPERATOR_BITCLEAREQ))
-    this->assignment(this->verify_not_sink(exp), p_range_clause);
+    this->assignment(this->verify_not_sink(exp), may_be_composite_lit,
+		     p_range_clause);
   else if (return_exp != NULL)
     return this->verify_not_sink(exp);
   else
@@ -3731,11 +3743,15 @@ Parse::inc_dec_stat(Expression* exp)
 
 // EXP is an expression that we have already parsed.
 
+// If MAY_BE_COMPOSITE_LIT is true, an expression on the right hand
+// side may be a composite literal.
+
 // If RANGE_CLAUSE is not NULL, then this will recognize a
 // RangeClause.
 
 void
-Parse::assignment(Expression* expr, Range_clause* p_range_clause)
+Parse::assignment(Expression* expr, bool may_be_composite_lit,
+		  Range_clause* p_range_clause)
 {
   Expression_list* vars;
   if (!this->peek_token()->is_op(OPERATOR_COMMA))
@@ -3746,20 +3762,24 @@ Parse::assignment(Expression* expr, Range_clause* p_range_clause)
   else
     {
       this->advance_token();
-      vars = this->expression_list(expr, true);
+      vars = this->expression_list(expr, true, may_be_composite_lit);
     }
 
-  this->tuple_assignment(vars, p_range_clause);
+  this->tuple_assignment(vars, may_be_composite_lit, p_range_clause);
 }
 
 // An assignment statement.  LHS is the list of expressions which
 // appear on the left hand side.
 
+// If MAY_BE_COMPOSITE_LIT is true, an expression on the right hand
+// side may be a composite literal.
+
 // If RANGE_CLAUSE is not NULL, then this will recognize a
 // RangeClause.
 
 void
-Parse::tuple_assignment(Expression_list* lhs, Range_clause* p_range_clause)
+Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
+			Range_clause* p_range_clause)
 {
   const Token* token = this->peek_token();
   if (!token->is_op(OPERATOR_EQ)
@@ -3791,7 +3811,8 @@ Parse::tuple_assignment(Expression_list* lhs, Range_clause* p_range_clause)
       return;
     }
 
-  Expression_list* vals = this->expression_list(NULL, false);
+  Expression_list* vals = this->expression_list(NULL, false,
+						may_be_composite_lit);
 
   // We've parsed everything; check for errors.
   if (lhs == NULL || vals == NULL)
@@ -3960,7 +3981,7 @@ Parse::return_stat()
   this->advance_token();
   Expression_list* vals = NULL;
   if (this->expression_may_start_here())
-    vals = this->expression_list(NULL, false);
+    vals = this->expression_list(NULL, false, true);
   this->gogo_->add_statement(Statement::make_return_statement(vals, location));
 
   if (vals == NULL
@@ -4321,7 +4342,7 @@ Parse::expr_switch_case(bool* is_default)
   if (token->is_keyword(KEYWORD_CASE))
     {
       this->advance_token();
-      return this->expression_list(NULL, false);
+      return this->expression_list(NULL, false, true);
     }
   else if (token->is_keyword(KEYWORD_DEFAULT))
     {
