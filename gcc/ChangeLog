@@ -1,5 +1,15 @@
 2012-05-04  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
+	PR tree-optimization/52633
+	* tree-vect-patterns.c (vect_vect_recog_func_ptrs): Swap order of
+	vect_recog_widen_shift_pattern and vect_recog_over_widening_pattern.
+	(vect_recog_over_widening_pattern): Remove handling of code that was
+	already detected as over-widening pattern.  Remove special handling
+	of "unsigned" cases.  Instead, support general case of conversion
+	of the shift result to another type.
+
+2012-05-04  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
 	* tree-vect-patterns.c (vect_single_imm_use): New function.
 	(vect_recog_widen_mult_pattern): Use it instead of open-coding loop.
 	(vect_recog_over_widening_pattern): Likewise.
