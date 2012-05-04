@@ -1,3 +1,7 @@
+2012-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* common.opt (flto-report): Do not mark as Optimization.
+
 2012-05-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/48496
