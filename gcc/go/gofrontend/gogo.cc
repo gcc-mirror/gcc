@@ -4946,11 +4946,6 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
       break;
 
     case Named_object::NAMED_OBJECT_PACKAGE:
-      if (new_object->is_package()
-	  && (old_object->package_value()->name()
-	      == new_object->package_value()->name()))
-	return old_object;
-
       break;
     }
 
