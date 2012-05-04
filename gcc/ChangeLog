@@ -1,3 +1,8 @@
+2012-05-04  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.c (eval_spec_function): Finalize/restore the current string
+	obstack state as part of the context push/pop operations.
+
 2012-05-04  Bin Cheng  <bin.cheng@arm.com>
 
 	PR rtl-optimization/52804
