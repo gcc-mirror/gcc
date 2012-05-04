@@ -1,3 +1,9 @@
+2012-05-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53111
+	* resolve.c (resolve_fl_derived): Fix -std=f95
+	diagnostic for generic vs. DT names.
+
 2012-05-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52864
