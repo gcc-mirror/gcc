@@ -25,7 +25,7 @@ Language
 LTO
 
 fltrans
-LTO Report Var(flag_ltrans) Optimization
+LTO Report Var(flag_ltrans)
 Run the link-time optimizer in local transformation (LTRANS) mode.
 
 fltrans-output-list=
@@ -33,7 +33,7 @@ LTO Joined Var(ltrans_output_list)
 Specify a file to which a list of files output by LTRANS is written.
 
 fwpa
-LTO Driver Report Var(flag_wpa) Optimization
+LTO Driver Report Var(flag_wpa)
 Run the link-time optimizer in whole program analysis (WPA) mode.
 
 fresolution=
