@@ -1,7 +1,13 @@
+2012-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* lang.opt (fwpa): Do not mark as Optimization.
+	(fltrans): Likewise.
+
 2012-04-30  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_main): Use compile ().
-	* lto-partition.c (partition_cgraph_node_p): Use symtab_used_from_object_file_p.
+	* lto-partition.c (partition_cgraph_node_p): Use
+	symtab_used_from_object_file_p.
 	(partition_varpool_node_p): Likewise.
 
 2012-04-20  Jan Hubicka  <jh@suse.cz>
