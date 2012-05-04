@@ -859,4 +859,10 @@ do_tlink (char **ld_argv, char **object_lst ATTRIBUTE_UNUSED)
       error ("ld returned %d exit status", exit);
       collect_exit (exit);
     }
+  else
+    {
+      /* We have just successfully produced an output file, so assume that we
+	 may unlink it if need be for now on.  */ 
+      may_unlink_output_file = true;
+    }
 }
