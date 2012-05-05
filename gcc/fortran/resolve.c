@@ -11991,6 +11991,8 @@ resolve_fl_derived (gfc_symbol *sym)
   if (!sym->attr.is_class)
     gfc_find_symbol (sym->name, sym->ns, 0, &gen_dt);
   if (gen_dt && gen_dt->generic && gen_dt->generic->next
+      && (!gen_dt->generic->sym->attr.use_assoc
+	  || gen_dt->generic->sym->module != gen_dt->generic->next->sym->module)
       && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Generic name '%s' of "
 			 "function '%s' at %L being the same name as derived "
 			 "type at %L", sym->name,
