@@ -584,10 +584,6 @@ iexport_data_proto(filename);
 #define gfc_alloca(x)  __builtin_alloca(x)
 
 
-/* Directory for creating temporary files.  Only used when none of the
-   following environment variables exist: GFORTRAN_TMPDIR, TMP and TEMP.  */
-#define DEFAULT_TEMPDIR "/tmp"
-
 /* The default value of record length for preconnected units is defined
    here. This value can be overriden by an environment variable.
    Default value is 1 Gb.  */
@@ -775,6 +771,18 @@ internal_proto(show_variables);
 
 unit_convert get_unformatted_convert (int);
 internal_proto(get_unformatted_convert);
+
+/* Secure getenv() which returns NULL if running as SUID/SGID.  */
+#ifdef HAVE___SECURE_GETENV
+#define secure_getenv __secure_getenv
+#elif defined(HAVE_GETUID) && defined(HAVE_GETEUID) \
+  && defined(HAVE_GETGID) && defined(HAVE_GETEGID)
+#define FALLBACK_SECURE_GETENV
+extern char *secure_getenv (const char *);
+internal_proto(secure_getenv);
+#else
+#define secure_getenv getenv
+#endif
 
 /* string.c */
 
