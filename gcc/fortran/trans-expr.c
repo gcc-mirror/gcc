@@ -147,11 +147,25 @@ gfc_vtable_copy_get (tree decl)
 #undef VTABLE_COPY_FIELD
 
 
+/* Obtain the vptr of the last class reference in an expression.  */
+
+tree
+gfc_get_vptr_from_expr (tree expr)
+{
+  tree tmp = expr;
+  while (tmp && !GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
+    tmp = TREE_OPERAND (tmp, 0);
+  tmp = gfc_class_vptr_get (tmp);
+  return tmp;
+}
+ 
+
 /* Takes a derived type expression and returns the address of a temporary
-   class object of the 'declared' type.  */ 
-static void
+   class object of the 'declared' type.  If vptr is not NULL, this is
+   used for the temporary class object.  */ 
+void
 gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
-			   gfc_typespec class_ts)
+			   gfc_typespec class_ts, tree vptr)
 {
   gfc_symbol *vtab;
   gfc_ss *ss;
@@ -167,11 +181,19 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
   /* Set the vptr.  */
   ctree =  gfc_class_vptr_get (var);
 
-  /* Remember the vtab corresponds to the derived type
-     not to the class declared type.  */
-  vtab = gfc_find_derived_vtab (e->ts.u.derived);
-  gcc_assert (vtab);
-  tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
+  if (vptr != NULL_TREE)
+    {
+      /* Use the dynamic vptr.  */
+      tmp = vptr;
+    }
+  else
+    {
+      /* In this case the vtab corresponds to the derived type and the
+	 vptr must point to it.  */
+      vtab = gfc_find_derived_vtab (e->ts.u.derived);
+      gcc_assert (vtab);
+      tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
+    }
   gfc_add_modify (&parmse->pre, ctree,
 		  fold_convert (TREE_TYPE (ctree), tmp));
 
@@ -3531,7 +3553,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  /* The derived type needs to be converted to a temporary
 	     CLASS object.  */
 	  gfc_init_se (&parmse, se);
-	  gfc_conv_derived_to_class (&parmse, e, fsym->ts);
+	  gfc_conv_derived_to_class (&parmse, e, fsym->ts, NULL);
 	}
       else if (se->ss && se->ss->info->useflags)
 	{

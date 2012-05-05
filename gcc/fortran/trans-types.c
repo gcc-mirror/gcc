@@ -1106,6 +1106,9 @@ gfc_typenode_for_spec (gfc_typespec * spec)
     case BT_CLASS:
       basetype = gfc_get_derived_type (spec->u.derived);
 
+      if (spec->type == BT_CLASS)
+	GFC_CLASS_TYPE_P (basetype) = 1;
+
       /* If we're dealing with either C_PTR or C_FUNPTR, we modified the
          type and kind to fit a (void *) and the basetype returned was a
          ptr_type_node.  We need to pass up this new information to the

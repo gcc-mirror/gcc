@@ -1140,6 +1140,10 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
   gfc_expr *e;
   tree tmp;
   bool class_target;
+  tree desc;
+  tree offset;
+  tree dim;
+  int n;
 
   gcc_assert (sym->assoc);
   e = sym->assoc->target;
@@ -1191,8 +1195,9 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 			    gfc_finish_block (&se.post));
     }
 
-  /* CLASS arrays just need the descriptor to be directly assigned.  */
-  else if (class_target && sym->attr.dimension)
+  /* Derived type temporaries, arising from TYPE IS, just need the
+     descriptor of class arrays to be assigned directly.  */
+  else if (class_target && sym->ts.type == BT_DERIVED && sym->attr.dimension)
     {
       gfc_se se;
 
@@ -1217,7 +1222,47 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gcc_assert (!sym->attr.dimension);
 
       gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, e);
+
+      /* Class associate-names come this way because they are
+	 unconditionally associate pointers and the symbol is scalar.  */
+      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.dimension)
+	{
+	  /* For a class array we need a descriptor for the selector.  */
+	  gfc_conv_expr_descriptor (&se, e, gfc_walk_expr (e));
+
+	  /* Obtain a temporary class container for the result.  */ 
+	  gfc_conv_class_to_class (&se, e, sym->ts, false);
+	  se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
+
+	  /* Set the offset.  */
+	  desc = gfc_class_data_get (se.expr);
+	  offset = gfc_index_zero_node;
+	  for (n = 0; n < e->rank; n++)
+	    {
+	      dim = gfc_rank_cst[n];
+	      tmp = fold_build2_loc (input_location, MULT_EXPR,
+				     gfc_array_index_type,
+				     gfc_conv_descriptor_stride_get (desc, dim),
+				     gfc_conv_descriptor_lbound_get (desc, dim));
+	      offset = fold_build2_loc (input_location, MINUS_EXPR,
+				        gfc_array_index_type,
+				        offset, tmp);
+	    }
+	  gfc_conv_descriptor_offset_set (&se.pre, desc, offset);
+	}
+      else if (sym->ts.type == BT_CLASS && e->ts.type == BT_CLASS
+	       && CLASS_DATA (e)->attr.dimension)
+	{
+	  /* This is bound to be a class array element.  */
+	  gfc_conv_expr_reference (&se, e);
+	  /* Get the _vptr component of the class object.  */ 
+	  tmp = gfc_get_vptr_from_expr (se.expr);
+	  /* Obtain a temporary class container for the result.  */
+	  gfc_conv_derived_to_class (&se, e, sym->ts, tmp);
+	  se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
+	}
+      else
+	gfc_conv_expr (&se, e);
 
       tmp = TREE_TYPE (sym->backend_decl);
       tmp = gfc_build_addr_expr (tmp, se.expr);

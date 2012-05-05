@@ -1,3 +1,12 @@
+2012-05-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41600
+	* gfortran.dg/select_type_26.f03 : New test.
+	* gfortran.dg/select_type_27.f03 : New test.
+
+	PR fortran/53191
+	* gfortran.dg/select_type_28.f03 : New test.
+
 2012-05-05  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/49010
