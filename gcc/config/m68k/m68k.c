@@ -916,16 +916,17 @@ m68k_emit_movem (rtx base, HOST_WIDE_INT offset,
 
   if (adjust_stack_p)
     {
-      src = plus_constant (base, (count
-				  * GET_MODE_SIZE (mode)
-				  * (HOST_WIDE_INT) (store_p ? -1 : 1)));
+      src = plus_constant (Pmode, base,
+			   (count
+			    * GET_MODE_SIZE (mode)
+			    * (HOST_WIDE_INT) (store_p ? -1 : 1)));
       XVECEXP (body, 0, i++) = gen_rtx_SET (VOIDmode, base, src);
     }
 
   for (; mask != 0; mask >>= 1, regno++)
     if (mask & 1)
       {
-	addr = plus_constant (base, offset);
+	addr = plus_constant (Pmode, base, offset);
 	operands[!store_p] = gen_frame_mem (mode, addr);
 	operands[store_p] = gen_rtx_REG (mode, regno);
 	XVECEXP (body, 0, i++)
@@ -971,7 +972,7 @@ m68k_expand_prologue (void)
   if (crtl->limit_stack
       && GET_CODE (stack_limit_rtx) == SYMBOL_REF)
     {
-      limit = plus_constant (stack_limit_rtx, current_frame.size + 4);
+      limit = plus_constant (Pmode, stack_limit_rtx, current_frame.size + 4);
       if (!m68k_legitimate_constant_p (Pmode, limit))
 	{
 	  emit_move_insn (gen_rtx_REG (Pmode, D0_REG), limit);
@@ -1205,12 +1206,12 @@ m68k_expand_epilogue (bool sibcall_p)
 		/* Generate the address -OFFSET(%fp,%a1.l).  */
 		addr = gen_rtx_REG (Pmode, A1_REG);
 		addr = gen_rtx_PLUS (Pmode, addr, frame_pointer_rtx);
-		addr = plus_constant (addr, -offset);
+		addr = plus_constant (Pmode, addr, -offset);
 	      }
 	    else if (restore_from_sp)
 	      addr = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
 	    else
-	      addr = plus_constant (frame_pointer_rtx, -offset);
+	      addr = plus_constant (Pmode, frame_pointer_rtx, -offset);
 	    emit_move_insn (gen_rtx_REG (SImode, D0_REG + i),
 			    gen_frame_mem (SImode, addr));
 	    offset -= GET_MODE_SIZE (SImode);
@@ -2450,7 +2451,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 				     base == reg ? 0 : reg);
 
       if (GET_CODE (orig) == CONST_INT)
-	pic_ref = plus_constant (base, INTVAL (orig));
+	pic_ref = plus_constant (Pmode, base, INTVAL (orig));
       else
 	pic_ref = gen_rtx_PLUS (Pmode, base, orig);
     }
@@ -5035,7 +5036,8 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   reload_completed = 1;
 
   /* The "this" pointer is stored at 4(%sp).  */
-  this_slot = gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, 4));
+  this_slot = gen_rtx_MEM (Pmode, plus_constant (Pmode,
+						 stack_pointer_rtx, 4));
 
   /* Add DELTA to THIS.  */
   if (delta != 0)
@@ -5060,7 +5062,7 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
 
       /* Set ADDR to a legitimate address for *THIS + VCALL_OFFSET.  */
-      addr = plus_constant (tmp, vcall_offset);
+      addr = plus_constant (Pmode, tmp, vcall_offset);
       if (!m68k_legitimate_address_p (Pmode, addr, true))
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, tmp, addr));

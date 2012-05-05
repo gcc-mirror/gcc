@@ -2003,7 +2003,8 @@ mcore_expand_prolog (void)
         {
           emit_insn (gen_movsi
                      (gen_rtx_MEM (SImode,
-                               plus_constant (stack_pointer_rtx, offset)),
+				   plus_constant (Pmode, stack_pointer_rtx,
+						  offset)),
                       gen_rtx_REG (SImode, rn)));
         }
     }
@@ -2038,7 +2039,8 @@ mcore_expand_prolog (void)
 	    {
 	      emit_insn (gen_movsi
 		         (gen_rtx_MEM (SImode,
-			           plus_constant (stack_pointer_rtx, offs)),
+				       plus_constant (Pmode, stack_pointer_rtx,
+						      offs)),
 		          gen_rtx_REG (SImode, i)));
 	      offs += 4;
 	    }
@@ -2133,7 +2135,8 @@ mcore_expand_epilog (void)
 	  emit_insn (gen_movsi
 		     (gen_rtx_REG (SImode, i),
 		      gen_rtx_MEM (SImode,
-			       plus_constant (stack_pointer_rtx, offs))));
+				   plus_constant (Pmode, stack_pointer_rtx,
+						  offs))));
 	  offs += 4;
 	}
     }

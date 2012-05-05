@@ -1412,7 +1412,7 @@ iq2000_va_start (tree valist, rtx nextarg)
 
   /* Everything is in the GPR save area, or in the overflow
      area which is contiguous with it.  */
-  nextarg = plus_constant (nextarg, - gpr_save_area_size);
+  nextarg = plus_constant (Pmode, nextarg, - gpr_save_area_size);
   std_expand_builtin_va_start (valist, nextarg);
 }
 
@@ -1783,7 +1783,7 @@ iq2000_annotate_frame_insn (rtx insn, rtx dwarf_pattern)
 static void
 iq2000_emit_frame_related_store (rtx mem, rtx reg, HOST_WIDE_INT offset)
 {
-  rtx dwarf_address = plus_constant (stack_pointer_rtx, offset);
+  rtx dwarf_address = plus_constant (Pmode, stack_pointer_rtx, offset);
   rtx dwarf_mem = gen_rtx_MEM (GET_MODE (reg), dwarf_address);
 
   iq2000_annotate_frame_insn (emit_move_insn (mem, reg),
@@ -2031,7 +2031,8 @@ iq2000_expand_prologue (void)
 				    adjustment_rtx));
 
       dwarf_pattern = gen_rtx_SET (Pmode, stack_pointer_rtx,
-				   plus_constant (stack_pointer_rtx, -tsize));
+				   plus_constant (Pmode, stack_pointer_rtx,
+						  -tsize));
 
       iq2000_annotate_frame_insn (insn, dwarf_pattern);
 
@@ -2120,7 +2121,7 @@ iq2000_expand_eh_return (rtx address)
   HOST_WIDE_INT gp_offset = cfun->machine->gp_sp_offset;
   rtx scratch;
 
-  scratch = plus_constant (stack_pointer_rtx, gp_offset);
+  scratch = plus_constant (Pmode, stack_pointer_rtx, gp_offset);
   emit_move_insn (gen_rtx_MEM (GET_MODE (address), scratch), address);
 }
 
@@ -2873,9 +2874,9 @@ iq2000_setup_incoming_varargs (cumulative_args_t cum_v,
 	  if (cum->arg_words < MAX_ARGS_IN_REGISTERS - iq2000_off) 
 	    {
 	      rtx ptr, mem; 
-	      ptr = plus_constant (virtual_incoming_args_rtx, 
-				   - (iq2000_save_gp_regs 
-				      * UNITS_PER_WORD)); 
+	      ptr = plus_constant (Pmode, virtual_incoming_args_rtx,
+				   - (iq2000_save_gp_regs
+				      * UNITS_PER_WORD));
 	      mem = gen_rtx_MEM (BLKmode, ptr); 
 	      move_block_from_reg 
 		(cum->arg_words + GP_ARG_FIRST + iq2000_off, 
@@ -3165,7 +3166,7 @@ iq2000_print_operand (FILE *file, rtx op, int letter)
   else if (code == MEM)
     {
       if (letter == 'D')
-	output_address (plus_constant (XEXP (op, 0), 4));
+	output_address (plus_constant (Pmode, XEXP (op, 0), 4));
       else
 	output_address (XEXP (op, 0));
     }
@@ -3273,7 +3274,7 @@ iq2000_legitimize_address (rtx xinsn, rtx old_x ATTRIBUTE_UNUSED,
                                   ptr_reg,
                                   gen_rtx_PLUS (Pmode, xplus0, int_reg)));
 
-          return plus_constant (ptr_reg, INTVAL (xplus1) & 0x7fff);
+          return plus_constant (Pmode, ptr_reg, INTVAL (xplus1) & 0x7fff);
         }
     }
 

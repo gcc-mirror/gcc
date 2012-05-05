@@ -976,7 +976,7 @@
 		    tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym),
 					  CRIS_UNSPEC_PCREL);
 		    if (offs != 0)
-		      tem = plus_constant (tem, offs);
+		      tem = plus_constant (Pmode, tem, offs);
 		    rm = rn;
 		    emit_move_insn (rm, gen_rtx_CONST (Pmode, tem));
 		  }
@@ -988,7 +988,7 @@
 		    tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym),
 					  CRIS_UNSPEC_GOTREL);
 		    if (offs != 0)
-		      tem = plus_constant (tem, offs);
+		      tem = plus_constant (Pmode, tem, offs);
 		    rm = gen_reg_rtx (Pmode);
 		    emit_move_insn (rm, gen_rtx_CONST (Pmode, tem));
 		    if (expand_binop (Pmode, add_optab, rm, pic_offset_table_rtx,
@@ -3868,7 +3868,7 @@
      (use (label_ref (match_operand 3 "" "")))])]
   ""
 {
-  operands[2] = plus_constant (operands[2], 1);
+  operands[2] = plus_constant (SImode, operands[2], 1);
   operands[5] = gen_reg_rtx (SImode);
   operands[6] = gen_reg_rtx (SImode);
   operands[7] = gen_reg_rtx (SImode);
@@ -3903,7 +3903,7 @@
   rtx xlabel = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
   for (i = 5; i <= 10; i++)
     operands[i] = gen_reg_rtx (SImode);
-  operands[2] = plus_constant (operands[2], 1);
+  operands[2] = plus_constant (SImode, operands[2], 1);
 
   /* Don't forget to decorate labels too, for PIC.  */
   operands[11] = flag_pic

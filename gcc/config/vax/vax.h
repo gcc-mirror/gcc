@@ -259,7 +259,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Given an rtx for the address of a frame,
    return an rtx for the address of the word in the frame
    that holds the dynamic chain--the previous frame's address.  */
-#define DYNAMIC_CHAIN_ADDRESS(FRAME) plus_constant ((FRAME), 12)
+#define DYNAMIC_CHAIN_ADDRESS(FRAME) plus_constant (Pmode, (FRAME), 12)
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -370,7 +370,8 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
   ((COUNT == 0)								\
-   ? gen_rtx_MEM (Pmode, plus_constant (FRAME, RETURN_ADDRESS_OFFSET))	\
+   ? gen_rtx_MEM (Pmode, plus_constant (Pmode, FRAME,			\
+					RETURN_ADDRESS_OFFSET))		\
    : (rtx) 0)
 
 

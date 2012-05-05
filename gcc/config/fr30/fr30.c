@@ -936,7 +936,8 @@ fr30_move_double (rtx * operands)
 	  emit_insn (gen_rtx_SET (VOIDmode, dest0,
 				  adjust_address (src, SImode, 0)));
 	  emit_insn (gen_rtx_SET (SImode, dest1,
-				  plus_constant (dest1, UNITS_PER_WORD)));
+				  plus_constant (SImode, dest1,
+						 UNITS_PER_WORD)));
 
 	  new_mem = gen_rtx_MEM (SImode, dest1);
 	  MEM_COPY_ATTRIBUTES (new_mem, src);

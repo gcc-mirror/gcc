@@ -550,7 +550,7 @@ mmix_dynamic_chain_address (rtx frame)
      frame-pointer.  Unfortunately, the caller assumes that a
      frame-pointer is present for *all* previous frames.  There should be
      a way to say that that cannot be done, like for RETURN_ADDR_RTX.  */
-  return plus_constant (frame, -8);
+  return plus_constant (Pmode, frame, -8);
 }
 
 /* STARTING_FRAME_OFFSET.  */
@@ -581,7 +581,9 @@ mmix_return_addr_rtx (int count, rtx frame ATTRIBUTE_UNUSED)
 	  See mmix_initial_elimination_offset for the reason we can't use
 	  get_hard_reg_initial_val for both.  Always using a stack slot
 	  and not a register would be suboptimal.  */
-       ? validize_mem (gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx, -16)))
+       ? validize_mem (gen_rtx_MEM (Pmode,
+				    plus_constant (Pmode,
+						   frame_pointer_rtx, -16)))
        : get_hard_reg_initial_val (Pmode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM))
     : NULL_RTX;
 }
@@ -2063,7 +2065,7 @@ mmix_expand_prologue (void)
 	  /* These registers aren't actually saved (as in "will be
 	     restored"), so don't tell DWARF2 they're saved.  */
 	  emit_move_insn (gen_rtx_MEM (DImode,
-				       plus_constant (stack_pointer_rtx,
+				       plus_constant (Pmode, stack_pointer_rtx,
 						      offset)),
 			  gen_rtx_REG (DImode, regno));
 	  offset -= 8;
@@ -2090,7 +2092,8 @@ mmix_expand_prologue (void)
 	}
 
       insn = emit_move_insn (gen_rtx_MEM (DImode,
-					  plus_constant (stack_pointer_rtx,
+					  plus_constant (Pmode,
+							 stack_pointer_rtx,
 							 offset)),
 			     hard_frame_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -2132,14 +2135,16 @@ mmix_expand_prologue (void)
       emit_move_insn (tmpreg, retreg);
 
       insn = emit_move_insn (gen_rtx_MEM (DImode,
-					  plus_constant (stack_pointer_rtx,
+					  plus_constant (Pmode,
+							 stack_pointer_rtx,
 							 offset)),
 			     tmpreg);
       RTX_FRAME_RELATED_P (insn) = 1;
       add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 		    gen_rtx_SET (VOIDmode,
 				 gen_rtx_MEM (DImode,
-					      plus_constant (stack_pointer_rtx,
+					      plus_constant (Pmode,
+							     stack_pointer_rtx,
 							     offset)),
 				 retreg));
 
@@ -2179,7 +2184,8 @@ mmix_expand_prologue (void)
 		      gen_rtx_REG (DImode,
 				   MMIX_rO_REGNUM));
       emit_move_insn (gen_rtx_MEM (DImode,
-				   plus_constant (stack_pointer_rtx, offset)),
+				   plus_constant (Pmode, stack_pointer_rtx,
+						  offset)),
 		      gen_rtx_REG (DImode, 255));
       offset -= 8;
     }
@@ -2215,7 +2221,8 @@ mmix_expand_prologue (void)
 	  }
 
 	insn = emit_move_insn (gen_rtx_MEM (DImode,
-					    plus_constant (stack_pointer_rtx,
+					    plus_constant (Pmode,
+							   stack_pointer_rtx,
 							   offset)),
 			       gen_rtx_REG (DImode, regno));
 	RTX_FRAME_RELATED_P (insn) = 1;
@@ -2291,7 +2298,7 @@ mmix_expand_epilogue (void)
 
 	emit_move_insn (gen_rtx_REG (DImode, regno),
 			gen_rtx_MEM (DImode,
-				     plus_constant (stack_pointer_rtx,
+				     plus_constant (Pmode, stack_pointer_rtx,
 						    offset)));
 	offset += 8;
       }
@@ -2323,7 +2330,7 @@ mmix_expand_epilogue (void)
 
       emit_move_insn (hard_frame_pointer_rtx,
 		      gen_rtx_MEM (DImode,
-				   plus_constant (stack_pointer_rtx,
+				   plus_constant (Pmode, stack_pointer_rtx,
 						  offset)));
       offset += 8;
     }

@@ -5196,7 +5196,8 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 	  rtx offset_reg;
 	  enum reg_class cls;
 
-	  offset_reg = plus_constant (operand, INTVAL (XEXP (ad, 1)));
+	  offset_reg = plus_constant (GET_MODE (ad), operand,
+				      INTVAL (XEXP (ad, 1)));
 
 	  /* Form the adjusted address.  */
 	  if (GET_CODE (XEXP (ad, 0)) == PLUS)
@@ -5363,9 +5364,9 @@ form_sum (enum machine_mode mode, rtx x, rtx y)
   gcc_assert (GET_MODE (y) == mode || GET_MODE (y) == VOIDmode);
 
   if (CONST_INT_P (x))
-    return plus_constant (y, INTVAL (x));
+    return plus_constant (mode, y, INTVAL (x));
   else if (CONST_INT_P (y))
-    return plus_constant (x, INTVAL (y));
+    return plus_constant (mode, x, INTVAL (y));
   else if (CONSTANT_P (x))
     tem = x, x = y, y = tem;
 
@@ -6161,7 +6162,8 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	      else
 		offset = SUBREG_BYTE (x);
 
-	      XEXP (tem, 0) = plus_constant (XEXP (tem, 0), offset);
+	      XEXP (tem, 0) = plus_constant (GET_MODE (XEXP (tem, 0)),
+					     XEXP (tem, 0), offset);
 	      PUT_MODE (tem, GET_MODE (x));
 	      if (MEM_OFFSET_KNOWN_P (tem))
 		set_mem_offset (tem, MEM_OFFSET (tem) + offset);

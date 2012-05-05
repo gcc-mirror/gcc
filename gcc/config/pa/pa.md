@@ -6870,7 +6870,7 @@
      of the virtual stack variables and the hard frame pointer.  */
   if (GET_CODE (fp) != REG)
     fp = force_reg (Pmode, fp);
-  emit_move_insn (hard_frame_pointer_rtx, plus_constant (fp, -8));
+  emit_move_insn (hard_frame_pointer_rtx, plus_constant (Pmode, fp, -8));
 
   emit_stack_restore (SAVE_NONLOCAL, stack);
 
@@ -8300,9 +8300,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   /* The elements of the buffer are, in order:  */
   rtx fp = gen_rtx_MEM (Pmode, operands[0]);
-  rtx lab = gen_rtx_MEM (Pmode, plus_constant (operands[0],
+  rtx lab = gen_rtx_MEM (Pmode, plus_constant (Pmode, operands[0],
 			 POINTER_SIZE / BITS_PER_UNIT));
-  rtx stack = gen_rtx_MEM (Pmode, plus_constant (operands[0],
+  rtx stack = gen_rtx_MEM (Pmode, plus_constant (Pmode, operands[0],
 			   (POINTER_SIZE * 2) / BITS_PER_UNIT));
   rtx pv = gen_rtx_REG (Pmode, 1);
 
@@ -8314,7 +8314,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
      to adjust for the offset between these two values.  */
   if (GET_CODE (fp) != REG)
     fp = force_reg (Pmode, fp);
-  emit_move_insn (hard_frame_pointer_rtx, plus_constant (fp, -8));
+  emit_move_insn (hard_frame_pointer_rtx, plus_constant (Pmode, fp, -8));
 
   /* This bit is the same as expand_builtin_longjmp.  */
   emit_stack_restore (SAVE_NONLOCAL, stack);

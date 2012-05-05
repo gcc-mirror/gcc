@@ -1293,7 +1293,7 @@ m32r_setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
       rtx regblock;
 
       regblock = gen_frame_mem (BLKmode,
-				plus_constant (arg_pointer_rtx,
+				plus_constant (Pmode, arg_pointer_rtx,
 					       FIRST_PARM_OFFSET (0)));
       set_mem_alias_set (regblock, get_varargs_alias_set ());
       move_block_from_reg (first_reg_offset, regblock, size);
@@ -1984,7 +1984,7 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
       if (CONST_INT_P (offset))
         {
           if (INT16_P (INTVAL (offset)))
-            return plus_constant (base, INTVAL (offset));
+            return plus_constant (Pmode, base, INTVAL (offset));
           else
 	    {
 	      gcc_assert (! reload_in_progress && ! reload_completed);
@@ -2087,9 +2087,9 @@ m32r_print_operand (FILE * file, rtx x, int code)
 	     currently necessary, but keep it around.  */
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 4));
+	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 4));
 	  else
-	    output_address (plus_constant (XEXP (x, 0), 4));
+	    output_address (plus_constant (Pmode, XEXP (x, 0), 4));
 	  fputc (')', file);
 	}
       else
@@ -2327,7 +2327,8 @@ m32r_print_operand_address (FILE * file, rtx addr)
 	    fputs ("sda(", file);
 	  else
 	    fputs ("low(", file);
-	  output_addr_const (file, plus_constant (XEXP (base, 1), offset));
+	  output_addr_const (file, plus_constant (Pmode, XEXP (base, 1),
+						  offset));
 	  fputs ("),", file);
 	  fputs (reg_names[REGNO (XEXP (base, 0))], file);
 	}

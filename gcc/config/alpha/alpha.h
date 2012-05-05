@@ -767,7 +767,7 @@ extern int alpha_memory_latency;
 #define EH_RETURN_DATA_REGNO(N)	((N) < 4 ? (N) + 16 : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 28)
 #define EH_RETURN_HANDLER_RTX \
-  gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, \
+  gen_rtx_MEM (Pmode, plus_constant (Pmode, stack_pointer_rtx, \
 				     crtl->outgoing_args_size))
 
 /* Addressing modes, and classification of registers for them.  */

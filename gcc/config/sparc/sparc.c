@@ -3866,7 +3866,7 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
       if (GET_CODE (offset) == CONST_INT)
 	{
 	  if (SMALL_INT (offset))
-	    return plus_constant (base, INTVAL (offset));
+	    return plus_constant (Pmode, base, INTVAL (offset));
 	  else if (can_create_pseudo_p ())
 	    offset = force_reg (Pmode, offset);
 	  else
@@ -4605,7 +4605,7 @@ sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
       emit_move_insn (g1, GEN_INT (first));
       emit_insn (gen_rtx_SET (VOIDmode, g1,
 			      gen_rtx_MINUS (Pmode, stack_pointer_rtx, g1)));
-      emit_stack_probe (plus_constant (g1, -size));
+      emit_stack_probe (plus_constant (Pmode, g1, -size));
     }
 
   /* The run-time loop is made up of 10 insns in the generic case while the
@@ -4625,11 +4625,12 @@ sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
       for (i = 2 * PROBE_INTERVAL; i < size; i += PROBE_INTERVAL)
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, g1,
-				  plus_constant (g1, -PROBE_INTERVAL)));
+				  plus_constant (Pmode, g1, -PROBE_INTERVAL)));
 	  emit_stack_probe (g1);
 	}
 
-      emit_stack_probe (plus_constant (g1, (i - PROBE_INTERVAL) - size));
+      emit_stack_probe (plus_constant (Pmode, g1,
+				       (i - PROBE_INTERVAL) - size));
     }
 
   /* Otherwise, do the same as above, but in a loop.  Note that we must be
@@ -4682,7 +4683,7 @@ sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 	 that SIZE is equal to ROUNDED_SIZE.  */
 
       if (size != rounded_size)
-	emit_stack_probe (plus_constant (g4, rounded_size - size));
+	emit_stack_probe (plus_constant (Pmode, g4, rounded_size - size));
     }
 
   /* Make sure nothing is scheduled before we are done.  */
@@ -4759,7 +4760,8 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 	{
 	  if (save_p (i, leaf_function))
 	    {
-	      mem = gen_frame_mem (DImode, plus_constant (base, offset));
+	      mem = gen_frame_mem (DImode, plus_constant (Pmode,
+							  base, offset));
 	      if (action_true == SORR_SAVE)
 		{
 		  insn = emit_move_insn (mem, gen_rtx_REG (DImode, i));
@@ -4784,7 +4786,7 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 
       if (fp_offset >= 0)
 	{
-	  mem = gen_frame_mem (DImode, plus_constant (base, fp_offset));
+	  mem = gen_frame_mem (DImode, plus_constant (Pmode, base, fp_offset));
 	  emit_move_insn (hard_frame_pointer_rtx, mem);
 	}
     }
@@ -4820,7 +4822,7 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 	      continue;
 	    }
 
-	  mem = gen_frame_mem (mode, plus_constant (base, offset));
+	  mem = gen_frame_mem (mode, plus_constant (Pmode, base, offset));
 	  if (action_true == SORR_SAVE)
 	    {
 	      insn = emit_move_insn (mem, gen_rtx_REG (mode, regno));
@@ -4828,12 +4830,14 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 	      if (mode == DImode)
 		{
 		  rtx set1, set2;
-		  mem = gen_frame_mem (SImode, plus_constant (base, offset));
+		  mem = gen_frame_mem (SImode, plus_constant (Pmode, base,
+							      offset));
 		  set1 = gen_rtx_SET (VOIDmode, mem,
 				      gen_rtx_REG (SImode, regno));
 		  RTX_FRAME_RELATED_P (set1) = 1;
 		  mem
-		    = gen_frame_mem (SImode, plus_constant (base, offset + 4));
+		    = gen_frame_mem (SImode, plus_constant (Pmode, base,
+							    offset + 4));
 		  set2 = gen_rtx_SET (VOIDmode, mem,
 				      gen_rtx_REG (SImode, regno + 1));
 		  RTX_FRAME_RELATED_P (set2) = 1;
@@ -4923,7 +4927,7 @@ emit_window_save (rtx increment)
 
   /* The CFA is %fp, the hard frame pointer.  */
   add_reg_note (insn, REG_CFA_DEF_CFA,
-		plus_constant (hard_frame_pointer_rtx,
+		plus_constant (Pmode, hard_frame_pointer_rtx,
 			       INCOMING_FRAME_SP_OFFSET));
 
   return insn;
@@ -5145,7 +5149,7 @@ sparc_flat_expand_prologue (void)
 
 	  add_reg_note (insn, REG_CFA_ADJUST_CFA,
 			gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
-				     plus_constant (stack_pointer_rtx,
+				     plus_constant (Pmode, stack_pointer_rtx,
 						    size)));
 	}
 
@@ -6736,10 +6740,10 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
       rtx mem;
 
       if (incoming)
-	mem = gen_frame_mem (Pmode, plus_constant (frame_pointer_rtx,
+	mem = gen_frame_mem (Pmode, plus_constant (Pmode, frame_pointer_rtx,
 						   STRUCT_VALUE_OFFSET));
       else
-	mem = gen_frame_mem (Pmode, plus_constant (stack_pointer_rtx,
+	mem = gen_frame_mem (Pmode, plus_constant (Pmode, stack_pointer_rtx,
 						   STRUCT_VALUE_OFFSET));
 
       /* Only follow the SPARC ABI for fixed-size structure returns.
@@ -6770,7 +6774,8 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 	     it's an unimp instruction (the most significant 10 bits
 	     will be zero).  */
 	  emit_move_insn (scratch, gen_rtx_MEM (SImode,
-						plus_constant (ret_reg, 8)));
+						plus_constant (Pmode,
+							       ret_reg, 8)));
 	  /* Assume the size is valid and pre-adjust */
 	  emit_insn (gen_add3_insn (ret_reg, ret_reg, GEN_INT (4)));
 	  emit_cmp_and_jump_insns (scratch, size_rtx, EQ, const0_rtx, SImode,
@@ -10420,7 +10425,7 @@ emit_and_preserve (rtx seq, rtx reg, rtx reg2)
   HOST_WIDE_INT size = SPARC_STACK_ALIGN (offset + 2*UNITS_PER_WORD);
 
   rtx slot
-    = gen_rtx_MEM (word_mode, plus_constant (stack_pointer_rtx,
+    = gen_rtx_MEM (word_mode, plus_constant (Pmode, stack_pointer_rtx,
 					     SPARC_STACK_BIAS + offset));
 
   emit_insn (gen_stack_pointer_dec (GEN_INT (size)));

@@ -1155,7 +1155,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
       rtx x, last;
       x = emit_library_call_value (setjmp_libfunc, NULL_RTX, LCT_RETURNS_TWICE,
 				   TYPE_MODE (integer_type_node), 1,
-				   plus_constant (XEXP (fc, 0),
+				   plus_constant (Pmode, XEXP (fc, 0),
 						  sjlj_fc_jbuf_ofs), Pmode);
 
       emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
@@ -1168,7 +1168,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
 	  add_reg_note (last, REG_BR_PROB, GEN_INT (REG_BR_PROB_BASE / 100));
 	}
 #else
-      expand_builtin_setjmp_setup (plus_constant (XEXP (fc, 0),
+      expand_builtin_setjmp_setup (plus_constant (Pmode, XEXP (fc, 0),
 						  sjlj_fc_jbuf_ofs),
 				   dispatch_label);
 #endif
@@ -2094,7 +2094,7 @@ expand_builtin_extract_return_addr (tree addr_tree)
 
   /* Then adjust to find the real return address.  */
 #if defined (RETURN_ADDR_OFFSET)
-  addr = plus_constant (addr, RETURN_ADDR_OFFSET);
+  addr = plus_constant (Pmode, addr, RETURN_ADDR_OFFSET);
 #endif
 
   return addr;
@@ -2113,7 +2113,7 @@ expand_builtin_frob_return_addr (tree addr_tree)
 
 #ifdef RETURN_ADDR_OFFSET
   addr = force_reg (Pmode, addr);
-  addr = plus_constant (addr, -RETURN_ADDR_OFFSET);
+  addr = plus_constant (Pmode, addr, -RETURN_ADDR_OFFSET);
 #endif
 
   return addr;

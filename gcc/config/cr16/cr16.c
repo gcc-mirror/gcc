@@ -1851,7 +1851,7 @@ cr16_create_dwarf_for_multi_push (rtx insn)
 	      tmp = gen_rtx_SET (VOIDmode,
 				 gen_frame_mem (mode,
 						plus_constant
-						(stack_pointer_rtx,
+						(Pmode, stack_pointer_rtx,
 						 total_push_bytes - offset)),
 				 reg);
 	      RTX_FRAME_RELATED_P (tmp) = 1;

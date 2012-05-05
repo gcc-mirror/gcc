@@ -75,21 +75,17 @@ trunc_int_for_mode (HOST_WIDE_INT c, enum machine_mode mode)
 }
 
 /* Return an rtx for the sum of X and the integer C, given that X has
-   mode MODE.  This routine should be used instead of plus_constant
-   when they want to ensure that addition happens in a particular
-   mode, which is necessary when X can be a VOIDmode CONST_INT or
-   CONST_DOUBLE and the width of the constant is different from the
-   width of the expression.  */
-/* TODO: All callers of plus_constant should migrate to this routine,
-   and once they do, we can assert that mode is not VOIDmode.  */
+   mode MODE.  */
 
 rtx
-plus_constant_mode (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
+plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 {
   RTX_CODE code;
   rtx y;
   rtx tem;
   int all_constant = 0;
+
+  gcc_assert (GET_MODE (x) == VOIDmode || GET_MODE (x) == mode);
 
   if (c == 0)
     return x;
@@ -143,7 +139,7 @@ plus_constant_mode (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
       if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
 	{
-	  tem = plus_constant_mode (mode, get_pool_constant (XEXP (x, 0)), c);
+	  tem = plus_constant (mode, get_pool_constant (XEXP (x, 0)), c);
 	  tem = force_const_mem (GET_MODE (x), tem);
 	  if (memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
 	    return tem;
@@ -173,7 +169,8 @@ plus_constant_mode (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 
       if (CONSTANT_P (XEXP (x, 1)))
 	{
-	  x = gen_rtx_PLUS (mode, XEXP (x, 0), plus_constant_mode (mode, XEXP (x, 1), c));
+	  x = gen_rtx_PLUS (mode, XEXP (x, 0),
+			    plus_constant (mode, XEXP (x, 1), c));
 	  c = 0;
 	}
       else if (find_constant_term_loc (&y))
@@ -183,7 +180,7 @@ plus_constant_mode (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 	  rtx copy = copy_rtx (x);
 	  rtx *const_loc = find_constant_term_loc (&copy);
 
-	  *const_loc = plus_constant_mode (mode, *const_loc, c);
+	  *const_loc = plus_constant (mode, *const_loc, c);
 	  x = copy;
 	  c = 0;
 	}
@@ -202,14 +199,6 @@ plus_constant_mode (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
     return gen_rtx_CONST (mode, x);
   else
     return x;
-}
-
-/* Return an rtx for the sum of X and the integer C.  */
-
-rtx
-plus_constant (rtx x, HOST_WIDE_INT c)
-{
-  return plus_constant_mode (GET_MODE (x), x, c);
 }
 
 /* If X is a sum, return a new sum like X but lacking any constant terms.
@@ -567,6 +556,7 @@ use_anchored_address (rtx x)
 {
   rtx base;
   HOST_WIDE_INT offset;
+  enum machine_mode mode;
 
   if (!flag_section_anchors)
     return x;
@@ -607,10 +597,11 @@ use_anchored_address (rtx x)
   /* If we're going to run a CSE pass, force the anchor into a register.
      We will then be able to reuse registers for several accesses, if the
      target costs say that that's worthwhile.  */
+  mode = GET_MODE (base);
   if (!cse_not_expected)
-    base = force_reg (GET_MODE (base), base);
+    base = force_reg (mode, base);
 
-  return replace_equiv_address (x, plus_constant (base, offset));
+  return replace_equiv_address (x, plus_constant (mode, base, offset));
 }
 
 /* Copy the value or contents of X to a new temp reg and return that reg.  */
@@ -995,7 +986,8 @@ round_push (rtx size)
 	 substituted by the right value in vregs pass and optimized
 	 during combine.  */
       align_rtx = virtual_preferred_stack_boundary_rtx;
-      alignm1_rtx = force_operand (plus_constant (align_rtx, -1), NULL_RTX);
+      alignm1_rtx = force_operand (plus_constant (Pmode, align_rtx, -1),
+				   NULL_RTX);
     }
 
   /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
@@ -1285,7 +1277,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
     {
       unsigned extra = (required_align - extra_align) / BITS_PER_UNIT;
 
-      size = plus_constant (size, extra);
+      size = plus_constant (Pmode, size, extra);
       size = force_operand (size, NULL_RTX);
 
       if (flag_stack_usage_info)
@@ -1576,7 +1568,8 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
       rtx addr = memory_address (Pmode,
 				 gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
 					         stack_pointer_rtx,
-					         plus_constant (size, first)));
+					         plus_constant (Pmode,
+								size, first)));
       emit_library_call (stack_check_libfunc, LCT_NORMAL, VOIDmode, 1, addr,
 			 Pmode);
       return;
@@ -1590,7 +1583,8 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
       rtx addr = memory_address (Pmode,
 				 gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
 					         stack_pointer_rtx,
-					         plus_constant (size, first)));
+					         plus_constant (Pmode,
+								size, first)));
 
       create_input_operand (&ops[0], addr, Pmode);
       if (maybe_expand_insn (CODE_FOR_check_stack, 1, ops))
@@ -1611,13 +1605,13 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
       for (i = PROBE_INTERVAL; i < isize; i += PROBE_INTERVAL)
 	{
 	  addr = memory_address (Pmode,
-				 plus_constant (stack_pointer_rtx,
+				 plus_constant (Pmode, stack_pointer_rtx,
 				 		STACK_GROW_OFF (first + i)));
 	  emit_stack_probe (addr);
 	}
 
       addr = memory_address (Pmode,
-			     plus_constant (stack_pointer_rtx,
+			     plus_constant (Pmode, stack_pointer_rtx,
 					    STACK_GROW_OFF (first + isize)));
       emit_stack_probe (addr);
     }
@@ -1701,7 +1695,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 	      /* Use [base + disp} addressing mode if supported.  */
 	      HOST_WIDE_INT offset = INTVAL (temp);
 	      addr = memory_address (Pmode,
-				     plus_constant (last_addr,
+				     plus_constant (Pmode, last_addr,
 						    STACK_GROW_OFF (offset)));
 	    }
 	  else
@@ -1759,9 +1753,9 @@ anti_adjust_stack_and_probe (rtx size, bool adjust_back)
 	}
 
       if (first_probe)
-	anti_adjust_stack (plus_constant (size, PROBE_INTERVAL + dope));
+	anti_adjust_stack (plus_constant (Pmode, size, PROBE_INTERVAL + dope));
       else
-	anti_adjust_stack (plus_constant (size, PROBE_INTERVAL - i));
+	anti_adjust_stack (plus_constant (Pmode, size, PROBE_INTERVAL - i));
       emit_stack_probe (stack_pointer_rtx);
     }
 
@@ -1839,7 +1833,7 @@ anti_adjust_stack_and_probe (rtx size, bool adjust_back)
 
   /* Adjust back and account for the additional first interval.  */
   if (adjust_back)
-    adjust_stack (plus_constant (size, PROBE_INTERVAL + dope));
+    adjust_stack (plus_constant (Pmode, size, PROBE_INTERVAL + dope));
   else
     adjust_stack (GEN_INT (PROBE_INTERVAL + dope));
 }

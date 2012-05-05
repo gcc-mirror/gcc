@@ -687,7 +687,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
       orig = machopic_indirect_data_reference (XEXP (orig, 1),
 					       (base == reg ? 0 : reg));
       if (MACHOPIC_INDIRECT && (GET_CODE (orig) == CONST_INT))
-	result = plus_constant (base, INTVAL (orig));
+	result = plus_constant (Pmode, base, INTVAL (orig));
       else
 	result = gen_rtx_PLUS (Pmode, base, orig);
 
@@ -972,7 +972,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 					      Pmode, (base == reg ? 0 : reg));
       if (GET_CODE (orig) == CONST_INT)
 	{
-	  pic_ref = plus_constant (base, INTVAL (orig));
+	  pic_ref = plus_constant (Pmode, base, INTVAL (orig));
 	  is_complex = 1;
 	}
       else

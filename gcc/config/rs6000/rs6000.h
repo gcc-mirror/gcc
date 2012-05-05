@@ -1394,7 +1394,7 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 
 /* MEM representing address to save the TOC register */
 #define RS6000_SAVE_TOC gen_rtx_MEM (Pmode, \
-				     plus_constant (stack_pointer_rtx, \
+				     plus_constant (Pmode, stack_pointer_rtx, \
 						    (TARGET_32BIT ? 20 : 40)))
 
 /* Align an address */

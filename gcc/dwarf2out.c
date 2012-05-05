@@ -14286,11 +14286,12 @@ rtl_for_decl_location (tree decl)
 	       && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl)))
 		   < UNITS_PER_WORD))
 	{
+	  enum machine_mode addr_mode = get_address_mode (rtl);
 	  int offset = (UNITS_PER_WORD
 			- GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))));
 
 	  rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (decl)),
-			     plus_constant (XEXP (rtl, 0), offset));
+			     plus_constant (addr_mode, XEXP (rtl, 0), offset));
 	}
     }
   else if (TREE_CODE (decl) == VAR_DECL
@@ -14299,6 +14300,7 @@ rtl_for_decl_location (tree decl)
 	   && GET_MODE (rtl) != TYPE_MODE (TREE_TYPE (decl))
 	   && BYTES_BIG_ENDIAN)
     {
+      enum machine_mode addr_mode = get_address_mode (rtl);
       int rsize = GET_MODE_SIZE (GET_MODE (rtl));
       int dsize = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl)));
 
@@ -14310,7 +14312,8 @@ rtl_for_decl_location (tree decl)
 	 else gdb will not be able to display it.  */
       if (rsize > dsize)
 	rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (decl)),
-			   plus_constant (XEXP (rtl, 0), rsize-dsize));
+			   plus_constant (addr_mode, XEXP (rtl, 0),
+					  rsize - dsize));
     }
 
   /* A variable with no DECL_RTL but a DECL_INITIAL is a compile-time constant,
@@ -17267,10 +17270,13 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 			  && loc->expr->dw_loc_next == NULL
 			  && GET_CODE (loc->expr->dw_loc_oprnd1.v.val_addr)
 			     == SYMBOL_REF)
-			loc->expr->dw_loc_oprnd1.v.val_addr
-			  = plus_constant (loc->expr->dw_loc_oprnd1.v.val_addr, off);
-			else
-			  loc_list_plus_const (loc, off);
+			{
+			  rtx x = loc->expr->dw_loc_oprnd1.v.val_addr;
+			  loc->expr->dw_loc_oprnd1.v.val_addr
+			    = plus_constant (GET_MODE (x), x , off);
+			}
+		      else
+			loc_list_plus_const (loc, off);
 		    }
 		  add_AT_location_description (var_die, DW_AT_location, loc);
 		  remove_AT (var_die, DW_AT_declaration);
@@ -17330,8 +17336,11 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 		  && loc->expr->dw_loc_opc == DW_OP_addr
 		  && loc->expr->dw_loc_next == NULL
 		  && GET_CODE (loc->expr->dw_loc_oprnd1.v.val_addr) == SYMBOL_REF)
-		loc->expr->dw_loc_oprnd1.v.val_addr
-		  = plus_constant (loc->expr->dw_loc_oprnd1.v.val_addr, off);
+		{
+		  rtx x = loc->expr->dw_loc_oprnd1.v.val_addr;
+		  loc->expr->dw_loc_oprnd1.v.val_addr
+		    = plus_constant (GET_MODE (x), x, off);
+		}
 	      else
 		loc_list_plus_const (loc, off);
 	    }

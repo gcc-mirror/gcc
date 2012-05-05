@@ -5594,7 +5594,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       high_int = INTVAL (XEXP (x, 1)) - low_int;
       sum = force_operand (gen_rtx_PLUS (Pmode, XEXP (x, 0),
 					 GEN_INT (high_int)), 0);
-      return plus_constant (sum, low_int);
+      return plus_constant (Pmode, sum, low_int);
     }
   else if (GET_CODE (x) == PLUS
 	   && GET_CODE (XEXP (x, 0)) == REG
@@ -8951,7 +8951,7 @@ setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
 	    }
 
 	  cfun->machine->varargs_save_offset = offset;
-	  save_area = plus_constant (virtual_stack_vars_rtx, offset);
+	  save_area = plus_constant (Pmode, virtual_stack_vars_rtx, offset);
 	}
     }
   else
@@ -8983,7 +8983,7 @@ setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
 	}
 
       mem = gen_rtx_MEM (BLKmode,
-			 plus_constant (save_area,
+			 plus_constant (Pmode, save_area,
 					first_reg_offset * reg_size));
       MEM_NOTRAP_P (mem) = 1;
       set_mem_alias_set (mem, set);
@@ -9021,7 +9021,7 @@ setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
 	{
 	  mem = gen_rtx_MEM ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
 			      ? DFmode : SFmode, 
-                             plus_constant (save_area, off));
+                             plus_constant (Pmode, save_area, off));
   	  MEM_NOTRAP_P (mem) = 1;
   	  set_mem_alias_set (mem, set);
 	  set_mem_align (mem, GET_MODE_ALIGNMENT (
@@ -14832,10 +14832,10 @@ print_operand (FILE *file, rtx x, int code)
 	     we have already done it, we can just use an offset of word.  */
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0),
+	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0),
 					   UNITS_PER_WORD));
 	  else if (GET_CODE (XEXP (x, 0)) == PRE_MODIFY)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0),
+	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0),
 					   UNITS_PER_WORD));
 	  else
 	    output_address (XEXP (adjust_address_nv (x, SImode,
@@ -15159,9 +15159,9 @@ print_operand (FILE *file, rtx x, int code)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 8));
+	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 8));
 	  else if (GET_CODE (XEXP (x, 0)) == PRE_MODIFY)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 8));
+	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 8));
 	  else
 	    output_address (XEXP (adjust_address_nv (x, SImode, 8), 0));
 	  if (small_data_operand (x, GET_MODE (x)))
@@ -15209,9 +15209,9 @@ print_operand (FILE *file, rtx x, int code)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 12));
+	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 12));
 	  else if (GET_CODE (XEXP (x, 0)) == PRE_MODIFY)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 12));
+	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 12));
 	  else
 	    output_address (XEXP (adjust_address_nv (x, SImode, 12), 0));
 	  if (small_data_operand (x, GET_MODE (x)))
@@ -18161,7 +18161,8 @@ rs6000_return_addr (int count, rtx frame)
 	  (Pmode,
 	   memory_address
 	   (Pmode,
-	    plus_constant (copy_to_reg
+	    plus_constant (Pmode,
+			   copy_to_reg
 			   (gen_rtx_MEM (Pmode,
 					 memory_address (Pmode, frame))),
 			   RETURN_ADDRESS_OFFSET)));
@@ -18431,7 +18432,8 @@ rs6000_emit_eh_reg_restore (rtx source, rtx scratch)
       else if (info->push_p)
 	sp_offset = info->total_size;
 
-      tmp = plus_constant (frame_rtx, info->lr_save_offset + sp_offset);
+      tmp = plus_constant (Pmode, frame_rtx,
+			   info->lr_save_offset + sp_offset);
       tmp = gen_frame_mem (Pmode, tmp);
       emit_move_insn (tmp, operands[0]);
     }
@@ -18679,9 +18681,11 @@ rs6000_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 	 it exceeds SIZE.  If only one probe is needed, this will not
 	 generate any code.  Then probe at FIRST + SIZE.  */
       for (i = PROBE_INTERVAL; i < size; i += PROBE_INTERVAL)
-	emit_stack_probe (plus_constant (stack_pointer_rtx, -(first + i)));
+	emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+					 -(first + i)));
 
-      emit_stack_probe (plus_constant (stack_pointer_rtx, -(first + size)));
+      emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+				       -(first + size)));
     }
 
   /* Otherwise, do the same as above, but in a loop.  Note that we must be
@@ -18707,7 +18711,8 @@ rs6000_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 
       /* TEST_ADDR = SP + FIRST.  */
       emit_insn (gen_rtx_SET (VOIDmode, r12,
-			      plus_constant (stack_pointer_rtx, -first)));
+			      plus_constant (Pmode, stack_pointer_rtx,
+					     -first)));
 
       /* LAST_ADDR = SP + FIRST + ROUNDED_SIZE.  */
       if (rounded_size > 32768)
@@ -18718,7 +18723,7 @@ rs6000_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 	}
       else
 	emit_insn (gen_rtx_SET (VOIDmode, r0,
-			        plus_constant (r12, -rounded_size)));
+			        plus_constant (Pmode, r12, -rounded_size)));
 
 
       /* Step 3: the loop
@@ -18742,7 +18747,7 @@ rs6000_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 	 that SIZE is equal to ROUNDED_SIZE.  */
 
       if (size != rounded_size)
-	emit_stack_probe (plus_constant (r12, rounded_size - size));
+	emit_stack_probe (plus_constant (Pmode, r12, rounded_size - size));
     }
 }
 
@@ -21111,7 +21116,7 @@ rs6000_emit_epilogue (int sibcall)
 	{
 	  insn = get_last_insn ();
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			plus_constant (frame_reg_rtx, frame_off));
+			plus_constant (Pmode, frame_reg_rtx, frame_off));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
@@ -25176,7 +25181,7 @@ rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
       if (GET_CODE (offset) == CONST_INT)
 	{
 	  if (SMALL_INT (offset))
-	    return plus_constant (base, INTVAL (offset));
+	    return plus_constant (Pmode, base, INTVAL (offset));
 	  else if (! reload_in_progress && ! reload_completed)
 	    offset = force_reg (Pmode, offset);
 	  else

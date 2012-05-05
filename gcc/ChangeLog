@@ -1,3 +1,250 @@
+2012-05-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtl.h (plus_constant, plus_constant_mode): Merge into a single
+	plus_constant function.
+	* explow.c (plus_constant, plus_constant_mode): Likewise.  Assert
+	that the mode is sensible.
+	(use_anchored_address, round_push, allocate_dynamic_stack_space)
+	(probe_stack_range, anti_adjust_stack_and_probe): Update calls to
+	plus_constant.
+
+	* alias.c (canon_rtx): Likewise.
+	(init_alias_analysis): Likewise.
+	* builtins.c (expand_builtin_return_addr)
+	(expand_builtin_setjmp_setup, expand_builtin_longjmp)
+	(expand_builtin_nonlocal_goto, expand_builtin_update_setjmp_buf)
+	(expand_builtin_apply_args_1, expand_builtin_apply, expand_movstr)
+	(expand_builtin_stpcpy): Likewise.
+	* calls.c (save_fixed_argument_area, restore_fixed_argument_area)
+	(compute_argument_addresses, internal_arg_pointer_based_exp)
+	(expand_call, emit_library_call_value_1): Likewise.
+	* cfgexpand.c (expand_one_stack_var_at, expand_debug_expr): Likewise.
+	* combine-stack-adj.c (try_apply_stack_adjustment): Likewise.
+	* combine.c (combine_simplify_rtx, force_to_mode): Likewise.
+	* cse.c (insert_const_anchor, find_reg_offset_for_const)
+	(use_related_value, fold_rtx): Likewise.
+	* cselib.c (cselib_subst_to_values): Likewise.
+	* dse.c (record_store, check_mem_read_rtx): Likewise.
+	* dwarf2out.c (rtl_for_decl_location, gen_variable_die): Likewise.
+	* emit-rtl.c (adjust_address_1): Likewise.
+	* except.c (sjlj_emit_function_enter)
+	(expand_builtin_extract_return_addr)
+	(expand_builtin_frob_return_addr): Likewise.
+	* expmed.c (expand_divmod): Likewise.
+	* expr.c (move_by_pieces, store_by_pieces, store_by_pieces_1)
+	(emit_move_resolve_push, push_block, emit_push_insn, store_expr)
+	(expand_expr_addr_expr_1, expand_expr_real_1): Likewise.
+	* function.c (assign_stack_local_1)
+	(instantiate_virtual_regs_in_rtx): Likewise.
+	* optabs.c (prepare_cmp_insn): Likewise.
+	* recog.c (offsettable_address_addr_space_p): Likewise.
+	* reload.c (find_reloads_address, form_sum)
+	(find_reloads_subreg_address): Likewise.
+	* reload1.c (init_reload, eliminate_regs_1)
+	(eliminate_regs_in_insn): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1)
+	(simplify_binary_operation_1, simplify_plus_minus): Likewise.
+	* var-tracking.c (compute_cfa_pointer, prepare_call_arguments)
+	(vt_add_function_parameter): Likewise.
+
+	* config/alpha/alpha.h (EH_RETURN_HANDLER_RTX): Likewise.
+	* config/alpha/vms.h (EH_RETURN_HANDLER_RTX): Likewise.
+	* config/alpha/alpha.c (alpha_legitimize_address_1)
+	(get_unaligned_address, alpha_expand_unaligned_load)
+	(alpha_expand_unaligned_store, alpha_expand_unaligned_load_words)
+	(alpha_expand_unaligned_store_words, alpha_expand_block_clear)
+	(alpha_expand_builtin_establish_vms_condition_handler)
+	(alpha_setup_incoming_varargs, emit_frame_store_1)
+	(alpha_expand_prologue, alpha_expand_epilogue)
+	(alpha_use_linkage): Likewise.
+	* config/alpha/alpha.md: Likewise.
+
+	* config/arm/arm.c (arm_trampoline_init, legitimize_pic_address)
+	(arm_load_pic_register, arm_pic_static_addr, arm_legitimize_address)
+	(thumb_legitimize_address, arm_gen_load_multiple_1)
+	(arm_gen_store_multiple_1, arm_gen_multiple_op, gen_ldm_seq)
+	(gen_stm_seq, gen_const_stm_seq, arm_block_move_unaligned_straight)
+	(arm_block_move_unaligned_loop, arm_gen_movmemqi, arm_reload_in_hi)
+	(arm_reload_out_hi, arm_reorg, vfp_emit_fstmd, emit_multi_reg_push)
+	(emit_sfm, thumb_set_frame_pointer, arm_expand_prologue)
+	(thumb1_emit_multi_reg_push, thumb1_expand_prologue)
+	(thumb_expand_movmemqi, arm_set_return_address)
+	(thumb_set_return_address): Likewise.
+	* config/arm/arm.md: Likewise.
+
+	* config/avr/avr.c (avr_incoming_return_addr_rtx)
+	(avr_prologue_setup_frame, expand_epilogue)
+	(avr_const_address_lo16): Likewise.
+
+	* config/bfin/bfin.h (EH_RETURN_HANDLER_RTX): Likewise.
+	* config/bfin/bfin.c (setup_incoming_varargs, bfin_load_pic_reg)
+	(bfin_expand_prologue, bfin_trampoline_init, bfin_expand_call)
+	(bfin_output_mi_thunk): Likewise.
+
+	* config/c6x/c6x.c (c6x_initialize_trampoline)
+	(c6x_output_mi_thunk): Likewise.
+
+	* config/cr16/cr16.h (EH_RETURN_HANDLER_RTX): Likewise.
+	* config/cr16/cr16.c (cr16_create_dwarf_for_multi_push): Likewise.
+
+	* config/cris/cris.c (cris_return_addr_rtx, cris_split_movdx)
+	(cris_expand_prologue, cris_expand_epilogue, cris_gen_movem_load)
+	(cris_emit_movem_store, cris_trampoline_init): Likewise.
+	* config/cris/cris.md: Likewise.
+
+	* config/darwin.c (machopic_indirect_data_reference)
+	(machopic_legitimize_pic_address): Likewise.
+
+	* config/epiphany/epiphany.c (epiphany_emit_save_restore)
+	(epiphany_expand_prologue, epiphany_expand_epilogue)
+	(epiphany_trampoline_init): Likewise.
+	* config/epiphany/epiphany.md: Likewise.
+
+	* config/fr30/fr30.c (fr30_move_double): Likewise.
+
+	* config/frv/frv.c (frv_dwarf_store, frv_expand_prologue)
+	(frv_expand_block_move, frv_expand_block_clear, frv_return_addr_rtx)
+	(frv_index_memory, unspec_got_name, frv_find_base_term)
+	(frv_output_dwarf_dtprel): Likewise.
+
+	* config/h8300/h8300.c (h8300_push_pop, h8300_return_addr_rtx)
+	(h8300_swap_into_er6, h8300_swap_out_of_er6): Likewise.
+
+	* config/i386/i386.h (RETURN_ADDR_RTX): Likewise.
+	* config/i386/i386.c (setup_incoming_varargs_64)
+	(setup_incoming_varargs_ms_64, choose_baseaddr)
+	(ix86_emit_save_reg_using_mov, ix86_adjust_stack_and_probe)
+	(ix86_emit_probe_stack_range, ix86_expand_prologue)
+	(ix86_emit_restore_reg_using_pop, ix86_emit_leave)
+	(ix86_expand_epilogue, legitimize_pic_address, ix86_legitimize_address)
+	(ix86_split_long_move, ix86_expand_movmem, ix86_expand_setmem)
+	(ix86_static_chain, ix86_trampoline_init, x86_this_parameter)
+	(x86_output_mi_thunk): Likewise.
+	* config/i386/i386.md: Likewise.
+
+	* config/ia64/ia64.c (ia64_expand_load_address)
+	(ia64_expand_tls_address, ia64_expand_move, ia64_split_tmode)
+	(do_spill, ia64_trampoline_init): Likewise.
+
+	* config/iq2000/iq2000.c (iq2000_va_start)
+	(iq2000_emit_frame_related_store, iq2000_expand_prologue)
+	(iq2000_expand_eh_return, iq2000_setup_incoming_varargs)
+	(iq2000_print_operand, iq2000_legitimize_address): Likewise.
+
+	* config/lm32/lm32.c (lm32_setup_incoming_varargs): Likewise.
+
+	* config/m32c/m32c.c (m32c_return_addr_rtx)
+	(m32c_expand_insv): Likewise.
+
+	* config/m32r/m32r.c (m32r_setup_incoming_varargs)
+	(m32r_legitimize_pic_address, m32r_print_operand)
+	(m32r_print_operand_address): Likewise.
+
+	* config/m68k/linux.h (FINALIZE_TRAMPOLINE): Likewise.
+	* config/m68k/m68k.h (RETURN_ADDR_RTX): Likewise.
+	(EH_RETURN_HANDLER_RTX): Likewise.
+	* config/m68k/m68k.c (m68k_emit_movem, m68k_expand_prologue)
+	(m68k_expand_epilogue, legitimize_pic_address)
+	(m68k_output_mi_thunk): Likewise.
+	* config/m68k/m68k.md: Likewise.
+
+	* config/mcore/mcore.c (mcore_expand_prolog): Likewise.
+	(mcore_expand_epilog): Likewise.
+	* config/mcore/mcore.md: Likewise.
+
+	* config/mep/mep.c (mep_allocate_initial_value)
+	(mep_expand_prologue, mep_expand_epilogue): Likewise.
+
+	* config/microblaze/microblaze.c (double_memory_operand)
+	(microblaze_block_move_loop): Likewise.
+
+	* config/mips/mips.c (mips_strip_unspec_address, mips_add_offset)
+	(mips_setup_incoming_varargs, mips_va_start, mips_block_move_loop)
+	(mips_print_operand, mips16e_save_restore_reg, mips_save_restore_reg)
+	(mips_expand_prologue, mips_epilogue_set_cfa)
+	(mips_expand_epilogue): Likewise.
+	* config/mips/mips.md: Likewise.
+
+	* config/mmix/mmix.c (mmix_dynamic_chain_address, mmix_return_addr_rtx)
+	(mmix_expand_prologue, mmix_expand_epilogue): Likewise.
+
+	* config/mn10300/mn10300.c (mn10300_gen_multiple_store)
+	(mn10300_builtin_saveregs, mn10300_trampoline_init): Likewise.
+
+	* config/moxie/moxie.h (INCOMING_RETURN_ADDR_RTX): Likewise.
+	(EH_RETURN_HANDLER_RTX): Likewise.
+	* config/moxie/moxie.c (moxie_static_chain): Likewise.
+
+	* config/pa/pa.c (legitimize_pic_address, hppa_legitimize_address)
+	(store_reg, set_reg_plus_d, pa_expand_prologue, load_reg)
+	(pa_return_addr_rtx, hppa_builtin_saveregs)
+	(pa_trampoline_init): Likewise.
+	* config/pa/pa.md: Likewise.
+
+	* config/pdp11/pdp11.c (pdp11_expand_epilogue): Likewise.
+
+	* config/picochip/picochip.c (picochip_static_chain): Likewise.
+
+	* config/rs6000/rs6000.h (RS6000_SAVE_TOC): Likewise.
+	* config/rs6000/rs6000.c (rs6000_legitimize_address)
+	(setup_incoming_varargs, print_operand, rs6000_return_addr)
+	(rs6000_emit_eh_reg_restore, rs6000_emit_probe_stack_range)
+	(rs6000_emit_epilogue)
+	(rs6000_machopic_legitimize_pic_address): Likewise.
+
+	* config/rx/rx.c (gen_rx_rtsd_vector, gen_rx_popm_vector): Likewise.
+
+	* config/s390/s390.h (INITIAL_FRAME_ADDRESS_RTX): Likewise.
+	(DYNAMIC_CHAIN_ADDRESS): Likewise.
+	* config/s390/s390.c (s390_decompose_address, legitimize_pic_address)
+	(s390_delegitimize_address, print_operand, annotate_constant_pool_refs)
+	(replace_constant_pool_ref, s390_return_addr_rtx, s390_back_chain_rtx)
+	(save_fpr, restore_fpr, save_gprs, restore_gprs, s390_emit_prologue)
+	(s390_emit_epilogue, s390_function_profiler): Likewise.
+	* config/s390/s390.md: Likewise.
+
+	* config/score/score.c (score_add_offset, score_prologue): Likewise.
+
+	* config/sh/sh.c (expand_block_move, push_regs, sh_builtin_saveregs)
+	(sh_output_mi_thunk): Likewise.
+	* config/sh/sh.md: Likewise.
+
+	* config/sparc/sparc.h (DYNAMIC_CHAIN_ADDRESS, FRAME_ADDR_RTX)
+	(RETURN_ADDR_RTX, INCOMING_RETURN_ADDR_RTX): Likewise.
+	* config/sparc/sparc.c (sparc_legitimize_pic_address)
+	(sparc_emit_probe_stack_range, emit_save_or_restore_regs)
+	(emit_window_save, sparc_flat_expand_prologue, sparc_struct_value_rtx)
+	(emit_and_preserve): Likewise.
+	* config/sparc/sparc.md: Likewise.
+
+	* config/spu/spu.h (DYNAMIC_CHAIN_ADDRESS): Likewise.
+	* config/spu/spu.c (spu_expand_insv, spu_machine_dependent_reorg)
+	(spu_setup_incoming_varargs, ea_load_store_inline)
+	(spu_expand_load): Likewise.
+
+	* config/stormy16/stormy16.c (xstormy16_expand_prologue)
+	(combine_bnp): Likewise.
+
+	* config/tilegx/tilegx.h (DYNAMIC_CHAIN_ADDRESS): Likewise.
+	* config/tilegx/tilegx.c (tilegx_setup_incoming_varargs)
+	(tilegx_expand_unaligned_load, tilegx_trampoline_init): Likewise.
+
+	* config/tilepro/tilepro.h (DYNAMIC_CHAIN_ADDRESS): Likewise.
+	* config/tilepro/tilepro.c (tilepro_setup_incoming_varargs)
+	(tilepro_expand_unaligned_load, tilepro_trampoline_init): Likewise.
+
+	* config/v850/v850.c (expand_prologue, expand_epilogue): Likewise.
+	* config/v850/v850.md: Likewise.
+
+	* config/vax/elf.h (EH_RETURN_STACKADJ_RTX): Likewise.
+	(EH_RETURN_HANDLER_RTX): Likewise.
+	* config/vax/vax.h (DYNAMIC_CHAIN_ADDRESS, RETURN_ADDR_RTX): Likewise.
+	* config/vax/vax.c (vax_add_reg_cfa_offset, vax_expand_prologue)
+	(print_operand_address, vax_trampoline_init): Likewise.
+
+	* config/xtensa/xtensa.c (xtensa_expand_prologue, xtensa_return_addr)
+	(xtensa_function_value_regno_p): Likewise.
+
 2012-05-04  Andrew Pinski  <apinski@cavium.com>
 
 	* expr.c (get_def_for_expr_class): New function.

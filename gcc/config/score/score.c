@@ -444,7 +444,7 @@ score_add_offset (rtx reg, HOST_WIDE_INT offset)
       offset &= 0x3fff;
     }
 
-  return plus_constant (reg, offset);
+  return plus_constant (GET_MODE (reg), reg, offset);
 }
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
@@ -1546,8 +1546,8 @@ score_prologue (void)
       REG_NOTES (insn) =
         alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
                          gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-                                      plus_constant (stack_pointer_rtx,
-                                                     -size)),
+                                      plus_constant (Pmode, stack_pointer_rtx,
+						     -size)),
                                       REG_NOTES (insn));
     }
 

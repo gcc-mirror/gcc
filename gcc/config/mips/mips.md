@@ -5756,7 +5756,7 @@
 {
   rtx addr;
 
-  addr = plus_constant (operands[0], GET_MODE_SIZE (Pmode) * 3);
+  addr = plus_constant (Pmode, operands[0], GET_MODE_SIZE (Pmode) * 3);
   mips_emit_move (gen_rtx_MEM (Pmode, addr), pic_offset_table_rtx);
   DONE;
 })
@@ -5772,9 +5772,9 @@
   /* The elements of the buffer are, in order:  */
   int W = GET_MODE_SIZE (Pmode);
   rtx fp = gen_rtx_MEM (Pmode, operands[0]);
-  rtx lab = gen_rtx_MEM (Pmode, plus_constant (operands[0], 1*W));
-  rtx stack = gen_rtx_MEM (Pmode, plus_constant (operands[0], 2*W));
-  rtx gpv = gen_rtx_MEM (Pmode, plus_constant (operands[0], 3*W));
+  rtx lab = gen_rtx_MEM (Pmode, plus_constant (Pmode, operands[0], 1*W));
+  rtx stack = gen_rtx_MEM (Pmode, plus_constant (Pmode, operands[0], 2*W));
+  rtx gpv = gen_rtx_MEM (Pmode, plus_constant (Pmode, operands[0], 3*W));
   rtx pv = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
   /* Use gen_raw_REG to avoid being given pic_offset_table_rtx.
      The target is bound to be using $28 as the global pointer

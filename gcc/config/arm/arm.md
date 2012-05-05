@@ -4929,7 +4929,8 @@
     rtx addr = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
 
     mem1 = change_address (operands[1], QImode, addr);
-    mem2 = change_address (operands[1], QImode, plus_constant (addr, 1));
+    mem2 = change_address (operands[1], QImode,
+			   plus_constant (Pmode, addr, 1));
     operands[0] = gen_lowpart (SImode, operands[0]);
     operands[1] = mem1;
     operands[2] = gen_reg_rtx (SImode);
@@ -5445,7 +5446,7 @@
       return thumb_load_double_from_address (operands);
     case 6:
       operands[2] = gen_rtx_MEM (SImode,
-			     plus_constant (XEXP (operands[0], 0), 4));
+			     plus_constant (Pmode, XEXP (operands[0], 0), 4));
       output_asm_insn (\"str\\t%1, %0\;str\\t%H1, %2\", operands);
       return \"\";
     case 7:
@@ -6223,7 +6224,8 @@
     rtx addr = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
 
     mem1 = change_address (operands[1], QImode, addr);
-    mem2 = change_address (operands[1], QImode, plus_constant (addr, 1));
+    mem2 = change_address (operands[1], QImode,
+			   plus_constant (Pmode, addr, 1));
     operands[0] = gen_lowpart (SImode, operands[0]);
     operands[1] = mem1;
     operands[2] = gen_reg_rtx (SImode);
@@ -6746,7 +6748,8 @@
       return thumb_load_double_from_address (operands);
     case 4:
       operands[2] = gen_rtx_MEM (SImode,
-				 plus_constant (XEXP (operands[0], 0), 4));
+				 plus_constant (Pmode,
+						XEXP (operands[0], 0), 4));
       output_asm_insn (\"str\\t%1, %0\;str\\t%H1, %2\", operands);
       return \"\";
     case 5:
@@ -8756,7 +8759,7 @@
 	rtx reg = XEXP (XVECEXP (par, 0, i), 0);
 
 	if (size != 0)
-	  emit_move_insn (addr, plus_constant (addr, size));
+	  emit_move_insn (addr, plus_constant (Pmode, addr, size));
 
 	mem = change_address (mem, GET_MODE (reg), NULL);
 	if (REGNO (reg) == R0_REGNUM)
@@ -8803,7 +8806,7 @@
 	rtx reg = SET_DEST (XVECEXP (operands[1], 0, i));
 
 	if (size != 0)
-	  emit_move_insn (addr, plus_constant (addr, size));
+	  emit_move_insn (addr, plus_constant (Pmode, addr, size));
 
 	mem = change_address (mem, GET_MODE (reg), NULL);
 	if (REGNO (reg) == R0_REGNUM)

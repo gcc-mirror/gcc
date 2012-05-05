@@ -1433,9 +1433,9 @@ canon_rtx (rtx x)
       if (x0 != XEXP (x, 0) || x1 != XEXP (x, 1))
 	{
 	  if (CONST_INT_P (x0))
-	    return plus_constant (x1, INTVAL (x0));
+	    return plus_constant (GET_MODE (x), x1, INTVAL (x0));
 	  else if (CONST_INT_P (x1))
-	    return plus_constant (x0, INTVAL (x1));
+	    return plus_constant (GET_MODE (x), x0, INTVAL (x1));
 	  return gen_rtx_PLUS (GET_MODE (x), x0, x1);
 	}
     }
@@ -2928,7 +2928,8 @@ init_alias_analysis (void)
 			   && (t = get_reg_known_value (REGNO (XEXP (src, 0))))
 			   && CONST_INT_P (XEXP (src, 1)))
 		    {
-		      t = plus_constant (t, INTVAL (XEXP (src, 1)));
+		      t = plus_constant (GET_MODE (src), t,
+					 INTVAL (XEXP (src, 1)));
 		      set_reg_known_value (regno, t);
 		      set_reg_known_equiv_p (regno, 0);
 		    }
