@@ -1,5 +1,17 @@
 2012-05-05  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR fortran/49010
+	PR fortran/24518
+	* intrinsic.texi (MOD, MODULO): Mention sign and magnitude of result.
+	* simplify.c (gfc_simplify_mod): Use mpfr_fmod.
+	(gfc_simplify_modulo): Likewise, use copysign to fix the result if
+	zero.
+	* trans-intrinsic.c (gfc_conv_intrinsic_mod): Remove fallback as
+	builtin_fmod is always available. For modulo, call copysign to fix
+	the result when signed zeros are enabled.
+
+2012-05-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
         * gfortran.texi (GFORTRAN_TMPDIR): Rename to TMPDIR, explain
         algorithm for choosing temp directory.
 

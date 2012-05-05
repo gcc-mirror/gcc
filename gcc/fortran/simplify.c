@@ -4222,7 +4222,6 @@ gfc_expr *
 gfc_simplify_mod (gfc_expr *a, gfc_expr *p)
 {
   gfc_expr *result;
-  mpfr_t tmp;
   int kind;
 
   if (a->expr_type != EXPR_CONSTANT || p->expr_type != EXPR_CONSTANT)
@@ -4254,12 +4253,8 @@ gfc_simplify_mod (gfc_expr *a, gfc_expr *p)
 	  }
 
 	gfc_set_model_kind (kind);
-	mpfr_init (tmp);
-	mpfr_div (tmp, a->value.real, p->value.real, GFC_RND_MODE);
-	mpfr_trunc (tmp, tmp);
-	mpfr_mul (tmp, tmp, p->value.real, GFC_RND_MODE);
-	mpfr_sub (result->value.real, a->value.real, tmp, GFC_RND_MODE);
-	mpfr_clear (tmp);
+	mpfr_fmod (result->value.real, a->value.real, p->value.real, 
+		   GFC_RND_MODE);
 	break;
 
       default:
@@ -4274,7 +4269,6 @@ gfc_expr *
 gfc_simplify_modulo (gfc_expr *a, gfc_expr *p)
 {
   gfc_expr *result;
-  mpfr_t tmp;
   int kind;
 
   if (a->expr_type != EXPR_CONSTANT || p->expr_type != EXPR_CONSTANT)
@@ -4308,12 +4302,17 @@ gfc_simplify_modulo (gfc_expr *a, gfc_expr *p)
 	  }
 
 	gfc_set_model_kind (kind);
-	mpfr_init (tmp);
-	mpfr_div (tmp, a->value.real, p->value.real, GFC_RND_MODE);
-	mpfr_floor (tmp, tmp);
-	mpfr_mul (tmp, tmp, p->value.real, GFC_RND_MODE);
-	mpfr_sub (result->value.real, a->value.real, tmp, GFC_RND_MODE);
-	mpfr_clear (tmp);
+	mpfr_fmod (result->value.real, a->value.real, p->value.real, 
+		   GFC_RND_MODE);
+	if (mpfr_cmp_ui (result->value.real, 0) != 0)
+	  {
+	    if (mpfr_signbit (a->value.real) != mpfr_signbit (p->value.real))
+	      mpfr_add (result->value.real, result->value.real, p->value.real,
+			GFC_RND_MODE);
+	  }
+	else
+	  mpfr_copysign (result->value.real, result->value.real, 
+			 p->value.real, GFC_RND_MODE);
 	break;
 
       default:

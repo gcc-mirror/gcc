@@ -1,3 +1,10 @@
+2012-05-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/49010
+	PR fortran/24518
+	* gfortran.dg/mod_sign0_1.f90: New test.
+	* gfortran.dg/mod_large_1.f90: New test.
+
 2012-05-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53175
