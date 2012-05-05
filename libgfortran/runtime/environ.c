@@ -56,6 +56,19 @@ variable;
 
 static void init_unformatted (variable *);
 
+
+#ifdef FALLBACK_SECURE_GETENV
+char *
+secure_getenv (const char *name)
+{
+  if ((getuid () == geteuid ()) && (getgid () == getegid ()))
+    return getenv (name);
+  else
+    return NULL;
+}
+#endif
+
+
 /* print_spaces()-- Print a particular number of spaces.  */
 
 static void
@@ -285,9 +298,8 @@ static variable variable_table[] = {
    "Unit number that will be preconnected to standard error\n"
    "(No preconnection if negative)", 0},
 
-  {"GFORTRAN_TMPDIR", 0, NULL, init_string, show_string,
-   "Directory for scratch files.  Overrides the TMP environment variable\n"
-   "If TMP is not set " DEFAULT_TEMPDIR " is used.", 0},
+  {"TMPDIR", 0, NULL, init_string, show_string,
+   "Directory for scratch files.", 0},
 
   {"GFORTRAN_UNBUFFERED_ALL", 0, &options.all_unbuffered, init_boolean,
    show_boolean,

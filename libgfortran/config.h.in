@@ -426,6 +426,9 @@
 /* Define to 1 if you have the `getcwd' function. */
 #undef HAVE_GETCWD
 
+/* Define to 1 if you have the `getegid' function. */
+#undef HAVE_GETEGID
+
 /* Define to 1 if you have the `geteuid' function. */
 #undef HAVE_GETEUID
 
@@ -833,6 +836,9 @@
 
 /* Define to 1 if you have the `ynl' function. */
 #undef HAVE_YNL
+
+/* Define to 1 if you have the `__secure_getenv' function. */
+#undef HAVE___SECURE_GETENV
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

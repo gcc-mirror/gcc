@@ -266,7 +266,7 @@ ftruncate chsize chdir getlogin gethostname kill link symlink sleep ttyname \
 alarm access fork execl wait setmode execve pipe dup2 close \
 strcasestr getrlimit gettimeofday stat fstat lstat getpwuid vsnprintf dup \
 getcwd localtime_r gmtime_r strerror_r getpwuid_r ttyname_r clock_gettime \
-readlink getgid getpid getppid getuid geteuid umask)
+readlink getgid getpid getppid getuid geteuid umask getegid __secure_getenv)
 
 # Check for C99 (and other IEEE) math functions
 GCC_CHECK_MATH_FUNC([acosf])

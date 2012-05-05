@@ -1,3 +1,18 @@
+2012-05-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * config.h.in: Regenerated.
+        * configure: Regenerated.
+        * configure.ac: Add checks for getegid and __secure_getenv.
+        * io/unix.c (P_tmpdir): Fallback definition for macro.
+        (tempfile_open): New function.
+        (tempfile): Use secure_getenv, call tempfile_open to try each
+        directory in turn.
+        * libgfortran.h (DEFAULT_TMPDIR): Remove macro.
+        (secure_getenv): New macro/prototype.
+        * runtime/environ.c (secure_getenv): New function.
+        (variable_table): Rename GFORTRAN_TMPDIR to TMPDIR.
+        * runtime/main.c (find_addr2line): Use secure_getenv.
+
 2012-04-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53051

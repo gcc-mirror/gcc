@@ -163,7 +163,7 @@ find_addr2line (void)
 {
 #ifdef HAVE_ACCESS
 #define A2L_LEN 10
-  char *path = getenv ("PATH");
+  char *path = secure_getenv ("PATH");
   if (!path)
     return;
   size_t n = strlen (path);
