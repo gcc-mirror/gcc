@@ -4882,6 +4882,9 @@ gfc_is_associate_pointer (gfc_symbol* sym)
   if (!sym->assoc)
     return false;
 
+  if (sym->ts.type == BT_CLASS)
+    return true;
+
   if (!sym->assoc->variable)
     return false;
 

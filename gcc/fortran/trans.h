@@ -348,8 +348,10 @@ tree gfc_vtable_size_get (tree);
 tree gfc_vtable_extends_get (tree);
 tree gfc_vtable_def_init_get (tree);
 tree gfc_vtable_copy_get (tree);
+tree gfc_get_vptr_from_expr (tree);
 tree gfc_get_class_array_ref (tree, tree);
 tree gfc_copy_class_to_class (tree, tree, tree);
+void gfc_conv_derived_to_class (gfc_se *, gfc_expr *, gfc_typespec, tree);
 void gfc_conv_class_to_class (gfc_se *, gfc_expr *, gfc_typespec, bool);
 
 /* Initialize an init/cleanup block.  */
@@ -827,6 +829,8 @@ struct GTY((variable_size)) lang_decl {
 #define GFC_ARRAY_TYPE_P(node) TYPE_LANG_FLAG_2(node)
 /* Fortran POINTER type.  */
 #define GFC_POINTER_TYPE_P(node) TYPE_LANG_FLAG_3(node)
+/* Fortran CLASS type.  */
+#define GFC_CLASS_TYPE_P(node) TYPE_LANG_FLAG_4(node)
 /* The GFC_TYPE_ARRAY_* members are present in both descriptor and
    descriptorless array types.  */
 #define GFC_TYPE_ARRAY_LBOUND(node, dim) \

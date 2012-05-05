@@ -3068,6 +3068,36 @@ add_to_offset (tree *cst_offset, tree *offset, tree t)
     }
 }
 
+
+static tree
+build_array_ref (tree desc, tree offset, tree decl)
+{
+  tree tmp;
+
+  /* Class array references need special treatment because the assigned
+     type size needs to be used to point to the element.  */ 
+  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc))
+	&& TREE_CODE (desc) == COMPONENT_REF
+	&& GFC_CLASS_TYPE_P (TREE_TYPE (TREE_OPERAND (desc, 0))))
+    {
+      tree type = gfc_get_element_type (TREE_TYPE (desc));
+      tmp = TREE_OPERAND (desc, 0);
+      tmp = gfc_get_class_array_ref (offset, tmp);
+      tmp = fold_convert (build_pointer_type (type), tmp);
+      tmp = build_fold_indirect_ref_loc (input_location, tmp);
+    }
+  else
+    {
+      tmp = gfc_conv_array_data (desc);
+      tmp = build_fold_indirect_ref_loc (input_location, tmp);
+      tmp = gfc_build_array_ref (tmp, offset, decl);
+    }
+
+  return tmp;
+}
+
+
+
 /* Build an array reference.  se->expr already holds the array descriptor.
    This should be either a variable, indirect variable reference or component
    reference.  For arrays which do not have a descriptor, se->expr will be
@@ -3195,10 +3225,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
     offset = fold_build2_loc (input_location, PLUS_EXPR,
 			      gfc_array_index_type, offset, cst_offset);
 
-  /* Access the calculated element.  */
-  tmp = gfc_conv_array_data (se->expr);
-  tmp = build_fold_indirect_ref (tmp);
-  se->expr = gfc_build_array_ref (tmp, offset, sym->backend_decl);
+  se->expr = build_array_ref (se->expr, offset, sym->backend_decl);
 }
 
 
@@ -6010,10 +6037,7 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 	return;
     }
 
-  tmp = gfc_conv_array_data (desc);
-  tmp = build_fold_indirect_ref_loc (input_location,
-				 tmp);
-  tmp = gfc_build_array_ref (tmp, offset, NULL);
+  tmp = build_array_ref (desc, offset, NULL);
 
   /* Offset the data pointer for pointer assignments from arrays with
      subreferences; e.g. my_integer => my_type(:)%integer_component.  */

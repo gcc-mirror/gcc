@@ -4904,14 +4904,19 @@ resolve_ref (gfc_expr *expr)
 	    {
 	      /* F03:C614.  */
 	      if (ref->u.c.component->attr.pointer
-		  || ref->u.c.component->attr.proc_pointer)
+		  || ref->u.c.component->attr.proc_pointer
+		  || (ref->u.c.component->ts.type == BT_CLASS
+			&& CLASS_DATA (ref->u.c.component)->attr.pointer))
 		{
 		  gfc_error ("Component to the right of a part reference "
 			     "with nonzero rank must not have the POINTER "
 			     "attribute at %L", &expr->where);
 		  return FAILURE;
 		}
-	      else if (ref->u.c.component->attr.allocatable)
+	      else if (ref->u.c.component->attr.allocatable
+			|| (ref->u.c.component->ts.type == BT_CLASS
+			    && CLASS_DATA (ref->u.c.component)->attr.allocatable))
+
 		{
 		  gfc_error ("Component to the right of a part reference "
 			     "with nonzero rank must not have the ALLOCATABLE "
@@ -5081,9 +5086,15 @@ resolve_variable (gfc_expr *e)
     }
 
   /* If this is an associate-name, it may be parsed with an array reference
-     in error even though the target is scalar.  Fail directly in this case.  */
-  if (sym->assoc && !sym->attr.dimension && e->ref && e->ref->type == REF_ARRAY)
-    return FAILURE;
+     in error even though the target is scalar.  Fail directly in this case.
+     TODO Understand why class scalar expressions must be excluded.  */
+  if (sym->assoc && !(sym->ts.type == BT_CLASS && e->rank == 0))
+    {
+      if (sym->ts.type == BT_CLASS)
+	gfc_fix_class_refs (e);
+      if (!sym->attr.dimension && e->ref && e->ref->type == REF_ARRAY)
+	return FAILURE;
+    }
 
   if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.generic)
     sym->ts.u.derived = gfc_find_dt_in_generic (sym->ts.u.derived);
@@ -7941,7 +7952,7 @@ gfc_type_is_extensible (gfc_symbol *sym)
 }
 
 
-/* Resolve an associate name:  Resolve target and ensure the type-spec is
+/* Resolve an associate-name:  Resolve target and ensure the type-spec is
    correct as well as possibly the array-spec.  */
 
 static void
@@ -7997,8 +8008,25 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       sym->attr.dimension = 0;
       return;
     }
-  if (target->rank > 0)
+
+  /* We cannot deal with class selectors that need temporaries.  */
+  if (target->ts.type == BT_CLASS
+	&& gfc_ref_needs_temporary_p (target->ref))
+    {
+      gfc_error ("CLASS selector at %L needs a temporary which is not "
+		 "yet implemented", &target->where);
+      return;
+    }
+
+  if (target->ts.type != BT_CLASS && target->rank > 0)
     sym->attr.dimension = 1;
+  else if (target->ts.type == BT_CLASS)
+    gfc_fix_class_refs (target);
+
+  /* The associate-name will have a correct type by now. Make absolutely
+     sure that it has not picked up a dimension attribute.  */
+  if (sym->ts.type == BT_CLASS)
+    sym->attr.dimension = 0;
 
   if (sym->attr.dimension)
     {

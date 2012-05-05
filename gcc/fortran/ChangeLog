@@ -1,3 +1,35 @@
+2012-05-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41600
+	* trans-array.c (build_array_ref): New static function.
+	(gfc_conv_array_ref, gfc_get_dataptr_offset): Call it.
+	* trans-expr.c (gfc_get_vptr_from_expr): New function.
+	(gfc_conv_derived_to_class): Add a new argument for a caller
+	supplied vptr and use it if it is not NULL.
+	(gfc_conv_procedure_call): Add NULL to call to above.
+	symbol.c (gfc_is_associate_pointer): Return true if symbol is
+	a class object.
+	* trans-stmt.c (trans_associate_var): Handle class associate-
+	names.
+	* expr.c (gfc_get_variable_expr): Supply the array-spec if
+	possible.
+	* trans-types.c (gfc_typenode_for_spec): Set GFC_CLASS_TYPE_P
+	for class types.
+	* trans.h : Add prototypes for gfc_get_vptr_from_expr and
+	gfc_conv_derived_to_class. Define GFC_CLASS_TYPE_P.
+	* resolve.c (resolve_variable): For class arrays, ensure that
+	the target expression has all the necessary _data references.
+	(resolve_assoc_var): Throw a "not yet implemented" error for
+	class array selectors that need a temporary.
+	* match.c (copy_ts_from_selector_to_associate,
+	select_derived_set_tmp, select_class_set_tmp): New functions.
+	(select_type_set_tmp): Call one of last two new functions.
+	(gfc_match_select_type): Copy_ts_from_selector_to_associate is
+	called if associate-name is typed.
+
+	PR fortran/53191
+	* resolve.c (resolve_ref): C614 applied to class expressions.
+
 2012-05-05  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/49010

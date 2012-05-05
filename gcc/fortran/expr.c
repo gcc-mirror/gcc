@@ -3821,6 +3821,9 @@ gfc_get_variable_expr (gfc_symtree *var)
       e->ref = gfc_get_ref ();
       e->ref->type = REF_ARRAY;
       e->ref->u.ar.type = AR_FULL;
+      e->ref->u.ar.as = gfc_copy_array_spec (var->n.sym->ts.type == BT_CLASS
+					     ? CLASS_DATA (var->n.sym)->as
+					     : var->n.sym->as);
     }
 
   return e;
