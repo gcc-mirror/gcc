@@ -1,3 +1,9 @@
+2012-05-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/43772
+	* c-common.c (warn_logical_operator): Do not warn if either side
+	is already true or false.
+
 2012-05-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/51712

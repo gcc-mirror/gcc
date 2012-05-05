@@ -1612,31 +1612,50 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 	   || INTEGRAL_TYPE_P (TREE_TYPE (op_right))))
     return;
 
-  lhs = make_range (op_left, &in0_p, &low0, &high0, &strict_overflow_p);
-  rhs = make_range (op_right, &in1_p, &low1, &high1, &strict_overflow_p);
 
-  if (lhs && TREE_CODE (lhs) == C_MAYBE_CONST_EXPR)
+  /* We first test whether either side separately is trivially true
+     (with OR) or trivially false (with AND).  If so, do not warn.
+     This is a common idiom for testing ranges of data types in
+     portable code.  */
+  lhs = make_range (op_left, &in0_p, &low0, &high0, &strict_overflow_p);
+  if (!lhs)
+    return;
+  if (TREE_CODE (lhs) == C_MAYBE_CONST_EXPR)
     lhs = C_MAYBE_CONST_EXPR_EXPR (lhs);
 
-  if (rhs && TREE_CODE (rhs) == C_MAYBE_CONST_EXPR)
+  /* If this is an OR operation, invert both sides; now, the result
+     should be always false to get a warning.  */
+  if (or_op)
+    in0_p = !in0_p;
+
+  tem = build_range_check (UNKNOWN_LOCATION, type, lhs, in0_p, low0, high0);
+  if (integer_zerop (tem))
+    return;
+
+  rhs = make_range (op_right, &in1_p, &low1, &high1, &strict_overflow_p);
+  if (!rhs)
+    return;
+  if (TREE_CODE (rhs) == C_MAYBE_CONST_EXPR)
     rhs = C_MAYBE_CONST_EXPR_EXPR (rhs);
 
-  /* If this is an OR operation, invert both sides; we will invert
-     again at the end.  */
+  /* If this is an OR operation, invert both sides; now, the result
+     should be always false to get a warning.  */
   if (or_op)
-    in0_p = !in0_p, in1_p = !in1_p;
+    in1_p = !in1_p;
 
-  /* If both expressions are the same, if we can merge the ranges, and we
-     can build the range test, return it or it inverted.  */
-  if (lhs && rhs && operand_equal_p (lhs, rhs, 0)
+  tem = build_range_check (UNKNOWN_LOCATION, type, rhs, in1_p, low1, high1);
+  if (integer_zerop (tem))
+    return;
+
+  /* If both expressions have the same operand, if we can merge the
+     ranges, and if the range test is always false, then warn.  */
+  if (operand_equal_p (lhs, rhs, 0)
       && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
 		       in1_p, low1, high1)
       && 0 != (tem = build_range_check (UNKNOWN_LOCATION,
-					type, lhs, in_p, low, high)))
+					type, lhs, in_p, low, high))
+      && integer_zerop (tem))
     {
-      if (TREE_CODE (tem) != INTEGER_CST)
-	return;
-
       if (or_op)
         warning_at (location, OPT_Wlogical_op,
                     "logical %<or%> "
