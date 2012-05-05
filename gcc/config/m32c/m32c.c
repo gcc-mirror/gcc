@@ -1178,7 +1178,8 @@ m32c_return_addr_rtx (int count)
     }
 
   ra_mem =
-    gen_rtx_MEM (mode, plus_constant (gen_rtx_REG (Pmode, FP_REGNO), offset));
+    gen_rtx_MEM (mode, plus_constant (Pmode, gen_rtx_REG (Pmode, FP_REGNO),
+				      offset));
   return copy_to_mode_reg (mode, ra_mem);
 }
 
@@ -4178,7 +4179,8 @@ m32c_expand_insv (rtx *operands)
       && GET_CODE (op0) == MEM)
     {
       /* We are little endian.  */
-      rtx new_mem = gen_rtx_MEM (QImode, plus_constant (XEXP (op0, 0), 1));
+      rtx new_mem = gen_rtx_MEM (QImode, plus_constant (Pmode,
+							XEXP (op0, 0), 1));
       MEM_COPY_ATTRIBUTES (new_mem, op0);
       mask >>= 8;
     }

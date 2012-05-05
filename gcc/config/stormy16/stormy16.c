@@ -1053,7 +1053,8 @@ xstormy16_expand_prologue (void)
 					     gen_rtx_MEM (Pmode, stack_pointer_rtx),
 					     reg);
 	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (Pmode, stack_pointer_rtx,
-					     plus_constant (stack_pointer_rtx,
+					     plus_constant (Pmode,
+							    stack_pointer_rtx,
 							    GET_MODE_SIZE (Pmode)));
 	add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 	RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 0)) = 1;
@@ -1076,7 +1077,8 @@ xstormy16_expand_prologue (void)
 					     gen_rtx_MEM (Pmode, stack_pointer_rtx),
 					     reg);
 	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (Pmode, stack_pointer_rtx,
-					     plus_constant (stack_pointer_rtx,
+					     plus_constant (Pmode, \
+							    stack_pointer_rtx,
 							    GET_MODE_SIZE (Pmode)));
 	add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 	RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 0)) = 1;
@@ -2564,7 +2566,7 @@ combine_bnp (rtx insn)
 
       if (! (mask & 0xff))
 	{
-	  addr = plus_constant (addr, 1);
+	  addr = plus_constant (Pmode, addr, 1);
 	  mask >>= 8;
 	}
       mem = gen_rtx_MEM (QImode, addr);

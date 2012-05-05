@@ -496,12 +496,12 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
   /* If we have already instantiated virtual registers, return the actual
      address relative to the frame pointer.  */
   if (virtuals_instantiated)
-    addr = plus_constant (frame_pointer_rtx,
+    addr = plus_constant (Pmode, frame_pointer_rtx,
 			  trunc_int_for_mode
 			  (slot_offset + bigend_correction
 			   + STARTING_FRAME_OFFSET, Pmode));
   else
-    addr = plus_constant (virtual_stack_vars_rtx,
+    addr = plus_constant (Pmode, virtual_stack_vars_rtx,
 			  trunc_int_for_mode
 			  (slot_offset + bigend_correction,
 			   Pmode));
@@ -1449,7 +1449,7 @@ instantiate_virtual_regs_in_rtx (rtx *loc, void *data)
       new_rtx = instantiate_new_reg (x, &offset);
       if (new_rtx)
 	{
-	  *loc = plus_constant (new_rtx, offset);
+	  *loc = plus_constant (GET_MODE (x), new_rtx, offset);
 	  if (changed)
 	    *changed = true;
 	}
@@ -1459,7 +1459,7 @@ instantiate_virtual_regs_in_rtx (rtx *loc, void *data)
       new_rtx = instantiate_new_reg (XEXP (x, 0), &offset);
       if (new_rtx)
 	{
-	  new_rtx = plus_constant (new_rtx, offset);
+	  new_rtx = plus_constant (GET_MODE (x), new_rtx, offset);
 	  *loc = simplify_gen_binary (PLUS, GET_MODE (x), new_rtx, XEXP (x, 1));
 	  if (changed)
 	    *changed = true;

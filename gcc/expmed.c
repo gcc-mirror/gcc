@@ -4786,7 +4786,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 		remainder = expand_binop (compute_mode, sub_optab, op0, tem,
 					  remainder, 1, OPTAB_LIB_WIDEN);
 	      }
-	    tem = plus_constant (op1, -1);
+	    tem = plus_constant (compute_mode, op1, -1);
 	    tem = expand_shift (RSHIFT_EXPR, compute_mode, tem, 1, NULL_RTX, 1);
 	    do_cmp_and_jump (remainder, tem, LEU, compute_mode, label);
 	    expand_inc (quotient, const1_rtx);

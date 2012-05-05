@@ -2682,7 +2682,8 @@ xtensa_expand_prologue (void)
   note_rtx = gen_rtx_SET (VOIDmode, (frame_pointer_needed
 				     ? hard_frame_pointer_rtx
 				     : stack_pointer_rtx),
-			  plus_constant (stack_pointer_rtx, -total_size));
+			  plus_constant (Pmode, stack_pointer_rtx,
+					 -total_size));
   RTX_FRAME_RELATED_P (insn) = 1;
   add_reg_note (insn, REG_FRAME_RELATED_EXPR, note_rtx);
 }
@@ -2707,7 +2708,7 @@ xtensa_return_addr (int count, rtx frame)
     retaddr = gen_rtx_REG (Pmode, A0_REG);
   else
     {
-      rtx addr = plus_constant (frame, -4 * UNITS_PER_WORD);
+      rtx addr = plus_constant (Pmode, frame, -4 * UNITS_PER_WORD);
       addr = memory_address (Pmode, addr);
       retaddr = gen_reg_rtx (Pmode);
       emit_move_insn (retaddr, gen_rtx_MEM (Pmode, addr));
@@ -3608,7 +3609,8 @@ static rtx
 xtensa_static_chain (const_tree ARG_UNUSED (fndecl), bool incoming_p)
 {
   rtx base = incoming_p ? arg_pointer_rtx : stack_pointer_rtx;
-  return gen_frame_mem (Pmode, plus_constant (base, -5 * UNITS_PER_WORD));
+  return gen_frame_mem (Pmode, plus_constant (Pmode, base,
+					      -5 * UNITS_PER_WORD));
 }
 
 

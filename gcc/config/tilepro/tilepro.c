@@ -356,7 +356,8 @@ tilepro_setup_incoming_varargs (cumulative_args_t cum,
 	{
 	  alias_set_type set = get_varargs_alias_set ();
 	  rtx tmp =
-	    gen_rtx_MEM (BLKmode, plus_constant (virtual_incoming_args_rtx,
+	    gen_rtx_MEM (BLKmode, plus_constant (Pmode, \
+						 virtual_incoming_args_rtx,
 						 -STACK_POINTER_OFFSET -
 						 UNITS_PER_WORD *
 						 (TILEPRO_NUM_ARG_REGS -
@@ -1640,7 +1641,7 @@ tilepro_expand_unaligned_load (rtx dest_reg, rtx mem, HOST_WIDE_INT bitsize,
      implicitly alias surrounding code.  Ideally we'd have some alias
      set that covered all types except those with alignment 8 or
      higher.  */
-  addr_lo = force_reg (Pmode, plus_constant (mema, byte_offset));
+  addr_lo = force_reg (Pmode, plus_constant (Pmode, mema, byte_offset));
   mem_lo = change_address (mem, mode,
 			   gen_rtx_AND (Pmode, addr_lo, GEN_INT (-4)));
   set_mem_alias_set (mem_lo, 0);
@@ -1648,7 +1649,7 @@ tilepro_expand_unaligned_load (rtx dest_reg, rtx mem, HOST_WIDE_INT bitsize,
   /* Load the high word at an address that will not fault if the low
      address is aligned and at the very end of a page.  */
   last_byte_offset = (bit_offset + bitsize - 1) / BITS_PER_UNIT;
-  addr_hi = force_reg (Pmode, plus_constant (mema, last_byte_offset));
+  addr_hi = force_reg (Pmode, plus_constant (Pmode, mema, last_byte_offset));
   mem_hi = change_address (mem, mode,
 			   gen_rtx_AND (Pmode, addr_hi, GEN_INT (-4)));
   set_mem_alias_set (mem_hi, 0);
@@ -4455,7 +4456,7 @@ tilepro_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 
   /* Get pointers to the beginning and end of the code block.  */
   begin_addr = force_reg (Pmode, XEXP (m_tramp, 0));
-  end_addr = force_reg (Pmode, plus_constant (XEXP (m_tramp, 0),
+  end_addr = force_reg (Pmode, plus_constant (Pmode, XEXP (m_tramp, 0),
 					      TRAMPOLINE_SIZE));
 
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),

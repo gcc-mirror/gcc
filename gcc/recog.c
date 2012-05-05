@@ -1969,7 +1969,7 @@ offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
       int good;
 
       y1 = *y2;
-      *y2 = plus_constant (*y2, mode_sz - 1);
+      *y2 = plus_constant (GET_MODE (y), *y2, mode_sz - 1);
       /* Use QImode because an odd displacement may be automatically invalid
 	 for any wider mode.  But it should be valid for a single byte.  */
       good = (*addressp) (QImode, y, as);
@@ -1991,9 +1991,10 @@ offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
       && mode != BLKmode
       && mode_sz <= GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT)
     z = gen_rtx_LO_SUM (GET_MODE (y), XEXP (y, 0),
-			plus_constant (XEXP (y, 1), mode_sz - 1));
+			plus_constant (GET_MODE (y), XEXP (y, 1),
+				       mode_sz - 1));
   else
-    z = plus_constant (y, mode_sz - 1);
+    z = plus_constant (GET_MODE (y), y, mode_sz - 1);
 
   /* Use QImode because an odd displacement may be automatically invalid
      for any wider mode.  But it should be valid for a single byte.  */

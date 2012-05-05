@@ -55,13 +55,15 @@ along with GCC; see the file COPYING3.  If not see
 /* Place the top of the stack for the DWARF2 EH stackadj value.  */
 #define EH_RETURN_STACKADJ_RTX						\
   gen_rtx_MEM (SImode,							\
-	       plus_constant (gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM),\
+	       plus_constant (Pmode,					\
+			      gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM),\
 			      -4))
 
 /* Simple store the return handler into the call frame.  */
 #define EH_RETURN_HANDLER_RTX						\
   gen_rtx_MEM (Pmode,							\
-	       plus_constant (gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM),\
+	       plus_constant (Pmode,					\
+			      gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM),\
 			      16))
 
 

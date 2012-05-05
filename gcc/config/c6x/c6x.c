@@ -735,7 +735,8 @@ c6x_initialize_trampoline (rtx tramp, tree fndecl, rtx cxt)
   tramp = XEXP (tramp, 0);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__gnu_clear_cache"),
 		     LCT_NORMAL, VOIDmode, 2, tramp, Pmode,
-		     plus_constant (tramp, TRAMPOLINE_SIZE), Pmode);
+		     plus_constant (Pmode, tramp, TRAMPOLINE_SIZE),
+		     Pmode);
 #endif
 }
 
@@ -822,7 +823,8 @@ c6x_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
       output_asm_insn ("ldw .d1t1 %3, %2", xops);
 
       /* Adjust the this parameter.  */
-      xops[0] = gen_rtx_MEM (Pmode, plus_constant (a0tmp, vcall_offset));
+      xops[0] = gen_rtx_MEM (Pmode, plus_constant (Pmode, a0tmp,
+						   vcall_offset));
       if (!memory_operand (xops[0], Pmode))
 	{
 	  rtx tmp2 = gen_rtx_REG (Pmode, REG_A1);

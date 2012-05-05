@@ -1555,7 +1555,8 @@ epiphany_emit_save_restore (int min, int limit, rtx addr, int epilogue_p)
 	  if (current_frame_info.first_slot_size > UNITS_PER_WORD)
 	    {
 	      mode = DImode;
-	      addr = plus_constant (addr, - (HOST_WIDE_INT) UNITS_PER_WORD);
+	      addr = plus_constant (Pmode, addr,
+				    - (HOST_WIDE_INT) UNITS_PER_WORD);
 	    }
 	  if (i-- < min || !epilogue_p)
 	    goto next_slot;
@@ -1588,7 +1589,8 @@ epiphany_emit_save_restore (int min, int limit, rtx addr, int epilogue_p)
 	    {
 	      mode = DImode;
 	      i++;
-	      addr = plus_constant (addr, - (HOST_WIDE_INT) UNITS_PER_WORD);
+	      addr = plus_constant (Pmode, addr,
+				    - (HOST_WIDE_INT) UNITS_PER_WORD);
 	    }
 	  /* If it fits in the following stack slot pair, that's fine, too.  */
 	  else if (GET_CODE (addr) == PLUS && (stack_offset & 7) == 4
@@ -1603,7 +1605,8 @@ epiphany_emit_save_restore (int min, int limit, rtx addr, int epilogue_p)
 	      skipped_mem = gen_mem (mode, addr);
 	      mode = DImode;
 	      i++;
-	      addr = plus_constant (addr, - (HOST_WIDE_INT) 2 * UNITS_PER_WORD);
+	      addr = plus_constant (Pmode, addr,
+				    - (HOST_WIDE_INT) 2 * UNITS_PER_WORD);
 	    }
 	}
       reg = gen_rtx_REG (mode, n);
@@ -1621,7 +1624,7 @@ epiphany_emit_save_restore (int min, int limit, rtx addr, int epilogue_p)
 	  continue;
 	}
     next_slot:
-      addr = plus_constant (addr, - (HOST_WIDE_INT) UNITS_PER_WORD);
+      addr = plus_constant (Pmode, addr, -(HOST_WIDE_INT) UNITS_PER_WORD);
       stack_offset -= GET_MODE_SIZE (mode);
     }
 }
@@ -1646,7 +1649,7 @@ epiphany_expand_prologue (void)
 
   if (interrupt_p)
     {
-      addr = plus_constant (stack_pointer_rtx,
+      addr = plus_constant (Pmode, stack_pointer_rtx,
 			    - (HOST_WIDE_INT) 2 * UNITS_PER_WORD);
       if (!lookup_attribute ("forwarder_section",
 			    DECL_ATTRIBUTES (current_function_decl))
@@ -1663,13 +1666,13 @@ epiphany_expand_prologue (void)
       frame_insn (gen_stack_adjust_add (off, mem));
       if (!epiphany_uninterruptible_p (current_function_decl))
 	emit_insn (gen_gie ());
-      addr = plus_constant (stack_pointer_rtx,
+      addr = plus_constant (Pmode, stack_pointer_rtx,
 			    current_frame_info.first_slot_offset
 			    - (HOST_WIDE_INT) 3 * UNITS_PER_WORD);
     }
   else
     {
-      addr = plus_constant (stack_pointer_rtx,
+      addr = plus_constant (Pmode, stack_pointer_rtx,
 			    epiphany_stack_offset
 			    - (HOST_WIDE_INT) UNITS_PER_WORD);
       epiphany_emit_save_restore (0, current_frame_info.small_threshold,
@@ -1689,7 +1692,8 @@ epiphany_expand_prologue (void)
 		       (gen_frame_mem (mode, stack_pointer_rtx),
 			gen_rtx_REG (mode, current_frame_info.first_slot),
 			off, mem));
-	  addr = plus_constant (addr, current_frame_info.first_slot_offset);
+	  addr = plus_constant (Pmode, addr,
+				current_frame_info.first_slot_offset);
 	}
     }
   epiphany_emit_save_restore (current_frame_info.small_threshold,
@@ -1718,7 +1722,7 @@ epiphany_expand_prologue (void)
   else if (current_frame_info.last_slot_offset)
     {
       mem = gen_frame_mem (BLKmode,
-			   plus_constant (stack_pointer_rtx,
+			   plus_constant (Pmode, stack_pointer_rtx,
 					  current_frame_info.last_slot_offset));
       off = GEN_INT (-current_frame_info.last_slot_offset);
       if (!SIMM11 (INTVAL (off)))
@@ -1797,7 +1801,7 @@ epiphany_expand_epilogue (int sibcall_p)
   restore_offset = (interrupt_p
 		    ? - 3 * UNITS_PER_WORD
 		    : epiphany_stack_offset - (HOST_WIDE_INT) UNITS_PER_WORD);
-  addr = plus_constant (stack_pointer_rtx,
+  addr = plus_constant (Pmode, stack_pointer_rtx,
 			(current_frame_info.first_slot_offset
 			 + restore_offset));
   epiphany_emit_save_restore (current_frame_info.small_threshold,
@@ -1832,12 +1836,12 @@ epiphany_expand_epilogue (int sibcall_p)
 		      gen_rtx_REG (SImode, GPR_0));
       emit_move_insn (gen_rtx_REG (word_mode, IRET_REGNUM),
 		      gen_rtx_REG (SImode, GPR_0+1));
-      addr = plus_constant (stack_pointer_rtx,
+      addr = plus_constant (Pmode, stack_pointer_rtx,
 			    - (HOST_WIDE_INT) 2 * UNITS_PER_WORD);
       emit_move_insn (gen_rtx_REG (DImode, GPR_0),
 		      gen_frame_mem (DImode, addr));
     }
-  addr = plus_constant (stack_pointer_rtx,
+  addr = plus_constant (Pmode, stack_pointer_rtx,
 			epiphany_stack_offset - (HOST_WIDE_INT) UNITS_PER_WORD);
   epiphany_emit_save_restore (0, current_frame_info.small_threshold, addr, 1);
   if (!sibcall_p)
@@ -2181,19 +2185,19 @@ epiphany_trampoline_init (rtx tramp_mem, tree fndecl, rtx cxt)
   rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
   rtx tramp = force_reg (Pmode, XEXP (tramp_mem, 0));
 
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 0)),
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (Pmode, tramp, 0)),
 		  gen_rtx_IOR (SImode, GEN_INT (0x4002000b),
 			       EPIPHANY_LOW_RTX (fnaddr)));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)),
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (Pmode, tramp, 4)),
 		  gen_rtx_IOR (SImode, GEN_INT (0x5002000b),
 			       EPIPHANY_HIGH_RTX (fnaddr)));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)),
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (Pmode, tramp, 8)),
 		  gen_rtx_IOR (SImode, GEN_INT (0x2002800b),
 			       EPIPHANY_LOW_RTX (cxt)));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (Pmode, tramp, 12)),
 		  gen_rtx_IOR (SImode, GEN_INT (0x3002800b),
 			       EPIPHANY_HIGH_RTX (cxt)));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 16)),
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (Pmode, tramp, 16)),
 		  GEN_INT (0x0802014f));
 }
 

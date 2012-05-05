@@ -844,7 +844,7 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
   tem = RETURN_ADDR_RTX (count, tem);
 #else
   tem = memory_address (Pmode,
-			plus_constant (tem, GET_MODE_SIZE (Pmode)));
+			plus_constant (Pmode, tem, GET_MODE_SIZE (Pmode)));
   tem = gen_frame_mem (Pmode, tem);
 #endif
   return tem;
@@ -879,14 +879,15 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
   set_mem_alias_set (mem, setjmp_alias_set);
   emit_move_insn (mem, targetm.builtin_setjmp_frame_value ());
 
-  mem = gen_rtx_MEM (Pmode, plus_constant (buf_addr, GET_MODE_SIZE (Pmode))),
+  mem = gen_rtx_MEM (Pmode, plus_constant (Pmode, buf_addr,
+					   GET_MODE_SIZE (Pmode))),
   set_mem_alias_set (mem, setjmp_alias_set);
 
   emit_move_insn (validize_mem (mem),
 		  force_reg (Pmode, gen_rtx_LABEL_REF (Pmode, receiver_label)));
 
   stack_save = gen_rtx_MEM (sa_mode,
-			    plus_constant (buf_addr,
+			    plus_constant (Pmode, buf_addr,
 					   2 * GET_MODE_SIZE (Pmode)));
   set_mem_alias_set (stack_save, setjmp_alias_set);
   emit_stack_save (SAVE_NONLOCAL, &stack_save);
@@ -1007,10 +1008,10 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 #endif
     {
       fp = gen_rtx_MEM (Pmode, buf_addr);
-      lab = gen_rtx_MEM (Pmode, plus_constant (buf_addr,
+      lab = gen_rtx_MEM (Pmode, plus_constant (Pmode, buf_addr,
 					       GET_MODE_SIZE (Pmode)));
 
-      stack = gen_rtx_MEM (sa_mode, plus_constant (buf_addr,
+      stack = gen_rtx_MEM (sa_mode, plus_constant (Pmode, buf_addr,
 						   2 * GET_MODE_SIZE (Pmode)));
       set_mem_alias_set (fp, setjmp_alias_set);
       set_mem_alias_set (lab, setjmp_alias_set);
@@ -1084,7 +1085,8 @@ expand_builtin_nonlocal_goto (tree exp)
   r_save_area = copy_to_reg (r_save_area);
   r_fp = gen_rtx_MEM (Pmode, r_save_area);
   r_sp = gen_rtx_MEM (STACK_SAVEAREA_MODE (SAVE_NONLOCAL),
-		      plus_constant (r_save_area, GET_MODE_SIZE (Pmode)));
+		      plus_constant (Pmode, r_save_area,
+				     GET_MODE_SIZE (Pmode)));
 
   crtl->has_nonlocal_goto = 1;
 
@@ -1154,7 +1156,8 @@ expand_builtin_update_setjmp_buf (rtx buf_addr)
     = gen_rtx_MEM (sa_mode,
 		   memory_address
 		   (sa_mode,
-		    plus_constant (buf_addr, 2 * GET_MODE_SIZE (Pmode))));
+		    plus_constant (Pmode, buf_addr,
+				   2 * GET_MODE_SIZE (Pmode))));
 
   emit_stack_save (SAVE_NONLOCAL, &stack_save);
 }
@@ -1539,7 +1542,7 @@ expand_builtin_apply_args_1 (void)
      as we might have pretended they were passed.  Make sure it's a valid
      operand, as emit_move_insn isn't expected to handle a PLUS.  */
   tem
-    = force_operand (plus_constant (tem, crtl->args.pretend_args_size),
+    = force_operand (plus_constant (Pmode, tem, crtl->args.pretend_args_size),
 		     NULL_RTX);
 #endif
   emit_move_insn (adjust_address (registers, Pmode, 0), tem);
@@ -1660,7 +1663,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   dest = virtual_outgoing_args_rtx;
 #ifndef STACK_GROWS_DOWNWARD
   if (CONST_INT_P (argsize))
-    dest = plus_constant (dest, -INTVAL (argsize));
+    dest = plus_constant (Pmode, dest, -INTVAL (argsize));
   else
     dest = gen_rtx_PLUS (Pmode, dest, negate_rtx (Pmode, argsize));
 #endif
@@ -3352,7 +3355,8 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
 	 adjust it.  */
       if (endp == 1)
 	{
-	  rtx tem = plus_constant (gen_lowpart (GET_MODE (target), target), 1);
+	  rtx tem = plus_constant (GET_MODE (target),
+				   gen_lowpart (GET_MODE (target), target), 1);
 	  emit_move_insn (target, force_operand (tem, NULL_RTX));
 	}
     }
@@ -3451,7 +3455,7 @@ expand_builtin_stpcpy (tree exp, rtx target, enum machine_mode mode)
 		  if (GET_MODE (target) != GET_MODE (ret))
 		    ret = gen_lowpart (GET_MODE (target), ret);
 
-		  ret = plus_constant (ret, INTVAL (len_rtx));
+		  ret = plus_constant (GET_MODE (ret), ret, INTVAL (len_rtx));
 		  ret = emit_move_insn (target, force_operand (ret, NULL_RTX));
 		  gcc_assert (ret);
 

@@ -4152,6 +4152,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   if (!SCALAR_FLOAT_MODE_P (mode))
     {
       rtx result;
+      enum machine_mode ret_mode;
 
       /* Handle a libcall just for the mode we are using.  */
       libfunc = optab_libfunc (cmp_optab, mode);
@@ -4166,9 +4167,9 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	    libfunc = ulibfunc;
 	}
 
+      ret_mode = targetm.libgcc_cmp_return_mode ();
       result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-					targetm.libgcc_cmp_return_mode (),
-					2, x, mode, y, mode);
+					ret_mode, 2, x, mode, y, mode);
 
       /* There are two kinds of comparison routines. Biased routines
 	 return 0/1/2, and unbiased routines return -1/0/1. Other parts
@@ -4186,7 +4187,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       if (!TARGET_LIB_INT_CMP_BIASED && !ALL_FIXED_POINT_MODE_P (mode))
 	{
 	  if (unsignedp)
-	    x = plus_constant (result, 1);
+	    x = plus_constant (ret_mode, result, 1);
 	  else
 	    y = const0_rtx;
 	}

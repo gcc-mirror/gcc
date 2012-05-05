@@ -238,7 +238,7 @@ while (0)
 #define EH_RETURN_STACKADJ_RTX 		gen_rtx_REG (Pmode, 4)
 
 #define EH_RETURN_HANDLER_RTX \
-  gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, -4))
+  gen_rtx_MEM (Pmode, plus_constant (Pmode, arg_pointer_rtx, -4))
 
 #define INCOMING_RETURN_ADDR_RTX	gen_rtx_RA
 

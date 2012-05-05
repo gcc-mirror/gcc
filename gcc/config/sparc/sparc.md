@@ -6436,7 +6436,7 @@
 	 instruction (the most significant 10 bits will be zero).  If so,
 	 update the return address to skip the unimp instruction.  */
       emit_move_insn (value,
-		      gen_rtx_MEM (SImode, plus_constant (rtnreg, 8)));
+		      gen_rtx_MEM (SImode, plus_constant (SImode, rtnreg, 8)));
       emit_insn (gen_lshrsi3 (value, value, GEN_INT (22)));
       emit_insn (gen_update_return (rtnreg, value));
     }

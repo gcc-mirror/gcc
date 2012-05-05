@@ -504,9 +504,9 @@ moxie_static_chain (const_tree fndecl, bool incoming_p)
     return NULL;
 
   if (incoming_p)
-    addr = plus_constant (arg_pointer_rtx, 2 * UNITS_PER_WORD);
+    addr = plus_constant (Pmode, arg_pointer_rtx, 2 * UNITS_PER_WORD);
   else
-    addr = plus_constant (stack_pointer_rtx, -UNITS_PER_WORD);
+    addr = plus_constant (Pmode, stack_pointer_rtx, -UNITS_PER_WORD);
 
   mem = gen_rtx_MEM (Pmode, addr);
   MEM_NOTRAP_P (mem) = 1;

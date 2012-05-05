@@ -770,7 +770,7 @@ avr_incoming_return_addr_rtx (void)
 {
   /* The return address is at the top of the stack.  Note that the push
      was via post-decrement, which means the actual address is off by one.  */
-  return gen_frame_mem (HImode, plus_constant (stack_pointer_rtx, 1));
+  return gen_frame_mem (HImode, plus_constant (Pmode, stack_pointer_rtx, 1));
 }
 
 /*  Helper for expand_prologue.  Emit a push of a byte register.  */
@@ -866,8 +866,8 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
                     gen_rtx_SET (VOIDmode, (frame_pointer_needed
                                             ? frame_pointer_rtx
                                             : stack_pointer_rtx),
-                                 plus_constant (stack_pointer_rtx,
-                                                -(size + live_seq))));
+                                 plus_constant (Pmode, stack_pointer_rtx,
+						-(size + live_seq))));
 
       /* Note that live_seq always contains r28+r29, but the other
          registers to be saved are all below 18.  */
@@ -880,7 +880,8 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
         {
           rtx m, r;
 
-          m = gen_rtx_MEM (QImode, plus_constant (stack_pointer_rtx, offset));
+          m = gen_rtx_MEM (QImode, plus_constant (Pmode, stack_pointer_rtx,
+						  offset));
           r = gen_rtx_REG (QImode, reg);
           add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (VOIDmode, m, r));
         }
@@ -995,13 +996,14 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
                             gen_rtx_SET (VOIDmode, fp, stack_pointer_rtx));
             }
 
-          insn = emit_move_insn (my_fp, plus_constant (my_fp, -size));
+          insn = emit_move_insn (my_fp, plus_constant (Pmode, my_fp, -size));
           if (frame_pointer_needed)
             {
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, fp,
-                                         plus_constant (fp, -size_cfa)));
+                                         plus_constant (Pmode, fp,
+							-size_cfa)));
             }
           
           /* Copy to stack pointer.  Note that since we've already
@@ -1028,8 +1030,9 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-                                         plus_constant (stack_pointer_rtx,
-                                                        -size_cfa)));
+                                         plus_constant (Pmode,
+							stack_pointer_rtx,
+							-size_cfa)));
             }
           
           fp_plus_insns = get_insns ();
@@ -1047,12 +1050,14 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               start_sequence ();
 
               insn = emit_move_insn (stack_pointer_rtx,
-                                     plus_constant (stack_pointer_rtx, -size));
+                                     plus_constant (Pmode, stack_pointer_rtx,
+						    -size));
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-                                         plus_constant (stack_pointer_rtx,
-                                                        -size_cfa)));
+                                         plus_constant (Pmode,
+							stack_pointer_rtx,
+							-size_cfa)));
               if (frame_pointer_needed)
                 {
                   insn = emit_move_insn (fp, stack_pointer_rtx);
@@ -1273,7 +1278,7 @@ expand_epilogue (bool sibcall_p)
       if (size)
         {
           emit_move_insn (frame_pointer_rtx,
-                          plus_constant (frame_pointer_rtx, size));
+                          plus_constant (Pmode, frame_pointer_rtx, size));
         }
         
       emit_insn (gen_epilogue_restores (gen_int_mode (live_seq, HImode)));
@@ -1319,7 +1324,7 @@ expand_epilogue (bool sibcall_p)
       if (!frame_pointer_needed)
         emit_move_insn (fp, stack_pointer_rtx);
 
-      emit_move_insn (my_fp, plus_constant (my_fp, size));
+      emit_move_insn (my_fp, plus_constant (Pmode, my_fp, size));
 
       /* Copy to stack pointer.  */
 
@@ -1344,7 +1349,7 @@ expand_epilogue (bool sibcall_p)
           start_sequence ();
 
           emit_move_insn (stack_pointer_rtx,
-                          plus_constant (stack_pointer_rtx, size));
+                          plus_constant (Pmode, stack_pointer_rtx, size));
 
           sp_plus_insns = get_insns ();
           end_sequence ();
@@ -6594,7 +6599,7 @@ avr_const_address_lo16 (rtx x)
           const char *name = XSTR (XEXP (XEXP (x, 0), 0), 0);
           
           lo16 = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
-          lo16 = gen_rtx_CONST (Pmode, plus_constant (lo16, offset));
+          lo16 = gen_rtx_CONST (Pmode, plus_constant (Pmode, lo16, offset));
           
           return lo16;
         }

@@ -206,7 +206,7 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 
 #undef EH_RETURN_HANDLER_RTX
 #define EH_RETURN_HANDLER_RTX \
-  gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, 8))
+  gen_rtx_MEM (Pmode, plus_constant (Pmode, stack_pointer_rtx, 8))
 
 #define LINK_EH_SPEC "vms-dwarf2eh.o%s "
 #define LINK_GCC_C_SEQUENCE_SPEC "%G"

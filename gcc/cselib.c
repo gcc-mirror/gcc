@@ -1866,7 +1866,8 @@ cselib_subst_to_values (rtx x, enum machine_mode memmode)
       i = GET_MODE_SIZE (memmode);
       if (code == PRE_DEC)
 	i = -i;
-      return cselib_subst_to_values (plus_constant (XEXP (x, 0), i),
+      return cselib_subst_to_values (plus_constant (GET_MODE (x),
+						    XEXP (x, 0), i),
 				     memmode);
 
     case PRE_MODIFY:

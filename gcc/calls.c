@@ -868,6 +868,7 @@ save_fixed_argument_area (int reg_parm_stack_space, rtx argblock, int *low_to_sa
 	int num_to_save;
 	enum machine_mode save_mode;
 	int delta;
+	rtx addr;
 	rtx stack_area;
 	rtx save_area;
 
@@ -891,10 +892,8 @@ save_fixed_argument_area (int reg_parm_stack_space, rtx argblock, int *low_to_sa
 #else
 	delta = low;
 #endif
-	stack_area = gen_rtx_MEM (save_mode,
-				  memory_address (save_mode,
-						  plus_constant (argblock,
-								 delta)));
+	addr = plus_constant (Pmode, argblock, delta);
+	stack_area = gen_rtx_MEM (save_mode, memory_address (save_mode, addr));
 
 	set_mem_align (stack_area, PARM_BOUNDARY);
 	if (save_mode == BLKmode)
@@ -920,16 +919,15 @@ restore_fixed_argument_area (rtx save_area, rtx argblock, int high_to_save, int 
 {
   enum machine_mode save_mode = GET_MODE (save_area);
   int delta;
-  rtx stack_area;
+  rtx addr, stack_area;
 
 #ifdef ARGS_GROW_DOWNWARD
   delta = -high_to_save;
 #else
   delta = low_to_save;
 #endif
-  stack_area = gen_rtx_MEM (save_mode,
-			    memory_address (save_mode,
-					    plus_constant (argblock, delta)));
+  addr = plus_constant (Pmode, argblock, delta);
+  stack_area = gen_rtx_MEM (save_mode, memory_address (save_mode, addr));
   set_mem_align (stack_area, PARM_BOUNDARY);
 
   if (save_mode != BLKmode)
@@ -1560,11 +1558,11 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	    continue;
 
 	  if (CONST_INT_P (offset))
-	    addr = plus_constant (arg_reg, INTVAL (offset));
+	    addr = plus_constant (Pmode, arg_reg, INTVAL (offset));
 	  else
 	    addr = gen_rtx_PLUS (Pmode, arg_reg, offset);
 
-	  addr = plus_constant (addr, arg_offset);
+	  addr = plus_constant (Pmode, addr, arg_offset);
 
 	  if (args[i].partial != 0)
 	    {
@@ -1594,11 +1592,11 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	  set_mem_align (args[i].stack, align);
 
 	  if (CONST_INT_P (slot_offset))
-	    addr = plus_constant (arg_reg, INTVAL (slot_offset));
+	    addr = plus_constant (Pmode, arg_reg, INTVAL (slot_offset));
 	  else
 	    addr = gen_rtx_PLUS (Pmode, arg_reg, slot_offset);
 
-	  addr = plus_constant (addr, arg_offset);
+	  addr = plus_constant (Pmode, addr, arg_offset);
 
 	  if (args[i].partial != 0)
 	    {
@@ -1759,7 +1757,7 @@ internal_arg_pointer_based_exp (rtx rtl, bool toplevel)
       rtx val = internal_arg_pointer_based_exp (XEXP (rtl, 0), toplevel);
       if (val == NULL_RTX || val == pc_rtx)
 	return val;
-      return plus_constant (val, INTVAL (XEXP (rtl, 1)));
+      return plus_constant (Pmode, val, INTVAL (XEXP (rtl, 1)));
     }
 
   /* When called at the topmost level, scan pseudo assignments in between the
@@ -2716,9 +2714,9 @@ expand_call (tree exp, rtx target, int ignore)
 	  argblock = crtl->args.internal_arg_pointer;
 	  argblock
 #ifdef STACK_GROWS_DOWNWARD
-	    = plus_constant (argblock, crtl->args.pretend_args_size);
+	    = plus_constant (Pmode, argblock, crtl->args.pretend_args_size);
 #else
-	    = plus_constant (argblock, -crtl->args.pretend_args_size);
+	    = plus_constant (Pmode, argblock, -crtl->args.pretend_args_size);
 #endif
 	  stored_args_map = sbitmap_alloc (args_size.constant);
 	  sbitmap_zero (stored_args_map);
@@ -2853,7 +2851,7 @@ expand_call (tree exp, rtx target, int ignore)
 		    {
 		      argblock = push_block (GEN_INT (needed), 0, 0);
 #ifdef ARGS_GROW_DOWNWARD
-		      argblock = plus_constant (argblock, needed);
+		      argblock = plus_constant (Pmode, argblock, needed);
 #endif
 		    }
 
@@ -3890,7 +3888,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	 use virtuals anyway, they won't match the rtl patterns.  */
 
       if (virtuals_instantiated)
-	argblock = plus_constant (stack_pointer_rtx, STACK_POINTER_OFFSET);
+	argblock = plus_constant (Pmode, stack_pointer_rtx,
+				  STACK_POINTER_OFFSET);
       else
 	argblock = virtual_outgoing_args_rtx;
     }
@@ -3976,7 +3975,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 		  enum machine_mode save_mode
 		    = mode_for_size (size, MODE_INT, 1);
 		  rtx adr
-		    = plus_constant (argblock,
+		    = plus_constant (Pmode, argblock,
 				     argvec[argnum].locate.offset.constant);
 		  rtx stack_area
 		    = gen_rtx_MEM (save_mode, memory_address (save_mode, adr));
@@ -4018,7 +4017,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  /* Indicate argument access so that alias.c knows that these
 	     values are live.  */
 	  if (argblock)
-	    use = plus_constant (argblock,
+	    use = plus_constant (Pmode, argblock,
 				 argvec[argnum].locate.offset.constant);
 	  else
 	    /* When arguments are pushed, trying to tell alias.c where
@@ -4244,7 +4243,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	if (argvec[count].save_area)
 	  {
 	    enum machine_mode save_mode = GET_MODE (argvec[count].save_area);
-	    rtx adr = plus_constant (argblock,
+	    rtx adr = plus_constant (Pmode, argblock,
 				     argvec[count].locate.offset.constant);
 	    rtx stack_area = gen_rtx_MEM (save_mode,
 					  memory_address (save_mode, adr));

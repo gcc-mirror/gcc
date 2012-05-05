@@ -1392,6 +1392,7 @@ record_store (rtx body, bb_info_t bb_info)
   cselib_val *base = NULL;
   insn_info_t ptr, last, redundant_reason;
   bool store_is_unused;
+  enum machine_mode address_mode;
 
   if (GET_CODE (body) != SET && GET_CODE (body) != CLOBBER)
     return 0;
@@ -1453,6 +1454,8 @@ record_store (rtx body, bb_info_t bb_info)
       clear_rhs_from_active_local_stores ();
       return 0;
     }
+
+  address_mode = targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
 
   if (GET_MODE (mem) == BLKmode)
     width = MEM_SIZE (mem);
@@ -1561,7 +1564,7 @@ record_store (rtx body, bb_info_t bb_info)
 	  mem_addr = group->canon_base_addr;
 	}
       if (offset)
-	mem_addr = plus_constant (mem_addr, offset);
+	mem_addr = plus_constant (address_mode, mem_addr, offset);
     }
 
   while (ptr)
@@ -2178,7 +2181,11 @@ check_mem_read_rtx (rtx *loc, void *data)
 	  mem_addr = group->canon_base_addr;
 	}
       if (offset)
-	mem_addr = plus_constant (mem_addr, offset);
+	{
+	  enum machine_mode address_mode
+	    = targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
+	  mem_addr = plus_constant (address_mode, mem_addr, offset);
+	}
     }
 
   /* We ignore the clobbers in store_info.  The is mildly aggressive,

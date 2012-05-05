@@ -1666,7 +1666,7 @@
 ;;		   (match_dup 4)))]
 ;;  "
 ;;{
-;;  operands[6] = plus_constant (operands[3],
+;;  operands[6] = plus_constant (DImode, operands[3],
 ;;			       INTVAL (operands[2]) / BITS_PER_UNIT);
 ;;  operands[7] = GEN_INT (- INTVAL (operands[2]) / BITS_PER_UNIT);
 ;;}")
@@ -3971,7 +3971,8 @@
   else
     {
       emit_move_insn (gen_rtx_REG (Pmode, 26),
-		      gen_rtx_MEM (Pmode, plus_constant (operands[0], 8)));
+		      gen_rtx_MEM (Pmode, plus_constant (Pmode,
+							 operands[0], 8)));
       operands[2] = operands[0];
     }
 
@@ -4046,7 +4047,8 @@
   else
     {
       emit_move_insn (gen_rtx_REG (Pmode, 26),
-		      gen_rtx_MEM (Pmode, plus_constant (operands[1], 8)));
+		      gen_rtx_MEM (Pmode, plus_constant (Pmode,
+							 operands[1], 8)));
       operands[3] = operands[1];
     }
 })
@@ -5572,7 +5574,7 @@
   [(set (match_dup 1) (match_operand:DI 0 "const_int_operand" ""))]
   ""
 {
-  operands[1] = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx,
+  operands[1] = gen_rtx_MEM (DImode, plus_constant (Pmode, stack_pointer_rtx,
 						    INTVAL (operands[0])));
   MEM_VOLATILE_P (operands[1]) = 1;
 
@@ -5794,8 +5796,8 @@
 {
   /* The elements of the buffer are, in order:  */
   rtx fp = gen_rtx_MEM (Pmode, operands[0]);
-  rtx lab = gen_rtx_MEM (Pmode, plus_constant (operands[0], 8));
-  rtx stack = gen_rtx_MEM (Pmode, plus_constant (operands[0], 16));
+  rtx lab = gen_rtx_MEM (Pmode, plus_constant (Pmode, operands[0], 8));
+  rtx stack = gen_rtx_MEM (Pmode, plus_constant (Pmode, operands[0], 16));
   rtx pv = gen_rtx_REG (Pmode, 27);
 
   /* This bit is the same as expand_builtin_longjmp.  */

@@ -1408,8 +1408,8 @@
     XVECEXP (operands[3], 0, i)
       = gen_rtx_SET (VOIDmode,
 		 gen_rtx_REG (SImode, regno + i),
-		 gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx,
-						      i * 4)));
+		 gen_rtx_MEM (SImode, plus_constant (Pmode, stack_pointer_rtx,
+						     i * 4)));
 }")
 
 (define_insn ""
@@ -1446,8 +1446,8 @@
   for (i = 0; i < count; i++)
     XVECEXP (operands[3], 0, i)
       = gen_rtx_SET (VOIDmode,
-		 gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx,
-						      i * 4)),
+		 gen_rtx_MEM (SImode, plus_constant (Pmode, stack_pointer_rtx,
+						     i * 4)),
 		 gen_rtx_REG (SImode, regno + i));
 }")
 

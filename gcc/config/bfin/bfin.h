@@ -784,7 +784,8 @@ typedef struct {
 #define EH_RETURN_DATA_REGNO(N)	((N) < 2 ? (N) : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, REG_P2)
 #define EH_RETURN_HANDLER_RTX \
-    gen_frame_mem (Pmode, plus_constant (frame_pointer_rtx, UNITS_PER_WORD))
+  gen_frame_mem (Pmode, plus_constant (Pmode, frame_pointer_rtx, \
+				       UNITS_PER_WORD))
 
 /* Addressing Modes */
 

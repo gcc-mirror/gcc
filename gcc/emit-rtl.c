@@ -2110,9 +2110,10 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 	  && (unsigned HOST_WIDE_INT) offset
 	      < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
 	addr = gen_rtx_LO_SUM (address_mode, XEXP (addr, 0),
-			       plus_constant (XEXP (addr, 1), offset));
+			       plus_constant (address_mode,
+					      XEXP (addr, 1), offset));
       else
-	addr = plus_constant (addr, offset);
+	addr = plus_constant (address_mode, addr, offset);
     }
 
   new_rtx = change_address_1 (memref, mode, addr, validate);

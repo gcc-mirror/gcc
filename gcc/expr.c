@@ -927,7 +927,8 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
       if (USE_LOAD_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_from)
 	{
 	  data.from_addr = copy_to_mode_reg (from_addr_mode,
-					     plus_constant (from_addr, len));
+					     plus_constant (from_addr_mode,
+							    from_addr, len));
 	  data.autinc_from = 1;
 	  data.explicit_inc_from = -1;
 	}
@@ -942,7 +943,8 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
       if (USE_STORE_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_to)
 	{
 	  data.to_addr = copy_to_mode_reg (to_addr_mode,
-					   plus_constant (to_addr, len));
+					   plus_constant (to_addr_mode,
+							  to_addr, len));
 	  data.autinc_to = 1;
 	  data.explicit_inc_to = -1;
 	}
@@ -991,7 +993,8 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 		emit_insn (gen_add2_insn (data.to_addr, constm1_rtx));
 	      else
 		data.to_addr = copy_to_mode_reg (to_addr_mode,
-						 plus_constant (data.to_addr,
+						 plus_constant (to_addr_mode,
+								data.to_addr,
 								-1));
 	    }
 	  to1 = adjust_automodify_address (data.to, QImode, data.to_addr,
@@ -2492,7 +2495,8 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
 		emit_insn (gen_add2_insn (data.to_addr, constm1_rtx));
 	      else
 		data.to_addr = copy_to_mode_reg (to_addr_mode,
-						 plus_constant (data.to_addr,
+						 plus_constant (to_addr_mode,
+								data.to_addr,
 								-1));
 	    }
 	  to1 = adjust_automodify_address (data.to, QImode, data.to_addr,
@@ -2580,7 +2584,9 @@ store_by_pieces_1 (struct store_by_pieces_d *data ATTRIBUTE_UNUSED,
       if (USE_STORE_PRE_DECREMENT (mode) && data->reverse && ! data->autinc_to)
 	{
 	  data->to_addr = copy_to_mode_reg (to_addr_mode,
-					    plus_constant (to_addr, data->len));
+					    plus_constant (to_addr_mode,
+							   to_addr,
+							   data->len));
 	  data->autinc_to = 1;
 	  data->explicit_inc_to = -1;
 	}
@@ -3115,7 +3121,7 @@ emit_move_resolve_push (enum machine_mode mode, rtx x)
     case POST_INC:
     case POST_DEC:
     case POST_MODIFY:
-      temp = plus_constant (stack_pointer_rtx, -adjust);
+      temp = plus_constant (Pmode, stack_pointer_rtx, -adjust);
       break;
     default:
       gcc_unreachable ();
@@ -3595,7 +3601,7 @@ push_block (rtx size, int extra, int below)
 
   size = convert_modes (Pmode, ptr_mode, size, 1);
   if (CONSTANT_P (size))
-    anti_adjust_stack (plus_constant (size, extra));
+    anti_adjust_stack (plus_constant (Pmode, size, extra));
   else if (REG_P (size) && extra == 0)
     anti_adjust_stack (size);
   else
@@ -3615,16 +3621,17 @@ push_block (rtx size, int extra, int below)
     {
       temp = virtual_outgoing_args_rtx;
       if (extra != 0 && below)
-	temp = plus_constant (temp, extra);
+	temp = plus_constant (Pmode, temp, extra);
     }
   else
     {
       if (CONST_INT_P (size))
-	temp = plus_constant (virtual_outgoing_args_rtx,
+	temp = plus_constant (Pmode, virtual_outgoing_args_rtx,
 			      -INTVAL (size) - (below ? 0 : extra));
       else if (extra != 0 && !below)
 	temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
-			     negate_rtx (Pmode, plus_constant (size, extra)));
+			     negate_rtx (Pmode, plus_constant (Pmode, size,
+							       extra)));
       else
 	temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
 			     negate_rtx (Pmode, size));
@@ -4097,11 +4104,12 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
 	    }
 	  else if (CONST_INT_P (args_so_far))
 	    temp = memory_address (BLKmode,
-				   plus_constant (args_addr,
+				   plus_constant (Pmode, args_addr,
 						  skip + INTVAL (args_so_far)));
 	  else
 	    temp = memory_address (BLKmode,
-				   plus_constant (gen_rtx_PLUS (Pmode,
+				   plus_constant (Pmode,
+						  gen_rtx_PLUS (Pmode,
 								args_addr,
 								args_so_far),
 						  skip));
@@ -4214,7 +4222,7 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
 	  if (CONST_INT_P (args_so_far))
 	    addr
 	      = memory_address (mode,
-				plus_constant (args_addr,
+				plus_constant (Pmode, args_addr,
 					       INTVAL (args_so_far)));
 	  else
 	    addr = memory_address (mode, gen_rtx_PLUS (Pmode, args_addr,
@@ -5264,7 +5272,8 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 		 Do all calculations in pointer_mode.  */
 	      if (CONST_INT_P (copy_size_rtx))
 		{
-		  size = plus_constant (size, -INTVAL (copy_size_rtx));
+		  size = plus_constant (address_mode, size,
+					-INTVAL (copy_size_rtx));
 		  target = adjust_address (target, BLKmode,
 					   INTVAL (copy_size_rtx));
 		}
@@ -7628,7 +7637,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
 	 of such an object.  */
       gcc_assert ((bitpos % BITS_PER_UNIT) == 0);
 
-      result = plus_constant (result, bitpos / BITS_PER_UNIT);
+      result = plus_constant (tmode, result, bitpos / BITS_PER_UNIT);
       if (modifier < EXPAND_SUM)
 	result = force_operand (result, target);
     }
@@ -8223,7 +8232,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 		= immed_double_const (TREE_INT_CST_LOW (treeop0),
 				      (HOST_WIDE_INT) 0,
 				      TYPE_MODE (TREE_TYPE (treeop1)));
-	      op1 = plus_constant (op1, INTVAL (constant_part));
+	      op1 = plus_constant (mode, op1, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op1 = force_operand (op1, target);
 	      return REDUCE_BIT_FIELD (op1);
@@ -8256,7 +8265,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 		= immed_double_const (TREE_INT_CST_LOW (treeop1),
 				      (HOST_WIDE_INT) 0,
 				      TYPE_MODE (TREE_TYPE (treeop0)));
-	      op0 = plus_constant (op0, INTVAL (constant_part));
+	      op0 = plus_constant (mode, op0, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op0 = force_operand (op0, target);
 	      return REDUCE_BIT_FIELD (op0);
@@ -8318,7 +8327,8 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	  /* If the last operand is a CONST_INT, use plus_constant of
 	     the negated constant.  Else make the MINUS.  */
 	  if (CONST_INT_P (op1))
-	    return REDUCE_BIT_FIELD (plus_constant (op0, - INTVAL (op1)));
+	    return REDUCE_BIT_FIELD (plus_constant (mode, op0,
+						    -INTVAL (op1)));
 	  else
 	    return REDUCE_BIT_FIELD (gen_rtx_MINUS (mode, op0, op1));
 	}

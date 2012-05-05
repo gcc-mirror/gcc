@@ -5874,7 +5874,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 		       == GET_MODE_PRECISION (mode)))
 	    {
 	      op0 = expand_compound_operation (op0);
-	      return plus_constant (gen_lowpart (mode, op0), 1);
+	      return plus_constant (mode, gen_lowpart (mode, op0), 1);
 	    }
 
 	  /* If STORE_FLAG_VALUE is -1, we have cases similar to
@@ -5923,7 +5923,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 		   && nonzero_bits (op0, mode) == 1)
 	    {
 	      op0 = expand_compound_operation (op0);
-	      return plus_constant (gen_lowpart (mode, op0), -1);
+	      return plus_constant (mode, gen_lowpart (mode, op0), -1);
 	    }
 
 	  /* If STORE_FLAG_VALUE says to just test the sign bit and X has just
@@ -8306,7 +8306,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	    && exact_log2 (- smask) >= 0
 	    && (nonzero_bits (XEXP (x, 0), mode) & ~smask) == 0
 	    && (INTVAL (XEXP (x, 1)) & ~smask) != 0)
-	  return force_to_mode (plus_constant (XEXP (x, 0),
+	  return force_to_mode (plus_constant (GET_MODE (x), XEXP (x, 0),
 					       (INTVAL (XEXP (x, 1)) & smask)),
 				mode, smask, next_select);
       }

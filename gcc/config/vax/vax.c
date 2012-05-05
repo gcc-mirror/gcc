@@ -138,7 +138,7 @@ vax_add_reg_cfa_offset (rtx insn, int offset, rtx src)
 {
   rtx x;
 
-  x = plus_constant (frame_pointer_rtx, offset);
+  x = plus_constant (Pmode, frame_pointer_rtx, offset);
   x = gen_rtx_MEM (SImode, x);
   x = gen_rtx_SET (VOIDmode, x, src);
   add_reg_note (insn, REG_CFA_OFFSET, x);
@@ -201,7 +201,7 @@ vax_expand_prologue (void)
      it will be processed first.  This is required to allow the other
      notes be interpreted properly.  */
   add_reg_note (insn, REG_CFA_DEF_CFA,
-		plus_constant (frame_pointer_rtx, offset));
+		plus_constant (Pmode, frame_pointer_rtx, offset));
 
   /* Allocate the local stack frame.  */
   size = get_frame_size ();
@@ -373,11 +373,13 @@ print_operand_address (FILE * file, rtx addr)
 	      if (offset)
 		{
 		  if (CONST_INT_P (offset))
-		    offset = plus_constant (XEXP (addr, 0), INTVAL (offset));
+		    offset = plus_constant (Pmode, XEXP (addr, 0),
+					    INTVAL (offset));
 		  else
 		    {
 		      gcc_assert (CONST_INT_P (XEXP (addr, 0)));
-		      offset = plus_constant (offset, INTVAL (XEXP (addr, 0)));
+		      offset = plus_constant (Pmode, offset,
+					      INTVAL (XEXP (addr, 0)));
 		    }
 		}
 	      offset = XEXP (addr, 0);
@@ -402,11 +404,13 @@ print_operand_address (FILE * file, rtx addr)
 	      if (offset)
 		{
 		  if (CONST_INT_P (offset))
-		    offset = plus_constant (XEXP (addr, 1), INTVAL (offset));
+		    offset = plus_constant (Pmode, XEXP (addr, 1),
+					    INTVAL (offset));
 		  else
 		    {
 		      gcc_assert (CONST_INT_P (XEXP (addr, 1)));
-		      offset = plus_constant (offset, INTVAL (XEXP (addr, 1)));
+		      offset = plus_constant (Pmode, offset,
+					      INTVAL (XEXP (addr, 1)));
 		    }
 		}
 	      offset = XEXP (addr, 1);
@@ -2108,7 +2112,7 @@ vax_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
   mem = adjust_address (m_tramp, SImode, 4);
   emit_move_insn (mem, cxt);
   mem = adjust_address (m_tramp, SImode, 11);
-  emit_move_insn (mem, plus_constant (fnaddr, 2));
+  emit_move_insn (mem, plus_constant (Pmode, fnaddr, 2));
   emit_insn (gen_sync_istream ());
 }
 

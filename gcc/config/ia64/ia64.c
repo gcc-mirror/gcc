@@ -1104,7 +1104,7 @@ ia64_expand_load_address (rtx dest, rtx src)
 	  if (lo != 0)
 	    {
 	      addend = lo;
-	      src = plus_constant (XEXP (XEXP (src, 0), 0), hi);
+	      src = plus_constant (Pmode, XEXP (XEXP (src, 0), 0), hi);
 	    }
 	}
 
@@ -1213,7 +1213,7 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
       addend_lo = ((addend & 0x3fff) ^ 0x2000) - 0x2000;
       addend_hi = addend - addend_lo;
 
-      op1 = plus_constant (op1, addend_hi);
+      op1 = plus_constant (Pmode, op1, addend_hi);
       addend = addend_lo;
 
       tmp = gen_reg_rtx (Pmode);
@@ -1290,7 +1290,7 @@ ia64_expand_move (rtx op0, rtx op1)
 
 	  if (addend_lo != 0)
 	    {
-	      op1 = plus_constant (sym, addend_hi);
+	      op1 = plus_constant (mode, sym, addend_hi);
 	      addend = addend_lo;
 	    }
 	  else
@@ -1441,7 +1441,8 @@ ia64_split_tmode (rtx out[2], rtx in, bool reversed, bool dead)
 	      (in, DImode, gen_rtx_POST_INC (Pmode, base), 0);
 	    out[1] = adjust_automodify_address
 	      (in, DImode,
-	       gen_rtx_POST_MODIFY (Pmode, base, plus_constant (base, -24)),
+	       gen_rtx_POST_MODIFY (Pmode, base,
+				    plus_constant (Pmode, base, -24)),
 	       8);
 	    break;
 
@@ -3190,7 +3191,8 @@ do_spill (rtx (*move_fn) (rtx, rtx, rtx), rtx reg, HOST_WIDE_INT cfa_off,
       add_reg_note (insn, REG_CFA_OFFSET,
 		    gen_rtx_SET (VOIDmode,
 				 gen_rtx_MEM (GET_MODE (reg),
-					      plus_constant (base, off)),
+					      plus_constant (Pmode,
+							     base, off)),
 				 frame_reg));
     }
 }
@@ -4253,7 +4255,7 @@ ia64_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
   emit_insn (gen_adddi3 (addr_reg, addr_reg, eight));
   m_tramp = adjust_automodify_address (m_tramp, VOIDmode, NULL, 8);
 
-  emit_move_insn (m_tramp, force_reg (Pmode, plus_constant (addr, 16)));
+  emit_move_insn (m_tramp, force_reg (Pmode, plus_constant (Pmode, addr, 16)));
   emit_insn (gen_adddi3 (addr_reg, addr_reg, eight));
   m_tramp = adjust_automodify_address (m_tramp, VOIDmode, NULL, 8);
 

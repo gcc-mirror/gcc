@@ -715,7 +715,7 @@ lm32_setup_incoming_varargs (cumulative_args_t cum_v, enum machine_mode mode,
       rtx regblock;
 
       regblock = gen_rtx_MEM (BLKmode,
-			      plus_constant (arg_pointer_rtx,
+			      plus_constant (Pmode, arg_pointer_rtx,
 					     FIRST_PARM_OFFSET (0)));
       move_block_from_reg (first_reg_offset, regblock, size);
 
