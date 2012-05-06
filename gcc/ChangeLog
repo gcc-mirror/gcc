@@ -1,3 +1,9 @@
+2012-05-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/52999
+	* config/pa/pa.h (LEGITIMATE_CONSTANT_P): Don't put function labels
+	in constant pool.
+
 2012-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

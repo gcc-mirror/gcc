@@ -859,8 +859,7 @@ extern int may_call_alloca;
        || reload_in_progress					\
        || reload_completed					\
        || LEGITIMATE_64BIT_CONST_INT_P (INTVAL (X))		\
-       || cint_ok_for_move (INTVAL (X)))			\
-   && !function_label_operand (X, VOIDmode))
+       || cint_ok_for_move (INTVAL (X))))
 
 /* Target flags set on a symbol_ref.  */
 
