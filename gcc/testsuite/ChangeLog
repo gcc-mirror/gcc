@@ -1,7 +1,17 @@
-2012-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+2012-05-06  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gcc.target/ia64/pr48496.c: New test.
-	* gcc.target/ia64/pr52657.c: Likewise.
+	* gnat.dg/specs/renamings.ads: Rename to...
+	* gnat.dg/specs/renaming1.ads: ...this.
+	* gnat.dg/specs/renaming2.ads: New test.
+	* gnat.dg/specs/renaming2_pkg1.ads: New helper.
+	* gnat.dg/specs/renaming2_pkg2.ads: Likewise.
+	* gnat.dg/specs/renaming2_pkg3.ads: Likewise.
+	* gnat.dg/specs/renaming2_pkg4.ad[sb]: Likewise.
+
+2012-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr36.ad[sb]: New test.
+	* gnat.dg/discr36_pkg.ad[sb]: New helper.
 
 2012-05-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
