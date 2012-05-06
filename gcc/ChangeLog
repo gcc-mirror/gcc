@@ -1,3 +1,12 @@
+2012-05-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline:
+	2012-04-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/52999
+	* config/pa/pa.c (pa_legitimate_constant_p): Don't put function labels
+	in constant pool.
+
 2012-05-04  Ian Lance Taylor  <iant@google.com>
 
 	* tree-vect-patterns.c (vect_single_imm_use): Correct return
