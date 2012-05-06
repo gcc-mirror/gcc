@@ -1,3 +1,8 @@
+2012-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41587
+	* gfortran.dg/class_array_13.f90: New.
+
 2012-05-06  Tristan Gingold  <gingold@adacore.com>
 
 	* gnat.dg/warn7.adb: New test.
