@@ -1,3 +1,59 @@
+2012-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (make_packable_type): Declare.
+	(make_type_from_size): Likewise.
+	(relate_alias_sets): Likewise.
+	(maybe_pad_type): Adjust.
+	(init_gnat_to_gnu): Delete.
+	(destroy_gnat_to_gnu): Likewise.
+	(init_dummy_type): Likewise.
+	(destroy_dummy_type): Likewise.
+	(init_gnat_utils): Declare.
+	(destroy_gnat_utils): Likewise.
+	(ceil_pow2): New inline function.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use ceil_pow2.
+	<object>: Pass True for the final processing of alignment and size.
+	<E_Subprogram_Type>: Only create the TYPE_DECL for a padded return
+	type if necessary.
+	(round_up_to_align): Delete.
+	(ceil_alignment): Likewise.
+	(relate_alias_sets): Move to...
+	(make_aligning_type): Likewise.
+	(make_packable_type): Likewise.
+	(maybe_pad_type): Likewise.
+	(make_type_from_size): Likewise.
+	* gcc-interface/utils.c (MAX_BITS_PER_WORD): Delete.
+	(struct pad_type_hash): New type.
+	(pad_type_hash_table): New static variable.
+	(init_gnat_to_gnu): Merge into...
+	(init_dummy_type): Likewise.
+	(init_gnat_utils): ...this.  New function.
+	(destroy_gnat_to_gnu): Merge into...
+	(destroy_dummy_type): Likewise.
+	(destroy_gnat_utils): ...this.  New function.
+	(pad_type_hash_marked_p): New function.
+	(pad_type_hash_hash): Likewise.
+	(pad_type_hash_eq): Likewise.
+	(relate_alias_sets): ...here.
+	(make_aligning_type): Likewise.
+	(make_packable_type): Likewise.
+	(maybe_pad_type): Likewise.  Change same_rm_size parameter into
+	set_rm_size; do not set TYPE_ADA_SIZE if it is false.  Do not set
+	null as Ada size.  Do not set TYPE_VOLATILE on the padded type.  If it
+	is complete and has constant size, canonicalize it.  Bail out earlier
+	if a warning need not be issued.
+	(make_type_from_size): Likewise.
+	<INTEGER_TYPE>: Bail out if size is too large
+	(gnat_types_compatible_p): Do not deal with padded types.
+	(convert): Compare main variants for padded types.
+	* gcc-interface/trans.c (gigi): Call {init|destroy}_gnat_utils.
+	(gnat_to_gnu): Do not convert at the end for a call to a function that
+	returns an unconstrained type with default discriminant.
+	(Attribute_to_gnu) <Attr_Size>: Simplify handling of padded objects.
+	* gcc-interface/utils2.c (build_binary_op) <MODIFY_EXPR>: Likewise.
+	Do not use the padded type if it is BLKmode and the inner type is
+	non-BLKmode.
+
 2012-05-02  Pascal Obry  <obry@adacore.com>
 
 	Revert

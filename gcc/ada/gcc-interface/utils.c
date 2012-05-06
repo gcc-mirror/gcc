@@ -58,10 +58,6 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-#ifndef MAX_BITS_PER_WORD
-#define MAX_BITS_PER_WORD  BITS_PER_WORD
-#endif
-
 /* If nonzero, pretend we are allocating at global level.  */
 int force_global;
 
@@ -215,6 +211,21 @@ static GTY(()) VEC(tree,gc) *global_renaming_pointers;
 /* A chain of unused BLOCK nodes. */
 static GTY((deletable)) tree free_block_chain;
 
+static int pad_type_hash_marked_p (const void *p);
+static hashval_t pad_type_hash_hash (const void *p);
+static int pad_type_hash_eq (const void *p1, const void *p2);
+
+/* A hash table of padded types.  It is modelled on the generic type
+   hash table in tree.c, which must thus be used as a reference.  */
+struct GTY(()) pad_type_hash {
+  unsigned long hash;
+  tree type;
+};
+
+static GTY ((if_marked ("pad_type_hash_marked_p"),
+	     param_is (struct pad_type_hash)))
+  htab_t pad_type_hash_table;
+
 static tree merge_sizes (tree, tree, tree, bool, bool);
 static tree compute_related_constant (tree, tree);
 static tree split_plus (tree, tree *);
@@ -223,23 +234,43 @@ static tree convert_to_fat_pointer (tree, tree);
 static bool potential_alignment_gap (tree, tree, tree);
 static void process_attributes (tree, struct attrib *);
 
-/* Initialize the association of GNAT nodes to GCC trees.  */
+/* Initialize data structures of the utils.c module.  */
 
 void
-init_gnat_to_gnu (void)
+init_gnat_utils (void)
 {
+  /* Initialize the association of GNAT nodes to GCC trees.  */
   associate_gnat_to_gnu = ggc_alloc_cleared_vec_tree (max_gnat_nodes);
+
+  /* Initialize the association of GNAT nodes to GCC trees as dummies.  */
+  dummy_node_table = ggc_alloc_cleared_vec_tree (max_gnat_nodes);
+
+  /* Initialize the hash table of padded types.  */
+  pad_type_hash_table = htab_create_ggc (512, pad_type_hash_hash,
+					 pad_type_hash_eq, 0);
 }
 
-/* Destroy the association of GNAT nodes to GCC trees.  */
+/* Destroy data structures of the utils.c module.  */
 
 void
-destroy_gnat_to_gnu (void)
+destroy_gnat_utils (void)
 {
+  /* Destroy the association of GNAT nodes to GCC trees.  */
   ggc_free (associate_gnat_to_gnu);
   associate_gnat_to_gnu = NULL;
-}
 
+  /* Destroy the association of GNAT nodes to GCC trees as dummies.  */
+  ggc_free (dummy_node_table);
+  dummy_node_table = NULL;
+
+  /* Destroy the hash table of padded types.  */
+  htab_delete (pad_type_hash_table);
+  pad_type_hash_table = NULL;
+
+  /* Invalidate the global renaming pointers.   */
+  invalidate_global_renaming_pointers ();
+}
+
 /* GNAT_ENTITY is a GNAT tree node for an entity.  Associate GNU_DECL, a GCC
    tree node, with GNAT_ENTITY.  If GNU_DECL is not a ..._DECL node, abort.
    If NO_CHECK is true, the latter check is suppressed.
@@ -281,23 +312,6 @@ present_gnu_tree (Entity_Id gnat_entity)
   return PRESENT_GNU_TREE (gnat_entity);
 }
 
-/* Initialize the association of GNAT nodes to GCC trees as dummies.  */
-
-void
-init_dummy_type (void)
-{
-  dummy_node_table = ggc_alloc_cleared_vec_tree (max_gnat_nodes);
-}
-
-/* Destroy the association of GNAT nodes to GCC trees as dummies.  */
-
-void
-destroy_dummy_type (void)
-{
-  ggc_free (dummy_node_table);
-  dummy_node_table = NULL;
-}
-
 /* Make a dummy type corresponding to GNAT_TYPE.  */
 
 tree
@@ -628,6 +642,702 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	  if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
 	    TYPE_NAME (t) = decl;
     }
+}
+
+/* Create a record type that contains a SIZE bytes long field of TYPE with a
+   starting bit position so that it is aligned to ALIGN bits, and leaving at
+   least ROOM bytes free before the field.  BASE_ALIGN is the alignment the
+   record is guaranteed to get.  */
+
+tree
+make_aligning_type (tree type, unsigned int align, tree size,
+		    unsigned int base_align, int room)
+{
+  /* We will be crafting a record type with one field at a position set to be
+     the next multiple of ALIGN past record'address + room bytes.  We use a
+     record placeholder to express record'address.  */
+  tree record_type = make_node (RECORD_TYPE);
+  tree record = build0 (PLACEHOLDER_EXPR, record_type);
+
+  tree record_addr_st
+    = convert (sizetype, build_unary_op (ADDR_EXPR, NULL_TREE, record));
+
+  /* The diagram below summarizes the shape of what we manipulate:
+
+                    <--------- pos ---------->
+                {  +------------+-------------+-----------------+
+      record  =>{  |############|     ...     | field (type)    |
+                {  +------------+-------------+-----------------+
+		   |<-- room -->|<- voffset ->|<---- size ----->|
+		   o            o
+		   |            |
+		   record_addr  vblock_addr
+
+     Every length is in sizetype bytes there, except "pos" which has to be
+     set as a bit position in the GCC tree for the record.  */
+  tree room_st = size_int (room);
+  tree vblock_addr_st = size_binop (PLUS_EXPR, record_addr_st, room_st);
+  tree voffset_st, pos, field;
+
+  tree name = TYPE_NAME (type);
+
+  if (TREE_CODE (name) == TYPE_DECL)
+    name = DECL_NAME (name);
+  name = concat_name (name, "ALIGN");
+  TYPE_NAME (record_type) = name;
+
+  /* Compute VOFFSET and then POS.  The next byte position multiple of some
+     alignment after some address is obtained by "and"ing the alignment minus
+     1 with the two's complement of the address.   */
+  voffset_st = size_binop (BIT_AND_EXPR,
+			   fold_build1 (NEGATE_EXPR, sizetype, vblock_addr_st),
+			   size_int ((align / BITS_PER_UNIT) - 1));
+
+  /* POS = (ROOM + VOFFSET) * BIT_PER_UNIT, in bitsizetype.  */
+  pos = size_binop (MULT_EXPR,
+		    convert (bitsizetype,
+			     size_binop (PLUS_EXPR, room_st, voffset_st)),
+                    bitsize_unit_node);
+
+  /* Craft the GCC record representation.  We exceptionally do everything
+     manually here because 1) our generic circuitry is not quite ready to
+     handle the complex position/size expressions we are setting up, 2) we
+     have a strong simplifying factor at hand: we know the maximum possible
+     value of voffset, and 3) we have to set/reset at least the sizes in
+     accordance with this maximum value anyway, as we need them to convey
+     what should be "alloc"ated for this type.
+
+     Use -1 as the 'addressable' indication for the field to prevent the
+     creation of a bitfield.  We don't need one, it would have damaging
+     consequences on the alignment computation, and create_field_decl would
+     make one without this special argument, for instance because of the
+     complex position expression.  */
+  field = create_field_decl (get_identifier ("F"), type, record_type, size,
+			     pos, 1, -1);
+  TYPE_FIELDS (record_type) = field;
+
+  TYPE_ALIGN (record_type) = base_align;
+  TYPE_USER_ALIGN (record_type) = 1;
+
+  TYPE_SIZE (record_type)
+    = size_binop (PLUS_EXPR,
+                  size_binop (MULT_EXPR, convert (bitsizetype, size),
+                              bitsize_unit_node),
+		  bitsize_int (align + room * BITS_PER_UNIT));
+  TYPE_SIZE_UNIT (record_type)
+    = size_binop (PLUS_EXPR, size,
+		  size_int (room + align / BITS_PER_UNIT));
+
+  SET_TYPE_MODE (record_type, BLKmode);
+  relate_alias_sets (record_type, type, ALIAS_SET_COPY);
+
+  /* Declare it now since it will never be declared otherwise.  This is
+     necessary to ensure that its subtrees are properly marked.  */
+  create_type_decl (name, record_type, NULL, true, false, Empty);
+
+  return record_type;
+}
+
+/* TYPE is a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE that is being used
+   as the field type of a packed record if IN_RECORD is true, or as the
+   component type of a packed array if IN_RECORD is false.  See if we can
+   rewrite it either as a type that has a non-BLKmode, which we can pack
+   tighter in the packed record case, or as a smaller type.  If so, return
+   the new type.  If not, return the original type.  */
+
+tree
+make_packable_type (tree type, bool in_record)
+{
+  unsigned HOST_WIDE_INT size = tree_low_cst (TYPE_SIZE (type), 1);
+  unsigned HOST_WIDE_INT new_size;
+  tree new_type, old_field, field_list = NULL_TREE;
+  unsigned int align;
+
+  /* No point in doing anything if the size is zero.  */
+  if (size == 0)
+    return type;
+
+  new_type = make_node (TREE_CODE (type));
+
+  /* Copy the name and flags from the old type to that of the new.
+     Note that we rely on the pointer equality created here for
+     TYPE_NAME to look through conversions in various places.  */
+  TYPE_NAME (new_type) = TYPE_NAME (type);
+  TYPE_JUSTIFIED_MODULAR_P (new_type) = TYPE_JUSTIFIED_MODULAR_P (type);
+  TYPE_CONTAINS_TEMPLATE_P (new_type) = TYPE_CONTAINS_TEMPLATE_P (type);
+  if (TREE_CODE (type) == RECORD_TYPE)
+    TYPE_PADDING_P (new_type) = TYPE_PADDING_P (type);
+
+  /* If we are in a record and have a small size, set the alignment to
+     try for an integral mode.  Otherwise set it to try for a smaller
+     type with BLKmode.  */
+  if (in_record && size <= MAX_FIXED_MODE_SIZE)
+    {
+      align = ceil_pow2 (size);
+      TYPE_ALIGN (new_type) = align;
+      new_size = (size + align - 1) & -align;
+    }
+  else
+    {
+      unsigned HOST_WIDE_INT align;
+
+      /* Do not try to shrink the size if the RM size is not constant.  */
+      if (TYPE_CONTAINS_TEMPLATE_P (type)
+	  || !host_integerp (TYPE_ADA_SIZE (type), 1))
+	return type;
+
+      /* Round the RM size up to a unit boundary to get the minimal size
+	 for a BLKmode record.  Give up if it's already the size.  */
+      new_size = TREE_INT_CST_LOW (TYPE_ADA_SIZE (type));
+      new_size = (new_size + BITS_PER_UNIT - 1) & -BITS_PER_UNIT;
+      if (new_size == size)
+	return type;
+
+      align = new_size & -new_size;
+      TYPE_ALIGN (new_type) = MIN (TYPE_ALIGN (type), align);
+    }
+
+  TYPE_USER_ALIGN (new_type) = 1;
+
+  /* Now copy the fields, keeping the position and size as we don't want
+     to change the layout by propagating the packedness downwards.  */
+  for (old_field = TYPE_FIELDS (type); old_field;
+       old_field = DECL_CHAIN (old_field))
+    {
+      tree new_field_type = TREE_TYPE (old_field);
+      tree new_field, new_size;
+
+      if (RECORD_OR_UNION_TYPE_P (new_field_type)
+	  && !TYPE_FAT_POINTER_P (new_field_type)
+	  && host_integerp (TYPE_SIZE (new_field_type), 1))
+	new_field_type = make_packable_type (new_field_type, true);
+
+      /* However, for the last field in a not already packed record type
+	 that is of an aggregate type, we need to use the RM size in the
+	 packable version of the record type, see finish_record_type.  */
+      if (!DECL_CHAIN (old_field)
+	  && !TYPE_PACKED (type)
+	  && RECORD_OR_UNION_TYPE_P (new_field_type)
+	  && !TYPE_FAT_POINTER_P (new_field_type)
+	  && !TYPE_CONTAINS_TEMPLATE_P (new_field_type)
+	  && TYPE_ADA_SIZE (new_field_type))
+	new_size = TYPE_ADA_SIZE (new_field_type);
+      else
+	new_size = DECL_SIZE (old_field);
+
+      new_field
+	= create_field_decl (DECL_NAME (old_field), new_field_type, new_type,
+			     new_size, bit_position (old_field),
+			     TYPE_PACKED (type),
+			     !DECL_NONADDRESSABLE_P (old_field));
+
+      DECL_INTERNAL_P (new_field) = DECL_INTERNAL_P (old_field);
+      SET_DECL_ORIGINAL_FIELD_TO_FIELD (new_field, old_field);
+      if (TREE_CODE (new_type) == QUAL_UNION_TYPE)
+	DECL_QUALIFIER (new_field) = DECL_QUALIFIER (old_field);
+
+      DECL_CHAIN (new_field) = field_list;
+      field_list = new_field;
+    }
+
+  finish_record_type (new_type, nreverse (field_list), 2, false);
+  relate_alias_sets (new_type, type, ALIAS_SET_COPY);
+  SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
+			  DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
+
+  /* If this is a padding record, we never want to make the size smaller
+     than what was specified.  For QUAL_UNION_TYPE, also copy the size.  */
+  if (TYPE_IS_PADDING_P (type) || TREE_CODE (type) == QUAL_UNION_TYPE)
+    {
+      TYPE_SIZE (new_type) = TYPE_SIZE (type);
+      TYPE_SIZE_UNIT (new_type) = TYPE_SIZE_UNIT (type);
+      new_size = size;
+    }
+  else
+    {
+      TYPE_SIZE (new_type) = bitsize_int (new_size);
+      TYPE_SIZE_UNIT (new_type)
+	= size_int ((new_size + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
+    }
+
+  if (!TYPE_CONTAINS_TEMPLATE_P (type))
+    SET_TYPE_ADA_SIZE (new_type, TYPE_ADA_SIZE (type));
+
+  compute_record_mode (new_type);
+
+  /* Try harder to get a packable type if necessary, for example
+     in case the record itself contains a BLKmode field.  */
+  if (in_record && TYPE_MODE (new_type) == BLKmode)
+    SET_TYPE_MODE (new_type,
+		   mode_for_size_tree (TYPE_SIZE (new_type), MODE_INT, 1));
+
+  /* If neither the mode nor the size has shrunk, return the old type.  */
+  if (TYPE_MODE (new_type) == BLKmode && new_size >= size)
+    return type;
+
+  return new_type;
+}
+
+/* Given a type TYPE, return a new type whose size is appropriate for SIZE.
+   If TYPE is the best type, return it.  Otherwise, make a new type.  We
+   only support new integral and pointer types.  FOR_BIASED is true if
+   we are making a biased type.  */
+
+tree
+make_type_from_size (tree type, tree size_tree, bool for_biased)
+{
+  unsigned HOST_WIDE_INT size;
+  bool biased_p;
+  tree new_type;
+
+  /* If size indicates an error, just return TYPE to avoid propagating
+     the error.  Likewise if it's too large to represent.  */
+  if (!size_tree || !host_integerp (size_tree, 1))
+    return type;
+
+  size = tree_low_cst (size_tree, 1);
+
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+      biased_p = (TREE_CODE (type) == INTEGER_TYPE
+		  && TYPE_BIASED_REPRESENTATION_P (type));
+
+      /* Integer types with precision 0 are forbidden.  */
+      if (size == 0)
+	size = 1;
+
+      /* Only do something if the type isn't a packed array type and doesn't
+	 already have the proper size and the size isn't too large.  */
+      if (TYPE_IS_PACKED_ARRAY_TYPE_P (type)
+	  || (TYPE_PRECISION (type) == size && biased_p == for_biased)
+	  || size > LONG_LONG_TYPE_SIZE)
+	break;
+
+      biased_p |= for_biased;
+      if (TYPE_UNSIGNED (type) || biased_p)
+	new_type = make_unsigned_type (size);
+      else
+	new_type = make_signed_type (size);
+      TREE_TYPE (new_type) = TREE_TYPE (type) ? TREE_TYPE (type) : type;
+      SET_TYPE_RM_MIN_VALUE (new_type,
+			     convert (TREE_TYPE (new_type),
+				      TYPE_MIN_VALUE (type)));
+      SET_TYPE_RM_MAX_VALUE (new_type,
+			     convert (TREE_TYPE (new_type),
+				      TYPE_MAX_VALUE (type)));
+      /* Copy the name to show that it's essentially the same type and
+	 not a subrange type.  */
+      TYPE_NAME (new_type) = TYPE_NAME (type);
+      TYPE_BIASED_REPRESENTATION_P (new_type) = biased_p;
+      SET_TYPE_RM_SIZE (new_type, bitsize_int (size));
+      return new_type;
+
+    case RECORD_TYPE:
+      /* Do something if this is a fat pointer, in which case we
+	 may need to return the thin pointer.  */
+      if (TYPE_FAT_POINTER_P (type) && size < POINTER_SIZE * 2)
+	{
+	  enum machine_mode p_mode = mode_for_size (size, MODE_INT, 0);
+	  if (!targetm.valid_pointer_mode (p_mode))
+	    p_mode = ptr_mode;
+	  return
+	    build_pointer_type_for_mode
+	      (TYPE_OBJECT_RECORD_TYPE (TYPE_UNCONSTRAINED_ARRAY (type)),
+	       p_mode, 0);
+	}
+      break;
+
+    case POINTER_TYPE:
+      /* Only do something if this is a thin pointer, in which case we
+	 may need to return the fat pointer.  */
+      if (TYPE_IS_THIN_POINTER_P (type) && size >= POINTER_SIZE * 2)
+	return
+	  build_pointer_type (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type)));
+      break;
+
+    default:
+      break;
+    }
+
+  return type;
+}
+
+/* See if the data pointed to by the hash table slot is marked.  */
+
+static int
+pad_type_hash_marked_p (const void *p)
+{
+  const_tree const type = ((const struct pad_type_hash *) p)->type;
+
+  return ggc_marked_p (type);
+}
+
+/* Return the cached hash value.  */
+
+static hashval_t
+pad_type_hash_hash (const void *p)
+{
+  return ((const struct pad_type_hash *) p)->hash;
+}
+
+/* Return 1 iff the padded types are equivalent.  */
+
+static int
+pad_type_hash_eq (const void *p1, const void *p2)
+{
+  const struct pad_type_hash *const t1 = (const struct pad_type_hash *) p1;
+  const struct pad_type_hash *const t2 = (const struct pad_type_hash *) p2;
+  tree type1, type2;
+
+  if (t1->hash != t2->hash)
+    return 0;
+
+  type1 = t1->type;
+  type2 = t2->type;
+
+  /* We consider that the padded types are equivalent if they pad the same
+     type and have the same size, alignment and RM size.  Taking the mode
+     into account is redundant since it is determined by the others.  */
+  return
+    TREE_TYPE (TYPE_FIELDS (type1)) == TREE_TYPE (TYPE_FIELDS (type2))
+    && TYPE_SIZE (type1) == TYPE_SIZE (type2)
+    && TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
+    && TYPE_ADA_SIZE (type1) == TYPE_ADA_SIZE (type2);
+}
+
+/* Ensure that TYPE has SIZE and ALIGN.  Make and return a new padded type
+   if needed.  We have already verified that SIZE and TYPE are large enough.
+   GNAT_ENTITY is used to name the resulting record and to issue a warning.
+   IS_COMPONENT_TYPE is true if this is being done for the component type of
+   an array.  IS_USER_TYPE is true if the original type needs to be completed.
+   DEFINITION is true if this type is being defined.  SET_RM_SIZE is true if
+   the RM size of the resulting type is to be set to SIZE too.  */
+
+tree
+maybe_pad_type (tree type, tree size, unsigned int align,
+		Entity_Id gnat_entity, bool is_component_type,
+		bool is_user_type, bool definition, bool set_rm_size)
+{
+  tree orig_size = TYPE_SIZE (type);
+  tree record, field;
+
+  /* If TYPE is a padded type, see if it agrees with any size and alignment
+     we were given.  If so, return the original type.  Otherwise, strip
+     off the padding, since we will either be returning the inner type
+     or repadding it.  If no size or alignment is specified, use that of
+     the original padded type.  */
+  if (TYPE_IS_PADDING_P (type))
+    {
+      if ((!size
+	   || operand_equal_p (round_up (size,
+					 MAX (align, TYPE_ALIGN (type))),
+			       round_up (TYPE_SIZE (type),
+					 MAX (align, TYPE_ALIGN (type))),
+			       0))
+	  && (align == 0 || align == TYPE_ALIGN (type)))
+	return type;
+
+      if (!size)
+	size = TYPE_SIZE (type);
+      if (align == 0)
+	align = TYPE_ALIGN (type);
+
+      type = TREE_TYPE (TYPE_FIELDS (type));
+      orig_size = TYPE_SIZE (type);
+    }
+
+  /* If the size is either not being changed or is being made smaller (which
+     is not done here and is only valid for bitfields anyway), show the size
+     isn't changing.  Likewise, clear the alignment if it isn't being
+     changed.  Then return if we aren't doing anything.  */
+  if (size
+      && (operand_equal_p (size, orig_size, 0)
+	  || (TREE_CODE (orig_size) == INTEGER_CST
+	      && tree_int_cst_lt (size, orig_size))))
+    size = NULL_TREE;
+
+  if (align == TYPE_ALIGN (type))
+    align = 0;
+
+  if (align == 0 && !size)
+    return type;
+
+  /* If requested, complete the original type and give it a name.  */
+  if (is_user_type)
+    create_type_decl (get_entity_name (gnat_entity), type,
+		      NULL, !Comes_From_Source (gnat_entity),
+		      !(TYPE_NAME (type)
+			&& TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+			&& DECL_IGNORED_P (TYPE_NAME (type))),
+		      gnat_entity);
+
+  /* We used to modify the record in place in some cases, but that could
+     generate incorrect debugging information.  So make a new record
+     type and name.  */
+  record = make_node (RECORD_TYPE);
+  TYPE_PADDING_P (record) = 1;
+
+  if (Present (gnat_entity))
+    TYPE_NAME (record) = create_concat_name (gnat_entity, "PAD");
+
+  TYPE_ALIGN (record) = align;
+  TYPE_SIZE (record) = size ? size : orig_size;
+  TYPE_SIZE_UNIT (record)
+    = convert (sizetype,
+	       size_binop (CEIL_DIV_EXPR, TYPE_SIZE (record),
+			   bitsize_unit_node));
+
+  /* If we are changing the alignment and the input type is a record with
+     BLKmode and a small constant size, try to make a form that has an
+     integral mode.  This might allow the padding record to also have an
+     integral mode, which will be much more efficient.  There is no point
+     in doing so if a size is specified unless it is also a small constant
+     size and it is incorrect to do so if we cannot guarantee that the mode
+     will be naturally aligned since the field must always be addressable.
+
+     ??? This might not always be a win when done for a stand-alone object:
+     since the nominal and the effective type of the object will now have
+     different modes, a VIEW_CONVERT_EXPR will be required for converting
+     between them and it might be hard to overcome afterwards, including
+     at the RTL level when the stand-alone object is accessed as a whole.  */
+  if (align != 0
+      && RECORD_OR_UNION_TYPE_P (type)
+      && TYPE_MODE (type) == BLKmode
+      && !TYPE_BY_REFERENCE_P (type)
+      && TREE_CODE (orig_size) == INTEGER_CST
+      && !TREE_OVERFLOW (orig_size)
+      && compare_tree_int (orig_size, MAX_FIXED_MODE_SIZE) <= 0
+      && (!size
+	  || (TREE_CODE (size) == INTEGER_CST
+	      && compare_tree_int (size, MAX_FIXED_MODE_SIZE) <= 0)))
+    {
+      tree packable_type = make_packable_type (type, true);
+      if (TYPE_MODE (packable_type) != BLKmode
+	  && align >= TYPE_ALIGN (packable_type))
+        type = packable_type;
+    }
+
+  /* Now create the field with the original size.  */
+  field  = create_field_decl (get_identifier ("F"), type, record, orig_size,
+			      bitsize_zero_node, 0, 1);
+  DECL_INTERNAL_P (field) = 1;
+
+  /* Do not emit debug info until after the auxiliary record is built.  */
+  finish_record_type (record, field, 1, false);
+
+  /* Set the RM size if requested.  */
+  if (set_rm_size)
+    {
+      SET_TYPE_ADA_SIZE (record, size ? size : orig_size);
+
+      /* If the padded type is complete and has constant size, we canonicalize
+	 it by means of the hash table.  This is consistent with the language
+	 semantics and ensures that gigi and the middle-end have a common view
+	 of these padded types.  */
+      if (TREE_CONSTANT (TYPE_SIZE (record)))
+	{
+	  hashval_t hashcode;
+	  struct pad_type_hash in, *h;
+	  void **loc;
+
+	  hashcode = iterative_hash_object (TYPE_HASH (type), 0);
+	  hashcode = iterative_hash_expr (TYPE_SIZE (record), hashcode);
+	  hashcode = iterative_hash_hashval_t (TYPE_ALIGN (record), hashcode);
+	  hashcode = iterative_hash_expr (TYPE_ADA_SIZE (record), hashcode);
+
+	  in.hash = hashcode;
+	  in.type = record;
+	  h = (struct pad_type_hash *)
+		htab_find_with_hash (pad_type_hash_table, &in, hashcode);
+	  if (h)
+	    {
+	      record = h->type;
+	      goto built;
+	    }
+
+	  h = ggc_alloc_pad_type_hash ();
+	  h->hash = hashcode;
+	  h->type = record;
+	  loc = htab_find_slot_with_hash (pad_type_hash_table, h, hashcode,
+					  INSERT);
+	  *loc = (void *)h;
+	}
+    }
+
+  /* Unless debugging information isn't being written for the input type,
+     write a record that shows what we are a subtype of and also make a
+     variable that indicates our size, if still variable.  */
+  if (TREE_CODE (orig_size) != INTEGER_CST
+      && TYPE_NAME (record)
+      && TYPE_NAME (type)
+      && !(TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	   && DECL_IGNORED_P (TYPE_NAME (type))))
+    {
+      tree marker = make_node (RECORD_TYPE);
+      tree name = TYPE_NAME (record);
+      tree orig_name = TYPE_NAME (type);
+
+      if (TREE_CODE (name) == TYPE_DECL)
+	name = DECL_NAME (name);
+
+      if (TREE_CODE (orig_name) == TYPE_DECL)
+	orig_name = DECL_NAME (orig_name);
+
+      TYPE_NAME (marker) = concat_name (name, "XVS");
+      finish_record_type (marker,
+			  create_field_decl (orig_name,
+					     build_reference_type (type),
+					     marker, NULL_TREE, NULL_TREE,
+					     0, 0),
+			  0, true);
+
+      add_parallel_type (record, marker);
+
+      if (definition && size && TREE_CODE (size) != INTEGER_CST)
+	TYPE_SIZE_UNIT (marker)
+	  = create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
+			     TYPE_SIZE_UNIT (record), false, false, false,
+			     false, NULL, gnat_entity);
+    }
+
+  rest_of_record_type_compilation (record);
+
+built:
+  /* If the size was widened explicitly, maybe give a warning.  Take the
+     original size as the maximum size of the input if there was an
+     unconstrained record involved and round it up to the specified alignment,
+     if one was specified.  But don't do it if we are just annotating types
+     and the type is tagged, since tagged types aren't fully laid out in this
+     mode.  */
+  if (!size
+      || TREE_CODE (size) == COND_EXPR
+      || TREE_CODE (size) == MAX_EXPR
+      || No (gnat_entity)
+      || (type_annotate_only && Is_Tagged_Type (Etype (gnat_entity))))
+    return record;
+
+  if (CONTAINS_PLACEHOLDER_P (orig_size))
+    orig_size = max_size (orig_size, true);
+
+  if (align)
+    orig_size = round_up (orig_size, align);
+
+  if (!operand_equal_p (size, orig_size, 0)
+      && !(TREE_CODE (size) == INTEGER_CST
+	   && TREE_CODE (orig_size) == INTEGER_CST
+	   && (TREE_OVERFLOW (size)
+	       || TREE_OVERFLOW (orig_size)
+	       || tree_int_cst_lt (size, orig_size))))
+    {
+      Node_Id gnat_error_node = Empty;
+
+      if (Is_Packed_Array_Type (gnat_entity))
+	gnat_entity = Original_Array_Type (gnat_entity);
+
+      if ((Ekind (gnat_entity) == E_Component
+	   || Ekind (gnat_entity) == E_Discriminant)
+	  && Present (Component_Clause (gnat_entity)))
+	gnat_error_node = Last_Bit (Component_Clause (gnat_entity));
+      else if (Present (Size_Clause (gnat_entity)))
+	gnat_error_node = Expression (Size_Clause (gnat_entity));
+
+      /* Generate message only for entities that come from source, since
+	 if we have an entity created by expansion, the message will be
+	 generated for some other corresponding source entity.  */
+      if (Comes_From_Source (gnat_entity))
+	{
+	  if (Present (gnat_error_node))
+	    post_error_ne_tree ("{^ }bits of & unused?",
+				gnat_error_node, gnat_entity,
+				size_diffop (size, orig_size));
+	  else if (is_component_type)
+	    post_error_ne_tree ("component of& padded{ by ^ bits}?",
+				gnat_entity, gnat_entity,
+				size_diffop (size, orig_size));
+	}
+    }
+
+  return record;
+}
+
+/* Relate the alias sets of GNU_NEW_TYPE and GNU_OLD_TYPE according to OP.
+   If this is a multi-dimensional array type, do this recursively.
+
+   OP may be
+   - ALIAS_SET_COPY:     the new set is made a copy of the old one.
+   - ALIAS_SET_SUPERSET: the new set is made a superset of the old one.
+   - ALIAS_SET_SUBSET:   the new set is made a subset of the old one.  */
+
+void
+relate_alias_sets (tree gnu_new_type, tree gnu_old_type, enum alias_set_op op)
+{
+  /* Remove any padding from GNU_OLD_TYPE.  It doesn't matter in the case
+     of a one-dimensional array, since the padding has the same alias set
+     as the field type, but if it's a multi-dimensional array, we need to
+     see the inner types.  */
+  while (TREE_CODE (gnu_old_type) == RECORD_TYPE
+	 && (TYPE_JUSTIFIED_MODULAR_P (gnu_old_type)
+	     || TYPE_PADDING_P (gnu_old_type)))
+    gnu_old_type = TREE_TYPE (TYPE_FIELDS (gnu_old_type));
+
+  /* Unconstrained array types are deemed incomplete and would thus be given
+     alias set 0.  Retrieve the underlying array type.  */
+  if (TREE_CODE (gnu_old_type) == UNCONSTRAINED_ARRAY_TYPE)
+    gnu_old_type
+      = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_old_type))));
+  if (TREE_CODE (gnu_new_type) == UNCONSTRAINED_ARRAY_TYPE)
+    gnu_new_type
+      = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_new_type))));
+
+  if (TREE_CODE (gnu_new_type) == ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (gnu_new_type)) == ARRAY_TYPE
+      && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_new_type)))
+    relate_alias_sets (TREE_TYPE (gnu_new_type), TREE_TYPE (gnu_old_type), op);
+
+  switch (op)
+    {
+    case ALIAS_SET_COPY:
+      /* The alias set shouldn't be copied between array types with different
+	 aliasing settings because this can break the aliasing relationship
+	 between the array type and its element type.  */
+#ifndef ENABLE_CHECKING
+      if (flag_strict_aliasing)
+#endif
+	gcc_assert (!(TREE_CODE (gnu_new_type) == ARRAY_TYPE
+		      && TREE_CODE (gnu_old_type) == ARRAY_TYPE
+		      && TYPE_NONALIASED_COMPONENT (gnu_new_type)
+			 != TYPE_NONALIASED_COMPONENT (gnu_old_type)));
+
+      TYPE_ALIAS_SET (gnu_new_type) = get_alias_set (gnu_old_type);
+      break;
+
+    case ALIAS_SET_SUBSET:
+    case ALIAS_SET_SUPERSET:
+      {
+	alias_set_type old_set = get_alias_set (gnu_old_type);
+	alias_set_type new_set = get_alias_set (gnu_new_type);
+
+	/* Do nothing if the alias sets conflict.  This ensures that we
+	   never call record_alias_subset several times for the same pair
+	   or at all for alias set 0.  */
+	if (!alias_sets_conflict_p (old_set, new_set))
+	  {
+	    if (op == ALIAS_SET_SUBSET)
+	      record_alias_subset (old_set, new_set);
+	    else
+	      record_alias_subset (new_set, old_set);
+	  }
+      }
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  record_component_aliases (gnu_new_type);
 }
 
 /* Record TYPE as a builtin type for Ada.  NAME is the name of the type.
@@ -2224,14 +2934,6 @@ gnat_types_compatible_p (tree t1, tree t2)
 	      && gnat_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))))
     return 1;
 
-  /* Padding record types are also compatible if they pad the same
-     type and have the same constant size.  */
-  if (code == RECORD_TYPE
-      && TYPE_PADDING_P (t1) && TYPE_PADDING_P (t2)
-      && TREE_TYPE (TYPE_FIELDS (t1)) == TREE_TYPE (TYPE_FIELDS (t2))
-      && tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2)))
-    return 1;
-
   return 0;
 }
 
@@ -3705,7 +4407,7 @@ convert (tree type, tree expr)
 	   && TYPE_PADDING_P (type) && TYPE_PADDING_P (etype)
 	   && (!TREE_CONSTANT (TYPE_SIZE (type))
 	       || !TREE_CONSTANT (TYPE_SIZE (etype))
-	       || gnat_types_compatible_p (type, etype)
+	       || TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype)
 	       || TYPE_NAME (TREE_TYPE (TYPE_FIELDS (type)))
 		  == TYPE_NAME (TREE_TYPE (TYPE_FIELDS (etype)))))
     ;
@@ -3734,8 +4436,8 @@ convert (tree type, tree expr)
       if (TREE_CODE (expr) == COMPONENT_REF
 	  && TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (expr, 0)))
 	  && (!TREE_CONSTANT (TYPE_SIZE (type))
-	      || gnat_types_compatible_p (type,
-					  TREE_TYPE (TREE_OPERAND (expr, 0)))
+	      || TYPE_MAIN_VARIANT (type)
+		 == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (expr, 0)))
 	      || (ecode == RECORD_TYPE
 		  && TYPE_NAME (etype)
 		     == TYPE_NAME (TREE_TYPE (TYPE_FIELDS (type))))))
