@@ -1,3 +1,13 @@
+2012-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53227
+	* config/i386/i386.md (swap<mode>): Rename from *swap<mode>.
+	(bswapdi2): Split from bswap<mode>2.  Use nonnimediate_operand
+	predicate for operand 1.  Force operand 1 to register for TARGET_BSWAP.
+	(bswapsi2): Ditto.
+	(*bswapdi2_doubleword): New insn pattern.
+	(*bswap<mode>2): Rename from *bswap<mode>2_1.
+
 2012-05-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_set_reg_reg_piece_cost): New function.
