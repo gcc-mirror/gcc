@@ -1,5 +1,11 @@
 2012-05-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips_set_reg_reg_piece_cost): New function.
+	(mips_set_reg_reg_cost): Likewise.
+	(mips_rtx_costs): Handle SET.
+
+2012-05-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* lower-subreg.c (shift_cost): Use set_src_cost, avoiding the SET.
 	(compute_costs): Likewise for the zero extension.  Use set_rtx_cost
 	to compute the cost of moves.  Set the mode of the target register.
