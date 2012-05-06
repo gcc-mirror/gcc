@@ -1,4 +1,6 @@
-package Renamings is
+-- { dg-do compile }
+
+package Renaming1 is
 
    package Inner is
       procedure PI (X : Integer);
@@ -11,4 +13,4 @@ package Renamings is
    procedure Q (X : Float);
    procedure Q (X : Integer) renames Inner.PI;
    pragma Convention (C, Q); -- { dg-error "non-local entity" }
-end Renamings;
+end Renaming1;

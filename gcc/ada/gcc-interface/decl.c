@@ -938,6 +938,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		gnu_type = TREE_TYPE (gnu_expr);
 	      }
 
+	    /* Or else, if the renamed object has an unconstrained type with
+	       default discriminant, use the padded type.  */
+	    else if (TYPE_IS_PADDING_P (TREE_TYPE (gnu_expr))
+		     && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_expr)))
+			== gnu_type
+		     && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
+	      gnu_type = TREE_TYPE (gnu_expr);
+
 	    /* Case 1: If this is a constant renaming stemming from a function
 	       call, treat it as a normal object whose initial value is what
 	       is being renamed.  RM 3.3 says that the result of evaluating a
