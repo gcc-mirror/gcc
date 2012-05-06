@@ -502,7 +502,12 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
     = create_subprog_decl (get_identifier ("__gnat_reraise_zcx"), NULL_TREE,
 			   ftype, NULL_TREE, false, true, true, true, NULL,
 			   Empty);
+  /* Indicate that these never return.  */
   DECL_IGNORED_P (reraise_zcx_decl) = 1;
+  TREE_THIS_VOLATILE (reraise_zcx_decl) = 1;
+  TREE_SIDE_EFFECTS (reraise_zcx_decl) = 1;
+  TREE_TYPE (reraise_zcx_decl)
+    = build_qualified_type (TREE_TYPE (reraise_zcx_decl), TYPE_QUAL_VOLATILE);
 
   /* If in no exception handlers mode, all raise statements are redirected to
      __gnat_last_chance_handler.  No need to redefine raise_nodefer_decl since
@@ -550,6 +555,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
        build_function_type_list (build_pointer_type (except_type_node),
 				 NULL_TREE),
      NULL_TREE, false, true, true, true, NULL, Empty);
+  DECL_IGNORED_P (get_excptr_decl) = 1;
 
   raise_nodefer_decl
     = create_subprog_decl
