@@ -338,8 +338,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 
   /* Initialize ourselves.  */
   init_code_table ();
-  init_gnat_to_gnu ();
-  init_dummy_type ();
+  init_gnat_utils ();
 
   /* If we are just annotating types, give VOID_TYPE zero sizes to avoid
      errors.  */
@@ -685,8 +684,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
     }
 
   /* Destroy ourselves.  */
-  destroy_gnat_to_gnu ();
-  destroy_dummy_type ();
+  destroy_gnat_utils ();
 
   /* We cannot track the location of errors past this point.  */
   error_gnat_node = Empty;
@@ -1501,34 +1499,25 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	    gnu_type = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_type)));
 	}
 
-      /* If we're looking for the size of a field, return the field size.
-	 Otherwise, if the prefix is an object, or if we're looking for
-	 'Object_Size or 'Max_Size_In_Storage_Elements, the result is the
-	 GCC size of the type.  Otherwise, it is the RM size of the type.  */
+      /* If we're looking for the size of a field, return the field size.  */
       if (TREE_CODE (gnu_prefix) == COMPONENT_REF)
 	gnu_result = DECL_SIZE (TREE_OPERAND (gnu_prefix, 1));
-      else if (TREE_CODE (gnu_prefix) != TYPE_DECL
+
+      /* Otherwise, if the prefix is an object, or if we are looking for
+	 'Object_Size or 'Max_Size_In_Storage_Elements, the result is the
+	 GCC size of the type.  We make an exception for padded objects,
+	 as we do not take into account alignment promotions for the size.
+	 This is in keeping with the object case of gnat_to_gnu_entity.  */
+      else if ((TREE_CODE (gnu_prefix) != TYPE_DECL
+		&& !(TYPE_IS_PADDING_P (gnu_type)
+		     && TREE_CODE (gnu_expr) == COMPONENT_REF))
 	       || attribute == Attr_Object_Size
 	       || attribute == Attr_Max_Size_In_Storage_Elements)
 	{
-	  /* If the prefix is an object of a padded type, the GCC size isn't
-	     relevant to the programmer.  Normally what we want is the RM size,
-	     which was set from the specified size, but if it was not set, we
-	     want the size of the field.  Using the MAX of those two produces
-	     the right result in all cases.  Don't use the size of the field
-	     if it's self-referential, since that's never what's wanted.  */
-	  if (TREE_CODE (gnu_prefix) != TYPE_DECL
-	      && TYPE_IS_PADDING_P (gnu_type)
-	      && TREE_CODE (gnu_expr) == COMPONENT_REF)
-	    {
-	      gnu_result = rm_size (gnu_type);
-	      if (!CONTAINS_PLACEHOLDER_P
-		   (DECL_SIZE (TREE_OPERAND (gnu_expr, 1))))
-		gnu_result
-		  = size_binop (MAX_EXPR, gnu_result,
-				DECL_SIZE (TREE_OPERAND (gnu_expr, 1)));
-	    }
-	  else if (Nkind (Prefix (gnat_node)) == N_Explicit_Dereference)
+	  /* If this is a dereference and we have a special dynamic constrained
+	     subtype on the prefix, use it to compute the size; otherwise, use
+	     the designated subtype.  */
+	  if (Nkind (Prefix (gnat_node)) == N_Explicit_Dereference)
 	    {
 	      Node_Id gnat_deref = Prefix (gnat_node);
 	      Node_Id gnat_actual_subtype
@@ -1547,12 +1536,12 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 						      get_identifier ("SIZE"),
 						      false);
 		}
-
-	      gnu_result = TYPE_SIZE (gnu_type);
 	    }
-	  else
-	    gnu_result = TYPE_SIZE (gnu_type);
+
+	  gnu_result = TYPE_SIZE (gnu_type);
 	}
+
+      /* Otherwise, the result is the RM size of the type.  */
       else
 	gnu_result = rm_size (gnu_type);
 
@@ -6921,15 +6910,10 @@ gnat_to_gnu (Node_Id gnat_node)
 
   else if (TREE_CODE (gnu_result) == CALL_EXPR
 	   && TYPE_IS_PADDING_P (TREE_TYPE (gnu_result))
+	   && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result)))
+	      == gnu_result_type
 	   && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_result_type)))
-    {
-      /* ??? We need to convert if the padded type has fixed size because
-	 gnat_types_compatible_p will say that padded types are compatible
-	 but the gimplifier will not and, therefore, will ultimately choke
-	 if there isn't a conversion added early.  */
-      if (TREE_CODE (TYPE_SIZE (TREE_TYPE (gnu_result))) == INTEGER_CST)
-	gnu_result = convert (gnu_result_type, gnu_result);
-    }
+    ;
 
   else if (TREE_TYPE (gnu_result) != gnu_result_type)
     gnu_result = convert (gnu_result_type, gnu_result);

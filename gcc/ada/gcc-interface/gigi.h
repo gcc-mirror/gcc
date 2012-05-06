@@ -123,18 +123,48 @@ extern tree get_minimal_subprog_decl (Entity_Id gnat_entity);
 extern tree make_aligning_type (tree type, unsigned int align, tree size,
 				unsigned int base_align, int room);
 
+/* TYPE is a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE that is being used
+   as the field type of a packed record if IN_RECORD is true, or as the
+   component type of a packed array if IN_RECORD is false.  See if we can
+   rewrite it either as a type that has a non-BLKmode, which we can pack
+   tighter in the packed record case, or as a smaller type.  If so, return
+   the new type.  If not, return the original type.  */
+extern tree make_packable_type (tree type, bool in_record);
+
+/* Given a type TYPE, return a new type whose size is appropriate for SIZE.
+   If TYPE is the best type, return it.  Otherwise, make a new type.  We
+   only support new integral and pointer types.  FOR_BIASED is true if
+   we are making a biased type.  */
+extern tree make_type_from_size (tree type, tree size_tree, bool for_biased);
+
 /* Ensure that TYPE has SIZE and ALIGN.  Make and return a new padded type
    if needed.  We have already verified that SIZE and TYPE are large enough.
    GNAT_ENTITY is used to name the resulting record and to issue a warning.
-   IS_COMPONENT_TYPE is true if this is being done for the component type
-   of an array.  IS_USER_TYPE is true if we must complete the original type.
-   DEFINITION is true if this type is being defined.  SAME_RM_SIZE is true
-   if the RM size of the resulting type is to be set to SIZE too; otherwise,
-   it's set to the RM size of the original type.  */
+   IS_COMPONENT_TYPE is true if this is being done for the component type of
+   an array.  IS_USER_TYPE is true if the original type needs to be completed.
+   DEFINITION is true if this type is being defined.  SET_RM_SIZE is true if
+   the RM size of the resulting type is to be set to SIZE too.  */
 extern tree maybe_pad_type (tree type, tree size, unsigned int align,
 			    Entity_Id gnat_entity, bool is_component_type,
 			    bool is_user_type, bool definition,
-			    bool same_rm_size);
+			    bool set_rm_size);
+
+enum alias_set_op
+{
+  ALIAS_SET_COPY,
+  ALIAS_SET_SUBSET,
+  ALIAS_SET_SUPERSET
+};
+
+/* Relate the alias sets of GNU_NEW_TYPE and GNU_OLD_TYPE according to OP.
+   If this is a multi-dimensional array type, do this recursively.
+
+   OP may be
+   - ALIAS_SET_COPY:     the new set is made a copy of the old one.
+   - ALIAS_SET_SUPERSET: the new set is made a superset of the old one.
+   - ALIAS_SET_SUBSET:   the new set is made a subset of the old one.  */
+extern void relate_alias_sets (tree gnu_new_type, tree gnu_old_type,
+			       enum alias_set_op op);
 
 /* Given a GNU tree and a GNAT list of choices, generate an expression to test
    the value passed against the list of choices.  */
@@ -497,11 +527,11 @@ extern tree convert_to_index_type (tree expr);
 /* Routines created solely for the tree translator's sake. Their prototypes
    can be changed as desired.  */
 
-/* Initialize the association of GNAT nodes to GCC trees.  */
-extern void init_gnat_to_gnu (void);
+/* Initialize data structures of the utils.c module.  */
+extern void init_gnat_utils (void);
 
-/* Destroy the association of GNAT nodes to GCC trees.  */
-extern void destroy_gnat_to_gnu (void);
+/* Destroy data structures of the utils.c module.  */
+extern void destroy_gnat_utils (void);
 
 /* GNAT_ENTITY is a GNAT tree node for a defining identifier.
    GNU_DECL is the GCC tree which is to be associated with
@@ -518,12 +548,6 @@ extern tree get_gnu_tree (Entity_Id gnat_entity);
 
 /* Return nonzero if a GCC tree has been associated with GNAT_ENTITY.  */
 extern bool present_gnu_tree (Entity_Id gnat_entity);
-
-/* Initialize the association of GNAT nodes to GCC trees as dummies.  */
-extern void init_dummy_type (void);
-
-/* Destroy the association of GNAT nodes to GCC trees as dummies.  */
-extern void destroy_dummy_type (void);
 
 /* Make a dummy type corresponding to GNAT_TYPE.  */
 extern tree make_dummy_type (Entity_Id gnat_type);
@@ -1008,3 +1032,9 @@ extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
 
 /* Convenient shortcuts.  */
 #define VECTOR_TYPE_P(TYPE) (TREE_CODE (TYPE) == VECTOR_TYPE)
+
+static inline unsigned HOST_WIDE_INT
+ceil_pow2 (unsigned HOST_WIDE_INT x)
+{
+  return (unsigned HOST_WIDE_INT) 1 << (floor_log2 (x - 1) + 1);
+}
