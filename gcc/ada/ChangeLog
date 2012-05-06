@@ -1,5 +1,13 @@
 2012-05-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Also handle invariant
+	conditions with only one bound.
+	(Raise_Error_to_gnu): Likewise.  New function extracted from...
+	(gnat_to_gnu) <N_Raise_Constraint_Error>: ...here.  Call above function
+	in regular mode only.
+
+2012-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/misc.c (gnat_post_options): Disable caret by default.
 
 2012-05-06  Eric Botcazou  <ebotcazou@adacore.com>
