@@ -2999,6 +2999,27 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 {
   switch (code)
     {
+      /* The lower-subreg pass decides whether to split multi-word regs
+	 into individual regs by looking at the cost for a SET of certain
+	 modes with the following patterns:
+	   (set (reg) (reg)) 
+	   (set (reg) (const_int 0))
+	 On machines that support vector-move operations a multi-word move
+	 is the same cost as individual reg move.  On SH there is no
+	 vector-move, so we have to provide the correct cost in the number
+	 of move insns to load/store the reg of the mode in question.  */
+    case SET:
+      if (register_operand (SET_DEST (x), VOIDmode)
+	    && (register_operand (SET_SRC (x), VOIDmode)
+		|| satisfies_constraint_Z (SET_SRC (x))))
+	{
+	  const enum machine_mode mode = GET_MODE (SET_DEST (x));
+	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode)
+				  / mov_insn_size (mode, TARGET_SH2A));
+	  return true;
+        }
+      return false;
+
     case CONST_INT:
       if (TARGET_SHMEDIA)
         {
