@@ -1,3 +1,10 @@
+2012-05-07  Uros Bizjak  <ubizjak@gmail.com>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/i386/i386.md (ctz<mode>2): Emit rep;bsf even for !TARGET_BMI.
+	Emit bsf when optimizing for size.
+	(*ffs<mode>_1): Ditto.
+
 2012-05-07  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53250
