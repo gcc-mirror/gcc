@@ -1471,7 +1471,7 @@ build_scoped_ref (tree datum, tree basetype, tree* binfo_p)
    delegation is detected.  */
 
 tree
-build_x_arrow (tree expr, tsubst_flags_t complain)
+build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 {
   tree orig_expr = expr;
   tree type = TREE_TYPE (expr);
@@ -1493,8 +1493,8 @@ build_x_arrow (tree expr, tsubst_flags_t complain)
       struct tinst_level *actual_inst = current_instantiation ();
       tree fn = NULL;
 
-      while ((expr = build_new_op (COMPONENT_REF, LOOKUP_NORMAL, expr,
-				   NULL_TREE, NULL_TREE,
+      while ((expr = build_new_op (loc, COMPONENT_REF,
+				   LOOKUP_NORMAL, expr, NULL_TREE, NULL_TREE,
 				   &fn, complain)))
 	{
 	  if (expr == error_mark_node)

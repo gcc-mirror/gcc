@@ -1,3 +1,28 @@
+2012-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53152
+	* call.c (op_error, build_new_op_1, build_new_op): Add location_t
+	parameter.
+	(build_conditional_expr_1): Adjust.
+	* typeck.c (build_x_indirect_ref, build_x_binary_op,
+	build_x_unary_op): Add location_t parameter.
+	(rationalize_conditional_expr, build_x_array_ref,
+	build_x_compound_expr, cp_build_modify_expr, build_x_modify_expr):
+	Adjust.
+	* typeck2.c (build_x_arrow): Add location_t parameter.
+	* semantics.c (finish_unary_op_expr): Likewise.
+	(finish_increment_expr, handle_omp_for_class_iterator): Adjust.
+	* decl2.c (grok_array_decl): Add location_t parameter.
+	* parser.c (cp_parser_postfix_open_square_expression,
+	cp_parser_postfix_dot_deref_expression, cp_parser_unary_expression,
+	cp_parser_binary_expression, cp_parser_builtin_offsetof,
+	do_range_for_auto_deduction, cp_convert_range_for,
+	cp_parser_template_argument, cp_parser_omp_for_cond): Pass the
+	location, adjust.
+	* pt.c (tsubst_copy_and_build): Adjust.
+	* tree.c (maybe_dummy_object): Likewise.
+	* cp-tree.h: Update declarations.
+
 2012-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* semantics.c (cxx_eval_constant_expression, case CONVERT_EXPR): Tidy.

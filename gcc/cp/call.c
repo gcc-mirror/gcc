@@ -159,8 +159,8 @@ static tree build_java_interface_fn_ref (tree, tree);
 		     /*c_cast_p=*/false, (COMPLAIN))
 static tree convert_like_real (conversion *, tree, tree, int, int, bool,
 			       bool, tsubst_flags_t);
-static void op_error (enum tree_code, enum tree_code, tree, tree,
-		      tree, bool);
+static void op_error (location_t, enum tree_code, enum tree_code, tree,
+		      tree, tree, bool);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int,
 							 tsubst_flags_t);
 static void print_z_candidate (const char *, struct z_candidate *);
@@ -4200,7 +4200,7 @@ op_error_string (const char *errmsg, int ntypes, bool match)
 }
 
 static void
-op_error (enum tree_code code, enum tree_code code2,
+op_error (location_t loc, enum tree_code code, enum tree_code code2,
 	  tree arg1, tree arg2, tree arg3, bool match)
 {
   const char *opname;
@@ -4214,62 +4214,65 @@ op_error (enum tree_code code, enum tree_code code2,
     {
     case COND_EXPR:
       if (flag_diagnostics_show_caret)
-	error (op_error_string (G_("ternary %<operator?:%>"), 3, match),
-	       TREE_TYPE (arg1), TREE_TYPE (arg2), TREE_TYPE (arg3));
+	error_at (loc, op_error_string (G_("ternary %<operator?:%>"),
+					3, match),
+		  TREE_TYPE (arg1), TREE_TYPE (arg2), TREE_TYPE (arg3));
       else
-	error (op_error_string (G_("ternary %<operator?:%> "
-				   "in %<%E ? %E : %E%>"), 3, match),
-	       arg1, arg2, arg3,
-	       TREE_TYPE (arg1), TREE_TYPE (arg2), TREE_TYPE (arg3));
+	error_at (loc, op_error_string (G_("ternary %<operator?:%> "
+					   "in %<%E ? %E : %E%>"), 3, match),
+		  arg1, arg2, arg3,
+		  TREE_TYPE (arg1), TREE_TYPE (arg2), TREE_TYPE (arg3));
       break;
 
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
       if (flag_diagnostics_show_caret)
-	error (op_error_string (G_("%<operator%s%>"), 1, match),
-	       opname, TREE_TYPE (arg1));
+	error_at (loc, op_error_string (G_("%<operator%s%>"), 1, match),
+		  opname, TREE_TYPE (arg1));
       else
-	error (op_error_string (G_("%<operator%s%> in %<%E%s%>"), 1, match),
-	       opname, arg1, opname, TREE_TYPE (arg1));
+	error_at (loc, op_error_string (G_("%<operator%s%> in %<%E%s%>"),
+					1, match),
+		  opname, arg1, opname, TREE_TYPE (arg1));
       break;
 
     case ARRAY_REF:
       if (flag_diagnostics_show_caret)
-	error (op_error_string (G_("%<operator[]%>"), 2, match),
-	       TREE_TYPE (arg1), TREE_TYPE (arg2));
+	error_at (loc, op_error_string (G_("%<operator[]%>"), 2, match),
+		  TREE_TYPE (arg1), TREE_TYPE (arg2));
       else
-	error (op_error_string (G_("%<operator[]%> in %<%E[%E]%>"), 2, match),
-	       arg1, arg2, TREE_TYPE (arg1), TREE_TYPE (arg2));
+	error_at (loc, op_error_string (G_("%<operator[]%> in %<%E[%E]%>"),
+					2, match),
+		  arg1, arg2, TREE_TYPE (arg1), TREE_TYPE (arg2));
       break;
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       if (flag_diagnostics_show_caret)
-	error (op_error_string (G_("%qs"), 1, match),
-	       opname, TREE_TYPE (arg1));
+	error_at (loc, op_error_string (G_("%qs"), 1, match),
+		  opname, TREE_TYPE (arg1));
       else
-	error (op_error_string (G_("%qs in %<%s %E%>"), 1, match),
-	       opname, opname, arg1, TREE_TYPE (arg1));
+	error_at (loc, op_error_string (G_("%qs in %<%s %E%>"), 1, match),
+		  opname, opname, arg1, TREE_TYPE (arg1));
       break;
 
     default:
       if (arg2)
 	if (flag_diagnostics_show_caret)
-	  error (op_error_string (G_("%<operator%s%>"), 2, match),
-		 opname, TREE_TYPE (arg1), TREE_TYPE (arg2));
+	  error_at (loc, op_error_string (G_("%<operator%s%>"), 2, match),
+		    opname, TREE_TYPE (arg1), TREE_TYPE (arg2));
 	else
-	  error (op_error_string (G_("%<operator%s%> in %<%E %s %E%>"),
-				  2, match),
-		 opname, arg1, opname, arg2,
-		 TREE_TYPE (arg1), TREE_TYPE (arg2));
+	  error_at (loc, op_error_string (G_("%<operator%s%> in %<%E %s %E%>"),
+					  2, match),
+		    opname, arg1, opname, arg2,
+		    TREE_TYPE (arg1), TREE_TYPE (arg2));
       else
 	if (flag_diagnostics_show_caret)
-	  error (op_error_string (G_("%<operator%s%>"), 1, match),
-		 opname, TREE_TYPE (arg1));
+	  error_at (loc, op_error_string (G_("%<operator%s%>"), 1, match),
+		    opname, TREE_TYPE (arg1));
 	else
-	  error (op_error_string (G_("%<operator%s%> in %<%s%E%>"),
-				  1, match),
-		 opname, opname, arg1, TREE_TYPE (arg1));
+	  error_at (loc, op_error_string (G_("%<operator%s%> in %<%s%E%>"),
+					  1, match),
+		    opname, opname, arg1, TREE_TYPE (arg1));
       break;
     }
 }
@@ -4607,7 +4610,8 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
 	{
           if (complain & tf_error)
             {
-              op_error (COND_EXPR, NOP_EXPR, arg1, arg2, arg3, FALSE);
+              op_error (input_location, COND_EXPR, NOP_EXPR,
+			arg1, arg2, arg3, FALSE);
               print_z_candidates (location_of (arg1), candidates);
             }
 	  return error_mark_node;
@@ -4617,7 +4621,8 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
 	{
           if (complain & tf_error)
             {
-              op_error (COND_EXPR, NOP_EXPR, arg1, arg2, arg3, FALSE);
+              op_error (input_location, COND_EXPR, NOP_EXPR,
+			arg1, arg2, arg3, FALSE);
               print_z_candidates (location_of (arg1), candidates);
             }
 	  return error_mark_node;
@@ -4944,8 +4949,8 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
 }
 
 static tree
-build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
-		tree *overload, tsubst_flags_t complain)
+build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
+		tree arg2, tree arg3, tree *overload, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   VEC(tree,gc) *arglist;
@@ -5098,8 +5103,7 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 		? G_("no %<%D(int)%> declared for postfix %qs,"
 		     " trying prefix operator instead")
 		: G_("no %<%D(int)%> declared for postfix %qs");
-	      permerror (input_location, msg, fnname,
-			 operator_name_info[code].name);
+	      permerror (loc, msg, fnname, operator_name_info[code].name);
 	    }
 
 	  if (!flag_permissive)
@@ -5109,8 +5113,8 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	    code = PREINCREMENT_EXPR;
 	  else
 	    code = PREDECREMENT_EXPR;
-	  result = build_new_op_1 (code, flags, arg1, NULL_TREE, NULL_TREE,
-				   overload, complain);
+	  result = build_new_op_1 (loc, code, flags, arg1, NULL_TREE,
+				   NULL_TREE, overload, complain);
 	  break;
 
 	  /* The caller will deal with these.  */
@@ -5135,8 +5139,8 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 		  {
 		    /* ... Otherwise, report the more generic
 		       "no matching operator found" error */
-		    op_error (code, code2, arg1, arg2, arg3, FALSE);
-		    print_z_candidates (input_location, candidates);
+		    op_error (loc, code, code2, arg1, arg2, arg3, FALSE);
+		    print_z_candidates (loc, candidates);
 		  }
 	    }
 	  result = error_mark_node;
@@ -5150,8 +5154,8 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	{
 	  if ((flags & LOOKUP_COMPLAIN) && (complain & tf_error))
 	    {
-	      op_error (code, code2, arg1, arg2, arg3, TRUE);
-	      print_z_candidates (input_location, candidates);
+	      op_error (loc, code, code2, arg1, arg2, arg3, TRUE);
+	      print_z_candidates (loc, candidates);
 	    }
 	  result = error_mark_node;
 	}
@@ -5213,7 +5217,7 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	      /* We need to call warn_logical_operator before
 		 converting arg2 to a boolean_type.  */
 	      if (complain & tf_warning)
-		warn_logical_operator (input_location, code, boolean_type_node,
+		warn_logical_operator (loc, code, boolean_type_node,
 				       code_orig_arg1, arg1,
 				       code_orig_arg2, arg2);
 
@@ -5254,7 +5258,7 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
-      warn_logical_operator (input_location, code, boolean_type_node,
+      warn_logical_operator (loc, code, boolean_type_node,
 			     code_orig_arg1, arg1, code_orig_arg2, arg2);
       /* Fall through.  */
     case PLUS_EXPR:
@@ -5313,12 +5317,14 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 /* Wrapper for above.  */
 
 tree
-build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
+build_new_op (location_t loc, enum tree_code code, int flags,
+	      tree arg1, tree arg2, tree arg3,
 	      tree *overload, tsubst_flags_t complain)
 {
   tree ret;
   bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = build_new_op_1 (code, flags, arg1, arg2, arg3, overload, complain);
+  ret = build_new_op_1 (loc, code, flags, arg1, arg2, arg3,
+			overload, complain);
   timevar_cond_stop (TV_OVERLOAD, subtime);
   return ret;
 }

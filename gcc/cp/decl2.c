@@ -336,7 +336,7 @@ grokclassfn (tree ctype, tree function, enum overload_flags flags)
    along the way.  */
 
 tree
-grok_array_decl (tree array_expr, tree index_exp)
+grok_array_decl (location_t loc, tree array_expr, tree index_exp)
 {
   tree type;
   tree expr;
@@ -362,7 +362,7 @@ grok_array_decl (tree array_expr, tree index_exp)
 
   /* If they have an `operator[]', use that.  */
   if (MAYBE_CLASS_TYPE_P (type) || MAYBE_CLASS_TYPE_P (TREE_TYPE (index_exp)))
-    expr = build_new_op (ARRAY_REF, LOOKUP_NORMAL,
+    expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL,
 			 array_expr, index_exp, NULL_TREE,
 			 /*overload=*/NULL, tf_warning_or_error);
   else
