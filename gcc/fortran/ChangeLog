@@ -1,3 +1,8 @@
+2012-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41587
+	* decl.c (build_struct): Don't ignore FAILED status.
+
 2012-05-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41600
