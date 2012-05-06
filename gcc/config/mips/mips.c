@@ -3490,6 +3490,37 @@ mips_zero_extend_cost (enum machine_mode mode, rtx op)
   return COSTS_N_INSNS (1);
 }
 
+/* Return the cost of moving between two registers of mode MODE,
+   assuming that the move will be in pieces of at most UNITS bytes.  */
+
+static int
+mips_set_reg_reg_piece_cost (enum machine_mode mode, unsigned int units)
+{
+  return COSTS_N_INSNS ((GET_MODE_SIZE (mode) + units - 1) / units);
+}
+
+/* Return the cost of moving between two registers of mode MODE.  */
+
+static int
+mips_set_reg_reg_cost (enum machine_mode mode)
+{
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_CC:
+      return mips_set_reg_reg_piece_cost (mode, GET_MODE_SIZE (CCmode));
+
+    case MODE_FLOAT:
+    case MODE_COMPLEX_FLOAT:
+    case MODE_VECTOR_FLOAT:
+      if (TARGET_HARD_FLOAT)
+	return mips_set_reg_reg_piece_cost (mode, UNITS_PER_HWFPVALUE);
+      /* Fall through */
+
+    default:
+      return mips_set_reg_reg_piece_cost (mode, UNITS_PER_WORD);
+    }
+}
+
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
@@ -3875,6 +3906,15 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case FLOAT_EXTEND:
     case FLOAT_TRUNCATE:
       *total = mips_cost->fp_add;
+      return false;
+
+    case SET:
+      if (register_operand (SET_DEST (x), VOIDmode)
+	  && reg_or_0_operand (SET_SRC (x), VOIDmode))
+	{
+	  *total = mips_set_reg_reg_cost (GET_MODE (SET_DEST (x)));
+	  return true;
+	}
       return false;
 
     default:
