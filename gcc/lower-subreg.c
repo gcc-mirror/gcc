@@ -135,13 +135,11 @@ static int
 shift_cost (bool speed_p, struct cost_rtxes *rtxes, enum rtx_code code,
 	    enum machine_mode mode, int op1)
 {
-  PUT_MODE (rtxes->target, mode);
   PUT_CODE (rtxes->shift, code);
   PUT_MODE (rtxes->shift, mode);
   PUT_MODE (rtxes->source, mode);
   XEXP (rtxes->shift, 1) = GEN_INT (op1);
-  SET_SRC (rtxes->set) = rtxes->shift;
-  return insn_rtx_cost (rtxes->set, speed_p);
+  return set_src_cost (rtxes->shift, speed_p);
 }
 
 /* For each X in the range [0, BITS_PER_WORD), set SPLITTING[X]
@@ -189,11 +187,12 @@ compute_costs (bool speed_p, struct cost_rtxes *rtxes)
   unsigned int i;
   int word_move_zero_cost, word_move_cost;
 
+  PUT_MODE (rtxes->target, word_mode);
   SET_SRC (rtxes->set) = CONST0_RTX (word_mode);
-  word_move_zero_cost = insn_rtx_cost (rtxes->set, speed_p);
+  word_move_zero_cost = set_rtx_cost (rtxes->set, speed_p);
 
   SET_SRC (rtxes->set) = rtxes->source;
-  word_move_cost = insn_rtx_cost (rtxes->set, speed_p);
+  word_move_cost = set_rtx_cost (rtxes->set, speed_p);
 
   if (LOG_COSTS)
     fprintf (stderr, "%s move: from zero cost %d, from reg cost %d\n",
@@ -209,7 +208,7 @@ compute_costs (bool speed_p, struct cost_rtxes *rtxes)
 
 	  PUT_MODE (rtxes->target, mode);
 	  PUT_MODE (rtxes->source, mode);
-	  mode_move_cost = insn_rtx_cost (rtxes->set, speed_p);
+	  mode_move_cost = set_rtx_cost (rtxes->set, speed_p);
 
 	  if (LOG_COSTS)
 	    fprintf (stderr, "%s move: original cost %d, split cost %d * %d\n",
@@ -236,10 +235,8 @@ compute_costs (bool speed_p, struct cost_rtxes *rtxes)
 
       /* The only case here to check to see if moving the upper part with a
 	 zero is cheaper than doing the zext itself.  */
-      PUT_MODE (rtxes->target, twice_word_mode);
       PUT_MODE (rtxes->source, word_mode);
-      SET_SRC (rtxes->set) = rtxes->zext;
-      zext_cost = insn_rtx_cost (rtxes->set, speed_p);
+      zext_cost = set_src_cost (rtxes->zext, speed_p);
 
       if (LOG_COSTS)
 	fprintf (stderr, "%s %s: original cost %d, split cost %d + %d\n",
