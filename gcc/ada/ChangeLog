@@ -1,5 +1,9 @@
 2012-05-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/misc.c (gnat_post_options): Disable caret by default.
+
+2012-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (make_packable_type): Declare.
 	(make_type_from_size): Likewise.
 	(relate_alias_sets): Likewise.
