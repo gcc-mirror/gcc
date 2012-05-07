@@ -996,7 +996,8 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
                             gen_rtx_SET (VOIDmode, fp, stack_pointer_rtx));
             }
 
-          insn = emit_move_insn (my_fp, plus_constant (Pmode, my_fp, -size));
+          insn = emit_move_insn (my_fp, plus_constant (GET_MODE (my_fp),
+                                                       my_fp, -size));
           if (frame_pointer_needed)
             {
               RTX_FRAME_RELATED_P (insn) = 1;
@@ -1324,7 +1325,7 @@ expand_epilogue (bool sibcall_p)
       if (!frame_pointer_needed)
         emit_move_insn (fp, stack_pointer_rtx);
 
-      emit_move_insn (my_fp, plus_constant (Pmode, my_fp, size));
+      emit_move_insn (my_fp, plus_constant (GET_MODE (my_fp), my_fp, size));
 
       /* Copy to stack pointer.  */
 
