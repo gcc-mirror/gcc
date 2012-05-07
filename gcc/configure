@@ -21511,20 +21511,20 @@ fi
 fi
 
 ORIGINAL_PLUGIN_LD_FOR_TARGET=$gcc_cv_ld
-PLUGIN_LD=`basename $gcc_cv_ld`
+PLUGIN_LD_SUFFIX=`basename $gcc_cv_ld | sed -e "s,$target_alias-,,"`
 
 # Check whether --with-plugin-ld was given.
 if test "${with_plugin_ld+set}" = set; then :
   withval=$with_plugin_ld; if test x"$withval" != x; then
    ORIGINAL_PLUGIN_LD_FOR_TARGET="$withval"
-   PLUGIN_LD="$withval"
+   PLUGIN_LD_SUFFIX=`echo $withval | sed -e "s,$target_alias-,,"`
  fi
 fi
 
 
 
 cat >>confdefs.h <<_ACEOF
-#define PLUGIN_LD "$PLUGIN_LD"
+#define PLUGIN_LD_SUFFIX "$PLUGIN_LD_SUFFIX"
 _ACEOF
 
 
