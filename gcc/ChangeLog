@@ -1,3 +1,8 @@
+2012-05-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* postreload.c (reload_cse_regs): Make static.
+	* reload.h (reload_cse_regs): Remove prototype.
+
 2012-05-07  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (clear_cache): New pattern.

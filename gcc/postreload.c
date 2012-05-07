@@ -64,7 +64,8 @@ static void move2add_note_store (rtx, const_rtx, void *);
 
 /* Call cse / combine like post-reload optimization phases.
    FIRST is the first instruction.  */
-void
+
+static void
 reload_cse_regs (rtx first ATTRIBUTE_UNUSED)
 {
   bool moves_converted;
