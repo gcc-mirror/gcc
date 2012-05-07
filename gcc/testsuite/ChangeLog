@@ -1,3 +1,10 @@
+2012-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53239
+	* g++.dg/opt/vrp3.C: New test.
+	* g++.dg/opt/vrp3-aux.cc: New file.
+	* g++.dg/opt/vrp3.h: New file.
+
 2012-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/debug/dwarf2/nested-3.C: Allow for / comments and missing
