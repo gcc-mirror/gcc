@@ -3712,7 +3712,10 @@ Unary_expression::eval_constant(Operator op, const Numeric_constant* unc,
     return false;
 
   mpz_t uval;
-  unc->get_int(&uval);
+  if (unc->is_rune())
+    unc->get_rune(&uval);
+  else
+    unc->get_int(&uval);
   mpz_t val;
   mpz_init(val);
 
