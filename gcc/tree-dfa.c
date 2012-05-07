@@ -814,21 +814,24 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	  {
 	    tree index = TREE_OPERAND (exp, 1);
 	    tree low_bound, unit_size;
+	    double_int doffset;
 
 	    /* If the resulting bit-offset is constant, track it.  */
 	    if (TREE_CODE (index) == INTEGER_CST
-		&& host_integerp (index, 0)
 		&& (low_bound = array_ref_low_bound (exp),
-		    host_integerp (low_bound, 0))
+ 		    TREE_CODE (low_bound) == INTEGER_CST)
 		&& (unit_size = array_ref_element_size (exp),
-		    host_integerp (unit_size, 1)))
+		    host_integerp (unit_size, 1))
+		&& (doffset = double_int_sext
+			      (double_int_sub (TREE_INT_CST (index),
+					       TREE_INT_CST (low_bound)),
+			       TYPE_PRECISION (TREE_TYPE (index))),
+		    double_int_fits_in_shwi_p (doffset)))
 	      {
-		HOST_WIDE_INT hindex = TREE_INT_CST_LOW (index);
-
-		hindex -= TREE_INT_CST_LOW (low_bound);
-		hindex *= TREE_INT_CST_LOW (unit_size);
-		hindex *= BITS_PER_UNIT;
-		bit_offset += hindex;
+		HOST_WIDE_INT hoffset = double_int_to_shwi (doffset);
+		hoffset *= TREE_INT_CST_LOW (unit_size);
+		hoffset *= BITS_PER_UNIT;
+		bit_offset += hoffset;
 
 		/* An array ref with a constant index up in the structure
 		   hierarchy will constrain the size of any variable array ref
