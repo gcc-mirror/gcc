@@ -4122,11 +4122,84 @@ verify_gimple_goto (gimple stmt)
 static bool
 verify_gimple_switch (gimple stmt)
 {
+  unsigned int i, n;
+  tree elt, prev_upper_bound = NULL_TREE;
+  tree index_type, elt_type = NULL_TREE;
+
   if (!is_gimple_val (gimple_switch_index (stmt)))
     {
       error ("invalid operand to switch statement");
       debug_generic_stmt (gimple_switch_index (stmt));
       return true;
+    }
+
+  index_type = TREE_TYPE (gimple_switch_index (stmt));
+  if (! INTEGRAL_TYPE_P (index_type))
+    {
+      error ("non-integral type switch statement");
+      debug_generic_expr (index_type);
+      return true;
+    }
+
+  elt = gimple_switch_default_label (stmt);
+  if (CASE_LOW (elt) != NULL_TREE || CASE_HIGH (elt) != NULL_TREE)
+    {
+      error ("invalid default case label in switch statement");
+      debug_generic_expr (elt);
+      return true;
+    }
+
+  n = gimple_switch_num_labels (stmt);
+  for (i = 1; i < n; i++)
+    {
+      elt = gimple_switch_label (stmt, i);
+
+      if (! CASE_LOW (elt))
+	{
+	  error ("invalid case label in switch statement");
+	  debug_generic_expr (elt);
+	  return true;
+	}
+      if (CASE_HIGH (elt)
+	  && ! tree_int_cst_lt (CASE_LOW (elt), CASE_HIGH (elt)))
+	{
+	  error ("invalid case range in switch statement");
+	  debug_generic_expr (elt);
+	  return true;
+	}
+
+      if (elt_type)
+	{
+	  if (TREE_TYPE (CASE_LOW (elt)) != elt_type
+	      || (CASE_HIGH (elt) && TREE_TYPE (CASE_HIGH (elt)) != elt_type))
+	    {
+	      error ("type mismatch for case label in switch statement");
+	      debug_generic_expr (elt);
+	      return true;
+	    }
+	}
+      else
+	{
+	  elt_type = TREE_TYPE (CASE_LOW (elt));
+	  if (TYPE_PRECISION (index_type) < TYPE_PRECISION (elt_type))
+	    {
+	      error ("type precision mismatch in switch statement");
+	      return true;
+	    }
+	}
+
+      if (prev_upper_bound)
+	{
+	  if (! tree_int_cst_lt (prev_upper_bound, CASE_LOW (elt)))
+	    {
+	      error ("case labels not sorted in switch statement");
+	      return true;
+	    }
+	}
+
+      prev_upper_bound = CASE_HIGH (elt);
+      if (! prev_upper_bound)
+	prev_upper_bound = CASE_LOW (elt);
     }
 
   return false;
