@@ -1658,6 +1658,10 @@ preprocess_case_label_vec_for_gimple (VEC(tree,heap) *labels,
 		      && tree_int_cst_compare (high, max_value) > 0)
 		    high = max_value;
 		  high = fold_convert (index_type, high);
+
+		  /* We may have folded a case range to a one-value case.  */
+		  if (tree_int_cst_equal (low, high))
+		    high = NULL_TREE;
 		}
 	    }
 
