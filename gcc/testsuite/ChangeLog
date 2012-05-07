@@ -1,3 +1,9 @@
+2012-05-07  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42987
+	* g++.dg/lto/pr42987_0.C: New testcase.
+	* g++.dg/lto/pr42987_1.C: Likewise.
+
 2012-05-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53255
