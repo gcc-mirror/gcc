@@ -1,3 +1,9 @@
+2012-05-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Return
+	whether we failed to compute data dependences.
+	(loop_prefetch_arrays): Fail if we failed.
+
 2012-05-07  Uros Bizjak  <ubizjak@gmail.com>
 	    Paolo Bonzini  <bonzini@gnu.org>
 

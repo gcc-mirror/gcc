@@ -1495,9 +1495,9 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
 
 /* Determines the distance till the first reuse of each reference in REFS
    in the loop nest of LOOP.  NO_OTHER_REFS is true if there are no other
-   memory references in the loop.  */
+   memory references in the loop.  Return false if the analysis fails.  */
 
-static void
+static bool
 determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 			   bool no_other_refs)
 {
@@ -1515,7 +1515,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
   ddr_p dep;
 
   if (loop->inner)
-    return;
+    return true;
 
   /* Find the outermost loop of the loop nest of loop (we require that
      there are no sibling loops inside the nest).  */
@@ -1585,7 +1585,8 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 	ref->independent_p = true;
     }
 
-  compute_all_dependences (datarefs, &dependences, vloops, true);
+  if (!compute_all_dependences (datarefs, &dependences, vloops, true))
+    return false;
 
   FOR_EACH_VEC_ELT (ddr_p, dependences, i, dep)
     {
@@ -1664,6 +1665,8 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 	  fprintf (dump_file, " ref %p distance %u\n",
 		   (void *) ref, ref->reuse_distance);
     }
+
+  return true;
 }
 
 /* Determine whether or not the trip count to ahead ratio is too small based
@@ -1826,7 +1829,8 @@ loop_prefetch_arrays (struct loop *loop)
   if (nothing_to_prefetch_p (refs))
     goto fail;
 
-  determine_loop_nest_reuse (loop, refs, no_other_refs);
+  if (!determine_loop_nest_reuse (loop, refs, no_other_refs))
+    goto fail;
 
   /* Step 3: determine unroll factor.  */
   unroll_factor = determine_unroll_factor (loop, refs, ninsns, &desc,
