@@ -5624,12 +5624,11 @@ resolve_typebound_static (gfc_expr* e, gfc_symtree** target,
   e->value.compcall.actual = NULL;
 
   /* If we find a deferred typebound procedure, check for derived types
-     that an over-riding typebound procedure has not been missed.  */
-  if (e->value.compcall.tbp->deferred
-	&& e->value.compcall.name
-	&& !e->value.compcall.tbp->non_overridable
-	&& e->value.compcall.base_object
-	&& e->value.compcall.base_object->ts.type == BT_DERIVED)
+     that an overriding typebound procedure has not been missed.  */
+  if (e->value.compcall.name
+      && !e->value.compcall.tbp->non_overridable
+      && e->value.compcall.base_object
+      && e->value.compcall.base_object->ts.type == BT_DERIVED)
     {
       gfc_symtree *st;
       gfc_symbol *derived;
