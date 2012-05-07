@@ -1,4 +1,11 @@
-2012-05-07    Georg-Johann Lay  <avr@gjlay.de>
+2012-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-dfa.c (get_ref_base_and_extent) <ARRAY_REF>: Do the offset
+	computation using the precision of the index type.
+	* gimple-fold.c (fold_const_aggregate_ref_1) <ARRAY_REF>: Likewise.
+	(fold_array_ctor_reference): Do index computations in the index type.
+
+2012-05-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_prologue_setup_frame): Fix mode passed
 	down to plus_constant.
