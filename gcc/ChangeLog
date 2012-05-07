@@ -1,3 +1,7 @@
+2012-05-07  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (clear_cache): New pattern.
+
 2012-05-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/53245

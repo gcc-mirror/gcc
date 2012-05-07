@@ -4346,6 +4346,15 @@
   "call_pal 0x86"
   [(set_attr "type" "callpal")])
 
+(define_expand "clear_cache"
+  [(match_operand:DI 0 "")		; region start
+   (match_operand:DI 1 "")]		; region end
+  ""
+{
+  emit_insn (gen_imb ());
+  DONE;
+})
+
 ;; BUGCHK is documented common to OSF/1 and VMS PALcode.
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 0))]
