@@ -1,3 +1,8 @@
+2012-05-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Bump minimum MPFR version to 2.4.0.
+	* configure: Regenerated.
+
 2012-05-03  Olivier Hainque  <hainque@adacore.com>
 
 	* config/mh-ppc-aix (LDFLAGS): Quote $(CC).

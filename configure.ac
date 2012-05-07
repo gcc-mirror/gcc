@@ -1367,7 +1367,7 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
     AC_MSG_CHECKING([for the correct version of mpfr.h])
     AC_TRY_COMPILE([#include <gmp.h>
     #include <mpfr.h>],[
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,1)
+    #if MPFR_VERSION < MPFR_VERSION_NUM(2,4,0)
     choke me
     #endif
     ], [AC_TRY_COMPILE([#include <gmp.h>
@@ -1427,7 +1427,7 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
 # The library versions listed in the error message below should match
 # the HARD-minimums enforced above.
   if test x$have_gmp != xyes; then
-    AC_MSG_ERROR([Building GCC requires GMP 4.2+, MPFR 2.3.1+ and MPC 0.8.0+.
+    AC_MSG_ERROR([Building GCC requires GMP 4.2+, MPFR 2.4.0+ and MPC 0.8.0+.
 Try the --with-gmp, --with-mpfr and/or --with-mpc options to specify
 their locations.  Source code for these libraries can be found at
 their respective hosting sites as well as at
