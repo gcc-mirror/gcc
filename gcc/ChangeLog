@@ -1,3 +1,9 @@
+2012-05-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53195
+	* tree-inline.c (setup_one_parameter): Properly add referenced
+	vars from the parameters new known value.
+
 2012-05-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/m68k/m68k.c (m68k_sched_branch_type): Remove.
@@ -5,8 +11,8 @@
 	(m68k_sched_md_init_global): Don't allocate it.
 	(m68k_sched_md_finish_global): Don't free it.
 	* config/m68k/m68k.h (m68k_sched_branch_type): Remove prototype.
-	* config/m68k/m68k.md: Set the type of insns using m68k_sched_branch_type
-	to bcc directly.
+	* config/m68k/m68k.md: Set the type of insns using
+	m68k_sched_branch_type to bcc directly.
 
 2012-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
