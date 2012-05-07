@@ -1,5 +1,13 @@
 2012-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* configure.ac (PLUGIN_LD): Rename into...
+	(PLUGIN_LD_SUFFIX): ...this and strip the target_alias triplet.
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* collect2.c (main): Set plugin_ld_suffix to PLUGIN_LD_SUFFIX.
+
+2012-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree-dfa.c (get_ref_base_and_extent) <ARRAY_REF>: Do the offset
 	computation using the precision of the index type.
 	* gimple-fold.c (fold_const_aggregate_ref_1) <ARRAY_REF>: Likewise.

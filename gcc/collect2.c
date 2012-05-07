@@ -1024,7 +1024,7 @@ int
 main (int argc, char **argv)
 {
   static const char *const ld_suffix	= "ld";
-  static const char *const plugin_ld_suffix = PLUGIN_LD;
+  static const char *const plugin_ld_suffix = PLUGIN_LD_SUFFIX;
   static const char *const real_ld_suffix = "real-ld";
   static const char *const collect_ld_suffix = "collect-ld";
   static const char *const nm_suffix	= "nm";
