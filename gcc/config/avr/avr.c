@@ -867,7 +867,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
                                             ? frame_pointer_rtx
                                             : stack_pointer_rtx),
                                  plus_constant (Pmode, stack_pointer_rtx,
-						-(size + live_seq))));
+                                                -(size + live_seq))));
 
       /* Note that live_seq always contains r28+r29, but the other
          registers to be saved are all below 18.  */
@@ -881,7 +881,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
           rtx m, r;
 
           m = gen_rtx_MEM (QImode, plus_constant (Pmode, stack_pointer_rtx,
-						  offset));
+                                                  offset));
           r = gen_rtx_REG (QImode, reg);
           add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (VOIDmode, m, r));
         }
@@ -1003,7 +1003,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, fp,
                                          plus_constant (Pmode, fp,
-							-size_cfa)));
+                                                        -size_cfa)));
             }
           
           /* Copy to stack pointer.  Note that since we've already
@@ -1031,8 +1031,8 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, stack_pointer_rtx,
                                          plus_constant (Pmode,
-							stack_pointer_rtx,
-							-size_cfa)));
+                                                        stack_pointer_rtx,
+                                                        -size_cfa)));
             }
           
           fp_plus_insns = get_insns ();
@@ -1051,13 +1051,13 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
 
               insn = emit_move_insn (stack_pointer_rtx,
                                      plus_constant (Pmode, stack_pointer_rtx,
-						    -size));
+                                                    -size));
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, stack_pointer_rtx,
                                          plus_constant (Pmode,
 							stack_pointer_rtx,
-							-size_cfa)));
+                                                        -size_cfa)));
               if (frame_pointer_needed)
                 {
                   insn = emit_move_insn (fp, stack_pointer_rtx);
