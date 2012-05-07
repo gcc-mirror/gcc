@@ -56,7 +56,7 @@ libatomic.map-sun : $(top_srcdir)/libatomic.map \
 	  $(top_srcdir)/libatomic.map \
 	  $(libatomic_la_OBJECTS:%.lo=.libs/%.o) \
 	 `echo $(libatomic_la_LIBADD) | \
-	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+	    sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
 	 > $@ || (rm -f $@ ; exit 1)
 endif
 else
