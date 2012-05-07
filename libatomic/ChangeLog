@@ -1,3 +1,8 @@
+2012-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Add $XPCFLAGS to CFLAGS, not $XCFLAGS.
+	* configure: Regenerate.
+
 2012-05-03  Richard Henderson  <rth@redhat.com>
 
 	* configure.ac (AM_MAINTAINER_MODE): New.

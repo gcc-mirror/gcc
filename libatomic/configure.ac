@@ -206,7 +206,7 @@ case " $config_path " in
        [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
       [],
       [AC_MSG_ERROR([Pthreads are required to build libatomic])])])
-  CFLAGS="$save_CFLAGS $XCFLAGS"
+  CFLAGS="$save_CFLAGS $XPCFLAGS"
   ;;
 esac
 
