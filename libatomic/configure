@@ -14421,7 +14421,7 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-  CFLAGS="$save_CFLAGS $XCFLAGS"
+  CFLAGS="$save_CFLAGS $XPCFLAGS"
   ;;
 esac
 
