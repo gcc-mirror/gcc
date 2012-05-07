@@ -1,3 +1,10 @@
+2012-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53239
+	* tree-vrp.c (get_value_range): Set VR of
+	SSA_NAME_IS_DEFAULT_DEF of DECL_BY_REFERENCE RESULT_DECL
+	to nonnull.
+
 2012-05-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53195

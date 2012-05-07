@@ -695,17 +695,22 @@ get_value_range (const_tree var)
   /* If VAR is a default definition of a parameter, the variable can
      take any value in VAR's type.  */
   sym = SSA_NAME_VAR (var);
-  if (SSA_NAME_IS_DEFAULT_DEF (var)
-      && TREE_CODE (sym) == PARM_DECL)
+  if (SSA_NAME_IS_DEFAULT_DEF (var))
     {
-      /* Try to use the "nonnull" attribute to create ~[0, 0]
-	 anti-ranges for pointers.  Note that this is only valid with
-	 default definitions of PARM_DECLs.  */
-      if (POINTER_TYPE_P (TREE_TYPE (sym))
-	  && nonnull_arg_p (sym))
+      if (TREE_CODE (sym) == PARM_DECL)
+	{
+	  /* Try to use the "nonnull" attribute to create ~[0, 0]
+	     anti-ranges for pointers.  Note that this is only valid with
+	     default definitions of PARM_DECLs.  */
+	  if (POINTER_TYPE_P (TREE_TYPE (sym))
+	      && nonnull_arg_p (sym))
+	    set_value_range_to_nonnull (vr, TREE_TYPE (sym));
+	  else
+	    set_value_range_to_varying (vr);
+	}
+      else if (TREE_CODE (sym) == RESULT_DECL
+	       && DECL_BY_REFERENCE (sym))
 	set_value_range_to_nonnull (vr, TREE_TYPE (sym));
-      else
-	set_value_range_to_varying (vr);
     }
 
   return vr;
