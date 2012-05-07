@@ -1,3 +1,13 @@
+2012-05-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/m68k/m68k.c (m68k_sched_branch_type): Remove.
+	(sched_branch_type): Remove.
+	(m68k_sched_md_init_global): Don't allocate it.
+	(m68k_sched_md_finish_global): Don't free it.
+	* config/m68k/m68k.h (m68k_sched_branch_type): Remove prototype.
+	* config/m68k/m68k.md: Set the type of insns using m68k_sched_branch_type
+	to bcc directly.
+
 2012-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2.c (solaris_override_options): New function.
