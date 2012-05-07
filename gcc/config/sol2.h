@@ -99,6 +99,12 @@ along with GCC; see the file COPYING3.  If not see
 	TARGET_SUB_OS_CPP_BUILTINS();			\
     } while (0)
 
+#define SUBTARGET_OVERRIDE_OPTIONS			\
+  do {							\
+    solaris_override_options ();			\
+  } while (0)
+
+
 /* It's safe to pass -s always, even if -g is not used.  Those options are
    handled by both Sun as and GNU as.  */
 #define ASM_SPEC_BASE \

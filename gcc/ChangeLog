@@ -1,3 +1,9 @@
+2012-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.c (solaris_override_options): New function.
+	* config/sol2-protos.h (solaris_override_options): Declare.
+	* config/sol2.h (SUBTARGET_OVERRIDE_OPTIONS): Define.
+
 2012-05-07  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Return

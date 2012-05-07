@@ -1,5 +1,6 @@
 /* General Solaris system support.
-   Copyright (C) 2004, 2005 , 2007, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 , 2007, 2010, 2011, 2012
+   Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -281,4 +282,13 @@ solaris_file_end (void)
     return;
 
   htab_traverse (solaris_comdat_htab, solaris_define_comdat_signature, NULL);
+}
+
+void
+solaris_override_options (void)
+{
+  /* Don't emit DWARF3/4 unless specifically selected.  Solaris ld cannot
+     handle CIE version 3 in .eh_frame.  */
+  if (!global_options_set.x_dwarf_version)
+    dwarf_version = 2;
 }
