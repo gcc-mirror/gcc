@@ -1,5 +1,12 @@
 2012-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* Makefile.am (libatomic.map-sun): Handle objects in
+	libatomic_la_LIBADD.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Regenerate.
+
+2012-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac: Add $XPCFLAGS to CFLAGS, not $XCFLAGS.
 	* configure: Regenerate.
 
