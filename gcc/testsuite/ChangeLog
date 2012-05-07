@@ -1,3 +1,8 @@
+2012-05-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53255
+	* gfortran.dg/typebound_operator_15.f90: New.
+
 2012-05-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41587
