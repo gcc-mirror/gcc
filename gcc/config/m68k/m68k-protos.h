@@ -81,7 +81,6 @@ extern enum attr_opx_type m68k_sched_attr_opx_type (rtx, int);
 extern enum attr_opy_type m68k_sched_attr_opy_type (rtx, int);
 extern enum attr_size m68k_sched_attr_size (rtx);
 extern enum attr_op_mem m68k_sched_attr_op_mem (rtx);
-extern enum attr_type m68k_sched_branch_type (rtx);
 #endif /* HAVE_ATTR_cpu */
 
 #endif /* RTX_CODE */

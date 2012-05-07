@@ -5882,26 +5882,6 @@ m68k_sched_attr_op_mem (rtx insn)
   return OP_MEM_I1;
 }
 
-/* Jump instructions types.  Indexed by INSN_UID.
-   The same rtl insn can be expanded into different asm instructions
-   depending on the cc0_status.  To properly determine type of jump
-   instructions we scan instruction stream and map jumps types to this
-   array.  */
-static enum attr_type *sched_branch_type;
-
-/* Return the type of the jump insn.  */
-enum attr_type
-m68k_sched_branch_type (rtx insn)
-{
-  enum attr_type type;
-
-  type = sched_branch_type[INSN_UID (insn)];
-
-  gcc_assert (type != 0);
-
-  return type;
-}
-
 /* Data for ColdFire V4 index bypass.
    Producer modifies register that is used as index in consumer with
    specified scale.  */
@@ -6125,20 +6105,6 @@ m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
 			   int sched_verbose ATTRIBUTE_UNUSED,
 			   int n_insns ATTRIBUTE_UNUSED)
 {
-  /* Init branch types.  */
-  {
-    rtx insn;
-
-    sched_branch_type = XCNEWVEC (enum attr_type, get_max_uid () + 1);
-
-    for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
-      {
-	if (JUMP_P (insn))
-	  /* !!! FIXME: Implement real scan here.  */
-	  sched_branch_type[INSN_UID (insn)] = TYPE_BCC;
-      }
-  }
-
 #ifdef ENABLE_CHECKING
   /* Check that all instructions have DFA reservations and
      that all instructions can be issued from a clean state.  */
@@ -6220,9 +6186,6 @@ m68k_sched_md_finish_global (FILE *dump ATTRIBUTE_UNUSED,
   sched_ib.records.adjust = NULL;
   sched_ib.records.n_insns = 0;
   max_insn_size = 0;
-
-  free (sched_branch_type);
-  sched_branch_type = NULL;
 }
 
 /* Implementation of targetm.sched.init () hook.
