@@ -1,3 +1,10 @@
+2012-05-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/53245
+	* gimplify.c (preprocess_case_label_vec_for_gimple): If low or high
+	is folded to a type boundary value, verify that the resulting case
+	label is still a care range.
+
 2012-05-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ctz<mode>2): Emit rep;bsf
