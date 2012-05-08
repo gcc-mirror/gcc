@@ -1,3 +1,30 @@
+2012-05-08  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_call_edge_duplication_hooks): Export.
+	(cgraph_create_node_1): Rename to ...
+	(cgraph_create_empty_node): ... this one; export.
+	(cgraph_create_node): Update.
+	(cgraph_set_call_stmt_including_clones): Move to cgraphclones.c
+	(cgraph_create_edge_including_clones): Likewise.
+	(cgraph_find_replacement_node): Likewise.
+	(cgraph_clone_edge): Likewise.
+	(cgraph_clone_node): Likewise.
+	(clone_function_name): Likewise.
+	(cgraph_create_virtual_clone): Likewise.
+	(cgraph_remove_node_and_inline_clones): Likewise.
+	(cgraph_redirect_edge_call_stmt_to_callee): Move here from
+	cgraphunit.c
+	* cgraph.h: Reorder declarations so they match file of origin.
+	(cgraph_create_empty_node): Declare.
+	* cgraphunit.c (update_call_expr): Move to cgraphclones.c
+	(cgraph_copy_node_for_versioning): Likewise.
+	(cgraph_function_versioning): Likewise.
+	(cgraph_materialize_clone): Likewise.
+	(cgraph_redirect_edge_call_stmt_to_callee): Likewise.
+	(cgraph_materialize_all_clones): Likewise.
+	* cgraphclones.c: New file.
+	* Makefile.in: Update for cgraphclones.
+
 2012-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53176
