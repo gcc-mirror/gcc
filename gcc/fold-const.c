@@ -11449,6 +11449,30 @@ fold_binary_loc (location_t loc,
 	    return fold_convert_loc (loc, type, arg0);
 	}
 
+      /* Fold (X * CST1) & CST2 to zero if we can, or drop known zero
+         bits from CST2.  */
+      if (TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (arg0) == MULT_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	{
+	  int arg1tz
+	    = double_int_ctz (tree_to_double_int (TREE_OPERAND (arg0, 1)));
+	  if (arg1tz > 0)
+	    {
+	      double_int arg1mask, masked;
+	      arg1mask = double_int_not (double_int_mask (arg1tz));
+	      arg1mask = double_int_ext (arg1mask, TYPE_PRECISION (type),
+					 TYPE_UNSIGNED (type));
+	      masked = double_int_and (arg1mask, tree_to_double_int (arg1));
+	      if (double_int_zero_p (masked))
+		return omit_two_operands_loc (loc, type, build_zero_cst (type),
+					      arg0, arg1);
+	      else if (!double_int_equal_p (masked, tree_to_double_int (arg1)))
+		return fold_build2_loc (loc, code, type, op0,
+					double_int_to_tree (type, masked));
+	    }
+	}
+
       /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,
 	 ((A & N) + B) & M -> (A + B) & M
 	 Similarly if (N & M) == 0,

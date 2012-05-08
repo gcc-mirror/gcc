@@ -1,3 +1,7 @@
+2012-05-08  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/fold-bitand-4.c: New testcase.
+
 2012-05-08  Dehao Chen  <dehao@google.com>
 
 	* gcc.dg/predict-1.c: Check if LOOP_IV_COMPARE static predict
