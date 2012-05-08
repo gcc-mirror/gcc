@@ -1,3 +1,8 @@
+2012-05-08  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary_loc): Fold (X * CST1) & CST2
+	to zero or to (X * CST1) & CST2' when CST1 has trailing zeros.
+
 2012-05-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	* Makefile.in (TEXI_GCC_FILES): Add avr-mmcu.texi.
