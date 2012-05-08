@@ -1,3 +1,11 @@
+2012-05-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/53272
+	* config/cris/cris.c (cris_normal_notice_update_cc): For TARGET_V32,
+	when a constant source operand matches an "I" constraint, the "no
+	CC0 change" applies to a register-destination only, not a
+	strict_low_part-destination.
+
 2012-05-07  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Backport from mainline:
