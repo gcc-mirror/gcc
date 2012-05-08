@@ -1,6 +1,6 @@
 2012-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR target/53250
+	PR target/53176
 	* config/i386/i386.c (ix86_set_reg_reg_cost): New function.
 	(ix86_rtx_costs): Handle SET.
 
