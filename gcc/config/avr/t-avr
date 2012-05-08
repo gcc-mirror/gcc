@@ -43,6 +43,26 @@ AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def
 $(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh $(AVR_MCUS)
 	$(SHELL) $< $(AVR_MCUS) > $@
 
+gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
+  $(TM_H) $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< -o $@
+
+avr-devices.o: s-avr-mmcu-texi
+
+s-avr-mmcu-texi: gen-avr-mmcu-texi$(build_exeext)
+	$(RUN_GEN) $< | sed -e 's:\r::g' > avr-mmcu.texi
+	@if cmp -s $(srcdir)/doc/avr-mmcu.texi avr-mmcu.texi; then \
+	  $(STAMP) $@;		\
+	else			\
+	  echo >&2 ;		\
+	  echo "***" >&2 ;	\
+	  echo "*** Verify that you have permission to grant a" >&2 ;	\
+	  echo "*** GFDL license for all new text in" >&2 ; 		\
+	  echo "*** avr-mmcu.texi, then copy it to $(srcdir)/doc/avr-mmcu.texi" >&2 ; \
+	  echo "***" >&2 ;	\
+	  false; 		\
+	fi
+
 # MULTILIB_OPTIONS
 # MULTILIB_DIRNAMES
 # MULTILIB_EXCEPTIONS
