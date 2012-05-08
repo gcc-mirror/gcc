@@ -1629,7 +1629,7 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
     in0_p = !in0_p;
 
   tem = build_range_check (UNKNOWN_LOCATION, type, lhs, in0_p, low0, high0);
-  if (integer_zerop (tem))
+  if (tem && integer_zerop (tem))
     return;
 
   rhs = make_range (op_right, &in1_p, &low1, &high1, &strict_overflow_p);
@@ -1644,7 +1644,7 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
     in1_p = !in1_p;
 
   tem = build_range_check (UNKNOWN_LOCATION, type, rhs, in1_p, low1, high1);
-  if (integer_zerop (tem))
+  if (tem && integer_zerop (tem))
     return;
 
   /* If both expressions have the same operand, if we can merge the
