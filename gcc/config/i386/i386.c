@@ -39242,7 +39242,7 @@ do_dispatch (rtx insn, int mode)
 static bool
 has_dispatch (rtx insn, int action)
 {
-  if ((ix86_tune == PROCESSOR_BDVER1 || ix86_tune == PROCESSOR_BDVER2)
+  if ((TARGET_BDVER1 || TARGET_BDVER2)
       && flag_dispatch_scheduler)
     switch (action)
       {
