@@ -1,3 +1,8 @@
+2012-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (has_dispatch): Use TARGET_BDVER1 and
+	TARGET_BDVER2 defines where appropriate.
+
 2012-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac (PLUGIN_LD): Rename into...
@@ -48,9 +53,8 @@
 2012-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53239
-	* tree-vrp.c (get_value_range): Set VR of
-	SSA_NAME_IS_DEFAULT_DEF of DECL_BY_REFERENCE RESULT_DECL
-	to nonnull.
+	* tree-vrp.c (get_value_range): Set VR of SSA_NAME_IS_DEFAULT_DEF
+	of DECL_BY_REFERENCE RESULT_DECL to nonnull.
 
 2012-05-07  Richard Guenther  <rguenther@suse.de>
 
