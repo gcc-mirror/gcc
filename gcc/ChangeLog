@@ -1,3 +1,9 @@
+2012-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53250
+	* config/i386/i386.c (ix86_set_reg_reg_cost): New function.
+	(ix86_rtx_costs): Handle SET.
+
 2012-05-08  Michael Matz  <matz@suse.de>
 
 	* basic-block.h (struct rtl_bb_info): Remove visited member and
@@ -15,8 +21,7 @@
 	(fixup_fallthru_exit_predecessor): Ditto.
 	(cfg_layout_duplicate_bb): Ditto.
 	* combine.c (update_cfg_for_uncondjump): Adjust.
-	* bb-reorder.c (struct bbro_basic_block_data_def): Add visited
-	member.
+	* bb-reorder.c (struct bbro_basic_block_data_def): Add visited member.
 	(bb_visited_trace): New accessor.
 	(mark_bb_visited): Move in front.
 	(rotate_loop): Use bb_visited_trace.

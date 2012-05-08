@@ -31861,6 +31861,52 @@ ix86_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
   return false;
 }
 
+/* Return the cost of moving between two registers of mode MODE.  */
+
+static int
+ix86_set_reg_reg_cost (enum machine_mode mode)
+{
+  unsigned int units = UNITS_PER_WORD;
+
+  switch (GET_MODE_CLASS (mode))
+    {
+    default:
+      break;
+
+    case MODE_CC:
+      units = GET_MODE_SIZE (CCmode);
+      break;
+
+    case MODE_FLOAT:
+      if ((TARGET_SSE2 && mode == TFmode)
+	  || (TARGET_80387 && mode == XFmode)
+	  || ((TARGET_80387 || TARGET_SSE2) && mode == DFmode)
+	  || ((TARGET_80387 || TARGET_SSE) && mode == SFmode))
+	units = GET_MODE_SIZE (mode);
+      break;
+
+    case MODE_COMPLEX_FLOAT:
+      if ((TARGET_SSE2 && mode == TCmode)
+	  || (TARGET_80387 && mode == XCmode)
+	  || ((TARGET_80387 || TARGET_SSE2) && mode == DCmode)
+	  || ((TARGET_80387 || TARGET_SSE) && mode == SCmode))
+	units = GET_MODE_SIZE (mode);
+      break;
+
+    case MODE_VECTOR_INT:
+    case MODE_VECTOR_FLOAT:
+      if ((TARGET_AVX && VALID_AVX256_REG_MODE (mode))
+	  || (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
+	  || (TARGET_SSE && VALID_SSE_REG_MODE (mode))
+	  || (TARGET_MMX && VALID_MMX_REG_MODE (mode)))
+	units = GET_MODE_SIZE (mode);
+    }
+
+  /* Return the cost of moving between two registers of mode MODE,
+     assuming that the move will be in pieces of at most UNITS bytes.  */
+  return COSTS_N_INSNS ((GET_MODE_SIZE (mode) + units - 1) / units);
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -31875,6 +31921,15 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
 
   switch (code)
     {
+    case SET:
+      if (register_operand (SET_DEST (x), VOIDmode)
+	  && reg_or_0_operand (SET_SRC (x), VOIDmode))
+	{
+	  *total = ix86_set_reg_reg_cost (GET_MODE (SET_DEST (x)));
+	  return true;
+	}
+      return false;
+
     case CONST_INT:
     case CONST:
     case LABEL_REF:
