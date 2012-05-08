@@ -500,8 +500,6 @@ void dump_cgraph_node (FILE *, struct cgraph_node *);
 void debug_cgraph_node (struct cgraph_node *);
 void cgraph_remove_edge (struct cgraph_edge *);
 void cgraph_remove_node (struct cgraph_node *);
-struct cgraph_node *cgraph_find_replacement_node (struct cgraph_node *);
-bool cgraph_remove_node_and_inline_clones (struct cgraph_node *, struct cgraph_node *);
 void cgraph_release_function_body (struct cgraph_node *);
 void cgraph_node_remove_callees (struct cgraph_node *node);
 struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
@@ -511,6 +509,7 @@ struct cgraph_edge *cgraph_create_indirect_edge (struct cgraph_node *, gimple,
 						 int, gcov_type, int);
 struct cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
 struct cgraph_node * cgraph_create_node (tree);
+struct cgraph_node * cgraph_create_empty_node (void);
 struct cgraph_node * cgraph_get_create_node (tree);
 struct cgraph_node * cgraph_same_body_alias (struct cgraph_node *, tree, tree);
 struct cgraph_node * cgraph_add_thunk (struct cgraph_node *, tree, tree, bool, HOST_WIDE_INT,
@@ -518,24 +517,15 @@ struct cgraph_node * cgraph_add_thunk (struct cgraph_node *, tree, tree, bool, H
 struct cgraph_node *cgraph_node_for_asm (tree);
 struct cgraph_edge *cgraph_edge (struct cgraph_node *, gimple);
 void cgraph_set_call_stmt (struct cgraph_edge *, gimple);
-void cgraph_set_call_stmt_including_clones (struct cgraph_node *, gimple, gimple);
-void cgraph_create_edge_including_clones (struct cgraph_node *,
-					  struct cgraph_node *,
-					  gimple, gimple, gcov_type, int,
-					  cgraph_inline_failed_t);
 void cgraph_update_edges_for_call_stmt (gimple, tree, gimple);
 struct cgraph_local_info *cgraph_local_info (tree);
 struct cgraph_global_info *cgraph_global_info (tree);
 struct cgraph_rtl_info *cgraph_rtl_info (tree);
-struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
-					struct cgraph_node *, gimple,
-					unsigned, gcov_type, int, bool);
-struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
-					int, bool, VEC(cgraph_edge_p,heap) *,
-					bool);
 struct cgraph_node *cgraph_create_function_alias (tree, tree);
-void cgraph_call_node_duplication_hooks (struct cgraph_node *node1,
-					 struct cgraph_node *node2);
+void cgraph_call_node_duplication_hooks (struct cgraph_node *,
+					 struct cgraph_node *);
+void cgraph_call_edge_duplication_hooks (struct cgraph_edge *,
+				         struct cgraph_edge *);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *);
@@ -547,16 +537,10 @@ void cgraph_unnest_node (struct cgraph_node *);
 enum availability cgraph_function_body_availability (struct cgraph_node *);
 void cgraph_add_new_function (tree, bool);
 const char* cgraph_inline_failed_string (cgraph_inline_failed_t);
-struct cgraph_node * cgraph_create_virtual_clone (struct cgraph_node *old_node,
-			                          VEC(cgraph_edge_p,heap)*,
-			                          VEC(ipa_replace_map_p,gc)* tree_map,
-			                          bitmap args_to_skip,
-						  const char *clone_name);
 
 void cgraph_set_nothrow_flag (struct cgraph_node *, bool);
 void cgraph_set_const_flag (struct cgraph_node *, bool, bool);
 void cgraph_set_pure_flag (struct cgraph_node *, bool, bool);
-tree clone_function_name (tree decl, const char *);
 bool cgraph_node_cannot_return (struct cgraph_node *);
 bool cgraph_edge_cannot_lead_to_return (struct cgraph_edge *);
 bool cgraph_will_be_removed_from_program_if_no_direct_calls
@@ -610,6 +594,32 @@ void cgraph_finalize_function (tree, bool);
 void finalize_compilation_unit (void);
 void compile (void);
 void init_cgraph (void);
+bool cgraph_process_new_functions (void);
+void cgraph_process_same_body_aliases (void);
+void fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target, tree alias);
+
+/* In cgraphclones.c  */
+
+struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
+					struct cgraph_node *, gimple,
+					unsigned, gcov_type, int, bool);
+struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
+					int, bool, VEC(cgraph_edge_p,heap) *,
+					bool);
+tree clone_function_name (tree decl, const char *);
+struct cgraph_node * cgraph_create_virtual_clone (struct cgraph_node *old_node,
+			                          VEC(cgraph_edge_p,heap)*,
+			                          VEC(ipa_replace_map_p,gc)* tree_map,
+			                          bitmap args_to_skip,
+						  const char *clone_name);
+struct cgraph_node *cgraph_find_replacement_node (struct cgraph_node *);
+bool cgraph_remove_node_and_inline_clones (struct cgraph_node *, struct cgraph_node *);
+void cgraph_set_call_stmt_including_clones (struct cgraph_node *, gimple, gimple);
+void cgraph_create_edge_including_clones (struct cgraph_node *,
+					  struct cgraph_node *,
+					  gimple, gimple, gcov_type, int,
+					  cgraph_inline_failed_t);
+void cgraph_materialize_all_clones (void);
 struct cgraph_node * cgraph_copy_node_for_versioning (struct cgraph_node *,
 		tree, VEC(cgraph_edge_p,heap)*, bitmap);
 struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
@@ -619,10 +629,6 @@ struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
 						basic_block, const char *);
 void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*,
 			       bool, bitmap, bool, bitmap, basic_block);
-bool cgraph_process_new_functions (void);
-void cgraph_process_same_body_aliases (void);
-void fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target, tree alias);
-
 
 /* In cgraphbuild.c  */
 unsigned int rebuild_cgraph_edges (void);
