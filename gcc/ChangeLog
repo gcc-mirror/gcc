@@ -1,3 +1,15 @@
+2012-05-08  Dehao Chen  <dehao@google.com>
+
+	* predict.c (find_qualified_ssa_name): New
+	(find_ssa_name_in_expr): New
+	(find_ssa_name_in_assign_stmt): New
+	(is_comparison_with_loop_invariant_p): New
+	(is_bound_expr_similar): New
+	(predict_iv_comparison): New
+	(predict_loops): Add heuristic for loop-nested branches that compare an
+	induction variable to a loop bound variable.
+	* predict.def (PRED_LOOP_IV_COMPARE): New macro
+
 2012-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (has_dispatch): Use TARGET_BDVER1 and

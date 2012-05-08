@@ -1,3 +1,13 @@
+2012-05-08  Dehao Chen  <dehao@google.com>
+
+	* gcc.dg/predict-1.c: Check if LOOP_IV_COMPARE static predict
+	heuristic is working properly.
+	* gcc.dg/predict-2.c: Likewise.
+	* gcc/dg/predict-3.c: Likewise.
+	* gcc/dg/predict-4.c: Likewise.
+	* gcc/dg/predict-5.c: Likewise.
+	* gcc/dg/predict-6.c: Likewise.
+
 2012-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53239

@@ -946,6 +946,355 @@ combine_predictions_for_bb (basic_block bb)
     }
 }
 
+/* Check if T1 and T2 satisfy the IV_COMPARE condition.
+   Return the SSA_NAME if the condition satisfies, NULL otherwise.
+
+   T1 and T2 should be one of the following cases:
+     1. T1 is SSA_NAME, T2 is NULL
+     2. T1 is SSA_NAME, T2 is INTEGER_CST between [-4, 4]
+     3. T2 is SSA_NAME, T1 is INTEGER_CST between [-4, 4]  */
+
+static tree
+strips_small_constant (tree t1, tree t2)
+{
+  tree ret = NULL;
+  int value = 0;
+
+  if (!t1)
+    return NULL;
+  else if (TREE_CODE (t1) == SSA_NAME)
+    ret = t1;
+  else if (host_integerp (t1, 0))
+    value = tree_low_cst (t1, 0);
+  else
+    return NULL;
+
+  if (!t2)
+    return ret;
+  else if (host_integerp (t2, 0))
+    value = tree_low_cst (t2, 0);
+  else if (TREE_CODE (t2) == SSA_NAME)
+    {
+      if (ret)
+        return NULL;
+      else
+        ret = t2;
+    }
+
+  if (value <= 4 && value >= -4)
+    return ret;
+  else
+    return NULL;
+}
+
+/* Return the SSA_NAME in T or T's operands.
+   Return NULL if SSA_NAME cannot be found.  */
+
+static tree
+get_base_value (tree t)
+{
+  if (TREE_CODE (t) == SSA_NAME)
+    return t;
+
+  if (!BINARY_CLASS_P (t))
+    return NULL;
+
+  switch (TREE_OPERAND_LENGTH (t))
+    {
+    case 1:
+      return strips_small_constant (TREE_OPERAND (t, 0), NULL);
+    case 2:
+      return strips_small_constant (TREE_OPERAND (t, 0),
+				    TREE_OPERAND (t, 1));
+    default:
+      return NULL;
+    }
+}
+
+/* Check the compare STMT in LOOP. If it compares an induction
+   variable to a loop invariant, return true, and save
+   LOOP_INVARIANT, COMPARE_CODE and LOOP_STEP.
+   Otherwise return false and set LOOP_INVAIANT to NULL.  */
+
+static bool
+is_comparison_with_loop_invariant_p (gimple stmt, struct loop *loop,
+				     tree *loop_invariant,
+				     enum tree_code *compare_code,
+				     int *loop_step,
+				     tree *loop_iv_base)
+{
+  tree op0, op1, bound, base;
+  affine_iv iv0, iv1;
+  enum tree_code code;
+  int step;
+
+  code = gimple_cond_code (stmt);
+  *loop_invariant = NULL;
+
+  switch (code)
+    {
+    case GT_EXPR:
+    case GE_EXPR:
+    case NE_EXPR:
+    case LT_EXPR:
+    case LE_EXPR:
+    case EQ_EXPR:
+      break;
+
+    default:
+      return false;
+    }
+
+  op0 = gimple_cond_lhs (stmt);
+  op1 = gimple_cond_rhs (stmt);
+
+  if ((TREE_CODE (op0) != SSA_NAME && TREE_CODE (op0) != INTEGER_CST) 
+       || (TREE_CODE (op1) != SSA_NAME && TREE_CODE (op1) != INTEGER_CST))
+    return false;
+  if (!simple_iv (loop, loop_containing_stmt (stmt), op0, &iv0, true))
+    return false;
+  if (!simple_iv (loop, loop_containing_stmt (stmt), op1, &iv1, true))
+    return false;
+  if (TREE_CODE (iv0.step) != INTEGER_CST
+      || TREE_CODE (iv1.step) != INTEGER_CST)
+    return false;
+  if ((integer_zerop (iv0.step) && integer_zerop (iv1.step))
+      || (!integer_zerop (iv0.step) && !integer_zerop (iv1.step)))
+    return false;
+
+  if (integer_zerop (iv0.step))
+    {
+      if (code != NE_EXPR && code != EQ_EXPR)
+	code = invert_tree_comparison (code, false);
+      bound = iv0.base;
+      base = iv1.base;
+      if (host_integerp (iv1.step, 0))
+	step = tree_low_cst (iv1.step, 0);
+      else
+	return false;
+    }
+  else
+    {
+      bound = iv1.base;
+      base = iv0.base;
+      if (host_integerp (iv0.step, 0))
+	step = tree_low_cst (iv0.step, 0);  
+      else
+	return false;
+    }
+
+  if (TREE_CODE (bound) != INTEGER_CST)
+    bound = get_base_value (bound);
+  if (!bound)
+    return false;
+  if (TREE_CODE (base) != INTEGER_CST)
+    base = get_base_value (base);
+  if (!base)
+    return false;
+
+  *loop_invariant = bound;
+  *compare_code = code;
+  *loop_step = step;
+  *loop_iv_base = base;
+  return true;
+}
+
+/* Compare two SSA_NAMEs: returns TRUE if T1 and T2 are value coherent.  */
+
+static bool
+expr_coherent_p (tree t1, tree t2)
+{
+  gimple stmt;
+  tree ssa_name_1 = NULL;
+  tree ssa_name_2 = NULL;
+
+  gcc_assert (TREE_CODE (t1) == SSA_NAME || TREE_CODE (t1) == INTEGER_CST);
+  gcc_assert (TREE_CODE (t2) == SSA_NAME || TREE_CODE (t2) == INTEGER_CST);
+
+  if (t1 == t2)
+    return true;
+
+  if (TREE_CODE (t1) == INTEGER_CST && TREE_CODE (t2) == INTEGER_CST)
+    return true;
+  if (TREE_CODE (t1) == INTEGER_CST || TREE_CODE (t2) == INTEGER_CST)
+    return false;
+
+  /* Check to see if t1 is expressed/defined with t2.  */
+  stmt = SSA_NAME_DEF_STMT (t1);
+  gcc_assert (stmt != NULL);
+  if (is_gimple_assign (stmt))
+    {
+      ssa_name_1 = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_USE);
+      if (ssa_name_1 && ssa_name_1 == t2)
+	return true;
+    }
+
+  /* Check to see if t2 is expressed/defined with t1.  */
+  stmt = SSA_NAME_DEF_STMT (t2);
+  gcc_assert (stmt != NULL);
+  if (is_gimple_assign (stmt))
+    {
+      ssa_name_2 = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_USE);
+      if (ssa_name_2 && ssa_name_2 == t1)
+	return true;
+    }
+
+  /* Compare if t1 and t2's def_stmts are identical.  */
+  if (ssa_name_2 != NULL && ssa_name_1 == ssa_name_2)
+    return true;
+  else
+    return false;
+}
+
+/* Predict branch probability of BB when BB contains a branch that compares
+   an induction variable in LOOP with LOOP_IV_BASE_VAR to LOOP_BOUND_VAR. The
+   loop exit is compared using LOOP_BOUND_CODE, with step of LOOP_BOUND_STEP.
+
+   E.g.
+     for (int i = 0; i < bound; i++) {
+       if (i < bound - 2)
+	 computation_1();
+       else
+	 computation_2();
+     }
+
+  In this loop, we will predict the branch inside the loop to be taken.  */
+
+static void
+predict_iv_comparison (struct loop *loop, basic_block bb,
+		       tree loop_bound_var,
+		       tree loop_iv_base_var,
+		       enum tree_code loop_bound_code,
+		       int loop_bound_step)
+{
+  gimple stmt;
+  tree compare_var, compare_base;
+  enum tree_code compare_code;
+  int compare_step;
+  edge then_edge;
+  edge_iterator ei;
+
+  if (predicted_by_p (bb, PRED_LOOP_ITERATIONS_GUESSED)
+      || predicted_by_p (bb, PRED_LOOP_ITERATIONS)
+      || predicted_by_p (bb, PRED_LOOP_EXIT))
+    return;
+
+  stmt = last_stmt (bb);
+  if (!stmt || gimple_code (stmt) != GIMPLE_COND)
+    return;
+  if (!is_comparison_with_loop_invariant_p (stmt, loop, &compare_var,
+					    &compare_code,
+					    &compare_step,
+					    &compare_base))
+    return;
+
+  /* Find the taken edge.  */
+  FOR_EACH_EDGE (then_edge, ei, bb->succs)
+    if (then_edge->flags & EDGE_TRUE_VALUE)
+      break;
+
+  /* When comparing an IV to a loop invariant, NE is more likely to be
+     taken while EQ is more likely to be not-taken.  */
+  if (compare_code == NE_EXPR)
+    {
+      predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, TAKEN);
+      return;
+    }
+  else if (compare_code == EQ_EXPR)
+    {
+      predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, NOT_TAKEN);
+      return;
+    }
+
+  if (!expr_coherent_p (loop_iv_base_var, compare_base))
+    return;
+
+  /* If loop bound, base and compare bound are all constants, we can
+     calculate the probability directly.  */
+  if (host_integerp (loop_bound_var, 0)
+      && host_integerp (compare_var, 0)
+      && host_integerp (compare_base, 0))
+    {
+      int probability;
+      HOST_WIDE_INT compare_count;
+      HOST_WIDE_INT loop_bound = tree_low_cst (loop_bound_var, 0);
+      HOST_WIDE_INT compare_bound = tree_low_cst (compare_var, 0);
+      HOST_WIDE_INT base = tree_low_cst (compare_base, 0);
+      HOST_WIDE_INT loop_count = (loop_bound - base) / compare_step;
+
+      if ((compare_step > 0)
+          ^ (compare_code == LT_EXPR || compare_code == LE_EXPR))
+	compare_count = (loop_bound - compare_bound) / compare_step;
+      else
+	compare_count = (compare_bound - base) / compare_step;
+
+      if (compare_code == LE_EXPR || compare_code == GE_EXPR)
+	compare_count ++;
+      if (loop_bound_code == LE_EXPR || loop_bound_code == GE_EXPR)
+	loop_count ++;
+      if (compare_count < 0)
+	compare_count = 0;
+      if (loop_count < 0)
+	loop_count = 0;
+
+      if (loop_count == 0)
+	probability = 0;
+      else if (compare_count > loop_count)
+	probability = REG_BR_PROB_BASE;
+      else
+	probability = (double) REG_BR_PROB_BASE * compare_count / loop_count;
+      predict_edge (then_edge, PRED_LOOP_IV_COMPARE, probability);
+      return;
+    }
+
+  if (expr_coherent_p (loop_bound_var, compare_var))
+    {
+      if ((loop_bound_code == LT_EXPR || loop_bound_code == LE_EXPR)
+	  && (compare_code == LT_EXPR || compare_code == LE_EXPR))
+	predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, TAKEN);
+      else if ((loop_bound_code == GT_EXPR || loop_bound_code == GE_EXPR)
+	       && (compare_code == GT_EXPR || compare_code == GE_EXPR))
+	predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, TAKEN);
+      else if (loop_bound_code == NE_EXPR)
+	{
+	  /* If the loop backedge condition is "(i != bound)", we do
+	     the comparison based on the step of IV:
+	     * step < 0 : backedge condition is like (i > bound)
+	     * step > 0 : backedge condition is like (i < bound)  */
+	  gcc_assert (loop_bound_step != 0);
+	  if (loop_bound_step > 0
+	      && (compare_code == LT_EXPR
+		  || compare_code == LE_EXPR))
+	    predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, TAKEN);
+	  else if (loop_bound_step < 0
+		   && (compare_code == GT_EXPR
+		       || compare_code == GE_EXPR))
+	    predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, TAKEN);
+	  else
+	    predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, NOT_TAKEN);
+	}
+      else
+	/* The branch is predicted not-taken if loop_bound_code is
+	   opposite with compare_code.  */
+	predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, NOT_TAKEN);
+    }
+  else if (expr_coherent_p (loop_iv_base_var, compare_var))
+    {
+      /* For cases like:
+	   for (i = s; i < h; i++)
+	     if (i > s + 2) ....
+	 The branch should be predicted taken.  */
+      if (loop_bound_step > 0
+	  && (compare_code == GT_EXPR || compare_code == GE_EXPR))
+	predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, TAKEN);
+      else if (loop_bound_step < 0
+	       && (compare_code == LT_EXPR || compare_code == LE_EXPR))
+	predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, TAKEN);
+      else
+	predict_edge_def (then_edge, PRED_LOOP_IV_COMPARE_GUESS, NOT_TAKEN);
+    }
+}
+ 
 /* Predict edge probabilities by exploiting loop structure.  */
 
 static void
@@ -963,6 +1312,12 @@ predict_loops (void)
       VEC (edge, heap) *exits;
       struct tree_niter_desc niter_desc;
       edge ex;
+      struct nb_iter_bound *nb_iter;
+      enum tree_code loop_bound_code = ERROR_MARK;
+      int loop_bound_step = 0;
+      tree loop_bound_var = NULL;
+      tree loop_iv_base = NULL;
+      gimple stmt = NULL;
 
       exits = get_loop_exit_edges (loop);
       n_exits = VEC_length (edge, exits);
@@ -1009,6 +1364,25 @@ predict_loops (void)
 	  predict_edge (ex, predictor, probability);
 	}
       VEC_free (edge, heap, exits);
+
+      /* Find information about loop bound variables.  */
+      for (nb_iter = loop->bounds; nb_iter;
+	   nb_iter = nb_iter->next)
+	if (nb_iter->stmt
+	    && gimple_code (nb_iter->stmt) == GIMPLE_COND)
+	  {
+	    stmt = nb_iter->stmt;
+	    break;
+	  }
+      if (!stmt && last_stmt (loop->header)
+	  && gimple_code (last_stmt (loop->header)) == GIMPLE_COND)
+	stmt = last_stmt (loop->header);
+      if (stmt)
+	is_comparison_with_loop_invariant_p (stmt, loop,
+					     &loop_bound_var,
+					     &loop_bound_code,
+					     &loop_bound_step,
+					     &loop_iv_base);
 
       bbs = get_loop_body (loop);
 
@@ -1071,6 +1445,10 @@ predict_loops (void)
 		    || !flow_bb_inside_loop_p (loop, e->dest))
 		  predict_edge (e, PRED_LOOP_EXIT, probability);
 	    }
+	  if (loop_bound_var)
+	    predict_iv_comparison (loop, bb, loop_bound_var, loop_iv_base,
+				   loop_bound_code,
+				   loop_bound_step);
 	}
 
       /* Free basic blocks from get_loop_body.  */
