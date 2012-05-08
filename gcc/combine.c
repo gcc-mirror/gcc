@@ -2536,13 +2536,13 @@ update_cfg_for_uncondjump (rtx insn)
       single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
 
       /* Remove barriers from the footer if there are any.  */
-      for (insn = bb->il.rtl->footer; insn; insn = NEXT_INSN (insn))
+      for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
 	if (BARRIER_P (insn))
 	  {
 	    if (PREV_INSN (insn))
 	      NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 	    else
-	      bb->il.rtl->footer = NEXT_INSN (insn);
+	      BB_FOOTER (bb) = NEXT_INSN (insn);
 	    if (NEXT_INSN (insn))
 	      PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 	  }

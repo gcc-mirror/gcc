@@ -102,17 +102,14 @@ extern const struct gcov_ctr_summary *profile_info;
 struct loop;
 
 struct GTY(()) rtl_bb_info {
-  /* The first and last insns of the block.  */
-  rtx head_;
+  /* The first insn of the block is embedded into bb->il.x.  */
+  /* The last insn of the block.  */
   rtx end_;
 
   /* In CFGlayout mode points to insn notes/jumptables to be placed just before
      and after the block.   */
-  rtx header;
-  rtx footer;
-
-  /* This field is used by the bb-reorder pass.  */
-  int visited;
+  rtx header_;
+  rtx footer_;
 };
 
 struct GTY(()) gimple_bb_info {
@@ -169,7 +166,10 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
 
   union basic_block_il_dependent {
       struct gimple_bb_info GTY ((tag ("0"))) gimple;
-      struct rtl_bb_info * GTY ((tag ("1"))) rtl;
+      struct {
+        rtx head_;
+        struct rtl_bb_info * rtl;
+      } GTY ((tag ("1"))) x;
     } GTY ((desc ("((%1.flags & BB_RTL) != 0)"))) il;
 
   /* Expected number of executions: calculated in profile.c.  */
@@ -260,7 +260,10 @@ enum bb_flags
      df_set_bb_dirty, but not cleared by df_analyze, so it can be used
      to test whether a block has been modified prior to a df_analyze
      call.  */
-  BB_MODIFIED = 1 << 12
+  BB_MODIFIED = 1 << 12,
+
+  /* A general visited flag for passes to use.  */
+  BB_VISITED = 1 << 13
 };
 
 /* Dummy flag for convenience in the hot/cold partitioning code.  */
@@ -415,8 +418,10 @@ struct GTY(()) control_flow_graph {
 
 /* Stuff for recording basic block info.  */
 
-#define BB_HEAD(B)      (B)->il.rtl->head_
-#define BB_END(B)       (B)->il.rtl->end_
+#define BB_HEAD(B)      (B)->il.x.head_
+#define BB_END(B)       (B)->il.x.rtl->end_
+#define BB_HEADER(B)    (B)->il.x.rtl->header_
+#define BB_FOOTER(B)    (B)->il.x.rtl->footer_
 
 /* Special block numbers [markers] for entry and exit.
    Neither of them is supposed to hold actual statements.  */

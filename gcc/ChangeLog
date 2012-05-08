@@ -1,3 +1,39 @@
+2012-05-08  Michael Matz  <matz@suse.de>
+
+	* basic-block.h (struct rtl_bb_info): Remove visited member and
+	move head_ member to ...
+	(struct basic_block_def.basic_block_il_dependent): ... the new
+	member x, replacing but containing old member rtl.
+	(enum bb_flags): New BB_VISITED flag.
+	(BB_HEADER, BB_FOOTER): New macros.
+
+	* jump.c (mark_all_labels): Adjust.
+	* cfgcleanup.c (try_optimize_cfg): Adjust.
+	* cfglayout.c (record_effective_endpoints): Adjust.
+	(relink_block_chain): Ditto (and don't fiddle with visited).
+	(fixup_reorder_chain): Adjust.
+	(fixup_fallthru_exit_predecessor): Ditto.
+	(cfg_layout_duplicate_bb): Ditto.
+	* combine.c (update_cfg_for_uncondjump): Adjust.
+	* bb-reorder.c (struct bbro_basic_block_data_def): Add visited
+	member.
+	(bb_visited_trace): New accessor.
+	(mark_bb_visited): Move in front.
+	(rotate_loop): Use bb_visited_trace.
+	(find_traces_1_round): Ditto.
+	(emit_barrier_after): Ditto.
+	(copy_bb): Ditto, and initialize visited on resize.
+	(reorder_basic_blocks): Initize visited member.
+	(duplicate_computed_gotos): Clear bb flags at start, use
+	BB_VISITED flags.
+
+	* cfgrtl.c (try_redirect_by_replacing_jump): Adjust.
+	(rtl_verify_flow_info_1): Ditto.
+	(cfg_layout_split_block): Ditto.
+	(cfg_layout_delete_block): Ditto.
+	(cfg_layout_merge_blocks): Ditto.
+	(init_rtl_bb_info): Adjust and initialize il.x.head_ member.
+
 2012-05-08  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/53272
