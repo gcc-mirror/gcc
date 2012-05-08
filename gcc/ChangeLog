@@ -1,3 +1,16 @@
+2012-05-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* Makefile.in (TEXI_GCC_FILES): Add avr-mmcu.texi.
+
+	* doc/avr-mmcu.texi: New auto-generated file.
+	* doc/invoke.texi (AVR Options): Include avr-mmcu.texi in order
+	to document all valid -mmcu= arguments.
+
+	* config/avr/avr.h (arch_info_s): New struct definition.
+	* config/avr/avr-devices.c (avr_texinfo): New variable.
+	* config/avr/gen-avr-mmcu-texi.c: New file.
+	* config/avr/t-avr: New rules and dependencies to build	avr-mmcu.texi.
+
 2012-05-08  Dehao Chen  <dehao@google.com>
 
 	* predict.c (find_qualified_ssa_name): New
