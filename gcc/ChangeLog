@@ -1,3 +1,8 @@
+2012-05-08   Teresa Johnson  <tejohnson@google.com>
+
+	* gcov-io.h (__gcov_reset, __gcov_dump): Declare.
+	* doc/gcov.texi: Add note on using __gcov_reset and __gcov_dump.
+
 2012-05-08  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_call_edge_duplication_hooks): Export.
