@@ -1,3 +1,12 @@
+2012-05-08   Teresa Johnson  <tejohnson@google.com>
+
+	* libgcov.c (gcov_clear, __gcov_reset): New functions.
+	(__gcov_dump): Ditto.
+	(gcov_dump_complete): New global variable.
+	(gcov_exit): Export hidden to enable use in L_gcov_dump.
+	(__gcov_flush): Outline functionality now in gcov_clear.
+	* Makefile.in (L_gcov_reset, L_gcov_dump): Define.
+
 2012-04-28  Aurelien Jarno  <aurelien@aurel32.net>
 
 	* config.host (mips64*-*-linux*, mipsisa64*-*-linux*): Remove. 

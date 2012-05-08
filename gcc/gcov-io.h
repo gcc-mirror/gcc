@@ -458,6 +458,12 @@ extern void __gcov_init (struct gcov_info *) ATTRIBUTE_HIDDEN;
 /* Called before fork, to avoid double counting.  */
 extern void __gcov_flush (void) ATTRIBUTE_HIDDEN;
 
+/* Function to reset all counters to 0.  */
+extern void __gcov_reset (void);
+
+/* Function to enable early write of profile information so far.  */
+extern void __gcov_dump (void);
+
 /* The merge function that just sums the counters.  */
 extern void __gcov_merge_add (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
