@@ -1487,9 +1487,7 @@ decompose_multiword_subregs (void)
       FOR_EACH_BB (bb)
 	{
 	  rtx insn;
-	  bool speed_p;
 
-	  speed_p = optimize_bb_for_speed_p (bb);
 	  FOR_BB_INSNS (bb, insn)
 	    {
 	      rtx pat;
