@@ -275,13 +275,13 @@ mark_all_labels (rtx f)
 	  /* In cfglayout mode, there may be non-insns between the
 	     basic blocks.  If those non-insns represent tablejump data,
 	     they contain label references that we must record.  */
-	  for (insn = bb->il.rtl->header; insn; insn = NEXT_INSN (insn))
+	  for (insn = BB_HEADER (bb); insn; insn = NEXT_INSN (insn))
 	    if (INSN_P (insn))
 	      {
 		gcc_assert (JUMP_TABLE_DATA_P (insn));
 		mark_jump_label (PATTERN (insn), insn, 0);
 	      }
-	  for (insn = bb->il.rtl->footer; insn; insn = NEXT_INSN (insn))
+	  for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
 	    if (INSN_P (insn))
 	      {
 		gcc_assert (JUMP_TABLE_DATA_P (insn));

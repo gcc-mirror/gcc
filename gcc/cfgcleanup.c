@@ -2586,21 +2586,21 @@ try_optimize_cfg (int mode)
 
 		      if (current_ir_type () == IR_RTL_CFGLAYOUT)
 			{
-			  if (b->il.rtl->footer
-			      && BARRIER_P (b->il.rtl->footer))
+			  if (BB_FOOTER (b)
+			      && BARRIER_P (BB_FOOTER (b)))
 			    FOR_EACH_EDGE (e, ei, b->preds)
 			      if ((e->flags & EDGE_FALLTHRU)
-				  && e->src->il.rtl->footer == NULL)
+				  && BB_FOOTER (e->src) == NULL)
 				{
-				  if (b->il.rtl->footer)
+				  if (BB_FOOTER (b))
 				    {
-				      e->src->il.rtl->footer = b->il.rtl->footer;
-				      b->il.rtl->footer = NULL;
+				      BB_FOOTER (e->src) = BB_FOOTER (b);
+				      BB_FOOTER (b) = NULL;
 				    }
 				  else
 				    {
 				      start_sequence ();
-				      e->src->il.rtl->footer = emit_barrier ();
+				      BB_FOOTER (e->src) = emit_barrier ();
 				      end_sequence ();
 				    }
 				}
