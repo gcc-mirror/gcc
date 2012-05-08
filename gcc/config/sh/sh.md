@@ -7097,11 +7097,57 @@ label:
 }
   [(set_attr "type" "cbranch")])
 
+;; The *branch_true patterns help combine when trying to invert conditions.
+(define_insn "*branch_true"
+  [(set (pc) (if_then_else (ne (zero_extend:SI (subreg:QI (reg:SI T_REG) 0))
+			       (const_int 0))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))]
+  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
+{
+  return output_branch (1, insn, operands);
+}
+  [(set_attr "type" "cbranch")])
+
+(define_insn "*branch_true"
+  [(set (pc) (if_then_else (ne (zero_extend:SI (subreg:QI (reg:SI T_REG) 3))
+			       (const_int 0))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))]
+  "TARGET_SH1 && ! TARGET_LITTLE_ENDIAN"
+{
+  return output_branch (1, insn, operands);
+}
+  [(set_attr "type" "cbranch")])
+
 (define_insn "branch_false"
   [(set (pc) (if_then_else (eq (reg:SI T_REG) (const_int 0))
 			   (label_ref (match_operand 0 "" ""))
 			   (pc)))]
   "TARGET_SH1"
+{
+  return output_branch (0, insn, operands);
+}
+  [(set_attr "type" "cbranch")])
+
+;; The *branch_false patterns help combine when trying to invert conditions.
+(define_insn "*branch_false"
+  [(set (pc) (if_then_else (eq (zero_extend:SI (subreg:QI (reg:SI T_REG) 0))
+			       (const_int 0))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))]
+  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
+{
+  return output_branch (0, insn, operands);
+}
+  [(set_attr "type" "cbranch")])
+
+(define_insn "*branch_false"
+  [(set (pc) (if_then_else (eq (zero_extend:SI (subreg:QI (reg:SI T_REG) 3))
+			       (const_int 0))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))]
+  "TARGET_SH1 && ! TARGET_LITTLE_ENDIAN"
 {
   return output_branch (0, insn, operands);
 }
@@ -9721,7 +9767,7 @@ label:
   ""
   [(const_int 0)])
 
-;; The *movtt patterns improve code at -O1.
+;; The *movtt patterns eliminate redundant T bit to T bit moves / tests.
 (define_insn_and_split "*movtt"
   [(set (reg:SI T_REG)
 	(eq:SI (zero_extend:SI (subreg:QI (reg:SI T_REG) 3))

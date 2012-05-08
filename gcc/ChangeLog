@@ -1,3 +1,8 @@
+2012-05-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md (*branch_true, *branch_false): New insns.
+
 2012-05-08   Teresa Johnson  <tejohnson@google.com>
 
 	* gcov-io.h (__gcov_reset, __gcov_dump): Declare.
