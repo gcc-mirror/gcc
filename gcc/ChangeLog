@@ -1,3 +1,9 @@
+2012-05-09  Terry Guo  <terry.guo@arm.com>
+
+	* Makefile.in (s-mlib): Add new argument MULTILIB_REQUIRED.
+	* genmultilib (MULTILIB_REQUIRED): New.
+	* doc/fragments.texi: Document the MULTILIB_REQUIRED.
+
 2012-05-09  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vect_loop_versioning): Adjust prototype.
