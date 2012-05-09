@@ -1126,6 +1126,7 @@ varpool_can_remove_if_no_refs (struct varpool_node *node)
   return (!node->symbol.force_output && !node->symbol.used_from_other_partition
   	  && (DECL_COMDAT (node->symbol.decl)
 	  || !node->symbol.externally_visible
+	  || DECL_HAS_VALUE_EXPR_P (node->symbol.decl)
 	  || DECL_EXTERNAL (node->symbol.decl)));
 }
 

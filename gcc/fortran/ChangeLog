@@ -1,3 +1,8 @@
+2012-05-08  Jan Hubicka  <jh@suse.cz>
+	
+	* trans-common.c (create_common): Do not fake TREE_ASM_WRITTEN.
+	* trans-decl.c (gfc_finish_cray_pointee): Likewise.
+
 2012-05-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53255
