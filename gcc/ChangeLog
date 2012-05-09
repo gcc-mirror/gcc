@@ -1,3 +1,26 @@
+2012-05-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-05-12 mainline r187342.
+
+	PR target/53256
+	* config/avr/elf.h (ASM_DECLARE_FUNCTION_NAME): Remove.
+	* config/avr/avr-protos.h (avr_asm_declare_function_name): Remove.
+	* config/avr/avr.h (struct machine_function): Add attributes_checked_p.
+	* config/avr/avr.c (avr_asm_declare_function_name): Remove.
+	(expand_prologue): Move initialization of cfun->machine->is_naked,
+	is_interrupt, is_signal, is_OS_task, is_OS_main from here to...
+	(avr_set_current_function): ...this new static function.
+	(TARGET_SET_CURRENT_FUNCTION): New define.
+	(avr_function_ok_for_sibcall): Use cfun->machine->is_* instead of
+	checking attributes of current_function_decl.
+	(avr_regs_to_save): Ditto.
+	(signal_function_p): Rename to avr_signal_function_p.
+	(interrupt_function_p): Rename to avr_interrupt_function_p.
+
+	* doc/extend.texi (Function Attributes): Better explanation of
+	'interrupt' and 'signal' for AVR. Move 'ifunc' down to establish
+	alphabetical order.
+
 2012-05-09  Matthias Klose  <doko@ubuntu.com>
 
 	* gcc-ar.c (main): Don't check for execute bits for the plugin.

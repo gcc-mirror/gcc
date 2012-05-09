@@ -2714,6 +2714,51 @@ then be sure to write this declaration in both files.
 
 This attribute is ignored for R8C target.
 
+@item ifunc ("@var{resolver}")
+@cindex @code{ifunc} attribute
+The @code{ifunc} attribute is used to mark a function as an indirect
+function using the STT_GNU_IFUNC symbol type extension to the ELF
+standard.  This allows the resolution of the symbol value to be
+determined dynamically at load time, and an optimized version of the
+routine can be selected for the particular processor or other system
+characteristics determined then.  To use this attribute, first define
+the implementation functions available, and a resolver function that
+returns a pointer to the selected implementation function.  The
+implementation functions' declarations must match the API of the
+function being implemented, the resolver's declaration is be a
+function returning pointer to void function returning void:
+
+@smallexample
+void *my_memcpy (void *dst, const void *src, size_t len)
+@{
+  @dots{}
+@}
+
+static void (*resolve_memcpy (void)) (void)
+@{
+  return my_memcpy; // we'll just always select this routine
+@}
+@end smallexample
+
+The exported header file declaring the function the user calls would
+contain:
+
+@smallexample
+extern void *memcpy (void *, const void *, size_t);
+@end smallexample
+
+allowing the user to call this as a regular function, unaware of the
+implementation.  Finally, the indirect function needs to be defined in
+the same translation unit as the resolver function:
+
+@smallexample
+void *memcpy (void *, const void *, size_t)
+     __attribute__ ((ifunc ("resolve_memcpy")));
+@end smallexample
+
+Indirect functions cannot be weak, and require a recent binutils (at
+least version 2.20.1), and GNU C library (at least version 2.11.1).
+
 @item interrupt
 @cindex interrupt handler functions
 Use this attribute on the ARM, AVR, CR16, Epiphany, M32C, M32R/D, m68k, MeP, MIPS,
@@ -2726,7 +2771,13 @@ code to initialize the interrupt vector table.
 Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, MicroBlaze,
 and SH processors can be specified via the @code{interrupt_handler} attribute.
 
-Note, on the AVR, interrupts will be enabled inside the function.
+Note, on the AVR, the hardware globally disables interrupts when an
+interrupt is executed.  The first instruction of an interrupt handler
+declared with this attribute will be a @code{SEI} instruction to
+re-enable interrupts.  See also the @code{signal} function attribute
+that does not insert a @code{SEI} instuction.  If both @code{signal} and
+@code{interrupt} are specified for the same function, @code{signal}
+will be silently ignored.
 
 Note, for the ARM, you can specify the kind of interrupt to be handled by
 adding an optional parameter to the interrupt attribute like this:
@@ -2821,51 +2872,6 @@ void __attribute__ ((interrupt, use_shadow_register_set,
 On RL78, use @code{brk_interrupt} instead of @code{interrupt} for
 handlers intended to be used with the @code{BRK} opcode (i.e.  those
 that must end with @code{RETB} instead of @code{RETI}).
-
-@item ifunc ("@var{resolver}")
-@cindex @code{ifunc} attribute
-The @code{ifunc} attribute is used to mark a function as an indirect
-function using the STT_GNU_IFUNC symbol type extension to the ELF
-standard.  This allows the resolution of the symbol value to be
-determined dynamically at load time, and an optimized version of the
-routine can be selected for the particular processor or other system
-characteristics determined then.  To use this attribute, first define
-the implementation functions available, and a resolver function that
-returns a pointer to the selected implementation function.  The
-implementation functions' declarations must match the API of the
-function being implemented, the resolver's declaration is be a
-function returning pointer to void function returning void:
-
-@smallexample
-void *my_memcpy (void *dst, const void *src, size_t len)
-@{
-  @dots{}
-@}
-
-static void (*resolve_memcpy (void)) (void)
-@{
-  return my_memcpy; // we'll just always select this routine
-@}
-@end smallexample
-
-The exported header file declaring the function the user calls would
-contain:
-
-@smallexample
-extern void *memcpy (void *, const void *, size_t);
-@end smallexample
-
-allowing the user to call this as a regular function, unaware of the
-implementation.  Finally, the indirect function needs to be defined in
-the same translation unit as the resolver function:
-
-@smallexample
-void *memcpy (void *, const void *, size_t)
-     __attribute__ ((ifunc ("resolve_memcpy")));
-@end smallexample
-
-Indirect functions cannot be weak, and require a recent binutils (at
-least version 2.20.1), and GNU C library (at least version 2.11.1).
 
 @item interrupt_handler
 @cindex interrupt handler functions on the Blackfin, m68k, H8/300 and SH processors
@@ -3471,11 +3477,23 @@ See long_call/short_call.
 See longcall/shortcall.
 
 @item signal
-@cindex signal handler functions on the AVR processors
+@cindex interrupt handler functions on the AVR processors
 Use this attribute on the AVR to indicate that the specified
-function is a signal handler.  The compiler will generate function
-entry and exit sequences suitable for use in a signal handler when this
-attribute is present.  Interrupts will be disabled inside the function.
+function is an interrupt handler.  The compiler will generate function
+entry and exit sequences suitable for use in an interrupt handler when this
+attribute is present.
+
+See also the @code{interrupt} function attribute. 
+
+The AVR hardware globally disables interrupts when an interrupt is executed.
+Interrupt handler functions defined with the @code{signal} attribute
+do not re-enable interrupts.  It is save to enable interrupts in a
+@code{signal} handler.  This ``save'' only applies to the code
+generated by the compiler and not to the IRQ-layout of the
+application which is responsibility of the application.
+
+If both @code{signal} and @code{interrupt} are specified for the same
+function, @code{signal} will be silently ignored.
 
 @item sp_switch
 Use this attribute on the SH to indicate an @code{interrupt_handler}

@@ -699,6 +699,10 @@ struct GTY(()) machine_function
 
   /* 'true' if a callee might be tail called */
   int sibcall_fails;
+
+  /* 'true' if the above is_foo predicates are sanity-checked to avoid
+     multiple diagnose for the same function.  */
+  int attributes_checked_p;
 };
 
 /* AVR does not round pushes, but the existance of this macro is

@@ -26,7 +26,6 @@ extern int function_arg_regno_p (int r);
 extern void avr_cpu_cpp_builtins (struct cpp_reader * pfile);
 extern enum reg_class avr_regno_reg_class (int r);
 extern void asm_globalize_label (FILE *file, const char *name);
-extern void avr_asm_declare_function_name (FILE *, const char *, tree);
 extern void order_regs_for_local_alloc (void);
 extern int avr_initial_elimination_offset (int from, int to);
 extern int avr_simple_epilogue (void);

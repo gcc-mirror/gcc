@@ -32,11 +32,6 @@
 #undef STRING_LIMIT
 #define STRING_LIMIT ((unsigned) 64)
 
-/* Take care of `signal' and `interrupt' attributes.  */
-#undef ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)     \
-  avr_asm_declare_function_name ((FILE), (NAME), (DECL))
-
 /* Output alignment 2**1 for jump tables.  */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
