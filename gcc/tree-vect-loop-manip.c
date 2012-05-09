@@ -1853,34 +1853,6 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
     }
 }
 
-/* Return the more conservative threshold between the
-   min_profitable_iters returned by the cost model and the user
-   specified threshold, if provided.  */
-
-static unsigned int
-conservative_cost_threshold (loop_vec_info loop_vinfo,
-			     int min_profitable_iters)
-{
-  unsigned int th;
-  int min_scalar_loop_bound;
-
-  min_scalar_loop_bound = ((PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
-			    * LOOP_VINFO_VECT_FACTOR (loop_vinfo)) - 1);
-
-  /* Use the cost model only if it is more conservative than user specified
-     threshold.  */
-  th = (unsigned) min_scalar_loop_bound;
-  if (min_profitable_iters
-      && (!min_scalar_loop_bound
-          || min_profitable_iters > min_scalar_loop_bound))
-    th = (unsigned) min_profitable_iters;
-
-  if (th && vect_print_dump_info (REPORT_COST))
-    fprintf (vect_dump, "Profitability threshold is %u loop iterations.", th);
-
-  return th;
-}
-
 /* Function vect_do_peeling_for_loop_bound
 
    Peel the last iterations of the loop represented by LOOP_VINFO.
@@ -1896,7 +1868,7 @@ conservative_cost_threshold (loop_vec_info loop_vinfo,
 
 void
 vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
-				tree cond_expr, gimple_seq cond_expr_stmt_list)
+				unsigned int th, bool check_profitability)
 {
   tree ni_name, ratio_mult_vf_name;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -1904,10 +1876,9 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
   edge update_e;
   basic_block preheader;
   int loop_num;
-  bool check_profitability = false;
-  unsigned int th = 0;
-  int min_profitable_iters;
   int max_iter;
+  tree cond_expr = NULL_TREE;
+  gimple_seq cond_expr_stmt_list = NULL;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_do_peeling_for_loop_bound ===");
@@ -1924,22 +1895,6 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 				   cond_expr_stmt_list);
 
   loop_num  = loop->num;
-
-  /* If cost model check not done during versioning and
-     peeling for alignment.  */
-  if (!LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
-      && !LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo)
-      && !LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo)
-      && !cond_expr)
-    {
-      check_profitability = true;
-
-      /* Get profitability threshold for vectorized loop.  */
-      min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
-
-      th = conservative_cost_threshold (loop_vinfo,
-					min_profitable_iters);
-    }
 
   new_loop = slpeel_tree_peel_loop_to_edge (loop, single_exit (loop),
                                             &ratio_mult_vf_name, ni_name, false,
@@ -1967,7 +1922,9 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
      by ratio_mult_vf_name steps.  */
   vect_update_ivs_after_vectorizer (loop_vinfo, ratio_mult_vf_name, update_e);
 
-  max_iter = MAX (LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1, (int) th);
+  max_iter = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1;
+  if (check_profitability)
+    max_iter = MAX (max_iter, (int) th);
   record_niter_bound (new_loop, shwi_to_double_int (max_iter), false, true);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Setting upper bound of nb iterations for epilogue "
@@ -2158,15 +2115,14 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
    peeling is recorded in LOOP_VINFO_UNALIGNED_DR.  */
 
 void
-vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
+vect_do_peeling_for_alignment (loop_vec_info loop_vinfo,
+			       unsigned int th, bool check_profitability)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree niters_of_prolog_loop, ni_name;
   tree n_iters;
   tree wide_prolog_niters;
   struct loop *new_loop;
-  unsigned int th = 0;
-  int min_profitable_iters;
   int max_iter;
 
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -2178,22 +2134,19 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo,
 							   ni_name);
 
-  /* Get profitability threshold for vectorized loop.  */
-  min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
-  th = conservative_cost_threshold (loop_vinfo,
-				    min_profitable_iters);
-
   /* Peel the prolog loop and iterate it niters_of_prolog_loop.  */
   new_loop =
     slpeel_tree_peel_loop_to_edge (loop, loop_preheader_edge (loop),
 				   &niters_of_prolog_loop, ni_name, true,
-				   th, true, NULL_TREE, NULL);
+				   th, check_profitability, NULL_TREE, NULL);
 
   gcc_assert (new_loop);
 #ifdef ENABLE_CHECKING
   slpeel_verify_cfg_after_peeling (new_loop, loop);
 #endif
-  max_iter = MAX (LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1, (int) th);
+  max_iter = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1;
+  if (check_profitability)
+    max_iter = MAX (max_iter, (int) th);
   record_niter_bound (new_loop, shwi_to_double_int (max_iter), false, true);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Setting upper bound of nb iterations for prologue "
@@ -2547,7 +2500,8 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
    *COND_EXPR_STMT_LIST.  */
 
 void
-vect_loop_versioning (loop_vec_info loop_vinfo)
+vect_loop_versioning (loop_vec_info loop_vinfo,
+		      unsigned int th, bool check_profitability)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block condition_bb;
@@ -2556,25 +2510,20 @@ vect_loop_versioning (loop_vec_info loop_vinfo)
   basic_block new_exit_bb;
   edge new_exit_e, e;
   gimple orig_phi, new_phi;
-  tree cond_expr;
+  tree cond_expr = NULL_TREE;
   gimple_seq cond_expr_stmt_list = NULL;
   tree arg;
   unsigned prob = 4 * REG_BR_PROB_BASE / 5;
   gimple_seq gimplify_stmt_list = NULL;
   tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
-  int min_profitable_iters = 0;
-  unsigned int th;
 
-  /* Get profitability threshold for vectorized loop.  */
-  min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
-
-  th = conservative_cost_threshold (loop_vinfo,
-				    min_profitable_iters);
-
-  cond_expr = fold_build2 (GT_EXPR, boolean_type_node, scalar_loop_iters,
-			   build_int_cst (TREE_TYPE (scalar_loop_iters), th));
-  cond_expr = force_gimple_operand_1 (cond_expr, &cond_expr_stmt_list,
-				      is_gimple_condexpr, NULL_TREE);
+  if (check_profitability)
+    {
+      cond_expr = fold_build2 (GT_EXPR, boolean_type_node, scalar_loop_iters,
+			       build_int_cst (TREE_TYPE (scalar_loop_iters), th));
+      cond_expr = force_gimple_operand_1 (cond_expr, &cond_expr_stmt_list,
+					  is_gimple_condexpr, NULL_TREE);
+    }
 
   if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo))
     vect_create_cond_for_align_checks (loop_vinfo, &cond_expr,
