@@ -1280,12 +1280,12 @@ package body Exp_Pakd is
       --  Initially Rhs is the right hand side value, it will be replaced
       --  later by an appropriate unchecked conversion for the assignment.
 
-      Obj    : Node_Id;
-      Atyp   : Entity_Id;
-      PAT    : Entity_Id;
-      Ctyp   : Entity_Id;
-      Csiz   : Int;
-      Cmask  : Uint;
+      Obj   : Node_Id;
+      Atyp  : Entity_Id;
+      PAT   : Entity_Id;
+      Ctyp  : Entity_Id;
+      Csiz  : Int;
+      Cmask : Uint;
 
       Shift : Node_Id;
       --  The expression for the shift value that is required
@@ -1433,9 +1433,9 @@ package body Exp_Pakd is
             Rhs_Val       := Expr_Rep_Value (Rhs);
             Rhs_Val_Known := True;
 
-         --  The following test catches the case of an unchecked conversion
-         --  of an integer literal. This results from optimizing aggregates
-         --  of packed types.
+         --  The following test catches the case of an unchecked conversion of
+         --  an integer literal. This results from optimizing aggregates of
+         --  packed types.
 
          elsif Nkind (Rhs) = N_Unchecked_Type_Conversion
            and then Compile_Time_Known_Value (Expression (Rhs))
@@ -2619,11 +2619,16 @@ package body Exp_Pakd is
       Cmask  : out Uint;
       Shift  : out Node_Id)
    is
-      Loc    : constant Source_Ptr := Sloc (N);
-      PAT    : Entity_Id;
-      Otyp   : Entity_Id;
-      Csiz   : Uint;
-      Osiz   : Uint;
+      Loc  : constant Source_Ptr := Sloc (N);
+      PAT  : Entity_Id;
+      Otyp : Entity_Id;
+      Pref : Node_Id;
+      Csiz : Uint;
+      Osiz : Uint;
+
+      In_Reverse_Storage_Order_Record : Boolean;
+      --  Set True if Obj is a [sub]component of a record that has reversed
+      --  scalar storage order.
 
    begin
       Csiz := Component_Size (Atyp);
@@ -2658,7 +2663,7 @@ package body Exp_Pakd is
       if Csiz /= 1 then
          Shift :=
            Make_Op_Multiply (Loc,
-             Left_Opnd => Make_Integer_Literal (Loc, Csiz),
+             Left_Opnd  => Make_Integer_Literal (Loc, Csiz),
              Right_Opnd => Shift);
       end if;
 
@@ -2693,7 +2698,7 @@ package body Exp_Pakd is
                 Prefix => Obj,
                 Expressions => New_List (
                   Make_Op_Divide (Loc,
-                    Left_Opnd => Duplicate_Subexpr (Shift),
+                    Left_Opnd  => Duplicate_Subexpr (Shift),
                     Right_Opnd => Make_Integer_Literal (Loc, Osiz))));
 
             Shift := New_Shift;
@@ -2725,7 +2730,30 @@ package body Exp_Pakd is
       --  the array used to implement the packed array, F is the number of bits
       --  in a source array element, and Shift is the count so far computed.
 
-      if Bytes_Big_Endian then
+      --  We also have to adjust if the storage order is reversed
+
+      Pref := Obj;
+      loop
+         case Nkind (Pref) is
+            when N_Selected_Component =>
+               Pref := Prefix (Pref);
+               exit;
+
+            when N_Indexed_Component =>
+               Pref := Prefix (Pref);
+
+            when others =>
+               Pref := Empty;
+               exit;
+         end case;
+      end loop;
+
+      In_Reverse_Storage_Order_Record :=
+        Present (Pref)
+          and then Is_Record_Type (Etype (Pref))
+          and then Reverse_Storage_Order (Etype (Pref));
+
+      if Bytes_Big_Endian xor In_Reverse_Storage_Order_Record then
          Shift :=
            Make_Op_Subtract (Loc,
              Left_Opnd  => Make_Integer_Literal (Loc, Osiz - Csiz),

@@ -829,7 +829,7 @@ fix_with_system (tFixDesc* p_fixd,
       /*
        *  Now add the fix number and file names that may be needed
        */
-      sprintf (pz_scan, " %ld '%s' '%s'",  (long) (p_fixd - fixDescList),
+      sprintf (pz_scan, " %ld '%s' '%s' '%s'", (long) (p_fixd - fixDescList),
 	       pz_fix_file, pz_file_source, pz_temp_file);
     }
   else /* NOT an "internal" fix: */

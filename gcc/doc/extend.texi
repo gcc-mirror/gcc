@@ -1311,18 +1311,18 @@ support is available or not:
 #ifdef __FLASH
 const __flash int var = 1;
 
-int read_i (void)
+int read_var (void)
 @{
-    return i;
+    return var;
 @}
 #else
-#include <avr/pgmspace.h> /* From avr-libc */
+#include <avr/pgmspace.h> /* From AVR-LibC */
 
 const int var PROGMEM = 1;
 
-int read_i (void)
+int read_var (void)
 @{
-    return (int) pgm_read_word (&i);
+    return (int) pgm_read_word (&var);
 @}
 #endif /* __FLASH */
 @end example
@@ -1332,7 +1332,8 @@ locates data in flash but
 accesses to these data will read from generic address space, i.e.@:
 from RAM,
 so that you need special accessors like @code{pgm_read_byte}
-from @w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc}}.
+from @w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-LibC}}
+together with attribute @code{progmem}.
 
 @b{Limitations and caveats}
 
@@ -1345,7 +1346,7 @@ supports reading across the 64@tie{}KiB flash segment boundaries is
 @code{__memx}.
 
 @item
-If you use one if the @code{__flash@var{N}} address spaces
+If you use one of the @code{__flash@var{N}} address spaces
 you will have to arrange your linker skript to locate the
 @code{.progmem@var{N}.data} sections according to your needs.
 
@@ -2713,6 +2714,51 @@ then be sure to write this declaration in both files.
 
 This attribute is ignored for R8C target.
 
+@item ifunc ("@var{resolver}")
+@cindex @code{ifunc} attribute
+The @code{ifunc} attribute is used to mark a function as an indirect
+function using the STT_GNU_IFUNC symbol type extension to the ELF
+standard.  This allows the resolution of the symbol value to be
+determined dynamically at load time, and an optimized version of the
+routine can be selected for the particular processor or other system
+characteristics determined then.  To use this attribute, first define
+the implementation functions available, and a resolver function that
+returns a pointer to the selected implementation function.  The
+implementation functions' declarations must match the API of the
+function being implemented, the resolver's declaration is be a
+function returning pointer to void function returning void:
+
+@smallexample
+void *my_memcpy (void *dst, const void *src, size_t len)
+@{
+  @dots{}
+@}
+
+static void (*resolve_memcpy (void)) (void)
+@{
+  return my_memcpy; // we'll just always select this routine
+@}
+@end smallexample
+
+The exported header file declaring the function the user calls would
+contain:
+
+@smallexample
+extern void *memcpy (void *, const void *, size_t);
+@end smallexample
+
+allowing the user to call this as a regular function, unaware of the
+implementation.  Finally, the indirect function needs to be defined in
+the same translation unit as the resolver function:
+
+@smallexample
+void *memcpy (void *, const void *, size_t)
+     __attribute__ ((ifunc ("resolve_memcpy")));
+@end smallexample
+
+Indirect functions cannot be weak, and require a recent binutils (at
+least version 2.20.1), and GNU C library (at least version 2.11.1).
+
 @item interrupt
 @cindex interrupt handler functions
 Use this attribute on the ARM, AVR, CR16, Epiphany, M32C, M32R/D, m68k, MeP, MIPS,
@@ -2725,7 +2771,13 @@ code to initialize the interrupt vector table.
 Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, MicroBlaze,
 and SH processors can be specified via the @code{interrupt_handler} attribute.
 
-Note, on the AVR, interrupts will be enabled inside the function.
+Note, on the AVR, the hardware globally disables interrupts when an
+interrupt is executed.  The first instruction of an interrupt handler
+declared with this attribute will be a @code{SEI} instruction to
+re-enable interrupts.  See also the @code{signal} function attribute
+that does not insert a @code{SEI} instuction.  If both @code{signal} and
+@code{interrupt} are specified for the same function, @code{signal}
+will be silently ignored.
 
 Note, for the ARM, you can specify the kind of interrupt to be handled by
 adding an optional parameter to the interrupt attribute like this:
@@ -2820,51 +2872,6 @@ void __attribute__ ((interrupt, use_shadow_register_set,
 On RL78, use @code{brk_interrupt} instead of @code{interrupt} for
 handlers intended to be used with the @code{BRK} opcode (i.e.  those
 that must end with @code{RETB} instead of @code{RETI}).
-
-@item ifunc ("@var{resolver}")
-@cindex @code{ifunc} attribute
-The @code{ifunc} attribute is used to mark a function as an indirect
-function using the STT_GNU_IFUNC symbol type extension to the ELF
-standard.  This allows the resolution of the symbol value to be
-determined dynamically at load time, and an optimized version of the
-routine can be selected for the particular processor or other system
-characteristics determined then.  To use this attribute, first define
-the implementation functions available, and a resolver function that
-returns a pointer to the selected implementation function.  The
-implementation functions' declarations must match the API of the
-function being implemented, the resolver's declaration is be a
-function returning pointer to void function returning void:
-
-@smallexample
-void *my_memcpy (void *dst, const void *src, size_t len)
-@{
-  @dots{}
-@}
-
-static void (*resolve_memcpy (void)) (void)
-@{
-  return my_memcpy; // we'll just always select this routine
-@}
-@end smallexample
-
-The exported header file declaring the function the user calls would
-contain:
-
-@smallexample
-extern void *memcpy (void *, const void *, size_t);
-@end smallexample
-
-allowing the user to call this as a regular function, unaware of the
-implementation.  Finally, the indirect function needs to be defined in
-the same translation unit as the resolver function:
-
-@smallexample
-void *memcpy (void *, const void *, size_t)
-     __attribute__ ((ifunc ("resolve_memcpy")));
-@end smallexample
-
-Indirect functions cannot be weak, and require a recent binutils (at
-least version 2.20.1), and GNU C library (at least version 2.11.1).
 
 @item interrupt_handler
 @cindex interrupt handler functions on the Blackfin, m68k, H8/300 and SH processors
@@ -3470,11 +3477,23 @@ See long_call/short_call.
 See longcall/shortcall.
 
 @item signal
-@cindex signal handler functions on the AVR processors
+@cindex interrupt handler functions on the AVR processors
 Use this attribute on the AVR to indicate that the specified
-function is a signal handler.  The compiler will generate function
-entry and exit sequences suitable for use in a signal handler when this
-attribute is present.  Interrupts will be disabled inside the function.
+function is an interrupt handler.  The compiler will generate function
+entry and exit sequences suitable for use in an interrupt handler when this
+attribute is present.
+
+See also the @code{interrupt} function attribute. 
+
+The AVR hardware globally disables interrupts when an interrupt is executed.
+Interrupt handler functions defined with the @code{signal} attribute
+do not re-enable interrupts.  It is save to enable interrupts in a
+@code{signal} handler.  This ``save'' only applies to the code
+generated by the compiler and not to the IRQ-layout of the
+application which is responsibility of the application.
+
+If both @code{signal} and @code{interrupt} are specified for the same
+function, @code{signal} will be silently ignored.
 
 @item sp_switch
 Use this attribute on the SH to indicate an @code{interrupt_handler}
@@ -4782,7 +4801,7 @@ of the data but not how this data is accessed.
 In order to read data located with the @code{progmem} attribute
 (inline) assembler must be used.
 @example
-/* Use custom macros from @w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc}} */
+/* Use custom macros from @w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-LibC}} */
 #include <avr/pgmspace.h> 
 
 /* Locate var in flash memory */
@@ -6822,7 +6841,7 @@ a = 2 * b;    /* a = @{2,2,2,2@} * b; */
 a = l + a;    /* Error, cannot convert long to int. */
 @end smallexample
 
-In C vectors can be subscripted as if the vector were an array with
+Vectors can be subscripted as if the vector were an array with
 the same number of elements and base type.  Out of bound accesses
 invoke undefined behavior at runtime.  Warnings for out of bound
 accesses for vector subscription can be enabled with
@@ -7092,7 +7111,8 @@ to the same names in the C++11 standard.  Refer there or to the
 atomic synchronization} for more detailed definitions.  These memory
 models integrate both barriers to code motion as well as synchronization
 requirements with other threads. These are listed in approximately
-ascending order of strength.
+ascending order of strength. It is also possible to use target specific
+flags for memory model flags, like Hardware Lock Elision.
 
 @table  @code
 @item __ATOMIC_RELAXED
@@ -9417,6 +9437,146 @@ Similar to @code{__builtin_inf}, except the return type is @code{__float128}.
 Similar to @code{__builtin_huge_val}, except the return type is @code{__float128}.
 @findex __builtin_huge_valq
 @end table
+
+The following built-in functions are always available and can be used to
+check the target platform type.
+
+@deftypefn {Built-in Function} void __builtin_cpu_init (void)
+This function runs the CPU detection code to check the type of CPU and the
+features supported.  This builtin needs to be invoked along with the builtins
+to check CPU type and features, @code{__builtin_cpu_is} and
+@code{__builtin_cpu_supports}, only when used in a function that will be
+executed before any constructors are called.  The CPU detection code is
+automatically executed in a very high priority constructor.
+
+For example, this function has to be used in @code{ifunc} resolvers which
+check for CPU type using the builtins, @code{__builtin_cpu_is}
+and @code{__builtin_cpu_supports}.
+@smallexample
+
+static void (*resolve_memcpy (void)) (void)
+@{
+  // ifunc resolvers fire before constructors, explicitly call the init
+  // function.
+  __builtin_cpu_init ();
+  if (__builtin_cpu_supports ("ssse3"))
+    return ssse3_memcpy; // super fast memcpy with ssse3 instructions.
+  else
+    return default_memcpy;
+@}
+
+void *memcpy (void *, const void *, size_t)
+     __attribute__ ((ifunc ("resolve_memcpy")));
+@end smallexample
+
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_cpu_is (const char *@var{cpuname})
+This function returns a positive integer if the runtime cpu is of type @var{cpuname}
+ and returns @code{0} otherwise. The following cpu names can be detected:
+
+@table @samp
+@item intel
+Intel CPU.
+
+@item atom
+Intel ATOM CPU.
+
+@item core2
+Intel Core2 CPU.
+
+@item corei7
+Intel Corei7 CPU.
+
+@item nehalem
+Intel Corei7 Nehalem CPU.
+
+@item westmere
+Intel Corei7 Westmere CPU.
+
+@item sandybridge
+Intel Corei7 Sandybridge CPU.
+
+@item amd
+AMD CPU.
+
+@item amdfam10h
+AMD family 10h CPU.
+
+@item barcelona
+AMD family 10h Barcelona CPU.
+
+@item shanghai
+AMD family 10h Shanghai CPU.
+
+@item istanbul
+AMD family 10h Istanbul CPU.
+
+@item amdfam15h
+AMD family 15h CPU.
+
+@item bdver1
+AMD family 15h Bulldozer version 1.
+
+@item bdver2
+AMD family 15h Bulldozer version 2.
+@end table
+
+Here is an example:
+@smallexample
+if (__builtin_cpu_is ("corei7"))
+  @{
+     do_corei7 (); //Corei7 specific implementation.
+  @}
+else
+  @{
+     do_generic (); //Generic implementation.
+  @}
+@end smallexample
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_cpu_supports (const char *@var{feature})
+This function returns a postive integer if the runtime cpu supports @var{feature}
+ and returns @code{0} otherwise. The following features can be detected:
+
+@table @samp
+@item cmov
+CMOV instruction.
+@item mmx
+MMX instructions.
+@item popcnt
+POPCNT instruction.
+@item sse
+SSE instructions.
+@item sse2
+SSE2 instructions.
+@item sse3
+SSE3 instructions.
+@item ssse3
+SSSE3 instructions.
+@item sse4.1
+SSE4.1 instructions.
+@item sse4.2
+SSE4.2 instructions.
+@item avx
+AVX instructions.
+@item avx2
+AVX2 instructions.
+@end table
+
+Here is an example:
+@smallexample
+if (__builtin_cpu_supports ("popcnt"))
+  @{
+     asm("popcnt %1,%0" : "=r"(count) : "rm"(n) : "cc");
+  @}
+else
+  @{
+     count = generic_countbits (n); //generic implementation.
+  @}
+@end smallexample
+@end deftypefn
+
 
 The following built-in functions are made available by @option{-mmmx}.
 All of them generate the machine instruction that is part of the name.

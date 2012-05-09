@@ -1012,7 +1012,9 @@ Lex::gather_number()
 	    }
 	}
 
-      if (*p != '.' && *p != 'i' && !Lex::could_be_exponent(p, pend))
+      // A partial token that looks like an octal literal might actually be the
+      // beginning of a floating-point or imaginary literal.
+      if (base == 16 || (*p != '.' && *p != 'i' && !Lex::could_be_exponent(p, pend)))
 	{
 	  std::string s(pnum, p - pnum);
 	  mpz_t val;

@@ -2536,13 +2536,13 @@ update_cfg_for_uncondjump (rtx insn)
       single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
 
       /* Remove barriers from the footer if there are any.  */
-      for (insn = bb->il.rtl->footer; insn; insn = NEXT_INSN (insn))
+      for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
 	if (BARRIER_P (insn))
 	  {
 	    if (PREV_INSN (insn))
 	      NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 	    else
-	      bb->il.rtl->footer = NEXT_INSN (insn);
+	      BB_FOOTER (bb) = NEXT_INSN (insn);
 	    if (NEXT_INSN (insn))
 	      PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 	  }
@@ -4611,8 +4611,7 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
       if (GET_CODE (XEXP (x, 0)) == CONST
 	  || GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
 	{
-	  enum machine_mode address_mode
-	    = targetm.addr_space.address_mode (MEM_ADDR_SPACE (x));
+	  enum machine_mode address_mode = get_address_mode (x);
 
 	  SUBST (XEXP (x, 0),
 		 gen_rtx_LO_SUM (address_mode,
@@ -5874,7 +5873,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 		       == GET_MODE_PRECISION (mode)))
 	    {
 	      op0 = expand_compound_operation (op0);
-	      return plus_constant (gen_lowpart (mode, op0), 1);
+	      return plus_constant (mode, gen_lowpart (mode, op0), 1);
 	    }
 
 	  /* If STORE_FLAG_VALUE is -1, we have cases similar to
@@ -5923,7 +5922,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 		   && nonzero_bits (op0, mode) == 1)
 	    {
 	      op0 = expand_compound_operation (op0);
-	      return plus_constant (gen_lowpart (mode, op0), -1);
+	      return plus_constant (mode, gen_lowpart (mode, op0), -1);
 	    }
 
 	  /* If STORE_FLAG_VALUE says to just test the sign bit and X has just
@@ -8306,7 +8305,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	    && exact_log2 (- smask) >= 0
 	    && (nonzero_bits (XEXP (x, 0), mode) & ~smask) == 0
 	    && (INTVAL (XEXP (x, 1)) & ~smask) != 0)
-	  return force_to_mode (plus_constant (XEXP (x, 0),
+	  return force_to_mode (plus_constant (GET_MODE (x), XEXP (x, 0),
 					       (INTVAL (XEXP (x, 1)) & smask)),
 				mode, smask, next_select);
       }

@@ -1645,31 +1645,50 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 	   || INTEGRAL_TYPE_P (TREE_TYPE (op_right))))
     return;
 
-  lhs = make_range (op_left, &in0_p, &low0, &high0, &strict_overflow_p);
-  rhs = make_range (op_right, &in1_p, &low1, &high1, &strict_overflow_p);
 
-  if (lhs && TREE_CODE (lhs) == C_MAYBE_CONST_EXPR)
+  /* We first test whether either side separately is trivially true
+     (with OR) or trivially false (with AND).  If so, do not warn.
+     This is a common idiom for testing ranges of data types in
+     portable code.  */
+  lhs = make_range (op_left, &in0_p, &low0, &high0, &strict_overflow_p);
+  if (!lhs)
+    return;
+  if (TREE_CODE (lhs) == C_MAYBE_CONST_EXPR)
     lhs = C_MAYBE_CONST_EXPR_EXPR (lhs);
 
-  if (rhs && TREE_CODE (rhs) == C_MAYBE_CONST_EXPR)
+  /* If this is an OR operation, invert both sides; now, the result
+     should be always false to get a warning.  */
+  if (or_op)
+    in0_p = !in0_p;
+
+  tem = build_range_check (UNKNOWN_LOCATION, type, lhs, in0_p, low0, high0);
+  if (tem && integer_zerop (tem))
+    return;
+
+  rhs = make_range (op_right, &in1_p, &low1, &high1, &strict_overflow_p);
+  if (!rhs)
+    return;
+  if (TREE_CODE (rhs) == C_MAYBE_CONST_EXPR)
     rhs = C_MAYBE_CONST_EXPR_EXPR (rhs);
 
-  /* If this is an OR operation, invert both sides; we will invert
-     again at the end.  */
+  /* If this is an OR operation, invert both sides; now, the result
+     should be always false to get a warning.  */
   if (or_op)
-    in0_p = !in0_p, in1_p = !in1_p;
+    in1_p = !in1_p;
 
-  /* If both expressions are the same, if we can merge the ranges, and we
-     can build the range test, return it or it inverted.  */
-  if (lhs && rhs && operand_equal_p (lhs, rhs, 0)
+  tem = build_range_check (UNKNOWN_LOCATION, type, rhs, in1_p, low1, high1);
+  if (tem && integer_zerop (tem))
+    return;
+
+  /* If both expressions have the same operand, if we can merge the
+     ranges, and if the range test is always false, then warn.  */
+  if (operand_equal_p (lhs, rhs, 0)
       && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
 		       in1_p, low1, high1)
       && 0 != (tem = build_range_check (UNKNOWN_LOCATION,
-					type, lhs, in_p, low, high)))
+					type, lhs, in_p, low, high))
+      && integer_zerop (tem))
     {
-      if (TREE_CODE (tem) != INTEGER_CST)
-	return;
-
       if (or_op)
         warning_at (location, OPT_Wlogical_op,
                     "logical %<or%> "
@@ -1725,6 +1744,7 @@ warn_if_unused_value (const_tree exp, location_t locus)
 
     case SAVE_EXPR:
     case NON_LVALUE_EXPR:
+    case NOP_EXPR:
       exp = TREE_OPERAND (exp, 0);
       goto restart;
 
@@ -3513,6 +3533,15 @@ binary_op_error (location_t location, enum tree_code code,
 	    type0, type1);
 }
 
+/* Given an expression as a tree, return its original type.  Do this
+   by stripping any conversion that preserves the sign and precision.  */
+static tree
+expr_original_type (tree expr)
+{
+  STRIP_SIGN_NOPS (expr);
+  return TREE_TYPE (expr);
+}
+
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.
@@ -3538,6 +3567,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
   int real1, real2;
   tree primop0, primop1;
   enum tree_code code = *rescode_ptr;
+  location_t loc = EXPR_LOC_OR_HERE (op0);
 
   /* Throw away any conversions to wider types
      already present in the operands.  */
@@ -3758,9 +3788,11 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
       if (TREE_CODE (primop0) != INTEGER_CST)
 	{
 	  if (val == truthvalue_false_node)
-	    warning (OPT_Wtype_limits, "comparison is always false due to limited range of data type");
+	    warning_at (loc, OPT_Wtype_limits,
+			"comparison is always false due to limited range of data type");
 	  if (val == truthvalue_true_node)
-	    warning (OPT_Wtype_limits, "comparison is always true due to limited range of data type");
+	    warning_at (loc, OPT_Wtype_limits,
+			"comparison is always true due to limited range of data type");
 	}
 
       if (val != 0)
@@ -3827,29 +3859,31 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	  && TYPE_UNSIGNED (*restype_ptr))
 	{
 	  tree value = 0;
+	  /* All unsigned values are >= 0, so we warn.  However,
+	     if OP0 is a constant that is >= 0, the signedness of
+	     the comparison isn't an issue, so suppress the
+	     warning.  */
+	  bool warn = 
+	    warn_type_limits && !in_system_header
+	    && !(TREE_CODE (primop0) == INTEGER_CST
+		 && !TREE_OVERFLOW (convert (c_common_signed_type (type),
+					     primop0)))
+	    /* Do not warn for enumeration types.  */
+	    && (TREE_CODE (expr_original_type (primop0)) != ENUMERAL_TYPE);
+	  
 	  switch (code)
 	    {
 	    case GE_EXPR:
-	      /* All unsigned values are >= 0, so we warn.  However,
-		 if OP0 is a constant that is >= 0, the signedness of
-		 the comparison isn't an issue, so suppress the
-		 warning.  */
-	      if (warn_type_limits && !in_system_header
-		  && !(TREE_CODE (primop0) == INTEGER_CST
-		       && !TREE_OVERFLOW (convert (c_common_signed_type (type),
-						   primop0))))
-		warning (OPT_Wtype_limits,
-			 "comparison of unsigned expression >= 0 is always true");
+	      if (warn)
+		warning_at (loc, OPT_Wtype_limits,
+			    "comparison of unsigned expression >= 0 is always true");
 	      value = truthvalue_true_node;
 	      break;
 
 	    case LT_EXPR:
-	      if (warn_type_limits && !in_system_header
-		  && !(TREE_CODE (primop0) == INTEGER_CST
-		       && !TREE_OVERFLOW (convert (c_common_signed_type (type),
-						   primop0))))
-		warning (OPT_Wtype_limits,
-			 "comparison of unsigned expression < 0 is always false");
+	      if (warn)
+		warning_at (loc, OPT_Wtype_limits,
+			    "comparison of unsigned expression < 0 is always false");
 	      value = truthvalue_false_node;
 	      break;
 
@@ -3895,19 +3929,19 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
-      pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+      pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 	       "pointer of type %<void *%> used in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE)
     {
-      pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+      pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 	       "pointer to a function used in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == METHOD_TYPE)
     {
-      pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+      pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 	       "pointer to member function used in arithmetic");
       size_exp = integer_one_node;
     }
@@ -4497,7 +4531,7 @@ c_sizeof_or_alignof_type (location_t loc,
       if (is_sizeof)
 	{
 	  if (complain && (pedantic || warn_pointer_arith))
-	    pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+	    pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 		     "invalid application of %<sizeof%> to a function type");
           else if (!complain)
             return error_mark_node;
@@ -4508,10 +4542,10 @@ c_sizeof_or_alignof_type (location_t loc,
 	  if (complain)
 	    {
 	      if (c_dialect_cxx ())
-		pedwarn (loc, OPT_pedantic, "ISO C++ does not permit "
+		pedwarn (loc, OPT_Wpedantic, "ISO C++ does not permit "
 			 "%<alignof%> applied to a function type");
 	      else
-		pedwarn (loc, OPT_pedantic, "ISO C does not permit "
+		pedwarn (loc, OPT_Wpedantic, "ISO C does not permit "
 			 "%<_Alignof%> applied to a function type");
 	    }
 	  value = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
@@ -4526,7 +4560,7 @@ c_sizeof_or_alignof_type (location_t loc,
 	                   " to %<shared void%> type", op_name);
           else if (type_code == VOID_TYPE
 	           && (pedantic || warn_pointer_arith))
-	    pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+	    pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 		     "invalid application of %qs to a void type", op_name);
         }
       else
@@ -5503,7 +5537,7 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
 
   /* Case ranges are a GNU extension.  */
   if (high_value)
-    pedwarn (loc, OPT_pedantic,
+    pedwarn (loc, OPT_Wpedantic,
 	     "range expressions in switch statements are non-standard");
 
   type = TREE_TYPE (cond);
@@ -5817,7 +5851,7 @@ finish_label_address_expr (tree label, location_t loc)
 {
   tree result;
 
-  pedwarn (input_location, OPT_pedantic, "taking the address of a label is non-standard");
+  pedwarn (input_location, OPT_Wpedantic, "taking the address of a label is non-standard");
 
   if (label == error_mark_node)
     return error_mark_node;
@@ -8483,7 +8517,7 @@ check_function_arguments (const_tree fntype, int nargs, tree *argarray)
 
   /* Check for errors in format strings.  */
 
-  if (warn_format || warn_missing_format_attribute)
+  if (warn_format || warn_suggest_attribute_format)
     check_function_format (TYPE_ATTRIBUTES (fntype), nargs, argarray);
 
   if (warn_format)
@@ -8882,6 +8916,7 @@ static const struct reason_option_codes_t option_codes[] = {
   {CPP_W_NORMALIZE,			OPT_Wnormalized_},
   {CPP_W_INVALID_PCH,			OPT_Winvalid_pch},
   {CPP_W_WARNING_DIRECTIVE,		OPT_Wcpp},
+  {CPP_W_LITERAL_SUFFIX,		OPT_Wliteral_suffix},
   {CPP_W_NONE,				0}
 };
 
@@ -10895,6 +10930,32 @@ build_userdef_literal (tree suffix_id, tree value, tree num_string)
   USERDEF_LITERAL_VALUE (literal) = value;
   USERDEF_LITERAL_NUM_STRING (literal) = num_string;
   return literal;
+}
+
+/* For vector[index], convert the vector to a
+   pointer of the underlying type.  */
+void
+convert_vector_to_pointer_for_subscript (location_t loc,
+					 tree* vecp, tree index)
+{
+  if (TREE_CODE (TREE_TYPE (*vecp)) == VECTOR_TYPE)
+    {
+      tree type = TREE_TYPE (*vecp);
+      tree type1;
+
+      if (TREE_CODE (index) == INTEGER_CST)
+        if (!host_integerp (index, 1)
+            || ((unsigned HOST_WIDE_INT) tree_low_cst (index, 1)
+               >= TYPE_VECTOR_SUBPARTS (type)))
+          warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
+
+      c_common_mark_addressable_vec (*vecp);
+      type = build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
+      type = build_pointer_type (type);
+      type1 = build_pointer_type (TREE_TYPE (*vecp));
+      *vecp = build1 (ADDR_EXPR, type1, *vecp);
+      *vecp = convert (type, *vecp);
+    }
 }
 
 #include "gt-c-family-c-common.h"

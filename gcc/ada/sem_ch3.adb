@@ -7753,21 +7753,27 @@ package body Sem_Ch3 is
 
       if Is_Record_Type (Derived_Type) then
 
-         --  Ekind (Parent_Base) is not necessarily E_Record_Type since
-         --  Parent_Base can be a private type or private extension.
+         declare
+            Parent_Full : Entity_Id;
 
-         if Present (Full_View (Parent_Base)) then
+         begin
+            --  Ekind (Parent_Base) is not necessarily E_Record_Type since
+            --  Parent_Base can be a private type or private extension. Go
+            --  to the full view here to get the E_Record_Type specific flags.
+
+            if Present (Full_View (Parent_Base)) then
+               Parent_Full := Full_View (Parent_Base);
+            else
+               Parent_Full := Parent_Base;
+            end if;
+
             Set_OK_To_Reorder_Components
-              (Derived_Type,
-               OK_To_Reorder_Components (Full_View (Parent_Base)));
+              (Derived_Type, OK_To_Reorder_Components (Parent_Full));
             Set_Reverse_Bit_Order
-              (Derived_Type, Reverse_Bit_Order (Full_View (Parent_Base)));
-         else
-            Set_OK_To_Reorder_Components
-              (Derived_Type, OK_To_Reorder_Components (Parent_Base));
-            Set_Reverse_Bit_Order
-              (Derived_Type, Reverse_Bit_Order (Parent_Base));
-         end if;
+              (Derived_Type, Reverse_Bit_Order (Parent_Full));
+            Set_Reverse_Storage_Order
+              (Derived_Type, Reverse_Storage_Order (Parent_Full));
+         end;
       end if;
 
       --  Direct controlled types do not inherit Finalize_Storage_Only flag

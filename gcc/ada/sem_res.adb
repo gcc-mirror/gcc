@@ -8880,10 +8880,10 @@ package body Sem_Res is
    -------------------
 
    procedure Resolve_Slice (N : Node_Id; Typ : Entity_Id) is
-      Name       : constant Node_Id := Prefix (N);
       Drange     : constant Node_Id := Discrete_Range (N);
+      Name       : constant Node_Id := Prefix (N);
       Array_Type : Entity_Id        := Empty;
-      Index      : Node_Id;
+      Index_Type : Entity_Id;
 
    begin
       if Is_Overloaded (Name) then
@@ -9003,8 +9003,13 @@ package body Sem_Res is
       --  necessary. Else resolve the bounds, and apply needed checks.
 
       if not Is_Entity_Name (Drange) then
-         Index := First_Index (Array_Type);
-         Resolve (Drange, Base_Type (Etype (Index)));
+         if Ekind (Array_Type) = E_String_Literal_Subtype then
+            Index_Type := Etype (String_Literal_Low_Bound (Array_Type));
+         else
+            Index_Type := Etype (First_Index (Array_Type));
+         end if;
+
+         Resolve (Drange, Base_Type (Index_Type));
 
          if Nkind (Drange) = N_Range then
 
@@ -9026,7 +9031,7 @@ package body Sem_Res is
                   and then Entity (Selector_Name (Prefix (N))) =
                                          RTE_Record_Component (RE_Prims_Ptr))
             then
-               Apply_Range_Check (Drange, Etype (Index));
+               Apply_Range_Check (Drange, Index_Type);
             end if;
          end if;
       end if;
@@ -10119,26 +10124,24 @@ package body Sem_Res is
       Set_Is_Constrained (Subtype_Id);
       Set_Etype          (N, Subtype_Id);
 
-      if Is_OK_Static_Expression (Low_Bound) then
-
       --  The low bound is set from the low bound of the corresponding index
       --  type. Note that we do not store the high bound in the string literal
       --  subtype, but it can be deduced if necessary from the length and the
       --  low bound.
 
+      if Is_OK_Static_Expression (Low_Bound) then
          Set_String_Literal_Low_Bound (Subtype_Id, Low_Bound);
 
+      --  If the lower bound is not static we create a range for the string
+      --  literal, using the index type and the known length of the literal.
+      --  The index type is not necessarily Positive, so the upper bound is
+      --  computed as T'Val (T'Pos (Low_Bound) + L - 1).
+
       else
-         --  If the lower bound is not static we create a range for the string
-         --  literal, using the index type and the known length of the literal.
-         --  The index type is not necessarily Positive, so the upper bound is
-         --  computed as  T'Val (T'Pos (Low_Bound) + L - 1)
-
          declare
-            Index_List    : constant List_Id    := New_List;
-            Index_Type    : constant Entity_Id := Etype (First_Index (Typ));
-
-            High_Bound : constant Node_Id :=
+            Index_List : constant List_Id   := New_List;
+            Index_Type : constant Entity_Id := Etype (First_Index (Typ));
+            High_Bound : constant Node_Id   :=
                            Make_Attribute_Reference (Loc,
                              Attribute_Name => Name_Val,
                              Prefix         =>
@@ -10157,9 +10160,9 @@ package body Sem_Res is
                                      String_Length (Strval (N)) - 1))));
 
             Array_Subtype : Entity_Id;
-            Index_Subtype : Entity_Id;
             Drange        : Node_Id;
             Index         : Node_Id;
+            Index_Subtype : Entity_Id;
 
          begin
             if Is_Integer_Type (Index_Type) then
@@ -10214,7 +10217,7 @@ package body Sem_Res is
             Rewrite (N,
               Make_Unchecked_Type_Conversion (Loc,
                 Subtype_Mark => New_Occurrence_Of (Array_Subtype, Loc),
-                Expression => Relocate_Node (N)));
+                Expression   => Relocate_Node (N)));
             Set_Etype (N, Array_Subtype);
          end;
       end if;

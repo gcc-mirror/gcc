@@ -1,0 +1,282 @@
+/* auto-config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Define if building universal (internal helper macro) */
+#undef AC_APPLE_UNIVERSAL_BUILD
+
+/* Have __atomic_compare_exchange for 1 byte integers. */
+#undef HAVE_ATOMIC_CAS_1
+
+/* Have __atomic_compare_exchange for 16 byte integers. */
+#undef HAVE_ATOMIC_CAS_16
+
+/* Have __atomic_compare_exchange for 2 byte integers. */
+#undef HAVE_ATOMIC_CAS_2
+
+/* Have __atomic_compare_exchange for 4 byte integers. */
+#undef HAVE_ATOMIC_CAS_4
+
+/* Have __atomic_compare_exchange for 8 byte integers. */
+#undef HAVE_ATOMIC_CAS_8
+
+/* Have __atomic_exchange for 1 byte integers. */
+#undef HAVE_ATOMIC_EXCHANGE_1
+
+/* Have __atomic_exchange for 16 byte integers. */
+#undef HAVE_ATOMIC_EXCHANGE_16
+
+/* Have __atomic_exchange for 2 byte integers. */
+#undef HAVE_ATOMIC_EXCHANGE_2
+
+/* Have __atomic_exchange for 4 byte integers. */
+#undef HAVE_ATOMIC_EXCHANGE_4
+
+/* Have __atomic_exchange for 8 byte integers. */
+#undef HAVE_ATOMIC_EXCHANGE_8
+
+/* Have __atomic_fetch_add for 1 byte integers. */
+#undef HAVE_ATOMIC_FETCH_ADD_1
+
+/* Have __atomic_fetch_add for 16 byte integers. */
+#undef HAVE_ATOMIC_FETCH_ADD_16
+
+/* Have __atomic_fetch_add for 2 byte integers. */
+#undef HAVE_ATOMIC_FETCH_ADD_2
+
+/* Have __atomic_fetch_add for 4 byte integers. */
+#undef HAVE_ATOMIC_FETCH_ADD_4
+
+/* Have __atomic_fetch_add for 8 byte integers. */
+#undef HAVE_ATOMIC_FETCH_ADD_8
+
+/* Have __atomic_fetch_op for all op for 1 byte integers. */
+#undef HAVE_ATOMIC_FETCH_OP_1
+
+/* Have __atomic_fetch_op for all op for 16 byte integers. */
+#undef HAVE_ATOMIC_FETCH_OP_16
+
+/* Have __atomic_fetch_op for all op for 2 byte integers. */
+#undef HAVE_ATOMIC_FETCH_OP_2
+
+/* Have __atomic_fetch_op for all op for 4 byte integers. */
+#undef HAVE_ATOMIC_FETCH_OP_4
+
+/* Have __atomic_fetch_op for all op for 8 byte integers. */
+#undef HAVE_ATOMIC_FETCH_OP_8
+
+/* Have __atomic_load/store for 1 byte integers. */
+#undef HAVE_ATOMIC_LDST_1
+
+/* Have __atomic_load/store for 16 byte integers. */
+#undef HAVE_ATOMIC_LDST_16
+
+/* Have __atomic_load/store for 2 byte integers. */
+#undef HAVE_ATOMIC_LDST_2
+
+/* Have __atomic_load/store for 4 byte integers. */
+#undef HAVE_ATOMIC_LDST_4
+
+/* Have __atomic_load/store for 8 byte integers. */
+#undef HAVE_ATOMIC_LDST_8
+
+/* Have __atomic_test_and_set for 1 byte integers. */
+#undef HAVE_ATOMIC_TAS_1
+
+/* Have __atomic_test_and_set for 16 byte integers. */
+#undef HAVE_ATOMIC_TAS_16
+
+/* Have __atomic_test_and_set for 2 byte integers. */
+#undef HAVE_ATOMIC_TAS_2
+
+/* Have __atomic_test_and_set for 4 byte integers. */
+#undef HAVE_ATOMIC_TAS_4
+
+/* Have __atomic_test_and_set for 8 byte integers. */
+#undef HAVE_ATOMIC_TAS_8
+
+/* Define to 1 if the target supports __attribute__((alias(...))). */
+#undef HAVE_ATTRIBUTE_ALIAS
+
+/* Define to 1 if the target supports __attribute__((dllexport)). */
+#undef HAVE_ATTRIBUTE_DLLEXPORT
+
+/* Define to 1 if the target supports __attribute__((visibility(...))). */
+#undef HAVE_ATTRIBUTE_VISIBILITY
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define to 1 if the target supports __attribute__((ifunc(...))). */
+#undef HAVE_IFUNC
+
+/* Have support for 1 byte integers. */
+#undef HAVE_INT1
+
+/* Have support for 16 byte integers. */
+#undef HAVE_INT16
+
+/* Have support for 2 byte integers. */
+#undef HAVE_INT2
+
+/* Have support for 4 byte integers. */
+#undef HAVE_INT4
+
+/* Have support for 8 byte integers. */
+#undef HAVE_INT8
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if GNU symbol versioning is used for libatomic. */
+#undef LIBAT_GNU_SYMBOL_VERSIONING
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* The size of `char', as computed by sizeof. */
+#undef SIZEOF_CHAR
+
+/* The size of `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of `short', as computed by sizeof. */
+#undef SIZEOF_SHORT
+
+/* The size of `void *', as computed by sizeof. */
+#undef SIZEOF_VOID_P
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define if you can safely include both <string.h> and <strings.h>. */
+#undef STRING_WITH_STRINGS
+
+/* Version number of package */
+#undef VERSION
+
+/* The word size in bytes of the machine. */
+#undef WORDSIZE
+
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel). */
+#if defined AC_APPLE_UNIVERSAL_BUILD
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
+#else
+# ifndef WORDS_BIGENDIAN
+#  undef WORDS_BIGENDIAN
+# endif
+#endif
+
+#define MAYBE_HAVE_ATOMIC_LDST_1 HAVE_ATOMIC_LDST_1
+
+#define MAYBE_HAVE_ATOMIC_TAS_16 HAVE_ATOMIC_TAS_16
+
+#define MAYBE_HAVE_ATOMIC_EXCHANGE_1 HAVE_ATOMIC_EXCHANGE_1
+
+#define MAYBE_HAVE_ATOMIC_EXCHANGE_2 HAVE_ATOMIC_EXCHANGE_2
+
+#define MAYBE_HAVE_ATOMIC_EXCHANGE_4 HAVE_ATOMIC_EXCHANGE_4
+
+#define MAYBE_HAVE_ATOMIC_EXCHANGE_8 HAVE_ATOMIC_EXCHANGE_8
+
+#define MAYBE_HAVE_ATOMIC_EXCHANGE_16 HAVE_ATOMIC_EXCHANGE_16
+
+#define MAYBE_HAVE_ATOMIC_CAS_1 HAVE_ATOMIC_CAS_1
+
+#define MAYBE_HAVE_ATOMIC_CAS_2 HAVE_ATOMIC_CAS_2
+
+#define MAYBE_HAVE_ATOMIC_CAS_4 HAVE_ATOMIC_CAS_4
+
+#define MAYBE_HAVE_ATOMIC_CAS_8 HAVE_ATOMIC_CAS_8
+
+#define MAYBE_HAVE_ATOMIC_LDST_2 HAVE_ATOMIC_LDST_2
+
+#define MAYBE_HAVE_ATOMIC_CAS_16 HAVE_ATOMIC_CAS_16
+
+#define MAYBE_HAVE_ATOMIC_FETCH_ADD_1 HAVE_ATOMIC_FETCH_ADD_1
+
+#define MAYBE_HAVE_ATOMIC_FETCH_ADD_2 HAVE_ATOMIC_FETCH_ADD_2
+
+#define MAYBE_HAVE_ATOMIC_FETCH_ADD_4 HAVE_ATOMIC_FETCH_ADD_4
+
+#define MAYBE_HAVE_ATOMIC_FETCH_ADD_8 HAVE_ATOMIC_FETCH_ADD_8
+
+#define MAYBE_HAVE_ATOMIC_FETCH_ADD_16 HAVE_ATOMIC_FETCH_ADD_16
+
+#define MAYBE_HAVE_ATOMIC_FETCH_OP_1 HAVE_ATOMIC_FETCH_OP_1
+
+#define MAYBE_HAVE_ATOMIC_FETCH_OP_2 HAVE_ATOMIC_FETCH_OP_2
+
+#define MAYBE_HAVE_ATOMIC_FETCH_OP_4 HAVE_ATOMIC_FETCH_OP_4
+
+#define MAYBE_HAVE_ATOMIC_FETCH_OP_8 HAVE_ATOMIC_FETCH_OP_8
+
+#define MAYBE_HAVE_ATOMIC_LDST_4 HAVE_ATOMIC_LDST_4
+
+#define MAYBE_HAVE_ATOMIC_FETCH_OP_16 HAVE_ATOMIC_FETCH_OP_16
+
+#ifndef WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN 0
+#endif
+
+#define MAYBE_HAVE_ATOMIC_LDST_8 HAVE_ATOMIC_LDST_8
+
+#define MAYBE_HAVE_ATOMIC_LDST_16 HAVE_ATOMIC_LDST_16
+
+#define MAYBE_HAVE_ATOMIC_TAS_1 HAVE_ATOMIC_TAS_1
+
+#define MAYBE_HAVE_ATOMIC_TAS_2 HAVE_ATOMIC_TAS_2
+
+#define MAYBE_HAVE_ATOMIC_TAS_4 HAVE_ATOMIC_TAS_4
+
+#define MAYBE_HAVE_ATOMIC_TAS_8 HAVE_ATOMIC_TAS_8

@@ -138,12 +138,6 @@ static const char* out_movqi_mr_r (rtx, rtx[], int*);
 static const char* out_movhi_mr_r (rtx, rtx[], int*);
 static const char* out_movsi_mr_r (rtx, rtx[], int*);
 
-static int avr_naked_function_p (tree);
-static int interrupt_function_p (tree);
-static int signal_function_p (tree);
-static int avr_OS_task_function_p (tree);
-static int avr_OS_main_function_p (tree);
-static int avr_regs_to_save (HARD_REG_SET *);
 static int get_sequence_length (rtx insns);
 static int sequent_regs_live (void);
 static const char *ptrreg_to_str (int);
@@ -491,7 +485,7 @@ avr_naked_function_p (tree func)
    by the "interrupt" attribute.  */
 
 static int
-interrupt_function_p (tree func)
+avr_interrupt_function_p (tree func)
 {
   return avr_lookup_function_attribute1 (func, "interrupt");
 }
@@ -500,7 +494,7 @@ interrupt_function_p (tree func)
    by the "signal" attribute.  */
 
 static int
-signal_function_p (tree func)
+avr_signal_function_p (tree func)
 {
   return avr_lookup_function_attribute1 (func, "signal");
 }
@@ -519,6 +513,80 @@ static int
 avr_OS_main_function_p (tree func)
 {
   return avr_lookup_function_attribute1 (func, "OS_main");
+}
+
+
+/* Implement `TARGET_SET_CURRENT_FUNCTION'.  */
+/* Sanity cheching for above function attributes.  */
+
+static void
+avr_set_current_function (tree decl)
+{
+  location_t loc;
+  const char *isr;
+
+  if (decl == NULL_TREE
+      || current_function_decl == NULL_TREE
+      || current_function_decl == error_mark_node
+      || cfun->machine->attributes_checked_p)
+    return;
+
+  loc = DECL_SOURCE_LOCATION (decl);
+
+  cfun->machine->is_naked = avr_naked_function_p (decl);
+  cfun->machine->is_signal = avr_signal_function_p (decl);
+  cfun->machine->is_interrupt = avr_interrupt_function_p (decl);
+  cfun->machine->is_OS_task = avr_OS_task_function_p (decl);
+  cfun->machine->is_OS_main = avr_OS_main_function_p (decl);
+
+  isr = cfun->machine->is_interrupt ? "interrupt" : "signal";
+
+  /* Too much attributes make no sense as they request conflicting features. */
+
+  if (cfun->machine->is_OS_task + cfun->machine->is_OS_main
+      + (cfun->machine->is_signal || cfun->machine->is_interrupt) > 1)
+    error_at (loc, "function attributes %qs, %qs and %qs are mutually"
+               " exclusive", "OS_task", "OS_main", isr);
+
+  /* 'naked' will hide effects of 'OS_task' and 'OS_main'.  */
+
+  if (cfun->machine->is_naked
+      && (cfun->machine->is_OS_task || cfun->machine->is_OS_main))
+    warning_at (loc, OPT_Wattributes, "function attributes %qs and %qs have"
+                " no effect on %qs function", "OS_task", "OS_main", "naked");
+
+  if (cfun->machine->is_interrupt || cfun->machine->is_signal)
+    {
+      tree args = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      tree ret = TREE_TYPE (TREE_TYPE (decl));
+      const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      
+      /* Silently ignore 'signal' if 'interrupt' is present.  AVR-LibC startet
+         using this when it switched from SIGNAL and INTERRUPT to ISR.  */
+
+      if (cfun->machine->is_interrupt)
+        cfun->machine->is_signal = 0;
+
+      /* Interrupt handlers must be  void __vector (void)  functions.  */
+
+      if (args && TREE_CODE (TREE_VALUE (args)) != VOID_TYPE)
+        error_at (loc, "%qs function cannot have arguments", isr);
+
+      if (TREE_CODE (ret) != VOID_TYPE)
+        error_at (loc, "%qs function cannot return a value", isr);
+
+      /* If the function has the 'signal' or 'interrupt' attribute, ensure
+         that the name of the function is "__vector_NN" so as to catch
+         when the user misspells the vector name.  */
+
+      if (!STR_PREFIX_P (name, "__vector"))
+        warning_at (loc, 0, "%qs appears to be a misspelled %s handler",
+                    name, isr);
+    }
+
+  /* Avoid the above diagnosis to be printed more than once.  */
+  
+  cfun->machine->attributes_checked_p = 1;
 }
 
 
@@ -570,8 +638,7 @@ static int
 avr_regs_to_save (HARD_REG_SET *set)
 {
   int reg, count;
-  int int_or_sig_p = (interrupt_function_p (current_function_decl)
-                      || signal_function_p (current_function_decl));
+  int int_or_sig_p = cfun->machine->is_interrupt || cfun->machine->is_signal;
 
   if (set)
     CLEAR_HARD_REG_SET (*set);
@@ -683,9 +750,9 @@ avr_simple_epilogue (void)
           && get_frame_size () == 0
           && avr_outgoing_args_size() == 0
           && avr_regs_to_save (NULL) == 0
-          && ! interrupt_function_p (current_function_decl)
-          && ! signal_function_p (current_function_decl)
-          && ! avr_naked_function_p (current_function_decl)
+          && ! cfun->machine->is_interrupt
+          && ! cfun->machine->is_signal
+          && ! cfun->machine->is_naked
           && ! TREE_THIS_VOLATILE (current_function_decl));
 }
 
@@ -770,7 +837,7 @@ avr_incoming_return_addr_rtx (void)
 {
   /* The return address is at the top of the stack.  Note that the push
      was via post-decrement, which means the actual address is off by one.  */
-  return gen_frame_mem (HImode, plus_constant (stack_pointer_rtx, 1));
+  return gen_frame_mem (HImode, plus_constant (Pmode, stack_pointer_rtx, 1));
 }
 
 /*  Helper for expand_prologue.  Emit a push of a byte register.  */
@@ -866,7 +933,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
                     gen_rtx_SET (VOIDmode, (frame_pointer_needed
                                             ? frame_pointer_rtx
                                             : stack_pointer_rtx),
-                                 plus_constant (stack_pointer_rtx,
+                                 plus_constant (Pmode, stack_pointer_rtx,
                                                 -(size + live_seq))));
 
       /* Note that live_seq always contains r28+r29, but the other
@@ -880,7 +947,8 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
         {
           rtx m, r;
 
-          m = gen_rtx_MEM (QImode, plus_constant (stack_pointer_rtx, offset));
+          m = gen_rtx_MEM (QImode, plus_constant (Pmode, stack_pointer_rtx,
+                                                  offset));
           r = gen_rtx_REG (QImode, reg);
           add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (VOIDmode, m, r));
         }
@@ -995,13 +1063,15 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
                             gen_rtx_SET (VOIDmode, fp, stack_pointer_rtx));
             }
 
-          insn = emit_move_insn (my_fp, plus_constant (my_fp, -size));
+          insn = emit_move_insn (my_fp, plus_constant (GET_MODE (my_fp),
+                                                       my_fp, -size));
           if (frame_pointer_needed)
             {
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, fp,
-                                         plus_constant (fp, -size_cfa)));
+                                         plus_constant (Pmode, fp,
+                                                        -size_cfa)));
             }
           
           /* Copy to stack pointer.  Note that since we've already
@@ -1028,7 +1098,8 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-                                         plus_constant (stack_pointer_rtx,
+                                         plus_constant (Pmode,
+                                                        stack_pointer_rtx,
                                                         -size_cfa)));
             }
           
@@ -1047,11 +1118,13 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               start_sequence ();
 
               insn = emit_move_insn (stack_pointer_rtx,
-                                     plus_constant (stack_pointer_rtx, -size));
+                                     plus_constant (Pmode, stack_pointer_rtx,
+                                                    -size));
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
                             gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-                                         plus_constant (stack_pointer_rtx,
+                                         plus_constant (Pmode,
+							stack_pointer_rtx,
                                                         -size_cfa)));
               if (frame_pointer_needed)
                 {
@@ -1090,12 +1163,6 @@ expand_prologue (void)
 
   size = get_frame_size() + avr_outgoing_args_size();
   
-  /* Init cfun->machine.  */
-  cfun->machine->is_naked = avr_naked_function_p (current_function_decl);
-  cfun->machine->is_interrupt = interrupt_function_p (current_function_decl);
-  cfun->machine->is_signal = signal_function_p (current_function_decl);
-  cfun->machine->is_OS_task = avr_OS_task_function_p (current_function_decl);
-  cfun->machine->is_OS_main = avr_OS_main_function_p (current_function_decl);
   cfun->machine->stack_usage = 0;
   
   /* Prologue: naked.  */
@@ -1273,7 +1340,7 @@ expand_epilogue (bool sibcall_p)
       if (size)
         {
           emit_move_insn (frame_pointer_rtx,
-                          plus_constant (frame_pointer_rtx, size));
+                          plus_constant (Pmode, frame_pointer_rtx, size));
         }
         
       emit_insn (gen_epilogue_restores (gen_int_mode (live_seq, HImode)));
@@ -1319,7 +1386,7 @@ expand_epilogue (bool sibcall_p)
       if (!frame_pointer_needed)
         emit_move_insn (fp, stack_pointer_rtx);
 
-      emit_move_insn (my_fp, plus_constant (my_fp, size));
+      emit_move_insn (my_fp, plus_constant (GET_MODE (my_fp), my_fp, size));
 
       /* Copy to stack pointer.  */
 
@@ -1344,7 +1411,7 @@ expand_epilogue (bool sibcall_p)
           start_sequence ();
 
           emit_move_insn (stack_pointer_rtx,
-                          plus_constant (stack_pointer_rtx, size));
+                          plus_constant (Pmode, stack_pointer_rtx, size));
 
           sp_plus_insns = get_insns ();
           end_sequence ();
@@ -2452,17 +2519,17 @@ avr_function_ok_for_sibcall (tree decl_callee, tree exp_callee)
 
   /* Ensure that caller and callee have compatible epilogues */
   
-  if (interrupt_function_p (current_function_decl)
-      || signal_function_p (current_function_decl)
+  if (cfun->machine->is_interrupt
+      || cfun->machine->is_signal
+      || cfun->machine->is_naked
       || avr_naked_function_p (decl_callee)
-      || avr_naked_function_p (current_function_decl)
       /* FIXME: For OS_task and OS_main, we are over-conservative.
          This is due to missing documentation of these attributes
          and what they actually should do and should not do. */
       || (avr_OS_task_function_p (decl_callee)
-          != avr_OS_task_function_p (current_function_decl))
+          != cfun->machine->is_OS_task)
       || (avr_OS_main_function_p (decl_callee)
-          != avr_OS_main_function_p (current_function_decl)))
+          != cfun->machine->is_OS_main))
     {
       return false;
     }
@@ -3476,15 +3543,16 @@ avr_out_load_psi (rtx insn, rtx *op, int *plen)
                                   "mov r27,__tmp_reg__", op, plen, -6);
             }
           
-            avr_asm_len ("adiw r26,%o1"      CR_TAB
-                         "ld r24,X+"         CR_TAB
-                         "ld r25,X+"         CR_TAB
-                         "ld r26,X", op, plen, -4);
+          avr_asm_len ("adiw r26,%o1" CR_TAB
+                       "ld %A0,X+"    CR_TAB
+                       "ld %B0,X+"    CR_TAB
+                       "ld %C0,X", op, plen, -4);
 
-            if (reg_dest != REG_X - 2)
-              avr_asm_len ("sbiw r26,%o1+2", op, plen, 1);
+          if (reg_dest != REG_W
+              && !reg_unused_after (insn, XEXP (base, 0)))
+            avr_asm_len ("sbiw r26,%o1+2", op, plen, 1);
 
-            return "";
+          return "";
         }
       
       if (reg_dest == reg_base)
@@ -6593,7 +6661,7 @@ avr_const_address_lo16 (rtx x)
           const char *name = XSTR (XEXP (XEXP (x, 0), 0), 0);
           
           lo16 = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
-          lo16 = gen_rtx_CONST (Pmode, plus_constant (lo16, offset));
+          lo16 = gen_rtx_CONST (Pmode, plus_constant (Pmode, lo16, offset));
           
           return lo16;
         }
@@ -6646,40 +6714,6 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
     }
   
   return default_assemble_integer (x, size, aligned_p);
-}
-
-
-/* Worker function for ASM_DECLARE_FUNCTION_NAME.  */
-
-void
-avr_asm_declare_function_name (FILE *file, const char *name, tree decl)
-{
-
-  /* If the function has the 'signal' or 'interrupt' attribute, test to
-     make sure that the name of the function is "__vector_NN" so as to
-     catch when the user misspells the interrupt vector name.  */
-
-  if (cfun->machine->is_interrupt)
-    {
-      if (!STR_PREFIX_P (name, "__vector"))
-        {
-          warning_at (DECL_SOURCE_LOCATION (decl), 0,
-                      "%qs appears to be a misspelled interrupt handler",
-                      name);
-        }
-    }
-  else if (cfun->machine->is_signal)
-    {
-      if (!STR_PREFIX_P (name, "__vector"))
-        {
-           warning_at (DECL_SOURCE_LOCATION (decl), 0,
-                       "%qs appears to be a misspelled signal handler",
-                       name);
-        }
-    }
-
-  ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
-  ASM_OUTPUT_LABEL (file, name);
 }
 
 
@@ -10857,6 +10891,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 #define TARGET_FUNCTION_ARG avr_function_arg
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE avr_function_arg_advance
+
+#undef  TARGET_SET_CURRENT_FUNCTION
+#define TARGET_SET_CURRENT_FUNCTION avr_set_current_function
 
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY avr_return_in_memory

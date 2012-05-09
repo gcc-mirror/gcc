@@ -191,9 +191,6 @@ div_if_zero_remainder (enum tree_code code, const_tree arg1, const_tree arg2)
      does the correct thing for POINTER_PLUS_EXPR where we want
      a signed division.  */
   uns = TYPE_UNSIGNED (TREE_TYPE (arg2));
-  if (TREE_CODE (TREE_TYPE (arg2)) == INTEGER_TYPE
-      && TYPE_IS_SIZETYPE (TREE_TYPE (arg2)))
-    uns = false;
 
   quo = double_int_divmod (tree_to_double_int (arg1),
 			   tree_to_double_int (arg2),
@@ -935,8 +932,9 @@ int_binop_types_match_p (enum tree_code code, const_tree type1, const_tree type2
    to produce a new constant.  Return NULL_TREE if we don't know how
    to evaluate CODE at compile-time.  */
 
-tree
-int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2)
+static tree
+int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
+		   int overflowable)
 {
   double_int op1, op2, res, tmp;
   tree t;
@@ -1078,11 +1076,17 @@ int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2)
       return NULL_TREE;
     }
 
-  t = force_fit_type_double (TREE_TYPE (arg1), res, 1,
+  t = force_fit_type_double (TREE_TYPE (arg1), res, overflowable,
 			     ((!uns || is_sizetype) && overflow)
 			     | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2));
 
   return t;
+}
+
+tree
+int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2)
+{
+  return int_const_binop_1 (code, arg1, arg2, 1);
 }
 
 /* Combine two constants ARG1 and ARG2 under operation CODE to produce a new
@@ -1423,8 +1427,10 @@ size_binop_loc (location_t loc, enum tree_code code, tree arg0, tree arg1)
 	    return arg1;
 	}
 
-      /* Handle general case of two integer constants.  */
-      return int_const_binop (code, arg0, arg1);
+      /* Handle general case of two integer constants.  For sizetype
+         constant calculations we always want to know about overflow,
+	 even in the unsigned case.  */
+      return int_const_binop_1 (code, arg0, arg1, -1);
     }
 
   return fold_build2_loc (loc, code, type, arg0, arg1);
@@ -2562,6 +2568,14 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case IMAGPART_EXPR:
 	  return OP_SAME (0);
 
+	case TARGET_MEM_REF:
+	  /* Require equal extra operands and then fall thru to MEM_REF
+	     handling of the two common operands.  */
+	  if (!OP_SAME_WITH_NULL (2)
+	      || !OP_SAME_WITH_NULL (3)
+	      || !OP_SAME_WITH_NULL (4))
+	    return 0;
+	  /* Fallthru.  */
 	case MEM_REF:
 	  /* Require equal access sizes, and similar pointer types.
 	     We can have incomplete types for array references of
@@ -5900,11 +5914,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	 multiple of the other, in which case we replace this with either an
 	 operation or CODE or TCODE.
 
-	 If we have an unsigned type that is not a sizetype, we cannot do
-	 this since it will change the result if the original computation
-	 overflowed.  */
-      if ((TYPE_OVERFLOW_UNDEFINED (ctype)
-	   || (TREE_CODE (ctype) == INTEGER_TYPE && TYPE_IS_SIZETYPE (ctype)))
+	 If we have an unsigned type, we cannot do this since it will change
+	 the result if the original computation overflowed.  */
+      if (TYPE_OVERFLOW_UNDEFINED (ctype)
 	  && ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR)
 	      || (tcode == MULT_EXPR
 		  && code != TRUNC_MOD_EXPR && code != CEIL_MOD_EXPR
@@ -9553,7 +9565,7 @@ get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
   if (code == ADDR_EXPR)
     {
       unsigned int bitalign;
-      bitalign = get_object_alignment_1 (TREE_OPERAND (expr, 0), residue);
+      get_object_alignment_1 (TREE_OPERAND (expr, 0), &bitalign, residue);
       *residue /= BITS_PER_UNIT;
       return bitalign / BITS_PER_UNIT;
     }
@@ -9712,6 +9724,48 @@ fold_addr_of_array_ref_difference (location_t loc, tree type,
 					       diff, esz));
     }
   return NULL_TREE;
+}
+
+/* If the real or vector real constant CST of type TYPE has an exact
+   inverse, return it, else return NULL.  */
+
+static tree
+exact_inverse (tree type, tree cst)
+{
+  REAL_VALUE_TYPE r;
+  tree unit_type, *elts;
+  enum machine_mode mode;
+  unsigned vec_nelts, i;
+
+  switch (TREE_CODE (cst))
+    {
+    case REAL_CST:
+      r = TREE_REAL_CST (cst);
+
+      if (exact_real_inverse (TYPE_MODE (type), &r))
+	return build_real (type, r);
+
+      return NULL_TREE;
+
+    case VECTOR_CST:
+      vec_nelts = VECTOR_CST_NELTS (cst);
+      elts = XALLOCAVEC (tree, vec_nelts);
+      unit_type = TREE_TYPE (type);
+      mode = TYPE_MODE (unit_type);
+
+      for (i = 0; i < vec_nelts; i++)
+	{
+	  r = TREE_REAL_CST (VECTOR_CST_ELT (cst, i));
+	  if (!exact_real_inverse (mode, &r))
+	    return NULL_TREE;
+	  elts[i] = build_real (unit_type, r);
+	}
+
+      return build_vector (type, elts);
+
+    default:
+      return NULL_TREE;
+    }
 }
 
 /* Fold a binary expression of code CODE and type TYPE with operands
@@ -9951,7 +10005,8 @@ fold_binary_loc (location_t loc,
       if (TREE_CODE (arg0) == ADDR_EXPR)
 	{
 	  tem = try_move_mult_to_index (loc, arg0,
-					fold_convert_loc (loc, sizetype, arg1));
+					fold_convert_loc (loc,
+							  ssizetype, arg1));
 	  if (tem)
 	    return fold_convert_loc (loc, type, tem);
 	}
@@ -11442,6 +11497,30 @@ fold_binary_loc (location_t loc,
 	    return fold_convert_loc (loc, type, arg0);
 	}
 
+      /* Fold (X * CST1) & CST2 to zero if we can, or drop known zero
+         bits from CST2.  */
+      if (TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (arg0) == MULT_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	{
+	  int arg1tz
+	    = double_int_ctz (tree_to_double_int (TREE_OPERAND (arg0, 1)));
+	  if (arg1tz > 0)
+	    {
+	      double_int arg1mask, masked;
+	      arg1mask = double_int_not (double_int_mask (arg1tz));
+	      arg1mask = double_int_ext (arg1mask, TYPE_PRECISION (type),
+					 TYPE_UNSIGNED (type));
+	      masked = double_int_and (arg1mask, tree_to_double_int (arg1));
+	      if (double_int_zero_p (masked))
+		return omit_two_operands_loc (loc, type, build_zero_cst (type),
+					      arg0, arg1);
+	      else if (!double_int_equal_p (masked, tree_to_double_int (arg1)))
+		return fold_build2_loc (loc, code, type, op0,
+					double_int_to_tree (type, masked));
+	    }
+	}
+
       /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,
 	 ((A & N) + B) & M -> (A + B) & M
 	 Similarly if (N & M) == 0,
@@ -11774,23 +11853,24 @@ fold_binary_loc (location_t loc,
 	 so only do this if -freciprocal-math.  We can actually
 	 always safely do it if ARG1 is a power of two, but it's hard to
 	 tell if it is or not in a portable manner.  */
-      if (TREE_CODE (arg1) == REAL_CST)
+      if (optimize
+	  && (TREE_CODE (arg1) == REAL_CST
+	      || (TREE_CODE (arg1) == COMPLEX_CST
+		  && COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg1)))
+	      || (TREE_CODE (arg1) == VECTOR_CST
+		  && VECTOR_FLOAT_TYPE_P (TREE_TYPE (arg1)))))
 	{
 	  if (flag_reciprocal_math
-	      && 0 != (tem = const_binop (code, build_real (type, dconst1),
-					  arg1)))
+	      && 0 != (tem = const_binop (code, build_one_cst (type), arg1)))
 	    return fold_build2_loc (loc, MULT_EXPR, type, arg0, tem);
-	  /* Find the reciprocal if optimizing and the result is exact.  */
-	  if (optimize)
+	  /* Find the reciprocal if optimizing and the result is exact.
+	     TODO: Complex reciprocal not implemented.  */
+	  if (TREE_CODE (arg1) != COMPLEX_CST)
 	    {
-	      REAL_VALUE_TYPE r;
-	      r = TREE_REAL_CST (arg1);
-	      if (exact_real_inverse (TYPE_MODE(TREE_TYPE(arg0)), &r))
-		{
-		  tem = build_real (type, r);
-		  return fold_build2_loc (loc, MULT_EXPR, type,
-				      fold_convert_loc (loc, type, arg0), tem);
-		}
+	      tree inverse = exact_inverse (TREE_TYPE (arg0), arg1);
+
+	      if (inverse)
+		return fold_build2_loc (loc, MULT_EXPR, type, arg0, inverse);
 	    }
 	}
       /* Convert A/B/C to A/(B*C).  */
@@ -14388,7 +14468,8 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx, htab_t ht)
 	  fold_checksum_tree (TREE_IMAGPART (expr), ctx, ht);
 	  break;
 	case VECTOR_CST:
-	  fold_checksum_tree (TREE_VECTOR_CST_ELTS (expr), ctx, ht);
+	  for (i = 0; i < (int) VECTOR_CST_NELTS (expr); ++i)
+	    fold_checksum_tree (VECTOR_CST_ELT (expr, i), ctx, ht);
 	  break;
 	default:
 	  break;

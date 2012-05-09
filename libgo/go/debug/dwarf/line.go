@@ -415,6 +415,10 @@ func (d *Data) addLine(lines []mapLineInfo, lineInfo Line, address uint64, line 
 	if newLineInfo {
 		if len(lines) > 0 {
 			sort.Sort(lines[len(lines)-1].addrs)
+			p := &lines[len(lines)-1]
+			if len(p.addrs) > 0 && address > p.addrs[len(p.addrs)-1].pc {
+				p.addrs = append(p.addrs, oneLineInfo{address, p.addrs[len(p.addrs)-1].line})
+			}
 		}
 		lines = append(lines, mapLineInfo{line: lineInfo})
 	}

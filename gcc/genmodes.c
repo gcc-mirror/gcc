@@ -1,5 +1,5 @@
 /* Generate the machine mode enumeration and associated tables.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -360,7 +360,6 @@ complete_mode (struct mode_data *m)
       m->bytesize = m->component->bytesize;
 
       m->ncomponents = 1;
-      m->component = 0;  /* ??? preserve this */
       break;
 
     case MODE_COMPLEX_INT:
@@ -427,7 +426,6 @@ make_complex_modes (enum mode_class cl,
 {
   struct mode_data *m;
   struct mode_data *c;
-  char buf[8];
   enum mode_class cclass = complex_class (cl);
 
   if (cclass == MODE_RANDOM)
@@ -435,43 +433,42 @@ make_complex_modes (enum mode_class cl,
 
   for (m = modes[cl]; m; m = m->next)
     {
+      char *p, *buf;
+      size_t m_len;
+
       /* Skip BImode.  FIXME: BImode probably shouldn't be MODE_INT.  */
       if (m->precision == 1)
 	continue;
 
-      if (strlen (m->name) >= sizeof buf)
-	{
-	  error ("%s:%d:mode name \"%s\" is too long",
-		 m->file, m->line, m->name);
-	  continue;
-	}
+      m_len = strlen (m->name);
+      /* The leading "1 +" is in case we prepend a "C" below.  */
+      buf = (char *) xmalloc (1 + m_len + 1);
 
       /* Float complex modes are named SCmode, etc.
 	 Int complex modes are named CSImode, etc.
          This inconsistency should be eliminated.  */
+      p = 0;
       if (cl == MODE_FLOAT)
 	{
-	  char *p, *q = 0;
-	  strncpy (buf, m->name, sizeof buf);
+	  memcpy (buf, m->name, m_len + 1);
 	  p = strchr (buf, 'F');
-	  if (p == 0)
-	    q = strchr (buf, 'D');
-	  if (p == 0 && q == 0)
+	  if (p == 0 && strchr (buf, 'D') == 0)
 	    {
 	      error ("%s:%d: float mode \"%s\" has no 'F' or 'D'",
 		     m->file, m->line, m->name);
+	      free (buf);
 	      continue;
 	    }
-
-	  if (p != 0)
-	    *p = 'C';
-	  else
-	    snprintf (buf, sizeof buf, "C%s", m->name);
 	}
+      if (p != 0)
+	*p = 'C';
       else
-	snprintf (buf, sizeof buf, "C%s", m->name);
+	{
+	  buf[0] = 'C';
+	  memcpy (buf + 1, m->name, m_len + 1);
+	}
 
-      c = new_mode (cclass, xstrdup (buf), file, line);
+      c = new_mode (cclass, buf, file, line);
       c->component = m;
     }
 }
@@ -823,7 +820,13 @@ calc_wider_mode (void)
 
 	  sortbuf[i] = 0;
 	  for (j = 0; j < i; j++)
-	    sortbuf[j]->next = sortbuf[j]->wider = sortbuf[j + 1];
+	    {
+	      sortbuf[j]->next = sortbuf[j + 1];
+	      if (c == MODE_PARTIAL_INT)
+		sortbuf[j]->wider = sortbuf[j]->component;
+	      else
+		sortbuf[j]->wider = sortbuf[j]->next;
+	    }
 
 	  modes[c] = sortbuf[0];
 	}
@@ -1120,7 +1123,8 @@ emit_mode_inner (void)
 
   for_all_modes (c, m)
     tagged_printf ("%smode",
-		   m->component ? m->component->name : void_mode->name,
+		   c != MODE_PARTIAL_INT && m->component
+		   ? m->component->name : void_mode->name,
 		   m->name);
 
   print_closer ();

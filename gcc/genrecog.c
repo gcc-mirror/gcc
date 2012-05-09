@@ -687,7 +687,6 @@ add_to_sequence (rtx pattern, struct decision_head *last,
   sub = this_decision = new_decision (pos, last);
   place = &this_decision->tests;
 
- restart:
   mode = GET_MODE (pattern);
   code = GET_CODE (pattern);
 
@@ -853,10 +852,6 @@ add_to_sequence (rtx pattern, struct decision_head *last,
       test = new_decision_test (DT_dup, &place);
       test->u.dup = XINT (pattern, 0);
       goto fini;
-
-    case ADDRESS:
-      pattern = XEXP (pattern, 0);
-      goto restart;
 
     default:
       break;

@@ -1499,7 +1499,7 @@ expand_block_move (rtx *operands)
 
 	  set_mem_size (from, 4);
 	  emit_insn (gen_movua (temp, from));
-	  emit_move_insn (src_addr, plus_constant (src_addr, 4));
+	  emit_move_insn (src_addr, plus_constant (Pmode, src_addr, 4));
 	  emit_move_insn (to, temp);
 	  copied += 4;
 	}
@@ -2999,6 +2999,27 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 {
   switch (code)
     {
+      /* The lower-subreg pass decides whether to split multi-word regs
+	 into individual regs by looking at the cost for a SET of certain
+	 modes with the following patterns:
+	   (set (reg) (reg)) 
+	   (set (reg) (const_int 0))
+	 On machines that support vector-move operations a multi-word move
+	 is the same cost as individual reg move.  On SH there is no
+	 vector-move, so we have to provide the correct cost in the number
+	 of move insns to load/store the reg of the mode in question.  */
+    case SET:
+      if (register_operand (SET_DEST (x), VOIDmode)
+	    && (register_operand (SET_SRC (x), VOIDmode)
+		|| satisfies_constraint_Z (SET_SRC (x))))
+	{
+	  const enum machine_mode mode = GET_MODE (SET_DEST (x));
+	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode)
+				  / mov_insn_size (mode, TARGET_SH2A));
+	  return true;
+        }
+      return false;
+
     case CONST_INT:
       if (TARGET_SHMEDIA)
         {
@@ -6584,12 +6605,13 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
 	  x = frame_insn (x);
 	  for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
 	    {
-	      mem = gen_rtx_MEM (SImode, plus_constant (sp_reg, i * 4));
+	      mem = gen_rtx_MEM (SImode, plus_constant (Pmode, sp_reg, i * 4));
 	      reg = gen_rtx_REG (SImode, i);
 	      add_reg_note (x, REG_CFA_OFFSET, gen_rtx_SET (SImode, mem, reg));
 	    }
 
-	  set = gen_rtx_SET (SImode, sp_reg, plus_constant (sp_reg, - 32));
+	  set = gen_rtx_SET (SImode, sp_reg,
+			     plus_constant (Pmode, sp_reg, - 32));
 	  add_reg_note (x, REG_CFA_ADJUST_CFA, set);
 	  emit_insn (gen_blockage ());
 	}
@@ -7817,7 +7839,8 @@ sh_builtin_saveregs (void)
       rtx addr, mask;
 
       regbuf = assign_stack_local (BLKmode, bufsize + UNITS_PER_WORD, 0);
-      addr = copy_to_mode_reg (Pmode, plus_constant (XEXP (regbuf, 0), 4));
+      addr = copy_to_mode_reg (Pmode, plus_constant (Pmode,
+						     XEXP (regbuf, 0), 4));
       mask = copy_to_mode_reg (Pmode, GEN_INT (-8));
       emit_insn (gen_andsi3 (addr, addr, mask));
       regbuf = change_address (regbuf, BLKmode, addr);
@@ -7849,8 +7872,8 @@ sh_builtin_saveregs (void)
      We emit the moves in reverse order so that we can use predecrement.  */
 
   fpregs = copy_to_mode_reg (Pmode,
-			     plus_constant (XEXP (regbuf, 0),
-                                            n_floatregs * UNITS_PER_WORD));
+			     plus_constant (Pmode, XEXP (regbuf, 0),
+					    n_floatregs * UNITS_PER_WORD));
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       rtx mem;
@@ -11777,7 +11800,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	error ("need a call-clobbered target register");
     }
 
-  this_value = plus_constant (this_rtx, delta);
+  this_value = plus_constant (Pmode, this_rtx, delta);
   if (vcall_offset
       && (simple_add || scratch0 != scratch1)
       && strict_memory_address_p (ptr_mode, this_value))
@@ -11803,7 +11826,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       if (!did_load)
 	emit_load_ptr (scratch0, this_rtx);
 
-      offset_addr = plus_constant (scratch0, vcall_offset);
+      offset_addr = plus_constant (Pmode, scratch0, vcall_offset);
       if (strict_memory_address_p (ptr_mode, offset_addr))
 	; /* Do nothing.  */
       else if (! TARGET_SH5 && scratch0 != scratch1)

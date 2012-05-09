@@ -3336,13 +3336,6 @@ package Einfo is
 --       conditions are present. The precondition_wrapper body is the original
 --       entry call, decorated with the given precondition for the entry.
 
---    Primitive_Operations (synthesized)
---       Present in concurrent types, tagged record types and subtypes, tagged
---       private types and tagged incomplete types. For concurrent types whose
---       Corresponding_Record_Type (CRT) is available, returns the list of
---       Direct_Primitive_Operations of its CRT; otherwise returns No_Elist.
---       For all the other types returns the Direct_Primitive_Operations.
-
 --    Predicate_Function (synthesized)
 --       Present in all types. Set for types for which (Has_Predicates is True)
 --       and for which a predicate procedure has been built that tests that the
@@ -3352,6 +3345,13 @@ package Einfo is
 --
 --       Note: the reason this is marked as a synthesized attribute is that the
 --       way this is stored is as an element of the Subprograms_For_Type field.
+
+--    Primitive_Operations (synthesized)
+--       Present in concurrent types, tagged record types and subtypes, tagged
+--       private types and tagged incomplete types. For concurrent types whose
+--       Corresponding_Record_Type (CRT) is available, returns the list of
+--       Direct_Primitive_Operations of its CRT; otherwise returns No_Elist.
+--       For all the other types returns the Direct_Primitive_Operations.
 
 --    Prival (Node17)
 --       Present in private components of protected types. Refers to the entity

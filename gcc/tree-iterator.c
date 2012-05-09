@@ -74,6 +74,13 @@ append_to_statement_list_1 (tree t, tree *list_p)
 	}
       *list_p = list = alloc_stmt_list ();
     }
+  else if (TREE_CODE (list) != STATEMENT_LIST)
+    {
+      tree first = list;
+      *list_p = list = alloc_stmt_list ();
+      i = tsi_last (list);
+      tsi_link_after (&i, first, TSI_CONTINUE_LINKING);
+    }
 
   i = tsi_last (list);
   tsi_link_after (&i, t, TSI_CONTINUE_LINKING);

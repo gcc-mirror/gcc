@@ -507,7 +507,7 @@ struct GTY(()) function {
   struct control_flow_graph *cfg;
 
   /* GIMPLE body for this function.  */
-  struct gimple_seq_d *gimple_body;
+  gimple_seq gimple_body;
 
   /* SSA and dataflow information.  */
   struct gimple_df *gimple_df;

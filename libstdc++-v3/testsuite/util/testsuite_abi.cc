@@ -530,7 +530,7 @@ compare_symbols(const char* baseline_file, const char* test_file,
 	}
     }
 
-  cout << "\n\t\t=== libstdc++-v3 check-abi Summary ===" << endl;
+  cout << "\n\t\t==== libstdc++-v3 check-abi Summary ====" << endl;
   cout << endl;
   cout << "# of added symbols:\t\t " << added_names.size() << endl;
   cout << "# of missing symbols:\t\t " << missing_names.size() << endl;

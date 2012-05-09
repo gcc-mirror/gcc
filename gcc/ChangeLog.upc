@@ -1,3 +1,8 @@
+2012-05-09  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 187347 into gupc branch.
+	Incorporates fix for segfault in tree vectorization pass.
+
 2012-05-04  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* testsuite/lib/upc.exp: Use gupc instead of xgupc driver.
@@ -8,11 +13,10 @@
 2012-04-29  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* config/rs6000/rs6000.c (rs6000_return_in_memory): Conform to
-	PPC ABI. In UPC structure pointer representation, a function
-	returns pointer to shared in memory instead of registers.
-	(rs6000_pass_by_reference): Conform to PPC ABI. In UPC structure
-	pointer representation, pointer to shared function argument
-	must be passed in memory instead of registers.
+	PPC ABI. In the UPC 'struct' pointer-to-shared representation,
+	a function returns a pointer-to-shared in memory instead
+	of in registers.
+	(rs6000_pass_by_reference): Ditto.
 
 2012-04-28  Gary Funck  <gary@intrepid.com>
 

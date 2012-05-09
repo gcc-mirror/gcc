@@ -1,0 +1,22 @@
+2012-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (libatomic.map-sun): Handle objects in
+	libatomic_la_LIBADD.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Regenerate.
+
+2012-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Add $XPCFLAGS to CFLAGS, not $XCFLAGS.
+	* configure: Regenerate.
+
+2012-05-03  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac (AM_MAINTAINER_MODE): New.
+	* acinclude.m4 (LIBAT_TEST_ATOMIC_BUILTIN): Handle compilation
+	failure in gcc_no_link path.
+	* configure, aclocal.m4, Makefile.in: Rebuild.
+
+2012-05-01  Richard Henderson  <rth@redhat.com>
+
+	* Initial commit.

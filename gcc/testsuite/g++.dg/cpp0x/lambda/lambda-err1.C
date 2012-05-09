@@ -4,5 +4,5 @@
 void foo()
 {
   int x[1];
-  [x]{} = 0;			// { dg-error "lambda closure" }
+  [x]{} = 0;			// { dg-error "lambda" }
 }

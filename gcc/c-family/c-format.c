@@ -1005,7 +1005,7 @@ decode_format_type (const char *s)
 /* Check the argument list of a call to printf, scanf, etc.
    ATTRS are the attributes on the function type.  There are NARGS argument
    values in the array ARGARRAY.
-   Also, if -Wmissing-format-attribute,
+   Also, if -Wsuggest-attribute=format,
    warn for calls to vprintf or vscanf in functions with no such format
    attribute themselves.  */
 
@@ -1033,7 +1033,7 @@ check_function_format (tree attrs, int nargs, tree *argarray)
 		params = tree_cons (NULL_TREE, argarray[i], params);
 	      check_format_info (&info, params);
 	    }
-	  if (warn_missing_format_attribute && info.first_arg_num == 0
+	  if (warn_suggest_attribute_format && info.first_arg_num == 0
 	      && (format_types[info.format_type].flags
 		  & (int) FMT_FLAG_ARG_CONVERT))
 	    {
@@ -1063,7 +1063,7 @@ check_function_format (tree attrs, int nargs, tree *argarray)
 			break;
 		    }
 		  if (args != 0)
-		    warning (OPT_Wmissing_format_attribute, "function might "
+		    warning (OPT_Wsuggest_attribute_format, "function might "
 			     "be possible candidate for %qs format attribute",
 			     format_types[info.format_type].name);
 		}
@@ -2424,13 +2424,13 @@ check_format_types (format_wanted_type *types)
 	continue;
       /* If we want 'void *', allow any pointer type.
 	 (Anything else would already have got a warning.)
-	 With -pedantic, only allow pointers to void and to character
+	 With -Wpedantic, only allow pointers to void and to character
 	 types.  */
       if (wanted_type == void_type_node
 	  && (!pedantic || (i == 1 && char_type_flag)))
 	continue;
       /* Don't warn about differences merely in signedness, unless
-	 -pedantic.  With -pedantic, warn if the type is a pointer
+	 -Wpedantic.  With -Wpedantic, warn if the type is a pointer
 	 target and not a character type, and for character types at
 	 a second level of indirection.  */
       if (TREE_CODE (wanted_type) == INTEGER_TYPE

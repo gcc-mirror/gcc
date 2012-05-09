@@ -1553,14 +1553,30 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 
   if (CPP_OPTION (pfile, user_literals))
     {
+      /* According to C++11 [lex.ext]p10, a ud-suffix not starting with an
+	 underscore is ill-formed.  Since this breaks programs using macros
+	 from inttypes.h, we generate a warning and treat the ud-suffix as a
+	 separate preprocessing token.  This approach is under discussion by
+	 the standards committee, and has been adopted as a conforming
+	 extension by other front ends such as clang. */
+      if (ISALPHA (*cur))
+	{
+	  /* Raise a warning, but do not consume subsequent tokens.  */
+	  if (CPP_OPTION (pfile, warn_literal_suffix))
+	    cpp_warning_with_line (pfile, CPP_W_LITERAL_SUFFIX,
+				   token->src_loc, 0,
+				   "invalid suffix on literal; C++11 requires "
+				   "a space between literal and identifier");
+	}
       /* Grab user defined literal suffix.  */
-      if (ISIDST (*cur))
+      else if (*cur == '_')
 	{
 	  type = cpp_userdef_string_add_type (type);
 	  ++cur;
+
+	  while (ISIDNUM (*cur))
+	    ++cur;
 	}
-      while (ISIDNUM (*cur))
-	++cur;
     }
 
   pfile->buffer->cur = cur;
@@ -1668,15 +1684,31 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 
   if (CPP_OPTION (pfile, user_literals))
     {
+      /* According to C++11 [lex.ext]p10, a ud-suffix not starting with an
+	 underscore is ill-formed.  Since this breaks programs using macros
+	 from inttypes.h, we generate a warning and treat the ud-suffix as a
+	 separate preprocessing token.  This approach is under discussion by
+	 the standards committee, and has been adopted as a conforming
+	 extension by other front ends such as clang. */
+      if (ISALPHA (*cur))
+	{
+	  /* Raise a warning, but do not consume subsequent tokens.  */
+	  if (CPP_OPTION (pfile, warn_literal_suffix))
+	    cpp_warning_with_line (pfile, CPP_W_LITERAL_SUFFIX,
+				   token->src_loc, 0,
+				   "invalid suffix on literal; C++11 requires "
+				   "a space between literal and identifier");
+	}
       /* Grab user defined literal suffix.  */
-      if (ISIDST (*cur))
+      else if (*cur == '_')
 	{
 	  type = cpp_userdef_char_add_type (type);
 	  type = cpp_userdef_string_add_type (type);
           ++cur;
+
+	  while (ISIDNUM (*cur))
+	    ++cur;
 	}
-      while (ISIDNUM (*cur))
-	++cur;
     }
 
   pfile->buffer->cur = cur;

@@ -110,9 +110,6 @@ extern void cp_common_init_ts (void);
 #undef LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN
 #define LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN cp_type_quals
 
-#undef LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR
-#define LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR cxx_callgraph_analyze_expr
-
 #undef LANG_HOOKS_MAKE_TYPE
 #define LANG_HOOKS_MAKE_TYPE cxx_make_type
 #undef LANG_HOOKS_TYPE_FOR_MODE

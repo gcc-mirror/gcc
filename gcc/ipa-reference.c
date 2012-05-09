@@ -435,7 +435,7 @@ analyze_function (struct cgraph_node *fn)
   local = init_function_info (fn);
   for (i = 0; ipa_ref_list_reference_iterate (&fn->symbol.ref_list, i, ref); i++)
     {
-      if (ref->refered_type != IPA_REF_VARPOOL)
+      if (!symtab_variable_p (ref->referred))
 	continue;
       var = ipa_ref_varpool_node (ref)->symbol.decl;
       if (ipa_ref_varpool_node (ref)->symbol.externally_visible
@@ -530,9 +530,8 @@ generate_summary (void)
   bm_temp = BITMAP_ALLOC (&local_info_obstack);
 
   /* Process all of the functions next.  */
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
-      analyze_function (node);
+  FOR_EACH_DEFINED_FUNCTION (node)
+    analyze_function (node);
 
   if (dump_file)
     EXECUTE_IF_SET_IN_BITMAP (all_module_statics, 0, index, bi)
@@ -544,7 +543,7 @@ generate_summary (void)
   BITMAP_FREE(bm_temp);
 
   if (dump_file)
-    for (node = cgraph_nodes; node; node = node->next)
+    FOR_EACH_DEFINED_FUNCTION (node)
       if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
 	{
 	  ipa_reference_local_vars_info_t l;
@@ -554,7 +553,7 @@ generate_summary (void)
 	  l = &get_reference_vars_info (node)->local;
 	  fprintf (dump_file,
 		   "\nFunction name:%s/%i:",
-		   cgraph_node_name (node), node->uid);
+		   cgraph_node_asm_name (node), node->symbol.order);
 	  fprintf (dump_file, "\n  locals read: ");
 	  if (l->statics_read)
 	    EXECUTE_IF_SET_IN_BITMAP (l->statics_read,
@@ -593,7 +592,7 @@ read_write_all_from_decl (struct cgraph_node *node, bool * read_all,
       *read_all = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
          fprintf (dump_file, "   %s/%i -> read all\n",
-		  cgraph_node_name (node), node->uid);
+		  cgraph_node_asm_name (node), node->symbol.order);
     }
   else
     {
@@ -603,7 +602,7 @@ read_write_all_from_decl (struct cgraph_node *node, bool * read_all,
       *write_all = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
          fprintf (dump_file, "   %s/%i -> read all, write all\n",
-		  cgraph_node_name (node), node->uid);
+		  cgraph_node_asm_name (node), node->symbol.order);
     }
 }
 
@@ -654,7 +653,7 @@ propagate (void)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Starting cycle with %s/%i\n",
-		  cgraph_node_name (node), node->uid);
+		  cgraph_node_asm_name (node), node->symbol.order);
 
       node_l = &node_info->local;
       node_g = &node_info->global;
@@ -698,7 +697,7 @@ propagate (void)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Visiting %s/%i\n",
-		      cgraph_node_name (w), w->uid);
+		      cgraph_node_asm_name (w), w->symbol.order);
 	  /* When function is overwritable, we can not assume anything.  */
 	  if (cgraph_function_body_availability (w) <= AVAIL_OVERWRITABLE)
 	    read_write_all_from_decl (w, &read_all, &write_all);
@@ -812,7 +811,7 @@ propagate (void)
 	  node_l = &node_info->local;
 	  fprintf (dump_file,
 		   "\nFunction name:%s/%i:",
-		   cgraph_node_name (node), node->uid);
+		   cgraph_node_asm_name (node), node->symbol.order);
 	  fprintf (dump_file, "\n  locals read: ");
 	  if (node_l->statics_read)
 	    EXECUTE_IF_SET_IN_BITMAP (node_l->statics_read,
@@ -838,7 +837,7 @@ propagate (void)
 		get_reference_vars_info (w);
 	      ipa_reference_local_vars_info_t w_l = &w_ri->local;
 	      fprintf (dump_file, "\n  next cycle: %s/%i ",
-		       cgraph_node_name (w), w->uid);
+		       cgraph_node_asm_name (w), w->symbol.order);
 	      fprintf (dump_file, "\n    locals read: ");
 	      if (w_l->statics_read)
 		EXECUTE_IF_SET_IN_BITMAP (w_l->statics_read,
@@ -884,13 +883,13 @@ propagate (void)
     }
 
   /* Cleanup. */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
       ipa_reference_vars_info_t node_info;
       ipa_reference_global_vars_info_t node_g;
       ipa_reference_optimization_summary_t opt;
 
-      if (!node->analyzed || node->alias)
+      if (node->alias)
         continue;
 
       node_info = get_reference_vars_info (node);
@@ -1149,7 +1148,7 @@ ipa_reference_read_optimization_summary (void)
 	      if (dump_file)
 		fprintf (dump_file,
 			 "\nFunction name:%s/%i:\n  static not read:",
-			 cgraph_node_name (node), node->uid);
+			 cgraph_node_asm_name (node), node->symbol.order);
 
 	      /* Set the statics not read.  */
 	      v_count = streamer_read_hwi (ib);

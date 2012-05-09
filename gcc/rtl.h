@@ -1643,8 +1643,7 @@ extern int ceil_log2 (unsigned HOST_WIDE_INT);
 
 /* In explow.c */
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, enum machine_mode);
-extern rtx plus_constant (rtx, HOST_WIDE_INT);
-extern rtx plus_constant_mode (enum machine_mode, rtx, HOST_WIDE_INT);
+extern rtx plus_constant (enum machine_mode, rtx, HOST_WIDE_INT);
 
 /* In rtl.c */
 extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
@@ -1900,6 +1899,7 @@ typedef struct replace_label_data
   bool update_label_nuses;
 } replace_label_data;
 
+extern enum machine_mode get_address_mode (rtx mem);
 extern int rtx_addr_can_trap_p (const_rtx);
 extern bool nonzero_address_p (const_rtx);
 extern int rtx_unstable_p (const_rtx);
@@ -2526,6 +2526,9 @@ extern void init_expmed (void);
 extern void expand_inc (rtx, rtx);
 extern void expand_dec (rtx, rtx);
 
+/* In lower-subreg.c */
+extern void init_lower_subreg (void);
+
 /* In gcse.c */
 extern bool can_copy_p (enum machine_mode);
 extern bool can_assign_to_reg_without_clobbers_p (rtx);
@@ -2597,7 +2600,7 @@ extern void init_alias_analysis (void);
 extern void end_alias_analysis (void);
 extern void vt_equate_reg_base_value (const_rtx, const_rtx);
 extern bool memory_modified_in_insn_p (const_rtx, const_rtx);
-extern rtx find_base_term (rtx);
+extern bool may_be_sp_based_p (rtx);
 extern rtx gen_hard_reg_clobber (enum machine_mode, unsigned int);
 extern rtx get_reg_known_value (unsigned int);
 extern bool get_reg_known_equiv_p (unsigned int);

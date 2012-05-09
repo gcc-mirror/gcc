@@ -1136,6 +1136,8 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 	case 'E':
 	case 'd':
 	case 'D':
+	case 'q':
+	case 'Q':
 	  push_char (dtp, 'e');
 	  goto exp1;
 
@@ -1449,6 +1451,8 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 	case 'e':
 	case 'D':
 	case 'd':
+	case 'Q':
+	case 'q':
 	  goto exp1;
 
 	case '+':
@@ -1546,6 +1550,8 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 	case 'e':
 	case 'D':
 	case 'd':
+	case 'Q':
+	case 'q':
 	  goto exp1;
 
 	case '+':

@@ -545,6 +545,7 @@ typedef struct _stmt_vec_info {
 
   /* For loads only, true if this is a gather load.  */
   bool gather_p;
+  bool stride_load_p;
 } *stmt_vec_info;
 
 /* Access Functions.  */
@@ -559,6 +560,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_VECTORIZABLE(S)         (S)->vectorizable
 #define STMT_VINFO_DATA_REF(S)             (S)->data_ref_info
 #define STMT_VINFO_GATHER_P(S)		   (S)->gather_p
+#define STMT_VINFO_STRIDE_LOAD_P(S)	   (S)->stride_load_p
 
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_base_address
 #define STMT_VINFO_DR_INIT(S)              (S)->dr_init
@@ -805,10 +807,10 @@ extern LOC vect_loop_location;
    in tree-vect-loop-manip.c.  */
 extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
-extern void vect_loop_versioning (loop_vec_info, bool, tree *, gimple_seq *);
+extern void vect_loop_versioning (loop_vec_info, unsigned int, bool);
 extern void vect_do_peeling_for_loop_bound (loop_vec_info, tree *,
-                                            tree, gimple_seq);
-extern void vect_do_peeling_for_alignment (loop_vec_info);
+					    unsigned int, bool);
+extern void vect_do_peeling_for_alignment (loop_vec_info, unsigned int, bool);
 extern LOC find_loop_location (struct loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 
@@ -875,6 +877,7 @@ extern bool vect_analyze_data_ref_accesses (loop_vec_info, bb_vec_info);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern tree vect_check_gather (gimple, loop_vec_info, tree *, tree *,
 			       int *);
+extern bool vect_check_strided_load (gimple, loop_vec_info, tree *, tree *);
 extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info, int *);
 extern tree vect_create_data_ref_ptr (gimple, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,

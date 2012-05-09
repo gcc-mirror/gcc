@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2135,7 +2135,18 @@ package body Layout is
                      --  others case.
 
                      if No (RM_Siz_Expr) then
-                        RM_Siz_Expr := Bits_To_SU (RM_SizV);
+
+                        --  If this is the only variant and the size is a
+                        --  literal, then use bit size as is, otherwise convert
+                        --  to storage units and continue to the next variant.
+
+                        if No (Prev (Var))
+                          and then Nkind (RM_SizV) = N_Integer_Literal
+                        then
+                           RM_Siz_Expr := RM_SizV;
+                        else
+                           RM_Siz_Expr := Bits_To_SU (RM_SizV);
+                        end if;
 
                      --  Otherwise construct the appropriate test
 

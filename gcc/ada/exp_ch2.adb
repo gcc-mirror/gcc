@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -723,6 +723,10 @@ package body Exp_Ch2 is
    --    typ!(recobj).rec.all'Constrained
 
    --  where rec is a selector whose Entry_Formal link points to the formal
+
+   --  If the type of the entry parameter has a representation clause, then an
+   --  extra temp is involved (see below).
+
    --  For a formal of a task entity, the formal is rewritten as a local
    --  renaming.
 
@@ -760,10 +764,30 @@ package body Exp_Ch2 is
       else
          if Nkind (N) = N_Explicit_Dereference then
             declare
-               P : constant Node_Id := Prefix (N);
-               S : Node_Id;
+               P    : Node_Id := Prefix (N);
+               S    : Node_Id;
+               E    : Entity_Id;
+               Decl : Node_Id;
 
             begin
+               --  If the type of an entry parameter has a representation
+               --  clause, then the prefix is not a selected component, but
+               --  instead a reference to a temp pointing at the selected
+               --  component. In this case, set P to be the initial value of
+               --  that temp.
+
+               if Nkind (P) = N_Identifier then
+                  E := Entity (P);
+
+                  if Ekind (E) = E_Constant then
+                     Decl := Parent (E);
+
+                     if Nkind (Decl) = N_Object_Declaration then
+                        P := Expression (Decl);
+                     end if;
+                  end if;
+               end if;
+
                if Nkind (P) = N_Selected_Component then
                   S := Selector_Name (P);
 

@@ -30,43 +30,12 @@ type NetlinkRouteRequest struct {
 
 func (rr *NetlinkRouteRequest) toWireFormat() []byte {
 	b := make([]byte, rr.Header.Len)
-	if BigEndian {
-		b[0] = byte(rr.Header.Len >> 24)
-		b[1] = byte(rr.Header.Len >> 16)
-		b[2] = byte(rr.Header.Len >> 8)
-		b[3] = byte(rr.Header.Len)
-		b[4] = byte(rr.Header.Type >> 8)
-		b[5] = byte(rr.Header.Type)
-		b[6] = byte(rr.Header.Flags >> 8)
-		b[7] = byte(rr.Header.Flags)
-		b[8] = byte(rr.Header.Seq >> 24)
-		b[9] = byte(rr.Header.Seq >> 16)
-		b[10] = byte(rr.Header.Seq >> 8)
-		b[11] = byte(rr.Header.Seq)
-		b[12] = byte(rr.Header.Pid >> 24)
-		b[13] = byte(rr.Header.Pid >> 16)
-		b[14] = byte(rr.Header.Pid >> 8)
-		b[15] = byte(rr.Header.Pid)
-		b[16] = byte(rr.Data.Family)
-	} else {
-		b[0] = byte(rr.Header.Len)
-		b[1] = byte(rr.Header.Len >> 8)
-		b[2] = byte(rr.Header.Len >> 16)
-		b[3] = byte(rr.Header.Len >> 24)
-		b[4] = byte(rr.Header.Type)
-		b[5] = byte(rr.Header.Type >> 8)
-		b[6] = byte(rr.Header.Flags)
-		b[7] = byte(rr.Header.Flags >> 8)
-		b[8] = byte(rr.Header.Seq)
-		b[9] = byte(rr.Header.Seq >> 8)
-		b[10] = byte(rr.Header.Seq >> 16)
-		b[11] = byte(rr.Header.Seq >> 24)
-		b[12] = byte(rr.Header.Pid)
-		b[13] = byte(rr.Header.Pid >> 8)
-		b[14] = byte(rr.Header.Pid >> 16)
-		b[15] = byte(rr.Header.Pid >> 24)
-		b[16] = byte(rr.Data.Family)
-	}
+	*(*uint32)(unsafe.Pointer(&b[0:4][0])) = rr.Header.Len
+	*(*uint16)(unsafe.Pointer(&b[4:6][0])) = rr.Header.Type
+	*(*uint16)(unsafe.Pointer(&b[6:8][0])) = rr.Header.Flags
+	*(*uint32)(unsafe.Pointer(&b[8:12][0])) = rr.Header.Seq
+	*(*uint32)(unsafe.Pointer(&b[12:16][0])) = rr.Header.Pid
+	b[16] = byte(rr.Data.Family)
 	return b
 }
 

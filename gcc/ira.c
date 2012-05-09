@@ -2238,18 +2238,22 @@ setup_preferred_alternate_classes_for_new_pseudos (int start)
 }
 
 
+/* The number of entries allocated in teg_info.  */
+static int allocated_reg_info_size;
 
 /* Regional allocation can create new pseudo-registers.  This function
    expands some arrays for pseudo-registers.  */
 static void
-expand_reg_info (int old_size)
+expand_reg_info (void)
 {
   int i;
   int size = max_reg_num ();
 
   resize_reg_info ();
-  for (i = old_size; i < size; i++)
+  for (i = allocated_reg_info_size; i < size; i++)
     setup_reg_classes (i, GENERAL_REGS, ALL_REGS, GENERAL_REGS);
+  setup_preferred_alternate_classes_for_new_pseudos (allocated_reg_info_size);
+  allocated_reg_info_size = size;
 }
 
 /* Return TRUE if there is too high register pressure in the function.
@@ -3983,7 +3987,8 @@ find_moveable_pseudos (void)
 
   last_moveable_pseudo = max_reg_num ();
 
-  fix_reg_equiv_init();
+  fix_reg_equiv_init ();
+  expand_reg_info ();
   regstat_free_n_sets_and_refs ();
   regstat_free_ri ();
   regstat_init_n_sets_and_refs ();
@@ -4043,7 +4048,6 @@ static int saved_flag_ira_share_spill_slots;
 static void
 ira (FILE *f)
 {
-  int allocated_reg_info_size;
   bool loops_p;
   int max_regno_before_ira, ira_max_point_before_emit;
   int rebuild_p;
@@ -4120,9 +4124,10 @@ ira (FILE *f)
 	}
     }
 
+  allocated_reg_info_size = max_reg_num ();
   find_moveable_pseudos ();
 
-  max_regno_before_ira = allocated_reg_info_size = max_reg_num ();
+  max_regno_before_ira = max_reg_num ();
   ira_setup_eliminable_regset ();
 
   ira_overall_cost = ira_reg_cost = ira_mem_cost = 0;
@@ -4168,10 +4173,7 @@ ira (FILE *f)
 	ira_initiate_assign ();
       else
 	{
-	  expand_reg_info (allocated_reg_info_size);
-	  setup_preferred_alternate_classes_for_new_pseudos
-	    (allocated_reg_info_size);
-	  allocated_reg_info_size = max_regno;
+	  expand_reg_info ();
 
 	  if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
 	    fprintf (ira_dump_file, "Flattening IR\n");

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-optimized" } */
+/* { dg-options "-O -fdump-tree-ifcombine" } */
 
 int test1 (int i, int j)
 {
@@ -11,5 +11,5 @@ int test1 (int i, int j)
 
 /* The above should be optimized to a i > j test by ifcombine.  */
 
-/* { dg-final { scan-tree-dump " > " "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
+/* { dg-final { scan-tree-dump " > " "ifcombine" } } */
+/* { dg-final { cleanup-tree-dump "ifcombine" } } */

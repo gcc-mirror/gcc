@@ -147,11 +147,25 @@ gfc_vtable_copy_get (tree decl)
 #undef VTABLE_COPY_FIELD
 
 
+/* Obtain the vptr of the last class reference in an expression.  */
+
+tree
+gfc_get_vptr_from_expr (tree expr)
+{
+  tree tmp = expr;
+  while (tmp && !GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
+    tmp = TREE_OPERAND (tmp, 0);
+  tmp = gfc_class_vptr_get (tmp);
+  return tmp;
+}
+ 
+
 /* Takes a derived type expression and returns the address of a temporary
-   class object of the 'declared' type.  */ 
-static void
+   class object of the 'declared' type.  If vptr is not NULL, this is
+   used for the temporary class object.  */ 
+void
 gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
-			   gfc_typespec class_ts)
+			   gfc_typespec class_ts, tree vptr)
 {
   gfc_symbol *vtab;
   gfc_ss *ss;
@@ -167,11 +181,19 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
   /* Set the vptr.  */
   ctree =  gfc_class_vptr_get (var);
 
-  /* Remember the vtab corresponds to the derived type
-     not to the class declared type.  */
-  vtab = gfc_find_derived_vtab (e->ts.u.derived);
-  gcc_assert (vtab);
-  tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
+  if (vptr != NULL_TREE)
+    {
+      /* Use the dynamic vptr.  */
+      tmp = vptr;
+    }
+  else
+    {
+      /* In this case the vtab corresponds to the derived type and the
+	 vptr must point to it.  */
+      vtab = gfc_find_derived_vtab (e->ts.u.derived);
+      gcc_assert (vtab);
+      tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
+    }
   gfc_add_modify (&parmse->pre, ctree,
 		  fold_convert (TREE_TYPE (ctree), tmp));
 
@@ -579,6 +601,19 @@ assign:
 
 
 /* End of prototype trans-class.c  */
+
+
+static void
+realloc_lhs_warning (bt type, bool array, locus *where)
+{
+  if (array && type != BT_CLASS && type != BT_DERIVED
+      && gfc_option.warn_realloc_lhs)
+    gfc_warning ("Code for reallocating the allocatable array at %L will "
+		 "be added", where);
+  else if (gfc_option.warn_realloc_lhs_all)
+    gfc_warning ("Code for reallocating the allocatable variable at %L "
+		 "will be added", where);
+}
 
 
 static tree gfc_trans_structure_assign (tree dest, gfc_expr * expr);
@@ -3518,7 +3553,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  /* The derived type needs to be converted to a temporary
 	     CLASS object.  */
 	  gfc_init_se (&parmse, se);
-	  gfc_conv_derived_to_class (&parmse, e, fsym->ts);
+	  gfc_conv_derived_to_class (&parmse, e, fsym->ts, NULL);
 	}
       else if (se->ss && se->ss->info->useflags)
 	{
@@ -6479,6 +6514,8 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
 	&& !(expr2->value.function.esym
 	    && expr2->value.function.esym->result->attr.allocatable))
     {
+      realloc_lhs_warning (expr1->ts.type, true, &expr1->where);
+
       if (!expr2->value.function.isym)
 	{
 	  realloc_lhs_loop_for_fcn_call (&se, &expr1->where, &ss, &loop);
@@ -6740,6 +6777,8 @@ alloc_scalar_allocatable_for_assignment (stmtblock_t *block,
   if (!expr2 || expr2->rank)
     return;
 
+  realloc_lhs_warning (expr2->ts.type, false, &expr2->where);
+
   /* Since this is a scalar lhs, we can afford to do this.  That is,
      there is no risk of side effects being repeated.  */
   gfc_init_se (&lse, NULL);
@@ -6988,7 +7027,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     {
       /* F2003: Add the code for reallocation on assignment.  */
       if (gfc_option.flag_realloc_lhs
-	    && is_scalar_reallocatable_lhs (expr1))
+	  && is_scalar_reallocatable_lhs (expr1))
 	alloc_scalar_allocatable_for_assignment (&block, rse.string_length,
 						 expr1, expr2);
 
@@ -7031,8 +7070,10 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       if (gfc_option.flag_realloc_lhs
 	    && gfc_is_reallocatable_lhs (expr1)
 	    && !gfc_expr_attr (expr1).codimension
-	    && !gfc_is_coindexed (expr1))
+	    && !gfc_is_coindexed (expr1)
+	    && expr2->rank)
 	{
+	  realloc_lhs_warning (expr1->ts.type, true, &expr1->where);
 	  ompws_flags &= ~OMPWS_SCALARIZER_WS;
 	  tmp = gfc_alloc_allocatable_for_assignment (&loop, expr1, expr2);
 	  if (tmp != NULL_TREE)

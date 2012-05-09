@@ -667,6 +667,24 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
   if (!outcome)
     return false;
 
+  /* If cand->insn has been already modified, update cand->mode to a wider
+     mode if possible, or punt.  */
+  if (state->modified[INSN_UID (cand->insn)].kind != EXT_MODIFIED_NONE)
+    {
+      enum machine_mode mode;
+      rtx set;
+
+      if (state->modified[INSN_UID (cand->insn)].kind
+	  != (cand->code == ZERO_EXTEND
+	      ? EXT_MODIFIED_ZEXT : EXT_MODIFIED_SEXT)
+	  || state->modified[INSN_UID (cand->insn)].mode != cand->mode
+	  || (set = single_set (cand->insn)) == NULL_RTX)
+	return false;
+      mode = GET_MODE (SET_DEST (set));
+      gcc_assert (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (cand->mode));
+      cand->mode = mode;
+    }
+
   merge_successful = true;
 
   /* Go through the defs vector and try to merge all the definitions

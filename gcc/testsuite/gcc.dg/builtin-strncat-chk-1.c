@@ -1,7 +1,7 @@
 /* Test whether buffer overflow warnings for __strncat_chk builtin
    are emitted properly.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -std=gnu99" } */
+/* { dg-options "-O2 -std=gnu99 -ftrack-macro-expansion=0" } */
 
 extern void abort (void);
 

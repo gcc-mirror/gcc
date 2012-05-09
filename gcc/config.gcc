@@ -1228,7 +1228,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 		# Assume modern glibc
 		default_gnu_indirect_function=yes
 		if test x$enable_targets = xall; then
-			tm_file="${tm_file} i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h i386/linux64.h"
+			tm_file="${tm_file} i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h i386/linux-common.h i386/linux64.h"
 			tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 			tmake_file="${tmake_file} i386/t-linux64"
 			x86_multilibs="${with_multilib_list}"
@@ -1263,7 +1263,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 				;;
 			esac
 		else
-			tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h i386/linux.h"
+			tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h i386/linux-common.h i386/linux.h"
 		fi
 		;;
 	i[34567]86-*-knetbsd*-gnu)
@@ -1285,7 +1285,7 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 		 i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h"
 	case ${target} in
 	x86_64-*-linux*)
-		tm_file="${tm_file} linux.h i386/linux64.h"
+		tm_file="${tm_file} linux.h i386/linux-common.h i386/linux64.h"
 		# Assume modern glibc
 		default_gnu_indirect_function=yes
 	  	;;
@@ -1712,7 +1712,7 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 mips64*-*-linux* | mipsisa64*-*-linux*)
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/gnu-user64.h mips/linux64.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/gnu-user64.h mips/linux64.h mips/linux-common.h"
 	tmake_file="${tmake_file} mips/t-linux64"
 	tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 	case ${target} in
@@ -1738,6 +1738,7 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 		tm_file="${tm_file} mips/gnu-user64.h mips/linux64.h"
 		tmake_file="${tmake_file} mips/t-linux64"
 	fi
+	tm_file="${tm_file} mips/linux-common.h"
 	case ${target} in
         mipsisa32r2*)
 		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33"

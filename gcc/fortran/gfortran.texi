@@ -576,10 +576,10 @@ environment variables.
 Malformed environment variables are silently ignored.
 
 @menu
+* TMPDIR:: Directory for scratch files
 * GFORTRAN_STDIN_UNIT:: Unit number for standard input
 * GFORTRAN_STDOUT_UNIT:: Unit number for standard output
 * GFORTRAN_STDERR_UNIT:: Unit number for standard error
-* GFORTRAN_TMPDIR:: Directory for scratch files
 * GFORTRAN_UNBUFFERED_ALL:: Do not buffer I/O for all units.
 * GFORTRAN_UNBUFFERED_PRECONNECTED:: Do not buffer I/O for preconnected units.
 * GFORTRAN_SHOW_LOCUS::  Show location for runtime errors
@@ -589,6 +589,27 @@ Malformed environment variables are silently ignored.
 * GFORTRAN_CONVERT_UNIT::  Set endianness for unformatted I/O
 * GFORTRAN_ERROR_BACKTRACE:: Show backtrace on run-time errors
 @end menu
+
+@node TMPDIR
+@section @env{TMPDIR}---Directory for scratch files
+
+When opening a file with @code{STATUS='SCRATCH'}, GNU Fortran tries to
+create the file in one of the potential directories by testing each
+directory in the order below.
+
+@enumerate
+@item
+The environment variable @env{TMPDIR}, if it exists.
+
+@item
+On the MinGW target, the directory returned by the @code{GetTempPath}
+function. Alternatively, on the Cygwin target, the @env{TMP} and
+@env{TEMP} environment variables, if they exist, in that order.
+
+@item
+The @code{P_tmpdir} macro if it is defined, otherwise the directory
+@file{/tmp}.
+@end enumerate
 
 @node GFORTRAN_STDIN_UNIT
 @section @env{GFORTRAN_STDIN_UNIT}---Unit number for standard input
@@ -610,14 +631,6 @@ The default value is 6.
 This environment variable can be used to select the unit number
 preconnected to standard error.  This must be a positive integer.
 The default value is 0.
-
-@node GFORTRAN_TMPDIR
-@section @env{GFORTRAN_TMPDIR}---Directory for scratch files
-
-This environment variable controls where scratch files are
-created.  If this environment variable is missing,
-GNU Fortran searches for the environment variable @env{TMP}, then @env{TEMP}.
-If these are missing, the default is @file{/tmp}.
 
 @node GFORTRAN_UNBUFFERED_ALL
 @section @env{GFORTRAN_UNBUFFERED_ALL}---Do not buffer I/O on all units

@@ -3685,19 +3685,20 @@ does not provide a definition that will confuse @command{configure}.
 If this error occurs during stage2 or later, then the problem most likely
 is the version of Make (see above).
 
-The native @command{as} and @command{ld} are recommended for bootstrapping
-on AIX@.  The GNU Assembler, GNU Linker, and GNU Binutils version 2.20
-is required to bootstrap on AIX 5@.  The native AIX tools do
-interoperate with GCC@.
+The native @command{as} and @command{ld} are recommended for
+bootstrapping on AIX@.  The GNU Assembler, GNU Linker, and GNU
+Binutils version 2.20 is the minimum level that supports bootstrap on
+AIX 5@.  The GNU Assembler has not been updated to support AIX 6@ or
+AIX 7.  The native AIX tools do interoperate with GCC@.
 
 AIX 5.3 TL10, AIX 6.1 TL05 and AIX 7.1 TL00 introduced an AIX
 assembler change that sometimes produces corrupt assembly files
 causing AIX linker errors.  The bug breaks GCC bootstrap on AIX and
 can cause compilation failures with existing GCC installations.  An
 AIX iFix for AIX 5.3 is available (APAR IZ98385 for AIX 5.3 TL10, APAR
-IZ98477 for AIX 5.3 TL11 and IZ98134 for AIX 5.3 TL12).  Fixes for AIX
-6.1 (APAR IZ98732 for AIX 6.1 TL05 and APAR IZ98861 for AIX 6.1 TL06)
-and AIX 7.1 are in verification and packaging phases.
+IZ98477 for AIX 5.3 TL11 and IZ98134 for AIX 5.3 TL12). AIX 5.3 TL11 SP8,
+AIX 5.3 TL12 SP5, AIX 6.1 TL04 SP11, AIX 6.1 TL05 SP7, AIX 6.1 TL06 SP6,
+AIX 6.1 TL07 and AIX 7.1 TL01 should include the fix.
 
 Building @file{libstdc++.a} requires a fix for an AIX Assembler bug
 APAR IY26685 (AIX 4.3) or APAR IY25528 (AIX 5.1).  It also requires a

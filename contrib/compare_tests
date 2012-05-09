@@ -55,8 +55,8 @@ trap "rm -f $tmps" 0 1 2 3 5 9 13 15
 exit_status=0
 
 if [ -d "$1" -a -d "$2" ] ; then
-	find "$1" -name '*.sum' >$lst1
-	find "$2" -name '*.sum' >$lst2
+	find "$1/" -name '*.sum' >$lst1
+	find "$2/" -name '*.sum' >$lst2
 	echo "# Comparing directories"
 	echo "## Dir1=$1: `cat $lst1 | wc -l` sum files"
 	echo "## Dir2=$2: `cat $lst2 | wc -l` sum files"

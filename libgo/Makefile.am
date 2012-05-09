@@ -654,9 +654,9 @@ go_net_sockoptip_file = go/net/sockoptip_linux.go
 else
 if LIBGO_IS_SOLARIS
 go_net_cgo_file = go/net/cgo_linux.go
-go_net_sock_file = go/net/sock_linux.go
-go_net_sockopt_file = go/net/sockopt_linux.go
-go_net_sockoptip_file = go/net/sockoptip_linux.go
+go_net_sock_file = go/net/sock_solaris.go
+go_net_sockopt_file = go/net/sockopt_bsd.go
+go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_solaris.go
 else
 if LIBGO_IS_FREEBSD
 go_net_cgo_file = go/net/cgo_bsd.go
@@ -1559,7 +1559,6 @@ s-syscall_arch: Makefile
 	echo "package syscall" > syscall_arch.go.tmp
 	echo 'const ARCH = "'$(GOARCH)'"' >> syscall_arch.go.tmp
 	echo 'const OS = "'$(GOOS)'"' >> syscall_arch.go.tmp
-	echo 'const BigEndian = $(GO_BIGENDIAN)' >> syscall_arch.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change syscall_arch.go.tmp syscall_arch.go
 	$(STAMP) $@
 
@@ -2855,6 +2854,7 @@ log/syslog.lo.dep: $(go_log_syslog_files)
 log/syslog.lo: $(go_log_syslog_files)
 	$(BUILDPACKAGE)
 log/syslog/syslog_c.lo: $(go_syslog_c_files) log/syslog.lo
+	@$(MKDIR_P) log/syslog
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/log/syslog/syslog_c.c
 log/syslog/check: $(CHECK_DEPS)
 	@$(MKDIR_P) log/syslog

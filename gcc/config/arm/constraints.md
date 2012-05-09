@@ -260,9 +260,9 @@
 
 (define_constraint "Dn"
  "@internal
-  In ARM/Thumb-2 state a const_vector which can be loaded with a Neon vmov
-  immediate instruction."
- (and (match_code "const_vector")
+  In ARM/Thumb-2 state a const_vector or const_int which can be loaded with a
+  Neon vmov immediate instruction."
+ (and (match_code "const_vector,const_int")
       (match_test "TARGET_32BIT
 		   && imm_for_neon_mov_operand (op, GET_MODE (op))")))
 

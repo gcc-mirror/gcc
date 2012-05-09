@@ -338,7 +338,7 @@ new_emutls_decl (tree decl, tree alias_of)
   else 
     varpool_create_variable_alias (to,
 				   varpool_node_for_asm
-				    (DECL_ASSEMBLER_NAME (alias_of))->symbol.decl);
+				    (DECL_ASSEMBLER_NAME (DECL_VALUE_EXPR (alias_of)))->symbol.decl);
   return to;
 }
 
@@ -446,7 +446,7 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
 
       /* We may be adding a new reference to a new variable to the function.
          This means we have to play with the ipa-reference web.  */
-      ipa_record_reference (d->cfun_node, NULL, NULL, cvar, IPA_REF_ADDR, x);
+      ipa_record_reference ((symtab_node)d->cfun_node, (symtab_node)cvar, IPA_REF_ADDR, x);
 
       /* Record this ssa_name for possible use later in the basic block.  */
       VEC_replace (tree, access_vars, index, addr);
@@ -741,7 +741,7 @@ ipa_lower_emutls (void)
   tls_vars = varpool_node_set_new ();
 
   /* Examine all global variables for TLS variables.  */
-  for (var = varpool_nodes; var ; var = var->next)
+  FOR_EACH_VARIABLE (var)
     if (DECL_THREAD_LOCAL_P (var->symbol.decl))
       {
 	gcc_checking_assert (TREE_STATIC (var->symbol.decl)
@@ -790,8 +790,8 @@ ipa_lower_emutls (void)
     }
 
   /* Adjust all uses of TLS variables within the function bodies.  */
-  for (func = cgraph_nodes; func; func = func->next)
-    if (func->reachable && func->lowered)
+  FOR_EACH_DEFINED_FUNCTION (func)
+    if (func->lowered)
       lower_emutls_function_body (func);
 
   /* Generate the constructor for any COMMON control variables created.  */

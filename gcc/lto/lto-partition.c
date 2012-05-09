@@ -72,7 +72,7 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
   struct ipa_ref *ref;
   for (i = 0; ipa_ref_list_reference_iterate (refs, i, ref); i++)
     {
-      if (ref->refered_type == IPA_REF_CGRAPH
+      if (symtab_function_p (ref->referred)
 	  && (DECL_COMDAT (cgraph_function_node (ipa_ref_node (ref),
 			   NULL)->symbol.decl)
 	      || (ref->use == IPA_REF_ALIAS
@@ -81,7 +81,7 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
 	  && !cgraph_node_in_set_p (ipa_ref_node (ref), part->cgraph_set))
 	add_cgraph_node_to_partition (part, ipa_ref_node (ref));
       else
-	if (ref->refered_type == IPA_REF_VARPOOL
+        if (symtab_variable_p (ref->referred)
 	    && (DECL_COMDAT (ipa_ref_varpool_node (ref)->symbol.decl)
 	        || (ref->use == IPA_REF_ALIAS
 		    && lookup_attribute
@@ -91,26 +91,26 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
 				       part->varpool_set))
 	  add_varpool_node_to_partition (part, ipa_ref_varpool_node (ref));
     }
-  for (i = 0; ipa_ref_list_refering_iterate (refs, i, ref); i++)
+  for (i = 0; ipa_ref_list_referring_iterate (refs, i, ref); i++)
     {
-      if (ref->refering_type == IPA_REF_CGRAPH
+      if (symtab_function_p (ref->referring)
 	  && ref->use == IPA_REF_ALIAS
-	  && !cgraph_node_in_set_p (ipa_ref_refering_node (ref),
+	  && !cgraph_node_in_set_p (ipa_ref_referring_node (ref),
 				    part->cgraph_set)
 	  && !lookup_attribute ("weakref",
 				DECL_ATTRIBUTES
-				  (ipa_ref_refering_node (ref)->symbol.decl)))
-	add_cgraph_node_to_partition (part, ipa_ref_refering_node (ref));
+				  (ipa_ref_referring_node (ref)->symbol.decl)))
+	add_cgraph_node_to_partition (part, ipa_ref_referring_node (ref));
       else
-	if (ref->refering_type == IPA_REF_VARPOOL
+        if (symtab_variable_p (ref->referring)
 	    && ref->use == IPA_REF_ALIAS
-	    && !varpool_node_in_set_p (ipa_ref_refering_varpool_node (ref),
+	    && !varpool_node_in_set_p (ipa_ref_referring_varpool_node (ref),
 				       part->varpool_set)
 	    && !lookup_attribute ("weakref",
 				  DECL_ATTRIBUTES
-				    (ipa_ref_refering_varpool_node (ref)->symbol.decl)))
+				    (ipa_ref_referring_varpool_node (ref)->symbol.decl)))
 	  add_varpool_node_to_partition (part,
-					 ipa_ref_refering_varpool_node (ref));
+					 ipa_ref_referring_varpool_node (ref));
     }
 }
 
@@ -269,7 +269,8 @@ partition_cgraph_node_p (struct cgraph_node *node)
   /* Extern inlines and comdat are always only in partitions they are needed.  */
   if (DECL_EXTERNAL (node->symbol.decl)
       || (DECL_COMDAT (node->symbol.decl)
-	  && !cgraph_used_from_object_file_p (node)))
+	  && !node->symbol.force_output
+	  && !symtab_used_from_object_file_p ((symtab_node) node)))
     return false;
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
     return false;
@@ -282,13 +283,13 @@ partition_cgraph_node_p (struct cgraph_node *node)
 static bool
 partition_varpool_node_p (struct varpool_node *vnode)
 {
-  if (vnode->alias || !vnode->needed)
+  if (vnode->alias || !vnode->analyzed)
     return false;
   /* Constant pool and comdat are always only in partitions they are needed.  */
   if (DECL_IN_CONSTANT_POOL (vnode->symbol.decl)
       || (DECL_COMDAT (vnode->symbol.decl)
-	  && !vnode->force_output
-	  && !varpool_used_from_object_file_p (vnode)))
+	  && !vnode->symbol.force_output
+	  && !symtab_used_from_object_file_p ((symtab_node) vnode)))
     return false;
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (vnode->symbol.decl)))
     return false;
@@ -313,7 +314,7 @@ lto_1_to_1_map (void)
 
   pmap = pointer_map_create ();
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
       if (!partition_cgraph_node_p (node)
 	  || node->symbol.aux)
@@ -348,7 +349,7 @@ lto_1_to_1_map (void)
       add_cgraph_node_to_partition (partition, node);
     }
 
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     {
       if (!partition_varpool_node_p (vnode)
 	  || vnode->symbol.aux)
@@ -367,9 +368,9 @@ lto_1_to_1_map (void)
 
       add_varpool_node_to_partition (partition, vnode);
     }
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     node->symbol.aux = NULL;
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     vnode->symbol.aux = NULL;
 
   /* If the cgraph is empty, create one cgraph node set so that there is still
@@ -463,7 +464,7 @@ lto_balanced_map (void)
   int npartitions;
   int current_order = -1;
 
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     gcc_assert (!vnode->symbol.aux);
   /* Until we have better ordering facility, use toplogical order.
      Include only nodes we will partition and compute estimate of program
@@ -487,13 +488,13 @@ lto_balanced_map (void)
     {
       qsort (order, n_nodes, sizeof (struct cgraph_node *), node_cmp);
 
-      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+      FOR_EACH_VARIABLE (vnode)
 	if (partition_varpool_node_p (vnode))
 	  n_varpool_nodes++;
       varpool_order = XNEWVEC (struct varpool_node *, n_varpool_nodes);
 
       n_varpool_nodes = 0;
-      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+      FOR_EACH_VARIABLE (vnode)
 	if (partition_varpool_node_p (vnode))
 	  varpool_order[n_varpool_nodes++] = vnode;
       qsort (varpool_order, n_varpool_nodes, sizeof (struct varpool_node *),
@@ -612,7 +613,7 @@ lto_balanced_map (void)
 	  /* Compute boundary cost of IPA REF edges and at the same time look into
 	     variables referenced from current partition and try to add them.  */
 	  for (j = 0; ipa_ref_list_reference_iterate (refs, j, ref); j++)
-	    if (ref->refered_type == IPA_REF_VARPOOL)
+	    if (symtab_variable_p (ref->referred))
 	      {
 		varpool_node_set_iterator vsi;
 
@@ -643,12 +644,12 @@ lto_balanced_map (void)
 		else
 		  cost++;
 	      }
-	  for (j = 0; ipa_ref_list_refering_iterate (refs, j, ref); j++)
-	    if (ref->refering_type == IPA_REF_VARPOOL)
+	  for (j = 0; ipa_ref_list_referring_iterate (refs, j, ref); j++)
+	    if (symtab_variable_p (ref->referring))
 	      {
 		varpool_node_set_iterator vsi;
 
-		vnode = ipa_ref_refering_varpool_node (ref);
+		vnode = ipa_ref_referring_varpool_node (ref);
 		gcc_assert (vnode->finalized);
 		if (!vnode->symbol.aux && flag_toplevel_reorder
 		    && partition_varpool_node_p (vnode))
@@ -664,7 +665,7 @@ lto_balanced_map (void)
 	      {
 		cgraph_node_set_iterator csi;
 
-		node = ipa_ref_refering_node (ref);
+		node = ipa_ref_referring_node (ref);
 		gcc_assert (node->analyzed);
 		csi = cgraph_node_set_find (partition->cgraph_set, node);
 		if (!csi_end_p (csi)
@@ -742,7 +743,7 @@ lto_balanced_map (void)
   /* Varables that are not reachable from the code go into last partition.  */
   if (flag_toplevel_reorder)
     {
-      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+      FOR_EACH_VARIABLE (vnode)
         if (partition_varpool_node_p (vnode) && !vnode->symbol.aux)
 	  add_varpool_node_to_partition (partition, vnode);
     }
@@ -858,7 +859,7 @@ lto_promote_cross_file_statics (void)
 	 referenced from all initializers of read-only vars referenced
 	 from this partition that are not in this partition.  This needs
 	 to be done recursively.  */
-      for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+      FOR_EACH_VARIABLE (vnode)
 	if (const_value_known_p (vnode->symbol.decl)
 	    && DECL_INITIAL (vnode->symbol.decl)
 	    && !varpool_node_in_set_p (vnode, vset)
@@ -876,7 +877,7 @@ lto_promote_cross_file_statics (void)
 	       ipa_ref_list_reference_iterate (&vnode->symbol.ref_list, i, ref);
 	       i++)
 	    {
-	      if (ref->refered_type == IPA_REF_CGRAPH)
+	      if (symtab_function_p (ref->referred))
 		{
 		  struct cgraph_node *n = ipa_ref_node (ref);
 		  gcc_assert (!n->global.inlined_to);

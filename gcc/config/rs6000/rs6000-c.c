@@ -3421,6 +3421,22 @@ rs6000_builtin_type_compatible (tree t, int id)
 }
 
 
+/* In addition to calling fold_convert for EXPR of type TYPE, also
+   call c_fully_fold to remove any C_MAYBE_CONST_EXPRs that could be
+   hiding there (PR47197).  */
+
+static tree
+fully_fold_convert (tree type, tree expr)
+{
+  tree result = fold_convert (type, expr);
+  bool maybe_const = true;
+
+  if (!c_dialect_cxx ())
+    result = c_fully_fold (result, false, &maybe_const);
+
+  return result;
+}
+
 /* Build a tree for a function call to an Altivec non-overloaded builtin.
    The overloaded builtin that matched the types and args is described
    by DESC.  The N arguments are given in ARGS, respectively.  
@@ -3470,18 +3486,18 @@ altivec_build_resolved_builtin (tree *args, int n,
       break;
     case 1:
       call = build_call_expr (impl_fndecl, 1,
-			      fold_convert (arg_type[0], args[0]));
+			      fully_fold_convert (arg_type[0], args[0]));
       break;
     case 2:
       call = build_call_expr (impl_fndecl, 2,
-			      fold_convert (arg_type[0], args[0]),
-			      fold_convert (arg_type[1], args[1]));
+			      fully_fold_convert (arg_type[0], args[0]),
+			      fully_fold_convert (arg_type[1], args[1]));
       break;
     case 3:
       call = build_call_expr (impl_fndecl, 3,
-			      fold_convert (arg_type[0], args[0]),
-			      fold_convert (arg_type[1], args[1]),
-			      fold_convert (arg_type[2], args[2]));
+			      fully_fold_convert (arg_type[0], args[0]),
+			      fully_fold_convert (arg_type[1], args[1]),
+			      fully_fold_convert (arg_type[2], args[2]));
       break;
     default:
       gcc_unreachable ();

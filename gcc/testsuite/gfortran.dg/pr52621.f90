@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O2 -fprefetch-loop-arrays" }
+! { dg-options "-O2 -fprefetch-loop-arrays -w" }
 
       SUBROUTINE GHDSYM(IZ,IS,LMMAX,S,LMS,Y,L2M,DRL,NLAY2,K0,DCUT)!,
 !

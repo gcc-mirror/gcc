@@ -858,7 +858,7 @@ spu_expand_insv (rtx ops[])
 	  rtx mask1 = gen_reg_rtx (TImode);
 	  rtx dst1 = gen_reg_rtx (TImode);
 	  rtx mem1;
-	  addr1 = plus_constant (addr, 16);
+	  addr1 = plus_constant (Pmode, addr, 16);
 	  addr1 = gen_rtx_AND (Pmode, addr1, GEN_INT (-16));
 	  emit_insn (gen_subsi3 (shl, GEN_INT (16), low));
 	  emit_insn (gen_shlqby_ti (mask1, mask, shl));
@@ -2949,7 +2949,7 @@ spu_machine_dependent_reorg (void)
 	  if (NONJUMP_INSN_P (branch))
 	    offset += get_attr_length (branch);
 	if (offset > 0)
-	  XVECEXP (unspec, 0, 0) = plus_constant (label_ref, offset);
+	  XVECEXP (unspec, 0, 0) = plus_constant (Pmode, label_ref, offset);
       }
 
   spu_var_tracking ();
@@ -4379,7 +4379,7 @@ spu_setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
       for (regno = ncum; regno < MAX_REGISTER_ARGS; regno++)
 	{
 	  tmp = gen_frame_mem (V4SImode,
-			       plus_constant (virtual_incoming_args_rtx,
+			       plus_constant (Pmode, virtual_incoming_args_rtx,
 					      offset));
 	  emit_move_insn (tmp,
 			  gen_rtx_REG (V4SImode, FIRST_ARG_REGNUM + regno));
@@ -4556,7 +4556,7 @@ ea_load_store_inline (rtx mem, bool is_store, rtx ea_addr, rtx data_addr)
       tag_equal_hi = gen_reg_rtx (V4SImode);
     }
 
-  emit_move_insn (index_mask, plus_constant (tag_size_sym, -128));
+  emit_move_insn (index_mask, plus_constant (Pmode, tag_size_sym, -128));
   emit_move_insn (tag_arr, tag_arr_sym);
   v = 0x0001020300010203LL;
   emit_move_insn (splat_mask, immed_double_const (v, v, TImode));
@@ -4583,14 +4583,16 @@ ea_load_store_inline (rtx mem, bool is_store, rtx ea_addr, rtx data_addr)
   emit_move_insn (cache_tag, gen_rtx_MEM (V4SImode, tag_addr));
   if (spu_ea_model != 32)
     emit_move_insn (cache_tag_hi, gen_rtx_MEM (V4SImode,
-					       plus_constant (tag_addr, 16)));
+					       plus_constant (Pmode,
+							      tag_addr, 16)));
 
   /* tag = ea_addr & -128  */
   emit_insn (gen_andv4si3 (tag, splat, spu_const (V4SImode, -128)));
 
   /* Read all four cache data pointers.  */
   emit_move_insn (cache_ptrs, gen_rtx_MEM (TImode,
-					   plus_constant (tag_addr, 32)));
+					   plus_constant (Pmode,
+							  tag_addr, 32)));
 
   /* Compare tags.  */
   emit_insn (gen_ceq_v4si (tag_equal, tag, cache_tag));
@@ -4941,7 +4943,7 @@ spu_expand_load (rtx dst0, rtx dst1, rtx src, int extra_rotby)
 
   if (dst1)
     {
-      addr1 = plus_constant (copy_rtx (addr), 16);
+      addr1 = plus_constant (SImode, copy_rtx (addr), 16);
       addr1 = gen_rtx_AND (SImode, addr1, GEN_INT (-16));
       emit_insn (gen__movti (dst1, change_address (src, TImode, addr1)));
     }

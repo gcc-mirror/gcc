@@ -90,15 +90,10 @@ static const char * const gimple_alloc_kind_names[] = {
     "assignments",
     "phi nodes",
     "conditionals",
-    "sequences",
     "everything else"
 };
 
 #endif /* GATHER_STATISTICS */
-
-/* A cache of gimple_seq objects.  Sequences are created and destroyed
-   fairly often during gimplification.  */
-static GTY ((deletable)) struct gimple_seq_d *gimple_seq_cache;
 
 /* Private API manipulation functions shared only with some
    other files.  */
@@ -154,6 +149,7 @@ gimple_alloc_stat (enum gimple_code code, unsigned num_ops MEM_STAT_DECL)
   /* Do not call gimple_set_modified here as it has other side
      effects and this tuple is still not completely built.  */
   stmt->gsbase.modified = 1;
+  gimple_init_singleton (stmt);
 
   return stmt;
 }
@@ -1201,53 +1197,6 @@ gimple_check_failed (const_gimple gs, const char *file, int line,
 #endif /* ENABLE_GIMPLE_CHECKING */
 
 
-/* Allocate a new GIMPLE sequence in GC memory and return it.  If
-   there are free sequences in GIMPLE_SEQ_CACHE return one of those
-   instead.  */
-
-gimple_seq
-gimple_seq_alloc (void)
-{
-  gimple_seq seq = gimple_seq_cache;
-  if (seq)
-    {
-      gimple_seq_cache = gimple_seq_cache->next_free;
-      gcc_assert (gimple_seq_cache != seq);
-      memset (seq, 0, sizeof (*seq));
-    }
-  else
-    {
-      seq = ggc_alloc_cleared_gimple_seq_d ();
-#ifdef GATHER_STATISTICS
-      gimple_alloc_counts[(int) gimple_alloc_kind_seq]++;
-      gimple_alloc_sizes[(int) gimple_alloc_kind_seq] += sizeof (*seq);
-#endif
-    }
-
-  return seq;
-}
-
-/* Return SEQ to the free pool of GIMPLE sequences.  */
-
-void
-gimple_seq_free (gimple_seq seq)
-{
-  if (seq == NULL)
-    return;
-
-  gcc_assert (gimple_seq_first (seq) == NULL);
-  gcc_assert (gimple_seq_last (seq) == NULL);
-
-  /* If this triggers, it's a sign that the same list is being freed
-     twice.  */
-  gcc_assert (seq != gimple_seq_cache || gimple_seq_cache == NULL);
-
-  /* Add SEQ to the pool of free sequences.  */
-  seq->next_free = gimple_seq_cache;
-  gimple_seq_cache = seq;
-}
-
-
 /* Link gimple statement GS to the end of the sequence *SEQ_P.  If
    *SEQ_P is NULL, a new sequence is allocated.  */
 
@@ -1255,12 +1204,8 @@ void
 gimple_seq_add_stmt (gimple_seq *seq_p, gimple gs)
 {
   gimple_stmt_iterator si;
-
   if (gs == NULL)
     return;
-
-  if (*seq_p == NULL)
-    *seq_p = gimple_seq_alloc ();
 
   si = gsi_last (*seq_p);
   gsi_insert_after (&si, gs, GSI_NEW_STMT);
@@ -1274,12 +1219,8 @@ void
 gimple_seq_add_seq (gimple_seq *dst_p, gimple_seq src)
 {
   gimple_stmt_iterator si;
-
   if (src == NULL)
     return;
-
-  if (*dst_p == NULL)
-    *dst_p = gimple_seq_alloc ();
 
   si = gsi_last (*dst_p);
   gsi_insert_seq_after (&si, src, GSI_NEW_STMT);
@@ -1324,7 +1265,7 @@ gimple_seq
 gimple_seq_copy (gimple_seq src)
 {
   gimple_stmt_iterator gsi;
-  gimple_seq new_seq = gimple_seq_alloc ();
+  gimple_seq new_seq = NULL;
   gimple stmt;
 
   for (gsi = gsi_start (src); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1337,7 +1278,7 @@ gimple_seq_copy (gimple_seq src)
 }
 
 
-/* Walk all the statements in the sequence SEQ calling walk_gimple_stmt
+/* Walk all the statements in the sequence *PSEQ calling walk_gimple_stmt
    on each one.  WI is as in walk_gimple_stmt.
 
    If walk_gimple_stmt returns non-NULL, the walk is stopped, and the
@@ -1349,12 +1290,12 @@ gimple_seq_copy (gimple_seq src)
    Otherwise, all the statements are walked and NULL returned.  */
 
 gimple
-walk_gimple_seq (gimple_seq seq, walk_stmt_fn callback_stmt,
-		 walk_tree_fn callback_op, struct walk_stmt_info *wi)
+walk_gimple_seq_mod (gimple_seq *pseq, walk_stmt_fn callback_stmt,
+		     walk_tree_fn callback_op, struct walk_stmt_info *wi)
 {
   gimple_stmt_iterator gsi;
 
-  for (gsi = gsi_start (seq); !gsi_end_p (gsi); )
+  for (gsi = gsi_start (*pseq); !gsi_end_p (gsi); )
     {
       tree ret = walk_gimple_stmt (&gsi, callback_stmt, callback_op, wi);
       if (ret)
@@ -1375,6 +1316,20 @@ walk_gimple_seq (gimple_seq seq, walk_stmt_fn callback_stmt,
     wi->callback_result = NULL_TREE;
 
   return NULL;
+}
+
+
+/* Like walk_gimple_seq_mod, but ensure that the head of SEQ isn't
+   changed by the callbacks.  */
+
+gimple
+walk_gimple_seq (gimple_seq seq, walk_stmt_fn callback_stmt,
+		 walk_tree_fn callback_op, struct walk_stmt_info *wi)
+{
+  gimple_seq seq2 = seq;
+  gimple ret = walk_gimple_seq_mod (&seq2, callback_stmt, callback_op, wi);
+  gcc_assert (seq2 == seq);
+  return ret;
 }
 
 
@@ -1808,51 +1763,51 @@ walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
   switch (gimple_code (stmt))
     {
     case GIMPLE_BIND:
-      ret = walk_gimple_seq (gimple_bind_body (stmt), callback_stmt,
-	                     callback_op, wi);
+      ret = walk_gimple_seq_mod (gimple_bind_body_ptr (stmt), callback_stmt,
+				 callback_op, wi);
       if (ret)
 	return wi->callback_result;
       break;
 
     case GIMPLE_CATCH:
-      ret = walk_gimple_seq (gimple_catch_handler (stmt), callback_stmt,
-	                     callback_op, wi);
+      ret = walk_gimple_seq_mod (gimple_catch_handler_ptr (stmt), callback_stmt,
+				 callback_op, wi);
       if (ret)
 	return wi->callback_result;
       break;
 
     case GIMPLE_EH_FILTER:
-      ret = walk_gimple_seq (gimple_eh_filter_failure (stmt), callback_stmt,
+      ret = walk_gimple_seq_mod (gimple_eh_filter_failure_ptr (stmt), callback_stmt,
 		             callback_op, wi);
       if (ret)
 	return wi->callback_result;
       break;
 
     case GIMPLE_EH_ELSE:
-      ret = walk_gimple_seq (gimple_eh_else_n_body (stmt),
+      ret = walk_gimple_seq_mod (gimple_eh_else_n_body_ptr (stmt),
 			     callback_stmt, callback_op, wi);
       if (ret)
 	return wi->callback_result;
-      ret = walk_gimple_seq (gimple_eh_else_e_body (stmt),
+      ret = walk_gimple_seq_mod (gimple_eh_else_e_body_ptr (stmt),
 			     callback_stmt, callback_op, wi);
       if (ret)
 	return wi->callback_result;
       break;
 
     case GIMPLE_TRY:
-      ret = walk_gimple_seq (gimple_try_eval (stmt), callback_stmt, callback_op,
+      ret = walk_gimple_seq_mod (gimple_try_eval_ptr (stmt), callback_stmt, callback_op,
 	                     wi);
       if (ret)
 	return wi->callback_result;
 
-      ret = walk_gimple_seq (gimple_try_cleanup (stmt), callback_stmt,
+      ret = walk_gimple_seq_mod (gimple_try_cleanup_ptr (stmt), callback_stmt,
 	                     callback_op, wi);
       if (ret)
 	return wi->callback_result;
       break;
 
     case GIMPLE_OMP_FOR:
-      ret = walk_gimple_seq (gimple_omp_for_pre_body (stmt), callback_stmt,
+      ret = walk_gimple_seq_mod (gimple_omp_for_pre_body_ptr (stmt), callback_stmt,
 		             callback_op, wi);
       if (ret)
 	return wi->callback_result;
@@ -1866,21 +1821,21 @@ walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
-      ret = walk_gimple_seq (gimple_omp_body (stmt), callback_stmt,
+      ret = walk_gimple_seq_mod (gimple_omp_body_ptr (stmt), callback_stmt,
 			     callback_op, wi);
       if (ret)
 	return wi->callback_result;
       break;
 
     case GIMPLE_WITH_CLEANUP_EXPR:
-      ret = walk_gimple_seq (gimple_wce_cleanup (stmt), callback_stmt,
+      ret = walk_gimple_seq_mod (gimple_wce_cleanup_ptr (stmt), callback_stmt,
 			     callback_op, wi);
       if (ret)
 	return wi->callback_result;
       break;
 
     case GIMPLE_TRANSACTION:
-      ret = walk_gimple_seq (gimple_transaction_body (stmt),
+      ret = walk_gimple_seq_mod (gimple_transaction_body_ptr (stmt),
 			     callback_stmt, callback_op, wi);
       if (ret)
 	return wi->callback_result;
@@ -2181,6 +2136,7 @@ gimple_assign_set_rhs_with_ops_1 (gimple_stmt_iterator *gsi, enum tree_code code
       tree lhs = gimple_assign_lhs (stmt);
       gimple new_stmt = gimple_alloc (gimple_code (stmt), new_rhs_ops + 1);
       memcpy (new_stmt, stmt, gimple_size (gimple_code (stmt)));
+      gimple_init_singleton (new_stmt);
       gsi_replace (gsi, new_stmt, true);
       stmt = new_stmt;
 
@@ -2270,7 +2226,8 @@ gimple_replace_lhs (gimple stmt, tree nlhs)
 
 /* Return a deep copy of statement STMT.  All the operands from STMT
    are reallocated and copied using unshare_expr.  The DEF, USE, VDEF
-   and VUSE operand arrays are set to empty in the new copy.  */
+   and VUSE operand arrays are set to empty in the new copy.  The new
+   copy isn't part of any sequence.  */
 
 gimple
 gimple_copy (gimple stmt)
@@ -2282,6 +2239,7 @@ gimple_copy (gimple stmt)
 
   /* Shallow copy all the fields from STMT.  */
   memcpy (copy, stmt, gimple_size (code));
+  gimple_init_singleton (copy);
 
   /* If STMT has sub-statements, deep-copy them as well.  */
   if (gimple_has_substatements (stmt))

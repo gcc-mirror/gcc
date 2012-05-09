@@ -116,13 +116,13 @@
   thing of great importance to keep in mind when debugging C++ code
   that uses <code>new</code> and <code>delete</code>: there are
   different kinds of allocation schemes that can be used by <code>
-  std::allocator </code>. For implementation details, see the <link linkend="manual.ext.allocator.mt">mt allocator</link> documentation and
+  std::allocator</code>. For implementation details, see the <link linkend="manual.ext.allocator.mt">mt allocator</link> documentation and
   look specifically for <code>GLIBCXX_FORCE_NEW</code>.
 </para>
 
 <para>
-  In a nutshell, the default allocator used by <code>
-  std::allocator</code> is a high-performance pool allocator, and can
+  In a nutshell, the optional <classname>mt_allocator</classname>
+  is a high-performance pool allocator, and can
   give the mistaken impression that in a suspect executable, memory is
   being leaked, when in reality the memory "leak" is a pool being used
   by the library's allocator and is reclaimed after program

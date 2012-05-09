@@ -131,7 +131,7 @@ namespace __gnu_debug
     "attempt to flip a singular bitset reference",
     // std::list checks
     "attempt to splice a list into itself",
-    "attempt to splice lists with inequal allocators",
+    "attempt to splice lists with unequal allocators",
     "attempt to splice elements referenced by a %1.state; iterator",
     "attempt to splice an iterator from a different container",
     "splice destination %1.name;"

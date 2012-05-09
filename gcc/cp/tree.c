@@ -2598,8 +2598,8 @@ maybe_dummy_object (tree type, tree* binfop)
 	   && context == nonlambda_method_basetype ())
     /* In a lambda, need to go through 'this' capture.  */
     decl = (build_x_indirect_ref
-	    ((lambda_expr_this_capture
-	      (CLASSTYPE_LAMBDA_EXPR (current_class_type))),
+	    (input_location, (lambda_expr_this_capture
+			      (CLASSTYPE_LAMBDA_EXPR (current_class_type))),
 	     RO_NULL, tf_warning_or_error));
   else
     decl = build_dummy_object (context);

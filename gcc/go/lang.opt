@@ -1,6 +1,6 @@
 ; lang.opt -- Options for the gcc Go front end.
 
-; Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+; Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -36,6 +36,14 @@ Go Joined Separate
 Wall
 Go
 ; Documented in c.opt
+
+fgo-check-divide-zero
+Go Var(go_check_divide_zero) Init(1)
+Add explicit checks for division by zero
+
+fgo-check-divide-overflow
+Go Var(go_check_divide_overflow) Init(1)
+Add explicit checks for division overflow in INT_MIN / -1
 
 fgo-dump-
 Go Joined RejectNegative

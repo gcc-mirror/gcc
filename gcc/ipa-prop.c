@@ -230,8 +230,8 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 	continue;
 
       fprintf (f, "    callsite  %s/%i -> %s/%i : \n",
-	       cgraph_node_name (node), node->uid,
-	       cgraph_node_name (cs->callee), cs->callee->uid);
+	       xstrdup (cgraph_node_name (node)), node->uid,
+	       xstrdup (cgraph_node_name (cs->callee)), cs->callee->uid);
       ipa_print_node_jump_functions_for_edge (f, cs);
     }
 
@@ -260,7 +260,7 @@ ipa_print_all_jump_functions (FILE *f)
   struct cgraph_node *node;
 
   fprintf (f, "\nJump functions:\n");
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     {
       ipa_print_node_jump_functions (f, node);
     }
@@ -1626,7 +1626,7 @@ ipa_analyze_params_uses (struct cgraph_node *node,
 					 visit_ref_for_mod_analysis,
 					 visit_ref_for_mod_analysis);
 	}
-      for (gsi = gsi_start (phi_nodes (bb)); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), info,
 				       visit_ref_for_mod_analysis,
 				       visit_ref_for_mod_analysis,
@@ -1780,8 +1780,8 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
       fprintf (dump_file, "ipa-prop: Discovered %s call to a known target "
 	       "(%s/%i -> %s/%i), for stmt ",
 	       ie->indirect_info->polymorphic ? "a virtual" : "an indirect",
-	       cgraph_node_name (ie->caller), ie->caller->uid,
-	       cgraph_node_name (ie->callee), ie->callee->uid);
+	       xstrdup (cgraph_node_name (ie->caller)), ie->caller->uid,
+	       xstrdup (cgraph_node_name (ie->callee)), ie->callee->uid);
       if (ie->call_stmt)
 	print_gimple_stmt (dump_file, ie->call_stmt, 2, TDF_SLIM);
       else
@@ -2209,7 +2209,7 @@ ipa_print_all_params (FILE * f)
   struct cgraph_node *node;
 
   fprintf (f, "\nFunction parameters:\n");
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     ipa_print_node_params (f, node);
 }
 
@@ -2513,7 +2513,8 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	      tree type = adj->type;
 	      unsigned int align;
 	      unsigned HOST_WIDE_INT misalign;
-	      align = get_pointer_alignment_1 (base, &misalign);
+
+	      get_pointer_alignment_1 (base, &align, &misalign);
 	      misalign += (double_int_sext (tree_to_double_int (off),
 					    TYPE_PRECISION (TREE_TYPE (off))).low
 			   * BITS_PER_UNIT);
@@ -3087,7 +3088,7 @@ ipa_update_after_lto_read (void)
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     if (node->analyzed)
       ipa_initialize_node_params (node);
 }

@@ -206,7 +206,7 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 
 #undef EH_RETURN_HANDLER_RTX
 #define EH_RETURN_HANDLER_RTX \
-  gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, 8))
+  gen_rtx_MEM (Pmode, plus_constant (Pmode, stack_pointer_rtx, 8))
 
 #define LINK_EH_SPEC "vms-dwarf2eh.o%s "
 #define LINK_GCC_C_SEQUENCE_SPEC "%G"
@@ -257,7 +257,15 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 #undef ASM_FINAL_SPEC
 
 /* The VMS convention is to always provide minimal debug info
-   for a traceback unless specifically overridden.  */
+   for a traceback unless specifically overridden.
+
+   Because ASM_OUTPUT_ADDR_DIFF_ELT is not defined for alpha-vms,
+   jump tables cannot be output for PIC code, because you can't put
+   an absolute address in a readonly section.  Putting the table in
+   a writable section is a security hole.  Therefore, we unset the
+   flag_jump_tables flag, forcing switch statements to be expanded
+   using decision trees.  There are probably other ways to address
+   this issue, but using a decision tree is clearly safe.  */
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS                  \
@@ -268,6 +276,8 @@ do {                                                \
       write_symbols = VMS_DEBUG;                    \
       debug_info_level = DINFO_LEVEL_TERSE;         \
     }                                               \
+  if (flag_pic)                                     \
+    flag_jump_tables = 0;                           \
 } while (0)
 
 #undef LINK_SPEC

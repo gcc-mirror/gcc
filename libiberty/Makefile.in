@@ -2,7 +2,7 @@
 # Originally written by K. Richard Pixley <rich@cygnus.com>.
 #
 # Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-# 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+# 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 # Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -126,7 +126,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	basename.c bcmp.c bcopy.c bsearch.c bzero.c			\
 	calloc.c choose-temp.c clock.c concat.c cp-demangle.c		\
 	 cp-demint.c cplus-dem.c crc32.c				\
-	dyn-string.c							\
+	dwarfnames.c dyn-string.c					\
 	fdmatch.c ffs.c fibheap.c filename_cmp.c floatformat.c		\
 	fnmatch.c fopen_unlocked.c					\
 	getcwd.c getopt.c getopt1.c getpagesize.c getpwd.c getruntime.c	\
@@ -166,7 +166,8 @@ REQUIRED_OFILES =							\
 	./md5.$(objext) ./sha1.$(objext) ./alloca.$(objext)		\
 	./argv.$(objext)						\
 	./choose-temp.$(objext) ./concat.$(objext)			\
-	./cp-demint.$(objext) ./crc32.$(objext) ./dyn-string.$(objext)	\
+	./cp-demint.$(objext) ./crc32.$(objext)				\
+	./dwarfnames.$(objext) ./dyn-string.$(objext)			\
 	./fdmatch.$(objext) ./fibheap.$(objext)				\
 	./filename_cmp.$(objext) ./floatformat.$(objext)		\
 	./fnmatch.$(objext) ./fopen_unlocked.$(objext)			\
@@ -620,6 +621,13 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/crc32.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/crc32.c $(OUTPUT_OPTION)
+
+./dwarfnames.$(objext): $(srcdir)/dwarfnames.c $(INCDIR)/dwarf2.h \
+	$(INCDIR)/dwarf2.def
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/dwarfnames.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/dwarfnames.c $(OUTPUT_OPTION)
 
 ./dyn-string.$(objext): $(srcdir)/dyn-string.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/dyn-string.h $(INCDIR)/libiberty.h

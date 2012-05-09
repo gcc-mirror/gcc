@@ -250,7 +250,7 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define FIRST_PARM_OFFSET(FNDECL) (0)
 
-#define DYNAMIC_CHAIN_ADDRESS(FP) plus_constant ((FP), -16)
+#define DYNAMIC_CHAIN_ADDRESS(FP) plus_constant (Pmode, (FP), -16)
 
 #define RETURN_ADDR_RTX(COUNT,FP) (spu_return_addr (COUNT, FP))
 

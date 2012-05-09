@@ -1,7 +1,7 @@
 /* Language-level data type conversion for GNU C++.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -109,7 +109,7 @@ cp_convert_to_pointer (tree type, tree expr)
     {
       if (TYPE_PTRMEMFUNC_P (intype)
 	  || TREE_CODE (intype) == METHOD_TYPE)
-	return convert_member_func_to_ptr (type, expr);
+	return convert_member_func_to_ptr (type, expr, tf_warning_or_error);
       if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
 	return build_nop (type, expr);
       intype = TREE_TYPE (expr);
@@ -188,7 +188,8 @@ cp_convert_to_pointer (tree type, tree expr)
 	    {
 	      tree object = TREE_OPERAND (expr, 0);
 	      return get_member_function_from_ptrfunc (&object,
-						       TREE_OPERAND (expr, 1));
+						       TREE_OPERAND (expr, 1),
+						       tf_warning_or_error);
 	    }
 	}
       error ("cannot convert %qE from type %qT to type %qT",
@@ -407,12 +408,12 @@ convert_to_reference (tree reftype, tree expr, int convtype,
   tree rval = NULL_TREE;
   tree rval_as_conversion = NULL_TREE;
   bool can_convert_intype_to_type;
+  tsubst_flags_t complain = ((flags & LOOKUP_COMPLAIN)
+			     ? tf_warning_or_error : tf_none);
 
   if (TREE_CODE (type) == FUNCTION_TYPE
       && TREE_TYPE (expr) == unknown_type_node)
-    expr = instantiate_type (type, expr,
-			     (flags & LOOKUP_COMPLAIN)
-			     ? tf_warning_or_error : tf_none);
+    expr = instantiate_type (type, expr, complain);
 
   if (expr == error_mark_node)
     return error_mark_node;
@@ -424,7 +425,8 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 
   intype = TYPE_MAIN_VARIANT (intype);
 
-  can_convert_intype_to_type = can_convert (type, intype);
+  can_convert_intype_to_type = can_convert (type, intype, complain);
+
   if (!can_convert_intype_to_type
       && (convtype & CONV_IMPLICIT) && MAYBE_CLASS_TYPE_P (intype)
       && ! (flags & LOOKUP_NO_CONVERSION))
@@ -444,7 +446,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 	}
     }
 
-  if (((convtype & CONV_STATIC) && can_convert (intype, type))
+  if (((convtype & CONV_STATIC) && can_convert (intype, type, complain))
       || ((convtype & CONV_IMPLICIT) && can_convert_intype_to_type))
     {
       if (flags & LOOKUP_COMPLAIN)
@@ -550,7 +552,7 @@ force_rvalue (tree expr, tsubst_flags_t complain)
       expr = build_cplus_new (type, expr, complain);
     }
   else
-    expr = decay_conversion (expr);
+    expr = decay_conversion (expr, complain);
 
   return expr;
 }
@@ -820,7 +822,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	/* For copy-initialization, first we create a temp of the proper type
 	   with a user-defined conversion sequence, then we direct-initialize
 	   the target with the temp (see [dcl.init]).  */
-	ctor = build_user_type_conversion (type, ctor, flags);
+	ctor = build_user_type_conversion (type, ctor, flags,
+					   tf_warning_or_error);
       else
 	{
 	  VEC(tree,gc) *ctor_vec = make_tree_vector_single (ctor);
@@ -1450,7 +1453,8 @@ build_type_conversion (tree xtype, tree expr)
 {
   /* C++: check to see if we can convert this aggregate type
      into the required type.  */
-  return build_user_type_conversion (xtype, expr, LOOKUP_NORMAL);
+  return build_user_type_conversion (xtype, expr, LOOKUP_NORMAL,
+				     tf_warning_or_error);
 }
 
 /* Convert the given EXPR to one of a group of types suitable for use in an
@@ -1468,8 +1472,13 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
   if (expr == null_node
       && (desires & WANT_INT)
       && !(desires & WANT_NULL))
-    warning_at (input_location, OPT_Wconversion_null,
-		"converting NULL to non-pointer type");
+    {
+      source_location loc =
+	expansion_point_location_if_in_system_header (input_location);
+
+      warning_at (loc, OPT_Wconversion_null,
+		  "converting NULL to non-pointer type");
+    }
 
   basetype = TREE_TYPE (expr);
 
@@ -1495,7 +1504,8 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 
       case FUNCTION_TYPE:
       case ARRAY_TYPE:
-	return (desires & WANT_POINTER) ? decay_conversion (expr)
+	return (desires & WANT_POINTER) ? decay_conversion (expr,
+							    tf_warning_or_error)
 					: NULL_TREE;
 
       case COMPLEX_TYPE:
@@ -1607,7 +1617,8 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
   if (winner)
     {
       tree type = non_reference (TREE_TYPE (TREE_TYPE (winner)));
-      return build_user_type_conversion (type, expr, LOOKUP_NORMAL);
+      return build_user_type_conversion (type, expr, LOOKUP_NORMAL,
+					 tf_warning_or_error);
     }
 
   return NULL_TREE;

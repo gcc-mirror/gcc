@@ -916,16 +916,17 @@ m68k_emit_movem (rtx base, HOST_WIDE_INT offset,
 
   if (adjust_stack_p)
     {
-      src = plus_constant (base, (count
-				  * GET_MODE_SIZE (mode)
-				  * (HOST_WIDE_INT) (store_p ? -1 : 1)));
+      src = plus_constant (Pmode, base,
+			   (count
+			    * GET_MODE_SIZE (mode)
+			    * (HOST_WIDE_INT) (store_p ? -1 : 1)));
       XVECEXP (body, 0, i++) = gen_rtx_SET (VOIDmode, base, src);
     }
 
   for (; mask != 0; mask >>= 1, regno++)
     if (mask & 1)
       {
-	addr = plus_constant (base, offset);
+	addr = plus_constant (Pmode, base, offset);
 	operands[!store_p] = gen_frame_mem (mode, addr);
 	operands[store_p] = gen_rtx_REG (mode, regno);
 	XVECEXP (body, 0, i++)
@@ -971,7 +972,7 @@ m68k_expand_prologue (void)
   if (crtl->limit_stack
       && GET_CODE (stack_limit_rtx) == SYMBOL_REF)
     {
-      limit = plus_constant (stack_limit_rtx, current_frame.size + 4);
+      limit = plus_constant (Pmode, stack_limit_rtx, current_frame.size + 4);
       if (!m68k_legitimate_constant_p (Pmode, limit))
 	{
 	  emit_move_insn (gen_rtx_REG (Pmode, D0_REG), limit);
@@ -1205,12 +1206,12 @@ m68k_expand_epilogue (bool sibcall_p)
 		/* Generate the address -OFFSET(%fp,%a1.l).  */
 		addr = gen_rtx_REG (Pmode, A1_REG);
 		addr = gen_rtx_PLUS (Pmode, addr, frame_pointer_rtx);
-		addr = plus_constant (addr, -offset);
+		addr = plus_constant (Pmode, addr, -offset);
 	      }
 	    else if (restore_from_sp)
 	      addr = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
 	    else
-	      addr = plus_constant (frame_pointer_rtx, -offset);
+	      addr = plus_constant (Pmode, frame_pointer_rtx, -offset);
 	    emit_move_insn (gen_rtx_REG (SImode, D0_REG + i),
 			    gen_frame_mem (SImode, addr));
 	    offset -= GET_MODE_SIZE (SImode);
@@ -2450,7 +2451,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 				     base == reg ? 0 : reg);
 
       if (GET_CODE (orig) == CONST_INT)
-	pic_ref = plus_constant (base, INTVAL (orig));
+	pic_ref = plus_constant (Pmode, base, INTVAL (orig));
       else
 	pic_ref = gen_rtx_PLUS (Pmode, base, orig);
     }
@@ -5035,7 +5036,8 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   reload_completed = 1;
 
   /* The "this" pointer is stored at 4(%sp).  */
-  this_slot = gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, 4));
+  this_slot = gen_rtx_MEM (Pmode, plus_constant (Pmode,
+						 stack_pointer_rtx, 4));
 
   /* Add DELTA to THIS.  */
   if (delta != 0)
@@ -5060,7 +5062,7 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
 
       /* Set ADDR to a legitimate address for *THIS + VCALL_OFFSET.  */
-      addr = plus_constant (tmp, vcall_offset);
+      addr = plus_constant (Pmode, tmp, vcall_offset);
       if (!m68k_legitimate_address_p (Pmode, addr, true))
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, tmp, addr));
@@ -5880,26 +5882,6 @@ m68k_sched_attr_op_mem (rtx insn)
   return OP_MEM_I1;
 }
 
-/* Jump instructions types.  Indexed by INSN_UID.
-   The same rtl insn can be expanded into different asm instructions
-   depending on the cc0_status.  To properly determine type of jump
-   instructions we scan instruction stream and map jumps types to this
-   array.  */
-static enum attr_type *sched_branch_type;
-
-/* Return the type of the jump insn.  */
-enum attr_type
-m68k_sched_branch_type (rtx insn)
-{
-  enum attr_type type;
-
-  type = sched_branch_type[INSN_UID (insn)];
-
-  gcc_assert (type != 0);
-
-  return type;
-}
-
 /* Data for ColdFire V4 index bypass.
    Producer modifies register that is used as index in consumer with
    specified scale.  */
@@ -6090,7 +6072,7 @@ m68k_sched_variable_issue (FILE *sched_dump ATTRIBUTE_UNUSED,
 	/* Scheduling for register pressure does not always take DFA into
 	   account.  Workaround instruction buffer not being filled enough.  */
 	{
-	  gcc_assert (sched_pressure_p);
+	  gcc_assert (sched_pressure == SCHED_PRESSURE_WEIGHTED);
 	  insn_size = sched_ib.filled;
 	}
 
@@ -6123,20 +6105,6 @@ m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
 			   int sched_verbose ATTRIBUTE_UNUSED,
 			   int n_insns ATTRIBUTE_UNUSED)
 {
-  /* Init branch types.  */
-  {
-    rtx insn;
-
-    sched_branch_type = XCNEWVEC (enum attr_type, get_max_uid () + 1);
-
-    for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
-      {
-	if (JUMP_P (insn))
-	  /* !!! FIXME: Implement real scan here.  */
-	  sched_branch_type[INSN_UID (insn)] = TYPE_BCC;
-      }
-  }
-
 #ifdef ENABLE_CHECKING
   /* Check that all instructions have DFA reservations and
      that all instructions can be issued from a clean state.  */
@@ -6218,9 +6186,6 @@ m68k_sched_md_finish_global (FILE *dump ATTRIBUTE_UNUSED,
   sched_ib.records.adjust = NULL;
   sched_ib.records.n_insns = 0;
   max_insn_size = 0;
-
-  free (sched_branch_type);
-  sched_branch_type = NULL;
 }
 
 /* Implementation of targetm.sched.init () hook.

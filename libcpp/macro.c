@@ -165,6 +165,8 @@ static void consume_next_token_from_context (cpp_reader *pfile,
 					     source_location *);
 static const cpp_token* cpp_get_token_1 (cpp_reader *, source_location *);
 
+static cpp_hashnode* macro_of_context (cpp_context *context);
+
 /* Statistical counter tracking the number of macros that got
    expanded.  */
 unsigned num_expanded_macros_counter = 0;
@@ -611,6 +613,21 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
 {
   const cpp_token *rhs = NULL;
   cpp_context *context = pfile->context;
+  source_location virt_loc = 0;
+
+  /* We must have been called on a token that appears at the left
+     hand side of a ## operator.  */
+  if (!(lhs->flags & PASTE_LEFT))
+    abort ();
+
+  if (context->tokens_kind == TOKENS_KIND_EXTENDED)
+    /* The caller must have called consume_next_token_from_context
+       right before calling us.  That has incremented the pointer to
+       the current virtual location.  So it now points to the location
+       of the token that comes right after *LHS.  We want the
+       resulting pasted token to have the location of the current
+       *LHS, though.  */
+    virt_loc = context->c.mc->cur_virt_loc[-1];
 
   do
     {
@@ -650,7 +667,18 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
   while (rhs->flags & PASTE_LEFT);
 
   /* Put the resulting token in its own context.  */
-  _cpp_push_token_context (pfile, NULL, lhs, 1);
+  if (context->tokens_kind == TOKENS_KIND_EXTENDED)
+    {
+      source_location *virt_locs = NULL;
+      _cpp_buff *token_buf = tokens_buff_new (pfile, 1, &virt_locs);
+      tokens_buff_add_token (token_buf, virt_locs, lhs,
+			     virt_loc, 0, NULL, 0);
+      push_extended_tokens_context (pfile, context->c.mc->macro_node,
+				    token_buf, virt_locs,
+				    (const cpp_token **)token_buf->base, 1);
+    }
+  else
+    _cpp_push_token_context (pfile, NULL, lhs, 1);
 }
 
 /* Returns TRUE if the number of arguments ARGC supplied in an
@@ -1782,18 +1810,27 @@ push_ptoken_context (cpp_reader *pfile, cpp_hashnode *macro, _cpp_buff *buff,
   LAST (context).ptoken = first + count;
 }
 
-/* Push a list of tokens.  */
+/* Push a list of tokens.
+
+   A NULL macro means that we should continue the current macro
+   expansion, in essence.  That means that if we are currently in a
+   macro expansion context, we'll make the new pfile->context refer to
+   the current macro.  */
 void
 _cpp_push_token_context (cpp_reader *pfile, cpp_hashnode *macro,
 			 const cpp_token *first, unsigned int count)
 {
-   cpp_context *context = next_context (pfile);
- 
+  cpp_context *context;
+
+   if (macro == NULL)
+     macro = macro_of_context (pfile->context);
+
+   context = next_context (pfile);
    context->tokens_kind = TOKENS_KIND_DIRECT;
    context->c.macro = macro;
    context->buff = NULL;
-  FIRST (context).token = first;
-  LAST (context).token = first + count;
+   FIRST (context).token = first;
+   LAST (context).token = first + count;
 }
 
 /* Build a context containing a list of tokens as well as their
@@ -1801,7 +1838,12 @@ _cpp_push_token_context (cpp_reader *pfile, cpp_hashnode *macro,
    contains the tokens pointed to by FIRST.  If TOKENS_BUFF is
    non-NULL, it means that the context owns it, meaning that
    _cpp_pop_context will free it as well as VIRT_LOCS_BUFF that
-   contains the virtual locations.  */
+   contains the virtual locations.
+
+   A NULL macro means that we should continue the current macro
+   expansion, in essence.  That means that if we are currently in a
+   macro expansion context, we'll make the new pfile->context refer to
+   the current macro.  */
 static void
 push_extended_tokens_context (cpp_reader *pfile,
 			      cpp_hashnode *macro,
@@ -1810,9 +1852,13 @@ push_extended_tokens_context (cpp_reader *pfile,
 			      const cpp_token **first,
 			      unsigned int count)
 {
-  cpp_context *context = next_context (pfile);
+  cpp_context *context;
   macro_context *m;
 
+  if (macro == NULL)
+    macro = macro_of_context (pfile->context);
+
+  context = next_context (pfile);
   context->tokens_kind = TOKENS_KIND_EXTENDED;
   context->buff = token_buff;
 
@@ -2084,6 +2130,19 @@ expand_arg (cpp_reader *pfile, macro_arg *arg)
   CPP_WTRADITIONAL (pfile) = saved_warn_trad;
 }
 
+/* Returns the macro associated to the current context if we are in
+   the context a macro expansion, NULL otherwise.  */
+static cpp_hashnode*
+macro_of_context (cpp_context *context)
+{
+  if (context == NULL)
+    return NULL;
+
+  return (context->tokens_kind == TOKENS_KIND_EXTENDED)
+    ? context->c.mc->macro_node
+    : context->c.macro;
+}
+
 /* Pop the current context off the stack, re-enabling the macro if the
    context represented a macro's replacement list.  Initially the
    context structure was not freed so that we can re-use it later, but
@@ -2092,6 +2151,10 @@ void
 _cpp_pop_context (cpp_reader *pfile)
 {
   cpp_context *context = pfile->context;
+
+  /* We should not be popping the base context.  */
+  if (context == &pfile->base_context)
+    abort ();
 
   if (context->c.macro)
     {
@@ -2120,7 +2183,14 @@ _cpp_pop_context (cpp_reader *pfile)
 	 tokens is pushed just for the purpose of walking them using
 	 cpp_get_token_1.  In that case, no 'macro' field is set into
 	 the dummy context.  */
-      if (macro != NULL)
+      if (macro != NULL
+	  /* Several contiguous macro expansion contexts can be
+	     associated to the same macro; that means it's the same
+	     macro expansion that spans accross all these (sub)
+	     contexts.  So we should re-enable an expansion-disabled
+	     macro only when we are sure we are really out of that
+	     macro expansion.  */
+	  && macro_of_context (context->prev) != macro)
 	macro->flags &= ~NODE_DISABLED;
     }
 
@@ -2436,7 +2506,12 @@ cpp_get_token_with_location (cpp_reader *pfile, source_location *loc)
 int
 cpp_sys_macro_p (cpp_reader *pfile)
 {
-  cpp_hashnode *node = pfile->context->c.macro;
+  cpp_hashnode *node = NULL;
+
+  if (pfile->context->tokens_kind == TOKENS_KIND_EXTENDED)
+    node = pfile->context->c.mc->macro_node;
+  else
+    node = pfile->context->c.macro;
 
   return node && node->value.macro && node->value.macro->syshdr;
 }

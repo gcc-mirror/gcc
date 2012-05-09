@@ -2180,8 +2180,9 @@ perhaps_add_new_callers (struct cgraph_node *node, struct ipcp_value *val)
 		  if (dump_file)
 		    fprintf (dump_file, " - adding an extra caller %s/%i"
 			     " of %s/%i\n",
-			     cgraph_node_name (cs->caller), cs->caller->uid,
-			     cgraph_node_name (val->spec_node),
+			     xstrdup (cgraph_node_name (cs->caller)),
+			     cs->caller->uid,
+			     xstrdup (cgraph_node_name (val->spec_node)),
 			     val->spec_node->uid);
 
 		  cgraph_redirect_edge_callee (cs, val->spec_node);
@@ -2494,8 +2495,6 @@ ipcp_generate_summary (void)
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
       {
-	/* Unreachable nodes should have been eliminated before ipcp.  */
-	gcc_assert (node->needed || node->reachable);
 	node->local.versionable
 	  = tree_versionable_function_p (node->symbol.decl);
 	ipa_analyze_node (node);
@@ -2544,7 +2543,7 @@ struct ipa_opt_pass_d pass_ipa_cp =
   0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_dump_cgraph |
+  TODO_dump_symtab |
   TODO_remove_functions | TODO_ggc_collect /* todo_flags_finish */
  },
  ipcp_generate_summary,			/* generate_summary */

@@ -41,58 +41,42 @@ namespace std _GLIBCXX_VISIBILITY(default)
   {
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-    // General case for x = (ax + c) mod m -- use Schrage's algorithm to
-    // avoid integer overflow.
-    //
-    // Because a and c are compile-time integral constants the compiler
-    // kindly elides any unreachable paths.
+    // General case for x = (ax + c) mod m -- use Schrage's algorithm
+    // to avoid integer overflow.
     //
     // Preconditions:  a > 0, m > 0.
     //
-    // XXX FIXME: as-is, only works correctly for __m % __a < __m / __a. 
-    //
-    template<typename _Tp, _Tp __m, _Tp __a, _Tp __c, bool>
-      struct _Mod
-      {
-	static _Tp
-	__calc(_Tp __x)
-	{
-	  if (__a == 1)
-	    __x %= __m;
-	  else
-	    {
-	      static const _Tp __q = __m / __a;
-	      static const _Tp __r = __m % __a;
-
-	      _Tp __t1 = __a * (__x % __q);
-	      _Tp __t2 = __r * (__x / __q);
-	      if (__t1 >= __t2)
-		__x = __t1 - __t2;
-	      else
-		__x = __m - __t2 + __t1;
-	    }
-
-	  if (__c != 0)
-	    {
-	      const _Tp __d = __m - __x;
-	      if (__d > __c)
-		__x += __c;
-	      else
-		__x = __c - __d;
-	    }
-	  return __x;
-	}
-      };
-
-    // Special case for m == 0 -- use unsigned integer overflow as modulo
-    // operator.
+    // Note: only works correctly for __m % __a < __m / __a.
     template<typename _Tp, _Tp __m, _Tp __a, _Tp __c>
-      struct _Mod<_Tp, __m, __a, __c, true>
+      _Tp
+      _Mod<_Tp, __m, __a, __c, false, true>::
+      __calc(_Tp __x)
       {
-	static _Tp
-	__calc(_Tp __x)
-	{ return __a * __x + __c; }
-      };
+	if (__a == 1)
+	  __x %= __m;
+	else
+	  {
+	    static const _Tp __q = __m / __a;
+	    static const _Tp __r = __m % __a;
+
+	    _Tp __t1 = __a * (__x % __q);
+	    _Tp __t2 = __r * (__x / __q);
+	    if (__t1 >= __t2)
+	      __x = __t1 - __t2;
+	    else
+	      __x = __m - __t2 + __t1;
+	  }
+
+	if (__c != 0)
+	  {
+	    const _Tp __d = __m - __x;
+	    if (__d > __c)
+	      __x += __c;
+	    else
+	      __x = __c - __d;
+	  }
+	return __x;
+      }
 
     template<typename _InputIterator, typename _OutputIterator,
 	     typename _UnaryOperation>

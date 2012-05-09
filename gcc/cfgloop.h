@@ -278,7 +278,8 @@ gcov_type expected_loop_iterations_unbounded (const struct loop *);
 extern unsigned expected_loop_iterations (const struct loop *);
 extern rtx doloop_condition_get (rtx);
 
-void estimate_numbers_of_iterations_loop (struct loop *, bool);
+void estimate_numbers_of_iterations_loop (struct loop *);
+void record_niter_bound (struct loop *, double_int, bool, bool);
 bool estimated_loop_iterations (struct loop *, double_int *);
 bool max_loop_iterations (struct loop *, double_int *);
 HOST_WIDE_INT estimated_loop_iterations_int (struct loop *);

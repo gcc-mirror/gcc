@@ -22,7 +22,7 @@ type Sockaddr interface {
 
 type RawSockaddrAny struct {
 	Addr RawSockaddr
-	Pad  [12]int8
+	Pad  [96]int8
 }
 
 const SizeofSockaddrAny = 0x1c

@@ -1181,7 +1181,7 @@ cris_return_addr_rtx (int count, rtx frameaddr ATTRIBUTE_UNUSED)
      present).  Apparently we can't eliminate from the frame-pointer in
      that direction, so use the incoming args (maybe pretended) pointer.  */
   return count == 0
-    ? gen_rtx_MEM (Pmode, plus_constant (virtual_incoming_args_rtx, -4))
+    ? gen_rtx_MEM (Pmode, plus_constant (Pmode, virtual_incoming_args_rtx, -4))
     : NULL_RTX;
 }
 
@@ -1695,6 +1695,7 @@ cris_normal_notice_update_cc (rtx exp, rtx insn)
 		       && (REGNO (SET_SRC (exp))
 			   > CRIS_LAST_GENERAL_REGISTER))
 		   || (TARGET_V32
+		       && REG_P (SET_DEST (exp))
 		       && satisfies_constraint_I (SET_SRC (exp))))
 	    {
 	      /* There's no CC0 change for this case.  Just check
@@ -2815,14 +2816,14 @@ cris_split_movdx (rtx *operands)
 			  operand_subword (dest, reverse, TRUE, mode),
 			  change_address
 			  (src, SImode,
-			   plus_constant (addr,
+			   plus_constant (Pmode, addr,
 					  reverse * UNITS_PER_WORD))));
 	      emit_insn (gen_rtx_SET
 			 (VOIDmode,
 			  operand_subword (dest, ! reverse, TRUE, mode),
 			  change_address
 			  (src, SImode,
-			   plus_constant (addr,
+			   plus_constant (Pmode, addr,
 					  (! reverse) *
 					  UNITS_PER_WORD))));
 	    }
@@ -2882,7 +2883,7 @@ cris_split_movdx (rtx *operands)
 	  emit_insn (gen_rtx_SET
 		     (VOIDmode,
 		      change_address (dest, SImode,
-				      plus_constant (addr,
+				      plus_constant (Pmode, addr,
 						     UNITS_PER_WORD)),
 		      operand_subword (src, 1, TRUE, mode)));
 	}
@@ -2954,7 +2955,8 @@ cris_expand_prologue (void)
 	{
 	  insn = emit_insn (gen_rtx_SET (VOIDmode,
 					 stack_pointer_rtx,
-					 plus_constant (stack_pointer_rtx,
+					 plus_constant (Pmode,
+							stack_pointer_rtx,
 							-4)));
 	  /* FIXME: When dwarf2 frame output and unless asynchronous
 	     exceptions, make dwarf2 bundle together all stack
@@ -2982,7 +2984,7 @@ cris_expand_prologue (void)
     {
       insn = emit_insn (gen_rtx_SET (VOIDmode,
 				     stack_pointer_rtx,
-				     plus_constant (stack_pointer_rtx,
+				     plus_constant (Pmode, stack_pointer_rtx,
 						    -4 - pretend)));
       pretend = 0;
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -2999,7 +3001,7 @@ cris_expand_prologue (void)
     {
       insn = emit_insn (gen_rtx_SET (VOIDmode,
 				     stack_pointer_rtx,
-				     plus_constant (stack_pointer_rtx,
+				     plus_constant (Pmode, stack_pointer_rtx,
 						    -4 - pretend)));
       pretend = 0;
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -3052,7 +3054,7 @@ cris_expand_prologue (void)
 		    {
 		      mem
 			= gen_rtx_MEM (SImode,
-				       plus_constant (stack_pointer_rtx,
+				       plus_constant (Pmode, stack_pointer_rtx,
 						      -(n_saved * 4 + size)));
 		      set_mem_alias_set (mem, get_frame_alias_set ());
 		      insn
@@ -3065,7 +3067,7 @@ cris_expand_prologue (void)
 		      insn
 			= gen_rtx_SET (VOIDmode,
 				       stack_pointer_rtx,
-				       plus_constant (stack_pointer_rtx,
+				       plus_constant (Pmode, stack_pointer_rtx,
 						      -(n_saved * 4 + size)));
 		      insn = emit_insn (insn);
 		      RTX_FRAME_RELATED_P (insn) = 1;
@@ -3083,7 +3085,8 @@ cris_expand_prologue (void)
 
 	      insn = emit_insn (gen_rtx_SET (VOIDmode,
 					     stack_pointer_rtx,
-					     plus_constant (stack_pointer_rtx,
+					     plus_constant (Pmode,
+							    stack_pointer_rtx,
 							    -4 - size)));
 	      RTX_FRAME_RELATED_P (insn) = 1;
 
@@ -3113,7 +3116,7 @@ cris_expand_prologue (void)
 	{
 	  mem
 	    = gen_rtx_MEM (SImode,
-			   plus_constant (stack_pointer_rtx,
+			   plus_constant (Pmode, stack_pointer_rtx,
 					  -(n_saved * 4 + size)));
 	  set_mem_alias_set (mem, get_frame_alias_set ());
 	  insn = cris_emit_movem_store (mem, GEN_INT (n_saved),
@@ -3124,7 +3127,7 @@ cris_expand_prologue (void)
 	  insn
 	    = gen_rtx_SET (VOIDmode,
 			   stack_pointer_rtx,
-			   plus_constant (stack_pointer_rtx,
+			   plus_constant (Pmode, stack_pointer_rtx,
 					  -(n_saved * 4 + size)));
 	  insn = emit_insn (insn);
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -3140,7 +3143,8 @@ cris_expand_prologue (void)
 	{
 	  insn = emit_insn (gen_rtx_SET (VOIDmode,
 					 stack_pointer_rtx,
-					 plus_constant (stack_pointer_rtx,
+					 plus_constant (Pmode,
+							stack_pointer_rtx,
 							-cfoa_size)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  framesize += cfoa_size;
@@ -3150,7 +3154,8 @@ cris_expand_prologue (void)
     {
       insn = emit_insn (gen_rtx_SET (VOIDmode,
 				     stack_pointer_rtx,
-				     plus_constant (stack_pointer_rtx,
+				     plus_constant (Pmode,
+						    stack_pointer_rtx,
 						    -(cfoa_size + size))));
       RTX_FRAME_RELATED_P (insn) = 1;
       framesize += size + cfoa_size;
@@ -3248,7 +3253,7 @@ cris_expand_epilogue (void)
 	       the saved registers.  We have to adjust for that.  */
 	    emit_insn (gen_rtx_SET (VOIDmode,
 				    stack_pointer_rtx,
-				    plus_constant (stack_pointer_rtx,
+				    plus_constant (Pmode, stack_pointer_rtx,
 						   argspace_offset)));
 	    /* Make sure we only do this once.  */
 	    argspace_offset = 0;
@@ -3274,7 +3279,7 @@ cris_expand_epilogue (void)
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode,
 				  stack_pointer_rtx,
-				  plus_constant (stack_pointer_rtx,
+				  plus_constant (Pmode, stack_pointer_rtx,
 						 argspace_offset)));
 	  argspace_offset = 0;
 	}
@@ -3333,7 +3338,7 @@ cris_expand_epilogue (void)
 
       emit_insn (gen_rtx_SET (VOIDmode,
 			      stack_pointer_rtx,
-			      plus_constant (stack_pointer_rtx, size)));
+			      plus_constant (Pmode, stack_pointer_rtx, size)));
     }
 
   /* If this function has no pushed register parameters
@@ -3395,7 +3400,8 @@ cris_expand_epilogue (void)
 
       emit_insn (gen_rtx_SET (VOIDmode,
 			      stack_pointer_rtx,
-			      plus_constant (stack_pointer_rtx, pretend)));
+			      plus_constant (Pmode, stack_pointer_rtx,
+					     pretend)));
     }
 
   /* Perform the "physical" unwinding that the EH machinery calculated.  */
@@ -3443,7 +3449,8 @@ cris_gen_movem_load (rtx src, rtx nregs_rtx, int nprefix)
   if (GET_CODE (XEXP (src, 0)) == POST_INC)
     {
       RTVEC_ELT (vec, nprefix + 1)
-	= gen_rtx_SET (VOIDmode, srcreg, plus_constant (srcreg, nregs * 4));
+	= gen_rtx_SET (VOIDmode, srcreg,
+		       plus_constant (Pmode, srcreg, nregs * 4));
       eltno++;
     }
 
@@ -3514,7 +3521,8 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
 
       RTVEC_ELT (vec, 0) = mov;
       RTVEC_ELT (vec, 1) = gen_rtx_SET (VOIDmode, destreg,
-					plus_constant (destreg, increment));
+					plus_constant (Pmode, destreg,
+						       increment));
       if (frame_related)
 	{
 	  RTX_FRAME_RELATED_P (mov) = 1;
@@ -3527,7 +3535,7 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
       RTVEC_ELT (vec, 0)
 	= gen_rtx_SET (VOIDmode,
 		       replace_equiv_address (dest,
-					      plus_constant (destreg,
+					      plus_constant (Pmode, destreg,
 							     increment)),
 		       gen_rtx_REG (SImode, regno));
       regno += regno_inc;
@@ -3542,7 +3550,7 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
 	{
 	  RTVEC_ELT (vec, 1)
 	    = gen_rtx_SET (VOIDmode, destreg,
-			   plus_constant (destreg,
+			   plus_constant (Pmode, destreg,
 					  increment != 0
 					  ? increment : nregs * 4));
 	  eltno++;
@@ -4143,7 +4151,7 @@ cris_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   if (TARGET_V32)
     {
       mem = adjust_address (m_tramp, SImode, 6);
-      emit_move_insn (mem, plus_constant (tramp, 38));
+      emit_move_insn (mem, plus_constant (Pmode, tramp, 38));
       mem = adjust_address (m_tramp, SImode, 22);
       emit_move_insn (mem, chain_value);
       mem = adjust_address (m_tramp, SImode, 28);

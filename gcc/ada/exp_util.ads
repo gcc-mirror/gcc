@@ -744,14 +744,17 @@ package Exp_Util is
    --  terms is scalar. This is true for scalars in the Ada sense, and for
    --  packed arrays which are represented by a scalar (modular) type.
 
-   function Requires_Cleanup_Actions (N : Node_Id) return Boolean;
+   function Requires_Cleanup_Actions
+     (N         : Node_Id;
+      Lib_Level : Boolean) return Boolean;
    --  Given a node N, determine whether its declarative and/or statement list
    --  contains one of the following:
    --
    --    1) controlled objects
    --    2) library-level tagged types
    --
-   --  The above cases require special actions on scope exit.
+   --  These cases require special actions on scope exit. The flag Lib_Level
+   --  is set True if the construct is at library level, and False otherwise.
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean;
    --  Given the node for an N_Unchecked_Type_Conversion, return True if this

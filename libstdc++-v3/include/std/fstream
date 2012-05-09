@@ -1,7 +1,7 @@
 // File based streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010, 2011
+// 2006, 2007, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -55,16 +55,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief  The actual work of input and output (for files).
    *  @ingroup io
    *
+   *  @tparam _CharT  Type of character stream.
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
+   *
    *  This class associates both its input and output sequence with an
    *  external disk file, and maintains a joint file position for both
    *  sequences.  Many of its semantics are described in terms of similar
    *  behavior in the Standard C Library's @c FILE streams.
+   *
+   *  Requirements on traits_type, specific to this class:
+   *  - traits_type::pos_type must be fpos<traits_type::state_type>
+   *  - traits_type::off_type must be streamoff
+   *  - traits_type::state_type must be Assignable and DefaultConstructible,
+   *  - traits_type::state_type() must be the initial state for codecvt.
    */
-  // Requirements on traits_type, specific to this class:
-  // traits_type::pos_type must be fpos<traits_type::state_type>
-  // traits_type::off_type must be streamoff
-  // traits_type::state_type must be Assignable and DefaultConstructible,
-  // and traits_type::state_type() must be the initial state for codecvt.
   template<typename _CharT, typename _Traits>
     class basic_filebuf : public basic_streambuf<_CharT, _Traits>
     {
@@ -411,6 +416,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief  Controlling input for files.
    *  @ingroup io
    *
+   *  @tparam _CharT  Type of character stream.
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
+   *
    *  This class supports reading from named files, using the inherited
    *  functions from std::basic_istream.  To control the associated
    *  sequence, an instance of std::basic_filebuf is used, which this page
@@ -578,6 +587,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief  Controlling output for files.
    *  @ingroup io
+   *
+   *  @tparam _CharT  Type of character stream.
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
    *
    *  This class supports reading from named files, using the inherited
    *  functions from std::basic_ostream.  To control the associated
@@ -751,6 +764,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief  Controlling input and output for files.
    *  @ingroup io
+   *
+   *  @tparam _CharT  Type of character stream.
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
    *
    *  This class supports reading from and writing to named files, using
    *  the inherited functions from std::basic_iostream.  To control the

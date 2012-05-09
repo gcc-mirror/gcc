@@ -968,12 +968,12 @@ void
 lto_output_toplevel_asms (void)
 {
   struct output_block *ob;
-  struct cgraph_asm_node *can;
+  struct asm_node *can;
   char *section_name;
   struct lto_output_stream *header_stream;
   struct lto_asm_header header;
 
-  if (! cgraph_asm_nodes)
+  if (! asm_nodes)
     return;
 
   ob = create_output_block (LTO_section_asm);
@@ -981,7 +981,7 @@ lto_output_toplevel_asms (void)
   /* Make string 0 be a NULL string.  */
   streamer_write_char_stream (ob->string_stream, 0);
 
-  for (can = cgraph_asm_nodes; can; can = can->next)
+  for (can = asm_nodes; can; can = can->next)
     {
       streamer_write_string_cst (ob, ob->main_stream, can->asm_str);
       streamer_write_hwi (ob, can->order);
@@ -1456,7 +1456,7 @@ produce_symtab (struct output_block *ob,
 	 in the LTO symbol table to prevent linker from forcing them
 	 into the output. */
       if (DECL_COMDAT (vnode->symbol.decl)
-	  && !vnode->force_output
+	  && !vnode->symbol.force_output
 	  && vnode->finalized 
 	  && DECL_VIRTUAL_P (vnode->symbol.decl))
 	continue;
@@ -1470,7 +1470,7 @@ produce_symtab (struct output_block *ob,
       if (!DECL_EXTERNAL (vnode->symbol.decl))
 	continue;
       if (DECL_COMDAT (vnode->symbol.decl)
-	  && !vnode->force_output
+	  && !vnode->symbol.force_output
 	  && vnode->finalized 
 	  && DECL_VIRTUAL_P (vnode->symbol.decl))
 	continue;

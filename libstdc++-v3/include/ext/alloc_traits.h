@@ -99,6 +99,7 @@ template<typename _Alloc>
     typedef typename _Base_type::pointer            pointer;
     typedef typename _Base_type::const_pointer      const_pointer;
     typedef typename _Base_type::size_type          size_type;
+    typedef typename _Base_type::difference_type    difference_type;
     // C++0x allocators do not define reference or const_reference
     typedef value_type&                             reference;
     typedef const value_type&                       const_reference;
@@ -170,6 +171,7 @@ template<typename _Alloc>
     typedef typename _Alloc::reference              reference;
     typedef typename _Alloc::const_reference        const_reference;
     typedef typename _Alloc::size_type              size_type;
+    typedef typename _Alloc::difference_type        difference_type;
 
     static pointer
     allocate(_Alloc& __a, size_type __n)

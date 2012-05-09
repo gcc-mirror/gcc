@@ -238,6 +238,62 @@ release_ssa_name (tree var)
     }
 }
 
+/* If the alignment of the pointer described by PI is known, return true and
+   store the alignment and the deviation from it into *ALIGNP and *MISALIGNP
+   respectively.  Otherwise return false.  */
+
+bool
+get_ptr_info_alignment (struct ptr_info_def *pi, unsigned int *alignp,
+			unsigned int *misalignp)
+{
+  if (pi->align)
+    {
+      *alignp = pi->align;
+      *misalignp = pi->misalign;
+      return true;
+    }
+  else
+    return false;
+}
+
+/* State that the pointer described by PI has unknown alignment.  */
+
+void
+mark_ptr_info_alignment_unknown (struct ptr_info_def *pi)
+{
+  pi->align = 0;
+  pi->misalign = 0;
+}
+
+/* Store the the power-of-two byte alignment and the deviation from that
+   alignment of pointer described by PI to ALIOGN and MISALIGN
+   respectively.  */
+
+void
+set_ptr_info_alignment (struct ptr_info_def *pi, unsigned int align,
+			    unsigned int misalign)
+{
+  gcc_checking_assert (align != 0);
+  gcc_assert ((align & (align - 1)) == 0);
+  gcc_assert ((misalign & ~(align - 1)) == 0);
+
+  pi->align = align;
+  pi->misalign = misalign;
+}
+
+/* If pointer decribed by PI has known alignment, increase its known
+   misalignment by INCREMENT modulo its current alignment.  */
+
+void
+adjust_ptr_info_misalignment (struct ptr_info_def *pi,
+			      unsigned int increment)
+{
+  if (pi->align != 0)
+    {
+      pi->misalign += increment;
+      pi->misalign &= (pi->align - 1);
+    }
+}
 
 /* Return the alias information associated with pointer T.  It creates a
    new instance if none existed.  */
@@ -254,8 +310,7 @@ get_ptr_info (tree t)
     {
       pi = ggc_alloc_cleared_ptr_info_def ();
       pt_solution_reset (&pi->pt);
-      pi->align = 1;
-      pi->misalign = 0;
+      mark_ptr_info_alignment_unknown (pi);
       SSA_NAME_PTR_INFO (t) = pi;
     }
 

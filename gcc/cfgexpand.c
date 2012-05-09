@@ -873,7 +873,7 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   /* If this fails, we've overflowed the stack frame.  Error nicely?  */
   gcc_assert (offset == trunc_int_for_mode (offset, Pmode));
 
-  x = plus_constant (base, offset);
+  x = plus_constant (Pmode, base, offset);
   x = gen_rtx_MEM (DECL_MODE (SSAVAR (decl)), x);
 
   if (TREE_CODE (decl) != SSA_NAME)
@@ -1241,8 +1241,9 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
       if (really_expand)
         expand_one_register_var (origvar);
     }
-  else if (!host_integerp (DECL_SIZE_UNIT (var), 1))
+  else if (! valid_constant_size_p (DECL_SIZE_UNIT (var)))
     {
+      /* Reject variables which cover more than half of the address-space.  */
       if (really_expand)
 	{
 	  error ("size of variable %q+D is too large", var);
@@ -2835,6 +2836,7 @@ expand_debug_expr (tree exp)
 	}
       /* FALLTHROUGH */
     case INDIRECT_REF:
+      inner_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
       op0 = expand_debug_expr (TREE_OPERAND (exp, 0));
       if (!op0)
 	return NULL;
@@ -2852,7 +2854,7 @@ expand_debug_expr (tree exp)
 	  if (!op1 || !CONST_INT_P (op1))
 	    return NULL;
 
-	  op0 = plus_constant (op0, INTVAL (op1));
+	  op0 = plus_constant (inner_mode, op0, INTVAL (op1));
 	}
 
       if (POINTER_TYPE_P (TREE_TYPE (exp)))
@@ -3346,8 +3348,10 @@ expand_debug_expr (tree exp)
 		  && (bitoffset % BITS_PER_UNIT) == 0
 		  && bitsize > 0
 		  && bitsize == maxsize)
-		return plus_constant (gen_rtx_DEBUG_IMPLICIT_PTR (mode, decl),
-				      bitoffset / BITS_PER_UNIT);
+		{
+		  rtx base = gen_rtx_DEBUG_IMPLICIT_PTR (mode, decl);
+		  return plus_constant (mode, base, bitoffset / BITS_PER_UNIT);
+		}
 	    }
 
 	  return NULL;
@@ -3729,7 +3733,8 @@ expand_gimple_basic_block (basic_block bb)
      block to be in GIMPLE, instead of RTL.  Therefore, we need to
      access the BB sequence directly.  */
   stmts = bb_seq (bb);
-  bb->il.gimple = NULL;
+  bb->il.gimple.seq = NULL;
+  bb->il.gimple.phi_nodes = NULL;
   rtl_profile_for_bb (bb);
   init_rtl_bb_info (bb);
   bb->flags |= BB_RTL;

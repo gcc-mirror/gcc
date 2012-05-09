@@ -6,4 +6,6 @@ LIB2ADD_ST = \
 	$(srcdir)/config/rs6000/crtsavgpr.S \
 	$(srcdir)/config/rs6000/crtresgpr.S \
 	$(srcdir)/config/rs6000/crtresxfpr.S \
-	$(srcdir)/config/rs6000/crtresxgpr.S
+	$(srcdir)/config/rs6000/crtresxgpr.S \
+	$(srcdir)/config/rs6000/crtsavevr.S \
+	$(srcdir)/config/rs6000/crtrestvr.S

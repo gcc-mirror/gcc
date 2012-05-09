@@ -7383,6 +7383,7 @@ package body Sem_Ch6 is
 
    function Can_Override_Operator (Subp : Entity_Id) return Boolean is
       Typ : Entity_Id;
+
    begin
       if Nkind (Subp) /= N_Defining_Operator_Symbol then
          return False;
@@ -7390,7 +7391,10 @@ package body Sem_Ch6 is
       else
          Typ := Base_Type (Etype (First_Formal (Subp)));
 
+         --  Check explicitly that the operation is a primitive of the type
+
          return Operator_Matches_Spec (Subp, Subp)
+           and then not Is_Generic_Type (Typ)
            and then Scope (Subp) = Scope (Typ)
            and then not Is_Class_Wide_Type (Typ);
       end if;
@@ -10813,15 +10817,19 @@ package body Sem_Ch6 is
                        Related_Nod => Related_Nod,
                        Scope_Id    => Scope (Current_Scope));
 
-                  --  If the designated type of the itype is an itype we
-                  --  decorate it with the Has_Delayed_Freeze attribute to
-                  --  avoid problems with the backend.
+                  --  If the designated type of the itype is an itype that is
+                  --  not frozen yet, we set the Has_Delayed_Freeze attribute
+                  --  on the access subtype, to prevent order-of-elaboration
+                  --  issues in the backend.
 
                   --  Example:
                   --     type T is access procedure;
                   --     procedure Op (O : not null T);
 
-                  if Is_Itype (Directly_Designated_Type (Formal_Type)) then
+                  if Is_Itype (Directly_Designated_Type (Formal_Type))
+                    and then
+                      not Is_Frozen (Directly_Designated_Type (Formal_Type))
+                  then
                      Set_Has_Delayed_Freeze (Formal_Type);
                   end if;
                end if;

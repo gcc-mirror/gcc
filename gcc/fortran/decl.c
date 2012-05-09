@@ -1658,7 +1658,10 @@ scalar:
       bool delayed = (gfc_state_stack->sym == c->ts.u.derived)
 		     || (!c->ts.u.derived->components
 			 && !c->ts.u.derived->attr.zero_comp);
-      return gfc_build_class_symbol (&c->ts, &c->attr, &c->as, delayed);
+      gfc_try t2 = gfc_build_class_symbol (&c->ts, &c->attr, &c->as, delayed);
+
+      if (t != FAILURE)
+	t = t2;
     }
 
   return t;

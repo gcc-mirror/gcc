@@ -476,10 +476,7 @@ streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
   else if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
     {
       HOST_WIDE_INT len = streamer_read_hwi (ib);
-      result = ggc_alloc_zone_cleared_tree_node ((len - 1) * sizeof (tree)
-						 + sizeof (struct tree_vector),
-						 &tree_zone);
-      TREE_SET_CODE (result, VECTOR_CST);
+      result = make_vector (len);
     }
   else if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
     {

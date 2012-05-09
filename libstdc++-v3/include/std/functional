@@ -1856,7 +1856,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       {
 	typedef _Function_base::_Base_manager<_Functor*> _Base;
 
-    public:
+      public:
 	static bool
 	_M_manager(_Any_data& __dest, const _Any_data& __source,
 		   _Manager_operation __op)
@@ -1994,7 +1994,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       typedef _Simple_type_wrapper<_Functor> _Wrapper;
       typedef _Function_base::_Base_manager<_Wrapper> _Base;
 
-     public:
+    public:
       static bool
       _M_manager(_Any_data& __dest, const _Any_data& __source,
 		 _Manager_operation __op)
@@ -2038,7 +2038,23 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     {
       typedef _Res _Signature_type(_ArgTypes...);
 
-      struct _Useless { };
+      template<typename _Functor>
+	using _Invoke = decltype(__callable_functor(std::declval<_Functor&>())
+				 (std::declval<_ArgTypes>()...) );
+
+      template<typename _CallRes, typename _Res1>
+	struct _CheckResult
+	: is_convertible<_CallRes, _Res1> { };
+
+      template<typename _CallRes>
+	struct _CheckResult<_CallRes, void>
+	: true_type { };
+
+      template<typename _Functor>
+	using _Callable = _CheckResult<_Invoke<_Functor>, _Res>;
+
+      template<typename _Cond, typename _Tp>
+	using _Requires = typename enable_if<_Cond::value, _Tp>::type;
 
     public:
       typedef _Res result_type;
@@ -2099,11 +2115,9 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
        *  If @a __f is a non-NULL function pointer or an object of type @c
        *  reference_wrapper<F>, this function will not throw.
        */
-      template<typename _Functor>
-	function(_Functor __f,
-		 typename enable_if<
-			   !is_integral<_Functor>::value, _Useless>::type
-		   = _Useless());
+      template<typename _Functor,
+	       typename = _Requires<_Callable<_Functor>, void>>
+	function(_Functor);
 
       /**
        *  @brief %Function assignment operator.
@@ -2178,7 +2192,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
        *  reference_wrapper<F>, this function will not throw.
        */
       template<typename _Functor>
-	typename enable_if<!is_integral<_Functor>::value, function&>::type
+	_Requires<_Callable<_Functor>, function&>
 	operator=(_Functor&& __f)
 	{
 	  function(std::forward<_Functor>(__f)).swap(*this);
@@ -2187,7 +2201,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       /// @overload
       template<typename _Functor>
-	typename enable_if<!is_integral<_Functor>::value, function&>::type
+	function&
 	operator=(reference_wrapper<_Functor> __f) noexcept
 	{
 	  function(__f).swap(*this);
@@ -2294,11 +2308,9 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     }
 
   template<typename _Res, typename... _ArgTypes>
-    template<typename _Functor>
+    template<typename _Functor, typename>
       function<_Res(_ArgTypes...)>::
-      function(_Functor __f,
-	       typename enable_if<
-			!is_integral<_Functor>::value, _Useless>::type)
+      function(_Functor __f)
       : _Function_base()
       {
 	typedef _Function_handler<_Signature_type, _Functor> _My_handler;

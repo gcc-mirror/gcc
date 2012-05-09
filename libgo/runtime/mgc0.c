@@ -4,6 +4,8 @@
 
 // Garbage collector.
 
+#include <unistd.h>
+
 #include "runtime.h"
 #include "arch.h"
 #include "malloc.h"
@@ -918,7 +920,7 @@ cachestats(void)
 	uint64 stacks_sys;
 
 	stacks_inuse = 0;
-	stacks_sys = 0;
+	stacks_sys = runtime_stacks_sys;
 	for(m=runtime_allm; m; m=m->alllink) {
 		runtime_purgecachedstats(m);
 		// stacks_inuse += m->stackalloc->inuse;
@@ -1020,7 +1022,7 @@ runtime_gc(int32 force)
 	stealcache();
 	cachestats();
 
-	mstats.next_gc = mstats.heap_alloc+mstats.heap_alloc*gcpercent/100;
+	mstats.next_gc = mstats.heap_alloc+(mstats.heap_alloc-runtime_stacks_sys)*gcpercent/100;
 	m->gcing = 0;
 
 	m->locks++;	// disable gc during the mallocs in newproc
@@ -1329,6 +1331,8 @@ runtime_setblockspecial(void *v, bool s)
 void
 runtime_MHeap_MapBits(MHeap *h)
 {
+	size_t page_size;
+
 	// Caller has added extra mappings to the arena.
 	// Add extra mappings of bitmap words as needed.
 	// We allocate extra bitmap pieces in chunks of bitmapChunk.
@@ -1341,6 +1345,9 @@ runtime_MHeap_MapBits(MHeap *h)
 	n = (n+bitmapChunk-1) & ~(bitmapChunk-1);
 	if(h->bitmap_mapped >= n)
 		return;
+
+	page_size = getpagesize();
+	n = (n+page_size-1) & ~(page_size-1);
 
 	runtime_SysMap(h->arena_start - n, n - h->bitmap_mapped);
 	h->bitmap_mapped = n;

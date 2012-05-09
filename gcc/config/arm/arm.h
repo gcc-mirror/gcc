@@ -1613,6 +1613,30 @@ typedef struct
 #define HAVE_PRE_MODIFY_REG   TARGET_32BIT
 #define HAVE_POST_MODIFY_REG  TARGET_32BIT
 
+enum arm_auto_incmodes
+  {
+    ARM_POST_INC,
+    ARM_PRE_INC,
+    ARM_POST_DEC,
+    ARM_PRE_DEC
+  };
+
+#define ARM_AUTOINC_VALID_FOR_MODE_P(mode, code) \
+  (TARGET_32BIT && arm_autoinc_modes_ok_p (mode, code))
+#define USE_LOAD_POST_INCREMENT(mode) \
+  ARM_AUTOINC_VALID_FOR_MODE_P(mode, ARM_POST_INC)
+#define USE_LOAD_PRE_INCREMENT(mode)  \
+  ARM_AUTOINC_VALID_FOR_MODE_P(mode, ARM_PRE_INC)
+#define USE_LOAD_POST_DECREMENT(mode) \
+  ARM_AUTOINC_VALID_FOR_MODE_P(mode, ARM_POST_DEC)
+#define USE_LOAD_PRE_DECREMENT(mode)  \
+  ARM_AUTOINC_VALID_FOR_MODE_P(mode, ARM_PRE_DEC)
+
+#define USE_STORE_PRE_DECREMENT(mode) USE_LOAD_PRE_DECREMENT(mode)
+#define USE_STORE_PRE_INCREMENT(mode) USE_LOAD_PRE_INCREMENT(mode)
+#define USE_STORE_POST_DECREMENT(mode) USE_LOAD_POST_DECREMENT(mode)
+#define USE_STORE_POST_INCREMENT(mode) USE_LOAD_POST_INCREMENT(mode)
+
 /* Macros to check register numbers against specific register classes.  */
 
 /* These assume that REGNO is a hard or pseudo reg number.

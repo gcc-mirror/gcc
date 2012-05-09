@@ -2494,12 +2494,12 @@ derive_constant_upper_bound_ops (tree type, tree op0,
    of iterations.  UPPER is true if we are sure the loop iterates at most
    I_BOUND times.  */
 
-static void
+void
 record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
 		    bool upper)
 {
-  /* Update the bounds only when there is no previous estimation, or when the current
-     estimation is smaller.  */
+  /* Update the bounds only when there is no previous estimation, or when the
+     current estimation is smaller.  */
   if (upper
       && (!loop->any_upper_bound
 	  || double_int_ucmp (i_bound, loop->nb_iterations_upper_bound) < 0))
@@ -2514,6 +2514,14 @@ record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
       loop->any_estimate = true;
       loop->nb_iterations_estimate = i_bound;
     }
+
+  /* If an upper bound is smaller than the realistic estimate of the
+     number of iterations, use the upper bound instead.  */
+  if (loop->any_upper_bound
+      && loop->any_estimate
+      && double_int_ucmp (loop->nb_iterations_upper_bound,
+			  loop->nb_iterations_estimate) < 0)
+    loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
 }
 
 /* Records that AT_STMT is executed at most BOUND + 1 times in LOOP.  IS_EXIT
@@ -2638,47 +2646,6 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple stmt,
   niter_bound = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step);
   max = derive_constant_upper_bound (niter_bound);
   record_estimate (loop, niter_bound, max, stmt, false, realistic, upper);
-}
-
-/* Returns true if REF is a reference to an array at the end of a dynamically
-   allocated structure.  If this is the case, the array may be allocated larger
-   than its upper bound implies.  */
-
-bool
-array_at_struct_end_p (tree ref)
-{
-  tree base = get_base_address (ref);
-  tree parent, field;
-
-  /* Unless the reference is through a pointer, the size of the array matches
-     its declaration.  */
-  if (!base || (!INDIRECT_REF_P (base) && TREE_CODE (base) != MEM_REF))
-    return false;
-
-  for (;handled_component_p (ref); ref = parent)
-    {
-      parent = TREE_OPERAND (ref, 0);
-
-      if (TREE_CODE (ref) == COMPONENT_REF)
-	{
-	  /* All fields of a union are at its end.  */
-	  if (TREE_CODE (TREE_TYPE (parent)) == UNION_TYPE)
-	    continue;
-
-	  /* Unless the field is at the end of the struct, we are done.  */
-	  field = TREE_OPERAND (ref, 1);
-	  if (DECL_CHAIN (field))
-	    return false;
-	}
-
-      /* The other options are ARRAY_REF, ARRAY_RANGE_REF, VIEW_CONVERT_EXPR.
-	 In all these cases, we might be accessing the last element, and
-	 although in practice this will probably never happen, it is legal for
-	 the indices of this last element to exceed the bounds of the array.
-	 Therefore, continue checking.  */
-    }
-
-  return true;
 }
 
 /* Determine information about number of iterations a LOOP from the index
@@ -2991,7 +2958,7 @@ gcov_type_to_double_int (gcov_type val)
    is true also use estimates derived from undefined behavior.  */
 
 void
-estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
+estimate_numbers_of_iterations_loop (struct loop *loop)
 {
   VEC (edge, heap) *exits;
   tree niter, type;
@@ -3003,8 +2970,9 @@ estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
   /* Give up if we already have tried to compute an estimation.  */
   if (loop->estimate_state != EST_NOT_COMPUTED)
     return;
+
   loop->estimate_state = EST_AVAILABLE;
-  loop->any_upper_bound = false;
+  /* Force estimate compuation but leave any existing upper bound in place.  */
   loop->any_estimate = false;
 
   exits = get_loop_exit_edges (loop);
@@ -3025,8 +2993,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
     }
   VEC_free (edge, heap, exits);
 
-  if (use_undefined_p)
-    infer_loop_bounds_from_undefined (loop);
+  infer_loop_bounds_from_undefined (loop);
 
   /* If we have a measured profile, use it to estimate the number of
      iterations.  */
@@ -3036,14 +3003,6 @@ estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
       bound = gcov_type_to_double_int (nit);
       record_niter_bound (loop, bound, true, false);
     }
-
-  /* If an upper bound is smaller than the realistic estimate of the
-     number of iterations, use the upper bound instead.  */
-  if (loop->any_upper_bound
-      && loop->any_estimate
-      && double_int_ucmp (loop->nb_iterations_upper_bound,
-			  loop->nb_iterations_estimate) < 0)
-    loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
 }
 
 /* Sets NIT to the estimated number of executions of the latch of the
@@ -3054,7 +3013,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
 bool
 estimated_loop_iterations (struct loop *loop, double_int *nit)
 {
-  estimate_numbers_of_iterations_loop (loop, true);
+  estimate_numbers_of_iterations_loop (loop);
   if (!loop->any_estimate)
     return false;
 
@@ -3069,7 +3028,7 @@ estimated_loop_iterations (struct loop *loop, double_int *nit)
 bool
 max_loop_iterations (struct loop *loop, double_int *nit)
 {
-  estimate_numbers_of_iterations_loop (loop, true);
+  estimate_numbers_of_iterations_loop (loop);
   if (!loop->any_upper_bound)
     return false;
 
@@ -3196,7 +3155,7 @@ estimated_stmt_executions (struct loop *loop, double_int *nit)
 /* Records estimates on numbers of iterations of loops.  */
 
 void
-estimate_numbers_of_iterations (bool use_undefined_p)
+estimate_numbers_of_iterations (void)
 {
   loop_iterator li;
   struct loop *loop;
@@ -3207,7 +3166,7 @@ estimate_numbers_of_iterations (bool use_undefined_p)
 
   FOR_EACH_LOOP (li, loop, 0)
     {
-      estimate_numbers_of_iterations_loop (loop, use_undefined_p);
+      estimate_numbers_of_iterations_loop (loop);
     }
 
   fold_undefer_and_ignore_overflow_warnings ();
@@ -3403,7 +3362,7 @@ scev_probably_wraps_p (tree base, tree step,
 
   valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
 
-  estimate_numbers_of_iterations_loop (loop, true);
+  estimate_numbers_of_iterations_loop (loop);
   for (bound = loop->bounds; bound; bound = bound->next)
     {
       if (n_of_executions_at_most (at_stmt, bound, valid_niter))

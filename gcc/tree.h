@@ -4490,6 +4490,8 @@ build_int_cstu (tree type, unsigned HOST_WIDE_INT cst)
 extern tree build_int_cst (tree, HOST_WIDE_INT);
 extern tree build_int_cst_type (tree, HOST_WIDE_INT);
 extern tree build_int_cst_wide (tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT);
+extern tree make_vector_stat (unsigned MEM_STAT_DECL);
+#define make_vector(n) make_vector_stat (n MEM_STAT_INFO)
 extern tree build_vector_stat (tree, tree * MEM_STAT_DECL);
 #define build_vector(t,v) build_vector_stat (t, v MEM_STAT_INFO)
 extern tree build_vector_from_ctor (tree, VEC(constructor_elt,gc) *);
@@ -4598,6 +4600,7 @@ extern bool tree_expr_nonnegative_warnv_p (tree, bool *);
 extern bool may_negate_without_overflow_p (const_tree);
 extern tree strip_array_types (tree);
 extern tree excess_precision_type (tree);
+extern bool valid_constant_size_p (const_tree);
 
 /* Construct various nodes representing fract or accum data types.  */
 
@@ -5224,6 +5227,8 @@ extern bool contains_packed_reference (const_tree exp);
 
 extern tree array_ref_element_size (tree);
 
+bool array_at_struct_end_p (tree);
+
 /* Return a tree representing the lower bound of the array mentioned in
    EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
 
@@ -5619,10 +5624,12 @@ extern tree build_string_literal (int, const char *);
 extern bool validate_arglist (const_tree, ...);
 extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
 extern bool is_builtin_fn (tree);
-extern unsigned int get_object_alignment_1 (tree, unsigned HOST_WIDE_INT *);
+extern bool get_object_alignment_1 (tree, unsigned int *,
+				    unsigned HOST_WIDE_INT *);
 extern unsigned int get_object_alignment (tree);
 extern unsigned int get_object_or_type_alignment (tree);
-extern unsigned int get_pointer_alignment_1 (tree, unsigned HOST_WIDE_INT *);
+extern bool get_pointer_alignment_1 (tree, unsigned int *,
+				     unsigned HOST_WIDE_INT *);
 extern unsigned int get_pointer_alignment (tree);
 extern tree fold_call_stmt (gimple, bool);
 extern tree gimple_fold_builtin_snprintf_chk (gimple, tree, enum built_in_function);

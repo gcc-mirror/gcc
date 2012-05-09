@@ -136,18 +136,20 @@ rm -rf $DIR
 mkdir $DIR
 
 cd $DIR
+mkdir test
+cd test
 
 if test $keep = false; then
-  trap "cd ..; rm -rf $DIR" 0 1 2 3 14 15
+  trap "cd ../..; rm -rf $DIR" 0 1 2 3 14 15
 else
-  trap "cd ..; echo Keeping $DIR" 0 1 2 3 14 15
+  trap "cd ../..; echo Keeping $DIR" 0 1 2 3 14 15
 fi
 
 case "$srcdir" in
 	/*)
 		;;
 	*)
-		srcdir="../$srcdir"
+		srcdir="../../$srcdir"
                 ;;
 esac
 
@@ -158,7 +160,7 @@ case "$basedir" in
 	/*)
 		;;
 	*)
-		basedir="../$basedir"
+		basedir="../../$basedir"
                 ;;
 esac
 
@@ -189,10 +191,10 @@ x)
 			b=`basename $f`
 			rm -f $b
 			cp $basedir/$f $b
-		    elif test -f ../$f; then
+		    elif test -f ../../$f; then
 			b=`basename $f`
 			rm -f $b
-			cp ../$f $b
+			cp ../../$f $b
 		    else
 			echo "file $f not found" 1>&2
 			exit 1
@@ -224,10 +226,10 @@ x)
 			b=`basename $f`
 			rm -f $b
 			cp $basedir/$f $b
-		    elif test -f ../$f; then
+		    elif test -f ../../$f; then
 			b=`basename $f`
 			rm -f $b
-			cp ../$f $b
+			cp ../../$f $b
 		    else
 			echo "file $f not found" 1>&2
 			exit 1
@@ -347,18 +349,18 @@ localname() {
 	pattern='Test([^a-z].*)?'
 	# The -p option tells GNU nm not to sort.
 	# The -v option tells Solaris nm to sort by value.
-	tests=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
+	tests=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
 	if [ "x$tests" = x ]; then
 		echo 'gotest: warning: no tests matching '$pattern in _gotest_.o $xofile 1>&2
 		exit 2
 	fi
 	# benchmarks are named BenchmarkFoo.
 	pattern='Benchmark([^a-z].*)?'
-	benchmarks=$($NM -p -v _gotest_.o $xofile | egrep ' T .*\.'$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
+	benchmarks=$($NM -p -v _gotest_.o $xofile | egrep " $test .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
 
 	# examples are named ExampleFoo
 	pattern='Example([^a-z].*)?'
-	examples=$($NM -p -v _gotest_.o $xofile | egrep ' T .*\.'$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
+	examples=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
 
 	# package spec
 	echo 'package main'
@@ -455,27 +457,27 @@ xno)
 	exit $status
 	;;
 xyes)
-	rm -rf ../testsuite/*.o
+	rm -rf ../../testsuite/*.o
 	files=`echo *`
 	for f in $files; do
 		if test "$f" = "_obj" || test "$f" = "_test"; then
 			continue
 		fi
-		rm -rf ../testsuite/$f
+		rm -rf ../../testsuite/$f
 		if test -f $f; then
-			cp $f ../testsuite/
+			cp $f ../../testsuite/
 		else
-			ln -s ../$DIR/$f ../testsuite/
+			ln -s ../$DIR/test/$f ../../testsuite/
 		fi
 	done
-	cd ../testsuite
+	cd ../../testsuite
 	rm -rf _obj _test
 	mkdir _obj _test
 	if test "$testname" != ""; then
 	    GOTESTNAME="$testname"
 	    export GOTESTNAME
 	fi
-	$MAKE check RUNTESTFLAGS="$RUNTESTFLAGS GOTEST_TMPDIR=$DIR"
+	$MAKE check RUNTESTFLAGS="$RUNTESTFLAGS GOTEST_TMPDIR=$DIR/test"
 	# Useful when using make check-target-libgo
 	cat libgo.log >> libgo-all.log
 	cat libgo.sum >> libgo-all.sum

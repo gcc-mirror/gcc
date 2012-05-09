@@ -1348,18 +1348,19 @@ vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *vr_)
 
 /* Lookup an existing or insert a new vn_reference entry into the
    value table for the VUSE, SET, TYPE, OPERANDS reference which
-   has the constant value CST.  */
+   has the value VALUE which is either a constant or an SSA name.  */
 
 static vn_reference_t
-vn_reference_lookup_or_insert_constant_for_pieces (tree vuse,
-						   alias_set_type set,
-						   tree type,
-						   VEC (vn_reference_op_s,
-							heap) *operands,
-						   tree cst)
+vn_reference_lookup_or_insert_for_pieces (tree vuse,
+					  alias_set_type set,
+					  tree type,
+					  VEC (vn_reference_op_s,
+					       heap) *operands,
+					  tree value)
 {
   struct vn_reference_s vr1;
   vn_reference_t result;
+  unsigned value_id;
   vr1.vuse = vuse;
   vr1.operands = operands;
   vr1.type = type;
@@ -1367,10 +1368,13 @@ vn_reference_lookup_or_insert_constant_for_pieces (tree vuse,
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if (vn_reference_lookup_1 (&vr1, &result))
     return result;
+  if (TREE_CODE (value) == SSA_NAME)
+    value_id = VN_INFO (value)->value_id;
+  else
+    value_id = get_or_alloc_constant_value_id (value);
   return vn_reference_insert_pieces (vuse, set, type,
 				     VEC_copy (vn_reference_op_s, heap,
-					       operands), cst,
-				     get_or_alloc_constant_value_id (cst));
+					       operands), value, value_id);
 }
 
 /* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
@@ -1452,7 +1456,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  && offset2 + size2 >= offset + maxsize)
 	{
 	  tree val = build_zero_cst (vr->type);
-	  return vn_reference_lookup_or_insert_constant_for_pieces
+	  return vn_reference_lookup_or_insert_for_pieces
 	           (vuse, vr->set, vr->type, vr->operands, val);
 	}
     }
@@ -1473,7 +1477,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  && offset2 + size2 >= offset + maxsize)
 	{
 	  tree val = build_zero_cst (vr->type);
-	  return vn_reference_lookup_or_insert_constant_for_pieces
+	  return vn_reference_lookup_or_insert_for_pieces
 	           (vuse, vr->set, vr->type, vr->operands, val);
 	}
     }
@@ -1514,7 +1518,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 						   / BITS_PER_UNIT),
 						ref->size / BITS_PER_UNIT);
 	      if (val)
-		return vn_reference_lookup_or_insert_constant_for_pieces
+		return vn_reference_lookup_or_insert_for_pieces
 		         (vuse, vr->set, vr->type, vr->operands, val);
 	    }
 	}
@@ -1568,7 +1572,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 		    }
 		}
 	      if (val)
-		return vn_reference_lookup_or_insert_constant_for_pieces
+		return vn_reference_lookup_or_insert_for_pieces
 		         (vuse, vr->set, vr->type, vr->operands, val);
 	    }
 	}
@@ -2525,6 +2529,30 @@ set_ssa_val_to (tree from, tree to)
   return false;
 }
 
+/* Mark as processed all the definitions in the defining stmt of USE, or
+   the USE itself.  */
+
+static void
+mark_use_processed (tree use)
+{
+  ssa_op_iter iter;
+  def_operand_p defp;
+  gimple stmt = SSA_NAME_DEF_STMT (use);
+
+  if (SSA_NAME_IS_DEFAULT_DEF (use) || gimple_code (stmt) == GIMPLE_PHI)
+    {
+      VN_INFO (use)->use_processed = true;
+      return;
+    }
+
+  FOR_EACH_SSA_DEF_OPERAND (defp, stmt, iter, SSA_OP_ALL_DEFS)
+    {
+      tree def = DEF_FROM_PTR (defp);
+
+      VN_INFO (def)->use_processed = true;
+    }
+}
+
 /* Set all definitions in STMT to value number to themselves.
    Return true if a value number changed. */
 
@@ -2538,8 +2566,6 @@ defs_to_varying (gimple stmt)
   FOR_EACH_SSA_DEF_OPERAND (defp, stmt, iter, SSA_OP_ALL_DEFS)
     {
       tree def = DEF_FROM_PTR (defp);
-
-      VN_INFO (def)->use_processed = true;
       changed |= set_ssa_val_to (def, def);
     }
   return changed;
@@ -2598,27 +2624,41 @@ visit_reference_op_call (tree lhs, gimple stmt)
 {
   bool changed = false;
   struct vn_reference_s vr1;
-  tree result;
+  vn_reference_t vnresult = NULL;
   tree vuse = gimple_vuse (stmt);
+  tree vdef = gimple_vdef (stmt);
 
   vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
   vr1.operands = valueize_shared_reference_ops_from_call (stmt);
   vr1.type = gimple_expr_type (stmt);
   vr1.set = 0;
   vr1.hashcode = vn_reference_compute_hash (&vr1);
-  result = vn_reference_lookup_1 (&vr1, NULL);
-  if (result)
+  vn_reference_lookup_1 (&vr1, &vnresult);
+
+  if (vnresult)
     {
-      changed = set_ssa_val_to (lhs, result);
-      if (TREE_CODE (result) == SSA_NAME
-	  && VN_INFO (result)->has_constants)
-	VN_INFO (lhs)->has_constants = true;
+      if (vnresult->result_vdef)
+	changed |= set_ssa_val_to (vdef, vnresult->result_vdef);
+
+      if (!vnresult->result && lhs)
+	vnresult->result = lhs;
+
+      if (vnresult->result && lhs)
+	{
+	  changed |= set_ssa_val_to (lhs, vnresult->result);
+
+	  if (VN_INFO (vnresult->result)->has_constants)
+	    VN_INFO (lhs)->has_constants = true;
+	}
     }
   else
     {
       void **slot;
       vn_reference_t vr2;
-      changed = set_ssa_val_to (lhs, lhs);
+      if (vdef)
+	changed |= set_ssa_val_to (vdef, vdef);
+      if (lhs)
+	changed |= set_ssa_val_to (lhs, lhs);
       vr2 = (vn_reference_t) pool_alloc (current_info->references_pool);
       vr2->vuse = vr1.vuse;
       vr2->operands = valueize_refs (create_reference_ops_from_call (stmt));
@@ -2626,6 +2666,7 @@ visit_reference_op_call (tree lhs, gimple stmt)
       vr2->set = vr1.set;
       vr2->hashcode = vr1.hashcode;
       vr2->result = lhs;
+      vr2->result_vdef = vdef;
       slot = htab_find_slot_with_hash (current_info->references,
 				       vr2, vr2->hashcode, INSERT);
       if (*slot)
@@ -2795,7 +2836,6 @@ visit_reference_op_store (tree lhs, tree op, gimple stmt)
 	 going to valueize the references in-place.  */
       if ((vdef = gimple_vdef (stmt)))
 	{
-	  VN_INFO (vdef)->use_processed = true;
 	  changed |= set_ssa_val_to (vdef, vdef);
 	}
 
@@ -2817,7 +2857,6 @@ visit_reference_op_store (tree lhs, tree op, gimple stmt)
       def = gimple_vdef (stmt);
       use = gimple_vuse (stmt);
 
-      VN_INFO (def)->use_processed = true;
       changed |= set_ssa_val_to (def, SSA_VAL (use));
     }
 
@@ -3167,7 +3206,7 @@ visit_use (tree use)
   bool changed = false;
   gimple stmt = SSA_NAME_DEF_STMT (use);
 
-  VN_INFO (use)->use_processed = true;
+  mark_use_processed (use);
 
   gcc_assert (!SSA_NAME_IN_FREE_LIST (use));
   if (dump_file && (dump_flags & TDF_DETAILS)
@@ -3186,8 +3225,7 @@ visit_use (tree use)
     {
       if (gimple_code (stmt) == GIMPLE_PHI)
 	changed = visit_phi (stmt);
-      else if (!gimple_has_lhs (stmt)
-	       || gimple_has_volatile_ops (stmt))
+      else if (gimple_has_volatile_ops (stmt))
 	changed = defs_to_varying (stmt);
       else if (is_gimple_assign (stmt))
 	{
@@ -3349,34 +3387,44 @@ visit_use (tree use)
 
 	  /* ???  We could try to simplify calls.  */
 
-	  if (stmt_has_constants (stmt)
-	      && TREE_CODE (lhs) == SSA_NAME)
-	    VN_INFO (lhs)->has_constants = true;
-	  else if (TREE_CODE (lhs) == SSA_NAME)
+	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	    {
-	      /* We reset expr and constantness here because we may
-		 have been value numbering optimistically, and
-		 iterating. They may become non-constant in this case,
-		 even if they were optimistically constant. */
-	      VN_INFO (lhs)->has_constants = false;
-	      VN_INFO (lhs)->expr = NULL_TREE;
+	      if (stmt_has_constants (stmt))
+		VN_INFO (lhs)->has_constants = true;
+	      else
+		{
+		  /* We reset expr and constantness here because we may
+		     have been value numbering optimistically, and
+		     iterating.  They may become non-constant in this case,
+		     even if they were optimistically constant.  */
+		  VN_INFO (lhs)->has_constants = false;
+		  VN_INFO (lhs)->expr = NULL_TREE;
+		}
+
+	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+		{
+		  changed = defs_to_varying (stmt);
+		  goto done;
+		}
 	    }
 
-	  if (TREE_CODE (lhs) == SSA_NAME
-	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
-	    changed = defs_to_varying (stmt);
 	  /* ???  We should handle stores from calls.  */
-	  else if (TREE_CODE (lhs) == SSA_NAME)
+	  if (!gimple_call_internal_p (stmt)
+	      && (gimple_call_flags (stmt) & (ECF_PURE | ECF_CONST)
+		  /* If the call has side effects, subsequent calls won't have
+		     the same incoming vuse, so it's save to assume
+		     equality.  */
+		  || gimple_has_side_effects (stmt))
+	      && ((lhs && TREE_CODE (lhs) == SSA_NAME)
+		  || (!lhs && gimple_vdef (stmt))))
 	    {
-	      if (!gimple_call_internal_p (stmt)
-		  && gimple_call_flags (stmt) & (ECF_PURE | ECF_CONST))
-		changed = visit_reference_op_call (lhs, stmt);
-	      else
-		changed = defs_to_varying (stmt);
+	      changed = visit_reference_op_call (lhs, stmt);
 	    }
 	  else
 	    changed = defs_to_varying (stmt);
 	}
+      else
+	changed = defs_to_varying (stmt);
     }
  done:
   return changed;

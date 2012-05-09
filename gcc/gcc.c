@@ -5327,6 +5327,8 @@ eval_spec_function (const char *func, const char *args)
   int save_this_is_linker_script;
   const char *save_suffix_subst;
 
+  int save_growing_size;
+  void *save_growing_value;
 
   sf = lookup_spec_function (func);
   if (sf == NULL)
@@ -5342,6 +5344,18 @@ eval_spec_function (const char *func, const char *args)
   save_this_is_linker_script = this_is_linker_script;
   save_input_from_pipe = input_from_pipe;
   save_suffix_subst = suffix_subst;
+
+  /* If we have some object growing now, finalize it so the args and function
+     eval proceed from a cleared context.  This is needed to prevent the first
+     constructed arg from mistakenly including the growing value.  We'll push
+     this value back on the obstack once the function evaluation is done, to
+     restore a consistent processing context for our caller.  This is fine as
+     the address of growing objects isn't guaranteed to remain stable until
+     they are finalized, and we expect this situation to be rare enough for
+     the extra copy not to be an issue.  */
+  save_growing_size = obstack_object_size (&obstack);
+  if (save_growing_size > 0)
+    save_growing_value = obstack_finish (&obstack);
 
   /* Create a new spec processing context, and build the function
      arguments.  */
@@ -5367,6 +5381,9 @@ eval_spec_function (const char *func, const char *args)
   this_is_linker_script = save_this_is_linker_script;
   input_from_pipe = save_input_from_pipe;
   suffix_subst = save_suffix_subst;
+
+  if (save_growing_size > 0)
+    obstack_grow (&obstack, save_growing_value, save_growing_size);
 
   return funcval;
 }

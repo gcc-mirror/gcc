@@ -6187,7 +6187,7 @@ label:
   if (TARGET_SH5 && true_regnum (operands[1]) < 16)
     {
       emit_move_insn (stack_pointer_rtx,
-		      plus_constant (stack_pointer_rtx, -8));
+		      plus_constant (Pmode, stack_pointer_rtx, -8));
       tos = gen_tmp_stack_mem (DFmode, stack_pointer_rtx);
     }
   else
@@ -6203,7 +6203,8 @@ label:
 			     gen_rtx_POST_INC (Pmode, stack_pointer_rtx));
   insn = emit_insn (gen_movdf_i4 (operands[0], tos, operands[2]));
   if (TARGET_SH5 && true_regnum (operands[0]) < 16)
-    emit_move_insn (stack_pointer_rtx, plus_constant (stack_pointer_rtx, 8));
+    emit_move_insn (stack_pointer_rtx,
+		    plus_constant (Pmode, stack_pointer_rtx, 8));
   else
     add_reg_note (insn, REG_INC, stack_pointer_rtx);
   DONE;
@@ -6413,7 +6414,7 @@ label:
     case PLUS:
       emit_insn (gen_movsf_ie (reg0, operands[1], operands[2]));
       operands[1] = copy_rtx (operands[1]);
-      XEXP (operands[1], 0) = plus_constant (addr, 4);
+      XEXP (operands[1], 0) = plus_constant (Pmode, addr, 4);
       emit_insn (gen_movsf_ie (reg1, operands[1], operands[2]));
       break;
       
@@ -6480,7 +6481,7 @@ label:
       emit_insn (gen_movsf_ie (operands[0], reg0, operands[2]));
 
       operands[0] = copy_rtx (operands[0]);
-      XEXP (operands[0], 0) = plus_constant (addr, 4);
+      XEXP (operands[0], 0) = plus_constant (Pmode, addr, 4);
 
       emit_insn (gen_movsf_ie (operands[0], reg1, operands[2]));	 
       break;
@@ -7096,11 +7097,57 @@ label:
 }
   [(set_attr "type" "cbranch")])
 
+;; The *branch_true patterns help combine when trying to invert conditions.
+(define_insn "*branch_true"
+  [(set (pc) (if_then_else (ne (zero_extend:SI (subreg:QI (reg:SI T_REG) 0))
+			       (const_int 0))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))]
+  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
+{
+  return output_branch (1, insn, operands);
+}
+  [(set_attr "type" "cbranch")])
+
+(define_insn "*branch_true"
+  [(set (pc) (if_then_else (ne (zero_extend:SI (subreg:QI (reg:SI T_REG) 3))
+			       (const_int 0))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))]
+  "TARGET_SH1 && ! TARGET_LITTLE_ENDIAN"
+{
+  return output_branch (1, insn, operands);
+}
+  [(set_attr "type" "cbranch")])
+
 (define_insn "branch_false"
   [(set (pc) (if_then_else (eq (reg:SI T_REG) (const_int 0))
 			   (label_ref (match_operand 0 "" ""))
 			   (pc)))]
   "TARGET_SH1"
+{
+  return output_branch (0, insn, operands);
+}
+  [(set_attr "type" "cbranch")])
+
+;; The *branch_false patterns help combine when trying to invert conditions.
+(define_insn "*branch_false"
+  [(set (pc) (if_then_else (eq (zero_extend:SI (subreg:QI (reg:SI T_REG) 0))
+			       (const_int 0))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))]
+  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
+{
+  return output_branch (0, insn, operands);
+}
+  [(set_attr "type" "cbranch")])
+
+(define_insn "*branch_false"
+  [(set (pc) (if_then_else (eq (zero_extend:SI (subreg:QI (reg:SI T_REG) 3))
+			       (const_int 0))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))]
+  "TARGET_SH1 && ! TARGET_LITTLE_ENDIAN"
 {
   return output_branch (0, insn, operands);
 }
@@ -9720,7 +9767,7 @@ label:
   ""
   [(const_int 0)])
 
-;; The *movtt patterns improve code at -O1.
+;; The *movtt patterns eliminate redundant T bit to T bit moves / tests.
 (define_insn_and_split "*movtt"
   [(set (reg:SI T_REG)
 	(eq:SI (zero_extend:SI (subreg:QI (reg:SI T_REG) 3))
@@ -11244,7 +11291,8 @@ label:
       emit_insn (gen_movsi (shift_reg, operands[3]));
       qi_val = gen_rtx_SUBREG (QImode, shift_reg, 3);
     }
-  addr_target = copy_addr_to_reg (plus_constant (orig_address, size - 1));
+  addr_target = copy_addr_to_reg (plus_constant (Pmode,
+						 orig_address, size - 1));
 
   operands[0] = replace_equiv_address (operands[0], addr_target);
   emit_insn (gen_movqi (operands[0], qi_val));

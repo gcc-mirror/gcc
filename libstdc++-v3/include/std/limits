@@ -270,10 +270,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	false for arbitrary precision types.</em> [18.2.1.2]/54  */
     static _GLIBCXX_USE_CONSTEXPR bool is_bounded = false;
 
-    /** True if the type is @e modulo, that is, if it is possible to add two
-	positive numbers and have a result that wraps around to a third number
-	that is less.  Typically false for floating types, true for unsigned
-	integers, and true for signed integers.  */
+    /** True if the type is @e modulo. A type is modulo if, for any
+	operation involving +, -, or * on values of that type whose
+	result would fall outside the range [min(),max()], the value
+	returned differs from the true value by an integer multiple of
+	max() - min() + 1. On most machines, this is false for floating
+	types, true for unsigned integers, and true for signed integers.
+	See PR22200 about signed integers.  */
     static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
     /** True if trapping is implemented for this type.  */
@@ -494,7 +497,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = !is_signed;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
@@ -564,7 +567,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
@@ -705,7 +708,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = !is_signed;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
@@ -768,7 +771,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static constexpr bool is_iec559 = false;
       static constexpr bool is_bounded = true;
-      static constexpr bool is_modulo = true;
+      static constexpr bool is_modulo = !is_signed;
 
       static constexpr bool traps = __glibcxx_integral_traps;
       static constexpr bool tinyness_before = false;
@@ -829,7 +832,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static constexpr bool is_iec559 = false;
       static constexpr bool is_bounded = true;
-      static constexpr bool is_modulo = true;
+      static constexpr bool is_modulo = !is_signed;
 
       static constexpr bool traps = __glibcxx_integral_traps;
       static constexpr bool tinyness_before = false;
@@ -896,7 +899,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
@@ -1036,7 +1039,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
@@ -1175,7 +1178,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
@@ -1318,7 +1321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
@@ -1465,7 +1468,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps
        = __glibcxx_integral_traps;

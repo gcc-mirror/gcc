@@ -24,8 +24,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
      Switch initialization conversion
 
 The following pass changes simple initializations of scalars in a switch
-statement into initializations from a static array.  Obviously, the values must
-be constant and known at compile time and a default branch must be
+statement into initializations from a static array.  Obviously, the values
+must be constant and known at compile time and a default branch must be
 provided.  For example, the following code:
 
         int a,b;
@@ -48,6 +48,7 @@ provided.  For example, the following code:
          default:
                 a_4 = 16;
                 b_4 = 1;
+		break;
         }
 	a_5 = PHI <a_1, a_2, a_3, a_4>
 	b_5 = PHI <b_1, b_2, b_3, b_4>
@@ -69,8 +70,8 @@ is changed into:
 	    a_7 = 16;
 	    b_7 = 1;
           }
-	  a_5 = PHI <a_6, a_7>
-	  b_b = PHI <b_6, b_7>
+	a_5 = PHI <a_6, a_7>
+	b_b = PHI <b_6, b_7>
 
 There are further constraints.  Specifically, the range of values across all
 case labels must not be bigger than SWITCH_CONVERSION_BRANCH_RATIO (default
@@ -99,24 +100,37 @@ eight) times the number of the actual switch branches. */
 /* The main structure of the pass.  */
 struct switch_conv_info
 {
-  /* The expression used to decide the switch branch.  (It is subsequently used
-     as the index to the created array.) */
+  /* The expression used to decide the switch branch.  */
   tree index_expr;
 
-  /* The following integer constants store the minimum value covered by the
-     cases.  */
+  /* The following integer constants store the minimum and maximum value
+     covered by the case labels.  */
   tree range_min;
+  tree range_max;
 
-  /* The difference between the above two numbers, i.e. The size of the array
-     that would have to be created by the transformation.  */
+  /* The difference between the above two numbers.  Stored here because it
+     is used in all the conversion heuristics, as well as for some of the
+     transformation, and it is expensive to re-compute it all the time.  */
   tree range_size;
 
-  /* Basic block that contains the actual SWITCH_EXPR.  */
+  /* Basic block that contains the actual GIMPLE_SWITCH.  */
   basic_block switch_bb;
 
-  /* All branches of the switch statement must have a single successor stored in
-     the following variable.  */
+  /* Basic block that is the target of the default case.  */
+  basic_block default_bb;
+
+  /* The single successor block of all branches out of the GIMPLE_SWITCH,
+     if such a block exists.  Otherwise NULL.  */
   basic_block final_bb;
+
+  /* The probability of the default edge in the replaced switch.  */
+  int default_prob;
+
+  /* The count of the default edge in the replaced switch.  */
+  gcov_type default_count;
+
+  /* Combined count of all other (non-default) edges in the replaced switch.  */
+  gcov_type other_count;
 
   /* Number of phi nodes in the final bb (that we'll be replacing).  */
   int phi_count;
@@ -135,15 +149,6 @@ struct switch_conv_info
      switch expression is out of range.  */
   tree *target_outbound_names;
 
-  /* The probability of the default edge in the replaced switch.  */
-  int default_prob;
-
-  /* The count of the default edge in the replaced switch.  */
-  gcov_type default_count;
-
-  /* Combined count of all other (non-default) edges in the replaced switch.  */
-  gcov_type other_count;
-
   /* The first load statement that loads a temporary from a new static array.
    */
   gimple arr_ref_first;
@@ -157,142 +162,139 @@ struct switch_conv_info
 
   /* Parameters for expand_switch_using_bit_tests.  Should be computed
      the same way as in expand_case.  */
-  unsigned int bit_test_uniq;
-  unsigned int bit_test_count;
-  basic_block bit_test_bb[2];
+  unsigned int uniq;
+  unsigned int count;
 };
 
-/* Global pass info.  */
-static struct switch_conv_info info;
+/* Collect information about GIMPLE_SWITCH statement SWTCH into INFO.  */
 
+static void
+collect_switch_conv_info (gimple swtch, struct switch_conv_info *info)
+{
+  unsigned int branch_num = gimple_switch_num_labels (swtch);
+  tree min_case, max_case;
+  unsigned int count, i;
+  edge e, e_default;
+  edge_iterator ei;
+
+  memset (info, 0, sizeof (*info));
+
+  /* The gimplifier has already sorted the cases by CASE_LOW and ensured there
+     is a default label which is the first in the vector.  */
+  gcc_assert (CASE_LOW (gimple_switch_label (swtch, 0)) == NULL_TREE);
+
+  /* Collect the bits we can deduce from the CFG.  */
+  info->index_expr = gimple_switch_index (swtch);
+  info->switch_bb = gimple_bb (swtch);
+  info->default_bb =
+    label_to_block (CASE_LABEL (gimple_switch_label (swtch, 0)));
+  e_default = find_edge (info->switch_bb, info->default_bb);
+  info->default_prob = e_default->probability;
+  info->default_count = e_default->count;
+  FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
+    if (e != e_default)
+      info->other_count += e->count;
+
+  /* See if there is one common successor block for all branch
+     targets.  If it exists, record it in FINAL_BB.  */
+  FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
+    {
+      if (! single_pred_p (e->dest))
+	{
+	  info->final_bb = e->dest;
+	  break;
+	}
+    }
+  if (info->final_bb)
+    FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
+      {
+	if (e->dest == info->final_bb)
+	  continue;
+
+	if (single_pred_p (e->dest)
+	    && single_succ_p (e->dest)
+	    && single_succ (e->dest) == info->final_bb)
+	  continue;
+
+	info->final_bb = NULL;
+	break;
+      }
+
+  /* Get upper and lower bounds of case values, and the covered range.  */
+  min_case = gimple_switch_label (swtch, 1);
+  max_case = gimple_switch_label (swtch, branch_num - 1);
+
+  info->range_min = CASE_LOW (min_case);
+  if (CASE_HIGH (max_case) != NULL_TREE)
+    info->range_max = CASE_HIGH (max_case);
+  else
+    info->range_max = CASE_LOW (max_case);
+
+  info->range_size =
+    int_const_binop (MINUS_EXPR, info->range_max, info->range_min);
+
+  /* Get a count of the number of case labels.  Single-valued case labels
+     simply count as one, but a case range counts double, since it may
+     require two compares if it gets lowered as a branching tree.  */
+  count = 0;
+  for (i = 1; i < branch_num; i++)
+    {
+      tree elt = gimple_switch_label (swtch, i);
+      count++;
+      if (CASE_HIGH (elt)
+	  && ! tree_int_cst_equal (CASE_LOW (elt), CASE_HIGH (elt)))
+	count++;
+    }
+  info->count = count;
+ 
+  /* Get the number of unique non-default targets out of the GIMPLE_SWITCH
+     block.  Assume a CFG cleanup would have already removed degenerate
+     switch statements, this allows us to just use EDGE_COUNT.  */
+  info->uniq = EDGE_COUNT (gimple_bb (swtch)->succs) - 1;
+}
 
 /* Checks whether the range given by individual case statements of the SWTCH
    switch statement isn't too big and whether the number of branches actually
    satisfies the size of the new array.  */
 
 static bool
-check_range (gimple swtch)
+check_range (struct switch_conv_info *info)
 {
-  tree min_case, max_case;
-  unsigned int branch_num = gimple_switch_num_labels (swtch);
-  tree range_max;
-
-  /* The gimplifier has already sorted the cases by CASE_LOW and ensured there
-     is a default label which is the first in the vector.  */
-
-  min_case = gimple_switch_label (swtch, 1);
-  info.range_min = CASE_LOW (min_case);
-
-  gcc_assert (branch_num > 1);
-  gcc_assert (CASE_LOW (gimple_switch_label (swtch, 0)) == NULL_TREE);
-  max_case = gimple_switch_label (swtch, branch_num - 1);
-  if (CASE_HIGH (max_case) != NULL_TREE)
-    range_max = CASE_HIGH (max_case);
-  else
-    range_max = CASE_LOW (max_case);
-
-  gcc_assert (info.range_min);
-  gcc_assert (range_max);
-
-  info.range_size = int_const_binop (MINUS_EXPR, range_max, info.range_min);
-
-  gcc_assert (info.range_size);
-  if (!host_integerp (info.range_size, 1))
+  gcc_assert (info->range_size);
+  if (!host_integerp (info->range_size, 1))
     {
-      info.reason = "index range way too large or otherwise unusable.\n";
+      info->reason = "index range way too large or otherwise unusable";
       return false;
     }
 
-  if ((unsigned HOST_WIDE_INT) tree_low_cst (info.range_size, 1)
-      > ((unsigned) branch_num * SWITCH_CONVERSION_BRANCH_RATIO))
+  if ((unsigned HOST_WIDE_INT) tree_low_cst (info->range_size, 1)
+      > ((unsigned) info->count * SWITCH_CONVERSION_BRANCH_RATIO))
     {
-      info.reason = "the maximum range-branch ratio exceeded.\n";
+      info->reason = "the maximum range-branch ratio exceeded";
       return false;
     }
 
   return true;
 }
 
-/* Checks the given CS switch case whether it is suitable for conversion
-   (whether all but the default basic blocks are empty and so on).  If it is,
-   adds the case to the branch list along with values for the defined variables
-   and returns true.  Otherwise returns false.  */
+/* Checks whether all but the FINAL_BB basic blocks are empty.  */
 
 static bool
-check_process_case (tree cs)
+check_all_empty_except_final (struct switch_conv_info *info)
 {
-  tree ldecl;
-  basic_block label_bb, following_bb;
   edge e;
+  edge_iterator ei;
 
-  ldecl = CASE_LABEL (cs);
-  label_bb = label_to_block (ldecl);
-
-  e = find_edge (info.switch_bb, label_bb);
-  gcc_assert (e);
-
-  if (CASE_LOW (cs) == NULL_TREE)
+  FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
     {
-      /* Default branch.  */
-      info.default_prob = e->probability;
-      info.default_count = e->count;
-    }
-  else
-    {
-      int i;
-      info.other_count += e->count;
-      for (i = 0; i < 2; i++)
-	if (info.bit_test_bb[i] == label_bb)
-	  break;
-	else if (info.bit_test_bb[i] == NULL)
-	  {
-	    info.bit_test_bb[i] = label_bb;
-	    info.bit_test_uniq++;
-	    break;
-	  }
-      if (i == 2)
-	info.bit_test_uniq = 3;
-      if (CASE_HIGH (cs) != NULL_TREE
-	  && ! tree_int_cst_equal (CASE_LOW (cs), CASE_HIGH (cs)))
-	info.bit_test_count += 2;
-      else
-	info.bit_test_count++;
-    }
+      if (e->dest == info->final_bb)
+	continue;
 
-  if (!label_bb)
-    {
-      info.reason = "  Bad case - cs BB  label is NULL\n";
-      return false;
-    }
-
-  if (!single_pred_p (label_bb))
-    {
-      if (info.final_bb && info.final_bb != label_bb)
+      if (!empty_block_p (e->dest))
 	{
-	  info.reason = "  Bad case - a non-final BB has two predecessors\n";
-	  return false; /* sth complex going on in this branch  */
-	}
-
-      following_bb = label_bb;
-    }
-  else
-    {
-      if (!empty_block_p (label_bb))
-	{
-	  info.reason = "  Bad case - a non-final BB not empty\n";
+	  info->reason = "bad case - a non-final BB not empty";
 	  return false;
 	}
-
-      e = single_succ_edge (label_bb);
-      following_bb = single_succ (label_bb);
-    }
-
-  if (!info.final_bb)
-    info.final_bb = following_bb;
-  else if (info.final_bb != following_bb)
-    {
-      info.reason = "  Bad case - different final BB\n";
-      return false; /* the only successor is not common for all the branches */
     }
 
   return true;
@@ -304,31 +306,31 @@ check_process_case (tree cs)
    phi nodes are OK, otherwise false.  */
 
 static bool
-check_final_bb (void)
+check_final_bb (struct switch_conv_info *info)
 {
   gimple_stmt_iterator gsi;
 
-  info.phi_count = 0;
-  for (gsi = gsi_start_phis (info.final_bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  info->phi_count = 0;
+  for (gsi = gsi_start_phis (info->final_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple phi = gsi_stmt (gsi);
       unsigned int i;
 
-      info.phi_count++;
+      info->phi_count++;
 
       for (i = 0; i < gimple_phi_num_args (phi); i++)
 	{
 	  basic_block bb = gimple_phi_arg_edge (phi, i)->src;
 
-	  if (bb == info.switch_bb
-	      || (single_pred_p (bb) && single_pred (bb) == info.switch_bb))
+	  if (bb == info->switch_bb
+	      || (single_pred_p (bb) && single_pred (bb) == info->switch_bb))
 	    {
 	      tree reloc, val;
 
 	      val = gimple_phi_arg_def (phi, i);
 	      if (!is_gimple_ip_invariant (val))
 		{
-		  info.reason = "   Non-invariant value from a case\n";
+		  info->reason = "non-invariant value from a case";
 		  return false; /* Non-invariant argument.  */
 		}
 	      reloc = initializer_constant_valid_p (val, TREE_TYPE (val));
@@ -336,11 +338,11 @@ check_final_bb (void)
 		  || (!flag_pic && reloc == NULL_TREE))
 		{
 		  if (reloc)
-		    info.reason
-		      = "   Value from a case would need runtime relocations\n";
+		    info->reason
+		      = "value from a case would need runtime relocations";
 		  else
-		    info.reason
-		      = "   Value from a case is not a valid initializer\n";
+		    info->reason
+		      = "value from a case is not a valid initializer";
 		  return false;
 		}
 	    }
@@ -355,17 +357,17 @@ check_final_bb (void)
    vectors that will become constructors of new arrays.  */
 
 static void
-create_temp_arrays (void)
+create_temp_arrays (struct switch_conv_info *info)
 {
   int i;
 
-  info.default_values = XCNEWVEC (tree, info.phi_count * 3);
-  info.constructors = XCNEWVEC (VEC (constructor_elt, gc) *, info.phi_count);
-  info.target_inbound_names = info.default_values + info.phi_count;
-  info.target_outbound_names = info.target_inbound_names + info.phi_count;
-  for (i = 0; i < info.phi_count; i++)
-    info.constructors[i]
-      = VEC_alloc (constructor_elt, gc, tree_low_cst (info.range_size, 1) + 1);
+  info->default_values = XCNEWVEC (tree, info->phi_count * 3);
+  info->constructors = XCNEWVEC (VEC (constructor_elt, gc) *, info->phi_count);
+  info->target_inbound_names = info->default_values + info->phi_count;
+  info->target_outbound_names = info->target_inbound_names + info->phi_count;
+  for (i = 0; i < info->phi_count; i++)
+    info->constructors[i]
+      = VEC_alloc (constructor_elt, gc, tree_low_cst (info->range_size, 1) + 1);
 }
 
 /* Free the arrays created by create_temp_arrays().  The vectors that are
@@ -373,17 +375,17 @@ create_temp_arrays (void)
    already become constructors and must be preserved.  */
 
 static void
-free_temp_arrays (void)
+free_temp_arrays (struct switch_conv_info *info)
 {
-  XDELETEVEC (info.constructors);
-  XDELETEVEC (info.default_values);
+  XDELETEVEC (info->constructors);
+  XDELETEVEC (info->default_values);
 }
 
 /* Populate the array of default values in the order of phi nodes.
    DEFAULT_CASE is the CASE_LABEL_EXPR for the default switch branch.  */
 
 static void
-gather_default_values (tree default_case)
+gather_default_values (tree default_case, struct switch_conv_info *info)
 {
   gimple_stmt_iterator gsi;
   basic_block bb = label_to_block (CASE_LABEL (default_case));
@@ -392,17 +394,17 @@ gather_default_values (tree default_case)
 
   gcc_assert (CASE_LOW (default_case) == NULL_TREE);
 
-  if (bb == info.final_bb)
-    e = find_edge (info.switch_bb, bb);
+  if (bb == info->final_bb)
+    e = find_edge (info->switch_bb, bb);
   else
     e = single_succ_edge (bb);
 
-  for (gsi = gsi_start_phis (info.final_bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi = gsi_start_phis (info->final_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple phi = gsi_stmt (gsi);
       tree val = PHI_ARG_DEF_FROM_EDGE (phi, e);
       gcc_assert (val);
-      info.default_values[i++] = val;
+      info->default_values[i++] = val;
     }
 }
 
@@ -411,10 +413,10 @@ gather_default_values (tree default_case)
    order of phi nodes.  SWTCH is the switch statement being converted.  */
 
 static void
-build_constructors (gimple swtch)
+build_constructors (gimple swtch, struct switch_conv_info *info)
 {
   unsigned i, branch_num = gimple_switch_num_labels (swtch);
-  tree pos = info.range_min;
+  tree pos = info->range_min;
 
   for (i = 1; i < branch_num; i++)
     {
@@ -425,8 +427,8 @@ build_constructors (gimple swtch)
       gimple_stmt_iterator gsi;
       int j;
 
-      if (bb == info.final_bb)
-	e = find_edge (info.switch_bb, bb);
+      if (bb == info->final_bb)
+	e = find_edge (info->switch_bb, bb);
       else
 	e = single_succ_edge (bb);
       gcc_assert (e);
@@ -434,15 +436,15 @@ build_constructors (gimple swtch)
       while (tree_int_cst_lt (pos, CASE_LOW (cs)))
 	{
 	  int k;
-	  for (k = 0; k < info.phi_count; k++)
+	  for (k = 0; k < info->phi_count; k++)
 	    {
 	      constructor_elt *elt;
 
 	      elt = VEC_quick_push (constructor_elt,
-				    info.constructors[k], NULL);
+				    info->constructors[k], NULL);
 	      elt->index = int_const_binop (MINUS_EXPR, pos,
-					    info.range_min);
-	      elt->value = info.default_values[k];
+					    info->range_min);
+	      elt->value = info->default_values[k];
 	    }
 
 	  pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
@@ -454,7 +456,7 @@ build_constructors (gimple swtch)
 	high = CASE_HIGH (cs);
       else
 	high = CASE_LOW (cs);
-      for (gsi = gsi_start_phis (info.final_bb);
+      for (gsi = gsi_start_phis (info->final_bb);
 	   !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple phi = gsi_stmt (gsi);
@@ -467,8 +469,8 @@ build_constructors (gimple swtch)
 	      constructor_elt *elt;
 
 	      elt = VEC_quick_push (constructor_elt,
-				    info.constructors[j], NULL);
-	      elt->index = int_const_binop (MINUS_EXPR, pos, info.range_min);
+				    info->constructors[j], NULL);
+	      elt->index = int_const_binop (MINUS_EXPR, pos, info->range_min);
 	      elt->value = val;
 
 	      pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
@@ -505,9 +507,10 @@ constructor_contains_same_values_p (VEC (constructor_elt, gc) *vec)
    all the constants.  */
 
 static tree
-array_value_type (gimple swtch, tree type, int num)
+array_value_type (gimple swtch, tree type, int num,
+		  struct switch_conv_info *info)
 {
-  unsigned int i, len = VEC_length (constructor_elt, info.constructors[num]);
+  unsigned int i, len = VEC_length (constructor_elt, info->constructors[num]);
   constructor_elt *elt;
   enum machine_mode mode;
   int sign = 0;
@@ -523,7 +526,7 @@ array_value_type (gimple swtch, tree type, int num)
   if (len < (optimize_bb_for_size_p (gimple_bb (swtch)) ? 2 : 32))
     return type;
 
-  FOR_EACH_VEC_ELT (constructor_elt, info.constructors[num], i, elt)
+  FOR_EACH_VEC_ELT (constructor_elt, info->constructors[num], i, elt)
     {
       double_int cst;
 
@@ -585,37 +588,37 @@ array_value_type (gimple swtch, tree type, int num)
 
 static void
 build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
-		 tree tidx)
+		 tree tidx, struct switch_conv_info *info)
 {
   tree name, cst;
   gimple load;
   gimple_stmt_iterator gsi = gsi_for_stmt (swtch);
   location_t loc = gimple_location (swtch);
 
-  gcc_assert (info.default_values[num]);
+  gcc_assert (info->default_values[num]);
 
   name = make_ssa_name (SSA_NAME_VAR (PHI_RESULT (phi)), NULL);
-  info.target_inbound_names[num] = name;
+  info->target_inbound_names[num] = name;
 
-  cst = constructor_contains_same_values_p (info.constructors[num]);
+  cst = constructor_contains_same_values_p (info->constructors[num]);
   if (cst)
     load = gimple_build_assign (name, cst);
   else
     {
       tree array_type, ctor, decl, value_type, fetch, default_type;
 
-      default_type = TREE_TYPE (info.default_values[num]);
-      value_type = array_value_type (swtch, default_type, num);
+      default_type = TREE_TYPE (info->default_values[num]);
+      value_type = array_value_type (swtch, default_type, num, info);
       array_type = build_array_type (value_type, arr_index_type);
       if (default_type != value_type)
 	{
 	  unsigned int i;
 	  constructor_elt *elt;
 
-	  FOR_EACH_VEC_ELT (constructor_elt, info.constructors[num], i, elt)
+	  FOR_EACH_VEC_ELT (constructor_elt, info->constructors[num], i, elt)
 	    elt->value = fold_convert (value_type, elt->value);
 	}
-      ctor = build_constructor (array_type, info.constructors[num]);
+      ctor = build_constructor (array_type, info->constructors[num]);
       TREE_CONSTANT (ctor) = true;
       TREE_STATIC (ctor) = true;
 
@@ -628,7 +631,6 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       add_referenced_var (decl);
-      varpool_mark_needed_node (varpool_node (decl));
       varpool_finalize_decl (decl);
 
       fetch = build4 (ARRAY_REF, value_type, decl, tidx, NULL_TREE,
@@ -645,7 +647,7 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
   SSA_NAME_DEF_STMT (name) = load;
   gsi_insert_before (&gsi, load, GSI_SAME_STMT);
   update_stmt (load);
-  info.arr_ref_last = load;
+  info->arr_ref_last = load;
 }
 
 /* Builds and initializes static arrays initialized with values gathered from
@@ -653,7 +655,7 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
    them.  */
 
 static void
-build_arrays (gimple swtch)
+build_arrays (gimple swtch, struct switch_conv_info *info)
 {
   tree arr_index_type;
   tree tidx, sub, tmp, utype;
@@ -665,19 +667,19 @@ build_arrays (gimple swtch)
   gsi = gsi_for_stmt (swtch);
 
   /* Make sure we do not generate arithmetics in a subrange.  */
-  utype = TREE_TYPE (info.index_expr);
+  utype = TREE_TYPE (info->index_expr);
   if (TREE_TYPE (utype))
     utype = lang_hooks.types.type_for_mode (TYPE_MODE (TREE_TYPE (utype)), 1);
   else
     utype = lang_hooks.types.type_for_mode (TYPE_MODE (utype), 1);
 
-  arr_index_type = build_index_type (info.range_size);
+  arr_index_type = build_index_type (info->range_size);
   tmp = create_tmp_var (utype, "csui");
   add_referenced_var (tmp);
   tidx = make_ssa_name (tmp, NULL);
   sub = fold_build2_loc (loc, MINUS_EXPR, utype,
-			 fold_convert_loc (loc, utype, info.index_expr),
-			 fold_convert_loc (loc, utype, info.range_min));
+			 fold_convert_loc (loc, utype, info->index_expr),
+			 fold_convert_loc (loc, utype, info->range_min));
   sub = force_gimple_operand_gsi (&gsi, sub,
 				  false, NULL, true, GSI_SAME_STMT);
   stmt = gimple_build_assign (tidx, sub);
@@ -685,29 +687,29 @@ build_arrays (gimple swtch)
 
   gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
   update_stmt (stmt);
-  info.arr_ref_first = stmt;
+  info->arr_ref_first = stmt;
 
-  for (gsi = gsi_start_phis (info.final_bb), i = 0;
+  for (gsi = gsi_start_phis (info->final_bb), i = 0;
        !gsi_end_p (gsi); gsi_next (&gsi), i++)
-    build_one_array (swtch, i, arr_index_type, gsi_stmt (gsi), tidx);
+    build_one_array (swtch, i, arr_index_type, gsi_stmt (gsi), tidx, info);
 }
 
 /* Generates and appropriately inserts loads of default values at the position
    given by BSI.  Returns the last inserted statement.  */
 
 static gimple
-gen_def_assigns (gimple_stmt_iterator *gsi)
+gen_def_assigns (gimple_stmt_iterator *gsi, struct switch_conv_info *info)
 {
   int i;
   gimple assign = NULL;
 
-  for (i = 0; i < info.phi_count; i++)
+  for (i = 0; i < info->phi_count; i++)
     {
       tree name
-	= make_ssa_name (SSA_NAME_VAR (info.target_inbound_names[i]), NULL);
+	= make_ssa_name (SSA_NAME_VAR (info->target_inbound_names[i]), NULL);
 
-      info.target_outbound_names[i] = name;
-      assign = gimple_build_assign (name, info.default_values[i]);
+      info->target_outbound_names[i] = name;
+      assign = gimple_build_assign (name, info->default_values[i]);
       SSA_NAME_DEF_STMT (name) = assign;
       gsi_insert_before (gsi, assign, GSI_SAME_STMT);
       update_stmt (assign);
@@ -743,7 +745,8 @@ prune_bbs (basic_block bbd, basic_block final)
    bbf description in the comment below).  */
 
 static void
-fix_phi_nodes (edge e1f, edge e2f, basic_block bbf)
+fix_phi_nodes (edge e1f, edge e2f, basic_block bbf,
+	       struct switch_conv_info *info)
 {
   gimple_stmt_iterator gsi;
   int i;
@@ -752,10 +755,9 @@ fix_phi_nodes (edge e1f, edge e2f, basic_block bbf)
        !gsi_end_p (gsi); gsi_next (&gsi), i++)
     {
       gimple phi = gsi_stmt (gsi);
-      add_phi_arg (phi, info.target_inbound_names[i], e1f, UNKNOWN_LOCATION);
-      add_phi_arg (phi, info.target_outbound_names[i], e2f, UNKNOWN_LOCATION);
+      add_phi_arg (phi, info->target_inbound_names[i], e1f, UNKNOWN_LOCATION);
+      add_phi_arg (phi, info->target_outbound_names[i], e2f, UNKNOWN_LOCATION);
     }
-
 }
 
 /* Creates a check whether the switch expression value actually falls into the
@@ -780,7 +782,7 @@ fix_phi_nodes (edge e1f, edge e2f, basic_block bbf)
 */
 
 static void
-gen_inbound_check (gimple swtch)
+gen_inbound_check (gimple swtch, struct switch_conv_info *info)
 {
   tree label_decl1 = create_artificial_label (UNKNOWN_LOCATION);
   tree label_decl2 = create_artificial_label (UNKNOWN_LOCATION);
@@ -797,17 +799,25 @@ gen_inbound_check (gimple swtch)
   edge e01, e02, e21, e1d, e1f, e2f;
   location_t loc = gimple_location (swtch);
 
-  gcc_assert (info.default_values);
+  gcc_assert (info->default_values);
+
+  /* Make no effort to update the post-dominator tree.  It is actually not
+     that hard for the transformations we have performed, but it is not
+     supported by iterate_fix_dominators.
+     Freeing post-dominance info is dome early to avoid pointless work in
+     create_basic_block, which is called when we split SWITCH_BB.  */
+  free_dominance_info (CDI_POST_DOMINATORS);
+
   bb0 = gimple_bb (swtch);
 
-  tidx = gimple_assign_lhs (info.arr_ref_first);
+  tidx = gimple_assign_lhs (info->arr_ref_first);
   utype = TREE_TYPE (tidx);
 
   /* (end of) block 0 */
-  gsi = gsi_for_stmt (info.arr_ref_first);
+  gsi = gsi_for_stmt (info->arr_ref_first);
   gsi_next (&gsi);
 
-  bound = fold_convert_loc (loc, utype, info.range_size);
+  bound = fold_convert_loc (loc, utype, info->range_size);
   cond_stmt = gimple_build_cond (LE_EXPR, tidx, bound, NULL_TREE, NULL_TREE);
   gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
   update_stmt (cond_stmt);
@@ -815,14 +825,14 @@ gen_inbound_check (gimple swtch)
   /* block 2 */
   label2 = gimple_build_label (label_decl2);
   gsi_insert_before (&gsi, label2, GSI_SAME_STMT);
-  last_assign = gen_def_assigns (&gsi);
+  last_assign = gen_def_assigns (&gsi, info);
 
   /* block 1 */
   label1 = gimple_build_label (label_decl1);
   gsi_insert_before (&gsi, label1, GSI_SAME_STMT);
 
   /* block F */
-  gsi = gsi_start_bb (info.final_bb);
+  gsi = gsi_start_bb (info->final_bb);
   label3 = gimple_build_label (label_decl3);
   gsi_insert_before (&gsi, label3, GSI_SAME_STMT);
 
@@ -834,126 +844,128 @@ gen_inbound_check (gimple swtch)
   bb1 = e21->dest;
   remove_edge (e21);
 
-  e1d = split_block (bb1, info.arr_ref_last);
+  e1d = split_block (bb1, info->arr_ref_last);
   bbd = e1d->dest;
   remove_edge (e1d);
 
   /* flags and profiles of the edge for in-range values */
   e01 = make_edge (bb0, bb1, EDGE_TRUE_VALUE);
-  e01->probability = REG_BR_PROB_BASE - info.default_prob;
-  e01->count = info.other_count;
+  e01->probability = REG_BR_PROB_BASE - info->default_prob;
+  e01->count = info->other_count;
 
   /* flags and profiles of the edge taking care of out-of-range values */
   e02->flags &= ~EDGE_FALLTHRU;
   e02->flags |= EDGE_FALSE_VALUE;
-  e02->probability = info.default_prob;
-  e02->count = info.default_count;
+  e02->probability = info->default_prob;
+  e02->count = info->default_count;
 
-  bbf = info.final_bb;
+  bbf = info->final_bb;
 
   e1f = make_edge (bb1, bbf, EDGE_FALLTHRU);
   e1f->probability = REG_BR_PROB_BASE;
-  e1f->count = info.other_count;
+  e1f->count = info->other_count;
 
   e2f = make_edge (bb2, bbf, EDGE_FALLTHRU);
   e2f->probability = REG_BR_PROB_BASE;
-  e2f->count = info.default_count;
+  e2f->count = info->default_count;
 
   /* frequencies of the new BBs */
   bb1->frequency = EDGE_FREQUENCY (e01);
   bb2->frequency = EDGE_FREQUENCY (e02);
   bbf->frequency = EDGE_FREQUENCY (e1f) + EDGE_FREQUENCY (e2f);
 
-  prune_bbs (bbd, info.final_bb); /* To keep calc_dfs_tree() in dominance.c
-				     happy.  */
+  /* Tidy blocks that have become unreachable.  */
+  prune_bbs (bbd, info->final_bb);
 
-  fix_phi_nodes (e1f, e2f, bbf);
+  /* Fixup the PHI nodes in bbF.  */
+  fix_phi_nodes (e1f, e2f, bbf, info);
 
-  free_dominance_info (CDI_DOMINATORS);
-  free_dominance_info (CDI_POST_DOMINATORS);
+  /* Fix the dominator tree, if it is available.  */
+  if (dom_info_available_p (CDI_DOMINATORS))
+    {
+      VEC (basic_block, heap) *bbs_to_fix_dom;
+
+      set_immediate_dominator (CDI_DOMINATORS, bb1, bb0);
+      set_immediate_dominator (CDI_DOMINATORS, bb2, bb0);
+      if (! get_immediate_dominator(CDI_DOMINATORS, bbf))
+	/* If bbD was the immediate dominator ...  */
+	set_immediate_dominator (CDI_DOMINATORS, bbf, bb0);
+
+      bbs_to_fix_dom = VEC_alloc (basic_block, heap, 4);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, bb0);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, bb1);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, bb2);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, bbf);
+
+      iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
+      VEC_free (basic_block, heap, bbs_to_fix_dom);
+    }
 }
 
 /* The following function is invoked on every switch statement (the current one
    is given in SWTCH) and runs the individual phases of switch conversion on it
-   one after another until one fails or the conversion is completed.  */
+   one after another until one fails or the conversion is completed.
+   Returns NULL on success, or a pointer to a string with the reason why the
+   conversion failed.  */
 
-static bool
+static const char *
 process_switch (gimple swtch)
 {
-  unsigned int i, branch_num = gimple_switch_num_labels (swtch);
-  tree index_type;
+  struct switch_conv_info info;
 
-  /* Operand 2 is either NULL_TREE or a vector of cases (stmt.c).  */
-  if (branch_num < 2)
+  /* Degenerate case with only a default label should never happen.  */
+  gcc_checking_assert (gimple_switch_num_labels (swtch) > 1);
+
+  collect_switch_conv_info (swtch, &info);
+
+  /* No error markers should reach here (they should be filtered out
+     during gimplification).  */
+  gcc_checking_assert (TREE_TYPE (info.index_expr) != error_mark_node);
+
+  /* If there is no common successor, we cannot do the transformation.  */
+  if (! info.final_bb)
+    return "no common successor to all case label target blocks found";
+
+  if (info.uniq <= 2)
     {
-      info.reason = "switch has no labels\n";
-      return false;
-    }
-
-  info.final_bb = NULL;
-  info.switch_bb = gimple_bb (swtch);
-  info.index_expr = gimple_switch_index (swtch);
-  index_type = TREE_TYPE (info.index_expr);
-  info.arr_ref_first = NULL;
-  info.arr_ref_last = NULL;
-  info.default_prob = 0;
-  info.default_count = 0;
-  info.other_count = 0;
-  info.bit_test_uniq = 0;
-  info.bit_test_count = 0;
-  info.bit_test_bb[0] = NULL;
-  info.bit_test_bb[1] = NULL;
-
-  /* An ERROR_MARK occurs for various reasons including invalid data type.
-     (comment from stmt.c) */
-  if (index_type == error_mark_node)
-    {
-      info.reason = "index error.\n";
-      return false;
+      if (expand_switch_using_bit_tests_p (info.index_expr, info.range_size,
+					   info.uniq, info.count))
+	return "expanding as bit test is preferable";
     }
 
   /* Check the case label values are within reasonable range:  */
-  if (!check_range (swtch))
-    return false;
+  if (!check_range (&info))
+    {
+      gcc_assert (info.reason);
+      return info.reason;
+    }
 
   /* For all the cases, see whether they are empty, the assignments they
      represent constant and so on...  */
-  for (i = 0; i < branch_num; i++)
-    if (!check_process_case (gimple_switch_label (swtch, i)))
-      {
-	if (dump_file)
-	  fprintf (dump_file, "Processing of case %i failed\n", i);
-	return false;
-      }
-
-  if (info.bit_test_uniq <= 2)
+  if (! check_all_empty_except_final (&info))
     {
-      rtl_profile_for_bb (gimple_bb (swtch));
-      if (expand_switch_using_bit_tests_p (gimple_switch_index (swtch),
-					   info.range_size, info.bit_test_uniq,
-					   info.bit_test_count))
-	{
-	  info.reason = "  Expanding as bit test is preferable\n";
-	  return false;
-	}
+      gcc_assert (info.reason);
+      return info.reason;
     }
-
-  if (!check_final_bb ())
-    return false;
+  if (!check_final_bb (&info))
+    {
+      gcc_assert (info.reason);
+      return info.reason;
+    }
 
   /* At this point all checks have passed and we can proceed with the
      transformation.  */
 
-  create_temp_arrays ();
-  gather_default_values (gimple_switch_label (swtch, 0));
-  build_constructors (swtch);
+  create_temp_arrays (&info);
+  gather_default_values (gimple_switch_label (swtch, 0), &info);
+  build_constructors (swtch, &info);
 
-  build_arrays (swtch); /* Build the static arrays and assignments.   */
-  gen_inbound_check (swtch);	/* Build the bounds check.  */
+  build_arrays (swtch, &info); /* Build the static arrays and assignments.   */
+  gen_inbound_check (swtch, &info);	/* Build the bounds check.  */
 
   /* Cleanup:  */
-  free_temp_arrays ();
-  return true;
+  free_temp_arrays (&info);
+  return NULL;
 }
 
 /* The main function of the pass scans statements for switches and invokes
@@ -966,6 +978,7 @@ do_switchconv (void)
 
   FOR_EACH_BB (bb)
   {
+    const char *failure_reason;
     gimple stmt = last_stmt (bb);
     if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
       {
@@ -980,8 +993,8 @@ do_switchconv (void)
 	    putc ('\n', dump_file);
 	  }
 
-	info.reason = NULL;
-	if (process_switch (stmt))
+	failure_reason = process_switch (stmt);
+	if (! failure_reason)
 	  {
 	    if (dump_file)
 	      {
@@ -993,10 +1006,9 @@ do_switchconv (void)
 	  {
 	    if (dump_file)
 	      {
-		gcc_assert (info.reason);
 		fputs ("Bailing out - ", dump_file);
-		fputs (info.reason, dump_file);
-		fputs ("--------------------------------\n", dump_file);
+		fputs (failure_reason, dump_file);
+		fputs ("\n--------------------------------\n", dump_file);
 	      }
 	  }
       }

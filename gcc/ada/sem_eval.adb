@@ -516,6 +516,8 @@ package body Sem_Eval is
          Subs : Nat;
 
       begin
+         --  Fixup only required for First/Last attribute reference
+
          if Nkind (N) = N_Attribute_Reference
            and then (Attribute_Name (N) = Name_First
                        or else
@@ -554,7 +556,7 @@ package body Sem_Eval is
                if Attribute_Name (N) = Name_First then
                   return String_Literal_Low_Bound (Xtyp);
 
-               else         -- Attribute_Name (N) = Name_Last
+               else
                   return Make_Integer_Literal (Sloc (N),
                     Intval => Intval (String_Literal_Low_Bound (Xtyp))
                                 + String_Literal_Length (Xtyp));
@@ -577,8 +579,7 @@ package body Sem_Eval is
 
             if Attribute_Name (N) = Name_First then
                return Type_Low_Bound (Xtyp);
-
-            else -- Attribute_Name (N) = Name_Last
+            else
                return Type_High_Bound (Xtyp);
             end if;
          end if;

@@ -1015,18 +1015,21 @@ linemap_macro_loc_to_exp_point (struct line_maps *set,
    * If LRK is set to LRK_MACRO_EXPANSION_POINT
    -------------------------------
 
-   The virtual location is resolved to the location to the locus of
-   the expansion point of the macro.
+   The virtual location is resolved to the first macro expansion point
+   that led to this macro expansion.
 
    * If LRK is set to LRK_SPELLING_LOCATION
    -------------------------------------
 
-   The virtual location is resolved to the location to the locus where
-   the token has been spelled in the source. This can follow through
-   all the macro expansions that led to the token.
+   The virtual location is resolved to the locus where the token has
+   been spelled in the source.   This can follow through all the macro
+   expansions that led to the token.
 
-   * If LRK is set to LRK_MACRO_PARM_REPLACEMENT_POINT
+   * If LRK is set to LRK_MACRO_DEFINITION_LOCATION
    --------------------------------------
+
+   The virtual location is resolved to the locus of the token in the
+   context of the macro definition.
 
    If LOC is the locus of a token that is an argument of a
    function-like macro [replacing a parameter in the replacement list
@@ -1038,8 +1041,8 @@ linemap_macro_loc_to_exp_point (struct line_maps *set,
    function-like macro, then the function behaves as if LRK was set to
    LRK_SPELLING_LOCATION.
 
-   If MAP is non-NULL, *MAP is set to the map of the resolved
-   location.  Note that if the resturned location wasn't originally
+   If LOC_MAP is not NULL, *LOC_MAP is set to the map encoding the
+   returned location.  Note that if the returned location wasn't originally
    encoded by a map, the *MAP is set to NULL.  This can happen if LOC
    resolves to a location reserved for the client code, like
    UNKNOWN_LOCATION or BUILTINS_LOCATION in GCC.  */
@@ -1109,6 +1112,55 @@ linemap_unwind_toward_expansion (struct line_maps *set,
 
   *map = resolved_map;
   return resolved_location;
+}
+
+/* If LOC is the virtual location of a token coming from the expansion
+   of a macro M and if its spelling location is reserved (e.g, a
+   location for a built-in token), then this function unwinds (using
+   linemap_unwind_toward_expansion) the location until a location that
+   is not reserved and is not in a sytem header is reached.  In other
+   words, this unwinds the reserved location until a location that is
+   in real source code is reached.
+
+   Otherwise, if the spelling location for LOC is not reserved or if
+   LOC doesn't come from the expansion of a macro, the function
+   returns LOC as is and *MAP is not touched.
+
+   *MAP is set to the map of the returned location if the later is
+   different from LOC.  */
+source_location
+linemap_unwind_to_first_non_reserved_loc (struct line_maps *set,
+					  source_location loc,
+					  const struct line_map **map)
+{
+  source_location resolved_loc;
+  const struct line_map *map0 = NULL, *map1 = NULL;
+
+  map0 = linemap_lookup (set, loc);
+  if (!linemap_macro_expansion_map_p (map0))
+    return loc;
+
+  resolved_loc = linemap_resolve_location (set, loc,
+					   LRK_SPELLING_LOCATION,
+					   &map1);
+
+  if (resolved_loc >= RESERVED_LOCATION_COUNT
+      && !LINEMAP_SYSP (map1))
+    return loc;
+
+  while (linemap_macro_expansion_map_p (map0)
+	 && (resolved_loc < RESERVED_LOCATION_COUNT
+	     || LINEMAP_SYSP (map1)))
+    {
+      loc = linemap_unwind_toward_expansion (set, loc, &map0);
+      resolved_loc = linemap_resolve_location (set, loc,
+					       LRK_SPELLING_LOCATION,
+					       &map1);
+    }
+
+  if (map != NULL)
+    *map = map0;
+  return loc;
 }
 
 /* Expand source code location LOC and return a user readable source

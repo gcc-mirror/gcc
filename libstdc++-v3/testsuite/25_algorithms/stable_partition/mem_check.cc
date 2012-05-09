@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,7 @@ using __gnu_test::destructor;
 typedef test_container<copy_tracker, random_access_iterator_wrapper> Container;
 
 const int A[] = {10, 20, 1, 11, 2, 21, 28, 29, 12, 35, 15, 27, 6, 16, 7, 
-                 25, 17, 8, 23, 18, 9, 19, 24, 30, 13, 4, 14, 22, 26};
+                 25, 17, 8, 23, 18, 9, 19, 24, 30, 13, 4, 14, 22, 26, 0};
 
 bool even(const copy_tracker& ct)
 { return ct.id() < 19; }

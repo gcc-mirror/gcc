@@ -54,6 +54,11 @@
 #endif
 
 #if !defined(inhibit_libc) && defined(HAVE_LD_EH_FRAME_HDR) \
+    && defined(__BIONIC__)
+# define USE_PT_GNU_EH_FRAME
+#endif
+
+#if !defined(inhibit_libc) && defined(HAVE_LD_EH_FRAME_HDR) \
     && defined(__FreeBSD__) && __FreeBSD__ >= 7
 # define ElfW __ElfN
 # define USE_PT_GNU_EH_FRAME

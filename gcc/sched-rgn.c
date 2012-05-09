@@ -2921,7 +2921,7 @@ schedule_region (int rgn)
 
   sched_extend_ready_list (rgn_n_insns);
 
-  if (sched_pressure_p)
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
     {
       sched_init_region_reg_pressure_info ();
       for (bb = 0; bb < current_nr_blocks; bb++)

@@ -29,7 +29,7 @@
 (define_code_iterator syncop [plus minus ior xor and])
 
 (define_code_attr sync_optab
-  [(ior "ior") (xor "xor") (and "and") (plus "add") (minus "sub")])
+  [(ior "or") (xor "xor") (and "and") (plus "add") (minus "sub")])
 
 (define_mode_attr sync_sfx
   [(QI "b") (HI "h") (SI "") (DI "d")])
@@ -64,6 +64,31 @@
   [(set_attr "length" "4")
    (set_attr "conds" "unconditional")
    (set_attr "predicable" "no")])
+
+;; Note that ldrd and vldr are *not* guaranteed to be single-copy atomic,
+;; even for a 64-bit aligned address.  Instead we use a ldrexd unparied
+;; with a store.
+(define_expand "atomic_loaddi"
+  [(match_operand:DI 0 "s_register_operand")		;; val out
+   (match_operand:DI 1 "mem_noofs_operand")		;; memory
+   (match_operand:SI 2 "const_int_operand")]		;; model
+  "TARGET_HAVE_LDREXD && ARM_DOUBLEWORD_ALIGN"
+{
+  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  expand_mem_thread_fence (model);
+  emit_insn (gen_atomic_loaddi_1 (operands[0], operands[1]));
+  if (model == MEMMODEL_SEQ_CST)
+    expand_mem_thread_fence (model);
+  DONE;
+})
+
+(define_insn "atomic_loaddi_1"
+  [(set (match_operand:DI 0 "s_register_operand" "=r")
+	(unspec:DI [(match_operand:DI 1 "mem_noofs_operand" "Ua")]
+		   UNSPEC_LL))]
+  "TARGET_HAVE_LDREXD && ARM_DOUBLEWORD_ALIGN"
+  "ldrexd%?\t%0, %H0, %C1"
+  [(set_attr "predicable" "yes")])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "s_register_operand" "")		;; bool out
@@ -317,16 +342,7 @@
 	  [(match_operand:DI 1 "mem_noofs_operand" "Ua")]
 	  VUNSPEC_LL))]
   "TARGET_HAVE_LDREXD"
-  {
-    rtx target = operands[0];
-    /* The restrictions on target registers in ARM mode are that the two
-       registers are consecutive and the first one is even; Thumb is
-       actually more flexible, but DI should give us this anyway.
-       Note that the 1st register always gets the lowest word in memory.  */
-    gcc_assert ((REGNO (target) & 1) == 0);
-    operands[2] = gen_rtx_REG (SImode, REGNO (target) + 1);
-    return "ldrexd%?\t%0, %2, %C1";
-  }
+  "ldrexd%?\t%0, %H0, %C1"
   [(set_attr "predicable" "yes")])
 
 (define_insn "arm_store_exclusive<mode>"

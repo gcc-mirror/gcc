@@ -341,7 +341,8 @@ double_memory_operand (rtx op, enum machine_mode mode)
     return 1;
 
   return memory_address_p ((GET_MODE_CLASS (mode) == MODE_INT
-			    ? SImode : SFmode), plus_constant (addr, 4));
+			    ? SImode : SFmode),
+			   plus_constant (Pmode, addr, 4));
 }
 
 /* Implement REG_OK_FOR_BASE_P -and- REG_OK_FOR_INDEX_P.  */
@@ -808,8 +809,8 @@ microblaze_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length)
   microblaze_block_move_straight (dest, src, MAX_MOVE_BYTES);
 
   /* Move on to the next block.  */
-  emit_move_insn (src_reg, plus_constant (src_reg, MAX_MOVE_BYTES));
-  emit_move_insn (dest_reg, plus_constant (dest_reg, MAX_MOVE_BYTES));
+  emit_move_insn (src_reg, plus_constant (Pmode, src_reg, MAX_MOVE_BYTES));
+  emit_move_insn (dest_reg, plus_constant (Pmode, dest_reg, MAX_MOVE_BYTES));
 
   /* Emit the test & branch.  */
   emit_insn (gen_cbranchsi4 (gen_rtx_NE (SImode, src_reg, final_src),

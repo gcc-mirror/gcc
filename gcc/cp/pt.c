@@ -943,7 +943,7 @@ maybe_process_partial_specialization (tree type)
        /* Someday C++0x may allow for enum template specialization.  */
       if (cxx_dialect > cxx98 && TREE_CODE (type) == ENUMERAL_TYPE
 	  && CLASS_TYPE_P (context) && CLASSTYPE_USE_TEMPLATE (context))
-	pedwarn (input_location, OPT_pedantic, "template specialization "
+	pedwarn (input_location, OPT_Wpedantic, "template specialization "
 		 "of %qD not allowed by ISO C++", type);
       else
 	{
@@ -1839,6 +1839,7 @@ determine_specialization (tree template_id,
 	{
 	  tree decl_arg_types;
 	  tree fn_arg_types;
+	  tree insttype;
 
 	  /* In case of explicit specialization, we need to check if
 	     the number of template headers appearing in the specialization
@@ -1900,15 +1901,6 @@ determine_specialization (tree template_id,
 	  fn_arg_types 
 	    = skip_artificial_parms_for (fn, fn_arg_types);
 
-	  /* Check that the number of function parameters matches.
-	     For example,
-	       template <class T> void f(int i = 0);
-	       template <> void f<int>();
-	     The specialization f<int> is invalid but is not caught
-	     by get_bindings below.  */
-	  if (list_length (fn_arg_types) != list_length (decl_arg_types))
-	    continue;
-
 	  /* Function templates cannot be specializations; there are
 	     no partial specializations of functions.  Therefore, if
 	     the type of DECL does not match FN, there is no
@@ -1927,6 +1919,15 @@ determine_specialization (tree template_id,
 	  if (!targs)
 	    /* We cannot deduce template arguments that when used to
 	       specialize TMPL will produce DECL.  */
+	    continue;
+
+	  /* Make sure that the deduced arguments actually work.  */
+	  insttype = tsubst (TREE_TYPE (fn), targs, tf_none, NULL_TREE);
+	  if (insttype == error_mark_node)
+	    continue;
+	  fn_arg_types
+	    = skip_artificial_parms_for (fn, TYPE_ARG_TYPES (insttype));
+	  if (!compparms (fn_arg_types, decl_arg_types))
 	    continue;
 
 	  /* Save this template, and the arguments deduced.  */
@@ -4376,6 +4377,18 @@ process_partial_specialization (tree decl)
 						   (maintmpl)))))
     error ("partial specialization %qT does not specialize any template arguments", type);
 
+  /* A partial specialization that replaces multiple parameters of the
+     primary template with a pack expansion is less specialized for those
+     parameters.  */
+  if (nargs < DECL_NTPARMS (maintmpl))
+    {
+      error ("partial specialization is not more specialized than the "
+	     "primary template because it replaces multiple parameters "
+	     "with a pack expansion");
+      inform (DECL_SOURCE_LOCATION (maintmpl), "primary template here");
+      return decl;
+    }
+
   /* [temp.class.spec]
 
      A partially specialized non-type argument expression shall not
@@ -5679,7 +5692,11 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      value_dependent_expression_p.  */
   if (TYPE_PTROBV_P (type)
       && TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE)
-    expr = decay_conversion (expr);
+    {
+      expr = decay_conversion (expr, complain);
+      if (expr == error_mark_node)
+	return error_mark_node;
+    }
 
   /* If we are in a template, EXPR may be non-dependent, but still
      have a syntactic, rather than semantic, form.  For example, EXPR
@@ -5887,7 +5904,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    }
 	}
 
-      expr = decay_conversion (expr);
+      expr = decay_conversion (expr, complain);
       if (expr == error_mark_node)
 	return error_mark_node;
 
@@ -5972,7 +5989,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	 context information to decay the pointer.  */
       if (!type_unknown_p (expr_type))
 	{
-	  expr = decay_conversion (expr);
+	  expr = decay_conversion (expr, complain);
 	  if (expr == error_mark_node)
 	    return error_mark_node;
 	}
@@ -6046,7 +6063,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		 "because it is of type %qT", expr, type,
 		 TREE_TYPE (expr));
 	  /* If we are just one standard conversion off, explain.  */
-	  if (can_convert (type, TREE_TYPE (expr)))
+	  if (can_convert (type, TREE_TYPE (expr), complain))
 	    inform (input_location,
 		    "standard conversions are not allowed in this context");
 	  return NULL_TREE;
@@ -6416,7 +6433,7 @@ convert_template_argument (tree parm,
 	  if (cxx_dialect >= cxx0x)
 	    /* OK under DR 1004.  */;
 	  else if (complain & tf_warning_or_error)
-	    pedwarn (input_location, OPT_pedantic, "injected-class-name %qD"
+	    pedwarn (input_location, OPT_Wpedantic, "injected-class-name %qD"
 		     " used as template template argument", TYPE_NAME (arg));
 	  else if (flag_pedantic_errors)
 	    t = arg;
@@ -6428,6 +6445,7 @@ convert_template_argument (tree parm,
   is_tmpl_type = 
     ((TREE_CODE (arg) == TEMPLATE_DECL
       && TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
+     || (requires_tmpl_type && TREE_CODE (arg) == TYPE_ARGUMENT_PACK)
      || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
      || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE);
 
@@ -6499,7 +6517,9 @@ convert_template_argument (tree parm,
     {
       if (requires_tmpl_type)
 	{
-	  if (TREE_CODE (TREE_TYPE (arg)) == UNBOUND_CLASS_TEMPLATE)
+	  if (template_parameter_pack_p (parm) && ARGUMENT_PACK_P (orig_arg))
+	    val = orig_arg;
+	  else if (TREE_CODE (TREE_TYPE (arg)) == UNBOUND_CLASS_TEMPLATE)
 	    /* The number of argument required is not known yet.
 	       Just accept it for now.  */
 	    val = TREE_TYPE (arg);
@@ -8930,10 +8950,15 @@ instantiate_class_template_1 (tree type)
 	      /* Build new TYPE_FIELDS.  */
               if (TREE_CODE (t) == STATIC_ASSERT)
                 {
-                  tree condition = 
-                    tsubst_expr (STATIC_ASSERT_CONDITION (t), args, 
-                                 tf_warning_or_error, NULL_TREE,
-                                 /*integral_constant_expression_p=*/true);
+                  tree condition;
+ 
+		  ++c_inhibit_evaluation_warnings;
+		  condition =
+		    tsubst_expr (STATIC_ASSERT_CONDITION (t), args, 
+				 tf_warning_or_error, NULL_TREE,
+				 /*integral_constant_expression_p=*/true);
+		  --c_inhibit_evaluation_warnings;
+
                   finish_static_assert (condition,
                                         STATIC_ASSERT_MESSAGE (t), 
                                         STATIC_ASSERT_SOURCE_LOCATION (t),
@@ -9518,7 +9543,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
         }
 
       /* Substitute into the PATTERN with the altered arguments.  */
-      if (TREE_CODE (t) == EXPR_PACK_EXPANSION)
+      if (!TYPE_P (pattern))
         TREE_VEC_ELT (result, i) = 
           tsubst_expr (pattern, args, complain, in_decl,
                        /*integral_constant_expression_p=*/false);
@@ -12460,7 +12485,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       gcc_unreachable ();
 
     case VA_ARG_EXPR:
-      return build_x_va_arg (tsubst_copy (TREE_OPERAND (t, 0), args, complain,
+      return build_x_va_arg (EXPR_LOCATION (t),
+			     tsubst_copy (TREE_OPERAND (t, 0), args, complain,
 					  in_decl),
 			     tsubst (TREE_TYPE (t), args, complain, in_decl));
 
@@ -13089,11 +13115,16 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case STATIC_ASSERT:
       {
-        tree condition = 
+	tree condition;
+
+	++c_inhibit_evaluation_warnings;
+        condition = 
           tsubst_expr (STATIC_ASSERT_CONDITION (t), 
                        args,
                        complain, in_decl,
                        /*integral_constant_expression_p=*/true);
+	--c_inhibit_evaluation_warnings;
+
         finish_static_assert (condition,
                               STATIC_ASSERT_MESSAGE (t),
                               STATIC_ASSERT_SOURCE_LOCATION (t),
@@ -13435,7 +13466,7 @@ tsubst_copy_and_build (tree t,
 	      r = convert_from_reference (r);
 	  }
 	else
-	  r = build_x_indirect_ref (r, RO_UNARY_STAR, complain);
+	  r = build_x_indirect_ref (input_location, r, RO_UNARY_STAR, complain);
 	return r;
       }
 
@@ -13512,7 +13543,7 @@ tsubst_copy_and_build (tree t,
     case POSTINCREMENT_EXPR:
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
 						args, complain, in_decl);
-      return build_x_unary_op (TREE_CODE (t), op1, complain);
+      return build_x_unary_op (input_location, TREE_CODE (t), op1, complain);
 
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
@@ -13523,8 +13554,8 @@ tsubst_copy_and_build (tree t,
     case UNARY_PLUS_EXPR:  /* Unary + */
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      return build_x_unary_op (TREE_CODE (t), RECUR (TREE_OPERAND (t, 0)),
-                               complain);
+      return build_x_unary_op (input_location, TREE_CODE (t),
+			       RECUR (TREE_OPERAND (t, 0)), complain);
 
     case FIX_TRUNC_EXPR:
       return cp_build_unary_op (FIX_TRUNC_EXPR, RECUR (TREE_OPERAND (t, 0)),
@@ -13541,7 +13572,7 @@ tsubst_copy_and_build (tree t,
       else
 	op1 = tsubst_non_call_postfix_expression (op1, args, complain,
 						  in_decl);
-      return build_x_unary_op (ADDR_EXPR, op1, complain);
+      return build_x_unary_op (input_location, ADDR_EXPR, op1, complain);
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -13576,7 +13607,7 @@ tsubst_copy_and_build (tree t,
     case DOTSTAR_EXPR:
       {
 	tree r = build_x_binary_op
-	  (TREE_CODE (t),
+	  (input_location, TREE_CODE (t),
 	   RECUR (TREE_OPERAND (t, 0)),
 	   (TREE_NO_WARNING (TREE_OPERAND (t, 0))
 	    ? ERROR_MARK
@@ -13680,7 +13711,7 @@ tsubst_copy_and_build (tree t,
       /* Remember that there was a reference to this entity.  */
       if (DECL_P (op1))
 	mark_used (op1);
-      return build_x_arrow (op1, complain);
+      return build_x_arrow (input_location, op1, complain);
 
     case NEW_EXPR:
       {
@@ -14293,7 +14324,8 @@ tsubst_copy_and_build (tree t,
       }
 
     case VA_ARG_EXPR:
-      return build_x_va_arg (RECUR (TREE_OPERAND (t, 0)),
+      return build_x_va_arg (EXPR_LOCATION (t),
+			     RECUR (TREE_OPERAND (t, 0)),
 			     tsubst (TREE_TYPE (t), args, complain, in_decl));
 
     case OFFSETOF_EXPR:
@@ -15108,14 +15140,15 @@ check_non_deducible_conversion (tree parm, tree arg, int strict,
 
   if (strict == DEDUCE_CONV)
     {
-      if (can_convert_arg (type, parm, NULL_TREE, flags))
+      if (can_convert_arg (type, parm, NULL_TREE, flags,
+			   explain_p ? tf_warning_or_error : tf_none))
 	return unify_success (explain_p);
     }
   else if (strict != DEDUCE_EXACT)
     {
       if (can_convert_arg (parm, type,
 			   TYPE_P (arg) ? NULL_TREE : arg,
-			   flags))
+			   flags, explain_p ? tf_warning_or_error : tf_none))
 	return unify_success (explain_p);
     }
 
@@ -17889,7 +17922,7 @@ do_decl_instantiation (tree decl, tree storage)
   else if (storage == ridpointers[(int) RID_EXTERN])
     {
       if (!in_system_header && (cxx_dialect == cxx98))
-	pedwarn (input_location, OPT_pedantic, 
+	pedwarn (input_location, OPT_Wpedantic, 
 		 "ISO C++ 1998 forbids the use of %<extern%> on explicit "
 		 "instantiations");
       extern_p = 1;
@@ -17986,12 +18019,12 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 	  if (storage == ridpointers[(int) RID_EXTERN])
 	    {
 	      if (cxx_dialect == cxx98)
-		pedwarn (input_location, OPT_pedantic, 
+		pedwarn (input_location, OPT_Wpedantic, 
 			 "ISO C++ 1998 forbids the use of %<extern%> on "
 			 "explicit instantiations");
 	    }
 	  else
-	    pedwarn (input_location, OPT_pedantic, 
+	    pedwarn (input_location, OPT_Wpedantic, 
 		     "ISO C++ forbids the use of %qE"
 		     " on explicit instantiations", storage);
 	}

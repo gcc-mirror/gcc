@@ -72,6 +72,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *
    *  @ingroup associative_containers
    *
+   *
+   *  @tparam _Key  Type of key objects.
+   *  @tparam _Compare  Comparison function object type, defaults to less<_Key>.
+   *  @tparam _Alloc  Allocator type, defaults to allocator<_Key>.
+   *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, a
    *  <a href="tables.html#66">reversible container</a>, and an
    *  <a href="tables.html#69">associative container</a> (using equivalent

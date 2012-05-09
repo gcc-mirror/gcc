@@ -1,5 +1,5 @@
 /* Wrapper for ar/ranlib/nm to pass the LTO plugin.
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
    Contributed by Andi Kleen.
 
 This file is part of GCC.
@@ -52,11 +52,16 @@ main(int ac, char **av)
   /* XXX implement more magic from gcc.c? */
   nprefix = getenv ("GCC_EXEC_PREFIX");
   if (!nprefix)
+    nprefix = av[0];
+  else
+    nprefix = concat (nprefix, "gcc-" PERSONALITY, NULL);
+
+  nprefix = make_relative_prefix (nprefix,
+				  standard_bin_prefix,
+				  standard_libexec_prefix);
+  if (nprefix == NULL)
     nprefix = standard_libexec_prefix;
 
-  nprefix = make_relative_prefix (av[0], 
-				  standard_bin_prefix, 
-				  nprefix);
   plugin = concat (nprefix,
 		   dir_separator,
                    DEFAULT_TARGET_MACHINE, 
@@ -65,7 +70,7 @@ main(int ac, char **av)
 	           dir_separator,
 		   LTOPLUGINSONAME,
 		   NULL);
-  if (access (plugin, X_OK))
+  if (access (plugin, R_OK))
     {
       fprintf (stderr, "%s: Cannot find plugin %s\n", av[0], plugin);
       exit (1);

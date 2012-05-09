@@ -8991,8 +8991,7 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 
 @table @asis
 @item @emph{Description}:
-@code{MOD(A,P)} computes the remainder of the division of A by P@. It is
-calculated as @code{A - (INT(A/P) * P)}.
+@code{MOD(A,P)} computes the remainder of the division of A by P@. 
 
 @item @emph{Standard}:
 Fortran 77 and later
@@ -9005,14 +9004,16 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}
-@item @var{P} @tab Shall be a scalar of the same type as @var{A} and not
-equal to zero
+@item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}.
+@item @var{P} @tab Shall be a scalar of the same type and kind as @var{A} 
+and not equal to zero.
 @end multitable
 
 @item @emph{Return value}:
-The kind of the return value is the result of cross-promoting
-the kinds of the arguments.
+The return value is the result of @code{A - (INT(A/P) * P)}. The type
+and kind of the return value is the same as that of the arguments. The
+returned value has the same sign as A and a magnitude less than the
+magnitude of P.
 
 @item @emph{Example}:
 @smallexample
@@ -9041,6 +9042,10 @@ end program test_mod
 @item @code{AMOD(A,P)} @tab @code{REAL(4) A,P} @tab @code{REAL(4)} @tab Fortran 95 and later
 @item @code{DMOD(A,P)} @tab @code{REAL(8) A,P} @tab @code{REAL(8)} @tab Fortran 95 and later
 @end multitable
+
+@item @emph{See also}:
+@ref{MODULO}
+
 @end table
 
 
@@ -9066,8 +9071,9 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}
-@item @var{P} @tab Shall be a scalar of the same type and kind as @var{A}
+@item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}.
+@item @var{P} @tab Shall be a scalar of the same type and kind as @var{A}. 
+It shall not be zero.
 @end multitable
 
 @item @emph{Return value}:
@@ -9080,7 +9086,8 @@ The type and kind of the result are those of the arguments.
 @item If @var{A} and @var{P} are of type @code{REAL}:
 @code{MODULO(A,P)} has the value of @code{A - FLOOR (A / P) * P}.
 @end table
-In all cases, if @var{P} is zero the result is processor-dependent.
+The returned value has the same sign as P and a magnitude less than
+the magnitude of P.
 
 @item @emph{Example}:
 @smallexample
@@ -9095,6 +9102,9 @@ program test_modulo
   print *, modulo(17.5,-5.5)
 end program
 @end smallexample
+
+@item @emph{See also}:
+@ref{MOD}
 
 @end table
 

@@ -1,6 +1,6 @@
 /* PR c/19978 : Test for duplicated warnings (unary operators).  */
 /* { dg-do compile } */
-/* { dg-options "-Woverflow" } */
+/* { dg-options "-Woverflow -ftrack-macro-expansion=0" } */
 
 #include <limits.h>
 

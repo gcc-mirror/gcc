@@ -4696,6 +4696,6 @@ picochip_static_chain (const_tree ARG_UNUSED (fndecl), bool incoming_p)
   if (incoming_p)
     addr = arg_pointer_rtx;
   else
-    addr = plus_constant (stack_pointer_rtx, -2 * UNITS_PER_WORD);
+    addr = plus_constant (Pmode, stack_pointer_rtx, -2 * UNITS_PER_WORD);
   return gen_frame_mem (Pmode, addr);
 }

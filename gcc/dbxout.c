@@ -2483,7 +2483,7 @@ dbxout_expand_expr (tree expr)
 	     return NULL, otherwise stabs might reference an undefined
 	     symbol.  */
 	  struct varpool_node *node = varpool_get_node (expr);
-	  if (!node || !node->needed)
+	  if (!node || !node->analyzed)
 	    return NULL;
 	}
       /* FALLTHRU */

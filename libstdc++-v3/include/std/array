@@ -1,6 +1,7 @@
 // <array> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,8 +55,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  Sets support random access iterators.
    *
-   *  @param  Tp  Type of element. Required to be a complete type.
-   *  @param  N  Number of elements.
+   *  @tparam  Tp  Type of element. Required to be a complete type.
+   *  @tparam  N  Number of elements.
   */
   template<typename _Tp, std::size_t _Nm>
     struct array
@@ -261,23 +262,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class tuple_element;
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    struct tuple_element<_Int, array<_Tp, _Nm> >
-    { typedef _Tp type; };
+    struct tuple_element<_Int, array<_Tp, _Nm>>
+    {
+      static_assert(_Int < _Nm, "index is out of bounds");
+      typedef _Tp type;
+    };
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
     constexpr _Tp&
     get(array<_Tp, _Nm>& __arr) noexcept
-    { return __arr._M_instance[_Int]; }
+    {
+      static_assert(_Int < _Nm, "index is out of bounds");
+      return __arr._M_instance[_Int];
+    }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
     constexpr _Tp&&
     get(array<_Tp, _Nm>&& __arr) noexcept
-    { return std::move(get<_Int>(__arr)); }
+    {
+      static_assert(_Int < _Nm, "index is out of bounds");
+      return std::move(get<_Int>(__arr));
+    }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
     constexpr const _Tp&
     get(const array<_Tp, _Nm>& __arr) noexcept
-    { return __arr._M_instance[_Int]; }
+    {
+      static_assert(_Int < _Nm, "index is out of bounds");
+      return __arr._M_instance[_Int];
+    }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

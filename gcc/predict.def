@@ -116,3 +116,13 @@ DEF_PREDICTOR (PRED_NULL_RETURN, "null return", HITRATE (90), 0)
 
 /* Branches to a mudflap bounds check are extremely unlikely.  */
 DEF_PREDICTOR (PRED_MUDFLAP, "mudflap check", PROB_VERY_LIKELY, 0)
+
+/* Branches to compare induction variable to a loop bound is
+   extremely likely.  */
+DEF_PREDICTOR (PRED_LOOP_IV_COMPARE_GUESS, "guess loop iv compare",
+	       PROB_VERY_LIKELY, 0)
+
+/* Use number of loop iterations determined by # of iterations analysis
+   to set probability of branches that compares IV to loop bound variable.  */
+DEF_PREDICTOR (PRED_LOOP_IV_COMPARE, "loop iv compare", PROB_VERY_LIKELY,
+	       PRED_FLAG_FIRST_MATCH)

@@ -695,17 +695,22 @@ get_value_range (const_tree var)
   /* If VAR is a default definition of a parameter, the variable can
      take any value in VAR's type.  */
   sym = SSA_NAME_VAR (var);
-  if (SSA_NAME_IS_DEFAULT_DEF (var)
-      && TREE_CODE (sym) == PARM_DECL)
+  if (SSA_NAME_IS_DEFAULT_DEF (var))
     {
-      /* Try to use the "nonnull" attribute to create ~[0, 0]
-	 anti-ranges for pointers.  Note that this is only valid with
-	 default definitions of PARM_DECLs.  */
-      if (POINTER_TYPE_P (TREE_TYPE (sym))
-	  && nonnull_arg_p (sym))
+      if (TREE_CODE (sym) == PARM_DECL)
+	{
+	  /* Try to use the "nonnull" attribute to create ~[0, 0]
+	     anti-ranges for pointers.  Note that this is only valid with
+	     default definitions of PARM_DECLs.  */
+	  if (POINTER_TYPE_P (TREE_TYPE (sym))
+	      && nonnull_arg_p (sym))
+	    set_value_range_to_nonnull (vr, TREE_TYPE (sym));
+	  else
+	    set_value_range_to_varying (vr);
+	}
+      else if (TREE_CODE (sym) == RESULT_DECL
+	       && DECL_BY_REFERENCE (sym))
 	set_value_range_to_nonnull (vr, TREE_TYPE (sym));
-      else
-	set_value_range_to_varying (vr);
     }
 
   return vr;
@@ -3420,6 +3425,8 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
     {
       double_int nit;
 
+      /* We are only entering here for loop header PHI nodes, so using
+	 the number of latch executions is the correct thing to use.  */
       if (max_loop_iterations (loop, &nit))
 	{
 	  value_range_t maxvr = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
@@ -4563,6 +4570,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      && INTEGRAL_TYPE_P (TREE_TYPE (name2))
 	      && IN_RANGE (tree_low_cst (cst2, 1), 1, prec - 1)
 	      && prec <= 2 * HOST_BITS_PER_WIDE_INT
+	      && prec == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (val)))
 	      && live_on_edge (e, name2)
 	      && !has_single_use (name2))
 	    {
@@ -4596,8 +4604,10 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	    new_val = val2;
 	  else
 	    {
+	      double_int maxval
+		= double_int_max_value (prec, TYPE_UNSIGNED (TREE_TYPE (val)));
 	      mask = double_int_ior (tree_to_double_int (val2), mask);
-	      if (double_int_minus_one_p (double_int_sext (mask, prec)))
+	      if (double_int_equal_p (mask, maxval))
 		new_val = NULL_TREE;
 	      else
 		new_val = double_int_to_tree (TREE_TYPE (val2), mask);
@@ -8271,12 +8281,6 @@ execute_vrp (void)
   scev_initialize ();
 
   insert_range_assertions ();
-
-  /* Estimate number of iterations - but do not use undefined behavior
-     for this.  We can't do this lazily as other functions may compute
-     this using undefined behavior.  */
-  free_numbers_of_iterations_estimates ();
-  estimate_numbers_of_iterations (false);
 
   to_remove_edges = VEC_alloc (edge, heap, 10);
   to_update_switch_stmts = VEC_alloc (switch_update, heap, 5);

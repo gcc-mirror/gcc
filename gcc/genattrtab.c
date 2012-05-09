@@ -1,6 +1,6 @@
 /* Generate code from machine description to compute values of attributes.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -275,16 +275,17 @@ static rtx copy_rtx_unchanging	   (rtx);
 static bool attr_alt_subset_p      (rtx, rtx);
 static bool attr_alt_subset_of_compl_p (rtx, rtx);
 static void clear_struct_flag      (rtx);
-static void write_attr_valueq	   (struct attr_desc *, const char *);
+static void write_attr_valueq	   (FILE *, struct attr_desc *, const char *);
 static struct attr_value *find_most_used  (struct attr_desc *);
-static void write_attr_set	   (struct attr_desc *, int, rtx,
+static void write_attr_set	   (FILE *, struct attr_desc *, int, rtx,
 				    const char *, const char *, rtx,
 				    int, int, unsigned int);
-static void write_attr_case	   (struct attr_desc *, struct attr_value *,
+static void write_attr_case	   (FILE *, struct attr_desc *,
+				    struct attr_value *,
 				    int, const char *, const char *, int, rtx);
-static void write_attr_value	   (struct attr_desc *, rtx);
-static void write_upcase	   (const char *);
-static void write_indent	   (int);
+static void write_attr_value	   (FILE *, struct attr_desc *, rtx);
+static void write_upcase	   (FILE *, const char *);
+static void write_indent	   (FILE *, int);
 static rtx identity_fn		   (rtx);
 static rtx zero_fn		   (rtx);
 static rtx one_fn		   (rtx);
@@ -293,6 +294,23 @@ static rtx min_fn		   (rtx);
 
 #define oballoc(T) XOBNEW (hash_obstack, T)
 #define oballocvec(T, N) XOBNEWVEC (hash_obstack, T, (N))
+
+/* This gen* file is unique, in that it writes out multiple files.
+
+   Before GCC 4.8, insn-attrtab.c was written out containing many large
+   functions and tables.  This made insn-attrtab.c _the_ bottle-neck in
+   a parallel build, and even made it impossible to build GCC on machines
+   with relatively small RAM space (PR other/29442).  Therefore, the
+   atrribute functions/tables are now written out to three separate
+   files: all "*insn_default_latency" functions go to LATENCY_FILE_NAME,
+   all "*internal_dfa_insn_code" functions go to DFA_FILE_NAME, and the
+   rest goes to ATTR_FILE_NAME.  */
+
+static const char *attr_file_name = NULL;
+static const char *dfa_file_name = NULL;
+static const char *latency_file_name = NULL;
+
+static FILE *attr_file, *dfa_file, *latency_file;
 
 /* Hash table for sharing RTL and strings.  */
 
@@ -1610,7 +1628,7 @@ min_fn (rtx exp)
 }
 
 static void
-write_length_unit_log (void)
+write_length_unit_log (FILE *outf)
 {
   struct attr_desc *length_attr = find_attr (&length_str, 0);
   struct attr_value *av;
@@ -1633,7 +1651,7 @@ write_length_unit_log (void)
       for (length_unit_log = 0; length_or & 1; length_or >>= 1)
 	length_unit_log++;
     }
-  printf ("EXPORTED_CONST int length_unit_log = %u;\n", length_unit_log);
+  fprintf (outf, "EXPORTED_CONST int length_unit_log = %u;\n", length_unit_log);
 }
 
 /* Take a COND expression and see if any of the conditions in it can be
@@ -2993,8 +3011,9 @@ gen_attr (rtx exp, int lineno)
       if (!et || !et->md_p)
 	error_with_line (lineno, "No define_enum called `%s' defined",
 			 attr->name);
-      for (ev = et->values; ev; ev = ev->next)
-	add_attr_value (attr, ev->name);
+      if (et)
+	for (ev = et->values; ev; ev = ev->next)
+	  add_attr_value (attr, ev->name);
     }
   else if (*XSTR (exp, 1) == '\0')
     attr->is_numeric = 1;
@@ -3246,7 +3265,7 @@ find_attrs_to_cache (rtx exp, bool create)
     }
 }
 
-/* Given a piece of RTX, print a C expression to test its truth value.
+/* Given a piece of RTX, print a C expression to test its truth value to OUTF.
    We use AND and IOR both for logical and bit-wise operations, so
    interpret them as logical unless they are inside a comparison expression.  */
 
@@ -3264,7 +3283,7 @@ find_attrs_to_cache (rtx exp, bool create)
 #define FLG_OUTSIDE_AND		8
 
 static unsigned int
-write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
+write_test_expr (FILE *outf, rtx exp, unsigned int attrs_cached, int flags)
 {
   int comparison_operator = 0;
   RTX_CODE code;
@@ -3273,14 +3292,14 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
   /* In order not to worry about operator precedence, surround our part of
      the expression with parentheses.  */
 
-  printf ("(");
+  fprintf (outf, "(");
   code = GET_CODE (exp);
   switch (code)
     {
     /* Binary operators.  */
     case GEU: case GTU:
     case LEU: case LTU:
-      printf ("(unsigned) ");
+      fprintf (outf, "(unsigned) ");
       /* Fall through.  */
 
     case EQ: case NE:
@@ -3294,7 +3313,7 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
       if ((code != AND && code != IOR) || (flags & FLG_BITWISE))
 	{
 	  flags &= ~(FLG_AFTER | FLG_INSIDE | FLG_OUTSIDE_AND);
-	  write_test_expr (XEXP (exp, 0), attrs_cached,
+	  write_test_expr (outf, XEXP (exp, 0), attrs_cached,
 			   flags | comparison_operator);
 	}
       else
@@ -3306,78 +3325,78 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 	      || (GET_CODE (XEXP (exp, 0)) == NOT
 		  && GET_CODE (XEXP (XEXP (exp, 0), 0)) == EQ_ATTR))
 	    attrs_cached
-	      = write_test_expr (XEXP (exp, 0), attrs_cached, flags);
+	      = write_test_expr (outf, XEXP (exp, 0), attrs_cached, flags);
 	  else
-	    write_test_expr (XEXP (exp, 0), attrs_cached, flags);
+	    write_test_expr (outf, XEXP (exp, 0), attrs_cached, flags);
 	}
       switch (code)
 	{
 	case EQ:
-	  printf (" == ");
+	  fprintf (outf, " == ");
 	  break;
 	case NE:
-	  printf (" != ");
+	  fprintf (outf, " != ");
 	  break;
 	case GE:
-	  printf (" >= ");
+	  fprintf (outf, " >= ");
 	  break;
 	case GT:
-	  printf (" > ");
+	  fprintf (outf, " > ");
 	  break;
 	case GEU:
-	  printf (" >= (unsigned) ");
+	  fprintf (outf, " >= (unsigned) ");
 	  break;
 	case GTU:
-	  printf (" > (unsigned) ");
+	  fprintf (outf, " > (unsigned) ");
 	  break;
 	case LE:
-	  printf (" <= ");
+	  fprintf (outf, " <= ");
 	  break;
 	case LT:
-	  printf (" < ");
+	  fprintf (outf, " < ");
 	  break;
 	case LEU:
-	  printf (" <= (unsigned) ");
+	  fprintf (outf, " <= (unsigned) ");
 	  break;
 	case LTU:
-	  printf (" < (unsigned) ");
+	  fprintf (outf, " < (unsigned) ");
 	  break;
 	case PLUS:
-	  printf (" + ");
+	  fprintf (outf, " + ");
 	  break;
 	case MINUS:
-	  printf (" - ");
+	  fprintf (outf, " - ");
 	  break;
 	case MULT:
-	  printf (" * ");
+	  fprintf (outf, " * ");
 	  break;
 	case DIV:
-	  printf (" / ");
+	  fprintf (outf, " / ");
 	  break;
 	case MOD:
-	  printf (" %% ");
+	  fprintf (outf, " %% ");
 	  break;
 	case AND:
 	  if (flags & FLG_BITWISE)
-	    printf (" & ");
+	    fprintf (outf, " & ");
 	  else
-	    printf (" && ");
+	    fprintf (outf, " && ");
 	  break;
 	case IOR:
 	  if (flags & FLG_BITWISE)
-	    printf (" | ");
+	    fprintf (outf, " | ");
 	  else
-	    printf (" || ");
+	    fprintf (outf, " || ");
 	  break;
 	case XOR:
-	  printf (" ^ ");
+	  fprintf (outf, " ^ ");
 	  break;
 	case ASHIFT:
-	  printf (" << ");
+	  fprintf (outf, " << ");
 	  break;
 	case LSHIFTRT:
 	case ASHIFTRT:
-	  printf (" >> ");
+	  fprintf (outf, " >> ");
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -3408,9 +3427,9 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 	      || (GET_CODE (XEXP (exp, 1)) == NOT
 		  && GET_CODE (XEXP (XEXP (exp, 1), 0)) == EQ_ATTR)))
 	attrs_cached
-	  = write_test_expr (XEXP (exp, 1), attrs_cached, flags);
+	  = write_test_expr (outf, XEXP (exp, 1), attrs_cached, flags);
       else
-	write_test_expr (XEXP (exp, 1), attrs_cached,
+	write_test_expr (outf, XEXP (exp, 1), attrs_cached,
 			 flags | comparison_operator);
       break;
 
@@ -3420,12 +3439,14 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 	{
 	  if (XSTR (XEXP (exp, 0), 0) == alternative_name)
 	    {
-	      printf ("which_alternative != %s", XSTR (XEXP (exp, 0), 1));
+	      fprintf (outf, "which_alternative != %s",
+		       XSTR (XEXP (exp, 0), 1));
 	      break;
 	    }
 
-	  printf ("! ");
-	  attrs_cached = write_test_expr (XEXP (exp, 0), attrs_cached, flags);
+	  fprintf (outf, "! ");
+	  attrs_cached =
+	    write_test_expr (outf, XEXP (exp, 0), attrs_cached, flags);
 	  break;
 	}
 
@@ -3437,22 +3458,22 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 	{
 	case NOT:
 	  if (flags & FLG_BITWISE)
-	    printf ("~ ");
+	    fprintf (outf, "~ ");
 	  else
-	    printf ("! ");
+	    fprintf (outf, "! ");
 	  break;
 	case ABS:
-	  printf ("abs ");
+	  fprintf (outf, "abs ");
 	  break;
 	case NEG:
-	  printf ("-");
+	  fprintf (outf, "-");
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
 
       flags &= ~(FLG_AFTER | FLG_INSIDE | FLG_OUTSIDE_AND);
-      write_test_expr (XEXP (exp, 0), attrs_cached, flags);
+      write_test_expr (outf, XEXP (exp, 0), attrs_cached, flags);
       break;
 
     case EQ_ATTR_ALT:
@@ -3490,13 +3511,13 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 	      if (!(set & 1))
 		bit++;
 
-	      printf ("which_alternative %s= %d",
-		      XINT (exp, 1) ? "!" : "=", bit);
+	      fprintf (outf, "which_alternative %s= %d",
+		       XINT (exp, 1) ? "!" : "=", bit);
 	    }
 	  else
 	    {
-	      printf ("%s((1 << which_alternative) & %#x)",
-		      XINT (exp, 1) ? "!" : "", set);
+	      fprintf (outf, "%s((1 << which_alternative) & %#x)",
+		       XINT (exp, 1) ? "!" : "", set);
 	    }
 	}
       break;
@@ -3510,7 +3531,7 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 
       if (XSTR (exp, 0) == alternative_name)
 	{
-	  printf ("which_alternative == %s", XSTR (exp, 1));
+	  fprintf (outf, "which_alternative == %s", XSTR (exp, 1));
 	  break;
 	}
 
@@ -3520,8 +3541,10 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
       /* Now is the time to expand the value of a constant attribute.  */
       if (attr->is_const)
 	{
-	  write_test_expr (evaluate_eq_attr (exp, attr,
-					     attr->default_val->value, -2, -2),
+	  write_test_expr (outf,
+			   evaluate_eq_attr (exp, attr,
+					     attr->default_val->value,
+					     -2, -2),
 			   attrs_cached, 0);
 	}
       else
@@ -3531,10 +3554,10 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 	    if (attr->name == cached_attrs[i])
 	      break;
 	  if (i < cached_attr_count && (attrs_cached & (1U << i)) != 0)
-	    printf ("cached_%s", attr->name);
+	    fprintf (outf, "cached_%s", attr->name);
 	  else if (i < cached_attr_count && (attrs_to_cache & (1U << i)) != 0)
 	    {
-	      printf ("(cached_%s = get_attr_%s (insn))",
+	      fprintf (outf, "(cached_%s = get_attr_%s (insn))",
 		      attr->name, attr->name);
 	      if (flags & FLG_AFTER)
 		attrs_cached_after |= (1U << i);
@@ -3543,9 +3566,9 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 	      attrs_cached |= (1U << i);
 	    }
 	  else
-	    printf ("get_attr_%s (insn)", attr->name);
-	  printf (" == ");
-	  write_attr_valueq (attr, XSTR (exp, 1));
+	    fprintf (outf, "get_attr_%s (insn)", attr->name);
+	  fprintf (outf, " == ");
+	  write_attr_valueq (outf, attr, XSTR (exp, 1));
 	}
       break;
 
@@ -3553,7 +3576,7 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
     case ATTR_FLAG:
       if (flags & FLG_BITWISE)
 	fatal ("ATTR_FLAG not valid inside comparison");
-      printf ("(flags & ATTR_FLAG_%s) != 0", XSTR (exp, 0));
+      fprintf (outf, "(flags & ATTR_FLAG_%s) != 0", XSTR (exp, 0));
       break;
 
     /* See if an operand matches a predicate.  */
@@ -3565,34 +3588,35 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 	  if (GET_MODE (exp) == VOIDmode)
 	    fatal ("null MATCH_OPERAND specified as test");
 	  else
-	    printf ("GET_MODE (operands[%d]) == %smode",
-		    XINT (exp, 0), GET_MODE_NAME (GET_MODE (exp)));
+	    fprintf (outf, "GET_MODE (operands[%d]) == %smode",
+		     XINT (exp, 0), GET_MODE_NAME (GET_MODE (exp)));
 	}
       else
-	printf ("%s (operands[%d], %smode)",
-		XSTR (exp, 1), XINT (exp, 0), GET_MODE_NAME (GET_MODE (exp)));
+	fprintf (outf, "%s (operands[%d], %smode)",
+		 XSTR (exp, 1), XINT (exp, 0), GET_MODE_NAME (GET_MODE (exp)));
       break;
 
     /* Constant integer.  */
     case CONST_INT:
-      printf (HOST_WIDE_INT_PRINT_DEC, XWINT (exp, 0));
+      fprintf (outf, HOST_WIDE_INT_PRINT_DEC, XWINT (exp, 0));
       break;
 
     case MATCH_TEST:
-      print_c_condition (XSTR (exp, 0));
+      fprint_c_condition (outf, XSTR (exp, 0));
       if (flags & FLG_BITWISE)
-	printf (" != 0");
+	fprintf (outf, " != 0");
       break;
 
     /* A random C expression.  */
     case SYMBOL_REF:
-      print_c_condition (XSTR (exp, 0));
+      fprint_c_condition (outf, XSTR (exp, 0));
       break;
 
     /* The address of the branch target.  */
     case MATCH_DUP:
-      printf ("INSN_ADDRESSES_SET_P () ? INSN_ADDRESSES (INSN_UID (GET_CODE (operands[%d]) == LABEL_REF ? XEXP (operands[%d], 0) : operands[%d])) : 0",
-	      XINT (exp, 0), XINT (exp, 0), XINT (exp, 0));
+      fprintf (outf,
+	       "INSN_ADDRESSES_SET_P () ? INSN_ADDRESSES (INSN_UID (GET_CODE (operands[%d]) == LABEL_REF ? XEXP (operands[%d], 0) : operands[%d])) : 0",
+	       XINT (exp, 0), XINT (exp, 0), XINT (exp, 0));
       break;
 
     case PC:
@@ -3601,19 +3625,19 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 	 address of the next insn for forward branches, and both with
 	 adjustments that account for the worst-case possible stretching of
 	 intervening alignments between this insn and its destination.  */
-      printf ("insn_current_reference_address (insn)");
+      fprintf (outf, "insn_current_reference_address (insn)");
       break;
 
     case CONST_STRING:
-      printf ("%s", XSTR (exp, 0));
+      fprintf (outf, "%s", XSTR (exp, 0));
       break;
 
     case IF_THEN_ELSE:
-      write_test_expr (XEXP (exp, 0), attrs_cached, 0);
-      printf (" ? ");
-      write_test_expr (XEXP (exp, 1), attrs_cached, FLG_BITWISE);
-      printf (" : ");
-      write_test_expr (XEXP (exp, 2), attrs_cached, FLG_BITWISE);
+      write_test_expr (outf, XEXP (exp, 0), attrs_cached, 0);
+      fprintf (outf, " ? ");
+      write_test_expr (outf, XEXP (exp, 1), attrs_cached, FLG_BITWISE);
+      fprintf (outf, " : ");
+      write_test_expr (outf, XEXP (exp, 2), attrs_cached, FLG_BITWISE);
       break;
 
     default:
@@ -3621,7 +3645,7 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
 	     GET_RTX_NAME (code));
     }
 
-  printf (")");
+  fprintf (outf, ")");
   return attrs_cached;
 }
 
@@ -3825,7 +3849,7 @@ walk_attr_value (rtx exp)
 /* Write out a function to obtain the attribute for a given INSN.  */
 
 static void
-write_attr_get (struct attr_desc *attr)
+write_attr_get (FILE *outf, struct attr_desc *attr)
 {
   struct attr_value *av, *common_av;
   int i, j;
@@ -3837,37 +3861,37 @@ write_attr_get (struct attr_desc *attr)
   /* Write out start of function, then all values with explicit `case' lines,
      then a `default', then the value with the most uses.  */
   if (attr->enum_name)
-    printf ("enum %s\n", attr->enum_name);
+    fprintf (outf, "enum %s\n", attr->enum_name);
   else if (!attr->is_numeric)
-    printf ("enum attr_%s\n", attr->name);
+    fprintf (outf, "enum attr_%s\n", attr->name);
   else
-    printf ("int\n");
+    fprintf (outf, "int\n");
 
   /* If the attribute name starts with a star, the remainder is the name of
      the subroutine to use, instead of `get_attr_...'.  */
   if (attr->name[0] == '*')
-    printf ("%s (rtx insn ATTRIBUTE_UNUSED)\n", &attr->name[1]);
+    fprintf (outf, "%s (rtx insn ATTRIBUTE_UNUSED)\n", &attr->name[1]);
   else if (attr->is_const == 0)
-    printf ("get_attr_%s (rtx insn ATTRIBUTE_UNUSED)\n", attr->name);
+    fprintf (outf, "get_attr_%s (rtx insn ATTRIBUTE_UNUSED)\n", attr->name);
   else
     {
-      printf ("get_attr_%s (void)\n", attr->name);
-      printf ("{\n");
+      fprintf (outf, "get_attr_%s (void)\n", attr->name);
+      fprintf (outf, "{\n");
 
       for (av = attr->first_value; av; av = av->next)
 	if (av->num_insns == 1)
-	  write_attr_set (attr, 2, av->value, "return", ";",
+	  write_attr_set (outf, attr, 2, av->value, "return", ";",
 			  true_rtx, av->first_insn->def->insn_code,
 			  av->first_insn->def->insn_index, 0);
 	else if (av->num_insns != 0)
-	  write_attr_set (attr, 2, av->value, "return", ";",
+	  write_attr_set (outf, attr, 2, av->value, "return", ";",
 			  true_rtx, -2, 0, 0);
 
-      printf ("}\n\n");
+      fprintf (outf, "}\n\n");
       return;
     }
 
-  printf ("{\n");
+  fprintf (outf, "{\n");
 
   /* Find attributes that are worth caching in the conditions.  */
   cached_attr_count = 0;
@@ -3888,27 +3912,27 @@ write_attr_get (struct attr_desc *attr)
 	cached_attr = find_attr (&name, 0);
 	gcc_assert (cached_attr && cached_attr->is_const == 0);
 	if (cached_attr->enum_name)
-	  printf ("  enum %s", cached_attr->enum_name);
+	  fprintf (outf, "  enum %s", cached_attr->enum_name);
 	else if (!cached_attr->is_numeric)
-	  printf ("  enum attr_%s", cached_attr->name);
+	  fprintf (outf, "  enum attr_%s", cached_attr->name);
 	else
-	  printf ("  int");
-	printf (" cached_%s ATTRIBUTE_UNUSED;\n", name);
+	  fprintf (outf, "  int");
+	fprintf (outf, " cached_%s ATTRIBUTE_UNUSED;\n", name);
 	j++;
       }
   cached_attr_count = j;
   if (cached_attr_count)
-    printf ("\n");
+    fprintf (outf, "\n");
 
-  printf ("  switch (recog_memoized (insn))\n");
-  printf ("    {\n");
+  fprintf (outf, "  switch (recog_memoized (insn))\n");
+  fprintf (outf, "    {\n");
 
   for (av = attr->first_value; av; av = av->next)
     if (av != common_av)
-      write_attr_case (attr, av, 1, "return", ";", 4, true_rtx);
+      write_attr_case (outf, attr, av, 1, "return", ";", 4, true_rtx);
 
-  write_attr_case (attr, common_av, 0, "return", ";", 4, true_rtx);
-  printf ("    }\n}\n\n");
+  write_attr_case (outf, attr, common_av, 0, "return", ";", 4, true_rtx);
+  fprintf (outf, "    }\n}\n\n");
   cached_attr_count = 0;
 }
 
@@ -3946,7 +3970,7 @@ eliminate_known_true (rtx known_true, rtx exp, int insn_code, int insn_index)
    and ";").  */
 
 static void
-write_attr_set (struct attr_desc *attr, int indent, rtx value,
+write_attr_set (FILE *outf, struct attr_desc *attr, int indent, rtx value,
 		const char *prefix, const char *suffix, rtx known_true,
 		int insn_code, int insn_index, unsigned int attrs_cached)
 {
@@ -4001,49 +4025,49 @@ write_attr_set (struct attr_desc *attr, int indent, rtx value,
 
 	  attrs_cached_inside = attrs_cached;
 	  attrs_cached_after = attrs_cached;
-	  write_indent (indent);
-	  printf ("%sif ", first_if ? "" : "else ");
+	  write_indent (outf, indent);
+	  fprintf (outf, "%sif ", first_if ? "" : "else ");
 	  first_if = 0;
-	  write_test_expr (testexp, attrs_cached,
+	  write_test_expr (outf, testexp, attrs_cached,
 			   (FLG_AFTER | FLG_INSIDE | FLG_OUTSIDE_AND));
 	  attrs_cached = attrs_cached_after;
-	  printf ("\n");
-	  write_indent (indent + 2);
-	  printf ("{\n");
+	  fprintf (outf, "\n");
+	  write_indent (outf, indent + 2);
+	  fprintf (outf, "{\n");
 
-	  write_attr_set (attr, indent + 4,
+	  write_attr_set (outf, attr, indent + 4,
 			  XVECEXP (value, 0, i + 1), prefix, suffix,
 			  inner_true, insn_code, insn_index,
 			  attrs_cached_inside);
-	  write_indent (indent + 2);
-	  printf ("}\n");
+	  write_indent (outf, indent + 2);
+	  fprintf (outf, "}\n");
 	  our_known_true = newexp;
 	}
 
       if (! first_if)
 	{
-	  write_indent (indent);
-	  printf ("else\n");
-	  write_indent (indent + 2);
-	  printf ("{\n");
+	  write_indent (outf, indent);
+	  fprintf (outf, "else\n");
+	  write_indent (outf, indent + 2);
+	  fprintf (outf, "{\n");
 	}
 
-      write_attr_set (attr, first_if ? indent : indent + 4, default_val,
+      write_attr_set (outf, attr, first_if ? indent : indent + 4, default_val,
 		      prefix, suffix, our_known_true, insn_code, insn_index,
 		      attrs_cached);
 
       if (! first_if)
 	{
-	  write_indent (indent + 2);
-	  printf ("}\n");
+	  write_indent (outf, indent + 2);
+	  fprintf (outf, "}\n");
 	}
     }
   else
     {
-      write_indent (indent);
-      printf ("%s ", prefix);
-      write_attr_value (attr, value);
-      printf ("%s\n", suffix);
+      write_indent (outf, indent);
+      fprintf (outf, "%s ", prefix);
+      write_attr_value (outf, attr, value);
+      fprintf (outf, "%s\n", suffix);
     }
 }
 
@@ -4051,25 +4075,25 @@ write_attr_set (struct attr_desc *attr, int indent, rtx value,
    INDENT is the amount of indentation to write before each case.  */
 
 static void
-write_insn_cases (struct insn_ent *ie, int indent)
+write_insn_cases (FILE *outf, struct insn_ent *ie, int indent)
 {
   for (; ie != 0; ie = ie->next)
     if (ie->def->insn_code != -1)
       {
-	write_indent (indent);
+	write_indent (outf, indent);
 	if (GET_CODE (ie->def->def) == DEFINE_PEEPHOLE)
-	  printf ("case %d:  /* define_peephole, line %d */\n",
-		  ie->def->insn_code, ie->def->lineno);
+	  fprintf (outf, "case %d:  /* define_peephole, line %d */\n",
+		   ie->def->insn_code, ie->def->lineno);
 	else
-	  printf ("case %d:  /* %s */\n",
-		  ie->def->insn_code, XSTR (ie->def->def, 0));
+	  fprintf (outf, "case %d:  /* %s */\n",
+		   ie->def->insn_code, XSTR (ie->def->def, 0));
       }
 }
 
 /* Write out the computation for one attribute value.  */
 
 static void
-write_attr_case (struct attr_desc *attr, struct attr_value *av,
+write_attr_case (FILE *outf, struct attr_desc *attr, struct attr_value *av,
 		 int write_case_lines, const char *prefix, const char *suffix,
 		 int indent, rtx known_true)
 {
@@ -4078,22 +4102,22 @@ write_attr_case (struct attr_desc *attr, struct attr_value *av,
 
   if (av->has_asm_insn)
     {
-      write_indent (indent);
-      printf ("case -1:\n");
-      write_indent (indent + 2);
-      printf ("if (GET_CODE (PATTERN (insn)) != ASM_INPUT\n");
-      write_indent (indent + 2);
-      printf ("    && asm_noperands (PATTERN (insn)) < 0)\n");
-      write_indent (indent + 2);
-      printf ("  fatal_insn_not_found (insn);\n");
+      write_indent (outf, indent);
+      fprintf (outf, "case -1:\n");
+      write_indent (outf, indent + 2);
+      fprintf (outf, "if (GET_CODE (PATTERN (insn)) != ASM_INPUT\n");
+      write_indent (outf, indent + 2);
+      fprintf (outf, "    && asm_noperands (PATTERN (insn)) < 0)\n");
+      write_indent (outf, indent + 2);
+      fprintf (outf, "  fatal_insn_not_found (insn);\n");
     }
 
   if (write_case_lines)
-    write_insn_cases (av->first_insn, indent);
+    write_insn_cases (outf, av->first_insn, indent);
   else
     {
-      write_indent (indent);
-      printf ("default:\n");
+      write_indent (outf, indent);
+      fprintf (outf, "default:\n");
     }
 
   /* See what we have to do to output this value.  */
@@ -4102,85 +4126,85 @@ write_attr_case (struct attr_desc *attr, struct attr_value *av,
 
   if (must_constrain)
     {
-      write_indent (indent + 2);
-      printf ("extract_constrain_insn_cached (insn);\n");
+      write_indent (outf, indent + 2);
+      fprintf (outf, "extract_constrain_insn_cached (insn);\n");
     }
   else if (must_extract)
     {
-      write_indent (indent + 2);
-      printf ("extract_insn_cached (insn);\n");
+      write_indent (outf, indent + 2);
+      fprintf (outf, "extract_insn_cached (insn);\n");
     }
 
   attrs_to_cache = 0;
   if (av->num_insns == 1)
-    write_attr_set (attr, indent + 2, av->value, prefix, suffix,
+    write_attr_set (outf, attr, indent + 2, av->value, prefix, suffix,
 		    known_true, av->first_insn->def->insn_code,
 		    av->first_insn->def->insn_index, 0);
   else
-    write_attr_set (attr, indent + 2, av->value, prefix, suffix,
+    write_attr_set (outf, attr, indent + 2, av->value, prefix, suffix,
 		    known_true, -2, 0, 0);
 
   if (strncmp (prefix, "return", 6))
     {
-      write_indent (indent + 2);
-      printf ("break;\n");
+      write_indent (outf, indent + 2);
+      fprintf (outf, "break;\n");
     }
-  printf ("\n");
+  fprintf (outf, "\n");
 }
 
 /* Utilities to write in various forms.  */
 
 static void
-write_attr_valueq (struct attr_desc *attr, const char *s)
+write_attr_valueq (FILE *outf, struct attr_desc *attr, const char *s)
 {
   if (attr->is_numeric)
     {
       int num = atoi (s);
 
-      printf ("%d", num);
+      fprintf (outf, "%d", num);
 
       if (num > 9 || num < 0)
-	printf (" /* %#x */", num);
+	fprintf (outf, " /* %#x */", num);
     }
   else
     {
-      write_upcase (attr->enum_name ? attr->enum_name : attr->name);
-      printf ("_");
-      write_upcase (s);
+      write_upcase (outf, attr->enum_name ? attr->enum_name : attr->name);
+      fprintf (outf, "_");
+      write_upcase (outf, s);
     }
 }
 
 static void
-write_attr_value (struct attr_desc *attr, rtx value)
+write_attr_value (FILE *outf, struct attr_desc *attr, rtx value)
 {
   int op;
 
   switch (GET_CODE (value))
     {
     case CONST_STRING:
-      write_attr_valueq (attr, XSTR (value, 0));
+      write_attr_valueq (outf, attr, XSTR (value, 0));
       break;
 
     case CONST_INT:
-      printf (HOST_WIDE_INT_PRINT_DEC, INTVAL (value));
+      fprintf (outf, HOST_WIDE_INT_PRINT_DEC, INTVAL (value));
       break;
 
     case SYMBOL_REF:
-      print_c_condition (XSTR (value, 0));
+      fprint_c_condition (outf, XSTR (value, 0));
       break;
 
     case ATTR:
       {
 	struct attr_desc *attr2 = find_attr (&XSTR (value, 0), 0);
 	if (attr->enum_name)
-	  printf ("(enum %s)", attr->enum_name);
+	  fprintf (outf, "(enum %s)", attr->enum_name);
 	else if (!attr->is_numeric)
-	  printf ("(enum attr_%s)", attr->name);
+	  fprintf (outf, "(enum attr_%s)", attr->name);
 	else if (!attr2->is_numeric)
-	  printf ("(int)");
+	  fprintf (outf, "(int)");
 
-	printf ("get_attr_%s (%s)", attr2->name,
-		(attr2->is_const ? "" : "insn"));
+	fprintf (outf, "get_attr_%s (%s)", attr2->name,
+		 (attr2->is_const ? "" : "insn"));
       }
       break;
 
@@ -4201,11 +4225,11 @@ write_attr_value (struct attr_desc *attr, rtx value)
       goto do_operator;
 
     do_operator:
-      write_attr_value (attr, XEXP (value, 0));
-      putchar (' ');
-      putchar (op);
-      putchar (' ');
-      write_attr_value (attr, XEXP (value, 1));
+      write_attr_value (outf, attr, XEXP (value, 0));
+      fputc (' ', outf);
+      fputc (op,  outf);
+      fputc (' ', outf);
+      write_attr_value (outf, attr, XEXP (value, 1));
       break;
 
     default:
@@ -4214,24 +4238,24 @@ write_attr_value (struct attr_desc *attr, rtx value)
 }
 
 static void
-write_upcase (const char *str)
+write_upcase (FILE *outf, const char *str)
 {
   while (*str)
     {
       /* The argument of TOUPPER should not have side effects.  */
-      putchar (TOUPPER(*str));
+      fputc (TOUPPER(*str), outf);
       str++;
     }
 }
 
 static void
-write_indent (int indent)
+write_indent (FILE *outf, int indent)
 {
   for (; indent > 8; indent -= 8)
-    printf ("\t");
+    fprintf (outf, "\t");
 
   for (; indent; indent--)
-    printf (" ");
+    fprintf (outf, " ");
 }
 
 /* Write a subroutine that is given an insn that requires a delay slot, a
@@ -4247,7 +4271,7 @@ write_indent (int indent)
    or "annul_false").  */
 
 static void
-write_eligible_delay (const char *kind)
+write_eligible_delay (FILE *outf, const char *kind)
 {
   struct delay_desc *delay;
   int max_slots;
@@ -4267,19 +4291,20 @@ write_eligible_delay (const char *kind)
 
   /* Write function prelude.  */
 
-  printf ("int\n");
-  printf ("eligible_for_%s (rtx delay_insn ATTRIBUTE_UNUSED, int slot, rtx candidate_insn, int flags ATTRIBUTE_UNUSED)\n",
-	  kind);
-  printf ("{\n");
-  printf ("  rtx insn;\n");
-  printf ("\n");
-  printf ("  gcc_assert (slot < %d);\n", max_slots);
-  printf ("\n");
+  fprintf (outf, "int\n");
+  fprintf (outf, "eligible_for_%s (rtx delay_insn ATTRIBUTE_UNUSED, int slot, \n"
+		 "		   rtx candidate_insn, int flags ATTRIBUTE_UNUSED)\n",
+	   kind);
+  fprintf (outf, "{\n");
+  fprintf (outf, "  rtx insn;\n");
+  fprintf (outf, "\n");
+  fprintf (outf, "  gcc_assert (slot < %d);\n", max_slots);
+  fprintf (outf, "\n");
   /* Allow dbr_schedule to pass labels, etc.  This can happen if try_split
      converts a compound instruction into a loop.  */
-  printf ("  if (!INSN_P (candidate_insn))\n");
-  printf ("    return 0;\n");
-  printf ("\n");
+  fprintf (outf, "  if (!INSN_P (candidate_insn))\n");
+  fprintf (outf, "    return 0;\n");
+  fprintf (outf, "\n");
 
   /* If more than one delay type, find out which type the delay insn is.  */
 
@@ -4289,28 +4314,28 @@ write_eligible_delay (const char *kind)
       gcc_assert (attr);
       common_av = find_most_used (attr);
 
-      printf ("  insn = delay_insn;\n");
-      printf ("  switch (recog_memoized (insn))\n");
-      printf ("    {\n");
+      fprintf (outf, "  insn = delay_insn;\n");
+      fprintf (outf, "  switch (recog_memoized (insn))\n");
+      fprintf (outf, "    {\n");
 
       sprintf (str, " * %d;\n      break;", max_slots);
       for (av = attr->first_value; av; av = av->next)
 	if (av != common_av)
-	  write_attr_case (attr, av, 1, "slot +=", str, 4, true_rtx);
+	  write_attr_case (outf, attr, av, 1, "slot +=", str, 4, true_rtx);
 
-      write_attr_case (attr, common_av, 0, "slot +=", str, 4, true_rtx);
-      printf ("    }\n\n");
+      write_attr_case (outf, attr, common_av, 0, "slot +=", str, 4, true_rtx);
+      fprintf (outf, "    }\n\n");
 
       /* Ensure matched.  Otherwise, shouldn't have been called.  */
-      printf ("  gcc_assert (slot >= %d);\n\n", max_slots);
+      fprintf (outf, "  gcc_assert (slot >= %d);\n\n", max_slots);
     }
 
   /* If just one type of delay slot, write simple switch.  */
   if (num_delays == 1 && max_slots == 1)
     {
-      printf ("  insn = candidate_insn;\n");
-      printf ("  switch (recog_memoized (insn))\n");
-      printf ("    {\n");
+      fprintf (outf, "  insn = candidate_insn;\n");
+      fprintf (outf, "  switch (recog_memoized (insn))\n");
+      fprintf (outf, "    {\n");
 
       attr = find_attr (&delay_1_0_str, 0);
       gcc_assert (attr);
@@ -4318,27 +4343,27 @@ write_eligible_delay (const char *kind)
 
       for (av = attr->first_value; av; av = av->next)
 	if (av != common_av)
-	  write_attr_case (attr, av, 1, "return", ";", 4, true_rtx);
+	  write_attr_case (outf, attr, av, 1, "return", ";", 4, true_rtx);
 
-      write_attr_case (attr, common_av, 0, "return", ";", 4, true_rtx);
-      printf ("    }\n");
+      write_attr_case (outf, attr, common_av, 0, "return", ";", 4, true_rtx);
+      fprintf (outf, "    }\n");
     }
 
   else
     {
       /* Write a nested CASE.  The first indicates which condition we need to
 	 test, and the inner CASE tests the condition.  */
-      printf ("  insn = candidate_insn;\n");
-      printf ("  switch (slot)\n");
-      printf ("    {\n");
+      fprintf (outf, "  insn = candidate_insn;\n");
+      fprintf (outf, "  switch (slot)\n");
+      fprintf (outf, "    {\n");
 
       for (delay = delays; delay; delay = delay->next)
 	for (i = 0; i < XVECLEN (delay->def, 1); i += 3)
 	  {
-	    printf ("    case %d:\n",
-		    (i / 3) + (num_delays == 1 ? 0 : delay->num * max_slots));
-	    printf ("      switch (recog_memoized (insn))\n");
-	    printf ("\t{\n");
+	    fprintf (outf, "    case %d:\n",
+		     (i / 3) + (num_delays == 1 ? 0 : delay->num * max_slots));
+	    fprintf (outf, "      switch (recog_memoized (insn))\n");
+	    fprintf (outf, "\t{\n");
 
 	    sprintf (str, "*%s_%d_%d", kind, delay->num, i / 3);
 	    pstr = str;
@@ -4348,18 +4373,18 @@ write_eligible_delay (const char *kind)
 
 	    for (av = attr->first_value; av; av = av->next)
 	      if (av != common_av)
-		write_attr_case (attr, av, 1, "return", ";", 8, true_rtx);
+		write_attr_case (outf, attr, av, 1, "return", ";", 8, true_rtx);
 
-	    write_attr_case (attr, common_av, 0, "return", ";", 8, true_rtx);
-	    printf ("      }\n");
+	    write_attr_case (outf, attr, common_av, 0, "return", ";", 8, true_rtx);
+	    fprintf (outf, "      }\n");
 	  }
 
-      printf ("    default:\n");
-      printf ("      gcc_unreachable ();\n");
-      printf ("    }\n");
+      fprintf (outf, "    default:\n");
+      fprintf (outf, "      gcc_unreachable ();\n");
+      fprintf (outf, "    }\n");
     }
 
-  printf ("}\n\n");
+  fprintf (outf, "}\n\n");
 }
 
 /* This page contains miscellaneous utility routines.  */
@@ -4498,29 +4523,29 @@ copy_rtx_unchanging (rtx orig)
    number of delay slots is not a function of the length of the insn.  */
 
 static void
-write_const_num_delay_slots (void)
+write_const_num_delay_slots (FILE *outf)
 {
   struct attr_desc *attr = find_attr (&num_delay_slots_str, 0);
   struct attr_value *av;
 
   if (attr)
     {
-      printf ("int\nconst_num_delay_slots (rtx insn)\n");
-      printf ("{\n");
-      printf ("  switch (recog_memoized (insn))\n");
-      printf ("    {\n");
+      fprintf (outf, "int\nconst_num_delay_slots (rtx insn)\n");
+      fprintf (outf, "{\n");
+      fprintf (outf, "  switch (recog_memoized (insn))\n");
+      fprintf (outf, "    {\n");
 
       for (av = attr->first_value; av; av = av->next)
 	{
 	  length_used = 0;
 	  walk_attr_value (av->value);
 	  if (length_used)
-	    write_insn_cases (av->first_insn, 4);
+	    write_insn_cases (outf, av->first_insn, 4);
 	}
 
-      printf ("    default:\n");
-      printf ("      return 1;\n");
-      printf ("    }\n}\n\n");
+      fprintf (outf, "    default:\n");
+      fprintf (outf, "      return 1;\n");
+      fprintf (outf, "    }\n}\n\n");
     }
 }
 
@@ -4696,7 +4721,10 @@ find_tune_attr (rtx exp)
     }
 }
 
-/* Create all of the attributes that describe automaton properties.  */
+/* Create all of the attributes that describe automaton properties.
+   Write the DFA and latency function prototypes to  the files that
+   need to have them, and write the init_sched_attrs().  */
+
 static void
 make_automaton_attrs (void)
 {
@@ -4718,23 +4746,49 @@ make_automaton_attrs (void)
       gcc_assert (tune_attr->is_const
 		  && !tune_attr->is_special
 		  && !tune_attr->is_numeric);
+
+      /* Write the prototypes for all DFA functions.  */
       for (val = tune_attr->first_value; val; val = val->next)
 	{
 	  if (val == tune_attr->default_val)
 	    continue;
 	  gcc_assert (GET_CODE (val->value) == CONST_STRING);
-	  printf ("static int internal_dfa_insn_code_%s (rtx);\n"
-		  "static int insn_default_latency_%s (rtx);\n",
-		  XSTR (val->value, 0), XSTR (val->value, 0));
+	  fprintf (dfa_file,
+		   "extern int internal_dfa_insn_code_%s (rtx);\n",
+		   XSTR (val->value, 0));
 	}
+      fprintf (dfa_file, "\n");
 
-      printf ("\n");
-      printf ("int (*internal_dfa_insn_code) (rtx);\n");
-      printf ("int (*insn_default_latency) (rtx);\n");
-      printf ("\n");
-      printf ("void\n");
-      printf ("init_sched_attrs (void)\n");
-      printf ("{\n");
+      /* Write the prototypes for all latency functions.  */
+      for (val = tune_attr->first_value; val; val = val->next)
+	{
+	  if (val == tune_attr->default_val)
+	    continue;
+	  gcc_assert (GET_CODE (val->value) == CONST_STRING);
+	  fprintf (latency_file,
+		   "extern int insn_default_latency_%s (rtx);\n",
+		   XSTR (val->value, 0));
+	}
+      fprintf (latency_file, "\n");
+
+      /* Write the prototypes for all automaton functions.  */
+      for (val = tune_attr->first_value; val; val = val->next)
+	{
+	  if (val == tune_attr->default_val)
+	    continue;
+	  gcc_assert (GET_CODE (val->value) == CONST_STRING);
+	  fprintf (attr_file,
+		   "extern int internal_dfa_insn_code_%s (rtx);\n"
+		   "extern int insn_default_latency_%s (rtx);\n",
+		   XSTR (val->value, 0), XSTR (val->value, 0));
+	}
+      fprintf (attr_file, "\n");
+      fprintf (attr_file, "int (*internal_dfa_insn_code) (rtx);\n");
+      fprintf (attr_file, "int (*insn_default_latency) (rtx);\n");
+      fprintf (attr_file, "\n");
+      fprintf (attr_file, "void\n");
+      fprintf (attr_file, "init_sched_attrs (void)\n");
+      fprintf (attr_file, "{\n");
 
       for (val = tune_attr->first_value; val; val = val->next)
 	{
@@ -4803,27 +4857,27 @@ make_automaton_attrs (void)
 
 	  if (first)
 	    {
-	      printf ("  if (");
+	      fprintf (attr_file, "  if (");
 	      first = false;
 	    }
 	  else
-	    printf ("  else if (");
-	  write_test_expr (test, 0, 0);
-	  printf (")\n");
-	  printf ("    {\n");
-	  printf ("      internal_dfa_insn_code\n");
-	  printf ("        = internal_dfa_insn_code_%s;\n",
-		  XSTR (val->value, 0));
-	  printf ("      insn_default_latency\n");
-	  printf ("        = insn_default_latency_%s;\n",
-		  XSTR (val->value, 0));
-	  printf ("    }\n");
+	    fprintf (attr_file, "  else if (");
+	  write_test_expr (attr_file, test, 0, 0);
+	  fprintf (attr_file, ")\n");
+	  fprintf (attr_file, "    {\n");
+	  fprintf (attr_file, "      internal_dfa_insn_code\n");
+	  fprintf (attr_file, "        = internal_dfa_insn_code_%s;\n",
+		   XSTR (val->value, 0));
+	  fprintf (attr_file, "      insn_default_latency\n");
+	  fprintf (attr_file, "        = insn_default_latency_%s;\n",
+		   XSTR (val->value, 0));
+	  fprintf (attr_file, "    }\n");
 	}
 
-      printf ("  else\n");
-      printf ("    gcc_unreachable ();\n");
-      printf ("}\n");
-      printf ("\n");
+      fprintf (attr_file, "  else\n");
+      fprintf (attr_file, "    gcc_unreachable ();\n");
+      fprintf (attr_file, "}\n");
+      fprintf (attr_file, "\n");
 
       XDELETEVEC (condexps);
     }
@@ -4873,7 +4927,62 @@ make_automaton_attrs (void)
 	  }
     }
 
-  make_internal_attr ("*bypass_p",               byps_exp, ATTR_NONE);
+  make_internal_attr ("*bypass_p", byps_exp, ATTR_NONE);
+}
+
+static void
+write_header (FILE *outf)
+{
+  fprintf (outf, "/* Generated automatically by the program `genattrtab'\n"
+	         "   from the machine description file `md'.  */\n\n");
+
+  fprintf (outf, "#include \"config.h\"\n");
+  fprintf (outf, "#include \"system.h\"\n");
+  fprintf (outf, "#include \"coretypes.h\"\n");
+  fprintf (outf, "#include \"tm.h\"\n");
+  fprintf (outf, "#include \"rtl.h\"\n");
+  fprintf (outf, "#include \"insn-attr.h\"\n");
+  fprintf (outf, "#include \"tm_p.h\"\n");
+  fprintf (outf, "#include \"insn-config.h\"\n");
+  fprintf (outf, "#include \"recog.h\"\n");
+  fprintf (outf, "#include \"regs.h\"\n");
+  fprintf (outf, "#include \"real.h\"\n");
+  fprintf (outf, "#include \"output.h\"\n");
+  fprintf (outf, "#include \"toplev.h\"\n");
+  fprintf (outf, "#include \"flags.h\"\n");
+  fprintf (outf, "#include \"function.h\"\n");
+  fprintf (outf, "\n");
+  fprintf (outf, "#define operands recog_data.operand\n\n");
+}
+
+static FILE *
+open_outfile (const char *file_name)
+{
+  FILE *outf;
+  outf = fopen (file_name, "w");
+  if (! outf)
+    fatal ("cannot open file %s: %s", file_name, xstrerror (errno));
+  write_header (outf);
+  return outf;
+}
+
+static bool
+handle_arg (const char *arg)
+{
+  switch (arg[1])
+    {
+    case 'A':
+      attr_file_name = &arg[2];
+      return true;
+    case 'D':
+      dfa_file_name = &arg[2];
+      return true;
+    case 'L':
+      latency_file_name = &arg[2];
+      return true;
+    default:
+      return false;
+    }
 }
 
 int
@@ -4887,8 +4996,12 @@ main (int argc, char **argv)
 
   progname = "genattrtab";
 
-  if (!init_rtx_reader_args (argc, argv))
-    return (FATAL_EXIT_CODE);
+  if (!init_rtx_reader_args_cb (argc, argv, handle_arg))
+    return FATAL_EXIT_CODE;
+
+  attr_file = open_outfile (attr_file_name);
+  dfa_file = open_outfile (dfa_file_name);
+  latency_file = open_outfile (latency_file_name);
 
   obstack_init (hash_obstack);
   obstack_init (temp_obstack);
@@ -4906,9 +5019,6 @@ main (int argc, char **argv)
   delay_type_str = DEF_ATTR_STRING ("*delay_type");
   delay_1_0_str = DEF_ATTR_STRING ("*delay_1_0");
   num_delay_slots_str = DEF_ATTR_STRING ("*num_delay_slots");
-
-  printf ("/* Generated automatically by the program `genattrtab'\n\
-from the machine description file `md'.  */\n\n");
 
   /* Read the machine description.  */
 
@@ -4969,23 +5079,6 @@ from the machine description file `md'.  */\n\n");
   if (num_delays)
     expand_delays ();
 
-  printf ("#include \"config.h\"\n");
-  printf ("#include \"system.h\"\n");
-  printf ("#include \"coretypes.h\"\n");
-  printf ("#include \"tm.h\"\n");
-  printf ("#include \"rtl.h\"\n");
-  printf ("#include \"insn-attr.h\"\n");
-  printf ("#include \"tm_p.h\"\n");
-  printf ("#include \"insn-config.h\"\n");
-  printf ("#include \"recog.h\"\n");
-  printf ("#include \"regs.h\"\n");
-  printf ("#include \"output.h\"\n");
-  printf ("#include \"diagnostic-core.h\"\n");
-  printf ("#include \"flags.h\"\n");
-  printf ("#include \"function.h\"\n");
-  printf ("\n");
-  printf ("#define operands recog_data.operand\n\n");
-
   /* Make `insn_alternatives'.  */
   insn_alternatives = oballocvec (int, insn_code_number);
   for (id = defs; id; id = id->next)
@@ -5030,8 +5123,19 @@ from the machine description file `md'.  */\n\n");
   for (i = 0; i < MAX_ATTRS_INDEX; i++)
     for (attr = attrs[i]; attr; attr = attr->next)
       {
+        FILE *outf;
+
+#define IS_ATTR_GROUP(X) (!strncmp(attr->name,X,strlen(X)))
+	if (IS_ATTR_GROUP ("*internal_dfa_insn_code"))
+	  outf = dfa_file;
+	else if (IS_ATTR_GROUP ("*insn_default_latency"))
+	  outf = latency_file;  
+	else
+	  outf = attr_file;
+#undef IS_ATTR_GROUP
+
 	if (! attr->is_special && ! attr->is_const)
-	  write_attr_get (attr);
+	  write_attr_get (outf, attr);
       }
 
   /* Write out delay eligibility information, if DEFINE_DELAY present.
@@ -5039,18 +5143,25 @@ from the machine description file `md'.  */\n\n");
      below.)  */
   if (num_delays)
     {
-      write_eligible_delay ("delay");
+      write_eligible_delay (attr_file, "delay");
       if (have_annul_true)
-	write_eligible_delay ("annul_true");
+	write_eligible_delay (attr_file, "annul_true");
       if (have_annul_false)
-	write_eligible_delay ("annul_false");
+	write_eligible_delay (attr_file, "annul_false");
     }
 
   /* Write out constant delay slot info.  */
-  write_const_num_delay_slots ();
+  write_const_num_delay_slots (attr_file);
 
-  write_length_unit_log ();
+  write_length_unit_log (attr_file);
 
-  fflush (stdout);
-  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+  if (fclose (attr_file) != 0)
+    fatal ("cannot close file %s: %s", attr_file_name, xstrerror (errno));
+  if (fclose (dfa_file) != 0)
+    fatal ("cannot close file %s: %s", dfa_file_name, xstrerror (errno));
+  if (fclose (latency_file) != 0)
+    fatal ("cannot close file %s: %s", latency_file_name, xstrerror (errno));
+
+  return SUCCESS_EXIT_CODE;
 }
+

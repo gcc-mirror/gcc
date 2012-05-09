@@ -110,7 +110,8 @@ const enum rtx_class rtx_class[NUM_RTX_CODE] = {
 
 const unsigned char rtx_code_size[NUM_RTX_CODE] = {
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)				\
-  ((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE || (ENUM) == CONST_FIXED\
+  (((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE			\
+    || (ENUM) == CONST_FIXED)						\
    ? RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (HOST_WIDE_INT)	\
    : RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (rtunion)),
 
@@ -380,7 +381,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
   if (GET_MODE (x) != GET_MODE (y))
     return 0;
 
-  /* MEMs refering to different address space are not equivalent.  */
+  /* MEMs referring to different address space are not equivalent.  */
   if (code == MEM && MEM_ADDR_SPACE (x) != MEM_ADDR_SPACE (y))
     return 0;
 
@@ -519,7 +520,7 @@ rtx_equal_p (const_rtx x, const_rtx y)
   if (GET_MODE (x) != GET_MODE (y))
     return 0;
 
-  /* MEMs refering to different address space are not equivalent.  */
+  /* MEMs referring to different address space are not equivalent.  */
   if (code == MEM && MEM_ADDR_SPACE (x) != MEM_ADDR_SPACE (y))
     return 0;
 

@@ -811,7 +811,7 @@ static HOST_WIDE_INT cfa_base_offset;
 static inline rtx
 compute_cfa_pointer (HOST_WIDE_INT adjustment)
 {
-  return plus_constant (cfa_base_rtx, adjustment + cfa_base_offset);
+  return plus_constant (Pmode, cfa_base_rtx, adjustment + cfa_base_offset);
 }
 
 /* Adjustment for hard_frame_pointer_rtx to cfa base reg,
@@ -4909,17 +4909,6 @@ find_use_val (rtx x, enum machine_mode mode, struct count_use_info *cui)
   return NULL;
 }
 
-/* Helper function to get mode of MEM's address.  */
-
-static inline enum machine_mode
-get_address_mode (rtx mem)
-{
-  enum machine_mode mode = GET_MODE (XEXP (mem, 0));
-  if (mode != VOIDmode)
-    return mode;
-  return targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
-}
-
 /* Replace all registers and addresses in an expression with VALUE
    expressions that map back to them, unless the expression is a
    register.  If no mapping is or can be performed, returns NULL.  */
@@ -5982,7 +5971,8 @@ prepare_call_arguments (basic_block bb, rtx insn)
       HOST_WIDE_INT token
 	= tree_low_cst (OBJ_TYPE_REF_TOKEN (obj_type_ref), 0);
       if (token)
-	clobbered = plus_constant (clobbered, token * GET_MODE_SIZE (mode));
+	clobbered = plus_constant (mode, clobbered,
+				   token * GET_MODE_SIZE (mode));
       clobbered = gen_rtx_MEM (mode, clobbered);
       x = gen_rtx_CONCAT (mode, gen_rtx_CLOBBER (VOIDmode, pc_rtx), clobbered);
       call_arguments
@@ -9021,7 +9011,8 @@ vt_add_function_parameter (tree parm)
 	off += INTVAL (XEXP (XEXP (incoming, 0), 1));
       incoming
 	= replace_equiv_address_nv (incoming,
-				    plus_constant (arg_pointer_rtx, off));
+				    plus_constant (Pmode,
+						   arg_pointer_rtx, off));
     }
 
 #ifdef HAVE_window_save

@@ -935,8 +935,8 @@
     A few people have reported that the standard containers appear
     to leak memory when tested with memory checkers such as
     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://valgrind.org/">valgrind</link>.
-    The library's default allocators keep free memory in a pool
-    for later reuse, rather than returning it to the OS.  Although
+    Under some configurations the library's allocators keep free memory in a
+    pool for later reuse, rather than returning it to the OS.  Although
     this memory is always reachable by the library and is never
     lost, memory debugging tools can report it as a leak.  If you
     want to test the library for memory leaks please read

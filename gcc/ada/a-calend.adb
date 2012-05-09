@@ -575,7 +575,7 @@ package body Ada.Calendar is
       pragma Unreferenced (H, M, Se, Ss, Le);
 
    begin
-      --  Even though the input time zone is UTC (0), the flag Is_Ada_05 will
+      --  Even though the input time zone is UTC (0), the flag Use_TZ will
       --  ensure that Split picks up the local time zone.
 
       Formatting_Operations.Split
@@ -589,7 +589,7 @@ package body Ada.Calendar is
          Second    => Se,
          Sub_Sec   => Ss,
          Leap_Sec  => Le,
-         Is_Ada_05 => False,
+         Use_TZ    => False,
          Time_Zone => 0);
 
       --  Validity checks
@@ -633,7 +633,7 @@ package body Ada.Calendar is
          raise Time_Error;
       end if;
 
-      --  Even though the input time zone is UTC (0), the flag Is_Ada_05 will
+      --  Even though the input time zone is UTC (0), the flag Use_TZ will
       --  ensure that Split picks up the local time zone.
 
       return
@@ -648,7 +648,7 @@ package body Ada.Calendar is
            Sub_Sec      => Ss,
            Leap_Sec     => False,
            Use_Day_Secs => True,
-           Is_Ada_05    => False,
+           Use_TZ       => False,
            Time_Zone    => 0);
    end Time_Of;
 
@@ -744,7 +744,8 @@ package body Ada.Calendar is
 
       Secs_T := time_t (Date_N / Nano);
 
-      --  Determine whether to treat the input date as historical or not
+      --  Determine whether to treat the input date as historical or not. A
+      --  value of "0" signifies that the date is NOT historic.
 
       Flag := (if Is_Historic then 1 else 0);
 
@@ -975,7 +976,7 @@ package body Ada.Calendar is
                 Sub_Sec      => 0.0,      --  No precise sub second given
                 Leap_Sec     => Leap,
                 Use_Day_Secs => False,    --  Time is given in h:m:s
-                Is_Ada_05    => True,     --  Force usage of explicit time zone
+                Use_TZ       => True,     --  Force usage of explicit time zone
                 Time_Zone    => 0));      --  Place the value in UTC
 
          --  Step 4: Daylight Savings Time
@@ -1153,8 +1154,12 @@ package body Ada.Calendar is
       -----------------
 
       function Day_Of_Week (Date : Time) return Integer is
-         Date_N    : constant Time_Rep := Time_Rep (Date);
-         Time_Zone : constant Long_Integer := UTC_Time_Offset (Date, True);
+         Date_N : constant Time_Rep := Time_Rep (Date);
+
+         Time_Zone : constant Long_Integer := UTC_Time_Offset (Date, False);
+         --  Keep the internal usage of UTC_Time_Offset consistent with Time_Of
+         --  and Split.
+
          Ada_Low_N : Time_Rep;
          Day_Count : Long_Integer;
          Day_Dur   : Time_Dur;
@@ -1204,7 +1209,7 @@ package body Ada.Calendar is
          Second    : out Integer;
          Sub_Sec   : out Duration;
          Leap_Sec  : out Boolean;
-         Is_Ada_05 : Boolean;
+         Use_TZ    : Boolean;
          Time_Zone : Long_Integer)
       is
          --  The following constants represent the number of nanoseconds
@@ -1257,7 +1262,7 @@ package body Ada.Calendar is
          --  Step 2: Time zone processing. This action converts the input date
          --  from GMT to the requested time zone. Applies from Ada 2005 on.
 
-         if Is_Ada_05 then
+         if Use_TZ then
             if Time_Zone /= 0 then
                Date_N := Date_N + Time_Rep (Time_Zone) * 60 * Nano;
             end if;
@@ -1385,7 +1390,7 @@ package body Ada.Calendar is
          Sub_Sec      : Duration;
          Leap_Sec     : Boolean := False;
          Use_Day_Secs : Boolean := False;
-         Is_Ada_05    : Boolean := False;
+         Use_TZ       : Boolean := False;
          Time_Zone    : Long_Integer := 0) return Time
       is
          Count         : Integer;
@@ -1479,7 +1484,7 @@ package body Ada.Calendar is
          --  a uniform representation which can be treated by arithmetic
          --  operations for instance without any additional corrections.
 
-         if Is_Ada_05 then
+         if Use_TZ then
             if Time_Zone /= 0 then
                Res_N := Res_N - Time_Rep (Time_Zone) * 60 * Nano;
             end if;
@@ -1519,7 +1524,7 @@ package body Ada.Calendar is
 
             Rounded_Res_N := Res_N - (Res_N mod Nano);
 
-            if Is_Ada_05
+            if Use_TZ
               and then Leap_Sec
               and then Rounded_Res_N /= Next_Leap_N
             then

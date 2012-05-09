@@ -968,7 +968,7 @@ predicate_bbs (loop_p loop)
 
 	    case GIMPLE_COND:
 	      {
-		tree c2, tem;
+		tree c2;
 		edge true_edge, false_edge;
 		location_t loc = gimple_location (stmt);
 		tree c = fold_build2_loc (loc, gimple_cond_code (stmt),
@@ -986,10 +986,8 @@ predicate_bbs (loop_p loop)
 					   unshare_expr (c));
 
 		/* If C is false, then FALSE_EDGE is taken.  */
-		c2 = invert_truthvalue_loc (loc, unshare_expr (c));
-		tem = canonicalize_cond_expr_cond (c2);
-		if (tem)
-		  c2 = tem;
+		c2 = build1_loc (loc, TRUTH_NOT_EXPR,
+				 boolean_type_node, unshare_expr (c));
 		add_to_dst_predicate_list (loop, false_edge,
 					   unshare_expr (cond), c2);
 
@@ -1653,8 +1651,8 @@ combine_blocks (struct loop *loop)
       free_bb_predicate (bb);
       if (bb_with_exit_edge_p (loop, bb))
 	{
+	  gcc_assert (exit_bb == NULL);
 	  exit_bb = bb;
-	  break;
 	}
     }
   gcc_assert (exit_bb != loop->latch);
@@ -1795,6 +1793,14 @@ main_tree_if_conversion (void)
     todo |= TODO_update_ssa_only_virtuals;
 
   free_dominance_info (CDI_POST_DOMINATORS);
+
+#ifdef ENABLE_CHECKING
+  {
+    basic_block bb;
+    FOR_EACH_BB (bb)
+      gcc_assert (!bb->aux);
+  }
+#endif
 
   return todo;
 }

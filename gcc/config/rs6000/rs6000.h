@@ -771,8 +771,7 @@ extern unsigned rs6000_pointer_size;
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
   (STRICT_ALIGNMENT							\
    || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == TFmode	\
-	|| (MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode	\
-	|| (MODE) == DImode)						\
+	|| (MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)	\
        && (ALIGN) < 32)							\
    || (VECTOR_MODE_P ((MODE)) && (((int)(ALIGN)) < VECTOR_ALIGN (MODE))))
 
@@ -910,8 +909,8 @@ extern unsigned rs6000_pointer_size;
 #define TOTAL_ALTIVEC_REGS	(LAST_ALTIVEC_REGNO - FIRST_ALTIVEC_REGNO + 1)
 
 #define FIRST_SAVED_ALTIVEC_REGNO (FIRST_ALTIVEC_REGNO+20)
-#define FIRST_SAVED_FP_REGNO    (14+32)
-#define FIRST_SAVED_GP_REGNO 13
+#define FIRST_SAVED_FP_REGNO	  (14+32)
+#define FIRST_SAVED_GP_REGNO	  (FIXED_R13 ? 14 : 13)
 
 /* List the order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.
@@ -1395,7 +1394,7 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 
 /* MEM representing address to save the TOC register */
 #define RS6000_SAVE_TOC gen_rtx_MEM (Pmode, \
-				     plus_constant (stack_pointer_rtx, \
+				     plus_constant (Pmode, stack_pointer_rtx, \
 						    (TARGET_32BIT ? 20 : 40)))
 
 /* Align an address */

@@ -3306,7 +3306,7 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 		 "only available with -std=c++11 or -std=gnu++11");
 	break;
       case CPP0X_INLINE_NAMESPACES:
-	pedwarn (input_location, OPT_pedantic,
+	pedwarn (input_location, OPT_Wpedantic,
 		 "inline namespaces "
 		 "only available with -std=c++11 or -std=gnu++11");
 	break;
@@ -3352,13 +3352,15 @@ pedwarn_cxx98 (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
 		       (cxx_dialect == cxx98) ? DK_PEDWARN : DK_WARNING);
   diagnostic.option_index = opt;
+  ret = report_diagnostic (&diagnostic);
   va_end (ap);
-  return report_diagnostic (&diagnostic);
+  return ret;
 }
 
 /* Issue a diagnostic that NAME cannot be found in SCOPE.  DECL is what

@@ -612,7 +612,6 @@ HAVE_STRERROR_R_FALSE
 HAVE_STRERROR_R_TRUE
 HAVE_SYS_MMAN_H_FALSE
 HAVE_SYS_MMAN_H_TRUE
-GO_BIGENDIAN
 PTHREAD_LIBS
 PTHREAD_CFLAGS
 NET_LIBS
@@ -11101,7 +11100,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11104 "configure"
+#line 11103 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11207,7 +11206,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11210 "configure"
+#line 11209 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14409,12 +14408,6 @@ $as_echo "#define AC_APPLE_UNIVERSAL_BUILD 1" >>confdefs.h
  presetting ac_cv_c_bigendian=no (or yes) will help" "$LINENO" 5 ;;
  esac
 
-case $ac_cv_c_bigendian in
-  yes) GO_BIGENDIAN=true ;;
-  no) GO_BIGENDIAN=false ;;
-  *) as_fn_error "unknown endianness" "$LINENO" 5 ;;
-esac
-
 
 
 
@@ -14515,7 +14508,7 @@ no)
   ;;
 esac
 
-for ac_header in sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/reboot.h
+for ac_header in sys/file.h sys/mman.h syscall.h sys/epoll.h sys/inotify.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h net/route.h netpacket/packet.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/fs.h linux/reboot.h netinet/in_syst.h netinet/ip.h netinet/ip_mroute.h netinet/if_ether.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -14530,7 +14523,7 @@ fi
 done
 
 
-for ac_header in linux/filter.h linux/netlink.h linux/rtnetlink.h
+for ac_header in linux/filter.h linux/if_addr.h linux/if_ether.h linux/if_tun.h linux/netlink.h linux/rtnetlink.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "#ifdef HAVE_SYS_SOCKET_H
@@ -14655,6 +14648,23 @@ _ACEOF
 
 fi
 
+
+LIBS_hold="$LIBS"
+LIBS="$LIBS -lm"
+for ac_func in cosl expl logl sinl tanl acosl asinl atanl atan2l expm1l ldexpl log10l log1pl
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+LIBS="$LIBS_hold"
 
 CFLAGS_hold="$CFLAGS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"

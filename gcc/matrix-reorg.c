@@ -548,7 +548,7 @@ find_matrices_decl (void)
 
   /* For every global variable in the program:
      Check to see if it's of a candidate type and record it.  */
-  for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+  FOR_EACH_DEFINED_VARIABLE (vnode)
     {
       tree var_decl = vnode->symbol.decl;
 
@@ -2266,100 +2266,98 @@ matrix_reorg (void)
   else
     check_transpose_p = false;
   /* If there are hand written vectors, we skip this optimization.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     if (!may_flatten_matrices (node))
       return 0;
   matrices_to_reorg = htab_create (37, mtt_info_hash, mtt_info_eq, mat_free);
   /* Find and record all potential matrices in the program.  */
   find_matrices_decl ();
   /* Analyze the accesses of the matrices (escaping analysis).  */
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
-      {
-	tree temp_fn;
+  FOR_EACH_DEFINED_FUNCTION (node)
+    {
+      tree temp_fn;
 
-	temp_fn = current_function_decl;
-	current_function_decl = node->symbol.decl;
-	push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
-	bitmap_obstack_initialize (NULL);
-	gimple_register_cfg_hooks ();
+      temp_fn = current_function_decl;
+      current_function_decl = node->symbol.decl;
+      push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
+      bitmap_obstack_initialize (NULL);
+      gimple_register_cfg_hooks ();
 
-	if (!gimple_in_ssa_p (cfun))
-	  {
-	    free_dominance_info (CDI_DOMINATORS);
-	    free_dominance_info (CDI_POST_DOMINATORS);
-	    pop_cfun ();
-	    current_function_decl = temp_fn;
-	    bitmap_obstack_release (NULL);
+      if (!gimple_in_ssa_p (cfun))
+	{
+	  free_dominance_info (CDI_DOMINATORS);
+	  free_dominance_info (CDI_POST_DOMINATORS);
+	  pop_cfun ();
+	  current_function_decl = temp_fn;
+	  bitmap_obstack_release (NULL);
 
-	    return 0;
-	  }
+	  return 0;
+	}
 
 #ifdef ENABLE_CHECKING
-	verify_flow_info ();
+      verify_flow_info ();
 #endif
 
-	if (!matrices_to_reorg)
-	  {
-	    free_dominance_info (CDI_DOMINATORS);
-	    free_dominance_info (CDI_POST_DOMINATORS);
-	    pop_cfun ();
-	    current_function_decl = temp_fn;
-	    bitmap_obstack_release (NULL);
+      if (!matrices_to_reorg)
+	{
+	  free_dominance_info (CDI_DOMINATORS);
+	  free_dominance_info (CDI_POST_DOMINATORS);
+	  pop_cfun ();
+	  current_function_decl = temp_fn;
+	  bitmap_obstack_release (NULL);
 
-	    return 0;
-	  }
+	  return 0;
+	}
 
-	/* Create htap for phi nodes.  */
-	htab_mat_acc_phi_nodes = htab_create (37, mat_acc_phi_hash,
-					      mat_acc_phi_eq, free);
-	if (!check_transpose_p)
-	  find_sites_in_func (false);
-	else
-	  {
-	    find_sites_in_func (true);
-	    loop_optimizer_init (LOOPS_NORMAL);
-	    if (current_loops)
-	      scev_initialize ();
-	    htab_traverse (matrices_to_reorg, analyze_transpose, NULL);
-	    if (current_loops)
-	      {
-		scev_finalize ();
-		loop_optimizer_finalize ();
-		current_loops = NULL;
-	      }
-	  }
-	/* If the current function is the allocation function for any of
-	   the matrices we check its allocation and the escaping level.  */
-	htab_traverse (matrices_to_reorg, check_allocation_function, NULL);
-	free_dominance_info (CDI_DOMINATORS);
-	free_dominance_info (CDI_POST_DOMINATORS);
-	pop_cfun ();
-	current_function_decl = temp_fn;
-	bitmap_obstack_release (NULL);
-      }
+      /* Create htap for phi nodes.  */
+      htab_mat_acc_phi_nodes = htab_create (37, mat_acc_phi_hash,
+					    mat_acc_phi_eq, free);
+      if (!check_transpose_p)
+	find_sites_in_func (false);
+      else
+	{
+	  find_sites_in_func (true);
+	  loop_optimizer_init (LOOPS_NORMAL);
+	  if (current_loops)
+	    scev_initialize ();
+	  htab_traverse (matrices_to_reorg, analyze_transpose, NULL);
+	  if (current_loops)
+	    {
+	      scev_finalize ();
+	      loop_optimizer_finalize ();
+	      current_loops = NULL;
+	    }
+	}
+      /* If the current function is the allocation function for any of
+	 the matrices we check its allocation and the escaping level.  */
+      htab_traverse (matrices_to_reorg, check_allocation_function, NULL);
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
+      pop_cfun ();
+      current_function_decl = temp_fn;
+      bitmap_obstack_release (NULL);
+    }
   htab_traverse (matrices_to_reorg, transform_allocation_sites, NULL);
   /* Now transform the accesses.  */
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
-      {
-	/* Remember that allocation sites have been handled.  */
-	tree temp_fn;
+  FOR_EACH_DEFINED_FUNCTION (node)
+    {
+      /* Remember that allocation sites have been handled.  */
+      tree temp_fn;
 
-	temp_fn = current_function_decl;
-	current_function_decl = node->symbol.decl;
-	push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
-	bitmap_obstack_initialize (NULL);
-	gimple_register_cfg_hooks ();
-	record_all_accesses_in_func ();
-	htab_traverse (matrices_to_reorg, transform_access_sites, NULL);
-        cgraph_rebuild_references ();
-	free_dominance_info (CDI_DOMINATORS);
-	free_dominance_info (CDI_POST_DOMINATORS);
-	pop_cfun ();
-	current_function_decl = temp_fn;
-	bitmap_obstack_release (NULL);
-      }
+      temp_fn = current_function_decl;
+      current_function_decl = node->symbol.decl;
+      push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
+      bitmap_obstack_initialize (NULL);
+      gimple_register_cfg_hooks ();
+      record_all_accesses_in_func ();
+      htab_traverse (matrices_to_reorg, transform_access_sites, NULL);
+      cgraph_rebuild_references ();
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
+      pop_cfun ();
+      current_function_decl = temp_fn;
+      bitmap_obstack_release (NULL);
+    }
   htab_traverse (matrices_to_reorg, dump_matrix_reorg_analysis, NULL);
 
   current_function_decl = NULL;
@@ -2391,6 +2389,6 @@ struct simple_ipa_opt_pass pass_ipa_matrix_reorg =
   0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_dump_cgraph      	/* todo_flags_finish */
+  TODO_dump_symtab      	/* todo_flags_finish */
  }
 };

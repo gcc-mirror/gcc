@@ -215,18 +215,16 @@ lto_cgraph_replace_node (struct cgraph_node *node,
     {
       fprintf (cgraph_dump_file, "Replacing cgraph node %s/%i by %s/%i"
  	       " for symbol %s\n",
-	       cgraph_node_name (node), node->uid,
-	       cgraph_node_name (prevailing_node),
+	       xstrdup (cgraph_node_name (node)), node->uid,
+	       xstrdup (cgraph_node_name (prevailing_node)),
 	       prevailing_node->uid,
 	       IDENTIFIER_POINTER ((*targetm.asm_out.mangle_assembler_name)
 		 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->symbol.decl)))));
     }
 
   /* Merge node flags.  */
-  if (node->needed)
-    cgraph_mark_needed_node (prevailing_node);
-  if (node->reachable)
-    cgraph_mark_reachable_node (prevailing_node);
+  if (node->symbol.force_output)
+    cgraph_mark_force_output_node (prevailing_node);
   if (node->symbol.address_taken)
     {
       gcc_assert (!prevailing_node->global.inlined_to);
@@ -249,7 +247,7 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 	e->call_stmt_cannot_inline_p = 1;
     }
   /* Redirect incomming references.  */
-  ipa_clone_refering (prevailing_node, NULL, &node->symbol.ref_list);
+  ipa_clone_referring ((symtab_node)prevailing_node, &node->symbol.ref_list);
 
   /* Finally remove the replaced node.  */
   cgraph_remove_node (node);
@@ -262,16 +260,10 @@ static void
 lto_varpool_replace_node (struct varpool_node *vnode,
 			  struct varpool_node *prevailing_node)
 {
-  /* Merge node flags.  */
-  if (vnode->needed)
-    {
-      gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
-      varpool_mark_needed_node (prevailing_node);
-    }
   gcc_assert (!vnode->finalized || prevailing_node->finalized);
   gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
 
-  ipa_clone_refering (NULL, prevailing_node, &vnode->symbol.ref_list);
+  ipa_clone_referring ((symtab_node)prevailing_node, &vnode->symbol.ref_list);
 
   /* Be sure we can garbage collect the initializer.  */
   if (DECL_INITIAL (vnode->symbol.decl))
@@ -761,11 +753,11 @@ lto_symtab_merge_cgraph_nodes (void)
   lto_symtab_maybe_init_hash_table ();
   htab_traverse (lto_symtab_identifiers, lto_symtab_merge_cgraph_nodes_1, NULL);
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     if ((node->thunk.thunk_p || node->alias)
 	&& node->thunk.alias)
       node->thunk.alias = lto_symtab_prevailing_decl (node->thunk.alias);
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+  FOR_EACH_VARIABLE (vnode)
     if (vnode->alias_of)
       vnode->alias_of = lto_symtab_prevailing_decl (vnode->alias_of);
 }

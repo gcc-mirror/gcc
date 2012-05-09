@@ -1719,7 +1719,8 @@ expand_prologue (void)
 	  if (num_save > 0 && REGNO (save_regs[num_save-1]) == LINK_POINTER_REGNUM)
 	    {
 	      emit_move_insn (gen_rtx_MEM (SImode,
-					   plus_constant (stack_pointer_rtx,
+					   plus_constant (Pmode,
+							  stack_pointer_rtx,
 							  offset)),
 			      save_regs[--num_save]);
 	      offset -= 4;
@@ -1728,7 +1729,8 @@ expand_prologue (void)
 	  for (i = 0; i < num_save; i++)
 	    {
 	      emit_move_insn (gen_rtx_MEM (SImode,
-					   plus_constant (stack_pointer_rtx,
+					   plus_constant (Pmode,
+							  stack_pointer_rtx,
 							  offset)),
 			      save_regs[i]);
 	      offset -= 4;
@@ -1916,7 +1918,8 @@ expand_epilogue (void)
 	    {
 	      emit_move_insn (restore_regs[--num_restore],
 			      gen_rtx_MEM (SImode,
-					   plus_constant (stack_pointer_rtx,
+					   plus_constant (Pmode,
+							  stack_pointer_rtx,
 							  offset)));
 	      offset -= 4;
 	    }
@@ -1925,7 +1928,8 @@ expand_epilogue (void)
 	    {
 	      emit_move_insn (restore_regs[i],
 			      gen_rtx_MEM (SImode,
-					   plus_constant (stack_pointer_rtx,
+					   plus_constant (Pmode,
+							  stack_pointer_rtx,
 							  offset)));
 
 	      emit_use (restore_regs[i]);

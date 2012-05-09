@@ -141,9 +141,7 @@ func (c *UnixConn) Close() error {
 	if !c.ok() {
 		return syscall.EINVAL
 	}
-	err := c.fd.Close()
-	c.fd = nil
-	return err
+	return c.fd.Close()
 }
 
 // LocalAddr returns the local network address, a *UnixAddr.
@@ -406,7 +404,7 @@ func (l *UnixListener) SetDeadline(t time.Time) (err error) {
 
 // File returns a copy of the underlying os.File, set to blocking mode.
 // It is the caller's responsibility to close f when finished.
-// Closing c does not affect f, and closing f does not affect c.
+// Closing l does not affect f, and closing f does not affect l.
 func (l *UnixListener) File() (f *os.File, err error) { return l.fd.dup() }
 
 // ListenUnixgram listens for incoming Unix datagram packets addressed to the

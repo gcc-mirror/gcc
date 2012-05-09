@@ -477,6 +477,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->warn_invalid_pch = value;
       break;
 
+    case OPT_Wliteral_suffix:
+      cpp_opts->warn_literal_suffix = value;
+      break;
+
     case OPT_Wlong_long:
       cpp_opts->cpp_warn_long_long = value;
       break;
@@ -753,11 +757,11 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	error ("output filename specified twice");
       break;
 
-      /* We need to handle the -pedantic switches here, rather than in
+      /* We need to handle the -Wpedantic switches here, rather than in
 	 c_common_post_options, so that a subsequent -Wno-endif-labels
 	 is not overridden.  */
     case OPT_pedantic_errors:
-    case OPT_pedantic:
+    case OPT_Wpedantic:
       cpp_opts->cpp_pedantic = 1;
       cpp_opts->warn_endif_labels = 1;
       if (warn_pointer_sign == -1)
@@ -938,7 +942,7 @@ c_common_post_options (const char **pfilename)
     warn_ignored_qualifiers = extra_warnings;
 
   /* -Wpointer-sign is disabled by default, but it is enabled if any
-     of -Wall or -pedantic are given.  */
+     of -Wall or -Wpedantic are given.  */
   if (warn_pointer_sign == -1)
     warn_pointer_sign = 0;
 
@@ -949,7 +953,7 @@ c_common_post_options (const char **pfilename)
   if (warn_jump_misses_init == -1)
     warn_jump_misses_init = 0;
 
-  /* -Woverlength-strings is off by default, but is enabled by -pedantic.
+  /* -Woverlength-strings is off by default, but is enabled by -Wpedantic.
      It is never enabled in C++, as the minimum limit is not normative
      in that standard.  */
   if (warn_overlength_strings == -1 || c_dialect_cxx ())
@@ -1294,8 +1298,8 @@ sanitize_cpp_opts (void)
   cpp_opts->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
 
   /* Wlong-long is disabled by default. It is enabled by:
-      [-pedantic | -Wtraditional] -std=[gnu|c]++98 ; or
-      [-pedantic | -Wtraditional] -std=non-c99 .
+      [-Wpedantic | -Wtraditional] -std=[gnu|c]++98 ; or
+      [-Wpedantic | -Wtraditional] -std=non-c99 .
 
       Either -Wlong-long or -Wno-long-long override any other settings.  */
   if (warn_long_long == -1)

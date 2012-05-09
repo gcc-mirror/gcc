@@ -265,7 +265,7 @@
   rtx addr
     = (frame_pointer_needed ? hard_frame_pointer_rtx : stack_pointer_rtx);
 
-  addr = plus_constant (addr, MACHINE_FUNCTION (cfun)->lr_slot_offset);
+  addr = plus_constant (Pmode, addr, MACHINE_FUNCTION (cfun)->lr_slot_offset);
   operands[1] = gen_frame_mem (SImode, addr);
 })
 
@@ -373,12 +373,12 @@
   if (post_modify_operand (operands[0], <MODE>mode))
     operands[2]
       = change_address (operands[2], VOIDmode,
-			plus_constant (XEXP (XEXP (operands[0], 0), 0),
+			plus_constant (Pmode, XEXP (XEXP (operands[0], 0), 0),
 				       UNITS_PER_WORD));
   if (post_modify_operand (operands[1], <MODE>mode))
     operands[3]
       = change_address (operands[3], VOIDmode,
-			plus_constant (XEXP (XEXP (operands[1], 0), 0),
+			plus_constant (Pmode, XEXP (XEXP (operands[1], 0), 0),
 				       UNITS_PER_WORD));
 }
   [(set_attr "type" "move,move,load,store")

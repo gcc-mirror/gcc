@@ -2,7 +2,7 @@
    This one inspired by java/class.c:build_utf8_ref.  */
 
 /* { dg-do compile } */
-/* { dg-options "-Wuninitialized" } */
+/* { dg-options "-Wuninitialized -ftrack-macro-expansion=2" } */
 
 #include <stddef.h>
 
@@ -24,7 +24,7 @@ do {								\
      tmp->car = 0; tmp->cdr = 0; tmp->type = TYPE;		\
      tmp->data = VALUE;						\
      if (TREE->car)						\
-	 LAST->cdr = tmp;					\
+	 LAST->cdr = tmp;	  /* { dg-bogus "field" "uninitialized variable warning" { xfail *-*-* } } */				\
      else							\
 	 TREE->car = tmp;					\
      LAST = tmp;						\
@@ -39,7 +39,7 @@ make_something(int a, int b, int c)
     rv = malloc (sizeof (struct tree));
     rv->car = 0;
 
-    APPEND(rv, field, INTEGER_T, a);  /* { dg-bogus "field" "uninitialized variable warning" { xfail *-*-* } } */
+    APPEND(rv, field, INTEGER_T, a);
     APPEND(rv, field, PTR_T, b);
     APPEND(rv, field, INTEGER_T, c);
 

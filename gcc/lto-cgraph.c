@@ -326,18 +326,18 @@ referenced_from_other_partition_p (struct ipa_ref_list *list, cgraph_node_set se
 {
   int i;
   struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_refering_iterate (list, i, ref); i++)
+  for (i = 0; ipa_ref_list_referring_iterate (list, i, ref); i++)
     {
-      if (ref->refering_type == IPA_REF_CGRAPH)
+      if (symtab_function_p (ref->referring))
 	{
-	  if (ipa_ref_refering_node (ref)->symbol.in_other_partition
-	      || !cgraph_node_in_set_p (ipa_ref_refering_node (ref), set))
+	  if (ipa_ref_referring_node (ref)->symbol.in_other_partition
+	      || !cgraph_node_in_set_p (ipa_ref_referring_node (ref), set))
 	    return true;
 	}
       else
 	{
-	  if (ipa_ref_refering_varpool_node (ref)->symbol.in_other_partition
-	      || !varpool_node_in_set_p (ipa_ref_refering_varpool_node (ref),
+	  if (ipa_ref_referring_varpool_node (ref)->symbol.in_other_partition
+	      || !varpool_node_in_set_p (ipa_ref_referring_varpool_node (ref),
 				         vset))
 	    return true;
 	}
@@ -370,16 +370,16 @@ referenced_from_this_partition_p (struct ipa_ref_list *list, cgraph_node_set set
 {
   int i;
   struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_refering_iterate (list, i, ref); i++)
+  for (i = 0; ipa_ref_list_referring_iterate (list, i, ref); i++)
     {
-      if (ref->refering_type == IPA_REF_CGRAPH)
+      if (symtab_function_p (ref->referring))
 	{
-	  if (cgraph_node_in_set_p (ipa_ref_refering_node (ref), set))
+	  if (cgraph_node_in_set_p (ipa_ref_referring_node (ref), set))
 	    return true;
 	}
       else
 	{
-	  if (varpool_node_in_set_p (ipa_ref_refering_varpool_node (ref),
+	  if (varpool_node_in_set_p (ipa_ref_referring_varpool_node (ref),
 				     vset))
 	    return true;
 	}
@@ -503,7 +503,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->local.versionable, 1);
   bp_pack_value (&bp, node->local.can_change_signature, 1);
   bp_pack_value (&bp, node->local.redefined_extern_inline, 1);
-  bp_pack_value (&bp, node->needed, 1);
+  bp_pack_value (&bp, node->symbol.force_output, 1);
   bp_pack_value (&bp, node->symbol.address_taken, 1);
   bp_pack_value (&bp, node->abstract_and_needed, 1);
   bp_pack_value (&bp, tag == LTO_cgraph_analyzed_node
@@ -566,12 +566,11 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   lto_output_var_decl_index (ob->decl_state, ob->main_stream, node->symbol.decl);
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, node->symbol.externally_visible, 1);
-  bp_pack_value (&bp, node->force_output, 1);
+  bp_pack_value (&bp, node->symbol.force_output, 1);
   bp_pack_value (&bp, node->finalized, 1);
   bp_pack_value (&bp, node->alias, 1);
   bp_pack_value (&bp, node->alias_of != NULL, 1);
   gcc_assert (node->finalized || !node->analyzed);
-  gcc_assert (node->needed);
   /* Constant pool initializers can be de-unified into individual ltrans units.
      FIXME: Alternatively at -Os we may want to avoid generating for them the local
      labels and share them across LTRANS partitions.  */
@@ -614,10 +613,10 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
 {
   struct bitpack_d bp;
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, ref->refered_type, 1);
+  bp_pack_value (&bp, symtab_function_p (ref->referred), 1);
   bp_pack_value (&bp, ref->use, 2);
   streamer_write_bitpack (&bp);
-  if (ref->refered_type == IPA_REF_CGRAPH)
+  if (symtab_function_p (ref->referred))
     {
       int nref = lto_cgraph_encoder_lookup (encoder, ipa_ref_node (ref));
       gcc_assert (nref != LCC_NOT_FOUND);
@@ -674,7 +673,7 @@ add_references (lto_cgraph_encoder_t encoder,
   int i;
   struct ipa_ref *ref;
   for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
-    if (ref->refered_type == IPA_REF_CGRAPH)
+    if (symtab_function_p (ref->referred))
       add_node_to (encoder, ipa_ref_node (ref), false);
     else
       {
@@ -911,7 +910,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->local.versionable = bp_unpack_value (bp, 1);
   node->local.can_change_signature = bp_unpack_value (bp, 1);
   node->local.redefined_extern_inline = bp_unpack_value (bp, 1);
-  node->needed = bp_unpack_value (bp, 1);
+  node->symbol.force_output = bp_unpack_value (bp, 1);
   node->symbol.address_taken = bp_unpack_value (bp, 1);
   node->abstract_and_needed = bp_unpack_value (bp, 1);
   node->symbol.used_from_other_partition = bp_unpack_value (bp, 1);
@@ -998,8 +997,8 @@ input_node (struct lto_file_decl_data *file_data,
     node = cgraph_get_create_node (fn_decl);
 
   node->symbol.order = order;
-  if (order >= cgraph_order)
-    cgraph_order = order + 1;
+  if (order >= symtab_order)
+    symtab_order = order + 1;
 
   node->count = streamer_read_hwi (ib);
   node->count_materialization_scale = streamer_read_hwi (ib);
@@ -1069,26 +1068,24 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
   node = varpool_node (var_decl);
   node->symbol.order = order;
-  if (order >= cgraph_order)
-    cgraph_order = order + 1;
+  if (order >= symtab_order)
+    symtab_order = order + 1;
   node->symbol.lto_file_data = file_data;
 
   bp = streamer_read_bitpack (ib);
   node->symbol.externally_visible = bp_unpack_value (&bp, 1);
-  node->force_output = bp_unpack_value (&bp, 1);
+  node->symbol.force_output = bp_unpack_value (&bp, 1);
   node->finalized = bp_unpack_value (&bp, 1);
   node->alias = bp_unpack_value (&bp, 1);
   non_null_aliasof = bp_unpack_value (&bp, 1);
-  node->analyzed = node->finalized; 
   node->symbol.used_from_other_partition = bp_unpack_value (&bp, 1);
   node->symbol.in_other_partition = bp_unpack_value (&bp, 1);
+  node->analyzed = (node->finalized && (!node->alias || !node->symbol.in_other_partition)); 
   if (node->symbol.in_other_partition)
     {
       DECL_EXTERNAL (node->symbol.decl) = 1;
       TREE_STATIC (node->symbol.decl) = 0;
     }
-  if (node->finalized)
-    varpool_mark_needed_node (node);
   if (non_null_aliasof)
     {
       decl_index = streamer_read_uhwi (ib);
@@ -1108,27 +1105,26 @@ input_varpool_node (struct lto_file_decl_data *file_data,
 
 static void
 input_ref (struct lto_input_block *ib,
-	   struct cgraph_node *refering_node,
-	   struct varpool_node *refering_varpool_node,
+	   symtab_node referring_node,
 	   VEC(cgraph_node_ptr, heap) *nodes,
 	   VEC(varpool_node_ptr, heap) *varpool_nodes_vec)
 {
   struct cgraph_node *node = NULL;
   struct varpool_node *varpool_node = NULL;
   struct bitpack_d bp;
-  enum ipa_ref_type type;
+  int type;
   enum ipa_ref_use use;
 
   bp = streamer_read_bitpack (ib);
-  type = (enum ipa_ref_type) bp_unpack_value (&bp, 1);
+  type = bp_unpack_value (&bp, 1);
   use = (enum ipa_ref_use) bp_unpack_value (&bp, 2);
-  if (type == IPA_REF_CGRAPH)
+  if (type)
     node = VEC_index (cgraph_node_ptr, nodes, streamer_read_hwi (ib));
   else
     varpool_node = VEC_index (varpool_node_ptr, varpool_nodes_vec,
 			      streamer_read_hwi (ib));
-  ipa_record_reference (refering_node, refering_varpool_node,
-		        node, varpool_node, use, NULL);
+  ipa_record_reference (referring_node,
+		        node ? (symtab_node) node : (symtab_node) varpool_node, use, NULL);
 }
 
 /* Read an edge from IB.  NODES points to a vector of previously read nodes for
@@ -1210,7 +1206,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   unsigned i;
 
   tag = streamer_read_enum (ib, LTO_cgraph_tags, LTO_cgraph_last_tag);
-  order_base = cgraph_order;
+  order_base = symtab_order;
   while (tag)
     {
       if (tag == LTO_cgraph_edge)
@@ -1324,7 +1320,7 @@ input_refs (struct lto_input_block *ib,
       node = VEC_index (cgraph_node_ptr, nodes, idx);
       while (count)
 	{
-	  input_ref (ib, node, NULL, nodes, varpool);
+	  input_ref (ib, (symtab_node) node, nodes, varpool);
 	  count--;
 	}
     }
@@ -1338,7 +1334,7 @@ input_refs (struct lto_input_block *ib,
 			streamer_read_uhwi (ib));
       while (count)
 	{
-	  input_ref (ib, NULL, node, nodes, varpool);
+	  input_ref (ib, (symtab_node) node, nodes, varpool);
 	  count--;
 	}
     }
@@ -1422,7 +1418,7 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
   /* Now compute count_materialization_scale of each node.
      During LTRANS we already have values of count_materialization_scale
      computed, so just update them.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     if (node->symbol.lto_file_data
 	&& node->symbol.lto_file_data->profile_info.runs)
       {
@@ -1457,6 +1453,8 @@ input_cgraph (void)
   struct lto_file_decl_data *file_data;
   unsigned int j = 0;
   struct cgraph_node *node;
+
+  cgraph_state = CGRAPH_STATE_IPA_SSA;
 
   while ((file_data = file_data_vec[j++]))
     {
@@ -1501,7 +1499,7 @@ input_cgraph (void)
 
   /* Clear out the aux field that was used to store enough state to
      tell which nodes should be overwritten.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     {
       /* Some nodes may have been created by cgraph_node.  This
 	 happens when the callgraph contains nested functions.  If the

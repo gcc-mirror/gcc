@@ -1,3 +1,9 @@
+2012-04-24  Tristan Gingold  <gingold@adacore.com>
+
+	* fixincl.c (fix_with_system): Add missing specifier.
+	* configure.ac: Default to twoprocess on vms.
+	* configure: Regenerate.
+
 2012-03-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* inclhack.def (aix_malloc): New.

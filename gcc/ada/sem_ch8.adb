@@ -7962,11 +7962,17 @@ package body Sem_Ch8 is
             declare
                Spec : constant Node_Id :=
                         Parent (List_Containing (Parent (Id)));
+
             begin
+               --  Check whether type is declared in a package specification,
+               --  and current unit is the corresponding package body. The
+               --  use clauses themselves may be within a nested package.
+
                return
                  Nkind (Spec) = N_Package_Specification
-                   and then Corresponding_Body (Parent (Spec)) =
-                              Cunit_Entity (Current_Sem_Unit);
+                   and then
+                     In_Same_Source_Unit (Corresponding_Body (Parent (Spec)),
+                                          Cunit_Entity (Current_Sem_Unit));
             end;
          end if;
 

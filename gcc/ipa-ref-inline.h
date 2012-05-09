@@ -19,61 +19,51 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Return callgraph node REF is refering.  */
+/* Return callgraph node REF is referring.  */
 static inline struct cgraph_node *
 ipa_ref_node (struct ipa_ref *ref)
 {
-  gcc_assert (ref->refered_type == IPA_REF_CGRAPH);
-  return ref->refered.cgraph_node;
+  return cgraph (ref->referred);
 }
 
-/* Return varpool node REF is refering.  */
+/* Return varpool node REF is referring.  */
 
 static inline struct varpool_node *
 ipa_ref_varpool_node (struct ipa_ref *ref)
 {
-  gcc_assert (ref->refered_type == IPA_REF_VARPOOL);
-  return ref->refered.varpool_node;
+  return varpool (ref->referred);
 }
 
 /* Return cgraph node REF is in.  */
 
 static inline struct cgraph_node *
-ipa_ref_refering_node (struct ipa_ref *ref)
+ipa_ref_referring_node (struct ipa_ref *ref)
 {
-  gcc_assert (ref->refering_type == IPA_REF_CGRAPH);
-  return ref->refering.cgraph_node;
+  return cgraph (ref->referring);
 }
 
 /* Return varpool node REF is in.  */
 
 static inline struct varpool_node *
-ipa_ref_refering_varpool_node (struct ipa_ref *ref)
+ipa_ref_referring_varpool_node (struct ipa_ref *ref)
 {
-  gcc_assert (ref->refering_type == IPA_REF_VARPOOL);
-  return ref->refering.varpool_node;
+  return varpool (ref->referring);
 }
 
 /* Return reference list REF is in.  */
 
 static inline struct ipa_ref_list *
-ipa_ref_refering_ref_list (struct ipa_ref *ref)
+ipa_ref_referring_ref_list (struct ipa_ref *ref)
 {
-  if (ref->refering_type == IPA_REF_CGRAPH)
-    return &ipa_ref_refering_node (ref)->symbol.ref_list;
-  else
-    return &ipa_ref_refering_varpool_node (ref)->symbol.ref_list;
+  return &ref->referring->symbol.ref_list;
 }
 
 /* Return reference list REF is in.  */
 
 static inline struct ipa_ref_list *
-ipa_ref_refered_ref_list (struct ipa_ref *ref)
+ipa_ref_referred_ref_list (struct ipa_ref *ref)
 {
-  if (ref->refered_type == IPA_REF_CGRAPH)
-    return &ipa_ref_node (ref)->symbol.ref_list;
-  else
-    return &ipa_ref_varpool_node (ref)->symbol.ref_list;
+  return &ref->referred->symbol.ref_list;
 }
 
 /* Return first reference in LIST or NULL if empty.  */
@@ -86,14 +76,14 @@ ipa_ref_list_first_reference (struct ipa_ref_list *list)
   return VEC_index (ipa_ref_t, list->references, 0);
 }
 
-/* Return first refering ref in LIST or NULL if empty.  */
+/* Return first referring ref in LIST or NULL if empty.  */
 
 static inline struct ipa_ref *
-ipa_ref_list_first_refering (struct ipa_ref_list *list)
+ipa_ref_list_first_referring (struct ipa_ref_list *list)
 {
-  if (!VEC_length (ipa_ref_ptr, list->refering))
+  if (!VEC_length (ipa_ref_ptr, list->referring))
     return NULL;
-  return VEC_index (ipa_ref_ptr, list->refering, 0);
+  return VEC_index (ipa_ref_ptr, list->referring, 0);
 }
 
 /* Clear reference list.  */
@@ -101,7 +91,7 @@ ipa_ref_list_first_refering (struct ipa_ref_list *list)
 static inline void
 ipa_empty_ref_list (struct ipa_ref_list *list)
 {
-  list->refering = NULL;
+  list->referring = NULL;
   list->references = NULL;
 }
 
@@ -115,5 +105,5 @@ ipa_ref_list_nreferences (struct ipa_ref_list *list)
 
 #define ipa_ref_list_reference_iterate(L,I,P) \
    VEC_iterate(ipa_ref_t, (L)->references, (I), (P))
-#define ipa_ref_list_refering_iterate(L,I,P) \
-   VEC_iterate(ipa_ref_ptr, (L)->refering, (I), (P))
+#define ipa_ref_list_referring_iterate(L,I,P) \
+   VEC_iterate(ipa_ref_ptr, (L)->referring, (I), (P))

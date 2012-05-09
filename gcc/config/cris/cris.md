@@ -976,7 +976,7 @@
 		    tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym),
 					  CRIS_UNSPEC_PCREL);
 		    if (offs != 0)
-		      tem = plus_constant (tem, offs);
+		      tem = plus_constant (Pmode, tem, offs);
 		    rm = rn;
 		    emit_move_insn (rm, gen_rtx_CONST (Pmode, tem));
 		  }
@@ -988,7 +988,7 @@
 		    tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym),
 					  CRIS_UNSPEC_GOTREL);
 		    if (offs != 0)
-		      tem = plus_constant (tem, offs);
+		      tem = plus_constant (Pmode, tem, offs);
 		    rm = gen_reg_rtx (Pmode);
 		    emit_move_insn (rm, gen_rtx_CONST (Pmode, tem));
 		    if (expand_binop (Pmode, add_optab, rm, pic_offset_table_rtx,
@@ -2915,36 +2915,51 @@
 
 ;; A strict_low_part pattern.
 
+;; Note the use of (match_dup 0) for the first operand of the operation
+;; here.  Reload can't handle an operand pair where one is read-write
+;; and must match a read, like in:
+;; (insn 80 79 81 4
+;;  (set (strict_low_part
+;;        (subreg:QI (reg/v:SI 0 r0 [orig:36 data ] [36]) 0))
+;;       (and:QI
+;;        (subreg:QI (reg:SI 15 acr [orig:27 D.7531 ] [27]) 0)
+;;        (const_int -64 [0xf..fc0]))) x.c:126 147 {*andqi_lowpart_v32}
+;;  (nil))
+;; In theory, it could reload this as a movstrictqi of the register
+;; operand at the and:QI to the destination register and change the
+;; and:QI operand to the same as the read-write output operand and the
+;; result would be recognized, but it doesn't recognize that's a valid
+;; reload for a strict_low_part-destination; it just sees a "+" at the
+;; destination constraints.  Better than adding complexity to reload is
+;; to follow the lead of m68k (see comment that begins with "These insns
+;; must use MATCH_DUP") since prehistoric times and make it just a
+;; match_dup.  FIXME: a sanity-check in gen* to refuse an insn with
+;; input-constraints matching input-output-constraints, e.g. "+r" <- "0".
+
 (define_insn "*andhi_lowpart_non_v32"
   [(set (strict_low_part
-	 (match_operand:HI 0 "register_operand"	       "+r,r, r,r,r,r"))
-	(and:HI (match_operand:HI 1 "register_operand" "%0,0, 0,0,0,r")
-		(match_operand:HI 2 "general_operand"   "r,Q>,L,O,g,!To")))]
+	 (match_operand:HI 0 "register_operand"	       "+r,r,r"))
+	(and:HI (match_dup 0)
+		(match_operand:HI 1 "general_operand"   "r,Q>,g")))]
   "!TARGET_V32"
   "@
-   and.w %2,%0
-   and.w %2,%0
-   and.w %2,%0
-   anDq %b2,%0
-   and.w %2,%0
-   and.w %2,%1,%0"
-  [(set_attr "slottable" "yes,yes,no,yes,no,no")
-   (set_attr "cc" "normal,normal,normal,clobber,normal,normal")])
+   and.w %1,%0
+   and.w %1,%0
+   and.w %1,%0"
+  [(set_attr "slottable" "yes,yes,no")])
 
 (define_insn "*andhi_lowpart_v32"
   [(set (strict_low_part
-	 (match_operand:HI 0 "register_operand" "+r,r,r,r,r"))
-	(and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0")
-		(match_operand:HI 2 "general_operand" "r,Q>,L,O,g")))]
+	 (match_operand:HI 0 "register_operand" "+r,r,r"))
+	(and:HI (match_dup 0)
+		(match_operand:HI 1 "general_operand" "r,Q>,g")))]
   "TARGET_V32"
   "@
-   and.w %2,%0
-   and.w %2,%0
-   and.w %2,%0
-   anDq %b2,%0
-   and.w %2,%0"
-  [(set_attr "slottable" "yes,yes,no,yes,no")
-   (set_attr "cc" "noov32,noov32,noov32,clobber,noov32")])
+   and.w %1,%0
+   and.w %1,%0
+   and.w %1,%0"
+  [(set_attr "slottable" "yes,yes,no")
+   (set_attr "cc" "noov32")])
 
 (define_expand "andqi3"
   [(set (match_operand:QI 0 "register_operand")
@@ -2984,32 +2999,28 @@
 
 (define_insn "*andqi_lowpart_non_v32"
   [(set (strict_low_part
-	 (match_operand:QI 0 "register_operand"	       "+r,r, r,r,r"))
-	(and:QI (match_operand:QI 1 "register_operand" "%0,0, 0,0,r")
-		(match_operand:QI 2 "general_operand"   "r,Q>,O,g,!To")))]
+	 (match_operand:QI 0 "register_operand"	       "+r,r,r"))
+	(and:QI (match_dup 0)
+		(match_operand:QI 1 "general_operand"   "r,Q>,g")))]
   "!TARGET_V32"
   "@
-   and.b %2,%0
-   and.b %2,%0
-   andQ %b2,%0
-   and.b %2,%0
-   and.b %2,%1,%0"
-  [(set_attr "slottable" "yes,yes,yes,no,no")
-   (set_attr "cc" "normal,normal,clobber,normal,normal")])
+   and.b %1,%0
+   and.b %1,%0
+   and.b %1,%0"
+  [(set_attr "slottable" "yes,yes,no")])
 
 (define_insn "*andqi_lowpart_v32"
   [(set (strict_low_part
-	 (match_operand:QI 0 "register_operand" "+r,r,r,r"))
-	(and:QI (match_operand:QI 1 "register_operand" "%0,0,0,0")
-		(match_operand:QI 2 "general_operand" "r,Q>,O,g")))]
+	 (match_operand:QI 0 "register_operand" "+r,r,r"))
+	(and:QI (match_dup 0)
+		(match_operand:QI 1 "general_operand" "r,Q>,g")))]
   "TARGET_V32"
   "@
-   and.b %2,%0
-   and.b %2,%0
-   andQ %b2,%0
-   and.b %2,%0"
-  [(set_attr "slottable" "yes,yes,yes,no")
-   (set_attr "cc" "noov32,noov32,clobber,noov32")])
+   and.b %1,%0
+   and.b %1,%0
+   and.b %1,%0"
+  [(set_attr "slottable" "yes,yes,no")
+   (set_attr "cc" "noov32")])
 
 ;; Bitwise or.
 
@@ -3857,7 +3868,7 @@
      (use (label_ref (match_operand 3 "" "")))])]
   ""
 {
-  operands[2] = plus_constant (operands[2], 1);
+  operands[2] = plus_constant (SImode, operands[2], 1);
   operands[5] = gen_reg_rtx (SImode);
   operands[6] = gen_reg_rtx (SImode);
   operands[7] = gen_reg_rtx (SImode);
@@ -3892,7 +3903,7 @@
   rtx xlabel = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
   for (i = 5; i <= 10; i++)
     operands[i] = gen_reg_rtx (SImode);
-  operands[2] = plus_constant (operands[2], 1);
+  operands[2] = plus_constant (SImode, operands[2], 1);
 
   /* Don't forget to decorate labels too, for PIC.  */
   operands[11] = flag_pic
@@ -4925,17 +4936,17 @@
   "operands[7]
      = rtx_equal_p (operands[3], operands[0]) ? operands[4] : operands[3];")
 
-;;  I cannot tell GCC (2.1, 2.7.2) how to correctly reload an instruction
-;; that looks like
-;;   and.b some_byte,const,reg_32
-;; where reg_32 is the destination of the "three-address" code optimally.
+;; There seems to be no other way to make GCC (including 4.8/trunk at
+;; r186932) optimally reload an instruction that looks like
+;;   and.d reg_or_mem,const_32__65535,other_reg
+;; where other_reg is the destination.
 ;; It should be:
-;;   movu.b some_byte,reg_32
-;;   and.b const,reg_32
+;;   movu.[bw] reg_or_mem,reg_32
+;;   and.[bw] trunc_int_for_mode([bw], const_32__65535),reg_32 ;; or andq
 ;; but it turns into:
-;;   move.b some_byte,reg_32
-;;   and.d const,reg_32
-;; Fix it here.
+;;   move.d reg_or_mem,reg_32
+;;   and.d const_32__65535,reg_32
+;; Fix it with these two peephole2's.
 ;; Testcases: gcc.dg/cris-peep2-andu1.c gcc.dg/cris-peep2-andu2.c
 
 (define_peephole2 ; andu (casesi+45)
@@ -4971,6 +4982,36 @@
 		   GEN_INT (trunc_int_for_mode (INTVAL (operands[3]),
 						amode == SImode
 						? QImode : amode)));
+})
+
+;; Since r186861, gcc.dg/cris-peep2-andu2.c trigs this pattern, with which
+;; we fix up e.g.:
+;;  movu.b 254,$r9.
+;;  and.d $r10,$r9
+;; into:
+;;  movu.b $r10,$r9
+;;  andq -2,$r9.
+;; Only do this for values fitting the quick immediate operand.
+(define_peephole2 ; andqu (casesi+46)
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operand:SI 1 "const_int_operand"))
+   (set (match_dup 0)
+	(and:SI (match_dup 0) (match_operand:SI 2 "nonimmediate_operand")))]
+   ;; Since the size of the memory access will be made different here,
+   ;; don't do this for a volatile access or a post-incremented address.
+  "satisfies_constraint_O (operands[1])
+   && !side_effects_p (operands[2])
+   && !reg_overlap_mentioned_p (operands[0], operands[2])"
+  [(set (match_dup 0) (match_dup 3))
+   (set (match_dup 0) (and:SI (match_dup 0) (match_dup 4)))]
+{
+  enum machine_mode zmode = INTVAL (operands[2]) <= 255 ? QImode : HImode;
+  rtx op1
+    = (REG_S_P (operands[2])
+       ? gen_rtx_REG (zmode, REGNO (operands[2]))
+       : adjust_address (operands[2], zmode, 0));
+  operands[3] = gen_rtx_ZERO_EXTEND (SImode, op1);
+  operands[4] = GEN_INT (trunc_int_for_mode (INTVAL (operands[1]), QImode));
 })
 
 ;; Try and avoid GOTPLT reads escaping a call: transform them into

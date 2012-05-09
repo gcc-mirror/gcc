@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 2007, 2008, 2010
+   Copyright (C) 2007, 2008, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
@@ -144,4 +144,12 @@ vxworks_override_options (void)
   /* PIC is only supported for RTPs.  */
   if (flag_pic && !TARGET_VXWORKS_RTP)
     error ("PIC is only supported for RTPs");
+
+  /* Default to strict dwarf-2 to prevent potential difficulties observed with
+     non-gdb debuggers on extensions > 2.  */
+  if (!global_options_set.x_dwarf_strict)
+    dwarf_strict = 1;
+
+  if (!global_options_set.x_dwarf_version)
+    dwarf_version = 2;
 }

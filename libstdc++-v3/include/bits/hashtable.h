@@ -157,11 +157,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  explicitly passed, template pattern.
    *
    *  Base class templates are: 
-   *    __detail::_Hashtable_base
-   *    __detail::_Map_base
-   *    __detail::_Insert
-   *    __detail::_Rehash_base
-   *    __detail::_Equality
+   *    - __detail::_Hashtable_base
+   *    - __detail::_Map_base
+   *    - __detail::_Insert
+   *    - __detail::_Rehash_base
+   *    - __detail::_Equality
    */
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -1698,57 +1698,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       while (__p)
 	{
-	  bool __check_now = true;
 	  __node_type* __next = __p->_M_next();
 	  std::size_t __bkt = __hash_code_base::_M_bucket_index(__p, __n);
 
-	  if (!__new_buckets[__bkt])
+	  if (__prev_p && __prev_bkt == __bkt)
 	    {
-	      __p->_M_nxt = _M_before_begin._M_nxt;
-	      _M_before_begin._M_nxt = __p;
-	      __new_buckets[__bkt] = &_M_before_begin;
-	      if (__p->_M_nxt)
-		__new_buckets[__bbegin_bkt] = __p;
-	      __bbegin_bkt = __bkt;
+	      // Previous insert was already in this bucket, we insert after
+	      // the previously inserted one to preserve equivalent elements
+	      // relative order.
+	      __p->_M_nxt = __prev_p->_M_nxt;
+	      __prev_p->_M_nxt = __p;
+
+	      // Inserting after a node in a bucket require to check that we
+	      // haven't change the bucket last node, in this case next
+	      // bucket containing its before begin node must be updated. We
+	      // schedule a check as soon as we move out of the sequence of
+	      // equivalent nodes to limit the number of checks.
+	      __check_bucket = true;
 	    }
 	  else
 	    {
-	      if (__prev_p && __prev_bkt == __bkt)
+	      if (__check_bucket)
 		{
-		  // Previous insert was already in this bucket, we insert after
-		  // the previously inserted one to preserve equivalent elements
-		  // relative order.
-		  __p->_M_nxt = __prev_p->_M_nxt;
-		  __prev_p->_M_nxt = __p;
+		  // Check if we shall update the next bucket because of insertions
+		  // into __prev_bkt bucket.
+		  if (__prev_p->_M_nxt)
+		    {
+		      std::size_t __next_bkt
+			= __hash_code_base::_M_bucket_index(__prev_p->_M_next(),
+							    __n);
+		      if (__next_bkt != __prev_bkt)
+			__new_buckets[__next_bkt] = __prev_p;
+		    }
+		  __check_bucket = false;
+		}
 
-		  // Inserting after a node in a bucket require to check that we
-		  // haven't change the bucket last node, in this case next
-		  // bucket containing its before begin node must be updated. We
-		  // schedule a check as soon as we move out of the sequence of
-		  // equivalent nodes to limit the number of checks.
-		  __check_bucket = true;
-		  __check_now = false;
+	      if (!__new_buckets[__bkt])
+		{
+		  __p->_M_nxt = _M_before_begin._M_nxt;
+		  _M_before_begin._M_nxt = __p;
+		  __new_buckets[__bkt] = &_M_before_begin;
+		  if (__p->_M_nxt)
+		    __new_buckets[__bbegin_bkt] = __p;
+		  __bbegin_bkt = __bkt;
 		}
 	      else
 		{
 		  __p->_M_nxt = __new_buckets[__bkt]->_M_nxt;
 		  __new_buckets[__bkt]->_M_nxt = __p;
 		}
-	    }
-
-	  if (__check_now && __check_bucket)
-	    {
-	      // Check if we shall update the next bucket because of insertions
-	      // into __prev_bkt bucket.
-	      if (__prev_p->_M_nxt)
-		{
-		  std::size_t __next_bkt
-		    = __hash_code_base::_M_bucket_index(__prev_p->_M_next(),
-							__n);
-		  if (__next_bkt != __prev_bkt)
-		    __new_buckets[__next_bkt] = __prev_p;
-		}
-	      __check_bucket = false;
 	    }
 	  __prev_p = __p;
 	  __prev_bkt = __bkt;

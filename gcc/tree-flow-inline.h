@@ -506,9 +506,14 @@ static inline gimple_seq
 phi_nodes (const_basic_block bb)
 {
   gcc_checking_assert (!(bb->flags & BB_RTL));
-  if (!bb->il.gimple)
-    return NULL;
-  return bb->il.gimple->phi_nodes;
+  return bb->il.gimple.phi_nodes;
+}
+
+static inline gimple_seq *
+phi_nodes_ptr (basic_block bb)
+{
+  gcc_checking_assert (!(bb->flags & BB_RTL));
+  return &bb->il.gimple.phi_nodes;
 }
 
 /* Set PHI nodes of a basic block BB to SEQ.  */
@@ -519,7 +524,7 @@ set_phi_nodes (basic_block bb, gimple_seq seq)
   gimple_stmt_iterator i;
 
   gcc_checking_assert (!(bb->flags & BB_RTL));
-  bb->il.gimple->phi_nodes = seq;
+  bb->il.gimple.phi_nodes = seq;
   if (seq)
     for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
       gimple_set_bb (gsi_stmt (i), bb);

@@ -40,6 +40,7 @@ extern const char *c_file_name;
 extern struct obstack temporary_obstack;
 extern char *temporary_firstobj;
 extern bool vflag, debug;
+extern bool may_unlink_output_file;
 
 extern void notice_translated (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void notice (const char *, ...) ATTRIBUTE_PRINTF_1;

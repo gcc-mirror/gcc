@@ -1328,8 +1328,8 @@ move_computations_stmt (struct dom_walk_data *dw_data,
 	}
 
       mark_virtual_ops_for_renaming (stmt);
-      gsi_insert_on_edge (loop_preheader_edge (level), stmt);
       gsi_remove (&bsi, false);
+      gsi_insert_on_edge (loop_preheader_edge (level), stmt);
     }
 }
 

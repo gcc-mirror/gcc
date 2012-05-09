@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
@@ -1146,8 +1146,7 @@ canon_address (rtx mem,
 	       HOST_WIDE_INT *offset,
 	       cselib_val **base)
 {
-  enum machine_mode address_mode
-    = targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
+  enum machine_mode address_mode = get_address_mode (mem);
   rtx mem_address = XEXP (mem, 0);
   rtx expanded_address, address;
   int expanded;
@@ -1499,11 +1498,7 @@ record_store (rtx body, bb_info_t bb_info)
     }
   else
     {
-      rtx base_term = find_base_term (XEXP (mem, 0));
-      if (!base_term
-	  || (GET_CODE (base_term) == ADDRESS
-	      && GET_MODE (base_term) == Pmode
-	      && XEXP (base_term, 0) == stack_pointer_rtx))
+      if (may_be_sp_based_p (XEXP (mem, 0)))
 	insn_info->stack_pointer_based = true;
       insn_info->contains_cselib_groups = true;
 
@@ -1565,7 +1560,7 @@ record_store (rtx body, bb_info_t bb_info)
 	  mem_addr = group->canon_base_addr;
 	}
       if (offset)
-	mem_addr = plus_constant (mem_addr, offset);
+	mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
     }
 
   while (ptr)
@@ -2182,7 +2177,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	  mem_addr = group->canon_base_addr;
 	}
       if (offset)
-	mem_addr = plus_constant (mem_addr, offset);
+	mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
     }
 
   /* We ignore the clobbers in store_info.  The is mildly aggressive,

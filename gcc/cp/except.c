@@ -1,6 +1,6 @@
 /* Handle exceptional things in C++.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
@@ -850,7 +850,7 @@ build_throw (tree exp)
 	}
       else
 	{
-	  tmp = decay_conversion (exp);
+	  tmp = decay_conversion (exp, tf_warning_or_error);
 	  if (tmp == error_mark_node)
 	    return error_mark_node;
 	  exp = build2 (INIT_EXPR, temp_type, object, tmp);

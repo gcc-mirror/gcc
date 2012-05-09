@@ -4152,6 +4152,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   if (!SCALAR_FLOAT_MODE_P (mode))
     {
       rtx result;
+      enum machine_mode ret_mode;
 
       /* Handle a libcall just for the mode we are using.  */
       libfunc = optab_libfunc (cmp_optab, mode);
@@ -4166,9 +4167,9 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	    libfunc = ulibfunc;
 	}
 
+      ret_mode = targetm.libgcc_cmp_return_mode ();
       result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-					targetm.libgcc_cmp_return_mode (),
-					2, x, mode, y, mode);
+					ret_mode, 2, x, mode, y, mode);
 
       /* There are two kinds of comparison routines. Biased routines
 	 return 0/1/2, and unbiased routines return -1/0/1. Other parts
@@ -4186,7 +4187,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       if (!TARGET_LIB_INT_CMP_BIASED && !ALL_FIXED_POINT_MODE_P (mode))
 	{
 	  if (unsignedp)
-	    x = plus_constant (result, 1);
+	    x = plus_constant (ret_mode, result, 1);
 	  else
 	    y = const0_rtx;
 	}
@@ -6737,6 +6738,9 @@ init_sync_libfuncs_1 (optab tab, const char *base, int max)
 void
 init_sync_libfuncs (int max)
 {
+  if (!flag_sync_libcalls)
+    return;
+
   init_sync_libfuncs_1 (sync_compare_and_swap_optab,
 			"__sync_val_compare_and_swap", max);
   init_sync_libfuncs_1 (sync_lock_test_and_set_optab,
@@ -8343,7 +8347,7 @@ maybe_legitimize_operand_same_code (enum insn_code icode, unsigned int opno,
 	  enum machine_mode mode;
 
 	  last = get_last_insn ();
-	  mode = targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
+	  mode = get_address_mode (mem);
 	  mem = replace_equiv_address (mem, copy_to_mode_reg (mode, addr));
 	  if (insn_operand_matches (icode, opno, mem))
 	    {

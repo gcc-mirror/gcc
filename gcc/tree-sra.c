@@ -1472,11 +1472,13 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
      by looking at the access mode.  That would constrain the
      alignment of base + base_offset which we would need to
      adjust according to offset.  */
-  align = get_pointer_alignment_1 (base, &misalign);
-  if (misalign == 0
-      && (TREE_CODE (prev_base) == MEM_REF
-	  || TREE_CODE (prev_base) == TARGET_MEM_REF))
-    align = MAX (align, TYPE_ALIGN (TREE_TYPE (prev_base)));
+  if (!get_pointer_alignment_1 (base, &align, &misalign))
+    {
+      gcc_assert (misalign == 0);
+      if (TREE_CODE (prev_base) == MEM_REF
+	  || TREE_CODE (prev_base) == TARGET_MEM_REF)
+	align = TYPE_ALIGN (TREE_TYPE (prev_base));
+    }
   misalign += (double_int_sext (tree_to_double_int (off),
 				TYPE_PRECISION (TREE_TYPE (off))).low
 	       * BITS_PER_UNIT);
@@ -1489,70 +1491,32 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
   return fold_build2_loc (loc, MEM_REF, exp_type, base, off);
 }
 
-DEF_VEC_ALLOC_P_STACK (tree);
-#define VEC_tree_stack_alloc(alloc) VEC_stack_alloc (tree, alloc)
-
 /* Construct a memory reference to a part of an aggregate BASE at the given
-   OFFSET and of the type of MODEL.  In case this is a chain of references
-   to component, the function will replicate the chain of COMPONENT_REFs of
-   the expression of MODEL to access it.  GSI and INSERT_AFTER have the same
-   meaning as in build_ref_for_offset.  */
+   OFFSET and of the same type as MODEL.  In case this is a reference to a
+   bit-field, the function will replicate the last component_ref of model's
+   expr to access it.  GSI and INSERT_AFTER have the same meaning as in
+   build_ref_for_offset.  */
 
 static tree
 build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 		     struct access *model, gimple_stmt_iterator *gsi,
 		     bool insert_after)
 {
-  tree type = model->type, t;
-  VEC(tree,stack) *cr_stack = NULL;
-
-  if (TREE_CODE (model->expr) == COMPONENT_REF)
+  if (TREE_CODE (model->expr) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (model->expr, 1)))
     {
-      tree expr = model->expr;
+      /* This access represents a bit-field.  */
+      tree t, exp_type, fld = TREE_OPERAND (model->expr, 1);
 
-      /* Create a stack of the COMPONENT_REFs so later we can walk them in
-	 order from inner to outer.  */
-      cr_stack = VEC_alloc (tree, stack, 6);
-
-      do {
-	tree field = TREE_OPERAND (expr, 1);
-	tree cr_offset = component_ref_field_offset (expr);
-	HOST_WIDE_INT bit_pos
-	  = tree_low_cst (cr_offset, 1) * BITS_PER_UNIT
-	      + TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field));
-
-	/* We can be called with a model different from the one associated
-	   with BASE so we need to avoid going up the chain too far.  */
-	if (offset - bit_pos < 0)
-	  break;
-
-	offset -= bit_pos;
-	VEC_safe_push (tree, stack, cr_stack, expr);
-
-	expr = TREE_OPERAND (expr, 0);
-	type = TREE_TYPE (expr);
-      } while (TREE_CODE (expr) == COMPONENT_REF);
+      offset -= int_bit_position (fld);
+      exp_type = TREE_TYPE (TREE_OPERAND (model->expr, 0));
+      t = build_ref_for_offset (loc, base, offset, exp_type, gsi, insert_after);
+      return fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (fld), t, fld,
+			      NULL_TREE);
     }
-
-  t = build_ref_for_offset (loc, base, offset, type, gsi, insert_after);
-
-  if (TREE_CODE (model->expr) == COMPONENT_REF)
-    {
-      unsigned i;
-      tree expr;
-
-      /* Now replicate the chain of COMPONENT_REFs from inner to outer.  */
-      FOR_EACH_VEC_ELT_REVERSE (tree, cr_stack, i, expr)
-	{
-	  tree field = TREE_OPERAND (expr, 1);
-	  t = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), t, field,
-			       TREE_OPERAND (expr, 2));
-	}
-
-      VEC_free (tree, stack, cr_stack);
-    }
-
-  return t;
+  else
+    return build_ref_for_offset (loc, base, offset, model->type,
+				 gsi, insert_after);
 }
 
 /* Construct a memory reference consisting of component_refs and array_refs to
@@ -3230,6 +3194,7 @@ initialize_parameter_reductions (void)
   gimple_seq seq = NULL;
   tree parm;
 
+  gsi = gsi_start (seq);
   for (parm = DECL_ARGUMENTS (current_function_decl);
        parm;
        parm = DECL_CHAIN (parm))
@@ -3243,12 +3208,6 @@ initialize_parameter_reductions (void)
       if (!access_vec)
 	continue;
 
-      if (!seq)
-	{
-	  seq = gimple_seq_alloc ();
-	  gsi = gsi_start (seq);
-	}
-
       for (access = VEC_index (access_p, access_vec, 0);
 	   access;
 	   access = access->next_grp)
@@ -3256,6 +3215,7 @@ initialize_parameter_reductions (void)
 				 EXPR_LOCATION (parm));
     }
 
+  seq = gsi_seq (gsi);
   if (seq)
     gsi_insert_seq_on_edge_immediate (single_succ_edge (ENTRY_BLOCK_PTR), seq);
 }
@@ -4651,8 +4611,8 @@ convert_callers_for_node (struct cgraph_node *node,
       if (dump_file)
 	fprintf (dump_file, "Adjusting call (%i -> %i) %s -> %s\n",
 		 cs->caller->uid, cs->callee->uid,
-		 cgraph_node_name (cs->caller),
-		 cgraph_node_name (cs->callee));
+		 xstrdup (cgraph_node_name (cs->caller)),
+		 xstrdup (cgraph_node_name (cs->callee)));
 
       ipa_modify_call_arguments (cs, cs->call_stmt, adjustments);
 
@@ -4904,6 +4864,6 @@ struct gimple_opt_pass pass_early_ipa_sra =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_cgraph              	/* todo_flags_finish */
+  TODO_dump_symtab              	/* todo_flags_finish */
  }
 };

@@ -1,7 +1,7 @@
 // DR 339
 //
 // Test of the use of various unary operators with SFINAE
-
+// { dg-options "-fmessage-length=0 -pedantic-errors -Wno-long-long -ftrack-macro-expansion=0 " }
 // Boilerplate helpers
 typedef char yes_type;
 struct no_type { char data[2]; };

@@ -766,7 +766,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	  else if (t == wchar_decl_node)
 	    {
 	      if (! DECL_IN_SYSTEM_HEADER (x))
-		pedwarn (input_location, OPT_pedantic, "redeclaration of %<wchar_t%> as %qT",
+		pedwarn (input_location, OPT_Wpedantic, "redeclaration of %<wchar_t%> as %qT",
 			 TREE_TYPE (x));
 	      
 	      /* Throw away the redeclaration.  */

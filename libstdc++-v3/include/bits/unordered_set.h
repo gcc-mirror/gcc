@@ -72,9 +72,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *
    *  @ingroup unordered_associative_containers
    *
-   *  Meets the requirements of a <a href="tables.html#65">container</a>, and
-   *  <a href="tables.html#xx">unordered associative container</a>
-   *
    *  @tparam  _Value  Type of key objects.
    *  @tparam  _Hash  Hashing function object type, defaults to hash<_Value>.
 
@@ -82,6 +79,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *                equal_to<_Value>.
    *
    *  @tparam  _Alloc  Allocator type, defaults to allocator<_Key>.
+   *
+   *  Meets the requirements of a <a href="tables.html#65">container</a>, and
+   *  <a href="tables.html#xx">unordered associative container</a>
    *
    *  Base is _Hashtable, dispatched at compile time via template
    *  alias __uset_hashtable.
@@ -135,14 +135,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *
    *  @ingroup unordered_associative_containers
    *
-   *  Meets the requirements of a <a href="tables.html#65">container</a>, and
-   *  <a href="tables.html#xx">unordered associative container</a>
-   *
    *  @tparam  _Value  Type of key objects.
    *  @tparam  _Hash  Hashing function object type, defaults to hash<_Value>.
    *  @tparam  _Pred  Predicate function object type, defaults
    *                  to equal_to<_Value>.
    *  @tparam  _Alloc  Allocator type, defaults to allocator<_Key>.
+   *
+   *  Meets the requirements of a <a href="tables.html#65">container</a>, and
+   *  <a href="tables.html#xx">unordered associative container</a>
    *
    *  Base is _Hashtable, dispatched at compile time via template
    *  alias __umset_hashtable.

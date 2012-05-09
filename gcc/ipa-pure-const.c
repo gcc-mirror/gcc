@@ -924,7 +924,7 @@ generate_summary (void)
      by default, but the info can be used at LTO with -fwhole-program or
      when function got cloned and the clone is AVAILABLE.  */
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       set_function_state (node, analyze_function (node, true));
 
@@ -1475,7 +1475,7 @@ propagate (void)
   propagate_pure_const ();
 
   /* Cleanup. */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     if (has_function_state (node))
       free (get_function_state (node));
   VEC_free (funct_state, heap, funct_state_vec);

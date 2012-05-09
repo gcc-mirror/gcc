@@ -25,6 +25,6 @@ void bar(int i)
    Simply test for the existence of +1 and -1 once, which also ensures
    the above.  If the addition/subtraction would be applied to the
    pointer we would instead see +-4 (or 8, depending on sizeof(int)).  */
-/* { dg-final { scan-tree-dump-times "\\\+ -1;" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump "\\\+ (0x0f*|18446744073709551615|4294967295|-1);" "optimized" } } */
 /* { dg-final { scan-tree-dump-times "\\\+ 1;" 1 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

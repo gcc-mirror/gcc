@@ -1,6 +1,6 @@
 #!/bin/sh 
 # Generates multilib.h.
-#   Copyright (C) 1994, 1995, 1996, 1997, 1999, 2002, 2007
+#   Copyright (C) 1994, 1995, 1996, 1997, 1999, 2002, 2007, 2012
 #   Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -73,6 +73,17 @@
 # the os directory names are used exclusively.  Use the mapping when
 # there is no one-to-one equivalence between GCC levels and the OS.
 
+# The optional eighth argument which intends to reduce the effort to write
+# so many MULTILIB_EXCEPTIONS rules. This option defines a series of option
+# combinations that we actually required.
+# For some cases, the generated option combinations are far more than what
+# we need, we have to write a lot of rules to screen out combinations we
+# don't need. If we missed some rules, the unexpected libraries will be built.
+# Now with this argument, one can simply give what combinations are needed.
+# It is pretty straigtforward.
+# This argument can be used together with MULTILIB_EXCEPTIONS and will take
+# effect after the MULTILIB_EXCEPTIONS.
+
 # The last option should be "yes" if multilibs are enabled.  If it is not
 # "yes", all GCC multilib dir names will be ".".
 
@@ -93,7 +104,7 @@
 #   genmultilib 'm64/m32 mno-app-regs|mcmodel=medany' '64 32 alt'
 #		'mcmodel?medany=mcmodel?medmid' 'm32/mno-app-regs* m32/mcmodel=*'
 #		'' 'm32/!m64/mno-app-regs m32/!m64/mcmodel=medany'
-#		'../lib64 ../lib32 alt' yes
+#		'../lib64 ../lib32 alt' '' yes
 # This produces:
 #   ". !m64 !m32 !mno-app-regs !mcmodel=medany;",
 #   "64:../lib64 m64 !m32 !mno-app-regs !mcmodel=medany;",
@@ -121,7 +132,8 @@ exceptions=$4
 extra=$5
 exclusions=$6
 osdirnames=$7
-enable_multilib=$8
+multilib_required=$8
+enable_multilib=$9
 
 echo "static const char *const multilib_raw[] = {"
 
@@ -193,6 +205,33 @@ cat >>tmpmultilib2 <<\EOF
 EOF
   chmod +x tmpmultilib2
   combinations=`./tmpmultilib2 ${combinations}`
+fi
+
+# If the MULTILIB_REQUIRED list are provided,
+# filter out combinations not in this list.
+if [ -n "${multilib_required}" ]; then
+  cat >tmpmultilib2 <<\EOF
+#!/bin/sh
+# This recursive script weeds out any combination of multilib
+# switches that not in the expected list.
+
+  for opt in $@; do
+    case "$opt" in
+EOF
+
+  for expect in ${multilib_required}; do
+    echo "      /${expect}/) echo \${opt};;" >> tmpmultilib2
+  done
+
+cat >>tmpmultilib2 <<\EOF
+      *) ;;
+    esac
+  done
+EOF
+
+   chmod +x tmpmultilib2
+   combinations=`./tmpmultilib2 ${combinations}`
+
 fi
 
 # Construct a sed pattern which will convert option names to directory

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
+/* { dg-options "-std=gnu99 -ftrack-macro-expansion=0" } */
 
 /* C99 6.5.10: Bitwise AND operator.
    C99 6.5.11: Bitwise exclusive OR operator.

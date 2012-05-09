@@ -4904,14 +4904,19 @@ resolve_ref (gfc_expr *expr)
 	    {
 	      /* F03:C614.  */
 	      if (ref->u.c.component->attr.pointer
-		  || ref->u.c.component->attr.proc_pointer)
+		  || ref->u.c.component->attr.proc_pointer
+		  || (ref->u.c.component->ts.type == BT_CLASS
+			&& CLASS_DATA (ref->u.c.component)->attr.pointer))
 		{
 		  gfc_error ("Component to the right of a part reference "
 			     "with nonzero rank must not have the POINTER "
 			     "attribute at %L", &expr->where);
 		  return FAILURE;
 		}
-	      else if (ref->u.c.component->attr.allocatable)
+	      else if (ref->u.c.component->attr.allocatable
+			|| (ref->u.c.component->ts.type == BT_CLASS
+			    && CLASS_DATA (ref->u.c.component)->attr.allocatable))
+
 		{
 		  gfc_error ("Component to the right of a part reference "
 			     "with nonzero rank must not have the ALLOCATABLE "
@@ -5081,9 +5086,15 @@ resolve_variable (gfc_expr *e)
     }
 
   /* If this is an associate-name, it may be parsed with an array reference
-     in error even though the target is scalar.  Fail directly in this case.  */
-  if (sym->assoc && !sym->attr.dimension && e->ref && e->ref->type == REF_ARRAY)
-    return FAILURE;
+     in error even though the target is scalar.  Fail directly in this case.
+     TODO Understand why class scalar expressions must be excluded.  */
+  if (sym->assoc && !(sym->ts.type == BT_CLASS && e->rank == 0))
+    {
+      if (sym->ts.type == BT_CLASS)
+	gfc_fix_class_refs (e);
+      if (!sym->attr.dimension && e->ref && e->ref->type == REF_ARRAY)
+	return FAILURE;
+    }
 
   if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.generic)
     sym->ts.u.derived = gfc_find_dt_in_generic (sym->ts.u.derived);
@@ -5123,6 +5134,19 @@ resolve_variable (gfc_expr *e)
 
   if (check_assumed_size_reference (sym, e))
     return FAILURE;
+
+  /* If a PRIVATE variable is used in the specification expression of the
+     result variable, it might be accessed from outside the module and can
+     thus not be TREE_PUBLIC() = 0.
+     TODO: sym->attr.public_used only has to be set for the result variable's
+     type-parameter expression and not for dummies or automatic variables.
+     Additionally, it only has to be set if the function is either PUBLIC or
+     used in a generic interface or TBP; unfortunately,
+     proc_name->attr.public_used can get set at a later stage.  */
+  if (specification_expr && sym->attr.access == ACCESS_PRIVATE
+      && !sym->attr.function && !sym->attr.use_assoc
+      && gfc_current_ns->proc_name && gfc_current_ns->proc_name->attr.function)
+    sym->attr.public_used = 1;
 
   /* Deal with forward references to entries during resolve_code, to
      satisfy, at least partially, 12.5.2.5.  */
@@ -5647,12 +5671,11 @@ resolve_typebound_static (gfc_expr* e, gfc_symtree** target,
   e->value.compcall.actual = NULL;
 
   /* If we find a deferred typebound procedure, check for derived types
-     that an over-riding typebound procedure has not been missed.  */
-  if (e->value.compcall.tbp->deferred
-	&& e->value.compcall.name
-	&& !e->value.compcall.tbp->non_overridable
-	&& e->value.compcall.base_object
-	&& e->value.compcall.base_object->ts.type == BT_DERIVED)
+     that an overriding typebound procedure has not been missed.  */
+  if (e->value.compcall.name
+      && !e->value.compcall.tbp->non_overridable
+      && e->value.compcall.base_object
+      && e->value.compcall.base_object->ts.type == BT_DERIVED)
     {
       gfc_symtree *st;
       gfc_symbol *derived;
@@ -7928,7 +7951,7 @@ gfc_type_is_extensible (gfc_symbol *sym)
 }
 
 
-/* Resolve an associate name:  Resolve target and ensure the type-spec is
+/* Resolve an associate-name:  Resolve target and ensure the type-spec is
    correct as well as possibly the array-spec.  */
 
 static void
@@ -7984,8 +8007,25 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       sym->attr.dimension = 0;
       return;
     }
-  if (target->rank > 0)
+
+  /* We cannot deal with class selectors that need temporaries.  */
+  if (target->ts.type == BT_CLASS
+	&& gfc_ref_needs_temporary_p (target->ref))
+    {
+      gfc_error ("CLASS selector at %L needs a temporary which is not "
+		 "yet implemented", &target->where);
+      return;
+    }
+
+  if (target->ts.type != BT_CLASS && target->rank > 0)
     sym->attr.dimension = 1;
+  else if (target->ts.type == BT_CLASS)
+    gfc_fix_class_refs (target);
+
+  /* The associate-name will have a correct type by now. Make absolutely
+     sure that it has not picked up a dimension attribute.  */
+  if (sym->ts.type == BT_CLASS)
+    sym->attr.dimension = 0;
 
   if (sym->attr.dimension)
     {
@@ -12015,6 +12055,8 @@ resolve_fl_derived (gfc_symbol *sym)
   if (!sym->attr.is_class)
     gfc_find_symbol (sym->name, sym->ns, 0, &gen_dt);
   if (gen_dt && gen_dt->generic && gen_dt->generic->next
+      && (!gen_dt->generic->sym->attr.use_assoc
+	  || gen_dt->generic->sym->module != gen_dt->generic->next->sym->module)
       && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Generic name '%s' of "
 			 "function '%s' at %L being the same name as derived "
 			 "type at %L", sym->name,

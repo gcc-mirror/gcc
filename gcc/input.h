@@ -39,6 +39,8 @@ extern char builtins_location_check[(BUILTINS_LOCATION
 
 extern expanded_location expand_location (source_location);
 extern const char * location_get_source_line(expanded_location xloc);
+extern expanded_location expand_location_to_spelling_point (source_location);
+extern source_location expansion_point_location_if_in_system_header (source_location);
 
 /* Historically GCC used location_t, while cpp used source_location.
    This could be removed but it hardly seems worth the effort.  */

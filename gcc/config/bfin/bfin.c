@@ -580,7 +580,8 @@ setup_incoming_varargs (cumulative_args_t cum,
   for (i = get_cumulative_args (cum)->words + 1; i < max_arg_registers; i++)
     {
       mem = gen_rtx_MEM (Pmode,
-			 plus_constant (arg_pointer_rtx, (i * UNITS_PER_WORD)));
+			 plus_constant (Pmode, arg_pointer_rtx,
+					(i * UNITS_PER_WORD)));
       emit_move_insn (mem, gen_rtx_REG (Pmode, i));
     }
 
@@ -1050,7 +1051,8 @@ bfin_load_pic_reg (rtx dest)
     return pic_offset_table_rtx;
       
   if (global_options_set.x_bfin_library_id)
-    addr = plus_constant (pic_offset_table_rtx, -4 - bfin_library_id * 4);
+    addr = plus_constant (Pmode, pic_offset_table_rtx,
+			   -4 - bfin_library_id * 4);
   else
     addr = gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
 			 gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
@@ -1111,7 +1113,7 @@ bfin_expand_prologue (void)
 	    }
 	  else
 	    {
-	      rtx limit = plus_constant (lim, offset);
+	      rtx limit = plus_constant (Pmode, lim, offset);
 	      emit_move_insn (p2reg, limit);
 	      lim = p2reg;
 	    }
@@ -1883,7 +1885,7 @@ bfin_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   if (TARGET_FDPIC)
     {
-      rtx a = force_reg (Pmode, plus_constant (XEXP (m_tramp, 0), 8));
+      rtx a = force_reg (Pmode, plus_constant (Pmode, XEXP (m_tramp, 0), 8));
       mem = adjust_address (m_tramp, Pmode, 0);
       emit_move_insn (mem, a);
       i = 8;
@@ -2077,7 +2079,7 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
 
 	  picreg = gen_reg_rtx (SImode);
 	  emit_insn (gen_load_funcdescsi (picreg,
-					  plus_constant (addr, 4)));
+					  plus_constant (Pmode, addr, 4)));
 	}
 
       nelts++;
@@ -4942,7 +4944,8 @@ bfin_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
       output_asm_insn ("%2 = r0; %2 = [%2];", xops);
 
       /* Adjust the this parameter.  */
-      xops[0] = gen_rtx_MEM (Pmode, plus_constant (p2tmp, vcall_offset));
+      xops[0] = gen_rtx_MEM (Pmode, plus_constant (Pmode, p2tmp,
+						   vcall_offset));
       if (!memory_operand (xops[0], Pmode))
 	{
 	  rtx tmp2 = gen_rtx_REG (Pmode, REG_P1);

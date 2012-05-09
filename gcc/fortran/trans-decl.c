@@ -457,8 +457,6 @@ gfc_finish_cray_pointee (tree decl, gfc_symbol *sym)
   SET_DECL_VALUE_EXPR (decl, value);
   DECL_HAS_VALUE_EXPR_P (decl) = 1;
   GFC_DECL_CRAY_POINTEE (decl) = 1;
-  /* This is a fake variable just for debugging purposes.  */
-  TREE_ASM_WRITTEN (decl) = 1;
 }
 
 
@@ -565,7 +563,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       /* TODO: Don't set sym->module for result or dummy variables.  */
       gcc_assert (current_function_decl == NULL_TREE || sym->result == sym);
       /* This is the declaration of a module variable.  */
-      if (sym->attr.access != ACCESS_PRIVATE)
+      if (sym->attr.access != ACCESS_PRIVATE || sym->attr.public_used)
 	TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
     }
@@ -4749,7 +4747,8 @@ gfc_trans_entry_master_switch (gfc_entry_list * el)
   tmp = gfc_finish_block (&block);
   /* The first argument selects the entry point.  */
   val = DECL_ARGUMENTS (current_function_decl);
-  tmp = build3_v (SWITCH_EXPR, val, tmp, NULL_TREE);
+  tmp = fold_build3_loc (input_location, SWITCH_EXPR, NULL_TREE,
+			 val, tmp, NULL_TREE);
   return tmp;
 }
 

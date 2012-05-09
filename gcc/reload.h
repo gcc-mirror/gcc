@@ -411,9 +411,6 @@ extern int push_reload (rtx, rtx, rtx *, rtx *, enum reg_class,
 			enum machine_mode, enum machine_mode,
 			int, int, int, enum reload_type);
 
-/* Functions in postreload.c:  */
-extern void reload_cse_regs (rtx);
-
 /* Functions in reload1.c:  */
 
 /* Initialize the reload pass once per compilation.  */

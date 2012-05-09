@@ -1001,7 +1001,6 @@ build_utf8_ref (tree name)
   DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (ctype);
   pushdecl (decl);
   rest_of_decl_compilation (decl, global_bindings_p (), 0);
-  varpool_mark_needed_node (varpool_node (decl));
   ref = build1 (ADDR_EXPR, utf8const_ptr_type, decl);
   IDENTIFIER_UTF8_REF (name) = ref;
   return ref;
@@ -1407,7 +1406,6 @@ make_local_function_alias (tree method)
   DECL_INITIAL (alias) = error_mark_node;
   TREE_ADDRESSABLE (alias) = 1;
   TREE_USED (alias) = 1;
-  TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (alias)) = 1;
   if (!flag_syntax_only)
     assemble_alias (alias, DECL_ASSEMBLER_NAME (method));
   return alias;

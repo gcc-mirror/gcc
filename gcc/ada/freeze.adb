@@ -2138,15 +2138,13 @@ package body Freeze is
          if Present (ADC)
            and then Reverse_Bit_Order (Rec) /= Reverse_Storage_Order (Rec)
          then
-            if Bytes_Big_Endian = not Reverse_Storage_Order (Rec) then
-               Error_Msg_N
-                 ("Scalar_Storage_Order High_Order_First is inconsistent with"
-                  & " Bit_Order", ADC);
-            else
-               Error_Msg_N
-                 ("Scalar_Storage_Order Low_Order_First is inconsistent with"
-                  & " Bit_Order", ADC);
-            end if;
+            --  Note: report error on Rec, not on ADC, as ADC may apply to
+            --  an ancestor type.
+
+            Error_Msg_Sloc := Sloc (ADC);
+            Error_Msg_N
+              ("scalar storage order for& specified# inconsistent with "
+               & "bit order", Rec);
          end if;
 
          --  Deal with Bit_Order aspect specifying a non-default bit order

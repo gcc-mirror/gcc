@@ -208,11 +208,11 @@ record_effective_endpoints (void)
       rtx end;
 
       if (PREV_INSN (BB_HEAD (bb)) && next_insn != BB_HEAD (bb))
-	bb->il.rtl->header = unlink_insn_chain (next_insn,
+	BB_HEADER (bb) = unlink_insn_chain (next_insn,
 					      PREV_INSN (BB_HEAD (bb)));
       end = skip_insns_after_block (bb);
       if (NEXT_INSN (BB_END (bb)) && BB_END (bb) != end)
-	bb->il.rtl->footer = unlink_insn_chain (NEXT_INSN (BB_END (bb)), end);
+	BB_FOOTER (bb) = unlink_insn_chain (NEXT_INSN (BB_END (bb)), end);
       next_insn = NEXT_INSN (BB_END (bb));
     }
 
@@ -633,9 +633,8 @@ reemit_insn_block_notes (void)
 
 
 /* Link the basic blocks in the correct order, compacting the basic
-   block queue while at it.  This also clears the visited flag on
-   all basic blocks.  If STAY_IN_CFGLAYOUT_MODE is false, this function
-   also clears the basic block header and footer fields.
+   block queue while at it.  If STAY_IN_CFGLAYOUT_MODE is false, this
+   function also clears the basic block header and footer fields.
 
    This function is usually called after a pass (e.g. tracer) finishes
    some transformations while in cfglayout mode.  The required sequence
@@ -681,13 +680,12 @@ relink_block_chain (bool stay_in_cfglayout_mode)
   prev_bb->next_bb = EXIT_BLOCK_PTR;
   EXIT_BLOCK_PTR->prev_bb = prev_bb;
 
-  /* Then, clean up the aux and visited fields.  */
+  /* Then, clean up the aux fields.  */
   FOR_ALL_BB (bb)
     {
       bb->aux = NULL;
-      bb->il.rtl->visited = 0;
       if (!stay_in_cfglayout_mode)
-	bb->il.rtl->header = bb->il.rtl->footer = NULL;
+	BB_HEADER (bb) = BB_FOOTER (bb) = NULL;
     }
 
   /* Maybe reset the original copy tables, they are not valid anymore
@@ -723,14 +721,14 @@ fixup_reorder_chain (void)
 
   for (bb = ENTRY_BLOCK_PTR->next_bb; bb; bb = (basic_block) bb->aux)
     {
-      if (bb->il.rtl->header)
+      if (BB_HEADER (bb))
 	{
 	  if (insn)
-	    NEXT_INSN (insn) = bb->il.rtl->header;
+	    NEXT_INSN (insn) = BB_HEADER (bb);
 	  else
-	    set_first_insn (bb->il.rtl->header);
-	  PREV_INSN (bb->il.rtl->header) = insn;
-	  insn = bb->il.rtl->header;
+	    set_first_insn (BB_HEADER (bb));
+	  PREV_INSN (BB_HEADER (bb)) = insn;
+	  insn = BB_HEADER (bb);
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
 	}
@@ -740,10 +738,10 @@ fixup_reorder_chain (void)
 	set_first_insn (BB_HEAD (bb));
       PREV_INSN (BB_HEAD (bb)) = insn;
       insn = BB_END (bb);
-      if (bb->il.rtl->footer)
+      if (BB_FOOTER (bb))
 	{
-	  NEXT_INSN (insn) = bb->il.rtl->footer;
-	  PREV_INSN (bb->il.rtl->footer) = insn;
+	  NEXT_INSN (insn) = BB_FOOTER (bb);
+	  PREV_INSN (BB_FOOTER (bb)) = insn;
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
 	}
@@ -799,7 +797,7 @@ fixup_reorder_chain (void)
 		{
 		  gcc_assert (!onlyjump_p (bb_end_insn)
 			      || returnjump_p (bb_end_insn));
-		  bb->il.rtl->footer = emit_barrier_after (bb_end_insn);
+		  BB_FOOTER (bb) = emit_barrier_after (bb_end_insn);
 		  continue;
 		}
 
@@ -908,7 +906,6 @@ fixup_reorder_chain (void)
       nb = force_nonfallthru_and_redirect (e_fall, e_fall->dest, ret_label);
       if (nb)
 	{
-	  nb->il.rtl->visited = 1;
 	  nb->aux = bb->aux;
 	  bb->aux = nb;
 	  /* Don't process this new block.  */
@@ -1062,8 +1059,8 @@ fixup_fallthru_exit_predecessor (void)
 	  bb = split_block (bb, NULL)->dest;
 	  bb->aux = c->aux;
 	  c->aux = bb;
-	  bb->il.rtl->footer = c->il.rtl->footer;
-	  c->il.rtl->footer = NULL;
+	  BB_FOOTER (bb) = BB_FOOTER (c);
+	  BB_FOOTER (c) = NULL;
 	}
 
       while (c->aux != bb)
@@ -1272,24 +1269,24 @@ cfg_layout_duplicate_bb (basic_block bb)
 			       EXIT_BLOCK_PTR->prev_bb);
 
   BB_COPY_PARTITION (new_bb, bb);
-  if (bb->il.rtl->header)
+  if (BB_HEADER (bb))
     {
-      insn = bb->il.rtl->header;
+      insn = BB_HEADER (bb);
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
-      insn = duplicate_insn_chain (bb->il.rtl->header, insn);
+      insn = duplicate_insn_chain (BB_HEADER (bb), insn);
       if (insn)
-	new_bb->il.rtl->header = unlink_insn_chain (insn, get_last_insn ());
+	BB_HEADER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
     }
 
-  if (bb->il.rtl->footer)
+  if (BB_FOOTER (bb))
     {
-      insn = bb->il.rtl->footer;
+      insn = BB_FOOTER (bb);
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
-      insn = duplicate_insn_chain (bb->il.rtl->footer, insn);
+      insn = duplicate_insn_chain (BB_FOOTER (bb), insn);
       if (insn)
-	new_bb->il.rtl->footer = unlink_insn_chain (insn, get_last_insn ());
+	BB_FOOTER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
     }
 
   return new_bb;

@@ -409,6 +409,10 @@ namespace __debug
 	_GLIBCXX_DEBUG_VERIFY(&__list != this,
 			      _M_message(__gnu_debug::__msg_self_splice)
 			      ._M_sequence(*this, "this"));
+	_GLIBCXX_DEBUG_VERIFY(__list.get_allocator() == this->get_allocator(),
+			      _M_message(__gnu_debug::__msg_splice_alloc)
+			      ._M_sequence(*this)
+			      ._M_sequence(__list, "__list"));
 	this->_M_transfer_from_if(__list, [&__list](_Base_const_iterator __it)
 	  {
 	    return __it != __list._M_base().cbefore_begin()
@@ -432,6 +436,10 @@ namespace __debug
 	_GLIBCXX_DEBUG_VERIFY(__i._M_attached_to(&__list),
 			      _M_message(__gnu_debug::__msg_splice_other)
 			      ._M_iterator(__i, "__i")
+			      ._M_sequence(__list, "__list"));
+	_GLIBCXX_DEBUG_VERIFY(__list.get_allocator() == this->get_allocator(),
+			      _M_message(__gnu_debug::__msg_splice_alloc)
+			      ._M_sequence(*this)
 			      ._M_sequence(__list, "__list"));
 
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -469,6 +477,10 @@ namespace __debug
 			      ._M_sequence(__list, "list")
 			      ._M_iterator(__before, "before")
 			      ._M_iterator(__last, "last"));
+	_GLIBCXX_DEBUG_VERIFY(__list.get_allocator() == this->get_allocator(),
+			      _M_message(__gnu_debug::__msg_splice_alloc)
+			      ._M_sequence(*this)
+			      ._M_sequence(__list, "__list"));
 
 	for (_Base_const_iterator __tmp = std::next(__before.base());
 	     __tmp != __last.base(); ++__tmp)

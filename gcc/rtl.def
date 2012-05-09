@@ -109,8 +109,8 @@ DEF_RTL_EXPR(INSN_LIST, "insn_list", "ue", RTX_EXTRA)
    `emit_insn' takes the SEQUENCE apart and makes separate insns.  */
 DEF_RTL_EXPR(SEQUENCE, "sequence", "E", RTX_EXTRA)
 
-/* Refers to the address of its argument.  This is only used in alias.c.  */
-DEF_RTL_EXPR(ADDRESS, "address", "e", RTX_MATCH)
+/* Represents a non-global base address.  This is only used in alias.c.  */
+DEF_RTL_EXPR(ADDRESS, "address", "i", RTX_EXTRA)
 
 /* ----------------------------------------------------------------------
    Expression types used for things in the instruction chain.
@@ -1268,9 +1268,7 @@ DEF_RTL_EXPR(EQ_ATTR_ALT, "eq_attr_alt", "ii", RTX_EXTRA)
    true for the insn being scheduled in reorg.
 
    genattr.c defines the following flags which can be tested by
-   (attr_flag "foo") expressions in eligible_for_delay.
-
-   forward, backward, very_likely, likely, very_unlikely, and unlikely.  */
+   (attr_flag "foo") expressions in eligible_for_delay: forward, backward.  */
 
 DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", RTX_EXTRA)
 

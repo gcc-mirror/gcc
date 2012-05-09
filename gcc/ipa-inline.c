@@ -220,8 +220,8 @@ report_inline_failed_reason (struct cgraph_edge *e)
   if (dump_file)
     {
       fprintf (dump_file, "  not inlinable: %s/%i -> %s/%i, %s\n",
-	       cgraph_node_name (e->caller), e->caller->uid,
-	       cgraph_node_name (e->callee), e->callee->uid,
+	       xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
+	       xstrdup (cgraph_node_name (e->callee)), e->callee->uid,
 	       cgraph_inline_failed_string (e->inline_failed));
     }
 }
@@ -423,8 +423,8 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	  if (dump_file)
 	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
 		     "call is cold and code would grow by %i\n",
-		     cgraph_node_name (e->caller), e->caller->uid,
-		     cgraph_node_name (callee), callee->uid,
+		     xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
+		     xstrdup (cgraph_node_name (callee)), callee->uid,
 		     growth);
 	  want_inline = false;
 	}
@@ -434,8 +434,8 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	  if (dump_file)
 	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
 		     "callee is not leaf and code would grow by %i\n",
-		     cgraph_node_name (e->caller), e->caller->uid,
-		     cgraph_node_name (callee), callee->uid,
+		     xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
+		     xstrdup (cgraph_node_name (callee)), callee->uid,
 		     growth);
 	  want_inline = false;
 	}
@@ -444,8 +444,8 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	  if (dump_file)
 	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
 		     "growth %i exceeds --param early-inlining-insns\n",
-		     cgraph_node_name (e->caller), e->caller->uid,
-		     cgraph_node_name (callee), callee->uid,
+		     xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
+		     xstrdup (cgraph_node_name (callee)), callee->uid,
 		     growth);
 	  want_inline = false;
 	}
@@ -754,8 +754,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   if (dump)
     {
       fprintf (dump_file, "    Badness calculation for %s -> %s\n",
-	       cgraph_node_name (edge->caller),
-	       cgraph_node_name (callee));
+	       xstrdup (cgraph_node_name (edge->caller)),
+	       xstrdup (cgraph_node_name (callee)));
       fprintf (dump_file, "      size growth %i, time growth %i\n",
 	       growth,
 	       time_growth);
@@ -910,8 +910,10 @@ update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
 	    {
 	      fprintf (dump_file,
 		       "  decreasing badness %s/%i -> %s/%i, %i to %i\n",
-		       cgraph_node_name (edge->caller), edge->caller->uid,
-		       cgraph_node_name (edge->callee), edge->callee->uid,
+		       xstrdup (cgraph_node_name (edge->caller)),
+		       edge->caller->uid,
+		       xstrdup (cgraph_node_name (edge->callee)),
+		       edge->callee->uid,
 		       (int)n->key,
 		       badness);
 	    }
@@ -925,8 +927,10 @@ update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
 	 {
 	   fprintf (dump_file,
 		    "  enqueuing call %s/%i -> %s/%i, badness %i\n",
-		    cgraph_node_name (edge->caller), edge->caller->uid,
-		    cgraph_node_name (edge->callee), edge->callee->uid,
+		    xstrdup (cgraph_node_name (edge->caller)),
+		    edge->caller->uid,
+		    xstrdup (cgraph_node_name (edge->callee)),
+		    edge->callee->uid,
 		    badness);
 	 }
       edge->aux = fibheap_insert (heap, badness, edge);
@@ -957,10 +961,10 @@ reset_edge_caches (struct cgraph_node *node)
   for (edge = where->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)
       reset_edge_growth_cache (edge);
-  for (i = 0; ipa_ref_list_refering_iterate (&where->symbol.ref_list,
+  for (i = 0; ipa_ref_list_referring_iterate (&where->symbol.ref_list,
 					      i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
-      reset_edge_caches (ipa_ref_refering_node (ref));
+      reset_edge_caches (ipa_ref_referring_node (ref));
 
   if (!e)
     return;
@@ -1009,11 +1013,11 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   if (!bitmap_set_bit (updated_nodes, node->uid))
     return;
 
-  for (i = 0; ipa_ref_list_refering_iterate (&node->symbol.ref_list,
+  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list,
 					      i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
-	struct cgraph_node *alias = ipa_ref_refering_node (ref);
+	struct cgraph_node *alias = ipa_ref_referring_node (ref);
         update_caller_keys (heap, alias, updated_nodes, check_inlinablity_for);
       }
 
@@ -1267,10 +1271,10 @@ recursive_inlining (struct cgraph_edge *edge,
   /* Remove master clone we used for inlining.  We rely that clones inlined
      into master clone gets queued just before master clone so we don't
      need recursion.  */
-  for (node = cgraph_nodes; node != master_clone;
+  for (node = cgraph_first_function (); node != master_clone;
        node = next)
     {
-      next = node->next;
+      next = cgraph_next_function (node);
       if (node->global.inlined_to == master_clone)
 	cgraph_remove_node (node);
     }
@@ -1610,8 +1614,8 @@ flatten_function (struct cgraph_node *node, bool early)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Not inlining %s into %s to avoid cycle.\n",
-		     cgraph_node_name (callee),
-		     cgraph_node_name (e->caller));
+		     xstrdup (cgraph_node_name (callee)),
+		     xstrdup (cgraph_node_name (e->caller)));
 	  e->inline_failed = CIF_RECURSIVE_INLINING;
 	  continue;
 	}
@@ -1651,8 +1655,8 @@ flatten_function (struct cgraph_node *node, bool early)
          recursing through the original node if the node was cloned.  */
       if (dump_file)
 	fprintf (dump_file, " Inlining %s into %s.\n",
-		 cgraph_node_name (callee),
-		 cgraph_node_name (e->caller));
+		 xstrdup (cgraph_node_name (callee)),
+		 xstrdup (cgraph_node_name (e->caller)));
       orig_callee = callee;
       inline_call (e, true, NULL, NULL);
       if (e->callee != orig_callee)
@@ -1685,7 +1689,7 @@ ipa_inline (void)
 
   nnodes = ipa_reverse_postorder (order);
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     node->symbol.aux = 0;
 
   if (dump_file)
@@ -1742,7 +1746,7 @@ ipa_inline (void)
 	 to be hot.  */
       for (cold = 0; cold <= 1; cold ++)
 	{
-	  for (node = cgraph_nodes; node; node = node->next)
+	  FOR_EACH_DEFINED_FUNCTION (node)
 	    {
 	      if (want_inline_function_called_once_p (node)
 		  && (cold
@@ -1754,7 +1758,8 @@ ipa_inline (void)
 		    {
 		      fprintf (dump_file,
 			       "\nInlining %s size %i.\n",
-			       cgraph_node_name (node), inline_summary (node)->size);
+			       cgraph_node_name (node),
+			       inline_summary (node)->size);
 		      fprintf (dump_file,
 			       " Called once from %s %i insns.\n",
 			       cgraph_node_name (node->callers->caller),
@@ -1817,8 +1822,8 @@ inline_always_inline_functions (struct cgraph_node *node)
 
       if (dump_file)
 	fprintf (dump_file, "  Inlining %s into %s (always_inline).\n",
-		 cgraph_node_name (e->callee),
-		 cgraph_node_name (e->caller));
+		 xstrdup (cgraph_node_name (e->callee)),
+		 xstrdup (cgraph_node_name (e->caller)));
       inline_call (e, true, NULL, NULL);
       inlined = true;
     }
@@ -1867,8 +1872,8 @@ early_inline_small_functions (struct cgraph_node *node)
 
       if (dump_file)
 	fprintf (dump_file, " Inlining %s into %s.\n",
-		 cgraph_node_name (callee),
-		 cgraph_node_name (e->caller));
+		 xstrdup (cgraph_node_name (callee)),
+		 xstrdup (cgraph_node_name (e->caller)));
       inline_call (e, true, NULL, NULL);
       inlined = true;
     }
@@ -2025,7 +2030,7 @@ struct ipa_opt_pass_d pass_ipa_inline =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   TODO_remove_functions,		/* todo_flags_finish */
-  TODO_dump_cgraph 
+  TODO_dump_symtab 
   | TODO_remove_functions | TODO_ggc_collect	/* todo_flags_finish */
  },
  inline_generate_summary,		/* generate_summary */

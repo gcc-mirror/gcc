@@ -214,7 +214,7 @@ diagnostic_build_prefix (diagnostic_context *context,
     "must-not-happen"
   };
   const char *text = _(diagnostic_kind_text[diagnostic->kind]);
-  expanded_location s = expand_location (diagnostic->location);
+  expanded_location s = expand_location_to_spelling_point (diagnostic->location);
   if (diagnostic->override_column)
     s.column = diagnostic->override_column;
   gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
@@ -266,7 +266,7 @@ diagnostic_show_locus (diagnostic_context * context,
       || diagnostic->location <= BUILTINS_LOCATION)
     return;
 
-  s = expand_location(diagnostic->location);
+  s = expand_location_to_spelling_point (diagnostic->location);
   line = location_get_source_line (s);
   if (line == NULL)
     return;
@@ -542,7 +542,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       diagnostic->kind = DK_ERROR;
     }
 
-  if (diagnostic->option_index)
+  if (diagnostic->option_index
+      && diagnostic->option_index != permissive_error_option (context))
     {
       diagnostic_t diag_class = DK_UNSPECIFIED;
 
@@ -714,6 +715,7 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   if (kind == DK_PERMERROR)
@@ -727,9 +729,10 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
       if (kind == DK_WARNING || kind == DK_PEDWARN)
 	diagnostic.option_index = opt;
   }
-  va_end (ap);
 
-  return report_diagnostic (&diagnostic);
+  ret = report_diagnostic (&diagnostic);
+  va_end (ap);
+  return ret;
 }
 
 /* An informative note at LOCATION.  Use this for additional details on an error
@@ -771,13 +774,15 @@ warning (int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_WARNING);
   diagnostic.option_index = opt;
 
+  ret = report_diagnostic (&diagnostic);
   va_end (ap);
-  return report_diagnostic (&diagnostic);
+  return ret;
 }
 
 /* A warning at LOCATION.  Use this for code which is correct according to the
@@ -789,12 +794,14 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_WARNING);
   diagnostic.option_index = opt;
+  ret = report_diagnostic (&diagnostic);
   va_end (ap);
-  return report_diagnostic (&diagnostic);
+  return ret;
 }
 
 /* A "pedantic" warning at LOCATION: issues a warning unless
@@ -803,10 +810,10 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
    language standard, if you have chosen not to make them errors.
 
    Note that these diagnostics are issued independent of the setting
-   of the -pedantic command-line switch.  To get a warning enabled
+   of the -Wpedantic command-line switch.  To get a warning enabled
    only with that switch, use either "if (pedantic) pedwarn
-   (OPT_pedantic,...)" or just "pedwarn (OPT_pedantic,..)".  To get a
-   pedwarn independently of the -pedantic switch use "pedwarn (0,...)".
+   (OPT_Wpedantic,...)" or just "pedwarn (OPT_Wpedantic,..)".  To get a
+   pedwarn independently of the -Wpedantic switch use "pedwarn (0,...)".
 
    Returns true if the warning was printed, false if it was inhibited.  */
 
@@ -815,12 +822,14 @@ pedwarn (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location,  DK_PEDWARN);
   diagnostic.option_index = opt;
+  ret = report_diagnostic (&diagnostic);
   va_end (ap);
-  return report_diagnostic (&diagnostic);
+  return ret;
 }
 
 /* A "permissive" error at LOCATION: issues an error unless
@@ -835,13 +844,15 @@ permerror (location_t location, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool ret;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
                        permissive_error_kind (global_dc));
   diagnostic.option_index = permissive_error_option (global_dc);
+  ret = report_diagnostic (&diagnostic);
   va_end (ap);
-  return report_diagnostic (&diagnostic);
+  return ret;
 }
 
 /* A hard error: the code is definitely ill-formed, and an object file

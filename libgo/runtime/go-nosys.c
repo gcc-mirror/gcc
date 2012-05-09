@@ -13,6 +13,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <math.h>
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -237,5 +238,118 @@ unshare (int flags __attribute__ ((unused)))
 {
   errno = ENOSYS;
   return -1;
+}
+#endif
+
+/* Long double math functions.  These are needed on old i386 systems
+   that don't have them in libm.  The compiler translates calls to
+   these functions on float64 to call an 80-bit floating point
+   function instead, because when optimizing that function can be
+   executed as an x87 instructure.  However, when not optimizing, this
+   translates into a call to the math function.  So on systems that
+   don't provide these functions, we provide a version that just calls
+   the float64 version.  */
+
+#ifndef HAVE_COSL
+long double
+cosl (long double a)
+{
+  return (long double) cos ((double) a);
+}
+#endif
+
+#ifndef HAVE_EXPL
+long double
+expl (long double a)
+{
+  return (long double) exp ((double) a);
+}
+#endif
+
+#ifndef HAVE_LOGL
+long double
+logl (long double a)
+{
+  return (long double) log ((double) a);
+}
+#endif
+
+#ifndef HAVE_SINL
+long double
+sinl (long double a)
+{
+  return (long double) sin ((double) a);
+}
+#endif
+
+#ifndef HAVE_TANL
+long double
+tanl (long double a)
+{
+  return (long double) tan ((double) a);
+}
+#endif
+
+#ifndef HAVE_ACOSL
+long double
+acosl (long double a)
+{
+  return (long double) acos ((double) a);
+}
+#endif
+
+#ifndef HAVE_ASINL
+long double
+asinl (long double a)
+{
+  return (long double) asin ((double) a);
+}
+#endif
+
+#ifndef HAVE_ATANL
+long double
+atanl (long double a)
+{
+  return (long double) atan ((double) a);
+}
+#endif
+
+#ifndef HAVE_ATAN2L
+long double
+atan2l (long double a, long double b)
+{
+  return (long double) atan2 ((double) a, (double) b);
+}
+#endif
+
+#ifndef HAVE_EXPM1L
+long double
+expm1l (long double a)
+{
+  return (long double) expm1 ((double) a);
+}
+#endif
+
+#ifndef HAVE_LDEXPL
+long double
+ldexpl (long double a, int exp)
+{
+  return (long double) ldexp ((double) a, exp);
+}
+#endif
+
+#ifndef HAVE_LOG10L
+long double
+log10l (long double a)
+{
+  return (long double) log10 ((double) a);
+}
+#endif
+
+#ifndef HAVE_LOG1PL
+long double
+log1pl (long double a)
+{
+  return (long double) log1p ((double) a);
 }
 #endif

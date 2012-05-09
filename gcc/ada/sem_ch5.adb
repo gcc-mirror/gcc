@@ -2337,16 +2337,20 @@ package body Sem_Ch5 is
       Generate_Reference (Base_Type (Etype (DS)), N, ' ');
       Set_Is_Known_Valid (Id, True);
 
-      --  The loop is not a declarative part, so the only entity declared
-      --  "within" must be frozen explicitly.
+      --  The loop is not a declarative part, so the loop variable must be
+      --  frozen explicitly. Do not freeze while preanalyzing a quantified
+      --  expression because the freeze node will not be inserted into the
+      --  tree due to flag Is_Spec_Expression being set.
 
-      declare
-         Flist : constant List_Id := Freeze_Entity (Id, N);
-      begin
-         if Is_Non_Empty_List (Flist) then
-            Insert_Actions (N, Flist);
-         end if;
-      end;
+      if Nkind (Parent (N)) /= N_Quantified_Expression then
+         declare
+            Flist : constant List_Id := Freeze_Entity (Id, N);
+         begin
+            if Is_Non_Empty_List (Flist) then
+               Insert_Actions (N, Flist);
+            end if;
+         end;
+      end if;
 
       --  Check for null or possibly null range and issue warning. We suppress
       --  such messages in generic templates and instances, because in practice
@@ -2766,6 +2770,12 @@ package body Sem_Ch5 is
 
          begin
             Nxt := Original_Node (Next (N));
+
+            --  Skip past pragmas
+
+            while Nkind (Nxt) = N_Pragma loop
+               Nxt := Original_Node (Next (Nxt));
+            end loop;
 
             --  If a label follows us, then we never have dead code, since
             --  someone could branch to the label, so we just ignore it, unless

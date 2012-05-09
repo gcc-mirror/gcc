@@ -106,6 +106,14 @@ enum symbol_visibility
 };
 #endif
 
+/* The algorithm used to implement -fsched-pressure.  */
+enum sched_pressure_algorithm
+{
+  SCHED_PRESSURE_NONE,
+  SCHED_PRESSURE_WEIGHTED,
+  SCHED_PRESSURE_MODEL
+};
+
 /* The algorithm used for the integrated register allocator (IRA).  */
 enum ira_algorithm
 {

@@ -988,7 +988,7 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, enum machine_mode mode)
 			       (!can_create_pseudo_p () ? scratch : NULL_RTX),
 			       1, OPTAB_LIB_WIDEN);
 
-    return plus_constant (x, low);
+    return plus_constant (Pmode, x, low);
   }
 }
 
@@ -1388,7 +1388,7 @@ get_unaligned_address (rtx ref)
   if (GET_CODE (base) == PLUS)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
 
-  return plus_constant (base, offset);
+  return plus_constant (Pmode, base, offset);
 }
 
 /* Compute a value X, such that X & 7 == (ADDR + OFS) & 7.
@@ -3233,21 +3233,22 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
 
   tmp = change_address (mem, DImode,
 			gen_rtx_AND (DImode,
-				     plus_constant (mema, ofs),
+				     plus_constant (DImode, mema, ofs),
 				     GEN_INT (-8)));
   set_mem_alias_set (tmp, 0);
   emit_move_insn (meml, tmp);
 
   tmp = change_address (mem, DImode,
 			gen_rtx_AND (DImode,
-				     plus_constant (mema, ofs + size - 1),
+				     plus_constant (DImode, mema,
+						    ofs + size - 1),
 				     GEN_INT (-8)));
   set_mem_alias_set (tmp, 0);
   emit_move_insn (memh, tmp);
 
   if (sign && size == 2)
     {
-      emit_move_insn (addr, plus_constant (mema, ofs+2));
+      emit_move_insn (addr, plus_constant (Pmode, mema, ofs+2));
 
       emit_insn (gen_extql (extl, meml, addr));
       emit_insn (gen_extqh (exth, memh, addr));
@@ -3261,7 +3262,7 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
     }
   else
     {
-      emit_move_insn (addr, plus_constant (mema, ofs));
+      emit_move_insn (addr, plus_constant (Pmode, mema, ofs));
       emit_insn (gen_extxl (extl, meml, GEN_INT (size*8), addr));
       switch ((int) size)
 	{
@@ -3333,20 +3334,21 @@ alpha_expand_unaligned_store (rtx dst, rtx src,
 
   meml = change_address (dst, DImode,
 			 gen_rtx_AND (DImode,
-				      plus_constant (dsta, ofs),
+				      plus_constant (DImode, dsta, ofs),
 				      GEN_INT (-8)));
   set_mem_alias_set (meml, 0);
 
   memh = change_address (dst, DImode,
 			 gen_rtx_AND (DImode,
-				      plus_constant (dsta, ofs + size - 1),
+				      plus_constant (DImode, dsta,
+						     ofs + size - 1),
 				      GEN_INT (-8)));
   set_mem_alias_set (memh, 0);
 
   emit_move_insn (dsth, memh);
   emit_move_insn (dstl, meml);
 
-  addr = copy_addr_to_reg (plus_constant (dsta, ofs));
+  addr = copy_addr_to_reg (plus_constant (Pmode, dsta, ofs));
 
   if (src != CONST0_RTX (GET_MODE (src)))
     {
@@ -3436,7 +3438,7 @@ alpha_expand_unaligned_load_words (rtx *out_regs, rtx smem,
     {
       tmp = change_address (smem, DImode,
 			    gen_rtx_AND (DImode,
-					 plus_constant (smema, 8*i),
+					 plus_constant (DImode, smema, 8*i),
 					 im8));
       set_mem_alias_set (tmp, 0);
       emit_move_insn (data_regs[i], tmp);
@@ -3444,7 +3446,8 @@ alpha_expand_unaligned_load_words (rtx *out_regs, rtx smem,
 
   tmp = change_address (smem, DImode,
 			gen_rtx_AND (DImode,
-				     plus_constant (smema, 8*words - 1),
+				     plus_constant (DImode, smema,
+						    8*words - 1),
 				     im8));
   set_mem_alias_set (tmp, 0);
   emit_move_insn (data_regs[words], tmp);
@@ -3504,8 +3507,9 @@ alpha_expand_unaligned_store_words (rtx *data_regs, rtx dmem,
 
   st_addr_2 = change_address (dmem, DImode,
 			      gen_rtx_AND (DImode,
-					   plus_constant (dmema, words*8 - 1),
-				       im8));
+					   plus_constant (DImode, dmema,
+							  words*8 - 1),
+					   im8));
   set_mem_alias_set (st_addr_2, 0);
 
   st_addr_1 = change_address (dmem, DImode,
@@ -3551,7 +3555,8 @@ alpha_expand_unaligned_store_words (rtx *data_regs, rtx dmem,
     {
       rtx tmp = change_address (dmem, DImode,
 				gen_rtx_AND (DImode,
-					     plus_constant (dmema, i*8),
+					     plus_constant (DImode,
+							    dmema, i*8),
 					     im8));
       set_mem_alias_set (tmp, 0);
       emit_move_insn (tmp, data_regs ? ins_tmps[i-1] : const0_rtx);
@@ -3961,7 +3966,8 @@ alpha_expand_block_clear (rtx operands[])
 	  rtx mem
 	    = change_address (orig_dst, DImode,
 			      gen_rtx_AND (DImode,
-					   plus_constant (orig_dsta, ofs + i*8),
+					   plus_constant (DImode, orig_dsta,
+							  ofs + i*8),
 					   GEN_INT (-8)));
 	  set_mem_alias_set (mem, 0);
 	  emit_move_insn (mem, const0_rtx);
@@ -4718,8 +4724,8 @@ alpha_init_machine_status (void)
 void
 alpha_expand_builtin_establish_vms_condition_handler (rtx target, rtx handler)
 {
-  rtx handler_slot_address
-    = plus_constant (hard_frame_pointer_rtx, VMS_COND_HANDLER_FP_OFFSET);
+  rtx handler_slot_address = plus_constant (Pmode, hard_frame_pointer_rtx,
+					    VMS_COND_HANDLER_FP_OFFSET);
 
   rtx handler_slot
     = gen_rtx_MEM (DImode, handler_slot_address);
@@ -6055,7 +6061,7 @@ alpha_setup_incoming_varargs (cumulative_args_t pcum, enum machine_mode mode,
       if (cfun->va_list_fpr_size & 1)
 	{
 	  tmp = gen_rtx_MEM (BLKmode,
-			     plus_constant (virtual_incoming_args_rtx,
+			     plus_constant (Pmode, virtual_incoming_args_rtx,
 					    (cum + 6) * UNITS_PER_WORD));
 	  MEM_NOTRAP_P (tmp) = 1;
 	  set_mem_alias_set (tmp, set);
@@ -6065,7 +6071,7 @@ alpha_setup_incoming_varargs (cumulative_args_t pcum, enum machine_mode mode,
       if (cfun->va_list_fpr_size & 2)
 	{
 	  tmp = gen_rtx_MEM (BLKmode,
-			     plus_constant (virtual_incoming_args_rtx,
+			     plus_constant (Pmode, virtual_incoming_args_rtx,
 					    cum * UNITS_PER_WORD));
 	  MEM_NOTRAP_P (tmp) = 1;
 	  set_mem_alias_set (tmp, set);
@@ -7514,7 +7520,7 @@ emit_frame_store_1 (rtx value, rtx base_reg, HOST_WIDE_INT frame_bias,
 {
   rtx addr, mem, insn;
 
-  addr = plus_constant (base_reg, base_ofs);
+  addr = plus_constant (Pmode, base_reg, base_ofs);
   mem = gen_frame_mem (DImode, addr);
 
   insn = emit_move_insn (mem, value);
@@ -7524,7 +7530,8 @@ emit_frame_store_1 (rtx value, rtx base_reg, HOST_WIDE_INT frame_bias,
     {
       if (frame_bias)
 	{
-	  addr = plus_constant (stack_pointer_rtx, frame_bias + base_ofs);
+	  addr = plus_constant (Pmode, stack_pointer_rtx,
+			        frame_bias + base_ofs);
 	  mem = gen_rtx_MEM (DImode, addr);
 	}
 
@@ -7679,7 +7686,8 @@ alpha_expand_prologue (void)
 
       if ((leftover > 4096 && sa_size == 0) || flag_stack_check)
 	{
-	  rtx last = gen_rtx_MEM (DImode, plus_constant (ptr, -leftover));
+	  rtx last = gen_rtx_MEM (DImode,
+				  plus_constant (Pmode, ptr, -leftover));
 	  MEM_VOLATILE_P (last) = 1;
 	  emit_move_insn (last, const0_rtx);
 	}
@@ -7710,7 +7718,7 @@ alpha_expand_prologue (void)
       RTX_FRAME_RELATED_P (seq) = 1;
       add_reg_note (seq, REG_FRAME_RELATED_EXPR,
 		    gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-				 plus_constant (stack_pointer_rtx,
+				 plus_constant (Pmode, stack_pointer_rtx,
 						-frame_size)));
     }
 
@@ -7791,7 +7799,7 @@ alpha_expand_prologue (void)
 	  rtx seq
 	    = emit_move_insn (stack_pointer_rtx,
 			      plus_constant
-			      (hard_frame_pointer_rtx,
+			      (Pmode, hard_frame_pointer_rtx,
 			       - (ALPHA_ROUND
 				  (crtl->outgoing_args_size))));
 
@@ -8087,14 +8095,14 @@ alpha_expand_epilogue (void)
 	    bias = reg_offset, reg_offset = 0;
 
 	  sa_reg = gen_rtx_REG (DImode, 22);
-	  sa_reg_exp = plus_constant (stack_pointer_rtx, bias);
+	  sa_reg_exp = plus_constant (Pmode, stack_pointer_rtx, bias);
 
 	  emit_move_insn (sa_reg, sa_reg_exp);
 	}
 
       /* Restore registers in order, excepting a true frame pointer.  */
 
-      mem = gen_frame_mem (DImode, plus_constant (sa_reg, reg_offset));
+      mem = gen_frame_mem (DImode, plus_constant (Pmode, sa_reg, reg_offset));
       reg = gen_rtx_REG (DImode, REG_RA);
       emit_move_insn (reg, mem);
       cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
@@ -8110,7 +8118,8 @@ alpha_expand_epilogue (void)
 	    else
 	      {
 		mem = gen_frame_mem (DImode,
-				     plus_constant (sa_reg, reg_offset));
+				     plus_constant (Pmode, sa_reg,
+						    reg_offset));
 		reg = gen_rtx_REG (DImode, i);
 		emit_move_insn (reg, mem);
 		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
@@ -8122,7 +8131,8 @@ alpha_expand_epilogue (void)
       for (i = 0; i < 31; ++i)
 	if (fmask & (1UL << i))
 	  {
-	    mem = gen_frame_mem (DFmode, plus_constant (sa_reg, reg_offset));
+	    mem = gen_frame_mem (DFmode, plus_constant (Pmode, sa_reg,
+						        reg_offset));
 	    reg = gen_rtx_REG (DFmode, i+32);
 	    emit_move_insn (reg, mem);
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
@@ -8150,7 +8160,7 @@ alpha_expand_epilogue (void)
 	{
 	  int low = ((frame_size & 0xffff) ^ 0x8000) - 0x8000;
 
-	  sp_adj2 = plus_constant (sp_adj1, frame_size - low);
+	  sp_adj2 = plus_constant (Pmode, sp_adj1, frame_size - low);
 	  if (sa_reg_exp && rtx_equal_p (sa_reg_exp, sp_adj2))
 	    sp_adj1 = sa_reg;
 	  else
@@ -8180,7 +8190,8 @@ alpha_expand_epilogue (void)
       if (fp_is_frame_pointer)
 	{
 	  emit_insn (gen_blockage ());
-	  mem = gen_frame_mem (DImode, plus_constant (sa_reg, fp_offset));
+	  mem = gen_frame_mem (DImode, plus_constant (Pmode, sa_reg,
+						      fp_offset));
 	  emit_move_insn (hard_frame_pointer_rtx, mem);
 	  cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
 					 hard_frame_pointer_rtx, cfa_restores);
@@ -9509,7 +9520,7 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
   al->rkind = rflag ? KIND_CODEADDR : KIND_LINKAGE;
 
   if (lflag)
-    return gen_rtx_MEM (Pmode, plus_constant (al->linkage, 8));
+    return gen_rtx_MEM (Pmode, plus_constant (Pmode, al->linkage, 8));
   else
     return al->linkage;
 }

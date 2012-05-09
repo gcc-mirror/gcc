@@ -599,10 +599,7 @@ make_new_block (struct function *fn, unsigned int index)
   basic_block bb = alloc_block ();
   bb->index = index;
   SET_BASIC_BLOCK_FOR_FUNCTION (fn, index, bb);
-  bb->il.gimple = ggc_alloc_cleared_gimple_bb_info ();
   n_basic_blocks_for_function (fn)++;
-  bb->flags = 0;
-  set_bb_seq (bb, gimple_seq_alloc ());
   return bb;
 }
 
@@ -1223,10 +1220,10 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
 
   while ((str = streamer_read_string_cst (data_in, &ib)))
     {
-      struct cgraph_asm_node *node = cgraph_add_asm_node (str);
+      struct asm_node *node = add_asm_node (str);
       node->order = streamer_read_hwi (&ib) + order_base;
-      if (node->order >= cgraph_order)
-	cgraph_order = node->order + 1;
+      if (node->order >= symtab_order)
+	symtab_order = node->order + 1;
     }
 
   clear_line_info (data_in);

@@ -103,7 +103,7 @@ go_langhook_init (void)
   /* The default precision for floating point numbers.  This is used
      for floating point constants with abstract type.  This may
      eventually be controllable by a command line option.  */
-  mpfr_set_default_prec (128);
+  mpfr_set_default_prec (256);
 
   /* Go uses exceptions.  */
   using_eh_for_cleanups ();

@@ -1236,9 +1236,7 @@ package body Sem_Util is
       --  Loop through sequence of basic declarative items
 
       Outer : while Present (Decl) loop
-         if Nkind (Decl) /= N_Subprogram_Body
-           and then Nkind (Decl) /= N_Package_Body
-           and then Nkind (Decl) /= N_Task_Body
+         if not Nkind_In (Decl, N_Subprogram_Body, N_Package_Body, N_Task_Body)
            and then Nkind (Decl) not in N_Body_Stub
          then
             Next (Decl);
@@ -3573,20 +3571,19 @@ package body Sem_Util is
       if Present (C)
         and then Restriction_Check_Required (SPARK)
       then
-
          declare
             Enclosing_Subp : constant Node_Id := Enclosing_Subprogram (Def_Id);
             Enclosing_Pack : constant Node_Id := Enclosing_Package (Def_Id);
             Other_Scope    : constant Node_Id := Enclosing_Dynamic_Scope (C);
-         begin
 
+         begin
             --  ... unless the new declaration is in a subprogram, and the
             --  visible declaration is a variable declaration or a parameter
             --  specification outside that subprogram.
 
             if Present (Enclosing_Subp)
               and then Nkind_In (Parent (C), N_Object_Declaration,
-                                 N_Parameter_Specification)
+                                             N_Parameter_Specification)
               and then not Scope_Within_Or_Same (Other_Scope, Enclosing_Subp)
             then
                null;
@@ -7587,6 +7584,34 @@ package body Sem_Util is
    -------------------------
 
    function Is_Object_Reference (N : Node_Id) return Boolean is
+
+      function Is_Internally_Generated_Renaming (N : Node_Id) return Boolean;
+      --  Determine whether N is the name of an internally-generated renaming
+
+      --------------------------------------
+      -- Is_Internally_Generated_Renaming --
+      --------------------------------------
+
+      function Is_Internally_Generated_Renaming (N : Node_Id) return Boolean is
+         P : Node_Id;
+
+      begin
+         P := N;
+         while Present (P) loop
+            if Nkind (P) = N_Object_Renaming_Declaration then
+               return not Comes_From_Source (P);
+            elsif Is_List_Member (P) then
+               return False;
+            end if;
+
+            P := Parent (P);
+         end loop;
+
+         return False;
+      end Is_Internally_Generated_Renaming;
+
+   --  Start of processing for Is_Object_Reference
+
    begin
       if Is_Entity_Name (N) then
          return Present (Entity (N)) and then Is_Object (Entity (N));
@@ -7632,6 +7657,14 @@ package body Sem_Util is
 
             when N_Unchecked_Type_Conversion =>
                return True;
+
+            --  Allow string literals to act as objects as long as they appear
+            --  in internally-generated renamings. The expansion of iterators
+            --  may generate such renamings when the range involves a string
+            --  literal.
+
+            when N_String_Literal =>
+               return Is_Internally_Generated_Renaming (Parent (N));
 
             when others =>
                return False;

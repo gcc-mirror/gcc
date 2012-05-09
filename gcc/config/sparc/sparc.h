@@ -1273,11 +1273,11 @@ do {									\
    return an rtx for the address of the word in the frame
    that holds the dynamic chain--the previous frame's address.  */
 #define DYNAMIC_CHAIN_ADDRESS(frame)	\
-  plus_constant (frame, 14 * UNITS_PER_WORD + SPARC_STACK_BIAS)
+  plus_constant (Pmode, frame, 14 * UNITS_PER_WORD + SPARC_STACK_BIAS)
 
 /* Given an rtx for the frame pointer,
    return an rtx for the address of the frame.  */
-#define FRAME_ADDR_RTX(frame) plus_constant (frame, SPARC_STACK_BIAS)
+#define FRAME_ADDR_RTX(frame) plus_constant (Pmode, frame, SPARC_STACK_BIAS)
 
 /* The return address isn't on the stack, it is in a register, so we can't
    access it from the current frame pointer.  We can access it from the
@@ -1299,7 +1299,7 @@ do {									\
   ((count == -1)				\
    ? gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)			\
    : gen_rtx_MEM (Pmode,			\
-		  memory_address (Pmode, plus_constant (frame, \
+		  memory_address (Pmode, plus_constant (Pmode, frame, \
 							15 * UNITS_PER_WORD \
 							+ SPARC_STACK_BIAS))))
 
@@ -1309,7 +1309,8 @@ do {									\
    is something you can return to.  */
 #define INCOMING_RETURN_ADDR_REGNUM 15
 #define INCOMING_RETURN_ADDR_RTX \
-  plus_constant (gen_rtx_REG (word_mode, INCOMING_RETURN_ADDR_REGNUM), 8)
+  plus_constant (word_mode, \
+		 gen_rtx_REG (word_mode, INCOMING_RETURN_ADDR_REGNUM), 8)
 #define DWARF_FRAME_RETURN_COLUMN \
   DWARF_FRAME_REGNUM (INCOMING_RETURN_ADDR_REGNUM)
 

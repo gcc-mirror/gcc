@@ -1,3 +1,71 @@
+2012-05-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/53261
+	* c-common.c (warn_logical_operator): Check that argument of
+	integer_zerop is not NULL.
+
+2012-05-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/43772
+	* c-common.c (warn_logical_operator): Do not warn if either side
+	is already true or false.
+
+2012-05-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/51712
+	* c-common.c (expr_original_type): New.
+	(shorten_compare): Do not warn for enumeration types.
+
+2012-05-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (fpermissive): Add Var(flag_permissive).
+
+2012-04-30  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/51033
+	* c-common.c (convert_vector_to_pointer_for_subscript): New function.
+	* c-common.h (convert_vector_to_pointer_for_subscript): Declare it.
+
+2012-04-30  Dodji Seketeli  <dodji@redhat.com>
+
+	Add -Wvarargs option
+	* c.opt (Wvarargs):  Define new option.
+
+2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-common.c (check_function_arguments): Replace
+	Wmissing-format-attribute with Wsuggest-attribute=format.
+
+2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wsuggest-attribute=format): New. Alias of
+	Wmissing-format-attribute.
+	* c-format.c (decode_format_type): Replace
+	Wmissing-format-attribute with Wsuggest-attribute=format.
+	(check_function_format): Likewise.
+
+2012-04-27   Ollie Wild  <aaw@google.com>
+
+	* c-common.c: Add CPP_W_LITERAL_SUFFIX mapping.
+	* c-opts.c (c_common_handle_option): Handle OPT_Wliteral_suffix.
+	* c.opt: Add Wliteral-suffix.
+
+2012-04-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/44774
+	* c.opt (Wpedantic): New.
+	(pedantic): Alias Wpedantic.
+	* c-opts.c (c_common_handle_option): Replace -pedantic with -Wpedantic.
+	(c_common_post_options): Likewise.
+	(sanitize_cpp_opts): Likewise.
+	* c-lex.c (interpret_float): Likewise.
+	* c-format.c (check_format_types): Likewise.
+	* c-common.c (pointer_int_sum): Likewise.
+	(c_sizeof_or_alignof_type): Likewise.
+	(c_add_case_label): Likewise.
+	(c_do_switch_warnings): Likewise.
+	* c-pragma.c (handle_pragma_float_const_decimal64): Likewise.
+
 2012-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52818

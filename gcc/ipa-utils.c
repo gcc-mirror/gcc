@@ -178,7 +178,7 @@ ipa_reduced_postorder (struct cgraph_node **order,
   env.reduce = reduce;
   env.allow_overwritable = allow_overwritable;
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
       enum availability avail = cgraph_function_body_availability (node);
 
@@ -222,7 +222,7 @@ void
 ipa_free_postorder_info (void)
 {
   struct cgraph_node *node;
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
       /* Get rid of the aux information.  */
       if (node->symbol.aux)
@@ -261,10 +261,10 @@ ipa_reverse_postorder (struct cgraph_node **order)
      output algorithm.  Ignore the fact that some functions won't need
      to be output and put them into order as well, so we get dependencies
      right through inline functions.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     node->symbol.aux = NULL;
   for (pass = 0; pass < 2; pass++)
-    for (node = cgraph_nodes; node; node = node->next)
+    FOR_EACH_FUNCTION (node)
       if (!node->symbol.aux
 	  && (pass
 	      || (!node->symbol.address_taken
@@ -295,13 +295,13 @@ ipa_reverse_postorder (struct cgraph_node **order)
 			    (cgraph_function_node (edge->callee, NULL)->symbol.decl))
 			node2 = NULL;
 		    }
-		  for (;ipa_ref_list_refering_iterate (&stack[stack_size].node->symbol.ref_list,
+		  for (;ipa_ref_list_referring_iterate (&stack[stack_size].node->symbol.ref_list,
 						       stack[stack_size].ref,
 						       ref) && !node2;
 		       stack[stack_size].ref++)
 		    {
 		      if (ref->use == IPA_REF_ALIAS)
-			node2 = ipa_ref_refering_node (ref);
+			node2 = ipa_ref_referring_node (ref);
 		    }
 		  if (!node2)
 		    break;
@@ -317,7 +317,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
 	    }
 	}
   free (stack);
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     node->symbol.aux = NULL;
   return order_pos;
 }

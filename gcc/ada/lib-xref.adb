@@ -1031,10 +1031,14 @@ package body Lib.Xref is
             Ref := Original_Location (Sloc (Nod));
             Def := Original_Location (Sloc (Ent));
 
-            --  If this is an operator symbol, skip the initial
-            --  quote, for navigation purposes.
+            --  If this is an operator symbol, skip the initial quote for
+            --  navigation purposes. This is not done for the end label,
+            --  where we want the actual position after the closing quote.
 
-            if Nkind (N) = N_Defining_Operator_Symbol
+            if Typ = 't' then
+               null;
+
+            elsif Nkind (N) = N_Defining_Operator_Symbol
               or else Nkind (Nod) = N_Operator_Symbol
             then
                Ref := Ref + 1;
@@ -1727,9 +1731,9 @@ package body Lib.Xref is
          --  since at the time the reference or definition is made, private
          --  types may be swapped, and the Sloc value may be incorrect. We
          --  also set up the pointer vector for the sort.
-         --  For user-defined operators we need to skip the initial
-         --  quote and point to the first character of the name, for
-         --  navigation purposes.
+
+         --  For user-defined operators we need to skip the initial quote and
+         --  point to the first character of the name, for navigation purposes.
 
          for J in 1 .. Nrefs loop
             declare

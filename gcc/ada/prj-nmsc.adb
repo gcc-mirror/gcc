@@ -1096,19 +1096,22 @@ package body Prj.Nmsc is
          Element  : Package_Element;
 
          procedure Process_Binder (Arrays : Array_Id);
-         --  Process the associate array attributes of package Binder
+         --  Process the associated array attributes of package Binder
 
          procedure Process_Builder (Attributes : Variable_Id);
          --  Process the simple attributes of package Builder
 
+         procedure Process_Clean  (Arrays : Array_Id);
+         --  Process the associated array attributes of package Clean
+
          procedure Process_Compiler (Arrays : Array_Id);
-         --  Process the associate array attributes of package Compiler
+         --  Process the associated array attributes of package Compiler
 
          procedure Process_Naming (Attributes : Variable_Id);
          --  Process the simple attributes of package Naming
 
          procedure Process_Naming (Arrays : Array_Id);
-         --  Process the associate array attributes of package Naming
+         --  Process the associated array attributes of package Naming
 
          procedure Process_Linker (Attributes : Variable_Id);
          --  Process the simple attributes of package Linker of a
@@ -1222,6 +1225,73 @@ package body Prj.Nmsc is
                Attribute_Id := Attribute.Next;
             end loop;
          end Process_Builder;
+
+         -------------------
+         -- Process_Clean --
+         -------------------
+
+         procedure Process_Clean  (Arrays : Array_Id) is
+            Current_Array_Id : Array_Id;
+            Current_Array    : Array_Data;
+            Element_Id       : Array_Element_Id;
+            Element          : Array_Element;
+            List             : String_List_Id;
+
+         begin
+            --  Process the associated array attributes of package Clean
+
+            Current_Array_Id := Arrays;
+            while Current_Array_Id /= No_Array loop
+               Current_Array := Shared.Arrays.Table (Current_Array_Id);
+
+               Element_Id := Current_Array.Value;
+               while Element_Id /= No_Array_Element loop
+                  Element := Shared.Array_Elements.Table (Element_Id);
+
+                  --  Get the name of the language
+
+                  Lang_Index :=
+                    Get_Language_From_Name
+                      (Project, Get_Name_String (Element.Index));
+
+                  if Lang_Index /= No_Language_Index then
+                     case Current_Array.Name is
+
+                        --  Attribute Object_Artifact_Extensions (<language>)
+
+                        when Name_Object_Artifact_Extensions =>
+                           List := Element.Value.Values;
+
+                           if List /= Nil_String then
+                              Put (Into_List =>
+                                     Lang_Index.Config.Clean_Object_Artifacts,
+                                   From_List => List,
+                                   In_Tree   => Data.Tree);
+                           end if;
+
+                        --  Attribute Source_Artifact_Extensions (<language>)
+
+                        when Name_Source_Artifact_Extensions =>
+                           List := Element.Value.Values;
+
+                           if List /= Nil_String then
+                              Put (Into_List =>
+                                     Lang_Index.Config.Clean_Source_Artifacts,
+                                   From_List => List,
+                                   In_Tree   => Data.Tree);
+                           end if;
+
+                        when others =>
+                           null;
+                     end case;
+                  end if;
+
+                  Element_Id := Element.Next;
+               end loop;
+
+               Current_Array_Id := Current_Array.Next;
+            end loop;
+         end Process_Clean;
 
          ----------------------
          -- Process_Compiler --
@@ -1831,6 +1901,12 @@ package body Prj.Nmsc is
                   --  Process attributes of package Builder
 
                   Process_Builder (Element.Decl.Attributes);
+
+               when Name_Clean =>
+
+                  --  Process attributes of package Clean
+
+                  Process_Clean (Element.Decl.Arrays);
 
                when Name_Compiler =>
 
@@ -3217,7 +3293,9 @@ package body Prj.Nmsc is
       if Project.Library then
          Support_For_Libraries := Project.Config.Lib_Support;
 
-         if Support_For_Libraries = Prj.None then
+         if not Project.Externally_Built
+           and then Support_For_Libraries = Prj.None
+         then
             Error_Msg
               (Data.Flags,
                "?libraries are not supported on this platform",
@@ -3405,7 +3483,9 @@ package body Prj.Nmsc is
                   end if;
 
                   if Project.Library_Kind /= Static then
-                     if Support_For_Libraries = Prj.Static_Only then
+                     if not Project.Externally_Built
+                       and then Support_For_Libraries = Prj.Static_Only
+                     then
                         Error_Msg
                           (Data.Flags,
                            "only static libraries are supported " &

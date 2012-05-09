@@ -1868,18 +1868,15 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   lto_symtab_merge_cgraph_nodes ();
   ggc_collect ();
 
+  /* FIXME: ipa_transforms_to_apply holds list of passes that have optimization
+     summaries computed and needs to apply changes.  At the moment WHOPR only
+     supports inlining, so we can push it here by hand.  In future we need to stream
+     this field into ltrans compilation.  */
   if (flag_ltrans)
-    for (node = cgraph_nodes; node; node = node->next)
-      {
-	/* FIXME: ipa_transforms_to_apply holds list of passes that have optimization
-	   summaries computed and needs to apply changes.  At the moment WHOPR only
-	   supports inlining, so we can push it here by hand.  In future we need to stream
-	   this field into ltrans compilation.  */
-	if (node->analyzed)
-	  VEC_safe_push (ipa_opt_pass, heap,
-			 node->ipa_transforms_to_apply,
-			 (ipa_opt_pass)&pass_ipa_inline);
-      }
+    FOR_EACH_DEFINED_FUNCTION (node)
+      VEC_safe_push (ipa_opt_pass, heap,
+		     node->ipa_transforms_to_apply,
+		     (ipa_opt_pass)&pass_ipa_inline);
   lto_symtab_free ();
 
   timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
@@ -1923,7 +1920,7 @@ materialize_cgraph (void)
      nodes and read the functions if we are not running in WPA mode.  */
   timevar_push (TV_IPA_LTO_GIMPLE_IN);
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_FUNCTION (node)
     {
       if (node->symbol.lto_file_data)
 	{
@@ -1961,6 +1958,7 @@ materialize_cgraph (void)
 static void
 do_whole_program_analysis (void)
 {
+  timevar_start (TV_PHASE_CGRAPH);
   /* Note that since we are in WPA mode, materialize_cgraph will not
      actually read in all the function bodies.  It only materializes
      the decls and cgraph nodes so that analysis can be performed.  */
@@ -2020,6 +2018,7 @@ do_whole_program_analysis (void)
       dump_memory_report (false);
     }
 
+  timevar_stop (TV_PHASE_CGRAPH);
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report)
     print_lto_report ();
@@ -2119,7 +2118,9 @@ lto_main (void)
 
 	  /* Let the middle end know that we have read and merged all of
 	     the input files.  */ 
-	  cgraph_optimize ();
+	  timevar_start (TV_PHASE_CGRAPH);
+	  compile ();
+	  timevar_stop (TV_PHASE_CGRAPH);
 
 	  /* FIXME lto, if the processes spawned by WPA fail, we miss
 	     the chance to print WPA's report, so WPA will call

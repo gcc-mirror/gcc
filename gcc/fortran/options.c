@@ -111,6 +111,8 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.warn_align_commons = 1;
   gfc_option.warn_real_q_constant = 0;
   gfc_option.warn_unused_dummy_argument = 0;
+  gfc_option.warn_realloc_lhs = 0;
+  gfc_option.warn_realloc_lhs_all = 0;
   gfc_option.max_errors = 25;
 
   gfc_option.flag_all_intrinsics = 0;
@@ -437,6 +439,9 @@ gfc_post_options (const char **pfilename)
   if (gfc_option.flag_frontend_optimize == -1)
     gfc_option.flag_frontend_optimize = optimize;
 
+  if (gfc_option.warn_realloc_lhs_all)
+    gfc_option.warn_realloc_lhs = 1;
+
   gfc_cpp_post_options ();
 
 /* FIXME: return gfc_cpp_preprocess_only ();
@@ -652,6 +657,14 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Wline_truncation:
       gfc_option.warn_line_truncation = value;
+      break;
+
+    case OPT_Wrealloc_lhs:
+      gfc_option.warn_realloc_lhs = value;
+      break;
+
+    case OPT_Wrealloc_lhs_all:
+      gfc_option.warn_realloc_lhs_all = value;
       break;
 
     case OPT_Wreturn_type:

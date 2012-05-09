@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2003, 2004, 2005, 2008, 2011
+@c 1999, 2000, 2001, 2003, 2004, 2005, 2008, 2011, 2012
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -120,6 +120,29 @@ options enabled.  Therefore @code{MULTILIB_EXCEPTIONS} is set to:
 @smallexample
 *mthumb/*mhard-float*
 @end smallexample
+
+@findex MULTILIB_REQUIRED
+@item MULTILIB_REQUIRED
+Sometimes when there are only a few combinations are required, it would
+be a big effort to come up with a @code{MULTILIB_EXCEPTIONS} list to
+cover all undesired ones.  In such a case, just listing all the required
+combinations in @code{MULTILIB_REQUIRED} would be more straightforward.
+
+The way to specify the entries in @code{MULTILIB_REQUIRED} is same with
+the way used for @code{MULTILIB_EXCEPTIONS}, only this time what are
+required will be specified.  Suppose there are multiple sets of
+@code{MULTILIB_OPTIONS} and only two combinations are required, one
+for ARMv7-M and one for ARMv7-R with hard floating-point ABI and FPU, the
+@code{MULTILIB_REQUIRED} can be set to:
+@smallexample
+@code{MULTILIB_REQUIRED} =  mthumb/march=armv7-m
+@code{MULTILIB_REQUIRED} += march=armv7-r/mfloat-abi=hard/mfpu=vfpv3-d16
+@end smallexample
+
+The @code{MULTILIB_REQUIRED} can be used together with
+@code{MULTILIB_EXCEPTIONS}.  The option combinations generated from
+@code{MULTILIB_OPTIONS} will be filtered by @code{MULTILIB_EXCEPTIONS}
+and then by @code{MULTILIB_REQUIRED}.
 
 @findex MULTILIB_EXTRA_OPTS
 @item MULTILIB_EXTRA_OPTS

@@ -110,6 +110,7 @@ typedef struct vn_reference_s
   tree type;
   VEC (vn_reference_op_s, heap) *operands;
   tree result;
+  tree result_vdef;
 } *vn_reference_t;
 typedef const struct vn_reference_s *const_vn_reference_t;
 

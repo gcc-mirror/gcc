@@ -226,7 +226,8 @@ enum reg_class
 #define FRAME_GROWS_DOWNWARD 1
 #define STARTING_FRAME_OFFSET 0
 
-#define DYNAMIC_CHAIN_ADDRESS(FRAME) plus_constant ((FRAME), UNITS_PER_WORD)
+#define DYNAMIC_CHAIN_ADDRESS(FRAME) \
+  plus_constant (Pmode, (FRAME), UNITS_PER_WORD)
 
 #define FIRST_PARM_OFFSET(FNDECL) 0
 

@@ -146,9 +146,8 @@ and warnings}.
 -Wconversion -Wfunction-elimination -Wimplicit-interface @gol
 -Wimplicit-procedure -Wintrinsic-shadow -Wintrinsics-std @gol
 -Wline-truncation -Wno-align-commons -Wno-tabs -Wreal-q-constant @gol
--Wsurprising -Wunderflow -Wunused-parameter -fmax-errors=@var{n}
--fsyntax-only @gol
--pedantic -pedantic-errors
+-Wsurprising -Wunderflow -Wunused-parameter -Wrealloc-lhs Wrealloc-lhs-all @gol
+-fmax-errors=@var{n} -fsyntax-only -pedantic -pedantic-errors
 }
 
 @item Debugging Options
@@ -919,6 +918,23 @@ off via @option{-Wno-align-commons}. See also @option{-falign-commons}.
 Warn if any calls to functions are eliminated by the optimizations
 enabled by the @option{-ffrontend-optimize} option.
 
+@item -Wrealloc-lhs
+@opindex @code{Wrealloc-lhs}
+@cindex Reallocate the LHS in assignments, notification
+Warn when the compiler might insert code to for allocation or reallocation of
+an allocatable array variable of intrinsic type in intrinsic assignments.  In
+hot loops, the Fortran 2003 reallocation feature may reduce the performance.
+If the array is already allocated with the correct shape, consider using a
+whole-array array-spec (e.g. @code{(:,:,:)}) for the variable on the left-hand
+side to prevent the reallocation check. Note that in some cases the warning
+is shown, even if the compiler will optimize reallocation checks away.  For
+instance, when the right-hand side contains the same variable multiplied by
+a scalar.  See also @option{-frealloc-lhs}.
+
+@item -Wrealloc-lhs-all
+@opindex @code{Wrealloc-lhs-all}
+Warn when the compiler inserts code to for allocation or reallocation of an
+allocatable variable; this includes scalars and derived types.
 
 @item -Werror
 @opindex @code{Werror}
@@ -1561,7 +1577,8 @@ need to be in effect. The parentheses protection is enabled by default, unless
 @cindex Reallocate the LHS in assignments
 An allocatable left-hand side of an intrinsic assignment is automatically
 (re)allocated if it is either unallocated or has a different shape. The
-option is enabled by default except when @option{-std=f95} is given.
+option is enabled by default except when @option{-std=f95} is given. See
+also @option{-Wrealloc-lhs}.
 
 @item -faggressive-function-elimination
 @opindex @code{faggressive-function-elimination}

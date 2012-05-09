@@ -186,6 +186,7 @@ rest_of_decl_compilation (tree decl,
       if ((at_end
 	   || !DECL_DEFER_OUTPUT (decl)
 	   || DECL_INITIAL (decl))
+	  && (TREE_CODE (decl) != VAR_DECL || !DECL_HAS_VALUE_EXPR_P (decl))
 	  && !DECL_EXTERNAL (decl))
 	{
 	  /* When reading LTO unit, we also read varpool, so do not
@@ -703,16 +704,12 @@ dump_passes (void)
 
   create_pass_tab();
 
-  n = cgraph_nodes;
-  while (n)
-    {
-      if (DECL_STRUCT_FUNCTION (n->symbol.decl))
-        {
-          node = n;
-          break;
-        }
-      n = n->next;
-    }
+  FOR_EACH_DEFINED_FUNCTION (n)
+    if (DECL_STRUCT_FUNCTION (n->symbol.decl))
+      {
+	node = n;
+	break;
+      }
 
   if (!node)
     return;
@@ -1252,19 +1249,24 @@ register_pass (struct register_pass_info *pass_info)
 /* Construct the pass tree.  The sequencing of passes is driven by
    the cgraph routines:
 
-   cgraph_finalize_compilation_unit ()
+   finalize_compilation_unit ()
        for each node N in the cgraph
 	   cgraph_analyze_function (N)
 	       cgraph_lower_function (N) -> all_lowering_passes
 
-   If we are optimizing, cgraph_optimize is then invoked:
+   If we are optimizing, compile is then invoked:
 
-   cgraph_optimize ()
+   compile ()
        ipa_passes () 			-> all_small_ipa_passes
-       cgraph_expand_all_functions ()
+					-> Analysis of all_regular_ipa_passes
+	* possible LTO streaming at copmilation time *
+					-> Execution of all_regular_ipa_passes
+	* possible LTO streaming at link time *
+					-> all_late_ipa_passes
+       expand_all_functions ()
            for each node N in the cgraph
-	       cgraph_expand_function (N)
-		  tree_rest_of_compilation (DECL (N))  -> all_passes
+	       expand_function (N)      -> Transformation of all_regular_ipa_passes
+				        -> all_passes
 */
 
 void
@@ -1662,8 +1664,8 @@ do_per_function (void (*callback) (void *data), void *data)
   else
     {
       struct cgraph_node *node;
-      for (node = cgraph_nodes; node; node = node->next)
-	if (node->analyzed && gimple_has_body_p (node->symbol.decl)
+      FOR_EACH_DEFINED_FUNCTION (node)
+	if (gimple_has_body_p (node->symbol.decl)
 	    && (!node->clone_of || node->symbol.decl != node->clone_of->symbol.decl))
 	  {
 	    push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
@@ -1866,10 +1868,10 @@ execute_todo (unsigned int flags)
       cgraph_remove_unreachable_nodes (true, dump_file);
     }
 
-  if ((flags & TODO_dump_cgraph) && dump_file && !current_function_decl)
+  if ((flags & TODO_dump_symtab) && dump_file && !current_function_decl)
     {
       gcc_assert (!cfun);
-      dump_cgraph (dump_file);
+      dump_symtab (dump_file);
       /* Flush the file.  If verification fails, we won't be able to
 	 close the file before aborting.  */
       fflush (dump_file);
@@ -2346,8 +2348,8 @@ ipa_write_summaries (void)
     }
   vset = varpool_node_set_new ();
 
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-    if (vnode->needed && (!vnode->alias || vnode->alias_of))
+  FOR_EACH_DEFINED_VARIABLE (vnode)
+    if ((!vnode->alias || vnode->alias_of))
       varpool_node_set_add (vset, vnode);
 
   ipa_write_summaries_1 (set, vset);

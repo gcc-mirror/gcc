@@ -32,6 +32,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
     imported_unsafe_(false),
     packages_(),
     init_functions_(),
+    var_deps_(),
     need_init_fn_(false),
     init_fn_name_(),
     imported_init_fns_(),
@@ -2216,12 +2217,18 @@ Order_eval::statement(Block* block, size_t* pindex, Statement* s)
       Expression::traverse(&init, &find_eval_ordering);
     }
 
-  if (find_eval_ordering.size() <= 1)
-    {
-      // If there is only one expression with a side-effect, we can
-      // leave it in place.
-      return TRAVERSE_CONTINUE;
-    }
+  size_t c = find_eval_ordering.size();
+  if (c == 0)
+    return TRAVERSE_CONTINUE;
+
+  // If there is only one expression with a side-effect, we can
+  // usually leave it in place.  However, for an assignment statement,
+  // we need to evaluate an expression on the right hand side before
+  // we evaluate any index expression on the left hand side, so for
+  // that case we always move the expression.  Otherwise we mishandle
+  // m[0] = len(m) where m is a map.
+  if (c == 1 && s->classification() != Statement::STATEMENT_ASSIGNMENT)
+    return TRAVERSE_CONTINUE;
 
   bool is_thunk = s->thunk_statement() != NULL;
   for (Find_eval_ordering::const_iterator p = find_eval_ordering.begin();
@@ -3814,6 +3821,10 @@ void
 Variable::lower_init_expression(Gogo* gogo, Named_object* function,
 				Statement_inserter* inserter)
 {
+  Named_object* dep = gogo->var_depends_on(this);
+  if (dep != NULL && dep->is_variable())
+    dep->var_value()->lower_init_expression(gogo, function, inserter);
+
   if (this->init_ != NULL && !this->init_is_lowered_)
     {
       if (this->seen_)
@@ -4935,11 +4946,6 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
       break;
 
     case Named_object::NAMED_OBJECT_PACKAGE:
-      if (new_object->is_package()
-	  && (old_object->package_value()->name()
-	      == new_object->package_value()->name()))
-	return old_object;
-
       break;
     }
 

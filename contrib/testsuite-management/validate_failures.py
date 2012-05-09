@@ -5,7 +5,7 @@
 
 # Contributed by Diego Novillo <dnovillo@google.com>
 #
-# Copyright (C) 2011 Free Software Foundation, Inc.
+# Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -241,7 +241,7 @@ def CompareResults(manifest, actual):
 
 
 def GetBuildData(options):
-  target = GetMakefileValue('%s/Makefile' % options.build_dir, 'target=')
+  target = GetMakefileValue('%s/Makefile' % options.build_dir, 'target_alias=')
   srcdir = GetMakefileValue('%s/Makefile' % options.build_dir, 'srcdir =')
   if not ValidBuildDirectory(options.build_dir, target):
     Error('%s is not a valid GCC top level build directory.' %

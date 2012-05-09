@@ -389,7 +389,7 @@ pdp11_expand_epilogue (void)
       for (regno = AC5_REGNUM; regno >= AC0_REGNUM; regno--)
 	if (pdp11_saved_regno (regno))
 	  {
-	    x = plus_constant (hard_frame_pointer_rtx, ofs);
+	    x = plus_constant (Pmode, hard_frame_pointer_rtx, ofs);
 	    x = gen_frame_mem (DFmode, x);
 	    reg = gen_rtx_REG (DFmode, regno);
 
@@ -407,7 +407,7 @@ pdp11_expand_epilogue (void)
 	if (pdp11_saved_regno (regno)
 	    && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed))
 	  {
-	    x = plus_constant (hard_frame_pointer_rtx, ofs);
+	    x = plus_constant (Pmode, hard_frame_pointer_rtx, ofs);
 	    x = gen_frame_mem (Pmode, x);
 	    emit_move_insn (gen_rtx_REG (Pmode, regno), x);
 	    ofs += 2;

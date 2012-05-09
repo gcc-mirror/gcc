@@ -517,8 +517,8 @@ package body Ada.Calendar is
       Le : Boolean;
 
    begin
-      --  Use UTC as the local time zone on VMS, the status of flag Is_Ada_05
-      --  is irrelevant in this case.
+      --  Use UTC as the local time zone on VMS, the status of flag Use_TZ is
+      --  irrelevant in this case.
 
       Formatting_Operations.Split
         (Date      => Date,
@@ -531,7 +531,7 @@ package body Ada.Calendar is
          Second    => Se,
          Sub_Sec   => Ss,
          Leap_Sec  => Le,
-         Is_Ada_05 => False,
+         Use_TZ    => False,
          Time_Zone => 0);
 
       --  Validity checks
@@ -573,8 +573,8 @@ package body Ada.Calendar is
          raise Time_Error;
       end if;
 
-      --  Use UTC as the local time zone on VMS, the status of flag Is_Ada_05
-      --  is irrelevant in this case.
+      --  Use UTC as the local time zone on VMS, the status of flag Use_TZ is
+      --  irrelevant in this case.
 
       return
         Formatting_Operations.Time_Of
@@ -588,7 +588,7 @@ package body Ada.Calendar is
            Sub_Sec      => Ss,
            Leap_Sec     => False,
            Use_Day_Secs => True,
-           Is_Ada_05    => False,
+           Use_TZ       => False,
            Time_Zone    => 0);
    end Time_Of;
 
@@ -835,7 +835,7 @@ package body Ada.Calendar is
                 Sub_Sec      => 0.0,      --  No precise sub second given
                 Leap_Sec     => Leap,
                 Use_Day_Secs => False,    --  Time is given in h:m:s
-                Is_Ada_05    => True,     --  Force usage of explicit time zone
+                Use_TZ       => True,     --  Force usage of explicit time zone
                 Time_Zone    => 0));      --  Place the value in UTC
          --  Step 4: Daylight Savings Time
 
@@ -990,12 +990,12 @@ package body Ada.Calendar is
          Second    : out Integer;
          Sub_Sec   : out Duration;
          Leap_Sec  : out Boolean;
-         Is_Ada_05 : Boolean;
+         Use_TZ    : Boolean;
          Time_Zone : Long_Integer)
       is
-         --  The flag Is_Ada_05 is present for interfacing purposes
+         --  The flag Use_TZ is present for interfacing purposes
 
-         pragma Unreferenced (Is_Ada_05);
+         pragma Unreferenced (Use_TZ);
 
          procedure Numtim
            (Status : out Unsigned_Longword;
@@ -1106,7 +1106,7 @@ package body Ada.Calendar is
          Sub_Sec      : Duration;
          Leap_Sec     : Boolean := False;
          Use_Day_Secs : Boolean := False;
-         Is_Ada_05    : Boolean := False;
+         Use_TZ       : Boolean := False;
          Time_Zone    : Long_Integer := 0) return Time
       is
          procedure Cvt_Vectim
@@ -1255,7 +1255,7 @@ package body Ada.Calendar is
 
             Rounded_Res_M := Res_M - (Res_M mod Mili);
 
-            if Is_Ada_05
+            if Use_TZ
               and then Leap_Sec
               and then Rounded_Res_M /= Next_Leap_M
             then

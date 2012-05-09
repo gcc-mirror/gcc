@@ -7640,8 +7640,8 @@ sel_global_init (void)
   sel_setup_sched_infos ();
   setup_sched_dump ();
 
-  sched_init ();
   sched_rgn_init (false);
+  sched_init ();
 
   sched_init_bbs ();
   /* Reset AFTER_RECOVERY if it has been set by the 1st scheduler pass.  */

@@ -74,7 +74,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "alloc-pool.h"
 #include "tree-mudflap.h"
-#include "tree-pass.h"
 #include "gimple.h"
 #include "tree-ssa-alias.h"
 #include "plugin.h"
@@ -145,10 +144,6 @@ unsigned local_tick;
 HOST_WIDE_INT random_seed;
 
 /* -f flags.  */
-
-/* Nonzero means make permerror produce warnings instead of errors.  */
-
-int flag_permissive = 0;
 
 /* When non-NULL, indicates that whenever space is allocated on the
    stack, the resulting stack pointer must not pass this
@@ -369,7 +364,8 @@ wrapup_global_declaration_1 (tree decl)
 bool
 wrapup_global_declaration_2 (tree decl)
 {
-  if (TREE_ASM_WRITTEN (decl) || DECL_EXTERNAL (decl))
+  if (TREE_ASM_WRITTEN (decl) || DECL_EXTERNAL (decl)
+      || (TREE_CODE (decl) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (decl)))
     return false;
 
   /* Don't write out static consts, unless we still need them.
@@ -413,7 +409,7 @@ wrapup_global_declaration_2 (tree decl)
 	       && (TREE_USED (decl)
 		   || TREE_USED (DECL_ASSEMBLER_NAME (decl))))
 	/* needed */;
-      else if (node && node->needed)
+      else if (node && node->analyzed)
 	/* needed */;
       else if (DECL_COMDAT (decl))
 	needed = false;
@@ -568,7 +564,7 @@ compile_file (void)
 
   ggc_protect_identifiers = false;
 
-  /* This must also call cgraph_finalize_compilation_unit.  */
+  /* This must also call finalize_compilation_unit.  */
   lang_hooks.decls.final_write_globals ();
 
   if (seen_error ())
@@ -581,7 +577,6 @@ compile_file (void)
      basically finished.  */
   if (in_lto_p || !flag_lto || flag_fat_lto_objects)
     {
-      varpool_assemble_pending_decls ();
       finish_aliases_2 ();
 
       /* Likewise for mudflap static object registrations.  */
@@ -961,63 +956,6 @@ init_asm_output (const char *name)
     }
 }
 
-/* Default tree printer.   Handles declarations only.  */
-bool
-default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
-		      int precision, bool wide, bool set_locus, bool hash)
-{
-  tree t;
-
-  /* FUTURE: %+x should set the locus.  */
-  if (precision != 0 || wide || hash)
-    return false;
-
-  switch (*spec)
-    {
-    case 'E':
-      t = va_arg (*text->args_ptr, tree);
-      if (TREE_CODE (t) == IDENTIFIER_NODE)
-	{
-	  pp_identifier (pp, IDENTIFIER_POINTER (t));
-	  return true;
-	}
-      break;
-
-    case 'D':
-      t = va_arg (*text->args_ptr, tree);
-      if (DECL_DEBUG_EXPR_IS_FROM (t) && DECL_DEBUG_EXPR (t))
-	t = DECL_DEBUG_EXPR (t);
-      break;
-
-    case 'F':
-    case 'T':
-      t = va_arg (*text->args_ptr, tree);
-      break;
-
-    case 'K':
-      percent_K_format (text);
-      return true;
-
-    default:
-      return false;
-    }
-
-  if (set_locus && text->locus)
-    *text->locus = DECL_SOURCE_LOCATION (t);
-
-  if (DECL_P (t))
-    {
-      const char *n = DECL_NAME (t)
-        ? identifier_to_locale (lang_hooks.decl_printable_name (t, 2))
-        : _("<anonymous>");
-      pp_string (pp, n);
-    }
-  else
-    dump_generic_node (pp, t, 0, TDF_DIAGNOSTIC, 0);
-
-  return true;
-}
-
 /* A helper function; used as the reallocator function for cpp's line
    table.  */
 static void *
@@ -1162,13 +1100,15 @@ general_init (const char *argv0)
   /* Initialize the diagnostics reporting machinery, so option parsing
      can give warnings and errors.  */
   diagnostic_initialize (global_dc, N_OPTS);
-  diagnostic_starter (global_dc) = default_tree_diagnostic_starter;
-  /* By default print macro expansion contexts in the diagnostic
-     finalizer -- for tokens resulting from macro macro expansion.  */
-  diagnostic_finalizer (global_dc) = virt_loc_aware_diagnostic_finalizer;
   /* Set a default printer.  Language specific initializations will
      override it later.  */
-  pp_format_decoder (global_dc->printer) = &default_tree_printer;
+  tree_diagnostics_defaults (global_dc);
+  /* FIXME: This should probably be moved to C-family
+     language-specific initializations.  */
+  /* By default print macro expansion contexts in the diagnostic
+     finalizer -- for tokens resulting from macro expansion.  */
+  diagnostic_finalizer (global_dc) = virt_loc_aware_diagnostic_finalizer;
+
   global_dc->show_caret
     = global_options_init.x_flag_diagnostics_show_caret;
   global_dc->show_option_requested
@@ -1430,11 +1370,6 @@ process_options (void)
 	}
     }
 
-  /* Unless over-ridden for the target, assume that all DWARF levels
-     may be emitted, if DWARF2_DEBUG is selected.  */
-  if (dwarf_strict < 0)
-    dwarf_strict = 0;
-
   /* A lot of code assumes write_symbols == NO_DEBUG if the debugging
      level is 0.  */
   if (debug_info_level == DINFO_LEVEL_NONE)
@@ -1662,6 +1597,7 @@ backend_init_target (void)
   /* rtx_cost is mode-dependent, so cached values need to be recomputed
      on a mode change.  */
   init_expmed ();
+  init_lower_subreg ();
 
   /* We may need to recompute regno_save_code[] and regno_restore_code[]
      after a mode change as well.  */

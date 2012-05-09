@@ -1507,6 +1507,17 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
         continue;
 
+      /* FORNOW: Any strided load prevents peeling.  The induction
+         variable analysis will fail when the prologue loop is generated,
+	 and so we can't generate the new base for the pointer.  */
+      if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "strided load prevents peeling");
+	  do_peeling = false;
+	  break;
+	}
+
       /* For invariant accesses there is nothing to enhance.  */
       if (integer_zerop (DR_STEP (dr)))
 	continue;
@@ -2690,6 +2701,53 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
   return decl;
 }
 
+/* Check wether a non-affine load in STMT (being in the loop referred to
+   in LOOP_VINFO) is suitable for handling as strided load.  That is the case
+   if its address is a simple induction variable.  If so return the base
+   of that induction variable in *BASEP and the (loop-invariant) step
+   in *STEPP, both only when that pointer is non-zero.
+
+   This handles ARRAY_REFs (with variant index) and MEM_REFs (with variant
+   base pointer) only.  */
+
+bool
+vect_check_strided_load (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
+			 tree *stepp)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  tree base, off;
+  affine_iv iv;
+
+  base = DR_REF (dr);
+
+  if (TREE_CODE (base) == ARRAY_REF)
+    {
+      off = TREE_OPERAND (base, 1);
+      base = TREE_OPERAND (base, 0);
+    }
+  else if (TREE_CODE (base) == MEM_REF)
+    {
+      off = TREE_OPERAND (base, 0);
+      base = TREE_OPERAND (base, 1);
+    }
+  else
+    return false;
+
+  if (TREE_CODE (off) != SSA_NAME)
+    return false;
+
+  if (!expr_invariant_in_loop_p (loop, base)
+      || !simple_iv (loop, loop_containing_stmt (stmt), off, &iv, true))
+    return false;
+
+  if (basep)
+    *basep = iv.base;
+  if (stepp)
+    *stepp = iv.step;
+  return true;
+}
 
 /* Function vect_analyze_data_refs.
 
@@ -3090,16 +3148,21 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	  VEC (ddr_p, heap) *ddrs = LOOP_VINFO_DDRS (loop_vinfo);
 	  struct data_dependence_relation *ddr, *newddr;
 	  bool bad = false;
+	  bool strided_load = false;
 	  tree off;
 	  VEC (loop_p, heap) *nest = LOOP_VINFO_LOOP_NEST (loop_vinfo);
 
-	  if (!vect_check_gather (stmt, loop_vinfo, NULL, &off, NULL)
-	      || get_vectype_for_scalar_type (TREE_TYPE (off)) == NULL_TREE)
+	  strided_load = vect_check_strided_load (stmt, loop_vinfo, NULL, NULL);
+	  gather = 0 != vect_check_gather (stmt, loop_vinfo, NULL, &off, NULL);
+	  if (gather
+	      && get_vectype_for_scalar_type (TREE_TYPE (off)) == NULL_TREE)
+	    gather = false;
+	  if (!gather && !strided_load)
 	    {
 	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 		{
 		  fprintf (vect_dump,
-			   "not vectorized: not suitable for gather ");
+			   "not vectorized: not suitable for gather/strided load ");
 		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
 		}
 	      return false;
@@ -3152,13 +3215,16 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 		{
 		  fprintf (vect_dump,
 			   "not vectorized: data dependence conflict"
-			   " prevents gather");
+			   " prevents gather/strided load");
 		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
 		}
 	      return false;
 	    }
 
-	  STMT_VINFO_GATHER_P (stmt_info) = true;
+	  if (gather)
+	    STMT_VINFO_GATHER_P (stmt_info) = true;
+	  else if (strided_load)
+	    STMT_VINFO_STRIDE_LOAD_P (stmt_info) = true;
 	}
     }
 
@@ -3342,10 +3408,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
     {
       duplicate_ssa_name_ptr_info (vec_stmt, DR_PTR_INFO (dr));
       if (offset)
-	{
-	  SSA_NAME_PTR_INFO (vec_stmt)->align = 1;
-	  SSA_NAME_PTR_INFO (vec_stmt)->misalign = 0;
-	}
+	mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (vec_stmt));
     }
 
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -3744,8 +3807,7 @@ bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
   if (DR_PTR_INFO (dr))
     {
       duplicate_ssa_name_ptr_info (new_dataref_ptr, DR_PTR_INFO (dr));
-      SSA_NAME_PTR_INFO (new_dataref_ptr)->align = 1;
-      SSA_NAME_PTR_INFO (new_dataref_ptr)->misalign = 0;
+      mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (new_dataref_ptr));
     }
 
   if (!ptr_incr)

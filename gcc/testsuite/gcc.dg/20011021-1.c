@@ -8,7 +8,7 @@
 struct t
 {
   int a;
-  int b;
+  int b; /* { dg-message "note: 'b' declared here" } */
   int c;
 };
 
@@ -28,7 +28,7 @@ struct multilevel
 };
 
 struct t T0 = { 1 };		/* { dg-warning "missing init" } */
-/* { dg-warning "near init" "near init" { target *-*-* } 30 } */
+
 struct t T1 = { .a = 1 };	/* { dg-bogus "(missing|near) init" } */
 
 union u U0 = { 1 };		/* { dg-warning "initialization of union" } */
@@ -42,4 +42,4 @@ struct multilevel M =
   { .n = 9 },			/* { dg-bogus "initialization of union" } */
   /* "string here" */
 };				/* { dg-warning "missing init" } */
-/* { dg-warning "near init" "near init" { target *-*-* } 44 } */
+/* { dg-message "declared here" "near init" { target *-*-* } 27 } */

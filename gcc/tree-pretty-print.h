@@ -50,10 +50,6 @@ extern void debug_generic_stmt (tree);
 extern void debug_tree_chain (tree);
 extern void percent_K_format (text_info *);
 extern void dump_function_header (FILE *, tree, int);
-
-/* In toplev.c  */
-extern bool default_tree_printer (pretty_printer *, text_info *, const char *,
-				  int, bool, bool, bool);
 /* In c-pretty-print.c  */
 extern void debug_c_tree (tree);
 

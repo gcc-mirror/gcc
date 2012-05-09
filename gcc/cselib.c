@@ -1866,7 +1866,8 @@ cselib_subst_to_values (rtx x, enum machine_mode memmode)
       i = GET_MODE_SIZE (memmode);
       if (code == PRE_DEC)
 	i = -i;
-      return cselib_subst_to_values (plus_constant (XEXP (x, 0), i),
+      return cselib_subst_to_values (plus_constant (GET_MODE (x),
+						    XEXP (x, 0), i),
 				     memmode);
 
     case PRE_MODIFY:
@@ -2523,8 +2524,7 @@ cselib_record_sets (rtx insn)
 	  sets[i].src_elt = cselib_lookup (src, GET_MODE (dest), 1, VOIDmode);
 	  if (MEM_P (dest))
 	    {
-	      enum machine_mode address_mode
-		= targetm.addr_space.address_mode (MEM_ADDR_SPACE (dest));
+	      enum machine_mode address_mode = get_address_mode (dest);
 
 	      sets[i].dest_addr_elt = cselib_lookup (XEXP (dest, 0),
 						     address_mode, 1,

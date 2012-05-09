@@ -380,154 +380,17 @@
 (define_special_predicate "load_multiple_operation"
   (match_code "parallel")
 {
-  HOST_WIDE_INT count = XVECLEN (op, 0);
-  unsigned dest_regno;
-  rtx src_addr;
-  HOST_WIDE_INT i = 1, base = 0;
-  HOST_WIDE_INT offset = 0;
-  rtx elt;
-  bool addr_reg_loaded = false;
-  bool update = false;
-
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || !REG_P (SET_DEST (XVECEXP (op, 0, 0))))
-    return false;
-
-  /* Check to see if this might be a write-back.  */
-  if (GET_CODE (SET_SRC (elt = XVECEXP (op, 0, 0))) == PLUS)
-    {
-      i++;
-      base = 1;
-      update = true;
-
-      /* Now check it more carefully.  */
-      if (GET_CODE (SET_DEST (elt)) != REG
-          || GET_CODE (XEXP (SET_SRC (elt), 0)) != REG
-          || GET_CODE (XEXP (SET_SRC (elt), 1)) != CONST_INT
-          || INTVAL (XEXP (SET_SRC (elt), 1)) != (count - 1) * 4)
-        return false;
-    }
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= i
-      || GET_CODE (XVECEXP (op, 0, i - 1)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, i - 1))) != REG
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, i - 1))) != MEM)
-    return false;
-
-  dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, i - 1)));
-  src_addr = XEXP (SET_SRC (XVECEXP (op, 0, i - 1)), 0);
-  if (GET_CODE (src_addr) == PLUS)
-    {
-      if (GET_CODE (XEXP (src_addr, 1)) != CONST_INT)
-	return false;
-      offset = INTVAL (XEXP (src_addr, 1));
-      src_addr = XEXP (src_addr, 0);
-    }
-  if (!REG_P (src_addr))
-    return false;
-
-  for (; i < count; i++)
-    {
-      elt = XVECEXP (op, 0, i);
-
-      if (GET_CODE (elt) != SET
-          || GET_CODE (SET_DEST (elt)) != REG
-          || GET_MODE (SET_DEST (elt)) != SImode
-          || REGNO (SET_DEST (elt)) <= dest_regno
-          || GET_CODE (SET_SRC (elt)) != MEM
-          || GET_MODE (SET_SRC (elt)) != SImode
-          || ((GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
-	       || !rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
-	       || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
-	       || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1)) != offset + (i - base) * 4)
-	      && (!REG_P (XEXP (SET_SRC (elt), 0))
-		  || offset + (i - base) * 4 != 0)))
-        return false;
-      dest_regno = REGNO (SET_DEST (elt));
-      if (dest_regno == REGNO (src_addr))
-        addr_reg_loaded = true;
-    }
-  /* For Thumb, we only have updating instructions.  If the pattern does
-     not describe an update, it must be because the address register is
-     in the list of loaded registers - on the hardware, this has the effect
-     of overriding the update.  */
-  if (update && addr_reg_loaded)
-    return false;
-  if (TARGET_THUMB1)
-    return update || addr_reg_loaded;
-  return true;
+ return ldm_stm_operation_p (op, /*load=*/true, SImode,
+                                 /*consecutive=*/false,
+                                 /*return_pc=*/false);
 })
 
 (define_special_predicate "store_multiple_operation"
   (match_code "parallel")
 {
-  HOST_WIDE_INT count = XVECLEN (op, 0);
-  unsigned src_regno;
-  rtx dest_addr;
-  HOST_WIDE_INT i = 1, base = 0, offset = 0;
-  rtx elt;
-
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET)
-    return false;
-
-  /* Check to see if this might be a write-back.  */
-  if (GET_CODE (SET_SRC (elt = XVECEXP (op, 0, 0))) == PLUS)
-    {
-      i++;
-      base = 1;
-
-      /* Now check it more carefully.  */
-      if (GET_CODE (SET_DEST (elt)) != REG
-          || GET_CODE (XEXP (SET_SRC (elt), 0)) != REG
-          || GET_CODE (XEXP (SET_SRC (elt), 1)) != CONST_INT
-          || INTVAL (XEXP (SET_SRC (elt), 1)) != (count - 1) * 4)
-        return false;
-    }
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= i
-      || GET_CODE (XVECEXP (op, 0, i - 1)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, i - 1))) != MEM
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, i - 1))) != REG)
-    return false;
-
-  src_regno = REGNO (SET_SRC (XVECEXP (op, 0, i - 1)));
-  dest_addr = XEXP (SET_DEST (XVECEXP (op, 0, i - 1)), 0);
-
-  if (GET_CODE (dest_addr) == PLUS)
-    {
-      if (GET_CODE (XEXP (dest_addr, 1)) != CONST_INT)
-	return false;
-      offset = INTVAL (XEXP (dest_addr, 1));
-      dest_addr = XEXP (dest_addr, 0);
-    }
-  if (!REG_P (dest_addr))
-    return false;
-
-  for (; i < count; i++)
-    {
-      elt = XVECEXP (op, 0, i);
-
-      if (GET_CODE (elt) != SET
-          || GET_CODE (SET_SRC (elt)) != REG
-          || GET_MODE (SET_SRC (elt)) != SImode
-          || REGNO (SET_SRC (elt)) <= src_regno
-          || GET_CODE (SET_DEST (elt)) != MEM
-          || GET_MODE (SET_DEST (elt)) != SImode
-          || ((GET_CODE (XEXP (SET_DEST (elt), 0)) != PLUS
-	       || !rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_addr)
-	       || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
-               || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1)) != offset + (i - base) * 4)
-	      && (!REG_P (XEXP (SET_DEST (elt), 0))
-		  || offset + (i - base) * 4 != 0)))
-        return false;
-      src_regno = REGNO (SET_SRC (elt));
-    }
-
-  return true;
+ return ldm_stm_operation_p (op, /*load=*/false, SImode,
+                                 /*consecutive=*/false,
+                                 /*return_pc=*/false);
 })
 
 (define_special_predicate "multi_register_push"
@@ -641,7 +504,7 @@
 })
 
 (define_predicate "imm_for_neon_mov_operand"
-  (match_code "const_vector")
+  (match_code "const_vector,const_int")
 {
   return neon_immediate_valid_for_move (op, mode, NULL, NULL);
 })

@@ -37,6 +37,14 @@ main ()
 //	.uleb128 0x9	# (DIE (0x34) DW_TAG_class_type)
 //	.long   .LASF0	# DW_AT_name: "Executor"
 //			# DW_AT_declaration
+//      .byte   0xa0    # DW_AT_signature
+//      .byte   0xfe
+//      .byte   0xe6
+//      .byte   0x7b
+//      .byte   0x66
+//      .byte   0xe9
+//      .byte   0x38
+//      .byte   0xf0
 //	.uleb128 0x5	# (DIE (0x39) DW_TAG_subprogram)
 //			# DW_AT_external
 //	.long   .LASF1	# DW_AT_name: "CurrentExecutor"
@@ -51,4 +59,4 @@ main ()
 //
 //     Hence the scary regexp:
 //
-//     { dg-final { scan-assembler "\[^\n\r\]*\\(DIE \\(0x(\[0-9a-f\]+)\\) DW_TAG_namespace\\)\[\n\r\]+\[^\n\r\]*\"thread\[\^\n\r]+\[\n\r\]+(\[^\n\r\]*\[\n\r\]+)+\[^\n\r\]*\\(DIE \\(0x(\[0-9a-f\]+)\\) DW_TAG_class_type\\)(\[\n\r\]+\[^\n\r\]*)+\"Executor\[^\n\r\]+\[\n\r\]+\[^\n\r\]*DW_AT_declaration\[\n\r\]+\[^\n\r\]*\\(DIE\[^\n\r\]*DW_TAG_subprogram\\)\[\n\r\]+(\[^\n\r\]*\[\n\r\]+)+\[^\n\r\]*\"CurrentExecutor\[^\n\r\]+\[\n\r\]+(\[^\n\r\]*\[\n\r\]+)+(\[^\n\r\]*\[\n\r\]+)+\[^\n\r\]*end of children of DIE 0x\\3\[\n\r]+\[^\n\r\]*end of children of DIE 0x\\1\[\n\r]+" } }
+//     { dg-final { scan-assembler "\[^\n\r\]*\\(DIE \\(0x(\[0-9a-f\]+)\\) DW_TAG_namespace\\)\[\n\r\]+\[^\n\r\]*\"thread\[\^\n\r]+\[\n\r\]+(\[^\n\r\]*\[\n\r\]+)+\[^\n\r\]*\\(DIE \\(0x(\[0-9a-f\]+)\\) DW_TAG_class_type\\)(\[\n\r\]+\[^\n\r\]*)+\"Executor\[^\n\r\]+\[\n\r\]+\[^\n\r\]*DW_AT_declaration\[\n\r\]+\[^\n\r\]*DW_AT_signature\[^#/\]*\[#/\] \[^\n\r\]*\\(DIE\[^\n\r\]*DW_TAG_subprogram\\)\[\n\r\]+(\[^\n\r\]*\[\n\r\]+)+\[^\n\r\]*\"CurrentExecutor\[^\n\r\]+\[\n\r\]+(\[^\n\r\]*\[\n\r\]+)+(\[^\n\r\]*\[\n\r\]+)+\[^\n\r\]*end of children of DIE 0x\\3\[\n\r]+\[^\n\r\]*end of children of DIE 0x\\1\[\n\r]+" } }

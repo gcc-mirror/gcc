@@ -1,5 +1,5 @@
 /*
-  { dg-options "-Wuninitialized" }
+  { dg-options "-Wuninitialized -ftrack-macro-expansion=0" }
   { dg-do compile }
 */
 

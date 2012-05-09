@@ -1,3 +1,68 @@
+2012-05-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* longlong.h: Use a URL instead of an FSF postal address.
+	Replace spaces with tab.
+
+2012-05-08   Teresa Johnson  <tejohnson@google.com>
+
+	* libgcov.c (gcov_clear, __gcov_reset): New functions.
+	(__gcov_dump): Ditto.
+	(gcov_dump_complete): New global variable.
+	(gcov_exit): Export hidden to enable use in L_gcov_dump.
+	(__gcov_flush): Outline functionality now in gcov_clear.
+	* Makefile.in (L_gcov_reset, L_gcov_dump): Define.
+
+2012-04-28  Aurelien Jarno  <aurelien@aurel32.net>
+
+	* config.host (mips64*-*-linux*, mipsisa64*-*-linux*): Remove. 
+	(mips*-*-linux*): Include mips/t-tpbit when long double is 
+	16 bytes long. 
+
+2012-04-25  Sriraman Tallam  <tmsriram@google.com>
+
+	* config/i386/i386-cpuinfo.c (FEATURE_AVX2): New enum value.
+	(get_available_features): New argument. Check for AVX2.
+	(__cpu_indicator_init): Modify call to get_available_features.
+
+2012-04-25  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/crtsavevr.S: New file.
+	* config/rs6000/crtrestvr.S: New file.
+	* config/rs6000/t-savresfgpr: Build the above.
+	* config/rs6000/t-netbsd: Likewise.
+
+2012-04-24  Sriraman Tallam  <tmsriram@google.com>
+
+	* libgcc/config/i386/i386-cpuinfo.c: Set __cpu_vendor always.
+
+2012-04-24  Sriraman Tallam  <tmsriram@google.com>
+
+	* libgcc/config/i386/i386-cpuinfo.c: New file.
+	* libgcc/config/i386/t-cpuinfo: New file.
+	* libgcc/config.host: Include t-cpuinfo.
+	* libgcc/config/i386/libgcc-glibc.ver: Version symbol __cpu_model.
+
+2012-04-24  Chao-ying Fu  <fu@mips.com>
+
+	* unwind-dw2-fde-dip.c: Define USE_PT_GNU_EH_FRAME for BIONIC.
+
+2012-04-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	struct siginfo vs. siginfo_t
+
+	* config/alpha/linux-unwind.h (alpha_fallback_frame_state): Use
+	siginfo_t instead of struct siginfo.
+	* config/bfin/linux-unwind.h (bfin_fallback_frame_state): Likewise.
+	* config/i386/linux-unwind.h (x86_fallback_frame_state): Likewise.
+	* config/ia64/linux-unwind.h (ia64_fallback_frame_state)
+	(ia64_handle_unwabi): Likewise.
+	* config/mips/linux-unwind.h (mips_fallback_frame_state): Likewise.
+	* config/pa/linux-unwind.h (pa32_fallback_frame_state): Likewise.
+	* config/sh/linux-unwind.h (shmedia_fallback_frame_state)
+	(sh_fallback_frame_state): Likewise.
+	* config/tilepro/linux-unwind.h (tile_fallback_frame_state): Likewise.
+	* config/xtensa/linux-unwind.h (xtensa_fallback_frame_state): Likewise.
+
 2012-04-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/linux-unwind.h (RT_SIGRETURN_SYSCALL): Update x32

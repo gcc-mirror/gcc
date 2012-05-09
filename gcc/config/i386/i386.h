@@ -75,6 +75,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_RDRND	OPTION_ISA_RDRND
 #define TARGET_F16C	OPTION_ISA_F16C
 #define TARGET_RTM      OPTION_ISA_RTM
+#define TARGET_HLE	OPTION_ISA_HLE
 
 #define TARGET_LP64	OPTION_ABI_64
 #define TARGET_X32	OPTION_ABI_X32
@@ -429,7 +430,7 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
-  X86_ARCH_CMOVE,		/* || TARGET_SSE */
+  X86_ARCH_CMOV,
   X86_ARCH_CMPXCHG,
   X86_ARCH_CMPXCHG8B,
   X86_ARCH_XADD,
@@ -440,11 +441,16 @@ enum ix86_arch_indices {
 
 extern unsigned char ix86_arch_features[X86_ARCH_LAST];
 
-#define TARGET_CMOVE		ix86_arch_features[X86_ARCH_CMOVE]
+#define TARGET_CMOV		ix86_arch_features[X86_ARCH_CMOV]
 #define TARGET_CMPXCHG		ix86_arch_features[X86_ARCH_CMPXCHG]
 #define TARGET_CMPXCHG8B	ix86_arch_features[X86_ARCH_CMPXCHG8B]
 #define TARGET_XADD		ix86_arch_features[X86_ARCH_XADD]
 #define TARGET_BSWAP		ix86_arch_features[X86_ARCH_BSWAP]
+
+/* For sane SSE instruction set generation we need fcomi instruction.
+   It is safe to enable all CMOVE instructions.  Also, RDRAND intrinsic
+   expands to a sequence that includes conditional move. */
+#define TARGET_CMOVE		(TARGET_CMOV || TARGET_SSE || TARGET_RDRND)
 
 #define TARGET_FISTTP		(TARGET_SSE3 && TARGET_80387)
 
@@ -1906,8 +1912,9 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 /* After the prologue, RA is at -4(AP) in the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME)					   \
   ((COUNT) == 0								   \
-   ? gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, -UNITS_PER_WORD)) \
-   : gen_rtx_MEM (Pmode, plus_constant (FRAME, UNITS_PER_WORD)))
+   ? gen_rtx_MEM (Pmode, plus_constant (Pmode, arg_pointer_rtx,	   \
+					-UNITS_PER_WORD))		   \
+   : gen_rtx_MEM (Pmode, plus_constant (Pmode, FRAME, UNITS_PER_WORD)))
 
 /* PC is dbx register 8; let's use that column for RA.  */
 #define DWARF_FRAME_RETURN_COLUMN 	(TARGET_64BIT ? 16 : 8)
@@ -2343,6 +2350,9 @@ extern void debug_dispatch_window (int);
 #define TARGET_RECIP_SQRT	((recip_mask & RECIP_MASK_SQRT) != 0)
 #define TARGET_RECIP_VEC_DIV	((recip_mask & RECIP_MASK_VEC_DIV) != 0)
 #define TARGET_RECIP_VEC_SQRT	((recip_mask & RECIP_MASK_VEC_SQRT) != 0)
+
+#define IX86_HLE_ACQUIRE (1 << 16)
+#define IX86_HLE_RELEASE (1 << 17)
 
 /*
 Local variables:

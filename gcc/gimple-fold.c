@@ -70,6 +70,7 @@ can_refer_decl_in_current_unit_p (tree decl)
 	 flags incorrectly.  Those variables should never
 	 be finalized.  */
       gcc_checking_assert (!(vnode = varpool_get_node (decl))
+			   || vnode->alias
 			   || !vnode->finalized);
       return false;
     }
@@ -548,9 +549,8 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   tree lhs;
   gimple stmt, new_stmt;
   gimple_stmt_iterator i;
-  gimple_seq stmts = gimple_seq_alloc();
+  gimple_seq stmts = NULL;
   struct gimplify_ctx gctx;
-  gimple last;
   gimple laststore;
   tree reaching_vuse;
 
@@ -619,17 +619,9 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 
   /* Second iterate over the statements forward, assigning virtual
      operands to their uses.  */
-  last = NULL;
   reaching_vuse = gimple_vuse (stmt);
   for (i = gsi_start (stmts); !gsi_end_p (i); gsi_next (&i))
     {
-      /* Do not insert the last stmt in this loop but remember it
-         for replacing the original statement.  */
-      if (last)
-	{
-	  gsi_insert_before (si_p, last, GSI_NEW_STMT);
-	  gsi_next (si_p);
-	}
       new_stmt = gsi_stmt (i);
       /* The replacement can expose previously unreferenced variables.  */
       if (gimple_in_ssa_p (cfun))
@@ -641,7 +633,6 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
       gimple_set_modified (new_stmt, true);
       if (gimple_vdef (new_stmt))
 	reaching_vuse = gimple_vdef (new_stmt);
-      last = new_stmt;
     }
 
   /* If the new sequence does not do a store release the virtual
@@ -658,8 +649,8 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	}
     }
 
-  /* Finally replace rhe original statement with the last.  */
-  gsi_replace (si_p, last, false);
+  /* Finally replace the original statement with the sequence.  */
+  gsi_replace_with_seq (si_p, stmts, false);
 }
 
 /* Return the string length, maximum string length or maximum value of
@@ -2754,7 +2745,7 @@ fold_array_ctor_reference (tree type, tree ctor,
   double_int low_bound, elt_size;
   double_int index, max_index;
   double_int access_index;
-  tree domain_type = NULL_TREE;
+  tree domain_type = NULL_TREE, index_type = NULL_TREE;
   HOST_WIDE_INT inner_offset;
 
   /* Compute low bound and elt size.  */
@@ -2764,6 +2755,7 @@ fold_array_ctor_reference (tree type, tree ctor,
     {
       /* Static constructors for variably sized objects makes no sense.  */
       gcc_assert (TREE_CODE (TYPE_MIN_VALUE (domain_type)) == INTEGER_CST);
+      index_type = TREE_TYPE (TYPE_MIN_VALUE (domain_type));
       low_bound = tree_to_double_int (TYPE_MIN_VALUE (domain_type));
     }
   else
@@ -2787,6 +2779,10 @@ fold_array_ctor_reference (tree type, tree ctor,
   access_index = double_int_udiv (uhwi_to_double_int (offset / BITS_PER_UNIT),
 				  elt_size, TRUNC_DIV_EXPR);
   access_index = double_int_add (access_index, low_bound);
+  if (index_type)
+    access_index = double_int_ext (access_index,
+				   TYPE_PRECISION (index_type),
+				   TYPE_UNSIGNED (index_type));
 
   /* And offset within the access.  */
   inner_offset = offset % (double_int_to_uhwi (elt_size) * BITS_PER_UNIT);
@@ -2797,6 +2793,11 @@ fold_array_ctor_reference (tree type, tree ctor,
     return NULL_TREE;
 
   index = double_int_sub (low_bound, double_int_one);
+  if (index_type)
+    index = double_int_ext (index,
+			    TYPE_PRECISION (index_type),
+			    TYPE_UNSIGNED (index_type));
+
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
     {
       /* Array constructor might explicitely set index, or specify range
@@ -2814,7 +2815,14 @@ fold_array_ctor_reference (tree type, tree ctor,
 	    }
 	}
       else
-	max_index = index = double_int_add (index, double_int_one);
+	{
+	  index = double_int_add (index, double_int_one);
+	  if (index_type)
+	    index = double_int_ext (index,
+				    TYPE_PRECISION (index_type),
+				    TYPE_UNSIGNED (index_type));
+	  max_index = index;
+	}
 
       /* Do we have match?  */
       if (double_int_cmp (access_index, index, 1) >= 0
@@ -2969,18 +2977,23 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
       if (TREE_CODE (TREE_OPERAND (t, 1)) == SSA_NAME
 	  && valueize
 	  && (idx = (*valueize) (TREE_OPERAND (t, 1)))
-	  && host_integerp (idx, 0))
+	  && TREE_CODE (idx) == INTEGER_CST)
 	{
 	  tree low_bound, unit_size;
+	  double_int doffset;
 
 	  /* If the resulting bit-offset is constant, track it.  */
 	  if ((low_bound = array_ref_low_bound (t),
-	       host_integerp (low_bound, 0))
+	       TREE_CODE (low_bound) == INTEGER_CST)
 	      && (unit_size = array_ref_element_size (t),
-		  host_integerp (unit_size, 1)))
+		  host_integerp (unit_size, 1))
+	      && (doffset = double_int_sext
+			    (double_int_sub (TREE_INT_CST (idx),
+					     TREE_INT_CST (low_bound)),
+			     TYPE_PRECISION (TREE_TYPE (idx))),
+		  double_int_fits_in_shwi_p (doffset)))
 	    {
-	      offset = TREE_INT_CST_LOW (idx);
-	      offset -= TREE_INT_CST_LOW (low_bound);
+	      offset = double_int_to_shwi (doffset);
 	      offset *= TREE_INT_CST_LOW (unit_size);
 	      offset *= BITS_PER_UNIT;
 

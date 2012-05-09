@@ -1,7 +1,7 @@
 // Stream buffer classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// 2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,6 +55,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief  The actual work of input and output (interface).
    *  @ingroup io
+   *
+   *  @tparam _CharT  Type of character stream.
+   *  @tparam _Traits  Traits for character type, defaults to
+   *                   char_traits<_CharT>.
    *
    *  This is a base class.  Derived stream buffers each control a
    *  pair of character sequences:  one for input, and one for output.

@@ -27,15 +27,8 @@ along with GCC; see the file COPYING3.  If not see
   " %{!EB:%{!EL:%(endian_spec)}}" \
   " %{!mabi=*: -" MULTILIB_ABI_DEFAULT "}"
 
-#undef LIB_SPEC
-#define LIB_SPEC "\
-%{pthread:-lpthread} \
-%{shared:-lc} \
-%{!shared: \
-  %{profile:-lc_p} %{!profile:-lc}}"
-
-#undef LINK_SPEC
-#define LINK_SPEC "\
+#undef GNU_USER_TARGET_LINK_SPEC
+#define GNU_USER_TARGET_LINK_SPEC "\
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
 %{shared} \
  %(endian_spec) \
@@ -49,6 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 %{mabi=n32:-m" GNU_USER_LINK_EMULATIONN32 "} \
 %{mabi=64:-m" GNU_USER_LINK_EMULATION64 "} \
 %{mabi=32:-m" GNU_USER_LINK_EMULATION32 "}"
+#undef LINK_SPEC
+#define LINK_SPEC GNU_USER_TARGET_LINK_SPEC
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX (TARGET_OLDABI ? "$" : ".")

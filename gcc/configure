@@ -21776,20 +21776,20 @@ fi
 fi
 
 ORIGINAL_PLUGIN_LD_FOR_TARGET=$gcc_cv_ld
-PLUGIN_LD=`basename $gcc_cv_ld`
+PLUGIN_LD_SUFFIX=`basename $gcc_cv_ld | sed -e "s,$target_alias-,,"`
 
 # Check whether --with-plugin-ld was given.
 if test "${with_plugin_ld+set}" = set; then :
   withval=$with_plugin_ld; if test x"$withval" != x; then
    ORIGINAL_PLUGIN_LD_FOR_TARGET="$withval"
-   PLUGIN_LD="$withval"
+   PLUGIN_LD_SUFFIX=`echo $withval | sed -e "s,$target_alias-,,"`
  fi
 fi
 
 
 
 cat >>confdefs.h <<_ACEOF
-#define PLUGIN_LD "$PLUGIN_LD"
+#define PLUGIN_LD_SUFFIX "$PLUGIN_LD_SUFFIX"
 _ACEOF
 
 
@@ -24890,6 +24890,39 @@ $as_echo "$gcc_cv_as_ix86_sahf" >&6; }
 if test $gcc_cv_as_ix86_sahf = yes; then
 
 $as_echo "#define HAVE_AS_IX86_SAHF 1" >>confdefs.h
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for hle prefixes" >&5
+$as_echo_n "checking assembler for hle prefixes... " >&6; }
+if test "${gcc_cv_as_ix86_hle+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_ix86_hle=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.code64
+       lock xacquire cmpxchg %esi, (%rcx)
+       ' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_ix86_hle=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_hle" >&5
+$as_echo "$gcc_cv_as_ix86_hle" >&6; }
+if test $gcc_cv_as_ix86_hle = yes; then
+
+$as_echo "#define HAVE_AS_IX86_HLE 1" >>confdefs.h
 
 fi
 

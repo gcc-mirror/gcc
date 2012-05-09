@@ -214,7 +214,8 @@ try_apply_stack_adjustment (rtx insn, struct csa_reflist *reflist,
 
   for (ml = reflist; ml ; ml = ml->next)
     {
-      rtx new_addr = plus_constant (stack_pointer_rtx, ml->sp_offset - delta);
+      rtx new_addr = plus_constant (Pmode, stack_pointer_rtx,
+				    ml->sp_offset - delta);
       rtx new_val;
 
       if (MEM_P (*ml->ref))

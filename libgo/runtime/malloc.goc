@@ -72,7 +72,7 @@ runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 		npages = size >> PageShift;
 		if((size & PageMask) != 0)
 			npages++;
-		s = runtime_MHeap_Alloc(&runtime_mheap, npages, 0, !(flag & FlagNoGC));
+		s = runtime_MHeap_Alloc(&runtime_mheap, npages, 0, 1);
 		if(s == nil)
 			runtime_throw("out of memory");
 		size = npages<<PageShift;

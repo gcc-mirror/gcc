@@ -87,7 +87,6 @@ init_ic_make_global_vars (void)
       decl_default_tls_model (ic_void_ptr_var);
 
   varpool_finalize_decl (ic_void_ptr_var);
-  varpool_mark_needed_node (varpool_node (ic_void_ptr_var));
 
   gcov_type_ptr = build_pointer_type (get_gcov_type ());
   ic_gcov_type_ptr_var
@@ -103,7 +102,6 @@ init_ic_make_global_vars (void)
       decl_default_tls_model (ic_gcov_type_ptr_var);
 
   varpool_finalize_decl (ic_gcov_type_ptr_var);
-  varpool_mark_needed_node (varpool_node (ic_gcov_type_ptr_var));
 }
 
 void
@@ -479,10 +477,9 @@ tree_profiling (void)
 
   init_node_map();
 
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
-      if (!node->analyzed
-	  || !gimple_has_body_p (node->symbol.decl))
+      if (!gimple_has_body_p (node->symbol.decl))
 	continue;
 
       /* Don't profile functions produced for builtin stuff.  */
@@ -520,10 +517,9 @@ tree_profiling (void)
     }
 
   /* Drop pure/const flags from instrumented functions.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
-      if (!node->analyzed
-	  || !gimple_has_body_p (node->symbol.decl)
+      if (!gimple_has_body_p (node->symbol.decl)
 	  || !(!node->clone_of
 	  || node->symbol.decl != node->clone_of->symbol.decl))
 	continue;
@@ -538,12 +534,11 @@ tree_profiling (void)
     }
 
   /* Update call statements and rebuild the cgraph.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  FOR_EACH_DEFINED_FUNCTION (node)
     {
       basic_block bb;
 
-      if (!node->analyzed
-	  || !gimple_has_body_p (node->symbol.decl)
+      if (!gimple_has_body_p (node->symbol.decl)
 	  || !(!node->clone_of
 	  || node->symbol.decl != node->clone_of->symbol.decl))
 	continue;

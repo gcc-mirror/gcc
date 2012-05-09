@@ -307,7 +307,7 @@ Common Driver Joined Alias(o) MissingArgError(missing filename after %qs)
 Driver Alias(pass-exit-codes)
 
 -pedantic
-Common Alias(pedantic)
+Common Alias(Wpedantic)
 
 -pedantic-errors
 Common Alias(pedantic-errors)
@@ -567,8 +567,7 @@ Common Var(warn_unsafe_loop_optimizations) Warning
 Warn if the loop cannot be optimized due to nontrivial assumptions.
 
 Wmissing-noreturn
-Common Var(warn_missing_noreturn) Warning
-Warn about functions which might be candidates for __attribute__((noreturn))
+Common Alias(Wsuggest-attribute=noreturn)
 
 Woverflow
 Common Var(warn_overflow) Init(1) Warning
@@ -581,6 +580,10 @@ Warn when the packed attribute has no effect on struct layout
 Wpadded
 Common Var(warn_padded) Warning
 Warn when padding is required to align structure members
+
+Wpedantic
+Common Var(pedantic) Warning
+Issue warnings needed for strict compliance to the standard
 
 Wshadow
 Common Var(warn_shadow) Warning
@@ -963,7 +966,7 @@ Common Joined RejectNegative Var(common_deferred_options) Defer
 Map one directory name to another in debug information
 
 fdebug-types-section
-Common Report Var(flag_debug_types_section) Init(1)
+Common Report Var(flag_debug_types_section) Init(0)
 Output .debug_types section when using DWARF v4 debuginfo.
 
 ; Nonzero for -fdefer-pop: don't pop args after each function call
@@ -1421,7 +1424,7 @@ Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1)
 -flto-compression-level=<number>	Use zlib compression level <number> for IL
 
 flto-report
-Common Report Var(flag_lto_report) Init(0) Optimization
+Common Report Var(flag_lto_report) Init(0)
 Report various link-time optimization statistics
 
 fmath-errno
@@ -1661,6 +1664,19 @@ fsched-pressure
 Common Report Var(flag_sched_pressure) Init(0) Optimization
 Enable register pressure sensitive insn scheduling
 
+fsched-pressure-algorithm=
+Common Joined RejectNegative Enum(sched_pressure_algorithm) Var(flag_sched_pressure_algorithm) Init(SCHED_PRESSURE_WEIGHTED)
+-fsched-pressure-algorithm=[weighted|model] Set the pressure-scheduling algorithm
+
+Enum
+Name(sched_pressure_algorithm) Type(enum sched_pressure_algorithm) UnknownError(unknown %<fsched-pressure%> algorithm %qs)
+
+EnumValue
+Enum(sched_pressure_algorithm) String(weighted) Value(SCHED_PRESSURE_WEIGHTED)
+
+EnumValue
+Enum(sched_pressure_algorithm) String(model) Value(SCHED_PRESSURE_MODEL)
+
 fsched-spec
 Common Report Var(flag_schedule_speculative) Init(1) Optimization
 Allow speculative motion of non-loads
@@ -1862,6 +1878,10 @@ fstrict-overflow
 Common Report Var(flag_strict_overflow)
 Treat signed overflow as undefined
 
+fsync-libcalls
+Common Report Var(flag_sync_libcalls) Init(1)
+Implement __atomic operations via libcalls to legacy __sync functions
+
 fsyntax-only
 Common Report Var(flag_syntax_only)
 Check for syntax errors, then stop
@@ -2015,6 +2035,10 @@ Enable hoisting loads from conditional pointers.
 ftree-pre
 Common Report Var(flag_tree_pre) Optimization
 Enable SSA-PRE optimization on trees
+
+ftree-partial-pre
+Common Report Var(flag_tree_partial_pre) Optimization
+In SSA-PRE optimization on trees, enable partial-partial redundancy elimination
 
 ftree-pta
 Common Report Var(flag_tree_pta) Init(1) Optimization
@@ -2208,7 +2232,7 @@ Common JoinedOrMissing Negative(gdwarf-)
 Generate debug information in COFF format
 
 gdwarf-
-Common Joined UInteger Var(dwarf_version) Init(2) Negative(gstabs)
+Common Joined UInteger Var(dwarf_version) Init(4) Negative(gstabs)
 Generate debug information in DWARF v2 (or later) format
 
 ggdb
@@ -2216,7 +2240,7 @@ Common JoinedOrMissing
 Generate debug information in default extended format
 
 gno-record-gcc-switches
-Common RejectNegative Var(dwarf_record_gcc_switches,0) Init(0)
+Common RejectNegative Var(dwarf_record_gcc_switches,0) Init(1)
 Don't record gcc command line switches in DWARF DW_AT_producer.
 
 grecord-gcc-switches
@@ -2232,7 +2256,7 @@ Common JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format
 
 gno-strict-dwarf
-Common RejectNegative Var(dwarf_strict,0) Init(-1)
+Common RejectNegative Var(dwarf_strict,0) Init(0)
 Emit DWARF additions beyond selected version
 
 gstrict-dwarf
@@ -2292,8 +2316,7 @@ pass-exit-codes
 Driver Var(pass_exit_codes)
 
 pedantic
-Common Var(pedantic)
-Issue warnings needed for strict compliance to the standard
+Common Alias(Wpedantic)
 
 pedantic-errors
 Common Var(flag_pedantic_errors)

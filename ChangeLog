@@ -1,3 +1,40 @@
+2012-05-09  Nick Clifton  <nickc@redhat.com>
+	    Paul Smith  <psmith@gnu.org>
+
+	PR bootstrap/50461
+	* configure.ac (mpfr-dir): When using in-tree MPFR sources
+	allow for the fact that from release v3.1.0 of MPFR the source
+	files were moved into a src sub-directory.
+	* configure: Regenerate.
+
+2012-05-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Bump minimum MPFR version to 2.4.0.
+	* configure: Regenerated.
+
+2012-05-03  Olivier Hainque  <hainque@adacore.com>
+
+	* config/mh-ppc-aix (LDFLAGS): Quote $(CC).
+
+2012-05-01  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.def (libatomic): New target_module.
+	* configure.ac (target_libraries): Add libatomic.
+	(noconfigdirs): Check if libatomic is supported.
+	* Makefile.in, configure: Rebuild.
+
+2012-05-01  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2012-04-25  Joel Brobecker  <brobecker@adacore.com>
+
+	* config.sub: Update to 2012-04-18 version from official repo.
+
+2012-04-24  Naveen H.S  <naveen.S@kpitcummins.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2012-04-11  Steve Ellcey  <sellcey@mips.com>
 
 	* MAINTAINERS: Changed email address.

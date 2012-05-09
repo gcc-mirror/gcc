@@ -998,6 +998,98 @@ oecount_cmp (const void *p1, const void *p2)
     return c1->id - c2->id;
 }
 
+/* Return TRUE iff STMT represents a builtin call that raises OP
+   to some exponent.  */
+
+static bool
+stmt_is_power_of_op (gimple stmt, tree op)
+{
+  tree fndecl;
+
+  if (!is_gimple_call (stmt))
+    return false;
+
+  fndecl = gimple_call_fndecl (stmt);
+
+  if (!fndecl
+      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+    return false;
+
+  switch (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)))
+    {
+    CASE_FLT_FN (BUILT_IN_POW):
+    CASE_FLT_FN (BUILT_IN_POWI):
+      return (operand_equal_p (gimple_call_arg (stmt, 0), op, 0));
+      
+    default:
+      return false;
+    }
+}
+
+/* Given STMT which is a __builtin_pow* call, decrement its exponent
+   in place and return the result.  Assumes that stmt_is_power_of_op
+   was previously called for STMT and returned TRUE.  */
+
+static HOST_WIDE_INT
+decrement_power (gimple stmt)
+{
+  REAL_VALUE_TYPE c, cint;
+  HOST_WIDE_INT power;
+  tree arg1;
+
+  switch (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)))
+    {
+    CASE_FLT_FN (BUILT_IN_POW):
+      arg1 = gimple_call_arg (stmt, 1);
+      c = TREE_REAL_CST (arg1);
+      power = real_to_integer (&c) - 1;
+      real_from_integer (&cint, VOIDmode, power, 0, 0);
+      gimple_call_set_arg (stmt, 1, build_real (TREE_TYPE (arg1), cint));
+      return power;
+
+    CASE_FLT_FN (BUILT_IN_POWI):
+      arg1 = gimple_call_arg (stmt, 1);
+      power = TREE_INT_CST_LOW (arg1) - 1;
+      gimple_call_set_arg (stmt, 1, build_int_cst (TREE_TYPE (arg1), power));
+      return power;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Find the single immediate use of STMT's LHS, and replace it
+   with OP.  Remove STMT.  If STMT's LHS is the same as *DEF,
+   replace *DEF with OP as well.  */
+
+static void
+propagate_op_to_single_use (tree op, gimple stmt, tree *def)
+{
+  tree lhs;
+  gimple use_stmt;
+  use_operand_p use;
+  gimple_stmt_iterator gsi;
+
+  if (is_gimple_call (stmt))
+    lhs = gimple_call_lhs (stmt);
+  else
+    lhs = gimple_assign_lhs (stmt);
+
+  gcc_assert (has_single_use (lhs));
+  single_imm_use (lhs, &use, &use_stmt);
+  if (lhs == *def)
+    *def = op;
+  SET_USE (use, op);
+  if (TREE_CODE (op) != SSA_NAME)
+    update_stmt (use_stmt);
+  gsi = gsi_for_stmt (stmt);
+  gsi_remove (&gsi, true);
+  release_defs (stmt);
+
+  if (is_gimple_call (stmt))
+    unlink_stmt_vdef (stmt);
+}
+
 /* Walks the linear chain with result *DEF searching for an operation
    with operand OP and code OPCODE removing that from the chain.  *DEF
    is updated if there is only one operand but no operation left.  */
@@ -1009,7 +1101,17 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 
   do
     {
-      tree name = gimple_assign_rhs1 (stmt);
+      tree name;
+
+      if (opcode == MULT_EXPR
+	  && stmt_is_power_of_op (stmt, op))
+	{
+	  if (decrement_power (stmt) == 1)
+	    propagate_op_to_single_use (op, stmt, def);
+	  return;
+	}
+
+      name = gimple_assign_rhs1 (stmt);
 
       /* If this is the operation we look for and one of the operands
          is ours simply propagate the other operand into the stmts
@@ -1018,22 +1120,25 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	  && (name == op
 	      || gimple_assign_rhs2 (stmt) == op))
 	{
-	  gimple use_stmt;
-	  use_operand_p use;
-	  gimple_stmt_iterator gsi;
 	  if (name == op)
 	    name = gimple_assign_rhs2 (stmt);
-	  gcc_assert (has_single_use (gimple_assign_lhs (stmt)));
-	  single_imm_use (gimple_assign_lhs (stmt), &use, &use_stmt);
-	  if (gimple_assign_lhs (stmt) == *def)
-	    *def = name;
-	  SET_USE (use, name);
-	  if (TREE_CODE (name) != SSA_NAME)
-	    update_stmt (use_stmt);
-	  gsi = gsi_for_stmt (stmt);
-	  gsi_remove (&gsi, true);
-	  release_defs (stmt);
+	  propagate_op_to_single_use (name, stmt, def);
 	  return;
+	}
+
+      /* We might have a multiply of two __builtin_pow* calls, and
+	 the operand might be hiding in the rightmost one.  */
+      if (opcode == MULT_EXPR
+	  && gimple_assign_rhs_code (stmt) == opcode
+	  && TREE_CODE (gimple_assign_rhs2 (stmt)) == SSA_NAME)
+	{
+	  gimple stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs2 (stmt));
+	  if (stmt_is_power_of_op (stmt2, op))
+	    {
+	      if (decrement_power (stmt2) == 1)
+		propagate_op_to_single_use (op, stmt2, def);
+	      return;
+	    }
 	}
 
       /* Continue walking the chain.  */
@@ -2137,6 +2242,47 @@ remove_visited_stmt_chain (tree var)
     }
 }
 
+/* If OP is an SSA name, find its definition and determine whether it
+   is a call to __builtin_powi.  If so, move the definition prior to
+   STMT.  Only do this during early reassociation.  */
+
+static void
+possibly_move_powi (gimple stmt, tree op)
+{
+  gimple stmt2;
+  tree fndecl;
+  gimple_stmt_iterator gsi1, gsi2;
+
+  if (!first_pass_instance
+      || !flag_unsafe_math_optimizations
+      || TREE_CODE (op) != SSA_NAME)
+    return;
+  
+  stmt2 = SSA_NAME_DEF_STMT (op);
+
+  if (!is_gimple_call (stmt2)
+      || !has_single_use (gimple_call_lhs (stmt2)))
+    return;
+
+  fndecl = gimple_call_fndecl (stmt2);
+
+  if (!fndecl
+      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+    return;
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    CASE_FLT_FN (BUILT_IN_POWI):
+      break;
+    default:
+      return;
+    }
+
+  gsi1 = gsi_for_stmt (stmt);
+  gsi2 = gsi_for_stmt (stmt2);
+  gsi_move_before (&gsi2, &gsi1);
+}
+
 /* This function checks three consequtive operands in
    passed operands vector OPS starting from OPINDEX and
    swaps two operands if it is profitable for binary operation
@@ -2242,6 +2388,8 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 	      print_gimple_stmt (dump_file, stmt, 0, 0);
 	    }
 
+	  possibly_move_powi (stmt, oe1->op);
+	  possibly_move_powi (stmt, oe2->op);
 	}
       return;
     }
@@ -2287,6 +2435,8 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 	  fprintf (dump_file, " into ");
 	  print_gimple_stmt (dump_file, stmt, 0, 0);
 	}
+
+      possibly_move_powi (stmt, oe->op);
     }
   /* Recurse on the LHS of the binary operator, which is guaranteed to
      be the non-leaf side.  */
@@ -2460,6 +2610,9 @@ rewrite_expr_tree_parallel (gimple stmt, int width,
 	  fprintf (dump_file, " into ");
 	  print_gimple_stmt (dump_file, stmts[i], 0, 0);
 	}
+
+      possibly_move_powi (stmts[i], op1);
+      possibly_move_powi (stmts[i], op2);
     }
 
   remove_visited_stmt_chain (last_rhs1);
@@ -3171,6 +3324,8 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 							   power));
 	      gimple_call_set_lhs (pow_stmt, iter_result);
 	      gimple_set_location (pow_stmt, gimple_location (stmt));
+	      /* Temporarily place the call; we will move it to the
+		 correct place during rewrite_expr.  */
 	      gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))

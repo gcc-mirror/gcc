@@ -397,6 +397,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_pclmul = 0, has_abm = 0, has_lwp = 0;
   unsigned int has_fma = 0, has_fma4 = 0, has_xop = 0;
   unsigned int has_bmi = 0, has_bmi2 = 0, has_tbm = 0, has_lzcnt = 0;
+  unsigned int has_hle = 0;
 
   bool arch;
 
@@ -456,6 +457,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
 
       has_bmi = ebx & bit_BMI;
+      has_hle = ebx & bit_HLE;
       has_avx2 = ebx & bit_AVX2;
       has_bmi2 = ebx & bit_BMI2;
     }
@@ -472,6 +474,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_abm = ecx & bit_ABM;
       has_lwp = ecx & bit_LWP;
       has_fma4 = ecx & bit_FMA4;
+      if (vendor == SIG_AMD && has_fma4 && has_fma)
+	has_fma4 = 0;
       has_xop = ecx & bit_XOP;
       has_tbm = ecx & bit_TBM;
       has_lzcnt = ecx & bit_LZCNT;
@@ -726,10 +730,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *sse4_2 = has_sse4_2 ? " -msse4.2" : " -mno-sse4.2";
       const char *sse4_1 = has_sse4_1 ? " -msse4.1" : " -mno-sse4.1";
       const char *lzcnt = has_lzcnt ? " -mlzcnt" : " -mno-lzcnt";
+      const char *hle = has_hle ? " -mhle" : " -mno-hle";
 
       options = concat (options, cx16, sahf, movbe, ase, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, bmi2,
-			tbm, avx, avx2, sse4_2, sse4_1, lzcnt, NULL);
+			tbm, avx, avx2, sse4_2, sse4_1, lzcnt,
+			hle, NULL);
     }
 
 done:

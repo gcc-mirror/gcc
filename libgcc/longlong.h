@@ -25,9 +25,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, 51 Franklin Street, Fifth Floor, Boston,
-   MA 02110-1301, USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 /* You have to define the following before including this file:
 
@@ -383,21 +382,21 @@ UDItype __umulsidi3 (USItype, USItype);
   do {                                                                  \
     register SItype __r0 __asm__ ("0");					\
     register SItype __r1 __asm__ ("1") = (m0);				\
-                                                                        \
+									\
     __asm__ ("mr\t%%r0,%3"                                              \
-             : "=r" (__r0), "=r" (__r1)					\
-             : "r"  (__r1),  "r" (m1));					\
+	     : "=r" (__r0), "=r" (__r1)					\
+	     : "r"  (__r1),  "r" (m1));					\
     (xh) = __r0; (xl) = __r1;						\
   } while (0)
 
 #define sdiv_qrnnd(q, r, n1, n0, d) \
-  do {                                                                  \
+  do {									\
     register SItype __r0 __asm__ ("0") = (n1);				\
     register SItype __r1 __asm__ ("1") = (n0);				\
-                                                                        \
+									\
     __asm__ ("dr\t%%r0,%4"                                              \
-             : "=r" (__r0), "=r" (__r1)					\
-             : "r" (__r0), "r" (__r1), "r" (d));			\
+	     : "=r" (__r0), "=r" (__r1)					\
+	     : "r" (__r0), "r" (__r1), "r" (d));			\
     (q) = __r1; (r) = __r0;						\
   } while (0)
 #endif /* __zarch__ */
@@ -840,9 +839,9 @@ UDItype __umulsidi3 (USItype, USItype);
 #define count_trailing_zeros(count,x) \
   do {									\
     __asm__ ("ffsd     %2,%0"						\
-            : "=r" ((USItype) (count))					\
-            : "0" ((USItype) 0),					\
-              "r" ((USItype) (x)));					\
+	    : "=r" ((USItype) (count))					\
+	    : "0" ((USItype) 0),					\
+	      "r" ((USItype) (x)));					\
   } while (0)
 #endif /* __ns32000__ */
 
@@ -858,7 +857,7 @@ UDItype __umulsidi3 (USItype, USItype);
      || defined (__ppc__)	/* Darwin */				\
      || (defined (PPC) && ! defined (CPU_FAMILY)) /* gcc 2.7.x GNU&SysV */    \
      || (defined (PPC) && defined (CPU_FAMILY)    /* VxWorks */               \
-         && CPU_FAMILY == PPC)                                                \
+	 && CPU_FAMILY == PPC)                                                \
      ) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   do {									\
@@ -899,7 +898,7 @@ UDItype __umulsidi3 (USItype, USItype);
   || defined (__ppc__)                                                    \
   || (defined (PPC) && ! defined (CPU_FAMILY)) /* gcc 2.7.x GNU&SysV */       \
   || (defined (PPC) && defined (CPU_FAMILY)    /* VxWorks */                  \
-         && CPU_FAMILY == PPC)
+	 && CPU_FAMILY == PPC)
 #define umul_ppmm(ph, pl, m0, m1) \
   do {									\
     USItype __m0 = (m0), __m1 = (m1);					\
@@ -1067,7 +1066,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #define udiv_qrnnd(q, r, n1, n0, d) \
   do {									\
     extern UWtype __udiv_qrnnd_16 (UWtype, UWtype)			\
-                        __attribute__ ((visibility ("hidden")));	\
+			__attribute__ ((visibility ("hidden")));	\
     /* r0: rn r1: qn */ /* r0: n1 r4: n0 r5: d r6: d1 */ /* r2: __m */	\
     __asm__ (								\
 	"mov%M4 %4,r5\n"						\
@@ -1202,8 +1201,8 @@ UDItype __umulsidi3 (USItype, USItype);
 #define count_leading_zeros(count, x) \
   do {                                                                  \
   __asm__ ("scan %1,1,%0"                                               \
-           : "=r" ((USItype) (count))                                   \
-           : "r" ((USItype) (x)));					\
+	   : "=r" ((USItype) (count))                                   \
+	   : "r" ((USItype) (x)));					\
   } while (0)
 /* Early sparclites return 63 for an argument of 0, but they warn that future
    implementations might change this.  Therefore, leave COUNT_LEADING_ZEROS_0

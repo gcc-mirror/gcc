@@ -1,7 +1,7 @@
 /* Subroutines for insn-output.c for SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
@@ -370,6 +370,30 @@ struct processor_costs niagara3_costs = {
   0, /* imul bit factor */
   COSTS_N_INSNS (31), /* idiv, average of 17 - 45 cycle range */
   COSTS_N_INSNS (30), /* idivX, average of 16 - 44 cycle range */
+  COSTS_N_INSNS (1), /* movcc/movr */
+  0, /* shift penalty */
+};
+
+static const
+struct processor_costs niagara4_costs = {
+  COSTS_N_INSNS (5), /* int load */
+  COSTS_N_INSNS (5), /* int signed load */
+  COSTS_N_INSNS (5), /* int zeroed load */
+  COSTS_N_INSNS (5), /* float load */
+  COSTS_N_INSNS (11), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (11), /* fadd, fsub */
+  COSTS_N_INSNS (11), /* fcmp */
+  COSTS_N_INSNS (11), /* fmov, fmovr */
+  COSTS_N_INSNS (11), /* fmul */
+  COSTS_N_INSNS (24), /* fdivs */
+  COSTS_N_INSNS (37), /* fdivd */
+  COSTS_N_INSNS (24), /* fsqrts */
+  COSTS_N_INSNS (37), /* fsqrtd */
+  COSTS_N_INSNS (12), /* imul */
+  COSTS_N_INSNS (12), /* imulX */
+  0, /* imul bit factor */
+  COSTS_N_INSNS (50), /* idiv, average of 41 - 60 cycle range */
+  COSTS_N_INSNS (35), /* idivX, average of 26 - 44 cycle range */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
 };
@@ -1157,8 +1181,10 @@ sparc_option_override (void)
       sparc_costs = &niagara2_costs;
       break;
     case PROCESSOR_NIAGARA3:
-    case PROCESSOR_NIAGARA4:
       sparc_costs = &niagara3_costs;
+      break;
+    case PROCESSOR_NIAGARA4:
+      sparc_costs = &niagara4_costs;
       break;
     case PROCESSOR_NATIVE:
       gcc_unreachable ();
@@ -2698,7 +2724,12 @@ emit_soft_tfmode_libcall (const char *func_name, int nargs, rtx *operands)
 
 	  if (GET_CODE (this_arg) == MEM
 	      && ! force_stack_temp)
-	    this_arg = XEXP (this_arg, 0);
+	    {
+	      tree expr = MEM_EXPR (this_arg);
+	      if (expr)
+		mark_addressable (expr);
+	      this_arg = XEXP (this_arg, 0);
+	    }
 	  else if (CONSTANT_P (this_arg)
 		   && ! force_stack_temp)
 	    {
@@ -3835,7 +3866,7 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
       if (GET_CODE (offset) == CONST_INT)
 	{
 	  if (SMALL_INT (offset))
-	    return plus_constant (base, INTVAL (offset));
+	    return plus_constant (Pmode, base, INTVAL (offset));
 	  else if (can_create_pseudo_p ())
 	    offset = force_reg (Pmode, offset);
 	  else
@@ -4574,7 +4605,7 @@ sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
       emit_move_insn (g1, GEN_INT (first));
       emit_insn (gen_rtx_SET (VOIDmode, g1,
 			      gen_rtx_MINUS (Pmode, stack_pointer_rtx, g1)));
-      emit_stack_probe (plus_constant (g1, -size));
+      emit_stack_probe (plus_constant (Pmode, g1, -size));
     }
 
   /* The run-time loop is made up of 10 insns in the generic case while the
@@ -4594,11 +4625,12 @@ sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
       for (i = 2 * PROBE_INTERVAL; i < size; i += PROBE_INTERVAL)
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, g1,
-				  plus_constant (g1, -PROBE_INTERVAL)));
+				  plus_constant (Pmode, g1, -PROBE_INTERVAL)));
 	  emit_stack_probe (g1);
 	}
 
-      emit_stack_probe (plus_constant (g1, (i - PROBE_INTERVAL) - size));
+      emit_stack_probe (plus_constant (Pmode, g1,
+				       (i - PROBE_INTERVAL) - size));
     }
 
   /* Otherwise, do the same as above, but in a loop.  Note that we must be
@@ -4651,7 +4683,7 @@ sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 	 that SIZE is equal to ROUNDED_SIZE.  */
 
       if (size != rounded_size)
-	emit_stack_probe (plus_constant (g4, rounded_size - size));
+	emit_stack_probe (plus_constant (Pmode, g4, rounded_size - size));
     }
 
   /* Make sure nothing is scheduled before we are done.  */
@@ -4728,7 +4760,8 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 	{
 	  if (save_p (i, leaf_function))
 	    {
-	      mem = gen_frame_mem (DImode, plus_constant (base, offset));
+	      mem = gen_frame_mem (DImode, plus_constant (Pmode,
+							  base, offset));
 	      if (action_true == SORR_SAVE)
 		{
 		  insn = emit_move_insn (mem, gen_rtx_REG (DImode, i));
@@ -4753,7 +4786,7 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 
       if (fp_offset >= 0)
 	{
-	  mem = gen_frame_mem (DImode, plus_constant (base, fp_offset));
+	  mem = gen_frame_mem (DImode, plus_constant (Pmode, base, fp_offset));
 	  emit_move_insn (hard_frame_pointer_rtx, mem);
 	}
     }
@@ -4789,7 +4822,7 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 	      continue;
 	    }
 
-	  mem = gen_frame_mem (mode, plus_constant (base, offset));
+	  mem = gen_frame_mem (mode, plus_constant (Pmode, base, offset));
 	  if (action_true == SORR_SAVE)
 	    {
 	      insn = emit_move_insn (mem, gen_rtx_REG (mode, regno));
@@ -4797,12 +4830,14 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 	      if (mode == DImode)
 		{
 		  rtx set1, set2;
-		  mem = gen_frame_mem (SImode, plus_constant (base, offset));
+		  mem = gen_frame_mem (SImode, plus_constant (Pmode, base,
+							      offset));
 		  set1 = gen_rtx_SET (VOIDmode, mem,
 				      gen_rtx_REG (SImode, regno));
 		  RTX_FRAME_RELATED_P (set1) = 1;
 		  mem
-		    = gen_frame_mem (SImode, plus_constant (base, offset + 4));
+		    = gen_frame_mem (SImode, plus_constant (Pmode, base,
+							    offset + 4));
 		  set2 = gen_rtx_SET (VOIDmode, mem,
 				      gen_rtx_REG (SImode, regno + 1));
 		  RTX_FRAME_RELATED_P (set2) = 1;
@@ -4892,7 +4927,7 @@ emit_window_save (rtx increment)
 
   /* The CFA is %fp, the hard frame pointer.  */
   add_reg_note (insn, REG_CFA_DEF_CFA,
-		plus_constant (hard_frame_pointer_rtx,
+		plus_constant (Pmode, hard_frame_pointer_rtx,
 			       INCOMING_FRAME_SP_OFFSET));
 
   return insn;
@@ -5114,7 +5149,7 @@ sparc_flat_expand_prologue (void)
 
 	  add_reg_note (insn, REG_CFA_ADJUST_CFA,
 			gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
-				     plus_constant (stack_pointer_rtx,
+				     plus_constant (Pmode, stack_pointer_rtx,
 						    size)));
 	}
 
@@ -6705,10 +6740,10 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
       rtx mem;
 
       if (incoming)
-	mem = gen_frame_mem (Pmode, plus_constant (frame_pointer_rtx,
+	mem = gen_frame_mem (Pmode, plus_constant (Pmode, frame_pointer_rtx,
 						   STRUCT_VALUE_OFFSET));
       else
-	mem = gen_frame_mem (Pmode, plus_constant (stack_pointer_rtx,
+	mem = gen_frame_mem (Pmode, plus_constant (Pmode, stack_pointer_rtx,
 						   STRUCT_VALUE_OFFSET));
 
       /* Only follow the SPARC ABI for fixed-size structure returns.
@@ -6739,7 +6774,8 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 	     it's an unimp instruction (the most significant 10 bits
 	     will be zero).  */
 	  emit_move_insn (scratch, gen_rtx_MEM (SImode,
-						plus_constant (ret_reg, 8)));
+						plus_constant (Pmode,
+							       ret_reg, 8)));
 	  /* Assume the size is valid and pre-adjust */
 	  emit_insn (gen_add3_insn (ret_reg, ret_reg, GEN_INT (4)));
 	  emit_cmp_and_jump_insns (scratch, size_rtx, EQ, const0_rtx, SImode,
@@ -7387,7 +7423,12 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
   if (TARGET_ARCH64)
     {
       if (MEM_P (x))
-	slot0 = x;
+	{
+	  tree expr = MEM_EXPR (x);
+	  if (expr)
+	    mark_addressable (expr);
+	  slot0 = x;
+	}
       else
 	{
 	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
@@ -7395,7 +7436,12 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 	}
 
       if (MEM_P (y))
-	slot1 = y;
+	{
+	  tree expr = MEM_EXPR (y);
+	  if (expr)
+	    mark_addressable (expr);
+	  slot1 = y;
+	}
       else
 	{
 	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
@@ -8890,9 +8936,10 @@ sparc_use_sched_lookahead (void)
 {
   if (sparc_cpu == PROCESSOR_NIAGARA
       || sparc_cpu == PROCESSOR_NIAGARA2
-      || sparc_cpu == PROCESSOR_NIAGARA3
-      || sparc_cpu == PROCESSOR_NIAGARA4)
+      || sparc_cpu == PROCESSOR_NIAGARA3)
     return 0;
+  if (sparc_cpu == PROCESSOR_NIAGARA4)
+    return 2;
   if (sparc_cpu == PROCESSOR_ULTRASPARC
       || sparc_cpu == PROCESSOR_ULTRASPARC3)
     return 4;
@@ -8911,9 +8958,9 @@ sparc_issue_rate (void)
     case PROCESSOR_NIAGARA:
     case PROCESSOR_NIAGARA2:
     case PROCESSOR_NIAGARA3:
-    case PROCESSOR_NIAGARA4:
     default:
       return 1;
+    case PROCESSOR_NIAGARA4:
     case PROCESSOR_V9:
       /* Assume V9 processors are capable of at least dual-issue.  */
       return 2;
@@ -10378,7 +10425,7 @@ emit_and_preserve (rtx seq, rtx reg, rtx reg2)
   HOST_WIDE_INT size = SPARC_STACK_ALIGN (offset + 2*UNITS_PER_WORD);
 
   rtx slot
-    = gen_rtx_MEM (word_mode, plus_constant (stack_pointer_rtx,
+    = gen_rtx_MEM (word_mode, plus_constant (Pmode, stack_pointer_rtx,
 					     SPARC_STACK_BIAS + offset));
 
   emit_insn (gen_stack_pointer_dec (GEN_INT (size)));

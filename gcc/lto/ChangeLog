@@ -1,3 +1,38 @@
+2012-05-04  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (do_whole_program_analysis): Set timevars correctly.
+	(lto_main): Likewise.
+	
+2012-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* lang.opt (fwpa): Do not mark as Optimization.
+	(fltrans): Likewise.
+
+2012-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_main): Use compile ().
+	* lto-partition.c (partition_cgraph_node_p): Use
+	symtab_used_from_object_file_p.
+	(partition_varpool_node_p): Likewise.
+
+2012-04-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (partition_cgraph_node_p): Use force_output.
+
+2012-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (add_references_to_partition, lto_balanced_map):
+	Update for new ipa-ref API.
+
+2012-04-16  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (read_cgraph_and_symbols): Use FOR_EACH
+        walkers to walk cgraph and varpool.
+	(materialize_cgraph): Likewise.
+	* lto-partition.c (lto_1_to_1_map): Likewise.
+	(lto_balanced_map): Likewise.
+	(lto_promote_cross_file_statics): Likewise.
+
 2012-04-14  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c: Update field referenced for new cgraph/varpool layout.

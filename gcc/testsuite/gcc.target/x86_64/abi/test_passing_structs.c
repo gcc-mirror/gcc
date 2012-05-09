@@ -216,7 +216,7 @@ main (void)
   for (i = 0; i < 8; i++)
     {
       m128s[i].x = (__m128){32+i, 0, i, 0};
-      fregs.xmm0._m128[i] = m128s[i].x;
+      (&fregs.xmm0)[i]._m128[0] = m128s[i].x;
     }
   num_fregs = 8;
   clear_float_hardware_registers;

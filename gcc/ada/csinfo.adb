@@ -199,36 +199,36 @@ begin
    --  by Csinfo, since they are specially handled. This means that any field
    --  definition or subprogram with a matching name is ignored.
 
-   Set (Special, "Analyzed",                  True);
-   Set (Special, "Assignment_OK",             True);
-   Set (Special, "Associated_Node",           True);
-   Set (Special, "Cannot_Be_Constant",        True);
-   Set (Special, "Chars",                     True);
-   Set (Special, "Comes_From_Source",         True);
-   Set (Special, "Do_Overflow_Check",         True);
-   Set (Special, "Do_Range_Check",            True);
-   Set (Special, "Entity",                    True);
-   Set (Special, "Entity_Or_Associated_Node", True);
-   Set (Special, "Error_Posted",              True);
-   Set (Special, "Etype",                     True);
-   Set (Special, "Evaluate_Once",             True);
-   Set (Special, "First_Itype",               True);
-   Set (Special, "Has_Aspect_Specifications", True);
-   Set (Special, "Has_Dynamic_Itype",         True);
-   Set (Special, "Has_Dynamic_Range_Check",   True);
-   Set (Special, "Has_Dynamic_Length_Check",  True);
-   Set (Special, "Has_Private_View",          True);
+   Set (Special, "Analyzed",                         True);
+   Set (Special, "Assignment_OK",                    True);
+   Set (Special, "Associated_Node",                  True);
+   Set (Special, "Cannot_Be_Constant",               True);
+   Set (Special, "Chars",                            True);
+   Set (Special, "Comes_From_Source",                True);
+   Set (Special, "Do_Overflow_Check",                True);
+   Set (Special, "Do_Range_Check",                   True);
+   Set (Special, "Entity",                           True);
+   Set (Special, "Entity_Or_Associated_Node",        True);
+   Set (Special, "Error_Posted",                     True);
+   Set (Special, "Etype",                            True);
+   Set (Special, "Evaluate_Once",                    True);
+   Set (Special, "First_Itype",                      True);
+   Set (Special, "Has_Aspect_Specifications",        True);
+   Set (Special, "Has_Dynamic_Itype",                True);
+   Set (Special, "Has_Dynamic_Range_Check",          True);
+   Set (Special, "Has_Dynamic_Length_Check",         True);
+   Set (Special, "Has_Private_View",                 True);
    Set (Special, "Implicit_With_From_Instantiation", True);
-   Set (Special, "Is_Controlling_Actual",     True);
-   Set (Special, "Is_Overloaded",             True);
-   Set (Special, "Is_Static_Expression",      True);
-   Set (Special, "Left_Opnd",                 True);
-   Set (Special, "Must_Not_Freeze",           True);
-   Set (Special, "Nkind_In",                  True);
-   Set (Special, "Parens",                    True);
-   Set (Special, "Pragma_Name",               True);
-   Set (Special, "Raises_Constraint_Error",   True);
-   Set (Special, "Right_Opnd",                True);
+   Set (Special, "Is_Controlling_Actual",            True);
+   Set (Special, "Is_Overloaded",                    True);
+   Set (Special, "Is_Static_Expression",             True);
+   Set (Special, "Left_Opnd",                        True);
+   Set (Special, "Must_Not_Freeze",                  True);
+   Set (Special, "Nkind_In",                         True);
+   Set (Special, "Parens",                           True);
+   Set (Special, "Pragma_Name",                      True);
+   Set (Special, "Raises_Constraint_Error",          True);
+   Set (Special, "Right_Opnd",                       True);
 
    --  Loop to acquire information from node definitions in sinfo.ads,
    --  checking for consistency in Op/Flag assignments to each synonym
@@ -627,7 +627,6 @@ begin
 
    declare
       List : constant TV.Table_Array := Convert_To_Array (Fields1);
-
    begin
       if List'Length /= 0 then
          Put_Line ("Missing procedure Set_" & List (1).Name & " in body");

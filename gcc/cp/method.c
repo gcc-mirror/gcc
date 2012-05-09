@@ -244,7 +244,6 @@ make_alias_for (tree target, tree newid)
   TREE_ADDRESSABLE (alias) = 1;
   TREE_USED (alias) = 1;
   SET_DECL_ASSEMBLER_NAME (alias, DECL_NAME (alias));
-  TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (alias)) = 1;
   return alias;
 }
 
@@ -390,7 +389,8 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 				 this_adjusting, fixed_offset, virtual_value,
 				 virtual_offset, alias);
   if (DECL_ONE_ONLY (function))
-    cgraph_add_to_same_comdat_group (thunk_node, funcn);
+    symtab_add_to_same_comdat_group ((symtab_node) thunk_node,
+				     (symtab_node) funcn);
 
   if (!this_adjusting
       || !targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,

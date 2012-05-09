@@ -1,3 +1,72 @@
+2012-05-02  Dodji Seketeli  <dodji@redhat.com>
+
+	Properly initialize cpp_context in destringize_and_run
+	* directives.c (destringize_and_run): Properly initialize the new
+	context.
+	* macro.c (_cpp_pop_context): Assert that we shouldn't try to pop
+	the initial base context, which has the same life time as the
+	current instance of cpp_file.
+
+2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Dodji Seketeli  <dodji@seketeli.org>
+
+	PR c++/52974
+	* libcpp/files.c (maybe_shorter_path): New.
+	(find_file_in_dir): Use it.
+
+2012-04-30  Dodji Seketeli  <dodji@redhat.com>
+
+	Switch -ftrack-macro-expansion=2 on by default.
+	* init.c (cpp_create_reader): Switch -ftrack-macro-expansion=2 on
+	by default.  Add comments.
+
+	Strip "<built-in>" loc from displayed expansion context
+	* include/line-map.h (linemap_unwind_toward_expansion): Fix typo
+	in comment.
+	(linemap_unwind_to_first_non_reserved_loc): Declare new function.
+	* line-map.c (linemap_unwind_to_first_non_reserved_loc): Define
+	new function.
+
+	Fix expansion point loc for macro-like tokens
+	* macro.c (macro_of_context): New static function.
+	(_cpp_push_token_context, push_extended_tokens_context): If the
+	macro argument is NULL, it means we are continuing the expansion
+	of the current macro, if any.  Update comments.
+	(_cpp_pop_context): Re-enable expansion of the macro only when we
+	are really out of the context of the current expansion.
+
+	Fix token pasting with -ftrack-macro-expansion
+	* macro.c (paste_all_tokens): Put the token resulting from pasting
+	into an extended token context with -ftrack-macro-location is in
+	effect.
+
+	Fix cpp_sys_macro_p with -ftrack-macro-expansion
+	* macro.c (cpp_sys_macro_p):  Support -ftrack-macro-expansion.
+
+2012-04-29  Dodji Seketeli  <dodji@redhat.com>
+
+	* lex.c (lex_raw_string): Change C++ style comments into C style
+	comments.
+    	(lex_string): Likewise.
+
+2012-04-27   Ollie Wild  <aaw@google.com>
+
+	* include/cpplib.h (struct cpp_options): Add new field,
+	warn_literal_suffix.
+	(CPP_W_LITERAL_SUFFIX): New enum.
+	* init.c (cpp_create_reader): Default initialization of
+	warn_literal_suffix.
+	* lex.c (lex_raw_string): Treat user-defined literals which don't
+	begin with '_' as separate tokens and produce a warning.
+	(lex_string): Ditto.
+
+2012-04-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* line-map.c (linemap_resolve_location): Synchronize comments with
+	those in line-map.h.
+	* include/line-map.h (linemap_resolve_location): Fix spelling in
+	comment.
+
 2012-03-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* lex.c (search_line_fast): Provide Neon-optimized version for ARM.

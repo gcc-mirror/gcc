@@ -728,15 +728,13 @@ microblaze*-*-*)
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
-mips64*-*-linux* | mipsisa64*-*-linux*)
-	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} t-crtfm mips/t-mips16 mips/t-tpbit"
-	md_unwind_header=mips/linux-unwind.h
-	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} t-crtfm mips/t-mips16"
 	md_unwind_header=mips/linux-unwind.h
+	if test "${ac_cv_sizeof_long_double}" = 16; then
+		tmake_file="${tmake_file} mips/t-tpbit"
+	fi
 	;;
 mips*-sde-elf*)
 	tmake_file="$tmake_file mips/t-crtstuff mips/t-mips16"
@@ -1130,7 +1128,7 @@ i[34567]86-*-linux* | x86_64-*-linux* | \
   i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu | \
   i[34567]86-*-knetbsd*-gnu | \
   i[34567]86-*-gnu*)
-	tmake_file="${tmake_file} t-tls i386/t-linux"
+	tmake_file="${tmake_file} t-tls i386/t-linux i386/t-cpuinfo"
 	if test "$libgcc_cv_cfi" = "yes"; then
 		tmake_file="${tmake_file} t-stack i386/t-stack-i386"
 	fi
