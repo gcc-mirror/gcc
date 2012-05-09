@@ -1,3 +1,9 @@
+2012-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52908
+	* gcc.target/i386/xop-imul32widen-vector.c: Update scan-assembler
+	directive to Scan for vpmuldq, not vpmacsdql.
+
 2012-05-09  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/53185
