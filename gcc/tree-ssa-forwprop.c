@@ -2677,8 +2677,7 @@ ssa_forward_propagate_and_combine (void)
 
   FOR_EACH_BB (bb)
     {
-      gimple_stmt_iterator gsi, prev;
-      bool prev_initialized;
+      gimple_stmt_iterator gsi;
 
       /* Apply forward propagation to all stmts in the basic-block.
 	 Note we update GSI within the loop as necessary.  */
@@ -2771,11 +2770,13 @@ ssa_forward_propagate_and_combine (void)
 
       /* Combine stmts with the stmts defining their operands.
 	 Note we update GSI within the loop as necessary.  */
-      prev_initialized = false;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gimple stmt = gsi_stmt (gsi);
 	  bool changed = false;
+
+	  /* Mark stmt as potentially needing revisiting.  */
+	  gimple_set_plf (stmt, GF_PLF_1, false);
 
 	  switch (gimple_code (stmt))
 	    {
@@ -2856,18 +2857,18 @@ ssa_forward_propagate_and_combine (void)
 	    {
 	      /* If the stmt changed then re-visit it and the statements
 		 inserted before it.  */
-	      if (!prev_initialized)
+	      for (; !gsi_end_p (gsi); gsi_prev (&gsi))
+		if (gimple_plf (gsi_stmt (gsi), GF_PLF_1))
+		  break;
+	      if (gsi_end_p (gsi))
 		gsi = gsi_start_bb (bb);
 	      else
-		{
-		  gsi = prev;
-		  gsi_next (&gsi);
-		}
+		gsi_next (&gsi);
 	    }
 	  else
 	    {
-	      prev = gsi;
-	      prev_initialized = true;
+	      /* Stmt no longer needs to be revisited.  */
+	      gimple_set_plf (stmt, GF_PLF_1, true);
 	      gsi_next (&gsi);
 	    }
 	}
