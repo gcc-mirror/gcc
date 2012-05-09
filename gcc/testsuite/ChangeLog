@@ -1,3 +1,9 @@
+2012-05-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/18437
+	* gfortran.dg/vect/rnflow-trs2a2.f90: Move ...
+	* gfortran.dg/vect/fast-math-rnflow-trs2a2.f90: ... here.
+
 2012-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53226
