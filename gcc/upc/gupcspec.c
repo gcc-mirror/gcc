@@ -151,11 +151,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 		      int *in_added_libraries ATTRIBUTE_UNUSED)
 {
   struct cl_decoded_option *decoded_options = *in_decoded_options;
-  int i;
+  unsigned int i;
+  int is_x_in_effect = 0;
   int is_x_upc_in_effect = 0;
-  int is_x_c_in_effect = 0;
-  int no_std_inc = 0;
-  int no_upc_pre_inc = 0;
   int verbose = 0;
   int n_infiles = 0;
   int n_outfiles = 0;
@@ -192,14 +190,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  /* These options disable linking entirely or linking of the
 	     standard libraries.  */
 	  invoke_linker = 0;
-	  break;
-
-	case OPT_nostdinc:
-	  no_std_inc = 1;
-	  break;
-
-	case OPT_fupc_pre_include:
-	  no_upc_pre_inc = decoded_options[i].value;
 	  break;
 
 	case OPT_fpreprocessed:
@@ -242,39 +232,47 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     invoke_linker = 0;
 
   /* Copy in the arguments as passed to 'upc' */
-  for (i = 1, is_x_upc_in_effect = 0; i < gupc_xargc; ++i)
+  is_x_in_effect = 0;
+  is_x_upc_in_effect = 0;
+  for (i = 1; i < gupc_xargc; ++i)
     {
-      /* Check for "-x [c,upc]" and set proper flags. */
+      /* Check for "-x [c,upc,..]". */
       if (decoded_options[i].opt_index == OPT_x)
 	{
-	  if (strcmp (decoded_options[i].arg, "c"))
-	    is_x_c_in_effect = 0;
+	  /* Go to default if "none" found. */
+	  if (!strcmp (decoded_options[i].arg, "none"))
+	    {
+	      is_x_in_effect = 0;
+	      is_x_upc_in_effect = 0;
+	    }
 	  else
-	    is_x_c_in_effect = 1;
-	  if (!strcmp (decoded_options[i].arg, "upc"))
-	    is_x_upc_in_effect = 1;
+	    is_x_in_effect = 1;
 	}
 
+      /* By default, driver accepts C files as UPC files. Unless there
+         is "-x" option in affect. */
       if (decoded_options[i].opt_index == OPT_SPECIAL_input_file)
 	{
 	  const int is_c_file = match_suffix (decoded_options[i].arg, ".c")
 	    || match_suffix (decoded_options[i].arg, ".h")
 	    || (pre_processed && match_suffix (decoded_options[i].arg, ".i"));
-	  const int is_upc_file =
-	    match_suffix (decoded_options[i].arg, ".upc")
-	    || match_suffix (decoded_options[i].arg, ".uph")
-	    || (pre_processed && match_suffix (decoded_options [i].arg,
-	       ".upci"));
-	  if (is_c_file && !is_x_upc_in_effect && !is_x_c_in_effect)
+	  if (is_c_file)
 	    {
-	      /* Assume that .c files are in fact UPC source files */
-	      is_x_upc_in_effect = 1;
-	      append_option (OPT_x, "upc", 1);
+              if ( !(is_x_in_effect || is_x_upc_in_effect))
+		{
+		  append_option (OPT_x, "upc", 1);
+	   	  is_x_upc_in_effect = 1;
+		}
+	      append_arg (&decoded_options[i]);
+	      continue;
 	    }
-	  else if (!(is_c_file || is_upc_file) && is_x_upc_in_effect)
+	  else
 	    {
-	      is_x_upc_in_effect = 0;
-	      append_option (OPT_x, "none", 1);
+	      if (is_x_upc_in_effect)
+	        {
+	          is_x_upc_in_effect = 0;
+		  append_option (OPT_x, "none", 1);
+	        }
 	    }
 	}
       append_arg (&decoded_options[i]);
@@ -287,10 +285,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       append_option (OPT_fupc_link, NULL, 1);
     }
 
-  if (verbose && gupc_new_decoded_options != gupc_x_decoded_options)
+  if (verbose)
     {
       fprintf (stderr, "Driving:");
-      for (i = 0; i < (int) gupc_newargc; i++)
+      for (i = 0; i < gupc_newargc; i++)
 	fprintf (stderr, " %s",
 		 gupc_new_decoded_options[i].orig_option_with_args_text);
       fprintf (stderr, "\n");

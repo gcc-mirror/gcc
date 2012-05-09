@@ -1,3 +1,13 @@
+2012-05-08  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* gupcspec.c (lang_specific_driver): Improve handling of
+	"-x" switches: (a) add "-x upc" switch for C source files if
+	no -x switch was seen before OR "-x none" was seen, (b) add
+	"-x none" for files other then C files if "-x upc" was
+	previously added. Cleanup warnings on unused variables
+	and integer conversion. Print verbose info regardless of the
+	command line being the same.
+
 2012-05-04  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* gupc.texi: Simplify the description of the optimization
@@ -6,7 +16,7 @@
 2012-05-04  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* Make-lang.in: Remove build of xgupc.
-	* gupcspecs.c (get_libgupc_path): Delete.
+	* gupcspec.c (get_libgupc_path): Delete.
 	(lang_specific_driver): Remove support for building xgupc.
 	Removed code tried to add -B, -L, -isystem to the command
 	line if xgupc driver is invoked from the development tree.
