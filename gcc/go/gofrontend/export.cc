@@ -33,7 +33,7 @@ const int Export::v1_checksum_len;
 // Constructor.
 
 Export::Export(Stream* stream)
-  : stream_(stream), type_refs_(), type_index_(1)
+  : stream_(stream), type_refs_(), type_index_(1), packages_()
 {
 }
 
@@ -91,7 +91,7 @@ should_export(Named_object* no)
 
 void
 Export::export_globals(const std::string& package_name,
-		       const std::string& unique_prefix,
+		       const std::string& pkgpath,
 		       int package_priority,
 		       const std::map<std::string, Package*>& imports,
 		       const std::string& import_init_fn,
@@ -140,9 +140,9 @@ Export::export_globals(const std::string& package_name,
   this->write_string(package_name);
   this->write_c_string(";\n");
 
-  // The unique prefix.  This prefix is used for all global symbols.
-  this->write_c_string("prefix ");
-  this->write_string(unique_prefix);
+  // The package path, used for all global symbols.
+  this->write_c_string("pkgpath ");
+  this->write_string(pkgpath);
   this->write_c_string(";\n");
 
   // The package priority.
@@ -209,12 +209,14 @@ Export::write_imports(const std::map<std::string, Package*>& imports)
        ++p)
     {
       this->write_c_string("import ");
-      this->write_string(p->second->name());
+      this->write_string(p->second->package_name());
       this->write_c_string(" ");
-      this->write_string(p->second->unique_prefix());
+      this->write_string(p->second->pkgpath());
       this->write_c_string(" \"");
       this->write_string(p->first);
       this->write_c_string("\";\n");
+
+      this->packages_.insert(p->second);
     }
 }
 
@@ -333,7 +335,7 @@ Export::write_type(const Type* type)
 	{
 	  // The builtin types should have been predefined.
 	  go_assert(!Linemap::is_predeclared_location(named_type->location())
-		     || (named_type->named_object()->package()->name()
+		     || (named_type->named_object()->package()->package_name()
 			 == "unsafe"));
 	  named_object = named_type->named_object();
 	}
@@ -345,14 +347,25 @@ Export::write_type(const Type* type)
       std::string s = "\"";
       if (package != NULL && !Gogo::is_hidden_name(named_object->name()))
 	{
-	  s += package->unique_prefix();
-	  s += '.';
-	  s += package->name();
+	  s += package->pkgpath();
 	  s += '.';
 	}
       s += named_object->name();
       s += "\" ";
       this->write_string(s);
+
+      // It is possible that this type was imported indirectly, and is
+      // not in a package in the import list.  If we have not
+      // mentioned this package before, write out the package name
+      // here so that any package importing this one will know it.
+      if (package != NULL
+	  && this->packages_.find(package) == this->packages_.end())
+	{
+	  this->write_c_string("\"");
+	  this->write_string(package->package_name());
+	  this->packages_.insert(package);
+	  this->write_c_string("\" ");
+	}
 
       // We must add a named type to the table now, since the
       // definition of the type may refer to the named type via a

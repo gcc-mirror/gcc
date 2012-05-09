@@ -323,13 +323,13 @@ Parse::type_name(bool issue_error)
 	  && package->name() != this->gogo_->package_name())
 	{
 	  // Check whether the name is there but hidden.
-	  std::string s = ('.' + package->package_value()->unique_prefix()
-			   + '.' + package->package_value()->name()
+	  std::string s = ('.' + package->package_value()->pkgpath()
 			   + '.' + name);
 	  named_object = package->package_value()->lookup(s);
 	  if (named_object != NULL)
 	    {
-	      const std::string& packname(package->package_value()->name());
+	      Package* p = package->package_value();
+	      const std::string& packname(p->package_name());
 	      error_at(location, "invalid reference to hidden type %<%s.%s%>",
 		       Gogo::message_name(packname).c_str(),
 		       Gogo::message_name(name).c_str());
@@ -345,7 +345,7 @@ Parse::type_name(bool issue_error)
 	named_object = this->gogo_->add_unknown_name(name, location);
       else
 	{
-	  const std::string& packname(package->package_value()->name());
+	  const std::string& packname(package->package_value()->package_name());
 	  error_at(location, "reference to undefined identifier %<%s.%s%>",
 		   Gogo::message_name(packname).c_str(),
 		   Gogo::message_name(name).c_str());
@@ -2384,7 +2384,7 @@ Parse::operand(bool may_be_sink)
 	  {
 	    go_assert(package != NULL);
 	    error_at(location, "invalid reference to hidden type %<%s.%s%>",
-		     Gogo::message_name(package->name()).c_str(),
+		     Gogo::message_name(package->package_name()).c_str(),
 		     Gogo::message_name(id).c_str());
 	    return Expression::make_error(location);
 	  }
@@ -2394,7 +2394,7 @@ Parse::operand(bool may_be_sink)
 	  {
 	    if (package != NULL)
 	      {
-		std::string n1 = Gogo::message_name(package->name());
+		std::string n1 = Gogo::message_name(package->package_name());
 		std::string n2 = Gogo::message_name(id);
 		if (!is_exported)
 		  error_at(location,

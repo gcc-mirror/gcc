@@ -53,6 +53,10 @@ fgo-optimize-
 Go Joined RejectNegative
 -fgo-optimize-<type>	Turn on optimization passes in the frontend
 
+fgo-pkgpath=
+Go Joined RejectNegative
+-fgo-pkgpath=<string>	Set Go package path
+
 fgo-prefix=
 Go Joined RejectNegative
 -fgo-prefix=<string>	Set package-specific prefix for exported Go names
