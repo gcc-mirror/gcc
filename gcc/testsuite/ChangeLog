@@ -1,3 +1,8 @@
+2012-05-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/53249
+	* gcc.target/i386/pr53249.c: New.
+
 2012-05-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/18437
