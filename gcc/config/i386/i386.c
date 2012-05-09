@@ -15907,60 +15907,19 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
   op0 = operands[0];
   op1 = operands[1];
 
-  if (TARGET_AVX)
+  if (TARGET_AVX
+      && GET_MODE_SIZE (mode) == 32)
     {
       switch (GET_MODE_CLASS (mode))
 	{
 	case MODE_VECTOR_INT:
 	case MODE_INT:
-	  switch (GET_MODE_SIZE (mode))
-	    {
-	    case 16:
-	      if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-		{
-		  op0 = gen_lowpart (V4SFmode, op0);
-		  op1 = gen_lowpart (V4SFmode, op1);
-		  emit_insn (gen_sse_movups (op0, op1));
-		}
-	      else
-		{
-		  op0 = gen_lowpart (V16QImode, op0);
-		  op1 = gen_lowpart (V16QImode, op1);
-		  emit_insn (gen_sse2_movdqu (op0, op1));
-		}
-	      break;
-	    case 32:
-	      op0 = gen_lowpart (V32QImode, op0);
-	      op1 = gen_lowpart (V32QImode, op1);
-	      ix86_avx256_split_vector_move_misalign (op0, op1);
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	  break;
+	  op0 = gen_lowpart (V32QImode, op0);
+	  op1 = gen_lowpart (V32QImode, op1);
+	  /* FALLTHRU */
+
 	case MODE_VECTOR_FLOAT:
-	  switch (mode)
-	    {
-	    case V4SFmode:
-	      emit_insn (gen_sse_movups (op0, op1));
-	      break;
-	    case V2DFmode:
-	      if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-		{
-		  op0 = gen_lowpart (V4SFmode, op0);
-		  op1 = gen_lowpart (V4SFmode, op1);
-		  emit_insn (gen_sse_movups (op0, op1));
-		}
-	      else
-		emit_insn (gen_sse2_movupd (op0, op1));
-	      break;
-	    case V8SFmode:
-	    case V4DFmode:
-	      ix86_avx256_split_vector_move_misalign (op0, op1);
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
+	  ix86_avx256_split_vector_move_misalign (op0, op1);
 	  break;
 
 	default:
@@ -15972,16 +15931,6 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 
   if (MEM_P (op1))
     {
-      /* If we're optimizing for size, movups is the smallest.  */
-      if (optimize_insn_for_size_p ()
-	  || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	{
-	  op0 = gen_lowpart (V4SFmode, op0);
-	  op1 = gen_lowpart (V4SFmode, op1);
-	  emit_insn (gen_sse_movups (op0, op1));
-	  return;
-	}
-
       /* ??? If we have typed data, then it would appear that using
 	 movdqu is the only way to get unaligned data loaded with
 	 integer type.  */
@@ -15989,16 +15938,19 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	{
 	  op0 = gen_lowpart (V16QImode, op0);
 	  op1 = gen_lowpart (V16QImode, op1);
+	  /* We will eventually emit movups based on insn attributes.  */
 	  emit_insn (gen_sse2_movdqu (op0, op1));
-	  return;
 	}
-
-      if (TARGET_SSE2 && mode == V2DFmode)
+      else if (TARGET_SSE2 && mode == V2DFmode)
         {
           rtx zero;
 
-	  if (TARGET_SSE_UNALIGNED_LOAD_OPTIMAL)
+	  if (TARGET_AVX
+	      || TARGET_SSE_UNALIGNED_LOAD_OPTIMAL
+	      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
+	      || optimize_function_for_size_p (cfun))
 	    {
+	      /* We will eventually emit movups based on insn attributes.  */
 	      emit_insn (gen_sse2_movupd (op0, op1));
 	      return;
 	    }
@@ -16030,7 +15982,10 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	}
       else
         {
-	  if (TARGET_SSE_UNALIGNED_LOAD_OPTIMAL)
+	  if (TARGET_AVX
+	      || TARGET_SSE_UNALIGNED_LOAD_OPTIMAL
+	      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
+	      || optimize_function_for_size_p (cfun))
 	    {
 	      op0 = gen_lowpart (V4SFmode, op0);
 	      op1 = gen_lowpart (V4SFmode, op1);
@@ -16045,6 +16000,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 
 	  if (mode != V4SFmode)
 	    op0 = gen_lowpart (V4SFmode, op0);
+
 	  m = adjust_address (op1, V2SFmode, 0);
 	  emit_insn (gen_sse_loadlps (op0, op0, m));
 	  m = adjust_address (op1, V2SFmode, 8);
@@ -16053,30 +16009,20 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
     }
   else if (MEM_P (op0))
     {
-      /* If we're optimizing for size, movups is the smallest.  */
-      if (optimize_insn_for_size_p ()
-	  || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	{
-	  op0 = gen_lowpart (V4SFmode, op0);
-	  op1 = gen_lowpart (V4SFmode, op1);
-	  emit_insn (gen_sse_movups (op0, op1));
-	  return;
-	}
-
-      /* ??? Similar to above, only less clear
-	 because of typeless stores.  */
-      if (TARGET_SSE2 && !TARGET_SSE_TYPELESS_STORES
-	  && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+      if (TARGET_SSE2 && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
         {
 	  op0 = gen_lowpart (V16QImode, op0);
 	  op1 = gen_lowpart (V16QImode, op1);
+	  /* We will eventually emit movups based on insn attributes.  */
 	  emit_insn (gen_sse2_movdqu (op0, op1));
-	  return;
 	}
-
-      if (TARGET_SSE2 && mode == V2DFmode)
+      else if (TARGET_SSE2 && mode == V2DFmode)
 	{
-	  if (TARGET_SSE_UNALIGNED_STORE_OPTIMAL)
+	  if (TARGET_AVX
+	      || TARGET_SSE_UNALIGNED_STORE_OPTIMAL
+	      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
+	      || optimize_function_for_size_p (cfun))
+	    /* We will eventually emit movups based on insn attributes.  */
 	    emit_insn (gen_sse2_movupd (op0, op1));
 	  else
 	    {
@@ -16091,7 +16037,10 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	  if (mode != V4SFmode)
 	    op1 = gen_lowpart (V4SFmode, op1);
 
-	  if (TARGET_SSE_UNALIGNED_STORE_OPTIMAL)
+	  if (TARGET_AVX
+	      || TARGET_SSE_UNALIGNED_STORE_OPTIMAL
+	      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
+	      || optimize_function_for_size_p (cfun))
 	    {
 	      op0 = gen_lowpart (V4SFmode, op0);
 	      emit_insn (gen_sse_movups (op0, op1));

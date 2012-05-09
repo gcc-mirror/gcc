@@ -449,8 +449,6 @@
 	      && (misaligned_operand (operands[0], <MODE>mode)
 		  || misaligned_operand (operands[1], <MODE>mode)))
 	    return "vmovupd\t{%1, %0|%0, %1}";
-	  else if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "%vmovaps\t{%1, %0|%0, %1}";
 	  else
 	    return "%vmovapd\t{%1, %0|%0, %1}";
 
@@ -460,8 +458,6 @@
 	      && (misaligned_operand (operands[0], <MODE>mode)
 		  || misaligned_operand (operands[1], <MODE>mode)))
 	    return "vmovdqu\t{%1, %0|%0, %1}";
-	  else if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "%vmovaps\t{%1, %0|%0, %1}";
 	  else
 	    return "%vmovdqa\t{%1, %0|%0, %1}";
 
@@ -475,19 +471,21 @@
   [(set_attr "type" "sselog1,ssemov,ssemov")
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
-	(cond [(match_test "TARGET_AVX")
+	(cond [(and (eq_attr "alternative" "1,2")
+	      	    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
+		 (if_then_else
+		    (match_test "GET_MODE_SIZE (<MODE>mode) > 16")
+		    (const_string "V8SF")
+		    (const_string "V4SF"))
+	       (match_test "TARGET_AVX")
 		 (const_string "<sseinsnmode>")
-	       (ior (ior (match_test "optimize_function_for_size_p (cfun)")
-			 (not (match_test "TARGET_SSE2")))
+	       (ior (and (eq_attr "alternative" "1,2")
+			 (match_test "optimize_function_for_size_p (cfun)"))
 		    (and (eq_attr "alternative" "2")
 			 (match_test "TARGET_SSE_TYPELESS_STORES")))
 		 (const_string "V4SF")
-	       (eq (const_string "<MODE>mode") (const_string "V4SFmode"))
-		 (const_string "V4SF")
-	       (eq (const_string "<MODE>mode") (const_string "V2DFmode"))
-		 (const_string "V2DF")
 	      ]
-	  (const_string "TI")))])
+	  (const_string "<sseinsnmode>")))])
 
 (define_insn "sse2_movq128"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
@@ -597,11 +595,33 @@
 	  [(match_operand:VF 1 "nonimmediate_operand" "xm,x")]
 	  UNSPEC_MOVU))]
   "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "%vmovu<ssemodesuffix>\t{%1, %0|%0, %1}"
+{
+  switch (get_attr_mode (insn))
+    {
+    case MODE_V8SF:
+    case MODE_V4SF:
+      return "%vmovups\t{%1, %0|%0, %1}";
+    default:
+      return "%vmovu<ssemodesuffix>\t{%1, %0|%0, %1}";
+    }
+}
   [(set_attr "type" "ssemov")
    (set_attr "movu" "1")
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "<MODE>")])
+   (set (attr "mode")
+	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (if_then_else
+		    (match_test "GET_MODE_SIZE (<MODE>mode) > 16")
+		    (const_string "V8SF")
+		    (const_string "V4SF"))
+	       (match_test "TARGET_AVX")
+		 (const_string "<MODE>")
+	       (ior (match_test "optimize_function_for_size_p (cfun)")
+		    (and (eq_attr "alternative" "1")
+			 (match_test "TARGET_SSE_TYPELESS_STORES")))
+	         (const_string "V4SF")
+	      ]
+	(const_string "<MODE>")))])
 
 (define_expand "<sse2>_movdqu<avxsizesuffix>"
   [(set (match_operand:VI1 0 "nonimmediate_operand")
@@ -618,7 +638,16 @@
 	(unspec:VI1 [(match_operand:VI1 1 "nonimmediate_operand" "xm,x")]
 		    UNSPEC_MOVU))]
   "TARGET_SSE2 && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "%vmovdqu\t{%1, %0|%0, %1}"
+{
+  switch (get_attr_mode (insn))
+    {
+    case MODE_V8SF:
+    case MODE_V4SF:
+      return "%vmovups\t{%1, %0|%0, %1}";
+    default:
+      return "%vmovdqu\t{%1, %0|%0, %1}";
+    }
+}
   [(set_attr "type" "ssemov")
    (set_attr "movu" "1")
    (set (attr "prefix_data16")
@@ -627,7 +656,20 @@
      (const_string "*")
      (const_string "1")))
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "<sseinsnmode>")])
+   (set (attr "mode")
+	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (if_then_else
+		    (match_test "GET_MODE_SIZE (<MODE>mode) > 16")
+		    (const_string "V8SF")
+		    (const_string "V4SF"))
+	       (match_test "TARGET_AVX")
+		 (const_string "<sseinsnmode>")
+	       (ior (match_test "optimize_function_for_size_p (cfun)")
+		    (and (eq_attr "alternative" "1")
+			 (match_test "TARGET_SSE_TYPELESS_STORES")))
+	         (const_string "V4SF")
+	      ]
+	(const_string "<sseinsnmode>")))])
 
 (define_insn "<sse3>_lddqu<avxsizesuffix>"
   [(set (match_operand:VI1 0 "register_operand" "=x")
