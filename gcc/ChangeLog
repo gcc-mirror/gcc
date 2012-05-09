@@ -1,5 +1,13 @@
 2012-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (*movdf_internal_rex64): Remove
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL handling from asm output code.
+	Calculate "mode" attribute according to
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL flag.
+	(*movdf_internal): Ditto.
+
+2012-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/44141
 	* config/i386/i386.c (ix86_expand_vector_move_misalign): Do not handle
 	128 bit vectors specially for TARGET_AVX.  Emit sse2_movupd and
