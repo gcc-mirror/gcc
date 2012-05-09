@@ -1,3 +1,8 @@
+2012-05-09  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/53185
+	* gcc.dg/vect/pr53185.c: New test.
+
 2012-05-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/53249
