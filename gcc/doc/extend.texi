@@ -4120,8 +4120,7 @@ namespace is now in use for GCC-specific pragmas.  However, it has been
 found convenient to use @code{__attribute__} to achieve a natural
 attachment of attributes to their corresponding declarations, whereas
 @code{#pragma GCC} is of use for constructs that do not naturally form
-part of the grammar.  @xref{Other Directives,,Miscellaneous
-Preprocessing Directives, cpp, The GNU C Preprocessor}.
+part of the grammar.  @xref{Pragmas,,Pragmas Accepted by GCC}.
 
 @node Attribute Syntax
 @section Attribute Syntax

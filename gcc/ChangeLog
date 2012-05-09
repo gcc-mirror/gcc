@@ -1,3 +1,8 @@
+2012-05-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+       * doc/extend.texi (Function Attributes): Point xref to section
+	about Pragmas.
+
 2012-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (*movdf_internal_rex64): Remove
