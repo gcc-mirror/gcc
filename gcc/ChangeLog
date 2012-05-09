@@ -1,3 +1,16 @@
+2012-05-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_loop_versioning): Adjust prototype.
+	(vect_do_peeling_for_loop_bound): Likewise.
+	(vect_do_peeling_for_alignment): Likewise.
+	* tree-vect-loop-manip.c (conservative_cost_threshold): Remove.
+	(vect_do_peeling_for_loop_bound): Get check_profitability and
+	threshold as parameters.
+	(vect_do_peeling_for_alignment): Likewise.
+	(vect_loop_versioning): Likewise.
+	* tree-vect-loop.c (vect_transform_loop): Compute check_profitability
+	and threshold here.  Control where to put the check here.
+
 2012-05-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/53249
