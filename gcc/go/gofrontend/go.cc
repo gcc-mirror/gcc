@@ -13,11 +13,6 @@
 #include "backend.h"
 #include "gogo.h"
 
-// The unique prefix to use for exported symbols.  This is set during
-// option processing.
-
-static std::string unique_prefix;
-
 // The data structures we build to represent the file.
 static Gogo* gogo;
 
@@ -25,36 +20,20 @@ static Gogo* gogo;
 
 GO_EXTERN_C
 void
-go_create_gogo(int int_type_size, int pointer_size)
+go_create_gogo(int int_type_size, int pointer_size, const char *pkgpath,
+	       const char *prefix)
 {
   go_assert(::gogo == NULL);
   Linemap* linemap = go_get_linemap();
   ::gogo = new Gogo(go_get_backend(), linemap, int_type_size, pointer_size);
-  if (!unique_prefix.empty())
-    ::gogo->set_unique_prefix(unique_prefix);
+
+  if (pkgpath != NULL)
+    ::gogo->set_pkgpath(pkgpath);
+  else if (prefix != NULL)
+    ::gogo->set_prefix(prefix);
 
   // FIXME: This should be in the gcc dependent code.
   ::gogo->define_builtin_function_trees();
-}
-
-// Set the unique prefix we use for exported symbols.
-
-GO_EXTERN_C
-void
-go_set_prefix(const char* arg)
-{
-  unique_prefix = arg;
-  for (size_t i = 0; i < unique_prefix.length(); ++i)
-    {
-      char c = unique_prefix[i];
-      if ((c >= 'a' && c <= 'z')
-	  || (c >= 'A' && c <= 'Z')
-	  || (c >= '0' && c <= '9')
-	  || c == '_')
-	;
-      else
-	unique_prefix[i] = '_';
-    }
 }
 
 // Parse the input files.

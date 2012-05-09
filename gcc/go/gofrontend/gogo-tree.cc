@@ -260,9 +260,7 @@ Gogo::get_init_fn_name()
 	}
       else
 	{
-	  std::string s = this->unique_prefix();
-	  s.append(1, '.');
-	  s.append(this->package_name());
+	  std::string s = this->pkgpath_symbol();
 	  s.append("..import");
 	  this->init_fn_name_ = s;
 	}
@@ -984,7 +982,7 @@ Named_object::get_id(Gogo* gogo)
       if (this->package_ == NULL)
 	package_name = gogo->package_name();
       else
-	package_name = this->package_->name();
+	package_name = this->package_->package_name();
 
       decl_name = package_name + '.' + Gogo::unpack_hidden_name(this->name_);
 
@@ -1277,9 +1275,15 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 		   || this->type_->is_method())
 	    {
 	      TREE_PUBLIC(decl) = 1;
-	      std::string asm_name = gogo->unique_prefix();
+	      std::string asm_name = gogo->pkgpath_symbol();
 	      asm_name.append(1, '.');
-	      asm_name.append(IDENTIFIER_POINTER(id), IDENTIFIER_LENGTH(id));
+	      asm_name.append(Gogo::unpack_hidden_name(no->name()));
+	      if (this->type_->is_method())
+		{
+		  asm_name.append(1, '.');
+		  Type* rtype = this->type_->receiver()->type();
+		  asm_name.append(rtype->mangled_name(gogo));
+		}
 	      SET_DECL_ASSEMBLER_NAME(decl,
 				      get_identifier_from_string(asm_name));
 	    }
@@ -1382,10 +1386,16 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 	  if (this->asm_name_.empty())
 	    {
 	      std::string asm_name = (no->package() == NULL
-				      ? gogo->unique_prefix()
-				      : no->package()->unique_prefix());
+				      ? gogo->pkgpath_symbol()
+				      : no->package()->pkgpath_symbol());
 	      asm_name.append(1, '.');
-	      asm_name.append(IDENTIFIER_POINTER(id), IDENTIFIER_LENGTH(id));
+	      asm_name.append(Gogo::unpack_hidden_name(no->name()));
+	      if (this->fntype_->is_method())
+		{
+		  asm_name.append(1, '.');
+		  Type* rtype = this->fntype_->receiver()->type();
+		  asm_name.append(rtype->mangled_name(gogo));
+		}
 	      SET_DECL_ASSEMBLER_NAME(decl,
 				      get_identifier_from_string(asm_name));
 	    }
