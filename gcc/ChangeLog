@@ -1,3 +1,8 @@
+2012-05-09  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/mips/mips.c (mips16_gp_pseudo_reg): Remove line
+	information from the instruction produced.
+
 2012-05-09  Richard Guenther  <rguenther@suse.de>
 
 	* stor-layout.c (bit_from_pos): Document.
