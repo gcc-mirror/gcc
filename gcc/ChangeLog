@@ -1,3 +1,12 @@
+2012-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53226
+	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine): Remove
+	prev and prev_initialized vars, gimple_set_plf (stmt, GF_PLF_1, false)
+	before processing it and gimple_set_plf (stmt, GF_PLF_1, true) if it
+	doesn't need to be revisited, look for earliest stmt with
+	!gimple_plf (stmt, GF_PLF_1) if something changed.
+
 2012-05-09  Terry Guo  <terry.guo@arm.com>
 
 	* genmultilib: Update copyright dates.
