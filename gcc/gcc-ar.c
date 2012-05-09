@@ -70,7 +70,7 @@ main(int ac, char **av)
 	           dir_separator,
 		   LTOPLUGINSONAME,
 		   NULL);
-  if (access (plugin, X_OK))
+  if (access (plugin, R_OK))
     {
       fprintf (stderr, "%s: Cannot find plugin %s\n", av[0], plugin);
       exit (1);
