@@ -25886,5 +25886,51 @@ arm_vectorize_vec_perm_const_ok (enum machine_mode vmode,
   return ret;
 }
 
-
+bool
+arm_autoinc_modes_ok_p (enum machine_mode mode, enum arm_auto_incmodes code)
+{
+  /* If we are soft float and we do not have ldrd 
+     then all auto increment forms are ok.  */
+  if (TARGET_SOFT_FLOAT && (TARGET_LDRD || GET_MODE_SIZE (mode) <= 4))
+    return true;
+
+  switch (code)
+    {
+      /* Post increment and Pre Decrement are supported for all
+	 instruction forms except for vector forms.  */
+    case ARM_POST_INC:
+    case ARM_PRE_DEC:
+      if (VECTOR_MODE_P (mode))
+	{
+	  if (code != ARM_PRE_DEC)
+	    return true;
+	  else 
+	    return false;
+	}
+      
+      return true;
+
+    case ARM_POST_DEC:
+    case ARM_PRE_INC:
+      /* Without LDRD and mode size greater than 
+	 word size, there is no point in auto-incrementing
+         because ldm and stm will not have these forms.  */
+      if (!TARGET_LDRD && GET_MODE_SIZE (mode) > 4)
+	return false;
+
+      /* Vector and floating point modes do not support
+	 these auto increment forms.  */
+      if (FLOAT_MODE_P (mode) || VECTOR_MODE_P (mode))
+	return false;
+
+      return true;
+     
+    default:
+      return false;
+      
+    }
+
+  return false;
+}
+
 #include "gt-arm.h"

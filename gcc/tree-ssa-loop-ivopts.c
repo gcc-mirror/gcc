@@ -2362,8 +2362,12 @@ add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
   cstepi = int_cst_value (step);
 
   mem_mode = TYPE_MODE (TREE_TYPE (*use->op_p));
-  if ((HAVE_PRE_INCREMENT && GET_MODE_SIZE (mem_mode) == cstepi)
-      || (HAVE_PRE_DECREMENT && GET_MODE_SIZE (mem_mode) == -cstepi))
+  if (((USE_LOAD_PRE_INCREMENT (mem_mode)
+	|| USE_STORE_PRE_INCREMENT (mem_mode))
+       && GET_MODE_SIZE (mem_mode) == cstepi)
+      || ((USE_LOAD_PRE_DECREMENT (mem_mode)
+	   || USE_STORE_PRE_DECREMENT (mem_mode))
+	  && GET_MODE_SIZE (mem_mode) == -cstepi))
     {
       enum tree_code code = MINUS_EXPR;
       tree new_base;
@@ -2380,8 +2384,12 @@ add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
       add_candidate_1 (data, new_base, step, important, IP_BEFORE_USE, use,
 		       use->stmt);
     }
-  if ((HAVE_POST_INCREMENT && GET_MODE_SIZE (mem_mode) == cstepi)
-      || (HAVE_POST_DECREMENT && GET_MODE_SIZE (mem_mode) == -cstepi))
+  if (((USE_LOAD_POST_INCREMENT (mem_mode)
+	|| USE_STORE_POST_INCREMENT (mem_mode))
+       && GET_MODE_SIZE (mem_mode) == cstepi)
+      || ((USE_LOAD_POST_DECREMENT (mem_mode)
+	   || USE_STORE_POST_DECREMENT (mem_mode))
+	  && GET_MODE_SIZE (mem_mode) == -cstepi))
     {
       add_candidate_1 (data, base, step, important, IP_AFTER_USE, use,
 		       use->stmt);
@@ -3315,25 +3323,29 @@ get_address_cost (bool symbol_present, bool var_present,
       reg0 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
       reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 2);
 
-      if (HAVE_PRE_DECREMENT)
+      if (USE_LOAD_PRE_DECREMENT (mem_mode) 
+	  || USE_STORE_PRE_DECREMENT (mem_mode))
 	{
 	  addr = gen_rtx_PRE_DEC (address_mode, reg0);
 	  has_predec[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
-      if (HAVE_POST_DECREMENT)
+      if (USE_LOAD_POST_DECREMENT (mem_mode) 
+	  || USE_STORE_POST_DECREMENT (mem_mode))
 	{
 	  addr = gen_rtx_POST_DEC (address_mode, reg0);
 	  has_postdec[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
-      if (HAVE_PRE_INCREMENT)
+      if (USE_LOAD_PRE_INCREMENT (mem_mode) 
+	  || USE_STORE_PRE_DECREMENT (mem_mode))
 	{
 	  addr = gen_rtx_PRE_INC (address_mode, reg0);
 	  has_preinc[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
-      if (HAVE_POST_INCREMENT)
+      if (USE_LOAD_POST_INCREMENT (mem_mode) 
+	  || USE_STORE_POST_INCREMENT (mem_mode))
 	{
 	  addr = gen_rtx_POST_INC (address_mode, reg0);
 	  has_postinc[mem_mode]
