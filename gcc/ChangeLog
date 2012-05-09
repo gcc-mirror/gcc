@@ -1,3 +1,7 @@
+2012-05-09  Matthias Klose  <doko@ubuntu.com>
+
+	* gcc-ar.c (main): Don't check for execute bits for the plugin.
+
 2012-05-09  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* tree-ssa-loop-ivopts.c (add_autoinc_candidates, get_address_cost):
