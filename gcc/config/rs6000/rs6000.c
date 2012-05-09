@@ -18961,6 +18961,28 @@ generate_set_vrsave (rtx reg, rs6000_stack_t *info, int epiloguep)
   return insn;
 }
 
+static rtx
+gen_frame_set (rtx reg, rtx frame_reg, int offset, bool store)
+{
+  rtx addr, mem;
+
+  addr = gen_rtx_PLUS (Pmode, frame_reg, GEN_INT (offset));
+  mem = gen_frame_mem (GET_MODE (reg), addr);
+  return gen_rtx_SET (VOIDmode, store ? mem : reg, store ? reg : mem);
+}
+
+static rtx
+gen_frame_load (rtx reg, rtx frame_reg, int offset)
+{
+  return gen_frame_set (reg, frame_reg, offset, false);
+}
+
+static rtx
+gen_frame_store (rtx reg, rtx frame_reg, int offset)
+{
+  return gen_frame_set (reg, frame_reg, offset, true);
+}
+
 /* Save a register into the frame, and emit RTX_FRAME_RELATED_P notes.
    Save REGNO into [FRAME_REG + OFFSET] in mode MODE.  */
 
@@ -19301,27 +19323,14 @@ rs6000_emit_savres_rtx (rs6000_stack_t *info,
       = gen_rtx_USE (VOIDmode, gen_rtx_REG (Pmode, use_reg));
 
   for (i = 0; i < end_reg - start_reg; i++)
-    {
-      rtx addr, reg, mem;
-      reg = gen_rtx_REG (reg_mode, start_reg + i);
-      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			   GEN_INT (save_area_offset + reg_size * i));
-      mem = gen_frame_mem (reg_mode, addr);
-
-      RTVEC_ELT (p, i + offset) = gen_rtx_SET (VOIDmode,
-					       (sel & SAVRES_SAVE) ? mem : reg,
-					       (sel & SAVRES_SAVE) ? reg : mem);
-    }
+    RTVEC_ELT (p, i + offset)
+      = gen_frame_set (gen_rtx_REG (reg_mode, start_reg + i),
+		       frame_reg_rtx, save_area_offset + reg_size * i,
+		       (sel & SAVRES_SAVE) != 0);
 
   if ((sel & SAVRES_SAVE) && (sel & SAVRES_LR))
-    {
-      rtx addr, reg, mem;
-      reg = gen_rtx_REG (Pmode, 0);
-      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			   GEN_INT (lr_offset));
-      mem = gen_frame_mem (Pmode, addr);
-      RTVEC_ELT (p, i + offset) = gen_rtx_SET (VOIDmode, mem, reg);
-    }
+    RTVEC_ELT (p, i + offset)
+      = gen_frame_store (gen_rtx_REG (Pmode, 0), frame_reg_rtx, lr_offset);
 
   par = gen_rtx_PARALLEL (VOIDmode, p);
 
@@ -19479,59 +19488,33 @@ rs6000_emit_prologue (void)
       /* We do floats first so that the instruction pattern matches
 	 properly.  */
       for (i = 0; i < 64 - info->first_fp_reg_save; i++)
-	{
-	  rtx reg = gen_rtx_REG ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-				  ? DFmode : SFmode),
-				 info->first_fp_reg_save + i);
-	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				   GEN_INT (info->fp_save_offset
-					    + frame_off + 8 * i));
-	  rtx mem = gen_frame_mem ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-				    ? DFmode : SFmode), addr);
-
-	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, mem, reg);
-	}
+	RTVEC_ELT (p, j++)
+	  = gen_frame_store (gen_rtx_REG (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
+					  ? DFmode : SFmode,
+					  info->first_fp_reg_save + i),
+			     frame_reg_rtx,
+			     info->fp_save_offset + frame_off + 8 * i);
       for (i = 0; info->first_altivec_reg_save + i <= LAST_ALTIVEC_REGNO; i++)
-	{
-	  rtx reg = gen_rtx_REG (V4SImode, info->first_altivec_reg_save + i);
-	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				   GEN_INT (info->altivec_save_offset
-					    + frame_off + 16 * i));
-	  rtx mem = gen_frame_mem (V4SImode, addr);
-
-	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, mem, reg);
-	}
+	RTVEC_ELT (p, j++)
+	  = gen_frame_store (gen_rtx_REG (V4SImode,
+					  info->first_altivec_reg_save + i),
+			     frame_reg_rtx,
+			     info->altivec_save_offset + frame_off + 16 * i);
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
-	{
-	  rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
-	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				   GEN_INT (info->gp_save_offset
-					    + frame_off + reg_size * i));
-	  rtx mem = gen_frame_mem (reg_mode, addr);
+	RTVEC_ELT (p, j++)
+	  = gen_frame_store (gen_rtx_REG (reg_mode, info->first_gp_reg_save + i),
+			     frame_reg_rtx,
+			     info->gp_save_offset + frame_off + reg_size * i);
 
-	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, mem, reg);
-	}
-
-      {
-	/* CR register traditionally saved as CR2.  */
-	rtx reg = gen_rtx_REG (reg_mode, CR2_REGNO);
-	rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				 GEN_INT (info->cr_save_offset
-					  + frame_off));
-	rtx mem = gen_frame_mem (reg_mode, addr);
-
-	RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, mem, reg);
-      }
+      /* CR register traditionally saved as CR2.  */
+      RTVEC_ELT (p, j++)
+	= gen_frame_store (gen_rtx_REG (SImode, CR2_REGNO),
+			   frame_reg_rtx, info->cr_save_offset + frame_off);
       /* Explain about use of R0.  */
       if (info->lr_save_p)
-	{
-	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				   GEN_INT (info->lr_save_offset
-					    + frame_off));
-	  rtx mem = gen_frame_mem (reg_mode, addr);
-
-	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, mem, reg0);
-	}
+	RTVEC_ELT (p, j++)
+	  = gen_frame_store (reg0,
+			     frame_reg_rtx, info->lr_save_offset + frame_off);
       /* Explain what happens to the stack pointer.  */
       {
 	rtx newval = gen_rtx_PLUS (Pmode, sp_reg_rtx, treg);
@@ -19834,17 +19817,10 @@ rs6000_emit_prologue (void)
       int i;
       p = rtvec_alloc (32 - info->first_gp_reg_save);
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
-	{
-	  rtx addr, reg, mem;
-	  reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
-	  addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			       GEN_INT (info->gp_save_offset
-					+ frame_off
-					+ reg_size * i));
-	  mem = gen_frame_mem (reg_mode, addr);
-
-	  RTVEC_ELT (p, i) = gen_rtx_SET (VOIDmode, mem, reg);
-	}
+	RTVEC_ELT (p, i)
+	  = gen_frame_store (gen_rtx_REG (reg_mode, info->first_gp_reg_save + i),
+			     frame_reg_rtx,
+			     info->gp_save_offset + frame_off + reg_size * i);
       insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
       rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
 			    NULL_RTX, NULL_RTX);
@@ -19860,22 +19836,37 @@ rs6000_emit_prologue (void)
 			   sp_off - frame_off);
     }
 
-  /* ??? There's no need to emit actual instructions here, but it's the
-     easiest way to get the frame unwind information emitted.  */
   if (crtl->calls_eh_return)
     {
-      unsigned int i, regno;
+      unsigned int i;
+      rtvec p;
 
       for (i = 0; ; ++i)
 	{
-	  regno = EH_RETURN_DATA_REGNO (i);
+	  unsigned int regno = EH_RETURN_DATA_REGNO (i);
+	  if (regno == INVALID_REGNUM)
+	    break;
+	}
+
+      p = rtvec_alloc (i);
+
+      for (i = 0; ; ++i)
+	{
+	  unsigned int regno = EH_RETURN_DATA_REGNO (i);
 	  if (regno == INVALID_REGNUM)
 	    break;
 
-	  emit_frame_save (frame_reg_rtx, reg_mode, regno,
-			   info->ehrd_offset + frame_off + reg_size * (int) i,
-			   sp_off - frame_off);
+	  insn
+	    = gen_frame_store (gen_rtx_REG (reg_mode, regno),
+			       sp_reg_rtx,
+			       info->ehrd_offset + sp_off + reg_size * (int) i);
+	  RTVEC_ELT (p, i) = insn;
+	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
+
+      insn = emit_insn (gen_blockage ());
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, gen_rtx_PARALLEL (VOIDmode, p));
     }
 
   /* In AIX ABI we need to make sure r2 is really saved.  */
@@ -20522,13 +20513,9 @@ rs6000_emit_epilogue (int sibcall)
 
       {
 	/* CR register traditionally saved as CR2.  */
-	rtx reg = gen_rtx_REG (reg_mode, CR2_REGNO);
-	rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				 GEN_INT (info->cr_save_offset));
-	rtx mem = gen_frame_mem (reg_mode, addr);
-
-	RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, reg, mem);
-
+	rtx reg = gen_rtx_REG (SImode, CR2_REGNO);
+	RTVEC_ELT (p, j++)
+	  = gen_frame_load (reg, frame_reg_rtx, info->cr_save_offset);
 	if (flag_shrink_wrap)
 	  {
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
@@ -20541,24 +20528,18 @@ rs6000_emit_epilogue (int sibcall)
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	{
 	  rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
-	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				   GEN_INT (info->gp_save_offset
-					    + reg_size * i));
-	  rtx mem = gen_frame_mem (reg_mode, addr);
-
-	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, reg, mem);
+	  RTVEC_ELT (p, j++)
+	    = gen_frame_load (reg,
+			      frame_reg_rtx, info->gp_save_offset + reg_size * i);
 	  if (flag_shrink_wrap)
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
       for (i = 0; info->first_altivec_reg_save + i <= LAST_ALTIVEC_REGNO; i++)
 	{
 	  rtx reg = gen_rtx_REG (V4SImode, info->first_altivec_reg_save + i);
-	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				   GEN_INT (info->altivec_save_offset
-					    + 16 * i));
-	  rtx mem = gen_frame_mem (V4SImode, addr);
-
-	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, reg, mem);
+	  RTVEC_ELT (p, j++)
+	    = gen_frame_load (reg,
+			      frame_reg_rtx, info->altivec_save_offset + 16 * i);
 	  if (flag_shrink_wrap)
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
@@ -20567,13 +20548,8 @@ rs6000_emit_epilogue (int sibcall)
 	  rtx reg = gen_rtx_REG ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
 				  ? DFmode : SFmode),
 				 info->first_fp_reg_save + i);
-	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				   GEN_INT (info->fp_save_offset
-					    + 8 * i));
-	  rtx mem = gen_frame_mem ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-				    ? DFmode : SFmode), addr);
-
-	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, reg, mem);
+	  RTVEC_ELT (p, j++)
+	    = gen_frame_load (reg, frame_reg_rtx, info->fp_save_offset + 8 * i);
 	  if (flag_shrink_wrap)
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
@@ -21076,16 +21052,10 @@ rs6000_emit_epilogue (int sibcall)
       rtvec p;
       p = rtvec_alloc (32 - info->first_gp_reg_save);
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
-	{
-	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				   GEN_INT (info->gp_save_offset
-					    + frame_off
-					    + reg_size * i));
-	  rtx mem = gen_frame_mem (reg_mode, addr);
-	  rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
-
-	  RTVEC_ELT (p, i) = gen_rtx_SET (VOIDmode, reg, mem);
-	}
+	RTVEC_ELT (p, i)
+	  = gen_frame_load (gen_rtx_REG (reg_mode, info->first_gp_reg_save + i),
+			    frame_reg_rtx,
+			    info->gp_save_offset + frame_off + reg_size * i);
       emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
     }
   else
@@ -21277,14 +21247,10 @@ rs6000_emit_epilogue (int sibcall)
 						       ? 1 : 11));
 	  for (i = 0; i < 64 - info->first_fp_reg_save; i++)
 	    {
-	      rtx addr, mem, reg;
+	      rtx reg = gen_rtx_REG (DFmode, info->first_fp_reg_save + i);
 
-	      addr = gen_rtx_PLUS (Pmode, sp_reg_rtx,
-				   GEN_INT (info->fp_save_offset + 8 * i));
-	      mem = gen_frame_mem (DFmode, addr);
-	      reg = gen_rtx_REG (DFmode, info->first_fp_reg_save + i);
-
-	      RTVEC_ELT (p, i + 4) = gen_rtx_SET (VOIDmode, reg, mem);
+	      RTVEC_ELT (p, i + 4)
+		= gen_frame_load (reg, sp_reg_rtx, info->fp_save_offset + 8 * i);
 	      if (flag_shrink_wrap)
 		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
 					       cfa_restores);

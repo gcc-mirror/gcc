@@ -1,3 +1,13 @@
+2012-05-09  Alan Modra  <amodra@gmail.com>
+
+	PR target/53271
+	* config/rs6000/rs6000.c (gen_frame_set): New function.
+	(gen_frame_load, gen_frame_store): New functions.
+	(rs6000_savres_rtx): Use the above.
+	(rs6000_emit_epilogue, rs6000_emit_prologue): Here too.
+	Correct mode used for CR2 in save/restore_world patterns.
+	Don't emit instructions for eh_return frame unwind reg info.
+
 2012-05-08  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphbuild.c (build_cgraph_edges): Do not finalize vars
