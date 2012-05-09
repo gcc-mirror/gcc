@@ -1,3 +1,12 @@
+2012-05-09  Nick Clifton  <nickc@redhat.com>
+	    Paul Smith  <psmith@gnu.org>
+
+	PR bootstrap/50461
+	* configure.ac (mpfr-dir): When using in-tree MPFR sources
+	allow for the fact that from release v3.1.0 of MPFR the source
+	files were moved into a src sub-directory.
+	* configure: Regenerate.
+
 2012-05-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure.ac: Bump minimum MPFR version to 2.4.0.
