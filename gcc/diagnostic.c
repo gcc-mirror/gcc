@@ -147,6 +147,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->option_enabled = NULL;
   context->option_state = NULL;
   context->option_name = NULL;
+  context->last_location = UNKNOWN_LOCATION;
   context->last_module = 0;
   context->x_data = NULL;
   context->lock = 0;
@@ -263,9 +264,11 @@ diagnostic_show_locus (diagnostic_context * context,
 
 
   if (!context->show_caret
-      || diagnostic->location <= BUILTINS_LOCATION)
+      || diagnostic->location <= BUILTINS_LOCATION
+      || diagnostic->location == context->last_location)
     return;
 
+  context->last_location = diagnostic->location;
   s = expand_location_to_spelling_point (diagnostic->location);
   line = location_get_source_line (s);
   if (line == NULL)
