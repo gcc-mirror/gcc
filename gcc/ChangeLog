@@ -1,3 +1,21 @@
+2012-05-09  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* tree-ssa-loop-ivopts.c (add_autoinc_candidates, get_address_cost):
+	Replace use of HAVE_{POST/PRE}_{INCREMENT/DECREMENT} with
+	USE_{LOAD/STORE}_{PRE/POST}_{INCREMENT/DECREMENT} appropriately.
+	* config/arm/arm.h (ARM_AUTOINC_VALID_FOR_MODE_P): New.
+	(USE_LOAD_POST_INCREMENT): Define.
+	(USE_LOAD_PRE_INCREMENT): Define.
+	(USE_LOAD_POST_DECREMENT): Define.
+	(USE_LOAD_PRE_DECREMENT): Define.
+	(USE_STORE_PRE_DECREMENT): Define.
+	(USE_STORE_PRE_INCREMENT): Define.
+	(USE_STORE_POST_DECREMENT): Define.
+	(USE_STORE_POST_INCREMENT): Define.
+	(arm_auto_incmodes): Add enumeration.
+	* config/arm/arm-protos.h (arm_autoinc_modes_ok_p): Declare.
+	* config/arm/arm.c (arm_autoinc_modes_ok_p): Define.
+
 2012-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53226
