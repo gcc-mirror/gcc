@@ -269,24 +269,42 @@ assemble_aliases (struct varpool_node *node)
 }
 
 /* Output one variable, if necessary.  Return whether we output it.  */
+
 bool
 varpool_assemble_decl (struct varpool_node *node)
 {
   tree decl = node->symbol.decl;
 
-  if (!TREE_ASM_WRITTEN (decl)
-      && !node->alias
-      && !node->symbol.in_other_partition
-      && !DECL_EXTERNAL (decl)
-      && (TREE_CODE (decl) != VAR_DECL || !DECL_HAS_VALUE_EXPR_P (decl)))
+  /* Aliases are outout when their target is produced or by
+     output_weakrefs.  */
+  if (node->alias)
+    return false;
+
+  /* Constant pool is output from RTL land when the reference
+     survive till this level.  */
+  if (DECL_IN_CONSTANT_POOL (decl))
+    return false;
+
+  /* Decls with VALUE_EXPR should not be in the varpool at all.  They
+     are not real variables, but just info for debugging and codegen.
+     Unfortunately at the moment emutls is not updating varpool correctly
+     after turning real vars into value_expr vars.  */
+  if (DECL_HAS_VALUE_EXPR_P (decl)
+      && !targetm.have_tls)
+    return false;
+
+  gcc_checking_assert (!TREE_ASM_WRITTEN (decl)
+		       && TREE_CODE (decl) == VAR_DECL
+		       && !DECL_HAS_VALUE_EXPR_P (decl));
+
+  if (!node->symbol.in_other_partition
+      && !DECL_EXTERNAL (decl))
     {
       assemble_variable (decl, 0, 1, 0);
-      if (TREE_ASM_WRITTEN (decl))
-	{
-	  node->finalized = 1;
-	  assemble_aliases (node);
-	  return true;
-	}
+      gcc_assert (TREE_ASM_WRITTEN (decl));
+      node->finalized = 1;
+      assemble_aliases (node);
+      return true;
     }
 
   return false;

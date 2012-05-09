@@ -1,3 +1,8 @@
+2012-05-04  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (do_whole_program_analysis): Set timevars correctly.
+	(lto_main): Likewise.
+	
 2012-05-04  Richard Guenther  <rguenther@suse.de>
 
 	* lang.opt (fwpa): Do not mark as Optimization.

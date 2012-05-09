@@ -834,6 +834,10 @@ varpool_finalize_decl (tree decl)
     enqueue_node ((symtab_node)node);
   if (cgraph_state >= CGRAPH_STATE_IPA_SSA)
     varpool_analyze_node (node);
+  /* Some frontends produce various interface variables after compilation
+     finished.  */
+  if (cgraph_state == CGRAPH_STATE_FINISHED)
+    varpool_assemble_decl (node);
 }
 
 /* Discover all functions and variables that are trivially needed, analyze

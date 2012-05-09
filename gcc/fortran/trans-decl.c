@@ -457,8 +457,6 @@ gfc_finish_cray_pointee (tree decl, gfc_symbol *sym)
   SET_DECL_VALUE_EXPR (decl, value);
   DECL_HAS_VALUE_EXPR_P (decl) = 1;
   GFC_DECL_CRAY_POINTEE (decl) = 1;
-  /* This is a fake variable just for debugging purposes.  */
-  TREE_ASM_WRITTEN (decl) = 1;
 }
 
 

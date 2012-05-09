@@ -1958,6 +1958,7 @@ materialize_cgraph (void)
 static void
 do_whole_program_analysis (void)
 {
+  timevar_start (TV_PHASE_CGRAPH);
   /* Note that since we are in WPA mode, materialize_cgraph will not
      actually read in all the function bodies.  It only materializes
      the decls and cgraph nodes so that analysis can be performed.  */
@@ -2017,6 +2018,7 @@ do_whole_program_analysis (void)
       dump_memory_report (false);
     }
 
+  timevar_stop (TV_PHASE_CGRAPH);
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report)
     print_lto_report ();
@@ -2116,7 +2118,9 @@ lto_main (void)
 
 	  /* Let the middle end know that we have read and merged all of
 	     the input files.  */ 
+	  timevar_start (TV_PHASE_CGRAPH);
 	  compile ();
+	  timevar_stop (TV_PHASE_CGRAPH);
 
 	  /* FIXME lto, if the processes spawned by WPA fail, we miss
 	     the chance to print WPA's report, so WPA will call

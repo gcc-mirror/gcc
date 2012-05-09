@@ -697,8 +697,6 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 	DECL_IGNORED_P (var_decl) = 1;
       if (s->sym->attr.target)
 	TREE_ADDRESSABLE (var_decl) = 1;
-      /* This is a fake variable just for debugging purposes.  */
-      TREE_ASM_WRITTEN (var_decl) = 1;
       /* Fake variables are not visible from other translation units. */
       TREE_PUBLIC (var_decl) = 0;
 

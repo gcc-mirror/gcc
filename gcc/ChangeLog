@@ -1,3 +1,23 @@
+2012-05-08  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphbuild.c (build_cgraph_edges): Do not finalize vars
+	with VALUE_EXPR.
+	* cgraph.h (varpool_can_remove_if_no_refs): Vars with VALUE_EXPR
+	are removable.
+	* toplev.c (wrapup_global_declaration_2): Vars with VALUE_EXPR
+	need to wrapup.
+	(compile_file): Do not output variables.
+	* cgraphbuild.c (varpool_finalize_decl): When var is finalized late,
+	output it.
+	* langhooks.c: Include timevar.h
+	(write_global_declarations): Finalize compilation unit after wrapup;
+	set timevars correctly.
+	* passes.c (rest_of_decl_compilation): Decls with VALUE_EXPR needs
+	not to be added to varpool.
+	* varpool.c (varpool_assemble_decl): Sanity check that we are called
+	only on cases where it makes sense; skip constant pool and value expr
+	vars.
+
 2012-05-08  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/linux.h (LINK_SPEC): Don't pass "-Y" option.
