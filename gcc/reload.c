@@ -3993,10 +3993,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	       as would have been done by find_reloads_address.  */
 	    addr_space_t as = MEM_ADDR_SPACE (recog_data.operand[i]);
 	    enum machine_mode address_mode;
-	    address_mode = GET_MODE (XEXP (recog_data.operand[i], 0));
-	    if (address_mode == VOIDmode)
-	      address_mode = targetm.addr_space.address_mode (as);
 
+	    address_mode = get_address_mode (recog_data.operand[i]);
 	    operand_reloadnum[i]
 	      = push_reload (XEXP (recog_data.operand[i], 0), NULL_RTX,
 			     &XEXP (recog_data.operand[i], 0), (rtx*) 0,

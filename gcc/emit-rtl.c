@@ -2092,7 +2092,7 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 
   /* Convert a possibly large offset to a signed value within the
      range of the target address space.  */
-  address_mode = targetm.addr_space.address_mode (attrs.addrspace);
+  address_mode = get_address_mode (memref);
   pbits = GET_MODE_BITSIZE (address_mode);
   if (HOST_BITS_PER_WIDE_INT > pbits)
     {
@@ -2179,7 +2179,7 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
   struct mem_attrs attrs, *defattrs;
 
   attrs = *get_mem_attrs (memref);
-  address_mode = targetm.addr_space.address_mode (attrs.addrspace);
+  address_mode = get_address_mode (memref);
   new_rtx = simplify_gen_binary (PLUS, address_mode, addr, offset);
 
   /* At this point we don't know _why_ the address is invalid.  It

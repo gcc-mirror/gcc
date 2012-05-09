@@ -4909,17 +4909,6 @@ find_use_val (rtx x, enum machine_mode mode, struct count_use_info *cui)
   return NULL;
 }
 
-/* Helper function to get mode of MEM's address.  */
-
-static inline enum machine_mode
-get_address_mode (rtx mem)
-{
-  enum machine_mode mode = GET_MODE (XEXP (mem, 0));
-  if (mode != VOIDmode)
-    return mode;
-  return targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
-}
-
 /* Replace all registers and addresses in an expression with VALUE
    expressions that map back to them, unless the expression is a
    register.  If no mapping is or can be performed, returns NULL.  */
