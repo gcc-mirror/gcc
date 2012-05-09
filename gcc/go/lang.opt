@@ -1,6 +1,6 @@
 ; lang.opt -- Options for the gcc Go front end.
 
-; Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+; Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -52,6 +52,10 @@ Go Joined RejectNegative
 fgo-optimize-
 Go Joined RejectNegative
 -fgo-optimize-<type>	Turn on optimization passes in the frontend
+
+fgo-pkgpath=
+Go Joined RejectNegative
+-fgo-pkgpath=<string>	Set Go package path
 
 fgo-prefix=
 Go Joined RejectNegative

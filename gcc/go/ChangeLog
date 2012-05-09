@@ -1,3 +1,19 @@
+2012-05-09  Ian Lance Taylor  <iant@google.com>
+
+	* lang.opt: Add -fgo-pkgpath.
+	* go-lang.c (go_pkgpath): New static variable.
+	(go_prefix): New static variable.
+	(go_langhook_init): Pass go_pkgpath and go_prefix to
+	go_create_gogo.
+	(go_langhook_handle_option): Handle -fgo-pkgpath.  Change
+	-fgo-prefix handling to just set go_prefix.
+	* go-c.h (go_set_prefix): Don't declare.
+	(go_create_gogo): Add pkgpath and prefix to declaration.
+	* go-gcc.cc (Gcc_backend::global_variable): Change unique_prefix
+	to pkgpath.  Don't include the package name in the asm name.
+	* gccgo.texi (Invoking gccgo): Document -fgo-pkgpath.  Update the
+	docs for -fgo-prefix.
+
 2012-04-23  Ian Lance Taylor  <iant@google.com>
 
 	* go-lang.c (go_langhook_init): Set MPFR precision to 256.
