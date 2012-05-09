@@ -1,3 +1,9 @@
+2012-05-08  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/linux.h (LINK_SPEC): Don't pass "-Y" option.
+	* config/sparc/linux64.h (LINK_ARCH32_SPEC): Likewise.
+	* config/sparc/linux64.h (LINK_ARCH64_SPEC): Likewise.
+
 2012-05-08  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/53278
