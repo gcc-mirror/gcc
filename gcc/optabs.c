@@ -8253,7 +8253,7 @@ maybe_legitimize_operand_same_code (enum insn_code icode, unsigned int opno,
 	  enum machine_mode mode;
 
 	  last = get_last_insn ();
-	  mode = targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
+	  mode = get_address_mode (mem);
 	  mem = replace_equiv_address (mem, copy_to_mode_reg (mode, addr));
 	  if (insn_operand_matches (icode, opno, mem))
 	    {

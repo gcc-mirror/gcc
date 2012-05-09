@@ -1,3 +1,25 @@
+2012-05-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/53249
+	* dwarf2out.h (get_address_mode): Move declaration to...
+	* rtl.h: ...here.
+	* dwarf2out.c (get_address_mode): Move definition to...
+	* rtlanal.c: ...here.
+	* var-tracking.c (get_address_mode): Delete.
+	* combine.c (find_split_point): Use get_address_mode instead of
+	targetm.addr_space.address_mode.
+	* cselib.c (cselib_record_sets): Likewise.
+	* dse.c (canon_address, record_store): Likewise.
+	* emit-rtl.c (adjust_address_1, offset_address): Likewise.
+	* expr.c (move_by_pieces, emit_block_move_via_loop, store_by_pieces)
+	(store_by_pieces_1, expand_assignment, store_expr, store_constructor)
+	(expand_expr_real_1): Likewise.
+	* ifcvt.c (noce_try_cmove_arith): Likewise.
+	* optabs.c (maybe_legitimize_operand_same_code): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* sched-deps.c (sched_analyze_1, sched_analyze_2): Likewise.
+	* sel-sched-dump.c (debug_mem_addr_value): Likewise.
+
 2012-05-09  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/mips/mips.c (mips16_gp_pseudo_reg): Remove line

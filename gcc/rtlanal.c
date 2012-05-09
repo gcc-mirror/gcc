@@ -5279,3 +5279,17 @@ low_bitmask_len (enum machine_mode mode, unsigned HOST_WIDE_INT m)
 
   return exact_log2 (m + 1);
 }
+
+/* Return the mode of MEM's address.  */
+
+enum machine_mode
+get_address_mode (rtx mem)
+{
+  enum machine_mode mode;
+
+  gcc_assert (MEM_P (mem));
+  mode = GET_MODE (XEXP (mem, 0));
+  if (mode != VOIDmode)
+    return mode;
+  return targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
+}
