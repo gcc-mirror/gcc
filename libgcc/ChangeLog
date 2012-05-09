@@ -1,3 +1,8 @@
+2012-05-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* longlong.h: Use a URL instead of an FSF postal address.
+	Replace spaces with tab.
+
 2012-05-08   Teresa Johnson  <tejohnson@google.com>
 
 	* libgcov.c (gcov_clear, __gcov_reset): New functions.
