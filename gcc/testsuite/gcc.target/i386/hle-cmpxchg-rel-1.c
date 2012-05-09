@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=x86-64 -mhle" } */
-/* { dg-final { scan-assembler "lock\[ \n\t\]+\(xrelease\|\.byte\[ \t\]+0xf3\)\[ \t\n\]+cmpxchg" } } */
+/* { dg-final { scan-assembler "lock;?\[ \n\t\]+\(xrelease\|\.byte\[ \t\]+0xf3\)\[ \t\n\]+cmpxchg" } } */
 
 int
 hle_cmpxchg (int *p, int oldv, int newv)

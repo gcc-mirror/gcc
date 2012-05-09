@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mhle" } */
-/* { dg-final { scan-assembler "lock\[ \n\t\]+\(xrelease\|\.byte\[ \t\]+0xf3\)\[ \t\n\]+sub" } } */
+/* { dg-final { scan-assembler "lock;?\[ \n\t\]+\(xrelease\|\.byte\[ \t\]+0xf3\)\[ \t\n\]+sub" } } */
 
 void
 hle_sub (int *p, int v)

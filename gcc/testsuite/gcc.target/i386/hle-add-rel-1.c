@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mhle" } */
-/* { dg-final { scan-assembler "lock\[ \n\t\]+\(xrelease\|\.byte\[ \t\]+0xf3\)\[ \t\n\]+add" } } */
+/* { dg-final { scan-assembler "lock;?\[ \n\t\]+\(xrelease\|\.byte\[ \t\]+0xf3\)\[ \t\n\]+add" } } */
 
 void
 hle_add (int *p, int v)

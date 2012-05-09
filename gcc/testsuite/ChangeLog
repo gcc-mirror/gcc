@@ -1,3 +1,20 @@
+2012-05-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/hle-add-acq-1.c: Allow for ; after lock.
+	* gcc.target/i386/hle-add-rel-1.c: Likewise.
+	* gcc.target/i386/hle-and-acq-1.c: Likewise.
+	* gcc.target/i386/hle-and-rel-1.c: Likewise.
+	* gcc.target/i386/hle-cmpxchg-acq-1.c: Likewise.
+	* gcc.target/i386/hle-cmpxchg-rel-1.c: Likewise.
+	* gcc.target/i386/hle-or-acq-1.c: Likewise.
+	* gcc.target/i386/hle-or-rel-1.c: Likewise.
+	* gcc.target/i386/hle-sub-acq-1.c: Likewise.
+	* gcc.target/i386/hle-sub-rel-1.c: Likewise.
+	* gcc.target/i386/hle-xadd-acq-1.c: Likewise.
+	* gcc.target/i386/hle-xadd-rel-1.c: Likewise.
+	* gcc.target/i386/hle-xor-acq-1.c: Likewise.
+	* gcc.target/i386/hle-xor-rel-1.c: Likewise.
+
 2012-05-09  Dehao Chen  <dehao@google.com>
 
 	* gcc.dg/predict-1.c: Remove the replicated text in this test.
