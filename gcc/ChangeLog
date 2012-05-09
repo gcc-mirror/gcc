@@ -12,6 +12,13 @@
 
 2012-05-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	PR c++/53289
+	* diagnostic.h (diagnostic_context): Add last_location.
+	* diagnostic.c (diagnostic_initialize): Initialize it.
+	(diagnostic_show_locus): Use it.
+
+2012-05-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
        * doc/extend.texi (Function Attributes): Point xref to section
 	about Pragmas.
 

@@ -172,6 +172,9 @@ struct diagnostic_context
   /* Auxiliary data for client.  */
   void *x_data;
 
+  /* Used to detect that the last caret was printed at the same location.  */
+  location_t last_location;
+
   /* Used to detect when the input file stack has changed since last
      described.  */
   const struct line_map *last_module;
