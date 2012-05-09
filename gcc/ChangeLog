@@ -1,3 +1,10 @@
+2012-05-09  Richard Guenther  <rguenther@suse.de>
+
+	* stor-layout.c (bit_from_pos): Document.
+	(byte_from_pos): Likewise.  Optimize.
+	(pos_from_bit): Likewise.
+	(normalize_offset): Use pos_from_bit instead of replicating it.
+
 2012-05-09  Alan Modra  <amodra@gmail.com>
 
 	PR target/53271

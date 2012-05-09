@@ -785,8 +785,8 @@ start_record_layout (tree t)
   return rli;
 }
 
-/* These four routines perform computations that convert between
-   the offset/bitpos forms and byte and bit offsets.  */
+/* Return the combined bit position for the byte offset OFFSET and the
+   bit position BITPOS.  */
 
 tree
 bit_from_pos (tree offset, tree bitpos)
@@ -797,25 +797,46 @@ bit_from_pos (tree offset, tree bitpos)
 				 bitsize_unit_node));
 }
 
+/* Return the combined truncated byte position for the byte offset OFFSET and
+   the bit position BITPOS.  */
+
 tree
 byte_from_pos (tree offset, tree bitpos)
 {
-  return size_binop (PLUS_EXPR, offset,
-		     fold_convert (sizetype,
-				   size_binop (TRUNC_DIV_EXPR, bitpos,
-					       bitsize_unit_node)));
+  tree bytepos;
+  if (TREE_CODE (bitpos) == MULT_EXPR
+      && tree_int_cst_equal (TREE_OPERAND (bitpos, 1), bitsize_unit_node))
+    bytepos = TREE_OPERAND (bitpos, 0);
+  else
+    bytepos = size_binop (TRUNC_DIV_EXPR, bitpos, bitsize_unit_node);
+  return size_binop (PLUS_EXPR, offset, fold_convert (sizetype, bytepos));
 }
+
+/* Split the bit position POS into a byte offset *POFFSET and a bit
+   position *PBITPOS with the byte offset aligned to OFF_ALIGN bits.  */
 
 void
 pos_from_bit (tree *poffset, tree *pbitpos, unsigned int off_align,
 	      tree pos)
 {
-  *poffset = size_binop (MULT_EXPR,
-			 fold_convert (sizetype,
-				       size_binop (FLOOR_DIV_EXPR, pos,
-						   bitsize_int (off_align))),
-			 size_int (off_align / BITS_PER_UNIT));
-  *pbitpos = size_binop (FLOOR_MOD_EXPR, pos, bitsize_int (off_align));
+  tree toff_align = bitsize_int (off_align);
+  if (TREE_CODE (pos) == MULT_EXPR
+      && tree_int_cst_equal (TREE_OPERAND (pos, 1), toff_align))
+    {
+      *poffset = size_binop (MULT_EXPR,
+			     fold_convert (sizetype, TREE_OPERAND (pos, 0)),
+			     size_int (off_align / BITS_PER_UNIT));
+      *pbitpos = bitsize_zero_node;
+    }
+  else
+    {
+      *poffset = size_binop (MULT_EXPR,
+			     fold_convert (sizetype,
+					   size_binop (FLOOR_DIV_EXPR, pos,
+						       toff_align)),
+			     size_int (off_align / BITS_PER_UNIT));
+      *pbitpos = size_binop (FLOOR_MOD_EXPR, pos, toff_align);
+    }
 }
 
 /* Given a pointer to bit and byte offsets and an offset alignment,
@@ -828,17 +849,10 @@ normalize_offset (tree *poffset, tree *pbitpos, unsigned int off_align)
      downwards.  */
   if (compare_tree_int (*pbitpos, off_align) >= 0)
     {
-      tree extra_aligns = size_binop (FLOOR_DIV_EXPR, *pbitpos,
-				      bitsize_int (off_align));
-
-      *poffset
-	= size_binop (PLUS_EXPR, *poffset,
-		      size_binop (MULT_EXPR,
-				  fold_convert (sizetype, extra_aligns),
-				  size_int (off_align / BITS_PER_UNIT)));
-
-      *pbitpos
-	= size_binop (FLOOR_MOD_EXPR, *pbitpos, bitsize_int (off_align));
+      tree offset, bitpos;
+      pos_from_bit (&offset, &bitpos, off_align, *pbitpos);
+      *poffset = size_binop (PLUS_EXPR, *poffset, offset);
+      *pbitpos = bitpos;
     }
 }
 
