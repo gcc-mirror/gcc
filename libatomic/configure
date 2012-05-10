@@ -12151,7 +12151,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12218,7 +12218,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12285,7 +12285,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12352,7 +12352,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12419,7 +12419,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12485,7 +12485,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12550,7 +12550,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12615,7 +12615,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12680,7 +12680,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12745,7 +12745,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12811,7 +12811,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12876,7 +12876,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -12941,7 +12941,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13006,7 +13006,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13071,7 +13071,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13138,7 +13138,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13204,7 +13204,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13270,7 +13270,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13336,7 +13336,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13402,7 +13402,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13470,7 +13470,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13537,7 +13537,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13604,7 +13604,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13671,7 +13671,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13738,7 +13738,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13810,7 +13810,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13881,7 +13881,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13952,7 +13952,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -14023,7 +14023,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -14094,7 +14094,7 @@ _ACEOF
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
