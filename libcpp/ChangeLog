@@ -1,3 +1,7 @@
+2012-05-10  Tristan Gingold  <gingold@adacore.com>
+
+	* expr.c (interpret_float_suffix): Add a guard.
+
 2012-05-02  Dodji Seketeli  <dodji@redhat.com>
 
 	Properly initialize cpp_context in destringize_and_run
