@@ -1,3 +1,7 @@
+2012-05-10  Richard Guenther  <rguenther@suse.de>
+
+	* gcc-interface/cuintp.c (UI_From_gnu): Remove TYPE_IS_SIZETYPE use.
+
 2012-05-06  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/trans.c (gigi): Decorate reraise_zcx_decl.

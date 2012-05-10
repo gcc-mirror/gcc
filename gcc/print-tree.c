@@ -611,9 +611,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	   || code == QUAL_UNION_TYPE)
 	  && TYPE_NO_FORCE_BLK (node))
 	fputs (" no-force-blk", file);
-      else if (code == INTEGER_TYPE
-	       && TYPE_IS_SIZETYPE (node))
-	fputs (" sizetype", file);
 
       if (TYPE_STRING_FLAG (node))
 	fputs (" string-flag", file);

@@ -2479,12 +2479,10 @@ initialize_sizetypes (void)
   TYPE_NAME (sizetype) = get_identifier ("sizetype");
   TYPE_PRECISION (sizetype) = precision;
   TYPE_UNSIGNED (sizetype) = 1;
-  TYPE_IS_SIZETYPE (sizetype) = 1;
   bitsizetype = make_node (INTEGER_TYPE);
   TYPE_NAME (bitsizetype) = get_identifier ("bitsizetype");
   TYPE_PRECISION (bitsizetype) = bprecision;
   TYPE_UNSIGNED (bitsizetype) = 1;
-  TYPE_IS_SIZETYPE (bitsizetype) = 1;
 
   /* Now layout both types manually.  */
   SET_TYPE_MODE (sizetype, smallest_mode_for_size (precision, MODE_INT));
@@ -2505,10 +2503,8 @@ initialize_sizetypes (void)
   /* Create the signed variants of *sizetype.  */
   ssizetype = make_signed_type (TYPE_PRECISION (sizetype));
   TYPE_NAME (ssizetype) = get_identifier ("ssizetype");
-  TYPE_IS_SIZETYPE (ssizetype) = 1;
   sbitsizetype = make_signed_type (TYPE_PRECISION (bitsizetype));
   TYPE_NAME (sbitsizetype) = get_identifier ("sbitsizetype");
-  TYPE_IS_SIZETYPE (sbitsizetype) = 1;
 }
 
 /* TYPE is an integral type, i.e., an INTEGRAL_TYPE, ENUMERAL_TYPE

@@ -4539,12 +4539,10 @@ c_sizeof_or_alignof_type (location_t loc,
 	value = size_int (TYPE_ALIGN_UNIT (type));
     }
 
-  /* VALUE will have an integer type with TYPE_IS_SIZETYPE set.
-     TYPE_IS_SIZETYPE means that certain things (like overflow) will
-     never happen.  However, this node should really have type
-     `size_t', which is just a typedef for an ordinary integer type.  */
+  /* VALUE will have the middle-end integer type sizetype.
+     However, we should really return a value of type `size_t',
+     which is just a typedef for an ordinary integer type.  */
   value = fold_convert_loc (loc, size_type_node, value);
-  gcc_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (value)));
 
   return value;
 }
