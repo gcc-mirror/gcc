@@ -9449,8 +9449,9 @@ executed before any constructors are called.  The CPU detection code is
 automatically executed in a very high priority constructor.
 
 For example, this function has to be used in @code{ifunc} resolvers which
-check for CPU type using the builtins, @code{__builtin_cpu_is}
-and @code{__builtin_cpu_supports}.
+check for CPU type using the builtins @code{__builtin_cpu_is}
+and @code{__builtin_cpu_supports}, or in constructors on targets which
+don't support constructor priority.
 @smallexample
 
 static void (*resolve_memcpy (void)) (void)

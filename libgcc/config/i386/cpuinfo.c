@@ -20,8 +20,16 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "cpuid.h"
 #include "tsystem.h"
+#include "auto-target.h"
 
-int __cpu_indicator_init (void) __attribute__ ((constructor (101)));
+#ifdef HAVE_INIT_PRIORITY
+#define CONSTRUCTOR_PRIORITY (101)
+#else
+#define CONSTRUCTOR_PRIORITY
+#endif
+
+int __cpu_indicator_init (void)
+  __attribute__ ((constructor CONSTRUCTOR_PRIORITY));
 
 enum vendor_signatures
 {
@@ -253,7 +261,7 @@ __get_cpuid_output (unsigned int __level,
    the priority set.  However, it still runs after ifunc initializers and
    needs to be called explicitly there.  */
 
-int __attribute__ ((constructor (101)))
+int __attribute__ ((constructor CONSTRUCTOR_PRIORITY))
 __cpu_indicator_init (void)
 {
   unsigned int eax, ebx, ecx, edx;

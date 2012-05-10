@@ -39,6 +39,7 @@ else
 fi
 AC_SUBST(libgcc_topdir)
 AC_CONFIG_AUX_DIR($libgcc_topdir)
+AC_CONFIG_HEADER(auto-target.h:config.in)
 
 AC_ARG_ENABLE(shared,
 [  --disable-shared        don't provide a shared libgcc],
@@ -326,6 +327,15 @@ if test "$enable_tls $gcc_cv_use_emutls" = "yes yes"; then
   set_use_emutls="-DUSE_EMUTLS"
 fi
 AC_SUBST(set_use_emutls)
+
+AC_CACHE_CHECK(for init priority support, libgcc_cv_init_priority, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,
+  [[void ip (void) __attribute__ ((constructor (1)));]])],
+  [libgcc_cv_init_priority=yes],[libgcc_cv_init_priority=no])])
+if test $libgcc_cv_init_priority = yes; then
+  AC_DEFINE(HAVE_INIT_PRIORITY, 1,
+  [Define if the compiler supports init priority.])
+fi
 
 # Conditionalize the sfp-machine.h header for this target machine.
 if test -z "${sfp_machine_header}"; then
