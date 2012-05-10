@@ -1,3 +1,16 @@
+2012-05-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (TYPE_IS_SIZETYPE): Remove.
+	* fold-const.c (int_const_binop_1): Remove TYPE_IS_SIZETYPE use.
+	(extract_muldiv_1): Likewise.
+	* gimple.c (gtc_visit): Likewise.
+	(gimple_types_compatible_p): Likewise.
+	(iterative_hash_canonical_type): Likewise.
+	(gimple_canonical_types_compatible_p): Likewise.
+	* gimplify.c (gimplify_one_sizepos): Likewise.
+	* print-tree.c (print_node): Likewise.
+	* stor-layout.c (initialize_sizetypes): Do not set TYPE_IS_SIZETYPE.
+
 2012-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52908

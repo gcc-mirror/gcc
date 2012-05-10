@@ -1,3 +1,8 @@
+2012-05-10  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (c_sizeof_or_alignof_type): Remove assert and
+	adjust commentary about TYPE_IS_SIZETYPE types.
+
 2012-05-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/53261

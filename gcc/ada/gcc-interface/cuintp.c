@@ -177,10 +177,7 @@ UI_From_gnu (tree Input)
      in a signed 64-bit integer.  */
   if (host_integerp (Input, 0))
     return UI_From_Int (TREE_INT_CST_LOW (Input));
-  else if (TREE_INT_CST_HIGH (Input) < 0
-	   && TYPE_UNSIGNED (gnu_type)
-	   && !(TREE_CODE (gnu_type) == INTEGER_TYPE
-		&& TYPE_IS_SIZETYPE (gnu_type)))
+  else if (TREE_INT_CST_HIGH (Input) < 0 && TYPE_UNSIGNED (gnu_type))
     return No_Uint;
 #endif
 
