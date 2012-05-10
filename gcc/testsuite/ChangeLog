@@ -1,3 +1,7 @@
+2012-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto11.ad[sb]: New test.
+
 2012-05-08  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/53272

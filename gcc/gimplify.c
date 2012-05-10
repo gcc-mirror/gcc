@@ -1425,6 +1425,13 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
       && !TYPE_SIZES_GIMPLIFIED (TREE_TYPE (decl)))
     gimplify_type_sizes (TREE_TYPE (decl), seq_p);
 
+  /* ??? DECL_ORIGINAL_TYPE is streamed for LTO so it needs to be gimplified
+     in case its size expressions contain problematic nodes like CALL_EXPR.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (decl)
+      && !TYPE_SIZES_GIMPLIFIED (DECL_ORIGINAL_TYPE (decl)))
+    gimplify_type_sizes (DECL_ORIGINAL_TYPE (decl), seq_p);
+
   if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     {
       tree init = DECL_INITIAL (decl);
