@@ -1,5 +1,10 @@
 2012-05-10  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline.c (update_all_callee_keys): Remove.
+	(inline_small_functions): Simplify priority updating.
+
+2012-05-10  Jan Hubicka  <jh@suse.cz>
+
 	* ipa.c (symtab_remove_unreachable_nodes): Fix marking of clones.
 
 2012-05-10  Jan Hubicka  <jh@suse.cz>
