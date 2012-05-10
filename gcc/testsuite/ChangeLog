@@ -1,5 +1,11 @@
 2012-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/53158
+	* g++.dg/cpp0x/lambda/lambda-err2.C: New.
+	* g++.dg/parse/error26.C: Tweak dg-error column number.
+
+2012-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/53301
 	* g++.dg/warn/Wzero-as-null-pointer-constant-6.C: New.
 

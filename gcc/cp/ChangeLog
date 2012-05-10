@@ -1,5 +1,17 @@
 2012-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/53158
+	* cvt.c (ocp_convert): Error out early for void -> bool conversions.
+	* typeck.c (decay_conversion): Use error_at.
+	* call.c (build_integral_nontype_arg_conv, convert_like_real,
+	convert_arg_to_ellipsis, perform_implicit_conversion_flags,
+	initialize_reference): Likewise.
+	* cvt.c (warn_ref_binding): Add location_t parameter.
+	(cp_convert_to_pointer, convert_to_reference, ocp_convert,
+	convert_to_void, ): Use error_at and warning_at.
+
+2012-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/53301
 	* decl.c (check_default_argument): Fix typo (POINTER_TYPE_P
 	instead of TYPE_PTR_P) in zero-as-null-pointer-constant warning.

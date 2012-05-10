@@ -4,7 +4,7 @@
 void foo()
 {
   if (({int c[2];})) ; // { dg-error "7:ISO C.. forbids" "7" }
-  // { dg-error "20:could not convert" "20" { target *-*-* } 6 }
+  // { dg-error "17:could not convert" "17" { target *-*-* } 6 }
 }
 
 void bar()

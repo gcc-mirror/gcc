@@ -2329,6 +2329,8 @@ conversion_warning (tree type, tree expr)
 void
 warnings_for_convert_and_check (tree type, tree expr, tree result)
 {
+  location_t loc = EXPR_LOC_OR_HERE (expr);
+
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
           || TREE_CODE (type) == ENUMERAL_TYPE)
@@ -2344,8 +2346,8 @@ warnings_for_convert_and_check (tree type, tree expr, tree result)
           /* This detects cases like converting -129 or 256 to
              unsigned char.  */
           if (!int_fits_type_p (expr, c_common_signed_type (type)))
-            warning (OPT_Woverflow,
-                     "large integer implicitly truncated to unsigned type");
+            warning_at (loc, OPT_Woverflow,
+			"large integer implicitly truncated to unsigned type");
           else
             conversion_warning (type, expr);
         }
@@ -2357,16 +2359,16 @@ warnings_for_convert_and_check (tree type, tree expr, tree result)
 	       && (TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE
 		   || TYPE_PRECISION (TREE_TYPE (expr))
 		   != TYPE_PRECISION (type)))
-	warning (OPT_Woverflow,
-		 "overflow in implicit constant conversion");
+	warning_at (loc, OPT_Woverflow,
+		    "overflow in implicit constant conversion");
 
       else
 	conversion_warning (type, expr);
     }
   else if ((TREE_CODE (result) == INTEGER_CST
 	    || TREE_CODE (result) == FIXED_CST) && TREE_OVERFLOW (result))
-    warning (OPT_Woverflow,
-             "overflow in implicit constant conversion");
+    warning_at (loc, OPT_Woverflow,
+		"overflow in implicit constant conversion");
   else
     conversion_warning (type, expr);
 }

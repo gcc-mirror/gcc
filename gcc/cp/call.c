@@ -3182,7 +3182,7 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
 		candidate->convs[0]->type);
     }
   else if (TYPE_P (candidate->fn))
-    inform (input_location, "%s%T <conversion>", msg, candidate->fn);
+    inform (loc, "%s%T <conversion>", msg, candidate->fn);
   else if (candidate->viable == -1)
     inform (loc, "%s%#D <near match>", msg, candidate->fn);
   else if (DECL_DELETED_FN (STRIP_TEMPLATE (candidate->fn)))
@@ -3692,6 +3692,7 @@ build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
   conversion *conv;
   void *p;
   tree t;
+  location_t loc = EXPR_LOC_OR_HERE (expr);
 
   if (error_operand_p (expr))
     return error_mark_node;
@@ -3727,8 +3728,8 @@ build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
 	  break;
 
 	if (complain & tf_error)
-	  error ("conversion from %qT to %qT not considered for "
-		 "non-type template argument", t, type);
+	  error_at (loc, "conversion from %qT to %qT not considered for "
+		    "non-type template argument", t, type);
 	/* and fall through.  */
 
       default:
@@ -5648,6 +5649,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
   tree totype = convs->type;
   diagnostic_t diag_kind;
   int flags;
+  location_t loc = EXPR_LOC_OR_HERE (expr);
 
   if (convs->bad_p && !(complain & tf_error))
     return error_mark_node;
@@ -5668,13 +5670,13 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  && SCALAR_TYPE_P (totype)
 	  && CONSTRUCTOR_NELTS (expr) > 0
 	  && BRACE_ENCLOSED_INITIALIZER_P (CONSTRUCTOR_ELT (expr, 0)->value))
-	permerror (input_location, "too many braces around initializer for %qT", totype);
+	permerror (loc, "too many braces around initializer for %qT", totype);
 
       for (; t ; t = next_conversion (t))
 	{
 	  if (t->kind == ck_user && t->cand->reason)
 	    {
-	      permerror (input_location, "invalid user-defined conversion "
+	      permerror (loc, "invalid user-defined conversion "
 			 "from %qT to %qT", TREE_TYPE (expr), totype);
 	      print_z_candidate ("candidate is:", t->cand);
 	      expr = convert_like_real (t, expr, fn, argnum, 1,
@@ -5704,7 +5706,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    break;
 	}
 
-      permerror (input_location, "invalid conversion from %qT to %qT",
+      permerror (loc, "invalid conversion from %qT to %qT",
 		 TREE_TYPE (expr), totype);
       if (fn)
 	permerror (DECL_SOURCE_LOCATION (fn),
@@ -5937,8 +5939,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    gcc_assert (TYPE_REF_IS_RVALUE (ref_type)
 			&& real_lvalue_p (expr));
 
-	    error ("cannot bind %qT lvalue to %qT",
-		   TREE_TYPE (expr), totype);
+	    error_at (loc, "cannot bind %qT lvalue to %qT",
+		      TREE_TYPE (expr), totype);
 	    if (fn)
 	      error ("  initializing argument %P of %q+D", argnum, fn);
 	    return error_mark_node;
@@ -5969,13 +5971,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		/* If the reference is volatile or non-const, we
 		   cannot create a temporary.  */
 		if (lvalue & clk_bitfield)
-		  error ("cannot bind bitfield %qE to %qT",
-			 expr, ref_type);
+		  error_at (loc, "cannot bind bitfield %qE to %qT",
+			    expr, ref_type);
 		else if (lvalue & clk_packed)
-		  error ("cannot bind packed field %qE to %qT",
-			 expr, ref_type);
+		  error_at (loc, "cannot bind packed field %qE to %qT",
+			    expr, ref_type);
 		else
-		  error ("cannot bind rvalue %qE to %qT", expr, ref_type);
+		  error_at (loc, "cannot bind rvalue %qE to %qT",
+			    expr, ref_type);
 		return error_mark_node;
 	      }
 	    /* If the source is a packed field, and we must use a copy
@@ -5988,8 +5991,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		&& CLASS_TYPE_P (type)
 		&& type_has_nontrivial_copy_init (type))
 	      {
-		error ("cannot bind packed field %qE to %qT",
-		       expr, ref_type);
+		error_at (loc, "cannot bind packed field %qE to %qT",
+			  expr, ref_type);
 		return error_mark_node;
 	      }
 	    if (lvalue & clk_bitfield)
@@ -6055,6 +6058,7 @@ tree
 convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 {
   tree arg_type;
+  location_t loc = EXPR_LOC_OR_HERE (arg);
 
   /* [expr.call]
 
@@ -6076,10 +6080,10 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
     {
       if ((complain & tf_warning)
 	  && warn_double_promotion && !c_inhibit_evaluation_warnings)
-	warning (OPT_Wdouble_promotion,
-		 "implicit conversion from %qT to %qT when passing "
-		 "argument to function",
-		 arg_type, double_type_node);
+	warning_at (loc, OPT_Wdouble_promotion,
+		    "implicit conversion from %qT to %qT when passing "
+		    "argument to function",
+		    arg_type, double_type_node);
       arg = convert_to_real (double_type_node, arg);
     }
   else if (NULLPTR_TYPE_P (arg_type))
@@ -6089,8 +6093,8 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
       if (SCOPED_ENUM_P (arg_type) && !abi_version_at_least (6))
 	{
 	  if (complain & tf_warning)
-	    warning (OPT_Wabi, "scoped enum %qT will not promote to an "
-		     "integral type in a future version of GCC", arg_type);
+	    warning_at (loc, OPT_Wabi, "scoped enum %qT will not promote to an "
+			"integral type in a future version of GCC", arg_type);
 	  arg = cp_convert (ENUM_UNDERLYING_TYPE (arg_type), arg);
 	}
       arg = perform_integral_promotions (arg);
@@ -6126,8 +6130,8 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 	      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (arg_type)))
 	{
 	  if (complain & tf_error)
-	    error ("cannot pass objects of non-trivially-copyable "
-		   "type %q#T through %<...%>", arg_type);
+	    error_at (loc, "cannot pass objects of non-trivially-copyable "
+		      "type %q#T through %<...%>", arg_type);
 	  else
 	    return error_mark_node;
 	}
@@ -8532,6 +8536,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
 {
   conversion *conv;
   void *p;
+  location_t loc = EXPR_LOC_OR_HERE (expr);
 
   if (error_operand_p (expr))
     return error_mark_node;
@@ -8554,8 +8559,8 @@ perform_implicit_conversion_flags (tree type, tree expr,
 	  else if (invalid_nonstatic_memfn_p (expr, complain))
 	    /* We gave an error.  */;
 	  else
-	    error ("could not convert %qE from %qT to %qT", expr,
-		   TREE_TYPE (expr), type);
+	    error_at (loc, "could not convert %qE from %qT to %qT", expr,
+		      TREE_TYPE (expr), type);
 	}
       expr = error_mark_node;
     }
@@ -8833,6 +8838,7 @@ initialize_reference (tree type, tree expr,
 {
   conversion *conv;
   void *p;
+  location_t loc = EXPR_LOC_OR_HERE (expr);
 
   if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;
@@ -8851,13 +8857,13 @@ initialize_reference (tree type, tree expr,
 	  else if (!CP_TYPE_CONST_P (TREE_TYPE (type))
 		   && !TYPE_REF_IS_RVALUE (type)
 		   && !real_lvalue_p (expr))
-	    error ("invalid initialization of non-const reference of "
-		   "type %qT from an rvalue of type %qT",
-		   type, TREE_TYPE (expr));
+	    error_at (loc, "invalid initialization of non-const reference of "
+		      "type %qT from an rvalue of type %qT",
+		      type, TREE_TYPE (expr));
 	  else
-	    error ("invalid initialization of reference of type "
-		   "%qT from expression of type %qT", type,
-		   TREE_TYPE (expr));
+	    error_at (loc, "invalid initialization of reference of type "
+		      "%qT from expression of type %qT", type,
+		      TREE_TYPE (expr));
 	}
       return error_mark_node;
     }

@@ -1,3 +1,8 @@
+2012-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53158
+	* c-common.c (warnings_for_convert_and_check): Use warning_at.
+
 2012-05-10  Richard Guenther  <rguenther@suse.de>
 
 	* c-common.c (c_sizeof_or_alignof_type): Remove assert and
