@@ -1,3 +1,8 @@
+2012-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_decl_expr): For a TYPE_DECL, also gimplify the
+	DECL_ORIGINAL_TYPE if it is present.
+
 2012-05-10  Nick Clifton  <nickc@redhat.com>
 
 	PR target/53120
