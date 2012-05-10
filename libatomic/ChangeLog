@@ -1,3 +1,10 @@
+2012-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR other/53284
+	* acinclude.m4 (LIBAT_TEST_ATOMIC_BUILTIN): Add -O0 -S to CFLAGS
+	instead of overriding.
+	* configure: Regenerate.
+
 2012-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am (libatomic.map-sun): Handle objects in
