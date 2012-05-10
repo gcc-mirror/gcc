@@ -8433,20 +8433,16 @@ standard_sse_constant_opcode (rtx insn, rtx x)
       switch (get_attr_mode (insn))
 	{
 	case MODE_TI:
-	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "%vpxor\t%0, %d0";
+	  return "%vpxor\t%0, %d0";
 	case MODE_V2DF:
-	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "%vxorpd\t%0, %d0";
+	  return "%vxorpd\t%0, %d0";
 	case MODE_V4SF:
 	  return "%vxorps\t%0, %d0";
 
 	case MODE_OI:
-	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "vpxor\t%x0, %x0, %x0";
+	  return "vpxor\t%x0, %x0, %x0";
 	case MODE_V4DF:
-	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "vxorpd\t%x0, %x0, %x0";
+	  return "vxorpd\t%x0, %x0, %x0";
 	case MODE_V8SF:
 	  return "vxorps\t%x0, %x0, %x0";
 
