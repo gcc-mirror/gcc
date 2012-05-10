@@ -1,3 +1,9 @@
+2012-05-10  Nick Clifton  <nickc@redhat.com>
+
+	PR target/53120
+	* config/m32c/bitops.md (bset_qi): Change operand 2 from having
+	a "0" constraint to being a (match_dup 0).
+
 2012-05-10  Richard Guenther  <rguenther@suse.de>
 
 	* stor-layout.c (byte_from_pos): Amend comment.
