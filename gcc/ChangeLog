@@ -1,3 +1,7 @@
+2012-05-10  Richard Guenther  <rguenther@suse.de>
+
+	* stor-layout.c (byte_from_pos): Amend comment.
+
 2012-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/extend.texi (X86 Built-in Functions, __builtin_cpu_init):
