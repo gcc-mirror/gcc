@@ -110,12 +110,13 @@ interpret_float_suffix (const uchar *s, size_t len)
     }
 
   /* Recognize a fixed-point suffix.  */
-  switch (s[len-1])
-    {
-    case 'k': case 'K': flags = CPP_N_ACCUM; break;
-    case 'r': case 'R': flags = CPP_N_FRACT; break;
-    default: break;
-    }
+  if (len != 0)
+    switch (s[len-1])
+      {
+      case 'k': case 'K': flags = CPP_N_ACCUM; break;
+      case 'r': case 'R': flags = CPP_N_FRACT; break;
+      default: break;
+      }
 
   /* Continue processing a fixed-point suffix.  The suffix is case
      insensitive except for ll or LL.  Order is significant.  */
