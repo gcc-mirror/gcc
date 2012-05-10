@@ -1836,7 +1836,7 @@ ipa_passes (void)
      because TODO is run before the subpasses.  It is important to remove
      the unreachable functions to save works at IPA level and to get LTO
      symbol tables right.  */
-  cgraph_remove_unreachable_nodes (true, cgraph_dump_file);
+  symtab_remove_unreachable_nodes (true, cgraph_dump_file);
 
   /* If pass_all_early_optimizations was not scheduled, the state of
      the cgraph will not be properly updated.  Update it now.  */
@@ -1962,7 +1962,7 @@ compile (void)
 
   /* This pass remove bodies of extern inline functions we never inlined.
      Do this later so other IPA passes see what is really going on.  */
-  cgraph_remove_unreachable_nodes (false, dump_file);
+  symtab_remove_unreachable_nodes (false, dump_file);
   cgraph_global_info_ready = true;
   if (cgraph_dump_file)
     {
@@ -1987,7 +1987,7 @@ compile (void)
   cgraph_materialize_all_clones ();
   bitmap_obstack_initialize (NULL);
   execute_ipa_pass_list (all_late_ipa_passes);
-  cgraph_remove_unreachable_nodes (true, dump_file);
+  symtab_remove_unreachable_nodes (true, dump_file);
 #ifdef ENABLE_CHECKING
   verify_symtab ();
 #endif

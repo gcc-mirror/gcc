@@ -1,3 +1,20 @@
+2012-05-10  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_remove_unreachable_nodes): Rename to ...
+	(symtab_remove_unreachable_nodes): ... this one.
+	* ipa-cp.c (ipcp_driver): Do not remove unreachable nodes.
+	* cgraphunit.c (ipa_passes): Update.
+	* cgraphclones.c (cgraph_materialize_all_clones): Update.
+	* cgraph.c (cgraph_release_function_body): Only turn initial
+	into error mark when initial was previously set.
+	* ipa-inline.c (ipa_inline): Update.
+	* ipa.c: Include ipa-inline.h
+	(enqueue_cgraph_node, enqueue_varpool_node): Remove.
+	(enqueue_node): New function.
+	(process_references): Update.
+	(symtab_remove_unreachable_nodes): Cleanup.
+	* passes.c (execute_todo, execute_one_pass): Update.
+
 2012-05-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/53125
