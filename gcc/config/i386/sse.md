@@ -337,6 +337,16 @@
    (V8SF "V4SF") (V4DF "V2DF")
    (V4SF "V2SF")])
 
+;; Mapping of vector modes ti packed single mode of the same size
+(define_mode_attr ssePSmode
+  [(V32QI "V8SF") (V16QI "V4SF")
+   (V16HI "V8SF") (V8HI "V4SF")
+   (V8SI "V8SF") (V4SI "V4SF")
+   (V4DI "V8SF") (V2DI "V4SF")
+   (V2TI "V8SF") (V1TI "V4SF")
+   (V8SF "V8SF") (V4SF "V4SF")
+   (V4DF "V8SF") (V2DF "V4SF")])
+
 ;; Mapping of vector modes back to the scalar modes
 (define_mode_attr ssescalarmode
   [(V32QI "QI") (V16HI "HI") (V8SI "SI") (V4DI "DI")
@@ -420,7 +430,7 @@
 })
 
 (define_insn "*mov<mode>_internal"
-  [(set (match_operand:V16 0 "nonimmediate_operand" "=x,x ,m")
+  [(set (match_operand:V16 0 "nonimmediate_operand"               "=x,x ,m")
 	(match_operand:V16 1 "nonimmediate_or_sse_const_operand"  "C ,xm,x"))]
   "TARGET_SSE
    && (register_operand (operands[0], <MODE>mode)
@@ -471,21 +481,18 @@
   [(set_attr "type" "sselog1,ssemov,ssemov")
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
-	(cond [(and (eq_attr "alternative" "1,2")
-	      	    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
-		 (if_then_else
-		    (match_test "GET_MODE_SIZE (<MODE>mode) > 16")
-		    (const_string "V8SF")
-		    (const_string "V4SF"))
+	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "<ssePSmode>")
+	       (and (eq_attr "alternative" "2")
+		    (match_test "TARGET_SSE_TYPELESS_STORES"))
+		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<sseinsnmode>")
-	       (ior (and (eq_attr "alternative" "1,2")
-			 (match_test "optimize_function_for_size_p (cfun)"))
-		    (and (eq_attr "alternative" "2")
-			 (match_test "TARGET_SSE_TYPELESS_STORES")))
+	       (ior (not (match_test "TARGET_SSE2"))
+		    (match_test "optimize_function_for_size_p (cfun)"))
 		 (const_string "V4SF")
 	      ]
-	  (const_string "<sseinsnmode>")))])
+	      (const_string "<sseinsnmode>")))])
 
 (define_insn "sse2_movq128"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
@@ -610,18 +617,16 @@
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
 	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-		 (if_then_else
-		    (match_test "GET_MODE_SIZE (<MODE>mode) > 16")
-		    (const_string "V8SF")
-		    (const_string "V4SF"))
+		 (const_string "<ssePSmode>")
+	       (and (eq_attr "alternative" "1")
+		    (match_test "TARGET_SSE_TYPELESS_STORES"))
+		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<MODE>")
-	       (ior (match_test "optimize_function_for_size_p (cfun)")
-		    (and (eq_attr "alternative" "1")
-			 (match_test "TARGET_SSE_TYPELESS_STORES")))
-	         (const_string "V4SF")
+	       (match_test "optimize_function_for_size_p (cfun)")
+		 (const_string "V4SF")
 	      ]
-	(const_string "<MODE>")))])
+	      (const_string "<MODE>")))])
 
 (define_expand "<sse2>_movdqu<avxsizesuffix>"
   [(set (match_operand:VI1 0 "nonimmediate_operand")
@@ -658,18 +663,16 @@
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
 	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-		 (if_then_else
-		    (match_test "GET_MODE_SIZE (<MODE>mode) > 16")
-		    (const_string "V8SF")
-		    (const_string "V4SF"))
+		 (const_string "<ssePSmode>")
+	       (and (eq_attr "alternative" "1")
+		    (match_test "TARGET_SSE_TYPELESS_STORES"))
+		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<sseinsnmode>")
-	       (ior (match_test "optimize_function_for_size_p (cfun)")
-		    (and (eq_attr "alternative" "1")
-			 (match_test "TARGET_SSE_TYPELESS_STORES")))
+	       (match_test "optimize_function_for_size_p (cfun)")
 	         (const_string "V4SF")
 	      ]
-	(const_string "<sseinsnmode>")))])
+	      (const_string "<sseinsnmode>")))])
 
 (define_insn "<sse3>_lddqu<avxsizesuffix>"
   [(set (match_operand:VI1 0 "register_operand" "=x")

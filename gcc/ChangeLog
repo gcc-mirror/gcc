@@ -1,3 +1,17 @@
+2012-05-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movoi_internal_avx): Handle
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL and TARGET_SSE_TYPELESS_STORES.
+	(*movti_internal_rex64): Handle TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL.
+	(*movti_internal_sse): Ditto.
+	(*movtf_internal): Ditto.
+	* config/i386/sse.md (ssePSmode): New mode attribute.
+	(*move<mode>_internal): Use ssePSmode.
+	(*<sse>_movu<ssemodesuffix><avxsizesuffix>): Ditto.
+	(*<sse2>_movdqu<avxsizesuffix>): Ditto.
+	* config/i386/i386.c (standard_sse_constant_opcode): Do not handle
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL here.
+
 2012-05-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_decl_expr): For a TYPE_DECL, also gimplify the
@@ -18,8 +32,7 @@
 	* doc/extend.texi (X86 Built-in Functions, __builtin_cpu_init):
 	Document requirement to call in constructors.
 
-	* config/i386/i386.c: Update comments for i386-cpuinfo.c name
-	change.
+	* config/i386/i386.c: Update comments for i386-cpuinfo.c name change.
 
 2012-05-10  Richard Guenther  <rguenther@suse.de>
 
