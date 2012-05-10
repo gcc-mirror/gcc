@@ -4125,7 +4125,12 @@ ira (FILE *f)
     }
 
   allocated_reg_info_size = max_reg_num ();
-  find_moveable_pseudos ();
+
+  /* It is not worth to do such improvement when we use a simple
+     allocation because of -O0 usage or because the function is too
+     big.  */
+  if (ira_conflicts_p)
+    find_moveable_pseudos ();
 
   max_regno_before_ira = max_reg_num ();
   ira_setup_eliminable_regset ();
@@ -4234,7 +4239,10 @@ ira (FILE *f)
 	      max_regno * sizeof (struct ira_spilled_reg_stack_slot));
     }
   allocate_initial_values (reg_equivs);
-  move_unallocated_pseudos ();
+
+  /* See comment for find_moveable_pseudos call.  */
+  if (ira_conflicts_p)
+    move_unallocated_pseudos ();
 }
 
 static void
