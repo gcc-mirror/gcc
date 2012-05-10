@@ -61,6 +61,7 @@ extern int ia64_hard_regno_rename_ok (int, int);
 extern enum reg_class ia64_secondary_reload_class (enum reg_class,
 						   enum machine_mode, rtx);
 extern const char *get_bundle_name (int);
+extern const char *output_probe_stack_range (rtx, rtx);
 
 extern void ia64_expand_vec_perm_even_odd (rtx, rtx, rtx, int);
 extern bool ia64_expand_vec_perm_const (rtx op[4]);

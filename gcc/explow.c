@@ -1525,17 +1525,24 @@ set_stack_check_libfunc (const char *libfunc_name)
 void
 emit_stack_probe (rtx address)
 {
-  rtx memref = gen_rtx_MEM (word_mode, address);
-
-  MEM_VOLATILE_P (memref) = 1;
-
-  /* See if we have an insn to probe the stack.  */
-#ifdef HAVE_probe_stack
-  if (HAVE_probe_stack)
-    emit_insn (gen_probe_stack (memref));
+#ifdef HAVE_probe_stack_address
+  if (HAVE_probe_stack_address)
+    emit_insn (gen_probe_stack_address (address));
   else
 #endif
-    emit_move_insn (memref, const0_rtx);
+    {
+      rtx memref = gen_rtx_MEM (word_mode, address);
+
+      MEM_VOLATILE_P (memref) = 1;
+
+      /* See if we have an insn to probe the stack.  */
+#ifdef HAVE_probe_stack
+      if (HAVE_probe_stack)
+        emit_insn (gen_probe_stack (memref));
+      else
+#endif
+        emit_move_insn (memref, const0_rtx);
+    }
 }
 
 /* Probe a range of stack addresses from FIRST to FIRST+SIZE, inclusive.
