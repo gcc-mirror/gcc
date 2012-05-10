@@ -15156,6 +15156,7 @@ add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
 static void
 add_byte_size_attribute (dw_die_ref die, tree tree_node)
 {
+  dw_die_ref decl_die;
   unsigned size;
 
   switch (TREE_CODE (tree_node))
@@ -15167,6 +15168,12 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
+      if (TREE_CODE (TYPE_SIZE_UNIT (tree_node)) == VAR_DECL
+	  && (decl_die = lookup_decl_die (TYPE_SIZE_UNIT (tree_node))))
+	{
+	  add_AT_die_ref (die, DW_AT_byte_size, decl_die);
+	  return;
+	}
       size = int_size_in_bytes (tree_node);
       break;
     case FIELD_DECL:
