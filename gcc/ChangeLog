@@ -1,4 +1,9 @@
 2012-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (add_byte_size_attribute) <RECORD_TYPE>: Handle variable
+	reference as size attribute.
+
+2012-05-10  Eric Botcazou  <ebotcazou@adacore.com>
 	    Tristan Gingold  <gingold@adacore.com>
 
 	* doc/md.texi (Standard Names): Document probe_stack_address.
