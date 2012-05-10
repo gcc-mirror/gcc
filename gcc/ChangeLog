@@ -1,3 +1,17 @@
+2012-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movti_internal_rex64): Avoid MOVAPS size
+	optimization for TARGET_AVX.
+	(*movti_internal_sse): Ditto.
+	(*movdi_internal_rex64): Handle TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL.
+	(*movdi_internal): Ditto.
+	(*movsi_internal): Ditto.
+	(*movtf_internal): Avoid MOVAPS size optimization for TARGET_AVX.
+	(*movdf_internal_rex64): Ditto.
+	(*movfd_internal): Ditto.
+	(*movsf_internal): Ditto.
+	* config/i386/sse.md (mov<mode>): Handle TARGET_SSE_LOAD0_BY_PXOR.
+
 2012-05-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (add_byte_size_attribute) <RECORD_TYPE>: Handle variable
