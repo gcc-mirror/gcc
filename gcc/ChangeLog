@@ -1,5 +1,10 @@
 2012-05-11  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/53291
+	* config/i386/i386.md (xtest): Use NE condition in ix86_expand_setcc.
+
+2012-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (*movti_internal_rex64): Avoid MOVAPS size
 	optimization for TARGET_AVX.
 	(*movti_internal_sse): Ditto.
