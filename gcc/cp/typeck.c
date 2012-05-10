@@ -1822,6 +1822,7 @@ decay_conversion (tree exp, tsubst_flags_t complain)
 {
   tree type;
   enum tree_code code;
+  location_t loc = EXPR_LOC_OR_HERE (exp);
 
   type = TREE_TYPE (exp);
   if (type == error_mark_node)
@@ -1853,7 +1854,7 @@ decay_conversion (tree exp, tsubst_flags_t complain)
   if (code == VOID_TYPE)
     {
       if (complain & tf_error)
-	error ("void value not ignored as it ought to be");
+	error_at (loc, "void value not ignored as it ought to be");
       return error_mark_node;
     }
   if (invalid_nonstatic_memfn_p (exp, complain))
@@ -1882,7 +1883,7 @@ decay_conversion (tree exp, tsubst_flags_t complain)
 	  && ! (TREE_CODE (exp) == CONSTRUCTOR && TREE_STATIC (exp)))
 	{
 	  if (complain & tf_error)
-	    error ("invalid use of non-lvalue array");
+	    error_at (loc, "invalid use of non-lvalue array");
 	  return error_mark_node;
 	}
 
