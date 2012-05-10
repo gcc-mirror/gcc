@@ -1,7 +1,7 @@
 2012-05-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/53125
-	* ira.c (ira): Call find_moveable_pseudos or
+	* ira.c (ira): Call find_moveable_pseudos and
 	move_unallocated_pseudos if only ira_conflicts_p is true.
 
 2012-05-10  Uros Bizjak  <ubizjak@gmail.com>
