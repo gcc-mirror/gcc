@@ -228,3 +228,10 @@ do {								\
 #define TARGET_ASM_FUNCTION_SECTION ia64_hpux_function_section
 
 #define TARGET_POSIX_IO
+
+/* Define this to be nonzero if static stack checking is supported.  */
+#define STACK_CHECK_STATIC_BUILTIN 1
+
+/* Minimum amount of stack required to recover from an anticipated stack
+   overflow detection.  */
+#define STACK_CHECK_PROTECT (24 * 1024)

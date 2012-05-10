@@ -1,3 +1,32 @@
+2012-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+	    Tristan Gingold  <gingold@adacore.com>
+
+	* doc/md.texi (Standard Names): Document probe_stack_address.
+	* explow.c (emit_stack_probe): Handle probe_stack_address.
+	* config/ia64/ia64.md (UNSPECV_PROBE_STACK_ADDRESS): New constant.
+	(UNSPECV_PROBE_STACK_RANGE): Likewise.
+	(probe_stack_address): New insn.
+	(probe_stack_range): Likewise.
+	* config/ia64/ia64.c: Include common/common-target.h.
+	(ia64_compute_frame_size): Mark r2 and r3 as used if static stack
+	checking is enabled.
+	(ia64_emit_probe_stack_range): New function.
+	(output_probe_stack_range): Likewise.
+	(ia64_expand_prologue): Invoke ia64_emit_probe_stack_range if static
+	builtin stack checking is enabled.
+	(rtx_needs_barrier) <UNSPEC_VOLATILE>: Handle UNSPECV_PROBE_STACK_RANGE
+	and UNSPECV_PROBE_STACK_ADDRESS.
+	(unknown_for_bundling_p): New predicate.
+	(group_barrier_needed): Use important_for_bundling_p.
+	(ia64_dfa_new_cycle): Use unknown_for_bundling_p.
+	(issue_nops_and_insn): Likewise.
+	(bundling): Likewise.
+	(final_emit_insn_group_barriers): Likewise.
+	* config/ia64/ia64-protos.h (output_probe_stack_range): Declare.
+	* config/ia64/hpux.h (STACK_CHECK_STATIC_BUILTIN): Define.
+	(STACK_CHECK_PROTECT): Likewise.
+	* config/ia64/linux.h (STACK_CHECK_STATIC_BUILTIN): Likewise.
+
 2012-05-10  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (update_all_callee_keys): Remove.
