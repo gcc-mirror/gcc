@@ -1,3 +1,10 @@
+2012-05-10  DJ Delorie  <dj@redhat.com>
+
+	* include/bits/random.tcc (seed_seq::generate): Cast max()
+	operands to size_t to ensure a template match.
+	* include/std/bitset (_M_copy_from_ptr): Cast min() operands to
+	size_t to ensure a template match.
+
 2012-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* scripts/testsuite_flags.in (cxxflags): Remove

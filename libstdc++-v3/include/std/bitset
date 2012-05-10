@@ -1377,7 +1377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		       size_t __pos, size_t __n, _CharT __zero, _CharT __one)
       {
 	reset();
-	const size_t __nbits = std::min(_Nb, std::min(__n, __len - __pos));
+	const size_t __nbits = std::min(_Nb, std::min(__n, size_t(__len - __pos)));
 	for (size_t __i = __nbits; __i > 0; --__i)
 	  {
 	    const _CharT __c = __s[__pos + __nbits - __i];
