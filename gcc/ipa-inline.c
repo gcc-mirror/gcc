@@ -1717,7 +1717,7 @@ ipa_inline (void)
     }
 
   inline_small_functions ();
-  cgraph_remove_unreachable_nodes (true, dump_file);
+  symtab_remove_unreachable_nodes (true, dump_file);
   free (order);
 
   /* We already perform some inlining of functions called once during

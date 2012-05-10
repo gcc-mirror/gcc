@@ -870,7 +870,7 @@ cgraph_materialize_all_clones (void)
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif
-  cgraph_remove_unreachable_nodes (false, cgraph_dump_file);
+  symtab_remove_unreachable_nodes (false, cgraph_dump_file);
 }
 
 #include "gt-cgraphclones.h"
