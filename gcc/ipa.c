@@ -310,12 +310,12 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 
 	  /* For non-inline clones, force their origins to the boundary and ensure
 	     that body is not removed.  */
-	  while (cnode->clone_of && !cnode->clone_of->symbol.aux
+	  while (cnode->clone_of
 	         && !gimple_has_body_p (cnode->symbol.decl))
 	    {
 	      bool noninline = cnode->clone_of->symbol.decl != cnode->symbol.decl;
 	      cnode = cnode->clone_of;
-	      if (noninline && !cnode->symbol.aux)
+	      if (noninline)
 	      	{
 	          pointer_set_insert (body_needed_for_clonning, cnode->symbol.decl);
 		  enqueue_node ((symtab_node)cnode, &first, reachable);

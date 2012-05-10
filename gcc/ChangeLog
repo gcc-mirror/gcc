@@ -1,5 +1,9 @@
 2012-05-10  Jan Hubicka  <jh@suse.cz>
 
+	* ipa.c (symtab_remove_unreachable_nodes): Fix marking of clones.
+
+2012-05-10  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (cgraph_remove_unreachable_nodes): Rename to ...
 	(symtab_remove_unreachable_nodes): ... this one.
 	* ipa-cp.c (ipcp_driver): Do not remove unreachable nodes.
