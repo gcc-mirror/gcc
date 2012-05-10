@@ -491,6 +491,9 @@
 	       (ior (not (match_test "TARGET_SSE2"))
 		    (match_test "optimize_function_for_size_p (cfun)"))
 		 (const_string "V4SF")
+	       (and (eq_attr "alternative" "0")
+		    (match_test "TARGET_SSE_LOAD0_BY_PXOR"))
+		 (const_string "TI")
 	      ]
 	      (const_string "<sseinsnmode>")))])
 
