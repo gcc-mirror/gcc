@@ -27665,7 +27665,7 @@ ix86_init_mmx_sse_builtins (void)
 }
 
 /* This builds the processor_model struct type defined in
-   libgcc/config/i386/i386-cpuinfo.c  */
+   libgcc/config/i386/cpuinfo.c  */
 
 static tree
 build_processor_model_struct (void)
@@ -27725,7 +27725,7 @@ make_var_decl (tree type, const char *name)
 }
 
 /* FNDECL is a __builtin_cpu_is or a __builtin_cpu_supports call that is folded
-   into an integer defined in libgcc/config/i386/i386-cpuinfo.c */
+   into an integer defined in libgcc/config/i386/cpuinfo.c */
 
 static tree
 fold_builtin_cpu (tree fndecl, tree *args)
@@ -27735,8 +27735,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 				DECL_FUNCTION_CODE (fndecl);
   tree param_string_cst = NULL;
 
-  /* This is the order of bit-fields in __processor_features in
-     i386-cpuinfo.c */
+  /* This is the order of bit-fields in __processor_features in cpuinfo.c */
   enum processor_features
   {
     F_CMOV = 0,
@@ -27754,7 +27753,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
   };
 
   /* These are the values for vendor types and cpu types  and subtypes
-     in i386-cpuinfo.c.  Cpu types and subtypes should be subtracted by
+     in cpuinfo.c.  Cpu types and subtypes should be subtracted by
      the corresponding start value.  */
   enum processor_model
   {

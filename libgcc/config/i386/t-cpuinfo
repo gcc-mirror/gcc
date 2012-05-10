@@ -1,1 +1,1 @@
-LIB2ADD += $(srcdir)/config/i386/i386-cpuinfo.c
+LIB2ADD += $(srcdir)/config/i386/cpuinfo.c

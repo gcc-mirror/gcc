@@ -1,3 +1,11 @@
+2012-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/extend.texi (X86 Built-in Functions, __builtin_cpu_init):
+	Document requirement to call in constructors.
+
+	* config/i386/i386.c: Update comments for i386-cpuinfo.c name
+	change.
+
 2012-05-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (TYPE_IS_SIZETYPE): Remove.
