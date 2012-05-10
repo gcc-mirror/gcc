@@ -798,7 +798,13 @@ bit_from_pos (tree offset, tree bitpos)
 }
 
 /* Return the combined truncated byte position for the byte offset OFFSET and
-   the bit position BITPOS.  */
+   the bit position BITPOS.
+
+   These functions operate on byte and bit positions as present in FIELD_DECLs
+   and assume that these expressions result in no (intermediate) overflow.
+   This assumption is necessary to fold the expressions as much as possible,
+   so as to avoid creating artificially variable-sized types in languages
+   supporting variable-sized types like Ada.  */
 
 tree
 byte_from_pos (tree offset, tree bitpos)
