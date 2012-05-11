@@ -2334,7 +2334,7 @@ vect_vfa_segment_size (struct data_reference *dr, tree length_factor)
 {
   tree segment_length;
 
-  if (!compare_tree_int (DR_STEP (dr), 0))
+  if (integer_zerop (DR_STEP (dr)))
     segment_length = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
   else
     segment_length = size_binop (MULT_EXPR,

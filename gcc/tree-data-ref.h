@@ -618,9 +618,10 @@ bool stmt_with_adjacent_zero_store_dr_p (gimple);
 static inline bool
 stride_of_unit_type_p (tree stride, tree type)
 {
-  return tree_int_cst_equal (fold_unary (ABS_EXPR, TREE_TYPE (stride),
-					 stride),
-			     TYPE_SIZE_UNIT (type));
+  return (TREE_CODE (stride) == INTEGER_CST
+	  && tree_int_cst_equal (fold_unary (ABS_EXPR, TREE_TYPE (stride),
+					     stride),
+				 TYPE_SIZE_UNIT (type)));
 }
 
 /* Determines whether RDG vertices V1 and V2 access to similar memory
