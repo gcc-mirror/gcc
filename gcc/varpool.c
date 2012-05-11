@@ -282,7 +282,7 @@ varpool_assemble_decl (struct varpool_node *node)
 
   /* Constant pool is output from RTL land when the reference
      survive till this level.  */
-  if (DECL_IN_CONSTANT_POOL (decl))
+  if (DECL_IN_CONSTANT_POOL (decl) && TREE_ASM_WRITTEN (decl))
     return false;
 
   /* Decls with VALUE_EXPR should not be in the varpool at all.  They
