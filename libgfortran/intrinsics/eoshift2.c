@@ -77,6 +77,12 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 
       ret->offset = 0;
       ret->dtype = array->dtype;
+
+      if (arraysize > 0)
+	ret->data = internal_malloc_size (size * arraysize);
+      else
+	ret->data = internal_malloc_size (1);
+
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
 	  index_type ub, str;
@@ -90,12 +96,6 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 	      * GFC_DESCRIPTOR_STRIDE(ret,i-1);
 
 	  GFC_DIMENSION_SET(ret->dim[i], 0, ub, str);
-
-	  if (arraysize > 0)
-	    ret->data = internal_malloc_size (size * arraysize);
-	  else
-	    ret->data = internal_malloc_size (1);
-
         }
     }
   else if (unlikely (compile_options.bounds_check))
