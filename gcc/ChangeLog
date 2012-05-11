@@ -1,5 +1,15 @@
 2012-05-11  Richard Guenther  <rguenther@suse.de>
 
+	* tree-flow.h (referenced_var_check_and_insert): Remove.
+	(find_new_referenced_vars): Likewise.
+	* tree-dfa.c (referenced_var_check_and_insert): Make static.
+	(find_new_referenced_vars_1, find_new_referenced_vars): Remove.
+	* tree-inline.c (copy_bb): Use find_referenced_vars_in
+	instead of find_new_referenced_vars.
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Likewise.
+
+2012-05-11  Richard Guenther  <rguenther@suse.de>
+
 	* tree-pass.h (pass_rest_of_compilation,
 	pass_all_optimizations, pass_postreload, pass_all_early_optimizations):
 	Remove.
