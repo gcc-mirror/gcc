@@ -1117,7 +1117,6 @@ init_tree_ssa (struct function *fn)
 				                 uid_ssaname_map_eq, NULL);
   pt_solution_reset (&fn->gimple_df->escaped);
   init_ssanames (fn, 0);
-  init_phinodes ();
 }
 
 /* Do the actions required to initialize internal data structures used
@@ -1173,7 +1172,6 @@ delete_tree_ssa (void)
   cfun->gimple_df->referenced_vars = NULL;
 
   fini_ssanames ();
-  fini_phinodes ();
 
   /* We no longer maintain the SSA operand cache at this point.  */
   if (ssa_operands_active ())

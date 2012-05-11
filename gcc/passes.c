@@ -334,7 +334,7 @@ gate_all_early_optimizations (void)
 	  && !seen_error ());
 }
 
-struct gimple_opt_pass pass_all_early_optimizations =
+static struct gimple_opt_pass pass_all_early_optimizations =
 {
  {
   GIMPLE_PASS,
@@ -364,7 +364,7 @@ gate_all_optimizations (void)
 	  && (!seen_error () || gimple_in_ssa_p (cfun)));
 }
 
-struct gimple_opt_pass pass_all_optimizations =
+static struct gimple_opt_pass pass_all_optimizations =
 {
  {
   GIMPLE_PASS,
@@ -391,10 +391,10 @@ gate_rest_of_compilation (void)
   return !(rtl_dump_and_exit || flag_syntax_only || seen_error ());
 }
 
-struct gimple_opt_pass pass_rest_of_compilation =
+static struct rtl_opt_pass pass_rest_of_compilation =
 {
  {
-  GIMPLE_PASS,
+  RTL_PASS,
   "*rest_of_compilation",               /* name */
   gate_rest_of_compilation,             /* gate */
   NULL,                                 /* execute */
@@ -416,7 +416,7 @@ gate_postreload (void)
   return reload_completed;
 }
 
-struct rtl_opt_pass pass_postreload =
+static struct rtl_opt_pass pass_postreload =
 {
  {
   RTL_PASS,
@@ -1377,6 +1377,7 @@ init_optimization_passes (void)
   p = &all_late_ipa_passes;
   NEXT_PASS (pass_ipa_pta);
   *p = NULL;
+
   /* These passes are run after IPA passes on every function that is being
      output to the assembler file.  */
   p = &all_passes;
