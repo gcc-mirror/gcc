@@ -296,7 +296,8 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(_First, _Last, \
 
 // Verify that the iterator range [_First, _Last) is a heap
 #define __glibcxx_check_heap(_First,_Last)				\
-_GLIBCXX_DEBUG_VERIFY(std::__is_heap(_First, _Last),		        \
+  _GLIBCXX_DEBUG_VERIFY(std::__is_heap(__gnu_debug::__base(_First),	\
+				       __gnu_debug::__base(_Last)),	\
 		      _M_message(__gnu_debug::__msg_not_heap)	        \
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
@@ -304,7 +305,9 @@ _GLIBCXX_DEBUG_VERIFY(std::__is_heap(_First, _Last),		        \
 /** Verify that the iterator range [_First, _Last) is a heap
     w.r.t. the predicate _Pred. */
 #define __glibcxx_check_heap_pred(_First,_Last,_Pred)			\
-_GLIBCXX_DEBUG_VERIFY(std::__is_heap(_First, _Last, _Pred),		\
+  _GLIBCXX_DEBUG_VERIFY(std::__is_heap(__gnu_debug::__base(_First),	\
+				       __gnu_debug::__base(_Last),	\
+				       _Pred),				\
 		      _M_message(__gnu_debug::__msg_not_heap_pred)      \
                       ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\

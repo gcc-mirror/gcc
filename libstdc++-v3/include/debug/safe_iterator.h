@@ -35,7 +35,6 @@
 #include <debug/functions.h>
 #include <debug/safe_base.h>
 #include <bits/stl_pair.h>
-#include <bits/stl_iterator_base_types.h> // for _Iter_base
 #include <ext/type_traits.h>
 
 namespace __gnu_debug
@@ -714,37 +713,6 @@ namespace __gnu_debug
     operator+(typename _Safe_iterator<_Iterator,_Sequence>::difference_type __n,
 	      const _Safe_iterator<_Iterator, _Sequence>& __i)
     { return __i + __n; }
-
-  // Helper struct to detect random access safe iterators.
-  template<typename _Iterator>
-    struct __is_safe_random_iterator
-    {
-      enum { __value = 0 };
-      typedef std::__false_type __type;
-    };
-
-  template<typename _Iterator, typename _Sequence>
-    struct __is_safe_random_iterator<_Safe_iterator<_Iterator, _Sequence> >
-    : std::__are_same<std::random_access_iterator_tag,
-                      typename std::iterator_traits<_Iterator>::
-		      iterator_category>
-    { };
-
-  template<typename _Iterator>
-    struct _Siter_base
-    : std::_Iter_base<_Iterator, __is_safe_random_iterator<_Iterator>::__value>
-    { };
-
-  /** Helper function to extract base iterator of random access safe iterator
-      in order to reduce performance impact of debug mode.  Limited to random
-      access iterator because it is the only category for which it is possible
-      to check for correct iterators order in the __valid_range function
-      thanks to the < operator.
-  */
-  template<typename _Iterator>
-    inline typename _Siter_base<_Iterator>::iterator_type
-    __base(_Iterator __it)
-    { return _Siter_base<_Iterator>::_S_base(__it); }
 } // namespace __gnu_debug
 
 #include <debug/safe_iterator.tcc>
