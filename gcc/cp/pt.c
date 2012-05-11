@@ -12066,7 +12066,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case PARM_DECL:
       r = retrieve_local_specialization (t);
 
-      if (r == NULL)
+      if (r == NULL_TREE)
 	{
 	  tree c;
 
@@ -12084,6 +12084,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     not the following PARM_DECLs that are chained to T.  */
 	  c = copy_node (t);
 	  r = tsubst_decl (c, args, complain);
+	  if (r == NULL_TREE)
+	    return error_mark_node;
 	  /* Give it the template pattern as its context; its true context
 	     hasn't been instantiated yet and this is good enough for
 	     mangling.  */

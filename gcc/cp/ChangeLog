@@ -1,3 +1,11 @@
+2012-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53305
+	* pt.c (tsubst_copy: case PARM_DECL): Return error_mark_node if
+	tsubst_decl returns NULL_TREE.
+	* cxx-pretty-print.c (pp_cxx_simple_type_specifier): Handle
+	BOUND_TEMPLATE_TEMPLATE_PARM.
+
 2012-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53158

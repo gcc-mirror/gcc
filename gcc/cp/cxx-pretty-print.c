@@ -1261,6 +1261,7 @@ pp_cxx_simple_type_specifier (cxx_pretty_printer *pp, tree t)
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
     case TEMPLATE_PARM_INDEX:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
       pp_cxx_unqualified_id (pp, t);
       break;
 
