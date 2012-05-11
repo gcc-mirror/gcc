@@ -459,4 +459,6 @@ combined option.  For example, some front ends use this to prevent
 value of @option{-fmath-errno} for languages that do not use
 @code{errno}.
 
+@item EnabledBy(@var{opt})
+If not explicitly set, the option is set to the value of @option{-@var{opt}}.
 @end table

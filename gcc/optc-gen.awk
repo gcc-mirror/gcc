@@ -1,4 +1,4 @@
-#  Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010, 2011
+#  Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010, 2011, 2012
 #  Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
@@ -323,5 +323,67 @@ for (i = 0; i < n_opts; i++) {
 }
 
 print "};"
+
+print "\n\n"
+print "bool                                                                  "
+print "common_handle_option_auto (struct gcc_options *opts,                  "
+print "                           struct gcc_options *opts_set,              "
+print "                           const struct cl_decoded_option *decoded,   "
+print "                           unsigned int lang_mask, int kind,          "
+print "                           location_t loc,                            "
+print "                           const struct cl_option_handlers *handlers, "
+print "                           diagnostic_context *dc)                    "
+print "{                                                                     "
+print "  size_t scode = decoded->opt_index;                                  "
+print "  int value = decoded->value;                                         "
+print "  enum opt_code code = (enum opt_code) scode;                         "
+print "                                                                      "
+print "  gcc_assert (decoded->canonical_option_num_elements <= 2);           "
+print "                                                                      "
+print "  switch (code)                                                       "
+print "    {                                                                 "
+n_enabledby = 0;
+for (i = 0; i < n_opts; i++) {
+    # With identical flags, pick only the last one.  The
+    # earlier loop ensured that it has all flags merged,
+    # and a nonempty help text if one of the texts was nonempty.
+    while( i + 1 != n_opts && opts[i] == opts[i + 1] ) {
+        i++;
+    }
+    enabledby_arg = opt_args("EnabledBy", flags[i]);
+    if (enabledby_arg != "") {
+        enabledby_name = enabledby_arg;
+        enabledby_index = opt_numbers[enabledby_name];
+        if (enabledby_index == "") {
+            print "#error Enabledby: " enabledby_name 
+        } else {
+            enabledby_var_name = var_name(flags[enabledby_index]);
+            if (enables[enabledby_name] == "") {
+                enabledby[n_enabledby] = enabledby_name;
+                n_enabledby++;
+            }
+            enables[enabledby_name] = enables[enabledby_name] opts[i] ",";
+        }
+    }
+}
+for (i = 0; i < n_enabledby; i++) {
+    enabledby_name = enabledby[i];
+    print "    case " opt_enum(enabledby_name) ":"
+    n_enables = split(enables[enabledby_name], thisenable, ",");
+    for (j = 1; j < n_enables; j++) {
+        opt_var_name = var_name(flags[opt_numbers[thisenable[j]]]);
+        print "      if (!opts_set->x_" opt_var_name ")"
+        print "        handle_generated_option (opts, opts_set,"
+        print "                                 " opt_enum(thisenable[j]) ", NULL, value,"
+        print "                                 lang_mask, kind, loc, handlers, dc);"
+    }
+    print "      break;\n"
+
+}
+print "    default:    "
+print "      break;    "
+print "    }           "
+print "  return true;  "
+print "}               "
 
 }

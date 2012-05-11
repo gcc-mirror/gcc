@@ -1,3 +1,9 @@
+2012-05-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* gcc-interface/misc.c (gnat_parse_file): Move before ...
+	(gnat_handle_option): ... this. Use handle_generated_option.
+
 2012-05-10  Richard Guenther  <rguenther@suse.de>
 
 	* gcc-interface/cuintp.c (UI_From_gnu): Remove TYPE_IS_SIZETYPE use.

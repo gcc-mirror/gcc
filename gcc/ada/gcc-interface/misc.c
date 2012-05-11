@@ -105,6 +105,14 @@ gnat_parse_file (void)
   _ada_gnat1drv ();
 }
 
+/* Return language mask for option processing.  */
+
+static unsigned int
+gnat_option_lang_mask (void)
+{
+  return CL_Ada;
+}
+
 /* Decode all the language specific options that cannot be decoded by GCC.
    The option decoding phase of GCC calls this routine on the flags that
    are marked as Ada-specific.  Return true on success or false on failure.  */
@@ -119,7 +127,10 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
   switch (code)
     {
     case OPT_Wall:
-      warn_unused = value;
+      handle_generated_option (&global_options, &global_options_set,
+			       OPT_Wunused, NULL, value,
+			       gnat_option_lang_mask (), kind, loc,
+			       handlers, global_dc);
       warn_uninitialized = value;
       warn_maybe_uninitialized = value;
       break;
@@ -143,14 +154,6 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
     }
 
   return true;
-}
-
-/* Return language mask for option processing.  */
-
-static unsigned int
-gnat_option_lang_mask (void)
-{
-  return CL_Ada;
 }
 
 /* Initialize options structure OPTS.  */

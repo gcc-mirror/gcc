@@ -1,3 +1,11 @@
+2012-05-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* options.c: Include diagnostics.h instead of
+	diagnostics-core.h.
+	(set_Wall): Do not see warn_unused here.
+	(gfc_handle_option): Set it here using handle_generated_option.
+
 2012-05-08  Jan Hubicka  <jh@suse.cz>
 	
 	* trans-common.c (create_common): Do not fake TREE_ASM_WRITTEN.
