@@ -77,6 +77,10 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 
       ret->offset = 0;
       ret->dtype = array->dtype;
+
+      /* xmalloc allocates a single byte for zero size.  */
+      ret->base_addr = xmalloc (size * arraysize);
+
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
 	  index_type ub, str;
@@ -90,10 +94,6 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 	      * GFC_DESCRIPTOR_STRIDE(ret,i-1);
 
 	  GFC_DIMENSION_SET(ret->dim[i], 0, ub, str);
-
-          /* xmalloc allocates a single byte for zero size.  */
-	  ret->base_addr = xmalloc (size * arraysize);
-
         }
     }
   else if (unlikely (compile_options.bounds_check))
