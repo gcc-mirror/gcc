@@ -1,3 +1,9 @@
+2012-05-11  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/53300
+	* varpool.c (varpool_assemble_decl): Also output constat pool entries
+	that output_constant_pool missed.
+
 2012-05-11  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/t-vxworks: Change MUTLILIB_EXTRA_OPTS to
