@@ -1,3 +1,8 @@
+2012-05-11  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* config/mips/t-vxworks: Change MUTLILIB_EXTRA_OPTS to
+	MULTILIB_EXTRA_OPTS.
+
 2012-05-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53291
