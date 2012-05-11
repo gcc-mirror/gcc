@@ -44,10 +44,6 @@ along with GCC; see the file COPYING3.  If not see
    garbage collector.  Similar results have been seen on a wider variety
    of tests (such as the compiler itself).
 
-   Right now we maintain our free list on a per-function basis.  It may
-   or may not make sense to maintain the free list for the duration of
-   a compilation unit.
-
    We could also use a zone allocator for these objects since they have
    a very well defined lifetime.  If someone wants to experiment with that
    this is the place to try it.
@@ -86,30 +82,6 @@ static int ideal_phi_node_len (int);
 unsigned int phi_nodes_reused;
 unsigned int phi_nodes_created;
 #endif
-
-/* Initialize management of PHIs.  */
-
-void
-init_phinodes (void)
-{
-  int i;
-
-  for (i = 0; i < NUM_BUCKETS - 2; i++)
-    free_phinodes[i] = NULL;
-  free_phinode_count = 0;
-}
-
-/* Finalize management of PHIs.  */
-
-void
-fini_phinodes (void)
-{
-  int i;
-
-  for (i = 0; i < NUM_BUCKETS - 2; i++)
-    free_phinodes[i] = NULL;
-  free_phinode_count = 0;
-}
 
 /* Dump some simple statistics regarding the re-use of PHI nodes.  */
 

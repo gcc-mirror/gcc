@@ -514,8 +514,6 @@ extern void add_phi_arg (gimple, tree, edge, source_location);
 extern void remove_phi_args (edge);
 extern void remove_phi_node (gimple_stmt_iterator *, bool);
 extern void remove_phi_nodes (basic_block);
-extern void init_phinodes (void);
-extern void fini_phinodes (void);
 extern void release_phi_node (gimple);
 #ifdef GATHER_STATISTICS
 extern void phinodes_print_statistics (void);

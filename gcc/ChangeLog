@@ -1,3 +1,16 @@
+2012-05-11  Richard Guenther  <rguenther@suse.de>
+
+	* tree-pass.h (pass_rest_of_compilation,
+	pass_all_optimizations, pass_postreload, pass_all_early_optimizations):
+	Remove.
+	* passes.c (pass_all_optimizations, pass_postreload,
+	pass_all_early_optimizations): Make static.
+	(pass_rest_of_compilation): Likewise.  Make it an RTL_PASS.
+	* tree-phinodes.c (init_phinodes, fini_phinodes): Remove.
+	* tree-ssa.c (init_tree_ssa): Do not call init_phinodes.
+	(delete_tree_ssa): Do not call fini_phinodes.
+	* tree-flow.h (init_phinodes, fini_phinodes): Remove.
+
 2012-05-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 53063
