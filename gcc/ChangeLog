@@ -1,3 +1,23 @@
+2012-05-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53295
+	* tree-data-ref.h (stride_of_unit_type_p): Handle non-constant
+	strides.
+	* tree-data-ref.c (dr_analyze_innermost): Allow non-constant
+	strides when analyzing data-references in a loop context.
+	* tree-vect-data-refs.c (vect_mark_for_runtime_alias_test): Reject
+	non-constant strides for now.
+	(vect_enhance_data_refs_alignment): Ignore data references
+	that are strided loads.
+	(vect_analyze_data_ref_access): Handle non-constant strides.
+	(vect_check_strided_load): Verify the data-reference is a load.
+	(vect_analyze_data_refs): Restructure to make strided load
+	support not dependent on gather support.
+	* tree-vect-stmts.c (vectorizable_load): Avoid useless work
+	when doing strided or gather loads.
+	* tree-vect-loop-manip.c (vect_vfa_segment_size): Use
+	integer_zerop to compare stride with zero.
+
 2012-05-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Support

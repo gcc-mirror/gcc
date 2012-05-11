@@ -542,6 +542,17 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
       return false;
     }
 
+  /* FORNOW: We don't support creating runtime alias tests for non-constant
+     step.  */
+  if (TREE_CODE (DR_STEP (DDR_A (ddr))) != INTEGER_CST
+      || TREE_CODE (DR_STEP (DDR_B (ddr))) != INTEGER_CST)
+    {
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
+	fprintf (vect_dump, "versioning not yet supported for non-constant "
+		 "step");
+      return false;
+    }
+
   VEC_safe_push (ddr_p, heap, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo), ddr);
   return true;
 }
@@ -1522,6 +1533,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       if (integer_zerop (DR_STEP (dr)))
 	continue;
 
+      /* Strided loads perform only component accesses, alignment is
+	 irrelevant for them.  */
+      if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
+	continue;
+
       supportable_dr_alignment = vect_supportable_dr_alignment (dr, true);
       do_peeling = vector_alignment_reachable_p (dr);
       if (do_peeling)
@@ -1779,6 +1795,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
 	    continue;
 
+	  /* Strided loads perform only component accesses, alignment is
+	     irrelevant for them.  */
+	  if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
+	    continue;
+
 	  save_misalignment = DR_MISALIGNMENT (dr);
 	  vect_update_misalignment_for_peel (dr, dr0, npeel);
 	  supportable_dr_alignment = vect_supportable_dr_alignment (dr, false);
@@ -1859,6 +1880,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  if (aligned_access_p (dr)
 	      || (STMT_VINFO_GROUPED_ACCESS (stmt_info)
 		  && GROUP_FIRST_ELEMENT (stmt_info) != stmt))
+	    continue;
+
+	  /* Strided loads perform only component accesses, alignment is
+	     irrelevant for them.  */
+	  if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
 	    continue;
 
 	  supportable_dr_alignment = vect_supportable_dr_alignment (dr, false);
@@ -2329,7 +2355,6 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
-  HOST_WIDE_INT dr_step;
 
   if (loop_vinfo)
     loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -2342,8 +2367,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
     }
 
   /* Allow invariant loads in loops.  */
-  dr_step = TREE_INT_CST_LOW (step);
-  if (loop_vinfo && dr_step == 0)
+  if (loop_vinfo && integer_zerop (step))
     {
       GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = NULL;
       return DR_IS_READ (dr);
@@ -2357,9 +2381,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 
       /* For the rest of the analysis we use the outer-loop step.  */
       step = STMT_VINFO_DR_STEP (stmt_info);
-      dr_step = TREE_INT_CST_LOW (step);
-
-      if (dr_step == 0)
+      if (integer_zerop (step))
 	{
 	  if (vect_print_dump_info (REPORT_ALIGNMENT))
 	    fprintf (vect_dump, "zero step in outer loop.");
@@ -2371,13 +2393,17 @@ vect_analyze_data_ref_access (struct data_reference *dr)
     }
 
   /* Consecutive?  */
-  if (!tree_int_cst_compare (step, TYPE_SIZE_UNIT (scalar_type))
-      || (dr_step < 0
-	  && !compare_tree_int (TYPE_SIZE_UNIT (scalar_type), -dr_step)))
+  if (TREE_CODE (step) == INTEGER_CST)
     {
-      /* Mark that it is not interleaving.  */
-      GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = NULL;
-      return true;
+      HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
+      if (!tree_int_cst_compare (step, TYPE_SIZE_UNIT (scalar_type))
+	  || (dr_step < 0
+	      && !compare_tree_int (TYPE_SIZE_UNIT (scalar_type), -dr_step)))
+	{
+	  /* Mark that it is not interleaving.  */
+	  GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = NULL;
+	  return true;
+	}
     }
 
   if (loop && nested_in_vect_loop_p (loop, stmt))
@@ -2386,6 +2412,10 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 	fprintf (vect_dump, "grouped access in outer loop.");
       return false;
     }
+
+  /* Assume this is a DR handled by non-constant strided load case.  */
+  if (TREE_CODE (step) != INTEGER_CST)
+    return STMT_VINFO_STRIDE_LOAD_P (stmt_info);
 
   /* Not consecutive access - check if it's a part of interleaving group.  */
   return vect_analyze_group_access (dr);
@@ -2719,6 +2749,9 @@ vect_check_strided_load (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree base, off;
   affine_iv iv;
+
+  if (!DR_IS_READ (dr))
+    return false;
 
   base = DR_REF (dr);
 
@@ -3148,21 +3181,19 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	  VEC (ddr_p, heap) *ddrs = LOOP_VINFO_DDRS (loop_vinfo);
 	  struct data_dependence_relation *ddr, *newddr;
 	  bool bad = false;
-	  bool strided_load = false;
 	  tree off;
 	  VEC (loop_p, heap) *nest = LOOP_VINFO_LOOP_NEST (loop_vinfo);
 
-	  strided_load = vect_check_strided_load (stmt, loop_vinfo, NULL, NULL);
 	  gather = 0 != vect_check_gather (stmt, loop_vinfo, NULL, &off, NULL);
 	  if (gather
 	      && get_vectype_for_scalar_type (TREE_TYPE (off)) == NULL_TREE)
 	    gather = false;
-	  if (!gather && !strided_load)
+	  if (!gather)
 	    {
 	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 		{
 		  fprintf (vect_dump,
-			   "not vectorized: not suitable for gather/strided load ");
+			   "not vectorized: not suitable for gather load ");
 		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
 		}
 	      return false;
@@ -3215,16 +3246,32 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 		{
 		  fprintf (vect_dump,
 			   "not vectorized: data dependence conflict"
-			   " prevents gather/strided load");
+			   " prevents gather load");
 		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
 		}
 	      return false;
 	    }
 
-	  if (gather)
-	    STMT_VINFO_GATHER_P (stmt_info) = true;
-	  else if (strided_load)
-	    STMT_VINFO_STRIDE_LOAD_P (stmt_info) = true;
+	  STMT_VINFO_GATHER_P (stmt_info) = true;
+	}
+      else if (loop_vinfo
+	       && TREE_CODE (DR_STEP (dr)) != INTEGER_CST)
+	{
+	  bool strided_load = false;
+	  if (!nested_in_vect_loop_p (loop, stmt))
+	    strided_load
+	      = vect_check_strided_load (stmt, loop_vinfo, NULL, NULL);
+	  if (!strided_load)
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+		{
+		  fprintf (vect_dump,
+			   "not vectorized: not suitable for strided load ");
+		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+		}
+	      return false;
+	    }
+	  STMT_VINFO_STRIDE_LOAD_P (stmt_info) = true;
 	}
     }
 

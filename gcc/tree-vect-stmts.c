@@ -4210,7 +4210,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   bool load_lanes_p = false;
   gimple first_stmt;
   bool inv_p;
-  bool negative;
+  bool negative = false;
   bool compute_in_loop = false;
   struct loop *at_loop;
   int vec_num;
@@ -4280,17 +4280,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
-  negative = tree_int_cst_compare (nested_in_vect_loop
-				   ? STMT_VINFO_DR_STEP (stmt_info)
-				   : DR_STEP (dr),
-				   size_zero_node) < 0;
-  if (negative && ncopies > 1)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "multiple types with negative step.");
-      return false;
-    }
-
   elem_type = TREE_TYPE (vectype);
   mode = TYPE_MODE (vectype);
 
@@ -4321,24 +4310,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	}
     }
 
-  if (negative)
-    {
-      gcc_assert (!grouped_load && !STMT_VINFO_GATHER_P (stmt_info));
-      alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
-      if (alignment_support_scheme != dr_aligned
-	  && alignment_support_scheme != dr_unaligned_supported)
-	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "negative step but alignment required.");
-	  return false;
-	}
-      if (!perm_mask_for_reverse (vectype))
-	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "negative step and reversing not supported.");
-	  return false;
-	}
-    }
 
   if (STMT_VINFO_GATHER_P (stmt_info))
     {
@@ -4358,7 +4329,41 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     }
   else if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
     {
-      vect_check_strided_load (stmt, loop_vinfo, &stride_base, &stride_step);
+      if (!vect_check_strided_load (stmt, loop_vinfo,
+				    &stride_base, &stride_step))
+	return false;
+    }
+  else
+    {
+      negative = tree_int_cst_compare (nested_in_vect_loop
+				       ? STMT_VINFO_DR_STEP (stmt_info)
+				       : DR_STEP (dr),
+				       size_zero_node) < 0;
+      if (negative && ncopies > 1)
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "multiple types with negative step.");
+	  return false;
+	}
+
+      if (negative)
+	{
+	  gcc_assert (!grouped_load);
+	  alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
+	  if (alignment_support_scheme != dr_aligned
+	      && alignment_support_scheme != dr_unaligned_supported)
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (vect_dump, "negative step but alignment required.");
+	      return false;
+	    }
+	  if (!perm_mask_for_reverse (vectype))
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (vect_dump, "negative step and reversing not supported.");
+	      return false;
+	    }
+	}
     }
 
   if (!vec_stmt) /* transformation not required.  */
