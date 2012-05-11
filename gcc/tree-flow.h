@@ -332,7 +332,6 @@ typedef struct
        (VAR) = next_referenced_var (&(ITER)))
 
 extern tree referenced_var_lookup (struct function *, unsigned int);
-extern bool referenced_var_check_and_insert (tree);
 #define num_referenced_vars htab_elements (gimple_referenced_vars (cfun))
 
 #define num_ssa_names (VEC_length (tree, cfun->gimple_df->ssa_names))
@@ -496,7 +495,6 @@ extern tree get_virtual_var (tree);
 extern bool add_referenced_var (tree);
 extern void remove_referenced_var (tree);
 extern void mark_symbols_for_renaming (gimple);
-extern void find_new_referenced_vars (gimple);
 extern tree make_rename_temp (tree, const char *);
 extern void set_default_def (tree, tree);
 extern tree gimple_default_def (struct function *, tree);

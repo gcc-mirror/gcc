@@ -625,7 +625,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
       new_stmt = gsi_stmt (i);
       /* The replacement can expose previously unreferenced variables.  */
       if (gimple_in_ssa_p (cfun))
-	find_new_referenced_vars (new_stmt);
+	find_referenced_vars_in (new_stmt);
       /* If the new statement possibly has a VUSE, update it with exact SSA
 	 name we know will reach this one.  */
       if (gimple_has_mem_ops (new_stmt))
