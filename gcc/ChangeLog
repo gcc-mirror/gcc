@@ -1,3 +1,21 @@
+2012-05-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* doc/options.texi (EnabledBy): Document
+	* opts.c: Include opts.h and options.h before tm.h.
+	(finish_options): Do not handle some sub-options here...
+	(common_handle_option): ... instead call common_handle_option_auto here.
+	* optc-gen.awk: Handle EnabledBy.
+	* opth-gen.awk: Declare common_handle_option_auto.
+	* common.opt (Wuninitialized): Use EnabledBy. Delete Init.
+	(Wmaybe-uninitialized): Likewise.
+        (Wunused-but-set-variable): Likewise.
+        (Wunused-function): Likewise.
+        (Wunused-label): Likewise.
+        (Wunused-value): Likewise.
+        (Wunused-variable): Likewise.
+        * opt-read.awk: Create opt_numbers array.
+
 2012-05-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53295

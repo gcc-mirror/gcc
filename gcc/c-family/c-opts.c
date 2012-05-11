@@ -360,7 +360,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wall:
-      warn_unused = value;
+      handle_generated_option (&global_options, &global_options_set,
+			       OPT_Wunused, NULL, value,
+			       c_family_lang_mask, kind, loc,
+			       handlers, global_dc);
       set_Wformat (value);
       handle_generated_option (&global_options, &global_options_set,
 			       OPT_Wimplicit, NULL, value,

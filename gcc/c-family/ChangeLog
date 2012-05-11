@@ -1,3 +1,9 @@
+2012-05-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* c-opts.c (c_common_handle_option): Use handle_generated_option
+	to enable sub-options.
+
 2012-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53158
