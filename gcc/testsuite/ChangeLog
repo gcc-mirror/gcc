@@ -1,3 +1,7 @@
+2012-05-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/debug/dwarf2/nested-3.C: Allow for ! comments.
+
 2012-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53305
