@@ -3191,7 +3191,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    
    Keep these checks in ascending code order.  */
 #define SCALAR_TYPE_P(TYPE)			\
-  (TYPE_PTRMEM_P (TYPE)				\
+  (TYPE_PTRDATAMEM_P (TYPE)			\
    || TREE_CODE (TYPE) == ENUMERAL_TYPE		\
    || ARITHMETIC_TYPE_P (TYPE)			\
    || TYPE_PTR_P (TYPE)				\
@@ -3376,7 +3376,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (TYPE_HAS_COPY_ASSIGN (NODE) && ! TYPE_HAS_COMPLEX_COPY_ASSIGN (NODE))
 
 /* Returns true if NODE is a pointer-to-data-member.  */
-#define TYPE_PTRMEM_P(NODE)			\
+#define TYPE_PTRDATAMEM_P(NODE)			\
   (TREE_CODE (NODE) == OFFSET_TYPE)
 /* Returns true if NODE is a pointer.  */
 #define TYPE_PTR_P(NODE)			\
@@ -3434,8 +3434,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (LANG_TYPE_CLASS_CHECK (NODE)->ptrmemfunc_flag)
 
 /* Returns true if NODE is a pointer-to-member.  */
-#define TYPE_PTR_TO_MEMBER_P(NODE) \
-  (TYPE_PTRMEM_P (NODE) || TYPE_PTRMEMFUNC_P (NODE))
+#define TYPE_PTRMEM_P(NODE) \
+  (TYPE_PTRDATAMEM_P (NODE) || TYPE_PTRMEMFUNC_P (NODE))
+
+/* Returns true if NODE is a pointer or a pointer-to-member.  */
+#define TYPE_PTR_OR_PTRMEM_P(NODE) \
+  (TYPE_PTR_P (NODE) || TYPE_PTRMEM_P (NODE))
 
 /* Indicates when overload resolution may resolve to a pointer to
    member function. [expr.unary.op]/3 */
@@ -3473,13 +3477,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    TYPE_PTRMEM_POINTED_TO_TYPE; there, the first parameter will have
    type `const X*'.  */
 #define TYPE_PTRMEM_CLASS_TYPE(NODE)			\
-  (TYPE_PTRMEM_P (NODE)					\
+  (TYPE_PTRDATAMEM_P (NODE)					\
    ? TYPE_OFFSET_BASETYPE (NODE)		\
    : TYPE_PTRMEMFUNC_OBJECT_TYPE (NODE))
 
 /* For a pointer-to-member type of the form `T X::*', this is `T'.  */
 #define TYPE_PTRMEM_POINTED_TO_TYPE(NODE)		\
-   (TYPE_PTRMEM_P (NODE)				\
+   (TYPE_PTRDATAMEM_P (NODE)				\
     ? TREE_TYPE (NODE)					\
     : TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (NODE)))
 

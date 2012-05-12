@@ -175,7 +175,7 @@ cp_convert_to_pointer (tree type, tree expr)
 
       return build_nop (type, expr);
     }
-  else if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
+  else if ((TYPE_PTRDATAMEM_P (type) && TYPE_PTRDATAMEM_P (intype))
 	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
     return convert_ptrmem (type, expr, /*allow_inverse_p=*/false,
 			   /*c_cast_p=*/false, tf_warning_or_error);
@@ -210,7 +210,7 @@ cp_convert_to_pointer (tree type, tree expr)
 	return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0,
 				 /*c_cast_p=*/false, tf_warning_or_error);
 
-      if (TYPE_PTRMEM_P (type))
+      if (TYPE_PTRDATAMEM_P (type))
 	{
 	  /* A NULL pointer-to-member is represented by -1, not by
 	     zero.  */
@@ -221,7 +221,7 @@ cp_convert_to_pointer (tree type, tree expr)
 
       return expr;
     }
-  else if (TYPE_PTR_TO_MEMBER_P (type) && INTEGRAL_CODE_P (form))
+  else if (TYPE_PTRMEM_P (type) && INTEGRAL_CODE_P (form))
     {
       error_at (loc, "invalid conversion from %qT to %qT", intype, type);
       return error_mark_node;
@@ -767,7 +767,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
     }
   if (NULLPTR_TYPE_P (type) && e && null_ptr_cst_p (e))
     return nullptr_node;
-  if (POINTER_TYPE_P (type) || TYPE_PTR_TO_MEMBER_P (type))
+  if (POINTER_TYPE_P (type) || TYPE_PTRMEM_P (type))
     return fold_if_not_in_template (cp_convert_to_pointer (type, e));
   if (code == VECTOR_TYPE)
     {
@@ -1722,8 +1722,7 @@ perform_qualification_conversions (tree type, tree expr)
   else if (TYPE_PTR_P (type) && TYPE_PTR_P (expr_type)
 	   && comp_ptr_ttypes (TREE_TYPE (type), TREE_TYPE (expr_type)))
     return build_nop (type, expr);
-  else if (TYPE_PTR_TO_MEMBER_P (type)
-	   && TYPE_PTR_TO_MEMBER_P (expr_type)
+  else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (expr_type)
 	   && same_type_p (TYPE_PTRMEM_CLASS_TYPE (type),
 			   TYPE_PTRMEM_CLASS_TYPE (expr_type))
 	   && comp_ptr_ttypes (TYPE_PTRMEM_POINTED_TO_TYPE (type),

@@ -578,7 +578,7 @@ null_member_pointer_value_p (tree t)
   else if (TYPE_PTRMEMFUNC_P (type))
     return (TREE_CODE (t) == CONSTRUCTOR
 	    && integer_zerop (CONSTRUCTOR_ELT (t, 0)->value));
-  else if (TYPE_PTRMEM_P (type))
+  else if (TYPE_PTRDATAMEM_P (type))
     return integer_all_onesp (t);
   else
     return false;
@@ -1162,7 +1162,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
      A null pointer constant can be converted to a pointer type; ... A
      null pointer constant of integral type can be converted to an
      rvalue of type std::nullptr_t. */
-  if ((tcode == POINTER_TYPE || TYPE_PTR_TO_MEMBER_P (to)
+  if ((tcode == POINTER_TYPE || TYPE_PTRMEM_P (to)
        || NULLPTR_TYPE_P (to))
       && expr && null_ptr_cst_p (expr))
     conv = build_conv (ck_std, to, conv);
@@ -1182,7 +1182,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       conv->bad_p = true;
     }
   else if ((tcode == POINTER_TYPE && fcode == POINTER_TYPE)
-	   || (TYPE_PTRMEM_P (to) && TYPE_PTRMEM_P (from)))
+	   || (TYPE_PTRDATAMEM_P (to) && TYPE_PTRDATAMEM_P (from)))
     {
       tree to_pointee;
       tree from_pointee;
@@ -1192,7 +1192,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 							TREE_TYPE (to)))
 	;
       else if (VOID_TYPE_P (TREE_TYPE (to))
-	       && !TYPE_PTRMEM_P (from)
+	       && !TYPE_PTRDATAMEM_P (from)
 	       && TREE_CODE (TREE_TYPE (from)) != FUNCTION_TYPE)
 	{
 	  tree nfrom = TREE_TYPE (from);
@@ -1201,7 +1201,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 			              cp_type_quals (nfrom)));
 	  conv = build_conv (ck_ptr, from, conv);
 	}
-      else if (TYPE_PTRMEM_P (from))
+      else if (TYPE_PTRDATAMEM_P (from))
 	{
 	  tree fbase = TYPE_PTRMEM_CLASS_TYPE (from);
 	  tree tbase = TYPE_PTRMEM_CLASS_TYPE (to);
@@ -1307,12 +1307,12 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       if (ARITHMETIC_TYPE_P (from)
 	  || UNSCOPED_ENUM_P (from)
 	  || fcode == POINTER_TYPE
-	  || TYPE_PTR_TO_MEMBER_P (from)
+	  || TYPE_PTRMEM_P (from)
 	  || NULLPTR_TYPE_P (from))
 	{
 	  conv = build_conv (ck_std, to, conv);
 	  if (fcode == POINTER_TYPE
-	      || TYPE_PTRMEM_P (from)
+	      || TYPE_PTRDATAMEM_P (from)
 	      || (TYPE_PTRMEMFUNC_P (from)
 		  && conv->rank < cr_pbool)
 	      || NULLPTR_TYPE_P (from))
@@ -2334,7 +2334,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 
     case MEMBER_REF:
       if (TREE_CODE (type1) == POINTER_TYPE
-	  && TYPE_PTR_TO_MEMBER_P (type2))
+	  && TYPE_PTRMEM_P (type2))
 	{
 	  tree c1 = TREE_TYPE (type1);
 	  tree c2 = TYPE_PTRMEM_CLASS_TYPE (type2);
@@ -2406,14 +2406,14 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
     case EQ_EXPR:
     case NE_EXPR:
       if ((TYPE_PTRMEMFUNC_P (type1) && TYPE_PTRMEMFUNC_P (type2))
-	  || (TYPE_PTRMEM_P (type1) && TYPE_PTRMEM_P (type2)))
+	  || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2)))
 	break;
-      if (TYPE_PTR_TO_MEMBER_P (type1) && null_ptr_cst_p (args[1]))
+      if (TYPE_PTRMEM_P (type1) && null_ptr_cst_p (args[1]))
 	{
 	  type2 = type1;
 	  break;
 	}
-      if (TYPE_PTR_TO_MEMBER_P (type2) && null_ptr_cst_p (args[0]))
+      if (TYPE_PTRMEM_P (type2) && null_ptr_cst_p (args[0]))
 	{
 	  type1 = type2;
 	  break;
@@ -2552,7 +2552,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	    break;
 	  if ((TYPE_PTRMEMFUNC_P (type1) && TYPE_PTRMEMFUNC_P (type2))
 	      || (TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
-	      || (TYPE_PTRMEM_P (type1) && TYPE_PTRMEM_P (type2))
+	      || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2))
 	      || ((TYPE_PTRMEMFUNC_P (type1)
 		   || TREE_CODE (type1) == POINTER_TYPE)
 		  && null_ptr_cst_p (args[1])))
@@ -2589,8 +2589,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	break;
 
       /* Otherwise, the types should be pointers.  */
-      if (!(TYPE_PTR_P (type1) || TYPE_PTR_TO_MEMBER_P (type1))
-	  || !(TYPE_PTR_P (type2) || TYPE_PTR_TO_MEMBER_P (type2)))
+      if (!TYPE_PTR_OR_PTRMEM_P (type1) || !TYPE_PTR_OR_PTRMEM_P (type2))
 	return;
 
       /* We don't check that the two types are the same; the logic
@@ -2615,12 +2614,12 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
       && TREE_CODE (type1) == TREE_CODE (type2)
       && (TREE_CODE (type1) == REFERENCE_TYPE
 	  || (TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
-	  || (TYPE_PTRMEM_P (type1) && TYPE_PTRMEM_P (type2))
+	  || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2))
 	  || TYPE_PTRMEMFUNC_P (type1)
 	  || MAYBE_CLASS_TYPE_P (type1)
 	  || TREE_CODE (type1) == ENUMERAL_TYPE))
     {
-      if (TYPE_PTR_P (type1) || TYPE_PTR_TO_MEMBER_P (type1))
+      if (TYPE_PTR_OR_PTRMEM_P (type1))
 	{
 	  tree cptype = composite_pointer_type (type1, type2,
 						error_mark_node,
@@ -4733,11 +4732,11 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
        cv-qualification of either the second or the third operand.
        The result is of the common type.  */
   else if ((null_ptr_cst_p (arg2)
-	    && (TYPE_PTR_P (arg3_type) || TYPE_PTR_TO_MEMBER_P (arg3_type)))
+	    && TYPE_PTR_OR_PTRMEM_P (arg3_type))
 	   || (null_ptr_cst_p (arg3)
-	       && (TYPE_PTR_P (arg2_type) || TYPE_PTR_TO_MEMBER_P (arg2_type)))
+	       && TYPE_PTR_OR_PTRMEM_P (arg2_type))
 	   || (TYPE_PTR_P (arg2_type) && TYPE_PTR_P (arg3_type))
-	   || (TYPE_PTRMEM_P (arg2_type) && TYPE_PTRMEM_P (arg3_type))
+	   || (TYPE_PTRDATAMEM_P (arg2_type) && TYPE_PTRDATAMEM_P (arg3_type))
 	   || (TYPE_PTRMEMFUNC_P (arg2_type) && TYPE_PTRMEMFUNC_P (arg3_type)))
     {
       result_type = composite_pointer_type (arg2_type, arg3_type, arg2,
@@ -7857,8 +7856,8 @@ compare_ics (conversion *ics1, conversion *ics2)
      for pointers A*, except opposite: if B is derived from A then
      A::* converts to B::*, not vice versa.  For that reason, we
      switch the from_ and to_ variables here.  */
-  else if ((TYPE_PTRMEM_P (from_type1) && TYPE_PTRMEM_P (from_type2)
-	    && TYPE_PTRMEM_P (to_type1) && TYPE_PTRMEM_P (to_type2))
+  else if ((TYPE_PTRDATAMEM_P (from_type1) && TYPE_PTRDATAMEM_P (from_type2)
+	    && TYPE_PTRDATAMEM_P (to_type1) && TYPE_PTRDATAMEM_P (to_type2))
 	   || (TYPE_PTRMEMFUNC_P (from_type1)
 	       && TYPE_PTRMEMFUNC_P (from_type2)
 	       && TYPE_PTRMEMFUNC_P (to_type1)

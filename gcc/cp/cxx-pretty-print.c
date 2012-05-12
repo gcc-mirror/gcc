@@ -1345,8 +1345,7 @@ pp_cxx_ptr_operator (cxx_pretty_printer *pp, tree t)
     {
     case REFERENCE_TYPE:
     case POINTER_TYPE:
-      if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE
-	  || TYPE_PTR_TO_MEMBER_P (TREE_TYPE (t)))
+      if (TYPE_PTR_OR_PTRMEM_P (TREE_TYPE (t)))
 	pp_cxx_ptr_operator (pp, TREE_TYPE (t));
       pp_c_attributes_display (pp_c_base (pp),
 			       TYPE_ATTRIBUTES (TREE_TYPE (t)));
@@ -1368,7 +1367,7 @@ pp_cxx_ptr_operator (cxx_pretty_printer *pp, tree t)
 	  break;
 	}
     case OFFSET_TYPE:
-      if (TYPE_PTR_TO_MEMBER_P (t))
+      if (TYPE_PTRMEM_P (t))
 	{
 	  if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 	    pp_cxx_left_paren (pp);
@@ -1641,7 +1640,7 @@ pp_cxx_function_definition (cxx_pretty_printer *pp, tree t)
 static void
 pp_cxx_abstract_declarator (cxx_pretty_printer *pp, tree t)
 {
-  if (TYPE_PTRMEM_P (t) || TYPE_PTRMEMFUNC_P (t))
+  if (TYPE_PTRMEM_P (t))
     pp_cxx_right_paren (pp);
   else if (POINTER_TYPE_P (t))
     {

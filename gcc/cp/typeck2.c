@@ -1573,7 +1573,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
   component = mark_rvalue_use (component);
 
   ptrmem_type = TREE_TYPE (component);
-  if (!TYPE_PTR_TO_MEMBER_P (ptrmem_type))
+  if (!TYPE_PTRMEM_P (ptrmem_type))
     {
       if (complain & tf_error)
 	error ("%qE cannot be used as a member pointer, since it is of "
@@ -1615,7 +1615,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 	return error_mark_node;
     }
 
-  if (TYPE_PTRMEM_P (ptrmem_type))
+  if (TYPE_PTRDATAMEM_P (ptrmem_type))
     {
       bool is_lval = real_lvalue_p (datum);
       tree ptype;

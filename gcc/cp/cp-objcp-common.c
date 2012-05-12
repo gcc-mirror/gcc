@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2004, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
@@ -118,7 +118,7 @@ cp_var_mod_type_p (tree type, tree fn)
 {
   /* If TYPE is a pointer-to-member, it is variably modified if either
      the class or the member are variably modified.  */
-  if (TYPE_PTR_TO_MEMBER_P (type))
+  if (TYPE_PTRMEM_P (type))
     return (variably_modified_type_p (TYPE_PTRMEM_CLASS_TYPE (type), fn)
 	    || variably_modified_type_p (TYPE_PTRMEM_POINTED_TO_TYPE (type),
 					 fn));

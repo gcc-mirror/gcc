@@ -5720,8 +5720,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 
   /* 14.3.2/5: The null pointer{,-to-member} conversion is applied
      to a non-type argument of "nullptr".  */
-  if (expr == nullptr_node
-      && (TYPE_PTR_P (type) || TYPE_PTR_TO_MEMBER_P (type)))
+  if (expr == nullptr_node && TYPE_PTR_OR_PTRMEM_P (type))
     expr = convert (type, expr);
 
   /* In C++11, integral or enumeration non-type template arguments can be
@@ -5737,8 +5736,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	   CONSTRUCTOR.  */;
       else if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
 	expr = maybe_constant_value (expr);
-      else if (TYPE_PTR_P (type)
-	       || TYPE_PTR_TO_MEMBER_P (type))
+      else if (TYPE_PTR_OR_PTRMEM_P (type))
 	{
 	  tree folded = maybe_constant_value (expr);
 	  if (TYPE_PTR_P (type) ? integer_zerop (folded)
@@ -6073,7 +6071,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 
      For a non-type template-parameter of type pointer to data member,
      qualification conversions (_conv.qual_) are applied.  */
-  else if (TYPE_PTRMEM_P (type))
+  else if (TYPE_PTRDATAMEM_P (type))
     {
       /* [temp.arg.nontype] bullet 1 says the pointer to member
          expression must be a pointer-to-member constant.  */
@@ -19169,7 +19167,7 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
     return 0;
   else if (POINTER_TYPE_P (type))
     return 0;
-  else if (TYPE_PTR_TO_MEMBER_P (type))
+  else if (TYPE_PTRMEM_P (type))
     return 0;
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
     return 0;
@@ -19218,7 +19216,7 @@ dependent_type_p_r (tree type)
 	dependent.  */
   type = TYPE_MAIN_VARIANT (type);
   /* -- a compound type constructed from any dependent type.  */
-  if (TYPE_PTR_TO_MEMBER_P (type))
+  if (TYPE_PTRMEM_P (type))
     return (dependent_type_p (TYPE_PTRMEM_CLASS_TYPE (type))
 	    || dependent_type_p (TYPE_PTRMEM_POINTED_TO_TYPE
 					   (type)));
