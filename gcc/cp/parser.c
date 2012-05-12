@@ -1621,6 +1621,8 @@ typedef struct cp_parser_expression_stack_entry
   enum tree_code tree_type;
   /* Precedence of the binary operation we are parsing.  */
   enum cp_parser_prec prec;
+  /* Location of the binary operation we are parsing.  */
+  location_t loc;
 } cp_parser_expression_stack_entry;
 
 /* The stack for storing partial expressions.  We only need NUM_PREC_VALUES
@@ -7275,30 +7277,33 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 {
   cp_parser_expression_stack stack;
   cp_parser_expression_stack_entry *sp = &stack[0];
-  tree lhs, rhs;
+  cp_parser_expression_stack_entry current;
+  tree rhs;
   cp_token *token;
-  location_t loc;
-  enum tree_code tree_type, lhs_type, rhs_type;
+  enum tree_code rhs_type;
   enum cp_parser_prec new_prec, lookahead_prec;
   tree overload;
 
   /* Parse the first expression.  */
-  lhs = cp_parser_cast_expression (parser, /*address_p=*/false, cast_p, pidk);
-  lhs_type = ERROR_MARK;
+  current.lhs = cp_parser_cast_expression (parser, /*address_p=*/false,
+					   cast_p, pidk);
+  current.lhs_type = ERROR_MARK;
+  current.prec = prec;
 
   for (;;)
     {
       /* Get an operator token.  */
       token = cp_lexer_peek_token (parser->lexer);
-      loc = token->location;
 
       if (warn_cxx0x_compat
           && token->type == CPP_RSHIFT
           && !parser->greater_than_is_operator_p)
         {
-          if (warning_at (loc, OPT_Wc__0x_compat, "%<>>%> operator is treated"
+          if (warning_at (token->location, OPT_Wc__0x_compat,
+			  "%<>>%> operator is treated"
 			  " as two right angle brackets in C++11"))
-	    inform (loc, "suggest parentheses around %<>>%> expression");
+	    inform (token->location,
+		    "suggest parentheses around %<>>%> expression");
         }
 
       new_prec = TOKEN_PRECEDENCE (token);
@@ -7310,7 +7315,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	 - or, we found an operator which has lower priority.  This is the case
 	   where the recursive descent *ascends*, as in `3 * 4 + 5' after
 	   parsing `3 * 4'.  */
-      if (new_prec <= prec)
+      if (new_prec <= current.prec)
 	{
 	  if (sp == stack)
 	    break;
@@ -7319,17 +7324,18 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	}
 
      get_rhs:
-      tree_type = binops_by_token[token->type].tree_type;
+      current.tree_type = binops_by_token[token->type].tree_type;
+      current.loc = token->location;
 
       /* We used the operator token.  */
       cp_lexer_consume_token (parser->lexer);
 
       /* For "false && x" or "true || x", x will never be executed;
 	 disable warnings while evaluating it.  */
-      if (tree_type == TRUTH_ANDIF_EXPR)
-	c_inhibit_evaluation_warnings += lhs == truthvalue_false_node;
-      else if (tree_type == TRUTH_ORIF_EXPR)
-	c_inhibit_evaluation_warnings += lhs == truthvalue_true_node;
+      if (current.tree_type == TRUTH_ANDIF_EXPR)
+	c_inhibit_evaluation_warnings += current.lhs == truthvalue_false_node;
+      else if (current.tree_type == TRUTH_ORIF_EXPR)
+	c_inhibit_evaluation_warnings += current.lhs == truthvalue_true_node;
 
       /* Extract another operand.  It may be the RHS of this expression
 	 or the LHS of a new, higher priority expression.  */
@@ -7347,14 +7353,11 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	     expression.  Since precedence levels on the stack are
 	     monotonically increasing, we do not have to care about
 	     stack overflows.  */
-	  sp->prec = prec;
-	  sp->tree_type = tree_type;
-	  sp->lhs = lhs;
-	  sp->lhs_type = lhs_type;
-	  sp++;
-	  lhs = rhs;
-	  lhs_type = rhs_type;
-	  prec = new_prec;
+	  *sp = current;
+	  ++sp;
+	  current.lhs = rhs;
+	  current.lhs_type = rhs_type;
+	  current.prec = new_prec;
 	  new_prec = lookahead_prec;
 	  goto get_rhs;
 
@@ -7367,20 +7370,17 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	     the precedence of the higher level subexpression
 	     (`PREC_ADDITIVE_EXPRESSION').  TOKEN is the CPP_PLUS token,
 	     which will be used to actually build the additive expression.  */
+	  rhs = current.lhs;
+	  rhs_type = current.lhs_type;
 	  --sp;
-	  prec = sp->prec;
-	  tree_type = sp->tree_type;
-	  rhs = lhs;
-	  rhs_type = lhs_type;
-	  lhs = sp->lhs;
-	  lhs_type = sp->lhs_type;
+	  current = *sp;
 	}
 
       /* Undo the disabling of warnings done above.  */
-      if (tree_type == TRUTH_ANDIF_EXPR)
-	c_inhibit_evaluation_warnings -= lhs == truthvalue_false_node;
-      else if (tree_type == TRUTH_ORIF_EXPR)
-	c_inhibit_evaluation_warnings -= lhs == truthvalue_true_node;
+      if (current.tree_type == TRUTH_ANDIF_EXPR)
+	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_false_node;
+      else if (current.tree_type == TRUTH_ORIF_EXPR)
+	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_true_node;
 
       overload = NULL;
       /* ??? Currently we pass lhs_type == ERROR_MARK and rhs_type ==
@@ -7391,14 +7391,17 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	 surrounded by parentheses.
       */
       if (no_toplevel_fold_p
-	  && lookahead_prec <= prec
+	  && lookahead_prec <= current.prec
 	  && sp == stack
-	  && TREE_CODE_CLASS (tree_type) == tcc_comparison)
-	lhs = build2 (tree_type, boolean_type_node, lhs, rhs);
+	  && TREE_CODE_CLASS (current.tree_type) == tcc_comparison)
+	current.lhs = build2 (current.tree_type, boolean_type_node,
+			      current.lhs, rhs);
       else
-	lhs = build_x_binary_op (loc, tree_type, lhs, lhs_type, rhs, rhs_type,
-				 &overload, tf_warning_or_error);
-      lhs_type = tree_type;
+	current.lhs = build_x_binary_op (current.loc, current.tree_type,
+					 current.lhs, current.lhs_type,
+					 rhs, rhs_type, &overload,
+					 tf_warning_or_error);
+      current.lhs_type = current.tree_type;
 
       /* If the binary operator required the use of an overloaded operator,
 	 then this expression cannot be an integral constant-expression.
@@ -7412,7 +7415,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	return error_mark_node;
     }
 
-  return lhs;
+  return current.lhs;
 }
 
 

@@ -163,7 +163,7 @@ static void op_error (location_t, enum tree_code, enum tree_code, tree,
 		      tree, tree, bool);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int,
 							 tsubst_flags_t);
-static void print_z_candidate (const char *, struct z_candidate *);
+static void print_z_candidate (location_t, const char *, struct z_candidate *);
 static void print_z_candidates (location_t, struct z_candidate *);
 static tree build_this (tree);
 static struct z_candidate *splice_viable (struct z_candidate *, bool, bool *);
@@ -3159,36 +3159,38 @@ print_arity_information (location_t loc, unsigned int have, unsigned int want)
    life simpler in print_z_candidates and for the translators.  */
 
 static void
-print_z_candidate (const char *msgstr, struct z_candidate *candidate)
+print_z_candidate (location_t loc, const char *msgstr,
+		   struct z_candidate *candidate)
 {
   const char *msg = (msgstr == NULL
 		     ? ""
 		     : ACONCAT ((msgstr, " ", NULL)));
-  location_t loc = location_of (candidate->fn);
+  location_t cloc = location_of (candidate->fn);
 
   if (TREE_CODE (candidate->fn) == IDENTIFIER_NODE)
     {
+      cloc = loc;
       if (candidate->num_convs == 3)
-	inform (input_location, "%s%D(%T, %T, %T) <built-in>", msg, candidate->fn,
+	inform (cloc, "%s%D(%T, %T, %T) <built-in>", msg, candidate->fn,
 		candidate->convs[0]->type,
 		candidate->convs[1]->type,
 		candidate->convs[2]->type);
       else if (candidate->num_convs == 2)
-	inform (input_location, "%s%D(%T, %T) <built-in>", msg, candidate->fn,
+	inform (cloc, "%s%D(%T, %T) <built-in>", msg, candidate->fn,
 		candidate->convs[0]->type,
 		candidate->convs[1]->type);
       else
-	inform (input_location, "%s%D(%T) <built-in>", msg, candidate->fn,
+	inform (cloc, "%s%D(%T) <built-in>", msg, candidate->fn,
 		candidate->convs[0]->type);
     }
   else if (TYPE_P (candidate->fn))
-    inform (loc, "%s%T <conversion>", msg, candidate->fn);
+    inform (cloc, "%s%T <conversion>", msg, candidate->fn);
   else if (candidate->viable == -1)
-    inform (loc, "%s%#D <near match>", msg, candidate->fn);
+    inform (cloc, "%s%#D <near match>", msg, candidate->fn);
   else if (DECL_DELETED_FN (STRIP_TEMPLATE (candidate->fn)))
-    inform (loc, "%s%#D <deleted>", msg, candidate->fn);
+    inform (cloc, "%s%#D <deleted>", msg, candidate->fn);
   else
-    inform (loc, "%s%#D", msg, candidate->fn);
+    inform (cloc, "%s%#D", msg, candidate->fn);
   /* Give the user some information about why this candidate failed.  */
   if (candidate->reason != NULL)
     {
@@ -3197,23 +3199,23 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
       switch (r->code)
 	{
 	case rr_arity:
-	  print_arity_information (loc, r->u.arity.actual,
+	  print_arity_information (cloc, r->u.arity.actual,
 				   r->u.arity.expected);
 	  break;
 	case rr_arg_conversion:
-	  print_conversion_rejection (loc, &r->u.conversion);
+	  print_conversion_rejection (cloc, &r->u.conversion);
 	  break;
 	case rr_bad_arg_conversion:
-	  print_conversion_rejection (loc, &r->u.bad_conversion);
+	  print_conversion_rejection (cloc, &r->u.bad_conversion);
 	  break;
 	case rr_explicit_conversion:
-	  inform (loc, "  return type %qT of explicit conversion function "
+	  inform (cloc, "  return type %qT of explicit conversion function "
 		  "cannot be converted to %qT with a qualification "
 		  "conversion", r->u.conversion.from_type,
 		  r->u.conversion.to_type);
 	  break;
 	case rr_template_conversion:
-	  inform (loc, "  conversion from return type %qT of template "
+	  inform (cloc, "  conversion from return type %qT of template "
 		  "conversion function specialization to %qT is not an "
 		  "exact match", r->u.conversion.from_type,
 		  r->u.conversion.to_type);
@@ -3224,12 +3226,12 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
 	     them here.  */
 	  if (r->u.template_unification.tmpl == NULL_TREE)
 	    {
-	      inform (loc, "  substitution of deduced template arguments "
+	      inform (cloc, "  substitution of deduced template arguments "
 		      "resulted in errors seen above");
 	      break;
 	    }
 	  /* Re-run template unification with diagnostics.  */
-	  inform (loc, "  template argument deduction/substitution failed:");
+	  inform (cloc, "  template argument deduction/substitution failed:");
 	  fn_type_unification (r->u.template_unification.tmpl,
 			       r->u.template_unification.explicit_targs,
 			       r->u.template_unification.targs,
@@ -3247,7 +3249,7 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
 				tf_warning_or_error);
 	  break;
 	case rr_invalid_copy:
-	  inform (loc,
+	  inform (cloc,
 		  "  a constructor taking a single argument of its own "
 		  "class type is invalid");
 	  break;
@@ -3312,7 +3314,7 @@ print_z_candidates (location_t loc, struct z_candidate *candidates)
 
   inform_n (loc, n_candidates, "candidate is:", "candidates are:");
   for (; candidates; candidates = candidates->next)
-    print_z_candidate (NULL, candidates);
+    print_z_candidate (loc, NULL, candidates);
 }
 
 /* USER_SEQ is a user-defined conversion sequence, beginning with a
@@ -5678,7 +5680,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    {
 	      permerror (loc, "invalid user-defined conversion "
 			 "from %qT to %qT", TREE_TYPE (expr), totype);
-	      print_z_candidate ("candidate is:", t->cand);
+	      print_z_candidate (loc, "candidate is:", t->cand);
 	      expr = convert_like_real (t, expr, fn, argnum, 1,
 					/*issue_conversion_warnings=*/false,
 					/*c_cast_p=*/false,
@@ -8405,8 +8407,8 @@ tweak:
 	      "ISO C++ says that these are ambiguous, even "
 	      "though the worst conversion for the first is better than "
 	      "the worst conversion for the second:");
-	      print_z_candidate (_("candidate 1:"), w);
-	      print_z_candidate (_("candidate 2:"), l);
+	      print_z_candidate (input_location, _("candidate 1:"), w);
+	      print_z_candidate (input_location, _("candidate 2:"), l);
 	    }
 	  else
 	    add_warning (w, l);

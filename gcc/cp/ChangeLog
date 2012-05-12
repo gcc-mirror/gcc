@@ -1,3 +1,12 @@
+2012-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (struct cp_parser_expression_stack_entry): Add location_t
+	field.
+	(cp_parser_binary_expression): Rework to always update at the same
+	time tree_type and loc.
+	* call.c (print_z_candidate): Add location_t parameter.
+	(print_z_candidates, convert_like_real, joust): Adjust.
+
 2012-05-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/53209
