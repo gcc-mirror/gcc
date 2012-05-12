@@ -10726,7 +10726,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
      actual length; (ii) To declare a named constant; or (iii) External
      function - but length must be declared in calling scoping unit.  */
   if (sym->attr.function
-      && sym->ts.type == BT_CHARACTER
+      && sym->ts.type == BT_CHARACTER && !sym->ts.deferred
       && sym->ts.u.cl && sym->ts.u.cl->length == NULL)
     {
       if ((sym->as && sym->as->rank) || (sym->attr.pointer)
