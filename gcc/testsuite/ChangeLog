@@ -1,3 +1,7 @@
+2012-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/parse/error47.C: New.
+
 2012-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/52537
