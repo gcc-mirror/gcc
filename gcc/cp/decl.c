@@ -10619,7 +10619,7 @@ check_default_argument (tree decl, tree arg)
 
   if (warn_zero_as_null_pointer_constant
       && c_inhibit_evaluation_warnings == 0
-      && (TYPE_PTR_P (decl_type) || TYPE_PTR_TO_MEMBER_P (decl_type))
+      && TYPE_PTR_OR_PTRMEM_P (decl_type)
       && null_ptr_cst_p (arg)
       && !NULLPTR_TYPE_P (TREE_TYPE (arg)))
     {

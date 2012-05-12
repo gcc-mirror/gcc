@@ -1,5 +1,34 @@
 2012-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* cp-tree.h (TYPE_PTRMEM_P): Rename to TYPE_PTRDATAMEM_P.
+	(TYPE_PTR_TO_MEMBER_P): Rename to TYPE_PTRMEM_P.
+	(TYPE_PTR_OR_PTRMEM_P): Add.
+	* typeck.c (composite_pointer_type_r, composite_pointer_type,
+	common_pointer_type, cp_build_indirect_ref, cp_build_binary_op,
+	cp_truthvalue_conversion, convert_ptrmem, build_static_cast_1,
+	build_reinterpret_cast_1, build_const_cast_1, comp_ptr_ttypes_real,
+	casts_away_constness_r, casts_away_constness): Adjust.
+	* init.c (build_zero_init_1): Adjust.
+	* class.c (check_field_decls): Likewise.
+	* decl.c (check_default_argument): Likewise.
+	* rtti.c (target_incomplete_p): Likewise.
+	* tree.c (zero_init_p): Likewise.
+	* cxx-pretty-print.c (pp_cxx_ptr_operator,
+	pp_cxx_abstract_declarator): Likewise.
+	* typeck2.c (build_m_component_ref): Likewise.
+	* pt.c (convert_nontype_argument, invalid_nontype_parm_type_p,
+	dependent_type_p_r): Likewise.
+	* call.c (null_member_pointer_value_p, standard_conversion,
+	add_builtin_candidate, build_conditional_expr_1, compare_ics):
+	Likewise.
+	* cp-objcp-common.c (cp_var_mod_type_p): Likewise.
+	* cvt.c (cp_convert_to_pointer, ocp_convert,
+	perform_qualification_conversions): Likewise.
+	* mangle.c (write_type): Likewise.
+	* name-lookup.c (arg_assoc_type): Likewise.
+
+2012-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* parser.c (struct cp_parser_expression_stack_entry): Add location_t
 	field.
 	(cp_parser_binary_expression): Rework to always update at the same

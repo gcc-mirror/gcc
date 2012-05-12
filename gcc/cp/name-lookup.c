@@ -5309,7 +5309,7 @@ arg_assoc_type (struct arg_lookup *k, tree type)
   if (!type)
     return false;
 
-  if (TYPE_PTRMEM_P (type))
+  if (TYPE_PTRDATAMEM_P (type))
     {
       /* Pointer to member: associate class type and value type.  */
       if (arg_assoc_type (k, TYPE_PTRMEM_CLASS_TYPE (type)))

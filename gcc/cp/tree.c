@@ -2773,7 +2773,7 @@ zero_init_p (const_tree t)
     return 1;
 
   /* NULL pointers to data members are initialized with -1.  */
-  if (TYPE_PTRMEM_P (t))
+  if (TYPE_PTRDATAMEM_P (t))
     return 0;
 
   /* Classes that contain types that can't be zero-initialized, cannot
