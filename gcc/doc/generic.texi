@@ -2494,7 +2494,7 @@ should submit your patches for inclusion in GCC@.
 @findex TYPE_PRECISION
 @findex TYPE_ARG_TYPES
 @findex TYPE_METHOD_BASETYPE
-@findex TYPE_PTRMEM_P
+@findex TYPE_PTRDATAMEM_P
 @findex TYPE_OFFSET_BASETYPE
 @findex TREE_TYPE
 @findex TYPE_CONTEXT
@@ -2571,7 +2571,7 @@ This predicate holds for a class-type.
 @item TYPE_BUILT_IN
 This predicate holds for a built-in type.
 
-@item TYPE_PTRMEM_P
+@item TYPE_PTRDATAMEM_P
 This predicate holds if the type is a pointer to data member.
 
 @item TYPE_PTR_P
@@ -2597,7 +2597,7 @@ language-dependent info about GENERIC types.
 @item POINTER_TYPE
 Used to represent pointer types, and pointer to data member types.  If
 @code{TREE_TYPE}
-is a pointer to data member type, then @code{TYPE_PTRMEM_P} will hold.
+is a pointer to data member type, then @code{TYPE_PTRDATAMEM_P} will hold.
 For a pointer to data member type of the form @samp{T X::*},
 @code{TYPE_PTRMEM_CLASS_TYPE} will be the type @code{X}, while
 @code{TYPE_PTRMEM_POINTED_TO_TYPE} will be the type @code{T}.
