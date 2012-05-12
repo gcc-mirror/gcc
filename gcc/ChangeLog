@@ -1,3 +1,8 @@
+2012-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.c (requires_stack_frame_p): If the function can throw
+	non-call exceptions, return true if the insn can throw internally.
+
 2012-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* doc/generic.texi: Rename TYPE_PTRMEM_P to TYPE_PTRDATAMEM_P.
