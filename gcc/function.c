@@ -5287,6 +5287,10 @@ requires_stack_frame_p (rtx insn, HARD_REG_SET prologue_used,
   if (CALL_P (insn))
     return !SIBLING_CALL_P (insn);
 
+  /* We need a frame to get the unique CFA expected by the unwinder.  */
+  if (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
+    return true;
+
   CLEAR_HARD_REG_SET (hardregs);
   for (df_rec = DF_INSN_DEFS (insn); *df_rec; df_rec++)
     {

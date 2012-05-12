@@ -1,3 +1,7 @@
+2012-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/null_pointer_deref3.adb: New test.
+
 2012-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53301
