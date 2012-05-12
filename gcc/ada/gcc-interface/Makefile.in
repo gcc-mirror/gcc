@@ -245,8 +245,8 @@ LIBS = $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(SYSLIBS)
 LIBDEPS = $(LIBINTL_DEP) $(LIBICONV_DEP) $(LIBIBERTY)
 # Default is no TGT_LIB; one might be passed down or something
 TGT_LIB =
-TOOLS_LIBS = targext.o link.o ../../libcommon-target.a ../../libcommon.a \
-  ../../../libcpp/libcpp.a $(LIBGNAT) $(LIBINTL) $(LIBICONV) \
+TOOLS_LIBS = targext.o link.o ../../ggc-none.o ../../libcommon-target.a \
+  ../../libcommon.a ../../../libcpp/libcpp.a $(LIBGNAT) $(LIBINTL) $(LIBICONV) \
   ../../../libiberty/libiberty.a $(SYSLIBS) $(TGT_LIB)
 
 # Convert the target variable into a space separated list of architecture,
