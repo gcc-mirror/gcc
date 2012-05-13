@@ -4,6 +4,26 @@
 
 2012-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*pushtf): Enable for TARGET_SSE.
+	(pushtf splitter): Ditto.
+	(movtf): Ditto.
+	(*movtf_internal): Ditto. Use V4SFmode for !TARGET_SSE2.
+	(<code>tf2): Enable for TARGET_SSE.
+	(*absnegtf2_sse): Ditto.
+	(copysign<mode>3): Enable TFmode for TARGET_SSE.
+	(copysign<mode>3_const): Ditto.
+	(copysign<mode>3_var): Ditto.
+	* config/i386/sse.md (<code>tf3): Enable for TARGET_SSE.
+	(*andnottf3): Ditto.  Use V4SFmode for !TARGET_SSE2.
+	(*<code>tf3): Ditto.
+	* config/i386/i386.c (struct builtin_description bdesc_args)
+	<IX86_BUILTIN_FABSQ>: Enable for TARGET_SSE.
+	<IX86_BUILTIN_COPYSIGNQ>: Ditto.
+	(ix86_expand_builtin) <IX86_BUILTIN_FABSQ, IX86_BUILTIN_COPYSIGNQ>:
+	Emit a normal call if SSE isn't available.
+
+2012-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/sse.md (<sse>_andnot<mode>3): Handle
 	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL.
 	(<code><mode>3): Ditto.
