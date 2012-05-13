@@ -6729,13 +6729,20 @@
        (const_string "*")))
    (set_attr "prefix" "orig,vex")
    (set (attr "mode")
-     (cond [(and (not (match_test "TARGET_AVX2"))
-		 (match_test "GET_MODE_SIZE (<MODE>mode) > 16"))
-	      (const_string "V8SF")
-	    (not (match_test "TARGET_SSE2"))
-	      (const_string "V4SF")
-	   ]
-	   (const_string "<sseinsnmode>")))])
+	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "<ssePSmode>")
+	       (match_test "TARGET_AVX2")
+		 (const_string "<sseinsnmode>")
+	       (match_test "TARGET_AVX")
+		 (if_then_else
+		   (match_test "GET_MODE_SIZE (<MODE>mode) > 16")
+		   (const_string "V8SF")
+		   (const_string "<sseinsnmode>"))
+	       (ior (not (match_test "TARGET_SSE2"))
+		    (match_test "optimize_function_for_size_p (cfun)"))
+		 (const_string "V4SF")
+	      ]
+	      (const_string "<sseinsnmode>")))])
 
 (define_expand "<code><mode>3"
   [(set (match_operand:VI 0 "register_operand")
@@ -6804,13 +6811,20 @@
        (const_string "*")))
    (set_attr "prefix" "orig,vex")
    (set (attr "mode")
-     (cond [(and (not (match_test "TARGET_AVX2"))
-		 (match_test "GET_MODE_SIZE (<MODE>mode) > 16"))
-	      (const_string "V8SF")
-	    (not (match_test "TARGET_SSE2"))
-	      (const_string "V4SF")
-	   ]
-	   (const_string "<sseinsnmode>")))])
+	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "<ssePSmode>")
+	       (match_test "TARGET_AVX2")
+		 (const_string "<sseinsnmode>")
+	       (match_test "TARGET_AVX")
+		 (if_then_else
+		   (match_test "GET_MODE_SIZE (<MODE>mode) > 16")
+		   (const_string "V8SF")
+		   (const_string "<sseinsnmode>"))
+	       (ior (not (match_test "TARGET_SSE2"))
+		    (match_test "optimize_function_for_size_p (cfun)"))
+		 (const_string "V4SF")
+	      ]
+	      (const_string "<sseinsnmode>")))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
