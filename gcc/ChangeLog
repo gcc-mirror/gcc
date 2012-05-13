@@ -1,3 +1,13 @@
+2012-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (<sse>_andnot<mode>3): Handle
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL.
+	(<code><mode>3): Ditto.
+	(*andnot<mode>3): Ditto.
+	(*andnottf3): Ditto.
+	(*<code><mode>3): Ditto.
+	(<code>tf3): Ditto.
+
 2012-05-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* optc-gen.awk: Error instead of warning for conflicting help.
@@ -85,8 +95,7 @@
 
 2012-05-11  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/driver-i386.c (host_detect_local_cpu): Support
-	RTM.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support RTM.
 
 2012-05-11  Jan Hubicka  <jh@suse.cz>
 
