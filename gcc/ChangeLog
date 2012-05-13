@@ -1,3 +1,9 @@
+2012-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR debug/53235
+	* dwarf2out.c (build_local_stub): Prefer DW_AT_signature for
+	comdat types.
+
 2012-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* function.c (requires_stack_frame_p): If the function can throw
