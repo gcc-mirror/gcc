@@ -1,3 +1,10 @@
+2012-05-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wclobbered,Wempty-body,Wignored-qualifiers,
+	Wmissing-field-initializers,Wmissing-parameter-type,
+	Wold-style-declaration,Woverride-init): Use EnabledBy.
+	* c-opts.c (c_common_post_options): Do not set here explicitly.
+
 2012-05-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 53063
