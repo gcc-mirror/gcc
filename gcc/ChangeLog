@@ -1,3 +1,11 @@
+2012-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_emit_conditional_branch): Handle
+	ORDERED and UNORDERED conditions.
+
 2012-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
