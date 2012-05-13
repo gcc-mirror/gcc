@@ -1,3 +1,7 @@
+2012-05-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* optc-gen.awk: Error instead of warning for conflicting help.
+
 2012-05-12  Jason Merrill  <jason@redhat.com>
 
 	PR debug/53235

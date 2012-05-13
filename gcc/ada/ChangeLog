@@ -1,3 +1,8 @@
+2012-05-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc-interface/lang.opt (I): Comment out help text with no effect.
+	(nostdinc): Comment out help text with no effect.
+
 2012-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (TOOLS_LIBS): Add ../../ggc-none.o.

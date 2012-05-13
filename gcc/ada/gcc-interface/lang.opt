@@ -48,7 +48,7 @@ Ada AdaWhy Alias(nostdlib)
 
 I
 Ada AdaWhy Joined Separate
--I <dir>.	Add <dir> to the end of the main source path
+; Documented in C but it should be: -I <dir>.	Add <dir> to the end of the main source path
 
 Wall
 Ada AdaWhy
@@ -60,7 +60,7 @@ Synonym of -gnatk8
 
 nostdinc
 Ada AdaWhy RejectNegative
-Do not look for source files in standard path
+; Documented in C but it should be: Do not look for source files in standard path
 
 nostdlib
 Ada AdaWhy
