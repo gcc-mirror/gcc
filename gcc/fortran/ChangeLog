@@ -1,3 +1,19 @@
+2012-05-13  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52158
+	PR fortran/45170
+	PR fortran/49430
+	* resolve.c (resolve_fl_derived0): Deferred character length 
+	procedure components are supported.
+	* trans-expr.c (gfc_conv_procedure_call): Handle TBP with 
+	deferred-length results.
+	(gfc_string_to_single_character): Add a new check to prevent
+	NULL read.
+	(gfc_conv_procedure_call): Remove unuseful checks on 
+	symbol's attributes. Add new checks to prevent NULL read on
+	string length. 
+
 2012-05-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/49110
