@@ -1,3 +1,10 @@
+2012-05-13  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	PR fortran/45170
+	* gfortran.dg/deferred_type_param_3.f90: New.
+	* gfortran.dg/deferred_type_proc_pointer_1.f90: New.
+	* gfortran.dg/deferred_type_proc_pointer_2.f90: New.
+
 2012-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/null_pointer_deref3.adb: New test.
