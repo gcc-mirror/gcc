@@ -26327,6 +26327,9 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_vmrsqrtv4sf2, "__builtin_ia32_rsqrtss", IX86_BUILTIN_RSQRTSS, UNKNOWN, (int) V4SF_FTYPE_V4SF_VEC_MERGE },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_vmrcpv4sf2, "__builtin_ia32_rcpss", IX86_BUILTIN_RCPSS, UNKNOWN, (int) V4SF_FTYPE_V4SF_VEC_MERGE },
 
+  { OPTION_MASK_ISA_SSE, CODE_FOR_abstf2, 0, IX86_BUILTIN_FABSQ, UNKNOWN, (int) FLOAT128_FTYPE_FLOAT128 },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_copysigntf3, 0, IX86_BUILTIN_COPYSIGNQ, UNKNOWN, (int) FLOAT128_FTYPE_FLOAT128_FLOAT128 },
+
   /* SSE MMX or 3Dnow!A */
   { OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A, CODE_FOR_mmx_uavgv8qi3, "__builtin_ia32_pavgb", IX86_BUILTIN_PAVGB, UNKNOWN, (int) V8QI_FTYPE_V8QI_V8QI },
   { OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A, CODE_FOR_mmx_uavgv4hi3, "__builtin_ia32_pavgw", IX86_BUILTIN_PAVGW, UNKNOWN, (int) V4HI_FTYPE_V4HI_V4HI },
@@ -26509,9 +26512,6 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pshufhw, "__builtin_ia32_pshufhw", IX86_BUILTIN_PSHUFHW, UNKNOWN, (int) V8HI_FTYPE_V8HI_INT },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_vmsqrtv2df2, "__builtin_ia32_sqrtsd", IX86_BUILTIN_SQRTSD, UNKNOWN, (int) V2DF_FTYPE_V2DF_VEC_MERGE },
-
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_abstf2, 0, IX86_BUILTIN_FABSQ, UNKNOWN, (int) FLOAT128_FTYPE_FLOAT128 },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_copysigntf3, 0, IX86_BUILTIN_COPYSIGNQ, UNKNOWN, (int) FLOAT128_FTYPE_FLOAT128_FLOAT128 },
 
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse2_movq128, "__builtin_ia32_movq128", IX86_BUILTIN_MOVQ128, UNKNOWN, (int) V2DI_FTYPE_V2DI },
 
@@ -28081,7 +28081,7 @@ ix86_init_builtins (void)
   def_builtin_const (0, "__builtin_huge_valq",
 		     FLOAT128_FTYPE_VOID, IX86_BUILTIN_HUGE_VALQ);
 
-  /* We will expand them to normal call if SSE2 isn't available since
+  /* We will expand them to normal call if SSE isn't available since
      they are used by libgcc. */
   t = ix86_get_builtin_func_type (FLOAT128_FTYPE_FLOAT128);
   t = add_builtin_function ("__builtin_fabsq", t, IX86_BUILTIN_FABSQ,
@@ -30215,8 +30215,8 @@ rdrand_step:
 	{
 	case IX86_BUILTIN_FABSQ:
 	case IX86_BUILTIN_COPYSIGNQ:
-	  if (!TARGET_SSE2)
-	    /* Emit a normal call if SSE2 isn't available.  */
+	  if (!TARGET_SSE)
+	    /* Emit a normal call if SSE isn't available.  */
 	    return expand_call (exp, target, ignore);
 	default:
 	  return ix86_expand_args_builtin (d, exp, target);
