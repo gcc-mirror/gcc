@@ -6929,36 +6929,31 @@ static int
 build_local_stub (void **slot, void *data)
 {
   struct external_ref *ref_p = (struct external_ref *)*slot;
-  dw_die_ref cu = (dw_die_ref) data;
-  dw_die_ref type = ref_p->type;
-  dw_die_ref stub = NULL;
 
-  if (ref_p->stub == NULL && ref_p->n_refs > 1)
+  if (ref_p->stub == NULL && ref_p->n_refs > 1 && !dwarf_strict)
     {
-      if (!dwarf_strict)
+      /* We have multiple references to this type, so build a small stub.
+	 Both of these forms are a bit dodgy from the perspective of the
+	 DWARF standard, since technically they should have names.  */
+      dw_die_ref cu = (dw_die_ref) data;
+      dw_die_ref type = ref_p->type;
+      dw_die_ref stub = NULL;
+
+      if (type->comdat_type_p)
 	{
-	  /* If we aren't being strict, use a typedef with no name
-	     to just forward to the real type.  In strict DWARF, a
-	     typedef must have a name.  */
+	  /* If we refer to this type via sig8, use AT_signature.  */
+	  stub = new_die (type->die_tag, cu, NULL_TREE);
+	  add_AT_die_ref (stub, DW_AT_signature, type);
+	}
+      else
+	{
+	  /* Otherwise, use a typedef with no name.  */
 	  stub = new_die (DW_TAG_typedef, cu, NULL_TREE);
 	  add_AT_die_ref (stub, DW_AT_type, type);
 	}
-      else if (type->comdat_type_p)
-	{
-	  /* If we refer to this type via sig8, we can use a simple
-	     declaration; this is larger than the typedef, but strictly
-	     correct.  */
-	  stub = new_die (type->die_tag, cu, NULL_TREE);
-	  add_AT_string (stub, DW_AT_name, get_AT_string (type, DW_AT_name));
-	  add_AT_flag (stub, DW_AT_declaration, 1);
-	  add_AT_die_ref (stub, DW_AT_signature, type);
-	}
 
-      if (stub)
-	{
-	  stub->die_mark++;
-	  ref_p->stub = stub;
-	}
+      stub->die_mark++;
+      ref_p->stub = stub;
     }
   return 1;
 }
