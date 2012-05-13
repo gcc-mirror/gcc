@@ -646,7 +646,7 @@ Common Var(warn_trampolines) Warning
 Warn whenever a trampoline is generated
 
 Wtype-limits
-Common Var(warn_type_limits) Init(-1) Warning
+Common Var(warn_type_limits) Warning EnabledBy(Wextra)
 Warn if a comparison is always true or always false due to the limited range of the data type
 
 Wuninitialized

@@ -1,3 +1,7 @@
+2012-05-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* common.opt (Wtype-limits): Use EnabledBy.
+
 2012-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (<sse>_andnot<mode>3): Handle

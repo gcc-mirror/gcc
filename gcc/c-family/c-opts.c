@@ -912,24 +912,10 @@ c_common_post_options (const char **pfilename)
 
   /* -Wextra implies the following flags
      unless explicitly overridden.  */
-  if (warn_type_limits == -1)
-    warn_type_limits = extra_warnings;
-  if (warn_clobbered == -1)
-    warn_clobbered = extra_warnings;
-  if (warn_empty_body == -1)
-    warn_empty_body = extra_warnings;
+
+  /* Wsign-compare is also enabled by -Wall in C++. */
   if (warn_sign_compare == -1)
     warn_sign_compare = extra_warnings;
-  if (warn_missing_field_initializers == -1)
-    warn_missing_field_initializers = extra_warnings;
-  if (warn_missing_parameter_type == -1)
-    warn_missing_parameter_type = extra_warnings;
-  if (warn_old_style_declaration == -1)
-    warn_old_style_declaration = extra_warnings;
-  if (warn_override_init == -1)
-    warn_override_init = extra_warnings;
-  if (warn_ignored_qualifiers == -1)
-    warn_ignored_qualifiers = extra_warnings;
 
   /* -Wpointer-sign is disabled by default, but it is enabled if any
      of -Wall or -Wpedantic are given.  */
