@@ -2336,7 +2336,7 @@ alpha_emit_conditional_branch (rtx operands[], enum machine_mode cmp_mode)
     {
     case EQ:  case LE:  case LT:  case LEU:  case LTU:
     case UNORDERED:
-      /* We have these compares: */
+      /* We have these compares.  */
       cmp_code = code, branch_code = NE;
       break;
 
@@ -2573,13 +2573,15 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
       switch (code)
 	{
 	case EQ: case LE: case LT: case LEU: case LTU:
+	case UNORDERED:
 	  /* We have these compares.  */
 	  cmp_code = code, code = NE;
 	  break;
 
 	case NE:
-	  /* This must be reversed.  */
-	  cmp_code = EQ, code = EQ;
+	case ORDERED:
+	  /* These must be reversed.  */
+	  cmp_code = reverse_condition (code), code = EQ;
 	  break;
 
 	case GE: case GT: case GEU: case GTU:
@@ -2599,6 +2601,14 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
 	  gcc_unreachable ();
 	}
 
+      if (cmp_mode == DImode)
+	{
+	  if (!reg_or_0_operand (op0, DImode))
+	    op0 = force_reg (DImode, op0);
+	  if (!reg_or_8bit_operand (op1, DImode))
+	    op1 = force_reg (DImode, op1);
+	}
+
       tem = gen_reg_rtx (cmp_mode);
       emit_insn (gen_rtx_SET (VOIDmode, tem,
 			      gen_rtx_fmt_ee (cmp_code, cmp_mode,
@@ -2608,6 +2618,14 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
       op0 = gen_lowpart (cmp_mode, tem);
       op1 = CONST0_RTX (cmp_mode);
       local_fast_math = 1;
+    }
+
+  if (cmp_mode == DImode)
+    {
+      if (!reg_or_0_operand (op0, DImode))
+	op0 = force_reg (DImode, op0);
+      if (!reg_or_8bit_operand (op1, DImode))
+	op1 = force_reg (DImode, op1);
     }
 
   /* We may be able to use a conditional move directly.
@@ -2628,11 +2646,13 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
   switch (code)
     {
     case EQ:  case LE:  case LT:  case LEU:  case LTU:
+    case UNORDERED:
       /* We have these compares: */
       break;
 
     case NE:
-      /* This must be reversed.  */
+    case ORDERED:
+      /* These must be reversed.  */
       code = reverse_condition (code);
       cmov_code = EQ;
       break;
