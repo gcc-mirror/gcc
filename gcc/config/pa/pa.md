@@ -28,31 +28,31 @@
 
 ;; Uses of UNSPEC in this file:
 
-(define_constants
-  [(UNSPEC_CFFC		0)	; canonicalize_funcptr_for_compare
-   (UNSPEC_GOTO		1)	; indirect_goto
-   (UNSPEC_DLTIND14R	2)	; 
-   (UNSPEC_TP		3)
-   (UNSPEC_TLSGD	4)
-   (UNSPEC_TLSLDM	5)
-   (UNSPEC_TLSLDO	6)
-   (UNSPEC_TLSLDBASE	7)
-   (UNSPEC_TLSIE	8)
-   (UNSPEC_TLSLE 	9)
-   (UNSPEC_TLSGD_PIC   10)
-   (UNSPEC_TLSLDM_PIC  11)
-   (UNSPEC_TLSIE_PIC   12)
+(define_c_enum "unspec"
+  [UNSPEC_CFFC		; canonicalize_funcptr_for_compare
+   UNSPEC_GOTO		; indirect_goto
+   UNSPEC_DLTIND14R
+   UNSPEC_TP
+   UNSPEC_TLSGD
+   UNSPEC_TLSLDM
+   UNSPEC_TLSLDO
+   UNSPEC_TLSLDBASE
+   UNSPEC_TLSIE
+   UNSPEC_TLSLE 
+   UNSPEC_TLSGD_PIC
+   UNSPEC_TLSLDM_PIC
+   UNSPEC_TLSIE_PIC
   ])
 
 ;; UNSPEC_VOLATILE:
 
-(define_constants
-  [(UNSPECV_BLOCKAGE	0)	; blockage
-   (UNSPECV_DCACHE	1)	; dcacheflush
-   (UNSPECV_ICACHE	2)	; icacheflush
-   (UNSPECV_OPC		3)	; outline_prologue_call
-   (UNSPECV_OEC		4)	; outline_epilogue_call
-   (UNSPECV_LONGJMP	5)	; builtin_longjmp
+(define_c_enum "unspecv"
+  [UNSPECV_BLOCKAGE	; blockage
+   UNSPECV_DCACHE	; dcacheflush
+   UNSPECV_ICACHE	; icacheflush
+   UNSPECV_OPC		; outline_prologue_call
+   UNSPECV_OEC		; outline_epilogue_call
+   UNSPECV_LONGJMP	; builtin_longjmp
   ])
 
 ;; Maximum pc-relative branch offsets.
