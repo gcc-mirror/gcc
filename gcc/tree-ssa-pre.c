@@ -3117,7 +3117,6 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 		bitmap_value_replace_in_set (NEW_SETS (block), nameexpr);
 	      bitmap_value_replace_in_set (AVAIL_OUT (block), nameexpr);
 	    }
-	  mark_symbols_for_renaming (stmt);
 	}
       gimple_seq_add_seq (stmts, forced_stmts);
     }
@@ -3137,9 +3136,6 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 
   gimple_seq_add_stmt (stmts, newstmt);
   bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
-
-  /* All the symbols in NEWEXPR should be put into SSA form.  */
-  mark_symbols_for_renaming (newstmt);
 
   /* Fold the last statement.  */
   gsi = gsi_last (*stmts);

@@ -74,7 +74,6 @@ read_vector_array (gimple stmt, gimple_stmt_iterator *gsi, tree scalar_dest,
   vect_name = make_ssa_name (vect, new_stmt);
   gimple_assign_set_lhs (new_stmt, vect_name);
   vect_finish_stmt_generation (stmt, new_stmt, gsi);
-  mark_symbols_for_renaming (new_stmt);
 
   return vect_name;
 }
@@ -96,7 +95,6 @@ write_vector_array (gimple stmt, gimple_stmt_iterator *gsi, tree vect,
 
   new_stmt = gimple_build_assign (array_ref, vect);
   vect_finish_stmt_generation (stmt, new_stmt, gsi);
-  mark_symbols_for_renaming (new_stmt);
 }
 
 /* PTR is a pointer to an array of type TYPE.  Return a representation
@@ -1795,7 +1793,6 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		  new_temp = make_ssa_name (vec_dest, new_stmt);
 		  gimple_call_set_lhs (new_stmt, new_temp);
 		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-		  mark_symbols_for_renaming (new_stmt);
 		  VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node),
 				  new_stmt);
 		}
@@ -1830,9 +1827,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  new_stmt = gimple_build_call_vec (fndecl, vargs);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_call_set_lhs (new_stmt, new_temp);
-
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-	  mark_symbols_for_renaming (new_stmt);
 
 	  if (j == 0)
 	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
@@ -1885,7 +1880,6 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		  new_temp = make_ssa_name (vec_dest, new_stmt);
 		  gimple_call_set_lhs (new_stmt, new_temp);
 		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-		  mark_symbols_for_renaming (new_stmt);
 		  VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node),
 				  new_stmt);
 		}
@@ -1927,9 +1921,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  new_stmt = gimple_build_call_vec (fndecl, vargs);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_call_set_lhs (new_stmt, new_temp);
-
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-	  mark_symbols_for_renaming (new_stmt);
 
 	  if (j == 0)
 	    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
@@ -4019,7 +4011,6 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  new_stmt = gimple_build_call_internal (IFN_STORE_LANES, 1, vec_array);
 	  gimple_call_set_lhs (new_stmt, data_ref);
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-	  mark_symbols_for_renaming (new_stmt);
 	}
       else
 	{
@@ -4076,7 +4067,6 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      /* Arguments are ready.  Create the new vector stmt.  */
 	      new_stmt = gimple_build_assign (data_ref, vec_oprnd);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
-	      mark_symbols_for_renaming (new_stmt);
 
 	      if (slp)
 		continue;
@@ -4629,7 +4619,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  vec_inv = build_constructor (vectype, v);
 	  new_temp = vect_init_vector (stmt, vec_inv, vectype, gsi);
 	  new_stmt = SSA_NAME_DEF_STMT (new_temp);
-	  mark_symbols_for_renaming (new_stmt);
 
 	  if (j == 0)
 	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
@@ -4845,7 +4834,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  new_stmt = gimple_build_call_internal (IFN_LOAD_LANES, 1, data_ref);
 	  gimple_call_set_lhs (new_stmt, vec_array);
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-	  mark_symbols_for_renaming (new_stmt);
 
 	  /* Extract each vector into an SSA_NAME.  */
 	  for (i = 0; i < vec_num; i++)
@@ -4978,7 +4966,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      new_temp = make_ssa_name (vec_dest, new_stmt);
 	      gimple_assign_set_lhs (new_stmt, new_temp);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
-	      mark_symbols_for_renaming (new_stmt);
 
 	      /* 3. Handle explicit realignment if necessary/supported.
 		 Create in loop:

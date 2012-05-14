@@ -1,5 +1,22 @@
 2012-05-14  Richard Guenther  <rguenther@suse.de>
 
+	* tree-vect-data-refs.c (vect_setup_realignment): Remove
+	call to mark_symbols_for_renaming.
+	(vect_permute_load_chain): Likewise.
+	* tree-vect-loop.c (vect_is_slp_reduction): Update stmt
+	instead of calling mark_symbols_for_renaming.
+	* tree-vect-stmts.c (read_vector_array): Remove call to
+	mark_symbols_for_renaming.
+	(write_vector_array): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	* matrix-reorg.c (transform_allocation_sites): Likewise.
+	* tree-ssa-pre.c (create_expression_by_pieces): Likewise.
+	(create_expression_by_pieces): Likewise.
+
+2012-05-14  Richard Guenther  <rguenther@suse.de>
+
 	* gimplify.c (gimple_regimplify_operands): Only mark the LHS
 	of statements for renaming.
 	(force_gimple_operand_1): Likewise, consistently for both

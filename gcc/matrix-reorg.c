@@ -2159,7 +2159,6 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 					   true, GSI_SAME_STMT);
       /* GLOBAL_HOLDING_THE_SIZE = DIM_SIZE.  */
       stmt = gimple_build_assign (dim_var, dim_size);
-      mark_symbols_for_renaming (stmt);
       gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 
       prev_dim_size = mi->dimension_size[i] = dim_var;

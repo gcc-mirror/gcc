@@ -4273,7 +4273,6 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       new_stmt = gimple_build_assign (vec_dest, data_ref);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
-      mark_symbols_for_renaming (new_stmt);
       if (pe)
         {
           new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);
@@ -4531,7 +4530,6 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  data_ref = make_ssa_name (perm_dest, perm_stmt);
 	  gimple_assign_set_lhs (perm_stmt, data_ref);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-	  mark_symbols_for_renaming (perm_stmt);
 
 	  VEC_replace (tree, *result_chain, j/2, data_ref);
 
@@ -4547,7 +4545,6 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  data_ref = make_ssa_name (perm_dest, perm_stmt);
 	  gimple_assign_set_lhs (perm_stmt, data_ref);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-	  mark_symbols_for_renaming (perm_stmt);
 
 	  VEC_replace (tree, *result_chain, j/2+length/2, data_ref);
 	}
