@@ -1,3 +1,20 @@
+2012-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/52428
+	* io/io.h (max_value): Rename to si_max, remove second argument.
+	* io/list_read.c (convert_integer): Use unsigned types when
+	parsing the digits, set max value depending on the sign.
+	* io/read.c (max_value): Rename to si_max, remove second argument,
+	simplify.
+	(read_decimal): Set max value depending on sign, always check
+	overflow.
+	(read_radix): Calculate max unsigned value directly.
+	* libgfortran.h (struct compile_options_t): Remove range_check
+	field.
+	* runtime/compile_options.c (set_options): Skip handling
+	options[7].
+	(init_compile_options): Don't set removed field.
+
 2012-05-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53310

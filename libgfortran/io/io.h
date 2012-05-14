@@ -661,8 +661,8 @@ internal_proto(hit_eof);
 extern void set_integer (void *, GFC_INTEGER_LARGEST, int);
 internal_proto(set_integer);
 
-extern GFC_UINTEGER_LARGEST max_value (int, int);
-internal_proto(max_value);
+extern GFC_UINTEGER_LARGEST si_max (int);
+internal_proto(si_max);
 
 extern int convert_real (st_parameter_dt *, void *, const char *, int);
 internal_proto(convert_real);

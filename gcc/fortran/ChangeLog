@@ -1,3 +1,12 @@
+2012-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/52428
+	* gfortran.texi: Update _gfortran_set_options documentation.
+	* invoke.texi: Remove runtime behavior description of
+	-fno-range-check.
+	* trans-decl.c (create_main_function): Don't pass the range-check
+	setting to the library.
+
 2012-05-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/49110
