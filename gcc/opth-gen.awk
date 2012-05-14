@@ -305,6 +305,17 @@ print "                           unsigned int lang_mask, int kind,          "
 print "                           location_t loc,                            "
 print "                           const struct cl_option_handlers *handlers, "
 print "                           diagnostic_context *dc);                   "
+for (i = 0; i < n_langs; i++) {
+    lang_name = lang_sanitized_name(langs[i]);
+    print "bool                                                                  "
+    print lang_name "_handle_option_auto (struct gcc_options *opts,              "
+    print "                           struct gcc_options *opts_set,              "
+    print "                           size_t scode, const char *arg, int value,  "
+    print "                           unsigned int lang_mask, int kind,          "
+    print "                           location_t loc,                            "
+    print "                           const struct cl_option_handlers *handlers, "
+    print "                           diagnostic_context *dc);                   "
+}
 print "#endif";
 print "#endif";
 print "";
@@ -401,8 +412,7 @@ for (i = 0; i < n_opts; i++) {
 print ""
 
 for (i = 0; i < n_langs; i++) {
-	macros[i] = "CL_" langs[i]
-	gsub( "[^" alnum "_]", "X", macros[i] )
+        macros[i] = "CL_" lang_sanitized_name(langs[i])
 	s = substr("            ", length (macros[i]))
 	print "#define " macros[i] s " (1U << " i ")"
     }

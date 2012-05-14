@@ -1,3 +1,13 @@
+2012-05-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* doc/options.texi: (LangEnabledBy): Document it.
+	* optc-gen.awk: Handle LangEnabledBy.
+	* opth-gen.awk: Generate declaration for lang-specific functions.
+	* opt-read.awk: Record lang numbers.
+	* opt-functions.awk (flag_set_p): Ignore the arguments of flags.
+	(lang_sanitized_name): New.
+
 2012-05-14  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* attribs.c (decl_attributes): Avoid emitting a warning if

@@ -397,9 +397,9 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	  if (warn_main == -1)
 	    warn_main = (value ? 2 : 0);
 
-	  /* In C, -Wall turns on -Wenum-compare, which we do here.
-	     In C++ it is on by default, which is done in
-	     c_common_post_options.  */
+	  /* In C, -Wall and -Wc++-compat turns on -Wenum-compare,
+	     which we do here.  In C++ it is on by default, which is
+	     done in c_common_post_options.  */
           if (warn_enum_compare == -1)
             warn_enum_compare = value;
 	}
@@ -407,9 +407,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	{
 	  /* C++-specific warnings.  */
           warn_sign_compare = value;
-	  warn_reorder = value;
-          warn_cxx0x_compat = value;
-          warn_delnonvdtor = value;
 	  warn_narrowing = value;
 	}
 
@@ -434,10 +431,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	 implies -Wenum-compare.  */
       if (warn_enum_compare == -1 && value)
 	warn_enum_compare = value;
-      /* Because C++ always warns about a goto which misses an
-	 initialization, -Wc++-compat turns on -Wjump-misses-init.  */
-      if (warn_jump_misses_init == -1 && value)
-	warn_jump_misses_init = value;
       cpp_opts->warn_cxx_operator_names = value;
       break;
 
@@ -836,6 +829,40 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
     }
 
+  switch (c_language)
+    {
+    case clk_c:
+      C_handle_option_auto (&global_options, &global_options_set, 
+                            scode, arg, value, 
+                            c_family_lang_mask, kind,
+                            loc, handlers, global_dc);
+      break;
+
+    case clk_objc:
+      ObjC_handle_option_auto (&global_options, &global_options_set,
+                               scode, arg, value, 
+                               c_family_lang_mask, kind,
+                               loc, handlers, global_dc);
+      break;
+
+    case clk_cxx:
+      CXX_handle_option_auto (&global_options, &global_options_set,
+                              scode, arg, value,
+                              c_family_lang_mask, kind,
+                              loc, handlers, global_dc);
+      break;
+
+    case clk_objcxx:
+      ObjCXX_handle_option_auto (&global_options, &global_options_set,
+                                 scode, arg, value,
+                                 c_family_lang_mask, kind,
+                                 loc, handlers, global_dc);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  
   return result;
 }
 
@@ -926,8 +953,6 @@ c_common_post_options (const char **pfilename)
     warn_strict_aliasing = 0;
   if (warn_strict_overflow == -1)
     warn_strict_overflow = 0;
-  if (warn_jump_misses_init == -1)
-    warn_jump_misses_init = 0;
 
   /* -Woverlength-strings is off by default, but is enabled by -Wpedantic.
      It is never enabled in C++, as the minimum limit is not normative

@@ -41,6 +41,7 @@ BEGIN {
 	{
 		if ($1 == "Language") {
 			langs[n_langs] = $2
+                        lang_numbers[$2] = n_langs
 			n_langs++;
 		}
 		else if ($1 == "TargetSave") {

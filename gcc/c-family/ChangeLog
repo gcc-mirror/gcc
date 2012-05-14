@@ -1,3 +1,12 @@
+2012-05-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* c.opt (Wc++0X-compat,Wdelete-non-virtual-dtor,Wjump-misses-init,
+	Wreorder): Use LangEnabledBy.
+	* c-opts.c (c_common_handle_option): Do not enable them
+	explicitly. Call lang-specific generated functions.
+	(c_common_post_options): Do not set them here.
+
 2012-05-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c.opt (Wclobbered,Wempty-body,Wignored-qualifiers,

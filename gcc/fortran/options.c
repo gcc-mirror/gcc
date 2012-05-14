@@ -1090,6 +1090,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
     }
 
+  Fortran_handle_option_auto (&global_options, &global_options_set, 
+                              scode, arg, value, 
+                              gfc_option_lang_mask (), kind,
+                              loc, handlers, global_dc);
   return result;
 }
 
