@@ -1087,11 +1087,14 @@ gfc_create_string_length (gfc_symbol * sym)
   if (sym->ts.u.cl->backend_decl == NULL_TREE)
     {
       tree length;
-      char name[GFC_MAX_MANGLED_SYMBOL_LEN + 2];
+      const char *name;
 
       /* Also prefix the mangled name.  */
-      strcpy (&name[1], sym->name);
-      name[0] = '.';
+      if (sym->module)
+	name = gfc_get_string (".__%s_MOD_%s", sym->module, sym->name);
+      else
+	name = gfc_get_string (".%s", sym->name);
+
       length = build_decl (input_location,
 			   VAR_DECL, get_identifier (name),
 			   gfc_charlen_type_node);
@@ -1101,6 +1104,13 @@ gfc_create_string_length (gfc_symbol * sym)
 	gfc_defer_symbol_init (sym);
 
       sym->ts.u.cl->backend_decl = length;
+
+      if (sym->attr.save || sym->ns->proc_name->attr.flavor == FL_MODULE)
+	TREE_STATIC (length) = 1;
+
+      if (sym->ns->proc_name->attr.flavor == FL_MODULE
+	  && (sym->attr.access != ACCESS_PRIVATE || sym->attr.public_used))
+	TREE_PUBLIC (length) = 1;
     }
 
   gcc_assert (sym->ts.u.cl->backend_decl != NULL_TREE);
@@ -1402,17 +1412,6 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 
       if (TREE_CODE (length) != INTEGER_CST)
 	{
-	  char name[GFC_MAX_MANGLED_SYMBOL_LEN + 2];
-
-	  if (sym->module)
-	    {
-	      /* Also prefix the mangled name for symbols from modules.  */
-	      strcpy (&name[1], sym->name);
-	      name[0] = '.';
-	      strcpy (&name[1],
-		      IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (length)));
-	      gfc_set_decl_assembler_name (decl, get_identifier (name));
-	    }
 	  gfc_finish_var_decl (length, sym);
 	  gcc_assert (!sym->value);
 	}
