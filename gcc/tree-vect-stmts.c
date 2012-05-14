@@ -1032,10 +1032,19 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
     }
 
   /* The loads themselves.  */
-  vect_get_load_cost (first_dr, ncopies,
-         ((!STMT_VINFO_GROUPED_ACCESS (stmt_info)) || group_size > 1
-          || slp_node),
-         &inside_cost, &outside_cost);
+  if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
+    {
+      /* N scalar loads plus gathering them into a vector.
+         ???  scalar_to_vec isn't the cost for that.  */
+      inside_cost += (vect_get_stmt_cost (scalar_load) * ncopies
+		      * TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info)));
+      inside_cost += ncopies * vect_get_stmt_cost (scalar_to_vec);
+    }
+  else
+    vect_get_load_cost (first_dr, ncopies,
+			((!STMT_VINFO_GROUPED_ACCESS (stmt_info))
+			 || group_size > 1 || slp_node),
+			&inside_cost, &outside_cost);
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_load_cost: inside_cost = %d, "
