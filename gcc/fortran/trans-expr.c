@@ -7005,13 +7005,14 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       gfc_add_expr_to_block (&loop.post, tmp);
     }
 
-  /* For a deferred character length function, the function call must
-     happen before the (re)allocation of the lhs, otherwise the character
-     length of the result is not known.  */
-  def_clen_func = (((expr2->expr_type == EXPR_FUNCTION)
-			   || (expr2->expr_type == EXPR_COMPCALL)
-			   || (expr2->expr_type == EXPR_PPC))
-		       && expr2->ts.deferred);
+  /* When assigning a character function result to a deferred-length variable,
+     the function call must happen before the (re)allocation of the lhs -
+     otherwise the character length of the result is not known.
+     NOTE: This relies on having the exact dependence of the length type
+     parameter available to the caller; gfortran saves it in the .mod files. */
+  def_clen_func = (expr2->expr_type == EXPR_FUNCTION
+		   || expr2->expr_type == EXPR_COMPCALL
+		   || expr2->expr_type == EXPR_PPC);
   if (gfc_option.flag_realloc_lhs
 	&& expr2->ts.type == BT_CHARACTER
 	&& (def_clen_func || expr2->expr_type == EXPR_OP)

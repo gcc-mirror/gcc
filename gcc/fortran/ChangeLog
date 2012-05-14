@@ -1,3 +1,15 @@
+2012-05-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49110
+	PR fortran/51055
+	PR fortran/53329
+	* trans-expr.c (gfc_trans_assignment_1): Fix allocation
+	handling for assignment of function results to allocatable
+	deferred-length strings.
+	* trans-decl.c (gfc_create_string_length): For deferred-length
+	module variables, include module name in the assembler name.
+	(gfc_get_symbol_decl): Don't override the assembler name.
+
 2012-05-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 53063
