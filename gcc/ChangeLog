@@ -1,3 +1,10 @@
+2012-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (have_macinfo): Define.
+	(dwarf2out_finish): Don't emit DW_AT_GNU_macros or DW_AT_macro_info
+	attribute, don't force empty compilation unit and don't emit any
+	.debug_macinfo/.debug_macro section if macinfo_table is empty.
+
 2012-05-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/53344
