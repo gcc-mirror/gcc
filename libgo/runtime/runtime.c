@@ -86,8 +86,8 @@ runtime_panicstring(const char *s)
 static int32	argc;
 static byte**	argv;
 
-extern Slice os_Args asm ("libgo_os.os.Args");
-extern Slice syscall_Envs asm ("libgo_syscall.syscall.Envs");
+extern Slice os_Args asm ("os.Args");
+extern Slice syscall_Envs asm ("syscall.Envs");
 
 void
 runtime_args(int32 c, byte **v)

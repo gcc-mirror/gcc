@@ -488,31 +488,31 @@ goc2c: goc2c.$(OBJEXT)
 	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD) -o $@ $<
 
 malloc.c: $(srcdir)/runtime/malloc.goc goc2c
-	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
+	./goc2c --gcc $< > $@.tmp
 	mv -f $@.tmp $@
 
 mprof.c: $(srcdir)/runtime/mprof.goc goc2c
-	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
+	./goc2c --gcc $< > $@.tmp
 	mv -f $@.tmp $@
 
 reflect.c: $(srcdir)/runtime/reflect.goc goc2c
-	./goc2c --gcc --go-prefix libgo_reflect $< > $@.tmp
+	./goc2c --gcc $< > $@.tmp
 	mv -f $@.tmp $@
 
 runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
-	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
+	./goc2c --gcc $< > $@.tmp
 	mv -f $@.tmp $@
 
 sema.c: $(srcdir)/runtime/sema.goc goc2c
-	./goc2c --gcc --go-prefix libgo_sync $< > $@.tmp
+	./goc2c --gcc $< > $@.tmp
 	mv -f $@.tmp $@
 
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
-	./goc2c --gcc --go-prefix libgo_os $< > $@.tmp
+	./goc2c --gcc --go-pkgpath os_signal $< > $@.tmp
 	mv -f $@.tmp $@
 
 time.c: $(srcdir)/runtime/time.goc goc2c
-	./goc2c --gcc --go-prefix libgo_time $< > $@.tmp
+	./goc2c --gcc $< > $@.tmp
 	mv -f $@.tmp $@
 
 %.c: $(srcdir)/runtime/%.goc goc2c
@@ -1604,33 +1604,38 @@ os_lib_inotify_lo =
 endif
 
 libgo_go_objs = \
-	bufio/bufio.lo \
-	bytes/bytes.lo \
+	bufio.lo \
+	bytes.lo \
 	bytes/index.lo \
-	crypto/crypto.lo \
-	errors/errors.lo \
-	expvar/expvar.lo \
-	flag/flag.lo \
-	fmt/fmt.lo \
-	hash/hash.lo \
-	html/html.lo \
-	image/image.lo \
-	io/io.lo \
-	log/log.lo \
-	math/math.lo \
-	net/net.lo \
-	os/exec.lo \
-	os/os.lo \
-	path/path.lo \
-	reflect/reflect.lo \
-	regexp/regexp.lo \
-	runtime/runtime.lo \
-	sort/sort.lo \
-	strconv/strconv.lo \
-	strings/strings.lo \
-	sync/sync.lo \
-	time/time.lo \
-	unicode/unicode.lo \
+	crypto.lo \
+	errors.lo \
+	expvar.lo \
+	flag.lo \
+	fmt.lo \
+	hash.lo \
+	html.lo \
+	image.lo \
+	io.lo \
+	log.lo \
+	math.lo \
+	mime.lo \
+	net.lo \
+	os.lo \
+	path.lo \
+	reflect-go.lo \
+	regexp.lo \
+	runtime-go.lo \
+	sort.lo \
+	strconv.lo \
+	strings.lo \
+	sync.lo \
+	syscall.lo \
+	syscall/errno.lo \
+	syscall/signame.lo \
+	syscall/wait.lo \
+	testing.lo \
+	time-go.lo \
+	unicode.lo \
 	archive/tar.lo \
 	archive/zip.lo \
 	compress/bzip2.lo \
@@ -1713,7 +1718,6 @@ libgo_go_objs = \
 	math/big.lo \
 	math/cmplx.lo \
 	math/rand.lo \
-	mime/mime.lo \
 	mime/multipart.lo \
 	net/http.lo \
 	net/mail.lo \
@@ -1724,6 +1728,7 @@ libgo_go_objs = \
 	old/netchan.lo \
 	old/regexp.lo \
 	old/template.lo \
+	os/exec.lo \
 	$(os_lib_inotify_lo) \
 	os/signal.lo \
 	os/user.lo \
@@ -1734,15 +1739,10 @@ libgo_go_objs = \
 	runtime/pprof.lo \
 	sync/atomic.lo \
 	sync/atomic_c.lo \
-	syscall/syscall.lo \
-	syscall/errno.lo \
-	syscall/signame.lo \
-	syscall/wait.lo \
 	text/scanner.lo \
 	text/tabwriter.lo \
 	text/template.lo \
 	text/template/parse.lo \
-	testing/testing.lo \
 	testing/iotest.lo \
 	testing/quick.lo \
 	unicode/utf16.lo \
@@ -1780,7 +1780,7 @@ BUILDDEPS = \
 BUILDPACKAGE = \
 	$(MKDIR_P) $(@D); \
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
-	$(LTGOCOMPILE) -I . -c -fgo-prefix="libgo_$(@D)" -o $@ $$files
+	$(LTGOCOMPILE) -I . -c -fgo-pkgpath=`echo $@ | sed -e 's/.lo$$//' -e 's/-go$$//'` -o $@ $$files
 
 if LIBGO_IS_RTEMS
 use_dejagnu = yes
@@ -1805,12 +1805,10 @@ CHECK = \
 	LD_LIBRARY_PATH=`echo $${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 	export LD_LIBRARY_PATH; \
 	rm -f $@-testsum $@-testlog; \
-	prefix=`if test "$(@D)" = "regexp"; then echo regexp-test; else dirname $(@D); fi`; \
-	test "$${prefix}" != "." || prefix="$(@D)"; \
 	if test "$(use_dejagnu)" = "yes"; then \
-	  $(SHELL) $(srcdir)/testsuite/gotest --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --testname="$(@D)" --goarch="$(GOARCH)" $(GOTESTFLAGS); \
+	  $(SHELL) $(srcdir)/testsuite/gotest --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --testname="$(@D)" --goarch="$(GOARCH)" $(GOTESTFLAGS); \
 	else \
-	  if $(SHELL) $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --goarch="$(GOARCH)" $(GOTESTFLAGS) >>$@-testlog 2>&1; then \
+	  if $(SHELL) $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --goarch="$(GOARCH)" $(GOTESTFLAGS) >>$@-testlog 2>&1; then \
 	    echo "PASS: $(@D)" >> $@-testlog; \
 	    echo "PASS: $(@D)"; \
 	    echo "PASS: $(@D)" > $@-testsum; \
@@ -1852,258 +1850,249 @@ CHECK_DEPS = libgo.la libgobegin.a \
 	$(toolexeclibgotexttemplate_DATA) \
 	$(toolexeclibgounicode_DATA)
 
-@go_include@ bufio/bufio.lo.dep
-bufio/bufio.lo.dep: $(go_bufio_files)
+@go_include@ bufio.lo.dep
+bufio.lo.dep: $(go_bufio_files)
 	$(BUILDDEPS)
-bufio/bufio.lo: $(go_bufio_files)
+bufio.lo: $(go_bufio_files)
 	$(BUILDPACKAGE)
 bufio/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: bufio/check
 
-@go_include@ bytes/bytes.lo.dep
-bytes/bytes.lo.dep: $(go_bytes_files)
+@go_include@ bytes.lo.dep
+bytes.lo.dep: $(go_bytes_files)
 	$(BUILDDEPS)
-bytes/bytes.lo: $(go_bytes_files)
+bytes.lo: $(go_bytes_files)
 	$(BUILDPACKAGE)
-bytes/index.lo: $(go_bytes_c_files) bytes/bytes.lo
+bytes/index.lo: $(go_bytes_c_files)
+	@$(MKDIR_P) bytes
 	$(LTCOMPILE) -c -o bytes/index.lo $(srcdir)/go/bytes/indexbyte.c
 bytes/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: bytes/check
 
-@go_include@ crypto/crypto.lo.dep
-crypto/crypto.lo.dep: $(go_crypto_files)
+@go_include@ crypto.lo.dep
+crypto.lo.dep: $(go_crypto_files)
 	$(BUILDDEPS)
-crypto/crypto.lo: $(go_crypto_files)
+crypto.lo: $(go_crypto_files)
 	$(BUILDPACKAGE)
 crypto/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: crypto/check
 
-@go_include@ errors/errors.lo.dep
-errors/errors.lo.dep: $(go_errors_files)
+@go_include@ errors.lo.dep
+errors.lo.dep: $(go_errors_files)
 	$(BUILDDEPS)
-errors/errors.lo: $(go_errors_files)
+errors.lo: $(go_errors_files)
 	$(BUILDPACKAGE)
 errors/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: errors/check
 
-@go_include@ expvar/expvar.lo.dep
-expvar/expvar.lo.dep: $(go_expvar_files)
+@go_include@ expvar.lo.dep
+expvar.lo.dep: $(go_expvar_files)
 	$(BUILDDEPS)
-expvar/expvar.lo: $(go_expvar_files)
+expvar.lo: $(go_expvar_files)
 	$(BUILDPACKAGE)
 expvar/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: expvar/check
 
-@go_include@ flag/flag.lo.dep
-flag/flag.lo.dep: $(go_flag_files)
+@go_include@ flag.lo.dep
+flag.lo.dep: $(go_flag_files)
 	$(BUILDDEPS)
-flag/flag.lo: $(go_flag_files)
+flag.lo: $(go_flag_files)
 	$(BUILDPACKAGE)
 flag/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: flag/check
 
-@go_include@ fmt/fmt.lo.dep
-fmt/fmt.lo.dep: $(go_fmt_files)
+@go_include@ fmt.lo.dep
+fmt.lo.dep: $(go_fmt_files)
 	$(BUILDDEPS)
-fmt/fmt.lo: $(go_fmt_files)
+fmt.lo: $(go_fmt_files)
 	$(BUILDPACKAGE)
 fmt/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: fmt/check
 
-@go_include@ hash/hash.lo.dep
-hash/hash.lo.dep: $(go_hash_files)
+@go_include@ hash.lo.dep
+hash.lo.dep: $(go_hash_files)
 	$(BUILDDEPS)
-hash/hash.lo: $(go_hash_files)
+hash.lo: $(go_hash_files)
 	$(BUILDPACKAGE)
 hash/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: hash/check
 
-@go_include@ html/html.lo.dep
-html/html.lo.dep: $(go_html_files)
+@go_include@ html.lo.dep
+html.lo.dep: $(go_html_files)
 	$(BUILDDEPS)
-html/html.lo: $(go_html_files)
+html.lo: $(go_html_files)
 	$(BUILDPACKAGE)
 html/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: html/check
 
-@go_include@ image/image.lo.dep
-image/image.lo.dep: $(go_image_files)
+@go_include@ image.lo.dep
+image.lo.dep: $(go_image_files)
 	$(BUILDDEPS)
-image/image.lo: $(go_image_files)
+image.lo: $(go_image_files)
 	$(BUILDPACKAGE)
 image/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: image/check
 
-@go_include@ io/io.lo.dep
-io/io.lo.dep: $(go_io_files)
+@go_include@ io.lo.dep
+io.lo.dep: $(go_io_files)
 	$(BUILDDEPS)
-io/io.lo: $(go_io_files)
+io.lo: $(go_io_files)
 	$(BUILDPACKAGE)
 io/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: io/check
 
-@go_include@ log/log.lo.dep
-log/log.lo.dep: $(go_log_files)
+@go_include@ log.lo.dep
+log.lo.dep: $(go_log_files)
 	$(BUILDDEPS)
-log/log.lo: $(go_log_files)
+log.lo: $(go_log_files)
 	$(BUILDPACKAGE)
 log/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: log/check
 
-@go_include@ math/math.lo.dep
-math/math.lo.dep: $(go_math_files)
+@go_include@ math.lo.dep
+math.lo.dep: $(go_math_files)
 	$(BUILDDEPS)
-math/math.lo: $(go_math_files)
+math.lo: $(go_math_files)
 	$(MKDIR_P) $(@D)
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
-	$(LTGOCOMPILE) $(MATH_FLAG) -I . -c -fgo-prefix="libgo_$(@D)" -o $@ $$files
+	$(LTGOCOMPILE) $(MATH_FLAG) -I . -c -fgo-pkgpath=math -o $@ $$files
 math/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: math/check
 
-@go_include@ mime/mime.lo.dep
-mime/mime.lo.dep: $(go_mime_files)
+@go_include@ mime.lo.dep
+mime.lo.dep: $(go_mime_files)
 	$(BUILDDEPS)
-mime/mime.lo: $(go_mime_files)
+mime.lo: $(go_mime_files)
 	$(BUILDPACKAGE)
 mime/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: mime/check
 
-@go_include@ net/net.lo.dep
-net/net.lo.dep: $(go_net_files)
+@go_include@ net.lo.dep
+net.lo.dep: $(go_net_files)
 	$(BUILDDEPS)
-net/net.lo: $(go_net_files)
+net.lo: $(go_net_files)
 	$(BUILDPACKAGE)
 net/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: net/check
 
-@go_include@ os/os.lo.dep
-os/os.lo.dep: $(go_os_files)
+@go_include@ os.lo.dep
+os.lo.dep: $(go_os_files)
 	$(BUILDDEPS)
-os/os.lo: $(go_os_files)
+os.lo: $(go_os_files)
 	$(BUILDPACKAGE)
 os/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: os/check
 
-@go_include@ path/path.lo.dep
-path/path.lo.dep: $(go_path_files)
+@go_include@ path.lo.dep
+path.lo.dep: $(go_path_files)
 	$(BUILDDEPS)
-path/path.lo: $(go_path_files)
+path.lo: $(go_path_files)
 	$(BUILDPACKAGE)
 path/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: path/check
 
-@go_include@ reflect/reflect.lo.dep
-reflect/reflect.lo.dep: $(go_reflect_files)
+@go_include@ reflect-go.lo.dep
+reflect-go.lo.dep: $(go_reflect_files)
 	$(BUILDDEPS)
-reflect/reflect.lo: $(go_reflect_files)
+reflect-go.lo: $(go_reflect_files)
 	$(BUILDPACKAGE)
 reflect/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: reflect/check
 
-@go_include@ regexp/regexp.lo.dep
-regexp/regexp.lo.dep: $(go_regexp_files)
+@go_include@ regexp.lo.dep
+regexp.lo.dep: $(go_regexp_files)
 	$(BUILDDEPS)
-regexp/regexp.lo: $(go_regexp_files)
+regexp.lo: $(go_regexp_files)
 	$(BUILDPACKAGE)
 regexp/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: regexp/check
 
-@go_include@ runtime/runtime.lo.dep
-runtime/runtime.lo.dep: $(go_runtime_files)
+@go_include@ runtime-go.lo.dep
+runtime-go.lo.dep: $(go_runtime_files)
 	$(BUILDDEPS)
-runtime/runtime.lo: $(go_runtime_files)
+runtime-go.lo: $(go_runtime_files)
 	$(BUILDPACKAGE)
 runtime/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: runtime/check
 
-@go_include@ text/scanner.lo.dep
-text/scanner.lo.dep: $(go_text_scanner_files)
+@go_include@ sort.lo.dep
+sort.lo.dep: $(go_sort_files)
 	$(BUILDDEPS)
-text/scanner.lo: $(go_text_scanner_files)
-	$(BUILDPACKAGE)
-text/scanner/check: $(CHECK_DEPS)
-	@$(MKDIR_P) text/scanner
-	@$(CHECK)
-.PHONY: text/scanner/check
-
-@go_include@ sort/sort.lo.dep
-sort/sort.lo.dep: $(go_sort_files)
-	$(BUILDDEPS)
-sort/sort.lo: $(go_sort_files)
+sort.lo: $(go_sort_files)
 	$(BUILDPACKAGE)
 sort/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: sort/check
 
-@go_include@ strconv/strconv.lo.dep
-strconv/strconv.lo.dep: $(go_strconv_files)
+@go_include@ strconv.lo.dep
+strconv.lo.dep: $(go_strconv_files)
 	$(BUILDDEPS)
-strconv/strconv.lo: $(go_strconv_files)
+strconv.lo: $(go_strconv_files)
 	$(BUILDPACKAGE)
 strconv/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: strconv/check
 
-@go_include@ strings/strings.lo.dep
-strings/strings.lo.dep: $(go_strings_files)
+@go_include@ strings.lo.dep
+strings.lo.dep: $(go_strings_files)
 	$(BUILDDEPS)
-strings/strings.lo: $(go_strings_files)
+strings.lo: $(go_strings_files)
 	$(BUILDPACKAGE)
 strings/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: strings/check
 
-@go_include@ sync/sync.lo.dep
-sync/sync.lo.dep: $(go_sync_files)
+@go_include@ sync.lo.dep
+sync.lo.dep: $(go_sync_files)
 	$(BUILDDEPS)
-sync/sync.lo: $(go_sync_files)
+sync.lo: $(go_sync_files)
 	$(BUILDPACKAGE)
 sync/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: sync/check
 
-@go_include@ testing/testing.lo.dep
-testing/testing.lo.dep: $(go_testing_files)
+@go_include@ testing.lo.dep
+testing.lo.dep: $(go_testing_files)
 	$(BUILDDEPS)
-testing/testing.lo: $(go_testing_files)
+testing.lo: $(go_testing_files)
 	$(BUILDPACKAGE)
 testing/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: testing/check
 
-@go_include@ time/time.lo.dep
-time/time.lo.dep: $(go_time_files)
+@go_include@ time-go.lo.dep
+time-go.lo.dep: $(go_time_files)
 	$(BUILDDEPS)
-time/time.lo: $(go_time_files)
+time-go.lo: $(go_time_files)
 	$(BUILDPACKAGE)
 time/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: time/check
 
-@go_include@ unicode/unicode.lo.dep
-unicode/unicode.lo.dep: $(go_unicode_files)
+@go_include@ unicode.lo.dep
+unicode.lo.dep: $(go_unicode_files)
 	$(BUILDDEPS)
-unicode/unicode.lo: $(go_unicode_files)
+unicode.lo: $(go_unicode_files)
 	$(BUILDPACKAGE)
 unicode/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -3133,6 +3122,16 @@ sync/atomic/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: sync/atomic/check
 
+@go_include@ text/scanner.lo.dep
+text/scanner.lo.dep: $(go_text_scanner_files)
+	$(BUILDDEPS)
+text/scanner.lo: $(go_text_scanner_files)
+	$(BUILDPACKAGE)
+text/scanner/check: $(CHECK_DEPS)
+	@$(MKDIR_P) text/scanner
+	@$(CHECK)
+.PHONY: text/scanner/check
+
 @go_include@ text/tabwriter.lo.dep
 text/tabwriter.lo.dep: $(go_text_tabwriter_files)
 	$(BUILDDEPS)
@@ -3202,16 +3201,19 @@ unicode/utf8/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: unicode/utf8/check
 
-@go_include@ syscall/syscall.lo.dep
-syscall/syscall.lo.dep: $(go_syscall_files)
+@go_include@ syscall.lo.dep
+syscall.lo.dep: $(go_syscall_files)
 	$(BUILDDEPS)
-syscall/syscall.lo: $(go_syscall_files)
+syscall.lo: $(go_syscall_files)
 	$(BUILDPACKAGE)
 syscall/errno.lo: go/syscall/errno.c
+	@$(MKDIR_P) syscall
 	$(LTCOMPILE) -c -o $@ $<
 syscall/signame.lo: go/syscall/signame.c
+	@$(MKDIR_P) syscall
 	$(LTCOMPILE) -c -o $@ $<
 syscall/wait.lo: go/syscall/wait.c
+	@$(MKDIR_P) syscall
 	$(LTCOMPILE) -c -o $@ $<
 
 # How to build a .gox file from a .lo file.
@@ -3219,61 +3221,61 @@ BUILDGOX = \
 	f=`echo $< | sed -e 's/.lo$$/.o/'`; \
 	$(OBJCOPY) -j .go_export $$f $@.tmp && mv -f $@.tmp $@
 
-bufio.gox: bufio/bufio.lo
+bufio.gox: bufio.lo
 	$(BUILDGOX)
-bytes.gox: bytes/bytes.lo
+bytes.gox: bytes.lo
 	$(BUILDGOX)
-crypto.gox: crypto/crypto.lo
+crypto.gox: crypto.lo
 	$(BUILDGOX)
-errors.gox: errors/errors.lo
+errors.gox: errors.lo
 	$(BUILDGOX)
-expvar.gox: expvar/expvar.lo
+expvar.gox: expvar.lo
 	$(BUILDGOX)
-flag.gox: flag/flag.lo
+flag.gox: flag.lo
 	$(BUILDGOX)
-fmt.gox: fmt/fmt.lo
+fmt.gox: fmt.lo
 	$(BUILDGOX)
-hash.gox: hash/hash.lo
+hash.gox: hash.lo
 	$(BUILDGOX)
-html.gox: html/html.lo
+html.gox: html.lo
 	$(BUILDGOX)
-image.gox: image/image.lo
+image.gox: image.lo
 	$(BUILDGOX)
-io.gox: io/io.lo
+io.gox: io.lo
 	$(BUILDGOX)
-log.gox: log/log.lo
+log.gox: log.lo
 	$(BUILDGOX)
-math.gox: math/math.lo
+math.gox: math.lo
 	$(BUILDGOX)
-mime.gox: mime/mime.lo
+mime.gox: mime.lo
 	$(BUILDGOX)
-net.gox: net/net.lo
+net.gox: net.lo
 	$(BUILDGOX)
-os.gox: os/os.lo
+os.gox: os.lo
 	$(BUILDGOX)
-path.gox: path/path.lo
+path.gox: path.lo
 	$(BUILDGOX)
-reflect.gox: reflect/reflect.lo
+reflect.gox: reflect-go.lo
 	$(BUILDGOX)
-regexp.gox: regexp/regexp.lo
+regexp.gox: regexp.lo
 	$(BUILDGOX)
-runtime.gox: runtime/runtime.lo
+runtime.gox: runtime-go.lo
 	$(BUILDGOX)
-sort.gox: sort/sort.lo
+sort.gox: sort.lo
 	$(BUILDGOX)
-strconv.gox: strconv/strconv.lo
+strconv.gox: strconv.lo
 	$(BUILDGOX)
-strings.gox: strings/strings.lo
+strings.gox: strings.lo
 	$(BUILDGOX)
-sync.gox: sync/sync.lo
+sync.gox: sync.lo
 	$(BUILDGOX)
-syscall.gox: syscall/syscall.lo
+syscall.gox: syscall.lo
 	$(BUILDGOX)
-testing.gox: testing/testing.lo
+testing.gox: testing.lo
 	$(BUILDGOX)
-time.gox: time/time.lo
+time.gox: time-go.lo
 	$(BUILDGOX)
-unicode.gox: unicode/unicode.lo
+unicode.gox: unicode.lo
 	$(BUILDGOX)
 
 archive/tar.gox: archive/tar.lo

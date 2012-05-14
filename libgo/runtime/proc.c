@@ -1300,7 +1300,7 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 /* For runtime package testing.  */
 
 void runtime_testing_entersyscall(void)
-  __asm__("libgo_runtime.runtime.entersyscall");
+  __asm__("runtime.entersyscall");
 
 void
 runtime_testing_entersyscall()
@@ -1309,7 +1309,7 @@ runtime_testing_entersyscall()
 }
 
 void runtime_testing_exitsyscall(void)
-  __asm__("libgo_runtime.runtime.exitsyscall");
+  __asm__("runtime.exitsyscall");
 
 void
 runtime_testing_exitsyscall()
@@ -1416,7 +1416,7 @@ rundefer(void)
 	}
 }
 
-void runtime_Goexit (void) asm ("libgo_runtime.runtime.Goexit");
+void runtime_Goexit (void) asm ("runtime.Goexit");
 
 void
 runtime_Goexit(void)
@@ -1425,7 +1425,7 @@ runtime_Goexit(void)
 	runtime_goexit();
 }
 
-void runtime_Gosched (void) asm ("libgo_runtime.runtime.Gosched");
+void runtime_Gosched (void) asm ("runtime.Gosched");
 
 void
 runtime_Gosched(void)
@@ -1504,7 +1504,7 @@ runtime_lockedOSThread(void)
 // for testing of callbacks
 
 _Bool runtime_golockedOSThread(void)
-  asm("libgo_runtime.runtime.golockedOSThread");
+  asm("runtime.golockedOSThread");
 
 _Bool
 runtime_golockedOSThread(void)
@@ -1520,7 +1520,7 @@ runtime_mid()
 }
 
 int32 runtime_NumGoroutine (void)
-  __asm__ ("libgo_runtime.runtime.NumGoroutine");
+  __asm__ ("runtime.NumGoroutine");
 
 int32
 runtime_NumGoroutine()

@@ -1383,7 +1383,7 @@ func TestImportPath(t *testing.T) {
 		t    Type
 		path string
 	}{
-		{TypeOf(&base64.Encoding{}).Elem(), "libgo_encoding.base64"},
+		{TypeOf(&base64.Encoding{}).Elem(), "encoding/base64"},
 		{TypeOf(uint(0)), ""},
 		{TypeOf(map[string]int{}), ""},
 		{TypeOf((*error)(nil)).Elem(), ""},

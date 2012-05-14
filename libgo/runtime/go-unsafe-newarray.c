@@ -12,7 +12,7 @@
 /* Implement unsafe_NewArray, called from the reflect package.  */
 
 void *unsafe_NewArray (struct __go_empty_interface type, int n)
-  asm ("libgo_reflect.reflect.unsafe_NewArray");
+  asm ("reflect.unsafe_NewArray");
 
 /* The dynamic type of the argument will be a pointer to a type
    descriptor.  */

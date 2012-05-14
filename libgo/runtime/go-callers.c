@@ -67,7 +67,7 @@ runtime_callers (int32 skip, uintptr *pcbuf, int32 m)
 }
 
 int Callers (int, struct __go_open_array)
-  __asm__ ("libgo_runtime.runtime.Callers");
+  __asm__ ("runtime.Callers");
 
 int
 Callers (int skip, struct __go_open_array pc)

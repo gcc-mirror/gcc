@@ -9,7 +9,7 @@
 #include "go-string.h"
 
 struct __go_string typestring(struct __go_empty_interface)
-  asm ("libgo_runtime.runtime.typestring");
+  asm ("runtime.typestring");
 
 struct __go_string
 typestring (struct __go_empty_interface e)
