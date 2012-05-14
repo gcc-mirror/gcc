@@ -2007,8 +2007,8 @@ op_valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree op)
   if (op && TREE_CODE (op) == SSA_NAME)
     {
       unsigned int value_id = VN_INFO (op)->value_id;
-      if (!bitmap_set_contains_value (set1, value_id)
-	  || (set2 && !bitmap_set_contains_value  (set2, value_id)))
+      if (!(bitmap_set_contains_value (set1, value_id)
+	    || (set2 && bitmap_set_contains_value  (set2, value_id))))
 	return false;
     }
   return true;

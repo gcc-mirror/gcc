@@ -1,5 +1,10 @@
 2012-05-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/53340
+	* tree-ssa-pre.c (op_valid_in_sets): Fix error in last commit.
+
+2012-05-14  Richard Guenther  <rguenther@suse.de>
+
 	* gimplify.c (gimplify_expr): Remove odd code.
 
 2012-05-14  Eric Botcazou  <ebotcazou@adacore.com>
