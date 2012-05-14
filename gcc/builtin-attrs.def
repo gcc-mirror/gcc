@@ -59,6 +59,14 @@ DEF_ATTR_FOR_INT (5)
 DEF_ATTR_FOR_INT (6)
 #undef DEF_ATTR_FOR_INT
 
+/* Construct a tree for a given string and a list containing it.  */
+#define DEF_ATTR_FOR_STRING(ENUM, VALUE)					\
+  DEF_ATTR_STRING (ATTR_##ENUM, VALUE)			\
+  DEF_ATTR_TREE_LIST (ATTR_LIST_##ENUM, ATTR_NULL,	\
+		      ATTR_##ENUM, ATTR_NULL)
+DEF_ATTR_FOR_STRING (STR1, "1")
+#undef DEF_ATTR_FOR_STRING
+
 /* Construct a tree for a list of two integers.  */
 #define DEF_LIST_INT_INT(VALUE1, VALUE2)				 \
   DEF_ATTR_TREE_LIST (ATTR_LIST_##VALUE1##_##VALUE2, ATTR_NULL,		 \
@@ -84,6 +92,7 @@ DEF_ATTR_IDENT (ATTR_NONNULL, "nonnull")
 DEF_ATTR_IDENT (ATTR_NORETURN, "noreturn")
 DEF_ATTR_IDENT (ATTR_NOTHROW, "nothrow")
 DEF_ATTR_IDENT (ATTR_LEAF, "leaf")
+DEF_ATTR_IDENT (ATTR_FNSPEC, "fn spec")
 DEF_ATTR_IDENT (ATTR_PRINTF, "printf")
 DEF_ATTR_IDENT (ATTR_ASM_FPRINTF, "asm_fprintf")
 DEF_ATTR_IDENT (ATTR_GCC_DIAG, "gcc_diag")
@@ -170,6 +179,10 @@ DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_5, ATTR_NONNULL, ATTR_LIST_5, \
 /* Nothrow const functions whose pointer parameter(s) are all nonnull.  */
 DEF_ATTR_TREE_LIST (ATTR_CONST_NOTHROW_NONNULL, ATTR_CONST, ATTR_NULL, \
 			ATTR_NOTHROW_NONNULL)
+/* Nothrow leaf functions whose pointer parameter(s) are all nonnull,
+   and which return their first argument.  */
+DEF_ATTR_TREE_LIST (ATTR_RET1_NOTHROW_NONNULL_LEAF, ATTR_FNSPEC, ATTR_LIST_STR1, \
+			ATTR_NOTHROW_NONNULL_LEAF)
 /* Nothrow const leaf functions whose pointer parameter(s) are all nonnull.  */
 DEF_ATTR_TREE_LIST (ATTR_CONST_NOTHROW_NONNULL_LEAF, ATTR_CONST, ATTR_NULL, \
 			ATTR_NOTHROW_NONNULL_LEAF)

@@ -254,18 +254,27 @@ kill_clobbered_value (rtx x, const_rtx set, void *data)
     kill_value (x, vd);
 }
 
+/* A structure passed as data to kill_set_value through note_stores.  */
+struct kill_set_value_data
+{
+  struct value_data *vd;
+  rtx ignore_set_reg;
+};
+  
 /* Called through note_stores.  If X is set, not clobbered, kill its
    current value and install it as the root of its own value list.  */
 
 static void
 kill_set_value (rtx x, const_rtx set, void *data)
 {
-  struct value_data *const vd = (struct value_data *) data;
+  struct kill_set_value_data *ksvd = (struct kill_set_value_data *) data;
+  if (rtx_equal_p (x, ksvd->ignore_set_reg))
+    return;
   if (GET_CODE (set) != CLOBBER)
     {
-      kill_value (x, vd);
+      kill_value (x, ksvd->vd);
       if (REG_P (x))
-	set_value_regno (REGNO (x), GET_MODE (x), vd);
+	set_value_regno (REGNO (x), GET_MODE (x), ksvd->vd);
     }
 }
 
@@ -743,6 +752,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       rtx set;
       bool replaced[MAX_RECOG_OPERANDS];
       bool changed = false;
+      struct kill_set_value_data ksvd;
 
       if (!NONDEBUG_INSN_P (insn))
 	{
@@ -976,14 +986,39 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	    note_uses (&PATTERN (insn), cprop_find_used_regs, vd);
 	}
 
+      ksvd.vd = vd;
+      ksvd.ignore_set_reg = NULL_RTX;
+
       /* Clobber call-clobbered registers.  */
       if (CALL_P (insn))
-	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
-	    kill_value_regno (i, 1, vd);
+	{
+	  int set_regno = INVALID_REGNUM;
+	  int set_nregs = 0;
+	  rtx exp;
+	  for (exp = CALL_INSN_FUNCTION_USAGE (insn); exp; exp = XEXP (exp, 1))
+	    {
+	      rtx x = XEXP (exp, 0);
+	      if (GET_CODE (x) == SET)
+		{
+		  rtx dest = SET_DEST (x);
+		  kill_value (dest, vd);
+		  set_value_regno (REGNO (dest), GET_MODE (dest), vd);
+		  copy_value (dest, SET_SRC (x), vd);
+		  ksvd.ignore_set_reg = dest;
+		  set_regno = REGNO (dest);
+		  set_nregs
+		    = hard_regno_nregs[set_regno][GET_MODE (dest)];
+		  break;
+		}
+	    }
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i)
+		&& (i < set_regno || i >= set_regno + set_nregs))
+	      kill_value_regno (i, 1, vd);
+	}
 
       /* Notice stores.  */
-      note_stores (PATTERN (insn), kill_set_value, vd);
+      note_stores (PATTERN (insn), kill_set_value, &ksvd);
 
       /* Notice copies.  */
       if (set && REG_P (SET_DEST (set)) && REG_P (SET_SRC (set)))
