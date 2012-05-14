@@ -1,3 +1,11 @@
+2012-05-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/52607
+	* config/i386/i386.c (ix86_expand_vec_perm_const): Move code to ...
+	(canonicalize_perm): ... new function.
+	(expand_vec_perm_2vperm2f128_vshuf): New function.
+	(ix86_expand_vec_perm_const_1): Call it.
+
 2012-05-14  Andrew Pinski  <apinski@cavium.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 	    Jakub Jelinek  <jakub@redhat.com>

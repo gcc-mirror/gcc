@@ -33343,6 +33343,7 @@ struct expand_vec_perm_d
   bool testing_p;
 };
 
+static bool canonicalize_perm (struct expand_vec_perm_d *d);
 static bool expand_vec_perm_1 (struct expand_vec_perm_d *d);
 static bool expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d);
 
@@ -37400,6 +37401,57 @@ expand_vec_perm_vperm2f128_vblend (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Implement a V4DF
+   permutation using two vperm2f128, followed by a vshufpd insn blending
+   the two vectors together.  */
+
+static bool
+expand_vec_perm_2vperm2f128_vshuf (struct expand_vec_perm_d *d)
+{
+  struct expand_vec_perm_d dfirst, dsecond, dthird;
+  bool ok;
+
+  if (!TARGET_AVX || (d->vmode != V4DFmode))
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  dfirst = *d;
+  dsecond = *d;
+  dthird = *d;
+
+  dfirst.perm[0] = (d->perm[0] & ~1);
+  dfirst.perm[1] = (d->perm[0] & ~1) + 1;
+  dfirst.perm[2] = (d->perm[2] & ~1);
+  dfirst.perm[3] = (d->perm[2] & ~1) + 1;
+  dsecond.perm[0] = (d->perm[1] & ~1);
+  dsecond.perm[1] = (d->perm[1] & ~1) + 1;
+  dsecond.perm[2] = (d->perm[3] & ~1);
+  dsecond.perm[3] = (d->perm[3] & ~1) + 1;
+  dthird.perm[0] = (d->perm[0] % 2);
+  dthird.perm[1] = (d->perm[1] % 2) + 4;
+  dthird.perm[2] = (d->perm[2] % 2) + 2;
+  dthird.perm[3] = (d->perm[3] % 2) + 6;
+
+  dfirst.target = gen_reg_rtx (dfirst.vmode);
+  dsecond.target = gen_reg_rtx (dsecond.vmode);
+  dthird.op0 = dfirst.target;
+  dthird.op1 = dsecond.target;
+  dthird.one_operand_p = false;
+
+  canonicalize_perm (&dfirst);
+  canonicalize_perm (&dsecond);
+
+  ok = expand_vec_perm_1 (&dfirst)
+       && expand_vec_perm_1 (&dsecond)
+       && expand_vec_perm_1 (&dthird);
+
+  gcc_assert (ok);
+
+  return true;
+}
+
 /* A subroutine of expand_vec_perm_even_odd_1.  Implement the double-word
    permutation with two pshufb insns and an ior.  We should have already
    failed all two instruction sequences.  */
@@ -38049,6 +38101,9 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 
   /* Try sequences of three instructions.  */
 
+  if (expand_vec_perm_2vperm2f128_vshuf (d))
+    return true;
+
   if (expand_vec_perm_pshufb2 (d))
     return true;
 
@@ -38086,12 +38141,56 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
+/* If a permutation only uses one operand, make it clear. Returns true
+   if the permutation references both operands.  */
+
+static bool
+canonicalize_perm (struct expand_vec_perm_d *d)
+{
+  int i, which, nelt = d->nelt;
+
+  for (i = which = 0; i < nelt; ++i)
+      which |= (d->perm[i] < nelt ? 1 : 2);
+
+  d->one_operand_p = true;
+  switch (which)
+    {
+    default:
+      gcc_unreachable();
+
+    case 3:
+      if (!rtx_equal_p (d->op0, d->op1))
+        {
+	  d->one_operand_p = false;
+	  break;
+        }
+      /* The elements of PERM do not suggest that only the first operand
+	 is used, but both operands are identical.  Allow easier matching
+	 of the permutation by folding the permutation into the single
+	 input vector.  */
+      /* FALLTHRU */
+
+    case 2:
+      for (i = 0; i < nelt; ++i)
+        d->perm[i] &= nelt - 1;
+      d->op0 = d->op1;
+      break;
+
+    case 1:
+      d->op1 = d->op0;
+      break;
+    }
+
+  return (which == 3);
+}
+
 bool
 ix86_expand_vec_perm_const (rtx operands[4])
 {
   struct expand_vec_perm_d d;
   unsigned char perm[MAX_VECT_LEN];
-  int i, nelt, which;
+  int i, nelt;
+  bool two_args;
   rtx sel;
 
   d.target = operands[0];
@@ -38108,44 +38207,15 @@ ix86_expand_vec_perm_const (rtx operands[4])
   gcc_assert (XVECLEN (sel, 0) == nelt);
   gcc_checking_assert (sizeof (d.perm) == sizeof (perm));
 
-  for (i = which = 0; i < nelt; ++i)
+  for (i = 0; i < nelt; ++i)
     {
       rtx e = XVECEXP (sel, 0, i);
       int ei = INTVAL (e) & (2 * nelt - 1);
-
-      which |= (ei < nelt ? 1 : 2);
       d.perm[i] = ei;
       perm[i] = ei;
     }
 
-  d.one_operand_p = true;
-  switch (which)
-    {
-    default:
-      gcc_unreachable();
-
-    case 3:
-      if (!rtx_equal_p (d.op0, d.op1))
-        {
-	  d.one_operand_p = false;
-	  break;
-        }
-      /* The elements of PERM do not suggest that only the first operand
-	 is used, but both operands are identical.  Allow easier matching
-	 of the permutation by folding the permutation into the single
-	 input vector.  */
-      /* FALLTHRU */
-
-    case 2:
-      for (i = 0; i < nelt; ++i)
-        d.perm[i] &= nelt - 1;
-      d.op0 = d.op1;
-      break;
-
-    case 1:
-      d.op1 = d.op0;
-      break;
-    }
+  two_args = canonicalize_perm (&d);
 
   if (ix86_expand_vec_perm_const_1 (&d))
     return true;
@@ -38154,7 +38224,7 @@ ix86_expand_vec_perm_const (rtx operands[4])
      same, the above tried to expand with one_operand_p and flattened selector.
      If that didn't work, retry without one_operand_p; we succeeded with that
      during testing.  */
-  if (which == 3 && d.one_operand_p)
+  if (two_args && d.one_operand_p)
     {
       d.one_operand_p = false;
       memcpy (d.perm, perm, sizeof (perm));
