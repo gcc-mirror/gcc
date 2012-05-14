@@ -6,7 +6,7 @@
 
 #include <sched.h>
 
-void Breakpoint (void) asm ("libgo_runtime.runtime.Breakpoint");
+void Breakpoint (void) asm ("runtime.Breakpoint");
 
 void
 Breakpoint (void)

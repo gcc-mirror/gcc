@@ -12,7 +12,7 @@
 /* Implement unsafe_New, called from the reflect package.  */
 
 void *unsafe_New (struct __go_empty_interface type)
-  asm ("libgo_reflect.reflect.unsafe_New");
+  asm ("reflect.unsafe_New");
 
 /* The dynamic type of the argument will be a pointer to a type
    descriptor.  */

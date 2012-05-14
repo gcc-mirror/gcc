@@ -298,8 +298,8 @@ void	runtime_gosched(void);
 void	runtime_tsleep(int64);
 M*	runtime_newm(void);
 void	runtime_goexit(void);
-void	runtime_entersyscall(void) __asm__("libgo_syscall.syscall.Entersyscall");
-void	runtime_exitsyscall(void) __asm__("libgo_syscall.syscall.Exitsyscall");
+void	runtime_entersyscall(void) __asm__("syscall.Entersyscall");
+void	runtime_exitsyscall(void) __asm__("syscall.Exitsyscall");
 void	siginit(void);
 bool	__go_sigsend(int32 sig);
 int32	runtime_callers(int32, uintptr*, int32);
@@ -374,7 +374,7 @@ void	runtime_panic(Eface);
 struct __go_func_type;
 void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,
 		  void **, void **)
-  asm ("libgo_reflect.reflect.call");
+  asm ("reflect.call");
 
 /* Functions.  */
 #define runtime_panic __go_panic
@@ -417,11 +417,11 @@ void	runtime_usleep(uint32);
  * runtime c-called (but written in Go)
  */
 void	runtime_printany(Eface)
-     __asm__("libgo_runtime.runtime.Printany");
+     __asm__("runtime.Printany");
 void	runtime_newTypeAssertionError(const String*, const String*, const String*, const String*, Eface*)
-     __asm__("libgo_runtime.runtime.NewTypeAssertionError");
+     __asm__("runtime.NewTypeAssertionError");
 void	runtime_newErrorString(String, Eface*)
-     __asm__("libgo_runtime.runtime.NewErrorString");
+     __asm__("runtime.NewErrorString");
 
 /*
  * wrapped for go users
@@ -431,8 +431,8 @@ void	runtime_semrelease(uint32 volatile *);
 int32	runtime_gomaxprocsfunc(int32 n);
 void	runtime_procyield(uint32);
 void	runtime_osyield(void);
-void	runtime_LockOSThread(void) __asm__("libgo_runtime.runtime.LockOSThread");
-void	runtime_UnlockOSThread(void) __asm__("libgo_runtime.runtime.UnlockOSThread");
+void	runtime_LockOSThread(void) __asm__("runtime.LockOSThread");
+void	runtime_UnlockOSThread(void) __asm__("runtime.UnlockOSThread");
 
 uintptr	runtime_memlimit(void);
 

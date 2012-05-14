@@ -15,7 +15,7 @@ struct time_now_ret
 };
 
 struct time_now_ret now()
-  __asm__ ("libgo_time.time.now")
+  __asm__ ("time.now")
   __attribute__ ((no_split_stack));
 
 struct time_now_ret

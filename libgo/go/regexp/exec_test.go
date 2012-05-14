@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package regexp
+package regexp_test
 
 import (
+	. "regexp"
+
 	"bufio"
 	"compress/bzip2"
 	"fmt"
@@ -219,22 +221,22 @@ var run = []func(*Regexp, *Regexp, string) ([]int, string){
 }
 
 func runFull(re, refull *Regexp, text string) ([]int, string) {
-	refull.longest = false
+	refull.SetLongest(false)
 	return refull.FindStringSubmatchIndex(text), "[full]"
 }
 
 func runPartial(re, refull *Regexp, text string) ([]int, string) {
-	re.longest = false
+	re.SetLongest(false)
 	return re.FindStringSubmatchIndex(text), ""
 }
 
 func runFullLongest(re, refull *Regexp, text string) ([]int, string) {
-	refull.longest = true
+	refull.SetLongest(true)
 	return refull.FindStringSubmatchIndex(text), "[full,longest]"
 }
 
 func runPartialLongest(re, refull *Regexp, text string) ([]int, string) {
-	re.longest = true
+	re.SetLongest(true)
 	return re.FindStringSubmatchIndex(text), "[longest]"
 }
 
@@ -246,22 +248,22 @@ var match = []func(*Regexp, *Regexp, string) (bool, string){
 }
 
 func matchFull(re, refull *Regexp, text string) (bool, string) {
-	refull.longest = false
+	refull.SetLongest(false)
 	return refull.MatchString(text), "[full]"
 }
 
 func matchPartial(re, refull *Regexp, text string) (bool, string) {
-	re.longest = false
+	re.SetLongest(false)
 	return re.MatchString(text), ""
 }
 
 func matchFullLongest(re, refull *Regexp, text string) (bool, string) {
-	refull.longest = true
+	refull.SetLongest(true)
 	return refull.MatchString(text), "[full,longest]"
 }
 
 func matchPartialLongest(re, refull *Regexp, text string) (bool, string) {
-	re.longest = true
+	re.SetLongest(true)
 	return re.MatchString(text), "[longest]"
 }
 
@@ -541,7 +543,7 @@ Reading:
 				}
 			}
 
-			re, err := compile(pattern, syn, true)
+			re, err := CompileInternal(pattern, syn, true)
 			if err != nil {
 				if shouldCompile {
 					t.Errorf("%s:%d: %#q did not compile", file, lineno, pattern)

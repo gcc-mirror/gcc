@@ -8,7 +8,7 @@
 
 #include "go-string.h"
 
-struct __go_string getgoroot (void) asm ("libgo_runtime.runtime.getgoroot");
+struct __go_string getgoroot (void) asm ("runtime.getgoroot");
 
 struct __go_string
 getgoroot ()
