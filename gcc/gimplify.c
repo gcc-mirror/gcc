@@ -8531,7 +8531,13 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
 	  gimple_stmt_iterator i;
 
 	  for (i = gsi_start (pre); !gsi_end_p (i); gsi_next (&i))
-	    mark_symbols_for_renaming (gsi_stmt (i));
+	    {
+	      tree lhs = gimple_get_lhs (gsi_stmt (i));
+	      if (lhs
+		  && TREE_CODE (lhs) != SSA_NAME
+		  && is_gimple_reg (lhs))
+		mark_sym_for_renaming (lhs);
+	    }
 	}
       gsi_insert_seq_before (gsi_p, pre, GSI_SAME_STMT);
     }
@@ -8585,6 +8591,21 @@ force_gimple_operand_1 (tree expr, gimple_seq *stmts,
     for (t = gimplify_ctxp->temps; t ; t = DECL_CHAIN (t))
       add_referenced_var (t);
 
+  if (!gimple_seq_empty_p (*stmts)
+      && gimplify_ctxp->into_ssa)
+    {
+      gimple_stmt_iterator i;
+
+      for (i = gsi_start (*stmts); !gsi_end_p (i); gsi_next (&i))
+	{
+	  tree lhs = gimple_get_lhs (gsi_stmt (i));
+	  if (lhs
+	      && TREE_CODE (lhs) != SSA_NAME
+	      && is_gimple_reg (lhs))
+	    mark_sym_for_renaming (lhs);
+	}
+    }
+
   pop_gimplify_context (NULL);
 
   return expr;
@@ -8621,14 +8642,6 @@ force_gimple_operand_gsi_1 (gimple_stmt_iterator *gsi, tree expr,
 
   if (!gimple_seq_empty_p (stmts))
     {
-      if (gimple_in_ssa_p (cfun))
-	{
-	  gimple_stmt_iterator i;
-
-	  for (i = gsi_start (stmts); !gsi_end_p (i); gsi_next (&i))
-	    mark_symbols_for_renaming (gsi_stmt (i));
-	}
-
       if (before)
 	gsi_insert_seq_before (gsi, stmts, m);
       else

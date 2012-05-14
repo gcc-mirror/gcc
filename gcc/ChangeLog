@@ -1,5 +1,12 @@
 2012-05-14  Richard Guenther  <rguenther@suse.de>
 
+	* gimplify.c (gimple_regimplify_operands): Only mark the LHS
+	of statements for renaming.
+	(force_gimple_operand_1): Likewise, consistently for both
+	calls to force_gimple_operand and force_gimple_operand_gsi.
+
+2012-05-14  Richard Guenther  <rguenther@suse.de>
+
 	* tree-dfa.c (make_rename_temp): Be forgiving if not in SSA form.
 	* omp-low.c (expand_omp_taskreg): Properly conditionalize call
 	to update_ssa.
