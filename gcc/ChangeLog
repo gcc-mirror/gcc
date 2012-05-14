@@ -1,3 +1,10 @@
+2012-05-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53331
+	* tree-vect-data-refs.c (vect_verify_datarefs_alignment): Ignore
+	strided loads.
+	* tree-vect-stmts.c (vect_model_load_cost): Handle strided loads.
+
 2012-05-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 53063

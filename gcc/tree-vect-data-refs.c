@@ -1078,6 +1078,11 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
           || !STMT_VINFO_VECTORIZABLE (stmt_info))
         continue;
 
+      /* Strided loads perform only component accesses, alignment is
+	 irrelevant for them.  */
+      if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
+	continue;
+
       supportable_dr_alignment = vect_supportable_dr_alignment (dr, false);
       if (!supportable_dr_alignment)
         {
