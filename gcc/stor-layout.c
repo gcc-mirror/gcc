@@ -786,25 +786,29 @@ start_record_layout (tree t)
 }
 
 /* Return the combined bit position for the byte offset OFFSET and the
-   bit position BITPOS.  */
+   bit position BITPOS.
 
-tree
-bit_from_pos (tree offset, tree bitpos)
-{
-  return size_binop (PLUS_EXPR, bitpos,
-		     size_binop (MULT_EXPR,
-				 fold_convert (bitsizetype, offset),
-				 bitsize_unit_node));
-}
-
-/* Return the combined truncated byte position for the byte offset OFFSET and
-   the bit position BITPOS.
-
-   These functions operate on byte and bit positions as present in FIELD_DECLs
+   These functions operate on byte and bit positions present in FIELD_DECLs
    and assume that these expressions result in no (intermediate) overflow.
    This assumption is necessary to fold the expressions as much as possible,
    so as to avoid creating artificially variable-sized types in languages
    supporting variable-sized types like Ada.  */
+
+tree
+bit_from_pos (tree offset, tree bitpos)
+{
+  if (TREE_CODE (offset) == PLUS_EXPR)
+    offset = size_binop (PLUS_EXPR,
+			 fold_convert (bitsizetype, TREE_OPERAND (offset, 0)),
+			 fold_convert (bitsizetype, TREE_OPERAND (offset, 1)));
+  else
+    offset = fold_convert (bitsizetype, offset);
+  return size_binop (PLUS_EXPR, bitpos,
+		     size_binop (MULT_EXPR, offset, bitsize_unit_node));
+}
+
+/* Return the combined truncated byte position for the byte offset OFFSET and
+   the bit position BITPOS.  */
 
 tree
 byte_from_pos (tree offset, tree bitpos)
