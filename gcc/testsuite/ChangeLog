@@ -1,3 +1,8 @@
+2012-05-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx256-unaligned-load-[1234].c: Update scan strings.
+	* gcc.target/i386/avx256-unaligned-store-[1234].c: Ditto.
+
 2012-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/null_pointer_deref3.adb: New test.
