@@ -1,4 +1,4 @@
-# Copyright (C) 1997, 2004, 2007, 2008, 2009, 2010
+# Copyright (C) 1997, 2004, 2007, 2008, 2009, 2010, 2011, 2012
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -241,6 +241,17 @@ proc check_effective_target_bmi2 { } {
 	    return __builtin_ia32_bzhi_si (__X, __Y);
 	}
     } "-mbmi2" ]
+}
+
+# Return 1 if rtm instructions can be compiled.
+proc check_effective_target_rtm { } {
+    return [check_no_compiler_messages rtm object {
+	void
+	_rtm_xend (void)
+	{
+	    return __builtin_ia32_xend ();
+	}
+    } "-mrtm" ]
 }
 
 # If the linker used understands -M <mapfile>, pass it to clear hardware
