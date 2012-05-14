@@ -24060,8 +24060,8 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       arg_adjust = 0;
       if (optimize
 	  || target == 0
-	  || GET_MODE (target) != tmode
-	  || ! (*insn_p->operand[0].predicate) (target, tmode))
+	  || !register_operand (target, tmode)
+	  || GET_MODE (target) != tmode)
 	target = gen_reg_rtx (tmode);
     }
 

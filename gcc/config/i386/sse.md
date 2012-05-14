@@ -354,18 +354,7 @@
   DONE;
 })
 
-(define_expand "avx_movup<avxmodesuffixf2c><avxmodesuffix>"
-  [(set (match_operand:AVXMODEF2P 0 "nonimmediate_operand" "")
-	(unspec:AVXMODEF2P
-	  [(match_operand:AVXMODEF2P 1 "nonimmediate_operand" "")]
-	  UNSPEC_MOVU))]
-  "AVX_VEC_FLOAT_MODE_P (<MODE>mode)"
-{
-  if (MEM_P (operands[0]) && MEM_P (operands[1]))
-    operands[1] = force_reg (<MODE>mode, operands[1]);
-})
-
-(define_insn "*avx_movup<avxmodesuffixf2c><avxmodesuffix>"
+(define_insn "avx_movup<avxmodesuffixf2c><avxmodesuffix>"
   [(set (match_operand:AVXMODEF2P 0 "nonimmediate_operand" "=x,m")
 	(unspec:AVXMODEF2P
 	  [(match_operand:AVXMODEF2P 1 "nonimmediate_operand" "xm,x")]
@@ -391,18 +380,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
-(define_expand "<sse>_movup<ssemodesuffixf2c>"
-  [(set (match_operand:SSEMODEF2P 0 "nonimmediate_operand" "")
-	(unspec:SSEMODEF2P
-	  [(match_operand:SSEMODEF2P 1 "nonimmediate_operand" "")]
-	  UNSPEC_MOVU))]
-  "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
-{
-  if (MEM_P (operands[0]) && MEM_P (operands[1]))
-    operands[1] = force_reg (<MODE>mode, operands[1]);
-})
-
-(define_insn "*<sse>_movup<ssemodesuffixf2c>"
+(define_insn "<sse>_movup<ssemodesuffixf2c>"
   [(set (match_operand:SSEMODEF2P 0 "nonimmediate_operand" "=x,m")
 	(unspec:SSEMODEF2P
 	  [(match_operand:SSEMODEF2P 1 "nonimmediate_operand" "xm,x")]
@@ -414,18 +392,7 @@
    (set_attr "movu" "1")
    (set_attr "mode" "<MODE>")])
 
-(define_expand "avx_movdqu<avxmodesuffix>"
-  [(set (match_operand:AVXMODEQI 0 "nonimmediate_operand" "")
-	(unspec:AVXMODEQI
-	  [(match_operand:AVXMODEQI 1 "nonimmediate_operand" "")]
-	  UNSPEC_MOVU))]
-  "TARGET_AVX"
-{
-  if (MEM_P (operands[0]) && MEM_P (operands[1]))
-    operands[1] = force_reg (<MODE>mode, operands[1]);
-})
-
-(define_insn "*avx_movdqu<avxmodesuffix>"
+(define_insn "avx_movdqu<avxmodesuffix>"
   [(set (match_operand:AVXMODEQI 0 "nonimmediate_operand" "=x,m")
 	(unspec:AVXMODEQI
 	  [(match_operand:AVXMODEQI 1 "nonimmediate_operand" "xm,x")]
@@ -437,17 +404,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<avxvecmode>")])
 
-(define_expand "sse2_movdqu"
-  [(set (match_operand:V16QI 0 "nonimmediate_operand" "")
-	(unspec:V16QI [(match_operand:V16QI 1 "nonimmediate_operand" "")]
-		      UNSPEC_MOVU))]
-  "TARGET_SSE2"
-{
-  if (MEM_P (operands[0]) && MEM_P (operands[1]))
-    operands[1] = force_reg (V16QImode, operands[1]);
-})
-
-(define_insn "*sse2_movdqu"
+(define_insn "sse2_movdqu"
   [(set (match_operand:V16QI 0 "nonimmediate_operand" "=x,m")
 	(unspec:V16QI [(match_operand:V16QI 1 "nonimmediate_operand" "xm,x")]
 		      UNSPEC_MOVU))]
