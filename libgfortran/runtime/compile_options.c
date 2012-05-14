@@ -169,8 +169,10 @@ set_options (int num, int options[])
     compile_options.sign_zero = options[5];
   if (num >= 7)
     compile_options.bounds_check = options[6];
-  if (num >= 8)
-    compile_options.range_check = options[7];
+  /* options[7] is the -frange-check option, which no longer affects
+     the library behavior; range checking is now always done when
+     parsing integers. It's place in the options array is retained due
+     to ABI compatibility. Remove when bumping the library ABI.  */
 
   /* If backtrace is required, we set signal handlers on the POSIX
      2001 signals with core action.  */
@@ -223,7 +225,6 @@ init_compile_options (void)
   compile_options.pedantic = 0;
   compile_options.backtrace = 0;
   compile_options.sign_zero = 1;
-  compile_options.range_check = 1;
 }
 
 /* Function called by the front-end to tell us the

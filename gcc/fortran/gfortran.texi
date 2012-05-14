@@ -2740,15 +2740,13 @@ Default: enabled.
 are (bitwise or-ed): GFC_RTCHECK_BOUNDS (1), GFC_RTCHECK_ARRAY_TEMPS (2),
 GFC_RTCHECK_RECURSION (4), GFC_RTCHECK_DO (16), GFC_RTCHECK_POINTER (32).
 Default: disabled.
-@item @var{option}[7] @tab If non zero, range checking is enabled.
-Default: enabled.  See -frange-check (@pxref{Code Gen Options}).
 @end multitable
 
 @item @emph{Example}:
 @smallexample
-  /* Use gfortran 4.7 default options.  */
-  static int options[] = @{68, 511, 0, 0, 1, 1, 0, 1@};
-  _gfortran_set_options (8, &options);
+  /* Use gfortran 4.8 default options.  */
+  static int options[] = @{68, 511, 0, 0, 1, 1, 0@};
+  _gfortran_set_options (7, &options);
 @end smallexample
 @end table
 
