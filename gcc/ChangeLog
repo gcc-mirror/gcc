@@ -1,3 +1,23 @@
+2012-05-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46098
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Always
+	generate target register for "load" class builtins.
+
+	Revert:
+	2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46098
+	* config/i386/sse.md (*avx_movu<ssemodesuffix><avxmodesuffix>):
+	Rename from avx_movu<ssemodesuffix><avxmodesuffix>.
+	(avx_movu<ssemodesuffix><avxmodesuffix>): New expander.
+	(*<sse>_movu<ssemodesuffix>): Rename from <sse>_movu<ssemodesuffix>.
+	(<sse>_movu<ssemodesuffix>): New expander.
+	(*avx_movdqu<avxmodesuffix>): Rename from avx_movdqu<avxmodesuffix>.
+	(avx_movdqu<avxmodesuffix>): New expander.
+	(*sse2_movdqu): Rename from sse2_movdqu.
+	(sse2_movdqu): New expander.
+
 2012-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
