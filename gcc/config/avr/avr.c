@@ -6639,48 +6639,6 @@ _reg_unused_after (rtx insn, rtx reg)
 }
 
 
-/* Return RTX that represents the lower 16 bits of a constant address.
-   Unfortunately, simplify_gen_subreg does not handle this case.  */
-
-static rtx
-avr_const_address_lo16 (rtx x)
-{
-  rtx lo16;
-  
-  switch (GET_CODE (x))
-    {
-    default:
-      break;
-      
-    case CONST:
-      if (PLUS == GET_CODE (XEXP (x, 0))
-          && SYMBOL_REF == GET_CODE (XEXP (XEXP (x, 0), 0))
-          && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
-        {
-          HOST_WIDE_INT offset = INTVAL (XEXP (XEXP (x, 0), 1));
-          const char *name = XSTR (XEXP (XEXP (x, 0), 0), 0);
-          
-          lo16 = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
-          lo16 = gen_rtx_CONST (Pmode, plus_constant (Pmode, lo16, offset));
-          
-          return lo16;
-        }
-      
-      break;
-      
-    case SYMBOL_REF:
-      {
-        const char *name = XSTR (x, 0);
-        
-        return gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
-      }
-    }
-  
-  avr_edump ("\n%?: %r\n", x);
-  gcc_unreachable();
-}
-
-
 /* Target hook for assembling integer objects.  The AVR version needs
    special handling for references to certain labels.  */
 
@@ -6688,7 +6646,7 @@ static bool
 avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
 {
   if (size == POINTER_SIZE / BITS_PER_UNIT && aligned_p
-      && text_segment_operand (x, VOIDmode) )
+      && text_segment_operand (x, VOIDmode))
     {
       fputs ("\t.word\tgs(", asm_out_file);
       output_addr_const (asm_out_file, x);
@@ -6698,17 +6656,19 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
     }
   else if (GET_MODE (x) == PSImode)
     {
-      default_assemble_integer (avr_const_address_lo16 (x),
-                                GET_MODE_SIZE (HImode), aligned_p);
-      
-      fputs ("\t.warning\t\"assembling 24-bit address needs binutils"
-             " extension for hh8(", asm_out_file);
+      /* This needs binutils 2.23+, see PR binutils/13503  */
+
+      fputs ("\t.byte\tlo8(", asm_out_file);
       output_addr_const (asm_out_file, x);
-      fputs (")\"\n", asm_out_file);
+      fputs (")" ASM_COMMENT_START "need binutils PR13503\n", asm_out_file);
       
-      fputs ("\t.byte\t0\t" ASM_COMMENT_START " hh8(", asm_out_file);
+      fputs ("\t.byte\thi8(", asm_out_file);
       output_addr_const (asm_out_file, x);
-      fputs (")\n", asm_out_file);
+      fputs (")" ASM_COMMENT_START "need binutils PR13503\n", asm_out_file);
+      
+      fputs ("\t.byte\thh8(", asm_out_file);
+      output_addr_const (asm_out_file, x);
+      fputs (")" ASM_COMMENT_START "need binutils PR13503\n", asm_out_file);
       
       return true;
     }

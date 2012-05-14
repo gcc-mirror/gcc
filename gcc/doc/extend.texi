@@ -1273,6 +1273,7 @@ If the high bit of the address is set, data is read from
 RAM using the lower two bytes as RAM address.
 If the high bit of the address is clear, data is read from flash
 with @code{RAMPZ} set according to the high byte of the address.
+@xref{AVR Built-in Functions,,@code{__builtin_avr_flash_segment}}.
 
 Objects in this address space will be located in @code{.progmem.data}.
 @end table
@@ -1302,6 +1303,7 @@ int main (void)
 @}
 @end example
 
+@noindent
 For each named address space supported by avr-gcc there is an equally
 named but uppercase built-in macro defined. 
 The purpose is to facilitate testing if respective address space
@@ -1327,7 +1329,8 @@ int read_var (void)
 #endif /* __FLASH */
 @end example
 
-Notice that attribute @ref{AVR Variable Attributes,@code{progmem}}
+@noindent
+Notice that attribute @ref{AVR Variable Attributes,,@code{progmem}}
 locates data in flash but
 accesses to these data will read from generic address space, i.e.@:
 from RAM,
@@ -1335,6 +1338,7 @@ so that you need special accessors like @code{pgm_read_byte}
 from @w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-LibC}}
 together with attribute @code{progmem}.
 
+@noindent
 @b{Limitations and caveats}
 
 @itemize
@@ -1361,17 +1365,14 @@ must not optimize away known values or insert them
 as immediates into operands of instructions.
 
 @item
-Code like the following is not yet supported because of missing
-support in avr-binutils,
-see @w{@uref{http://sourceware.org/PR13503,PR13503}}.
+The following code initializes a variable @code{pfoo}
+located in static storage with a 24-bit address:
 @example
 extern const __memx char foo;
 const __memx void *pfoo = &foo;
 @end example
-The code will throw an assembler warning and the high byte of
-@code{pfoo} will be initialized with@tie{}@code{0}, i.e.@: the
-initialization will be as if @code{foo} was located in the first
-64@tie{}KiB chunk of flash.
+Such code requires at least binutils 2.23, see
+@w{@uref{http://sourceware.org/PR13503,PR13503}}.
 
 @end itemize
 
