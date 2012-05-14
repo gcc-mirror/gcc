@@ -30,7 +30,9 @@ BEGIN {
 # Return nonzero if FLAGS contains a flag matching REGEX.
 function flag_set_p(regex, flags)
 {
-	return (" " flags " ") ~ (" " regex " ")
+    # Ignore the arguments of flags with arguments.
+    gsub ("\\([^)]+\\)", "", flags);
+    return (" " flags " ") ~ (" " regex " ")
 }
 
 # Return STRING if FLAGS contains a flag matching regexp REGEX,
@@ -286,4 +288,11 @@ function opt_sanitized_name(name)
 function opt_enum(name)
 {
 	return "OPT_" opt_sanitized_name(name)
+}
+
+# Given the language called NAME return a sanitized version of its name.
+function lang_sanitized_name(name)
+{
+    gsub( "[^" alnum "_]", "X", name )
+    return name
 }

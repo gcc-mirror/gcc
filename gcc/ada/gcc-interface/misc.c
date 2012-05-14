@@ -26,6 +26,8 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "opts.h"
+#include "options.h"
 #include "tm.h"
 #include "tree.h"
 #include "diagnostic.h"
@@ -36,8 +38,6 @@
 #include "toplev.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "opts.h"
-#include "options.h"
 #include "plugin.h"
 #include "real.h"
 #include "function.h"	/* For pass_by_reference.  */
@@ -153,6 +153,10 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
       gcc_unreachable ();
     }
 
+  Ada_handle_option_auto (&global_options, &global_options_set, 
+                          scode, arg, value, 
+                          gnat_option_lang_mask (), kind,
+                          loc, handlers, global_dc);
   return true;
 }
 

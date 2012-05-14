@@ -1,3 +1,8 @@
+2012-05-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* options.c (gfc_handle_option): Call lang-specific generated function.
+
 2012-05-13  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 	    Tobias Burnus  <burnus@net-b.de>
 

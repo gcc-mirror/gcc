@@ -288,7 +288,7 @@ C ObjC Var(warn_cxx_compat) Warning
 Warn about C constructs that are not in the common subset of C and C++
 
 Wc++0x-compat
-C++ ObjC++ Var(warn_cxx0x_compat) Warning
+C++ ObjC++ Var(warn_cxx0x_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Deprecated in favor of -Wc++11-compat
 
 Wc++11-compat
@@ -336,7 +336,7 @@ C ObjC Var(warn_declaration_after_statement) Warning
 Warn when a declaration is found after a statement
 
 Wdelete-non-virtual-dtor
-C++ ObjC++ Var(warn_delnonvdtor) Warning
+C++ ObjC++ Var(warn_delnonvdtor) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about deleting polymorphic objects with non-virtual destructors
 
 Wdeprecated
@@ -446,7 +446,7 @@ C ObjC C++ ObjC++ Warning
 Warn about PCH files that are found but not used
 
 Wjump-misses-init
-C ObjC Var(warn_jump_misses_init) Init(-1) Warning
+C ObjC Var(warn_jump_misses_init) Warning LangEnabledby(C ObjC,Wc++-compat)
 Warn when a jump misses a variable initialization
 
 Wliteral-suffix
@@ -598,7 +598,7 @@ C ObjC C++ ObjC++ Var(warn_redundant_decls) Warning
 Warn about multiple declarations of the same object
 
 Wreorder
-C++ ObjC++ Var(warn_reorder) Warning
+C++ ObjC++ Var(warn_reorder) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn when the compiler reorders code
 
 Wreturn-type
