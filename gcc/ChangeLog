@@ -1,5 +1,9 @@
 2012-05-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (dwarf2out_define, dwarf2out_undef): Treat
+	lineno 1 the same as lineno 0 before first start file directive.
+	(optimize_macinfo_range): Likewise.
+
 	* dwarf2out.c (have_macinfo): Define.
 	(dwarf2out_finish): Don't emit DW_AT_GNU_macros or DW_AT_macro_info
 	attribute, don't force empty compilation unit and don't emit any
