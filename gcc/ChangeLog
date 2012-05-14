@@ -1,5 +1,17 @@
 2012-05-14  Richard Guenther  <rguenther@suse.de>
 
+	* tree-dfa.c (make_rename_temp): Be forgiving if not in SSA form.
+	* omp-low.c (expand_omp_taskreg): Properly conditionalize call
+	to update_ssa.
+	(expand_omp_for): Likewise.
+	(expand_omp_for_generic): Adjust conditional add to referenced vars.
+	Use make_rename_temp for temporaries that should be rewritten into
+	SSA form.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_atomic_pipeline): Likewise.
+
+2012-05-14  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53331
 	* tree-vect-data-refs.c (vect_verify_datarefs_alignment): Ignore
 	strided loads.
