@@ -3134,6 +3134,12 @@ static GTY (()) VEC (pubname_entry, gc) * pubtype_table;
    defines/undefines (and file start/end markers).  */
 static GTY (()) VEC (macinfo_entry, gc) * macinfo_table;
 
+/* True if .debug_macinfo or .debug_macros section is going to be
+   emitted.  */
+#define have_macinfo \
+  (debug_info_level >= DINFO_LEVEL_VERBOSE \
+   && !VEC_empty (macinfo_entry, macinfo_table))
+
 /* Array of dies for which we should generate .debug_ranges info.  */
 static GTY ((length ("ranges_table_allocated"))) dw_ranges_ref ranges_table;
 
@@ -22691,7 +22697,7 @@ dwarf2out_finish (const char *filename)
     add_AT_lineptr (comp_unit_die (), DW_AT_stmt_list,
 		    debug_line_section_label);
 
-  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+  if (have_macinfo)
     add_AT_macptr (comp_unit_die (),
 		   dwarf_strict ? DW_AT_macro_info : DW_AT_GNU_macros,
 		   macinfo_section_label);
@@ -22726,8 +22732,8 @@ dwarf2out_finish (const char *filename)
   htab_delete (comdat_type_table);
 
   /* Output the main compilation unit if non-empty or if .debug_macinfo
-     will be emitted.  */
-  output_comp_unit (comp_unit_die (), debug_info_level >= DINFO_LEVEL_VERBOSE);
+     or .debug_macro will be emitted.  */
+  output_comp_unit (comp_unit_die (), have_macinfo);
 
   /* Output the abbreviation table.  */
   if (abbrev_die_table_in_use != 1)
@@ -22807,12 +22813,11 @@ dwarf2out_finish (const char *filename)
     }
 
   /* Have to end the macro section.  */
-  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+  if (have_macinfo)
     {
       switch_to_section (debug_macinfo_section);
       ASM_OUTPUT_LABEL (asm_out_file, macinfo_section_label);
-      if (!VEC_empty (macinfo_entry, macinfo_table))
-	output_macinfo ();
+      output_macinfo ();
       dw2_asm_output_data (1, 0, "End compilation unit");
     }
 
