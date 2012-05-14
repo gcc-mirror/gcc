@@ -2870,7 +2870,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 	{
 	  if (GET_CODE (XEXP (link, 0)) == CLOBBER)
 	    sched_analyze_1 (deps, XEXP (link, 0), insn);
-	  else
+	  else if (GET_CODE (XEXP (link, 0)) != SET)
 	    sched_analyze_2 (deps, XEXP (link, 0), insn);
 	}
       /* Don't schedule anything after a tail call, tail call needs

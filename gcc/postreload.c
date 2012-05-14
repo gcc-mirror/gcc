@@ -1358,8 +1358,10 @@ reload_combine (void)
 	  for (link = CALL_INSN_FUNCTION_USAGE (insn); link;
 	       link = XEXP (link, 1))
 	    {
-	      rtx usage_rtx = XEXP (XEXP (link, 0), 0);
-	      if (REG_P (usage_rtx))
+	      rtx setuse = XEXP (link, 0);
+	      rtx usage_rtx = XEXP (setuse, 0);
+	      if ((GET_CODE (setuse) == USE || GET_CODE (setuse) == CLOBBER)
+		  && REG_P (usage_rtx))
 	        {
 		  unsigned int i;
 		  unsigned int start_reg = REGNO (usage_rtx);

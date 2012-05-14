@@ -1,3 +1,50 @@
+2012-05-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* attribs.c (decl_attributes): Avoid emitting a warning if
+	ATTR_FLAG_BUILT_IN.
+	* doc/rtl.texi (CALL_INSN_FUNCTION_USAGE): Use lowercase for rtx
+	codes.  Document meaning of sets inside CALL_INSN_FUNCTION_USAGE.
+	* c-family/c-common.c (DEF_ATTR_STRING): Define and undefine as
+	necessary.
+	* builtin-attrs.def (DEF_ATTR_FOR_STRING): Define.  Use it to
+	define a string "1".
+	(ATTR_RET1_NOTHROW_NONNULL_LEAF): New attr definition.
+	* builtins.def (BUILT_IN_MEMCPY, BUILT_IN_MEMMOVE, BUILT_IN_MEMSET,
+	BUILT_IN_STRCPY): Use it for these functions.
+	* postreload.c (reload_combine): Deal with SETs inside
+	CALL_INSN_FUNCTION_USAGE.
+	* caller-save.c (setup_save_areas, save_call_clobbered_regs):
+	Look for REG_RETURNED notes and use a cheap restore if possible.
+	* ira-int.h (struct ira_allocno): New member cheap_calls_crossed_num.
+	(ALLOCNO_CHEAP_CALLS_CROSSED_NUM): New macro.
+	* ira-build.c (ira_create_allocno, create_cap_allocno,
+	propagate_allocno_info, propagate_some_info_from_allocno,
+	copy_info_to_removed_store_destination, ira_flattening): Handle it.
+	* ira-lives.c (pseudo_regno_single_word_and_live_p,
+	find_call_crossed_cheap_reg): New static functions.
+	(process_bb_node_lives): Look for SETs in CALL_INSN_FUNCTION_USAGE,
+	and set ALLOCNO_CHEAP_CALLS_CROSSED_NUM if possible.  Also make
+	a REG_RETURNED note in that case.
+	* ira.c (setup_reg_renumber): Change assert to allow cases where
+	allocnos only cross calls for which they are cheap to restore.
+	* ira-costs.c (ira_tune_allocno_costs): Compare
+	ALLOCNO_CALLS_CROSSED_NUM to ALLOCNO_CHEAP_CALLS_CROSSED_NUM rather
+	than 0.
+	* reg-notes.def (REG_RETURNED): New note.
+	* cse.c (cse_insn): Likewise.
+	* sched-deps.c (sched_analyze_insn): Likewise.
+	* expr.c (init_block_move_fn): Set a "fn spec" attribute.
+	* calls.c (decl_return_flags): New static function.
+	(expand_call): Generate a SET in CALL_INSN_FUNCTION_USAGE for
+	functions that return one of their arguments.
+	* lto/lto-lang.c (handle_fnspec_attribute): New static function.
+	(lto_attribute_table): Add "fn spec".
+	(DEF_ATTR_STRING): Define and undefine along with the other macros.
+	* regcprop.c (struct kill_set_value_data): New.
+	(kill_set_value): Interpret data as a pointer to such a struct.
+	Do nothing if the caller wants the register to be ignored.
+	(copyprop_hardreg_forward_1): Handle SETs in CALL_INSN_FUNCTION_USAGE.
+
 2012-05-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53340

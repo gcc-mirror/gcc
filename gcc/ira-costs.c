@@ -2107,7 +2107,8 @@ ira_tune_allocno_costs (void)
       mode = ALLOCNO_MODE (a);
       n = ira_class_hard_regs_num[aclass];
       min_cost = INT_MAX;
-      if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
+      if (ALLOCNO_CALLS_CROSSED_NUM (a)
+	  != ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a))
 	{
 	  ira_allocate_and_set_costs
 	    (&ALLOCNO_HARD_REG_COSTS (a), aclass,

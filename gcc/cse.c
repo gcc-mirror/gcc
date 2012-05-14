@@ -4312,7 +4312,8 @@ canonicalize_insn (rtx insn, struct set **psets, int n_sets)
   if (CALL_P (insn))
     {
       for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
-	XEXP (tem, 0) = canon_reg (XEXP (tem, 0), insn);
+	if (GET_CODE (XEXP (tem, 0)) != SET)
+	  XEXP (tem, 0) = canon_reg (XEXP (tem, 0), insn);
     }
 
   if (GET_CODE (x) == SET && GET_CODE (SET_SRC (x)) == CALL)
