@@ -33,6 +33,9 @@
 /* Whether we're emitting for gcc */
 static int gcc;
 
+/* Package path to use; only meaningful for gcc */
+static const char *pkgpath;
+
 /* Package prefix to use; only meaningful for gcc */
 static const char *prefix;
 
@@ -579,9 +582,13 @@ write_gcc_func_header(char *package, char *name, struct params *params,
 	first = 1;
 	write_params(params, &first);
 	printf(") asm (\"");
-	if (prefix != NULL)
-	  printf("%s.", prefix);
-	printf("%s.%s\");\n", package, name);
+	if (pkgpath != NULL)
+	  printf("%s", pkgpath);
+	else if (prefix != NULL)
+	  printf("%s.%s", prefix, package);
+	else
+	  printf("%s", package);
+	printf(".%s\");\n", name);
 	write_gcc_return_type(package, name, rets);
 	printf(" %s_%s(", package, name);
 	first = 1;
@@ -724,7 +731,7 @@ process_file(void)
 static void
 usage(void)
 {
-	sysfatal("Usage: goc2c [--6g | --gc] [--go-prefix PREFIX] [file]\n");
+	sysfatal("Usage: goc2c [--6g | --gc] [--go-pkgpath PKGPATH] [--go-prefix PREFIX] [file]\n");
 }
 
 void
@@ -740,7 +747,11 @@ main(int argc, char **argv)
 			gcc = 0;
 		else if(strcmp(argv[1], "--gcc") == 0)
 			gcc = 1;
-		else if (strcmp(argv[1], "--go-prefix") == 0 && argc > 2) {
+		else if (strcmp(argv[1], "--go-pkgpath") == 0 && argc > 2) {
+			pkgpath = argv[2];
+			argc--;
+			argv++;
+		} else if (strcmp(argv[1], "--go-prefix") == 0 && argc > 2) {
 			prefix = argv[2];
 			argc--;
 			argv++;

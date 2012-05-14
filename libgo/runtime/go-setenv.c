@@ -15,7 +15,7 @@
 /* Set the C environment from Go.  This is called by syscall.Setenv.  */
 
 void setenv_c (struct __go_string, struct __go_string)
-  __asm__ ("libgo_syscall.syscall.setenv_c");
+  __asm__ ("syscall.setenv_c");
 
 void
 setenv_c (struct __go_string k, struct __go_string v)

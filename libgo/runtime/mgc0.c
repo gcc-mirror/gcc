@@ -1078,7 +1078,7 @@ runtime_gc(int32 force)
 }
 
 void runtime_ReadMemStats(MStats *)
-  __asm__("libgo_runtime.runtime.ReadMemStats");
+  __asm__("runtime.ReadMemStats");
 
 void
 runtime_ReadMemStats(MStats *stats)

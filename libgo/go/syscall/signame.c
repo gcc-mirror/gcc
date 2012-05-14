@@ -11,7 +11,7 @@
 #include "arch.h"
 #include "malloc.h"
 
-String Signame (int sig) asm ("libgo_syscall.syscall.Signame");
+String Signame (int sig) asm ("syscall.Signame");
 
 String
 Signame (int sig)
