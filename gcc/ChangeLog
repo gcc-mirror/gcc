@@ -1,3 +1,13 @@
+2012-05-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/53344
+	* config/avr/avr.c (avr_const_address_lo16): Remove.
+	(avr_assemble_integer):  Print ".byte lo8(x)",
+	".byte hi8(x)", ".byte hh8(x)" instead of emit an assembler
+	.warning if 3-byte address is assembled. 
+	* doc/extend.texi (AVR Named Address Spaces): Document that
+	binutils 2.23 is needed to assemble 3-byte addresses.
+
 2012-05-14  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_setup_realignment): Remove
