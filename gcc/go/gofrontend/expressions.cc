@@ -4044,7 +4044,7 @@ Unary_expression::do_get_tree(Translate_context* context)
 
       if (this->create_temp_
 	  && !TREE_ADDRESSABLE(TREE_TYPE(expr))
-	  && !DECL_P(expr)
+	  && (TREE_CODE(expr) == CONST_DECL || !DECL_P(expr))
 	  && TREE_CODE(expr) != INDIRECT_REF
 	  && TREE_CODE(expr) != COMPONENT_REF)
 	{
@@ -6194,7 +6194,9 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 	  make_tmp = NULL_TREE;
 	  arg = right_tree;
 	}
-      else if (TREE_ADDRESSABLE(TREE_TYPE(right_tree)) || DECL_P(right_tree))
+      else if (TREE_ADDRESSABLE(TREE_TYPE(right_tree))
+	       || (TREE_CODE(right_tree) != CONST_DECL
+		   && DECL_P(right_tree)))
 	{
 	  make_tmp = NULL_TREE;
 	  arg = build_fold_addr_expr_loc(location.gcc_location(), right_tree);
