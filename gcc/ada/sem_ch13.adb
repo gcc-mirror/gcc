@@ -944,16 +944,14 @@ package body Sem_Ch13 is
                      --  Set the Uses_Lock_Free flag to True if there is no
                      --  expression or if the expression is True.
 
-                     if No (Expr)
-                       or else Is_True (Static_Boolean (Expr))
-                     then
+                     if No (Expr) or else Is_True (Static_Boolean (Expr)) then
                         Set_Uses_Lock_Free (E);
                      end if;
 
                      goto Continue;
                   end if;
 
-                  --  For all of these aspects we just create a matching pragma
+                  --  For all other aspects we just create a matching pragma
                   --  and insert it, if the expression is missing or set to
                   --  True. If the expression is False, we can ignore the
                   --  aspect with the exception that in the case of a derived

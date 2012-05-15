@@ -70,9 +70,8 @@ package body Sem_Ch9 is
    function Allows_Lock_Free_Implementation
      (N        : Node_Id;
       Complain : Boolean := False) return Boolean;
-   --  This dispatch routine return True if N satisfies the following list of
-   --  lock-free restrictions for protected type declaration and protected
-   --  body:
+   --  This routine returns True iff N satisfies the following list of lock-
+   --  free restrictions for protected type declaration and protected body:
    --
    --    1) Protected type declaration
    --         May not contain entries
@@ -87,8 +86,7 @@ package body Sem_Ch9 is
    --            May not contain loop statements or procedure calls
    --            Function calls and attribute references must be static
    --
-   --  If Complain is set to True, an error message is issued when return
-   --  False.
+   --  If Complain is True, an error message is issued when False is returned
 
    procedure Check_Max_Entries (D : Node_Id; R : All_Parameter_Restrictions);
    --  Given either a protected definition or a task definition in D, check
@@ -134,9 +132,7 @@ package body Sem_Ch9 is
       --  flag. When Complain is True, an aspect Lock_Free forces the lock-free
       --  implementation. In that case, the debug flag is not needed.
 
-      if not Complain
-        and then not Debug_Flag_9
-      then
+      if not Complain and then not Debug_Flag_9 then
          return False;
       end if;
 
@@ -235,7 +231,7 @@ package body Sem_Ch9 is
       --  Protected body case
 
       else
-         declare
+         Protected_Body_Case : declare
             Decls         : constant List_Id   := Declarations (N);
             Pid           : constant Entity_Id := Corresponding_Spec (N);
             Prot_Typ_Decl : constant Node_Id   := Parent (Pid);
@@ -392,6 +388,8 @@ package body Sem_Ch9 is
                end if;
             end Satisfies_Lock_Free_Requirements;
 
+         --  Start of processing for Protected_Body_Case
+
          begin
             Decl := First (Decls);
 
@@ -409,7 +407,7 @@ package body Sem_Ch9 is
 
                Next (Decl);
             end loop;
-         end;
+         end Protected_Body_Case;
       end if;
 
       return True;
@@ -1709,8 +1707,8 @@ package body Sem_Ch9 is
       End_Scope;
 
       --  When a Lock_Free aspect forces the lock-free implementation, check N
-      --  meets all the lock-free restrictions. Otherwise,
-      --  Allows_Lock_Free_Implementation issue an error message.
+      --  meets all the lock-free restrictions. Otherwise, an error message is
+      --  issued by Allows_Lock_Free_Implementation.
 
       if Uses_Lock_Free (Defining_Identifier (N)) then
          if not Allows_Lock_Free_Implementation (N, Complain => True) then
