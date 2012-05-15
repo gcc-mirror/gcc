@@ -1,3 +1,20 @@
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Has_Inferable_Discriminants): For a qualified
+	expression, use correct node for test on the subtype denoted by
+	the subtype mark.
+
+2012-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Scope_In_Main_Unit): Rename into...
+	(In_Main_Unit_Or_Subunit): ...this.  Also return
+	true if the subprogram is within a subunit of the
+	main unit.
+	(Add_Inlined_Body): Adjust for above renaming.
+	(Add_Inlined_Subprogram): Likewise.  Pass the subprogram directly.
+	(Analyze_Inlined_Bodies): Really set aside inlined subprograms
+	not handled by Add_Inlined_Body.
+
 2012-05-15  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch10.adb (Expand_With_Clause): In the context of a generic
