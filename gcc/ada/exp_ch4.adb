@@ -10117,6 +10117,7 @@ package body Exp_Ch4 is
    -------------------------------
 
    procedure Insert_Dereference_Action (N : Node_Id) is
+
       function Is_Checked_Storage_Pool (P : Entity_Id) return Boolean;
       --  Return true if type of P is derived from Checked_Pool;
 
@@ -10183,6 +10184,7 @@ package body Exp_Ch4 is
       end if;
 
       --  Extract the address of the dereferenced object. Generate:
+
       --    Addr : System.Address := <N>'Pool_Address;
 
       Addr := Make_Temporary (Loc, 'P');
@@ -10198,6 +10200,7 @@ package body Exp_Ch4 is
               Attribute_Name => Name_Pool_Address)));
 
       --  Calculate the size of the dereferenced object. Generate:
+
       --    Size : Storage_Count := <N>.all'Size / Storage_Unit;
 
       Deref :=
@@ -10210,8 +10213,10 @@ package body Exp_Ch4 is
       Insert_Action (N,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Size,
+
           Object_Definition   =>
             New_Reference_To (RTE (RE_Storage_Count), Loc),
+
           Expression          =>
             Make_Op_Divide (Loc,
               Left_Opnd   =>

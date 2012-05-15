@@ -1,3 +1,30 @@
+2012-05-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb, sem_util.adb, s-stposu.adb, exp_ch4.adb: Minor
+	reformatting.
+
+2012-05-15  Geert Bosch  <bosch@adacore.com>
+
+	* uintp.adb (UI_Rem): Remove optimizations, as they are complex and are
+	not needed.
+	(Sum_Digits): Remove, no longer used.
+	(Sum_Double_Digits): Likewise.
+
+2012-05-15  Yannick Moy  <moy@adacore.com>
+
+	* aspects.ads: Minor typo.
+
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi (Scalar_Storage_Order): Fix RM reference.
+	* sem_ch13.adb: Minor comment fix: incorrect RM reference.
+
+2012-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Process_Atomic_Shared_Volatile): Propagate
+	atomicity from an object to its underlying type only if it
+	is composite.
+
 2012-05-15  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Iterator_Specification): Set kind of
