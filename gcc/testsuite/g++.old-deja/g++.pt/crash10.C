@@ -3,7 +3,7 @@
 template<int M, int N>
 class GCD {
 public:
-  enum { val = (N == 0) ? M : GCD<N, M % N>::val }; // { dg-warning "division" "division" }
+  enum { val = (N == 0) ? M : GCD<N, M % N>::val };
 // { dg-error "constant expression" "valid" { target *-*-* } 6 }
 // { dg-message "template argument" "valid" { target *-*-* } 6 }
 };
