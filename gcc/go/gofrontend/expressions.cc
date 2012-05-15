@@ -4048,15 +4048,46 @@ Unary_expression::do_get_tree(Translate_context* context)
 	  && TREE_CODE(expr) != INDIRECT_REF
 	  && TREE_CODE(expr) != COMPONENT_REF)
 	{
-	  tree tmp = create_tmp_var(TREE_TYPE(expr), get_name(expr));
-	  DECL_IGNORED_P(tmp) = 1;
-	  DECL_INITIAL(tmp) = expr;
-	  TREE_ADDRESSABLE(tmp) = 1;
-	  return build2_loc(loc.gcc_location(), COMPOUND_EXPR,
-			    build_pointer_type(TREE_TYPE(expr)),
-			    build1_loc(loc.gcc_location(), DECL_EXPR,
-                                       void_type_node, tmp),
-			    build_fold_addr_expr_loc(loc.gcc_location(), tmp));
+	  if (current_function_decl != NULL)
+	    {
+	      tree tmp = create_tmp_var(TREE_TYPE(expr), get_name(expr));
+	      DECL_IGNORED_P(tmp) = 1;
+	      DECL_INITIAL(tmp) = expr;
+	      TREE_ADDRESSABLE(tmp) = 1;
+	      return build2_loc(loc.gcc_location(), COMPOUND_EXPR,
+				build_pointer_type(TREE_TYPE(expr)),
+				build1_loc(loc.gcc_location(), DECL_EXPR,
+					   void_type_node, tmp),
+				build_fold_addr_expr_loc(loc.gcc_location(),
+							 tmp));
+	    }
+	  else
+	    {
+	      tree tmp = build_decl(loc.gcc_location(), VAR_DECL,
+				    create_tmp_var_name("A"), TREE_TYPE(expr));
+	      DECL_EXTERNAL(tmp) = 0;
+	      TREE_PUBLIC(tmp) = 0;
+	      TREE_STATIC(tmp) = 1;
+	      DECL_ARTIFICIAL(tmp) = 1;
+	      TREE_ADDRESSABLE(tmp) = 1;
+	      tree make_tmp;
+	      if (!TREE_CONSTANT(expr))
+		make_tmp = fold_build2_loc(loc.gcc_location(), INIT_EXPR,
+					   void_type_node, tmp, expr);
+	      else
+		{
+		  TREE_READONLY(tmp) = 1;
+		  TREE_CONSTANT(tmp) = 1;
+		  DECL_INITIAL(tmp) = expr;
+		  make_tmp = NULL_TREE;
+		}
+	      rest_of_decl_compilation(tmp, 1, 0);
+	      tree addr = build_fold_addr_expr_loc(loc.gcc_location(), tmp);
+	      if (make_tmp == NULL_TREE)
+		return addr;
+	      return build2_loc(loc.gcc_location(), COMPOUND_EXPR,
+				TREE_TYPE(addr), make_tmp, addr);
+	    }
 	}
 
       return build_fold_addr_expr_loc(loc.gcc_location(), expr);
