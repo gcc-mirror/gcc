@@ -2267,7 +2267,20 @@ package body Sem_Ch5 is
          --  free.
 
          else
-            Analyze (DS);
+            --  A quantified expression that appears in a pre/post condition
+            --  is pre-analyzed several times.  If the range is given by an
+            --  attribute reference it is rewritten as a range, and this is
+            --  done even with expansion disabled. If the type is already set
+            --  do not reanalyze, because a range with static bounds may be
+            --  typed Integer by default.
+
+            if Nkind (Parent (N)) = N_Quantified_Expression
+              and then Present (Etype (DS))
+            then
+               null;
+            else
+               Analyze (DS);
+            end if;
          end if;
       end if;
 

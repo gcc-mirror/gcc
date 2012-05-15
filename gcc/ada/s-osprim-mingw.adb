@@ -236,9 +236,11 @@ package body System.OS_Primitives is
    function Monotonic_Clock return Duration is
       Current_Ticks  : aliased LARGE_INTEGER;
       Elap_Secs_Tick : Duration;
+
    begin
       if QueryPerformanceCounter (Current_Ticks'Access) = Win32.FALSE then
          return 0.0;
+
       else
          Elap_Secs_Tick :=
            Duration (Long_Long_Float (Current_Ticks - BMTA.all) /
