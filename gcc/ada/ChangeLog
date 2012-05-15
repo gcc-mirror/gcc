@@ -1,3 +1,15 @@
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
+	* s-soflin.ads, s-soflin.adb (Save_Library_Occurrence): Parameter
+	E is now of type Exception_Occurrence_Access.
+	* exp_ch7.ads, exp_ch7.adb (Build_Exception_Handler): Adjust generated
+	call to Save_Library_Occurrence.
+
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Rewrite_Coextension): Use Insert_Action to
+	insert temporary variable decl at the proper place in the tree.
+
 2012-05-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* g-calend.adb (Split_At_Locale): New routine.
