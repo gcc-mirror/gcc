@@ -14779,7 +14779,7 @@ statements unless @option{^-ne^NO_EXITS_AS_GOTOS^} option is specified.
 The Ada essential complexity metric defined here is intended to quantify
 the extent to which the software is unstructured. It is adapted from
 the McCabe essential complexity metric defined in
-http://www.mccabe.com/pdf/nist235r.pdf but is modified to be more
+@url{http://www.mccabe.com/pdf/mccabe-nist235r.pdf} but is modified to be more
 suitable for typical Ada usage. For example, short circuit forms
 are not penalized as unstructured in the Ada essential complexity metric.
 
