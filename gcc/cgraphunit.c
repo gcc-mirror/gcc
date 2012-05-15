@@ -1264,25 +1264,21 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 	}
 
       vtabletmp =
-	create_tmp_var (build_pointer_type
-			(build_pointer_type (vtable_entry_type)), "vptr");
+	make_rename_temp (build_pointer_type
+			  (build_pointer_type (vtable_entry_type)), "vptr");
 
       /* The vptr is always at offset zero in the object.  */
       stmt = gimple_build_assign (vtabletmp,
 				  build1 (NOP_EXPR, TREE_TYPE (vtabletmp),
 					  ptr));
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
-      mark_symbols_for_renaming (stmt);
-      find_referenced_vars_in (stmt);
 
       /* Form the vtable address.  */
-      vtabletmp2 = create_tmp_var (TREE_TYPE (TREE_TYPE (vtabletmp)),
-				   "vtableaddr");
+      vtabletmp2 = make_rename_temp (TREE_TYPE (TREE_TYPE (vtabletmp)),
+				     "vtableaddr");
       stmt = gimple_build_assign (vtabletmp2,
 				  build_simple_mem_ref (vtabletmp));
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
-      mark_symbols_for_renaming (stmt);
-      find_referenced_vars_in (stmt);
 
       /* Find the entry with the vcall offset.  */
       stmt = gimple_build_assign (vtabletmp2,
@@ -1292,13 +1288,11 @@ thunk_adjust (gimple_stmt_iterator * bsi,
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
 
       /* Get the offset itself.  */
-      vtabletmp3 = create_tmp_var (TREE_TYPE (TREE_TYPE (vtabletmp2)),
-				   "vcalloffset");
+      vtabletmp3 = make_rename_temp (TREE_TYPE (TREE_TYPE (vtabletmp2)),
+				     "vcalloffset");
       stmt = gimple_build_assign (vtabletmp3,
 				  build_simple_mem_ref (vtabletmp2));
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
-      mark_symbols_for_renaming (stmt);
-      find_referenced_vars_in (stmt);
 
       /* Adjust the `this' pointer.  */
       ptr = fold_build_pointer_plus_loc (input_location, ptr, vtabletmp3);
@@ -1316,21 +1310,17 @@ thunk_adjust (gimple_stmt_iterator * bsi,
         ptrtmp = ptr;
       else
         {
-          ptrtmp = create_tmp_var (TREE_TYPE (ptr), "ptr");
+          ptrtmp = make_rename_temp (TREE_TYPE (ptr), "ptr");
           stmt = gimple_build_assign (ptrtmp, ptr);
 	  gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
-	  mark_symbols_for_renaming (stmt);
-	  find_referenced_vars_in (stmt);
 	}
       ptr = fold_build_pointer_plus_hwi_loc (input_location,
 					     ptrtmp, fixed_offset);
     }
 
   /* Emit the statement and gimplify the adjustment expression.  */
-  ret = create_tmp_var (TREE_TYPE (ptr), "adjusted_this");
+  ret = make_rename_temp (TREE_TYPE (ptr), "adjusted_this");
   stmt = gimple_build_assign (ret, ptr);
-  mark_symbols_for_renaming (stmt);
-  find_referenced_vars_in (stmt);
   gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
 
   return ret;
@@ -1434,7 +1424,7 @@ assemble_thunk (struct cgraph_node *node)
 	      BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
 	    }
 	  else
-            restmp = create_tmp_var_raw (restype, "retval");
+            restmp = make_rename_temp (restype, "retval");
 	}
 
       for (arg = a; arg; arg = DECL_CHAIN (arg))
@@ -1447,17 +1437,22 @@ assemble_thunk (struct cgraph_node *node)
 				      virtual_offset));
       else
         VEC_quick_push (tree, vargs, a);
+      add_referenced_var (a);
+      if (is_gimple_reg (a))
+	mark_sym_for_renaming (a);
       for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
-        VEC_quick_push (tree, vargs, arg);
+	{
+	  add_referenced_var (arg);
+	  if (is_gimple_reg (arg))
+	    mark_sym_for_renaming (arg);
+	  VEC_quick_push (tree, vargs, arg);
+	}
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       VEC_free (tree, heap, vargs);
       gimple_call_set_from_thunk (call, true);
       if (restmp)
         gimple_call_set_lhs (call, restmp);
       gsi_insert_after (&bsi, call, GSI_NEW_STMT);
-      mark_symbols_for_renaming (call);
-      find_referenced_vars_in (call);
-      update_stmt (call);
 
       if (restmp && !this_adjusting)
         {
