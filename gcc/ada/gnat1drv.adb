@@ -267,6 +267,12 @@ procedure Gnat1drv is
 
          Force_ALI_Tree_File := True;
          Try_Semantics := True;
+
+         --  Enable Exception_Extra_Info for now, to avoid extra messages
+         --  on controlled operations.
+         --  ??? To be revised.
+
+         Exception_Extra_Info := True;
       end if;
 
       --  Set Configurable_Run_Time mode if system.ads flag set
