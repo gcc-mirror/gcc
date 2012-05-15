@@ -1,3 +1,8 @@
+2012-05-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53355
+	* gcc.dg/tree-ssa/vrp67.c: New testcase.
+
 2012-05-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* gfortran.dg/*.f90: Remove now redundant manual

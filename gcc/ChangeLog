@@ -1,3 +1,9 @@
+2012-05-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53355
+	* tree-vrp.c (extract_range_from_binary_expr_1): Handle LSHIFT_EXPRs
+	by constants.
+
 2012-05-15  Tristan Gingold  <gingold@adacore.com>
 
       * tree-ssa-strlen.c (get_string_length): Convert lhs if needed.

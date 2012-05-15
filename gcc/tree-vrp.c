@@ -2403,6 +2403,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       && code != ROUND_DIV_EXPR
       && code != TRUNC_MOD_EXPR
       && code != RSHIFT_EXPR
+      && code != LSHIFT_EXPR
       && code != MIN_EXPR
       && code != MAX_EXPR
       && code != BIT_AND_EXPR
@@ -2594,6 +2595,40 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	}
 
       extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
+      return;
+    }
+  else if (code == LSHIFT_EXPR)
+    {
+      /* If we have a LSHIFT_EXPR with any shift values outside [0..prec-1],
+	 then drop to VR_VARYING.  Outside of this range we get undefined
+	 behavior from the shift operation.  We cannot even trust
+	 SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
+	 shifts, and the operation at the tree level may be widened.  */
+      if (vr1.type != VR_RANGE
+	  || !value_range_nonnegative_p (&vr1)
+	  || TREE_CODE (vr1.max) != INTEGER_CST
+	  || compare_tree_int (vr1.max, TYPE_PRECISION (expr_type) - 1) == 1)
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
+      /* We can map shifts by constants to MULT_EXPR handling.  */
+      if (range_int_cst_singleton_p (&vr1))
+	{
+	  value_range_t vr1p = { VR_RANGE, NULL_TREE, NULL_TREE, NULL };
+	  vr1p.min
+	    = double_int_to_tree (expr_type,
+				  double_int_lshift (double_int_one,
+						     TREE_INT_CST_LOW (vr1.min),
+						     TYPE_PRECISION (expr_type),
+						     false));
+	  vr1p.max = vr1p.min;
+	  extract_range_from_multiplicative_op_1 (vr, MULT_EXPR, &vr0, &vr1p);
+	  return;
+	}
+
+      set_value_range_to_varying (vr);
       return;
     }
   else if (code == TRUNC_DIV_EXPR
