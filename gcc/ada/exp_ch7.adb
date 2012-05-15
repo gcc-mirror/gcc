@@ -4602,6 +4602,7 @@ package body Exp_Ch7 is
    begin
       return
         Is_Protected_Type (T)
+          and then not Uses_Lock_Free (T)
           and then not Has_Entries (T)
           and then Is_RTE (Find_Protection_Type (T), RE_Protection);
    end Is_Simple_Protected_Type;

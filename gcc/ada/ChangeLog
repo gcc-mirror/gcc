@@ -1,3 +1,44 @@
+2012-05-15  Robert Dewar  <dewar@adacore.com>
+
+	* g-comlin.adb, g-comlin.ads: Minor reformatting.
+
+2012-05-15  Vincent Pucci  <pucci@adacore.com>
+
+	* aspects.adb, aspects.adb: Reordering of the Aspect_Idi list. New
+	aspect Aspect_Lock_Free.
+	* einfo.adb, einfo.ads: New flag Uses_Lock_Free (flag 188).
+	(Set_Uses_Lock_Free): New routine.
+	(Uses_Lock_Free): New routine.
+	* exp_ch7.adb (Is_Simple_Protected_Type): Return False for
+	lock-free implementation.
+	* exp_ch9.adb (Allows_Lock_Free_Implementation): Moved to Sem_Ch9.
+	(Build_Lock_Free_Unprotected_Subprogram_Body): Protected
+	procedure uses __sync_synchronise. Check both Object_Size
+	and Value_Size.
+	(Expand_N_Protected_Body): Lock_Free_Active
+	renames Lock_Free_On.
+	(Expand_N_Protected_Type_Declaration):
+	_Object field removed for lock-free implementation.
+	(Install_Private_Data_Declarations): Protection object removed
+	for lock-free implementation.
+	(Make_Initialize_Protection):
+	Protection object initialization removed for lock-free implementation.
+	* rtsfind.ads: RE_Atomic_Synchronize and RE_Relaxed added.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Aspect_Lock_Free
+	analysis added.
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): New routine.
+	(Analyze_Protected_Body): Allows_Lock_Free_Implementation call added.
+	(Analyze_Protected_Type_Declaration):
+	Allows_Lock_Free_Implementation call added.
+	(Analyze_Single_Protected_Declaration): Second analysis of
+	aspects removed.
+	* s-atopri.ads: Header added.
+	(Atomic_Synchronize): New routine.
+
+2012-05-15  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.ads: Add comment.
+
 2012-05-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* a-calend.adb (Day_Of_Week): The routine once again treats

@@ -1343,7 +1343,7 @@ package body GNAT.Command_Line is
    begin
       if Switch /= "" or else Long_Switch /= "" then
          Initialize_Switch_Def
-            (Def, Switch, Long_Switch, Help, Section, Argument);
+           (Def, Switch, Long_Switch, Help, Section, Argument);
          Add (Config, Def);
       end if;
    end Define_Switch;
@@ -1390,7 +1390,7 @@ package body GNAT.Command_Line is
    begin
       if Switch /= "" or else Long_Switch /= "" then
          Initialize_Switch_Def
-            (Def, Switch, Long_Switch, Help, Section, Argument);
+           (Def, Switch, Long_Switch, Help, Section, Argument);
          Def.Integer_Output  := Output.all'Unchecked_Access;
          Def.Integer_Default := Default;
          Def.Integer_Initial := Initial;
@@ -1415,7 +1415,7 @@ package body GNAT.Command_Line is
    begin
       if Switch /= "" or else Long_Switch /= "" then
          Initialize_Switch_Def
-            (Def, Switch, Long_Switch, Help, Section, Argument);
+           (Def, Switch, Long_Switch, Help, Section, Argument);
          Def.String_Output  := Output.all'Unchecked_Access;
          Add (Config, Def);
       end if;
@@ -3233,7 +3233,9 @@ package body GNAT.Command_Line is
                   end if;
                end if;
 
-            else  --  Long_Switch necessarily not null
+            --  Def.Switch is null (Long_Switch must be non-null)
+
+            else
                Decompose_Switch (Def.Long_Switch.all, P2, Last2);
                Append (Result,
                        Def.Long_Switch (Def.Long_Switch'First .. Last2));
