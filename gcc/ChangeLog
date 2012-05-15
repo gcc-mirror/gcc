@@ -1,3 +1,9 @@
+2012-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/53358
+	* config/i386/i386.md (*addqi_2 peephole with QImode addition): Check
+	that operands[2] is either immediate, or q_regs_operand.
+
 2012-05-15  Richard Guenther  <rguenther@suse.de>
 
 	* cgraphunit.c (thunk_adjust): Use make_rename_temp.

@@ -1,3 +1,8 @@
+2012-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/53358
+	* gcc.dg/pr53358.c: New test.
+
 2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/11856
