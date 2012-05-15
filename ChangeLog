@@ -1,3 +1,8 @@
+2012-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Merge upstream change
+	* libtool.m4 (_LT_ENABLE_LOCK): Support x32.
+
 2012-05-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	* MAINTAINERS (Write After Approval): Add myself.
