@@ -2941,8 +2941,9 @@ move_spill_restore (void)
 		 copies and the reload pass can spill the allocno set
 		 by copy although the allocno will not get memory
 		 slot.  */
-	      || ira_reg_equiv_invariant_p[regno]
-	      || ira_reg_equiv_const[regno] != NULL_RTX
+	      || (regno < ira_reg_equiv_len
+		  && (ira_reg_equiv_invariant_p[regno]
+		      || ira_reg_equiv_const[regno] != NULL_RTX))
 	      || !bitmap_bit_p (loop_node->border_allocnos, ALLOCNO_NUM (a)))
 	    continue;
 	  mode = ALLOCNO_MODE (a);

@@ -1,5 +1,9 @@
 2012-05-15  Tristan Gingold  <gingold@adacore.com>
 
+	* ira-color.c (move_spill_restore): Add a guard.
+
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
 	* config/ia64/ia64.c (ia64_emit_probe_stack_range): Adjust calls to
 	plus_constant.
 
