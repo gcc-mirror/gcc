@@ -1,3 +1,9 @@
+2012-05-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/tm.texi.in (Type Layout) <SIZE_TYPE>: Update reference to
+	source-code.
+	* doc/tm.texi: Regenerate.
+
 2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* tree.h (EXPR_LOCATION): Use CAN_HAVE_LOCATION_P.
