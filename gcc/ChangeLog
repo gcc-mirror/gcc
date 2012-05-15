@@ -147,8 +147,6 @@
 	ATTR_FLAG_BUILT_IN.
 	* doc/rtl.texi (CALL_INSN_FUNCTION_USAGE): Use lowercase for rtx
 	codes.  Document meaning of sets inside CALL_INSN_FUNCTION_USAGE.
-	* c-family/c-common.c (DEF_ATTR_STRING): Define and undefine as
-	necessary.
 	* builtin-attrs.def (DEF_ATTR_FOR_STRING): Define.  Use it to
 	define a string "1".
 	(ATTR_RET1_NOTHROW_NONNULL_LEAF): New attr definition.
@@ -180,9 +178,6 @@
 	* calls.c (decl_return_flags): New static function.
 	(expand_call): Generate a SET in CALL_INSN_FUNCTION_USAGE for
 	functions that return one of their arguments.
-	* lto/lto-lang.c (handle_fnspec_attribute): New static function.
-	(lto_attribute_table): Add "fn spec".
-	(DEF_ATTR_STRING): Define and undefine along with the other macros.
 	* regcprop.c (struct kill_set_value_data): New.
 	(kill_set_value): Interpret data as a pointer to such a struct.
 	Do nothing if the caller wants the register to be ignored.

@@ -1,8 +1,14 @@
+2012-05-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* lto-lang.c (handle_fnspec_attribute): New static function.
+	(lto_attribute_table): Add "fn spec".
+	(DEF_ATTR_STRING): Define and undefine along with the other macros.
+
 2012-05-04  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (do_whole_program_analysis): Set timevars correctly.
 	(lto_main): Likewise.
-	
+
 2012-05-04  Richard Guenther  <rguenther@suse.de>
 
 	* lang.opt (fwpa): Do not mark as Optimization.
