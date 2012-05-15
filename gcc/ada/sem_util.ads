@@ -385,10 +385,12 @@ package Sem_Util is
    --  Returns the Node_Id associated with the innermost enclosing generic
    --  unit, if any. If none, then returns Empty.
 
-   function Enclosing_Lib_Unit_Entity return Entity_Id;
-   --  Returns the entity of enclosing N_Compilation_Unit Node which is the
+   function Enclosing_Lib_Unit_Entity
+     (E : Entity_Id := Current_Scope) return Entity_Id;
+   --  Returns the entity of enclosing library unit node which is the
    --  root of the current scope (which must not be Standard_Standard, and the
-   --  caller is responsible for ensuring this condition).
+   --  caller is responsible for ensuring this condition) or other specified
+   --  entity.
 
    function Enclosing_Package (E : Entity_Id) return Entity_Id;
    --  Utility function to return the Ada entity of the package enclosing
@@ -739,6 +741,10 @@ package Sem_Util is
 
    function In_Parameter_Specification (N : Node_Id) return Boolean;
    --  Returns True if node N belongs to a parameter specification
+
+   function In_Reverse_Storage_Order_Record (N : Node_Id) return Boolean;
+   --  Returns True if N denotes a component or subcomponent in a record object
+   --  that has Reverse_Storage_Order.
 
    function In_Subprogram_Or_Concurrent_Unit return Boolean;
    --  Determines if the current scope is within a subprogram compilation unit

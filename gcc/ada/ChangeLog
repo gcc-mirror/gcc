@@ -1,3 +1,36 @@
+2012-05-15  Yannick Moy  <moy@adacore.com>
+
+	* aspects.ads: Minor addition of comments to provide info on
+	how to add new aspects.
+
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
+	* osint.ads: Minor reformatting.
+
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch5.adb, exp_pakd.adb, sem_util.adb, sem_util.ads
+	(Expand_Assign_Array): Handle the case of a packed bit array within a
+	record with reverse storage order (assign element by element in that
+	case).
+	(In_Reverse_Storage_Order_Record): New subprogram,
+	code extracted from Exp_Pakd.
+
+2012-05-15  Yannick Moy  <moy@adacore.com>
+
+	* a-ngelfu.ads: Add postconditions using Ada 2012
+	aspect syntax, reflecting some of the RM requirements for these
+	functions, from Annex A.5.1 or G.2.4.
+
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
+	* adaint.c: Minor fix: move misplaced comment.
+
+2012-05-15  Doug Rupp  <rupp@adacore.com>
+
+	* vms_data.ads: Enhance help for /IMMEDIATE_ERRORS to discourage
+	use by customers.
+
 2012-05-15  Tristan Gingold  <gingold@adacore.com>
 
 	* a-exextr.adb: Add comment.
