@@ -642,32 +642,45 @@ package body Prj.Nmsc is
 
       Add_Src := True;
 
+      if Unit /= No_Name then
+         Prev_Unit := Units_Htable.Get (Data.Tree.Units_HT, Unit);
+      end if;
+
+      if Prev_Unit /= No_Unit_Index
+        and then (Kind = Impl or else Kind = Spec)
+        and then Prev_Unit.File_Names (Kind) /= null
+      then
+         --  Suspicious, we need to check later whether this is authorized
+
+         Add_Src := False;
+         Source := Prev_Unit.File_Names (Kind);
+
+      else
+         Source := Source_Files_Htable.Get
+           (Data.Tree.Source_Files_HT, File_Name);
+
+         if Source /= No_Source and then Source.Index = Index then
+            Add_Src := False;
+         end if;
+      end if;
+
       --  Always add the source if it is locally removed, to avoid incorrect
       --  duplicate checks.
 
-      if not Locally_Removed then
-         if Unit /= No_Name then
-            Prev_Unit := Units_Htable.Get (Data.Tree.Units_HT, Unit);
-         end if;
+      if Locally_Removed then
+         Add_Src := True;
 
-         if Prev_Unit /= No_Unit_Index
-           and then (Kind = Impl or else Kind = Spec)
-           and then Prev_Unit.File_Names (Kind) /= null
+         --  A locally removed source may first replace a source in a project
+         --  being extended.
+
+         if Source /= No_Source
+           and then Is_Extending (Project, Source.Project)
+           and then Naming_Exception /= Inherited
          then
-            --  Suspicious, we need to check later whether this is authorized
-
-            Add_Src := False;
-            Source := Prev_Unit.File_Names (Kind);
-
-         else
-            Source := Source_Files_Htable.Get
-              (Data.Tree.Source_Files_HT, File_Name);
-
-            if Source /= No_Source and then Source.Index = Index then
-               Add_Src := False;
-            end if;
+            Source_To_Replace := Source;
          end if;
 
+      else
          --  Duplication of file/unit in same project is allowed if order of
          --  source directories is known, or if there is no compiler for the
          --  language.
@@ -725,7 +738,7 @@ package body Prj.Nmsc is
 
             elsif Is_Extending (Project, Source.Project) then
                if not Locally_Removed
-                  and then Naming_Exception /= Inherited
+                 and then Naming_Exception /= Inherited
                then
                   Source_To_Replace := Source;
                end if;
@@ -733,6 +746,7 @@ package body Prj.Nmsc is
             elsif Prev_Unit /= No_Unit_Index
               and then Prev_Unit.File_Names (Kind) /= null
               and then not Source.Locally_Removed
+              and then Source.Replaced_By = No_Source
               and then not Data.In_Aggregate_Lib
             then
                --  Path is set if this is a source we found on the disk, in
@@ -768,6 +782,7 @@ package body Prj.Nmsc is
                Add_Src := False;
 
             elsif not Source.Locally_Removed
+              and then Source.Replaced_By /= No_Source
               and then not Data.Flags.Allow_Duplicate_Basenames
               and then Lang_Id.Config.Kind = Unit_Based
               and then Source.Language.Config.Kind = Unit_Based
@@ -785,10 +800,10 @@ package body Prj.Nmsc is
                Add_Src := True;
             end if;
          end if;
+      end if;
 
-         if not Add_Src then
-            return;
-         end if;
+      if not Add_Src then
+         return;
       end if;
 
       --  Add the new file
@@ -868,7 +883,7 @@ package body Prj.Nmsc is
 
          --  Note that this updates Unit information as well
 
-         if Naming_Exception /= Inherited then
+         if Naming_Exception /= Inherited and then not Locally_Removed then
             Override_Kind (Id, Kind);
          end if;
       end if;
@@ -7799,8 +7814,12 @@ package body Prj.Nmsc is
                     (Project.Excluded, Source.File);
 
                   if Excluded /= No_File_Found then
-                     Source.Locally_Removed := True;
                      Source.In_Interfaces   := False;
+                     Source.Locally_Removed := True;
+
+                     if Proj = Project.Project then
+                        Source.Suppressed := True;
+                     end if;
 
                      if Current_Verbosity = High then
                         Debug_Indent;

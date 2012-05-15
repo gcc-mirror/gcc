@@ -1,3 +1,59 @@
+2012-05-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Expand_With_Clause): In the context of a generic
+	package declaration, a private with-clause on a child unit implies
+	that the implicit with clauses on its parents are private as well.
+
+2012-05-15  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Is_Interface_Conformant): Add missing call to
+	Base_Type to handle subtypes.
+	* exp_ch6.adb (Expand_Call): For calls located in thunks handle
+	unchecked conversions of access types found in actuals.
+	* exp_disp.adb (Expand_Interface_Thunk): Add missing unchecked
+	conversion to actuals whose type is an access type. Done to
+	avoid reporting spurious errors.
+
+2012-05-15  Vincent Celier  <celier@adacore.com>
+
+	* prj-env.adb (Create_Mapping): Ignore sources that are
+	suppressed (Create_Mapping_File.Process): Ditto
+	* prj-nmsc.adb (Add_Source): Update to take into
+	account suppressed files that may hide inherited sources.
+	(Mark_Excluded_Sources): Mark excluded sources of the current
+	project as suppressed.
+	* prj.ads (Source_Data): New Boolean component Suppressed,
+	defaulted to False
+
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_intr.adb: Minor reformatting.
+
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi: Document attribute Scalar_Storage_Order.
+
+2012-05-15  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Build_Offset_To_Top): Modify the
+	expansion of the offset_to_top functions to ensure that their
+	profile is conformant with the profile specified in Ada.Tags. No
+	change in functionality.
+
+2012-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Subp_Info): Remove Count and Next_Nopred
+	components, add Processed component and move around Next component.
+	(Add_Call): Reverse meaning of Successors table to the natural one.
+	(Add_Inlined_Body): Do not inline a package if it is in the main unit.
+	(Add_Inlined_Subprogram): Do not add the subprogram to the list if the
+	package is in the main unit. Do not recurse on the successors.
+	(Add_Subp): Adjust to new contents of Subp_Info.
+	(Analyze_Inlined_Bodies): Do not attempt
+	to compute a topological order on the list of inlined subprograms,
+	but compute the transitive closure from the main unit instead.
+	(Get_Code_Unit_Entity): Always return the spec for a package.
+
 2012-05-15  Yannick Moy  <moy@adacore.com>
 
 	* aspects.ads: Minor addition of comments to provide info on

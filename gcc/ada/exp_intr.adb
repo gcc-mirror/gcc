@@ -564,16 +564,15 @@ package body Exp_Intr is
          --  conventions and this has already been checked.
 
       elsif Present (Alias (E)) then
-         Expand_Intrinsic_Call (N,  Alias (E));
+         Expand_Intrinsic_Call (N, Alias (E));
 
       elsif Nkind (N) in N_Binary_Op then
          Expand_Binary_Operator_Call (N);
 
-         --  The only other case is where an external name was specified,
-         --  since this is the only way that an otherwise unrecognized
-         --  name could escape the checking in Sem_Prag. Nothing needs
-         --  to be done in such a case, since we pass such a call to the
-         --  back end unchanged.
+         --  The only other case is where an external name was specified, since
+         --  this is the only way that an otherwise unrecognized name could
+         --  escape the checking in Sem_Prag. Nothing needs to be done in such
+         --  a case, since we pass such a call to the back end unchanged.
 
       else
          null;
