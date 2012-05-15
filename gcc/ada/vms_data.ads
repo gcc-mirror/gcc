@@ -1779,9 +1779,12 @@ package VMS_Data is
    --   Causes errors to be displayed as soon as they are encountered, rather
    --   than after compilation is terminated. If GNAT terminates prematurely
    --   or goes into an infinite loop, the last error message displayed may
-   --   help to pinpoint the culprit. Use with caution: This qualifier is
-   --   intended for use in debugging the compiler proper, and may cause
-   --   output of warnings suppressed by pragma.
+   --   help to pinpoint the culprit.
+   --
+   --   Note that this qualifier is intended only for helping to diagnose
+   --   illegal programs when the compiler fails. It disconnects many of the
+   --   normal handling procedures for error messages, and may for example
+   --   cause malfunction of pragma Warnings.
 
    S_GCC_Inline  : aliased constant S := "/INLINE="                        &
                                             "PRAGMA "                      &

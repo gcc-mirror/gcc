@@ -1931,7 +1931,7 @@ package body Exp_Ch3 is
             Set_Declarations (Body_Node, New_List (
               Make_Full_Type_Declaration (Loc,
                 Defining_Identifier => Acc_Type,
-                Type_Definition =>
+                Type_Definition     =>
                   Make_Access_To_Object_Definition (Loc,
                     All_Present            => True,
                     Null_Exclusion_Present => False,
@@ -1949,7 +1949,7 @@ package body Exp_Ch3 is
                           Make_Selected_Component (Loc,
                             Prefix        =>
                               Unchecked_Convert_To (Acc_Type,
-                                 Make_Identifier (Loc, Name_uO)),
+                                Make_Identifier (Loc, Name_uO)),
                             Selector_Name =>
                               New_Reference_To (Iface_Comp, Loc)),
                         Attribute_Name => Name_Position)))));

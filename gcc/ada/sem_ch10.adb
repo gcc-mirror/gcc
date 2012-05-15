@@ -2991,8 +2991,8 @@ package body Sem_Ch10 is
       --  with_clause on a child unit implies that the implicit with on the
       --  parent is also private.
 
-      if Nkind_In
-         (Unit (N), N_Package_Declaration, N_Generic_Package_Declaration)
+      if Nkind_In (Unit (N), N_Package_Declaration,
+                             N_Generic_Package_Declaration)
       then
          Set_Private_Present (Withn, Private_Present (Item));
       end if;

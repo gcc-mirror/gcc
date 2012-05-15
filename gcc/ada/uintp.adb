@@ -370,9 +370,12 @@ package body Uintp is
          H : constant array (Int range 0 .. 15) of Character :=
                "0123456789ABCDEF";
 
+         Q, R : Uint;
       begin
-         if U >= Base then
-            Image_Uint (U / Base);
+         UI_Div_Rem (U, Base, Q, R);
+
+         if Q > Uint_0 then
+            Image_Uint (Q);
          end if;
 
          if Digs_Output = 4 and then Base = Uint_16 then
@@ -380,7 +383,7 @@ package body Uintp is
             Digs_Output := 0;
          end if;
 
-         Image_Char (H (UI_To_Int (U rem Base)));
+         Image_Char (H (UI_To_Int (R)));
 
          Digs_Output := Digs_Output + 1;
       end Image_Uint;
@@ -2383,8 +2386,8 @@ package body Uintp is
 
             --  Special cases when Right is less than 13 and Left is larger
             --  larger than one digit. All of these algorithms depend on the
-            --  base being 2 ** 15 We work with Abs (Left) and Abs(Right)
-            --  then multiply result by Sign (Left)
+            --  base being 2 ** 15. We work with Abs (Left) and Abs(Right)
+            --  then multiply result by Sign (Left).
 
             if (Right <= Uint_12) and then (Right >= Uint_Minus_12) then
 
@@ -2394,7 +2397,7 @@ package body Uintp is
                   Sign := 1;
                end if;
 
-               --  All cases are listed, grouped by mathematical method It is
+               --  All cases are listed, grouped by mathematical method. It is
                --  not inefficient to do have this case list out of order since
                --  GCC sorts the cases we list.
 
@@ -2403,9 +2406,10 @@ package body Uintp is
                   when 1 =>
                      return Uint_0;
 
-                  --  Powers of two are simple AND's with LS Left Digit GCC
-                  --  will recognise these constants as powers of 2 and replace
-                  --  the rem with simpler operations where possible.
+                  --  Powers of two are simple AND's with the least significant
+                  --  digit of Left. GCC will recognise these constants as
+                  --  powers of 2 and replace the rem with simpler operations
+                  --  where possible.
 
                   --  Least_Sig_Digit might return Negative numbers
 
@@ -2426,7 +2430,7 @@ package body Uintp is
                   --    If B Rem Right = 1 then
                   --    Left Rem Right = Sum_Of_Digits_Base_B (Left) Rem Right
 
-                  --  Note: 2^32 mod 3 = 1
+                  --  Note: 2^30 mod 3 = 1
 
                   when 3 =>
                      return UI_From_Int (
@@ -2438,7 +2442,7 @@ package body Uintp is
                      return UI_From_Int (
                         Sign * (Sum_Digits (Left, 1) rem Int (7)));
 
-                  --  Note: 2^32 mod 5 = -1
+                  --  Note: 2^30 mod 5 = -1
 
                   --  Alternating sums might be negative, but rem is always
                   --  positive hence we must use mod here.
@@ -2483,7 +2487,7 @@ package body Uintp is
                   --     (M1 mod m1) = (M2 mod m2) = 1 AND
                   --     (M1 mod m2) = (M2 mod m1) = 0
 
-                  --  So u mod m = (u1 * M1 + u2 * M2) mod m Where u1 = (u mod
+                  --  So u mod m = (u1 * M1 + u2 * M2) mod m where u1 = (u mod
                   --  m1) AND u2 = (u mod m2); Under typical circumstances the
                   --  last mod m can be done with a (possible) single
                   --  subtraction.

@@ -34,30 +34,35 @@
 --  aspect specifications from the tree. The semantic processing for aspect
 --  specifications is found in Sem_Ch13.Analyze_Aspect_Specifications.
 
+------------------------
+-- Adding New Aspects --
+------------------------
+
 --  In general, each aspect should have a corresponding pragma, so that the
 --  newly developed functionality is available for Ada versions < Ada 2012.
 --  When both are defined, it is convenient to first transform the aspect into
 --  an equivalent pragma in Sem_Ch13.Analyze_Aspect_Specifications, and then
 --  analyze the pragma in Sem_Prag.Analyze_Pragma.
 
---  To add a new aspect:
---  * create a name in snames.ads-tmpl
---  * create a value in type Aspect_Id in this unit
---  * add a value for the aspect in the global arrays defined in this unit
---  * add code for analyzing the aspect in
---    Sem_Ch13.Analyze_Aspect_Specifications. This may involve adding some
---    nodes to the tree to perform additional treatments later.
---  * if the semantic analysis of expressions/names in the aspect should not
---    occur at the point the aspect is defined, add code in the adequate
---    semantic analysis procedure for the aspect. For example, this is the case
---    for aspects Pre and Post on subprograms, which are pre-analyzed at the
---    end of the list of declarations to which the subprogram belongs, and
---    fully analyzed (possibly with expansion) during the semantic analysis of
---    subprogram bodies.
+--  To add a new aspect, you need to do the following
 
---  Additionally, to add a corresponding pragma for a new aspect:
---  * create a name for the pragma in snames.ads-tmpl
---  * add code for analyzing the pragma in Sem_Prag.Analyze_Pragma
+--    1. Create a name in snames.ads-tmpl
+
+--    2. Create a value in type Aspect_Id in this unit
+
+--    3. Add a value for the aspect in the global arrays defined in this unit
+
+--    4. Add code for the aspect in Sem_Ch13.Analyze_Aspect_Specifications.
+--       This may involve adding some nodes to the tree to perform additional
+--       treatments later.
+
+--    5. Ff the semantic analysis of expressions/names in the aspect should not
+--       occur at the point the aspect is defined, add code in the adequate
+--       semantic analysis procedure for the aspect. For example, this is the
+--       case for aspects Pre and Post on subprograms, which are pre-analyzed
+--       at the end of the declaration list to which the subprogram belongs,
+--       and fully analyzed (possibly with expansion) during the semantic
+--       analysis of subprogram bodies.
 
 with Namet;  use Namet;
 with Snames; use Snames;
