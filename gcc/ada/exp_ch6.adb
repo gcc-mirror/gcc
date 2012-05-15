@@ -2712,7 +2712,7 @@ package body Exp_Ch6 is
                      end loop;
 
                   --  Handle unchecked conversion of access types generated
-                  --  in thunks (cf. Expand_Interface_Thunk)
+                  --  in thunks (cf. Expand_Interface_Thunk).
 
                   elsif Is_Access_Type (Etype (Actual))
                     and then Nkind (Actual) = N_Unchecked_Type_Conversion

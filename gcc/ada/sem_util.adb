@@ -3172,12 +3172,13 @@ package body Sem_Util is
    function Enclosing_Lib_Unit_Entity
       (E : Entity_Id := Current_Scope) return Entity_Id
    is
-      Unit_Entity : Entity_Id := E;
+      Unit_Entity : Entity_Id;
 
    begin
       --  Look for enclosing library unit entity by following scope links.
       --  Equivalent to, but faster than indexing through the scope stack.
 
+      Unit_Entity := E;
       while (Present (Scope (Unit_Entity))
         and then Scope (Unit_Entity) /= Standard_Standard)
         and not Is_Child_Unit (Unit_Entity)

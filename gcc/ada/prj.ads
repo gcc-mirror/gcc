@@ -788,8 +788,7 @@ package Prj is
       --  These sources should not be put in the mapping file.
 
       Replaced_By : Source_Id := No_Source;
-      --  Indicate the source in an extending project that replaces the current
-      --  source.
+      --  Source in an extending project that replaces the current source
 
       File : File_Name_Type := No_File;
       --  Canonical file name of the source

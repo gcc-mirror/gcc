@@ -10106,9 +10106,7 @@ package body Exp_Ch4 is
 
       elsif Nkind (N) = N_Qualified_Expression then
          return Is_Unchecked_Union (Etype (Subtype_Mark (N)))
-                  and then
-                Is_Constrained (Etype (Subtype_Mark (N)));
-
+           and then Is_Constrained (Etype (Subtype_Mark (N)));
       end if;
 
       return False;

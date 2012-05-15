@@ -1,5 +1,16 @@
 2012-05-15  Thomas Quinot  <quinot@adacore.com>
 
+	* uintp.adb (Image_Uint): Use UI_Div_Rem to get quotient and
+	remainder of U / Base in a single operation.
+
+2012-05-15  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, inline.adb, sem_ch10.adb, prj.ads, sem_util.adb,
+	a-ngelfu.ads, exp_ch4.adb, exp_ch6.adb, aspects.ads, sem_ch6.adb,
+	vms_data.ads, exp_ch3.adb, prj-env.adb: Minor reformatting.
+
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_ch4.adb (Has_Inferable_Discriminants): For a qualified
 	expression, use correct node for test on the subtype denoted by
 	the subtype mark.

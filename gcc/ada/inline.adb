@@ -743,14 +743,17 @@ package body Inline is
 
          for Index in Inlined.First .. Inlined.Last loop
             if not Is_Called (Inlined.Table (Index).Name) then
+
                --  This means that Add_Inlined_Body added the subprogram to the
                --  table but wasn't able to handle its code unit. Do nothing.
 
                Inlined.Table (Index).Processed := True;
+
             elsif Inlined.Table (Index).Main_Call then
                Pending_Inlined.Increment_Last;
                Pending_Inlined.Table (Pending_Inlined.Last) := Index;
                Inlined.Table (Index).Processed := True;
+
             else
                Set_Is_Called (Inlined.Table (Index).Name, False);
             end if;
@@ -967,10 +970,12 @@ package body Inline is
 
    function Get_Code_Unit_Entity (E : Entity_Id) return Entity_Id is
       Unit : Entity_Id := Cunit_Entity (Get_Code_Unit (E));
+
    begin
       if Ekind (Unit) = E_Package_Body then
          Unit := Spec_Entity (Unit);
       end if;
+
       return Unit;
    end Get_Code_Unit_Entity;
 
@@ -1002,6 +1007,28 @@ package body Inline is
 
       return False;
    end Has_Initialized_Type;
+
+   -----------------------------
+   -- In_Main_Unit_Or_Subunit --
+   -----------------------------
+
+   function In_Main_Unit_Or_Subunit (E : Entity_Id) return Boolean is
+      Comp : Node_Id := Cunit (Get_Code_Unit (E));
+
+   begin
+      --  Check whether the subprogram or package to inline is within the main
+      --  unit or its spec or within a subunit. In either case there are no
+      --  additional bodies to process. If the subprogram appears in a parent
+      --  of the current unit, the check on whether inlining is possible is
+      --  done in Analyze_Inlined_Bodies.
+
+      while Nkind (Unit (Comp)) = N_Subunit loop
+         Comp := Library_Unit (Comp);
+      end loop;
+
+      return Comp = Cunit (Main_Unit)
+        or else Comp = Library_Unit (Cunit (Main_Unit));
+   end In_Main_Unit_Or_Subunit;
 
    ----------------
    -- Initialize --
@@ -1037,7 +1064,6 @@ package body Inline is
 
    begin
       if Serious_Errors_Detected = 0 then
-
          Expander_Active := (Operating_Mode = Opt.Generate_Code);
          Push_Scope (Standard_Standard);
          To_Clean := New_Elmt_List;
@@ -1155,28 +1181,5 @@ package body Inline is
          J := J + 1;
       end loop;
    end Remove_Dead_Instance;
-
-   -----------------------------
-   -- In_Main_Unit_Or_Subunit --
-   -----------------------------
-
-   function In_Main_Unit_Or_Subunit (E : Entity_Id) return Boolean is
-      Comp : Node_Id := Cunit (Get_Code_Unit (E));
-
-   begin
-      --  Check whether the subprogram or package to inline is within the main
-      --  unit or its spec or within a subunit. In either case there are no
-      --  additional bodies to process. If the subprogram appears in a parent
-      --  of the current unit, the check on whether inlining is possible is
-      --  done in Analyze_Inlined_Bodies.
-
-      while Nkind (Unit (Comp)) = N_Subunit loop
-         Comp := Library_Unit (Comp);
-      end loop;
-
-      return
-        Comp = Cunit (Main_Unit)
-          or else Comp = Library_Unit (Cunit (Main_Unit));
-   end In_Main_Unit_Or_Subunit;
 
 end Inline;
