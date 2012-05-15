@@ -1,3 +1,7 @@
+2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* tree.h (EXPR_LOCATION): Use CAN_HAVE_LOCATION_P.
+
 2012-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/53358
