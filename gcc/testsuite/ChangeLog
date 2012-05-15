@@ -1,3 +1,8 @@
+2012-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/53358
+	* gcc.dg/pr53358.c: New test.
+
 2012-05-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/avx256-unaligned-load-[1234].c: Update scan strings.
