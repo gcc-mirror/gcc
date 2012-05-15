@@ -224,10 +224,13 @@ package body System.Soft_Links is
    -----------------------------
 
    procedure Save_Library_Occurrence (E : EOA) is
+      use Ada.Exceptions;
    begin
       if not Library_Exception_Set then
          Library_Exception_Set := True;
-         Ada.Exceptions.Save_Occurrence (Library_Exception, E.all);
+         if E /= null then
+            Ada.Exceptions.Save_Occurrence (Library_Exception, E.all);
+         end if;
       end if;
    end Save_Library_Occurrence;
 

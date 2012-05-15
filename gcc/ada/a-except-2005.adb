@@ -1296,7 +1296,13 @@ package body Ada.Exceptions is
    begin
       if Library_Exception_Set then
          LE := Library_Exception;
-         Raise_From_Controlled_Operation (LE);
+         if LE.Id = Null_Id then
+            Raise_Exception_No_Defer
+              (E       => Program_Error'Identity,
+               Message => "finalize/adjust raised exception");
+         else
+            Raise_From_Controlled_Operation (LE);
+         end if;
       end if;
    end Reraise_Library_Exception_If_Any;
 
