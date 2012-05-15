@@ -218,21 +218,24 @@ private
       --  within the range of 0 .. 6 (Monday .. Sunday).
 
       procedure Split
-        (Date      : Time;
-         Year      : out Year_Number;
-         Month     : out Month_Number;
-         Day       : out Day_Number;
-         Day_Secs  : out Day_Duration;
-         Hour      : out Integer;
-         Minute    : out Integer;
-         Second    : out Integer;
-         Sub_Sec   : out Duration;
-         Leap_Sec  : out Boolean;
-         Use_TZ    : Boolean;
-         Time_Zone : Long_Integer);
-      --  Split a time value into its components. Set Use_TZ to use the local
-      --  time zone (the value in Time_Zone is ignored) when splitting a time
-      --  value.
+        (Date        : Time;
+         Year        : out Year_Number;
+         Month       : out Month_Number;
+         Day         : out Day_Number;
+         Day_Secs    : out Day_Duration;
+         Hour        : out Integer;
+         Minute      : out Integer;
+         Second      : out Integer;
+         Sub_Sec     : out Duration;
+         Leap_Sec    : out Boolean;
+         Use_TZ      : Boolean;
+         Is_Historic : Boolean;
+         Time_Zone   : Long_Integer);
+      --  Split a time value into its components. If flag Is_Historic is set,
+      --  this routine would try to use to the best of the OS's abilities the
+      --  time zone offset that was or will be in effect on Date. Set Use_TZ
+      --  to use the local time zone (the value in Time_Zone is ignored) when
+      --  splitting a time value.
 
       function Time_Of
         (Year         : Year_Number;
@@ -243,16 +246,19 @@ private
          Minute       : Integer;
          Second       : Integer;
          Sub_Sec      : Duration;
-         Leap_Sec     : Boolean := False;
-         Use_Day_Secs : Boolean := False;
-         Use_TZ       : Boolean := False;
-         Time_Zone    : Long_Integer := 0) return Time;
+         Leap_Sec     : Boolean;
+         Use_Day_Secs : Boolean;
+         Use_TZ       : Boolean;
+         Is_Historic  : Boolean;
+         Time_Zone    : Long_Integer) return Time;
       --  Given all the components of a date, return the corresponding time
       --  value. Set Use_Day_Secs to use the value in Day_Secs, otherwise the
       --  day duration will be calculated from Hour, Minute, Second and Sub_
-      --  Sec. Set Use_TZ to use the local time zone (the value in formal
-      --  Time_Zone is ignored) when building a time value and to verify the
-      --  validity of a requested leap second.
+      --  Sec. If flag Is_Historic is set, this routine would try to use to the
+      --  best of the OS's abilities the time zone offset that was or will be
+      --  in effect on the input date. Set Use_TZ to use the local time zone
+      --  (the value in formal Time_Zone is ignored) when building a time value
+      --  and to verify the validity of a requested leap second.
 
    end Formatting_Operations;
 

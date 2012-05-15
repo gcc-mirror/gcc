@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2011, AdaCore                     --
+--                     Copyright (C) 1999-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -595,7 +595,8 @@ package GNAT.Command_Line is
       Switch      : String := "";
       Long_Switch : String := "";
       Help        : String := "";
-      Section     : String := "");
+      Section     : String := "";
+      Argument    : String := "ARG");
    --  Indicates a new switch. The format of this switch follows the getopt
    --  format (trailing ':', '?', etc for defining a switch with parameters).
    --
@@ -617,6 +618,9 @@ package GNAT.Command_Line is
    --
    --  In_Section indicates in which section the switch is valid (you need to
    --  first define the section through a call to Define_Section).
+   --
+   --  Argument is the name of the argument, as displayed in the automatic
+   --  help message. It is always capitalized for consistency.
 
    procedure Define_Switch
      (Config      : in out Command_Line_Configuration;
@@ -643,7 +647,8 @@ package GNAT.Command_Line is
       Help        : String := "";
       Section     : String := "";
       Initial     : Integer := 0;
-      Default     : Integer := 1);
+      Default     : Integer := 1;
+      Argument    : String := "ARG");
    --  See Define_Switch for a description of the parameters.
    --  When the switch is found on the command line, Getopt will set
    --  Output.all to the value of the switch's parameter. If the parameter is
@@ -651,6 +656,7 @@ package GNAT.Command_Line is
    --  Output is always initialized to Initial. If the switch has an optional
    --  argument which isn't specified by the user, then Output will be set to
    --  Default.
+   --  The switch must accept an argument.
 
    procedure Define_Switch
      (Config      : in out Command_Line_Configuration;
@@ -658,10 +664,14 @@ package GNAT.Command_Line is
       Switch      : String := "";
       Long_Switch : String := "";
       Help        : String := "";
-      Section     : String := "");
+      Section     : String := "";
+      Argument    : String := "ARG");
    --  Set Output to the value of the switch's parameter when the switch is
    --  found on the command line.
-   --  Output is always initialized to the empty string.
+   --  Output is always initialized to the empty string if it does not have
+   --  a value already (otherwise it is left as is so that you can specify the
+   --  default value directly in the declaration of the variable).
+   --  The switch must accept an argument.
 
    procedure Set_Usage
      (Config   : in out Command_Line_Configuration;
@@ -1095,6 +1105,10 @@ private
       Long_Switch : GNAT.OS_Lib.String_Access;
       Section     : GNAT.OS_Lib.String_Access;
       Help        : GNAT.OS_Lib.String_Access;
+
+      Argument    : GNAT.OS_Lib.String_Access;
+      --  null if "ARG".
+      --  Name of the argument for this switch.
 
       case Typ is
          when Switch_Untyped =>

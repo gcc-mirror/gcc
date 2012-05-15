@@ -1,3 +1,52 @@
+2012-05-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.adb (Day_Of_Week): The routine once again treats
+	all dates as historic.	(Formatting_Operations.Split): All
+	calls to UTC_Time_Offset are now controlled through formal
+	parameter Is_Historic.	(Formatting_Operations.Time_Of):
+	All calls to UTC_Time_Offset are now handled through
+	formal parameter Is_Historic.
+	(Split): Update the call to Formatting_Operations.Split.
+	(Time_Of): Update the call to Formatting_Operations.Time_Of.
+	(To_Ada_Time): Update the call to Formatting_Operations.Time_Of.
+	(To_Strict_Tm): Update the call to Formatting_Operations.Split.
+	* a-calend.ads (Split): Add new formal Is_Historic along with
+	comment on usage. This routine is now exported for the purposes
+	of GNAT.Calendar.Locale.
+	(Time_Of): Remove defaults. Add new
+	formal Is_Historic along with comment on usage. This routine is
+	now exported for the purposes of GNAT.Calendar.Locale.
+	* a-calend-vms.adb (Split): Update the call to
+	Formatting_Operations.Split.
+	(Time_Of): Update the call to Formatting_Operations.Time_Of.
+	* a-calend-vms.ads (Split): Add new formal Is_Historic along
+	with comment on usage.	(Time_Of): Remove defaults. Add new
+	formal Is_Historic along with comment on usage.
+	* a-calfor.adb (Split): Update the call to
+	Formatting_Operations.Split.
+	(Time_Of): Update the call to Formatting_Operations.Time_Of.
+	* impunit.adb: Include g-calloc to the list of non-RM defined
+	units.
+
+2012-05-15  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Add_Source): Always add the source if it is
+	excluded, to avoid incorrect duplicate checks.
+
+2012-05-15  Yannick Moy  <moy@adacore.com>
+
+	* sem_aux.ads: Correct typo.
+	* sem_eval.adb (Compile_Time_Known_Value): Return False in Alfa
+	mode for a deferred constant when outside of the scope of its
+	full view.
+
+2012-05-15  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb, g-comlin.ads (Define_Switch): Allow specifying the name
+	of the argument, for the automatic help message.
+	(Getopt): do not systematically initialize switches with string values
+	to the empty string, when the user has already specified a default.
+
 2012-05-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 53063

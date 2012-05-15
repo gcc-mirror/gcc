@@ -642,143 +642,153 @@ package body Prj.Nmsc is
 
       Add_Src := True;
 
-      if Unit /= No_Name then
-         Prev_Unit := Units_Htable.Get (Data.Tree.Units_HT, Unit);
-      end if;
+      --  Always add the source if it is locally removed, to avoid incorrect
+      --  duplicate checks.
 
-      if Prev_Unit /= No_Unit_Index
-        and then (Kind = Impl or else Kind = Spec)
-        and then Prev_Unit.File_Names (Kind) /= null
-      then
-         --  Suspicious, we need to check later whether this is authorized
-
-         Add_Src := False;
-         Source := Prev_Unit.File_Names (Kind);
-
-      else
-         Source := Source_Files_Htable.Get
-           (Data.Tree.Source_Files_HT, File_Name);
-
-         if Source /= No_Source and then Source.Index = Index then
-            Add_Src := False;
+      if not Locally_Removed then
+         if Unit /= No_Name then
+            Prev_Unit := Units_Htable.Get (Data.Tree.Units_HT, Unit);
          end if;
-      end if;
 
-      --  Duplication of file/unit in same project is allowed if order of
-      --  source directories is known, or if there is no compiler for the
-      --  language.
+         if Prev_Unit /= No_Unit_Index
+           and then (Kind = Impl or else Kind = Spec)
+           and then Prev_Unit.File_Names (Kind) /= null
+         then
+            --  Suspicious, we need to check later whether this is authorized
 
-      if Add_Src = False then
-         Add_Src := True;
+            Add_Src := False;
+            Source := Prev_Unit.File_Names (Kind);
 
-         if Project = Source.Project then
-            if Prev_Unit = No_Unit_Index then
-               if Data.Flags.Allow_Duplicate_Basenames then
-                  Add_Src := True;
+         else
+            Source := Source_Files_Htable.Get
+              (Data.Tree.Source_Files_HT, File_Name);
 
-               elsif Lang_Id.Config.Compiler_Driver = Empty_File then
-                  Add_Src := True;
+            if Source /= No_Source and then Source.Index = Index then
+               Add_Src := False;
+            end if;
+         end if;
 
-               elsif Source_Dir_Rank /= Source.Source_Dir_Rank then
-                  Add_Src := False;
+         --  Duplication of file/unit in same project is allowed if order of
+         --  source directories is known, or if there is no compiler for the
+         --  language.
 
-               else
-                  Error_Msg_File_1 := File_Name;
-                  Error_Msg
-                    (Data.Flags, "duplicate source file name {",
-                     Location, Project);
-                  Add_Src := False;
-               end if;
+         if Add_Src = False then
+            Add_Src := True;
 
-            else
-               if Source_Dir_Rank /= Source.Source_Dir_Rank then
-                  Add_Src := False;
+            if Project = Source.Project then
+               if Prev_Unit = No_Unit_Index then
+                  if Data.Flags.Allow_Duplicate_Basenames then
+                     Add_Src := True;
 
-               --  We might be seeing the same file through a different path
-               --  (for instance because of symbolic links).
+                  elsif Lang_Id.Config.Compiler_Driver = Empty_File then
+                     Add_Src := True;
 
-               elsif Source.Path.Name /= Path.Name then
-                  if not Source.Duplicate_Unit then
-                     Error_Msg_Name_1 := Unit;
+                  elsif Source_Dir_Rank /= Source.Source_Dir_Rank then
+                     Add_Src := False;
+
+                  else
+                     Error_Msg_File_1 := File_Name;
                      Error_Msg
-                       (Data.Flags, "\duplicate unit %%", Location, Project);
-                     Source.Duplicate_Unit := True;
+                       (Data.Flags, "duplicate source file name {",
+                        Location, Project);
+                     Add_Src := False;
                   end if;
 
-                  Add_Src := False;
+               else
+                  if Source_Dir_Rank /= Source.Source_Dir_Rank then
+                     Add_Src := False;
+
+                     --  We might be seeing the same file through a different
+                     --  path (for instance because of symbolic links).
+
+                  elsif Source.Path.Name /= Path.Name then
+                     if not Source.Duplicate_Unit then
+                        Error_Msg_Name_1 := Unit;
+                        Error_Msg
+                          (Data.Flags,
+                           "\duplicate unit %%",
+                           Location,
+                           Project);
+                        Source.Duplicate_Unit := True;
+                     end if;
+
+                     Add_Src := False;
+                  end if;
                end if;
-            end if;
 
-            --  Do not allow the same unit name in different projects, except
-            --  if one is extending the other.
+               --  Do not allow the same unit name in different projects,
+               --  except if one is extending the other.
 
-            --  For a file based language, the same file name replaces a file
-            --  in a project being extended, but it is allowed to have the same
-            --  file name in unrelated projects.
+               --  For a file based language, the same file name replaces a
+               --  file in a project being extended, but it is allowed to have
+               --  the same file name in unrelated projects.
 
-         elsif Is_Extending (Project, Source.Project) then
-            if not Locally_Removed and then Naming_Exception /= Inherited then
-               Source_To_Replace := Source;
-            end if;
+            elsif Is_Extending (Project, Source.Project) then
+               if not Locally_Removed
+                  and then Naming_Exception /= Inherited
+               then
+                  Source_To_Replace := Source;
+               end if;
 
-         elsif Prev_Unit /= No_Unit_Index
-           and then Prev_Unit.File_Names (Kind) /= null
-           and then not Source.Locally_Removed
-           and then not Data.In_Aggregate_Lib
-         then
-            --  Path is set if this is a source we found on the disk, in which
-            --  case we can provide more explicit error message. Path is unset
-            --  when the source is added from one of the naming exceptions in
-            --  the project.
+            elsif Prev_Unit /= No_Unit_Index
+              and then Prev_Unit.File_Names (Kind) /= null
+              and then not Source.Locally_Removed
+              and then not Data.In_Aggregate_Lib
+            then
+               --  Path is set if this is a source we found on the disk, in
+               --  which case we can provide more explicit error message. Path
+               --  is unset when the source is added from one of the naming
+               --  exceptions in the project.
 
-            if Path /= No_Path_Information then
-               Error_Msg_Name_1 := Unit;
+               if Path /= No_Path_Information then
+                  Error_Msg_Name_1 := Unit;
+                  Error_Msg
+                    (Data.Flags,
+                     "unit %% cannot belong to several projects",
+                     Location, Project);
+
+                  Error_Msg_Name_1 := Project.Name;
+                  Error_Msg_Name_2 := Name_Id (Path.Display_Name);
+                  Error_Msg
+                    (Data.Flags, "\  project %%, %%", Location, Project);
+
+                  Error_Msg_Name_1 := Source.Project.Name;
+                  Error_Msg_Name_2 := Name_Id (Source.Path.Display_Name);
+                  Error_Msg
+                    (Data.Flags, "\  project %%, %%", Location, Project);
+
+               else
+                  Error_Msg_Name_1 := Unit;
+                  Error_Msg_Name_2 := Source.Project.Name;
+                  Error_Msg
+                    (Data.Flags, "unit %% already belongs to project %%",
+                     Location, Project);
+               end if;
+
+               Add_Src := False;
+
+            elsif not Source.Locally_Removed
+              and then not Data.Flags.Allow_Duplicate_Basenames
+              and then Lang_Id.Config.Kind = Unit_Based
+              and then Source.Language.Config.Kind = Unit_Based
+              and then not Data.In_Aggregate_Lib
+            then
+               Error_Msg_File_1 := File_Name;
+               Error_Msg_File_2 := File_Name_Type (Source.Project.Name);
                Error_Msg
                  (Data.Flags,
-                  "unit %% cannot belong to several projects",
-                  Location, Project);
+                  "{ is already a source of project {", Location, Project);
 
-               Error_Msg_Name_1 := Project.Name;
-               Error_Msg_Name_2 := Name_Id (Path.Display_Name);
-               Error_Msg
-                 (Data.Flags, "\  project %%, %%", Location, Project);
+               --  Add the file anyway, to avoid further warnings like
+               --  "language unknown".
 
-               Error_Msg_Name_1 := Source.Project.Name;
-               Error_Msg_Name_2 := Name_Id (Source.Path.Display_Name);
-               Error_Msg
-                 (Data.Flags, "\  project %%, %%", Location, Project);
-
-            else
-               Error_Msg_Name_1 := Unit;
-               Error_Msg_Name_2 := Source.Project.Name;
-               Error_Msg
-                 (Data.Flags, "unit %% already belongs to project %%",
-                  Location, Project);
+               Add_Src := True;
             end if;
-
-            Add_Src := False;
-
-         elsif not Source.Locally_Removed
-           and then not Data.Flags.Allow_Duplicate_Basenames
-           and then Lang_Id.Config.Kind = Unit_Based
-           and then Source.Language.Config.Kind = Unit_Based
-           and then not Data.In_Aggregate_Lib
-         then
-            Error_Msg_File_1 := File_Name;
-            Error_Msg_File_2 := File_Name_Type (Source.Project.Name);
-            Error_Msg
-              (Data.Flags,
-               "{ is already a source of project {", Location, Project);
-
-            --  Add the file anyway, to avoid further warnings like "language
-            --  unknown".
-
-            Add_Src := True;
          end if;
-      end if;
 
-      if not Add_Src then
-         return;
+         if not Add_Src then
+            return;
+         end if;
       end if;
 
       --  Add the new file
