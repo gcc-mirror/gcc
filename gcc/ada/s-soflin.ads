@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -289,12 +289,10 @@ package System.Soft_Links is
    -------------------------------------
 
    Library_Exception : EO;
-   pragma Export (Ada, Library_Exception, "__gnat_library_exception");
    --  Library-level finalization routines use this common reference to store
    --  the first library-level exception which occurs during finalization.
 
    Library_Exception_Set : Boolean := False;
-   pragma Export (Ada, Library_Exception_Set, "__gnat_library_exception_set");
    --  Used in conjunction with Library_Exception, set when an exception has
    --  been stored.
 

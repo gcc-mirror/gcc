@@ -1357,19 +1357,6 @@ package body Bindgen is
       procedure Gen_Header is
       begin
          WBI ("   procedure finalize_library is");
-
-         --  The following flag is used to check for library-level exceptions
-         --  raised during finalization. Symbol comes from System.Soft_Links.
-         --  VM targets use regular Ada to reference the entity.
-
-         if VM_Target = No_VM then
-            WBI ("      LE_Set : Boolean;");
-
-            Set_String ("      pragma Import (Ada, LE_Set, ");
-            Set_String ("""__gnat_library_exception_set"");");
-            Write_Statement_Buffer;
-         end if;
-
          WBI ("   begin");
       end Gen_Header;
 
@@ -1569,27 +1556,17 @@ package body Bindgen is
          --  and the routine necessary to raise it.
 
          if VM_Target = No_VM then
-            WBI ("      if LE_Set then");
-            WBI ("         declare");
-            WBI ("            LE : Ada.Exceptions.Exception_Occurrence;");
+            WBI ("      declare");
+            WBI ("         procedure Reraise_Library_Exception_If_Any;");
 
-            Set_String ("            pragma Import (Ada, LE, ");
-            Set_String ("""__gnat_library_exception"");");
+            Set_String ("            pragma Import (Ada, ");
+            Set_String ("Reraise_Library_Exception_If_Any, ");
+            Set_String ("""__gnat_reraise_library_exception_if_any"");");
             Write_Statement_Buffer;
 
-            Set_String ("            procedure Raise_From_Controlled_");
-            Set_String ("Operation (X : Ada.Exceptions.Exception_");
-            Set_String ("Occurrence);");
-            Write_Statement_Buffer;
-
-            Set_String ("            pragma Import (Ada, Raise_From_");
-            Set_String ("Controlled_Operation, ");
-            Set_String ("""__gnat_raise_from_controlled_operation"");");
-            Write_Statement_Buffer;
-
-            WBI ("         begin");
-            WBI ("            Raise_From_Controlled_Operation (LE);");
-            WBI ("         end;");
+            WBI ("      begin");
+            WBI ("         Reraise_Library_Exception_If_Any;");
+            WBI ("      end;");
 
          --  VM-specific code, use regular Ada to produce the desired behavior
 
@@ -1599,9 +1576,10 @@ package body Bindgen is
             Set_String ("         Ada.Exceptions.Reraise_Occurrence (");
             Set_String ("System.Soft_Links.Library_Exception);");
             Write_Statement_Buffer;
+
+            WBI ("      end if;");
          end if;
 
-         WBI ("      end if;");
          WBI ("   end finalize_library;");
          WBI ("");
       end if;
