@@ -110,6 +110,7 @@ extern Nat       Serious_Errors_Detected;
 
 extern Entity_Id Get_Local_Raise_Call_Entity (void);
 extern Entity_Id Get_RT_Exception_Entity (int);
+extern void Get_RT_Exception_Name (int);
 
 /* exp_code:  */
 

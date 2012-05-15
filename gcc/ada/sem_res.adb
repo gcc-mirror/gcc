@@ -1967,7 +1967,10 @@ package body Sem_Res is
                --  Prefix (N) must statically denote a remote subprogram
                --  declared in a package specification.
 
-               if Attr = Attribute_Access then
+               if Attr = Attribute_Access           or else
+                  Attr = Attribute_Unchecked_Access or else
+                  Attr = Attribute_Unrestricted_Access
+               then
                   Decl := Unit_Declaration_Node (Entity (Pref));
 
                   if Nkind (Decl) = N_Subprogram_Body then
@@ -1990,26 +1993,22 @@ package body Sem_Res is
                        ("prefix must statically denote a remote subprogram ",
                         N);
                   end if;
-               end if;
 
-               --   If we are generating code for a distributed program.
-               --   perform semantic checks against the corresponding
-               --   remote entities.
+                  --  If we are generating code in distributed mode, perform
+                  --  semantic checks against corresponding remote entities.
 
-               if (Attr = Attribute_Access           or else
-                   Attr = Attribute_Unchecked_Access or else
-                   Attr = Attribute_Unrestricted_Access)
-                 and then Full_Expander_Active
-                 and then Get_PCS_Name /= Name_No_DSA
-               then
-                  Check_Subtype_Conformant
-                    (New_Id  => Entity (Prefix (N)),
-                     Old_Id  => Designated_Type
-                                  (Corresponding_Remote_Type (Typ)),
-                     Err_Loc => N);
+                  if Full_Expander_Active
+                    and then Get_PCS_Name /= Name_No_DSA
+                  then
+                     Check_Subtype_Conformant
+                       (New_Id  => Entity (Prefix (N)),
+                        Old_Id  => Designated_Type
+                                     (Corresponding_Remote_Type (Typ)),
+                        Err_Loc => N);
 
-                  if Is_Remote then
-                     Process_Remote_AST_Attribute (N, Typ);
+                     if Is_Remote then
+                        Process_Remote_AST_Attribute (N, Typ);
+                     end if;
                   end if;
                end if;
             end if;

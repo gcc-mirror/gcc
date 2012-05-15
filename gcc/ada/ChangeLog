@@ -1,3 +1,48 @@
+2012-05-15  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb, exp_ch11.adb, exp_ch11.ads: Minor reformatting.
+
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb (Resolve): Enforce E.2.2(11/2) and E.2.2(12) for
+	'Unrestricted_Access and 'Unchecked_Access (not just 'Access):
+	even in those cases, a remote access type may only designate a
+	remote subprogram.
+
+2012-05-15  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb, sem_util.ads, sem_cat.adb: Minor refactoring.
+	(Enclosing_Lib_Unit_Node): Rename to Enclosing_Comp_Unit_Node.
+
+2012-05-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Remove obsolete
+	checks on nested inlined subprograms.
+
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
+	* fe.h (Get_RT_Exception_Name): Declare.
+
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c (db_region_for): Use %p + cast to avoid warnings.
+	(get_region_description_for): Likewise.
+	(db_action_for): Likewise.
+	(get_call_site_action_for): Likewise.
+	(get_ttype_entry_for): Remove useless 'const'.
+	(PERSONALITY_FUNCTION): Add ATTRIBUTE_UNUSED on uw_exception_class.
+
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exextr.adb (Unhandled_Exception_Terminate): Save occurrence
+	on the stack to avoid a dynamic memory allocation.
+
+2012-05-15  Bob Duff  <duff@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call): Move initialization of
+	E_Stats and D_Stats after Process_Statements_For_Controlled_Objects,
+	because those calls can destroy the Statements list.
+
 2012-05-15  Tristan Gingold  <gingold@adacore.com>
 
 	* fe.h (Get_RT_Exception_Name): Define.

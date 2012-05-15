@@ -11883,12 +11883,10 @@ package body Exp_Ch9 is
 
       E_Call  : Node_Id :=
                   Entry_Call_Statement (Entry_Call_Alternative (N));
-      E_Stats : constant List_Id :=
-                  Statements (Entry_Call_Alternative (N));
+      E_Stats : List_Id;  --  statements after entry call
       D_Stat  : Node_Id :=
                   Delay_Statement (Delay_Alternative (N));
-      D_Stats : constant List_Id :=
-                  Statements (Delay_Alternative (N));
+      D_Stats : List_Id;  --  statements after "delay ..."
 
       Actuals        : List_Id;
       Blk_Typ        : Entity_Id;
@@ -11932,6 +11930,12 @@ package body Exp_Ch9 is
 
       Process_Statements_For_Controlled_Objects (Entry_Call_Alternative (N));
       Process_Statements_For_Controlled_Objects (Delay_Alternative (N));
+
+      --  Must fetch E_Stats/D_Stats after above "Process_...", because it
+      --  might modify them.
+
+      E_Stats := Statements (Entry_Call_Alternative (N));
+      D_Stats := Statements (Delay_Alternative (N));
 
       --  The arguments in the call may require dynamic allocation, and the
       --  call statement may have been transformed into a block. The block

@@ -79,9 +79,9 @@ package Exp_Ch11 is
    --  the exception entity to be passed to Local_Raise.
 
    procedure Get_RT_Exception_Name (Code : RT_Exception_Code);
-   --  This procedure is provided for use by the back end to get in the
-   --  name of the Rcheck procedure for Code. The name is appended to
-   --  Namet.Name_Buffer, without the __gnat_rcheck_ prefix.
+   --  This procedure is provided for use by the back end to obtain the name of
+   --  the Rcheck procedure for Code. The name is appended to Namet.Name_Buffer
+   --  without the __gnat_rcheck_ prefix.
 
    function Is_Non_Ada_Error (E : Entity_Id) return Boolean;
    --  This function is provided for Gigi use. It returns True if operating on
