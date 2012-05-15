@@ -4417,12 +4417,10 @@ Similar, for other arithmetic operations.
 @cindex @code{fma@var{m}4} instruction pattern
 @item @samp{fma@var{m}4}
 Multiply operand 2 and operand 1, then add operand 3, storing the
-result in operand 0.  All operands must have mode @var{m}.  This
-pattern is used to implement the @code{fma}, @code{fmaf}, and
-@code{fmal} builtin functions from the ISO C99 standard.  The
-@code{fma} operation may produce different results than doing the
-multiply followed by the add if the machine does not perform a
-rounding step between the operations.
+result in operand 0 without doing an intermediate rounding step.  All
+operands must have mode @var{m}.  This pattern is used to implement
+the @code{fma}, @code{fmaf}, and @code{fmal} builtin functions from
+the ISO C99 standard.
 
 @cindex @code{fms@var{m}4} instruction pattern
 @item @samp{fms@var{m}4}
