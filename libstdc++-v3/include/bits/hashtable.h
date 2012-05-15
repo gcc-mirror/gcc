@@ -203,8 +203,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __key_extract = typename std::conditional<
 					     __constant_iterators::value,
-				       	     std::_Identity<value_type>,
-					     std::_Select1st<value_type>>::type;
+				       	     __detail::_Identity,
+					     __detail::_Select1st>::type;
 
       using __hashtable_base = __detail::
 			       _Hashtable_base<_Key, _Value, _ExtractKey,
