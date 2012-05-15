@@ -423,7 +423,7 @@ package body Sem_Ch13 is
                               end if;
                            end if;
 
-                        --  Give error message for RM 13.4.1(10) violation
+                        --  Give error message for RM 13.5.1(10) violation
 
                         else
                            Error_Msg_FE

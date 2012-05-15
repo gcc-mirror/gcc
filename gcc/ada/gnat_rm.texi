@@ -6780,7 +6780,7 @@ component value, possibly applying some shift and mask operatings on the
 enclosing machine scalar), and the opposite operation is done for
 writes.
 
-In that case, the restrictions set forth in 10.3/2 for scalar components
+In that case, the restrictions set forth in 13.5.1(10.3/2) for scalar components
 are relaxed. Instead, the following rules apply:
 
 @itemize @bullet

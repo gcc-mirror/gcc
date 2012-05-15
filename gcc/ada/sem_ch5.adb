@@ -1683,7 +1683,7 @@ package body Sem_Ch5 is
          begin
             Typ := Etype (Iter_Name);
 
-            --  Protect against malformed iterator.
+            --  Protect against malformed iterator
 
             if Typ = Any_Type then
                Error_Msg_N ("invalid expression in loop iterator", Iter_Name);

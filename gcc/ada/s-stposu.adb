@@ -56,6 +56,10 @@ package body System.Storage_Pools.Subpools is
    procedure Detach (N : not null SP_Node_Ptr);
    --  Unhook a subpool node from an arbitrary subpool list
 
+   -----------------------------------
+   -- Adjust_Controlled_Dereference --
+   -----------------------------------
+
    procedure Adjust_Controlled_Dereference
      (Addr         : in out System.Address;
       Storage_Size : in out System.Storage_Elements.Storage_Count;

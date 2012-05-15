@@ -56,7 +56,7 @@
 --       This may involve adding some nodes to the tree to perform additional
 --       treatments later.
 
---    5. Ff the semantic analysis of expressions/names in the aspect should not
+--    5. If the semantic analysis of expressions/names in the aspect should not
 --       occur at the point the aspect is defined, add code in the adequate
 --       semantic analysis procedure for the aspect. For example, this is the
 --       case for aspects Pre and Post on subprograms, which are pre-analyzed

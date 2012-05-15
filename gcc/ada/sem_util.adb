@@ -8684,7 +8684,7 @@ package body Sem_Util is
       then
          return True;
 
-      --  A function call is never a variable.
+      --  A function call is never a variable
 
       elsif Nkind (N) = N_Function_Call then
          return False;
