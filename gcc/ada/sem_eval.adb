@@ -4669,6 +4669,10 @@ package body Sem_Eval is
       --  In Ada 2012, subtypes statically match if their static predicates
       --  match as well.
 
+      ----------------------
+      -- Predicates_Match --
+      ----------------------
+
       function Predicates_Match return Boolean is
          Pred1 : Node_Id;
          Pred2 : Node_Id;
@@ -4698,6 +4702,8 @@ package body Sem_Eval is
             pragma Warnings (On);
          end if;
       end Predicates_Match;
+
+   --  Start of processing for Subtypes_Statically_Match
 
    begin
       --  A type always statically matches itself
@@ -4768,7 +4774,8 @@ package body Sem_Eval is
             HB2 : constant Node_Id := Type_High_Bound (T2);
 
          begin
-            --  If the bounds are the same tree node, then match
+            --  If the bounds are the same tree node, then match if and only
+            --  if any predicates present also match.
 
             if LB1 = LB2 and then HB1 = HB2 then
                return Predicates_Match;
