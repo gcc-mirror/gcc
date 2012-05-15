@@ -1,3 +1,15 @@
+2012-05-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Set kind of
+	loop variable after pre-analysis of iterator name, to prevent
+	premature usage of loop variable.
+
+2012-05-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Variable): In Ada 2012, an explicit
+	dereference that is a rewriting of an expression whose type has
+	a declared Implicit_Derenference aspect is a variable.
+
 2012-05-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Insert_Dereference_Action): Reimplemented. The

@@ -1650,13 +1650,17 @@ package body Sem_Ch5 is
 
    begin
       Enter_Name (Def_Id);
-      Set_Ekind (Def_Id, E_Variable);
 
       if Present (Subt) then
          Analyze (Subt);
       end if;
 
       Preanalyze_Range (Iter_Name);
+
+      --  Set the kind of the loop variable, which is not visible within
+      --  the iterator name.
+
+      Set_Ekind (Def_Id, E_Variable);
 
       --  If the domain of iteration is an expression, create a declaration for
       --  it, so that finalization actions are introduced outside of the loop.
@@ -1678,6 +1682,13 @@ package body Sem_Ch5 is
 
          begin
             Typ := Etype (Iter_Name);
+
+            --  Protect against malformed iterator.
+
+            if Typ = Any_Type then
+               Error_Msg_N ("invalid expression in loop iterator", Iter_Name);
+               return;
+            end if;
 
             --  The name in the renaming declaration may be a function call.
             --  Indicate that it does not come from source, to suppress
