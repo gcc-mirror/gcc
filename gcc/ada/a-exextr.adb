@@ -162,14 +162,14 @@ package body Exception_Traces is
    -----------------------------------
 
    procedure Unhandled_Exception_Terminate is
-
-      --  Comments needed on why we do things this way ??? (see RH)
-
       Excep : Exception_Occurrence;
       --  This occurrence will be used to display a message after finalization.
       --  It is necessary to save a copy here, or else the designated value
       --  could be overwritten if an exception is raised during finalization
-      --  (even if that exception is caught).
+      --  (even if that exception is caught). The occurrence is saved on the
+      --  stack to avoid dynamic allocation (if this exception is due to lack
+      --  of space in the heap, we therefore avoid a second failure). We assume
+      --  that there is enough room on the stack however.
 
    begin
       Save_Occurrence (Excep, Get_Current_Excep.all.all);

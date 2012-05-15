@@ -8633,7 +8633,30 @@ package body Sem_Prag is
                 Name_Entity,
                 Name_External_Name,
                 Name_Link_Name));
-            Check_At_Least_N_Arguments (2);
+
+            if Present (Corresponding_Aspect (N)) then
+
+               --  If the pragma comes from an Aspect, there is a single entity
+               --  parameter and an optional booean value with default true.
+               --  The convention must be provided by a separate aspect.
+
+               Check_At_Least_N_Arguments (1);
+               Check_At_Most_N_Arguments  (2);
+               Def_Id := Entity (Arg1);
+
+               if No (Arg2) then
+
+                  --  If the aspect has a default True value, set corresponding
+                  --  flag on the entity.
+
+                  Set_Is_Exported (Def_Id);
+               end if;
+               return;
+
+            else
+               Check_At_Least_N_Arguments (2);
+            end if;
+
             Check_At_Most_N_Arguments  (4);
             Process_Convention (C, Def_Id);
 
@@ -9566,9 +9589,30 @@ package body Sem_Prag is
                 Name_Entity,
                 Name_External_Name,
                 Name_Link_Name));
-            Check_At_Least_N_Arguments (2);
-            Check_At_Most_N_Arguments  (4);
-            Process_Import_Or_Interface;
+
+            if Present (Corresponding_Aspect (N)) then
+
+               --  If the pragma comes from an Aspect, there is a single entity
+               --  parameter and an optional booean value with default true.
+               --  The convention must be provided by a separate aspect.
+
+               Check_At_Least_N_Arguments (1);
+               Check_At_Most_N_Arguments  (2);
+
+               if No (Arg2) then
+
+                  --  If the aspect has a default True value, set corresponding
+                  --  flag on the entity.
+
+                  Set_Is_Imported (Entity (Arg1));
+               end if;
+               return;
+
+            else
+               Check_At_Least_N_Arguments (2);
+               Check_At_Most_N_Arguments  (4);
+               Process_Import_Or_Interface;
+            end if;
 
          ----------------------
          -- Import_Exception --
