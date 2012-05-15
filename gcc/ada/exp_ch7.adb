@@ -723,9 +723,10 @@ package body Exp_Ch7 is
       pragma Assert (Present (Data.Raised_Id));
 
       if Exception_Extra_Info
-        or else (For_Library and then not Restricted_Profile)
+        or else (For_Library and not Restricted_Profile)
       then
          if Exception_Extra_Info then
+
             --  Generate:
 
             --    Get_Current_Excep.all
@@ -735,8 +736,9 @@ package body Exp_Ch7 is
                 Name =>
                   Make_Explicit_Dereference (Data.Loc,
                     Prefix =>
-                      New_Reference_To (RTE (RE_Get_Current_Excep),
-                                        Data.Loc)));
+                      New_Reference_To
+                        (RTE (RE_Get_Current_Excep), Data.Loc)));
+
          else
             --  Generate:
 
@@ -748,15 +750,17 @@ package body Exp_Ch7 is
          if For_Library and then not Restricted_Profile then
             Proc_To_Call := RTE (RE_Save_Library_Occurrence);
             Actuals := New_List (Except);
+
          else
             Proc_To_Call := RTE (RE_Save_Occurrence);
 
             --  The dereference occurs only when Exception_Extra_Info is true,
             --  and therefore Except is not null.
 
-            Actuals := New_List (
-              New_Reference_To (Data.E_Id, Data.Loc),
-              Make_Explicit_Dereference (Data.Loc, Except));
+            Actuals :=
+              New_List (
+                New_Reference_To (Data.E_Id, Data.Loc),
+                Make_Explicit_Dereference (Data.Loc, Except));
          end if;
 
          --  Generate:
@@ -3054,6 +3058,7 @@ package body Exp_Ch7 is
          A_Expr := New_Reference_To (RTE (RE_Triggered_By_Abort), Loc);
 
          --  Generate:
+
          --    Abort_Id : constant Boolean := <A_Expr>;
 
          Append_To (Decls,
@@ -3073,6 +3078,7 @@ package body Exp_Ch7 is
          Data.E_Id      := Make_Temporary (Loc, 'E');
 
          --  Generate:
+
          --    E_Id : Exception_Occurrence;
 
          E_Decl :=
@@ -3089,6 +3095,7 @@ package body Exp_Ch7 is
       end if;
 
       --  Generate:
+
       --    Raised_Id : Boolean := False;
 
       Append_To (Decls,
@@ -3134,6 +3141,7 @@ package body Exp_Ch7 is
       end if;
 
       --  Generate:
+
       --    Raised_Id and then not Abort_Id
       --      <or>
       --    Raised_Id
@@ -3149,6 +3157,7 @@ package body Exp_Ch7 is
       end if;
 
       --  Generate:
+
       --    if Raised_Id and then not Abort_Id then
       --       Raise_From_Controlled_Operation (E_Id);
       --         <or>

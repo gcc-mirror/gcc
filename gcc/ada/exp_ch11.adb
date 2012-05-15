@@ -1909,72 +1909,78 @@ package body Exp_Ch11 is
             --  case it will end up in the block statements, even though it
             --  is not there now.
 
-            if Is_List_Member (N)
-              and then (List_Containing (N) = Statements (P)
-                          or else
-                        List_Containing (N) = SSE.Actions_To_Be_Wrapped_Before
-                          or else
-                        List_Containing (N) = SSE.Actions_To_Be_Wrapped_After)
-            then
-               --  Loop through exception handlers
+            if Is_List_Member (N) then
+               declare
+                  LCN : constant List_Id := List_Containing (N);
 
-               H := First (Exception_Handlers (P));
-               while Present (H) loop
+               begin
+                  if LCN = Statements (P)
+                       or else
+                     LCN  = SSE.Actions_To_Be_Wrapped_Before
+                       or else
+                     LCN = SSE.Actions_To_Be_Wrapped_After
+                  then
+                     --  Loop through exception handlers
 
-                  --  Guard against other constructs appearing in the list of
-                  --  exception handlers.
+                     H := First (Exception_Handlers (P));
+                     while Present (H) loop
 
-                  if Nkind (H) = N_Exception_Handler then
+                        --  Guard against other constructs appearing in the
+                        --  list of exception handlers.
 
-                     --  Loop through choices in one handler
+                        if Nkind (H) = N_Exception_Handler then
 
-                     C := First (Exception_Choices (H));
-                     while Present (C) loop
+                           --  Loop through choices in one handler
 
-                        --  Deal with others case
+                           C := First (Exception_Choices (H));
+                           while Present (C) loop
 
-                        if Nkind (C) = N_Others_Choice then
+                              --  Deal with others case
 
-                           --  Matching others handler, but we need to ensure
-                           --  there is no choice parameter. If there is, then
-                           --  we don't have a local handler after all (since
-                           --  we do not allow choice parameters for local
-                           --  handlers).
+                              if Nkind (C) = N_Others_Choice then
 
-                           if No (Choice_Parameter (H)) then
-                              return H;
-                           else
-                              return Empty;
-                           end if;
+                                 --  Matching others handler, but we need
+                                 --  to ensure there is no choice parameter.
+                                 --  If there is, then we don't have a local
+                                 --  handler after all (since we do not allow
+                                 --  choice parameters for local handlers).
 
-                        --  If not others must be entity name
+                                 if No (Choice_Parameter (H)) then
+                                    return H;
+                                 else
+                                    return Empty;
+                                 end if;
 
-                        elsif Nkind (C) /= N_Others_Choice then
-                           pragma Assert (Is_Entity_Name (C));
-                           pragma Assert (Present (Entity (C)));
+                                 --  If not others must be entity name
 
-                           --  Get exception being handled, dealing with
-                           --  renaming.
+                              elsif Nkind (C) /= N_Others_Choice then
+                                 pragma Assert (Is_Entity_Name (C));
+                                 pragma Assert (Present (Entity (C)));
 
-                           EHandle := Get_Renamed_Entity (Entity (C));
+                                 --  Get exception being handled, dealing with
+                                 --  renaming.
 
-                           --  If match, then check choice parameter
+                                 EHandle := Get_Renamed_Entity (Entity (C));
 
-                           if ERaise = EHandle then
-                              if No (Choice_Parameter (H)) then
-                                 return H;
-                              else
-                                 return Empty;
+                                 --  If match, then check choice parameter
+
+                                 if ERaise = EHandle then
+                                    if No (Choice_Parameter (H)) then
+                                       return H;
+                                    else
+                                       return Empty;
+                                    end if;
+                                 end if;
                               end if;
-                           end if;
+
+                              Next (C);
+                           end loop;
                         end if;
 
-                        Next (C);
+                        Next (H);
                      end loop;
                   end if;
-
-                  Next (H);
-               end loop;
+               end;
             end if;
          end if;
 

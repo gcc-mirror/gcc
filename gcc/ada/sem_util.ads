@@ -386,7 +386,7 @@ package Sem_Util is
    --  root of the current scope (which must not be Standard_Standard, and the
    --  caller is responsible for ensuring this condition).
 
-   function Enclosing_Lib_Unit_Node (N : Node_Id) return Node_Id;
+   function Enclosing_Comp_Unit_Node (N : Node_Id) return Node_Id;
    --  Returns the enclosing N_Compilation_Unit Node that is the root of a
    --  subtree containing N.
 

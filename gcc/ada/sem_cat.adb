@@ -2131,7 +2131,7 @@ package body Sem_Cat is
 
             if Is_Internal_File_Name (Unit_File_Name (Get_Source_Unit (N)))
               and then
-                Enclosing_Lib_Unit_Node (N) /= Enclosing_Lib_Unit_Node (E)
+                Enclosing_Comp_Unit_Node (N) /= Enclosing_Comp_Unit_Node (E)
               and then (Is_Preelaborated (Scope (E))
                          or else Is_Pure (Scope (E))
                          or else (Present (Renamed_Object (E))

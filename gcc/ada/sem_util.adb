@@ -3165,11 +3165,11 @@ package body Sem_Util is
       return Unit_Entity;
    end Enclosing_Lib_Unit_Entity;
 
-   -----------------------------
-   -- Enclosing_Lib_Unit_Node --
-   -----------------------------
+   ------------------------------
+   -- Enclosing_Comp_Unit_Node --
+   ------------------------------
 
-   function Enclosing_Lib_Unit_Node (N : Node_Id) return Node_Id is
+   function Enclosing_Comp_Unit_Node (N : Node_Id) return Node_Id is
       Current_Node : Node_Id;
 
    begin
@@ -3185,7 +3185,7 @@ package body Sem_Util is
       end if;
 
       return Current_Node;
-   end Enclosing_Lib_Unit_Node;
+   end Enclosing_Comp_Unit_Node;
 
    -----------------------
    -- Enclosing_Package --
