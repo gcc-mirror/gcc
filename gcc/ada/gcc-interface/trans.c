@@ -702,12 +702,16 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 static tree
 build_raise_check (int check, enum exception_info_kind kind)
 {
-  char name[21];
   tree result, ftype;
+  const char pfx[] = "__gnat_rcheck_";
+
+  strcpy (Name_Buffer, pfx);
+  Name_Len = sizeof (pfx) - 1;
+  Get_RT_Exception_Name (check);
 
   if (kind == exception_simple)
     {
-      sprintf (name, "__gnat_rcheck_%.2d", check);
+      Name_Buffer[Name_Len] = 0;
       ftype
 	= build_function_type_list (void_type_node,
 				    build_pointer_type
@@ -717,7 +721,9 @@ build_raise_check (int check, enum exception_info_kind kind)
   else
     {
       tree t = (kind == exception_column ? NULL_TREE : integer_type_node);
-      sprintf (name, "__gnat_rcheck_%.2d_ext", check);
+
+      strcpy (Name_Buffer + Name_Len, "_ext");
+      Name_Buffer[Name_Len + 4] = 0;
       ftype
 	= build_function_type_list (void_type_node,
 				    build_pointer_type
@@ -727,7 +733,8 @@ build_raise_check (int check, enum exception_info_kind kind)
     }
 
   result
-    = create_subprog_decl (get_identifier (name), NULL_TREE, ftype, NULL_TREE,
+    = create_subprog_decl (get_identifier (Name_Buffer),
+			   NULL_TREE, ftype, NULL_TREE,
 			   false, true, true, true, NULL, Empty);
 
   /* Indicate that it never returns.  */
