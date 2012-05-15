@@ -68,7 +68,7 @@ ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
 THREAD_KIND=native
 TRACE=no
 # We do not want the WARN_CFLAGS of the compiler in Ada as it is for C/C++.
-COMMON_FLAGS_TO_PASS = $(filter-out -pedantic -W%, $(FLAGS_TO_PASS))
+COMMON_FLAGS_TO_PASS = $(filter-out $(WARN_CFLAGS), $(FLAGS_TO_PASS))
 ADA_FLAGS_TO_PASS = \
 	"ADA_FOR_BUILD=$(ADA_FOR_BUILD)"	\
 	"ADA_INCLUDE_DIR=$(ADA_INCLUDE_DIR)"	\
