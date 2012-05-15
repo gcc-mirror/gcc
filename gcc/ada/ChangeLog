@@ -1,3 +1,9 @@
+2012-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Process_Atomic_Shared_Volatile): Propagate
+	atomicity from an object to its underlying type only if it
+	is composite.
+
 2012-05-06  Pascal Obry  <obry@adacore.com>
 
 	Revert

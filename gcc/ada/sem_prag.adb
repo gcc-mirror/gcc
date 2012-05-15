@@ -2972,16 +2972,29 @@ package body Sem_Prag is
                   Set_Has_Delayed_Freeze (E);
                end if;
 
-               --  An interesting improvement here. If an object of type X is
-               --  declared atomic, and the type X is not atomic, that's a
+               --  An interesting improvement here. If an object of composite
+               --  type X is declared atomic, and the type X isn't, that's a
                --  pity, since it may not have appropriate alignment etc. We
                --  can rescue this in the special case where the object and
                --  type are in the same unit by just setting the type as
                --  atomic, so that the back end will process it as atomic.
 
+               --  Note: we used to do this for elementary types as well,
+               --  but that turns out to be a bad idea and can have unwanted
+               --  effects, most notably if the type is elementary, the object
+               --  a simple component within a record, and both are in a spec:
+               --  every object of this type in the entire program will be
+               --  treated as atomic, thus incurring a potentially costly
+               --  synchronization operation for every access.
+
+               --  Of course it would be best if the back end could just adjust
+               --  the alignment etc for the specific object, but that's not
+               --  something we are capable of doing at this point.
+
                Utyp := Underlying_Type (Etype (E));
 
                if Present (Utyp)
+                 and then Is_Composite_Type (Utyp)
                  and then Sloc (E) > No_Location
                  and then Sloc (Utyp) > No_Location
                  and then
