@@ -13608,7 +13608,11 @@ tsubst_copy_and_build (tree t,
     case MEMBER_REF:
     case DOTSTAR_EXPR:
       {
-	tree r = build_x_binary_op
+	tree r;
+
+	++c_inhibit_evaluation_warnings;
+
+	r = build_x_binary_op
 	  (input_location, TREE_CODE (t),
 	   RECUR (TREE_OPERAND (t, 0)),
 	   (TREE_NO_WARNING (TREE_OPERAND (t, 0))
@@ -13622,6 +13626,9 @@ tsubst_copy_and_build (tree t,
 	   complain);
 	if (EXPR_P (r) && TREE_NO_WARNING (t))
 	  TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
+
+	--c_inhibit_evaluation_warnings;
+
 	return r;
       }
 

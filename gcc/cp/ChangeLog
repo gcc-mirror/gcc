@@ -1,3 +1,9 @@
+2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/11586
+	* pt.c (tsubst_copy_and_build): Increase / decrease
+	c_inhibit_evaluation_warnings around build_x_binary_op call.
+
 2012-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (TYPE_PTRMEM_P): Rename to TYPE_PTRDATAMEM_P.

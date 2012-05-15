@@ -66,7 +66,7 @@ int test (int x)
 
 template <typename Int, Int D>
 void f(Int x) {
-  assert(0 <= x and x <= D); // { dg-warning "comparison is always true due to limited range of data type" }
+  assert(0 <= x and x <= D);
 }
 
 int ff(void) {
