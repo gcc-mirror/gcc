@@ -1,3 +1,8 @@
+2012-05-15  Andris Pavenis  <andris.pavenis@iki.fi>
+
+	PR ada/52494
+	* s-taprop-dummy.adb (Specific): New package.
+
 2012-05-15  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/Make-lang.in (COMMON_FLAGS_TO_PASS): Use WARN_CFLAGS

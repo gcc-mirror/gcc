@@ -46,6 +46,28 @@ package body System.Task_Primitives.Operations is
    pragma Warnings (Off);
    --  Turn off warnings since so many unreferenced parameters
 
+   --------------------
+   -- Local Packages --
+   --------------------
+
+   package Specific is
+
+      procedure Set (Self_Id : Task_Id);
+      pragma Inline (Set);
+      --  Set the self id for the current task
+
+   end Specific;
+
+   package body Specific is
+
+      procedure Set (Self_Id : Task_Id) is
+      begin
+         null;
+      end Set;
+
+   end Specific;
+   --  The body of this package is target specific
+
    ----------------------------------
    -- ATCB allocation/deallocation --
    ----------------------------------
