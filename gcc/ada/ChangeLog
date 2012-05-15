@@ -1,3 +1,27 @@
+2012-05-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* g-calend.adb (Split_At_Locale): New routine.
+	(Time_Of_At_Locale): New routine.
+	* g-calend.ads (Split_At_Locale): New routine.
+	(Time_Of_At_Locale): New routine.
+
+2012-05-15  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-except.ads: Minor reformatting.
+
+2012-05-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): If the loop
+	parameter specification is part of a quantified expression, and it
+	already carries a type, do not repeat the analysis to preserve
+	type information: a range attribute reference may have been
+	rewritten as a range with static bounds, and its re-analysis may
+	type it as Integer by default, instead of the original index type.
+
+2012-05-15  Robert Dewar  <dewar@adacore.com>
+
+	* s-osprim-mingw.adb: Minor reformatting.
+
 2012-05-15  Arnaud Charlet  <charlet@adacore.com>
 
 	* a-except.adb, a-except.ads (Reraise_Library_Exception_If_Any): New.
@@ -132,8 +156,6 @@
 	* a-calfor.adb (Split): Update the call to
 	Formatting_Operations.Split.
 	(Time_Of): Update the call to Formatting_Operations.Time_Of.
-	* impunit.adb: Include g-calloc to the list of non-RM defined
-	units.
 
 2012-05-15  Vincent Celier  <celier@adacore.com>
 

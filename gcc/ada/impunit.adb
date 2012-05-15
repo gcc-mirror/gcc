@@ -246,7 +246,6 @@ package body Impunit is
     ("g-byorma", F),  -- GNAT.Byte_Order_Mark
     ("g-bytswa", F),  -- GNAT.Byte_Swapping
     ("g-calend", F),  -- GNAT.Calendar
-    ("g-calloc", F),  -- GNAT.Calendar.Locale
     ("g-catiio", F),  -- GNAT.Calendar.Time_IO
     ("g-casuti", F),  -- GNAT.Case_Util
     ("g-cgi   ", F),  -- GNAT.CGI

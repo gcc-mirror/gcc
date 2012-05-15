@@ -35,7 +35,7 @@
 
 --  This version of Ada.Exceptions is a full Ada 95 version. It omits Ada 2005
 --  features such as the additional definitions of Exception_Name returning
---  Wide_[Wide_]String. If differs from the 95 version only in that it is
+--  Wide_[Wide_]String. It differs from the Ada 95 version only in that it is
 --  declared Preelaborate (see declaration below for why this is done).
 
 --  It is used for building the compiler and the basic tools, since these
