@@ -2394,17 +2394,6 @@ gimple_copy (gimple stmt)
 }
 
 
-/* Set the MODIFIED flag to MODIFIEDP, iff the gimple statement G has
-   a MODIFIED field.  */
-
-void
-gimple_set_modified (gimple s, bool modifiedp)
-{
-  if (gimple_has_ops (s))
-    s->gsbase.modified = (unsigned) modifiedp;
-}
-
-
 /* Return true if statement S has side-effects.  We consider a
    statement to have side effects if:
 

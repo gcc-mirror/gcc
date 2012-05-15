@@ -830,7 +830,6 @@ tree gimple_get_lhs (const_gimple);
 void gimple_set_lhs (gimple, tree);
 void gimple_replace_lhs (gimple, tree);
 gimple gimple_copy (gimple);
-void gimple_set_modified (gimple, bool);
 void gimple_cond_get_ops_from_tree (tree, enum tree_code *, tree *, tree *);
 gimple gimple_build_cond_from_tree (tree, tree, tree);
 void gimple_cond_set_condition_from_tree (gimple, tree);
@@ -1518,6 +1517,17 @@ static inline bool
 gimple_modified_p (const_gimple g)
 {
   return (gimple_has_ops (g)) ? (bool) g->gsbase.modified : false;
+}
+
+
+/* Set the MODIFIED flag to MODIFIEDP, iff the gimple statement G has
+   a MODIFIED field.  */
+
+static inline void
+gimple_set_modified (gimple s, bool modifiedp)
+{
+  if (gimple_has_ops (s))
+    s->gsbase.modified = (unsigned) modifiedp;
 }
 
 
