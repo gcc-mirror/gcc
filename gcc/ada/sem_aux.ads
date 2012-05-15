@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,7 +99,7 @@ package Sem_Aux is
    function Constant_Value (Ent : Entity_Id) return Node_Id;
    --  Ent is a variable, constant, named integer, or named real entity. This
    --  call obtains the initialization expression for the entity. Will return
-   --  Empty for for a deferred constant whose full view is not available or
+   --  Empty for a deferred constant whose full view is not available or
    --  in some other cases of internal entities, which cannot be treated as
    --  constants from the point of view of constant folding. Empty is also
    --  returned for variables with no initialization expression.

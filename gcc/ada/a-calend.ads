@@ -193,33 +193,6 @@ private
    --  of year - 4 to year + 4. Internally, routines Split and Time_Of add or
    --  subtract a "fake" February 29 to facilitate the arithmetic involved.
 
-   ------------------------------------
-   -- Time Zones and UTC_Time_Offset --
-   ------------------------------------
-
-   --  The implementation-defined time zone of Ada.Calendar routines is the
-   --  local time zone. The term "local time zone" can be interpreted in two
-   --  different ways - either the offset from UTC of the "now" or the offset
-   --  from UTC of some input date.
-
-   --  For efficency reasons, Split and Time_Of take the first approach. Since
-   --  the Ada Reference Manual does not mandate that Split and Time_Of should
-   --  be concious of historic time zones, this interpretation is acceptable
-   --  and efficent in terms of performance. Split and Time_Of localize their
-   --  respective input regardless of whether it represent a past or a future
-   --  date.
-
-   --  UTC_Time_Offset on the other hand must be knowledgeable of historic time
-   --  zones. To achieve this, the implementation relies on various operating
-   --  system routines. Note that not all operating systems support time zones.
-   --  UTC_Time_Offset calculates the offset from UTC as it occurred or will
-   --  occur on the input date relative to the local time zone. Example:
-
-   --     Date         Offset    Reason
-   --     2012-01-11   -300
-   --     2011-03-12   -300
-   --     2011-03-14   -240      Daylight savings is in effect
-
    ------------------------
    -- Local Declarations --
    ------------------------
@@ -341,21 +314,25 @@ private
       --  within the range of 0 .. 6 (Monday .. Sunday).
 
       procedure Split
-        (Date      : Time;
-         Year      : out Year_Number;
-         Month     : out Month_Number;
-         Day       : out Day_Number;
-         Day_Secs  : out Day_Duration;
-         Hour      : out Integer;
-         Minute    : out Integer;
-         Second    : out Integer;
-         Sub_Sec   : out Duration;
-         Leap_Sec  : out Boolean;
-         Use_TZ    : Boolean;
-         Time_Zone : Long_Integer);
-      --  Split a time value into its components. Set Use_TZ to use the local
-      --  time zone (the value in Time_Zone is ignored) when splitting a time
-      --  value.
+        (Date        : Time;
+         Year        : out Year_Number;
+         Month       : out Month_Number;
+         Day         : out Day_Number;
+         Day_Secs    : out Day_Duration;
+         Hour        : out Integer;
+         Minute      : out Integer;
+         Second      : out Integer;
+         Sub_Sec     : out Duration;
+         Leap_Sec    : out Boolean;
+         Use_TZ      : Boolean;
+         Is_Historic : Boolean;
+         Time_Zone   : Long_Integer);
+      pragma Export (Ada, Split, "__gnat_split");
+      --  Split a time value into its components. If flag Is_Historic is set,
+      --  this routine would try to use to the best of the OS's abilities the
+      --  time zone offset that was or will be in effect on Date. Set Use_TZ
+      --  to use the local time zone (the value in Time_Zone is ignored) when
+      --  splitting a time value.
 
       function Time_Of
         (Year         : Year_Number;
@@ -366,16 +343,20 @@ private
          Minute       : Integer;
          Second       : Integer;
          Sub_Sec      : Duration;
-         Leap_Sec     : Boolean := False;
-         Use_Day_Secs : Boolean := False;
-         Use_TZ       : Boolean := False;
-         Time_Zone    : Long_Integer := 0) return Time;
+         Leap_Sec     : Boolean;
+         Use_Day_Secs : Boolean;
+         Use_TZ       : Boolean;
+         Is_Historic  : Boolean;
+         Time_Zone    : Long_Integer) return Time;
+      pragma Export (Ada, Time_Of, "__gnat_time_of");
       --  Given all the components of a date, return the corresponding time
       --  value. Set Use_Day_Secs to use the value in Day_Secs, otherwise the
       --  day duration will be calculated from Hour, Minute, Second and Sub_
-      --  Sec. Set Use_TZ to use the local time zone (the value in formal
-      --  Time_Zone is ignored) when building a time value and to verify the
-      --  validity of a requested leap second.
+      --  Sec. If flag Is_Historic is set, this routine would try to use to the
+      --  best of the OS's abilities the time zone offset that was or will be
+      --  in effect on the input date. Set Use_TZ to use the local time zone
+      --  (the value in formal Time_Zone is ignored) when building a time value
+      --  and to verify the validity of a requested leap second.
 
    end Formatting_Operations;
 
