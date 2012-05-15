@@ -1,5 +1,22 @@
 2012-05-15  Tristan Gingold  <gingold@adacore.com>
 
+	* exp_ch7.adb (Build_Exception_Handler): Save current
+	occurrence only if -gnateE.
+	(Build_Object_Declaration): Declare E_Id only if -gnateE.
+	(Build_Raise_Statement): Call Raise_From_Controlled_Operation only if
+	-gnateE (else raise PE).
+	* s-soflin.adb (Save_Library_Occurrence): Handle null occurrence
+	access.
+	* a-except-2005.adb (Reraise_Library_Exception_If_Any): Call
+	Raise_From_Controlled_Operation only if the saved occurrence is
+	not null, otherwise raise PE.
+
+2012-05-15  Yannick Moy  <moy@adacore.com>
+
+	* exp_alfa.ads: Add comments describing the Alfa mode.
+
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
 	* s-soflin.ads, s-soflin.adb (Save_Library_Occurrence): Parameter
 	E is now of type Exception_Occurrence_Access.
 	* exp_ch7.ads, exp_ch7.adb (Build_Exception_Handler): Adjust generated
