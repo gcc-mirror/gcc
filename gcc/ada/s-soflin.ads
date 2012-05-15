@@ -43,7 +43,7 @@ with Ada.Exceptions;
 with System.Stack_Checking;
 
 package System.Soft_Links is
-   pragma Preelaborate_05;
+   pragma Preelaborate;
 
    subtype EOA is Ada.Exceptions.Exception_Occurrence_Access;
    subtype EO is Ada.Exceptions.Exception_Occurrence;

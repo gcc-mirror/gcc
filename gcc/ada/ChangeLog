@@ -1,3 +1,9 @@
+2012-05-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-except.adb, a-except.ads (Reraise_Library_Exception_If_Any): New.
+	Mark this unit preelaborate.
+	* s-soflin.ads: Make package Preelaborate.
+
 2012-05-15  Robert Dewar  <dewar@adacore.com>
 
 	* s-osprim-mingw.adb, sem_eval.adb, a-calend-vms.ads: Minor reformatting

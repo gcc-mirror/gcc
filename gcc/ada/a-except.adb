@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1174,6 +1174,19 @@ package body Ada.Exceptions is
       Abort_Defer.all;
       Raise_Current_Excep (Excep.Id);
    end Reraise;
+
+   --------------------------------------
+   -- Reraise_Library_Exception_If_Any --
+   --------------------------------------
+
+   procedure Reraise_Library_Exception_If_Any is
+      LE : Exception_Occurrence;
+   begin
+      if Library_Exception_Set then
+         LE := Library_Exception;
+         Raise_From_Controlled_Operation (LE);
+      end if;
+   end Reraise_Library_Exception_If_Any;
 
    ------------------------
    -- Reraise_Occurrence --
