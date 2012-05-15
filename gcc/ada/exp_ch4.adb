@@ -10117,11 +10117,6 @@ package body Exp_Ch4 is
    -------------------------------
 
    procedure Insert_Dereference_Action (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Typ  : constant Entity_Id  := Etype (N);
-      Pool : constant Entity_Id  := Associated_Storage_Pool (Typ);
-      Pnod : constant Node_Id    := Parent (N);
-
       function Is_Checked_Storage_Pool (P : Entity_Id) return Boolean;
       --  Return true if type of P is derived from Checked_Pool;
 
@@ -10149,57 +10144,172 @@ package body Exp_Ch4 is
          return False;
       end Is_Checked_Storage_Pool;
 
+      --  Local variables
+
+      Typ   : constant Entity_Id  := Etype (N);
+      Desig : constant Entity_Id  := Available_View (Designated_Type (Typ));
+      Loc   : constant Source_Ptr := Sloc (N);
+      Pool  : constant Entity_Id  := Associated_Storage_Pool (Typ);
+      Pnod  : constant Node_Id    := Parent (N);
+
+      Addr  : Entity_Id;
+      Alig  : Entity_Id;
+      Deref : Node_Id;
+      Size  : Entity_Id;
+      Stmt  : Node_Id;
+
    --  Start of processing for Insert_Dereference_Action
 
    begin
       pragma Assert (Nkind (Pnod) = N_Explicit_Dereference);
 
-      if not (Is_Checked_Storage_Pool (Pool)
-              and then Comes_From_Source (Original_Node (Pnod)))
-      then
+      --  Do not re-expand a dereference which has already been processed by
+      --  this routine.
+
+      if Has_Dereference_Action (Pnod) then
+         return;
+
+      --  Do not perform this type of expansion for internally-generated
+      --  dereferences.
+
+      elsif not Comes_From_Source (Original_Node (Pnod)) then
+         return;
+
+      --  A dereference action is only applicable to objects which have been
+      --  allocated on a checked pool.
+
+      elsif not Is_Checked_Storage_Pool (Pool) then
          return;
       end if;
 
+      --  Extract the address of the dereferenced object. Generate:
+      --    Addr : System.Address := <N>'Pool_Address;
+
+      Addr := Make_Temporary (Loc, 'P');
+
       Insert_Action (N,
-        Make_Procedure_Call_Statement (Loc,
-          Name => New_Reference_To (
-            Find_Prim_Op (Etype (Pool), Name_Dereference), Loc),
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Addr,
+          Object_Definition   =>
+            New_Reference_To (RTE (RE_Address), Loc),
+          Expression          =>
+            Make_Attribute_Reference (Loc,
+              Prefix         => Duplicate_Subexpr_Move_Checks (N),
+              Attribute_Name => Name_Pool_Address)));
 
-          Parameter_Associations => New_List (
+      --  Calculate the size of the dereferenced object. Generate:
+      --    Size : Storage_Count := <N>.all'Size / Storage_Unit;
 
-            --  Pool
+      Deref :=
+        Make_Explicit_Dereference (Loc,
+          Prefix => Duplicate_Subexpr_Move_Checks (N));
+      Set_Has_Dereference_Action (Deref);
 
-             New_Reference_To (Pool, Loc),
+      Size := Make_Temporary (Loc, 'S');
 
-            --  Storage_Address. We use the attribute Pool_Address, which uses
-            --  the pointer itself to find the address of the object, and which
-            --  handles unconstrained arrays properly by computing the address
-            --  of the template. i.e. the correct address of the corresponding
-            --  allocation.
-
-             Make_Attribute_Reference (Loc,
-               Prefix         => Duplicate_Subexpr_Move_Checks (N),
-               Attribute_Name => Name_Pool_Address),
-
-            --  Size_In_Storage_Elements
-
-             Make_Op_Divide (Loc,
-               Left_Opnd  =>
+      Insert_Action (N,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Size,
+          Object_Definition   =>
+            New_Reference_To (RTE (RE_Storage_Count), Loc),
+          Expression          =>
+            Make_Op_Divide (Loc,
+              Left_Opnd   =>
                 Make_Attribute_Reference (Loc,
-                  Prefix         =>
-                    Make_Explicit_Dereference (Loc,
-                      Duplicate_Subexpr_Move_Checks (N)),
+                  Prefix         => Deref,
                   Attribute_Name => Name_Size),
                Right_Opnd =>
-                 Make_Integer_Literal (Loc, System_Storage_Unit)),
+                 Make_Integer_Literal (Loc, System_Storage_Unit))));
 
-            --  Alignment
+      --  Calculate the alignment of the dereferenced object. Generate:
+      --    Alig : constant Storage_Count := <N>.all'Alignment;
 
-             Make_Attribute_Reference (Loc,
-               Prefix         =>
-                 Make_Explicit_Dereference (Loc,
-                   Duplicate_Subexpr_Move_Checks (N)),
-               Attribute_Name => Name_Alignment))));
+      Deref :=
+        Make_Explicit_Dereference (Loc,
+          Prefix => Duplicate_Subexpr_Move_Checks (N));
+      Set_Has_Dereference_Action (Deref);
+
+      Alig := Make_Temporary (Loc, 'A');
+
+      Insert_Action (N,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Alig,
+          Object_Definition   =>
+            New_Reference_To (RTE (RE_Storage_Count), Loc),
+          Expression          =>
+            Make_Attribute_Reference (Loc,
+              Prefix         => Deref,
+              Attribute_Name => Name_Alignment)));
+
+      --  A dereference of a controlled object requires special processing. The
+      --  finalization machinery requests additional space from the underlying
+      --  pool to allocate and hide two pointers. As a result, a checked pool
+      --  may mark the wrong memory as valid. Since checked pools do not have
+      --  knowledge of hidden pointers, we have to bring the two pointers back
+      --  in view in order to restore the original state of the object.
+
+      if Needs_Finalization (Desig) then
+
+         --  Adjust the address and size of the dereferenced object. Generate:
+         --    Adjust_Controlled_Dereference (Addr, Size, Alig);
+
+         Stmt :=
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Reference_To (RTE (RE_Adjust_Controlled_Dereference), Loc),
+             Parameter_Associations => New_List (
+               New_Reference_To (Addr, Loc),
+               New_Reference_To (Size, Loc),
+               New_Reference_To (Alig, Loc)));
+
+         --  Class-wide types complicate things because we cannot determine
+         --  statically whether the actual object is truly controlled. We must
+         --  generate a runtime check to detect this property. Generate:
+         --
+         --    if Needs_Finalization (<N>.all'Tag) then
+         --       <Stmt>;
+         --    end if;
+
+         if Is_Class_Wide_Type (Desig) then
+            Deref :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => Duplicate_Subexpr_Move_Checks (N));
+            Set_Has_Dereference_Action (Deref);
+
+            Stmt :=
+              Make_If_Statement (Loc,
+                Condition       =>
+                  Make_Function_Call (Loc,
+                    Name                   =>
+                      New_Reference_To (RTE (RE_Needs_Finalization), Loc),
+                    Parameter_Associations => New_List (
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => Deref,
+                        Attribute_Name => Name_Tag))),
+                Then_Statements => New_List (Stmt));
+         end if;
+
+         Insert_Action (N, Stmt);
+      end if;
+
+      --  Generate:
+      --    Dereference (Pool, Addr, Size, Alig);
+
+      Insert_Action (N,
+        Make_Procedure_Call_Statement (Loc,
+          Name                   =>
+            New_Reference_To
+              (Find_Prim_Op (Etype (Pool), Name_Dereference), Loc),
+          Parameter_Associations => New_List (
+            New_Reference_To (Pool, Loc),
+            New_Reference_To (Addr, Loc),
+            New_Reference_To (Size, Loc),
+            New_Reference_To (Alig, Loc))));
+
+      --  Mark the explicit dereference as processed to avoid potential
+      --  infinite expansion.
+
+      Set_Has_Dereference_Action (Pnod);
 
    exception
       when RE_Not_Available =>

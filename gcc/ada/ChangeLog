@@ -1,3 +1,21 @@
+2012-05-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Insert_Dereference_Action): Reimplemented. The
+	routine performs address and size adjustments for dereferences
+	of heap-allocated controlled objects. This manipulation is needed
+	in order to restore the original state of the memory at the time
+	it was allocated by the finalization machinery.
+	* rtsfind.ads: Add RE_Adjust_Controlled_Dereference to tables
+	RE_Id and RE_Unit_Table.
+	* sinfo.adb (Has_Dereference_Action): New routine.
+	(Set_Has_Dereference_Action): New routine.
+	* sinfo.ads: Add new semantic flag Has_Dereference_Action along
+	its association in nodes.
+	(Has_Dereference_Action): New routine and pragma Inline.
+	(Set_Has_Dereference_Action): New routine and pragma Inline.
+	* s-stposu.ads, s-stposu.adb (Adjust_Controlled_Dereference): New
+	routine.
+
 2012-05-15  Thomas Quinot  <quinot@adacore.com>
 
 	* uintp.adb (Image_Uint): Use UI_Div_Rem to get quotient and
