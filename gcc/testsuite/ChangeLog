@@ -1,6 +1,6 @@
 2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	PR c++/11586
+	PR c++/11856
 	* g++.dg/warn/Wtype-limits.C: Don't warn in templates.
 	* g++.dg/warn/Wtype-limits-Wextra.C: Likewise.
 
