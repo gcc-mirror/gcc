@@ -23,4 +23,3 @@ CONTAINS
     CALL test()
   END SUBROUTINE sic_explicit_orbitals
 END MODULE qs_ks_methods
-! { dg-final { cleanup-modules "qs_ks_methods" } }

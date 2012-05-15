@@ -17,5 +17,3 @@ PROGRAM TEST
   real(8) :: c(3)
   c = cross_product()
 END PROGRAM TEST
-
-! { dg-final { cleanup-modules "module_vec3d" } }

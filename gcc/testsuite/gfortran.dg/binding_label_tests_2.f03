@@ -31,5 +31,3 @@ contains
   subroutine sub8() bind(c, name) ! { dg-error "Syntax error" }
   end subroutine sub8 ! { dg-error "Expecting END MODULE" }
 end module binding_label_tests_2 
-
-! { dg-final { cleanup-modules "binding_label_tests_2" } }

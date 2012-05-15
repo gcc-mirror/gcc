@@ -28,4 +28,3 @@ contains
     if (len (g) == 2) g= "2"
   end function g
 end program test
-! { dg-final { cleanup-modules "m" } }

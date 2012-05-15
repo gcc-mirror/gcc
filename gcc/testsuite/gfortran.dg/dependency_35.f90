@@ -21,4 +21,3 @@ program main
   a = bar(3,4)*5 + b
   e = sum(b,1) + 3
 end program main
-! { dg-final { cleanup-modules "foo" } }

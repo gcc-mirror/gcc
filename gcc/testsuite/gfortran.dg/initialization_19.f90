@@ -30,5 +30,3 @@ call g
 call g
 
 end program t
-
-! ! { dg-final { cleanup-modules "c s" } }

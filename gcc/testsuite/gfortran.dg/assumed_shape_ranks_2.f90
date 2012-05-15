@@ -43,5 +43,3 @@ end module mod1
   call foo (bar, i)
   if (i .ne. 2) call abort ()
 end
-
-! { dg-final { cleanup-modules "mod1" } }

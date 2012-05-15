@@ -34,6 +34,3 @@ call t1%foo()
 call t2%foo()
 call t1%foo(t2)
 end
-
-! { dg-final { cleanup-modules "m" } }
-

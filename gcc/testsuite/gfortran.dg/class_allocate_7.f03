@@ -31,5 +31,3 @@ program main
   allocate(kernel,source=executive_producer%create_show ())
   if (kernel%variable .ne. 99) call abort
 end program
-! { dg-final { cleanup-modules "show_producer_class" } }
-

@@ -21,5 +21,3 @@ contains
     liter_cb = 0
   END FUNCTION liter_cb
 end module m
-
-! { dg-final { cleanup-modules "m" } }

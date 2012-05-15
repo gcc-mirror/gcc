@@ -12,5 +12,3 @@ end module m
   if (ichar(a(2:2)) /= 0) call abort
   write (s,"(A)") a
 end
-
-! { dg-final { cleanup-modules "m" } }

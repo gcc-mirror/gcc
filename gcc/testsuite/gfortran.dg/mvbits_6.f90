@@ -31,4 +31,3 @@
       call yg0009(tda2l,4,3,1,-1,-4,-3)
 
       end
-! { dg-final { cleanup-modules "yg0009_stuff" } }

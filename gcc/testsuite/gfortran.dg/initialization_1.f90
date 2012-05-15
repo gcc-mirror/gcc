@@ -35,5 +35,3 @@ contains
 
   end subroutine foo  
 end module const
-
-! { dg-final { cleanup-modules "const" } }

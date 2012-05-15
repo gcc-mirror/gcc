@@ -18,5 +18,3 @@ program p
   unprotected_pointer => protected_target  ! { dg-error "target has PROTECTED attribute" }
   unprotected_pointer => protected_pointer ! OK
 end program p
-
-! { dg-final { cleanup-modules "m" } }

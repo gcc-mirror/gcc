@@ -66,4 +66,3 @@ end module m1
   if (any((ac*bc) /= matmul(ac,bc))) call abort()
 
 end
-! { dg-final { cleanup-modules "m1" } }

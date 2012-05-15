@@ -57,5 +57,3 @@ program tao_program
   deallocate (u%design, u%model)
   deallocate (s%u)
 end program
-
-! { dg-final { cleanup-modules "test_struct" } }

@@ -31,5 +31,3 @@ program c
   end interface
   call bar()  ! { dg-error "Missing actual argument" }
 end program
-
-! { dg-final { cleanup-modules "a b" } }

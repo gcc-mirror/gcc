@@ -49,5 +49,3 @@ program main
     type is (integrand); if (any (kernel%variable .ne. -1)) call abort
   end select
 end program
-! { dg-final { cleanup-modules "show_producer_class" } }
-

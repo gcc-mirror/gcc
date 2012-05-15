@@ -13,5 +13,3 @@ end interface
 
 call my_c_print()
 end program main
-
-! { dg-final { cleanup-modules "a" } }

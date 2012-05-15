@@ -26,4 +26,3 @@ CONTAINS
 END MODULE
 
 END
-! { dg-final { cleanup-modules "m1" } }

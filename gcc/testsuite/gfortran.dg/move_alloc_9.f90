@@ -53,5 +53,3 @@ program testmv1
   if (allocated(sm2)) call abort()
   if (.not. allocated(sm)) call abort()
 end program 
-
-! { dg-final { cleanup-modules "m2 m3" } }

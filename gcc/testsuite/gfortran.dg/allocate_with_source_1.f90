@@ -26,4 +26,3 @@ program note7_35
   if (name .ne. 'xxxxxxxxxx') call abort
   if (len (name) .ne. 10 ) call abort
 end program note7_35
-! { dg-final { cleanup-modules "foo" } }

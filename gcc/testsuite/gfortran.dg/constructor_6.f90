@@ -167,5 +167,3 @@ program Struct_over
   if (my_test_cnt /= 6) call abort()
 
 end program Struct_over
-
-! { dg-final { cleanup-modules "test_cnt rational temp_node" } }

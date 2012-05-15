@@ -110,5 +110,3 @@ contains
     end do
   end subroutine test_mixed
 end module c_f_pointer_shape_tests_2
-! { dg-final { cleanup-modules "c_f_pointer_shape_tests_2" } } 
-

@@ -18,5 +18,3 @@ CONTAINS
     F1 = D%I
   END FUNCTION
 END MODULE
-
-! { dg-final { cleanup-modules "m1" } }

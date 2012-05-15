@@ -24,5 +24,3 @@
         use m
         print *,ichar('~') ! must print "1"
       end program p
-
-! { dg-final { cleanup-modules "m" } }

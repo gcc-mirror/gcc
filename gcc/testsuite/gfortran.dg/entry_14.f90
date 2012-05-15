@@ -99,5 +99,3 @@ contains
     if(abs(ent(27) + 216.0) > tiny(1.0)) call abort()
   end subroutine test4
 end program main
-
-! { dg-final { cleanup-modules "m1 m2 m3 m4" } }

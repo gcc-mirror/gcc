@@ -92,5 +92,3 @@ end module a_bar_mod
   call a%doit
   if (a%getit () .ne. 3) call abort
 end
-! { dg-final { cleanup-modules "foo_mod s_bar_mod a_bar_mod" } }
-

@@ -28,4 +28,3 @@ END WHERE
 WHERE (I(:)%I>0) J=I       ! { dg-error "Non-ELEMENTAL user-defined assignment in WHERE" }
 
 END
-! { dg-final { cleanup-modules "m1" } }

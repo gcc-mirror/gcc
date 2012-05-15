@@ -35,5 +35,3 @@ program test
   call sub1(x)
   if(x(1) /= 5) call abort()
 end program
-
-! { dg-final { cleanup-modules "test_module" } }

@@ -20,4 +20,3 @@ program main
   if (test (-huge(0.0_kl), 1) /= 0) call abort
 end program main
 !
-! { dg-final { cleanup-modules "test_default_format" } }

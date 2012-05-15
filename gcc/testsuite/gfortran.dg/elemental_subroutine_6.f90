@@ -22,4 +22,3 @@ CONTAINS
     out(1, 1:42) = in(1, 1:42)
   END SUBROUTINE
 END MODULE foo
-! { dg-final { cleanup-modules "foo" } }

@@ -23,4 +23,3 @@ END MODULE MODS
   if (any (ISHFTC(X, 3, 5) /= D)) call abort ()
   if (any (ISHFTC(X, Y, 5) /= E)) call abort ()
 end
-! { dg-final { cleanup-modules "mods" } }

@@ -30,4 +30,3 @@ CONTAINS
     !TYPE(ParentVector), INTENT(INOUT) :: pvec
   END SUBROUTINE item_operation
 END MODULE procedure_intent_nonsense
-! { dg-final { cleanup-modules "procedure_intent_nonsense" } }

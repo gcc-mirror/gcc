@@ -29,4 +29,3 @@ CONTAINS
   SUBROUTINE ep_force_release()
   END SUBROUTINE ep_force_release
 END MODULE ep_types
-! { dg-final { cleanup-modules "replica_types ep_types" } }

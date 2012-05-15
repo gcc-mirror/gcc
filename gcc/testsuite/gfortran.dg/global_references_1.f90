@@ -96,5 +96,3 @@ END SUBROUTINE j
     entry link2 (nameg)    ! { dg-error "is already being used as a SUBROUTINE" }
     return
   end
-
-! { dg-final { cleanup-modules "m" } }

@@ -34,6 +34,4 @@ end module m
 end
 
 ! { dg-final { scan-tree-dump-times "_vptr->" 0 "original" } }
-
-! { dg-final { cleanup-modules "m" } }
 ! { dg-final { cleanup-tree-dump "original" } }

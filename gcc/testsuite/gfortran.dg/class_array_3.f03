@@ -136,5 +136,3 @@ program main
 !  print *, "After qsort:  ", A%disp()
  if (any (A%disp() .ne. [2,3,4,5,7])) call abort
 end program main
-
-! { dg-final { cleanup-modules "m_qsort test" } }

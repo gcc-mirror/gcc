@@ -20,5 +20,3 @@ end module m
   use m
   if (f ().ne.2) call abort ()
 end
-
-! { dg-final { cleanup-modules "m" } }

@@ -46,5 +46,3 @@ END PROGRAM test
 INTEGER FUNCTION setbd()
   setbd=42
 END FUNCTION setbd
-
-! { dg-final { cleanup-modules "ksbin1_aux_mod" } }

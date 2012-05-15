@@ -35,5 +35,3 @@ contains
   end subroutine
 
 end module m2
-
-! { dg-final { cleanup-modules "m1 m2" } }

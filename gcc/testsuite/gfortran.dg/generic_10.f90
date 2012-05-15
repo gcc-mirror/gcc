@@ -33,4 +33,3 @@ end module gfcbug46
   call random_number (z)
   print *, z
 end
-! { dg-final { cleanup-modules "gfcbug46" } }

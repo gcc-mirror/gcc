@@ -47,6 +47,3 @@ end subroutine bar
     complex, intent(out) :: y(:)
   end subroutine
 end module test
-
-! { dg-final { cleanup-modules "m test" } }
-

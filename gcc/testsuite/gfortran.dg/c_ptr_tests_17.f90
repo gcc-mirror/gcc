@@ -84,5 +84,3 @@ function kill_C_FUNPTR() bind(C)
    end interface
    kill_C_FUNPTR = C_FUNLOC(fun)
 end function kill_C_FUNPTR
-
-! { dg-final { cleanup-modules "m3 m1" } }

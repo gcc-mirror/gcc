@@ -23,4 +23,3 @@ end module m
   call x(:)%foo(n)
   if (any(n .ne. [99,199,299])) call abort
 end
-! { dg-final { cleanup-modules "m" } }

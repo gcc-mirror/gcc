@@ -26,5 +26,3 @@ program a
   write(str,*) nan
   if (adjustl(str) /= "NaN") call abort()
 end program a
-
-! { dg-final { cleanup-modules "nonordinal" } }

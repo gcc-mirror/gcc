@@ -45,4 +45,3 @@ program main
     call foo(aa)
 end program main
 
-! { dg-final { cleanup-modules "dt subs" } }

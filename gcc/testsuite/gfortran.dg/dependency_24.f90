@@ -78,4 +78,3 @@ contains
     if (any (a%j .ne. 99)) call abort
   end subroutine
 end
-! { dg-final { cleanup-modules "m" } }

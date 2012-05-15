@@ -86,5 +86,3 @@ subroutine trans2(a,b)
   return
 
 end subroutine trans2
-
-! { dg-final { cleanup-modules "base_mod s_base_mod" } }

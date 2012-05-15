@@ -19,5 +19,3 @@ integer :: i
 i = 1
 if (para(i) /= 1) call i_am_optimized_away()
 end
-
-! { dg-final { cleanup-modules "m" } }

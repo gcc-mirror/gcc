@@ -58,6 +58,4 @@ program testd15
   if (af2%get() .ne. 3) call abort
 
 end program testd15
-
-! { dg-final { cleanup-modules "foo_mod foo2_mod" } }
  

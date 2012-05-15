@@ -35,4 +35,3 @@ PROGRAM P
    CALL FOO(10.)
    call bar (foo)  ! { dg-error "is ambiguous" }
 END PROGRAM P
-! { dg-final { cleanup-modules "m1 m2" } }

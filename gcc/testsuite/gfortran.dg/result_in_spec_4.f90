@@ -23,5 +23,3 @@ contains
       sigma2 = MATMUL(getPhaseMatrix(), sigma2)
    END SUBROUTINE
 end module m
-
-! { dg-final { cleanup-modules "m m2" } }

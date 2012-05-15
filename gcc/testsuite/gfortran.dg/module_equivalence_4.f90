@@ -25,5 +25,3 @@ end subroutine nudata
   real :: a_(2) = (/1.,2./)  
   call nudata (nlibe_, a_, l_)
 end
-
-! { dg-final { cleanup-modules "data_c" } }

@@ -29,5 +29,3 @@ SUBROUTINE polymorph(b)
   USE classtype
   CLASS(t) :: b
 END SUBROUTINE
-
-! { dg-final { cleanup-modules "classtype" } }

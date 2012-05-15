@@ -65,4 +65,3 @@ end
   allocate(x)
   call s (x)
 end
-! { dg-final { cleanup-modules "m" } }

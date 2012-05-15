@@ -122,5 +122,3 @@ program test
   if (isinf(max(-large, -inf, nan))) call abort
 
 end program test
-
-! { dg-final { cleanup-modules "aux2" } }

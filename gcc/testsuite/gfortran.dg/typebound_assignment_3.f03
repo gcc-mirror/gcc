@@ -26,5 +26,3 @@ end module
   type (bar) :: foobar(2)
   foobar = bar()           ! There was a not-implemented error here 
 end
-
-! { dg-final { cleanup-modules "foo" } }

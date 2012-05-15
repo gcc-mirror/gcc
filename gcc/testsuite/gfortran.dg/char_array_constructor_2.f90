@@ -11,4 +11,3 @@ end module foomod
   use foomod
   print *, aa, bb
 end
-! { dg-final { cleanup-modules "foomod" } }

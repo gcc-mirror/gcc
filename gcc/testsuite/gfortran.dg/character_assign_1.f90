@@ -14,4 +14,3 @@ CONTAINS
     TDA1L(NF1:NF2:NF1)%C = TDA1L(NF0+2:NF3:NF2/2)%C
   END SUBROUTINE
 END MODULE TESTS
-! { dg-final { cleanup-modules "tests" } }

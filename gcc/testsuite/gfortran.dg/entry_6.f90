@@ -52,5 +52,3 @@ end module foo
     if (z1((3,4)) .ne. (-5, 10)) call abort ()
     if (z2((5,6)) .ne. (-9, 38)) call abort ()
  end
-
-! { dg-final { cleanup-modules "foo" } }

@@ -101,5 +101,3 @@ program test_pnt
   call create_field(quality,msh)
   mshp => msh_(quality)
 end program test_pnt
-
-! { dg-final { cleanup-modules "class_mesh class_field class_scalar_field" } }

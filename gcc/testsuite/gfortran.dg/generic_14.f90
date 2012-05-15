@@ -101,5 +101,3 @@ module h
 end module h
 
 end
-
-! { dg-final { cleanup-modules "a inclmod" } }

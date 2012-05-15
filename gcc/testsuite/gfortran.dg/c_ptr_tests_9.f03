@@ -28,5 +28,3 @@ program main
 
   call sub0()
 end program main
-
-! { dg-final { cleanup-modules "c_ptr_tests_9" } }

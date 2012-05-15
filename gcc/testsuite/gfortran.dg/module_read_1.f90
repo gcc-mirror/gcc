@@ -27,4 +27,3 @@ program test
   if(len(push(0)) /= 0) call abort()
   if(len(push(1)) /= 1) call abort()
 end program
-! { dg-final { cleanup-modules "foo" } }

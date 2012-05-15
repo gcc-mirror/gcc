@@ -41,4 +41,3 @@ end module m_string
   print *, char1 (["j","k","l"])
 end
 ! { dg-final { cleanup-tree-dump "m_string" } }
-! { dg-final { cleanup-modules "m_string" } }

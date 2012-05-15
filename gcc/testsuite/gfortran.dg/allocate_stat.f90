@@ -74,4 +74,3 @@ contains
    if(associated(p)) deallocate(p)
  end subroutine sub
 end module test
-! { dg-final { cleanup-modules "test" } }

@@ -36,5 +36,3 @@ end module PrettyPix_module
     if (this%look_at_path%r(i)%y2(1) .ne. x(i)) call abort
   end do
 end
-
-! { dg-final { cleanup-modules "prettypix_module" } }

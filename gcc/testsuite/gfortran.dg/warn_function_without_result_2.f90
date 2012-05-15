@@ -16,4 +16,3 @@ contains
     k = 8
   end function j
 end module m
-! { dg-final { cleanup-modules "mod" } }

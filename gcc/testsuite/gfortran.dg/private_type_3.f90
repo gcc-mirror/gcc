@@ -30,5 +30,3 @@ module c
 	arg_t%c = 42
      end subroutine d
 end module c
-
-! { dg-final { cleanup-modules "a c" } }

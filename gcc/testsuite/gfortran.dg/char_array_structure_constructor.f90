@@ -31,5 +31,3 @@ contains
     ENDDO
   end subroutine alloc
 END program char_array_structure_constructor
-
-! { dg-final { cleanup-modules "global" } }

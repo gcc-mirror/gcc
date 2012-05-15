@@ -32,5 +32,3 @@ program opshape
   a = dot_product (t(:,1), t(:,2) .cross. t(:,3))
 
 end program opshape
-
-! { dg-final { cleanup-modules "geometry" } }

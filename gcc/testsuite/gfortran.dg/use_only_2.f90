@@ -27,4 +27,3 @@ end module MyMod3
 module MyMod4
   USE MyMod3, only: write_MyInt
 end module MYMOD4
-! { dg-final { cleanup-modules "mymod1 mymod2 mymod3 mymod4" } }

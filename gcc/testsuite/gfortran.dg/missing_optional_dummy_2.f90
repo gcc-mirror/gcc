@@ -36,5 +36,3 @@ contains
     if (.not.present(substr)) isscan = myscan ("foo", "over")
   end function isscan
 end
-! { dg-final { cleanup-modules "myint" } }
-

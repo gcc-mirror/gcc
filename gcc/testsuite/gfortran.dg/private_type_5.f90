@@ -22,4 +22,3 @@ contains
     end subroutine init
   end subroutine sub
 end module test
-! { dg-final { cleanup-modules "test" } }

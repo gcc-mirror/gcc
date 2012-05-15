@@ -6,5 +6,3 @@ module FLAGS
   character :: at, dev
   equivalence ( encodings(1:1),at ), ( encodings(2:2),dev)
 end module FLAGS
-
-! { dg-final { cleanup-modules "flags" } }

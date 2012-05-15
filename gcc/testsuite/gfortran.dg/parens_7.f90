@@ -15,5 +15,3 @@ end function test4
 
  
 end program test
-
-! { dg-final { cleanup-modules "m" } }

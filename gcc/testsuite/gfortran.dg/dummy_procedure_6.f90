@@ -67,5 +67,3 @@ contains
   end subroutine
 
 end program
-
-! { dg-final { cleanup-modules "m" } }

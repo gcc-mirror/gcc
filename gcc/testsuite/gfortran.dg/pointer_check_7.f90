@@ -32,5 +32,3 @@ contains
   end subroutine
 
 end module
-
-! { dg-final { cleanup-modules "base_mat_mod" } }

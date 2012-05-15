@@ -60,5 +60,3 @@ PROGRAM main
   WRITE (*,*) myobj%sub (1) ! { dg-error "FUNCTION" }
 
 END PROGRAM main
-
-! { dg-final { cleanup-modules "m" } }

@@ -22,4 +22,3 @@ contains
   end subroutine
 end module ice5
  
-! { dg-final { cleanup-modules "ice5" } }

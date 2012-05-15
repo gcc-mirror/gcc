@@ -48,5 +48,3 @@ end module mymod
   q = d (b = set_b (), id = 99)
   call check_b (q%b)
 end
-
-! { dg-final { cleanup-modules "mymod" } }

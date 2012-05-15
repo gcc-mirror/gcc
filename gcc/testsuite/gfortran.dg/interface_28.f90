@@ -38,6 +38,3 @@ program interfaceCheck
   call test(subActual)  ! { dg-error "INTENT mismatch in argument" }
   call test(subActual2)  ! { dg-error "OPTIONAL mismatch in argument" }
 end program
-
-! { dg-final { cleanup-modules "sub testsub" } }
-

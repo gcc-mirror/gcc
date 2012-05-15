@@ -17,4 +17,3 @@ END MODULE M1
 USE M1
 CALL S1(D1%I(3)) ! { dg-error "variable definition context" }
 END
-! { dg-final { cleanup-modules "m1" } }

@@ -22,4 +22,3 @@
         ALLOCATE(WORK(SIZE))
         WORK = TOL
       END SUBROUTINE BUILD
-! { dg-final { cleanup-modules "M" } }

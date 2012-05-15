@@ -23,5 +23,3 @@ end module
   type(foo) :: a, b
   print *, a == b
 end subroutine
-
-! { dg-final { cleanup-modules "foo_type" } }

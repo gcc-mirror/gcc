@@ -9,4 +9,3 @@ contains
     func0 = c_null_ptr
   end function func0
 end module c_ptr_tests_7
-! { dg-final { cleanup-modules "c_ptr_tests_7" } }

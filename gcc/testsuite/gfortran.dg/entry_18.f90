@@ -33,4 +33,3 @@ entry glocalb( x, y )
    y = x
 end subroutine
 end module
-! { dg-final { cleanup-modules "gsub" } }

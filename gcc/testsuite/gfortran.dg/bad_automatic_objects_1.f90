@@ -18,5 +18,3 @@ program foobar
   integer, dimension (i) :: k ! { dg-error "must have constant shape" }
   character (len = i) :: c2   ! { dg-error "must have constant character length" }
 end program foobar
-
-! { dg-final { cleanup-modules "foo bar" } }

@@ -20,4 +20,3 @@ contains
     l12 = coefficient * l12
   end subroutine mutual_ind_cir_cir_coils
 end module mcc_m
-! { dg-final { cleanup-modules "mcc_m" } }

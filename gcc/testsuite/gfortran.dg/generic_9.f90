@@ -42,4 +42,3 @@ contains
   END SUBROUTINE
 
 END MODULE
-! { dg-final { cleanup-modules "class_foo_type class_foo" } }

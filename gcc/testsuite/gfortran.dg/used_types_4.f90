@@ -37,4 +37,3 @@ contains
     call InitRECFAST(CP%omegab,CP%h0,CP%tcmb,CP%yhe)
   end subroutine inithermo
 end module ThermoData
-! { dg-final { cleanup-modules "precision modelparams timesteps thermodata" } }

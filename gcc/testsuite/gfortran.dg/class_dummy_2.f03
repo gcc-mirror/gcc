@@ -29,5 +29,3 @@ contains
 end module fails_test
 
 end
-
-! { dg-final { cleanup-modules "fails_mod fails_test" } }

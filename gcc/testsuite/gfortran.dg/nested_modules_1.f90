@@ -41,5 +41,3 @@
        call eyeore ()
        call tigger (w)
        end
-
-! { dg-final { cleanup-modules "mod0 mod1 mod2" } }

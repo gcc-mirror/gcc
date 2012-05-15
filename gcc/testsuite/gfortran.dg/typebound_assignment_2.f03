@@ -35,5 +35,3 @@ contains
     this%gr = gr
   end subroutine init_comps
 end module hydro_flow 
-
-! { dg-final { cleanup-modules "hydro_grid hydro_flow" } }

@@ -33,5 +33,3 @@ PROGRAM finalizer
   IMPLICIT NONE
   ! Do nothing here
 END PROGRAM finalizer
-
-! { dg-final { cleanup-modules "final_type" } }

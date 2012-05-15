@@ -31,4 +31,3 @@ contains
     end do
   end subroutine test_array
 end module c_f_pointer_logical
-! { dg-final { cleanup-modules "c_f_pointer_logical" } }

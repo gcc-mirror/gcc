@@ -22,5 +22,3 @@ program module_equiv
   c = (/99.0_4, 999.0_4, 999.0_4, 99.0_4/)
   call foo ()
 end program module_equiv
-
-! { dg-final { cleanup-modules "test_equiv" } }

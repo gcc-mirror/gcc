@@ -16,5 +16,3 @@ module ice
       end subroutine bar
     end subroutine foo
 end module
-
-! { dg-final { cleanup-modules "ice" } }

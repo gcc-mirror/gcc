@@ -21,4 +21,3 @@ program test
   if (nxttab(linem, 1) .ne. 6) call abort
   if (nxttab(linem, nplam) .ne. 132) call abort
 end program test
-! { dg-final { cleanup-modules "splitprms" } }

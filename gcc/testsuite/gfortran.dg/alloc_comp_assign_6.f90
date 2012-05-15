@@ -51,5 +51,3 @@ program VST28
     call abort ()
   end if
 end program VST28
-
-! { dg-final { cleanup-modules "iso_varying_string" } }

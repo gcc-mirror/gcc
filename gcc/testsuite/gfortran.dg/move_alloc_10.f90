@@ -75,5 +75,3 @@ program main
       call abort ()
   end select
 end program main
-
-! { dg-final { cleanup-modules "myalloc" } }

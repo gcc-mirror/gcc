@@ -36,5 +36,3 @@ contains
   end subroutine changeF90Globals
 
 end module bind_c_vars
-
-! { dg-final { cleanup-modules "bind_c_vars" } }

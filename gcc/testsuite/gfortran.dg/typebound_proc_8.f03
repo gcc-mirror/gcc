@@ -33,5 +33,3 @@ CONTAINS
   END SUBROUTINE proc
 
 END MODULE testmod
-
-! { dg-final { cleanup-modules "testmod" } }

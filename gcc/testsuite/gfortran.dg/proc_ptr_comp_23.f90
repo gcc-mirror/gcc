@@ -70,4 +70,3 @@ print *, p(nr=3,x=(/0.1,0.1/))
 print *, funcp%p(nr=3,x=(/0.1,0.1/))
 
 end program t
-! { dg-final { cleanup-modules "poisson_functions_m element_defs_m" } }

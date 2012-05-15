@@ -44,5 +44,3 @@ PROGRAM main
     CALL abort ()
   END IF
 END PROGRAM main
-
-! { dg-final { cleanup-modules "m" } }

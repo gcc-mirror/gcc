@@ -42,5 +42,3 @@ contains
     x (2) = 21.0
   END SUBROUTINE roo
 end program test
-
-! { dg-final { cleanup-modules "global" } }

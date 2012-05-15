@@ -43,5 +43,3 @@ program p
   call test1 ()
   call test2 ()
 end program
-
-! { dg-final { cleanup-modules "m" } }

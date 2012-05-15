@@ -40,5 +40,3 @@ END MODULE PR43866
   Q%B=0
   CALL FOO (Q,N,N,.FALSE.)
 END
-
-! { dg-final { cleanup-modules "pr43866" } }

@@ -57,5 +57,3 @@ contains
     end do
   end subroutine test_complex_arrays
 end module c_f_pointer_complex
-! { dg-final { cleanup-modules "c_f_pointer_complex" } }
-

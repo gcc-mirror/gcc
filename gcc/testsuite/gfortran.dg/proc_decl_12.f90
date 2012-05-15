@@ -23,5 +23,3 @@ contains
     call f([1,2,3])
   end subroutine foo
 end program test
-
-! { dg-final { cleanup-modules "m" } }

@@ -39,5 +39,3 @@ program test_ext
   end do
   write(*, *) 'OK'
 end program
-
-! { dg-final { cleanup-modules "type_ext" } }

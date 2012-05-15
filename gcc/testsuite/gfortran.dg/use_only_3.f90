@@ -32,7 +32,3 @@ subroutine dforceb(c0, i, betae, ipol, bec0, ctabin, gqq, gqqm, qmat, dq2, df)
        &   dq2,  gmes
 
  end subroutine dforceb
-! { dg-final { cleanup-modules "cell_base cvan gvecs kinds" } }
-! { dg-final { cleanup-modules "constants electrons_base gvecw parameters" } }
-! { dg-final { cleanup-modules "control_flags electrons_nose ions_base" } }
-

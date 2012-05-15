@@ -16,4 +16,3 @@ CONTAINS
    I=-J
  END SUBROUTINE T1
 END MODULE M1
-! { dg-final { cleanup-modules "m1" } }

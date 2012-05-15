@@ -17,5 +17,3 @@ module m_sort
     end function gt_cmp
   end interface
 end module m_sort
-
-! { dg-final { cleanup-modules "m_sort" } }

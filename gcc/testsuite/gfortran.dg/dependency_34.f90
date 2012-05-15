@@ -19,4 +19,3 @@ program main
   a(bar(i,i+2):2) = a(bar(i,i+2):2)
   a(int(i,kind=2):5) = a(int(i,kind=2)+1:6)
 end program main
-! { dg-final { cleanup-modules "foo" } }

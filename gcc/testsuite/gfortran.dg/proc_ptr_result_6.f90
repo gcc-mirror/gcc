@@ -46,6 +46,3 @@ contains
     getPtr2 => func
   end function
 end program test
-
-! { dg-final { cleanup-modules "m" } }
-

@@ -15,4 +15,3 @@ CONTAINS
          ENDDO vertex
      END SUBROUTINE
 END MODULE test
-! { dg-final { cleanup-modules "test" } }

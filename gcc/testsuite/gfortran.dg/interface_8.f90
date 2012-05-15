@@ -26,5 +26,3 @@ program main
   use mod1, only: generic   ! { dg-warning "has ambiguous interfaces" }
   use mod2
 end program main
-
-! { dg-final { cleanup-modules "mod1 mod2" } }

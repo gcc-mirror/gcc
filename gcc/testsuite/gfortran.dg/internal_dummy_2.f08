@@ -60,5 +60,3 @@ CONTAINS
   END SUBROUTINE incA
 
 END PROGRAM main
-
-! { dg-final { cleanup-modules "m" } }

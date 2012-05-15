@@ -37,5 +37,3 @@ END MODULE
 PROGRAM p
   USE m
 END
-
-! { dg-final { cleanup-modules "m" } }

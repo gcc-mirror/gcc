@@ -24,5 +24,3 @@ contains
     call x%do()
   end subroutine
 end 
-
-! { dg-final { cleanup-modules "foo_mod" } }

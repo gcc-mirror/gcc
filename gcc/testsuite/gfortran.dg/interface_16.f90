@@ -96,6 +96,3 @@ Subroutine foo_sub(a,pr,b,x,eps,cd,info)
   Call foo_pwrk(pr,p,f,cd,info,work=aux)  ! This worked if bar_pwrk was called!
   return
 End Subroutine foo_sub
-
-! { dg-final { cleanup-modules "foo_base_mod foo_pr_mod bar_pr_mod bar_prt" } }
-

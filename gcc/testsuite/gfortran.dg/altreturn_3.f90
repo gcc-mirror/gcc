@@ -42,4 +42,3 @@ program test
  20 continue
   if (i /= -1) call abort ()
 end
-! { dg-final { cleanup-modules "arswitch" } }

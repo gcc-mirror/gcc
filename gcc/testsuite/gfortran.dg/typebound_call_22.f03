@@ -28,5 +28,3 @@ end program
 
 ! { dg-final { scan-tree-dump-times "base \\(\\);" 1 "optimized" } }
 ! { dg-final { cleanup-tree-dump "optimized" } }
-
-! { dg-final { cleanup-modules "m" } }

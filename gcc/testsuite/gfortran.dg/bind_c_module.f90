@@ -19,4 +19,3 @@ module d
   implicit none
   bind(c) :: a  ! { dg-error "applied to" }
 end module d
-! { dg-final { cleanup-modules "a" } }

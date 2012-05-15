@@ -26,4 +26,3 @@ program test
     if (astr(i:i) /= achar(0)) call abort
   end do    
 end program test
-! { dg-final { cleanup-modules "cyclic" } }

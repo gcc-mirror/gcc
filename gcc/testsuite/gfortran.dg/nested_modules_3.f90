@@ -53,5 +53,3 @@ PROGRAM use_foobar
   CALL sub3 (z, j)
   IF (ALL (j.ne.(/3,2,1/))) CALL abort ()
 END PROGRAM use_foobar
-
-! { dg-final { cleanup-modules "foo bar foobar" } }

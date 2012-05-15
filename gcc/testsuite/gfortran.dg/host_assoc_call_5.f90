@@ -18,4 +18,3 @@ contains
    subroutine other_sub ()
    end subroutine other_sub
 end module foo
-! { dg-final { cleanup-modules "foo" } }

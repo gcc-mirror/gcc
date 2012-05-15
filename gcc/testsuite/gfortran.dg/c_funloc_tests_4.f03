@@ -36,5 +36,3 @@ contains
     func0 = desired_retval
   end function func0
 end module c_funloc_tests_4
-! { dg-final { cleanup-modules "c_funloc_tests_4" } }
-

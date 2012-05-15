@@ -25,6 +25,3 @@ use m
  str = x%ptr(3)
  if (str/='abc') call abort()
 end
-
-! { dg-final { cleanup-modules "m" } }
-

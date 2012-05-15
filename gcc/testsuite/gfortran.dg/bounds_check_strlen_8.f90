@@ -36,5 +36,3 @@ END MODULE M3
 USE M3
 CALL S1
 END
-
-! { dg-final { cleanup-modules "m1 m2 m3" } }

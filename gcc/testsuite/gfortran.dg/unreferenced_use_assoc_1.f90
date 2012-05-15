@@ -37,4 +37,3 @@ program main
    call DoSomethingWithBytes( UserTypeToBytes(user) )
 
 end program 
-! { dg-final { cleanup-modules "internalcompilererror" } }

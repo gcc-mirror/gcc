@@ -32,4 +32,3 @@ end module vamp_rest
   print *, s_last
   print *, diag (x)
 end
-! { dg-final { cleanup-modules "tao_random_numbers linalg vamp_rest" } }

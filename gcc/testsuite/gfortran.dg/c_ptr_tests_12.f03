@@ -40,6 +40,3 @@ contains
     status = fgsl_vector_align(p_x, f_x)
   end subroutine expb_df
 end module tmod
-
-! { dg-final { cleanup-modules "fgsl tmod" } } 
-

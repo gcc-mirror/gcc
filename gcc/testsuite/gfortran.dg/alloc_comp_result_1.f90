@@ -30,4 +30,3 @@ program test
   x = a_fun(0)
   if (any (x(1)%mons%coeff .ne. 99)) call abort
 end program test
-! { dg-final { cleanup-modules "mod_a" } }

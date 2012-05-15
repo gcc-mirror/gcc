@@ -1,7 +1,6 @@
 !PR fortran/32242
 ! { dg-do compile }
 ! { dg-options "-Wreturn-type" }
-! { dg-final { cleanup-modules "kahan_sum" } }
 
 MODULE kahan_sum
   INTEGER, PARAMETER :: dp=KIND(0.0D0)

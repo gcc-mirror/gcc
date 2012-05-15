@@ -9,4 +9,3 @@ END module globals
 BLOCK DATA
    use globals
 END BLOCK DATA
-! { dg-final { cleanup-modules "globals" } }

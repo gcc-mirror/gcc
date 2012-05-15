@@ -64,5 +64,3 @@ contains
     lhs(:) = rhs(:)
   end subroutine invalid3
 end module test4
-
-! { dg-final { cleanup-modules "test1" } }

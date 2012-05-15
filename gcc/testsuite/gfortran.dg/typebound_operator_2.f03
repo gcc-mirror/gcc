@@ -63,5 +63,3 @@ CONTAINS
   END SUBROUTINE sub2
 
 END MODULE m
-
-! { dg-final { cleanup-modules "m" } }

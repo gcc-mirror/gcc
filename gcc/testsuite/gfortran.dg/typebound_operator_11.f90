@@ -38,5 +38,3 @@ contains
     x = x%t()*dt
   end subroutine 
 end module
-
-! { dg-final { cleanup-modules "foo_module" } }

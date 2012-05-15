@@ -13,5 +13,3 @@ end module cray_pointers_5
   ipt = loc (arr)
   if (any (var .ne. (/1, 2, 3, 4, 5, 6, 7, 8, 9, 10/))) call abort
 end
-
-! { dg-final { cleanup-modules "cray_pointers_5" } }

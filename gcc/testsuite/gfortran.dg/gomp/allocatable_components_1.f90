@@ -55,5 +55,3 @@ CONTAINS
     !$omp end parallel do
   END SUBROUTINE
 END MODULE
-
-! { dg-final { cleanup-modules "test_allocatable_components" } }

@@ -28,5 +28,3 @@ end module
  class(gradient_class), pointer    :: g_initial, ip_save
  ip_save => g_initial%inner_product()   ! ICE
 end
-
-! { dg-final { cleanup-modules "abstract_gradient" } }

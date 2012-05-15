@@ -23,6 +23,3 @@ contains
   END FUNCTION next_state
 
 end module vector_calculus
-
-! { dg-final { cleanup-modules "vector_calculus" } }
-

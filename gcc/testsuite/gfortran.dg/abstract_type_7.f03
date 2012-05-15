@@ -15,4 +15,3 @@ module ice_module
   end type c_type
 end module ice_module
  
-! { dg-final { cleanup-modules "ice_module" } }

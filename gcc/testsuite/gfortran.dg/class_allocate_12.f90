@@ -88,5 +88,3 @@ program main
   attractor = constructor( [1., 1., 1.] , timed_lorenz_integrator)
   call integrate(attractor)
 end program main
-
-! { dg-final { cleanup-modules "surrogate_module strategy_module integrand_module runge_kutta_2nd_module" } }

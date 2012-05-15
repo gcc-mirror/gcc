@@ -31,5 +31,3 @@ program cfpointerstress
   write(*,*) 'ASSOCIATED =', associated(img)
   deallocate(r)
 end program cfpointerstress
-
-! { dg-final { cleanup-modules "nag_j_types" } }

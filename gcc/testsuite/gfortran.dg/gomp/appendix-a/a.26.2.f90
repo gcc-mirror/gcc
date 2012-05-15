@@ -20,4 +20,3 @@
 !$OMP END PARALLEL DO
           END SUBROUTINE F
       END MODULE A26_2
-! { dg-final { cleanup-modules "A26_2" } }

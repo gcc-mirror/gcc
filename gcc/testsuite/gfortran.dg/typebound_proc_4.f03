@@ -35,5 +35,3 @@ MODULE testmod
 CONTAINS
 
 END MODULE testmod
-
-! { dg-final { cleanup-modules "testmod" } }

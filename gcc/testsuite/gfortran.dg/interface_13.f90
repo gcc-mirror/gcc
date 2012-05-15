@@ -29,5 +29,3 @@
           data_r8(1)=0
       end subroutine my_sio_file_read_common
     end module files_module
-
-! { dg-final { cleanup-modules "files_module" } }

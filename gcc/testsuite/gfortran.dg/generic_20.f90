@@ -27,5 +27,3 @@ real :: res(1)
 res = matmul (one(2.0), (/ 2.0/))
 if (abs (res(1)-4.0) > epsilon (res)) call abort ()
 end
-
-! { dg-final { cleanup-modules "m" } }

@@ -290,5 +290,3 @@ subroutine smooth_mesh
   type(vector) :: new_pos  ! the new vertex position, after smoothing
 
 end subroutine smooth_mesh
-! { dg-final { cleanup-modules "class_vector class_dimensions tools_math" } }
-! { dg-final { cleanup-modules "class_motion class_bc_math class_bc tools_mesh_basics" } }

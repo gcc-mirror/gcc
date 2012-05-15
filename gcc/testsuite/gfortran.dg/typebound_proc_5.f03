@@ -115,5 +115,3 @@ CONTAINS
   END SUBROUTINE proc_no_module
 
 END PROGRAM main
-
-! { dg-final { cleanup-modules "othermod testmod" } }

@@ -43,6 +43,3 @@ program Test_03
     if (m%i/=6) call abort()
 
 end program Test_03
-
-! { dg-final { cleanup-modules "mymod" } }
-
