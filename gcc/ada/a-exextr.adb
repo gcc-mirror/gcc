@@ -162,6 +162,9 @@ package body Exception_Traces is
    -----------------------------------
 
    procedure Unhandled_Exception_Terminate is
+
+      --  Comments needed on why we do things this way ??? (see RH)
+
       Excep : Exception_Occurrence;
       --  This occurrence will be used to display a message after finalization.
       --  It is necessary to save a copy here, or else the designated value

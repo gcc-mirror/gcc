@@ -2509,9 +2509,9 @@ package body Sem_Ch6 is
       --  Previously we scanned the body to look for nested subprograms, and
       --  rejected an inline directive if nested subprograms were present,
       --  because the back-end would generate conflicting symbols for the
-      --  nested bodies.  This is now unecessary.
+      --  nested bodies. This is now unnecessary.
 
-      --  Look ahead to recognize a pragma inline that appears after the body
+      --  Look ahead to recognize a pragma Inline that appears after the body
 
       Check_Inline_Pragma (Spec_Id);
 

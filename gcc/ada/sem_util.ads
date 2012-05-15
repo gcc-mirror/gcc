@@ -368,6 +368,10 @@ package Sem_Util is
    --  Same as Einfo.Extra_Accessibility except thtat object renames
    --  are looked through.
 
+   function Enclosing_Comp_Unit_Node (N : Node_Id) return Node_Id;
+   --  Returns the enclosing N_Compilation_Unit Node that is the root of a
+   --  subtree containing N.
+
    function Enclosing_CPP_Parent (Typ : Entity_Id) return Entity_Id;
    --  Returns the closest ancestor of Typ that is a CPP type.
 
@@ -385,10 +389,6 @@ package Sem_Util is
    --  Returns the entity of enclosing N_Compilation_Unit Node which is the
    --  root of the current scope (which must not be Standard_Standard, and the
    --  caller is responsible for ensuring this condition).
-
-   function Enclosing_Comp_Unit_Node (N : Node_Id) return Node_Id;
-   --  Returns the enclosing N_Compilation_Unit Node that is the root of a
-   --  subtree containing N.
 
    function Enclosing_Package (E : Entity_Id) return Entity_Id;
    --  Utility function to return the Ada entity of the package enclosing
