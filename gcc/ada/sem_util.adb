@@ -8674,7 +8674,17 @@ package body Sem_Util is
            or else
              Is_Variable_Prefix (Original_Node (Prefix (N)));
 
-      --  A function call is never a variable
+      --  in Ada 2012, the dereference may have been added for a type with
+      --  a declared implicit dereference aspect.
+
+      elsif Nkind (N) = N_Explicit_Dereference
+        and then Present (Etype (Orig_Node))
+        and then  Ada_Version >= Ada_2012
+        and then Has_Implicit_Dereference (Etype (Orig_Node))
+      then
+         return True;
+
+      --  A function call is never a variable.
 
       elsif Nkind (N) = N_Function_Call then
          return False;
