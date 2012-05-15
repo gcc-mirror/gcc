@@ -1684,7 +1684,7 @@ struct GTY(()) tree_constructor {
    decls and constants can be shared among multiple locations, so
    return nothing.  */
 #define EXPR_LOCATION(NODE) \
-  (EXPR_P ((NODE)) ? (NODE)->exp.locus : UNKNOWN_LOCATION)
+  (CAN_HAVE_LOCATION_P ((NODE)) ? (NODE)->exp.locus : UNKNOWN_LOCATION)
 #define SET_EXPR_LOCATION(NODE, LOCUS) EXPR_CHECK ((NODE))->exp.locus = (LOCUS)
 #define EXPR_HAS_LOCATION(NODE) (EXPR_LOCATION (NODE) != UNKNOWN_LOCATION)
 #define EXPR_LOC_OR_HERE(NODE) (EXPR_HAS_LOCATION (NODE) ? (NODE)->exp.locus : input_location)
