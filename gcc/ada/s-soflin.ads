@@ -310,7 +310,7 @@ package System.Soft_Links is
    --  See the body of Tailored_Exception_Traceback in Ada.Exceptions for
    --  a more detailed description of the potential problems.
 
-   procedure Save_Library_Occurrence (E : Ada.Exceptions.Exception_Occurrence);
+   procedure Save_Library_Occurrence (E : EOA);
    --  When invoked, this routine saves an exception occurrence into a hidden
    --  reference. Subsequent calls will have no effect.
 

@@ -89,7 +89,7 @@ package Exp_Ch7 is
    --    when others =>
    --       if not Raised_Id then
    --          Raised_Id := True;
-   --          Save_Library_Occurrence (Get_Current_Excep.all.all);
+   --          Save_Library_Occurrence (Get_Current_Excep.all);
    --       end if;
    --
    --  E_Id denotes the defining identifier of a local exception occurrence.

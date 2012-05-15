@@ -716,40 +716,43 @@ package body Exp_Ch7 is
    is
       Actuals      : List_Id;
       Proc_To_Call : Entity_Id;
+      Except       : Node_Id;
 
    begin
       pragma Assert (Present (Data.E_Id));
       pragma Assert (Present (Data.Raised_Id));
 
       --  Generate:
-      --    Get_Current_Excep.all.all
 
-      Actuals := New_List (
-        Make_Explicit_Dereference (Data.Loc,
-          Prefix =>
-            Make_Function_Call (Data.Loc,
-              Name =>
-                Make_Explicit_Dereference (Data.Loc,
-                  Prefix =>
-                    New_Reference_To (RTE (RE_Get_Current_Excep),
-                                      Data.Loc)))));
+      --    Get_Current_Excep.all
 
-      if For_Library and then not Restricted_Profile then
+      Except :=
+        Make_Function_Call (Data.Loc,
+          Name =>
+            Make_Explicit_Dereference (Data.Loc,
+              Prefix =>
+                New_Reference_To (RTE (RE_Get_Current_Excep), Data.Loc)));
+
+      if For_Library and not Restricted_Profile then
          Proc_To_Call := RTE (RE_Save_Library_Occurrence);
-
+         Actuals := New_List (Except);
       else
          Proc_To_Call := RTE (RE_Save_Occurrence);
-         Prepend_To (Actuals, New_Reference_To (Data.E_Id, Data.Loc));
+         Actuals :=
+           New_List
+             (New_Reference_To (Data.E_Id, Data.Loc),
+              Make_Explicit_Dereference (Data.Loc, Except));
       end if;
 
       --  Generate:
+
       --    when others =>
       --       if not Raised_Id then
       --          Raised_Id := True;
 
       --          Save_Occurrence (E_Id, Get_Current_Excep.all.all);
       --            or
-      --          Save_Library_Occurrence (Get_Current_Excep.all.all);
+      --          Save_Library_Occurrence (Get_Current_Excep.all);
       --       end if;
 
       return

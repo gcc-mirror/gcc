@@ -3424,9 +3424,8 @@ package body Exp_Ch4 is
       -------------------------
 
       procedure Rewrite_Coextension (N : Node_Id) is
-         Temp_Id    : constant Node_Id := Make_Temporary (Loc, 'C');
-         Temp_Decl  : Node_Id;
-         Insert_Nod : Node_Id;
+         Temp_Id   : constant Node_Id := Make_Temporary (Loc, 'C');
+         Temp_Decl : Node_Id;
 
       begin
          --  Generate:
@@ -3442,21 +3441,7 @@ package body Exp_Ch4 is
             Set_Expression (Temp_Decl, Expression (Expression (N)));
          end if;
 
-         --  Find the proper insertion node for the declaration
-
-         Insert_Nod := Parent (N);
-         while Present (Insert_Nod) loop
-            exit when
-              Nkind (Insert_Nod) in N_Statement_Other_Than_Procedure_Call
-                or else Nkind (Insert_Nod) = N_Procedure_Call_Statement
-                or else Nkind (Insert_Nod) in N_Declaration;
-
-            Insert_Nod := Parent (Insert_Nod);
-         end loop;
-
-         Insert_Before (Insert_Nod, Temp_Decl);
-         Analyze (Temp_Decl);
-
+         Insert_Action (N, Temp_Decl);
          Rewrite (N,
            Make_Attribute_Reference (Loc,
              Prefix         => New_Occurrence_Of (Temp_Id, Loc),
