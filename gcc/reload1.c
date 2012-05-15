@@ -5423,6 +5423,13 @@ reload_reg_reaches_end_p (unsigned int regno, int reloadnum)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
 	  return 0;
 
+      /* Reload register of reload with type RELOAD_FOR_INPADDR_ADDRESS
+	 could be killed if the register is also used by reload with type
+	 RELOAD_FOR_INPUT_ADDRESS, so check it.  */
+      if (type == RELOAD_FOR_INPADDR_ADDRESS
+	  && TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[opnum], regno))
+	return 0;
+
       for (i = opnum + 1; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno))
@@ -5496,6 +5503,13 @@ reload_reg_reaches_end_p (unsigned int regno, int reloadnum)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno))
 	  return 0;
+
+      /* Reload register of reload with type RELOAD_FOR_OUTADDR_ADDRESS
+	 could be killed if the register is also used by reload with type
+	 RELOAD_FOR_OUTPUT_ADDRESS, so check it.  */
+      if (type == RELOAD_FOR_OUTADDR_ADDRESS
+	  && TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], regno))
+	return 0;
 
       return 1;
 
