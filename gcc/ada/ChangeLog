@@ -1,3 +1,8 @@
+2012-05-15  Andris Pavenis  <andris.pavenis@iki.fi>
+
+	PR ada/52494
+	* s-taprop-dummy.adb (Specific): New package.
+
 2012-05-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_prag.adb (Process_Atomic_Shared_Volatile): Propagate
