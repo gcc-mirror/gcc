@@ -138,8 +138,8 @@ package body Inline is
    --  Return the entity node for the unit containing E. Always return
    --  the spec for a package.
 
-   function Scope_In_Main_Unit (Scop : Entity_Id) return Boolean;
-   --  Return True if Scop is in the main unit or its spec
+   function In_Main_Unit_Or_Subunit (E : Entity_Id) return Boolean;
+   --  Return True if E is in the main unit or its spec or in a subunit
 
    procedure Add_Call (Called : Entity_Id; Caller : Entity_Id := Empty);
    --  Make two entries in Inlined table, for an inlined subprogram being
@@ -341,7 +341,7 @@ package body Inline is
 
                elsif not Is_Inlined (Pack)
                  and then Comes_From_Source (E)
-                 and then not Scope_In_Main_Unit (Pack)
+                 and then not In_Main_Unit_Or_Subunit (Pack)
                then
                   Set_Is_Inlined (Pack);
                   Inlined_Bodies.Increment_Last;
@@ -433,7 +433,7 @@ package body Inline is
         and then (Is_Inlined (Pack)
                     or else Is_Generic_Instance (Pack)
                     or else Is_Internal (E))
-        and then not Scope_In_Main_Unit (Pack)
+        and then not In_Main_Unit_Or_Subunit (E)
         and then not Is_Nested (E)
         and then not Has_Initialized_Type (E)
       then
@@ -746,7 +746,7 @@ package body Inline is
                --  This means that Add_Inlined_Body added the subprogram to the
                --  table but wasn't able to handle its code unit. Do nothing.
 
-               null;
+               Inlined.Table (Index).Processed := True;
             elsif Inlined.Table (Index).Main_Call then
                Pending_Inlined.Increment_Last;
                Pending_Inlined.Table (Pending_Inlined.Last) := Index;
@@ -767,9 +767,9 @@ package body Inline is
 
             while S /= No_Succ loop
                Subp := Successors.Table (S).Subp;
-               Set_Is_Called (Inlined.Table (Subp).Name);
 
                if not Inlined.Table (Subp).Processed then
+                  Set_Is_Called (Inlined.Table (Subp).Name);
                   Pending_Inlined.Increment_Last;
                   Pending_Inlined.Table (Pending_Inlined.Last) := Subp;
                   Inlined.Table (Subp).Processed := True;
@@ -1156,23 +1156,27 @@ package body Inline is
       end loop;
    end Remove_Dead_Instance;
 
-   ------------------------
-   -- Scope_In_Main_Unit --
-   ------------------------
+   -----------------------------
+   -- In_Main_Unit_Or_Subunit --
+   -----------------------------
 
-   function Scope_In_Main_Unit (Scop : Entity_Id) return Boolean is
-      Comp : constant Node_Id := Cunit (Get_Code_Unit (Scop));
+   function In_Main_Unit_Or_Subunit (E : Entity_Id) return Boolean is
+      Comp : Node_Id := Cunit (Get_Code_Unit (E));
 
    begin
-      --  Check whether the scope of the subprogram to inline is within the
-      --  main unit or within its spec. In either case there are no additional
-      --  bodies to process. If the subprogram appears in a parent of the
-      --  current unit, the check on whether inlining is possible is done in
-      --  Analyze_Inlined_Bodies.
+      --  Check whether the subprogram or package to inline is within the main
+      --  unit or its spec or within a subunit. In either case there are no
+      --  additional bodies to process. If the subprogram appears in a parent
+      --  of the current unit, the check on whether inlining is possible is
+      --  done in Analyze_Inlined_Bodies.
+
+      while Nkind (Unit (Comp)) = N_Subunit loop
+         Comp := Library_Unit (Comp);
+      end loop;
 
       return
         Comp = Cunit (Main_Unit)
           or else Comp = Library_Unit (Cunit (Main_Unit));
-   end Scope_In_Main_Unit;
+   end In_Main_Unit_Or_Subunit;
 
 end Inline;

@@ -10105,9 +10105,9 @@ package body Exp_Ch4 is
       --  mark is a constrained Unchecked_Union subtype.
 
       elsif Nkind (N) = N_Qualified_Expression then
-         return Is_Unchecked_Union (Subtype_Mark (N))
+         return Is_Unchecked_Union (Etype (Subtype_Mark (N)))
                   and then
-                Is_Constrained (Subtype_Mark (N));
+                Is_Constrained (Etype (Subtype_Mark (N)));
 
       end if;
 
