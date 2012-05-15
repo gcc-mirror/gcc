@@ -1829,6 +1829,14 @@ package body Exp_Disp is
                  Make_Explicit_Dereference (Loc,
                    New_Reference_To (Defining_Identifier (Decl_2), Loc))));
 
+         --  Ensure proper matching of access types. Required to avoid
+         --  reporting spurious errors.
+
+         elsif Is_Access_Type (Etype (Target_Formal)) then
+            Append_To (Actuals,
+              Unchecked_Convert_To (Base_Type (Etype (Target_Formal)),
+                New_Reference_To (Defining_Identifier (Formal), Loc)));
+
          --  No special management required for this actual
 
          else
