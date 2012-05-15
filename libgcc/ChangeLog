@@ -1,3 +1,12 @@
+2012-05-15  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/aix-unwind.h (*_REGNO): New, set of useful
+	register numbers. LR_REGNO replaces R_LR.
+	(ucontext_for): New, helper for ...
+	(ppc_aix_fallback_frame_state): New, implementation for aix 5.2
+	and 5.3 of ...
+	(MD_FALLBACK_FRAME_STATE_FOR): Define for 32bit configurations.
+
 2012-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (i[34567]86-*-linux*, x86_64-*-linux*)
