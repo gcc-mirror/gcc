@@ -1,3 +1,8 @@
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/ia64.c (ia64_emit_probe_stack_range): Adjust calls to
+	plus_constant.
+
 2012-05-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_init_constructor): Do a block move for very

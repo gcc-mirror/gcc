@@ -3276,7 +3276,7 @@ ia64_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size, int sol)
 	 size is at least 4096 - (96 + 2) * 8 = 3312 bytes, which is enough.
 	 Also compute the address of the last probe for the memory stack
 	 (which grows towards lower addresses).  */
-      emit_insn (gen_rtx_SET (VOIDmode, r3, plus_constant (r3, 4095)));
+      emit_insn (gen_rtx_SET (VOIDmode, r3, plus_constant (Pmode, r3, 4095)));
       emit_insn (gen_rtx_SET (VOIDmode, r2,
 			      gen_rtx_PLUS (Pmode, stack_pointer_rtx, r2)));
 
@@ -3328,12 +3328,12 @@ ia64_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size, int sol)
       for (i = 2 * PROBE_INTERVAL; i < size; i += PROBE_INTERVAL)
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, r2,
-				  plus_constant (r2, -PROBE_INTERVAL)));
+				  plus_constant (Pmode, r2, -PROBE_INTERVAL)));
 	  emit_stack_probe (r2);
 	}
 
       emit_insn (gen_rtx_SET (VOIDmode, r2,
-			      plus_constant (r2,
+			      plus_constant (Pmode, r2,
 					     (i - PROBE_INTERVAL) - size)));
       emit_stack_probe (r2);
     }
@@ -3394,7 +3394,8 @@ ia64_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size, int sol)
       if (size != rounded_size)
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, r2,
-				  plus_constant (r2, rounded_size - size)));
+				  plus_constant (Pmode, r2,
+						 rounded_size - size)));
 	  emit_stack_probe (r2);
 	}
     }
