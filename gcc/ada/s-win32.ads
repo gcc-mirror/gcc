@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2008-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 2008-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,7 @@ package System.Win32 is
    --  The LARGE_INTEGER type is actually a fixed point type
    --  that only can represent integers. The reason for this is
    --  easier conversion to Duration or other fixed point types.
-   --  (See Operations.Clock)
+   --  (See System.OS_Primitives.Clock, mingw and rtx versions.)
 
    type LARGE_INTEGER is delta 1.0 range -2.0**63 .. 2.0**63 - 1.0;
 

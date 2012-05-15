@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a dummy version of this package that is needed to solve bootstrap
---  problems when compiling a library that doesn't require s-atacco.adb from
---  a compiler that contains one.
+--  This package does not require a body, since it is a package renaming. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not interfere.
 
-package body System.Address_To_Access_Conversions is
-
-end System.Address_To_Access_Conversions;
+pragma No_Body;

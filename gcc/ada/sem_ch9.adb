@@ -82,7 +82,7 @@ package body Sem_Ch9 is
    --            May reference only one protected component
    --            May not reference non-constant entities outside the protected
    --              subprogram scope.
-   --            May not reference non-scalar out parameters
+   --            May not reference non-elementary out parameters
    --            May not contain loop statements or procedure calls
    --            Function calls and attribute references must be static
    --
@@ -306,7 +306,7 @@ package body Sem_Ch9 is
 
                         elsif Ekind_In (Id, E_Out_Parameter,
                                             E_In_Out_Parameter)
-                          and then not Is_Scalar_Type (Etype (Id))
+                          and then not Is_Elementary_Type (Etype (Id))
                           and then Scope_Within_Or_Same (Scope (Id), Sub_Id)
                         then
                            return Abandon;
