@@ -54,4 +54,3 @@ contains
      two = -123*y
   end function two
 end program main
-! { dg-final { cleanup-modules "test_mod" } }

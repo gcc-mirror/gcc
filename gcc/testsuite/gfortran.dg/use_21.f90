@@ -31,5 +31,3 @@ program ala
    implicit none
    call dom%init
 end program ala
-
-! { dg-final { cleanup-modules "domain" } }

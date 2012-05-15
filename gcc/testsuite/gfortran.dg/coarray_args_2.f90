@@ -46,5 +46,3 @@ program rank_mismatch_02
      write(*, *) 'OK'
   end if
 end program
-
-! { dg-final { cleanup-modules "mod_rank_mismatch_02" } }

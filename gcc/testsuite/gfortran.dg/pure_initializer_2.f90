@@ -43,4 +43,3 @@ pure function test()
   integer :: test
   test = p
 end function test
-! { dg-final { cleanup-modules "mod_xyz mod_xyz2 mod_xyz3" } }

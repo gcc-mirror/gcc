@@ -74,4 +74,3 @@ program testit
   print *, "in the main:", k
   call write(33)
 end program testit
-! { dg-final { cleanup-modules "gfcbug68 gfcbug68a m n" } }

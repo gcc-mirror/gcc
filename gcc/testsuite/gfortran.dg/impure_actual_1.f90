@@ -20,6 +20,3 @@ END MODULE M1
 USE M1
  write(6,*) J(L) ! { dg-error "Mismatch in PURE attribute" }
 END
-
-! { dg-final { cleanup-modules "m1" } }
-

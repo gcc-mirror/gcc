@@ -25,5 +25,3 @@ contains
     namelist /nml3/ t2       ! ok, private components
   end subroutine
 END MODULE
-
-! { dg-final { cleanup-modules "nml" } }

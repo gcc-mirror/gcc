@@ -70,5 +70,3 @@ contains
     end subroutine fn14
   end function fn12
 end module
-
-! { dg-final { cleanup-modules "pr35768" } }

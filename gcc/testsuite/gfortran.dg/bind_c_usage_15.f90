@@ -27,5 +27,3 @@ program main
   call gen(x)
   if(x /= 17) call abort()
 end program main
-
-! { dg-final { cleanup-modules "mod" } }

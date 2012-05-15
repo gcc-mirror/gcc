@@ -146,5 +146,3 @@ function p7(x)
  integer :: x, p7
  p7 = x*(-2)
 end function
-
-! { dg-final { cleanup-modules "m" } }

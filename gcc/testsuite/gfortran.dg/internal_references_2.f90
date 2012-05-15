@@ -18,5 +18,3 @@ contains
     real a
   end subroutine sub
 end module aap
-
-! { dg-final { cleanup-modules "aap" } }

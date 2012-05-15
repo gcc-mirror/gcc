@@ -47,5 +47,3 @@ CONTAINS
     t_bar = .FALSE.
   END FUNCTION
 END MODULE
-
-! { dg-final { cleanup-modules "mod_t" } }

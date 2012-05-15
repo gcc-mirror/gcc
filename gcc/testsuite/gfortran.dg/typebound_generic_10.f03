@@ -28,5 +28,3 @@ contains
   end subroutine b_subroutine
 
 end module generic 
-
-! { dg-final { cleanup-modules "generic" } }

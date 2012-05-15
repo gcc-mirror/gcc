@@ -32,5 +32,3 @@ contains
       call add (c   , b   )
   end subroutine foo
 end module gfcbug82
-
-! { dg-final { cleanup-modules "gfcbug82" } }

@@ -31,4 +31,3 @@ program test_foo
   use foo, only: i => foo! { dg-error "been used as an external module name" }
   use foo, only: foo => i! { dg-error "been used as an external module name" }
 end program
-! { dg-final { cleanup-modules "foo bar test test2 test3" } }

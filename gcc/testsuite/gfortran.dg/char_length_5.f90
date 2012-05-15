@@ -58,4 +58,3 @@ program xjoin
   if (len (join (words2(2:4:2), sep2)) .ne. 10) call abort ()
 
 end program xjoin
-! { dg-final { cleanup-modules "util_mod" } }

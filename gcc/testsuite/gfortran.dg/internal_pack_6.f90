@@ -54,6 +54,5 @@ END SUBROUTINE S2
 
  call s2
 end
-! { dg-final { cleanup-modules "m1" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_internal_pack" 0 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

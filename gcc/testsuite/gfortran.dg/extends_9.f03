@@ -33,4 +33,3 @@ END MODULE
 
 END
  
-! { dg-final { cleanup-modules "run_example_fortran03" } }

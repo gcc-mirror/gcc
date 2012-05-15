@@ -20,5 +20,3 @@ module m2
 end module
 
 end
-
-! { dg-final { cleanup-modules "m0 m1 m2" } }

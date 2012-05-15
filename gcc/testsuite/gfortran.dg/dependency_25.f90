@@ -91,5 +91,3 @@ program TestProgram
   if (any (abs(Table%RealData(:,4) - 1) > epsilon(1.0))) call abort ()
   if (any (abs(Table%RealData(:,[1,2,3,5]) - 42) > epsilon(1.0))) call abort ()
 end program TestProgram
-
-! { dg-final { cleanup-modules "unitvalue_module" } }

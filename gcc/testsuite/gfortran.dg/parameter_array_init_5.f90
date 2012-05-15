@@ -23,4 +23,3 @@ program TEST
     use bug3
     call sr
 end program TEST
-! { dg-final { cleanup-modules "bug3" } }

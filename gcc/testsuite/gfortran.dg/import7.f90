@@ -53,6 +53,3 @@
          END TYPE
          TYPE(T1) X
        END
-
-! { dg-final { cleanup-modules "mod" } }
-

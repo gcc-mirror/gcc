@@ -64,5 +64,3 @@ contains
 end module m3
 
 end
-
-! { dg-final { cleanup-modules "testmod testmod2 m3" } }

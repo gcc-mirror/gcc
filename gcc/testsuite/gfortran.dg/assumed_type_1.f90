@@ -52,5 +52,3 @@ contains
     call MPI_Send2(x, 1, 1,1,1,j,i)
   end
 end
-
-! { dg-final { cleanup-modules "mpi_interface" } }

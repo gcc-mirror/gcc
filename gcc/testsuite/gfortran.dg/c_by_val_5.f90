@@ -65,5 +65,3 @@ program main
   call Grid2BMP(10)
 !  call test()
 end program main
-
-! { dg-final { cleanup-modules "x" } }

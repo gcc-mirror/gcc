@@ -26,4 +26,3 @@ PROGRAM main
   ! See if constructing the extending type works.
   conc = concrete_t (1, 2)
 END PROGRAM main
-! { dg-final { cleanup-modules "m" } }

@@ -50,4 +50,3 @@ subroutine test_sub(input1, input2)
    if (mysum(1) /= 3 .and. mysum(2) /= 4) call abort 
 
 end subroutine test_sub 
-! { dg-final { cleanup-modules "myoperator" } }

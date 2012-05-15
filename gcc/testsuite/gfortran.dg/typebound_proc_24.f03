@@ -28,5 +28,3 @@ contains
   end subroutine
 
 end module 
-
-! { dg-final { cleanup-modules "datetime_mod" } }

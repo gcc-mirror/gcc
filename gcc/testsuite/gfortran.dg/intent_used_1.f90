@@ -15,5 +15,3 @@ MODULE global
       END SUBROUTINE foo
    END INTERFACE
 END MODULE global
-
-! { dg-final { cleanup-modules "global" } }

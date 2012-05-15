@@ -22,5 +22,3 @@ CONTAINS
       CALL C_F_POINTER(FPTR=FPTR, CPTR=CPTR, SHAPE=[strlen(CPTR)])
    END FUNCTION
 END MODULE ISO_C_UTILITIES
-! { dg-final { cleanup-modules "iso_c_utilities" } }
-

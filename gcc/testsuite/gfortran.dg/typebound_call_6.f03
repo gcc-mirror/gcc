@@ -41,5 +41,3 @@ PROGRAM main
   CALL super%proc
   CALL sub%proc
 END PROGRAM main
-
-! { dg-final { cleanup-modules "m" } }

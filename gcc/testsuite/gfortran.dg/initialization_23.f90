@@ -12,6 +12,3 @@
       CHARACTER, PARAMETER :: the_alpha = one_parameter('c') ! { dg-error "Can't convert TYPE" }
       CHARACTER, PARAMETER :: the_beta = (/one_parameter('c')/) ! { dg-error "Incompatible ranks" }
     END MODULE cdf_aux_mod
-
-! { dg-final { cleanup-modules "cdf_aux_mod" } }
-

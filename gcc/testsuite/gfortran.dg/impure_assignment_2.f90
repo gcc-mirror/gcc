@@ -66,5 +66,3 @@ CONTAINS
     RES = B
   END FUNCTION
 END MODULE pr20882
-! { dg-final { cleanup-modules "pr20863 pr20882" } }
-

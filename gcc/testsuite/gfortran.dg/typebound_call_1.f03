@@ -94,5 +94,3 @@ PROGRAM main
   USE m, ONLY: test
   CALL test ()
 END PROGRAM main
-
-! { dg-final { cleanup-modules "m" } }

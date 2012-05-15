@@ -34,4 +34,3 @@ program main
   deallocate(t%data)
   deallocate(t)
 end program main
-! { dg-final { cleanup-modules "m1" } }

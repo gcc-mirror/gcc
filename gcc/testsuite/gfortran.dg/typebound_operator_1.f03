@@ -45,5 +45,3 @@ CONTAINS
   END SUBROUTINE assign_proc
 
 END MODULE m
-
-! { dg-final { cleanup-modules "m" } }

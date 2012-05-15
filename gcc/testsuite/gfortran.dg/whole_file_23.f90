@@ -45,5 +45,3 @@ program xjoin
   character (len=5) :: words(2) = (/"two  ","three"/) 
   write (*,"(1x,'words = ',a)") "'"//join (words, "&")//"'"
 end program xjoin
-
-! { dg-final { cleanup-modules "util_mod" } }

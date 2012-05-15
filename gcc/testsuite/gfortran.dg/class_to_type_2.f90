@@ -93,5 +93,3 @@ program prog
 
  call subpr2_array (g ())
 end program
-
-! { dg-final { cleanup-modules "mod_subpr" } }

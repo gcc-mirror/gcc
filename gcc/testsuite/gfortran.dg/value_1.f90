@@ -81,4 +81,3 @@ contains
   end subroutine complex_foo
 
 end program test_value
-! { dg-final { cleanup-modules "global" } }

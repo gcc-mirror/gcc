@@ -23,5 +23,3 @@ MODULE TEST
   public  all_type, any_type
 END MODULE
 END
-
-! { dg-final { cleanup-modules "test" } }

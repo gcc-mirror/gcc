@@ -39,4 +39,3 @@ module m4
 end module m4
 
 end
-! { dg-final { cleanup-modules "m1 m2 m3 m4" } }

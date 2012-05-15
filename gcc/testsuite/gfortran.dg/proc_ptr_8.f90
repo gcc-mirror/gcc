@@ -41,5 +41,3 @@ contains
   end subroutine
 
 END
-
-! { dg-final { cleanup-modules "x" } }

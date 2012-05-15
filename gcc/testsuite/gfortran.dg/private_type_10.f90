@@ -30,5 +30,3 @@ module demo2
   type(myint), save :: foo2 ! { dg-error "of PRIVATE derived type" }
   public :: foo2
 end module demo2
-
-! { dg-final { cleanup-modules "demo" } }

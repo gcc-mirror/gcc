@@ -99,5 +99,3 @@ program main
     type is (i_field); if (u%i .ne. 152064) call abort
   end select
 end program
-! { dg-final { cleanup-modules "field_module i_field_module" } }
-

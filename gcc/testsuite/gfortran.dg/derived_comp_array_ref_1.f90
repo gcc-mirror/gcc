@@ -31,5 +31,3 @@ end module gd_calc
   call activate_gd_calcs (used_, outputs_)
   if (any (outputs_(ndim:1:-1)%used .neqv. used_)) call abort ()
 end
-
-! { dg-final { cleanup-modules "gd_calc" } }

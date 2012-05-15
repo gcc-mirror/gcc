@@ -54,5 +54,3 @@ contains
   end function gn_monte_rand
 
 end module general_rand
-
-! { dg-final { cleanup-modules "general_rand" } }

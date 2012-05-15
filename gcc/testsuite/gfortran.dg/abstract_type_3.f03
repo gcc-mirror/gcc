@@ -49,4 +49,3 @@ CONTAINS
   END SUBROUTINE impl
 
 END MODULE m
-! { dg-final { cleanup-modules "m" } }

@@ -26,5 +26,3 @@ str%string = ['H','e','l','l','o']
 if (len (string_to_char (str)) /= 5) call abort ()
 if (string_to_char (str) /= "Hello") call abort ()
 end
-
-! { dg-final { cleanup-modules "m_string" } }

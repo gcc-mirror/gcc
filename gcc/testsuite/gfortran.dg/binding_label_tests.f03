@@ -73,5 +73,3 @@ module binding_label_tests
   subroutine sub4() BIND(c, name = "        ") 
   end subroutine sub4 
 end module binding_label_tests
-
-! { dg-final { cleanup-modules "binding_label_tests" } }

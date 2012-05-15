@@ -56,4 +56,3 @@ end module global
   if (any (x .ne. (/42.0, 42.0, -42.0, -42.0/))) call abort ()
   if (cam%i .ne. 99) call abort ()
 end
-! { dg-final { cleanup-modules "types global" } }

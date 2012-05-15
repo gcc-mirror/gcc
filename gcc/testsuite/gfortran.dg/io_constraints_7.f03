@@ -33,5 +33,3 @@ program main
   open (newunit=a, file="foo") ! { dg-error "variable definition context" }
   close (unit=a)
 end program main
-
-! { dg-final { cleanup-modules "m" } }

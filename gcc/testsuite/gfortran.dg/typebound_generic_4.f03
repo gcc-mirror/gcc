@@ -51,4 +51,3 @@ program foobar
 end program foobar
 
 ! { dg-output "Vector.*Matrix" }
-! { dg-final { cleanup-modules "bar_mod" } }

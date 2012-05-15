@@ -23,5 +23,3 @@ program TestStringTools
   if (txt .ne. "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz") &
         call abort ()
 end program TestStringTools
-
-! { dg-final { cleanup-modules "chtest" } }

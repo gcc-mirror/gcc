@@ -34,5 +34,3 @@ contains
     if (any(d(3:5) .ne. b)) call abort ()
   end subroutine
 end
-
-! { dg-final { cleanup-modules "aap" } }

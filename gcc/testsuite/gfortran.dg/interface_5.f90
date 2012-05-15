@@ -53,4 +53,3 @@ program main
   call bl_copy(1.0, chr)
   if (chr /= "recopy") call abort ()  
 end program main
-! { dg-final { cleanup-modules "f77_blas_generic f77_blas_extra" } }

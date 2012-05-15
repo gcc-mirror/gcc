@@ -30,4 +30,3 @@ PROGRAM main
 END PROGRAM main
 
 ! { dg-output "shorter than the declared one for dummy argument 'str' \\(3/5\\)" }
-! { dg-final { cleanup-modules "m" } }

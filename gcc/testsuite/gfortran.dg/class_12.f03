@@ -41,5 +41,3 @@ contains
     operand = operand%product(scale)
   end subroutine 
 end module
-
-! { dg-final { cleanup-modules "abstract_algebra" } }

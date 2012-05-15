@@ -31,5 +31,3 @@ program pure_byref_3
     a = hoj()
     if (.not. all(a == (/1, 2, 3/))) call abort()
 end program pure_byref_3
-
-! { dg-final { cleanup-modules "huj_mod" } }

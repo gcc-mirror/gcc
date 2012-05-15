@@ -5,5 +5,3 @@ module namelist_1
   integer,private :: x
   namelist /n/ x ! { dg-error "cannot be member of PUBLIC namelist" "" }
 end module
-
-! { dg-final { cleanup-modules "namelist_1" } }

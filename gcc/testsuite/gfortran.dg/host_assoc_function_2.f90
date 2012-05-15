@@ -45,4 +45,3 @@ contains
 
   end subroutine foo
 end module gfcbug64_mod2
-! { dg-final { cleanup-modules "gfcbug64_mod1 gfcbug64_mod2" } }

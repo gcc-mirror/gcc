@@ -26,5 +26,3 @@ end module
   use type_definitions
   use elliptical_elements
 end
-
-! { dg-final { cleanup-modules "type_definitions elliptical_elements" } }

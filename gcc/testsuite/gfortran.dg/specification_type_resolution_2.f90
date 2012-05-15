@@ -21,5 +21,3 @@ contains
   end function bar
 
 end module gfcbug50
-
-! { dg-final { cleanup-modules "gfcbug50" } }

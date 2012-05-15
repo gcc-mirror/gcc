@@ -14,5 +14,3 @@ use m
 implicit none
 if (allocated(x)) call abort()
 end 
-
-! { dg-final { cleanup-modules "m" } }

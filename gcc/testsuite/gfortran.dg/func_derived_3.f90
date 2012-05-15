@@ -123,5 +123,3 @@ end module func_derived_3a
   if (trim (line).ne."simple  =     1") call abort ()
   close (10)
 end program
-
-! { dg-final { cleanup-modules "func_derived_3 func_derived_3a" } }

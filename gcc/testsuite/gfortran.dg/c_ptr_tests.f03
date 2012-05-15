@@ -42,5 +42,3 @@ module c_ptr_tests
       call c_f_pointer(self%myServices, localServices)
     end subroutine sub0
 end module c_ptr_tests
-
-! { dg-final { cleanup-modules "c_ptr_tests" } }

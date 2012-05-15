@@ -172,4 +172,3 @@ program main
   call destroy_list(list) 
   stop 
 end program main 
-! { dg-final { cleanup-modules "poly_list" } }

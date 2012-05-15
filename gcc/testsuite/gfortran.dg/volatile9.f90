@@ -40,5 +40,3 @@
     implicit none
     volatile :: v13
   end subroutine s14 
-
-! { dg-final { cleanup-modules "mod13 mod13a mod13b" } }

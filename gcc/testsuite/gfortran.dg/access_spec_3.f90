@@ -31,4 +31,3 @@ program user
         bint = 8
         write(*,*) aint
 end program
-! { dg-final { cleanup-modules "base a b c" } }

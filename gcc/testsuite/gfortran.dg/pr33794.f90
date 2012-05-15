@@ -46,5 +46,3 @@ program test
 
   call self_ind_cir_coil (r, l, turns, mu, self_l)
 end program test
-
-! { dg-final { cleanup-modules "scc_m" } }

@@ -1,6 +1,5 @@
 !PR fortran/32238
 ! { dg-do compile }
-! { dg-final { cleanup-modules "bug_test" } }
 
 module bug_test
 

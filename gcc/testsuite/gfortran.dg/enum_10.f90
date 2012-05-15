@@ -60,5 +60,3 @@ call f4 (one4, 1)
 call f4 (two4, 2)
 call f4 (max4, huge(1_4)+0)
 end
-
-! { dg-final { cleanup-modules "enum_10" } }

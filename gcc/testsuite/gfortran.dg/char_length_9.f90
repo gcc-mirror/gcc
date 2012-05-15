@@ -18,5 +18,3 @@ CONTAINS
                val%c_val(i)(1:MIN (80, l_out-(i-1)*default_string_length))
   END SUBROUTINE val_get
 END MODULE input_val_types
-
-! { dg-final { cleanup-modules "input_val_types" } }

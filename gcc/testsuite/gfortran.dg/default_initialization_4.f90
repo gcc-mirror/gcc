@@ -19,4 +19,3 @@ if (t%x /= 42) call abort()
 t%x = 0
 if (t%x /= 0) call abort()
 end
-! { dg-final { cleanup-modules "good" } }

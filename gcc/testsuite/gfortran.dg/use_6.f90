@@ -41,5 +41,3 @@ use x, only : operator(.bar.) => operator(.addfive.) ! { dg-error "Fortran 2003:
 use y, operator(.my.) => operator(.addfive.) ! { dg-error "Fortran 2003: Renaming operators in USE statements" }
 use z
 end
-
-! { dg-final { cleanup-modules "x y z" } }

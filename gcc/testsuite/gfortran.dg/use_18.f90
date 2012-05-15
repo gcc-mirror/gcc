@@ -47,5 +47,3 @@ type(t2) :: k = t2(1), l = t2(2)
 print *, i*j
 print *, k > l
 end
-
-! { dg-final { cleanup-modules "foo bar" } }

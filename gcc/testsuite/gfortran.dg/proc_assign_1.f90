@@ -77,4 +77,3 @@ contains
         y = 2                ! OK - function result
     end function y
 end
-! { dg-final { cleanup-modules "simple simpler" } }

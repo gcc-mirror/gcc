@@ -27,4 +27,3 @@ end module test_module
    call sub_module (sub)
    call sub_module (str)
 end
-! { dg-final { cleanup-modules "test_module" } }

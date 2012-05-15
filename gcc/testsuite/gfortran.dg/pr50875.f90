@@ -35,5 +35,3 @@ contains
   end subroutine routine_A
 
 end module test
-
-! { dg-final { cleanup-modules "test" } }

@@ -32,4 +32,3 @@ program main
     print *, 'Is flag'
   endif
 end program
-! { dg-final { cleanup-modules "funcinterfacemod secondmod" } }

@@ -24,5 +24,3 @@ subroutine plane ()
   call point ( gp)
 end subroutine plane
 end module gfcbug44
-! { dg-final { cleanup-modules "geo gfcbug44" } }
-

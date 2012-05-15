@@ -30,5 +30,3 @@ program pr
   print *,a%t1%i
   print *,b%u1%j  ! { dg-error "is a PRIVATE component of" }
 end program
-
-! { dg-final { cleanup-modules "mo" } }

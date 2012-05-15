@@ -32,5 +32,3 @@ program main
   if (kernel1%variable .ne. -1) call abort
   if (kernel2%variable .ne. -1) call abort
 end program
-! { dg-final { cleanup-modules "show_producer_class" } }
-

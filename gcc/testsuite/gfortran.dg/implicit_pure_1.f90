@@ -50,4 +50,3 @@ program gfcbug114a
 end program gfcbug114a
 
 ! { dg-final { scan-module "b" "IMPLICIT_PURE" } }
-! { dg-final { cleanup-modules "b" } }

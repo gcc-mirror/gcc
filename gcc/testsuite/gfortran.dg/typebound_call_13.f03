@@ -39,5 +39,3 @@ program test_optional
   if (res /= 2) call abort()
 
 end program
-
-! { dg-final { cleanup-modules "module_myobj" } }

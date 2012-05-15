@@ -70,6 +70,3 @@ contains
  end function
 
 end module m
-
-! { dg-final { cleanup-modules "m" } }
-

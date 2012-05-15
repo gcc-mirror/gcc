@@ -109,4 +109,3 @@ contains
 end program alloc_fun
 ! { dg-final { scan-tree-dump-times "free" 10 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
-! { dg-final { cleanup-modules "m" } }

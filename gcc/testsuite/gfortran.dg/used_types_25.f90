@@ -12,6 +12,3 @@ use m
  type t ! { dg-error "Derived type definition of 't' at .1. has already been defined" }
  end type t ! { dg-error "Expecting END PROGRAM statement" }
 end
-
-! { dg-final { cleanup-modules "m" } }
-

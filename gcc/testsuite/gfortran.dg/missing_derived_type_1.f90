@@ -11,4 +11,3 @@ module test
     type(nonexist),pointer :: l ! { dg-error "has not been declared" }
   end type epot_t
 end module test
-! { dg-final { cleanup-modules "test" } }

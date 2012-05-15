@@ -23,5 +23,3 @@
           CALL set_bound(the_beta%parameters(1:which)) ! { dg-error "Rank mismatch" }
       END SUBROUTINE cdf_beta
     END MODULE cdf_beta_mod
-
-! { dg-final { cleanup-modules "cdf_aux_mod" } }

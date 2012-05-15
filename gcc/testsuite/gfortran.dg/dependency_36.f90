@@ -26,5 +26,3 @@ CONTAINS
     x = matmul(a,b)             ! { dg-warning "Creating array temporary" }
   END SUBROUTINE GeneticOptimize
 END MODULE m
-
-! { dg-final { cleanup-modules "m" } }

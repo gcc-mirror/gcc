@@ -13,4 +13,3 @@ subroutine aa ! { dg-error "is already defined" }
    write(*,*) 'BB'
 end subroutine aa
 end module
-! { dg-final { cleanup-modules "aha" } }

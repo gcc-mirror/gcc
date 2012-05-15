@@ -26,4 +26,3 @@ module smooth_mesh
   type(vector ) :: new_pos  ! { dg-error "used before it is defined" }
 end module smooth_mesh
 
-! { dg-final { cleanup-modules "class_vector tools_math smooth_mesh" } }

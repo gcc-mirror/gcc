@@ -45,5 +45,3 @@ end module abc
   use abc
   call xmain(3, 2)
 end
-! { dg-final { cleanup-modules "abc" } }
-

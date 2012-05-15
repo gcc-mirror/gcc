@@ -33,4 +33,3 @@ contains
       bar = 1.0
     end function bar
 end program test
-! { dg-final { cleanup-modules "m" } }

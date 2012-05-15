@@ -27,5 +27,3 @@ program main
   if (associated(p_fun) .or. associated(p_fun2)) &
     call abort ()
 end program main
-
-! { dg-final { cleanup-modules "mod_a" } }

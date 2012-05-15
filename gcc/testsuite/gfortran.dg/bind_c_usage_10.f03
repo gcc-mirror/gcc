@@ -71,5 +71,3 @@ contains
     func4ent = -88.0
   end function func4
 end module mod
-
-! { dg-final { cleanup-modules "mod" } }

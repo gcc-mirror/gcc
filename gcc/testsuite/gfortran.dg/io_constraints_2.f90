@@ -73,5 +73,3 @@ end module global
 100 continue
 200 format (2i6)
  END
-
-! { dg-final { cleanup-modules "global" } }

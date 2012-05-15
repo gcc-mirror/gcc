@@ -98,5 +98,3 @@ contains
     y = seq_type3 (99)
   end subroutine foo
 END
-
-! { dg-final { cleanup-modules "global" } }

@@ -38,4 +38,3 @@ end module grid_io
   call read_grid_header
 end
 ! { dg-final { cleanup-tree-dump "grid_io" } }
-! { dg-final { cleanup-modules "grid_io" } }

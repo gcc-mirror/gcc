@@ -48,6 +48,3 @@ program test
    y = reshape (z, (/6/))
    if (any(y%x .ne. (/ 64000, 128000, 19200, 64, 128000, 256000/))) call abort ()
 end program test
-
-! { dg-final { cleanup-modules "elem_assign" } }
-

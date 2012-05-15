@@ -18,4 +18,3 @@ CONTAINS
     END FUNCTION
   END FUNCTION
 END MODULE
-! { dg-final { cleanup-modules "foo" } }

@@ -68,4 +68,3 @@ program main
   n = 5
   if(any (foo3(n) /= [ 0,1,2,3,0 ])) call abort()
 end program
-! { dg-final { cleanup-modules "one" } }

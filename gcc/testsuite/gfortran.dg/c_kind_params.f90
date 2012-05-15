@@ -74,4 +74,3 @@ contains
   end subroutine param_test
     
 end module c_kind_params
-! { dg-final { cleanup-modules "c_kind_params" } }

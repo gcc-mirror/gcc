@@ -53,4 +53,3 @@ contains
    two = 1
  end function two
 end program main
-! { dg-final { cleanup-modules "m1 m2" } }

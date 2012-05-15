@@ -13,4 +13,3 @@ module abuse_mod
    integer(1), parameter :: MSKa1(len(HEX1)) =  [(1,i=1,len(HEX1))]
    integer(1), parameter :: ARR1(len(HEX1)) = [( MSKa1(i), i=1,len(HEX1) )]
 end module abuse_mod
-! { dg-final { cleanup-modules "abuse_mod" } }

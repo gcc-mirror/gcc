@@ -17,5 +17,3 @@ program driver
   
   call sub0()
 end program driver
-
-! { dg-final { cleanup-modules "c_funloc_tests" } }

@@ -22,5 +22,3 @@ subroutine string_comp(i)
    integer :: i
    i = map(42)
 end subroutine string_comp
-
-! { dg-final { cleanup-modules "b" } }

@@ -82,5 +82,3 @@ contains
     print *, x, y, z, dt2, st2, ns2, ns1
   end subroutine foo
 END
-
-! { dg-final { cleanup-modules "global" } }

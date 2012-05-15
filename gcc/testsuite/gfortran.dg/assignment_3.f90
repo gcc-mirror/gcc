@@ -59,5 +59,3 @@ TYPE (distributed_vector) :: SCALP_DV
 ZTEMP = PVAZG * SCALP_DV
 END SUBROUTINE CAININAD_SCALE_DISTVEC
 END MODULE YOMCAIN
-
-! { dg-final { cleanup-modules "yomcain" } }

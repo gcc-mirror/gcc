@@ -69,4 +69,3 @@ function proc_ext (arg, chr)
   proc_ext = arg
   chr = "proc_ext"
 end function
-! { dg-final { cleanup-modules "m" } }

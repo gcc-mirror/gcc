@@ -8,4 +8,3 @@ SUBROUTINE glutInit_f03()
   argv(1)=C_LOC(empty_string)
 END SUBROUTINE
 end module c_loc_tests_7
-! { dg-final { cleanup-modules "c_loc_tests_7" } }

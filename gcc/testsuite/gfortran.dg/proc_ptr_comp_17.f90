@@ -27,6 +27,3 @@ use m
  str = 'fghij'
  if (strptr/='fghij') call abort()
 end
-
-! { dg-final { cleanup-modules "m" } }
-

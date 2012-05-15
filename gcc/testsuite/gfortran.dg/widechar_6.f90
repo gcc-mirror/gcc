@@ -60,5 +60,3 @@ program test
   if (len (cut(4_"12345")) /= 2 .or. cut(4_"45") /= 4_"") call abort
 
 end program test
-
-! { dg-final { cleanup-modules "mod" } }

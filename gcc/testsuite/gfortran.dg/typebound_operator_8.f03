@@ -97,4 +97,3 @@ program main
   
   if (u%i .ne. 152064) call abort
 end program
-! { dg-final { cleanup-modules "field_module i_field_module" } }

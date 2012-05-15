@@ -54,5 +54,3 @@ module test
   real :: a
   protected :: test ! { dg-error "MODULE attribute conflicts with PROTECTED" }
 end module test
-
-! { dg-final { cleanup-modules "protmod test" } }

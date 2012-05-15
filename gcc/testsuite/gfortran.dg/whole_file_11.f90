@@ -35,5 +35,3 @@ FUNCTION foo_count()
   USE module_foo, ONLY: foo
   INTEGER :: foo_count
 END FUNCTION
-
-! { dg-final { cleanup-modules "module_foo" } }

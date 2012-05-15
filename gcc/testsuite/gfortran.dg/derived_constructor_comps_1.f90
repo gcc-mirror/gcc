@@ -54,4 +54,3 @@ contains
   end function foo
 
 end program prog
-! { dg-final { cleanup-modules "foo_mod" } }

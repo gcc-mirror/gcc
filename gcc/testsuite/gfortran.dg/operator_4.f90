@@ -96,5 +96,3 @@ PROGRAM pr17711
   A = (A >  C)   ! { dg-error "comparison operator '>'" }
   A = (A.GT.C)   ! { dg-error "comparison operator '.gt.'" }
 END PROGRAM
-
-! { dg-final { cleanup-modules "mod_t" } }

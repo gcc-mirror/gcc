@@ -78,4 +78,3 @@ contains
     ip_save => g_initial%inquire_inner_product()
   end subroutine cg
 end module m4
-! { dg-final { cleanup-modules "m1 m2 m3 m4" } }

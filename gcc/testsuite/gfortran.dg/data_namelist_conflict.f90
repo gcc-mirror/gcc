@@ -23,4 +23,3 @@ program test
    if (i /= 0 .or. j /= 1) call abort
    close(10)
 end program
-! { dg-final { cleanup-modules "globals" } }

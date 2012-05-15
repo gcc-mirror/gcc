@@ -37,4 +37,3 @@ program x
   public  :: i ! { dg-error "only allowed in the specification part of a module" }
   integer,public :: j ! { dg-error "not allowed outside of the specification part of a module" }
 end program x
-! { dg-final { cleanup-modules "test mod" } }

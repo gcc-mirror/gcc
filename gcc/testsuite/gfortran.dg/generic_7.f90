@@ -24,5 +24,3 @@ CONTAINS
     WRITE(*,*) x, y
   END SUBROUTINE
 END MODULE
-
-! { dg-final { cleanup-modules "global" } }

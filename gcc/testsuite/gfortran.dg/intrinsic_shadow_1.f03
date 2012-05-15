@@ -53,5 +53,3 @@ REAL FUNCTION random_seed () ! { dg-bogus "of an intrinsic" }
 END FUNCTION random_seed
 
 ! We do only compile, so no main program needed.
-
-! { dg-final { cleanup-modules "testmod" } }

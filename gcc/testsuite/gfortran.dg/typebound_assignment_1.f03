@@ -31,5 +31,3 @@ contains
     this%st = st
   end subroutine init_comps
 end module hydro_flow 
-
-! { dg-final { cleanup-modules "hydro_state hydro_flow" } }

@@ -42,6 +42,3 @@ contains
     if (inverse(1_4) /= 3_4) call abort ()
   end subroutine sub
 end program gfcbug48
-
-! { dg-final { cleanup-modules "module1 module2" } }
-

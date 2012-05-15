@@ -41,4 +41,3 @@ program test
   call bar
   call bar2
 end
-! { dg-final { cleanup-modules "iso_fortran_env" } }

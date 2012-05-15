@@ -33,4 +33,3 @@ contains
     end interface
   end subroutine integrate
 end module foo
-! { dg-final { cleanup-modules "foo bar" } }

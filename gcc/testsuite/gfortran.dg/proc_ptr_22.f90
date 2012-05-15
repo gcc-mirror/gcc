@@ -25,6 +25,3 @@ program bugTest
   pp2 => returnMat
   if (sum(pp2(3,2))/=6) call abort()
 end program bugTest
-
-! { dg-final { cleanup-modules "bugtestmod" } }
-

@@ -32,5 +32,3 @@ contains
 end module
 
 end
-
-! { dg-final { cleanup-modules "grid_module field_module" } }

@@ -49,5 +49,3 @@ subroutine test2()
     integer, allocatable :: d[:] ! { dg-error "Noncoarray component c at .1. of type LOCK_TYPE or with subcomponent of type LOCK_TYPE must have a codimension or be a subcomponent of a coarray. .Variables of type t5 may not have a codimension as d at .2. has a codimension or a coarray subcomponent." }
   end type t5
 end subroutine test2
-
-! { dg-final { cleanup-modules "m3" } }

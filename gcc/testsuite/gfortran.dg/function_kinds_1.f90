@@ -51,4 +51,3 @@ end module mymodule
   z = func()
   if (z%i .ne. 5) call abort ()
 end
-! { dg-final { cleanup-modules "kinds mymodule" } }

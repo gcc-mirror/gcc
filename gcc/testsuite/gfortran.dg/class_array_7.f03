@@ -55,5 +55,3 @@ program main
   call reallocate (a)
   if (trim (print_type ("a", a)) .ne. "a is base_type") call abort
 end program main
-
-! { dg-final { cleanup-modules "realloc" } }

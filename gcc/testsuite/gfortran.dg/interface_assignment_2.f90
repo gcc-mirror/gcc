@@ -46,4 +46,3 @@ PROGRAM VST_2
   if (any (str_ara(1)%chars(1:5) .ne. char_elm(1:5))) call abort
   if (any (str_ara(2)%chars(1:5) .ne. char_elm(6:10))) call abort
 END PROGRAM VST_2
-! { dg-final { cleanup-modules "iso_varying_string" } }

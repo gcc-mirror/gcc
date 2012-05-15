@@ -65,5 +65,3 @@ CONTAINS
   END FUNCTION proc3
 
 END MODULE testmod
-
-! { dg-final { cleanup-modules "testmod" } }

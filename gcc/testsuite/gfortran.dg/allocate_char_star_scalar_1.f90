@@ -29,5 +29,3 @@ program hum
     call foo(q)
 
 end program hum
-
-! { dg-final { cleanup-modules "moo" } }

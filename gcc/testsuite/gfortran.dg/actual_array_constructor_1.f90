@@ -78,5 +78,3 @@ contains
   end subroutine option_stopwatch_a
 
 end program main
-! { dg-final { cleanup-modules "global my_module" } }
-

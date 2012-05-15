@@ -43,5 +43,3 @@ program tsave
   if (info .ne. 10) call abort ()
   
 end program tsave
-
-! { dg-final { cleanup-modules "bar_mod" } }

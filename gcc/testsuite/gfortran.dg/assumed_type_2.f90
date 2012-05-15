@@ -139,8 +139,6 @@ deallocate (array_class_t1_ptr, array_t3_ptr)
 
 end
 
-! { dg-final { cleanup-modules "mod" } }
-
 ! { dg-final { scan-tree-dump-times "sub_scalar .0B,"  2 "original" } }
 ! { dg-final { scan-tree-dump-times "sub_scalar .scalar_real_alloc," 2 "original" } }
 ! { dg-final { scan-tree-dump-times "sub_scalar .scalar_char_ptr," 2 "original" } }

@@ -22,4 +22,3 @@ END MODULE
 USE M
 CALL b()
 END
-! { dg-final { cleanup-modules "m" } }

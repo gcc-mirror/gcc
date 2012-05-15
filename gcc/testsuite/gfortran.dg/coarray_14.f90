@@ -51,5 +51,3 @@ type(t), allocatable :: a[:]
  allocate (t :: a) ! { dg-error "Coarray specification required in ALLOCATE statement" }
 allocate (t :: a[*]) ! OK
 end program myTest
-
-! { dg-final { cleanup-modules "m" } }

@@ -75,5 +75,3 @@ contains
   end function
 
 end
-
-! { dg-final { cleanup-modules "module_m module_m2 s_hard sidl_string_array" } }

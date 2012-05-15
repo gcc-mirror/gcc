@@ -1,6 +1,5 @@
 !PR fortran/32222
 ! { dg-do compile }
-! { dg-final { cleanup-modules "splinemod" } }
 
 module splinemod
 implicit none

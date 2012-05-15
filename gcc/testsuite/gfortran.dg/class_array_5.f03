@@ -22,4 +22,3 @@ module ice6
   end subroutine do_something_else
 
 end module ice6
-! { dg-final { cleanup-modules "ice6" } }

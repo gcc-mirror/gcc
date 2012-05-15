@@ -6,4 +6,3 @@ module foo
   INTEGER, PARAMETER, DIMENSION(2) ::  IP_ARRAY1_32_S = &
   & (/  LBOUND(IP_ARRAY2_4_S(5:10,2:3))/)
 END module foo
-! { dg-final { cleanup-modules "foo" } }

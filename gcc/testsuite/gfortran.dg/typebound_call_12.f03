@@ -33,4 +33,3 @@ PROGRAM ProgA
   END DO
 END PROGRAM ProgA
  
-! { dg-final { cleanup-modules "moda" } }

@@ -25,5 +25,3 @@ contains
   end function Tree_Node_Get
 
 end module Merger_Trees
-
-! { dg-final { cleanup-modules "merger_trees" } }

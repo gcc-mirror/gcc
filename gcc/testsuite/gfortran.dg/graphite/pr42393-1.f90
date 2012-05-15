@@ -22,4 +22,3 @@ CONTAINS
     fn_val = sum
   END FUNCTION basym
 END MODULE beta_gamma_psi
-! { dg-final { cleanup-modules "beta_gamma_psi" } }

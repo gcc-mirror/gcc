@@ -15,4 +15,3 @@ contains
     call InitialDiatomicX ()    ! { dg-error "which is not consistent with the CALL" }
   end subroutine FindDiatomicPeriod
 end module Diatoms
-! { dg-final { cleanup-modules "diatoms" } }

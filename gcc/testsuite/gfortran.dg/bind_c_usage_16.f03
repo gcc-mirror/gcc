@@ -55,5 +55,3 @@ subroutine test() bind(c)
     if(iachar(d(i)(2:2)) /=32 .or. iachar(d(i)(3:3)) /= 32) call abort()
   end do
 end subroutine
-
-! { dg-final { cleanup-modules "mod" } }

@@ -25,5 +25,3 @@ END MODULE myfortran_binding
 use myfortran_binding
 error_handler => error_stop
 end
-
-! { dg-final { cleanup-modules "myfortran_binding" } }

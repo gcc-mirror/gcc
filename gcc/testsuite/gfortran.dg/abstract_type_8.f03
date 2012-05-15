@@ -25,5 +25,3 @@ abstract interface
     end subroutine generic_desc
 end interface
 end module factory_pattern
-
-! { dg-final { cleanup-modules "factory_pattern" } }

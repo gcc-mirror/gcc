@@ -11,4 +11,3 @@ contains
   subroutine fourir(A,ntot,kconjg, E,useold)
   end subroutine fourir
 end module solv_cap
-! { dg-final { cleanup-modules "solv_cap" } }

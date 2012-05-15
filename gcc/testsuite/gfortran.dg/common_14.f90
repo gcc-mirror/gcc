@@ -24,5 +24,3 @@ end
 
 call two()
 end
-
-! { dg-final { cleanup-modules "m" } }

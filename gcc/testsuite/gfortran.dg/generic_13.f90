@@ -33,4 +33,3 @@ PROGRAM TT
  CALL SUB(xx,I)
  IF (I.NE.7) CALL ABORT()
 END PROGRAM
-! { dg-final { cleanup-modules "test too" } }
