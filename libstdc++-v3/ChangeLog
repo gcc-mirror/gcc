@@ -1,3 +1,22 @@
+2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/53339
+	* include/bits/hashtable_policy.h (__detail::_Identity,
+	__detail::_Select1st): Add.
+	(_Map_base, _Hashtable_base): Use the latter, adjust parameters.
+	* include/bits/hashtable.h (_Hashtable::__key_extract): Adjust.
+	* include/bits/unordered_set.h (__uset_hashtable, __umset_hashtable):
+	Likewise.
+	* include/bits/unordered_map.h (__umap_hashtable, __ummap_hashtable):
+	Likewise.
+	* include/bits/stl_function.h (_Identity, _Select1st, _Select2nd)
+	Unconditionally derive from unary_function.
+	* include/ext/functional (identity, select1st, select2nd): Remove
+	#ifdef __GXX_EXPERIMENTAL_CXX0X__ bits.
+	* testsuite/23_containers/unordered_map/requirements/53339.cc: New.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	53339.cc: Likewise.
+
 2012-05-11  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/53263
