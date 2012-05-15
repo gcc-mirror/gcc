@@ -1322,7 +1322,7 @@ __go_go(void (*fn)(void*), void* arg)
 {
 	byte *sp;
 	size_t spsize;
-	G * volatile newg;	// volatile to avoid longjmp warning
+	G *newg;
 
 	schedlock();
 
@@ -1363,19 +1363,26 @@ __go_go(void (*fn)(void*), void* arg)
 	if(sp == nil)
 		runtime_throw("nil g->stack0");
 
-	getcontext(&newg->context);
-	newg->context.uc_stack.ss_sp = sp;
+	{
+		// Avoid warnings about variables clobbered by
+		// longjmp.
+		byte * volatile vsp = sp;
+		size_t volatile vspsize = spsize;
+		G * volatile vnewg = newg;
+
+		getcontext(&vnewg->context);
+		vnewg->context.uc_stack.ss_sp = vsp;
 #ifdef MAKECONTEXT_STACK_TOP
-	newg->context.uc_stack.ss_sp += spsize;
+		vnewg->context.uc_stack.ss_sp += vspsize;
 #endif
-	newg->context.uc_stack.ss_size = spsize;
-	makecontext(&newg->context, kickoff, 0);
+		vnewg->context.uc_stack.ss_size = vspsize;
+		makecontext(&vnewg->context, kickoff, 0);
 
-	newprocreadylocked(newg);
-	schedunlock();
+		newprocreadylocked(vnewg);
+		schedunlock();
 
-	return newg;
-//printf(" goid=%d\n", newg->goid);
+		return vnewg;
+	}
 }
 
 // Put on gfree list.  Sched must be locked.
