@@ -142,7 +142,12 @@ package Aspects is
       Aspect_Unreferenced,                  -- GNAT
       Aspect_Unreferenced_Objects,          -- GNAT
       Aspect_Volatile,
-      Aspect_Volatile_Components);
+      Aspect_Volatile_Components,
+
+      --  Aspects that have a static boolean value but don't correspond to
+      --  pragmas
+
+      Aspect_Lock_Free);
 
    --  The following array indicates aspects that accept 'Class
 
@@ -182,6 +187,7 @@ package Aspects is
                              Aspect_Dimension_System         => True,
                              Aspect_Favor_Top_Level          => True,
                              Aspect_Inline_Always            => True,
+                             Aspect_Lock_Free                => True,
                              Aspect_Object_Size              => True,
                              Aspect_Persistent_BSS           => True,
                              Aspect_Predicate                => True,
@@ -352,6 +358,7 @@ package Aspects is
      Aspect_Interrupt_Priority           => Name_Interrupt_Priority,
      Aspect_Invariant                    => Name_Invariant,
      Aspect_Iterator_Element             => Name_Iterator_Element,
+     Aspect_Lock_Free                    => Name_Lock_Free,
      Aspect_Machine_Radix                => Name_Machine_Radix,
      Aspect_No_Return                    => Name_No_Return,
      Aspect_Object_Size                  => Name_Object_Size,

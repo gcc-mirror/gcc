@@ -926,15 +926,39 @@ package body Sem_Ch13 is
                when No_Aspect =>
                   raise Program_Error;
 
-               --  Aspects taking an optional boolean argument. For all of
-               --  these we just create a matching pragma and insert it, if
-               --  the expression is missing or set to True. If the expression
-               --  is False, we can ignore the aspect with the exception that
-               --  in the case of a derived type, we must check for an illegal
-               --  attempt to cancel an inherited aspect.
+               --  Aspects taking an optional boolean argument
 
                when Boolean_Aspects =>
                   Set_Is_Boolean_Aspect (Aspect);
+
+                  --  Special treatment for Aspect_Lock_Free since it is the
+                  --  only Boolean_Aspect that doesn't correspond to a pragma.
+
+                  if A_Id = Aspect_Lock_Free then
+                     if Ekind (E) /= E_Protected_Type then
+                        Error_Msg_N
+                          ("aspect % only applies to protected objects",
+                           Aspect);
+                     end if;
+
+                     --  Set the Uses_Lock_Free flag to True if there is no
+                     --  expression or if the expression is True.
+
+                     if No (Expr)
+                       or else Is_True (Static_Boolean (Expr))
+                     then
+                        Set_Uses_Lock_Free (E);
+                     end if;
+
+                     goto Continue;
+                  end if;
+
+                  --  For all of these aspects we just create a matching pragma
+                  --  and insert it, if the expression is missing or set to
+                  --  True. If the expression is False, we can ignore the
+                  --  aspect with the exception that in the case of a derived
+                  --  type, we must check for an illegal attempt to cancel an
+                  --  inherited aspect.
 
                   if Present (Expr)
                     and then Is_False (Static_Boolean (Expr))
