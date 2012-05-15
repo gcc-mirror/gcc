@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -235,6 +235,13 @@ private
            "__gnat_raise_from_controlled_operation");
    --  Raise Program_Error, providing information about X (an exception raised
    --  during a controlled operation) in the exception message.
+
+   procedure Reraise_Library_Exception_If_Any;
+   pragma Export
+     (Ada, Reraise_Library_Exception_If_Any,
+           "__gnat_reraise_library_exception_if_any");
+   --  If there was an exception raised during library-level finalization,
+   --  reraise the exception.
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);

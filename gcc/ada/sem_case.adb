@@ -803,8 +803,18 @@ package body Sem_Case is
          --  bounds of its base type to determine the values covered by the
          --  discrete choices.
 
+         --  In Ada 2012, if the subtype has a non-static predicate the full
+         --  range of the base type must be covered as well.
+
          if Is_OK_Static_Subtype (Subtyp) then
-            Bounds_Type := Subtyp;
+            if not Has_Predicates (Subtyp)
+              or else Present (Static_Predicate (Subtyp))
+            then
+               Bounds_Type := Subtyp;
+            else
+               Bounds_Type := Choice_Type;
+            end if;
+
          else
             Bounds_Type := Choice_Type;
          end if;

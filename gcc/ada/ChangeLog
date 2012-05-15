@@ -1,3 +1,34 @@
+2012-05-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb (Subtypes_Statically_Match): In Ada 2012, static
+	matching requires matching of static subtype predicates as well.
+
+2012-05-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_case.adb (Analyze_Choices): If the subtype of the
+	expression has a non-static predicate, the case alternatives
+	must cover the base type.
+
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
+	* a-calend-vms.ads: Add pragma export to Split and Time_Of.
+	Merge comments from a-calend.ads to minimize differences.
+
+2012-05-15  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: gnatmetric: add a small example that demonstrates
+	the difference between control coupling and unit coupling.
+
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb (Gen_Header): Remove code to emit LE_Set.
+	(Gen_Finalize_Library): Replace test with
+	a call to __gnat_reraise_library_exception_if_any.
+	* s-soflin.ads (Library_Exception): Do not export.
+	(Library_Exception_Set): Likewise.
+	* a-except-2005.ads, a-except-2005.adb
+	(Reraise_Library_Exception_If_Any): New procedure.
+
 2012-05-15  Geert Bosch  <bosch@adacore.com>
 
 	* sem_ch9.adb (Allows_Lock_Free_Implementation): out or in out
