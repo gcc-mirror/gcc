@@ -3770,6 +3770,7 @@ find_moveable_pseudos (void)
 	    if (DF_REG_DEF_COUNT (regno) != 1
 		|| !DF_REF_INSN_INFO (def)
 		|| HARD_REGISTER_NUM_P (regno)
+		|| DF_REG_EQ_USE_COUNT (regno) > 0
 		|| (!INTEGRAL_MODE_P (mode) && !FLOAT_MODE_P (mode)))
 	      continue;
 	    def_insn = DF_REF_INSN (def);

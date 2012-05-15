@@ -1,3 +1,8 @@
+2012-05-15  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* ira.c (find_moveable_pseudos): Skip registers whose
+	DF_REG_EQ_USE_COUNT is nonzero.
+
 2012-05-15  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* doc/md.texi (fma): Define to only be applicable for single
