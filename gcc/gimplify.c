@@ -4033,9 +4033,13 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    else
 	      align = TYPE_ALIGN (type);
 
+	    /* Do a block move either if the size is so small as to make
+	       each individual move a sub-unit move on average, or if it
+	       is so large as to make individual moves inefficient.  */
 	    if (size > 0
 		&& num_nonzero_elements > 1
-		&& !can_move_by_pieces (size, align))
+		&& (size < num_nonzero_elements
+		    || !can_move_by_pieces (size, align)))
 	      {
 		if (notify_temp_creation)
 		  return GS_ERROR;
