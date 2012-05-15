@@ -1,3 +1,8 @@
+2012-05-15  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/Make-lang.in (COMMON_FLAGS_TO_PASS): Use WARN_CFLAGS
+	instead of trying to mimic it.
+
 2012-05-15  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch5.adb, sem_util.adb, s-stposu.adb, exp_ch4.adb: Minor
