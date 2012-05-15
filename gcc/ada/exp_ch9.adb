@@ -3253,12 +3253,17 @@ package body Exp_Ch9 is
          begin
             --  Get the type size
 
+            --  Surely this should be Known_Static_Esize if you are about
+            --  to assume you can do UI_To_Int on it! ???
+
             if Known_Esize (Comp_Type) then
                Typ_Size := UI_To_Int (Esize (Comp_Type));
 
             --  If the Esize (Object_Size) is unknown at compile-time, look at
             --  the RM_Size (Value_Size) since it may have been set by an
             --  explicit representation clause.
+
+            --  And how do we know this is statically known???
 
             else
                Typ_Size := UI_To_Int (RM_Size (Comp_Type));
@@ -3359,6 +3364,7 @@ package body Exp_Ch9 is
               (Stmts, Compare, Unsigned, Comp, Saved_Comp, Current_Comp);
 
             --  Generate:
+
             --    exit when System.Atomic_Primitives.Atomic_Compare_Exchange
             --                (Comp'Address,
             --                 Interfaces.Unsigned (Saved_Comp),
@@ -3397,16 +3403,15 @@ package body Exp_Ch9 is
 
             if Present (Label_Id) then
                Label := Make_Label (Loc, Label_Id);
-
                Append_To (Decls,
                  Make_Implicit_Label_Declaration (Loc,
                    Defining_Identifier => Entity (Label_Id),
                    Label_Construct     => Label));
-
                Append_To (Stmts, Label);
             end if;
 
             --  Generate:
+
             --    loop
             --       declare
             --          <Decls>
@@ -3446,8 +3451,7 @@ package body Exp_Ch9 is
             Build_Protected_Sub_Specification (N, Prot_Typ, Unprotected_Mode),
           Declarations               => Decls,
           Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => Stmts));
+            Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts));
    end Build_Lock_Free_Unprotected_Subprogram_Body;
 
    -------------------------
@@ -8195,8 +8199,8 @@ package body Exp_Ch9 is
    --  the state of the protected object.
 
    procedure Expand_N_Protected_Body (N : Node_Id) is
-      Loc          : constant Source_Ptr := Sloc (N);
-      Pid          : constant Entity_Id  := Corresponding_Spec (N);
+      Loc : constant Source_Ptr := Sloc (N);
+      Pid : constant Entity_Id  := Corresponding_Spec (N);
 
       Lock_Free_Active : constant Boolean := Uses_Lock_Free (Pid);
       --  This flag indicates whether the lock free implementation is active
@@ -8258,7 +8262,6 @@ package body Exp_Ch9 is
          while Present (Formal) loop
             Append_To (Actuals,
               Make_Identifier (Loc, Chars (Defining_Identifier (Formal))));
-
             Next (Formal);
          end loop;
 
@@ -8269,6 +8272,7 @@ package body Exp_Ch9 is
                   Name =>
                     New_Reference_To (Corresponding_Spec (Prot_Bod), Loc),
                   Parameter_Associations => Actuals));
+
          else
             pragma Assert (Nkind (Spec) = N_Function_Specification);
 
@@ -8540,13 +8544,13 @@ package body Exp_Ch9 is
    --  the specs refer to this type.
 
    procedure Expand_N_Protected_Type_Declaration (N : Node_Id) is
-      Loc              : constant Source_Ptr := Sloc (N);
-      Prot_Typ         : constant Entity_Id  := Defining_Identifier (N);
+      Loc      : constant Source_Ptr := Sloc (N);
+      Prot_Typ : constant Entity_Id  := Defining_Identifier (N);
 
       Lock_Free_Active : constant Boolean := Uses_Lock_Free (Prot_Typ);
       --  This flag indicates whether the lock free implementation is active
 
-      Pdef             : constant Node_Id := Protected_Definition (N);
+      Pdef : constant Node_Id := Protected_Definition (N);
       --  This contains two lists; one for visible and one for private decls
 
       Rec_Decl     : Node_Id;
@@ -8621,7 +8625,7 @@ package body Exp_Ch9 is
 
             return True;
 
-         --  Any other types will be checked by the back-end
+         --  Any other type will be checked by the back-end
 
          else
             return True;
@@ -8637,21 +8641,20 @@ package body Exp_Ch9 is
          --  All semantic checks already done in Sem_Prag
 
          Prot_Proc    : constant Entity_Id :=
-                       Defining_Unit_Name
-                         (Specification (Current_Node));
+                          Defining_Unit_Name (Specification (Current_Node));
 
          Proc_Address : constant Node_Id :=
                           Make_Attribute_Reference (Loc,
-                          Prefix => New_Reference_To (Prot_Proc, Loc),
-                          Attribute_Name => Name_Address);
+                            Prefix         =>
+                              New_Reference_To (Prot_Proc, Loc),
+                            Attribute_Name => Name_Address);
 
          RTS_Call     : constant Entity_Id :=
                           Make_Procedure_Call_Statement (Loc,
-                            Name =>
-                              New_Reference_To (
-                                RTE (RE_Register_Interrupt_Handler), Loc),
-                            Parameter_Associations =>
-                              New_List (Proc_Address));
+                            Name                   =>
+                              New_Reference_To
+                                (RTE (RE_Register_Interrupt_Handler), Loc),
+                            Parameter_Associations => New_List (Proc_Address));
       begin
          Append_Freeze_Action (Prot_Proc, RTS_Call);
       end Register_Handler;
@@ -8857,16 +8860,15 @@ package body Exp_Ch9 is
                      Protection_Subtype :=
                        New_Reference_To (RTE (RE_Protection), Loc);
                   end if;
+
                else
                   Protection_Subtype :=
-                    Make_Subtype_Indication
-                      (Sloc => Loc,
+                    Make_Subtype_Indication (Loc,
                        Subtype_Mark =>
                          New_Reference_To
                            (RTE (RE_Static_Interrupt_Protection), Loc),
                        Constraint =>
-                         Make_Index_Or_Discriminant_Constraint (
-                           Sloc => Loc,
+                         Make_Index_Or_Discriminant_Constraint (Loc,
                            Constraints => New_List (
                              Entry_Count_Expr,
                              Make_Integer_Literal (Loc, Num_Attach_Handler))));
@@ -8876,31 +8878,29 @@ package body Exp_Ch9 is
               and then not Restriction_Active (No_Dynamic_Attachment)
             then
                Protection_Subtype :=
-                  Make_Subtype_Indication (
-                    Sloc => Loc,
-                    Subtype_Mark => New_Reference_To
-                      (RTE (RE_Dynamic_Interrupt_Protection), Loc),
-                    Constraint =>
-                      Make_Index_Or_Discriminant_Constraint (
-                        Sloc => Loc,
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To
+                        (RTE (RE_Dynamic_Interrupt_Protection), Loc),
+                    Constraint   =>
+                      Make_Index_Or_Discriminant_Constraint (Loc,
                         Constraints => New_List (Entry_Count_Expr)));
 
             --  Type has explicit entries or generated primitive entry wrappers
 
             elsif Has_Entries (Prot_Typ)
               or else (Ada_Version >= Ada_2005
-                         and then Present (Interface_List (N)))
+                        and then Present (Interface_List (N)))
             then
                case Corresponding_Runtime_Package (Prot_Typ) is
                   when System_Tasking_Protected_Objects_Entries =>
                      Protection_Subtype :=
                         Make_Subtype_Indication (Loc,
                           Subtype_Mark =>
-                            New_Reference_To (RTE (RE_Protection_Entries),
-                              Loc),
-                          Constraint =>
-                            Make_Index_Or_Discriminant_Constraint (
-                              Sloc => Loc,
+                            New_Reference_To
+                              (RTE (RE_Protection_Entries), Loc),
+                          Constraint   =>
+                            Make_Index_Or_Discriminant_Constraint (Loc,
                               Constraints => New_List (Entry_Count_Expr)));
 
                   when System_Tasking_Protected_Objects_Single_Entry =>
@@ -8918,7 +8918,7 @@ package body Exp_Ch9 is
 
             Object_Comp :=
               Make_Component_Declaration (Loc,
-                Defining_Identifier =>
+                Defining_Identifier  =>
                   Make_Defining_Identifier (Loc, Name_uObject),
                 Component_Definition =>
                   Make_Component_Definition (Loc,
@@ -8969,9 +8969,7 @@ package body Exp_Ch9 is
       --  internal operations.
 
       E_Count := 0;
-
       Comp := First (Visible_Declarations (Pdef));
-
       while Present (Comp) loop
          if Nkind (Comp) = N_Subprogram_Declaration then
             Sub :=
@@ -9080,17 +9078,15 @@ package body Exp_Ch9 is
             --  Collect pointers to the protected subprogram and the barrier
             --  of the current entry, for insertion into Entry_Bodies_Array.
 
-            Append (
+            Append_To (Expressions (Entries_Aggr),
               Make_Aggregate (Loc,
                 Expressions => New_List (
                   Make_Attribute_Reference (Loc,
-                    Prefix => New_Reference_To (Bdef, Loc),
+                    Prefix         => New_Reference_To (Bdef, Loc),
                     Attribute_Name => Name_Unrestricted_Access),
                   Make_Attribute_Reference (Loc,
-                    Prefix => New_Reference_To (Edef, Loc),
-                    Attribute_Name => Name_Unrestricted_Access))),
-              Expressions (Entries_Aggr));
-
+                    Prefix         => New_Reference_To (Edef, Loc),
+                    Attribute_Name => Name_Unrestricted_Access))));
          end if;
 
          Next (Comp);
@@ -12935,9 +12931,7 @@ package body Exp_Ch9 is
       --  any protected entry (family) of subprogram. Note for the lock-free
       --  implementation, the Protection object is not needed anymore.
 
-      if Is_Protected
-        and then not Uses_Lock_Free (Conc_Typ)
-      then
+      if Is_Protected and then not Uses_Lock_Free (Conc_Typ) then
          declare
             Prot_Ent : constant Entity_Id := Make_Temporary (Loc, 'R');
             Prot_Typ : RE_Id;
@@ -12964,7 +12958,7 @@ package body Exp_Ch9 is
             elsif Has_Entries (Conc_Typ)
               or else
                 (Ada_Version >= Ada_2005
-                   and then Present (Interface_List (Parent (Conc_Typ))))
+                  and then Present (Interface_List (Parent (Conc_Typ))))
             then
                case Corresponding_Runtime_Package (Conc_Typ) is
                   when System_Tasking_Protected_Objects_Entries =>
