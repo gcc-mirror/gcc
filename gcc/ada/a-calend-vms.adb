@@ -915,8 +915,19 @@ package body Ada.Calendar is
          --  Step 1: Split the input time
 
          Formatting_Operations.Split
-           (T, Year, Month, tm_day, Day_Secs,
-            tm_hour, tm_min, Second, Sub_Sec, Leap_Sec, True, 0);
+           (Date        => T,
+            Year        => Year,
+            Month       => Month,
+            Day         => tm_day,
+            Day_Secs    => Day_Secs,
+            Hour        => tm_hour,
+            Minute      => tm_min,
+            Second      => Second,
+            Sub_Sec     => Sub_Sec,
+            Leap_Sec    => Leap_Sec,
+            Use_TZ      => True,
+            Is_Historic => False,
+            Time_Zone   => 0);
 
          --  Step 2: Correct the year and month
 

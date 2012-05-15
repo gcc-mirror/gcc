@@ -1,3 +1,24 @@
+2012-05-15  Geert Bosch  <bosch@adacore.com>
+
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): out or in out
+	parameters can be access types as well, not just scalar types,
+	so relax the test to Is_Elementary_Type.
+
+2012-05-15  Bob Duff  <duff@adacore.com>
+
+	* s-atacco.ads s-atacco.adb: Replace pragma Elaborate_Body
+	with pragma No_Body.
+	(Xyz): Remove Xyz, which is apparently unnecessary.
+
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
+	* a-calend-vms.adb: Complete previous change.
+
+2012-05-15  Bob Duff  <duff@adacore.com>
+
+	* s-win32.ads: Minor comment fix.
+	* s-osprim-mingw.adb: Minor editing.
+
 2012-05-15  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch9.adb, sem_ch9.adb, sem_ch13.adb: Minor reformatting.

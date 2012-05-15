@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,23 +38,11 @@ generic
 
 package System.Address_To_Access_Conversions is
    pragma Preelaborate;
-   pragma Elaborate_Body;
-   --  This pragma Elaborate_Body is there to ensure the requirement of what is
-   --  at the moment a dummy null body. The reason this null body is there is
-   --  that we used to have a real body, and it causes bootstrap problems with
-   --  old compilers if we try to remove the corresponding file.
 
    pragma Compile_Time_Warning
      (Object'Unconstrained_Array,
       "Object is unconstrained array type" & ASCII.LF &
       "To_Pointer results may not have bounds");
-
-   --  Capture constrained status, suppressing warnings, since this is
-   --  an obsolescent feature to use Constrained in this way (RM J.4).
-
-   pragma Warnings (Off);
-   Xyz : Boolean := Object'Constrained;
-   pragma Warnings (On);
 
    type Object_Pointer is access all Object;
    for Object_Pointer'Size use Standard'Address_Size;
