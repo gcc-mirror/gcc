@@ -1,3 +1,8 @@
+2012-05-15  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_set_modified): Move ...
+	* gimple.h (gimple_set_modified): ... here.
+
 2012-05-15  Tristan Gingold  <gingold@adacore.com>
 
 	* ira-color.c (move_spill_restore): Add a guard.
