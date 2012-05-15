@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -527,10 +527,18 @@ package body Exp_Prag is
    --  seen (i.e. this elaboration cannot be deferred to the freeze point).
 
    procedure Expand_Pragma_Import_Or_Interface (N : Node_Id) is
-      Def_Id    : constant Entity_Id := Entity (Arg2 (N));
+      Def_Id    : Entity_Id;
       Init_Call : Node_Id;
 
    begin
+      --  If the pragma comes from an aspect, the entity is its first argument.
+
+      if Present (Corresponding_Aspect (N)) then
+         Def_Id := Entity (Arg1 (N));
+      else
+         Def_Id := Entity (Arg2 (N));
+      end if;
+
       if Ekind (Def_Id) = E_Variable then
 
          --  Find generated initialization call for object, if any

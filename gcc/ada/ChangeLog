@@ -1,3 +1,26 @@
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exextr.adb: Add comment.
+
+2012-05-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting (remove long dead code).
+
+2012-05-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.adb, aspects.ads: Add aspects for Convention, Export,
+	External_Name, Import, and Link_Name.
+	* exp_prag.adb (Expand_Pragma_Import_Or_Interface): if the
+	pragma comes from an aspect specification, the entity is the
+	first argument.
+	* sem_prag.adb (Analyze_Pragma, cases Pragma_Export and
+	Pragma_Import): if the pragma comes from an aspect specification,
+	the entity is the first argument, and the second has the value
+	True by default.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): generate pragam
+	for aspect Convention. Add placeholders for Link_Name and
+	External_Name.
+
 2012-05-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Asynchronous_Select): Extract the statements

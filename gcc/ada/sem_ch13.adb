@@ -1168,6 +1168,14 @@ package body Sem_Ch13 is
                --  the second argument is a local name referring to the entity,
                --  and the first argument is the aspect definition expression.
 
+               when Aspect_Convention =>
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Argument_Associations =>
+                        New_List (Relocate_Node (Expr), Ent),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Chars (Id)));
+
                when Aspect_Warnings =>
 
                   --  Construct the pragma
@@ -1562,6 +1570,13 @@ package body Sem_Ch13 is
                   Analyze_Aspect_Dimension_System (N, Id, Expr);
                   goto Continue;
 
+               --  Placeholders for new aspects without corresponding pragmas
+
+               when Aspect_External_Name =>
+                  null;
+
+               when Aspect_Link_Name =>
+                  null;
             end case;
 
             --  If a delay is required, we delay the freeze (not much point in
@@ -6199,6 +6214,9 @@ package body Sem_Ch13 is
          when Aspect_Attach_Handler =>
             T := RTE (RE_Interrupt_ID);
 
+         when Aspect_Convention =>
+            null;
+
          --  Default_Value is resolved with the type entity in question
 
          when Aspect_Default_Value =>
@@ -6224,6 +6242,12 @@ package body Sem_Ch13 is
             T := RTE (RE_Dispatching_Domain);
 
          when Aspect_External_Tag =>
+            T := Standard_String;
+
+         when Aspect_External_Name =>
+            T := Standard_String;
+
+         when Aspect_Link_Name =>
             T := Standard_String;
 
          when Aspect_Priority | Aspect_Interrupt_Priority =>
