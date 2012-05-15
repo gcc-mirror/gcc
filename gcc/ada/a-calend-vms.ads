@@ -49,9 +49,8 @@ package Ada.Calendar is
    subtype Month_Number is Integer range 1 .. 12;
    subtype Day_Number   is Integer range 1 .. 31;
 
-   --  A Day_Duration value of 86_400.0 designates a new day
-
    subtype Day_Duration is Duration range 0.0 .. 86_400.0;
+   --  Note that a value of 86_400.0 is the start of the next day
 
    function Clock return Time;
    --  The returned time value is the number of nanoseconds since the start
