@@ -21,8 +21,13 @@
 
 	PR libstdc++/53263
 	* include/debug/safe_iterator.h (__gnu_debug::__base): Move...
-	* include/debug/functions.h: ... Here. Add debug function
-	overloads to perform checks on normal iterators when possible.
+	* include/debug/functions.h: ... Here.
+	(__check_sorted_aux): Add overload for random access safe
+	iterators.
+	(__check_partition_lower_aux): New.
+	(__check_partition_lower): Use latter.
+	(__check_partition_upper_aux): New.
+	(__check_partition_upper): Use latter.
 	* include/debug/macros.h (__glibcxx_check_heap)
 	(__glibcxx_check_heap_pred): Use __gnu_debug::__base on iterator range.
 
