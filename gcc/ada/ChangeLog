@@ -1,5 +1,20 @@
 2012-05-15  Tristan Gingold  <gingold@adacore.com>
 
+	* fe.h (Get_RT_Exception_Name): Define.
+	* types.ads (RT_Exception_Code): Update comment.
+	* exp_ch11.adb, exp_ch11.ads (Get_RT_Exception_Name): New
+	procedure to get the name of the rcheck subprograms.
+	* a-except-2005.adb (Rcheck_xx): Rename.
+	* a-except.adb Likewise, but also keep the old Rcheck_nn routines
+	for bootstrap.
+	* arith64.c (__gnat_mulv64): Use __gnat_rcheck_CE_Overflow_Check
+	instead of __gnat_rcheck_10.
+	* gcc-interface/trans.c (build_raise_check): Use Get_RT_Exception_Name
+	to create the __gnat_rcheck routines name.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2012-05-15  Tristan Gingold  <gingold@adacore.com>
+
 	* exp_ch7.adb (Build_Exception_Handler): Save current
 	occurrence only if -gnateE.
 	(Build_Object_Declaration): Declare E_Id only if -gnateE.

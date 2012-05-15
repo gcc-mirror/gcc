@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -764,7 +764,9 @@ package Types is
    --    2. Modify the corresponding definitions in types.h, including the
    --       definition of last_reason_code.
 
-   --    3. Add a new routine in Ada.Exceptions with the appropriate call and
+   --    3. Add the name of the routines in exp_ch11.Get_RT_Exception_Name
+
+   --    4. Add a new routine in Ada.Exceptions with the appropriate call and
    --       static string constant. Note that there is more than one version
    --       of a-except.adb which must be modified.
 

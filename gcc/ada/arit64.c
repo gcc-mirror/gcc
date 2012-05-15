@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 2009, Free Software Foundation, Inc.               *
+ *         Copyright (C) 2009-2012, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,7 +29,7 @@
  *                                                                          *
  ****************************************************************************/
 
-extern void __gnat_rcheck_10(char *file, int line)
+extern void __gnat_rcheck_CE_Overflow_Check(char *file, int line)
   __attribute__ ((__noreturn__));
 
 long long int __gnat_mulv64 (long long int x, long long int y)
@@ -49,7 +49,7 @@ long long int __gnat_mulv64 (long long int x, long long int y)
   long long unsigned low = (long long unsigned) xlo * (long long unsigned) ylo;
 
   if ((xhi && yhi) ||  mid + (low  >> 32) > 0x7fffffff + neg)
-    __gnat_rcheck_10 (__FILE__, __LINE__);
+    __gnat_rcheck_CE_Overflow_Check (__FILE__, __LINE__);
 
   low += ((long long unsigned) (unsigned) mid) << 32;
 
