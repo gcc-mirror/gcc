@@ -2622,13 +2622,8 @@ package body Exp_Pakd is
       Loc  : constant Source_Ptr := Sloc (N);
       PAT  : Entity_Id;
       Otyp : Entity_Id;
-      Pref : Node_Id;
       Csiz : Uint;
       Osiz : Uint;
-
-      In_Reverse_Storage_Order_Record : Boolean;
-      --  Set True if Obj is a [sub]component of a record that has reversed
-      --  scalar storage order.
 
    begin
       Csiz := Component_Size (Atyp);
@@ -2732,28 +2727,7 @@ package body Exp_Pakd is
 
       --  We also have to adjust if the storage order is reversed
 
-      Pref := Obj;
-      loop
-         case Nkind (Pref) is
-            when N_Selected_Component =>
-               Pref := Prefix (Pref);
-               exit;
-
-            when N_Indexed_Component =>
-               Pref := Prefix (Pref);
-
-            when others =>
-               Pref := Empty;
-               exit;
-         end case;
-      end loop;
-
-      In_Reverse_Storage_Order_Record :=
-        Present (Pref)
-          and then Is_Record_Type (Etype (Pref))
-          and then Reverse_Storage_Order (Etype (Pref));
-
-      if Bytes_Big_Endian xor In_Reverse_Storage_Order_Record then
+      if Bytes_Big_Endian xor In_Reverse_Storage_Order_Record (Obj) then
          Shift :=
            Make_Op_Subtract (Loc,
              Left_Opnd  => Make_Integer_Literal (Loc, Osiz - Csiz),

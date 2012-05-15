@@ -350,7 +350,6 @@ int __gnat_vmsp = 0;
 /* Used for Ada bindings */
 int __gnat_size_of_file_attributes = sizeof (struct file_attributes);
 
-/* Reset the file attributes as if no system call had been performed */
 void __gnat_stat_to_attr (int fd, char* name, struct file_attributes* attr);
 
 /* The __gnat_max_path_len variable is used to export the maximum
@@ -401,6 +400,8 @@ to_ptr32 (char **ptr64)
 #endif
 
 static const char ATTR_UNSET = 127;
+
+/* Reset the file attributes as if no system call had been performed */
 
 void
 __gnat_reset_attributes
