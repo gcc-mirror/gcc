@@ -1,3 +1,8 @@
+2012-05-16  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* configure.ac: Stack protector enabling for Android targets.
+	* configure: Regenerate.
+
 2012-05-16  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* ira.c (pseudo_move_insn): Delete.
