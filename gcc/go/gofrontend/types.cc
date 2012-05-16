@@ -1748,7 +1748,7 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name,
       base_name = name->name();
       const Named_object* in_function = name->in_function();
       if (in_function != NULL)
-	base_name += '$' + in_function->name();
+	base_name += '$' + Gogo::unpack_hidden_name(in_function->name());
     }
   std::string hash_name = base_name + "$hash";
   std::string equal_name = base_name + "$equal";
