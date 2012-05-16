@@ -4038,10 +4038,16 @@ gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 # Build the include directories.
 stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) fixinc_list
 # Copy in the headers provided with gcc.
+#
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
 # Using basename would be simpler, but some systems don't have it.
+#
 # The touch command is here to workaround an AIX/Linux NFS bug.
+#
+# The move-if-change + cp -p twists for limits.h are intended to preserve
+# the time stamp when we regenerate, to prevent pointless rebuilds during
+# e.g. install-no-fixedincludes.
 	-if [ -d include ] ; then true; else mkdir include; chmod a+rx include; fi
 	-if [ -d include-fixed ] ; then true; else mkdir include-fixed; chmod a+rx include-fixed; fi
 	for file in .. $(USER_H); do \
@@ -4090,8 +4096,10 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) fixinc_list
 	  fi; \
 	  $(mkinstalldirs) $${fix_dir}; \
 	  chmod a+rx $${fix_dir} || true; \
+	  $(SHELL) $(srcdir)/../move-if-change \
+	    tmp-xlimits.h  tmp-limits.h; \
 	  rm -f $${fix_dir}/limits.h; \
-	  mv tmp-xlimits.h $${fix_dir}/limits.h; \
+	  cp -p tmp-limits.h $${fix_dir}/limits.h; \
 	  chmod a+r $${fix_dir}/limits.h; \
 	done
 # Install the README
@@ -4193,6 +4201,42 @@ stmp-fixinc: gsyslimits.h macro_list fixinc_list \
 	fi
 	$(STAMP) stmp-fixinc
 #
+
+# Install with the gcc headers files, not the fixed include files, which we
+# are typically not allowed to distribute.  The general idea is to:
+#  - Get to "install" with a bare set of internal headers, not the
+#    fixed system ones,
+#  - Prevent rebuilds of what normally depends on the headers, which is
+#    useless for installation purposes and would rely on improper headers.
+#  - Restore as much of the original state as possible.
+
+.PHONY: install-no-fixedincludes
+
+install-no-fixedincludes:
+	# Stash the current set of headers away, save stamps we're going to
+	# alter explicitly, and arrange for fixincludes not to run next time
+	# we trigger a headers rebuild.
+	-rm -rf tmp-include
+	-mv include tmp-include 2>/dev/null
+	-mv include-fixed tmp-include-fixed 2>/dev/null
+	-mv stmp-int-hdrs tmp-stmp-int-hdrs 2>/dev/null
+	-mv stmp-fixinc tmp-stmp-fixinc 2>/dev/null
+	-mkdir include
+	-cp -p $(srcdir)/gsyslimits.h include/syslimits.h
+	-touch stmp-fixinc
+
+	# Rebuild our internal headers, restore the original stamps so that
+	# "install" doesn't trigger pointless rebuilds because of that update,
+	# then do install
+	$(MAKE) $(FLAGS_TO_PASS) stmp-int-hdrs
+	-mv tmp-stmp-int-hdrs stmp-int-hdrs 2>/dev/null
+	-mv tmp-stmp-fixinc stmp-fixinc 2>/dev/null
+	$(MAKE) $(FLAGS_TO_PASS) install
+
+	# Restore the original set of maybe-fixed headers
+	-rm -rf include; mv tmp-include include 2>/dev/null
+	-rm -rf include-fixed; mv tmp-include-fixed include-fixed 2>/dev/null
+
 # Remake the info files.
 
 doc: $(BUILD_INFO) $(GENERATED_MANPAGES)

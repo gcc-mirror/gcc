@@ -1,3 +1,10 @@
+2012-05-16  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.tpl (gcc-no-fixedincludes): Rename into ...
+	(gcc-install-no-fixedincludes): Now forwarder to local target in gcc/
+	(install-no-fixedincludes): Adjust accordingly.
+	* Makefile.in: Regenerate.
+
 2012-03-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-03-28 mainline r185907.
