@@ -4552,7 +4552,12 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile
 	rm -f tmp-header-vars
-	$(foreach header_var,$(shell sed < Makefile -e 's/^\([A-Z0-9_]*_H\)[      ]*=.*/\1/p' -e d),echo $(header_var)=$(shell echo $($(header_var):$(srcdir)/%=.../%) | sed -e 's~\.\.\./config/~config/~' -e 's~\.\.\..*/~~') >> tmp-header-vars;) \
+# The first sed gets the list "header variables" as the list variables
+# assigned in Makefile and having _H at the end of the name.  "sed -n" proved
+# more portable than a trailing "-e d" to filter out the uninteresting lines,
+# in particular on ia64-hpux where "s/.../p" only prints if -n was requested
+# as well.
+	$(foreach header_var,$(shell sed < Makefile -n -e 's/^\([A-Z0-9_]*_H\)[      ]*=.*/\1/p'),echo $(header_var)=$(shell echo $($(header_var):$(srcdir)/%=.../%) | sed -e 's~\.\.\./config/~config/~' -e 's~\.\.\..*/~~') >> tmp-header-vars;) \
 	$(SHELL) $(srcdir)/../move-if-change tmp-header-vars b-header-vars
 	$(STAMP) s-header-vars
 

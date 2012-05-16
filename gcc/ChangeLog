@@ -1,3 +1,8 @@
+2012-05-16  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (s-header-vars): Resort to -n instead of trailing
+	-e d in sed invocation.
+
 2012-05-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/tm.texi.in (Type Layout) <SIZE_TYPE>: Update reference to
