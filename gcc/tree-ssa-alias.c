@@ -850,8 +850,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 
   /* If either reference is view-converted, give up now.  */
   if (same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) != 1
-      || same_type_for_tbaa (TREE_TYPE (dbase2),
-			     TREE_TYPE (reference_alias_ptr_type (dbase2))) != 1)
+      || same_type_for_tbaa (TREE_TYPE (dbase2), TREE_TYPE (base2)) != 1)
     return true;
 
   /* If both references are through the same type, they do not alias
