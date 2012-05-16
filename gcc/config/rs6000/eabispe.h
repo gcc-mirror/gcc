@@ -21,21 +21,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_EABI	\
-  | MASK_STRICT_ALIGN)
-
-#undef  SUBSUBTARGET_OVERRIDE_OPTIONS
-#define SUBSUBTARGET_OVERRIDE_OPTIONS \
-  if (!global_options_set.x_rs6000_cpu_index) \
-    rs6000_cpu = PROCESSOR_PPC8540; \
-  if (!global_options_set.x_rs6000_spe_abi) \
-    rs6000_spe_abi = 1; \
-  if (!global_options_set.x_rs6000_float_gprs) \
-    rs6000_float_gprs = 1; \
-  if (!global_options_set.x_rs6000_spe) \
-    rs6000_spe = 1; \
-  if (target_flags & MASK_64BIT) \
-    error ("-m64 not supported in this configuration")
+#define TARGET_DEFAULT \
+  (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_STRICT_ALIGN | MASK_EABI)
 
 #undef  ASM_DEFAULT_SPEC
 #define	ASM_DEFAULT_SPEC "-mppc -mspe -me500"
