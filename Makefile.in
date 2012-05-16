@@ -2447,11 +2447,12 @@ install.all: install-no-fixedincludes
 		true ; \
 	fi
 
-# install-no-fixedincludes is used because Cygnus can not distribute
-# the fixed header files.
+# install-no-fixedincludes is used to allow the elaboration of binary packages
+# suitable for distribution, where we cannot include the fixed system header
+# files.
 .PHONY: install-no-fixedincludes
 install-no-fixedincludes: installdirs install-host-nogcc \
-	install-target gcc-no-fixedincludes
+	install-target gcc-install-no-fixedincludes
 
 .PHONY: install-strip
 install-strip:
@@ -41200,25 +41201,16 @@ check-gcc-go:
 check-go: check-gcc-go check-target-libgo
 
 
-# Install the gcc headers files, but not the fixed include files,
-# which Cygnus is not allowed to distribute.  This rule is very
-# dependent on the workings of the gcc Makefile.in.
-.PHONY: gcc-no-fixedincludes
-gcc-no-fixedincludes:
+# The gcc part of install-no-fixedincludes, which relies on an intimate
+# knowledge of how a number of gcc internal targets (inter)operate.  Delegate.
+.PHONY: gcc-install-no-fixedincludes
+gcc-install-no-fixedincludes:
 	@if [ -f ./gcc/Makefile ]; then \
-	  rm -rf gcc/tmp-include; \
-	  mv gcc/include gcc/tmp-include 2>/dev/null; \
-	  mkdir gcc/include; \
-	  cp $(srcdir)/gcc/gsyslimits.h gcc/include/syslimits.h; \
-	  touch gcc/stmp-fixinc gcc/include/fixed; \
-	  rm -f gcc/stmp-headers gcc/stmp-int-hdrs; \
 	  r=`${PWD_COMMAND}`; export r; \
-	  s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(HOST_EXPORTS) \
-	  (cd ./gcc && \
-	   $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
-	  rm -rf gcc/include; \
-	  mv gcc/tmp-include gcc/include 2>/dev/null; \
+	  (cd ./gcc \
+	   && $(MAKE) $(GCC_FLAGS_TO_PASS) install-no-fixedincludes); \
 	else true; fi
 @endif gcc
 
