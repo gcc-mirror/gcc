@@ -1,3 +1,10 @@
+2012-05-16  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (install-no-fixedincludes): New target, former toplevel
+	gcc-no-fixedincludes. Stash "include-fixed" in addition to "include".
+	Add comments and improve stamp preservation across the whole sequence.
+	(stmp-int-hdrs): Use move-if-change + cp -p to setup fix_dir/limits.h.
+
 2012-05-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-inline.c (insert_init_stmt): Do not call
