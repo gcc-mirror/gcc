@@ -1,3 +1,32 @@
+2012-05-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/7263
+	* c-tree.h (enum c_declspec_word): Declare new enum.
+	(struct c_declspecs::locations): New member.
+	(declspecs_add_qual, declspecs_add_scspec)
+	(declspecs_add_addrspace, declspecs_add_alignas): Take a new
+	location parameter.
+	* c-decl.c (build_null_declspecs): Initialize the new struct
+	c_declspecs::locations member.
+	(declspecs_add_addrspace): Take a location parameter for the
+	address space.  Store it onto declaration specifiers.
+	(declspecs_add_qual): Likewise, take a location parameter for the
+	qualifier.
+	(declspecs_add_type): Likewise, take a location parameter for the
+	type specifier.
+	(declspecs_add_scspec): Likewise, take a location parameter for
+	the storage class specifier.
+	(declspecs_add_attrs): Likewise, take a location parameter for the
+	first attribute.
+	(declspecs_add_alignas): Likewise, take a location parameter for
+	the alignas token.
+	(finish_declspecs): For diagnostics, use the location of the
+	relevant declspec, instead of the global input_location.
+	* c-parser.c (c_parser_parameter_declaration): Pass the precise
+	virtual location of the declspec to the declspecs-setters.
+	(c_parser_declspecs): Likewise.  Avoid calling c_parser_peek_token
+	repeatedly.
+
 2012-05-16  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	* configure.ac: Stack protector enabling for Android targets.

@@ -2015,14 +2015,15 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 
       if (c_parser_next_token_is (parser, CPP_NAME))
 	{
-	  tree value = c_parser_peek_token (parser)->value;
-	  c_id_kind kind = c_parser_peek_token (parser)->id_kind;
+	  c_token *name_token = c_parser_peek_token (parser);
+	  tree value = name_token->value;
+	  c_id_kind kind = name_token->id_kind;
 
 	  if (kind == C_ID_ADDRSPACE)
 	    {
 	      addr_space_t as
-		= c_parser_peek_token (parser)->keyword - RID_FIRST_ADDR_SPACE;
-	      declspecs_add_addrspace (specs, as);
+		= name_token->keyword - RID_FIRST_ADDR_SPACE;
+	      declspecs_add_addrspace (name_token->location, specs, as);
 	      c_parser_consume_token (parser);
 	      attrs_ok = true;
 	      continue;
@@ -2068,7 +2069,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	    }
 	  t.expr = NULL_TREE;
 	  t.expr_const_operands = true;
-	  declspecs_add_type (loc, specs, t);
+	  declspecs_add_type (name_token->location, specs, t);
 	  continue;
 	}
       if (c_parser_next_token_is (parser, CPP_LESS))
@@ -2104,7 +2105,8 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  /* TODO: Distinguish between function specifiers (inline, noreturn)
 	     and storage class specifiers, either here or in
 	     declspecs_add_scspec.  */
-	  declspecs_add_scspec (specs, c_parser_peek_token (parser)->value);
+	  declspecs_add_scspec (loc, specs,
+				c_parser_peek_token (parser)->value);
 	  c_parser_consume_token (parser);
 	  break;
 	case RID_UNSIGNED:
@@ -2171,18 +2173,18 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_VOLATILE:
 	case RID_RESTRICT:
 	  attrs_ok = true;
-	  declspecs_add_qual (specs, c_parser_peek_token (parser)->value);
+	  declspecs_add_qual (loc, specs, c_parser_peek_token (parser)->value);
 	  c_parser_consume_token (parser);
 	  break;
 	case RID_ATTRIBUTE:
 	  if (!attrs_ok)
 	    goto out;
 	  attrs = c_parser_attributes (parser);
-	  declspecs_add_attrs (specs, attrs);
+	  declspecs_add_attrs (loc, specs, attrs);
 	  break;
 	case RID_ALIGNAS:
 	  align = c_parser_alignas_specifier (parser);
-	  declspecs_add_alignas (specs, align);
+	  declspecs_add_alignas (loc, specs, align);
 	  break;
 	default:
 	  goto out;
@@ -3332,7 +3334,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
   specs = build_null_declspecs ();
   if (attrs)
     {
-      declspecs_add_attrs (specs, attrs);
+      declspecs_add_attrs (input_location, specs, attrs);
       attrs = NULL_TREE;
     }
   c_parser_declspecs (parser, specs, true, true, true, cla_nonabstract_decl);

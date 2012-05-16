@@ -222,8 +222,45 @@ enum c_typespec_keyword {
   cts_accum
 };
 
-/* A sequence of declaration specifiers in C.  */
+/* This enum lists all the possible declarator specifiers, storage
+   class or attribute that a user can write.  There is at least one
+   enumerator per possible declarator specifier in the struct
+   c_declspecs below.
+
+   It is used to index the array of declspec locations in struct
+   c_declspecs.  */
+enum c_declspec_word {
+  cdw_typespec /* A catch-all for a typespec.  */,
+  cdw_storage_class  /* A catch-all for a storage class */,
+  cdw_attributes,
+  cdw_typedef,
+  cdw_explicit_signed,
+  cdw_deprecated,
+  cdw_default_int,
+  cdw_long,
+  cdw_long_long,
+  cdw_short,
+  cdw_signed,
+  cdw_unsigned,
+  cdw_complex,
+  cdw_inline,
+  cdw_noreturn,
+  cdw_thread,
+  cdw_const,
+  cdw_volatile,
+  cdw_restrict,
+  cdw_saturating,
+  cdw_alignas,
+  cdw_address_space,
+  cdw_number_of_elements /* This one must always be the last
+			    enumerator.  */
+};
+
+/* A sequence of declaration specifiers in C.  When a new declaration
+   specifier is added, please update the enum c_declspec_word above
+   accordingly.  */
 struct c_declspecs {
+  source_location locations[cdw_number_of_elements];
   /* The type specified, if a single type specifier such as a struct,
      union or enum specifier, typedef name or typeof specifies the
      whole type, or NULL_TREE if none or a keyword such as "void" or
@@ -509,15 +546,20 @@ extern struct c_declarator *build_id_declarator (tree);
 extern struct c_declarator *make_pointer_declarator (struct c_declspecs *,
 						     struct c_declarator *);
 extern struct c_declspecs *build_null_declspecs (void);
-extern struct c_declspecs *declspecs_add_qual (struct c_declspecs *, tree);
+extern struct c_declspecs *declspecs_add_qual (source_location,
+					       struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_type (location_t,
 					       struct c_declspecs *,
 					       struct c_typespec);
-extern struct c_declspecs *declspecs_add_scspec (struct c_declspecs *, tree);
-extern struct c_declspecs *declspecs_add_attrs (struct c_declspecs *, tree);
-extern struct c_declspecs *declspecs_add_addrspace (struct c_declspecs *,
+extern struct c_declspecs *declspecs_add_scspec (source_location,
+						 struct c_declspecs *, tree);
+extern struct c_declspecs *declspecs_add_attrs (source_location,
+						struct c_declspecs *, tree);
+extern struct c_declspecs *declspecs_add_addrspace (source_location,
+						    struct c_declspecs *,
 						    addr_space_t);
-extern struct c_declspecs *declspecs_add_alignas (struct c_declspecs *, tree);
+extern struct c_declspecs *declspecs_add_alignas (source_location,
+						  struct c_declspecs *, tree);
 extern struct c_declspecs *finish_declspecs (struct c_declspecs *);
 
 /* in c-objc-common.c */
