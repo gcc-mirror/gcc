@@ -1252,6 +1252,26 @@ delete_related_insns (rtx insn)
   if (next != 0 && BARRIER_P (next))
     delete_insn (next);
 
+  /* If this is a call, then we have to remove the var tracking note
+     for the call arguments.  */
+
+  if (CALL_P (insn)
+      || (NONJUMP_INSN_P (insn)
+	  && GET_CODE (PATTERN (insn)) == SEQUENCE
+	  && CALL_P (XVECEXP (PATTERN (insn), 0, 0))))
+    {
+      rtx p = insn;
+
+      for (p = NEXT_INSN (p);
+	   p && NOTE_P (p);
+	   p = NEXT_INSN (p))
+	if (NOTE_KIND (p) == NOTE_INSN_CALL_ARG_LOCATION)
+	  {
+	    remove_insn (p);
+	    break;
+	  }
+    }
+
   /* If deleting a jump, decrement the count of the label,
      and delete the label if it is now unused.  */
 

@@ -1,3 +1,8 @@
+2012-05-16  David S. Miller  <davem@davemloft.net>
+
+	* jump.c (delete_related_insns): If we remove a CALL, make sure
+	we delete it's NOTE_INSN_CALL_ARG_LOCATION note too.
+
 2012-05-16  Richard Henderson  <rth@redhat.com>
 
 	PR debug/52727
