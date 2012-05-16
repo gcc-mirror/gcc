@@ -200,6 +200,10 @@ static long *bb_rank;
 /* Operand->rank hashtable.  */
 static struct pointer_map_t *operand_rank;
 
+/* Map from inserted __builtin_powi calls to multiply chains that
+   feed them.  */
+static struct pointer_map_t *bip_map;
+
 /* Forward decls.  */
 static long get_rank (tree);
 
@@ -2249,7 +2253,7 @@ remove_visited_stmt_chain (tree var)
 static void
 possibly_move_powi (gimple stmt, tree op)
 {
-  gimple stmt2;
+  gimple stmt2, *mpy;
   tree fndecl;
   gimple_stmt_iterator gsi1, gsi2;
 
@@ -2278,9 +2282,39 @@ possibly_move_powi (gimple stmt, tree op)
       return;
     }
 
+  /* Move the __builtin_powi.  */
   gsi1 = gsi_for_stmt (stmt);
   gsi2 = gsi_for_stmt (stmt2);
   gsi_move_before (&gsi2, &gsi1);
+
+  /* See if there are multiplies feeding the __builtin_powi base
+     argument that must also be moved.  */
+  while ((mpy = (gimple *) pointer_map_contains (bip_map, stmt2)) != NULL)
+    {
+      /* If we've already moved this statement, we're done.  This is
+         identified by a NULL entry for the statement in bip_map.  */
+      gimple *next = (gimple *) pointer_map_contains (bip_map, *mpy);
+      if (next && !*next)
+	return;
+
+      stmt = stmt2;
+      stmt2 = *mpy;
+      gsi1 = gsi_for_stmt (stmt);
+      gsi2 = gsi_for_stmt (stmt2);
+      gsi_move_before (&gsi2, &gsi1);
+
+      /* The moved multiply may be DAG'd from multiple calls if it
+	 was the result of a cached multiply.  Only move it once.
+	 Rank order ensures we move it to the right place the first
+	 time.  */
+      if (next)
+	*next = NULL;
+      else
+	{
+	  next = (gimple *) pointer_map_insert (bip_map, *mpy);
+	  *next = NULL;
+	}
+    }
 }
 
 /* This function checks three consequtive operands in
@@ -3281,6 +3315,7 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
   while (true)
     {
       HOST_WIDE_INT power;
+      gimple last_mul = NULL;
 
       /* First look for the largest cached product of factors from
 	 preceding iterations.  If found, create a builtin_powi for
@@ -3318,15 +3353,24 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 	    }
 	  else
 	    {
+	      gimple *value;
+
 	      iter_result = get_reassoc_pow_ssa_name (target, type);
 	      pow_stmt = gimple_build_call (powi_fndecl, 2, rf1->repr, 
 					    build_int_cst (integer_type_node,
 							   power));
 	      gimple_call_set_lhs (pow_stmt, iter_result);
 	      gimple_set_location (pow_stmt, gimple_location (stmt));
-	      /* Temporarily place the call; we will move it to the
-		 correct place during rewrite_expr.  */
+	      /* Temporarily place the call; we will move it and its
+		 feeding multiplies to the correct place during
+		 rewrite_expr.  */
 	      gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
+
+	      if (!operand_equal_p (rf1->repr, rf1->factor, 0))
+		{
+		  value = (gimple *) pointer_map_insert (bip_map, pow_stmt);
+		  *value = SSA_NAME_DEF_STMT (rf1->repr);
+		}
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -3413,6 +3457,15 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 		  gsi_insert_before (&gsi, mul_stmt, GSI_SAME_STMT);
 		  rf1->repr = target_ssa;
 
+		  /* Chain multiplies together for later movement.  */
+		  if (last_mul)
+		    {
+		      gimple *value
+			= (gimple *) pointer_map_insert (bip_map, mul_stmt);
+		      *value = last_mul;
+		    }
+		  last_mul = mul_stmt;
+
 		  /* Don't reprocess the multiply we just introduced.  */
 		  gimple_set_visited (mul_stmt, true);
 		}
@@ -3428,6 +3481,15 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 	  gimple_call_set_lhs (pow_stmt, iter_result);
 	  gimple_set_location (pow_stmt, gimple_location (stmt));
 	  gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
+
+	  /* If we inserted a chain of multiplies before the pow_stmt,
+	     record that fact so we can move it later when we move the
+	     pow_stmt.  */
+	  if (last_mul)
+	    {
+	      gimple *value = (gimple *) pointer_map_insert (bip_map, pow_stmt);
+	      *value = last_mul;
+	    }
 	}
 
       /* Append the result of this iteration to the ops vector.  */
@@ -3544,6 +3606,7 @@ reassociate_bb (basic_block bb)
 	  if (associative_tree_code (rhs_code))
 	    {
 	      VEC(operand_entry_t, heap) *ops = NULL;
+	      bip_map = pointer_map_create ();
 
 	      /* There may be no immediate uses left by the time we
 		 get here because we may have eliminated them all.  */
@@ -3608,6 +3671,7 @@ reassociate_bb (basic_block bb)
 		}
 
 	      VEC_free (operand_entry_t, heap, ops);
+	      pointer_map_destroy (bip_map);
 	    }
 	}
     }

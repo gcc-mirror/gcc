@@ -1,3 +1,11 @@
+2012-05-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/53217
+	* tree-ssa-reassoc.c (bip_map): New static variable.
+	(possibly_move_powi): Move feeding multiplies with __builtin_powi call.
+	(attempt_builtin_powi): Save feeding multiplies on a stack.
+	(reassociate_bb): Create and destroy bip_map.
+
 2012-05-16  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in (install-no-fixedincludes): New target, former toplevel

@@ -1,3 +1,8 @@
+2012-05-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/53217
+	* gfortran.dg/pr53217.f90: New test.
+
 2012-05-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53364
