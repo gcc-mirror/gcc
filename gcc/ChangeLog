@@ -1,5 +1,42 @@
 2012-05-16  Olivier Hainque  <hainque@adacore.com>
 
+	* config/rs6000/rs6000-opts.h (enum processor_type): Add
+	PROCESSOR_PPC8548.
+	* config/rs6000/rs6000-cpus.def: Reference it for cpu="8548".
+	* config/rs6000/rs6000.md (cpu attribute definition): Add ppc8548.
+	* config/rs6000/8540.md: indicate that the units/patterns apply to
+	ppc8548 as well.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Rename
+	default_cpu into implicit_cpu, conveying what --with-cpu was passed at
+	configure time. Treat implicit_cpu as have_CPU. Pick defaults for SPE
+	related flags,	check that what is queried is supported by the selected
+	configuration. Rework the single/double_float and MASK_STRING resets to
+	hit for all the E500 cores (854x + E500MC variants). Select the ppc8540
+	costs for PROCESSOR_PPC8548 as well.
+	(rs6000_issue_rate): case CPU_PPC8548 together with CPU_PPC8540.
+	(rs6000_use_sched_lookahead): Likewise, rewriting function as a case
+	statement instead of a sequence of ifs.
+
+	* config/rs6000/rs6000.h (TARGET_E500): Remove.
+	(TARGET_NO_LWSYNC): Adjust accordingly.
+	* config/rs6000/e500.h (TARGET_E500): Remove.
+	(CHECK_E500_OPTIONS): Adjust accordingly.
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Remove.
+	(TARGET_DEFAULT): Reformat definition to match the one in linuxspe.h.
+	* config/rs6000/linuxspe.h: Likewise.
+	* config/rs6000/vxworks.h: Remove bogus TARGET_E500 overrides and
+	superfluous comments.
+	* config/rs6000/e500-double.h: Remove.
+
+	* config.gcc (pick a default with_cpu): For powerpc*-*-*spe*,
+	default to with_cpu=8548 if --enable-e500-double, and to 8540
+	otherwise.
+	(set misc flags section): For powerpc*|rs6000*, remove inclusion
+	of e500-double.h for --enable-e500-double.
+
+2012-05-16  Olivier Hainque  <hainque@adacore.com>
+
 	* Makefile.in (s-header-vars): Resort to -n instead of trailing
 	-e d in sed invocation.
 

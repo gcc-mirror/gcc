@@ -2592,7 +2592,10 @@ rs6000_option_override_internal (bool global_init_p)
 {
   bool ret = true;
   bool have_cpu = false;
-  const char *default_cpu = OPTION_TARGET_CPU_DEFAULT;
+
+  /* The default cpu requested at configure time, if any.  */
+  const char *implicit_cpu = OPTION_TARGET_CPU_DEFAULT;
+
   int set_masks;
   int cpu_index;
   int tune_index;
@@ -2610,11 +2613,6 @@ rs6000_option_override_internal (bool global_init_p)
       && TARGET_64BIT)
     warning (0, "-malign-power is not supported for 64-bit Darwin;"
 	     " it is incompatible with the installed C and C++ libraries");
-
-  if (global_options_set.x_rs6000_spe_abi
-      && rs6000_spe_abi
-      && !TARGET_SPE_ABI)
-    error ("not configured for SPE ABI");
 
   /* Numerous experiment shows that IRA based loop pressure
      calculation works better for RTL loop invariant motion on targets
@@ -2651,7 +2649,8 @@ rs6000_option_override_internal (bool global_init_p)
   /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
      the cpu in a target attribute or pragma, but did not specify a tuning
      option, use the cpu for the tuning option rather than the option specified
-     with -mtune on the command line.  */
+     with -mtune on the command line.  Process a '--with-cpu' configuration
+     request as an implicit --cpu.  */
   if (rs6000_cpu_index >= 0)
     {
       cpu_index = rs6000_cpu_index;
@@ -2664,10 +2663,12 @@ rs6000_option_override_internal (bool global_init_p)
     }
   else
     {
-      if (!default_cpu)
-	default_cpu = (TARGET_POWERPC64 ? "powerpc64" : "powerpc");
+      const char *default_cpu =
+        (implicit_cpu ? implicit_cpu
+         : (TARGET_POWERPC64 ? "powerpc64" : "powerpc"));
 
       rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (default_cpu);
+      have_cpu = implicit_cpu != 0;
     }
 
   gcc_assert (cpu_index >= 0);
@@ -2697,6 +2698,42 @@ rs6000_option_override_internal (bool global_init_p)
 
   gcc_assert (tune_index >= 0);
   rs6000_cpu = processor_target_table[tune_index].processor;
+
+  /* Pick defaults for SPE related control flags.  Do this early to make sure
+     that the TARGET_ macros are representative ASAP.  */
+  {
+    int spe_capable_cpu =
+      (rs6000_cpu == PROCESSOR_PPC8540
+       || rs6000_cpu == PROCESSOR_PPC8548);
+
+    if (!global_options_set.x_rs6000_spe_abi)
+      rs6000_spe_abi = spe_capable_cpu;
+
+    if (!global_options_set.x_rs6000_spe)
+      rs6000_spe = spe_capable_cpu;
+
+    if (!global_options_set.x_rs6000_float_gprs)
+      rs6000_float_gprs =
+        (rs6000_cpu == PROCESSOR_PPC8540 ? 1
+         : rs6000_cpu == PROCESSOR_PPC8548 ? 2
+         : 0);
+  }
+
+  if (global_options_set.x_rs6000_spe_abi
+      && rs6000_spe_abi
+      && !TARGET_SPE_ABI)
+    error ("not configured for SPE ABI");
+
+  if (global_options_set.x_rs6000_spe
+      && rs6000_spe
+      && !TARGET_SPE)
+    error ("not configured for SPE instruction set");
+
+  if (main_target_opt != NULL
+      && ((main_target_opt->x_rs6000_spe_abi != rs6000_spe_abi)
+          || (main_target_opt->x_rs6000_spe != rs6000_spe)
+          || (main_target_opt->x_rs6000_float_gprs != rs6000_float_gprs)))
+    error ("target attribute or pragma changes SPE ABI");
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
       || rs6000_cpu == PROCESSOR_PPCE500MC || rs6000_cpu == PROCESSOR_PPCE500MC64)
@@ -2933,35 +2970,44 @@ rs6000_option_override_internal (bool global_init_p)
   SUB3TARGET_OVERRIDE_OPTIONS;
 #endif
 
-  if (TARGET_E500 || rs6000_cpu == PROCESSOR_PPCE500MC
-      || rs6000_cpu == PROCESSOR_PPCE500MC64)
+  /* For the E500 family of cores, reset the single/double FP flags to let us
+     check that they remain constant across attributes or pragmas.  Also,
+     clear a possible request for string instructions, not supported and which
+     we might have silently queried above for -Os. 
+
+     For other families, clear ISEL in case it was set implicitly.
+  */
+
+  switch (rs6000_cpu)
     {
-      /* The e500 and e500mc do not have string instructions, and we set
-	 MASK_STRING above when optimizing for size.  */
-      if ((target_flags & MASK_STRING) != 0)
-	target_flags = target_flags & ~MASK_STRING;
-    }
-  else if (global_options_set.x_rs6000_cpu_index)
-    {
-      /* For the powerpc-eabispe configuration, we set all these by
-	 default, so let's unset them if we manually set another
-	 CPU that is not the E500.  */
-      if (main_target_opt != NULL
-	  && ((main_target_opt->x_rs6000_spe_abi != rs6000_spe_abi)
-	      || (main_target_opt->x_rs6000_spe != rs6000_spe)
-	      || (main_target_opt->x_rs6000_float_gprs != rs6000_float_gprs)))
-	error ("target attribute or pragma changes SPE ABI");
-      else
-	{
-	  if (!global_options_set.x_rs6000_spe_abi)
-	    rs6000_spe_abi = 0;
-	  if (!global_options_set.x_rs6000_spe)
-	    rs6000_spe = 0;
-	  if (!global_options_set.x_rs6000_float_gprs)
-	    rs6000_float_gprs = 0;
-	}
-      if (!(target_flags_explicit & MASK_ISEL))
+    case PROCESSOR_PPC8540:
+    case PROCESSOR_PPC8548:
+    case PROCESSOR_PPCE500MC:
+    case PROCESSOR_PPCE500MC64:
+
+      rs6000_single_float = TARGET_E500_SINGLE || TARGET_E500_DOUBLE;
+      rs6000_double_float = TARGET_E500_DOUBLE;
+
+      target_flags &= ~MASK_STRING;
+
+      break;
+
+    default:
+
+      if (have_cpu && !(target_flags_explicit & MASK_ISEL))
 	target_flags &= ~MASK_ISEL;
+
+      break;
+    }
+
+  if (main_target_opt)
+    {
+      if (main_target_opt->x_rs6000_single_float != rs6000_single_float)
+	error ("target attribute or pragma changes single precision floating "
+	       "point");
+      if (main_target_opt->x_rs6000_double_float != rs6000_double_float)
+	error ("target attribute or pragma changes double precision floating "
+	       "point");
     }
 
   /* Detect invalid option combinations with E500.  */
@@ -3188,6 +3234,7 @@ rs6000_option_override_internal (bool global_init_p)
 	break;
 
       case PROCESSOR_PPC8540:
+      case PROCESSOR_PPC8548:
 	rs6000_cost = &ppc8540_cost;
 	break;
 
@@ -3259,26 +3306,6 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_HARD_FLOAT && TARGET_FPRS 
       && rs6000_single_float == 0 && rs6000_double_float == 0)
     rs6000_single_float = rs6000_double_float = 1;
-
-  /* Reset single and double FP flags if target is E500. */
-  if (TARGET_E500) 
-  {
-    rs6000_single_float = rs6000_double_float = 0;
-    if (TARGET_E500_SINGLE)
-      rs6000_single_float = 1; 
-    if (TARGET_E500_DOUBLE)
-      rs6000_single_float = rs6000_double_float = 1;
-  }
-
-  if (main_target_opt)
-    {
-      if (main_target_opt->x_rs6000_single_float != rs6000_single_float)
-	error ("target attribute or pragma changes single precision floating "
-	       "point");
-      if (main_target_opt->x_rs6000_double_float != rs6000_double_float)
-	error ("target attribute or pragma changes double precision floating "
-	       "point");
-    }
 
   /* If not explicitly specified via option, decide whether to generate indexed
      load/store instructions.  */
@@ -23126,6 +23153,7 @@ rs6000_issue_rate (void)
   case CPU_PPC750:
   case CPU_PPC7400:
   case CPU_PPC8540:
+  case CPU_PPC8548:
   case CPU_CELL:
   case CPU_PPCE300C2:
   case CPU_PPCE300C3:
@@ -23156,11 +23184,18 @@ rs6000_issue_rate (void)
 static int
 rs6000_use_sched_lookahead (void)
 {
-  if (rs6000_cpu_attr == CPU_PPC8540)
-    return 4;
-  if (rs6000_cpu_attr == CPU_CELL)
-    return (reload_completed ? 8 : 0);
-  return 0;
+  switch (rs6000_cpu_attr)
+    {
+    case CPU_PPC8540:
+    case CPU_PPC8548:
+      return 4;
+
+    case CPU_CELL:
+      return (reload_completed ? 8 : 0);
+
+    default:
+      return 0;
+    }
 }
 
 /* We are choosing insn from the ready queue.  Return nonzero if INSN can be chosen.  */

@@ -2828,6 +2828,13 @@ if test x$with_cpu = x ; then
     mips*-*-vxworks)
       with_arch=mips2
       ;;
+    powerpc*-*-*spe*)
+      if test x$enable_e500_double = xyes; then
+         with_cpu=8548
+      else
+         with_cpu=8540
+      fi       
+      ;;
     sparc-leon*-*)
       with_cpu=v8;
       ;;
@@ -3509,11 +3516,6 @@ case ${target} in
 		c_target_objs="${c_target_objs} rs6000-c.o"
 		cxx_target_objs="${cxx_target_objs} rs6000-c.o"
 		tmake_file="rs6000/t-rs6000 ${tmake_file}"
-
-                if test x$enable_e500_double = xyes
-                then
-                        tm_file="$tm_file rs6000/e500-double.h"
-                fi
 		;;
 
 	sh[123456ble]*-*-* | sh-*-*)
