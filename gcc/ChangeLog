@@ -1,5 +1,10 @@
 2012-05-16  Richard Guenther  <rguenther@suse.de>
 
+	* tree-flow.h (get_virtual_var): Remove.
+	* tree-dfa.c (get_virtual_var): Likewise.
+
+2012-05-16  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1):
 	Remove set-only bitmap of new names.
 	(slpeel_tree_peel_loop_to_edge): Likewise.  Do not set
