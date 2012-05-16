@@ -1,3 +1,9 @@
+2012-05-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53364
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Properly
+	detect a view-conversion of the decl.
+
 2012-05-16  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/7263
