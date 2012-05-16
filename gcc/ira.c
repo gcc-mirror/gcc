@@ -3621,9 +3621,6 @@ int first_moveable_pseudo, last_moveable_pseudo;
    first_moveable_pseudo.  */
 /* The original home register.  */
 static VEC (rtx, heap) *pseudo_replaced_reg;
-/* The move instruction we added to move the value to its original home
-   register.  */
-static VEC (rtx, heap) *pseudo_move_insn;
 
 /* Look for instances where we have an instruction that is known to increase
    register pressure, and whose result is not used immediately.  If it is
@@ -3667,9 +3664,7 @@ find_moveable_pseudos (void)
   bitmap_initialize (&interesting, 0);
 
   first_moveable_pseudo = max_regs;
-  VEC_free (rtx, heap, pseudo_move_insn);
   VEC_free (rtx, heap, pseudo_replaced_reg);
-  VEC_safe_grow (rtx, heap, pseudo_move_insn, max_regs);
   VEC_safe_grow (rtx, heap, pseudo_replaced_reg, max_regs);
 
   df_analyze ();
@@ -3965,10 +3960,8 @@ find_moveable_pseudos (void)
 	  if (validate_change (def_insn, DF_REF_LOC (def), newreg, 0))
 	    {
 	      unsigned nregno = REGNO (newreg);
-	      rtx move = emit_insn_before (gen_move_insn (def_reg, newreg),
-					   use_insn);
+	      emit_insn_before (gen_move_insn (def_reg, newreg), use_insn);
 	      nregno -= max_regs;
-	      VEC_replace (rtx, pseudo_move_insn, nregno, move);
 	      VEC_replace (rtx, pseudo_replaced_reg, nregno, def_reg);
 	    }
 	}
@@ -4011,18 +4004,25 @@ move_unallocated_pseudos (void)
   for (i = first_moveable_pseudo; i < last_moveable_pseudo; i++)
     if (reg_renumber[i] < 0)
       {
-	df_ref def = DF_REG_DEF_CHAIN (i);
 	int idx = i - first_moveable_pseudo;
 	rtx other_reg = VEC_index (rtx, pseudo_replaced_reg, idx);
-	rtx def_insn = DF_REF_INSN (def);
-	rtx move_insn = VEC_index (rtx, pseudo_move_insn, idx);
-	rtx set;
+	rtx def_insn = DF_REF_INSN (DF_REG_DEF_CHAIN (i));
+	/* The use must follow all definitions of OTHER_REG, so we can
+	   insert the new definition immediately after any of them.  */
+	df_ref other_def = DF_REG_DEF_CHAIN (REGNO (other_reg));
+	rtx move_insn = DF_REF_INSN (other_def);
 	rtx newinsn = emit_insn_after (PATTERN (def_insn), move_insn);
+	rtx set;
 	int success;
 
 	if (dump_file)
 	  fprintf (dump_file, "moving def of %d (insn %d now) ",
 		   REGNO (other_reg), INSN_UID (def_insn));
+
+	delete_insn (move_insn);
+	while ((other_def = DF_REG_DEF_CHAIN (REGNO (other_reg))))
+	  delete_insn (DF_REF_INSN (other_def));
+	delete_insn (def_insn);
 
 	set = single_set (newinsn);
 	success = validate_change (newinsn, &SET_DEST (set), other_reg, 0);
@@ -4030,8 +4030,6 @@ move_unallocated_pseudos (void)
 	if (dump_file)
 	  fprintf (dump_file, " %d) rather than keep unallocated replacement %d\n",
 		   INSN_UID (newinsn), i);
-	delete_insn (move_insn);
-	delete_insn (def_insn);
 	SET_REG_N_REFS (i, 0);
       }
 }

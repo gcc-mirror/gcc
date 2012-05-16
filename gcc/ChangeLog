@@ -1,3 +1,10 @@
+2012-05-16  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* ira.c (pseudo_move_insn): Delete.
+	(find_moveable_pseudos): Don't set it.
+	(move_unallocated_pseudos): Use DF_REG_DEF_CHAIN to find
+	the definitions of the original pseudo.  Delete all of them.
+
 2012-05-16  Olivier Hainque  <hainque@adacore.com>
 
 	* config/rs6000/rs6000-opts.h (enum processor_type): Add
