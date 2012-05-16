@@ -1,3 +1,7 @@
+2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/53339

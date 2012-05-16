@@ -1,3 +1,7 @@
+2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2012-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (enable_objc_gc): Remove alpha*-dec-osf* handling.

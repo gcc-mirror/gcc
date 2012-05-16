@@ -1,3 +1,7 @@
+2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2012-05-16  Andrew Pinski  <apinski@cavium.com>
 
 	* gimple-fold.c (get_maxval_strlen): Move COND_EXPR handling under

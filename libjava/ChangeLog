@@ -1,3 +1,7 @@
+2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2012-04-23  Andrew Haley  <aph@redhat.com>
 
 	* defineclass.cc (MAJOR_1_7,  MINOR_1_7): New.
