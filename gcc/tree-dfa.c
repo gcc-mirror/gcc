@@ -624,29 +624,6 @@ remove_referenced_var (tree var)
 }
 
 
-/* Return the virtual variable associated to the non-scalar variable VAR.  */
-
-tree
-get_virtual_var (tree var)
-{
-  STRIP_NOPS (var);
-
-  if (TREE_CODE (var) == SSA_NAME)
-    var = SSA_NAME_VAR (var);
-
-  while (TREE_CODE (var) == REALPART_EXPR || TREE_CODE (var) == IMAGPART_EXPR
-	 || handled_component_p (var))
-    var = TREE_OPERAND (var, 0);
-
-  /* Treating GIMPLE registers as virtual variables makes no sense.
-     Also complain if we couldn't extract a _DECL out of the original
-     expression.  */
-  gcc_assert (SSA_VAR_P (var));
-  gcc_assert (!is_gimple_reg (var));
-
-  return var;
-}
-
 /* Mark all the naked symbols in STMT for SSA renaming.  */
 
 void
