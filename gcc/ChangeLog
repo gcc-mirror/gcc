@@ -1,5 +1,13 @@
 2012-05-16  Richard Guenther  <rguenther@suse.de>
 
+	* tree-inline.c (insert_init_stmt): Do not call
+	mark_symbols_for_renaming.
+	(setup_one_parameter): Avoid initializing unused parameters.
+	(declare_return_variable): Properly handle DECL_BY_REFERENCE
+	return vars in SSA form.
+
+2012-05-16  Richard Guenther  <rguenther@suse.de>
+
 	* tree-flow.h (get_virtual_var): Remove.
 	* tree-dfa.c (get_virtual_var): Likewise.
 

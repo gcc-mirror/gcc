@@ -2542,7 +2542,6 @@ insert_init_stmt (copy_body_data *id, basic_block bb, gimple init_stmt)
 	}
       gsi_insert_after (&si, init_stmt, GSI_NEW_STMT);
       gimple_regimplify_operands (init_stmt, &si);
-      mark_symbols_for_renaming (init_stmt);
 
       if (!is_gimple_debug (init_stmt) && MAY_HAVE_DEBUG_STMTS)
 	{
@@ -2707,14 +2706,17 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 
       STRIP_USELESS_TYPE_CONVERSION (rhs);
 
-      /* We want to use MODIFY_EXPR, not INIT_EXPR here so that we
-	 keep our trees in gimple form.  */
-      if (def && gimple_in_ssa_p (cfun) && is_gimple_reg (p))
+      /* If we are in SSA form properly remap the default definition
+         or omit the initialization if the parameter is unused.  */
+      if (gimple_in_ssa_p (cfun) && is_gimple_reg (p))
 	{
-	  def = remap_ssa_name (def, id);
-          init_stmt = gimple_build_assign (def, rhs);
-	  SSA_NAME_IS_DEFAULT_DEF (def) = 0;
-	  set_default_def (var, NULL);
+	  if (def)
+	    {
+	      def = remap_ssa_name (def, id);
+	      init_stmt = gimple_build_assign (def, rhs);
+	      SSA_NAME_IS_DEFAULT_DEF (def) = 0;
+	      set_default_def (var, NULL);
+	    }
 	}
       else
         init_stmt = gimple_build_assign (var, rhs);
@@ -2974,10 +2976,15 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       if (gimple_in_ssa_p (id->src_cfun))
 	add_referenced_var (temp);
       insert_decl_map (id, result, temp);
-      /* When RESULT_DECL is in SSA form, we need to use it's default_def
-	 SSA_NAME.  */
-      if (gimple_in_ssa_p (id->src_cfun) && gimple_default_def (id->src_cfun, result))
-        temp = remap_ssa_name (gimple_default_def (id->src_cfun, result), id);
+      /* When RESULT_DECL is in SSA form, we need to remap and initialize
+	 it's default_def SSA_NAME.  */
+      if (gimple_in_ssa_p (id->src_cfun)
+	  && is_gimple_reg (result))
+	{
+	  temp = make_ssa_name (temp, NULL);
+	  insert_decl_map (id, gimple_default_def (id->src_cfun, result),
+			   temp);
+	}
       insert_init_stmt (id, entry_bb, gimple_build_assign (temp, var));
     }
   else
