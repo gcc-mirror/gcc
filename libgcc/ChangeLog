@@ -1,3 +1,12 @@
+2012-05-16  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (install-unwind_h): Rename into ...
+	(install-unwind_h-forbuild): New target.
+	(all): Use it instead of the former install-unwind_h.
+	(install-unwind_h): Reinstate, copy to user install destination
+	for include files, not to the internal gcc object directory one.
+	(install-leaf): Depend on it.
+
 2012-04-30  Andreas Tobler  <andreast@fgznet.ch>
 
 	Backport from mainline

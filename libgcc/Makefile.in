@@ -1002,13 +1002,25 @@ $(libgcc-objects) $(libgcc-s-objects) $(libgcc-eh-objects) \
 	$(libunwind-objects) $(libunwind-s-objects) \
 	$(EXTRA_PARTS): libgcc_tm.h
 
-install-unwind_h:
+# Copy unwind.h to the place where gcc will look for it at build-time
+install-unwind_h-forbuild:
 	dest=$(gcc_objdir)/include/tmp$$$$-unwind.h; \
 	cp unwind.h $$dest; \
 	chmod a+r $$dest; \
 	sh $(srcdir)/../move-if-change $$dest $(gcc_objdir)/include/unwind.h
 
-all: install-unwind_h
+# Copy unwind.h to the place where gcc will look at run-time, once installed
+#
+# This is redundant with the internal copy above when using a regular toplevel
+# "install" target, because gcc's install will copy to the destination as well.
+#
+# This is however useful for "install-no-fixincludes" case, when only the gcc
+# internal headers are copied by gcc's install.
+install-unwind_h:
+	$(mkinstalldirs) $(DESTDIR)$(libsubdir)/include
+	$(INSTALL_DATA) unwind.h $(DESTDIR)$(libsubdir)/include
+
+all: install-unwind_h-forbuild
 
 # Documentation targets (empty).
 .PHONY: info html dvi pdf install-info install-html install-pdf
@@ -1047,7 +1059,7 @@ install-shared:
 		@shlib_base_name@,libgcc_s,$(subst \
 		@shlib_slibdir_qual@,$(MULTIOSSUBDIR),$(SHLIB_INSTALL))))
 
-install-leaf: $(install-shared) $(install-libunwind)
+install-leaf: $(install-shared) $(install-libunwind) install-unwind_h
 	$(mkinstalldirs) $(DESTDIR)$(inst_libdir)
 
 	$(INSTALL_DATA) libgcc.a $(DESTDIR)$(inst_libdir)/
@@ -1073,6 +1085,7 @@ install: install-leaf
 install-strip: install
 
 .PHONY: install install-shared install-libunwind install-strip
+.PHONY: install-unwind_h install-unwind_h-forbuild
 
 # Don't export variables to the environment, in order to not confuse
 # configure.
