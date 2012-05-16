@@ -1,5 +1,14 @@
 2012-05-16  Richard Guenther  <rguenther@suse.de>
 
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1):
+	Remove set-only bitmap of new names.
+	(slpeel_tree_peel_loop_to_edge): Likewise.  Do not set
+	CFG hooks.
+	* tree-flow.h (ssa_names_to_replace): Remove.
+	* tree-into-ssa.c (ssa_names_to_replace): Likewise.
+
+2012-05-16  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53364
 	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Properly
 	detect a view-conversion of the decl.
