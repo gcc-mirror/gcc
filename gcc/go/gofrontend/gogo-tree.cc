@@ -1003,7 +1003,7 @@ Named_object::get_id(Gogo* gogo)
     {
       const Named_object* in_function = this->type_value()->in_function();
       if (in_function != NULL)
-	decl_name += '$' + in_function->name();
+	decl_name += '$' + Gogo::unpack_hidden_name(in_function->name());
     }
   return get_identifier_from_string(decl_name);
 }
