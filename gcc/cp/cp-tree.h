@@ -4647,7 +4647,9 @@ typedef enum cp_storage_class {
   sc_mutable
 } cp_storage_class;
 
-/* An individual decl-specifier.  */
+/* An individual decl-specifier.  This is used to index the array of
+   locations for the declspecs in struct cp_decl_specifier_seq
+   below.  */
 
 typedef enum cp_decl_spec {
   ds_first,
@@ -4667,17 +4669,20 @@ typedef enum cp_decl_spec {
   ds_constexpr,
   ds_complex,
   ds_thread,
-  ds_last
+  ds_type_spec,
+  ds_redefined_builtin_type_spec,
+  ds_attribute,
+  ds_storage_class,
+  ds_long_long,
+  ds_last /* This enumerator must always be the last one.  */
 } cp_decl_spec;
 
 /* A decl-specifier-seq.  */
 
 typedef struct cp_decl_specifier_seq {
-  /* The number of times each of the keywords has been seen.  */
-  unsigned specs[(int) ds_last];
-  /* The location of the primary type. Mainly used for error
-     reporting.  */
-  location_t type_location;
+  /* An array of locations for the declaration sepecifiers, indexed by
+     enum cp_decl_spec_word.  */
+  source_location locations[ds_last];
   /* The primary type, if any, given by the decl-specifier-seq.
      Modifiers, like "short", "const", and "unsigned" are not
      reflected here.  This field will be a TYPE, unless a typedef-name
@@ -4826,6 +4831,8 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   /* True if the location is in a system header.  */
   bool in_system_header_p;
 };
+
+bool decl_spec_seq_has_spec_p (const cp_decl_specifier_seq *, cp_decl_spec);
 
 /* Return the type of the `this' parameter of FNTYPE.  */
 

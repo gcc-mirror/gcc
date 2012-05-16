@@ -1,3 +1,18 @@
+2012-05-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/7263
+	* include/cpplib.h (cpp_classify_number): Take a location
+	parameter.
+	* expr.c (SYNTAX_ERROR_AT, SYNTAX_ERROR2_AT): New diagnostic
+	macros that take a location parameter.
+	(cpp_classify_number): Take a (virtual) location parameter.  Use
+	it for diagnostics.  Adjust comments.
+	(eval_token): Take a location parameter.  Pass it to
+	cpp_classify_number and to diagnostic routines.
+	(_cpp_parse_expr): Use virtual locations of tokens when parsing
+	expressions.  Pass a virtual location to eval_token and to
+	diagnostic routines.
+
 2012-05-10  Tristan Gingold  <gingold@adacore.com>
 
 	* expr.c (interpret_float_suffix): Add a guard.

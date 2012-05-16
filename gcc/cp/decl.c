@@ -4129,8 +4129,8 @@ fixup_anonymous_aggr (tree t)
 tree
 check_tag_decl (cp_decl_specifier_seq *declspecs)
 {
-  int saw_friend = declspecs->specs[(int)ds_friend] != 0;
-  int saw_typedef = declspecs->specs[(int)ds_typedef] != 0;
+  int saw_friend = decl_spec_seq_has_spec_p (declspecs, ds_friend);
+  int saw_typedef = decl_spec_seq_has_spec_p (declspecs, ds_typedef);
   /* If a class, struct, or enum type is declared by the DECLSPECS
      (i.e, if a class-specifier, enum-specifier, or non-typename
      elaborated-type-specifier appears in the DECLSPECS),
@@ -4143,7 +4143,8 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
   else if (declspecs->redefined_builtin_type)
     {
       if (!in_system_header)
-	permerror (input_location, "redeclaration of C++ built-in type %qT",
+	permerror (declspecs->locations[ds_redefined_builtin_type_spec],
+		   "redeclaration of C++ built-in type %qT",
 		   declspecs->redefined_builtin_type);
       return NULL_TREE;
     }
@@ -4198,29 +4199,29 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
 
   else
     {
-      if (declspecs->specs[(int)ds_inline]
-	  || declspecs->specs[(int)ds_virtual])
+      if (decl_spec_seq_has_spec_p (declspecs, ds_inline)
+	  || decl_spec_seq_has_spec_p (declspecs, ds_virtual))
 	error ("%qs can only be specified for functions",
-	       declspecs->specs[(int)ds_inline]
+	       decl_spec_seq_has_spec_p (declspecs, ds_inline)
 	       ? "inline" : "virtual");
       else if (saw_friend
 	       && (!current_class_type
 		   || current_scope () != current_class_type))
 	error ("%<friend%> can only be specified inside a class");
-      else if (declspecs->specs[(int)ds_explicit])
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_explicit))
 	error ("%<explicit%> can only be specified for constructors");
       else if (declspecs->storage_class)
 	error ("a storage class can only be specified for objects "
 	       "and functions");
-      else if (declspecs->specs[(int)ds_const]
-	       || declspecs->specs[(int)ds_volatile]
-	       || declspecs->specs[(int)ds_restrict]
-	       || declspecs->specs[(int)ds_thread])
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_const)
+	       || decl_spec_seq_has_spec_p (declspecs, ds_volatile)
+	       || decl_spec_seq_has_spec_p (declspecs, ds_restrict)
+	       || decl_spec_seq_has_spec_p (declspecs, ds_thread))
 	error ("qualifiers can only be specified for objects "
 	       "and functions");
       else if (saw_typedef)
 	warning (0, "%<typedef%> was ignored in this declaration");
-      else if (declspecs->specs[(int) ds_constexpr])
+      else if (decl_spec_seq_has_spec_p (declspecs,  ds_constexpr))
         error ("%<constexpr%> cannot be used for type declarations");
     }
 
@@ -4472,7 +4473,7 @@ start_decl (const cp_declarator *declarator,
 		error ("duplicate initialization of %qD", decl);
 	      if (duplicate_decls (decl, field, /*newdecl_is_friend=*/false))
 		decl = field;
-              if (declspecs->specs[(int) ds_constexpr]
+              if (decl_spec_seq_has_spec_p (declspecs, ds_constexpr)
                   && !DECL_DECLARED_CONSTEXPR_P (field))
                 error ("%qD declared %<constexpr%> outside its class", field);
 	    }
@@ -7682,7 +7683,7 @@ grokvardecl (tree type,
       TREE_PUBLIC (decl) = DECL_EXTERNAL (decl);
     }
 
-  if (declspecs->specs[(int)ds_thread])
+  if (decl_spec_seq_has_spec_p (declspecs, ds_thread))
     DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
 
   /* If the type of the decl has no linkage, make sure that we'll
@@ -8436,16 +8437,16 @@ grokdeclarator (const cp_declarator *declarator,
   bool parameter_pack_p = declarator? declarator->parameter_pack_p : false;
   bool template_type_arg = false;
   bool template_parm_flag = false;
-  bool constexpr_p = declspecs->specs[(int) ds_constexpr];
+  bool constexpr_p = decl_spec_seq_has_spec_p (declspecs, ds_constexpr);
   const char *errmsg;
 
-  signed_p = declspecs->specs[(int)ds_signed];
-  unsigned_p = declspecs->specs[(int)ds_unsigned];
-  short_p = declspecs->specs[(int)ds_short];
-  long_p = declspecs->specs[(int)ds_long];
-  longlong = declspecs->specs[(int)ds_long] >= 2;
+  signed_p = decl_spec_seq_has_spec_p (declspecs, ds_signed);
+  unsigned_p = decl_spec_seq_has_spec_p (declspecs, ds_unsigned);
+  short_p = decl_spec_seq_has_spec_p (declspecs, ds_short);
+  long_p = decl_spec_seq_has_spec_p (declspecs, ds_long);
+  longlong = decl_spec_seq_has_spec_p (declspecs, ds_long_long);
   explicit_int128 = declspecs->explicit_int128_p;
-  thread_p = declspecs->specs[(int)ds_thread];
+  thread_p = decl_spec_seq_has_spec_p (declspecs, ds_thread);
 
   if (decl_context == FUNCDEF)
     funcdef_flag = true, decl_context = NORMAL;
@@ -8646,7 +8647,7 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (dname && IDENTIFIER_OPNAME_P (dname))
     {
-      if (declspecs->specs[(int)ds_typedef])
+      if (decl_spec_seq_has_spec_p (declspecs, ds_typedef))
 	{
 	  error ("declaration of %qD as %<typedef%>", dname);
 	  return error_mark_node;
@@ -8684,7 +8685,7 @@ grokdeclarator (const cp_declarator *declarator,
   if (name == NULL)
     name = decl_context == PARM ? "parameter" : "type name";
 
-  if (constexpr_p && declspecs->specs[(int)ds_typedef])
+  if (constexpr_p && decl_spec_seq_has_spec_p (declspecs, ds_typedef))
     {
       error ("%<constexpr%> cannot appear in a typedef declaration");
       return error_mark_node;
@@ -8910,7 +8911,7 @@ grokdeclarator (const cp_declarator *declarator,
   else if (short_p)
     type = short_integer_type_node;
 
-  if (declspecs->specs[(int)ds_complex])
+  if (decl_spec_seq_has_spec_p (declspecs, ds_complex))
     {
       if (TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
 	error ("complex invalid for %qs", name);
@@ -8934,11 +8935,11 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   type_quals = TYPE_UNQUALIFIED;
-  if (declspecs->specs[(int)ds_const])
+  if (decl_spec_seq_has_spec_p (declspecs, ds_const))
     type_quals |= TYPE_QUAL_CONST;
-  if (declspecs->specs[(int)ds_volatile])
+  if (decl_spec_seq_has_spec_p (declspecs, ds_volatile))
     type_quals |= TYPE_QUAL_VOLATILE;
-  if (declspecs->specs[(int)ds_restrict])
+  if (decl_spec_seq_has_spec_p (declspecs, ds_restrict))
     type_quals |= TYPE_QUAL_RESTRICT;
   if (sfk == sfk_conversion && type_quals != TYPE_UNQUALIFIED)
     error ("qualifiers are not allowed on declaration of %<operator %T%>",
@@ -8963,9 +8964,9 @@ grokdeclarator (const cp_declarator *declarator,
   type_quals = cp_type_quals (type);
 
   staticp = 0;
-  inlinep = !! declspecs->specs[(int)ds_inline];
-  virtualp = !! declspecs->specs[(int)ds_virtual];
-  explicitp = !! declspecs->specs[(int)ds_explicit];
+  inlinep = decl_spec_seq_has_spec_p (declspecs, ds_inline);
+  virtualp =  decl_spec_seq_has_spec_p (declspecs, ds_virtual);
+  explicitp = decl_spec_seq_has_spec_p (declspecs, ds_explicit);
 
   storage_class = declspecs->storage_class;
   if (storage_class == sc_static)
@@ -8977,7 +8978,7 @@ grokdeclarator (const cp_declarator *declarator,
       storage_class = sc_none;
       staticp = 0;
     }
-  friendp = !! declspecs->specs[(int)ds_friend];
+  friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
 
   if (dependent_name && !friendp)
     {
@@ -8988,7 +8989,7 @@ grokdeclarator (const cp_declarator *declarator,
   /* Issue errors about use of storage classes for parameters.  */
   if (decl_context == PARM)
     {
-      if (declspecs->specs[(int)ds_typedef])
+      if (decl_spec_seq_has_spec_p (declspecs, ds_typedef))
 	{
 	  error ("typedef declaration invalid in parameter declaration");
 	  return error_mark_node;
@@ -9032,7 +9033,7 @@ grokdeclarator (const cp_declarator *declarator,
       && ((storage_class
 	   && storage_class != sc_extern
 	   && storage_class != sc_static)
-	  || declspecs->specs[(int)ds_typedef]))
+	  || decl_spec_seq_has_spec_p (declspecs, ds_typedef)))
     {
       error ("multiple storage classes in declaration of %qs", name);
       thread_p = false;
@@ -9046,7 +9047,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  && (storage_class == sc_register
 	      || storage_class == sc_auto))
 	;
-      else if (declspecs->specs[(int)ds_typedef])
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_typedef))
 	;
       else if (decl_context == FIELD
 	       /* C++ allows static class elements.  */
@@ -9640,7 +9641,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      return error_mark_node;
 	    }
 	}
-      else if (declspecs->specs[(int)ds_typedef]
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_typedef)
 	       && current_class_type)
 	{
 	  error ("cannot declare member %<%T::%s%> within %qT",
@@ -9711,7 +9712,8 @@ grokdeclarator (const cp_declarator *declarator,
 	  error ("non-member %qs cannot be declared %<mutable%>", name);
 	  storage_class = sc_none;
 	}
-      else if (decl_context == TYPENAME || declspecs->specs[(int)ds_typedef])
+      else if (decl_context == TYPENAME
+	       || decl_spec_seq_has_spec_p (declspecs, ds_typedef))
 	{
 	  error ("non-object member %qs cannot be declared %<mutable%>", name);
 	  storage_class = sc_none;
@@ -9741,7 +9743,7 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
-  if (declspecs->specs[(int)ds_typedef] && decl_context != TYPENAME)
+  if (decl_spec_seq_has_spec_p (declspecs, ds_typedef) && decl_context != TYPENAME)
     {
       tree decl;
 
@@ -9853,7 +9855,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      memfn_quals != TYPE_UNQUALIFIED,
 		      inlinep, friendp, raises != NULL_TREE);
 
-      if (declspecs->specs[(int)ds_alias])
+      if (decl_spec_seq_has_spec_p (declspecs, ds_alias))
 	/* Acknowledge that this was written:
 	     `using analias = atype;'.  */
 	TYPE_DECL_ALIAS_P (decl) = 1;
@@ -10352,7 +10354,7 @@ grokdeclarator (const cp_declarator *declarator,
 	   and `extern' makes no difference.  */
 	if (! toplevel_bindings_p ()
 	    && (storage_class == sc_static
-		|| declspecs->specs[(int)ds_inline])
+		|| decl_spec_seq_has_spec_p (declspecs, ds_inline))
 	    && pedantic)
 	  {
 	    if (storage_class == sc_static)

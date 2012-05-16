@@ -1,3 +1,23 @@
+2012-05-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/7263
+	* gcc.dg/binary-constants-2.c: Run without tracking locations
+	accross macro expansion.
+	* gcc.dg/binary-constants-3.c: Likewise.
+	* gcc.dg/cpp/sysmac2.c: Likewise.
+	* testsuite/gcc.dg/nofixed-point-2.c: Adjust for more precise
+	location.
+	* gcc.dg/cpp/syshdr3.c: New test.
+	* gcc.dg/cpp/syshdr3.h: New header for the new test above.
+	* gcc.dg/system-binary-constants-1.c: New test.
+	* gcc.dg/system-binary-constants-1.h: New header for the new test
+	above.
+	* g++.dg/cpp/syshdr3.C: New test.
+	* g++.dg/cpp/syshdr3.h: New header the new test above.
+	* g++.dg/system-binary-constants-1.C: New test.
+	* g++.dg/system-binary-constants-1.h: New header the new test
+	above.
+
 2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.old-deja/g++.pt/crash10.C: Adjust post PR11586.

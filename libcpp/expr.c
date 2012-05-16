@@ -59,7 +59,7 @@ static cpp_num num_rshift (cpp_num, size_t, size_t);
 
 static cpp_num append_digit (cpp_num, int, int, size_t);
 static cpp_num parse_defined (cpp_reader *);
-static cpp_num eval_token (cpp_reader *, const cpp_token *);
+static cpp_num eval_token (cpp_reader *, const cpp_token *, source_location);
 static struct op *reduce (cpp_reader *, struct op *, enum cpp_ttype);
 static unsigned int interpret_float_suffix (const uchar *, size_t);
 static unsigned int interpret_int_suffix (const uchar *, size_t);
@@ -75,6 +75,12 @@ static void check_promotion (cpp_reader *, const struct op *);
   do { cpp_error (pfile, CPP_DL_ERROR, msgid); goto syntax_error; } while(0)
 #define SYNTAX_ERROR2(msgid, arg) \
   do { cpp_error (pfile, CPP_DL_ERROR, msgid, arg); goto syntax_error; } \
+  while(0)
+#define SYNTAX_ERROR_AT(loc, msgid) \
+  do { cpp_error_with_line (pfile, CPP_DL_ERROR, (loc), 0, msgid); goto syntax_error; } \
+  while(0)
+#define SYNTAX_ERROR2_AT(loc, msgid, arg)					\
+  do { cpp_error_with_line (pfile, CPP_DL_ERROR, (loc), 0, msgid, arg); goto syntax_error; } \
   while(0)
 
 /* Subroutine of cpp_classify_number.  S points to a float suffix of
@@ -359,11 +365,18 @@ cpp_get_userdef_suffix (const cpp_token *tok)
 
 /* Categorize numeric constants according to their field (integer,
    floating point, or invalid), radix (decimal, octal, hexadecimal),
-   and type suffixes.  In C++0X if UD_SUFFIX is non null it will be
-   assigned any unrecognized suffix for a user-defined literal.  */
+   and type suffixes.
+
+   TOKEN is the token that represents the numeric constant to
+   classify.
+
+   In C++0X if UD_SUFFIX is non null it will be assigned
+   any unrecognized suffix for a user-defined literal.
+
+   VIRTUAL_LOCATION is the virtual location for TOKEN.  */
 unsigned int
 cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
-		     const char **ud_suffix)
+		     const char **ud_suffix, source_location virtual_location)
 {
   const uchar *str = token->val.str.text;
   const uchar *limit;
@@ -422,7 +435,8 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	  if (float_flag == NOT_FLOAT)
 	    float_flag = AFTER_POINT;
 	  else
-	    SYNTAX_ERROR ("too many decimal points in number");
+	    SYNTAX_ERROR_AT (virtual_location,
+			     "too many decimal points in number");
 	}
       else if ((radix <= 10 && (c == 'e' || c == 'E'))
 	       || (radix == 16 && (c == 'p' || c == 'P')))
@@ -450,8 +464,8 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	    radix = 10;
 
 	  if (CPP_PEDANTIC (pfile))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "fixed-point constants are a GCC extension");
+	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+				 "fixed-point constants are a GCC extension");
 	  goto syntax_ok;
 	}
       else
@@ -464,26 +478,29 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
   if (max_digit >= radix)
     {
       if (radix == 2)
-	SYNTAX_ERROR2 ("invalid digit \"%c\" in binary constant", '0' + max_digit);
+	SYNTAX_ERROR2_AT (virtual_location,
+			  "invalid digit \"%c\" in binary constant", '0' + max_digit);
       else
-	SYNTAX_ERROR2 ("invalid digit \"%c\" in octal constant", '0' + max_digit);
+	SYNTAX_ERROR2_AT (virtual_location,
+			  "invalid digit \"%c\" in octal constant", '0' + max_digit);
     }
 
   if (float_flag != NOT_FLOAT)
     {
       if (radix == 2)
 	{
-	  cpp_error (pfile, CPP_DL_ERROR,
-		     "invalid prefix \"0b\" for floating constant");
+	  cpp_error_with_line (pfile, CPP_DL_ERROR, virtual_location, 0,
+			       "invalid prefix \"0b\" for floating constant");
 	  return CPP_N_INVALID;
 	}
 
       if (radix == 16 && !seen_digit)
-	SYNTAX_ERROR ("no digits in hexadecimal floating constant");
+	SYNTAX_ERROR_AT (virtual_location,
+			 "no digits in hexadecimal floating constant");
 
       if (radix == 16 && CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, c99))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "use of C99 hexadecimal floating constant");
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+			     "use of C99 hexadecimal floating constant");
 
       if (float_flag == AFTER_EXPON)
 	{
@@ -492,14 +509,15 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 
 	  /* Exponent is decimal, even if string is a hex float.  */
 	  if (!ISDIGIT (*str))
-	    SYNTAX_ERROR ("exponent has no digits");
+	    SYNTAX_ERROR_AT (virtual_location, "exponent has no digits");
 
 	  do
 	    str++;
 	  while (ISDIGIT (*str));
 	}
       else if (radix == 16)
-	SYNTAX_ERROR ("hexadecimal floating constants require an exponent");
+	SYNTAX_ERROR_AT (virtual_location,
+			 "hexadecimal floating constants require an exponent");
 
       result = interpret_float_suffix (str, limit - str);
       if (result == 0)
@@ -512,9 +530,9 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	    }
 	  else
 	    {
-	      cpp_error (pfile, CPP_DL_ERROR,
-			 "invalid suffix \"%.*s\" on floating constant",
-			 (int) (limit - str), str);
+	      cpp_error_with_line (pfile, CPP_DL_ERROR, virtual_location, 0,
+				   "invalid suffix \"%.*s\" on floating constant",
+				   (int) (limit - str), str);
 	      return CPP_N_INVALID;
 	    }
 	}
@@ -523,33 +541,33 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
       if (limit != str
 	  && CPP_WTRADITIONAL (pfile)
 	  && ! cpp_sys_macro_p (pfile))
-	cpp_warning (pfile, CPP_W_TRADITIONAL,
-		     "traditional C rejects the \"%.*s\" suffix",
-		     (int) (limit - str), str);
+	cpp_warning_with_line (pfile, CPP_W_TRADITIONAL, virtual_location, 0,
+			       "traditional C rejects the \"%.*s\" suffix",
+			       (int) (limit - str), str);
 
       /* A suffix for double is a GCC extension via decimal float support.
 	 If the suffix also specifies an imaginary value we'll catch that
 	 later.  */
       if ((result == CPP_N_MEDIUM) && CPP_PEDANTIC (pfile))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "suffix for double constant is a GCC extension");
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+			     "suffix for double constant is a GCC extension");
 
       /* Radix must be 10 for decimal floats.  */
       if ((result & CPP_N_DFLOAT) && radix != 10)
         {
-          cpp_error (pfile, CPP_DL_ERROR,
-                     "invalid suffix \"%.*s\" with hexadecimal floating constant",
-                     (int) (limit - str), str);
+          cpp_error_with_line (pfile, CPP_DL_ERROR, virtual_location, 0,
+			       "invalid suffix \"%.*s\" with hexadecimal floating constant",
+			       (int) (limit - str), str);
           return CPP_N_INVALID;
         }
 
       if ((result & (CPP_N_FRACT | CPP_N_ACCUM)) && CPP_PEDANTIC (pfile))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "fixed-point constants are a GCC extension");
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+			     "fixed-point constants are a GCC extension");
 
       if ((result & CPP_N_DFLOAT) && CPP_PEDANTIC (pfile))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "decimal float constants are a GCC extension");
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+			     "decimal float constants are a GCC extension");
 
       result |= CPP_N_FLOATING;
     }
@@ -566,9 +584,9 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	    }
 	  else
 	    {
-	      cpp_error (pfile, CPP_DL_ERROR,
-			 "invalid suffix \"%.*s\" on integer constant",
-			 (int) (limit - str), str);
+	      cpp_error_with_line (pfile, CPP_DL_ERROR, virtual_location, 0,
+				   "invalid suffix \"%.*s\" on integer constant",
+				   (int) (limit - str), str);
 	      return CPP_N_INVALID;
 	    }
 	}
@@ -582,9 +600,10 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 		       && CPP_OPTION (pfile, cpp_warn_long_long);
 
 	  if (u_or_i || large)
-	    cpp_warning (pfile, large ? CPP_W_LONG_LONG : CPP_W_TRADITIONAL,
-		         "traditional C rejects the \"%.*s\" suffix",
-		         (int) (limit - str), str);
+	    cpp_warning_with_line (pfile, large ? CPP_W_LONG_LONG : CPP_W_TRADITIONAL,
+				   virtual_location, 0,
+				   "traditional C rejects the \"%.*s\" suffix",
+				   (int) (limit - str), str);
 	}
 
       if ((result & CPP_N_WIDTH) == CPP_N_LARGE
@@ -595,9 +614,11 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 		                : N_("use of C99 long long integer constant");
 
 	  if (CPP_OPTION (pfile, c99))
-            cpp_warning (pfile, CPP_W_LONG_LONG, message);
+            cpp_warning_with_line (pfile, CPP_W_LONG_LONG, virtual_location,
+				   0, message);
           else
-            cpp_pedwarning (pfile, CPP_W_LONG_LONG, message);
+            cpp_pedwarning_with_line (pfile, CPP_W_LONG_LONG,
+				      virtual_location, 0, message);
         }
 
       result |= CPP_N_INTEGER;
@@ -605,11 +626,11 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 
  syntax_ok:
   if ((result & CPP_N_IMAGINARY) && CPP_PEDANTIC (pfile))
-    cpp_error (pfile, CPP_DL_PEDWARN,
-	       "imaginary constants are a GCC extension");
+    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+			 "imaginary constants are a GCC extension");
   if (radix == 2 && CPP_PEDANTIC (pfile))
-    cpp_error (pfile, CPP_DL_PEDWARN,
-	       "binary constants are a GCC extension");
+    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+			 "binary constants are a GCC extension");
 
   if (radix == 10)
     result |= CPP_N_DECIMAL;
@@ -897,7 +918,8 @@ parse_defined (cpp_reader *pfile)
    number or character constant, or the result of the "defined" or "#"
    operators).  */
 static cpp_num
-eval_token (cpp_reader *pfile, const cpp_token *token)
+eval_token (cpp_reader *pfile, const cpp_token *token,
+	    source_location virtual_location)
 {
   cpp_num result;
   unsigned int temp;
@@ -909,21 +931,21 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
   switch (token->type)
     {
     case CPP_NUMBER:
-      temp = cpp_classify_number (pfile, token, NULL);
+      temp = cpp_classify_number (pfile, token, NULL, virtual_location);
       if (temp & CPP_N_USERDEF)
 	cpp_error (pfile, CPP_DL_ERROR,
 		   "user-defined literal in preprocessor expression");
       switch (temp & CPP_N_CATEGORY)
 	{
 	case CPP_N_FLOATING:
-	  cpp_error (pfile, CPP_DL_ERROR,
-		     "floating constant in preprocessor expression");
+	  cpp_error_with_line (pfile, CPP_DL_ERROR, virtual_location, 0,
+			       "floating constant in preprocessor expression");
 	  break;
 	case CPP_N_INTEGER:
 	  if (!(temp & CPP_N_IMAGINARY))
 	    return cpp_interpret_integer (pfile, token, temp);
-	  cpp_error (pfile, CPP_DL_ERROR,
-		     "imaginary number in preprocessor expression");
+	  cpp_error_with_line (pfile, CPP_DL_ERROR, virtual_location, 0,
+			       "imaginary number in preprocessor expression");
 	  break;
 
 	case CPP_N_INVALID:
@@ -970,8 +992,9 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
 	  result.high = 0;
 	  result.low = 0;
 	  if (CPP_OPTION (pfile, warn_undef) && !pfile->state.skip_eval)
-	    cpp_warning (pfile, CPP_W_UNDEF, "\"%s\" is not defined",
-		         NODE_NAME (token->val.node.node));
+	    cpp_warning_with_line (pfile, CPP_W_UNDEF, virtual_location, 0,
+				   "\"%s\" is not defined",
+				   NODE_NAME (token->val.node.node));
 	}
       break;
 
@@ -981,11 +1004,12 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
 	  /* A pedantic warning takes precedence over a deprecated
 	     warning here.  */
 	  if (CPP_PEDANTIC (pfile))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "assertions are a GCC extension");
+	    cpp_error_with_line (pfile, CPP_DL_PEDWARN,
+				 virtual_location, 0,
+				 "assertions are a GCC extension");
 	  else if (CPP_OPTION (pfile, cpp_warn_deprecated))
-	    cpp_warning (pfile, CPP_W_DEPRECATED,
-		         "assertions are a deprecated extension");
+	    cpp_warning_with_line (pfile, CPP_W_DEPRECATED, virtual_location, 0,
+				   "assertions are a deprecated extension");
 	}
       _cpp_test_assertion (pfile, &temp);
       result.high = 0;
@@ -1087,6 +1111,7 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
   struct op *top = pfile->op_stack;
   unsigned int lex_count;
   bool saw_leading_not, want_value = true;
+  source_location virtual_location = 0;
 
   pfile->state.skip_eval = 0;
 
@@ -1103,9 +1128,9 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
       struct op op;
 
       lex_count++;
-      op.token = cpp_get_token (pfile);
+      op.token = cpp_get_token_with_location (pfile, &virtual_location);
       op.op = op.token->type;
-      op.loc = op.token->src_loc;
+      op.loc = virtual_location;
 
       switch (op.op)
 	{
@@ -1118,10 +1143,11 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
 	case CPP_NAME:
 	case CPP_HASH:
 	  if (!want_value)
-	    SYNTAX_ERROR2 ("missing binary operator before token \"%s\"",
-			   cpp_token_as_text (pfile, op.token));
+	    SYNTAX_ERROR2_AT (op.loc,
+			      "missing binary operator before token \"%s\"",
+			      cpp_token_as_text (pfile, op.token));
 	  want_value = false;
-	  top->value = eval_token (pfile, op.token);
+	  top->value = eval_token (pfile, op.token, op.loc);
 	  continue;
 
 	case CPP_NOT:
@@ -1138,8 +1164,9 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
 
 	default:
 	  if ((int) op.op <= (int) CPP_EQ || (int) op.op >= (int) CPP_PLUS_EQ)
-	    SYNTAX_ERROR2 ("token \"%s\" is not valid in preprocessor expressions",
-			   cpp_token_as_text (pfile, op.token));
+	    SYNTAX_ERROR2_AT (op.loc,
+			      "token \"%s\" is not valid in preprocessor expressions",
+			      cpp_token_as_text (pfile, op.token));
 	  break;
 	}
 
@@ -1147,27 +1174,32 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
       if (optab[op.op].flags & NO_L_OPERAND)
 	{
 	  if (!want_value)
-	    SYNTAX_ERROR2 ("missing binary operator before token \"%s\"",
-			   cpp_token_as_text (pfile, op.token));
+	    SYNTAX_ERROR2_AT (op.loc,
+			      "missing binary operator before token \"%s\"",
+			      cpp_token_as_text (pfile, op.token));
 	}
       else if (want_value)
 	{
 	  /* We want a number (or expression) and haven't got one.
 	     Try to emit a specific diagnostic.  */
 	  if (op.op == CPP_CLOSE_PAREN && top->op == CPP_OPEN_PAREN)
-	    SYNTAX_ERROR ("missing expression between '(' and ')'");
+	    SYNTAX_ERROR_AT (op.loc,
+			     "missing expression between '(' and ')'");
 
 	  if (op.op == CPP_EOF && top->op == CPP_EOF)
- 	    SYNTAX_ERROR2 ("%s with no expression", is_if ? "#if" : "#elif");
+ 	    SYNTAX_ERROR2_AT (op.loc,
+			      "%s with no expression", is_if ? "#if" : "#elif");
 
  	  if (top->op != CPP_EOF && top->op != CPP_OPEN_PAREN)
- 	    SYNTAX_ERROR2 ("operator '%s' has no right operand",
- 			   cpp_token_as_text (pfile, top->token));
+ 	    SYNTAX_ERROR2_AT (op.loc,
+			      "operator '%s' has no right operand",
+			      cpp_token_as_text (pfile, top->token));
 	  else if (op.op == CPP_CLOSE_PAREN || op.op == CPP_EOF)
 	    /* Complain about missing paren during reduction.  */;
 	  else
-	    SYNTAX_ERROR2 ("operator '%s' has no left operand",
-			   cpp_token_as_text (pfile, op.token));
+	    SYNTAX_ERROR2_AT (op.loc,
+			      "operator '%s' has no left operand",
+			      cpp_token_as_text (pfile, op.token));
 	}
 
       top = reduce (pfile, top, op.op);
@@ -1192,7 +1224,8 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
 	  break;
 	case CPP_COLON:
 	  if (top->op != CPP_QUERY)
-	    SYNTAX_ERROR (" ':' without preceding '?'");
+	    SYNTAX_ERROR_AT (op.loc,
+			     " ':' without preceding '?'");
 	  if (!num_zerop (top[-1].value)) /* Was '?' condition true?  */
 	    pfile->state.skip_eval++;
 	  else
@@ -1209,7 +1242,7 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
 
       top->op = op.op;
       top->token = op.token;
-      top->loc = op.token->src_loc;
+      top->loc = op.loc;
     }
 
   /* The controlling macro expression is only valid if we called lex 3
@@ -1220,8 +1253,9 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
 
   if (top != pfile->op_stack)
     {
-      cpp_error (pfile, CPP_DL_ICE, "unbalanced stack in %s",
-		 is_if ? "#if" : "#elif");
+      cpp_error_with_line (pfile, CPP_DL_ICE, top->loc, 0,
+			   "unbalanced stack in %s",
+			   is_if ? "#if" : "#elif");
     syntax_error:
       return false;  /* Return false on syntax error.  */
     }
