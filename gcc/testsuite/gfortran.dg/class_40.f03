@@ -32,5 +32,3 @@ program test
   type(treeNode) :: node
   call walk (node)
 end program
-
-! { dg-final { cleanup-modules "tree_nodes merger_trees merger_tree_build" } }

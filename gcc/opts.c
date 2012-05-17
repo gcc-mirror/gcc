@@ -1,5 +1,7 @@
 /* Command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012
+
    Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
@@ -23,11 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "intl.h"
 #include "coretypes.h"
+#include "opts.h"
+#include "options.h"
 #include "tm.h" /* For STACK_CHECK_BUILTIN,
 		   STACK_CHECK_STATIC_BUILTIN, DEFAULT_GDB_EXTENSIONS,
 		   DWARF2_DEBUGGING_INFO and DBX_DEBUGGING_INFO.  */
-#include "opts.h"
-#include "options.h"
 #include "flags.h"
 #include "params.h"
 #include "diagnostic.h"
@@ -815,33 +817,18 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
                            opts->x_param_values, opts_set->x_param_values);
 
   /* This replaces set_Wunused.  */
-  if (opts->x_warn_unused_function == -1)
-    opts->x_warn_unused_function = opts->x_warn_unused;
-  if (opts->x_warn_unused_label == -1)
-    opts->x_warn_unused_label = opts->x_warn_unused;
   /* Wunused-parameter is enabled if both -Wunused -Wextra are enabled.  */
   if (opts->x_warn_unused_parameter == -1)
     opts->x_warn_unused_parameter = (opts->x_warn_unused
 				     && opts->x_extra_warnings);
-  if (opts->x_warn_unused_variable == -1)
-    opts->x_warn_unused_variable = opts->x_warn_unused;
   /* Wunused-but-set-parameter is enabled if both -Wunused -Wextra are
      enabled.  */
   if (opts->x_warn_unused_but_set_parameter == -1)
     opts->x_warn_unused_but_set_parameter = (opts->x_warn_unused
 					     && opts->x_extra_warnings);
-  if (opts->x_warn_unused_but_set_variable == -1)
-    opts->x_warn_unused_but_set_variable = opts->x_warn_unused;
-  if (opts->x_warn_unused_value == -1)
-    opts->x_warn_unused_value = opts->x_warn_unused;
-
   /* Wunused-local-typedefs is enabled by -Wunused or -Wall.  */
   if (opts->x_warn_unused_local_typedefs == -1)
     opts->x_warn_unused_local_typedefs = opts->x_warn_unused;
-
-  /* This replaces set_Wextra.  */
-  if (opts->x_warn_uninitialized == -1)
-    opts->x_warn_uninitialized = opts->x_extra_warnings;
 }
 
 #define LEFT_COLUMN	27
@@ -1745,11 +1732,6 @@ common_handle_option (struct gcc_options *opts,
       /* No-op. Used by the driver and passed to us because it starts with f.*/
       break;
 
-    case OPT_Wuninitialized:
-      /* Also turn on maybe uninitialized warning.  */
-      opts->x_warn_maybe_uninitialized = value;
-      break;
-
     default:
       /* If the flag was handled in a standard way, assume the lack of
 	 processing here is intentional.  */
@@ -1757,6 +1739,8 @@ common_handle_option (struct gcc_options *opts,
       break;
     }
 
+  common_handle_option_auto (opts, opts_set, decoded, lang_mask, kind,
+                             loc, handlers, dc);
   return true;
 }
 

@@ -198,10 +198,9 @@ make_rename_temp (tree type, const char *prefix)
   tree t = create_tmp_reg (type, prefix);
 
   if (gimple_referenced_vars (cfun))
-    {
-      add_referenced_var (t);
-      mark_sym_for_renaming (t);
-    }
+    add_referenced_var (t);
+  if (gimple_in_ssa_p (cfun))
+    mark_sym_for_renaming (t);
 
   return t;
 }
@@ -462,9 +461,7 @@ find_vars_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   return NULL_TREE;
 }
 
-/* Find referenced variables in STMT.  In contrast with
-   find_new_referenced_vars, this function will not mark newly found
-   variables for renaming.  */
+/* Find referenced variables in STMT.  */
 
 void
 find_referenced_vars_in (gimple stmt)
@@ -505,7 +502,7 @@ referenced_var_lookup (struct function *fn, unsigned int uid)
 /* Check if TO is in the referenced_vars hash table and insert it if not.
    Return true if it required insertion.  */
 
-bool
+static bool
 referenced_var_check_and_insert (tree to)
 {
   tree h, *loc;
@@ -664,38 +661,6 @@ mark_symbols_for_renaming (gimple stmt)
   FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_OPERANDS)
     if (DECL_P (op))
       mark_sym_for_renaming (op);
-}
-
-
-/* Find all variables within the gimplified statement that were not
-   previously visible to the function and add them to the referenced
-   variables list.  */
-
-static tree
-find_new_referenced_vars_1 (tree *tp, int *walk_subtrees,
-			    void *data ATTRIBUTE_UNUSED)
-{
-  tree t = *tp;
-
-  if (TREE_CODE (t) == VAR_DECL && !var_ann (t))
-    {
-      add_referenced_var (t);
-      mark_sym_for_renaming (t);
-    }
-
-  if (IS_TYPE_OR_DECL_P (t))
-    *walk_subtrees = 0;
-
-  return NULL;
-}
-
-
-/* Find any new referenced variables in STMT.  */
-
-void
-find_new_referenced_vars (gimple stmt)
-{
-  walk_gimple_op (stmt, find_new_referenced_vars_1, NULL);
 }
 
 

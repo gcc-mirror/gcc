@@ -24,5 +24,3 @@ program test
   implicit none
   if(x() /= -5) call abort()
 end program test
-
-! { dg-final { cleanup-modules "modproc" } }

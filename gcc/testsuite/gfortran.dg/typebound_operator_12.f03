@@ -41,5 +41,3 @@ program main
   if (any (fireworks%position .ne. [6, 12, 18])) call abort
   if (any (fireworks%velocity .ne. [24, 30, 36])) call abort
 end program
-! { dg-final { cleanup-modules "soop_stars_class" } }
-

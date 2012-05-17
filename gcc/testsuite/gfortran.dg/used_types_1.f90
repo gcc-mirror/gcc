@@ -19,5 +19,3 @@ CONTAINS
     mtpcar%coo='a'             !ICE was here
   END SUBROUTINE str_clan
 END MODULE
-
-! { dg-final { cleanup-modules "testcase tp_trace" } }

@@ -38,5 +38,3 @@ program func_derived_2
   y => get2 (x)
   if (y%i.ne.112) call abort ()
 end program func_derived_2
-
-! { dg-final { cleanup-modules "mpoint" } }

@@ -23,4 +23,3 @@ CONTAINS
   END SELECT
   END FUNCTION dlegendre
 END MODULE spherical_harmonics
-! { dg-final { cleanup-modules "spherical_harmonics" } }

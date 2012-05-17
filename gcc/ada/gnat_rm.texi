@@ -272,6 +272,7 @@ Implementation Defined Attributes
 * Result::
 * Safe_Emax::
 * Safe_Large::
+* Scalar_Storage_Order::
 * Simple_Storage_Pool::
 * Small::
 * Storage_Unit::
@@ -6023,6 +6024,7 @@ consideration, you should minimize the use of these attributes.
 * Result::
 * Safe_Emax::
 * Safe_Large::
+* Scalar_Storage_Order::
 * Simple_Storage_Pool::
 * Small::
 * Storage_Unit::
@@ -6749,6 +6751,54 @@ this attribute.
 The @code{Safe_Large} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
+
+@node Scalar_Storage_Order
+@unnumberedsec Scalar_Storage_Order
+@cindex Endianness
+@cindex Scalar storage order
+@findex Scalar_Storage_Order
+@noindent
+For every record subtype @var{S}, the representation attribute
+@code{Scalar_Storage_Order} denotes the order in which storage elements
+that make up scalar components are ordered within S. Other properties are
+as for standard representation attribute @code{Bit_Order}, as defined by
+Ada RM 13.5.3(4). The default is @code{System.Default_Bit_Order}.
+
+If @code{@var{S}'Scalar_Storage_Order} is specified explicitly, it shall be
+equal to @code{@var{S}'Bit_Order}. Note: This means that if a
+@code{Scalar_Storage_Order} attribute definition clause is not confirming,
+then the type's @code{Bit_Order} shall be specified explicitly and set to
+the same value.
+
+A confirming @code{Scalar_Storage_Order} attribute definition clause (i.e.
+with a value equal to @code{System.Default_Bit_Order}) has no effect.
+
+If the opposite storage order is specified, then whenever the
+value of a scalar component of S is read, the storage elements of the
+enclosing machine scalar are first reversed (before retrieving the
+component value, possibly applying some shift and mask operatings on the
+enclosing machine scalar), and the opposite operation is done for
+writes.
+
+In that case, the restrictions set forth in 13.5.1(10.3/2) for scalar components
+are relaxed. Instead, the following rules apply:
+
+@itemize @bullet
+@item the underlying storage elements are those at positions
+  @code{(position + first_bit / storage_element_size) ..
+        (position + (last_bit + storage_element_size - 1) /
+                    storage_element_size)}
+@item the sequence of underlying storage elements shall have
+        a size no greater than the largest machine scalar
+@item the enclosing machine scalar is defined as the smallest machine
+        scalar starting at a position no greater than
+        @code{position + first_bit / storage_element_size} and covering
+        storage elements at least up to @code{position + (last_bit +
+        storage_element_size - 1) / storage_element_size}
+@item the position of the component is interpreted relative to that machine
+ scalar.
+
+@end itemize
 
 @node Simple_Storage_Pool
 @unnumberedsec Simple_Storage_Pool
@@ -15452,7 +15502,7 @@ sequences for various UCS input formats.
 @section @code{GNAT.Byte_Swapping} (@file{g-bytswa.ads})
 @cindex @code{GNAT.Byte_Swapping} (@file{g-bytswa.ads})
 @cindex Byte swapping
-@cindex Endian
+@cindex Endianness
 
 @noindent
 General routines for swapping the bytes in 2-, 4-, and 8-byte quantities.

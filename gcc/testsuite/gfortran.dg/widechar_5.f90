@@ -55,5 +55,3 @@ program test_modules
   if (any (len_trim (outer4) /= [len(outer4), 3])) call abort
 
 end program test_modules
-
-! { dg-final { cleanup-modules "kinds inner middle outer" } }

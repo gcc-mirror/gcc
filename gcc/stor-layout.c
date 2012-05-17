@@ -813,15 +813,25 @@ start_record_layout (tree t)
 }
 
 /* Return the combined bit position for the byte offset OFFSET and the
-   bit position BITPOS.  */
+   bit position BITPOS.
+
+   These functions operate on byte and bit positions present in FIELD_DECLs
+   and assume that these expressions result in no (intermediate) overflow.
+   This assumption is necessary to fold the expressions as much as possible,
+   so as to avoid creating artificially variable-sized types in languages
+   supporting variable-sized types like Ada.  */
 
 tree
 bit_from_pos (tree offset, tree bitpos)
 {
+  if (TREE_CODE (offset) == PLUS_EXPR)
+    offset = size_binop (PLUS_EXPR,
+			 fold_convert (bitsizetype, TREE_OPERAND (offset, 0)),
+			 fold_convert (bitsizetype, TREE_OPERAND (offset, 1)));
+  else
+    offset = fold_convert (bitsizetype, offset);
   return size_binop (PLUS_EXPR, bitpos,
-		     size_binop (MULT_EXPR,
-				 fold_convert (bitsizetype, offset),
-				 bitsize_unit_node));
+		     size_binop (MULT_EXPR, offset, bitsize_unit_node));
 }
 
 /* Return the combined truncated byte position for the byte offset OFFSET and
@@ -2506,12 +2516,10 @@ initialize_sizetypes (void)
   TYPE_NAME (sizetype) = get_identifier ("sizetype");
   TYPE_PRECISION (sizetype) = precision;
   TYPE_UNSIGNED (sizetype) = 1;
-  TYPE_IS_SIZETYPE (sizetype) = 1;
   bitsizetype = make_node (INTEGER_TYPE);
   TYPE_NAME (bitsizetype) = get_identifier ("bitsizetype");
   TYPE_PRECISION (bitsizetype) = bprecision;
   TYPE_UNSIGNED (bitsizetype) = 1;
-  TYPE_IS_SIZETYPE (bitsizetype) = 1;
 
   /* Now layout both types manually.  */
   SET_TYPE_MODE (sizetype, smallest_mode_for_size (precision, MODE_INT));
@@ -2532,10 +2540,8 @@ initialize_sizetypes (void)
   /* Create the signed variants of *sizetype.  */
   ssizetype = make_signed_type (TYPE_PRECISION (sizetype));
   TYPE_NAME (ssizetype) = get_identifier ("ssizetype");
-  TYPE_IS_SIZETYPE (ssizetype) = 1;
   sbitsizetype = make_signed_type (TYPE_PRECISION (bitsizetype));
   TYPE_NAME (sbitsizetype) = get_identifier ("sbitsizetype");
-  TYPE_IS_SIZETYPE (sbitsizetype) = 1;
 }
 
 /* TYPE is an integral type, i.e., an INTEGRAL_TYPE, ENUMERAL_TYPE

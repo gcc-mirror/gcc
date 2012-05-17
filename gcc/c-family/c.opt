@@ -1,4 +1,4 @@
-; Options for the C, ObjC, C++ and ObjC++ front ends.
+; Options for the C, ObjC, UPC, C++ and ObjC++ front ends.
 ; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 ; 2011, 2012 Free Software Foundation, Inc.
 ;
@@ -291,7 +291,7 @@ C UPC ObjC Var(warn_cxx_compat) Warning
 Warn about C constructs that are not in the common subset of C and C++
 
 Wc++0x-compat
-C++ ObjC++ Var(warn_cxx0x_compat) Warning
+C++ ObjC++ Var(warn_cxx0x_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Deprecated in favor of -Wc++11-compat
 
 Wc++11-compat
@@ -307,7 +307,7 @@ C UPC ObjC C++ ObjC++ Var(warn_char_subscripts) Warning
 Warn about subscripts whose type is \"char\"
 
 Wclobbered
-C UPC ObjC C++ ObjC++ Var(warn_clobbered) Init(-1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
 Warn about variables that might be changed by \"longjmp\" or \"vfork\"
 
 Wcomment
@@ -339,7 +339,7 @@ C UPC ObjC Var(warn_declaration_after_statement) Warning
 Warn when a declaration is found after a statement
 
 Wdelete-non-virtual-dtor
-C++ ObjC++ Var(warn_delnonvdtor) Warning
+C++ ObjC++ Var(warn_delnonvdtor) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about deleting polymorphic objects with non-virtual destructors
 
 Wdeprecated
@@ -355,7 +355,7 @@ C++ ObjC++ Var(warn_ecpp) Warning
 Warn about violations of Effective C++ style rules
 
 Wempty-body
-C UPC ObjC C++ ObjC++ Var(warn_empty_body) Init(-1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_empty_body) Warning EnabledBy(Wextra)
 Warn about an empty body in an if or else statement
 
 Wendif-labels
@@ -410,7 +410,7 @@ Wformat=
 C UPC ObjC C++ ObjC++ Joined Warning
 
 Wignored-qualifiers
-C UPC C++ Var(warn_ignored_qualifiers) Init(-1) Warning
+C C++ Var(warn_ignored_qualifiers) Warning EnabledBy(Wextra)
 Warn whenever type qualifiers are ignored.
 
 Winit-self
@@ -449,7 +449,7 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about PCH files that are found but not used
 
 Wjump-misses-init
-C UPC ObjC Var(warn_jump_misses_init) Init(-1) Warning
+C UPC ObjC Var(warn_jump_misses_init) Warning LangEnabledby(C ObjC,Wc++-compat)
 Warn when a jump misses a variable initialization
 
 Wliteral-suffix
@@ -477,7 +477,7 @@ C UPC ObjC C++ ObjC++ Var(warn_missing_declarations) Warning
 Warn about global functions without previous declarations
 
 Wmissing-field-initializers
-C UPC ObjC C++ ObjC++ Var(warn_missing_field_initializers) Init(-1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_missing_field_initializers) Warning EnabledBy(Wextra)
 Warn about missing fields in struct initializers
 
 Wsuggest-attribute=format
@@ -493,7 +493,7 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about user-specified include directories that do not exist
 
 Wmissing-parameter-type
-C UPC ObjC Var(warn_missing_parameter_type) Init(-1) Warning
+C UPC ObjC Var(warn_missing_parameter_type) Warning EnabledBy(Wextra)
 Warn about function parameters declared without a type specifier in K&R-style functions
 
 Wmissing-prototypes
@@ -541,7 +541,7 @@ C++ ObjC++ Var(warn_old_style_cast) Warning
 Warn if a C-style cast is used in a program
 
 Wold-style-declaration
-C UPC ObjC Var(warn_old_style_declaration) Init(-1) Warning
+C UPC ObjC Var(warn_old_style_declaration) Warning EnabledBy(Wextra)
 Warn for obsolescent usage in a declaration
 
 Wold-style-definition
@@ -557,7 +557,7 @@ C++ ObjC++ Var(warn_overloaded_virtual) Warning
 Warn about overloaded virtual function names
 
 Woverride-init
-C UPC ObjC Var(warn_override_init) Init(-1) Warning
+C UPC ObjC Var(warn_override_init) Warning EnabledBy(Wextra)
 Warn about overriding initializers without side effects
 
 Wpacked-bitfield-compat
@@ -601,7 +601,7 @@ C UPC ObjC C++ ObjC++ Var(warn_redundant_decls) Warning
 Warn about multiple declarations of the same object
 
 Wreorder
-C++ ObjC++ Var(warn_reorder) Warning
+C++ ObjC++ Var(warn_reorder) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn when the compiler reorders code
 
 Wreturn-type

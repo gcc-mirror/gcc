@@ -67,4 +67,3 @@ program spec_test
   c_size = 5
   if (tricky ('Help me', butt_ugly) .ne. transfer (butt_ugly (1), chr)) call abort ()
 end program spec_test
-! { dg-final { cleanup-modules "mykinds spec_xpr xtra_fun" } }

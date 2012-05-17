@@ -2073,7 +2073,8 @@ tree
 gfc_string_to_single_character (tree len, tree str, int kind)
 {
 
-  if (!INTEGER_CST_P (len) || TREE_INT_CST_HIGH (len) != 0
+  if (len == NULL
+      || !INTEGER_CST_P (len) || TREE_INT_CST_HIGH (len) != 0
       || !POINTER_TYPE_P (TREE_TYPE (str)))
     return NULL_TREE;
 
@@ -4175,7 +4176,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     we take the character length of the first argument for the result.
 	     For dummies, we have to look through the formal argument list for
 	     this function and use the character length found there.*/
-	  if (ts.deferred && (sym->attr.allocatable || sym->attr.pointer))
+	  if (ts.deferred)
 	    cl.backend_decl = gfc_create_var (gfc_charlen_type_node, "slen");
 	  else if (!sym->attr.dummy)
 	    cl.backend_decl = VEC_index (tree, stringargs, 0);
@@ -4186,6 +4187,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		if (strcmp (formal->sym->name, sym->name) == 0)
 		  cl.backend_decl = formal->sym->ts.u.cl->backend_decl;
 	    }
+	  len = cl.backend_decl;
         }
       else
         {
@@ -4343,9 +4345,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	      if ((!comp && sym->attr.allocatable)
 		  || (comp && comp->attr.allocatable))
-		gfc_add_modify (&se->pre, var,
-				fold_convert (TREE_TYPE (var),
-					      null_pointer_node));
+		{
+		  gfc_add_modify (&se->pre, var,
+				  fold_convert (TREE_TYPE (var),
+						null_pointer_node));
+		  tmp = gfc_call_free (convert (pvoid_type_node, var));
+		  gfc_add_expr_to_block (&se->post, tmp);
+		}
 
 	      /* Provide an address expression for the function arguments.  */
 	      var = gfc_build_addr_expr (NULL_TREE, var);
@@ -4364,17 +4370,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  VEC_safe_push (tree, gc, retargs, var);
 	}
 
-      if (ts.type == BT_CHARACTER && ts.deferred
-	    && (sym->attr.allocatable || sym->attr.pointer))
+      /* Add the string length to the argument list.  */
+      if (ts.type == BT_CHARACTER && ts.deferred)
 	{
 	  tmp = len;
 	  if (TREE_CODE (tmp) != VAR_DECL)
 	    tmp = gfc_evaluate_now (len, &se->pre);
-	  len = gfc_build_addr_expr (NULL_TREE, tmp);
+	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+	  VEC_safe_push (tree, gc, retargs, tmp);
 	}
-
-      /* Add the string length to the argument list.  */
-      if (ts.type == BT_CHARACTER)
+      else if (ts.type == BT_CHARACTER)
 	VEC_safe_push (tree, gc, retargs, len);
     }
   gfc_free_interface_mapping (&mapping);
@@ -4483,10 +4488,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      else
 	        se->expr = var;
 
-	      if (!ts.deferred)
-		se->string_length = len;
-	      else if (sym->attr.allocatable || sym->attr.pointer)
-		se->string_length = cl.backend_decl;
+	      se->string_length = len;
 	    }
 	  else
 	    {
@@ -5776,8 +5778,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	 really added if -fbounds-check is enabled.  Exclude deferred
 	 character length lefthand sides.  */
       if (expr1->ts.type == BT_CHARACTER && expr2->expr_type != EXPR_NULL
-	  && !(expr1->ts.deferred
-			&& (TREE_CODE (lse.string_length) == VAR_DECL))
+	  && !expr1->ts.deferred
 	  && !expr1->symtree->n.sym->attr.proc_pointer
 	  && !gfc_is_proc_ptr_comp (expr1, NULL))
 	{
@@ -5790,11 +5791,11 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 
       /* The assignment to an deferred character length sets the string
 	 length to that of the rhs.  */
-      if (expr1->ts.deferred && (TREE_CODE (lse.string_length) == VAR_DECL))
+      if (expr1->ts.deferred)
 	{
-	  if (expr2->expr_type != EXPR_NULL)
+	  if (expr2->expr_type != EXPR_NULL && lse.string_length != NULL)
 	    gfc_add_modify (&block, lse.string_length, rse.string_length);
-	  else
+	  else if (lse.string_length != NULL)
 	    gfc_add_modify (&block, lse.string_length,
 			    build_int_cst (gfc_charlen_type_node, 0));
 	}
@@ -7004,13 +7005,14 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       gfc_add_expr_to_block (&loop.post, tmp);
     }
 
-  /* For a deferred character length function, the function call must
-     happen before the (re)allocation of the lhs, otherwise the character
-     length of the result is not known.  */
-  def_clen_func = (((expr2->expr_type == EXPR_FUNCTION)
-			   || (expr2->expr_type == EXPR_COMPCALL)
-			   || (expr2->expr_type == EXPR_PPC))
-		       && expr2->ts.deferred);
+  /* When assigning a character function result to a deferred-length variable,
+     the function call must happen before the (re)allocation of the lhs -
+     otherwise the character length of the result is not known.
+     NOTE: This relies on having the exact dependence of the length type
+     parameter available to the caller; gfortran saves it in the .mod files. */
+  def_clen_func = (expr2->expr_type == EXPR_FUNCTION
+		   || expr2->expr_type == EXPR_COMPCALL
+		   || expr2->expr_type == EXPR_PPC);
   if (gfc_option.flag_realloc_lhs
 	&& expr2->ts.type == BT_CHARACTER
 	&& (def_clen_func || expr2->expr_type == EXPR_OP)

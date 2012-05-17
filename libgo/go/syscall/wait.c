@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 
 extern _Bool Exited (uint32_t *w)
-  __asm__ ("libgo_syscall.syscall.Exited.N32_libgo_syscall.syscall.WaitStatus");
+  __asm__ ("syscall.Exited.N18_syscall.WaitStatus");
 
 _Bool
 Exited (uint32_t *w)
@@ -20,7 +20,7 @@ Exited (uint32_t *w)
 }
 
 extern _Bool Signaled (uint32_t *w)
-  __asm__ ("libgo_syscall.syscall.Signaled.N32_libgo_syscall.syscall.WaitStatus");
+  __asm__ ("syscall.Signaled.N18_syscall.WaitStatus");
 
 _Bool
 Signaled (uint32_t *w)
@@ -29,7 +29,7 @@ Signaled (uint32_t *w)
 }
 
 extern _Bool Stopped (uint32_t *w)
-  __asm__ ("libgo_syscall.syscall.Stopped.N32_libgo_syscall.syscall.WaitStatus");
+  __asm__ ("syscall.Stopped.N18_syscall.WaitStatus");
 
 _Bool
 Stopped (uint32_t *w)
@@ -38,7 +38,7 @@ Stopped (uint32_t *w)
 }
 
 extern _Bool Continued (uint32_t *w)
-  __asm__ ("libgo_syscall.syscall.Continued.N32_libgo_syscall.syscall.WaitStatus");
+  __asm__ ("syscall.Continued.N18_syscall.WaitStatus");
 
 _Bool
 Continued (uint32_t *w)
@@ -47,7 +47,7 @@ Continued (uint32_t *w)
 }
 
 extern _Bool CoreDump (uint32_t *w)
-  __asm__ ("libgo_syscall.syscall.CoreDump.N32_libgo_syscall.syscall.WaitStatus");
+  __asm__ ("syscall.CoreDump.N18_syscall.WaitStatus");
 
 _Bool
 CoreDump (uint32_t *w)
@@ -56,7 +56,7 @@ CoreDump (uint32_t *w)
 }
 
 extern int ExitStatus (uint32_t *w)
-  __asm__ ("libgo_syscall.syscall.ExitStatus.N32_libgo_syscall.syscall.WaitStatus");
+  __asm__ ("syscall.ExitStatus.N18_syscall.WaitStatus");
 
 int
 ExitStatus (uint32_t *w)
@@ -67,7 +67,7 @@ ExitStatus (uint32_t *w)
 }
 
 extern int Signal (uint32_t *w)
-  __asm__ ("libgo_syscall.syscall.Signal.N32_libgo_syscall.syscall.WaitStatus");
+  __asm__ ("syscall.Signal.N18_syscall.WaitStatus");
 
 int
 Signal (uint32_t *w)
@@ -78,7 +78,7 @@ Signal (uint32_t *w)
 }
 
 extern int StopSignal (uint32_t *w)
-  __asm__ ("libgo_syscall.syscall.StopSignal.N32_libgo_syscall.syscall.WaitStatus");
+  __asm__ ("syscall.StopSignal.N18_syscall.WaitStatus");
 
 int
 StopSignal (uint32_t *w)
@@ -89,7 +89,7 @@ StopSignal (uint32_t *w)
 }
 
 extern int TrapCause (uint32_t *w)
-  __asm__ ("libgo_syscall.syscall.TrapCause.N32_libgo_syscall.syscall.WaitStatus");
+  __asm__ ("syscall.TrapCause.N18_syscall.WaitStatus");
 
 int
 TrapCause (uint32_t *w __attribute__ ((unused)))

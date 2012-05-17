@@ -36,4 +36,3 @@ CALL set(E,(E))
 IF (D%I.NE.4) call abort ()
 IF (4.NE.E%I) call abort ()
 END
-! { dg-final { cleanup-modules "tt" } }

@@ -46,4 +46,3 @@ CONTAINS
     TYPE(outer), INTENT(IN) :: a
   END SUBROUTINE test3
 END MODULE test
-! { dg-final { cleanup-modules "types mymod test" } }

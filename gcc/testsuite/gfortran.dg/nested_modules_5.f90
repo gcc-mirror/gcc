@@ -25,5 +25,3 @@ end module serial
   character*15  :: buffer  
   buffer = lc ("Have a Nice DAY")
   end
-
-! { dg-final { cleanup-modules "anything serial" } }

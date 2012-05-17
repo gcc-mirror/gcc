@@ -21,5 +21,3 @@ MODULE m2
   END TYPE subt
 
 END MODULE m2
-
-! { dg-final { cleanup-modules "m1 m2" } }

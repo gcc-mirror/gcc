@@ -26,4 +26,3 @@ program main
   class(field) ,pointer :: u
   u = (u)*2. ! { dg-error "check that there is a matching specific" }
 end program
-! { dg-final { cleanup-modules "field_module" } }

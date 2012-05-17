@@ -15,5 +15,3 @@ contains
     print*, a .myop. b
   end subroutine test_fn
 end module test_mod
-
-! { dg-final { cleanup-modules "test_mod" } }

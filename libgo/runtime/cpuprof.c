@@ -122,7 +122,7 @@ static void LostProfileData(void) {
 }
 
 extern void runtime_SetCPUProfileRate(int32)
-     __asm__("libgo_runtime.runtime.SetCPUProfileRate");
+     __asm__("runtime.SetCPUProfileRate");
 
 // SetCPUProfileRate sets the CPU profiling rate.
 // The user documentation is in debug.go.
@@ -422,7 +422,7 @@ breakflush:
 }
 
 extern Slice runtime_CPUProfile(void)
-     __asm__("libgo_runtime.runtime.CPUProfile");
+     __asm__("runtime.CPUProfile");
 
 // CPUProfile returns the next cpu profile block as a []byte.
 // The user documentation is in debug.go.

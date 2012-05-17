@@ -47,5 +47,3 @@ contains
     real, protected :: b ! { dg-error "only allowed in specification part of a module" }
   end subroutine bar
 end module prot2
-
-! { dg-final { cleanup-modules "protmod" } }

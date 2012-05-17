@@ -21,6 +21,3 @@ function get_coeff(self) result(coeff)
 end function get_coeff
 
 end module array
-
-
-! { dg-final { cleanup-modules "array" } }

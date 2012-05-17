@@ -9,5 +9,3 @@ module crash
   end type foo
   type (foo), save :: bar
 end module crash
-
-! { dg-final { cleanup-modules "crash" } }

@@ -29,4 +29,3 @@ program xx
 ! This was another bug, uncovered when the PR was fixed.
   if (any(ccopy(z//mz(:)(i:j)) .ne. (/"zzgh ","zzjk "/))) call abort ()
 end program xx
-! { dg-final { cleanup-modules "str_mod" } }

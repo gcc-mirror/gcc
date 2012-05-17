@@ -59,5 +59,3 @@ contains
     res = ( t%i == i )
   end function i_equal_t2
 end module m_test2
-
-! { dg-final { cleanup-modules "m_test m_test2" } }

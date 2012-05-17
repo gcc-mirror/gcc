@@ -2394,17 +2394,6 @@ gimple_copy (gimple stmt)
 }
 
 
-/* Set the MODIFIED flag to MODIFIEDP, iff the gimple statement G has
-   a MODIFIED field.  */
-
-void
-gimple_set_modified (gimple s, bool modifiedp)
-{
-  if (gimple_has_ops (s))
-    s->gsbase.modified = (unsigned) modifiedp;
-}
-
-
 /* Return true if statement S has side-effects.  We consider a
    statement to have side effects if:
 
@@ -3326,8 +3315,7 @@ gtc_visit (tree t1, tree t2,
 	return false;
 
       if (TREE_CODE (t1) == INTEGER_TYPE
-	  && (TYPE_IS_SIZETYPE (t1) != TYPE_IS_SIZETYPE (t2)
-	      || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)))
+	  && TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2))
 	return false;
 
       /* That's all we need to check for float and fixed-point types.  */
@@ -3756,8 +3744,7 @@ gimple_types_compatible_p (tree t1, tree t2)
 	return false;
 
       if (TREE_CODE (t1) == INTEGER_TYPE
-	  && (TYPE_IS_SIZETYPE (t1) != TYPE_IS_SIZETYPE (t2)
-	      || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)))
+	  && TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2))
 	return false;
 
       /* That's all we need to check for float and fixed-point types.  */
@@ -4206,10 +4193,7 @@ iterative_hash_canonical_type (tree type, hashval_t val)
 
   /* For integer types hash the types min/max values and the string flag.  */
   if (TREE_CODE (type) == INTEGER_TYPE)
-    {
-      v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
-      v = iterative_hash_hashval_t (TYPE_IS_SIZETYPE (type), v);
-    }
+    v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
 
   /* For array types hash their domain and the string flag.  */
   if (TREE_CODE (type) == ARRAY_TYPE
@@ -4425,8 +4409,7 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 	return false;
 
       if (TREE_CODE (t1) == INTEGER_TYPE
-	  && (TYPE_IS_SIZETYPE (t1) != TYPE_IS_SIZETYPE (t2)
-	      || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)))
+	  && TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2))
 	return false;
 
       /* For canonical type comparisons we do not want to build SCCs

@@ -15,5 +15,3 @@ MODULE WinData
     ! { dg-error "specification expression" "" { target *-*-* } 13 }
   END TYPE TWindowData
 END MODULE WinData
-
-! { dg-final { cleanup-modules "windata" } }

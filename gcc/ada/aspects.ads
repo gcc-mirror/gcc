@@ -34,6 +34,36 @@
 --  aspect specifications from the tree. The semantic processing for aspect
 --  specifications is found in Sem_Ch13.Analyze_Aspect_Specifications.
 
+------------------------
+-- Adding New Aspects --
+------------------------
+
+--  In general, each aspect should have a corresponding pragma, so that the
+--  newly developed functionality is available for Ada versions < Ada 2012.
+--  When both are defined, it is convenient to first transform the aspect into
+--  an equivalent pragma in Sem_Ch13.Analyze_Aspect_Specifications, and then
+--  analyze the pragma in Sem_Prag.Analyze_Pragma.
+
+--  To add a new aspect, you need to do the following
+
+--    1. Create a name in snames.ads-tmpl
+
+--    2. Create a value in type Aspect_Id in this unit
+
+--    3. Add a value for the aspect in the global arrays defined in this unit
+
+--    4. Add code for the aspect in Sem_Ch13.Analyze_Aspect_Specifications.
+--       This may involve adding some nodes to the tree to perform additional
+--       treatments later.
+
+--    5. If the semantic analysis of expressions/names in the aspect should not
+--       occur at the point the aspect is defined, add code in the adequate
+--       semantic analysis procedure for the aspect. For example, this is the
+--       case for aspects Pre and Post on subprograms, which are pre-analyzed
+--       at the end of the declaration list to which the subprogram belongs,
+--       and fully analyzed (possibly with expansion) during the semantic
+--       analysis of subprogram bodies.
+
 with Namet;  use Namet;
 with Snames; use Snames;
 with Types;  use Types;
@@ -51,6 +81,7 @@ package Aspects is
       Aspect_Component_Size,
       Aspect_Constant_Indexing,
       Aspect_Contract_Case,                 -- GNAT
+      Aspect_Convention,
       Aspect_CPU,
       Aspect_Default_Component_Value,
       Aspect_Default_Iterator,
@@ -59,12 +90,14 @@ package Aspects is
       Aspect_Dimension_System,              -- GNAT
       Aspect_Dispatching_Domain,
       Aspect_Dynamic_Predicate,
+      Aspect_External_Name,
       Aspect_External_Tag,
       Aspect_Implicit_Dereference,
       Aspect_Input,
       Aspect_Interrupt_Priority,
       Aspect_Invariant,
       Aspect_Iterator_Element,
+      Aspect_Link_Name,
       Aspect_Machine_Radix,
       Aspect_Object_Size,                   -- GNAT
       Aspect_Output,
@@ -121,9 +154,11 @@ package Aspects is
       Aspect_Atomic,
       Aspect_Atomic_Components,
       Aspect_Discard_Names,
+      Aspect_Export,
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_Independent,
       Aspect_Independent_Components,
+      Aspect_Import,
       Aspect_Inline,
       Aspect_Inline_Always,                 -- GNAT
       Aspect_Interrupt_Handler,
@@ -142,7 +177,12 @@ package Aspects is
       Aspect_Unreferenced,                  -- GNAT
       Aspect_Unreferenced_Objects,          -- GNAT
       Aspect_Volatile,
-      Aspect_Volatile_Components);
+      Aspect_Volatile_Components,
+
+      --  Aspects that have a static boolean value but don't correspond to
+      --  pragmas
+
+      Aspect_Lock_Free);
 
    --  The following array indicates aspects that accept 'Class
 
@@ -182,6 +222,7 @@ package Aspects is
                              Aspect_Dimension_System         => True,
                              Aspect_Favor_Top_Level          => True,
                              Aspect_Inline_Always            => True,
+                             Aspect_Lock_Free                => True,
                              Aspect_Object_Size              => True,
                              Aspect_Persistent_BSS           => True,
                              Aspect_Predicate                => True,
@@ -263,6 +304,7 @@ package Aspects is
                         Aspect_Component_Size          => Expression,
                         Aspect_Constant_Indexing       => Name,
                         Aspect_Contract_Case           => Expression,
+                        Aspect_Convention              => Name,
                         Aspect_CPU                     => Expression,
                         Aspect_Default_Component_Value => Expression,
                         Aspect_Default_Iterator        => Name,
@@ -271,12 +313,14 @@ package Aspects is
                         Aspect_Dimension_System        => Expression,
                         Aspect_Dispatching_Domain      => Expression,
                         Aspect_Dynamic_Predicate       => Expression,
+                        Aspect_External_Name           => Expression,
                         Aspect_External_Tag            => Expression,
                         Aspect_Implicit_Dereference    => Name,
                         Aspect_Input                   => Name,
                         Aspect_Interrupt_Priority      => Expression,
                         Aspect_Invariant               => Expression,
                         Aspect_Iterator_Element        => Name,
+                        Aspect_Link_Name               => Expression,
                         Aspect_Machine_Radix           => Expression,
                         Aspect_Object_Size             => Expression,
                         Aspect_Output                  => Name,
@@ -330,6 +374,7 @@ package Aspects is
      Aspect_Component_Size               => Name_Component_Size,
      Aspect_Constant_Indexing            => Name_Constant_Indexing,
      Aspect_Contract_Case                => Name_Contract_Case,
+     Aspect_Convention                   => Name_Convention,
      Aspect_CPU                          => Name_CPU,
      Aspect_Default_Iterator             => Name_Default_Iterator,
      Aspect_Default_Value                => Name_Default_Value,
@@ -340,9 +385,12 @@ package Aspects is
      Aspect_Dispatching_Domain           => Name_Dispatching_Domain,
      Aspect_Dynamic_Predicate            => Name_Dynamic_Predicate,
      Aspect_Elaborate_Body               => Name_Elaborate_Body,
+     Aspect_External_Name                => Name_External_Name,
      Aspect_External_Tag                 => Name_External_Tag,
+     Aspect_Export                       => Name_Export,
      Aspect_Favor_Top_Level              => Name_Favor_Top_Level,
      Aspect_Implicit_Dereference         => Name_Implicit_Dereference,
+     Aspect_Import                       => Name_Import,
      Aspect_Independent                  => Name_Independent,
      Aspect_Independent_Components       => Name_Independent_Components,
      Aspect_Inline                       => Name_Inline,
@@ -352,6 +400,8 @@ package Aspects is
      Aspect_Interrupt_Priority           => Name_Interrupt_Priority,
      Aspect_Invariant                    => Name_Invariant,
      Aspect_Iterator_Element             => Name_Iterator_Element,
+     Aspect_Link_Name                    => Name_Link_Name,
+     Aspect_Lock_Free                    => Name_Lock_Free,
      Aspect_Machine_Radix                => Name_Machine_Radix,
      Aspect_No_Return                    => Name_No_Return,
      Aspect_Object_Size                  => Name_Object_Size,

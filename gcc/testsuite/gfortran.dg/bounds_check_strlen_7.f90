@@ -22,4 +22,3 @@ PROGRAM main
 END PROGRAM main
 
 ! { dg-output "shorter than the declared one for dummy argument 'opt' \\(0/5\\)" }
-! { dg-final { cleanup-modules "m" } }

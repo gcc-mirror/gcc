@@ -716,61 +716,100 @@ package body Exp_Ch7 is
    is
       Actuals      : List_Id;
       Proc_To_Call : Entity_Id;
+      Except       : Node_Id;
+      Stmts        : List_Id;
 
    begin
-      pragma Assert (Present (Data.E_Id));
       pragma Assert (Present (Data.Raised_Id));
 
-      --  Generate:
-      --    Get_Current_Excep.all.all
+      if Exception_Extra_Info
+        or else (For_Library and not Restricted_Profile)
+      then
+         if Exception_Extra_Info then
 
-      Actuals := New_List (
-        Make_Explicit_Dereference (Data.Loc,
-          Prefix =>
-            Make_Function_Call (Data.Loc,
-              Name =>
-                Make_Explicit_Dereference (Data.Loc,
-                  Prefix =>
-                    New_Reference_To (RTE (RE_Get_Current_Excep),
-                                      Data.Loc)))));
+            --  Generate:
 
-      if For_Library and then not Restricted_Profile then
-         Proc_To_Call := RTE (RE_Save_Library_Occurrence);
+            --    Get_Current_Excep.all
+
+            Except :=
+              Make_Function_Call (Data.Loc,
+                Name =>
+                  Make_Explicit_Dereference (Data.Loc,
+                    Prefix =>
+                      New_Reference_To
+                        (RTE (RE_Get_Current_Excep), Data.Loc)));
+
+         else
+            --  Generate:
+
+            --    null
+
+            Except := Make_Null (Data.Loc);
+         end if;
+
+         if For_Library and then not Restricted_Profile then
+            Proc_To_Call := RTE (RE_Save_Library_Occurrence);
+            Actuals := New_List (Except);
+
+         else
+            Proc_To_Call := RTE (RE_Save_Occurrence);
+
+            --  The dereference occurs only when Exception_Extra_Info is true,
+            --  and therefore Except is not null.
+
+            Actuals :=
+              New_List (
+                New_Reference_To (Data.E_Id, Data.Loc),
+                Make_Explicit_Dereference (Data.Loc, Except));
+         end if;
+
+         --  Generate:
+
+         --    when others =>
+         --       if not Raised_Id then
+         --          Raised_Id := True;
+
+         --          Save_Occurrence (E_Id, Get_Current_Excep.all.all);
+         --            or
+         --          Save_Library_Occurrence (Get_Current_Excep.all);
+         --       end if;
+
+         Stmts :=
+           New_List (
+             Make_If_Statement (Data.Loc,
+               Condition       =>
+                 Make_Op_Not (Data.Loc,
+                   Right_Opnd => New_Reference_To (Data.Raised_Id, Data.Loc)),
+
+               Then_Statements => New_List (
+                 Make_Assignment_Statement (Data.Loc,
+                   Name       => New_Reference_To (Data.Raised_Id, Data.Loc),
+                   Expression => New_Reference_To (Standard_True, Data.Loc)),
+
+                 Make_Procedure_Call_Statement (Data.Loc,
+                   Name                   =>
+                     New_Reference_To (Proc_To_Call, Data.Loc),
+                   Parameter_Associations => Actuals))));
 
       else
-         Proc_To_Call := RTE (RE_Save_Occurrence);
-         Prepend_To (Actuals, New_Reference_To (Data.E_Id, Data.Loc));
+         --  Generate:
+
+         --    Raised_Id := True;
+
+         Stmts := New_List (
+           Make_Assignment_Statement (Data.Loc,
+             Name       => New_Reference_To (Data.Raised_Id, Data.Loc),
+             Expression => New_Reference_To (Standard_True, Data.Loc)));
       end if;
 
       --  Generate:
-      --    when others =>
-      --       if not Raised_Id then
-      --          Raised_Id := True;
 
-      --          Save_Occurrence (E_Id, Get_Current_Excep.all.all);
-      --            or
-      --          Save_Library_Occurrence (Get_Current_Excep.all.all);
-      --       end if;
+      --    when others =>
 
       return
         Make_Exception_Handler (Data.Loc,
-          Exception_Choices =>
-            New_List (Make_Others_Choice (Data.Loc)),
-          Statements => New_List (
-            Make_If_Statement (Data.Loc,
-              Condition       =>
-                Make_Op_Not (Data.Loc,
-                  Right_Opnd => New_Reference_To (Data.Raised_Id, Data.Loc)),
-
-              Then_Statements => New_List (
-                Make_Assignment_Statement (Data.Loc,
-                  Name       => New_Reference_To (Data.Raised_Id, Data.Loc),
-                  Expression => New_Reference_To (Standard_True, Data.Loc)),
-
-                Make_Procedure_Call_Statement (Data.Loc,
-                  Name                   =>
-                    New_Reference_To (Proc_To_Call, Data.Loc),
-                  Parameter_Associations => Actuals)))));
+          Exception_Choices => New_List (Make_Others_Choice (Data.Loc)),
+          Statements        => Stmts);
    end Build_Exception_Handler;
 
    -------------------------------
@@ -2995,8 +3034,6 @@ package body Exp_Ch7 is
          return;
       end if;
 
-      Data.Abort_Id  := Make_Temporary (Loc, 'A');
-      Data.E_Id      := Make_Temporary (Loc, 'E');
       Data.Raised_Id := Make_Temporary (Loc, 'R');
 
       --  In certain scenarios, finalization can be triggered by an abort. If
@@ -3016,37 +3053,49 @@ package body Exp_Ch7 is
         and then VM_Target = No_VM
         and then not For_Package
       then
+         Data.Abort_Id  := Make_Temporary (Loc, 'A');
+
          A_Expr := New_Reference_To (RTE (RE_Triggered_By_Abort), Loc);
 
-      --  No abort, .NET/JVM or library-level finalizers
+         --  Generate:
+
+         --    Abort_Id : constant Boolean := <A_Expr>;
+
+         Append_To (Decls,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Data.Abort_Id,
+             Constant_Present    => True,
+             Object_Definition   => New_Reference_To (Standard_Boolean, Loc),
+             Expression          => A_Expr));
 
       else
-         A_Expr := New_Reference_To (Standard_False, Loc);
+         --  No abort, .NET/JVM or library-level finalizers
+
+         Data.Abort_Id  := Empty;
+      end if;
+
+      if Exception_Extra_Info then
+         Data.E_Id      := Make_Temporary (Loc, 'E');
+
+         --  Generate:
+
+         --    E_Id : Exception_Occurrence;
+
+         E_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Data.E_Id,
+             Object_Definition   =>
+               New_Reference_To (RTE (RE_Exception_Occurrence), Loc));
+         Set_No_Initialization (E_Decl);
+
+         Append_To (Decls, E_Decl);
+
+      else
+         Data.E_Id      := Empty;
       end if;
 
       --  Generate:
-      --    Abort_Id : constant Boolean := <A_Expr>;
 
-      Append_To (Decls,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Data.Abort_Id,
-          Constant_Present    => True,
-          Object_Definition   => New_Reference_To (Standard_Boolean, Loc),
-          Expression          => A_Expr));
-
-      --  Generate:
-      --    E_Id : Exception_Occurrence;
-
-      E_Decl :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Data.E_Id,
-          Object_Definition   =>
-            New_Reference_To (RTE (RE_Exception_Occurrence), Loc));
-      Set_No_Initialization (E_Decl);
-
-      Append_To (Decls, E_Decl);
-
-      --  Generate:
       --    Raised_Id : Boolean := False;
 
       Append_To (Decls,
@@ -3064,12 +3113,15 @@ package body Exp_Ch7 is
      (Data : Finalization_Exception_Data) return Node_Id
    is
       Stmt : Node_Id;
+      Expr : Node_Id;
 
    begin
       --  Standard run-time and .NET/JVM targets use the specialized routine
       --  Raise_From_Controlled_Operation.
 
-      if RTE_Available (RE_Raise_From_Controlled_Operation) then
+      if Exception_Extra_Info
+        and then RTE_Available (RE_Raise_From_Controlled_Operation)
+      then
          Stmt :=
            Make_Procedure_Call_Statement (Data.Loc,
               Name                   =>
@@ -3089,6 +3141,23 @@ package body Exp_Ch7 is
       end if;
 
       --  Generate:
+
+      --    Raised_Id and then not Abort_Id
+      --      <or>
+      --    Raised_Id
+
+      Expr := New_Reference_To (Data.Raised_Id, Data.Loc);
+
+      if Present (Data.Abort_Id) then
+         Expr := Make_And_Then (Data.Loc,
+           Left_Opnd  => Expr,
+           Right_Opnd =>
+             Make_Op_Not (Data.Loc,
+               Right_Opnd => New_Reference_To (Data.Abort_Id, Data.Loc)));
+      end if;
+
+      --  Generate:
+
       --    if Raised_Id and then not Abort_Id then
       --       Raise_From_Controlled_Operation (E_Id);
       --         <or>
@@ -3097,13 +3166,7 @@ package body Exp_Ch7 is
 
       return
         Make_If_Statement (Data.Loc,
-          Condition       =>
-            Make_And_Then (Data.Loc,
-              Left_Opnd  => New_Reference_To (Data.Raised_Id, Data.Loc),
-              Right_Opnd =>
-                Make_Op_Not (Data.Loc,
-                  Right_Opnd => New_Reference_To (Data.Abort_Id, Data.Loc))),
-
+          Condition       => Expr,
           Then_Statements => New_List (Stmt));
    end Build_Raise_Statement;
 
@@ -4602,6 +4665,7 @@ package body Exp_Ch7 is
    begin
       return
         Is_Protected_Type (T)
+          and then not Uses_Lock_Free (T)
           and then not Has_Entries (T)
           and then Is_RTE (Find_Protection_Type (T), RE_Protection);
    end Is_Simple_Protected_Type;

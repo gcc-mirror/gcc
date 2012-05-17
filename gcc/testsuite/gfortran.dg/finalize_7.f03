@@ -55,5 +55,3 @@ END PROGRAM finalizer
 
 ! TODO: Remove this once finalization is implemented.
 ! { dg-excess-errors "not yet implemented" }
-
-! { dg-final { cleanup-modules "final_type" } }

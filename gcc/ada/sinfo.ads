@@ -1111,6 +1111,12 @@ package Sinfo is
    --    handler is deleted during optimization. For further details on why
    --    this is required, see Exp_Ch11.Remove_Handler_Entries.
 
+   --  Has_Dereference_Action (Flag13-Sem)
+   --    This flag is present in N_Explicit_Dereference nodes. It is set to
+   --    indicate that the expansion has aready produced a call to primitive
+   --    Dereference of a System.Checked_Pools.Checked_Pool implementation.
+   --    Such dereference actions are produced for debugging purposes.
+
    --  Has_Dynamic_Length_Check (Flag10-Sem)
    --    This flag is present in all expression nodes. It is set to indicate
    --    that one of the routines in unit Checks has generated a length check
@@ -3192,6 +3198,7 @@ package Sinfo is
       --  Prefix (Node3)
       --  Actual_Designated_Subtype (Node4-Sem)
       --  Atomic_Sync_Required (Flag14-Sem)
+      --  Has_Dereference_Action (Flag13-Sem)
       --  plus fields for expression
 
       -------------------------------
@@ -8524,6 +8531,9 @@ package Sinfo is
    function Has_Created_Identifier
      (N : Node_Id) return Boolean;    -- Flag15
 
+   function Has_Dereference_Action
+     (N : Node_Id) return Boolean;    -- Flag13
+
    function Has_Dynamic_Length_Check
      (N : Node_Id) return Boolean;    -- Flag10
 
@@ -9507,6 +9517,9 @@ package Sinfo is
 
    procedure Set_Has_Created_Identifier
      (N : Node_Id; Val : Boolean := True);    -- Flag15
+
+   procedure Set_Has_Dereference_Action
+     (N : Node_Id; Val : Boolean := True);    -- Flag13
 
    procedure Set_Has_Dynamic_Length_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag10
@@ -11947,6 +11960,7 @@ package Sinfo is
    pragma Inline (Handled_Statement_Sequence);
    pragma Inline (Handler_List_Entry);
    pragma Inline (Has_Created_Identifier);
+   pragma Inline (Has_Dereference_Action);
    pragma Inline (Has_Dynamic_Length_Check);
    pragma Inline (Has_Dynamic_Range_Check);
    pragma Inline (Has_Init_Expression);
@@ -12272,6 +12286,7 @@ package Sinfo is
    pragma Inline (Set_Handled_Statement_Sequence);
    pragma Inline (Set_Handler_List_Entry);
    pragma Inline (Set_Has_Created_Identifier);
+   pragma Inline (Set_Has_Dereference_Action);
    pragma Inline (Set_Has_Dynamic_Length_Check);
    pragma Inline (Set_Has_Init_Expression);
    pragma Inline (Set_Has_Local_Raise);

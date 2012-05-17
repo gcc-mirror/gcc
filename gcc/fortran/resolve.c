@@ -10726,7 +10726,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
      actual length; (ii) To declare a named constant; or (iii) External
      function - but length must be declared in calling scoping unit.  */
   if (sym->attr.function
-      && sym->ts.type == BT_CHARACTER
+      && sym->ts.type == BT_CHARACTER && !sym->ts.deferred
       && sym->ts.u.cl && sym->ts.u.cl->length == NULL)
     {
       if ((sym->as && sym->as->rank) || (sym->attr.pointer)
@@ -11665,7 +11665,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
   for ( ; c != NULL; c = c->next)
     {
       /* See PRs 51550, 47545, 48654, 49050, 51075 - and 45170.  */
-      if (c->ts.type == BT_CHARACTER && c->ts.deferred)
+      if (c->ts.type == BT_CHARACTER && c->ts.deferred && !c->attr.function)
 	{
 	  gfc_error ("Deferred-length character component '%s' at %L is not "
 		     "yet supported", c->name, &c->loc);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,14 +162,18 @@ package body Exception_Traces is
    -----------------------------------
 
    procedure Unhandled_Exception_Terminate is
-      Excep : constant EOA := Save_Occurrence (Get_Current_Excep.all.all);
+      Excep : Exception_Occurrence;
       --  This occurrence will be used to display a message after finalization.
       --  It is necessary to save a copy here, or else the designated value
       --  could be overwritten if an exception is raised during finalization
-      --  (even if that exception is caught).
+      --  (even if that exception is caught). The occurrence is saved on the
+      --  stack to avoid dynamic allocation (if this exception is due to lack
+      --  of space in the heap, we therefore avoid a second failure). We assume
+      --  that there is enough room on the stack however.
 
    begin
-      Last_Chance_Handler (Excep.all);
+      Save_Occurrence (Excep, Get_Current_Excep.all.all);
+      Last_Chance_Handler (Excep);
    end Unhandled_Exception_Terminate;
 
    ------------------------------------

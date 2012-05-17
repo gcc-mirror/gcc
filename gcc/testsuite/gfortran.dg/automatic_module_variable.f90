@@ -14,5 +14,3 @@ contains
     init = x
   end function init
 end module sd
-
-! { dg-final { cleanup-modules "sd" } }

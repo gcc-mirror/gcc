@@ -96,5 +96,3 @@ program test
   use sparse_matrices_fields
   use global_numbering
 end program test
-
-! { dg-final { cleanup-modules "sparse_tools sparse_matrices_fields global_numbering" } }

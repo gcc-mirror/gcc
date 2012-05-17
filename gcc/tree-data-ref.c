@@ -736,7 +736,7 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
   if (in_loop)
     {
       if (!simple_iv (loop, loop_containing_stmt (stmt), base, &base_iv,
-                      false))
+                      nest ? true : false))
         {
           if (nest)
             {
@@ -773,7 +773,8 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
           offset_iv.step = ssize_int (0);
         }
       else if (!simple_iv (loop, loop_containing_stmt (stmt),
-                           poffset, &offset_iv, false))
+                           poffset, &offset_iv,
+			   nest ? true : false))
         {
           if (nest)
             {

@@ -181,4 +181,3 @@ contains
          & abort
   end subroutine checku
 end program main
-! { dg-final { cleanup-modules "m" } }

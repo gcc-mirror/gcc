@@ -18,5 +18,3 @@ end module bidon
  integer,intent(in) :: nspden 
  
  end subroutine nonlinear
-
-! { dg-final { cleanup-modules "bidon" } }

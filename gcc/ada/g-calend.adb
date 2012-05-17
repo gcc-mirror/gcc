@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2010, AdaCore                     --
+--                     Copyright (C) 1999-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -188,6 +188,61 @@ package body GNAT.Calendar is
       Second     := Second_Number (Secs mod 60);
    end Split;
 
+   ---------------------
+   -- Split_At_Locale --
+   ---------------------
+
+   procedure Split_At_Locale
+     (Date       : Time;
+      Year       : out Year_Number;
+      Month      : out Month_Number;
+      Day        : out Day_Number;
+      Hour       : out Hour_Number;
+      Minute     : out Minute_Number;
+      Second     : out Second_Number;
+      Sub_Second : out Second_Duration)
+   is
+      procedure Ada_Calendar_Split
+        (Date        : Time;
+         Year        : out Year_Number;
+         Month       : out Month_Number;
+         Day         : out Day_Number;
+         Day_Secs    : out Day_Duration;
+         Hour        : out Integer;
+         Minute      : out Integer;
+         Second      : out Integer;
+         Sub_Sec     : out Duration;
+         Leap_Sec    : out Boolean;
+         Use_TZ      : Boolean;
+         Is_Historic : Boolean;
+         Time_Zone   : Long_Integer);
+      pragma Import (Ada, Ada_Calendar_Split, "__gnat_split");
+
+      Ds : Day_Duration;
+      Le : Boolean;
+
+      pragma Unreferenced (Ds, Le);
+
+   begin
+      --  Even though the input time zone is UTC (0), the flag Use_TZ will
+      --  ensure that Split picks up the local time zone.
+
+      Ada_Calendar_Split
+        (Date        => Date,
+         Year        => Year,
+         Month       => Month,
+         Day         => Day,
+         Day_Secs    => Ds,
+         Hour        => Hour,
+         Minute      => Minute,
+         Second      => Second,
+         Sub_Sec     => Sub_Second,
+         Leap_Sec    => Le,
+         Use_TZ      => False,
+         Is_Historic => False,
+         Time_Zone   => 0);
+   end Split_At_Locale;
+
    ----------------
    -- Sub_Second --
    ----------------
@@ -219,7 +274,6 @@ package body GNAT.Calendar is
       Second     : Second_Number;
       Sub_Second : Second_Duration := 0.0) return Time
    is
-
       Day_Secs : constant Day_Duration :=
                    Day_Duration (Hour   * 3_600) +
                    Day_Duration (Minute *    60) +
@@ -228,6 +282,56 @@ package body GNAT.Calendar is
    begin
       return Time_Of (Year, Month, Day, Day_Secs);
    end Time_Of;
+
+   -----------------------
+   -- Time_Of_At_Locale --
+   -----------------------
+
+   function Time_Of_At_Locale
+     (Year       : Year_Number;
+      Month      : Month_Number;
+      Day        : Day_Number;
+      Hour       : Hour_Number;
+      Minute     : Minute_Number;
+      Second     : Second_Number;
+      Sub_Second : Second_Duration := 0.0) return Time
+   is
+      function Ada_Calendar_Time_Of
+        (Year         : Year_Number;
+         Month        : Month_Number;
+         Day          : Day_Number;
+         Day_Secs     : Day_Duration;
+         Hour         : Integer;
+         Minute       : Integer;
+         Second       : Integer;
+         Sub_Sec      : Duration;
+         Leap_Sec     : Boolean;
+         Use_Day_Secs : Boolean;
+         Use_TZ       : Boolean;
+         Is_Historic  : Boolean;
+         Time_Zone    : Long_Integer) return Time;
+      pragma Import (Ada, Ada_Calendar_Time_Of, "__gnat_time_of");
+
+   begin
+      --  Even though the input time zone is UTC (0), the flag Use_TZ will
+      --  ensure that Split picks up the local time zone.
+
+      return
+        Ada_Calendar_Time_Of
+          (Year         => Year,
+           Month        => Month,
+           Day          => Day,
+           Day_Secs     => 0.0,
+           Hour         => Hour,
+           Minute       => Minute,
+           Second       => Second,
+           Sub_Sec      => Sub_Second,
+           Leap_Sec     => False,
+           Use_Day_Secs => False,
+           Use_TZ       => False,
+           Is_Historic  => False,
+           Time_Zone    => 0);
+   end Time_Of_At_Locale;
 
    -----------------
    -- To_Duration --

@@ -30,6 +30,7 @@ gofiles=""
 pkgfiles=""
 loop=true
 keep=false
+pkgpath=
 prefix=
 dejagnu=no
 GOARCH=""
@@ -54,6 +55,15 @@ while $loop; do
 		;;
 	x--basedir=*)
 		basedir=`echo $1 | sed -e 's/^--basedir=//'`
+		shift
+		;;
+	x--pkgpath)
+		pkgpath=$2
+		shift
+		shift
+		;;
+	x--pkgpath=*)
+		pkgpath=`echo $1 | sed -e 's/^--pkgpath=//'`
 		shift
 		;;
 	x--prefix)
@@ -310,23 +320,28 @@ set -e
 
 package=`echo ${srcdir} | sed -e 's|^.*libgo/go/||'`
 
+pkgpatharg=
+xpkgpatharg=
 prefixarg=
-if test -n "$prefix"; then
+if test -n "$pkgpath"; then
+	pkgpatharg="-fgo-pkgpath=$pkgpath"
+	xpkgpatharg="-fgo-pkgpath=${pkgpath}_test"
+elif test -n "$prefix"; then
 	prefixarg="-fgo-prefix=$prefix"
 fi
 
 if test "$trace" = "true"; then
-  echo $GC -g $prefixarg -c -I . -fno-toplevel-reorder -o _gotest_.o $gofiles $pkgbasefiles
+  echo $GC -g $pkgpatharg $prefixarg -c -I . -fno-toplevel-reorder -o _gotest_.o $gofiles $pkgbasefiles
 fi
-$GC -g $prefixarg -c -I . -fno-toplevel-reorder -o _gotest_.o $gofiles $pkgbasefiles
+$GC -g $pkgpatharg $prefixarg -c -I . -fno-toplevel-reorder -o _gotest_.o $gofiles $pkgbasefiles
 
 if $havex; then
 	mkdir -p `dirname $package`
 	cp _gotest_.o `dirname $package`/lib`basename $package`.a
 	if test "$trace" = "true"; then
-	    echo $GC -g -c -I . -fno-toplevel-reorder -o $xofile $xgofiles
+	    echo $GC -g $xpkgpatharg -c -I . -fno-toplevel-reorder -o $xofile $xgofiles
 	fi
-	$GC -g -c -I . -fno-toplevel-reorder -o $xofile $xgofiles
+	$GC -g $xpkgpatharg -c -I . -fno-toplevel-reorder -o $xofile $xgofiles
 fi
 
 # They all compile; now generate the code to call them.
@@ -343,24 +358,26 @@ localname() {
 	ppc*) text="D" ;;
 	esac
 
+	symtogo='sed -e s/_test/XXXtest/ -e s/.*_\([^_]*\.\)/\1/ -e s/XXXtest/_test/'
+
 	# test functions are named TestFoo
 	# the grep -v eliminates methods and other special names
 	# that have multiple dots.
 	pattern='Test([^a-z].*)?'
 	# The -p option tells GNU nm not to sort.
 	# The -v option tells Solaris nm to sort by value.
-	tests=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
+	tests=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | $symtogo)
 	if [ "x$tests" = x ]; then
 		echo 'gotest: warning: no tests matching '$pattern in _gotest_.o $xofile 1>&2
 		exit 2
 	fi
 	# benchmarks are named BenchmarkFoo.
 	pattern='Benchmark([^a-z].*)?'
-	benchmarks=$($NM -p -v _gotest_.o $xofile | egrep " $test .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
+	benchmarks=$($NM -p -v _gotest_.o $xofile | egrep " $test .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | $symtogo)
 
 	# examples are named ExampleFoo
 	pattern='Example([^a-z].*)?'
-	examples=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
+	examples=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | $symtogo)
 
 	# package spec
 	echo 'package main'

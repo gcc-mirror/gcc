@@ -23,5 +23,3 @@ contains
         find_x => null()
     end function find_x
 end module class_t
-
-! { dg-final { cleanup-modules "class_t" } }

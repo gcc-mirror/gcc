@@ -77,5 +77,3 @@ contains
     endwhere
   end subroutine test_where_char2
 end program test 
-! { dg-final { cleanup-modules "global" } }
-

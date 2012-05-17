@@ -77,4 +77,3 @@ module data_types
     Integer(kindInt), dimension(:), pointer :: subset
   end type GroupDefLL
 end module data_types
-! { dg-final { cleanup-modules "data_types" } }

@@ -62,5 +62,3 @@ PROGRAM main
 
   CALL test (1)
 END PROGRAM main
-
-! { dg-final { cleanup-modules "m" } }

@@ -452,6 +452,7 @@ package body Einfo is
    --    Is_Ada_2005_Only                Flag185
    --    Is_Interface                    Flag186
    --    Has_Constrained_Partial_View    Flag187
+   --    Uses_Lock_Free                  Flag188
    --    Is_Pure_Unit_Access_Type        Flag189
    --    Has_Specified_Stream_Input      Flag190
 
@@ -525,7 +526,6 @@ package body Einfo is
    --    Has_Anonymous_Master            Flag253
    --    Is_Implementation_Defined       Flag254
 
-   --    (unused)                        Flag188
    --    (unused)                        Flag201
 
    -----------------------
@@ -2793,6 +2793,12 @@ package body Einfo is
    begin
       return Flag222 (Id);
    end Used_As_Generic_Actual;
+
+   function Uses_Lock_Free (Id : E) return B is
+   begin
+      pragma Assert (Is_Protected_Type (Id));
+      return Flag188 (Id);
+   end Uses_Lock_Free;
 
    function Uses_Sec_Stack (Id : E) return B is
    begin
@@ -5358,15 +5364,21 @@ package body Einfo is
       Set_Node16 (Id, V);
    end Set_Unset_Reference;
 
-   procedure Set_Uses_Sec_Stack (Id : E; V : B := True) is
-   begin
-      Set_Flag95 (Id, V);
-   end Set_Uses_Sec_Stack;
-
    procedure Set_Used_As_Generic_Actual (Id : E; V : B := True) is
    begin
       Set_Flag222 (Id, V);
    end Set_Used_As_Generic_Actual;
+
+   procedure Set_Uses_Lock_Free (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Protected_Type);
+      Set_Flag188 (Id, V);
+   end Set_Uses_Lock_Free;
+
+   procedure Set_Uses_Sec_Stack (Id : E; V : B := True) is
+   begin
+      Set_Flag95 (Id, V);
+   end Set_Uses_Sec_Stack;
 
    procedure Set_Warnings_Off (Id : E; V : B := True) is
    begin

@@ -940,8 +940,6 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
   tree t;
   tree type = TREE_TYPE (arg1);
   bool uns = TYPE_UNSIGNED (type);
-  bool is_sizetype
-    = (TREE_CODE (type) == INTEGER_TYPE && TYPE_IS_SIZETYPE (type));
   bool overflow = false;
 
   op1 = tree_to_double_int (arg1);
@@ -1077,7 +1075,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
     }
 
   t = force_fit_type_double (TREE_TYPE (arg1), res, overflowable,
-			     ((!uns || is_sizetype) && overflow)
+			     (!uns && overflow)
 			     | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2));
 
   return t;
@@ -5639,8 +5637,6 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  /* ... and has wrapping overflow, and its type is smaller
 	     than ctype, then we cannot pass through as widening.  */
 	  && ((TYPE_OVERFLOW_WRAPS (TREE_TYPE (op0))
-	       && ! (TREE_CODE (TREE_TYPE (op0)) == INTEGER_TYPE
-		     && TYPE_IS_SIZETYPE (TREE_TYPE (op0)))
 	       && (TYPE_PRECISION (ctype)
 	           > TYPE_PRECISION (TREE_TYPE (op0))))
 	      /* ... or this is a truncation (t is narrower than op0),
@@ -5818,7 +5814,6 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	 the operation since it will change the result if the original
 	 computation overflowed.  */
       if (TYPE_UNSIGNED (ctype)
-	  && ! (TREE_CODE (ctype) == INTEGER_TYPE && TYPE_IS_SIZETYPE (ctype))
 	  && ctype != type)
 	break;
 
@@ -5844,14 +5839,8 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	 (C * 8) % 4 since we know that's zero.  */
       if ((code == TRUNC_MOD_EXPR || code == CEIL_MOD_EXPR
 	   || code == FLOOR_MOD_EXPR || code == ROUND_MOD_EXPR)
-	  /* If the multiplication can overflow we cannot optimize this.
-	     ???  Until we can properly mark individual operations as
-	     not overflowing we need to treat sizetype special here as
-	     stor-layout relies on this opimization to make
-	     DECL_FIELD_BIT_OFFSET always a constant.  */
-	  && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (t))
-	      || (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
-		  && TYPE_IS_SIZETYPE (TREE_TYPE (t))))
+	  /* If the multiplication can overflow we cannot optimize this.  */
+	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (t))
 	  && TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST
 	  && integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c)))
 	{
@@ -5893,16 +5882,11 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 		     (tree_to_double_int (c),
 		      TYPE_PRECISION (ctype), TYPE_UNSIGNED (ctype)),
 		   false, &overflow_p);
-	  overflow_p = (((!TYPE_UNSIGNED (ctype)
-			  || (TREE_CODE (ctype) == INTEGER_TYPE
-			      && TYPE_IS_SIZETYPE (ctype)))
-			 && overflow_p)
+	  overflow_p = ((!TYPE_UNSIGNED (ctype) && overflow_p)
 			| TREE_OVERFLOW (c) | TREE_OVERFLOW (op1));
 	  if (!double_int_fits_to_tree_p (ctype, mul)
 	      && ((TYPE_UNSIGNED (ctype) && tcode != MULT_EXPR)
-		  || !TYPE_UNSIGNED (ctype)
-		  || (TREE_CODE (ctype) == INTEGER_TYPE
-		      && TYPE_IS_SIZETYPE (ctype))))
+		  || !TYPE_UNSIGNED (ctype)))
 	    overflow_p = 1;
 	  if (!overflow_p)
 	    return fold_build2 (tcode, ctype, fold_convert (ctype, op0),

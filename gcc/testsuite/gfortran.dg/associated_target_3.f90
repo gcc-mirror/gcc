@@ -31,5 +31,3 @@ contains
     if (.not. associated (a, b)) call abort()
   end subroutine cmpPtr
 end
-
-! { dg-final { cleanup-modules "m" } }

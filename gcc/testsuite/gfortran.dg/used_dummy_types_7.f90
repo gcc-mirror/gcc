@@ -42,4 +42,3 @@ INTERFACE
   END SUBROUTINE
 END INTERFACE
 END MODULE
-! { dg-final { cleanup-modules "atom types list" } }

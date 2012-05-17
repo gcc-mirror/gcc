@@ -10,5 +10,3 @@ module truc
   integer, parameter :: answer = 42
 contains
 end module truc
-
-! { dg-final { cleanup-modules "truc" } }

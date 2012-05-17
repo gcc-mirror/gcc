@@ -14,4 +14,3 @@ CONTAINS
       END SUBROUTINE sub2
   END SUBROUTINE sub1
 END MODULE ksbin2_aux_mod
-! { dg-final { cleanup-modules "ksbin2_aux_mod" } }

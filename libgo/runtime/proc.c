@@ -1300,7 +1300,7 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 /* For runtime package testing.  */
 
 void runtime_testing_entersyscall(void)
-  __asm__("libgo_runtime.runtime.entersyscall");
+  __asm__("runtime.entersyscall");
 
 void
 runtime_testing_entersyscall()
@@ -1309,7 +1309,7 @@ runtime_testing_entersyscall()
 }
 
 void runtime_testing_exitsyscall(void)
-  __asm__("libgo_runtime.runtime.exitsyscall");
+  __asm__("runtime.exitsyscall");
 
 void
 runtime_testing_exitsyscall()
@@ -1322,7 +1322,7 @@ __go_go(void (*fn)(void*), void* arg)
 {
 	byte *sp;
 	size_t spsize;
-	G * volatile newg;	// volatile to avoid longjmp warning
+	G *newg;
 
 	schedlock();
 
@@ -1363,19 +1363,26 @@ __go_go(void (*fn)(void*), void* arg)
 	if(sp == nil)
 		runtime_throw("nil g->stack0");
 
-	getcontext(&newg->context);
-	newg->context.uc_stack.ss_sp = sp;
+	{
+		// Avoid warnings about variables clobbered by
+		// longjmp.
+		byte * volatile vsp = sp;
+		size_t volatile vspsize = spsize;
+		G * volatile vnewg = newg;
+
+		getcontext(&vnewg->context);
+		vnewg->context.uc_stack.ss_sp = vsp;
 #ifdef MAKECONTEXT_STACK_TOP
-	newg->context.uc_stack.ss_sp += spsize;
+		vnewg->context.uc_stack.ss_sp += vspsize;
 #endif
-	newg->context.uc_stack.ss_size = spsize;
-	makecontext(&newg->context, kickoff, 0);
+		vnewg->context.uc_stack.ss_size = vspsize;
+		makecontext(&vnewg->context, kickoff, 0);
 
-	newprocreadylocked(newg);
-	schedunlock();
+		newprocreadylocked(vnewg);
+		schedunlock();
 
-	return newg;
-//printf(" goid=%d\n", newg->goid);
+		return vnewg;
+	}
 }
 
 // Put on gfree list.  Sched must be locked.
@@ -1416,7 +1423,7 @@ rundefer(void)
 	}
 }
 
-void runtime_Goexit (void) asm ("libgo_runtime.runtime.Goexit");
+void runtime_Goexit (void) asm ("runtime.Goexit");
 
 void
 runtime_Goexit(void)
@@ -1425,7 +1432,7 @@ runtime_Goexit(void)
 	runtime_goexit();
 }
 
-void runtime_Gosched (void) asm ("libgo_runtime.runtime.Gosched");
+void runtime_Gosched (void) asm ("runtime.Gosched");
 
 void
 runtime_Gosched(void)
@@ -1504,7 +1511,7 @@ runtime_lockedOSThread(void)
 // for testing of callbacks
 
 _Bool runtime_golockedOSThread(void)
-  asm("libgo_runtime.runtime.golockedOSThread");
+  asm("runtime.golockedOSThread");
 
 _Bool
 runtime_golockedOSThread(void)
@@ -1520,7 +1527,7 @@ runtime_mid()
 }
 
 int32 runtime_NumGoroutine (void)
-  __asm__ ("libgo_runtime.runtime.NumGoroutine");
+  __asm__ ("runtime.NumGoroutine");
 
 int32
 runtime_NumGoroutine()

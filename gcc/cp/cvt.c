@@ -42,7 +42,7 @@ static tree cp_convert_to_pointer (tree, tree);
 static tree convert_to_pointer_force (tree, tree);
 static tree build_type_conversion (tree, tree);
 static tree build_up_reference (tree, tree, int, tree);
-static void warn_ref_binding (tree, tree, tree);
+static void warn_ref_binding (location_t, tree, tree, tree);
 
 /* Change of width--truncation and extension of integers or reals--
    is represented with NOP_EXPR.  Proper functioning of many things
@@ -79,6 +79,8 @@ cp_convert_to_pointer (tree type, tree expr)
   tree intype = TREE_TYPE (expr);
   enum tree_code form;
   tree rval;
+  location_t loc = EXPR_LOC_OR_HERE (expr);
+
   if (intype == error_mark_node)
     return error_mark_node;
 
@@ -87,8 +89,8 @@ cp_convert_to_pointer (tree type, tree expr)
       intype = complete_type (intype);
       if (!COMPLETE_TYPE_P (intype))
 	{
-	  error ("can%'t convert from incomplete type %qT to %qT",
-		 intype, type);
+	  error_at (loc, "can%'t convert from incomplete type %qT to %qT",
+		    intype, type);
 	  return error_mark_node;
 	}
 
@@ -96,8 +98,8 @@ cp_convert_to_pointer (tree type, tree expr)
       if (rval)
 	{
 	  if (rval == error_mark_node)
-	    error ("conversion of %qE from %qT to %qT is ambiguous",
-		   expr, intype, type);
+	    error_at (loc, "conversion of %qE from %qT to %qT is ambiguous",
+		      expr, intype, type);
 	  return rval;
 	}
     }
@@ -166,14 +168,14 @@ cp_convert_to_pointer (tree type, tree expr)
 
       if (TYPE_PTRMEMFUNC_P (type))
 	{
-	  error ("cannot convert %qE from type %qT to type %qT",
-		 expr, intype, type);
+	  error_at (loc, "cannot convert %qE from type %qT to type %qT",
+		    expr, intype, type);
 	  return error_mark_node;
 	}
 
       return build_nop (type, expr);
     }
-  else if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
+  else if ((TYPE_PTRDATAMEM_P (type) && TYPE_PTRDATAMEM_P (intype))
 	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
     return convert_ptrmem (type, expr, /*allow_inverse_p=*/false,
 			   /*c_cast_p=*/false, tf_warning_or_error);
@@ -192,8 +194,8 @@ cp_convert_to_pointer (tree type, tree expr)
 						       tf_warning_or_error);
 	    }
 	}
-      error ("cannot convert %qE from type %qT to type %qT",
-	     expr, intype, type);
+      error_at (loc, "cannot convert %qE from type %qT to type %qT",
+		expr, intype, type);
       return error_mark_node;
     }
 
@@ -201,14 +203,14 @@ cp_convert_to_pointer (tree type, tree expr)
     {
       if (c_inhibit_evaluation_warnings == 0
 	  && !NULLPTR_TYPE_P (TREE_TYPE (expr)))
-	warning (OPT_Wzero_as_null_pointer_constant,
-		 "zero as null pointer constant");
+	warning_at (loc, OPT_Wzero_as_null_pointer_constant,
+		    "zero as null pointer constant");
 
       if (TYPE_PTRMEMFUNC_P (type))
 	return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0,
 				 /*c_cast_p=*/false, tf_warning_or_error);
 
-      if (TYPE_PTRMEM_P (type))
+      if (TYPE_PTRDATAMEM_P (type))
 	{
 	  /* A NULL pointer-to-member is represented by -1, not by
 	     zero.  */
@@ -219,9 +221,9 @@ cp_convert_to_pointer (tree type, tree expr)
 
       return expr;
     }
-  else if (TYPE_PTR_TO_MEMBER_P (type) && INTEGRAL_CODE_P (form))
+  else if (TYPE_PTRMEM_P (type) && INTEGRAL_CODE_P (form))
     {
-      error ("invalid conversion from %qT to %qT", intype, type);
+      error_at (loc, "invalid conversion from %qT to %qT", intype, type);
       return error_mark_node;
     }
 
@@ -242,8 +244,8 @@ cp_convert_to_pointer (tree type, tree expr)
   if (type_unknown_p (expr))
     return instantiate_type (type, expr, tf_warning_or_error);
 
-  error ("cannot convert %qE from type %qT to type %qT",
-	 expr, intype, type);
+  error_at (loc, "cannot convert %qE from type %qT to type %qT",
+	    expr, intype, type);
   return error_mark_node;
 }
 
@@ -367,7 +369,7 @@ build_up_reference (tree type, tree arg, int flags, tree decl)
    non-volatile const type.  */
 
 static void
-warn_ref_binding (tree reftype, tree intype, tree decl)
+warn_ref_binding (location_t loc, tree reftype, tree intype, tree decl)
 {
   tree ttl = TREE_TYPE (reftype);
 
@@ -388,7 +390,7 @@ warn_ref_binding (tree reftype, tree intype, tree decl)
 	msg = G_("conversion to non-const reference type %q#T from "
 	         "rvalue of type %qT");
 
-      permerror (input_location, msg, reftype, intype);
+      permerror (loc, msg, reftype, intype);
     }
 }
 
@@ -410,6 +412,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
   bool can_convert_intype_to_type;
   tsubst_flags_t complain = ((flags & LOOKUP_COMPLAIN)
 			     ? tf_warning_or_error : tf_none);
+  location_t loc = EXPR_LOC_OR_HERE (expr);
 
   if (TREE_CODE (type) == FUNCTION_TYPE
       && TREE_TYPE (expr) == unknown_type_node)
@@ -455,11 +458,11 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 	  tree ttr = lvalue_type (expr);
 
 	  if (! real_lvalue_p (expr))
-	    warn_ref_binding (reftype, intype, decl);
+	    warn_ref_binding (loc, reftype, intype, decl);
 
 	  if (! (convtype & CONV_CONST)
 		   && !at_least_as_qualified_p (ttl, ttr))
-	    permerror (input_location, "conversion from %qT to %qT discards qualifiers",
+	    permerror (loc, "conversion from %qT to %qT discards qualifiers",
 		       ttr, reftype);
 	}
 
@@ -477,8 +480,8 @@ convert_to_reference (tree reftype, tree expr, int convtype,
       if (TREE_CODE (intype) == POINTER_TYPE
 	  && (comptypes (TREE_TYPE (intype), type,
 			 COMPARE_BASE | COMPARE_DERIVED)))
-	warning (0, "casting %qT to %qT does not dereference pointer",
-		 intype, reftype);
+	warning_at (loc, 0, "casting %qT to %qT does not dereference pointer",
+		    intype, reftype);
 
       rval = cp_build_addr_expr (expr, tf_warning_or_error);
       if (rval != error_mark_node)
@@ -494,7 +497,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
                                          tf_warning_or_error);
       if (rval == NULL_TREE || rval == error_mark_node)
 	return rval;
-      warn_ref_binding (reftype, intype, decl);
+      warn_ref_binding (loc, reftype, intype, decl);
       rval = build_up_reference (reftype, rval, flags, decl);
     }
 
@@ -505,7 +508,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
     }
 
   if (flags & LOOKUP_COMPLAIN)
-    error ("cannot convert type %qT to type %qT", intype, reftype);
+    error_at (loc, "cannot convert type %qT to type %qT", intype, reftype);
 
   return error_mark_node;
 }
@@ -633,6 +636,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
   enum tree_code code = TREE_CODE (type);
   const char *invalid_conv_diag;
   tree e1;
+  location_t loc = EXPR_LOC_OR_HERE (expr);
 
   if (error_operand_p (e) || type == error_mark_node)
     return error_mark_node;
@@ -711,8 +715,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	      || TREE_CODE (intype) == POINTER_TYPE)
 	    {
 	      if (flags & LOOKUP_COMPLAIN)
-		permerror (input_location, "conversion from %q#T to %q#T", intype, type);
-
+		permerror (loc, "conversion from %q#T to %q#T", intype, type);
 	      if (!flag_permissive)
 		return error_mark_node;
 	    }
@@ -726,10 +729,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	     unspecified.  */
 	  if (TREE_CODE (expr) == INTEGER_CST
 	      && !int_fits_type_p (expr, ENUM_UNDERLYING_TYPE (type)))
-	    warning (OPT_Wconversion, 
-		     "the result of the conversion is unspecified because "
-		     "%qE is outside the range of type %qT",
-		     expr, type);
+	    warning_at (loc, OPT_Wconversion, 
+			"the result of the conversion is unspecified because "
+			"%qE is outside the range of type %qT",
+			expr, type);
 	}
       if (MAYBE_CLASS_TYPE_P (intype))
 	{
@@ -738,11 +741,18 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	  if (rval)
 	    return rval;
 	  if (flags & LOOKUP_COMPLAIN)
-	    error ("%q#T used where a %qT was expected", intype, type);
+	    error_at (loc, "%q#T used where a %qT was expected", intype, type);
 	  return error_mark_node;
 	}
       if (code == BOOLEAN_TYPE)
 	{
+	  if (TREE_CODE (intype) == VOID_TYPE)
+	    {
+	      error_at (loc, "could not convert %qE from %<void%> to %<bool%>",
+			expr);
+	      return error_mark_node;
+	    }
+
 	  /* We can't implicitly convert a scoped enum to bool, so convert
 	     to the underlying type first.  */
 	  if (SCOPED_ENUM_P (intype) && (convtype & CONV_STATIC))
@@ -757,7 +767,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
     }
   if (NULLPTR_TYPE_P (type) && e && null_ptr_cst_p (e))
     return nullptr_node;
-  if (POINTER_TYPE_P (type) || TYPE_PTR_TO_MEMBER_P (type))
+  if (POINTER_TYPE_P (type) || TYPE_PTRMEM_P (type))
     return fold_if_not_in_template (cp_convert_to_pointer (type, e));
   if (code == VECTOR_TYPE)
     {
@@ -769,7 +779,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	  if (ret_val)
 	    return ret_val;
 	  if (flags & LOOKUP_COMPLAIN)
-	    error ("%q#T used where a %qT was expected", in_vtype, type);
+	    error_at (loc, "%q#T used where a %qT was expected", in_vtype, type);
 	  return error_mark_node;
 	}
       return fold_if_not_in_template (convert_to_vector (type, e));
@@ -784,7 +794,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	    return rval;
 	  else
 	    if (flags & LOOKUP_COMPLAIN)
-	      error ("%q#T used where a floating point value was expected",
+	      error_at (loc, "%q#T used where a floating point value was expected",
 			TREE_TYPE (e));
 	}
       if (code == REAL_TYPE)
@@ -845,8 +855,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
       if (invalid_nonstatic_memfn_p (expr, tf_warning_or_error))
 	/* We displayed the error message.  */;
       else
-	error ("conversion from %qT to non-scalar type %qT requested",
-	       TREE_TYPE (expr), type);
+	error_at (loc, "conversion from %qT to non-scalar type %qT requested",
+		  TREE_TYPE (expr), type);
     }
   return error_mark_node;
 }
@@ -873,6 +883,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 tree
 convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 {
+  location_t loc = EXPR_LOC_OR_HERE (expr);
+
   if (expr == error_mark_node
       || TREE_TYPE (expr) == error_mark_node)
     return error_mark_node;
@@ -903,7 +915,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
   if (TREE_CODE (expr) == PSEUDO_DTOR_EXPR)
     {
       if (complain & tf_error)
-        error ("pseudo-destructor is not called");
+        error_at (loc, "pseudo-destructor is not called");
       return error_mark_node;
     }
   if (VOID_TYPE_P (TREE_TYPE (expr)))
@@ -980,35 +992,35 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	      switch (implicit)
 		{
 	      	  case ICV_CAST:
-		    warning (0, "conversion to void will not access "
+		    warning_at (loc, 0, "conversion to void will not access "
 				"object of incomplete type %qT", type);
 		    break;
 		  case ICV_SECOND_OF_COND:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 				"incomplete type %qT in second operand "
 				"of conditional expression", type);
 		    break;
 		  case ICV_THIRD_OF_COND:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 				"incomplete type %qT in third operand "
 				"of conditional expression", type);
 		    break;
 		  case ICV_RIGHT_OF_COMMA:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 				"incomplete type %qT in right operand of "
 				"comma operator", type);
 		    break;
 		  case ICV_LEFT_OF_COMMA:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 				"incomplete type %qT in left operand of "
 				"comma operator", type);
 		    break;
 		  case ICV_STATEMENT:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 				"incomplete type %qT in statement", type);
 		     break;
 		  case ICV_THIRD_IN_FOR:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 				"incomplete type %qT in for increment "
 				"expression", type);
 		    break;
@@ -1024,37 +1036,37 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	      switch (implicit)
 		{
 	      	  case ICV_CAST:
-		    warning (0, "conversion to void will not access "
+		    warning_at (loc, 0, "conversion to void will not access "
 				"object of type %qT", type);
 		    break;
 		  case ICV_SECOND_OF_COND:
-		    warning (0, "implicit dereference will not access object "
-				"of type %qT in second operand of "
+		    warning_at (loc, 0, "implicit dereference will not access "
+				"object of type %qT in second operand of "
 				"conditional expression", type);
 		    break;
 		  case ICV_THIRD_OF_COND:
-		    warning (0, "implicit dereference will not access object "
-		  	      	"of type %qT in third operand of "
+		    warning_at (loc, 0, "implicit dereference will not access "
+				"object of type %qT in third operand of "
 				"conditional expression", type);
 		    break;
 		  case ICV_RIGHT_OF_COMMA:
-		    warning (0, "implicit dereference will not access object "
-		    		"of type %qT in right operand of "
+		    warning_at (loc, 0, "implicit dereference will not access "
+				"object of type %qT in right operand of "
 				"comma operator", type);
 		    break;
 		  case ICV_LEFT_OF_COMMA:
-		    warning (0, "implicit dereference will not access object "
-		    		"of type %qT in left operand of comma operator",
-			     type);
+		    warning_at (loc, 0, "implicit dereference will not access "
+				"object of type %qT in left operand of comma "
+				"operator", type);
 		    break;
 		  case ICV_STATEMENT:
-		    warning (0, "implicit dereference will not access object "
-		     		"of type %qT in statement",  type);
+		    warning_at (loc, 0, "implicit dereference will not access "
+				"object of type %qT in statement",  type);
 		     break;
 		  case ICV_THIRD_IN_FOR:
-		    warning (0, "implicit dereference will not access object "
-		    		"of type %qT in for increment expression",
-			     type);
+		    warning_at (loc, 0, "implicit dereference will not access "
+				"object of type %qT in for increment expression",
+				type);
 		    break;
 		  default:
 		    gcc_unreachable ();
@@ -1066,37 +1078,37 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	      switch (implicit)
 		{
 	      	  case ICV_CAST:
-		    warning (0, "conversion to void will not access "
+		    warning_at (loc, 0, "conversion to void will not access "
 				"object of non-trivially-copyable type %qT",
-			     type);
+				type);
 		    break;
 		  case ICV_SECOND_OF_COND:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 				"non-trivially-copyable type %qT in second "
 				"operand of conditional expression", type);
 		    break;
 		  case ICV_THIRD_OF_COND:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 		  	      	"non-trivially-copyable type %qT in third "
 				"operand of conditional expression", type);
 		    break;
 		  case ICV_RIGHT_OF_COMMA:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 		    		"non-trivially-copyable type %qT in right "
 				"operand of comma operator", type);
 		    break;
 		  case ICV_LEFT_OF_COMMA:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 		    		"non-trivially-copyable type %qT in left "
 				"operand of comma operator", type);
 		    break;
 		  case ICV_STATEMENT:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 		     		"non-trivially-copyable type %qT in statement",
-			      type);
+				type);
 		     break;
 		  case ICV_THIRD_IN_FOR:
-		    warning (0, "indirection will not access object of "
+		    warning_at (loc, 0, "indirection will not access object of "
 		    		"non-trivially-copyable type %qT in for "
 				"increment expression", type);
 		    break;
@@ -1117,7 +1129,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
                 && (complain & tf_warning)
                 && !TREE_NO_WARNING (expr)
                 && !is_reference)
-              warning (OPT_Wunused_value, "value computed is not used");
+              warning_at (loc, OPT_Wunused_value, "value computed is not used");
             expr = TREE_OPERAND (expr, 0);
           }
 
@@ -1134,37 +1146,37 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	  switch (implicit)
 	    {
 	      case ICV_CAST:
-		warning (0, "conversion to void will not access "
+		warning_at (loc, 0, "conversion to void will not access "
 			    "object %qE of incomplete type %qT", expr, type);
 		break;
 	      case ICV_SECOND_OF_COND:
-	        warning (0, "variable %qE of incomplete type %qT will not "
-			    "be accessed in second operand of "
+	        warning_at (loc, 0, "variable %qE of incomplete type %qT will "
+			    "not be accessed in second operand of "
 			    "conditional expression", expr, type);
 		break;
 	      case ICV_THIRD_OF_COND:
-	        warning (0, "variable %qE of incomplete type %qT will not "
-			    "be accessed in third operand of "
+	        warning_at (loc, 0, "variable %qE of incomplete type %qT will "
+			    "not be accessed in third operand of "
 			    "conditional expression", expr, type);
 		break;
 	      case ICV_RIGHT_OF_COMMA:
-	        warning (0, "variable %qE of incomplete type %qT will not "
-			    "be accessed in right operand of comma operator",
-			 expr, type);
+	        warning_at (loc, 0, "variable %qE of incomplete type %qT will "
+			    "not be accessed in right operand of comma operator",
+			    expr, type);
 		break;
 	      case ICV_LEFT_OF_COMMA:
-	        warning (0, "variable %qE of incomplete type %qT will not "
-			    "be accessed in left operand of comma operator",
-			 expr, type);
+	        warning_at (loc, 0, "variable %qE of incomplete type %qT will "
+			    "not be accessed in left operand of comma operator",
+			    expr, type);
 		break;
 	      case ICV_STATEMENT:
-	        warning (0, "variable %qE of incomplete type %qT will not "
-		            "be accessed in statement", expr, type);
+	        warning_at (loc, 0, "variable %qE of incomplete type %qT will "
+			    "not be accessed in statement", expr, type);
 		break;
 	      case ICV_THIRD_IN_FOR:
-	        warning (0, "variable %qE of incomplete type %qT will not "
-			    "be accessed in for increment expression",
-		         expr, type);
+	        warning_at (loc, 0, "variable %qE of incomplete type %qT will "
+			    "not be accessed in for increment expression",
+			    expr, type);
 		break;
 	      default:
 	        gcc_unreachable ();
@@ -1211,32 +1223,32 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	  switch (implicit)
 	    {
 	      case ICV_CAST:
-		error ("conversion to void "
-		       "cannot resolve address of overloaded function");
+		error_at (loc, "conversion to void "
+			  "cannot resolve address of overloaded function");
 		break;
 	      case ICV_SECOND_OF_COND:
-		error ("second operand of conditional expression "
-		       "cannot resolve address of overloaded function");
+		error_at (loc, "second operand of conditional expression "
+			  "cannot resolve address of overloaded function");
 		break;
 	      case ICV_THIRD_OF_COND:
-		error ("third operand of conditional expression "
-		       "cannot resolve address of overloaded function");
+		error_at (loc, "third operand of conditional expression "
+			  "cannot resolve address of overloaded function");
 		break;
 	      case ICV_RIGHT_OF_COMMA:
-		error ("right operand of comma operator "
-		       "cannot resolve address of overloaded function");
+		error_at (loc, "right operand of comma operator "
+			  "cannot resolve address of overloaded function");
 		break;
 	      case ICV_LEFT_OF_COMMA:
-		error ("left operand of comma operator "
-		       "cannot resolve address of overloaded function");
+		error_at (loc, "left operand of comma operator "
+			  "cannot resolve address of overloaded function");
 		break;
 	      case ICV_STATEMENT:
-		error ("statement "
-		       "cannot resolve address of overloaded function");
+		error_at (loc, "statement "
+			  "cannot resolve address of overloaded function");
 		break;
 	      case ICV_THIRD_IN_FOR:
-		error ("for increment expression "
-		       "cannot resolve address of overloaded function");
+		error_at (loc, "for increment expression "
+			  "cannot resolve address of overloaded function");
 		break;
 	    }
 	else
@@ -1250,34 +1262,34 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	  switch (implicit)
 	    {
 	      case ICV_SECOND_OF_COND:
-	        warning (OPT_Waddress,
-			 "second operand of conditional expression "
-			 "is a reference, not call, to function %qE", expr);
+	        warning_at (loc, OPT_Waddress,
+			    "second operand of conditional expression "
+			    "is a reference, not call, to function %qE", expr);
 		break;
 	      case ICV_THIRD_OF_COND:
-	        warning (OPT_Waddress,
-			 "third operand of conditional expression "
-			 "is a reference, not call, to function %qE", expr);
+	        warning_at (loc, OPT_Waddress,
+			    "third operand of conditional expression "
+			    "is a reference, not call, to function %qE", expr);
 		break;
 	      case ICV_RIGHT_OF_COMMA:
-	        warning (OPT_Waddress,
-			 "right operand of comma operator "
-			 "is a reference, not call, to function %qE", expr);
+		warning_at (loc, OPT_Waddress,
+			    "right operand of comma operator "
+			    "is a reference, not call, to function %qE", expr);
 		break;
 	      case ICV_LEFT_OF_COMMA:
-	        warning (OPT_Waddress,
-			 "left operand of comma operator "
-			 "is a reference, not call, to function %qE", expr);
+	        warning_at (loc, OPT_Waddress,
+			    "left operand of comma operator "
+			    "is a reference, not call, to function %qE", expr);
 		break;
 	      case ICV_STATEMENT:
-	        warning (OPT_Waddress,
-			 "statement is a reference, not call, to function %qE",
-			 expr);
+	        warning_at (loc, OPT_Waddress,
+			    "statement is a reference, not call, to function %qE",
+			    expr);
 		break;
 	      case ICV_THIRD_IN_FOR:
-	        warning (OPT_Waddress,
-			 "for increment expression "
-			 "is a reference, not call, to function %qE", expr);
+	        warning_at (loc, OPT_Waddress,
+			    "for increment expression "
+			    "is a reference, not call, to function %qE", expr);
 		break;
 	      default:
 	        gcc_unreachable ();
@@ -1302,28 +1314,30 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	      switch (implicit)
 		{
 		  case ICV_SECOND_OF_COND:
-		    warning (OPT_Wunused_value,
-			     "second operand of conditional expression has no effect");
+		    warning_at (loc, OPT_Wunused_value,
+				"second operand of conditional expression "
+				"has no effect");
 		    break;
 		  case ICV_THIRD_OF_COND:
-		    warning (OPT_Wunused_value,
-		    	     "third operand of conditional expression has no effect");
+		    warning_at (loc, OPT_Wunused_value,
+				"third operand of conditional expression "
+				"has no effect");
 		    break;
 		  case ICV_RIGHT_OF_COMMA:
-		    warning (OPT_Wunused_value,
-		    	     "right operand of comma operator has no effect");
+		    warning_at (loc, OPT_Wunused_value,
+				"right operand of comma operator has no effect");
 		    break;
 		  case ICV_LEFT_OF_COMMA:
-		    warning (OPT_Wunused_value,
-		    	     "left operand of comma operator has no effect");
+		    warning_at (loc, OPT_Wunused_value,
+				"left operand of comma operator has no effect");
 		    break;
 		  case ICV_STATEMENT:
-		    warning (OPT_Wunused_value,
-		    	     "statement has no effect");
+		    warning_at (loc, OPT_Wunused_value,
+				"statement has no effect");
 		    break;
 		  case ICV_THIRD_IN_FOR:
-		    warning (OPT_Wunused_value,
-		    	     "for increment expression has no effect");
+		    warning_at (loc, OPT_Wunused_value,
+				"for increment expression has no effect");
 		    break;
 		  default:
 		    gcc_unreachable ();
@@ -1361,7 +1375,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 			    || code == POSTDECREMENT_EXPR
 			    || code == POSTINCREMENT_EXPR)))
                   && (complain & tf_warning))
-		warning (OPT_Wunused_value, "value computed is not used");
+		warning_at (loc, OPT_Wunused_value, "value computed is not used");
 	    }
 	}
       expr = build1 (CONVERT_EXPR, void_type_node, expr);
@@ -1708,8 +1722,7 @@ perform_qualification_conversions (tree type, tree expr)
   else if (TYPE_PTR_P (type) && TYPE_PTR_P (expr_type)
 	   && comp_ptr_ttypes (TREE_TYPE (type), TREE_TYPE (expr_type)))
     return build_nop (type, expr);
-  else if (TYPE_PTR_TO_MEMBER_P (type)
-	   && TYPE_PTR_TO_MEMBER_P (expr_type)
+  else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (expr_type)
 	   && same_type_p (TYPE_PTRMEM_CLASS_TYPE (type),
 			   TYPE_PTRMEM_CLASS_TYPE (expr_type))
 	   && comp_ptr_ttypes (TYPE_PTRMEM_POINTED_TO_TYPE (type),

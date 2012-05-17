@@ -58,4 +58,3 @@ PROGRAM test
   WRITE (*,*) ispriv_t (5) ! { dg-error "has no IMPLICIT type" }
 
 END PROGRAM test
-! { dg-final { cleanup-modules "privmod" } }

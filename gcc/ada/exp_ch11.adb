@@ -1909,72 +1909,78 @@ package body Exp_Ch11 is
             --  case it will end up in the block statements, even though it
             --  is not there now.
 
-            if Is_List_Member (N)
-              and then (List_Containing (N) = Statements (P)
-                          or else
-                        List_Containing (N) = SSE.Actions_To_Be_Wrapped_Before
-                          or else
-                        List_Containing (N) = SSE.Actions_To_Be_Wrapped_After)
-            then
-               --  Loop through exception handlers
+            if Is_List_Member (N) then
+               declare
+                  LCN : constant List_Id := List_Containing (N);
 
-               H := First (Exception_Handlers (P));
-               while Present (H) loop
+               begin
+                  if LCN = Statements (P)
+                       or else
+                     LCN  = SSE.Actions_To_Be_Wrapped_Before
+                       or else
+                     LCN = SSE.Actions_To_Be_Wrapped_After
+                  then
+                     --  Loop through exception handlers
 
-                  --  Guard against other constructs appearing in the list of
-                  --  exception handlers.
+                     H := First (Exception_Handlers (P));
+                     while Present (H) loop
 
-                  if Nkind (H) = N_Exception_Handler then
+                        --  Guard against other constructs appearing in the
+                        --  list of exception handlers.
 
-                     --  Loop through choices in one handler
+                        if Nkind (H) = N_Exception_Handler then
 
-                     C := First (Exception_Choices (H));
-                     while Present (C) loop
+                           --  Loop through choices in one handler
 
-                        --  Deal with others case
+                           C := First (Exception_Choices (H));
+                           while Present (C) loop
 
-                        if Nkind (C) = N_Others_Choice then
+                              --  Deal with others case
 
-                           --  Matching others handler, but we need to ensure
-                           --  there is no choice parameter. If there is, then
-                           --  we don't have a local handler after all (since
-                           --  we do not allow choice parameters for local
-                           --  handlers).
+                              if Nkind (C) = N_Others_Choice then
 
-                           if No (Choice_Parameter (H)) then
-                              return H;
-                           else
-                              return Empty;
-                           end if;
+                                 --  Matching others handler, but we need
+                                 --  to ensure there is no choice parameter.
+                                 --  If there is, then we don't have a local
+                                 --  handler after all (since we do not allow
+                                 --  choice parameters for local handlers).
 
-                        --  If not others must be entity name
+                                 if No (Choice_Parameter (H)) then
+                                    return H;
+                                 else
+                                    return Empty;
+                                 end if;
 
-                        elsif Nkind (C) /= N_Others_Choice then
-                           pragma Assert (Is_Entity_Name (C));
-                           pragma Assert (Present (Entity (C)));
+                                 --  If not others must be entity name
 
-                           --  Get exception being handled, dealing with
-                           --  renaming.
+                              elsif Nkind (C) /= N_Others_Choice then
+                                 pragma Assert (Is_Entity_Name (C));
+                                 pragma Assert (Present (Entity (C)));
 
-                           EHandle := Get_Renamed_Entity (Entity (C));
+                                 --  Get exception being handled, dealing with
+                                 --  renaming.
 
-                           --  If match, then check choice parameter
+                                 EHandle := Get_Renamed_Entity (Entity (C));
 
-                           if ERaise = EHandle then
-                              if No (Choice_Parameter (H)) then
-                                 return H;
-                              else
-                                 return Empty;
+                                 --  If match, then check choice parameter
+
+                                 if ERaise = EHandle then
+                                    if No (Choice_Parameter (H)) then
+                                       return H;
+                                    else
+                                       return Empty;
+                                    end if;
+                                 end if;
                               end if;
-                           end if;
+
+                              Next (C);
+                           end loop;
                         end if;
 
-                        Next (C);
+                        Next (H);
                      end loop;
                   end if;
-
-                  Next (H);
-               end loop;
+               end;
             end if;
          end if;
 
@@ -2022,6 +2028,88 @@ package body Exp_Ch11 is
          when RT_SE_Exceptions => return Standard_Storage_Error;
       end case;
    end Get_RT_Exception_Entity;
+
+   ---------------------------
+   -- Get_RT_Exception_Name --
+   ---------------------------
+
+   procedure Get_RT_Exception_Name (Code : RT_Exception_Code) is
+   begin
+      case Code is
+         when CE_Access_Check_Failed =>
+            Add_Str_To_Name_Buffer ("CE_Access_Check");
+         when CE_Access_Parameter_Is_Null =>
+            Add_Str_To_Name_Buffer ("CE_Null_Access_Parameter");
+         when CE_Discriminant_Check_Failed =>
+            Add_Str_To_Name_Buffer ("CE_Discriminant_Check");
+         when CE_Divide_By_Zero =>
+            Add_Str_To_Name_Buffer ("CE_Divide_By_Zero");
+         when CE_Explicit_Raise =>
+            Add_Str_To_Name_Buffer ("CE_Explicit_Raise");
+         when CE_Index_Check_Failed =>
+            Add_Str_To_Name_Buffer ("CE_Index_Check");
+         when CE_Invalid_Data =>
+            Add_Str_To_Name_Buffer ("CE_Invalid_Data");
+         when CE_Length_Check_Failed =>
+            Add_Str_To_Name_Buffer ("CE_Length_Check");
+         when CE_Null_Exception_Id =>
+            Add_Str_To_Name_Buffer ("CE_Null_Exception_Id");
+         when CE_Null_Not_Allowed =>
+            Add_Str_To_Name_Buffer ("CE_Null_Not_Allowed");
+         when CE_Overflow_Check_Failed =>
+            Add_Str_To_Name_Buffer ("CE_Overflow_Check");
+         when CE_Partition_Check_Failed =>
+            Add_Str_To_Name_Buffer ("CE_Partition_Check");
+         when CE_Range_Check_Failed =>
+            Add_Str_To_Name_Buffer ("CE_Range_Check");
+         when CE_Tag_Check_Failed =>
+            Add_Str_To_Name_Buffer ("CE_Tag_Check");
+
+         when PE_Access_Before_Elaboration =>
+            Add_Str_To_Name_Buffer ("PE_Access_Before_Elaboration");
+         when PE_Accessibility_Check_Failed =>
+            Add_Str_To_Name_Buffer ("PE_Accessibility_Check");
+         when PE_Address_Of_Intrinsic =>
+            Add_Str_To_Name_Buffer ("PE_Address_Of_Intrinsic");
+         when PE_All_Guards_Closed =>
+            Add_Str_To_Name_Buffer ("PE_All_Guards_Closed");
+         when PE_Bad_Predicated_Generic_Type =>
+            Add_Str_To_Name_Buffer ("PE_Bad_Predicated_Generic_Type");
+         when PE_Current_Task_In_Entry_Body =>
+            Add_Str_To_Name_Buffer ("PE_Current_Task_In_Entry_Body");
+         when PE_Duplicated_Entry_Address =>
+            Add_Str_To_Name_Buffer ("PE_Duplicated_Entry_Address");
+         when PE_Explicit_Raise =>
+            Add_Str_To_Name_Buffer ("PE_Explicit_Raise");
+         when PE_Finalize_Raised_Exception =>
+            Add_Str_To_Name_Buffer ("PE_Finalize_Raised_Exception");
+         when PE_Implicit_Return =>
+            Add_Str_To_Name_Buffer ("PE_Implicit_Return");
+         when PE_Misaligned_Address_Value =>
+            Add_Str_To_Name_Buffer ("PE_Misaligned_Address_Value");
+         when PE_Missing_Return =>
+            Add_Str_To_Name_Buffer ("PE_Missing_Return");
+         when PE_Overlaid_Controlled_Object =>
+            Add_Str_To_Name_Buffer ("PE_Overlaid_Controlled_Object");
+         when PE_Potentially_Blocking_Operation =>
+            Add_Str_To_Name_Buffer ("PE_Potentially_Blocking_Operation");
+         when PE_Stubbed_Subprogram_Called =>
+            Add_Str_To_Name_Buffer ("PE_Stubbed_Subprogram_Called");
+         when PE_Unchecked_Union_Restriction =>
+            Add_Str_To_Name_Buffer ("PE_Unchecked_Union_Restriction");
+         when PE_Non_Transportable_Actual =>
+            Add_Str_To_Name_Buffer ("PE_Non_Transportable_Actual");
+
+         when SE_Empty_Storage_Pool =>
+            Add_Str_To_Name_Buffer ("SE_Empty_Storage_Pool");
+         when SE_Explicit_Raise =>
+            Add_Str_To_Name_Buffer ("SE_Explicit_Raise");
+         when SE_Infinite_Recursion =>
+            Add_Str_To_Name_Buffer ("SE_Infinite_Recursion");
+         when SE_Object_Too_Large =>
+            Add_Str_To_Name_Buffer ("SE_Object_Too_Large");
+      end case;
+   end Get_RT_Exception_Name;
 
    ----------------------
    -- Is_Non_Ada_Error --

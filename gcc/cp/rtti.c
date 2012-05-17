@@ -816,7 +816,7 @@ static bool
 target_incomplete_p (tree type)
 {
   while (true)
-    if (TYPE_PTRMEM_P (type))
+    if (TYPE_PTRDATAMEM_P (type))
       {
 	if (!COMPLETE_TYPE_P (TYPE_PTRMEM_CLASS_TYPE (type)))
 	  return true;

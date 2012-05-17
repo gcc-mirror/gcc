@@ -1097,45 +1097,6 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
       }
 }
 
-/* Recompute heap nodes for each of caller edges of each of callees.
-   Walk recursively into all inline clones.  */
-
-static void
-update_all_callee_keys (fibheap_t heap, struct cgraph_node *node,
-			bitmap updated_nodes)
-{
-  struct cgraph_edge *e = node->callees;
-  if (!e)
-    return;
-  while (true)
-    if (!e->inline_failed && e->callee->callees)
-      e = e->callee->callees;
-    else
-      {
-	struct cgraph_node *callee = cgraph_function_or_thunk_node (e->callee,
-								    NULL);
-
-	/* We inlined and thus callees might have different number of calls.
-	   Reset their caches  */
-        reset_node_growth_cache (callee);
-	if (e->inline_failed)
-	  update_caller_keys (heap, callee, updated_nodes, e);
-	if (e->next_callee)
-	  e = e->next_callee;
-	else
-	  {
-	    do
-	      {
-		if (e->caller == node)
-		  return;
-		e = e->caller->callers;
-	      }
-	    while (!e->next_callee);
-	    e = e->next_callee;
-	  }
-      }
-}
-
 /* Enqueue all recursive calls from NODE into priority queue depending on
    how likely we want to recursively inline the call.  */
 
@@ -1488,7 +1449,7 @@ inline_small_functions (void)
 	     at once. Consequently we need to update all callee keys.  */
 	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
-          update_all_callee_keys (heap, where, updated_nodes);
+          update_callee_keys (heap, where, updated_nodes);
 	}
       else
 	{
@@ -1527,18 +1488,7 @@ inline_small_functions (void)
 	  reset_edge_caches (edge->callee);
           reset_node_growth_cache (callee);
 
-	  /* We inlined last offline copy to the body.  This might lead
-	     to callees of function having fewer call sites and thus they
-	     may need updating. 
-
-	     FIXME: the callee size could also shrink because more information
-	     is propagated from caller.  We don't track when this happen and
-	     thus we need to recompute everything all the time.  Once this is
-	     solved, "|| 1" should go away.  */
-	  if (callee->global.inlined_to || 1)
-	    update_all_callee_keys (heap, callee, updated_nodes);
-	  else
-	    update_callee_keys (heap, edge->callee, updated_nodes);
+	  update_callee_keys (heap, edge->callee, updated_nodes);
 	}
       where = edge->caller;
       if (where->global.inlined_to)
@@ -1551,11 +1501,6 @@ inline_small_functions (void)
 	 called by function we inlined (since number of it inlinable callers
 	 might change).  */
       update_caller_keys (heap, where, updated_nodes, NULL);
-
-      /* We removed one call of the function we just inlined.  If offline
-	 copy is still needed, be sure to update the keys.  */
-      if (callee != where && !callee->global.inlined_to)
-        update_caller_keys (heap, callee, updated_nodes, NULL);
       bitmap_clear (updated_nodes);
 
       if (dump_file)
@@ -1717,7 +1662,7 @@ ipa_inline (void)
     }
 
   inline_small_functions ();
-  cgraph_remove_unreachable_nodes (true, dump_file);
+  symtab_remove_unreachable_nodes (true, dump_file);
   free (order);
 
   /* We already perform some inlining of functions called once during

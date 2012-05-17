@@ -2987,10 +2987,13 @@ package body Sem_Ch10 is
       Set_First_Name         (Withn, True);
       Set_Implicit_With      (Withn, True);
 
-      --  If the unit is a package declaration, a private_with_clause on a
-      --  child unit implies the implicit with on the parent is also private.
+      --  If the unit is a package or generic package  declaration, a private_
+      --  with_clause on a child unit implies that the implicit with on the
+      --  parent is also private.
 
-      if Nkind (Unit (N)) = N_Package_Declaration then
+      if Nkind_In (Unit (N), N_Package_Declaration,
+                             N_Generic_Package_Declaration)
+      then
          Set_Private_Present (Withn, Private_Present (Item));
       end if;
 

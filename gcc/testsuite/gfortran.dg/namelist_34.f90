@@ -26,5 +26,3 @@ USE types
    namelist /a/ t1    ! { dg-error "has ALLOCATABLE or POINTER components and thus requires a defined input/output" }
    namelist /b/ t3    ! { dg-error "has ALLOCATABLE or POINTER components and thus requires a defined input/output" }
 END MODULE
-
-! { dg-final { cleanup-modules "types nml" } }

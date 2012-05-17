@@ -29,7 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  ??? Need header saying what this unit is!!!
+--  This package contains atomic primitives defined from gcc built-in functions
+
+--  For now, these operations are only used by the compiler to generate the
+--  lock-free implementation of protected objects.
 
 package System.Atomic_Primitives is
    pragma Preelaborate;
@@ -119,4 +122,6 @@ package System.Atomic_Primitives is
       Model : Mem_Model := Seq_Cst) return uint64;
    pragma Import (Intrinsic, Atomic_Load_64, "__atomic_load_8");
 
+   procedure Atomic_Synchronize;
+   pragma Import (Intrinsic, Atomic_Synchronize, "__sync_synchronize");
 end System.Atomic_Primitives;

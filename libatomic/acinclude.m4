@@ -67,7 +67,7 @@ AC_DEFUN([LIBAT_TEST_ATOMIC_BUILTIN],[
     else
       old_CFLAGS="$CFLAGS"
       # Compile unoptimized.
-      CFLAGS='-O0 -S'
+      CFLAGS="$CFLAGS -O0 -S"
       if AC_TRY_EVAL(ac_compile); then
         if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
 	  eval $2=no

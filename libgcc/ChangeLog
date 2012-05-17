@@ -1,3 +1,39 @@
+2012-05-15  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/aix-unwind.h (*_REGNO): New, set of useful
+	register numbers. LR_REGNO replaces R_LR.
+	(ucontext_for): New, helper for ...
+	(ppc_aix_fallback_frame_state): New, implementation for aix 5.2
+	and 5.3 of ...
+	(MD_FALLBACK_FRAME_STATE_FOR): Define for 32bit configurations.
+
+2012-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (i[34567]86-*-linux*, x86_64-*-linux*)
+	(i[34567]86-*-kfreebsd*-gnu, x86_64-*-kfreebsd*-gnu)
+	(i[34567]86-*-knetbsd*-gnu, i[34567]86-*-gnu*): Move
+	i386/t-cpuinfo ...
+	(i[34567]86-*-*, x86_64-*-*): ... here.
+
+	* config/i386/libgcc-bsd.ver (GCC_4.8.0): New version.
+	* config/i386/libgcc-sol2.ver (GCC_4.8.0): New version.
+
+	* config/i386/i386-cpuinfo.c: Rename to ...
+	* config/i386/cpuinfo.c: ... this.
+	* config/i386/t-cpuinfo (LIB2ADD): Reflect this.
+
+	* configure.ac (AC_CONFIG_HEADER): Call for auto-target.h.
+	(libgcc_cv_init_priority): New test.
+	* configure: Regenerate.
+	* config.in: New file.
+	* Makefile.in (clean): Rename config.h to auto-target.h.
+	(config.h): Likewise.
+	(stamp-h): Likewise.
+
+	* config/i386/cpuinfo.c (auto-target.h): Include.
+	(CONSTRUCTOR_PRIORITY): Define.
+	(__cpu_indicator_init): Use it.
+
 2012-05-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* longlong.h: Use a URL instead of an FSF postal address.

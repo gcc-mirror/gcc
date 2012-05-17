@@ -2773,7 +2773,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       : (__n - 1) / 2;
       const size_t __p = (__n - __t) / 2;
       const size_t __q = __p + __t;
-      const size_t __m = std::max(__s + 1, __n);
+      const size_t __m = std::max(size_t(__s + 1), __n);
 
       for (size_t __k = 0; __k < __m; ++__k)
 	{

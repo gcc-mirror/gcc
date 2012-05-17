@@ -43,5 +43,3 @@
     REAL :: solveCConvert(1:anzKomponenten)
     solveCConvert = (/(real(i), i = 1, anzKomponenten)/)
   END FUNCTION solveCConvert
-
-! { dg-final { cleanup-modules "module_conc module_thermocalc" } }

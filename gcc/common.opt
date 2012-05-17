@@ -646,15 +646,15 @@ Common Var(warn_trampolines) Warning
 Warn whenever a trampoline is generated
 
 Wtype-limits
-Common Var(warn_type_limits) Init(-1) Warning
+Common Var(warn_type_limits) Warning EnabledBy(Wextra)
 Warn if a comparison is always true or always false due to the limited range of the data type
 
 Wuninitialized
-Common Var(warn_uninitialized) Init(-1) Warning
+Common Var(warn_uninitialized) Warning EnabledBy(Wextra)
 Warn about uninitialized automatic variables
 
 Wmaybe-uninitialized
-Common Var(warn_maybe_uninitialized) Warning
+Common Var(warn_maybe_uninitialized) Warning EnabledBy(Wuninitialized)
 Warn about maybe uninitialized automatic variables
 
 Wunreachable-code
@@ -670,15 +670,15 @@ Common Var(warn_unused_but_set_parameter) Init(-1) Warning
 Warn when a function parameter is only set, otherwise unused
 
 Wunused-but-set-variable
-Common Var(warn_unused_but_set_variable) Init(-1) Warning
+Common Var(warn_unused_but_set_variable) Warning EnabledBy(Wunused)
 Warn when a variable is only set, otherwise unused
 
 Wunused-function
-Common Var(warn_unused_function) Init(-1) Warning
+Common Var(warn_unused_function) Warning EnabledBy(Wunused)
 Warn when a function is unused
 
 Wunused-label
-Common Var(warn_unused_label) Init(-1) Warning
+Common Var(warn_unused_label) Warning EnabledBy(Wunused)
 Warn when a label is unused
 
 Wunused-parameter
@@ -686,11 +686,11 @@ Common Var(warn_unused_parameter) Init(-1) Warning
 Warn when a function parameter is unused
 
 Wunused-value
-Common Var(warn_unused_value) Init(-1) Warning
+Common Var(warn_unused_value) Warning EnabledBy(Wunused)
 Warn when an expression value is unused
 
 Wunused-variable
-Common Var(warn_unused_variable) Init(-1) Warning
+Common Var(warn_unused_variable) Warning EnabledBy(Wunused)
 Warn when a variable is unused
 
 Wcoverage-mismatch

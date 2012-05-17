@@ -66,6 +66,3 @@ contains
   end function get2
 
 end
-
-
-! { dg-final { cleanup-modules "m" } }

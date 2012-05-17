@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,6 +55,28 @@ package body System.Storage_Pools.Subpools is
 
    procedure Detach (N : not null SP_Node_Ptr);
    --  Unhook a subpool node from an arbitrary subpool list
+
+   -----------------------------------
+   -- Adjust_Controlled_Dereference --
+   -----------------------------------
+
+   procedure Adjust_Controlled_Dereference
+     (Addr         : in out System.Address;
+      Storage_Size : in out System.Storage_Elements.Storage_Count;
+      Alignment    : System.Storage_Elements.Storage_Count)
+   is
+      Header_And_Padding : constant Storage_Offset :=
+                             Header_Size_With_Padding (Alignment);
+   begin
+      --  Expose the two hidden pointers by shifting the address from the
+      --  start of the object to the FM_Node equivalent of the pointers.
+
+      Addr := Addr - Header_And_Padding;
+
+      --  Update the size of the object to include the two pointers
+
+      Storage_Size := Storage_Size + Header_And_Padding;
+   end Adjust_Controlled_Dereference;
 
    --------------
    -- Allocate --

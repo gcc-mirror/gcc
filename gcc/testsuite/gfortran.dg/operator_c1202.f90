@@ -66,5 +66,3 @@ module op
       end function f1
 
 end module op
-
-! { dg-final { cleanup-modules "op" } }

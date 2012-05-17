@@ -58,5 +58,3 @@ program prog
      end if
   end select
 end program prog
-! { dg-final { cleanup-modules "generic_deferred" } }
-

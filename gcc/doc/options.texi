@@ -459,4 +459,13 @@ combined option.  For example, some front ends use this to prevent
 value of @option{-fmath-errno} for languages that do not use
 @code{errno}.
 
+@item EnabledBy(@var{opt})
+If not explicitly set, the option is set to the value of @option{-@var{opt}}.
+
+@item LangEnabledBy(@var{language}, @var{opt})
+When compiling for the given language, the option is set to the value
+of @option{-@var{opt}}, if not explicitly set. It is possible to
+specify several different languages.  Each @var{language} must have
+been declared by an earlier @code{Language} record.  @xref{Option file
+format}.
 @end table

@@ -461,12 +461,20 @@ convert_integer (st_parameter_dt *dtp, int length, int negative)
 {
   char c, *buffer, message[MSGLEN];
   int m;
-  GFC_INTEGER_LARGEST v, max, max10;
+  GFC_UINTEGER_LARGEST v, max, max10;
+  GFC_INTEGER_LARGEST value;
 
   buffer = dtp->u.p.saved_string;
   v = 0;
 
-  max = (length == -1) ? MAX_REPEAT : max_value (length, 1);
+  if (length == -1)
+    max = MAX_REPEAT;
+  else
+    {
+      max = si_max (length);
+      if (negative)
+	max++;
+    }
   max10 = max / 10;
 
   for (;;)
@@ -490,8 +498,10 @@ convert_integer (st_parameter_dt *dtp, int length, int negative)
   if (length != -1)
     {
       if (negative)
-	v = -v;
-      set_integer (dtp->u.p.value, v, length);
+	value = -v;
+      else
+	value = v;
+      set_integer (dtp->u.p.value, value, length);
     }
   else
     {

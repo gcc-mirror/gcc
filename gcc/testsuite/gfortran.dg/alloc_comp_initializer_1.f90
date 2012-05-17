@@ -68,4 +68,3 @@ contains
     end subroutine p_bld
 
 end program foo
-! { dg-final { cleanup-modules "p_type_mod" } }

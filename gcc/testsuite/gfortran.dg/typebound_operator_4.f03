@@ -88,5 +88,3 @@ PROGRAM main
   x = x + 42 ! { dg-error "Operands of" }
   x = x .PLUS. 5 ! { dg-error "Unknown operator" }
 END PROGRAM main
-
-! { dg-final { cleanup-modules "m" } }

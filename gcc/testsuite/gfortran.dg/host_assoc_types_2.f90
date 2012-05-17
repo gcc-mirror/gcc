@@ -66,4 +66,3 @@ contains
       call overloaded_sub(dval)
    end subroutine
 end program
-! { dg-final { cleanup-modules "stype dtype" } }

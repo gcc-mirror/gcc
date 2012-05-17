@@ -56,8 +56,3 @@ module c_kind_tests_2
   real(myI), bind(c) :: myCFloat2 ! { dg-warning "is for type INTEGER" }
   real(4), bind(c) :: myFloat
 end module c_kind_tests_2
-
-! { dg-final { cleanup-modules "c_kind_tests_2" } }
-! { dg-final { cleanup-modules "bind_c_implicit_vars" } }
-! { dg-final { cleanup-modules "test" } }
-! { dg-final { cleanup-modules "iso_c_utilities" } }

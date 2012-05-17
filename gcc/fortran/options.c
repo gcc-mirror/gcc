@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "target.h"
 #include "cpp.h"
-#include "diagnostic-core.h"	/* For sorry.  */
+#include "diagnostic.h"	/* For global_dc.  */
 #include "tm.h"
 
 gfc_option_t gfc_option;
@@ -474,7 +474,6 @@ set_Wall (int setting)
   gfc_option.warn_real_q_constant = setting;
   gfc_option.warn_unused_dummy_argument = setting;
 
-  warn_unused = setting;
   warn_return_type = setting;
   warn_switch = setting;
   warn_uninitialized = setting;
@@ -612,6 +611,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wall:
+      handle_generated_option (&global_options, &global_options_set,
+			       OPT_Wunused, NULL, value,
+			       gfc_option_lang_mask (), kind, loc,
+			       handlers, global_dc);
       set_Wall (value);
       break;
 
@@ -1087,6 +1090,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
     }
 
+  Fortran_handle_option_auto (&global_options, &global_options_set, 
+                              scode, arg, value, 
+                              gfc_option_lang_mask (), kind,
+                              loc, handlers, global_dc);
   return result;
 }
 

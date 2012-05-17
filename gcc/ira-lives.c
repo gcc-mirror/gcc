@@ -241,6 +241,24 @@ dec_register_pressure (enum reg_class pclass, int nregs)
     }
 }
 
+/* Determine from the objects_live bitmap whether REGNO is currently live,
+   and occupies only one object.  Return false if we have no information.  */
+static bool
+pseudo_regno_single_word_and_live_p (int regno)
+{
+  ira_allocno_t a = ira_curr_regno_allocno_map[regno];
+  ira_object_t obj;
+
+  if (a == NULL)
+    return false;
+  if (ALLOCNO_NUM_OBJECTS (a) > 1)
+    return false;
+
+  obj = ALLOCNO_OBJECT (a, 0);
+
+  return sparseset_bit_p (objects_live, OBJECT_CONFLICT_ID (obj));
+}
+
 /* Mark the pseudo register REGNO as live.  Update all information about
    live ranges and register pressure.  */
 static void
@@ -1043,6 +1061,67 @@ bb_has_abnormal_call_pred (basic_block bb)
   return false;
 }
 
+/* Look through the CALL_INSN_FUNCTION_USAGE of a call insn INSN, and see if
+   we find a SET rtx that we can use to deduce that a register can be cheaply
+   caller-saved.  Return such a register, or NULL_RTX if none is found.  */
+static rtx
+find_call_crossed_cheap_reg (rtx insn)
+{
+  rtx cheap_reg = NULL_RTX;
+  rtx exp = CALL_INSN_FUNCTION_USAGE (insn);
+
+  while (exp != NULL)
+    {
+      rtx x = XEXP (exp, 0);
+      if (GET_CODE (x) == SET)
+	{
+	  exp = x;
+	  break;
+	}
+      exp = XEXP (exp, 1);
+    }
+  if (exp != NULL)
+    {
+      basic_block bb = BLOCK_FOR_INSN (insn);
+      rtx reg = SET_SRC (exp);
+      rtx prev = PREV_INSN (insn);
+      while (prev && !(INSN_P (prev)
+		       && BLOCK_FOR_INSN (prev) != bb))
+	{
+	  if (NONDEBUG_INSN_P (prev))
+	    {
+	      rtx set = single_set (prev);
+
+	      if (set && rtx_equal_p (SET_DEST (set), reg))
+		{
+		  rtx src = SET_SRC (set);
+		  if (!REG_P (src) || HARD_REGISTER_P (src)
+		      || !pseudo_regno_single_word_and_live_p (REGNO (src)))
+		    break;
+		  if (!modified_between_p (src, prev, insn))
+		    cheap_reg = src;
+		  break;
+		}
+	      if (set && rtx_equal_p (SET_SRC (set), reg))
+		{
+		  rtx dest = SET_DEST (set);
+		  if (!REG_P (dest) || HARD_REGISTER_P (dest)
+		      || !pseudo_regno_single_word_and_live_p (REGNO (dest)))
+		    break;
+		  if (!modified_between_p (dest, prev, insn))
+		    cheap_reg = dest;
+		  break;
+		}
+
+	      if (reg_overlap_mentioned_p (reg, PATTERN (prev)))
+		break;
+	    }
+	  prev = PREV_INSN (prev);
+	}
+    }
+  return cheap_reg;
+}  
+
 /* Process insns of the basic block given by its LOOP_TREE_NODE to
    update allocno live ranges, allocno hard register conflicts,
    intersected calls, and register pressure info for allocnos for the
@@ -1185,6 +1264,13 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 
 	  if (call_p)
 	    {
+	      /* Try to find a SET in the CALL_INSN_FUNCTION_USAGE, and from
+		 there, try to find a pseudo that is live across the call but
+		 can be cheaply reconstructed from the return value.  */
+	      rtx cheap_reg = find_call_crossed_cheap_reg (insn);
+	      if (cheap_reg != NULL_RTX)
+		add_reg_note (insn, REG_RETURNED, cheap_reg);
+
 	      last_call_num++;
 	      sparseset_clear (allocnos_processed);
 	      /* The current set of live allocnos are live across the call.  */
@@ -1226,6 +1312,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  /* Mark it as saved at the next call.  */
 		  allocno_saved_at_call[num] = last_call_num + 1;
 		  ALLOCNO_CALLS_CROSSED_NUM (a)++;
+		  if (cheap_reg != NULL_RTX
+		      && ALLOCNO_REGNO (a) == (int) REGNO (cheap_reg))
+		    ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a)++;
 		}
 	    }
 

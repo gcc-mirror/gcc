@@ -38,5 +38,3 @@ contains
   end subroutine sub4
 
 end module mod2
-
-! { dg-final { cleanup-modules "mod0 mod1 mod2" } }

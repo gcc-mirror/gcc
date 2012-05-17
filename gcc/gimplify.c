@@ -1444,6 +1444,13 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
       && !TYPE_SIZES_GIMPLIFIED (TREE_TYPE (decl)))
     gimplify_type_sizes (TREE_TYPE (decl), seq_p);
 
+  /* ??? DECL_ORIGINAL_TYPE is streamed for LTO so it needs to be gimplified
+     in case its size expressions contain problematic nodes like CALL_EXPR.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (decl)
+      && !TYPE_SIZES_GIMPLIFIED (DECL_ORIGINAL_TYPE (decl)))
+    gimplify_type_sizes (DECL_ORIGINAL_TYPE (decl), seq_p);
+
   if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     {
       tree init = DECL_INITIAL (decl);
@@ -4029,9 +4036,13 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    else
 	      align = TYPE_ALIGN (type);
 
+	    /* Do a block move either if the size is so small as to make
+	       each individual move a sub-unit move on average, or if it
+	       is so large as to make individual moves inefficient.  */
 	    if (size > 0
 		&& num_nonzero_elements > 1
-		&& !can_move_by_pieces (size, align))
+		&& (size < num_nonzero_elements
+		    || !can_move_by_pieces (size, align)))
 	      {
 		if (notify_temp_creation)
 		  return GS_ERROR;
@@ -7943,19 +7954,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	 TMP.  First, make sure that the expression has a type so that
 	 it can be assigned into a temporary.  */
       gcc_assert (!VOID_TYPE_P (TREE_TYPE (*expr_p)));
-
-      if (!gimple_seq_empty_p (internal_post) || (fallback & fb_lvalue))
-	/* The postqueue might change the value of the expression between
-	   the initialization and use of the temporary, so we can't use a
-	   formal temp.  FIXME do we care?  */
-	{
-	  *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
-	  if (TREE_CODE (TREE_TYPE (*expr_p)) == COMPLEX_TYPE
-	      || TREE_CODE (TREE_TYPE (*expr_p)) == VECTOR_TYPE)
-	    DECL_GIMPLE_REG_P (*expr_p) = 1;
-	}
-      else
-	*expr_p = get_formal_tmp_var (*expr_p, pre_p);
+      *expr_p = get_formal_tmp_var (*expr_p, pre_p);
     }
   else
     {
@@ -8101,7 +8100,7 @@ gimplify_type_sizes (tree type, gimple_seq *list_p)
 void
 gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
 {
-  tree type, expr = *expr_p;
+  tree expr = *expr_p;
 
   /* We don't do anything if the value isn't there, is constant, or contains
      A PLACEHOLDER_EXPR.  We also don't want to do anything if it's already
@@ -8113,30 +8112,10 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
       || CONTAINS_PLACEHOLDER_P (expr))
     return;
 
-  type = TREE_TYPE (expr);
   *expr_p = unshare_expr (expr);
 
   gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue);
   expr = *expr_p;
-
-  /* Verify that we've an exact type match with the original expression.
-     In particular, we do not wish to drop a "sizetype" in favour of a
-     type of similar dimensions.  We don't want to pollute the generic
-     type-stripping code with this knowledge because it doesn't matter
-     for the bulk of GENERIC/GIMPLE.  It only matters that TYPE_SIZE_UNIT
-     and friends retain their "sizetype-ness".  */
-  if (TREE_TYPE (expr) != type
-      && TREE_CODE (type) == INTEGER_TYPE
-      && TYPE_IS_SIZETYPE (type))
-    {
-      tree tmp;
-      gimple stmt;
-
-      *expr_p = create_tmp_var (type, NULL);
-      tmp = build1 (NOP_EXPR, type, expr);
-      stmt = gimplify_assign (*expr_p, tmp, stmt_p);
-      gimple_set_location (stmt, EXPR_LOC_OR_HERE (expr));
-    }
 }
 
 /* Gimplify the body of statements of FNDECL and return a GIMPLE_BIND node
@@ -8559,7 +8538,13 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
 	  gimple_stmt_iterator i;
 
 	  for (i = gsi_start (pre); !gsi_end_p (i); gsi_next (&i))
-	    mark_symbols_for_renaming (gsi_stmt (i));
+	    {
+	      tree lhs = gimple_get_lhs (gsi_stmt (i));
+	      if (lhs
+		  && TREE_CODE (lhs) != SSA_NAME
+		  && is_gimple_reg (lhs))
+		mark_sym_for_renaming (lhs);
+	    }
 	}
       gsi_insert_seq_before (gsi_p, pre, GSI_SAME_STMT);
     }
@@ -8613,6 +8598,21 @@ force_gimple_operand_1 (tree expr, gimple_seq *stmts,
     for (t = gimplify_ctxp->temps; t ; t = DECL_CHAIN (t))
       add_referenced_var (t);
 
+  if (!gimple_seq_empty_p (*stmts)
+      && gimplify_ctxp->into_ssa)
+    {
+      gimple_stmt_iterator i;
+
+      for (i = gsi_start (*stmts); !gsi_end_p (i); gsi_next (&i))
+	{
+	  tree lhs = gimple_get_lhs (gsi_stmt (i));
+	  if (lhs
+	      && TREE_CODE (lhs) != SSA_NAME
+	      && is_gimple_reg (lhs))
+	    mark_sym_for_renaming (lhs);
+	}
+    }
+
   pop_gimplify_context (NULL);
 
   return expr;
@@ -8649,14 +8649,6 @@ force_gimple_operand_gsi_1 (gimple_stmt_iterator *gsi, tree expr,
 
   if (!gimple_seq_empty_p (stmts))
     {
-      if (gimple_in_ssa_p (cfun))
-	{
-	  gimple_stmt_iterator i;
-
-	  for (i = gsi_start (stmts); !gsi_end_p (i); gsi_next (&i))
-	    mark_symbols_for_renaming (gsi_stmt (i));
-	}
-
       if (before)
 	gsi_insert_seq_before (gsi, stmts, m);
       else

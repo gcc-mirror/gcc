@@ -142,6 +142,7 @@ package Snames is
    Name_Dimension                      : constant Name_Id := N + $;
    Name_Dimension_System               : constant Name_Id := N + $;
    Name_Dynamic_Predicate              : constant Name_Id := N + $;
+   Name_Lock_Free                      : constant Name_Id := N + $;
    Name_Post                           : constant Name_Id := N + $;
    Name_Pre                            : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;

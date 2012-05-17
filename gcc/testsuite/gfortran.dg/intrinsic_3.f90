@@ -35,6 +35,3 @@ module p
     end function erfc
 
 end module p
-
-! { dg-final { cleanup-modules "p" } }
-

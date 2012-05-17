@@ -49,4 +49,3 @@ end program namelist_47
 ! { dg-output "Missing colon in substring qualifier for namelist variable x%m%c012345678901234567890123456789012345678901234567890123456789h(\n|\r\n|\r)" }
 ! { dg-output "Substring out of range for namelist variable x%m%c012345678901234567890123456789012345678901234567890123456789h(\n|\r\n|\r)" }
 ! { dg-output "Bad character in substring qualifier for namelist variable x%m%c012345678901234567890123456789012345678901234567890123456789h(\n|\r\n|\r)" }
-! { dg-final { cleanup-modules "nml_47" } }

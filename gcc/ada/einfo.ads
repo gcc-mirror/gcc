@@ -3878,6 +3878,12 @@ package Einfo is
 --       Present in all entities, set if the entity is used as an argument to
 --       a generic instantiation. Used to tune certain warning messages.
 
+--    Uses_Lock_Free (Flag188)
+--       Present in protected type entities. Set to True when the Lock Free
+--       implementation is used for the protected type. This implemenatation is
+--       based on atomic transactions and doesn't require anymore the use of
+--       Protection object (see System.Tasking.Protected_Objects).
+
 --    Uses_Sec_Stack (Flag95)
 --       Present in scope entities (blocks,functions, procedures, tasks,
 --       entries). Set to True when secondary stack is used in this scope and
@@ -5601,6 +5607,7 @@ package Einfo is
    --    Stored_Constraint                   (Elist23)
    --    Has_Interrupt_Handler               (synth)
    --    Sec_Stack_Needed_For_Return         (Flag167)  ???
+   --    Uses_Lock_Free                      (Flag188)
    --    Uses_Sec_Stack                      (Flag95)   ???
    --    Has_Entries                         (synth)
    --    Number_Entries                      (synth)
@@ -6405,6 +6412,7 @@ package Einfo is
    function Universal_Aliasing                  (Id : E) return B;
    function Unset_Reference                     (Id : E) return N;
    function Used_As_Generic_Actual              (Id : E) return B;
+   function Uses_Lock_Free                      (Id : E) return B;
    function Uses_Sec_Stack                      (Id : E) return B;
    function Vax_Float                           (Id : E) return B;
    function Warnings_Off                        (Id : E) return B;
@@ -7001,6 +7009,7 @@ package Einfo is
    procedure Set_Universal_Aliasing              (Id : E; V : B := True);
    procedure Set_Unset_Reference                 (Id : E; V : N);
    procedure Set_Used_As_Generic_Actual          (Id : E; V : B := True);
+   procedure Set_Uses_Lock_Free                  (Id : E; V : B := True);
    procedure Set_Uses_Sec_Stack                  (Id : E; V : B := True);
    procedure Set_Warnings_Off                    (Id : E; V : B := True);
    procedure Set_Warnings_Off_Used               (Id : E; V : B := True);
@@ -7746,6 +7755,7 @@ package Einfo is
    pragma Inline (Universal_Aliasing);
    pragma Inline (Unset_Reference);
    pragma Inline (Used_As_Generic_Actual);
+   pragma Inline (Uses_Lock_Free);
    pragma Inline (Uses_Sec_Stack);
    pragma Inline (Warnings_Off);
    pragma Inline (Warnings_Off_Used);
@@ -8148,6 +8158,7 @@ package Einfo is
    pragma Inline (Set_Universal_Aliasing);
    pragma Inline (Set_Unset_Reference);
    pragma Inline (Set_Used_As_Generic_Actual);
+   pragma Inline (Set_Uses_Lock_Free);
    pragma Inline (Set_Uses_Sec_Stack);
    pragma Inline (Set_Warnings_Off);
    pragma Inline (Set_Warnings_Off_Used);

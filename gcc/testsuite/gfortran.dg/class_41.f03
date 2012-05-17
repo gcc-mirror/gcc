@@ -20,5 +20,3 @@ contains
     print *,a_string(this)
   end subroutine b_sub
 end module a_module
-
-! { dg-final { cleanup-modules "a_module" } }

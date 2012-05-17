@@ -34,5 +34,3 @@ PROGRAM test
   WRITE(str4,'(i0)') ICHAR(cdir())
   if(str4 /= '47' .or. ichar(str4(3:3)) /= 32) call abort()
 END PROGRAM
-
-! { dg-final { cleanup-modules "mod" } }

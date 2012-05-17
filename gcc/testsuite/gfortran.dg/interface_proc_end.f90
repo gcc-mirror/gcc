@@ -16,5 +16,3 @@
       END INTERFACE
       end subroutine
       end module
-
-! { dg-final { cleanup-modules "n" } }

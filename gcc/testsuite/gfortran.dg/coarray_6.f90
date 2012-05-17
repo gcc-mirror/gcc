@@ -81,5 +81,3 @@ end subroutine valid
 program main
   integer :: A[*] ! Valid, implicit SAVE attribute
 end program main
-
-! { dg-final { cleanup-modules "m" } }

@@ -14,5 +14,3 @@ module m
   type(t),save :: default_t
 
 end module
-
-! { dg-final { cleanup-modules "m" } }

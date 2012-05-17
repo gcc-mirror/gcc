@@ -36,6 +36,3 @@ contains
   end subroutine bug21
 
 end module d_base_mat_mod
-
-
-! { dg-final { cleanup-modules "d_base_mat_mod" } }

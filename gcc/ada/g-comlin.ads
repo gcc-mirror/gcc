@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2011, AdaCore                     --
+--                     Copyright (C) 1999-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -181,16 +181,20 @@
 --     ...
 
 --  Specifying the help message is optional, but makes it easy to then call
---  the function
+--  the function:
+
 --     Display_Help (Config);
+
 --  that will display a properly formatted help message for your application,
 --  listing all possible switches. That way you have a single place in which
 --  to maintain the list of switches and their meaning, rather than maintaining
 --  both the string to pass to Getopt and a subprogram to display the help.
 --  Both will properly stay synchronized.
 
---  Once you have this Config, you just have to call
+--  Once you have this Config, you just have to call:
+
 --     Getopt (Config, Callback'Access);
+
 --  to parse the command line. The Callback will be called for each switch
 --  found on the command line (in the case of our example, that is "-gnatwu"
 --  and then "-gnatwv", not "-gnatwa" itself). This simplifies command line
@@ -203,13 +207,13 @@
 
 --     Optimization : aliased Integer;
 --     Verbose      : aliased Boolean;
---
+
 --     Define_Switch (Config, Verbose'Access,
 --                    "-v", Long_Switch => "--verbose",
 --                    Help => "Output extra verbose information");
 --     Define_Switch (Config, Optimization'Access,
 --                    "-O?", Help => "Optimization level");
---
+
 --     Getopt (Config);  --  No callback
 
 --  Since all switches are handled automatically, we don't even need to pass
@@ -263,8 +267,8 @@
 --  Some command line arguments can have parameters, which on a command line
 --  appear as a separate argument that must immediately follow the switch.
 --  Since the subprograms in this package will reorganize the switches to group
---  them, you need to indicate what is a command line
---  parameter, and what is a switch argument.
+--  them, you need to indicate what is a command line parameter, and what is a
+--  switch argument.
 
 --  This is done by passing an extra argument to Add_Switch, as in:
 
@@ -308,18 +312,18 @@ package GNAT.Command_Line is
       Stop_At_First_Non_Switch : Boolean := False;
       Section_Delimiters       : String := "");
    --  The first procedure resets the internal state of the package to prepare
-   --  to rescan the parameters. It does not need to be called before the first
-   --  use of Getopt (but it could be), but it must be called if you want to
-   --  start rescanning the command line parameters from the start. The
-   --  optional parameter Switch_Char can be used to reset the switch
+   --  to rescan the parameters. It does not need to be called before the
+   --  first use of Getopt (but it could be), but it must be called if you
+   --  want to start rescanning the command line parameters from the start.
+   --  The optional parameter Switch_Char can be used to reset the switch
    --  character, e.g. to '/' for use in DOS-like systems.
    --
-   --  The second subprogram initializes a parser that takes its arguments from
-   --  an array of strings rather than directly from the command line. In this
-   --  case, the parser is responsible for freeing the strings stored in
+   --  The second subprogram initializes a parser that takes its arguments
+   --  from an array of strings rather than directly from the command line. In
+   --  this case, the parser is responsible for freeing the strings stored in
    --  Command_Line. If you pass null to Command_Line, this will in fact create
    --  a second parser for Ada.Command_Line, which doesn't share any data with
-   --  the default parser. This parser must be free-ed.
+   --  the default parser. This parser must be free'ed.
    --
    --  The optional parameter Stop_At_First_Non_Switch indicates if Getopt is
    --  to look for switches on the whole command line, or if it has to stop as
@@ -451,9 +455,9 @@ package GNAT.Command_Line is
    --  spaces.
    --
    --    Example
-   --       Getopt ("a b", Concatenate => False)
-   --       If the command line is '-ab', exception Invalid_Switch will be
-   --       raised and Full_Switch will return "ab".
+   --      Getopt ("a b", Concatenate => False)
+   --      If the command line is '-ab', exception Invalid_Switch will be
+   --      raised and Full_Switch will return "ab".
 
    function Get_Argument
      (Do_Expansion : Boolean := False;
@@ -559,8 +563,8 @@ package GNAT.Command_Line is
    --  The section name should not include the leading '-'. So for instance in
    --  the case of gnatmake we would use:
    --
-   --      Define_Section (Config, "cargs");
-   --      Define_Section (Config, "bargs");
+   --    Define_Section (Config, "cargs");
+   --    Define_Section (Config, "bargs");
 
    procedure Define_Alias
      (Config   : in out Command_Line_Configuration;
@@ -595,7 +599,8 @@ package GNAT.Command_Line is
       Switch      : String := "";
       Long_Switch : String := "";
       Help        : String := "";
-      Section     : String := "");
+      Section     : String := "";
+      Argument    : String := "ARG");
    --  Indicates a new switch. The format of this switch follows the getopt
    --  format (trailing ':', '?', etc for defining a switch with parameters).
    --
@@ -608,15 +613,18 @@ package GNAT.Command_Line is
    --
    --  Switch and Long_Switch (when specified) are aliases and can be used
    --  interchangeably. There is no check that they both take an argument or
-   --  both take no argument.
-   --  Switch can be set to "*" to indicate that any switch is supported (in
-   --  which case Getopt will return '*', see its documentation).
+   --  both take no argument. Switch can be set to "*" to indicate that any
+   --  switch is supported (in which case Getopt will return '*', see its
+   --  documentation).
    --
    --  Help is used by the Display_Help procedure to describe the supported
    --  switches.
    --
    --  In_Section indicates in which section the switch is valid (you need to
    --  first define the section through a call to Define_Section).
+   --
+   --  Argument is the name of the argument, as displayed in the automatic
+   --  help message. It is always capitalized for consistency.
 
    procedure Define_Switch
      (Config      : in out Command_Line_Configuration;
@@ -629,11 +637,13 @@ package GNAT.Command_Line is
    --  See Define_Switch for a description of the parameters.
    --  When the switch is found on the command line, Getopt will set
    --  Output.all to Value.
+   --
    --  Output is always initially set to "not Value", so that if the switch is
    --  not found on the command line, Output still has a valid value.
    --  The switch must not take any parameter.
-   --  Output must exist at least as long as Config, otherwise erroneous memory
-   --  access may happen.
+   --
+   --  Output must exist at least as long as Config, otherwise an erroneous
+   --  memory access may occur.
 
    procedure Define_Switch
      (Config      : in out Command_Line_Configuration;
@@ -643,14 +653,16 @@ package GNAT.Command_Line is
       Help        : String := "";
       Section     : String := "";
       Initial     : Integer := 0;
-      Default     : Integer := 1);
-   --  See Define_Switch for a description of the parameters.
-   --  When the switch is found on the command line, Getopt will set
-   --  Output.all to the value of the switch's parameter. If the parameter is
-   --  not an integer, Invalid_Parameter is raised.
+      Default     : Integer := 1;
+      Argument    : String := "ARG");
+   --  See Define_Switch for a description of the parameters. When the
+   --  switch is found on the command line, Getopt will set Output.all to the
+   --  value of the switch's parameter. If the parameter is not an integer,
+   --  Invalid_Parameter is raised.
+
    --  Output is always initialized to Initial. If the switch has an optional
    --  argument which isn't specified by the user, then Output will be set to
-   --  Default.
+   --  Default. The switch must accept an argument.
 
    procedure Define_Switch
      (Config      : in out Command_Line_Configuration;
@@ -658,10 +670,13 @@ package GNAT.Command_Line is
       Switch      : String := "";
       Long_Switch : String := "";
       Help        : String := "";
-      Section     : String := "");
+      Section     : String := "";
+      Argument    : String := "ARG");
    --  Set Output to the value of the switch's parameter when the switch is
-   --  found on the command line.
-   --  Output is always initialized to the empty string.
+   --  found on the command line. Output is always initialized to the empty
+   --  string if it does not have a value already (otherwise it is left as is
+   --  so that you can specify the default value directly in the declaration
+   --  of the variable). The switch must accept an argument.
 
    procedure Set_Usage
      (Config   : in out Command_Line_Configuration;
@@ -695,15 +710,14 @@ package GNAT.Command_Line is
      (Switch    : String;
       Parameter : String;
       Section   : String);
-   --  Called when a switch is found on the command line.
-   --  [Switch] includes any leading '-' that was specified in Define_Switch.
-   --  This is slightly different from the functional version of Getopt above,
-   --  for which Full_Switch omits the first leading '-'.
+   --  Called when a switch is found on the command line. Switch includes
+   --  any leading '-' that was specified in Define_Switch. This is slightly
+   --  different from the functional version of Getopt above, for which
+   --  Full_Switch omits the first leading '-'.
 
    Exit_From_Command_Line : exception;
-   --  Emitted when the program should exit.
-   --  This is called when Getopt below has seen -h, --help or an invalid
-   --  switch.
+   --  Emitted when the program should exit. This is called when Getopt below
+   --  has seen -h, --help or an invalid switch.
 
    procedure Getopt
      (Config      : Command_Line_Configuration;
@@ -813,7 +827,7 @@ package GNAT.Command_Line is
    --  If the command line has sections (such as -bargs -cargs), then they
    --  should be listed in the Sections parameter (as "-bargs -cargs").
    --
-   --  This function can be used to reset Cmd by passing an empty string.
+   --  This function can be used to reset Cmd by passing an empty string
    --
    --  If an invalid switch is found on the command line (ie wasn't defined in
    --  the configuration via Define_Switch), and the configuration wasn't set
@@ -937,6 +951,7 @@ package GNAT.Command_Line is
    ---------------
    -- Iteration --
    ---------------
+
    --  When a command line was created with the above, you can then iterate
    --  over its contents using the following iterator.
 
@@ -982,6 +997,7 @@ package GNAT.Command_Line is
    --  create an Opt_Parser.
    --
    --  Args must be freed by the caller.
+   --
    --  Expanded has the same meaning as in Start.
 
 private
@@ -1095,6 +1111,10 @@ private
       Long_Switch : GNAT.OS_Lib.String_Access;
       Section     : GNAT.OS_Lib.String_Access;
       Help        : GNAT.OS_Lib.String_Access;
+
+      Argument    : GNAT.OS_Lib.String_Access;
+      --  null if "ARG".
+      --  Name of the argument for this switch.
 
       case Typ is
          when Switch_Untyped =>

@@ -76,4 +76,3 @@ end module m
   if (a%prod() .ne. 42) call abort
   if (a%extract (4) .ne. 168) call abort
 end
-! { dg-final { cleanup-modules "m" } }

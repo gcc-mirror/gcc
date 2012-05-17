@@ -44,4 +44,3 @@ contains
   mons(1) = p1%mons(1)*p2%mons(2)
  end function
 end module
-! { dg-final { cleanup-modules "mod_symmon mod_sympoly" } }

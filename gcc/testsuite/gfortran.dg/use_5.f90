@@ -45,5 +45,3 @@ use z
  if ((.my. i) /= 2+15) call abort ()
  if ((.addfive. i) /= 2+5) call abort ()
 end
-
-! { dg-final { cleanup-modules "x y z" } }

@@ -21,5 +21,3 @@ end
   implicit none
   procedure(Proc) :: Proc_Get
 end
-
-! { dg-final { cleanup-modules "m1 m2" } }

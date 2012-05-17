@@ -27,5 +27,3 @@ end module bar
   call xmain
   if (c(1) .ne. "ab") call abort
 end
-! { dg-final { cleanup-modules "bar" } }
-

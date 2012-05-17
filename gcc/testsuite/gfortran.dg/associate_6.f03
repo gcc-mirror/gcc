@@ -34,6 +34,5 @@ PROGRAM main
     IF (arr(1) /= 1 .OR. arr(4) /= 4) CALL abort ()
   END ASSOCIATE
 END PROGRAM main
-! { dg-final { cleanup-modules "m" } }
 ! { dg-final { scan-tree-dump-times "func" 2 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

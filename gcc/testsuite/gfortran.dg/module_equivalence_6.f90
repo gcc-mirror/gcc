@@ -19,4 +19,3 @@ PROGRAM fortranlibtest
   INTEGER :: ii
   ii = H5P_DEFAULT_F 
 END PROGRAM fortranlibtest
-! { dg-final { cleanup-modules "h5global hdf5" } }

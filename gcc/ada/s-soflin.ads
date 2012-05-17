@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ with Ada.Exceptions;
 with System.Stack_Checking;
 
 package System.Soft_Links is
-   pragma Preelaborate_05;
+   pragma Preelaborate;
 
    subtype EOA is Ada.Exceptions.Exception_Occurrence_Access;
    subtype EO is Ada.Exceptions.Exception_Occurrence;
@@ -289,12 +289,10 @@ package System.Soft_Links is
    -------------------------------------
 
    Library_Exception : EO;
-   pragma Export (Ada, Library_Exception, "__gnat_library_exception");
    --  Library-level finalization routines use this common reference to store
    --  the first library-level exception which occurs during finalization.
 
    Library_Exception_Set : Boolean := False;
-   pragma Export (Ada, Library_Exception_Set, "__gnat_library_exception_set");
    --  Used in conjunction with Library_Exception, set when an exception has
    --  been stored.
 
@@ -312,7 +310,7 @@ package System.Soft_Links is
    --  See the body of Tailored_Exception_Traceback in Ada.Exceptions for
    --  a more detailed description of the potential problems.
 
-   procedure Save_Library_Occurrence (E : Ada.Exceptions.Exception_Occurrence);
+   procedure Save_Library_Occurrence (E : EOA);
    --  When invoked, this routine saves an exception occurrence into a hidden
    --  reference. Subsequent calls will have no effect.
 

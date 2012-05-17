@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,9 +49,6 @@ package body System.OS_Primitives is
    --  GNU/Linker will fail to auto-import those variables when building
    --  libgnarl.dll. The indirection level introduced here has no measurable
    --  penalties.
-
-   --  Note that access variables below must not be declared as constant
-   --  otherwise the compiler optimization will remove this indirect access.
 
    type DA is access all Duration;
    --  Use to have indirect access to multi-word variables
@@ -129,9 +126,9 @@ package body System.OS_Primitives is
                   Long_Long_Float (TFA.all));
 
       --  If we have a shift of more than Max_Shift seconds we resynchronize
-      --  the Clock. This is probably due to a manual Clock adjustment, an
-      --  DST adjustment or an NTP synchronisation. And we want to adjust the
-      --  time for this system (non-monotonic) clock.
+      --  the Clock. This is probably due to a manual Clock adjustment, a DST
+      --  adjustment or an NTP synchronisation. And we want to adjust the time
+      --  for this system (non-monotonic) clock.
 
       if abs (Elap_Secs_Sys - Elap_Secs_Tick) > Max_Shift then
          Get_Base_Time;
@@ -179,7 +176,7 @@ package body System.OS_Primitives is
       --  a performance counter which has a better precision than the Win32
       --  time API.
 
-      --  Try at most 10th times to reach the best synchronisation (below 1
+      --  Try at most 10 times to reach the best synchronisation (below 1
       --  millisecond) otherwise the runtime will use the best value reached
       --  during the runs.
 
@@ -239,9 +236,11 @@ package body System.OS_Primitives is
    function Monotonic_Clock return Duration is
       Current_Ticks  : aliased LARGE_INTEGER;
       Elap_Secs_Tick : Duration;
+
    begin
       if QueryPerformanceCounter (Current_Ticks'Access) = Win32.FALSE then
          return 0.0;
+
       else
          Elap_Secs_Tick :=
            Duration (Long_Long_Float (Current_Ticks - BMTA.all) /

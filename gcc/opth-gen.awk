@@ -1,4 +1,4 @@
-#  Copyright (C) 2003,2004,2005,2006,2007,2008, 2010, 2011
+#  Copyright (C) 2003,2004,2005,2006,2007,2008, 2010, 2011, 2012
 #  Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
@@ -293,6 +293,30 @@ print "extern void cl_target_option_restore (struct gcc_options *, struct cl_tar
 print "";
 print "/* Print target option variables from a structure.  */";
 print "extern void cl_target_option_print (FILE *, int, struct cl_target_option *);";
+print "";
+print "/* Anything that includes tm.h, does not necessarily need this.  */"
+print "#if !defined(GCC_TM_H)"
+print "#include \"input.h\" /* for location_t */"
+print "bool                                                                  "
+print "common_handle_option_auto (struct gcc_options *opts,                  "
+print "                           struct gcc_options *opts_set,              "
+print "                           const struct cl_decoded_option *decoded,   "
+print "                           unsigned int lang_mask, int kind,          "
+print "                           location_t loc,                            "
+print "                           const struct cl_option_handlers *handlers, "
+print "                           diagnostic_context *dc);                   "
+for (i = 0; i < n_langs; i++) {
+    lang_name = lang_sanitized_name(langs[i]);
+    print "bool                                                                  "
+    print lang_name "_handle_option_auto (struct gcc_options *opts,              "
+    print "                           struct gcc_options *opts_set,              "
+    print "                           size_t scode, const char *arg, int value,  "
+    print "                           unsigned int lang_mask, int kind,          "
+    print "                           location_t loc,                            "
+    print "                           const struct cl_option_handlers *handlers, "
+    print "                           diagnostic_context *dc);                   "
+}
+print "#endif";
 print "#endif";
 print "";
 
@@ -388,8 +412,7 @@ for (i = 0; i < n_opts; i++) {
 print ""
 
 for (i = 0; i < n_langs; i++) {
-	macros[i] = "CL_" langs[i]
-	gsub( "[^" alnum "_]", "X", macros[i] )
+        macros[i] = "CL_" lang_sanitized_name(langs[i])
 	s = substr("            ", length (macros[i]))
 	print "#define " macros[i] s " (1U << " i ")"
     }

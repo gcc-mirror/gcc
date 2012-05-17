@@ -32,4 +32,4 @@ MULTILIB_EXCEPTIONS = mips3* mabi=o64 fPIC \
 		      $(addprefix mabi=o64/, EL* msoft-float* mrtp* fPIC*) \
 		      $(addsuffix /fPIC, *mabi=o64 *mips3 *EL *msoft-float)
 
-MUTLILIB_EXTRA_OPTS = -G 0 -mno-branch-likely
+MULTILIB_EXTRA_OPTS = -G 0 -mno-branch-likely

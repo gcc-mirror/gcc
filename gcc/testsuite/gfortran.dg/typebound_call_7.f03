@@ -46,5 +46,3 @@ CONTAINS
   END SUBROUTINE fill_gap
 
 END MODULE touching
-
-! { dg-final { cleanup-modules "touching" } }

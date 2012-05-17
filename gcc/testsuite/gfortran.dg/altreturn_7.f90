@@ -30,6 +30,3 @@ END MODULE
   CALL ABORT()
 2 CONTINUE
 END
-
-! { dg-final { cleanup-modules "tt" } }
-

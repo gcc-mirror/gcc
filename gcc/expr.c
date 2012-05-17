@@ -1386,7 +1386,7 @@ init_block_move_fn (const char *asmspec)
 {
   if (!block_move_fn)
     {
-      tree args, fn;
+      tree args, fn, attrs, attr_args;
 
       fn = get_identifier ("memcpy");
       args = build_function_type_list (ptr_type_node, ptr_type_node,
@@ -1400,6 +1400,11 @@ init_block_move_fn (const char *asmspec)
       TREE_NOTHROW (fn) = 1;
       DECL_VISIBILITY (fn) = VISIBILITY_DEFAULT;
       DECL_VISIBILITY_SPECIFIED (fn) = 1;
+
+      attr_args = build_tree_list (NULL_TREE, build_string (1, "1"));
+      attrs = tree_cons (get_identifier ("fn spec"), attr_args, NULL);
+
+      decl_attributes (&fn, attrs, ATTR_FLAG_BUILT_IN);
 
       block_move_fn = fn;
     }
@@ -8190,10 +8195,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	      || DECL_RTL (treeop1) == stack_pointer_rtx
 	      || DECL_RTL (treeop1) == arg_pointer_rtx))
 	{
-	  tree t = treeop1;
-
-	  treeop1 = TREE_OPERAND (treeop0, 0);
-	  TREE_OPERAND (treeop0, 0) = t;
+	  gcc_unreachable ();
 	}
 
       /* If the result is to be ptr_mode and we are adding an integer to

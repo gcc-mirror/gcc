@@ -34,5 +34,3 @@ module m_common_namespaces
   use m_common_attrs, only: dictionary_t
   use m_common_attrs, only: get_prefix_by_index
 end module m_common_namespaces
-
-! { dg-final { cleanup-modules "m_common_attrs m_common_namespaces" } }

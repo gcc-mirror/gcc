@@ -41,5 +41,3 @@ program main
    call BytesToString( StringToBytes('Hi'), str )
    if (trim(str) .ne. "Hi") call abort ()
 end program
-! { dg-final { cleanup-modules "transferbug" } }
-

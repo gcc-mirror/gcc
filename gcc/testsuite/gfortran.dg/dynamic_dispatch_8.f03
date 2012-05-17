@@ -103,6 +103,3 @@ program testd10
   if (a%getit() .ne. 3) call abort
 
 end program testd10
-
-! { dg-final { cleanup-modules "foo_mod foo2_mod bar_mod" } }
-

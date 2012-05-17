@@ -16,4 +16,3 @@ contains
 
   end subroutine sub0
 end module c_loc_tests_5
-! { dg-final { cleanup-modules "c_loc_tests_5" } }

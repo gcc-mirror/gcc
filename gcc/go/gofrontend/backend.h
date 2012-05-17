@@ -321,16 +321,16 @@ class Backend
   error_variable() = 0;
 
   // Create a global variable.  PACKAGE_NAME is the name of the
-  // package where the variable is defined.  UNIQUE_PREFIX is the
-  // prefix for that package, from the -fgo-prefix option.  NAME is
-  // the name of the variable.  BTYPE is the type of the variable.
-  // IS_EXTERNAL is true if the variable is defined in some other
-  // package.  IS_HIDDEN is true if the variable is not exported (name
-  // begins with a lower case letter).  LOCATION is where the variable
-  // was defined.
+  // package where the variable is defined.  PKGPATH is the package
+  // path for that package, from the -fgo-pkgpath or -fgo-prefix
+  // option.  NAME is the name of the variable.  BTYPE is the type of
+  // the variable.  IS_EXTERNAL is true if the variable is defined in
+  // some other package.  IS_HIDDEN is true if the variable is not
+  // exported (name begins with a lower case letter).  LOCATION is
+  // where the variable was defined.
   virtual Bvariable*
   global_variable(const std::string& package_name,
-		  const std::string& unique_prefix,
+		  const std::string& pkgpath,
 		  const std::string& name,
 		  Btype* btype,
 		  bool is_external,

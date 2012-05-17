@@ -45,5 +45,3 @@ module merry_ICE
    use foo,  only: foo_t   ! <------ change order to prevent ICE
    use bar,  only: bar_t   ! <------ change order to prevent ICE
 end module merry_ICE
-
-! { dg-final { cleanup-modules "foo bar merry_ice" } }

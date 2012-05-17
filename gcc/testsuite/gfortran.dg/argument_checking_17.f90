@@ -22,5 +22,3 @@ contains
     call sub2(a%mdr(GRH_SIZE+1),a%size-GRH_SIZE)
   end subroutine sub1
 end module teststr
-
-! { dg-final { cleanup-modules "teststr" } }

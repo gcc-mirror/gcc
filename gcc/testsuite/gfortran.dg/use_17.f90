@@ -35,5 +35,3 @@ subroutine test1
   integer :: c_double
   integer, parameter :: p1 = c_int, p2 = c_double_orig
 end subroutine test1
-
-! { dg-final { cleanup-modules "mod1 mod2" } }

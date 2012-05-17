@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,7 +89,7 @@ package Exp_Ch7 is
    --    when others =>
    --       if not Raised_Id then
    --          Raised_Id := True;
-   --          Save_Library_Occurrence (Get_Current_Excep.all.all);
+   --          Save_Library_Occurrence (Get_Current_Excep.all);
    --       end if;
    --
    --  E_Id denotes the defining identifier of a local exception occurrence.
@@ -272,6 +272,8 @@ package Exp_Ch7 is
    function Is_Simple_Protected_Type (T : Entity_Id) return Boolean;
    --  Determine whether T denotes a protected type without entires whose
    --  _object field is of type System.Tasking.Protected_Objects.Protection.
+   --  Something wrong here, implementation was changed to test Lock_Free
+   --  but this spec does not mention that ???
 
    --------------------------------
    -- Transient Scope Management --

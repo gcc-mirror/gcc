@@ -47,5 +47,3 @@ module bind_c_coms_2
   integer(c_int) :: m, n
   bind(c, name="") /com3/
 end module bind_c_coms_2
-
-! { dg-final { cleanup-modules "bind_c_coms bind_c_coms_2" } }

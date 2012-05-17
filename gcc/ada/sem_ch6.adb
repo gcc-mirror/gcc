@@ -1812,7 +1812,6 @@ package body Sem_Ch6 is
       Prev_Id      : constant Entity_Id  := Current_Entity_In_Scope (Body_Id);
       Conformant   : Boolean;
       HSS          : Node_Id;
-      P_Ent        : Entity_Id;
       Prot_Typ     : Entity_Id := Empty;
       Spec_Id      : Entity_Id;
       Spec_Decl    : Node_Id   := Empty;
@@ -2507,44 +2506,12 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Do not inline any subprogram that contains nested subprograms, since
-      --  the backend inlining circuit seems to generate uninitialized
-      --  references in this case. We know this happens in the case of front
-      --  end ZCX support, but it also appears it can happen in other cases as
-      --  well. The backend often rejects attempts to inline in the case of
-      --  nested procedures anyway, so little if anything is lost by this.
-      --  Note that this is test is for the benefit of the back-end. There is
-      --  a separate test for front-end inlining that also rejects nested
-      --  subprograms.
+      --  Previously we scanned the body to look for nested subprograms, and
+      --  rejected an inline directive if nested subprograms were present,
+      --  because the back-end would generate conflicting symbols for the
+      --  nested bodies. This is now unnecessary.
 
-      --  Do not do this test if errors have been detected, because in some
-      --  error cases, this code blows up, and we don't need it anyway if
-      --  there have been errors, since we won't get to the linker anyway.
-
-      if Comes_From_Source (Body_Id)
-        and then Serious_Errors_Detected = 0
-        and then not Debug_Flag_Dot_K
-      then
-         P_Ent := Body_Id;
-         loop
-            P_Ent := Scope (P_Ent);
-            exit when No (P_Ent) or else P_Ent = Standard_Standard;
-
-            if Is_Subprogram (P_Ent) then
-               Set_Is_Inlined (P_Ent, False);
-
-               if Comes_From_Source (P_Ent)
-                 and then Has_Pragma_Inline (P_Ent)
-               then
-                  Cannot_Inline
-                    ("cannot inline& (nested subprogram)?",
-                     N, P_Ent);
-               end if;
-            end if;
-         end loop;
-      end if;
-
-      --  Look ahead to recognize a pragma inline that appears after the body
+      --  Look ahead to recognize a pragma Inline that appears after the body
 
       Check_Inline_Pragma (Spec_Id);
 
@@ -6105,7 +6072,6 @@ package body Sem_Ch6 is
 
    begin
       while Present (Old_Discr) and then Present (New_Discr) loop
-
          New_Discr_Id := Defining_Identifier (New_Discr);
 
          --  The subtype mark of the discriminant on the full type has not
@@ -8967,7 +8933,7 @@ package body Sem_Ch6 is
         or else not Is_Dispatching_Operation (Prim)
         or else Scope (Prim) /= Scope (Tagged_Type)
         or else No (Typ)
-        or else Base_Type (Typ) /= Tagged_Type
+        or else Base_Type (Typ) /= Base_Type (Tagged_Type)
         or else not Primitive_Names_Match (Iface_Prim, Prim)
       then
          return False;

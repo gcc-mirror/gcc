@@ -23,6 +23,3 @@ SUBROUTINE cdf_beta()
   IMPLICIT NONE
   CALL check_complements(the_beta%name)
 END SUBROUTINE cdf_beta
-
-! { dg-final { cleanup-modules "cdf_aux_mod" } }
-

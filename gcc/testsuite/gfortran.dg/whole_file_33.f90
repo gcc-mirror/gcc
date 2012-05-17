@@ -46,5 +46,3 @@ MODULE DENSEOP
    x=x_o
   END SUBROUTINE GEINV8
 END MODULE DENSEOP
-
-! { dg-final { cleanup-modules "la_precision lapack90 denseop" } }

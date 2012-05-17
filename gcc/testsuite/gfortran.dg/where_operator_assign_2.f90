@@ -102,5 +102,3 @@ contains
     endwhere
   end subroutine test_where_4
 end program test 
-! { dg-final { cleanup-modules "global" } }
-

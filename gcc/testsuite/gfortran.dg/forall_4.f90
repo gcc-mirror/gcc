@@ -64,4 +64,3 @@ contains
     w = 5 - i
   end function w
 end
-! { dg-final { cleanup-modules "foo" } }

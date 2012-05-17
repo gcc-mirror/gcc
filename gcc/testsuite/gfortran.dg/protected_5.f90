@@ -53,5 +53,3 @@ program main
   nullify(t%p)         ! { dg-error "pointer association context" }
   allocate(t%array(15))! { dg-error "variable definition context" }
 end program main
-
-! { dg-final { cleanup-modules "good1 good2 bad1 bad2" } }

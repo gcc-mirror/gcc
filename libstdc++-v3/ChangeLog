@@ -1,3 +1,43 @@
+2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/53339
+	* include/bits/hashtable_policy.h (__detail::_Identity,
+	__detail::_Select1st): Add.
+	(_Map_base, _Hashtable_base): Use the latter, adjust parameters.
+	* include/bits/hashtable.h (_Hashtable::__key_extract): Adjust.
+	* include/bits/unordered_set.h (__uset_hashtable, __umset_hashtable):
+	Likewise.
+	* include/bits/unordered_map.h (__umap_hashtable, __ummap_hashtable):
+	Likewise.
+	* include/bits/stl_function.h (_Identity, _Select1st, _Select2nd)
+	Unconditionally derive from unary_function.
+	* include/ext/functional (identity, select1st, select2nd): Remove
+	#ifdef __GXX_EXPERIMENTAL_CXX0X__ bits.
+	* testsuite/23_containers/unordered_map/requirements/53339.cc: New.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	53339.cc: Likewise.
+
+2012-05-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/53263
+	* include/debug/safe_iterator.h (__gnu_debug::__base): Move...
+	* include/debug/functions.h: ... Here.
+	(__check_sorted_aux): Add overload for random access safe
+	iterators.
+	(__check_partition_lower_aux): New.
+	(__check_partition_lower): Use latter.
+	(__check_partition_upper_aux): New.
+	(__check_partition_upper): Use latter.
+	* include/debug/macros.h (__glibcxx_check_heap)
+	(__glibcxx_check_heap_pred): Use __gnu_debug::__base on iterator range.
+
+2012-05-10  DJ Delorie  <dj@redhat.com>
+
+	* include/bits/random.tcc (seed_seq::generate): Cast max()
+	operands to size_t to ensure a template match.
+	* include/std/bitset (_M_copy_from_ptr): Cast min() operands to
+	size_t to ensure a template match.
+
 2012-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* scripts/testsuite_flags.in (cxxflags): Remove

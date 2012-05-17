@@ -32,4 +32,3 @@ program main
   p = c_funloc(ffunc)
   call callFunc(p, 21,-17*21)
 end program main
-! { dg-final { cleanup-modules "c_funloc_tests_3" } }

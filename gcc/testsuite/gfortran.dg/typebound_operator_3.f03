@@ -121,5 +121,3 @@ PROGRAM main
 
   IF (.GET. num1 /= 3.0) CALL abort ()
 END PROGRAM main
-
-! { dg-final { cleanup-modules "m" } }

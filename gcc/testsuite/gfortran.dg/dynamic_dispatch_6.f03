@@ -65,5 +65,3 @@ program main
   allocate (periodic_5th_factory ::  field_creator) 
   u => field_creator%create() 
 end program
-
-! { dg-final { cleanup-modules "field_module periodic_5th_order_module field_factory_module periodic_5th_factory_module" } }

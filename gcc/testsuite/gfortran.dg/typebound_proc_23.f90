@@ -28,5 +28,3 @@ if (it/=0) call abort()
 call ice_sub(t)
 if (it/=1) call abort()
 end
-
-! { dg-final { cleanup-modules "ice" } }

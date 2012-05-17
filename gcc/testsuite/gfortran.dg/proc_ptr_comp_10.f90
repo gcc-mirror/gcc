@@ -26,6 +26,3 @@ type(t) :: obj
 obj%ppc => pp
 pp => obj%ppc
 end
-
-! { dg-final { cleanup-modules "m" } }
-

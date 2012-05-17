@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,7 +35,8 @@
 
 --  This version of Ada.Exceptions is a full Ada 95 version. It omits Ada 2005
 --  features such as the additional definitions of Exception_Name returning
---  Wide_[Wide_]String.
+--  Wide_[Wide_]String. It differs from the Ada 95 version only in that it is
+--  declared Preelaborate (see declaration below for why this is done).
 
 --  It is used for building the compiler and the basic tools, since these
 --  builds may be done with bootstrap compilers that cannot handle these
@@ -56,12 +57,10 @@ with System.Standard_Library;
 with System.Traceback_Entries;
 
 package Ada.Exceptions is
-   pragma Warnings (Off);
-   pragma Preelaborate_05;
-   pragma Warnings (On);
-   --  We make this preelaborable in Ada 2005 mode. If we did not do this, then
-   --  run time units used by the compiler (e.g. s-soflin.ads) would run
-   --  into trouble. Conformance is not an issue, since this version is used
+   pragma Preelaborate;
+   --  We make this preelaborable. If we did not do this, then run time units
+   --  used by the compiler (e.g. s-soflin.ads) would run into trouble.
+   --  Conformance with Ada 95 is not an issue, since this version is used
    --  only by the compiler.
 
    type Exception_Id is private;
@@ -206,6 +205,13 @@ private
            "__gnat_raise_from_controlled_operation");
    --  Raise Program_Error, providing information about X (an exception raised
    --  during a controlled operation) in the exception message.
+
+   procedure Reraise_Library_Exception_If_Any;
+   pragma Export
+     (Ada, Reraise_Library_Exception_If_Any,
+           "__gnat_reraise_library_exception_if_any");
+   --  If there was an exception raised during library-level finalization,
+   --  reraise the exception.
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);

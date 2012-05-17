@@ -1,5 +1,75 @@
+2012-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/52428
+	* gfortran.texi: Update _gfortran_set_options documentation.
+	* invoke.texi: Remove runtime behavior description of
+	-fno-range-check.
+	* trans-decl.c (create_main_function): Don't pass the range-check
+	setting to the library.
+
+2012-05-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49110
+	PR fortran/51055
+	PR fortran/53329
+	* trans-expr.c (gfc_trans_assignment_1): Fix allocation
+	handling for assignment of function results to allocatable
+	deferred-length strings.
+	* trans-decl.c (gfc_create_string_length): For deferred-length
+	module variables, include module name in the assembler name.
+	(gfc_get_symbol_decl): Don't override the assembler name.
+
+2012-05-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* options.c (gfc_handle_option): Call lang-specific generated function.
+
+2012-05-13  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52158
+	PR fortran/45170
+	PR fortran/49430
+	* resolve.c (resolve_fl_derived0): Deferred character length 
+	procedure components are supported.
+	* trans-expr.c (gfc_conv_procedure_call): Handle TBP with 
+	deferred-length results.
+	(gfc_string_to_single_character): Add a new check to prevent
+	NULL read.
+	(gfc_conv_procedure_call): Remove unuseful checks on 
+	symbol's attributes. Add new checks to prevent NULL read on
+	string length. 
+
+2012-05-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49110
+	PR fortran/52843
+	* resolve.c (resolve_fl_procedure): Don't regard
+	character(len=:) as character(*) in the diagnostic.
+
+2012-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52537
+	* frontend-passes.c (optimize_op):  Change
+	old-style comparison operators to new-style, simplify
+	switch as a result.
+	(empty_string):  New function.
+	(get_len_trim_call):  New function.
+	(optimize_comparison):  If comparing to an empty string,
+	use comparison of len_trim to zero.
+	Use new-style comparison operators only.
+	(optimize_trim):  Use get_len_trim_call.
+
+2012-05-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* options.c: Include diagnostics.h instead of
+	diagnostics-core.h.
+	(set_Wall): Do not see warn_unused here.
+	(gfc_handle_option): Set it here using handle_generated_option.
+
 2012-05-08  Jan Hubicka  <jh@suse.cz>
-	
+
 	* trans-common.c (create_common): Do not fake TREE_ASM_WRITTEN.
 	* trans-decl.c (gfc_finish_cray_pointee): Likewise.
 

@@ -521,18 +521,19 @@ package body Ada.Calendar is
       --  irrelevant in this case.
 
       Formatting_Operations.Split
-        (Date      => Date,
-         Year      => Year,
-         Month     => Month,
-         Day       => Day,
-         Day_Secs  => Seconds,
-         Hour      => H,
-         Minute    => M,
-         Second    => Se,
-         Sub_Sec   => Ss,
-         Leap_Sec  => Le,
-         Use_TZ    => False,
-         Time_Zone => 0);
+        (Date        => Date,
+         Year        => Year,
+         Month       => Month,
+         Day         => Day,
+         Day_Secs    => Seconds,
+         Hour        => H,
+         Minute      => M,
+         Second      => Se,
+         Sub_Sec     => Ss,
+         Leap_Sec    => Le,
+         Use_TZ      => False,
+         Is_Historic => True,
+         Time_Zone   => 0);
 
       --  Validity checks
 
@@ -589,6 +590,7 @@ package body Ada.Calendar is
            Leap_Sec     => False,
            Use_Day_Secs => True,
            Use_TZ       => False,
+           Is_Historic  => True,
            Time_Zone    => 0);
    end Time_Of;
 
@@ -836,6 +838,7 @@ package body Ada.Calendar is
                 Leap_Sec     => Leap,
                 Use_Day_Secs => False,    --  Time is given in h:m:s
                 Use_TZ       => True,     --  Force usage of explicit time zone
+                Is_Historic  => True,
                 Time_Zone    => 0));      --  Place the value in UTC
          --  Step 4: Daylight Savings Time
 
@@ -912,8 +915,19 @@ package body Ada.Calendar is
          --  Step 1: Split the input time
 
          Formatting_Operations.Split
-           (T, Year, Month, tm_day, Day_Secs,
-            tm_hour, tm_min, Second, Sub_Sec, Leap_Sec, True, 0);
+           (Date        => T,
+            Year        => Year,
+            Month       => Month,
+            Day         => tm_day,
+            Day_Secs    => Day_Secs,
+            Hour        => tm_hour,
+            Minute      => tm_min,
+            Second      => Second,
+            Sub_Sec     => Sub_Sec,
+            Leap_Sec    => Leap_Sec,
+            Use_TZ      => True,
+            Is_Historic => False,
+            Time_Zone   => 0);
 
          --  Step 2: Correct the year and month
 
@@ -980,22 +994,23 @@ package body Ada.Calendar is
       -----------
 
       procedure Split
-        (Date      : Time;
-         Year      : out Year_Number;
-         Month     : out Month_Number;
-         Day       : out Day_Number;
-         Day_Secs  : out Day_Duration;
-         Hour      : out Integer;
-         Minute    : out Integer;
-         Second    : out Integer;
-         Sub_Sec   : out Duration;
-         Leap_Sec  : out Boolean;
-         Use_TZ    : Boolean;
-         Time_Zone : Long_Integer)
+        (Date        : Time;
+         Year        : out Year_Number;
+         Month       : out Month_Number;
+         Day         : out Day_Number;
+         Day_Secs    : out Day_Duration;
+         Hour        : out Integer;
+         Minute      : out Integer;
+         Second      : out Integer;
+         Sub_Sec     : out Duration;
+         Leap_Sec    : out Boolean;
+         Use_TZ      : Boolean;
+         Is_Historic : Boolean;
+         Time_Zone   : Long_Integer)
       is
-         --  The flag Use_TZ is present for interfacing purposes
+         --  Flags Use_TZ and Is_Historic are present for interfacing purposes
 
-         pragma Unreferenced (Use_TZ);
+         pragma Unreferenced (Use_TZ, Is_Historic);
 
          procedure Numtim
            (Status : out Unsigned_Longword;
@@ -1104,11 +1119,16 @@ package body Ada.Calendar is
          Minute       : Integer;
          Second       : Integer;
          Sub_Sec      : Duration;
-         Leap_Sec     : Boolean := False;
-         Use_Day_Secs : Boolean := False;
-         Use_TZ       : Boolean := False;
-         Time_Zone    : Long_Integer := 0) return Time
+         Leap_Sec     : Boolean;
+         Use_Day_Secs : Boolean;
+         Use_TZ       : Boolean;
+         Is_Historic  : Boolean;
+         Time_Zone    : Long_Integer) return Time
       is
+         --  Flag Is_Historic is present for interfacing purposes
+
+         pragma Unreferenced (Is_Historic);
+
          procedure Cvt_Vectim
            (Status         : out Unsigned_Longword;
             Input_Time     : Unsigned_Word_Array;

@@ -46,5 +46,3 @@ end module
   if (t1%a .ne. -0.5d0) call abort
   if (any(t1%b .ne. [-1d0, -2d0])) call abort
 end
-
-! { dg-final { cleanup-modules "typemodule" } }

@@ -3598,7 +3598,8 @@ expand_omp_taskreg (struct omp_region *region)
     expand_parallel_call (region, new_bb, entry_stmt, ws_args);
   else
     expand_task_call (new_bb, entry_stmt);
-  update_ssa (TODO_update_ssa_only_virtuals);
+  if (gimple_in_ssa_p (cfun))
+    update_ssa (TODO_update_ssa_only_virtuals);
 }
 
 
@@ -3709,7 +3710,7 @@ expand_omp_for_generic (struct omp_region *region,
   iend0 = create_tmp_var (fd->iter_type, ".iend0");
   TREE_ADDRESSABLE (istart0) = 1;
   TREE_ADDRESSABLE (iend0) = 1;
-  if (gimple_in_ssa_p (cfun))
+  if (gimple_referenced_vars (cfun))
     {
       add_referenced_var (istart0);
       add_referenced_var (iend0);
@@ -3793,7 +3794,7 @@ expand_omp_for_generic (struct omp_region *region,
 	    counts[i] = t;
 	  else
 	    {
-	      counts[i] = create_tmp_var (type, ".count");
+	      counts[i] = make_rename_temp (type, ".count");
 	      t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE,
 					    true, GSI_SAME_STMT);
 	      stmt = gimple_build_assign (counts[i], t);
@@ -3918,8 +3919,7 @@ expand_omp_for_generic (struct omp_region *region,
 				   false, GSI_CONTINUE_LINKING);
   if (fd->collapse > 1)
     {
-      tree tem = create_tmp_var (type, ".tem");
-
+      tree tem = make_rename_temp (type, ".tem");
       stmt = gimple_build_assign (tem, fd->loop.v);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
       for (i = fd->collapse - 1; i >= 0; i--)
@@ -4207,12 +4207,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   t = fold_convert (itype, t);
   n = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE, true, GSI_SAME_STMT);
 
-  q = create_tmp_var (itype, "q");
+  q = make_rename_temp (itype, "q");
   t = fold_build2 (TRUNC_DIV_EXPR, itype, n, nthreads);
   t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE, true, GSI_SAME_STMT);
   gsi_insert_before (&gsi, gimple_build_assign (q, t), GSI_SAME_STMT);
 
-  tt = create_tmp_var (itype, "tt");
+  tt = make_rename_temp (itype, "tt");
   t = fold_build2 (TRUNC_MOD_EXPR, itype, n, nthreads);
   t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE, true, GSI_SAME_STMT);
   gsi_insert_before (&gsi, gimple_build_assign (tt, t), GSI_SAME_STMT);
@@ -4433,7 +4433,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   n = force_gimple_operand_gsi (&si, t, true, NULL_TREE,
 				true, GSI_SAME_STMT);
 
-  trip_var = create_tmp_var (itype, ".trip");
+  trip_var = create_tmp_reg (itype, ".trip");
   if (gimple_in_ssa_p (cfun))
     {
       add_referenced_var (trip_var);
@@ -4679,7 +4679,8 @@ expand_omp_for (struct omp_region *region)
 			      (enum built_in_function) next_ix);
     }
 
-  update_ssa (TODO_update_ssa_only_virtuals);
+  if (gimple_in_ssa_p (cfun))
+    update_ssa (TODO_update_ssa_only_virtuals);
 }
 
 
@@ -5281,8 +5282,8 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
     {
       tree iaddr_val;
 
-      iaddr = create_tmp_var (build_pointer_type_for_mode (itype, ptr_mode,
-							   true), NULL);
+      iaddr = make_rename_temp (build_pointer_type_for_mode (itype, ptr_mode,
+							     true), NULL);
       iaddr_val
 	= force_gimple_operand_gsi (&si,
 				    fold_convert (TREE_TYPE (iaddr), addr),

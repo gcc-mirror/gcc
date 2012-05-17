@@ -25,5 +25,3 @@ contains
    y = p(x)
  end function i_g
 end module m2
-
-! { dg-final { cleanup-modules "m1 m2" } }

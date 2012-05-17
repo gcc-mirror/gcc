@@ -427,6 +427,12 @@ get_string_length (strinfo si)
 				    NULL);
 	  add_referenced_var (lhs_var);
 	  tem = gimple_call_arg (stmt, 0);
+          if (!ptrofftype_p (TREE_TYPE (lhs)))
+            {
+              lhs = convert_to_ptrofftype (lhs);
+              lhs = force_gimple_operand_gsi (&gsi, lhs, true, NULL_TREE,
+                                              true, GSI_SAME_STMT);
+            }
 	  lenstmt
 	    = gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
 					    make_ssa_name (lhs_var, NULL),

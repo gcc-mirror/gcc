@@ -15,5 +15,3 @@ program main
   use c_ptr_tests_10
   call sub0()
 end program main
-
-! { dg-final { cleanup-modules "c_ptr_tests_10" } }

@@ -22,5 +22,3 @@ subroutine VALUE()
 end subroutine VALUE
 
 end
-
-! { dg-final { cleanup-modules "ints" } }

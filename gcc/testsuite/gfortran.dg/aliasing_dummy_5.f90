@@ -51,5 +51,3 @@ contains
     CALL foobar (x)
   end subroutine bar
 END subroutine test
-
-! { dg-final { cleanup-modules "m m2" } }

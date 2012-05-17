@@ -41,4 +41,3 @@ END MODULE complex
   if (.not.((a + b) .eq. (b + a))) call abort ()
   if (.not.((a + b) .eq. cx (4, 2))) call abort ()
 end
-! { dg-final { cleanup-modules "complex" } }

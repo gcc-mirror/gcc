@@ -1780,6 +1780,11 @@ package VMS_Data is
    --   than after compilation is terminated. If GNAT terminates prematurely
    --   or goes into an infinite loop, the last error message displayed may
    --   help to pinpoint the culprit.
+   --
+   --   Note that this qualifier is intended only for helping to diagnose
+   --   illegal programs when the compiler fails. It disconnects many of the
+   --   normal handling procedures for error messages, and may for example
+   --   cause malfunction of pragma Warnings.
 
    S_GCC_Inline  : aliased constant S := "/INLINE="                        &
                                             "PRAGMA "                      &

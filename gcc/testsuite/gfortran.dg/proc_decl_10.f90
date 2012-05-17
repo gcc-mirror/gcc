@@ -28,5 +28,3 @@ procedure(cos) :: my2 ! { dg-error "Cannot change attributes" }
 procedure(dprod) :: my3 ! { dg-error "Cannot change attributes" }
 
 end program test
-
-! { dg-final { cleanup-modules "m" } }

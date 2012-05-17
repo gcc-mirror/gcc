@@ -51,6 +51,3 @@ recursive subroutine my_sub(j)
    j = j*3
    call set_sub(my_sub)
 end subroutine my_sub
-
-! { dg-final { cleanup-modules "store_subroutine" } }
-

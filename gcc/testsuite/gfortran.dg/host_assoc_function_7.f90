@@ -37,5 +37,3 @@ end module sa0054_stuff
   call SA0054 (RDA)
   IF (ANY (INT (RDA) .ne. [(6 * I, I = 1, 10)])) print *, rda
 END
-
-! { dg-final { cleanup-modules "sa0054_stuff" } }

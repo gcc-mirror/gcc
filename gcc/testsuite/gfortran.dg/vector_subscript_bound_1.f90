@@ -17,5 +17,3 @@ CONTAINS
     PRINT *, pw%cr(UBOUND(pw%cr))
   END SUBROUTINE pw_write
 END MODULE
-
-! { dg-final { cleanup-modules "pw_types" } }

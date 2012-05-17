@@ -26,5 +26,3 @@ PROGRAM MAIN
   TYPE(T1) :: BAZ
   BAZ = BAR
 END
-! { dg-final { cleanup-modules "m" } }
-

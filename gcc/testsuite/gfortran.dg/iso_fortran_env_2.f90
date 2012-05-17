@@ -72,5 +72,3 @@ subroutine gee5
   use ,non_intrinsic :: iso_fortran_env
   print *, x
 end
-
-! { dg-final { cleanup-modules "iso_fortran_env" } }

@@ -32,5 +32,3 @@ TYPE(BLOCK) MATRIX
 POINTER MATRIX
 ALLOCATE(MATRIX)
 END
-
-! { dg-final { cleanup-modules "mat" } }

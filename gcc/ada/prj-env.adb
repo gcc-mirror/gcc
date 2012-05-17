@@ -754,7 +754,7 @@ package body Prj.Env is
          exit when Data = No_Source;
 
          if Data.Unit /= No_Unit_Index then
-            if Data.Locally_Removed then
+            if Data.Locally_Removed and then not Data.Suppressed then
                Fmap.Add_Forbidden_File_Name (Data.File);
             else
                Fmap.Add_To_File_Map
@@ -829,7 +829,8 @@ package body Prj.Env is
             Source := Prj.Element (Iter);
             exit when Source = No_Source;
 
-            if Source.Replaced_By = No_Source
+            if not Source.Suppressed
+              and then Source.Replaced_By = No_Source
               and then Source.Path.Name /= No_Path
               and then (Source.Language.Config.Kind = File_Based
                          or else Source.Unit /= No_Unit_Index)

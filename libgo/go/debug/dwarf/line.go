@@ -359,7 +359,7 @@ func (d *Data) parseLineProgram(u *unit, b *buf, hdr lineHdr, end Offset) {
 					b.error("DWARF file number out of range")
 					return
 				}
-				lineInfo.Filename = hdr.files[i]
+				lineInfo.Filename = hdr.files[i-1]
 				newLineInfo = true
 			case LineSetColumn:
 				lineInfo.Column = int(b.uint())

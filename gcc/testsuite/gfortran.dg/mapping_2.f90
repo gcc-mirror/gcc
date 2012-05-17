@@ -29,4 +29,3 @@ program len_test
 
    if (my_string(x) .ne. "01234567890") call abort ()
 end program len_test
-! { dg-final { cleanup-modules "test" } }

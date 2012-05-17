@@ -25,4 +25,3 @@ print *, t ! { dg-error "has PRIVATE components" }
 print *, c_loc(get_ptr()) ! { dg-error "has PRIVATE components" }
 
 end
-! { dg-final { cleanup-modules "pr32601" } }  

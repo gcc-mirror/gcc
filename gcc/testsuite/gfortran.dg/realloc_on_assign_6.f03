@@ -124,6 +124,3 @@ do k = 1,size(some_type_to_save)
 end do
 
 end subroutine print_after_transfer
-! { dg-final { cleanup-modules "m gf33" } }
-! { dg-final { cleanup-modules "custom_type custom_interfaces" } }
-! { dg-final { cleanup-modules "store_data_test" } }

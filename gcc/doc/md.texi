@@ -4417,12 +4417,10 @@ Similar, for other arithmetic operations.
 @cindex @code{fma@var{m}4} instruction pattern
 @item @samp{fma@var{m}4}
 Multiply operand 2 and operand 1, then add operand 3, storing the
-result in operand 0.  All operands must have mode @var{m}.  This
-pattern is used to implement the @code{fma}, @code{fmaf}, and
-@code{fmal} builtin functions from the ISO C99 standard.  The
-@code{fma} operation may produce different results than doing the
-multiply followed by the add if the machine does not perform a
-rounding step between the operations.
+result in operand 0 without doing an intermediate rounding step.  All
+operands must have mode @var{m}.  This pattern is used to implement
+the @code{fma}, @code{fmaf}, and @code{fmal} builtin functions from
+the ISO C99 standard.
 
 @cindex @code{fms@var{m}4} instruction pattern
 @item @samp{fms@var{m}4}
@@ -5613,6 +5611,13 @@ an error if the stack has overflowed.  The single operand is the address in
 the stack farthest from the current stack pointer that you need to validate.
 Normally, on platforms where this pattern is needed, you would obtain the
 stack limit from a global or thread-specific variable or register.
+
+@cindex @code{probe_stack_address} instruction pattern
+@item @samp{probe_stack_address}
+If stack checking (@pxref{Stack Checking}) can be done on your system by
+probing the stack but without the need to actually access it, define this
+pattern and signal an error if the stack has overflowed.  The single operand
+is the memory address in the stack that needs to be probed.
 
 @cindex @code{probe_stack} instruction pattern
 @item @samp{probe_stack}

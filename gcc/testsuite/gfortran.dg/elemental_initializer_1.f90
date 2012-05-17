@@ -31,5 +31,3 @@ contains
   end function len_
 
 end module iso_varying_string
-
-! { dg-final { cleanup-modules "iso_varying_string" } }

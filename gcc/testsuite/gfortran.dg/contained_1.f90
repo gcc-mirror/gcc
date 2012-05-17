@@ -31,5 +31,3 @@ program contained_1
   call a
   if (i .ne. 1) call abort
 end program
-
-! { dg-final { cleanup-modules "contained_1_mod" } }

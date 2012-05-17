@@ -783,8 +783,12 @@ package Prj is
       Locally_Removed : Boolean := False;
       --  True if the source has been "excluded"
 
+      Suppressed : Boolean := False;
+      --  True if the source is a locally removed direct source of the project.
+      --  These sources should not be put in the mapping file.
+
       Replaced_By : Source_Id := No_Source;
-      --  Missing comment ???
+      --  Source in an extending project that replaces the current source
 
       File : File_Name_Type := No_File;
       --  Canonical file name of the source
@@ -866,6 +870,7 @@ package Prj is
                        Unit                   => No_Unit_Index,
                        Index                  => 0,
                        Locally_Removed        => False,
+                       Suppressed             => False,
                        Compilable             => Unknown,
                        In_The_Queue           => False,
                        Replaced_By            => No_Source,

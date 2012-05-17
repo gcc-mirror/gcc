@@ -2711,6 +2711,14 @@ package body Exp_Ch6 is
                         Next_Entity (Parm_Ent);
                      end loop;
 
+                  --  Handle unchecked conversion of access types generated
+                  --  in thunks (cf. Expand_Interface_Thunk).
+
+                  elsif Is_Access_Type (Etype (Actual))
+                    and then Nkind (Actual) = N_Unchecked_Type_Conversion
+                  then
+                     Parm_Ent := Entity (Expression (Actual));
+
                   else pragma Assert (Is_Entity_Name (Actual));
                      Parm_Ent := Entity (Actual);
                   end if;

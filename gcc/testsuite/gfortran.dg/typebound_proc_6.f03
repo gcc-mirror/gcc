@@ -176,5 +176,3 @@ CONTAINS
   END SUBROUTINE proc_tmereal
 
 END MODULE testmod
-
-! { dg-final { cleanup-modules "testmod" } }

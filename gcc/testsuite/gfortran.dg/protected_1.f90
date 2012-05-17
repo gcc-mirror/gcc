@@ -57,5 +57,3 @@ contains
     if(a /= 44 .or. ap /= 79 .or. at /= 4) call abort()
   end subroutine
 end program main
-
-! { dg-final { cleanup-modules "protmod" } }

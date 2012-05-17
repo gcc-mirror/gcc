@@ -20,5 +20,3 @@ end module two
 use one, only: foo_one => foo
 use two, only: foo_two => foo
 end
-
-! { dg-final { cleanup-modules "one two" } }

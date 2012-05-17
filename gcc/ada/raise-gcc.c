@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2011, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2012, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -535,10 +535,10 @@ db_region_for (region_descriptor *region, _Unwind_Context *uw_context)
 
   ip = get_ip_from_context (uw_context);
 
-  db (DB_REGIONS, "For ip @ 0x%08x => ", ip);
+  db (DB_REGIONS, "For ip @ %p => ", (void *)ip);
 
   if (region->lsda)
-    db (DB_REGIONS, "lsda @ 0x%x", region->lsda);
+    db (DB_REGIONS, "lsda @ %p", (void *)region->lsda);
   else
     db (DB_REGIONS, "no lsda");
 
@@ -548,7 +548,7 @@ db_region_for (region_descriptor *region, _Unwind_Context *uw_context)
 /* Retrieve the ttype entry associated with FILTER in the REGION's
    ttype table.  */
 
-static const _Unwind_Ptr
+static _Unwind_Ptr
 get_ttype_entry_for (region_descriptor *region, long filter)
 {
   _Unwind_Ptr ttype_entry;
@@ -582,7 +582,7 @@ get_region_description_for (_Unwind_Context *uw_context,
     return;
 
   /* Parse the lsda and fill the region descriptor.  */
-  p = (char *)region->lsda;
+  p = (const unsigned char *)region->lsda;
 
   region->base = _Unwind_GetRegionStart (uw_context);
 
@@ -662,13 +662,13 @@ db_action_for (action_descriptor *action, _Unwind_Context *uw_context)
 {
   _Unwind_Ptr ip = get_ip_from_context (uw_context);
 
-  db (DB_ACTIONS, "For ip @ 0x%08x => ", ip);
+  db (DB_ACTIONS, "For ip @ %p => ", (void *)ip);
 
   switch (action->kind)
      {
      case unknown:
-       db (DB_ACTIONS, "lpad @ 0x%x, record @ 0x%x\n",
-	   action->landing_pad, action->table_entry);
+       db (DB_ACTIONS, "lpad @ %p, record @ %p\n",
+	   (void *) action->landing_pad, action->table_entry);
        break;
 
      case nothing:
@@ -680,7 +680,7 @@ db_action_for (action_descriptor *action, _Unwind_Context *uw_context)
        break;
 
      case handler:
-       db (DB_ACTIONS, "Handler, filter = %d\n", action->ttype_filter);
+       db (DB_ACTIONS, "Handler, filter = %d\n", (int) action->ttype_filter);
        break;
 
      default:
@@ -784,9 +784,9 @@ get_call_site_action_for (_Unwind_Context *uw_context,
       p = read_uleb128 (p, &cs_action);
 
       db (DB_CSITE,
-	  "c_site @ 0x%08x (+0x%03x), len = %3d, lpad @ 0x%08x (+0x%03x)\n",
-	  region->base+cs_start, cs_start, cs_len,
-	  region->lp_base+cs_lp, cs_lp);
+	  "c_site @ %p (+%p), len = %p, lpad @ %p (+%p)\n",
+	  (void *)region->base + cs_start, (void *)cs_start, (void *)cs_len,
+	  (void *)region->lp_base + cs_lp, (void *)cs_lp);
 
       /* The table is sorted, so if we've passed the IP, stop.  */
       if (ip < region->base + cs_start)
@@ -1069,7 +1069,8 @@ PERSONALITY_FUNCTION (version_arg_t, phases_arg_t,
 _Unwind_Reason_Code
 PERSONALITY_FUNCTION (version_arg_t version_arg,
                       phases_arg_t phases_arg,
-                      _Unwind_Exception_Class uw_exception_class,
+                      _Unwind_Exception_Class uw_exception_class
+		         ATTRIBUTE_UNUSED,
                       _Unwind_Exception *uw_exception,
                       _Unwind_Context *uw_context)
 {

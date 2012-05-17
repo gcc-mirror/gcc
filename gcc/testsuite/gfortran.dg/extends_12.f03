@@ -20,5 +20,3 @@ program diff_01
   implicit none
   call create_ext()
 end program
-
-! { dg-final { cleanup-modules "mod_diff_01" } }

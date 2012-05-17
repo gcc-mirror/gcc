@@ -51,4 +51,3 @@ end program namelist_40
 ! { dg-output "Missing colon in substring qualifier for namelist variable x%m%ch(\n|\r\n|\r)" }
 ! { dg-output "Substring out of range for namelist variable x%m%ch(\n|\r\n|\r)" }
 ! { dg-output "Bad character in substring qualifier for namelist variable x%m%ch(\n|\r\n|\r)" }
-! { dg-final { cleanup-modules "global" } }

@@ -86,3 +86,6 @@ do {						\
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS ia64_soft_fp_init_libfuncs
+
+/* Define this to be nonzero if static stack checking is supported.  */
+#define STACK_CHECK_STATIC_BUILTIN 1

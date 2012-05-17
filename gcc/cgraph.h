@@ -637,7 +637,7 @@ int compute_call_stmt_bb_frequency (tree, basic_block bb);
 void record_references_in_initializer (tree, bool);
 
 /* In ipa.c  */
-bool cgraph_remove_unreachable_nodes (bool, FILE *);
+bool symtab_remove_unreachable_nodes (bool, FILE *);
 cgraph_node_set cgraph_node_set_new (void);
 cgraph_node_set_iterator cgraph_node_set_find (cgraph_node_set,
 					       struct cgraph_node *);

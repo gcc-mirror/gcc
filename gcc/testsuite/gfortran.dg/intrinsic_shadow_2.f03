@@ -25,5 +25,3 @@ REAL FUNCTION acosh (arg) ! { dg-warning "of an intrinsic" }
 END FUNCTION acosh
 
 ! We do only compile, so no main program needed.
-
-! { dg-final { cleanup-modules "testmod" } }

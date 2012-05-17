@@ -87,46 +87,34 @@ set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)
 }
 
 
-/* max_value()-- Given a length (kind), return the maximum signed or
- * unsigned value */
+/* Max signed value of size give by length argument.  */
 
 GFC_UINTEGER_LARGEST
-max_value (int length, int signed_flag)
+si_max (int length)
 {
   GFC_UINTEGER_LARGEST value;
-#if defined HAVE_GFC_REAL_16 || defined HAVE_GFC_REAL_10
-  int n;
-#endif
 
   switch (length)
-    {
+      {
 #if defined HAVE_GFC_REAL_16 || defined HAVE_GFC_REAL_10
     case 16:
     case 10:
       value = 1;
-      for (n = 1; n < 4 * length; n++)
+      for (int n = 1; n < 4 * length; n++)
         value = (value << 2) + 3;
-      if (! signed_flag)
-        value = 2*value+1;
-      break;
+      return value;
 #endif
     case 8:
-      value = signed_flag ? 0x7fffffffffffffff : 0xffffffffffffffff;
-      break;
+      return GFC_INTEGER_8_HUGE;
     case 4:
-      value = signed_flag ? 0x7fffffff : 0xffffffff;
-      break;
+      return GFC_INTEGER_4_HUGE;
     case 2:
-      value = signed_flag ? 0x7fff : 0xffff;
-      break;
+      return GFC_INTEGER_2_HUGE;
     case 1:
-      value = signed_flag ? 0x7f : 0xff;
-      break;
+      return GFC_INTEGER_1_HUGE;
     default:
       internal_error (NULL, "Bad integer kind");
     }
-
-  return value;
 }
 
 
@@ -634,11 +622,7 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
       return;
     }
 
-  maxv = max_value (length, 1);
-  maxv_10 = maxv / 10;
-
   negative = 0;
-  value = 0;
 
   switch (*p)
     {
@@ -655,6 +639,11 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
     default:
       break;
     }
+
+  maxv = si_max (length);
+  if (negative)
+    maxv++;
+  maxv_10 = maxv / 10;
 
   /* At this point we have a digit-string */
   value = 0;
@@ -674,20 +663,21 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
       if (c < '0' || c > '9')
 	goto bad;
 
-      if (value > maxv_10 && compile_options.range_check == 1)
+      if (value > maxv_10)
 	goto overflow;
 
       c -= '0';
       value = 10 * value;
 
-      if (value > maxv - c && compile_options.range_check == 1)
+      if (value > maxv - c)
 	goto overflow;
       value += c;
     }
 
-  v = value;
   if (negative)
-    v = -v;
+    v = -value;
+  else
+    v = value;
 
   set_integer (dest, v, length);
   return;
@@ -734,7 +724,8 @@ read_radix (st_parameter_dt *dtp, const fnode *f, char *dest, int length,
       return;
     }
 
-  maxv = max_value (length, 0);
+  /* Maximum unsigned value, assuming two's complement.  */
+  maxv = 2 * si_max (length) + 1;
   maxv_r = maxv / radix;
 
   negative = 0;

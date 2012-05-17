@@ -157,13 +157,6 @@ package body Uintp is
    pragma Inline (N_Digits);
    --  Returns number of "digits" in a Uint
 
-   function Sum_Digits (Left : Uint; Sign : Int) return Int;
-   --  If Sign = 1 return the sum of the "digits" of Abs (Left). If the total
-   --  has more than one digit then return Sum_Digits of total.
-
-   function Sum_Double_Digits (Left : Uint; Sign : Int) return Int;
-   --  Same as above but work in New_Base = Base * Base
-
    procedure UI_Div_Rem
      (Left, Right       : Uint;
       Quotient          : out Uint;
@@ -370,9 +363,12 @@ package body Uintp is
          H : constant array (Int range 0 .. 15) of Character :=
                "0123456789ABCDEF";
 
+         Q, R : Uint;
       begin
-         if U >= Base then
-            Image_Uint (U / Base);
+         UI_Div_Rem (U, Base, Q, R);
+
+         if Q > Uint_0 then
+            Image_Uint (Q);
          end if;
 
          if Digs_Output = 4 and then Base = Uint_16 then
@@ -380,7 +376,7 @@ package body Uintp is
             Digs_Output := 0;
          end if;
 
-         Image_Char (H (UI_To_Int (U rem Base)));
+         Image_Char (H (UI_To_Int (R)));
 
          Digs_Output := Digs_Output + 1;
       end Image_Uint;
@@ -734,234 +730,6 @@ package body Uintp is
          end;
       end if;
    end Release_And_Save;
-
-   ----------------
-   -- Sum_Digits --
-   ----------------
-
-   --  This is done in one pass
-
-   --  Mathematically: assume base congruent to 1 and compute an equivalent
-   --  integer to Left.
-
-   --  If Sign = -1 return the alternating sum of the "digits"
-
-   --     D1 - D2 + D3 - D4 + D5 ...
-
-   --  (where D1 is Least Significant Digit)
-
-   --  Mathematically: assume base congruent to -1 and compute an equivalent
-   --  integer to Left.
-
-   --  This is used in Rem and Base is assumed to be 2 ** 15
-
-   --  Note: The next two functions are very similar, any style changes made
-   --  to one should be reflected in both.  These would be simpler if we
-   --  worked base 2 ** 32.
-
-   function Sum_Digits (Left : Uint; Sign : Int) return Int is
-   begin
-      pragma Assert (Sign = Int_1 or else Sign = Int (-1));
-
-      --  First try simple case;
-
-      if Direct (Left) then
-         declare
-            Tmp_Int : Int := Direct_Val (Left);
-
-         begin
-            if Tmp_Int >= Base then
-               Tmp_Int := (Tmp_Int / Base) +
-                  Sign * (Tmp_Int rem Base);
-
-                  --  Now Tmp_Int is in [-(Base - 1) .. 2 * (Base - 1)]
-
-               if Tmp_Int >= Base then
-
-                  --  Sign must be 1
-
-                  Tmp_Int := (Tmp_Int / Base) + 1;
-
-               end if;
-
-               --  Now Tmp_Int is in [-(Base - 1) .. (Base - 1)]
-
-            end if;
-
-            return Tmp_Int;
-         end;
-
-      --  Otherwise full circuit is needed
-
-      else
-         declare
-            L_Length : constant Int := N_Digits (Left);
-            L_Vec    : UI_Vector (1 .. L_Length);
-            Tmp_Int  : Int;
-            Carry    : Int;
-            Alt      : Int;
-
-         begin
-            Init_Operand (Left, L_Vec);
-            L_Vec (1) := abs L_Vec (1);
-            Tmp_Int := 0;
-            Carry := 0;
-            Alt := 1;
-
-            for J in reverse 1 .. L_Length loop
-               Tmp_Int := Tmp_Int + Alt * (L_Vec (J) + Carry);
-
-               --  Tmp_Int is now between [-2 * Base + 1 .. 2 * Base - 1],
-               --  since old Tmp_Int is between [-(Base - 1) .. Base - 1]
-               --  and L_Vec is in [0 .. Base - 1] and Carry in [-1 .. 1]
-
-               if Tmp_Int >= Base then
-                  Tmp_Int := Tmp_Int - Base;
-                  Carry := 1;
-
-               elsif Tmp_Int <= -Base then
-                  Tmp_Int := Tmp_Int + Base;
-                  Carry := -1;
-
-               else
-                  Carry := 0;
-               end if;
-
-               --  Tmp_Int is now between [-Base + 1 .. Base - 1]
-
-               Alt := Alt * Sign;
-            end loop;
-
-            Tmp_Int := Tmp_Int + Alt * Carry;
-
-            --  Tmp_Int is now between [-Base .. Base]
-
-            if Tmp_Int >= Base then
-               Tmp_Int := Tmp_Int - Base + Alt * Sign * 1;
-
-            elsif Tmp_Int <= -Base then
-               Tmp_Int := Tmp_Int + Base + Alt * Sign * (-1);
-            end if;
-
-            --  Now Tmp_Int is in [-(Base - 1) .. (Base - 1)]
-
-            return Tmp_Int;
-         end;
-      end if;
-   end Sum_Digits;
-
-   -----------------------
-   -- Sum_Double_Digits --
-   -----------------------
-
-   --  Note: This is used in Rem, Base is assumed to be 2 ** 15
-
-   function Sum_Double_Digits (Left : Uint; Sign : Int) return Int is
-   begin
-      --  First try simple case;
-
-      pragma Assert (Sign = Int_1 or else Sign = Int (-1));
-
-      if Direct (Left) then
-         return Direct_Val (Left);
-
-      --  Otherwise full circuit is needed
-
-      else
-         declare
-            L_Length      : constant Int := N_Digits (Left);
-            L_Vec         : UI_Vector (1 .. L_Length);
-            Most_Sig_Int  : Int;
-            Least_Sig_Int : Int;
-            Carry         : Int;
-            J             : Int;
-            Alt           : Int;
-
-         begin
-            Init_Operand (Left, L_Vec);
-            L_Vec (1) := abs L_Vec (1);
-            Most_Sig_Int := 0;
-            Least_Sig_Int := 0;
-            Carry := 0;
-            Alt := 1;
-            J := L_Length;
-
-            while J > Int_1 loop
-               Least_Sig_Int := Least_Sig_Int + Alt * (L_Vec (J) + Carry);
-
-               --  Least is in [-2 Base + 1 .. 2 * Base - 1]
-               --  Since L_Vec in [0 .. Base - 1] and Carry in [-1 .. 1]
-               --  and old Least in [-Base + 1 .. Base - 1]
-
-               if Least_Sig_Int >= Base then
-                  Least_Sig_Int := Least_Sig_Int - Base;
-                  Carry := 1;
-
-               elsif Least_Sig_Int <= -Base then
-                  Least_Sig_Int := Least_Sig_Int + Base;
-                  Carry := -1;
-
-               else
-                  Carry := 0;
-               end if;
-
-               --  Least is now in [-Base + 1 .. Base - 1]
-
-               Most_Sig_Int := Most_Sig_Int + Alt * (L_Vec (J - 1) + Carry);
-
-               --  Most is in [-2 Base + 1 .. 2 * Base - 1]
-               --  Since L_Vec in [0 ..  Base - 1] and Carry in  [-1 .. 1]
-               --  and old Most in [-Base + 1 .. Base - 1]
-
-               if Most_Sig_Int >= Base then
-                  Most_Sig_Int := Most_Sig_Int - Base;
-                  Carry := 1;
-
-               elsif Most_Sig_Int <= -Base then
-                  Most_Sig_Int := Most_Sig_Int + Base;
-                  Carry := -1;
-               else
-                  Carry := 0;
-               end if;
-
-               --  Most is now in [-Base + 1 .. Base - 1]
-
-               J := J - 2;
-               Alt := Alt * Sign;
-            end loop;
-
-            if J = Int_1 then
-               Least_Sig_Int := Least_Sig_Int + Alt * (L_Vec (J) + Carry);
-            else
-               Least_Sig_Int := Least_Sig_Int + Alt * Carry;
-            end if;
-
-            if Least_Sig_Int >= Base then
-               Least_Sig_Int := Least_Sig_Int - Base;
-               Most_Sig_Int := Most_Sig_Int + Alt * 1;
-
-            elsif Least_Sig_Int <= -Base then
-               Least_Sig_Int := Least_Sig_Int + Base;
-               Most_Sig_Int := Most_Sig_Int + Alt * (-1);
-            end if;
-
-            if Most_Sig_Int >= Base then
-               Most_Sig_Int := Most_Sig_Int - Base;
-               Alt := Alt * Sign;
-               Least_Sig_Int :=
-                 Least_Sig_Int + Alt * 1; -- cannot overflow again
-
-            elsif Most_Sig_Int <= -Base then
-               Most_Sig_Int := Most_Sig_Int + Base;
-               Alt := Alt * Sign;
-               Least_Sig_Int :=
-                 Least_Sig_Int + Alt * (-1); --  cannot overflow again.
-            end if;
-
-            return Most_Sig_Int * Base + Least_Sig_Int;
-         end;
-      end if;
-   end Sum_Double_Digits;
 
    ---------------
    -- Tree_Read --
@@ -2367,167 +2135,21 @@ package body Uintp is
    end UI_Rem;
 
    function UI_Rem (Left, Right : Uint) return Uint is
-      Sign : Int;
-      Tmp  : Int;
-
-      subtype Int1_12 is Integer range 1 .. 12;
+      Remainder : Uint;
+      Quotient  : Uint;
+      pragma Warnings (Off, Quotient);
 
    begin
       pragma Assert (Right /= Uint_0);
 
-      if Direct (Right) then
-         if Direct (Left) then
-            return UI_From_Int (Direct_Val (Left) rem Direct_Val (Right));
+      if Direct (Right) and then Direct (Left) then
+         return UI_From_Int (Direct_Val (Left) rem Direct_Val (Right));
 
-         else
-
-            --  Special cases when Right is less than 13 and Left is larger
-            --  larger than one digit. All of these algorithms depend on the
-            --  base being 2 ** 15 We work with Abs (Left) and Abs(Right)
-            --  then multiply result by Sign (Left)
-
-            if (Right <= Uint_12) and then (Right >= Uint_Minus_12) then
-
-               if Left < Uint_0 then
-                  Sign := -1;
-               else
-                  Sign := 1;
-               end if;
-
-               --  All cases are listed, grouped by mathematical method It is
-               --  not inefficient to do have this case list out of order since
-               --  GCC sorts the cases we list.
-
-               case Int1_12 (abs (Direct_Val (Right))) is
-
-                  when 1 =>
-                     return Uint_0;
-
-                  --  Powers of two are simple AND's with LS Left Digit GCC
-                  --  will recognise these constants as powers of 2 and replace
-                  --  the rem with simpler operations where possible.
-
-                  --  Least_Sig_Digit might return Negative numbers
-
-                  when 2 =>
-                     return UI_From_Int (
-                        Sign * (Least_Sig_Digit (Left) mod 2));
-
-                  when 4 =>
-                     return UI_From_Int (
-                        Sign * (Least_Sig_Digit (Left) mod 4));
-
-                  when 8 =>
-                     return UI_From_Int (
-                        Sign * (Least_Sig_Digit (Left) mod 8));
-
-                  --  Some number theoretical tricks:
-
-                  --    If B Rem Right = 1 then
-                  --    Left Rem Right = Sum_Of_Digits_Base_B (Left) Rem Right
-
-                  --  Note: 2^32 mod 3 = 1
-
-                  when 3 =>
-                     return UI_From_Int (
-                        Sign * (Sum_Double_Digits (Left, 1) rem Int (3)));
-
-                  --  Note: 2^15 mod 7 = 1
-
-                  when 7 =>
-                     return UI_From_Int (
-                        Sign * (Sum_Digits (Left, 1) rem Int (7)));
-
-                  --  Note: 2^32 mod 5 = -1
-
-                  --  Alternating sums might be negative, but rem is always
-                  --  positive hence we must use mod here.
-
-                  when 5 =>
-                     Tmp := Sum_Double_Digits (Left, -1) mod Int (5);
-                     return UI_From_Int (Sign * Tmp);
-
-                  --  Note: 2^15 mod 9 = -1
-
-                  --  Alternating sums might be negative, but rem is always
-                  --  positive hence we must use mod here.
-
-                  when 9  =>
-                     Tmp := Sum_Digits (Left, -1) mod Int (9);
-                     return UI_From_Int (Sign * Tmp);
-
-                  --  Note: 2^15 mod 11 = -1
-
-                  --  Alternating sums might be negative, but rem is always
-                  --  positive hence we must use mod here.
-
-                  when 11 =>
-                     Tmp := Sum_Digits (Left, -1) mod Int (11);
-                     return UI_From_Int (Sign * Tmp);
-
-                  --  Now resort to Chinese Remainder theorem to reduce 6, 10,
-                  --  12 to previous special cases
-
-                  --  There is no reason we could not add more cases like these
-                  --  if it proves useful.
-
-                  --  Perhaps we should go up to 16, however we have no "trick"
-                  --  for 13.
-
-                  --  To find u mod m we:
-
-                  --  Pick m1, m2 S.T.
-                  --     GCD(m1, m2) = 1 AND m = (m1 * m2).
-
-                  --  Next we pick (Basis) M1, M2 small S.T.
-                  --     (M1 mod m1) = (M2 mod m2) = 1 AND
-                  --     (M1 mod m2) = (M2 mod m1) = 0
-
-                  --  So u mod m = (u1 * M1 + u2 * M2) mod m Where u1 = (u mod
-                  --  m1) AND u2 = (u mod m2); Under typical circumstances the
-                  --  last mod m can be done with a (possible) single
-                  --  subtraction.
-
-                  --  m1 = 2; m2 = 3; M1 = 3; M2 = 4;
-
-                  when 6  =>
-                     Tmp := 3 * (Least_Sig_Digit (Left) rem 2) +
-                              4 * (Sum_Double_Digits (Left, 1) rem 3);
-                     return UI_From_Int (Sign * (Tmp rem 6));
-
-                  --  m1 = 2; m2 = 5; M1 = 5; M2 = 6;
-
-                  when 10 =>
-                     Tmp := 5 * (Least_Sig_Digit (Left) rem 2) +
-                              6 * (Sum_Double_Digits (Left, -1) mod 5);
-                     return UI_From_Int (Sign * (Tmp rem 10));
-
-                  --  m1 = 3; m2 = 4; M1 = 4; M2 = 9;
-
-                  when 12 =>
-                     Tmp := 4 * (Sum_Double_Digits (Left, 1) rem 3) +
-                              9 * (Least_Sig_Digit (Left) rem 4);
-                     return UI_From_Int (Sign * (Tmp rem 12));
-               end case;
-
-            end if;
-
-            --  Else fall through to general case
-
-            --  The special case Length (Left) = Length (Right) = 1 in Div
-            --  looks slow. It uses UI_To_Int when Int should suffice. ???
-         end if;
-      end if;
-
-      declare
-         Remainder : Uint;
-         Quotient  : Uint;
-         pragma Warnings (Off, Quotient);
-      begin
+      else
          UI_Div_Rem
-           (Left, Right, Quotient, Remainder, Discard_Quotient  => True);
+           (Left, Right, Quotient, Remainder, Discard_Quotient => True);
          return Remainder;
-      end;
+      end if;
    end UI_Rem;
 
    ------------

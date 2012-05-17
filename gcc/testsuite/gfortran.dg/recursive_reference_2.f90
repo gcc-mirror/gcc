@@ -30,5 +30,3 @@ integer :: ans(5)
 IF (ANY(TEST(3).NE.(/5,5,5,5,5/))) CALL ABORT()
 IF (ANY(TEST(6).NE.(/0,0,0,0,0/))) CALL ABORT()
 END
-! { dg-final { cleanup-modules "m1" } }
-

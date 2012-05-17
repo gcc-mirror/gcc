@@ -54,4 +54,3 @@ PROGRAM TEST1
   call BAR (T2)
   CALL FOOBAR (T2)
 END PROGRAM TEST1
-! { dg-final { cleanup-modules "test2 test3 test4" } }

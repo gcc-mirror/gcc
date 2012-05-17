@@ -22,5 +22,3 @@ CONTAINS
     write(6,*) I
   END SUBROUTINE TST
 END
-
-! { dg-final { cleanup-modules "addon" } }

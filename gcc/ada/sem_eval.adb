@@ -1302,7 +1302,16 @@ package body Sem_Eval is
             if Ekind (E) = E_Enumeration_Literal then
                return True;
 
-            elsif Ekind (E) = E_Constant then
+            --  In Alfa mode, the value of deferred constants should be ignored
+            --  outside the scope of their full view. This allows parameterized
+            --  formal verification, in which a deferred constant value if not
+            --  known from client units.
+
+            elsif Ekind (E) = E_Constant
+              and then not (Alfa_Mode
+                             and then Present (Full_View (E))
+                             and then not In_Open_Scopes (Scope (E)))
+            then
                V := Constant_Value (E);
                return Present (V) and then Compile_Time_Known_Value (V);
             end if;
@@ -4655,6 +4664,47 @@ package body Sem_Eval is
    --  values match (RM 4.9.1(1)).
 
    function Subtypes_Statically_Match (T1, T2 : Entity_Id) return Boolean is
+
+      function Predicates_Match return Boolean;
+      --  In Ada 2012, subtypes statically match if their static predicates
+      --  match as well.
+
+      ----------------------
+      -- Predicates_Match --
+      ----------------------
+
+      function Predicates_Match return Boolean is
+         Pred1 : Node_Id;
+         Pred2 : Node_Id;
+
+      begin
+         if Ada_Version < Ada_2012 then
+            return True;
+
+         elsif Has_Predicates (T1) /= Has_Predicates (T2) then
+            return False;
+
+         else
+            Pred1 := Get_Rep_Item_For_Entity (T1, Name_Static_Predicate);
+            Pred2 := Get_Rep_Item_For_Entity (T2, Name_Static_Predicate);
+
+            --  Subtypes statically match if the predicate comes from the
+            --  same declaration, which can only happen if one is a subtype
+            --  of the other and has no explicit predicate.
+
+            --  Suppress warnings on order of actuals, which is otherwise
+            --  triggered by one of the two calls below.
+
+            pragma Warnings (Off);
+            return Pred1 = Pred2
+              or else (No (Pred1) and then Is_Subtype_Of (T1, T2))
+              or else (No (Pred2) and then Is_Subtype_Of (T2, T1));
+            pragma Warnings (On);
+         end if;
+      end Predicates_Match;
+
+   --  Start of processing for Subtypes_Statically_Match
+
    begin
       --  A type always statically matches itself
 
@@ -4724,10 +4774,11 @@ package body Sem_Eval is
             HB2 : constant Node_Id := Type_High_Bound (T2);
 
          begin
-            --  If the bounds are the same tree node, then match
+            --  If the bounds are the same tree node, then match if and only
+            --  if any predicates present also match.
 
             if LB1 = LB2 and then HB1 = HB2 then
-               return True;
+               return Predicates_Match;
 
             --  Otherwise bounds must be static and identical value
 

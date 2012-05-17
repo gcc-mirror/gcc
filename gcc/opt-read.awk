@@ -1,4 +1,4 @@
-#  Copyright (C) 2003,2004,2005,2006,2007,2008, 2010, 2011
+#  Copyright (C) 2003,2004,2005,2006,2007,2008, 2010, 2011, 2012
 #  Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
@@ -41,6 +41,7 @@ BEGIN {
 	{
 		if ($1 == "Language") {
 			langs[n_langs] = $2
+                        lang_numbers[$2] = n_langs
 			n_langs++;
 		}
 		else if ($1 == "TargetSave") {
@@ -108,6 +109,7 @@ BEGIN {
 			name = opt_args("Mask", $1)
 			if (name == "") {
 				opts[n_opts]  = $1
+				opt_numbers[$1] = n_opts
 				flags[n_opts] = $2
 				help[n_opts]  = $3
 				for (i = 4; i <= NF; i++)

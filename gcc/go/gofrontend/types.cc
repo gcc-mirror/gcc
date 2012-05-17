@@ -1301,15 +1301,10 @@ Type::type_descriptor_var_name(Gogo* gogo, Named_type* nt)
     go_assert(in_function == NULL);
   else
     {
-      const std::string& unique_prefix(no->package() == NULL
-				       ? gogo->unique_prefix()
-				       : no->package()->unique_prefix());
-      const std::string& package_name(no->package() == NULL
-				      ? gogo->package_name()
-				      : no->package()->name());
-      ret.append(unique_prefix);
-      ret.append(1, '.');
-      ret.append(package_name);
+      const std::string& pkgpath(no->package() == NULL
+				 ? gogo->pkgpath_symbol()
+				 : no->package()->pkgpath_symbol());
+      ret.append(pkgpath);
       ret.append(1, '.');
       if (in_function != NULL)
 	{
@@ -1317,7 +1312,20 @@ Type::type_descriptor_var_name(Gogo* gogo, Named_type* nt)
 	  ret.append(1, '.');
 	}
     }
-  ret.append(no->name());
+
+  // FIXME: This adds in pkgpath twice for hidden symbols, which is
+  // pointless.
+  const std::string& name(no->name());
+  if (!Gogo::is_hidden_name(name))
+    ret.append(name);
+  else
+    {
+      ret.append(1, '.');
+      ret.append(Gogo::pkgpath_for_symbol(Gogo::hidden_name_pkgpath(name)));
+      ret.append(1, '.');
+      ret.append(Gogo::unpack_hidden_name(name));
+    }
+
   return ret;
 }
 
@@ -1740,7 +1748,7 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name,
       base_name = name->name();
       const Named_object* in_function = name->in_function();
       if (in_function != NULL)
-	base_name += '$' + in_function->name();
+	base_name += '$' + Gogo::unpack_hidden_name(in_function->name());
     }
   std::string hash_name = base_name + "$hash";
   std::string equal_name = base_name + "$equal";
@@ -1977,15 +1985,10 @@ Type::uncommon_type_constructor(Gogo* gogo, Type* uncommon_type,
       else
 	{
 	  const Package* package = no->package();
-	  const std::string& unique_prefix(package == NULL
-					   ? gogo->unique_prefix()
-					   : package->unique_prefix());
-	  const std::string& package_name(package == NULL
-					  ? gogo->package_name()
-					  : package->name());
-	  n.assign(unique_prefix);
-	  n.append(1, '.');
-	  n.append(package_name);
+	  const std::string& pkgpath(package == NULL
+				     ? gogo->pkgpath()
+				     : package->pkgpath());
+	  n.assign(pkgpath);
 	  if (name->in_function() != NULL)
 	    {
 	      n.append(1, '.');
@@ -2096,7 +2099,8 @@ Type::method_constructor(Gogo*, Type* method_type,
     vals->push_back(Expression::make_nil(bloc));
   else
     {
-      s = Expression::make_string(Gogo::hidden_name_prefix(method_name), bloc);
+      s = Expression::make_string(Gogo::hidden_name_pkgpath(method_name),
+				  bloc);
       vals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
     }
 
@@ -4668,7 +4672,7 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	fvals->push_back(Expression::make_nil(bloc));
       else
 	{
-	  std::string n = Gogo::hidden_name_prefix(pf->field_name());
+	  std::string n = Gogo::hidden_name_pkgpath(pf->field_name());
 	  Expression* s = Expression::make_string(n, bloc);
 	  fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 	}
@@ -7056,7 +7060,7 @@ Interface_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	    mvals->push_back(Expression::make_nil(bloc));
 	  else
 	    {
-	      s = Gogo::hidden_name_prefix(pm->name());
+	      s = Gogo::hidden_name_pkgpath(pm->name());
 	      e = Expression::make_string(s, bloc);
 	      mvals->push_back(Expression::make_unary(OPERATOR_AND, e, bloc));
 	    }
@@ -7105,11 +7109,15 @@ Interface_type::do_reflection(Gogo* gogo, std::string* ret) const
 	    {
 	      if (!Gogo::is_hidden_name(p->name()))
 		ret->append(p->name());
+	      else if (gogo->pkgpath_from_option())
+		ret->append(p->name().substr(1));
 	      else
 		{
-		  // This matches what the gc compiler does.
-		  std::string prefix = Gogo::hidden_name_prefix(p->name());
-		  ret->append(prefix.substr(prefix.find('.') + 1));
+		  // If no -fgo-pkgpath option, backward compatibility
+		  // for how this used to work before -fgo-pkgpath was
+		  // introduced.
+		  std::string pkgpath = Gogo::hidden_name_pkgpath(p->name());
+		  ret->append(pkgpath.substr(pkgpath.find('.') + 1));
 		  ret->push_back('.');
 		  ret->append(Gogo::unpack_hidden_name(p->name()));
 		}
@@ -7939,20 +7947,14 @@ Named_type::do_hash_for_method(Gogo* gogo) const
   // where we are going to be comparing named types for equality.  In
   // other cases, which are cases where the runtime is going to
   // compare hash codes to see if the types are the same, we need to
-  // include the package prefix and name in the hash.
+  // include the pkgpath in the hash.
   if (gogo != NULL && !Gogo::is_hidden_name(name) && !this->is_builtin())
     {
       const Package* package = this->named_object()->package();
       if (package == NULL)
-	{
-	  ret = Type::hash_string(gogo->unique_prefix(), ret);
-	  ret = Type::hash_string(gogo->package_name(), ret);
-	}
+	ret = Type::hash_string(gogo->pkgpath(), ret);
       else
-	{
-	  ret = Type::hash_string(package->unique_prefix(), ret);
-	  ret = Type::hash_string(package->name(), ret);
-	}
+	ret = Type::hash_string(package->pkgpath(), ret);
     }
 
   return ret;
@@ -8324,11 +8326,16 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
     }
   if (!this->is_builtin())
     {
+      // We handle -fgo-prefix and -fgo-pkgpath differently here for
+      // compatibility with how the compiler worked before
+      // -fgo-pkgpath was introduced.
       const Package* package = this->named_object_->package();
-      if (package != NULL)
-	ret->append(package->name());
+      if (gogo->pkgpath_from_option())
+	ret->append(package != NULL ? package->pkgpath() : gogo->pkgpath());
       else
-	ret->append(gogo->package_name());
+	ret->append(package != NULL
+		    ? package->package_name()
+		    : gogo->package_name());
       ret->push_back('.');
     }
   if (this->in_function_ != NULL)
@@ -8355,15 +8362,10 @@ Named_type::do_mangled_name(Gogo* gogo, std::string* ret) const
     go_assert(this->in_function_ == NULL);
   else
     {
-      const std::string& unique_prefix(no->package() == NULL
-				       ? gogo->unique_prefix()
-				       : no->package()->unique_prefix());
-      const std::string& package_name(no->package() == NULL
-				      ? gogo->package_name()
-				      : no->package()->name());
-      name = unique_prefix;
-      name.append(1, '.');
-      name.append(package_name);
+      const std::string& pkgpath(no->package() == NULL
+				 ? gogo->pkgpath_symbol()
+				 : no->package()->pkgpath_symbol());
+      name = pkgpath;
       name.append(1, '.');
       if (this->in_function_ != NULL)
 	{
@@ -9487,9 +9489,9 @@ Forward_declaration_type::do_mangled_name(Gogo* gogo, std::string* ret) const
       const Named_object* no = this->named_object();
       std::string name;
       if (no->package() == NULL)
-	name = gogo->package_name();
+	name = gogo->pkgpath_symbol();
       else
-	name = no->package()->name();
+	name = no->package()->pkgpath_symbol();
       name += '.';
       name += Gogo::unpack_hidden_name(no->name());
       char buf[20];

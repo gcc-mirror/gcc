@@ -3455,20 +3455,26 @@ unpredictably.
 @code{call_insn} insns have the same extra fields as @code{insn} insns,
 accessed in the same way and in addition contain a field
 @code{CALL_INSN_FUNCTION_USAGE}, which contains a list (chain of
-@code{expr_list} expressions) containing @code{use} and @code{clobber}
-expressions that denote hard registers and @code{MEM}s used or
-clobbered by the called function.
+@code{expr_list} expressions) containing @code{use}, @code{clobber} and
+sometimes @code{set} expressions that denote hard registers and
+@code{mem}s used or clobbered by the called function.
 
-A @code{MEM} generally points to a stack slots in which arguments passed
+A @code{mem} generally points to a stack slot in which arguments passed
 to the libcall by reference (@pxref{Register Arguments,
 TARGET_PASS_BY_REFERENCE}) are stored.  If the argument is
 caller-copied (@pxref{Register Arguments, TARGET_CALLEE_COPIES}),
-the stack slot will be mentioned in @code{CLOBBER} and @code{USE}
-entries; if it's callee-copied, only a @code{USE} will appear, and the
-@code{MEM} may point to addresses that are not stack slots.
+the stack slot will be mentioned in @code{clobber} and @code{use}
+entries; if it's callee-copied, only a @code{use} will appear, and the
+@code{mem} may point to addresses that are not stack slots.
 
-@code{CLOBBER}ed registers in this list augment registers specified in
-@code{CALL_USED_REGISTERS} (@pxref{Register Basics}).
+Registers occurring inside a @code{clobber} in this list augment
+registers specified in @code{CALL_USED_REGISTERS} (@pxref{Register
+Basics}).
+
+If the list contains a @code{set} involving two registers, it indicates
+that the function returns one of its arguments.  Such a @code{set} may
+look like a no-op if the same register holds the argument and the return
+value.
 
 @findex code_label
 @findex CODE_LABEL_NUMBER

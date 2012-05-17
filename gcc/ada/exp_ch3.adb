@@ -1883,9 +1883,10 @@ package body Exp_Ch3 is
 
          procedure Build_Offset_To_Top_Function (Iface_Comp : Entity_Id);
          --  Generate:
-         --    function Fxx (O : in Rec_Typ) return Storage_Offset is
+         --    function Fxx (O : Address) return Storage_Offset is
+         --       type Acc is access all <Typ>;
          --    begin
-         --       return O.Iface_Comp'Position;
+         --       return Acc!(O).Iface_Comp'Position;
          --    end Fxx;
 
          ----------------------------------
@@ -1896,6 +1897,7 @@ package body Exp_Ch3 is
             Body_Node : Node_Id;
             Func_Id   : Entity_Id;
             Spec_Node : Node_Id;
+            Acc_Type  : Entity_Id;
 
          begin
             Func_Id := Make_Temporary (Loc, 'F');
@@ -1912,7 +1914,7 @@ package body Exp_Ch3 is
                   Make_Defining_Identifier (Loc, Name_uO),
                 In_Present          => True,
                 Parameter_Type      =>
-                  New_Reference_To (Rec_Type, Loc))));
+                  New_Reference_To (RTE (RE_Address), Loc))));
             Set_Result_Definition (Spec_Node,
               New_Reference_To (RTE (RE_Storage_Offset), Loc));
 
@@ -1924,7 +1926,19 @@ package body Exp_Ch3 is
 
             Body_Node := New_Node (N_Subprogram_Body, Loc);
             Set_Specification (Body_Node, Spec_Node);
-            Set_Declarations (Body_Node, New_List);
+
+            Acc_Type := Make_Temporary (Loc, 'T');
+            Set_Declarations (Body_Node, New_List (
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Acc_Type,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present            => True,
+                    Null_Exclusion_Present => False,
+                    Constant_Present       => False,
+                    Subtype_Indication     =>
+                      New_Reference_To (Rec_Type, Loc)))));
+
             Set_Handled_Statement_Sequence (Body_Node,
               Make_Handled_Sequence_Of_Statements (Loc,
                 Statements     => New_List (
@@ -1933,7 +1947,9 @@ package body Exp_Ch3 is
                       Make_Attribute_Reference (Loc,
                         Prefix         =>
                           Make_Selected_Component (Loc,
-                            Prefix        => Make_Identifier (Loc, Name_uO),
+                            Prefix        =>
+                              Unchecked_Convert_To (Acc_Type,
+                                Make_Identifier (Loc, Name_uO)),
                             Selector_Name =>
                               New_Reference_To (Iface_Comp, Loc)),
                         Attribute_Name => Name_Position)))));

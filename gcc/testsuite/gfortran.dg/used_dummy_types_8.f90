@@ -32,4 +32,3 @@ END MODULE M1
   D1=T1(3)
   write(6,*) E1(D1)
 END
-! { dg-final { cleanup-modules "m1" } }

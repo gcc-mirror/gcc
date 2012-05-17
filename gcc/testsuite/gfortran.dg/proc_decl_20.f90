@@ -20,5 +20,3 @@ end module other_fun
     use other_fun
     procedure(abstract_fun) :: fun
  end program fptr
-
-! { dg-final { cleanup-modules "other_fun" } }

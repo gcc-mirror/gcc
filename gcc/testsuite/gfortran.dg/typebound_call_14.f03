@@ -25,5 +25,3 @@ contains
     print *,ice_array(2)%next%ice_fun()
   end subroutine
 end module ice_module
-
-! { dg-final { cleanup-modules "ice_module" } }

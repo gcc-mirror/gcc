@@ -1,3 +1,44 @@
+2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/11856
+	* c-common.c (shorten_compare): Check c_inhibit_evaluation_warnings.
+
+2012-05-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* c-common.c (DEF_ATTR_STRING): Define and undefine as necessary.
+
+2012-05-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* c.opt (Wc++0X-compat,Wdelete-non-virtual-dtor,Wjump-misses-init,
+	Wreorder): Use LangEnabledBy.
+	* c-opts.c (c_common_handle_option): Do not enable them
+	explicitly. Call lang-specific generated functions.
+	(c_common_post_options): Do not set them here.
+
+2012-05-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wclobbered,Wempty-body,Wignored-qualifiers,
+	Wmissing-field-initializers,Wmissing-parameter-type,
+	Wold-style-declaration,Woverride-init): Use EnabledBy.
+	* c-opts.c (c_common_post_options): Do not set here explicitly.
+
+2012-05-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 53063
+	* c-opts.c (c_common_handle_option): Use handle_generated_option
+	to enable sub-options.
+
+2012-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53158
+	* c-common.c (warnings_for_convert_and_check): Use warning_at.
+
+2012-05-10  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (c_sizeof_or_alignof_type): Remove assert and
+	adjust commentary about TYPE_IS_SIZETYPE types.
+
 2012-05-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/53261

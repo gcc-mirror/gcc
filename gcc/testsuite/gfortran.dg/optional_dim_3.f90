@@ -50,4 +50,3 @@ program main
   call sub(bound=.false., dimmy=1_8)
   call sub()
 end program main
-! { dg-final { cleanup-modules "tst_foo" } }

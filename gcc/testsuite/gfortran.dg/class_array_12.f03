@@ -29,5 +29,3 @@ contains
   end function BGet
 
 end module test
-
-! { dg-final { cleanup-modules "test" } }

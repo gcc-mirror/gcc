@@ -121,7 +121,7 @@ installcheck:
 .PHONY: all clean
 
 clean:
-	-rm -f config.h libgcc_tm.h stamp-h stmp-ldirs libgcc.map
+	-rm -f auto-target.h libgcc_tm.h stamp-h stmp-ldirs libgcc.map
 	-rm -f *$(objext)
 	-rm -f *.dep
 	-rm -f *.a
@@ -139,9 +139,9 @@ Makefile: $(srcdir)/Makefile.in config.status
 
 # Depending on Makefile makes sure that config.status has been re-run
 # if needed.  This prevents problems with parallel builds.
-config.h: stamp-h ; @true
+auto-target.h: stamp-h ; @true
 stamp-h: $(srcdir)/config.in config.status Makefile
-	CONFIG_FILES= CONFIG_HEADERS=config.h:$(srcdir)/config.in $(SHELL) ./config.status
+	CONFIG_FILES= CONFIG_HEADERS=auto-target.h:$(srcdir)/config.in $(SHELL) ./config.status
 
 config.status: $(srcdir)/configure $(srcdir)/config.host
 	$(SHELL) ./config.status --recheck

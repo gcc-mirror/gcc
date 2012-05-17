@@ -14,5 +14,3 @@ contains
     call bar(z0)
   end subroutine foo
 end module
-
-! { dg-final { cleanup-modules "pr39594" } }

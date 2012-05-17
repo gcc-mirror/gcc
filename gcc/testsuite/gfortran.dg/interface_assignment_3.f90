@@ -45,5 +45,3 @@ contains
     y% m = x% m                             ! ICE
   end subroutine assign_atm_to_atm
 end module gfcbug74
-! { dg-final { cleanup-modules "mo_memory gfcbug74" } }
-

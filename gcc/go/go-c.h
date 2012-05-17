@@ -38,11 +38,11 @@ extern "C"
 
 extern int go_enable_dump (const char*);
 extern int go_enable_optimize (const char*);
-extern void go_set_prefix (const char*);
 
 extern void go_add_search_path (const char*);
 
-extern void go_create_gogo (int int_type_size, int pointer_size);
+extern void go_create_gogo (int int_type_size, int pointer_size,
+			    const char* pkgpath, const char *prefix);
 
 extern void go_parse_input_files (const char**, unsigned int,
 				  bool only_check_syntax,

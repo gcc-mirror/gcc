@@ -31,7 +31,8 @@
 #define _GLIBCXX_DEBUG_FUNCTIONS_H 1
 
 #include <bits/c++config.h>
-#include <bits/stl_iterator_base_types.h> // for iterator_traits, categories
+#include <bits/stl_iterator_base_types.h> // for iterator_traits, categories and
+					  // _Iter_base
 #include <bits/cpp_type_traits.h>         // for __is_integer
 #include <debug/formatter.h>
 
@@ -118,11 +119,8 @@ namespace __gnu_debug
     inline bool
     __valid_range_aux(const _InputIterator& __first,
 		      const _InputIterator& __last, std::__false_type)
-  {
-    typedef typename std::iterator_traits<_InputIterator>::iterator_category
-      _Category;
-    return __valid_range_aux2(__first, __last, _Category());
-  }
+  { return __valid_range_aux2(__first, __last,
+			      std::__iterator_category(__first)); }
 
   /** Don't know what these iterators are, or if they are even
    *  iterators (we may get an integral type for InputIterator), so
@@ -214,6 +212,15 @@ namespace __gnu_debug
       return true;
     }
 
+  // For performance reason, as the iterator range has been validated, check on
+  // random access safe iterators is done using the base iterator.
+  template<typename _Iterator, typename _Sequence>
+    inline bool
+    __check_sorted_aux(const _Safe_iterator<_Iterator, _Sequence>& __first,
+		       const _Safe_iterator<_Iterator, _Sequence>& __last,
+		       std::random_access_iterator_tag __tag)
+  { return __check_sorted_aux(__first.base(), __last.base(), __tag); }
+
   // Can't check if an input iterator sequence is sorted, because we can't step
   // through the sequence.
   template<typename _InputIterator, typename _Predicate>
@@ -240,19 +247,28 @@ namespace __gnu_debug
       return true;
     }
 
+  // For performance reason, as the iterator range has been validated, check on
+  // random access safe iterators is done using the base iterator.
+  template<typename _Iterator, typename _Sequence,
+	   typename _Predicate>
+    inline bool
+    __check_sorted_aux(const _Safe_iterator<_Iterator, _Sequence>& __first,
+		       const _Safe_iterator<_Iterator, _Sequence>& __last,
+		       _Predicate __pred,
+		       std::random_access_iterator_tag __tag)
+  { return __check_sorted_aux(__first.base(), __last.base(), __pred, __tag); }
+
   // Determine if a sequence is sorted.
   template<typename _InputIterator>
     inline bool
     __check_sorted(const _InputIterator& __first, const _InputIterator& __last)
     {
-      typedef typename std::iterator_traits<_InputIterator>::iterator_category
-        _Category;
-
       // Verify that the < operator for elements in the sequence is a
       // StrictWeakOrdering by checking that it is irreflexive.
       __glibcxx_assert(__first == __last || !(*__first < *__first));
 
-      return __check_sorted_aux(__first, __last, _Category());
+      return __check_sorted_aux(__first, __last,
+				std::__iterator_category(__first));
     }
 
   template<typename _InputIterator, typename _Predicate>
@@ -260,14 +276,12 @@ namespace __gnu_debug
     __check_sorted(const _InputIterator& __first, const _InputIterator& __last,
                    _Predicate __pred)
     {
-      typedef typename std::iterator_traits<_InputIterator>::iterator_category
-        _Category;
-
       // Verify that the predicate is StrictWeakOrdering by checking that it
       // is irreflexive.
       __glibcxx_assert(__first == __last || !__pred(*__first, *__first));
 
-      return __check_sorted_aux(__first, __last, __pred, _Category());
+      return __check_sorted_aux(__first, __last, __pred,
+				std::__iterator_category(__first));
     }
 
   template<typename _InputIterator>
@@ -332,13 +346,11 @@ namespace __gnu_debug
       return __check_sorted_set_aux(__first, __last, __pred, _SameType());
    }
 
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // 270. Binary search requirements overly strict
-  // Determine if a sequence is partitioned w.r.t. this element.
   template<typename _ForwardIterator, typename _Tp>
     inline bool
-    __check_partitioned_lower(_ForwardIterator __first,
-			      _ForwardIterator __last, const _Tp& __value)
+  __check_partitioned_lower_aux(_ForwardIterator __first,
+				_ForwardIterator __last, const _Tp& __value,
+				std::forward_iterator_tag)
     {
       while (__first != __last && *__first < __value)
 	++__first;
@@ -347,10 +359,33 @@ namespace __gnu_debug
       return __first == __last;
     }
 
+  // For performance reason, as the iterator range has been validated, check on
+  // random access safe iterators is done using the base iterator.
+  template<typename _Iterator, typename _Sequence, typename _Tp>
+    inline bool
+    __check_partitioned_lower_aux(
+			const _Safe_iterator<_Iterator, _Sequence>& __first,
+			const _Safe_iterator<_Iterator, _Sequence>& __last,
+			const _Tp& __value,
+			std::random_access_iterator_tag __tag)
+    { return __check_partitioned_lower_aux(__first.base(), __last.base(),
+					   __value, __tag); }
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 270. Binary search requirements overly strict
+  // Determine if a sequence is partitioned w.r.t. this element.
   template<typename _ForwardIterator, typename _Tp>
     inline bool
-    __check_partitioned_upper(_ForwardIterator __first,
+    __check_partitioned_lower(_ForwardIterator __first,
 			      _ForwardIterator __last, const _Tp& __value)
+    { return __check_partitioned_lower_aux(__first, __last, __value,
+					   std::__iterator_category(__first)); }
+
+  template<typename _ForwardIterator, typename _Tp>
+    inline bool
+    __check_partitioned_upper_aux(_ForwardIterator __first,
+				  _ForwardIterator __last, const _Tp& __value,
+				  std::forward_iterator_tag)
     {
       while (__first != __last && !(__value < *__first))
 	++__first;
@@ -359,12 +394,31 @@ namespace __gnu_debug
       return __first == __last;
     }
 
-  // Determine if a sequence is partitioned w.r.t. this element.
+  // For performance reason, as the iterator range has been validated, check on
+  // random access safe iterators is done using the base iterator.
+  template<typename _Iterator, typename _Sequence, typename _Tp>
+    inline bool
+    __check_partitioned_upper_aux(
+			const _Safe_iterator<_Iterator, _Sequence>& __first,
+			const _Safe_iterator<_Iterator, _Sequence>& __last,
+			const _Tp& __value,
+			std::random_access_iterator_tag __tag)
+    { return __check_partitioned_upper_aux(__first.base(), __last.base(),
+					   __value, __tag); }
+
+  template<typename _ForwardIterator, typename _Tp>
+    inline bool
+    __check_partitioned_upper(_ForwardIterator __first,
+			      _ForwardIterator __last, const _Tp& __value)
+    { return __check_partitioned_upper_aux(__first, __last, __value,
+					   std::__iterator_category(__first)); }
+
   template<typename _ForwardIterator, typename _Tp, typename _Pred>
     inline bool
-    __check_partitioned_lower(_ForwardIterator __first,
-			      _ForwardIterator __last, const _Tp& __value,
-			      _Pred __pred)
+    __check_partitioned_lower_aux(_ForwardIterator __first,
+				  _ForwardIterator __last, const _Tp& __value,
+				  _Pred __pred,
+				  std::forward_iterator_tag)
     {
       while (__first != __last && bool(__pred(*__first, __value)))
 	++__first;
@@ -373,11 +427,34 @@ namespace __gnu_debug
       return __first == __last;
     }
 
+  // For performance reason, as the iterator range has been validated, check on
+  // random access safe iterators is done using the base iterator.
+  template<typename _Iterator, typename _Sequence,
+	   typename _Tp, typename _Pred>
+    inline bool
+    __check_partitioned_lower_aux(
+			const _Safe_iterator<_Iterator, _Sequence>& __first,
+			const _Safe_iterator<_Iterator, _Sequence>& __last,
+			const _Tp& __value, _Pred __pred,
+			std::random_access_iterator_tag __tag)
+    { return __check_partitioned_lower_aux(__first.base(), __last.base(),
+					   __value, __pred, __tag); }
+
+  // Determine if a sequence is partitioned w.r.t. this element.
   template<typename _ForwardIterator, typename _Tp, typename _Pred>
     inline bool
-    __check_partitioned_upper(_ForwardIterator __first,
+    __check_partitioned_lower(_ForwardIterator __first,
 			      _ForwardIterator __last, const _Tp& __value,
 			      _Pred __pred)
+    { return __check_partitioned_lower_aux(__first, __last, __value, __pred,
+					   std::__iterator_category(__first)); }
+
+  template<typename _ForwardIterator, typename _Tp, typename _Pred>
+    inline bool
+    __check_partitioned_upper_aux(_ForwardIterator __first,
+				  _ForwardIterator __last, const _Tp& __value,
+				  _Pred __pred,
+				  std::forward_iterator_tag)
     {
       while (__first != __last && !bool(__pred(__value, *__first)))
 	++__first;
@@ -385,6 +462,58 @@ namespace __gnu_debug
 	++__first;
       return __first == __last;
     }
+
+  // For performance reason, as the iterator range has been validated, check on
+  // random access safe iterators is done using the base iterator.
+  template<typename _Iterator, typename _Sequence,
+	   typename _Tp, typename _Pred>
+    inline bool
+    __check_partitioned_upper_aux(
+			const _Safe_iterator<_Iterator, _Sequence>& __first,
+			const _Safe_iterator<_Iterator, _Sequence>& __last,
+			const _Tp& __value, _Pred __pred,
+			std::random_access_iterator_tag __tag)
+    { return __check_partitioned_upper_aux(__first.base(), __last.base(),
+					   __value, __pred, __tag); }
+
+  template<typename _ForwardIterator, typename _Tp, typename _Pred>
+    inline bool
+    __check_partitioned_upper(_ForwardIterator __first,
+			      _ForwardIterator __last, const _Tp& __value,
+			      _Pred __pred)
+    { return __check_partitioned_upper_aux(__first, __last, __value, __pred,
+					   std::__iterator_category(__first)); }
+
+  // Helper struct to detect random access safe iterators.
+  template<typename _Iterator>
+    struct __is_safe_random_iterator
+    {
+      enum { __value = 0 };
+      typedef std::__false_type __type;
+    };
+
+  template<typename _Iterator, typename _Sequence>
+    struct __is_safe_random_iterator<_Safe_iterator<_Iterator, _Sequence> >
+    : std::__are_same<std::random_access_iterator_tag,
+                      typename std::iterator_traits<_Iterator>::
+		      iterator_category>
+    { };
+
+  template<typename _Iterator>
+    struct _Siter_base
+    : std::_Iter_base<_Iterator, __is_safe_random_iterator<_Iterator>::__value>
+    { };
+
+  /** Helper function to extract base iterator of random access safe iterator
+      in order to reduce performance impact of debug mode.  Limited to random
+      access iterator because it is the only category for which it is possible
+      to check for correct iterators order in the __valid_range function
+      thanks to the < operator.
+  */
+  template<typename _Iterator>
+    inline typename _Siter_base<_Iterator>::iterator_type
+    __base(_Iterator __it)
+    { return _Siter_base<_Iterator>::_S_base(__it); }
 } // namespace __gnu_debug
 
 #endif

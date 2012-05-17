@@ -72,6 +72,3 @@ program bug20
   end select
 
 end program bug20
-
-
-! { dg-final { cleanup-modules "base_mat_mod d_base_mat_mod" } }

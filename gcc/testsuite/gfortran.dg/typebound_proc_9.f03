@@ -29,5 +29,3 @@ MODULE testmod
   END TYPE abstract_type
 
 END MODULE testmod
-
-! { dg-final { cleanup-modules "testmod" } }

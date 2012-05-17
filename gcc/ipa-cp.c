@@ -2445,7 +2445,6 @@ ipcp_driver (void)
   struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
   struct topo_info topo;
 
-  cgraph_remove_unreachable_nodes (true,dump_file);
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
   grow_next_edge_clone_vector ();

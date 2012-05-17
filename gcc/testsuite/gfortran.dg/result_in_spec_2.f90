@@ -28,4 +28,3 @@ program test
   if(len (test2()) /= 3) call abort ()
   if(test2() /= '123') call abort ()
 end program test
-! { dg-final { cleanup-modules "test1" } }

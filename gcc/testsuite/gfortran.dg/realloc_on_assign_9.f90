@@ -30,5 +30,3 @@ program main
 
   july4 = new_show(boom=fireworks)
 end program
-
-! { dg-final { cleanup-modules "soop_stars_class" } }

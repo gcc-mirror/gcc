@@ -1929,7 +1929,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
 	      swap_tree_operands (next_stmt,
 	 		          gimple_assign_rhs1_ptr (next_stmt),
                                   gimple_assign_rhs2_ptr (next_stmt));
-	      mark_symbols_for_renaming (next_stmt);
+	      update_stmt (next_stmt);
 	    }
 	  else
 	    return false;

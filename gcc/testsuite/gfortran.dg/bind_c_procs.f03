@@ -35,5 +35,3 @@ contains
   end function my_f03_func
 
 end module bind_c_procs
-
-! { dg-final { cleanup-modules "bind_c_procs" } }

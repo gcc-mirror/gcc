@@ -23,5 +23,3 @@ program main
   if (line /= "aX          ") call abort
   if (f() .ne. 2) call abort
 end program main
-
-! { dg-final { cleanup-modules "foo" } }

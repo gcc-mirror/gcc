@@ -26,4 +26,3 @@ END MODULE cdf_nc_chisq_mod
   use cdf_nc_chisq_mod
   call local_cum_nc_chisq
 end
-! { dg-final { cleanup-modules "cdf_nc_chisq_mod" } }

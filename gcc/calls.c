@@ -574,6 +574,41 @@ special_function_p (const_tree fndecl, int flags)
   return flags;
 }
 
+/* Similar to special_function_p; return a set of ERF_ flags for the
+   function FNDECL.  */
+static int
+decl_return_flags (tree fndecl)
+{
+  tree attr;
+  tree type = TREE_TYPE (fndecl);
+  if (!type)
+    return 0;
+
+  attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
+  if (!attr)
+    return 0;
+
+  attr = TREE_VALUE (TREE_VALUE (attr));
+  if (!attr || TREE_STRING_LENGTH (attr) < 1)
+    return 0;
+
+  switch (TREE_STRING_POINTER (attr)[0])
+    {
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+      return ERF_RETURNS_ARG | (TREE_STRING_POINTER (attr)[0] - '1');
+
+    case 'm':
+      return ERF_NOALIAS;
+
+    case '.':
+    default:
+      return 0;
+    }
+}
+
 /* Return nonzero when FNDECL represents a call to setjmp.  */
 
 int
@@ -2247,8 +2282,9 @@ expand_call (tree exp, rtx target, int ignore)
      (on machines that lack push insns), or 0 if space not preallocated.  */
   rtx argblock = 0;
 
-  /* Mask of ECF_ flags.  */
+  /* Mask of ECF_ and ERF_ flags.  */
   int flags = 0;
+  int return_flags = 0;
 #ifdef REG_PARM_STACK_SPACE
   /* Define the boundary of the register parm stack space that needs to be
      saved, if any.  */
@@ -2293,6 +2329,7 @@ expand_call (tree exp, rtx target, int ignore)
     {
       fntype = TREE_TYPE (fndecl);
       flags |= flags_from_decl_or_type (fndecl);
+      return_flags |= decl_return_flags (fndecl);
     }
   else
     {
@@ -3105,6 +3142,20 @@ expand_call (tree exp, rtx target, int ignore)
 						   VOIDmode, void_type_node,
 						   true);
 
+      if (pass == 1 && (return_flags & ERF_RETURNS_ARG))
+	{
+	  int arg_nr = return_flags & ERF_RETURN_ARG_MASK;
+	  if (PUSH_ARGS_REVERSED)
+	    arg_nr = num_actuals - arg_nr - 1;
+	  if (args[arg_nr].reg
+	      && valreg
+	      && REG_P (valreg)
+	      && GET_MODE (args[arg_nr].reg) == GET_MODE (valreg))
+	  call_fusage
+	    = gen_rtx_EXPR_LIST (TYPE_MODE (TREE_TYPE (args[arg_nr].tree_value)),
+				 gen_rtx_SET (VOIDmode, valreg, args[arg_nr].reg),
+				 call_fusage);
+	}
       /* All arguments and registers used for the call must be set up by
 	 now!  */
 

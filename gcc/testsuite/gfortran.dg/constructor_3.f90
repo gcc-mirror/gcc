@@ -43,5 +43,3 @@ if (k /= 42) call abort ()
 !print *, x%j
 !print *, k
 end
-
-! { dg-final { cleanup-modules "m m2" } }

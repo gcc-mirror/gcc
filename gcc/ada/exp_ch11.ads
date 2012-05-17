@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,6 +78,11 @@ package Exp_Ch11 is
    --  to determine which Rcheck_nn procedure to call. The returned result is
    --  the exception entity to be passed to Local_Raise.
 
+   procedure Get_RT_Exception_Name (Code : RT_Exception_Code);
+   --  This procedure is provided for use by the back end to obtain the name of
+   --  the Rcheck procedure for Code. The name is appended to Namet.Name_Buffer
+   --  without the __gnat_rcheck_ prefix.
+
    function Is_Non_Ada_Error (E : Entity_Id) return Boolean;
    --  This function is provided for Gigi use. It returns True if operating on
    --  VMS, and the argument E is the entity for System.Aux_Dec.Non_Ada_Error.
@@ -90,5 +95,4 @@ package Exp_Ch11 is
    --  handler (and restriction No_Exception_Propagation is set), or if there
    --  is a local handler marking that it has a local raise. E is the entity
    --  of the corresponding exception.
-
 end Exp_Ch11;

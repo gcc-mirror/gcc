@@ -16,5 +16,3 @@ subroutine init
   use foo
   if (.not.allocated(bar)) call abort
 end subroutine init
-
-! { dg-final { cleanup-modules "foo" } }

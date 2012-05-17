@@ -23,5 +23,3 @@ CONTAINS
   END FUNCTION func
 
 END MODULE m
-
-! { dg-final { cleanup-modules "m" } }

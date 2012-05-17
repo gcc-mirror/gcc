@@ -37,4 +37,3 @@ end module foo_mod
 subroutine s_foobar2(x)  
   use foo_mod
 end subroutine s_foobar2
-! { dg-final { cleanup-modules "s_foo_mod d_foo_mod foo_mod" } }

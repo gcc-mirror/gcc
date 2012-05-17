@@ -12,5 +12,3 @@ contains
     class(Overload_AnException_impl_t) :: self
   end subroutine
 end module 
-
-! { dg-final { cleanup-modules "overload_anexception_impl" } }

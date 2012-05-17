@@ -32,5 +32,3 @@ program comBlockDriver
   
   call testTypes()
 end program comBlockDriver
-
-! { dg-final { cleanup-modules "mycommodule comblocktests" } }

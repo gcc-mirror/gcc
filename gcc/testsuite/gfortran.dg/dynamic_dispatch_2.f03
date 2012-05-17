@@ -94,4 +94,3 @@ end module m
   call a%extract (4, i)
   if (i .ne. 168) call abort
 end
-! { dg-final { cleanup-modules "m" } }

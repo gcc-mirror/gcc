@@ -1794,7 +1794,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      ssa_op_iter i;
 	      tree def;
 
-	      find_new_referenced_vars (gsi_stmt (copy_gsi));
+	      find_referenced_vars_in (gsi_stmt (copy_gsi));
 	      FOR_EACH_SSA_TREE_OPERAND (def, stmt, i, SSA_OP_DEF)
 		if (TREE_CODE (def) == SSA_NAME)
 		  SSA_NAME_DEF_STMT (def) = stmt;

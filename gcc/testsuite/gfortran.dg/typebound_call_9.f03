@@ -56,5 +56,3 @@ contains
   End Subroutine foo_free
 
 end module foo_mod
-
-! { dg-final { cleanup-modules "foo_mod" } }
