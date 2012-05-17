@@ -5691,7 +5691,8 @@ extern bool lvalue_or_rvalue_with_address_p	(const_tree);
 extern bool xvalue_p	                        (const_tree);
 extern bool builtin_valid_in_constant_expr_p    (const_tree);
 extern tree build_min				(enum tree_code, tree, ...);
-extern tree build_min_nt			(enum tree_code, ...);
+extern tree build_min_nt_loc			(location_t, enum tree_code,
+						 ...);
 extern tree build_min_non_dep			(enum tree_code, tree, ...);
 extern tree build_min_non_dep_call_vec		(tree, tree, VEC(tree,gc) *);
 extern tree build_cplus_new			(tree, tree, tsubst_flags_t);
@@ -5820,7 +5821,8 @@ extern tree build_x_binary_op			(location_t,
 						 enum tree_code, tree,
 						 enum tree_code, tree *,
 						 tsubst_flags_t);
-extern tree build_x_array_ref			(tree, tree, tsubst_flags_t);
+extern tree build_x_array_ref			(location_t, tree, tree,
+						 tsubst_flags_t);
 extern tree build_x_unary_op			(location_t,
 						 enum tree_code, tree,
                                                  tsubst_flags_t);
@@ -5829,12 +5831,13 @@ extern tree cp_build_addr_expr_strict		(tree, tsubst_flags_t);
 extern tree cp_build_unary_op                   (enum tree_code, tree, int, 
                                                  tsubst_flags_t);
 extern tree unary_complex_lvalue		(enum tree_code, tree);
-extern tree build_x_conditional_expr		(tree, tree, tree, 
+extern tree build_x_conditional_expr		(location_t, tree, tree, tree, 
                                                  tsubst_flags_t);
 extern tree build_x_compound_expr_from_list	(tree, expr_list_kind,
 						 tsubst_flags_t);
 extern tree build_x_compound_expr_from_vec	(VEC(tree,gc) *, const char *);
-extern tree build_x_compound_expr		(tree, tree, tsubst_flags_t);
+extern tree build_x_compound_expr		(location_t, tree, tree,
+						 tsubst_flags_t);
 extern tree build_compound_expr                 (location_t, tree, tree);
 extern tree cp_build_compound_expr		(tree, tree, tsubst_flags_t);
 extern tree build_static_cast			(tree, tree, tsubst_flags_t);
@@ -5842,7 +5845,8 @@ extern tree build_reinterpret_cast		(tree, tree, tsubst_flags_t);
 extern tree build_const_cast			(tree, tree, tsubst_flags_t);
 extern tree build_c_cast			(location_t, tree, tree);
 extern tree cp_build_c_cast			(tree, tree, tsubst_flags_t);
-extern tree build_x_modify_expr			(tree, enum tree_code, tree,
+extern tree build_x_modify_expr			(location_t, tree,
+						 enum tree_code, tree,
 						 tsubst_flags_t);
 extern tree cp_build_modify_expr		(tree, enum tree_code, tree,
 						 tsubst_flags_t);

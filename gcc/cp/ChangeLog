@@ -1,3 +1,24 @@
+2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44516
+	* typeck.c (build_x_array_ref, build_x_conditional_expr,
+	build_x_compound_expr, build_x_modify_expr): Add location_t parameter.
+	(finish_class_member_access_expr, build_x_indirect_ref,
+	build_x_binary_op, build_x_compound_expr_from_list,
+	build_x_compound_expr_from_vec): Adjust callers.
+	* tree.c (build_min_nt_loc): New.
+	(build_min_nt): Remove.
+	* typeck2.c (build_x_arrow): Adjust callers.
+	* pt.c (tsubst_qualified_id, tsubst_omp_for_iterator,
+	tsubst_copy_and_build): Likewise.
+	* semantics.c (finish_mem_initializers, handle_omp_for_class_iterator,
+	 finish_omp_atomic): Likewise.
+	* decl2.c (grok_array_decl, build_anon_union_vars): Adjust.
+	* parser.c (cp_parser_question_colon_clause,
+	cp_parser_assignment_expression, cp_parser_expression,
+	cp_parser_template_id, cp_parser_omp_for_loop): Likewise.
+	* cp-tree.h: Update.
+
 2012-05-16  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/7263
