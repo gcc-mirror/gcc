@@ -58,16 +58,34 @@ EnumValue
 Enum(target_device) String(51ac) Value(mcf51ac)
 
 EnumValue
+Enum(target_device) String(51ag) Value(mcf51ag)
+
+EnumValue
 Enum(target_device) String(51cn) Value(mcf51cn)
 
 EnumValue
 Enum(target_device) String(51em) Value(mcf51em)
 
 EnumValue
+Enum(target_device) String(51je) Value(mcf51je)
+
+EnumValue
+Enum(target_device) String(51jf) Value(mcf51jf)
+
+EnumValue
+Enum(target_device) String(51jg) Value(mcf51jg)
+
+EnumValue
 Enum(target_device) String(51jm) Value(mcf51jm)
 
 EnumValue
+Enum(target_device) String(51mm) Value(mcf51mm)
+
+EnumValue
 Enum(target_device) String(51qe) Value(mcf51qe)
+
+EnumValue
+Enum(target_device) String(51qm) Value(mcf51qm)
 
 EnumValue
 Enum(target_device) String(5202) Value(mcf5202)
