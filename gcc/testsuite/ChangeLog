@@ -1,7 +1,7 @@
 2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/39681
-	* g++.dg/parse/error48.C: New.
+	* g++.dg/parse/error49.C: New.
 	* g++.dg/cpp0x/error8.C: Likewise.
 	* g++.dg/ext/utf-cxx98.C: Adjust dg-error directive.
 	* g++.dg/ext/utf-dflt2.C: Likewise.
