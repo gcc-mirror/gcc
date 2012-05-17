@@ -50,6 +50,8 @@ uintptr runtime_stacks_sys;
 
 static void schedule(G*);
 
+static void gtraceback(G*);
+
 typedef struct Sched Sched;
 
 M	runtime_m0;
@@ -345,6 +347,9 @@ runtime_mcall(void (*pfn)(G*))
 		// the values for this thread.
 		mp = runtime_m();
 		gp = runtime_g();
+
+		if(gp->dotraceback != nil)
+			gtraceback(gp);
 	}
 	if (gp == nil || !gp->fromgogo) {
 #ifdef USING_SPLIT_STACK
@@ -523,17 +528,71 @@ runtime_goroutineheader(G *g)
 }
 
 void
-runtime_tracebackothers(G *me)
+runtime_goroutinetrailer(G *g)
 {
-	G *g;
+	if(g != nil && g->gopc != 0 && g->goid != 1) {
+		struct __go_string fn;
+		struct __go_string file;
+		int line;
+
+		if(__go_file_line(g->gopc - 1, &fn, &file, &line)) {
+			runtime_printf("created by %s\n", fn.__data);
+			runtime_printf("\t%s:%d\n", file.__data, line);
+		}
+	}
+}
+
+void
+runtime_tracebackothers(G * volatile me)
+{
+	G * volatile g;
 
 	for(g = runtime_allg; g != nil; g = g->alllink) {
 		if(g == me || g->status == Gdead)
 			continue;
 		runtime_printf("\n");
 		runtime_goroutineheader(g);
-		// runtime_traceback(g->sched.pc, g->sched.sp, 0, g);
+
+		// Our only mechanism for doing a stack trace is
+		// _Unwind_Backtrace.  And that only works for the
+		// current thread, not for other random goroutines.
+		// So we need to switch context to the goroutine, get
+		// the backtrace, and then switch back.
+
+		// This means that if g is running or in a syscall, we
+		// can't reliably print a stack trace.  FIXME.
+		if(g->status == Gsyscall || g->status == Grunning) {
+			runtime_printf("no stack trace available\n");
+			runtime_goroutinetrailer(g);
+			continue;
+		}
+
+		g->dotraceback = me;
+
+#ifdef USING_SPLIT_STACK
+		__splitstack_getcontext(&me->stack_context[0]);
+#endif
+		getcontext(&me->context);
+
+		if(g->dotraceback) {
+			runtime_gogo(g);
+		}
 	}
+}
+
+// Do a stack trace of gp, and then restore the context to
+// gp->dotraceback.
+
+static void
+gtraceback(G* gp)
+{
+	G* ret;
+
+	runtime_traceback(nil);
+	runtime_goroutinetrailer(gp);
+	ret = gp->dotraceback;
+	gp->dotraceback = nil;
+	runtime_gogo(ret);
 }
 
 // Mark this g as m's idle goroutine.
@@ -1171,7 +1230,7 @@ runtime_entersyscall(void)
 
 	// Leave SP around for gc and traceback.
 #ifdef USING_SPLIT_STACK
-	g->gcstack = __splitstack_find(NULL, NULL, &g->gcstack_size,
+	g->gcstack = __splitstack_find(nil, nil, &g->gcstack_size,
 				       &g->gcnext_segment, &g->gcnext_sp,
 				       &g->gcinitial_sp);
 #else
@@ -1227,9 +1286,11 @@ runtime_exitsyscall(void)
 	// find that we still have mcpu <= mcpumax, then we can
 	// start executing Go code immediately, without having to
 	// schedlock/schedunlock.
+	// Also do fast return if any locks are held, so that
+	// panic code can use syscalls to open a file.
 	gp = g;
 	v = runtime_xadd(&runtime_sched.atomic, (1<<mcpuShift));
-	if(m->profilehz == runtime_sched.profilehz && atomic_mcpu(v) <= atomic_mcpumax(v)) {
+	if((m->profilehz == runtime_sched.profilehz && atomic_mcpu(v) <= atomic_mcpumax(v)) || m->locks > 0) {
 		// There's a cpu for us, so we can run.
 		gp->status = Grunning;
 		// Garbage collector isn't running (since we are),
@@ -1561,7 +1622,7 @@ runtime_sigprof(uint8 *pc __attribute__ ((unused)),
 		uint8 *lr __attribute__ ((unused)),
 		G *gp __attribute__ ((unused)))
 {
-	// int32 n;
+	int32 n;
 
 	if(prof.fn == nil || prof.hz == 0)
 		return;
@@ -1571,9 +1632,9 @@ runtime_sigprof(uint8 *pc __attribute__ ((unused)),
 		runtime_unlock(&prof);
 		return;
 	}
-	// n = runtime_gentraceback(pc, sp, lr, gp, 0, prof.pcbuf, nelem(prof.pcbuf));
-	// if(n > 0)
-	// 	prof.fn(prof.pcbuf, n);
+	n = runtime_callers(0, prof.pcbuf, nelem(prof.pcbuf));
+	if(n > 0)
+		prof.fn(prof.pcbuf, n);
 	runtime_unlock(&prof);
 }
 

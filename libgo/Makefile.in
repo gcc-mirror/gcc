@@ -197,22 +197,23 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-setenv.c runtime/go-signal.c runtime/go-strcmp.c \
 	runtime/go-string-to-byte-array.c \
 	runtime/go-string-to-int-array.c runtime/go-strplus.c \
-	runtime/go-strslice.c runtime/go-trampoline.c \
-	runtime/go-type-complex.c runtime/go-type-eface.c \
-	runtime/go-type-error.c runtime/go-type-float.c \
-	runtime/go-type-identity.c runtime/go-type-interface.c \
-	runtime/go-type-string.c runtime/go-typedesc-equal.c \
-	runtime/go-typestring.c runtime/go-unsafe-new.c \
-	runtime/go-unsafe-newarray.c runtime/go-unsafe-pointer.c \
-	runtime/go-unwind.c runtime/chan.c runtime/cpuprof.c \
-	runtime/lock_sema.c runtime/thread-sema.c runtime/lock_futex.c \
-	runtime/thread-linux.c runtime/mcache.c runtime/mcentral.c \
-	runtime/mem_posix_memalign.c runtime/mem.c runtime/mfinal.c \
-	runtime/mfixalloc.c runtime/mgc0.c runtime/mheap.c \
-	runtime/msize.c runtime/proc.c runtime/runtime.c \
-	runtime/signal_unix.c runtime/thread.c runtime/yield.c \
-	runtime/rtems-task-variable-add.c iface.c malloc.c map.c \
-	mprof.c reflect.c runtime1.c sema.c sigqueue.c string.c time.c
+	runtime/go-strslice.c runtime/go-traceback.c \
+	runtime/go-trampoline.c runtime/go-type-complex.c \
+	runtime/go-type-eface.c runtime/go-type-error.c \
+	runtime/go-type-float.c runtime/go-type-identity.c \
+	runtime/go-type-interface.c runtime/go-type-string.c \
+	runtime/go-typedesc-equal.c runtime/go-typestring.c \
+	runtime/go-unsafe-new.c runtime/go-unsafe-newarray.c \
+	runtime/go-unsafe-pointer.c runtime/go-unwind.c runtime/chan.c \
+	runtime/cpuprof.c runtime/lock_sema.c runtime/thread-sema.c \
+	runtime/lock_futex.c runtime/thread-linux.c runtime/mcache.c \
+	runtime/mcentral.c runtime/mem_posix_memalign.c runtime/mem.c \
+	runtime/mfinal.c runtime/mfixalloc.c runtime/mgc0.c \
+	runtime/mheap.c runtime/msize.c runtime/proc.c \
+	runtime/runtime.c runtime/signal_unix.c runtime/thread.c \
+	runtime/yield.c runtime/rtems-task-variable-add.c iface.c \
+	malloc.c map.c mprof.c reflect.c runtime1.c sema.c sigqueue.c \
+	string.c time.c
 @LIBGO_IS_LINUX_FALSE@am__objects_1 = lock_sema.lo thread-sema.lo
 @LIBGO_IS_LINUX_TRUE@am__objects_1 = lock_futex.lo thread-linux.lo
 @HAVE_SYS_MMAN_H_FALSE@am__objects_2 = mem_posix_memalign.lo
@@ -234,16 +235,16 @@ am__objects_4 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-reflect-map.lo go-rune.lo go-runtime-error.lo go-setenv.lo \
 	go-signal.lo go-strcmp.lo go-string-to-byte-array.lo \
 	go-string-to-int-array.lo go-strplus.lo go-strslice.lo \
-	go-trampoline.lo go-type-complex.lo go-type-eface.lo \
-	go-type-error.lo go-type-float.lo go-type-identity.lo \
-	go-type-interface.lo go-type-string.lo go-typedesc-equal.lo \
-	go-typestring.lo go-unsafe-new.lo go-unsafe-newarray.lo \
-	go-unsafe-pointer.lo go-unwind.lo chan.lo cpuprof.lo \
-	$(am__objects_1) mcache.lo mcentral.lo $(am__objects_2) \
-	mfinal.lo mfixalloc.lo mgc0.lo mheap.lo msize.lo proc.lo \
-	runtime.lo signal_unix.lo thread.lo yield.lo $(am__objects_3) \
-	iface.lo malloc.lo map.lo mprof.lo reflect.lo runtime1.lo \
-	sema.lo sigqueue.lo string.lo time.lo
+	go-traceback.lo go-trampoline.lo go-type-complex.lo \
+	go-type-eface.lo go-type-error.lo go-type-float.lo \
+	go-type-identity.lo go-type-interface.lo go-type-string.lo \
+	go-typedesc-equal.lo go-typestring.lo go-unsafe-new.lo \
+	go-unsafe-newarray.lo go-unsafe-pointer.lo go-unwind.lo \
+	chan.lo cpuprof.lo $(am__objects_1) mcache.lo mcentral.lo \
+	$(am__objects_2) mfinal.lo mfixalloc.lo mgc0.lo mheap.lo \
+	msize.lo proc.lo runtime.lo signal_unix.lo thread.lo yield.lo \
+	$(am__objects_3) iface.lo malloc.lo map.lo mprof.lo reflect.lo \
+	runtime1.lo sema.lo sigqueue.lo string.lo time.lo
 am_libgo_la_OBJECTS = $(am__objects_4)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -855,6 +856,7 @@ runtime_files = \
 	runtime/go-string-to-int-array.c \
 	runtime/go-strplus.c \
 	runtime/go-strslice.c \
+	runtime/go-traceback.c \
 	runtime/go-trampoline.c \
 	runtime/go-type-complex.c \
 	runtime/go-type-eface.c \
@@ -2408,6 +2410,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-string-to-int-array.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strplus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strslice.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-traceback.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-trampoline.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-complex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-eface.Plo@am__quote@
@@ -2822,6 +2825,13 @@ go-strslice.lo: runtime/go-strslice.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-strslice.c' object='go-strslice.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-strslice.lo `test -f 'runtime/go-strslice.c' || echo '$(srcdir)/'`runtime/go-strslice.c
+
+go-traceback.lo: runtime/go-traceback.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-traceback.lo -MD -MP -MF $(DEPDIR)/go-traceback.Tpo -c -o go-traceback.lo `test -f 'runtime/go-traceback.c' || echo '$(srcdir)/'`runtime/go-traceback.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-traceback.Tpo $(DEPDIR)/go-traceback.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-traceback.c' object='go-traceback.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-traceback.lo `test -f 'runtime/go-traceback.c' || echo '$(srcdir)/'`runtime/go-traceback.c
 
 go-trampoline.lo: runtime/go-trampoline.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-trampoline.lo -MD -MP -MF $(DEPDIR)/go-trampoline.Tpo -c -o go-trampoline.lo `test -f 'runtime/go-trampoline.c' || echo '$(srcdir)/'`runtime/go-trampoline.c
