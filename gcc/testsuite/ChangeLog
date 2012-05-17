@@ -1,3 +1,8 @@
+2012-05-17  David S. Miller  <davem@davemloft.net>
+
+	* gfortran.dg/bessel_7.f90: Bump allowed precision to avoid
+	failure on sparc-*-linux-gnu.
+
 2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/39681
