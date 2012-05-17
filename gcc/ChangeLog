@@ -1,3 +1,9 @@
+2012-05-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* opts.c (common_handle_option): -pedantic-errors enables -Wpedantic.
+	(enable_warning_as_error): Do not special case Wuninitialized.
+	* optc-gen.awk: Add sanity checks.
+
 2012-05-17  Jan Hubicka   <jh@suse.cz>
 
 	* ipa-reference.c (is_proper_for_analysis): Do not check flags

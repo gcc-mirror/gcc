@@ -510,10 +510,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	  break;
 	}
 
-    case OPT_Wreturn_type:
-      warn_return_type = value;
-      break;
-
     case OPT_Wtraditional:
       cpp_opts->cpp_warn_traditional = value;
       break;
@@ -540,12 +536,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       warn_variadic_macros = value;
       break;
 
-    case OPT_Wwrite_strings:
-      warn_write_strings = value;
-      break;
-
     case OPT_Weffc__:
-      warn_ecpp = value;
       if (value)
         warn_nonvdtor = true;
       break;
@@ -740,10 +731,9 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	error ("output filename specified twice");
       break;
 
-      /* We need to handle the -Wpedantic switches here, rather than in
+      /* We need to handle the -Wpedantic switch here, rather than in
 	 c_common_post_options, so that a subsequent -Wno-endif-labels
 	 is not overridden.  */
-    case OPT_pedantic_errors:
     case OPT_Wpedantic:
       cpp_opts->cpp_pedantic = 1;
       cpp_opts->warn_endif_labels = 1;

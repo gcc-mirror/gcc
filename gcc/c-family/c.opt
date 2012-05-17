@@ -142,9 +142,6 @@ C ObjC C++ ObjC++ Joined Separate
 -pedantic
 C ObjC C++ ObjC++ Alias(pedantic)
 
--pedantic-errors
-C ObjC C++ ObjC++ Alias(pedantic-errors)
-
 -preprocess
 C ObjC C++ ObjC++ Undocumented Alias(E)
 
@@ -1201,10 +1198,6 @@ C ObjC C++ ObjC++ Joined Separate
 
 pedantic
 C ObjC C++ ObjC++ Alias(Wpedantic)
-; Documented in common.opt
-
-pedantic-errors
-C ObjC C++ ObjC++
 ; Documented in common.opt
 
 print-objc-runtime-info
