@@ -1712,8 +1712,11 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_pedantic_errors:
-      opts->x_pedantic = 1;
       dc->pedantic_errors = 1;
+      control_warning_option (OPT_Wpedantic, DK_ERROR, value,
+			      loc, lang_mask,
+			      handlers, opts, opts_set,
+                              dc);
       break;
 
     case OPT_flto:
@@ -2012,9 +2015,6 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
       control_warning_option (option_index, (int) kind, value,
 			      loc, lang_mask,
 			      handlers, opts, opts_set, dc);
-      if (option_index == OPT_Wuninitialized)
-        enable_warning_as_error ("maybe-uninitialized", value, lang_mask,
-	                         handlers, opts, opts_set, loc, dc);
     }
   free (new_option);
 }
