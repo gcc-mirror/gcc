@@ -1,3 +1,10 @@
+2012-05-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/m68k/m68k-devices.def: Add 51ag, 51je, 51jf, 51jg, 51mm,
+	51qm.
+	* config/m68k/m68k-tables.opt: Regenerated.
+	* doc/invoke.texi (M680x0 Options): Document.
+
 2012-05-16  Dave Boutcher  <daveboutcher@gmail.com>
 	    Patrick Marlier  <patrick.marlier@gmail.com>
 
