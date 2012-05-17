@@ -1,3 +1,16 @@
+2012-05-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/53125
+	* regstat.c (regstat_bb_compute_ri): Take new local_live_last_luid
+	argument.  Simplify calculation of REG_LIVE_LENGTH for regnos that
+	die in the basic block.  Correctly top off REG_FREQ and
+	REG_FREQ_CALLS_CROSSED.
+	Remove do_not_gen.
+	(regstat_compute_ri): Allocate and free local_live_last_luid.
+	Remove do_not_gen.
+	(regstat_bb_compute_calls_crossed): Correctly top off
+	REG_FREQ_CALLS_CROSSED.
+
 2012-05-17  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_symtab_resolve_symbols): Preffer decl with constructor
