@@ -782,6 +782,10 @@ process_function_and_variable_attributes (struct cgraph_node *first,
        vnode = varpool_next_variable (vnode))
     {
       tree decl = vnode->symbol.decl;
+      if (DECL_EXTERNAL (decl)
+	  && DECL_INITIAL (decl)
+	  && const_value_known_p (decl))
+	varpool_finalize_decl (decl);
       if (DECL_PRESERVE_P (decl))
 	vnode->symbol.force_output = true;
       else if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
@@ -1161,6 +1165,8 @@ mark_functions_to_output (void)
 	  gcc_assert (node->global.inlined_to
 		      || !gimple_has_body_p (decl)
 		      || node->symbol.in_other_partition
+		      || node->clones
+		      || DECL_ARTIFICIAL (decl)
 		      || DECL_EXTERNAL (decl));
 
 	}
@@ -1760,12 +1766,13 @@ output_in_order (void)
     }
 
   FOR_EACH_DEFINED_VARIABLE (pv)
-    {
-      i = pv->symbol.order;
-      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-      nodes[i].kind = ORDER_VAR;
-      nodes[i].u.v = pv;
-    }
+    if (!DECL_EXTERNAL (pv->symbol.decl))
+      {
+	i = pv->symbol.order;
+	gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
+	nodes[i].kind = ORDER_VAR;
+	nodes[i].u.v = pv;
+      }
 
   for (pa = asm_nodes; pa; pa = pa->next)
     {

@@ -62,18 +62,11 @@ can_refer_decl_in_current_unit_p (tree decl)
   if (!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
     return true;
   /* External flag is set, so we deal with C++ reference
-     to static object from other file.  */
+     to static object from other file.
+     We also may see weakref that is always safe.  */
   if (DECL_EXTERNAL (decl) && TREE_STATIC (decl)
       && TREE_CODE (decl) == VAR_DECL)
-    {
-      /* Just be sure it is not big in frontend setting
-	 flags incorrectly.  Those variables should never
-	 be finalized.  */
-      gcc_checking_assert (!(vnode = varpool_get_node (decl))
-			   || vnode->alias
-			   || !vnode->finalized);
-      return false;
-    }
+    return lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)) != NULL;
   /* When function is public, we always can introduce new reference.
      Exception are the COMDAT functions where introducing a direct
      reference imply need to include function body in the curren tunit.  */

@@ -489,7 +489,21 @@ lto_symtab_resolve_symbols (void **slot)
       /* From variables that can prevail choose the largest one.  */
       if (!prevailing
 	  || tree_int_cst_lt (DECL_SIZE (prevailing->decl),
-			      DECL_SIZE (e->decl)))
+			      DECL_SIZE (e->decl))
+	  /* When variables are equivalent try to chose one that has useful
+	     DECL_INITIAL.  This makes sense for keyed vtables that are
+	     DECL_EXTERNAL but initialized.  In units that do not need them
+	     we replace the initializer by error_mark_node to conserve
+	     memory.
+
+	     We know that the vtable is keyed outside the LTO unit - otherwise
+	     the keyed instance would prevail.  We still can preserve useful
+	     info in the initializer.  */
+	  || (DECL_SIZE (prevailing->decl) == DECL_SIZE (e->decl)
+	      && (DECL_INITIAL (e->decl)
+		  && DECL_INITIAL (e->decl) != error_mark_node)
+	      && (!DECL_INITIAL (prevailing->decl)
+		  || DECL_INITIAL (prevailing->decl) == error_mark_node)))
 	prevailing = e;
     }
 

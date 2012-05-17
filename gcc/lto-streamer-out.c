@@ -353,11 +353,10 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
 
 	  varpool_encoder = ob->decl_state->varpool_node_encoder;
 	  vnode = varpool_get_node (expr);
-	  if (!vnode)
+	  if (!vnode
+	      || !lto_varpool_encoder_encode_initializer_p (varpool_encoder,
+							    vnode))
 	    initial = error_mark_node;
-	  else if (!lto_varpool_encoder_encode_initializer_p (varpool_encoder,
-							      vnode))
-	    initial = NULL;
 	}
 
       stream_write_tree (ob, initial, ref_p);
