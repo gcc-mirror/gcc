@@ -1,3 +1,13 @@
+2012-05-17  Jan Hubicka   <jh@suse.cz>
+
+	* ipa-reference.c (is_proper_for_analysis): Do not check flags
+	that might change as result of global optimization.
+	(analyze_function): Do not check analyzed and externally_visible
+	flags; be happy about address dereferences.
+	(propagate): Prune all_module_statics so it really contains just
+	statics; prune all the local summaries.
+	(ipa_reference_write_optimization_summary): Simplify.
+
 2012-05-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/m68k/m68k-devices.def: Add 51ag, 51je, 51jf, 51jg, 51mm,
