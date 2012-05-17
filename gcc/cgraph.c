@@ -1242,6 +1242,7 @@ cgraph_remove_node (struct cgraph_node *node)
 	  && (cgraph_global_info_ready
 	      && (TREE_ASM_WRITTEN (n->symbol.decl)
 		  || DECL_EXTERNAL (n->symbol.decl)
+		  || !n->analyzed
 		  || n->symbol.in_other_partition))))
     cgraph_release_function_body (node);
 

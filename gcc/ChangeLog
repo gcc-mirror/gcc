@@ -1,3 +1,26 @@
+2012-05-17  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_symtab_resolve_symbols): Preffer decl with constructor
+	over decl without.
+	* cgraph.c (cgraph_remove_node): Clear also body of unanalyzed nodes.
+	* cgraph.h (varpool_can_remove_if_no_refs): Handle external correctly.
+	* cgraphunit.c (process_function_and_variable_attributes): Finalize 
+	extrnal decls.
+	(mark_functions_to_output): Also accept bodies for functions with clones.
+	(output_in_order): Skip external vars.
+	* lto-cgraph.c (lto_output_node): External functions are never in other
+	partition.
+	(lto_output_varpool_node): Likewise.
+	* lto-streamer-out.c (lto_write_tree): Always use error_mark_nodes for
+	forgotten initializers.
+	* ipa.c (process_references): Handle external vars.
+	(symtab_remove_unreachable_nodes): Update to handle external vars.
+	(varpool_externally_visible_p): External vars are externally visible.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Update.
+	* varpool.c (varpool_remove_node): Remove constructor.
+	(decide_is_variable_needed): Handle externals.
+	(varpool_remove_unreferenced_decls): Likewise.
+
 2012-05-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* opts.c (common_handle_option): -pedantic-errors enables -Wpedantic.

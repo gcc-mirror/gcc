@@ -59,6 +59,14 @@ void
 varpool_remove_node (struct varpool_node *node)
 {
   symtab_unregister_node ((symtab_node)node);
+  if (DECL_INITIAL (node->symbol.decl)
+      && !DECL_IN_CONSTANT_POOL (node->symbol.decl)
+      /* Keep vtables for BINFO folding.  */
+      && !DECL_VIRTUAL_P (node->symbol.decl)
+      /* dbxout output constant initializers for readonly vars.  */
+      && (!host_integerp (DECL_INITIAL (node->symbol.decl), 0)
+	  || !TREE_READONLY (node->symbol.decl)))
+    DECL_INITIAL (node->symbol.decl) = error_mark_node;
   ggc_free (node);
 }
 
@@ -118,17 +126,17 @@ varpool_node_for_asm (tree asmname)
 bool
 decide_is_variable_needed (struct varpool_node *node, tree decl)
 {
+  if (DECL_EXTERNAL (decl))
+    return false;
+
   /* If the user told us it is used, then it must be so.  */
   if (node->symbol.force_output)
     return true;
 
-  gcc_assert (!DECL_EXTERNAL (decl));
-
   /* Externally visible variables must be output.  The exception is
      COMDAT variables that must be output only when they are needed.  */
   if (TREE_PUBLIC (decl)
-      && !DECL_COMDAT (decl)
-      && !DECL_EXTERNAL (decl))
+      && !DECL_COMDAT (decl))
     return true;
 
   return false;
@@ -348,7 +356,8 @@ varpool_remove_unreferenced_decls (void)
 	  && (!varpool_can_remove_if_no_refs (node)
 	      /* We just expanded all function bodies.  See if any of
 		 them needed the variable.  */
-	      || DECL_RTL_SET_P (node->symbol.decl)))
+	      || (!DECL_EXTERNAL (node->symbol.decl)
+		  && DECL_RTL_SET_P (node->symbol.decl))))
 	{
 	  enqueue_node (node, &first);
           if (cgraph_dump_file)
@@ -372,6 +381,8 @@ varpool_remove_unreferenced_decls (void)
 	}
       for (i = 0; ipa_ref_list_reference_iterate (&node->symbol.ref_list, i, ref); i++)
 	if (symtab_variable_p (ref->referred)
+	    && (!DECL_EXTERNAL (ref->referred->symbol.decl)
+		|| varpool (ref->referred)->alias)
 	    && varpool (ref->referred)->analyzed)
 	  enqueue_node (varpool (ref->referred), &first);
     }
