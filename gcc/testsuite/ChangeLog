@@ -1,3 +1,7 @@
+2012-05-16  Patrick Marlier  <patrick.marlier@gmail.com> 
+
+	* gcc.dg/tm/indirect-2.c: New test. 
+
 2012-05-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/53217
