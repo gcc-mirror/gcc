@@ -6613,7 +6613,7 @@ cp_parser_new_expression (cp_parser* parser)
   VEC(tree,gc) *placement;
   tree type;
   VEC(tree,gc) *initializer;
-  tree nelts;
+  tree nelts = NULL_TREE;
   tree ret;
 
   /* Look for the optional `::' operator.  */
@@ -6666,7 +6666,6 @@ cp_parser_new_expression (cp_parser* parser)
 		  "try removing the parentheses around the type-id");
 	  cp_parser_direct_new_declarator (parser);
 	}
-      nelts = NULL_TREE;
     }
   /* Otherwise, there must be a new-type-id.  */
   else
@@ -6736,7 +6735,6 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
   cp_declarator *declarator;
   cp_declarator *outer_declarator;
   const char *saved_message;
-  tree type;
 
   /* The type-specifier sequence must not contain type definitions.
      (It cannot contain declarations of new types either, but if they
@@ -6751,6 +6749,10 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
 				&type_specifier_seq);
   /* Restore the old message.  */
   parser->type_definition_forbidden_message = saved_message;
+
+  if (type_specifier_seq.type == error_mark_node)
+    return error_mark_node;
+
   /* Parse the new-declarator.  */
   new_declarator = cp_parser_new_declarator_opt (parser);
 
@@ -6787,8 +6789,7 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
 	new_declarator = NULL;
     }
 
-  type = groktypename (&type_specifier_seq, new_declarator, false);
-  return type;
+  return groktypename (&type_specifier_seq, new_declarator, false);
 }
 
 /* Parse an (optional) new-declarator.
@@ -15735,6 +15736,8 @@ cp_parser_init_declarator (cp_parser* parser,
 					       &is_non_constant_init);
 	  if (!member_p && processing_template_decl)
 	    finish_lambda_scope ();
+	  if (initializer == error_mark_node)
+	    cp_parser_skip_to_end_of_statement (parser);
 	}
     }
 
@@ -21748,6 +21751,9 @@ cp_parser_late_parse_one_default_arg (cp_parser *parser, tree decl,
     maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 
   finish_lambda_scope ();
+
+  if (parsed_arg == error_mark_node)
+    cp_parser_skip_to_end_of_statement (parser);
 
   if (!processing_template_decl)
     {
