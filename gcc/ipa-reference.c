@@ -247,10 +247,6 @@ add_static_var (tree var)
 static inline bool
 is_proper_for_analysis (tree t)
 {
-  /* We handle only variables whose address is never taken.  */
-  if (TREE_ADDRESSABLE (t))
-    return false;
-
   /* If the variable has the "used" attribute, treat it as if it had a
      been touched by the devil.  */
   if (DECL_PRESERVE_P (t))
@@ -264,10 +260,6 @@ is_proper_for_analysis (tree t)
   /* We do not need to analyze readonly vars, we already know they do not
      alias.  */
   if (TREE_READONLY (t))
-    return false;
-
-  /* We cannot touch decls where the type needs constructing.  */
-  if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (t)))
     return false;
 
   /* This is a variable we care about.  Check if we have seen it
@@ -438,9 +430,7 @@ analyze_function (struct cgraph_node *fn)
       if (!symtab_variable_p (ref->referred))
 	continue;
       var = ipa_ref_varpool_node (ref)->symbol.decl;
-      if (ipa_ref_varpool_node (ref)->symbol.externally_visible
-	  || !ipa_ref_varpool_node (ref)->analyzed
-	  || !is_proper_for_analysis (var))
+      if (!is_proper_for_analysis (var))
 	continue;
       switch (ref->use)
 	{
@@ -453,7 +443,6 @@ analyze_function (struct cgraph_node *fn)
           bitmap_set_bit (local->statics_written, DECL_UID (var));
 	  break;
 	case IPA_REF_ADDR:
-	  gcc_unreachable ();
 	  break;
 	}
     }
@@ -613,6 +602,7 @@ static unsigned int
 propagate (void)
 {
   struct cgraph_node *node;
+  struct varpool_node *vnode;
   struct cgraph_node *w;
   struct cgraph_node **order =
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
@@ -624,6 +614,28 @@ propagate (void)
 
   ipa_discover_readonly_nonaddressable_vars ();
   generate_summary ();
+
+  /* Now we know what vars are realy statics; prune out those that aren't.  */
+  FOR_EACH_VARIABLE (vnode)
+    if (vnode->symbol.externally_visible
+	|| TREE_ADDRESSABLE (vnode->symbol.decl)
+	|| TREE_READONLY (vnode->symbol.decl)
+	|| !is_proper_for_analysis (vnode->symbol.decl)
+	|| !vnode->analyzed)
+      bitmap_clear_bit (all_module_statics, DECL_UID (vnode->symbol.decl));
+
+  /* Forget info we collected "just for fun" on variables that turned out to be
+     non-local.  */
+  FOR_EACH_DEFINED_FUNCTION (node)
+    {
+      ipa_reference_local_vars_info_t node_l;
+
+      node_l = &get_reference_vars_info (node)->local;
+      if (node_l->statics_read != all_module_statics)
+        bitmap_and_into (node_l->statics_read, all_module_statics);
+      if (node_l->statics_written != all_module_statics)
+        bitmap_and_into (node_l->statics_written, all_module_statics);
+    }
 
   /* Propagate the local information thru the call graph to produce
      the global information.  All the nodes within a cycle will have
@@ -1034,9 +1046,7 @@ ipa_reference_write_optimization_summary (cgraph_node_set set,
   for (i = 0; i < lto_varpool_encoder_size (varpool_encoder); i++)
     {
       struct varpool_node *vnode = lto_varpool_encoder_deref (varpool_encoder, i);
-      if (!vnode->symbol.externally_visible
-	  && vnode->analyzed
-	  && bitmap_bit_p (all_module_statics, DECL_UID (vnode->symbol.decl))
+      if (bitmap_bit_p (all_module_statics, DECL_UID (vnode->symbol.decl))
 	  && referenced_from_this_partition_p (&vnode->symbol.ref_list, set, vset))
 	{
 	  tree decl = vnode->symbol.decl;
