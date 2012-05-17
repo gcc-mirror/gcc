@@ -1,5 +1,14 @@
 2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/53371
+	* except.c (is_admissible_throw_operand): Rename to
+	is_admissible_throw_operand_or_catch_parameter and handle
+	catch parameter too.
+	(expand_start_catch_block): Use it.
+	(build_throw): Adjust.
+
+2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/44516
 	* typeck.c (build_x_array_ref, build_x_conditional_expr,
 	build_x_compound_expr, build_x_modify_expr): Add location_t parameter.
