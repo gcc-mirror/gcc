@@ -439,6 +439,7 @@ runtime_files = \
 	runtime/go-string-to-int-array.c \
 	runtime/go-strplus.c \
 	runtime/go-strslice.c \
+	runtime/go-traceback.c \
 	runtime/go-trampoline.c \
 	runtime/go-type-complex.c \
 	runtime/go-type-eface.c \

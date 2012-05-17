@@ -11,6 +11,17 @@
 
 uint32	runtime_panicking;
 
+int32
+runtime_gotraceback(void)
+{
+	const byte *p;
+
+	p = runtime_getenv("GOTRACEBACK");
+	if(p == nil || p[0] == '\0')
+		return 1;	// default is on
+	return runtime_atoi(p);
+}
+
 static Lock paniclk;
 
 void
@@ -31,20 +42,26 @@ runtime_startpanic(void)
 void
 runtime_dopanic(int32 unused __attribute__ ((unused)))
 {
-	/*
+	G* g;
 	static bool didothers;
 
+	g = runtime_g();
 	if(g->sig != 0)
-		runtime_printf("[signal %x code=%p addr=%p pc=%p]\n",
-			g->sig, g->sigcode0, g->sigcode1, g->sigpc);
+		runtime_printf("[signal %x code=%p addr=%p]\n",
+			g->sig, (void*)(g->sigcode0), (void*)(g->sigcode1));
 
 	if(runtime_gotraceback()){
+		if(g != runtime_m()->g0) {
+			runtime_printf("\n");
+			runtime_goroutineheader(g);
+			runtime_traceback();
+			runtime_goroutinetrailer(g);
+		}
 		if(!didothers) {
 			didothers = true;
 			runtime_tracebackothers(g);
 		}
 	}
-	*/
 
 	runtime_unlock(&paniclk);
 	if(runtime_xadd(&runtime_panicking, -1) != 0) {
@@ -185,10 +202,10 @@ runtime_fastrand1(void)
 }
 
 static struct root_list runtime_roots =
-{ NULL,
+{ nil,
   { { &syscall_Envs, sizeof syscall_Envs },
     { &os_Args, sizeof os_Args },
-    { NULL, 0 } },
+    { nil, 0 } },
 };
 
 void
@@ -208,4 +225,14 @@ runtime_cputicks(void)
   // FIXME: implement for other processors.
   return 0;
 #endif
+}
+
+bool
+runtime_showframe(const unsigned char *s)
+{
+	static int32 traceback = -1;
+	
+	if(traceback < 0)
+		traceback = runtime_gotraceback();
+	return traceback > 1 || (__builtin_strchr((const char*)s, '.') != nil && __builtin_memcmp(s, "runtime.", 7) != 0);
 }
