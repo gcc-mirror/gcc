@@ -1,6 +1,13 @@
-2012-05-16  Patrick Marlier  <patrick.marlier@gmail.com> 
+2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	* gcc.dg/tm/indirect-2.c: New test. 
+	PR c++/44516
+	* g++.dg/parse/error48.C: New.
+	* g++.dg/template/crash89.C: Adjust dg-error line numbers.
+	* g++.old-deja/g++.robertl/eb109.C: Add column info to dg-error string.
+
+2012-05-16  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	* gcc.dg/tm/indirect-2.c: New test.
 
 2012-05-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 

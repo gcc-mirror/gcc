@@ -2536,7 +2536,8 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
 	  || (TREE_CODE (name) == SCOPE_REF
 	      && TYPE_P (TREE_OPERAND (name, 0))
 	      && dependent_type_p (TREE_OPERAND (name, 0))))
-	return build_min_nt (COMPONENT_REF, object, name, NULL_TREE);
+	return build_min_nt_loc (UNKNOWN_LOCATION, COMPONENT_REF,
+				 object, name, NULL_TREE);
       object = build_non_dependent_expr (object);
     }
   else if (c_dialect_objc ()
@@ -2743,7 +2744,7 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
       if (TREE_TYPE (expr) && POINTER_TYPE_P (TREE_TYPE (expr)))
 	return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
       if (type_dependent_expression_p (expr))
-	return build_min_nt (INDIRECT_REF, expr);
+	return build_min_nt_loc (loc, INDIRECT_REF, expr);
       expr = build_non_dependent_expr (expr);
     }
 
@@ -3597,7 +3598,7 @@ build_x_binary_op (location_t loc, enum tree_code code, tree arg1,
     {
       if (type_dependent_expression_p (arg1)
 	  || type_dependent_expression_p (arg2))
-	return build_min_nt (code, arg1, arg2);
+	return build_min_nt_loc (loc, code, arg1, arg2);
       arg1 = build_non_dependent_expr (arg1);
       arg2 = build_non_dependent_expr (arg2);
     }
@@ -3629,7 +3630,8 @@ build_x_binary_op (location_t loc, enum tree_code code, tree arg1,
 /* Build and return an ARRAY_REF expression.  */
 
 tree
-build_x_array_ref (tree arg1, tree arg2, tsubst_flags_t complain)
+build_x_array_ref (location_t loc, tree arg1, tree arg2,
+		   tsubst_flags_t complain)
 {
   tree orig_arg1 = arg1;
   tree orig_arg2 = arg2;
@@ -3639,14 +3641,14 @@ build_x_array_ref (tree arg1, tree arg2, tsubst_flags_t complain)
     {
       if (type_dependent_expression_p (arg1)
 	  || type_dependent_expression_p (arg2))
-	return build_min_nt (ARRAY_REF, arg1, arg2,
-			     NULL_TREE, NULL_TREE);
+	return build_min_nt_loc (loc, ARRAY_REF, arg1, arg2,
+				 NULL_TREE, NULL_TREE);
       arg1 = build_non_dependent_expr (arg1);
       arg2 = build_non_dependent_expr (arg2);
     }
 
-  expr = build_new_op (input_location, ARRAY_REF, LOOKUP_NORMAL, arg1,
-		       arg2, NULL_TREE, /*overload=*/NULL, complain);
+  expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, arg1, arg2,
+		       NULL_TREE, /*overload=*/NULL, complain);
 
   if (processing_template_decl && expr != error_mark_node)
     return build_min_non_dep (ARRAY_REF, expr, orig_arg1, orig_arg2,
@@ -4671,7 +4673,7 @@ build_x_unary_op (location_t loc, enum tree_code code, tree xarg,
   if (processing_template_decl)
     {
       if (type_dependent_expression_p (xarg))
-	return build_min_nt (code, xarg, NULL_TREE);
+	return build_min_nt_loc (loc, code, xarg, NULL_TREE);
 
       xarg = build_non_dependent_expr (xarg);
     }
@@ -5586,7 +5588,7 @@ cxx_mark_addressable (tree exp)
 /* Build and return a conditional expression IFEXP ? OP1 : OP2.  */
 
 tree
-build_x_conditional_expr (tree ifexp, tree op1, tree op2, 
+build_x_conditional_expr (location_t loc, tree ifexp, tree op1, tree op2, 
                           tsubst_flags_t complain)
 {
   tree orig_ifexp = ifexp;
@@ -5603,7 +5605,7 @@ build_x_conditional_expr (tree ifexp, tree op1, tree op2,
 	  /* As a GNU extension, the middle operand may be omitted.  */
 	  || (op1 && type_dependent_expression_p (op1))
 	  || type_dependent_expression_p (op2))
-	return build_min_nt (COND_EXPR, ifexp, op1, op2);
+	return build_min_nt_loc (loc, COND_EXPR, ifexp, op1, op2);
       ifexp = build_non_dependent_expr (ifexp);
       if (op1)
 	op1 = build_non_dependent_expr (op1);
@@ -5670,8 +5672,8 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
 	return error_mark_node;
 
       for (list = TREE_CHAIN (list); list; list = TREE_CHAIN (list))
-	expr = build_x_compound_expr (expr, TREE_VALUE (list), 
-                                      complain);
+	expr = build_x_compound_expr (EXPR_LOCATION (TREE_VALUE (list)),
+				      expr, TREE_VALUE (list), complain);
     }
 
   return expr;
@@ -5699,7 +5701,8 @@ build_x_compound_expr_from_vec (VEC(tree,gc) *vec, const char *msg)
 
       expr = VEC_index (tree, vec, 0);
       for (ix = 1; VEC_iterate (tree, vec, ix, t); ++ix)
-	expr = build_x_compound_expr (expr, t, tf_warning_or_error);
+	expr = build_x_compound_expr (EXPR_LOCATION (t), expr,
+				      t, tf_warning_or_error);
 
       return expr;
     }
@@ -5708,7 +5711,8 @@ build_x_compound_expr_from_vec (VEC(tree,gc) *vec, const char *msg)
 /* Handle overloading of the ',' operator when needed.  */
 
 tree
-build_x_compound_expr (tree op1, tree op2, tsubst_flags_t complain)
+build_x_compound_expr (location_t loc, tree op1, tree op2,
+		       tsubst_flags_t complain)
 {
   tree result;
   tree orig_op1 = op1;
@@ -5718,13 +5722,13 @@ build_x_compound_expr (tree op1, tree op2, tsubst_flags_t complain)
     {
       if (type_dependent_expression_p (op1)
 	  || type_dependent_expression_p (op2))
-	return build_min_nt (COMPOUND_EXPR, op1, op2);
+	return build_min_nt_loc (loc, COMPOUND_EXPR, op1, op2);
       op1 = build_non_dependent_expr (op1);
       op2 = build_non_dependent_expr (op2);
     }
 
-  result = build_new_op (input_location, COMPOUND_EXPR, LOOKUP_NORMAL,
-			 op1, op2, NULL_TREE, /*overload=*/NULL, complain);
+  result = build_new_op (loc, COMPOUND_EXPR, LOOKUP_NORMAL, op1, op2,
+			 NULL_TREE, /*overload=*/NULL, complain);
   if (!result)
     result = cp_build_compound_expr (op1, op2, complain);
 
@@ -7105,18 +7109,19 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 }
 
 tree
-build_x_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
-		     tsubst_flags_t complain)
+build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
+		     tree rhs, tsubst_flags_t complain)
 {
   if (processing_template_decl)
-    return build_min_nt (MODOP_EXPR, lhs,
-			 build_min_nt (modifycode, NULL_TREE, NULL_TREE), rhs);
+    return build_min_nt_loc (loc, MODOP_EXPR, lhs,
+			     build_min_nt_loc (loc, modifycode, NULL_TREE,
+					       NULL_TREE), rhs);
 
   if (modifycode != NOP_EXPR)
     {
-      tree rval = build_new_op (input_location, MODIFY_EXPR, LOOKUP_NORMAL,
-				lhs, rhs, make_node (modifycode),
-				/*overload=*/NULL, complain);
+      tree rval = build_new_op (loc, MODIFY_EXPR, LOOKUP_NORMAL, lhs, rhs,
+				make_node (modifycode), /*overload=*/NULL,
+				complain);
       if (rval)
 	{
 	  TREE_NO_WARNING (rval) = 1;

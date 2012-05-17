@@ -7394,6 +7394,7 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
   tree expr;
   tree assignment_expr;
   struct cp_token *token;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
   /* Consume the `?' token.  */
   cp_lexer_consume_token (parser->lexer);
@@ -7428,7 +7429,7 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
   c_inhibit_evaluation_warnings -= logical_or_expr == truthvalue_true_node;
 
   /* Build the conditional-expression.  */
-  return build_x_conditional_expr (logical_or_expr,
+  return build_x_conditional_expr (loc, logical_or_expr,
 				   expr,
 				   assignment_expr,
                                    tf_warning_or_error);
@@ -7468,11 +7469,11 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
 	return cp_parser_question_colon_clause (parser, expr);
       else
 	{
-	  enum tree_code assignment_operator;
+	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
 	  /* If it's an assignment-operator, we're using the second
 	     production.  */
-	  assignment_operator
+	  enum tree_code assignment_operator
 	    = cp_parser_assignment_operator_opt (parser);
 	  if (assignment_operator != ERROR_MARK)
 	    {
@@ -7490,7 +7491,7 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
 							      NIC_ASSIGNMENT))
 		return error_mark_node;
 	      /* Build the assignment expression.  */
-	      expr = build_x_modify_expr (expr,
+	      expr = build_x_modify_expr (loc, expr,
 					  assignment_operator,
 					  rhs,
 					  tf_warning_or_error);
@@ -7599,6 +7600,7 @@ static tree
 cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
 {
   tree expression = NULL_TREE;
+  location_t loc = UNKNOWN_LOCATION;
 
   while (true)
     {
@@ -7612,7 +7614,7 @@ cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
       if (!expression)
 	expression = assignment_expression;
       else
-	expression = build_x_compound_expr (expression,
+	expression = build_x_compound_expr (loc, expression,
 					    assignment_expression,
                                             tf_warning_or_error);
       /* If the next token is not a comma, then we are done with the
@@ -7620,6 +7622,7 @@ cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
 	break;
       /* Consume the `,'.  */
+      loc = cp_lexer_peek_token (parser->lexer)->location;
       cp_lexer_consume_token (parser->lexer);
       /* A comma operator cannot appear in a constant-expression.  */
       if (cp_parser_non_integral_constant_expression (parser, NIC_COMMA))
@@ -12457,7 +12460,9 @@ cp_parser_template_id (cp_parser *parser,
 
   /* Build a representation of the specialization.  */
   if (TREE_CODE (templ) == IDENTIFIER_NODE)
-    template_id = build_min_nt (TEMPLATE_ID_EXPR, templ, arguments);
+    template_id = build_min_nt_loc (next_token->location,
+				    TEMPLATE_ID_EXPR,
+				    templ, arguments);
   else if (DECL_TYPE_TEMPLATE_P (templ)
 	   || DECL_TEMPLATE_TEMPLATE_PARM_P (templ))
     {
@@ -26401,7 +26406,8 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 		  cp_parser_parse_definitely (parser);
 		  cp_parser_require (parser, CPP_EQ, RT_EQ);
 		  rhs = cp_parser_assignment_expression (parser, false, NULL);
-		  finish_expr_stmt (build_x_modify_expr (decl, NOP_EXPR,
+		  finish_expr_stmt (build_x_modify_expr (EXPR_LOCATION (rhs),
+							 decl, NOP_EXPR,
 							 rhs,
 							 tf_warning_or_error));
 		  add_private_clause = true;
