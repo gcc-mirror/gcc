@@ -1,5 +1,17 @@
 2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/39681
+	* parser.c (cp_parser_new_type_id): Early return error_mark_node
+	if the cp_parser_type_specifier_seq call has type_specifier_seq.type
+	error_mark_node; tidy.
+	(cp_parser_new_expression): Always initialize nelts to NULL_TREE to
+	avoid uninitialized warnings.
+	(cp_parser_init_declarator, cp_parser_late_parse_one_default_arg):
+	Call cp_parser_skip_to_end_of_statement if cp_parser_initializer
+	returns error_mark_node.
+
+2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/53371
 	* except.c (is_admissible_throw_operand): Rename to
 	is_admissible_throw_operand_or_catch_parameter and handle

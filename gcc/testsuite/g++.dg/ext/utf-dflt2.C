@@ -3,7 +3,6 @@
 // { dg-options "-std=c++98" }
 
 const void	*s0 = u8"a";		// { dg-error "was not declared" }
-		// { dg-error "expected ',' or ';'" "" { target *-*-* } 5 }
 
 #define u8	"a"
 
