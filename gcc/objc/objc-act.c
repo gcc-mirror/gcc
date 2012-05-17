@@ -3293,7 +3293,7 @@ objc_get_class_reference (tree ident)
 #ifdef OBJCPLUS
   if (processing_template_decl)
     /* Must wait until template instantiation time.  */
-    return build_min_nt (CLASS_REFERENCE_EXPR, ident);
+    return build_min_nt_loc (UNKNOWN_LOCATION, CLASS_REFERENCE_EXPR, ident);
 #endif
 
   if (TREE_CODE (ident) == TYPE_DECL)
@@ -5272,8 +5272,8 @@ objc_build_message_expr (tree receiver, tree message_args)
 #ifdef OBJCPLUS
   if (processing_template_decl)
     /* Must wait until template instantiation time.  */
-    return build_min_nt (MESSAGE_SEND_EXPR, receiver, sel_name,
-			 method_params);
+    return build_min_nt_loc (UNKNOWN_LOCATION, MESSAGE_SEND_EXPR, receiver,
+			     sel_name, method_params);
 #endif
 
   return objc_finish_message_expr (receiver, sel_name, method_params, NULL);
