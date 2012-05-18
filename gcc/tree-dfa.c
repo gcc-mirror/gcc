@@ -624,23 +624,6 @@ remove_referenced_var (tree var)
 }
 
 
-/* Mark all the naked symbols in STMT for SSA renaming.  */
-
-void
-mark_symbols_for_renaming (gimple stmt)
-{
-  tree op;
-  ssa_op_iter iter;
-
-  update_stmt (stmt);
-
-  /* Mark all the operands for renaming.  */
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_OPERANDS)
-    if (DECL_P (op))
-      mark_sym_for_renaming (op);
-}
-
-
 /* If EXP is a handled component reference for a structure, return the
    base variable.  The access range is delimited by bit positions *POFFSET and
    *POFFSET + *PMAX_SIZE.  The access size is *PSIZE bits.  If either

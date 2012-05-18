@@ -493,7 +493,6 @@ extern void dump_variable (FILE *, tree);
 extern void debug_variable (tree);
 extern bool add_referenced_var (tree);
 extern void remove_referenced_var (tree);
-extern void mark_symbols_for_renaming (gimple);
 extern tree make_rename_temp (tree, const char *);
 extern void set_default_def (tree, tree);
 extern tree gimple_default_def (struct function *, tree);
