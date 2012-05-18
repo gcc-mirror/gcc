@@ -401,7 +401,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 
   // Build a constructor for the struct.
 
-  VEC(constructor_elt,gc*) root_list_init = VEC_alloc(constructor_elt, gc, 2);
+  VEC(constructor_elt,gc)* root_list_init = VEC_alloc(constructor_elt, gc, 2);
 
   elt = VEC_quick_push(constructor_elt, root_list_init, NULL);
   field = TYPE_FIELDS(root_list_type);
