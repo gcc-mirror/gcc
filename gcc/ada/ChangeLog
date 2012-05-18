@@ -1,3 +1,9 @@
+2012-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: For an object at
+	global level with unconstrained nominal subtype and a non-fixed size,
+	make a variable for the size.
+
 2012-05-15  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	PR ada/52494
