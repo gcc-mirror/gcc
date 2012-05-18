@@ -1,3 +1,19 @@
+2012-05-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* tree-ssa-reassoc.c (bip_map): Remove decl.
+	(completely_remove_stmt): Remove function.
+	(remove_def_if_absorbed_call): Remove function.
+	(remove_visited_stmt_chain): Remove __builtin_powi handling.
+	(possibly_move_powi): Remove function.
+	(rewrite_expr_tree): Remove calls to possibly_move_powi.
+	(rewrite_expr_tree_parallel): Likewise.
+	(attempt_builtin_powi): Build multiplies explicitly rather than
+	relying on the ops vector and rank system.
+	(transform_stmt_to_copy): New function.
+	(transform_stmt_to_multiply): Likewise.
+	(reassociate_bb): Handle leftover operations after __builtin_powi
+	optimization; build a final multiply if necessary.
+
 2012-05-18  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (varpool_finalize_decl): Allow external decls.

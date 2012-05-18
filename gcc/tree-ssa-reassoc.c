@@ -200,10 +200,6 @@ static long *bb_rank;
 /* Operand->rank hashtable.  */
 static struct pointer_map_t *operand_rank;
 
-/* Map from inserted __builtin_powi calls to multiply chains that
-   feed them.  */
-static struct pointer_map_t *bip_map;
-
 /* Forward decls.  */
 static long get_rank (tree);
 
@@ -2184,32 +2180,6 @@ is_phi_for_stmt (gimple stmt, tree operand)
   return false;
 }
 
-/* Remove STMT, unlink its virtual defs, and release its SSA defs.  */
-
-static inline void
-completely_remove_stmt (gimple stmt)
-{
-  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  gsi_remove (&gsi, true);
-  unlink_stmt_vdef (stmt);
-  release_defs (stmt);
-}
-
-/* If OP is defined by a builtin call that has been absorbed by
-   reassociation, remove its defining statement completely.  */
-
-static inline void
-remove_def_if_absorbed_call (tree op)
-{
-  gimple stmt;
-
-  if (TREE_CODE (op) == SSA_NAME
-      && has_zero_uses (op)
-      && is_gimple_call ((stmt = SSA_NAME_DEF_STMT (op)))
-      && gimple_visited_p (stmt))
-    completely_remove_stmt (stmt);
-}
-
 /* Remove def stmt of VAR if VAR has zero uses and recurse
    on rhs1 operand if so.  */
 
@@ -2218,7 +2188,6 @@ remove_visited_stmt_chain (tree var)
 {
   gimple stmt;
   gimple_stmt_iterator gsi;
-  tree var2;
 
   while (1)
     {
@@ -2228,92 +2197,12 @@ remove_visited_stmt_chain (tree var)
       if (is_gimple_assign (stmt) && gimple_visited_p (stmt))
 	{
 	  var = gimple_assign_rhs1 (stmt);
-	  var2 = gimple_assign_rhs2 (stmt);
 	  gsi = gsi_for_stmt (stmt);
 	  gsi_remove (&gsi, true);
 	  release_defs (stmt);
-	  /* A multiply whose operands are both fed by builtin pow/powi
-	     calls must check whether to remove rhs2 as well.  */
-	  remove_def_if_absorbed_call (var2);
-	}
-      else if (is_gimple_call (stmt) && gimple_visited_p (stmt))
-	{
-	  completely_remove_stmt (stmt);
-	  return;
 	}
       else
 	return;
-    }
-}
-
-/* If OP is an SSA name, find its definition and determine whether it
-   is a call to __builtin_powi.  If so, move the definition prior to
-   STMT.  Only do this during early reassociation.  */
-
-static void
-possibly_move_powi (gimple stmt, tree op)
-{
-  gimple stmt2, *mpy;
-  tree fndecl;
-  gimple_stmt_iterator gsi1, gsi2;
-
-  if (!first_pass_instance
-      || !flag_unsafe_math_optimizations
-      || TREE_CODE (op) != SSA_NAME)
-    return;
-  
-  stmt2 = SSA_NAME_DEF_STMT (op);
-
-  if (!is_gimple_call (stmt2)
-      || !has_single_use (gimple_call_lhs (stmt2)))
-    return;
-
-  fndecl = gimple_call_fndecl (stmt2);
-
-  if (!fndecl
-      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
-    return;
-
-  switch (DECL_FUNCTION_CODE (fndecl))
-    {
-    CASE_FLT_FN (BUILT_IN_POWI):
-      break;
-    default:
-      return;
-    }
-
-  /* Move the __builtin_powi.  */
-  gsi1 = gsi_for_stmt (stmt);
-  gsi2 = gsi_for_stmt (stmt2);
-  gsi_move_before (&gsi2, &gsi1);
-
-  /* See if there are multiplies feeding the __builtin_powi base
-     argument that must also be moved.  */
-  while ((mpy = (gimple *) pointer_map_contains (bip_map, stmt2)) != NULL)
-    {
-      /* If we've already moved this statement, we're done.  This is
-         identified by a NULL entry for the statement in bip_map.  */
-      gimple *next = (gimple *) pointer_map_contains (bip_map, *mpy);
-      if (next && !*next)
-	return;
-
-      stmt = stmt2;
-      stmt2 = *mpy;
-      gsi1 = gsi_for_stmt (stmt);
-      gsi2 = gsi_for_stmt (stmt2);
-      gsi_move_before (&gsi2, &gsi1);
-
-      /* The moved multiply may be DAG'd from multiple calls if it
-	 was the result of a cached multiply.  Only move it once.
-	 Rank order ensures we move it to the right place the first
-	 time.  */
-      if (next)
-	*next = NULL;
-      else
-	{
-	  next = (gimple *) pointer_map_insert (bip_map, *mpy);
-	  *next = NULL;
-	}
     }
 }
 
@@ -2421,9 +2310,6 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 	      fprintf (dump_file, " into ");
 	      print_gimple_stmt (dump_file, stmt, 0, 0);
 	    }
-
-	  possibly_move_powi (stmt, oe1->op);
-	  possibly_move_powi (stmt, oe2->op);
 	}
       return;
     }
@@ -2469,8 +2355,6 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 	  fprintf (dump_file, " into ");
 	  print_gimple_stmt (dump_file, stmt, 0, 0);
 	}
-
-      possibly_move_powi (stmt, oe->op);
     }
   /* Recurse on the LHS of the binary operator, which is guaranteed to
      be the non-leaf side.  */
@@ -2644,9 +2528,6 @@ rewrite_expr_tree_parallel (gimple stmt, int width,
 	  fprintf (dump_file, " into ");
 	  print_gimple_stmt (dump_file, stmts[i], 0, 0);
 	}
-
-      possibly_move_powi (stmts[i], op1);
-      possibly_move_powi (stmts[i], op2);
     }
 
   remove_visited_stmt_chain (last_rhs1);
@@ -3222,11 +3103,10 @@ get_reassoc_pow_ssa_name (tree *target, tree type)
 
 /* Look for repeated operands in OPS in the multiply tree rooted at
    STMT.  Replace them with an optimal sequence of multiplies and powi
-   builtin calls, and remove the used operands from OPS.  Push new
-   SSA names onto OPS that represent the introduced multiplies and
-   builtin calls.  */
+   builtin calls, and remove the used operands from OPS.  Return an
+   SSA name representing the value of the replacement sequence.  */
 
-static void
+static tree
 attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 		      tree *target)
 {
@@ -3235,6 +3115,7 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
   operand_entry_t oe;
   repeat_factor_t rf1, rf2;
   repeat_factor rfnew;
+  tree result = NULL_TREE;
   tree target_ssa, iter_result;
   tree type = TREE_TYPE (gimple_get_lhs (stmt));
   tree powi_fndecl = mathfn_built_in (type, BUILT_IN_POWI);
@@ -3244,7 +3125,7 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
   /* Nothing to do if BUILT_IN_POWI doesn't exist for this type and
      target.  */
   if (!powi_fndecl)
-    return;
+    return NULL_TREE;
 
   /* Allocate the repeated factor vector.  */
   repeat_factor_vec = VEC_alloc (repeat_factor, heap, 10);
@@ -3315,7 +3196,6 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
   while (true)
     {
       HOST_WIDE_INT power;
-      gimple last_mul = NULL;
 
       /* First look for the largest cached product of factors from
 	 preceding iterations.  If found, create a builtin_powi for
@@ -3353,24 +3233,13 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 	    }
 	  else
 	    {
-	      gimple *value;
-
 	      iter_result = get_reassoc_pow_ssa_name (target, type);
 	      pow_stmt = gimple_build_call (powi_fndecl, 2, rf1->repr, 
 					    build_int_cst (integer_type_node,
 							   power));
 	      gimple_call_set_lhs (pow_stmt, iter_result);
 	      gimple_set_location (pow_stmt, gimple_location (stmt));
-	      /* Temporarily place the call; we will move it and its
-		 feeding multiplies to the correct place during
-		 rewrite_expr.  */
 	      gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
-
-	      if (!operand_equal_p (rf1->repr, rf1->factor, 0))
-		{
-		  value = (gimple *) pointer_map_insert (bip_map, pow_stmt);
-		  *value = SSA_NAME_DEF_STMT (rf1->repr);
-		}
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -3457,15 +3326,6 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 		  gsi_insert_before (&gsi, mul_stmt, GSI_SAME_STMT);
 		  rf1->repr = target_ssa;
 
-		  /* Chain multiplies together for later movement.  */
-		  if (last_mul)
-		    {
-		      gimple *value
-			= (gimple *) pointer_map_insert (bip_map, mul_stmt);
-		      *value = last_mul;
-		    }
-		  last_mul = mul_stmt;
-
 		  /* Don't reprocess the multiply we just introduced.  */
 		  gimple_set_visited (mul_stmt, true);
 		}
@@ -3481,19 +3341,22 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
 	  gimple_call_set_lhs (pow_stmt, iter_result);
 	  gimple_set_location (pow_stmt, gimple_location (stmt));
 	  gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
-
-	  /* If we inserted a chain of multiplies before the pow_stmt,
-	     record that fact so we can move it later when we move the
-	     pow_stmt.  */
-	  if (last_mul)
-	    {
-	      gimple *value = (gimple *) pointer_map_insert (bip_map, pow_stmt);
-	      *value = last_mul;
-	    }
 	}
 
-      /* Append the result of this iteration to the ops vector.  */
-      add_to_ops_vec (ops, iter_result);
+      /* If we previously formed at least one other builtin_powi call,
+	 form the product of this one and those others.  */
+      if (result)
+	{
+	  tree new_result = get_reassoc_pow_ssa_name (target, type);
+	  mul_stmt = gimple_build_assign_with_ops (MULT_EXPR, new_result,
+						   result, iter_result);
+	  gimple_set_location (mul_stmt, gimple_location (stmt));
+	  gsi_insert_before (&gsi, mul_stmt, GSI_SAME_STMT);
+	  gimple_set_visited (mul_stmt, true);
+	  result = new_result;
+	}
+      else
+	result = iter_result;
 
       /* Decrement the occurrence count of each element in the product
 	 by the count found above, and remove this many copies of each
@@ -3534,6 +3397,59 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops,
      clean up.  */
   VEC_qsort (operand_entry_t, *ops, sort_by_operand_rank);
   VEC_free (repeat_factor, heap, repeat_factor_vec);
+
+  /* Return the final product computed herein.  Note that there may
+     still be some elements with single occurrence count left in OPS;
+     those will be handled by the normal reassociation logic.  */
+  return result;
+}
+
+/* Transform STMT at *GSI into a copy by replacing its rhs with NEW_RHS.  */
+
+static void
+transform_stmt_to_copy (gimple_stmt_iterator *gsi, gimple stmt, tree new_rhs)
+{
+  tree rhs1;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Transforming ");
+      print_gimple_stmt (dump_file, stmt, 0, 0);
+    }
+
+  rhs1 = gimple_assign_rhs1 (stmt);
+  gimple_assign_set_rhs_from_tree (gsi, new_rhs);
+  update_stmt (stmt);
+  remove_visited_stmt_chain (rhs1);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, " into ");
+      print_gimple_stmt (dump_file, stmt, 0, 0);
+    }
+}
+
+/* Transform STMT at *GSI into a multiply of RHS1 and RHS2.  */
+
+static void
+transform_stmt_to_multiply (gimple_stmt_iterator *gsi, gimple stmt,
+			    tree rhs1, tree rhs2)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Transforming ");
+      print_gimple_stmt (dump_file, stmt, 0, 0);
+    }
+
+  gimple_assign_set_rhs_with_ops_1 (gsi, MULT_EXPR, rhs1, rhs2, NULL_TREE);
+  update_stmt (gsi_stmt (*gsi));
+  remove_visited_stmt_chain (rhs1);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, " into ");
+      print_gimple_stmt (dump_file, stmt, 0, 0);
+    }
 }
 
 /* Reassociate expressions in basic block BB and its post-dominator as
@@ -3606,7 +3522,7 @@ reassociate_bb (basic_block bb)
 	  if (associative_tree_code (rhs_code))
 	    {
 	      VEC(operand_entry_t, heap) *ops = NULL;
-	      bip_map = pointer_map_create ();
+	      tree powi_result = NULL_TREE;
 
 	      /* There may be no immediate uses left by the time we
 		 get here because we may have eliminated them all.  */
@@ -3630,28 +3546,21 @@ reassociate_bb (basic_block bb)
 	      if (first_pass_instance
 		  && rhs_code == MULT_EXPR
 		  && flag_unsafe_math_optimizations)
-		attempt_builtin_powi (stmt, &ops, &target);
+		powi_result = attempt_builtin_powi (stmt, &ops, &target);
 
-	      if (VEC_length (operand_entry_t, ops) == 1)
+	      /* If the operand vector is now empty, all operands were 
+		 consumed by the __builtin_powi optimization.  */
+	      if (VEC_length (operand_entry_t, ops) == 0)
+		transform_stmt_to_copy (&gsi, stmt, powi_result);
+	      else if (VEC_length (operand_entry_t, ops) == 1)
 		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file, "Transforming ");
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
-		    }
-
-		  rhs1 = gimple_assign_rhs1 (stmt);
-		  gimple_assign_set_rhs_from_tree (&gsi,
-						   VEC_last (operand_entry_t,
-							     ops)->op);
-		  update_stmt (stmt);
-		  remove_visited_stmt_chain (rhs1);
-
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file, " into ");
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
-		    }
+		  tree last_op = VEC_last (operand_entry_t, ops)->op;
+		  
+		  if (powi_result)
+		    transform_stmt_to_multiply (&gsi, stmt, last_op,
+						powi_result);
+		  else
+		    transform_stmt_to_copy (&gsi, stmt, last_op);
 		}
 	      else
 		{
@@ -3668,10 +3577,27 @@ reassociate_bb (basic_block bb)
 		    rewrite_expr_tree_parallel (stmt, width, ops);
 		  else
 		    rewrite_expr_tree (stmt, 0, ops, false);
+
+		  /* If we combined some repeated factors into a 
+		     __builtin_powi call, multiply that result by the
+		     reassociated operands.  */
+		  if (powi_result)
+		    {
+		      gimple mul_stmt;
+		      tree type = TREE_TYPE (gimple_get_lhs (stmt));
+		      tree target_ssa = get_reassoc_pow_ssa_name (&target,
+								  type);
+		      gimple_set_lhs (stmt, target_ssa);
+		      update_stmt (stmt);
+		      mul_stmt = gimple_build_assign_with_ops (MULT_EXPR, lhs,
+							       powi_result,
+							       target_ssa);
+		      gimple_set_location (mul_stmt, gimple_location (stmt));
+		      gsi_insert_after (&gsi, mul_stmt, GSI_NEW_STMT);
+		    }
 		}
 
 	      VEC_free (operand_entry_t, heap, ops);
-	      pointer_map_destroy (bip_map);
 	    }
 	}
     }
