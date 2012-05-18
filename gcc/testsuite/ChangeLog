@@ -1,3 +1,8 @@
+2012-05-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53390
+	* gcc.dg/torture/pr53390.c: New testcase.
+
 2012-05-18  Meador Inge  <meadori@codesourcery.com>
 
 	PR rtl-optimization/53352
