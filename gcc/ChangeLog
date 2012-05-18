@@ -1,3 +1,8 @@
+2012-05-18  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (FLAGS_TO_PASS): Pass $(libexecsubdir) instead of
+	$(libsubdir) as libexecsubdir.
+
 2012-05-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (print_operand): Revise code that unsafely
