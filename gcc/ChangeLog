@@ -1,3 +1,10 @@
+2012-05-18  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (varpool_finalize_decl): Allow external decls.
+	(mark_functions_to_output): Fix sanity check.
+	* ipa.c (function_and_variable_visibility): Remove TREE_STATIC
+	check.
+
 2012-05-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (mark_symbols_for_renaming): Remove.
