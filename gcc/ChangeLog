@@ -1,3 +1,8 @@
+2012-05-18  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (FLAGS_TO_PASS): Pass $(libexecsubdir) instead of
+	$(libsubdir) as libexecsubdir.
+
 2012-05-16  Andrew Pinski  <apinski@cavium.com>
 
 	* gimple-fold.c (get_maxval_strlen): Move COND_EXPR handling under
