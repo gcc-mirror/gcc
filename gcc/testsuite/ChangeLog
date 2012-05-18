@@ -1,3 +1,8 @@
+2012-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/lto12.ads: New test.
+	* gnat.dg/specs/lto12_pkg.ads: New helper.
+
 2012-05-17  David S. Miller  <davem@davemloft.net>
 
 	* gfortran.dg/bessel_7.f90: Bump allowed precision to avoid

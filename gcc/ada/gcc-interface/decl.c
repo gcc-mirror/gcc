@@ -778,6 +778,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		gnu_size = max_size (TYPE_SIZE (gnu_type), true);
 		mutable_p = true;
 	      }
+
+	    /* If we are at global level and the size isn't constant, call
+	       elaborate_expression_1 to make a variable for it rather than
+	       calculating it each time.  */
+	    if (global_bindings_p () && !TREE_CONSTANT (gnu_size))
+	      gnu_size = elaborate_expression_1 (gnu_size, gnat_entity,
+						 get_identifier ("SIZE"),
+						 definition, false);
 	  }
 
 	/* If the size is zero byte, make it one byte since some linkers have
