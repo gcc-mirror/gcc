@@ -1,5 +1,9 @@
 2012-05-18  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/pr53352.c: Return zero.
+
+2012-05-18  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53390
 	* gcc.dg/torture/pr53390.c: New testcase.
 
