@@ -1,3 +1,8 @@
+2012-05-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (print_operand): Revise code that unsafely
+	relied on signed overflow behavior.
+
 2012-05-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53346
