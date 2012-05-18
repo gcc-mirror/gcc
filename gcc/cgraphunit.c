@@ -819,7 +819,7 @@ varpool_finalize_decl (tree decl)
 {
   struct varpool_node *node = varpool_node (decl);
 
-  gcc_assert (TREE_STATIC (decl));
+  gcc_assert (TREE_STATIC (decl) || DECL_EXTERNAL (decl));
 
   if (node->finalized)
     return;
@@ -1156,6 +1156,7 @@ mark_functions_to_output (void)
 		 have analyzed node pointing to it.  */
 	      && !node->symbol.in_other_partition
 	      && !node->alias
+	      && !node->clones
 	      && !DECL_EXTERNAL (decl))
 	    {
 	      dump_cgraph_node (stderr, node);

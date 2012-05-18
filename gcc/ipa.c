@@ -915,7 +915,6 @@ function_and_variable_visibility (bool whole_program)
 	    symtab_dissolve_same_comdat_group_list ((symtab_node) vnode);
 	  vnode->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
-     gcc_assert (TREE_STATIC (vnode->symbol.decl));
     }
   pointer_set_destroy (aliased_nodes);
   pointer_set_destroy (aliased_vnodes);
