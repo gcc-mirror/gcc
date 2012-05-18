@@ -1,5 +1,13 @@
 2012-05-18  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/53346
+	* gcc.dg/tree-ssa/ldist-18.c: New testcase.
+	* gcc.target/i386/incoming-10.c: Adjust.
+	* gcc.target/i386/incoming-11.c: Likewise.
+	* gcc.target/i386/pr46295.c: Likewise.
+
+2012-05-18  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/pr53352.c: Return zero.
 
 2012-05-18  Richard Guenther  <rguenther@suse.de>
