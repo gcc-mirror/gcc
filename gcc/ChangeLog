@@ -1,3 +1,14 @@
+2012-05-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (mark_symbols_for_renaming): Remove.
+	* tree-dfa.c (mark_symbols_for_renaming): Likewise.
+	* tree-inline.c (copy_edges_for_bb): Do not mark symbols for
+	renaming.
+	(copy_debug_stmt): Likewise.
+	(expand_call_inline): Likewise.
+	(declare_return_variable): Mark the return variable for renaming
+	if necessary.
+
 2012-05-18  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/arm-protos.h (arm_emit_coreregs_64bit_shift): New

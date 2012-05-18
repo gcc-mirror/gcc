@@ -1921,11 +1921,7 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb)
 
       copy_stmt = gsi_stmt (si);
       if (!is_gimple_debug (copy_stmt))
-	{
-	  update_stmt (copy_stmt);
-	  if (gimple_in_ssa_p (cfun))
-	    mark_symbols_for_renaming (copy_stmt);
-	}
+	update_stmt (copy_stmt);
 
       /* Do this before the possible split_block.  */
       gsi_next (&si);
@@ -2397,8 +2393,6 @@ copy_debug_stmt (gimple stmt, copy_body_data *id)
   processing_debug_stmt = 0;
 
   update_stmt (stmt);
-  if (gimple_in_ssa_p (cfun))
-    mark_symbols_for_renaming (stmt);
 }
 
 /* Process deferred debug stmts.  In order to give values better odds
@@ -2961,6 +2955,11 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       TREE_ADDRESSABLE (var) = 1;
       var = build_fold_addr_expr (var);
     }
+  else if (gimple_in_ssa_p (cfun)
+	   && is_gimple_reg (var))
+    /* ???  Re-org id->retval and its special handling so that we can
+       record an SSA name directly and not need to invoke the SSA renamer.  */
+    mark_sym_for_renaming (var);
 
  done:
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
@@ -4032,8 +4031,6 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
       gimple old_stmt = stmt;
       stmt = gimple_build_assign (gimple_call_lhs (stmt), use_retvar);
       gsi_replace (&stmt_gsi, stmt, false);
-      if (gimple_in_ssa_p (cfun))
-	mark_symbols_for_renaming (stmt);
       maybe_clean_or_replace_eh_stmt (old_stmt, stmt);
     }
   else
