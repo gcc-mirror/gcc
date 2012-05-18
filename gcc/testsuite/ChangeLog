@@ -1,3 +1,8 @@
+2012-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/lto12.ads: New test.
+	* gnat.dg/specs/lto12_pkg.ads: New helper.
+
 2012-05-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53346
