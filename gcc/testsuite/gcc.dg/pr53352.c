@@ -38,4 +38,5 @@ int main ()
 
   g_t = &one;
   bar (0);
+  return 0;
 }
