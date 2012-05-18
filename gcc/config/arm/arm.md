@@ -3520,21 +3520,37 @@
                    (match_operand:SI 2 "reg_or_int_operand" "")))]
   "TARGET_32BIT"
   "
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (!CONST_INT_P (operands[2])
+      && (TARGET_REALLY_IWMMXT || (TARGET_HARD_FLOAT && TARGET_MAVERICK)))
+    ; /* No special preparation statements; expand pattern as above.  */
+  else
     {
-      if ((HOST_WIDE_INT) INTVAL (operands[2]) == 1)
+      rtx scratch1, scratch2;
+
+      if (CONST_INT_P (operands[2])
+	  && (HOST_WIDE_INT) INTVAL (operands[2]) == 1)
         {
           emit_insn (gen_arm_ashldi3_1bit (operands[0], operands[1]));
           DONE;
         }
-        /* Ideally we shouldn't fail here if we could know that operands[1] 
-           ends up already living in an iwmmxt register. Otherwise it's
-           cheaper to have the alternate code being generated than moving
-           values to iwmmxt regs and back.  */
-        FAIL;
+
+      /* Ideally we should use iwmmxt here if we could know that operands[1]
+         ends up already living in an iwmmxt register. Otherwise it's
+         cheaper to have the alternate code being generated than moving
+         values to iwmmxt regs and back.  */
+
+      /* If we're optimizing for size, we prefer the libgcc calls.  */
+      if (optimize_function_for_size_p (cfun))
+	FAIL;
+
+      /* Expand operation using core-registers.
+	 'FAIL' would achieve the same thing, but this is a bit smarter.  */
+      scratch1 = gen_reg_rtx (SImode);
+      scratch2 = gen_reg_rtx (SImode);
+      arm_emit_coreregs_64bit_shift (ASHIFT, operands[0], operands[1],
+				     operands[2], scratch1, scratch2);
+      DONE;
     }
-  else if (!TARGET_REALLY_IWMMXT && !(TARGET_HARD_FLOAT && TARGET_MAVERICK))
-    FAIL;
   "
 )
 
@@ -3579,21 +3595,37 @@
                      (match_operand:SI 2 "reg_or_int_operand" "")))]
   "TARGET_32BIT"
   "
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (!CONST_INT_P (operands[2])
+      && (TARGET_REALLY_IWMMXT || (TARGET_HARD_FLOAT && TARGET_MAVERICK)))
+    ; /* No special preparation statements; expand pattern as above.  */
+  else
     {
-      if ((HOST_WIDE_INT) INTVAL (operands[2]) == 1)
+      rtx scratch1, scratch2;
+
+      if (CONST_INT_P (operands[2])
+	  && (HOST_WIDE_INT) INTVAL (operands[2]) == 1)
         {
           emit_insn (gen_arm_ashrdi3_1bit (operands[0], operands[1]));
           DONE;
         }
-        /* Ideally we shouldn't fail here if we could know that operands[1] 
-           ends up already living in an iwmmxt register. Otherwise it's
-           cheaper to have the alternate code being generated than moving
-           values to iwmmxt regs and back.  */
-        FAIL;
+
+      /* Ideally we should use iwmmxt here if we could know that operands[1]
+         ends up already living in an iwmmxt register. Otherwise it's
+         cheaper to have the alternate code being generated than moving
+         values to iwmmxt regs and back.  */
+
+      /* If we're optimizing for size, we prefer the libgcc calls.  */
+      if (optimize_function_for_size_p (cfun))
+	FAIL;
+
+      /* Expand operation using core-registers.
+	 'FAIL' would achieve the same thing, but this is a bit smarter.  */
+      scratch1 = gen_reg_rtx (SImode);
+      scratch2 = gen_reg_rtx (SImode);
+      arm_emit_coreregs_64bit_shift (ASHIFTRT, operands[0], operands[1],
+				     operands[2], scratch1, scratch2);
+      DONE;
     }
-  else if (!TARGET_REALLY_IWMMXT)
-    FAIL;
   "
 )
 
@@ -3636,21 +3668,37 @@
                      (match_operand:SI 2 "reg_or_int_operand" "")))]
   "TARGET_32BIT"
   "
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (!CONST_INT_P (operands[2])
+      && (TARGET_REALLY_IWMMXT || (TARGET_HARD_FLOAT && TARGET_MAVERICK)))
+    ; /* No special preparation statements; expand pattern as above.  */
+  else
     {
-      if ((HOST_WIDE_INT) INTVAL (operands[2]) == 1)
+      rtx scratch1, scratch2;
+
+      if (CONST_INT_P (operands[2])
+	  && (HOST_WIDE_INT) INTVAL (operands[2]) == 1)
         {
           emit_insn (gen_arm_lshrdi3_1bit (operands[0], operands[1]));
           DONE;
         }
-        /* Ideally we shouldn't fail here if we could know that operands[1] 
-           ends up already living in an iwmmxt register. Otherwise it's
-           cheaper to have the alternate code being generated than moving
-           values to iwmmxt regs and back.  */
-        FAIL;
+
+      /* Ideally we should use iwmmxt here if we could know that operands[1]
+         ends up already living in an iwmmxt register. Otherwise it's
+         cheaper to have the alternate code being generated than moving
+         values to iwmmxt regs and back.  */
+
+      /* If we're optimizing for size, we prefer the libgcc calls.  */
+      if (optimize_function_for_size_p (cfun))
+	FAIL;
+
+      /* Expand operation using core-registers.
+	 'FAIL' would achieve the same thing, but this is a bit smarter.  */
+      scratch1 = gen_reg_rtx (SImode);
+      scratch2 = gen_reg_rtx (SImode);
+      arm_emit_coreregs_64bit_shift (LSHIFTRT, operands[0], operands[1],
+				     operands[2], scratch1, scratch2);
+      DONE;
     }
-  else if (!TARGET_REALLY_IWMMXT)
-    FAIL;
   "
 )
 
@@ -7755,7 +7803,7 @@
 ;; Patterns to match conditional branch insns.
 ;;
 
-(define_insn "*arm_cond_branch"
+(define_insn "arm_cond_branch"
   [(set (pc)
 	(if_then_else (match_operator 1 "arm_comparison_operator"
 		       [(match_operand 2 "cc_register" "") (const_int 0)])

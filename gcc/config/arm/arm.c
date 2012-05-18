@@ -25933,4 +25933,256 @@ arm_autoinc_modes_ok_p (enum machine_mode mode, enum arm_auto_incmodes code)
   return false;
 }
 
+/* The default expansion of general 64-bit shifts in core-regs is suboptimal,
+   on ARM, since we know that shifts by negative amounts are no-ops.
+   Additionally, the default expansion code is not available or suitable
+   for post-reload insn splits (this can occur when the register allocator
+   chooses not to do a shift in NEON).
+   
+   This function is used in both initial expand and post-reload splits, and
+   handles all kinds of 64-bit shifts.
+
+   Input requirements:
+    - It is safe for the input and output to be the same register, but
+      early-clobber rules apply for the shift amount and scratch registers.
+    - Shift by register requires both scratch registers.  Shift by a constant
+      less than 32 in Thumb2 mode requires SCRATCH1 only.  In all other cases
+      the scratch registers may be NULL.
+    - Ashiftrt by a register also clobbers the CC register.  */
+void
+arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
+			       rtx amount, rtx scratch1, rtx scratch2)
+{
+  rtx out_high = gen_highpart (SImode, out);
+  rtx out_low = gen_lowpart (SImode, out);
+  rtx in_high = gen_highpart (SImode, in);
+  rtx in_low = gen_lowpart (SImode, in);
+
+  /* Terminology:
+	in = the register pair containing the input value.
+	out = the destination register pair.
+	up = the high- or low-part of each pair.
+	down = the opposite part to "up".
+     In a shift, we can consider bits to shift from "up"-stream to
+     "down"-stream, so in a left-shift "up" is the low-part and "down"
+     is the high-part of each register pair.  */
+
+  rtx out_up   = code == ASHIFT ? out_low : out_high;
+  rtx out_down = code == ASHIFT ? out_high : out_low;
+  rtx in_up   = code == ASHIFT ? in_low : in_high;
+  rtx in_down = code == ASHIFT ? in_high : in_low;
+
+  gcc_assert (code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT);
+  gcc_assert (out
+	      && (REG_P (out) || GET_CODE (out) == SUBREG)
+	      && GET_MODE (out) == DImode);
+  gcc_assert (in
+	      && (REG_P (in) || GET_CODE (in) == SUBREG)
+	      && GET_MODE (in) == DImode);
+  gcc_assert (amount
+	      && (((REG_P (amount) || GET_CODE (amount) == SUBREG)
+		   && GET_MODE (amount) == SImode)
+		  || CONST_INT_P (amount)));
+  gcc_assert (scratch1 == NULL
+	      || (GET_CODE (scratch1) == SCRATCH)
+	      || (GET_MODE (scratch1) == SImode
+		  && REG_P (scratch1)));
+  gcc_assert (scratch2 == NULL
+	      || (GET_CODE (scratch2) == SCRATCH)
+	      || (GET_MODE (scratch2) == SImode
+		  && REG_P (scratch2)));
+  gcc_assert (!REG_P (out) || !REG_P (amount)
+	      || !HARD_REGISTER_P (out)
+	      || (REGNO (out) != REGNO (amount)
+		  && REGNO (out) + 1 != REGNO (amount)));
+
+  /* Macros to make following code more readable.  */
+  #define SUB_32(DEST,SRC) \
+	    gen_addsi3 ((DEST), (SRC), gen_rtx_CONST_INT (VOIDmode, -32))
+  #define RSB_32(DEST,SRC) \
+	    gen_subsi3 ((DEST), gen_rtx_CONST_INT (VOIDmode, 32), (SRC))
+  #define SUB_S_32(DEST,SRC) \
+	    gen_addsi3_compare0 ((DEST), (SRC), \
+				 gen_rtx_CONST_INT (VOIDmode, -32))
+  #define SET(DEST,SRC) \
+	    gen_rtx_SET (SImode, (DEST), (SRC))
+  #define SHIFT(CODE,SRC,AMOUNT) \
+	    gen_rtx_fmt_ee ((CODE), SImode, (SRC), (AMOUNT))
+  #define LSHIFT(CODE,SRC,AMOUNT) \
+	    gen_rtx_fmt_ee ((CODE) == ASHIFT ? ASHIFT : LSHIFTRT, \
+			    SImode, (SRC), (AMOUNT))
+  #define REV_LSHIFT(CODE,SRC,AMOUNT) \
+	    gen_rtx_fmt_ee ((CODE) == ASHIFT ? LSHIFTRT : ASHIFT, \
+			    SImode, (SRC), (AMOUNT))
+  #define ORR(A,B) \
+	    gen_rtx_IOR (SImode, (A), (B))
+  #define BRANCH(COND,LABEL) \
+	    gen_arm_cond_branch ((LABEL), \
+				 gen_rtx_ ## COND (CCmode, cc_reg, \
+						   const0_rtx), \
+				 cc_reg)
+
+  /* Shifts by register and shifts by constant are handled separately.  */
+  if (CONST_INT_P (amount))
+    {
+      /* We have a shift-by-constant.  */
+
+      /* First, handle out-of-range shift amounts.
+	 In both cases we try to match the result an ARM instruction in a
+	 shift-by-register would give.  This helps reduce execution
+	 differences between optimization levels, but it won't stop other
+         parts of the compiler doing different things.  This is "undefined
+         behaviour, in any case.  */
+      if (INTVAL (amount) <= 0)
+	emit_insn (gen_movdi (out, in));
+      else if (INTVAL (amount) >= 64)
+	{
+	  if (code == ASHIFTRT)
+	    {
+	      rtx const31_rtx = gen_rtx_CONST_INT (VOIDmode, 31);
+	      emit_insn (SET (out_down, SHIFT (code, in_up, const31_rtx)));
+	      emit_insn (SET (out_up, SHIFT (code, in_up, const31_rtx)));
+	    }
+	  else
+	    emit_insn (gen_movdi (out, const0_rtx));
+	}
+
+      /* Now handle valid shifts. */
+      else if (INTVAL (amount) < 32)
+	{
+	  /* Shifts by a constant less than 32.  */
+	  rtx reverse_amount = gen_rtx_CONST_INT (VOIDmode,
+						  32 - INTVAL (amount));
+
+	  emit_insn (SET (out_down, LSHIFT (code, in_down, amount)));
+	  emit_insn (SET (out_down,
+			  ORR (REV_LSHIFT (code, in_up, reverse_amount),
+			       out_down)));
+	  emit_insn (SET (out_up, SHIFT (code, in_up, amount)));
+	}
+      else
+	{
+	  /* Shifts by a constant greater than 31.  */
+	  rtx adj_amount = gen_rtx_CONST_INT (VOIDmode, INTVAL (amount) - 32);
+
+	  emit_insn (SET (out_down, SHIFT (code, in_up, adj_amount)));
+	  if (code == ASHIFTRT)
+	    emit_insn (gen_ashrsi3 (out_up, in_up,
+				    gen_rtx_CONST_INT (VOIDmode, 31)));
+	  else
+	    emit_insn (SET (out_up, const0_rtx));
+	}
+    }
+  else
+    {
+      /* We have a shift-by-register.  */
+      rtx cc_reg = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+
+      /* This alternative requires the scratch registers.  */
+      gcc_assert (scratch1 && REG_P (scratch1));
+      gcc_assert (scratch2 && REG_P (scratch2));
+
+      /* We will need the values "amount-32" and "32-amount" later.
+         Swapping them around now allows the later code to be more general. */
+      switch (code)
+	{
+	case ASHIFT:
+	  emit_insn (SUB_32 (scratch1, amount));
+	  emit_insn (RSB_32 (scratch2, amount));
+	  break;
+	case ASHIFTRT:
+	  emit_insn (RSB_32 (scratch1, amount));
+	  /* Also set CC = amount > 32.  */
+	  emit_insn (SUB_S_32 (scratch2, amount));
+	  break;
+	case LSHIFTRT:
+	  emit_insn (RSB_32 (scratch1, amount));
+	  emit_insn (SUB_32 (scratch2, amount));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      /* Emit code like this:
+
+	 arithmetic-left:
+	    out_down = in_down << amount;
+	    out_down = (in_up << (amount - 32)) | out_down;
+	    out_down = ((unsigned)in_up >> (32 - amount)) | out_down;
+	    out_up = in_up << amount;
+
+	 arithmetic-right:
+	    out_down = in_down >> amount;
+	    out_down = (in_up << (32 - amount)) | out_down;
+	    if (amount < 32)
+	      out_down = ((signed)in_up >> (amount - 32)) | out_down;
+	    out_up = in_up << amount;
+
+	 logical-right:
+	    out_down = in_down >> amount;
+	    out_down = (in_up << (32 - amount)) | out_down;
+	    if (amount < 32)
+	      out_down = ((unsigned)in_up >> (amount - 32)) | out_down;
+	    out_up = in_up << amount;
+
+	  The ARM and Thumb2 variants are the same but implemented slightly
+	  differently.  If this were only called during expand we could just
+	  use the Thumb2 case and let combine do the right thing, but this
+	  can also be called from post-reload splitters.  */
+
+      emit_insn (SET (out_down, LSHIFT (code, in_down, amount)));
+
+      if (!TARGET_THUMB2)
+	{
+	  /* Emit code for ARM mode.  */
+	  emit_insn (SET (out_down,
+			  ORR (SHIFT (ASHIFT, in_up, scratch1), out_down)));
+	  if (code == ASHIFTRT)
+	    {
+	      rtx done_label = gen_label_rtx ();
+	      emit_jump_insn (BRANCH (LT, done_label));
+	      emit_insn (SET (out_down, ORR (SHIFT (ASHIFTRT, in_up, scratch2),
+					     out_down)));
+	      emit_label (done_label);
+	    }
+	  else
+	    emit_insn (SET (out_down, ORR (SHIFT (LSHIFTRT, in_up, scratch2),
+					   out_down)));
+	}
+      else
+	{
+	  /* Emit code for Thumb2 mode.
+	     Thumb2 can't do shift and or in one insn.  */
+	  emit_insn (SET (scratch1, SHIFT (ASHIFT, in_up, scratch1)));
+	  emit_insn (gen_iorsi3 (out_down, out_down, scratch1));
+
+	  if (code == ASHIFTRT)
+	    {
+	      rtx done_label = gen_label_rtx ();
+	      emit_jump_insn (BRANCH (LT, done_label));
+	      emit_insn (SET (scratch2, SHIFT (ASHIFTRT, in_up, scratch2)));
+	      emit_insn (SET (out_down, ORR (out_down, scratch2)));
+	      emit_label (done_label);
+	    }
+	  else
+	    {
+	      emit_insn (SET (scratch2, SHIFT (LSHIFTRT, in_up, scratch2)));
+	      emit_insn (gen_iorsi3 (out_down, out_down, scratch2));
+	    }
+	}
+
+      emit_insn (SET (out_up, SHIFT (code, in_up, amount)));
+    }
+
+  #undef SUB_32
+  #undef RSB_32
+  #undef SUB_S_32
+  #undef SET
+  #undef SHIFT
+  #undef LSHIFT
+  #undef REV_LSHIFT
+  #undef ORR
+  #undef BRANCH
+}
+
 #include "gt-arm.h"

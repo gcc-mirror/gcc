@@ -1,3 +1,12 @@
+2012-05-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm-protos.h (arm_emit_coreregs_64bit_shift): New
+	prototype.
+	* config/arm/arm.c (arm_emit_coreregs_64bit_shift): New function.
+	* config/arm/arm.md (ashldi3): Use arm_emit_coreregs_64bit_shift.
+	(ashrdi3,lshrdi3): Likewise.
+	(arm_cond_branch): Remove '*' to enable gen_arm_cond_branch.
+
 2012-05-18  Meador Inge  <meadori@codesourcery.com>
 
 	PR rtl-optimization/53352
