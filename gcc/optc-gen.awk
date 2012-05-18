@@ -391,10 +391,14 @@ for (i = 0; i < n_enabledby; i++) {
     n_enables = split(enables[enabledby_name], thisenable, ",");
     for (j = 1; j < n_enables; j++) {
         opt_var_name = var_name(flags[opt_numbers[thisenable[j]]]);
-        print "      if (!opts_set->x_" opt_var_name ")"
-        print "        handle_generated_option (opts, opts_set,"
-        print "                                 " opt_enum(thisenable[j]) ", NULL, value,"
-        print "                                 lang_mask, kind, loc, handlers, dc);"
+        if (opt_var_name != "") {
+            print "      if (!opts_set->x_" opt_var_name ")"
+            print "        handle_generated_option (opts, opts_set,"
+            print "                                 " opt_enum(thisenable[j]) ", NULL, value,"
+            print "                                 lang_mask, kind, loc, handlers, dc);"
+        } else {
+            print "#error " thisenable[j] " does not have a Var() flag"
+        }
     }
     print "      break;\n"
 }
@@ -430,10 +434,14 @@ for (i = 0; i < n_langs; i++) {
         n_enables = split(enables[lang_name,enabledby_name], thisenable, ",");
         for (j = 1; j < n_enables; j++) {
             opt_var_name = var_name(flags[opt_numbers[thisenable[j]]]);
-            print "      if (!opts_set->x_" opt_var_name ")"
-            print "        handle_generated_option (opts, opts_set,"
-            print "                                 " opt_enum(thisenable[j]) ", arg, value,"
-            print "                                 lang_mask, kind, loc, handlers, dc);"
+            if (opt_var_name != "") {
+                print "      if (!opts_set->x_" opt_var_name ")"
+                print "        handle_generated_option (opts, opts_set,"
+                print "                                 " opt_enum(thisenable[j]) ", arg, value,"
+                print "                                 lang_mask, kind, loc, handlers, dc);"
+            } else {
+                print "#error " thisenable[j] " does not have a Var() flag"
+            }
         }
         print "      break;\n"
     }

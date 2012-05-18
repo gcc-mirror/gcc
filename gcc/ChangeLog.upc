@@ -1,3 +1,9 @@
+2012-05-18  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 187666 into gupc branch.
+	Incorporates fix for ICE in tree vectorization pass
+	when processing strided loads.
+
 2012-05-17  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 187578 into gupc branch.

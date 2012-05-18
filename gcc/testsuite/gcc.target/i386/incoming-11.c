@@ -10,9 +10,9 @@ int q[100];
 void f()
 {
 	int i;
-	for (i = 0; i < 100; i++) p[i] = 0;
+	for (i = 0; i < 100; i++) p[i] = 1;
 	g();
-	for (i = 0; i < 100; i++) q[i] = 0;
+	for (i = 0; i < 100; i++) q[i] = 1;
 }
 
 /* { dg-final { scan-assembler "andl\[\\t \]*\\$-16,\[\\t \]*%esp" } } */

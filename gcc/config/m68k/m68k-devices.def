@@ -84,10 +84,16 @@ M68K_DEVICE ("cpu32", cpu32,    "cpu32", "cpu32", cpu32,    isa_cpu32, FL_MMU)
 /* For historical reasons, the 51 multilib is named 51qe.  */
 M68K_DEVICE ("51",    mcf51,    "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP)
 M68K_DEVICE ("51ac",  mcf51ac,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP)
+M68K_DEVICE ("51ag",  mcf51ag,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP)
 M68K_DEVICE ("51cn",  mcf51cn,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP)
 M68K_DEVICE ("51em",  mcf51em,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP | FL_CF_MAC)
+M68K_DEVICE ("51je",  mcf51je,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP | FL_CF_MAC)
+M68K_DEVICE ("51jf",  mcf51jf,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP | FL_CF_EMAC)
+M68K_DEVICE ("51jg",  mcf51jg,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP | FL_CF_EMAC)
 M68K_DEVICE ("51jm",  mcf51jm,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP)
+M68K_DEVICE ("51mm",  mcf51mm,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP | FL_CF_MAC)
 M68K_DEVICE ("51qe",  mcf51qe,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP)
+M68K_DEVICE ("51qm",  mcf51qm,  "51",    "51qe",  cfv1,     isa_c,     FL_CF_USP | FL_CF_EMAC)
 
 /* ColdFire CFV2 processors.  */
 M68K_DEVICE ("5202",  mcf5202,  "5206",  "5206",  cfv2,     isa_a,     0)

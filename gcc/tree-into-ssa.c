@@ -3053,26 +3053,6 @@ name_registered_for_update_p (tree n ATTRIBUTE_UNUSED)
 }
 
 
-/* Return the set of all the SSA names marked to be replaced.  */
-
-bitmap
-ssa_names_to_replace (void)
-{
-  unsigned i = 0;
-  bitmap ret;
-  sbitmap_iterator sbi;
-
-  gcc_assert (update_ssa_initialized_fn == NULL
-	      || update_ssa_initialized_fn == cfun);
-
-  ret = BITMAP_ALLOC (NULL);
-  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i, sbi)
-    bitmap_set_bit (ret, i);
-
-  return ret;
-}
-
-
 /* Mark NAME to be released after update_ssa has finished.  */
 
 void

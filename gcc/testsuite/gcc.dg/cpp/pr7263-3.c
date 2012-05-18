@@ -1,6 +1,6 @@
 /* PR 7263:  __extension__ keyword doesn't suppress warning on LL or ULL constants.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -pedantic-errors" } */
+/* { dg-options "-std=c99 -pedantic-errors -ftrack-macro-expansion=0" } */
 #include "pr7263-3.h"
 __complex__  bar () /* { dg-error "ISO C does not support plain .complex. meaning .double complex." } */
 {

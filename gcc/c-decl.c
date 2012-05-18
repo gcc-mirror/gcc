@@ -8972,6 +8972,7 @@ struct c_declspecs *
 build_null_declspecs (void)
 {
   struct c_declspecs *ret = XOBNEW (&parser_obstack, struct c_declspecs);
+  memset (&ret->locations, 0, cdw_number_of_elements);
   ret->type = 0;
   ret->expr = 0;
   ret->decl_attr = 0;
@@ -9013,7 +9014,8 @@ build_null_declspecs (void)
    SPECS, returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_addrspace (struct c_declspecs *specs, addr_space_t as)
+declspecs_add_addrspace (source_location location,
+			 struct c_declspecs *specs, addr_space_t as)
 {
   specs->non_sc_seen_p = true;
   specs->declspecs_seen_p = true;
@@ -9024,7 +9026,10 @@ declspecs_add_addrspace (struct c_declspecs *specs, addr_space_t as)
 	   c_addr_space_name (as),
 	   c_addr_space_name (specs->address_space));
   else
-    specs->address_space = as;
+    {
+      specs->address_space = as;
+      specs->locations[cdw_address_space] = location;
+    }
   return specs;
 }
 
@@ -9032,7 +9037,8 @@ declspecs_add_addrspace (struct c_declspecs *specs, addr_space_t as)
    returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_qual (struct c_declspecs *specs, tree qual)
+declspecs_add_qual (source_location loc,
+		    struct c_declspecs *specs, tree qual)
 {
   enum rid i;
   bool dupe = false;
@@ -9063,14 +9069,17 @@ declspecs_add_qual (struct c_declspecs *specs, tree qual)
     case RID_CONST:
       dupe = specs->const_p;
       specs->const_p = true;
+      specs->locations[cdw_const] = loc;
       break;
     case RID_VOLATILE:
       dupe = specs->volatile_p;
       specs->volatile_p = true;
+      specs->locations[cdw_volatile] = loc;
       break;
     case RID_RESTRICT:
       dupe = specs->restrict_p;
       specs->restrict_p = true;
+      specs->locations[cdw_restrict] = loc;
       break;
     case RID_SHARED:
       dupe = specs->shared_p;
@@ -9088,7 +9097,7 @@ declspecs_add_qual (struct c_declspecs *specs, tree qual)
       gcc_unreachable ();
     }
   if (dupe && !flag_isoc99)
-    pedwarn (input_location, OPT_Wpedantic, "duplicate %qE", qual);
+    pedwarn (loc, OPT_Wpedantic, "duplicate %qE", qual);
   return specs;
 }
 
@@ -9141,6 +9150,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  pedwarn_c90 (loc, OPT_Wlong_long,
 			       "ISO C90 does not support %<long long%>");
 		  specs->long_long_p = 1;
+		  specs->locations[cdw_long_long] = loc;
 		  break;
 		}
 	      if (specs->short_p)
@@ -9180,7 +9190,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<long%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
 	      else
-		specs->long_p = true;
+		{
+		  specs->long_p = true;
+		  specs->locations[cdw_long] = loc;
+		}
 	      break;
 	    case RID_SHORT:
 	      dupe = specs->short_p;
@@ -9225,7 +9238,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<short%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
 	      else
-		specs->short_p = true;
+		{
+		  specs->short_p = true;
+		  specs->locations[cdw_short] = loc;
+		}
 	      break;
 	    case RID_SIGNED:
 	      dupe = specs->signed_p;
@@ -9262,7 +9278,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<signed%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
 	      else
-		specs->signed_p = true;
+		{
+		  specs->signed_p = true;
+		  specs->locations[cdw_signed] = loc;
+		}
 	      break;
 	    case RID_UNSIGNED:
 	      dupe = specs->unsigned_p;
@@ -9299,11 +9318,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<unsigned%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
 	      else
-		specs->unsigned_p = true;
+		{
+		  specs->unsigned_p = true;
+		  specs->locations[cdw_unsigned] = loc;
+		}
 	      break;
 	    case RID_COMPLEX:
 	      dupe = specs->complex_p;
-	      if (!flag_isoc99 && !in_system_header)
+	      if (!flag_isoc99 && !in_system_header_at (loc))
 		pedwarn (loc, OPT_Wpedantic,
 			 "ISO C90 does not support complex types");
 	      if (specs->typespec_word == cts_void)
@@ -9339,7 +9361,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<complex%> and %<_Sat%> in "
 			   "declaration specifiers"));
 	      else
-		specs->complex_p = true;
+		{
+		  specs->complex_p = true;
+		  specs->locations[cdw_complex] = loc;
+		}
 	      break;
 	    case RID_SAT:
 	      dupe = specs->saturating_p;
@@ -9392,7 +9417,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<_Sat%> and %<complex%> in "
 			   "declaration specifiers"));
 	      else
-		specs->saturating_p = true;
+		{
+		  specs->saturating_p = true;
+		  specs->locations[cdw_saturating] = loc;
+		}
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -9438,7 +9466,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<__int128%> and %<short%> in "
 			   "declaration specifiers"));
 	      else
-		specs->typespec_word = cts_int128;
+		{
+		  specs->typespec_word = cts_int128;
+		  specs->locations[cdw_typespec] = loc;
+		}
 	      return specs;
 	    case RID_VOID:
 	      if (specs->long_p)
@@ -9466,7 +9497,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<_Sat%> and %<void%> in "
 			   "declaration specifiers"));
 	      else
-		specs->typespec_word = cts_void;
+		{
+		  specs->typespec_word = cts_void;
+		  specs->locations[cdw_typespec] = loc;
+		}
 	      return specs;
 	    case RID_BOOL:
 	      if (specs->long_p)
@@ -9494,7 +9528,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<_Sat%> and %<_Bool%> in "
 			   "declaration specifiers"));
 	      else
-		specs->typespec_word = cts_bool;
+		{
+		  specs->typespec_word = cts_bool;
+		  specs->locations[cdw_typespec] = loc;
+		}
 	      return specs;
 	    case RID_CHAR:
 	      if (specs->long_p)
@@ -9510,7 +9547,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<_Sat%> and %<char%> in "
 			   "declaration specifiers"));
 	      else
-		specs->typespec_word = cts_char;
+		{
+		  specs->typespec_word = cts_char;
+		  specs->locations[cdw_typespec] = loc;
+		}
 	      return specs;
 	    case RID_INT:
 	      if (specs->saturating_p)
@@ -9518,7 +9558,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<_Sat%> and %<int%> in "
 			   "declaration specifiers"));
 	      else
-		specs->typespec_word = cts_int;
+		{
+		  specs->typespec_word = cts_int;
+		  specs->locations[cdw_typespec] = loc;
+		}
 	      return specs;
 	    case RID_FLOAT:
 	      if (specs->long_p)
@@ -9542,7 +9585,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<_Sat%> and %<float%> in "
 			   "declaration specifiers"));
 	      else
-		specs->typespec_word = cts_float;
+		{
+		  specs->typespec_word = cts_float;
+		  specs->locations[cdw_typespec] = loc;
+		}
 	      return specs;
 	    case RID_DOUBLE:
 	      if (specs->long_long_p)
@@ -9566,7 +9612,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<_Sat%> and %<double%> in "
 			   "declaration specifiers"));
 	      else
-		specs->typespec_word = cts_double;
+		{
+		  specs->typespec_word = cts_double;
+		  specs->locations[cdw_typespec] = loc;
+		}
 	      return specs;
 	    case RID_DFLOAT32:
 	    case RID_DFLOAT64:
@@ -9620,6 +9669,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  specs->typespec_word = cts_dfloat64;
 		else
 		  specs->typespec_word = cts_dfloat128;
+		specs->locations[cdw_typespec] = loc;
 	      }
 	      if (!targetm.decimal_float_supported_p ())
 		error_at (loc,
@@ -9645,6 +9695,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		    specs->typespec_word = cts_fract;
 		else
 		    specs->typespec_word = cts_accum;
+		specs->locations[cdw_typespec] = loc;
 	      }
 	      if (!targetm.fixed_point_supported_p ())
 		error_at (loc,
@@ -9678,6 +9729,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	  specs->decl_attr = DECL_ATTRIBUTES (type);
 	  specs->typedef_p = true;
 	  specs->explicit_signed_p = C_TYPEDEF_EXPLICITLY_SIGNED (type);
+	  specs->locations[cdw_typedef] = loc;
 
 	  /* If this typedef name is defined in a struct, then a C++
 	     lookup would return a different value.  */
@@ -9701,13 +9753,17 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
       else if (TREE_TYPE (t) == error_mark_node)
 	;
       else
-	specs->type = TREE_TYPE (t);
+	{
+	  specs->type = TREE_TYPE (t);
+	  specs->locations[cdw_typespec] = loc;
+	}
     }
   else
     {
       if (TREE_CODE (type) != ERROR_MARK && spec.kind == ctsk_typeof)
 	{
 	  specs->typedef_p = true;
+	  specs->locations[cdw_typedef] = loc;
 	  if (spec.expr)
 	    {
 	      if (specs->expr)
@@ -9728,7 +9784,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
    declaration specifiers SPECS, returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
+declspecs_add_scspec (source_location loc,
+		      struct c_declspecs *specs,
+		      tree scspec)
 {
   enum rid i;
   enum c_storage_class n = csc_none;
@@ -9749,11 +9807,13 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
 	 difference between gnu89 and C99 inline.  */
       dupe = false;
       specs->inline_p = true;
+      specs->locations[cdw_inline] = loc;
       break;
     case RID_NORETURN:
       /* Duplicate _Noreturn is permitted.  */
       dupe = false;
       specs->noreturn_p = true;
+      specs->locations[cdw_noreturn] = loc;
       break;
     case RID_THREAD:
       dupe = specs->thread_p;
@@ -9764,7 +9824,10 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
       else if (specs->storage_class == csc_typedef)
 	error ("%<__thread%> used with %<typedef%>");
       else
-	specs->thread_p = true;
+	{
+	  specs->thread_p = true;
+	  specs->locations[cdw_thread] = loc;
+	}
       break;
     case RID_AUTO:
       n = csc_auto;
@@ -9803,6 +9866,7 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
       else
 	{
 	  specs->storage_class = n;
+	  specs->locations[cdw_storage_class] = loc;
 	  if (n != csc_extern && n != csc_static && specs->thread_p)
 	    {
 	      error ("%<__thread%> used with %qE", scspec);
@@ -9817,9 +9881,10 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
    returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_attrs (struct c_declspecs *specs, tree attrs)
+declspecs_add_attrs (source_location loc, struct c_declspecs *specs, tree attrs)
 {
   specs->attrs = chainon (attrs, specs->attrs);
+  specs->locations[cdw_attributes] = loc;
   specs->declspecs_seen_p = true;
   return specs;
 }
@@ -9828,10 +9893,12 @@ declspecs_add_attrs (struct c_declspecs *specs, tree attrs)
    alignment is ALIGN) to the declaration specifiers SPECS, returning
    SPECS.  */
 struct c_declspecs *
-declspecs_add_alignas (struct c_declspecs *specs, tree align)
+declspecs_add_alignas (source_location loc,
+		       struct c_declspecs *specs, tree align)
 {
   int align_log;
   specs->alignas_p = true;
+  specs->locations[cdw_alignas] = loc;
   if (align == error_mark_node)
     return specs;
   align_log = check_user_alignment (align, true);
@@ -9872,9 +9939,11 @@ finish_declspecs (struct c_declspecs *specs)
     {
       if (specs->saturating_p)
 	{
-	  error ("%<_Sat%> is used without %<_Fract%> or %<_Accum%>");
+	  error_at (specs->locations[cdw_saturating],
+		    "%<_Sat%> is used without %<_Fract%> or %<_Accum%>");
 	  if (!targetm.fixed_point_supported_p ())
-	    error ("fixed-point types not supported for this target");
+	    error_at (specs->locations[cdw_saturating],
+		      "fixed-point types not supported for this target");
 	  specs->typespec_word = cts_fract;
 	}
       else if (specs->long_p || specs->short_p
@@ -9885,7 +9954,7 @@ finish_declspecs (struct c_declspecs *specs)
       else if (specs->complex_p)
 	{
 	  specs->typespec_word = cts_double;
-	  pedwarn (input_location, OPT_Wpedantic,
+	  pedwarn (specs->locations[cdw_complex], OPT_Wpedantic,
 		   "ISO C does not support plain %<complex%> meaning "
 		   "%<double complex%>");
 	}
@@ -9930,7 +9999,7 @@ finish_declspecs (struct c_declspecs *specs)
 	specs->type = char_type_node;
       if (specs->complex_p)
 	{
-	  pedwarn (input_location, OPT_Wpedantic,
+	  pedwarn (specs->locations[cdw_complex], OPT_Wpedantic,
 		   "ISO C does not support complex integer types");
 	  specs->type = build_complex_type (specs->type);
 	}
@@ -9943,7 +10012,7 @@ finish_declspecs (struct c_declspecs *specs)
 		     : int128_integer_type_node);
       if (specs->complex_p)
 	{
-	  pedwarn (input_location, OPT_Wpedantic,
+	  pedwarn (specs->locations[cdw_complex], OPT_Wpedantic,
 		   "ISO C does not support complex integer types");
 	  specs->type = build_complex_type (specs->type);
 	}
@@ -9969,7 +10038,7 @@ finish_declspecs (struct c_declspecs *specs)
 		       : integer_type_node);
       if (specs->complex_p)
 	{
-	  pedwarn (input_location, OPT_Wpedantic,
+	  pedwarn (specs->locations[cdw_complex], OPT_Wpedantic,
 		   "ISO C does not support complex integer types");
 	  specs->type = build_complex_type (specs->type);
 	}

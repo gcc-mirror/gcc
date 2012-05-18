@@ -1,3 +1,11 @@
+2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2012-05-16  Tobias Burnus  <burnus@net-b.de>
+
+	* io/unix.c (tempfile_open): Pass mode to "open" for O_CREAT.
+
 2012-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/52428

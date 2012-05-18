@@ -2223,6 +2223,9 @@ static void cp_parser_set_storage_class
   (cp_parser *, cp_decl_specifier_seq *, enum rid, location_t);
 static void cp_parser_set_decl_spec_type
   (cp_decl_specifier_seq *, tree, location_t, bool);
+static void set_and_check_decl_spec_loc
+  (cp_decl_specifier_seq *decl_specs,
+   cp_decl_spec ds, source_location location);
 static bool cp_parser_friend_p
   (const cp_decl_specifier_seq *);
 static void cp_parser_required_error
@@ -2492,53 +2495,6 @@ cp_parser_simulate_error (cp_parser* parser)
       return true;
     }
   return false;
-}
-
-/* Check for repeated decl-specifiers.  */
-
-static void
-cp_parser_check_decl_spec (cp_decl_specifier_seq *decl_specs,
-			   location_t location)
-{
-  int ds;
-
-  for (ds = ds_first; ds != ds_last; ++ds)
-    {
-      unsigned count = decl_specs->specs[ds];
-      if (count < 2)
-	continue;
-      /* The "long" specifier is a special case because of "long long".  */
-      if (ds == ds_long)
-	{
-	  if (count > 2)
-	    error_at (location, "%<long long long%> is too long for GCC");
-	  else 
-	    pedwarn_cxx98 (location, OPT_Wlong_long, 
-			   "ISO C++ 1998 does not support %<long long%>");
-	}
-      else if (count > 1)
-	{
-	  static const char *const decl_spec_names[] = {
-	    "signed",
-	    "unsigned",
-	    "short",
-	    "long",
-	    "const",
-	    "volatile",
-	    "restrict",
-	    "inline",
-	    "virtual",
-	    "explicit",
-	    "friend",
-	    "typedef",
-	    "using",
-            "constexpr",
-	    "__complex",
-	    "__thread"
-	  };
-	  error_at (location, "duplicate %qs", decl_spec_names[ds]);
-	}
-    }
 }
 
 /* This function is called when a type is defined.  If type
@@ -6657,7 +6613,7 @@ cp_parser_new_expression (cp_parser* parser)
   VEC(tree,gc) *placement;
   tree type;
   VEC(tree,gc) *initializer;
-  tree nelts;
+  tree nelts = NULL_TREE;
   tree ret;
 
   /* Look for the optional `::' operator.  */
@@ -6710,7 +6666,6 @@ cp_parser_new_expression (cp_parser* parser)
 		  "try removing the parentheses around the type-id");
 	  cp_parser_direct_new_declarator (parser);
 	}
-      nelts = NULL_TREE;
     }
   /* Otherwise, there must be a new-type-id.  */
   else
@@ -6780,7 +6735,6 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
   cp_declarator *declarator;
   cp_declarator *outer_declarator;
   const char *saved_message;
-  tree type;
 
   /* The type-specifier sequence must not contain type definitions.
      (It cannot contain declarations of new types either, but if they
@@ -6795,6 +6749,10 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
 				&type_specifier_seq);
   /* Restore the old message.  */
   parser->type_definition_forbidden_message = saved_message;
+
+  if (type_specifier_seq.type == error_mark_node)
+    return error_mark_node;
+
   /* Parse the new-declarator.  */
   new_declarator = cp_parser_new_declarator_opt (parser);
 
@@ -6831,8 +6789,7 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
 	new_declarator = NULL;
     }
 
-  type = groktypename (&type_specifier_seq, new_declarator, false);
-  return type;
+  return groktypename (&type_specifier_seq, new_declarator, false);
 }
 
 /* Parse an (optional) new-declarator.
@@ -7438,6 +7395,7 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
   tree expr;
   tree assignment_expr;
   struct cp_token *token;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
   /* Consume the `?' token.  */
   cp_lexer_consume_token (parser->lexer);
@@ -7472,7 +7430,7 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
   c_inhibit_evaluation_warnings -= logical_or_expr == truthvalue_true_node;
 
   /* Build the conditional-expression.  */
-  return build_x_conditional_expr (logical_or_expr,
+  return build_x_conditional_expr (loc, logical_or_expr,
 				   expr,
 				   assignment_expr,
                                    tf_warning_or_error);
@@ -7512,11 +7470,11 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
 	return cp_parser_question_colon_clause (parser, expr);
       else
 	{
-	  enum tree_code assignment_operator;
+	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
 	  /* If it's an assignment-operator, we're using the second
 	     production.  */
-	  assignment_operator
+	  enum tree_code assignment_operator
 	    = cp_parser_assignment_operator_opt (parser);
 	  if (assignment_operator != ERROR_MARK)
 	    {
@@ -7534,7 +7492,7 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
 							      NIC_ASSIGNMENT))
 		return error_mark_node;
 	      /* Build the assignment expression.  */
-	      expr = build_x_modify_expr (expr,
+	      expr = build_x_modify_expr (loc, expr,
 					  assignment_operator,
 					  rhs,
 					  tf_warning_or_error);
@@ -7643,6 +7601,7 @@ static tree
 cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
 {
   tree expression = NULL_TREE;
+  location_t loc = UNKNOWN_LOCATION;
 
   while (true)
     {
@@ -7656,7 +7615,7 @@ cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
       if (!expression)
 	expression = assignment_expression;
       else
-	expression = build_x_compound_expr (expression,
+	expression = build_x_compound_expr (loc, expression,
 					    assignment_expression,
                                             tf_warning_or_error);
       /* If the next token is not a comma, then we are done with the
@@ -7664,6 +7623,7 @@ cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
 	break;
       /* Consume the `,'.  */
+      loc = cp_lexer_peek_token (parser->lexer)->location;
       cp_lexer_consume_token (parser->lexer);
       /* A comma operator cannot appear in a constant-expression.  */
       if (cp_parser_non_integral_constant_expression (parser, NIC_COMMA))
@@ -10555,6 +10515,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 {
   bool constructor_possible_p = !parser->in_declarator_p;
   cp_token *start_token = NULL;
+  cp_decl_spec ds;
 
   /* Clear DECL_SPECS.  */
   clear_decl_specs (decl_specs);
@@ -10568,6 +10529,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       bool constructor_p;
       bool found_decl_spec;
       cp_token *token;
+      ds = ds_last;
 
       /* Peek at the next token.  */
       token = cp_lexer_peek_token (parser->lexer);
@@ -10583,6 +10545,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  decl_specs->attributes
 	    = chainon (decl_specs->attributes,
 		       cp_parser_attributes_opt (parser));
+	  if (decl_specs->locations[ds_attribute] == 0)
+	    decl_specs->locations[ds_attribute] = token->location;
 	  continue;
 	}
       /* Assume we will find a decl-specifier keyword.  */
@@ -10602,14 +10566,14 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	    }
 	  else
 	    {
-	      ++decl_specs->specs[(int) ds_friend];
+	      ds = ds_friend;
 	      /* Consume the token.  */
 	      cp_lexer_consume_token (parser->lexer);
 	    }
 	  break;
 
         case RID_CONSTEXPR:
-          ++decl_specs->specs[(int) ds_constexpr];
+	  ds = ds_constexpr;
           cp_lexer_consume_token (parser->lexer);
           break;
 
@@ -10626,7 +10590,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  /* decl-specifier:
 	       typedef  */
 	case RID_TYPEDEF:
-	  ++decl_specs->specs[(int) ds_typedef];
+	  ds = ds_typedef;
 	  /* Consume the token.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  /* A constructor declarator cannot appear in a typedef.  */
@@ -10679,8 +10643,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  break;
 	case RID_THREAD:
 	  /* Consume the token.  */
+	  ds = ds_thread;
 	  cp_lexer_consume_token (parser->lexer);
-	  ++decl_specs->specs[(int) ds_thread];
 	  break;
 
 	default:
@@ -10694,13 +10658,16 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  && token->keyword != RID_CONSTEXPR)
 	error ("decl-specifier invalid in condition");
 
+      if (ds != ds_last)
+	set_and_check_decl_spec_loc (decl_specs, ds, token->location);
+
       /* Constructors are a special case.  The `S' in `S()' is not a
 	 decl-specifier; it is the beginning of the declarator.  */
       constructor_p
 	= (!found_decl_spec
 	   && constructor_possible_p
 	   && (cp_parser_constructor_declarator_p
-	       (parser, decl_specs->specs[(int) ds_friend] != 0)));
+	       (parser, decl_spec_seq_has_spec_p (decl_specs, ds_friend))));
 
       /* If we don't have a DECL_SPEC yet, then we must be looking at
 	 a type-specifier.  */
@@ -10777,12 +10744,10 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       flags |= CP_PARSER_FLAGS_OPTIONAL;
     }
 
-  cp_parser_check_decl_spec (decl_specs, start_token->location);
-
   /* Don't allow a friend specifier with a class definition.  */
-  if (decl_specs->specs[(int) ds_friend] != 0
+  if (decl_spec_seq_has_spec_p (decl_specs, ds_friend)
       && (*declares_class_or_enum & 2))
-    error_at (start_token->location,
+    error_at (decl_specs->locations[ds_friend],
 	      "class definition may not be declared a friend");
 }
 
@@ -10843,8 +10808,7 @@ cp_parser_function_specifier_opt (cp_parser* parser,
   switch (token->keyword)
     {
     case RID_INLINE:
-      if (decl_specs)
-	++decl_specs->specs[(int) ds_inline];
+      set_and_check_decl_spec_loc (decl_specs, ds_inline, token->location);
       break;
 
     case RID_VIRTUAL:
@@ -10853,13 +10817,11 @@ cp_parser_function_specifier_opt (cp_parser* parser,
 	 A member function template shall not be virtual.  */
       if (PROCESSING_REAL_TEMPLATE_DECL_P ())
 	error_at (token->location, "templates may not be %<virtual%>");
-      else if (decl_specs)
-	++decl_specs->specs[(int) ds_virtual];
+      set_and_check_decl_spec_loc (decl_specs, ds_virtual, token->location);
       break;
 
     case RID_EXPLICIT:
-      if (decl_specs)
-	++decl_specs->specs[(int) ds_explicit];
+      set_and_check_decl_spec_loc (decl_specs, ds_explicit, token->location);
       break;
 
     default:
@@ -12499,7 +12461,9 @@ cp_parser_template_id (cp_parser *parser,
 
   /* Build a representation of the specialization.  */
   if (TREE_CODE (templ) == IDENTIFIER_NODE)
-    template_id = build_min_nt (TEMPLATE_ID_EXPR, templ, arguments);
+    template_id = build_min_nt_loc (next_token->location,
+				    TEMPLATE_ID_EXPR,
+				    templ, arguments);
   else if (DECL_TYPE_TEMPLATE_P (templ)
 	   || DECL_TEMPLATE_TEMPLATE_PARM_P (templ))
     {
@@ -13170,14 +13134,16 @@ cp_parser_explicit_instantiation (cp_parser* parser)
       if (declares_class_or_enum & 2)
 	cp_parser_check_for_definition_in_return_type (declarator,
 						       decl_specifiers.type,
-						       decl_specifiers.type_location);
+						       decl_specifiers.locations[ds_type_spec]);
       if (declarator != cp_error_declarator)
 	{
-	  if (decl_specifiers.specs[(int)ds_inline])
-	    permerror (input_location, "explicit instantiation shall not use"
+	  if (decl_spec_seq_has_spec_p (&decl_specifiers, ds_inline))
+	    permerror (decl_specifiers.locations[ds_inline],
+		       "explicit instantiation shall not use"
 		       " %<inline%> specifier");
-	  if (decl_specifiers.specs[(int)ds_constexpr])
-	    permerror (input_location, "explicit instantiation shall not use"
+	  if (decl_spec_seq_has_spec_p (&decl_specifiers, ds_constexpr))
+	    permerror (decl_specifiers.locations[ds_constexpr],
+		       "explicit instantiation shall not use"
 		       " %<constexpr%> specifier");
 
 	  decl = grokdeclarator (declarator, &decl_specifiers,
@@ -13399,7 +13365,7 @@ cp_parser_type_specifier (cp_parser* parser,
       type_spec
 	= (cp_parser_elaborated_type_specifier
 	   (parser,
-	    decl_specs && decl_specs->specs[(int) ds_friend],
+	    decl_spec_seq_has_spec_p (decl_specs, ds_friend),
 	    is_declaration));
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs,
@@ -13440,7 +13406,7 @@ cp_parser_type_specifier (cp_parser* parser,
     {
       if (decl_specs)
 	{
-	  ++decl_specs->specs[(int)ds];
+	  set_and_check_decl_spec_loc (decl_specs, ds, token->location);
 	  decl_specs->any_specifiers_p = true;
 	}
       return cp_lexer_consume_token (parser->lexer)->u.value;
@@ -13531,8 +13497,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       type = boolean_type_node;
       break;
     case RID_SHORT:
-      if (decl_specs)
-	++decl_specs->specs[(int) ds_short];
+      set_and_check_decl_spec_loc (decl_specs, ds_short, token->location);
       type = short_integer_type_node;
       break;
     case RID_INT:
@@ -13549,17 +13514,15 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       break;
     case RID_LONG:
       if (decl_specs)
-	++decl_specs->specs[(int) ds_long];
+	set_and_check_decl_spec_loc (decl_specs, ds_long, token->location);
       type = long_integer_type_node;
       break;
     case RID_SIGNED:
-      if (decl_specs)
-	++decl_specs->specs[(int) ds_signed];
+      set_and_check_decl_spec_loc (decl_specs, ds_signed, token->location);
       type = integer_type_node;
       break;
     case RID_UNSIGNED:
-      if (decl_specs)
-	++decl_specs->specs[(int) ds_unsigned];
+      set_and_check_decl_spec_loc (decl_specs, ds_unsigned, token->location);
       type = unsigned_type_node;
       break;
     case RID_FLOAT:
@@ -15070,19 +15033,21 @@ static tree
 cp_parser_alias_declaration (cp_parser* parser)
 {
   tree id, type, decl, pushed_scope = NULL_TREE, attributes;
-  location_t id_location;
+  location_t id_location, using_location, attrs_location = 0;
   cp_declarator *declarator;
   cp_decl_specifier_seq decl_specs;
   bool member_p;
   const char *saved_message = NULL;
 
   /* Look for the `using' keyword.  */
+  using_location = cp_lexer_peek_token (parser->lexer)->location;
   cp_parser_require_keyword (parser, RID_USING, RT_USING);
   id_location = cp_lexer_peek_token (parser->lexer)->location;
   id = cp_parser_identifier (parser);
   if (id == error_mark_node)
     return error_mark_node;
 
+  attrs_location = cp_lexer_peek_token (parser->lexer)->location;
   attributes = cp_parser_attributes_opt (parser);
   if (attributes == error_mark_node)
     return error_mark_node;
@@ -15131,9 +15096,19 @@ cp_parser_alias_declaration (cp_parser* parser)
 
   clear_decl_specs (&decl_specs);
   decl_specs.type = type;
-  decl_specs.attributes = attributes;
-  ++decl_specs.specs[(int) ds_typedef];
-  ++decl_specs.specs[(int) ds_alias];
+  if (attributes != NULL_TREE)
+    {
+      decl_specs.attributes = attributes;
+      set_and_check_decl_spec_loc (&decl_specs,
+				   ds_attribute,
+				   attrs_location);
+    }
+  set_and_check_decl_spec_loc (&decl_specs,
+			       ds_typedef,
+			       using_location);
+  set_and_check_decl_spec_loc (&decl_specs,
+			       ds_alias,
+			       using_location);
 
   declarator = make_id_declarator (NULL_TREE, id, sfk_none);
   declarator->id_loc = id_location;
@@ -15515,7 +15490,7 @@ cp_parser_init_declarator (cp_parser* parser,
   if (declares_class_or_enum & 2)
     cp_parser_check_for_definition_in_return_type (declarator,
 						   decl_specifiers->type,
-						   decl_specifiers->type_location);
+						   decl_specifiers->locations[ds_type_spec]);
 
   /* Figure out what scope the entity declared by the DECLARATOR is
      located in.  `grokdeclarator' sometimes changes the scope, so
@@ -15761,6 +15736,8 @@ cp_parser_init_declarator (cp_parser* parser,
 					       &is_non_constant_init);
 	  if (!member_p && processing_template_decl)
 	    finish_lambda_scope ();
+	  if (initializer == error_mark_node)
+	    cp_parser_skip_to_end_of_statement (parser);
 	}
     }
 
@@ -16936,8 +16913,6 @@ cp_parser_type_specifier_seq (cp_parser* parser,
       if (is_declaration && !is_cv_qualifier)
 	flags |= CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES;
     }
-
-  cp_parser_check_decl_spec (type_specifier_seq, start_token->location);
 }
 
 /* Parse a parameter-declaration-clause.
@@ -19042,7 +19017,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      if (declares_class_or_enum & 2)
 		cp_parser_check_for_definition_in_return_type
 					    (declarator, decl_specifiers.type,
-					     decl_specifiers.type_location);
+					     decl_specifiers.locations[ds_type_spec]);
 
 	      /* Look for an asm-specification.  */
 	      asm_specification = cp_parser_asm_specification_opt (parser);
@@ -21301,7 +21276,7 @@ cp_parser_single_declaration (cp_parser* parser,
     *friend_p = cp_parser_friend_p (&decl_specifiers);
 
   /* There are no template typedefs.  */
-  if (decl_specifiers.specs[(int) ds_typedef])
+  if (decl_spec_seq_has_spec_p (&decl_specifiers, ds_typedef))
     {
       error_at (decl_spec_token_start->location,
 		"template declaration of %<typedef%>");
@@ -21777,6 +21752,9 @@ cp_parser_late_parse_one_default_arg (cp_parser *parser, tree decl,
 
   finish_lambda_scope ();
 
+  if (parsed_arg == error_mark_node)
+    cp_parser_skip_to_end_of_statement (parser);
+
   if (!processing_template_decl)
     {
       /* In a non-template class, check conversions now.  In a template,
@@ -22049,10 +22027,11 @@ cp_parser_set_storage_class (cp_parser *parser,
     }
 
   if ((keyword == RID_EXTERN || keyword == RID_STATIC)
-      && decl_specs->specs[(int) ds_thread])
+      && decl_spec_seq_has_spec_p (decl_specs, ds_thread))
     {
-      error_at (location, "%<__thread%> before %qD", ridpointers[keyword]);
-      decl_specs->specs[(int) ds_thread] = 0;
+      error_at (decl_specs->locations[ds_thread],
+		"%<__thread%> before %qD", ridpointers[keyword]);
+      decl_specs->locations[ds_thread] = 0;
     }
 
   switch (keyword)
@@ -22076,12 +22055,13 @@ cp_parser_set_storage_class (cp_parser *parser,
       gcc_unreachable ();
     }
   decl_specs->storage_class = storage_class;
+  set_and_check_decl_spec_loc (decl_specs, ds_storage_class, location);
 
   /* A storage class specifier cannot be applied alongside a typedef 
      specifier. If there is a typedef specifier present then set 
      conflicting_specifiers_p which will trigger an error later
      on in grokdeclarator. */
-  if (decl_specs->specs[(int)ds_typedef])
+  if (decl_spec_seq_has_spec_p (decl_specs, ds_typedef))
     decl_specs->conflicting_specifiers_p = true;
 }
 
@@ -22101,24 +22081,27 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
      this is what happened.  In system headers, we ignore these
      declarations so that G++ can work with system headers that are not
      C++-safe.  */
-  if (decl_specs->specs[(int) ds_typedef]
+  if (decl_spec_seq_has_spec_p (decl_specs, ds_typedef)
       && !type_definition_p
       && (type_spec == boolean_type_node
 	  || type_spec == char16_type_node
 	  || type_spec == char32_type_node
 	  || type_spec == wchar_type_node)
       && (decl_specs->type
-	  || decl_specs->specs[(int) ds_long]
-	  || decl_specs->specs[(int) ds_short]
-	  || decl_specs->specs[(int) ds_unsigned]
-	  || decl_specs->specs[(int) ds_signed]))
+	  || decl_spec_seq_has_spec_p (decl_specs, ds_long)
+	  || decl_spec_seq_has_spec_p (decl_specs, ds_short)
+	  || decl_spec_seq_has_spec_p (decl_specs, ds_unsigned)
+	  || decl_spec_seq_has_spec_p (decl_specs, ds_signed)))
     {
       decl_specs->redefined_builtin_type = type_spec;
+      set_and_check_decl_spec_loc (decl_specs,
+				   ds_redefined_builtin_type_spec,
+				   location);
       if (!decl_specs->type)
 	{
 	  decl_specs->type = type_spec;
 	  decl_specs->type_definition_p = false;
-	  decl_specs->type_location = location;
+	  set_and_check_decl_spec_loc (decl_specs,ds_type_spec, location);
 	}
     }
   else if (decl_specs->type)
@@ -22128,8 +22111,87 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
       decl_specs->type = type_spec;
       decl_specs->type_definition_p = type_definition_p;
       decl_specs->redefined_builtin_type = NULL_TREE;
-      decl_specs->type_location = location;
+      set_and_check_decl_spec_loc (decl_specs, ds_type_spec, location);
     }
+}
+
+/* Set the location for a declarator specifier and check if it is
+   duplicated.
+
+   DECL_SPECS is the sequence of declarator specifiers onto which to
+   set the location.
+
+   DS is the single declarator specifier to set which location  is to
+   be set onto the existing sequence of declarators.
+
+   LOCATION is the location for the declarator specifier to
+   consider.  */
+
+static void
+set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
+			     cp_decl_spec ds, source_location location)
+{
+  gcc_assert (ds < ds_last);
+
+  if (decl_specs == NULL)
+    return;
+
+  if (decl_specs->locations[ds] == 0)
+    decl_specs->locations[ds] = location;
+  else
+    {
+      if (ds == ds_long)
+	{
+	  if (decl_specs->locations[ds_long_long] != 0)
+	    error_at (location,
+		      "%<long long long%> is too long for GCC");
+	  else
+	    {
+	      decl_specs->locations[ds_long_long] = location;
+	      pedwarn_cxx98 (location,
+			     OPT_Wlong_long, 
+			     "ISO C++ 1998 does not support %<long long%>");
+	    }
+	}
+      else
+	{
+	  static const char *const decl_spec_names[] = {
+	    "signed",
+	    "unsigned",
+	    "short",
+	    "long",
+	    "const",
+	    "volatile",
+	    "restrict",
+	    "inline",
+	    "virtual",
+	    "explicit",
+	    "friend",
+	    "typedef",
+	    "using",
+            "constexpr",
+	    "__complex",
+	    "__thread"
+	  };
+	  error_at (location,
+		    "duplicate %qs", decl_spec_names[ds]);
+	}
+    }
+}
+
+/* Return true iff the declarator specifier DS is present in the
+   sequence of declarator specifiers DECL_SPECS.  */
+
+bool
+decl_spec_seq_has_spec_p (const cp_decl_specifier_seq * decl_specs,
+			  cp_decl_spec ds)
+{
+  gcc_assert (ds < ds_last);
+
+  if (decl_specs == NULL)
+    return false;
+
+  return decl_specs->locations[ds] != 0;
 }
 
 /* DECL_SPECIFIERS is the representation of a decl-specifier-seq.
@@ -22138,7 +22200,7 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 static bool
 cp_parser_friend_p (const cp_decl_specifier_seq *decl_specifiers)
 {
-  return decl_specifiers->specs[(int) ds_friend] != 0;
+  return decl_spec_seq_has_spec_p (decl_specifiers, ds_friend);
 }
 
 /* Issue an error message indicating that TOKEN_DESC was expected.
@@ -23951,17 +24013,17 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 	}
 
       /* __thread.  */
-      if (declspecs.specs[(int) ds_thread])
+      if (decl_spec_seq_has_spec_p (&declspecs, ds_thread))
 	{
 	  cp_parser_error (parser, "invalid type for instance variable");
-	  declspecs.specs[(int) ds_thread] = 0;
+	  declspecs.locations[ds_thread] = 0;
 	}
       
       /* typedef.  */
-      if (declspecs.specs[(int) ds_typedef])
+      if (decl_spec_seq_has_spec_p (&declspecs, ds_typedef))
 	{
 	  cp_parser_error (parser, "invalid type for instance variable");
-	  declspecs.specs[(int) ds_typedef] = 0;
+	  declspecs.locations[ds_thread] = 0;
 	}
 
       prefix_attributes = declspecs.attributes;
@@ -24530,17 +24592,17 @@ cp_parser_objc_struct_declaration (cp_parser *parser)
     }
   
   /* __thread.  */
-  if (declspecs.specs[(int) ds_thread])
+  if (decl_spec_seq_has_spec_p (&declspecs, ds_thread))
     {
       cp_parser_error (parser, "invalid type for property");
-      declspecs.specs[(int) ds_thread] = 0;
+      declspecs.locations[ds_thread] = 0;
     }
   
   /* typedef.  */
-  if (declspecs.specs[(int) ds_typedef])
+  if (decl_spec_seq_has_spec_p (&declspecs, ds_typedef))
     {
       cp_parser_error (parser, "invalid type for property");
-      declspecs.specs[(int) ds_typedef] = 0;
+      declspecs.locations[ds_typedef] = 0;
     }
 
   prefix_attributes = declspecs.attributes;
@@ -26350,7 +26412,8 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 		  cp_parser_parse_definitely (parser);
 		  cp_parser_require (parser, CPP_EQ, RT_EQ);
 		  rhs = cp_parser_assignment_expression (parser, false, NULL);
-		  finish_expr_stmt (build_x_modify_expr (decl, NOP_EXPR,
+		  finish_expr_stmt (build_x_modify_expr (EXPR_LOCATION (rhs),
+							 decl, NOP_EXPR,
 							 rhs,
 							 tf_warning_or_error));
 		  add_private_clause = true;

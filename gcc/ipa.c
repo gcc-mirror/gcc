@@ -100,7 +100,10 @@ process_references (struct ipa_ref_list *list,
 	{
 	  struct varpool_node *node = ipa_ref_varpool_node (ref);
 
-	  if (node->analyzed)
+	  if (node->analyzed
+	      && (!DECL_EXTERNAL (node->symbol.decl)
+		  || node->alias
+		  || before_inlining_p))
 	    pointer_set_insert (reachable, node);
 	  enqueue_node ((symtab_node) node, first, reachable);
 	}
@@ -186,6 +189,12 @@ has_addr_references_p (struct cgraph_node *node,
      declaration of origin and cgraph_remove_node already knows how to
      reshape callgraph and preserve body when offline copy of function or
      inline clone is being removed.
+
+   - C++ virtual tables keyed to other unit are represented as DECL_EXTERNAL
+     variables with DECL_INITIAL set.  We finalize these and keep reachable
+     ones around for constant folding purposes.  After inlining we however
+     stop walking their references to let everything static referneced by them
+     to be removed when it is otherwise unreachable.
 
    We maintain queue of both reachable symbols (i.e. defined symbols that needs
    to stay) and symbols that are in boundary (i.e. external symbols referenced
@@ -323,6 +332,19 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		}
 	    }
 	}
+      /* When we see constructor of external variable, keep referred nodes in the
+	 boundary.  This will also hold initializers of the external vars NODE
+	 reffers to.  */
+      if (symtab_variable_p (node)
+	  && DECL_EXTERNAL (node->symbol.decl)
+	  && !varpool (node)->alias
+	  && in_boundary_p)
+        {
+	  int i;
+	  struct ipa_ref *ref;
+	  for (i = 0; ipa_ref_list_reference_iterate (&node->symbol.ref_list, i, ref); i++)
+	    enqueue_node (ref->referred, &first, reachable);
+        }
     }
 
   /* Remove unreachable functions.   */
@@ -347,7 +369,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      changed = true;
 	    }
 	  if (!pointer_set_contains (body_needed_for_clonning, node->symbol.decl)
-	      && !DECL_ARTIFICIAL (node->symbol.decl))
+	      && (node->local.finalized || !DECL_ARTIFICIAL (node->symbol.decl)))
 	    cgraph_release_function_body (node);
 	  node->analyzed = false;
 	}
@@ -627,6 +649,9 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
   if (vnode->alias && DECL_EXTERNAL (vnode->symbol.decl))
     return true;
 
+  if (DECL_EXTERNAL (vnode->symbol.decl))
+    return true;
+
   if (!DECL_COMDAT (vnode->symbol.decl) && !TREE_PUBLIC (vnode->symbol.decl))
     return false;
 
@@ -890,7 +915,6 @@ function_and_variable_visibility (bool whole_program)
 	    symtab_dissolve_same_comdat_group_list ((symtab_node) vnode);
 	  vnode->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
-     gcc_assert (TREE_STATIC (vnode->symbol.decl));
     }
   pointer_set_destroy (aliased_nodes);
   pointer_set_destroy (aliased_vnodes);

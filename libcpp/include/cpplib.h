@@ -851,7 +851,7 @@ struct cpp_num
 /* Classify a CPP_NUMBER token.  The return value is a combination of
    the flags from the above sets.  */
 extern unsigned cpp_classify_number (cpp_reader *, const cpp_token *,
-				     const char **);
+				     const char **, source_location);
 
 /* Return the classification flags for a float suffix.  */
 extern unsigned int cpp_interpret_float_suffix (const char *, size_t);

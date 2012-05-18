@@ -44,16 +44,16 @@ ostream& operator<<(ostream& os, Graph<VertexType,EdgeType>& G)
     // display of vertices with successors
   for(int i = 0; i < G.size(); ++i)  // { dg-error "no member" } no size function
     {
-      os << G[i].first << " <";      // { dg-error "no match" } no index operator
+      os << G[i].first << " <";      // { dg-error "14:no match" } no index operator
 
         // The compiler does not like this line!!!!!!
         typename Graph<VertexType, EdgeType>::Successor::iterator
-	  startN = G[i].second.begin(), // { dg-error "no match" } no index operator
-	  endN   = G[i].second.end();  // { dg-error "no match" } no index operator
+	  startN = G[i].second.begin(), // { dg-error "14:no match" } no index operator
+	  endN   = G[i].second.end();  // { dg-error "14:no match" } no index operator
 
         while(startN != endN)
         {
-            os << G[(*startN).first].first << ' ' // { dg-error "no match" } no index operator
+            os << G[(*startN).first].first << ' ' // { dg-error "20:no match" } no index operator
                << (*startN).second << ' ';
             ++startN;
         }

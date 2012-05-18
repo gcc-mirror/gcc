@@ -46,7 +46,7 @@ static void initialize_handler_parm (tree, tree);
 static tree do_allocate_exception (tree);
 static tree wrap_cleanups_r (tree *, int *, void *);
 static int complete_ptr_ref_or_void_ptr_p (tree, tree);
-static bool is_admissible_throw_operand (tree);
+static bool is_admissible_throw_operand_or_catch_parameter (tree, bool);
 static int can_convert_eh (tree, tree);
 
 /* Sets up all the global eh stuff that needs to be initialized at the
@@ -485,12 +485,13 @@ expand_start_catch_block (tree decl)
   if (! doing_eh ())
     return NULL_TREE;
 
-  /* Make sure this declaration is reasonable.  */
-  if (decl && !complete_ptr_ref_or_void_ptr_p (TREE_TYPE (decl), NULL_TREE))
-    decl = error_mark_node;
-
   if (decl)
-    type = prepare_eh_type (TREE_TYPE (decl));
+    {
+      if (!is_admissible_throw_operand_or_catch_parameter (decl, false))
+	decl = error_mark_node;
+
+      type = prepare_eh_type (TREE_TYPE (decl));
+    }
   else
     type = NULL_TREE;
 
@@ -720,7 +721,7 @@ build_throw (tree exp)
 
   if (exp != NULL_TREE)
     {
-      if (!is_admissible_throw_operand (exp))
+      if (!is_admissible_throw_operand_or_catch_parameter (exp, true))
 	return error_mark_node;
     }
 
@@ -944,14 +945,21 @@ complete_ptr_ref_or_void_ptr_p (tree type, tree from)
   return 1;
 }
 
-/* Return truth-value if EXPRESSION is admissible in throw-expression,
-   i.e. if it is not of incomplete type or a pointer/reference to such
-   a type or of an abstract class type.  */
+/* If IS_THROW is true return truth-value if T is an expression admissible
+   in throw-expression, i.e. if it is not of incomplete type or a pointer/
+   reference to such a type or of an abstract class type.
+   If IS_THROW is false, likewise for a catch parameter, same requirements
+   for its type plus rvalue reference type is also not admissible.  */
 
 static bool
-is_admissible_throw_operand (tree expr)
+is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
 {
-  tree type = TREE_TYPE (expr);
+  tree expr = is_throw ? t : NULL_TREE;
+  tree type = TREE_TYPE (t);
+
+  /* C++11 [except.handle] The exception-declaration shall not denote
+     an incomplete type, an abstract class type, or an rvalue reference 
+     type.  */
 
   /* 15.1/4 [...] The type of the throw-expression shall not be an
 	    incomplete type, or a pointer or a reference to an incomplete
@@ -968,8 +976,20 @@ is_admissible_throw_operand (tree expr)
 	    conversion.  */
   else if (CLASS_TYPE_P (type) && CLASSTYPE_PURE_VIRTUALS (type))
     {
-      error ("expression %qE of abstract class type %qT cannot "
-	     "be used in throw-expression", expr, type);
+      if (is_throw)
+	error ("expression %qE of abstract class type %qT cannot "
+	       "be used in throw-expression", expr, type);
+      else
+	error ("cannot declare catch parameter to be of abstract "
+	       "class type %qT", type);
+      return false;
+    }
+  else if (!is_throw
+	   && TREE_CODE (type) == REFERENCE_TYPE
+	   && TYPE_REF_IS_RVALUE (type))
+    {
+      error ("cannot declare catch parameter to be of rvalue "
+	     "reference type %qT", type);
       return false;
     }
 

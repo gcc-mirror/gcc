@@ -1,3 +1,79 @@
+2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/39681
+	* parser.c (cp_parser_new_type_id): Early return error_mark_node
+	if the cp_parser_type_specifier_seq call has type_specifier_seq.type
+	error_mark_node; tidy.
+	(cp_parser_new_expression): Always initialize nelts to NULL_TREE to
+	avoid uninitialized warnings.
+	(cp_parser_init_declarator, cp_parser_late_parse_one_default_arg):
+	Call cp_parser_skip_to_end_of_statement if cp_parser_initializer
+	returns error_mark_node.
+
+2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53371
+	* except.c (is_admissible_throw_operand): Rename to
+	is_admissible_throw_operand_or_catch_parameter and handle
+	catch parameter too.
+	(expand_start_catch_block): Use it.
+	(build_throw): Adjust.
+
+2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44516
+	* typeck.c (build_x_array_ref, build_x_conditional_expr,
+	build_x_compound_expr, build_x_modify_expr): Add location_t parameter.
+	(finish_class_member_access_expr, build_x_indirect_ref,
+	build_x_binary_op, build_x_compound_expr_from_list,
+	build_x_compound_expr_from_vec): Adjust callers.
+	* tree.c (build_min_nt_loc): New.
+	(build_min_nt): Remove.
+	* typeck2.c (build_x_arrow): Adjust callers.
+	* pt.c (tsubst_qualified_id, tsubst_omp_for_iterator,
+	tsubst_copy_and_build): Likewise.
+	* semantics.c (finish_mem_initializers, handle_omp_for_class_iterator,
+	 finish_omp_atomic): Likewise.
+	* decl2.c (grok_array_decl, build_anon_union_vars): Adjust.
+	* parser.c (cp_parser_question_colon_clause,
+	cp_parser_assignment_expression, cp_parser_expression,
+	cp_parser_template_id, cp_parser_omp_for_loop): Likewise.
+	* cp-tree.h: Update.
+
+2012-05-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/7263
+	* cp-tree.h (enum cp_decl_spec): Add new enumerators to cover all
+	the possible declarator specifiers so far.
+	(struct cp_decl_specifier_seq::locations): Declare new member.
+	(cp_decl_specifier_seq::{specs, type_location}): Remove.
+	(decl_spec_seq_has_spec_p): Declare new function.
+	* parser.c (cp_parser_check_decl_spec): Remove.
+	(set_and_check_decl_spec_loc): Define new static function.
+	(decl_spec_seq_has_spec_p): Define new public function.
+	(cp_parser_decl_specifier_seq, cp_parser_function_specifier_opt)
+	(cp_parser_type_specifier, cp_parser_simple_type_specifier)
+	(cp_parser_set_storage_class, cp_parser_set_decl_spec_type)
+	(cp_parser_alias_declaration): Set the locations for each
+	declspec, using set_and_check_decl_spec_loc.
+	(cp_parser_explicit_instantiation, cp_parser_init_declarator)
+	(cp_parser_member_declaration, cp_parser_init_declarator): Use the
+	new declspec location for specifiers.  Use the new
+	decl_spec_seq_has_spec_p.
+	(cp_parser_type_specifier_seq): Use the new
+	set_and_check_decl_spec_loc.  Stop using
+	cp_parser_check_decl_spec.  Use the new decl_spec_seq_has_spec_p.
+	(, cp_parser_init_declarator): Use the new
+	set_and_check_decl_spec_loc.
+	(cp_parser_single_declaration, cp_parser_friend_p)
+	(cp_parser_objc_class_ivars, cp_parser_objc_struct_declaration):
+	Use the new decl_spec_seq_has_spec_p.
+	* decl.c (check_tag_decl): Use new decl_spec_seq_has_spec_p.  Use
+	the more precise ds_redefined_builtin_type_spec location for
+	diagnostics about re-declaring C++ built-in types.
+	(start_decl, grokvardecl, grokdeclarator): Use the new
+	decl_spec_seq_has_spec_p.
+
 2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/11856

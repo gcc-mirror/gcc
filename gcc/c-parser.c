@@ -1243,7 +1243,9 @@ static bool c_parser_objc_diagnose_bad_element_prefix
    compiling UPC.  */
 static void c_parser_upc_forall_statement (c_parser *);
 static void c_parser_upc_sync_statement (c_parser *, int);
-static void c_parser_upc_shared_qual (c_parser *, struct c_declspecs *);
+static void c_parser_upc_shared_qual (source_location,
+                                      c_parser *,
+				      struct c_declspecs *);
 
 /* Parse a translation unit (C90 6.7, C99 6.9).
 
@@ -2042,14 +2044,15 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 
       if (c_parser_next_token_is (parser, CPP_NAME))
 	{
-	  tree value = c_parser_peek_token (parser)->value;
-	  c_id_kind kind = c_parser_peek_token (parser)->id_kind;
+	  c_token *name_token = c_parser_peek_token (parser);
+	  tree value = name_token->value;
+	  c_id_kind kind = name_token->id_kind;
 
 	  if (kind == C_ID_ADDRSPACE)
 	    {
 	      addr_space_t as
-		= c_parser_peek_token (parser)->keyword - RID_FIRST_ADDR_SPACE;
-	      declspecs_add_addrspace (specs, as);
+		= name_token->keyword - RID_FIRST_ADDR_SPACE;
+	      declspecs_add_addrspace (name_token->location, specs, as);
 	      c_parser_consume_token (parser);
 	      attrs_ok = true;
 	      continue;
@@ -2095,7 +2098,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	    }
 	  t.expr = NULL_TREE;
 	  t.expr_const_operands = true;
-	  declspecs_add_type (loc, specs, t);
+	  declspecs_add_type (name_token->location, specs, t);
 	  continue;
 	}
       if (c_parser_next_token_is (parser, CPP_LESS))
@@ -2131,7 +2134,8 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  /* TODO: Distinguish between function specifiers (inline, noreturn)
 	     and storage class specifiers, either here or in
 	     declspecs_add_scspec.  */
-	  declspecs_add_scspec (specs, c_parser_peek_token (parser)->value);
+	  declspecs_add_scspec (loc, specs,
+				c_parser_peek_token (parser)->value);
 	  c_parser_consume_token (parser);
 	  break;
 	case RID_UNSIGNED:
@@ -2198,29 +2202,29 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_VOLATILE:
 	case RID_RESTRICT:
 	  attrs_ok = true;
-	  declspecs_add_qual (specs, c_parser_peek_token (parser)->value);
+	  declspecs_add_qual (loc, specs, c_parser_peek_token (parser)->value);
 	  c_parser_consume_token (parser);
 	  break;
         /* UPC qualifiers */
 	case RID_SHARED:
 	  attrs_ok = true;
-          c_parser_upc_shared_qual (parser, specs);
+          c_parser_upc_shared_qual (loc, parser, specs);
 	  break;
 	case RID_STRICT:
 	case RID_RELAXED:
 	  attrs_ok = true;
-	  declspecs_add_qual (specs, c_parser_peek_token (parser)->value);
+	  declspecs_add_qual (loc, specs, c_parser_peek_token (parser)->value);
 	  c_parser_consume_token (parser);
 	  break;
 	case RID_ATTRIBUTE:
 	  if (!attrs_ok)
 	    goto out;
 	  attrs = c_parser_attributes (parser);
-	  declspecs_add_attrs (specs, attrs);
+	  declspecs_add_attrs (loc, specs, attrs);
 	  break;
 	case RID_ALIGNAS:
 	  align = c_parser_alignas_specifier (parser);
-	  declspecs_add_alignas (specs, align);
+	  declspecs_add_alignas (loc, specs, align);
 	  break;
 	default:
 	  goto out;
@@ -3370,7 +3374,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
   specs = build_null_declspecs ();
   if (attrs)
     {
-      declspecs_add_attrs (specs, attrs);
+      declspecs_add_attrs (input_location, specs, attrs);
       attrs = NULL_TREE;
     }
   c_parser_declspecs (parser, specs, true, true, true, cla_nonabstract_decl);
@@ -8733,7 +8737,9 @@ c_parser_objc_at_dynamic_declaration (c_parser *parser)
 
 */
 static void
-c_parser_upc_shared_qual (c_parser *parser, struct c_declspecs *specs)
+c_parser_upc_shared_qual (source_location loc,
+                          c_parser *parser,
+			  struct c_declspecs *specs)
 {
   tree array_qual, arg1;
 
@@ -8743,7 +8749,7 @@ c_parser_upc_shared_qual (c_parser *parser, struct c_declspecs *specs)
   /* check for shared array layout specifier */
   if (!c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
     {
-      declspecs_add_qual (specs, ridpointers[RID_SHARED]);
+      declspecs_add_qual (loc, specs, ridpointers[RID_SHARED]);
       return;
     }
   c_parser_consume_token (parser);
@@ -8765,7 +8771,7 @@ c_parser_upc_shared_qual (c_parser *parser, struct c_declspecs *specs)
     }
   array_qual = build4 (ARRAY_REF, NULL_TREE, NULL_TREE, 
                  arg1, NULL_TREE, NULL_TREE);
-  declspecs_add_qual (specs, array_qual);
+  declspecs_add_qual (loc, specs, array_qual);
 
   if (!c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
     {

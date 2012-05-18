@@ -824,6 +824,11 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   /* Initialize misalignment to unknown.  */
   SET_DR_MISALIGNMENT (dr, -1);
 
+  /* Strided loads perform only component accesses, misalignment information
+     is irrelevant for them.  */
+  if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
+    return true;
+
   misalign = DR_INIT (dr);
   aligned_to = DR_ALIGNED_TO (dr);
   base_addr = DR_BASE_ADDRESS (dr);

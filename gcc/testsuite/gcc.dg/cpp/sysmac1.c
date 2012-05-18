@@ -1,7 +1,7 @@
 /* Copyright (C) 2001 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
-/* { dg-options "-std=gnu99 -pedantic -Wtraditional" } */
+/* { dg-options "-std=gnu99 -pedantic -Wtraditional -ftrack-macro-expansion=0" } */
 
 /* Tests diagnostics are suppressed for some macros defined in system
    headers.  */

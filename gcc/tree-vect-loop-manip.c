@@ -489,8 +489,7 @@ LOOP->  loop1
 
 static void
 slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
-                                    bool is_new_loop, basic_block *new_exit_bb,
-                                    bitmap *defs)
+                                    bool is_new_loop, basic_block *new_exit_bb)
 {
   gimple orig_phi, new_phi;
   gimple update_phi, update_phi2;
@@ -586,7 +585,6 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
       gcc_assert (get_current_def (current_new_name) == NULL_TREE);
 
       set_current_def (current_new_name, PHI_RESULT (new_phi));
-      bitmap_set_bit (*defs, SSA_NAME_VERSION (current_new_name));
     }
 }
 
@@ -1159,7 +1157,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   struct loop *new_loop = NULL, *first_loop, *second_loop;
   edge skip_e;
   tree pre_condition = NULL_TREE;
-  bitmap definitions;
   basic_block bb_before_second_loop, bb_after_second_loop;
   basic_block bb_before_first_loop;
   basic_block bb_between_loops;
@@ -1171,12 +1168,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 
   if (!slpeel_can_duplicate_loop_p (loop, e))
     return NULL;
-
-  /* We have to initialize cfg_hooks. Then, when calling
-   cfg_hooks->split_edge, the function tree_split_edge
-   is actually called and, when calling cfg_hooks->duplicate_block,
-   the function tree_duplicate_bb is called.  */
-  gimple_register_cfg_hooks ();
 
   /* If the loop has a virtual PHI, but exit bb doesn't, create a virtual PHI
      in the exit bb and rename all the uses after the loop.  This simplifies
@@ -1259,7 +1250,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
       second_loop = loop;
     }
 
-  definitions = ssa_names_to_replace ();
   slpeel_update_phis_for_duplicate_loop (loop, new_loop, e == exit_e);
   rename_variables_in_loop (new_loop);
 
@@ -1397,7 +1387,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
                                   bb_before_second_loop, bb_before_first_loop);
   slpeel_update_phi_nodes_for_guard1 (skip_e, first_loop,
 				      first_loop == new_loop,
-				      &new_exit_bb, &definitions);
+				      &new_exit_bb);
 
 
   /* 3. Add the guard that controls whether the second loop is executed.
@@ -1441,7 +1431,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   if (update_first_loop_count)
     slpeel_make_loop_iterate_ntimes (first_loop, *first_niters);
 
-  BITMAP_FREE (definitions);
   delete_update_ssa ();
 
   adjust_vec_debug_stmts ();

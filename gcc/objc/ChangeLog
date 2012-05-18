@@ -1,6 +1,12 @@
+2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR objc++/53388
+	* objc-act.c (objc_get_class_reference, objc_build_message_expr):
+	Use build_min_nt_loc.
+
 2012-04-20  Jan Hubicka  <jh@suse.cz>
 
-	* objc-acct.c (mark_referenced_methods); Use
+	* objc-act.c (mark_referenced_methods); Use
 	cgraph_mark_force_output_node.
 
 2012-03-21  Steven Bosscher  <steven@gcc.gnu.org>

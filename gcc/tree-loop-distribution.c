@@ -1131,8 +1131,11 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   BITMAP_FREE (processed);
   nbp = VEC_length (bitmap, partitions);
 
-  if (nbp <= 1
-      || partition_contains_all_rw (rdg, partitions))
+  if (nbp == 0
+      || (nbp == 1
+	  && !can_generate_builtin (rdg, VEC_index (bitmap, partitions, 0)))
+      || (nbp > 1
+	  && partition_contains_all_rw (rdg, partitions)))
     goto ldist_done;
 
   if (dump_file && (dump_flags & TDF_DETAILS))

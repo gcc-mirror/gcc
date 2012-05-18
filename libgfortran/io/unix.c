@@ -1099,9 +1099,9 @@ tempfile_open (const char *tempdir, char **fname)
 
 #if defined(HAVE_CRLF) && defined(O_BINARY)
       fd = open (template, O_RDWR | O_CREAT | O_EXCL | O_BINARY,
-		 S_IRUSR | S_IWUSR);
+		 S_IRUSR | S_IWUSR, 0600);
 #else
-      fd = open (template, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+      fd = open (template, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR, 0600);
 #endif
     }
   while (fd == -1 && errno == EEXIST);

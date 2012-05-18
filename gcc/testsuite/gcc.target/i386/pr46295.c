@@ -9,7 +9,7 @@ void Parse_Vector ()
    EXPRESS Express;
    int Terms;
    for (Terms = 0; Terms < 5; Terms++)
-     Express[Terms] = 0.0;
+     Express[Terms] = 1.0;
    Parse_Rel_Factor(Express,&Terms);
 }
 

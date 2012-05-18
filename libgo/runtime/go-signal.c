@@ -157,7 +157,6 @@ sig_handler (int sig)
 
   for (i = 0; runtime_sigtab[i].sig != -1; ++i)
     {
-      struct sigaction sa;
       SigTab *t;
 
       t = &runtime_sigtab[i];
@@ -177,21 +176,33 @@ sig_handler (int sig)
 
       runtime_startpanic ();
 
-      /* We should do a stack backtrace here.  Until we can do that,
-	 we reraise the signal in order to get a slightly better
-	 report from the shell.  */
+      {
+	const char *name = NULL;
 
-      memset (&sa, 0, sizeof sa);
+#ifdef HAVE_STRSIGNAL
+	name = strsignal (sig);
+#endif
 
-      sa.sa_handler = SIG_DFL;
+	if (name == NULL)
+	  runtime_printf ("Signal %d\n", sig);
+	else
+	  runtime_printf ("%s\n", name);
+      }
 
-      i = sigemptyset (&sa.sa_mask);
-      __go_assert (i == 0);
+      runtime_printf ("\n");
 
-      if (sigaction (sig, &sa, NULL) != 0)
-	abort ();
+      if (runtime_gotraceback ())
+	{
+	  G *g;
 
-      raise (sig);
+	  g = runtime_g ();
+	  runtime_traceback (g);
+	  runtime_tracebackothers (g);
+
+	  /* The gc library calls runtime_dumpregs here, and provides
+	     a function that prints the registers saved in context in
+	     a readable form.  */
+	}
 
       runtime_exit (2);
     }
@@ -230,11 +241,21 @@ static void
 sig_panic_info_handler (int sig, siginfo_t *info,
 			void *context __attribute__ ((unused)))
 {
-  if (runtime_g () == NULL || info->si_code == SI_USER)
+  G *g;
+
+  g = runtime_g ();
+  if (g == NULL || info->si_code == SI_USER)
     {
       sig_handler (sig);
       return;
     }
+
+  g->sig = sig;
+  g->sigcode0 = info->si_code;
+  g->sigcode1 = (uintptr_t) info->si_addr;
+
+  /* It would be nice to set g->sigpc here as the gc library does, but
+     I don't know how to get it portably.  */
 
   sig_panic_leadin (sig);
 
@@ -284,11 +305,18 @@ sig_panic_info_handler (int sig, siginfo_t *info,
 static void
 sig_panic_handler (int sig)
 {
-  if (runtime_g () == NULL)
+  G *g;
+
+  g = runtime_g ();
+  if (g == NULL)
     {
       sig_handler (sig);
       return;
     }
+
+  g->sig = sig;
+  g->sigcode0 = 0;
+  g->sigcode1 = 0;
 
   sig_panic_leadin (sig);
 

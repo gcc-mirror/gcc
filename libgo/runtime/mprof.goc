@@ -361,10 +361,11 @@ func Stack(b Slice, all bool) (n int32) {
 		g->writenbuf = b.__count;
 		USED(pc);
 		USED(sp);
-		// runtime_goroutineheader(g);
-		// runtime_traceback(pc, sp, 0, g);
-		// if(all)
-		//	runtime_tracebackothers(g);
+		runtime_goroutineheader(g);
+		runtime_traceback();
+		runtime_goroutinetrailer(g);
+		if(all)
+			runtime_tracebackothers(g);
 		n = b.__count - g->writenbuf;
 		g->writebuf = nil;
 		g->writenbuf = 0;

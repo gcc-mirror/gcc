@@ -8,9 +8,7 @@ const static char16_t	c0	= 'a';	/* { dg-error "not name a type" } */
 const static char32_t	c1	= 'a';	/* { dg-error "not name a type" } */
 
 const unsigned short	c2	= u'a';	/* { dg-error "not declared" } */
-	/* { dg-error "expected ',' or ';'" "" { target *-*-* } 10 } */
 const unsigned long	c3	= U'a';	/* { dg-error "not declared" } */
-	/* { dg-error "expected ',' or ';'" "" { target *-*-* } 12 } */
 
 #define u	1 +
 #define U	2 +

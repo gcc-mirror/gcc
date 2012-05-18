@@ -4732,7 +4732,7 @@ ipa_tm_transform_clone (struct cgraph_node *node)
   /* If this function makes no calls and has no irrevocable blocks,
      then there's nothing to do.  */
   /* ??? Remove non-aborting top-level transactions.  */
-  if (!node->callees && !d->irrevocable_blocks_clone)
+  if (!node->callees && !node->indirect_calls && !d->irrevocable_blocks_clone)
     return;
 
   current_function_decl = d->clone->symbol.decl;

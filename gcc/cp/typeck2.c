@@ -1484,7 +1484,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
   if (processing_template_decl)
     {
       if (type_dependent_expression_p (expr))
-	return build_min_nt (ARROW_EXPR, expr);
+	return build_min_nt_loc (loc, ARROW_EXPR, expr);
       expr = build_non_dependent_expr (expr);
     }
 

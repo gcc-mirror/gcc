@@ -1,3 +1,9 @@
+2012-05-17  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (add_references_to_partition): Handle external vars.
+	(partition_varpool_node_p): Likewise.
+	(lto_promote_cross_file_statics): Do not promote externals.
+
 2012-05-14  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* lto-lang.c (handle_fnspec_attribute): New static function.

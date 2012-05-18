@@ -315,7 +315,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
     case CPP_NUMBER:
       {
 	const char *suffix = NULL;
-	unsigned int flags = cpp_classify_number (parse_in, tok, &suffix);
+	unsigned int flags = cpp_classify_number (parse_in, tok, &suffix, *loc);
 
 	switch (flags & CPP_N_CATEGORY)
 	  {
@@ -417,7 +417,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
 	*cpp_spell_token (parse_in, tok, name, true) = 0;
 
-	error ("stray %qs in program", name);
+	error_at (*loc, "stray %qs in program", name);
       }
 
       goto retry;

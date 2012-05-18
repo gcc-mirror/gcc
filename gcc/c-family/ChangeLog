@@ -1,3 +1,16 @@
+2012-05-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (--pedantic-errors,-pedantic-errors): Do not handle here.
+	* c-opts.c (c_common_handle_option): Do not handle explicitly
+	Wreturn-type, Wwrite-strings, warn_ecpp, and -pedantic-errors.
+
+2012-05-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/7263
+	* c-lex.c (c_lex_with_flags):  Pass a virtual location to the call
+	to cpp_classify_number.  For diagnostics, use the precise location
+	instead of the global input_location.
+
 2012-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/11856

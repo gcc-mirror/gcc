@@ -1,3 +1,279 @@
+2012-05-18  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (FLAGS_TO_PASS): Pass $(libexecsubdir) instead of
+	$(libsubdir) as libexecsubdir.
+
+2012-05-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (print_operand): Revise code that unsafely
+	relied on signed overflow behavior.
+
+2012-05-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53346
+	* tree-loop-distribution.c (ldist_gen): Make sure to apply
+	builtin transform even when only a single partition with
+	all reads/writes exists.
+
+2012-05-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53390
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Ignore
+	strided loads.
+
+2012-05-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* tree-ssa-reassoc.c (bip_map): Remove decl.
+	(completely_remove_stmt): Remove function.
+	(remove_def_if_absorbed_call): Remove function.
+	(remove_visited_stmt_chain): Remove __builtin_powi handling.
+	(possibly_move_powi): Remove function.
+	(rewrite_expr_tree): Remove calls to possibly_move_powi.
+	(rewrite_expr_tree_parallel): Likewise.
+	(attempt_builtin_powi): Build multiplies explicitly rather than
+	relying on the ops vector and rank system.
+	(transform_stmt_to_copy): New function.
+	(transform_stmt_to_multiply): Likewise.
+	(reassociate_bb): Handle leftover operations after __builtin_powi
+	optimization; build a final multiply if necessary.
+
+2012-05-18  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (varpool_finalize_decl): Allow external decls.
+	(mark_functions_to_output): Fix sanity check.
+	* ipa.c (function_and_variable_visibility): Remove TREE_STATIC
+	check.
+
+2012-05-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (mark_symbols_for_renaming): Remove.
+	* tree-dfa.c (mark_symbols_for_renaming): Likewise.
+	* tree-inline.c (copy_edges_for_bb): Do not mark symbols for
+	renaming.
+	(copy_debug_stmt): Likewise.
+	(expand_call_inline): Likewise.
+	(declare_return_variable): Mark the return variable for renaming
+	if necessary.
+
+2012-05-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm-protos.h (arm_emit_coreregs_64bit_shift): New
+	prototype.
+	* config/arm/arm.c (arm_emit_coreregs_64bit_shift): New function.
+	* config/arm/arm.md (ashldi3): Use arm_emit_coreregs_64bit_shift.
+	(ashrdi3,lshrdi3): Likewise.
+	(arm_cond_branch): Remove '*' to enable gen_arm_cond_branch.
+
+2012-05-18  Meador Inge  <meadori@codesourcery.com>
+
+	PR rtl-optimization/53352
+	* cse.c (equiv_constant): Ignore paradoxical subregs.
+
+2012-05-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/53125
+	* regstat.c (regstat_bb_compute_ri): Take new local_live_last_luid
+	argument.  Simplify calculation of REG_LIVE_LENGTH for regnos that
+	die in the basic block.  Correctly top off REG_FREQ and
+	REG_FREQ_CALLS_CROSSED.
+	Remove do_not_gen.
+	(regstat_compute_ri): Allocate and free local_live_last_luid.
+	Remove do_not_gen.
+	(regstat_bb_compute_calls_crossed): Correctly top off
+	REG_FREQ_CALLS_CROSSED.
+
+2012-05-17  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_symtab_resolve_symbols): Preffer decl with constructor
+	over decl without.
+	* cgraph.c (cgraph_remove_node): Clear also body of unanalyzed nodes.
+	* cgraph.h (varpool_can_remove_if_no_refs): Handle external correctly.
+	* cgraphunit.c (process_function_and_variable_attributes): Finalize 
+	extrnal decls.
+	(mark_functions_to_output): Also accept bodies for functions with clones.
+	(output_in_order): Skip external vars.
+	* lto-cgraph.c (lto_output_node): External functions are never in other
+	partition.
+	(lto_output_varpool_node): Likewise.
+	* lto-streamer-out.c (lto_write_tree): Always use error_mark_nodes for
+	forgotten initializers.
+	* ipa.c (process_references): Handle external vars.
+	(symtab_remove_unreachable_nodes): Update to handle external vars.
+	(varpool_externally_visible_p): External vars are externally visible.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Update.
+	* varpool.c (varpool_remove_node): Remove constructor.
+	(decide_is_variable_needed): Handle externals.
+	(varpool_remove_unreferenced_decls): Likewise.
+
+2012-05-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* opts.c (common_handle_option): -pedantic-errors enables -Wpedantic.
+	(enable_warning_as_error): Do not special case Wuninitialized.
+	* optc-gen.awk: Add sanity checks.
+
+2012-05-17  Jan Hubicka   <jh@suse.cz>
+
+	* ipa-reference.c (is_proper_for_analysis): Do not check flags
+	that might change as result of global optimization.
+	(analyze_function): Do not check analyzed and externally_visible
+	flags; be happy about address dereferences.
+	(propagate): Prune all_module_statics so it really contains just
+	statics; prune all the local summaries.
+	(ipa_reference_write_optimization_summary): Simplify.
+
+2012-05-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/m68k/m68k-devices.def: Add 51ag, 51je, 51jf, 51jg, 51mm,
+	51qm.
+	* config/m68k/m68k-tables.opt: Regenerated.
+	* doc/invoke.texi (M680x0 Options): Document.
+
+2012-05-16  Dave Boutcher  <daveboutcher@gmail.com>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	* trans-mem.c (ipa_tm_transform_clone): Transform functions with
+	indirect calls.
+
+2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2012-05-16  Andrew Pinski  <apinski@cavium.com>
+
+	* gimple-fold.c (get_maxval_strlen): Move COND_EXPR handling under
+	GIMPLE_ASSIGN.
+
+2012-05-16  David S. Miller  <davem@davemloft.net>
+
+	* jump.c (delete_related_insns): If we remove a CALL, make sure
+	we delete it's NOTE_INSN_CALL_ARG_LOCATION note too.
+
+2012-05-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/53217
+	* tree-ssa-reassoc.c (bip_map): New static variable.
+	(possibly_move_powi): Move feeding multiplies with __builtin_powi call.
+	(attempt_builtin_powi): Save feeding multiplies on a stack.
+	(reassociate_bb): Create and destroy bip_map.
+
+2012-05-16  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (install-no-fixedincludes): New target, former toplevel
+	gcc-no-fixedincludes. Stash "include-fixed" in addition to "include".
+	Add comments and improve stamp preservation across the whole sequence.
+	(stmp-int-hdrs): Use move-if-change + cp -p to setup fix_dir/limits.h.
+
+2012-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (insert_init_stmt): Do not call
+	mark_symbols_for_renaming.
+	(setup_one_parameter): Avoid initializing unused parameters.
+	(declare_return_variable): Properly handle DECL_BY_REFERENCE
+	return vars in SSA form.
+
+2012-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (get_virtual_var): Remove.
+	* tree-dfa.c (get_virtual_var): Likewise.
+
+2012-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1):
+	Remove set-only bitmap of new names.
+	(slpeel_tree_peel_loop_to_edge): Likewise.  Do not set
+	CFG hooks.
+	* tree-flow.h (ssa_names_to_replace): Remove.
+	* tree-into-ssa.c (ssa_names_to_replace): Likewise.
+
+2012-05-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53364
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Properly
+	detect a view-conversion of the decl.
+
+2012-05-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/7263
+	* c-tree.h (enum c_declspec_word): Declare new enum.
+	(struct c_declspecs::locations): New member.
+	(declspecs_add_qual, declspecs_add_scspec)
+	(declspecs_add_addrspace, declspecs_add_alignas): Take a new
+	location parameter.
+	* c-decl.c (build_null_declspecs): Initialize the new struct
+	c_declspecs::locations member.
+	(declspecs_add_addrspace): Take a location parameter for the
+	address space.  Store it onto declaration specifiers.
+	(declspecs_add_qual): Likewise, take a location parameter for the
+	qualifier.
+	(declspecs_add_type): Likewise, take a location parameter for the
+	type specifier.
+	(declspecs_add_scspec): Likewise, take a location parameter for
+	the storage class specifier.
+	(declspecs_add_attrs): Likewise, take a location parameter for the
+	first attribute.
+	(declspecs_add_alignas): Likewise, take a location parameter for
+	the alignas token.
+	(finish_declspecs): For diagnostics, use the location of the
+	relevant declspec, instead of the global input_location.
+	* c-parser.c (c_parser_parameter_declaration): Pass the precise
+	virtual location of the declspec to the declspecs-setters.
+	(c_parser_declspecs): Likewise.  Avoid calling c_parser_peek_token
+	repeatedly.
+
+2012-05-16  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* configure.ac: Stack protector enabling for Android targets.
+	* configure: Regenerate.
+
+2012-05-16  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* ira.c (pseudo_move_insn): Delete.
+	(find_moveable_pseudos): Don't set it.
+	(move_unallocated_pseudos): Use DF_REG_DEF_CHAIN to find
+	the definitions of the original pseudo.  Delete all of them.
+
+2012-05-16  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/rs6000-opts.h (enum processor_type): Add
+	PROCESSOR_PPC8548.
+	* config/rs6000/rs6000-cpus.def: Reference it for cpu="8548".
+	* config/rs6000/rs6000.md (cpu attribute definition): Add ppc8548.
+	* config/rs6000/8540.md: indicate that the units/patterns apply to
+	ppc8548 as well.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Rename
+	default_cpu into implicit_cpu, conveying what --with-cpu was passed at
+	configure time. Treat implicit_cpu as have_CPU. Pick defaults for SPE
+	related flags,	check that what is queried is supported by the selected
+	configuration. Rework the single/double_float and MASK_STRING resets to
+	hit for all the E500 cores (854x + E500MC variants). Select the ppc8540
+	costs for PROCESSOR_PPC8548 as well.
+	(rs6000_issue_rate): case CPU_PPC8548 together with CPU_PPC8540.
+	(rs6000_use_sched_lookahead): Likewise, rewriting function as a case
+	statement instead of a sequence of ifs.
+
+	* config/rs6000/rs6000.h (TARGET_E500): Remove.
+	(TARGET_NO_LWSYNC): Adjust accordingly.
+	* config/rs6000/e500.h (TARGET_E500): Remove.
+	(CHECK_E500_OPTIONS): Adjust accordingly.
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Remove.
+	(TARGET_DEFAULT): Reformat definition to match the one in linuxspe.h.
+	* config/rs6000/linuxspe.h: Likewise.
+	* config/rs6000/vxworks.h: Remove bogus TARGET_E500 overrides and
+	superfluous comments.
+	* config/rs6000/e500-double.h: Remove.
+
+	* config.gcc (pick a default with_cpu): For powerpc*-*-*spe*,
+	default to with_cpu=8548 if --enable-e500-double, and to 8540
+	otherwise.
+	(set misc flags section): For powerpc*|rs6000*, remove inclusion
+	of e500-double.h for --enable-e500-double.
+
+2012-05-16  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (s-header-vars): Resort to -n instead of trailing
+	-e d in sed invocation.
+
 2012-05-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/tm.texi.in (Type Layout) <SIZE_TYPE>: Update reference to

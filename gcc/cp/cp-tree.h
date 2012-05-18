@@ -4647,7 +4647,9 @@ typedef enum cp_storage_class {
   sc_mutable
 } cp_storage_class;
 
-/* An individual decl-specifier.  */
+/* An individual decl-specifier.  This is used to index the array of
+   locations for the declspecs in struct cp_decl_specifier_seq
+   below.  */
 
 typedef enum cp_decl_spec {
   ds_first,
@@ -4667,17 +4669,20 @@ typedef enum cp_decl_spec {
   ds_constexpr,
   ds_complex,
   ds_thread,
-  ds_last
+  ds_type_spec,
+  ds_redefined_builtin_type_spec,
+  ds_attribute,
+  ds_storage_class,
+  ds_long_long,
+  ds_last /* This enumerator must always be the last one.  */
 } cp_decl_spec;
 
 /* A decl-specifier-seq.  */
 
 typedef struct cp_decl_specifier_seq {
-  /* The number of times each of the keywords has been seen.  */
-  unsigned specs[(int) ds_last];
-  /* The location of the primary type. Mainly used for error
-     reporting.  */
-  location_t type_location;
+  /* An array of locations for the declaration sepecifiers, indexed by
+     enum cp_decl_spec_word.  */
+  source_location locations[ds_last];
   /* The primary type, if any, given by the decl-specifier-seq.
      Modifiers, like "short", "const", and "unsigned" are not
      reflected here.  This field will be a TYPE, unless a typedef-name
@@ -4826,6 +4831,8 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   /* True if the location is in a system header.  */
   bool in_system_header_p;
 };
+
+bool decl_spec_seq_has_spec_p (const cp_decl_specifier_seq *, cp_decl_spec);
 
 /* Return the type of the `this' parameter of FNTYPE.  */
 
@@ -5684,7 +5691,8 @@ extern bool lvalue_or_rvalue_with_address_p	(const_tree);
 extern bool xvalue_p	                        (const_tree);
 extern bool builtin_valid_in_constant_expr_p    (const_tree);
 extern tree build_min				(enum tree_code, tree, ...);
-extern tree build_min_nt			(enum tree_code, ...);
+extern tree build_min_nt_loc			(location_t, enum tree_code,
+						 ...);
 extern tree build_min_non_dep			(enum tree_code, tree, ...);
 extern tree build_min_non_dep_call_vec		(tree, tree, VEC(tree,gc) *);
 extern tree build_cplus_new			(tree, tree, tsubst_flags_t);
@@ -5813,7 +5821,8 @@ extern tree build_x_binary_op			(location_t,
 						 enum tree_code, tree,
 						 enum tree_code, tree *,
 						 tsubst_flags_t);
-extern tree build_x_array_ref			(tree, tree, tsubst_flags_t);
+extern tree build_x_array_ref			(location_t, tree, tree,
+						 tsubst_flags_t);
 extern tree build_x_unary_op			(location_t,
 						 enum tree_code, tree,
                                                  tsubst_flags_t);
@@ -5822,12 +5831,13 @@ extern tree cp_build_addr_expr_strict		(tree, tsubst_flags_t);
 extern tree cp_build_unary_op                   (enum tree_code, tree, int, 
                                                  tsubst_flags_t);
 extern tree unary_complex_lvalue		(enum tree_code, tree);
-extern tree build_x_conditional_expr		(tree, tree, tree, 
+extern tree build_x_conditional_expr		(location_t, tree, tree, tree, 
                                                  tsubst_flags_t);
 extern tree build_x_compound_expr_from_list	(tree, expr_list_kind,
 						 tsubst_flags_t);
 extern tree build_x_compound_expr_from_vec	(VEC(tree,gc) *, const char *);
-extern tree build_x_compound_expr		(tree, tree, tsubst_flags_t);
+extern tree build_x_compound_expr		(location_t, tree, tree,
+						 tsubst_flags_t);
 extern tree build_compound_expr                 (location_t, tree, tree);
 extern tree cp_build_compound_expr		(tree, tree, tsubst_flags_t);
 extern tree build_static_cast			(tree, tree, tsubst_flags_t);
@@ -5835,7 +5845,8 @@ extern tree build_reinterpret_cast		(tree, tree, tsubst_flags_t);
 extern tree build_const_cast			(tree, tree, tsubst_flags_t);
 extern tree build_c_cast			(location_t, tree, tree);
 extern tree cp_build_c_cast			(tree, tree, tsubst_flags_t);
-extern tree build_x_modify_expr			(tree, enum tree_code, tree,
+extern tree build_x_modify_expr			(location_t, tree,
+						 enum tree_code, tree,
 						 tsubst_flags_t);
 extern tree cp_build_modify_expr		(tree, enum tree_code, tree,
 						 tsubst_flags_t);

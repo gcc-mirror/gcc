@@ -62,18 +62,11 @@ can_refer_decl_in_current_unit_p (tree decl)
   if (!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
     return true;
   /* External flag is set, so we deal with C++ reference
-     to static object from other file.  */
+     to static object from other file.
+     We also may see weakref that is always safe.  */
   if (DECL_EXTERNAL (decl) && TREE_STATIC (decl)
       && TREE_CODE (decl) == VAR_DECL)
-    {
-      /* Just be sure it is not big in frontend setting
-	 flags incorrectly.  Those variables should never
-	 be finalized.  */
-      gcc_checking_assert (!(vnode = varpool_get_node (decl))
-			   || vnode->alias
-			   || !vnode->finalized);
-      return false;
-    }
+    return lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)) != NULL;
   /* When function is public, we always can introduce new reference.
      Exception are the COMDAT functions where introducing a direct
      reference imply need to include function body in the curren tunit.  */
@@ -670,13 +663,10 @@ get_maxval_strlen (tree arg, tree *length, bitmap visited, int type)
 
   if (TREE_CODE (arg) != SSA_NAME)
     {
-      if (TREE_CODE (arg) == COND_EXPR)
-        return get_maxval_strlen (COND_EXPR_THEN (arg), length, visited, type)
-               && get_maxval_strlen (COND_EXPR_ELSE (arg), length, visited, type);
       /* We can end up with &(*iftmp_1)[0] here as well, so handle it.  */
-      else if (TREE_CODE (arg) == ADDR_EXPR
-	       && TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF
-	       && integer_zerop (TREE_OPERAND (TREE_OPERAND (arg, 0), 1)))
+      if (TREE_CODE (arg) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF
+	  && integer_zerop (TREE_OPERAND (TREE_OPERAND (arg, 0), 1)))
 	{
 	  tree aop0 = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
 	  if (TREE_CODE (aop0) == INDIRECT_REF
@@ -735,6 +725,13 @@ get_maxval_strlen (tree arg, tree *length, bitmap visited, int type)
           {
             tree rhs = gimple_assign_rhs1 (def_stmt);
             return get_maxval_strlen (rhs, length, visited, type);
+          }
+	else if (gimple_assign_rhs_code (def_stmt) == COND_EXPR)
+	  {
+	    tree op2 = gimple_assign_rhs2 (def_stmt);
+	    tree op3 = gimple_assign_rhs3 (def_stmt);
+	    return get_maxval_strlen (op2, length, visited, type)
+		   && get_maxval_strlen (op3, length, visited, type);
           }
         return false;
 
