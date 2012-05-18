@@ -12,7 +12,7 @@ void f()
 {
 	int i;
 	struct s s;
-	for (i = 0; i < sizeof(s.x) / sizeof(*s.x); i++) s.x[i] = 0;
+	for (i = 0; i < sizeof(s.x) / sizeof(*s.x); i++) s.x[i] = 1;
 	g(&s);
 }
 

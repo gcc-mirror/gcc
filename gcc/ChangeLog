@@ -1,5 +1,12 @@
 2012-05-18  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/53346
+	* tree-loop-distribution.c (ldist_gen): Make sure to apply
+	builtin transform even when only a single partition with
+	all reads/writes exists.
+
+2012-05-18  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53390
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Ignore
 	strided loads.
