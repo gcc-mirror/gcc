@@ -1,3 +1,8 @@
+2012-05-18  Meador Inge  <meadori@codesourcery.com>
+
+	PR rtl-optimization/53352
+	* gcc.dg/pr53352.c: New test.
+
 2012-05-17  David S. Miller  <davem@davemloft.net>
 
 	* gfortran.dg/bessel_7.f90: Bump allowed precision to avoid
