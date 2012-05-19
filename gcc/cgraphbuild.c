@@ -54,7 +54,7 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
   tree decl;
   struct record_reference_ctx *ctx = (struct record_reference_ctx *)data;
 
-  t = canonicalize_constructor_val (t);
+  t = canonicalize_constructor_val (t, NULL);
   if (!t)
     t = *tp;
   else if (t != *tp)

@@ -1,3 +1,18 @@
+2012-05-18  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphbuild.c (record_reference): Update.
+	* lto-cgraph.c (lto_output_varpool_node): External vars
+	are not in other partition even if they are not output
+	in current partition.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Take FROM_DECL
+	argument; fix.
+	(canonicalize_constructor_val): Take FROM_DECL argument.
+	(fold_ctor_reference, fold_string_cst_ctor_reference,
+	fold_array_ctor_reference, fold_nonarray_ctor_reference,
+	fold_ctor_reference): Likewise.
+	(fold_const_aggregate_ref_1, gimple_get_virt_method_for_binfo): Update.
+	* gimple.h (gimple_fold_builtin): Likewise.
+
 2012-05-18  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in (FLAGS_TO_PASS): Pass $(libexecsubdir) instead of
