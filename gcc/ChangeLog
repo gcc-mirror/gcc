@@ -1,3 +1,14 @@
+2012-05-18  David S. Miller  <davem@davemloft.net>
+
+	Backport r185385 from mainline.
+	2012-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52584
+	* tree-vect-generic.c (type_for_widest_vector_mode): Take
+	element type instead of mode, use build_vector_type_for_mode
+	instead of the langhook, build a vector of proper signedness.
+	(expand_vector_operations_1): Adjust.
+
 2012-05-18  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in (FLAGS_TO_PASS): Pass $(libexecsubdir) instead of
