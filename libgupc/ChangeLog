@@ -1,3 +1,11 @@
+2012-05-19  Gary Funck  <gary@intrepid.com>
+
+	* smp/upc_main.c (__upc_per_thread_init):
+	Change the declaration of GUPCR_INIT_ARRAY_START
+	and GUPCR_INIT_ARRAY_END so that the optimizer does
+	not conclude that the per-thread initialization procedure table
+	has only a single element.
+
 2012-05-04  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Check for gupc driver only.

@@ -586,8 +586,8 @@ static void
 __upc_per_thread_init (upc_info_p u)
 {
   typedef void (*func_ptr_t) (void);
-  extern func_ptr_t GUPCR_INIT_ARRAY_START[1];
-  extern func_ptr_t GUPCR_INIT_ARRAY_END[1];
+  extern func_ptr_t GUPCR_INIT_ARRAY_START[];
+  extern func_ptr_t GUPCR_INIT_ARRAY_END[];
   const int n_init = (int)(GUPCR_INIT_ARRAY_END - GUPCR_INIT_ARRAY_START);
   int i;
   __upc_vm_init_per_thread ();
