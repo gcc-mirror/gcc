@@ -1,6 +1,15 @@
+2012-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2012-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-pre.c (can_value_number_call): Delete.
+	(compute_avail): Skip all statements with side effects.
+	<GIMPLE_CALL>: Skip calls to internal functions.
+
 2012-05-18  David S. Miller  <davem@davemloft.net>
 
-	Backport r185385 from mainline.
+	Backport r185385 from mainline
 	2012-03-14  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52584

@@ -2618,19 +2618,6 @@ compute_antic (void)
   sbitmap_free (changed_blocks);
 }
 
-/* Return true if we can value number the call in STMT.  This is true
-   if we have a pure or constant call to a real function.  */
-
-static bool
-can_value_number_call (gimple stmt)
-{
-  if (gimple_call_internal_p (stmt))
-    return false;
-  if (gimple_call_flags (stmt) & (ECF_PURE | ECF_CONST))
-    return true;
-  return false;
-}
-
 /* Return true if OP is a tree which we can perform PRE on.
    This may not match the operations we can value number, but in
    a perfect world would.  */
@@ -3959,8 +3946,7 @@ compute_avail (void)
 	     or control flow.
 	     If this isn't a call or it is the last stmt in the
 	     basic-block then the CFG represents things correctly.  */
-	  if (is_gimple_call (stmt)
-	      && !stmt_ends_bb_p (stmt))
+	  if (is_gimple_call (stmt) && !stmt_ends_bb_p (stmt))
 	    {
 	      /* Non-looping const functions always return normally.
 		 Otherwise the call might not return or have side-effects
@@ -3982,8 +3968,7 @@ compute_avail (void)
 	      bitmap_value_insert_into_set (AVAIL_OUT (block), e);
 	    }
 
-	  if (gimple_has_volatile_ops (stmt)
-	      || stmt_could_throw_p (stmt))
+	  if (gimple_has_side_effects (stmt) || stmt_could_throw_p (stmt))
 	    continue;
 
 	  switch (gimple_code (stmt))
@@ -4001,7 +3986,8 @@ compute_avail (void)
 		pre_expr result = NULL;
 		VEC(vn_reference_op_s, heap) *ops = NULL;
 
-		if (!can_value_number_call (stmt))
+		/* We can value number only calls to real functions.  */
+		if (gimple_call_internal_p (stmt))
 		  continue;
 
 		copy_reference_ops_from_call (stmt, &ops);
