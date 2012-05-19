@@ -852,115 +852,6 @@ output_function (struct cgraph_node *node)
 }
 
 
-/* Used to pass data to trivally_defined_alias callback.  */
-struct sets {
-  cgraph_node_set set;
-  varpool_node_set vset;
-};
-
-
-/* Return true if alias pair P belongs to the set of cgraph nodes in
-   SET.  If P is a an alias for a VAR_DECL, it can always be emitted.
-   However, for FUNCTION_DECL aliases, we should only output the pair
-   if it belongs to a function whose cgraph node is in SET.
-   Otherwise, the LTRANS phase will get into trouble when finalizing
-   aliases because the alias will refer to a function not defined in
-   the file processed by LTRANS.  */
-
-static bool
-trivally_defined_alias (tree decl ATTRIBUTE_UNUSED,
-			tree target, void *data)
-{
-  struct sets *set = (struct sets *) data;
-  struct cgraph_node *fnode = NULL;
-  struct varpool_node *vnode = NULL;
-
-  fnode = cgraph_node_for_asm (target);
-  if (fnode)
-    return cgraph_node_in_set_p (fnode, set->set);
-  vnode = varpool_node_for_asm (target);
-  return vnode && varpool_node_in_set_p (vnode, set->vset);
-}
-
-/* Return true if alias pair P should be output in the current
-   partition contains cgrpah nodes SET and varpool nodes VSET.
-   DEFINED is set of all aliases whose targets are defined in
-   the partition.
-
-   Normal aliases are output when they are defined, while WEAKREF
-   aliases are output when they are used.  */
-
-static bool
-output_alias_pair_p (alias_pair *p, symbol_alias_set_t *defined,
-		     cgraph_node_set set, varpool_node_set vset)
-{
-  struct cgraph_node *node;
-  struct varpool_node *vnode;
-
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
-    {
-      if (TREE_CODE (p->decl) == VAR_DECL)
-	{
-	  vnode = varpool_get_node (p->decl);
-	  return (vnode
-		  && referenced_from_this_partition_p (&vnode->symbol.ref_list,
-						      set, vset));
-	}
-      node = cgraph_get_node (p->decl);
-      return (node
-	      && (referenced_from_this_partition_p (&node->symbol.ref_list,
-						    set, vset)
-		  || reachable_from_this_partition_p (node, set)));
-    }
-  else
-    return symbol_alias_set_contains (defined, p->decl);
-}
-
-/* Output any unreferenced global symbol defined in SET, alias pairs
-   and labels.  */
-
-static void
-output_unreferenced_globals (cgraph_node_set set, varpool_node_set vset)
-{
-  struct output_block *ob;
-  alias_pair *p;
-  unsigned i;
-  symbol_alias_set_t *defined;
-  struct sets setdata;
-
-  setdata.set = set;
-  setdata.vset = vset;
-
-  ob = create_output_block (LTO_section_static_initializer);
-  ob->cgraph_node = NULL;
-
-  clear_line_info (ob);
-
-  /* Make string 0 be a NULL string.  */
-  streamer_write_char_stream (ob->string_stream, 0);
-
-  /* We really need to propagate in both directoins:
-     for normal aliases we propagate from first defined alias to
-     all aliases defined based on it.  For weakrefs we propagate in
-     the oposite direction.  */
-  defined = propagate_aliases_backward (trivally_defined_alias, &setdata);
-
-  /* Emit the alias pairs for the nodes in SET.  */
-  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
-    if (output_alias_pair_p (p, defined, set, vset))
-      {
-	stream_write_tree (ob, p->decl, true);
-	stream_write_tree (ob, p->target, true);
-      }
-  symbol_alias_set_destroy (defined);
-
-  streamer_write_record_start (ob, LTO_null);
-
-  produce_asm (ob, NULL);
-  destroy_output_block (ob);
-}
-
-
 /* Emit toplevel asms.  */
 
 void
@@ -1387,8 +1278,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
    SET and VSET are cgraph/varpool node sets we are outputting.  */
 
 static void
-produce_symtab (struct output_block *ob,
-	        cgraph_node_set set, varpool_node_set vset)
+produce_symtab (struct output_block *ob)
 {
   struct streamer_tree_cache_d *cache = ob->writer_cache;
   char *section_name = lto_get_section_name (LTO_section_symtab, NULL, NULL);
@@ -1399,12 +1289,6 @@ produce_symtab (struct output_block *ob,
   lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
   lto_cgraph_encoder_t encoder = ob->decl_state->cgraph_node_encoder;
   int i;
-  alias_pair *p;
-  struct sets setdata;
-  symbol_alias_set_t *defined;
-
-  setdata.set = set;
-  setdata.vset = vset;
 
   lto_begin_section (section_name, false);
   free (section_name);
@@ -1478,13 +1362,6 @@ produce_symtab (struct output_block *ob,
       write_symbol (cache, &stream, vnode->symbol.decl, seen, false);
     }
 
-  /* Write all aliases.  */
-  defined = propagate_aliases_backward (trivally_defined_alias, &setdata);
-  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
-    if (output_alias_pair_p (p, defined, set, vset))
-      write_symbol (cache, &stream, p->decl, seen, true);
-  symbol_alias_set_destroy (defined);
-
   lto_write_stream (&stream);
   pointer_set_destroy (seen);
 
@@ -1499,7 +1376,8 @@ produce_symtab (struct output_block *ob,
    recover these on other side.  */
 
 static void
-produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
+produce_asm_for_decls (cgraph_node_set set ATTRIBUTE_UNUSED,
+		       varpool_node_set vset ATTRIBUTE_UNUSED)
 {
   struct lto_out_decl_state *out_state;
   struct lto_out_decl_state *fn_out_state;
@@ -1514,11 +1392,6 @@ produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
   ob = create_output_block (LTO_section_decls);
   ob->global = true;
 
-  /* Write out unreferenced globals, alias pairs and labels.  We defer
-     doing this until now so that we can write out only what is
-     needed.  */
-  output_unreferenced_globals (set, vset);
-
   memset (&header, 0, sizeof (struct lto_decl_header));
 
   section_name = lto_get_section_name (LTO_section_decls, NULL, NULL);
@@ -1527,6 +1400,8 @@ produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
 
   /* Make string 0 be a NULL string.  */
   streamer_write_char_stream (ob->string_stream, 0);
+
+  gcc_assert (!alias_pairs);
 
   /* Write the global symbols.  */
   out_state = lto_get_out_decl_state ();
@@ -1591,7 +1466,7 @@ produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
   /* Write the symbol table.  It is used by linker to determine dependencies
      and thus we can skip it for WPA.  */
   if (!flag_wpa)
-    produce_symtab (ob, set, vset);
+    produce_symtab (ob);
 
   /* Write command line opts.  */
   lto_write_options ();
