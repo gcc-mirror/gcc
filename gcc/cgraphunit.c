@@ -205,6 +205,7 @@ static void expand_all_functions (void);
 static void mark_functions_to_output (void);
 static void expand_function (struct cgraph_node *);
 static void cgraph_analyze_function (struct cgraph_node *);
+static void handle_alias_pairs (void);
 
 FILE *cgraph_dump_file;
 
@@ -284,6 +285,8 @@ cgraph_process_new_functions (void)
 
   if (!cgraph_new_nodes)
     return false;
+  finish_aliases_1 ();
+  handle_alias_pairs ();
   /*  Note that this queue may grow as its being processed, as the new
       functions may generate new ones.  */
   for (csi = csi_start (cgraph_new_nodes); !csi_end_p (csi); csi_next (&csi))
@@ -1089,6 +1092,7 @@ handle_alias_pairs (void)
 	  VEC_unordered_remove (alias_pair, alias_pairs, i);
 	}
     }
+  VEC_free (alias_pair, gc, alias_pairs);
 }
 
 

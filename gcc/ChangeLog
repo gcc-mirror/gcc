@@ -1,5 +1,19 @@
 2012-05-18  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphunit.c (handle_alias_pairs): Declare; free alias_pairs
+	(cgraph_process_new_functions): Process also aliases.
+	* lto-streamer-out.c (struct sets): Remove.
+	(trivally_defined_alias): Remove.
+	(output_alias_pair_p): Remove.
+	(output_unreferenced_globals): Remove.
+	(produce_symtab); Do not handle alias pairs.
+	(produce_asm_for_decls): Likewise.
+	* lto-streamer-in.c (input_alias_pairs): Remove.
+	(lto_read_body): Do not input alias pairs.
+	(lto_input_constructors_and_inits): Remove.
+
+2012-05-18  Jan Hubicka  <jh@suse.cz>
+
 	* cgraphunit.c (handle_alias_pairs): Cleanup; handle all types of aliases.
 
 2012-05-18  Jan Hubicka  <jh@suse.cz>

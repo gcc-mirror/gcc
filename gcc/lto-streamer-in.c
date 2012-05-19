@@ -931,39 +931,6 @@ input_function (tree fn_decl, struct data_in *data_in,
 }
 
 
-/* Read initializer expressions for public statics.  DATA_IN is the
-   file being read.  IB is the input block used for reading.  */
-
-static void
-input_alias_pairs (struct lto_input_block *ib, struct data_in *data_in)
-{
-  tree var;
-
-  clear_line_info (data_in);
-
-  var = stream_read_tree (ib, data_in);
-  while (var)
-    {
-      const char *orig_name, *new_name;
-      alias_pair *p;
-
-      p = VEC_safe_push (alias_pair, gc, alias_pairs, NULL);
-      p->decl = var;
-      p->target = stream_read_tree (ib, data_in);
-
-      /* If the target is a static object, we may have registered a
-	 new name for it to avoid clashes between statics coming from
-	 different files.  In that case, use the new name.  */
-      orig_name = IDENTIFIER_POINTER (p->target);
-      new_name = lto_get_decl_name_mapping (data_in->file_data, orig_name);
-      if (strcmp (orig_name, new_name) != 0)
-	p->target = get_identifier (new_name);
-
-      var = stream_read_tree (ib, data_in);
-    }
-}
-
-
 /* Read the body from DATA for function FN_DECL and fill it in.
    FILE_DATA are the global decls and types.  SECTION_TYPE is either
    LTO_section_function_body or LTO_section_static_initializer.  If
@@ -1059,10 +1026,6 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
 
       pop_cfun ();
     }
-  else
-    {
-      input_alias_pairs (&ib_main, data_in);
-    }
 
   clear_line_info (data_in);
   lto_data_in_delete (data_in);
@@ -1078,17 +1041,6 @@ lto_input_function_body (struct lto_file_decl_data *file_data,
 {
   current_function_decl = fn_decl;
   lto_read_body (file_data, fn_decl, data, LTO_section_function_body);
-}
-
-
-/* Read in VAR_DECL using DATA.  FILE_DATA holds the global decls and
-   types.  */
-
-void
-lto_input_constructors_and_inits (struct lto_file_decl_data *file_data,
-				  const char *data)
-{
-  lto_read_body (file_data, NULL, data, LTO_section_static_initializer);
 }
 
 
