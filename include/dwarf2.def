@@ -167,7 +167,7 @@ DW_TAG (DW_TAG_GNU_formal_parameter_pack, 0x4108)
    are properly part of DWARF 5.  */
 DW_TAG (DW_TAG_GNU_call_site, 0x4109)
 DW_TAG (DW_TAG_GNU_call_site_parameter, 0x410a)
-/* Extensions for UPC.  See: http://upc.gwu.edu/~upc.  */
+/* Extensions for UPC.  See: http://dwarfstd.org/doc/DWARF4.pdf.  */
 DW_TAG (DW_TAG_upc_shared_type, 0x8765)
 DW_TAG (DW_TAG_upc_strict_type, 0x8766)
 DW_TAG (DW_TAG_upc_relaxed_type, 0x8767)

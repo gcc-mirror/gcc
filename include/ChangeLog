@@ -1,3 +1,8 @@
+2012-05-19  Gary Funck  <gary@intrepid.com>
+
+	* dwarf2.def: Update comment re: UPC extensions to reference
+	DWARF4 specification.
+
 2012-05-02  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2.def: Remove DW_FORM_GNU_ref_index,
