@@ -1,3 +1,11 @@
+2012-05-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR rtl-optimzation/53373
+	* config/pa/pa.md (call_symref_pic): Don't expose PIC register save in
+	call pattern.  Update split patterns.
+	(call_symref_64bit, call_reg_pic, call_reg_64bit, call_val_symref_pic,
+	call_val_symref_64bit, call_val_reg_pic, call_val_reg_64bit): Likewise.
+
 2012-05-20  Razya Ladelsky  <razya@il.ibm.com>
 	
 	* tree-parloops.c (gen_parallel_loop): Change many_iterations_cond for outer loops.
