@@ -1,3 +1,14 @@
+2012-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (Has_Thiscall_Convention): New macro.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Test it to set the thiscall
+	calling convention
+	(get_minimal_subprog_decl): Likewise.
+	(gnat_first_param_is_class): New predicate.
+
+	* gcc-interface/misc.c (gnat_handle_option): Fix formatting.
+	* gcc-interface/Makefile.in: Likewise.
+
 2012-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: For an object at
