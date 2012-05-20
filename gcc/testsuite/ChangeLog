@@ -1,3 +1,8 @@
+2012-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto13.adb: New test.
+	* gnat.dg/lto13_pkg.ad[sb]: New helper.
+
 2012-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/lto12.ads: New test.
