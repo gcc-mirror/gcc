@@ -1,3 +1,11 @@
+2012-05-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2012-05-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support
+	RDRND, F16C and FSGSBASE.
+
 2012-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure: Regenerate.

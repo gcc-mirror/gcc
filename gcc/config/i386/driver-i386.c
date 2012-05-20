@@ -397,6 +397,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_pclmul = 0, has_abm = 0, has_lwp = 0;
   unsigned int has_fma = 0, has_fma4 = 0, has_xop = 0;
   unsigned int has_bmi = 0, has_tbm = 0;
+  unsigned int has_rdrnd = 0, has_f16c = 0, has_fsgsbase = 0;
 
   bool arch;
 
@@ -444,12 +445,21 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   has_aes = ecx & bit_AES;
   has_pclmul = ecx & bit_PCLMUL;
   has_fma = ecx & bit_FMA;
+  has_f16c = ecx & bit_F16C;
+  has_rdrnd = ecx & bit_RDRND;
 
   has_cmpxchg8b = edx & bit_CMPXCHG8B;
   has_cmov = edx & bit_CMOV;
   has_mmx = edx & bit_MMX;
   has_sse = edx & bit_SSE;
   has_sse2 = edx & bit_SSE2;
+
+  if (max_level >= 7)
+    {
+      __cpuid_count (7, 0, eax, ebx, ecx, edx);
+
+      has_fsgsbase = ebx & bit_FSGSBASE;
+    }
 
   /* Check cpuid level of extended features.  */
   __cpuid (0x80000000, ext_level, ebx, ecx, edx);
@@ -711,10 +721,13 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *avx = has_avx ? " -mavx" : " -mno-avx";
       const char *sse4_2 = has_sse4_2 ? " -msse4.2" : " -mno-sse4.2";
       const char *sse4_1 = has_sse4_1 ? " -msse4.1" : " -mno-sse4.1";
+      const char *rdrnd = has_rdrnd ? " -mrdrnd" : " -mno-rdrnd";
+      const char *f16c = has_f16c ? " -mf16c" : " -mno-f16c";
+      const char *fsgsbase = has_fsgsbase ? " -mfsgsbase" : " -mno-fsgsbase";
 
       options = concat (options, cx16, sahf, movbe, ase, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, tbm,
-			avx, sse4_2, sse4_1, NULL);
+			avx, sse4_2, sse4_1, rdrnd, f16c, fsgsbase, NULL);
     }
 
 done:
