@@ -1,3 +1,10 @@
+2012-05-19  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c (upc_lang_layout_decl): Ignore declarations of
+	an array of shared type declarations if the size of the
+	array is zero.  This avoids a segfault when processing
+	the UPC blocking factor.
+
 2012-05-08  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* gupcspec.c (lang_specific_driver): Improve handling of

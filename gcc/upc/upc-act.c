@@ -966,7 +966,9 @@ upc_lang_layout_decl (tree decl, tree type)
     t = TREE_TYPE (t);
 
   if (TREE_CODE (t) == ARRAY_TYPE
-      && TYPE_SIZE (type) != NULL_TREE && upc_shared_type_p (TREE_TYPE (t)))
+      && TYPE_SIZE (type) != NULL_TREE
+      && !integer_zerop (TYPE_SIZE (type))
+      && upc_shared_type_p (TREE_TYPE (t)))
     {
       const tree elt_type = TREE_TYPE (t);
       const tree elt_size = TYPE_SIZE (elt_type);
