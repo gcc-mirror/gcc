@@ -1,3 +1,7 @@
+2012-05-20  Razya Ladelsky  <razya@il.ibm.com>
+	
+	* tree-parloops.c (gen_parallel_loop): Change many_iterations_cond for outer loops.
+
 2012-05-18  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (handle_alias_pairs): Declare; free alias_pairs
