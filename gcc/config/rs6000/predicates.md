@@ -1,5 +1,5 @@
 ;; Predicate definitions for POWER and PowerPC.
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -824,8 +824,8 @@
 
 ;; Return 1 if this operand is a valid input for a move insn.
 (define_predicate "input_operand"
-  (match_code "label_ref,symbol_ref,const,high,reg,subreg,mem,
-	       const_double,const_vector,const_int,plus")
+  (match_code "symbol_ref,const,reg,subreg,mem,
+	       const_double,const_vector,const_int")
 {
   /* Memory is always valid.  */
   if (memory_operand (op, mode))
@@ -833,7 +833,6 @@
 
   /* For floating-point, easy constants are valid.  */
   if (SCALAR_FLOAT_MODE_P (mode)
-      && CONSTANT_P (op)
       && easy_fp_constant (op, mode))
     return 1;
 
@@ -866,14 +865,6 @@
   if (register_operand (op, mode))
     return 1;
 
-  /* A SYMBOL_REF referring to the TOC is valid.  */
-  if (legitimate_constant_pool_address_p (op, mode, false))
-    return 1;
-
-  /* A constant pool expression (relative to the TOC) is valid */
-  if (toc_relative_expr_p (op))
-    return 1;
-
   /* V.4 allows SYMBOL_REFs and CONSTs that are in the small data region
      to be valid.  */
   if (DEFAULT_ABI == ABI_V4
@@ -886,8 +877,8 @@
 
 ;; Return 1 if this operand is a valid input for a vsx_splat insn.
 (define_predicate "splat_input_operand"
-  (match_code "label_ref,symbol_ref,const,high,reg,subreg,mem,
-	       const_double,const_vector,const_int,plus")
+  (match_code "symbol_ref,const,reg,subreg,mem,
+	       const_double,const_vector,const_int")
 {
   if (MEM_P (op))
     {
@@ -1460,4 +1451,15 @@
 	  && GET_CODE (XEXP (XVECEXP (op, 0, 0), 0)) == MEM
 	  && GET_MODE (XEXP (XVECEXP (op, 0, 0), 0)) == BLKmode
 	  && XEXP (XVECEXP (op, 0, 0), 1) == const0_rtx);
+})
+
+;; Match a small code model toc reference (or medium and large
+;; model toc references before reload).
+(define_predicate "small_toc_ref"
+  (match_code "unspec,plus")
+{
+  if (GET_CODE (op) == PLUS && CONST_INT_P (XEXP (op, 1)))
+    op = XEXP (op, 0);
+
+  return GET_CODE (op) == UNSPEC && XINT (op, 1) == UNSPEC_TOCREL;
 })
