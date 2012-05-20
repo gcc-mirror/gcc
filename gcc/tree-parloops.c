@@ -1732,6 +1732,7 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
   unsigned prob;
   location_t loc;
   gimple cond_stmt;
+  unsigned int m_p_thread=2;
 
   /* From
 
@@ -1786,15 +1787,31 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
      loop that will be split to loop_fn, the new one will be used for the
      remaining iterations.  */
 
+  /* We should compute a better number-of-iterations value for outer loops.
+     That is, if we have
+ 
+    for (i = 0; i < n; ++i)
+      for (j = 0; j < m; ++j)
+        ...
+
+    we should compute nit = n * m, not nit = n.  
+    Also may_be_zero handling would need to be adjusted.  */
+
   type = TREE_TYPE (niter->niter);
   nit = force_gimple_operand (unshare_expr (niter->niter), &stmts, true,
 			      NULL_TREE);
   if (stmts)
     gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
 
-  many_iterations_cond =
-    fold_build2 (GE_EXPR, boolean_type_node,
-		 nit, build_int_cst (type, MIN_PER_THREAD * n_threads));
+  if (loop->inner)
+    m_p_thread=2;
+  else
+    m_p_thread=MIN_PER_THREAD;
+
+   many_iterations_cond =
+     fold_build2 (GE_EXPR, boolean_type_node,
+                nit, build_int_cst (type, m_p_thread * n_threads));
+
   many_iterations_cond
     = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 		   invert_truthvalue (unshare_expr (niter->may_be_zero)),
