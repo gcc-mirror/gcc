@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+   2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -38,7 +38,7 @@ extern bool macho_lo_sum_memory_operand (rtx, enum machine_mode);
 extern int num_insns_constant (rtx, enum machine_mode);
 extern int num_insns_constant_wide (HOST_WIDE_INT);
 extern int small_data_operand (rtx, enum machine_mode);
-extern bool toc_relative_expr_p (rtx);
+extern bool toc_relative_expr_p (const_rtx, bool);
 extern bool invalid_e500_subreg (rtx, enum machine_mode);
 extern void validate_condition_mode (enum rtx_code, enum machine_mode);
 extern bool legitimate_constant_pool_address_p (const_rtx, enum machine_mode,
