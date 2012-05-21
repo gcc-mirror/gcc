@@ -1,3 +1,12 @@
+2012-05-22  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c: Delete unnecessary forward declarations.
+	Move those with ATTRIBUTE_UNUSED to immediately before definitions.
+	Move function pointer variables after forward declarations.
+	(rs6000_builtin_support_vector_misalignment): Make static.
+	(rs6000_legitimate_address_p, rs6000_gimplify_va_arg): Likewise.
+	(rs6000_function_value, rs6000_can_eliminate): Likewise.
+
 2012-05-21  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/53373
