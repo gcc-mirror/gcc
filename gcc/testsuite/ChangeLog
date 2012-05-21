@@ -1,5 +1,11 @@
 2012-05-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/53366
+	* gcc.dg/torture/pr53366-1.c: New test.
+	* gcc.dg/torture/pr53366-2.c: New test.
+	* gcc.target/i386/pr53366-1.c: New test.
+	* gcc.target/i386/pr53366-2.c: New test.
+
 	PR tree-optimization/53409
 	* gcc.c-torture/compile/pr53409.c: New test.
 
