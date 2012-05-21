@@ -1,3 +1,8 @@
+2012-05-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* Makefile.in (options.c): Add options.h to included header
+	files, before tm.h.
+
 2012-05-21  Razya Ladelsky  <razya@il.ibm.com>
 
 	* tree-parloops.c : Add myself to contributors, update 
