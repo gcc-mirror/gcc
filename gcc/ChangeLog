@@ -1,3 +1,8 @@
+2012-05-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (can_generate_builtin): Reject
+	volatile stmts.
+
 2012-05-21  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* Makefile.in (options.c): Add options.h to included header
