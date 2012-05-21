@@ -4315,6 +4315,11 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
     ret = fold_build3_loc (colon_loc, COND_EXPR, result_type, ifexp, op1, op2);
   else
     {
+      if (int_operands)
+	{
+	  op1 = remove_c_maybe_const_expr (op1);
+	  op2 = remove_c_maybe_const_expr (op2);
+	}
       ret = build3 (COND_EXPR, result_type, ifexp, op1, op2);
       if (int_operands)
 	ret = note_integer_operands (ret);
