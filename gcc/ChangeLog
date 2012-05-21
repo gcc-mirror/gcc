@@ -1,11 +1,26 @@
+2012-05-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (put_condition_code): Change "reverse" and "fp"
+	arguments to bool.
+	(ix86_print_operand) <case 'O'>: Look at mode size of the operand.
+	Do not print '.' here.  Output operand lossage error for unhandled
+	sizes.  Move.
+	<case '*'>: Move.
+	<case '&'>: Ditto.
+	<case 'Y'>: Ditto.
+	<case 'z'>: Hardcode "code" argument into error strings.
+	<case 'Z'>: Ditto.
+	<case 'D'>: Merge AVX and non-AVX codes.
+	<case 'C', case 'c', case 'F', case 'f'>: Merge.  Fix error string.
+	Update call to put_condition_code.
+
 2012-05-21  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.md (*clzsi2_cf): Renamed from clzsi2.  Call
 	CC_STATUS_INIT.
 	(clzsi2): New expander.
 	(*clzsi2_68k): New insn.
-	* config/m68k/m68k.h: Update comment about
-	CLZ_DEFINED_VALUE_AT_ZERO.
+	* config/m68k/m68k.h: Update comment about CLZ_DEFINED_VALUE_AT_ZERO.
 
 2012-05-21  Aldy Hernandez  <aldyh@redhat.com>
 

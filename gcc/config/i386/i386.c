@@ -13610,8 +13610,8 @@ ix86_find_base_term (rtx x)
 }
 
 static void
-put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
-		    int fp, FILE *file)
+put_condition_code (enum rtx_code code, enum machine_mode mode, bool reverse,
+		    bool fp, FILE *file)
 {
   const char *suffix;
 
@@ -13932,8 +13932,8 @@ get_some_local_dynamic_name (void)
    C -- print opcode suffix for set/cmov insn.
    c -- like C, but print reversed condition
    F,f -- likewise, but for floating-point.
-   O -- if HAVE_AS_IX86_CMOV_SUN_SYNTAX, expand to "w.", "l." or "q.",
-        otherwise nothing
+   O -- if HAVE_AS_IX86_CMOV_SUN_SYNTAX, print the opcode suffix for
+	the size of the current operand, otherwise nothing.
    R -- print the prefix for register names.
    z -- print the opcode suffix for the size of the current operand.
    Z -- likewise, with special suffixes for x87 instructions.
@@ -13974,22 +13974,6 @@ ix86_print_operand (FILE *file, rtx x, int code)
     {
       switch (code)
 	{
-	case '*':
-	  if (ASSEMBLER_DIALECT == ASM_ATT)
-	    putc ('*', file);
-	  return;
-
-	case '&':
-	  {
-	    const char *name = get_some_local_dynamic_name ();
-	    if (name == NULL)
-	      output_operand_lossage ("'%%&' used without any "
-				      "local dynamic TLS references");
-	    else
-	      assemble_name (file, name);
-	    return;
-	  }
-
 	case 'A':
 	  switch (ASSEMBLER_DIALECT)
 	    {
@@ -14054,6 +14038,33 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    putc ('t', file);
 	  return;
 
+	case 'O':
+#ifdef HAVE_AS_IX86_CMOV_SUN_SYNTAX
+	  if (ASSEMBLER_DIALECT != ASM_ATT)
+	    return;
+
+	  switch (GET_MODE_SIZE (GET_MODE (x)))
+	    {
+	    case 2:
+	      putc ('w', file);
+	      break;
+  
+	    case 4:
+	      putc ('l', file);
+	      break;
+
+	    case 8:
+	      putc ('q', file);
+	      break;
+
+	    default:
+	      output_operand_lossage
+		("invalid operand size for operand code 'O'");
+	      return;
+	    }
+#endif
+	  return;
+
 	case 'z':
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
 	    {
@@ -14081,14 +14092,14 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
 		default:
 		  output_operand_lossage
-		    ("invalid operand size for operand code '%c'", code);
+		    ("invalid operand size for operand code 'z'");
 		  return;
 		}
 	    }
 
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
 	    warning
-	      (0, "non-integer operand used with operand code '%c'", code);
+	      (0, "non-integer operand used with operand code 'z'");
 	  /* FALLTHRU */
 
 	case 'Z':
@@ -14151,12 +14162,12 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  else
 	    {
 	      output_operand_lossage
-		("invalid operand type used with operand code '%c'", code);
+		("invalid operand type used with operand code 'Z'");
 	      return;
 	    }
 
 	  output_operand_lossage
-	    ("invalid operand size for operand code '%c'", code);
+	    ("invalid operand size for operand code 'Z'");
 	  return;
 
 	case 'd':
@@ -14180,241 +14191,6 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	      fputs (", ", file);
 	    }
 	  return;
-
-	case 'D':
-	  /* Little bit of braindamage here.  The SSE compare instructions
-	     does use completely different names for the comparisons that the
-	     fp conditional moves.  */
-	  if (TARGET_AVX)
-	    {
-	      switch (GET_CODE (x))
-		{
-		case EQ:
-		  fputs ("eq", file);
-		  break;
-		case UNEQ:
-		  fputs ("eq_us", file);
-		  break;
-		case LT:
-		  fputs ("lt", file);
-		  break;
-		case UNLT:
-		  fputs ("nge", file);
-		  break;
-		case LE:
-		  fputs ("le", file);
-		  break;
-		case UNLE:
-		  fputs ("ngt", file);
-		  break;
-		case UNORDERED:
-		  fputs ("unord", file);
-		  break;
-		case NE:
-		  fputs ("neq", file);
-		  break;
-		case LTGT:
-		  fputs ("neq_oq", file);
-		  break;
-		case GE:
-		  fputs ("ge", file);
-		  break;
-		case UNGE:
-		  fputs ("nlt", file);
-		  break;
-		case GT:
-		  fputs ("gt", file);
-		  break;
-		case UNGT:
-		  fputs ("nle", file);
-		  break;
-		case ORDERED:
-		  fputs ("ord", file);
-		  break;
-		default:
-		  output_operand_lossage ("operand is not a condition code, "
-					  "invalid operand code 'D'");
-		  return;
-		}
-	    }
-	  else
-	    {
-	      switch (GET_CODE (x))
-		{
-		case EQ:
-		case UNEQ:
-		  fputs ("eq", file);
-		  break;
-		case LT:
-		case UNLT:
-		  fputs ("lt", file);
-		  break;
-		case LE:
-		case UNLE:
-		  fputs ("le", file);
-		  break;
-		case UNORDERED:
-		  fputs ("unord", file);
-		  break;
-		case NE:
-		case LTGT:
-		  fputs ("neq", file);
-		  break;
-		case UNGE:
-		case GE:
-		  fputs ("nlt", file);
-		  break;
-		case UNGT:
-		case GT:
-		  fputs ("nle", file);
-		  break;
-		case ORDERED:
-		  fputs ("ord", file);
-		  break;
-		default:
-		  output_operand_lossage ("operand is not a condition code, "
-					  "invalid operand code 'D'");
-		  return;
-		}
-	    }
-	  return;
-	case 'O':
-#ifdef HAVE_AS_IX86_CMOV_SUN_SYNTAX
-	  if (ASSEMBLER_DIALECT == ASM_ATT)
-	    {
-	      switch (GET_MODE (x))
-		{
-		case HImode: putc ('w', file); break;
-		case SImode:
-		case SFmode: putc ('l', file); break;
-		case DImode:
-		case DFmode: putc ('q', file); break;
-		default: gcc_unreachable ();
-		}
-	      putc ('.', file);
-	    }
-#endif
-	  return;
-	case 'C':
-	  if (!COMPARISON_P (x))
-	    {
-	      output_operand_lossage ("operand is neither a constant nor a "
-				      "condition code, invalid operand code "
-				      "'C'");
-	      return;
-	    }
-	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)), 0, 0, file);
-	  return;
-	case 'F':
-	  if (!COMPARISON_P (x))
-	    {
-	      output_operand_lossage ("operand is neither a constant nor a "
-				      "condition code, invalid operand code "
-				      "'F'");
-	      return;
-	    }
-#ifdef HAVE_AS_IX86_CMOV_SUN_SYNTAX
-	  if (ASSEMBLER_DIALECT == ASM_ATT)
-	    putc ('.', file);
-#endif
-	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)), 0, 1, file);
-	  return;
-
-	  /* Like above, but reverse condition */
-	case 'c':
-	  /* Check to see if argument to %c is really a constant
-	     and not a condition code which needs to be reversed.  */
-	  if (!COMPARISON_P (x))
-	    {
-	      output_operand_lossage ("operand is neither a constant nor a "
-				      "condition code, invalid operand "
-				      "code 'c'");
-	      return;
-	    }
-	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)), 1, 0, file);
-	  return;
-	case 'f':
-	  if (!COMPARISON_P (x))
-	    {
-	      output_operand_lossage ("operand is neither a constant nor a "
-				      "condition code, invalid operand "
-				      "code 'f'");
-	      return;
-	    }
-#ifdef HAVE_AS_IX86_CMOV_SUN_SYNTAX
-	  if (ASSEMBLER_DIALECT == ASM_ATT)
-	    putc ('.', file);
-#endif
-	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)), 1, 1, file);
-	  return;
-
-	case 'H':
-	  if (!offsettable_memref_p (x))
-	    {
-	      output_operand_lossage ("operand is not an offsettable memory "
-				      "reference, invalid operand "
-				      "code 'H'");
-	      return;
-	    }
-	  /* It doesn't actually matter what mode we use here, as we're
-	     only going to use this for printing.  */
-	  x = adjust_address_nv (x, DImode, 8);
-	  break;
-
-	case 'K':
-	  gcc_assert (CONST_INT_P (x));
-
-	  if (INTVAL (x) & IX86_HLE_ACQUIRE)
-#ifdef HAVE_AS_IX86_HLE
-	    fputs ("xacquire ", file);
-#else
-	    fputs ("\n" ASM_BYTE "0xf2\n\t", file);
-#endif
-	  else if (INTVAL (x) & IX86_HLE_RELEASE)
-#ifdef HAVE_AS_IX86_HLE
-	    fputs ("xrelease ", file);
-#else
-	    fputs ("\n" ASM_BYTE "0xf3\n\t", file);
-#endif
-	  /* We do not want to print value of the operand.  */
-	  return;
-
-	case '+':
-	  {
-	    rtx x;
-
-	    if (!optimize
-	        || optimize_function_for_size_p (cfun)
-		|| !TARGET_BRANCH_PREDICTION_HINTS)
-	      return;
-
-	    x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
-	    if (x)
-	      {
-		int pred_val = INTVAL (XEXP (x, 0));
-
-		if (pred_val < REG_BR_PROB_BASE * 45 / 100
-		    || pred_val > REG_BR_PROB_BASE * 55 / 100)
-		  {
-		    bool taken = pred_val > REG_BR_PROB_BASE / 2;
-		    bool cputaken
-		      = final_forward_branch_p (current_output_insn) == 0;
-
-		    /* Emit hints only in the case default branch prediction
-		       heuristics would fail.  */
-		    if (taken != cputaken)
-		      {
-			/* We use 3e (DS) prefix for taken branches and
-			   2e (CS) prefix for not taken branches.  */
-			if (taken)
-			  fputs ("ds ; ", file);
-			else
-			  fputs ("cs ; ", file);
-		      }
-		  }
-	      }
-	    return;
-	  }
 
 	case 'Y':
 	  switch (GET_CODE (x))
@@ -14471,6 +14247,182 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	      return;
 	    }
 	  return;
+
+	case 'D':
+	  /* Little bit of braindamage here.  The SSE compare instructions
+	     does use completely different names for the comparisons that the
+	     fp conditional moves.  */
+	  switch (GET_CODE (x))
+	    {
+	    case UNEQ:
+	      if (TARGET_AVX)
+		{
+		  fputs ("eq_us", file);
+		  break;
+		}
+	    case EQ:
+	      fputs ("eq", file);
+	      break;
+	    case UNLT:
+	      if (TARGET_AVX)
+		{
+		  fputs ("nge", file);
+		  break;
+		}
+	    case LT:
+	      fputs ("lt", file);
+	      break;
+	    case UNLE:
+	      if (TARGET_AVX)
+		{
+		  fputs ("ngt", file);
+		  break;
+		}
+	    case LE:
+	      fputs ("le", file);
+	      break;
+	    case UNORDERED:
+	      fputs ("unord", file);
+	      break;
+	    case LTGT:
+	      if (TARGET_AVX)
+		{
+		  fputs ("neq_oq", file);
+		  break;
+		}
+	    case NE:
+	      fputs ("neq", file);
+	      break;
+	    case GE:
+	      if (TARGET_AVX)
+		{
+		  fputs ("ge", file);
+		  break;
+		}
+	    case UNGE:
+	      fputs ("nlt", file);
+	      break;
+	    case GT:
+	      if (TARGET_AVX)
+		{
+		  fputs ("gt", file);
+		  break;
+		}
+	    case UNGT:
+	      fputs ("nle", file);
+	      break;
+	    case ORDERED:
+	      fputs ("ord", file);
+	      break;
+	    default:
+	      output_operand_lossage ("operand is not a condition code, "
+				      "invalid operand code 'D'");
+	      return;
+	    }
+	  return;
+
+	case 'C':
+	case 'c':
+	case 'F':
+	case 'f':
+	  if (!COMPARISON_P (x))
+	    {
+	      output_operand_lossage ("operand is not a condition code, "
+				      "invalid operand code '%c'", code);
+	      return;
+	    }
+#ifdef HAVE_AS_IX86_CMOV_SUN_SYNTAX
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
+	    putc ('.', file);
+#endif
+	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)),
+			      code == 'c' || code == 'f',
+			      code == 'F' || code == 'f',
+			      file);
+	  return;
+
+	case 'H':
+	  if (!offsettable_memref_p (x))
+	    {
+	      output_operand_lossage ("operand is not an offsettable memory "
+				      "reference, invalid operand code 'H'");
+	      return;
+	    }
+	  /* It doesn't actually matter what mode we use here, as we're
+	     only going to use this for printing.  */
+	  x = adjust_address_nv (x, DImode, 8);
+	  break;
+
+	case 'K':
+	  gcc_assert (CONST_INT_P (x));
+
+	  if (INTVAL (x) & IX86_HLE_ACQUIRE)
+#ifdef HAVE_AS_IX86_HLE
+	    fputs ("xacquire ", file);
+#else
+	    fputs ("\n" ASM_BYTE "0xf2\n\t", file);
+#endif
+	  else if (INTVAL (x) & IX86_HLE_RELEASE)
+#ifdef HAVE_AS_IX86_HLE
+	    fputs ("xrelease ", file);
+#else
+	    fputs ("\n" ASM_BYTE "0xf3\n\t", file);
+#endif
+	  /* We do not want to print value of the operand.  */
+	  return;
+
+	case '*':
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
+	    putc ('*', file);
+	  return;
+
+	case '&':
+	  {
+	    const char *name = get_some_local_dynamic_name ();
+	    if (name == NULL)
+	      output_operand_lossage ("'%%&' used without any "
+				      "local dynamic TLS references");
+	    else
+	      assemble_name (file, name);
+	    return;
+	  }
+
+	case '+':
+	  {
+	    rtx x;
+
+	    if (!optimize
+	        || optimize_function_for_size_p (cfun)
+		|| !TARGET_BRANCH_PREDICTION_HINTS)
+	      return;
+
+	    x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
+	    if (x)
+	      {
+		int pred_val = INTVAL (XEXP (x, 0));
+
+		if (pred_val < REG_BR_PROB_BASE * 45 / 100
+		    || pred_val > REG_BR_PROB_BASE * 55 / 100)
+		  {
+		    bool taken = pred_val > REG_BR_PROB_BASE / 2;
+		    bool cputaken
+		      = final_forward_branch_p (current_output_insn) == 0;
+
+		    /* Emit hints only in the case default branch prediction
+		       heuristics would fail.  */
+		    if (taken != cputaken)
+		      {
+			/* We use 3e (DS) prefix for taken branches and
+			   2e (CS) prefix for not taken branches.  */
+			if (taken)
+			  fputs ("ds ; ", file);
+			else
+			  fputs ("cs ; ", file);
+		      }
+		  }
+	      }
+	    return;
+	  }
 
 	case ';':
 #ifndef HAVE_AS_IX86_REP_LOCK_PREFIX
