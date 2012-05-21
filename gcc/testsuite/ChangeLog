@@ -1,3 +1,9 @@
+2012-05-21  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/53148
+	* gcc.c-torture/compile/pr53418-1.c,
+	gcc.c-torture/compile/pr53418-2.c: New tests.
+
 2012-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53366
