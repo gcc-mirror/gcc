@@ -1,3 +1,10 @@
+2012-05-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52700
+	* configure.ac: Allow gnu, gnu-versioned-namespace for
+	--enable-symvers arguments.
+	* configure: Regenerate.
+
 2012-04-23  Andrew Haley  <aph@redhat.com>
 
 	* defineclass.cc (MAJOR_1_7,  MINOR_1_7): New.
