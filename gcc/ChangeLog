@@ -1,3 +1,12 @@
+2012-05-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple.h (gimple_set_in_transaction): Remove.
+	(gimple_in_transaction): Look in BB instead.
+	(gimple_statement_base): Remove in_transaction field.
+	* basic-block.h (enum bb_flags): Add BB_IN_TRANSACTION.
+	* trans-mem.c (compute_transaction_bits): Place transaction bit
+	information into basic blocks.
+
 2012-05-21  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* expr.c (get_def_for_expr_class): Define only if
