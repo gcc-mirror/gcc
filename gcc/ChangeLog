@@ -1,5 +1,17 @@
 2012-05-22  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (save_reg_p): New function.
+	(first_reg_to_save, first_fp_reg_to_save): Use it here.
+	(first_altivec_reg_to_save, restore_saved_cr): Likewise.
+	(emit_frame_save): Use gen_frame_store.
+	(gen_frame_mem_offset): Correct SPE condition requiring reg+reg.
+	(rs6000_emit_prologue): Use save_reg_p.  Use gen_frame_store for
+	vrsave and toc.
+	(rs6000_emit_epilogue): Use save_reg_p.  Use gen_frame_load for
+	vrsave, toc, gp and fp restores.
+
+2012-05-22  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c: Delete unnecessary forward declarations.
 	Move those with ATTRIBUTE_UNUSED to immediately before definitions.
 	Move function pointer variables after forward declarations.
