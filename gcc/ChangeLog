@@ -1,3 +1,9 @@
+2012-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53425
+	* config/i386/i386.c (type_natural_mode): Warn passing SSE
+	vector argument without SSE enabled changes the ABI.
+
 2012-05-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53408

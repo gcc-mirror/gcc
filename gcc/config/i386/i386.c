@@ -5827,6 +5827,20 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum)
 		      }
 		    return TYPE_MODE (type);
 		  }
+		else if ((size == 8 || size == 16) && !TARGET_SSE)
+		  {
+		    static bool warnedsse;
+
+		    if (cum
+			&& !warnedsse
+			&& cum->warn_sse)
+		      {
+			warnedsse = true;
+			warning (0, "SSE vector argument without SSE "
+				 "enabled changes the ABI");
+		      }
+		    return mode;
+		  }
 		else
 		  return mode;
 	      }
