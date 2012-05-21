@@ -1,3 +1,13 @@
+2012-05-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53399
+	* config/i386/i386.md (ffs<mode>2): Generate CCCmode compare
+	for TARGET_BMI.
+	(ffssi2_no_cmove): Ditto.
+	(*ffs<mode>_1): Remove insn pattern.
+	(*tzcnt<mode>_1): New insn pattern.
+	(*bsf<mode>1): Ditto.
+
 2012-05-21  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (add_referenced_var): Do not walk DECL_INITIAL for
@@ -70,7 +80,7 @@
 
 2012-05-21  Razya Ladelsky  <razya@il.ibm.com>
 
-	* tree-parloops.c : Add myself to contributors, update 
+	* tree-parloops.c : Add myself to contributors, update
 	TODO list, add link to wiki.
 
 2012-05-21  Alan Modra  <amodra@gmail.com>
@@ -126,8 +136,9 @@
 	call_val_symref_64bit, call_val_reg_pic, call_val_reg_64bit): Likewise.
 
 2012-05-20  Razya Ladelsky  <razya@il.ibm.com>
-	
-	* tree-parloops.c (gen_parallel_loop): Change many_iterations_cond for outer loops.
+
+	* tree-parloops.c (gen_parallel_loop): Change many_iterations_cond
+	for outer loops.
 
 2012-05-18  Jan Hubicka  <jh@suse.cz>
 
@@ -145,7 +156,8 @@
 
 2012-05-18  Jan Hubicka  <jh@suse.cz>
 
-	* cgraphunit.c (handle_alias_pairs): Cleanup; handle all types of aliases.
+	* cgraphunit.c (handle_alias_pairs): Cleanup; handle all types of
+	aliases.
 
 2012-05-18  Jan Hubicka  <jh@suse.cz>
 
@@ -205,15 +217,13 @@
 
 	* cgraphunit.c (varpool_finalize_decl): Allow external decls.
 	(mark_functions_to_output): Fix sanity check.
-	* ipa.c (function_and_variable_visibility): Remove TREE_STATIC
-	check.
+	* ipa.c (function_and_variable_visibility): Remove TREE_STATIC check.
 
 2012-05-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (mark_symbols_for_renaming): Remove.
 	* tree-dfa.c (mark_symbols_for_renaming): Likewise.
-	* tree-inline.c (copy_edges_for_bb): Do not mark symbols for
-	renaming.
+	* tree-inline.c (copy_edges_for_bb): Do not mark symbols for renaming.
 	(copy_debug_stmt): Likewise.
 	(expand_call_inline): Likewise.
 	(declare_return_variable): Mark the return variable for renaming
@@ -248,13 +258,14 @@
 
 2012-05-17  Jan Hubicka  <jh@suse.cz>
 
-	* lto-symtab.c (lto_symtab_resolve_symbols): Preffer decl with constructor
-	over decl without.
+	* lto-symtab.c (lto_symtab_resolve_symbols): Preffer decl with
+	constructor over decl without.
 	* cgraph.c (cgraph_remove_node): Clear also body of unanalyzed nodes.
 	* cgraph.h (varpool_can_remove_if_no_refs): Handle external correctly.
-	* cgraphunit.c (process_function_and_variable_attributes): Finalize 
+	* cgraphunit.c (process_function_and_variable_attributes): Finalize
 	extrnal decls.
-	(mark_functions_to_output): Also accept bodies for functions with clones.
+	(mark_functions_to_output): Also accept bodies for functions with
+	clones.
 	(output_in_order): Skip external vars.
 	* lto-cgraph.c (lto_output_node): External functions are never in other
 	partition.
@@ -287,8 +298,7 @@
 
 2012-05-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
-	* config/m68k/m68k-devices.def: Add 51ag, 51je, 51jf, 51jg, 51mm,
-	51qm.
+	* config/m68k/m68k-devices.def: Add 51ag, 51je, 51jf, 51jg, 51mm, 51qm.
 	* config/m68k/m68k-tables.opt: Regenerated.
 	* doc/invoke.texi (M680x0 Options): Document.
 
@@ -468,7 +478,7 @@
 
 2012-05-15  Tristan Gingold  <gingold@adacore.com>
 
-      * tree-ssa-strlen.c (get_string_length): Convert lhs if needed.
+	* tree-ssa-strlen.c (get_string_length): Convert lhs if needed.
 
 2012-05-15  Richard Guenther  <rguenther@suse.de>
 
@@ -496,8 +506,7 @@
 
 2012-05-15  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
-	* doc/md.texi (fma): Define to only be applicable for single
-	rounding.
+	* doc/md.texi (fma): Define to only be applicable for single rounding.
 
 2012-05-14  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -552,7 +561,7 @@
 	* config/avr/avr.c (avr_const_address_lo16): Remove.
 	(avr_assemble_integer):  Print ".byte lo8(x)",
 	".byte hi8(x)", ".byte hh8(x)" instead of emit an assembler
-	.warning if 3-byte address is assembled. 
+	.warning if 3-byte address is assembled.
 	* doc/extend.texi (AVR Named Address Spaces): Document that
 	binutils 2.23 is needed to assemble 3-byte addresses.
 
