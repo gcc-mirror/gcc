@@ -1,3 +1,19 @@
+2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51184
+	* decl.c (grokdeclarator): Diagnose functions returning abstract
+	class types as TYPENAME.
+	* cp-tree.h (ABSTRACT_CLASS_TYPE_P): Add.
+	* except.c (is_admissible_throw_operand_or_catch_parameter): Use it.
+	* pt.c (tsubst): Likewise.
+	* semantics.c (trait_expr_value): Likewise.
+
+2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/40821
+	* parser.c (cp_parser_attributes_opt): Enforce error checking of
+	unbalanced parentheses in the presence of tentative parsing.
+
 2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/39681

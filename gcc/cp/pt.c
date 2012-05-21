@@ -11646,7 +11646,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      error ("creating array of %qT", type);
 	    return error_mark_node;
 	  }
-	if (CLASS_TYPE_P (type) && CLASSTYPE_PURE_VIRTUALS (type))
+	if (ABSTRACT_CLASS_TYPE_P (type))
 	  {
 	    if (complain & tf_error)
 	      error ("creating array of %qT, which is an abstract class type",

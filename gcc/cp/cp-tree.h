@@ -1658,6 +1658,10 @@ struct GTY((variable_size)) lang_type {
 #define CLASSTYPE_PURE_VIRTUALS(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->pure_virtuals)
 
+/* Nonzero means that this type is an abstract class type.  */
+#define ABSTRACT_CLASS_TYPE_P(NODE) \
+  (CLASS_TYPE_P (NODE) && CLASSTYPE_PURE_VIRTUALS(NODE))
+
 /* Nonzero means that this type has an X() constructor.  */
 #define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->h.has_default_ctor)
