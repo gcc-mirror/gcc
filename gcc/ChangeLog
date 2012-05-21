@@ -1,3 +1,11 @@
+2012-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53410
+	* fold-const.c (fold_binary_loc): Use build_zero_cst (type)
+	instead of build_int_cst (type, 0) where vector types might be
+	involved. Instead of build_int_cst (type, 1) convert the original
+	integer_onep argument to the desired type.
+
 2012-05-21  Michael Matz  <matz@suse.de>
 
 	* genattrtab.c (attr_rtx_cost): Move earlier, start with cost being 1.
