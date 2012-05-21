@@ -1,3 +1,8 @@
+2012-05-21  Razya Ladelsky  <razya@il.ibm.com>
+
+	* tree-parloops.c : Add myself to contributors, update 
+	TODO list, add link to wiki.
+
 2012-05-21  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/predicates.md (input_operand): Don't match
