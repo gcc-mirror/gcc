@@ -1,3 +1,9 @@
+2012-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53425
+	* gcc.target/i386/pr53425-1.c: New file.
+	* gcc.target/i386/pr53425-2.c: Likewise.
+
 2012-05-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53408
