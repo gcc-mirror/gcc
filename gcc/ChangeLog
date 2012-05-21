@@ -1,3 +1,10 @@
+2012-05-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53408
+	* tree-vect-loop.c (vectorizable_induction): Properly check
+	the restriction that we cannot handle induction results from
+	the inner loop outside of the outer loop.
+
 2012-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/53416
