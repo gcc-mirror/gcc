@@ -1,3 +1,13 @@
+2012-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2012-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53416
+	* config/i386/i386.md (UNSPEC_RDRAND): Renamed to ...
+	(UNSPECV_RDRAND): This.
+	(rdrand<mode>_1): Updated.
+
 2012-05-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
