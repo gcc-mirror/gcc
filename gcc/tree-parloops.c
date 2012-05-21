@@ -1,8 +1,8 @@
 /* Loop autoparallelization.
    Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
-   Contributed by Sebastian Pop <pop@cri.ensmp.fr> and
-   Zdenek Dvorak <dvorakz@suse.cz>.
+   Contributed by Sebastian Pop <pop@cri.ensmp.fr> 
+   Zdenek Dvorak <dvorakz@suse.cz> and Razya Ladelsky <razya@il.ibm.com>.
 
 This file is part of GCC.
 
@@ -54,9 +54,9 @@ along with GCC; see the file COPYING3.  If not see
    -- if there are several parallelizable loops in a function, it may be
       possible to generate the threads just once (using synchronization to
       ensure that cross-loop dependences are obeyed).
-   -- handling of common scalar dependence patterns (accumulation, ...)
-   -- handling of non-innermost loops  */
-
+   -- handling of common reduction patterns for outer loops.  
+    
+   More info can also be found at http://gcc.gnu.org/wiki/AutoParInGCC  */
 /*
   Reduction handling:
   currently we use vect_force_simple_reduction() to detect reduction patterns.
