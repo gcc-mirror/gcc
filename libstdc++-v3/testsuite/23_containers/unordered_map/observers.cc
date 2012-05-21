@@ -25,6 +25,6 @@ test01()
 {
   std::unordered_map<int, int> um;
 
-  auto ke = um.key_eq();
-  auto h = um.hash_function();
+  auto ke __attribute__((unused)) = um.key_eq();
+  auto h __attribute__((unused)) = um.hash_function();
 }

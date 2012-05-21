@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,29 +58,29 @@ void test01()
   mm1.insert(value_type("bar", 25));
   VERIFY( mm1.size() == 12 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
 
   VERIFY( mm1.erase(mm1.begin()) != mm1.end() );
   VERIFY( mm1.size() == 11 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
 
   auto it = mm1.begin();
   advance(it, 2);
   VERIFY( mm1.erase(mm1.begin(), it) != mm1.end() );
   VERIFY( mm1.size() == 9 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
 
   VERIFY( mm1.erase(mm1.begin()->first) == 3 );
   VERIFY( mm1.size() == 6 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
 
   VERIFY( mm1.erase(mm1.begin(), mm1.end()) == mm1.end() );
   VERIFY( mm1.empty() );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
 }
 
 int main()

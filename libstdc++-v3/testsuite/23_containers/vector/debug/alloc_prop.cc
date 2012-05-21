@@ -67,8 +67,8 @@ struct X
   ~X() { }
   X(const X&) { }
   X(X&&) { }
-  X& operator=(const X&) { }
-  X& operator=(X&&) { }
+  X& operator=(const X&) { return *this; }
+  X& operator=(X&&) { return *this; }
 };
 
 int main()
