@@ -263,7 +263,12 @@ enum bb_flags
   BB_MODIFIED = 1 << 12,
 
   /* A general visited flag for passes to use.  */
-  BB_VISITED = 1 << 13
+  BB_VISITED = 1 << 13,
+
+  /* Set on blocks that are in a transaction.  This is calculated on
+     demand, and is available after calling
+     compute_transaction_bits().  */
+  BB_IN_TRANSACTION = 1 << 14
 };
 
 /* Dummy flag for convenience in the hot/cold partitioning code.  */
