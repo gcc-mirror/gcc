@@ -116,6 +116,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "vecprim.h"
 #include "fnmatch.h"
 
+#define DEBUG 0
+
 /* Flags for make_internal_attr's `special' parameter.  */
 #define ATTR_NONE		0
 #define ATTR_SPECIAL		(1 << 0)
@@ -1654,6 +1656,57 @@ write_length_unit_log (FILE *outf)
   fprintf (outf, "EXPORTED_CONST int length_unit_log = %u;\n", length_unit_log);
 }
 
+/* Compute approximate cost of the expression.  Used to decide whether
+   expression is cheap enough for inline.  */
+static int
+attr_rtx_cost (rtx x)
+{
+  int cost = 1;
+  enum rtx_code code;
+  if (!x)
+    return 0;
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case MATCH_OPERAND:
+      if (XSTR (x, 1)[0])
+	return 10;
+      else
+	return 1;
+
+    case EQ_ATTR_ALT:
+      return 1;
+
+    case EQ_ATTR:
+      /* Alternatives don't result into function call.  */
+      if (!strcmp_check (XSTR (x, 0), alternative_name))
+	return 1;
+      else
+	return 5;
+    default:
+      {
+	int i, j;
+	const char *fmt = GET_RTX_FORMAT (code);
+	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+	  {
+	    switch (fmt[i])
+	      {
+	      case 'V':
+	      case 'E':
+		for (j = 0; j < XVECLEN (x, i); j++)
+		  cost += attr_rtx_cost (XVECEXP (x, i, j));
+		break;
+	      case 'e':
+		cost += attr_rtx_cost (XEXP (x, i));
+		break;
+	      }
+	  }
+      }
+      break;
+    }
+  return cost;
+}
+
 /* Take a COND expression and see if any of the conditions in it can be
    simplified.  If any are known true or known false for the particular insn
    code, the COND can be further simplified.
@@ -2280,57 +2333,6 @@ simplify_or_tree (rtx exp, rtx *pterm, int insn_code, int insn_index)
   return exp;
 }
 
-/* Compute approximate cost of the expression.  Used to decide whether
-   expression is cheap enough for inline.  */
-static int
-attr_rtx_cost (rtx x)
-{
-  int cost = 0;
-  enum rtx_code code;
-  if (!x)
-    return 0;
-  code = GET_CODE (x);
-  switch (code)
-    {
-    case MATCH_OPERAND:
-      if (XSTR (x, 1)[0])
-	return 10;
-      else
-	return 0;
-
-    case EQ_ATTR_ALT:
-      return 0;
-
-    case EQ_ATTR:
-      /* Alternatives don't result into function call.  */
-      if (!strcmp_check (XSTR (x, 0), alternative_name))
-	return 0;
-      else
-	return 5;
-    default:
-      {
-	int i, j;
-	const char *fmt = GET_RTX_FORMAT (code);
-	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-	  {
-	    switch (fmt[i])
-	      {
-	      case 'V':
-	      case 'E':
-		for (j = 0; j < XVECLEN (x, i); j++)
-		  cost += attr_rtx_cost (XVECEXP (x, i, j));
-		break;
-	      case 'e':
-		cost += attr_rtx_cost (XEXP (x, i));
-		break;
-	      }
-	  }
-      }
-      break;
-    }
-  return cost;
-}
-
 /* Simplify test expression and use temporary obstack in order to avoid
    memory bloat.  Use ATTR_IND_SIMPLIFIED to avoid unnecessary simplifications
    and avoid unnecessary copying if possible.  */
@@ -2663,6 +2665,25 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 	  return SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
 	}
 
+      /* Similarly,
+	    convert (ior (and (y) (x))
+			 (and (z) (x)))
+	    to      (and (ior (y) (z))
+			 (x))
+         Note that we want the common term to stay at the end.
+       */
+
+      else if (GET_CODE (left) == AND && GET_CODE (right) == AND
+	       && attr_equal_p (XEXP (left, 1), XEXP (right, 1)))
+	{
+	  newexp = attr_rtx (IOR, XEXP (left, 0), XEXP (right, 0));
+
+	  left = newexp;
+	  right = XEXP (right, 1);
+	  newexp = attr_rtx (AND, left, right);
+	  return SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
+	}
+
       /* See if all or all but one of the insn's alternatives are specified
 	 in this tree.  Optimize if so.  */
 
@@ -2798,7 +2819,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 	      x = evaluate_eq_attr (exp, attr, av->value,
 				    insn_code, insn_index);
 	      x = SIMPLIFY_TEST_EXP (x, insn_code, insn_index);
-	      if (attr_rtx_cost(x) < 20)
+	      if (attr_rtx_cost(x) < 7)
 		return x;
 	    }
 	}
@@ -2818,6 +2839,133 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
   return newexp;
 }
 
+/* Return 1 if any EQ_ATTR subexpression of P refers to ATTR,
+   otherwise return 0.  */
+
+static int
+tests_attr_p (rtx p, struct attr_desc *attr)
+{
+  const char *fmt;
+  int i, ie, j, je;
+
+  if (GET_CODE (p) == EQ_ATTR)
+    {
+      if (XSTR (p, 0) != attr->name)
+	return 0;
+      return 1;
+    }
+
+  fmt = GET_RTX_FORMAT (GET_CODE (p));
+  ie = GET_RTX_LENGTH (GET_CODE (p));
+  for (i = 0; i < ie; i++)
+    {
+      switch (*fmt++)
+	{
+	case 'e':
+	  if (tests_attr_p (XEXP (p, i), attr))
+	    return 1;
+	  break;
+
+	case 'E':
+	  je = XVECLEN (p, i);
+	  for (j = 0; j < je; ++j)
+	    if (tests_attr_p (XVECEXP (p, i, j), attr))
+	      return 1;
+	  break;
+	}
+    }
+
+  return 0;
+}
+
+/* Calculate a topological sorting of all attributes so that
+   all attributes only depend on attributes in front of it.
+   Place the result in *RET (which is a pointer to an array of
+   attr_desc pointers), and return the size of that array.  */
+
+static int
+get_attr_order (struct attr_desc ***ret)
+{
+  int i, j;
+  int num = 0;
+  struct attr_desc *attr;
+  struct attr_desc **all, **sorted;
+  char *handled;
+  for (i = 0; i < MAX_ATTRS_INDEX; i++)
+    for (attr = attrs[i]; attr; attr = attr->next)
+      num++;
+  all = XNEWVEC (struct attr_desc *, num);
+  sorted = XNEWVEC (struct attr_desc *, num);
+  handled = XCNEWVEC (char, num);
+  num = 0;
+  for (i = 0; i < MAX_ATTRS_INDEX; i++)
+    for (attr = attrs[i]; attr; attr = attr->next)
+      all[num++] = attr;
+
+  j = 0;
+  for (i = 0; i < num; i++)
+    if (all[i]->is_const)
+      handled[i] = 1, sorted[j++] = all[i];
+
+  /* We have only few attributes hence we can live with the inner
+     loop being O(n^2), unlike the normal fast variants of topological
+     sorting.  */
+  while (j < num)
+    {
+      for (i = 0; i < num; i++)
+	if (!handled[i])
+	  {
+	    /* Let's see if I depends on anything interesting.  */
+	    int k;
+	    for (k = 0; k < num; k++)
+	      if (!handled[k])
+		{
+		  struct attr_value *av;
+		  for (av = all[i]->first_value; av; av = av->next)
+		    if (av->num_insns != 0)
+		      if (tests_attr_p (av->value, all[k]))
+			break;
+
+		  if (av)
+		    /* Something in I depends on K.  */
+		    break;
+		}
+	    if (k == num)
+	      {
+		/* Nothing in I depended on anything intersting, so
+		   it's done.  */
+		handled[i] = 1;
+		sorted[j++] = all[i];
+	      }
+	  }
+    }
+
+  if (DEBUG)
+    for (j = 0; j < num; j++)
+      {
+	struct attr_desc *attr2;
+	struct attr_value *av;
+
+	attr = sorted[j];
+	fprintf (stderr, "%s depends on: ", attr->name);
+	for (i = 0; i < MAX_ATTRS_INDEX; ++i)
+	  for (attr2 = attrs[i]; attr2; attr2 = attr2->next)
+	    if (!attr2->is_const)
+	      for (av = attr->first_value; av; av = av->next)
+		if (av->num_insns != 0)
+		  if (tests_attr_p (av->value, attr2))
+		    {
+		      fprintf (stderr, "%s, ", attr2->name);
+		      break;
+		    }
+	fprintf (stderr, "\n");
+      }
+
+  free (all);
+  *ret = sorted;
+  return num;
+}
+
 /* Optimize the attribute lists by seeing if we can determine conditional
    values from the known values of other attributes.  This will save subroutine
    calls during the compilation.  */
@@ -2832,6 +2980,8 @@ optimize_attrs (void)
   int i;
   struct attr_value_list *ivbuf;
   struct attr_value_list *iv;
+  struct attr_desc **topsort;
+  int topnum;
 
   /* For each insn code, make a list of all the insn_ent's for it,
      for all values for all attributes.  */
@@ -2847,18 +2997,22 @@ optimize_attrs (void)
 
   iv = ivbuf = XNEWVEC (struct attr_value_list, num_insn_ents);
 
-  for (i = 0; i < MAX_ATTRS_INDEX; i++)
-    for (attr = attrs[i]; attr; attr = attr->next)
-      for (av = attr->first_value; av; av = av->next)
-	for (ie = av->first_insn; ie; ie = ie->next)
-	  {
-	    iv->attr = attr;
-	    iv->av = av;
-	    iv->ie = ie;
-	    iv->next = insn_code_values[ie->def->insn_code];
-	    insn_code_values[ie->def->insn_code] = iv;
-	    iv++;
-	  }
+  /* Create the chain of insn*attr values such that we see dependend
+     attributes after their dependencies.  As we use a stack via the
+     next pointers start from the end of the topological order.  */
+  topnum = get_attr_order (&topsort);
+  for (i = topnum - 1; i >= 0; i--)
+    for (av = topsort[i]->first_value; av; av = av->next)
+      for (ie = av->first_insn; ie; ie = ie->next)
+	{
+	  iv->attr = topsort[i];
+	  iv->av = av;
+	  iv->ie = ie;
+	  iv->next = insn_code_values[ie->def->insn_code];
+	  insn_code_values[ie->def->insn_code] = iv;
+	  iv++;
+	}
+  free (topsort);
 
   /* Sanity check on num_insn_ents.  */
   gcc_assert (iv == ivbuf + num_insn_ents);
@@ -2893,7 +3047,15 @@ optimize_attrs (void)
 	    }
 
 	  rtl_obstack = old;
-	  if (newexp != av->value)
+	  /* If we created a new value for this instruction, and it's
+	     cheaper than the old value, and overall cheap, use that
+	     one as specific value for the current instruction.
+	     The last test is to avoid exploding the get_attr_ function
+	     sizes for no much gain.  */
+	  if (newexp != av->value
+	      && attr_rtx_cost (newexp) < attr_rtx_cost (av->value)
+	      && attr_rtx_cost (newexp) < 26
+	     )
 	    {
 	      newexp = attr_copy_rtx (newexp);
 	      remove_insn_ent (av, ie);
@@ -3998,6 +4160,10 @@ write_attr_set (FILE *outf, struct attr_desc *attr, int indent, rtx value,
 	  rtx testexp;
 	  rtx inner_true;
 
+	  /* Reset our_known_true after some time to not accumulate
+	     too much cruft (slowing down genattrtab).  */
+	  if ((i & 31) == 0)
+	    our_known_true = known_true;
 	  testexp = eliminate_known_true (our_known_true,
 					  XVECEXP (value, 0, i),
 					  insn_code, insn_index);

@@ -1,3 +1,12 @@
+2012-05-21  Michael Matz  <matz@suse.de>
+
+	* genattrtab.c (attr_rtx_cost): Move earlier, start with cost being 1.
+	(simplify_test_exp): Handle one more case of distributive law,
+	decrease cost threshold.
+	(tests_attr_p, get_attr_order): New functions.
+	(optimize_attrs): Use topological order, inline only cheap values.
+	(write_attr_set): Reset our_known_true after some time.
+
 2012-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/53425
