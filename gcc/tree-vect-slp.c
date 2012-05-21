@@ -1199,7 +1199,8 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
 
   /* We checked that this case ok, so there is no need to proceed with 
      permutation tests.  */
-  if (complex_numbers == 2)
+  if (complex_numbers == 2
+      && VEC_length (slp_tree, SLP_INSTANCE_LOADS (slp_instn)) == 2)
     {
       VEC_free (slp_tree, heap, SLP_INSTANCE_LOADS (slp_instn));
       VEC_free (int, heap, SLP_INSTANCE_LOAD_PERMUTATION (slp_instn));

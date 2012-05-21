@@ -1,5 +1,10 @@
 2012-05-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/53366
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Don't shortcut
+	tests if complex_numbers == 2, but there are non-complex number loads
+	too.
+
 	PR tree-optimization/53409
 	* tree-vect-loop.c (vect_analyze_loop_operations): Don't check
 	vinfo_for_stmt (op_def_stmt) if op_def_stmt isn't inside loop.
