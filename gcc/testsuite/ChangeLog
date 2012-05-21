@@ -1,3 +1,7 @@
+2012-05-21  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	* gcc.dg/tm/indirect-2.c: New test.
+
 2012-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
