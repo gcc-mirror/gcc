@@ -5441,7 +5441,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
       return type_has_virtual_destructor (type1);
 
     case CPTK_IS_ABSTRACT:
-      return (CLASS_TYPE_P (type1) && CLASSTYPE_PURE_VIRTUALS (type1));
+      return (ABSTRACT_CLASS_TYPE_P (type1));
 
     case CPTK_IS_BASE_OF:
       return (NON_UNION_CLASS_TYPE_P (type1) && NON_UNION_CLASS_TYPE_P (type2)
