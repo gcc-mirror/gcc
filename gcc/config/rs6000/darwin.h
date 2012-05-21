@@ -1,6 +1,6 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X).
    Copyright (C) 1997, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
    This file is part of GCC.
@@ -172,16 +172,6 @@ extern int darwin_emit_branch_islands;
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
   (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
    + (STACK_POINTER_OFFSET))
-
-/* Define cutoff for using out-of-line functions to save registers.
-   Currently on Darwin, we implement FP and GPR out-of-line-saves plus the
-   special routine for 'save everything'.  */
-
-#undef FP_SAVE_INLINE
-#define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) > 60 && (FIRST_REG) < 64)
-
-#undef GP_SAVE_INLINE
-#define GP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) > 29 && (FIRST_REG) < 32)
 
 /* Darwin uses a function call if everything needs to be saved/restored.  */
 
