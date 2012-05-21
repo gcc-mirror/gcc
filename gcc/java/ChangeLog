@@ -1,3 +1,9 @@
+2012-05-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR java/52815
+	* class.c (emit_register_classes_in_jcr_section): Revise placement
+	of #ifdef JCR_SECTION_NAME.
+
 2012-04-22  Jan Hubicka  <jh@suse.cz>
 
 	* class.c (build_utf8_ref): Do not mark varpool node as needed.
