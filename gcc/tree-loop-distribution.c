@@ -822,8 +822,10 @@ can_generate_builtin (struct graph *rdg, bitmap partition)
       nb_reads++;
     else if (RDG_MEM_WRITE_STMT (rdg, i))
       {
+	gimple stmt = RDG_STMT (rdg, i);
 	nb_writes++;
-	if (stmt_with_adjacent_zero_store_dr_p (RDG_STMT (rdg, i)))
+	if (!gimple_has_volatile_ops (stmt)
+	    && stmt_with_adjacent_zero_store_dr_p (stmt))
 	  stores_zero++;
       }
 
