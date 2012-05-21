@@ -1,5 +1,17 @@
 2012-05-22  Alan Modra  <amodra@gmail.com>
 
+	* aix.h (FP_SAVE_INLINE, GP_SAVE_INLINE): Delete.
+	* darwin.h (FP_SAVE_INLINE, GP_SAVE_INLINE): Delete.
+	* sysv4.h (FP_SAVE_INLINE, GP_SAVE_INLINE, V_SAVE_INLINE): Delete.
+	* config/rs6000/rs6000.c (V_SAVE_INLINE): Delete.
+	(rs6000_savres_strategy): Reimplement GP/FP/V_SAVE_INLINE logic.
+	For ELF targets, use out-of-line restores for -Os and any number
+	of regs if the restore exits, and out-of-line gp save for two or
+	more regs.  Use save_reg_p to test for holes in reg restore set.
+	Replace "#if" with "if".
+
+2012-05-22  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (save_reg_p): New function.
 	(first_reg_to_save, first_fp_reg_to_save): Use it here.
 	(first_altivec_reg_to_save, restore_saved_cr): Likewise.

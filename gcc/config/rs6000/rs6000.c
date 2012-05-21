@@ -17237,10 +17237,6 @@ enum {
   REST_INLINE_VRS = 0x200
 };
 
-#ifndef V_SAVE_INLINE
-#define V_SAVE_INLINE(FIRST_REG) 1
-#endif
-
 static int
 rs6000_savres_strategy (rs6000_stack_t *info,
 			bool using_static_chain_p)
@@ -17262,7 +17258,6 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		 | SAVE_INLINE_VRS | REST_INLINE_VRS);
 
   if (info->first_fp_reg_save == 64
-      || FP_SAVE_INLINE (info->first_fp_reg_save)
       /* The out-of-line FP routines use double-precision stores;
 	 we can't use those routines if we don't have such stores.  */
       || (TARGET_HARD_FLOAT && !TARGET_DOUBLE_FLOAT)
@@ -17270,25 +17265,79 @@ rs6000_savres_strategy (rs6000_stack_t *info,
     strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
 
   if (info->first_gp_reg_save == 32
-      || GP_SAVE_INLINE (info->first_gp_reg_save)
       || (!(strategy & SAVRES_MULTIPLE)
 	  && global_regs_p (info->first_gp_reg_save, 32)))
     strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
 
   if (info->first_altivec_reg_save == LAST_ALTIVEC_REGNO + 1
-      || V_SAVE_INLINE (info->first_altivec_reg_save)
       || global_regs_p (info->first_altivec_reg_save, LAST_ALTIVEC_REGNO + 1))
     strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
+
+  /* Define cutoff for using out-of-line functions to save registers.  */
+  if (DEFAULT_ABI == ABI_V4 || TARGET_ELF)
+    {
+      if (!optimize_size)
+	{
+	  strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
+	  strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+	  strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
+	}
+      else
+	{
+	  /* Prefer out-of-line restore if it will exit.  */
+	  if (info->first_fp_reg_save > 61)
+	    strategy |= SAVE_INLINE_FPRS;
+	  if (info->first_gp_reg_save > 29)
+	    {
+	      if (info->first_fp_reg_save == 64)
+		strategy |= SAVE_INLINE_GPRS;
+	      else
+		strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+	    }
+	  if (info->first_altivec_reg_save == LAST_ALTIVEC_REGNO)
+	    strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
+	}
+    }
+  else if (DEFAULT_ABI == ABI_DARWIN)
+    {
+      if (info->first_fp_reg_save > 60)
+	strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
+      if (info->first_gp_reg_save > 29)
+	strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+      strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
+    }
+  else
+    {
+      gcc_checking_assert (DEFAULT_ABI == ABI_AIX);
+      if (info->first_fp_reg_save > 61)
+	strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
+      strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+      strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
+    }
 
   /* Don't bother to try to save things out-of-line if r11 is occupied
      by the static chain.  It would require too much fiddling and the
      static chain is rarely used anyway.  FPRs are saved w.r.t the stack
      pointer on Darwin, and AIX uses r1 or r12.  */
   if (using_static_chain_p && DEFAULT_ABI != ABI_AIX)
-    strategy |= ((DEFAULT_ABI == ABI_DARWIN
-		  ? 0 : SAVE_INLINE_FPRS | REST_INLINE_FPRS)
+    strategy |= ((DEFAULT_ABI == ABI_DARWIN ? 0 : SAVE_INLINE_FPRS)
 		 | SAVE_INLINE_GPRS
 		 | SAVE_INLINE_VRS | REST_INLINE_VRS);
+
+  /* We can only use the out-of-line routines to restore if we've
+     saved all the registers from first_fp_reg_save in the prologue.
+     Otherwise, we risk loading garbage.  */
+  if ((strategy & (SAVE_INLINE_FPRS | REST_INLINE_FPRS)) == SAVE_INLINE_FPRS)
+    {
+      int i;
+
+      for (i = info->first_fp_reg_save; i < 64; i++)
+	if (!save_reg_p (i))
+	  {
+	    strategy |= REST_INLINE_FPRS;
+	    break;
+	  }
+    }
 
   /* If we are going to use store multiple, then don't even bother
      with the out-of-line routines, since the store-multiple
@@ -17319,13 +17368,6 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 	  || info->first_fp_reg_save != 64))
     strategy |= REST_INLINE_GPRS;
 
-  /* We can only use load multiple or the out-of-line routines to
-     restore if we've used store multiple or out-of-line routines
-     in the prologue, i.e. if we've saved all the registers from
-     first_gp_reg_save.  Otherwise, we risk loading garbage.  */
-  if ((strategy & (SAVE_INLINE_GPRS | SAVRES_MULTIPLE)) == SAVE_INLINE_GPRS)
-    strategy |= REST_INLINE_GPRS;
-
   /* Saving CR interferes with the exit routines used on the SPE, so
      just punt here.  */
   if (TARGET_SPE_ABI
@@ -17333,8 +17375,24 @@ rs6000_savres_strategy (rs6000_stack_t *info,
       && info->cr_save_p)
     strategy |= REST_INLINE_GPRS;
 
-#if defined (POWERPC_LINUX) || defined (POWERPC_FREEBSD)
-  if (TARGET_64BIT)
+  /* We can only use load multiple or the out-of-line routines to
+     restore if we've used store multiple or out-of-line routines
+     in the prologue, i.e. if we've saved all the registers from
+     first_gp_reg_save.  Otherwise, we risk loading garbage.  */
+  if ((strategy & (SAVE_INLINE_GPRS | REST_INLINE_GPRS | SAVRES_MULTIPLE))
+      == SAVE_INLINE_GPRS)
+    {
+      int i;
+
+      for (i = info->first_gp_reg_save; i < 32; i++)
+	if (!save_reg_p (i))
+	  {
+	    strategy |= REST_INLINE_GPRS;
+	    break;
+	  }
+    }
+
+  if (TARGET_ELF && TARGET_64BIT)
     {
       if (!(strategy & SAVE_INLINE_FPRS))
 	strategy |= SAVE_NOINLINE_FPRS_SAVES_LR;
@@ -17342,10 +17400,9 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 	       && info->first_fp_reg_save == 64)
 	strategy |= SAVE_NOINLINE_GPRS_SAVES_LR;
     }
-#else
-  if (TARGET_AIX && !(strategy & REST_INLINE_FPRS))
+  else if (TARGET_AIX && !(strategy & REST_INLINE_FPRS))
     strategy |= REST_NOINLINE_FPRS_DOESNT_RESTORE_LR;
-#endif
+
   if (TARGET_MACHO && !(strategy & SAVE_INLINE_FPRS))
     strategy |= SAVE_NOINLINE_FPRS_SAVES_LR;
 
