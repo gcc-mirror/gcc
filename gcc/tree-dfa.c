@@ -577,24 +577,16 @@ set_default_def (tree var, tree def)
 bool
 add_referenced_var (tree var)
 {
-  gcc_assert (DECL_P (var));
+  gcc_checking_assert (TREE_CODE (var) == VAR_DECL
+		       || TREE_CODE (var) == PARM_DECL
+		       || TREE_CODE (var) == RESULT_DECL);
+
   if (!*DECL_VAR_ANN_PTR (var))
     create_var_ann (var);
 
   /* Insert VAR into the referenced_vars hash table if it isn't present.  */
   if (referenced_var_check_and_insert (var))
-    {
-      /* Scan DECL_INITIAL for pointer variables as they may contain
-	 address arithmetic referencing the address of other
-	 variables.  As we are only interested in directly referenced
-	 globals or referenced locals restrict this to initializers
-	 than can refer to local variables.  */
-      if (DECL_INITIAL (var)
-          && DECL_CONTEXT (var) == current_function_decl)
-      	walk_tree (&DECL_INITIAL (var), find_vars_r, NULL, 0);
-
-      return true;
-    }
+    return true;
 
   return false;
 }

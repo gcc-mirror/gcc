@@ -377,7 +377,8 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data)
       if (data != NULL && bitmap_clear_bit ((bitmap) data, DECL_UID (t))
 	  && DECL_CONTEXT (t) == current_function_decl)
 	mark_all_vars_used (&DECL_INITIAL (t), data);
-      set_is_used (t);
+      if (var_ann (t) != NULL)
+	set_is_used (t);
     }
   /* remove_unused_scope_block_p requires information about labels
      which are not DECL_IGNORED_P to tell if they might be used in the IL.  */
