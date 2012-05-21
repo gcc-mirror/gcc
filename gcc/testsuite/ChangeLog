@@ -1,5 +1,9 @@
 2012-05-21  Richard Guenther  <rguenther@suse.de>
 
+	* gfortran.dg/pr46519-2.f90: Adjust to avoid memset transform.
+
+2012-05-21  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/torture/ldist-1.c: New testcase.
 
 2012-05-20  Eric Botcazou  <ebotcazou@adacore.com>
