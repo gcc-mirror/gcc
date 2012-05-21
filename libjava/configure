@@ -24542,7 +24542,7 @@ else
   # Check whether --enable-symvers was given.
 if test "${enable_symvers+set}" = set; then :
   enableval=$enable_symvers; case "$enableval" in
-         yes) libjava_cv_anon_version_script=yes ;;
+         yes|gnu*) libjava_cv_anon_version_script=yes ;;
          no)  libjava_cv_anon_version_script=no ;;
          *)   as_fn_error "Unknown argument to enable/disable symvers" "$LINENO" 5;;
         esac
