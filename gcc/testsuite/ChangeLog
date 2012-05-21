@@ -1,3 +1,9 @@
+2012-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53410
+	* gcc.c-torture/compile/pr53410-1.c: New test.
+	* gcc.c-torture/compile/pr53410-2.c: New test.
+
 2012-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/53425
