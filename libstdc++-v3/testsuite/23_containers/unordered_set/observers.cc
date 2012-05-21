@@ -25,6 +25,6 @@ test01()
 {
   std::unordered_set<int> us;
 
-  auto ke = us.key_eq();
-  auto h = us.hash_function();
+  auto ke __attribute__((unused)) = us.key_eq();
+  auto h __attribute__((unused)) = us.hash_function();
 }
