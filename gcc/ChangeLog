@@ -1,3 +1,8 @@
+2012-05-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_aix_asm_output_dwarf_table_ref):
+	Use strip_name_encoding target hook.
+
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (VAR_DECL_IS_VIRTUAL_OPERAND): New.
