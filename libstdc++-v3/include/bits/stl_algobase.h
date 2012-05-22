@@ -944,8 +944,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lower_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val)
     {
+#ifdef _GLIBCXX_CONCEPT_CHECKS
       typedef typename iterator_traits<_ForwardIterator>::value_type
 	_ValueType;
+#endif
       typedef typename iterator_traits<_ForwardIterator>::difference_type
 	_DistanceType;
 
@@ -1083,9 +1085,11 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     lexicographical_compare(_II1 __first1, _II1 __last1,
 			    _II2 __first2, _II2 __last2)
     {
+#ifdef _GLIBCXX_CONCEPT_CHECKS
       // concept requirements
       typedef typename iterator_traits<_II1>::value_type _ValueType1;
       typedef typename iterator_traits<_II2>::value_type _ValueType2;
+#endif
       __glibcxx_function_requires(_InputIteratorConcept<_II1>)
       __glibcxx_function_requires(_InputIteratorConcept<_II2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType1, _ValueType2>)

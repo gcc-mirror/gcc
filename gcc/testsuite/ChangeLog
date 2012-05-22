@@ -1,3 +1,9 @@
+2012-05-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53322
+	* g++.dg/warn/Wunused-local-typedefs.C: Adjust to use -Wunused
+    	instead of -Wunused-local-typedefs.
+
 2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51184
