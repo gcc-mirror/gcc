@@ -1,3 +1,8 @@
+2012-05-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR other/53231
+	* tas_n.c (libat_test_and_set): Correct return.  Remove unused variable.
+
 2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.

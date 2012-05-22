@@ -85,7 +85,7 @@ SIZE(libat_test_and_set) (UTYPE *mptr, int smodel)
 bool
 SIZE(libat_test_and_set) (UTYPE *mptr, int smodel)
 {
-  UTYPE oldval, newval;
+  UTYPE oldval;
   UWORD magic;
 
   pre_seq_barrier (smodel);
@@ -97,7 +97,7 @@ SIZE(libat_test_and_set) (UTYPE *mptr, int smodel)
   protect_end (mptr, magic);
   post_seq_barrier (smodel);
 
-  return ret != 0;
+  return oldval != 0;
 }
 
 #define DONE 1
