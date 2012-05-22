@@ -18392,7 +18392,7 @@ void
 rs6000_aix_asm_output_dwarf_table_ref (char * frame_table_label)
 {
   fprintf (asm_out_file, "\t.ref %s\n",
-	   TARGET_STRIP_NAME_ENCODING (frame_table_label));
+	   (* targetm.strip_name_encoding) (frame_table_label));
 }
 
 /* This ties together stack memory (MEM with an alias set of frame_alias_set)
