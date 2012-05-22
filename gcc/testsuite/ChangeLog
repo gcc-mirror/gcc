@@ -1,3 +1,11 @@
+2012-05-22  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-04-12  Richard Guenther  <rguenther@suse.de>
+
+	PR c/52862
+	* gcc.dg/pr52862.c: New testcase.
+
 2012-05-21  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/53418
