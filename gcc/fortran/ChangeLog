@@ -1,3 +1,9 @@
+2012-05-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53322
+	* f95-lang.c (gfc_init_builtin_functions): Remove the unused
+    	typedef builtin_type.
+
 2012-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/52428

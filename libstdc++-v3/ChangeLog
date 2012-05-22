@@ -1,3 +1,10 @@
+2012-05-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53322
+	* include/bits/stl_algobase.h (lower_bound)
+    	(lexicographical_compare): Do not declare unused local typedefs
+    	here when Concepts are turned off.
+
 2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/22_locale/num_put/put/char/9780-2.cc: Avoid -Wall warnings.

@@ -641,7 +641,6 @@ gfc_init_builtin_functions (void)
 #undef DEF_POINTER_TYPE
     BT_LAST
   };
-  typedef enum builtin_type builtin_type;
 
   tree mfunc_float[6];
   tree mfunc_double[6];

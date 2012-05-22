@@ -1,5 +1,5 @@
 // Origin PR c++/33255
-// { dg-options "-Wunused-local-typedefs" }
+// { dg-options "-Wunused" } <-- should trigger -Wunused-local-typedefs
 // { dg-do compile }
 
 void
@@ -59,7 +59,7 @@ test3_tmpl(void)
 {
     typedef struct ST<int> foo;
     ST<int> v;
-    const foo &var = v;
+    const foo __attribute__((unused))&var = v;
 }
 
 void
@@ -72,7 +72,7 @@ void
 test4(void)
 {
   typedef int foo;
-  int vec[1] = {sizeof (foo)};
+  int __attribute__((unused))vec[1] = {sizeof (foo)};
 }
 
 void
@@ -87,11 +87,11 @@ test5(void)
   typedef C0 T4;
 
   int v0 = (T0) 2;
-  char v1 = static_cast<T1> (0);
-  reinterpret_cast<T2> (&v0);
+  char __attribute__((unused)) v1 = static_cast<T1> (0);
+  if (reinterpret_cast<T2> (&v0));
   unsigned* const c = 0;
-  unsigned* v2 = const_cast<T3* const> (c);
-  C0 *p0 = 0;
+  unsigned* __attribute__((unused))v2 = const_cast<T3* const> (c);
+  C0 *__attribute__((unused))p0 = 0;
   C1 *p1 = 0;
   p0 = dynamic_cast<T4*> (p1);  
 }
@@ -101,7 +101,7 @@ test6(void)
 {
   struct C0 {};
   typedef C0 foo;
-  C0 *v = new foo;
+  C0 *__attribute__((unused))v = new foo;
 }
 
 template<class T, class U>
