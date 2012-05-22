@@ -1,6 +1,16 @@
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2012-02-28  Richard Guenther  <rguenther@suse.de>
+
+	PR target/52407
+	* config/i386/i386.c (ix86_expand_vector_set): Fix element
+	ordering for the VEC_CONCAT for two element vectors for
+	V2SFmode, V2SImode and V2DImode.
+
+2012-05-22  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2012-04-12  Richard Guenther  <rguenther@suse.de>
 
 	PR c/52862

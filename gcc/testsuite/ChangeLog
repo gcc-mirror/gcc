@@ -1,6 +1,14 @@
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2012-02-28  Richard Guenther  <rguenther@suse.de>
+
+	PR target/52407
+	* gcc.dg/torture/pr52407.c: New testcase.
+
+2012-05-22  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2012-04-12  Richard Guenther  <rguenther@suse.de>
 
 	PR c/52862
