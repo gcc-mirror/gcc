@@ -1,3 +1,8 @@
+2012-05-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51071
+	* gcc.dg/torture/pr51071-2.c: New testcase.
+
 2012-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53366
