@@ -1,6 +1,15 @@
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2011-11-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51071
+	* gimple.c (gimple_has_side_effects): Remove checking code
+	that doesn't belong here.
+
+2012-05-22  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2012-02-28  Richard Guenther  <rguenther@suse.de>
 
 	PR target/52407
