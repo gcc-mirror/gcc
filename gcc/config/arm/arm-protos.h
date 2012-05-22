@@ -248,6 +248,7 @@ extern int vfp3_const_double_for_fract_bits (rtx);
 
 extern void arm_emit_coreregs_64bit_shift (enum rtx_code, rtx, rtx, rtx, rtx,
 					   rtx);
+extern bool arm_validize_comparison (rtx *, rtx *, rtx *);
 #endif /* RTX_CODE */
 
 extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
