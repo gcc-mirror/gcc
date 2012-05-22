@@ -1,3 +1,10 @@
+2012-05-22  Tom Tromey  <tromey@redhat.com>
+
+	http://sourceware.org/bugzilla/show_bug.cgi?id=14065
+	* testsuite/demangle-expected: Add regression test.
+	* cp-demangle.c (d_find_pack): Return NULL for
+	DEMANGLE_COMPONENT_UNNAMED_TYPE.
+
 2012-04-27  Tom Tromey  <tromey@redhat.com>
 
 	* dwarfnames.c: New file.
