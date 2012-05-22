@@ -1,5 +1,10 @@
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
+	* tree-cfg.c (verify_gimple_assign_unary): Fix typo in previous
+	commit.
+
+2012-05-22  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/53437
 	* tree-inline.c (setup_one_parameter): Create a dummy init
 	statement for unused parameters when not optimizing.

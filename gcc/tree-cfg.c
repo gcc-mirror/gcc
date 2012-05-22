@@ -3376,8 +3376,8 @@ verify_gimple_assign_unary (gimple stmt)
 	/* Allow conversion from integral to offset type and vice versa.  */
 	if ((TREE_CODE (lhs_type) == OFFSET_TYPE
 	     && INTEGRAL_TYPE_P (rhs1_type))
-	    || (TREE_CODE (lhs_type) == INTEGER_TYPE
-		&& INTEGRAL_TYPE_P (rhs1_type)))
+	    || (INTEGRAL_TYPE_P (lhs_type)
+		&& TREE_CODE (rhs1_type) == OFFSET_TYPE))
 	  return false;
 
 	/* Otherwise assert we are converting between types of the
