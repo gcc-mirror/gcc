@@ -2471,7 +2471,7 @@ rewrite_into_ssa (void)
   basic_block bb;
 
   /* Initialize operand data structures.  */
-  init_ssa_operands ();
+  init_ssa_operands (cfun);
 
   /* Initialize internal data needed by the renamer.  */
   init_ssa_renamer ();

@@ -1211,7 +1211,7 @@ init_lowered_empty_function (tree decl)
   gimple_register_cfg_hooks ();
   init_empty_tree_cfg ();
   init_tree_ssa (cfun);
-  init_ssa_operands ();
+  init_ssa_operands (cfun);
   cfun->gimple_df->in_ssa_p = true;
   DECL_INITIAL (decl) = make_node (BLOCK);
 

@@ -62,7 +62,6 @@ struct dfa_stats_d
 
 /* Local functions.  */
 static void collect_dfa_stats (struct dfa_stats_d *);
-static tree find_vars_r (tree *, int *, void *);
 
 
 /*---------------------------------------------------------------------------
@@ -441,17 +440,19 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
    the function.  */
 
 static tree
-find_vars_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+find_vars_r (tree *tp, int *walk_subtrees, void *data)
 {
+  struct function *fn = (struct function *) data;
+
   /* If we are reading the lto info back in, we need to rescan the
      referenced vars.  */
   if (TREE_CODE (*tp) == SSA_NAME)
-    add_referenced_var (SSA_NAME_VAR (*tp));
+    add_referenced_var_1 (SSA_NAME_VAR (*tp), fn);
 
   /* If T is a regular variable that the optimizers are interested
      in, add it to the list of variables.  */
   else if (SSA_VAR_P (*tp))
-    add_referenced_var (*tp);
+    add_referenced_var_1 (*tp, fn);
 
   /* Type, _DECL and constant nodes have no interesting children.
      Ignore them.  */
@@ -471,16 +472,16 @@ find_referenced_vars_in (gimple stmt)
   if (gimple_code (stmt) != GIMPLE_PHI)
     {
       for (i = 0; i < gimple_num_ops (stmt); i++)
-	walk_tree (gimple_op_ptr (stmt, i), find_vars_r, NULL, NULL);
+	walk_tree (gimple_op_ptr (stmt, i), find_vars_r, cfun, NULL);
     }
   else
     {
-      walk_tree (gimple_phi_result_ptr (stmt), find_vars_r, NULL, NULL);
+      walk_tree (gimple_phi_result_ptr (stmt), find_vars_r, cfun, NULL);
 
       for (i = 0; i < gimple_phi_num_args (stmt); i++)
 	{
 	  tree arg = gimple_phi_arg_def (stmt, i);
-	  walk_tree (&arg, find_vars_r, NULL, NULL);
+	  walk_tree (&arg, find_vars_r, cfun, NULL);
 	}
     }
 }
