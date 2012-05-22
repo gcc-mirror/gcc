@@ -1,3 +1,8 @@
+2012-05-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/53336
+	* g++.dg/torture/pr53336.C: New testcase.
+
 2012-05-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/53322
