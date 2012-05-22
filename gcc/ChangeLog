@@ -1,5 +1,11 @@
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/53437
+	* tree-inline.c (setup_one_parameter): Create a dummy init
+	statement for unused parameters when not optimizing.
+
+2012-05-22  Richard Guenther  <rguenther@suse.de>
+
 	* tree-flow.h (add_referenced_var_1): Declare.
 	(add_referenced_var): Define.
 	* tree-dfa.c (referenced_var_check_and_insert): Avoid one hash
