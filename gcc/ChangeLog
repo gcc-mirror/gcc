@@ -1,5 +1,27 @@
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
+	* tree.h (VAR_DECL_IS_VIRTUAL_OPERAND): New.
+	(init_function_for_compilation): Remove.
+	* tree-dfa.c (find_vars_r): Take struct function argument.
+	(find_referenced_vars_in): Adjust.
+	* tree-ssa-operands.c (clobber_stats): Remove.
+	(create_vop_var): Take struct function argument.  Mark
+	virtual operand with VAR_DECL_IS_VIRTUAL_OPERAND.
+	(init_ssa_operands): Take struct function argument.
+	(fini_ssa_operands): Do not dump dead stats.
+	* tree-ssa-operands.h (init_ssa_operands): Take struct function
+	argument.
+	* cgraphunit.c (init_lowered_empty_function): Adjust.
+	* lto-streamer-in.c (input_cfg): Likewise.
+	* tree-inline.c (initialize_cfun): Likewise.
+	* tree-into-ssa.c (rewrite_into_ssa): Likewise.
+	* omp-low.c (expand_omp_taskreg): Likewise.  Avoid switching
+	cfun.
+	* gimple.c (is_gimple_reg): Optimize the SSA_NAME case,
+	virtual operands are not registers.
+
+2012-05-22  Richard Guenther  <rguenther@suse.de>
+
 	* tree-cfg.c (verify_gimple_assign_unary): Fix typo in previous
 	commit.
 

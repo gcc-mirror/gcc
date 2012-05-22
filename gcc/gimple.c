@@ -2786,7 +2786,17 @@ bool
 is_gimple_reg (tree t)
 {
   if (TREE_CODE (t) == SSA_NAME)
-    t = SSA_NAME_VAR (t);
+    {
+      t = SSA_NAME_VAR (t);
+      if (TREE_CODE (t) == VAR_DECL
+	  && VAR_DECL_IS_VIRTUAL_OPERAND (t))
+	return false;
+      return true;
+    }
+
+  if (TREE_CODE (t) == VAR_DECL
+      && VAR_DECL_IS_VIRTUAL_OPERAND (t))
+    return false;
 
   if (!is_gimple_variable (t))
     return false;

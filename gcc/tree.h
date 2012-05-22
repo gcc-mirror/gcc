@@ -689,6 +689,9 @@ struct GTY(()) tree_common {
        TYPE_SATURATING in
            all types
 
+       VAR_DECL_IS_VIRTUAL_OPERAND in
+	   VAR_DECL
+
    nowarning_flag:
 
        TREE_NO_WARNING in
@@ -3333,6 +3336,9 @@ extern void decl_fini_priority_insert (tree, priority_type);
    libraries.  */
 #define MAX_RESERVED_INIT_PRIORITY 100
 
+#define VAR_DECL_IS_VIRTUAL_OPERAND(NODE) \
+  (VAR_DECL_CHECK (NODE)->base.saturating_flag)
+
 #define DECL_VAR_ANN_PTR(NODE) \
   (TREE_CODE (NODE) == VAR_DECL ? &(NODE)->var_decl.ann \
    : TREE_CODE (NODE) == PARM_DECL ? &(NODE)->parm_decl.ann \
@@ -5537,7 +5543,6 @@ extern void stack_protect_prologue (void);
 extern void stack_protect_epilogue (void);
 extern void init_dummy_function_start (void);
 extern void expand_dummy_function_end (void);
-extern unsigned int init_function_for_compilation (void);
 extern void allocate_struct_function (tree, bool);
 extern void push_struct_function (tree fndecl);
 extern void init_function_start (tree);
