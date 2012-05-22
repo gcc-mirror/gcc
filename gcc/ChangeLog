@@ -1,3 +1,7 @@
+2012-05-22  Steven Drake <sbd@NetBSD.org>
+
+	* gcc.c (do_spec_1): Add %M spec token to output multilib_os_dir.
+
 2012-05-22  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_aix_asm_output_dwarf_table_ref):

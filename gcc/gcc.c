@@ -377,6 +377,7 @@ or with constant text in a single argument.
 	If multilib_dir is set, extra entries are generated with it affixed.
  %l     process LINK_SPEC as a spec.
  %L     process LIB_SPEC as a spec.
+ %M     Output multilib_os_dir.
  %G     process LIBGCC_SPEC as a spec.
  %R     Output the concatenation of target_system_root and
         target_sysroot_suffix.
@@ -5113,6 +5114,14 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    value = do_spec_1 (lib_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
+	    break;
+
+	  case 'M':
+	    if (multilib_os_dir == NULL)
+	      obstack_1grow (&obstack, '.');
+	    else
+	      obstack_grow (&obstack, multilib_os_dir,
+			    strlen (multilib_os_dir));
 	    break;
 
 	  case 'G':
