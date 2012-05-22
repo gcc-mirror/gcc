@@ -7,7 +7,6 @@
 #include "config.h"
 
 #include "go-assert.h"
-#include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -128,7 +127,7 @@ struct	G
 	void*	gcnext_segment;
 	void*	gcnext_sp;
 	void*	gcinitial_sp;
-	jmp_buf	gcregs;
+	ucontext_t gcregs;
 	byte*	entry;		// initial function
 	G*	alllink;	// on allg
 	void*	param;		// passed parameter on wakeup

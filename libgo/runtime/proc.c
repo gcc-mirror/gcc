@@ -1239,9 +1239,7 @@ runtime_entersyscall(void)
 
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
-	// We could use getcontext here, but setjmp is more efficient
-	// because it doesn't need to save the signal mask.
-	setjmp(g->gcregs);
+	getcontext(&g->gcregs);
 
 	g->status = Gsyscall;
 
@@ -1299,7 +1297,7 @@ runtime_exitsyscall(void)
 		gp->gcstack = nil;
 #endif
 		gp->gcnext_sp = nil;
-		runtime_memclr(gp->gcregs, sizeof gp->gcregs);
+		runtime_memclr(&gp->gcregs, sizeof gp->gcregs);
 
 		if(m->profilehz > 0)
 			runtime_setprof(true);
@@ -1328,7 +1326,7 @@ runtime_exitsyscall(void)
 	gp->gcstack = nil;
 #endif
 	gp->gcnext_sp = nil;
-	runtime_memclr(gp->gcregs, sizeof gp->gcregs);
+	runtime_memclr(&gp->gcregs, sizeof gp->gcregs);
 }
 
 // Allocate a new g, with a stack big enough for stacksize bytes.
