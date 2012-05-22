@@ -1,7 +1,20 @@
+2012-05-22  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/53334
+	* config/arm/arm-protos.h (arm_validize_comparison): Declare.
+	* config/arm/arm.c (arm_validize_comparison): Define.
+	* config/arm/arm.md ("cbranchsi4"): Cleanup expansion and use
+	arm_validize_comparison.
+	("cbranchdi4"): Likewise.
+	("cstoredi4"): Likewise.
+	("movsicc"): Likewise.
+	("movsfcc"): Likewise.
+	("movdfcc"): Likewise.
+
 2012-05-22  Dimitrios Apostolou  <jimis@gmx.net>
 
 	* df-scan.c (df_scan_alloc): Round up allocation pools size, reduce
-	the mw_reg_pool size. 
+	the mw_reg_pool size.
 
 2012-05-22  Paolo Bonzini  <bonzini@gnu.org>
 
