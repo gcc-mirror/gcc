@@ -1,3 +1,8 @@
+2012-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53389
+	* gfortran.dg/realloc_on_assign_15.f90: New.
+
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51071
@@ -12,7 +17,7 @@
 
 	PR c++/53322
 	* g++.dg/warn/Wunused-local-typedefs.C: Adjust to use -Wunused
-    	instead of -Wunused-local-typedefs.
+	instead of -Wunused-local-typedefs.
 
 2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
