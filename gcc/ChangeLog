@@ -1,8 +1,9 @@
 2012-05-22  Alan Modra  <amodra@gmail.com>
 
-	* aix.h (FP_SAVE_INLINE, GP_SAVE_INLINE): Delete.
-	* darwin.h (FP_SAVE_INLINE, GP_SAVE_INLINE): Delete.
-	* sysv4.h (FP_SAVE_INLINE, GP_SAVE_INLINE, V_SAVE_INLINE): Delete.
+	* config/rs6000/aix.h (FP_SAVE_INLINE, GP_SAVE_INLINE): Delete.
+	* config/rs6000/darwin.h (FP_SAVE_INLINE, GP_SAVE_INLINE): Delete.
+	* config/rs6000/sysv4.h (FP_SAVE_INLINE, GP_SAVE_INLINE,
+	V_SAVE_INLINE): Delete.
 	* config/rs6000/rs6000.c (V_SAVE_INLINE): Delete.
 	(rs6000_savres_strategy): Reimplement GP/FP/V_SAVE_INLINE logic.
 	For ELF targets, use out-of-line restores for -Os and any number
