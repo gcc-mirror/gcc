@@ -1,3 +1,9 @@
+2012-05-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/53336
+	* tree-cfg.c (verify_gimple_assign_unary): Allow conversion from
+	non-integer integral types to offset type and vice versa.
+
 2012-05-22  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/aix.h (FP_SAVE_INLINE, GP_SAVE_INLINE): Delete.
