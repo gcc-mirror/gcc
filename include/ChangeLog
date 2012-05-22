@@ -1,3 +1,7 @@
+2012-05-22  Doug Evans  <dje@google.com>
+
+	* leb128.h: New file.
+
 2012-05-19  Gary Funck  <gary@intrepid.com>
 
 	* dwarf2.def: Update comment re: UPC extensions to reference
