@@ -1,3 +1,8 @@
+2012-05-22  Dimitrios Apostolou  <jimis@gmx.net>
+
+	* df-scan.c (df_scan_alloc): Round up allocation pools size, reduce
+	the mw_reg_pool size. 
+
 2012-05-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/53336

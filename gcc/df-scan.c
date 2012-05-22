@@ -318,7 +318,7 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 {
   struct df_scan_problem_data *problem_data;
   unsigned int insn_num = get_max_uid () + 1;
-  unsigned int block_size = 400;
+  unsigned int block_size = 512;
   basic_block bb;
 
   /* Given the number of pools, this is really faster than tearing
@@ -347,7 +347,7 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 			 sizeof (struct df_reg_info), block_size);
   problem_data->mw_reg_pool
     = create_alloc_pool ("df_scan mw_reg",
-			 sizeof (struct df_mw_hardreg), block_size);
+			 sizeof (struct df_mw_hardreg), block_size / 16);
 
   bitmap_obstack_initialize (&problem_data->reg_bitmaps);
   bitmap_obstack_initialize (&problem_data->insn_bitmaps);
