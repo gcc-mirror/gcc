@@ -1,3 +1,8 @@
+2012-05-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53389
+	* gfortran.dg/realloc_on_assign_15.f90: New.
+
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53408

@@ -1,3 +1,9 @@
+2012-05-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53389
+	* trans-array.c (gfc_add_loop_ss_code): Don't evaluate expression, if
+	ss->is_alloc_lhs is set.
+
 2012-05-07  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline:
