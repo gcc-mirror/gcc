@@ -1,3 +1,10 @@
+2012-05-23  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr39074-2.c: Adjust.
+	* gcc.dg/torture/pr39074.c: Likewise.
+	* gcc.dg/torture/pta-structcopy-1.c: Likewise.
+	* gcc.dg/tree-ssa/alias-19.c: Likewise.
+
 2012-05-22  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/53161

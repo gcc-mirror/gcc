@@ -1,8 +1,17 @@
+2012-05-23  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (add_referenced_var_1): Do not add global vars.
+	* tree-ssa-live.c (mark_all_vars_used_1): Handle global vars
+	via the global_unused_vars bitmap.
+	(remove_unused_locals): Handle global vars in local-decls via
+	a global_unused_vars bitmap instead of the used flag in the
+	var annotation.  Simplify global variable handling and removal.
+
 2012-05-22  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/53426
-	* tree-ssa-structalias.c (create_variable_info_for): Skip constructors from
-	other partitions.
+	* tree-ssa-structalias.c (create_variable_info_for): Skip constructors
+	from other partitions.
 
 2012-05-22  Jan Hubicka  <jh@suse.cz>
 
