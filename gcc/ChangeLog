@@ -1,3 +1,10 @@
+2012-05-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/53448
+	* config/avr/avr.h (ASM_OUTPUT_ALIGN): Don't inhibit .p2align 1.
+	* config/avr/elf.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Use
+	ASM_OUTPUT_ALIGN.
+
 2012-05-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (add_referenced_var_1): Do not add global vars.
