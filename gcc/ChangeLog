@@ -1,3 +1,7 @@
+2012-05-23  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-inline-analysis.c (inline_merge_summary): Free operand_map.
+
 2012-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple.c (gimple_types_compatible_p_1) <ARRAY_TYPE>: Remove bogus
