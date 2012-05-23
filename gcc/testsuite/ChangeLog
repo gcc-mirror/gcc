@@ -1,6 +1,6 @@
 2012-05-23  Michael Hope  <michael.hope@linaro.org>
 
-	PR c++/PR52796
+	PR c++/52796
 	* g++.dg/cpp0x/variadic-value1.C: Change selector for explicit
 	options.
 
