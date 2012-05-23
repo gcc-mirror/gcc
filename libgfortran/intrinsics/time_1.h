@@ -181,8 +181,8 @@ gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec
 #endif
 
 
-/* Realtime clock with microsecond resolution, falling back to less
-   precise functions if the target does not support gettimeofday().
+/* Realtime clock with microsecond resolution, falling back to other
+   functions if the target does not support gettimeofday().
 
    Arguments:
    secs     - OUTPUT, seconds
@@ -203,6 +203,12 @@ gf_gettime (time_t * secs, long * usecs)
   err = gettimeofday (&tv, NULL);
   *secs = tv.tv_sec;
   *usecs = tv.tv_usec;
+  return err;
+#elif defined(HAVE_CLOCK_GETTIME)
+  struct timespec ts;
+  int err = clock_gettime (CLOCK_REALTIME, &ts);
+  *secs = ts.tv_sec;
+  *usecs = ts.tv_nsec / 1000;
   return err;
 #else
   time_t t = time (NULL);
