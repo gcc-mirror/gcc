@@ -1,3 +1,8 @@
+2012-05-22  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/53161
+	* symtab.c (symtab_register_node): Fix ordering issue.
+
 2012-05-22  Steven Drake <sbd@NetBSD.org>
 
 	* gcc.c (do_spec_1): Add %M spec token to output multilib_os_dir.
