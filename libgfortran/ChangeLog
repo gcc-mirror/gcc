@@ -1,3 +1,14 @@
+2012-05-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR libfortran/53444
+	* acinclude.m4 (LIBGFOR_CHECK_STRERROR_R): Add configure checks for
+	two- and three-argument versions of strerror_r.
+	* configure.ac (LIBGFOR_CHECK_STRERROR_R): Use it.
+	* runtime/error.c (gf_strerror): Handle two-argument version
+	of strerror_r.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.

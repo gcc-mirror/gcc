@@ -362,3 +362,29 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
   dnl We need a conditional for the Makefile
   AM_CONDITIONAL(LIBGFOR_BUILD_QUAD, [test "x$libgfor_cv_have_float128" = xyes])
 ])
+
+
+dnl Check whether we have strerror_r
+AC_DEFUN([LIBGFOR_CHECK_STRERROR_R], [
+  dnl Check for three-argument POSIX version of strerror_r
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-Wimplicit-function-declaration -Werror"
+  AC_TRY_COMPILE([#define _GNU_SOURCE 1
+	     	  #include <string.h>
+		  #include <locale.h>],
+		  [char s[128]; strerror_r(5, s, 128);],
+		  AC_DEFINE(HAVE_STRERROR_R, 1,
+		  [Define if strerror_r is available in <string.h>.]),)
+  CFLAGS="$ac_save_CFLAGS"
+
+  dnl Check for two-argument version of strerror_r (e.g. for VxWorks)
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-Wimplicit-function-declaration -Werror"
+  AC_TRY_COMPILE([#define _GNU_SOURCE 1
+	     	  #include <string.h>
+		  #include <locale.h>],
+		  [char s[128]; strerror_r(5, s);],
+		  AC_DEFINE(HAVE_STRERROR_R_2ARGS, 1,
+		  [Define if strerror_r takes two arguments and is available in <string.h>.]),)
+  CFLAGS="$ac_save_CFLAGS"
+])
