@@ -1,3 +1,8 @@
+2012-05-22  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/53161
+	* g++.dg/torture/pr53161.C: New testcase.
+
 2012-05-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53389
