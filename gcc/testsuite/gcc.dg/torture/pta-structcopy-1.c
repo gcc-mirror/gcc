@@ -31,5 +31,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "points-to vars: { i }" "ealias" } } */
+/* { dg-final { scan-tree-dump "y.* = { i }" "ealias" } } */
+/* { dg-final { scan-tree-dump "y.*, points-to vars: { D..... }" "ealias" } } */
 /* { dg-final { cleanup-tree-dump "ealias" } } */

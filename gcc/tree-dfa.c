@@ -581,6 +581,11 @@ add_referenced_var_1 (tree var, struct function *fn)
 		       || TREE_CODE (var) == PARM_DECL
 		       || TREE_CODE (var) == RESULT_DECL);
 
+  if (!(TREE_CODE (var) == VAR_DECL
+	&& VAR_DECL_IS_VIRTUAL_OPERAND (var))
+      && is_global_var (var))
+    return false;
+
   if (!*DECL_VAR_ANN_PTR (var))
     create_var_ann (var);
 

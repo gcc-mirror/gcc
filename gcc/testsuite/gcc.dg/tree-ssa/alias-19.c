@@ -26,5 +26,5 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump "q_. = { a b }" "alias" } } */
-/* { dg-final { scan-tree-dump "q_., points-to vars: { a b }" "alias" } } */
+/* { dg-final { scan-tree-dump "q_., points-to vars: { D..... b }" "alias" } } */
 /* { dg-final { cleanup-tree-dump "alias" } } */
