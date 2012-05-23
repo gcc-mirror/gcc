@@ -1,5 +1,5 @@
 // PR c++/52796
-// { dg-do run { target c++11 } }
+// { dg-options "-std=c++0x -pedantic-errors" }
 
 inline void *operator new(__SIZE_TYPE__ s, void *p) { return p; }
 
