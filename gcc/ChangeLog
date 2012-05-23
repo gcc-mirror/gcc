@@ -1,3 +1,12 @@
+2012-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple.c (gimple_types_compatible_p_1) <ARRAY_TYPE>: Remove bogus
+	size handling.
+	(gimple_canonical_types_compatible_p) <ARRAY_TYPE>: Likewise.
+	(iterative_hash_gimple_type): Adjust comment.
+	(iterative_hash_canonical_type): Likewise.  Hash the bounds of the
+	domain for an array type instead of the domain type itself.
+
 2012-05-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53438
