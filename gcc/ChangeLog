@@ -1,3 +1,12 @@
+2012-05-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-05-23 mainline r187803
+
+	PR target/53448
+	* config/avr/avr.h (ASM_OUTPUT_ALIGN): Don't inhibit .p2align 1.
+	* config/avr/elf.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Use
+	ASM_OUTPUT_ALIGN.
+
 2012-05-23  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	Backport from 2012-05-03 mainline r187075
