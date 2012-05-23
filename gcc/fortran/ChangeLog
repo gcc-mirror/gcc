@@ -1,3 +1,12 @@
+2012-05-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51055
+	PR fortran/45170
+	* match.c (gfc_match_allocate): Set length_from_typespec
+	for characters.
+	* resolve.c (resolve_charlen): If set, don't check whether
+	the len is a specification expression.
+
 2012-05-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53389

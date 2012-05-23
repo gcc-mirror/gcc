@@ -9945,12 +9945,24 @@ resolve_charlen (gfc_charlen *cl)
 
   cl->resolved = 1;
 
-  specification_expr = 1;
 
-  if (resolve_index_expr (cl->length) == FAILURE)
+  if (cl->length_from_typespec)
     {
-      specification_expr = 0;
-      return FAILURE;
+      if (gfc_resolve_expr (cl->length) == FAILURE)
+	return FAILURE;
+
+      if (gfc_simplify_expr (cl->length, 0) == FAILURE)
+	return FAILURE;
+    }
+  else
+    {
+      specification_expr = 1;
+
+      if (resolve_index_expr (cl->length) == FAILURE)
+	{
+	  specification_expr = 0;
+	  return FAILURE;
+	}
     }
 
   /* "If the character length parameter value evaluates to a negative
