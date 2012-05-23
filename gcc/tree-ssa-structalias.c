@@ -5583,7 +5583,8 @@ create_variable_info_for (tree decl, const char *name)
 
 	  /* If this is a global variable with an initializer and we are in
 	     IPA mode generate constraints for it.  */
-	  if (DECL_INITIAL (decl))
+	  if (DECL_INITIAL (decl)
+	      && vnode->analyzed)
 	    {
 	      VEC (ce_s, heap) *rhsc = NULL;
 	      struct constraint_expr lhs, *rhsp;
