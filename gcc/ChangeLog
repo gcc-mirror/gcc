@@ -1,3 +1,10 @@
+2012-05-23  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	Backport from 2012-05-03 mainline r187075
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Reset
+	has_fma4 for AMD processors with both fma3 and fma4 support.
+
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53408
