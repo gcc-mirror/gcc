@@ -1,3 +1,9 @@
+2012-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29185
+	* decl2.c (delete_sanity): Extend 'deleting array' warning to
+	any array type.
+
 2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51184

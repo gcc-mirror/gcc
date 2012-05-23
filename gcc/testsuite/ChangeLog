@@ -1,3 +1,8 @@
+2012-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29185
+	* g++.dg/warn/delete-array-1.C: New.
+
 2012-05-23  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/torture/pr39074-2.c: Adjust.

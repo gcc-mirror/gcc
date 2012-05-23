@@ -438,9 +438,8 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
     }
 
   /* An array can't have been allocated by new, so complain.  */
-  if (TREE_CODE (exp) == VAR_DECL
-      && TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
-    warning (0, "deleting array %q#D", exp);
+  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+    warning (0, "deleting array %q#E", exp);
 
   t = build_expr_type_conversion (WANT_POINTER, exp, true);
 
