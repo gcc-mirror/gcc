@@ -177,7 +177,6 @@ create_vop_var (struct function *fn)
   TREE_ADDRESSABLE (global_var) = 0;
   VAR_DECL_IS_VIRTUAL_OPERAND (global_var) = 1;
 
-  create_var_ann (global_var);
   add_referenced_var_1 (global_var, fn);
   fn->gimple_df->vop = global_var;
 }

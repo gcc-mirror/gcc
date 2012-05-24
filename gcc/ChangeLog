@@ -1,5 +1,10 @@
 2012-05-24  Richard Guenther  <rguenther@suse.de>
 
+	* varpool.c (add_new_static_var): Remove call to create_var_ann.
+	* tree-ssa-operands.c (create_vop_var): Likewise.
+
+2012-05-24  Richard Guenther  <rguenther@suse.de>
+
 	PR bootstrap/53466
 	* tree-ssa-live.c (remove_unused_scope_block_p): Properly
 	handle globals.
