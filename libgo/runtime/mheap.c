@@ -191,7 +191,7 @@ MHeap_Grow(MHeap *h, uintptr npage)
 			v = runtime_MHeap_SysAlloc(h, ask);
 		}
 		if(v == nil) {
-			runtime_printf("runtime: out of memory: cannot allocate %llu-byte block (%llu in use)\n", (unsigned long long)ask, (unsigned long long)mstats.heap_sys);
+			runtime_printf("runtime: out of memory: cannot allocate %D-byte block (%D in use)\n", (uint64)ask, mstats.heap_sys);
 			return false;
 		}
 	}
@@ -277,7 +277,7 @@ MHeap_FreeLocked(MHeap *h, MSpan *s)
 	PageID p;
 
 	if(s->state != MSpanInUse || s->ref != 0) {
-		// runtime_printf("MHeap_FreeLocked - span %p ptr %p state %d ref %d\n", s, s->start<<PageShift, s->state, s->ref);
+		runtime_printf("MHeap_FreeLocked - span %p ptr %p state %d ref %d\n", s, s->start<<PageShift, s->state, s->ref);
 		runtime_throw("MHeap_FreeLocked - invalid free");
 	}
 	mstats.heap_idle += s->npages<<PageShift;
@@ -397,10 +397,10 @@ runtime_MHeap_Scavenger(void* dummy)
 
 		if(trace) {
 			if(sumreleased > 0)
-				runtime_printf("scvg%d: %p MB released\n", k, (void*)(sumreleased>>20));
-			runtime_printf("scvg%d: inuse: %lld, idle: %lld, sys: %lld, released: %lld, consumed: %lld (MB)\n",
-				k, (long long)(mstats.heap_inuse>>20), (long long)(mstats.heap_idle>>20), (long long)(mstats.heap_sys>>20),
-				(long long)(mstats.heap_released>>20), (long long)((mstats.heap_sys - mstats.heap_released)>>20));
+				runtime_printf("scvg%d: %p MB released\n", k, sumreleased>>20);
+			runtime_printf("scvg%d: inuse: %D, idle: %D, sys: %D, released: %D, consumed: %D (MB)\n",
+				k, mstats.heap_inuse>>20, mstats.heap_idle>>20, mstats.heap_sys>>20,
+				mstats.heap_released>>20, (mstats.heap_sys - mstats.heap_released)>>20);
 		}
 	}
 }
@@ -451,7 +451,7 @@ void
 runtime_MSpanList_Insert(MSpan *list, MSpan *span)
 {
 	if(span->next != nil || span->prev != nil) {
-		// runtime_printf("failed MSpanList_Insert %p %p %p\n", span, span->next, span->prev);
+		runtime_printf("failed MSpanList_Insert %p %p %p\n", span, span->next, span->prev);
 		runtime_throw("MSpanList_Insert");
 	}
 	span->next = list->next;

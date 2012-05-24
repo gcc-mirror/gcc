@@ -100,8 +100,8 @@ runtime_makechan_c(ChanType *t, int64 hint)
 	c->dataqsiz = hint;
 
 	if(debug)
-		runtime_printf("makechan: chan=%p; elemsize=%lld; elemalign=%d; dataqsiz=%d\n",
-			c, (long long)elem->__size, elem->__align, c->dataqsiz);
+		runtime_printf("makechan: chan=%p; elemsize=%D; elemalign=%d; dataqsiz=%d\n",
+			c, (int64)elem->__size, elem->__align, c->dataqsiz);
 
 	return c;
 }

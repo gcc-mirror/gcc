@@ -236,3 +236,15 @@ runtime_showframe(const unsigned char *s)
 		traceback = runtime_gotraceback();
 	return traceback > 1 || (__builtin_strchr((const char*)s, '.') != nil && __builtin_memcmp(s, "runtime.", 7) != 0);
 }
+
+bool
+runtime_isInf(float64 f, int32 sign)
+{
+	if(!__builtin_isinf(f))
+		return false;
+	if(sign == 0)
+		return true;
+	if(sign > 0)
+		return f > 0;
+	return f < 0;
+}
