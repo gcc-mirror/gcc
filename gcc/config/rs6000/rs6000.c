@@ -14718,7 +14718,6 @@ void
 print_operand (FILE *file, rtx x, int code)
 {
   int i;
-  HOST_WIDE_INT val;
   unsigned HOST_WIDE_INT uval;
 
   switch (code)
@@ -15159,34 +15158,17 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'W':
       /* MB value for a PowerPC64 rldic operand.  */
-      val = (GET_CODE (x) == CONST_INT
-	     ? INTVAL (x) : CONST_DOUBLE_HIGH (x));
-
-      if (val < 0)
-	i = -1;
-      else
-	for (i = 0; i < HOST_BITS_PER_WIDE_INT; i++)
-	  if ((val <<= 1) < 0)
-	    break;
+      i = clz_hwi (GET_CODE (x) == CONST_INT
+		   ? INTVAL (x) : CONST_DOUBLE_HIGH (x));
 
 #if HOST_BITS_PER_WIDE_INT == 32
-      if (GET_CODE (x) == CONST_INT && i >= 0)
+      if (GET_CODE (x) == CONST_INT && i > 0)
 	i += 32;  /* zero-extend high-part was all 0's */
       else if (GET_CODE (x) == CONST_DOUBLE && i == 32)
-	{
-	  val = CONST_DOUBLE_LOW (x);
-
-	  gcc_assert (val);
-	  if (val < 0)
-	    --i;
-	  else
-	    for ( ; i < 64; i++)
-	      if ((val <<= 1) < 0)
-		break;
-	}
+	i = clz_hwi (CONST_DOUBLE_LOW (x)) + 32;
 #endif
 
-      fprintf (file, "%d", i + 1);
+      fprintf (file, "%d", i);
       return;
 
     case 'x':
