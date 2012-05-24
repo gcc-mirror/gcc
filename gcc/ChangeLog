@@ -1,3 +1,23 @@
+2012-05-24  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (create_var_ann): Remove.
+	* tree-dfa.c (create_var_ann): Remove and inline into its
+	single caller ...
+	(add_referenced_var_1): ... here.
+	* varpool.c (add_new_static_var): Do not call add_referenced_var
+	for global vars.
+	* gimple-fold.c (canonicalize_constructor_val): Likewise.
+	* tree-switch-conversion.c (build_one_array): Likewise.
+	* tree-profile.c (gimple_gen_ic_profiler): Likewise.
+	* tree-flow-inline.h (gimple_referenced_vars): Guard against
+	NULL fn argument.
+	* tree-inline.c (remap_gimple_op_r): Likewise.  Check
+	gimple_referenced_vars instead of gimple_in_ssa_p.
+	(copy_tree_body_r): Likewise.
+	(setup_one_parameter): Likewise.
+	(declare_return_variable): Likewise.
+	(tree_function_versioning): Likewise.
+
 2012-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53465

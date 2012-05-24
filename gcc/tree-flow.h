@@ -482,7 +482,6 @@ extern int op_prio (const_tree);
 extern const char *op_symbol_code (enum tree_code);
 
 /* In tree-dfa.c  */
-extern var_ann_t create_var_ann (tree);
 extern void renumber_gimple_stmt_uids (void);
 extern void renumber_gimple_stmt_uids_in_blocks (basic_block *, int);
 extern void dump_dfa_stats (FILE *);
