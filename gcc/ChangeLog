@@ -1,4 +1,14 @@
-2012-05-24  Jim MacArthur<jim.macarthur@arm.com>
+2012-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53465
+	* tree-vrp.c (extract_range_from_cond_expr): First copy_value_range
+	vr0 into *vr, then vrp_meet that.
+	(vrp_meet): If one vr type is VR_UNDEFINED, ensure the result doesn't
+	have any equivalences.
+	(vrp_visit_phi_node): Call copy_value_range instead of vrp_meet the
+	first time.
+
+2012-05-24  Jim MacArthur  <jim.macarthur@arm.com>
 
 	* recog.c (reg_fits_class_p): Check both regno and regno + offset are
 	hard registers.
@@ -2897,7 +2907,7 @@
 	is enabled.
 	(movdi_vfp_cortexa8): Likewise.
 
-2012-04-30  Ian Bolton	<ian.bolton@arm.com>
+2012-04-30  Ian Bolton  <ian.bolton@arm.com>
 	    Sameera Deshpande  <sameera.deshpande@arm.com>
 	    Greta Yorsh	 <greta.yorsh@arm.com>
 

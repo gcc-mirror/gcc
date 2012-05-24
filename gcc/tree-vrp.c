@@ -3282,8 +3282,8 @@ extract_range_from_cond_expr (value_range_t *vr, gimple stmt)
     set_value_range_to_varying (&vr1);
 
   /* The resulting value range is the union of the operand ranges */
-  vrp_meet (&vr0, &vr1);
   copy_value_range (vr, &vr0);
+  vrp_meet (vr, &vr1);
 }
 
 
@@ -6888,13 +6888,17 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 {
   if (vr0->type == VR_UNDEFINED)
     {
-      copy_value_range (vr0, vr1);
+      /* Drop equivalences.  See PR53465.  */
+      set_value_range (vr0, vr1->type, vr1->min, vr1->max, NULL);
       return;
     }
 
   if (vr1->type == VR_UNDEFINED)
     {
-      /* Nothing to do.  VR0 already has the resulting range.  */
+      /* VR0 already has the resulting range, just drop equivalences.
+	 See PR53465.  */
+      if (vr0->equiv)
+	bitmap_clear (vr0->equiv);
       return;
     }
 
@@ -7036,6 +7040,7 @@ vrp_visit_phi_node (gimple phi)
   tree lhs = PHI_RESULT (phi);
   value_range_t *lhs_vr = get_value_range (lhs);
   value_range_t vr_result = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+  bool first = true;
   int edges, old_edges;
   struct loop *l;
 
@@ -7092,7 +7097,11 @@ vrp_visit_phi_node (gimple phi)
 	      fprintf (dump_file, "\n");
 	    }
 
-	  vrp_meet (&vr_result, &vr_arg);
+	  if (first)
+	    copy_value_range (&vr_result, &vr_arg);
+	  else
+	    vrp_meet (&vr_result, &vr_arg);
+	  first = false;
 
 	  if (vr_result.type == VR_VARYING)
 	    break;
