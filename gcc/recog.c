@@ -2792,14 +2792,16 @@ bool
 reg_fits_class_p (const_rtx operand, reg_class_t cl, int offset,
 		  enum machine_mode mode)
 {
-  int regno = REGNO (operand);
+  unsigned int regno = REGNO (operand);
 
   if (cl == NO_REGS)
     return false;
 
+  /* Regno must not be a pseudo register.  Offset may be negative.  */
   return (HARD_REGISTER_NUM_P (regno)
-	  && in_hard_reg_set_p (reg_class_contents[(int) cl],
-				mode, regno + offset));
+	  && HARD_REGISTER_NUM_P (regno + offset)
+	  && in_hard_reg_set_p (reg_class_contents[(int) cl], mode, 
+				regno + offset));
 }
 
 /* Split single instruction.  Helper function for split_all_insns and
