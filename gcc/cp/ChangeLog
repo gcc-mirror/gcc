@@ -1,3 +1,13 @@
+2012-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/32080
+	* parser.c (cp_parser_ctor_initializer_opt_and_function_body,
+	cp_parser_function_body): Add a bool parameter, true when parsing
+	a function-try-block.
+	(cp_parser_function_try_block): Pass true to the above.
+	(cp_parser_function_definition_after_declarator,
+	cp_parser_function_transaction): Adjust.
+
 2012-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/29185
