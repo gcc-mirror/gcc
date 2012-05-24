@@ -429,7 +429,7 @@ mark_scope_block_unused (tree scope)
    done by the inliner.  */
 
 static bool
-remove_unused_scope_block_p (tree scope)
+remove_unused_scope_block_p (tree scope, bitmap global_unused_vars)
 {
   tree *t, *next;
   bool unused = !TREE_USED (scope);
@@ -472,7 +472,9 @@ remove_unused_scope_block_p (tree scope)
 	 info about optimized-out variables in the scope blocks.
 	 Exception are the scope blocks not containing any instructions
 	 at all so user can't get into the scopes at first place.  */
-      else if (var_ann (*t) != NULL && is_used_p (*t))
+      else if ((is_global_var (*t)
+		&& !bitmap_bit_p (global_unused_vars, DECL_UID (*t)))
+	       || (var_ann (*t) != NULL && is_used_p (*t)))
 	unused = false;
       else if (TREE_CODE (*t) == LABEL_DECL && TREE_USED (*t))
 	/* For labels that are still used in the IL, the decision to
@@ -517,7 +519,7 @@ remove_unused_scope_block_p (tree scope)
     }
 
   for (t = &BLOCK_SUBBLOCKS (scope); *t ;)
-    if (remove_unused_scope_block_p (*t))
+    if (remove_unused_scope_block_p (*t, global_unused_vars))
       {
 	if (BLOCK_SUBBLOCKS (*t))
 	  {
@@ -847,9 +849,20 @@ remove_unused_locals (void)
     }
   if (dstidx != num)
     VEC_truncate (tree, cfun->local_decls, dstidx);
+
+  /* ???  We end up with decls in referenced-vars that are not in
+     local-decls.  */
+  FOR_EACH_REFERENCED_VAR (cfun, t, rvi)
+    if (TREE_CODE (t) == VAR_DECL
+	&& !VAR_DECL_IS_VIRTUAL_OPERAND (t)
+	&& !is_used_p (t))
+      remove_referenced_var (t);
+
+  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl),
+			       global_unused_vars);
+
   BITMAP_FREE (global_unused_vars);
 
-  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Scope blocks after cleanups:\n");

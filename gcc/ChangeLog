@@ -1,3 +1,12 @@
+2012-05-24  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/53466
+	* tree-ssa-live.c (remove_unused_scope_block_p): Properly
+	handle globals.
+	(remove_unused_locals): Pass global_unused_vars to
+	remove_unused_scope_block_p.  Restore code walking all
+	referenced vars and pruning them.
+
 2012-05-23  Jan Hubicka  <jh@suse.cz>
 
 	* tree.h (alias_diag_flags): Remove.
