@@ -71,6 +71,8 @@ typedef	struct	__go_panic_stack	Panic;
 typedef struct	__go_func_type		FuncType;
 typedef struct	__go_map_type		MapType;
 
+typedef struct  Traceback	Traceback;
+
 /*
  * per-cpu declaration.
  */
@@ -151,7 +153,7 @@ struct	G
 	// uintptr	sigpc;
 	uintptr	gopc;	// pc of go statement that created this goroutine
 
-	G*	dotraceback;
+	Traceback* traceback;
 
 	ucontext_t	context;
 	void*		stack_context[10];
@@ -299,6 +301,7 @@ void	runtime_goroutineheader(G*);
 void	runtime_goroutinetrailer(G*);
 void	runtime_traceback();
 void	runtime_tracebackothers(G*);
+void	runtime_printtrace(uintptr*, int32);
 String	runtime_gostringnocopy(const byte*);
 void*	runtime_mstart(void*);
 G*	runtime_malg(int32, byte**, size_t*);
