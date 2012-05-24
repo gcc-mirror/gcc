@@ -103,7 +103,7 @@ runtime_InitSizes(void)
 		sizeclass++;
 	}
 	if(sizeclass != NumSizeClasses) {
-		// runtime_printf("sizeclass=%d NumSizeClasses=%d\n", sizeclass, NumSizeClasses);
+		runtime_printf("sizeclass=%d NumSizeClasses=%d\n", sizeclass, NumSizeClasses);
 		runtime_throw("InitSizes - bad NumSizeClasses");
 	}
 
@@ -122,13 +122,13 @@ runtime_InitSizes(void)
 		for(n=0; n < MaxSmallSize; n++) {
 			sizeclass = runtime_SizeToClass(n);
 			if(sizeclass < 1 || sizeclass >= NumSizeClasses || runtime_class_to_size[sizeclass] < n) {
-				// runtime_printf("size=%d sizeclass=%d runtime_class_to_size=%d\n", n, sizeclass, runtime_class_to_size[sizeclass]);
-				// runtime_printf("incorrect SizeToClass");
+				runtime_printf("size=%d sizeclass=%d runtime_class_to_size=%d\n", n, sizeclass, runtime_class_to_size[sizeclass]);
+				runtime_printf("incorrect SizeToClass");
 				goto dump;
 			}
 			if(sizeclass > 1 && runtime_class_to_size[sizeclass-1] >= n) {
-				// runtime_printf("size=%d sizeclass=%d runtime_class_to_size=%d\n", n, sizeclass, runtime_class_to_size[sizeclass]);
-				// runtime_printf("SizeToClass too big");
+				runtime_printf("size=%d sizeclass=%d runtime_class_to_size=%d\n", n, sizeclass, runtime_class_to_size[sizeclass]);
+				runtime_printf("SizeToClass too big");
 				goto dump;
 			}
 		}
