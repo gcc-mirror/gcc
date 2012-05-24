@@ -1,5 +1,10 @@
 2012-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/53464
+	* g++.dg/cpp0x/constexpr-default1.C: New.
+
+2012-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/32080
 	* g++.dg/eh/goto2.C: New.
 
