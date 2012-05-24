@@ -1,3 +1,8 @@
+2012-05-24  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/53466
+	* g++.dg/debug/pr53466.C: New testcase.
+
 2012-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53465
