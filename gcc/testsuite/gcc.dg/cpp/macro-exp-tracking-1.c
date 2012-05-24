@@ -6,16 +6,14 @@
 #define OPERATE(OPRD1, OPRT, OPRD2) \
 do \
 { \
-  OPRD1 OPRT OPRD2; /* { dg-message "expansion" }*/ 	   \
+  OPRD1 OPRT OPRD2; /* { dg-message "definition" }*/ 	   \
 } while (0)
 
 #define SHIFTL(A,B) \
-  OPERATE (A,<<,B) /* { dg-message "expanded|expansion" } */
+  OPERATE (A,<<,B) /* { dg-error "invalid operands" } */
 
 void
 foo ()
 {
-  SHIFTL (0.1,0.2); /* { dg-message "expanded" } */
+  SHIFTL (0.1,0.2); /* { dg-message "in expansion of macro \[^\n\r\]SHIFTL" } */
 }
-
-/* { dg-error "invalid operands" "" { target *-*-* } 13 } */

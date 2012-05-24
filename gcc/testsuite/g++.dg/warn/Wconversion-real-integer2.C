@@ -29,5 +29,5 @@ float  vfloat;
 
 void h (void)
 {
-    vfloat = INT_MAX; // { dg-message "expanded from here" }
+    vfloat = INT_MAX; // { dg-message "in expansion of macro 'INT_MAX'" }
 }
