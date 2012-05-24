@@ -497,7 +497,8 @@ tree_profiling (void)
       gcov_type_tmp_var = NULL_TREE;
 
       /* Local pure-const may imply need to fixup the cfg.  */
-      execute_fixup_cfg ();
+      if (execute_fixup_cfg () & TODO_cleanup_cfg)
+	cleanup_tree_cfg ();
       branch_prob ();
 
       if (! flag_branch_probabilities
