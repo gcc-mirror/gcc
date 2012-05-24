@@ -7,12 +7,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "runtime.h"
 #include "go-assert.h"
 
 void
 __go_assert_fail (const char *file, unsigned int lineno)
 {
   /* FIXME: Eventually we should dump a stack trace here.  */
-  fprintf (stderr, "%s:%u: libgo assertion failure\n", file, lineno);
+  runtime_printf ("%s:%U: libgo assertion failure\n", file, (uint64) lineno);
   abort ();
 }

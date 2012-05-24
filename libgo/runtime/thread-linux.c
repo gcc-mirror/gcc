@@ -68,7 +68,7 @@ runtime_futexwakeup(uint32 *addr, uint32 cnt)
 	// I don't know that futex wakeup can return
 	// EAGAIN or EINTR, but if it does, it would be
 	// safe to loop and call futex again.
-	runtime_printf("futexwakeup addr=%p returned %lld\n", addr, (long long)ret);
+	runtime_printf("futexwakeup addr=%p returned %D\n", addr, ret);
 	*(int32*)0x1006 = 0x1006;
 }
 
