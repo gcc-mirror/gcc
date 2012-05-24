@@ -590,7 +590,6 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   {
 #define N  (sizeof(vc) / sizeof(long))
 
-    typedef char check_count[(N == 2 || N == 4) * 2 - 1];
     union {
       vc v;
       unsigned long l[N];
