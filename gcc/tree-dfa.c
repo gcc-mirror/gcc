@@ -118,27 +118,6 @@ struct gimple_opt_pass pass_referenced_vars =
 };
 
 
-/*---------------------------------------------------------------------------
-			    Manage annotations
----------------------------------------------------------------------------*/
-/* Create a new annotation for a _DECL node T.  */
-
-var_ann_t
-create_var_ann (tree t)
-{
-  var_ann_t ann;
-
-  gcc_assert (t);
-  gcc_assert (TREE_CODE (t) == VAR_DECL
-	      || TREE_CODE (t) == PARM_DECL
-	      || TREE_CODE (t) == RESULT_DECL);
-
-  ann = ggc_alloc_cleared_var_ann_d ();
-  *DECL_VAR_ANN_PTR (t) = ann;
-
-  return ann;
-}
-
 /* Renumber all of the gimple stmt uids.  */
 
 void
@@ -587,7 +566,7 @@ add_referenced_var_1 (tree var, struct function *fn)
     return false;
 
   if (!*DECL_VAR_ANN_PTR (var))
-    create_var_ann (var);
+    *DECL_VAR_ANN_PTR (var) = ggc_alloc_cleared_var_ann_d ();
 
   /* Insert VAR into the referenced_vars hash table if it isn't present.  */
   if (referenced_var_check_and_insert (var, fn))

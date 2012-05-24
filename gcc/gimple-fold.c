@@ -164,7 +164,8 @@ canonicalize_constructor_val (tree cval, tree from_decl)
       if (TREE_CODE (base) == VAR_DECL)
 	{
 	  TREE_ADDRESSABLE (base) = 1;
-	  if (cfun && gimple_referenced_vars (cfun))
+	  if (cfun && gimple_referenced_vars (cfun)
+	      && !is_global_var (base))
 	    add_referenced_var (base);
 	}
       else if (TREE_CODE (base) == FUNCTION_DECL)
