@@ -1,5 +1,5 @@
 /* Wrappers for platform timing functions.
-   Copyright (C) 2003, 2007, 2009, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2007, 2009, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -165,6 +165,21 @@ gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec
   if ((err == (clock_t) -1) && errno != 0)
     return -1;
   return 0;
+
+#elif defined(HAVE_CLOCK_GETTIME) && (defined(CLOCK_PROCESS_CPUTIME_ID) \
+				      || defined(CLOCK_THREAD_CPUTIME_ID))
+  /* Newer versions of VxWorks have CLOCK_THREAD_CPUTIME_ID giving
+     per-thread CPU time.  CLOCK_PROCESS_CPUTIME_ID would be better
+     but is not available.  */
+#ifndef CLOCK_PROCESS_CPUTIME_ID
+#define CLOCK_PROCESS_CPUTIME_ID CLOCK_THREAD_CPUTIME_ID
+#endif
+  struct timespec ts;
+  int err = clock_gettime (CLOCK_PROCESS_CPUTIME_ID, &ts);
+  *user_sec = ts.tv_sec;
+  *user_usecs = ts.tv_nsec / 1000;
+  *system_sec = *system_usec = 0;
+  return err;
 
 #else 
   clock_t c = clock ();
