@@ -239,25 +239,14 @@ extern const unsigned char tree_code_length[];
 
 extern const char *const tree_code_name[];
 
-/* We have to be able to tell cgraph about the needed-ness of the target
-   of an alias.  This requires that the decl have been defined.  Aliases
-   that precede their definition have to be queued for later processing.  */
+/* When procesing aliases on symtab level, we need the declaration of target.
+   For this reason we need to queue aliases and process them after all declarations
+   has been produced.  */
 
-/* The deferred processing proceeds in several passes.  We memorize the
-   diagnostics emitted for a pair to prevent repeating messages when the
-   queue gets re-scanned after possible updates.  */
-
-typedef enum {
-  ALIAS_DIAG_NONE      = 0x0,
-  ALIAS_DIAG_TO_UNDEF  = 0x1,
-  ALIAS_DIAG_TO_EXTERN = 0x2
-} alias_diag_flags;
-  
 typedef struct GTY(()) alias_pair
 {
   tree decl;
   tree target;  
-  int  emitted_diags;  /* alias_diags already emitted for this pair.  */
 } alias_pair;
 
 /* Define gc'd vector type.  */
@@ -5691,24 +5680,8 @@ extern void mark_decl_referenced (tree);
 extern void notice_global_symbol (tree);
 extern void set_user_assembler_name (tree, const char *);
 extern void process_pending_assemble_externals (void);
-extern void finish_aliases_1 (void);
-extern void finish_aliases_2 (void);
-extern void remove_unreachable_alias_pairs (void);
 extern bool decl_replaceable_p (tree);
 extern bool decl_binds_to_current_def_p (tree);
-
-/* Derived type for use by compute_visible_aliases and callers.  A symbol
-   alias set is a pointer set into which we enter IDENTIFIER_NODES bearing
-   the canonicalised assembler-level symbol names corresponding to decls
-   and their aliases.  */
-typedef struct pointer_set_t symbol_alias_set_t;
-
-extern void symbol_alias_set_destroy (symbol_alias_set_t *);
-extern int symbol_alias_set_contains (const symbol_alias_set_t *, tree);
-extern symbol_alias_set_t * propagate_aliases_backward (bool (*)
-							 (tree, tree, void *),
-							void *);
-
 /* In stmt.c */
 extern void expand_computed_goto (tree);
 extern bool parse_output_constraint (const char **, int, int, int,

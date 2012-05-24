@@ -285,7 +285,6 @@ cgraph_process_new_functions (void)
 
   if (!cgraph_new_nodes)
     return false;
-  finish_aliases_1 ();
   handle_alias_pairs ();
   /*  Note that this queue may grow as its being processed, as the new
       functions may generate new ones.  */
@@ -1068,6 +1067,18 @@ handle_alias_pairs (void)
 	  = lookup_attribute ("weakref",
 			      DECL_ATTRIBUTES (p->decl)) != NULL;
 
+      if (DECL_EXTERNAL (target_node->symbol.decl)
+	  /* We use local aliases for C++ thunks to force the tailcall
+	     to bind locally.  This is a hack - to keep it working do
+	     the following (which is not strictly correct).  */
+	  && (! TREE_CODE (target_node->symbol.decl) == FUNCTION_DECL
+	      || ! DECL_VIRTUAL_P (target_node->symbol.decl))
+	  && ! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
+	{
+	  error ("%q+D aliased to external symbol %qE",
+		 p->decl, p->target);
+	}
+
       if (TREE_CODE (p->decl) == FUNCTION_DECL
           && target_node && symtab_function_p (target_node))
 	{
@@ -1185,6 +1196,7 @@ mark_functions_to_output (void)
 		 end up not removing the body since we no longer have an
 		 analyzed node pointing to it.  */
 	      && !node->symbol.in_other_partition
+	      && !node->clones
 	      && !DECL_EXTERNAL (decl))
 	    {
 	      dump_cgraph_node (stderr, node);
@@ -1552,8 +1564,8 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
 	/* Force assemble_alias to really output the alias this time instead
 	   of buffering it in same alias pairs.  */
 	TREE_ASM_WRITTEN (alias->thunk.alias) = 1;
-	assemble_alias (alias->symbol.decl,
-			DECL_ASSEMBLER_NAME (alias->thunk.alias));
+	do_assemble_alias (alias->symbol.decl,
+			   DECL_ASSEMBLER_NAME (alias->thunk.alias));
 	assemble_thunks_and_aliases (alias);
 	TREE_ASM_WRITTEN (alias->thunk.alias) = saved_written;
       }
@@ -1902,16 +1914,16 @@ output_weakrefs (void)
     if (node->alias && DECL_EXTERNAL (node->symbol.decl)
         && !TREE_ASM_WRITTEN (node->symbol.decl)
 	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
-      assemble_alias (node->symbol.decl,
-		      node->thunk.alias ? DECL_ASSEMBLER_NAME (node->thunk.alias)
-		      : get_alias_symbol (node->symbol.decl));
+      do_assemble_alias (node->symbol.decl,
+		         node->thunk.alias ? DECL_ASSEMBLER_NAME (node->thunk.alias)
+		         : get_alias_symbol (node->symbol.decl));
   FOR_EACH_VARIABLE (vnode)
     if (vnode->alias && DECL_EXTERNAL (vnode->symbol.decl)
         && !TREE_ASM_WRITTEN (vnode->symbol.decl)
 	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (vnode->symbol.decl)))
-      assemble_alias (vnode->symbol.decl,
-		      vnode->alias_of ? DECL_ASSEMBLER_NAME (vnode->alias_of)
-		      : get_alias_symbol (vnode->symbol.decl));
+      do_assemble_alias (vnode->symbol.decl,
+		         vnode->alias_of ? DECL_ASSEMBLER_NAME (vnode->alias_of)
+		         : get_alias_symbol (vnode->symbol.decl));
 }
 
 /* Initialize callgraph dump file.  */
@@ -1995,7 +2007,6 @@ compile (void)
 #endif
   bitmap_obstack_release (NULL);
   mark_functions_to_output ();
-  output_weakrefs ();
 
   cgraph_state = CGRAPH_STATE_EXPANSION;
   if (!flag_toplevel_reorder)
@@ -2010,6 +2021,7 @@ compile (void)
 
   cgraph_process_new_functions ();
   cgraph_state = CGRAPH_STATE_FINISHED;
+  output_weakrefs ();
 
   if (cgraph_dump_file)
     {
@@ -2058,7 +2070,6 @@ finalize_compilation_unit (void)
   finalize_size_functions ();
 
   /* Mark alias targets necessary and emit diagnostics.  */
-  finish_aliases_1 ();
   handle_alias_pairs ();
 
   if (!quiet_flag)
@@ -2075,7 +2086,6 @@ finalize_compilation_unit (void)
   cgraph_analyze_functions ();
 
   /* Mark alias targets necessary and emit diagnostics.  */
-  finish_aliases_1 ();
   handle_alias_pairs ();
 
   /* Gimplify and lower thunks.  */
