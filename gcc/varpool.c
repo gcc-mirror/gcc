@@ -457,7 +457,6 @@ add_new_static_var (tree type)
   DECL_CONTEXT (new_decl) = NULL_TREE;
   DECL_ABSTRACT (new_decl) = 0;
   lang_hooks.dup_lang_specific_decl (new_decl);
-  create_var_ann (new_decl);
   new_node = varpool_node (new_decl);
   add_referenced_var (new_decl);
   varpool_finalize_decl (new_decl);
