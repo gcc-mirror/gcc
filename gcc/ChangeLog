@@ -1,3 +1,10 @@
+2012-05-24  Jim MacArthur<jim.macarthur@arm.com>
+
+	* recog.c (reg_fits_class_p): Check both regno and regno + offset are
+	hard registers.
+	* regs.h (in_hard_reg_set_p): Assert that regno is a hard register and
+	check end_regno - 1 is a hard register.
+
 2012-05-24  Richard Guenther  <rguenther@suse.de>
 
 	* varpool.c (add_new_static_var): Remove call to create_var_ann.
