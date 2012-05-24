@@ -48,7 +48,7 @@ RegisterDebugLookup (infofn_type pi, symvalfn_type ps)
 /* Return function/file/line information for PC.  */
 
 _Bool
-__go_file_line (uintptr_t pc, struct __go_string *fn, struct __go_string *file,
+__go_file_line (uintptr pc, struct __go_string *fn, struct __go_string *file,
 		int *line)
 {
   if (infofn == NULL)
