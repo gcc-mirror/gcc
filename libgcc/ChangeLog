@@ -1,5 +1,10 @@
 2012-05-24  Olivier Hainque  <hainque@adacore.com>
 
+	* Makefile.in: move dependency on install-unwind_h from
+	"install-leaf" to "install".
+
+2012-05-24  Olivier Hainque  <hainque@adacore.com>
+
 	* Makefile.in (clean): Remove libgcc_tm.stamp as well.
 	Use a separate command for stamp removals.
 
