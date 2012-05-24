@@ -1059,7 +1059,7 @@ install-shared:
 		@shlib_base_name@,libgcc_s,$(subst \
 		@shlib_slibdir_qual@,$(MULTIOSSUBDIR),$(SHLIB_INSTALL))))
 
-install-leaf: $(install-shared) $(install-libunwind) install-unwind_h
+install-leaf: $(install-shared) $(install-libunwind)
 	$(mkinstalldirs) $(DESTDIR)$(inst_libdir)
 
 	$(INSTALL_DATA) libgcc.a $(DESTDIR)$(inst_libdir)/
@@ -1079,7 +1079,7 @@ install-leaf: $(install-shared) $(install-libunwind) install-unwind_h
 	  esac;							\
 	done
 
-install: install-leaf
+install: install-leaf install-unwind_h
 	@: $(MAKE) ; $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 install-strip: install
