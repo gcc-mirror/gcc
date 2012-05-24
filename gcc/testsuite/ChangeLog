@@ -1,3 +1,8 @@
+2012-05-24  Pat Haugen <pthaugen@us.ibm.com>
+	* gcc.target/powerpc/lhs-1.c: New.
+	* gcc.target/powerpc/lhs-2.c: New.
+	* gcc.target/powerpc/lhs-3.c: New.
+
 2012-05-24  Dodji Seketeli  <dodji@redhat.com>
 
 	Make unwound macro expansion trace less redundant
