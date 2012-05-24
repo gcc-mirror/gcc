@@ -1,3 +1,8 @@
+2012-05-24  Dodji Seketeli  <dodji@redhat.com>
+
+	PR bootstrap/53459
+	* lex.c (search_line_fast): Remove unused typedef check_count.
+
 2012-05-16  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/7263
