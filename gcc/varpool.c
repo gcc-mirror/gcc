@@ -270,7 +270,7 @@ assemble_aliases (struct varpool_node *node)
     if (ref->use == IPA_REF_ALIAS)
       {
 	struct varpool_node *alias = ipa_ref_referring_varpool_node (ref);
-	assemble_alias (alias->symbol.decl,
+	do_assemble_alias (alias->symbol.decl,
 			DECL_ASSEMBLER_NAME (alias->alias_of));
 	assemble_aliases (alias);
       }
@@ -349,7 +349,6 @@ varpool_remove_unreferenced_decls (void)
 
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "Trivially needed variables:");
-  finish_aliases_1 ();
   FOR_EACH_DEFINED_VARIABLE (node)
     {
       if (node->analyzed

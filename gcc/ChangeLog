@@ -1,3 +1,26 @@
+2012-05-23  Jan Hubicka  <jh@suse.cz>
+
+	* tree.h (alias_diag_flags): Remove.
+	(alias_pair): Remove emitted_diags.
+	(finish_aliases_1, finish_aliases_2, remove_unreachable_alias_pairs,
+	symbol_alias_set_t, symbol_alias_set_destroy,
+	symbol_alias_set_contains, propagate_aliases_backward): Remove.
+	* toplev.c (compile_file): Do not call finish_aliases_2
+	* cgraphunit.c (cgraph_process_new_functions): Do not call finish_aliases_1.
+	(handle_alias_pairs): Output diagnostics about aliases to externals.
+	(assemble_thunks_and_aliases): Use do_assemble_alias.
+	(output_weakrefs): Likewise.
+	(finalize_compilation_unit): Do not call finish_aliases_1.
+	* ipa.c (symtab_remove_unreachable_nodes): De not call remove_unreachable_alias_pairs.
+	* varasm.c (do_assemble_alias): Export.
+	(symbol_alias_set_create, symbol_alias_set_destroy, symbol_alias_set_contains,
+	symbol_alias_set_insert, propagate_aliases_forward, propagate_aliases_backward,
+	propagate_aliases_backward, trivially_visible_alias, trivially_defined_alias,
+	remove_unreachable_alias_pairs, finish_aliases_1, finish_aliases_2, 
+	assemble_alias): Remove.
+	* output.h (do_assemble_alias): Declare.
+	* varpool.c (varpool_remove_unreferenced_decls): Do not call finish_aliases_1.
+
 2012-05-23  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-inline-analysis.c (inline_merge_summary): Free operand_map.
