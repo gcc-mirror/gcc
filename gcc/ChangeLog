@@ -1,3 +1,9 @@
+2012-05-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53474
+	* config/i386/i386.c (ix86_print_operand) <case 'O'>: Print '.' here.
+	<case 'C', case 'c', case 'F', case 'f'>: Print '.' only for C and c.
+
 2012-05-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	PR target/53435
@@ -125,20 +131,24 @@
 	symbol_alias_set_t, symbol_alias_set_destroy,
 	symbol_alias_set_contains, propagate_aliases_backward): Remove.
 	* toplev.c (compile_file): Do not call finish_aliases_2
-	* cgraphunit.c (cgraph_process_new_functions): Do not call finish_aliases_1.
+	* cgraphunit.c (cgraph_process_new_functions): Do not call
+	finish_aliases_1.
 	(handle_alias_pairs): Output diagnostics about aliases to externals.
 	(assemble_thunks_and_aliases): Use do_assemble_alias.
 	(output_weakrefs): Likewise.
 	(finalize_compilation_unit): Do not call finish_aliases_1.
-	* ipa.c (symtab_remove_unreachable_nodes): De not call remove_unreachable_alias_pairs.
+	* ipa.c (symtab_remove_unreachable_nodes): De not call
+	remove_unreachable_alias_pairs.
 	* varasm.c (do_assemble_alias): Export.
-	(symbol_alias_set_create, symbol_alias_set_destroy, symbol_alias_set_contains,
-	symbol_alias_set_insert, propagate_aliases_forward, propagate_aliases_backward,
-	propagate_aliases_backward, trivially_visible_alias, trivially_defined_alias,
-	remove_unreachable_alias_pairs, finish_aliases_1, finish_aliases_2, 
-	assemble_alias): Remove.
+	(symbol_alias_set_create, symbol_alias_set_destroy,
+	symbol_alias_set_contains, symbol_alias_set_insert,
+	propagate_aliases_forward, propagate_aliases_backward,
+	propagate_aliases_backward, trivially_visible_alias,
+	trivially_defined_alias, remove_unreachable_alias_pairs,
+	finish_aliases_1, finish_aliases_2, assemble_alias): Remove.
 	* output.h (do_assemble_alias): Declare.
-	* varpool.c (varpool_remove_unreferenced_decls): Do not call finish_aliases_1.
+	* varpool.c (varpool_remove_unreferenced_decls): Do not call
+	finish_aliases_1.
 
 2012-05-23  Martin Jambor  <mjambor@suse.cz>
 
@@ -211,15 +221,13 @@
 	* lto-streamer-in.c (input_cfg): Likewise.
 	* tree-inline.c (initialize_cfun): Likewise.
 	* tree-into-ssa.c (rewrite_into_ssa): Likewise.
-	* omp-low.c (expand_omp_taskreg): Likewise.  Avoid switching
-	cfun.
+	* omp-low.c (expand_omp_taskreg): Likewise.  Avoid switching cfun.
 	* gimple.c (is_gimple_reg): Optimize the SSA_NAME case,
 	virtual operands are not registers.
 
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
-	* tree-cfg.c (verify_gimple_assign_unary): Fix typo in previous
-	commit.
+	* tree-cfg.c (verify_gimple_assign_unary): Fix typo in previous commit.
 
 2012-05-22  Richard Guenther  <rguenther@suse.de>
 
@@ -231,8 +239,7 @@
 
 	* tree-flow.h (add_referenced_var_1): Declare.
 	(add_referenced_var): Define.
-	* tree-dfa.c (referenced_var_check_and_insert): Avoid one hash
-	lookup.
+	* tree-dfa.c (referenced_var_check_and_insert): Avoid one hash lookup.
 	(add_referenced_var): Rename to ...
 	(add_referenced_var_1): ... this.  Take struct function argument.
 

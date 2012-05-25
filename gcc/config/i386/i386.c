@@ -13931,8 +13931,8 @@ get_some_local_dynamic_name (void)
    C -- print opcode suffix for set/cmov insn.
    c -- like C, but print reversed condition
    F,f -- likewise, but for floating-point.
-   O -- if HAVE_AS_IX86_CMOV_SUN_SYNTAX, print the opcode suffix for
-	the size of the current operand, otherwise nothing.
+   O -- if HAVE_AS_IX86_CMOV_SUN_SYNTAX, expand to "w.", "l." or "q.",
+	otherwise nothing
    R -- print the prefix for register names.
    z -- print the opcode suffix for the size of the current operand.
    Z -- likewise, with special suffixes for x87 instructions.
@@ -14061,6 +14061,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		("invalid operand size for operand code 'O'");
 	      return;
 	    }
+
+	  putc ('.', file);
 #endif
 	  return;
 
@@ -14320,20 +14322,21 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    }
 	  return;
 
-	case 'C':
-	case 'c':
 	case 'F':
 	case 'f':
+#ifdef HAVE_AS_IX86_CMOV_SUN_SYNTAX
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
+	    putc ('.', file);
+#endif
+
+	case 'C':
+	case 'c':
 	  if (!COMPARISON_P (x))
 	    {
 	      output_operand_lossage ("operand is not a condition code, "
 				      "invalid operand code '%c'", code);
 	      return;
 	    }
-#ifdef HAVE_AS_IX86_CMOV_SUN_SYNTAX
-	  if (ASSEMBLER_DIALECT == ASM_ATT)
-	    putc ('.', file);
-#endif
 	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)),
 			      code == 'c' || code == 'f',
 			      code == 'F' || code == 'f',
