@@ -818,6 +818,15 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	       || decl_function_context (*tp) == id->src_fn))
     /* These may need to be remapped for EH handling.  */
     *tp = remap_decl (*tp, id);
+  else if (TREE_CODE (*tp) == FIELD_DECL)
+    {
+      /* If the enclosing record type is variably_modified_type_p, the field
+	 has already been remapped.  Otherwise, it need not be.  */
+      tree *n = (tree *) pointer_map_contains (id->decl_map, *tp);
+      if (n)
+	*tp = *n;
+      *walk_subtrees = 0;
+    }
   else if (TYPE_P (*tp))
     /* Types may need remapping as well.  */
     *tp = remap_type (*tp, id);
