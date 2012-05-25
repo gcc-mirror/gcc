@@ -18910,6 +18910,12 @@ cp_parser_member_declaration (cp_parser* parser)
 	     particular type), as opposed to a nested class.  */
 	  else if (ANON_AGGR_TYPE_P (type))
 	    {
+	      /* C++11 9.5/6.  */
+	      if (decl_specifiers.storage_class != sc_none)
+		error_at (decl_spec_token_start->location,
+			  "a storage class on an anonymous aggregate "
+			  "in class scope is not allowed");
+
 	      /* Remove constructors and such from TYPE, now that we
 		 know it is an anonymous aggregate.  */
 	      fixup_anonymous_aggr (type);

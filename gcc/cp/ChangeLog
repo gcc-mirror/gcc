@@ -1,3 +1,9 @@
+2012-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/32054
+	* parser.c (cp_parser_member_declaration): A storage class is not
+	allowed in a declaration of an anonymous aggregate in a class scope.
+
 2012-05-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR obj-c++/53441
