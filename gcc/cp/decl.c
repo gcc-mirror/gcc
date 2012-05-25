@@ -9803,7 +9803,8 @@ grokdeclarator (const cp_declarator *declarator,
 	       clones.  */
 	    DECL_ABSTRACT (decl) = 1;
 	}
-      else if (constructor_name_p (unqualified_id, current_class_type))
+      else if (current_class_type
+	       && constructor_name_p (unqualified_id, current_class_type))
 	permerror (input_location, "ISO C++ forbids nested type %qD with same name "
 		   "as enclosing class",
 		   unqualified_id);
