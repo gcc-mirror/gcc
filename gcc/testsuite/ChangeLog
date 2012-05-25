@@ -1,3 +1,8 @@
+2012-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/32054
+	* g++.dg/other/anon-union3.C: New.
+
 2012-05-25  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/split-6.c: New test.
