@@ -1,3 +1,7 @@
+2012-05-25  Tristan Gingold  <gingold@adacore.com>
+
+	* common/config/ia64/ia64-common.c (ia64_except_unwind_info): Fix typo.
+
 2012-05-25  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* fold-const.c (optimize_bit_field_compare): Abort early in the strict
