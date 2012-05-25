@@ -703,6 +703,7 @@ mark(void (*scan)(byte*, int64))
 	scan((byte*)&runtime_allm, sizeof runtime_allm);
 	runtime_MProf_Mark(scan);
 	runtime_time_scan(scan);
+	runtime_trampoline_scan(scan);
 
 	// mark stacks
 	for(gp=runtime_allg; gp!=nil; gp=gp->alllink) {
