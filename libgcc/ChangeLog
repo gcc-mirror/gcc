@@ -1,3 +1,8 @@
+2012-05-25  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks/tramp.S (trampoline_setup): Use a longcall
+	sequence in the non pic case on VxWorks.
+
 2012-05-24  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in: Move dependency on install-unwind_h from
