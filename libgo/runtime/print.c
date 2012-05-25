@@ -136,7 +136,7 @@ void
 runtime_printpc(void *p __attribute__ ((unused)))
 {
 	runtime_prints("PC=");
-	runtime_printhex((uint64)runtime_getcallerpc(p));
+	runtime_printhex((uint64)(uintptr)runtime_getcallerpc(p));
 }
 
 void
