@@ -1,3 +1,9 @@
+2012-05-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/t-linux64: Delete the 32-bit multilib that uses
+	software floating point emulation.  No longer build the multilibs
+	with -mstrict-align.
+
 2012-05-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/53008
