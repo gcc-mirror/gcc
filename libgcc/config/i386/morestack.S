@@ -1,5 +1,5 @@
 # x86/x86_64 support for -fsplit-stack.
-# Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+# Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 # Contributed by Ian Lance Taylor <iant@google.com>.
 
 # This file is part of GCC.
@@ -138,6 +138,24 @@ __morestack_non_split:
 	je	1f			# see above.
 	addl	$2,%eax
 1:	inc	%eax
+
+	# If the instruction that we return to is
+	#   leal  20(%ebp),{%eax,%ecx,%edx}
+	# then we have been called by a varargs function that expects
+	# %ebp to hold a real value.  That can only work if we do the
+	# full stack split routine.  FIXME: This is fragile.
+	cmpb	$0x8d,(%eax)
+	jne	3f
+	cmpb	$0x14,2(%eax)
+	jne	3f
+	cmpb	$0x45,1(%eax)
+	je	2f
+	cmpb	$0x4d,1(%eax)
+	je	2f
+	cmpb	$0x55,1(%eax)
+	je	2f
+
+3:	
 	movl	%eax,4(%esp)		# Update return address.
 
 	popl	%eax			# Restore %eax and stack.
@@ -175,18 +193,32 @@ __morestack_non_split:
 #else
 	cmpl	%fs:0x40,%eax
 #endif
-	popq	%rax			# Restore register.
-
-	.cfi_adjust_cfa_offset -8	# Adjust for popped register.
 
 	jb	2f			# Get more space if we need it.
 
 	# This breaks call/return prediction, as described above.
-	incq	(%rsp)			# Increment the return address.
+	incq	8(%rsp)			# Increment the return address.
+
+	# If the instruction that we return to is
+	#   leaq  24(%rbp), %r11n
+	# then we have been called by a varargs function that expects
+	# %ebp to hold a real value.  That can only work if we do the
+	# full stack split routine.  FIXME: This is fragile.
+	movq	8(%rsp),%rax
+	cmpl	$0x185d8d4c,(%rax)
+	je	2f
+
+	popq	%rax			# Restore register.
+
+	.cfi_adjust_cfa_offset -8	# Adjust for popped register.
 
 	ret				# Return to caller.
 
 2:
+	popq	%rax			# Restore register.
+
+	.cfi_adjust_cfa_offset -8	# Adjust for popped register.
+
 	addq	$0x5000+BACKOFF,%r10	# Increment space we request.
 
 	# Fall through into morestack.

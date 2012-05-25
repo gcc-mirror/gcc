@@ -1,3 +1,7 @@
+2012-05-25  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/split-6.c: New test.
+
 2012-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto14.adb: New test.
