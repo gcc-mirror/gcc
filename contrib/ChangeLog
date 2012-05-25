@@ -1,3 +1,9 @@
+2012-05-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/53472
+	* contrib/compare-debug (remove_comment): New function.
+	Remove any .comment sections if the first cmp failed.
+
 2012-05-09  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc_update: Use $GCC_SVN to retrieve branch and revision.
