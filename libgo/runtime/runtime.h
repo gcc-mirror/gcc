@@ -490,6 +490,7 @@ uintptr	runtime_memlimit(void);
 void	runtime_setprof(bool);
 
 void	runtime_time_scan(void (*)(byte*, int64));
+void	runtime_trampoline_scan(void (*)(byte *, int64));
 
 void	runtime_setsig(int32, bool, bool);
 #define runtime_setitimer setitimer
