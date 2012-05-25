@@ -1,3 +1,9 @@
+2012-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/52178
+	* tree-inline.c (remap_gimple_op_r): Fix handling of FIELD_DECL.
+	* tree.c (RETURN_TRUE_IF_VAR): Do not return true for PLACEHOLDER_EXPR.
+
 2012-05-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/t-linux64: Delete the 32-bit multilib that uses
