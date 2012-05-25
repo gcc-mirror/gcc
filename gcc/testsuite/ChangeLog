@@ -1,3 +1,7 @@
+2012-05-25  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc.target/i386/large-frame.c: New.
+
 2012-05-24  Pat Haugen <pthaugen@us.ibm.com>
 	* gcc.target/powerpc/lhs-1.c: New.
 	* gcc.target/powerpc/lhs-2.c: New.

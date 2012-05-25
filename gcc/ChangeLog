@@ -1,5 +1,11 @@
 2012-05-25  Tristan Gingold  <gingold@adacore.com>
 
+	* config/i386/i386.c (struct ix86_frame): Remove unused frame field.
+	(ix86_compute_frame_layout): Fix type of stack_alignment_needed
+	and preferred_alignment.
+
+2012-05-25  Tristan Gingold  <gingold@adacore.com>
+
 	* common/config/ia64/ia64-common.c (ia64_except_unwind_info): Fix typo.
 
 2012-05-25  Thomas Schwinge  <thomas@codesourcery.com>
