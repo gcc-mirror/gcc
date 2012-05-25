@@ -8431,8 +8431,11 @@ variably_modified_type_p (tree type, tree fn)
    a variable in FN.  */
 #define RETURN_TRUE_IF_VAR(T)						\
   do { tree _t = (T);							\
-    if (_t && _t != error_mark_node && TREE_CODE (_t) != INTEGER_CST	\
-        && (!fn || walk_tree (&_t, find_var_from_fn, fn, NULL)))	\
+    if (_t != NULL_TREE							\
+	&& _t != error_mark_node					\
+	&& TREE_CODE (_t) != INTEGER_CST				\
+	&& TREE_CODE (_t) != PLACEHOLDER_EXPR				\
+	&& (!fn || walk_tree (&_t, find_var_from_fn, fn, NULL)))	\
       return true;  } while (0)
 
   if (type == error_mark_node)
