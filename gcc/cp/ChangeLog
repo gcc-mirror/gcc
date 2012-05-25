@@ -1,3 +1,9 @@
+2012-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR obj-c++/53441
+	* decl.c (grokdeclarator): Check that current_class_type is non-NULL
+	before calling constructor_name_p.
+
 2012-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/32080
