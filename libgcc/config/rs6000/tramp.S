@@ -95,6 +95,16 @@ FUNC_START(__trampoline_setup)
 	blr
 
 .Labort:
+/* Use a longcall sequence in the non PIC case on VxWorks, to prevent
+   possible relocation errors if this is module-loaded very far away from
+   the 'abort' entry point.  */
+#if defined (__VXWORKS__) && ! (defined __PIC__ || defined __pic__)
+        lis   r11,JUMP_TARGET(abort)@ha
+        addic r11,r11,JUMP_TARGET(abort)@l
+        mtlr  r11
+        blrl
+#else
+
 #if (defined __PIC__ || defined __pic__) && defined HAVE_AS_REL16
 	bcl	20,31,1f
 1:	mflr	r30
@@ -103,5 +113,7 @@ FUNC_START(__trampoline_setup)
 #endif
 	bl	JUMP_TARGET(abort)
 FUNC_END(__trampoline_setup)
+
+#endif
 
 #endif
