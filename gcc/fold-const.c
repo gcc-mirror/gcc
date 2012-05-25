@@ -3346,6 +3346,11 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
   tree mask;
   tree offset;
 
+  /* In the strict volatile bitfields case, doing code changes here may prevent
+     other optimizations, in particular in a SLOW_BYTE_ACCESS setting.  */
+  if (flag_strict_volatile_bitfields > 0)
+    return 0;
+
   /* Get all the information about the extractions being done.  If the bit size
      if the same as the size of the underlying object, we aren't doing an
      extraction at all and so can do nothing.  We also don't want to

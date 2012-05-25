@@ -1,4 +1,9 @@
-2012-05-24  Pat Haugen <pthaugen@us.ibm.com>
+2012-05-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* fold-const.c (optimize_bit_field_compare): Abort early in the strict
+	volatile bitfields case.
+
+2012-05-24  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Change
 	rs6000_sched_costly_dep default to true_store_to_load_dep_costly.
