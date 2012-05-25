@@ -3394,13 +3394,6 @@ _ACEOF
 
 fi
 
-gnu_ld=`if test x"$gnu_ld_flag" = x"yes"; then echo 1; else echo 0; fi`
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_GNU_LD $gnu_ld
-_ACEOF
-
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether a default linker was specified" >&5
 $as_echo_n "checking whether a default linker was specified... " >&6; }
 if test x"${DEFAULT_LINKER+set}" = x"set"; then
@@ -3458,13 +3451,6 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 fi
-
-gnu_as=`if test x"$gas_flag" = x"yes"; then echo 1; else echo 0; fi`
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_GNU_AS $gnu_as
-_ACEOF
-
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether a default assembler was specified" >&5
 $as_echo_n "checking whether a default assembler was specified... " >&6; }
@@ -11174,6 +11160,20 @@ if test x$use_long_long_for_widest_fast_int = xyes; then
 $as_echo "#define USE_LONG_LONG_FOR_WIDEST_FAST_INT 1" >>confdefs.h
 
 fi
+
+gnu_ld_bool=`if test x"$gnu_ld" = x"yes"; then echo 1; else echo 0; fi`
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GNU_LD $gnu_ld_bool
+_ACEOF
+
+
+gnu_as_bool=`if test x"$gas" = x"yes"; then echo 1; else echo 0; fi`
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GNU_AS $gnu_as_bool
+_ACEOF
+
 
 count=a
 for f in $host_xm_file; do
