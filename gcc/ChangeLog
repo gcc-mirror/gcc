@@ -1,3 +1,9 @@
+2012-05-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	PR target/53435
+	* config/i386/i386.c (ix86_expand_vec_perm): Use correct op.
+	(ix86_expand_vec_perm): Use int mode instead of float.
+
 2012-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/52362

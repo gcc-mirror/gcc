@@ -19797,7 +19797,7 @@ ix86_expand_vec_perm (rtx operands[])
 	      t1 = gen_reg_rtx (V8SImode);
 	      t2 = gen_reg_rtx (V8SImode);
 	      emit_insn (gen_avx2_permvarv8si (t1, op0, mask));
-	      emit_insn (gen_avx2_permvarv8si (t2, op0, mask));
+	      emit_insn (gen_avx2_permvarv8si (t2, op1, mask));
 	      goto merge_two;
 	    }
 	  return;
@@ -19830,10 +19830,10 @@ ix86_expand_vec_perm (rtx operands[])
 
         case V4SFmode:
 	  t1 = gen_reg_rtx (V8SFmode);
-	  t2 = gen_reg_rtx (V8SFmode);
-	  mask = gen_lowpart (V4SFmode, mask);
+	  t2 = gen_reg_rtx (V8SImode);
+	  mask = gen_lowpart (V4SImode, mask);
 	  emit_insn (gen_avx_vec_concatv8sf (t1, op0, op1));
-	  emit_insn (gen_avx_vec_concatv8sf (t2, mask, mask));
+	  emit_insn (gen_avx_vec_concatv8si (t2, mask, mask));
 	  emit_insn (gen_avx2_permvarv8sf (t1, t1, t2));
 	  emit_insn (gen_avx_vextractf128v8sf (target, t1, const0_rtx));
 	  return;
@@ -35856,7 +35856,7 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
       else if (vmode == V32QImode)
 	emit_insn (gen_avx2_pshufbv32qi3 (target, op0, vperm));
       else
-	emit_insn (gen_avx2_permvarv8si (target, vperm, op0));
+	emit_insn (gen_avx2_permvarv8si (target, op0, vperm));
     }
   else
     {
