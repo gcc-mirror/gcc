@@ -1,3 +1,13 @@
+2012-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/52362
+	* config.gcc (i[34567]86-*-mingw* | x86_64-*-mingw*): Set gas and
+	gnu_ld variables to yes.
+	* configure.ac (HAVE_GNU_LD): Move to after config.gcc inclusion.
+	(HAVE_GNU_AS): Likewise.
+	* config.in: Regenerate.
+	* configure: Likewise.
+
 2012-05-25  Tristan Gingold  <gingold@adacore.com>
 
 	* config/i386/i386.c (struct ix86_frame): Remove unused frame field.
