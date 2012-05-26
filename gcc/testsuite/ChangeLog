@@ -1,3 +1,7 @@
+2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming5.adb: Adjust dg-final directive.
+
 2012-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/32054
