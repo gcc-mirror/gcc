@@ -53,12 +53,14 @@ int main ()
     T t;
     if (c != 11)
       return 5;
-    MA ma = bar ((M[2]) { M(), M() }, m);
-    if (c != 12)
-      return 7;
     M mm[2] = ((M[2]) { f(M()), f(M()) });
-    if (c != 14)
+    if (c != 13)
       return 8;
+#if 0
+    MA ma = bar ((M[2]) { M(), M() }, m);
+    if (c != 14)
+      return 7;
+#endif
   }
   if (c != 0)
     return 6;

@@ -1886,6 +1886,15 @@ decay_conversion (tree exp, tsubst_flags_t complain)
 	  return error_mark_node;
 	}
 
+      /* Don't let an array compound literal decay to a pointer.  It can
+	 still be used to initialize an array or bind to a reference.  */
+      if (TREE_CODE (exp) == TARGET_EXPR)
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "taking address of temporary array");
+	  return error_mark_node;
+	}
+
       ptrtype = build_pointer_type (TREE_TYPE (type));
 
       if (TREE_CODE (exp) == VAR_DECL)
