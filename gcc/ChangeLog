@@ -1,3 +1,17 @@
+2012-05-26  Dimitrios Apostolou  <jimis@gmx.net>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* df-scan.c (df_def_record_1): Assert a parallel must contain an
+	EXPR_LIST at this point.  Receive the LOC and move its extraction...
+	(df_defs_record): ... here. Change if-else to a switch statement.
+	(df_find_hard_reg_defs, df_find_hard_reg_defs_1): New.
+	(df_get_call_refs): Changed defs_generated from bitmap to HARD_REG_SET
+	and compute it from df_find_hard_reg_defs(). Record DF_REF_BASE
+	DEFs in REGNO order. Use HARD_REG_SET instead of bitmap for
+	regs_invalidated_by_call.
+	(df_insn_refs_collect): Record DF_REF_REGULAR DEFs after
+	df_get_call_refs().
+
 2012-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/52178
