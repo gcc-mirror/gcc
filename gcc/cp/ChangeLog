@@ -1,3 +1,8 @@
+2012-05-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53491
+	* tree.c (stabilize_expr): Handle exp of void type.
+
 2012-05-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53220

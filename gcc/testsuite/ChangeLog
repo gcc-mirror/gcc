@@ -1,4 +1,9 @@
-2012-05-22  Jason Merrill  <jason@redhat.com>
+2012-05-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53491
+	* g++.dg/parse/crash60.C: New.
+
+2012-05-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53220
 	* c-c++-common/array-lit.c: New.

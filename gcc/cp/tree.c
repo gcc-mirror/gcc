@@ -3281,6 +3281,11 @@ stabilize_expr (tree exp, tree* initp)
 
   if (!TREE_SIDE_EFFECTS (exp))
     init_expr = NULL_TREE;
+  else if (VOID_TYPE_P (TREE_TYPE (exp)))
+    {
+      *initp = exp;
+      return void_zero_node;
+    }
   /* There are no expressions with REFERENCE_TYPE, but there can be call
      arguments with such a type; just treat it as a pointer.  */
   else if (TREE_CODE (TREE_TYPE (exp)) == REFERENCE_TYPE
