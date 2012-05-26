@@ -119,8 +119,8 @@ typedef struct variant_desc_d {
   /* The value of the qualifier.  */
   tree qual;
 
-  /* The record associated with this variant.  */
-  tree record;
+  /* The type of the variant after transformation.  */
+  tree new_type;
 } variant_desc;
 
 DEF_VEC_O(variant_desc);
@@ -3318,11 +3318,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      {
 			tree old_variant = v->type;
 			tree new_variant = make_node (RECORD_TYPE);
+			tree suffix
+			  = concat_name (DECL_NAME (gnu_variant_part),
+					 IDENTIFIER_POINTER
+					 (DECL_NAME (v->field)));
 			TYPE_NAME (new_variant)
-			  = DECL_NAME (TYPE_NAME (old_variant));
+			  = concat_name (TYPE_NAME (gnu_type),
+					 IDENTIFIER_POINTER (suffix));
 			copy_and_substitute_in_size (new_variant, old_variant,
 						     gnu_subst_list);
-			v->record = new_variant;
+			v->new_type = new_variant;
 		      }
 		}
 	      else
@@ -3426,7 +3431,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			    if (selected_variant)
 			      gnu_cont_type = gnu_type;
 			    else
-			      gnu_cont_type = v->record;
+			      gnu_cont_type = v->new_type;
 			  }
 			else
 			  /* The front-end may pass us "ghost" components if
@@ -7562,7 +7567,7 @@ build_variant_list (tree qual_union_type, VEC(subst_pair,heap) *subst_list,
 	  v->type = variant_type;
 	  v->field = gnu_field;
 	  v->qual = qual;
-	  v->record = NULL_TREE;
+	  v->new_type = NULL_TREE;
 
 	  /* Recurse on the variant subpart of the variant, if any.  */
 	  variant_subpart = get_variant_part (variant_type);
@@ -8238,7 +8243,9 @@ create_variant_part_from (tree old_variant_part,
 
   /* First create the type of the variant part from that of the old one.  */
   new_union_type = make_node (QUAL_UNION_TYPE);
-  TYPE_NAME (new_union_type) = DECL_NAME (TYPE_NAME (old_union_type));
+  TYPE_NAME (new_union_type)
+    = concat_name (TYPE_NAME (record_type),
+		   IDENTIFIER_POINTER (DECL_NAME (old_variant_part)));
 
   /* If the position of the variant part is constant, subtract it from the
      size of the type of the parent to get the new size.  This manual CSE
@@ -8272,7 +8279,7 @@ create_variant_part_from (tree old_variant_part,
 	continue;
 
       /* Retrieve the list of fields already added to the new variant.  */
-      new_variant = v->record;
+      new_variant = v->new_type;
       field_list = TYPE_FIELDS (new_variant);
 
       /* If the old variant had a variant subpart, we need to create a new
