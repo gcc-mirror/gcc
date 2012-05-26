@@ -1,3 +1,10 @@
+2012-05-26  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2012-05-23  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-inline-analysis.c (inline_merge_summary): Free operand_map.
+
 2012-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/52178
