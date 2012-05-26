@@ -1785,6 +1785,18 @@ array_to_pointer_conversion (location_t loc, tree exp)
   if (TREE_CODE (exp) == INDIRECT_REF)
     return convert (ptrtype, TREE_OPERAND (exp, 0));
 
+  /* In C++ array compound literals are temporary objects unless they are
+     const or appear in namespace scope, so they are destroyed too soon
+     to use them for much of anything  (c++/53220).  */
+  if (warn_cxx_compat && TREE_CODE (exp) == COMPOUND_LITERAL_EXPR)
+    {
+      tree decl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+      if (!TREE_READONLY (decl) && !TREE_STATIC (decl))
+	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
+		    "converting an array compound literal to a pointer "
+		    "is ill-formed in C++");
+    }
+
   adr = build_unary_op (loc, ADDR_EXPR, exp, 1);
   return convert (ptrtype, adr);
 }

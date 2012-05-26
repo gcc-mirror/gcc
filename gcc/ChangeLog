@@ -1,3 +1,9 @@
+2012-05-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53220
+	* c-typeck.c (array_to_pointer_conversion): Give -Wc++-compat warning
+	about array compound literals.
+
 2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgcleanup.c (try_optimize_cfg): Do not delete forwarder blocks
