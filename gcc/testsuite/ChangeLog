@@ -1,5 +1,10 @@
 2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/50294
+	* gnat.dg/array21.adb: New test.
+
+2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/renaming5.adb: Adjust dg-final directive.
 
 2012-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
