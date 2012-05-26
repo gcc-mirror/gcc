@@ -1,3 +1,13 @@
+2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgcleanup.c (try_optimize_cfg): Do not delete forwarder blocks
+	if CLEANUP_NO_INSN_DEL.
+	* cfgrtl.c (unique_locus_on_edge_between_p): New function extracted
+	from cfg_layout_merge_blocks.
+	(emit_nop_for_unique_locus_between): New function.
+	(rtl_merge_blocks): Invoke emit_nop_for_unique_locus_between.
+	(cfg_layout_merge_blocks): Likewise.
+
 2012-05-26  Dimitrios Apostolou  <jimis@gmx.net>
 	    Paolo Bonzini  <bonzini@gnu.org>
 

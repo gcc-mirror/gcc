@@ -603,6 +603,56 @@ rtl_split_block (basic_block bb, void *insnp)
   return new_bb;
 }
 
+/* Return true if the single edge between blocks A and B is the only place
+   in RTL which holds some unique locus.  */
+
+static bool
+unique_locus_on_edge_between_p (basic_block a, basic_block b)
+{
+  const int goto_locus = EDGE_SUCC (a, 0)->goto_locus;
+  rtx insn, end;
+
+  if (!goto_locus)
+    return false;
+
+  /* First scan block A backward.  */
+  insn = BB_END (a);
+  end = PREV_INSN (BB_HEAD (a));
+  while (insn != end && (!NONDEBUG_INSN_P (insn) || INSN_LOCATOR (insn) == 0))
+    insn = PREV_INSN (insn);
+
+  if (insn != end && locator_eq (INSN_LOCATOR (insn), goto_locus))
+    return false;
+
+  /* Then scan block B forward.  */
+  insn = BB_HEAD (b);
+  if (insn)
+    {
+      end = NEXT_INSN (BB_END (b));
+      while (insn != end && !NONDEBUG_INSN_P (insn))
+	insn = NEXT_INSN (insn);
+
+      if (insn != end && INSN_LOCATOR (insn) != 0
+	  && locator_eq (INSN_LOCATOR (insn), goto_locus))
+	return false;
+    }
+
+  return true;
+}
+
+/* If the single edge between blocks A and B is the only place in RTL which
+   holds some unique locus, emit a nop with that locus between the blocks.  */
+
+static void
+emit_nop_for_unique_locus_between (basic_block a, basic_block b)
+{
+  if (!unique_locus_on_edge_between_p (a, b))
+    return;
+
+  BB_END (a) = emit_insn_after_noloc (gen_nop (), BB_END (a), a);
+  INSN_LOCATOR (BB_END (a)) = EDGE_SUCC (a, 0)->goto_locus;
+}
+
 /* Blocks A and B are to be merged into a single block A.  The insns
    are already contiguous.  */
 
@@ -681,15 +731,25 @@ rtl_merge_blocks (basic_block a, basic_block b)
 
   /* Delete everything marked above as well as crap that might be
      hanging out between the two blocks.  */
-  BB_HEAD (b) = NULL;
+  BB_END (a) = a_end;
+  BB_HEAD (b) = b_empty ? NULL_RTX : b_head;
   delete_insn_chain (del_first, del_last, true);
+
+  /* When not optimizing CFG and the edge is the only place in RTL which holds
+     some unique locus, emit a nop with that locus in between.  */
+  if (!optimize)
+    {
+      emit_nop_for_unique_locus_between (a, b);
+      a_end = BB_END (a);
+    }
 
   /* Reassociate the insns of B with A.  */
   if (!b_empty)
     {
       update_bb_for_insn_chain (a_end, b_debug_end, a);
 
-      a_end = b_debug_end;
+      BB_END (a) = b_debug_end;
+      BB_HEAD (b) = NULL_RTX;
     }
   else if (b_end != b_debug_end)
     {
@@ -701,11 +761,10 @@ rtl_merge_blocks (basic_block a, basic_block b)
 	reorder_insns_nobb (NEXT_INSN (a_end), PREV_INSN (b_debug_start),
 			    b_debug_end);
       update_bb_for_insn_chain (b_debug_start, b_debug_end, a);
-      a_end = b_debug_end;
+      BB_END (a) = b_debug_end;
     }
 
   df_bb_delete (b->index);
-  BB_END (a) = a_end;
 
   /* If B was a forwarder block, propagate the locus on the edge.  */
   if (forwarder_p && !EDGE_SUCC (b, 0)->goto_locus)
@@ -2853,33 +2912,10 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
     try_redirect_by_replacing_jump (EDGE_SUCC (a, 0), b, true);
   gcc_assert (!JUMP_P (BB_END (a)));
 
-  /* When not optimizing and the edge is the only place in RTL which holds
+  /* When not optimizing CFG and the edge is the only place in RTL which holds
      some unique locus, emit a nop with that locus in between.  */
-  if (!optimize && EDGE_SUCC (a, 0)->goto_locus)
-    {
-      rtx insn = BB_END (a), end = PREV_INSN (BB_HEAD (a));
-      int goto_locus = EDGE_SUCC (a, 0)->goto_locus;
-
-      while (insn != end && (!INSN_P (insn) || INSN_LOCATOR (insn) == 0))
-	insn = PREV_INSN (insn);
-      if (insn != end && locator_eq (INSN_LOCATOR (insn), goto_locus))
-	goto_locus = 0;
-      else
-	{
-	  insn = BB_HEAD (b);
-	  end = NEXT_INSN (BB_END (b));
-	  while (insn != end && !INSN_P (insn))
-	    insn = NEXT_INSN (insn);
-	  if (insn != end && INSN_LOCATOR (insn) != 0
-	      && locator_eq (INSN_LOCATOR (insn), goto_locus))
-	    goto_locus = 0;
-	}
-      if (goto_locus)
-	{
-	  BB_END (a) = emit_insn_after_noloc (gen_nop (), BB_END (a), a);
-	  INSN_LOCATOR (BB_END (a)) = goto_locus;
-	}
-    }
+  if (!optimize)
+    emit_nop_for_unique_locus_between (a, b);
 
   /* Possible line number notes should appear in between.  */
   if (BB_HEADER (b))
