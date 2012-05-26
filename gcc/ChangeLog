@@ -1,3 +1,12 @@
+2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2012-03-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR rtl-optimization/52528
+	* combine.c (can_combine_p): Add setting of subst_low_luid
+	before call to expand_field_assignment().
+
 2012-05-26  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline

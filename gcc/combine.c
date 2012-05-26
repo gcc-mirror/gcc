@@ -1822,6 +1822,10 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED,
   if (set == 0)
     return 0;
 
+  /* The simplification in expand_field_assignment may call back to
+     get_last_value, so set safe guard here.  */
+  subst_low_luid = DF_INSN_LUID (insn);
+
   set = expand_field_assignment (set);
   src = SET_SRC (set), dest = SET_DEST (set);
 
