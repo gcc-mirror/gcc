@@ -1,3 +1,7 @@
+2012-05-27  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.c (build_constructor): Propagate TREE_SIDE_EFFECTS.
+
 2012-05-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53220
