@@ -158,10 +158,11 @@ gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec
   struct tms buf;
   clock_t err;
   err = times (&buf);
-  *user_sec = buf.tms_utime / HZ;
-  *user_usec = buf.tms_utime % HZ * (1000000. / HZ);
-  *system_sec = buf.tms_stime / HZ;
-  *system_usec = buf.tms_stime % HZ * (1000000. / HZ);
+  long hz = HZ;
+  *user_sec = buf.tms_utime / hz;
+  *user_usec = (buf.tms_utime % hz) * (1000000. / hz);
+  *system_sec = buf.tms_stime / hz;
+  *system_usec = (buf.tms_stime % hz) * (1000000. / hz);
   if ((err == (clock_t) -1) && errno != 0)
     return -1;
   return 0;
@@ -184,7 +185,7 @@ gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec
 #else 
   clock_t c = clock ();
   *user_sec = c / CLOCKS_PER_SEC;
-  *user_usec = c % CLOCKS_PER_SEC * (1000000. / CLOCKS_PER_SEC);
+  *user_usec = (c % CLOCKS_PER_SEC) * (1000000. / CLOCKS_PER_SEC);
   *system_sec = *system_usec = 0;
   if (c == (clock_t) -1)
     return -1;
@@ -204,7 +205,7 @@ gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec
    usecs    - OUTPUT, microseconds
 
    The OUTPUT arguments shall represent the number of seconds and
-   nanoseconds since the Epoch.
+   microseconds since the Epoch.
 
    Return value: 0 for success, -1 for error. In case of error, errno
    is set.
