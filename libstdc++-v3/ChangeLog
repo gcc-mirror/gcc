@@ -1,3 +1,8 @@
+2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53503
+	* testsuite/26_numerics/headers/cmath/53503.cc: New.
+
 2012-05-10  DJ Delorie  <dj@redhat.com>
 
 	* include/bits/random.tcc (seed_seq::generate): Cast max()

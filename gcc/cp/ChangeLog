@@ -1,3 +1,8 @@
+2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53503
+	* semantics.c (potential_constant_expression_1): Handle LTGT_EXPR.
+
 2012-05-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/53209
