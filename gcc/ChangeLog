@@ -1,3 +1,8 @@
+2012-05-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/md.texi (stack_protect_test): Remove negation of
+        branch to label.
+
 2012-05-27  Nathan Sidwell  <nathan@acm.org>
 
 	* tree.c (build_constructor): Propagate TREE_SIDE_EFFECTS.
