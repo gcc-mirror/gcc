@@ -2,7 +2,7 @@
 
 	* doc/md.texi (stack_protect_test): Remove negation of branch to
 	label.
-	(Standard Names): Fix typos in documentation for atomic patterns.
+	(Standard Names): Fix typos in documentation of atomic patterns.
 
 2012-05-27  Nathan Sidwell  <nathan@acm.org>
 
