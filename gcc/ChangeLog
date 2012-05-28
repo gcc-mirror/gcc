@@ -1,3 +1,11 @@
+2012-05-28  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	Backport from mainline
+        2012-05-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53438
+	* tree-sra.c (analyze_access_subtree): Correct bitfield exclusion.
+
 2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
