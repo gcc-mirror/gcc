@@ -1,3 +1,9 @@
+2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/25137
+	* g++.dg/warn/Wbraces3.C: New.
+	* g++.dg/warn/Wbraces4.C: Likewise.
+
 2012-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53505

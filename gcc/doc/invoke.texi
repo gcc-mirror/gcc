@@ -3090,7 +3090,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wformat   @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
 -Wmaybe-uninitialized @gol
--Wmissing-braces  @gol
+-Wmissing-braces @r{(only for C/ObjC)} @gol
 -Wnonnull  @gol
 -Wparentheses  @gol
 -Wpointer-sign  @gol
@@ -3401,7 +3401,8 @@ or @option{-Wpedantic}.
 @opindex Wno-missing-braces
 Warn if an aggregate or union initializer is not fully bracketed.  In
 the following example, the initializer for @samp{a} is not fully
-bracketed, but that for @samp{b} is fully bracketed.
+bracketed, but that for @samp{b} is fully bracketed.  This warning is
+enabled by @option{-Wall} in C.
 
 @smallexample
 int a[2][2] = @{ 0, 1, 2, 3 @};
