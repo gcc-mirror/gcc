@@ -1,3 +1,9 @@
+2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/25137
+	* doc/invoke.texi: Document -Wmissing-braces not enabled by -Wall
+	for C++.
+
 2012-05-28  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/md.texi (stack_protect_test): Remove negation of branch to
