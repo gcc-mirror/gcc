@@ -1,3 +1,8 @@
+2012-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53505
+	* c-c++-common/torture/pr53505.c: New test.
+
 2012-05-25  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/split-6.c: New test.
