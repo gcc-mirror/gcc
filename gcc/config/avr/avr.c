@@ -6840,7 +6840,7 @@ avr_progmem_p (tree decl, tree attributes)
 /* Scan type TYP for pointer references to address space ASn.
    Return ADDR_SPACE_GENERIC (i.e. 0) if all pointers targeting
    the AS are also declared to be CONST.
-   Otherwise, return the respective addres space, i.e. a value != 0.  */
+   Otherwise, return the respective address space, i.e. a value != 0.  */
    
 static addr_space_t
 avr_nonconst_pointer_addrspace (tree typ)
@@ -6884,7 +6884,7 @@ avr_nonconst_pointer_addrspace (tree typ)
 }
 
 
-/* Sanity check NODE so that all pointers targeting non-generic addres spaces
+/* Sanity check NODE so that all pointers targeting non-generic address spaces
    go along with CONST qualifier.  Writing to these address spaces should
    be detected and complained about as early as possible.  */
 
@@ -9727,7 +9727,7 @@ avr_emit_movmemhi (rtx *xop)
   /* FIXME: Register allocator does a bad job and might spill address
         register(s) inside the loop leading to additional move instruction
         to/from stack which could clobber tmp_reg.  Thus, do *not* emit
-        load and store as seperate insns.  Instead, we perform the copy
+        load and store as separate insns.  Instead, we perform the copy
         by means of one monolithic insn.  */
 
   gcc_assert (TMP_REGNO == LPM_REGNO);

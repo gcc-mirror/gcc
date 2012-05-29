@@ -7374,7 +7374,7 @@ highest_pow2_factor_for_target (const_tree target, const_tree exp)
 }
 
 #ifdef HAVE_conditional_move
-/* Convert the tree comparision code TCODE to the rtl one where the
+/* Convert the tree comparison code TCODE to the rtl one where the
    signedness is UNSIGNEDP.  */
 
 static enum rtx_code

@@ -159,7 +159,7 @@ static outf_p *base_files;
 
 #if ENABLE_CHECKING
 /* Utility debugging function, printing the various type counts within
-   a list of types.  Called thru the DBGPRINT_COUNT_TYPE macro.  */
+   a list of types.  Called through the DBGPRINT_COUNT_TYPE macro.  */
 void
 dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
 {
@@ -1828,7 +1828,7 @@ struct file_rule_st files_rules[] = {
 
   /* Source *.c files are using get_file_gtfilename to compute their
      output_name and get_file_basename to compute their for_name
-     thru the source_dot_c_frul action.  */
+     through the source_dot_c_frul action.  */
   { DIR_PREFIX_REGEX "([[:alnum:]_-]*)\\.c$",
     REG_EXTENDED, NULL_REGEX, "gt-$3.h", "$3.c", source_dot_c_frul},
   /* Common header files get "gtype-desc.c" as their output_name,
@@ -2004,7 +2004,7 @@ get_output_file_with_visibility (input_file *inpf)
   /* Try each rule in sequence in files_rules until one is triggered. */
   {
     int rulix = 0;
-    DBGPRINTF ("passing input file @ %p named %s thru the files_rules",
+    DBGPRINTF ("passing input file @ %p named %s through the files_rules",
 	       (void*) inpf, inpfname);
 
     for (; files_rules[rulix].frul_srcexpr != NULL; rulix++)

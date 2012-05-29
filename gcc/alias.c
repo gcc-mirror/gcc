@@ -76,7 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 
    The first two questions can be answered with a simple examination
    of the type system.  If structure X contains a field of type Y then
-   a store thru a pointer to an X can overwrite any field that is
+   a store through a pointer to an X can overwrite any field that is
    contained (recursively) in an X (unless we know that px1 != px2).
 
    The last two of the questions can be solved in the same way as the

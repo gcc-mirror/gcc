@@ -5939,7 +5939,7 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	}
 
       /* Request a secondary reload with a general scratch register
-	 for everthing else.  ??? Could symbolic operands be handled
+	 for everything else.  ??? Could symbolic operands be handled
 	 directly when generating non-pic PA 2.0 code?  */
       sri->icode = (in_p
 		    ? direct_optab_handler (reload_in_optab, mode)

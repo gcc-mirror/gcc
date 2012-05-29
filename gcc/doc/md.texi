@@ -5683,7 +5683,7 @@ built-in setjmp that isn't needed at the site of a nonlocal goto.  You
 will not normally need to define this pattern.  A typical reason why you
 might need this pattern is if some value, such as a pointer to a global
 table, must be restored.  It takes one argument, which is the label
-to which builtin_longjmp transfered control; this pattern may be emitted
+to which builtin_longjmp transferred control; this pattern may be emitted
 at a small offset from that label.
 
 @cindex @code{builtin_longjmp} instruction pattern

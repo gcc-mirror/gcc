@@ -2077,7 +2077,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   /* TODO add SPE and paired floating point vector support.  */
 
-  /* Register class constaints for the constraints that depend on compile
+  /* Register class constraints for the constraints that depend on compile
      switches.  */
   if (TARGET_HARD_FLOAT && TARGET_FPRS)
     rs6000_constraints[RS6000_CONSTRAINT_f] = FLOAT_REGS;
@@ -2328,7 +2328,7 @@ darwin_rs6000_override_options (void)
 
   /* Unless the user (not the configurer) has explicitly overridden
      it with -mcpu=G3 or -mno-altivec, then 10.5+ targets default to
-     G4 unless targetting the kernel.  */
+     G4 unless targeting the kernel.  */
   if (!flag_mkernel
       && !flag_apple_kext
       && strverscmp (darwin_macosx_version_min, "10.5") >= 0

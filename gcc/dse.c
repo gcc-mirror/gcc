@@ -95,7 +95,7 @@ along with GCC; see the file COPYING3.  If not see
    5) Delete the insns that the global analysis has indicated are
    unnecessary.
 
-   6) Delete insns that store the same value as preceeding store
+   6) Delete insns that store the same value as preceding store
    where the earlier store couldn't be eliminated.
 
    7) Cleanup.
@@ -388,7 +388,7 @@ struct insn_info
   struct insn_info * prev_insn;
 
   /* The linked list of insns that are in consideration for removal in
-     the forwards pass thru the basic block.  This pointer may be
+     the forwards pass through the basic block.  This pointer may be
      trash as it is not cleared when a wild read occurs.  The only
      time it is guaranteed to be correct is when the traversal starts
      at active_local_stores.  */
@@ -457,7 +457,7 @@ struct bb_info
      being processed.  While it contains info for all of the
      registers, only the hard registers are actually examined.  It is used
      to assure that shift and/or add sequences that are inserted do not
-     accidently clobber live hard regs.  */
+     accidentally clobber live hard regs.  */
   bitmap regs_live;
 };
 

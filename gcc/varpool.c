@@ -259,7 +259,7 @@ varpool_analyze_node (struct varpool_node *node)
   node->analyzed = true;
 }
 
-/* Assemble thunks and aliases asociated to NODE.  */
+/* Assemble thunks and aliases associated to NODE.  */
 
 static void
 assemble_aliases (struct varpool_node *node)
@@ -508,7 +508,7 @@ varpool_extra_name_alias (tree alias, tree decl)
   return alias_node;
 }
 
-/* Call calback on NODE and aliases asociated to NODE. 
+/* Call calback on NODE and aliases associated to NODE. 
    When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
    skipped. */
 

@@ -99,12 +99,12 @@ static const struct vms_crtl_name vms_crtl_names[] =
 
 #define NBR_CRTL_NAMES (sizeof (vms_crtl_names) / sizeof (*vms_crtl_names))
 
-/* List of aliased identifiers.  They must be persistant accross gc.  */
+/* List of aliased identifiers.  They must be persistent across gc.  */
 
 static GTY(()) VEC(tree,gc) *aliases_id;
 
 /* Add a CRTL translation.  This simply use the transparent alias
-   mechanism, which is platform independant and works with the
+   mechanism, which is platform independent and works with the
    #pragma extern_prefix (which set the assembler name).  */
 
 static void

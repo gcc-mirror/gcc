@@ -5044,7 +5044,7 @@ find_place_to_insert_bb (basic_block bb, int rgn)
             break;
         }
 
-      /* We skipped the right block, so we increase i.  We accomodate
+      /* We skipped the right block, so we increase i.  We accommodate
          it for increasing by step later, so we decrease i.  */
       return (i + 1) - 1;
     }

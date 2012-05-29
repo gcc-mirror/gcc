@@ -495,7 +495,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
       return false;
     }
 
-  /* Jump thru a lot of hoops to keep the attributes up to date.  We
+  /* Jump through a lot of hoops to keep the attributes up to date.  We
      do not want to call one of the change address variants that take
      an offset even though we know the offset in many cases.  These
      assume you are changing where the address is pointing by the

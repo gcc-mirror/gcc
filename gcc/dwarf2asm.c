@@ -161,7 +161,7 @@ dw2_asm_output_vms_delta (int size ATTRIBUTE_UNUSED,
   va_start (ap, comment);
 
 #ifndef ASM_OUTPUT_DWARF_VMS_DELTA
-  /* VMS Delta is only special on ia64-vms, but this funtion also gets
+  /* VMS Delta is only special on ia64-vms, but this function also gets
      called on alpha-vms so it has to do something sane.  */
   dw2_asm_output_delta (size, lab1, lab2, comment);
 #else

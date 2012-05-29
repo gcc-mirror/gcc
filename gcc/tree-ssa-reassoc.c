@@ -1245,15 +1245,15 @@ build_and_add_sum (tree tmpvar, tree op1, tree op2, enum tree_code opcode)
       in the candidates bitmap with relevant indices into *OPS.
 
     - Second we build the chains of multiplications or divisions for
-      these candidates, counting the number of occurences of (operand, code)
+      these candidates, counting the number of occurrences of (operand, code)
       pairs in all of the candidates chains.
 
-    - Third we sort the (operand, code) pairs by number of occurence and
+    - Third we sort the (operand, code) pairs by number of occurrence and
       process them starting with the pair with the most uses.
 
       * For each such pair we walk the candidates again to build a
         second candidate bitmap noting all multiplication/division chains
-	that have at least one occurence of (operand, code).
+	that have at least one occurrence of (operand, code).
 
       * We build an alternate addition chain only covering these
         candidates with one (operand, code) operation removed from their

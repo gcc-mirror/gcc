@@ -1778,7 +1778,7 @@ static struct tm_region *all_tm_regions;
 static bitmap_obstack tm_obstack;
 
 
-/* A subroutine of tm_region_init.  Record the existance of the
+/* A subroutine of tm_region_init.  Record the existence of the
    GIMPLE_TRANSACTION statement in a tree of tm_region elements.  */
 
 static struct tm_region *

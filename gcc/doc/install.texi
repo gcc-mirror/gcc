@@ -305,9 +305,9 @@ systems' @command{tar} programs will also work, only try GNU
 
 @item Perl version 5.6.1 (or later)
 
-Necessary when targetting Darwin, building @samp{libstdc++},
+Necessary when targeting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
-Necessary when targetting Solaris 2 with Sun @command{ld} and not using
+Necessary when targeting Solaris 2 with Sun @command{ld} and not using
 @option{--disable-symvers}.  The bundled @command{perl} in Solaris@tie{}8
 and up works.
 

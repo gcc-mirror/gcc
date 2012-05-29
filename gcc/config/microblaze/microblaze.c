@@ -190,7 +190,7 @@ enum reg_class microblaze_regno_to_class[] =
 /* MicroBlaze specific machine attributes.
    interrupt_handler - Interrupt handler attribute to add interrupt prologue 
 		       and epilogue and use appropriate interrupt return.
-   save_volatiles    - Similiar to interrupt handler, but use normal return.  */
+   save_volatiles    - Similar to interrupt handler, but use normal return.  */
 int interrupt_handler;
 int save_volatiles;
 

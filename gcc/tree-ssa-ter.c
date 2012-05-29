@@ -473,7 +473,7 @@ finished_with_expr (temp_expr_table_p tab, int version, bool free_expr)
   bitmap_iterator bi;
 
   /* Remove this expression from its dependent lists.  The partition dependence
-     list is retained and transfered later to whomever uses this version.  */
+     list is retained and transferred later to whomever uses this version.  */
   if (tab->partition_dependencies[version])
     {
       EXECUTE_IF_SET_IN_BITMAP (tab->partition_dependencies[version], 0, i, bi)

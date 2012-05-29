@@ -264,7 +264,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
    This is done before inline plan is applied to NODE when there are
    still some inline clones if it.
 
-   This is neccesary because inline decisions are not really transitive
+   This is necessary because inline decisions are not really transitive
    and the other inline clones may have different bodies.  */
 
 static struct cgraph_node *

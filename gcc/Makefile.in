@@ -293,7 +293,7 @@ mkinstalldirs=$(SHELL) $(srcdir)/../mkinstalldirs
 
 # write_entries_to_file - writes each entry in a list
 # to the specified file.  Entries are written in chunks of
-# $(write_entries_to_file_split) to accomodate systems with
+# $(write_entries_to_file_split) to accommodate systems with
 # severe command-line-length limitations.
 # Parameters:
 # $(1): variable containing entries to iterate over
@@ -461,7 +461,7 @@ NATIVE_SYSTEM_HEADER_DIR = @NATIVE_SYSTEM_HEADER_DIR@
 CROSS_SYSTEM_HEADER_DIR = @CROSS_SYSTEM_HEADER_DIR@
 
 # autoconf sets SYSTEM_HEADER_DIR to one of the above.
-# Purge it of unneccessary internal relative paths
+# Purge it of unnecessary internal relative paths
 # to directories that might not exist yet.
 # The sed idiom for this is to repeat the search-and-replace until it doesn't match, using :a ... ta.
 # Use single quotes here to avoid nested double- and backquotes, this

@@ -300,7 +300,7 @@ typedef const char* (lto_get_section_data_f) (struct lto_file_decl_data *,
 
 /* Return the data found from the above call.  The first three
    parameters are the same as above.  The fourth parameter is the data
-   itself and the fifth is the lenght of the data. */
+   itself and the fifth is the length of the data. */
 typedef void (lto_free_section_data_f) (struct lto_file_decl_data *,
 					enum lto_section_type,
 					const char *,
@@ -987,7 +987,7 @@ lto_init_tree_ref_encoder (struct lto_tree_ref_encoder *encoder,
 }
 
 
-/* Destory an lto_tree_ref_encoder ENCODER by freeing its contents.  The
+/* Destroy an lto_tree_ref_encoder ENCODER by freeing its contents.  The
    memory used by ENCODER is not freed by this function.  */
 static inline void
 lto_destroy_tree_ref_encoder (struct lto_tree_ref_encoder *encoder)

@@ -160,7 +160,7 @@ create_new_allocno (int regno, ira_loop_tree_node_t loop_tree_node)
 typedef struct move *move_t;
 
 /* The structure represents an allocno move.  Both allocnos have the
-   same origional regno but different allocation.  */
+   same original regno but different allocation.  */
 struct move
 {
   /* The allocnos involved in the move.  */
@@ -446,7 +446,7 @@ setup_entered_from_non_parent_p (void)
 }
 
 /* Return TRUE if move of SRC_ALLOCNO (assigned to hard register) to
-   DEST_ALLOCNO (assigned to memory) can be removed beacuse it does
+   DEST_ALLOCNO (assigned to memory) can be removed because it does
    not change value of the destination.  One possible reason for this
    is the situation when SRC_ALLOCNO is not modified in the
    corresponding loop.  */

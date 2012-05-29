@@ -36,7 +36,7 @@
 ;; A list of integer modes that are less than a word
 (define_mode_iterator NARROW [QI HI])
 
-;; A list of all the integer modes upto 64bit
+;; A list of all the integer modes up to 64bit
 (define_mode_iterator QHSD [QI HI SI DI])
 
 ;; A list of the 32bit and 64bit integer modes

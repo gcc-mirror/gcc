@@ -8071,7 +8071,7 @@ include_spec_function (int argc, const char **argv)
 }
 
 /* %:find-file spec function.  This function replaces its argument by
-    the file found thru find_file, that is the -print-file-name gcc
+    the file found through find_file, that is the -print-file-name gcc
     program option. */
 static const char *
 find_file_spec_function (int argc, const char **argv)
@@ -8087,7 +8087,7 @@ find_file_spec_function (int argc, const char **argv)
 
 
 /* %:find-plugindir spec function.  This function replaces its argument
-    by the -iplugindir=<dir> option.  `dir' is found thru find_file, that
+    by the -iplugindir=<dir> option.  `dir' is found through find_file, that
     is the -print-file-name gcc program option. */
 static const char *
 find_plugindir_spec_function (int argc, const char **argv ATTRIBUTE_UNUSED)

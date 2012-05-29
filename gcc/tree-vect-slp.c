@@ -1291,7 +1291,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
      FORNOW: not supported in loop SLP because of realignment compications.  */
   bb_vinfo = STMT_VINFO_BB_VINFO (vinfo_for_stmt (stmt));
   bad_permutation = false;
-  /* Check that for every node in the instance teh loads form a subchain.  */
+  /* Check that for every node in the instance the loads form a subchain.  */
   if (bb_vinfo)
     {
       FOR_EACH_VEC_ELT (slp_tree, SLP_INSTANCE_LOADS (slp_instn), i, node)

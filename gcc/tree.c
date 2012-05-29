@@ -3057,7 +3057,7 @@ push_without_duplicates (tree exp, VEC (tree, heap) **queue)
     VEC_safe_push (tree, heap, *queue, exp);
 }
 
-/* Given a tree EXP, find all occurences of references to fields
+/* Given a tree EXP, find all occurrences of references to fields
    in a PLACEHOLDER_EXPR and place them in vector REFS without
    duplicates.  Also record VAR_DECLs and CONST_DECLs.  Note that
    we assume here that EXP contains only arithmetic expressions

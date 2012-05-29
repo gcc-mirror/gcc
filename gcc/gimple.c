@@ -3333,7 +3333,7 @@ gtc_visit (tree t1, tree t2,
 	  || FIXED_POINT_TYPE_P (t1))
 	return true;
 
-      /* For other types fall thru to more complex checks.  */
+      /* For other types fall through to more complex checks.  */
     }
 
   /* If the types have been previously registered and found equal
@@ -3755,7 +3755,7 @@ gimple_types_compatible_p (tree t1, tree t2)
 	  || FIXED_POINT_TYPE_P (t1))
 	return true;
 
-      /* For other types fall thru to more complex checks.  */
+      /* For other types fall through to more complex checks.  */
     }
 
   /* If the types have been previously registered and found equal

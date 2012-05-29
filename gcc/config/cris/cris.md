@@ -1530,7 +1530,7 @@
   "movs<m> %1,%0"
   [(set_attr "slottable" "yes,yes,no")])
 
-;; To do a byte->word extension, extend to dword, exept that the top half
+;; To do a byte->word extension, extend to dword, except that the top half
 ;; of the register will be clobbered.  FIXME: Perhaps this is not needed.
 
 (define_insn "extendqihi2"

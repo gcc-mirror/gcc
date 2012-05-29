@@ -528,7 +528,7 @@ mark_ref_dead (df_ref def)
 
 /* If REG is a pseudo or a subreg of it, and the class of its allocno
    intersects CL, make a conflict with pseudo DREG.  ORIG_DREG is the
-   rtx actually accessed, it may be indentical to DREG or a subreg of it.
+   rtx actually accessed, it may be identical to DREG or a subreg of it.
    Advance the current program point before making the conflict if
    ADVANCE_P.  Return TRUE if we will need to advance the current
    program point.  */
@@ -562,7 +562,7 @@ make_pseudo_conflict (rtx reg, enum reg_class cl, rtx dreg, rtx orig_dreg,
 
 /* Check and make if necessary conflicts for pseudo DREG of class
    DEF_CL of the current insn with input operand USE of class USE_CL.
-   ORIG_DREG is the rtx actually accessed, it may be indentical to
+   ORIG_DREG is the rtx actually accessed, it may be identical to
    DREG or a subreg of it.  Advance the current program point before
    making the conflict if ADVANCE_P.  Return TRUE if we will need to
    advance the current program point.  */

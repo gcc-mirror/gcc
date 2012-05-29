@@ -3454,7 +3454,7 @@ output_probe_stack_range (rtx reg1, rtx reg2)
    Also any insns generated here should have RTX_FRAME_RELATED_P(insn) = 1
    so that the debug info generation code can handle them properly.
 
-   The register save area is layed out like so:
+   The register save area is laid out like so:
    cfa+16
 	[ varargs spill area ]
 	[ fr register spill area ]

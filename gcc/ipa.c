@@ -683,7 +683,7 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
   if (vnode->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
 
-  /* As a special case, the COMDAT virutal tables can be unshared.
+  /* As a special case, the COMDAT virtual tables can be unshared.
      In LTO mode turn vtables into static variables.  The variable is readonly,
      so this does not enable more optimization, but referring static var
      is faster for dynamic linking.  Also this match logic hidding vtables
@@ -791,7 +791,7 @@ function_and_variable_visibility (bool whole_program)
 
       /* C++ FE on lack of COMDAT support create local COMDAT functions
 	 (that ought to be shared but can not due to object format
-	 limitations).  It is neccesary to keep the flag to make rest of C++ FE
+	 limitations).  It is necessary to keep the flag to make rest of C++ FE
 	 happy.  Clear the flag here to avoid confusion in middle-end.  */
       if (DECL_COMDAT (node->symbol.decl) && !TREE_PUBLIC (node->symbol.decl))
         DECL_COMDAT (node->symbol.decl) = 0;
@@ -974,7 +974,7 @@ gate_whole_program_function_and_variable_visibility (void)
   return !flag_ltrans;
 }
 
-/* Bring functionss local at LTO time whith -fwhole-program.  */
+/* Bring functionss local at LTO time with -fwhole-program.  */
 
 static unsigned int
 whole_program_function_and_variable_visibility (void)
@@ -1350,7 +1350,7 @@ build_cdtor_fns (void)
 
 /* Look for constructors and destructors and produce function calling them.
    This is needed for targets not supporting ctors or dtors, but we perform the
-   transformation also at linktime to merge possibly numberous
+   transformation also at linktime to merge possibly numerous
    constructors/destructors into single function to improve code locality and
    reduce size.  */
 

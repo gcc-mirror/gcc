@@ -1524,7 +1524,7 @@ fix_up_fall_thru_edges (void)
 		  /* We know the fall-thru edge crosses; if the cond
 		     jump edge does NOT cross, and its destination is the
 		     next block in the bb order, invert the jump
-		     (i.e. fix it so the fall thru does not cross and
+		     (i.e. fix it so the fall through does not cross and
 		     the cond jump does).  */
 
 		  if (!cond_jump_crosses
@@ -2251,7 +2251,7 @@ partition_hot_cold_basic_blocks (void)
 
   /* Convert all crossing fall_thru edges to non-crossing fall
      thrus to unconditional jumps (that jump to the original fall
-     thru dest).  */
+     through dest).  */
   fix_up_fall_thru_edges ();
 
   /* If the architecture does not have conditional branches that can

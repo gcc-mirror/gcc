@@ -546,7 +546,7 @@ typedef struct microblaze_args
 
 #define FUNCTION_MODE   SImode
 
-/* Mode should alwasy be SImode */
+/* Mode should always be SImode */
 #define REGISTER_MOVE_COST(MODE, FROM, TO)			\
   ( GR_REG_CLASS_P (FROM) && GR_REG_CLASS_P (TO) ? 2 		\
    : (FROM) == ST_REGS && GR_REG_CLASS_P (TO) ? 4		\

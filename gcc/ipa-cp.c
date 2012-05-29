@@ -82,7 +82,7 @@ along with GCC; see the file COPYING3.  If not see
    for each strongly connected component (SCC), we propagate constants
    according to previously computed jump functions.  We also record what known
    values depend on other known values and estimate local effects.  Finally, we
-   propagate cumulative information about these effects from dependant values
+   propagate cumulative information about these effects from dependent values
    to those on which they depend.
 
    Second, we again traverse the call graph in the same topological order and
@@ -1588,7 +1588,7 @@ safe_add (int a, int b)
 
 
 /* Propagate the estimated effects of individual values along the topological
-   from the dependant values to those they depend on.  */
+   from the dependent values to those they depend on.  */
 
 static void
 propagate_effects (void)

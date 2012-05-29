@@ -155,7 +155,7 @@ expand_location_to_spelling_point (source_location loc)
   return expand_location_1 (loc, /*expansion_piont_p=*/false);
 }
 
-/* If LOCATION is in a sytem header and if it's a virtual location for
+/* If LOCATION is in a system header and if it's a virtual location for
    a token coming from the expansion of a macro M, unwind it to the
    location of the expansion point of M.  Otherwise, just return
    LOCATION.

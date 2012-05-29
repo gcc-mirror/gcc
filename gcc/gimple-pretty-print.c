@@ -156,7 +156,7 @@ debug_gimple_seq (gimple_seq seq)
 
 
 /* A simple helper to pretty-print some of the gimple tuples in the printf
-   style. The format modifiers are preceeded by '%' and are:
+   style. The format modifiers are preceded by '%' and are:
      'G' - outputs a string corresponding to the code of the given gimple,
      'S' - outputs a gimple_seq with indent of spc + 2,
      'T' - outputs the tree t,

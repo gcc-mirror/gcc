@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Statistics gathered during LTO, WPA and LTRANS.  */
 struct lto_stats_d lto_stats;
 
-/* LTO uses bitmaps with different life-times.  So use a seperate
+/* LTO uses bitmaps with different life-times.  So use a separate
    obstack for all LTO bitmaps.  */
 static bitmap_obstack lto_obstack;
 static bool lto_obstack_initialized;

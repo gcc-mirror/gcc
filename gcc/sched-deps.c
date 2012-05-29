@@ -1583,8 +1583,8 @@ add_dependence_list_and_free (struct deps_desc *deps, rtx insn, rtx *listp,
     }
 }
 
-/* Remove all occurences of INSN from LIST.  Return the number of
-   occurences removed.  */
+/* Remove all occurrences of INSN from LIST.  Return the number of
+   occurrences removed.  */
 
 static int
 remove_from_dependence_list (rtx insn, rtx* listp)
@@ -2798,7 +2798,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 			 && code == SET);
 
   if (may_trap_p (x))
-    /* Avoid moving trapping instructions accross function calls that might
+    /* Avoid moving trapping instructions across function calls that might
        not always return.  */
     add_dependence_list (insn, deps->last_function_call_may_noreturn,
 			 1, REG_DEP_ANTI);

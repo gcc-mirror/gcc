@@ -494,7 +494,7 @@ try_eliminate_compare (struct comparison *cmp)
 {
   rtx x, insn, bb_head, flags, in_a, cmp_src;
 
-  /* We must have found an interesting "clobber" preceeding the compare.  */
+  /* We must have found an interesting "clobber" preceding the compare.  */
   if (cmp->prev_clobber == NULL)
     return false;
 
