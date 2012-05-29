@@ -23,11 +23,6 @@
 	(enter_macro_context): Set the cpp_reader::about_to_expand_macro_p
 	flag until we really start expanding the macro.
 
-2012-05-24  Dodji Seketeli  <dodji@redhat.com>
-
-	PR bootstrap/53459
-	* lex.c (search_line_fast): Remove unused typedef check_count.
-
 2012-05-16  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/7263
