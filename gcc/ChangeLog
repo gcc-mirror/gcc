@@ -1,3 +1,10 @@
+2012-05-29  Meador Inge  <meadori@codesourcery.com>
+
+	* c-decl.c (c_push_function_context): Always create a new language
+	function.
+	(c_pop_function_context): Clear the language function created in
+	c_push_function_context.
+
 2012-05-29  Matt Turner  <mattst88@gmail.com>
 
 	* config/alpha/ev6.md: (define_bypass "ev6_fmul,ev6_fadd"): New.
