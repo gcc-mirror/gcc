@@ -18,7 +18,7 @@ dnl the "ISO C9X: 7.18 Integer types <stdint.h>" section requires the
 dnl existence of an include file <stdint.h> that defines a set of
 dnl typedefs, especially uint8_t,int32_t,uintptr_t.
 dnl Many older installations will not provide this file, but some will
-dnl have the very same definitions in <inttypes.h>. In other enviroments
+dnl have the very same definitions in <inttypes.h>. In other environments
 dnl we can use the inet-types in <sys/types.h> which would define the
 dnl typedefs int8_t and u_int8_t respectivly.
 dnl
