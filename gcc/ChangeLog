@@ -1,3 +1,8 @@
+2012-05-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (s-avr-mmcu-texi): Call 
+	gen-avr-mmcu-texi$(build_exeext) via ./ and don't assume . is in PATH.
+	
 2012-05-29  Michael Matz  <matz@suse.de>
 
 	* rtl.h (assign_stack_temp, assign_stack_temp_for_type,
