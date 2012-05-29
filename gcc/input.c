@@ -1,5 +1,5 @@
 /* Data and functions related to line maps and input files.
-   Copyright (C) 2004, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2004, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -105,15 +105,8 @@ read_line (FILE *file)
 	  return string;
 	}
       pos += len;
-      ptr = XNEWVEC (char, string_len * 2);
-      if (ptr)
-	{
-	  memcpy (ptr, string, pos);
-	  string = ptr;
-	  string_len += 2;
-	}
-      else
-	pos = 0;
+      string = XRESIZEVEC (char, string, string_len * 2);
+      string_len *= 2;
     }
       
   return pos ? string : NULL;
