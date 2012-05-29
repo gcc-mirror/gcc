@@ -2219,15 +2219,8 @@ read_line (FILE *file)
 	  return string;
 	}
       pos += len;
-      ptr = XNEWVEC (char, string_len * 2);
-      if (ptr)
-	{
-	  memcpy (ptr, string, pos);
-	  string = ptr;
-	  string_len += 2;
-	}
-      else
-	pos = 0;
+      string = XRESIZEVEC (char, string, string_len * 2);
+      string_len *= 2;
     }
       
   return pos ? string : NULL;
