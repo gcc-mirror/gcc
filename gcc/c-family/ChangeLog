@@ -1,3 +1,7 @@
+2012-05-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c: Fix typo.
+
 2012-05-29  Michael Matz  <matz@suse.de>
 
 	* c-common.h (c_expand_decl): Remove prototype.
