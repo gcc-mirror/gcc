@@ -1,3 +1,21 @@
+2012-05-29  Michael Matz  <matz@suse.de>
+
+	* c-tree.h (c_expand_decl): Remove prototype.
+
+	* expr.c (expand_expr_real_1 <normal_inner_ref>): Don't allocate
+	a kept temp.
+	(expand_expr_real_1 <COMPOUND_LITERAL_EXPR>): Make unreachable.
+	* gimple-fold.c (canonicalize_constructor_val): Canonicalize 
+	COMPOUND_LITERAL_EXPR.
+	* function.c (expand_function_start): Don't call expand_decl,
+	instead assert that we have RTL assigned.
+	* tree-ssa-live.c (remove_unused_locals): Clear
+	nonlocal_goto_save_area if its backing variable is removed.
+	* stmt.c (expand_asm_operands): Remove handling of non-lvalues
+	as mem inputs.
+	(expand_decl): Assert that this does nothing.
+	* calls.c (expand_call): Don't call mark_temp_addr_taken.
+
 2012-05-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53516

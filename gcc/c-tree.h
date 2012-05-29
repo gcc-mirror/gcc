@@ -535,7 +535,6 @@ extern void store_parm_decls (void);
 extern void store_parm_decls_from (struct c_arg_info *);
 extern tree xref_tag (enum tree_code, tree);
 extern struct c_typespec parser_xref_tag (location_t, enum tree_code, tree);
-extern int c_expand_decl (tree);
 extern struct c_parm *build_c_parm (struct c_declspecs *, tree,
 				    struct c_declarator *);
 extern struct c_declarator *build_attrs_declarator (tree,

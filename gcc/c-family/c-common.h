@@ -544,8 +544,6 @@ extern tree build_modify_expr (location_t, tree, tree, enum tree_code,
 			       location_t, tree, tree);
 extern tree build_indirect_ref (location_t, tree, ref_operator);
 
-extern int c_expand_decl (tree);
-
 extern int field_decl_cmp (const void *, const void *);
 extern void resort_sorted_fields (void *, void *, gt_pointer_operator,
 				  void *);

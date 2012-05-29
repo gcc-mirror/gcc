@@ -835,6 +835,9 @@ remove_unused_locals (void)
 	    {
 	      if (var_ann (var))
 		remove_referenced_var (var);
+	      if (cfun->nonlocal_goto_save_area
+		  && TREE_OPERAND (cfun->nonlocal_goto_save_area, 0) == var)
+		cfun->nonlocal_goto_save_area = NULL;
 	      continue;
 	    }
 	}
