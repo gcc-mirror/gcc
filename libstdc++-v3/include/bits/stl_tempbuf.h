@@ -1,7 +1,7 @@
 // Temporary buffer implementation -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-// 2010, 2011
+// 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -182,25 +182,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<bool>
     struct __uninitialized_construct_buf_dispatch
     {
-      template<typename _ForwardIterator, typename _Tp>
+      template<typename _Pointer, typename _ForwardIterator>
         static void
-        __ucr(_ForwardIterator __first, _ForwardIterator __last,
-	      _Tp& __value)
+        __ucr(_Pointer __first, _Pointer __last,
+	      _ForwardIterator __seed)
         {
 	  if(__first == __last)
 	    return;
 
-	  _ForwardIterator __cur = __first;
+	  _Pointer __cur = __first;
 	  __try
 	    {
 	      std::_Construct(std::__addressof(*__first),
-			      _GLIBCXX_MOVE(__value));
-	      _ForwardIterator __prev = __cur;
+			      _GLIBCXX_MOVE(*__seed));
+	      _Pointer __prev = __cur;
 	      ++__cur;
 	      for(; __cur != __last; ++__cur, ++__prev)
 		std::_Construct(std::__addressof(*__cur),
 				_GLIBCXX_MOVE(*__prev));
-	      __value = _GLIBCXX_MOVE(*__prev);
+	      *__seed = _GLIBCXX_MOVE(*__prev);
 	    }
 	  __catch(...)
 	    {
@@ -213,9 +213,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __uninitialized_construct_buf_dispatch<true>
     {
-      template<typename _ForwardIterator, typename _Tp>
+      template<typename _Pointer, typename _ForwardIterator>
         static void
-        __ucr(_ForwardIterator, _ForwardIterator, _Tp&) { }
+        __ucr(_Pointer, _Pointer, _ForwardIterator) { }
     };
 
   // Constructs objects in the range [first, last).
@@ -223,23 +223,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // their exact value is not defined. In particular they may
   // be 'moved from'.
   //
-  // While __value may altered during this algorithm, it will have
+  // While *__seed may be altered during this algorithm, it will have
   // the same value when the algorithm finishes, unless one of the
   // constructions throws.
   //
-  // Requirements: _ForwardIterator::value_type(_Tp&&) is valid.
-  template<typename _ForwardIterator, typename _Tp>
+  // Requirements: _Pointer::value_type(_Tp&&) is valid.
+  template<typename _Pointer, typename _ForwardIterator>
     inline void
-    __uninitialized_construct_buf(_ForwardIterator __first,
-				  _ForwardIterator __last,
-				  _Tp& __value)
+    __uninitialized_construct_buf(_Pointer __first, _Pointer __last,
+				  _ForwardIterator __seed)
     {
-      typedef typename std::iterator_traits<_ForwardIterator>::value_type
+      typedef typename std::iterator_traits<_Pointer>::value_type
 	_ValueType;
 
       std::__uninitialized_construct_buf_dispatch<
         __has_trivial_constructor(_ValueType)>::
-	  __ucr(__first, __last, __value);
+	  __ucr(__first, __last, __seed);
     }
 
   template<typename _ForwardIterator, typename _Tp>
@@ -254,9 +253,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    value_type>(_M_original_len));
 	  _M_buffer = __p.first;
 	  _M_len = __p.second;
-	  if(_M_buffer)
+	  if (_M_buffer)
 	    std::__uninitialized_construct_buf(_M_buffer, _M_buffer + _M_len,
-					       *__first);
+					       __first);
 	}
       __catch(...)
 	{
