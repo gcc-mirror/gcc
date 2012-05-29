@@ -302,8 +302,13 @@ extern int cris_cpu_version;
 
 #define TARGET_HAS_MUL_INSNS (cris_cpu_version >= CRIS_CPU_NG)
 #define TARGET_HAS_LZ (cris_cpu_version >= CRIS_CPU_ETRAX4)
+#define TARGET_HAS_BREAK (cris_cpu_version >= CRIS_CPU_ETRAX4)
 #define TARGET_HAS_SWAP (cris_cpu_version >= CRIS_CPU_SVINTO)
 #define TARGET_V32 (cris_cpu_version >= CRIS_CPU_V32)
+
+/* The "break" instruction was introduced with ETRAX 4.  */
+#define TARGET_TRAP_USING_BREAK8 \
+ (cris_trap_using_break8 == 2 ? TARGET_HAS_BREAK : cris_trap_using_break8)
 
 /* Node: Storage Layout */
 

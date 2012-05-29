@@ -1,3 +1,11 @@
+2012-05-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (TARGET_HAS_BREAK, TARGET_TRAP_USING_BREAK8):
+	New macros.
+	* config/cris/cris.md ("trap"): Define, enabled for
+	TARGET_TRAP_USING_BREAK8.
+	* config/cris/cris.opt (mtrap-using-break8): New option.
+
 2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/25137
