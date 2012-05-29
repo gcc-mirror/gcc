@@ -401,8 +401,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	     done in c_common_post_options.  */
           if (warn_enum_compare == -1)
             warn_enum_compare = value;
-
-	  warn_missing_braces = value;
 	}
       else
 	{
