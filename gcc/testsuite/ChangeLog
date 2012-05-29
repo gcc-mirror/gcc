@@ -1,3 +1,8 @@
+2012-05-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53516
+	* gcc.dg/torture/pr53516.c: New testcase.
+
 2012-05-29  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/53229
