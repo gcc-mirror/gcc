@@ -50,7 +50,7 @@ gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
 avr-devices.o: s-avr-mmcu-texi
 
 s-avr-mmcu-texi: gen-avr-mmcu-texi$(build_exeext)
-	$(RUN_GEN) $< | sed -e 's:\r::g' > avr-mmcu.texi
+	$(RUN_GEN) ./$< | sed -e 's:\r::g' > avr-mmcu.texi
 	@if cmp -s $(srcdir)/doc/avr-mmcu.texi avr-mmcu.texi; then \
 	  $(STAMP) $@;		\
 	else			\
