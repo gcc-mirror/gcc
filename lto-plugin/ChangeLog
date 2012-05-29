@@ -1,3 +1,7 @@
+2012-05-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-plugin.c: Fix typo.
+
 2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
