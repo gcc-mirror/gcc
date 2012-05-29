@@ -430,7 +430,10 @@ find_vars_r (tree *tp, int *walk_subtrees, void *data)
 
   /* If T is a regular variable that the optimizers are interested
      in, add it to the list of variables.  */
-  else if (SSA_VAR_P (*tp))
+  else if ((TREE_CODE (*tp) == VAR_DECL
+	    && !is_global_var (*tp))
+	   || TREE_CODE (*tp) == PARM_DECL
+	   || TREE_CODE (*tp) == RESULT_DECL)
     add_referenced_var_1 (*tp, fn);
 
   /* Type, _DECL and constant nodes have no interesting children.
@@ -560,22 +563,24 @@ add_referenced_var_1 (tree var, struct function *fn)
 		       || TREE_CODE (var) == PARM_DECL
 		       || TREE_CODE (var) == RESULT_DECL);
 
-  if (!(TREE_CODE (var) == VAR_DECL
-	&& VAR_DECL_IS_VIRTUAL_OPERAND (var))
-      && is_global_var (var))
-    return false;
+  gcc_checking_assert ((TREE_CODE (var) == VAR_DECL
+			&& VAR_DECL_IS_VIRTUAL_OPERAND (var))
+		       || !is_global_var (var));
 
-  if (!*DECL_VAR_ANN_PTR (var))
-    *DECL_VAR_ANN_PTR (var) = ggc_alloc_cleared_var_ann_d ();
-
-  /* Insert VAR into the referenced_vars hash table if it isn't present.  */
+  /* Insert VAR into the referenced_vars hash table if it isn't present
+     and allocate its var-annotation.  */
   if (referenced_var_check_and_insert (var, fn))
-    return true;
+    {
+      gcc_checking_assert (!*DECL_VAR_ANN_PTR (var));
+      *DECL_VAR_ANN_PTR (var) = ggc_alloc_cleared_var_ann_d ();
+      return true;
+    }
 
   return false;
 }
 
-/* Remove VAR from the list.  */
+/* Remove VAR from the list of referenced variables and clear its
+   var-annotation.  */
 
 void
 remove_referenced_var (tree var)
@@ -585,14 +590,16 @@ remove_referenced_var (tree var)
   void **loc;
   unsigned int uid = DECL_UID (var);
 
-  /* Preserve var_anns of globals.  */
-  if (!is_global_var (var)
-      && (v_ann = var_ann (var)))
-    {
-      ggc_free (v_ann);
-      *DECL_VAR_ANN_PTR (var) = NULL;
-    }
-  gcc_assert (DECL_P (var));
+  gcc_checking_assert (TREE_CODE (var) == VAR_DECL
+		       || TREE_CODE (var) == PARM_DECL
+		       || TREE_CODE (var) == RESULT_DECL);
+
+  gcc_checking_assert (!is_global_var (var));
+
+  v_ann = var_ann (var);
+  ggc_free (v_ann);
+  *DECL_VAR_ANN_PTR (var) = NULL;
+
   in.uid = uid;
   loc = htab_find_slot_with_hash (gimple_referenced_vars (cfun), &in, uid,
 				  NO_INSERT);

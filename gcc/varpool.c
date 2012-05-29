@@ -449,7 +449,7 @@ add_new_static_var (tree type)
   tree new_decl;
   struct varpool_node *new_node;
 
-  new_decl = create_tmp_var (type, NULL);
+  new_decl = create_tmp_var_raw (type, NULL);
   DECL_NAME (new_decl) = create_tmp_var_name (NULL);
   TREE_READONLY (new_decl) = 0;
   TREE_STATIC (new_decl) = 1;
