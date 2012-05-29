@@ -7317,8 +7317,6 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  if (c_dialect_objc ())
 	    objc_check_decl (decl);
 	  rest_of_decl_compilation (decl, toplevel, 0);
-	  if (!toplevel)
-	    expand_decl (decl);
 	}
     }
   C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t)) = 0;

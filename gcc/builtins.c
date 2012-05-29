@@ -2650,8 +2650,8 @@ expand_builtin_cexpi (tree exp, rtx target)
       else
 	gcc_unreachable ();
 
-      op1 = assign_temp (TREE_TYPE (arg), 0, 1, 1);
-      op2 = assign_temp (TREE_TYPE (arg), 0, 1, 1);
+      op1 = assign_temp (TREE_TYPE (arg), 1, 1);
+      op2 = assign_temp (TREE_TYPE (arg), 1, 1);
       op1a = copy_addr_to_reg (XEXP (op1, 0));
       op2a = copy_addr_to_reg (XEXP (op2, 0));
       top1 = make_tree (build_pointer_type (TREE_TYPE (arg)), op1a);

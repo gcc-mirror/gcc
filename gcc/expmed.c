@@ -1351,7 +1351,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	else
 	  {
 	    rtx mem = assign_stack_temp (GET_MODE (op0),
-					 GET_MODE_SIZE (GET_MODE (op0)), 0);
+					 GET_MODE_SIZE (GET_MODE (op0)));
 	    emit_move_insn (mem, op0);
 	    op0 = adjust_address (mem, BLKmode, 0);
 	  }

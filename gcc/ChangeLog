@@ -1,5 +1,57 @@
 2012-05-29  Michael Matz  <matz@suse.de>
 
+	* rtl.h (assign_stack_temp, assign_stack_temp_for_type,
+	assign_temp): Remove 'keep' argument.
+	(mark_temp_addr_taken): Remove prototype.
+	* tree.h (expand_decl): Remove prototype.
+	* function.c (struct temp_slot): Remove addr_taken and keep
+	member.
+	(assign_stack_temp_for_type) Don't initialize above, remove
+	keep argument.
+	(assign_stack_temp, assign_temp): Remove keep argument.
+	(mark_temp_addr_taken): Remove.
+	(preserve_temp_slots): Remove handling of addr_taken and keep
+	members.
+	(free_temp_slots): Ditto.
+	* expr.c (expand_expr_real_1 <COMPOUND_LITERAL_EXPR>): Remove
+	dead code.
+	* stmt.c (expand_asm_operands): Remove dead code.
+	(expand_decl): Remove.
+	* c-decl.c (finish_struct): Don't call expand_decl.
+	* builtins.c (expand_builtin_cexpi): Adjust calls to assign_temp
+	and assign_stack_temp.
+	* calls.c (save_fixed_argument_area, initialize_argument_information,
+	expand_call, emit_library_call_value_1, store_one_arg): Ditto.
+	* expmed.c (extract_bit_field_1): Ditto.
+	* expr.c (emit_group_load_1, emit_group_store,
+	copy_blkmode_from_reg, emit_push_insn, expand_assignment,
+	store_field, expand_constructor, expand_cond_expr_using_cmove,
+	expand_expr_real_2, expand_expr_real_1): Ditto.
+	* stmt.c (expand_asm_operands, expand_return): Ditto.
+
+	* function.c (pop_temp_slots): Call free_temp_slots.
+	* calls.c (store_one_arg): Don't call preserve_temp_slots or
+	free_temp_slots.
+	* expr.c (expand_assignment): Don't call free_temp_slots.
+
+	* config/arm/arm.c (neon_expand_vector_init): Ditto.
+	* config/i386/i386.c (ix86_expand_vector_set): Ditto.
+	(ix86_expand_vector_extract): Ditto.
+	* config/ia64/ia64.c (spill_xfmode_rfmode_operand,
+	ia64_expand_movxf_movrf): Ditto.
+	* config/mips/mips.c (mips_expand_vi_general): Ditto.
+	* config/mmix/mmix.md (floatdisf2, floatunsdisf2, truncdfsf2,
+	extendsfdf2): Ditto.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init,
+	rs6000_expand_vector_set, rs6000_expand_vector_extract,
+	rs6000_allocate_stack_temp): Ditto.
+	* config/rs6000/rs6000.md (fix_trunctfsi2_fprs): Ditto.
+	* config/sparc/sparc.c (emit_soft_tfmode_libcall,
+	sparc_emit_float_lib_cmp, sparc_emit_float_lib_cmp,
+	sparc_expand_vector_init): Ditto.
+
+2012-05-29  Michael Matz  <matz@suse.de>
+
 	* c-tree.h (c_expand_decl): Remove prototype.
 
 	* expr.c (expand_expr_real_1 <normal_inner_ref>): Don't allocate
