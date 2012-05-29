@@ -1,3 +1,10 @@
+2012-05-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tempbuf.h (__uninitialized_construct_buf)
+	(__uninitialized_construct_buf_dispatch<>::__ucr): Fix to work
+	with iterator returning rvalue.
+	* testsuite/25_algorithms/stable_sort/3.cc: New.
+
 2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53503
