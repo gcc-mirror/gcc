@@ -527,7 +527,6 @@ assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
   return assign_stack_local_1 (mode, size, align, ASLK_RECORD_PAD);
 }
 
-
 /* In order to evaluate some expressions, such as function calls returning
    structures in memory, we need to temporarily allocate stack locations.
    We record each allocated temporary in the following structure.
@@ -540,11 +539,7 @@ assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
    result could be in a temporary, we preserve it if we can determine which
    one it is in.  If we cannot determine which temporary may contain the
    result, all temporaries are preserved.  A temporary is preserved by
-   pretending it was allocated at the previous nesting level.
-
-   Automatic variables are also assigned temporary slots, at the nesting
-   level where they are defined.  They are marked a "kept" so that
-   free_temp_slots will not free them.  */
+   pretending it was allocated at the previous nesting level.  */
 
 struct GTY(()) temp_slot {
   /* Points to next temporary slot.  */
@@ -564,12 +559,8 @@ struct GTY(()) temp_slot {
   unsigned int align;
   /* Nonzero if this temporary is currently in use.  */
   char in_use;
-  /* Nonzero if this temporary has its address taken.  */
-  char addr_taken;
   /* Nesting level at which this slot is being used.  */
   int level;
-  /* Nonzero if this should survive a call to free_temp_slots.  */
-  int keep;
   /* The offset of the slot from the frame_pointer, including extra space
      for alignment.  This info is for combine_temp_slots.  */
   HOST_WIDE_INT base_offset;
@@ -775,17 +766,11 @@ find_temp_slot_from_address (rtx x)
    SIZE is the size in units of the space required.  We do no rounding here
    since assign_stack_local will do any required rounding.
 
-   KEEP is 1 if this slot is to be retained after a call to
-   free_temp_slots.  Automatic variables for a block are allocated
-   with this flag.  KEEP values of 2 or 3 were needed respectively
-   for variables whose lifetime is controlled by CLEANUP_POINT_EXPRs
-   or for SAVE_EXPRs, but they are now unused.
-
    TYPE is the type that will be used for the stack slot.  */
 
 rtx
 assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
-			    int keep, tree type)
+			    tree type)
 {
   unsigned int align;
   struct temp_slot *p, *best_p = 0, *selected = NULL, **pp;
@@ -794,9 +779,6 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
      of a variable size.  */
   gcc_assert (size != -1);
-
-  /* These are now unused.  */
-  gcc_assert (keep <= 1);
 
   align = get_stack_local_alignment (type, mode);
 
@@ -846,7 +828,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 	  if (best_p->size - rounded_size >= alignment)
 	    {
 	      p = ggc_alloc_temp_slot ();
-	      p->in_use = p->addr_taken = 0;
+	      p->in_use = 0;
 	      p->size = best_p->size - rounded_size;
 	      p->base_offset = best_p->base_offset + rounded_size;
 	      p->full_size = best_p->full_size - rounded_size;
@@ -918,10 +900,8 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 
   p = selected;
   p->in_use = 1;
-  p->addr_taken = 0;
   p->type = type;
   p->level = temp_slot_level;
-  p->keep = keep;
 
   pp = temp_slots_at_level (p->level);
   insert_slot_to_list (p, pp);
@@ -946,26 +926,25 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 }
 
 /* Allocate a temporary stack slot and record it for possible later
-   reuse.  First three arguments are same as in preceding function.  */
+   reuse.  First two arguments are same as in preceding function.  */
 
 rtx
-assign_stack_temp (enum machine_mode mode, HOST_WIDE_INT size, int keep)
+assign_stack_temp (enum machine_mode mode, HOST_WIDE_INT size)
 {
-  return assign_stack_temp_for_type (mode, size, keep, NULL_TREE);
+  return assign_stack_temp_for_type (mode, size, NULL_TREE);
 }
 
 /* Assign a temporary.
    If TYPE_OR_DECL is a decl, then we are doing it on behalf of the decl
    and so that should be used in error messages.  In either case, we
    allocate of the given type.
-   KEEP is as for assign_stack_temp.
    MEMORY_REQUIRED is 1 if the result must be addressable stack memory;
    it is 0 if a register is OK.
    DONT_PROMOTE is 1 if we should not promote values in register
    to wider modes.  */
 
 rtx
-assign_temp (tree type_or_decl, int keep, int memory_required,
+assign_temp (tree type_or_decl, int memory_required,
 	     int dont_promote ATTRIBUTE_UNUSED)
 {
   tree type, decl;
@@ -1011,7 +990,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
 	  size = 1;
 	}
 
-      tmp = assign_stack_temp_for_type (mode, size, keep, type);
+      tmp = assign_stack_temp_for_type (mode, size, type);
       return tmp;
     }
 
@@ -1139,32 +1118,10 @@ update_temp_slot_address (rtx old_rtx, rtx new_rtx)
   insert_temp_slot_address (new_rtx, p);
 }
 
-/* If X could be a reference to a temporary slot, mark the fact that its
-   address was taken.  */
-
-void
-mark_temp_addr_taken (rtx x)
-{
-  struct temp_slot *p;
-
-  if (x == 0)
-    return;
-
-  /* If X is not in memory or is at a constant address, it cannot be in
-     a temporary slot.  */
-  if (!MEM_P (x) || CONSTANT_P (XEXP (x, 0)))
-    return;
-
-  p = find_temp_slot_from_address (XEXP (x, 0));
-  if (p != 0)
-    p->addr_taken = 1;
-}
-
 /* If X could be a reference to a temporary slot, mark that slot as
    belonging to the to one level higher than the current level.  If X
    matched one of our slots, just mark that one.  Otherwise, we can't
-   easily predict which it is, so upgrade all of them.  Kept slots
-   need not be touched.
+   easily predict which it is, so upgrade all of them.
 
    This is called when an ({...}) construct occurs and a statement
    returns a value in memory.  */
@@ -1174,43 +1131,18 @@ preserve_temp_slots (rtx x)
 {
   struct temp_slot *p = 0, *next;
 
-  /* If there is no result, we still might have some objects whose address
-     were taken, so we need to make sure they stay around.  */
   if (x == 0)
-    {
-      for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
-	{
-	  next = p->next;
-
-	  if (p->addr_taken)
-	    move_slot_to_level (p, temp_slot_level - 1);
-	}
-
-      return;
-    }
+    return;
 
   /* If X is a register that is being used as a pointer, see if we have
-     a temporary slot we know it points to.  To be consistent with
-     the code below, we really should preserve all non-kept slots
-     if we can't find a match, but that seems to be much too costly.  */
+     a temporary slot we know it points to.  */
   if (REG_P (x) && REG_POINTER (x))
     p = find_temp_slot_from_address (x);
 
   /* If X is not in memory or is at a constant address, it cannot be in
-     a temporary slot, but it can contain something whose address was
-     taken.  */
+     a temporary slot.  */
   if (p == 0 && (!MEM_P (x) || CONSTANT_P (XEXP (x, 0))))
-    {
-      for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
-	{
-	  next = p->next;
-
-	  if (p->addr_taken)
-	    move_slot_to_level (p, temp_slot_level - 1);
-	}
-
-      return;
-    }
+    return;
 
   /* First see if we can find a match.  */
   if (p == 0)
@@ -1218,23 +1150,8 @@ preserve_temp_slots (rtx x)
 
   if (p != 0)
     {
-      /* Move everything at our level whose address was taken to our new
-	 level in case we used its address.  */
-      struct temp_slot *q;
-
       if (p->level == temp_slot_level)
-	{
-	  for (q = *temp_slots_at_level (temp_slot_level); q; q = next)
-	    {
-	      next = q->next;
-
-	      if (p != q && q->addr_taken)
-		move_slot_to_level (q, temp_slot_level - 1);
-	    }
-
-	  move_slot_to_level (p, temp_slot_level - 1);
-	  p->addr_taken = 0;
-	}
+	move_slot_to_level (p, temp_slot_level - 1);
       return;
     }
 
@@ -1242,9 +1159,7 @@ preserve_temp_slots (rtx x)
   for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
     {
       next = p->next;
-
-      if (!p->keep)
-	move_slot_to_level (p, temp_slot_level - 1);
+      move_slot_to_level (p, temp_slot_level - 1);
     }
 }
 
@@ -1260,12 +1175,8 @@ free_temp_slots (void)
   for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
     {
       next = p->next;
-
-      if (!p->keep)
-	{
-	  make_slot_available (p);
-	  some_available = true;
-	}
+      make_slot_available (p);
+      some_available = true;
     }
 
   if (some_available)
@@ -1289,22 +1200,7 @@ push_temp_slots (void)
 void
 pop_temp_slots (void)
 {
-  struct temp_slot *p, *next;
-  bool some_available = false;
-
-  for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
-    {
-      next = p->next;
-      make_slot_available (p);
-      some_available = true;
-    }
-
-  if (some_available)
-    {
-      remove_unused_temp_slot_addresses ();
-      combine_temp_slots ();
-    }
-
+  free_temp_slots ();
   temp_slot_level--;
 }
 

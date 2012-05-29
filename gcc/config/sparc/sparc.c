@@ -2738,7 +2738,7 @@ emit_soft_tfmode_libcall (const char *func_name, int nargs, rtx *operands)
 	    }
 	  else
 	    {
-	      this_slot = assign_stack_temp (TFmode, GET_MODE_SIZE (TFmode), 0);
+	      this_slot = assign_stack_temp (TFmode, GET_MODE_SIZE (TFmode));
 
 	      /* Operand 0 is the return value.  We'll copy it out later.  */
 	      if (i > 0)
@@ -7431,7 +7431,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 	}
       else
 	{
-	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
+	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode));
 	  emit_move_insn (slot0, x);
 	}
 
@@ -7444,7 +7444,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 	}
       else
 	{
-	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
+	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode));
 	  emit_move_insn (slot1, y);
 	}
 
@@ -11631,7 +11631,7 @@ sparc_expand_vector_init (rtx target, rtx vals)
 	}
     }
 
-  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
   for (i = 0; i < n_elts; i++)
     emit_move_insn (adjust_address_nv (mem, inner_mode,
 				       i * GET_MODE_SIZE (inner_mode)),
