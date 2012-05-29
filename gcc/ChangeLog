@@ -1,3 +1,15 @@
+2012-05-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (find_vars_r): Do not call add_referenced_vars
+	for globals.
+	(add_referenced_var_1): Re-organize.  Assert we are not
+	called for globals.
+	(remove_referenced_var): Likewise.
+	* varpool.c (add_new_static_var): Use create_tmp_var_raw.
+	* tree-mudflap.c (execute_mudflap_function_ops): Do not
+	call add_referenced_var on globals.
+	* matrix-reorg.c (transform_access_sites): Likewise.
+
 2012-05-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* alias.c (reg_known_value): Make this a VEC.
