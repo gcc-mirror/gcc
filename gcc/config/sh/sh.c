@@ -882,6 +882,14 @@ sh_option_override (void)
   /* This target defaults to strict volatile bitfields.  */
   if (flag_strict_volatile_bitfields < 0 && abi_version_at_least(2))
     flag_strict_volatile_bitfields = 1;
+
+  /* Make sure that only one atomic mode is selected and that the selection
+     is valid for the current target CPU.  */
+  if (TARGET_SOFT_ATOMIC && TARGET_HARD_ATOMIC)
+    error ("-msoft-atomic and -mhard-atomic cannot be used at the same time");
+  if (TARGET_HARD_ATOMIC && ! TARGET_SH4A_ARCH)
+    error ("-mhard-atomic is only available for SH4A targets");
+
 }
 
 /* Print the operand address in x to the stream.  */

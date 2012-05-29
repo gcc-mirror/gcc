@@ -321,7 +321,11 @@ Follow Renesas (formerly Hitachi) / SuperH calling conventions
 
 msoft-atomic
 Target Report Var(TARGET_SOFT_ATOMIC)
-Use software atomic sequences supported by kernel
+Use gUSA software atomic sequences
+
+mhard-atomic
+Target Report Var(TARGET_HARD_ATOMIC)
+Use hardware atomic sequences
 
 menable-tas
 Target Report RejectNegative Var(TARGET_ENABLE_TAS)

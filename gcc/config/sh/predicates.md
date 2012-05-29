@@ -879,3 +879,22 @@
     }
   return 0;
 })
+
+;; The atomic_* operand predicates are used for the atomic patterns.
+;; Depending on the particular pattern some operands can be immediate
+;; values.  Using these predicates avoids the usage of 'force_reg' in the
+;; expanders.
+(define_predicate "atomic_arith_operand"
+  (ior (match_code "subreg,reg")
+       (and (match_test "satisfies_constraint_I08 (op)")
+	    (match_test "mode != QImode")
+	    (match_test "mode != HImode")
+	    (match_test "TARGET_SH4A_ARCH"))))
+
+(define_predicate "atomic_logical_operand"
+  (ior (match_code "subreg,reg")
+       (and (match_test "satisfies_constraint_K08 (op)")
+	    (match_test "mode != QImode")
+	    (match_test "mode != HImode")
+	    (match_test "TARGET_SH4A_ARCH"))))
+

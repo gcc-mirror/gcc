@@ -21,10 +21,42 @@
 ;;
 ;; Atomic integer operations for the Renesas / SuperH SH CPUs.
 ;;
+;; On SH CPUs atomic integer operations can be done either in 'software' or
+;; in 'hardware', where true hardware support was introduced with the SH4A.
+;; In addition to that all SH CPUs support the 'tas.b' instruction, which
+;; can be optionally used to implement the 'atomic_test_and_set' builtin.
+;;
+;; tas.b atomic_test_and_set (-menable-tas)
+;;
+;; Depending on the particular hardware configuration, usage of the 'tas.b'
+;; instruction might be undesired or even unsafe.  Thus, it has to be
+;; enabled by the user explicitely.  If it is not enabled, the
+;; 'atomic_test_and_set' builtin is implemented either with hardware or with
+;; software atomics, depending on which is enabled.  It is also possible to
+;; enable the 'tas.b' instruction only, without enabling support for the 
+;; other atomic operations.
+;;
+;;
+;; Hardware Atomics (-mhard-atomic, SH4A only)
+;;
+;; Hardware atomics implement all atomic operations using the 'movli.l' and
+;; 'movco.l' instructions that are availble on SH4A.  On multi-core hardware
+;; configurations hardware atomics is the only safe mode.
+;; However, it can also be safely used on single-core configurations.
+;; Since these instructions operate on SImode memory only, QImode and HImode
+;; have to be emulated with SImode and subreg masking, which results in
+;; larger code.
+;;
+;;
+;; Software Atomics (-msoft-atomic)
+;;
 ;; On single-core systems there can only be one execution context running
 ;; at a given point in time.  This allows the usage of rewindable atomic
 ;; sequences, which effectively emulate locked-load / conditional-store
-;; operations.
+;; operations.  This requires complementary support in the interrupt / 
+;; exception handling code (e.g. kernel) and does not work safely on multi-
+;; core configurations.
+;;
 ;; When an execution context is interrupted while it is an atomic
 ;; sequence, the interrupted context's PC is rewound to the beginning of
 ;; the atomic sequence by the interrupt / exception handling code, before
@@ -79,15 +111,16 @@
 ;; For correct operation the atomic sequences must not be rewound after
 ;; they have passed the write-back instruction.
 ;;
-;; The current implementation is limited to QImode, HImode and SImode 
+;; The current atomic support is limited to QImode, HImode and SImode 
 ;; atomic operations.  DImode operations could also be implemented but
 ;; would require some ABI modifications to support multiple-instruction
 ;; write-back.  This is because SH1/SH2/SH3/SH4 does not have a DImode
 ;; store instruction.  DImode stores must be split into two SImode stores.
 ;;
-;; For some operations it would be possible to use insns with an immediate
-;; operand such as add #imm,Rn.  However, since the original value before
-;; the operation also needs to be available, this is not so handy.
+;; On single-core SH4A CPUs software atomic aware interrupt / exception code
+;; is actually compatible with user code that utilizes hardware atomics.
+;; Since SImode hardware atomic sequences are more compact on SH4A they are
+;; always used, regardless of the selected atomic mode.
 
 (define_c_enum "unspec" [
   UNSPEC_ATOMIC
@@ -100,6 +133,7 @@
 ])
 
 (define_mode_iterator I124 [QI HI SI])
+(define_mode_iterator I12 [QI HI])
 
 (define_mode_attr i124suffix [(QI "b") (HI "w") (SI "l")])
 (define_mode_attr i124extend_insn [(QI "exts.b") (HI "exts.w") (SI "mov")])
@@ -108,23 +142,42 @@
 (define_code_attr fetchop_name
   [(plus "add") (minus "sub") (ior "or") (xor "xor") (and "and")])
 
+(define_code_attr fetchop_predicate
+  [(plus "atomic_arith_operand") (minus "register_operand")
+   (ior "atomic_logical_operand") (xor "atomic_logical_operand")
+   (and "atomic_logical_operand")])
+
+(define_code_attr fetchop_constraint
+  [(plus "rI08") (minus "r") (ior "rK08") (xor "rK08") (and "rK08")])
+
+;;------------------------------------------------------------------------------
+;; comapre and swap
+
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")		;; bool success output
    (match_operand:I124 1 "register_operand" "")		;; oldval output
    (match_operand:I124 2 "memory_operand" "")		;; memory
-   (match_operand:I124 3 "register_operand" "")		;; expected input
-   (match_operand:I124 4 "register_operand" "")		;; newval input
+   (match_operand:I124 3 "atomic_arith_operand" "")	;; expected input
+   (match_operand:I124 4 "atomic_arith_operand" "")	;; newval input
    (match_operand:SI 5 "const_int_operand" "")		;; is_weak
    (match_operand:SI 6 "const_int_operand" "")		;; success model
    (match_operand:SI 7 "const_int_operand" "")]		;; failure model
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
 {
-  rtx addr;
+  rtx addr = force_reg (Pmode, XEXP (operands[2], 0));
+  rtx old_val = gen_lowpart (SImode, operands[1]);
+  rtx exp_val = operands[3];
+  rtx new_val = operands[4];
+  rtx atomic_insn;
 
-  addr = force_reg (Pmode, XEXP (operands[2], 0));
-  emit_insn (gen_atomic_compare_and_swap<mode>_soft
-	     (gen_lowpart (SImode, operands[1]), addr, operands[3],
-	      operands[4]));
+  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+      atomic_insn = gen_atomic_compare_and_swap<mode>_hard (old_val, addr,
+							    exp_val, new_val);
+  else
+      atomic_insn = gen_atomic_compare_and_swap<mode>_soft (old_val, addr,
+							    exp_val, new_val);
+  emit_insn (atomic_insn);
+
   if (<MODE>mode == QImode)
     emit_insn (gen_zero_extendqisi2 (gen_lowpart (SImode, operands[1]),
 				     operands[1]));
@@ -134,6 +187,67 @@
   emit_insn (gen_movsi (operands[0], gen_rtx_REG (SImode, T_REG)));
   DONE;
 })
+
+(define_insn "atomic_compare_and_swapsi_hard"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(unspec_volatile:SI
+	  [(mem:SI (match_operand:SI 1 "register_operand" "r"))
+	   (match_operand:SI 2 "arith_operand" "rI08")
+	   (match_operand:SI 3 "arith_operand" "rI08")]
+	  UNSPECV_CMPXCHG_1))
+   (set (mem:SI (match_dup 1))
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_2))
+   (set (reg:SI T_REG)
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_3))
+   (clobber (reg:SI R0_REG))]
+  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r0:	movli.l	@%1,r0"		"\n"
+	 "	cmp/eq	%2,r0"		"\n"
+	 "	bf{.|/}s	0f"	"\n"
+	 "	mov	r0,%0"		"\n"
+	 "	mov	%3,r0"		"\n"
+	 "	movco.l	r0,@%1"		"\n"
+	 "	bf	0b"		"\n"
+	 "0:";
+}
+  [(set_attr "length" "14")])
+
+(define_insn "atomic_compare_and_swap<mode>_hard"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(unspec_volatile:SI
+	  [(mem:I12 (match_operand:SI 1 "register_operand" "r"))
+	   (match_operand:I12 2 "register_operand" "r")
+	   (match_operand:I12 3 "register_operand" "r")]
+	  UNSPECV_CMPXCHG_1))
+   (set (mem:I12 (match_dup 1))
+	(unspec_volatile:I12 [(const_int 0)] UNSPECV_CMPXCHG_2))
+   (set (reg:SI T_REG)
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_3))
+   (clobber (reg:SI R0_REG))
+   (clobber (match_scratch:SI 4 "=&r"))
+   (clobber (match_scratch:SI 5 "=&r"))
+   (clobber (match_scratch:SI 6 "=1"))]
+  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r	mov	#-4,%5"			"\n"
+	 "	<i124extend_insn>	%2,%4"	"\n"
+	 "	and	%1,%5"			"\n"
+	 "	xor	%5,%1"			"\n"
+	 "	add	r15,%1"			"\n"
+	 "	add	#-4,%1"			"\n"
+	 "0:	movli.l	@%5,r0"			"\n"
+	 "	mov.l	r0,@-r15"		"\n"
+	 "	mov.<i124suffix>	@%1,%0"	"\n"
+	 "	mov.<i124suffix>	%3,@%1" "\n"
+	 "	cmp/eq	%4,%0"			"\n"
+	 "	bf{.|/}s	0f"		"\n"
+	 "	mov.l	@r15+,r0"		"\n"
+	 "	movco.l	r0,@%5"			"\n"
+	 "	bf	0b"			"\n"
+	 "0:";
+}
+  [(set_attr "length" "30")])
 
 (define_insn "atomic_compare_and_swap<mode>_soft"
   [(set (match_operand:SI 0 "register_operand" "=&u")
@@ -151,7 +265,7 @@
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
 {
-  return "mova	1f,r0"				"\n"
+  return "\r	mova	1f,r0"			"\n"
 	 "	<i124extend_insn>	%2,%4"	"\n"
 	 "	.align 2"			"\n"
 	 "	mov	r15,r1"			"\n"
@@ -164,16 +278,27 @@
 }
   [(set_attr "length" "20")])
 
+;;------------------------------------------------------------------------------
+;; read - write - return old value
+
 (define_expand "atomic_exchange<mode>"
   [(match_operand:I124 0 "register_operand" "")		;; oldval output
    (match_operand:I124 1 "memory_operand" "")		;; memory
-   (match_operand:I124 2 "register_operand" "")		;; newval input
+   (match_operand:I124 2 "atomic_arith_operand" "")	;; newval input
    (match_operand:SI 3 "const_int_operand" "")]		;; memory model
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
 {
   rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
-  emit_insn (gen_atomic_exchange<mode>_soft
-	     (operands[0], addr, operands[2]));
+  rtx val = operands[2];
+  rtx atomic_insn;
+
+  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+      atomic_insn = gen_atomic_exchange<mode>_hard (operands[0], addr, val);
+  else
+      atomic_insn = gen_atomic_exchange<mode>_soft (operands[0], addr, val);
+
+  emit_insn (atomic_insn);
+
   if (<MODE>mode == QImode)
     emit_insn (gen_zero_extendqisi2 (gen_lowpart (SImode, operands[0]),
 				     operands[0]));
@@ -182,6 +307,49 @@
 				     operands[0]));
   DONE;
 })
+
+(define_insn "atomic_exchangesi_hard"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(mem:SI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:SI (match_dup 1))
+	(unspec:SI
+	  [(match_operand:SI 2 "arith_operand" "rI08")] UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))]
+  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r0:	movli.l	@%1,r0"		"\n"
+	 "	mov	r0,%0"		"\n"
+	 "	mov	%2,r0"		"\n"
+	 "	movco.l r0,@%1"		"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "10")])
+
+(define_insn "atomic_exchange<mode>_hard"
+  [(set (match_operand:I12 0 "register_operand" "=&r")
+	(mem:I12 (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:I12 (match_dup 1))
+	(unspec:I12
+	  [(match_operand:I12 2 "register_operand" "r")] UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (match_scratch:SI 4 "=1"))]
+  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r	mov	#-4,%3"			"\n"
+	 "	and	%1,%3"			"\n"
+	 "	xor	%3,%1"			"\n"
+	 "	add	r15,%1"			"\n"
+	 "	add	#-4,%1"			"\n"
+	 "0:	movli.l	@%3,r0"			"\n"
+	 "	mov.l	r0,@-r15"		"\n"
+	 "	mov.<i124suffix>	@%1,%0"	"\n"
+	 "	mov.<i124suffix>	%2,@%1" "\n"
+	 "	mov.l	@r15+,r0"		"\n"
+	 "	movco.l	r0,@%3"			"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "24")])
 
 (define_insn "atomic_exchange<mode>_soft"
   [(set (match_operand:I124 0 "register_operand" "=&u")
@@ -193,7 +361,7 @@
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
 {
-  return "mova	1f,r0"				"\n"
+  return "\r	mova	1f,r0"			"\n"
 	 "	.align 2"			"\n"
 	 "	mov	r15,r1"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
@@ -203,22 +371,32 @@
 }
   [(set_attr "length" "14")])
 
+;;------------------------------------------------------------------------------
+;; read - add|sub|or|and|xor|nand - write - return old value
+
 (define_expand "atomic_fetch_<fetchop_name><mode>"
   [(set (match_operand:I124 0 "register_operand" "")
 	(match_operand:I124 1 "memory_operand" ""))
    (set (match_dup 1)
 	(unspec:I124
 	  [(FETCHOP:I124 (match_dup 1)
-	     (match_operand:I124 2 "register_operand" ""))]
+	     (match_operand:I124 2 "<fetchop_predicate>" ""))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
 {
-  rtx addr;
+  rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
+  rtx atomic_insn;
 
-  addr = force_reg (Pmode, XEXP (operands[1], 0));
-  emit_insn (gen_atomic_fetch_<fetchop_name><mode>_soft
-	     (operands[0], addr, operands[2]));
+  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+    atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_hard (operands[0], addr,
+							      operands[2]);
+  else
+      atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_soft (operands[0],
+								addr,
+								operands[2]);
+  emit_insn (atomic_insn);
+
   if (<MODE>mode == QImode)
     emit_insn (gen_zero_extendqisi2 (gen_lowpart (SImode, operands[0]),
 				     operands[0]));
@@ -227,6 +405,55 @@
 				     operands[0]));
   DONE;
 })
+
+(define_insn "atomic_fetch_<fetchop_name>si_hard"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(mem:SI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:SI (match_dup 1))
+	(unspec:SI
+	  [(FETCHOP:SI (mem:SI (match_dup 1))
+	     (match_operand:SI 2 "<fetchop_predicate>" "<fetchop_constraint>"))]
+	  UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))]
+  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r0:	movli.l	@%1,r0"		"\n"
+	 "	mov	r0,%0"		"\n"
+	 "	<fetchop_name>	%2,r0"	"\n"
+	 "	movco.l	r0,@%1"		"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "10")])
+
+(define_insn "atomic_fetch_<fetchop_name><mode>_hard"
+  [(set (match_operand:I12 0 "register_operand" "=&r")
+	(mem:I12 (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:I12 (match_dup 1))
+	(unspec:I12
+	  [(FETCHOP:I12 (mem:I12 (match_dup 1))
+	     (match_operand:I12 2 "<fetchop_predicate>" "<fetchop_constraint>"))]
+	  UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (match_scratch:SI 4 "=1"))]
+  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r	mov	#-4,%3"			"\n"
+	 "	and	%1,%3"			"\n"
+	 "	xor	%3,%1"			"\n"
+	 "	add	r15,%1"			"\n"
+	 "	add	#-4,%1"			"\n"
+	 "0:	movli.l	@%3,r0"			"\n"
+	 "	mov.l	r0,@-r15"		"\n"
+	 "	mov.<i124suffix>	@%1,r0"	"\n"
+	 "	mov	r0,%0"			"\n"
+	 "	<fetchop_name>	%2,r0"		"\n"
+	 "	mov.<i124suffix>	r0,@%1"	"\n"
+	 "	mov.l	@r15+,r0"		"\n"
+	 "	movco.l	r0,@%3"			"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "28")])
 
 (define_insn "atomic_fetch_<fetchop_name><mode>_soft"
   [(set (match_operand:I124 0 "register_operand" "=&u")
@@ -241,7 +468,7 @@
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
 {
-  return "mova	1f,r0"				"\n"
+  return "\r	mova	1f,r0"			"\n"
 	 "	.align 2"			"\n"
 	 "	mov	r15,r1"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
@@ -259,16 +486,23 @@
    (set (match_dup 1)
 	(unspec:I124
 	  [(not:I124 (and:I124 (match_dup 1)
-	     (match_operand:I124 2 "register_operand" "")))]
+		     (match_operand:I124 2 "atomic_logical_operand" "")))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
 {
-  rtx addr;
+  rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
+  rtx atomic_insn;
 
-  addr = force_reg (Pmode, XEXP (operands[1], 0));
-  emit_insn (gen_atomic_fetch_nand<mode>_soft
-	     (operands[0], addr, operands[2]));
+  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+    atomic_insn = gen_atomic_fetch_nand<mode>_hard (operands[0], addr,
+						    operands[2]);
+  else
+    atomic_insn = gen_atomic_fetch_nand<mode>_soft (operands[0], addr,
+						    operands[2]);
+
+  emit_insn (atomic_insn);
+
   if (<MODE>mode == QImode)
     emit_insn (gen_zero_extendqisi2 (gen_lowpart (SImode, operands[0]),
 				     operands[0]));
@@ -277,6 +511,57 @@
 				     operands[0]));
   DONE;
 })
+
+(define_insn "atomic_fetch_nandsi_hard"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(mem:SI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:SI (match_dup 1))
+	(unspec:SI
+	  [(not:SI (and:SI (mem:SI (match_dup 1))
+		   (match_operand:SI 2 "logical_operand" "rK08")))]
+	  UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))]
+  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r0:	movli.l	@%1,r0"		"\n"
+	 "	mov	r0,%0"		"\n"
+	 "	and	%2,r0"		"\n"
+	 "	not	r0,r0"		"\n"
+	 "	movco.l	r0,@%1"		"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "12")])
+
+(define_insn "atomic_fetch_nand<mode>_hard"
+  [(set (match_operand:I12 0 "register_operand" "=&r")
+	(mem:I12 (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:I12 (match_dup 1))
+	(unspec:I12
+	  [(not:I12 (and:I12 (mem:I12 (match_dup 1))
+		    (match_operand:I12 2 "logical_operand" "rK08")))]
+	  UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (match_scratch:SI 4 "=1"))]
+  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r	mov	#-4,%3"			"\n"
+	 "	and	%1,%3"			"\n"
+	 "	xor	%3,%1"			"\n"
+	 "	add	r15,%1"			"\n"
+	 "	add	#-4,%1"			"\n"
+	 "0:	movli.l	@%3,r0"			"\n"
+	 "	mov.l	r0,@-r15"		"\n"
+	 "	mov.<i124suffix>	@%1,r0"	"\n"
+	 "	mov	r0,%0"			"\n"
+	 "	and	%2,r0"			"\n"
+	 "	not	r0,r0"			"\n"
+	 "	mov.<i124suffix>	r0,@%1"	"\n"
+	 "	mov.l	@r15+,r0"		"\n"
+	 "	movco.l	r0,@%3"			"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "30")])
 
 (define_insn "atomic_fetch_nand<mode>_soft"
   [(set (match_operand:I124 0 "register_operand" "=&u")
@@ -291,7 +576,7 @@
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
 {
-  return "mova	1f,r0"				"\n"
+  return "\r	mova	1f,r0"			"\n"
 	 "	mov	r15,r1"			"\n"
 	 "	.align 2"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
@@ -304,23 +589,32 @@
 }
   [(set_attr "length" "20")])
 
+;;------------------------------------------------------------------------------
+;; read - add|sub|or|and|xor|nand - write - return new value
+
 (define_expand "atomic_<fetchop_name>_fetch<mode>"
   [(set (match_operand:I124 0 "register_operand" "")
 	(FETCHOP:I124
 	  (match_operand:I124 1 "memory_operand" "")
-	  (match_operand:I124 2 "register_operand" "")))
+	  (match_operand:I124 2 "<fetchop_predicate>" "")))
    (set (match_dup 1)
 	(unspec:I124
 	  [(FETCHOP:I124 (match_dup 1) (match_dup 2))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
 {
-  rtx addr;
+  rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
+  rtx atomic_insn;
 
-  addr = force_reg (Pmode, XEXP (operands[1], 0));
-  emit_insn (gen_atomic_<fetchop_name>_fetch<mode>_soft
-	     (operands[0], addr, operands[2]));
+  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+    atomic_insn = gen_atomic_<fetchop_name>_fetch<mode>_hard (operands[0], addr,
+							      operands[2]);
+  else
+    atomic_insn = gen_atomic_<fetchop_name>_fetch<mode>_soft (operands[0], addr,
+							      operands[2]);
+  emit_insn (atomic_insn);
+
   if (<MODE>mode == QImode)
     emit_insn (gen_zero_extendqisi2 (gen_lowpart (SImode, operands[0]),
 				     operands[0]));
@@ -329,6 +623,56 @@
 				     operands[0]));
   DONE;
 })
+
+(define_insn "atomic_<fetchop_name>_fetchsi_hard"
+  [(set (match_operand:SI 0 "register_operand" "=&z")
+	(FETCHOP:SI
+	  (mem:SI (match_operand:SI 1 "register_operand" "r"))
+	  (match_operand:SI 2 "<fetchop_predicate>" "<fetchop_constraint>")))
+   (set (mem:SI (match_dup 1))
+	(unspec:SI
+	  [(FETCHOP:SI (mem:SI (match_dup 1)) (match_dup 2))]
+	  UNSPEC_ATOMIC))]
+  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r0:	movli.l	@%1,%0"		"\n"
+	 "	<fetchop_name>	%2,%0"	"\n"
+	 "	movco.l	%0,@%1"		"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "8")])
+
+(define_insn "atomic_<fetchop_name>_fetch<mode>_hard"
+  [(set (match_operand:I12 0 "register_operand" "=&r")
+	(FETCHOP:I12
+	  (mem:I12 (match_operand:SI 1 "register_operand" "r"))
+	  (match_operand:I12 2 "<fetchop_predicate>" "<fetchop_constraint>")))
+   (set (mem:I12 (match_dup 1))
+	(unspec:I12
+	  [(FETCHOP:I12 (mem:I12 (match_dup 1)) (match_dup 2))]
+	  UNSPEC_ATOMIC))
+
+   (clobber (reg:SI R0_REG))
+   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (match_scratch:SI 4 "=1"))]
+  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r	mov	#-4,%3"			"\n"
+	 "	and	%1,%3"			"\n"
+	 "	xor	%3,%1"			"\n"
+	 "	add	r15,%1"			"\n"
+	 "	add	#-4,%1"			"\n"
+	 "0:	movli.l	@%3,r0"			"\n"
+	 "	mov.l	r0,@-r15"		"\n"
+	 "	mov.<i124suffix>	@%1,r0"	"\n"
+	 "	<fetchop_name>	%2,r0"		"\n"
+	 "	mov.<i124suffix>	r0,@%1"	"\n"
+	 "	mov	r0,%0"			"\n"
+	 "	mov.l	@r15+,r0"		"\n"
+	 "	movco.l	r0,@%3"			"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "28")])
 
 (define_insn "atomic_<fetchop_name>_fetch<mode>_soft"
   [(set (match_operand:I124 0 "register_operand" "=&u")
@@ -343,7 +687,7 @@
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
 {
-  return "mova	1f,r0"				"\n"
+  return "\r	mova	1f,r0"			"\n"
 	 "	mov	r15,r1"			"\n"
 	 "	.align 2"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
@@ -358,19 +702,25 @@
   [(set (match_operand:I124 0 "register_operand" "")
 	(not:I124 (and:I124
 	  (match_operand:I124 1 "memory_operand" "")
-	  (match_operand:I124 2 "register_operand" ""))))
+	  (match_operand:I124 2 "atomic_logical_operand" ""))))
    (set (match_dup 1)
 	(unspec:I124
 	  [(not:I124 (and:I124 (match_dup 1) (match_dup 2)))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
 {
-  rtx addr;
+  rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
+  rtx atomic_insn;
 
-  addr = force_reg (Pmode, XEXP (operands[1], 0));
-  emit_insn (gen_atomic_nand_fetch<mode>_soft
-	     (operands[0], addr, operands[2]));
+  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+    atomic_insn = gen_atomic_nand_fetch<mode>_hard (operands[0], addr,
+						    operands[2]);
+  else
+    atomic_insn = gen_atomic_nand_fetch<mode>_soft (operands[0], addr,
+						    operands[2]);
+  emit_insn (atomic_insn);
+
   if (<MODE>mode == QImode)
     emit_insn (gen_zero_extendqisi2 (gen_lowpart (SImode, operands[0]),
 				     operands[0]));
@@ -379,6 +729,54 @@
 				     operands[0]));
   DONE;
 })
+
+(define_insn "atomic_nand_fetchsi_hard"
+  [(set (match_operand:SI 0 "register_operand" "=&z")
+	(not:SI (and:SI (mem:SI (match_operand:SI 1 "register_operand" "r"))
+			(match_operand:SI 2 "logical_operand" "rK08"))))
+   (set (mem:SI (match_dup 1))
+	(unspec:SI
+	  [(not:SI (and:SI (mem:SI (match_dup 1)) (match_dup 2)))]
+	  UNSPEC_ATOMIC))]
+  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r0:	movli.l	@%1,%0"		"\n"
+	 "	and	%2,%0"		"\n"
+	 "	not	%0,%0"		"\n"
+	 "	movco.l	%0,@%1"		"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "10")])
+
+(define_insn "atomic_nand_fetch<mode>_hard"
+  [(set (match_operand:I12 0 "register_operand" "=&r")
+	(not:I12 (and:I12 (mem:I12 (match_operand:SI 1 "register_operand" "r"))
+			  (match_operand:I12 2 "logical_operand" "rK08"))))
+   (set (mem:I12 (match_dup 1))
+	(unspec:I12
+	  [(not:I12 (and:I12 (mem:I12 (match_dup 1)) (match_dup 2)))]
+	  UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (match_scratch:SI 4 "=1"))]
+  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+{
+  return "\r	mov	#-4,%3"			"\n"
+	 "	and	%1,%3"			"\n"
+	 "	xor	%3,%1"			"\n"
+	 "	add	r15,%1"			"\n"
+	 "	add	#-4,%1"			"\n"
+	 "0:	movli.l	@%3,r0"			"\n"
+	 "	mov.l	r0,@-r15"		"\n"
+	 "	mov.<i124suffix>	@%1,r0"	"\n"
+	 "	and	%2,r0"			"\n"
+	 "	not	r0,%0"			"\n"
+	 "	mov.<i124suffix>	%0,@%1"	"\n"
+	 "	mov.l	@r15+,r0"		"\n"
+	 "	movco.l	r0,@%3"			"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "28")])
 
 (define_insn "atomic_nand_fetch<mode>_soft"
   [(set (match_operand:I124 0 "register_operand" "=&u")
@@ -393,7 +791,7 @@
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
 {
-  return "mova	1f,r0"				"\n"
+  return "\r	mova	1f,r0"			"\n"
 	 "	.align 2"			"\n"
 	 "	mov	r15,r1"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
@@ -405,11 +803,14 @@
 }
   [(set_attr "length" "18")])
 
+;;------------------------------------------------------------------------------
+;; read - test against zero - or with 0x80 - write - return test result
+
 (define_expand "atomic_test_and_set"
   [(match_operand:SI 0 "register_operand" "")		;; bool result output
    (match_operand:QI 1 "memory_operand" "")		;; memory
    (match_operand:SI 2 "const_int_operand" "")]		;; model
-  "(TARGET_SOFT_ATOMIC || TARGET_ENABLE_TAS) && !TARGET_SHMEDIA"
+  "(TARGET_ANY_ATOMIC || TARGET_ENABLE_TAS) && !TARGET_SHMEDIA"
 {
   rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
 
@@ -417,11 +818,13 @@
     emit_insn (gen_tasb (addr));
   else
     {
-      rtx val;
-
-      val = gen_int_mode (targetm.atomic_test_and_set_trueval, QImode);
+      rtx val = gen_int_mode (targetm.atomic_test_and_set_trueval, QImode);
       val = force_reg (QImode, val);
-      emit_insn (gen_atomic_test_and_set_soft (addr, val));
+
+      if (TARGET_HARD_ATOMIC)
+	  emit_insn (gen_atomic_test_and_set_hard (addr, val));
+      else
+	  emit_insn (gen_atomic_test_and_set_soft (addr, val));
     }
 
   /* The result of the test op is the inverse of what we are
@@ -452,7 +855,7 @@
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_ENABLE_TAS && !TARGET_SHMEDIA"
 {
-  return "mova	1f,r0"			"\n"
+  return "\r	mova	1f,r0"		"\n"
 	 "	.align 2"		"\n"
 	 "	mov	r15,r1"		"\n"
 	 "	mov	#(0f-1f),r15"	"\n"
@@ -462,4 +865,32 @@
 	 "	tst	%2,%2";
 }
   [(set_attr "length" "16")])
+
+(define_insn "atomic_test_and_set_hard"
+  [(set (reg:SI T_REG)
+	(eq:SI (mem:QI (match_operand:SI 0 "register_operand" "r"))
+	       (const_int 0)))
+   (set (mem:QI (match_dup 0))
+	(unspec:QI [(match_operand:QI 1 "register_operand" "r")] UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (match_scratch:SI 2 "=&r"))
+   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (match_scratch:SI 4 "=0"))]
+  "TARGET_HARD_ATOMIC && !TARGET_ENABLE_TAS && TARGET_SH4A_ARCH"
+{
+  return "\r	mov	#-4,%2"		"\n"
+	 "	and	%0,%2"		"\n"
+	 "	xor	%2,%0"		"\n"
+	 "	add	r15,%0"		"\n"
+	 "	add	#-4,%0"		"\n"
+	 "0:	movli.l	@%2,r0"		"\n"
+	 "	mov.l	r0,@-r15"	"\n"
+	 "	mov.b	@%0,%3"		"\n"
+	 "	mov.b	%1,@%0"		"\n"
+	 "	mov.l	@r15+,r0"	"\n"
+	 "	movco.l	r0,@%2"		"\n"
+	 "	bf	0b"		"\n"
+	 "	tst	%3,%3";
+}
+  [(set_attr "length" "26")])
 

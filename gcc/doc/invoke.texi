@@ -884,7 +884,7 @@ See RS/6000 and PowerPC Options.
 -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
--maccumulate-outgoing-args -minvalid-symbols -msoft-atomic @gol
+-maccumulate-outgoing-args -minvalid-symbols -msoft-atomic -mhard-atomic @gol
 -mbranch-cost=@var{num} -mcbranchdi -mcmpeqdi -mfused-madd -mpretend-cmove @gol
 -menable-tas}
 
@@ -18054,9 +18054,21 @@ which is incompatible with the SH ABI@.
 Generate GNU/Linux compatible gUSA software atomic sequences for the atomic
 built-in functions.  The generated atomic sequences require support from the 
 interrupt / exception handling code of the system and are only suitable for
-single-core systems.  They will not perform correctly on multi-core systems.
+single-core systems.  They will not operate correctly on multi-core systems.
 This option is enabled by default when the target is @code{sh-*-linux*}.
+When the target is SH4A, this option will also partially utilize the hardware
+atomic instructions @code{movli.l} and @code{movco.l} to create more
+efficient code.
 For details on the atomic built-in functions see @ref{__atomic Builtins}.
+
+@item -mhard-atomic
+@opindex hard-atomic
+Generate hardware atomic sequences for the atomic built-in functions.  This
+is only available on SH4A and is suitable for multi-core systems.  Code
+compiled with this option will also be compatible with gUSA aware
+interrupt / exception handling systems.  In contrast to the
+@option{-msoft-atomic} option this will only use the instructions
+@code{movli.l} and @code{movco.l} to create atomic sequences.
 
 @item -menable-tas
 @opindex menable-tas
