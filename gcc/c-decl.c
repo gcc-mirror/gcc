@@ -8577,11 +8577,9 @@ check_for_loop_decls (location_t loc, bool turn_off_iso_c99_error)
 void
 c_push_function_context (void)
 {
-  struct language_function *p = cfun->language;
-  /* cfun->language might have been already allocated by the use of
-     -Wunused-local-typedefs.  In that case, just re-use it.  */
-  if (p == NULL)
-    cfun->language = p = ggc_alloc_cleared_language_function ();
+  struct language_function *p;
+  p = ggc_alloc_language_function ();
+  cfun->language = p;
 
   p->base.x_stmt_tree = c_stmt_tree;
   c_stmt_tree.x_cur_stmt_list
@@ -8607,11 +8605,7 @@ c_pop_function_context (void)
 
   pop_function_context ();
   p = cfun->language;
-  /* When -Wunused-local-typedefs is in effect, cfun->languages is
-     used to store data throughout the life time of the current cfun,
-     So don't deallocate it.  */
-  if (!warn_unused_local_typedefs)
-    cfun->language = NULL;
+  cfun->language = NULL;
 
   if (DECL_STRUCT_FUNCTION (current_function_decl) == 0
       && DECL_SAVED_TREE (current_function_decl) == NULL_TREE)
