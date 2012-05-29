@@ -269,7 +269,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   return map;
 }
 
-/* Returns TRUE if the line table set tracks token locations accross
+/* Returns TRUE if the line table set tracks token locations across
    macro expansion, FALSE otherwise.  */
 
 bool
@@ -1118,7 +1118,7 @@ linemap_unwind_toward_expansion (struct line_maps *set,
    of a macro M and if its spelling location is reserved (e.g, a
    location for a built-in token), then this function unwinds (using
    linemap_unwind_toward_expansion) the location until a location that
-   is not reserved and is not in a sytem header is reached.  In other
+   is not reserved and is not in a system header is reached.  In other
    words, this unwinds the reserved location until a location that is
    in real source code is reached.
 

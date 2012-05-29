@@ -72,7 +72,7 @@ struct macro_arg_token_iter
   /* A pointer to the current token pointed to by the iterator.  */
   const cpp_token **token_ptr;
   /* A pointer to the "full" location of the current token.  If
-     -ftrack-macro-expansion is used this location tracks loci accross
+     -ftrack-macro-expansion is used this location tracks loci across
      macro expansion.  */
   const source_location *location_ptr;
 #ifdef ENABLE_CHECKING
@@ -1221,7 +1221,7 @@ delete_macro_args (_cpp_buff *buff, unsigned num_args)
 
 /* Set the INDEXth token of the macro argument ARG. TOKEN is the token
    to set, LOCATION is its virtual location.  "Virtual" location means
-   the location that encodes loci accross macro expansion. Otherwise
+   the location that encodes loci across macro expansion. Otherwise
    it has to be TOKEN->SRC_LOC.  KIND is the kind of tokens the
    argument ARG is supposed to contain.  Note that ARG must be
    tailored so that it has enough room to contain INDEX + 1 numbers of
@@ -1346,7 +1346,7 @@ macro_arg_token_iter_init (macro_arg_token_iter *iter,
 
 /* Move the iterator one token forward. Note that if IT was
    initialized on an argument that has a stringified token, moving it
-   foward doesn't make sense as a stringified token is essentially one
+   forward doesn't make sense as a stringified token is essentially one
    string.  */
 static void
 macro_arg_token_iter_forward (macro_arg_token_iter *it)
@@ -1965,7 +1965,7 @@ tokens_buff_remove_last_token (_cpp_buff *tokens_buff)
    means -ftrack-macro-expansion is effect; it then points to where to
    insert the virtual location of TOKEN.  TOKEN is the token to
    insert.  VIRT_LOC is the virtual location of the token, i.e, the
-   location possibly encoding its locus accross macro expansion.  If
+   location possibly encoding its locus across macro expansion.  If
    TOKEN is an argument of a function-like macro (inside a macro
    replacement list), PARM_DEF_LOC is the spelling location of the
    macro parameter that TOKEN is replacing, in the replacement list of
@@ -2010,7 +2010,7 @@ tokens_buff_put_token_to (const cpp_token **dest,
    reaches BUFFER's size; it aborts in that situation.
 
    TOKEN is the token to append. VIRT_LOC is the virtual location of
-   the token, i.e, the location possibly encoding its locus accross
+   the token, i.e, the location possibly encoding its locus across
    macro expansion. If TOKEN is an argument of a function-like macro
    (inside a macro replacement list), PARM_DEF_LOC is the location of
    the macro parameter that TOKEN is replacing.  If TOKEN doesn't come
@@ -2226,7 +2226,7 @@ _cpp_pop_context (cpp_reader *pfile)
       if (macro != NULL
 	  /* Several contiguous macro expansion contexts can be
 	     associated to the same macro; that means it's the same
-	     macro expansion that spans accross all these (sub)
+	     macro expansion that spans across all these (sub)
 	     contexts.  So we should re-enable an expansion-disabled
 	     macro only when we are sure we are really out of that
 	     macro expansion.  */
@@ -2264,7 +2264,7 @@ reached_end_of_context (cpp_context *context)
 /* Consume the next token contained in the current context of PFILE,
    and return it in *TOKEN. It's "full location" is returned in
    *LOCATION. If -ftrack-macro-location is in effeect, fFull location"
-   means the location encoding the locus of the token accross macro
+   means the location encoding the locus of the token across macro
    expansion; otherwise it's just is the "normal" location of the
    token which (*TOKEN)->src_loc.  */
 static inline void

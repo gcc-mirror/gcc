@@ -1,3 +1,10 @@
+2012-05-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* directives.c: Fix typos.
+	* include/line-map.h: Fix typos.
+	* line-map.c: Fix typos.
+	* macro.c: Fix typos.
+
 2012-05-25  Dodji Seketeli  <dodji@redhat.com>
 
 	PR bootstrap/53459
