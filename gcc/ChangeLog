@@ -1,3 +1,36 @@
+2012-05-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52941
+	* config/sh/predicates.md (atomic_arith_operand,
+	atomic_logical_operand): New predicates.
+	* config/sh/sh.c (sh_option_override): Check atomic options.
+	* config/sh/sh.h (TARGET_ANY_ATOMIC, UNSUPPORTED_ATOMIC_OPTIONS,
+	UNSUPPORTED_HARD_ATOMIC_CPU): New macros.
+	(DRIVER_SELF_SPECS): Use UNSUPPORTED_ATOMIC_OPTIONS and
+	UNSUPPORTED_HARD_ATOMIC_CPU.
+	* config/sh/sync.md: Update description comments.
+	(I12): New mode iterator.
+	(fetchop_predicate, fetchop_constraint): New code attributes.
+	(atomic_compare_and_swapsi_hard, atomic_compare_and_swap<mode>_hard,
+	atomic_exchangesi_hard, atomic_exchange<mode>_hard,
+	atomic_fetch_<fetchop_name>si_hard,
+	atomic_fetch_<fetchop_name><mode>_hard,
+	atomic_fetch_nandsi_hard, atomic_fetch_nand<mode>_hard,
+	atomic_<fetchop_name>_fetchsi_hard,
+	atomic_<fetchop_name>_fetch<mode>_hard,
+	atomic_nand_fetchsi_hard, atomic_nand_fetch<mode>_hard,
+	atomic_test_and_set_hard): New insns.
+	(atomic_compare_and_swap<mode>_soft, atomic_exchange<mode>_soft,
+	atomic_fetch_<fetchop_name><mode>_soft, atomic_fetch_nand<mode>_soft,
+	atomic_<fetchop_name>_fetch<mode>_soft, atomic_nand_fetch<mode>_soft,
+	atomic_test_and_set_soft): Use same formatting for the first line of
+	the asm block as in new insns above.
+	(atomic_compare_and_swap<mode>, atomic_exchange<mode>,
+	atomic_fetch_<fetchop_name><mode>, atomic_<fetchop_name>_fetch<mode>,
+	atomic_test_and_set): Integrate new *_hard insns into expanders.
+	* config/sh/sh.opt (mhard-atomic): New option.
+	* doc/invoke.texi (SH Options): Document it.
+
 2012-05-29  Meador Inge  <meadori@codesourcery.com>
 
 	* c-decl.c (c_push_function_context): Always create a new language
