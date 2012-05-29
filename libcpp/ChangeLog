@@ -1,3 +1,9 @@
+2012-05-25  Dodji Seketeli  <dodji@redhat.com>
+
+	PR bootstrap/53459
+	* lex.c (search_line_fast): Avoid unused local typedefs to simulate
+	a static assertion.
+
 2012-05-29  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/53229
