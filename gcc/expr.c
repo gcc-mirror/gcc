@@ -9922,7 +9922,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    tree nt = build_qualified_type (TREE_TYPE (tem),
 					    (TYPE_QUALS (TREE_TYPE (tem))
 					     | TYPE_QUAL_CONST));
-	    memloc = assign_temp (nt, 1, 1, 1);
+	    memloc = assign_temp (nt, 0, 1, 1);
 	    emit_move_insn (memloc, op0);
 	    op0 = memloc;
 	    mem_attrs_from_type = true;
@@ -10425,6 +10425,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case POSTDECREMENT_EXPR:
     case LOOP_EXPR:
     case EXIT_EXPR:
+    case COMPOUND_LITERAL_EXPR:
       /* Lowered by gimplify.c.  */
       gcc_unreachable ();
 
@@ -10439,7 +10440,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return expand_expr_real (treeop0, original_target, tmode,
 			       modifier, alt_rtl);
 
-    case COMPOUND_LITERAL_EXPR:
+#if 0
       {
 	/* Initialize the anonymous variable declared in the compound
 	   literal, then return the variable.  */
@@ -10459,6 +10460,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	return expand_expr_real (decl, original_target, tmode,
 				 modifier, alt_rtl);
       }
+#endif
 
     default:
       return expand_expr_real_2 (&ops, target, tmode, modifier);

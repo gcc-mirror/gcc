@@ -2405,8 +2405,6 @@ expand_call (tree exp, rtx target, int ignore)
 	       specified.  If we were to allocate space on the stack here,
 	       we would have no way of knowing when to free it.  */
 	    rtx d = assign_temp (rettype, 0, 1, 1);
-
-	    mark_temp_addr_taken (d);
 	    structure_value_addr = XEXP (d, 0);
 	    target = 0;
 	  }

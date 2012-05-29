@@ -910,6 +910,8 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 		 at this point.  Ignore it: clearly this *is* a memory.  */
 	    }
 	  else
+	    gcc_unreachable ();
+#if 0
 	    {
 	      warning (0, "use of memory input without lvalue in "
 		       "asm operand %d is deprecated", i + noutputs);
@@ -935,6 +937,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 		  op = memloc;
 		}
 	    }
+#endif
 	}
 
       generating_concat_p = old_generating_concat_p;
@@ -1703,6 +1706,7 @@ expand_decl (tree decl)
      type in case this node is used in a reference.  */
   if (TREE_CODE (decl) == CONST_DECL)
     {
+      gcc_unreachable ();
       DECL_MODE (decl) = TYPE_MODE (type);
       DECL_ALIGN (decl) = TYPE_ALIGN (type);
       DECL_SIZE (decl) = TYPE_SIZE (type);
@@ -1720,6 +1724,7 @@ expand_decl (tree decl)
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
     return;
 
+  gcc_unreachable ();
   /* Create the RTL representation for the variable.  */
 
   if (type == error_mark_node)

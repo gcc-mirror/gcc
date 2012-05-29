@@ -1,3 +1,7 @@
+2012-05-29  Michael Matz  <matz@suse.de>
+
+	* gcc-interface/utils.c (create_var_decl_1): Don't call expand_decl.
+
 2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (variant_desc): Rename 'record' to 'new_type'.

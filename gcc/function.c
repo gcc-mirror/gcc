@@ -4788,11 +4788,8 @@ expand_function_start (tree subr)
       tree t_save;
       rtx r_save;
 
-      /* ??? We need to do this save early.  Unfortunately here is
-	 before the frame variable gets declared.  Help out...  */
       tree var = TREE_OPERAND (cfun->nonlocal_goto_save_area, 0);
-      if (!DECL_RTL_SET_P (var))
-	expand_decl (var);
+      gcc_assert (DECL_RTL_SET_P (var));
 
       t_save = build4 (ARRAY_REF,
 		       TREE_TYPE (TREE_TYPE (cfun->nonlocal_goto_save_area)),

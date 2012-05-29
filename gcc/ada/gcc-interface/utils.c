@@ -2227,8 +2227,6 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
       if (global_bindings_p ())
 	rest_of_decl_compilation (var_decl, true, 0);
     }
-  else
-    expand_decl (var_decl);
 
   return var_decl;
 }
