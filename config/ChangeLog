@@ -1,3 +1,9 @@
+2012-05-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* mt-sde: Fix typos.
+	* stdint.m4: Fix typos.
+	* tcl.m4: Fix typos.
+
 2012-04-03  Tristan Gingold  <gingold@adacore.com>
 
 	* mmap.m4: Use *vms* instead of vms*.
