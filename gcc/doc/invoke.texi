@@ -885,8 +885,8 @@ See RS/6000 and PowerPC Options.
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
 -maccumulate-outgoing-args -minvalid-symbols -msoft-atomic -mhard-atomic @gol
--mbranch-cost=@var{num} -mcbranchdi -mcmpeqdi -mfused-madd -mpretend-cmove @gol
--menable-tas}
+-mbranch-cost=@var{num} -mcbranchdi -mcmpeqdi -mfused-madd -mno-fused-madd @gol
+-mpretend-cmove -menable-tas}
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mimpure-text  -mno-impure-text @gol
@@ -18250,11 +18250,17 @@ Emit the @code{cmpeqdi_t} instruction pattern even when @option{-mcbranchdi}
 is in effect.
 
 @item -mfused-madd
+@itemx -mno-fused-madd
 @opindex mfused-madd
-Allow the usage of the @code{fmac} instruction (floating-point
-multiply-accumulate) if the processor type supports it.  Enabling this
-option might generate code that produces different numeric floating-point
-results compared to strict IEEE 754 arithmetic.
+@opindex mno-fused-madd
+If the processor type supports it, setting @code{-mfused-madd} will allow the
+usage of the @code{fmac} instruction (floating-point multiply-accumulate) for
+regular calculations.  Enabling this option might generate faster code but also
+produce different numeric floating-point results compared to strict IEEE 754
+arithmetic.  @code{-mfused-madd} is enabled by default by option
+@option{-funsafe-math-optimizations}.  Setting @code{-mno-fused-madd} will
+disallow the usage of the @code{fmac} instruction for regular calculations
+even if @option{-funsafe-math-optimizations} is in effect.
 
 @item -mpretend-cmove
 @opindex mpretend-cmove

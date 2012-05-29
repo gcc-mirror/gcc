@@ -876,6 +876,13 @@ sh_option_override (void)
 	align_functions = min_align;
     }
 
+  /* Enable fmac insn for "a * b + c" SFmode calculations when -ffast-math
+     is enabled and -mno-fused-madd is not specified by the user.
+     The fmac insn can't be enabled by default due to the implied
+     FMA semantics.   See also PR target/29100.  */
+  if (global_options_set.x_TARGET_FMAC == 0 && flag_unsafe_math_optimizations)
+    TARGET_FMAC = 1;
+
   if (sh_fixed_range_str)
     sh_fix_range (sh_fixed_range_str);
 
