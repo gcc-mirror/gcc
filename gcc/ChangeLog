@@ -1,3 +1,8 @@
+2012-05-29  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/ev6.md: (define_bypass "ev6_fmul,ev6_fadd"): New.
+	(define_bypass "ev6_fcmov"): New.
+
 2012-05-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* integrate.c: Remove.
