@@ -16409,6 +16409,135 @@ gen_type_die_for_member (tree type, tree member, dw_die_ref context_die)
       pop_decl_scope ();
     }
 }
+
+/* Forward declare these functions, because they are mutually recursive
+  with their set_block_* pairing functions.  */
+static void set_decl_origin_self (tree);
+static void set_decl_abstract_flags (tree, int);
+
+/* Given a pointer to some BLOCK node, if the BLOCK_ABSTRACT_ORIGIN for the
+   given BLOCK node is NULL, set the BLOCK_ABSTRACT_ORIGIN for the node so
+   that it points to the node itself, thus indicating that the node is its
+   own (abstract) origin.  Additionally, if the BLOCK_ABSTRACT_ORIGIN for
+   the given node is NULL, recursively descend the decl/block tree which
+   it is the root of, and for each other ..._DECL or BLOCK node contained
+   therein whose DECL_ABSTRACT_ORIGINs or BLOCK_ABSTRACT_ORIGINs are also
+   still NULL, set *their* DECL_ABSTRACT_ORIGIN or BLOCK_ABSTRACT_ORIGIN
+   values to point to themselves.  */
+
+static void
+set_block_origin_self (tree stmt)
+{
+  if (BLOCK_ABSTRACT_ORIGIN (stmt) == NULL_TREE)
+    {
+      BLOCK_ABSTRACT_ORIGIN (stmt) = stmt;
+
+      {
+	tree local_decl;
+
+	for (local_decl = BLOCK_VARS (stmt);
+	     local_decl != NULL_TREE;
+	     local_decl = DECL_CHAIN (local_decl))
+	  if (! DECL_EXTERNAL (local_decl))
+	    set_decl_origin_self (local_decl);	/* Potential recursion.  */
+      }
+
+      {
+	tree subblock;
+
+	for (subblock = BLOCK_SUBBLOCKS (stmt);
+	     subblock != NULL_TREE;
+	     subblock = BLOCK_CHAIN (subblock))
+	  set_block_origin_self (subblock);	/* Recurse.  */
+      }
+    }
+}
+
+/* Given a pointer to some ..._DECL node, if the DECL_ABSTRACT_ORIGIN for
+   the given ..._DECL node is NULL, set the DECL_ABSTRACT_ORIGIN for the
+   node to so that it points to the node itself, thus indicating that the
+   node represents its own (abstract) origin.  Additionally, if the
+   DECL_ABSTRACT_ORIGIN for the given node is NULL, recursively descend
+   the decl/block tree of which the given node is the root of, and for
+   each other ..._DECL or BLOCK node contained therein whose
+   DECL_ABSTRACT_ORIGINs or BLOCK_ABSTRACT_ORIGINs are also still NULL,
+   set *their* DECL_ABSTRACT_ORIGIN or BLOCK_ABSTRACT_ORIGIN values to
+   point to themselves.  */
+
+static void
+set_decl_origin_self (tree decl)
+{
+  if (DECL_ABSTRACT_ORIGIN (decl) == NULL_TREE)
+    {
+      DECL_ABSTRACT_ORIGIN (decl) = decl;
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  tree arg;
+
+	  for (arg = DECL_ARGUMENTS (decl); arg; arg = DECL_CHAIN (arg))
+	    DECL_ABSTRACT_ORIGIN (arg) = arg;
+	  if (DECL_INITIAL (decl) != NULL_TREE
+	      && DECL_INITIAL (decl) != error_mark_node)
+	    set_block_origin_self (DECL_INITIAL (decl));
+	}
+    }
+}
+
+/* Given a pointer to some BLOCK node, and a boolean value to set the
+   "abstract" flags to, set that value into the BLOCK_ABSTRACT flag for
+   the given block, and for all local decls and all local sub-blocks
+   (recursively) which are contained therein.  */
+
+static void
+set_block_abstract_flags (tree stmt, int setting)
+{
+  tree local_decl;
+  tree subblock;
+  unsigned int i;
+
+  BLOCK_ABSTRACT (stmt) = setting;
+
+  for (local_decl = BLOCK_VARS (stmt);
+       local_decl != NULL_TREE;
+       local_decl = DECL_CHAIN (local_decl))
+    if (! DECL_EXTERNAL (local_decl))
+      set_decl_abstract_flags (local_decl, setting);
+
+  for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
+    {
+      local_decl = BLOCK_NONLOCALIZED_VAR (stmt, i);
+      if ((TREE_CODE (local_decl) == VAR_DECL && !TREE_STATIC (local_decl))
+	  || TREE_CODE (local_decl) == PARM_DECL)
+	set_decl_abstract_flags (local_decl, setting);
+    }
+
+  for (subblock = BLOCK_SUBBLOCKS (stmt);
+       subblock != NULL_TREE;
+       subblock = BLOCK_CHAIN (subblock))
+    set_block_abstract_flags (subblock, setting);
+}
+
+/* Given a pointer to some ..._DECL node, and a boolean value to set the
+   "abstract" flags to, set that value into the DECL_ABSTRACT flag for the
+   given decl, and (in the case where the decl is a FUNCTION_DECL) also
+   set the abstract flags for all of the parameters, local vars, local
+   blocks and sub-blocks (recursively) to the same setting.  */
+
+static void
+set_decl_abstract_flags (tree decl, int setting)
+{
+  DECL_ABSTRACT (decl) = setting;
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      tree arg;
+
+      for (arg = DECL_ARGUMENTS (decl); arg; arg = DECL_CHAIN (arg))
+	DECL_ABSTRACT (arg) = setting;
+      if (DECL_INITIAL (decl) != NULL_TREE
+	  && DECL_INITIAL (decl) != error_mark_node)
+	set_block_abstract_flags (DECL_INITIAL (decl), setting);
+    }
+}
 
 /* Generate the DWARF2 info for the "abstract" instance of a function which we
    may later generate inlined and/or out-of-line instances of.  */

@@ -36,7 +36,6 @@
 #include "recog.h"
 #include "diagnostic-core.h"
 #include "ggc.h"
-#include "integrate.h"
 #include "df.h"
 #include "tm_p.h"
 #include "target.h"

@@ -44,7 +44,6 @@
 #include "recog.h"
 #include "optabs.h"
 #include "ggc.h"
-#include "integrate.h"
 #include "cgraph.h"
 #include "langhooks.h"
 #include "bfin-protos.h"

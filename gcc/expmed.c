@@ -1865,9 +1865,9 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 	  /* If the field does not already start at the lsb,
 	     shift it so it does.  */
 	  /* Maybe propagate the target for the shift.  */
-	  /* But not if we will return it--could confuse integrate.c.  */
 	  rtx subtarget = (target != 0 && REG_P (target) ? target : 0);
-	  if (tmode != mode) subtarget = 0;
+	  if (tmode != mode)
+	    subtarget = 0;
 	  op0 = expand_shift (RSHIFT_EXPR, mode, op0, bitpos, subtarget, 1);
 	}
       /* Convert the value to the desired mode.  */

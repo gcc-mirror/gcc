@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "tm-constrs.h"
 #include "tree-pass.h"
-#include "integrate.h"
 
 /* Which cpu we're compiling for.  */
 int epiphany_cpu_type;

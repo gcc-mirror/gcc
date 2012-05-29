@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "tree-pass.h"
 #include "target.h"
-#include "integrate.h"
 
 #include "rtl.h"	/* FIXME: For asm_str_count.  */
 
@@ -3235,6 +3234,29 @@ inline_forbidden_p (tree fndecl)
 
   pointer_set_destroy (visited_nodes);
   return forbidden_p;
+}
+
+/* Return false if the function FNDECL cannot be inlined on account of its
+   attributes, true otherwise.  */
+static bool
+function_attribute_inlinable_p (const_tree fndecl)
+{
+  if (targetm.attribute_table)
+    {
+      const_tree a;
+
+      for (a = DECL_ATTRIBUTES (fndecl); a; a = TREE_CHAIN (a))
+	{
+	  const_tree name = TREE_PURPOSE (a);
+	  int i;
+
+	  for (i = 0; targetm.attribute_table[i].name != NULL; i++)
+	    if (is_attribute_p (targetm.attribute_table[i].name, name))
+	      return targetm.function_attribute_inlinable_p (fndecl);
+	}
+    }
+
+  return true;
 }
 
 /* Returns nonzero if FN is a function that does not have any

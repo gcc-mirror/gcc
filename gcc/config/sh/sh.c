@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "diagnostic-core.h"
 #include "recog.h"
-#include "integrate.h"
 #include "dwarf2.h"
 #include "tm_p.h"
 #include "target.h"

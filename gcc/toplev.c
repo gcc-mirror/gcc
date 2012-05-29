@@ -59,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "ira.h"
 #include "dwarf2asm.h"
-#include "integrate.h"
 #include "debug.h"
 #include "target.h"
 #include "common/common-target.h"

@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "ggc.h"
 #include "tm_p.h"
-#include "integrate.h"
 #include "langhooks.h"
 #include "target.h"
 #include "common/common-target.h"
@@ -1222,6 +1221,133 @@ init_temp_slots (void)
 					       NULL);
   else
     htab_empty (temp_slot_address_table);
+}
+
+/* Functions and data structures to keep track of the values hard regs
+   had at the start of the function.  */
+
+/* Private type used by get_hard_reg_initial_reg, get_hard_reg_initial_val,
+   and has_hard_reg_initial_val..  */
+typedef struct GTY(()) initial_value_pair {
+  rtx hard_reg;
+  rtx pseudo;
+} initial_value_pair;
+/* ???  This could be a VEC but there is currently no way to define an
+   opaque VEC type.  This could be worked around by defining struct
+   initial_value_pair in function.h.  */
+typedef struct GTY(()) initial_value_struct {
+  int num_entries;
+  int max_entries;
+  initial_value_pair * GTY ((length ("%h.num_entries"))) entries;
+} initial_value_struct;
+
+/* If a pseudo represents an initial hard reg (or expression), return
+   it, else return NULL_RTX.  */
+
+rtx
+get_hard_reg_initial_reg (rtx reg)
+{
+  struct initial_value_struct *ivs = crtl->hard_reg_initial_vals;
+  int i;
+
+  if (ivs == 0)
+    return NULL_RTX;
+
+  for (i = 0; i < ivs->num_entries; i++)
+    if (rtx_equal_p (ivs->entries[i].pseudo, reg))
+      return ivs->entries[i].hard_reg;
+
+  return NULL_RTX;
+}
+
+/* Make sure that there's a pseudo register of mode MODE that stores the
+   initial value of hard register REGNO.  Return an rtx for such a pseudo.  */
+
+rtx
+get_hard_reg_initial_val (enum machine_mode mode, unsigned int regno)
+{
+  struct initial_value_struct *ivs;
+  rtx rv;
+
+  rv = has_hard_reg_initial_val (mode, regno);
+  if (rv)
+    return rv;
+
+  ivs = crtl->hard_reg_initial_vals;
+  if (ivs == 0)
+    {
+      ivs = ggc_alloc_initial_value_struct ();
+      ivs->num_entries = 0;
+      ivs->max_entries = 5;
+      ivs->entries = ggc_alloc_vec_initial_value_pair (5);
+      crtl->hard_reg_initial_vals = ivs;
+    }
+
+  if (ivs->num_entries >= ivs->max_entries)
+    {
+      ivs->max_entries += 5;
+      ivs->entries = GGC_RESIZEVEC (initial_value_pair, ivs->entries,
+				    ivs->max_entries);
+    }
+
+  ivs->entries[ivs->num_entries].hard_reg = gen_rtx_REG (mode, regno);
+  ivs->entries[ivs->num_entries].pseudo = gen_reg_rtx (mode);
+
+  return ivs->entries[ivs->num_entries++].pseudo;
+}
+
+/* See if get_hard_reg_initial_val has been used to create a pseudo
+   for the initial value of hard register REGNO in mode MODE.  Return
+   the associated pseudo if so, otherwise return NULL.  */
+
+rtx
+has_hard_reg_initial_val (enum machine_mode mode, unsigned int regno)
+{
+  struct initial_value_struct *ivs;
+  int i;
+
+  ivs = crtl->hard_reg_initial_vals;
+  if (ivs != 0)
+    for (i = 0; i < ivs->num_entries; i++)
+      if (GET_MODE (ivs->entries[i].hard_reg) == mode
+	  && REGNO (ivs->entries[i].hard_reg) == regno)
+	return ivs->entries[i].pseudo;
+
+  return NULL_RTX;
+}
+
+unsigned int
+emit_initial_value_sets (void)
+{
+  struct initial_value_struct *ivs = crtl->hard_reg_initial_vals;
+  int i;
+  rtx seq;
+
+  if (ivs == 0)
+    return 0;
+
+  start_sequence ();
+  for (i = 0; i < ivs->num_entries; i++)
+    emit_move_insn (ivs->entries[i].pseudo, ivs->entries[i].hard_reg);
+  seq = get_insns ();
+  end_sequence ();
+
+  emit_insn_at_entry (seq);
+  return 0;
+}
+
+/* Return the hardreg-pseudoreg initial values pair entry I and
+   TRUE if I is a valid entry, or FALSE if I is not a valid entry.  */
+bool
+initial_value_entry (int i, rtx *hreg, rtx *preg)
+{
+  struct initial_value_struct *ivs = crtl->hard_reg_initial_vals;
+  if (!ivs || i >= ivs->num_entries)
+    return false;
+
+  *hreg = ivs->entries[i].hard_reg;
+  *preg = ivs->entries[i].pseudo;
+  return true;
 }
 
 /* These routines are responsible for converting virtual register references

@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "ggc.h"
 #include "diagnostic-core.h"
-#include "integrate.h"
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"
