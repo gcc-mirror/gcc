@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "" } */
+/* { dg-options "-ftrack-macro-expansion=0" } */
 
 int foo(int, ...);
 

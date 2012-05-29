@@ -1,3 +1,21 @@
+2012-05-29  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/53229
+	* gcc.dg/cpp/paste6.c: Force to run without
+	-ftrack-macro-expansion.
+	* gcc.dg/cpp/paste8.c: Likewise.
+	* gcc.dg/cpp/paste8-2.c: New test, like paste8.c but run with
+	-ftrack-macro-expansion.
+	* gcc.dg/cpp/paste12.c: Force to run without
+	-ftrack-macro-expansion.
+	* gcc.dg/cpp/paste12-2.c: New test, like paste12.c but run with
+	-ftrack-macro-expansion.
+	* gcc.dg/cpp/paste13.c: Likewise.
+	* gcc.dg/cpp/paste14.c: Likewise.
+	* gcc.dg/cpp/paste14-2.c: New test, like paste14.c but run with
+	-ftrack-macro-expansion.
+	* gcc.dg/cpp/paste18.c: New test.
+
 2012-05-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.target/cris/torture/trap-1.c,
