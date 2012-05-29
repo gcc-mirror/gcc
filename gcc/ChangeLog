@@ -1,3 +1,7 @@
+2012-05-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/include/texinfo.tex: Update to version 2012-05-16.16.
+
 2012-05-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (find_vars_r): Do not call add_referenced_vars
