@@ -1,5 +1,13 @@
 2012-05-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/51340
+	* config/sh/sh.c (sh_option_override): Set TARGET_FMAC if
+	flag_unsafe_math_optimizations is set.
+	* doc/invoke.texi (SH Options): Add -mno-fused-madd description.
+	Update description of -mfused-madd.
+
+2012-05-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/52941
 	* config/sh/predicates.md (atomic_arith_operand,
 	atomic_logical_operand): New predicates.

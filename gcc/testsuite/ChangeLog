@@ -1,3 +1,10 @@
+2012-05-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51340
+	* gcc.target/sh/pr51340-1.c: New.
+	* gcc.target/sh/pr51340-2.c: New.
+	* gcc.target/sh/pr51340-3.c: New.
+
 2012-05-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53516
