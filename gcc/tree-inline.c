@@ -818,6 +818,15 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	       || decl_function_context (*tp) == id->src_fn))
     /* These may need to be remapped for EH handling.  */
     *tp = remap_decl (*tp, id);
+  else if (TREE_CODE (*tp) == FIELD_DECL)
+    {
+      /* If the enclosing record type is variably_modified_type_p, the field
+	 has already been remapped.  Otherwise, it need not be.  */
+      tree *n = (tree *) pointer_map_contains (id->decl_map, *tp);
+      if (n)
+	*tp = *n;
+      *walk_subtrees = 0;
+    }
   else if (TYPE_P (*tp))
     /* Types may need remapping as well.  */
     *tp = remap_type (*tp, id);
@@ -876,8 +885,8 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 
       /* Global variables we haven't seen yet need to go into referenced
 	 vars.  If not referenced from types only.  */
-      if (gimple_in_ssa_p (cfun)
-	  && TREE_CODE (*tp) == VAR_DECL
+      if (gimple_referenced_vars (cfun)
+	  && TREE_CODE (*tp) == VAR_DECL && !is_global_var (*tp)
 	  && id->remapping_type_depth == 0
 	  && !processing_debug_stmt)
 	add_referenced_var (*tp);
@@ -1119,8 +1128,8 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 
       /* Global variables we haven't seen yet needs to go into referenced
 	 vars.  If not referenced from types or debug stmts only.  */
-      if (gimple_in_ssa_p (cfun)
-	  && TREE_CODE (*tp) == VAR_DECL
+      if (gimple_referenced_vars (cfun)
+	  && TREE_CODE (*tp) == VAR_DECL && !is_global_var (*tp)
 	  && id->remapping_type_depth == 0
 	  && !processing_debug_stmt)
 	add_referenced_var (*tp);
@@ -2123,7 +2132,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
     {
       init_tree_ssa (cfun);
       cfun->gimple_df->in_ssa_p = true;
-      init_ssa_operands ();
+      init_ssa_operands (cfun);
     }
   pop_cfun ();
 }
@@ -2604,11 +2613,11 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
   /* We are eventually using the value - make sure all variables
      referenced therein are properly recorded.  */
   if (value
-      && gimple_in_ssa_p (cfun)
+      && gimple_referenced_vars (cfun)
       && TREE_CODE (value) == ADDR_EXPR)
     {
       tree base = get_base_address (TREE_OPERAND (value, 0));
-      if (base && TREE_CODE (base) == VAR_DECL)
+      if (base && TREE_CODE (base) == VAR_DECL && !is_global_var (base))
 	add_referenced_var (base);
     }
 
@@ -2701,7 +2710,8 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
       STRIP_USELESS_TYPE_CONVERSION (rhs);
 
       /* If we are in SSA form properly remap the default definition
-         or omit the initialization if the parameter is unused.  */
+         or assign to a dummy SSA name if the parameter is unused and
+	 we are not optimizing.  */
       if (gimple_in_ssa_p (cfun) && is_gimple_reg (p))
 	{
 	  if (def)
@@ -2710,6 +2720,11 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	      init_stmt = gimple_build_assign (def, rhs);
 	      SSA_NAME_IS_DEFAULT_DEF (def) = 0;
 	      set_default_def (var, NULL);
+	    }
+	  else if (!optimize)
+	    {
+	      def = make_ssa_name (var, NULL);
+	      init_stmt = gimple_build_assign (def, rhs);
 	    }
 	}
       else
@@ -2911,7 +2926,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
   gcc_assert (TREE_CODE (TYPE_SIZE_UNIT (callee_type)) == INTEGER_CST);
 
   var = copy_result_decl_to_var (result, id);
-  if (gimple_in_ssa_p (cfun))
+  if (gimple_referenced_vars (cfun))
     add_referenced_var (var);
 
   DECL_SEEN_IN_BIND_EXPR_P (var) = 1;
@@ -2972,7 +2987,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       && !is_gimple_val (var))
     {
       tree temp = create_tmp_var (TREE_TYPE (result), "retvalptr");
-      if (gimple_in_ssa_p (id->src_cfun))
+      if (gimple_referenced_vars (cfun))
 	add_referenced_var (temp);
       insert_decl_map (id, result, temp);
       /* When RESULT_DECL is in SSA form, we need to remap and initialize
@@ -5188,10 +5203,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
 	    if (TREE_CODE (op) == ADDR_EXPR)
 	      {
-		op = TREE_OPERAND (op, 0);
-		while (handled_component_p (op))
-		  op = TREE_OPERAND (op, 0);
-		if (TREE_CODE (op) == VAR_DECL)
+		op = get_base_address (TREE_OPERAND (op, 0));
+		if (op && TREE_CODE (op) == VAR_DECL && !is_global_var (op))
 		  add_referenced_var (op);
 	      }
 	    gcc_assert (TREE_CODE (replace_info->old_tree) == PARM_DECL);

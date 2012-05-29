@@ -6977,12 +6977,12 @@
 	        (match_operand:SI 2 "nonmemory_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
 	      (pc)))]
-  "TARGET_THUMB1 || TARGET_32BIT"
+  "TARGET_EITHER"
   "
   if (!TARGET_THUMB1)
     {
-      if (!arm_add_operand (operands[2], SImode))
-	operands[2] = force_reg (SImode, operands[2]);
+      if (!arm_validize_comparison (&operands[0], &operands[1], &operands[2]))
+        FAIL;
       emit_jump_insn (gen_cbranch_cc (operands[0], operands[1], operands[2],
 				      operands[3]));
       DONE;
@@ -7054,33 +7054,13 @@
 	      (pc)))]
   "TARGET_32BIT"
   "{
-     rtx swap = NULL_RTX;
-     enum rtx_code code = GET_CODE (operands[0]);
-
      /* We should not have two constants.  */
      gcc_assert (GET_MODE (operands[1]) == DImode
 		 || GET_MODE (operands[2]) == DImode);
 
-    /* Flip unimplemented DImode comparisons to a form that
-       arm_gen_compare_reg can handle.  */
-     switch (code)
-     {
-     case GT:
-       swap = gen_rtx_LT (VOIDmode, operands[2], operands[1]); break;
-     case LE:
-       swap = gen_rtx_GE (VOIDmode, operands[2], operands[1]); break;
-     case GTU:
-       swap = gen_rtx_LTU (VOIDmode, operands[2], operands[1]); break;
-     case LEU:
-       swap = gen_rtx_GEU (VOIDmode, operands[2], operands[1]); break;
-     default:
-       break;
-     }
-     if (swap)
-       emit_jump_insn (gen_cbranch_cc (swap, operands[2], operands[1],
-                                       operands[3]));
-     else
-       emit_jump_insn (gen_cbranch_cc (operands[0], operands[1], operands[2],
+     if (!arm_validize_comparison (&operands[0], &operands[1], &operands[2]))		 
+       FAIL;
+     emit_jump_insn (gen_cbranch_cc (operands[0], operands[1], operands[2],
 				       operands[3]));
      DONE;
    }"
@@ -8065,33 +8045,15 @@
 	  (match_operand:DI 3 "cmpdi_operand" "")]))]
   "TARGET_32BIT"
   "{
-     rtx swap = NULL_RTX;
-     enum rtx_code code = GET_CODE (operands[1]);
-
      /* We should not have two constants.  */
      gcc_assert (GET_MODE (operands[2]) == DImode
 		 || GET_MODE (operands[3]) == DImode);
 
-    /* Flip unimplemented DImode comparisons to a form that
-       arm_gen_compare_reg can handle.  */
-     switch (code)
-     {
-     case GT:
-       swap = gen_rtx_LT (VOIDmode, operands[3], operands[2]); break;
-     case LE:
-       swap = gen_rtx_GE (VOIDmode, operands[3], operands[2]); break;
-     case GTU:
-       swap = gen_rtx_LTU (VOIDmode, operands[3], operands[2]); break;
-     case LEU:
-       swap = gen_rtx_GEU (VOIDmode, operands[3], operands[2]); break;
-     default:
-       break;
-     }
-     if (swap)
-       emit_insn (gen_cstore_cc (operands[0], swap, operands[3],
-		      	         operands[2]));
-     else
-       emit_insn (gen_cstore_cc (operands[0], operands[1], operands[2],
+     if (!arm_validize_comparison (&operands[1],
+     				   &operands[2],
+				   &operands[3]))
+       FAIL;
+     emit_insn (gen_cstore_cc (operands[0], operands[1], operands[2],
 		      	         operands[3]));
      DONE;
    }"
@@ -8186,12 +8148,14 @@
   "TARGET_32BIT"
   "
   {
-    enum rtx_code code = GET_CODE (operands[1]);
+    enum rtx_code code;
     rtx ccreg;
 
-    if (code == UNEQ || code == LTGT)
+    if (!arm_validize_comparison (&operands[1], &XEXP (operands[1], 0), 
+       				  &XEXP (operands[1], 1)))
       FAIL;
-
+    
+    code = GET_CODE (operands[1]);
     ccreg = arm_gen_compare_reg (code, XEXP (operands[1], 0),
 				 XEXP (operands[1], 1), NULL_RTX);
     operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
@@ -8202,22 +8166,18 @@
   [(set (match_operand:SF 0 "s_register_operand" "")
 	(if_then_else:SF (match_operand 1 "expandable_comparison_operator" "")
 			 (match_operand:SF 2 "s_register_operand" "")
-			 (match_operand:SF 3 "nonmemory_operand" "")))]
+			 (match_operand:SF 3 "arm_float_add_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
   "
   {
     enum rtx_code code = GET_CODE (operands[1]);
     rtx ccreg;
 
-    if (code == UNEQ || code == LTGT)
-      FAIL;
+    if (!arm_validize_comparison (&operands[1], &XEXP (operands[1], 0), 
+       				  &XEXP (operands[1], 1)))
+       FAIL;
 
-    /* When compiling for SOFT_FLOAT, ensure both arms are in registers. 
-       Otherwise, ensure it is a valid FP add operand */
-    if ((!(TARGET_HARD_FLOAT && TARGET_FPA))
-        || (!arm_float_add_operand (operands[3], SFmode)))
-      operands[3] = force_reg (SFmode, operands[3]);
-
+    code = GET_CODE (operands[1]);
     ccreg = arm_gen_compare_reg (code, XEXP (operands[1], 0),
 				 XEXP (operands[1], 1), NULL_RTX);
     operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
@@ -8235,9 +8195,10 @@
     enum rtx_code code = GET_CODE (operands[1]);
     rtx ccreg;
 
-    if (code == UNEQ || code == LTGT)
-      FAIL;
-
+    if (!arm_validize_comparison (&operands[1], &XEXP (operands[1], 0), 
+       				  &XEXP (operands[1], 1)))
+       FAIL;
+    code = GET_CODE (operands[1]);
     ccreg = arm_gen_compare_reg (code, XEXP (operands[1], 0),
 				 XEXP (operands[1], 1), NULL_RTX);
     operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);

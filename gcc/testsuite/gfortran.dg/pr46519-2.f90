@@ -10,7 +10,7 @@
   REAL                          :: fluxout
   INTEGER                       :: min_q, max_q, var
   do k=kts,kte
-    praci(k)=0.0
+    praci(k)=1.0
   enddo
   min_q=kte
   max_q=kts-1

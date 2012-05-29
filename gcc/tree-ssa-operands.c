@@ -76,34 +76,6 @@ along with GCC; see the file COPYING3.  If not see
    operand vector for VUSE, then the new vector will also be modified
    such that it contains 'a_5' rather than 'a'.  */
 
-/* Structure storing statistics on how many call clobbers we have, and
-   how many where avoided.  */
-
-static struct
-{
-  /* Number of call-clobbered ops we attempt to add to calls in
-     add_call_clobbered_mem_symbols.  */
-  unsigned int clobbered_vars;
-
-  /* Number of write-clobbers (VDEFs) avoided by using
-     not_written information.  */
-  unsigned int static_write_clobbers_avoided;
-
-  /* Number of reads (VUSEs) avoided by using not_read information.  */
-  unsigned int static_read_clobbers_avoided;
-
-  /* Number of write-clobbers avoided because the variable can't escape to
-     this call.  */
-  unsigned int unescapable_clobbers_avoided;
-
-  /* Number of read-only uses we attempt to add to calls in
-     add_call_read_mem_symbols.  */
-  unsigned int readonly_clobbers;
-
-  /* Number of read-only uses we avoid using not_read information.  */
-  unsigned int static_readonly_clobbers_avoided;
-} clobber_stats;
-
 
 /* Flags to describe operand properties in helpers.  */
 
@@ -186,11 +158,11 @@ ssa_operands_active (void)
    representative of all of the virtual operands FUD chain.  */
 
 static void
-create_vop_var (void)
+create_vop_var (struct function *fn)
 {
   tree global_var;
 
-  gcc_assert (cfun->gimple_df->vop == NULL_TREE);
+  gcc_assert (fn->gimple_df->vop == NULL_TREE);
 
   global_var = build_decl (BUILTINS_LOCATION, VAR_DECL,
 			   get_identifier (".MEM"),
@@ -203,10 +175,10 @@ create_vop_var (void)
   DECL_CONTEXT (global_var) = NULL_TREE;
   TREE_THIS_VOLATILE (global_var) = 0;
   TREE_ADDRESSABLE (global_var) = 0;
+  VAR_DECL_IS_VIRTUAL_OPERAND (global_var) = 1;
 
-  create_var_ann (global_var);
-  add_referenced_var (global_var);
-  cfun->gimple_df->vop = global_var;
+  add_referenced_var_1 (global_var, fn);
+  fn->gimple_df->vop = global_var;
 }
 
 /* These are the sizes of the operand memory buffer in bytes which gets
@@ -224,7 +196,7 @@ create_vop_var (void)
 /* Initialize the operand cache routines.  */
 
 void
-init_ssa_operands (void)
+init_ssa_operands (struct function *fn)
 {
   if (!n_initialized++)
     {
@@ -235,13 +207,12 @@ init_ssa_operands (void)
       bitmap_obstack_initialize (&operands_bitmap_obstack);
     }
 
-  gcc_assert (gimple_ssa_operands (cfun)->operand_memory == NULL);
-  gimple_ssa_operands (cfun)->operand_memory_index
-     = gimple_ssa_operands (cfun)->ssa_operand_mem_size;
-  gimple_ssa_operands (cfun)->ops_active = true;
-  memset (&clobber_stats, 0, sizeof (clobber_stats));
-  gimple_ssa_operands (cfun)->ssa_operand_mem_size = OP_SIZE_INIT;
-  create_vop_var ();
+  gcc_assert (gimple_ssa_operands (fn)->operand_memory == NULL);
+  gimple_ssa_operands (fn)->operand_memory_index
+     = gimple_ssa_operands (fn)->ssa_operand_mem_size;
+  gimple_ssa_operands (fn)->ops_active = true;
+  gimple_ssa_operands (fn)->ssa_operand_mem_size = OP_SIZE_INIT;
+  create_vop_var (fn);
 }
 
 
@@ -276,22 +247,6 @@ fini_ssa_operands (void)
     bitmap_obstack_release (&operands_bitmap_obstack);
 
   cfun->gimple_df->vop = NULL_TREE;
-
-  if (dump_file && (dump_flags & TDF_STATS))
-    {
-      fprintf (dump_file, "Original clobbered vars:           %d\n",
-	       clobber_stats.clobbered_vars);
-      fprintf (dump_file, "Static write clobbers avoided:     %d\n",
-	       clobber_stats.static_write_clobbers_avoided);
-      fprintf (dump_file, "Static read clobbers avoided:      %d\n",
-	       clobber_stats.static_read_clobbers_avoided);
-      fprintf (dump_file, "Unescapable clobbers avoided:      %d\n",
-	       clobber_stats.unescapable_clobbers_avoided);
-      fprintf (dump_file, "Original read-only clobbers:       %d\n",
-	       clobber_stats.readonly_clobbers);
-      fprintf (dump_file, "Static read-only clobbers avoided: %d\n",
-	       clobber_stats.static_readonly_clobbers_avoided);
-    }
 }
 
 

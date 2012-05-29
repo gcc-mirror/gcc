@@ -2,7 +2,7 @@
 
 // 2010-02-10  Paolo Carlini  <paolo.carlini@oracle.com> 
 //
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,19 +59,19 @@ void test01()
   mm1.insert(value_type("because to why", 11));
   VERIFY( mm1.size() == 11 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
 
   VERIFY( mm1.erase("eeilo") == 1 );
   VERIFY( mm1.size() == 10 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
   iterator it1 = mm1.find("eeilo");
   VERIFY( it1 == mm1.end() );
 
   VERIFY( mm1.erase("tillsammans") == 1 );
   VERIFY( mm1.size() == 9 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
   iterator it2 = mm1.find("tillsammans");
   VERIFY( it2 == mm1.end() );
 
@@ -81,14 +81,14 @@ void test01()
   VERIFY( mm1.erase(it3->first) == 1 );
   VERIFY( mm1.size() == 8 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
   it3 = mm1.find("belonging (no longer mix)");
   VERIFY( it3 == mm1.end() );
 
   VERIFY( !mm1.erase("abra") );
   VERIFY( mm1.size() == 8 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
 
   VERIFY( !mm1.erase("eeilo") );
   VERIFY( mm1.size() == 8 );
@@ -96,7 +96,7 @@ void test01()
   VERIFY( mm1.erase("because to why") == 2 );
   VERIFY( mm1.size() == 6 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
   iterator it4 = mm1.find("because to why");
   VERIFY( it4 == mm1.end() );
 
@@ -113,14 +113,14 @@ void test01()
   VERIFY( mm1.erase(it5->first) == 1 );
   VERIFY( mm1.size() == 5 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
   it5 = mm1.find("umbra/penumbra");
   VERIFY( it5 == mm1.end() );
 
   VERIFY( mm1.erase(it6->first) == 1 );
   VERIFY( mm1.size() == 4 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
   it6 = mm1.find("one line behind");
   VERIFY( it6 == mm1.end() );
 
@@ -133,7 +133,7 @@ void test01()
   VERIFY( mm1.erase(it8->first) == 1 );
   VERIFY( mm1.size() == 3 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
   VERIFY( ++it7 == it9 );
 
   iterator it10 = it9;
@@ -142,20 +142,20 @@ void test01()
 
   VERIFY( mm1.erase(it9->first) == 1 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
   VERIFY( mm1.size() == 2 );
   VERIFY( ++it10 == mm1.end() );
 
   VERIFY( mm1.erase(mm1.begin()) != mm1.end() );  
   VERIFY( mm1.size() == 1 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
   VERIFY( mm1.begin() == it11 );
 
   VERIFY( mm1.erase(mm1.begin()->first) == 1 );  
   VERIFY( mm1.size() == 0 );
   VERIFY( get_nb_bucket_elems(mm1) == mm1.size() );
-  VERIFY( distance(mm1.begin(), mm1.end()) == mm1.size() );
+  VERIFY( distance(mm1.begin(), mm1.end()) - mm1.size() == 0 );
   VERIFY( mm1.begin() == mm1.end() );
 }
 

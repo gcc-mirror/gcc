@@ -2451,12 +2451,14 @@ compute_transaction_bits (void)
   struct tm_region *region;
   VEC (basic_block, heap) *queue;
   unsigned int i;
-  gimple_stmt_iterator gsi;
   basic_block bb;
 
   /* ?? Perhaps we need to abstract gate_tm_init further, because we
      certainly don't need it to calculate CDI_DOMINATOR info.  */
   gate_tm_init ();
+
+  FOR_EACH_BB (bb)
+    bb->flags &= ~BB_IN_TRANSACTION;
 
   for (region = all_tm_regions; region; region = region->next)
     {
@@ -2466,11 +2468,7 @@ compute_transaction_bits (void)
 				    NULL,
 				    /*stop_at_irr_p=*/true);
       for (i = 0; VEC_iterate (basic_block, queue, i, bb); ++i)
-	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	  {
-	    gimple stmt = gsi_stmt (gsi);
-	    gimple_set_in_transaction (stmt, true);
-	  }
+	bb->flags |= BB_IN_TRANSACTION;
       VEC_free (basic_block, heap, queue);
     }
 
@@ -4330,7 +4328,8 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
 
   record_tm_clone_pair (old_decl, new_decl);
 
-  if (info->old_node->symbol.force_output)
+  if (info->old_node->symbol.force_output
+      || ipa_ref_list_first_referring (&info->old_node->symbol.ref_list))
     ipa_tm_mark_force_output_node (new_node);
   return false;
 }
@@ -4383,7 +4382,8 @@ ipa_tm_create_version (struct cgraph_node *old_node)
   record_tm_clone_pair (old_decl, new_decl);
 
   cgraph_call_function_insertion_hooks (new_node);
-  if (old_node->symbol.force_output)
+  if (old_node->symbol.force_output
+      || ipa_ref_list_first_referring (&old_node->symbol.ref_list))
     ipa_tm_mark_force_output_node (new_node);
 
   /* Do the same thing, but for any aliases of the original node.  */

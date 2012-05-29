@@ -50,19 +50,23 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-/* Convention_Stdcall should be processed in a specific way on 32 bits
-   Windows targets only.  The macro below is a helper to avoid having to
-   check for a Windows specific attribute throughout this unit.  */
+/* "stdcall" and "thiscall" conventions should be processed in a specific way
+   on 32-bit x86/Windows only.  The macros below are helpers to avoid having
+   to check for a Windows specific attribute throughout this unit.  */
 
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
 #ifdef TARGET_64BIT
 #define Has_Stdcall_Convention(E) \
   (!TARGET_64BIT && Convention (E) == Convention_Stdcall)
+#define Has_Thiscall_Convention(E) \
+  (!TARGET_64BIT && gnat_first_param_is_class (E))
 #else
 #define Has_Stdcall_Convention(E) (Convention (E) == Convention_Stdcall)
+#define Has_Thiscall_Convention(E) (gnat_first_param_is_class (E))
 #endif
 #else
 #define Has_Stdcall_Convention(E) 0
+#define Has_Thiscall_Convention(E) 0
 #endif
 
 /* Stack realignment is necessary for functions with foreign conventions when
@@ -115,8 +119,8 @@ typedef struct variant_desc_d {
   /* The value of the qualifier.  */
   tree qual;
 
-  /* The record associated with this variant.  */
-  tree record;
+  /* The type of the variant after transformation.  */
+  tree new_type;
 } variant_desc;
 
 DEF_VEC_O(variant_desc);
@@ -126,6 +130,7 @@ DEF_VEC_ALLOC_O(variant_desc,heap);
 static GTY ((if_marked ("tree_int_map_marked_p"),
 	     param_is (struct tree_int_map))) htab_t annotate_value_cache;
 
+static bool gnat_first_param_is_class (Entity_Id) ATTRIBUTE_UNUSED;
 static bool allocatable_size_p (tree, bool);
 static void prepend_one_attribute_to (struct attrib **,
 				      enum attr_type, tree, tree, Node_Id);
@@ -3313,11 +3318,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      {
 			tree old_variant = v->type;
 			tree new_variant = make_node (RECORD_TYPE);
+			tree suffix
+			  = concat_name (DECL_NAME (gnu_variant_part),
+					 IDENTIFIER_POINTER
+					 (DECL_NAME (v->field)));
 			TYPE_NAME (new_variant)
-			  = DECL_NAME (TYPE_NAME (old_variant));
+			  = concat_name (TYPE_NAME (gnu_type),
+					 IDENTIFIER_POINTER (suffix));
 			copy_and_substitute_in_size (new_variant, old_variant,
 						     gnu_subst_list);
-			v->record = new_variant;
+			v->new_type = new_variant;
 		      }
 		}
 	      else
@@ -3421,7 +3431,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			    if (selected_variant)
 			      gnu_cont_type = gnu_type;
 			    else
-			      gnu_cont_type = v->record;
+			      gnu_cont_type = v->new_type;
 			  }
 			else
 			  /* The front-end may pass us "ghost" components if
@@ -4403,6 +4413,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("stdcall"), NULL_TREE,
 	     gnat_entity);
+	else if (Has_Thiscall_Convention (gnat_entity))
+	  prepend_one_attribute_to
+	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
+	     get_identifier ("thiscall"), NULL_TREE,
+	     gnat_entity);
 
 	/* If we should request stack realignment for a foreign convention
 	   subprogram, do so.  Note that this applies to task entry points in
@@ -5266,6 +5281,10 @@ get_minimal_subprog_decl (Entity_Id gnat_entity)
     prepend_one_attribute_to (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 			      get_identifier ("stdcall"), NULL_TREE,
 			      gnat_entity);
+  else if (Has_Thiscall_Convention (gnat_entity))
+    prepend_one_attribute_to (&attr_list, ATTR_MACHINE_ATTRIBUTE,
+			      get_identifier ("thiscall"), NULL_TREE,
+			      gnat_entity);
 
   if (No (Interface_Name (gnat_entity)) && gnu_ext_name == gnu_entity_name)
     gnu_ext_name = NULL_TREE;
@@ -5273,6 +5292,63 @@ get_minimal_subprog_decl (Entity_Id gnat_entity)
   return
     create_subprog_decl (gnu_entity_name, gnu_ext_name, void_ftype, NULL_TREE,
 			 false, true, true, true, attr_list, gnat_entity);
+}
+
+/* Return whether the E_Subprogram_Type/E_Function/E_Procedure GNAT_ENTITY has
+   a first parameter with a class or equivalent type.
+
+   We use the predicate on 32-bit x86/Windows to find out whether we need to
+   use the "thiscall" calling convention for GNAT_ENTITY.  This convention is
+   the one set for C++ methods (functions with METHOD_TYPE) by the back-end.
+   Now in Ada primitive operations are regular subprograms (e.g. you can have
+   common pointers to both) so we cannot compute an equivalent of METHOD_TYPE
+   and so we set the calling convention in an uniform way.  */
+
+static bool
+gnat_first_param_is_class (Entity_Id gnat_entity)
+{
+  Entity_Id gnat_param = First_Formal_With_Extras (gnat_entity);
+  Entity_Id gnat_type;
+  Node_Id node;
+
+  if (No (gnat_param))
+    return false;
+
+  gnat_type = Underlying_Type (Etype (gnat_param));
+
+  /* This is the main case.  Note that we must return the same value for
+     regular tagged types and CW types since dispatching calls have a CW
+     type on the caller side and a tagged type on the callee side.  */
+  if (Is_Tagged_Type (gnat_type))
+    return True;
+
+  /* C++ classes with no virtual functions can be imported as limited
+     record types, but we need to return true for the constructors.  */
+  if (Is_CPP_Class (gnat_type))
+    return True;
+
+  /* The language-level "protected" calling convention doesn't distinguish
+     tagged protected types from non-tagged protected types (e.g. you can
+     have common pointers to both) so we must use a single low-level calling
+     convention for it.  Since tagged protected types can be derived from
+     simple limited interfaces, we need to pick the calling convention of
+     the latters.  */
+  if (Is_Protected_Record_Type (gnat_type))
+    return True;
+
+  /* If this is the special E_Subprogram_Type built for the declaration of
+     an access to protected subprogram type, the first parameter will have
+     type Address, but we must return true to be consistent with above.  */
+  if (Is_Itype (gnat_entity)
+      && Present (node = Associated_Node_For_Itype (gnat_entity))
+      && Nkind (node) == N_Full_Type_Declaration
+      && Ekind (Defining_Identifier (node)) == E_Access_Subprogram_Type
+      && Present (node = Original_Access_Type (Defining_Identifier (node)))
+      && (Ekind (node) == E_Access_Protected_Subprogram_Type
+	  || Ekind (node) == E_Anonymous_Access_Protected_Subprogram_Type))
+    return True;
+
+  return False;
 }
 
 /* Finalize the processing of From_With_Type incomplete types.  */
@@ -7491,7 +7567,7 @@ build_variant_list (tree qual_union_type, VEC(subst_pair,heap) *subst_list,
 	  v->type = variant_type;
 	  v->field = gnu_field;
 	  v->qual = qual;
-	  v->record = NULL_TREE;
+	  v->new_type = NULL_TREE;
 
 	  /* Recurse on the variant subpart of the variant, if any.  */
 	  variant_subpart = get_variant_part (variant_type);
@@ -8167,7 +8243,9 @@ create_variant_part_from (tree old_variant_part,
 
   /* First create the type of the variant part from that of the old one.  */
   new_union_type = make_node (QUAL_UNION_TYPE);
-  TYPE_NAME (new_union_type) = DECL_NAME (TYPE_NAME (old_union_type));
+  TYPE_NAME (new_union_type)
+    = concat_name (TYPE_NAME (record_type),
+		   IDENTIFIER_POINTER (DECL_NAME (old_variant_part)));
 
   /* If the position of the variant part is constant, subtract it from the
      size of the type of the parent to get the new size.  This manual CSE
@@ -8201,7 +8279,7 @@ create_variant_part_from (tree old_variant_part,
 	continue;
 
       /* Retrieve the list of fields already added to the new variant.  */
-      new_variant = v->record;
+      new_variant = v->new_type;
       field_list = TYPE_FIELDS (new_variant);
 
       /* If the old variant had a variant subpart, we need to create a new

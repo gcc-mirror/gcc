@@ -2096,9 +2096,12 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	  && (TREE_CODE (root->type) != INTEGER_TYPE
 	      || TYPE_PRECISION (root->type) != root->size)
 	  /* But leave bitfield accesses alone.  */
-	  && (root->offset % BITS_PER_UNIT) == 0)
+	  && (TREE_CODE (root->expr) != COMPONENT_REF
+	      || !DECL_BIT_FIELD (TREE_OPERAND (root->expr, 1))))
 	{
 	  tree rt = root->type;
+	  gcc_assert ((root->offset % BITS_PER_UNIT) == 0
+		      && (root->size % BITS_PER_UNIT) == 0);
 	  root->type = build_nonstandard_integer_type (root->size,
 						       TYPE_UNSIGNED (rt));
 	  root->expr = build_ref_for_offset (UNKNOWN_LOCATION,

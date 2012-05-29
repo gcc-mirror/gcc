@@ -9194,6 +9194,11 @@ grokdeclarator (const cp_declarator *declarator,
 		error ("%qs declared as function returning an array", name);
 		return error_mark_node;
 	      }
+	    /* When decl_context == NORMAL we emit a better error message
+	       later in abstract_virtuals_error.  */
+	    if (decl_context == TYPENAME && ABSTRACT_CLASS_TYPE_P (type))
+	      error ("%qs declared as function returning an abstract "
+		     "class type", name);
 
 	    /* Pick up type qualifiers which should be applied to `this'.  */
 	    memfn_quals = declarator->u.function.qualifiers;
@@ -9798,7 +9803,8 @@ grokdeclarator (const cp_declarator *declarator,
 	       clones.  */
 	    DECL_ABSTRACT (decl) = 1;
 	}
-      else if (constructor_name_p (unqualified_id, current_class_type))
+      else if (current_class_type
+	       && constructor_name_p (unqualified_id, current_class_type))
 	permerror (input_location, "ISO C++ forbids nested type %qD with same name "
 		   "as enclosing class",
 		   unqualified_id);

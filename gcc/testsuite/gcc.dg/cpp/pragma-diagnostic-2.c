@@ -24,5 +24,5 @@ g (void)
 void
 h (void)
 {
-  CODE_WITH_WARNING;		/* { dg-message "expanded" } */
+  CODE_WITH_WARNING; /* { dg-message "in expansion of macro 'CODE_WITH_WARNING'" } */
 }

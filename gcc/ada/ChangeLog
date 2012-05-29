@@ -1,3 +1,51 @@
+2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (variant_desc): Rename 'record' to 'new_type'.
+	(build_variant_list): Adjust to above renaming.
+	(gnat_to_gnu_entity) <E_Record_Subtype>: Likewise.  Give a unique name
+	to the type of the variant containers.
+	(create_variant_part_from): Likewise.  Give a unique name to the type
+	of the variant part.
+
+2012-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/52362
+	* link.c (__gnat_object_file_option): Set to "-Wl,@" for GNU linker.
+	(__gnat_using_gnu_linker): Delete.
+	* gnatlink.adb (Gnatlink): Declare Object_File_Option_Ptr here...
+	Declare Object_File_Option string constant and Using_GNU_response_file
+	boolean constant.
+	(Process_Binder_File): ...instead of here.  Delete Using_GNU_Linker,
+	Opening and Closing local variables.  Do not handle the GNU linker
+	specially.
+	(Write_RF): New procedure to write into the response file.  Escape some
+	characters if a GNU response file is used.  Keep track of error status.
+	Invoke Write_RF to write into the response file.  Delete the file only
+	if the link was successful.
+	* mlib-utl.adb: Do not `with' package System.
+	(Gcc): Likewise.  Declare Object_File_Option string constant and
+	Using_GNU_response_file boolean constant.
+	(Write_RF): Take a string instead of address and length.  Escape some
+	characters if a GNU response file is used.
+	Invoke Write_RF to write into the response file.  Delete the file only
+	if the link was successful.  Do not warn if it cannot be deleted.
+
+2012-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations): Put a name
+	on the dummy global variable.
+
+2012-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (Has_Thiscall_Convention): New macro.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Test it to set the thiscall
+	calling convention
+	(get_minimal_subprog_decl): Likewise.
+	(gnat_first_param_is_class): New predicate.
+
+	* gcc-interface/misc.c (gnat_handle_option): Fix formatting.
+	* gcc-interface/Makefile.in: Likewise.
+
 2012-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: For an object at

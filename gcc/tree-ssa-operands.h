@@ -100,7 +100,7 @@ struct GTY(()) ssa_operands {
 #define PHI_ARG_INDEX_FROM_USE(USE)   phi_arg_index_from_use (USE)
 
 
-extern void init_ssa_operands (void);
+extern void init_ssa_operands (struct function *fn);
 extern void fini_ssa_operands (void);
 extern void update_stmt_operands (gimple);
 extern void free_stmt_operands (gimple);

@@ -5435,7 +5435,7 @@ VEC(alias_pair,gc) *alias_pairs;
    or ASM_OUTPUT_DEF_FROM_DECLS.  The function defines the symbol whose
    tree node is DECL to have the value of the tree node TARGET.  */
 
-static void
+void
 do_assemble_alias (tree decl, tree target)
 {
   /* Emulated TLS had better not get this var.  */
@@ -5535,255 +5535,6 @@ do_assemble_alias (tree decl, tree target)
 #endif
 }
 
-
-/* Allocate and construct a symbol alias set.  */
-
-static symbol_alias_set_t *
-symbol_alias_set_create (void)
-{
-  return pointer_set_create ();
-}
-
-/* Destruct and free a symbol alias set.  */
-
-void
-symbol_alias_set_destroy (symbol_alias_set_t *aset)
-{
-  pointer_set_destroy (aset);
-}
-
-/* Test if a symbol alias set contains a given name.  */
-
-int
-symbol_alias_set_contains (const symbol_alias_set_t *aset, tree t)
-{
-  /* We accept either a DECL or an IDENTIFIER directly.  */
-  if (TREE_CODE (t) != IDENTIFIER_NODE)
-    t = DECL_ASSEMBLER_NAME (t);
-  t = targetm.asm_out.mangle_assembler_name (IDENTIFIER_POINTER (t));
-  return pointer_set_contains (aset, t);
-}
-
-/* Enter a new name into a symbol alias set.  */
-
-static int
-symbol_alias_set_insert (symbol_alias_set_t *aset, tree t)
-{
-  /* We accept either a DECL or an IDENTIFIER directly.  */
-  if (TREE_CODE (t) != IDENTIFIER_NODE)
-    t = DECL_ASSEMBLER_NAME (t);
-  t = targetm.asm_out.mangle_assembler_name (IDENTIFIER_POINTER (t));
-  return pointer_set_insert (aset, t);
-}
-
-/* IN_SET_P is a predicate function assuming to be taken
-   alias_pair->decl, alias_pair->target and DATA arguments.
-
-   Compute set of aliases by including everything where TRIVIALLY_VISIBLE
-   predeicate is true and propagate across aliases such that when
-   alias DECL is included, its TARGET is included too.  */
-
-static symbol_alias_set_t *
-propagate_aliases_forward (bool (*in_set_p)
-			     (tree decl, tree target, void *data),
-		           void *data)
-{
-  symbol_alias_set_t *set;
-  unsigned i;
-  alias_pair *p;
-  bool changed;
-
-  set = symbol_alias_set_create ();
-  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); ++i)
-    if (in_set_p (p->decl, p->target, data))
-      symbol_alias_set_insert (set, p->decl);
-  do
-    {
-      changed = false;
-      for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); ++i)
-	if (symbol_alias_set_contains (set, p->decl)
-	    && !symbol_alias_set_insert (set, p->target))
-	  changed = true;
-    }
-  while (changed);
-
-  return set;
-}
-
-/* Like propagate_aliases_forward but do backward propagation.  */
-
-symbol_alias_set_t *
-propagate_aliases_backward (bool (*in_set_p)
-			     (tree decl, tree target, void *data),
-		           void *data)
-{
-  symbol_alias_set_t *set;
-  unsigned i;
-  alias_pair *p;
-  bool changed;
-
-  /* We have to compute the set of set nodes including aliases
-     themselves.  */
-  set = symbol_alias_set_create ();
-  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); ++i)
-    if (in_set_p (p->decl, p->target, data))
-      symbol_alias_set_insert (set, p->target);
-  do
-    {
-      changed = false;
-      for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); ++i)
-	if (symbol_alias_set_contains (set, p->target)
-	    && !symbol_alias_set_insert (set, p->decl))
-	  changed = true;
-    }
-  while (changed);
-
-  return set;
-}
-/* See if the alias is trivially visible.  This means
-     1) alias is expoerted from the unit or
-     2) alias is used in the code.
-   We assume that unused cgraph/varpool nodes has been
-   removed.
-   Used as callback for propagate_aliases.  */
-
-static bool
-trivially_visible_alias (tree decl, tree target ATTRIBUTE_UNUSED,
-			 void *data ATTRIBUTE_UNUSED)
-{
-  struct cgraph_node *fnode = NULL;
-  struct varpool_node *vnode = NULL;
-
-  if (!TREE_PUBLIC (decl))
-    {
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	fnode = cgraph_get_node (decl);
-      else
-	vnode = varpool_get_node (decl);
-      return vnode || fnode;
-    }
-  else
-    return true;
-}
-
-/* See if the target of alias is defined in this unit.
-   Used as callback for propagate_aliases.  */
-
-static bool
-trivially_defined_alias (tree decl ATTRIBUTE_UNUSED,
-			 tree target,
-			 void *data ATTRIBUTE_UNUSED)
-{
-  struct cgraph_node *fnode = NULL;
-  struct varpool_node *vnode = NULL;
-
-  fnode = cgraph_node_for_asm (target);
-  vnode = (fnode == NULL) ? varpool_node_for_asm (target) : NULL;
-  return (fnode && fnode->analyzed) || (vnode && vnode->finalized);
-}
-
-/* Remove the alias pairing for functions that are no longer in the call
-   graph.  */
-
-void
-remove_unreachable_alias_pairs (void)
-{
-  symbol_alias_set_t *visible;
-  unsigned i;
-  alias_pair *p;
-
-  if (alias_pairs == NULL)
-    return;
-
-  /* We have to compute the set of visible nodes including aliases
-     themselves.  */
-  visible = propagate_aliases_forward (trivially_visible_alias, NULL);
-
-  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); )
-    {
-      if (!DECL_EXTERNAL (p->decl)
-	  && !symbol_alias_set_contains (visible, p->decl))
-	{
-	  VEC_unordered_remove (alias_pair, alias_pairs, i);
-	  continue;
-	}
-
-      i++;
-    }
-
-  symbol_alias_set_destroy (visible);
-}
-
-
-/* First pass of completing pending aliases.  Make sure that cgraph knows
-   which symbols will be required.  */
-
-void
-finish_aliases_1 (void)
-{
-  symbol_alias_set_t *defined;
-  unsigned i;
-  alias_pair *p;
-
-  if (alias_pairs == NULL)
-    return;
-
-  /* We have to compute the set of defined nodes including aliases
-     themselves.  */
-  defined = propagate_aliases_backward (trivially_defined_alias, NULL);
-
-  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
-    {
-      tree target_decl;
-
-      target_decl = find_decl (p->target);
-      if (target_decl == NULL)
-	{
-	  if (symbol_alias_set_contains (defined, p->target))
-	    continue;
-
-	  if (! (p->emitted_diags & ALIAS_DIAG_TO_UNDEF)
-	      && ! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
-	    {
-	      error ("%q+D aliased to undefined symbol %qE",
-		     p->decl, p->target);
-	      p->emitted_diags |= ALIAS_DIAG_TO_UNDEF;
-	    }
-	}
-      else if (! (p->emitted_diags & ALIAS_DIAG_TO_EXTERN)
-	       && DECL_EXTERNAL (target_decl)
-	       /* We use local aliases for C++ thunks to force the tailcall
-		  to bind locally.  This is a hack - to keep it working do
-		  the following (which is not strictly correct).  */
-	       && (! TREE_CODE (target_decl) == FUNCTION_DECL
-		   || ! DECL_VIRTUAL_P (target_decl))
-	       && ! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
-	{
-	  error ("%q+D aliased to external symbol %qE",
-		 p->decl, p->target);
-	  p->emitted_diags |= ALIAS_DIAG_TO_EXTERN;
-	}
-    }
-
-  symbol_alias_set_destroy (defined);
-}
-
-/* Second pass of completing pending aliases.  Emit the actual assembly.
-   This happens at the end of compilation and thus it is assured that the
-   target symbol has been emitted.  */
-
-void
-finish_aliases_2 (void)
-{
-  unsigned i;
-  alias_pair *p;
-
-  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
-    do_assemble_alias (p->decl, p->target);
-
-  VEC_truncate (alias_pair, alias_pairs, 0);
-}
-
 /* Emit an assembler directive to make the symbol for DECL an alias to
    the symbol for TARGET.  */
 
@@ -5845,14 +5596,14 @@ assemble_alias (tree decl, tree target)
     target_decl = find_decl (target);
   else
     target_decl= NULL;
-  if (target_decl && TREE_ASM_WRITTEN (target_decl))
+  if ((target_decl && TREE_ASM_WRITTEN (target_decl))
+      || cgraph_state >= CGRAPH_STATE_EXPANSION)
     do_assemble_alias (decl, target);
   else
     {
       alias_pair *p = VEC_safe_push (alias_pair, gc, alias_pairs, NULL);
       p->decl = decl;
       p->target = target;
-      p->emitted_diags = ALIAS_DIAG_NONE;
     }
 }
 

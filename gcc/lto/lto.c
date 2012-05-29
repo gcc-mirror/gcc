@@ -156,20 +156,6 @@ lto_splay_tree_new (void)
 			 NULL);
 }
 
-/* Read the constructors and inits.  */
-
-static void
-lto_materialize_constructors_and_inits (struct lto_file_decl_data * file_data)
-{
-  size_t len;
-  const char *data = lto_get_section_data (file_data, 
-					   LTO_section_static_initializer,
-					   NULL, &len);
-  lto_input_constructors_and_inits (file_data, data);
-  lto_free_section_data (file_data, LTO_section_static_initializer, NULL,
-			 data, len);
-}
-
 /* Return true when NODE has a clone that is analyzed (i.e. we need
    to load its body even if the node itself is not needed).  */
 
@@ -1882,15 +1868,6 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
 
   timevar_push (TV_IPA_LTO_DECL_INIT_IO);
-
-  /* FIXME lto. This loop needs to be changed to use the pass manager to
-     call the ipa passes directly.  */
-  if (!seen_error ())
-    for (i = 0; i < last_file_ix; i++)
-      {
-	struct lto_file_decl_data *file_data = all_file_decl_data [i];
-	lto_materialize_constructors_and_inits (file_data);
-      }
 
   /* Indicate that the cgraph is built and ready.  */
   cgraph_function_flags_ready = true;

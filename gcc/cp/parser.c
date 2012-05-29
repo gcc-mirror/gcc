@@ -1989,7 +1989,7 @@ static cp_parameter_declarator *cp_parser_parameter_declaration
 static tree cp_parser_default_argument 
   (cp_parser *, bool);
 static void cp_parser_function_body
-  (cp_parser *);
+  (cp_parser *, bool);
 static tree cp_parser_initializer
   (cp_parser *, bool *, bool *);
 static tree cp_parser_initializer_clause
@@ -2000,7 +2000,7 @@ static VEC(constructor_elt,gc) *cp_parser_initializer_list
   (cp_parser *, bool *);
 
 static bool cp_parser_ctor_initializer_opt_and_function_body
-  (cp_parser *);
+  (cp_parser *, bool);
 
 /* Classes [gram.class] */
 
@@ -17395,16 +17395,18 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
      compound_statement  */
 
 static void
-cp_parser_function_body (cp_parser *parser)
+cp_parser_function_body (cp_parser *parser, bool in_function_try_block)
 {
-  cp_parser_compound_statement (parser, NULL, false, true);
+  cp_parser_compound_statement (parser, NULL, in_function_try_block, true);
 }
 
 /* Parse a ctor-initializer-opt followed by a function-body.  Return
-   true if a ctor-initializer was present.  */
+   true if a ctor-initializer was present.  When IN_FUNCTION_TRY_BLOCK
+   is true we are parsing a function-try-block.  */
 
 static bool
-cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser)
+cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser,
+						  bool in_function_try_block)
 {
   tree body, list;
   bool ctor_initializer_p;
@@ -17431,7 +17433,7 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser)
 	last = STATEMENT_LIST_TAIL (list)->stmt;
     }
   /* Parse the function-body.  */
-  cp_parser_function_body (parser);
+  cp_parser_function_body (parser, in_function_try_block);
   if (check_body_p)
     check_constexpr_ctor_body (last, list);
   /* Finish the function body.  */
@@ -18908,6 +18910,12 @@ cp_parser_member_declaration (cp_parser* parser)
 	     particular type), as opposed to a nested class.  */
 	  else if (ANON_AGGR_TYPE_P (type))
 	    {
+	      /* C++11 9.5/6.  */
+	      if (decl_specifiers.storage_class != sc_none)
+		error_at (decl_spec_token_start->location,
+			  "a storage class on an anonymous aggregate "
+			  "in class scope is not allowed");
+
 	      /* Remove constructors and such from TYPE, now that we
 		 know it is an anonymous aggregate.  */
 	      fixup_anonymous_aggr (type);
@@ -19707,8 +19715,8 @@ cp_parser_function_try_block (cp_parser* parser)
   /* Let the rest of the front end know where we are.  */
   try_block = begin_function_try_block (&compound_stmt);
   /* Parse the function-body.  */
-  ctor_initializer_p
-    = cp_parser_ctor_initializer_opt_and_function_body (parser);
+  ctor_initializer_p = cp_parser_ctor_initializer_opt_and_function_body
+    (parser, /*in_function_try_block=*/true);
   /* We're done with the `try' part.  */
   finish_function_try_block (try_block);
   /* Parse the handlers.  */
@@ -20052,6 +20060,7 @@ cp_parser_attributes_opt (cp_parser* parser)
     {
       cp_token *token;
       tree attribute_list;
+      bool ok = true;
 
       /* Peek at the next token.  */
       token = cp_lexer_peek_token (parser->lexer);
@@ -20076,8 +20085,12 @@ cp_parser_attributes_opt (cp_parser* parser)
 	attribute_list = NULL;
 
       /* Look for the two `)' tokens.  */
-      cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
-      cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+      if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
+	ok = false;
+      if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
+	ok = false;
+      if (!ok)
+	cp_parser_skip_to_end_of_statement (parser);
 
       /* Add these new attributes to the list.  */
       attributes = chainon (attributes, attribute_list);
@@ -21043,8 +21056,8 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
   else if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TRY))
     ctor_initializer_p = cp_parser_function_try_block (parser);
   else
-    ctor_initializer_p
-      = cp_parser_ctor_initializer_opt_and_function_body (parser);
+    ctor_initializer_p = cp_parser_ctor_initializer_opt_and_function_body
+      (parser, /*in_function_try_block=*/false);
 
   finish_lambda_scope ();
 
@@ -27219,8 +27232,8 @@ cp_parser_function_transaction (cp_parser *parser, enum rid keyword)
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TRY))
     ctor_initializer_p = cp_parser_function_try_block (parser);
   else
-    ctor_initializer_p
-      = cp_parser_ctor_initializer_opt_and_function_body (parser);
+    ctor_initializer_p = cp_parser_ctor_initializer_opt_and_function_body
+      (parser, /*in_function_try_block=*/false);
 
   parser->in_transaction = old_in;
 

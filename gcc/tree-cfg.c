@@ -3373,10 +3373,10 @@ verify_gimple_assign_unary (gimple stmt)
 		    || ptrofftype_p (sizetype))))
 	  return false;
 
-	/* Allow conversion from integer to offset type and vice versa.  */
+	/* Allow conversion from integral to offset type and vice versa.  */
 	if ((TREE_CODE (lhs_type) == OFFSET_TYPE
-	     && TREE_CODE (rhs1_type) == INTEGER_TYPE)
-	    || (TREE_CODE (lhs_type) == INTEGER_TYPE
+	     && INTEGRAL_TYPE_P (rhs1_type))
+	    || (INTEGRAL_TYPE_P (lhs_type)
 		&& TREE_CODE (rhs1_type) == OFFSET_TYPE))
 	  return false;
 

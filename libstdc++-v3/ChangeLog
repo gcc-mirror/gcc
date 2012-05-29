@@ -1,3 +1,37 @@
+2012-05-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53322
+	* include/bits/stl_algobase.h (lower_bound)
+    	(lexicographical_compare): Do not declare unused local typedefs
+    	here when Concepts are turned off.
+
+2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/22_locale/num_put/put/char/9780-2.cc: Avoid -Wall warnings.
+	* testsuite/29_atomics/atomic/cons/49445.cc: Likewise.
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc:
+	* Likewise.
+	* testsuite/23_containers/unordered_map/observers.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/2.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/insert/53115.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/observers.cc: Likewise.
+	* testsuite/23_containers/vector/debug/alloc_prop.cc: Likewise.
+	* testsuite/23_containers/unordered_set/observers.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/2.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/insert/53115.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/insert/multiset_range.cc:
+	* Likewise.
+	* testsuite/23_containers/unordered_multiset/observers.cc: Likewise.
+
+2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53361
+	* testsuite/23_containers/array/cons/53361.cc: New.
+
 2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44516

@@ -33,8 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 
 /* Return true when DECL can be referenced from current unit.
-   We can get declarations that are not possible to reference for
-   various reasons:
+   FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
+   We can get declarations that are not possible to reference for various
+   reasons:
 
      1) When analyzing C++ virtual tables.
 	C++ virtual tables do have known constructors even
@@ -54,19 +55,35 @@ along with GCC; see the file COPYING3.  If not see
         directly.  */
 
 static bool
-can_refer_decl_in_current_unit_p (tree decl)
+can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 {
   struct varpool_node *vnode;
   struct cgraph_node *node;
+  symtab_node snode;
 
-  if (!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
+  /* We will later output the initializer, so we can reffer to it.
+     So we are concerned only when DECL comes from initializer of
+     external var.  */
+  if (!from_decl
+      || TREE_CODE (from_decl) != VAR_DECL
+      || !DECL_EXTERNAL (from_decl)
+      || (symtab_get_node (from_decl)->symbol.in_other_partition))
     return true;
-  /* External flag is set, so we deal with C++ reference
-     to static object from other file.
-     We also may see weakref that is always safe.  */
-  if (DECL_EXTERNAL (decl) && TREE_STATIC (decl)
-      && TREE_CODE (decl) == VAR_DECL)
-    return lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)) != NULL;
+  /* We are concerned ony about static/external vars and functions.  */
+  if ((!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
+      || (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL))
+    return true;
+  /* Weakrefs have somewhat confusing DECL_EXTERNAL flag set; they are always safe.  */
+  if (DECL_EXTERNAL (decl)
+      && lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
+    return true;
+  /* We are folding reference from external vtable.  The vtable may reffer
+     to a symbol keyed to other compilation unit.  The other compilation
+     unit may be in separate DSO and the symbol may be hidden.  */
+  if (DECL_VISIBILITY_SPECIFIED (decl)
+      && DECL_EXTERNAL (decl)
+      && (!(snode = symtab_get_node (decl)) || !snode->symbol.in_other_partition))
+    return false;
   /* When function is public, we always can introduce new reference.
      Exception are the COMDAT functions where introducing a direct
      reference imply need to include function body in the curren tunit.  */
@@ -75,14 +92,19 @@ can_refer_decl_in_current_unit_p (tree decl)
   /* We are not at ltrans stage; so don't worry about WHOPR.
      Also when still gimplifying all referred comdat functions will be
      produced.
-     ??? as observed in PR20991 for already optimized out comdat virtual functions
-     we may not neccesarily give up because the copy will be output elsewhere when
-     corresponding vtable is output.  */
+
+     As observed in PR20991 for already optimized out comdat virtual functions
+     it may be tempting to not neccesarily give up because the copy will be
+     output elsewhere when corresponding vtable is output.  
+     This is however not possible - ABI specify that COMDATs are output in
+     units where they are used and when the other unit was compiled with LTO
+     it is possible that vtable was kept public while the function itself
+     was privatized. */
   if (!flag_ltrans && (!DECL_COMDAT (decl) || !cgraph_function_flags_ready))
     return true;
-  /* If we already output the function body, we are safe.  */
-  if (TREE_ASM_WRITTEN (decl))
-    return true;
+
+  /* OK we are seeing either COMDAT or static variable.  In this case we must
+     check that the definition is still around so we can refer it.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       node = cgraph_get_node (decl);
@@ -92,22 +114,29 @@ can_refer_decl_in_current_unit_p (tree decl)
          compilation stage when making a new reference no longer makes callee
          to be compiled.  */
       if (!node || !node->analyzed || node->global.inlined_to)
-	return false;
+	{
+	  gcc_checking_assert (!TREE_ASM_WRITTEN (decl));
+	  return false;
+	}
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
       vnode = varpool_get_node (decl);
-      if (!vnode || !vnode->finalized)
-	return false;
+      if (!vnode || !vnode->analyzed)
+	{
+	  gcc_checking_assert (!TREE_ASM_WRITTEN (decl));
+	  return false;
+	}
     }
   return true;
 }
 
 /* CVAL is value taken from DECL_INITIAL of variable.  Try to transform it into
-   acceptable form for is_gimple_min_invariant.   */
+   acceptable form for is_gimple_min_invariant.
+   FROM_DECL (if non-NULL) specify variable whose constructor contains CVAL.  */
 
 tree
-canonicalize_constructor_val (tree cval)
+canonicalize_constructor_val (tree cval, tree from_decl)
 {
   STRIP_NOPS (cval);
   if (TREE_CODE (cval) == POINTER_PLUS_EXPR
@@ -130,12 +159,13 @@ canonicalize_constructor_val (tree cval)
 
       if ((TREE_CODE (base) == VAR_DECL
 	   || TREE_CODE (base) == FUNCTION_DECL)
-	  && !can_refer_decl_in_current_unit_p (base))
+	  && !can_refer_decl_in_current_unit_p (base, from_decl))
 	return NULL_TREE;
       if (TREE_CODE (base) == VAR_DECL)
 	{
 	  TREE_ADDRESSABLE (base) = 1;
-	  if (cfun && gimple_referenced_vars (cfun))
+	  if (cfun && gimple_referenced_vars (cfun)
+	      && !is_global_var (base))
 	    add_referenced_var (base);
 	}
       else if (TREE_CODE (base) == FUNCTION_DECL)
@@ -163,7 +193,7 @@ get_symbol_constant_value (tree sym)
       tree val = DECL_INITIAL (sym);
       if (val)
 	{
-	  val = canonicalize_constructor_val (val);
+	  val = canonicalize_constructor_val (val, sym);
 	  if (val && is_gimple_min_invariant (val))
 	    return val;
 	  else
@@ -2627,7 +2657,7 @@ gimple_fold_stmt_to_constant (gimple stmt, tree (*valueize) (tree))
 
 static tree fold_ctor_reference (tree type, tree ctor,
 				 unsigned HOST_WIDE_INT offset,
-				 unsigned HOST_WIDE_INT size);
+				 unsigned HOST_WIDE_INT size, tree);
 
 /* See if we can find constructor defining value of BASE.
    When we know the consructor with constant offset (such as
@@ -2735,7 +2765,8 @@ fold_string_cst_ctor_reference (tree type, tree ctor,
 static tree
 fold_array_ctor_reference (tree type, tree ctor,
 			   unsigned HOST_WIDE_INT offset,
-			   unsigned HOST_WIDE_INT size)
+			   unsigned HOST_WIDE_INT size,
+			   tree from_decl)
 {
   unsigned HOST_WIDE_INT cnt;
   tree cfield, cval;
@@ -2824,7 +2855,8 @@ fold_array_ctor_reference (tree type, tree ctor,
       /* Do we have match?  */
       if (double_int_cmp (access_index, index, 1) >= 0
 	  && double_int_cmp (access_index, max_index, 1) <= 0)
-	return fold_ctor_reference (type, cval, inner_offset, size);
+	return fold_ctor_reference (type, cval, inner_offset, size,
+				    from_decl);
     }
   /* When memory is not explicitely mentioned in constructor,
      it is 0 (or out of range).  */
@@ -2837,7 +2869,8 @@ fold_array_ctor_reference (tree type, tree ctor,
 static tree
 fold_nonarray_ctor_reference (tree type, tree ctor,
 			      unsigned HOST_WIDE_INT offset,
-			      unsigned HOST_WIDE_INT size)
+			      unsigned HOST_WIDE_INT size,
+			      tree from_decl)
 {
   unsigned HOST_WIDE_INT cnt;
   tree cfield, cval;
@@ -2892,7 +2925,8 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 	  if (double_int_cmp (uhwi_to_double_int (offset), bitoffset, 0) < 0)
 	    return NULL_TREE;
 	  return fold_ctor_reference (type, cval,
-				      double_int_to_uhwi (inner_offset), size);
+				      double_int_to_uhwi (inner_offset), size,
+				      from_decl);
 	}
     }
   /* When memory is not explicitely mentioned in constructor, it is 0.  */
@@ -2904,14 +2938,14 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 
 static tree
 fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
-		     unsigned HOST_WIDE_INT size)
+		     unsigned HOST_WIDE_INT size, tree from_decl)
 {
   tree ret;
 
   /* We found the field with exact match.  */
   if (useless_type_conversion_p (type, TREE_TYPE (ctor))
       && !offset)
-    return canonicalize_constructor_val (ctor);
+    return canonicalize_constructor_val (ctor, from_decl);
 
   /* We are at the end of walk, see if we can view convert the
      result.  */
@@ -2920,7 +2954,7 @@ fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
       && operand_equal_p (TYPE_SIZE (type),
 			  TYPE_SIZE (TREE_TYPE (ctor)), 0))
     {
-      ret = canonicalize_constructor_val (ctor);
+      ret = canonicalize_constructor_val (ctor, from_decl);
       ret = fold_unary (VIEW_CONVERT_EXPR, type, ret);
       if (ret)
 	STRIP_NOPS (ret);
@@ -2933,9 +2967,11 @@ fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
 
       if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (ctor)) == VECTOR_TYPE)
-	return fold_array_ctor_reference (type, ctor, offset, size);
+	return fold_array_ctor_reference (type, ctor, offset, size,
+					  from_decl);
       else
-	return fold_nonarray_ctor_reference (type, ctor, offset, size);
+	return fold_nonarray_ctor_reference (type, ctor, offset, size,
+					     from_decl);
     }
 
   return NULL_TREE;
@@ -3008,7 +3044,8 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 		return NULL_TREE;
 	      return fold_ctor_reference (TREE_TYPE (t), ctor, offset,
 					  TREE_INT_CST_LOW (unit_size)
-					  * BITS_PER_UNIT);
+					  * BITS_PER_UNIT,
+					  base);
 	    }
 	}
       /* Fallthru.  */
@@ -3034,7 +3071,8 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
       if (offset < 0)
 	return NULL_TREE;
 
-      return fold_ctor_reference (TREE_TYPE (t), ctor, offset, size);
+      return fold_ctor_reference (TREE_TYPE (t), ctor, offset, size,
+				  base);
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -3068,9 +3106,9 @@ tree
 gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
 {
   unsigned HOST_WIDE_INT offset, size;
-  tree v, fn;
+  tree v, fn, vtable;
 
-  v = BINFO_VTABLE (known_binfo);
+  vtable = v = BINFO_VTABLE (known_binfo);
   /* If there is no virtual methods table, leave the OBJ_TYPE_REF alone.  */
   if (!v)
     return NULL_TREE;
@@ -3096,7 +3134,7 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
   size = tree_low_cst (TYPE_SIZE (TREE_TYPE (TREE_TYPE (v))), 1);
   offset += token * size;
   fn = fold_ctor_reference (TREE_TYPE (TREE_TYPE (v)), DECL_INITIAL (v),
-			    offset, size);
+			    offset, size, vtable);
   if (!fn || integer_zerop (fn))
     return NULL_TREE;
   gcc_assert (TREE_CODE (fn) == ADDR_EXPR
@@ -3108,7 +3146,7 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
      devirtualize.  This can happen in WHOPR when the actual method
      ends up in other partition, because we found devirtualization
      possibility too late.  */
-  if (!can_refer_decl_in_current_unit_p (fn))
+  if (!can_refer_decl_in_current_unit_p (fn, vtable))
     return NULL_TREE;
 
   /* Make sure we create a cgraph node for functions we'll reference.

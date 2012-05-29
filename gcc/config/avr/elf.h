@@ -35,7 +35,7 @@
 /* Output alignment 2**1 for jump tables.  */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
-  fprintf (FILE, "\t.p2align\t1\n");
+  ASM_OUTPUT_ALIGN (FILE, 1);
 
 /* Be conservative in crtstuff.c.  */
 #undef INIT_SECTION_ASM_OP

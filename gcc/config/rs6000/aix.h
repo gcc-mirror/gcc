@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -206,11 +206,6 @@
 #define SUBTARGET_EXTRA_SPECS						\
   { "link_syscalls",            LINK_SYSCALLS_SPEC },			\
   { "link_libg",                LINK_LIBG_SPEC }
-
-/* Define cutoff for using external functions to save floating point.  */
-#define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == 62 || (FIRST_REG) == 63)
-/* And similarly for general purpose registers.  */
-#define GP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) < 32)
 
 #define PROFILE_HOOK(LABEL)   output_profile_hook (LABEL)
 

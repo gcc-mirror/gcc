@@ -2126,7 +2126,7 @@ options.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
     $(srcdir)/optc-gen.awk
 	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
 	       -f $(srcdir)/optc-gen.awk \
-	       -v header_name="config.h system.h coretypes.h tm.h" < $< > $@
+	       -v header_name="config.h system.h coretypes.h options.h tm.h" < $< > $@
 
 options-save.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
     $(srcdir)/optc-save-gen.awk

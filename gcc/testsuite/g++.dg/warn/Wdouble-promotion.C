@@ -36,7 +36,7 @@ usual_arithmetic_conversions(void)
 
   local_cf = cf + 1.0;       /* { dg-warning "implicit" } */
   local_cf = cf - d;         /* { dg-warning "implicit" } */
-  local_cf = cf + 1.0 * ID;  /* { dg-message "expanded from here" } */
+  local_cf = cf + 1.0 * ID;  /* { dg-message "in expansion of macro 'ID'" } */
   local_cf = cf - cd;        /* { dg-warning "implicit" } */
   
   local_f = i ? f : d;       /* { dg-warning "implicit" } */

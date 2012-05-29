@@ -333,6 +333,12 @@
 #endif
 
 
+/* Define if your assembler supports HLE prefixes. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_HLE
+#endif
+
+
 /* Define if your assembler supports the .quad directive. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_QUAD
@@ -348,11 +354,6 @@
 /* Define if your assembler supports the sahf mnemonic in 64bit mode. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_SAHF
-#endif
-
-/* Define if your assembler supports HLE prefixes. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_IX86_HLE
 #endif
 
 
@@ -1096,7 +1097,7 @@
 #endif
 
 
-/* Define if using GNU as. */
+/* Define to 1 if using GNU as. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GNU_AS
 #endif
@@ -1108,7 +1109,7 @@
 #endif
 
 
-/* Define if using GNU ld. */
+/* Define to 1 if using GNU ld. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GNU_LD
 #endif

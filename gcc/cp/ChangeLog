@@ -1,3 +1,59 @@
+2012-05-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53491
+	* tree.c (stabilize_expr): Handle exp of void type.
+
+2012-05-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53220
+	* call.c (convert_like_real) [ck_list]: Take array address directly.
+	* typeck.c (decay_conversion): Reject decay of an array compound
+	literal.
+
+2012-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/32054
+	* parser.c (cp_parser_member_declaration): A storage class is not
+	allowed in a declaration of an anonymous aggregate in a class scope.
+
+2012-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR obj-c++/53441
+	* decl.c (grokdeclarator): Check that current_class_type is non-NULL
+	before calling constructor_name_p.
+
+2012-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/32080
+	* parser.c (cp_parser_ctor_initializer_opt_and_function_body,
+	cp_parser_function_body): Add a bool parameter, true when parsing
+	a function-try-block.
+	(cp_parser_function_try_block): Pass true to the above.
+	(cp_parser_function_definition_after_declarator,
+	cp_parser_function_transaction): Adjust.
+
+2012-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29185
+	* decl2.c (delete_sanity): Extend 'deleting array' warning to
+	any array type.
+
+2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51184
+	* decl.c (grokdeclarator): Diagnose functions returning abstract
+	class types as TYPENAME.
+	* cp-tree.h (ABSTRACT_CLASS_TYPE_P): Add.
+	* except.c (is_admissible_throw_operand_or_catch_parameter): Use it.
+	* pt.c (tsubst): Likewise.
+	* semantics.c (trait_expr_value): Likewise.
+
+2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/40821
+	* parser.c (cp_parser_attributes_opt): Enforce error checking of
+	unbalanced parentheses in the presence of tentative parsing.
+
 2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/39681

@@ -139,7 +139,7 @@ __go_free(void *v)
 	m->mallocing = 1;
 
 	if(!runtime_mlookup(v, nil, nil, &s)) {
-		// runtime_printf("free %p: not an allocated block\n", v);
+		runtime_printf("free %p: not an allocated block\n", v);
 		runtime_throw("free runtime_mlookup");
 	}
 	prof = runtime_blockspecial(v);
@@ -367,7 +367,7 @@ runtime_mallocinit(void)
 		if(p == nil)
 			runtime_throw("runtime: cannot reserve arena virtual address space");
 		if((uintptr)p & (((uintptr)1<<PageShift)-1))
-			runtime_printf("runtime: SysReserve returned unaligned address %p; asked for %p", p, (void*)(bitmap_size+arena_size));
+			runtime_printf("runtime: SysReserve returned unaligned address %p; asked for %p", p, bitmap_size+arena_size);
 	}
 	if((uintptr)p & (((uintptr)1<<PageShift)-1))
 		runtime_throw("runtime: SysReserve returned unaligned address");
@@ -467,15 +467,15 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	const FuncType *ft;
 
 	if(obj.__type_descriptor == nil) {
-		// runtime·printf("runtime.SetFinalizer: first argument is nil interface\n");
+		runtime_printf("runtime.SetFinalizer: first argument is nil interface\n");
 		goto throw;
 	}
 	if(obj.__type_descriptor->__code != GO_PTR) {
-		// runtime_printf("runtime.SetFinalizer: first argument is %S, not pointer\n", *obj.type->string);
+		runtime_printf("runtime.SetFinalizer: first argument is %S, not pointer\n", *obj.__type_descriptor->__reflection);
 		goto throw;
 	}
 	if(!runtime_mlookup(obj.__object, &base, &size, nil) || obj.__object != base) {
-		// runtime_printf("runtime.SetFinalizer: pointer not at beginning of allocated block\n");
+		runtime_printf("runtime.SetFinalizer: pointer not at beginning of allocated block\n");
 		goto throw;
 	}
 	ft = nil;
@@ -494,7 +494,7 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	return;
 
 badfunc:
-	// runtime_printf("runtime.SetFinalizer: second argument is %S, not func(%S)\n", *finalizer.type->string, *obj.type->string);
+	runtime_printf("runtime.SetFinalizer: second argument is %S, not func(%S)\n", *finalizer.__type_descriptor->__reflection, *obj.__type_descriptor->__reflection);
 throw:
 	runtime_throw("runtime.SetFinalizer");
 }

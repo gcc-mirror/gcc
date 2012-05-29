@@ -14,6 +14,11 @@ AC_PREREQ(2.64)
 AC_INIT([GNU C Runtime Library], 1.0,,[libgcc])
 AC_CONFIG_SRCDIR([static-object.mk])
 
+# The libgcc should not depend on any header files
+AC_DEFUN([_AC_INCLUDES_DEFAULT_REQUIREMENTS],
+  [m4_divert_text([DEFAULTS],
+    [ac_includes_default='/* none */'])])
+
 AC_ARG_WITH(target-subdir,
 [  --with-target-subdir=SUBDIR      Configuring in a subdirectory for target])
 AC_ARG_WITH(cross-host,

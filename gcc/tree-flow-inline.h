@@ -39,7 +39,7 @@ gimple_in_ssa_p (const struct function *fun)
 static inline htab_t
 gimple_referenced_vars (const struct function *fun)
 {
-  if (!fun->gimple_df)
+  if (!fun || !fun->gimple_df)
     return NULL;
   return fun->gimple_df->referenced_vars;
 }

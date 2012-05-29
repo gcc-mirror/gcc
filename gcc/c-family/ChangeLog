@@ -1,3 +1,8 @@
+2012-05-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53322
+	* c.opt (Wunused-local-typedefs): Use EnabledBy(Wunused).
+
 2012-05-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c.opt (--pedantic-errors,-pedantic-errors): Do not handle here.

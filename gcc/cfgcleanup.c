@@ -2644,7 +2644,7 @@ try_optimize_cfg (int mode)
 		}
 
 	      /* If we fall through an empty block, we can remove it.  */
-	      if (!(mode & CLEANUP_CFGLAYOUT)
+	      if (!(mode & (CLEANUP_CFGLAYOUT | CLEANUP_NO_INSN_DEL))
 		  && single_pred_p (b)
 		  && (single_pred_edge (b)->flags & EDGE_FALLTHRU)
 		  && !LABEL_P (BB_HEAD (b))

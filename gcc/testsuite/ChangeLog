@@ -1,3 +1,189 @@
+2012-05-27  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/stmt-expr-4.c: New.
+
+2012-05-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53491
+	* g++.dg/parse/crash60.C: New.
+
+2012-05-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53220
+	* c-c++-common/array-lit.c: New.
+	* g++.dg/ext/complit12.C: #if 0 out decay-to-pointer test.
+
+2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/50294
+	* gnat.dg/array21.adb: New test.
+
+2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming5.adb: Adjust dg-final directive.
+
+2012-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/32054
+	* g++.dg/other/anon-union3.C: New.
+
+2012-05-25  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/split-6.c: New test.
+
+2012-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto14.adb: New test.
+
+2012-05-25  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc.target/i386/large-frame.c: New.
+
+2012-05-24  Pat Haugen <pthaugen@us.ibm.com>
+	* gcc.target/powerpc/lhs-1.c: New.
+	* gcc.target/powerpc/lhs-2.c: New.
+	* gcc.target/powerpc/lhs-3.c: New.
+
+2012-05-24  Dodji Seketeli  <dodji@redhat.com>
+
+	Make unwound macro expansion trace less redundant
+	* gcc.dg/cpp/macro-exp-tracking-1.c: Adjust.
+	* gcc.dg/cpp/macro-exp-tracking-2.c: Likewise.
+	* gcc.dg/cpp/macro-exp-tracking-3.c: Likewise.
+	* gcc.dg/cpp/macro-exp-tracking-4.c: Likewise.
+	* gcc.dg/cpp/macro-exp-tracking-5.c: Likewise.
+	* gcc.dg/cpp/pragma-diagnostic-2.c: Likewise.
+
+2012-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53464
+	* g++.dg/cpp0x/constexpr-default1.C: New.
+
+2012-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/32080
+	* g++.dg/eh/goto2.C: New.
+
+2012-05-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53460
+	* g++.dg/tree-prof/pr53460.C: New testcase.
+
+2012-05-24  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/53466
+	* g++.dg/debug/pr53466.C: New testcase.
+
+2012-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53465
+	* gcc.c-torture/execute/pr53465.c: New test.
+
+2012-05-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51055
+	PR fortran/45170
+	* gfortran.dg/allocate_with_typespec_6.f90: New.
+
+2012-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29185
+	* g++.dg/warn/delete-array-1.C: New.
+
+2012-05-23  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr39074-2.c: Adjust.
+	* gcc.dg/torture/pr39074.c: Likewise.
+	* gcc.dg/torture/pta-structcopy-1.c: Likewise.
+	* gcc.dg/tree-ssa/alias-19.c: Likewise.
+
+2012-05-22  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/53161
+	* g++.dg/torture/pr53161.C: New testcase.
+
+2012-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53389
+	* gfortran.dg/realloc_on_assign_15.f90: New.
+
+2012-05-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51071
+	* gcc.dg/torture/pr51071-2.c: New testcase.
+
+2012-05-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/53336
+	* g++.dg/torture/pr53336.C: New testcase.
+
+2012-05-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53322
+	* g++.dg/warn/Wunused-local-typedefs.C: Adjust to use -Wunused
+	instead of -Wunused-local-typedefs.
+
+2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51184
+	* g++.dg/other/abstract4.C: New-
+
+2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/40821
+	* g++.dg/ext/attrib46.C: New.
+
+2012-05-21  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/53418
+	* gcc.c-torture/compile/pr53418-1.c,
+	gcc.c-torture/compile/pr53418-2.c: New tests.
+
+2012-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53366
+	* gcc.dg/torture/pr53366-1.c: New test.
+	* gcc.dg/torture/pr53366-2.c: New test.
+	* gcc.target/i386/pr53366-1.c: New test.
+	* gcc.target/i386/pr53366-2.c: New test.
+
+	PR tree-optimization/53409
+	* gcc.c-torture/compile/pr53409.c: New test.
+
+	PR tree-optimization/53410
+	* gcc.c-torture/compile/pr53410-1.c: New test.
+	* gcc.c-torture/compile/pr53410-2.c: New test.
+
+2012-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53425
+	* gcc.target/i386/pr53425-1.c: New file.
+	* gcc.target/i386/pr53425-2.c: Likewise.
+
+2012-05-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53408
+	* gcc.dg/torture/pr53408.c: New testcase.
+
+2012-05-21  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53416
+	* gcc.target/i386/pr53416.c: New file.
+
+2012-05-21  Richard Guenther  <rguenther@suse.de>
+
+	* gfortran.dg/pr46519-2.f90: Adjust to avoid memset transform.
+
+2012-05-21  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/ldist-1.c: New testcase.
+
+2012-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto13.adb: New test.
+	* gnat.dg/lto13_pkg.ad[sb]: New helper.
+
 2012-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/lto12.ads: New test.

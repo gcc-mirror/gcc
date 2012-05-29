@@ -3466,6 +3466,9 @@ gfc_match_allocate (void)
 			 "type parameter", &old_locus);
 	      goto cleanup;
 	    }
+
+	  if (ts.type == BT_CHARACTER)
+	    ts.u.cl->length_from_typespec = true;
 	}
       else
 	{

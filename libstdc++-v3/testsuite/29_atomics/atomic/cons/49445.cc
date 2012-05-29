@@ -33,10 +33,10 @@ enum class tacos : int
 int main()
 {
   std::atomic<float> af(0.0f);
-  float non_af = af;
+  float non_af __attribute__((unused)) = af;
   
   std::atomic<tacos> ae(tacos::sabor);
-  tacos non_ae = ae;
+  tacos non_ae __attribute__((unused)) = ae;
 
   return 0;
 }

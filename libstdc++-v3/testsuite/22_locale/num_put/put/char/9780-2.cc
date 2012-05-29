@@ -1,7 +1,7 @@
 // { dg-require-namedlocale "de_DE" }
 // { dg-require-namedlocale "es_ES" }
 
-// Copyright (C) 2004, 2005, 2009, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2009, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@ void test01()
 
   locale l2 = locale("C");
   const numpunct<char>& npunct2 = use_facet<numpunct<char> >(l2);
-  char c = npunct2.thousands_sep();
+  char c __attribute__((unused)) = npunct2.thousands_sep();
   string s = npunct2.grouping();
 
   ostringstream oss;
@@ -53,7 +53,7 @@ void test02()
 
   locale l2 = locale("es_ES");
   const numpunct<char>& npunct3 = use_facet<numpunct<char> >(l2);
-  char c = npunct3.thousands_sep();
+  char c __attribute__((unused)) = npunct3.thousands_sep();
   string s = npunct3.grouping();
 
   ostringstream oss;
@@ -72,7 +72,7 @@ void test02()
 int main()
 {
   // Sanity check.
-  char c = npunct.thousands_sep();
+  char c __attribute__((unused)) = npunct.thousands_sep();
   string s = npunct.grouping();
 
   test01();

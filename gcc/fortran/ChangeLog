@@ -1,3 +1,24 @@
+2012-05-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51055
+	PR fortran/45170
+	* match.c (gfc_match_allocate): Set length_from_typespec
+	for characters.
+	* resolve.c (resolve_charlen): If set, don't check whether
+	the len is a specification expression.
+
+2012-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53389
+	* trans-array.c (gfc_add_loop_ss_code): Don't evaluate expression, if
+	ss->is_alloc_lhs is set.
+
+2012-05-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53322
+	* f95-lang.c (gfc_init_builtin_functions): Remove the unused
+	typedef builtin_type.
+
 2012-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/52428

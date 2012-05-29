@@ -348,7 +348,7 @@ runtime_mcall(void (*pfn)(G*))
 		mp = runtime_m();
 		gp = runtime_g();
 
-		if(gp->dotraceback != nil)
+		if(gp->traceback != nil)
 			gtraceback(gp);
 	}
 	if (gp == nil || !gp->fromgogo) {
@@ -542,11 +542,20 @@ runtime_goroutinetrailer(G *g)
 	}
 }
 
+struct Traceback
+{
+	G* gp;
+	uintptr pcbuf[100];
+	int32 c;
+};
+
 void
 runtime_tracebackothers(G * volatile me)
 {
 	G * volatile g;
+	Traceback traceback;
 
+	traceback.gp = me;
 	for(g = runtime_allg; g != nil; g = g->alllink) {
 		if(g == me || g->status == Gdead)
 			continue;
@@ -567,16 +576,19 @@ runtime_tracebackothers(G * volatile me)
 			continue;
 		}
 
-		g->dotraceback = me;
+		g->traceback = &traceback;
 
 #ifdef USING_SPLIT_STACK
 		__splitstack_getcontext(&me->stack_context[0]);
 #endif
 		getcontext(&me->context);
 
-		if(g->dotraceback) {
+		if(g->traceback != nil) {
 			runtime_gogo(g);
 		}
+
+		runtime_printtrace(traceback.pcbuf, traceback.c);
+		runtime_goroutinetrailer(g);
 	}
 }
 
@@ -586,13 +598,13 @@ runtime_tracebackothers(G * volatile me)
 static void
 gtraceback(G* gp)
 {
-	G* ret;
+	Traceback* traceback;
 
-	runtime_traceback(nil);
-	runtime_goroutinetrailer(gp);
-	ret = gp->dotraceback;
-	gp->dotraceback = nil;
-	runtime_gogo(ret);
+	traceback = gp->traceback;
+	gp->traceback = nil;
+	traceback->c = runtime_callers(1, traceback->pcbuf,
+		sizeof traceback->pcbuf / sizeof traceback->pcbuf[0]);
+	runtime_gogo(traceback->gp);
 }
 
 // Mark this g as m's idle goroutine.
@@ -1239,9 +1251,7 @@ runtime_entersyscall(void)
 
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
-	// We could use getcontext here, but setjmp is more efficient
-	// because it doesn't need to save the signal mask.
-	setjmp(g->gcregs);
+	getcontext(&g->gcregs);
 
 	g->status = Gsyscall;
 
@@ -1299,7 +1309,7 @@ runtime_exitsyscall(void)
 		gp->gcstack = nil;
 #endif
 		gp->gcnext_sp = nil;
-		runtime_memclr(gp->gcregs, sizeof gp->gcregs);
+		runtime_memclr(&gp->gcregs, sizeof gp->gcregs);
 
 		if(m->profilehz > 0)
 			runtime_setprof(true);
@@ -1328,7 +1338,7 @@ runtime_exitsyscall(void)
 	gp->gcstack = nil;
 #endif
 	gp->gcnext_sp = nil;
-	runtime_memclr(gp->gcregs, sizeof gp->gcregs);
+	runtime_memclr(&gp->gcregs, sizeof gp->gcregs);
 }
 
 // Allocate a new g, with a stack big enough for stacksize bytes.

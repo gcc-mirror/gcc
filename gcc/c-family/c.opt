@@ -674,7 +674,7 @@ C UPC ObjC Var(warn_unsuffixed_float_constants) Warning
 Warn about unsuffixed float constants
 
 Wunused-local-typedefs
-C UPC ObjC C++ ObjC++ Var(warn_unused_local_typedefs) Warning
+C UPC ObjC C++ ObjC++ Var(warn_unused_local_typedefs) Warning EnabledBy(Wunused)
 Warn when typedefs locally defined in a function are not used
 
 Wunused-macros

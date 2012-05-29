@@ -1,3 +1,37 @@
+2012-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/time_1.h (gf_cputime): Don't reevaluate HZ expression
+	for times fallback, clarify operation ordering for times and clock
+	fallbacks.
+	(gf_gettime): Fix comment typo.
+
+2012-05-24  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53456
+	* intrinsics/time_1.h (gf_cputime): Fallback for clock_gettime.
+
+2012-05-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53456
+	* intrinsics/time_1.h (gf_gettime): Fallback for clock_gettime.
+
+2012-05-23  Robert Mason  <rbmj@verizon.net>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR libfortran/53445
+	* intrinsics/chmod.c (chmod_func): Ignore S_ISVTX on VxWorks.
+
+2012-05-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR libfortran/53444
+	* acinclude.m4 (LIBGFOR_CHECK_STRERROR_R): Add configure checks for
+	two- and three-argument versions of strerror_r.
+	* configure.ac (LIBGFOR_CHECK_STRERROR_R): Use it.
+	* runtime/error.c (gf_strerror): Handle two-argument version
+	of strerror_r.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.

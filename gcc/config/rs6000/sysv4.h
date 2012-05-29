@@ -1,6 +1,6 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
@@ -242,19 +242,6 @@ do {									\
 #undef	WORDS_BIG_ENDIAN
 #define	BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN)
 #define	WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN)
-
-/* Define cutoff for using external functions to save floating point.
-   When optimizing for size, use external functions when profitable.  */
-#define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == 62			\
-				   || (FIRST_REG) == 63			\
-				   || !optimize_size)
-
-/* And similarly for general purpose registers.  */
-#define GP_SAVE_INLINE(FIRST_REG) (!optimize_size)
-
-/* And vector registers.  */
-#define V_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == LAST_ALTIVEC_REGNO	\
-				  || !optimize_size)
 
 /* Put jump tables in read-only memory, rather than in .text.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 0

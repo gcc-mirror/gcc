@@ -3346,6 +3346,11 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
   tree mask;
   tree offset;
 
+  /* In the strict volatile bitfields case, doing code changes here may prevent
+     other optimizations, in particular in a SLOW_BYTE_ACCESS setting.  */
+  if (flag_strict_volatile_bitfields > 0)
+    return 0;
+
   /* Get all the information about the extractions being done.  If the bit size
      if the same as the size of the underlying object, we aren't doing an
      extraction at all and so can do nothing.  We also don't want to
@@ -11293,7 +11298,7 @@ fold_binary_loc (location_t loc,
 	  && integer_onep (TREE_OPERAND (arg0, 1))
 	  && integer_onep (arg1))
 	return fold_build2_loc (loc, EQ_EXPR, type, arg0,
-			    build_int_cst (TREE_TYPE (arg0), 0));
+				build_zero_cst (TREE_TYPE (arg0)));
 
       /* Fold (X & Y) ^ Y as ~X & Y.  */
       if (TREE_CODE (arg0) == BIT_AND_EXPR
@@ -11403,21 +11408,25 @@ fold_binary_loc (location_t loc,
 	  && integer_onep (TREE_OPERAND (arg0, 1))
 	  && integer_onep (arg1))
 	{
+	  tree tem2;
 	  tem = TREE_OPERAND (arg0, 0);
-	  return fold_build2_loc (loc, EQ_EXPR, type,
-			      fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (tem), tem,
-					   build_int_cst (TREE_TYPE (tem), 1)),
-			      build_int_cst (TREE_TYPE (tem), 0));
+	  tem2 = fold_convert_loc (loc, TREE_TYPE (tem), arg1);
+	  tem2 = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (tem),
+				  tem, tem2);
+	  return fold_build2_loc (loc, EQ_EXPR, type, tem2,
+				  build_zero_cst (TREE_TYPE (tem)));
 	}
       /* Fold ~X & 1 as (X & 1) == 0.  */
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && integer_onep (arg1))
 	{
+	  tree tem2;
 	  tem = TREE_OPERAND (arg0, 0);
-	  return fold_build2_loc (loc, EQ_EXPR, type,
-			      fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (tem), tem,
-					   build_int_cst (TREE_TYPE (tem), 1)),
-			      build_int_cst (TREE_TYPE (tem), 0));
+	  tem2 = fold_convert_loc (loc, TREE_TYPE (tem), arg1);
+	  tem2 = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (tem),
+				  tem, tem2);
+	  return fold_build2_loc (loc, EQ_EXPR, type, tem2,
+				  build_zero_cst (TREE_TYPE (tem)));
 	}
       /* Fold !X & 1 as X == 0.  */
       if (TREE_CODE (arg0) == TRUTH_NOT_EXPR
@@ -11425,7 +11434,7 @@ fold_binary_loc (location_t loc,
 	{
 	  tem = TREE_OPERAND (arg0, 0);
 	  return fold_build2_loc (loc, EQ_EXPR, type, tem,
-				  build_int_cst (TREE_TYPE (tem), 0));
+				  build_zero_cst (TREE_TYPE (tem)));
 	}
 
       /* Fold (X ^ Y) & Y as ~X & Y.  */
@@ -12941,13 +12950,13 @@ fold_binary_loc (location_t loc,
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
 	return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 0),
-				build_int_cst (TREE_TYPE (arg0), 0));
+				build_zero_cst (TREE_TYPE (arg0)));
       /* Likewise (X ^ Y) == X becomes Y == 0.  X has no side-effects.  */
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
 	  && reorder_operands_p (TREE_OPERAND (arg0, 1), arg1))
 	return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 1),
-				build_int_cst (TREE_TYPE (arg0), 0));
+				build_zero_cst (TREE_TYPE (arg0)));
 
       /* (X ^ C1) op C2 can be rewritten as X op (C1 ^ C2).  */
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
@@ -13035,7 +13044,7 @@ fold_binary_loc (location_t loc,
 							  BIT_XOR_EXPR, itype,
 							  arg00, arg10),
 					     arg01),
-				build_int_cst (itype, 0));
+				build_zero_cst (itype));
 
 	  if (operand_equal_p (arg01, arg10, 0))
 	    return fold_build2_loc (loc, code, type,
@@ -13044,7 +13053,7 @@ fold_binary_loc (location_t loc,
 							  BIT_XOR_EXPR, itype,
 							  arg00, arg11),
 					     arg01),
-				build_int_cst (itype, 0));
+				build_zero_cst (itype));
 
 	  if (operand_equal_p (arg00, arg11, 0))
 	    return fold_build2_loc (loc, code, type,
@@ -13053,7 +13062,7 @@ fold_binary_loc (location_t loc,
 							  BIT_XOR_EXPR, itype,
 							  arg01, arg10),
 					     arg00),
-				build_int_cst (itype, 0));
+				build_zero_cst (itype));
 
 	  if (operand_equal_p (arg00, arg10, 0))
 	    return fold_build2_loc (loc, code, type,
@@ -13062,7 +13071,7 @@ fold_binary_loc (location_t loc,
 							  BIT_XOR_EXPR, itype,
 							  arg01, arg11),
 					     arg00),
-				build_int_cst (itype, 0));
+				build_zero_cst (itype));
 	}
 
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
@@ -13540,7 +13549,7 @@ fold_binary_loc (location_t loc,
 	return build2_loc (loc, code == LT_EXPR ? EQ_EXPR : NE_EXPR, type,
 			   build2 (RSHIFT_EXPR, TREE_TYPE (arg0), arg0,
 				   TREE_OPERAND (arg1, 1)),
-			   build_int_cst (TREE_TYPE (arg0), 0));
+			   build_zero_cst (TREE_TYPE (arg0)));
 
       if ((code == LT_EXPR || code == GE_EXPR)
 	  && TYPE_UNSIGNED (TREE_TYPE (arg0))
@@ -13552,7 +13561,7 @@ fold_binary_loc (location_t loc,
 			TREE_OPERAND (TREE_OPERAND (arg1, 0), 1));
 	  return build2_loc (loc, code == LT_EXPR ? EQ_EXPR : NE_EXPR, type,
 			     fold_convert_loc (loc, TREE_TYPE (arg0), tem),
-			     build_int_cst (TREE_TYPE (arg0), 0));
+			     build_zero_cst (TREE_TYPE (arg0)));
 	}
 
       return NULL_TREE;

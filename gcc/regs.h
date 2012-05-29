@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "machmode.h"
 #include "hard-reg-set.h"
+#include "rtl.h"
 
 #define REG_BYTES(R) mode_size[(int) GET_MODE (R)]
 
@@ -367,10 +368,16 @@ in_hard_reg_set_p (const HARD_REG_SET regs, enum machine_mode mode,
 {
   unsigned int end_regno;
 
+  gcc_assert (HARD_REGISTER_NUM_P (regno));
+  
   if (!TEST_HARD_REG_BIT (regs, regno))
     return false;
 
   end_regno = end_hard_regno (mode, regno);
+
+  if (!HARD_REGISTER_NUM_P (end_regno - 1))
+    return false;
+
   while (++regno < end_regno)
     if (!TEST_HARD_REG_BIT (regs, regno))
       return false;

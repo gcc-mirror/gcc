@@ -73,10 +73,34 @@ Darwin)
   ;;
 esac
 
+remove_comment ()
+{
+  file=$1
+  opts=
+  for s in `objdump --section-headers "$file" | awk '{ print $2 }'`; do
+    case "$s" in
+    .comment*)
+      opts="$opts --remove-section $s"
+      ;;
+    esac
+  done
+  [ -n "$opts" ] && objcopy $opts $file
+}
+
 if cmp "$1.$suf1" "$2.$suf2"; then
   status=0
 else
   status=1
+
+  # Remove any .comment sections.
+  if (objcopy -v) 2>&1 | grep ' --remove-section' > /dev/null \
+     && (objdump --help) 2>&1 | grep ' --\[*section-\]*headers' > /dev/null; then
+    remove_comment "$1.$suf1"
+    remove_comment "$2.$suf2"
+    if cmp "$1.$suf1" "$2.$suf2"; then
+      status=0
+    fi
+  fi
 
   # Assembler-generated CFI will add an .eh_frame section for -g not
   # present in -g0.  Try to cope with it by checking that an .eh_frame

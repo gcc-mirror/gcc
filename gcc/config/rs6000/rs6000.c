@@ -920,310 +920,102 @@ static const struct rs6000_builtin_info_type rs6000_builtin_info[] =
 static tree (*rs6000_veclib_handler) (tree, tree, tree);
 
 
-static bool rs6000_function_ok_for_sibcall (tree, tree);
-static const char *rs6000_invalid_within_doloop (const_rtx);
-static bool rs6000_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool rs6000_debug_legitimate_address_p (enum machine_mode, rtx, bool);
-static rtx rs6000_generate_compare (rtx, enum machine_mode);
 static bool spe_func_has_64bit_regs_p (void);
-static rtx gen_frame_mem_offset (enum machine_mode, rtx, int);
-static unsigned rs6000_hash_constant (rtx);
-static unsigned toc_hash_function (const void *);
-static int toc_hash_eq (const void *, const void *);
-static bool reg_offset_addressing_ok_p (enum machine_mode);
-static bool virtual_stack_registers_memory_p (rtx);
-static bool constant_pool_expr_p (rtx);
-static bool legitimate_small_data_p (enum machine_mode, rtx);
-static bool legitimate_lo_sum_address_p (enum machine_mode, rtx, int);
 static struct machine_function * rs6000_init_machine_status (void);
-static bool rs6000_assemble_integer (rtx, unsigned int, int);
-#if defined (HAVE_GAS_HIDDEN) && !TARGET_MACHO
-static void rs6000_assemble_visibility (tree, int);
-#endif
 static int rs6000_ra_ever_killed (void);
-static bool rs6000_attribute_takes_identifier_p (const_tree);
 static tree rs6000_handle_longcall_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_handle_altivec_attribute (tree *, tree, tree, int, bool *);
-static bool rs6000_ms_bitfield_layout_p (const_tree);
 static tree rs6000_handle_struct_attribute (tree *, tree, tree, int, bool *);
-static void rs6000_eliminate_indexed_memrefs (rtx operands[2]);
-static const char *rs6000_mangle_type (const_tree);
-static void rs6000_set_default_type_attributes (tree);
-static bool rs6000_reg_live_or_pic_offset_p (int);
 static tree rs6000_builtin_vectorized_libmass (tree, tree, tree);
-static tree rs6000_builtin_vectorized_function (tree, tree, tree);
-static bool rs6000_output_addr_const_extra (FILE *, rtx);
-static void rs6000_output_function_prologue (FILE *, HOST_WIDE_INT);
-static void rs6000_output_function_epilogue (FILE *, HOST_WIDE_INT);
-static void rs6000_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
-				    tree);
 static rtx rs6000_emit_set_long_const (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
-static bool rs6000_return_in_memory (const_tree, const_tree);
-static rtx rs6000_function_value (const_tree, const_tree, bool);
-static void rs6000_file_start (void);
-#if TARGET_ELF
-static int rs6000_elf_reloc_rw_mask (void);
-static void rs6000_elf_asm_out_constructor (rtx, int) ATTRIBUTE_UNUSED;
-static void rs6000_elf_asm_out_destructor (rtx, int) ATTRIBUTE_UNUSED;
-static void rs6000_elf_file_end (void) ATTRIBUTE_UNUSED;
-static void rs6000_elf_asm_init_sections (void);
-static section *rs6000_elf_select_rtx_section (enum machine_mode, rtx,
-					       unsigned HOST_WIDE_INT);
-static void rs6000_elf_encode_section_info (tree, rtx, int)
-     ATTRIBUTE_UNUSED;
-#endif
-static bool rs6000_use_blocks_for_constant_p (enum machine_mode, const_rtx);
-static void rs6000_alloc_sdmode_stack_slot (void);
-static void rs6000_instantiate_decls (void);
-#if TARGET_XCOFF
-static void rs6000_xcoff_asm_output_anchor (rtx);
-static void rs6000_xcoff_asm_globalize_label (FILE *, const char *);
-static void rs6000_xcoff_asm_init_sections (void);
-static int rs6000_xcoff_reloc_rw_mask (void);
-static void rs6000_xcoff_asm_named_section (const char *, unsigned int, tree);
-static section *rs6000_xcoff_select_section (tree, int,
-					     unsigned HOST_WIDE_INT);
-static void rs6000_xcoff_unique_section (tree, int);
-static section *rs6000_xcoff_select_rtx_section
-  (enum machine_mode, rtx, unsigned HOST_WIDE_INT);
-static const char * rs6000_xcoff_strip_name_encoding (const char *);
-static unsigned int rs6000_xcoff_section_type_flags (tree, const char *, int);
-static void rs6000_xcoff_file_start (void);
-static void rs6000_xcoff_file_end (void);
-#endif
-static int rs6000_variable_issue (FILE *, int, rtx, int);
-static int rs6000_register_move_cost (enum machine_mode,
-				      reg_class_t, reg_class_t);
 static int rs6000_memory_move_cost (enum machine_mode, reg_class_t, bool);
-static bool rs6000_rtx_costs (rtx, int, int, int, int *, bool);
 static bool rs6000_debug_rtx_costs (rtx, int, int, int, int *, bool);
 static int rs6000_debug_address_cost (rtx, bool);
-static int rs6000_adjust_cost (rtx, rtx, rtx, int);
 static int rs6000_debug_adjust_cost (rtx, rtx, rtx, int);
-static void rs6000_sched_init (FILE *, int, int);
 static bool is_microcoded_insn (rtx);
 static bool is_nonpipeline_insn (rtx);
 static bool is_cracked_insn (rtx);
-static bool is_branch_slot_insn (rtx);
-static bool is_load_insn (rtx);
-static rtx get_store_dest (rtx pat);
-static bool is_store_insn (rtx);
+static bool is_load_insn (rtx, rtx *);
+static bool is_store_insn (rtx, rtx *);
 static bool set_to_load_agen (rtx,rtx);
-static bool adjacent_mem_locations (rtx,rtx);
-static int rs6000_adjust_priority (rtx, int);
-static int rs6000_issue_rate (void);
-static bool rs6000_is_costly_dependence (dep_t, int, int);
-static rtx get_next_active_insn (rtx, rtx);
 static bool insn_terminates_group_p (rtx , enum group_termination);
 static bool insn_must_be_first_in_group (rtx);
 static bool insn_must_be_last_in_group (rtx);
-static bool is_costly_group (rtx *, rtx);
-static int force_new_group (int, FILE *, rtx *, rtx, bool *, int, int *);
-static int redefine_groups (FILE *, int, rtx, rtx);
-static int pad_groups (FILE *, int, rtx, rtx);
-static void rs6000_sched_finish (FILE *, int);
-static int rs6000_sched_reorder (FILE *, int, rtx *, int *, int);
-static int rs6000_sched_reorder2 (FILE *, int, rtx *, int *, int);
-static int rs6000_use_sched_lookahead (void);
-static int rs6000_use_sched_lookahead_guard (rtx);
-static void * rs6000_alloc_sched_context (void);
-static void rs6000_init_sched_context (void *, bool);
-static void rs6000_set_sched_context (void *);
-static void rs6000_free_sched_context (void *);
-static tree rs6000_builtin_reciprocal (unsigned int, bool, bool);
-static tree rs6000_builtin_mask_for_load (void);
-static tree rs6000_builtin_mul_widen_even (tree);
-static tree rs6000_builtin_mul_widen_odd (tree);
-static bool rs6000_builtin_support_vector_misalignment (enum
-							machine_mode,
-							const_tree,
-							int, bool);
-static int rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt,
-                                              tree, int);
-static enum machine_mode rs6000_preferred_simd_mode (enum machine_mode);
-
-static void def_builtin (const char *, tree, enum rs6000_builtins);
-static bool rs6000_vector_alignment_reachable (const_tree, bool);
-static void rs6000_init_builtins (void);
-static tree rs6000_builtin_decl (unsigned, bool);
-
-static rtx rs6000_expand_unop_builtin (enum insn_code, tree, rtx);
-static rtx rs6000_expand_binop_builtin (enum insn_code, tree, rtx);
-static rtx rs6000_expand_ternop_builtin (enum insn_code, tree, rtx);
-static rtx rs6000_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void altivec_init_builtins (void);
-static unsigned builtin_hash_function (const void *);
-static int builtin_hash_eq (const void *, const void *);
 static tree builtin_function_type (enum machine_mode, enum machine_mode,
 				   enum machine_mode, enum machine_mode,
 				   enum rs6000_builtins, const char *name);
 static void rs6000_common_init_builtins (void);
-static void rs6000_init_libfuncs (void);
-
 static void paired_init_builtins (void);
-static rtx paired_expand_builtin (tree, rtx, bool *);
-static rtx paired_expand_lv_builtin (enum insn_code, tree, rtx);
-static rtx paired_expand_stv_builtin (enum insn_code, tree);
 static rtx paired_expand_predicate_builtin (enum insn_code, tree, rtx);
-
 static void spe_init_builtins (void);
-static rtx spe_expand_builtin (tree, rtx, bool *);
-static rtx spe_expand_stv_builtin (enum insn_code, tree);
 static rtx spe_expand_predicate_builtin (enum insn_code, tree, rtx);
 static rtx spe_expand_evsel_builtin (enum insn_code, tree, rtx);
 static int rs6000_emit_int_cmove (rtx, rtx, rtx, rtx);
 static rs6000_stack_t *rs6000_stack_info (void);
-static void debug_stack_info (rs6000_stack_t *);
-
-static rtx altivec_expand_builtin (tree, rtx, bool *);
-static rtx altivec_expand_ld_builtin (tree, rtx, bool *);
-static rtx altivec_expand_st_builtin (tree, rtx, bool *);
-static rtx altivec_expand_dst_builtin (tree, rtx, bool *);
-static rtx altivec_expand_abs_builtin (enum insn_code, tree, rtx);
-static rtx altivec_expand_predicate_builtin (enum insn_code, tree, rtx);
-static rtx altivec_expand_stv_builtin (enum insn_code, tree);
-static rtx altivec_expand_vec_init_builtin (tree, tree, rtx);
-static rtx altivec_expand_vec_set_builtin (tree);
-static rtx altivec_expand_vec_ext_builtin (tree, rtx);
-static int get_element_number (tree, tree);
-static void rs6000_option_override (void);
-static int rs6000_loop_align_max_skip (rtx);
-static int first_altivec_reg_to_save (void);
-static unsigned int compute_vrsave_mask (void);
-static void compute_save_world_info (rs6000_stack_t *info_ptr);
 static void is_altivec_return_reg (rtx, void *);
-static rtx generate_set_vrsave (rtx, rs6000_stack_t *, int);
 int easy_vector_constant (rtx, enum machine_mode);
-static rtx rs6000_dwarf_register_span (rtx);
-static void rs6000_init_dwarf_reg_sizes_extra (tree);
-static rtx rs6000_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx rs6000_debug_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx rs6000_legitimize_tls_address (rtx, enum tls_model);
-static void rs6000_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
-static rtx rs6000_delegitimize_address (rtx);
-static bool rs6000_const_not_ok_for_debug_p (rtx);
-static rtx rs6000_tls_get_addr (void);
-static rtx rs6000_got_sym (void);
 static int rs6000_tls_symbol_ref_1 (rtx *, void *);
-static const char *rs6000_get_some_local_dynamic_name (void);
 static int rs6000_get_some_local_dynamic_name_1 (rtx *, void *);
-static rtx rs6000_complex_function_value (enum machine_mode);
-static rtx rs6000_spe_function_arg (const CUMULATIVE_ARGS *,
-				    enum machine_mode, const_tree);
-static void rs6000_darwin64_record_arg_advance_flush (CUMULATIVE_ARGS *,
-						      HOST_WIDE_INT, int);
-static void rs6000_darwin64_record_arg_advance_recurse (CUMULATIVE_ARGS *,
-							const_tree,
-							HOST_WIDE_INT);
-static void rs6000_darwin64_record_arg_flush (CUMULATIVE_ARGS *,
-					      HOST_WIDE_INT,
-					      rtx[], int *);
-static void rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *,
-						const_tree, HOST_WIDE_INT,
-						rtx[], int *);
-static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree, bool, bool);
-static rtx rs6000_mixed_function_arg (enum machine_mode, const_tree, int);
-static void rs6000_function_arg_advance (cumulative_args_t, enum machine_mode,
-					 const_tree, bool);
-static rtx rs6000_function_arg (cumulative_args_t, enum machine_mode,
-				const_tree, bool);
-static unsigned int rs6000_function_arg_boundary (enum machine_mode,
-						  const_tree);
-static void rs6000_move_block_from_reg (int regno, rtx x, int nregs);
-static void setup_incoming_varargs (cumulative_args_t,
-				    enum machine_mode, tree,
-				    int *, int);
-static bool rs6000_pass_by_reference (cumulative_args_t, enum machine_mode,
-				      const_tree, bool);
-static int rs6000_arg_partial_bytes (cumulative_args_t, enum machine_mode,
-				     tree, bool);
-static const char *invalid_arg_for_unprototyped_fn (const_tree, const_tree, const_tree);
+static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree,
+				       bool, bool);
 #if TARGET_MACHO
 static void macho_branch_islands (void);
-static int no_previous_def (tree function_name);
-static tree get_prev_label (tree function_name);
-static void rs6000_darwin_file_start (void);
 #endif
-
-static tree rs6000_build_builtin_va_list (void);
-static void rs6000_va_start (tree, rtx);
-static tree rs6000_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
-static bool rs6000_must_pass_in_stack (enum machine_mode, const_tree);
-static bool rs6000_scalar_mode_supported_p (enum machine_mode);
-static bool rs6000_vector_mode_supported_p (enum machine_mode);
-static rtx rs6000_emit_vector_compare_inner (enum rtx_code, rtx, rtx);
-static rtx rs6000_emit_vector_compare (enum rtx_code, rtx, rtx,
-				       enum machine_mode);
-static tree rs6000_stack_protect_fail (void);
-
 static rtx rs6000_legitimize_reload_address (rtx, enum machine_mode, int, int,
 					     int, int *);
-
 static rtx rs6000_debug_legitimize_reload_address (rtx, enum machine_mode, int,
 						   int, int, int *);
-
-rtx (*rs6000_legitimize_reload_address_ptr) (rtx, enum machine_mode, int, int,
-					     int, int *)
-  = rs6000_legitimize_reload_address;
-
-static bool rs6000_mode_dependent_address_p (const_rtx);
 static bool rs6000_mode_dependent_address (const_rtx);
 static bool rs6000_debug_mode_dependent_address (const_rtx);
-static bool (*rs6000_mode_dependent_address_ptr) (const_rtx)
-  = rs6000_mode_dependent_address;
-
 static enum reg_class rs6000_secondary_reload_class (enum reg_class,
 						     enum machine_mode, rtx);
 static enum reg_class rs6000_debug_secondary_reload_class (enum reg_class,
 							   enum machine_mode,
 							   rtx);
-enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
-						     enum machine_mode, rtx)
-  = rs6000_secondary_reload_class;
-
 static enum reg_class rs6000_preferred_reload_class (rtx, enum reg_class);
 static enum reg_class rs6000_debug_preferred_reload_class (rtx,
 							   enum reg_class);
-enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx, enum reg_class)
-  = rs6000_preferred_reload_class;
-
 static bool rs6000_secondary_memory_needed (enum reg_class, enum reg_class,
 					    enum machine_mode);
-
 static bool rs6000_debug_secondary_memory_needed (enum reg_class,
 						  enum reg_class,
 						  enum machine_mode);
-
-bool (*rs6000_secondary_memory_needed_ptr) (enum reg_class, enum reg_class,
-					    enum machine_mode)
-  = rs6000_secondary_memory_needed;
-
 static bool rs6000_cannot_change_mode_class (enum machine_mode,
 					     enum machine_mode,
 					     enum reg_class);
 static bool rs6000_debug_cannot_change_mode_class (enum machine_mode,
 						   enum machine_mode,
 						   enum reg_class);
+static bool rs6000_save_toc_in_prologue_p (void);
+
+rtx (*rs6000_legitimize_reload_address_ptr) (rtx, enum machine_mode, int, int,
+					     int, int *)
+  = rs6000_legitimize_reload_address;
+
+static bool (*rs6000_mode_dependent_address_ptr) (const_rtx)
+  = rs6000_mode_dependent_address;
+
+enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
+						     enum machine_mode, rtx)
+  = rs6000_secondary_reload_class;
+
+enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx, enum reg_class)
+  = rs6000_preferred_reload_class;
+
+bool (*rs6000_secondary_memory_needed_ptr) (enum reg_class, enum reg_class,
+					    enum machine_mode)
+  = rs6000_secondary_memory_needed;
 
 bool (*rs6000_cannot_change_mode_class_ptr) (enum machine_mode,
 					     enum machine_mode,
 					     enum reg_class)
   = rs6000_cannot_change_mode_class;
 
-static reg_class_t rs6000_secondary_reload (bool, rtx, reg_class_t,
-					    enum machine_mode,
-					    struct secondary_reload_info *);
-
 const int INSN_NOT_AVAILABLE = -1;
-static enum machine_mode rs6000_eh_return_filter_mode (void);
-static bool rs6000_can_eliminate (const int, const int);
-static void rs6000_conditional_register_usage (void);
-static void rs6000_trampoline_init (rtx, tree, rtx);
-static bool rs6000_cannot_force_const_mem (enum machine_mode, rtx);
-static bool rs6000_legitimate_constant_p (enum machine_mode, rtx);
-static bool rs6000_save_toc_in_prologue_p (void);
-static void rs6000_code_end (void) ATTRIBUTE_UNUSED;
-static void rs6000_set_up_by_prologue (struct hard_reg_set_container *);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -1248,14 +1040,6 @@ struct GTY(()) builtin_hash_struct
 };
 
 static GTY ((param_is (struct builtin_hash_struct))) htab_t builtin_hash_table;
-
-static bool rs6000_valid_attribute_p (tree, tree, tree, int);
-static void rs6000_function_specific_save (struct cl_target_option *);
-static void rs6000_function_specific_restore (struct cl_target_option *);
-static void rs6000_function_specific_print (FILE *, int,
-					    struct cl_target_option *);
-static bool rs6000_can_inline_p (tree, tree);
-static void rs6000_set_current_function (tree);
 
 
 /* Default register names.  */
@@ -3046,7 +2830,7 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Handle -msched-costly-dep option.  */
   rs6000_sched_costly_dep
-    = (rs6000_sched_groups ? store_to_load_dep_costly : no_dep_costly);
+    = (rs6000_sched_groups ? true_store_to_load_dep_costly : no_dep_costly);
 
   if (rs6000_sched_costly_dep_str)
     {
@@ -3523,7 +3307,7 @@ rs6000_vector_alignment_reachable (const_tree type ATTRIBUTE_UNUSED, bool is_pac
 
 /* Return true if the vector misalignment factor is supported by the
    target.  */ 
-bool
+static bool
 rs6000_builtin_support_vector_misalignment (enum machine_mode mode,
 					    const_tree type,
 					    int misalignment,
@@ -5307,15 +5091,37 @@ constant_pool_expr_p (rtx op)
 	  && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (base), Pmode));
 }
 
-static rtx tocrel_base, tocrel_offset;
+static const_rtx tocrel_base, tocrel_offset;
+
+/* Return true if OP is a toc pointer relative address (the output
+   of create_TOC_reference).  If STRICT, do not match high part or
+   non-split -mcmodel=large/medium toc pointer relative addresses.  */
 
 bool
-toc_relative_expr_p (rtx op)
+toc_relative_expr_p (const_rtx op, bool strict)
 {
-  if (GET_CODE (op) != CONST)
+  if (!TARGET_TOC)
     return false;
 
-  split_const (op, &tocrel_base, &tocrel_offset);
+  if (TARGET_CMODEL != CMODEL_SMALL)
+    {
+      /* Only match the low part.  */
+      if (GET_CODE (op) == LO_SUM
+	  && REG_P (XEXP (op, 0))
+	  && INT_REG_OK_FOR_BASE_P (XEXP (op, 0), strict))
+	op = XEXP (op, 1);
+      else if (strict)
+	return false;
+    }
+
+  tocrel_base = op;
+  tocrel_offset = const0_rtx;
+  if (GET_CODE (op) == PLUS && CONST_INT_P (XEXP (op, 1)))
+    {
+      tocrel_base = XEXP (op, 0);
+      tocrel_offset = XEXP (op, 1);
+    }
+
   return (GET_CODE (tocrel_base) == UNSPEC
 	  && XINT (tocrel_base, 1) == UNSPEC_TOCREL);
 }
@@ -5327,14 +5133,7 @@ bool
 legitimate_constant_pool_address_p (const_rtx x, enum machine_mode mode,
 				    bool strict)
 {
-  return (TARGET_TOC
-	  && (GET_CODE (x) == PLUS || GET_CODE (x) == LO_SUM)
-	  && GET_CODE (XEXP (x, 0)) == REG
-	  && (REGNO (XEXP (x, 0)) == TOC_REGISTER
-	      || ((TARGET_MINIMAL_TOC
-		   || TARGET_CMODEL != CMODEL_SMALL)
-		  && INT_REG_OK_FOR_BASE_P (XEXP (x, 0), strict)))
-	  && toc_relative_expr_p (XEXP (x, 1))
+  return (toc_relative_expr_p (x, strict)
 	  && (TARGET_CMODEL != CMODEL_MEDIUM
 	      || constant_pool_expr_p (XVECEXP (tocrel_base, 0, 0))
 	      || mode == QImode
@@ -5714,10 +5513,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && GET_CODE (x) == SYMBOL_REF
 	   && constant_pool_expr_p (x)
 	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), Pmode))
-    {
-      rtx reg = TARGET_CMODEL != CMODEL_SMALL ? gen_reg_rtx (Pmode) : NULL_RTX;
-      return create_TOC_reference (x, reg);
-    }
+    return create_TOC_reference (x, NULL_RTX);
   else
     return x;
 }
@@ -5775,6 +5571,7 @@ rs6000_debug_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
+static void rs6000_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void
 rs6000_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
@@ -5800,49 +5597,55 @@ rs6000_output_dwarf_dtprel (FILE *file, int size, rtx x)
 static rtx
 rs6000_delegitimize_address (rtx orig_x)
 {
-  rtx x, y;
+  rtx x, y, offset;
 
   orig_x = delegitimize_mem_from_attrs (orig_x);
   x = orig_x;
   if (MEM_P (x))
     x = XEXP (x, 0);
 
-  if (GET_CODE (x) == (TARGET_CMODEL != CMODEL_SMALL ? LO_SUM : PLUS)
-      && GET_CODE (XEXP (x, 1)) == CONST)
-    {
-      rtx offset = NULL_RTX;
+  y = x;
+  if (TARGET_CMODEL != CMODEL_SMALL
+      && GET_CODE (y) == LO_SUM)
+    y = XEXP (y, 1);
 
-      y = XEXP (XEXP (x, 1), 0);
-      if (GET_CODE (y) == PLUS
-	  && GET_MODE (y) == Pmode
-	  && CONST_INT_P (XEXP (y, 1)))
+  offset = NULL_RTX;
+  if (GET_CODE (y) == PLUS
+      && GET_MODE (y) == Pmode
+      && CONST_INT_P (XEXP (y, 1)))
+    {
+      offset = XEXP (y, 1);
+      y = XEXP (y, 0);
+    }
+
+  if (GET_CODE (y) == UNSPEC
+      && XINT (y, 1) == UNSPEC_TOCREL)
+    {
+#ifdef ENABLE_CHECKING
+      if (REG_P (XVECEXP (y, 0, 1))
+	  && REGNO (XVECEXP (y, 0, 1)) == TOC_REGISTER)
 	{
-	  offset = XEXP (y, 1);
-	  y = XEXP (y, 0);
+	  /* All good.  */
 	}
-      if (GET_CODE (y) == UNSPEC
-          && XINT (y, 1) == UNSPEC_TOCREL
-	  && ((GET_CODE (XEXP (x, 0)) == REG
-	       && (REGNO (XEXP (x, 0)) == TOC_REGISTER
-		   || TARGET_MINIMAL_TOC
-		   || TARGET_CMODEL != CMODEL_SMALL))
-	      || (TARGET_CMODEL != CMODEL_SMALL
-		  && GET_CODE (XEXP (x, 0)) == CONST
-		  && GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
-		  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == REG
-		  && REGNO (XEXP (XEXP (XEXP (x, 0), 0), 0)) == TOC_REGISTER
-		  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == HIGH
-		  && rtx_equal_p (XEXP (x, 1),
-				  XEXP (XEXP (XEXP (XEXP (x, 0), 0), 1), 0)))))
+      else if (GET_CODE (XVECEXP (y, 0, 1)) == DEBUG_EXPR)
 	{
-	  y = XVECEXP (y, 0, 0);
-	  if (offset != NULL_RTX)
-	    y = gen_rtx_PLUS (Pmode, y, offset);
-	  if (!MEM_P (orig_x))
-	    return y;
-	  else
-	    return replace_equiv_address_nv (orig_x, y);
+	  /* Weirdness alert.  df_note_compute can replace r2 with a
+	     debug_expr when this unspec is in a debug_insn.
+	     Seen in gcc.dg/pr51957-1.c  */
 	}
+      else
+	{
+	  debug_rtx (orig_x);
+	  abort ();
+	}
+#endif
+      y = XVECEXP (y, 0, 0);
+      if (offset != NULL_RTX)
+	y = gen_rtx_PLUS (Pmode, y, offset);
+      if (!MEM_P (orig_x))
+	return y;
+      else
+	return replace_equiv_address_nv (orig_x, y);
     }
 
   if (TARGET_MACHO
@@ -6104,9 +5907,8 @@ rs6000_tls_referenced_p (rtx x)
 static bool
 rs6000_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
-  if (GET_CODE (x) == CONST
-      && GET_CODE (XEXP (x, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == HIGH)
+  if (GET_CODE (x) == HIGH
+      && GET_CODE (XEXP (x, 0)) == UNSPEC)
     return true;
 
   return rs6000_tls_referenced_p (x);
@@ -6119,6 +5921,21 @@ static int
 rs6000_tls_symbol_ref_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
 {
   return RS6000_SYMBOL_REF_TLS_P (*x);
+}
+
+/* Return true iff the given SYMBOL_REF refers to a constant pool entry
+   that we have put in the TOC, or for cmodel=medium, if the SYMBOL_REF
+   can be addressed relative to the toc pointer.  */
+
+static bool
+use_toc_relative_ref (rtx sym)
+{
+  return ((constant_pool_expr_p (sym)
+	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (sym),
+					       get_pool_mode (sym)))
+	  || (TARGET_CMODEL == CMODEL_MEDIUM
+	      && !CONSTANT_POOL_ADDRESS_P (sym)
+	      && SYMBOL_REF_LOCAL_P (sym)));
 }
 
 /* Our implementation of LEGITIMIZE_RELOAD_ADDRESS.  Returns a value to
@@ -6158,7 +5975,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
     {
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
 		   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
-		   opnum, (enum reload_type)type);
+		   opnum, (enum reload_type) type);
       *win = 1;
       return x;
     }
@@ -6169,7 +5986,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
     {
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
 		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
-		   opnum, (enum reload_type)type);
+		   opnum, (enum reload_type) type);
       *win = 1;
       return x;
     }
@@ -6187,24 +6004,18 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
 	 floating point constant.  */
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
 		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
-		   opnum, (enum reload_type)type);
+		   opnum, (enum reload_type) type);
       *win = 1;
       return x;
     }
 #endif
 
   if (TARGET_CMODEL != CMODEL_SMALL
-      && GET_CODE (x) == LO_SUM
-      && GET_CODE (XEXP (x, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
-      && REGNO (XEXP (XEXP (x, 0), 0)) == TOC_REGISTER
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST
-      && GET_CODE (XEXP (XEXP (XEXP (x, 0), 1), 0)) == HIGH
-      && GET_CODE (XEXP (x, 1)) == CONST
-      && GET_CODE (XEXP (XEXP (x, 1), 0)) == UNSPEC
-      && XINT (XEXP (XEXP (x, 1), 0), 1) == UNSPEC_TOCREL
-      && rtx_equal_p (XEXP (XEXP (XEXP (XEXP (x, 0), 1), 0), 0), XEXP (x, 1)))
+      && reg_offset_p
+      && small_toc_ref (x, VOIDmode))
     {
+      rtx hi = gen_rtx_HIGH (Pmode, copy_rtx (x));
+      x = gen_rtx_LO_SUM (Pmode, hi, x);
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
 		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
 		   opnum, (enum reload_type) type);
@@ -6267,7 +6078,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
 
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
 		   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
-		   opnum, (enum reload_type)type);
+		   opnum, (enum reload_type) type);
       *win = 1;
       return x;
     }
@@ -6308,7 +6119,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
 
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
 		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
-		   opnum, (enum reload_type)type);
+		   opnum, (enum reload_type) type);
       *win = 1;
       return x;
     }
@@ -6335,8 +6146,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
   if (TARGET_TOC
       && reg_offset_p
       && GET_CODE (x) == SYMBOL_REF
-      && constant_pool_expr_p (x)
-      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), mode))
+      && use_toc_relative_ref (x))
     {
       x = create_TOC_reference (x, NULL_RTX);
       if (TARGET_CMODEL != CMODEL_SMALL)
@@ -6394,7 +6204,7 @@ rs6000_debug_legitimize_reload_address (rtx x, enum machine_mode mode,
    32-bit DImode, TImode, TFmode, TDmode), indexed addressing cannot be used
    because adjacent memory cells are accessed by adding word-sized offsets
    during assembly output.  */
-bool
+static bool
 rs6000_legitimate_address_p (enum machine_mode mode, rtx x, bool reg_ok_strict)
 {
   bool reg_offset_p = reg_offset_addressing_ok_p (mode);
@@ -6571,9 +6381,13 @@ rs6000_debug_mode_dependent_address (const_rtx addr)
 rtx
 rs6000_find_base_term (rtx op)
 {
-  rtx base, offset;
+  rtx base;
 
-  split_const (op, &base, &offset);
+  base = op;
+  if (GET_CODE (base) == CONST)
+    base = XEXP (base, 0);
+  if (GET_CODE (base) == PLUS)
+    base = XEXP (base, 0);
   if (GET_CODE (base) == UNSPEC)
     switch (XINT (base, 1))
       {
@@ -7225,33 +7039,13 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
       /* If this is a SYMBOL_REF that refers to a constant pool entry,
 	 and we have put it in the TOC, we just need to make a TOC-relative
 	 reference to it.  */
-      if ((TARGET_TOC
-	   && GET_CODE (operands[1]) == SYMBOL_REF
-	   && constant_pool_expr_p (operands[1])
-	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (operands[1]),
-					       get_pool_mode (operands[1])))
-	  || (TARGET_CMODEL == CMODEL_MEDIUM
-	      && GET_CODE (operands[1]) == SYMBOL_REF
-	      && !CONSTANT_POOL_ADDRESS_P (operands[1])
-	      && SYMBOL_REF_LOCAL_P (operands[1])))
-	{
-	  rtx reg = NULL_RTX;
-	  if (TARGET_CMODEL != CMODEL_SMALL)
-	    {
-	      if (can_create_pseudo_p ())
-		reg = gen_reg_rtx (Pmode);
-	      else
-		reg = operands[0];
-	    }
-	  operands[1] = create_TOC_reference (operands[1], reg);
-	}
+      if (TARGET_TOC
+	  && GET_CODE (operands[1]) == SYMBOL_REF
+	  && use_toc_relative_ref (operands[1]))
+	operands[1] = create_TOC_reference (operands[1], operands[0]);
       else if (mode == Pmode
 	       && CONSTANT_P (operands[1])
 	       && GET_CODE (operands[1]) != HIGH
-	       && !(TARGET_CMODEL != CMODEL_SMALL
-		    && GET_CODE (operands[1]) == CONST
-		    && GET_CODE (XEXP (operands[1], 0)) == PLUS
-		    && GET_CODE (XEXP (XEXP (operands[1], 0), 1)) == HIGH)
 	       && ((GET_CODE (operands[1]) != CONST_INT
 		    && ! easy_fp_constant (operands[1], mode))
 		   || (GET_CODE (operands[1]) == CONST_INT
@@ -7259,9 +7053,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 			   > (TARGET_CMODEL != CMODEL_SMALL ? 3 : 2)))
 		   || (GET_CODE (operands[0]) == REG
 		       && FP_REGNO_P (REGNO (operands[0]))))
-	       && ! legitimate_constant_pool_address_p (operands[1], mode,
-							false)
-	       && ! toc_relative_expr_p (operands[1])
+	       && !toc_relative_expr_p (operands[1], false)
 	       && (TARGET_CMODEL == CMODEL_SMALL
 		   || can_create_pseudo_p ()
 		   || (REG_P (operands[0])
@@ -7311,16 +7103,8 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 			get_pool_constant (XEXP (operands[1], 0)),
 			get_pool_mode (XEXP (operands[1], 0))))
 	    {
-	      rtx tocref;
-	      rtx reg = NULL_RTX;
-	      if (TARGET_CMODEL != CMODEL_SMALL)
-		{
-		  if (can_create_pseudo_p ())
-		    reg = gen_reg_rtx (Pmode);
-		  else
-		    reg = operands[0];
-		}
-	      tocref = create_TOC_reference (XEXP (operands[1], 0), reg);
+	      rtx tocref = create_TOC_reference (XEXP (operands[1], 0),
+						 operands[0]);
 	      operands[1] = gen_const_mem (mode, tocref);
 	      set_mem_alias_set (operands[1], get_TOC_alias_set ());
 	    }
@@ -9224,7 +9008,7 @@ rs6000_va_start (tree valist, rtx nextarg)
 
 /* Implement va_arg.  */
 
-tree
+static tree
 rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 			gimple_seq *post_p)
 {
@@ -14746,7 +14530,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'D':
       /* Like 'J' but get to the GT bit only.  */
-      gcc_assert (GET_CODE (x) == REG);
+      gcc_assert (REG_P (x));
 
       /* Bit 1 is GT bit.  */
       i = 4 * (REGNO (x) - CR0_REGNO) + 1;
@@ -14866,9 +14650,9 @@ print_operand (FILE *file, rtx x, int code)
     case 'L':
       /* Write second word of DImode or DFmode reference.  Works on register
 	 or non-indexed memory only.  */
-      if (GET_CODE (x) == REG)
+      if (REG_P (x))
 	fputs (reg_names[REGNO (x) + 1], file);
-      else if (GET_CODE (x) == MEM)
+      else if (MEM_P (x))
 	{
 	  /* Handle possible auto-increment.  Since it is pre-increment and
 	     we have already done it, we can just use an offset of word.  */
@@ -15037,7 +14821,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 't':
       /* Like 'J' but get to the OVERFLOW/UNORDERED bit.  */
-      gcc_assert (GET_CODE (x) == REG && GET_MODE (x) == CCmode);
+      gcc_assert (REG_P (x) && GET_MODE (x) == CCmode);
 
       /* Bit 3 is OV bit.  */
       i = 4 * (REGNO (x) - CR0_REGNO) + 3;
@@ -15077,7 +14861,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'U':
       /* Print `u' if this has an auto-increment or auto-decrement.  */
-      if (GET_CODE (x) == MEM
+      if (MEM_P (x)
 	  && (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC
 	      || GET_CODE (XEXP (x, 0)) == PRE_MODIFY))
@@ -15169,7 +14953,7 @@ print_operand (FILE *file, rtx x, int code)
       return;
 
     case 'X':
-      if (GET_CODE (x) == MEM
+      if (MEM_P (x)
 	  && (legitimate_indexed_address_p (XEXP (x, 0), 0)
 	      || (GET_CODE (XEXP (x, 0)) == PRE_MODIFY
 		  && legitimate_indexed_address_p (XEXP (XEXP (x, 0), 1), 0))))
@@ -15178,9 +14962,9 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'Y':
       /* Like 'L', for third word of TImode  */
-      if (GET_CODE (x) == REG)
+      if (REG_P (x))
 	fputs (reg_names[REGNO (x) + 2], file);
-      else if (GET_CODE (x) == MEM)
+      else if (MEM_P (x))
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
@@ -15228,9 +15012,9 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'Z':
       /* Like 'L', for last word of TImode.  */
-      if (GET_CODE (x) == REG)
+      if (REG_P (x))
 	fputs (reg_names[REGNO (x) + 3], file);
-      else if (GET_CODE (x) == MEM)
+      else if (MEM_P (x))
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
@@ -15250,7 +15034,7 @@ print_operand (FILE *file, rtx x, int code)
       {
 	rtx tmp;
 
-	gcc_assert (GET_CODE (x) == MEM);
+	gcc_assert (MEM_P (x));
 
 	tmp = XEXP (x, 0);
 
@@ -15261,7 +15045,7 @@ print_operand (FILE *file, rtx x, int code)
 		|| GET_MODE (x) == TImode))
 	  {
 	    /* Handle [reg].  */
-	    if (GET_CODE (tmp) == REG)
+	    if (REG_P (tmp))
 	      {
 		fprintf (file, "0(%s)", reg_names[REGNO (tmp)]);
 		break;
@@ -15272,7 +15056,7 @@ print_operand (FILE *file, rtx x, int code)
 	      {
 		int x;
 
-		gcc_assert (GET_CODE (XEXP (tmp, 0)) == REG);
+		gcc_assert (REG_P (XEXP (tmp, 0)));
 
 		x = INTVAL (XEXP (tmp, 1));
 		fprintf (file, "%d(%s)", x, reg_names[REGNO (XEXP (tmp, 0))]);
@@ -15289,7 +15073,7 @@ print_operand (FILE *file, rtx x, int code)
 	else if (VECTOR_MEM_VSX_P (GET_MODE (x))
 		 && GET_CODE (tmp) == PRE_MODIFY)
 	  tmp = XEXP (tmp, 1);
-	if (GET_CODE (tmp) == REG)
+	if (REG_P (tmp))
 	  fprintf (file, "0,%s", reg_names[REGNO (tmp)]);
 	else
 	  {
@@ -15312,9 +15096,9 @@ print_operand (FILE *file, rtx x, int code)
       }
 
     case 0:
-      if (GET_CODE (x) == REG)
+      if (REG_P (x))
 	fprintf (file, "%s", reg_names[REGNO (x)]);
-      else if (GET_CODE (x) == MEM)
+      else if (MEM_P (x))
 	{
 	  /* We need to handle PRE_INC and PRE_DEC here, since we need to
 	     know the width from the mode.  */
@@ -15331,14 +15115,14 @@ print_operand (FILE *file, rtx x, int code)
 	}
       else
 	{
-	  if (toc_relative_expr_p (x))
+	  if (toc_relative_expr_p (x, false))
 	    /* This hack along with a corresponding hack in
 	       rs6000_output_addr_const_extra arranges to output addends
 	       where the assembler expects to find them.  eg.
-	       (const (plus (unspec [symbol_ref ("x") tocrel]) 4))
+	       (plus (unspec [(symbol_ref ("x")) (reg 2)] tocrel) 4)
 	       without this hack would be output as "x@toc+4".  We
 	       want "x+4@toc".  */
-	    output_addr_const (file, tocrel_base);
+	    output_addr_const (file, CONST_CAST_RTX (tocrel_base));
 	  else
 	    output_addr_const (file, x);
 	}
@@ -15358,7 +15142,7 @@ print_operand (FILE *file, rtx x, int code)
 void
 print_operand_address (FILE *file, rtx x)
 {
-  if (GET_CODE (x) == REG)
+  if (REG_P (x))
     fprintf (file, "0(%s)", reg_names[ REGNO (x) ]);
   else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == CONST
 	   || GET_CODE (x) == LABEL_REF)
@@ -15370,9 +15154,9 @@ print_operand_address (FILE *file, rtx x)
       else
 	gcc_assert (!TARGET_TOC);
     }
-  else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == REG)
+  else if (GET_CODE (x) == PLUS && REG_P (XEXP (x, 0))
+	   && REG_P (XEXP (x, 1)))
     {
-      gcc_assert (REG_P (XEXP (x, 0)));
       if (REGNO (XEXP (x, 0)) == 0)
 	fprintf (file, "%s,%s", reg_names[ REGNO (XEXP (x, 1)) ],
 		 reg_names[ REGNO (XEXP (x, 0)) ]);
@@ -15380,11 +15164,12 @@ print_operand_address (FILE *file, rtx x)
 	fprintf (file, "%s,%s", reg_names[ REGNO (XEXP (x, 0)) ],
 		 reg_names[ REGNO (XEXP (x, 1)) ]);
     }
-  else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
+  else if (GET_CODE (x) == PLUS && REG_P (XEXP (x, 0))
+	   && GET_CODE (XEXP (x, 1)) == CONST_INT)
     fprintf (file, HOST_WIDE_INT_PRINT_DEC "(%s)",
 	     INTVAL (XEXP (x, 1)), reg_names[ REGNO (XEXP (x, 0)) ]);
 #if TARGET_MACHO
-  else if (GET_CODE (x) == LO_SUM && GET_CODE (XEXP (x, 0)) == REG
+  else if (GET_CODE (x) == LO_SUM && REG_P (XEXP (x, 0))
 	   && CONSTANT_P (XEXP (x, 1)))
     {
       fprintf (file, "lo16(");
@@ -15392,29 +15177,29 @@ print_operand_address (FILE *file, rtx x)
       fprintf (file, ")(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
     }
 #endif
-  else if (legitimate_constant_pool_address_p (x, QImode, true))
-    {
-      /* This hack along with a corresponding hack in
-	 rs6000_output_addr_const_extra arranges to output addends
-	 where the assembler expects to find them.  eg.
-	 (lo_sum (reg 9)
-	 .       (const (plus (unspec [symbol_ref ("x") tocrel]) 8)))
-	 without this hack would be output as "x@toc+8@l(9)".  We
-	 want "x+8@toc@l(9)".  */
-      output_addr_const (file, tocrel_base);
-      if (GET_CODE (x) == LO_SUM)
-	fprintf (file, "@l(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
-      else
-	fprintf (file, "(%s)", reg_names[REGNO (XEXP (x, 0))]);
-    }
 #if TARGET_ELF
-  else if (GET_CODE (x) == LO_SUM && GET_CODE (XEXP (x, 0)) == REG
+  else if (GET_CODE (x) == LO_SUM && REG_P (XEXP (x, 0))
 	   && CONSTANT_P (XEXP (x, 1)))
     {
       output_addr_const (file, XEXP (x, 1));
       fprintf (file, "@l(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
     }
 #endif
+  else if (toc_relative_expr_p (x, false))
+    {
+      /* This hack along with a corresponding hack in
+	 rs6000_output_addr_const_extra arranges to output addends
+	 where the assembler expects to find them.  eg.
+	 (lo_sum (reg 9)
+	 .       (plus (unspec [(symbol_ref ("x")) (reg 2)] tocrel) 8))
+	 without this hack would be output as "x@toc+8@l(9)".  We
+	 want "x+8@toc@l(9)".  */
+      output_addr_const (file, CONST_CAST_RTX (tocrel_base));
+      if (GET_CODE (x) == LO_SUM)
+	fprintf (file, "@l(%s)", reg_names[REGNO (XEXP (x, 0))]);
+      else
+	fprintf (file, "(%s)", reg_names[REGNO (XVECEXP (tocrel_base, 0, 1))]);
+    }
   else
     gcc_unreachable ();
 }
@@ -15428,13 +15213,15 @@ rs6000_output_addr_const_extra (FILE *file, rtx x)
     switch (XINT (x, 1))
       {
       case UNSPEC_TOCREL:
-	gcc_assert (GET_CODE (XVECEXP (x, 0, 0)) == SYMBOL_REF);
+	gcc_checking_assert (GET_CODE (XVECEXP (x, 0, 0)) == SYMBOL_REF
+			     && REG_P (XVECEXP (x, 0, 1))
+			     && REGNO (XVECEXP (x, 0, 1)) == TOC_REGISTER);
 	output_addr_const (file, XVECEXP (x, 0, 0));
 	if (x == tocrel_base && tocrel_offset != const0_rtx)
 	  {
 	    if (INTVAL (tocrel_offset) >= 0)
 	      fprintf (file, "+");
-	    output_addr_const (file, tocrel_offset);
+	    output_addr_const (file, CONST_CAST_RTX (tocrel_offset));
 	  }
 	if (!TARGET_AIX || (TARGET_ELF && TARGET_MINIMAL_TOC))
 	  {
@@ -17250,6 +17037,12 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 /* This page contains routines that are used to determine what the
    function prologue and epilogue code will do and write them out.  */
 
+static inline bool
+save_reg_p (int r)
+{
+  return !call_used_regs[r] && df_regs_ever_live_p (r);
+}
+
 /* Return the first fixed-point register that is required to be
    saved. 32 if none.  */
 
@@ -17260,13 +17053,15 @@ first_reg_to_save (void)
 
   /* Find lowest numbered live register.  */
   for (first_reg = 13; first_reg <= 31; first_reg++)
-    if (df_regs_ever_live_p (first_reg)
-	&& (! call_used_regs[first_reg]
-	    || (first_reg == RS6000_PIC_OFFSET_TABLE_REGNUM
-		&& ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
-		    || (DEFAULT_ABI == ABI_DARWIN && flag_pic)
-		    || (TARGET_TOC && TARGET_MINIMAL_TOC)))))
+    if (save_reg_p (first_reg))
       break;
+
+  if (first_reg > RS6000_PIC_OFFSET_TABLE_REGNUM
+      && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
+	  || (DEFAULT_ABI == ABI_DARWIN && flag_pic)
+	  || (TARGET_TOC && TARGET_MINIMAL_TOC))
+      && df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))
+    first_reg = RS6000_PIC_OFFSET_TABLE_REGNUM;
 
 #if TARGET_MACHO
   if (flag_pic
@@ -17287,7 +17082,7 @@ first_fp_reg_to_save (void)
 
   /* Find lowest numbered live register.  */
   for (first_reg = 14 + 32; first_reg <= 63; first_reg++)
-    if (df_regs_ever_live_p (first_reg))
+    if (save_reg_p (first_reg))
       break;
 
   return first_reg;
@@ -17313,7 +17108,7 @@ first_altivec_reg_to_save (void)
 
   /* Find lowest numbered live register.  */
   for (i = FIRST_ALTIVEC_REGNO + 20; i <= LAST_ALTIVEC_REGNO; ++i)
-    if (df_regs_ever_live_p (i))
+    if (save_reg_p (i))
       break;
 
   return i;
@@ -17457,10 +17252,6 @@ enum {
   REST_INLINE_VRS = 0x200
 };
 
-#ifndef V_SAVE_INLINE
-#define V_SAVE_INLINE(FIRST_REG) 1
-#endif
-
 static int
 rs6000_savres_strategy (rs6000_stack_t *info,
 			bool using_static_chain_p)
@@ -17482,7 +17273,6 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		 | SAVE_INLINE_VRS | REST_INLINE_VRS);
 
   if (info->first_fp_reg_save == 64
-      || FP_SAVE_INLINE (info->first_fp_reg_save)
       /* The out-of-line FP routines use double-precision stores;
 	 we can't use those routines if we don't have such stores.  */
       || (TARGET_HARD_FLOAT && !TARGET_DOUBLE_FLOAT)
@@ -17490,25 +17280,79 @@ rs6000_savres_strategy (rs6000_stack_t *info,
     strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
 
   if (info->first_gp_reg_save == 32
-      || GP_SAVE_INLINE (info->first_gp_reg_save)
       || (!(strategy & SAVRES_MULTIPLE)
 	  && global_regs_p (info->first_gp_reg_save, 32)))
     strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
 
   if (info->first_altivec_reg_save == LAST_ALTIVEC_REGNO + 1
-      || V_SAVE_INLINE (info->first_altivec_reg_save)
       || global_regs_p (info->first_altivec_reg_save, LAST_ALTIVEC_REGNO + 1))
     strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
+
+  /* Define cutoff for using out-of-line functions to save registers.  */
+  if (DEFAULT_ABI == ABI_V4 || TARGET_ELF)
+    {
+      if (!optimize_size)
+	{
+	  strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
+	  strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+	  strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
+	}
+      else
+	{
+	  /* Prefer out-of-line restore if it will exit.  */
+	  if (info->first_fp_reg_save > 61)
+	    strategy |= SAVE_INLINE_FPRS;
+	  if (info->first_gp_reg_save > 29)
+	    {
+	      if (info->first_fp_reg_save == 64)
+		strategy |= SAVE_INLINE_GPRS;
+	      else
+		strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+	    }
+	  if (info->first_altivec_reg_save == LAST_ALTIVEC_REGNO)
+	    strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
+	}
+    }
+  else if (DEFAULT_ABI == ABI_DARWIN)
+    {
+      if (info->first_fp_reg_save > 60)
+	strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
+      if (info->first_gp_reg_save > 29)
+	strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+      strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
+    }
+  else
+    {
+      gcc_checking_assert (DEFAULT_ABI == ABI_AIX);
+      if (info->first_fp_reg_save > 61)
+	strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
+      strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+      strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
+    }
 
   /* Don't bother to try to save things out-of-line if r11 is occupied
      by the static chain.  It would require too much fiddling and the
      static chain is rarely used anyway.  FPRs are saved w.r.t the stack
      pointer on Darwin, and AIX uses r1 or r12.  */
   if (using_static_chain_p && DEFAULT_ABI != ABI_AIX)
-    strategy |= ((DEFAULT_ABI == ABI_DARWIN
-		  ? 0 : SAVE_INLINE_FPRS | REST_INLINE_FPRS)
+    strategy |= ((DEFAULT_ABI == ABI_DARWIN ? 0 : SAVE_INLINE_FPRS)
 		 | SAVE_INLINE_GPRS
 		 | SAVE_INLINE_VRS | REST_INLINE_VRS);
+
+  /* We can only use the out-of-line routines to restore if we've
+     saved all the registers from first_fp_reg_save in the prologue.
+     Otherwise, we risk loading garbage.  */
+  if ((strategy & (SAVE_INLINE_FPRS | REST_INLINE_FPRS)) == SAVE_INLINE_FPRS)
+    {
+      int i;
+
+      for (i = info->first_fp_reg_save; i < 64; i++)
+	if (!save_reg_p (i))
+	  {
+	    strategy |= REST_INLINE_FPRS;
+	    break;
+	  }
+    }
 
   /* If we are going to use store multiple, then don't even bother
      with the out-of-line routines, since the store-multiple
@@ -17539,13 +17383,6 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 	  || info->first_fp_reg_save != 64))
     strategy |= REST_INLINE_GPRS;
 
-  /* We can only use load multiple or the out-of-line routines to
-     restore if we've used store multiple or out-of-line routines
-     in the prologue, i.e. if we've saved all the registers from
-     first_gp_reg_save.  Otherwise, we risk loading garbage.  */
-  if ((strategy & (SAVE_INLINE_GPRS | SAVRES_MULTIPLE)) == SAVE_INLINE_GPRS)
-    strategy |= REST_INLINE_GPRS;
-
   /* Saving CR interferes with the exit routines used on the SPE, so
      just punt here.  */
   if (TARGET_SPE_ABI
@@ -17553,8 +17390,24 @@ rs6000_savres_strategy (rs6000_stack_t *info,
       && info->cr_save_p)
     strategy |= REST_INLINE_GPRS;
 
-#if defined (POWERPC_LINUX) || defined (POWERPC_FREEBSD)
-  if (TARGET_64BIT)
+  /* We can only use load multiple or the out-of-line routines to
+     restore if we've used store multiple or out-of-line routines
+     in the prologue, i.e. if we've saved all the registers from
+     first_gp_reg_save.  Otherwise, we risk loading garbage.  */
+  if ((strategy & (SAVE_INLINE_GPRS | REST_INLINE_GPRS | SAVRES_MULTIPLE))
+      == SAVE_INLINE_GPRS)
+    {
+      int i;
+
+      for (i = info->first_gp_reg_save; i < 32; i++)
+	if (!save_reg_p (i))
+	  {
+	    strategy |= REST_INLINE_GPRS;
+	    break;
+	  }
+    }
+
+  if (TARGET_ELF && TARGET_64BIT)
     {
       if (!(strategy & SAVE_INLINE_FPRS))
 	strategy |= SAVE_NOINLINE_FPRS_SAVES_LR;
@@ -17562,10 +17415,9 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 	       && info->first_fp_reg_save == 64)
 	strategy |= SAVE_NOINLINE_GPRS_SAVES_LR;
     }
-#else
-  if (TARGET_AIX && !(strategy & REST_INLINE_FPRS))
+  else if (TARGET_AIX && !(strategy & REST_INLINE_FPRS))
     strategy |= REST_NOINLINE_FPRS_DOESNT_RESTORE_LR;
-#endif
+
   if (TARGET_MACHO && !(strategy & SAVE_INLINE_FPRS))
     strategy |= SAVE_NOINLINE_FPRS_SAVES_LR;
 
@@ -18517,7 +18369,7 @@ uses_TOC (void)
 rtx
 create_TOC_reference (rtx symbol, rtx largetoc_reg)
 {
-  rtx tocrel, tocreg;
+  rtx tocrel, tocreg, hi;
 
   if (TARGET_DEBUG_ADDR)
     {
@@ -18535,24 +18387,18 @@ create_TOC_reference (rtx symbol, rtx largetoc_reg)
   if (!can_create_pseudo_p ())
     df_set_regs_ever_live (TOC_REGISTER, true);
 
-  tocrel = gen_rtx_CONST (Pmode,
-			  gen_rtx_UNSPEC (Pmode, gen_rtvec (1, symbol),
-					  UNSPEC_TOCREL));
   tocreg = gen_rtx_REG (Pmode, TOC_REGISTER);
-  if (TARGET_CMODEL != CMODEL_SMALL)
+  tocrel = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, symbol, tocreg), UNSPEC_TOCREL);
+  if (TARGET_CMODEL == CMODEL_SMALL || can_create_pseudo_p ())
+    return tocrel;
+
+  hi = gen_rtx_HIGH (Pmode, copy_rtx (tocrel));
+  if (largetoc_reg != NULL)
     {
-      rtx hi = gen_rtx_CONST (Pmode,
-			      gen_rtx_PLUS (Pmode, tocreg, 
-					    gen_rtx_HIGH (Pmode, tocrel)));
-      if (largetoc_reg != NULL)
-	{
-	  emit_move_insn (largetoc_reg, hi);
-	  hi = largetoc_reg;
-	}
-      return gen_rtx_LO_SUM (Pmode, hi, copy_rtx (tocrel));
+      emit_move_insn (largetoc_reg, hi);
+      hi = largetoc_reg;
     }
-  else
-    return gen_rtx_PLUS (Pmode, tocreg, tocrel);
+  return gen_rtx_LO_SUM (Pmode, hi, tocrel);
 }
 
 /* Issue assembly directives that create a reference to the given DWARF
@@ -18561,7 +18407,7 @@ void
 rs6000_aix_asm_output_dwarf_table_ref (char * frame_table_label)
 {
   fprintf (asm_out_file, "\t.ref %s\n",
-	   TARGET_STRIP_NAME_ENCODING (frame_table_label));
+	   (* targetm.strip_name_encoding) (frame_table_label));
 }
 
 /* This ties together stack memory (MEM with an alias set of frame_alias_set)
@@ -19015,7 +18861,7 @@ static rtx
 emit_frame_save (rtx frame_reg, enum machine_mode mode,
 		 unsigned int regno, int offset, HOST_WIDE_INT frame_reg_to_sp)
 {
-  rtx reg, insn, mem, addr;
+  rtx reg, insn;
 
   /* Some cases that need register indexed addressing.  */
   gcc_checking_assert (!((TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
@@ -19026,9 +18872,7 @@ emit_frame_save (rtx frame_reg, enum machine_mode mode,
 			     && !SPE_CONST_OFFSET_OK (offset))));
 
   reg = gen_rtx_REG (mode, regno);
-  addr = gen_rtx_PLUS (Pmode, frame_reg, GEN_INT (offset));
-  mem = gen_frame_mem (mode, addr);
-  insn = emit_move_insn (mem, reg);
+  insn = emit_insn (gen_frame_store (reg, frame_reg, offset));
   return rs6000_frame_related (insn, frame_reg, frame_reg_to_sp,
 			       NULL_RTX, NULL_RTX);
 }
@@ -19043,7 +18887,7 @@ gen_frame_mem_offset (enum machine_mode mode, rtx reg, int offset)
 
   int_rtx = GEN_INT (offset);
 
-  if ((TARGET_SPE_ABI && SPE_VECTOR_MODE (mode))
+  if ((TARGET_SPE_ABI && SPE_VECTOR_MODE (mode) && !SPE_CONST_OFFSET_OK (offset))
       || (TARGET_E500_DOUBLE && mode == DFmode))
     {
       offset_rtx = gen_rtx_REG (Pmode, FIXED_SCRATCH);
@@ -19672,8 +19516,7 @@ rs6000_emit_prologue (void)
     {
       int i;
       for (i = 0; i < 64 - info->first_fp_reg_save; i++)
-	if (df_regs_ever_live_p (info->first_fp_reg_save + i)
-	    && ! call_used_regs[info->first_fp_reg_save + i])
+	if (save_reg_p (info->first_fp_reg_save + i))
 	  emit_frame_save (frame_reg_rtx,
 			   (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
 			    ? DFmode : SFmode),
@@ -20123,7 +19966,7 @@ rs6000_emit_prologue (void)
       && TARGET_ALTIVEC_VRSAVE
       && info->vrsave_mask != 0)
     {
-      rtx reg, mem, vrsave;
+      rtx reg, vrsave;
       int offset;
       int save_regno;
 
@@ -20150,10 +19993,7 @@ rs6000_emit_prologue (void)
 
       /* Save VRSAVE.  */
       offset = info->vrsave_save_offset + frame_off;
-      mem = gen_frame_mem (SImode,
-			   gen_rtx_PLUS (Pmode, frame_reg_rtx,
-					 GEN_INT (offset)));
-      insn = emit_move_insn (mem, reg);
+      insn = emit_insn (gen_frame_store (reg, frame_reg_rtx, offset));
 
       /* Include the registers in the mask.  */
       emit_insn (gen_iorsi3 (reg, reg, GEN_INT ((int) info->vrsave_mask)));
@@ -20234,9 +20074,8 @@ rs6000_emit_prologue (void)
      linux-unwind.h frob_update_context.  */
   if (rs6000_save_toc_in_prologue_p ())
     {
-      rtx addr = gen_rtx_PLUS (Pmode, sp_reg_rtx, GEN_INT (5 * reg_size));
-      rtx mem = gen_frame_mem (reg_mode, addr);
-      emit_move_insn (mem, gen_rtx_REG (reg_mode, TOC_REGNUM));
+      rtx reg = gen_rtx_REG (reg_mode, TOC_REGNUM);
+      emit_insn (gen_frame_store (reg, sp_reg_rtx, 5 * reg_size));
     }
 }
 
@@ -20334,7 +20173,7 @@ restore_saved_cr (rtx reg, int using_mfcr_multiple, bool exit_func)
   if (using_mfcr_multiple)
     {
       for (i = 0; i < 8; i++)
-	if (df_regs_ever_live_p (CR0_REGNO+i) && ! call_used_regs[CR0_REGNO+i])
+	if (save_reg_p (CR0_REGNO + i))
 	  count++;
       gcc_assert (count);
     }
@@ -20348,13 +20187,13 @@ restore_saved_cr (rtx reg, int using_mfcr_multiple, bool exit_func)
 
       ndx = 0;
       for (i = 0; i < 8; i++)
-	if (df_regs_ever_live_p (CR0_REGNO+i) && ! call_used_regs[CR0_REGNO+i])
+	if (save_reg_p (CR0_REGNO + i))
 	  {
 	    rtvec r = rtvec_alloc (2);
 	    RTVEC_ELT (r, 0) = reg;
 	    RTVEC_ELT (r, 1) = GEN_INT (1 << (7-i));
 	    RTVEC_ELT (p, ndx) =
-	      gen_rtx_SET (VOIDmode, gen_rtx_REG (CCmode, CR0_REGNO+i),
+	      gen_rtx_SET (VOIDmode, gen_rtx_REG (CCmode, CR0_REGNO + i),
 			   gen_rtx_UNSPEC (CCmode, r, UNSPEC_MOVESI_TO_CR));
 	    ndx++;
 	  }
@@ -20363,8 +20202,8 @@ restore_saved_cr (rtx reg, int using_mfcr_multiple, bool exit_func)
     }
   else
     for (i = 0; i < 8; i++)
-      if (df_regs_ever_live_p (CR0_REGNO+i) && ! call_used_regs[CR0_REGNO+i])
-	emit_insn (gen_movsi_to_cr_one (gen_rtx_REG (CCmode, CR0_REGNO+i),
+      if (save_reg_p (CR0_REGNO + i))
+	emit_insn (gen_movsi_to_cr_one (gen_rtx_REG (CCmode, CR0_REGNO + i),
 					reg));
 
   if (!exit_func && (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap))
@@ -20697,7 +20536,7 @@ rs6000_emit_epilogue (int sibcall)
 	  || (DEFAULT_ABI != ABI_V4
 	      && offset_below_red_zone_p (info->vrsave_save_offset))))
     {
-      rtx addr, mem, reg;
+      rtx reg;
 
       if (frame_reg_rtx == sp_reg_rtx)
 	{
@@ -20712,11 +20551,9 @@ rs6000_emit_epilogue (int sibcall)
 	    frame_reg_rtx = hard_frame_pointer_rtx;
 	}
 
-      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			   GEN_INT (info->vrsave_save_offset + frame_off));
-      mem = gen_frame_mem (SImode, addr);
       reg = gen_rtx_REG (SImode, 12);
-      emit_move_insn (reg, mem);
+      emit_insn (gen_frame_load (reg, frame_reg_rtx,
+				 info->vrsave_save_offset + frame_off));
 
       emit_insn (generate_set_vrsave (reg, info, 1));
     }
@@ -20894,13 +20731,11 @@ rs6000_emit_epilogue (int sibcall)
       && (DEFAULT_ABI == ABI_V4
 	  || !offset_below_red_zone_p (info->vrsave_save_offset)))
     {
-      rtx addr, mem, reg;
+      rtx reg;
 
-      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			   GEN_INT (info->vrsave_save_offset + frame_off));
-      mem = gen_frame_mem (SImode, addr);
       reg = gen_rtx_REG (SImode, 12);
-      emit_move_insn (reg, mem);
+      emit_insn (gen_frame_load (reg, frame_reg_rtx,
+				 info->vrsave_save_offset + frame_off));
 
       emit_insn (generate_set_vrsave (reg, info, 1));
     }
@@ -20954,11 +20789,9 @@ rs6000_emit_epilogue (int sibcall)
 
       if (TARGET_AIX)
 	{
-	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				   GEN_INT (frame_off + 5 * reg_size));
-	  rtx mem = gen_frame_mem (reg_mode, addr);
-
-	  emit_move_insn (gen_rtx_REG (reg_mode, 2), mem);
+	  rtx reg = gen_rtx_REG (reg_mode, 2);
+	  emit_insn (gen_frame_load (reg, frame_reg_rtx,
+				     frame_off + 5 * reg_size));
 	}
 
       for (i = 0; ; ++i)
@@ -20969,6 +20802,7 @@ rs6000_emit_epilogue (int sibcall)
 	  if (regno == INVALID_REGNUM)
 	    break;
 
+	  /* Note: possible use of r0 here to address SPE regs.  */
 	  mem = gen_frame_mem_offset (reg_mode, frame_reg_rtx,
 				      info->ehrd_offset + frame_off
 				      + reg_size * (int) i);
@@ -21087,16 +20921,10 @@ rs6000_emit_epilogue (int sibcall)
     {
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
-	  {
-	    rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				     GEN_INT (info->gp_save_offset
-					      + frame_off
-					      + reg_size * i));
-	    rtx mem = gen_frame_mem (reg_mode, addr);
-	    rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
-
-	    emit_move_insn (reg, mem);
-	  }
+	  emit_insn (gen_frame_load
+		     (gen_rtx_REG (reg_mode, info->first_gp_reg_save + i),
+		      frame_reg_rtx,
+		      info->gp_save_offset + frame_off + reg_size * i));
     }
 
   if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
@@ -21159,21 +20987,13 @@ rs6000_emit_epilogue (int sibcall)
   /* Restore fpr's if we need to do it without calling a function.  */
   if (restoring_FPRs_inline)
     for (i = 0; i < 64 - info->first_fp_reg_save; i++)
-      if ((df_regs_ever_live_p (info->first_fp_reg_save + i)
-	   && !call_used_regs[info->first_fp_reg_save + i]))
+      if (save_reg_p (info->first_fp_reg_save + i))
 	{
-	  rtx addr, mem, reg;
-	  addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			       GEN_INT (info->fp_save_offset
-					+ frame_off
-					+ 8 * i));
-	  mem = gen_frame_mem ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-				? DFmode : SFmode), addr);
-	  reg = gen_rtx_REG ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-			      ? DFmode : SFmode),
-			     info->first_fp_reg_save + i);
-
-	  emit_move_insn (reg, mem);
+	  rtx reg = gen_rtx_REG ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
+				  ? DFmode : SFmode),
+				 info->first_fp_reg_save + i);
+	  emit_insn (gen_frame_load (reg, frame_reg_rtx,
+				     info->fp_save_offset + frame_off + 8 * i));
 	  if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
@@ -22982,49 +22802,78 @@ set_to_load_agen (rtx out_insn, rtx in_insn)
   return false;
 }
 
+/* Try to determine base/offset/size parts of the given MEM.
+   Return true if successful, false if all the values couldn't
+   be determined.
+
+   This function only looks for REG or REG+CONST address forms.
+   REG+REG address form will return false. */
+
+static bool
+get_memref_parts (rtx mem, rtx *base, HOST_WIDE_INT *offset,
+		  HOST_WIDE_INT *size)
+{
+  rtx addr_rtx;
+  if MEM_SIZE_KNOWN_P (mem)
+    *size = MEM_SIZE (mem);
+  else
+    return false;
+
+  if (GET_CODE (XEXP (mem, 0)) == PRE_MODIFY)
+    addr_rtx = XEXP (XEXP (mem, 0), 1);
+  else
+    addr_rtx = (XEXP (mem, 0));
+
+  if (GET_CODE (addr_rtx) == REG)
+    {
+      *base = addr_rtx;
+      *offset = 0;
+    }
+  else if (GET_CODE (addr_rtx) == PLUS
+	   && CONST_INT_P (XEXP (addr_rtx, 1)))
+    {
+      *base = XEXP (addr_rtx, 0);
+      *offset = INTVAL (XEXP (addr_rtx, 1));
+    }
+  else
+    return false;
+
+  return true;
+}
+
 /* The function returns true if the target storage location of
-   out_insn is adjacent to the target storage location of in_insn */
+   mem1 is adjacent to the target storage location of mem2 */
 /* Return 1 if memory locations are adjacent.  */
 
 static bool
-adjacent_mem_locations (rtx insn1, rtx insn2)
+adjacent_mem_locations (rtx mem1, rtx mem2)
 {
+  rtx reg1, reg2;
+  HOST_WIDE_INT off1, size1, off2, size2;
 
-  rtx a = get_store_dest (PATTERN (insn1));
-  rtx b = get_store_dest (PATTERN (insn2));
+  if (get_memref_parts (mem1, &reg1, &off1, &size1)
+      && get_memref_parts (mem2, &reg2, &off2, &size2))
+    return ((REGNO (reg1) == REGNO (reg2))
+	    && ((off1 + size1 == off2)
+		|| (off2 + size2 == off1)));
 
-  if ((GET_CODE (XEXP (a, 0)) == REG
-       || (GET_CODE (XEXP (a, 0)) == PLUS
-	   && GET_CODE (XEXP (XEXP (a, 0), 1)) == CONST_INT))
-      && (GET_CODE (XEXP (b, 0)) == REG
-	  || (GET_CODE (XEXP (b, 0)) == PLUS
-	      && GET_CODE (XEXP (XEXP (b, 0), 1)) == CONST_INT)))
-    {
-      HOST_WIDE_INT val0 = 0, val1 = 0, val_diff;
-      rtx reg0, reg1;
+  return false;
+}
 
-      if (GET_CODE (XEXP (a, 0)) == PLUS)
-        {
-	  reg0 = XEXP (XEXP (a, 0), 0);
-	  val0 = INTVAL (XEXP (XEXP (a, 0), 1));
-        }
-      else
-	reg0 = XEXP (a, 0);
+/* This function returns true if it can be determined that the two MEM
+   locations overlap by at least 1 byte based on base reg/offset/size. */
 
-      if (GET_CODE (XEXP (b, 0)) == PLUS)
-        {
-	  reg1 = XEXP (XEXP (b, 0), 0);
-	  val1 = INTVAL (XEXP (XEXP (b, 0), 1));
-        }
-      else
-	reg1 = XEXP (b, 0);
+static bool
+mem_locations_overlap (rtx mem1, rtx mem2)
+{
+  rtx reg1, reg2;
+  HOST_WIDE_INT off1, size1, off2, size2;
 
-      val_diff = val1 - val0;
-
-      return ((REGNO (reg0) == REGNO (reg1))
-	      && ((MEM_SIZE_KNOWN_P (a) && val_diff == MEM_SIZE (a))
-		  || (MEM_SIZE_KNOWN_P (b) && val_diff == -MEM_SIZE (b))));
-    }
+  if (get_memref_parts (mem1, &reg1, &off1, &size1)
+      && get_memref_parts (mem2, &reg2, &off2, &size2))
+    return ((REGNO (reg1) == REGNO (reg2))
+	    && (((off1 <= off2) && (off1 + size1 > off2))
+		|| ((off2 <= off1) && (off2 + size2 > off1))));
 
   return false;
 }
@@ -23038,6 +22887,7 @@ adjacent_mem_locations (rtx insn1, rtx insn2)
 static int
 rs6000_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
 {
+  rtx load_mem, str_mem;
   /* On machines (like the 750) which have asymmetric integer units,
      where one integer unit can do multiply and divides and the other
      can't, reduce the priority of multiply/divide so it is scheduled
@@ -23089,8 +22939,8 @@ rs6000_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
     }
 
   if (rs6000_cpu == PROCESSOR_POWER6
-      && ((load_store_pendulum == -2 && is_load_insn (insn))
-          || (load_store_pendulum == 2 && is_store_insn (insn))))
+      && ((load_store_pendulum == -2 && is_load_insn (insn, &load_mem))
+          || (load_store_pendulum == 2 && is_store_insn (insn, &str_mem))))
     /* Attach highest priority to insn if the scheduler has just issued two
        stores and this instruction is a load, or two loads and this instruction
        is a store. Power6 wants loads and stores scheduled alternately
@@ -23215,54 +23065,63 @@ rs6000_use_sched_lookahead_guard (rtx insn)
   return 1;
 }
 
-/* Determine is PAT refers to memory.  */
+/* Determine if PAT refers to memory. If so, set MEM_REF to the MEM rtx
+   and return true.  */
 
 static bool
-is_mem_ref (rtx pat)
+find_mem_ref (rtx pat, rtx *mem_ref)
 {
   const char * fmt;
   int i, j;
-  bool ret = false;
 
   /* stack_tie does not produce any real memory traffic.  */
   if (tie_operand (pat, VOIDmode))
     return false;
 
   if (GET_CODE (pat) == MEM)
-    return true;
+    {
+      *mem_ref = pat;
+      return true;
+    }
 
   /* Recursively process the pattern.  */
   fmt = GET_RTX_FORMAT (GET_CODE (pat));
 
-  for (i = GET_RTX_LENGTH (GET_CODE (pat)) - 1; i >= 0 && !ret; i--)
+  for (i = GET_RTX_LENGTH (GET_CODE (pat)) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	ret |= is_mem_ref (XEXP (pat, i));
+	{
+	  if (find_mem_ref (XEXP (pat, i), mem_ref))
+	    return true;
+	}
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (pat, i) - 1; j >= 0; j--)
-	  ret |= is_mem_ref (XVECEXP (pat, i, j));
+	  {
+	    if (find_mem_ref (XVECEXP (pat, i, j), mem_ref))
+	      return true;
+	  }
     }
 
-  return ret;
+  return false;
 }
 
 /* Determine if PAT is a PATTERN of a load insn.  */
 
 static bool
-is_load_insn1 (rtx pat)
+is_load_insn1 (rtx pat, rtx *load_mem)
 {
   if (!pat || pat == NULL_RTX)
     return false;
 
   if (GET_CODE (pat) == SET)
-    return is_mem_ref (SET_SRC (pat));
+    return find_mem_ref (SET_SRC (pat), load_mem);
 
   if (GET_CODE (pat) == PARALLEL)
     {
       int i;
 
       for (i = 0; i < XVECLEN (pat, 0); i++)
-	if (is_load_insn1 (XVECEXP (pat, 0, i)))
+	if (is_load_insn1 (XVECEXP (pat, 0, i), load_mem))
 	  return true;
     }
 
@@ -23272,7 +23131,7 @@ is_load_insn1 (rtx pat)
 /* Determine if INSN loads from memory.  */
 
 static bool
-is_load_insn (rtx insn)
+is_load_insn (rtx insn, rtx *load_mem)
 {
   if (!insn || !INSN_P (insn))
     return false;
@@ -23280,26 +23139,26 @@ is_load_insn (rtx insn)
   if (GET_CODE (insn) == CALL_INSN)
     return false;
 
-  return is_load_insn1 (PATTERN (insn));
+  return is_load_insn1 (PATTERN (insn), load_mem);
 }
 
 /* Determine if PAT is a PATTERN of a store insn.  */
 
 static bool
-is_store_insn1 (rtx pat)
+is_store_insn1 (rtx pat, rtx *str_mem)
 {
   if (!pat || pat == NULL_RTX)
     return false;
 
   if (GET_CODE (pat) == SET)
-    return is_mem_ref (SET_DEST (pat));
+    return find_mem_ref (SET_DEST (pat), str_mem);
 
   if (GET_CODE (pat) == PARALLEL)
     {
       int i;
 
       for (i = 0; i < XVECLEN (pat, 0); i++)
-	if (is_store_insn1 (XVECEXP (pat, 0, i)))
+	if (is_store_insn1 (XVECEXP (pat, 0, i), str_mem))
 	  return true;
     }
 
@@ -23309,38 +23168,12 @@ is_store_insn1 (rtx pat)
 /* Determine if INSN stores to memory.  */
 
 static bool
-is_store_insn (rtx insn)
+is_store_insn (rtx insn, rtx *str_mem)
 {
   if (!insn || !INSN_P (insn))
     return false;
 
-  return is_store_insn1 (PATTERN (insn));
-}
-
-/* Return the dest of a store insn.  */
-
-static rtx
-get_store_dest (rtx pat)
-{
-  gcc_assert (is_store_insn1 (pat));
-
-  if (GET_CODE (pat) == SET)
-    return SET_DEST (pat);
-  else if (GET_CODE (pat) == PARALLEL)
-    {
-      int i;
-
-      for (i = 0; i < XVECLEN (pat, 0); i++)
-	{
-	  rtx inner_pat = XVECEXP (pat, 0, i);
-	  if (GET_CODE (inner_pat) == SET
-	      && is_mem_ref (SET_DEST (inner_pat)))
-	    return inner_pat;
-	}
-    }
-  /* We shouldn't get here, because we should have either a simple
-     store insn or a store with update which are covered above.  */
-  gcc_unreachable();
+  return is_store_insn1 (PATTERN (insn), str_mem);
 }
 
 /* Returns whether the dependence between INSN and NEXT is considered
@@ -23351,6 +23184,7 @@ rs6000_is_costly_dependence (dep_t dep, int cost, int distance)
 {
   rtx insn;
   rtx next;
+  rtx load_mem, str_mem;
 
   /* If the flag is not enabled - no dependence is considered costly;
      allow all dependent insns in the same group.
@@ -23368,15 +23202,16 @@ rs6000_is_costly_dependence (dep_t dep, int cost, int distance)
   next = DEP_CON (dep);
 
   if (rs6000_sched_costly_dep == store_to_load_dep_costly
-      && is_load_insn (next)
-      && is_store_insn (insn))
+      && is_load_insn (next, &load_mem)
+      && is_store_insn (insn, &str_mem))
     /* Prevent load after store in the same group.  */
     return true;
 
   if (rs6000_sched_costly_dep == true_store_to_load_dep_costly
-      && is_load_insn (next)
-      && is_store_insn (insn)
-      && DEP_TYPE (dep) == REG_DEP_TRUE)
+      && is_load_insn (next, &load_mem)
+      && is_store_insn (insn, &str_mem)
+      && DEP_TYPE (dep) == REG_DEP_TRUE
+      && mem_locations_overlap(str_mem, load_mem))
      /* Prevent load after store in the same group if it is a true
 	dependence.  */
      return true;
@@ -23503,12 +23338,12 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx *ready,
     {
       int pos;
       int i;
-      rtx tmp;
+      rtx tmp, load_mem, str_mem;
 
-      if (is_store_insn (last_scheduled_insn))
+      if (is_store_insn (last_scheduled_insn, &str_mem))
         /* Issuing a store, swing the load_store_pendulum to the left */
         load_store_pendulum--;
-      else if (is_load_insn (last_scheduled_insn))
+      else if (is_load_insn (last_scheduled_insn, &load_mem))
         /* Issuing a load, swing the load_store_pendulum to the right */
         load_store_pendulum++;
       else
@@ -23527,7 +23362,7 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx *ready,
 
           while (pos >= 0)
             {
-              if (is_load_insn (ready[pos]))
+              if (is_load_insn (ready[pos], &load_mem))
                 {
                   /* Found a load.  Move it to the head of the ready list,
                      and adjust it's priority so that it is more likely to
@@ -23553,7 +23388,7 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx *ready,
 
           while (pos >= 0)
             {
-              if (is_load_insn (ready[pos])
+              if (is_load_insn (ready[pos], &load_mem)
                   && !sel_sched_p ()
 		  && INSN_PRIORITY_KNOWN (ready[pos]))
                 {
@@ -23580,15 +23415,16 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx *ready,
 
           while (pos >= 0)
             {
-              if (is_store_insn (ready[pos]))
+              if (is_store_insn (ready[pos], &str_mem))
                 {
+		  rtx str_mem2;
                   /* Maintain the index of the first store found on the
                      list */
                   if (first_store_pos == -1)
                     first_store_pos = pos;
 
-                  if (is_store_insn (last_scheduled_insn)
-                      && adjacent_mem_locations (last_scheduled_insn,ready[pos]))
+                  if (is_store_insn (last_scheduled_insn, &str_mem2)
+                      && adjacent_mem_locations (str_mem, str_mem2))
                     {
                       /* Found an adjacent store.  Move it to the head of the
                          ready list, and adjust it's priority so that it is
@@ -23632,7 +23468,7 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx *ready,
 
           while (pos >= 0)
             {
-              if (is_store_insn (ready[pos])
+              if (is_store_insn (ready[pos], &str_mem)
                   && !sel_sched_p ()
 		  && INSN_PRIORITY_KNOWN (ready[pos]))
                 {
@@ -23916,7 +23752,7 @@ is_costly_group (rtx *group_insns, rtx next_insn)
       if (!insn)
 	continue;
 
-      FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
+      FOR_EACH_DEP (insn, SD_LIST_RES_FORW, sd_it, dep)
 	{
 	  rtx next = DEP_CON (dep);
 
@@ -23980,12 +23816,20 @@ force_new_group (int sched_verbose, FILE *dump, rtx *group_insns,
       if (can_issue_more && !is_branch_slot_insn (next_insn))
 	can_issue_more--;
 
-      while (can_issue_more > 0)
+      /* Power6 and Power7 have special group ending nop. */
+      if (rs6000_cpu_attr == CPU_POWER6 || rs6000_cpu_attr == CPU_POWER7)
 	{
-	  nop = gen_nop ();
+	  nop = gen_group_ending_nop ();
 	  emit_insn_before (nop, next_insn);
-	  can_issue_more--;
+	  can_issue_more = 0;
 	}
+      else
+	while (can_issue_more > 0)
+	  {
+	    nop = gen_nop ();
+	    emit_insn_before (nop, next_insn);
+	    can_issue_more--;
+	  }
 
       *group_end = true;
       return 0;
@@ -24761,6 +24605,7 @@ rs6000_elf_select_rtx_section (enum machine_mode mode, rtx x,
    function descriptor name.  This saves a lot of overriding code to
    read the prefixes.  */
 
+static void rs6000_elf_encode_section_info (tree, rtx, int) ATTRIBUTE_UNUSED;
 static void
 rs6000_elf_encode_section_info (tree decl, rtx rtl, int first)
 {
@@ -25273,6 +25118,7 @@ rs6000_elf_reloc_rw_mask (void)
    This differs from default_named_section_asm_out_constructor in
    that we have special handling for -mrelocatable.  */
 
+static void rs6000_elf_asm_out_constructor (rtx, int) ATTRIBUTE_UNUSED;
 static void
 rs6000_elf_asm_out_constructor (rtx symbol, int priority)
 {
@@ -25302,6 +25148,7 @@ rs6000_elf_asm_out_constructor (rtx symbol, int priority)
     assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 
+static void rs6000_elf_asm_out_destructor (rtx, int) ATTRIBUTE_UNUSED;
 static void
 rs6000_elf_asm_out_destructor (rtx symbol, int priority)
 {
@@ -25407,6 +25254,7 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
   ASM_OUTPUT_LABEL (file, name);
 }
 
+static void rs6000_elf_file_end (void) ATTRIBUTE_UNUSED;
 static void
 rs6000_elf_file_end (void)
 {
@@ -26952,7 +26800,7 @@ rs6000_complex_function_value (enum machine_mode mode)
    On RS/6000 an integer value is in r3 and a floating-point value is in
    fp1, unless -msoft-float.  */
 
-rtx
+static rtx
 rs6000_function_value (const_tree valtype,
 		       const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
 		       bool outgoing ATTRIBUTE_UNUSED)
@@ -27099,7 +26947,7 @@ rs6000_libcall_value (enum machine_mode mode)
    We need r30 if -mminimal-toc was specified, and there are constant pool
    references.  */
 
-bool
+static bool
 rs6000_can_eliminate (const int from, const int to)
 {
   return (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM
@@ -28226,6 +28074,7 @@ get_ppc476_thunk_name (char name[32])
 /* This function emits the simple thunk routine that is used to preserve
    the link stack on the 476 cpu.  */
 
+static void rs6000_code_end (void) ATTRIBUTE_UNUSED;
 static void
 rs6000_code_end (void)
 {

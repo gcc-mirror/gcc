@@ -111,7 +111,7 @@ static void df_ref_record (enum df_ref_class, struct df_collection_rec *,
 			   rtx, rtx *,
 			   basic_block, struct df_insn_info *,
 			   enum df_ref_type, int ref_flags);
-static void df_def_record_1 (struct df_collection_rec *, rtx,
+static void df_def_record_1 (struct df_collection_rec *, rtx *,
 			     basic_block, struct df_insn_info *,
 			     int ref_flags);
 static void df_defs_record (struct df_collection_rec *, rtx,
@@ -318,7 +318,7 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 {
   struct df_scan_problem_data *problem_data;
   unsigned int insn_num = get_max_uid () + 1;
-  unsigned int block_size = 400;
+  unsigned int block_size = 512;
   basic_block bb;
 
   /* Given the number of pools, this is really faster than tearing
@@ -347,7 +347,7 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 			 sizeof (struct df_reg_info), block_size);
   problem_data->mw_reg_pool
     = create_alloc_pool ("df_scan mw_reg",
-			 sizeof (struct df_mw_hardreg), block_size);
+			 sizeof (struct df_mw_hardreg), block_size / 16);
 
   bitmap_obstack_initialize (&problem_data->reg_bitmaps);
   bitmap_obstack_initialize (&problem_data->insn_bitmaps);
@@ -2917,40 +2917,27 @@ df_read_modify_subreg_p (rtx x)
 }
 
 
-/* Process all the registers defined in the rtx, X.
-   Autoincrement/decrement definitions will be picked up by
-   df_uses_record.  */
+/* Process all the registers defined in the rtx pointed by LOC.
+   Autoincrement/decrement definitions will be picked up by df_uses_record.
+   Any change here has to be matched in df_find_hard_reg_defs_1.  */
 
 static void
 df_def_record_1 (struct df_collection_rec *collection_rec,
-                 rtx x, basic_block bb, struct df_insn_info *insn_info,
+                 rtx *loc, basic_block bb, struct df_insn_info *insn_info,
 		 int flags)
 {
-  rtx *loc;
-  rtx dst;
-
- /* We may recursively call ourselves on EXPR_LIST when dealing with PARALLEL
-     construct.  */
-  if (GET_CODE (x) == EXPR_LIST || GET_CODE (x) == CLOBBER)
-    loc = &XEXP (x, 0);
-  else
-    loc = &SET_DEST (x);
-  dst = *loc;
+  rtx dst = *loc;
 
   /* It is legal to have a set destination be a parallel. */
   if (GET_CODE (dst) == PARALLEL)
     {
       int i;
-
       for (i = XVECLEN (dst, 0) - 1; i >= 0; i--)
 	{
 	  rtx temp = XVECEXP (dst, 0, i);
-	  if (GET_CODE (temp) == EXPR_LIST || GET_CODE (temp) == CLOBBER
-	      || GET_CODE (temp) == SET)
-	    df_def_record_1 (collection_rec,
-                             temp, bb, insn_info,
-			     GET_CODE (temp) == CLOBBER
-			     ? flags | DF_REF_MUST_CLOBBER : flags);
+	  gcc_assert (GET_CODE (temp) == EXPR_LIST);
+	  df_def_record_1 (collection_rec, &XEXP (temp, 0),
+			   bb, insn_info, flags);
 	}
       return;
     }
@@ -2996,7 +2983,8 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
 }
 
 
-/* Process all the registers defined in the pattern rtx, X.  */
+/* Process all the registers defined in the pattern rtx, X.  Any change
+   here has to be matched in df_find_hard_reg_defs.  */
 
 static void
 df_defs_record (struct df_collection_rec *collection_rec,
@@ -3004,26 +2992,99 @@ df_defs_record (struct df_collection_rec *collection_rec,
 		int flags)
 {
   RTX_CODE code = GET_CODE (x);
+  int i;
 
-  if (code == SET || code == CLOBBER)
+  switch (code)
     {
-      /* Mark the single def within the pattern.  */
-      int clobber_flags = flags;
-      clobber_flags |= (code == CLOBBER) ? DF_REF_MUST_CLOBBER : 0;
-      df_def_record_1 (collection_rec, x, bb, insn_info, clobber_flags);
-    }
-  else if (code == COND_EXEC)
-    {
+    case SET:
+      df_def_record_1 (collection_rec, &SET_DEST (x), bb, insn_info, flags);
+      break;
+
+    case CLOBBER:
+      flags |= DF_REF_MUST_CLOBBER;
+      df_def_record_1 (collection_rec, &XEXP (x, 0), bb, insn_info, flags);
+      break;
+
+    case COND_EXEC:
       df_defs_record (collection_rec, COND_EXEC_CODE (x),
 		      bb, insn_info, DF_REF_CONDITIONAL);
+      break;
+
+    case PARALLEL:
+      for (i = 0; i < XVECLEN (x, 0); i++)
+	df_defs_record (collection_rec, XVECEXP (x, 0, i),
+			bb, insn_info, flags);
+      break;
+    default:
+      /* No DEFs to record in other cases */
+      break;
     }
-  else if (code == PARALLEL)
+}
+
+/* Set bits in *DEFS for hard registers found in the rtx DST, which is the
+   destination of a set or clobber.  This has to match the logic in
+   df_defs_record_1.  */
+
+static void
+df_find_hard_reg_defs_1 (rtx dst, HARD_REG_SET *defs)
+{
+  /* It is legal to have a set destination be a parallel. */
+  if (GET_CODE (dst) == PARALLEL)
     {
       int i;
+      for (i = XVECLEN (dst, 0) - 1; i >= 0; i--)
+	{
+	  rtx temp = XVECEXP (dst, 0, i);
+	  gcc_assert (GET_CODE (temp) == EXPR_LIST);
+	  df_find_hard_reg_defs_1 (XEXP (temp, 0), defs);
+	}
+      return;
+    }
 
-      /* Mark the multiple defs within the pattern.  */
-      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-	df_defs_record (collection_rec, XVECEXP (x, 0, i), bb, insn_info, flags);
+  if (GET_CODE (dst) == STRICT_LOW_PART)
+      dst = XEXP (dst, 0);
+
+  if (GET_CODE (dst) == ZERO_EXTRACT)
+      dst = XEXP (dst, 0);
+
+  /* At this point if we do not have a reg or a subreg, just return.  */
+  if (REG_P (dst) && HARD_REGISTER_P (dst))
+    SET_HARD_REG_BIT (*defs, REGNO (dst));
+  else if (GET_CODE (dst) == SUBREG
+	   && REG_P (SUBREG_REG (dst)) && HARD_REGISTER_P (dst))
+    SET_HARD_REG_BIT (*defs, REGNO (SUBREG_REG (dst)));
+}
+
+/* Set bits in *DEFS for hard registers defined in the pattern X.  This
+   has to match the logic in df_defs_record.  */
+
+static void
+df_find_hard_reg_defs (rtx x, HARD_REG_SET *defs)
+{
+  RTX_CODE code = GET_CODE (x);
+  int i;
+
+  switch (code)
+    {
+    case SET:
+      df_find_hard_reg_defs_1 (SET_DEST (x), defs);
+      break;
+
+    case CLOBBER:
+      df_find_hard_reg_defs_1 (XEXP (x, 0), defs);
+      break;
+
+    case COND_EXEC:
+      df_find_hard_reg_defs (COND_EXEC_CODE (x), defs);
+      break;
+
+    case PARALLEL:
+      for (i = 0; i < XVECLEN (x, 0); i++)
+	df_find_hard_reg_defs (XVECEXP (x, 0, i), defs);
+      break;
+    default:
+      /* No DEFs to record in other cases */
+      break;
     }
 }
 
@@ -3310,29 +3371,56 @@ df_get_conditional_uses (struct df_collection_rec *collection_rec)
 }
 
 
-/* Get call's extra defs and uses. */
+/* Get call's extra defs and uses (track caller-saved registers). */
 
 static void
-df_get_call_refs (struct df_collection_rec * collection_rec,
+df_get_call_refs (struct df_collection_rec *collection_rec,
                   basic_block bb,
                   struct df_insn_info *insn_info,
                   int flags)
 {
   rtx note;
-  bitmap_iterator bi;
-  unsigned int ui;
   bool is_sibling_call;
   unsigned int i;
-  df_ref def;
-  bitmap_head defs_generated;
+  HARD_REG_SET defs_generated;
 
-  bitmap_initialize (&defs_generated, &df_bitmap_obstack);
+  CLEAR_HARD_REG_SET (defs_generated);
+  df_find_hard_reg_defs (PATTERN (insn_info->insn), &defs_generated);
+  is_sibling_call = SIBLING_CALL_P (insn_info->insn);
 
-  /* Do not generate clobbers for registers that are the result of the
-     call.  This causes ordering problems in the chain building code
-     depending on which def is seen first.  */
-  FOR_EACH_VEC_ELT (df_ref, collection_rec->def_vec, i, def)
-    bitmap_set_bit (&defs_generated, DF_REF_REGNO (def));
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      if (i == STACK_POINTER_REGNUM)
+	/* The stack ptr is used (honorarily) by a CALL insn.  */
+	df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
+		       NULL, bb, insn_info, DF_REF_REG_USE,
+		       DF_REF_CALL_STACK_USAGE | flags);
+      else if (global_regs[i])
+	{
+	  /* Calls to const functions cannot access any global registers and
+	     calls to pure functions cannot set them.  All other calls may
+	     reference any of the global registers, so they are recorded as
+	     used. */
+	  if (!RTL_CONST_CALL_P (insn_info->insn))
+	    {
+	      df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
+			     NULL, bb, insn_info, DF_REF_REG_USE, flags);
+	      if (!RTL_PURE_CALL_P (insn_info->insn))
+		df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
+			       NULL, bb, insn_info, DF_REF_REG_DEF, flags);
+	    }
+	}
+      else if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i)
+	       /* no clobbers for regs that are the result of the call */
+	       && !TEST_HARD_REG_BIT (defs_generated, i)
+	       && (!is_sibling_call
+		   || !bitmap_bit_p (df->exit_block_uses, i)
+		   || refers_to_regno_p (i, i+1,
+				         crtl->return_rtx, NULL)))
+	  df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
+			 NULL, bb, insn_info, DF_REF_REG_DEF,
+			 DF_REF_MAY_CLOBBER | flags);
+    }
 
   /* Record the registers used to pass arguments, and explicitly
      noted as clobbered.  */
@@ -3347,7 +3435,7 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
 	  if (REG_P (XEXP (XEXP (note, 0), 0)))
 	    {
 	      unsigned int regno = REGNO (XEXP (XEXP (note, 0), 0));
-	      if (!bitmap_bit_p (&defs_generated, regno))
+	      if (!TEST_HARD_REG_BIT (defs_generated, regno))
 		df_defs_record (collection_rec, XEXP (note, 0), bb,
 				insn_info, flags);
 	    }
@@ -3357,40 +3445,6 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
 	}
     }
 
-  /* The stack ptr is used (honorarily) by a CALL insn.  */
-  df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[STACK_POINTER_REGNUM],
-		 NULL, bb, insn_info, DF_REF_REG_USE,
-		 DF_REF_CALL_STACK_USAGE | flags);
-
-  /* Calls to const functions cannot access any global registers and calls to
-     pure functions cannot set them.  All other calls may reference any of the
-     global registers, so they are recorded as used.  */
-  if (!RTL_CONST_CALL_P (insn_info->insn))
-    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (global_regs[i])
-	{
-	  df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-			 NULL, bb, insn_info, DF_REF_REG_USE, flags);
-	  if (!RTL_PURE_CALL_P (insn_info->insn))
-	    df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-			   NULL, bb, insn_info, DF_REF_REG_DEF, flags);
-	}
-
-  is_sibling_call = SIBLING_CALL_P (insn_info->insn);
-  EXECUTE_IF_SET_IN_BITMAP (regs_invalidated_by_call_regset, 0, ui, bi)
-    {
-      if (!global_regs[ui]
-	  && (!bitmap_bit_p (&defs_generated, ui))
-	  && (!is_sibling_call
-	      || !bitmap_bit_p (df->exit_block_uses, ui)
-	      || refers_to_regno_p (ui, ui+1,
-				    crtl->return_rtx, NULL)))
-        df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[ui],
-		       NULL, bb, insn_info, DF_REF_REG_DEF,
-		       DF_REF_MAY_CLOBBER | flags);
-    }
-
-  bitmap_clear (&defs_generated);
   return;
 }
 
@@ -3400,7 +3454,7 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
    and reg chains. */
 
 static void
-df_insn_refs_collect (struct df_collection_rec* collection_rec,
+df_insn_refs_collect (struct df_collection_rec *collection_rec,
 		      basic_block bb, struct df_insn_info *insn_info)
 {
   rtx note;
@@ -3411,9 +3465,6 @@ df_insn_refs_collect (struct df_collection_rec* collection_rec,
   VEC_truncate (df_ref, collection_rec->use_vec, 0);
   VEC_truncate (df_ref, collection_rec->eq_use_vec, 0);
   VEC_truncate (df_mw_hardreg_ptr, collection_rec->mw_vec, 0);
-
-  /* Record register defs.  */
-  df_defs_record (collection_rec, PATTERN (insn_info->insn), bb, insn_info, 0);
 
   /* Process REG_EQUIV/REG_EQUAL notes.  */
   for (note = REG_NOTES (insn_info->insn); note;
@@ -3445,9 +3496,16 @@ df_insn_refs_collect (struct df_collection_rec* collection_rec,
         }
     }
 
+  /* For CALL_INSNs, first record DF_REF_BASE register defs, as well as
+     uses from CALL_INSN_FUNCTION_USAGE. */
   if (CALL_P (insn_info->insn))
     df_get_call_refs (collection_rec, bb, insn_info,
 		      (is_cond_exec) ? DF_REF_CONDITIONAL : 0);
+
+  /* Record other defs.  These should be mostly for DF_REF_REGULAR, so
+     that a qsort on the defs is unnecessary in most cases.  */
+  df_defs_record (collection_rec,
+		  PATTERN (insn_info->insn), bb, insn_info, 0);
 
   /* Record the register uses.  */
   df_uses_record (collection_rec,

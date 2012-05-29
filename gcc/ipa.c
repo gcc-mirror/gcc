@@ -454,10 +454,6 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     FOR_EACH_DEFINED_FUNCTION (node)
       cgraph_propagate_frequency (node);
 
-  /* Reclaim alias pairs for functions that have disappeared from the
-     call graph.  */
-  remove_unreachable_alias_pairs ();
-
   return changed;
 }
 

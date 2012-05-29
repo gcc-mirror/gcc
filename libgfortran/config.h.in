@@ -696,8 +696,11 @@
 /* Define to 1 if you have the `strcasestr' function. */
 #undef HAVE_STRCASESTR
 
-/* Define to 1 if you have the `strerror_r' function. */
+/* Define if strerror_r is available in <string.h>. */
 #undef HAVE_STRERROR_R
+
+/* Define if strerror_r takes two arguments and is available in <string.h>. */
+#undef HAVE_STRERROR_R_2ARGS
 
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H

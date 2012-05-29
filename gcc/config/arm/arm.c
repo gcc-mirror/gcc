@@ -26185,4 +26185,54 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
   #undef BRANCH
 }
 
+
+/* Returns true if a valid comparison operation and makes 
+   the operands in a form that is valid.  */
+bool
+arm_validize_comparison (rtx *comparison, rtx * op1, rtx * op2)
+{
+  enum rtx_code code = GET_CODE (*comparison);
+  enum rtx_code canonical_code;
+  enum machine_mode mode = (GET_MODE (*op1) == VOIDmode) 
+    ? GET_MODE (*op2) : GET_MODE (*op1);
+
+  gcc_assert (GET_MODE (*op1) != VOIDmode || GET_MODE (*op2) != VOIDmode);
+
+  if (code == UNEQ || code == LTGT)
+    return false;
+
+  canonical_code = arm_canonicalize_comparison (code, op1, op2);
+  PUT_CODE (*comparison, canonical_code);
+
+  switch (mode)
+    {
+    case SImode:
+      if (!arm_add_operand (*op1, mode))
+	*op1 = force_reg (mode, *op1);
+      if (!arm_add_operand (*op2, mode))
+	*op2 = force_reg (mode, *op2);
+      return true;
+
+    case DImode:
+      if (!cmpdi_operand (*op1, mode))
+	*op1 = force_reg (mode, *op1);
+      if (!cmpdi_operand (*op2, mode))
+	*op2 = force_reg (mode, *op2);
+      return true;
+      
+    case SFmode:
+    case DFmode:
+      if (!arm_float_compare_operand (*op1, mode))
+	*op1 = force_reg (mode, *op1);
+      if (!arm_float_compare_operand (*op2, mode))
+	*op2 = force_reg (mode, *op2);
+      return true;
+    default:
+      break;
+    }
+  
+  return false;
+
+}
+
 #include "gt-arm.h"

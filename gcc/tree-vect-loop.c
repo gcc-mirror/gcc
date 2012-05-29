@@ -1327,7 +1327,9 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
                     return false;
 
                   op_def_stmt = SSA_NAME_DEF_STMT (phi_op);
-                  if (!op_def_stmt || !vinfo_for_stmt (op_def_stmt))
+		  if (!op_def_stmt
+		      || !flow_bb_inside_loop_p (loop, gimple_bb (op_def_stmt))
+		      || !vinfo_for_stmt (op_def_stmt))
                     return false;
 
                   if (STMT_VINFO_RELEVANT (vinfo_for_stmt (op_def_stmt))
@@ -5061,12 +5063,46 @@ vectorizable_induction (gimple phi, gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
   tree vec_def;
 
   gcc_assert (ncopies >= 1);
-  /* FORNOW. This restriction should be relaxed.  */
-  if (nested_in_vect_loop_p (loop, phi) && ncopies > 1)
+  /* FORNOW. These restrictions should be relaxed.  */
+  if (nested_in_vect_loop_p (loop, phi))
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "multiple types in nested loop.");
-      return false;
+      imm_use_iterator imm_iter;
+      use_operand_p use_p;
+      gimple exit_phi;
+      edge latch_e;
+      tree loop_arg;
+
+      if (ncopies > 1)
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "multiple types in nested loop.");
+	  return false;
+	}
+
+      exit_phi = NULL;
+      latch_e = loop_latch_edge (loop->inner);
+      loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, loop_arg)
+	{
+	  if (!flow_bb_inside_loop_p (loop->inner,
+				      gimple_bb (USE_STMT (use_p))))
+	    {
+	      exit_phi = USE_STMT (use_p);
+	      break;
+	    }
+	}
+      if (exit_phi)
+	{
+	  stmt_vec_info exit_phi_vinfo  = vinfo_for_stmt (exit_phi);
+	  if (!(STMT_VINFO_RELEVANT_P (exit_phi_vinfo)
+		&& !STMT_VINFO_LIVE_P (exit_phi_vinfo)))
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (vect_dump, "inner-loop induction only used outside "
+			 "of the outer vectorized loop.");
+	      return false;
+	    }
+	}
     }
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info))

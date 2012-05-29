@@ -465,6 +465,7 @@ runtime_files = \
 	runtime/mgc0.c \
 	runtime/mheap.c \
 	runtime/msize.c \
+	runtime/print.c \
 	runtime/proc.c \
 	runtime/runtime.c \
 	runtime/signal_unix.c \

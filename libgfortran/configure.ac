@@ -265,8 +265,11 @@ AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
 ftruncate chsize chdir getlogin gethostname kill link symlink sleep ttyname \
 alarm access fork execl wait setmode execve pipe dup2 close \
 strcasestr getrlimit gettimeofday stat fstat lstat getpwuid vsnprintf dup \
-getcwd localtime_r gmtime_r strerror_r getpwuid_r ttyname_r clock_gettime \
+getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
 readlink getgid getpid getppid getuid geteuid umask getegid __secure_getenv)
+
+# Check strerror_r, cannot be above as versions with two and three arguments exist
+LIBGFOR_CHECK_STRERROR_R
 
 # Check for C99 (and other IEEE) math functions
 GCC_CHECK_MATH_FUNC([acosf])

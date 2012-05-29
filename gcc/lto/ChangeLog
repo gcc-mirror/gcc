@@ -1,3 +1,8 @@
+2012-05-18  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_materialize_constructors_and_inits): Remove.
+	(read_cgraph_and_symbols): Remove handling of alias pairs.
+
 2012-05-17  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c (add_references_to_partition): Handle external vars.

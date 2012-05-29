@@ -187,6 +187,7 @@ extern int decode_reg_name (const char *);
 extern int decode_reg_name_and_count (const char *, int *);
 
 extern void assemble_alias (tree, tree);
+extern void do_assemble_alias (tree, tree);
 
 extern void default_assemble_visibility (tree, int);
 

@@ -872,11 +872,13 @@ save_call_clobbered_regs (void)
 		  && HARD_REGISTER_P (cheap)
 		  && TEST_HARD_REG_BIT (call_used_reg_set, REGNO (cheap)))
 		{
-		  rtx call_set = single_set (insn);
-		  rtx dest = SET_DEST (call_set);
-		  rtx pat = gen_rtx_SET (VOIDmode, cheap,
-					 copy_rtx (dest));
-		  chain = insert_one_insn (chain, 0, -1, pat);
+		  rtx dest, newpat;
+		  rtx pat = PATTERN (insn);
+		  if (GET_CODE (pat) == PARALLEL)
+		    pat = XVECEXP (pat, 0, 0);
+		  dest = SET_DEST (pat);
+		  newpat = gen_rtx_SET (VOIDmode, cheap, copy_rtx (dest));
+		  chain = insert_one_insn (chain, 0, -1, newpat);
 		}
 	    }
           last = chain;
