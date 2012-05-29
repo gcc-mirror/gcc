@@ -40,7 +40,7 @@ __udivsi3 (unsigned int a, unsigned int b)
 
   /* Assuming B is nonzero, compute S0 such that 0 <= S0,
      (B << S0+1) does not overflow,
-     A < 4.01 * (B << S0), with S0 choosen as small as possible
+     A < 4.01 * (B << S0), with S0 chosen as small as possible
      without taking to much time calculating.  */
 #ifdef CONVERT_UNSIGNED
   u0.f = a;

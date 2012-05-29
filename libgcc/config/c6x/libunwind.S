@@ -113,7 +113,7 @@ restore_core_regs:
 	# Zero demand saved flags
 	mvk	.s1	0, A0
 	stw	.d2t1	A0, *+B15[1]
-	# Save return address, setup additional argument and call fucntion
+	# Save return address, setup additional argument and call function
 	stw	.d2t2	B3, *+B15[35]
 	add	.d\argside	B15, 4, \argreg
 	do_call	__gnu\name

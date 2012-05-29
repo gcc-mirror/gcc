@@ -68,7 +68,7 @@ muldi3_hardproc:
 	swi	r26,r1,24
 	swi	r27,r1,28
 
-# Load all the 16 bit values for A thru H
+# Load all the 16 bit values for A through H
 	lhui	r20,r1,44   # A
 	lhui	r21,r1,46   # B
 	lhui	r22,r1,48   # C

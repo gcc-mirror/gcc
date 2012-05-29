@@ -922,7 +922,7 @@ ARM_FUNC_ALIAS aeabi_ddiv divdf3
 	teqne	r5, ip
 	bleq	LSYM(Ldv_s)
 
-	@ Substract divisor exponent from dividend''s.
+	@ Subtract divisor exponent from dividend''s.
 	sub	r4, r4, r5
 
 	@ Preserve final sign into lr.
@@ -956,7 +956,7 @@ ARM_FUNC_ALIAS aeabi_ddiv divdf3
 	movs	yh, yh, lsr #1
 	mov	yl, yl, rrx
 1:
-	@ Perform first substraction to align result to a nibble.
+	@ Perform first subtraction to align result to a nibble.
 	subs	r6, r6, yl
 	sbc	r5, r5, yh
 	movs	yh, yh, lsr #1
