@@ -5275,26 +5275,33 @@ stores_from_loop (struct loop *loop, VEC (gimple, heap) **stmts)
 bool
 stmt_with_adjacent_zero_store_dr_p (gimple stmt)
 {
-  tree op0, op1;
+  tree lhs, rhs;
   bool res;
   struct data_reference *dr;
 
   if (!stmt
       || !gimple_vdef (stmt)
-      || !is_gimple_assign (stmt)
-      || !gimple_assign_single_p (stmt)
-      || !(op1 = gimple_assign_rhs1 (stmt))
-      || !(integer_zerop (op1) || real_zerop (op1)))
+      || !gimple_assign_single_p (stmt))
+    return false;
+
+  lhs = gimple_assign_lhs (stmt);
+  rhs = gimple_assign_rhs1 (stmt);
+
+  /* If this is a bitfield store bail out.  */
+  if (TREE_CODE (lhs) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (lhs, 1)))
+    return false;
+
+  if (!(integer_zerop (rhs) || real_zerop (rhs)))
     return false;
 
   dr = XCNEW (struct data_reference);
-  op0 = gimple_assign_lhs (stmt);
 
   DR_STMT (dr) = stmt;
-  DR_REF (dr) = op0;
+  DR_REF (dr) = lhs;
 
   res = dr_analyze_innermost (dr, loop_containing_stmt (stmt))
-    && stride_of_unit_type_p (DR_STEP (dr), TREE_TYPE (op0));
+    && stride_of_unit_type_p (DR_STEP (dr), TREE_TYPE (lhs));
 
   free_data_ref (dr);
   return res;

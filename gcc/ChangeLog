@@ -1,3 +1,10 @@
+2012-05-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53516
+	* tree-data-ref.c (stmt_with_adjacent_zero_store_dr_p): Reject
+	bitfield accesses.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Likewise.
+
 2012-05-28  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	Backport from mainline
