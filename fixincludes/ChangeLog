@@ -1,3 +1,11 @@
+2012-05-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure.ac: Use GCC_AC_FUNC_MMAP_BLACKLIST instead of
+	gcc_AC_FUNC_MMAP_BLACKLIST.
+	* Makefile.in (ACLOCAL_AMFLAGS): Don't include ../gcc.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2012-04-24  Tristan Gingold  <gingold@adacore.com>
 
 	* fixincl.c (fix_with_system): Add missing specifier.

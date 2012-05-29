@@ -12,6 +12,6 @@
 # PARTICULAR PURPOSE.
 
 m4_include([../config/acx.m4])
+m4_include([../config/mmap.m4])
 m4_include([../config/override.m4])
 m4_include([../config/warnings.m4])
-m4_include([../gcc/acinclude.m4])
