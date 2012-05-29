@@ -9185,7 +9185,7 @@ choose_baseaddr (HOST_WIDE_INT cfa_offset)
   if (m->use_fast_prologue_epilogue)
     {
       /* Choose the base register most likely to allow the most scheduling
-         opportunities.  Generally FP is valid througout the function,
+         opportunities.  Generally FP is valid throughout the function,
          while DRAP must be reloaded within the epilogue.  But choose either
          over the SP due to increased encoding size.  */
 
@@ -33112,7 +33112,7 @@ ix86_count_insn (basic_block bb)
   return min_prev_count;
 }
 
-/* Pad short funtion to 4 instructions.   */
+/* Pad short function to 4 instructions.   */
 
 static void
 ix86_pad_short_function (void)
@@ -36909,7 +36909,7 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
 	{
 	  if (d->perm[0] / nelt2 == nonzero_halves[1])
 	    {
-	      /* Attempt to increase the likelyhood that dfinal
+	      /* Attempt to increase the likelihood that dfinal
 		 shuffle will be intra-lane.  */
 	      char tmph = nonzero_halves[0];
 	      nonzero_halves[0] = nonzero_halves[1];
@@ -38985,7 +38985,7 @@ fits_dispatch_window (rtx insn)
   /* Make disp_cmp and disp_jcc get scheduled at the latest.  These
      instructions should be given the lowest priority in the
      scheduling process in Haifa scheduler to make sure they will be
-     scheduled in the same dispatch window as the refrence to them.  */
+     scheduled in the same dispatch window as the reference to them.  */
   if (group == disp_jcc || group == disp_cmp)
     return false;
 

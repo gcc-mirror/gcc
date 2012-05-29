@@ -775,7 +775,7 @@ Read-only in this context means never modified during the lifetime of the
 program, not necessarily in ROM or in write-disabled pages.  A common
 example of the later is a shared library's global offset table.  This
 table is initialized by the runtime loader, so the memory is technically
-writable, but after control is transfered from the runtime loader to the
+writable, but after control is transferred from the runtime loader to the
 application, this memory will never be subsequently modified.
 
 Stored in the @code{unchanging} field and printed as @samp{/u}.

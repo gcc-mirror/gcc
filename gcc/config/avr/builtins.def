@@ -38,7 +38,7 @@ DEF_BUILTIN ("__builtin_avr_cli",   0, AVR_BUILTIN_CLI, void_ftype_void, CODE_FO
 DEF_BUILTIN ("__builtin_avr_wdr",   0, AVR_BUILTIN_WDR,   void_ftype_void, CODE_FOR_wdr)
 DEF_BUILTIN ("__builtin_avr_sleep", 0, AVR_BUILTIN_SLEEP, void_ftype_void, CODE_FOR_sleep)
 
-/* Mapped to respective instruction but might alse be folded away
+/* Mapped to respective instruction but might also be folded away
    or emit as libgcc call if ISA does not provide the instruction.  */
 DEF_BUILTIN ("__builtin_avr_swap",   1, AVR_BUILTIN_SWAP,   uchar_ftype_uchar,      CODE_FOR_rotlqi3_4)
 DEF_BUILTIN ("__builtin_avr_fmul",   2, AVR_BUILTIN_FMUL,   uint_ftype_uchar_uchar, CODE_FOR_fmul)

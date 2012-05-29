@@ -48,7 +48,7 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
 			     void (*def_or_undef) (cpp_reader *,
 						   const char *))
 {
-  /* For some of the k6/pentium varients there weren't seperate ISA bits to
+  /* For some of the k6/pentium varients there weren't separate ISA bits to
      identify which tune/arch flag was passed, so figure it out here.  */
   size_t arch_len = strlen (ix86_arch_string);
   size_t tune_len = strlen (ix86_tune_string);

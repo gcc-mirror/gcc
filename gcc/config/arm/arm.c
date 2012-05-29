@@ -2588,7 +2588,7 @@ optimal_immediate_sequence (enum rtx_code code, unsigned HOST_WIDE_INT val,
   int insns1, insns2;
   struct four_ints tmp_sequence;
 
-  /* If we aren't targetting ARM, the best place to start is always at
+  /* If we aren't targeting ARM, the best place to start is always at
      the bottom, otherwise look more closely.  */
   if (TARGET_ARM)
     {
@@ -8473,7 +8473,7 @@ cortex_a9_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
 			&& reg_overlap_mentioned_p (SET_DEST (PATTERN (insn)),
 						    SET_DEST (PATTERN (dep))))
 		      {
-			/* FMACS is a special case where the dependant
+			/* FMACS is a special case where the dependent
 			   instruction can be issued 3 cycles before
 			   the normal latency in case of an output
 			   dependency.  */
@@ -16187,7 +16187,7 @@ arm_output_epilogue (rtx sibling)
 	 now we have to use add/sub in those cases. However, the value
 	 of that would be marginal, as both mov and add/sub are 32-bit
 	 in ARM mode, and it would require extra conditionals
-	 in arm_expand_prologue to distingish ARM-apcs-frame case
+	 in arm_expand_prologue to distinguish ARM-apcs-frame case
 	 (where frame pointer is required to point at first register)
 	 and ARM-non-apcs-frame. Therefore, such change is postponed
 	 until real need arise.  */

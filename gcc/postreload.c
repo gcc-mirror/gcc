@@ -683,7 +683,7 @@ struct reg_use
   /* Points to the memory reference enclosing the use, if any, NULL_RTX
      otherwise.  */
   rtx containing_mem;
-  /* Location of the register withing INSN.  */
+  /* Location of the register within INSN.  */
   rtx *usep;
   /* The reverse uid of the insn.  */
   int ruid;

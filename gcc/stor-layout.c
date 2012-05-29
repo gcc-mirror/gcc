@@ -1799,7 +1799,7 @@ finish_bitfield_representative (tree repr, tree field)
   if (nextf)
     {
       tree maxsize;
-      /* If there was an error, the field may be not layed out
+      /* If there was an error, the field may be not laid out
          correctly.  Don't bother to do anything.  */
       if (TREE_TYPE (nextf) == error_mark_node)
 	return;
@@ -1880,7 +1880,7 @@ finish_bitfield_representative (tree repr, tree field)
 }
 
 /* Compute and set FIELD_DECLs for the underlying objects we should
-   use for bitfield access for the structure layed out with RLI.  */
+   use for bitfield access for the structure laid out with RLI.  */
 
 static void
 finish_bitfield_layout (record_layout_info rli)
@@ -2231,7 +2231,7 @@ layout_type (tree type)
 	      }
 
 	    /* If we arrived at a length of zero ignore any overflow
-	       that occured as part of the calculation.  There exists
+	       that occurred as part of the calculation.  There exists
 	       an association of the plus one where that overflow would
 	       not happen.  */
 	    if (integer_zerop (length)

@@ -577,7 +577,7 @@
   (and (eq_attr "type" "cbranch")
        (match_test "TARGET_SH2"))
   ;; SH2e has a hardware bug that pretty much prohibits the use of
-  ;; annuled delay slots.
+  ;; annulled delay slots.
   [(eq_attr "cond_delay_slot" "yes") (and (eq_attr "cond_delay_slot" "yes")
 					  (not (eq_attr "cpu" "sh2e"))) (nil)])
 
@@ -631,7 +631,7 @@
   [(set_attr "type" "mt_group")])
 
 ;; Test low QI subreg against zero.
-;; This avoids unecessary zero extension before the test.
+;; This avoids unnecessary zero extension before the test.
 
 (define_insn "tstqi_t_zero"
   [(set (reg:SI T_REG)
@@ -5470,7 +5470,7 @@ label:
 ;; selected to copy QImode regs.  If one of them happens to be allocated
 ;; on the stack, reload will stick to movqi insn and generate wrong
 ;; displacement addressing because of the generic m alternatives.  
-;; With the movqi_reg_reg being specified before movqi it will be intially 
+;; With the movqi_reg_reg being specified before movqi it will be initially 
 ;; picked to load/store regs.  If the regs regs are on the stack reload will
 ;; try other insns and not stick to movqi_reg_reg.
 ;; The same applies to the movhi variants.

@@ -2010,7 +2010,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		p = true_predicate ();
 
 	      /* We account everything but the calls.  Calls have their own
-		 size/time info attached to cgraph edges.  This is neccesary
+		 size/time info attached to cgraph edges.  This is necessary
 		 in order to make the cost disappear after inlining.  */
 	      if (!is_gimple_call (stmt))
 		{

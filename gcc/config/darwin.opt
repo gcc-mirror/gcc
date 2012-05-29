@@ -224,7 +224,7 @@ Generate code suitable for fast turn around debugging
 ; and cc1plus don't crash if no -mmacosx-version-min is passed.  The
 ; driver will always pass a -mmacosx-version-min, so in normal use the
 ; Init is never used.  Useful for setting the OS on which people
-; ususally debug.
+; usually debug.
 mmacosx-version-min=
 Target Joined Report Var(darwin_macosx_version_min) Init("10.6")
 The earliest MacOS X version on which this program will run

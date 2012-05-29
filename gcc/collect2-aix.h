@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
    Definitions adapted from bfd.  (Fairly heavily adapted in some cases.)
    ------------------------------------------------------------------------- */
 
-/* Compatiblity types for bfd.  */
+/* Compatibility types for bfd.  */
 typedef unsigned HOST_WIDE_INT bfd_vma;
 
 /* The size of an archive's fl_magic field.  */
@@ -135,7 +135,7 @@ struct external_filehdr_32
   /* The number of entries in the symbol table.  */
   char f_nsyms[4];
 
-  /* The size of the auxillary header.  */
+  /* The size of the auxiliary header.  */
   char f_opthdr[2];
 
   /* Flags.  */
@@ -157,7 +157,7 @@ struct external_filehdr_64
   /* The offset of the symbol table from the start of the file.  */
   char f_symptr[8];
 
-  /* The size of the auxillary header.  */
+  /* The size of the auxiliary header.  */
   char f_opthdr[2];
 
   /* Flags.  */
@@ -222,7 +222,7 @@ struct external_syment
   /* The class of symbol (a C_* value).  */
   char n_sclass[1];
 
-  /* The number of auxillary symbols attached to this entry.  */
+  /* The number of auxiliary symbols attached to this entry.  */
   char n_numaux[1];
 };
 

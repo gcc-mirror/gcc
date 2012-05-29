@@ -998,7 +998,7 @@ vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **ops,
   HOST_WIDE_INT addr_offset;
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
-     from .foo.bar to the preceeding MEM_REF offset and replace the
+     from .foo.bar to the preceding MEM_REF offset and replace the
      address with &OBJ.  */
   addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (op->op0, 0),
 					     &addr_offset);
@@ -1043,7 +1043,7 @@ vn_reference_maybe_forwprop_address (VEC (vn_reference_op_s, heap) **ops,
   off = double_int_sext (off, TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
-     from .foo.bar to the preceeding MEM_REF offset and replace the
+     from .foo.bar to the preceding MEM_REF offset and replace the
      address with &OBJ.  */
   if (code == ADDR_EXPR)
     {
@@ -1379,7 +1379,7 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
 
 /* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
    from the statement defining VUSE and if not successful tries to
-   translate *REFP and VR_ through an aggregate copy at the defintion
+   translate *REFP and VR_ through an aggregate copy at the definition
    of VUSE.  */
 
 static void *

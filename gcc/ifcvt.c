@@ -3877,7 +3877,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 
   /* We can avoid creating a new basic block if then_bb is immediately
      followed by else_bb, i.e. deleting then_bb allows test_bb to fall
-     thru to else_bb.  */
+     through to else_bb.  */
 
   if (then_bb->next_bb == else_bb
       && then_bb->prev_bb == test_bb

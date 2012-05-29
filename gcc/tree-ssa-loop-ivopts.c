@@ -4704,7 +4704,7 @@ may_eliminate_iv (struct ivopts_data *data,
       period_value = tree_to_double_int (period);
       if (double_int_ucmp (max_niter, period_value) > 0)
         {
-          /* See if we can take advantage of infered loop bound information.  */
+          /* See if we can take advantage of inferred loop bound information.  */
           if (data->loop_single_exit_p)
             {
               if (!max_loop_iterations (loop, &max_niter))
@@ -4817,7 +4817,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
   /* When the condition is a comparison of the candidate IV against
      zero, prefer this IV.
 
-     TODO: The constant that we're substracting from the cost should
+     TODO: The constant that we're subtracting from the cost should
      be target-dependent.  This information should be added to the
      target costs for each backend.  */
   if (!infinite_cost_p (elim_cost) /* Do not try to decrease infinite! */

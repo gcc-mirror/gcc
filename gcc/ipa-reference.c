@@ -615,7 +615,7 @@ propagate (void)
   ipa_discover_readonly_nonaddressable_vars ();
   generate_summary ();
 
-  /* Now we know what vars are realy statics; prune out those that aren't.  */
+  /* Now we know what vars are really statics; prune out those that aren't.  */
   FOR_EACH_VARIABLE (vnode)
     if (vnode->symbol.externally_visible
 	|| TREE_ADDRESSABLE (vnode->symbol.decl)
@@ -637,7 +637,7 @@ propagate (void)
         bitmap_and_into (node_l->statics_written, all_module_statics);
     }
 
-  /* Propagate the local information thru the call graph to produce
+  /* Propagate the local information through the call graph to produce
      the global information.  All the nodes within a cycle will have
      the same info so we collapse cycles first.  Then we can do the
      propagation in one pass from the leaves to the roots.  */

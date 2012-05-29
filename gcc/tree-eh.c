@@ -1346,7 +1346,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
   /* Begin inserting code for getting to the finally block.  Things
      are done in this order to correspond to the sequence the code is
-     layed out.  */
+     laid out.  */
 
   if (tf->may_fallthru)
     {
@@ -1957,7 +1957,7 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
       /* If the stmt can throw use a new temporary for the assignment
          to a LHS.  This makes sure the old value of the LHS is
 	 available on the EH edge.  Only do so for statements that
-	 potentially fall thru (no noreturn calls e.g.), otherwise
+	 potentially fall through (no noreturn calls e.g.), otherwise
 	 this new assignment might create fake fallthru regions.  */
       if (stmt_could_throw_p (stmt)
 	  && gimple_has_lhs (stmt)
@@ -2748,7 +2748,7 @@ maybe_clean_or_replace_eh_stmt (gimple old_stmt, gimple new_stmt)
   return false;
 }
 
-/* Given a statement OLD_STMT in OLD_FUN and a duplicate statment NEW_STMT
+/* Given a statement OLD_STMT in OLD_FUN and a duplicate statement NEW_STMT
    in NEW_FUN, copy the EH table data from OLD_STMT to NEW_STMT.  The MAP
    operand is the return value of duplicate_eh_regions.  */
 
@@ -3307,7 +3307,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 
 	/* Collect the labels for a switch.  Zero the post_landing_pad
 	   field becase we'll no longer have anything keeping these labels
-	   in existance and the optimizer will be free to merge these
+	   in existence and the optimizer will be free to merge these
 	   blocks at will.  */
 	for (c = r->u.eh_try.first_catch; c ; c = c->next_catch)
 	  {

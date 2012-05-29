@@ -723,7 +723,7 @@ update_gimple_call (gimple_stmt_iterator *si_p, tree fn, int nargs, ...)
    call.  This can only be done if EXPR is a CALL_EXPR with valid
    GIMPLE operands as arguments, or if it is a suitable RHS expression
    for a GIMPLE_ASSIGN.  More complex expressions will require
-   gimplification, which will introduce addtional statements.  In this
+   gimplification, which will introduce additional statements.  In this
    event, no update is performed, and the function returns false.
    Note that we cannot mutate a GIMPLE_CALL in-place, so we always
    replace the statement at *SI_P with an entirely new statement.

@@ -591,7 +591,7 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
      overflow, ... */
   if (exit_must_be_taken)
     {
-      /* ... then we can strenghten this to C / S, and possibly we can use
+      /* ... then we can strengthen this to C / S, and possibly we can use
 	 the upper bound on C given by BNDS.  */
       if (TREE_CODE (c) == INTEGER_CST)
 	mpz_set_double_int (bnd, tree_to_double_int (c), true);

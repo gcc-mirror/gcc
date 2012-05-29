@@ -2762,7 +2762,7 @@ mn10300_adjust_sched_cost (rtx insn, rtx link, rtx dep, int cost)
       Chapter 3 of the MN103E Series Instruction Manual
       where it says:
 
-        "When the preceeding instruction is a CPU load or
+        "When the preceding instruction is a CPU load or
 	 store instruction, a following FPU instruction
 	 cannot be executed until the CPU completes the
 	 latency period even though there are no register
@@ -2788,7 +2788,7 @@ mn10300_adjust_sched_cost (rtx insn, rtx link, rtx dep, int cost)
     return cost;
 
   /* XXX: Verify: The text of 1-7-4 implies that the restriction
-     only applies when an INTEGER load/store preceeds an FPU
+     only applies when an INTEGER load/store precedes an FPU
      instruction, but is this true ?  For now we assume that it is.  */
   if (GET_MODE_CLASS (GET_MODE (SET_SRC (PATTERN (insn)))) != MODE_INT)
     return cost;

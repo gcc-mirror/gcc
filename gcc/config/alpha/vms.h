@@ -153,7 +153,7 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* Eventhough pointers are 64bits, only 32bit ever remain significant in code
+/* Even though pointers are 64bits, only 32bit ever remain significant in code
    addresses.  */
 #define MASK_RETURN_ADDR                                \
   (flag_vms_pointer_size == VMS_POINTER_SIZE_NONE       \

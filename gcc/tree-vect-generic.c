@@ -508,7 +508,7 @@ type_for_widest_vector_mode (tree type, optab op)
    returns either the element itself, either BIT_FIELD_REF, or an
    ARRAY_REF expression.
 
-   GSI is requred to insert temporary variables while building a
+   GSI is required to insert temporary variables while building a
    refernece to the element of the vector VECT.
 
    PTMPVEC is a pointer to the temporary variable for caching

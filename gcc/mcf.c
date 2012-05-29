@@ -1385,7 +1385,7 @@ sum_edge_counts (VEC (edge, gc) *to_edges)
 }
 
 
-/* Main routine. Smoothes the intial assigned basic block and edge counts using
+/* Main routine. Smoothes the initial assigned basic block and edge counts using
    a minimum cost flow algorithm, to ensure that the flow consistency rule is
    obeyed: sum of outgoing edges = sum of incoming edges for each basic
    block.  */

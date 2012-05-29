@@ -713,7 +713,7 @@ struct GTY(()) machine_function
   int attributes_checked_p;
 };
 
-/* AVR does not round pushes, but the existance of this macro is
+/* AVR does not round pushes, but the existence of this macro is
    required in order for pushes to be generated.  */
 #define PUSH_ROUNDING(X)	(X)
 

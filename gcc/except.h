@@ -46,7 +46,7 @@ enum eh_region_type
 
   /* TRY regions implement catching an exception.  The list of types associated
      with the attached catch handlers is examined in order by the runtime and
-     control is transfered to the appropriate handler.  Note that a NULL type
+     control is transferred to the appropriate handler.  Note that a NULL type
      list is a catch-all handler, and that it will catch *all* exceptions
      including those originating from a different language.  */
   ERT_TRY,
@@ -80,7 +80,7 @@ struct GTY(()) eh_landing_pad_d
   /* The region with which this landing pad is associated.  */
   struct eh_region_d *region;
 
-  /* At the gimple level, the location to which control will be transfered
+  /* At the gimple level, the location to which control will be transferred
      for this landing pad.  There can be both EH and normal edges into the
      block containing the post-landing-pad label.  */
   tree post_landing_pad;

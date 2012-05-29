@@ -4069,7 +4069,7 @@ compute_avail (void)
 			if (TREE_CODE (nary->op[i]) == SSA_NAME)
 			  add_to_exp_gen (block, nary->op[i]);
 
-		      /* If the NARY traps and there was a preceeding
+		      /* If the NARY traps and there was a preceding
 		         point in the block that might not return avoid
 			 adding the nary to EXP_GEN.  */
 		      if (BB_MAY_NOTRETURN (block)

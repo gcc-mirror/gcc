@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
       The symbol table is constructed starting from the trivially needed
       symbols finalized by the frontend.  Functions are lowered into
       GIMPLE representation and callgraph/reference lists are constructed.
-      Those are used to discover other neccesary functions and variables.
+      Those are used to discover other necessary functions and variables.
 
       At the end the bodies of unreachable functions are removed.
 
@@ -220,7 +220,7 @@ static GTY (()) tree vtable_entry_type;
 
 /* Determine if function DECL is trivially needed and should stay in the
    compilation unit.  This is used at the symbol table construction time
-   and differs from later logic removing unnecesary functions that can
+   and differs from later logic removing unnecessary functions that can
    take into account results of analysis, whole program info etc.  */
 
 static bool
@@ -385,7 +385,7 @@ referred_to_p (symtab_node node)
 {
   struct ipa_ref *ref;
 
-  /* See if there are any refrences at all.  */
+  /* See if there are any references at all.  */
   if (ipa_ref_list_referring_iterate (&node->symbol.ref_list, 0, ref))
     return true;
   /* For functions check also calls.  */
@@ -1534,7 +1534,7 @@ assemble_thunk (struct cgraph_node *node)
 
 
 
-/* Assemble thunks and aliases asociated to NODE.  */
+/* Assemble thunks and aliases associated to NODE.  */
 
 static void
 assemble_thunks_and_aliases (struct cgraph_node *node)
@@ -1903,7 +1903,7 @@ get_alias_symbol (tree decl)
 
 
 /* Weakrefs may be associated to external decls and thus not output
-   at expansion time.  Emit all neccesary aliases.  */
+   at expansion time.  Emit all necessary aliases.  */
 
 static void
 output_weakrefs (void)

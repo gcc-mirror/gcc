@@ -546,7 +546,7 @@ default_function_section (tree decl, enum node_frequency freq,
     return NULL;
   /* Startup code should go to startup subsection unless it is
      unlikely executed (this happens especially with function splitting
-     where we can split away unnecesary parts of static constructors.  */
+     where we can split away unnecessary parts of static constructors.  */
   if (startup && freq != NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return get_named_text_section (decl, ".text.startup", NULL);
 

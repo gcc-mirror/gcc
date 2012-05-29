@@ -133,7 +133,7 @@ eq_ivtype_map_elts (const void *e1, const void *e2)
 
 
 
-/* Record LOOP as occuring in REGION.  */
+/* Record LOOP as occurring in REGION.  */
 
 static void
 sese_record_loop (sese region, loop_p loop)

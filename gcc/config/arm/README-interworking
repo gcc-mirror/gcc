@@ -227,7 +227,7 @@ considerations when building programs and DLLs:
 
 Switching between the ARM and Thumb instruction sets is accomplished
 via the BX instruction which takes as an argument a register name.
-Control is transfered to the address held in this register (with the
+Control is transferred to the address held in this register (with the
 bottom bit masked out), and if the bottom bit is set, then Thumb
 instruction processing is enabled, otherwise ARM instruction
 processing is enabled.

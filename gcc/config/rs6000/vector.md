@@ -172,7 +172,7 @@
 
 
 
-;; Reload patterns for vector operations.  We may need an addtional base
+;; Reload patterns for vector operations.  We may need an additional base
 ;; register to convert the reg+offset addressing to reg+reg for vector
 ;; registers and reg+reg or (reg+reg)&(-16) addressing to just an index
 ;; register for gpr registers.

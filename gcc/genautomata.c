@@ -2390,7 +2390,7 @@ add_presence_absence (unit_set_el_t dest_list,
 
 /* The function inserts BYPASS in the list of bypasses of the
    corresponding output insn.  The order of bypasses in the list is
-   decribed in a comment for member `bypass_list' (see above).  If
+   described in a comment for member `bypass_list' (see above).  If
    there is already the same bypass in the list the function reports
    this and does nothing.  */
 static void

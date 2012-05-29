@@ -4504,7 +4504,7 @@ adjust_piece_list (rtx *dest, rtx *src, rtx *inner,
 
   if (copy)
     {
-      /* First copy all nodes preceeding the current bitpos.  */
+      /* First copy all nodes preceding the current bitpos.  */
       while (src != inner)
 	{
 	  *dest = decl_piece_node (*decl_piece_varloc_ptr (*src),
@@ -12686,7 +12686,7 @@ add_loc_descr_to_each (dw_loc_list_ref list, dw_loc_descr_ref ref)
 
 /* Given two lists RET and LIST
    produce location list that is result of adding expression in LIST
-   to expression in RET on each possition in program.
+   to expression in RET on each position in program.
    Might be destructive on both RET and LIST.
 
    TODO: We handle only simple cases of RET or LIST having at most one
@@ -19989,7 +19989,7 @@ dwarf2out_source_line (unsigned int line, const char *filename,
   /* Recall that this end-of-prologue indication is *not* the same thing
      as the end_prologue debug hook.  The NOTE_INSN_PROLOGUE_END note,
      to which the hook corresponds, follows the last insn that was 
-     emitted by gen_prologue.  What we need is to preceed the first insn
+     emitted by gen_prologue.  What we need is to precede the first insn
      that had been emitted after NOTE_INSN_FUNCTION_BEG, i.e. the first
      insn that corresponds to something the user wrote.  These may be
      very different locations once scheduling is enabled.  */

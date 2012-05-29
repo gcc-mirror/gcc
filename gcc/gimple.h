@@ -4800,7 +4800,7 @@ gimple_return_set_retval (gimple gs, tree retval)
 }
 
 
-/* Returns true when the gimple statment STMT is any of the OpenMP types.  */
+/* Returns true when the gimple statement STMT is any of the OpenMP types.  */
 
 #define CASE_GIMPLE_OMP				\
     case GIMPLE_OMP_PARALLEL:			\

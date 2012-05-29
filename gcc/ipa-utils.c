@@ -325,7 +325,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
 
 
 /* Given a memory reference T, will return the variable at the bottom
-   of the access.  Unlike get_base_address, this will recurse thru
+   of the access.  Unlike get_base_address, this will recurse through
    INDIRECT_REFS.  */
 
 tree

@@ -762,7 +762,7 @@ do {									\
 /* This value is used in tree-sra to decide whether it might benefical
    to split a struct move into several word-size moves.  For S/390
    only small values make sense here since struct moves are relatively
-   cheap thanks to mvc so the small default value choosen for archs
+   cheap thanks to mvc so the small default value chosen for archs
    with memmove patterns should be ok.  But this value is multiplied
    in tree-sra with UNITS_PER_WORD to make a decision so we adjust it
    here to compensate for that factor since mvc costs exactly the same

@@ -4700,7 +4700,7 @@ typedef struct record_layout_info_s
   /* The alignment of the record so far, ignoring #pragma pack and
      __attribute__ ((packed)), in bits.  */
   unsigned int unpacked_align;
-  /* The previous field layed out.  */
+  /* The previous field laid out.  */
   tree prev_field;
   /* The static variables (i.e., class variables, as opposed to
      instance variables) encountered in T.  */
@@ -4933,7 +4933,7 @@ extern bool contains_placeholder_p (const_tree);
 
 extern bool type_contains_placeholder_p (tree);
 
-/* Given a tree EXP, find all occurences of references to fields
+/* Given a tree EXP, find all occurrences of references to fields
    in a PLACEHOLDER_EXPR and place them in vector REFS without
    duplicates.  Also record VAR_DECLs and CONST_DECLs.  Note that
    we assume here that EXP contains only arithmetic expressions
