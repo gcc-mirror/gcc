@@ -1,3 +1,9 @@
+2012-05-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wmissing-braces): Use LangEnabledBy(C ObjC,Wall).
+	* c-opts.c (c_common_handle_option): Remove code handling
+	warn_missing_braces.
+
 2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/25137

@@ -463,7 +463,7 @@ C ObjC C++ ObjC++ Var(warn_main) Init(-1) Warning
 Warn about suspicious declarations of \"main\"
 
 Wmissing-braces
-C ObjC C++ ObjC++ Var(warn_missing_braces) Warning
+C ObjC C++ ObjC++ Var(warn_missing_braces) Warning LangEnabledBy(C ObjC,Wall)
 Warn about possibly missing braces around initializers
 
 Wmissing-declarations
