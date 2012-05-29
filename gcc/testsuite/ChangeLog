@@ -1,3 +1,11 @@
+2012-05-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/torture/trap-1.c,
+	gcc.target/cris/torture/trap-2.c,
+	gcc.target/cris/torture/trap-3.c,
+	gcc.target/cris/torture/trap-v0.c,
+	gcc.target/cris/torture/trap-v3.c: New tests.
+
 2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/25137
