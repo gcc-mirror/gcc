@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "target.h"
 #include "target-def.h"
-#include "integrate.h"
 #include "langhooks.h"
 #include "cfglayout.h"
 #include "sched-int.h"

@@ -38,7 +38,7 @@
 #include "tm-constrs.h"
 #include "target.h"
 #include "target-def.h"
-#include "integrate.h"
+#include "function.h"
 #include "dwarf2.h"
 #include "timevar.h"
 #include "gimple.h"

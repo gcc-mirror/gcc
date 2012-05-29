@@ -460,9 +460,5 @@ extern void debug_reload (void);
    reloading to/from a register that is wider than a word.  */
 extern rtx reload_adjust_reg_for_mode (rtx, enum machine_mode);
 
-/* Ideally this function would be in ira.c or reload, but due to dependencies
-   on integrate.h, it's part of integrate.c.  */
-extern void allocate_initial_values (VEC (reg_equivs_t, gc) *);
-
 /* Allocate or grow the reg_equiv tables, initializing new entries to 0.  */
 extern void grow_reg_equivs (void);

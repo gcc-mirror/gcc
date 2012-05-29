@@ -45,7 +45,6 @@
 #include "debug.h"
 #include "target.h"
 #include "target-def.h"
-#include "integrate.h"
 #include "langhooks.h"
 #include "cfglayout.h"
 #include "df.h"

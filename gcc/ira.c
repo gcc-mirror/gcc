@@ -380,7 +380,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "reload.h"
 #include "diagnostic-core.h"
-#include "integrate.h"
+#include "function.h"
 #include "ggc.h"
 #include "ira-int.h"
 #include "dce.h"
@@ -4034,7 +4034,55 @@ move_unallocated_pseudos (void)
       }
 }
 
+/* If the backend knows where to allocate pseudos for hard
+   register initial values, register these allocations now.  */
+void
+allocate_initial_values (void)
+{
+  if (targetm.allocate_initial_value)
+    {
+      rtx hreg, preg, x;
+      int i, regno;
 
+      for (i = 0; HARD_REGISTER_NUM_P (i); i++)
+	{
+	  if (! initial_value_entry (i, &hreg, &preg))
+	    break;
+
+	  x = targetm.allocate_initial_value (hreg);
+	  regno = REGNO (preg);
+	  if (x && REG_N_SETS (regno) <= 1)
+	    {
+	      if (MEM_P (x))
+		reg_equiv_memory_loc (regno) = x;
+	      else
+		{
+		  basic_block bb;
+		  int new_regno;
+
+		  gcc_assert (REG_P (x));
+		  new_regno = REGNO (x);
+		  reg_renumber[regno] = new_regno;
+		  /* Poke the regno right into regno_reg_rtx so that even
+		     fixed regs are accepted.  */
+		  SET_REGNO (preg, new_regno);
+		  /* Update global register liveness information.  */
+		  FOR_EACH_BB (bb)
+		    {
+		      if (REGNO_REG_SET_P(df_get_live_in (bb), regno))
+			SET_REGNO_REG_SET (df_get_live_in (bb), new_regno);
+		      if (REGNO_REG_SET_P(df_get_live_out (bb), regno))
+			SET_REGNO_REG_SET (df_get_live_out (bb), new_regno);
+		    }
+		}
+	    }
+	}
+
+      gcc_checking_assert (! initial_value_entry (FIRST_PSEUDO_REGISTER,
+						  &hreg, &preg));
+    }
+}
+
 /* All natural loops.  */
 struct loops ira_loops;
 
@@ -4239,7 +4287,7 @@ ira (FILE *f)
       memset (ira_spilled_reg_stack_slots, 0,
 	      max_regno * sizeof (struct ira_spilled_reg_stack_slot));
     }
-  allocate_initial_values (reg_equivs);
+  allocate_initial_values ();
 
   /* See comment for find_moveable_pseudos call.  */
   if (ira_conflicts_p)

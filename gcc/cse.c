@@ -622,9 +622,7 @@ static enum machine_mode cse_cc_succs (basic_block, basic_block, rtx, rtx,
 
 static const struct rtl_hooks cse_rtl_hooks = RTL_HOOKS_INITIALIZER;
 
-/* Nonzero if X has the form (PLUS frame-pointer integer).  We check for
-   virtual regs here because the simplify_*_operation routines are called
-   by integrate.c, which is called before virtual register instantiation.  */
+/* Nonzero if X has the form (PLUS frame-pointer integer).  */
 
 static bool
 fixed_base_plus_p (rtx x)
@@ -635,9 +633,6 @@ fixed_base_plus_p (rtx x)
       if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx)
 	return true;
       if (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM])
-	return true;
-      if (REGNO (x) >= FIRST_VIRTUAL_REGISTER
-	  && REGNO (x) <= LAST_VIRTUAL_REGISTER)
 	return true;
       return false;
 

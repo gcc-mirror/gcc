@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "rtl.h"
 #include "insn-config.h"
-#include "integrate.h"
 #include "flags.h"
 #include "langhooks.h"
 #include "target.h"

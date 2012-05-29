@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "targhooks.h"
-#include "integrate.h"
 #include "langhooks.h"
 #include "df.h"
 

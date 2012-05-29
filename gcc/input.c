@@ -117,7 +117,7 @@ read_line (FILE *file)
    the null character.  */
 
 const char *
-location_get_source_line(expanded_location xloc)
+location_get_source_line (expanded_location xloc)
 {
   const char *buffer;
   int lines = 1;

@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2.h"
 #include "debug.h"
 #include "tm_p.h"
-#include "integrate.h"
 #include "target.h"
 #include "target-def.h"
 #include "df.h"

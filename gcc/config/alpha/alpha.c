@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "diagnostic-core.h"
 #include "ggc.h"
-#include "integrate.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"

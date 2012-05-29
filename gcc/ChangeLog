@@ -1,3 +1,63 @@
+2012-05-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* integrate.c: Remove.
+	* integrate.h: Remove.
+	* Makefile.in: Remove make rules for integrate.c and INTEGRATE_H.
+	* config/arm/t-arm: Remove INTEGRATE_H dependency for target files.
+	* config/rs6000/t-rs6000: Likewise
+	* config/spu/t-spu-elf: Likewise.
+	* function.h (get_hard_reg_initial_val, has_hard_reg_initial_val,
+	get_hard_reg_initial_reg, emit_initial_value_sets): Move prototypes
+	from integrate.h to here.
+	(initial_value_entry): New prototype.
+	* reload.h (allocate_initial_values): Remove prototype.
+	* tree.h (set_decl_abstract_flags, set_decl_origin_self): Likewise.
+	* cse.c (fixed_base_plus_p): Don't handle virtual registers for
+	integrate.c.
+	* dwarf2out.c (set_decl_origin_self, set_block_origin_self,
+	set_decl_abstract_flags, set_block_abstract_flags): Move from
+	integrate.c to here, the only user.
+	* expmed.c (extract_fixed_bit_field): Remove outdated comment
+	about integrate.c.
+	* function.c: Don't include integrate.h.
+	(struct initial_value_pair, struct initial_value_struct,
+	get_hard_reg_initial_val, has_hard_reg_initial_val,
+	get_hard_reg_initial_reg, emit_initial_value_sets): Move from
+	integrate.c to here.
+	(initial_value_entry): New function.
+	* genemit.c (main): Don't print integrate.h include line.
+	* ira.c: Don't include integrate.h.
+	(allocate_initial_values): Move from integrate.c to here.
+	(ira): Update allocate_initial_values call.
+	* tree-inline.c: Don't include integrate.h.
+	(function_attribute_inlinable_p): Moved from integrate.c to here.
+	* cfgexpand.c: Don't include integrate.h.
+	* except.c: Likewise.
+	* langhooks.c: Likewise.
+	* passes.c: Likewise.
+	* toplev.c: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/spu/spu.c: Likewise.
+	* config/epiphany/epiphany.c: Likewise.
+	* config/mep/mep.c: Likewise.
+	* config/score/score.c: Likewise.
+	* config/picochip/picochip.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/alpha/alpha.c: Likewise.
+	* config/microblaze/microblaze.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/v850/v850.c: Likewise.
+	* config/mmix/mmix.c: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/m32r/m32r.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/c6x/c6x.c: Include function.h instead of integrate.h.
+	* config/tilegx/tilegx.c: Likewise.
+	* config/tilepro/tilepro.c: Likewise.
+
 2012-05-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr (s-avr-mmcu-texi): Call 
@@ -1448,7 +1508,8 @@
 	* doc/options.texi (EnabledBy): Document
 	* opts.c: Include opts.h and options.h before tm.h.
 	(finish_options): Do not handle some sub-options here...
-	(common_handle_option): ... instead call common_handle_option_auto here.
+	(common_handle_option): ... instead call common_handle_option_auto
+	here.
 	* optc-gen.awk: Handle EnabledBy.
 	* opth-gen.awk: Declare common_handle_option_auto.
 	* common.opt (Wuninitialized): Use EnabledBy. Delete Init.

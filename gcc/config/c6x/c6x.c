@@ -40,7 +40,7 @@
 #include "tm-preds.h"
 #include "tm-constrs.h"
 #include "df.h"
-#include "integrate.h"
+#include "function.h"
 #include "diagnostic-core.h"
 #include "cgraph.h"
 #include "cfglayout.h"

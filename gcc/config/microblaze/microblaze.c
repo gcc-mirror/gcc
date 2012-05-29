@@ -31,7 +31,6 @@
 #include "conditions.h"
 #include "insn-flags.h"
 #include "insn-attr.h"
-#include "integrate.h"
 #include "recog.h"
 #include "tree.h"
 #include "function.h"
