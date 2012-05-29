@@ -1,5 +1,8 @@
 /* PR preprocessor/28709 */
-/* { dg-do preprocess } */
+/* 
+   { dg-options "-ftrack-macro-expansion=0" }
+   { dg-do preprocess }
+*/
 
 #define foo - ## >>
 foo		/* { dg-error "pasting \"-\" and \">>\"" } */

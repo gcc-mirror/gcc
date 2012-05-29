@@ -413,9 +413,13 @@ struct cpp_reader
      macro invocation.  */
   source_location invocation_location;
 
-  /* True if this call to cpp_get_token should consider setting
-     invocation_location.  */
-  bool set_invocation_location;
+  /* Nonzero if we are about to expand a macro.  Note that if we are
+     really expanding a macro, the function macro_of_context returns
+     the macro being expanded and this flag is set to false.  Client
+     code should use the function in_macro_expansion_p to know if we
+     are either about to expand a macro, or are actually expanding
+     one.  */
+  bool about_to_expand_macro_p;
 
   /* Search paths for include files.  */
   struct cpp_dir *quote_include;	/* "" */

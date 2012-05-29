@@ -1,4 +1,7 @@
-/* { dg-do preprocess } */
+/*
+  { dg-options "-ftrack-macro-expansion=0" }
+  { dg-do preprocess }
+*/
 
 /* Test correct diagnostics when pasting in #include.
    Source: PR preprocessor/6780.  */
