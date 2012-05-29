@@ -159,7 +159,7 @@ struct GTY(()) line_map_macro {
 
      Note that a virtual location is a location returned by
      linemap_add_macro_token.  It encodes the relevant locations (x,y
-     pairs) of that token accross the macro expansions from which it
+     pairs) of that token across the macro expansions from which it
      (the token) might come from.
 
      In the example above x1 (for token "+") is going to be the same
@@ -370,7 +370,7 @@ struct GTY(()) line_maps {
 #define LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP(SET) \
   LINEMAPS_LAST_ALLOCATED_MAP(SET, false)
 
-/* Returns a pointer to the begining of the region where macro maps
+/* Returns a pointer to the beginning of the region where macro maps
    are allcoated.  */
 #define LINEMAPS_MACRO_MAPS(SET) \
   LINEMAPS_MAPS(SET, true)
@@ -450,7 +450,7 @@ extern const struct line_map *linemap_add
 extern const struct line_map *linemap_lookup
   (struct line_maps *, source_location);
 
-/* Returns TRUE if the line table set tracks token locations accross
+/* Returns TRUE if the line table set tracks token locations across
    macro expansion, FALSE otherwise.  */
 bool linemap_tracks_macro_expansion_locs_p (struct line_maps *);
 

@@ -446,7 +446,7 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
 	 
 	 We exclude the -fdirectives-only case because macro expansion
 	 has not been performed yet, and block comments can cause spaces
-	 to preceed the directive.  */
+	 to precede the directive.  */
       if (CPP_OPTION (pfile, preprocessed)
 	  && !CPP_OPTION (pfile, directives_only)
 	  && (indented || !(dir->flags & IN_I)))
