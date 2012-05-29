@@ -77,7 +77,7 @@ __divv2df3 (vector double a_in, vector double b_in)
   a_exp_1s = (vec_ullong2)spu_cmpeq(a_exp, exp_mask_u32);
   b_exp_1s = (vec_ullong2)spu_cmpeq(b_exp, exp_mask_u32);
 
-  /* Identify all possible special values that must be accomodated including:
+  /* Identify all possible special values that must be accommodated including:
    * +-denorm, +-0, +-infinity, and NaNs.
    */
   a_denorm0= (vec_ullong2)spu_cmpeq(a_exp, 0);

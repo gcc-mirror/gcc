@@ -25,7 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 extern vector unsigned int __mfc_tag_table;
 
 /* Release the specified DMA tag from exclusive use.  Once released, the
-   tag is available for future reservation.  Upon sucessful release,
+   tag is available for future reservation.  Upon successful release,
    MFC_DMA_TAG_VALID is returned.  If the specified tag is not in the
    range 0 to 31, or had not been reserved, no action is taken and
    MFC_DMA_TAG_INVALID is returned.  */

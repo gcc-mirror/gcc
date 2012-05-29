@@ -26,7 +26,7 @@ extern vector unsigned int __mfc_tag_table;
 
 /* Release a sequential group of tags from exclusive use. The sequential
    group of tags is the range starting from <first_tag> through
-   <first_tag>+<number_of_tags>-1. Upon sucessful release, MFC_DMA_TAG_VALID
+   <first_tag>+<number_of_tags>-1. Upon successful release, MFC_DMA_TAG_VALID
    is returned and the tags become available for future reservation.
 
    If the specified tags were not previously reserved, no action is

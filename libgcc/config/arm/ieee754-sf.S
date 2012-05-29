@@ -661,7 +661,7 @@ ARM_FUNC_ALIAS aeabi_fdiv divsf3
 	beq	LSYM(Ldv_s)
 LSYM(Ldv_x):
 
-	@ Substract divisor exponent from dividend''s
+	@ Subtract divisor exponent from dividend''s
 	sub	r2, r2, r3
 
 	@ Preserve final sign into ip.
