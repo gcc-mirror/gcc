@@ -1,4 +1,4 @@
-2012-05-29  Iain Sandoe  <iains@gcc.gnu.org>
+2012-05-29  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* config/darwin.h (STARTFILE_SPEC): Do not use -lbundle1.o when
 	Darwin >= 10.
