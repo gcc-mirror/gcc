@@ -1,5 +1,14 @@
 2012-05-29  Jack Howarth  <howarth@bromo.med.uc.edu>
 
+	PR debug/53453
+	* doc/tm.texi: Update.
+	* doc/tm.texi.in (SDB and DWARF) <TARGET_FORCE_AT_COMP_DIR>: Add @hook.
+	* target.def (force_at_comp_dir): New hook.
+	* config/darwin.h (TARGET_FORCE_AT_COMP_DIR): Define.
+	* dwarf2out.c (dwarf2out_finish): Check targetm.force_at_comp_dir.
+
+2012-05-29  Jack Howarth  <howarth@bromo.med.uc.edu>
+
 	* config/darwin.h (STARTFILE_SPEC): Do not use -lbundle1.o when
 	Darwin >= 10.
 	(DARWIN_DYLIB1_SPEC): Do not use -ldylib1.10.5.o when Darwin >= 10.
