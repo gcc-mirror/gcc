@@ -1,3 +1,8 @@
+2012-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* explow.c (probe_stack_range): Restore simple control flow and stop
+	again when the probe cannot be generated if HAVE_check_stack.
+
 2012-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/53519

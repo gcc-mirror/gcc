@@ -1579,12 +1579,11 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 								size, first)));
       emit_library_call (stack_check_libfunc, LCT_NORMAL, VOIDmode, 1, addr,
 			 Pmode);
-      return;
     }
 
   /* Next see if we have an insn to check the stack.  */
 #ifdef HAVE_check_stack
-  if (HAVE_check_stack)
+  else if (HAVE_check_stack)
     {
       struct expand_operand ops[1];
       rtx addr = memory_address (Pmode,
@@ -1592,10 +1591,10 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 					         stack_pointer_rtx,
 					         plus_constant (Pmode,
 								size, first)));
-
+      bool success;
       create_input_operand (&ops[0], addr, Pmode);
-      if (maybe_expand_insn (CODE_FOR_check_stack, 1, ops))
-	return;
+      success = maybe_expand_insn (CODE_FOR_check_stack, 1, ops);
+      gcc_assert (success);
     }
 #endif
 
