@@ -1,3 +1,10 @@
+2012-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53220
+	* call.c (convert_like_real) [ck_list]: Take array address directly.
+	* typeck.c (decay_conversion): Reject decay of an array compound
+	literal.
+
 2012-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53491

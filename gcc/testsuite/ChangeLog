@@ -1,3 +1,9 @@
+2012-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53220
+	* c-c++-common/array-lit.c: New.
+	* g++.dg/ext/complit12.C: #if 0 out decay-to-pointer test.
+
 2012-05-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53501

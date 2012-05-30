@@ -1758,7 +1758,8 @@ ISO C99 supports compound literals.  A compound literal looks like
 a cast containing an initializer.  Its value is an object of the
 type specified in the cast, containing the elements specified in
 the initializer; it is an lvalue.  As an extension, GCC supports
-compound literals in C90 mode and in C++.
+compound literals in C90 mode and in C++, though the semantics are
+somewhat different in C++.
 
 Usually, the specified type is a structure.  Assume that
 @code{struct foo} and @code{structure} are declared as shown:
@@ -1784,8 +1785,9 @@ This is equivalent to writing the following:
 @}
 @end smallexample
 
-You can also construct an array.  If all the elements of the compound literal
-are (made up of) simple constant expressions, suitable for use in
+You can also construct an array, though this is dangerous in C++, as
+explained below.  If all the elements of the compound literal are
+(made up of) simple constant expressions, suitable for use in
 initializers of objects of static storage duration, then the compound
 literal can be coerced to a pointer to its first element and used in
 such an initializer, as shown here:
@@ -1820,6 +1822,25 @@ static struct foo x = @{1, 'a', 'b'@};
 static int y[] = @{1, 2, 3@};
 static int z[] = @{1, 0, 0@};
 @end smallexample
+
+In C, a compound literal designates an unnamed object with static or
+automatic storage duration.  In C++, a compound literal designates a
+temporary object, which only lives until the end of its
+full-expression.  As a result, well-defined C code that takes the
+address of a subobject of a compound literal can be undefined in C++.
+For instance, if the array compound literal example above appeared
+inside a function, any subsequent use of @samp{foo} in C++ has
+undefined behavior because the lifetime of the array ends after the
+declaration of @samp{foo}.  As a result, the C++ compiler now rejects
+the conversion of a temporary array to a pointer.
+
+As an optimization, the C++ compiler sometimes gives array compound
+literals longer lifetimes: when the array either appears outside a
+function or has const-qualified type.  If @samp{foo} and its
+initializer had elements of @samp{char *const} type rather than
+@samp{char *}, or if @samp{foo} were a global variable, the array
+would have static storage duration.  But it is probably safest just to
+avoid the use of array compound literals in code compiled as C++.
 
 @node Designated Inits
 @section Designated Initializers
