@@ -4036,7 +4036,7 @@ move_unallocated_pseudos (void)
 
 /* If the backend knows where to allocate pseudos for hard
    register initial values, register these allocations now.  */
-void
+static void
 allocate_initial_values (void)
 {
   if (targetm.allocate_initial_value)
