@@ -1,3 +1,8 @@
+2012-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53519
+	* gcc.c-torture/compile/pr53519.c: New test.
+
 2012-05-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53516
