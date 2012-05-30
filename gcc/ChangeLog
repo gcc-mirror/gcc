@@ -1,3 +1,11 @@
+2012-05-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Makefile.in: Fix many dependencies.
+	(DWARF2_H): Depend on dwarf2.def.
+	(RTL_ERROR_H): Depend on rtl-error.h.
+	(TREE_PRETTY_PRINT_H, GIMPLE_PRETTY_PRINT_H): New.  Replace
+	all gimple-pretty-print.h and tree-pretty-print.h references.
+
 2012-05-30  Marc Glisse  <marc.glisse@inria.fr>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Optimize shuffle of
