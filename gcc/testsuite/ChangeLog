@@ -1,3 +1,9 @@
+2012-05-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53501
+	* gcc.dg/torture/pr53501.c: New testcase.
+	* c-c++-common/restrict-2.c: Adjust.
+
 2012-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/53519

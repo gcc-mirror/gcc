@@ -10025,12 +10025,12 @@ fold_binary_loc (location_t loc,
       /* Handle (A1 * C1) + (A2 * C2) with A1, A2 or C1, C2 being the
 	 same or one.  Make sure type is not saturating.
 	 fold_plusminus_mult_expr will re-associate.  */
-      if ((TREE_CODE (arg0) == MULT_EXPR
-	   || TREE_CODE (arg1) == MULT_EXPR)
+      if ((TREE_CODE (op0) == MULT_EXPR
+	   || TREE_CODE (op1) == MULT_EXPR)
 	  && !TYPE_SATURATING (type)
 	  && (!FLOAT_TYPE_P (type) || flag_associative_math))
         {
-	  tree tem = fold_plusminus_mult_expr (loc, code, type, arg0, arg1);
+	  tree tem = fold_plusminus_mult_expr (loc, code, type, op0, op1);
 	  if (tem)
 	    return tem;
 	}
@@ -10637,12 +10637,12 @@ fold_binary_loc (location_t loc,
       /* Handle (A1 * C1) - (A2 * C2) with A1, A2 or C1, C2 being the
 	 same or one.  Make sure type is not saturating.
 	 fold_plusminus_mult_expr will re-associate.  */
-      if ((TREE_CODE (arg0) == MULT_EXPR
-	   || TREE_CODE (arg1) == MULT_EXPR)
+      if ((TREE_CODE (op0) == MULT_EXPR
+	   || TREE_CODE (op1) == MULT_EXPR)
 	  && !TYPE_SATURATING (type)
 	  && (!FLOAT_TYPE_P (type) || flag_associative_math))
         {
-	  tree tem = fold_plusminus_mult_expr (loc, code, type, arg0, arg1);
+	  tree tem = fold_plusminus_mult_expr (loc, code, type, op0, op1);
 	  if (tem)
 	    return tem;
 	}
