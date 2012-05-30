@@ -10284,8 +10284,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	    break;
 
 	  /* Make this fit the case below.  */
-	  varop = gen_rtx_XOR (mode, XEXP (varop, 0),
-			       GEN_INT (GET_MODE_MASK (mode)));
+	  varop = gen_rtx_XOR (mode, XEXP (varop, 0), constm1_rtx);
 	  continue;
 
 	case IOR:

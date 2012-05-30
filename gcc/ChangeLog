@@ -1,3 +1,9 @@
+2012-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53519
+	* combine.c (simplify_shift_const_1) <case NOT>: Use constm1_rtx
+	instead of GEN_INT (GET_MODE_MASK (mode)) as second operand of XOR.
+
 2012-05-30  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* config/arm/arm.c (arm_evpc_neon_vrev): Adjust off by one error.
