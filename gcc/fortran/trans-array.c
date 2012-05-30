@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
    descriptors and data pointers are also translated.
 
    If the expression is an assignment, we must then resolve any dependencies.
-   In fortran all the rhs values of an assignment must be evaluated before
+   In Fortran all the rhs values of an assignment must be evaluated before
    any assignments take place.  This can require a temporary array to store the
    values.  We also require a temporary when we are passing array expressions
    or vector subscripts as procedure parameters.
@@ -973,7 +973,7 @@ get_array_ref_dim_for_loop_dim (gfc_ss *ss, int loop_dim)
 
    'eltype' == NULL signals that the temporary should be a class object.
    The 'initial' expression is used to obtain the size of the dynamic
-   type; otehrwise the allocation and initialisation proceeds as for any
+   type; otherwise the allocation and initialisation proceeds as for any
    other expression
 
    PRE, POST, INITIAL, DYNAMIC and DEALLOC are as for
@@ -1754,7 +1754,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  tmp = build1_v (LABEL_EXPR, exit_label);
 	  gfc_add_expr_to_block (&implied_do_block, tmp);
 
-	  /* Finishe the implied-do loop.  */
+	  /* Finish the implied-do loop.  */
 	  tmp = gfc_finish_block(&implied_do_block);
 	  gfc_add_expr_to_block(pblock, tmp);
 
@@ -1765,7 +1765,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 }
 
 
-/* A catch-all to obtain the string length for anything that is not a
+/* A catch-all to obtain the string length for anything that is not
    a substring of non-constant length, a constant, array or variable.  */
 
 static void
@@ -4323,7 +4323,7 @@ temporary:
 
 /* Browse through each array's information from the scalarizer and set the loop
    bounds according to the "best" one (per dimension), i.e. the one which
-   provides the most information (constant bounds, shape, etc).  */
+   provides the most information (constant bounds, shape, etc.).  */
 
 static void
 set_loop_bounds (gfc_loopinfo *loop)
@@ -4367,7 +4367,7 @@ set_loop_bounds (gfc_loopinfo *loop)
 	    }
 	  else
 	    {
-	      /* Silence unitialized warnings.  */
+	      /* Silence uninitialized warnings.  */
 	      specinfo = NULL;
 	      spec_dim = 0;
 	    }
@@ -4906,7 +4906,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
     }
 
   /* The stride is the number of elements in the array, so multiply by the
-     size of an element to get the total size.  Obviously, if there ia a
+     size of an element to get the total size.  Obviously, if there is a
      SOURCE expression (expr3) we must use its element size.  */
   if (expr3_elem_size != NULL_TREE)
     tmp = expr3_elem_size;
@@ -6382,7 +6382,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       /* A transformational function return value will be a temporary
 	 array descriptor.  We still need to go through the scalarizer
-	 to create the descriptor.  Elemental functions ar handled as
+	 to create the descriptor.  Elemental functions are handled as
 	 arbitrary expressions, i.e. copy to a temporary.  */
 
       if (se->direct_byref)
@@ -7423,7 +7423,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	case DEALLOCATE_ALLOC_COMP:
 
 	  /* gfc_deallocate_scalar_with_status calls gfc_deallocate_alloc_comp
-	     (ie. this function) so generate all the calls and suppress the
+	     (i.e. this function) so generate all the calls and suppress the
 	     recursion from here, if necessary.  */
 	  called_dealloc_with_status = false;
 	  gfc_init_block (&tmpblock);
@@ -8455,7 +8455,7 @@ gfc_reverse_ss (gfc_ss * ss)
 }
 
 
-/* Given an expression refering to a procedure, return the symbol of its
+/* Given an expression referring to a procedure, return the symbol of its
    interface.  We can't get the procedure symbol directly as we have to handle
    the case of (deferred) type-bound procedures.  */
 

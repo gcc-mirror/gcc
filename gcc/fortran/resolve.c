@@ -1401,7 +1401,7 @@ count_specific_procs (gfc_expr *e)
 
 
 /* See if a call to sym could possibly be a not allowed RECURSION because of
-   a missing RECURIVE declaration.  This means that either sym is the current
+   a missing RECURSIVE declaration.  This means that either sym is the current
    context itself, or sym is the parent of a contained procedure calling its
    non-RECURSIVE containing procedure.
    This also works if sym is an ENTRY.  */
@@ -5684,7 +5684,7 @@ resolve_typebound_static (gfc_expr* e, gfc_symtree** target,
       derived = e->value.compcall.base_object->ts.u.derived;
       st = NULL;
 
-      /* If necessary, go throught the inheritance chain.  */
+      /* If necessary, go through the inheritance chain.  */
       while (!st && derived)
 	{
 	  /* Look for the typebound procedure 'name'.  */
@@ -6879,7 +6879,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   gfc_component *c;
   gfc_try t;
 
-  /* Mark the ultimost array component as being in allocate to allow DIMEN_STAR
+  /* Mark the utmost array component as being in allocate to allow DIMEN_STAR
      checking of coarrays.  */
   for (ref = e->ref; ref; ref = ref->next)
     if (ref->next == NULL)
@@ -7130,7 +7130,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   if (dimension == 0 && codimension == 0)
     goto success;
 
-  /* Make sure the last reference node is an array specifiction.  */
+  /* Make sure the last reference node is an array specification.  */
 
   if (!ref2 || ref2->type != REF_ARRAY || ref2->u.ar.type == AR_FULL
       || (dimension && ref2->u.ar.dimen == 0))
@@ -8200,7 +8200,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 
       /* Chain in the new list only if it is marked as dangling.  Otherwise
 	 there is a CASE label overlap and this is already used.  Just ignore,
-	 the error is diagonsed elsewhere.  */
+	 the error is diagnosed elsewhere.  */
       if (st->n.sym->assoc->dangling)
 	{
 	  new_st->ext.block.assoc = st->n.sym->assoc;
@@ -9366,7 +9366,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_WORKSHARE:
 	      omp_workshare_save = omp_workshare_flag;
 	      omp_workshare_flag = 1;
-	      /* FALLTHROUGH */
+	      /* FALL THROUGH */
 	    default:
 	      gfc_resolve_blocks (code->block, ns);
 	      break;

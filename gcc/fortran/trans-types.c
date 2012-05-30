@@ -1957,7 +1957,7 @@ gfc_nonrestricted_type (tree t)
 {
   tree ret = t;
 
-  /* If the type isn't layed out yet, don't copy it.  If something
+  /* If the type isn't laid out yet, don't copy it.  If something
      needs it for real it should wait until the type got finished.  */
   if (!TYPE_SIZE (t))
     return t;
