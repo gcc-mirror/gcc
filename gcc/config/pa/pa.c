@@ -188,6 +188,7 @@ static enum machine_mode pa_c_mode_for_suffix (char);
 static section *pa_function_section (tree, enum node_frequency, bool, bool);
 static bool pa_cannot_force_const_mem (enum machine_mode, rtx);
 static bool pa_legitimate_constant_p (enum machine_mode, rtx);
+static unsigned int pa_section_type_flags (tree, const char *, int);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -383,6 +384,8 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P pa_legitimate_constant_p
+#undef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS pa_section_type_flags
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10332,7 +10335,29 @@ pa_legitimate_constant_p (enum machine_mode mode, rtx x)
       && !pa_cint_ok_for_move (INTVAL (x)))
     return false;
 
+  if (function_label_operand (x, mode))
+    return false;
+
   return true;
+}
+
+/* Implement TARGET_SECTION_TYPE_FLAGS.  */
+
+static unsigned int
+pa_section_type_flags (tree decl, const char *name, int reloc)
+{
+  unsigned int flags;
+
+  flags = default_section_type_flags (decl, name, reloc);
+
+  /* Function labels are placed in the constant pool.  This can
+     cause a section conflict if decls are put in ".data.rel.ro"
+     or ".data.rel.ro.local" using the __attribute__ construct.  */
+  if (strcmp (name, ".data.rel.ro") == 0
+      || strcmp (name, ".data.rel.ro.local") == 0)
+    flags |= SECTION_WRITE | SECTION_RELRO;
+
+  return flags;
 }
 
 #include "gt-pa.h"
