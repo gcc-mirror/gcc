@@ -1,3 +1,10 @@
+2012-05-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/52999
+	* config/pa/pa.c (TARGET_SECTION_TYPE_FLAGS): Define.
+	(pa_section_type_flags): New.
+	(pa_legitimate_constant_p): Revert previous change.
+
 2012-05-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ira.c (allocate_initial_values): Make static.
