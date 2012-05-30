@@ -1,3 +1,9 @@
+2012-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53356
+	* g++.dg/init/new34.C: New.
+	* g++.dg/tree-ssa/stabilize1.C: New.
+
 2012-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/53356
