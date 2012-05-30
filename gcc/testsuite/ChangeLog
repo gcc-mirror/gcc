@@ -1,3 +1,7 @@
+2012-05-30  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* gcc.target/arm/neon-vrev.c: New.
+
 2012-05-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51340
