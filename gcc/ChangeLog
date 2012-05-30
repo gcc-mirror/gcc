@@ -1,3 +1,9 @@
+2012-05-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53501
+	* fold-const.c (fold_binary_loc): Make sure to call
+	fold_plusminus_mult_expr with the original sign of operands.
+
 2012-05-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Makefile.in: Fix many dependencies.
