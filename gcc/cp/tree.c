@@ -3389,7 +3389,7 @@ stabilize_aggr_init (tree call, tree *initp)
    takes care not to introduce additional temporaries.
 
    Returns TRUE iff the expression was successfully pre-evaluated,
-   i.e., if INIT is now side-effect free, except for, possible, a
+   i.e., if INIT is now side-effect free, except for, possibly, a
    single call to a constructor.  */
 
 bool
@@ -3402,21 +3402,37 @@ stabilize_init (tree init, tree *initp)
   if (t == error_mark_node || processing_template_decl)
     return true;
 
-  if (TREE_CODE (t) == INIT_EXPR
-      && TREE_CODE (TREE_OPERAND (t, 1)) != TARGET_EXPR
-      && TREE_CODE (TREE_OPERAND (t, 1)) != CONSTRUCTOR
-      && TREE_CODE (TREE_OPERAND (t, 1)) != AGGR_INIT_EXPR)
-    {
-      TREE_OPERAND (t, 1) = stabilize_expr (TREE_OPERAND (t, 1), initp);
-      return true;
-    }
-
   if (TREE_CODE (t) == INIT_EXPR)
     t = TREE_OPERAND (t, 1);
   if (TREE_CODE (t) == TARGET_EXPR)
     t = TARGET_EXPR_INITIAL (t);
-  if (TREE_CODE (t) == COMPOUND_EXPR)
-    t = expr_last (t);
+
+  /* If the RHS can be stabilized without breaking copy elision, stabilize
+     it.  We specifically don't stabilize class prvalues here because that
+     would mean an extra copy, but they might be stabilized below.  */
+  if (TREE_CODE (init) == INIT_EXPR
+      && TREE_CODE (t) != CONSTRUCTOR
+      && TREE_CODE (t) != AGGR_INIT_EXPR
+      && (SCALAR_TYPE_P (TREE_TYPE (t))
+	  || lvalue_or_rvalue_with_address_p (t)))
+    {
+      TREE_OPERAND (init, 1) = stabilize_expr (t, initp);
+      return true;
+    }
+
+  if (TREE_CODE (t) == COMPOUND_EXPR
+      && TREE_CODE (init) == INIT_EXPR)
+    {
+      tree last = expr_last (t);
+      /* Handle stabilizing the EMPTY_CLASS_EXPR pattern.  */
+      if (!TREE_SIDE_EFFECTS (last))
+	{
+	  *initp = t;
+	  TREE_OPERAND (init, 1) = last;
+	  return true;
+	}
+    }
+
   if (TREE_CODE (t) == CONSTRUCTOR)
     {
       /* Aggregate initialization: stabilize each of the field
@@ -3438,11 +3454,6 @@ stabilize_init (tree init, tree *initp)
 	}
       return good;
     }
-
-  /* If the initializer is a COND_EXPR, we can't preevaluate
-     anything.  */
-  if (TREE_CODE (t) == COND_EXPR)
-    return false;
 
   if (TREE_CODE (t) == CALL_EXPR)
     {

@@ -1,5 +1,9 @@
 2012-05-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53356
+	* tree.c (stabilize_init): Handle stabilizing a TARGET_EXPR
+	representing a bitwise copy of a glvalue.
+
 	* tree.c (stabilize_expr): Tweak logic.
 
 	PR c++/53356
