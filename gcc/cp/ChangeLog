@@ -1,5 +1,7 @@
 2012-05-30  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (stabilize_expr): Tweak logic.
+
 	PR c++/53356
 	* tree.c (stabilize_init): Side effects make the init unstable.
 
