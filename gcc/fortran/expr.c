@@ -711,7 +711,7 @@ gfc_copy_shape (mpz_t *shape, int rank)
 
 
 /* Copy a shape array excluding dimension N, where N is an integer
-   constant expression.  Dimensions are numbered in fortran style --
+   constant expression.  Dimensions are numbered in Fortran style --
    starting with ONE.
 
    So, if the original shape array contains R elements
@@ -4405,7 +4405,7 @@ gfc_has_ultimate_pointer (gfc_expr *e)
 
 /* Check whether an expression is "simply contiguous", cf. F2008, 6.5.4.
    Note: A scalar is not regarded as "simply contiguous" by the standard.
-   if bool is not strict, some futher checks are done - for instance,
+   if bool is not strict, some further checks are done - for instance,
    a "(::1)" is accepted.  */
 
 bool
@@ -4482,7 +4482,7 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict)
 	return false;
 
       /* Following the standard, "(::1)" or - if known at compile time -
-	 "(lbound:ubound)" are not simply contigous; if strict
+	 "(lbound:ubound)" are not simply contiguous; if strict
 	 is false, they are regarded as simply contiguous.  */
       if (ar->stride[i] && (strict || ar->stride[i]->expr_type != EXPR_CONSTANT
 			    || ar->stride[i]->ts.type != BT_INTEGER

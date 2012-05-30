@@ -1,3 +1,15 @@
+2012-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	* decl.c: Fix comment typos.
+	* expr.c: Ditto.
+	* frontend-passes.c: Ditto.
+	* match.c: Ditto.
+	* resolve.c: Ditto.
+	* trans-array.c: Ditto.
+	* trans-common.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+	* trans-types.c: Ditto.
+
 2012-05-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51055

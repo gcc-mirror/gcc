@@ -243,7 +243,7 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 }
 
 /* Returns a new expression (a variable) to be used in place of the old one,
-   with an an assignment statement before the current statement to set
+   with an assignment statement before the current statement to set
    the value of the variable. Creates a new BLOCK for the statement if
    that hasn't already been done and puts the statement, plus the
    newly created variables, in that block.  */
@@ -806,7 +806,7 @@ optimize_op (gfc_expr *e)
 {
   gfc_intrinsic_op op = e->value.op.op;
 
-  /* Only use new-style comparisions.  */
+  /* Only use new-style comparisons.  */
   switch(op)
     {
     case INTRINSIC_EQ_OS:
@@ -931,7 +931,7 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
     }
   else if (e->expr_type == EXPR_FUNCTION)
     {
-      /* One of the lexical comparision functions.  */
+      /* One of the lexical comparison functions.  */
       firstarg = e->value.function.actual;
       secondarg = firstarg->next;
       op1 = firstarg->expr;

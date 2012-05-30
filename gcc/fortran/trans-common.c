@@ -86,7 +86,7 @@ along with GCC; see the file COPYING3.  If not see
    Each segment is described by a chain of segment_info structures.  Each
    segment_info structure describes the extents of a single variable within
    the segment.  This list is maintained in the order the elements are
-   positioned withing the segment.  If two elements have the same starting
+   positioned within the segment.  If two elements have the same starting
    offset the smaller will come first.  If they also have the same size their
    ordering is undefined. 
    
