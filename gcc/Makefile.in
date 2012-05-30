@@ -447,8 +447,8 @@ SPLAY_TREE_H= $(srcdir)/../include/splay-tree.h
 FIBHEAP_H   = $(srcdir)/../include/fibheap.h
 PARTITION_H = $(srcdir)/../include/partition.h
 MD5_H	    = $(srcdir)/../include/md5.h
-DWARF2_H    = $(srcdir)/../include/dwarf2.h
-XREGEX_H    =  $(srcdir)/../include/xregex.h
+DWARF2_H    = $(srcdir)/../include/dwarf2.h $(srcdir)/../include/dwarf2.def
+XREGEX_H    = $(srcdir)/../include/xregex.h
 FNMATCH_H   = $(srcdir)/../include/fnmatch.h
 
 # Linker plugin API headers
@@ -849,7 +849,7 @@ RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H) reg-notes.def insn-notes.def \
   $(HASHTAB_H)
 FIXED_VALUE_H = fixed-value.h $(MACHMODE_H) double-int.h
 RTL_H = $(RTL_BASE_H) genrtl.h vecir.h
-RTL_ERROR_H = $(RTL_H) $(DIAGNOSTIC_CORE_H)
+RTL_ERROR_H = rtl-error.h $(RTL_H) $(DIAGNOSTIC_CORE_H)
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 PARAMS_H = params.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
@@ -928,6 +928,8 @@ TREE_FLOW_H = tree-flow.h tree-flow-inline.h tree-ssa-operands.h \
 TREE_SSA_LIVE_H = tree-ssa-live.h $(PARTITION_H) vecprim.h
 SSAEXPAND_H = ssaexpand.h $(TREE_SSA_LIVE_H)
 PRETTY_PRINT_H = pretty-print.h $(INPUT_H) $(OBSTACK_H)
+TREE_PRETTY_PRINT_H = tree-pretty-print.h $(PRETTY_PRINT_H)
+GIMPLE_PRETTY_PRINT_H = gimple-pretty-print.h $(TREE_PRETTY_PRINT_H)
 DIAGNOSTIC_CORE_H = diagnostic-core.h $(INPUT_H) bversion.h diagnostic.def
 DIAGNOSTIC_H = diagnostic.h $(DIAGNOSTIC_CORE_H) $(PRETTY_PRINT_H)
 C_PRETTY_PRINT_H = c-family/c-pretty-print.h $(PRETTY_PRINT_H) \
@@ -941,7 +943,7 @@ DBGCNT_H = dbgcnt.h dbgcnt.def
 EBITMAP_H = ebitmap.h sbitmap.h
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) vecprim.h $(TREE_H) $(GIMPLE_H) \
-		$(GCOV_IO_H) $(DIAGNOSTIC_H)
+		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h
 DATA_STREAMER_H = data-streamer.h $(VEC_H) $(LTO_STREAMER_H)
 GIMPLE_STREAMER_H = gimple-streamer.h $(LTO_STREAMER_H) $(BASIC_BLOCK_H) \
 		    $(FUNCTION_H)
@@ -952,8 +954,8 @@ TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H)
 IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H) alloc-pool.h
 GSTAB_H = gstab.h stab.def
 BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h
-GCC_PLUGIN_H = gcc-plugin.h highlev-plugin-common.h $(CONFIG_H) $(SYSTEM_H) \
-		$(HASHTAB_H)
+GCC_PLUGIN_H = gcc-plugin.h highlev-plugin-common.h plugin.def \
+		$(CONFIG_H) $(SYSTEM_H) $(HASHTAB_H)
 PLUGIN_H = plugin.h $(GCC_PLUGIN_H)
 PLUGIN_VERSION_H = plugin-version.h configargs.h
 LIBFUNCS_H = libfuncs.h $(HASHTAB_H)
@@ -1861,7 +1863,7 @@ c-decl.o : c-decl.c c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) $(C_TREE_H) $(GGC_H) $(TARGET_H) $(FLAGS_H) $(FUNCTION_H) \
 	output.h debug.h toplev.h intl.h $(TM_P_H) $(TREE_INLINE_H) \
 	$(TIMEVAR_H) $(OPTS_H) $(C_PRAGMA_H) gt-c-decl.h $(CGRAPH_H) \
-	$(HASHTAB_H) $(LIBFUNCS_H) $(EXCEPT_H) $(LANGHOOKS_DEF_H) \
+	$(HASHTAB_H) $(LANGHOOKS_DEF_H) \
 	$(TREE_DUMP_H) $(C_COMMON_H) $(CPPLIB_H) $(DIAGNOSTIC_CORE_H) \
 	$(INPUT_H) langhooks.h pointer-set.h tree-iterator.h \
 	$(PLUGIN_H) c-family/c-ada-spec.h c-family/c-objc.h
@@ -1879,7 +1881,7 @@ c-objc-common.o : c-objc-common.c c-objc-common.h \
 	$(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TREE_H) $(C_TREE_H) $(FLAGS_H) $(DIAGNOSTIC_H) \
 	langhooks.h $(GGC_H) $(C_PRETTY_PRINT_H) intl.h \
-	tree-pretty-print.h
+	$(TREE_PRETTY_PRINT_H)
 
 c-parser.o : c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(TREE_H) $(C_TREE_H) $(C_COMMON_H) $(C_PRAGMA_H) $(CPPLIB_H) \
@@ -1889,9 +1891,9 @@ c-parser.o : c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	 c-family/c-objc.h
 
 c-typeck.o : c-typeck.c c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(TREE_H) $(C_TREE_H) $(TARGET_H) $(FLAGS_H) intl.h output.h $(EXPR_H) \
+	$(TREE_H) $(C_TREE_H) $(TARGET_H) $(FLAGS_H) intl.h output.h \
 	langhooks.h tree-iterator.h $(BITMAP_H) $(GIMPLE_H) \
-	 c-family/c-objc.h
+	c-family/c-objc.h
 
 
 
@@ -2035,7 +2037,7 @@ c-family/c-pragma.o: c-family/c-pragma.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 c-family/c-pretty-print.o : c-family/c-pretty-print.c $(C_PRETTY_PRINT_H) \
 	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(DIAGNOSTIC_H) tree-iterator.h intl.h tree-pretty-print.h
+	$(DIAGNOSTIC_H) tree-iterator.h intl.h $(TREE_PRETTY_PRINT_H)
 
 c-family/c-semantics.o : c-family/c-semantics.c $(CONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(TM_H) $(TREE_H) $(FLAGS_H) output.h \
@@ -2057,7 +2059,7 @@ default-c.o: config/default-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 # Files used by all variants of C and some other languages.
 
 attribs.o : attribs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-	$(FLAGS_H) toplev.h $(DIAGNOSTIC_CORE_H) output.h $(GGC_H) $(TM_P_H) \
+	$(FLAGS_H) $(DIAGNOSTIC_CORE_H) $(GGC_H) $(TM_P_H) \
 	$(TARGET_H) langhooks.h $(CPPLIB_H) $(PLUGIN_H)
 
 incpath.o: incpath.c incpath.h $(CONFIG_H) $(SYSTEM_H) $(CPPLIB_H) \
@@ -2163,7 +2165,7 @@ trans-mem.o : trans-mem.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TREE_H) $(GIMPLE_H) $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_INLINE_H) \
 	$(DIAGNOSTIC_CORE_H) $(DEMANGLE_H) output.h $(TRANS_MEM_H) \
 	$(PARAMS_H) $(TARGET_H) langhooks.h \
-	tree-pretty-print.h gimple-pretty-print.h $(CFGLOOP_H)
+	$(GIMPLE_PRETTY_PRINT_H) $(CFGLOOP_H)
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h		\
 	$(GGC_H) $(HASHTAB_H) $(DIAGNOSTIC_CORE_H) $(PARAMS_H) hosthooks.h	\
@@ -2186,8 +2188,7 @@ stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(FLAGS_H) convert.h $(DIAGNOSTIC_CORE_H) langhooks.h
 
-double-int.o: double-int.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	toplev.h $(TREE_H)
+double-int.o: double-int.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H)
 
 # lto-compress.o needs $(ZLIBINC) added to the include flags.
 CFLAGS-lto-compress.o += $(ZLIBINC)
@@ -2266,7 +2267,7 @@ tree.o: tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h gt-tree.h $(TREE_INLINE_H) tree-iterator.h \
    $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(OBSTACK_H) pointer-set.h \
    tree-pass.h $(LANGHOOKS_DEF_H) $(DIAGNOSTIC_H) $(CGRAPH_H) $(TIMEVAR_H) \
-   $(EXCEPT_H) debug.h intl.h tree-diagnostic.h tree-pretty-print.h \
+   $(EXCEPT_H) debug.h intl.h tree-diagnostic.h $(TREE_PRETTY_PRINT_H) \
    $(COMMON_TARGET_H)
 tree-dump.o: tree-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h toplev.h $(SPLAY_TREE_H) $(TREE_DUMP_H) \
@@ -2277,10 +2278,10 @@ tree-inline.o : tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    intl.h $(FUNCTION_H) $(GIMPLE_H) \
    debug.h $(DIAGNOSTIC_H) $(EXCEPT_H) $(TREE_FLOW_H) tree-iterator.h tree-mudflap.h \
    $(IPA_PROP_H) value-prof.h $(TREE_PASS_H) $(TARGET_H) \
-   tree-pretty-print.h
+   $(TREE_PRETTY_PRINT_H)
 print-tree.o : print-tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(GGC_H) langhooks.h tree-iterator.h \
-   $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_PASS_H) gimple-pretty-print.h
+   $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_PASS_H) $(GIMPLE_PRETTY_PRINT_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(PARAMS_H) $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) output.h $(RTL_H) \
    $(GGC_H) $(TM_P_H) $(TARGET_H) langhooks.h $(REGS_H) gt-stor-layout.h \
@@ -2291,7 +2292,7 @@ tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
    $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) \
    $(GIMPLE_H) $(FUNCTION_H) \
    $(TIMEVAR_H) tree-ssa-sccvn.h \
-   $(CGRAPH_H) gimple-pretty-print.h tree-pretty-print.h $(PARAMS_H)
+   $(CGRAPH_H) $(GIMPLE_PRETTY_PRINT_H) $(PARAMS_H)
 tree-ssa-structalias.o: tree-ssa-structalias.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(GGC_H) $(OBSTACK_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) output.h \
@@ -2304,34 +2305,33 @@ tree-ssa-uninit.o : tree-ssa-uninit.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) langhooks.h tree-pass.h $(BASIC_BLOCK_H) $(BITMAP_H) \
    $(FLAGS_H) $(HASHTAB_H) pointer-set.h \
-   $(GIMPLE_H) $(TREE_INLINE_H) gimple-pretty-print.h
+   $(GIMPLE_H) $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa.o : tree-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(EXPR_H) output.h $(DIAGNOSTIC_H) \
    toplev.h $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) langhooks.h $(TREE_PASS_H) $(BASIC_BLOCK_H) $(BITMAP_H) \
    $(FLAGS_H) $(GGC_H) $(HASHTAB_H) pointer-set.h \
-   $(GIMPLE_H) $(TREE_INLINE_H) $(TARGET_H) tree-pretty-print.h \
-   gimple-pretty-print.h $(CFGLOOP_H)
+   $(GIMPLE_H) $(TREE_INLINE_H) $(TARGET_H) \
+   $(GIMPLE_PRETTY_PRINT_H) $(CFGLOOP_H)
 tree-into-ssa.o : tree-into-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(EXPR_H) output.h $(DIAGNOSTIC_H) \
    $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    langhooks.h domwalk.h $(TREE_PASS_H) $(PARAMS_H) $(BASIC_BLOCK_H) \
    $(BITMAP_H) $(CFGLOOP_H) $(FLAGS_H) $(HASHTAB_H) \
-   $(GIMPLE_H) $(TREE_INLINE_H) vecprim.h tree-pretty-print.h \
-   gimple-pretty-print.h
+   $(GIMPLE_H) $(TREE_INLINE_H) vecprim.h \
+   $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-ter.o : tree-ssa-ter.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
-   $(TREE_SSA_LIVE_H) $(BITMAP_H) $(FLAGS_H) tree-pretty-print.h \
-   gimple-pretty-print.h
+   $(TREE_SSA_LIVE_H) $(BITMAP_H) $(FLAGS_H) \
+   $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-coalesce.o : tree-ssa-coalesce.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    $(TREE_SSA_LIVE_H) $(BITMAP_H) $(FLAGS_H) $(HASHTAB_H) \
-   tree-pretty-print.h
+   $(TREE_PRETTY_PRINT_H)
 tree-outof-ssa.o : tree-outof-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    $(TREE_PASS_H) $(TREE_SSA_LIVE_H) $(BASIC_BLOCK_H) $(BITMAP_H) $(GGC_H) \
-   $(EXPR_H) $(SSAEXPAND_H) tree-pretty-print.h \
-   gimple-pretty-print.h
+   $(EXPR_H) $(SSAEXPAND_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-dse.o : tree-ssa-dse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(RTL_H) $(TM_P_H) $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_DUMP_H) domwalk.h $(FLAGS_H) \
@@ -2339,42 +2339,41 @@ tree-ssa-dse.o : tree-ssa-dse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 tree-ssa-forwprop.o : tree-ssa-forwprop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(TM_P_H) $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_DUMP_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
-   langhooks.h $(FLAGS_H) $(GIMPLE_H) tree-pretty-print.h \
-   gimple-pretty-print.h $(EXPR_H)
+   langhooks.h $(FLAGS_H) $(GIMPLE_H) $(GIMPLE_PRETTY_PRINT_H) $(EXPR_H)
 tree-ssa-phiprop.o : tree-ssa-phiprop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(TM_P_H) $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_DUMP_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
-   langhooks.h $(FLAGS_H) tree-pretty-print.h gimple-pretty-print.h
+   langhooks.h $(FLAGS_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-ifcombine.o : tree-ssa-ifcombine.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(TREE_H) $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_DUMP_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
-   tree-pretty-print.h
+   $(TREE_PRETTY_PRINT_H)
 tree-ssa-phiopt.o : tree-ssa-phiopt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(TM_P_H) $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_DUMP_H) langhooks.h $(FLAGS_H) \
    $(DIAGNOSTIC_H) $(TIMEVAR_H) pointer-set.h domwalk.h $(CFGLOOP_H) \
-   $(TREE_DATA_REF_H) tree-pretty-print.h
+   $(TREE_DATA_REF_H) $(TREE_PRETTY_PRINT_H)
 tree-nrv.o : tree-nrv.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FUNCTION_H) $(BASIC_BLOCK_H) $(FLAGS_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TIMEVAR_H) $(TREE_DUMP_H) $(TREE_PASS_H) \
-   langhooks.h tree-pretty-print.h
+   langhooks.h $(TREE_PRETTY_PRINT_H)
 tree-ssa-copy.o : tree-ssa-copy.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) output.h $(DIAGNOSTIC_H) \
    $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    $(BASIC_BLOCK_H) $(TREE_PASS_H) langhooks.h tree-ssa-propagate.h \
-   $(FLAGS_H) $(CFGLOOP_H) tree-pretty-print.h gimple-pretty-print.h
+   $(FLAGS_H) $(CFGLOOP_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-propagate.o : tree-ssa-propagate.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(EXPR_H) output.h \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) $(BASIC_BLOCK_H) $(TREE_PASS_H) langhooks.h \
    tree-ssa-propagate.h $(VEC_H) value-prof.h gt-tree-ssa-propagate.h $(FLAGS_H) \
-   $(GIMPLE_H) gimple-pretty-print.h
+   $(GIMPLE_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-dom.o : tree-ssa-dom.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(EXPR_H) output.h $(DIAGNOSTIC_H) \
    $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    $(BASIC_BLOCK_H) domwalk.h $(TREE_PASS_H) $(FLAGS_H) langhooks.h \
-   tree-ssa-propagate.h $(CFGLOOP_H) $(PARAMS_H) tree-pretty-print.h \
-   gimple-pretty-print.h
+   tree-ssa-propagate.h $(CFGLOOP_H) $(PARAMS_H) \
+   $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-uncprop.o : tree-ssa-uncprop.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(EXPR_H) output.h \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
@@ -2400,37 +2399,35 @@ domwalk.o : domwalk.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 tree-ssa-live.o : tree-ssa-live.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    $(TREE_SSA_LIVE_H) $(BITMAP_H) debug.h $(FLAGS_H) \
-   tree-pretty-print.h gimple-pretty-print.h $(GIMPLE_H)
+   $(GIMPLE_PRETTY_PRINT_H) $(GIMPLE_H)
 tree-ssa-copyrename.o : tree-ssa-copyrename.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) $(FUNCTION_H) $(TIMEVAR_H) \
    $(TREE_PASS_H) $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_SSA_LIVE_H) \
    $(BASIC_BLOCK_H) $(BITMAP_H) $(FLAGS_H) $(HASHTAB_H) langhooks.h \
-   $(GIMPLE_H) $(TREE_INLINE_H) $(GIMPLE_H) tree-pretty-print.h
+   $(GIMPLE_H) $(TREE_INLINE_H) $(GIMPLE_H)
 tree-ssa-pre.o : tree-ssa-pre.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) $(FIBHEAP_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(FLAGS_H) langhooks.h \
    $(CFGLOOP_H) alloc-pool.h $(BASIC_BLOCK_H) $(BITMAP_H) $(HASHTAB_H) \
    $(GIMPLE_H) $(TREE_INLINE_H) tree-iterator.h tree-ssa-sccvn.h $(PARAMS_H) \
-   $(DBGCNT_H) tree-scalar-evolution.h tree-pretty-print.h \
-   gimple-pretty-print.h
+   $(DBGCNT_H) tree-scalar-evolution.h $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-sccvn.o : tree-ssa-sccvn.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) $(FIBHEAP_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(FLAGS_H) $(CFGLOOP_H) \
    alloc-pool.h $(BASIC_BLOCK_H) $(BITMAP_H) langhooks.h $(HASHTAB_H) $(GIMPLE_H) \
    $(TREE_INLINE_H) tree-iterator.h tree-ssa-propagate.h tree-ssa-sccvn.h \
-   $(PARAMS_H) tree-pretty-print.h gimple-pretty-print.h gimple-fold.h
+   $(PARAMS_H) $(GIMPLE_PRETTY_PRINT_H) gimple-fold.h
 tree-vrp.o : tree-vrp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_DUMP_H) $(DIAGNOSTIC_H) $(GGC_H) \
    $(BASIC_BLOCK_H) tree-ssa-propagate.h $(FLAGS_H) $(TREE_DUMP_H) \
-   $(CFGLOOP_H) $(SCEV_H) $(TIMEVAR_H) intl.h tree-pretty-print.h \
-   gimple-pretty-print.h gimple-fold.h $(OPTABS_H) $(EXPR_H)
+   $(CFGLOOP_H) $(SCEV_H) $(TIMEVAR_H) intl.h \
+   $(GIMPLE_PRETTY_PRINT_H) gimple-fold.h $(OPTABS_H) $(EXPR_H)
 tree-cfg.o : tree-cfg.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) $(FLAGS_H) output.h \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) $(EXCEPT_H) langhooks.h $(CFGLOOP_H) $(TREE_PASS_H) \
    $(CFGLAYOUT_H) $(BASIC_BLOCK_H) \
-   value-prof.h tree-ssa-propagate.h $(TREE_INLINE_H) tree-pretty-print.h \
-   gimple-pretty-print.h
+   value-prof.h tree-ssa-propagate.h $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-cfgcleanup.o : tree-cfgcleanup.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) $(FLAGS_H) output.h \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
@@ -2440,14 +2437,14 @@ tree-cfgcleanup.o : tree-cfgcleanup.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
 tree-tailcall.o : tree-tailcall.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(FUNCTION_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) $(DIAGNOSTIC_H) $(EXCEPT_H) $(TREE_PASS_H) $(FLAGS_H) langhooks.h \
-   $(BASIC_BLOCK_H) $(DBGCNT_H) gimple-pretty-print.h $(TARGET_H) \
+   $(BASIC_BLOCK_H) $(DBGCNT_H) $(GIMPLE_PRETTY_PRINT_H) $(TARGET_H) \
    $(COMMON_TARGET_H)
 tree-ssa-sink.o : tree-ssa-sink.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(FLAGS_H) alloc-pool.h \
    $(BASIC_BLOCK_H) $(BITMAP_H) $(CFGLOOP_H) $(FIBHEAP_H) $(HASHTAB_H) \
    langhooks.h $(GIMPLE_H) $(TREE_INLINE_H) tree-iterator.h \
-   gimple-pretty-print.h
+   $(GIMPLE_PRETTY_PRINT_H)
 tree-nested.o: tree-nested.c $(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TREE_H) \
    $(TM_P_H) $(FUNCTION_H) $(TREE_DUMP_H) $(TREE_INLINE_H) \
    tree-iterator.h $(GIMPLE_H) $(CGRAPH_H) $(EXPR_H) langhooks.h \
@@ -2455,7 +2452,7 @@ tree-nested.o: tree-nested.c $(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TREE_H) \
 tree-if-conv.o: tree-if-conv.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(FLAGS_H) $(TIMEVAR_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) \
    $(CFGLOOP_H) $(TREE_DATA_REF_H) $(TREE_PASS_H) $(DIAGNOSTIC_H) \
-   $(TREE_DUMP_H) $(DBGCNT_H) tree-pretty-print.h gimple-pretty-print.h
+   $(TREE_DUMP_H) $(DBGCNT_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-iterator.o : tree-iterator.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
    coretypes.h $(GGC_H) tree-iterator.h $(GIMPLE_H) gt-tree-iterator.h
 tree-dfa.o : tree-dfa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
@@ -2463,12 +2460,11 @@ tree-dfa.o : tree-dfa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_INLINE_H) $(HASHTAB_H) pointer-set.h $(FLAGS_H) $(FUNCTION_H) \
    $(TIMEVAR_H) convert.h $(TM_H) coretypes.h langhooks.h $(TREE_DUMP_H) \
    $(TREE_PASS_H) $(PARAMS_H) $(CGRAPH_H) $(BASIC_BLOCK_H) $(GIMPLE_H) \
-   tree-pretty-print.h
+   $(TREE_PRETTY_PRINT_H)
 tree-ssa-operands.o : tree-ssa-operands.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(GGC_H) $(DIAGNOSTIC_H) $(TREE_INLINE_H) \
    $(FLAGS_H) $(FUNCTION_H) $(TM_H) $(TIMEVAR_H) $(TREE_PASS_H) \
-   coretypes.h langhooks.h $(IPA_REFERENCE_H) tree-pretty-print.h \
-   gimple-pretty-print.h
+   coretypes.h langhooks.h $(IPA_REFERENCE_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-eh.o : tree-eh.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_H) $(FLAGS_H) $(FUNCTION_H) $(EXCEPT_H) langhooks.h \
    $(GGC_H) $(TREE_PASS_H) coretypes.h $(TIMEVAR_H) pointer-set.h \
@@ -2488,17 +2484,17 @@ tree-ssa-address.o : tree-ssa-address.c $(TREE_FLOW_H) $(CONFIG_H) \
    output.h $(DIAGNOSTIC_H) $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    $(TREE_PASS_H) $(FLAGS_H) $(TREE_INLINE_H) $(RECOG_H) insn-config.h \
    $(EXPR_H) gt-tree-ssa-address.h $(GGC_H) tree-affine.h $(TARGET_H) \
-   tree-pretty-print.h
+   $(TREE_PRETTY_PRINT_H)
 tree-ssa-loop-niter.o : tree-ssa-loop-niter.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) $(PARAMS_H) \
    $(TREE_INLINE_H) output.h $(DIAGNOSTIC_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(TREE_PASS_H) $(TREE_DATA_REF_H) \
-   $(BASIC_BLOCK_H) $(GGC_H) intl.h tree-pretty-print.h gimple-pretty-print.h
+   $(BASIC_BLOCK_H) $(GGC_H) intl.h $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-loop-ivcanon.o : tree-ssa-loop-ivcanon.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) $(PARAMS_H) \
    $(TREE_INLINE_H) output.h $(DIAGNOSTIC_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    $(FLAGS_H) $(TREE_PASS_H) $(SCEV_H) $(BASIC_BLOCK_H) $(TARGET_H) \
-   tree-pretty-print.h gimple-pretty-print.h
+   $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-loop-ch.o : tree-ssa-loop-ch.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) $(TREE_INLINE_H) \
    output.h $(DIAGNOSTIC_H) $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
@@ -2509,22 +2505,22 @@ tree-ssa-loop-prefetch.o: tree-ssa-loop-prefetch.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(TREE_PASS_H) $(RECOG_H) insn-config.h $(HASHTAB_H) \
    $(CFGLOOP_H) $(PARAMS_H) langhooks.h $(BASIC_BLOCK_H) \
    $(DIAGNOSTIC_CORE_H) langhooks.h $(TREE_INLINE_H) $(TREE_DATA_REF_H) \
-   $(OPTABS_H) tree-pretty-print.h
+   $(OPTABS_H) $(TREE_PRETTY_PRINT_H)
 tree-predcom.o: tree-predcom.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_P_H) \
    $(CFGLOOP_H) $(TREE_FLOW_H) $(GGC_H) $(TREE_DATA_REF_H) \
    $(PARAMS_H) $(DIAGNOSTIC_H) $(TREE_PASS_H) $(TM_H) coretypes.h \
-   tree-affine.h $(TREE_INLINE_H) tree-pretty-print.h
+   tree-affine.h $(TREE_INLINE_H) $(TREE_PRETTY_PRINT_H)
 tree-ssa-loop-ivopts.o : tree-ssa-loop-ivopts.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) $(EXPR_H) \
    output.h $(DIAGNOSTIC_H) $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    $(TREE_PASS_H) $(GGC_H) $(RECOG_H) insn-config.h $(HASHTAB_H) $(SCEV_H) \
    $(CFGLOOP_H) $(PARAMS_H) langhooks.h $(BASIC_BLOCK_H) \
-   tree-affine.h pointer-set.h $(TARGET_H) tree-pretty-print.h \
-   gimple-pretty-print.h tree-ssa-propagate.h
+   tree-affine.h pointer-set.h $(TARGET_H) \
+   $(GIMPLE_PRETTY_PRINT_H) tree-ssa-propagate.h
 tree-affine.o : tree-affine.c tree-affine.h $(CONFIG_H) pointer-set.h \
    $(SYSTEM_H) $(TREE_H) $(GIMPLE_H) \
    output.h $(DIAGNOSTIC_H) coretypes.h $(TREE_DUMP_H) $(FLAGS_H) \
-   tree-pretty-print.h
+   $(TREE_PRETTY_PRINT_H)
 tree-ssa-loop-manip.o : tree-ssa-loop-manip.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(BASIC_BLOCK_H) output.h $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \
@@ -2534,25 +2530,24 @@ tree-ssa-loop-im.o : tree-ssa-loop-im.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) domwalk.h \
    $(PARAMS_H) output.h $(DIAGNOSTIC_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) $(TREE_PASS_H) $(FLAGS_H) $(BASIC_BLOCK_H) \
-   pointer-set.h tree-affine.h tree-ssa-propagate.h gimple-pretty-print.h \
-   tree-pretty-print.h
+   pointer-set.h tree-affine.h tree-ssa-propagate.h $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-math-opts.o : tree-ssa-math-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(FLAGS_H) $(TREE_H) $(TREE_FLOW_H) $(TIMEVAR_H) \
    $(TREE_PASS_H) alloc-pool.h $(BASIC_BLOCK_H) $(TARGET_H) \
-   $(DIAGNOSTIC_H) $(RTL_H) $(EXPR_H) $(OPTABS_H) gimple-pretty-print.h
+   $(DIAGNOSTIC_H) $(RTL_H) $(EXPR_H) $(OPTABS_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-alias.o : tree-ssa-alias.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) $(TREE_INLINE_H) $(FLAGS_H) \
    $(FUNCTION_H) $(TIMEVAR_H) convert.h $(TM_H) coretypes.h langhooks.h \
    $(TREE_DUMP_H) $(TREE_PASS_H) $(PARAMS_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) \
    $(GIMPLE_H) $(VEC_H) $(TARGET_H) \
    vecprim.h pointer-set.h alloc-pool.h \
-   tree-pretty-print.h
+   $(TREE_PRETTY_PRINT_H)
 tree-ssa-reassoc.o : tree-ssa-reassoc.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(FLAGS_H) \
    tree-iterator.h $(BASIC_BLOCK_H) $(GIMPLE_H) $(TREE_INLINE_H) \
    $(VEC_H) langhooks.h alloc-pool.h pointer-set.h $(CFGLOOP_H) \
-   tree-pretty-print.h gimple-pretty-print.h $(DIAGNOSTIC_CORE_H)
+   $(GIMPLE_PRETTY_PRINT_H) $(DIAGNOSTIC_CORE_H)
 tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(GGC_H) output.h \
    $(DIAGNOSTIC_H) $(BASIC_BLOCK_H) $(FLAGS_H) $(TIMEVAR_H) $(TM_H) \
@@ -2562,11 +2557,11 @@ tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_PASS_H) $(CFGLOOP_H) $(EXCEPT_H)
 
 gimplify.o : gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(GIMPLE_H) \
-   $(DIAGNOSTIC_H) $(GIMPLE_H) $(TREE_INLINE_H) langhooks.h \
+   $(DIAGNOSTIC_H) $(TREE_INLINE_H) langhooks.h \
    $(LANGHOOKS_DEF_H) $(TREE_FLOW_H) $(CGRAPH_H) $(TIMEVAR_H) $(TM_H) \
    coretypes.h $(EXCEPT_H) $(FLAGS_H) $(RTL_H) $(FUNCTION_H) $(EXPR_H) output.h \
    $(GGC_H) gt-gimplify.h $(HASHTAB_H) $(TARGET_H) $(DIAGNOSTIC_CORE_H) $(OPTABS_H) \
-   $(SPLAY_TREE_H) $(VEC_H) tree-iterator.h tree-pass.h tree-pretty-print.h
+   $(SPLAY_TREE_H) $(VEC_H) tree-iterator.h tree-pass.h $(TREE_PRETTY_PRINT_H)
 gimple-iterator.o : gimple-iterator.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_H) $(GIMPLE_H) $(TREE_FLOW_H) value-prof.h
 gimple-fold.o : gimple-fold.c $(TREE_FLOW_H) $(CONFIG_H) \
@@ -2585,19 +2580,19 @@ omp-low.o : omp-low.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(TREE_PASS_H) $(GGC_H) $(EXCEPT_H) $(SPLAY_TREE_H) $(OPTABS_H) \
    $(CFGLOOP_H) tree-iterator.h gt-omp-low.h
 tree-browser.o : tree-browser.c tree-browser.def $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h $(TREE_H) tree-pretty-print.h
+   coretypes.h $(TREE_H) $(TREE_PRETTY_PRINT_H)
 omega.o : omega.c omega.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
    $(DIAGNOSTIC_CORE_H) $(TREE_PASS_H)
 tree-chrec.o : tree-chrec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   tree-pretty-print.h $(CFGLOOP_H) $(TREE_FLOW_H) $(SCEV_H) $(TREE_PASS_H) \
+   $(TREE_PRETTY_PRINT_H) $(CFGLOOP_H) $(TREE_FLOW_H) $(SCEV_H) $(TREE_PASS_H) \
    $(PARAMS_H)
 tree-scalar-evolution.o : tree-scalar-evolution.c $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h gimple-pretty-print.h $(TREE_FLOW_H) $(CFGLOOP_H) $(SCEV_H) \
+   coretypes.h $(GIMPLE_PRETTY_PRINT_H) $(TREE_FLOW_H) $(CFGLOOP_H) $(SCEV_H) \
    $(TREE_PASS_H) $(PARAMS_H) gt-tree-scalar-evolution.h
 tree-data-ref.o : tree-data-ref.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   gimple-pretty-print.h $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
+   $(GIMPLE_PRETTY_PRINT_H) $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
    $(TREE_PASS_H) langhooks.h tree-affine.h $(PARAMS_H)
-sese.o : sese.c sese.h $(CONFIG_H) $(SYSTEM_H) coretypes.h tree-pretty-print.h \
+sese.o : sese.c sese.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_PRETTY_PRINT_H) \
    $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) tree-pass.h value-prof.h
 graphite.o : graphite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_CORE_H) \
    $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h \
@@ -2621,7 +2616,7 @@ graphite-interchange.o : graphite-interchange.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
    sese.h graphite-ppl.h graphite-poly.h
 graphite-poly.o : graphite-poly.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) $(TREE_DUMP_H) gimple-pretty-print.h \
+   $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(GIMPLE_PRETTY_PRINT_H) \
    $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h graphite-ppl.h graphite-poly.h \
    graphite-dependences.h graphite-cloog-util.h
 graphite-ppl.o : graphite-ppl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -2636,50 +2631,47 @@ graphite-sese-to-poly.o : graphite-sese-to-poly.c $(CONFIG_H) \
 tree-vect-loop.o: tree-vect-loop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) \
    $(TREE_DUMP_H) $(CFGLOOP_H) $(CFGLAYOUT_H) $(EXPR_H) $(RECOG_H) $(OPTABS_H) \
-   $(DIAGNOSTIC_CORE_H) $(SCEV_H) $(TREE_VECTORIZER_H) tree-pretty-print.h \
-   gimple-pretty-print.h $(TARGET_H) $(TREE_DATA_REF_H)
+   $(DIAGNOSTIC_CORE_H) $(SCEV_H) $(TREE_VECTORIZER_H) \
+   $(GIMPLE_PRETTY_PRINT_H) $(TARGET_H) $(TREE_DATA_REF_H)
 tree-vect-loop-manip.o: tree-vect-loop-manip.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(CFGLAYOUT_H) $(EXPR_H) $(DIAGNOSTIC_CORE_H) \
-   $(SCEV_H) $(TREE_VECTORIZER_H) langhooks.h tree-pretty-print.h \
-   gimple-pretty-print.h
+   $(SCEV_H) $(TREE_VECTORIZER_H) langhooks.h $(GIMPLE_PRETTY_PRINT_H)
 tree-vect-patterns.o: tree-vect-patterns.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(EXPR_H) $(OPTABS_H) $(PARAMS_H) \
    $(TREE_DATA_REF_H) $(TREE_VECTORIZER_H) $(RECOG_H) $(DIAGNOSTIC_CORE_H) \
-   gimple-pretty-print.h
+   $(GIMPLE_PRETTY_PRINT_H)
 tree-vect-slp.o: tree-vect-slp.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(CFGLAYOUT_H) \
-   $(EXPR_H) $(RECOG_H) $(OPTABS_H) $(TREE_VECTORIZER_H) tree-pretty-print.h \
-   gimple-pretty-print.h $(TREE_DATA_REF_H) langhooks.h
+   $(EXPR_H) $(RECOG_H) $(OPTABS_H) $(TREE_VECTORIZER_H) \
+   $(GIMPLE_PRETTY_PRINT_H) $(TREE_DATA_REF_H) langhooks.h
 tree-vect-stmts.o: tree-vect-stmts.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(CFGLAYOUT_H) \
    $(EXPR_H) $(RECOG_H) $(OPTABS_H) $(DIAGNOSTIC_CORE_H) $(TREE_VECTORIZER_H) \
-   langhooks.h tree-pretty-print.h gimple-pretty-print.h
+   langhooks.h $(GIMPLE_PRETTY_PRINT_H)
 tree-vect-data-refs.o: tree-vect-data-refs.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) \
    $(EXPR_H) $(OPTABS_H) $(SCEV_H) $(TREE_VECTORIZER_H) \
-   $(DIAGNOSTIC_CORE_H) $(TM_P_H) \
-   tree-pretty-print.h gimple-pretty-print.h
+   $(DIAGNOSTIC_CORE_H) $(TM_P_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-vectorizer.o: tree-vectorizer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \
    $(CFGLOOP_H) $(TREE_PASS_H) $(TREE_VECTORIZER_H) $(TIMEVAR_H) \
-   tree-pretty-print.h
+   $(TREE_PRETTY_PRINT_H)
 tree-loop-distribution.o: tree-loop-distribution.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(TREE_PASS_H)
 tree-parloops.o: tree-parloops.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) gimple-pretty-print.h \
+   $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(GIMPLE_PRETTY_PRINT_H) \
    $(TREE_PASS_H) langhooks.h gt-tree-parloops.h $(TREE_VECTORIZER_H)
 tree-stdarg.o: tree-stdarg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(FUNCTION_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_PASS_H) \
-   tree-stdarg.h $(TARGET_H) langhooks.h gimple-pretty-print.h
+   tree-stdarg.h $(TARGET_H) langhooks.h $(GIMPLE_PRETTY_PRINT_H)
 tree-object-size.o: tree-object-size.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(DIAGNOSTIC_CORE_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) \
-   $(TREE_PASS_H) tree-ssa-propagate.h tree-pretty-print.h \
-   gimple-pretty-print.h
+   $(TREE_PASS_H) tree-ssa-propagate.h $(GIMPLE_PRETTY_PRINT_H)
 internal-fn.o : internal-fn.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(INTERNAL_FN_H) $(TREE_H) $(EXPR_H) $(OPTABS_H) $(GIMPLE_H)
 gimple.o : gimple.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
@@ -2689,8 +2681,7 @@ gimple.o : gimple.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
 gimple-pretty-print.o : gimple-pretty-print.c $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(DIAGNOSTIC_H) $(HASHTAB_H) $(TREE_FLOW_H) \
    $(TM_H) coretypes.h $(TREE_PASS_H) $(GIMPLE_H) value-prof.h \
-   $(TRANS_MEM_H) \
-   tree-pretty-print.h gimple-pretty-print.h
+   $(TRANS_MEM_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-mudflap.o : $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TREE_INLINE_H) \
    $(GIMPLE_H) $(DIAGNOSTIC_H) $(DEMANGLE_H) $(HASHTAB_H) langhooks.h tree-mudflap.h \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(CGRAPH_H) $(GGC_H) \
@@ -2703,7 +2694,7 @@ tree-nomudflap.o : $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TREE_INLINE_H) \
 tree-pretty-print.o : tree-pretty-print.c $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(DIAGNOSTIC_H) $(HASHTAB_H) $(TREE_FLOW_H) \
    $(TM_H) coretypes.h tree-iterator.h $(SCEV_H) langhooks.h \
-   $(TREE_PASS_H) value-prof.h output.h tree-pretty-print.h
+   $(TREE_PASS_H) value-prof.h output.h $(TREE_PRETTY_PRINT_H)
 tree-diagnostic.o : tree-diagnostic.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_H) $(DIAGNOSTIC_H) tree-diagnostic.h langhooks.h $(LANGHOOKS_DEF_H) \
    $(VEC_H)
@@ -2752,7 +2743,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(CGRAPH_H) $(COVERAGE_H) alloc-pool.h $(GGC_H) \
    $(OPTS_H) params.def tree-mudflap.h $(TREE_PASS_H) $(GIMPLE_H) \
    tree-ssa-alias.h $(PLUGIN_H) realmpfr.h tree-diagnostic.h \
-   tree-pretty-print.h opts-diagnostic.h $(COMMON_TARGET_H)
+   $(TREE_PRETTY_PRINT_H) opts-diagnostic.h $(COMMON_TARGET_H)
 
 hwint.o : hwint.c $(CONFIG_H) $(SYSTEM_H) $(DIAGNOSTIC_CORE_H)
 
@@ -2785,7 +2776,7 @@ rtl.o : rtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
 
 print-rtl.o : print-rtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     $(RTL_H) $(TREE_H) hard-reg-set.h $(BASIC_BLOCK_H) $(FLAGS_H) \
-    $(BCONFIG_H) $(DIAGNOSTIC_H) cselib.h $(TREE_PASS_H) tree-pretty-print.h \
+    $(BCONFIG_H) $(DIAGNOSTIC_H) cselib.h $(TREE_PASS_H) $(TREE_PRETTY_PRINT_H) \
     dwarf2out.h
 rtlanal.o : rtlanal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) \
    $(RTL_H) hard-reg-set.h $(TM_P_H) insn-config.h $(RECOG_H) \
@@ -2819,7 +2810,7 @@ except.o : except.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    dwarf2asm.h dwarf2out.h toplev.h $(DIAGNOSTIC_CORE_H) $(HASHTAB_H) intl.h $(GGC_H) \
    gt-except.h $(CGRAPH_H) $(DIAGNOSTIC_H) $(DWARF2_H) \
    $(TARGET_H) $(TM_P_H) $(TREE_PASS_H) $(TIMEVAR_H) $(TREE_FLOW_H) \
-   tree-pretty-print.h sbitmap.h $(COMMON_TARGET_H) $(CFGLOOP_H)
+   $(TREE_PRETTY_PRINT_H) sbitmap.h $(COMMON_TARGET_H) $(CFGLOOP_H)
 expr.o : expr.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) $(FUNCTION_H) $(REGS_H) $(EXPR_H) $(OPTABS_H) \
    $(LIBFUNCS_H) $(INSN_ATTR_H) insn-config.h $(RECOG_H) output.h \
@@ -2827,12 +2818,13 @@ expr.o : expr.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    reload.h langhooks.h intl.h $(TM_P_H) $(TARGET_H) \
    tree-iterator.h gt-expr.h $(MACHMODE_H) $(TIMEVAR_H) $(TREE_FLOW_H) \
    $(TREE_PASS_H) $(DF_H) $(DIAGNOSTIC_H) vecprim.h $(SSAEXPAND_H) \
-   $(PARAMS_H) $(COMMON_TARGET_H)
-dojump.o : dojump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
+   $(PARAMS_H) $(COMMON_TARGET_H) target-globals.h
+dojump.o : dojump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TM_P_H) \
+   $(RTL_H) $(TREE_H) \
    $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) $(OPTABS_H) $(INSN_ATTR_H) insn-config.h \
    langhooks.h $(GGC_H) gt-dojump.h vecprim.h $(BASIC_BLOCK_H) output.h
-builtins.o : builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-   $(TREE_H) $(GIMPLE_H) $(FLAGS_H) $(TARGET_H) $(FUNCTION_H) $(REGS_H) \
+builtins.o : builtins.c builtins.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(RTL_H) $(TREE_H) $(GIMPLE_H) $(FLAGS_H) $(TARGET_H) $(FUNCTION_H) $(REGS_H) \
    $(EXPR_H) $(OPTABS_H) insn-config.h $(RECOG_H) output.h typeclass.h \
    hard-reg-set.h $(DIAGNOSTIC_CORE_H) hard-reg-set.h $(EXCEPT_H) \
    $(TM_P_H) $(PREDICT_H) $(LIBFUNCS_H) langhooks.h $(BASIC_BLOCK_H) \
@@ -2840,7 +2832,7 @@ builtins.o : builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) value-prof.h
 calls.o : calls.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) $(EXPR_H) $(OPTABS_H) langhooks.h $(TARGET_H) \
-   $(LIBFUNCS_H) $(REGS_H) toplev.h $(DIAGNOSTIC_CORE_H) output.h \
+   $(LIBFUNCS_H) $(REGS_H) $(DIAGNOSTIC_CORE_H) output.h \
    $(FUNCTION_H) $(TIMEVAR_H) $(TM_P_H) $(CGRAPH_H) $(EXCEPT_H) sbitmap.h \
    $(DBGCNT_H) $(TREE_FLOW_H)
 expmed.o : expmed.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
@@ -2850,7 +2842,7 @@ expmed.o : expmed.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_
 explow.o : explow.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    $(FLAGS_H) hard-reg-set.h insn-config.h $(EXPR_H) $(OPTABS_H) $(RECOG_H) \
    $(DIAGNOSTIC_CORE_H) $(EXCEPT_H) $(FUNCTION_H) $(GGC_H) $(TM_P_H) langhooks.h gt-explow.h \
-   $(TARGET_H) $(COMMON_TARGET_H) output.h
+   $(TARGET_H) $(COMMON_TARGET_H) output.h $(LIBFUNCS_H)
 optabs.o : optabs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) insn-config.h $(EXPR_H) $(OPTABS_H) $(LIBFUNCS_H) \
    $(RECOG_H) reload.h $(DIAGNOSTIC_CORE_H) $(GGC_H) $(TM_P_H) \
@@ -2872,10 +2864,11 @@ dwarf2out.o : dwarf2out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(GGC_H) $(EXCEPT_H) dwarf2asm.h $(TM_P_H) langhooks.h $(HASHTAB_H) \
    gt-dwarf2out.h $(TARGET_H) $(CGRAPH_H) $(MD5_H) $(INPUT_H) $(FUNCTION_H) \
    $(GIMPLE_H) $(TREE_PASS_H) $(TREE_FLOW_H) $(CFGLAYOUT_H) \
-   tree-pretty-print.h $(COMMON_TARGET_H) $(OPTS_H)
+   $(TREE_PRETTY_PRINT_H) $(COMMON_TARGET_H) $(OPTS_H)
 dwarf2cfi.o : dwarf2cfi.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-   version.h $(RTL_H) $(FUNCTION_H) $(DWARF2_H) dwarf2asm.h dwarf2out.h \
-   $(GGC_H) $(TM_P_H) $(TARGET_H) $(TREE_PASS_H) $(BASIC_BLOCK_H)
+   version.h $(RTL_H) $(EXPR_H) $(REGS_H) $(FUNCTION_H) output.h \
+   gt-dwarf2cfi.h debug.h $(DWARF2_H) dwarf2asm.h dwarf2out.h $(COMMON_TARGET_H) \
+   $(GGC_H) $(TM_P_H) $(TARGET_H) $(TREE_PASS_H) $(BASIC_BLOCK_H) $(EXCEPT_H)
 dwarf2asm.o : dwarf2asm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(FLAGS_H) $(RTL_H) $(TREE_H) output.h dwarf2asm.h $(TM_P_H) $(GGC_H) \
    gt-dwarf2asm.h $(DWARF2_H) $(SPLAY_TREE_H) $(TARGET_H)
@@ -2895,7 +2888,7 @@ real.o : real.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(DIAGNOSTIC_CORE_H) $(TM_P_H) $(REAL_H) dfp.h realmpfr.h
 realmpfr.o : realmpfr.c realmpfr.h $(CONFIG_H) $(SYSTEM_H) $(REAL_H)
 dfp.o : dfp.c dfp.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)	$(TREE_H) \
-   $(DIAGNOSTIC_CORE_H) $(TM_P_H) $(REAL_H) $(DECNUM_H)
+   $(TM_P_H) $(REAL_H) $(DECNUM_H)
 fixed-value.o: fixed-value.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(REAL_H) $(DIAGNOSTIC_CORE_H)
 jump.o : jump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
@@ -2915,23 +2908,23 @@ cgraph.o : cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    gt-cgraph.h output.h intl.h $(BASIC_BLOCK_H) debug.h $(HASHTAB_H) \
    $(TREE_INLINE_H) $(TREE_DUMP_H) $(TREE_FLOW_H) cif-code.def \
    value-prof.h $(EXCEPT_H) $(IPA_UTILS_H) $(DIAGNOSTIC_CORE_H) \
-   ipa-inline.h $(LTO_STREAMER_H) $(CFGLOOP_H)
+   ipa-inline.h $(LTO_STREAMER_H) $(CFGLOOP_H) $(GIMPLE_PRETTY_PRINT_H)
 cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) toplev.h $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(GGC_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(GIMPLE_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) debug.h $(DIAGNOSTIC_H) \
    $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) $(IPA_PROP_H) \
    gt-cgraphunit.h tree-iterator.h $(COVERAGE_H) $(TREE_DUMP_H) \
-   tree-pretty-print.h gimple-pretty-print.h ipa-inline.h $(IPA_UTILS_H) \
-   $(LTO_STREAMER_H) output.h $(REGSET_H) $(EXCEPT_H)
+   $(GIMPLE_PRETTY_PRINT_H) ipa-inline.h $(IPA_UTILS_H) \
+   $(LTO_STREAMER_H) output.h $(REGSET_H) $(EXCEPT_H) $(GCC_PLUGIN_H) plugin.h
 cgraphclones.o : cgraphclones.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) toplev.h $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(GGC_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(GIMPLE_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) debug.h $(DIAGNOSTIC_H) \
    $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) $(IPA_PROP_H) \
-   gt-cgraphunit.h tree-iterator.h $(COVERAGE_H) $(TREE_DUMP_H) \
-   tree-pretty-print.h gimple-pretty-print.h ipa-inline.h $(IPA_UTILS_H) \
-   $(LTO_STREAMER_H) output.h $(REGSET_H) $(EXCEPT_H)
+   tree-iterator.h $(COVERAGE_H) $(TREE_DUMP_H) \
+   $(GIMPLE_PRETTY_PRINT_H) ipa-inline.h $(IPA_UTILS_H) \
+   $(LTO_STREAMER_H) output.h $(EXCEPT_H) $(GCC_PLUGIN_H) gt-cgraphclones.h
 cgraphbuild.o : cgraphbuild.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(CGRAPH_H) intl.h pointer-set.h $(GIMPLE_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(IPA_UTILS_H) $(EXCEPT_H) \
@@ -2947,7 +2940,7 @@ ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TM_H) $(TREE_PASS_H) $(FLAGS_H) $(TREE_H) \
    $(TREE_INLINE_H) $(GIMPLE_H) $(TIMEVAR_H) \
-   tree-pretty-print.h gimple-pretty-print.h $(LTO_STREAMER_H) \
+   $(GIMPLE_PRETTY_PRINT_H) $(LTO_STREAMER_H) \
    $(DATA_STREAMER_H) $(TREE_STREAMER_H)
 ipa-ref.o : ipa-ref.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H)  $(TREE_H) $(TARGET_H) \
@@ -2955,11 +2948,11 @@ ipa-ref.o : ipa-ref.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 ipa-cp.o : ipa-cp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
    $(TREE_H) $(TARGET_H) $(GIMPLE_H) $(CGRAPH_H) $(IPA_PROP_H) $(TREE_FLOW_H) \
    $(TREE_PASS_H) $(FLAGS_H) $(TIMEVAR_H) $(DIAGNOSTIC_H) $(TREE_DUMP_H) \
-   $(TREE_INLINE_H) $(FIBHEAP_H) $(PARAMS_H) tree-pretty-print.h ipa-inline.h
-ipa-split.o : ipa-split.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
+   $(TREE_INLINE_H) $(FIBHEAP_H) $(PARAMS_H) $(TREE_PRETTY_PRINT_H) ipa-inline.h
+ipa-split.o : ipa-split.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(TREE_FLOW_H) \
    $(TREE_PASS_H) $(FLAGS_H) $(TIMEVAR_H) $(DIAGNOSTIC_H) $(TREE_DUMP_H) \
-   $(TREE_INLINE_H) $(FIBHEAP_H) $(PARAMS_H)
+   $(TREE_INLINE_H) $(FIBHEAP_H) $(PARAMS_H) $(GIMPLE_PRETTY_PRINT_H) ipa-inline.h
 matrix-reorg.o : matrix-reorg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
    $(TM_H) $(TREE_H) $(RTL_H) $(TREE_INLINE_H) $(TREE_FLOW_H) \
    tree-flow-inline.h langhooks.h $(HASHTAB_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(GGC_H) \
@@ -2971,18 +2964,18 @@ ipa-inline.o : ipa-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
    $(DIAGNOSTIC_H) $(FIBHEAP_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) \
    $(COVERAGE_H) $(GGC_H) $(TREE_FLOW_H) $(RTL_H) $(IPA_PROP_H) \
-   $(EXCEPT_H) gimple-pretty-print.h ipa-inline.h $(TARGET_H) $(IPA_UTILS_H)
+   $(EXCEPT_H) $(GIMPLE_PRETTY_PRINT_H) ipa-inline.h $(TARGET_H) $(IPA_UTILS_H)
 ipa-inline-analysis.o : ipa-inline-analysis.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
    $(DIAGNOSTIC_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) \
    $(HASHTAB_H) $(COVERAGE_H) $(GGC_H) $(TREE_FLOW_H) $(IPA_PROP_H) \
-   gimple-pretty-print.h ipa-inline.h $(LTO_STREAMER_H) $(DATA_STREAMER_H) \
+   $(GIMPLE_PRETTY_PRINT_H) ipa-inline.h $(LTO_STREAMER_H) $(DATA_STREAMER_H) \
    $(TREE_STREAMER_H)
 ipa-inline-transform.o : ipa-inline-transform.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
-   $(DIAGNOSTIC_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) \
+   $(TIMEVAR_H) $(TREE_PASS_H) \
    $(HASHTAB_H) $(COVERAGE_H) $(GGC_H) $(TREE_FLOW_H) $(IPA_PROP_H) \
-   gimple-pretty-print.h ipa-inline.h $(LTO_STREAMER_H) tree-pass.h
+   tree-pass.h
 ipa-utils.o : ipa-utils.c $(IPA_UTILS_H) $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) langhooks.h \
    pointer-set.h $(GGC_H) $(GIMPLE_H) $(SPLAY_TREE_H) \
@@ -2998,7 +2991,7 @@ ipa-pure-const.o : ipa-pure-const.c $(CONFIG_H) $(SYSTEM_H) \
    pointer-set.h $(GGC_H) $(IPA_UTILS_H) $(TARGET_H) \
    $(GIMPLE_H) $(CGRAPH_H) output.h $(FLAGS_H) $(TREE_PASS_H) $(TIMEVAR_H) \
    $(DIAGNOSTIC_H) $(CFGLOOP_H) $(SCEV_H) $(LTO_STREAMER_H) \
-   gimple-pretty-print.h $(DATA_STREAMER_H) $(TREE_STREAMER_H)
+   $(GIMPLE_PRETTY_PRINT_H) $(DATA_STREAMER_H) $(TREE_STREAMER_H)
 coverage.o : coverage.c $(GCOV_IO_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(TREE_H) $(FLAGS_H) output.h $(REGS_H) $(EXPR_H) \
    $(FUNCTION_H) $(BASIC_BLOCK_H) toplev.h $(DIAGNOSTIC_CORE_H) $(GGC_H) langhooks.h $(COVERAGE_H) \
@@ -3022,7 +3015,7 @@ dse.o : dse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(TM_P_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) insn-config.h \
    $(RECOG_H) $(EXPR_H) $(DF_H) cselib.h $(DBGCNT_H) $(TIMEVAR_H) \
    $(TREE_PASS_H) alloc-pool.h $(ALIAS_H) $(OPTABS_H) $(TARGET_H) \
-   $(BITMAP_H) $(PARAMS_H)
+   $(BITMAP_H) $(PARAMS_H) $(TREE_FLOW_H)
 fwprop.o : fwprop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(DIAGNOSTIC_CORE_H) insn-config.h $(RECOG_H) $(FLAGS_H) $(OBSTACK_H) $(BASIC_BLOCK_H) \
    output.h $(DF_H) alloc-pool.h $(TIMEVAR_H) $(TREE_PASS_H) $(TARGET_H) \
@@ -3036,7 +3029,7 @@ ree.o : ree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(REGS_H) $(TREE_H) $(TM_P_H) insn-config.h $(INSN_ATTR_H) $(DIAGNOSTIC_CORE_H) \
    $(TARGET_H) $(OPTABS_H) insn-codes.h rtlhooks-def.h $(PARAMS_H) $(CGRAPH_H)
 cprop.o : cprop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-   $(REGS_H) hard-reg-set.h $(FLAGS_H) insn-config.h $(GGC_H) \
+   $(REGS_H) hard-reg-set.h $(FLAGS_H) insn-config.h \
    $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) $(FUNCTION_H) output.h toplev.h $(DIAGNOSTIC_CORE_H) \
    $(TM_P_H) $(PARAMS_H) cselib.h $(EXCEPT_H) $(TREE_H) $(TIMEVAR_H) \
    intl.h $(OBSTACK_H) $(TREE_PASS_H) $(DF_H) $(DBGCNT_H) $(TARGET_H) \
@@ -3065,32 +3058,31 @@ mode-switching.o : mode-switching.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 tree-ssa-dce.o : tree-ssa-dce.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
     $(TREE_FLOW_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) $(TM_H) \
     coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(FLAGS_H) $(BASIC_BLOCK_H) \
-    $(GGC_H) $(GIMPLE_H) $(CFGLOOP_H) $(SCEV_H) tree-pretty-print.h \
-    gimple-pretty-print.h
+    $(GGC_H) $(GIMPLE_H) $(CFGLOOP_H) $(SCEV_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-call-cdce.o : tree-call-cdce.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
     $(TREE_FLOW_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) $(TM_H) \
     coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(FLAGS_H) $(BASIC_BLOCK_H) \
-    $(GIMPLE_H) gimple-pretty-print.h
+    $(GIMPLE_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-ccp.o : tree-ssa-ccp.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(EXPR_H) output.h \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) $(BASIC_BLOCK_H) $(TREE_PASS_H) langhooks.h  $(PARAMS_H) \
    tree-ssa-propagate.h value-prof.h $(FLAGS_H) $(TARGET_H) $(DIAGNOSTIC_CORE_H) \
-   $(DBGCNT_H) tree-pretty-print.h gimple-pretty-print.h gimple-fold.h
+   $(DBGCNT_H) $(GIMPLE_PRETTY_PRINT_H) gimple-fold.h
 tree-ssa-strlen.o : tree-ssa-strlen.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_FLOW_H) $(TREE_PASS_H) domwalk.h alloc-pool.h tree-ssa-propagate.h \
-   gimple-pretty-print.h $(PARAMS_H) $(EXPR_H)
+   $(GIMPLE_PRETTY_PRINT_H) $(PARAMS_H) $(EXPR_H)
 tree-sra.o : tree-sra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h alloc-pool.h \
    $(TM_H) $(TREE_H) $(GIMPLE_H) $(CGRAPH_H) $(TREE_FLOW_H) \
    $(IPA_PROP_H) $(DIAGNOSTIC_H) statistics.h $(TREE_DUMP_H) $(TIMEVAR_H) \
-   $(PARAMS_H) $(TARGET_H) $(FLAGS_H) $(EXPR_H) tree-pretty-print.h \
-   $(DBGCNT_H) $(TREE_INLINE_H) gimple-pretty-print.h
+   $(PARAMS_H) $(TARGET_H) $(FLAGS_H) $(EXPR_H) \
+   $(DBGCNT_H) $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-switch-conversion.o : tree-switch-conversion.c $(CONFIG_H) $(SYSTEM_H) \
     $(TREE_H) $(TM_P_H) $(TREE_FLOW_H) $(DIAGNOSTIC_H) $(TREE_INLINE_H) \
     $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) $(GIMPLE_H) \
     $(TREE_PASS_H) $(FLAGS_H) $(EXPR_H) $(BASIC_BLOCK_H) output.h \
     $(GGC_H) $(OBSTACK_H) $(PARAMS_H) $(CPPLIB_H) $(PARAMS_H) \
-    gimple-pretty-print.h langhooks.h
+    $(GIMPLE_PRETTY_PRINT_H) langhooks.h
 tree-complex.o : tree-complex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
     $(TM_H) $(FLAGS_H) $(TREE_FLOW_H) $(GIMPLE_H) \
     tree-iterator.h $(TREE_PASS_H) tree-ssa-propagate.h $(DIAGNOSTIC_H)
@@ -3123,7 +3115,7 @@ var-tracking.o : var-tracking.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(BASIC_BLOCK_H) output.h sbitmap.h alloc-pool.h $(FIBHEAP_H) $(HASHTAB_H) \
    $(REGS_H) $(EXPR_H) $(TIMEVAR_H) $(TREE_PASS_H) $(TREE_FLOW_H) \
    cselib.h $(TARGET_H) $(DIAGNOSTIC_CORE_H) $(PARAMS_H) $(DIAGNOSTIC_H) pointer-set.h \
-   $(RECOG_H) $(TM_P_H) tree-pretty-print.h
+   $(RECOG_H) $(TM_P_H) $(TREE_PRETTY_PRINT_H)
 profile.o : profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) output.h $(REGS_H) $(EXPR_H) $(FUNCTION_H) $(BASIC_BLOCK_H) \
    $(DIAGNOSTIC_CORE_H) $(COVERAGE_H) $(TREE_FLOW_H) value-prof.h cfghooks.h \
@@ -3139,7 +3131,7 @@ value-prof.o : value-prof.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RECOG_H) insn-config.h $(OPTABS_H) $(REGS_H) $(GGC_H) $(DIAGNOSTIC_H) \
    $(TREE_H) $(COVERAGE_H) $(RTL_H) $(GCOV_IO_H) $(TREE_FLOW_H) \
    tree-flow-inline.h $(TIMEVAR_H) $(TREE_PASS_H) $(DIAGNOSTIC_CORE_H) pointer-set.h \
-   tree-pretty-print.h gimple-pretty-print.h
+   $(GIMPLE_PRETTY_PRINT_H)
 loop-doloop.o : loop-doloop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(FLAGS_H) $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) $(TM_P_H) \
    $(DIAGNOSTIC_CORE_H) $(CFGLOOP_H) output.h $(PARAMS_H) $(TARGET_H)
@@ -3159,7 +3151,7 @@ cfgexpand.o : cfgexpand.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_DUMP_H) $(EXCEPT_H) langhooks.h $(TREE_PASS_H) $(RTL_H) \
    $(DIAGNOSTIC_H) toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(FLAGS_H) debug.h $(PARAMS_H) \
    value-prof.h $(TREE_INLINE_H) $(TARGET_H) $(SSAEXPAND_H) $(REGS_H) \
-   tree-pretty-print.h gimple-pretty-print.h $(BITMAP_H) sbitmap.h \
+   $(GIMPLE_PRETTY_PRINT_H) $(BITMAP_H) sbitmap.h \
    $(INSN_ATTR_H) $(CFGLOOP_H)
 cfgrtl.o : cfgrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_ERROR_H) \
    $(FLAGS_H) insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h \
@@ -3257,7 +3249,7 @@ caller-save.o : caller-save.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_
 bt-load.o : bt-load.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(EXCEPT_H) \
    $(RTL_H) hard-reg-set.h $(REGS_H) $(TM_P_H) $(FIBHEAP_H) output.h $(EXPR_H) \
    $(TARGET_H) $(FLAGS_H) $(INSN_ATTR_H) $(FUNCTION_H) $(TREE_PASS_H) \
-   toplev.h $(DIAGNOSTIC_CORE_H) $(DF_H) vecprim.h $(RECOG_H)
+   $(DIAGNOSTIC_CORE_H) $(DF_H) vecprim.h $(RECOG_H)
 reorg.o : reorg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    conditions.h hard-reg-set.h $(BASIC_BLOCK_H) $(REGS_H) insn-config.h \
    $(INSN_ATTR_H) $(EXCEPT_H) $(RECOG_H) $(FUNCTION_H) $(FLAGS_H) output.h \
@@ -3301,7 +3293,7 @@ ira-lives.o: ira-lives.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(DF_H) sparseset.h $(IRA_INT_H)
 ira.o: ira.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(REGS_H) $(RTL_H) $(TM_P_H) $(TARGET_H) $(FLAGS_H) $(OBSTACK_H) \
-   $(BITMAP_H) hard-reg-set.h $(BASIC_BLOCK_H) $(DBGCNT_H) \
+   $(BITMAP_H) hard-reg-set.h $(BASIC_BLOCK_H) $(DBGCNT_H) $(FUNCTION_H) \
    $(EXPR_H) $(RECOG_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) output.h \
    $(EXCEPT_H) reload.h toplev.h $(DIAGNOSTIC_CORE_H) $(DF_H) $(GGC_H) $(IRA_INT_H)
 regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
@@ -3312,7 +3304,7 @@ regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
 combine-stack-adj.o : combine-stack-adj.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) insn-config.h $(TIMEVAR_H) $(TREE_PASS_H) \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
-   $(EXPR_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_CORE_H) $(TM_P_H) $(DF_H) $(EXCEPT_H) reload.h
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(DF_H) $(EXCEPT_H) reload.h
 compare-elim.o : compare-elim.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(TM_P_H) insn-config.h $(RECOG_H) $(FLAGS_H) \
    $(BASIC_BLOCK_H) $(TREE_PASS_H) $(TARGET_H) $(DF_H) domwalk.h
@@ -3372,7 +3364,8 @@ final.o : final.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_ERROR_H) \
    $(EXCEPT_H) debug.h xcoffout.h toplev.h $(DIAGNOSTIC_CORE_H) reload.h dwarf2out.h \
    $(TREE_PASS_H) $(BASIC_BLOCK_H) $(TM_P_H) $(TARGET_H) $(EXPR_H) \
    $(CFGLAYOUT_H) dbxout.h $(TIMEVAR_H) $(CGRAPH_H) $(COVERAGE_H) \
-   $(DF_H) vecprim.h $(GGC_H) $(CFGLOOP_H) $(PARAMS_H) $(TREE_FLOW_H)
+   $(DF_H) vecprim.h $(GGC_H) $(CFGLOOP_H) $(PARAMS_H) $(TREE_FLOW_H) \
+   $(DWARF2_H) targhooks.h $(TREE_PRETTY_PRINT_H)
 recog.o : recog.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_ERROR_H) \
    $(FUNCTION_H) $(BASIC_BLOCK_H) $(REGS_H) $(RECOG_H) $(EXPR_H) \
    $(FLAGS_H) insn-config.h $(INSN_ATTR_H) output.h reload.h \
@@ -4002,7 +3995,8 @@ PREPROCESSOR_DEFINES = \
 
 CFLAGS-cppbuiltin.o += $(PREPROCESSOR_DEFINES) -DBASEVER=$(BASEVER_s)
 cppbuiltin.o: cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(TREE_H) cppbuiltin.h Makefile
+	$(TARGET_H) $(TARGET_DEF) $(TREE_H) $(CPP_ID_DATA_H) \
+	cppbuiltin.h version.h Makefile
 
 CFLAGS-cppdefault.o += $(PREPROCESSOR_DEFINES)
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -4574,7 +4568,7 @@ installdirs:
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(GIMPLE_H) $(TREE_PASS_H) $(GCC_PLUGIN_H) \
-  $(GGC_H) $(TREE_DUMP_H) $(PRETTY_PRINT_H) $(OPTS_H) $(PARAMS_H) plugin.def \
+  $(GGC_H) $(TREE_DUMP_H) $(PRETTY_PRINT_H) $(OPTS_H) $(PARAMS_H) \
   $(tm_file_list) $(tm_include_list) $(tm_p_file_list) $(tm_p_include_list) \
   $(host_xm_file_list) $(host_xm_include_list) $(xm_include_list) \
   intl.h $(PLUGIN_VERSION_H) $(DIAGNOSTIC_H) ${C_TREE_H} \
@@ -4583,7 +4577,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(EXCEPT_H) tree-ssa-sccvn.h real.h output.h $(IPA_UTILS_H) \
   $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \
   cppdefault.h flags.h $(MD5_H) params.def params.h prefix.h tree-inline.h \
-  gimple-pretty-print.h tree-pretty-print.h realmpfr.h \
+  $(GIMPLE_PRETTY_PRINT_H) realmpfr.h \
   $(IPA_PROP_H) $(RTL_H) $(TM_P_H) $(CFGLOOP_H) $(EMIT_RTL_H) version.h
 
 # generate the 'build fragment' b-header-vars
