@@ -12810,13 +12810,13 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
     case TLS_MODEL_INITIAL_EXEC:
       if (TARGET_64BIT)
 	{
-	  if (TARGET_SUN_TLS)
+	  if (TARGET_SUN_TLS && !TARGET_X32)
 	    {
 	      /* The Sun linker took the AMD64 TLS spec literally
 		 and can only handle %rax as destination of the
 		 initial executable code sequence.  */
 
-	      dest = gen_reg_rtx (Pmode);
+	      dest = gen_reg_rtx (DImode);
 	      emit_insn (gen_tls_initial_exec_64_sun (dest, x));
 	      return dest;
 	    }

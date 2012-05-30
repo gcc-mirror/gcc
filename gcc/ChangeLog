@@ -1,3 +1,8 @@
+2012-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (legitimize_tls_address) <TLS_MODEL_INITIAL_EXEC>:
+	Generate tls_initial_exec_64_sun only when !TARGET_X32.
+
 2012-05-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53501
@@ -169,23 +174,21 @@
 
 2012-05-29  Georg-Johann Lay  <avr@gjlay.de>
 
-	* config/avr/t-avr (s-avr-mmcu-texi): Call 
+	* config/avr/t-avr (s-avr-mmcu-texi): Call
 	gen-avr-mmcu-texi$(build_exeext) via ./ and don't assume . is in PATH.
-	
+
 2012-05-29  Michael Matz  <matz@suse.de>
 
 	* rtl.h (assign_stack_temp, assign_stack_temp_for_type,
 	assign_temp): Remove 'keep' argument.
 	(mark_temp_addr_taken): Remove prototype.
 	* tree.h (expand_decl): Remove prototype.
-	* function.c (struct temp_slot): Remove addr_taken and keep
-	member.
+	* function.c (struct temp_slot): Remove addr_taken and keep member.
 	(assign_stack_temp_for_type) Don't initialize above, remove
 	keep argument.
 	(assign_stack_temp, assign_temp): Remove keep argument.
 	(mark_temp_addr_taken): Remove.
-	(preserve_temp_slots): Remove handling of addr_taken and keep
-	members.
+	(preserve_temp_slots): Remove handling of addr_taken and keep members.
 	(free_temp_slots): Ditto.
 	* expr.c (expand_expr_real_1 <COMPOUND_LITERAL_EXPR>): Remove
 	dead code.
@@ -231,7 +234,7 @@
 	* expr.c (expand_expr_real_1 <normal_inner_ref>): Don't allocate
 	a kept temp.
 	(expand_expr_real_1 <COMPOUND_LITERAL_EXPR>): Make unreachable.
-	* gimple-fold.c (canonicalize_constructor_val): Canonicalize 
+	* gimple-fold.c (canonicalize_constructor_val): Canonicalize
 	COMPOUND_LITERAL_EXPR.
 	* function.c (expand_function_start): Don't call expand_decl,
 	instead assert that we have RTL assigned.
@@ -415,8 +418,7 @@
 	PR middle-end/53510
 	* input.c (read_line): Use XRESIZEVEC instead of XNEWVEC
 	to avoid leaking memory.  No need to handle memory allocation
-	failure.  Double string_len on each reallocation instead of
-	adding 2.
+	failure.  Double string_len on each reallocation instead of adding 2.
 	* gcov.c (read_line): Likewise.
 
 2012-05-29  Hans-Peter Nilsson  <hp@axis.com>
@@ -435,8 +437,7 @@
 
 2012-05-28  Hans-Peter Nilsson  <hp@axis.com>
 
-	* doc/md.texi (stack_protect_test): Remove negation of branch to
-	label.
+	* doc/md.texi (stack_protect_test): Remove negation of branch to label.
 	(Standard Names): Fix typos in documentation of atomic patterns.
 
 2012-05-27  Nathan Sidwell  <nathan@acm.org>
