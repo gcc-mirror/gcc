@@ -1,7 +1,7 @@
 /* RTL simplification functions for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011  Free Software Foundation, Inc.
+   2011, 2012  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3241,6 +3241,27 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		}
 
 	      return gen_rtx_CONST_VECTOR (mode, v);
+	    }
+
+	  /* If we build {a,b} then permute it, build the result directly.  */
+	  if (XVECLEN (trueop1, 0) == 2
+	      && CONST_INT_P (XVECEXP (trueop1, 0, 0))
+	      && CONST_INT_P (XVECEXP (trueop1, 0, 1))
+	      && GET_CODE (trueop0) == VEC_CONCAT
+	      && GET_CODE (XEXP (trueop0, 0)) == VEC_CONCAT
+	      && GET_MODE (XEXP (trueop0, 0)) == mode
+	      && GET_CODE (XEXP (trueop0, 1)) == VEC_CONCAT
+	      && GET_MODE (XEXP (trueop0, 1)) == mode)
+	    {
+	      unsigned int i0 = INTVAL (XVECEXP (trueop1, 0, 0));
+	      unsigned int i1 = INTVAL (XVECEXP (trueop1, 0, 1));
+	      rtx subop0, subop1;
+
+	      gcc_assert (i0 < 4 && i1 < 4);
+	      subop0 = XEXP (XEXP (trueop0, i0 / 2), i0 % 2);
+	      subop1 = XEXP (XEXP (trueop0, i1 / 2), i1 % 2);
+
+	      return simplify_gen_binary (VEC_CONCAT, mode, subop0, subop1);
 	    }
 	}
 

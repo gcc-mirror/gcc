@@ -1,3 +1,7 @@
+2012-05-30  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.target/i386/shuf-concat.c: New test.
+
 2012-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/53519
