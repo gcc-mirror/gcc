@@ -406,13 +406,13 @@ collect_exit (int status)
 
   if (ldout != 0 && ldout[0])
     {
-      dump_file (ldout, stdout);
+      dump_ld_file (ldout, stdout);
       maybe_unlink (ldout);
     }
 
   if (lderrout != 0 && lderrout[0])
     {
-      dump_file (lderrout, stderr);
+      dump_ld_file (lderrout, stderr);
       maybe_unlink (lderrout);
     }
 
@@ -518,7 +518,7 @@ extract_string (const char **pp)
 }
 
 void
-dump_file (const char *name, FILE *to)
+dump_ld_file (const char *name, FILE *to)
 {
   FILE *stream = fopen (name, "r");
 

@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "regs.h"
 #include "flags.h"
-#include "output.h"
 #include "function.h"
 #include "except.h"
 #include "diagnostic-core.h"

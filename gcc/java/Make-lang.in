@@ -309,7 +309,7 @@ java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
 java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \
   $(SYSTEM_H) coretypes.h $(GGC_H)
 java/resource.o: java/resource.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(JAVA_TREE_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
+  $(JAVA_TREE_H) java/jcf.h java/parse.h toplev.h $(GGC_H) \
   $(TARGET_H) $(FUNCTION_H) gt-java-resource.h
 java/typeck.o: java/typeck.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   $(SYSTEM_H) coretypes.h $(GGC_H) $(REAL_H)

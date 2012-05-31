@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "cfglayout.h"
 #include "cfgloop.h"
-#include "output.h"
 #include "recog.h"
 #include "target.h"
 #include "hw-doloop.h"

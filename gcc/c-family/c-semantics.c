@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "c-common.h"
 #include "flags.h"
-#include "output.h"
 #include "tree-iterator.h"
 
 /* Create an empty statement tree rooted at T.  */

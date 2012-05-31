@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "diagnostic-core.h"	/* For internal_error.  */
 #include "toplev.h"	/* For announce_function.  */
-#include "output.h"	/* For decl_default_tls_model.  */
 #include "target.h"
 #include "function.h"
 #include "flags.h"

@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "params.h"
-#include "output.h"
 #include "basic-block.h"
 #include "cselib.h"
 #include "target.h"

@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "sched-int.h"
 #include "target.h"
-#include "output.h"
 
 
 #ifdef INSN_SCHEDULING

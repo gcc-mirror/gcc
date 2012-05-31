@@ -237,8 +237,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "insn-codes.h"
 #include "rtlhooks-def.h"
-/* Include output.h for dump_file.  */
-#include "output.h"
 #include "params.h"
 #include "timevar.h"
 #include "tree-pass.h"

@@ -42,7 +42,6 @@
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
-#include "output.h"
 #include "cfglayout.h"
 #include "fibheap.h"
 #include "flags.h"

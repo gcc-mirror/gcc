@@ -84,7 +84,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "timevar.h"
 #include "tree-pass.h"
-#include "output.h"
 #include "reload.h"
 #include "df.h"
 #include "ira-int.h"

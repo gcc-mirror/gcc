@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "basic-block.h"
 #include "cgraph.h"
-#include "output.h"
 #include "intl.h"
 #include "gimple.h"
 #include "tree-dump.h"

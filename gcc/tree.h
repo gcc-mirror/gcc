@@ -5678,6 +5678,8 @@ extern void set_user_assembler_name (tree, const char *);
 extern void process_pending_assemble_externals (void);
 extern bool decl_replaceable_p (tree);
 extern bool decl_binds_to_current_def_p (tree);
+extern enum tls_model decl_default_tls_model (const_tree);
+
 /* In stmt.c */
 extern void expand_computed_goto (tree);
 extern bool parse_output_constraint (const char **, int, int, int,

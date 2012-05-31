@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "params.h"
 #include "df.h"
-#include "output.h"
 #include "reload.h"
 #include "sparseset.h"
 #include "ira-int.h"

@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "intl.h"
 #include "flags.h"
-#include "output.h"
 #include "toplev.h"
 #include "target.h"
 

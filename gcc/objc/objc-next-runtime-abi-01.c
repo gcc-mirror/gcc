@@ -49,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "ggc.h"
 #include "target.h"
-#include "output.h"
+#include "output.h" /* for asm_out_file */
 #include "tree-iterator.h"
 
 #include "objc-runtime-hooks.h"

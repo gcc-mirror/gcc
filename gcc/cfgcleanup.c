@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "regs.h"
 #include "timevar.h"
-#include "output.h"
 #include "insn-config.h"
 #include "flags.h"
 #include "recog.h"

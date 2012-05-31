@@ -164,7 +164,6 @@
 #include "hard-reg-set.h"
 #include "flags.h"
 #include "recog.h"
-#include "output.h"
 #include "basic-block.h"
 #include "reload.h"
 #include "ggc.h"

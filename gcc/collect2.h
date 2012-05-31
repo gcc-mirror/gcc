@@ -30,7 +30,7 @@ extern void collect_exit (int) ATTRIBUTE_NORETURN;
 
 extern int collect_wait (const char *, struct pex_obj *);
 
-extern void dump_file (const char *, FILE *);
+extern void dump_ld_file (const char *, FILE *);
 
 extern int file_exists (const char *);
 

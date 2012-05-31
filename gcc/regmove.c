@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "target.h"
-#include "output.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"

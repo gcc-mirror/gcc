@@ -1371,25 +1371,6 @@ assemble_asm (tree string)
   fprintf (asm_out_file, "\t%s\n", TREE_STRING_POINTER (string));
 }
 
-/* Record an element in the table of global destructors.  SYMBOL is
-   a SYMBOL_REF of the function to be called; PRIORITY is a number
-   between 0 and MAX_INIT_PRIORITY.  */
-
-void
-default_stabs_asm_out_destructor (rtx symbol ATTRIBUTE_UNUSED,
-				  int priority ATTRIBUTE_UNUSED)
-{
-#if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO
-  /* Tell GNU LD that this is part of the static destructor set.
-     This will work for any system that uses stabs, most usefully
-     aout systems.  */
-  dbxout_begin_simple_stabs ("___DTOR_LIST__", 22 /* N_SETT */);
-  dbxout_stab_value_label (XSTR (symbol, 0));
-#else
-  sorry ("global destructors not supported on this target");
-#endif
-}
-
 /* Write the address of the entity given by SYMBOL to SEC.  */
 void
 assemble_addr_to_section (rtx symbol, section *sec)
@@ -1438,23 +1419,6 @@ default_dtor_section_asm_out_destructor (rtx symbol,
   assemble_addr_to_section (symbol, dtors_section);
 }
 #endif
-
-/* Likewise for global constructors.  */
-
-void
-default_stabs_asm_out_constructor (rtx symbol ATTRIBUTE_UNUSED,
-				   int priority ATTRIBUTE_UNUSED)
-{
-#if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO
-  /* Tell GNU LD that this is part of the static destructor set.
-     This will work for any system that uses stabs, most usefully
-     aout systems.  */
-  dbxout_begin_simple_stabs ("___CTOR_LIST__", 22 /* N_SETT */);
-  dbxout_stab_value_label (XSTR (symbol, 0));
-#else
-  sorry ("global constructors not supported on this target");
-#endif
-}
 
 void
 default_named_section_asm_out_constructor (rtx symbol, int priority)

@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "cfglayout.h"
 #include "params.h"
-#include "output.h"
 #include "expr.h"
 #include "hashtab.h"
 #include "recog.h"

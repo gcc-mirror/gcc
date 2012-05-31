@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tm_p.h"
 #include "addresses.h"
-#include "output.h"
 #include "ggc.h"
 
 #define MOVE_MAX_WORDS (MOVE_MAX / UNITS_PER_WORD)

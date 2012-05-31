@@ -59,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "expr.h"
 #include "intl.h"
-#include "output.h"
 #include "diagnostic-core.h"
 #include "df.h"
 #include "hashtab.h"

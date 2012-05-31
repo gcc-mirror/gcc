@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tree.h"
 #include "output.h"
+#include "dbxout.h"
 #include "except.h"
 #include "expr.h"
 #include "optabs.h"
