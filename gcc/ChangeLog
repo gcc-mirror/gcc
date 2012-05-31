@@ -1,5 +1,19 @@
 2012-05-31  Richard Guenther  <rguenther@suse.de>
 
+	* tree-loop-distribution.c (struct partition_s): New struct,
+	typedef and vector type.
+	(partition_alloc, partition_free): New functions.
+	(generate_loops_for_partition, generate_builtin,
+	generate_code_for_partition, rdg_flag_uses, rdg_flag_vertex,
+	rdg_flag_vertex_and_dependent, rdg_flag_loop_exits,
+	build_rdg_partition_for_component, can_generate_builtin,
+	similar_memory_accesses, fuse_partitions_with_similar_memory_accesses,
+	rdg_build_partitions, dump_rdg_partitions, debug_rdg_partitions,
+	number_of_rw_in_partition, partition_contains_all_rw,
+	ldist_gen): Use partition_t instead of bitmap.
+
+2012-05-31  Richard Guenther  <rguenther@suse.de>
+
 	* tree-loop-distribution.c (stmt_has_scalar_dependences_outside_loop):
 	Use FOR_EACH_SSA_DEF_OPERAND.
 	(generate_builtin): Adjust.
