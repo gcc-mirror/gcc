@@ -1,5 +1,14 @@
 2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* regs.h (move_table, move_cost, may_move_in_cost, may_move_out_cost):
+	Move these definitions and associated target_globals fields to...
+	* ira-int.h: ...here.
+	* rtl.h (init_move_cost): Delete.
+	* reginfo.c (last_mode_for_init_move_cost, init_move_cost): Move to...
+	* ira.c: ...here, making the latter static.
+
+2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ira-costs.c (copy_cost): Use ira_init_register_move_cost_if_necessary
 	and ira_register_move_cost instead of init_move_cost and move_cost.
 

@@ -2044,8 +2044,6 @@ extern rtx remove_free_EXPR_LIST_node (rtx *);
 
 /* reginfo.c */
 
-/* Initialize may_move_cost and friends for mode M.  */
-extern void init_move_cost (enum machine_mode);
 /* Resize reg info.  */
 extern bool resize_reg_info (void);
 /* Free up register info memory.  */

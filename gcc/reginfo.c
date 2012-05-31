@@ -122,9 +122,6 @@ static const char *const initial_reg_names[] = REGISTER_NAMES;
 /* Array containing all of the register class names.  */
 const char * reg_class_names[] = REG_CLASS_NAMES;
 
-#define last_mode_for_init_move_cost \
-  (this_target_regs->x_last_mode_for_init_move_cost)
-
 /* No more global register variables may be declared; true once
    reginfo has been initialized.  */
 static int no_global_reg_vars = 0;
@@ -195,95 +192,6 @@ init_reg_sets (void)
 
   SET_HARD_REG_SET (accessible_reg_set);
   SET_HARD_REG_SET (operand_reg_set);
-}
-
-/* Initialize may_move_cost and friends for mode M.  */
-void
-init_move_cost (enum machine_mode m)
-{
-  static unsigned short last_move_cost[N_REG_CLASSES][N_REG_CLASSES];
-  bool all_match = true;
-  unsigned int i, j;
-
-  gcc_assert (have_regs_of_mode[m]);
-  for (i = 0; i < N_REG_CLASSES; i++)
-    if (contains_reg_of_mode[i][m])
-      for (j = 0; j < N_REG_CLASSES; j++)
-	{
-	  int cost;
-	  if (!contains_reg_of_mode[j][m])
-	    cost = 65535;
-	  else
-	    {
-	      cost = register_move_cost (m, (enum reg_class) i,
-					 (enum reg_class) j);
-	      gcc_assert (cost < 65535);
-	    }
-	  all_match &= (last_move_cost[i][j] == cost);
-	  last_move_cost[i][j] = cost;
-	}
-  if (all_match && last_mode_for_init_move_cost != -1)
-    {
-      move_cost[m] = move_cost[last_mode_for_init_move_cost];
-      may_move_in_cost[m] = may_move_in_cost[last_mode_for_init_move_cost];
-      may_move_out_cost[m] = may_move_out_cost[last_mode_for_init_move_cost];
-      return;
-    }
-  last_mode_for_init_move_cost = m;
-  move_cost[m] = (move_table *)xmalloc (sizeof (move_table)
-					* N_REG_CLASSES);
-  may_move_in_cost[m] = (move_table *)xmalloc (sizeof (move_table)
-					       * N_REG_CLASSES);
-  may_move_out_cost[m] = (move_table *)xmalloc (sizeof (move_table)
-					        * N_REG_CLASSES);
-  for (i = 0; i < N_REG_CLASSES; i++)
-    if (contains_reg_of_mode[i][m])
-      for (j = 0; j < N_REG_CLASSES; j++)
-	{
-	  int cost;
-	  enum reg_class *p1, *p2;
-
-	  if (last_move_cost[i][j] == 65535)
-	    {
-	      move_cost[m][i][j] = 65535;
-	      may_move_in_cost[m][i][j] = 65535;
-	      may_move_out_cost[m][i][j] = 65535;
-	    }
-	  else
-	    {
-	      cost = last_move_cost[i][j];
-
-	      for (p2 = &reg_class_subclasses[j][0];
-		   *p2 != LIM_REG_CLASSES; p2++)
-		if (*p2 != i && contains_reg_of_mode[*p2][m])
-		  cost = MAX (cost, move_cost[m][i][*p2]);
-
-	      for (p1 = &reg_class_subclasses[i][0];
-		   *p1 != LIM_REG_CLASSES; p1++)
-		if (*p1 != j && contains_reg_of_mode[*p1][m])
-		  cost = MAX (cost, move_cost[m][*p1][j]);
-
-	      gcc_assert (cost <= 65535);
-	      move_cost[m][i][j] = cost;
-
-	      if (reg_class_subset_p ((enum reg_class) i, (enum reg_class) j))
-		may_move_in_cost[m][i][j] = 0;
-	      else
-		may_move_in_cost[m][i][j] = cost;
-
-	      if (reg_class_subset_p ((enum reg_class) j, (enum reg_class) i))
-		may_move_out_cost[m][i][j] = 0;
-	      else
-		may_move_out_cost[m][i][j] = cost;
-	    }
-	}
-    else
-      for (j = 0; j < N_REG_CLASSES; j++)
-	{
-	  move_cost[m][i][j] = 65535;
-	  may_move_in_cost[m][i][j] = 65535;
-	  may_move_out_cost[m][i][j] = 65535;
-	}
 }
 
 /* We need to save copies of some of the register information which
@@ -575,25 +483,6 @@ init_reg_sets_1 (void)
 	     have_regs_of_mode [m] = 1;
 	  }
      }
-
-  /* Reset move_cost and friends, making sure we only free shared
-     table entries once.  */
-  for (i = 0; i < MAX_MACHINE_MODE; i++)
-    if (move_cost[i])
-      {
-	for (j = 0; j < i && move_cost[i] != move_cost[j]; j++)
-	  ;
-	if (i == j)
-	  {
-	    free (move_cost[i]);
-	    free (may_move_in_cost[i]);
-	    free (may_move_out_cost[i]);
-	  }
-      }
-  memset (move_cost, 0, sizeof move_cost);
-  memset (may_move_in_cost, 0, sizeof may_move_in_cost);
-  memset (may_move_out_cost, 0, sizeof may_move_out_cost);
-  last_mode_for_init_move_cost = -1;
 }
 
 /* Compute the table of register modes.
