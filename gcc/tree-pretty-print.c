@@ -805,6 +805,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	       infer them and MEM_ATTR caching will share MEM_REFs
 	       with differently-typed op0s.  */
 	    && TREE_CODE (TREE_OPERAND (node, 0)) != INTEGER_CST
+	    /* Released SSA_NAMES have no TREE_TYPE.  */
+	    && TREE_TYPE (TREE_OPERAND (node, 0)) != NULL_TREE
 	    /* Same pointer types, but ignoring POINTER_TYPE vs.
 	       REFERENCE_TYPE.  */
 	    && (TREE_TYPE (TREE_TYPE (TREE_OPERAND (node, 0)))
@@ -1171,6 +1173,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		     can't infer them and MEM_ATTR caching will share
 		     MEM_REFs with differently-typed op0s.  */
 		  && TREE_CODE (TREE_OPERAND (op0, 0)) != INTEGER_CST
+		  /* Released SSA_NAMES have no TREE_TYPE.  */
+		  && TREE_TYPE (TREE_OPERAND (op0, 0)) != NULL_TREE
 		  /* Same pointer types, but ignoring POINTER_TYPE vs.
 		     REFERENCE_TYPE.  */
 		  && (TREE_TYPE (TREE_TYPE (TREE_OPERAND (op0, 0)))

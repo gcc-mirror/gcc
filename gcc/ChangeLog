@@ -1,3 +1,9 @@
+2012-05-31  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53541
+	* tree-pretty-print.c (dump_generic_node): Guard against
+	NULL_TREE TREE_TYPE when dumping MEM_REF offset type.
+
 2012-05-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
