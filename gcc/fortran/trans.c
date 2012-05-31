@@ -1130,15 +1130,12 @@ internal_realloc (void *mem, size_t size)
   if (!res && size != 0)
     _gfortran_os_error ("Allocation would exceed memory limit");
 
-  if (size == 0)
-    return NULL;
-
   return res;
 }  */
 tree
 gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
 {
-  tree msg, res, nonzero, zero, null_result, tmp;
+  tree msg, res, nonzero, null_result, tmp;
   tree type = TREE_TYPE (mem);
 
   size = gfc_evaluate_now (size, block);
@@ -1166,15 +1163,6 @@ gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
 			 null_result,
 			 build_call_expr_loc (input_location,
 					      gfor_fndecl_os_error, 1, msg),
-			 build_empty_stmt (input_location));
-  gfc_add_expr_to_block (block, tmp);
-
-  /* if (size == 0) then the result is NULL.  */
-  tmp = fold_build2_loc (input_location, MODIFY_EXPR, type, res,
-			 build_int_cst (type, 0));
-  zero = fold_build1_loc (input_location, TRUTH_NOT_EXPR, boolean_type_node,
-			  nonzero);
-  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, zero, tmp,
 			 build_empty_stmt (input_location));
   gfc_add_expr_to_block (block, tmp);
 
