@@ -1,3 +1,8 @@
+2012-05-31  Richard Guenther  <rguenther@suse.de>
+
+	* tree-data-ref.c (dr_analyze_innermost): Properly convert
+	the MEM_REF offset to sizetype.
+
 2012-05-31  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/invoke.texi (AVR Options): Fix typos.
