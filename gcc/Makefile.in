@@ -728,15 +728,27 @@ DIR = ../gcc
 
 # Native compiler for the build machine and its switches.
 CC_FOR_BUILD = @CC_FOR_BUILD@
+CXX_FOR_BUILD = @CXX_FOR_BUILD@
 BUILD_CFLAGS= @BUILD_CFLAGS@ -DGENERATOR_FILE
+BUILD_CXXFLAGS = @BUILD_CXXFLAGS@ -DGENERATOR_FILE
 
 # Native compiler that we use.  This may be C++ some day.
+ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
 COMPILER_FOR_BUILD = $(CC_FOR_BUILD)
 BUILD_COMPILERFLAGS = $(BUILD_CFLAGS)
+else
+COMPILER_FOR_BUILD = $(CXX_FOR_BUILD)
+BUILD_COMPILERFLAGS = $(BUILD_CXXFLAGS)
+endif
 
 # Native linker that we use.
+ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
 LINKER_FOR_BUILD = $(CC_FOR_BUILD)
 BUILD_LINKERFLAGS = $(BUILD_CFLAGS)
+else
+LINKER_FOR_BUILD = $(CXX_FOR_BUILD)
+BUILD_LINKERFLAGS = $(BUILD_CXXFLAGS)
+endif
 
 # Native linker and preprocessor flags.  For x-fragment overrides.
 BUILD_LDFLAGS=@BUILD_LDFLAGS@

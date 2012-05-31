@@ -1,3 +1,15 @@
+2012-05-31   Diego Novillo  <dnovillo@google.com>
+
+       * configure.ac (CXX_FOR_BUILD): Define and substitute.
+       (BUILD_CXXFLAGS): Define and substitute.
+       * Makefile.in (BUILD_CXXFLAGS): Define.
+       (CXX_FOR_BUILD): Define.
+       (COMPILER_FOR_BUILD): Set to CXX_FOR_BUILD if building with C++.
+       (LINKER_FOR_BUILD): Likewise.
+       (BUILD_COMPILERFLAGS): Set to BUILD_CXXFLAGS if building with C++.
+       (BUILD_LINKERFLAGS): Likewise.
+       * configure: Regenerate.
+
 2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Makefile.in: Fix many dependencies.
