@@ -1,3 +1,8 @@
+2012-05-31  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48493
+	* gcc.dg/torture/pr48493.c: New testcase.
+
 2012-05-31  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_char_mult): Add
