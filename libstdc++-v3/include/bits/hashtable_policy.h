@@ -831,10 +831,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::insert;
 
       template<typename _Pair>
-	using __is_convertible = std::is_convertible<_Pair, value_type>;
+	using __is_conv = std::is_convertible<_Pair, value_type>;
 
       template<typename _Pair>
-	using _IFconv = std::enable_if<__is_convertible<_Pair>::value>;
+	using _IFconv = std::enable_if<__is_conv<_Pair>::value>;
 
       template<typename _Pair>
 	using _IFconvp = typename _IFconv<_Pair>::type;
