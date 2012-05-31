@@ -1,3 +1,21 @@
+2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira.h (target_ira): Delete x_ira_available_class_regs.
+	(ira_available_class_regs): Delete.
+	* ira.c (setup_available_class_regs): Delete.
+	(setup_alloc_classes): Don't call it.
+	(setup_pressure_classes): Use ira_class_hard_regs_num instead of
+	ira_available_class_regs.
+	* haifa-sched.c (print_curr_reg_pressure, setup_insn_reg_pressure_info)
+	(model_spill_cost): Likewise.
+	* ira-build.c (low_pressure_loop_node_p): Likewise.
+	* ira-color.c (color_pass): Likewise.
+	* ira-emit.c (change_loop): Likewise.
+	* ira-lives.c (inc_register_pressure, dec_register_pressure)
+	(single_reg_class, ira_implicitly_set_insn_hard_regs)
+	(process_bb_node_lives): Likewise.
+	* loop-invariant.c (gain_for_invariant): Likewise.
+
 2012-05-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/52999

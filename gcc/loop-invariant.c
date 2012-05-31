@@ -1210,7 +1210,7 @@ gain_for_invariant (struct invariant *inv, unsigned *regs_needed,
 	      + (int) regs_needed[pressure_class]
 	      + LOOP_DATA (curr_loop)->max_reg_pressure[pressure_class]
 	      + IRA_LOOP_RESERVED_REGS
-	      > ira_available_class_regs[pressure_class])
+	      > ira_class_hard_regs_num[pressure_class])
 	    break;
 	}
       if (i < ira_pressure_classes_num)

@@ -25,10 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 extern bool ira_conflicts_p;
 
 struct target_ira {
-  /* Number of given class hard registers available for the register
-     allocation for given classes.  */
-  int x_ira_available_class_regs[N_REG_CLASSES];
-
   /* Map: hard register number -> allocno class it belongs to.  If the
      corresponding class is NO_REGS, the hard register is not available
      for allocation.  */
@@ -95,8 +91,6 @@ extern struct target_ira *this_target_ira;
 #define this_target_ira (&default_target_ira)
 #endif
 
-#define ira_available_class_regs \
-  (this_target_ira->x_ira_available_class_regs)
 #define ira_hard_regno_allocno_class \
   (this_target_ira->x_ira_hard_regno_allocno_class)
 #define ira_allocno_classes_num \
