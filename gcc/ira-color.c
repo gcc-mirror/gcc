@@ -2766,7 +2766,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	pclass = ira_pressure_class_translate[rclass];
 	if (flag_ira_region == IRA_REGION_MIXED
 	    && (loop_tree_node->reg_pressure[pclass]
-		<= ira_available_class_regs[pclass]))
+		<= ira_class_hard_regs_num[pclass]))
 	  {
 	    mode = ALLOCNO_MODE (a);
 	    hard_regno = ALLOCNO_HARD_REGNO (a);
@@ -2819,7 +2819,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 				    ALLOCNO_NUM (subloop_allocno)));
 	  if ((flag_ira_region == IRA_REGION_MIXED)
 	      && (loop_tree_node->reg_pressure[pclass]
-		  <= ira_available_class_regs[pclass]))
+		  <= ira_class_hard_regs_num[pclass]))
 	    {
 	      if (! ALLOCNO_ASSIGNED_P (subloop_allocno))
 		{

@@ -490,23 +490,6 @@ setup_class_hard_regs (void)
     }
 }
 
-/* Set up IRA_AVAILABLE_CLASS_REGS.  */
-static void
-setup_available_class_regs (void)
-{
-  int i, j;
-
-  memset (ira_available_class_regs, 0, sizeof (ira_available_class_regs));
-  for (i = 0; i < N_REG_CLASSES; i++)
-    {
-      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[i]);
-      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
-	if (TEST_HARD_REG_BIT (temp_hard_regset, j))
-	  ira_available_class_regs[i]++;
-    }
-}
-
 /* Set up global variables defining info about hard registers for the
    allocation.  These depend on USE_HARD_FRAME_P whose TRUE value means
    that we can use the hard frame pointer for the allocation.  */
@@ -520,7 +503,6 @@ setup_alloc_regs (bool use_hard_frame_p)
   if (! use_hard_frame_p)
     SET_HARD_REG_BIT (no_unit_alloc_regs, HARD_FRAME_POINTER_REGNUM);
   setup_class_hard_regs ();
-  setup_available_class_regs ();
 }
 
 
@@ -799,9 +781,9 @@ setup_pressure_classes (void)
   n = 0;
   for (cl = 0; cl < N_REG_CLASSES; cl++)
     {
-      if (ira_available_class_regs[cl] == 0)
+      if (ira_class_hard_regs_num[cl] == 0)
 	continue;
-      if (ira_available_class_regs[cl] != 1
+      if (ira_class_hard_regs_num[cl] != 1
 	  /* A register class without subclasses may contain a few
 	     hard registers and movement between them is costly
 	     (e.g. SPARC FPCC registers).  We still should consider it
@@ -1504,7 +1486,7 @@ ira_init_register_move_cost (enum machine_mode mode)
     {
       /* Some subclasses are to small to have enough registers to hold
 	 a value of MODE.  Just ignore them.  */
-      if (ira_reg_class_max_nregs[cl1][mode] > ira_available_class_regs[cl1])
+      if (ira_reg_class_max_nregs[cl1][mode] > ira_class_hard_regs_num[cl1])
 	continue;
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl1]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
