@@ -11171,26 +11171,26 @@ points to.
 
 @item
 The startup code from libgcc never sets @code{EIND}.
-Notice that startup code is a blend of code from libgcc and AVR-Libc.
-For the impact of AVR-Libc on @code{EIND}, see the
-@w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-Libc user manual}}.
+Notice that startup code is a blend of code from libgcc and AVR-LibC.
+For the impact of AVR-LibC on @code{EIND}, see the
+@w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-LibC user manual}}.
 
 @item
 It is legitimate for user-specific startup code to set up @code{EIND}
 early, for example by means of initialization code located in
 section @code{.init3}. Such code runs prior to general startup code
 that initializes RAM and calls constructors, but after the bit
-of startup code from AVR-Libc that sets @code{EIND} to the segment
+of startup code from AVR-LibC that sets @code{EIND} to the segment
 where the vector table is located.
 @example
 #include <avr/io.h>
 
 static void
-__attribute__ ((section (".init3"), naked, used, no_instrument_function))
+__attribute__((section(".init3"),naked,used,no_instrument_function))
 init3_set_eind (void)
 @{
-    __asm volatile ("ldi r24, pm_hh8(__trampolines_start)" "\n\t"
-                    "out %i0, r24" :: "n" (&EIND) : "r24", "memory");
+    __asm volatile ("ldi r24,pm_hh8(__trampolines_start)\n\t"
+                    "out %i0,r24" :: "n" (&EIND) : "r24","memory");
 @}
 @end example
 
