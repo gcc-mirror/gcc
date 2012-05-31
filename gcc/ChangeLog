@@ -1,3 +1,10 @@
+2012-05-31  Matt Turner  <mattst88@gmail.com>
+
+	* config/mips/4600.md (r4600_imul_si): Rename from r4600_imul.
+	(r4600_imul_di): New.
+	(r4600_idiv_si): Rename from r4600_idiv.
+	(r4600_idiv_di): New.
+
 2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* output.h (__gcc_host_wide_int__): Move to hwint.h.
