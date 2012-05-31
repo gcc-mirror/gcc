@@ -52,6 +52,34 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
 
+typedef struct partition_s
+{
+  bitmap stmts;
+} *partition_t;
+
+DEF_VEC_P (partition_t);
+DEF_VEC_ALLOC_P (partition_t, heap);
+
+/* Allocate and initialize a partition from BITMAP.  */
+
+static partition_t
+partition_alloc (bitmap stmts)
+{
+  partition_t partition = XCNEW (struct partition_s);
+  partition->stmts = stmts ? stmts : BITMAP_ALLOC (NULL);
+  return partition;
+}
+
+/* Free PARTITION.  */
+
+static void
+partition_free (partition_t partition)
+{
+  BITMAP_FREE (partition->stmts);
+  free (partition);
+}
+
+
 /* If bit I is not set, it means that this node represents an
    operation that has already been performed, and that should not be
    performed again.  This is the subgraph of remaining important
@@ -192,7 +220,8 @@ create_bb_after_loop (struct loop *loop)
    the code gen succeeded. */
 
 static bool
-generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
+generate_loops_for_partition (struct loop *loop, partition_t partition,
+			      bool copy_p)
 {
   unsigned i, x;
   gimple_stmt_iterator bsi;
@@ -219,7 +248,7 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
 	basic_block bb = bbs[i];
 
 	for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	  if (!bitmap_bit_p (partition, x++))
+	  if (!bitmap_bit_p (partition->stmts, x++))
 	    reset_debug_uses (gsi_stmt (bsi));
 
 	for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
@@ -227,7 +256,7 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
 	    gimple stmt = gsi_stmt (bsi);
 	    if (gimple_code (stmt) != GIMPLE_LABEL
 		&& !is_gimple_debug (stmt)
-		&& !bitmap_bit_p (partition, x++))
+		&& !bitmap_bit_p (partition->stmts, x++))
 	      reset_debug_uses (stmt);
 	  }
       }
@@ -237,7 +266,7 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
       basic_block bb = bbs[i];
 
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi);)
-	if (!bitmap_bit_p (partition, x++))
+	if (!bitmap_bit_p (partition->stmts, x++))
 	  {
 	    gimple phi = gsi_stmt (bsi);
 	    if (!is_gimple_reg (gimple_phi_result (phi)))
@@ -252,7 +281,7 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
 	  gimple stmt = gsi_stmt (bsi);
 	  if (gimple_code (stmt) != GIMPLE_LABEL
 	      && !is_gimple_debug (stmt)
-	      && !bitmap_bit_p (partition, x++))
+	      && !bitmap_bit_p (partition->stmts, x++))
 	    {
 	      unlink_stmt_vdef (stmt);
 	      gsi_remove (&bsi, true);
@@ -337,7 +366,7 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
    operation succeeded.  */
 
 static bool
-generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
+generate_builtin (struct loop *loop, partition_t partition, bool copy_p)
 {
   bool res = false;
   unsigned i, x = 0;
@@ -366,7 +395,7 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
 	      || is_gimple_debug (stmt))
 	    continue;
 
-	  if (!bitmap_bit_p (partition, x++))
+	  if (!bitmap_bit_p (partition->stmts, x++))
 	    continue;
 
 	  /* If the stmt has uses outside of the loop fail.
@@ -432,7 +461,8 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
    generate a built-in.  */
 
 static bool
-generate_code_for_partition (struct loop *loop, bitmap partition, bool copy_p)
+generate_code_for_partition (struct loop *loop, partition_t partition,
+			     bool copy_p)
 {
   if (generate_builtin (loop, partition, copy_p))
     return true;
@@ -544,14 +574,14 @@ has_upstream_mem_writes (int u)
   return bitmap_bit_p (upstream_mem_writes, u);
 }
 
-static void rdg_flag_vertex_and_dependent (struct graph *, int, bitmap, bitmap,
-					   bitmap, bool *);
+static void rdg_flag_vertex_and_dependent (struct graph *, int, partition_t,
+					   bitmap, bitmap, bool *);
 
 /* Flag the uses of U stopping following the information from
    upstream_mem_writes.  */
 
 static void
-rdg_flag_uses (struct graph *rdg, int u, bitmap partition, bitmap loops,
+rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
 	       bitmap processed, bool *part_has_writes)
 {
   use_operand_p use_p;
@@ -617,12 +647,12 @@ rdg_flag_uses (struct graph *rdg, int u, bitmap partition, bitmap loops,
    in LOOPS.  */
 
 static void
-rdg_flag_vertex (struct graph *rdg, int v, bitmap partition, bitmap loops,
+rdg_flag_vertex (struct graph *rdg, int v, partition_t partition, bitmap loops,
 		 bool *part_has_writes)
 {
   struct loop *loop;
 
-  if (!bitmap_set_bit (partition, v))
+  if (!bitmap_set_bit (partition->stmts, v))
     return;
 
   loop = loop_containing_stmt (RDG_STMT (rdg, v));
@@ -639,7 +669,7 @@ rdg_flag_vertex (struct graph *rdg, int v, bitmap partition, bitmap loops,
    Also flag their loop number in LOOPS.  */
 
 static void
-rdg_flag_vertex_and_dependent (struct graph *rdg, int v, bitmap partition,
+rdg_flag_vertex_and_dependent (struct graph *rdg, int v, partition_t partition,
 			       bitmap loops, bitmap processed,
 			       bool *part_has_writes)
 {
@@ -686,7 +716,7 @@ collect_condition_stmts (struct loop *loop, VEC (gimple, heap) **conds)
    RDG.  */
 
 static void
-rdg_flag_loop_exits (struct graph *rdg, bitmap loops, bitmap partition,
+rdg_flag_loop_exits (struct graph *rdg, bitmap loops, partition_t partition,
 		     bitmap processed, bool *part_has_writes)
 {
   unsigned i;
@@ -720,12 +750,12 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, bitmap partition,
    the strongly connected component C of the RDG are flagged, also
    including the loop exit conditions.  */
 
-static bitmap
+static partition_t
 build_rdg_partition_for_component (struct graph *rdg, rdgc c,
 				   bool *part_has_writes)
 {
   int i, v;
-  bitmap partition = BITMAP_ALLOC (NULL);
+  partition_t partition = partition_alloc (NULL);
   bitmap loops = BITMAP_ALLOC (NULL);
   bitmap processed = BITMAP_ALLOC (NULL);
 
@@ -803,7 +833,7 @@ rdg_build_components (struct graph *rdg, VEC (int, heap) *starting_vertices,
    zero pattern.  */
 
 static bool
-can_generate_builtin (struct graph *rdg, bitmap partition)
+can_generate_builtin (struct graph *rdg, partition_t partition)
 {
   unsigned i;
   bitmap_iterator bi;
@@ -811,7 +841,7 @@ can_generate_builtin (struct graph *rdg, bitmap partition)
   int nb_writes = 0;
   int stores_zero = 0;
 
-  EXECUTE_IF_SET_IN_BITMAP (partition, 0, i, bi)
+  EXECUTE_IF_SET_IN_BITMAP (partition->stmts, 0, i, bi)
     if (RDG_MEM_READS_STMT (rdg, i))
       nb_reads++;
     else if (RDG_MEM_WRITE_STMT (rdg, i))
@@ -830,16 +860,16 @@ can_generate_builtin (struct graph *rdg, bitmap partition)
    accesses in RDG.  */
 
 static bool
-similar_memory_accesses (struct graph *rdg, bitmap partition1,
-			 bitmap partition2)
+similar_memory_accesses (struct graph *rdg, partition_t partition1,
+			 partition_t partition2)
 {
   unsigned i, j;
   bitmap_iterator bi, bj;
 
-  EXECUTE_IF_SET_IN_BITMAP (partition1, 0, i, bi)
+  EXECUTE_IF_SET_IN_BITMAP (partition1->stmts, 0, i, bi)
     if (RDG_MEM_WRITE_STMT (rdg, i)
 	|| RDG_MEM_READS_STMT (rdg, i))
-      EXECUTE_IF_SET_IN_BITMAP (partition2, 0, j, bj)
+      EXECUTE_IF_SET_IN_BITMAP (partition2->stmts, 0, j, bj)
 	if (RDG_MEM_WRITE_STMT (rdg, j)
 	    || RDG_MEM_READS_STMT (rdg, j))
 	  if (rdg_has_similar_memory_accesses (rdg, i, j))
@@ -855,20 +885,20 @@ similar_memory_accesses (struct graph *rdg, bitmap partition1,
 
 static void
 fuse_partitions_with_similar_memory_accesses (struct graph *rdg,
-					      VEC (bitmap, heap) **partitions)
+					      VEC (partition_t, heap) **partitions)
 {
   int p1, p2;
-  bitmap partition1, partition2;
+  partition_t partition1, partition2;
 
-  FOR_EACH_VEC_ELT (bitmap, *partitions, p1, partition1)
+  FOR_EACH_VEC_ELT (partition_t, *partitions, p1, partition1)
     if (!can_generate_builtin (rdg, partition1))
-      FOR_EACH_VEC_ELT (bitmap, *partitions, p2, partition2)
+      FOR_EACH_VEC_ELT (partition_t, *partitions, p2, partition2)
 	if (p1 != p2
 	    && !can_generate_builtin (rdg, partition2)
 	    && similar_memory_accesses (rdg, partition1, partition2))
 	  {
-	    bitmap_ior_into (partition1, partition2);
-	    VEC_ordered_remove (bitmap, *partitions, p2);
+	    bitmap_ior_into (partition1->stmts, partition2->stmts);
+	    VEC_ordered_remove (partition_t, *partitions, p2);
 	    p2--;
 	  }
 }
@@ -880,15 +910,15 @@ fuse_partitions_with_similar_memory_accesses (struct graph *rdg,
 static void
 rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
 		      VEC (int, heap) **other_stores,
-		      VEC (bitmap, heap) **partitions, bitmap processed)
+		      VEC (partition_t, heap) **partitions, bitmap processed)
 {
   int i;
   rdgc x;
-  bitmap partition = BITMAP_ALLOC (NULL);
+  partition_t partition = partition_alloc (NULL);
 
   FOR_EACH_VEC_ELT (rdgc, components, i, x)
     {
-      bitmap np;
+      partition_t np;
       bool part_has_writes = false;
       int v = VEC_index (int, x->vertices, 0);
 
@@ -896,20 +926,20 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
 	continue;
 
       np = build_rdg_partition_for_component (rdg, x, &part_has_writes);
-      bitmap_ior_into (partition, np);
-      bitmap_ior_into (processed, np);
-      BITMAP_FREE (np);
+      bitmap_ior_into (partition->stmts, np->stmts);
+      bitmap_ior_into (processed, np->stmts);
+      partition_free (np);
 
       if (part_has_writes)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "ldist useful partition:\n");
-	      dump_bitmap (dump_file, partition);
+	      dump_bitmap (dump_file, partition->stmts);
 	    }
 
-	  VEC_safe_push (bitmap, heap, *partitions, partition);
-	  partition = BITMAP_ALLOC (NULL);
+	  VEC_safe_push (partition_t, heap, *partitions, partition);
+	  partition = partition_alloc (NULL);
 	}
     }
 
@@ -937,10 +967,10 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
     }
 
   /* If there is something left in the last partition, save it.  */
-  if (bitmap_count_bits (partition) > 0)
-    VEC_safe_push (bitmap, heap, *partitions, partition);
+  if (bitmap_count_bits (partition->stmts) > 0)
+    VEC_safe_push (partition_t, heap, *partitions, partition);
   else
-    BITMAP_FREE (partition);
+    partition_free (partition);
 
   fuse_partitions_with_similar_memory_accesses (rdg, partitions);
 }
@@ -948,20 +978,20 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
 /* Dump to FILE the PARTITIONS.  */
 
 static void
-dump_rdg_partitions (FILE *file, VEC (bitmap, heap) *partitions)
+dump_rdg_partitions (FILE *file, VEC (partition_t, heap) *partitions)
 {
   int i;
-  bitmap partition;
+  partition_t partition;
 
-  FOR_EACH_VEC_ELT (bitmap, partitions, i, partition)
-    debug_bitmap_file (file, partition);
+  FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
+    debug_bitmap_file (file, partition->stmts);
 }
 
 /* Debug PARTITIONS.  */
-extern void debug_rdg_partitions (VEC (bitmap, heap) *);
+extern void debug_rdg_partitions (VEC (partition_t, heap) *);
 
 DEBUG_FUNCTION void
-debug_rdg_partitions (VEC (bitmap, heap) *partitions)
+debug_rdg_partitions (VEC (partition_t, heap) *partitions)
 {
   dump_rdg_partitions (stderr, partitions);
 }
@@ -989,13 +1019,13 @@ number_of_rw_in_rdg (struct graph *rdg)
    the RDG.  */
 
 static int
-number_of_rw_in_partition (struct graph *rdg, bitmap partition)
+number_of_rw_in_partition (struct graph *rdg, partition_t partition)
 {
   int res = 0;
   unsigned i;
   bitmap_iterator ii;
 
-  EXECUTE_IF_SET_IN_BITMAP (partition, 0, i, ii)
+  EXECUTE_IF_SET_IN_BITMAP (partition->stmts, 0, i, ii)
     {
       if (RDG_MEM_WRITE_STMT (rdg, i))
 	++res;
@@ -1011,13 +1041,13 @@ number_of_rw_in_partition (struct graph *rdg, bitmap partition)
    write operations of RDG.  */
 
 static bool
-partition_contains_all_rw (struct graph *rdg, VEC (bitmap, heap) *partitions)
+partition_contains_all_rw (struct graph *rdg, VEC (partition_t, heap) *partitions)
 {
   int i;
-  bitmap partition;
+  partition_t partition;
   int nrw = number_of_rw_in_rdg (rdg);
 
-  FOR_EACH_VEC_ELT (bitmap, partitions, i, partition)
+  FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
     if (nrw == number_of_rw_in_partition (rdg, partition))
       return true;
 
@@ -1033,9 +1063,10 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 {
   int i, nbp;
   VEC (rdgc, heap) *components = VEC_alloc (rdgc, heap, 3);
-  VEC (bitmap, heap) *partitions = VEC_alloc (bitmap, heap, 3);
+  VEC (partition_t, heap) *partitions = VEC_alloc (partition_t, heap, 3);
   VEC (int, heap) *other_stores = VEC_alloc (int, heap, 3);
-  bitmap partition, processed = BITMAP_ALLOC (NULL);
+  partition_t partition;
+  bitmap processed = BITMAP_ALLOC (NULL);
 
   remaining_stmts = BITMAP_ALLOC (NULL);
   upstream_mem_writes = BITMAP_ALLOC (NULL);
@@ -1069,11 +1100,12 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   rdg_build_partitions (rdg, components, &other_stores, &partitions,
 			processed);
   BITMAP_FREE (processed);
-  nbp = VEC_length (bitmap, partitions);
 
+  nbp = VEC_length (partition_t, partitions);
   if (nbp == 0
       || (nbp == 1
-	  && !can_generate_builtin (rdg, VEC_index (bitmap, partitions, 0)))
+	  && !can_generate_builtin (rdg,
+				    VEC_index (partition_t, partitions, 0)))
       || (nbp > 1
 	  && partition_contains_all_rw (rdg, partitions)))
     goto ldist_done;
@@ -1081,7 +1113,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg_partitions (dump_file, partitions);
 
-  FOR_EACH_VEC_ELT (bitmap, partitions, i, partition)
+  FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
     if (!generate_code_for_partition (loop, partition, i < nbp - 1))
       goto ldist_done;
 
@@ -1094,11 +1126,11 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   BITMAP_FREE (remaining_stmts);
   BITMAP_FREE (upstream_mem_writes);
 
-  FOR_EACH_VEC_ELT (bitmap, partitions, i, partition)
-    BITMAP_FREE (partition);
+  FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
+    partition_free (partition);
 
   VEC_free (int, heap, other_stores);
-  VEC_free (bitmap, heap, partitions);
+  VEC_free (partition_t, heap, partitions);
   free_rdg_components (components);
   return nbp;
 }
