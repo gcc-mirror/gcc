@@ -5781,7 +5781,7 @@ else
   gfortran_use_symver=yes
 fi
 
-if test "x$gfortran_use_symver" = xyes; then
+if test "x$gfortran_use_symver" != xno; then
   save_LDFLAGS="$LDFLAGS"
   LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
   cat > conftest.map <<EOF
