@@ -1,5 +1,10 @@
 2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* ira.c (init_move_cost): Adjust local variable names to match
+	file conventions.  Use ira_assert instead of gcc_assert.
+
+2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* regs.h (move_table, move_cost, may_move_in_cost, may_move_out_cost):
 	Move these definitions and associated target_globals fields to...
 	* ira-int.h: ...here.

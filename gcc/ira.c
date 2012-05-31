@@ -1461,90 +1461,92 @@ clarify_prohibited_class_mode_regs (void)
 /* Initialize may_move_cost and friends for mode M.  */
 
 static void
-init_move_cost (enum machine_mode m)
+init_move_cost (enum machine_mode mode)
 {
   static unsigned short last_move_cost[N_REG_CLASSES][N_REG_CLASSES];
   bool all_match = true;
-  unsigned int i, j;
+  unsigned int cl1, cl2;
 
-  gcc_assert (have_regs_of_mode[m]);
-  for (i = 0; i < N_REG_CLASSES; i++)
-    if (contains_reg_of_mode[i][m])
-      for (j = 0; j < N_REG_CLASSES; j++)
+  ira_assert (have_regs_of_mode[mode]);
+  for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
+    if (contains_reg_of_mode[cl1][mode])
+      for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
 	{
 	  int cost;
-	  if (!contains_reg_of_mode[j][m])
+	  if (!contains_reg_of_mode[cl2][mode])
 	    cost = 65535;
 	  else
 	    {
-	      cost = register_move_cost (m, (enum reg_class) i,
-					 (enum reg_class) j);
-	      gcc_assert (cost < 65535);
+	      cost = register_move_cost (mode, (enum reg_class) cl1,
+					 (enum reg_class) cl2);
+	      ira_assert (cost < 65535);
 	    }
-	  all_match &= (last_move_cost[i][j] == cost);
-	  last_move_cost[i][j] = cost;
+	  all_match &= (last_move_cost[cl1][cl2] == cost);
+	  last_move_cost[cl1][cl2] = cost;
 	}
   if (all_match && last_mode_for_init_move_cost != -1)
     {
-      move_cost[m] = move_cost[last_mode_for_init_move_cost];
-      may_move_in_cost[m] = may_move_in_cost[last_mode_for_init_move_cost];
-      may_move_out_cost[m] = may_move_out_cost[last_mode_for_init_move_cost];
+      move_cost[mode] = move_cost[last_mode_for_init_move_cost];
+      may_move_in_cost[mode] = may_move_in_cost[last_mode_for_init_move_cost];
+      may_move_out_cost[mode] = may_move_out_cost[last_mode_for_init_move_cost];
       return;
     }
-  last_mode_for_init_move_cost = m;
-  move_cost[m] = (move_table *)xmalloc (sizeof (move_table)
+  last_mode_for_init_move_cost = mode;
+  move_cost[mode] = (move_table *)xmalloc (sizeof (move_table)
 					* N_REG_CLASSES);
-  may_move_in_cost[m] = (move_table *)xmalloc (sizeof (move_table)
+  may_move_in_cost[mode] = (move_table *)xmalloc (sizeof (move_table)
 					       * N_REG_CLASSES);
-  may_move_out_cost[m] = (move_table *)xmalloc (sizeof (move_table)
+  may_move_out_cost[mode] = (move_table *)xmalloc (sizeof (move_table)
 					        * N_REG_CLASSES);
-  for (i = 0; i < N_REG_CLASSES; i++)
-    if (contains_reg_of_mode[i][m])
-      for (j = 0; j < N_REG_CLASSES; j++)
+  for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
+    if (contains_reg_of_mode[cl1][mode])
+      for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
 	{
 	  int cost;
 	  enum reg_class *p1, *p2;
 
-	  if (last_move_cost[i][j] == 65535)
+	  if (last_move_cost[cl1][cl2] == 65535)
 	    {
-	      move_cost[m][i][j] = 65535;
-	      may_move_in_cost[m][i][j] = 65535;
-	      may_move_out_cost[m][i][j] = 65535;
+	      move_cost[mode][cl1][cl2] = 65535;
+	      may_move_in_cost[mode][cl1][cl2] = 65535;
+	      may_move_out_cost[mode][cl1][cl2] = 65535;
 	    }
 	  else
 	    {
-	      cost = last_move_cost[i][j];
+	      cost = last_move_cost[cl1][cl2];
 
-	      for (p2 = &reg_class_subclasses[j][0];
+	      for (p2 = &reg_class_subclasses[cl2][0];
 		   *p2 != LIM_REG_CLASSES; p2++)
-		if (*p2 != i && contains_reg_of_mode[*p2][m])
-		  cost = MAX (cost, move_cost[m][i][*p2]);
+		if (*p2 != cl1 && contains_reg_of_mode[*p2][mode])
+		  cost = MAX (cost, move_cost[mode][cl1][*p2]);
 
-	      for (p1 = &reg_class_subclasses[i][0];
+	      for (p1 = &reg_class_subclasses[cl1][0];
 		   *p1 != LIM_REG_CLASSES; p1++)
-		if (*p1 != j && contains_reg_of_mode[*p1][m])
-		  cost = MAX (cost, move_cost[m][*p1][j]);
+		if (*p1 != cl2 && contains_reg_of_mode[*p1][mode])
+		  cost = MAX (cost, move_cost[mode][*p1][cl2]);
 
-	      gcc_assert (cost <= 65535);
-	      move_cost[m][i][j] = cost;
+	      ira_assert (cost <= 65535);
+	      move_cost[mode][cl1][cl2] = cost;
 
-	      if (reg_class_subset_p ((enum reg_class) i, (enum reg_class) j))
-		may_move_in_cost[m][i][j] = 0;
+	      if (reg_class_subset_p ((enum reg_class) cl1,
+				      (enum reg_class) cl2))
+		may_move_in_cost[mode][cl1][cl2] = 0;
 	      else
-		may_move_in_cost[m][i][j] = cost;
+		may_move_in_cost[mode][cl1][cl2] = cost;
 
-	      if (reg_class_subset_p ((enum reg_class) j, (enum reg_class) i))
-		may_move_out_cost[m][i][j] = 0;
+	      if (reg_class_subset_p ((enum reg_class) cl2,
+				      (enum reg_class) cl1))
+		may_move_out_cost[mode][cl1][cl2] = 0;
 	      else
-		may_move_out_cost[m][i][j] = cost;
+		may_move_out_cost[mode][cl1][cl2] = cost;
 	    }
 	}
     else
-      for (j = 0; j < N_REG_CLASSES; j++)
+      for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
 	{
-	  move_cost[m][i][j] = 65535;
-	  may_move_in_cost[m][i][j] = 65535;
-	  may_move_out_cost[m][i][j] = 65535;
+	  move_cost[mode][cl1][cl2] = 65535;
+	  may_move_in_cost[mode][cl1][cl2] = 65535;
+	  may_move_out_cost[mode][cl1][cl2] = 65535;
 	}
 }
 
