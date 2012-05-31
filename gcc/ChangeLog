@@ -1,3 +1,21 @@
+2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Makefile.in: Fix many dependencies.
+	* tree-profile.c: Don't include regs.h.
+	* tree-vectorizer.c: Don't include cfglayout.h.
+	* tree-vect-stmts.c: Likewise.
+	* tree-vect-slp.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* reg-stack.c: Likewise.
+	* tree-ssa-loop-manip.c: Likewise.
+	* toplev.c: Likewise.
+	* varasm.c: Don't include cfglayout.h, basic-block.h,
+	and tree-iterator.h.
+	* tree-cfgcleanup.c: Don't include cfglayout.h.
+	* passes.c: Don't include cfglayout.h, dwarf2asm.h,
+	dwarf2out.h, dbxout.h, sdbout.h, and xcoffout.h.
+	* cgraphclones.c: Don't include plugin.h.
+
 2012-05-31  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr: Correct avr-mmcu.texi dependencies.

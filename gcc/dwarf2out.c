@@ -93,7 +93,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-pass.h"
 #include "tree-flow.h"
-#include "cfglayout.h"
+#include "cfglayout.h" /* for insn_scope.  */
 #include "opts.h"
 
 static void dwarf2out_source_line (unsigned int, const char *, int, bool);

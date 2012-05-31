@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "target.h"
 #include "params.h"
-#include "tree-flow.h"
+#include "tree-flow.h" /* for may_be_aliased */
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).

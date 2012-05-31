@@ -63,8 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
-#include "cfglayout.h"
-#include "cfgloop.h"
+#include "cfgloop.h" /* for init_set_costs */
 #include "hosthooks.h"
 #include "cgraph.h"
 #include "opts.h"
