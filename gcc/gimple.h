@@ -1588,12 +1588,20 @@ gimple_set_has_volatile_ops (gimple stmt, bool volatilep)
     stmt->gsbase.has_volatile_ops = (unsigned) volatilep;
 }
 
+/* Return true if BB is in a transaction.  */
+
+static inline bool
+block_in_transaction (basic_block bb)
+{
+  return bb->flags & BB_IN_TRANSACTION;
+}
+
 /* Return true if STMT is in a transaction.  */
 
 static inline bool
 gimple_in_transaction (gimple stmt)
 {
-  return gimple_bb (stmt)->flags & BB_IN_TRANSACTION;
+  return block_in_transaction (gimple_bb (stmt));
 }
 
 /* Return true if statement STMT may access memory.  */
