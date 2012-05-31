@@ -18,6 +18,11 @@
 	number_of_rw_in_partition, partition_contains_all_rw,
 	ldist_gen): Use partition_t instead of bitmap.
 
+2012-05-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-texi.c: Sort MCUs. 
+	* doc/avr-mmcu.texi: Regenerate.
+	
 2012-05-31  Richard Guenther  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (stmt_has_scalar_dependences_outside_loop):
