@@ -1,5 +1,10 @@
 2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* ira-costs.c (copy_cost): Use ira_init_register_move_cost_if_necessary
+	and ira_register_move_cost instead of init_move_cost and move_cost.
+
+2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ira.h (target_ira): Delete x_ira_available_class_regs.
 	(ira_available_class_regs): Delete.
 	* ira.c (setup_available_class_regs): Delete.

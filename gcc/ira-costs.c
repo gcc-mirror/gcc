@@ -359,9 +359,8 @@ copy_cost (rtx x, enum machine_mode mode, reg_class_t rclass, bool to_p,
 
   if (secondary_class != NO_REGS)
     {
-      if (!move_cost[mode])
-        init_move_cost (mode);
-      return (move_cost[mode][(int) secondary_class][(int) rclass]
+      ira_init_register_move_cost_if_necessary (mode);
+      return (ira_register_move_cost[mode][(int) secondary_class][(int) rclass]
 	      + sri.extra_cost
 	      + copy_cost (x, mode, secondary_class, to_p, &sri));
     }
@@ -374,10 +373,11 @@ copy_cost (rtx x, enum machine_mode mode, reg_class_t rclass, bool to_p,
 	   + ira_memory_move_cost[mode][(int) rclass][to_p != 0];
   else if (REG_P (x))
     {
-      if (!move_cost[mode])
-        init_move_cost (mode);
+      reg_class_t x_class = REGNO_REG_CLASS (REGNO (x));
+
+      ira_init_register_move_cost_if_necessary (mode);
       return (sri.extra_cost
-	      + move_cost[mode][REGNO_REG_CLASS (REGNO (x))][(int) rclass]);
+	      + ira_register_move_cost[mode][(int) x_class][(int) rclass]);
     }
   else
     /* If this is a constant, we may eventually want to call rtx_cost
