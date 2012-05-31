@@ -1,3 +1,10 @@
+2012-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	Revert:
+	2012-05-16  Tobias Burnus  <burnus@net-b.de>
+
+	* io/unix.c (tempfile_open): Pass mode to "open" for O_CREAT.
+
 2012-05-30  Tobias Burnus  <burnus@net-b.de>
 
 	* io/io.h: Fix comment typos.
