@@ -1,3 +1,9 @@
+2012-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53500
+	PR c++/52905
+	* call.c (joust): Handle comparing list and non-list ctors.
+
 2012-05-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53356
