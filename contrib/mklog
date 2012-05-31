@@ -1,0 +1,151 @@
+#!/usr/bin/perl
+# Copyright (C) 2012 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+# This script parses a .diff file generated with 'diff -up' or 'diff -cp'
+# and writes a skeleton ChangeLog file to stdout. It does not try to be
+# very smart when parsing function names, but it produces a reasonable
+# approximation.
+#
+# Author: Diego Novillo <dnovillo@google.com> and
+#         Cary Coutant <ccoutant@google.com>
+
+# Change these settings to reflect your profile.
+$username = $ENV{'USER'};
+$name = `finger $username | grep -o 'Name: .*'`;
+@n = split(/:/, $name);
+$name = @n[1]; chop($name);
+$addr = $username . "\@my.domain.org";
+$date = `date +%Y-%m-%d`; chop ($date);
+
+
+#-----------------------------------------------------------------------------
+# Program starts here. You should not need to edit anything below this
+# line.
+#-----------------------------------------------------------------------------
+if ( $#ARGV != 0 ) {
+    $prog = `basename $0`; chop ($prog);
+    print "usage: $prog file.diff\n\n";
+    print "Adds a ChangeLog template to the start of file.diff\n";
+    print "It assumes that file.diff has been created with -up or -cp.\n";
+    exit 1;
+}
+
+$diff = $ARGV[0];
+$dir = `dirname $diff`; chop ($dir);
+$basename = `basename $diff`; chop ($basename);
+$cl = `mktemp /tmp/$basename.XXXXXX` || exit 1; chop ($cl);
+$hdrline = "$date  $name  <$addr>";
+
+open (CLFILE, ">$cl") or die "Could not open file $cl for writing";
+
+print CLFILE "$hdrline\n\n";
+
+# For every file in the .diff print all the function names in ChangeLog
+# format.
+$bof = 0;
+open (DFILE, $diff) or die "Could not open file $diff for reading";
+while (<DFILE>) {
+    # Check if we found a new file.
+    if (/^\+\+\+ (b\/)?(\S+)/) {
+	# If we have not seen any function names in the previous file (ie,
+	# $bof == 1), we just write out a ':' before starting the next
+	# file.
+	if ($bof == 1) {
+	    print CLFILE ":\n";
+	}
+	$filename = $2;
+	print CLFILE "\t* $filename";
+	$bof = 1;
+    }
+
+    # Remember the last line in a unified diff block that might start
+    # a new function.
+    if (/^[-+ ]([a-zA-Z0-9_].*)/) {
+        $save_fn = $1;
+    }
+
+    # If we find a new function, print it in brackets.  Special case if
+    # this is the first function in a file.  
+    #
+    # Note that we don't try too hard to find good matches.  This should
+    # return a superset of the actual set of functions in the .diff file.
+    #
+    # The first two patterns work with context diff files (diff -c). The
+    # third pattern works with unified diff files (diff -u).
+    #
+    # The fourth pattern looks for the starts of functions or classes
+    # within a unified diff block.
+
+    if (/^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/
+        || /^[\-\+\!] ([a-zA-Z0-9_]+)[ \t]*\(.*/
+	|| /^@@ .* @@ ([a-zA-Z0-9_].*)/
+	|| /^[-+ ](\{)/)
+      {
+	$_ = $1;
+	my $fn;
+	if (/^\{/) {
+	    # Beginning of a new function.
+	    $_ = $save_fn;
+	} else {
+	    $save_fn = "";
+	}
+	if (/;$/) {
+	    # No usable function name found.
+	} elsif (/^((class|struct|union|enum) [a-zA-Z0-9_]+)/) {
+	    # Discard stuff after the class/struct/etc. tag.
+	    $fn = $1;
+	} elsif (/([a-zA-Z0-9_][^(]*)\(/) {
+	    # Discard template and function parameters.
+	    $fn = $1;
+	    1 while ($fn =~ s/<[^<>]*>//);
+	    $fn =~ s/[ \t]*$//;
+	}
+	if ($fn && $seen_names{$fn} == 0) {
+	    # If this is the first function in the file, we display it next
+	    # to the filename, so we need an extra space before the opening
+	    # brace.
+	    if ($bof) {
+		print CLFILE " ";
+		$bof = 0;
+	    } else {
+		print CLFILE "\t";
+	    }
+
+	    print CLFILE "($fn):\n";
+	    $seen_names{$fn} = 1;
+	}
+    }
+}
+
+# If we have not seen any function names (ie, $bof == 1), we just
+# write out a ':'. This happens when there is only one file with no
+# functions.
+if ($bof == 1) {
+    print CLFILE ":\n";
+}
+
+print CLFILE "\n";
+close (DFILE);
+
+# Concatenate the ChangeLog template and the original .diff file.
+system ("cat $diff >>$cl && mv $cl $diff") == 0
+    or die "Could not add the ChangeLog entry to $diff";
+
+exit 0;
