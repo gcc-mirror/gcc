@@ -1,3 +1,13 @@
+2012-05-31  Richard Guenther  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (stmt_has_scalar_dependences_outside_loop):
+	Use FOR_EACH_SSA_DEF_OPERAND.
+	(generate_builtin): Adjust.
+	(stmt_generated_in_another_partition): Remove.
+	(add_scalar_computations_to_partition): Likewise.
+	(rdg_build_partitions): Do not call
+	add_scalar_computations_to_partition.
+
 2012-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-dfa.c (get_ref_base_and_extent): Compute the offset using
