@@ -1,3 +1,10 @@
+2012-05-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/51345
+	* config/avr/avr.opt (-msp8): Document it.
+	* doc/invoke.texi (AVR Options): Ditto.  And document related
+	built-in macros.
+
 2012-05-31   Diego Novillo  <dnovillo@google.com>
 
        * configure.ac (CXX_FOR_BUILD): Define and substitute.
