@@ -1,5 +1,12 @@
 2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* ira.c (setup_allocno_and_important_classes): Use
+	ira_class_hard_regs_num to check whether a class has any
+	allocatable registers.
+	(ira_init_register_move_cost): Likewise.
+
+2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ira.c (init_move_cost): Adjust local variable names to match
 	file conventions.  Use ira_assert instead of gcc_assert.
 
