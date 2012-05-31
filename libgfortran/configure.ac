@@ -157,7 +157,7 @@ AS_HELP_STRING([--disable-symvers],
   [disable symbol versioning for libgfortran]),
 gfortran_use_symver=$enableval,
 gfortran_use_symver=yes)
-if test "x$gfortran_use_symver" = xyes; then
+if test "x$gfortran_use_symver" != xno; then
   save_LDFLAGS="$LDFLAGS"
   LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
   cat > conftest.map <<EOF
