@@ -1451,15 +1451,18 @@ clarify_prohibited_class_mode_regs (void)
 	}
 }
 
-/* Initialize may_move_cost and friends for mode M.  */
-
-static void
-init_move_cost (enum machine_mode mode)
+/* Allocate and initialize IRA_REGISTER_MOVE_COST, IRA_MAY_MOVE_IN_COST
+   and IRA_MAY_MOVE_OUT_COST for MODE.  */
+void
+ira_init_register_move_cost (enum machine_mode mode)
 {
   static unsigned short last_move_cost[N_REG_CLASSES][N_REG_CLASSES];
   bool all_match = true;
   unsigned int cl1, cl2;
 
+  ira_assert (ira_register_move_cost[mode] == NULL
+	      && ira_may_move_in_cost[mode] == NULL
+	      && ira_may_move_out_cost[mode] == NULL);
   ira_assert (have_regs_of_mode[mode]);
   for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
     if (contains_reg_of_mode[cl1][mode])
@@ -1479,18 +1482,18 @@ init_move_cost (enum machine_mode mode)
 	}
   if (all_match && last_mode_for_init_move_cost != -1)
     {
-      move_cost[mode] = move_cost[last_mode_for_init_move_cost];
-      may_move_in_cost[mode] = may_move_in_cost[last_mode_for_init_move_cost];
-      may_move_out_cost[mode] = may_move_out_cost[last_mode_for_init_move_cost];
+      ira_register_move_cost[mode]
+	= ira_register_move_cost[last_mode_for_init_move_cost];
+      ira_may_move_in_cost[mode]
+	= ira_may_move_in_cost[last_mode_for_init_move_cost];
+      ira_may_move_out_cost[mode]
+	= ira_may_move_out_cost[last_mode_for_init_move_cost];
       return;
     }
   last_mode_for_init_move_cost = mode;
-  move_cost[mode] = (move_table *)xmalloc (sizeof (move_table)
-					* N_REG_CLASSES);
-  may_move_in_cost[mode] = (move_table *)xmalloc (sizeof (move_table)
-					       * N_REG_CLASSES);
-  may_move_out_cost[mode] = (move_table *)xmalloc (sizeof (move_table)
-					        * N_REG_CLASSES);
+  ira_register_move_cost[mode] = XNEWVEC (move_table, N_REG_CLASSES);
+  ira_may_move_in_cost[mode] = XNEWVEC (move_table, N_REG_CLASSES);
+  ira_may_move_out_cost[mode] = XNEWVEC (move_table, N_REG_CLASSES);
   for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
     if (contains_reg_of_mode[cl1][mode])
       for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
@@ -1500,9 +1503,9 @@ init_move_cost (enum machine_mode mode)
 
 	  if (last_move_cost[cl1][cl2] == 65535)
 	    {
-	      move_cost[mode][cl1][cl2] = 65535;
-	      may_move_in_cost[mode][cl1][cl2] = 65535;
-	      may_move_out_cost[mode][cl1][cl2] = 65535;
+	      ira_register_move_cost[mode][cl1][cl2] = 65535;
+	      ira_may_move_in_cost[mode][cl1][cl2] = 65535;
+	      ira_may_move_out_cost[mode][cl1][cl2] = 65535;
 	    }
 	  else
 	    {
@@ -1513,115 +1516,37 @@ init_move_cost (enum machine_mode mode)
 		if (ira_class_hard_regs_num[*p2] > 0
 		    && (ira_reg_class_max_nregs[*p2][mode]
 			<= ira_class_hard_regs_num[*p2]))
-		  cost = MAX (cost, move_cost[mode][cl1][*p2]);
+		  cost = MAX (cost, ira_register_move_cost[mode][cl1][*p2]);
 
 	      for (p1 = &reg_class_subclasses[cl1][0];
 		   *p1 != LIM_REG_CLASSES; p1++)
 		if (ira_class_hard_regs_num[*p1] > 0
 		    && (ira_reg_class_max_nregs[*p1][mode]
 			<= ira_class_hard_regs_num[*p1]))
-		  cost = MAX (cost, move_cost[mode][*p1][cl2]);
+		  cost = MAX (cost, ira_register_move_cost[mode][*p1][cl2]);
 
 	      ira_assert (cost <= 65535);
-	      move_cost[mode][cl1][cl2] = cost;
+	      ira_register_move_cost[mode][cl1][cl2] = cost;
 
 	      if (ira_class_subset_p[cl1][cl2])
-		may_move_in_cost[mode][cl1][cl2] = 0;
+		ira_may_move_in_cost[mode][cl1][cl2] = 0;
 	      else
-		may_move_in_cost[mode][cl1][cl2] = cost;
+		ira_may_move_in_cost[mode][cl1][cl2] = cost;
 
 	      if (ira_class_subset_p[cl2][cl1])
-		may_move_out_cost[mode][cl1][cl2] = 0;
+		ira_may_move_out_cost[mode][cl1][cl2] = 0;
 	      else
-		may_move_out_cost[mode][cl1][cl2] = cost;
+		ira_may_move_out_cost[mode][cl1][cl2] = cost;
 	    }
 	}
     else
       for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
 	{
-	  move_cost[mode][cl1][cl2] = 65535;
-	  may_move_in_cost[mode][cl1][cl2] = 65535;
-	  may_move_out_cost[mode][cl1][cl2] = 65535;
+	  ira_register_move_cost[mode][cl1][cl2] = 65535;
+	  ira_may_move_in_cost[mode][cl1][cl2] = 65535;
+	  ira_may_move_out_cost[mode][cl1][cl2] = 65535;
 	}
 }
-
-/* Allocate and initialize IRA_REGISTER_MOVE_COST,
-   IRA_MAX_REGISTER_MOVE_COST, IRA_MAY_MOVE_IN_COST,
-   IRA_MAY_MOVE_OUT_COST, IRA_MAX_MAY_MOVE_IN_COST, and
-   IRA_MAX_MAY_MOVE_OUT_COST for MODE if it is not done yet.  */
-void
-ira_init_register_move_cost (enum machine_mode mode)
-{
-  int cl1, cl2, cl3;
-
-  ira_assert (ira_register_move_cost[mode] == NULL
-	      && ira_max_register_move_cost[mode] == NULL
-	      && ira_may_move_in_cost[mode] == NULL
-	      && ira_may_move_out_cost[mode] == NULL
-	      && ira_max_may_move_in_cost[mode] == NULL
-	      && ira_max_may_move_out_cost[mode] == NULL);
-  if (move_cost[mode] == NULL)
-    init_move_cost (mode);
-  ira_register_move_cost[mode] = move_cost[mode];
-  /* Don't use ira_allocate because the tables exist out of scope of a
-     IRA call.  */
-  ira_max_register_move_cost[mode]
-    = (move_table *) xmalloc (sizeof (move_table) * N_REG_CLASSES);
-  memcpy (ira_max_register_move_cost[mode], ira_register_move_cost[mode],
-	  sizeof (move_table) * N_REG_CLASSES);
-  for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
-    /* Some subclasses are to small to have enough registers to hold
-       a value of MODE.  Just ignore them.  */
-    if (ira_class_hard_regs_num[cl1] > 0
-	&& ira_reg_class_max_nregs[cl1][mode] <= ira_class_hard_regs_num[cl1])
-      for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
-	if (hard_reg_set_subset_p (reg_class_contents[cl1],
-				   reg_class_contents[cl2]))
-	  for (cl3 = 0; cl3 < N_REG_CLASSES; cl3++)
-	    {
-	      gcc_assert (ira_register_move_cost[mode][cl2][cl3]
-			  >= ira_register_move_cost[mode][cl1][cl3]);
-	      gcc_assert (ira_register_move_cost[mode][cl3][cl2]
-			  >= ira_register_move_cost[mode][cl3][cl1]);
-	    }
-  ira_may_move_in_cost[mode]
-    = (move_table *) xmalloc (sizeof (move_table) * N_REG_CLASSES);
-  memcpy (ira_may_move_in_cost[mode], may_move_in_cost[mode],
-	  sizeof (move_table) * N_REG_CLASSES);
-  ira_may_move_out_cost[mode]
-    = (move_table *) xmalloc (sizeof (move_table) * N_REG_CLASSES);
-  memcpy (ira_may_move_out_cost[mode], may_move_out_cost[mode],
-	  sizeof (move_table) * N_REG_CLASSES);
-  ira_max_may_move_in_cost[mode]
-    = (move_table *) xmalloc (sizeof (move_table) * N_REG_CLASSES);
-  memcpy (ira_max_may_move_in_cost[mode], ira_max_register_move_cost[mode],
-	  sizeof (move_table) * N_REG_CLASSES);
-  ira_max_may_move_out_cost[mode]
-    = (move_table *) xmalloc (sizeof (move_table) * N_REG_CLASSES);
-  memcpy (ira_max_may_move_out_cost[mode], ira_max_register_move_cost[mode],
-	  sizeof (move_table) * N_REG_CLASSES);
-  for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
-    if (contains_reg_of_mode[cl1][mode])
-      for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
-	{
-	  if (!contains_reg_of_mode[cl2][mode]
-	      || ira_class_hard_regs_num[cl2] == 0)
-	    continue;
-	  if (ira_class_subset_p[cl1][cl2])
-	    gcc_assert (ira_may_move_in_cost[mode][cl1][cl2] == 0);
-	  if (ira_class_subset_p[cl2][cl1])
-	    gcc_assert (ira_may_move_out_cost[mode][cl1][cl2] == 0);
-	  if (ira_class_subset_p[cl1][cl2])
-	    ira_max_may_move_in_cost[mode][cl1][cl2] = 0;
-	  if (ira_class_subset_p[cl2][cl1])
-	    ira_max_may_move_out_cost[mode][cl1][cl2] = 0;
-	  gcc_assert (ira_may_move_in_cost[mode][cl1][cl2]
-		      == ira_max_may_move_in_cost[mode][cl1][cl2]);
-	  gcc_assert (ira_may_move_out_cost[mode][cl1][cl2]
-		      == ira_max_may_move_out_cost[mode][cl1][cl2]);
-	}
-}
-
 
 
 /* This is called once during compiler work.  It sets up
@@ -1630,23 +1555,11 @@ ira_init_register_move_cost (enum machine_mode mode)
 void
 ira_init_once (void)
 {
-  int mode;
-
-  for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
-    {
-      ira_register_move_cost[mode] = NULL;
-      ira_max_register_move_cost[mode] = NULL;
-      ira_may_move_in_cost[mode] = NULL;
-      ira_may_move_out_cost[mode] = NULL;
-      ira_max_may_move_in_cost[mode] = NULL;
-      ira_max_may_move_out_cost[mode] = NULL;
-    }
   ira_init_costs_once ();
 }
 
-/* Free ira_max_register_move_cost, ira_may_move_in_cost,
-   ira_may_move_out_cost, ira_max_may_move_in_cost, and
-   ira_max_may_move_out_cost for each mode.  */
+/* Free ira_max_register_move_cost, ira_may_move_in_cost and
+   ira_may_move_out_cost for each mode.  */
 static void
 free_register_move_costs (void)
 {
@@ -1655,35 +1568,24 @@ free_register_move_costs (void)
   /* Reset move_cost and friends, making sure we only free shared
      table entries once.  */
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
-    if (move_cost[mode])
+    if (ira_register_move_cost[mode])
       {
-	for (i = 0; i < mode && move_cost[i] != move_cost[mode]; i++)
+	for (i = 0;
+	     i < mode && (ira_register_move_cost[i]
+			  != ira_register_move_cost[mode]);
+	     i++)
 	  ;
 	if (i == mode)
 	  {
-	    free (move_cost[mode]);
-	    free (may_move_in_cost[mode]);
-	    free (may_move_out_cost[mode]);
+	    free (ira_register_move_cost[mode]);
+	    free (ira_may_move_in_cost[mode]);
+	    free (ira_may_move_out_cost[mode]);
 	  }
       }
-  memset (move_cost, 0, sizeof move_cost);
-  memset (may_move_in_cost, 0, sizeof may_move_in_cost);
-  memset (may_move_out_cost, 0, sizeof may_move_out_cost);
+  memset (ira_register_move_cost, 0, sizeof ira_register_move_cost);
+  memset (ira_may_move_in_cost, 0, sizeof ira_may_move_in_cost);
+  memset (ira_may_move_out_cost, 0, sizeof ira_may_move_out_cost);
   last_mode_for_init_move_cost = -1;
-  for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
-    {
-      free (ira_max_register_move_cost[mode]);
-      free (ira_may_move_in_cost[mode]);
-      free (ira_may_move_out_cost[mode]);
-      free (ira_max_may_move_in_cost[mode]);
-      free (ira_max_may_move_out_cost[mode]);
-      ira_register_move_cost[mode] = NULL;
-      ira_max_register_move_cost[mode] = NULL;
-      ira_may_move_in_cost[mode] = NULL;
-      ira_may_move_out_cost[mode] = NULL;
-      ira_max_may_move_in_cost[mode] = NULL;
-      ira_max_may_move_out_cost[mode] = NULL;
-    }
 }
 
 /* This is called every time when register related information is

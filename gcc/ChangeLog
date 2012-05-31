@@ -1,5 +1,24 @@
 2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* ira-int.h (target_ira_int): Rename x_move_cost to
+	x_ira_register_move_cost, x_may_move_in_cost to
+	x_ira_may_move_in_cost and x_may_move_out_cost to
+	x_ira_may_move_out_cost.  Delete the old fields with
+	those names and also x_ira_max_register_move_cost,
+	x_ira_max_may_move_in_cost and x_ira_max_may_move_out_cost.
+	(move_cost, may_move_in_cost, may_move_out_cost)
+	(ira_max_register_move_cost, ira_max_may_move_in_cost)
+	(ira_max_may_move_out_cost): Delete.
+	* ira.c (init_move_cost): Rename to...
+	(ira_init_register_move_cost): ...this, deleting the old
+	function with that name.  Apply above variable renamings.
+	Retain asserts for null fields.
+	(ira_init_once): Don't initialize register move costs here.
+	(free_register_move_costs): Apply above variable renamings.
+	Remove code for deleted fields.
+
+2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ira.c (init_move_cost): Adjust choice of subclasses to match
 	the current ira_init_register_move_cost choice.  Use
 	ira_class_subset_p instead of reg_class_subset_p.
