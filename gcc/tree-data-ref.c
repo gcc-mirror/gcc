@@ -720,13 +720,12 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
     {
       if (!integer_zerop (TREE_OPERAND (base, 1)))
 	{
+	  double_int moff = mem_ref_offset (base);
+	  tree mofft = double_int_to_tree (sizetype, moff);
 	  if (!poffset)
-	    {
-	      double_int moff = mem_ref_offset (base);
-	      poffset = double_int_to_tree (sizetype, moff);
-	    }
+	    poffset = mofft;
 	  else
-	    poffset = size_binop (PLUS_EXPR, poffset, TREE_OPERAND (base, 1));
+	    poffset = size_binop (PLUS_EXPR, poffset, mofft);
 	}
       base = TREE_OPERAND (base, 0);
     }
