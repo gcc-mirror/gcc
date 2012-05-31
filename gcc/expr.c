@@ -4593,6 +4593,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
   if ((TREE_CODE (to) == MEM_REF
        || TREE_CODE (to) == TARGET_MEM_REF)
       && mode != BLKmode
+      && !mem_ref_refers_to_non_mem_p (to)
       && ((align = get_object_or_type_alignment (to))
 	  < GET_MODE_ALIGNMENT (mode))
       && ((icode = optab_handler (movmisalign_optab, mode))
