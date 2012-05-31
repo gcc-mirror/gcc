@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "expr.h"
 #include "recog.h"
-#include "output.h"
 #include "function.h"
 #include "flags.h"
 #include "df.h"

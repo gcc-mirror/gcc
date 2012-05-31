@@ -1,3 +1,17 @@
+2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* call.c: Do not include output.h.
+	* class.c: Likewise.
+	* except.c: Likewise.
+	* friend.c: Likewise.
+	* init.c: Likewise.
+	* lex.c: Likewise.
+	* method.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+
 2012-05-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53356

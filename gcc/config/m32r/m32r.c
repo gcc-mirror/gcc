@@ -29,6 +29,7 @@
 #include "insn-config.h"
 #include "conditions.h"
 #include "output.h"
+#include "dbxout.h"
 #include "insn-attr.h"
 #include "flags.h"
 #include "expr.h"

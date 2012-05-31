@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "cfglayout.h"
 #include "cfghooks.h"
-#include "output.h"
 #include "tree-flow.h"
 
 static void copy_loops_to (struct loop **, int,

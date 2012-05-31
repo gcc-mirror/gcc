@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "emit-rtl.h"
 #include "diagnostic-core.h"
-#include "output.h"
 #include "ggc.h"
 #include "hashtab.h"
 #include "tree-pass.h"

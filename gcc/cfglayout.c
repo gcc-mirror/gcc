@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "basic-block.h"
 #include "insn-config.h"
-#include "output.h"
 #include "function.h"
 #include "cfglayout.h"
 #include "cfgloop.h"

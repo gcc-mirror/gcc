@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "c-common.h"
-#include "output.h"
+#include "output.h" /* for asm_out_file */
 #include "debug.h"
 #include "c-pragma.h"
 #include "ggc.h"

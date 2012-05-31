@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "langhooks.h"
 #include "basic-block.h"
-#include "output.h"
 #include "function.h"
 #include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"

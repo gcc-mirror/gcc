@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "regs.h"
 #include "fibheap.h"
-#include "output.h"
 #include "target.h"
 #include "expr.h"
 #include "flags.h"

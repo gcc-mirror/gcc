@@ -40,6 +40,7 @@
 #include "except.h"
 #include "function.h"
 #include "output.h"
+#include "dbxout.h"
 #include "basic-block.h"
 #include "diagnostic-core.h"
 #include "toplev.h"

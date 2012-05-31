@@ -29,7 +29,7 @@ along with Gcov; see the file COPYING3.  If not see
 #include "gcov-io.h"
 #include "gcov-io.c"
 
-static void dump_file (const char *);
+static void dump_gcov_file (const char *);
 static void print_prefix (const char *, unsigned, gcov_position_t);
 static void print_usage (void);
 static void print_version (void);
@@ -116,7 +116,7 @@ main (int argc ATTRIBUTE_UNUSED, char **argv)
     }
 
   while (argv[optind])
-    dump_file (argv[optind++]);
+    dump_gcov_file (argv[optind++]);
   return 0;
 }
 
@@ -153,7 +153,7 @@ print_prefix (const char *filename, unsigned depth, gcov_position_t position)
 }
 
 static void
-dump_file (const char *filename)
+dump_gcov_file (const char *filename)
 {
   unsigned tags[4];
   unsigned depth = 0;

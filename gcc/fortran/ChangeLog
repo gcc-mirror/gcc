@@ -1,3 +1,8 @@
+2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* trans-common.c: Do not include output.h.
+	* trans-decl.c: Likewise.
+
 2012-05-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53521

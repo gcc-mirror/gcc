@@ -1,3 +1,129 @@
+2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* output.h (__gcc_host_wide_int__): Move to hwint.h.
+	(decl_default_tls_model): Move to tree.h
+	(dump_file): Move to system.h.
+	(default_stabs_asm_out_destructor, default_stabs_asm_out_constructor,
+	dbxout_int, dbxout_stabd, dbxout_begin_stabn, dbxout_begin_stabn_sline,
+	dbxout_begin_empty_stabs, dbxout_begin_simple_stabs,
+	dbxout_begin_simple_stabs_desc, dbxout_stab_value_zero,
+	dbxout_stab_value_zero, dbxout_stab_value_label_diff,
+	dbxout_stab_value_internal_label,
+	dbxout_stab_value_internal_label_diff): Move from here ...
+	* dbxout.h: ... to here.
+	* system.h (dump_file): Moved here from output.h.
+	* hwint.h (__gcc_host_wide_int__): Moved here from output.h.
+	* tree.h (decl_default_tls_model): Moved here from output.h.
+	* varasm.c (default_stabs_asm_out_destructor,
+	default_stabs_asm_out_constructor): Move from here ...
+	* dbxout.c: ... to here.
+
+	* gcov-dump.c (dump_file): Rename to dump_gcov_file.  Update callers.
+
+	* collect2.h (dump_file): Rename to dump_ld_file.
+	* collect2.c: Likewise.
+	* tlink.c: Likewise.
+
+	* alias.c: Do not include output.h.
+	* auto-inc-dec.c: Likewise.
+	* bt-load.c: Likewise.
+	* caller-save.c: Likewise.
+	* cfg.c: Likewise.
+	* cfgbuild.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* cfglayout.c: Likewise.
+	* cfgloop.c: Likewise.
+	* cfgloopanal.c: Likewise.
+	* cfgloopmanip.c: Likewise.
+	* cfgrtl.c: Likewise.
+	* cgraph.c: Likewise.
+	* cgraphclones.c: Likewise.
+	* combine-stack-adj.c: Likewise.
+	* combine.c: Likewise.
+	* cprop.c: Likewise.
+	* cse.c: Likewise.
+	* cselib.c: Likewise.
+	* dbgcnt.c: Likewise.
+	* df-problems.c: Likewise.
+	* df-scan.c: Likewise.
+	* dojump.c: Likewise.
+	* fwprop.c: Likewise.
+	* gcse.c: Likewise.
+	* graph.c: Likewise.
+	* haifa-sched.c: Likewise.
+	* hw-doloop.c: Likewise.
+	* ipa-inline-transform.c: Likewise.
+	* ipa-pure-const.c: Likewise.
+	* ipa-reference.c: Likewise.
+	* ipa-utils.c: Likewise.
+	* ira-build.c: Likewise.
+	* ira-emit.c: Likewise.
+	* lcm.c: Likewise.
+	* loop-doloop.c: Likewise.
+	* loop-invariant.c: Likewise.
+	* loop-iv.c: Likewise.
+	* loop-unroll.c: Likewise.
+	* loop-unswitch.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* lto-section-in.c: Likewise.
+	* lto-streamer-in.c: Likewise.
+	* mcf.c: Likewise.
+	* mode-switching.c: Likewise.
+	* postreload-gcse.c: Likewise.
+	* postreload.c: Likewise.
+	* predict.c: Likewise.
+	* profile.c: Likewise.
+	* ree.c: Likewise.
+	* reg-stack.c: Likewise.
+	* regcprop.c: Likewise.
+	* regmove.c: Likewise.
+	* regstat.c: Likewise.
+	* reload1.c: Likewise.
+	* sched-ebb.c: Likewise.
+	* sel-sched-dump.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* stor-layout.c: Likewise.
+	* store-motion.c: Likewise.
+	* tracer.c: Likewise.
+	* tree-affine.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-cfgcleanup.c: Likewise.
+	* tree-dfa.c: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-nomudflap.c: Likewise.
+	* tree-optimize.c: Likewise.
+	* tree-pretty-print.c: Likewise.
+	* tree-profile.c: Likewise.
+	* tree-ssa-address.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-copy.c: Likewise.
+	* tree-ssa-dom.c: Likewise.
+	* tree-ssa-loop-ch.c: Likewise.
+	* tree-ssa-loop-im.c: Likewise.
+	* tree-ssa-loop-manip.c: Likewise.
+	* tree-ssa-loop-niter.c: Likewise.
+	* tree-ssa-loop-prefetch.c: Likewise.
+	* tree-ssa-loop-unswitch.c: Likewise.
+	* tree-ssa-loop.c: Likewise.
+	* tree-ssa-propagate.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* tree-ssa-tail-merge.c: Likewise.
+	* tree-ssa-threadedge.c: Likewise.
+	* tree-ssa-threadupdate.c: Likewise.
+	* tree-ssa-uncprop.c: Likewise.
+	* tree-ssa-uninit.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* value-prof.c: Likewise.
+	* var-tracking.c: Likewise.
+	* web.c: Likewise.
+
+	* config/m32r/m32r.c: Include dbxout.h.
+	* config/pa/pa.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+
+	* Makefile.in: Fix dependencies.
+	* config/rs6000/t-rs5000: Likewise.
+
 2012-05-31  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/52558

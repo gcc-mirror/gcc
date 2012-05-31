@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "gimple.h"
 #include "cgraph.h"
-#include "output.h"
 #include "flags.h"
 #include "timevar.h"
 #include "diagnostic.h"

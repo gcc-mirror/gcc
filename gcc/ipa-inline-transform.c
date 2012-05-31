@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cgraph.h"
 #include "timevar.h"
-#include "output.h"
 #include "intl.h"
 #include "coverage.h"
 #include "ggc.h"

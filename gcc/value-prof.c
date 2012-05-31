@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "value-prof.h"
-#include "output.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "recog.h"

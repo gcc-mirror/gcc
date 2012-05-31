@@ -30,7 +30,6 @@
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "reload.h"
-#include "output.h"
 #include "function.h"
 #include "recog.h"
 #include "flags.h"

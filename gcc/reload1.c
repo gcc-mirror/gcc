@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "reload.h"
 #include "recog.h"
-#include "output.h"
 #include "except.h"
 #include "tree.h"
 #include "ira.h"

@@ -25,7 +25,6 @@ See dbgcnt.def for usage information.  */
 #include "diagnostic-core.h"
 #include "tm.h"
 #include "rtl.h"
-#include "output.h"
 
 #include "dbgcnt.h"
 

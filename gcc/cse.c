@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
-#include "output.h"
 #include "ggc.h"
 #include "timevar.h"
 #include "except.h"

@@ -142,7 +142,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "target.h"
 #include "common/common-target.h"
-#include "output.h"
 #include "params.h"
 #include "vecprim.h"
 #include "dbgcnt.h"

@@ -28,7 +28,6 @@
 #include "bitmap.h"
 #include "flags.h"
 #include "basic-block.h"
-#include "output.h"
 #include "tree.h"
 #include "tree-flow.h"
 #include "tree-inline.h"

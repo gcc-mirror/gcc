@@ -96,7 +96,6 @@
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "flags.h"
-#include "output.h"
 #include "insn-config.h"
 #include "reload.h"
 #include "sbitmap.h"

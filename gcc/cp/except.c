@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"
-#include "output.h"
 #include "tree-inline.h"
 #include "tree-iterator.h"
 #include "target.h"

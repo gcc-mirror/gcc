@@ -1,3 +1,8 @@
+2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-ada-spec.c: Do not include output.h.
+	* c-semantics.c: Likewise.
+
 2012-05-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c: Fix typo.

@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "vec.h"
 #include "timevar.h"
-#include "output.h"
 #include "lto-streamer.h"
 #include "lto-compress.h"
 #include "ggc.h"
