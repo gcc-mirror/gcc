@@ -1,5 +1,15 @@
 2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* ira.c (init_move_cost): Adjust choice of subclasses to match
+	the current ira_init_register_move_cost choice.  Use
+	ira_class_subset_p instead of reg_class_subset_p.
+	(ira_init_register_move_cost): Assert that move_cost,
+	may_move_in_cost and may_move_out_cost already hold the desired
+	values for their ira_* equivalents.  For the latter two,
+	ignore classes that can't store a register of the given mode.
+
+2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ira.c (setup_allocno_and_important_classes): Use
 	ira_class_hard_regs_num to check whether a class has any
 	allocatable registers.
