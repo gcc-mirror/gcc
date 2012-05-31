@@ -65,7 +65,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "cfgloop.h"
-#include "cfglayout.h"
 #include "tree-vectorizer.h"
 #include "tree-pass.h"
 #include "timevar.h"

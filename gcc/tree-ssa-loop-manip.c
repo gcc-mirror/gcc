@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "cfgloop.h"
 #include "tree-pass.h"
-#include "cfglayout.h"
 #include "tree-scalar-evolution.h"
 #include "params.h"
 #include "tree-inline.h"

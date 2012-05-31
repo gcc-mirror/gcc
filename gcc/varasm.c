@@ -50,9 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "targhooks.h"
 #include "tree-mudflap.h"
 #include "cgraph.h"
-#include "cfglayout.h"
-#include "basic-block.h"
-#include "tree-iterator.h"
 #include "pointer-set.h"
 
 #ifdef XCOFF_DEBUGGING_INFO

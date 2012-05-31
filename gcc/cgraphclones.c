@@ -96,7 +96,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "output.h"
 #include "coverage.h"
-#include "plugin.h"
 #include "ipa-inline.h"
 #include "ipa-utils.h"
 #include "lto-streamer.h"
