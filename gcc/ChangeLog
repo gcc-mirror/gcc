@@ -1,6 +1,15 @@
 2012-06-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
+	2012-03-27  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR target/52667
+	* config/sh/sh.c (find_barrier): Add equality check of last_got to
+	avoid going above orig insn.  Update comments.
+
+2012-06-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
 	2012-03-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/52642
