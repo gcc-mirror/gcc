@@ -771,48 +771,22 @@ struct target_ira_int {
 
   /* Maximum cost of moving from a register in one class to a register
      in another class.  Based on TARGET_REGISTER_MOVE_COST.  */
-  move_table *x_move_cost[MAX_MACHINE_MODE];
+  move_table *x_ira_register_move_cost[MAX_MACHINE_MODE];
 
   /* Similar, but here we don't have to move if the first index is a
      subset of the second so in that case the cost is zero.  */
-  move_table *x_may_move_in_cost[MAX_MACHINE_MODE];
+  move_table *x_ira_may_move_in_cost[MAX_MACHINE_MODE];
 
   /* Similar, but here we don't have to move if the first index is a
      superset of the second so in that case the cost is zero.  */
-  move_table *x_may_move_out_cost[MAX_MACHINE_MODE];
+  move_table *x_ira_may_move_out_cost[MAX_MACHINE_MODE];
 
   /* Keep track of the last mode we initialized move costs for.  */
   int x_last_mode_for_init_move_cost;
 
-  /* Array based on TARGET_REGISTER_MOVE_COST.  Don't use
-     ira_register_move_cost directly.  Use function of
-     ira_get_may_move_cost instead.  */
-  move_table *x_ira_register_move_cost[MAX_MACHINE_MODE];
-
-  /* Array analogs of the macros MEMORY_MOVE_COST and
-     REGISTER_MOVE_COST but they contain maximal cost not minimal as
-     the previous two ones do.  */
+  /* Array analog of the macro MEMORY_MOVE_COST but they contain maximal
+     cost not minimal.  */
   short int x_ira_max_memory_move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][2];
-  move_table *x_ira_max_register_move_cost[MAX_MACHINE_MODE];
-
-  /* Similar to may_move_in_cost but it is calculated in IRA instead of
-     regclass.  Another difference we take only available hard registers
-     into account to figure out that one register class is a subset of
-     the another one.  Don't use it directly.  Use function of
-     ira_get_may_move_cost instead.  */
-  move_table *x_ira_may_move_in_cost[MAX_MACHINE_MODE];
-
-  /* Similar to may_move_out_cost but it is calculated in IRA instead of
-     regclass.  Another difference we take only available hard registers
-     into account to figure out that one register class is a subset of
-     the another one.  Don't use it directly.  Use function of
-     ira_get_may_move_cost instead.  */
-  move_table *x_ira_may_move_out_cost[MAX_MACHINE_MODE];
-
-/* Similar to ira_may_move_in_cost and ira_may_move_out_cost but they
-   return maximal cost.  */
-  move_table *x_ira_max_may_move_in_cost[MAX_MACHINE_MODE];
-  move_table *x_ira_max_may_move_out_cost[MAX_MACHINE_MODE];
 
   /* Map class->true if class is a possible allocno class, false
      otherwise. */
@@ -905,26 +879,14 @@ extern struct target_ira_int *this_target_ira_int;
 
 #define ira_reg_mode_hard_regset \
   (this_target_ira_int->x_ira_reg_mode_hard_regset)
-#define move_cost \
-  (this_target_ira_int->x_move_cost)
-#define may_move_in_cost \
-  (this_target_ira_int->x_may_move_in_cost)
-#define may_move_out_cost \
-  (this_target_ira_int->x_may_move_out_cost)
 #define ira_register_move_cost \
   (this_target_ira_int->x_ira_register_move_cost)
 #define ira_max_memory_move_cost \
   (this_target_ira_int->x_ira_max_memory_move_cost)
-#define ira_max_register_move_cost \
-  (this_target_ira_int->x_ira_max_register_move_cost)
 #define ira_may_move_in_cost \
   (this_target_ira_int->x_ira_may_move_in_cost)
 #define ira_may_move_out_cost \
   (this_target_ira_int->x_ira_may_move_out_cost)
-#define ira_max_may_move_in_cost \
-  (this_target_ira_int->x_ira_max_may_move_in_cost)
-#define ira_max_may_move_out_cost \
-  (this_target_ira_int->x_ira_max_may_move_out_cost)
 #define ira_reg_allocno_class_p \
   (this_target_ira_int->x_ira_reg_allocno_class_p)
 #define ira_reg_pressure_class_p \
