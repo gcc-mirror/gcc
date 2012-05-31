@@ -1,6 +1,15 @@
 2012-06-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
+	2012-03-21  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/52642
+	* config/sh/sh.c (sh_expand_prologue): Emit blockage at the end of
+	prologue for unwinder and profiler.
+
+2012-06-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
 	2012-03-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (abssi2): Add TARGET_SH1 condition.
