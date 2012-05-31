@@ -802,6 +802,7 @@ extern basic_block alloc_block (void);
 extern void alloc_aux_for_blocks (int);
 extern void clear_aux_for_blocks (void);
 extern void free_aux_for_blocks (void);
+extern void alloc_aux_for_edge (edge, int);
 extern void alloc_aux_for_edges (int);
 extern void clear_aux_for_edges (void);
 extern void free_aux_for_edges (void);
