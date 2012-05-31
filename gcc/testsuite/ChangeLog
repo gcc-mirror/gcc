@@ -1,3 +1,12 @@
+2012-05-31  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_char_mult): Add
+	arm32 to targets.
+	* gcc.dg/vect/slp-perm-8.c (main): Prevent vectorization
+	of the initialization loop.
+        (dg-final): Adjust the expected number of vectorized loops depending
+	on vect_char_mult target selector.
+
 2012-05-31  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.target/cris/asm-v8.S, gcc.target/cris/asm-v10.S,
