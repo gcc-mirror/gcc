@@ -1,3 +1,10 @@
+2012-05-31  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/asm-v8.S, gcc.target/cris/asm-v10.S,
+	gcc.target/cris/asm-other.S, gcc.target/cris/inasm-v8.c,
+	gcc.target/cris/inasm-v10.c, gcc.target/cris/inasm-other.c:
+	New tests.
+
 2012-05-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53356
