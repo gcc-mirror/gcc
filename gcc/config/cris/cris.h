@@ -156,11 +156,13 @@ extern int cris_cpu_version;
     " -D__CRIS_arch_tune=" CRIS_DEFAULT_TUNE "}}}}}"\
  CRIS_ARCH_CPP_DEFAULT
 
-/* Override previous definitions (linux.h).  */
+/* Override previous definitions (../linux.h).  */
 #undef CC1_SPEC
 #define CC1_SPEC \
  "%{metrax4:-march=v3}\
   %{metrax100:-march=v8}\
+  %{march=*:-march=%*}\
+  %{mcpu=*:-mcpu=%*}\
   %(cc1_subtarget)"
 
 /* For the cris-*-elf subtarget.  */
@@ -190,7 +192,9 @@ extern int cris_cpu_version;
  MAYBE_AS_NO_MUL_BUG_ABORT \
  "%(asm_subtarget)\
  %{march=*:%{mcpu=*:%edo not specify both -march=... and -mcpu=...}}\
- %{march=v32:--march=v32} %{mcpu=v32:--march=v32}"
+ %{march=v0|mcpu=v0|march=v3|mcpu=v3|march=v8|mcpu=v8:--march=v0_v10}\
+ %{march=v10|mcpu=v10:--march=v10}\
+ %{march=v32|mcpu=v32:--march=v32}"
 
 /* For the cris-*-elf subtarget.  */
 #define CRIS_ASM_SUBTARGET_SPEC \
