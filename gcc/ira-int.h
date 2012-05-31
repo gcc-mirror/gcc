@@ -75,6 +75,8 @@ DEF_VEC_ALLOC_P(ira_copy_t, heap);
 /* Typedef for pointer to the subsequent structure.  */
 typedef struct ira_loop_tree_node *ira_loop_tree_node_t;
 
+typedef unsigned short move_table[N_REG_CLASSES];
+
 /* In general case, IRA is a regional allocator.  The regions are
    nested and form a tree.  Currently regions are natural loops.  The
    following structure describes loop tree node (representing basic
@@ -767,6 +769,21 @@ struct target_ira_int {
   HARD_REG_SET (x_ira_reg_mode_hard_regset
 		[FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES]);
 
+  /* Maximum cost of moving from a register in one class to a register
+     in another class.  Based on TARGET_REGISTER_MOVE_COST.  */
+  move_table *x_move_cost[MAX_MACHINE_MODE];
+
+  /* Similar, but here we don't have to move if the first index is a
+     subset of the second so in that case the cost is zero.  */
+  move_table *x_may_move_in_cost[MAX_MACHINE_MODE];
+
+  /* Similar, but here we don't have to move if the first index is a
+     superset of the second so in that case the cost is zero.  */
+  move_table *x_may_move_out_cost[MAX_MACHINE_MODE];
+
+  /* Keep track of the last mode we initialized move costs for.  */
+  int x_last_mode_for_init_move_cost;
+
   /* Array based on TARGET_REGISTER_MOVE_COST.  Don't use
      ira_register_move_cost directly.  Use function of
      ira_get_may_move_cost instead.  */
@@ -888,6 +905,12 @@ extern struct target_ira_int *this_target_ira_int;
 
 #define ira_reg_mode_hard_regset \
   (this_target_ira_int->x_ira_reg_mode_hard_regset)
+#define move_cost \
+  (this_target_ira_int->x_move_cost)
+#define may_move_in_cost \
+  (this_target_ira_int->x_may_move_in_cost)
+#define may_move_out_cost \
+  (this_target_ira_int->x_may_move_out_cost)
 #define ira_register_move_cost \
   (this_target_ira_int->x_ira_register_move_cost)
 #define ira_max_memory_move_cost \

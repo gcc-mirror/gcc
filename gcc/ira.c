@@ -423,6 +423,8 @@ HARD_REG_SET eliminable_regset;
 /* Temporary hard reg set used for a different calculation.  */
 static HARD_REG_SET temp_hard_regset;
 
+#define last_mode_for_init_move_cost \
+  (this_target_ira_int->x_last_mode_for_init_move_cost)
 
 
 /* The function sets up the map IRA_REG_MODE_HARD_REGSET.  */
@@ -1455,8 +1457,96 @@ clarify_prohibited_class_mode_regs (void)
 	      }
 	}
 }
-
 
+/* Initialize may_move_cost and friends for mode M.  */
+
+static void
+init_move_cost (enum machine_mode m)
+{
+  static unsigned short last_move_cost[N_REG_CLASSES][N_REG_CLASSES];
+  bool all_match = true;
+  unsigned int i, j;
+
+  gcc_assert (have_regs_of_mode[m]);
+  for (i = 0; i < N_REG_CLASSES; i++)
+    if (contains_reg_of_mode[i][m])
+      for (j = 0; j < N_REG_CLASSES; j++)
+	{
+	  int cost;
+	  if (!contains_reg_of_mode[j][m])
+	    cost = 65535;
+	  else
+	    {
+	      cost = register_move_cost (m, (enum reg_class) i,
+					 (enum reg_class) j);
+	      gcc_assert (cost < 65535);
+	    }
+	  all_match &= (last_move_cost[i][j] == cost);
+	  last_move_cost[i][j] = cost;
+	}
+  if (all_match && last_mode_for_init_move_cost != -1)
+    {
+      move_cost[m] = move_cost[last_mode_for_init_move_cost];
+      may_move_in_cost[m] = may_move_in_cost[last_mode_for_init_move_cost];
+      may_move_out_cost[m] = may_move_out_cost[last_mode_for_init_move_cost];
+      return;
+    }
+  last_mode_for_init_move_cost = m;
+  move_cost[m] = (move_table *)xmalloc (sizeof (move_table)
+					* N_REG_CLASSES);
+  may_move_in_cost[m] = (move_table *)xmalloc (sizeof (move_table)
+					       * N_REG_CLASSES);
+  may_move_out_cost[m] = (move_table *)xmalloc (sizeof (move_table)
+					        * N_REG_CLASSES);
+  for (i = 0; i < N_REG_CLASSES; i++)
+    if (contains_reg_of_mode[i][m])
+      for (j = 0; j < N_REG_CLASSES; j++)
+	{
+	  int cost;
+	  enum reg_class *p1, *p2;
+
+	  if (last_move_cost[i][j] == 65535)
+	    {
+	      move_cost[m][i][j] = 65535;
+	      may_move_in_cost[m][i][j] = 65535;
+	      may_move_out_cost[m][i][j] = 65535;
+	    }
+	  else
+	    {
+	      cost = last_move_cost[i][j];
+
+	      for (p2 = &reg_class_subclasses[j][0];
+		   *p2 != LIM_REG_CLASSES; p2++)
+		if (*p2 != i && contains_reg_of_mode[*p2][m])
+		  cost = MAX (cost, move_cost[m][i][*p2]);
+
+	      for (p1 = &reg_class_subclasses[i][0];
+		   *p1 != LIM_REG_CLASSES; p1++)
+		if (*p1 != j && contains_reg_of_mode[*p1][m])
+		  cost = MAX (cost, move_cost[m][*p1][j]);
+
+	      gcc_assert (cost <= 65535);
+	      move_cost[m][i][j] = cost;
+
+	      if (reg_class_subset_p ((enum reg_class) i, (enum reg_class) j))
+		may_move_in_cost[m][i][j] = 0;
+	      else
+		may_move_in_cost[m][i][j] = cost;
+
+	      if (reg_class_subset_p ((enum reg_class) j, (enum reg_class) i))
+		may_move_out_cost[m][i][j] = 0;
+	      else
+		may_move_out_cost[m][i][j] = cost;
+	    }
+	}
+    else
+      for (j = 0; j < N_REG_CLASSES; j++)
+	{
+	  move_cost[m][i][j] = 65535;
+	  may_move_in_cost[m][i][j] = 65535;
+	  may_move_out_cost[m][i][j] = 65535;
+	}
+}
 
 /* Allocate and initialize IRA_REGISTER_MOVE_COST,
    IRA_MAX_REGISTER_MOVE_COST, IRA_MAY_MOVE_IN_COST,
@@ -1577,8 +1667,26 @@ ira_init_once (void)
 static void
 free_register_move_costs (void)
 {
-  int mode;
+  int mode, i;
 
+  /* Reset move_cost and friends, making sure we only free shared
+     table entries once.  */
+  for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
+    if (move_cost[mode])
+      {
+	for (i = 0; i < mode && move_cost[i] != move_cost[mode]; i++)
+	  ;
+	if (i == mode)
+	  {
+	    free (move_cost[mode]);
+	    free (may_move_in_cost[mode]);
+	    free (may_move_out_cost[mode]);
+	  }
+      }
+  memset (move_cost, 0, sizeof move_cost);
+  memset (may_move_in_cost, 0, sizeof may_move_in_cost);
+  memset (may_move_out_cost, 0, sizeof may_move_out_cost);
+  last_mode_for_init_move_cost = -1;
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
     {
       free (ira_max_register_move_cost[mode]);
