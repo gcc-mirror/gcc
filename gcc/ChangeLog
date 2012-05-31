@@ -1,3 +1,9 @@
+2012-05-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr: Correct avr-mmcu.texi dependencies.
+	(s-avr-mmcu-texi): Don't sed on gen-avr-mmcu-texi output.
+	* doc/avr-mmcu.texi (svn:eol-style): Set to native.
+	
 2012-05-31  Richard Guenther  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (struct partition_s): New struct,
