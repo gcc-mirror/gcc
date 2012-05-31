@@ -1,5 +1,10 @@
 2012-05-31  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/ldist-pr45948-2.c: New testcase copy of
+	ldist-pr45948.c with disabled SCCP.
+
+2012-05-31  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/48493
 	* gcc.dg/torture/pr48493.c: New testcase.
 

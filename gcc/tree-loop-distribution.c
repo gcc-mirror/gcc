@@ -80,32 +80,19 @@ ssa_name_has_uses_outside_loop_p (tree def, loop_p loop)
 }
 
 /* Returns true when STMT defines a scalar variable used after the
-   loop.  */
+   loop LOOP.  */
 
 static bool
-stmt_has_scalar_dependences_outside_loop (gimple stmt)
+stmt_has_scalar_dependences_outside_loop (loop_p loop, gimple stmt)
 {
-  tree name;
+  def_operand_p def_p;
+  ssa_op_iter op_iter;
 
-  switch (gimple_code (stmt))
-    {
-    case GIMPLE_CALL:
-    case GIMPLE_ASSIGN:
-      name = gimple_get_lhs (stmt);
-      break;
+  FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, op_iter, SSA_OP_DEF)
+    if (ssa_name_has_uses_outside_loop_p (DEF_FROM_PTR (def_p), loop))
+      return true;
 
-    case GIMPLE_PHI:
-      name = gimple_phi_result (stmt);
-      break;
-
-    default:
-      return false;
-    }
-
-  return (name
-	  && TREE_CODE (name) == SSA_NAME
-	  && ssa_name_has_uses_outside_loop_p (name,
-					       loop_containing_stmt (stmt)));
+  return false;
 }
 
 /* Update the PHI nodes of NEW_LOOP.  NEW_LOOP is a duplicate of
@@ -382,9 +369,16 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
 	  if (!bitmap_bit_p (partition, x++))
 	    continue;
 
-	  /* If the stmt has uses outside of the loop fail.  */
-	  if (stmt_has_scalar_dependences_outside_loop (stmt))
-	    goto end;
+	  /* If the stmt has uses outside of the loop fail.
+	     ???  If the stmt is generated in another partition that
+	     is not created as builtin we can ignore this.  */
+	  if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "not generating builtin, partition has "
+			 "scalar uses outside of the loop\n");
+	      goto end;
+	    }
 
 	  if (is_gimple_assign (stmt)
 	      && !is_gimple_reg (gimple_assign_lhs (stmt)))
@@ -879,60 +873,6 @@ fuse_partitions_with_similar_memory_accesses (struct graph *rdg,
 	  }
 }
 
-/* Returns true when STMT will be code generated in a partition of RDG
-   different than PART and that will not be code generated as a
-   builtin.  */
-
-static bool
-stmt_generated_in_another_partition (struct graph *rdg, gimple stmt, int part,
-				     VEC (bitmap, heap) *partitions)
-{
-  int p;
-  bitmap pp;
-  unsigned i;
-  bitmap_iterator bi;
-
-  FOR_EACH_VEC_ELT (bitmap, partitions, p, pp)
-    if (p != part
-	&& !can_generate_builtin (rdg, pp))
-      EXECUTE_IF_SET_IN_BITMAP (pp, 0, i, bi)
-	if (stmt == RDG_STMT (rdg, i))
-	  return true;
-
-  return false;
-}
-
-/* For each partition in PARTITIONS that will be code generated using
-   a builtin, add its scalar computations used after the loop to
-   PARTITION.  */
-
-static void
-add_scalar_computations_to_partition (struct graph *rdg,
-				      VEC (bitmap, heap) *partitions,
-				      bitmap partition)
-{
-  int p;
-  bitmap pp;
-  unsigned i;
-  bitmap_iterator bi;
-  bitmap l = BITMAP_ALLOC (NULL);
-  bitmap pr = BITMAP_ALLOC (NULL);
-  bool f = false;
-
-  FOR_EACH_VEC_ELT (bitmap, partitions, p, pp)
-    if (can_generate_builtin (rdg, pp))
-      EXECUTE_IF_SET_IN_BITMAP (pp, 0, i, bi)
-	if (stmt_has_scalar_dependences_outside_loop (RDG_STMT (rdg, i))
-	    && !stmt_generated_in_another_partition (rdg, RDG_STMT (rdg, i), p,
-						     partitions))
-	  rdg_flag_vertex_and_dependent (rdg, i, partition, l, pr, &f);
-
-  rdg_flag_loop_exits (rdg, l, partition, pr, &f);
-
-  BITMAP_FREE (pr);
-  BITMAP_FREE (l);
-}
-
 /* Aggregate several components into a useful partition that is
    registered in the PARTITIONS vector.  Partitions will be
    distributed in different loops.  */
@@ -995,8 +935,6 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
       VEC_free (int, heap, foo);
       free_rdg_components (comps);
     }
-
-  add_scalar_computations_to_partition (rdg, *partitions, partition);
 
   /* If there is something left in the last partition, save it.  */
   if (bitmap_count_bits (partition) > 0)
