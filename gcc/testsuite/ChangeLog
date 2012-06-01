@@ -1,5 +1,9 @@
 2012-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* c-c++-common/restrict-2.c: Revert previous change.
+
+2012-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/53517
 	* gnat.dg/lto14.adb: Skip on Solaris.
 

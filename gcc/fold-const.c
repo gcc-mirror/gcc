@@ -10022,15 +10022,18 @@ fold_binary_loc (location_t loc,
 	    }
 	}
 
-      /* Handle (A1 * C1) + (A2 * C2) with A1, A2 or C1, C2 being the
-	 same or one.  Make sure type is not saturating.
-	 fold_plusminus_mult_expr will re-associate.  */
-      if ((TREE_CODE (op0) == MULT_EXPR
-	   || TREE_CODE (op1) == MULT_EXPR)
+      /* Handle (A1 * C1) + (A2 * C2) with A1, A2 or C1, C2 being the same or
+	 one.  Make sure the type is not saturating and has the signedness of
+	 the stripped operands, as fold_plusminus_mult_expr will re-associate.
+	 ??? The latter condition should use TYPE_OVERFLOW_* flags instead.  */
+      if ((TREE_CODE (arg0) == MULT_EXPR
+	   || TREE_CODE (arg1) == MULT_EXPR)
 	  && !TYPE_SATURATING (type)
+	  && TYPE_UNSIGNED (type) == TYPE_UNSIGNED (TREE_TYPE (arg0))
+	  && TYPE_UNSIGNED (type) == TYPE_UNSIGNED (TREE_TYPE (arg1))
 	  && (!FLOAT_TYPE_P (type) || flag_associative_math))
         {
-	  tree tem = fold_plusminus_mult_expr (loc, code, type, op0, op1);
+	  tree tem = fold_plusminus_mult_expr (loc, code, type, arg0, arg1);
 	  if (tem)
 	    return tem;
 	}
@@ -10634,15 +10637,18 @@ fold_binary_loc (location_t loc,
 	  && (tem = distribute_real_division (loc, code, type, arg0, arg1)))
 	return tem;
 
-      /* Handle (A1 * C1) - (A2 * C2) with A1, A2 or C1, C2 being the
-	 same or one.  Make sure type is not saturating.
-	 fold_plusminus_mult_expr will re-associate.  */
-      if ((TREE_CODE (op0) == MULT_EXPR
-	   || TREE_CODE (op1) == MULT_EXPR)
+      /* Handle (A1 * C1) - (A2 * C2) with A1, A2 or C1, C2 being the same or
+	 one.  Make sure the type is not saturating and has the signedness of
+	 the stripped operands, as fold_plusminus_mult_expr will re-associate.
+	 ??? The latter condition should use TYPE_OVERFLOW_* flags instead.  */
+      if ((TREE_CODE (arg0) == MULT_EXPR
+	   || TREE_CODE (arg1) == MULT_EXPR)
 	  && !TYPE_SATURATING (type)
+	  && TYPE_UNSIGNED (type) == TYPE_UNSIGNED (TREE_TYPE (arg0))
+	  && TYPE_UNSIGNED (type) == TYPE_UNSIGNED (TREE_TYPE (arg1))
 	  && (!FLOAT_TYPE_P (type) || flag_associative_math))
         {
-	  tree tem = fold_plusminus_mult_expr (loc, code, type, op0, op1);
+	  tree tem = fold_plusminus_mult_expr (loc, code, type, arg0, arg1);
 	  if (tem)
 	    return tem;
 	}

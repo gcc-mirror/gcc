@@ -1,3 +1,8 @@
+2012-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/53501
+	* fold-const.c (fold_binary_loc): Refine previous change.
+
 2012-06-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
