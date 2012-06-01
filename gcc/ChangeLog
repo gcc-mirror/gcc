@@ -1,3 +1,26 @@
+2012-06-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (enum partition_kind): New enum.
+	(struct partition_s): Add kind and main_stmt members.
+	(partition_alloc): Initialize kind to PKIND_NORMAL.
+	(partition_builtin_p): New function.
+	(copy_loop_before): Remove failure path and assert instead.
+	(generate_loops_for_partition): Likewise.
+	(generate_memset_zero): Fold into ...
+	(generate_memset_builtin): ... this.
+	(classify_partition): New function with code from
+	can_generate_builtin and generate_builtin.
+	(generate_builtin): Remove.
+	(can_generate_builtin): Likewise.
+	(fuse_partitions_with_similar_memory_accesses): Call
+	partition_builtin_p instead of can_generate_builtin.
+	(rdg_build_partitions): Do not call
+	fuse_partitions_with_similar_memory_accesses here...
+	(ldist_gen): ... but here after classifying all partitions.
+	Remove failure path of generate_code_for_partition.
+	(generate_code_for_partition): Generate code according
+	to partition classification.
+
 2012-06-01  Manuel López-Ibáñez  <manu@gcc.gnu.org>
             Jonathan Wakely  <jwakely.gcc@gmail.com>
 

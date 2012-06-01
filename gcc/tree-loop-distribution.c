@@ -52,9 +52,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
 
+enum partition_kind { PKIND_NORMAL, PKIND_MEMSET };
+
 typedef struct partition_s
 {
   bitmap stmts;
+  enum partition_kind kind;
+  /* Main statement a kind != PKIND_NORMAL partition is about.  */
+  gimple main_stmt;
 } *partition_t;
 
 DEF_VEC_P (partition_t);
@@ -67,6 +72,7 @@ partition_alloc (bitmap stmts)
 {
   partition_t partition = XCNEW (struct partition_s);
   partition->stmts = stmts ? stmts : BITMAP_ALLOC (NULL);
+  partition->kind = PKIND_NORMAL;
   return partition;
 }
 
@@ -79,6 +85,13 @@ partition_free (partition_t partition)
   free (partition);
 }
 
+/* Returns true if the partition can be generated as a builtin.  */
+
+static bool
+partition_builtin_p (partition_t partition)
+{
+  return partition->kind != PKIND_NORMAL;
+}
 
 /* If bit I is not set, it means that this node represents an
    operation that has already been performed, and that should not be
@@ -183,15 +196,10 @@ copy_loop_before (struct loop *loop)
   struct loop *res;
   edge preheader = loop_preheader_edge (loop);
 
-  if (!single_exit (loop))
-    return NULL;
-
   initialize_original_copy_tables ();
   res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, preheader);
+  gcc_assert (res != NULL);
   free_original_copy_tables ();
-
-  if (!res)
-    return NULL;
 
   update_phis_for_loop_copy (loop, res);
   rename_variables_in_loop (res);
@@ -216,10 +224,9 @@ create_bb_after_loop (struct loop *loop)
    copied when COPY_P is true.  All the statements not flagged in the
    PARTITION bitmap are removed from the loop or from its copy.  The
    statements are indexed in sequence inside a basic block, and the
-   basic blocks of a loop are taken in dom order.  Returns true when
-   the code gen succeeded. */
+   basic blocks of a loop are taken in dom order.  */
 
-static bool
+static void
 generate_loops_for_partition (struct loop *loop, partition_t partition,
 			      bool copy_p)
 {
@@ -230,12 +237,10 @@ generate_loops_for_partition (struct loop *loop, partition_t partition,
   if (copy_p)
     {
       loop = copy_loop_before (loop);
+      gcc_assert (loop != NULL);
       create_preheader (loop, CP_SIMPLE_PREHEADERS);
       create_bb_after_loop (loop);
     }
-
-  if (loop == NULL)
-    return false;
 
   /* Remove stmts not in the PARTITION bitmap.  The order in which we
      visit the phi nodes and the statements is exactly as in
@@ -293,7 +298,6 @@ generate_loops_for_partition (struct loop *loop, partition_t partition,
     }
 
   free (bbs);
-  return true;
 }
 
 /* Build the size argument for a memset call.  */
@@ -313,19 +317,29 @@ build_size_arg_loc (location_t loc, tree nb_iter, tree op,
   return x;
 }
 
-/* Generate a call to memset.  Return true when the operation succeeded.  */
+/* Generate a call to memset for PARTITION in LOOP.  */
 
 static void
-generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
-		      gimple_stmt_iterator bsi)
+generate_memset_builtin (struct loop *loop, partition_t partition)
 {
-  tree addr_base, nb_bytes;
-  bool res = false;
+  gimple_stmt_iterator gsi;
+  gimple stmt, fn_call;
+  tree op0, nb_iter, mem, fn, addr_base, nb_bytes;
   gimple_seq stmt_list = NULL, stmts;
-  gimple fn_call;
-  tree mem, fn;
   struct data_reference *dr = XCNEW (struct data_reference);
-  location_t loc = gimple_location (stmt);
+  location_t loc;
+  bool res;
+
+  stmt = partition->main_stmt;
+  loc = gimple_location (stmt);
+  op0 = gimple_assign_lhs (stmt);
+  if (gimple_bb (stmt) == loop->latch)
+    nb_iter = number_of_latch_executions (loop);
+  else
+    nb_iter = number_of_exit_cond_executions (loop);
+
+  /* The new statements will be placed before LOOP.  */
+  gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
 
   DR_STMT (dr) = stmt;
   DR_REF (dr) = op0;
@@ -353,7 +367,7 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   fn = build_fold_addr_expr (builtin_decl_implicit (BUILT_IN_MEMSET));
   fn_call = gimple_build_call (fn, 3, mem, integer_zero_node, nb_bytes);
   gimple_seq_add_stmt (&stmt_list, fn_call);
-  gsi_insert_seq_after (&bsi, stmt_list, GSI_CONTINUE_LINKING);
+  gsi_insert_seq_after (&gsi, stmt_list, GSI_CONTINUE_LINKING);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "generated memset zero\n");
@@ -361,113 +375,56 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   free_data_ref (dr);
 }
 
-/* Tries to generate a builtin function for the instructions of LOOP
-   pointed to by the bits set in PARTITION.  Returns true when the
-   operation succeeded.  */
+/* Remove and destroy the loop LOOP.  */
 
-static bool
-generate_builtin (struct loop *loop, partition_t partition, bool copy_p)
+static void
+destroy_loop (struct loop *loop)
 {
-  bool res = false;
-  unsigned i, x = 0;
+  unsigned nbbs = loop->num_nodes;
+  edge exit = single_exit (loop);
+  basic_block src = loop_preheader_edge (loop)->src, dest = exit->dest;
   basic_block *bbs;
-  gimple write = NULL;
-  gimple_stmt_iterator bsi;
-  tree nb_iter = number_of_exit_cond_executions (loop);
-
-  if (!nb_iter || nb_iter == chrec_dont_know)
-    return false;
+  unsigned i;
 
   bbs = get_loop_body_in_dom_order (loop);
 
-  for (i = 0; i < loop->num_nodes; i++)
-    {
-      basic_block bb = bbs[i];
+  redirect_edge_pred (exit, src);
+  exit->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
+  exit->flags |= EDGE_FALLTHRU;
+  cancel_loop_tree (loop);
+  rescan_loop_exit (exit, false, true);
 
-      for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	x++;
-
-      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	{
-	  gimple stmt = gsi_stmt (bsi);
-
-	  if (gimple_code (stmt) == GIMPLE_LABEL
-	      || is_gimple_debug (stmt))
-	    continue;
-
-	  if (!bitmap_bit_p (partition->stmts, x++))
-	    continue;
-
-	  /* If the stmt has uses outside of the loop fail.
-	     ???  If the stmt is generated in another partition that
-	     is not created as builtin we can ignore this.  */
-	  if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "not generating builtin, partition has "
-			 "scalar uses outside of the loop\n");
-	      goto end;
-	    }
-
-	  if (is_gimple_assign (stmt)
-	      && !is_gimple_reg (gimple_assign_lhs (stmt)))
-	    {
-	      /* Don't generate the builtins when there are more than
-		 one memory write.  */
-	      if (write != NULL)
-		goto end;
-
-	      write = stmt;
-	      if (bb == loop->latch)
-		nb_iter = number_of_latch_executions (loop);
-	    }
-	}
-    }
-
-  if (!stmt_with_adjacent_zero_store_dr_p (write))
-    goto end;
-
-  /* The new statements will be placed before LOOP.  */
-  bsi = gsi_last_bb (loop_preheader_edge (loop)->src);
-  generate_memset_zero (write, gimple_assign_lhs (write), nb_iter, bsi);
-  res = true;
-
-  /* If this is the last partition for which we generate code, we have
-     to destroy the loop.  */
-  if (!copy_p)
-    {
-      unsigned nbbs = loop->num_nodes;
-      edge exit = single_exit (loop);
-      basic_block src = loop_preheader_edge (loop)->src, dest = exit->dest;
-      redirect_edge_pred (exit, src);
-      exit->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
-      exit->flags |= EDGE_FALLTHRU;
-      cancel_loop_tree (loop);
-      rescan_loop_exit (exit, false, true);
-
-      for (i = 0; i < nbbs; i++)
-	delete_basic_block (bbs[i]);
-
-      set_immediate_dominator (CDI_DOMINATORS, dest,
-			       recompute_dominator (CDI_DOMINATORS, dest));
-    }
-
- end:
+  for (i = 0; i < nbbs; i++)
+    delete_basic_block (bbs[i]);
   free (bbs);
-  return res;
+
+  set_immediate_dominator (CDI_DOMINATORS, dest,
+			   recompute_dominator (CDI_DOMINATORS, dest));
 }
 
-/* Generates code for PARTITION.  For simple loops, this function can
-   generate a built-in.  */
+/* Generates code for PARTITION.  */
 
-static bool
+static void
 generate_code_for_partition (struct loop *loop, partition_t partition,
 			     bool copy_p)
 {
-  if (generate_builtin (loop, partition, copy_p))
-    return true;
+  switch (partition->kind)
+    {
+    case PKIND_MEMSET:
+      generate_memset_builtin (loop, partition);
+      /* If this is the last partition for which we generate code, we have
+	 to destroy the loop.  */
+      if (!copy_p)
+	destroy_loop (loop);
+      break;
 
-  return generate_loops_for_partition (loop, partition, copy_p);
+    case PKIND_NORMAL:
+      generate_loops_for_partition (loop, partition, copy_p);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 }
 
 
@@ -828,32 +785,71 @@ rdg_build_components (struct graph *rdg, VEC (int, heap) *starting_vertices,
   BITMAP_FREE (saved_components);
 }
 
-/* Returns true when it is possible to generate a builtin pattern for
-   the PARTITION of RDG.  For the moment we detect only the memset
-   zero pattern.  */
+/* Classifies the builtin kind we can generate for PARTITION of RDG and LOOP.
+   For the moment we detect only the memset zero pattern.  */
 
-static bool
-can_generate_builtin (struct graph *rdg, partition_t partition)
+static void
+classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 {
-  unsigned i;
   bitmap_iterator bi;
-  int nb_reads = 0;
-  int nb_writes = 0;
-  int stores_zero = 0;
+  unsigned i;
+  tree nb_iter;
+
+  partition->kind = PKIND_NORMAL;
+  partition->main_stmt = NULL;
+
+  /* Perform general partition disqualification for builtins.  */
+  nb_iter = number_of_exit_cond_executions (loop);
+  if (!nb_iter || nb_iter == chrec_dont_know)
+    return;
 
   EXECUTE_IF_SET_IN_BITMAP (partition->stmts, 0, i, bi)
-    if (RDG_MEM_READS_STMT (rdg, i))
-      nb_reads++;
-    else if (RDG_MEM_WRITE_STMT (rdg, i))
-      {
-	gimple stmt = RDG_STMT (rdg, i);
-	nb_writes++;
-	if (!gimple_has_volatile_ops (stmt)
-	    && stmt_with_adjacent_zero_store_dr_p (stmt))
-	  stores_zero++;
-      }
+    {
+      gimple stmt = RDG_STMT (rdg, i);
 
-  return stores_zero == 1 && nb_writes == 1 && nb_reads == 0;
+      if (gimple_has_volatile_ops (stmt))
+	return;
+
+      /* If the stmt has uses outside of the loop fail.
+	 ???  If the stmt is generated in another partition that
+	 is not created as builtin we can ignore this.  */
+      if (gimple_code (stmt) != GIMPLE_PHI
+	  && stmt_has_scalar_dependences_outside_loop (loop, stmt))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "not generating builtin, partition has "
+		     "scalar uses outside of the loop\n");
+	  return;
+	}
+    }
+
+  /* Detect memset.  */
+  EXECUTE_IF_SET_IN_BITMAP (partition->stmts, 0, i, bi)
+    {
+      gimple stmt = RDG_STMT (rdg, i);
+
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	continue;
+
+      /* Any scalar stmts are ok.  */
+      if (!gimple_vuse (stmt))
+	continue;
+
+      /* Exactly one store.  */
+      if (gimple_assign_single_p (stmt)
+	  && !is_gimple_reg (gimple_assign_lhs (stmt)))
+	{
+	  if (partition->main_stmt != NULL)
+	    return;
+	  partition->main_stmt = stmt;
+	}
+      else
+	return;
+    }
+
+  if (partition->main_stmt != NULL
+      && stmt_with_adjacent_zero_store_dr_p (partition->main_stmt))
+    partition->kind = PKIND_MEMSET;
 }
 
 /* Returns true when PARTITION1 and PARTITION2 have similar memory
@@ -891,10 +887,10 @@ fuse_partitions_with_similar_memory_accesses (struct graph *rdg,
   partition_t partition1, partition2;
 
   FOR_EACH_VEC_ELT (partition_t, *partitions, p1, partition1)
-    if (!can_generate_builtin (rdg, partition1))
+    if (!partition_builtin_p (partition1))
       FOR_EACH_VEC_ELT (partition_t, *partitions, p2, partition2)
 	if (p1 != p2
-	    && !can_generate_builtin (rdg, partition2)
+	    && !partition_builtin_p (partition2)
 	    && similar_memory_accesses (rdg, partition1, partition2))
 	  {
 	    bitmap_ior_into (partition1->stmts, partition2->stmts);
@@ -971,8 +967,6 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
     VEC_safe_push (partition_t, heap, *partitions, partition);
   else
     partition_free (partition);
-
-  fuse_partitions_with_similar_memory_accesses (rdg, partitions);
 }
 
 /* Dump to FILE the PARTITIONS.  */
@@ -1101,11 +1095,15 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 			processed);
   BITMAP_FREE (processed);
 
+  FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
+    classify_partition (loop, rdg, partition);
+
+  fuse_partitions_with_similar_memory_accesses (rdg, &partitions);
+
   nbp = VEC_length (partition_t, partitions);
   if (nbp == 0
       || (nbp == 1
-	  && !can_generate_builtin (rdg,
-				    VEC_index (partition_t, partitions, 0)))
+	  && !partition_builtin_p (VEC_index (partition_t, partitions, 0)))
       || (nbp > 1
 	  && partition_contains_all_rw (rdg, partitions)))
     goto ldist_done;
@@ -1114,8 +1112,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
     dump_rdg_partitions (dump_file, partitions);
 
   FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
-    if (!generate_code_for_partition (loop, partition, i < nbp - 1))
-      goto ldist_done;
+    generate_code_for_partition (loop, partition, i < nbp - 1);
 
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   mark_sym_for_renaming (gimple_vop (cfun));
