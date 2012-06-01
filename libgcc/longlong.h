@@ -1127,6 +1127,29 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "rJ" ((USItype) (al)),					\
 	     "rI" ((USItype) (bl))					\
 	   __CLOBBER_CC)
+#if defined (__sparc_v9__)
+#define umul_ppmm(w1, w0, u, v) \
+  do {									\
+    register USItype __g1 asm ("g1");					\
+    __asm__ ("umul\t%2,%3,%1\n\t"					\
+	     "srlx\t%1, 32, %0"						\
+	     : "=r" ((USItype) (w1)),					\
+	       "=r" (__g1)						\
+	     : "r" ((USItype) (u)),					\
+	       "r" ((USItype) (v)));					\
+    (w0) = __g1;							\
+  } while (0)
+#define udiv_qrnnd(__q, __r, __n1, __n0, __d) \
+  __asm__ ("mov\t%2,%%y\n\t"						\
+	   "udiv\t%3,%4,%0\n\t"						\
+	   "umul\t%0,%4,%1\n\t"						\
+	   "sub\t%3,%1,%1"						\
+	   : "=&r" ((USItype) (__q)),					\
+	     "=&r" ((USItype) (__r))					\
+	   : "r" ((USItype) (__n1)),					\
+	     "r" ((USItype) (__n0)),					\
+	     "r" ((USItype) (__d)))
+#else
 #if defined (__sparc_v8__)
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ ("umul %2,%3,%1;rd %%y,%0"					\
@@ -1292,37 +1315,44 @@ UDItype __umulsidi3 (USItype, USItype);
 #define UDIV_TIME (3+7*32)	/* 7 instructions/iteration. 32 iterations.  */
 #endif /* __sparclite__ */
 #endif /* __sparc_v8__ */
+#endif /* __sparc_v9__ */
 #endif /* sparc32 */
 
 #if ((defined (__sparc__) && defined (__arch64__)) || defined (__sparcv9)) \
     && W_TYPE_SIZE == 64
 #define add_ssaaaa(sh, sl, ah, al, bh, bl)				\
-  __asm__ ("addcc %r4,%5,%1\n\t"					\
-   	   "add %r2,%3,%0\n\t"						\
-   	   "bcs,a,pn %%xcc, 1f\n\t"					\
-   	   "add %0, 1, %0\n"						\
-	   "1:"								\
-	   : "=r" ((UDItype)(sh)),				      	\
-	     "=&r" ((UDItype)(sl))				      	\
-	   : "%rJ" ((UDItype)(ah)),				     	\
-	     "rI" ((UDItype)(bh)),				      	\
-	     "%rJ" ((UDItype)(al)),				     	\
-	     "rI" ((UDItype)(bl))				       	\
-	   __CLOBBER_CC)
+  do {									\
+    UDItype __carry = 0;						\
+    __asm__ ("addcc\t%r5,%6,%1\n\t"					\
+	     "add\t%r3,%4,%0\n\t"					\
+	     "movcs\t%%xcc, 1, %2\n\t"					\
+	     "add\t%0, %2, %0"						\
+	     : "=r" ((UDItype)(sh)),				      	\
+	       "=&r" ((UDItype)(sl)),				      	\
+	       "+r" (__carry)				      		\
+	     : "%rJ" ((UDItype)(ah)),				     	\
+	       "rI" ((UDItype)(bh)),				      	\
+	       "%rJ" ((UDItype)(al)),				     	\
+	       "rI" ((UDItype)(bl))				       	\
+	     __CLOBBER_CC);						\
+  } while (0)
 
-#define sub_ddmmss(sh, sl, ah, al, bh, bl) 				\
-  __asm__ ("subcc %r4,%5,%1\n\t"					\
-   	   "sub %r2,%3,%0\n\t"						\
-   	   "bcs,a,pn %%xcc, 1f\n\t"					\
-   	   "sub %0, 1, %0\n\t"						\
-	   "1:"								\
-	   : "=r" ((UDItype)(sh)),				      	\
-	     "=&r" ((UDItype)(sl))				      	\
-	   : "rJ" ((UDItype)(ah)),				     	\
-	     "rI" ((UDItype)(bh)),				      	\
-	     "rJ" ((UDItype)(al)),				     	\
-	     "rI" ((UDItype)(bl))				       	\
-	   __CLOBBER_CC)
+#define sub_ddmmss(sh, sl, ah, al, bh, bl)				\
+  do {									\
+    UDItype __carry = 0;						\
+    __asm__ ("subcc\t%r5,%6,%1\n\t"					\
+	     "sub\t%r3,%4,%0\n\t"					\
+	     "movcs\t%%xcc, 1, %2\n\t"					\
+	     "add\t%0, %2, %0"						\
+	     : "=r" ((UDItype)(sh)),				      	\
+	       "=&r" ((UDItype)(sl)),				      	\
+	       "+r" (__carry)				      		\
+	     : "%rJ" ((UDItype)(ah)),				     	\
+	       "rI" ((UDItype)(bh)),				      	\
+	       "%rJ" ((UDItype)(al)),				     	\
+	       "rI" ((UDItype)(bl))				       	\
+	     __CLOBBER_CC);						\
+  } while (0)
 
 #define umul_ppmm(wh, wl, u, v)						\
   do {									\
