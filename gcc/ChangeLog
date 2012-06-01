@@ -1,3 +1,10 @@
+2012-06-01  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+            Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/50134
+	* doc/invoke.texi (Warning Options): Explain purpose and differences
+	between -Wmissing-prototypes and -Wmissing-declarations.
+
 2012-06-01  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.c (save_switch): Add user_p parameter.
