@@ -3518,8 +3518,8 @@ void
 push_namespace (tree name)
 {
   tree d = NULL_TREE;
-  int need_new = 1;
-  int implicit_use = 0;
+  bool need_new = true;
+  bool implicit_use = false;
   bool anon = !name;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
@@ -3535,8 +3535,8 @@ push_namespace (tree name)
       d = IDENTIFIER_NAMESPACE_VALUE (name);
       if (d)
 	/* Reopening anonymous namespace.  */
-	need_new = 0;
-      implicit_use = 1;
+	need_new = false;
+      implicit_use = true;
     }
   else
     {
@@ -3544,13 +3544,36 @@ push_namespace (tree name)
       d = IDENTIFIER_NAMESPACE_VALUE (name);
       if (d != NULL_TREE && TREE_CODE (d) == NAMESPACE_DECL)
 	{
-	  need_new = 0;
-	  if (DECL_NAMESPACE_ALIAS (d))
-	    {
-	      error ("namespace alias %qD not allowed here, assuming %qD",
-		     d, DECL_NAMESPACE_ALIAS (d));
-	      d = DECL_NAMESPACE_ALIAS (d);
+	  tree dna = DECL_NAMESPACE_ALIAS (d);
+	  if (dna)
+ 	    {
+	      /* We do some error recovery for, eg, the redeclaration
+		 of M here:
+
+		 namespace N {}
+		 namespace M = N;
+		 namespace M {}
+
+		 However, in nasty cases like:
+
+		 namespace N
+		 {
+		   namespace M = N;
+		   namespace M {}
+		 }
+
+		 we just error out below, in duplicate_decls.  */
+	      if (NAMESPACE_LEVEL (dna)->level_chain
+		  == current_binding_level)
+		{
+		  error ("namespace alias %qD not allowed here, "
+			 "assuming %qD", d, dna);
+		  d = dna;
+		  need_new = false;
+		}
 	    }
+	  else
+	    need_new = false;
 	}
     }
 
