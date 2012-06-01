@@ -1,3 +1,8 @@
+2012-06-01  Yuri Rumyantsev  <yuri.s.rumyantsev@intel.com>
+
+	* config/i386/i386.c (x86_sched_reorder): New function.
+	Added new function x86_sched_reorder.
+
 2012-06-01  Richard Guenther  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (stmt_has_scalar_dependences_outside_loop):
