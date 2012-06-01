@@ -49,6 +49,7 @@ extern rtx cris_gen_movem_load (rtx, rtx, int);
 extern rtx cris_emit_movem_store (rtx, rtx, int, bool);
 extern void cris_expand_pic_call_address (rtx *);
 extern void cris_order_for_addsi3 (rtx *, int);
+extern void cris_emit_trap_for_misalignment (rtx);
 #endif /* RTX_CODE */
 extern void cris_asm_output_label_ref (FILE *, char *);
 extern void cris_target_asm_named_section (const char *, unsigned int, tree);

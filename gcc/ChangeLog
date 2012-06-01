@@ -1,3 +1,20 @@
+2012-06-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	Add CRIS atomic patterns for 1, 2, and 4 bytes.
+	* config/cris/cris.c (cris_emit_trap_for_misalignment): New function.
+	* config/cris/cris-protos.h: Declare it.
+	* config/cris/cris.h [!TARGET_DEFAULT, TARGET_CPU_DEFAULT == 32] 
+	(TARGET_DEFAULT): Add alignment by 32.
+	[!TARGET_DEFAULT, TARGET_CPU_DEFAULT == 10] (TARGET_DEFAULT): New
+	case, as TARGET_CPU_DEFAULT == 0 but with alignment as for
+	TARGET_CPU_DEFAULT == 32. 
+	(TARGET_TRAP_UNALIGNED_ATOMIC): New macro.
+	* config/cris/cris.md: Include sync.md.  Avoid allocating specific
+	numbers by replacing the define_constants for all UNSPECs with the
+	equivalent define_c_enum construct.
+	* config/cris/cris.opt (mtrap-unaligned-atomic): New option.
+	* config/cris/sync.md: New file.
+
 2012-05-31  Matt Turner  <mattst88@gmail.com>
 
 	* config/mips/4600.md (r4600_imul_si): Rename from r4600_imul.
