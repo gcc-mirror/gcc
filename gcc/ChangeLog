@@ -1,3 +1,22 @@
+2012-06-01  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.c (save_switch): Add user_p parameter.
+	(read_specs): Likewise.
+	(set_specs): Likewise.
+	(validate_switches): Likewise.
+	(validate_switches_from_spec): Likewise.
+	(validate_all_switches): Pass on user_p parameter.
+	(struct spec_list): Add user_p field.
+	(struct switchstr): Add known field.
+	(save_switch): Add known parameter.
+	(INIT_STATIC_SPEC): Initialize user_p;
+	(driver_unknown_option_callbac): call save_switch if
+	OPT_SPECIAL_unknown.
+	(driver_handle_option): Propagate OPT_specs.
+	(do_spec_1): Set validated only if known.
+	(check_live_switch): Likewise.
+	(validate_switches): Set validated if known or user_spec.
+
 2012-06-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	Add CRIS atomic patterns for 1, 2, and 4 bytes.

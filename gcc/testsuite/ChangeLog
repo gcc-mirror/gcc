@@ -1,3 +1,8 @@
+2012-06-01  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.dg/spec-options.c: New test.
+	* gcc.dg/foo.specs: New file.
+
 2012-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/53517
