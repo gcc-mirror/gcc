@@ -4416,8 +4416,12 @@ This warning is also enabled by @option{-Wextra}.
 @opindex Wno-missing-prototypes
 Warn if a global function is defined without a previous prototype
 declaration.  This warning is issued even if the definition itself
-provides a prototype.  The aim is to detect global functions that 
-are not declared in header files.
+provides a prototype.  Use this option to detect global functions
+that do not have a matching prototype declaration in a header file.
+This option is not valid for C++ because all function declarations
+provide prototypes and a non-matching declaration will declare an
+overload rather than conflict with an earlier declaration.
+Use @option{-Wmissing-declarations} to detect missing declarations in C++.
 
 @item -Wmissing-declarations
 @opindex Wmissing-declarations
@@ -4425,7 +4429,9 @@ are not declared in header files.
 Warn if a global function is defined without a previous declaration.
 Do so even if the definition itself provides a prototype.
 Use this option to detect global functions that are not declared in
-header files.  In C++, no warnings are issued for function templates,
+header files.  In C, no warnings are issued for functions with previous
+non-prototype declarations; use @option{-Wmissing-prototype} to detect
+missing prototypes.  In C++, no warnings are issued for function templates,
 or for inline functions, or for functions in anonymous namespaces.
 
 @item -Wmissing-field-initializers
