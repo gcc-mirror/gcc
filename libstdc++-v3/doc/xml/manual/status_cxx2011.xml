@@ -274,10 +274,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>19.2</entry>
       <entry>Exception classes</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>const char*</code> constructors.</entry>
     </row>
     <row>
       <entry>19.3</entry>
@@ -322,10 +323,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>19.5.5</entry>
       <entry>Class <code>system_error</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>const char*</code> constructors.</entry>
     </row>
     <row>
       <entry>
