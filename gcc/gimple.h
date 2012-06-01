@@ -1593,7 +1593,7 @@ gimple_set_has_volatile_ops (gimple stmt, bool volatilep)
 static inline bool
 block_in_transaction (basic_block bb)
 {
-  return bb->flags & BB_IN_TRANSACTION;
+  return flag_tm && bb->flags & BB_IN_TRANSACTION;
 }
 
 /* Return true if STMT is in a transaction.  */
