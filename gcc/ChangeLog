@@ -1,5 +1,11 @@
 2012-06-01  Richard Guenther  <rguenther@suse.de>
 
+	* tree-loop-distribution.c (stmt_has_scalar_dependences_outside_loop):
+	Handle PHIs.
+	(classify_partition): Likewise.
+
+2012-06-01  Richard Guenther  <rguenther@suse.de>
+
 	* tree-loop-distribution.c (enum partition_kind): New enum.
 	(struct partition_s): Add kind and main_stmt members.
 	(partition_alloc): Initialize kind to PKIND_NORMAL.

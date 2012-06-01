@@ -129,6 +129,9 @@ stmt_has_scalar_dependences_outside_loop (loop_p loop, gimple stmt)
   def_operand_p def_p;
   ssa_op_iter op_iter;
 
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    return ssa_name_has_uses_outside_loop_p (gimple_phi_result (stmt), loop);
+
   FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, op_iter, SSA_OP_DEF)
     if (ssa_name_has_uses_outside_loop_p (DEF_FROM_PTR (def_p), loop))
       return true;
@@ -813,8 +816,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
       /* If the stmt has uses outside of the loop fail.
 	 ???  If the stmt is generated in another partition that
 	 is not created as builtin we can ignore this.  */
-      if (gimple_code (stmt) != GIMPLE_PHI
-	  && stmt_has_scalar_dependences_outside_loop (loop, stmt))
+      if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "not generating builtin, partition has "
