@@ -1,3 +1,8 @@
+2012-06-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/26155
+	* g++.dg/parse/namespace-alias-1.C: New.
+
 2012-06-01  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.dg/spec-options.c: New test.

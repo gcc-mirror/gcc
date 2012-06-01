@@ -1,3 +1,9 @@
+2012-06-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/26155
+	* name-lookup.c (push_namespace): When error recovery is
+	impossible just error out in duplicate_decls.
+
 2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* call.c: Do not include output.h.
