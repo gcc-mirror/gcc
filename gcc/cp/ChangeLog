@@ -1,5 +1,10 @@
 2012-06-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53137
+	* pt.c (instantiate_class_template_1): Set LAMBDA_EXPR_THIS_CAPTURE.
+	(instantiate_decl): Don't push_to_top_level for local class methods.
+	(instantiate_class_template_1): Or for local classes.
+
 	PR c++/53484
 	* pt.c (do_auto_deduction): Don't try to deduce from a
 	type-dependent initializer.
