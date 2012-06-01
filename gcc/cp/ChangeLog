@@ -1,3 +1,9 @@
+2012-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53484
+	* pt.c (do_auto_deduction): Don't try to deduce from a
+	type-dependent initializer.
+
 2012-06-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/26155

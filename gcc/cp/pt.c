@@ -20318,10 +20318,9 @@ do_auto_deduction (tree type, tree init, tree auto_node)
   if (init == error_mark_node)
     return error_mark_node;
 
-  if (processing_template_decl
-      && (TREE_TYPE (init) == NULL_TREE
-	  || BRACE_ENCLOSED_INITIALIZER_P (init)))
-    /* Not enough information to try this yet.  */
+  if (type_dependent_expression_p (init))
+    /* Defining a subset of type-dependent expressions that we can deduce
+       from ahead of time isn't worth the trouble.  */
     return type;
 
   /* [dcl.spec.auto]: Obtain P from T by replacing the occurrences of auto
