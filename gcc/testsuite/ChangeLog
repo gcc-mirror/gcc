@@ -1,3 +1,7 @@
+2012-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/restrict-2.c: Revert previous change.
+
 2012-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53137
