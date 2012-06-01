@@ -1,3 +1,28 @@
+2012-06-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/sync-1-v10.c,
+	gcc.target/cris/sync-1-v32.c, gcc.target/cris/sync-1.c,
+	gcc.target/cris/sync-2c.c, gcc.target/cris/sync-2i.c,
+	gcc.target/cris/sync-2s.c, gcc.target/cris/sync-3i.c,
+	gcc.target/cris/sync-3s.c, gcc.target/cris/sync-4c.c,
+	gcc.target/cris/sync-4i.c, gcc.target/cris/sync-4s.c,
+	gcc.target/cris/torture/sync-mis-op-i-1.c,
+	gcc.target/cris/torture/sync-mis-op-i-1a.c,
+	gcc.target/cris/torture/sync-mis-op-i-2.c,
+	gcc.target/cris/torture/sync-mis-op-i-2a.c,
+	gcc.target/cris/torture/sync-mis-op-i-3.c,
+	gcc.target/cris/torture/sync-mis-op-i-3a.c,
+	gcc.target/cris/torture/sync-mis-op-s-1.c,
+	gcc.target/cris/torture/sync-mis-op-s-1a.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-1.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-1a.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-2.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-2a.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-3.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-3a.c,
+	gcc.target/cris/torture/sync-mis-xchg-s-1.c,
+	gcc.target/cris/torture/sync-mis-xchg-s-1a.c: New tests.
+
 2012-05-31  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ldist-pr45948-2.c: New testcase copy of
