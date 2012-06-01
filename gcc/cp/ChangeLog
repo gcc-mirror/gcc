@@ -1,5 +1,11 @@
 2012-06-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52725
+	* parser.c (cp_parser_binary_expression): Bail early if we're parsing
+	tentatively and the LHS has a parse error.
+
+2012-06-01  Jason Merrill  <jason@redhat.com>
+
 	PR c++/53137
 	* pt.c (instantiate_class_template_1): Set LAMBDA_EXPR_THIS_CAPTURE.
 	(instantiate_decl): Don't push_to_top_level for local class methods.
