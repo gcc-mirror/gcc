@@ -2153,7 +2153,7 @@ execute_sm (struct loop *loop, VEC (edge, heap) *exits, mem_ref_p ref)
   fmt_data.orig_loop = loop;
   for_each_index (&ref->mem, force_move_till, &fmt_data);
 
-  if ((flag_tm && block_in_transaction (loop_preheader_edge (loop)->src))
+  if (block_in_transaction (loop_preheader_edge (loop)->src)
       || !PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES))
     multi_threaded_model_p = true;
 
