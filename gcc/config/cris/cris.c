@@ -1922,6 +1922,39 @@ cris_simple_epilogue (void)
   return true;
 }
 
+/* Emit checking that MEM is aligned for an access in MODE, failing
+   that, executing a "break 8" (or call to abort, if "break 8" is
+   disabled).  */
+
+void
+cris_emit_trap_for_misalignment (rtx mem)
+{
+  rtx addr, reg, ok_label, and, jmp;
+  int natural_alignment;
+  gcc_assert (MEM_P (mem));
+
+  natural_alignment = GET_MODE_SIZE (GET_MODE (mem));
+  addr = XEXP (mem, 0);
+  reg = force_reg (Pmode, addr);
+  ok_label = gen_label_rtx ();
+
+  /* This will yield a btstq without a separate register used, usually -
+     with the exception for PRE hoisting the "and" but not the branch
+     around the trap: see gcc.dg/target/cris/sync-3s.c.  */
+  and = gen_rtx_AND (Pmode, reg, GEN_INT (natural_alignment - 1));
+  emit_cmp_and_jump_insns (force_reg (SImode, and), const0_rtx, EQ,
+			   NULL_RTX, Pmode, 1, ok_label);
+  jmp = get_last_insn ();
+  gcc_assert (JUMP_P (jmp));
+
+  /* While this isn't mudflap, it is a similar kind of assertion.
+     If PRED_MUDFLAP stops working, use something else or introduce a
+     more suitable assertion predication type.  */
+  predict_insn_def (jmp, PRED_MUDFLAP, TAKEN);
+  expand_builtin_trap ();
+  emit_label (ok_label);
+}
+
 /* Expand a return insn (just one insn) marked as using SRP or stack
    slot depending on parameter ON_STACK.  */
 
