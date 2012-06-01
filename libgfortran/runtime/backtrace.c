@@ -270,9 +270,9 @@ fallback:
   }
   while (0);
 
+fallback_noerr:
 #endif /* CAN_PIPE */
 
-fallback_noerr:
   /* Fallback to the simple backtrace without addr2line.  */
   state.direct_output = 1;
   _Unwind_Backtrace (trace_function, &state);
