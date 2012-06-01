@@ -23857,6 +23857,110 @@ ia32_multipass_dfa_lookahead (void)
     }
 }
 
+/* Try to reorder ready list to take advantage of Atom pipelined IMUL
+   execution. It is applied if
+   (1) IMUL instruction is on the top of list;
+   (2) There exists the only producer of independent IMUL instruction in
+       ready list;
+   (3) Put found producer on the top of ready list.
+   Returns issue rate.  */
+
+static int
+ix86_sched_reorder(FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
+                   int clock_var ATTRIBUTE_UNUSED)
+{
+  static int issue_rate = -1;
+  int n_ready = *pn_ready;
+  rtx insn, insn1, insn2;
+  int i;
+  sd_iterator_def sd_it;
+  dep_t dep;
+  int index = -1;
+
+  /* Set up issue rate.  */
+  issue_rate = ix86_issue_rate();
+
+  /* Do reodering for Atom only.  */
+  if (ix86_tune != PROCESSOR_ATOM)
+    return issue_rate;
+  /* Nothing to do if ready list contains only 1 instruction.  */
+  if (n_ready <= 1)
+    return issue_rate;
+
+  /* Check that IMUL instruction is on the top of ready list.  */
+  insn = ready[n_ready - 1];
+  if (!NONDEBUG_INSN_P (insn))
+    return issue_rate;
+  insn = PATTERN (insn);
+  if (GET_CODE (insn) == PARALLEL)
+    insn = XVECEXP (insn, 0, 0);
+  if (GET_CODE (insn) != SET)
+    return issue_rate;
+  if (!(GET_CODE (SET_SRC (insn)) == MULT
+      && GET_MODE (SET_SRC (insn)) == SImode))
+    return issue_rate;
+
+  /* Search for producer of independent IMUL instruction.  */
+  for (i = n_ready - 2; i>= 0; i--)
+    {
+      insn = ready[i];
+      if (!NONDEBUG_INSN_P (insn))
+        continue;
+      /* Skip IMUL instruction.  */
+      insn2 = PATTERN (insn);
+      if (GET_CODE (insn2) == PARALLEL)
+        insn2 = XVECEXP (insn2, 0, 0);
+      if (GET_CODE (insn2) == SET
+          && GET_CODE (SET_SRC (insn2)) == MULT
+          && GET_MODE (SET_SRC (insn2)) == SImode)
+        continue;
+
+      FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
+        {
+          rtx con;
+	  con = DEP_CON (dep);
+          insn1 = PATTERN (con);
+          if (GET_CODE (insn1) == PARALLEL)
+            insn1 = XVECEXP (insn1, 0, 0);
+
+          if (GET_CODE (insn1) == SET
+              && GET_CODE (SET_SRC (insn1)) == MULT
+              && GET_MODE (SET_SRC (insn1)) == SImode)
+            {
+              sd_iterator_def sd_it1;
+              dep_t dep1;
+              /* Check if there is no other dependee for IMUL.  */
+              index = i;
+              FOR_EACH_DEP (con, SD_LIST_BACK, sd_it1, dep1)
+                {
+                  rtx pro;
+                  pro = DEP_PRO (dep1);
+                  if (pro != insn)
+                    index = -1;
+	        }
+              if (index >= 0)
+                break;
+            }
+        }
+      if (index >= 0)
+        break;
+    }
+  if (index < 0)
+    return issue_rate; /* Didn't find IMUL producer.  */
+
+  if (sched_verbose > 1)
+    fprintf(dump, ";;\tatom sched_reorder: swap %d and %d insns\n",
+            INSN_UID (ready[index]), INSN_UID (ready[n_ready - 1]));
+
+  /* Put IMUL producer (ready[index]) at the top of ready list.  */
+  insn1= ready[index];
+  for (i = index; i < n_ready - 1; i++)
+    ready[i] = ready[i + 1];
+  ready[n_ready - 1] = insn1;
+
+  return issue_rate;
+}
+
 
 
 /* Model decoder of Core 2/i7.
@@ -38500,6 +38604,8 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #define TARGET_SCHED_DISPATCH_DO do_dispatch
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH ix86_reassociation_width
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER ix86_sched_reorder
 
 /* The size of the dispatch window is the total number of bytes of
    object code allowed in a window.  */
