@@ -430,7 +430,8 @@ get_internal_unit (st_parameter_dt *dtp)
 	  else
 	    {
 	      dtp->internal_unit_len =
-		string_len_trim_char4 (dtp->internal_unit_len, dtp->internal_unit);
+		string_len_trim_char4 (dtp->internal_unit_len,
+				       (const gfc_char4_t*) dtp->internal_unit);
 	      iunit->recl = dtp->internal_unit_len;
 	    }
 	}
