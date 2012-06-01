@@ -1,3 +1,8 @@
+2012-06-01  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Restore
+	the "do {" part of the do-while(0) loop.
+
 2012-06-01  Yuri Rumyantsev  <yuri.s.rumyantsev@intel.com>
 
 	* config/i386/i386.c (x86_sched_reorder): New function.
