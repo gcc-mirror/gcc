@@ -7246,6 +7246,9 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
   current.lhs_type = ERROR_MARK;
   current.prec = prec;
 
+  if (cp_parser_error_occurred (parser))
+    return error_mark_node;
+
   for (;;)
     {
       /* Get an operator token.  */
