@@ -1,3 +1,8 @@
+2012-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/53517
+	* gnat.dg/lto14.adb: Skip on Solaris.
+
 2012-06-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.target/cris/sync-1-v10.c,
