@@ -1,3 +1,9 @@
+2012-05-31  David S. Miller  <davem@davemloft.net>
+
+	* longlong.h [SPARC] (umul_ppmm, udiv_qrnnd): Use hardware integer
+	multiply and divide instructions on 32-bit when V9.
+	(add_ssaaaa, sub_ddmmss): Convert to branchless code on 64-bit.
+
 2012-05-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/ieee754-df.S: Fix typos.
