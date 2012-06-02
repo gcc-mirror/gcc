@@ -129,7 +129,7 @@ double_int_fits_in_uhwi_p (double_int cst)
 /* The following operations perform arithmetics modulo 2^precision,
    so you do not need to call double_int_ext between them, even if
    you are representing numbers with precision less than
-   2 * HOST_BITS_PER_WIDE_INT bits.  */
+   HOST_BITS_PER_DOUBLE_INT bits.  */
 
 double_int double_int_mul (double_int, double_int);
 double_int double_int_mul_with_sign (double_int, double_int, bool, int *);
@@ -139,7 +139,7 @@ double_int double_int_neg (double_int);
 
 /* You must ensure that double_int_ext is called on the operands
    of the following operations, if the precision of the numbers
-   is less than 2 * HOST_BITS_PER_WIDE_INT bits.  */
+   is less than HOST_BITS_PER_DOUBLE_INT bits.  */
 double_int double_int_div (double_int, double_int, bool, unsigned);
 double_int double_int_sdiv (double_int, double_int, unsigned);
 double_int double_int_udiv (double_int, double_int, unsigned);
@@ -249,7 +249,7 @@ double_int double_int_min_value (unsigned int, bool);
 
 /* The operands of the following comparison functions must be processed
    with double_int_ext, if their precision is less than
-   2 * HOST_BITS_PER_WIDE_INT bits.  */
+   HOST_BITS_PER_DOUBLE_INT bits.  */
 
 /* Returns true if CST is zero.  */
 

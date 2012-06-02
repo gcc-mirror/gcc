@@ -517,7 +517,7 @@ immed_double_int_const (double_int i, enum machine_mode mode)
 
 /* Return a CONST_DOUBLE or CONST_INT for a value specified as a pair
    of ints: I0 is the low-order word and I1 is the high-order word.
-   For values that are larger than 2*HOST_BITS_PER_WIDE_INT, the
+   For values that are larger than HOST_BITS_PER_DOUBLE_INT, the
    implied upper bits are copies of the high bit of i1.  The value
    itself is neither signed nor unsigned.  Do not use this routine for
    non-integer modes; convert to REAL_VALUE_TYPE and use
@@ -530,7 +530,7 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, enum machine_mode mode)
   unsigned int i;
 
   /* There are the following cases (note that there are no modes with
-     HOST_BITS_PER_WIDE_INT < GET_MODE_BITSIZE (mode) < 2 * HOST_BITS_PER_WIDE_INT):
+     HOST_BITS_PER_WIDE_INT < GET_MODE_BITSIZE (mode) < HOST_BITS_PER_DOUBLE_INT):
 
      1) If GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT, then we use
 	gen_int_mode.
@@ -1206,7 +1206,7 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
       && msize * BITS_PER_UNIT <= HOST_BITS_PER_WIDE_INT)
     innermode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
   else if (innermode == VOIDmode)
-    innermode = mode_for_size (HOST_BITS_PER_WIDE_INT * 2, MODE_INT, 0);
+    innermode = mode_for_size (HOST_BITS_PER_DOUBLE_INT, MODE_INT, 0);
 
   xsize = GET_MODE_SIZE (innermode);
 
@@ -5787,7 +5787,7 @@ init_emit_once (void)
       FCONST1(mode).data.low = 0;
       FCONST1(mode).mode = mode;
       lshift_double (1, 0, GET_MODE_FBIT (mode),
-                     2 * HOST_BITS_PER_WIDE_INT,
+                     HOST_BITS_PER_DOUBLE_INT,
                      &FCONST1(mode).data.low,
 		     &FCONST1(mode).data.high,
                      SIGNED_FIXED_POINT_MODE_P (mode));
@@ -5810,7 +5810,7 @@ init_emit_once (void)
       FCONST1(mode).data.low = 0;
       FCONST1(mode).mode = mode;
       lshift_double (1, 0, GET_MODE_FBIT (mode),
-                     2 * HOST_BITS_PER_WIDE_INT,
+                     HOST_BITS_PER_DOUBLE_INT,
                      &FCONST1(mode).data.low,
 		     &FCONST1(mode).data.high,
                      SIGNED_FIXED_POINT_MODE_P (mode));

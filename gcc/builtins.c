@@ -713,7 +713,7 @@ c_readstr (const char *str, enum machine_mode mode)
 	  && GET_MODE_SIZE (mode) >= UNITS_PER_WORD)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
-      gcc_assert (j < 2 * HOST_BITS_PER_WIDE_INT);
+      gcc_assert (j < HOST_BITS_PER_DOUBLE_INT);
 
       if (ch)
 	ch = (unsigned char) str[i];
@@ -8143,7 +8143,7 @@ fold_builtin_bitop (tree fndecl, tree arg)
       if (width > HOST_BITS_PER_WIDE_INT)
 	{
 	  hi = TREE_INT_CST_HIGH (arg);
-	  if (width < 2 * HOST_BITS_PER_WIDE_INT)
+	  if (width < HOST_BITS_PER_DOUBLE_INT)
 	    hi &= ~((unsigned HOST_WIDE_INT) (-1)
 		    << (width - HOST_BITS_PER_WIDE_INT));
 	}

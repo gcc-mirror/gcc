@@ -1423,10 +1423,10 @@ real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
 	 undefined, so it doesn't matter what we return, and some callers
 	 expect to be able to use this routine for both signed and
 	 unsigned conversions.  */
-      if (exp > 2*HOST_BITS_PER_WIDE_INT)
+      if (exp > HOST_BITS_PER_DOUBLE_INT)
 	goto overflow;
 
-      rshift_significand (&t, r, 2*HOST_BITS_PER_WIDE_INT - exp);
+      rshift_significand (&t, r, HOST_BITS_PER_DOUBLE_INT - exp);
       if (HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG)
 	{
 	  high = t.sig[SIGSZ-1];
@@ -2160,7 +2160,7 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
       memset (r, 0, sizeof (*r));
       r->cl = rvc_normal;
       r->sign = high < 0 && !unsigned_p;
-      SET_REAL_EXP (r, 2 * HOST_BITS_PER_WIDE_INT);
+      SET_REAL_EXP (r, HOST_BITS_PER_DOUBLE_INT);
 
       if (r->sign)
 	{

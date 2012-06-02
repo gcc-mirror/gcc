@@ -1,3 +1,39 @@
+2012-06-2  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* expmed.c (expand_mult, choose_multiplier): Change "2 *
+	HOST_BITS_PER_WIDE_INT" to "HOST_BITS_PER_DOUBLE_INT".
+	* expr.c (convert_modes): Likewise.
+	* explow.c (plus_constant): Likewise.
+	* fixed-value.c (fixed_saturate1, fixed_saturate2)
+	(do_fixed_add, do_fixed_multiply, do_fixed_multiply)
+	(do_fixed_multiply, do_fixed_multiply, do_fixed_divide)
+	(do_fixed_divide, do_fixed_divide, do_fixed_divide)
+	(do_fixed_divide, do_fixed_divide, do_fixed_shift, do_fixed_shift)
+	(do_fixed_shift, fixed_convert, fixed_convert)
+	(fixed_convert_from_int, fixed_convert_from_int)
+	(fixed_convert_from_real): Likewise.
+	* fold-const.c (fold_convert_const_int_from_fixed, sign_bit_p)
+	(native_interpret_int, fold_binary_loc, fold_ternary_loc): Likewise.
+	* varasm.c (output_constructor_bitfield): Likewise.
+	* tree-vrp.c (register_edge_assert_for_2): Likewise.
+	* double-int.c (rshift_double, lshift_double): Likewise.
+	* double-int.h (double_int_fits_in_uhwi_p, double_int, double_int): Likewise.
+	* simplify-rtx.c (mode_signbit_p)
+	(simplify_const_unary_operation, simplify_binary_operation_1)
+	(simplify_immed_subreg): Likewise.
+	* builtins.c (c_readstr, fold_builtin_bitop): Likewise.
+	* tree-vect-generic.c (build_replicated_const): Likewise.
+	* dbxout.c (stabstr_O): Likewise.
+	* emit-rtl.c (immed_double_int_const, immed_double_const)
+	(gen_lowpart_common, init_emit_once): Likewise.
+	* tree.c (integer_pow2p, tree_log2, tree_floor_log2)
+	(widest_int_cst_value, upper_bound_in_type): Likewise.
+	* stor-layout.c (initialize_sizetypes, fixup_signed_type)
+	(fixup_unsigned_type): Likewise.
+	* real.c (real_to_integer2, real_from_integer): Likewise.
+	* dwarf2out.c (size_of_loc_descr, size_of_die, output_die)
+	(clz_loc_descriptor, mem_loc_descriptor): Likewise.
+
 2012-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/53501

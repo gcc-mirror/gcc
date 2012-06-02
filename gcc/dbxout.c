@@ -703,7 +703,7 @@ stabstr_O (tree cst)
      present.  */
   {
     const unsigned int width = TYPE_PRECISION (TREE_TYPE (cst));
-    if (width == HOST_BITS_PER_WIDE_INT * 2)
+    if (width == HOST_BITS_PER_DOUBLE_INT)
       ;
     else if (width > HOST_BITS_PER_WIDE_INT)
       high &= (((HOST_WIDE_INT) 1 << (width - HOST_BITS_PER_WIDE_INT)) - 1);
