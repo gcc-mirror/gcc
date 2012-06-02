@@ -1,5 +1,10 @@
 2012-06-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52973
+	* parser.c (cp_parser_class_head): Apply attributes here.
+	* semantics.c (begin_class_definition): Not here.
+	* cp-tree.h: Adjust.
+
 	PR c++/52725
 	* parser.c (cp_parser_binary_expression): Bail early if we're parsing
 	tentatively and the LHS has a parse error.
