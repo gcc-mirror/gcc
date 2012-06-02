@@ -88,7 +88,7 @@ mode_signbit_p (enum machine_mode mode, const_rtx x)
   if (width <= HOST_BITS_PER_WIDE_INT
       && CONST_INT_P (x))
     val = INTVAL (x);
-  else if (width <= 2 * HOST_BITS_PER_WIDE_INT
+  else if (width <= HOST_BITS_PER_DOUBLE_INT
 	   && GET_CODE (x) == CONST_DOUBLE
 	   && CONST_DOUBLE_LOW (x) == 0)
     {
@@ -1356,7 +1356,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	lv = CONST_DOUBLE_LOW (op),  hv = CONST_DOUBLE_HIGH (op);
 
       if (op_mode == VOIDmode
-	  || GET_MODE_PRECISION (op_mode) > 2 * HOST_BITS_PER_WIDE_INT)
+	  || GET_MODE_PRECISION (op_mode) > HOST_BITS_PER_DOUBLE_INT)
 	/* We should never get a negative number.  */
 	gcc_assert (hv >= 0);
       else if (GET_MODE_PRECISION (op_mode) <= HOST_BITS_PER_WIDE_INT)
@@ -1517,7 +1517,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
   /* We can do some operations on integer CONST_DOUBLEs.  Also allow
      for a DImode operation on a CONST_INT.  */
   else if (GET_MODE (op) == VOIDmode
-	   && width <= HOST_BITS_PER_WIDE_INT * 2
+	   && width <= HOST_BITS_PER_DOUBLE_INT
 	   && (GET_CODE (op) == CONST_DOUBLE
 	       || CONST_INT_P (op)))
     {
@@ -1713,7 +1713,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
   else if (GET_CODE (op) == CONST_DOUBLE
 	   && SCALAR_FLOAT_MODE_P (GET_MODE (op))
 	   && GET_MODE_CLASS (mode) == MODE_INT
-	   && width <= 2 * HOST_BITS_PER_WIDE_INT && width > 0)
+	   && width <= HOST_BITS_PER_DOUBLE_INT && width > 0)
     {
       /* Although the overflow semantics of RTL's FIX and UNSIGNED_FIX
 	 operators are intentionally left unspecified (to ease implementation
@@ -1778,7 +1778,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	    return const0_rtx;
 
 	  /* Test against the unsigned upper bound.  */
-	  if (width == 2 * HOST_BITS_PER_WIDE_INT)
+	  if (width == HOST_BITS_PER_DOUBLE_INT)
 	    {
 	      th = -1;
 	      tl = -1;
@@ -2376,8 +2376,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  && GET_MODE (op0) == mode
 	  && CONST_DOUBLE_LOW (trueop1) == 0
 	  && (val = exact_log2 (CONST_DOUBLE_HIGH (trueop1))) >= 0
-	  && (val < 2 * HOST_BITS_PER_WIDE_INT - 1
-	      || GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT))
+	  && (val < HOST_BITS_PER_DOUBLE_INT - 1
+	      || GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_DOUBLE_INT))
 	return simplify_gen_binary (ASHIFT, mode, op0,
 				    GEN_INT (val + HOST_BITS_PER_WIDE_INT));
 
@@ -5216,7 +5216,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 
 	      for (i = 0; i < HOST_BITS_PER_WIDE_INT; i += value_bit)
 		*vp++ = CONST_DOUBLE_LOW (el) >> i;
-	      while (i < HOST_BITS_PER_WIDE_INT * 2 && i < elem_bitsize)
+	      while (i < HOST_BITS_PER_DOUBLE_INT && i < elem_bitsize)
 		{
 		  *vp++
 		    = CONST_DOUBLE_HIGH (el) >> (i - HOST_BITS_PER_WIDE_INT);
@@ -5271,7 +5271,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	    {
 	      for (i = 0; i < HOST_BITS_PER_WIDE_INT; i += value_bit)
 		*vp++ = CONST_FIXED_VALUE_LOW (el) >> i;
-              for (; i < 2 * HOST_BITS_PER_WIDE_INT && i < elem_bitsize;
+              for (; i < HOST_BITS_PER_DOUBLE_INT && i < elem_bitsize;
 		   i += value_bit)
 		*vp++ = CONST_FIXED_VALUE_HIGH (el)
 			>> (i - HOST_BITS_PER_WIDE_INT);
@@ -5364,7 +5364,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	       know why.  */
 	    if (elem_bitsize <= HOST_BITS_PER_WIDE_INT)
 	      elems[elem] = gen_int_mode (lo, outer_submode);
-	    else if (elem_bitsize <= 2 * HOST_BITS_PER_WIDE_INT)
+	    else if (elem_bitsize <= HOST_BITS_PER_DOUBLE_INT)
 	      elems[elem] = immed_double_const (lo, hi, outer_submode);
 	    else
 	      return NULL_RTX;

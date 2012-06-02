@@ -127,7 +127,7 @@ plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 	if (add_double_with_sign (l1, h1, l2, h2, &lv, &hv, false))
 	  /* Sorry, we have no way to represent overflows this wide.
 	     To fix, add constant support wider than CONST_DOUBLE.  */
-	  gcc_assert (GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT);
+	  gcc_assert (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_DOUBLE_INT);
 
 	return immed_double_const (lv, hv, VOIDmode);
       }

@@ -1578,7 +1578,7 @@ size_of_loc_descr (dw_loc_descr_ref loc)
 	    size += HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT;
 	    break;
 	  case dw_val_class_const_double:
-	    size += 2 * HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT;
+	    size += HOST_BITS_PER_DOUBLE_INT / BITS_PER_UNIT;
 	    break;
 	  default:
 	    gcc_unreachable ();
@@ -7133,7 +7133,7 @@ size_of_die (dw_die_ref die)
 	  }
 	  break;
 	case dw_val_class_const_double:
-	  size += 2 * HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR;
+	  size += HOST_BITS_PER_DOUBLE_INT / HOST_BITS_PER_CHAR;
 	  if (HOST_BITS_PER_WIDE_INT >= 64)
 	    size++; /* block */
 	  break;
@@ -7772,7 +7772,7 @@ output_die (dw_die_ref die)
 
 	    if (HOST_BITS_PER_WIDE_INT >= 64)
 	      dw2_asm_output_data (1,
-				   2 * HOST_BITS_PER_WIDE_INT
+				   HOST_BITS_PER_DOUBLE_INT
 				   / HOST_BITS_PER_CHAR,
 				   NULL);
 
@@ -10629,7 +10629,7 @@ clz_loc_descriptor (rtx rtl, enum machine_mode mode,
   if (GET_MODE_CLASS (mode) != MODE_INT
       || GET_MODE (XEXP (rtl, 0)) != mode
       || (GET_CODE (rtl) == CLZ
-	  && GET_MODE_BITSIZE (mode) > 2 * HOST_BITS_PER_WIDE_INT))
+	  && GET_MODE_BITSIZE (mode) > HOST_BITS_PER_DOUBLE_INT))
     return NULL;
 
   op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
@@ -11545,7 +11545,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	}
       if (!dwarf_strict
 	  && (GET_MODE_BITSIZE (mode) == HOST_BITS_PER_WIDE_INT
-	      || GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_WIDE_INT))
+	      || GET_MODE_BITSIZE (mode) == HOST_BITS_PER_DOUBLE_INT))
 	{
 	  dw_die_ref type_die = base_type_for_mode (mode, 1);
 	  enum machine_mode amode;
@@ -11597,7 +11597,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	     adequately represented.  We output CONST_DOUBLEs as blocks.  */
 	  if (mode == VOIDmode
 	      || (GET_MODE (rtl) == VOIDmode
-		  && GET_MODE_BITSIZE (mode) != 2 * HOST_BITS_PER_WIDE_INT))
+		  && GET_MODE_BITSIZE (mode) != HOST_BITS_PER_DOUBLE_INT))
 	    break;
 	  type_die = base_type_for_mode (mode,
 					 GET_MODE_CLASS (mode) == MODE_INT);

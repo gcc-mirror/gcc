@@ -1590,7 +1590,7 @@ fold_convert_const_int_from_fixed (tree type, const_tree arg1)
   /* Right shift FIXED_CST to temp by fbit.  */
   temp = TREE_FIXED_CST (arg1).data;
   mode = TREE_FIXED_CST (arg1).mode;
-  if (GET_MODE_FBIT (mode) < 2 * HOST_BITS_PER_WIDE_INT)
+  if (GET_MODE_FBIT (mode) < HOST_BITS_PER_DOUBLE_INT)
     {
       temp = double_int_rshift (temp, GET_MODE_FBIT (mode),
 			        HOST_BITS_PER_DOUBLE_INT,
@@ -3633,7 +3633,7 @@ sign_bit_p (tree exp, const_tree val)
       lo = 0;
 
       mask_hi = ((unsigned HOST_WIDE_INT) -1
-		 >> (2 * HOST_BITS_PER_WIDE_INT - width));
+		 >> (HOST_BITS_PER_DOUBLE_INT - width));
       mask_lo = -1;
     }
   else
@@ -7379,7 +7379,7 @@ native_interpret_int (tree type, const unsigned char *ptr, int len)
 
   if (total_bytes > len)
     return NULL_TREE;
-  if (total_bytes * BITS_PER_UNIT > 2 * HOST_BITS_PER_WIDE_INT)
+  if (total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
     return NULL_TREE;
 
   result = double_int_zero;
@@ -13291,7 +13291,7 @@ fold_binary_loc (location_t loc,
 	unsigned int width = TYPE_PRECISION (arg1_type);
 
 	if (TREE_CODE (arg1) == INTEGER_CST
-	    && width <= 2 * HOST_BITS_PER_WIDE_INT
+	    && width <= HOST_BITS_PER_DOUBLE_INT
 	    && (INTEGRAL_TYPE_P (arg1_type) || POINTER_TYPE_P (arg1_type)))
 	  {
 	    HOST_WIDE_INT signed_max_hi;
@@ -13891,7 +13891,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      if (outer_width > HOST_BITS_PER_WIDE_INT)
 		{
 		  mask_hi = ((unsigned HOST_WIDE_INT) -1
-			     >> (2 * HOST_BITS_PER_WIDE_INT - outer_width));
+			     >> (HOST_BITS_PER_DOUBLE_INT - outer_width));
 		  mask_lo = -1;
 		}
 	      else

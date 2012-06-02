@@ -3155,8 +3155,8 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	    {
 	      int shift = floor_log2 (CONST_DOUBLE_HIGH (op1))
 			  + HOST_BITS_PER_WIDE_INT;
-	      if (shift < 2 * HOST_BITS_PER_WIDE_INT - 1
-		  || GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT)
+	      if (shift < HOST_BITS_PER_DOUBLE_INT - 1
+		  || GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_DOUBLE_INT)
 		return expand_shift (LSHIFT_EXPR, mode, op0,
 				     shift, target, unsignedp);
 	    }
@@ -3316,7 +3316,7 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   /* We could handle this with some effort, but this case is much
      better handled directly with a scc insn, so rely on caller using
      that.  */
-  gcc_assert (pow != 2 * HOST_BITS_PER_WIDE_INT);
+  gcc_assert (pow != HOST_BITS_PER_DOUBLE_INT);
 
   /* mlow = 2^(N + lgup)/d */
  if (pow >= HOST_BITS_PER_WIDE_INT)
