@@ -4551,6 +4551,23 @@ sparc_compute_frame_size (HOST_WIDE_INT size, int leaf_function)
   return frame_size;
 }
 
+/* Implement the macro INITIAL_ELIMINATION_OFFSET, return the OFFSET.  */
+
+int
+sparc_initial_elimination_offset (int to)
+{
+  int offset;
+
+  if (to == STACK_POINTER_REGNUM)
+    offset = sparc_compute_frame_size (get_frame_size (),
+				       current_function_is_leaf);
+  else
+    offset = 0;
+
+  offset += SPARC_STACK_BIAS;
+  return offset;
+}
+
 /* Output any necessary .register pseudo-ops.  */
 
 void

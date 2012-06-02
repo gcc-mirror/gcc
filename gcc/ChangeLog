@@ -1,3 +1,12 @@
+2012-06-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/sparc/sparc.h (INITIAL_ELIMINATION_OFFSET): Split out to
+	new function sparc_initial_elimination_offset.
+	* config/sparc/sparc.c (sparc_initial_elimination_offset): New
+	function.
+	* config/sparc/sparc-protos.h (sparc_initial_elimination_offset):
+	Prototype it.
+
 2012-06-2  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* expmed.c (expand_mult, choose_multiplier): Change "2 *
