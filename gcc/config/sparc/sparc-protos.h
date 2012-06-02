@@ -37,6 +37,7 @@ extern enum direction function_arg_padding (enum machine_mode, const_tree);
 
 extern void order_regs_for_local_alloc (void);
 extern HOST_WIDE_INT sparc_compute_frame_size (HOST_WIDE_INT, int);
+extern int sparc_initial_elimination_offset (int);
 extern void sparc_expand_prologue (void);
 extern void sparc_flat_expand_prologue (void);
 extern void sparc_expand_epilogue (bool);
