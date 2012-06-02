@@ -1,3 +1,8 @@
+2012-06-02  Jason Merrill  <jason@redhat.com>
+
+	* objcp-decl.c (objcp_start_struct): Adjust for change in
+	begin_class_definition prototype.
+
 2011-10-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Make-lang.in (OBJCXX_OBJS): Added objc-map.o.

@@ -1,5 +1,9 @@
 2012-06-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52973
+	* g++.dg/ext/visibility/template12.C: New.
+	* g++.dg/ext/attrib14.C: Adjust warning line.
+
 	PR c++/52725
 	* g++.dg/parse/new6.C: New.
 	* g++.dg/template/sizeof-template-argument.C: Adjust error message.

@@ -49,7 +49,7 @@ objcp_start_struct (location_t loc ATTRIBUTE_UNUSED,
   CLASSTYPE_DECLARED_CLASS (s) = 0;  /* this is a 'struct', not a 'class'.  */
   xref_basetypes (s, NULL_TREE);     /* no base classes here!  */
 
-  return begin_class_definition (s, NULL_TREE);
+  return begin_class_definition (s);
 }
 
 tree 
