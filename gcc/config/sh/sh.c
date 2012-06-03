@@ -876,12 +876,29 @@ sh_option_override (void)
 	align_functions = min_align;
     }
 
-  /* Enable fmac insn for "a * b + c" SFmode calculations when -ffast-math
-     is enabled and -mno-fused-madd is not specified by the user.
-     The fmac insn can't be enabled by default due to the implied
-     FMA semantics.   See also PR target/29100.  */
-  if (global_options_set.x_TARGET_FMAC == 0 && flag_unsafe_math_optimizations)
-    TARGET_FMAC = 1;
+  if (flag_unsafe_math_optimizations)
+    {
+      /* Enable fmac insn for "a * b + c" SFmode calculations when -ffast-math
+	 is enabled and -mno-fused-madd is not specified by the user.
+	 The fmac insn can't be enabled by default due to the implied
+	 FMA semantics.   See also PR target/29100.  */
+      if (global_options_set.x_TARGET_FMAC == 0)
+	TARGET_FMAC = 1;
+
+      /* Enable fsca insn for SH4A if not otherwise specified by the user.  */
+      if (global_options_set.x_TARGET_FSCA == 0 && TARGET_SH4A_FP)
+	TARGET_FSCA = 1;
+
+      /* Enable fsrra insn for SH4A if not otherwise specified by the user.  */
+      if (global_options_set.x_TARGET_FSRRA == 0 && TARGET_SH4A_FP)
+	TARGET_FSRRA = 1;
+    }
+
+  /*  Allow fsrra insn only if -funsafe-math-optimizations and
+      -ffinite-math-only is enabled.  */
+  TARGET_FSRRA = TARGET_FSRRA
+		 && flag_unsafe_math_optimizations
+		 && flag_finite_math_only;
 
   if (sh_fixed_range_str)
     sh_fix_range (sh_fixed_range_str);
@@ -896,7 +913,6 @@ sh_option_override (void)
     error ("-msoft-atomic and -mhard-atomic cannot be used at the same time");
   if (TARGET_HARD_ATOMIC && ! TARGET_SH4A_ARCH)
     error ("-mhard-atomic is only available for SH4A targets");
-
 }
 
 /* Print the operand address in x to the stream.  */

@@ -886,7 +886,7 @@ See RS/6000 and PowerPC Options.
 -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
 -maccumulate-outgoing-args -minvalid-symbols -msoft-atomic -mhard-atomic @gol
 -mbranch-cost=@var{num} -mcbranchdi -mcmpeqdi -mfused-madd -mno-fused-madd @gol
--mpretend-cmove -menable-tas}
+-mfsca -mno-fsca -mfsrra -mno-fsrra -mpretend-cmove -menable-tas}
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mimpure-text  -mno-impure-text @gol
@@ -18301,6 +18301,28 @@ arithmetic.  @code{-mfused-madd} is enabled by default by option
 @option{-funsafe-math-optimizations}.  Setting @code{-mno-fused-madd} will
 disallow the usage of the @code{fmac} instruction for regular calculations
 even if @option{-funsafe-math-optimizations} is in effect.
+
+@item -mfsca
+@itemx -mno-fsca
+@opindex mfsca
+@opindex mno-fsca
+Allow or disallow the compiler to emit the @code{fsca} instruction for sine
+and cosine approximations.  The option @code{-mfsca} must be used in
+combination with @code{-funsafe-math-optimizations}.  It is enabled by default
+when generating code for SH4A.  Using @code{-mno-fsca} disables sine and cosine
+approximations even if @code{-funsafe-math-optimizations} is in effect.
+
+@item -mfsrra
+@itemx -mno-fsrra
+@opindex mfsrra
+@opindex mno-fsrra
+Allow or disallow the compiler to emit the @code{fsrra} instruction for
+reciprocal square root approximations.  The option @code{-mfsrra} must be used
+in combination with @code{-funsafe-math-optimizations} and
+@code{-ffinite-math-only}.  It is enabled by default when generating code for
+SH4A.  Using @code{-mno-fsrra} disables reciprocal square root approximations
+even if @code{-funsafe-math-optimizations} and @code{-ffinite-math-only} are
+in effect.
 
 @item -mpretend-cmove
 @opindex mpretend-cmove
