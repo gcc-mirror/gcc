@@ -185,6 +185,7 @@ static bool pa_can_eliminate (const int, const int);
 static void pa_conditional_register_usage (void);
 static enum machine_mode pa_c_mode_for_suffix (char);
 static section *pa_function_section (tree, enum node_frequency, bool, bool);
+static unsigned int pa_section_type_flags (tree, const char *, int);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -399,6 +400,9 @@ static const struct default_options pa_option_optimization_table[] =
 #define TARGET_C_MODE_FOR_SUFFIX pa_c_mode_for_suffix
 #undef TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION pa_function_section
+
+#undef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS pa_section_type_flags
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10429,6 +10433,25 @@ pa_function_section (tree decl, enum node_frequency freq,
 
   /* Otherwise, use the default function section.  */
   return default_function_section (decl, freq, startup, exit);
+}
+
+/* Implement TARGET_SECTION_TYPE_FLAGS.  */
+
+static unsigned int
+pa_section_type_flags (tree decl, const char *name, int reloc)
+{
+  unsigned int flags;
+
+  flags = default_section_type_flags (decl, name, reloc);
+
+  /* Function labels are placed in the constant pool.  This can
+     cause a section conflict if decls are put in ".data.rel.ro"
+     or ".data.rel.ro.local" using the __attribute__ construct.  */
+  if (strcmp (name, ".data.rel.ro") == 0
+      || strcmp (name, ".data.rel.ro.local") == 0)
+    flags |= SECTION_WRITE | SECTION_RELRO;
+
+  return flags;
 }
 
 #include "gt-pa.h"

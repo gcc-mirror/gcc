@@ -1,3 +1,10 @@
+2012-06-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/52999
+	* config/pa/pa.c (TARGET_SECTION_TYPE_FLAGS): Define.
+	(pa_section_type_flags): New.
+	* config/pa/pa.h (LEGITIMATE_CONSTANT_P): Revert previous change.
+
 2012-05-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53541
