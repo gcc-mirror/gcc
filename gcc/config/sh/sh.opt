@@ -348,3 +348,12 @@ Don't generate privileged-mode only code; implies -mno-inline-ic_invalidate if t
 mpretend-cmove
 Target Var(TARGET_PRETEND_CMOVE)
 Pretend a branch-around-a-move is a conditional move.
+
+mfsca
+Target Var(TARGET_FSCA)
+Enable the use of the fsca instruction
+
+mfsrra
+Target Var(TARGET_FSRRA)
+Enable the use of the fsrra instruction
+

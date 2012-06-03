@@ -1,3 +1,16 @@
+2012-06-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53512
+	* sh.opt (mfsca, mfsrra): New options.
+	* sh.md (rsqrtsf2): Use TARGET_FPU_ANY and TARGET_FSRRA	condition.
+	(fsca): Use TARGET_FPU_ANY and TARGET_FSCA condition.
+	(sinssf2, cossf2): Fold expanders to ...
+	(sincossf3): ... this new expander.  Use TARGET_FPU_ANY and
+	TARGET_FSCA condition.
+	* sh.c (sh_option_override): Handle TARGET_FSRRA and TARGET_FSCA.
+	* doc/invoke.texi (SH Options): Add descriptions for -mfsca,
+	-mno-fsca, -mfsrra, -mno-fsrra.
+
 2012-06-03  Matt Turner  <mattst88@gmail.com>
 
 	* config/mips/4600.md (r4700_imul_si): New.
@@ -18,7 +31,7 @@
 	* config/sparc/sparc-protos.h (sparc_initial_elimination_offset):
 	Prototype it.
 
-2012-06-2  Kenneth Zadeck <zadeck@naturalbridge.com>
+2012-06-02  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* expmed.c (expand_mult, choose_multiplier): Change "2 *
 	HOST_BITS_PER_WIDE_INT" to "HOST_BITS_PER_DOUBLE_INT".
