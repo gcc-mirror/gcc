@@ -1,3 +1,14 @@
+2012-06-03  Matt Turner  <mattst88@gmail.com>
+
+	* config/mips/4600.md (r4700_imul_si): New.
+	(r4700_imul_di): New.
+	(r4700_fmul_single): New.
+	(r4700_fmul_double): New.
+	* config/mips/mips-cpus.def: Add r4700.
+	* config/mips/mips.c: Likewise.
+	* config/mips/mips.md: Likewise.
+	* config/mips/mips-tables.opt: Regenerate.
+
 2012-06-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/sparc/sparc.h (INITIAL_ELIMINATION_OFFSET): Split out to

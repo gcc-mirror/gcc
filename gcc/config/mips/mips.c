@@ -961,6 +961,9 @@ static const struct mips_rtx_cost_data
   { /* R4650 */
     DEFAULT_COSTS
   },
+  { /* R4700 */
+    DEFAULT_COSTS
+  },
   { /* R5000 */
     COSTS_N_INSNS (6),            /* fp_add */
     COSTS_N_INSNS (4),            /* fp_mult_sf */
