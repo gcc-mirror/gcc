@@ -113,7 +113,7 @@ struct GTY(()) ipa_ancestor_jf_data
 {
   /* Offset of the field representing the ancestor.  */
   HOST_WIDE_INT offset;
-  /* TYpe of the result.  */
+  /* Type of the result.  */
   tree type;
   /* Number of the caller's formal parameter being passed.  */
   int formal_id;
@@ -148,6 +148,108 @@ typedef struct GTY (()) ipa_jump_func
 
 DEF_VEC_O (ipa_jump_func_t);
 DEF_VEC_ALLOC_O (ipa_jump_func_t, gc);
+
+/* Return the offset of the component that is decribed by a known type jump
+   function JFUNC.  */
+
+static inline HOST_WIDE_INT
+ipa_get_jf_known_type_offset (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_KNOWN_TYPE);
+  return jfunc->value.known_type.offset;
+}
+
+/* Return the base type of a known type jump function JFUNC.  */
+
+static inline tree
+ipa_get_jf_known_type_base_type (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_KNOWN_TYPE);
+  return jfunc->value.known_type.base_type;
+}
+
+/* Return the component type of a known type jump function JFUNC.  */
+
+static inline tree
+ipa_get_jf_known_type_component_type (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_KNOWN_TYPE);
+  return jfunc->value.known_type.component_type;
+}
+
+/* Return the constant stored in a constant jump functin JFUNC.  */
+
+static inline tree
+ipa_get_jf_constant (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_CONST);
+  return jfunc->value.constant;
+}
+
+/* Return the operand of a pass through jmp function JFUNC.  */
+
+static inline tree
+ipa_get_jf_pass_through_operand (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_PASS_THROUGH);
+  return jfunc->value.pass_through.operand;
+}
+
+/* Return the number of the caller's formal parameter that a pass through jump
+   function JFUNC refers to.  */
+
+static inline int
+ipa_get_jf_pass_through_formal_id (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_PASS_THROUGH);
+  return jfunc->value.pass_through.formal_id;
+}
+
+/* Return operation of a pass through jump function JFUNC.  */
+
+static inline enum tree_code
+ipa_get_jf_pass_through_operation (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_PASS_THROUGH);
+  return jfunc->value.pass_through.operation;
+}
+
+/* Return the offset of an ancestor jump function JFUNC.  */
+
+static inline HOST_WIDE_INT
+ipa_get_jf_ancestor_offset (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
+  return jfunc->value.ancestor.offset;
+}
+
+/* Return the result type of an ancestor jump function JFUNC.  */
+
+static inline tree
+ipa_get_jf_ancestor_type (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
+  return jfunc->value.ancestor.type;
+}
+
+/* Return the number of the caller's formal parameter that an ancestor jump
+   function JFUNC refers to.  */
+
+static inline int
+ipa_get_jf_ancestor_formal_id (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
+  return jfunc->value.ancestor.formal_id;
+}
+
+/* Return the pfn part of a member pointer constant jump function JFUNC.  */
+
+static inline tree
+ipa_get_jf_member_ptr_pfn (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_CONST_MEMBER_PTR);
+  return jfunc->value.member_cst.pfn;
+}
 
 /* Summary describing a single formal parameter.  */
 

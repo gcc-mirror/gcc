@@ -2514,16 +2514,16 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
 	{
 	  struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, i);
 	  if (jfunc->type == IPA_JF_PASS_THROUGH
-	      && (jfunc->value.pass_through.formal_id
+	      && (ipa_get_jf_pass_through_formal_id (jfunc)
 		  < (int) VEC_length (inline_param_summary_t,
-				      inlined_es->param)))
+						   inlined_es->param)))
 	    {
+	      int jf_formal_id = ipa_get_jf_pass_through_formal_id (jfunc);
 	      int prob1 = VEC_index (inline_param_summary_t,
 				     es->param, i)->change_prob;
 	      int prob2 = VEC_index
 			     (inline_param_summary_t,
-			     inlined_es->param,
-			     jfunc->value.pass_through.formal_id)->change_prob;
+			     inlined_es->param, jf_formal_id)->change_prob;
 	      int prob = ((prob1 * prob2 + REG_BR_PROB_BASE / 2)
 			  / REG_BR_PROB_BASE);
 
@@ -2649,8 +2649,8 @@ inline_merge_summary (struct cgraph_edge *edge)
 	  int map = -1;
 	  /* TODO: handle non-NOPs when merging.  */
 	  if (jfunc->type == IPA_JF_PASS_THROUGH
-	      && jfunc->value.pass_through.operation == NOP_EXPR)
-	    map = jfunc->value.pass_through.formal_id;
+	      && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
+	    map = ipa_get_jf_pass_through_formal_id (jfunc);
 	  VEC_replace (int, operand_map, i, map);
 	  gcc_assert (map < ipa_get_param_count (IPA_NODE_REF (to)));
 	}
