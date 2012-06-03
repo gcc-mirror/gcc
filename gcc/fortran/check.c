@@ -163,7 +163,7 @@ kind_check (gfc_expr *k, int n, bt type)
   if (scalar_check (k, n) == FAILURE)
     return FAILURE;
 
-  if (k->expr_type != EXPR_CONSTANT)
+  if (gfc_check_init_expr (k) != SUCCESS)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be a constant",
 		 gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
