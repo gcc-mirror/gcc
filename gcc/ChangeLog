@@ -1,3 +1,48 @@
+2012-06-03  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_get_jf_known_type_offset): New function.
+	(ipa_get_jf_known_type_base_type): Likewise.
+	(ipa_get_jf_known_type_component_type): Likewise.
+	(ipa_get_jf_constant): Likewise.
+	(ipa_get_jf_pass_through_formal_id): Likewise.
+	(ipa_get_jf_pass_through_operation): Likewise.
+	(ipa_get_jf_ancestor_offset): Likewise.
+	(ipa_get_jf_ancestor_type): Likewise.
+	(ipa_get_jf_ancestor_formal_id): Likewise.
+	(ipa_get_jf_member_ptr_pfn): Likewise.
+	* ipa-prop.c (ipa_set_jf_known_type): New function.
+	(ipa_set_jf_constant): Likewise.
+	(ipa_set_jf_simple_pass_through): Likewise.
+	(ipa_set_jf_arith_pass_through): Likewise.
+	(ipa_set_ancestor_jf): Likewise.
+	(fill_member_ptr_cst_jump_function): Moved up and renamed to
+	ipa_set_jf_member_ptr_cst.
+	(detect_type_change_1): Use the new jump function creation functions.
+	(compute_complex_assign_jump_func): Likewise.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(compute_known_type_jump_func): Likewise.
+	(compute_scalar_jump_functions): Likewise.
+	(compute_pass_through_member_ptrs): Likewise.
+	(determine_cst_member_ptr): Likewise.
+	(combine_known_type_and_ancestor_jfs): Likewise.
+	(try_make_edge_direct_simple_call): Likewise.
+	(try_make_edge_direct_virtual_call): Likewise.
+	(update_indirect_edges_after_inlining): Likewise.
+	* ipa-cp.c (ipa_get_jf_pass_through_result): Use jump function
+	access functions.  Incorporat NOP_EXPR and BINFO handling from its
+	callers.
+	(ipa_get_jf_ancestor_result): Likewise.  Incorporate handling BINFOs
+	which was in its callers.
+	(ipa_value_from_jfunc): Use jump function access functions.  Some
+	functionality moved to functions above.
+	(propagate_vals_accross_ancestor): Likewise.
+	(propagate_vals_accross_pass_through): Use jump function access
+	functions.
+	(propagate_accross_jump_function): Likewise.
+	* ipa-inline-analysis.c (remap_edge_change_prob): Use jump function
+	access functions.
+	(inline_merge_summary): Likewise.
+
 2012-06-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.h (MAX_PCREL17F_OFFSET): Define.
