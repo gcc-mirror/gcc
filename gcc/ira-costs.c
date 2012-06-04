@@ -239,33 +239,19 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
       COPY_HARD_REG_SET (temp, reg_class_contents[aclass]);
       AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
       /* We exclude classes from consideration which are subsets of
-	 ACLASS only if ACLASS is a pressure class or subset of a
-	 pressure class.  It means by the definition of pressure classes
-	 that cost of moving between susbets of ACLASS is cheaper than
-	 load or store.  */
-      for (i = 0; i < ira_pressure_classes_num; i++)
-	{
-	  cl = ira_pressure_classes[i];
-	  if (cl == aclass)
-	    break;
-	  COPY_HARD_REG_SET (temp2, reg_class_contents[cl]);
-	  AND_COMPL_HARD_REG_SET (temp2, ira_no_alloc_regs);
-	  if (hard_reg_set_subset_p (temp, temp2))
-	    break;
-	}
-      exclude_p = i < ira_pressure_classes_num;
+	 ACLASS only if ACLASS is an uniform class.  */
+      exclude_p = ira_uniform_class_p[aclass];
       classes.num = 0;
       for (i = 0; i < ira_important_classes_num; i++)
 	{
 	  cl = ira_important_classes[i];
 	  if (exclude_p)
 	    {
-	      /* Exclude no-pressure classes which are subsets of
+	      /* Exclude non-uniform classes which are subsets of
 		 ACLASS.  */
 	      COPY_HARD_REG_SET (temp2, reg_class_contents[cl]);
 	      AND_COMPL_HARD_REG_SET (temp2, ira_no_alloc_regs);
-	      if (! ira_reg_pressure_class_p[cl]
-		  && hard_reg_set_subset_p (temp2, temp) && cl != aclass)
+	      if (hard_reg_set_subset_p (temp2, temp) && cl != aclass)
 		continue;
 	    }
 	  classes.classes[classes.num++] = cl;

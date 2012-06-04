@@ -828,6 +828,9 @@ struct target_ira_int {
      classes.  */
   int x_ira_important_class_nums[N_REG_CLASSES];
 
+  /* Map class->true if class is an uniform class, false otherwise.  */
+  bool x_ira_uniform_class_p[N_REG_CLASSES];
+
   /* The biggest important class inside of intersection of the two
      classes (that is calculated taking only hard registers available
      for allocation into account;.  If the both classes contain no hard
@@ -905,6 +908,8 @@ extern struct target_ira_int *this_target_ira_int;
   (this_target_ira_int->x_ira_important_classes)
 #define ira_important_class_nums \
   (this_target_ira_int->x_ira_important_class_nums)
+#define ira_uniform_class_p \
+  (this_target_ira_int->x_ira_uniform_class_p)
 #define ira_reg_class_intersect \
   (this_target_ira_int->x_ira_reg_class_intersect)
 #define ira_reg_classes_intersect_p \

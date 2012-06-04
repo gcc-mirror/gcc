@@ -1,3 +1,19 @@
+2012-06-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-int.h (struct target_ira_int): Add member
+	x_ira_uniform_class_p.
+	(ira_uniform_class_p): New macro.
+
+	* ira.c (setup_uniform_class_p): New function.
+	(setup_allocno_and_important_classes): Call the function.
+	(print_unform_and_important_classes): New function.
+	(print_classes): Rename to print_translated_classes.
+	(ira_debug_allocno_classes): Add call of
+	print_unform_and_important_classes.
+
+	* ira-costs.c (setup_regno_cost_classes_by_aclass): Use uniform
+	classes instead of pressure classes.
+
 2012-06-04   Sterling Augustine  <saugustine@google.com>
 
 	* gcc/c-family/c-pretty-print.h (pp_c_flag_gnu_v3): New enumerator.
