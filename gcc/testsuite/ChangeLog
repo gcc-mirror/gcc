@@ -1,3 +1,7 @@
+2012-06-04  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/debug/dwarf2/nested-3.C: Allow for | comments.
+
 2012-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53550
