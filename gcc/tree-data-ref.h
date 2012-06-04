@@ -609,21 +609,29 @@ index_in_loop_nest (int var, VEC (loop_p, heap) *loop_nest)
   return var_index;
 }
 
-void stores_from_loop (struct loop *, VEC (gimple, heap) **);
-void stores_zero_from_loop (struct loop *, VEC (gimple, heap) **);
 bool rdg_defs_used_in_other_loops_p (struct graph *, int);
-bool stmt_with_adjacent_zero_store_dr_p (gimple);
 
-/* Returns true when STRIDE is equal in absolute value to the size of
-   the unit type of TYPE.  */
+/* Returns true when the data reference DR the form "A[i] = ..."
+   with a stride equal to its unit type size.  */
 
 static inline bool
-stride_of_unit_type_p (tree stride, tree type)
+adjacent_store_dr_p (struct data_reference *dr)
 {
-  return (TREE_CODE (stride) == INTEGER_CST
-	  && tree_int_cst_equal (fold_unary (ABS_EXPR, TREE_TYPE (stride),
-					     stride),
-				 TYPE_SIZE_UNIT (type)));
+  if (!DR_IS_WRITE (dr))
+    return false;
+
+  /* If this is a bitfield store bail out.  */
+  if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
+    return false;
+
+  if (!DR_STEP (dr)
+      || TREE_CODE (DR_STEP (dr)) != INTEGER_CST)
+    return false;
+
+  return tree_int_cst_equal (fold_unary (ABS_EXPR, TREE_TYPE (DR_STEP (dr)),
+					 DR_STEP (dr)),
+			     TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr))));
 }
 
 /* In tree-data-ref.c  */
