@@ -398,7 +398,28 @@ destroy_loop (struct loop *loop)
   rescan_loop_exit (exit, false, true);
 
   for (i = 0; i < nbbs; i++)
-    delete_basic_block (bbs[i]);
+    {
+      /* We have made sure to not leave any dangling uses of SSA
+         names defined in the loop.  With the exception of virtuals.
+	 Make sure we replace all uses of virtual defs that will remain
+	 outside of the loop with the bare symbol as delete_basic_block
+	 will release them.  */
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_phis (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple phi = gsi_stmt (gsi);
+	  if (!is_gimple_reg (gimple_phi_result (phi)))
+	    mark_virtual_phi_result_for_renaming (phi);
+	}
+      for (gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  tree vdef = gimple_vdef (stmt);
+	  if (vdef && TREE_CODE (vdef) == SSA_NAME)
+	    mark_virtual_operand_for_renaming (vdef);
+	}
+      delete_basic_block (bbs[i]);
+    }
   free (bbs);
 
   set_immediate_dominator (CDI_DOMINATORS, dest,
@@ -801,6 +822,9 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
   partition->kind = PKIND_NORMAL;
   partition->main_stmt = NULL;
 
+  if (!flag_tree_loop_distribute_patterns)
+    return;
+
   /* Perform general partition disqualification for builtins.  */
   nb_iter = number_of_exit_cond_executions (loop);
   if (!nb_iter || nb_iter == chrec_dont_know)
@@ -874,31 +898,6 @@ similar_memory_accesses (struct graph *rdg, partition_t partition1,
 	    return true;
 
   return false;
-}
-
-/* Fuse all the partitions from PARTITIONS that contain similar memory
-   references, i.e., we're taking care of cache locality.  This
-   function does not fuse those partitions that contain patterns that
-   can be code generated with builtins.  */
-
-static void
-fuse_partitions_with_similar_memory_accesses (struct graph *rdg,
-					      VEC (partition_t, heap) **partitions)
-{
-  int p1, p2;
-  partition_t partition1, partition2;
-
-  FOR_EACH_VEC_ELT (partition_t, *partitions, p1, partition1)
-    if (!partition_builtin_p (partition1))
-      FOR_EACH_VEC_ELT (partition_t, *partitions, p2, partition2)
-	if (p1 != p2
-	    && !partition_builtin_p (partition2)
-	    && similar_memory_accesses (rdg, partition1, partition2))
-	  {
-	    bitmap_ior_into (partition1->stmts, partition2->stmts);
-	    VEC_ordered_remove (partition_t, *partitions, p2);
-	    p2--;
-	  }
 }
 
 /* Aggregate several components into a useful partition that is
@@ -1100,7 +1099,55 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
     classify_partition (loop, rdg, partition);
 
-  fuse_partitions_with_similar_memory_accesses (rdg, &partitions);
+  /* If we are only distributing patterns fuse all partitions that
+     were not properly classified as builtins.  Else fuse partitions
+     with similar memory accesses.  */
+  if (!flag_tree_loop_distribution)
+    {
+      partition_t into;
+      for (i = 0; VEC_iterate (partition_t, partitions, i, into); ++i)
+	if (!partition_builtin_p (into))
+	  break;
+      for (++i; VEC_iterate (partition_t, partitions, i, partition); ++i)
+	if (!partition_builtin_p (partition))
+	  {
+	    bitmap_ior_into (into->stmts, partition->stmts);
+	    VEC_ordered_remove (partition_t, partitions, i);
+	    i--;
+	  }
+    }
+  else
+    {
+      partition_t into;
+      int j;
+      for (i = 0; VEC_iterate (partition_t, partitions, i, into); ++i)
+	{
+	  if (partition_builtin_p (into))
+	    continue;
+	  for (j = i + 1;
+	       VEC_iterate (partition_t, partitions, j, partition); ++j)
+	    {
+	      if (!partition_builtin_p (partition)
+		  /* ???  The following is horribly inefficient,
+		     we are re-computing and analyzing data-references
+		     of the stmts in the partitions all the time.  */
+		  && similar_memory_accesses (rdg, into, partition))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "fusing partitions\n");
+		      dump_bitmap (dump_file, into->stmts);
+		      dump_bitmap (dump_file, partition->stmts);
+		      fprintf (dump_file, "because they have similar "
+			       "memory accesses\n");
+		    }
+		  bitmap_ior_into (into->stmts, partition->stmts);
+		  VEC_ordered_remove (partition_t, partitions, j);
+		  j--;
+		}
+	    }
+	}
+    }
 
   nbp = VEC_length (partition_t, partitions);
   if (nbp == 0
@@ -1108,17 +1155,16 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 	  && !partition_builtin_p (VEC_index (partition_t, partitions, 0)))
       || (nbp > 1
 	  && partition_contains_all_rw (rdg, partitions)))
-    goto ldist_done;
+    {
+      nbp = 0;
+      goto ldist_done;
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg_partitions (dump_file, partitions);
 
   FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
     generate_code_for_partition (loop, partition, i < nbp - 1);
-
-  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
-  mark_sym_for_renaming (gimple_vop (cfun));
-  update_ssa (TODO_update_ssa_only_virtuals);
 
  ldist_done:
 
@@ -1151,16 +1197,6 @@ distribute_loop (struct loop *loop, VEC (gimple, heap) *stmts)
   VEC (ddr_p, heap) *dependence_relations;
   VEC (data_reference_p, heap) *datarefs;
   VEC (loop_p, heap) *loop_nest;
-
-  if (loop->num_nodes > 2)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "FIXME: Loop %d not distributed: it has more than two basic blocks.\n",
-		 loop->num);
-
-      return res;
-    }
 
   datarefs = VEC_alloc (data_reference_p, heap, 10);
   dependence_relations = VEC_alloc (ddr_p, heap, 100);
@@ -1215,48 +1251,38 @@ tree_loop_distribution (void)
 {
   struct loop *loop;
   loop_iterator li;
-  int nb_generated_loops = 0;
+  bool changed = false;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  /* We can at the moment only distribute non-nested loops, thus restrict
+     walking to innermost loops.  */
+  FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
     {
       VEC (gimple, heap) *work_list = NULL;
       int num = loop->num;
+      int nb_generated_loops = 0;
 
       /* If the loop doesn't have a single exit we will fail anyway,
 	 so do that early.  */
       if (!single_exit (loop))
 	continue;
 
-      /* If both flag_tree_loop_distribute_patterns and
-	 flag_tree_loop_distribution are set, then only
-	 distribute_patterns is executed.  */
-      if (flag_tree_loop_distribute_patterns)
-	{
-	  /* With the following working list, we're asking
-	     distribute_loop to separate from the rest of the loop the
-	     stores of the form "A[i] = 0".  */
-	  stores_zero_from_loop (loop, &work_list);
+      /* Only distribute loops with a header and latch for now.  */
+      if (loop->num_nodes > 2)
+	continue;
 
-	  /* Do nothing if there are no patterns to be distributed.  */
-	  if (VEC_length (gimple, work_list) > 0)
-	    nb_generated_loops = distribute_loop (loop, work_list);
-	}
-      else if (flag_tree_loop_distribution)
-	{
-	  /* With the following working list, we're asking
-	     distribute_loop to separate the stores of the loop: when
-	     dependences allow, it will end on having one store per
-	     loop.  */
-	  stores_from_loop (loop, &work_list);
+      /* -ftree-loop-distribution strictly distributes more but also
+         enables pattern detection.  For now simply distribute all stores
+	 or memset like stores.  */
+      if (flag_tree_loop_distribution)
+	stores_from_loop (loop, &work_list);
+      else if (flag_tree_loop_distribute_patterns)
+	stores_zero_from_loop (loop, &work_list);
 
-	  /* A simple heuristic for cache locality is to not split
-	     stores to the same array.  Without this call, an unrolled
-	     loop would be split into as many loops as unroll factor,
-	     each loop storing in the same array.  */
-	  remove_similar_memory_refs (&work_list);
+      if (VEC_length (gimple, work_list) > 0)
+	nb_generated_loops = distribute_loop (loop, work_list);
 
-	  nb_generated_loops = distribute_loop (loop, work_list);
-	}
+      if (nb_generated_loops > 0)
+	changed = true;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1267,12 +1293,18 @@ tree_loop_distribution (void)
 	    fprintf (dump_file, "Loop %d is the same.\n", num);
 	}
 
-#ifdef ENABLE_CHECKING
-      verify_loop_structure ();
-#endif
-
       VEC_free (gimple, heap, work_list);
     }
+
+  if (changed)
+    {
+      mark_sym_for_renaming (gimple_vop (cfun));
+      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+    }
+
+#ifdef ENABLE_CHECKING
+  verify_loop_structure ();
+#endif
 
   return 0;
 }
