@@ -1,3 +1,12 @@
+2012-06-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-06-04 mainline r188172
+
+	PR target/46261
+	* config/avr/avr-stdint.h: New file.
+	* config.gcc (avr-*-*,tm_file): Use avr/avr-stdint.h instead of
+	newlib-stdint.h
+
 2012-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure: Regenerate.
