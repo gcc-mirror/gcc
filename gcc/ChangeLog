@@ -1,3 +1,9 @@
+2012-06-04  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/53461
+	* config/m68k/m68k.md ("tablejump"): Fix check for
+	CASE_VECTOR_PC_RELATIVE.
+
 2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* output.h (merge_weak, assemble_alias,
