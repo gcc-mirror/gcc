@@ -10,6 +10,6 @@ const A& foo();
 
 void bar()
 {
-  foo()=A(0); // { dg-error "12:no match for 'operator='" }
+  foo()=A(0); // { dg-error "8:no match for 'operator='" }
   // { dg-message "candidate" "candidate note" { target *-*-* } 13 }
 }
