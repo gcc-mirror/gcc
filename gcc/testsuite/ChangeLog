@@ -1,3 +1,8 @@
+2012-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53550
+	* gcc.dg/pr53550.c: New test.
+
 2012-06-04  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ldist-11.c: Enable -ftree-loop-distribute-patterns.
