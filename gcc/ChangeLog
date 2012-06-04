@@ -1,3 +1,19 @@
+2012-06-04  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-04-25  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR middle-end/52979
+	* stor-layout.c (get_best_mode): Don't return mode with bitsize
+	larger than maxbits.  Don't compute maxbits modulo align.
+	Also check that unit bytes long store at bitpos / unit * unit
+	doesn't affect bits beyond bitregion_end.
+	* expmed.c (store_bit_field_1): Avoid trying insv if OP_MODE MEM
+	would not fit into bitregion_start ... bitregion_end + 1 bit
+	region.
+	(store_split_bit_field): Decrease unit close to end of bitregion_end
+	if access is restricted in order to avoid mutual recursion.
+
 2012-06-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-06-04 mainline r188172

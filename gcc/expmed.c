@@ -640,7 +640,13 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && !(MEM_P (op0) && MEM_VOLATILE_P (op0)
 	   && flag_strict_volatile_bitfields > 0)
       && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
-	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode))))
+	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode)))
+      /* Do not use insv if the bit region is restricted and
+	 op_mode integer at offset doesn't fit into the
+	 restricted region.  */
+      && !(MEM_P (op0) && bitregion_end
+	   && bitnum - bitpos + GET_MODE_BITSIZE (op_mode)
+	      > bitregion_end + 1))
     {
       struct expand_operand ops[4];
       int xbitpos = bitpos;
@@ -760,7 +766,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  || GET_MODE_BITSIZE (GET_MODE (op0)) > maxbits
 	  || (op_mode != MAX_MACHINE_MODE
 	      && GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (op_mode)))
-	bestmode = get_best_mode  (bitsize, bitnum,
+	bestmode = get_best_mode (bitsize, bitnum,
 				  bitregion_start, bitregion_end,
 				  MEM_ALIGN (op0),
 				  (op_mode == MAX_MACHINE_MODE
@@ -1095,6 +1101,16 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
       offset = (bitpos + bitsdone) / unit;
       thispos = (bitpos + bitsdone) % unit;
+
+      /* When region of bytes we can touch is restricted, decrease
+	 UNIT close to the end of the region as needed.  */
+      if (bitregion_end
+	  && unit > BITS_PER_UNIT
+	  && bitpos + bitsdone - thispos + unit > bitregion_end + 1)
+	{
+	  unit = unit / 2;
+	  continue;
+	}
 
       /* THISSIZE must not overrun a word boundary.  Otherwise,
 	 store_fixed_bit_field will call us again, and we will mutually
