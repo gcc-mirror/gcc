@@ -118,11 +118,11 @@ cxx_dwarf_name (tree t, int verbosity)
       && (ANON_AGGRNAME_P (DECL_NAME (t)) || LAMBDANAME_P (DECL_NAME (t))))
     return NULL;
   if (verbosity >= 2)
-    return decl_as_string (t,
-			   TFF_DECL_SPECIFIERS | TFF_UNQUALIFIED_NAME
-			   | TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS);
+    return decl_as_dwarf_string (t,
+                                 TFF_DECL_SPECIFIERS | TFF_UNQUALIFIED_NAME
+                                 | TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS);
 
-  return cxx_printable_name (t, verbosity);
+  return lang_decl_dwarf_name (t, verbosity, false);
 }
 
 static enum classify_record

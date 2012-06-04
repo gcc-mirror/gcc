@@ -30,7 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 typedef enum
   {
      pp_c_flag_abstract = 1 << 1,
-     pp_c_flag_last_bit = 2
+     pp_c_flag_gnu_v3 = 1 << 2,
+     pp_c_flag_last_bit = 3
   } pp_c_pretty_print_flags;
 
 
