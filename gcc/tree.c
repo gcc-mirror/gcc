@@ -4598,7 +4598,8 @@ free_lang_data_in_decl (tree decl)
   if (TREE_CODE (decl) == FIELD_DECL)
     {
       free_lang_data_in_one_sizepos (&DECL_FIELD_OFFSET (decl));
-      DECL_QUALIFIER (decl) = NULL_TREE;
+      if (TREE_CODE (DECL_CONTEXT (decl)) == QUAL_UNION_TYPE)
+	DECL_QUALIFIER (decl) = NULL_TREE;
     }
 
  if (TREE_CODE (decl) == FUNCTION_DECL)

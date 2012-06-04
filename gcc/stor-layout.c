@@ -1722,6 +1722,221 @@ finalize_type_size (tree type)
     }
 }
 
+/* Return a new underlying object for a bitfield started with FIELD.  */
+
+static tree
+start_bitfield_representative (tree field)
+{
+  tree repr = make_node (FIELD_DECL);
+  DECL_FIELD_OFFSET (repr) = DECL_FIELD_OFFSET (field);
+  /* Force the representative to begin at a BITS_PER_UNIT aligned
+     boundary - C++ may use tail-padding of a base object to
+     continue packing bits so the bitfield region does not start
+     at bit zero (see g++.dg/abi/bitfield5.C for example).
+     Unallocated bits may happen for other reasons as well,
+     for example Ada which allows explicit bit-granular structure layout.  */
+  DECL_FIELD_BIT_OFFSET (repr)
+    = size_binop (BIT_AND_EXPR,
+		  DECL_FIELD_BIT_OFFSET (field),
+		  bitsize_int (~(BITS_PER_UNIT - 1)));
+  SET_DECL_OFFSET_ALIGN (repr, DECL_OFFSET_ALIGN (field));
+  DECL_SIZE (repr) = DECL_SIZE (field);
+  DECL_SIZE_UNIT (repr) = DECL_SIZE_UNIT (field);
+  DECL_PACKED (repr) = DECL_PACKED (field);
+  DECL_CONTEXT (repr) = DECL_CONTEXT (field);
+  return repr;
+}
+
+/* Finish up a bitfield group that was started by creating the underlying
+   object REPR with the last field in the bitfield group FIELD.  */
+
+static void
+finish_bitfield_representative (tree repr, tree field)
+{
+  unsigned HOST_WIDE_INT bitsize, maxbitsize;
+  enum machine_mode mode;
+  tree nextf, size;
+
+  size = size_diffop (DECL_FIELD_OFFSET (field),
+		      DECL_FIELD_OFFSET (repr));
+  gcc_assert (host_integerp (size, 1));
+  bitsize = (tree_low_cst (size, 1) * BITS_PER_UNIT
+	     + tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+	     - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1)
+	     + tree_low_cst (DECL_SIZE (field), 1));
+
+  /* Round up bitsize to multiples of BITS_PER_UNIT.  */
+  bitsize = (bitsize + BITS_PER_UNIT - 1) & ~(BITS_PER_UNIT - 1);
+
+  /* Now nothing tells us how to pad out bitsize ...  */
+  nextf = DECL_CHAIN (field);
+  while (nextf && TREE_CODE (nextf) != FIELD_DECL)
+    nextf = DECL_CHAIN (nextf);
+  if (nextf)
+    {
+      tree maxsize;
+      /* If there was an error, the field may be not laid out
+         correctly.  Don't bother to do anything.  */
+      if (TREE_TYPE (nextf) == error_mark_node)
+	return;
+      maxsize = size_diffop (DECL_FIELD_OFFSET (nextf),
+			     DECL_FIELD_OFFSET (repr));
+      if (host_integerp (maxsize, 1))
+	{
+	  maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
+			+ tree_low_cst (DECL_FIELD_BIT_OFFSET (nextf), 1)
+			- tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+	  /* If the group ends within a bitfield nextf does not need to be
+	     aligned to BITS_PER_UNIT.  Thus round up.  */
+	  maxbitsize = (maxbitsize + BITS_PER_UNIT - 1) & ~(BITS_PER_UNIT - 1);
+	}
+      else
+	maxbitsize = bitsize;
+    }
+  else
+    {
+      /* ???  If you consider that tail-padding of this struct might be
+         re-used when deriving from it we cannot really do the following
+	 and thus need to set maxsize to bitsize?  Also we cannot
+	 generally rely on maxsize to fold to an integer constant, so
+	 use bitsize as fallback for this case.  */
+      tree maxsize = size_diffop (TYPE_SIZE_UNIT (DECL_CONTEXT (field)),
+				  DECL_FIELD_OFFSET (repr));
+      if (host_integerp (maxsize, 1))
+	maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
+		      - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+      else
+	maxbitsize = bitsize;
+    }
+
+  /* Only if we don't artificially break up the representative in
+     the middle of a large bitfield with different possibly
+     overlapping representatives.  And all representatives start
+     at byte offset.  */
+  gcc_assert (maxbitsize % BITS_PER_UNIT == 0);
+
+  /* Find the smallest nice mode to use.  */
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (GET_MODE_BITSIZE (mode) >= bitsize)
+      break;
+  if (mode != VOIDmode
+      && (GET_MODE_BITSIZE (mode) > maxbitsize
+	  || GET_MODE_BITSIZE (mode) > MAX_FIXED_MODE_SIZE))
+    mode = VOIDmode;
+
+  if (mode == VOIDmode)
+    {
+      /* We really want a BLKmode representative only as a last resort,
+         considering the member b in
+	   struct { int a : 7; int b : 17; int c; } __attribute__((packed));
+	 Otherwise we simply want to split the representative up
+	 allowing for overlaps within the bitfield region as required for
+	   struct { int a : 7; int b : 7;
+		    int c : 10; int d; } __attribute__((packed));
+	 [0, 15] HImode for a and b, [8, 23] HImode for c.  */
+      DECL_SIZE (repr) = bitsize_int (bitsize);
+      DECL_SIZE_UNIT (repr) = size_int (bitsize / BITS_PER_UNIT);
+      DECL_MODE (repr) = BLKmode;
+      TREE_TYPE (repr) = build_array_type_nelts (unsigned_char_type_node,
+						 bitsize / BITS_PER_UNIT);
+    }
+  else
+    {
+      unsigned HOST_WIDE_INT modesize = GET_MODE_BITSIZE (mode);
+      DECL_SIZE (repr) = bitsize_int (modesize);
+      DECL_SIZE_UNIT (repr) = size_int (modesize / BITS_PER_UNIT);
+      DECL_MODE (repr) = mode;
+      TREE_TYPE (repr) = lang_hooks.types.type_for_mode (mode, 1);
+    }
+
+  /* Remember whether the bitfield group is at the end of the
+     structure or not.  */
+  DECL_CHAIN (repr) = nextf;
+}
+
+/* Compute and set FIELD_DECLs for the underlying objects we should
+   use for bitfield access for the structure laid out with RLI.  */
+
+static void
+finish_bitfield_layout (record_layout_info rli)
+{
+  tree field, prev;
+  tree repr = NULL_TREE;
+
+  /* Unions would be special, for the ease of type-punning optimizations
+     we could use the underlying type as hint for the representative
+     if the bitfield would fit and the representative would not exceed
+     the union in size.  */
+  if (TREE_CODE (rli->t) != RECORD_TYPE)
+    return;
+
+  for (prev = NULL_TREE, field = TYPE_FIELDS (rli->t);
+       field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+
+      /* In the C++ memory model, consecutive bit fields in a structure are
+	 considered one memory location and updating a memory location
+	 may not store into adjacent memory locations.  */
+      if (!repr
+	  && DECL_BIT_FIELD_TYPE (field))
+	{
+	  /* Start new representative.  */
+	  repr = start_bitfield_representative (field);
+	}
+      else if (repr
+	       && ! DECL_BIT_FIELD_TYPE (field))
+	{
+	  /* Finish off new representative.  */
+	  finish_bitfield_representative (repr, prev);
+	  repr = NULL_TREE;
+	}
+      else if (DECL_BIT_FIELD_TYPE (field))
+	{
+	  gcc_assert (repr != NULL_TREE);
+
+	  /* Zero-size bitfields finish off a representative and
+	     do not have a representative themselves.  This is
+	     required by the C++ memory model.  */
+	  if (integer_zerop (DECL_SIZE (field)))
+	    {
+	      finish_bitfield_representative (repr, prev);
+	      repr = NULL_TREE;
+	    }
+
+	  /* We assume that either DECL_FIELD_OFFSET of the representative
+	     and each bitfield member is a constant or they are equal.
+	     This is because we need to be able to compute the bit-offset
+	     of each field relative to the representative in get_bit_range
+	     during RTL expansion.
+	     If these constraints are not met, simply force a new
+	     representative to be generated.  That will at most
+	     generate worse code but still maintain correctness with
+	     respect to the C++ memory model.  */
+	  else if (!((host_integerp (DECL_FIELD_OFFSET (repr), 1)
+		      && host_integerp (DECL_FIELD_OFFSET (field), 1))
+		     || operand_equal_p (DECL_FIELD_OFFSET (repr),
+					 DECL_FIELD_OFFSET (field), 0)))
+	    {
+	      finish_bitfield_representative (repr, prev);
+	      repr = start_bitfield_representative (field);
+	    }
+	}
+      else
+	continue;
+
+      if (repr)
+	DECL_BIT_FIELD_REPRESENTATIVE (field) = repr;
+
+      prev = field;
+    }
+
+  if (repr)
+    finish_bitfield_representative (repr, prev);
+}
+
 /* Do all of the work required to layout the type indicated by RLI,
    once the fields have been laid out.  This function will call `free'
    for RLI, unless FREE_P is false.  Passing a value other than false
@@ -1741,6 +1956,9 @@ finish_record_layout (record_layout_info rli, int free_p)
 
   /* Perform any last tweaks to the TYPE_SIZE, etc.  */
   finalize_type_size (rli->t);
+
+  /* Compute bitfield representatives.  */
+  finish_bitfield_layout (rli);
 
   /* Propagate TYPE_PACKED to variants.  With C++ templates,
      handle_packed_attribute is too early to do this.  */

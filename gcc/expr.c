@@ -4439,113 +4439,88 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
 /* In the C++ memory model, consecutive bit fields in a structure are
    considered one memory location.
 
-   Given a COMPONENT_REF, this function returns the bit range of
-   consecutive bits in which this COMPONENT_REF belongs in.  The
-   values are returned in *BITSTART and *BITEND.  If either the C++
-   memory model is not activated, or this memory access is not thread
-   visible, 0 is returned in *BITSTART and *BITEND.
+   Given a COMPONENT_REF EXP at position (BITPOS, OFFSET), this function
+   returns the bit range of consecutive bits in which this COMPONENT_REF
+   belongs.  The values are returned in *BITSTART and *BITEND.  *BITPOS
+   and *OFFSET may be adjusted in the process.
 
-   EXP is the COMPONENT_REF.
-   INNERDECL is the actual object being referenced.
-   BITPOS is the position in bits where the bit starts within the structure.
-   BITSIZE is size in bits of the field being referenced in EXP.
-
-   For example, while storing into FOO.A here...
-
-      struct {
-        BIT 0:
-          unsigned int a : 4;
-	  unsigned int b : 1;
-	BIT 8:
-	  unsigned char c;
-	  unsigned int d : 6;
-      } foo;
-
-   ...we are not allowed to store past <b>, so for the layout above, a
-   range of 0..7 (because no one cares if we store into the
-   padding).  */
+   If the access does not need to be restricted, 0 is returned in both
+   *BITSTART and *BITEND.  */
 
 static void
 get_bit_range (unsigned HOST_WIDE_INT *bitstart,
 	       unsigned HOST_WIDE_INT *bitend,
-	       tree exp, tree innerdecl,
-	       HOST_WIDE_INT bitpos, HOST_WIDE_INT bitsize)
+	       tree exp,
+	       HOST_WIDE_INT *bitpos,
+	       tree *offset)
 {
-  tree field, record_type, fld;
-  bool found_field = false;
-  bool prev_field_is_bitfield;
+  HOST_WIDE_INT bitoffset;
+  tree field, repr;
 
   gcc_assert (TREE_CODE (exp) == COMPONENT_REF);
 
-  /* If other threads can't see this value, no need to restrict stores.  */
-  if (ALLOW_STORE_DATA_RACES
-      || ((TREE_CODE (innerdecl) == MEM_REF
-	   || TREE_CODE (innerdecl) == TARGET_MEM_REF)
-	  && !ptr_deref_may_alias_global_p (TREE_OPERAND (innerdecl, 0)))
-      || (DECL_P (innerdecl)
-	  && ((TREE_CODE (innerdecl) == VAR_DECL
-	       && DECL_THREAD_LOCAL_P (innerdecl))
-	      || !TREE_STATIC (innerdecl))))
+  field = TREE_OPERAND (exp, 1);
+  repr = DECL_BIT_FIELD_REPRESENTATIVE (field);
+  /* If we do not have a DECL_BIT_FIELD_REPRESENTATIVE there is no
+     need to limit the range we can access.  */
+  if (!repr)
     {
       *bitstart = *bitend = 0;
       return;
     }
 
-  /* Bit field we're storing into.  */
-  field = TREE_OPERAND (exp, 1);
-  record_type = DECL_FIELD_CONTEXT (field);
-
-  /* Count the contiguous bitfields for the memory location that
-     contains FIELD.  */
-  *bitstart = 0;
-  prev_field_is_bitfield = true;
-  for (fld = TYPE_FIELDS (record_type); fld; fld = DECL_CHAIN (fld))
+  /* If we have a DECL_BIT_FIELD_REPRESENTATIVE but the enclosing record is
+     part of a larger bit field, then the representative does not serve any
+     useful purpose.  This can occur in Ada.  */
+  if (handled_component_p (TREE_OPERAND (exp, 0)))
     {
-      tree t, offset;
-      enum machine_mode mode;
-      int unsignedp, volatilep;
-
-      if (TREE_CODE (fld) != FIELD_DECL)
-	continue;
-
-      t = build3 (COMPONENT_REF, TREE_TYPE (exp),
-		  unshare_expr (TREE_OPERAND (exp, 0)),
-		  fld, NULL_TREE);
-      get_inner_reference (t, &bitsize, &bitpos, &offset,
-			   &mode, &unsignedp, &volatilep, true);
-
-      if (field == fld)
-	found_field = true;
-
-      if (DECL_BIT_FIELD_TYPE (fld) && bitsize > 0)
+      enum machine_mode rmode;
+      HOST_WIDE_INT rbitsize, rbitpos;
+      tree roffset;
+      int unsignedp;
+      int volatilep = 0;
+      get_inner_reference (TREE_OPERAND (exp, 0), &rbitsize, &rbitpos,
+			   &roffset, &rmode, &unsignedp, &volatilep, false);
+      if ((rbitpos % BITS_PER_UNIT) != 0)
 	{
-	  if (prev_field_is_bitfield == false)
-	    {
-	      *bitstart = bitpos;
-	      prev_field_is_bitfield = true;
-	    }
-	}
-      else
-	{
-	  prev_field_is_bitfield = false;
-	  if (found_field)
-	    break;
+	  *bitstart = *bitend = 0;
+	  return;
 	}
     }
-  gcc_assert (found_field);
 
-  if (fld)
+  /* Compute the adjustment to bitpos from the offset of the field
+     relative to the representative.  DECL_FIELD_OFFSET of field and
+     repr are the same by construction if they are not constants,
+     see finish_bitfield_layout.  */
+  if (host_integerp (DECL_FIELD_OFFSET (field), 1)
+      && host_integerp (DECL_FIELD_OFFSET (repr), 1))
+    bitoffset = (tree_low_cst (DECL_FIELD_OFFSET (field), 1)
+		 - tree_low_cst (DECL_FIELD_OFFSET (repr), 1)) * BITS_PER_UNIT;
+  else
+    bitoffset = 0;
+  bitoffset += (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+		- tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+
+  /* If the adjustment is larger than bitpos, we would have a negative bit
+     position for the lower bound and this may wreak havoc later.  This can
+     occur only if we have a non-null offset, so adjust offset and bitpos
+     to make the lower bound non-negative.  */
+  if (bitoffset > *bitpos)
     {
-      /* We found the end of the bit field sequence.  Include the
-	 padding up to the next field and be done.  */
-      *bitend = bitpos - 1;
+      HOST_WIDE_INT adjust = bitoffset - *bitpos;
+
+      gcc_assert ((adjust % BITS_PER_UNIT) == 0);
+      gcc_assert (*offset != NULL_TREE);
+
+      *bitpos += adjust;
+      *offset
+	= size_binop (MINUS_EXPR, *offset, size_int (adjust / BITS_PER_UNIT));
+      *bitstart = 0;
     }
   else
-    {
-      /* If this is the last element in the structure, include the padding
-	 at the end of structure.  */
-      *bitend = TREE_INT_CST_LOW (TYPE_SIZE (record_type)) - 1;
-    }
+    *bitstart = *bitpos - bitoffset;
+
+  *bitend = *bitstart + tree_low_cst (DECL_SIZE (repr), 1) - 1;
 }
 
 /* Returns true if the MEM_REF REF refers to an object that does not
@@ -4675,8 +4650,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 
       if (TREE_CODE (to) == COMPONENT_REF
 	  && DECL_BIT_FIELD_TYPE (TREE_OPERAND (to, 1)))
-	get_bit_range (&bitregion_start, &bitregion_end,
-		       to, tem, bitpos, bitsize);
+	get_bit_range (&bitregion_start, &bitregion_end, to, &bitpos, &offset);
 
       /* If we are going to use store_bit_field and extract_bit_field,
 	 make sure to_rtx will be safe for multiple use.  */

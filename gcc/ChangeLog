@@ -1,3 +1,57 @@
+2012-06-04  Richard Guenther  <rguenther@suse.de>
+	Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2012-04-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+        * expr.c (get_bit_range): Add OFFSET parameter and adjust BITPOS.
+        Change type of BITOFFSET to signed.  Make sure the lower bound of
+        the computed range is non-negative by adjusting OFFSET and BITPOS.
+        (expand_assignment): Adjust call to get_bit_range.
+
+	2012-03-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+        * expr.c (get_bit_range): Return the null range if the enclosing record
+        is part of a larger bit field.
+
+	2012-03-20  Richard Guenther  <rguenther@suse.de>
+
+        * stor-layout.c (finish_bitfield_representative): Fallback
+        to conservative maximum size if the padding up to the next
+        field cannot be computed as a constant.
+        (finish_bitfield_layout): If we cannot compute the distance
+        between the start of the bitfield representative and the
+        bitfield member start a new representative.
+        * expr.c (get_bit_range): The distance between the start of
+        the bitfield representative and the bitfield member is zero
+        if the field offsets are not constants.
+
+	2012-03-16  Richard Guenther  <rguenther@suse.de>
+
+        * stor-layout.c (finish_bitfield_representative): Fall back
+        to the conservative maximum size if we cannot compute the
+        size of the tail padding.
+
+	2012-03-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (DECL_BIT_FIELD_REPRESENTATIVE): New define.
+	* stor-layout.c (start_bitfield_representative): New function.
+	(finish_bitfield_representative): Likewise.
+	(finish_bitfield_layout): Likewise.
+	(finish_record_layout): Call finish_bitfield_layout.
+	* tree.c (free_lang_data_in_decl): Only free DECL_QUALIFIER
+	for QUAL_UNION_TYPE fields.
+	* tree-streamer-in.c (lto_input_ts_field_decl_tree_pointers):
+	Stream DECL_BIT_FIELD_REPRESENTATIVE.
+	* tree-streamer-out.c (write_ts_field_decl_tree_pointers): Likewise.
+
+	PR middle-end/52080
+	PR middle-end/52097
+	PR middle-end/48124
+	* expr.c (get_bit_range): Unconditionally extract bitrange
+	from DECL_BIT_FIELD_REPRESENTATIVE.
+	(expand_assignment): Adjust call to get_bit_range.
+
 2012-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/53501
