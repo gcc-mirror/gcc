@@ -1,3 +1,19 @@
+2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* output.h (merge_weak, assemble_alias,
+	initializer_constant_valid_p,
+	initializer_constant_valid_for_bitfield_p): Move protos from here...
+	* tree.h: ... to here.
+	* cgraphclones.c: Do not include output.h.
+	* gimplify.c: Likewise.
+	* reload.c: Likewise.
+	* recog.c: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+	* Makefile.in: Fix dependencies.
+
 2012-06-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/46261

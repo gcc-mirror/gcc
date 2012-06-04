@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "intl.h"
-#include "output.h"
+#include "output.h"	/* for assemble_string */
 #include "target.h"
 #include "common/common-target.h"
 

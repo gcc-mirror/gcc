@@ -1,3 +1,8 @@
+2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc-interface/utils2.c: Do not include output.h.
+	* gcc-interface/Make-lang.in: Fix dependencies.
+
 2012-05-29  Michael Matz  <matz@suse.de>
 
 	* gcc-interface/utils.c (create_var_decl_1): Don't call expand_decl.

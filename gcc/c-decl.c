@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "flags.h"
 #include "function.h"
-#include "output.h"
 #include "c-tree.h"
 #include "toplev.h"
 #include "tm_p.h"

@@ -157,11 +157,6 @@ extern const char *get_insn_template (int, rtx);
 
 /* Functions in varasm.c.  */
 
-/* Declare DECL to be a weak symbol.  */
-extern void declare_weak (tree);
-/* Merge weak status.  */
-extern void merge_weak (tree, tree);
-
 /* Emit any pending weak declarations.  */
 extern void weak_finish (void);
 
@@ -179,7 +174,6 @@ extern int decode_reg_name (const char *);
    external name.  */
 extern int decode_reg_name_and_count (const char *, int *);
 
-extern void assemble_alias (tree, tree);
 extern void do_assemble_alias (tree, tree);
 
 extern void default_assemble_visibility (tree, int);
@@ -304,22 +298,6 @@ extern void output_quoted_string (FILE *, const char *);
    evaluate the property while walking a constructor for other purposes.  */
 
 extern bool constructor_static_from_elts_p (const_tree);
-
-/* Return nonzero if VALUE is a valid constant-valued expression
-   for use in initializing a static variable; one that can be an
-   element of a "constant" initializer.
-
-   Return null_pointer_node if the value is absolute;
-   if it is relocatable, return the variable that determines the relocation.
-   We assume that VALUE has been folded as much as possible;
-   therefore, we do not need to check for such things as
-   arithmetic-combinations of integers.  */
-extern tree initializer_constant_valid_p (tree, tree);
-
-/* Return true if VALUE is a valid constant-valued expression
-   for use in initializing a static bit-field; one that can be
-   an element of a "constant" initializer.  */
-extern bool initializer_constant_valid_for_bitfield_p (tree);
 
 /* Output assembler code for constant EXP to FILE, with no label.
    This includes the pseudo-op such as ".int" or ".byte", and a newline.

@@ -106,7 +106,6 @@ a register with any other reload.  */
 #include "addresses.h"
 #include "hard-reg-set.h"
 #include "flags.h"
-#include "output.h"
 #include "function.h"
 #include "params.h"
 #include "target.h"
