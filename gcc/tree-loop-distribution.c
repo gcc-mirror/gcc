@@ -878,6 +878,20 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
     partition->kind = PKIND_MEMSET;
 }
 
+/* For a data reference REF, return the declaration of its base
+   address or NULL_TREE if the base is not determined.  */
+
+static tree
+ref_base_address (data_reference_p dr)
+{
+  tree base_address = DR_BASE_ADDRESS (dr);
+  if (base_address
+      && TREE_CODE (base_address) == ADDR_EXPR)
+    return TREE_OPERAND (base_address, 0);
+
+  return base_address;
+}
+
 /* Returns true when PARTITION1 and PARTITION2 have similar memory
    accesses in RDG.  */
 
@@ -885,17 +899,36 @@ static bool
 similar_memory_accesses (struct graph *rdg, partition_t partition1,
 			 partition_t partition2)
 {
-  unsigned i, j;
+  unsigned i, j, k, l;
   bitmap_iterator bi, bj;
+  data_reference_p ref1, ref2;
 
+  /* First check whether in the intersection of the two partitions are
+     any loads or stores.  Common loads are the situation that happens
+     most often.  */
+  EXECUTE_IF_AND_IN_BITMAP (partition1->stmts, partition2->stmts, 0, i, bi)
+    if (RDG_MEM_WRITE_STMT (rdg, i)
+	|| RDG_MEM_READS_STMT (rdg, i))
+      return true;
+
+  /* Then check all data-references against each other.  */
   EXECUTE_IF_SET_IN_BITMAP (partition1->stmts, 0, i, bi)
     if (RDG_MEM_WRITE_STMT (rdg, i)
 	|| RDG_MEM_READS_STMT (rdg, i))
       EXECUTE_IF_SET_IN_BITMAP (partition2->stmts, 0, j, bj)
 	if (RDG_MEM_WRITE_STMT (rdg, j)
 	    || RDG_MEM_READS_STMT (rdg, j))
-	  if (rdg_has_similar_memory_accesses (rdg, i, j))
-	    return true;
+	  {
+	    FOR_EACH_VEC_ELT (data_reference_p, RDG_DATAREFS (rdg, i), k, ref1)
+	      {
+		tree base1 = ref_base_address (ref1);
+		if (base1)
+		  FOR_EACH_VEC_ELT (data_reference_p,
+				    RDG_DATAREFS (rdg, j), l, ref2)
+		    if (base1 == ref_base_address (ref2))
+		      return true;
+	      }
+	  }
 
   return false;
 }
@@ -1252,6 +1285,16 @@ tree_loop_distribution (void)
   struct loop *loop;
   loop_iterator li;
   bool changed = false;
+  basic_block bb;
+
+  FOR_ALL_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	gimple_set_uid (gsi_stmt (gsi), -1);
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	gimple_set_uid (gsi_stmt (gsi), -1);
+    }
 
   /* We can at the moment only distribute non-nested loops, thus restrict
      walking to innermost loops.  */

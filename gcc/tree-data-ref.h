@@ -403,7 +403,6 @@ extern bool compute_all_dependences (VEC (data_reference_p, heap) *,
 extern tree find_data_references_in_bb (struct loop *, basic_block,
                                         VEC (data_reference_p, heap) **);
 
-extern void create_rdg_vertices (struct graph *, VEC (gimple, heap) *);
 extern bool dr_may_alias_p (const struct data_reference *,
 			    const struct data_reference *, bool);
 extern bool dr_equal_offsets_p (struct data_reference *,
@@ -525,6 +524,9 @@ typedef struct rdg_vertex
   /* The statement represented by this vertex.  */
   gimple stmt;
 
+  /* Vector of data-references in this statement.  */
+  VEC(data_reference_p, heap) *datarefs;
+
   /* True when the statement contains a write to memory.  */
   bool has_mem_write;
 
@@ -533,9 +535,11 @@ typedef struct rdg_vertex
 } *rdg_vertex_p;
 
 #define RDGV_STMT(V)     ((struct rdg_vertex *) ((V)->data))->stmt
+#define RDGV_DATAREFS(V) ((struct rdg_vertex *) ((V)->data))->datarefs
 #define RDGV_HAS_MEM_WRITE(V) ((struct rdg_vertex *) ((V)->data))->has_mem_write
 #define RDGV_HAS_MEM_READS(V) ((struct rdg_vertex *) ((V)->data))->has_mem_reads
 #define RDG_STMT(RDG, I) RDGV_STMT (&(RDG->vertices[I]))
+#define RDG_DATAREFS(RDG, I) RDGV_DATAREFS (&(RDG->vertices[I]))
 #define RDG_MEM_WRITE_STMT(RDG, I) RDGV_HAS_MEM_WRITE (&(RDG->vertices[I]))
 #define RDG_MEM_READS_STMT(RDG, I) RDGV_HAS_MEM_READS (&(RDG->vertices[I]))
 
@@ -608,7 +612,6 @@ index_in_loop_nest (int var, VEC (loop_p, heap) *loop_nest)
 void stores_from_loop (struct loop *, VEC (gimple, heap) **);
 void stores_zero_from_loop (struct loop *, VEC (gimple, heap) **);
 bool rdg_defs_used_in_other_loops_p (struct graph *, int);
-bool have_similar_memory_accesses (gimple, gimple);
 bool stmt_with_adjacent_zero_store_dr_p (gimple);
 
 /* Returns true when STRIDE is equal in absolute value to the size of
@@ -621,16 +624,6 @@ stride_of_unit_type_p (tree stride, tree type)
 	  && tree_int_cst_equal (fold_unary (ABS_EXPR, TREE_TYPE (stride),
 					     stride),
 				 TYPE_SIZE_UNIT (type)));
-}
-
-/* Determines whether RDG vertices V1 and V2 access to similar memory
-   locations, in which case they have to be in the same partition.  */
-
-static inline bool
-rdg_has_similar_memory_accesses (struct graph *rdg, int v1, int v2)
-{
-  return have_similar_memory_accesses (RDG_STMT (rdg, v1),
-				       RDG_STMT (rdg, v2));
 }
 
 /* In tree-data-ref.c  */
