@@ -1,3 +1,8 @@
+2012-06-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/53555
+	* config/i386/i386.c (ix86_sched_reorder) Skip debug insns.
+
 2012-06-04  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (is_unit_die): New.
