@@ -23919,6 +23919,8 @@ ix86_sched_reorder(FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
         {
           rtx con;
 	  con = DEP_CON (dep);
+	  if (!NONDEBUG_INSN_P (con))
+	    continue;
           insn1 = PATTERN (con);
           if (GET_CODE (insn1) == PARALLEL)
             insn1 = XVECEXP (insn1, 0, 0);
@@ -23935,6 +23937,8 @@ ix86_sched_reorder(FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
                 {
                   rtx pro;
                   pro = DEP_PRO (dep1);
+		  if (!NONDEBUG_INSN_P (pro))
+		    continue;
                   if (pro != insn)
                     index = -1;
 	        }
