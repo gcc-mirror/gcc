@@ -178,7 +178,7 @@ gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec
   struct timespec ts;
   int err = clock_gettime (CLOCK_PROCESS_CPUTIME_ID, &ts);
   *user_sec = ts.tv_sec;
-  *user_usecs = ts.tv_nsec / 1000;
+  *user_usec = ts.tv_nsec / 1000;
   *system_sec = *system_usec = 0;
   return err;
 
