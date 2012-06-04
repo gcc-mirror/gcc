@@ -1343,7 +1343,7 @@ UDItype __umulsidi3 (USItype, USItype);
     __asm__ ("subcc\t%r5,%6,%1\n\t"					\
 	     "sub\t%r3,%4,%0\n\t"					\
 	     "movcs\t%%xcc, 1, %2\n\t"					\
-	     "add\t%0, %2, %0"						\
+	     "sub\t%0, %2, %0"						\
 	     : "=r" ((UDItype)(sh)),				      	\
 	       "=&r" ((UDItype)(sl)),				      	\
 	       "+r" (__carry)				      		\
