@@ -1,3 +1,14 @@
+2012-06-04  Edmar Wienskoski  <edmar@freescale.com>
+
+	* gcc.target/powerpc/cell_builtin_1.c: New test case.
+	* gcc.target/powerpc/cell_builtin_2.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_3.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_4.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_5.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_6.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_7.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_8.c: Ditto.
+
 2012-05-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline
