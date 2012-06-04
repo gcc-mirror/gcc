@@ -1,4 +1,5 @@
-2012-06-04  Janne Blomqvist  <jb@gcc.gnu.org>
+2012-06-04  Robert Mason  <rbmj@verizon.net>
+	    Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/53456
 	* intrinsics/time_1.h (gf_cputime): Fix typo in clock_gettime branch.
