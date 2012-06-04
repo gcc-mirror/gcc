@@ -22158,7 +22158,11 @@ dwarf2out_finish (const char *filename)
   for (node = deferred_asm_name; node; node = node->next)
     {
       tree decl = node->created_for;
-      if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
+      /* When generating LTO bytecode we can not generate new assembler
+         names at this point and all important decls got theirs via
+	 free-lang-data.  */
+      if ((!flag_generate_lto || DECL_ASSEMBLER_NAME_SET_P (decl))
+	  && DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
 	{
 	  add_linkage_attr (node->die, decl);
 	  move_linkage_attr (node->die);
