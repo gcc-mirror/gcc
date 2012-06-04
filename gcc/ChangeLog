@@ -1,3 +1,30 @@
+2012-06-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-data-ref.c (struct rdg_vertex_info): Remove.
+	(rdg_vertex_for_stmt): Simplify using gimple_uid.
+	(create_rdg_vertices): Pass loop argument, remove stmt to RDG index
+	hashtable.   Record stmt data-references.
+	(hash_stmt_vertex_info): Remove.
+	(eq_stmt_vertex_info): Likewise.
+	(hash_stmt_vertex_del): Likewise.
+	(build_empty_rdg): Simplify.
+	(build_rdg): Adjust.
+	(free_rdg): Likewise.
+	(ref_base_address): Remove.
+	(have_similar_memory_accesses): Likewise.
+	* tree-data-ref.h (create_rdg_vertices): Remove.
+	(struct rdg_vertex): Add datarefs member.
+	(RDGV_DATAREFS): New define.
+	(RDG_DATAREFS): Likewise.
+	(have_similar_memory_accesses): Remove.
+	(rdg_has_similar_memory_accesses): Likewise.
+	* tree-loop-distribution.c (ref_base_address): Re-implement here.
+	(similar_memory_accesses): Re-implement using existing data-references.
+	(tree_loop_distribution): Initialize stmt uids for the stmt to
+	RDG index mapping.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Only
+	access stmt vinfo for stmts in loop.
+
 2012-06-04  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/53461
