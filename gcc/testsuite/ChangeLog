@@ -1,5 +1,10 @@
+2012-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53550
+	* gcc.dg/pr53550.c: New test.
+
 2012-06-04  Richard Guenther  <rguenther@suse.de>
-	Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
 	PR middle-end/52080
