@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "langhooks.h"
 #include "basic-block.h"
-#include "output.h"
 #include "function.h"
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
@@ -1756,7 +1755,7 @@ normalize_preds (VEC(use_pred_info_t, heap) **preds, size_t *n)
 
 /* Computes the predicates that guard the use and checks
    if the incoming paths that have empty (or possibly
-   empty) defintion can be pruned/filtered. The function returns
+   empty) definition can be pruned/filtered. The function returns
    true if it can be determined that the use of PHI's def in
    USE_STMT is guarded with a predicate set not overlapping with
    predicate sets of all runtime paths that do not have a definition.
@@ -1764,7 +1763,7 @@ normalize_preds (VEC(use_pred_info_t, heap) **preds, size_t *n)
    the bb of the use (for phi operand use, the bb is not the bb of
    the phi stmt, but the src bb of the operand edge). UNINIT_OPNDS
    is a bit vector. If an operand of PHI is uninitialized, the
-   correponding bit in the vector is 1.  VISIED_PHIS is a pointer
+   corresponding bit in the vector is 1.  VISIED_PHIS is a pointer
    set of phis being visted.  */
 
 static bool

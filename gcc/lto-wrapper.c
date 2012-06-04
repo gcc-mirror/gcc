@@ -727,7 +727,7 @@ run_gcc (unsigned argc, char *argv[])
       obstack_ptr_grow (&argv_obstack, "-fwpa");
     }
 
-  /* Append the input objects and possible preceeding arguments.  */
+  /* Append the input objects and possible preceding arguments.  */
   for (i = 1; i < argc; ++i)
     obstack_ptr_grow (&argv_obstack, argv[i]);
   obstack_ptr_grow (&argv_obstack, NULL);

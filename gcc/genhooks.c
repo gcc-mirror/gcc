@@ -91,7 +91,7 @@ s_hook_eq_p (const void *p1, const void *p2)
 }
 
 /* Read the documentation file with name IN_FNAME, perform substitutions
-   to incorporate informtion from hook_array, and emit the result on stdout.
+   to incorporate information from hook_array, and emit the result on stdout.
    Hooks defined with DEFHOOK / DEFHOOKPOD are emitted at the place of a
    matching @hook in the input file; if there is no matching @hook, the
    hook is emitted after the hook that precedes it in target.def .

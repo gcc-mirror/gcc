@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "params.h"
 #include "df.h"
-#include "output.h"
 #include "reload.h"
 #include "sparseset.h"
 #include "ira-int.h"
@@ -1829,8 +1828,8 @@ low_pressure_loop_node_p (ira_loop_tree_node_t node)
   for (i = 0; i < ira_pressure_classes_num; i++)
     {
       pclass = ira_pressure_classes[i];
-      if (node->reg_pressure[pclass] > ira_available_class_regs[pclass]
-	  && ira_available_class_regs[pclass] > 1)
+      if (node->reg_pressure[pclass] > ira_class_hard_regs_num[pclass]
+	  && ira_class_hard_regs_num[pclass] > 1)
 	return false;
     }
   return true;

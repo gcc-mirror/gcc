@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "function.h"
 #include "regs.h"
-#include "output.h"
 #include "alloc-pool.h"
 #include "flags.h"
 #include "hard-reg-set.h"
@@ -3734,7 +3733,7 @@ df_get_eh_block_artificial_uses (bitmap eh_block_artificial_uses)
 {
   bitmap_clear (eh_block_artificial_uses);
 
-  /* The following code (down thru the arg_pointer setting APPEARS
+  /* The following code (down through the arg_pointer setting APPEARS
      to be necessary because there is nothing that actually
      describes what the exception handling code may actually need
      to keep alive.  */
@@ -4539,7 +4538,7 @@ df_scan_verify (void)
 
   /* Verification is a 4 step process. */
 
-  /* (1) All of the refs are marked by going thru the reg chains.  */
+  /* (1) All of the refs are marked by going through the reg chains.  */
   for (i = 0; i < DF_REG_SIZE (df); i++)
     {
       gcc_assert (df_reg_chain_mark (DF_REG_DEF_CHAIN (i), i, true, false)

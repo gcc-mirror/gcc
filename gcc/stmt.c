@@ -827,7 +827,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	}
       else
 	{
-	  op = assign_temp (type, 0, 0, 1);
+	  op = assign_temp (type, 0, 1);
 	  op = validize_mem (op);
 	  if (!MEM_P (op) && TREE_CODE (TREE_VALUE (tail)) == SSA_NAME)
 	    set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (TREE_VALUE (tail)), op);
@@ -910,31 +910,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 		 at this point.  Ignore it: clearly this *is* a memory.  */
 	    }
 	  else
-	    {
-	      warning (0, "use of memory input without lvalue in "
-		       "asm operand %d is deprecated", i + noutputs);
-
-	      if (CONSTANT_P (op))
-		{
-		  rtx mem = force_const_mem (TYPE_MODE (type), op);
-		  if (mem)
-		    op = validize_mem (mem);
-		  else
-		    op = force_reg (TYPE_MODE (type), op);
-		}
-	      if (REG_P (op)
-		  || GET_CODE (op) == SUBREG
-		  || GET_CODE (op) == CONCAT)
-		{
-		  tree qual_type = build_qualified_type (type,
-							 (TYPE_QUALS (type)
-							  | TYPE_QUAL_CONST));
-		  rtx memloc = assign_temp (qual_type, 1, 1, 1);
-		  memloc = validize_mem (memloc);
-		  emit_move_insn (memloc, op);
-		  op = memloc;
-		}
-	    }
+	    gcc_unreachable ();
 	}
 
       generating_concat_p = old_generating_concat_p;
@@ -1603,7 +1579,7 @@ expand_return (tree retval)
       tree ot = TREE_TYPE (DECL_RESULT (current_function_decl));
       tree nt = build_qualified_type (ot, TYPE_QUALS (ot) | TYPE_QUAL_CONST);
 
-      val = assign_temp (nt, 0, 0, 1);
+      val = assign_temp (nt, 0, 1);
       val = expand_expr (retval_rhs, val, GET_MODE (val), EXPAND_NORMAL);
       val = force_not_mem (val);
       /* Return the calculated value.  */
@@ -1687,111 +1663,6 @@ expand_nl_goto_receiver (void)
      scheduling.  Specifically, the update of the frame pointer must
      happen immediately, not later.  */
   emit_insn (gen_blockage ());
-}
-
-/* Generate RTL for the automatic variable declaration DECL.
-   (Other kinds of declarations are simply ignored if seen here.)  */
-
-void
-expand_decl (tree decl)
-{
-  tree type;
-
-  type = TREE_TYPE (decl);
-
-  /* For a CONST_DECL, set mode, alignment, and sizes from those of the
-     type in case this node is used in a reference.  */
-  if (TREE_CODE (decl) == CONST_DECL)
-    {
-      DECL_MODE (decl) = TYPE_MODE (type);
-      DECL_ALIGN (decl) = TYPE_ALIGN (type);
-      DECL_SIZE (decl) = TYPE_SIZE (type);
-      DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (type);
-      return;
-    }
-
-  /* Otherwise, only automatic variables need any expansion done.  Static and
-     external variables, and external functions, will be handled by
-     `assemble_variable' (called from finish_decl).  TYPE_DECL requires
-     nothing.  PARM_DECLs are handled in `assign_parms'.  */
-  if (TREE_CODE (decl) != VAR_DECL)
-    return;
-
-  if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
-    return;
-
-  /* Create the RTL representation for the variable.  */
-
-  if (type == error_mark_node)
-    SET_DECL_RTL (decl, gen_rtx_MEM (BLKmode, const0_rtx));
-
-  else if (DECL_SIZE (decl) == 0)
-    {
-      /* Variable with incomplete type.  */
-      rtx x;
-      if (DECL_INITIAL (decl) == 0)
-	/* Error message was already done; now avoid a crash.  */
-	x = gen_rtx_MEM (BLKmode, const0_rtx);
-      else
-	/* An initializer is going to decide the size of this array.
-	   Until we know the size, represent its address with a reg.  */
-	x = gen_rtx_MEM (BLKmode, gen_reg_rtx (Pmode));
-
-      set_mem_attributes (x, decl, 1);
-      SET_DECL_RTL (decl, x);
-    }
-  else if (use_register_for_decl (decl))
-    {
-      /* Automatic variable that can go in a register.  */
-      enum machine_mode reg_mode = promote_decl_mode (decl, NULL);
-
-      SET_DECL_RTL (decl, gen_reg_rtx (reg_mode));
-
-      /* Note if the object is a user variable.  */
-      if (!DECL_ARTIFICIAL (decl))
-	  mark_user_reg (DECL_RTL (decl));
-
-      if (POINTER_TYPE_P (type))
-	mark_reg_pointer (DECL_RTL (decl),
-			  TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
-    }
-
-  else
-    {
-      rtx oldaddr = 0;
-      rtx addr;
-      rtx x;
-
-      /* Variable-sized decls are dealt with in the gimplifier.  */
-      gcc_assert (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST);
-
-      /* If we previously made RTL for this decl, it must be an array
-	 whose size was determined by the initializer.
-	 The old address was a register; set that register now
-	 to the proper address.  */
-      if (DECL_RTL_SET_P (decl))
-	{
-	  gcc_assert (MEM_P (DECL_RTL (decl)));
-	  gcc_assert (REG_P (XEXP (DECL_RTL (decl), 0)));
-	  oldaddr = XEXP (DECL_RTL (decl), 0);
-	}
-
-      /* Set alignment we actually gave this decl.  */
-      DECL_ALIGN (decl) = (DECL_MODE (decl) == BLKmode ? BIGGEST_ALIGNMENT
-			   : GET_MODE_BITSIZE (DECL_MODE (decl)));
-      DECL_USER_ALIGN (decl) = 0;
-
-      x = assign_temp (decl, 1, 1, 1);
-      set_mem_attributes (x, decl, 1);
-      SET_DECL_RTL (decl, x);
-
-      if (oldaddr)
-	{
-	  addr = force_operand (XEXP (DECL_RTL (decl), 0), oldaddr);
-	  if (addr != oldaddr)
-	    emit_move_insn (oldaddr, addr);
-	}
-    }
 }
 
 /* Emit code to save the current value of stack.  */

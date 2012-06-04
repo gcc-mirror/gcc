@@ -23,6 +23,7 @@ if { ![istarget powerpc*-*-*] && ![istarget rs6000-*-*] } then {
 
 # Load support procs.
 load_lib gcc-dg.exp
+load_lib torture-options.exp
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
@@ -47,4 +48,5 @@ set-torture-options $SAVRES_TEST_OPTS
 gcc-dg-runtest [list $srcdir/$subdir/savres.c] $alti
 
 # All done.
+torture-finish
 dg-finish

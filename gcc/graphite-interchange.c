@@ -144,7 +144,7 @@ build_partial_difference (ppl_Pointset_Powerset_C_Polyhedron_t *p,
 
      This means that all the time dimensions are equal except for
      time_depth, where the constraint is t_{depth} = t'_{depth} + 1
-     step.  More to this: we should be carefull not to add equalities
+     step.  More to this: we should be careful not to add equalities
      to the 'coupled' dimensions, which happens when the one dimension
      is stripmined dimension, and the other dimension corresponds
      to the point loop inside stripmined dimension.  */

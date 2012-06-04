@@ -1,3 +1,7 @@
+2012-05-29  Edmar Wienskoski  <edmar@freescale.com>
+
+	*  MAINTAINERS (Write After Approval): Add myself.
+
 2012-05-16  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.tpl (gcc-no-fixedincludes): Rename into ...

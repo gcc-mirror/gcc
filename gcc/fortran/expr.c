@@ -711,7 +711,7 @@ gfc_copy_shape (mpz_t *shape, int rank)
 
 
 /* Copy a shape array excluding dimension N, where N is an integer
-   constant expression.  Dimensions are numbered in fortran style --
+   constant expression.  Dimensions are numbered in Fortran style --
    starting with ONE.
 
    So, if the original shape array contains R elements
@@ -1943,12 +1943,6 @@ et0 (gfc_expr *e)
 }
 
 
-/* Check an intrinsic arithmetic operation to see if it is consistent
-   with some type of expression.  */
-
-static gfc_try check_init_expr (gfc_expr *);
-
-
 /* Scalarize an expression for an elemental intrinsic call.  */
 
 static gfc_try
@@ -1994,7 +1988,7 @@ scalarize_intrinsic_call (gfc_expr *e)
   for (; a; a = a->next)
     {
       /* Check that this is OK for an initialization expression.  */
-      if (a->expr && check_init_expr (a->expr) == FAILURE)
+      if (a->expr && gfc_check_init_expr (a->expr) == FAILURE)
 	goto cleanup;
 
       rank[n] = 0;
@@ -2231,7 +2225,7 @@ check_init_expr_arguments (gfc_expr *e)
   gfc_actual_arglist *ap;
 
   for (ap = e->value.function.actual; ap; ap = ap->next)
-    if (check_init_expr (ap->expr) == FAILURE)
+    if (gfc_check_init_expr (ap->expr) == FAILURE)
       return MATCH_ERROR;
 
   return MATCH_YES;
@@ -2319,7 +2313,7 @@ check_inquiry (gfc_expr *e, int not_restricted)
 			&ap->expr->where);
 	      return MATCH_ERROR;
 	  }
-	else if (not_restricted && check_init_expr (ap->expr) == FAILURE)
+	else if (not_restricted && gfc_check_init_expr (ap->expr) == FAILURE)
 	  return MATCH_ERROR;
 
 	if (not_restricted == 0
@@ -2437,8 +2431,8 @@ check_conversion (gfc_expr *e)
    intrinsics in the context of initialization expressions.  If
    FAILURE is returned an error message has been generated.  */
 
-static gfc_try
-check_init_expr (gfc_expr *e)
+gfc_try
+gfc_check_init_expr (gfc_expr *e)
 {
   match m;
   gfc_try t;
@@ -2449,7 +2443,7 @@ check_init_expr (gfc_expr *e)
   switch (e->expr_type)
     {
     case EXPR_OP:
-      t = check_intrinsic_op (e, check_init_expr);
+      t = check_intrinsic_op (e, gfc_check_init_expr);
       if (t == SUCCESS)
 	t = gfc_simplify_expr (e, 0);
 
@@ -2573,11 +2567,11 @@ check_init_expr (gfc_expr *e)
       break;
 
     case EXPR_SUBSTRING:
-      t = check_init_expr (e->ref->u.ss.start);
+      t = gfc_check_init_expr (e->ref->u.ss.start);
       if (t == FAILURE)
 	break;
 
-      t = check_init_expr (e->ref->u.ss.end);
+      t = gfc_check_init_expr (e->ref->u.ss.end);
       if (t == SUCCESS)
 	t = gfc_simplify_expr (e, 0);
 
@@ -2592,14 +2586,14 @@ check_init_expr (gfc_expr *e)
       if (t == FAILURE)
 	break;
 
-      t = gfc_check_constructor (e, check_init_expr);
+      t = gfc_check_constructor (e, gfc_check_init_expr);
       if (t == FAILURE)
 	break;
 
       break;
 
     case EXPR_ARRAY:
-      t = gfc_check_constructor (e, check_init_expr);
+      t = gfc_check_constructor (e, gfc_check_init_expr);
       if (t == FAILURE)
 	break;
 
@@ -2629,7 +2623,7 @@ gfc_reduce_init_expr (gfc_expr *expr)
   gfc_init_expr_flag = true;
   t = gfc_resolve_expr (expr);
   if (t == SUCCESS)
-    t = check_init_expr (expr);
+    t = gfc_check_init_expr (expr);
   gfc_init_expr_flag = false;
 
   if (t == FAILURE)
@@ -4405,7 +4399,7 @@ gfc_has_ultimate_pointer (gfc_expr *e)
 
 /* Check whether an expression is "simply contiguous", cf. F2008, 6.5.4.
    Note: A scalar is not regarded as "simply contiguous" by the standard.
-   if bool is not strict, some futher checks are done - for instance,
+   if bool is not strict, some further checks are done - for instance,
    a "(::1)" is accepted.  */
 
 bool
@@ -4482,7 +4476,7 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict)
 	return false;
 
       /* Following the standard, "(::1)" or - if known at compile time -
-	 "(lbound:ubound)" are not simply contigous; if strict
+	 "(lbound:ubound)" are not simply contiguous; if strict
 	 is false, they are regarded as simply contiguous.  */
       if (ar->stride[i] && (strict || ar->stride[i]->expr_type != EXPR_CONSTANT
 			    || ar->stride[i]->ts.type != BT_INTEGER

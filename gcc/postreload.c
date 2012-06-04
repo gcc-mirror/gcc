@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "reload.h"
 #include "recog.h"
-#include "output.h"
 #include "cselib.h"
 #include "diagnostic-core.h"
 #include "except.h"
@@ -683,7 +682,7 @@ struct reg_use
   /* Points to the memory reference enclosing the use, if any, NULL_RTX
      otherwise.  */
   rtx containing_mem;
-  /* Location of the register withing INSN.  */
+  /* Location of the register within INSN.  */
   rtx *usep;
   /* The reverse uid of the insn.  */
   int ruid;

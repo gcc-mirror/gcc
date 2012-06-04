@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
-#include "output.h"
 #include "diagnostic-core.h"
 #include "ggc.h"
 #include "target.h"
@@ -1826,7 +1825,7 @@ finish_bitfield_representative (tree repr, tree field)
   if (nextf)
     {
       tree maxsize;
-      /* If there was an error, the field may be not layed out
+      /* If there was an error, the field may be not laid out
          correctly.  Don't bother to do anything.  */
       if (TREE_TYPE (nextf) == error_mark_node)
 	return;
@@ -1907,7 +1906,7 @@ finish_bitfield_representative (tree repr, tree field)
 }
 
 /* Compute and set FIELD_DECLs for the underlying objects we should
-   use for bitfield access for the structure layed out with RLI.  */
+   use for bitfield access for the structure laid out with RLI.  */
 
 static void
 finish_bitfield_layout (record_layout_info rli)
@@ -2258,7 +2257,7 @@ layout_type (tree type)
 	      }
 
 	    /* If we arrived at a length of zero ignore any overflow
-	       that occured as part of the calculation.  There exists
+	       that occurred as part of the calculation.  There exists
 	       an association of the plus one where that overflow would
 	       not happen.  */
 	    if (integer_zerop (length)
@@ -2508,8 +2507,8 @@ initialize_sizetypes (void)
     = MIN (precision + BITS_PER_UNIT_LOG + 1, MAX_FIXED_MODE_SIZE);
   bprecision
     = GET_MODE_PRECISION (smallest_mode_for_size (bprecision, MODE_INT));
-  if (bprecision > HOST_BITS_PER_WIDE_INT * 2)
-    bprecision = HOST_BITS_PER_WIDE_INT * 2;
+  if (bprecision > HOST_BITS_PER_DOUBLE_INT)
+    bprecision = HOST_BITS_PER_DOUBLE_INT;
 
   /* Create stubs for sizetype and bitsizetype so we can create constants.  */
   sizetype = make_node (INTEGER_TYPE);
@@ -2610,10 +2609,10 @@ fixup_signed_type (tree type)
   int precision = TYPE_PRECISION (type);
 
   /* We can not represent properly constants greater then
-     2 * HOST_BITS_PER_WIDE_INT, still we need the types
+     HOST_BITS_PER_DOUBLE_INT, still we need the types
      as they are used by i386 vector extensions and friends.  */
-  if (precision > HOST_BITS_PER_WIDE_INT * 2)
-    precision = HOST_BITS_PER_WIDE_INT * 2;
+  if (precision > HOST_BITS_PER_DOUBLE_INT)
+    precision = HOST_BITS_PER_DOUBLE_INT;
 
   set_min_and_max_values_for_integral_type (type, precision,
 					    /*is_unsigned=*/false);
@@ -2632,10 +2631,10 @@ fixup_unsigned_type (tree type)
   int precision = TYPE_PRECISION (type);
 
   /* We can not represent properly constants greater then
-     2 * HOST_BITS_PER_WIDE_INT, still we need the types
+     HOST_BITS_PER_DOUBLE_INT, still we need the types
      as they are used by i386 vector extensions and friends.  */
-  if (precision > HOST_BITS_PER_WIDE_INT * 2)
-    precision = HOST_BITS_PER_WIDE_INT * 2;
+  if (precision > HOST_BITS_PER_DOUBLE_INT)
+    precision = HOST_BITS_PER_DOUBLE_INT;
 
   TYPE_UNSIGNED (type) = 1;
 

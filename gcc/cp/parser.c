@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "decl.h"
 #include "flags.h"
 #include "diagnostic-core.h"
-#include "output.h"
 #include "target.h"
 #include "cgraph.h"
 #include "c-family/c-common.h"
@@ -2009,7 +2008,7 @@ static tree cp_parser_class_name
 static tree cp_parser_class_specifier
   (cp_parser *);
 static tree cp_parser_class_head
-  (cp_parser *, bool *, tree *, tree *);
+  (cp_parser *, bool *, tree *);
 static enum tag_types cp_parser_class_key
   (cp_parser *);
 static void cp_parser_member_specification_opt
@@ -7246,6 +7245,9 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 					   cast_p, pidk);
   current.lhs_type = ERROR_MARK;
   current.prec = prec;
+
+  if (cp_parser_error_occurred (parser))
+    return error_mark_node;
 
   for (;;)
     {
@@ -17906,7 +17908,6 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   /* Parse the class-head.  */
   type = cp_parser_class_head (parser,
 			       &nested_name_specifier_p,
-			       &attributes,
 			       &bases);
   /* If the class-head was a semantic disaster, skip the entire body
      of the class.  */
@@ -17965,7 +17966,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       scope = CP_DECL_CONTEXT (TYPE_MAIN_DECL (type));
       old_scope = push_inner_scope (scope);
     }
-  type = begin_class_definition (type, attributes);
+  type = begin_class_definition (type);
 
   if (type == error_mark_node)
     /* If the type is erroneous, skip the entire body of the class.  */
@@ -18222,7 +18223,6 @@ cp_parser_class_specifier (cp_parser* parser)
 static tree
 cp_parser_class_head (cp_parser* parser,
 		      bool* nested_name_specifier_p,
-		      tree *attributes_p,
 		      tree *bases)
 {
   tree nested_name_specifier;
@@ -18590,6 +18590,14 @@ cp_parser_class_head (cp_parser* parser,
   else if (type == error_mark_node)
     type = NULL_TREE;
 
+  if (type)
+    {
+      /* Apply attributes now, before any use of the class as a template
+	 argument in its base list.  */
+      cplus_decl_attributes (&type, attributes, (int)ATTR_FLAG_TYPE_IN_PLACE);
+      fixup_attribute_variants (type);
+    }
+
   /* We will have entered the scope containing the class; the names of
      base classes should be looked up in that context.  For example:
 
@@ -18616,7 +18624,6 @@ cp_parser_class_head (cp_parser* parser,
 
   if (type)
     DECL_SOURCE_LOCATION (TYPE_NAME (type)) = type_start_token->location;
-  *attributes_p = attributes;
   if (type && (virt_specifiers & VIRT_SPEC_FINAL))
     CLASSTYPE_FINAL (type) = 1;
  out:

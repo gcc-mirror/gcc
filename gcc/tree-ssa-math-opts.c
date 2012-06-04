@@ -2533,7 +2533,7 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 	 a*b-c -> fma(a,b,-c): we've exchanged MUL+SUB for FMA+NEG, which
 	 is still two operations.  Consider -(a*b)-c -> fma(-a,b,-c): we
 	 still have 3 operations, but in the FMA form the two NEGs are
-	 independant and could be run in parallel.  */
+	 independent and could be run in parallel.  */
     }
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, mul_result)

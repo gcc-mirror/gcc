@@ -240,8 +240,6 @@ extern int caller_save_needed;
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) 0
 #endif
 
-typedef unsigned short move_table[N_REG_CLASSES];
-
 /* Target-dependent globals.  */
 struct target_regs {
   /* For each starting hard register, the number of consecutive hard
@@ -260,21 +258,6 @@ struct target_regs {
 
   /* 1 if the corresponding class contains a register of the given mode.  */
   char x_contains_reg_of_mode[N_REG_CLASSES][MAX_MACHINE_MODE];
-
-  /* Maximum cost of moving from a register in one class to a register
-     in another class.  Based on TARGET_REGISTER_MOVE_COST.  */
-  move_table *x_move_cost[MAX_MACHINE_MODE];
-
-  /* Similar, but here we don't have to move if the first index is a
-     subset of the second so in that case the cost is zero.  */
-  move_table *x_may_move_in_cost[MAX_MACHINE_MODE];
-
-  /* Similar, but here we don't have to move if the first index is a
-     superset of the second so in that case the cost is zero.  */
-  move_table *x_may_move_out_cost[MAX_MACHINE_MODE];
-
-  /* Keep track of the last mode we initialized move costs for.  */
-  int x_last_mode_for_init_move_cost;
 
   /* Record for each mode whether we can move a register directly to or
      from an object of that mode in memory.  If we can't, we won't try
@@ -301,12 +284,6 @@ extern struct target_regs *this_target_regs;
   (this_target_regs->x_have_regs_of_mode)
 #define contains_reg_of_mode \
   (this_target_regs->x_contains_reg_of_mode)
-#define move_cost \
-  (this_target_regs->x_move_cost)
-#define may_move_in_cost \
-  (this_target_regs->x_may_move_in_cost)
-#define may_move_out_cost \
-  (this_target_regs->x_may_move_out_cost)
 #define direct_load \
   (this_target_regs->x_direct_load)
 #define direct_store \

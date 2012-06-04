@@ -127,7 +127,7 @@ plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 	if (add_double_with_sign (l1, h1, l2, h2, &lv, &hv, false))
 	  /* Sorry, we have no way to represent overflows this wide.
 	     To fix, add constant support wider than CONST_DOUBLE.  */
-	  gcc_assert (GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT);
+	  gcc_assert (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_DOUBLE_INT);
 
 	return immed_double_const (lv, hv, VOIDmode);
       }
@@ -1581,12 +1581,11 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 								size, first)));
       emit_library_call (stack_check_libfunc, LCT_NORMAL, VOIDmode, 1, addr,
 			 Pmode);
-      return;
     }
 
   /* Next see if we have an insn to check the stack.  */
 #ifdef HAVE_check_stack
-  if (HAVE_check_stack)
+  else if (HAVE_check_stack)
     {
       struct expand_operand ops[1];
       rtx addr = memory_address (Pmode,
@@ -1594,10 +1593,10 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 					         stack_pointer_rtx,
 					         plus_constant (Pmode,
 								size, first)));
-
+      bool success;
       create_input_operand (&ops[0], addr, Pmode);
-      if (maybe_expand_insn (CODE_FOR_check_stack, 1, ops))
-	return;
+      success = maybe_expand_insn (CODE_FOR_check_stack, 1, ops);
+      gcc_assert (success);
     }
 #endif
 

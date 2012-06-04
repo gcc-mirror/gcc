@@ -94,7 +94,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
      produced.
 
      As observed in PR20991 for already optimized out comdat virtual functions
-     it may be tempting to not neccesarily give up because the copy will be
+     it may be tempting to not necessarily give up because the copy will be
      output elsewhere when corresponding vtable is output.  
      This is however not possible - ABI specify that COMDATs are output in
      units where they are used and when the other unit was compiled with LTO
@@ -154,6 +154,12 @@ canonicalize_constructor_val (tree cval, tree from_decl)
   if (TREE_CODE (cval) == ADDR_EXPR)
     {
       tree base = get_base_address (TREE_OPERAND (cval, 0));
+      if (!base && TREE_CODE (TREE_OPERAND (cval, 0)) == COMPOUND_LITERAL_EXPR)
+	{
+	  base = COMPOUND_LITERAL_EXPR_DECL (TREE_OPERAND (cval, 0));
+	  if (base)
+	    TREE_OPERAND (cval, 0) = base;
+	}
       if (!base)
 	return NULL_TREE;
 
@@ -1054,7 +1060,7 @@ gimple_extract_devirt_binfo_from_cst (tree cst)
       type = TREE_TYPE (fld);
       offset -= pos;
     }
-  /* Artifical sub-objects are ancestors, we do not want to use them for
+  /* Artificial sub-objects are ancestors, we do not want to use them for
      devirtualization, at least not here.  */
   if (last_artificial)
     return NULL_TREE;

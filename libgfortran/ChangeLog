@@ -1,3 +1,30 @@
+2012-06-01  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsics/chmod.c (chmod_func): On MinGW, don't set is_dir and
+	fix octal-mode handling.
+	* io/unit.c (get_internal_unit): Add cast.
+	* io/unix.c (min): Undef "min" before defining it.
+	* runtime/backtrace.c (show_backtrace): Move label into
+	ifndef __MINGW__ block.
+
+2012-05-31  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/51007
+	* configure.ac: Allow gnu, gnu* variants for --enable-symvers argument.
+	* configure: Regenerated.
+
+2012-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	Revert:
+	2012-05-16  Tobias Burnus  <burnus@net-b.de>
+
+	* io/unix.c (tempfile_open): Pass mode to "open" for O_CREAT.
+
+2012-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	* io/io.h: Fix comment typos.
+	* io/list_read.c: Ditto.
+
 2012-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsics/time_1.h (gf_cputime): Don't reevaluate HZ expression

@@ -156,11 +156,13 @@ extern int cris_cpu_version;
     " -D__CRIS_arch_tune=" CRIS_DEFAULT_TUNE "}}}}}"\
  CRIS_ARCH_CPP_DEFAULT
 
-/* Override previous definitions (linux.h).  */
+/* Override previous definitions (../linux.h).  */
 #undef CC1_SPEC
 #define CC1_SPEC \
  "%{metrax4:-march=v3}\
   %{metrax100:-march=v8}\
+  %{march=*:-march=%*}\
+  %{mcpu=*:-mcpu=%*}\
   %(cc1_subtarget)"
 
 /* For the cris-*-elf subtarget.  */
@@ -190,7 +192,9 @@ extern int cris_cpu_version;
  MAYBE_AS_NO_MUL_BUG_ABORT \
  "%(asm_subtarget)\
  %{march=*:%{mcpu=*:%edo not specify both -march=... and -mcpu=...}}\
- %{march=v32:--march=v32} %{mcpu=v32:--march=v32}"
+ %{march=v0|mcpu=v0|march=v3|mcpu=v3|march=v8|mcpu=v8:--march=v0_v10}\
+ %{march=v10|mcpu=v10:--march=v10}\
+ %{march=v32|mcpu=v32:--march=v32}"
 
 /* For the cris-*-elf subtarget.  */
 #define CRIS_ASM_SUBTARGET_SPEC \
@@ -282,15 +286,25 @@ extern int cris_cpu_version;
 #define TARGET_CPU_DEFAULT CRIS_CPU_BASE
 #endif
 
-/* Default target_flags if no switches specified.  */
+/* Default target_flags if no switches specified.
+   The alignment-by-32 is to make builtin atomic support for v10 and v32
+   work for *-elf for types without specified alignment (like plain
+   "int").  See top comment in sync.md.  */
 #ifndef TARGET_DEFAULT
 # if TARGET_CPU_DEFAULT == 32
 #  define TARGET_DEFAULT \
  (MASK_STACK_ALIGN \
   + MASK_CONST_ALIGN + MASK_DATA_ALIGN \
+  + MASK_ALIGN_BY_32 \
   + MASK_PROLOGUE_EPILOGUE)
-# else  /* 10 */
-# define TARGET_DEFAULT \
+# elif TARGET_CPU_DEFAULT == 10
+#  define TARGET_DEFAULT \
+ (MASK_SIDE_EFFECT_PREFIXES + MASK_STACK_ALIGN \
+  + MASK_CONST_ALIGN + MASK_DATA_ALIGN \
+  + MASK_ALIGN_BY_32 \
+  + MASK_PROLOGUE_EPILOGUE + MASK_MUL_BUG)
+# else  /* 0 */
+#  define TARGET_DEFAULT \
  (MASK_SIDE_EFFECT_PREFIXES + MASK_STACK_ALIGN \
   + MASK_CONST_ALIGN + MASK_DATA_ALIGN \
   + MASK_PROLOGUE_EPILOGUE + MASK_MUL_BUG)
@@ -302,8 +316,23 @@ extern int cris_cpu_version;
 
 #define TARGET_HAS_MUL_INSNS (cris_cpu_version >= CRIS_CPU_NG)
 #define TARGET_HAS_LZ (cris_cpu_version >= CRIS_CPU_ETRAX4)
+#define TARGET_HAS_BREAK (cris_cpu_version >= CRIS_CPU_ETRAX4)
 #define TARGET_HAS_SWAP (cris_cpu_version >= CRIS_CPU_SVINTO)
 #define TARGET_V32 (cris_cpu_version >= CRIS_CPU_V32)
+
+/* The "break" instruction was introduced with ETRAX 4.  */
+#define TARGET_TRAP_USING_BREAK8 \
+ (cris_trap_using_break8 == 2 ? TARGET_HAS_BREAK : cris_trap_using_break8)
+
+/* The < v10 atomics turn off interrupts, so they don't need alignment.
+   Incidentally, by default alignment is off there causing variables to
+   be default unaligned all over, so we'd have to make support
+   libraries use a proper atomic type (instead of "int"), one we'd
+   specify as aligned.  */
+#define TARGET_TRAP_UNALIGNED_ATOMIC		\
+ (cris_trap_unaligned_atomic == 2		\
+  ? (TARGET_V32 || cris_cpu_version == 10)	\
+  : cris_trap_unaligned_atomic)
 
 /* Node: Storage Layout */
 

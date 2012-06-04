@@ -1730,10 +1730,9 @@ extern rtx assign_stack_local (enum machine_mode, HOST_WIDE_INT, int);
 #define ASLK_REDUCE_ALIGN 1
 #define ASLK_RECORD_PAD 2
 extern rtx assign_stack_local_1 (enum machine_mode, HOST_WIDE_INT, int, int);
-extern rtx assign_stack_temp (enum machine_mode, HOST_WIDE_INT, int);
-extern rtx assign_stack_temp_for_type (enum machine_mode,
-				       HOST_WIDE_INT, int, tree);
-extern rtx assign_temp (tree, int, int, int);
+extern rtx assign_stack_temp (enum machine_mode, HOST_WIDE_INT);
+extern rtx assign_stack_temp_for_type (enum machine_mode, HOST_WIDE_INT, tree);
+extern rtx assign_temp (tree, int, int);
 
 /* In emit-rtl.c */
 extern rtx emit_insn_before (rtx, rtx);
@@ -2045,8 +2044,6 @@ extern rtx remove_free_EXPR_LIST_node (rtx *);
 
 /* reginfo.c */
 
-/* Initialize may_move_cost and friends for mode M.  */
-extern void init_move_cost (enum machine_mode);
 /* Resize reg info.  */
 extern bool resize_reg_info (void);
 /* Free up register info memory.  */
@@ -2498,7 +2495,6 @@ extern void print_inline_rtx (FILE *, const_rtx, int);
 extern void reposition_prologue_and_epilogue_notes (void);
 extern int prologue_epilogue_contains (const_rtx);
 extern int sibcall_epilogue_contains (const_rtx);
-extern void mark_temp_addr_taken (rtx);
 extern void update_temp_slot_address (rtx, rtx);
 extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);
 extern void set_return_jump_label (rtx);

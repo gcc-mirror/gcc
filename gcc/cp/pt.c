@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-objcp-common.h"
 #include "tree-inline.h"
 #include "decl.h"
-#include "output.h"
 #include "toplev.h"
 #include "timevar.h"
 #include "tree-iterator.h"
@@ -8699,6 +8698,7 @@ instantiate_class_template_1 (tree type)
   tree pbinfo;
   tree base_list;
   unsigned int saved_maximum_field_alignment;
+  tree fn_context;
 
   if (type == error_mark_node)
     return error_mark_node;
@@ -8757,7 +8757,9 @@ instantiate_class_template_1 (tree type)
      it now.  */
   push_deferring_access_checks (dk_no_deferred);
 
-  push_to_top_level ();
+  fn_context = decl_function_context (TYPE_MAIN_DECL (type));
+  if (!fn_context)
+    push_to_top_level ();
   /* Use #pragma pack from the template context.  */
   saved_maximum_field_alignment = maximum_field_alignment;
   maximum_field_alignment = TYPE_PRECISION (pattern);
@@ -9155,8 +9157,14 @@ instantiate_class_template_1 (tree type)
       tree decl = lambda_function (type);
       if (decl)
 	{
+	  tree lam = CLASSTYPE_LAMBDA_EXPR (type);
+	  LAMBDA_EXPR_THIS_CAPTURE (lam)
+	    = lookup_field_1 (type, get_identifier ("__this"), false);
+
 	  instantiate_decl (decl, false, false);
 	  maybe_add_lambda_conv_op (type);
+
+	  LAMBDA_EXPR_THIS_CAPTURE (lam) = NULL_TREE;
 	}
       else
 	gcc_assert (errorcount);
@@ -9187,7 +9195,8 @@ instantiate_class_template_1 (tree type)
   perform_deferred_access_checks ();
   pop_nested_class ();
   maximum_field_alignment = saved_maximum_field_alignment;
-  pop_from_top_level ();
+  if (!fn_context)
+    pop_from_top_level ();
   pop_deferring_access_checks ();
   pop_tinst_level ();
 
@@ -18436,9 +18445,10 @@ instantiate_decl (tree d, int defer_ok,
   tree spec;
   tree gen_tmpl;
   bool pattern_defined;
-  int need_push;
   location_t saved_loc = input_location;
   bool external_p;
+  tree fn_context;
+  bool nested;
 
   /* This function should only be used to instantiate templates for
      functions and static member variables.  */
@@ -18673,9 +18683,12 @@ instantiate_decl (tree d, int defer_ok,
 	goto out;
     }
 
-  need_push = !cfun || !global_bindings_p ();
-  if (need_push)
+  fn_context = decl_function_context (d);
+  nested = (current_function_decl != NULL_TREE);
+  if (!fn_context)
     push_to_top_level ();
+  else if (nested)
+    push_function_context ();
 
   /* Mark D as instantiated so that recursive calls to
      instantiate_decl do not try to instantiate it again.  */
@@ -18785,8 +18798,10 @@ instantiate_decl (tree d, int defer_ok,
   /* We're not deferring instantiation any more.  */
   TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
 
-  if (need_push)
+  if (!fn_context)
     pop_from_top_level ();
+  else if (nested)
+    pop_function_context ();
 
 out:
   input_location = saved_loc;
@@ -20319,10 +20334,9 @@ do_auto_deduction (tree type, tree init, tree auto_node)
   if (init == error_mark_node)
     return error_mark_node;
 
-  if (processing_template_decl
-      && (TREE_TYPE (init) == NULL_TREE
-	  || BRACE_ENCLOSED_INITIALIZER_P (init)))
-    /* Not enough information to try this yet.  */
+  if (type_dependent_expression_p (init))
+    /* Defining a subset of type-dependent expressions that we can deduce
+       from ahead of time isn't worth the trouble.  */
     return type;
 
   /* [dcl.spec.auto]: Obtain P from T by replacing the occurrences of auto

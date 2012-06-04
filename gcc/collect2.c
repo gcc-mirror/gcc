@@ -406,13 +406,13 @@ collect_exit (int status)
 
   if (ldout != 0 && ldout[0])
     {
-      dump_file (ldout, stdout);
+      dump_ld_file (ldout, stdout);
       maybe_unlink (ldout);
     }
 
   if (lderrout != 0 && lderrout[0])
     {
-      dump_file (lderrout, stderr);
+      dump_ld_file (lderrout, stderr);
       maybe_unlink (lderrout);
     }
 
@@ -518,7 +518,7 @@ extract_string (const char **pp)
 }
 
 void
-dump_file (const char *name, FILE *to)
+dump_ld_file (const char *name, FILE *to)
 {
   FILE *stream = fopen (name, "r");
 
@@ -842,7 +842,7 @@ add_lto_object (struct lto_object_list *list, const char *name)
    files contain LTO info.  The linker command line LTO_LD_ARGV
    represents the linker command that would produce a final executable
    without the use of LTO. OBJECT_LST is a vector of object file names
-   appearing in LTO_LD_ARGV that are to be considerd for link-time
+   appearing in LTO_LD_ARGV that are to be considered for link-time
    recompilation, where OBJECT is a pointer to the last valid element.
    (This awkward convention avoids an impedance mismatch with the
    usage of similarly-named variables in main().)  The elements of
@@ -2567,7 +2567,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 
   /* LTO objects must be in a known format.  This check prevents
      us from accepting an archive containing LTO objects, which
-     gcc cannnot currently handle.  */
+     gcc cannot currently handle.  */
   if (which_pass == PASS_LTOINFO && !maybe_lto_object_file (prog_name))
     return;
 

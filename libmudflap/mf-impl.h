@@ -46,7 +46,7 @@ typedef __mf_uintptr_t uintptr_t;
 
 /* Private definitions related to mf-runtime.h  */
 
-#define __MF_TYPE_MAX_CEM  __MF_TYPE_STACK  /* largest type# for the cemetary */
+#define __MF_TYPE_MAX_CEM  __MF_TYPE_STACK  /* largest type# for the cemetery */
 #define __MF_TYPE_MAX __MF_TYPE_GUESS
 
 

@@ -74,6 +74,11 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 # endif
 #endif
 
+/* This is a magic identifier which allows GCC to figure out the type
+   of HOST_WIDE_INT for %wd specifier checks.  You must issue this
+   typedef before using the __asm_fprintf__ format attribute.  */
+typedef HOST_WIDE_INT __gcc_host_wide_int__;
+
 /* Various printf format strings for HOST_WIDE_INT.  */
 
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG

@@ -529,7 +529,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 	 better way.  */
       stack_slot
 	= validize_mem (assign_stack_temp (SFmode,
-					   GET_MODE_SIZE (SFmode), 0));
+					   GET_MODE_SIZE (SFmode)));
       emit_insn (gen_floatdisf2 (stack_slot, operands[1]));
       emit_move_insn (operands[0], stack_slot);
       DONE;
@@ -563,7 +563,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 	 way.  */
       stack_slot
 	= validize_mem (assign_stack_temp (SFmode,
-					   GET_MODE_SIZE (SFmode), 0));
+					   GET_MODE_SIZE (SFmode)));
       emit_insn (gen_floatunsdisf2 (stack_slot, operands[1]));
       emit_move_insn (operands[0], stack_slot);
       DONE;
@@ -645,7 +645,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 	 way.  */
       stack_slot
 	= validize_mem (assign_stack_temp (SFmode,
-					   GET_MODE_SIZE (SFmode), 0));
+					   GET_MODE_SIZE (SFmode)));
       emit_insn (gen_truncdfsf2 (stack_slot, operands[1]));
       emit_move_insn (operands[0], stack_slot);
       DONE;
@@ -678,7 +678,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 	 better way.  */
       stack_slot
 	= validize_mem (assign_stack_temp (SFmode,
-					   GET_MODE_SIZE (SFmode), 0));
+					   GET_MODE_SIZE (SFmode)));
       emit_move_insn (stack_slot, operands[1]);
       emit_insn (gen_extendsfdf2 (operands[0], stack_slot));
       DONE;

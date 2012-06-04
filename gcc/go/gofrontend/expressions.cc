@@ -4475,9 +4475,8 @@ Binary_expression::eval_constant(Operator op, Numeric_constant* left_nc,
     case OPERATOR_LE:
     case OPERATOR_GT:
     case OPERATOR_GE:
-      // These return boolean values and as such must be handled
-      // elsewhere.
-      go_unreachable();
+      // These return boolean values, not numeric.
+      return false;
     default:
       break;
     }
@@ -5304,24 +5303,13 @@ Binary_expression::operand_address(Statement_inserter* inserter,
 bool
 Binary_expression::do_numeric_constant_value(Numeric_constant* nc) const
 {
-  Operator op = this->op_;
-
-  if (op == OPERATOR_EQEQ
-      || op == OPERATOR_NOTEQ
-      || op == OPERATOR_LT
-      || op == OPERATOR_LE
-      || op == OPERATOR_GT
-      || op == OPERATOR_GE)
-    return false;
-
   Numeric_constant left_nc;
   if (!this->left_->numeric_constant_value(&left_nc))
     return false;
   Numeric_constant right_nc;
   if (!this->right_->numeric_constant_value(&right_nc))
     return false;
-
-  return Binary_expression::eval_constant(op, &left_nc, &right_nc,
+  return Binary_expression::eval_constant(this->op_, &left_nc, &right_nc,
 					  this->location(), nc);
 }
 

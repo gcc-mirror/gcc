@@ -678,11 +678,11 @@ DEFHOOK
    of INSN on CPU that are not described in DFA.
    READY_TRY and N_READY represent the current state of search in the
    optimization space.  The target can filter out instructions that
-   should not be tried after issueing INSN by setting corresponding
+   should not be tried after issuing INSN by setting corresponding
    elements in READY_TRY to non-zero.
    INSN is the instruction being evaluated.
    PREV_DATA is a pointer to target-specific data corresponding
-   to a state before issueing INSN.  */
+   to a state before issuing INSN.  */
 DEFHOOK
 (first_cycle_multipass_issue,
  "",
@@ -696,7 +696,7 @@ DEFHOOK
    described in DFA.
    READY_TRY and N_READY represent the current state of search in the
    optimization space.  The target can filter out instructions that
-   should not be tried after issueing INSN by setting corresponding
+   should not be tried after issuing INSN by setting corresponding
    elements in READY_TRY to non-zero.  */
 DEFHOOK
 (first_cycle_multipass_backtrack,
@@ -2746,6 +2746,13 @@ DEFHOOKPOD
  "True if the @code{.debug_pubtypes} and @code{.debug_pubnames} sections\
  should be emitted.  These sections are not used on most platforms, and\
  in particular GDB does not use them.",
+ bool, false)
+
+DEFHOOKPOD
+(force_at_comp_dir,
+ "True if the @code{DW_AT_comp_dir} attribute should be emitted for each \
+ compilation unit.  This attribute is required for the darwin linker \
+ to emit debug information.",
  bool, false)
 
 DEFHOOKPOD

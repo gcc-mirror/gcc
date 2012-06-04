@@ -40,7 +40,7 @@
 #include "tm-preds.h"
 #include "tm-constrs.h"
 #include "df.h"
-#include "integrate.h"
+#include "function.h"
 #include "diagnostic-core.h"
 #include "cgraph.h"
 #include "cfglayout.h"
@@ -3630,7 +3630,7 @@ typedef struct c6x_sched_context
 /* The current scheduling state.  */
 static struct c6x_sched_context ss;
 
-/* The following variable value is DFA state before issueing the first insn
+/* The following variable value is DFA state before issuing the first insn
    in the current clock cycle.  This is used in c6x_variable_issue for
    comparison with the state after issuing the last insn in a cycle.  */
 static state_t prev_cycle_state;

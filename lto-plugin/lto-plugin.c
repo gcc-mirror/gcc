@@ -754,7 +754,7 @@ resolve_conflicts (struct plugin_symtab *t, struct plugin_symtab *conflicts)
   conflicts->syms = xmalloc (sizeof (struct ld_plugin_symbol) * outlen);
   conflicts->aux = xmalloc (sizeof (struct sym_aux) * outlen);
 
-  /* Move all duplicate symbols into the auxillary conflicts table. */
+  /* Move all duplicate symbols into the auxiliary conflicts table. */
   out = 0;
   for (i = 0; i < t->nsyms; i++) 
     {

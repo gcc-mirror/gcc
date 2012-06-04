@@ -60,7 +60,7 @@
    In both these cases, leave the DOC string empty, i.e. "".
    Sometimes, for some historic reason the function declaration 
    has to be documented differently
-   than what it is.  In that case, use DEFHOOK_UNDOC to supress auto-generation
+   than what it is.  In that case, use DEFHOOK_UNDOC to suppress auto-generation
    of documentation.  DEFHOOK_UNDOC takes a DOC string which it ignores, so
    you can put GPLed documentation string there if you have hopes that you
    can clear the declaration & documentation for GFDL distribution later,

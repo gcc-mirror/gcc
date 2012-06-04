@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "ggc.h"
 #include "diagnostic-core.h"
-#include "integrate.h"
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"
@@ -3869,7 +3868,7 @@ static int prev_opcode = 0;
 
 /* This isn't as optimal as it could be, because we don't know what
    control register the STC opcode is storing in.  We only need to add
-   the nop if it's the relevent register, but we add it for irrelevent
+   the nop if it's the relevant register, but we add it for irrelevant
    registers also.  */
 
 void
@@ -6993,7 +6992,7 @@ core_insn_p (rtx insn)
 }
 
 /* Mark coprocessor instructions that can be bundled together with
-   the immediately preceeding core instruction.  This is later used
+   the immediately preceding core instruction.  This is later used
    to emit the "+" that tells the assembler to create a VLIW insn.
 
    For unbundled insns, the assembler will automatically add coprocessor

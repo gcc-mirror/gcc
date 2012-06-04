@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "basic-block.h"
 #include "cgraph.h"
-#include "output.h"
 #include "intl.h"
 #include "gimple.h"
 #include "tree-dump.h"
@@ -413,7 +412,7 @@ cgraph_get_create_node (tree decl)
 }
 
 /* Mark ALIAS as an alias to DECL.  DECL_NODE is cgraph node representing
-   the function body is associated with (not neccesarily cgraph_node (DECL).  */
+   the function body is associated with (not necessarily cgraph_node (DECL).  */
 
 struct cgraph_node *
 cgraph_create_function_alias (tree alias, tree decl)
@@ -1581,7 +1580,7 @@ cgraph_node_can_be_local_p (struct cgraph_node *node)
 					   NULL, true));
 }
 
-/* Call calback on NODE, thunks and aliases asociated to NODE. 
+/* Call calback on NODE, thunks and aliases associated to NODE. 
    When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
    skipped. */
 
@@ -1617,7 +1616,7 @@ cgraph_for_node_thunks_and_aliases (struct cgraph_node *node,
   return false;
 }
 
-/* Call calback on NODE and aliases asociated to NODE. 
+/* Call calback on NODE and aliases associated to NODE. 
    When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
    skipped. */
 
@@ -2087,7 +2086,7 @@ verify_edge_count_and_frequency (struct cgraph_edge *e)
   if (gimple_has_body_p (e->caller->symbol.decl)
       && !e->caller->global.inlined_to
       /* FIXME: Inline-analysis sets frequency to 0 when edge is optimized out.
-	 Remove this once edges are actualy removed from the function at that time.  */
+	 Remove this once edges are actually removed from the function at that time.  */
       && (e->frequency
 	  || (inline_edge_summary_vec
 	      && ((VEC_length(inline_edge_summary_t, inline_edge_summary_vec)

@@ -713,7 +713,7 @@ c_readstr (const char *str, enum machine_mode mode)
 	  && GET_MODE_SIZE (mode) >= UNITS_PER_WORD)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
-      gcc_assert (j < 2 * HOST_BITS_PER_WIDE_INT);
+      gcc_assert (j < HOST_BITS_PER_DOUBLE_INT);
 
       if (ch)
 	ch = (unsigned char) str[i];
@@ -2650,8 +2650,8 @@ expand_builtin_cexpi (tree exp, rtx target)
       else
 	gcc_unreachable ();
 
-      op1 = assign_temp (TREE_TYPE (arg), 0, 1, 1);
-      op2 = assign_temp (TREE_TYPE (arg), 0, 1, 1);
+      op1 = assign_temp (TREE_TYPE (arg), 1, 1);
+      op2 = assign_temp (TREE_TYPE (arg), 1, 1);
       op1a = copy_addr_to_reg (XEXP (op1, 0));
       op2a = copy_addr_to_reg (XEXP (op2, 0));
       top1 = make_tree (build_pointer_type (TREE_TYPE (arg)), op1a);
@@ -8143,7 +8143,7 @@ fold_builtin_bitop (tree fndecl, tree arg)
       if (width > HOST_BITS_PER_WIDE_INT)
 	{
 	  hi = TREE_INT_CST_HIGH (arg);
-	  if (width < 2 * HOST_BITS_PER_WIDE_INT)
+	  if (width < HOST_BITS_PER_DOUBLE_INT)
 	    hi &= ~((unsigned HOST_WIDE_INT) (-1)
 		    << (width - HOST_BITS_PER_WIDE_INT));
 	}

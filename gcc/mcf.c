@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "basic-block.h"
-#include "output.h"
 #include "langhooks.h"
 #include "tree.h"
 #include "gcov-io.h"
@@ -1385,7 +1384,7 @@ sum_edge_counts (VEC (edge, gc) *to_edges)
 }
 
 
-/* Main routine. Smoothes the intial assigned basic block and edge counts using
+/* Main routine. Smoothes the initial assigned basic block and edge counts using
    a minimum cost flow algorithm, to ensure that the flow consistency rule is
    obeyed: sum of outgoing edges = sum of incoming edges for each basic
    block.  */

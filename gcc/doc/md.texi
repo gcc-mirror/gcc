@@ -5683,7 +5683,7 @@ built-in setjmp that isn't needed at the site of a nonlocal goto.  You
 will not normally need to define this pattern.  A typical reason why you
 might need this pattern is if some value, such as a pointer to a global
 table, must be restored.  It takes one argument, which is the label
-to which builtin_longjmp transfered control; this pattern may be emitted
+to which builtin_longjmp transferred control; this pattern may be emitted
 at a small offset from that label.
 
 @cindex @code{builtin_longjmp} instruction pattern
@@ -5885,7 +5885,7 @@ from a compare-and-swap operation, if defined.
 @itemx @samp{sync_old_ior@var{mode}}, @samp{sync_old_and@var{mode}}
 @itemx @samp{sync_old_xor@var{mode}}, @samp{sync_old_nand@var{mode}}
 
-These patterns are emit code for an atomic operation on memory,
+These patterns emit code for an atomic operation on memory,
 and return the value that the memory contained before the operation.
 Operand 0 is the result value, operand 1 is the memory on which the
 atomic operation is performed, and operand 2 is the second operand
@@ -6037,7 +6037,7 @@ performed.  Operand 1 is the second operand to the binary operator.
 Operand 2 is the memory model to be used by the operation.
 
 If these patterns are not defined, attempts will be made to use legacy
-@code{sync} patterns, or equivilent patterns which return a result.  If
+@code{sync} patterns, or equivalent patterns which return a result.  If
 none of these are available a compare-and-swap loop will be used.
 
 @cindex @code{atomic_fetch_add@var{mode}} instruction pattern
@@ -6079,7 +6079,7 @@ performed.  Operand 2 is the second operand to the binary operator.
 Operand 3 is the memory model to be used by the operation.
 
 If these patterns are not defined, attempts will be made to use legacy
-@code{sync} patterns, or equivilent patterns which return the result before
+@code{sync} patterns, or equivalent patterns which return the result before
 the operation followed by the arithmetic operation required to produce the
 result.  If none of these are available a compare-and-swap loop will be
 used.
@@ -6136,7 +6136,7 @@ If this pattern is not defined, then a plain move pattern is generated.
 This pattern, if defined, compares a @code{ptr_mode} value from the
 memory in operand 1 with the memory in operand 0 without leaving the
 value in a register afterward and branches to operand 2 if the values
-weren't equal.
+were equal.
 
 If this pattern is not defined, then a plain compare pattern and
 conditional branch pattern is used.

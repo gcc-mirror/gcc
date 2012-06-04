@@ -1,7 +1,40 @@
-2012-05-24  Dodji Seketeli  <dodji@redhat.com>
+2012-05-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* directives.c: Fix typos.
+	* include/line-map.h: Fix typos.
+	* line-map.c: Fix typos.
+	* macro.c: Fix typos.
+
+2012-05-25  Dodji Seketeli  <dodji@redhat.com>
 
 	PR bootstrap/53459
-	* lex.c (search_line_fast): Remove unused typedef check_count.
+	* lex.c (search_line_fast): Avoid unused local typedefs to simulate
+	a static assertion.
+
+2012-05-29  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/53229
+	* internal.h (cpp_reader::set_invocation_location): Remove.
+	(cpp_reader::about_to_expand_macro_p): New member flag.
+	* directives.c (do_pragma):  Remove Kludge as
+	pfile->set_invocation_location is no more.
+	* macro.c (cpp_get_token_1): Do away with the use of
+	cpp_reader::set_invocation_location.  Just collect the macro
+	expansion point when we are about to expand the top-most macro.
+	Do not override cpp_reader::about_to_expand_macro_p.
+	This fixes gcc.dg/cpp/paste12.c by making get_token_no_padding
+	properly handle locations of expansion points.
+	(cpp_get_token_with_location): Adjust, as
+	cpp_reader::set_invocation_location is no more.
+	(paste_tokens): Take a virtual location parameter for
+	the LHS of the pasting operator.  Use it in diagnostics.  Update
+	comments.
+	(paste_all_tokens): Tighten the assert.  Propagate the location of
+	the expansion point when no virtual locations are available.
+	Pass the virtual location to paste_tokens.
+	(in_macro_expansion_p): New static function.
+	(enter_macro_context): Set the cpp_reader::about_to_expand_macro_p
+	flag until we really start expanding the macro.
 
 2012-05-16  Dodji Seketeli  <dodji@redhat.com>
 

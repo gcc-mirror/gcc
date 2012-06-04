@@ -65,7 +65,7 @@ type_lineloc (const_type_p ty)
 }
 
 /* The state file has simplistic lispy lexical tokens.  Its lexer gives
-   a linked list of struct state_token_st, thru the peek_state_token
+   a linked list of struct state_token_st, through the peek_state_token
    function.  Lexical tokens are consumed with next_state_tokens.  */
 
 
@@ -818,7 +818,7 @@ write_state_lang_struct_type (type_p current)
   type_p hty = NULL;
   const char *homoname = 0;
   write_state_struct_union_type (current, "lang_struct");
-  /* lang_struct-ures are particularily tricky, since their
+  /* lang_struct-ures are particularly tricky, since their
      u.s.lang_struct field gives a list of homonymous struct-s or
      union-s! */
   DBGPRINTF ("lang_struct @ %p #%d", (void *) current, current->state_number);

@@ -720,13 +720,12 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
     {
       if (!integer_zerop (TREE_OPERAND (base, 1)))
 	{
+	  double_int moff = mem_ref_offset (base);
+	  tree mofft = double_int_to_tree (sizetype, moff);
 	  if (!poffset)
-	    {
-	      double_int moff = mem_ref_offset (base);
-	      poffset = double_int_to_tree (sizetype, moff);
-	    }
+	    poffset = mofft;
 	  else
-	    poffset = size_binop (PLUS_EXPR, poffset, TREE_OPERAND (base, 1));
+	    poffset = size_binop (PLUS_EXPR, poffset, mofft);
 	}
       base = TREE_OPERAND (base, 0);
     }
@@ -5255,26 +5254,33 @@ stores_from_loop (struct loop *loop, VEC (gimple, heap) **stmts)
 bool
 stmt_with_adjacent_zero_store_dr_p (gimple stmt)
 {
-  tree op0, op1;
+  tree lhs, rhs;
   bool res;
   struct data_reference *dr;
 
   if (!stmt
       || !gimple_vdef (stmt)
-      || !is_gimple_assign (stmt)
-      || !gimple_assign_single_p (stmt)
-      || !(op1 = gimple_assign_rhs1 (stmt))
-      || !(integer_zerop (op1) || real_zerop (op1)))
+      || !gimple_assign_single_p (stmt))
+    return false;
+
+  lhs = gimple_assign_lhs (stmt);
+  rhs = gimple_assign_rhs1 (stmt);
+
+  /* If this is a bitfield store bail out.  */
+  if (TREE_CODE (lhs) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (lhs, 1)))
+    return false;
+
+  if (!(integer_zerop (rhs) || real_zerop (rhs)))
     return false;
 
   dr = XCNEW (struct data_reference);
-  op0 = gimple_assign_lhs (stmt);
 
   DR_STMT (dr) = stmt;
-  DR_REF (dr) = op0;
+  DR_REF (dr) = lhs;
 
   res = dr_analyze_innermost (dr, loop_containing_stmt (stmt))
-    && stride_of_unit_type_p (DR_STEP (dr), TREE_TYPE (op0));
+    && stride_of_unit_type_p (DR_STEP (dr), TREE_TYPE (lhs));
 
   free_data_ref (dr);
   return res;
@@ -5397,65 +5403,3 @@ have_similar_memory_accesses (gimple s1, gimple s2)
   VEC_free (data_ref_loc, heap, refs2);
   return res;
 }
-
-/* Helper function for the hashtab.  */
-
-static int
-have_similar_memory_accesses_1 (const void *s1, const void *s2)
-{
-  return have_similar_memory_accesses (CONST_CAST_GIMPLE ((const_gimple) s1),
-				       CONST_CAST_GIMPLE ((const_gimple) s2));
-}
-
-/* Helper function for the hashtab.  */
-
-static hashval_t
-ref_base_address_1 (const void *s)
-{
-  gimple stmt = CONST_CAST_GIMPLE ((const_gimple) s);
-  unsigned i;
-  VEC (data_ref_loc, heap) *refs;
-  data_ref_loc *ref;
-  hashval_t res = 0;
-
-  get_references_in_stmt (stmt, &refs);
-
-  FOR_EACH_VEC_ELT (data_ref_loc, refs, i, ref)
-    if (!ref->is_read)
-      {
-	res = htab_hash_pointer (ref_base_address (stmt, ref));
-	break;
-      }
-
-  VEC_free (data_ref_loc, heap, refs);
-  return res;
-}
-
-/* Try to remove duplicated write data references from STMTS.  */
-
-void
-remove_similar_memory_refs (VEC (gimple, heap) **stmts)
-{
-  unsigned i;
-  gimple stmt;
-  htab_t seen = htab_create (VEC_length (gimple, *stmts), ref_base_address_1,
-			     have_similar_memory_accesses_1, NULL);
-
-  for (i = 0; VEC_iterate (gimple, *stmts, i, stmt); )
-    {
-      void **slot;
-
-      slot = htab_find_slot (seen, stmt, INSERT);
-
-      if (*slot)
-	VEC_ordered_remove (gimple, *stmts, i);
-      else
-	{
-	  *slot = (void *) stmt;
-	  i++;
-	}
-    }
-
-  htab_delete (seen);
-}
-

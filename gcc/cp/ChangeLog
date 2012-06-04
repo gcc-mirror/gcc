@@ -1,3 +1,59 @@
+2012-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52973
+	* parser.c (cp_parser_class_head): Apply attributes here.
+	* semantics.c (begin_class_definition): Not here.
+	* cp-tree.h: Adjust.
+
+	PR c++/52725
+	* parser.c (cp_parser_binary_expression): Bail early if we're parsing
+	tentatively and the LHS has a parse error.
+
+	PR c++/53137
+	* pt.c (instantiate_class_template_1): Set LAMBDA_EXPR_THIS_CAPTURE.
+	(instantiate_decl): Don't push_to_top_level for local class methods.
+	(instantiate_class_template_1): Or for local classes.
+
+	PR c++/53484
+	* pt.c (do_auto_deduction): Don't try to deduce from a
+	type-dependent initializer.
+
+2012-06-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/26155
+	* name-lookup.c (push_namespace): When error recovery is
+	impossible just error out in duplicate_decls.
+
+2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* call.c: Do not include output.h.
+	* class.c: Likewise.
+	* except.c: Likewise.
+	* friend.c: Likewise.
+	* init.c: Likewise.
+	* lex.c: Likewise.
+	* method.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+
+2012-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53356
+	* tree.c (stabilize_init): Handle stabilizing a TARGET_EXPR
+	representing a bitwise copy of a glvalue.
+
+	* tree.c (stabilize_expr): Tweak logic.
+
+	PR c++/53356
+	* tree.c (stabilize_init): Side effects make the init unstable.
+
+2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53503
+	* semantics.c (potential_constant_expression_1): Handle LTGT_EXPR.
+
 2012-05-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53491

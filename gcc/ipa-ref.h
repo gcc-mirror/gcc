@@ -58,7 +58,7 @@ struct GTY(()) ipa_ref_list
 {
   /* Store actual references in references vector.  */
   VEC(ipa_ref_t,gc) *references;
-  /* Refering is vector of pointers to references.  It must not live in GGC space
+  /* Referring is vector of pointers to references.  It must not live in GGC space
      or GGC will try to mark middle of references vectors.  */
   VEC(ipa_ref_ptr,heap) * GTY((skip)) referring;
 };

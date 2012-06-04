@@ -264,8 +264,11 @@ struct GTY(()) rtl_data {
      the hard register containing the result.  */
   rtx return_rtx;
 
-  /* Opaque pointer used by get_hard_reg_initial_val and
-     has_hard_reg_initial_val (see integrate.[hc]).  */
+  /* Vector of initial-value pairs.  Each pair consists of a pseudo
+     register of approprite mode that stores the initial value a hard
+     register REGNO, and that hard register itself.  */
+  /* ??? This could be a VEC but there is currently no way to define an
+	 opaque VEC type.  */
   struct initial_value_struct *hard_reg_initial_vals;
 
   /* A variable living at the top of the frame that holds a known value.
@@ -688,7 +691,6 @@ void types_used_by_var_decl_insert (tree type, tree var_decl);
    referenced by the global variable.  */
 extern GTY(()) VEC(tree,gc) *types_used_by_cur_var_decl;
 
-
 /* cfun shouldn't be set directly; use one of these functions instead.  */
 extern void set_cfun (struct function *new_cfun);
 extern void push_cfun (struct function *new_cfun);
@@ -759,6 +761,14 @@ extern int get_last_funcdef_no (void);
 #ifdef HAVE_simple_return
 extern bool requires_stack_frame_p (rtx, HARD_REG_SET, HARD_REG_SET);
 #endif                        
+
+extern rtx get_hard_reg_initial_val (enum machine_mode, unsigned int);
+extern rtx has_hard_reg_initial_val (enum machine_mode, unsigned int);
+extern rtx get_hard_reg_initial_reg (rtx);
+extern bool initial_value_entry (int i, rtx *, rtx *);
+
+/* Called from gimple_expand_cfg.  */
+extern unsigned int emit_initial_value_sets (void);
 
 /* In predict.c */
 extern bool optimize_function_for_size_p (struct function *);

@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "basic-block.h"
-#include "output.h"
 #include "tm_p.h"
 #include "function.h"
 #include "tree-pass.h"
@@ -445,7 +444,7 @@ optimize_mode_switching (void)
   int i, j;
   int n_entities;
   int max_num_modes = 0;
-  bool emited ATTRIBUTE_UNUSED = false;
+  bool emitted ATTRIBUTE_UNUSED = false;
   basic_block post_entry ATTRIBUTE_UNUSED, pre_exit ATTRIBUTE_UNUSED;
 
   for (e = N_ENTITIES - 1, n_entities = 0; e >= 0; e--)
@@ -704,7 +703,7 @@ optimize_mode_switching (void)
 		  /* Insert MODE_SET only if it is nonempty.  */
 		  if (mode_set != NULL_RTX)
 		    {
-		      emited = true;
+		      emitted = true;
 		      if (NOTE_INSN_BASIC_BLOCK_P (ptr->insn_ptr))
 			emit_insn_after (mode_set, ptr->insn_ptr);
 		      else
@@ -731,7 +730,7 @@ optimize_mode_switching (void)
 #if defined (MODE_ENTRY) && defined (MODE_EXIT)
   cleanup_cfg (CLEANUP_NO_INSN_DEL);
 #else
-  if (!need_commit && !emited)
+  if (!need_commit && !emitted)
     return 0;
 #endif
 

@@ -9200,7 +9200,7 @@ choose_baseaddr (HOST_WIDE_INT cfa_offset)
   if (m->use_fast_prologue_epilogue)
     {
       /* Choose the base register most likely to allow the most scheduling
-         opportunities.  Generally FP is valid througout the function,
+         opportunities.  Generally FP is valid throughout the function,
          while DRAP must be reloaded within the epilogue.  But choose either
          over the SP due to increased encoding size.  */
 
@@ -12825,13 +12825,13 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
     case TLS_MODEL_INITIAL_EXEC:
       if (TARGET_64BIT)
 	{
-	  if (TARGET_SUN_TLS)
+	  if (TARGET_SUN_TLS && !TARGET_X32)
 	    {
 	      /* The Sun linker took the AMD64 TLS spec literally
 		 and can only handle %rax as destination of the
 		 initial executable code sequence.  */
 
-	      dest = gen_reg_rtx (Pmode);
+	      dest = gen_reg_rtx (DImode);
 	      emit_insn (gen_tls_initial_exec_64_sun (dest, x));
 	      return dest;
 	    }
@@ -23872,6 +23872,110 @@ ia32_multipass_dfa_lookahead (void)
     }
 }
 
+/* Try to reorder ready list to take advantage of Atom pipelined IMUL
+   execution. It is applied if
+   (1) IMUL instruction is on the top of list;
+   (2) There exists the only producer of independent IMUL instruction in
+       ready list;
+   (3) Put found producer on the top of ready list.
+   Returns issue rate.  */
+
+static int
+ix86_sched_reorder(FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
+                   int clock_var ATTRIBUTE_UNUSED)
+{
+  static int issue_rate = -1;
+  int n_ready = *pn_ready;
+  rtx insn, insn1, insn2;
+  int i;
+  sd_iterator_def sd_it;
+  dep_t dep;
+  int index = -1;
+
+  /* Set up issue rate.  */
+  issue_rate = ix86_issue_rate();
+
+  /* Do reodering for Atom only.  */
+  if (ix86_tune != PROCESSOR_ATOM)
+    return issue_rate;
+  /* Nothing to do if ready list contains only 1 instruction.  */
+  if (n_ready <= 1)
+    return issue_rate;
+
+  /* Check that IMUL instruction is on the top of ready list.  */
+  insn = ready[n_ready - 1];
+  if (!NONDEBUG_INSN_P (insn))
+    return issue_rate;
+  insn = PATTERN (insn);
+  if (GET_CODE (insn) == PARALLEL)
+    insn = XVECEXP (insn, 0, 0);
+  if (GET_CODE (insn) != SET)
+    return issue_rate;
+  if (!(GET_CODE (SET_SRC (insn)) == MULT
+      && GET_MODE (SET_SRC (insn)) == SImode))
+    return issue_rate;
+
+  /* Search for producer of independent IMUL instruction.  */
+  for (i = n_ready - 2; i>= 0; i--)
+    {
+      insn = ready[i];
+      if (!NONDEBUG_INSN_P (insn))
+        continue;
+      /* Skip IMUL instruction.  */
+      insn2 = PATTERN (insn);
+      if (GET_CODE (insn2) == PARALLEL)
+        insn2 = XVECEXP (insn2, 0, 0);
+      if (GET_CODE (insn2) == SET
+          && GET_CODE (SET_SRC (insn2)) == MULT
+          && GET_MODE (SET_SRC (insn2)) == SImode)
+        continue;
+
+      FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
+        {
+          rtx con;
+	  con = DEP_CON (dep);
+          insn1 = PATTERN (con);
+          if (GET_CODE (insn1) == PARALLEL)
+            insn1 = XVECEXP (insn1, 0, 0);
+
+          if (GET_CODE (insn1) == SET
+              && GET_CODE (SET_SRC (insn1)) == MULT
+              && GET_MODE (SET_SRC (insn1)) == SImode)
+            {
+              sd_iterator_def sd_it1;
+              dep_t dep1;
+              /* Check if there is no other dependee for IMUL.  */
+              index = i;
+              FOR_EACH_DEP (con, SD_LIST_BACK, sd_it1, dep1)
+                {
+                  rtx pro;
+                  pro = DEP_PRO (dep1);
+                  if (pro != insn)
+                    index = -1;
+	        }
+              if (index >= 0)
+                break;
+            }
+        }
+      if (index >= 0)
+        break;
+    }
+  if (index < 0)
+    return issue_rate; /* Didn't find IMUL producer.  */
+
+  if (sched_verbose > 1)
+    fprintf(dump, ";;\tatom sched_reorder: swap %d and %d insns\n",
+            INSN_UID (ready[index]), INSN_UID (ready[n_ready - 1]));
+
+  /* Put IMUL producer (ready[index]) at the top of ready list.  */
+  insn1= ready[index];
+  for (i = index; i < n_ready - 1; i++)
+    ready[i] = ready[i + 1];
+  ready[n_ready - 1] = insn1;
+
+  return issue_rate;
+}
+
 
 
 /* Model decoder of Core 2/i7.
@@ -33127,7 +33231,7 @@ ix86_count_insn (basic_block bb)
   return min_prev_count;
 }
 
-/* Pad short funtion to 4 instructions.   */
+/* Pad short function to 4 instructions.   */
 
 static void
 ix86_pad_short_function (void)
@@ -34425,7 +34529,7 @@ half:
     }
   else
     {
-      rtx mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), false);
+      rtx mem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
 
       emit_move_insn (mem, target);
 
@@ -34642,7 +34746,7 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
     }
   else
     {
-      rtx mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), false);
+      rtx mem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
 
       emit_move_insn (mem, vec);
 
@@ -36924,7 +37028,7 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
 	{
 	  if (d->perm[0] / nelt2 == nonzero_halves[1])
 	    {
-	      /* Attempt to increase the likelyhood that dfinal
+	      /* Attempt to increase the likelihood that dfinal
 		 shuffle will be intra-lane.  */
 	      char tmph = nonzero_halves[0];
 	      nonzero_halves[0] = nonzero_halves[1];
@@ -38515,6 +38619,8 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #define TARGET_SCHED_DISPATCH_DO do_dispatch
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH ix86_reassociation_width
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER ix86_sched_reorder
 
 /* The size of the dispatch window is the total number of bytes of
    object code allowed in a window.  */
@@ -39000,7 +39106,7 @@ fits_dispatch_window (rtx insn)
   /* Make disp_cmp and disp_jcc get scheduled at the latest.  These
      instructions should be given the lowest priority in the
      scheduling process in Haifa scheduler to make sure they will be
-     scheduled in the same dispatch window as the refrence to them.  */
+     scheduled in the same dispatch window as the reference to them.  */
   if (group == disp_jcc || group == disp_cmp)
     return false;
 

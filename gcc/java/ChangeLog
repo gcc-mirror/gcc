@@ -1,3 +1,7 @@
+2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* resource.c: Do not include output.h.
+
 2012-05-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR java/52815

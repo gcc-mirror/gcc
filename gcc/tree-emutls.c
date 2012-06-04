@@ -434,7 +434,6 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
       addr = create_tmp_var (build_pointer_type (TREE_TYPE (decl)), NULL);
       x = gimple_build_call (d->builtin_decl, 1, build_fold_addr_expr (cdecl));
       gimple_set_location (x, d->loc);
-      add_referenced_var (cdecl);
 
       addr = make_ssa_name (addr, x);
       gimple_call_set_lhs (x, addr);

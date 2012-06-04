@@ -592,7 +592,8 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 
     union {
       vc v;
-      unsigned long l[N];
+      /* Statically assert that N is 2 or 4.  */
+      unsigned long l[(N == 2 || N == 4) ? N : -1];
     } u;
     unsigned long l, i = 0;
 

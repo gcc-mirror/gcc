@@ -1104,15 +1104,12 @@ extern char leaf_reg_remap[];
   {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}, \
    { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM} }
 
-#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) 			\
-  do {									\
-    if ((TO) == STACK_POINTER_REGNUM)					\
-      (OFFSET) = sparc_compute_frame_size (get_frame_size (),		\
-					   current_function_is_leaf);	\
-    else								\
-      (OFFSET) = 0;							\
-    (OFFSET) += SPARC_STACK_BIAS;					\
-  } while (0)
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) 		\
+  do								\
+    {								\
+      (OFFSET) = sparc_initial_elimination_offset ((TO));	\
+    }								\
+  while (0)
 
 /* Keep the stack pointer constant throughout the function.
    This is both an optimization and a necessity: longjmp

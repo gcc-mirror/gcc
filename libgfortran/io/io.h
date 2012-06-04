@@ -1,10 +1,10 @@
 /* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ typedef struct array_loop_spec
 }
 array_loop_spec;
 
-/* A stucture to build a hash table for format data.  */
+/* A structure to build a hash table for format data.  */
 
 #define FORMAT_HASH_SIZE 16
 
@@ -400,7 +400,7 @@ typedef struct st_parameter_dt
 	  unsigned at_eol : 1;
 	  unsigned comma_flag : 1;
 	  /* A namelist specific flag used in the list directed library
-	     to flag that calls are being made from namelist read (eg. to
+	     to flag that calls are being made from namelist read (e.g. to
 	     ignore comments or to treat '/' as a terminator)  */
 	  unsigned namelist_mode : 1;
 	  /* A namelist specific flag used in the list directed library

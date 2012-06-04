@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tree-flow.h"
 #include "pointer-set.h"
-#include "output.h"
 #include "ggc.h"
 
 static void flow_loops_cfg_dump (FILE *);

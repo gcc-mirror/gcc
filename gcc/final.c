@@ -72,7 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "targhooks.h"
 #include "debug.h"
 #include "expr.h"
-#include "cfglayout.h"
+#include "cfglayout.h" /* for reemit_insn_block_notes */
 #include "tree-pass.h"
 #include "tree-flow.h"
 #include "timevar.h"
@@ -83,7 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "cfgloop.h"
 #include "params.h"
-#include "tree-pretty-print.h"
+#include "tree-pretty-print.h" /* for dump_function_header */
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data

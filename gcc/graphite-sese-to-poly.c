@@ -1223,7 +1223,7 @@ add_condition_to_domain (ppl_Pointset_Powerset_C_Polyhedron_t ps, gimple stmt,
   ppl_delete_Linear_Expression (right);
 }
 
-/* Add conditional statement STMT to pbb.  CODE is used as the comparision
+/* Add conditional statement STMT to pbb.  CODE is used as the comparison
    operator.  This allows us to invert the condition or to handle
    inequalities.  */
 
@@ -2840,7 +2840,7 @@ follow_inital_value_to_phi (tree arg, tree lhs)
 }
 
 
-/* Return the argument of the loop PHI that is the inital value coming
+/* Return the argument of the loop PHI that is the initial value coming
    from outside the loop.  */
 
 static edge
@@ -2860,7 +2860,7 @@ edge_initial_value_for_loop_phi (gimple phi)
   return NULL;
 }
 
-/* Return the argument of the loop PHI that is the inital value coming
+/* Return the argument of the loop PHI that is the initial value coming
    from outside the loop.  */
 
 static tree

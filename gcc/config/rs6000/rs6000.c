@@ -40,8 +40,8 @@
 #include "except.h"
 #include "function.h"
 #include "output.h"
+#include "dbxout.h"
 #include "basic-block.h"
-#include "integrate.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "ggc.h"
@@ -2077,7 +2077,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   /* TODO add SPE and paired floating point vector support.  */
 
-  /* Register class constaints for the constraints that depend on compile
+  /* Register class constraints for the constraints that depend on compile
      switches.  */
   if (TARGET_HARD_FLOAT && TARGET_FPRS)
     rs6000_constraints[RS6000_CONSTRAINT_f] = FLOAT_REGS;
@@ -2328,7 +2328,7 @@ darwin_rs6000_override_options (void)
 
   /* Unless the user (not the configurer) has explicitly overridden
      it with -mcpu=G3 or -mno-altivec, then 10.5+ targets default to
-     G4 unless targetting the kernel.  */
+     G4 unless targeting the kernel.  */
   if (!flag_mkernel
       && !flag_apple_kext
       && strverscmp (darwin_macosx_version_min, "10.5") >= 0
@@ -4576,7 +4576,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
      of 64-bit items is not supported on Altivec.  */
   if (all_same && GET_MODE_SIZE (inner_mode) <= 4)
     {
-      mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode), 0);
+      mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode));
       emit_move_insn (adjust_address_nv (mem, inner_mode, 0),
 		      XVECEXP (vals, 0, 0));
       x = gen_rtx_UNSPEC (VOIDmode,
@@ -4612,7 +4612,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 
   /* Construct the vector in memory one field at a time
      and load the whole vector.  */
-  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
   for (i = 0; i < n_elts; i++)
     emit_move_insn (adjust_address_nv (mem, inner_mode,
 				    i * GET_MODE_SIZE (inner_mode)),
@@ -4641,7 +4641,7 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
     }
 
   /* Load single variable value.  */
-  mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode), 0);
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode));
   emit_move_insn (adjust_address_nv (mem, inner_mode, 0), val);
   x = gen_rtx_UNSPEC (VOIDmode,
 		      gen_rtvec (1, const0_rtx), UNSPEC_LVE);
@@ -4696,7 +4696,7 @@ rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
     }
 
   /* Allocate mode-sized buffer.  */
-  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
 
   emit_move_insn (mem, vec);
 
@@ -27829,7 +27829,7 @@ rs6000_allocate_stack_temp (enum machine_mode mode,
 			    bool offsettable_p,
 			    bool reg_reg_p)
 {
-  rtx stack = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+  rtx stack = assign_stack_temp (mode, GET_MODE_SIZE (mode));
   rtx addr = XEXP (stack, 0);
   int strict_p = (reload_in_progress || reload_completed);
 

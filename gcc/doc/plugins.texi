@@ -276,7 +276,7 @@ the start or end of the GCC garbage collection.
 Some plugins may need to have GGC mark additional data. This can be
 done by registering a callback (called with a null @code{gcc_data})
 for the @code{PLUGIN_GGC_MARKING} event. Such callbacks can call the
-@code{ggc_set_mark} routine, preferably thru the @code{ggc_mark} macro
+@code{ggc_set_mark} routine, preferably through the @code{ggc_mark} macro
 (and conversely, these routines should usually not be used in plugins
 outside of the @code{PLUGIN_GGC_MARKING} event).
 

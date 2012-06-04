@@ -4853,7 +4853,7 @@ typedef struct record_layout_info_s
   /* The alignment of the record so far, ignoring #pragma pack and
      __attribute__ ((packed)), in bits.  */
   unsigned int unpacked_align;
-  /* The previous field layed out.  */
+  /* The previous field laid out.  */
   tree prev_field;
   /* The static variables (i.e., class variables, as opposed to
      instance variables) encountered in T.  */
@@ -5092,7 +5092,7 @@ extern bool contains_placeholder_p (const_tree);
 
 extern bool type_contains_placeholder_p (tree);
 
-/* Given a tree EXP, find all occurences of references to fields
+/* Given a tree EXP, find all occurrences of references to fields
    in a PLACEHOLDER_EXPR and place them in vector REFS without
    duplicates.  Also record VAR_DECLs and CONST_DECLs.  Note that
    we assume here that EXP contains only arithmetic expressions
@@ -5817,10 +5817,6 @@ extern tree decl_attributes (tree *, tree, int);
 
 extern void apply_tm_attr (tree, tree);
 
-/* In integrate.c */
-extern void set_decl_abstract_flags (tree, int);
-extern void set_decl_origin_self (tree);
-
 /* In stor-layout.c */
 extern void set_min_and_max_values_for_integral_type (tree, int, bool);
 extern void fixup_signed_type (tree);
@@ -5841,6 +5837,8 @@ extern void set_user_assembler_name (tree, const char *);
 extern void process_pending_assemble_externals (void);
 extern bool decl_replaceable_p (tree);
 extern bool decl_binds_to_current_def_p (tree);
+extern enum tls_model decl_default_tls_model (const_tree);
+
 /* In stmt.c */
 extern void expand_computed_goto (tree);
 extern bool parse_output_constraint (const char **, int, int, int,
@@ -5852,7 +5850,6 @@ extern tree resolve_asm_operand_names (tree, tree, tree, tree);
 extern bool expand_switch_using_bit_tests_p (tree, tree, unsigned int,
 					     unsigned int);
 extern void expand_case (gimple);
-extern void expand_decl (tree);
 #ifdef HARD_CONST
 /* Silly ifdef to avoid having all includers depend on hard-reg-set.h.  */
 extern tree tree_overlaps_hard_reg_set (tree, HARD_REG_SET *);

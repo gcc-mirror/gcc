@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "flags.h"
-#include "regs.h"
 #include "function.h"
 #include "basic-block.h"
 #include "diagnostic-core.h"
@@ -45,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "profile.h"
 #include "target.h"
-#include "output.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree gcov_type_tmp_var;

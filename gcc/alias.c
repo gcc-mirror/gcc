@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "flags.h"
-#include "output.h"
 #include "diagnostic-core.h"
 #include "cselib.h"
 #include "splay-tree.h"
@@ -76,7 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 
    The first two questions can be answered with a simple examination
    of the type system.  If structure X contains a field of type Y then
-   a store thru a pointer to an X can overwrite any field that is
+   a store through a pointer to an X can overwrite any field that is
    contained (recursively) in an X (unless we know that px1 != px2).
 
    The last two of the questions can be solved in the same way as the
@@ -243,12 +242,9 @@ static GTY((deletable)) VEC(rtx,gc) *old_reg_base_value;
    ? VEC_index (rtx, reg_base_value, REGNO (X)) : 0)
 
 /* Vector indexed by N giving the initial (unchanging) value known for
-   pseudo-register N.  This array is initialized in init_alias_analysis,
+   pseudo-register N.  This vector is initialized in init_alias_analysis,
    and does not change until end_alias_analysis is called.  */
-static GTY((length("reg_known_value_size"))) rtx *reg_known_value;
-
-/* Indicates number of valid entries in reg_known_value.  */
-static GTY(()) unsigned int reg_known_value_size;
+static GTY(()) VEC(rtx,gc) *reg_known_value;
 
 /* Vector recording for each reg_known_value whether it is due to a
    REG_EQUIV note.  Future passes (viz., reload) may replace the
@@ -262,7 +258,7 @@ static GTY(()) unsigned int reg_known_value_size;
    REG_EQUIV notes.  One could argue that the REG_EQUIV notes are
    wrong, but solving the problem in the scheduler will likely give
    better code, so we do it here.  */
-static bool *reg_known_equiv_p;
+static sbitmap reg_known_equiv_p;
 
 /* True when scanning insns from the start of the rtl to the
    NOTE_INSN_FUNCTION_BEG note.  */
@@ -1362,8 +1358,8 @@ get_reg_known_value (unsigned int regno)
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
       regno -= FIRST_PSEUDO_REGISTER;
-      if (regno < reg_known_value_size)
-	return reg_known_value[regno];
+      if (regno < VEC_length (rtx, reg_known_value))
+	return VEC_index (rtx, reg_known_value, regno);
     }
   return NULL;
 }
@@ -1376,8 +1372,8 @@ set_reg_known_value (unsigned int regno, rtx val)
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
       regno -= FIRST_PSEUDO_REGISTER;
-      if (regno < reg_known_value_size)
-	reg_known_value[regno] = val;
+      if (regno < VEC_length (rtx, reg_known_value))
+	VEC_replace (rtx, reg_known_value, regno, val);
     }
 }
 
@@ -1389,8 +1385,8 @@ get_reg_known_equiv_p (unsigned int regno)
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
       regno -= FIRST_PSEUDO_REGISTER;
-      if (regno < reg_known_value_size)
-	return reg_known_equiv_p[regno];
+      if (regno < VEC_length (rtx, reg_known_value))
+	return TEST_BIT (reg_known_equiv_p, regno);
     }
   return false;
 }
@@ -1401,8 +1397,13 @@ set_reg_known_equiv_p (unsigned int regno, bool val)
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
       regno -= FIRST_PSEUDO_REGISTER;
-      if (regno < reg_known_value_size)
-	reg_known_equiv_p[regno] = val;
+      if (regno < VEC_length (rtx, reg_known_value))
+	{
+	  if (val)
+	    SET_BIT (reg_known_equiv_p, regno);
+	  else
+	    RESET_BIT (reg_known_equiv_p, regno);
+	}
     }
 }
 
@@ -2799,13 +2800,12 @@ init_alias_analysis (void)
   int changed, pass;
   int i;
   unsigned int ui;
-  rtx insn;
+  rtx insn, val;
 
   timevar_push (TV_ALIAS_ANALYSIS);
 
-  reg_known_value_size = maxreg - FIRST_PSEUDO_REGISTER;
-  reg_known_value = ggc_alloc_cleared_vec_rtx (reg_known_value_size);
-  reg_known_equiv_p = XCNEWVEC (bool, reg_known_value_size);
+  reg_known_value = VEC_alloc (rtx, gc, maxreg - FIRST_PSEUDO_REGISTER);
+  reg_known_equiv_p = sbitmap_alloc (maxreg - FIRST_PSEUDO_REGISTER);
 
   /* If we have memory allocated from the previous run, use it.  */
   if (old_reg_base_value)
@@ -2931,13 +2931,13 @@ init_alias_analysis (void)
 		      t = plus_constant (GET_MODE (src), t,
 					 INTVAL (XEXP (src, 1)));
 		      set_reg_known_value (regno, t);
-		      set_reg_known_equiv_p (regno, 0);
+		      set_reg_known_equiv_p (regno, false);
 		    }
 		  else if (DF_REG_DEF_COUNT (regno) == 1
 			   && ! rtx_varies_p (src, 1))
 		    {
 		      set_reg_known_value (regno, src);
-		      set_reg_known_equiv_p (regno, 0);
+		      set_reg_known_equiv_p (regno, false);
 		    }
 		}
 	    }
@@ -2964,9 +2964,12 @@ init_alias_analysis (void)
   while (changed && ++pass < MAX_ALIAS_LOOP_PASSES);
 
   /* Fill in the remaining entries.  */
-  for (i = 0; i < (int)reg_known_value_size; i++)
-    if (reg_known_value[i] == 0)
-      reg_known_value[i] = regno_reg_rtx[i + FIRST_PSEUDO_REGISTER];
+  FOR_EACH_VEC_ELT (rtx, reg_known_value, i, val)
+    {
+      int regno = i + FIRST_PSEUDO_REGISTER;
+      if (! val)
+	set_reg_known_value (regno, regno_reg_rtx[regno]);
+    }
 
   /* Clean up.  */
   free (new_reg_base_value);
@@ -2989,11 +2992,8 @@ void
 end_alias_analysis (void)
 {
   old_reg_base_value = reg_base_value;
-  ggc_free (reg_known_value);
-  reg_known_value = 0;
-  reg_known_value_size = 0;
-  free (reg_known_equiv_p);
-  reg_known_equiv_p = 0;
+  VEC_free (rtx, gc, reg_known_value);
+  sbitmap_free (reg_known_equiv_p);
 }
 
 #include "gt-alias.h"

@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "target.h"
 #include "target-def.h"
-#include "integrate.h"
 #include "langhooks.h"
 #include "cfglayout.h"
 #include "sched-int.h"
@@ -960,6 +959,9 @@ static const struct mips_rtx_cost_data
     DEFAULT_COSTS
   },
   { /* R4650 */
+    DEFAULT_COSTS
+  },
+  { /* R4700 */
     DEFAULT_COSTS
   },
   { /* R5000 */
@@ -17201,7 +17203,7 @@ static void
 mips_expand_vi_general (enum machine_mode vmode, enum machine_mode imode,
 			unsigned nelt, unsigned nvar, rtx target, rtx vals)
 {
-  rtx mem = assign_stack_temp (vmode, GET_MODE_SIZE (vmode), 0);
+  rtx mem = assign_stack_temp (vmode, GET_MODE_SIZE (vmode));
   unsigned int i, isize = GET_MODE_SIZE (imode);
 
   if (nvar < nelt)

@@ -74,7 +74,10 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
   bool ugo[3];
   bool rwxXstugo[9];
   int set_mode, part;
-  bool is_dir, honor_umask, continue_clause = false;
+  bool honor_umask, continue_clause = false;
+#ifndef __MINGW32__
+  bool is_dir;
+#endif
   mode_t mode_mask, file_mode, new_mode;
   struct stat stat_buf;
 
@@ -93,10 +96,10 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
   if (mode[0] >= '0' && mode[0] <= '9')
     {
 #ifdef __MINGW32__
-      unsigned mode;
-      if (sscanf (mode, "%o", &mode) != 1)
+      unsigned fmode;
+      if (sscanf (mode, "%o", &fmode) != 1)
 	return 1;
-      file_mode = (mode_t) mode;
+      file_mode = (mode_t) fmode;
 #else
       if (sscanf (mode, "%o", &file_mode) != 1)
 	return 1;
@@ -109,7 +112,9 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
     return 1;
 
   file_mode = stat_buf.st_mode & ~S_IFMT;
+#ifndef __MINGW32__
   is_dir = stat_buf.st_mode & S_IFDIR;
+#endif
 
 #ifdef HAVE_UMASK
   /* Obtain the umask without distroying the setting.  */

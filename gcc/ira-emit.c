@@ -84,7 +84,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "timevar.h"
 #include "tree-pass.h"
-#include "output.h"
 #include "reload.h"
 #include "df.h"
 #include "ira-int.h"
@@ -160,7 +159,7 @@ create_new_allocno (int regno, ira_loop_tree_node_t loop_tree_node)
 typedef struct move *move_t;
 
 /* The structure represents an allocno move.  Both allocnos have the
-   same origional regno but different allocation.  */
+   same original regno but different allocation.  */
 struct move
 {
   /* The allocnos involved in the move.  */
@@ -446,7 +445,7 @@ setup_entered_from_non_parent_p (void)
 }
 
 /* Return TRUE if move of SRC_ALLOCNO (assigned to hard register) to
-   DEST_ALLOCNO (assigned to memory) can be removed beacuse it does
+   DEST_ALLOCNO (assigned to memory) can be removed because it does
    not change value of the destination.  One possible reason for this
    is the situation when SRC_ALLOCNO is not modified in the
    corresponding loop.  */
@@ -606,7 +605,7 @@ change_loop (ira_loop_tree_node_t node)
 		  == ALLOCNO_HARD_REGNO (parent_allocno))
 	      && (ALLOCNO_HARD_REGNO (allocno) < 0
 		  || (parent->reg_pressure[pclass] + 1
-		      <= ira_available_class_regs[pclass])
+		      <= ira_class_hard_regs_num[pclass])
 		  || TEST_HARD_REG_BIT (ira_prohibited_mode_move_regs
 					[ALLOCNO_MODE (allocno)],
 					ALLOCNO_HARD_REGNO (allocno))

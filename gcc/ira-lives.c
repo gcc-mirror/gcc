@@ -192,7 +192,7 @@ inc_register_pressure (enum reg_class pclass, int n)
 	continue;
       curr_reg_pressure[cl] += n;
       if (high_pressure_start_point[cl] < 0
-	  && (curr_reg_pressure[cl] > ira_available_class_regs[cl]))
+	  && (curr_reg_pressure[cl] > ira_class_hard_regs_num[cl]))
 	high_pressure_start_point[cl] = curr_point;
       if (curr_bb_node->reg_pressure[cl] < curr_reg_pressure[cl])
 	curr_bb_node->reg_pressure[cl] = curr_reg_pressure[cl];
@@ -221,7 +221,7 @@ dec_register_pressure (enum reg_class pclass, int nregs)
       curr_reg_pressure[cl] -= nregs;
       ira_assert (curr_reg_pressure[cl] >= 0);
       if (high_pressure_start_point[cl] >= 0
-	  && curr_reg_pressure[cl] <= ira_available_class_regs[cl])
+	  && curr_reg_pressure[cl] <= ira_class_hard_regs_num[cl])
 	set_p = true;
     }
   if (set_p)
@@ -235,7 +235,7 @@ dec_register_pressure (enum reg_class pclass, int nregs)
 	  if (! ira_reg_pressure_class_p[cl])
 	    continue;
 	  if (high_pressure_start_point[cl] >= 0
-	      && curr_reg_pressure[cl] <= ira_available_class_regs[cl])
+	      && curr_reg_pressure[cl] <= ira_class_hard_regs_num[cl])
 	    high_pressure_start_point[cl] = -1;
 	}
     }
@@ -528,7 +528,7 @@ mark_ref_dead (df_ref def)
 
 /* If REG is a pseudo or a subreg of it, and the class of its allocno
    intersects CL, make a conflict with pseudo DREG.  ORIG_DREG is the
-   rtx actually accessed, it may be indentical to DREG or a subreg of it.
+   rtx actually accessed, it may be identical to DREG or a subreg of it.
    Advance the current program point before making the conflict if
    ADVANCE_P.  Return TRUE if we will need to advance the current
    program point.  */
@@ -562,7 +562,7 @@ make_pseudo_conflict (rtx reg, enum reg_class cl, rtx dreg, rtx orig_dreg,
 
 /* Check and make if necessary conflicts for pseudo DREG of class
    DEF_CL of the current insn with input operand USE of class USE_CL.
-   ORIG_DREG is the rtx actually accessed, it may be indentical to
+   ORIG_DREG is the rtx actually accessed, it may be identical to
    DREG or a subreg of it.  Advance the current program point before
    making the conflict if ADVANCE_P.  Return TRUE if we will need to
    advance the current program point.  */
@@ -851,7 +851,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 		     ? GENERAL_REGS
 		     : REG_CLASS_FROM_CONSTRAINT (c, constraints));
 	  if ((cl != NO_REGS && next_cl != cl)
-	      || (ira_available_class_regs[next_cl]
+	      || (ira_class_hard_regs_num[next_cl]
 		  > ira_reg_class_max_nregs[next_cl][GET_MODE (op)]))
 	    return NO_REGS;
 	  cl = next_cl;
@@ -864,7 +864,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 				recog_data.operand[c - '0'], NULL_RTX);
 	  if ((cl != NO_REGS && next_cl != cl)
 	      || next_cl == NO_REGS
-	      || (ira_available_class_regs[next_cl]
+	      || (ira_class_hard_regs_num[next_cl]
 		  > ira_reg_class_max_nregs[next_cl][GET_MODE (op)]))
 	    return NO_REGS;
 	  cl = next_cl;
@@ -943,8 +943,8 @@ ira_implicitly_set_insn_hard_regs (HARD_REG_SET *set)
 		  if (cl != NO_REGS
 		      /* There is no register pressure problem if all of the
 			 regs in this class are fixed.  */
-		      && ira_available_class_regs[cl] != 0
-		      && (ira_available_class_regs[cl]
+		      && ira_class_hard_regs_num[cl] != 0
+		      && (ira_class_hard_regs_num[cl]
 			  <= ira_reg_class_max_nregs[cl][mode]))
 		    IOR_HARD_REG_SET (*set, reg_class_contents[cl]);
 		  break;
@@ -1170,7 +1170,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		if (curr_bb_node->reg_pressure[cl] < curr_reg_pressure[cl])
 		  curr_bb_node->reg_pressure[cl] = curr_reg_pressure[cl];
 		ira_assert (curr_reg_pressure[cl]
-			    <= ira_available_class_regs[cl]);
+			    <= ira_class_hard_regs_num[cl]);
 	      }
 	  }
       EXECUTE_IF_SET_IN_BITMAP (reg_live_out, FIRST_PSEUDO_REGISTER, j, bi)

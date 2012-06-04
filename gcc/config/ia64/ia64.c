@@ -1585,13 +1585,13 @@ spill_xfmode_rfmode_operand (rtx in, int force, enum machine_mode mode)
       && GET_MODE (SUBREG_REG (in)) == TImode
       && GET_CODE (SUBREG_REG (in)) == REG)
     {
-      rtx memt = assign_stack_temp (TImode, 16, 0);
+      rtx memt = assign_stack_temp (TImode, 16);
       emit_move_insn (memt, SUBREG_REG (in));
       return adjust_address (memt, mode, 0);
     }
   else if (force && GET_CODE (in) == REG)
     {
-      rtx memx = assign_stack_temp (mode, 16, 0);
+      rtx memx = assign_stack_temp (mode, 16);
       emit_move_insn (memx, in);
       return memx;
     }
@@ -1716,7 +1716,7 @@ ia64_expand_movxf_movrf (enum machine_mode mode, rtx operands[])
 	    memt = adjust_address (in, TImode, 0);
 	  else
 	    {
-	      memt = assign_stack_temp (TImode, 16, 0);
+	      memt = assign_stack_temp (TImode, 16);
 	      memx = adjust_address (memt, mode, 0);
 	      emit_move_insn (memx, in);
 	    }
@@ -3454,7 +3454,7 @@ output_probe_stack_range (rtx reg1, rtx reg2)
    Also any insns generated here should have RTX_FRAME_RELATED_P(insn) = 1
    so that the debug info generation code can handle them properly.
 
-   The register save area is layed out like so:
+   The register save area is laid out like so:
    cfa+16
 	[ varargs spill area ]
 	[ fr register spill area ]

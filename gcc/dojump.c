@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "ggc.h"
 #include "basic-block.h"
-#include "output.h"
 #include "tm_p.h"
 
 static bool prefer_and_bit_test (enum machine_mode, int);

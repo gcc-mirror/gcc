@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "function.h"
 #include "regs.h"
-#include "output.h"
 #include "alloc-pool.h"
 #include "flags.h"
 #include "hard-reg-set.h"

@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "basic-block.h"
-#include "output.h"
 #include "tree-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
@@ -868,7 +867,7 @@ copy_ref_info (tree new_ref, tree old_ref)
 	  duplicate_ssa_name_ptr_info
 	    (new_ptr_base, SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
 	  new_pi = SSA_NAME_PTR_INFO (new_ptr_base);
-	  /* We have to be careful about transfering alignment information.  */
+	  /* We have to be careful about transferring alignment information.  */
 	  if (get_ptr_info_alignment (new_pi, &align, &misalign)
 	      && TREE_CODE (old_ref) == MEM_REF
 	      && !(TREE_CODE (new_ref) == TARGET_MEM_REF

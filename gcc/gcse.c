@@ -150,7 +150,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "basic-block.h"
-#include "output.h"
 #include "function.h"
 #include "expr.h"
 #include "except.h"
@@ -2906,7 +2905,7 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb,
   return (pred == NULL);
 }
 
-/* Find occurence in BB.  */
+/* Find occurrence in BB.  */
 
 static struct occr *
 find_occr_in_bb (struct occr *occr, basic_block bb)
@@ -2990,11 +2989,11 @@ hoist_code (void)
 	    {
 	      /* Current expression.  */
 	      struct expr *expr = index_map[i];
-	      /* Number of occurences of EXPR that can be hoisted to BB.  */
+	      /* Number of occurrences of EXPR that can be hoisted to BB.  */
 	      int hoistable = 0;
-	      /* Basic blocks that have occurences reachable from BB.  */
+	      /* Basic blocks that have occurrences reachable from BB.  */
 	      bitmap_head _from_bbs, *from_bbs = &_from_bbs;
-	      /* Occurences reachable from BB.  */
+	      /* Occurrences reachable from BB.  */
 	      VEC (occr_t, heap) *occrs_to_hoist = NULL;
 	      /* We want to insert the expression into BB only once, so
 		 note when we've inserted it.  */
@@ -3004,14 +3003,14 @@ hoist_code (void)
 	      bitmap_initialize (from_bbs, 0);
 
 	      /* If an expression is computed in BB and is available at end of
-		 BB, hoist all occurences dominated by BB to BB.  */
+		 BB, hoist all occurrences dominated by BB to BB.  */
 	      if (TEST_BIT (comp[bb->index], i))
 		{
 		  occr = find_occr_in_bb (expr->antic_occr, bb);
 
 		  if (occr)
 		    {
-		      /* An occurence might've been already deleted
+		      /* An occurrence might've been already deleted
 			 while processing a dominator of BB.  */
 		      if (!occr->deleted_p)
 			{
@@ -3042,7 +3041,7 @@ hoist_code (void)
 		  occr = find_occr_in_bb (expr->antic_occr, dominated);
 		  gcc_assert (occr);
 
-		  /* An occurence might've been already deleted
+		  /* An occurrence might've been already deleted
 		     while processing a dominator of BB.  */
 		  if (occr->deleted_p)
 		    continue;
@@ -3084,7 +3083,7 @@ hoist_code (void)
 	      if (hoistable > 1 && dbg_cnt (hoist_insn))
 		{
 		  /* If (hoistable != VEC_length), then there is
-		     an occurence of EXPR in BB itself.  Don't waste
+		     an occurrence of EXPR in BB itself.  Don't waste
 		     time looking for LCA in this case.  */
 		  if ((unsigned) hoistable
 		      == VEC_length (occr_t, occrs_to_hoist))
@@ -3094,7 +3093,7 @@ hoist_code (void)
 		      lca = nearest_common_dominator_for_set (CDI_DOMINATORS,
 							      from_bbs);
 		      if (lca != bb)
-			/* Punt, it's better to hoist these occurences to
+			/* Punt, it's better to hoist these occurrences to
 			   LCA.  */
 			VEC_free (occr_t, heap, occrs_to_hoist);
 		    }
@@ -3105,7 +3104,7 @@ hoist_code (void)
 
 	      insn_inserted_p = 0;
 
-	      /* Walk through occurences of I'th expressions we want
+	      /* Walk through occurrences of I'th expressions we want
 		 to hoist to BB and make the transformations.  */
 	      FOR_EACH_VEC_ELT (occr_t, occrs_to_hoist, j, occr)
 		{

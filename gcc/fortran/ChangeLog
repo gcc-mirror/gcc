@@ -1,3 +1,45 @@
+2012-06-03  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48831
+	* gfortran.h (gfc_check_init_expr): Add prototype declaration
+	of function.
+	* check.c (kind_check): Change if condition to use
+	to gfc_check_init_expr.
+	* expr.c (check_init_expr): Remove forward declaration
+	and static keyword. Change name in gfc_check_init_expr.
+	(scalarize_intrinsic_call, check_init_expr_arguments,
+	check_inquiry, check_conversion, gfc_reduce_init_expr): Update
+	call to gfc_check_init_expr.
+
+2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* trans-common.c: Do not include output.h.
+	* trans-decl.c: Likewise.
+
+2012-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53521
+	* trans.c (gfc_deallocate_scalar_with_status): Properly
+	handle the case size == 0.
+
+2012-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR c/53502
+	* decl.c (match_attr_spec): Remove "typedef".
+
+2012-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	* decl.c: Fix comment typos.
+	* expr.c: Ditto.
+	* frontend-passes.c: Ditto.
+	* match.c: Ditto.
+	* resolve.c: Ditto.
+	* trans-array.c: Ditto.
+	* trans-common.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+	* trans-types.c: Ditto.
+
 2012-05-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51055

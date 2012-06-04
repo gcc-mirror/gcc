@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
 
-/* This maps fortran intrinsic math functions to external library or GCC
+/* This maps Fortran intrinsic math functions to external library or GCC
    builtin functions.  */
 typedef struct GTY(()) gfc_intrinsic_map_t {
   /* The explicit enum is required to work around inadequacies in the
@@ -1579,7 +1579,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	}
 
 
-      /* Substract 1 to get to zero based and add dimensions.  */
+      /* Subtract 1 to get to zero based and add dimensions.  */
       switch (arg->expr->rank)
 	{
 	case 0:

@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "vec.h"
 #include "timevar.h"
-#include "output.h"
 #include "pointer-set.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"

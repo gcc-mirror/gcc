@@ -1351,7 +1351,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	else
 	  {
 	    rtx mem = assign_stack_temp (GET_MODE (op0),
-					 GET_MODE_SIZE (GET_MODE (op0)), 0);
+					 GET_MODE_SIZE (GET_MODE (op0)));
 	    emit_move_insn (mem, op0);
 	    op0 = adjust_address (mem, BLKmode, 0);
 	  }
@@ -1865,9 +1865,9 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 	  /* If the field does not already start at the lsb,
 	     shift it so it does.  */
 	  /* Maybe propagate the target for the shift.  */
-	  /* But not if we will return it--could confuse integrate.c.  */
 	  rtx subtarget = (target != 0 && REG_P (target) ? target : 0);
-	  if (tmode != mode) subtarget = 0;
+	  if (tmode != mode)
+	    subtarget = 0;
 	  op0 = expand_shift (RSHIFT_EXPR, mode, op0, bitpos, subtarget, 1);
 	}
       /* Convert the value to the desired mode.  */
@@ -3155,8 +3155,8 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	    {
 	      int shift = floor_log2 (CONST_DOUBLE_HIGH (op1))
 			  + HOST_BITS_PER_WIDE_INT;
-	      if (shift < 2 * HOST_BITS_PER_WIDE_INT - 1
-		  || GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT)
+	      if (shift < HOST_BITS_PER_DOUBLE_INT - 1
+		  || GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_DOUBLE_INT)
 		return expand_shift (LSHIFT_EXPR, mode, op0,
 				     shift, target, unsignedp);
 	    }
@@ -3316,7 +3316,7 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   /* We could handle this with some effort, but this case is much
      better handled directly with a scc insn, so rely on caller using
      that.  */
-  gcc_assert (pow != 2 * HOST_BITS_PER_WIDE_INT);
+  gcc_assert (pow != HOST_BITS_PER_DOUBLE_INT);
 
   /* mlow = 2^(N + lgup)/d */
  if (pow >= HOST_BITS_PER_WIDE_INT)

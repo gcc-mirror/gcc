@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "flags.h"
 #include "regs.h"
-#include "output.h"
 #include "except.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"

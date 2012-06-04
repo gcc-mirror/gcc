@@ -45,7 +45,7 @@
 })
 
 ;; A compiler-only memory barrier.  Generic code, when checking for the
-;; existance of various named patterns, uses asm("":::"memory") when we
+;; existence of various named patterns, uses asm("":::"memory") when we
 ;; don't need an actual instruction.  Here, it's easiest to pretend that
 ;; membar 0 is such a barrier.  Further, this gives us a nice hook to 
 ;; ignore all such barriers on Sparc V7.

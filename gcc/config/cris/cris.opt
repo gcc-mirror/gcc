@@ -175,6 +175,14 @@ Target Report RejectNegative Joined Var(cris_max_stackframe_str)
 max-stackframe=
 Target Report RejectNegative Joined Undocumented Var(cris_max_stackframe_str)
 
+mtrap-using-break8
+Target Report Var(cris_trap_using_break8) Init(2)
+Emit traps as \"break 8\", default for CRIS v3 and up.  If disabled, calls to abort() are used.
+
+mtrap-unaligned-atomic
+Target Report Var(cris_trap_unaligned_atomic) Init(2)
+Emit checks causing \"break 8\" instructions to execute when applying atomic builtins on misaligned memory
+
 ; TARGET_SVINTO: Currently this just affects alignment.  FIXME:
 ; Redundant with TARGET_ALIGN_BY_32, or put machine stuff here?
 ; This and the others below could just as well be variables and

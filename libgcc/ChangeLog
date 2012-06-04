@@ -1,3 +1,44 @@
+2012-06-03  David S. Miller  <davem@davemloft.net>
+
+	* longlong.h [SPARC] (sub_ddmmss): Fix thinko in previous 64-bit
+	change.
+
+2012-05-31  David S. Miller  <davem@davemloft.net>
+
+	* longlong.h [SPARC] (umul_ppmm, udiv_qrnnd): Use hardware integer
+	multiply and divide instructions on 32-bit when V9.
+	(add_ssaaaa, sub_ddmmss): Convert to branchless code on 64-bit.
+
+2012-05-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/ieee754-df.S: Fix typos.
+	* config/arm/ieee754-sf.S: Fix typos.
+	* config/c6x/libunwind.S: Fix typos.
+	* config/epiphany/udivsi3-float.c: Fix typos.
+	* config/microblaze/muldi3_hard.S: Fix typos.
+	* config/picochip/adddi3.S: Fix typos.
+	* config/picochip/ashlsi3.S: Fix typos.
+	* config/picochip/ashrsi3.S: Fix typos.
+	* config/picochip/clzsi2.S: Fix typos.
+	* config/picochip/cmpsi2.S: Fix typos.
+	* config/picochip/divmod15.S: Fix typos.
+	* config/picochip/divmodhi4.S: Fix typos.
+	* config/picochip/divmodsi4.S: Fix typos.
+	* config/picochip/longjmp.S: Fix typos.
+	* config/picochip/lshrsi3.S: Fix typos.
+	* config/picochip/parityhi2.S: Fix typos.
+	* config/picochip/popcounthi2.S: Fix typos.
+	* config/picochip/setjmp.S: Fix typos.
+	* config/picochip/subdi3.S: Fix typos.
+	* config/picochip/ucmpsi2.S: Fix typos.
+	* config/picochip/udivmodhi4.S: Fix typos.
+	* config/picochip/udivmodsi4.S: Fix typos.
+	* config/spu/divv2df3.c: Fix typos.
+	* config/spu/mfc_multi_tag_release.c: Fix typos.
+	* config/spu/mfc_tag_release.c: Fix typos.
+	* configure.ac: Fix typos.
+	* configure: Regenerate.
+
 2012-05-25  Ian Lance Taylor  <iant@google.com>
 
 	* config/i386/morestack.S (__morestack_non_split): Check whether

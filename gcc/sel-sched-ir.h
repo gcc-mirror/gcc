@@ -874,7 +874,7 @@ typedef struct
 {
   /* For each bb header this field contains a set of live registers.
      For all other insns this field has a NULL.
-     We also need to know LV sets for the instructions, that are immediatly
+     We also need to know LV sets for the instructions, that are immediately
      after the border of the region.  */
   regset lv_set;
 
@@ -987,7 +987,7 @@ typedef struct
   short flags;
 
   /* When flags include SUCCS_ALL, this will be set to the exact type
-     of the sucessor we're traversing now.  */
+     of the successor we're traversing now.  */
   short current_flags;
 
   /* If skip to loop exits, save here information about loop exits.  */

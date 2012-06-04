@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "diagnostic-core.h"
 #include "recog.h"
-#include "integrate.h"
 #include "dwarf2.h"
 #include "tm_p.h"
 #include "target.h"
@@ -393,7 +392,7 @@ static const struct attribute_spec sh_attribute_table[] =
    The insn that frees registers is most likely to be the insn with lowest
    LUID (original insn order); but such an insn might be there in the stalled
    queue (Q) instead of the ready queue (R).  To solve this, we skip cycles
-   upto a max of 8 cycles so that such insns may move from Q -> R.
+   up to a max of 8 cycles so that such insns may move from Q -> R.
 
    The description of the hooks are as below:
 
@@ -877,12 +876,43 @@ sh_option_override (void)
 	align_functions = min_align;
     }
 
+  if (flag_unsafe_math_optimizations)
+    {
+      /* Enable fmac insn for "a * b + c" SFmode calculations when -ffast-math
+	 is enabled and -mno-fused-madd is not specified by the user.
+	 The fmac insn can't be enabled by default due to the implied
+	 FMA semantics.   See also PR target/29100.  */
+      if (global_options_set.x_TARGET_FMAC == 0)
+	TARGET_FMAC = 1;
+
+      /* Enable fsca insn for SH4A if not otherwise specified by the user.  */
+      if (global_options_set.x_TARGET_FSCA == 0 && TARGET_SH4A_FP)
+	TARGET_FSCA = 1;
+
+      /* Enable fsrra insn for SH4A if not otherwise specified by the user.  */
+      if (global_options_set.x_TARGET_FSRRA == 0 && TARGET_SH4A_FP)
+	TARGET_FSRRA = 1;
+    }
+
+  /*  Allow fsrra insn only if -funsafe-math-optimizations and
+      -ffinite-math-only is enabled.  */
+  TARGET_FSRRA = TARGET_FSRRA
+		 && flag_unsafe_math_optimizations
+		 && flag_finite_math_only;
+
   if (sh_fixed_range_str)
     sh_fix_range (sh_fixed_range_str);
 
   /* This target defaults to strict volatile bitfields.  */
   if (flag_strict_volatile_bitfields < 0 && abi_version_at_least(2))
     flag_strict_volatile_bitfields = 1;
+
+  /* Make sure that only one atomic mode is selected and that the selection
+     is valid for the current target CPU.  */
+  if (TARGET_SOFT_ATOMIC && TARGET_HARD_ATOMIC)
+    error ("-msoft-atomic and -mhard-atomic cannot be used at the same time");
+  if (TARGET_HARD_ATOMIC && ! TARGET_SH4A_ARCH)
+    error ("-mhard-atomic is only available for SH4A targets");
 }
 
 /* Print the operand address in x to the stream.  */
@@ -11478,7 +11508,7 @@ sh_expand_binop_v2sf (enum rtx_code code, rtx op0, rtx op1, rtx op2)
    We could hold SFmode / SCmode values in XD registers, but that
    would require a tertiary reload when reloading from / to memory,
    and a secondary reload to reload from / to general regs; that
-   seems to be a loosing proposition.
+   seems to be a losing proposition.
 
    We want to allow TImode FP regs so that when V4SFmode is loaded as TImode,
    it won't be ferried through GP registers first.  */

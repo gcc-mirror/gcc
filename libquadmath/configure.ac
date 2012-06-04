@@ -169,7 +169,7 @@ AS_HELP_STRING([--disable-symvers],
   [disable symbol versioning for libquadmath]),
 quadmath_use_symver=$enableval,
 quadmath_use_symver=yes)
-if test "x$quadmath_use_symver" = xyes; then
+if test "x$quadmath_use_symver" != xno; then
   if test x$gcc_no_link = xyes; then
     # If we cannot link, we cannot build shared libraries, so do not use
     # symbol versioning.

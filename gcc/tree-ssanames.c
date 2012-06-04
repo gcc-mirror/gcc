@@ -281,7 +281,7 @@ set_ptr_info_alignment (struct ptr_info_def *pi, unsigned int align,
   pi->misalign = misalign;
 }
 
-/* If pointer decribed by PI has known alignment, increase its known
+/* If pointer described by PI has known alignment, increase its known
    misalignment by INCREMENT modulo its current alignment.  */
 
 void

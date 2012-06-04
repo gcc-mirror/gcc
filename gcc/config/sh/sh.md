@@ -577,7 +577,7 @@
   (and (eq_attr "type" "cbranch")
        (match_test "TARGET_SH2"))
   ;; SH2e has a hardware bug that pretty much prohibits the use of
-  ;; annuled delay slots.
+  ;; annulled delay slots.
   [(eq_attr "cond_delay_slot" "yes") (and (eq_attr "cond_delay_slot" "yes")
 					  (not (eq_attr "cpu" "sh2e"))) (nil)])
 
@@ -631,7 +631,7 @@
   [(set_attr "type" "mt_group")])
 
 ;; Test low QI subreg against zero.
-;; This avoids unecessary zero extension before the test.
+;; This avoids unnecessary zero extension before the test.
 
 (define_insn "tstqi_t_zero"
   [(set (reg:SI T_REG)
@@ -5470,7 +5470,7 @@ label:
 ;; selected to copy QImode regs.  If one of them happens to be allocated
 ;; on the stack, reload will stick to movqi insn and generate wrong
 ;; displacement addressing because of the generic m alternatives.  
-;; With the movqi_reg_reg being specified before movqi it will be intially 
+;; With the movqi_reg_reg being specified before movqi it will be initially 
 ;; picked to load/store regs.  If the regs regs are on the stack reload will
 ;; try other insns and not stick to movqi_reg_reg.
 ;; The same applies to the movhi variants.
@@ -10689,7 +10689,7 @@ label:
 	(div:SF (match_operand:SF 1 "immediate_operand" "i")
 		(sqrt:SF (match_operand:SF 2 "register_operand" "0"))))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
-  "TARGET_SH4A_FP && flag_unsafe_math_optimizations
+  "TARGET_FPU_ANY && TARGET_FSRRA
    && operands[1] == CONST1_RTX (SFmode)"
   "fsrra	%0"
   [(set_attr "type" "fsrra")
@@ -10705,47 +10705,35 @@ label:
 	 (unspec:SF [(mult:SF (float:SF (match_dup 1)) (match_dup 2))
 		    ] UNSPEC_FCOSA)))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
-  "TARGET_SH4A_FP && flag_unsafe_math_optimizations
+  "TARGET_FPU_ANY && TARGET_FSCA
    && operands[2] == sh_fsca_int2sf ()"
   "fsca	fpul,%d0"
   [(set_attr "type" "fsca")
    (set_attr "fp_mode" "single")])
 
-(define_expand "sinsf2"
+;; When the sincos pattern is defined, the builtin functions sin and cos
+;; will be expanded to the sincos pattern and one of the output values will
+;; remain unused.
+(define_expand "sincossf3"
   [(set (match_operand:SF 0 "nonimmediate_operand" "")
-	(unspec:SF [(match_operand:SF 1 "fp_arith_reg_operand" "")]
-		   UNSPEC_FSINA))]
-  "TARGET_SH4A_FP && flag_unsafe_math_optimizations"
+	(unspec:SF [(match_operand:SF 2 "fp_arith_reg_operand" "")]
+		   UNSPEC_FSINA))
+   (set (match_operand:SF 1 "nonimmediate_operand" "")
+	(unspec:SF [(match_dup 2)] UNSPEC_FCOSA))]
+  "TARGET_FPU_ANY && TARGET_FSCA"
 {
   rtx scaled = gen_reg_rtx (SFmode);
   rtx truncated = gen_reg_rtx (SImode);
   rtx fsca = gen_reg_rtx (V2SFmode);
   rtx scale_reg = force_reg (SFmode, sh_fsca_sf2int ());
 
-  emit_sf_insn (gen_mulsf3 (scaled, operands[1], scale_reg));
+  emit_sf_insn (gen_mulsf3 (scaled, operands[2], scale_reg));
   emit_sf_insn (gen_fix_truncsfsi2 (truncated, scaled));
   emit_sf_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf (),
 			  get_fpscr_rtx ()));
+
   emit_move_insn (operands[0], gen_rtx_SUBREG (SFmode, fsca, 0));
-  DONE;
-})
-
-(define_expand "cossf2"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "")
-	(unspec:SF [(match_operand:SF 1 "fp_arith_reg_operand" "")]
-		   UNSPEC_FCOSA))]
-  "TARGET_SH4A_FP && flag_unsafe_math_optimizations"
-{
-  rtx scaled = gen_reg_rtx (SFmode);
-  rtx truncated = gen_reg_rtx (SImode);
-  rtx fsca = gen_reg_rtx (V2SFmode);
-  rtx scale_reg = force_reg (SFmode, sh_fsca_sf2int ());
-
-  emit_sf_insn (gen_mulsf3 (scaled, operands[1], scale_reg));
-  emit_sf_insn (gen_fix_truncsfsi2 (truncated, scaled));
-  emit_sf_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf (),
-			  get_fpscr_rtx ()));
-  emit_move_insn (operands[0], gen_rtx_SUBREG (SFmode, fsca, 4));
+  emit_move_insn (operands[1], gen_rtx_SUBREG (SFmode, fsca, 4));
   DONE;
 })
 

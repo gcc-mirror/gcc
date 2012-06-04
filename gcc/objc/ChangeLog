@@ -1,3 +1,7 @@
+2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* objc-act.c: Do not include output.h.
+
 2012-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR objc++/53388

@@ -64,7 +64,7 @@ build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
     low &= ((HOST_WIDE_INT)1 << TYPE_PRECISION (type)) - 1, high = 0;
   else if (TYPE_PRECISION (type) == HOST_BITS_PER_WIDE_INT)
     high = 0;
-  else if (TYPE_PRECISION (type) == 2 * HOST_BITS_PER_WIDE_INT)
+  else if (TYPE_PRECISION (type) == HOST_BITS_PER_DOUBLE_INT)
     high = low;
   else
     gcc_unreachable ();
@@ -508,7 +508,7 @@ type_for_widest_vector_mode (tree type, optab op)
    returns either the element itself, either BIT_FIELD_REF, or an
    ARRAY_REF expression.
 
-   GSI is requred to insert temporary variables while building a
+   GSI is required to insert temporary variables while building a
    refernece to the element of the vector VECT.
 
    PTMPVEC is a pointer to the temporary variable for caching

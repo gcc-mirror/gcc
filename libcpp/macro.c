@@ -72,7 +72,7 @@ struct macro_arg_token_iter
   /* A pointer to the current token pointed to by the iterator.  */
   const cpp_token **token_ptr;
   /* A pointer to the "full" location of the current token.  If
-     -ftrack-macro-expansion is used this location tracks loci accross
+     -ftrack-macro-expansion is used this location tracks loci across
      macro expansion.  */
   const source_location *location_ptr;
 #ifdef ENABLE_CHECKING
@@ -100,7 +100,8 @@ static void expand_arg (cpp_reader *, macro_arg *);
 static const cpp_token *new_string_token (cpp_reader *, uchar *, unsigned int);
 static const cpp_token *stringify_arg (cpp_reader *, macro_arg *);
 static void paste_all_tokens (cpp_reader *, const cpp_token *);
-static bool paste_tokens (cpp_reader *, const cpp_token **, const cpp_token *);
+static bool paste_tokens (cpp_reader *, source_location,
+			  const cpp_token **, const cpp_token *);
 static void alloc_expanded_arg_mem (cpp_reader *, macro_arg *, size_t);
 static void ensure_expanded_arg_room (cpp_reader *, macro_arg *, size_t, size_t *);
 static void delete_macro_args (_cpp_buff*, unsigned num_args);
@@ -166,6 +167,8 @@ static void consume_next_token_from_context (cpp_reader *pfile,
 static const cpp_token* cpp_get_token_1 (cpp_reader *, source_location *);
 
 static cpp_hashnode* macro_of_context (cpp_context *context);
+
+static bool in_macro_expansion_p (cpp_reader *pfile);
 
 /* Statistical counter tracking the number of macros that got
    expanded.  */
@@ -544,9 +547,11 @@ stringify_arg (cpp_reader *pfile, macro_arg *arg)
 
 /* Try to paste two tokens.  On success, return nonzero.  In any
    case, PLHS is updated to point to the pasted token, which is
-   guaranteed to not have the PASTE_LEFT flag set.  */
+   guaranteed to not have the PASTE_LEFT flag set.  LOCATION is
+   the virtual location used for error reporting.  */
 static bool
-paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
+paste_tokens (cpp_reader *pfile, source_location location,
+	      const cpp_token **plhs, const cpp_token *rhs)
 {
   unsigned char *buf, *end, *lhsend;
   cpp_token *lhs;
@@ -590,7 +595,7 @@ paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
 
       /* Mandatory error for all apart from assembler.  */
       if (CPP_OPTION (pfile, lang) != CLK_ASM)
-	cpp_error (pfile, CPP_DL_ERROR,
+	cpp_error_with_line (pfile, CPP_DL_ERROR, location, 0,
 	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
 		   buf, cpp_token_as_text (pfile, rhs));
       return false;
@@ -615,9 +620,10 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
   cpp_context *context = pfile->context;
   source_location virt_loc = 0;
 
-  /* We must have been called on a token that appears at the left
-     hand side of a ## operator.  */
-  if (!(lhs->flags & PASTE_LEFT))
+  /* We are expanding a macro and we must have been called on a token
+     that appears at the left hand side of a ## operator.  */
+  if (macro_of_context (pfile->context) == NULL
+      || (!(lhs->flags & PASTE_LEFT)))
     abort ();
 
   if (context->tokens_kind == TOKENS_KIND_EXTENDED)
@@ -628,6 +634,11 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
        resulting pasted token to have the location of the current
        *LHS, though.  */
     virt_loc = context->c.mc->cur_virt_loc[-1];
+  else
+    /* We are not tracking macro expansion.  So the best virtual
+       location we can get here is the expansion point of the macro we
+       are currently expanding.  */
+    virt_loc = pfile->invocation_location;
 
   do
     {
@@ -661,7 +672,7 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
 	  if (rhs->flags & PASTE_LEFT)
 	    abort ();
 	}
-      if (!paste_tokens (pfile, &lhs, rhs))
+      if (!paste_tokens (pfile, virt_loc, &lhs, rhs))
 	break;
     }
   while (rhs->flags & PASTE_LEFT);
@@ -1018,6 +1029,17 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
   pfile->state.angled_headers = false;
 
+  /* From here to when we push the context for the macro later down
+     this function, we need to flag the fact that we are about to
+     expand a macro.  This is useful when -ftrack-macro-expansion is
+     turned off.  In that case, we need to record the location of the
+     expansion point of the top-most macro we are about to to expand,
+     into pfile->invocation_location.  But we must not record any such
+     location once the process of expanding the macro starts; that is,
+     we must not do that recording between now and later down this
+     function where set this flag to FALSE.  */
+  pfile->about_to_expand_macro_p = true;
+
   if ((node->flags & NODE_BUILTIN) && !(node->flags & NODE_USED))
     {
       node->flags |= NODE_USED;
@@ -1057,6 +1079,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 	      if (pragma_buff)
 		_cpp_release_buff (pfile, pragma_buff);
 
+	      pfile->about_to_expand_macro_p = false;
 	      return 0;
 	    }
 
@@ -1146,12 +1169,15 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
 	    }
 	  while (pragma_buff != NULL);
+	  pfile->about_to_expand_macro_p = false;
 	  return 2;
 	}
 
+      pfile->about_to_expand_macro_p = false;
       return 1;
     }
 
+  pfile->about_to_expand_macro_p = false;
   /* Handle built-in macros and the _Pragma operator.  */
   return builtin_macro (pfile, node);
 }
@@ -1195,7 +1221,7 @@ delete_macro_args (_cpp_buff *buff, unsigned num_args)
 
 /* Set the INDEXth token of the macro argument ARG. TOKEN is the token
    to set, LOCATION is its virtual location.  "Virtual" location means
-   the location that encodes loci accross macro expansion. Otherwise
+   the location that encodes loci across macro expansion. Otherwise
    it has to be TOKEN->SRC_LOC.  KIND is the kind of tokens the
    argument ARG is supposed to contain.  Note that ARG must be
    tailored so that it has enough room to contain INDEX + 1 numbers of
@@ -1320,7 +1346,7 @@ macro_arg_token_iter_init (macro_arg_token_iter *iter,
 
 /* Move the iterator one token forward. Note that if IT was
    initialized on an argument that has a stringified token, moving it
-   foward doesn't make sense as a stringified token is essentially one
+   forward doesn't make sense as a stringified token is essentially one
    string.  */
 static void
 macro_arg_token_iter_forward (macro_arg_token_iter *it)
@@ -1939,7 +1965,7 @@ tokens_buff_remove_last_token (_cpp_buff *tokens_buff)
    means -ftrack-macro-expansion is effect; it then points to where to
    insert the virtual location of TOKEN.  TOKEN is the token to
    insert.  VIRT_LOC is the virtual location of the token, i.e, the
-   location possibly encoding its locus accross macro expansion.  If
+   location possibly encoding its locus across macro expansion.  If
    TOKEN is an argument of a function-like macro (inside a macro
    replacement list), PARM_DEF_LOC is the spelling location of the
    macro parameter that TOKEN is replacing, in the replacement list of
@@ -1984,7 +2010,7 @@ tokens_buff_put_token_to (const cpp_token **dest,
    reaches BUFFER's size; it aborts in that situation.
 
    TOKEN is the token to append. VIRT_LOC is the virtual location of
-   the token, i.e, the location possibly encoding its locus accross
+   the token, i.e, the location possibly encoding its locus across
    macro expansion. If TOKEN is an argument of a function-like macro
    (inside a macro replacement list), PARM_DEF_LOC is the location of
    the macro parameter that TOKEN is replacing.  If TOKEN doesn't come
@@ -2143,6 +2169,20 @@ macro_of_context (cpp_context *context)
     : context->c.macro;
 }
 
+/* Return TRUE iff we are expanding a macro or are about to start
+   expanding one.  If we are effectively expanding a macro, the
+   function macro_of_context returns a pointer to the macro being
+   expanded.  */
+static bool
+in_macro_expansion_p (cpp_reader *pfile)
+{
+  if (pfile == NULL)
+    return false;
+
+  return (pfile->about_to_expand_macro_p 
+	  || macro_of_context (pfile->context));
+}
+
 /* Pop the current context off the stack, re-enabling the macro if the
    context represented a macro's replacement list.  Initially the
    context structure was not freed so that we can re-use it later, but
@@ -2186,7 +2226,7 @@ _cpp_pop_context (cpp_reader *pfile)
       if (macro != NULL
 	  /* Several contiguous macro expansion contexts can be
 	     associated to the same macro; that means it's the same
-	     macro expansion that spans accross all these (sub)
+	     macro expansion that spans across all these (sub)
 	     contexts.  So we should re-enable an expansion-disabled
 	     macro only when we are sure we are really out of that
 	     macro expansion.  */
@@ -2224,7 +2264,7 @@ reached_end_of_context (cpp_context *context)
 /* Consume the next token contained in the current context of PFILE,
    and return it in *TOKEN. It's "full location" is returned in
    *LOCATION. If -ftrack-macro-location is in effeect, fFull location"
-   means the location encoding the locus of the token accross macro
+   means the location encoding the locus of the token across macro
    expansion; otherwise it's just is the "normal" location of the
    token which (*TOKEN)->src_loc.  */
 static inline void
@@ -2298,11 +2338,13 @@ static const cpp_token*
 cpp_get_token_1 (cpp_reader *pfile, source_location *location)
 {
   const cpp_token *result;
-  bool can_set = pfile->set_invocation_location;
   /* This token is a virtual token that either encodes a location
      related to macro expansion or a spelling location.  */
   source_location virt_loc = 0;
-  pfile->set_invocation_location = false;
+  /* pfile->about_to_expand_macro_p can be overriden by indirect calls
+     to functions that push macro contexts.  So let's save it so that
+     we can restore it when we are about to leave this routine.  */
+  bool saved_about_to_expand_macro = pfile->about_to_expand_macro_p;
 
   for (;;)
     {
@@ -2355,7 +2397,7 @@ cpp_get_token_1 (cpp_reader *pfile, source_location *location)
 	  int ret = 0;
 	  /* If not in a macro context, and we're going to start an
 	     expansion, record the location.  */
-	  if (can_set && !context->c.macro)
+	  if (!in_macro_expansion_p (pfile))
 	    pfile->invocation_location = result->src_loc;
 	  if (pfile->state.prevent_expansion)
 	    break;
@@ -2423,8 +2465,7 @@ cpp_get_token_1 (cpp_reader *pfile, source_location *location)
       *location = virt_loc;
 
       if (!CPP_OPTION (pfile, track_macro_expansion)
-	  && can_set
-	  && pfile->context->c.macro != NULL)
+	  && macro_of_context (pfile->context) != NULL)
 	/* We are in a macro expansion context, are not tracking
 	   virtual location, but were asked to report the location
 	   of the expansion point of the macro being expanded.  */
@@ -2432,6 +2473,8 @@ cpp_get_token_1 (cpp_reader *pfile, source_location *location)
 
       *location = maybe_adjust_loc_for_trad_cpp (pfile, *location);
     }
+
+  pfile->about_to_expand_macro_p = saved_about_to_expand_macro;
   return result;
 }
 
@@ -2493,11 +2536,7 @@ cpp_get_token (cpp_reader *pfile)
 const cpp_token *
 cpp_get_token_with_location (cpp_reader *pfile, source_location *loc)
 {
-  const cpp_token *result;
-
-  pfile->set_invocation_location = true;
-  result = cpp_get_token_1 (pfile, loc);
-  return result;
+  return cpp_get_token_1 (pfile, loc);
 }
 
 /* Returns true if we're expanding an object-like macro that was

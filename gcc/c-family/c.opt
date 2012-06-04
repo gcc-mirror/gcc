@@ -446,7 +446,7 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about PCH files that are found but not used
 
 Wjump-misses-init
-C UPC ObjC Var(warn_jump_misses_init) Warning LangEnabledby(C ObjC,Wc++-compat)
+C UPC ObjC Var(warn_jump_misses_init) Warning LangEnabledby(C UPC ObjC,Wc++-compat)
 Warn when a jump misses a variable initialization
 
 Wliteral-suffix
@@ -466,7 +466,7 @@ C UPC ObjC C++ ObjC++ Var(warn_main) Init(-1) Warning
 Warn about suspicious declarations of \"main\"
 
 Wmissing-braces
-C UPC ObjC C++ ObjC++ Var(warn_missing_braces) Warning
+C UPC ObjC C++ ObjC++ Var(warn_missing_braces) Warning LangEnabledBy(C UPC ObjC,Wall)
 Warn about possibly missing braces around initializers
 
 Wmissing-declarations

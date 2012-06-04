@@ -60,7 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "basic-block.h"
-#include "output.h"
 #include "tm_p.h"
 #include "function.h"
 #include "sbitmap.h"

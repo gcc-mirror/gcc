@@ -35,7 +35,6 @@
 #include "function.h"
 #include "output.h"
 #include "basic-block.h"
-#include "integrate.h"
 #include "diagnostic-core.h"
 #include "ggc.h"
 #include "hashtab.h"
@@ -2870,7 +2869,7 @@ spu_machine_dependent_reorg (void)
 	    prop = prev;
 
 	  /* If this is the JOIN block of a simple IF-THEN then
-	     propogate the hint to the HEADER block. */
+	     propagate the hint to the HEADER block. */
 	  else if (prev && prev2
 		   && EDGE_COUNT (bb->preds) == 2
 		   && EDGE_COUNT (prev->preds) == 1
@@ -3124,7 +3123,7 @@ spu_sched_variable_issue (FILE *file ATTRIBUTE_UNUSED,
 	prev_priority = INSN_PRIORITY (insn);
     }
 
-  /* Always try issueing more insns.  spu_sched_reorder will decide 
+  /* Always try issuing more insns.  spu_sched_reorder will decide 
      when the cycle should be advanced. */
   return 1;
 }
@@ -3231,7 +3230,7 @@ spu_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
      used to effect it. */
   if (in_spu_reorg && spu_dual_nops < 10)
     {
-      /* When we are at an even address and we are not issueing nops to
+      /* When we are at an even address and we are not issuing nops to
          improve scheduling then we need to advance the cycle.  */
       if ((spu_sched_length & 7) == 0 && prev_clock_var == clock
 	  && (spu_dual_nops == 0

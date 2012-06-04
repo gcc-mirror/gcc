@@ -1,3 +1,28 @@
+2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-ada-spec.c: Do not include output.h.
+	* c-semantics.c: Likewise.
+
+2012-05-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c: Fix typo.
+
+2012-05-29  Michael Matz  <matz@suse.de>
+
+	* c-common.h (c_expand_decl): Remove prototype.
+
+2012-05-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wmissing-braces): Use LangEnabledBy(C ObjC,Wall).
+	* c-opts.c (c_common_handle_option): Remove code handling
+	warn_missing_braces.
+
+2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/25137
+	* c-opts.c (c_common_handle_option): For C++ -Wall doesn't enable
+	-Wmissing_braces.
+
 2012-05-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/53322

@@ -371,7 +371,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 			       c_family_lang_mask, kind, loc,
 			       handlers, global_dc);
       warn_char_subscripts = value;
-      warn_missing_braces = value;
       warn_parentheses = value;
       warn_return_type = value;
       warn_sequence_point = value;	/* Was C only.  */

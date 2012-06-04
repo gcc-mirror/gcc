@@ -55,46 +55,46 @@
 ;; The movsi for a gotless symbol could be split (post reload).
 
 
-(define_constants
+(define_c_enum ""
   [
    ;; PLT reference from call expansion: operand 0 is the address,
    ;; the mode is VOIDmode.  Always wrapped in CONST.
    ;; The value is relative to the GOT.
-   (CRIS_UNSPEC_PLT_GOTREL 0)
+   CRIS_UNSPEC_PLT_GOTREL
 
    ;; PLT reference from call expansion: operand 0 is the address,
    ;; the mode is VOIDmode.  Always wrapped in CONST.
    ;; The value is relative to the PC.  It's arch-dependent whether
    ;; the offset counts from the start or the end of the current item.
-   (CRIS_UNSPEC_PLT_PCREL 1)
+   CRIS_UNSPEC_PLT_PCREL
 
    ;; The address of the global offset table as a source operand.
-   (CRIS_UNSPEC_GOT 2)
+   CRIS_UNSPEC_GOT
 
    ;; The offset from the global offset table to the operand.
-   (CRIS_UNSPEC_GOTREL 3)
+   CRIS_UNSPEC_GOTREL
 
    ;; The PC-relative offset to the operand.  It's arch-dependent whether
    ;; the offset counts from the start or the end of the current item.
-   (CRIS_UNSPEC_PCREL 4)
+   CRIS_UNSPEC_PCREL
 
    ;; The index into the global offset table of a symbol, while
    ;; also generating a GOT entry for the symbol.
-   (CRIS_UNSPEC_GOTREAD 5)
+   CRIS_UNSPEC_GOTREAD
 
    ;; Similar to CRIS_UNSPEC_GOTREAD, but also generating a PLT entry.
-   (CRIS_UNSPEC_PLTGOTREAD 6)
+   CRIS_UNSPEC_PLTGOTREAD
 
    ;; Condition for v32 casesi jump, since it needs to have if_then_else
    ;; form with register as one branch and default label as other.
    ;; Operand 0 is const_int 0.
-   (CRIS_UNSPEC_CASESI 7)
+   CRIS_UNSPEC_CASESI
 
    ;; Stack frame deallocation barrier.
-   (CRIS_UNSPEC_FRAME_DEALLOC 8)
+   CRIS_UNSPEC_FRAME_DEALLOC
 
    ;; Swap all 32 bits of the operand; 31 <=> 0, 30 <=> 1...
-   (CRIS_UNSPEC_SWAP_BITS 9)
+   CRIS_UNSPEC_SWAP_BITS
   ])
 
 ;; Register numbers.
@@ -1530,7 +1530,7 @@
   "movs<m> %1,%0"
   [(set_attr "slottable" "yes,yes,no")])
 
-;; To do a byte->word extension, extend to dword, exept that the top half
+;; To do a byte->word extension, extend to dword, except that the top half
 ;; of the register will be clobbered.  FIXME: Perhaps this is not needed.
 
 (define_insn "extendqihi2"
@@ -3825,6 +3825,14 @@
   ""
   "nop"
   [(set_attr "cc" "none")])
+
+;; Same as the gdb trap breakpoint, will cause a SIGTRAP for
+;; cris-linux* and crisv32-linux*, as intended.  Will work in
+;; freestanding environments with sufficient framework.
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 8))]
+  "TARGET_TRAP_USING_BREAK8"
+  "break 8")
 
 ;; We need to stop accesses to the stack after the memory is
 ;; deallocated.  Unfortunately, reorg doesn't look at naked clobbers,
@@ -4157,6 +4165,8 @@
 	 3 [(match_dup 0)
 	    (match_dup 1)]))]
   "")
+
+(include "sync.md")
 
 ;; Splits for all cases in side-effect insns where (possibly after reload
 ;; and register allocation) rx and ry in [rx=ry+i] are equal.

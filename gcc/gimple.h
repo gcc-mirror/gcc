@@ -1589,12 +1589,20 @@ gimple_set_has_volatile_ops (gimple stmt, bool volatilep)
     stmt->gsbase.has_volatile_ops = (unsigned) volatilep;
 }
 
+/* Return true if BB is in a transaction.  */
+
+static inline bool
+block_in_transaction (basic_block bb)
+{
+  return flag_tm && bb->flags & BB_IN_TRANSACTION;
+}
+
 /* Return true if STMT is in a transaction.  */
 
 static inline bool
 gimple_in_transaction (gimple stmt)
 {
-  return gimple_bb (stmt)->flags & BB_IN_TRANSACTION;
+  return block_in_transaction (gimple_bb (stmt));
 }
 
 /* Return true if statement STMT may access memory.  */
@@ -4801,7 +4809,7 @@ gimple_return_set_retval (gimple gs, tree retval)
 }
 
 
-/* Returns true when the gimple statment STMT is any of the OpenMP types.  */
+/* Returns true when the gimple statement STMT is any of the OpenMP types.  */
 
 #define CASE_GIMPLE_OMP				\
     case GIMPLE_OMP_PARALLEL:			\
