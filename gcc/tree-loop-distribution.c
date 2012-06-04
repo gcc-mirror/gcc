@@ -323,7 +323,8 @@ build_size_arg_loc (location_t loc, tree nb_iter, tree op,
 /* Generate a call to memset for PARTITION in LOOP.  */
 
 static void
-generate_memset_builtin (struct loop *loop, partition_t partition)
+generate_memset_builtin (struct loop *loop, struct graph *rdg,
+			 partition_t partition)
 {
   gimple_stmt_iterator gsi;
   gimple stmt, fn_call;
@@ -331,7 +332,6 @@ generate_memset_builtin (struct loop *loop, partition_t partition)
   gimple_seq stmt_list = NULL, stmts;
   struct data_reference *dr = XCNEW (struct data_reference);
   location_t loc;
-  bool res;
 
   stmt = partition->main_stmt;
   loc = gimple_location (stmt);
@@ -344,11 +344,8 @@ generate_memset_builtin (struct loop *loop, partition_t partition)
   /* The new statements will be placed before LOOP.  */
   gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
 
-  DR_STMT (dr) = stmt;
-  DR_REF (dr) = op0;
-  res = dr_analyze_innermost (dr, loop_containing_stmt (stmt));
-  gcc_assert (res && stride_of_unit_type_p (DR_STEP (dr), TREE_TYPE (op0)));
-
+  dr = VEC_index (data_reference_p,
+		  RDG_DATAREFS (rdg, rdg_vertex_for_stmt (rdg, stmt)), 0);
   nb_bytes = build_size_arg_loc (loc, nb_iter, op0, &stmt_list);
   addr_base = size_binop_loc (loc, PLUS_EXPR, DR_OFFSET (dr), DR_INIT (dr));
   addr_base = fold_convert_loc (loc, sizetype, addr_base);
@@ -374,8 +371,6 @@ generate_memset_builtin (struct loop *loop, partition_t partition)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "generated memset zero\n");
-
-  free_data_ref (dr);
 }
 
 /* Remove and destroy the loop LOOP.  */
@@ -429,13 +424,13 @@ destroy_loop (struct loop *loop)
 /* Generates code for PARTITION.  */
 
 static void
-generate_code_for_partition (struct loop *loop, partition_t partition,
-			     bool copy_p)
+generate_code_for_partition (struct loop *loop, struct graph *rdg,
+			     partition_t partition, bool copy_p)
 {
   switch (partition->kind)
     {
     case PKIND_MEMSET:
-      generate_memset_builtin (loop, partition);
+      generate_memset_builtin (loop, rdg, partition);
       /* If this is the last partition for which we generate code, we have
 	 to destroy the loop.  */
       if (!copy_p)
@@ -865,16 +860,24 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
       if (gimple_assign_single_p (stmt)
 	  && !is_gimple_reg (gimple_assign_lhs (stmt)))
 	{
+	  tree rhs;
 	  if (partition->main_stmt != NULL)
 	    return;
 	  partition->main_stmt = stmt;
+	  rhs = gimple_assign_rhs1 (stmt);
+	  if (!(integer_zerop (rhs) || real_zerop (rhs)))
+	    return;
+	  if (VEC_length (data_reference_p, RDG_DATAREFS (rdg, i)) != 1)
+	    return;
+	  if (!adjacent_store_dr_p (VEC_index (data_reference_p,
+					       RDG_DATAREFS (rdg, i), 0)))
+	    return;
 	}
       else
 	return;
     }
 
-  if (partition->main_stmt != NULL
-      && stmt_with_adjacent_zero_store_dr_p (partition->main_stmt))
+  if (partition->main_stmt != NULL)
     partition->kind = PKIND_MEMSET;
 }
 
@@ -1095,6 +1098,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   VEC (int, heap) *other_stores = VEC_alloc (int, heap, 3);
   partition_t partition;
   bitmap processed = BITMAP_ALLOC (NULL);
+  bool any_builtin;
 
   remaining_stmts = BITMAP_ALLOC (NULL);
   upstream_mem_writes = BITMAP_ALLOC (NULL);
@@ -1129,8 +1133,12 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 			processed);
   BITMAP_FREE (processed);
 
+  any_builtin = false;
   FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
-    classify_partition (loop, rdg, partition);
+    {
+      classify_partition (loop, rdg, partition);
+      any_builtin |= partition_builtin_p (partition);
+    }
 
   /* If we are only distributing patterns fuse all partitions that
      were not properly classified as builtins.  Else fuse partitions
@@ -1138,6 +1146,12 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   if (!flag_tree_loop_distribution)
     {
       partition_t into;
+      /* If we did not detect any builtin simply bail out.  */
+      if (!any_builtin)
+	{
+	  nbp = 0;
+	  goto ldist_done;
+	}
       for (i = 0; VEC_iterate (partition_t, partitions, i, into); ++i)
 	if (!partition_builtin_p (into))
 	  break;
@@ -1197,7 +1211,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
     dump_rdg_partitions (dump_file, partitions);
 
   FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
-    generate_code_for_partition (loop, partition, i < nbp - 1);
+    generate_code_for_partition (loop, rdg, partition, i < nbp - 1);
 
  ldist_done:
 
@@ -1301,8 +1315,10 @@ tree_loop_distribution (void)
   FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
     {
       VEC (gimple, heap) *work_list = NULL;
+      basic_block *bbs;
       int num = loop->num;
       int nb_generated_loops = 0;
+      unsigned int i;
 
       /* If the loop doesn't have a single exit we will fail anyway,
 	 so do that early.  */
@@ -1313,13 +1329,31 @@ tree_loop_distribution (void)
       if (loop->num_nodes > 2)
 	continue;
 
-      /* -ftree-loop-distribution strictly distributes more but also
-         enables pattern detection.  For now simply distribute all stores
-	 or memset like stores.  */
-      if (flag_tree_loop_distribution)
-	stores_from_loop (loop, &work_list);
-      else if (flag_tree_loop_distribute_patterns)
-	stores_zero_from_loop (loop, &work_list);
+      /* Initialize the worklist with stmts we seed the partitions with.  */
+      bbs = get_loop_body_in_dom_order (loop);
+      for (i = 0; i < loop->num_nodes; ++i)
+	{
+	  gimple_stmt_iterator gsi;
+	  for (gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple stmt = gsi_stmt (gsi);
+	      /* Only distribute stores for now.
+	         ???  We should also try to distribute scalar reductions,
+		 thus SSA defs that have scalar uses outside of the loop.  */
+	      if (!gimple_assign_single_p (stmt)
+		  || is_gimple_reg (gimple_assign_lhs (stmt)))
+		continue;
+
+	      /* If we are only performing pattern detection restrict
+		 what we try to distribute to stores from constants.  */
+	      if (!flag_tree_loop_distribution
+		  && !is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
+		continue;
+
+	      VEC_safe_push (gimple, heap, work_list, stmt);
+	    }
+	}
+      free (bbs);
 
       if (VEC_length (gimple, work_list) > 0)
 	nb_generated_loops = distribute_loop (loop, work_list);

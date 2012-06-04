@@ -1,5 +1,23 @@
 2012-06-04  Richard Guenther  <rguenther@suse.de>
 
+	* tree-data-ref.c (stores_from_loop): Remove.
+	(stmt_with_adjacent_zero_store_dr_p): Likewise.
+	(stores_zero_from_loop): Likewise.
+	* tree-data-ref.h (stores_from_loop, stores_zero_from_loop,
+	stmt_with_adjacent_zero_store_dr_p, stride_of_unit_type_p): Remove.
+	(adjacent_store_dr_p): New function.
+	* tree-loop-distribution.c (generate_memset_builtin): Pass
+	the RDG, use the already available data-reference.
+	(generate_code_for_partition): Pass down RDG.
+	(classify_partition): Inline parts of the former
+	stmt_with_adjacent_zero_store_dr_p here and use adjacent_store_dr_p.
+	(ldist_gen): Remember if there was any detected builtin and
+	do less work if not and flag_tree_loop_distribution is not set.
+	(tree_loop_distribution): Inline and fuse stores_from_loop
+	and stores_zero_from_loop here.
+
+2012-06-04  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/53471
 	* dwarf2out.c (dwarf2out_finish): If generating LTO do not
 	create new assembler names.
