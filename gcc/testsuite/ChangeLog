@@ -1,3 +1,12 @@
+2012-06-04  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/53463
+	* g++.dg/cpp/limits.C: New test.
+	* g++.dg/parse/error19.C: Adjust.
+	* g++.dg/warn/Wconversion-real-integer2.C: Likewise.
+	* g++.dg/warn/pr35635.C: Likewise.
+	* g++.old-deja/g++.pt/assign1.C: Likewise.
+
 2012-06-04  Edmar Wienskoski  <edmar@freescale.com>
 
 	PR target/53559

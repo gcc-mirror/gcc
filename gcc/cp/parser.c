@@ -7481,6 +7481,7 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
 	  if (assignment_operator != ERROR_MARK)
 	    {
 	      bool non_constant_p;
+	      location_t saved_input_location;
 
 	      /* Parse the right-hand side of the assignment.  */
 	      tree rhs = cp_parser_initializer_clause (parser, &non_constant_p);
@@ -7493,11 +7494,15 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
 	      if (cp_parser_non_integral_constant_expression (parser,
 							      NIC_ASSIGNMENT))
 		return error_mark_node;
-	      /* Build the assignment expression.  */
+	      /* Build the assignment expression.  Its default
+		 location is the location of the '=' token.  */
+	      saved_input_location = input_location;
+	      input_location = loc;
 	      expr = build_x_modify_expr (loc, expr,
 					  assignment_operator,
 					  rhs,
 					  tf_warning_or_error);
+	      input_location = saved_input_location;
 	    }
 	}
     }
