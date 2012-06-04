@@ -1,3 +1,21 @@
+2012-06-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-data-ref.c (have_similar_memory_accesses_1): Remove.
+	(ref_base_address_1): Likewise.
+	(remove_similar_memory_refs): Likewise.
+	* tree-data-ref.h (remove_similar_memory_refs): Remove.
+	* tree-loop-distribution.c (classify_partition): Do not classify
+	as builtin if -ftree-loop-distribute-patterns is not enabled.
+	(fuse_partitions_with_similar_memory_accesses): Inline ...
+	(ldist_gen): ... here.  Fuse all non-builtin partitions if
+	-ftree-loop-distribution is not enabled.  Properly return
+	the number of created partitions.  Do not update SSA form here
+	but ...
+	(tree_loop_distribution): ... once here for the whole function.
+	Only walk innermost loops, constrain loops we consider here
+	further.  Do not call remove_similar_memory_refs.
+	(distribute_loop): Do not check number of loop nodes here.
+
 2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Makefile.in (GIMPLE_H): Do not depend on TARGET_H.

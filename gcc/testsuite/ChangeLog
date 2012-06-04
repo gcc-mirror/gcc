@@ -1,3 +1,9 @@
+2012-06-04  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ldist-11.c: Enable -ftree-loop-distribute-patterns.
+	* gcc.dg/tree-ssa/ldist-17.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-pr45948.c: Likewise.
+
 2012-06-03  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	PR fortran/48831
