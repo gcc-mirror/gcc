@@ -1275,13 +1275,14 @@ number_of_iterations_cond (struct loop *loop,
      practice, but it is simple enough to manage.  */
   if (!integer_zerop (iv0->step) && !integer_zerop (iv1->step))
     {
+      tree step_type = POINTER_TYPE_P (type) ? sizetype : type;
       if (code != NE_EXPR)
 	return false;
 
-      iv0->step = fold_binary_to_constant (MINUS_EXPR, type,
+      iv0->step = fold_binary_to_constant (MINUS_EXPR, step_type,
 					   iv0->step, iv1->step);
       iv0->no_overflow = false;
-      iv1->step = build_int_cst (type, 0);
+      iv1->step = build_int_cst (step_type, 0);
       iv1->no_overflow = true;
     }
 
