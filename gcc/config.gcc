@@ -925,7 +925,7 @@ avr-*-rtems*)
 	extra_objs="avr-devices.o"
 	;;
 avr-*-*)
-	tm_file="avr/avr.h dbxelf.h newlib-stdint.h"
+	tm_file="avr/avr.h dbxelf.h avr/avr-stdint.h"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o"
