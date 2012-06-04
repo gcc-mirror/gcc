@@ -1,3 +1,7 @@
+2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Makefile.in (GIMPLE_H): Do not depend on TARGET_H.
+
 2012-06-03  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (ipa_get_jf_known_type_offset): New function.
