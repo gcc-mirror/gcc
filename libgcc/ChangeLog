@@ -1,3 +1,8 @@
+2012-06-03  David S. Miller  <davem@davemloft.net>
+
+	* longlong.h [SPARC] (sub_ddmmss): Fix thinko in previous 64-bit
+	change.
+
 2012-05-31  David S. Miller  <davem@davemloft.net>
 
 	* longlong.h [SPARC] (umul_ppmm, udiv_qrnnd): Use hardware integer
