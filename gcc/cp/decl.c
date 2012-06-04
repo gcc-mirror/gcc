@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "decl.h"
 #include "intl.h"
-#include "output.h"
+#include "output.h" /* for have_global_bss_p */
 #include "toplev.h"
 #include "hashtab.h"
 #include "tm_p.h"

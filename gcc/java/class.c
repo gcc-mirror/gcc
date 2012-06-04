@@ -34,7 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "obstack.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
-#include "output.h"
+#include "output.h" /* for switch_to_section and get_section */
 #include "parse.h"
 #include "function.h"
 #include "ggc.h"

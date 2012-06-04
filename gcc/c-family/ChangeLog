@@ -1,3 +1,8 @@
+2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-common.c: Do not include output.h.
+	* c-pragma.c: Likewise.
+
 2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-ada-spec.c: Do not include output.h.

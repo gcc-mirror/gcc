@@ -5680,6 +5680,29 @@ extern bool decl_replaceable_p (tree);
 extern bool decl_binds_to_current_def_p (tree);
 extern enum tls_model decl_default_tls_model (const_tree);
 
+/* Declare DECL to be a weak symbol.  */
+extern void declare_weak (tree);
+/* Merge weak status.  */
+extern void merge_weak (tree, tree);
+/* Make one symbol an alias for another.  */
+extern void assemble_alias (tree, tree);
+
+/* Return nonzero if VALUE is a valid constant-valued expression
+   for use in initializing a static variable; one that can be an
+   element of a "constant" initializer.
+
+   Return null_pointer_node if the value is absolute;
+   if it is relocatable, return the variable that determines the relocation.
+   We assume that VALUE has been folded as much as possible;
+   therefore, we do not need to check for such things as
+   arithmetic-combinations of integers.  */
+extern tree initializer_constant_valid_p (tree, tree);
+
+/* Return true if VALUE is a valid constant-valued expression
+   for use in initializing a static bit-field; one that can be
+   an element of a "constant" initializer.  */
+extern bool initializer_constant_valid_for_bitfield_p (tree);
+
 /* In stmt.c */
 extern void expand_computed_goto (tree);
 extern bool parse_output_constraint (const char **, int, int, int,
