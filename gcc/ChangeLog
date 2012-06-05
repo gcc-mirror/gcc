@@ -1,3 +1,12 @@
+2012-06-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/53487
+	* config/rs6000/rs6000.c (rs6000_generate_compare): If we are
+	doing an unsigned compare, make sure the second argument is not a
+	negative constant.
+	(rs6000_emit_cmove): Don't allow floating point comparisons when
+	generating ISEL moves.
+
 2012-06-05  Edmar Wienskoski  <edmar@freescale.com>
 
 	* config/rs6000/e5500.md: New file.
