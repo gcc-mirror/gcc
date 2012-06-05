@@ -1,3 +1,9 @@
+2012-06-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50619
+	* resolve.c (build_default_init_expr): Don't initialize
+	ASSOCIATE names.
+
 2012-06-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53521
