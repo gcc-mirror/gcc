@@ -1,3 +1,9 @@
+2012-06-04  Dimitrios Apostolou <jimis@gmx.net>
+
+	* line-map.c (linemap_enter_macro): Don't zero max_column_hint in
+	every macro. This improves performance by reducing the number of
+	reallocations when track-macro-expansion is on.
+
 2012-06-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/53463
