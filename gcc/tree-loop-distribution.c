@@ -57,6 +57,7 @@ enum partition_kind { PKIND_NORMAL, PKIND_MEMSET };
 typedef struct partition_s
 {
   bitmap stmts;
+  bool has_writes;
   enum partition_kind kind;
   /* Main statement a kind != PKIND_NORMAL partition is about.  */
   gimple main_stmt;
@@ -72,6 +73,7 @@ partition_alloc (bitmap stmts)
 {
   partition_t partition = XCNEW (struct partition_s);
   partition->stmts = stmts ? stmts : BITMAP_ALLOC (NULL);
+  partition->has_writes = false;
   partition->kind = PKIND_NORMAL;
   return partition;
 }
@@ -91,6 +93,14 @@ static bool
 partition_builtin_p (partition_t partition)
 {
   return partition->kind != PKIND_NORMAL;
+}
+
+/* Returns true if the partition has an writes.  */
+
+static bool
+partition_has_writes (partition_t partition)
+{
+  return partition->has_writes;
 }
 
 /* If bit I is not set, it means that this node represents an
@@ -583,14 +593,14 @@ has_upstream_mem_writes (int u)
 }
 
 static void rdg_flag_vertex_and_dependent (struct graph *, int, partition_t,
-					   bitmap, bitmap, bool *);
+					   bitmap, bitmap);
 
 /* Flag the uses of U stopping following the information from
    upstream_mem_writes.  */
 
 static void
 rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
-	       bitmap processed, bool *part_has_writes)
+	       bitmap processed)
 {
   use_operand_p use_p;
   struct vertex *x = &(rdg->vertices[u]);
@@ -606,7 +616,7 @@ rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
 
       if (!already_processed_vertex_p (processed, v))
 	rdg_flag_vertex_and_dependent (rdg, v, partition, loops,
-				       processed, part_has_writes);
+				       processed);
     }
 
   if (gimple_code (stmt) != GIMPLE_PHI)
@@ -623,7 +633,7 @@ rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
 	      if (v >= 0
 		  && !already_processed_vertex_p (processed, v))
 		rdg_flag_vertex_and_dependent (rdg, v, partition, loops,
-					       processed, part_has_writes);
+					       processed);
 	    }
 	}
     }
@@ -645,7 +655,7 @@ rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
 
 	      if (!already_processed_vertex_p (processed, v))
 		rdg_flag_vertex_and_dependent (rdg, v, partition, loops,
-					       processed, part_has_writes);
+					       processed);
 	    }
 	}
     }
@@ -655,8 +665,7 @@ rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
    in LOOPS.  */
 
 static void
-rdg_flag_vertex (struct graph *rdg, int v, partition_t partition, bitmap loops,
-		 bool *part_has_writes)
+rdg_flag_vertex (struct graph *rdg, int v, partition_t partition, bitmap loops)
 {
   struct loop *loop;
 
@@ -668,7 +677,7 @@ rdg_flag_vertex (struct graph *rdg, int v, partition_t partition, bitmap loops,
 
   if (rdg_cannot_recompute_vertex_p (rdg, v))
     {
-      *part_has_writes = true;
+      partition->has_writes = true;
       bitmap_clear_bit (remaining_stmts, v);
     }
 }
@@ -678,22 +687,20 @@ rdg_flag_vertex (struct graph *rdg, int v, partition_t partition, bitmap loops,
 
 static void
 rdg_flag_vertex_and_dependent (struct graph *rdg, int v, partition_t partition,
-			       bitmap loops, bitmap processed,
-			       bool *part_has_writes)
+			       bitmap loops, bitmap processed)
 {
   unsigned i;
   VEC (int, heap) *nodes = VEC_alloc (int, heap, 3);
   int x;
 
   bitmap_set_bit (processed, v);
-  rdg_flag_uses (rdg, v, partition, loops, processed, part_has_writes);
+  rdg_flag_uses (rdg, v, partition, loops, processed);
   graphds_dfs (rdg, &v, 1, &nodes, false, remaining_stmts);
-  rdg_flag_vertex (rdg, v, partition, loops, part_has_writes);
+  rdg_flag_vertex (rdg, v, partition, loops);
 
   FOR_EACH_VEC_ELT (int, nodes, i, x)
     if (!already_processed_vertex_p (processed, x))
-      rdg_flag_vertex_and_dependent (rdg, x, partition, loops, processed,
-				     part_has_writes);
+      rdg_flag_vertex_and_dependent (rdg, x, partition, loops, processed);
 
   VEC_free (int, heap, nodes);
 }
@@ -725,7 +732,7 @@ collect_condition_stmts (struct loop *loop, VEC (gimple, heap) **conds)
 
 static void
 rdg_flag_loop_exits (struct graph *rdg, bitmap loops, partition_t partition,
-		     bitmap processed, bool *part_has_writes)
+		     bitmap processed)
 {
   unsigned i;
   bitmap_iterator bi;
@@ -741,8 +748,7 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, partition_t partition,
       bitmap new_loops = BITMAP_ALLOC (NULL);
 
       if (!already_processed_vertex_p (processed, v))
-	rdg_flag_vertex_and_dependent (rdg, v, partition, new_loops, processed,
-				       part_has_writes);
+	rdg_flag_vertex_and_dependent (rdg, v, partition, new_loops, processed);
 
       EXECUTE_IF_SET_IN_BITMAP (new_loops, 0, i, bi)
 	if (bitmap_set_bit (loops, i))
@@ -759,8 +765,7 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, partition_t partition,
    including the loop exit conditions.  */
 
 static partition_t
-build_rdg_partition_for_component (struct graph *rdg, rdgc c,
-				   bool *part_has_writes)
+build_rdg_partition_for_component (struct graph *rdg, rdgc c)
 {
   int i, v;
   partition_t partition = partition_alloc (NULL);
@@ -769,10 +774,9 @@ build_rdg_partition_for_component (struct graph *rdg, rdgc c,
 
   FOR_EACH_VEC_ELT (int, c->vertices, i, v)
     if (!already_processed_vertex_p (processed, v))
-      rdg_flag_vertex_and_dependent (rdg, v, partition, loops, processed,
-				     part_has_writes);
+      rdg_flag_vertex_and_dependent (rdg, v, partition, loops, processed);
 
-  rdg_flag_loop_exits (rdg, loops, partition, processed, part_has_writes);
+  rdg_flag_loop_exits (rdg, loops, partition, processed);
 
   BITMAP_FREE (processed);
   BITMAP_FREE (loops);
@@ -996,18 +1000,18 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
   FOR_EACH_VEC_ELT (rdgc, components, i, x)
     {
       partition_t np;
-      bool part_has_writes = false;
       int v = VEC_index (int, x->vertices, 0);
 
       if (bitmap_bit_p (processed, v))
 	continue;
 
-      np = build_rdg_partition_for_component (rdg, x, &part_has_writes);
+      np = build_rdg_partition_for_component (rdg, x);
       bitmap_ior_into (partition->stmts, np->stmts);
+      partition->has_writes = partition_has_writes (np);
       bitmap_ior_into (processed, np->stmts);
       partition_free (np);
 
-      if (part_has_writes)
+      if (partition_has_writes (partition))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
