@@ -1122,6 +1122,7 @@ runtime_newm(void)
 
 	stacksize = PTHREAD_STACK_MIN;
 
+#if 0
 #ifdef HAVE__DL_GET_TLS_STATIC_INFO
 	{
 		/* On GNU/Linux the static TLS size is taken out of
@@ -1141,6 +1142,7 @@ runtime_newm(void)
 		_dl_get_tls_static_info(&tlssize, &tlsalign);
 		stacksize += tlssize;
 	}
+#endif
 #endif
 
 	if(pthread_attr_setstacksize(&attr, stacksize) != 0)
