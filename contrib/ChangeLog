@@ -1,3 +1,12 @@
+2012-06-04   Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py (GetResults):
+	Change argument to accept list of summary files to analyze.
+	Update callers.
+	(CheckExpectedResults): Handle options.manifest, options.results
+	and options.ignore_missing_failures.
+	(Main): Add options --manifest, --results and --ignore_missing_failures.
+
 2012-05-31   Diego Novillo  <dnovillo@google.com>
 	     Cary Coutant  <ccoutant@google.com>
 
