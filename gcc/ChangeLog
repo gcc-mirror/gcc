@@ -1,3 +1,9 @@
+2012-06-05  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (ptr_regno_for_savres): Comment.
+	(rs6000_emit_prologue): Ensure register used for inline saves
+	of vector regs is not the static chain register.  Revise comment.
+
 2012-06-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* doc/md.texi (Standard Pattern Names For Generation): Document
