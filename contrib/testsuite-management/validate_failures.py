@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.6
 
 # Script to compare testsuite failures against a list of known-to-fail
 # tests.
@@ -206,10 +206,8 @@ def GetSumFiles(builddir):
   return sum_files
 
 
-def GetResults(builddir):
-  """Collect all the test results from .sum files under the given build
-  directory."""
-  sum_files = GetSumFiles(builddir)
+def GetResults(sum_files):
+  """Collect all the test results from the given .sum files."""
   build_results = set()
   for sum_fname in sum_files:
     print '\t%s' % sum_fname
@@ -258,16 +256,26 @@ def PrintSummary(msg, summary):
 
 
 def CheckExpectedResults(options):
-  (srcdir, target, valid_build) = GetBuildData(options)
-  if not valid_build:
-    return False
+  if not options.manifest:
+    (srcdir, target, valid_build) = GetBuildData(options)
+    if not valid_build:
+      return False
+    manifest_name = _MANIFEST_PATH_PATTERN % (srcdir, target)
+  else:
+    manifest_name = options.manifest
+    if not os.path.exists(manifest_name):
+      Error('Manifest file %s does not exist.' % manifest_name)
 
-  manifest_name = _MANIFEST_PATH_PATTERN % (srcdir, target)
   print 'Manifest:         %s' % manifest_name
   manifest = GetManifest(manifest_name)
 
-  print 'Getting actual results from build'
-  actual = GetResults(options.build_dir)
+  if not options.results:
+    print 'Getting actual results from build'
+    sum_files = GetSumFiles(options.build_dir)
+  else:
+    print 'Getting actual results from user-provided results'
+    sum_files = options.results.split()
+  actual = GetResults(sum_files)
 
   if options.verbosity >= 1:
     PrintSummary('Tests expected to fail', manifest)
@@ -280,7 +288,7 @@ def CheckExpectedResults(options):
     PrintSummary('Build results not in the manifest', actual_vs_manifest)
     tests_ok = False
 
-  if len(manifest_vs_actual) > 0:
+  if not options.ignore_missing_failures and len(manifest_vs_actual) > 0:
     PrintSummary('Manifest results not present in the build'
                  '\n\nNOTE: This is not a failure.  It just means that the '
                  'manifest expected\nthese tests to fail, '
@@ -314,20 +322,42 @@ def ProduceManifest(options):
 
 def Main(argv):
   parser = optparse.OptionParser(usage=__doc__)
+
+  # Keep the following list sorted by option name.
   parser.add_option('--build_dir', action='store', type='string',
                     dest='build_dir', default='.',
                     help='Build directory to check (default = .)')
-  parser.add_option('--manifest', action='store_true', dest='manifest',
-                    default=False, help='Produce the manifest for the current '
-                    'build (default = False)')
   parser.add_option('--force', action='store_true', dest='force',
-                    default=False, help='When used with --manifest, it will '
-                    'overwrite an existing manifest file (default = False)')
+                    default=False, help='When used with --produce_manifest, '
+                    'it will overwrite an existing manifest file '
+                    '(default = False)')
+  parser.add_option('--ignore_missing_failures', action='store_true',
+                    dest='ignore_missing_failures', default=False,
+                    help='When a failure is expected in the manifest but '
+                    'it is not found in the actual results, the script '
+                    'produces a note alerting to this fact. This means '
+                    'that the expected failure has been fixed, or '
+                    'it did not run, or it may simply be flaky '
+                    '(default = False)')
+  parser.add_option('--manifest', action='store', type='string',
+                    dest='manifest', default=None,
+                    help='Name of the manifest file to use (default = '
+                    'taken from contrib/testsuite-managment/<target>.xfail)')
+  parser.add_option('--produce_manifest', action='store_true',
+                    dest='produce_manifest', default=False,
+                    help='Produce the manifest for the current '
+                    'build (default = False)')
+  parser.add_option('--results', action='store', type='string',
+                    dest='results', default=None, help='Space-separated list '
+                    'of .sum files with the testing results to check. The '
+                    'only content needed from these files are the lines '
+                    'starting with FAIL, XPASS or UNRESOLVED (default = '
+                    '.sum files collected from the build directory).')
   parser.add_option('--verbosity', action='store', dest='verbosity',
                     type='int', default=0, help='Verbosity level (default = 0)')
   (options, _) = parser.parse_args(argv[1:])
 
-  if options.manifest:
+  if options.produce_manifest:
     retval = ProduceManifest(options)
   else:
     retval = CheckExpectedResults(options)
