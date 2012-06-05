@@ -1105,6 +1105,7 @@ runtime_newm(void)
 	M *m;
 	pthread_attr_t attr;
 	pthread_t tid;
+	size_t stacksize;
 
 	m = runtime_malloc(sizeof(M));
 	mcommoninit(m);
@@ -1118,7 +1119,31 @@ runtime_newm(void)
 #ifndef PTHREAD_STACK_MIN
 #define PTHREAD_STACK_MIN 8192
 #endif
-	if(pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN) != 0)
+
+	stacksize = PTHREAD_STACK_MIN;
+
+#ifdef HAVE__DL_GET_TLS_STATIC_INFO
+	{
+		/* On GNU/Linux the static TLS size is taken out of
+		   the stack size, and we get an error or a crash if
+		   there is not enough stack space left.  Add it back
+		   in if we can, in case the program uses a lot of TLS
+		   space.  */
+#ifndef internal_function
+#ifdef __i386__
+#define internal_function __attribute__ ((regparm (3), stdcall))
+#else
+#define internal_function
+#endif
+#endif
+		extern void _dl_get_tls_static_info(size_t*, size_t*) internal_function;
+		size_t tlssize, tlsalign;
+		_dl_get_tls_static_info(&tlssize, &tlsalign);
+		stacksize += tlssize;
+	}
+#endif
+
+	if(pthread_attr_setstacksize(&attr, stacksize) != 0)
 		runtime_throw("pthread_attr_setstacksize");
 
 	if(pthread_create(&tid, &attr, runtime_mstart, m) != 0)
