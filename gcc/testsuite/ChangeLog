@@ -1,5 +1,10 @@
 2012-06-05  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/30442
+	* gcc.dg/vect/bb-slp-30.c: New testcase.
+
+2012-06-05  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53081
 	* gcc.dg/tree-ssa/ldist-19.c: New testcase.
 	* gcc.c-torture/execute/builtins/builtins.exp: Always pass
