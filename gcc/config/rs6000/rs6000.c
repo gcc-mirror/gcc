@@ -15419,6 +15419,16 @@ rs6000_generate_compare (rtx cmp, enum machine_mode mode)
   else
     comp_mode = CCmode;
 
+  /* If we have an unsigned compare, make sure we don't have a signed value as
+     an immediate.  */
+  if (comp_mode == CCUNSmode && GET_CODE (op1) == CONST_INT
+      && INTVAL (op1) < 0)
+    {
+      op0 = copy_rtx_if_shared (op0);
+      op1 = force_reg (GET_MODE (op0), op1);
+      cmp = gen_rtx_fmt_ee (code, GET_MODE (cmp), op0, op1);
+    }
+
   /* First, the compare.  */
   compare_result = gen_reg_rtx (comp_mode);
 
@@ -16170,6 +16180,11 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   if (GET_MODE (true_cond) != result_mode)
     return 0;
   if (GET_MODE (false_cond) != result_mode)
+    return 0;
+
+  /* Don't allow using floating point comparisons for integer results for
+     now.  */
+  if (FLOAT_MODE_P (compare_mode) && !FLOAT_MODE_P (result_mode))
     return 0;
 
   /* First, work out if the hardware can do this at all, or
