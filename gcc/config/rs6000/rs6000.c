@@ -19109,6 +19109,9 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
   return NULL_RTX;
 }
 
+/* Return the register number used as a pointer by out-of-line
+   save/restore functions.  */
+
 static inline unsigned
 ptr_regno_for_savres (int sel)
 {
@@ -19846,6 +19849,9 @@ rs6000_emit_prologue (void)
 	  int sel = SAVRES_SAVE | SAVRES_VR;
 	  unsigned ptr_regno = ptr_regno_for_savres (sel);
 
+	  if (using_static_chain_p
+	      && ptr_regno == STATIC_CHAIN_REGNUM)
+	    ptr_regno = 12;
 	  if (REGNO (frame_reg_rtx) != ptr_regno)
 	    START_USE (ptr_regno);
 	  ptr_reg = gen_rtx_REG (Pmode, ptr_regno);
@@ -19954,9 +19960,9 @@ rs6000_emit_prologue (void)
       int offset;
       int save_regno;
 
-      /* Get VRSAVE onto a GPR.  Note that ABI_V4 might be using r12
-	 as frame_reg_rtx and r11 as the static chain pointer for
-	 nested functions.  */
+      /* Get VRSAVE onto a GPR.  Note that ABI_V4 and ABI_DARWIN might
+	 be using r12 as frame_reg_rtx and r11 as the static chain
+	 pointer for nested functions.  */
       save_regno = 12;
       if (DEFAULT_ABI == ABI_AIX && !using_static_chain_p)
 	save_regno = 11;
