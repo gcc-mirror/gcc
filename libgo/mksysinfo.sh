@@ -524,6 +524,8 @@ rusage=`grep '^type _rusage struct' gen-sysinfo.go`
 if test "$rusage" != ""; then
   rusage=`echo $rusage | sed -e 's/type _rusage struct //' -e 's/[{}]//g'`
   rusage=`echo $rusage | sed -e 's/^ *//'`
+  # Remove anonymous unions from GNU/Linux <bits/resource.h>.
+  rusage=`echo $rusage | sed -e 's/Godump_[0-9]* struct {\([^}]*\)};/\1/g'`
   nrusage=
   while test -n "$rusage"; do
     field=`echo $rusage | sed -e 's/^\([^;]*\);.*$/\1/'`
