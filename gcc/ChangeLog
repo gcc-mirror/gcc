@@ -1,5 +1,18 @@
 2012-06-05  Richard Guenther  <rguenther@suse.de>
 
+	* tree-loop-distribution.c (struct partition_s): Add has_writes
+	member.
+	(partition_alloc): Initialize it.
+	(partition_has_writes): New function.
+	(rdg_flag_uses): Adjust.
+	(rdg_flag_vertex): Likewise.
+	(rdg_flag_vertex_and_dependent): Likewise.
+	(rdg_flag_loop_exits): Likewise.
+	(build_rdg_partition_for_component): Likewise.
+	(rdg_build_partitions): Likewise.
+
+2012-06-05  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53081
 	* tree-loop-distribution.c (generate_memset_builtin): Handle all
 	kinds of byte-sized stores.
