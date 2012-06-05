@@ -1,3 +1,9 @@
+2012-06-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53575
+	* config.gcc: Select x32 run-time library if --with-abi={x32|mx32}
+	is used for x86_64-*-*.
+
 2012-06-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/30442

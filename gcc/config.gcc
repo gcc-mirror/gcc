@@ -1299,7 +1299,14 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	tmake_file="${tmake_file} i386/t-linux64"
 	x86_multilibs="${with_multilib_list}"
 	if test "$x86_multilibs" = "default"; then
-		x86_multilibs="m64,m32"
+		case ${with_abi} in
+		x32 | mx32)
+			x86_multilibs="mx32"
+			;;
+		*)
+			x86_multilibs="m64,m32"
+			;;
+		esac
 	fi
 	x86_multilibs=`echo $x86_multilibs | sed -e 's/,/ /g'`
 	for x86_multilib in ${x86_multilibs}; do
