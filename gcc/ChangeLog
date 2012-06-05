@@ -1,5 +1,12 @@
 2012-06-05  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/30442
+	* tree-vect-data-refs.c (vect_analyze_data_refs): For basic-block
+	vectorization stop analysis at the first stmt we cannot compute
+	a data-reference for instead of giving up completely.
+
+2012-06-05  Richard Guenther  <rguenther@suse.de>
+
 	* tree-loop-distribution.c (struct partition_s): Add has_writes
 	member.
 	(partition_alloc): Initialize it.
