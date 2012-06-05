@@ -1,3 +1,11 @@
+2012-06-05  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2011-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gthr-posix.h (__gthread_active_p): Do not use preprocessor
+	conditionals and comments inside macro arguments.
+
 2012-06-04  Edmar Wienskoski  <edmar@freescale.com>
 
 	PR target/53559
