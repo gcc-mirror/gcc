@@ -37,7 +37,7 @@ load_lib c-torture.exp
 torture-init
 set-torture-options $C_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 
-set additional_flags ""
+set additional_flags "-fno-tree-loop-distribute-patterns"
 if [istarget "powerpc-*-darwin*"] {
    lappend additional_flags "-Wl,-multiply_defined,suppress"
 }

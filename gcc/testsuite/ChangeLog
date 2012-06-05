@@ -1,3 +1,10 @@
+2012-06-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53081
+	* gcc.dg/tree-ssa/ldist-19.c: New testcase.
+	* gcc.c-torture/execute/builtins/builtins.exp: Always pass
+	-fno-tree-loop-distribute-patterns.
+
 2012-06-05  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/savres.c: Add -mdynamic-no-pic for darwin.

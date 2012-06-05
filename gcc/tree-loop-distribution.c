@@ -332,6 +332,7 @@ generate_memset_builtin (struct loop *loop, struct graph *rdg,
   gimple_seq stmt_list = NULL, stmts;
   struct data_reference *dr = XCNEW (struct data_reference);
   location_t loc;
+  tree val;
 
   stmt = partition->main_stmt;
   loc = gimple_location (stmt);
@@ -364,13 +365,44 @@ generate_memset_builtin (struct loop *loop, struct graph *rdg,
   mem = force_gimple_operand (addr_base, &stmts, true, NULL);
   gimple_seq_add_seq (&stmt_list, stmts);
 
+  /* This exactly matches the pattern recognition in classify_partition.  */
+  val = gimple_assign_rhs1 (stmt);
+  if (integer_zerop (val)
+      || real_zerop (val)
+      || TREE_CODE (val) == CONSTRUCTOR)
+    val = integer_zero_node;
+  else if (integer_all_onesp (val))
+    val = build_int_cst (integer_type_node, -1);
+  else
+    {
+      if (TREE_CODE (val) == INTEGER_CST)
+	val = fold_convert (integer_type_node, val);
+      else if (!useless_type_conversion_p (integer_type_node, TREE_TYPE (val)))
+	{
+	  gimple cstmt;
+	  tree tem = create_tmp_reg (integer_type_node, NULL);
+	  tem = make_ssa_name (tem, NULL);
+	  cstmt = gimple_build_assign_with_ops (NOP_EXPR, tem, val, NULL_TREE);
+	  gimple_seq_add_stmt (&stmt_list, cstmt);
+	  val = tem;
+	}
+    }
+
   fn = build_fold_addr_expr (builtin_decl_implicit (BUILT_IN_MEMSET));
-  fn_call = gimple_build_call (fn, 3, mem, integer_zero_node, nb_bytes);
+  fn_call = gimple_build_call (fn, 3, mem, val, nb_bytes);
   gimple_seq_add_stmt (&stmt_list, fn_call);
   gsi_insert_seq_after (&gsi, stmt_list, GSI_CONTINUE_LINKING);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "generated memset zero\n");
+    {
+      fprintf (dump_file, "generated memset");
+      if (integer_zerop (val))
+	fprintf (dump_file, " zero\n");
+      else if (integer_all_onesp (val))
+	fprintf (dump_file, " minus one\n");
+      else
+	fprintf (dump_file, "\n");
+    }
 }
 
 /* Remove and destroy the loop LOOP.  */
@@ -865,7 +897,19 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 	    return;
 	  partition->main_stmt = stmt;
 	  rhs = gimple_assign_rhs1 (stmt);
-	  if (!(integer_zerop (rhs) || real_zerop (rhs)))
+	  if (!(integer_zerop (rhs)
+		|| integer_all_onesp (rhs)
+		|| real_zerop (rhs)
+		|| (TREE_CODE (rhs) == CONSTRUCTOR
+		    && !TREE_CLOBBER_P (rhs))
+		|| (INTEGRAL_TYPE_P (TREE_TYPE (rhs))
+		    && (TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)))
+			== TYPE_MODE (unsigned_char_type_node)))))
+	    return;
+	  if (TREE_CODE (rhs) == SSA_NAME
+	      && !SSA_NAME_IS_DEFAULT_DEF (rhs)
+	      && flow_bb_inside_loop_p
+		   (loop, gimple_bb (SSA_NAME_DEF_STMT (rhs))))
 	    return;
 	  if (VEC_length (data_reference_p, RDG_DATAREFS (rdg, i)) != 1)
 	    return;
@@ -1346,9 +1390,19 @@ tree_loop_distribution (void)
 
 	      /* If we are only performing pattern detection restrict
 		 what we try to distribute to stores from constants.  */
-	      if (!flag_tree_loop_distribution
-		  && !is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
-		continue;
+	      if (!flag_tree_loop_distribution)
+		{
+		  tree rhs = gimple_assign_rhs1 (stmt);
+		  if (!is_gimple_min_invariant (rhs)
+		      && TREE_CODE (rhs) != CONSTRUCTOR
+		      && TREE_CODE (rhs) != SSA_NAME)
+		    continue;
+		  if (TREE_CODE (rhs) == SSA_NAME
+		      && !SSA_NAME_IS_DEFAULT_DEF (rhs)
+		      && flow_bb_inside_loop_p
+			   (loop, gimple_bb (SSA_NAME_DEF_STMT (rhs))))
+		    continue;
+		}
 
 	      VEC_safe_push (gimple, heap, work_list, stmt);
 	    }
