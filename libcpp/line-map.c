@@ -331,7 +331,6 @@ linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
 	  num_tokens * sizeof (source_location));
 
   LINEMAPS_MACRO_CACHE (set) = LINEMAPS_MACRO_USED (set) - 1;
-  set->max_column_hint = 0;
 
   return map;
 }
