@@ -1,4 +1,4 @@
-2012-06-01  Edmar Wienskoski  <edmar@freescale.com>
+2012-06-05  Edmar Wienskoski  <edmar@freescale.com>
 
 	* gcc.dg/tree-ssa/vector-3.c: Adjust regular expression.
 
