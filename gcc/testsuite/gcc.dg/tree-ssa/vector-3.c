@@ -14,7 +14,7 @@ float f(float b)
 
 /* We should be able to optimize this to just "return 0.0;" */
 /* { dg-final { scan-tree-dump-times "BIT_FIELD_REF" 0 "optimized"} } */
-/* { dg-final { scan-tree-dump-times "0.0" 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "0\\\.0" 1 "optimized"} } */
 
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 

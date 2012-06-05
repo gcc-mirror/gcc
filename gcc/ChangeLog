@@ -1,3 +1,29 @@
+2012-06-01  Edmar Wienskoski  <edmar@freescale.com>
+
+	* config/rs6000/e5500.md: New file.
+	* config/rs6000/e6500.md: New file.
+	* config/rs6000/rs6000.c (processor_costs): Add new costs for
+	e5500 and e6500.
+	(rs6000_option_override_internal): Altivec and Spe options not
+	allowed with e5500. Spe options not allowed with e6500. Increase
+	move inline limit for e5500 and e6500. Disable string instructions
+	for e5500 and e6500. Enable branch targets alignment for e5500 and
+	e6500. Initialize rs6000_cost for e5500 and e6500.
+	(rs6000_adjust_cost): Add extra scheduling cycles between compare
+	and brnach for e5500 and e6500.
+	(rs6000_issue_rate): Set issue rate for e5500 and e6500.
+	* config/rs6000/rs6000-cpus.def: Add cpu definitions for e5500 and
+	e6500.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add e5500 and e6500.
+	* config/rs6000/rs6000.md (define_attr "cpu"): Add ppce5500 and
+	ppce6500.
+	Include e5500.md and e6500.md.
+	* config/rs6000/rs6000-opt.h (processor_type): Add
+	PROCESSOR_PPCE5500 and PROCESSOR_PPCE6500.
+	* config.gcc (cpu_is_64bit): Add new cores e5500, e6500.
+	(powerpc*-*-*): Add new cores e5500, e6500.
+	* doc/invoke.texi: (item -mcpu): Add e5500 and e6500 to list of cpus.
+
 2012-06-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_analyze_data_refs): Fix last

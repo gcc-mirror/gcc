@@ -168,6 +168,8 @@
 %{mcpu=e300c3: -me300} \
 %{mcpu=e500mc: -me500mc} \
 %{mcpu=e500mc64: -me500mc64} \
+%{mcpu=e5500: -me5500} \
+%{mcpu=e6500: -me6500} \
 %{maltivec: -maltivec} \
 %{mvsx: -mvsx %{!maltivec: -maltivec} %{!mcpu*: %(asm_cpu_power7)}} \
 -many"

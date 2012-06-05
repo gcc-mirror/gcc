@@ -755,6 +755,44 @@ struct processor_costs ppce500mc64_cost = {
   1,			/* prefetch streams /*/
 };
 
+/* Instruction costs on PPCE5500 processors.  */
+static const
+struct processor_costs ppce5500_cost = {
+  COSTS_N_INSNS (5),    /* mulsi */
+  COSTS_N_INSNS (5),    /* mulsi_const */
+  COSTS_N_INSNS (4),    /* mulsi_const9 */
+  COSTS_N_INSNS (5),    /* muldi */
+  COSTS_N_INSNS (14),   /* divsi */
+  COSTS_N_INSNS (14),   /* divdi */
+  COSTS_N_INSNS (7),    /* fp */
+  COSTS_N_INSNS (10),   /* dmul */
+  COSTS_N_INSNS (36),   /* sdiv */
+  COSTS_N_INSNS (66),   /* ddiv */
+  64,			/* cache line size */
+  32,			/* l1 cache */
+  128,			/* l2 cache */
+  1,			/* prefetch streams /*/
+};
+
+/* Instruction costs on PPCE6500 processors.  */
+static const
+struct processor_costs ppce6500_cost = {
+  COSTS_N_INSNS (5),    /* mulsi */
+  COSTS_N_INSNS (5),    /* mulsi_const */
+  COSTS_N_INSNS (4),    /* mulsi_const9 */
+  COSTS_N_INSNS (5),    /* muldi */
+  COSTS_N_INSNS (14),   /* divsi */
+  COSTS_N_INSNS (14),   /* divdi */
+  COSTS_N_INSNS (7),    /* fp */
+  COSTS_N_INSNS (10),   /* dmul */
+  COSTS_N_INSNS (36),   /* sdiv */
+  COSTS_N_INSNS (66),   /* ddiv */
+  64,			/* cache line size */
+  32,			/* l1 cache */
+  128,			/* l2 cache */
+  1,			/* prefetch streams /*/
+};
+
 /* Instruction costs on AppliedMicro Titan processors.  */
 static const
 struct processor_costs titan_cost = {
@@ -2520,10 +2558,16 @@ rs6000_option_override_internal (bool global_init_p)
     error ("target attribute or pragma changes SPE ABI");
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
-      || rs6000_cpu == PROCESSOR_PPCE500MC || rs6000_cpu == PROCESSOR_PPCE500MC64)
+      || rs6000_cpu == PROCESSOR_PPCE500MC || rs6000_cpu == PROCESSOR_PPCE500MC64
+      || rs6000_cpu == PROCESSOR_PPCE5500)
     {
       if (TARGET_ALTIVEC)
 	error ("AltiVec not supported in this target");
+      if (TARGET_SPE)
+	error ("SPE not supported in this target");
+    }
+  if (rs6000_cpu == PROCESSOR_PPCE6500)
+    {
       if (TARGET_SPE)
 	error ("SPE not supported in this target");
     }
@@ -2621,7 +2665,9 @@ rs6000_option_override_internal (bool global_init_p)
      user's opinion, though.  */
   if (rs6000_block_move_inline_limit == 0
       && (rs6000_cpu == PROCESSOR_PPCE500MC
-	  || rs6000_cpu == PROCESSOR_PPCE500MC64))
+	  || rs6000_cpu == PROCESSOR_PPCE500MC64
+	  || rs6000_cpu == PROCESSOR_PPCE5500
+	  || rs6000_cpu == PROCESSOR_PPCE6500))
     rs6000_block_move_inline_limit = 128;
 
   /* store_one_arg depends on expand_block_move to handle at least the
@@ -2768,6 +2814,8 @@ rs6000_option_override_internal (bool global_init_p)
     case PROCESSOR_PPC8548:
     case PROCESSOR_PPCE500MC:
     case PROCESSOR_PPCE500MC64:
+    case PROCESSOR_PPCE5500:
+    case PROCESSOR_PPCE6500:
 
       rs6000_single_float = TARGET_E500_SINGLE || TARGET_E500_DOUBLE;
       rs6000_double_float = TARGET_E500_DOUBLE;
@@ -2812,7 +2860,9 @@ rs6000_option_override_internal (bool global_init_p)
 				 || rs6000_cpu == PROCESSOR_POWER6
 				 || rs6000_cpu == PROCESSOR_POWER7
 				 || rs6000_cpu == PROCESSOR_PPCE500MC
-				 || rs6000_cpu == PROCESSOR_PPCE500MC64);
+				 || rs6000_cpu == PROCESSOR_PPCE500MC64
+				 || rs6000_cpu == PROCESSOR_PPCE5500
+				 || rs6000_cpu == PROCESSOR_PPCE6500);
 
   /* Allow debug switches to override the above settings.  These are set to -1
      in rs6000.opt to indicate the user hasn't directly set the switch.  */
@@ -3033,6 +3083,14 @@ rs6000_option_override_internal (bool global_init_p)
 
       case PROCESSOR_PPCE500MC64:
 	rs6000_cost = &ppce500mc64_cost;
+	break;
+
+      case PROCESSOR_PPCE5500:
+	rs6000_cost = &ppce5500_cost;
+	break;
+
+      case PROCESSOR_PPCE6500:
+	rs6000_cost = &ppce6500_cost;
 	break;
 
       case PROCESSOR_TITAN:
@@ -22422,6 +22480,8 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                  || rs6000_cpu_attr == CPU_PPC750
                  || rs6000_cpu_attr == CPU_PPC7400
                  || rs6000_cpu_attr == CPU_PPC7450
+                 || rs6000_cpu_attr == CPU_PPCE5500
+                 || rs6000_cpu_attr == CPU_PPCE6500
                  || rs6000_cpu_attr == CPU_POWER4
                  || rs6000_cpu_attr == CPU_POWER5
 		 || rs6000_cpu_attr == CPU_POWER7
@@ -22997,6 +23057,8 @@ rs6000_issue_rate (void)
   case CPU_PPCE300C3:
   case CPU_PPCE500MC:
   case CPU_PPCE500MC64:
+  case CPU_PPCE5500:
+  case CPU_PPCE6500:
   case CPU_TITAN:
     return 2;
   case CPU_RIOS2:
