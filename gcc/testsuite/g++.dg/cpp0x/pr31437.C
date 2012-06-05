@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++0x" }
-template <typename... T> struct A // { dg-error "candidates|A" }
+template <typename... T> struct A // { dg-message "candidates|A" }
 {
   A(T* p) {  // { dg-error "parameter packs|T" }
    (A<T...>*)(p); 
