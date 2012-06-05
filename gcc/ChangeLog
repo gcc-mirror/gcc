@@ -1,4 +1,4 @@
-2012-06-01  Edmar Wienskoski  <edmar@freescale.com>
+2012-06-05  Edmar Wienskoski  <edmar@freescale.com>
 
 	* config/rs6000/e5500.md: New file.
 	* config/rs6000/e6500.md: New file.
