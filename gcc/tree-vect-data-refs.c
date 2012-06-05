@@ -2855,7 +2855,10 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	    {
 	      /* Mark the rest of the basic-block as unvectorizable.  */
 	      for (; !gsi_end_p (gsi); gsi_next (&gsi))
-		STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)) = false;
+		{
+		  stmt = gsi_stmt (gsi);
+		  STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)) = false;
+		}
 	      break;
 	    }
 	}
