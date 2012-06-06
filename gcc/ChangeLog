@@ -1,3 +1,8 @@
+2012-06-06  Matt Turner  <mattst88@gmail.com>
+
+	* config/arm/mmintrin.h (_mm_empty): New.
+	 (_m_empty): New.
+
 2012-06-06  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* doc/invoke.texi (sched-pressure-algorithm): Document new --param.
