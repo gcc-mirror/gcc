@@ -9350,6 +9350,17 @@ Set the maximum number of instructions executed in parallel in
 reassociated tree. This parameter overrides target dependent
 heuristics used by default if has non zero value.
 
+@item sched-pressure-algorithm
+Choose between the two available implementations of
+@option{-fsched-pressure}.  Algorithm 1 is the original implementation
+and is the more likely to prevent instructions from being reordered.
+Algorithm 2 was designed to be a compromise between the relatively
+conservative approach taken by algorithm 1 and the rather aggressive
+approach taken by the default scheduler.  It relies more heavily on
+having a regular register file and accurate register pressure classes.
+See @file{haifa-sched.c} in the GCC sources for more details.
+
+The default choice depends on the target.
 @end table
 @end table
 

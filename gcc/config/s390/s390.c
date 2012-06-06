@@ -1649,6 +1649,11 @@ s390_option_override (void)
      is beneficial on s390, we enable it if available.  */
   if (flag_prefetch_loop_arrays < 0 && HAVE_prefetch && optimize >= 3)
     flag_prefetch_loop_arrays = 1;
+
+  /* Use the alternative scheduling-pressure algorithm by default.  */
+  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, 2,
+                         global_options.x_param_values,
+                         global_options_set.x_param_values);
 }
 
 /* Map for smallest class containing reg regno.  */

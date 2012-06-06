@@ -979,6 +979,12 @@ DEFPARAM (PARAM_MAX_TRACKED_STRLENS,
 	  "track string lengths",
 	  1000, 0, 0)
 
+/* Keep this in sync with the sched_pressure_algorithm enum.  */
+DEFPARAM (PARAM_SCHED_PRESSURE_ALGORITHM,
+	  "sched-pressure-algorithm",
+	  "Which -fsched-pressure algorithm to apply",
+	  1, 1, 2)
+
 /*
 Local variables:
 mode:c

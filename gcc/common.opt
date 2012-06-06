@@ -1664,19 +1664,6 @@ fsched-pressure
 Common Report Var(flag_sched_pressure) Init(0) Optimization
 Enable register pressure sensitive insn scheduling
 
-fsched-pressure-algorithm=
-Common Joined RejectNegative Enum(sched_pressure_algorithm) Var(flag_sched_pressure_algorithm) Init(SCHED_PRESSURE_WEIGHTED)
--fsched-pressure-algorithm=[weighted|model] Set the pressure-scheduling algorithm
-
-Enum
-Name(sched_pressure_algorithm) Type(enum sched_pressure_algorithm) UnknownError(unknown %<fsched-pressure%> algorithm %qs)
-
-EnumValue
-Enum(sched_pressure_algorithm) String(weighted) Value(SCHED_PRESSURE_WEIGHTED)
-
-EnumValue
-Enum(sched_pressure_algorithm) String(model) Value(SCHED_PRESSURE_MODEL)
-
 fsched-spec
 Common Report Var(flag_schedule_speculative) Init(1) Optimization
 Allow speculative motion of non-loads
