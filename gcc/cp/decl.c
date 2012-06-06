@@ -8091,9 +8091,10 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
       processing_template_decl = 0;
       itype = cp_build_binary_op (input_location,
 				  MINUS_EXPR,
-				  cp_convert (ssizetype, size),
-				  cp_convert (ssizetype, integer_one_node),
-				  tf_warning_or_error);
+				  cp_convert (ssizetype, size, complain),
+				  cp_convert (ssizetype, integer_one_node,
+					      complain),
+				  complain);
       itype = fold (itype);
       processing_template_decl = saved_processing_template_decl;
 
@@ -13277,11 +13278,12 @@ finish_destructor_body (void)
       an implicit definition), non-placement operator delete shall
       be looked up in the scope of the destructor's class and if
       found shall be accessible and unambiguous.  */
-      exprstmt = build_op_delete_call(DELETE_EXPR, current_class_ptr,
-				      virtual_size,
-				      /*global_p=*/false,
-				      /*placement=*/NULL_TREE,
-				      /*alloc_fn=*/NULL_TREE);
+      exprstmt = build_op_delete_call (DELETE_EXPR, current_class_ptr,
+				       virtual_size,
+				       /*global_p=*/false,
+				       /*placement=*/NULL_TREE,
+				       /*alloc_fn=*/NULL_TREE,
+				       tf_warning_or_error);
 
       if_stmt = begin_if_stmt ();
       finish_if_stmt_cond (build2 (BIT_AND_EXPR, integer_type_node,

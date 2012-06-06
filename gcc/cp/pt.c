@@ -8474,8 +8474,7 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 
      both F templates are the same.  */
   tmpl = lookup_name_real (DECL_NAME (friend_tmpl), 0, 0,
-			   /*block_p=*/true, 0, 
-			   LOOKUP_COMPLAIN | LOOKUP_HIDDEN);
+			   /*block_p=*/true, 0, LOOKUP_HIDDEN);
 
   /* But, if we don't find one, it might be because we're in a
      situation like this:

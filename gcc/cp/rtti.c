@@ -99,7 +99,7 @@ VEC(tree,gc) *unemitted_tinfo_decls;
    and are generated as needed. */
 static GTY (()) VEC(tinfo_s,gc) *tinfo_descs;
 
-static tree ifnonnull (tree, tree);
+static tree ifnonnull (tree, tree, tsubst_flags_t);
 static tree tinfo_name (tree, bool);
 static tree build_dynamic_cast_1 (tree, tree, tsubst_flags_t);
 static tree throw_bad_cast (void);
@@ -336,7 +336,8 @@ build_typeid (tree exp)
          This is an lvalue use of expr then.  */
       exp = mark_lvalue_use (exp);
       exp = stabilize_reference (exp);
-      cond = cp_convert (boolean_type_node, TREE_OPERAND (exp, 0));
+      cond = cp_convert (boolean_type_node, TREE_OPERAND (exp, 0),
+			 tf_warning_or_error);
     }
 
   exp = get_tinfo_decl_dynamic (exp);
@@ -498,12 +499,13 @@ get_typeid (tree type)
    RESULT, it must have previously had a save_expr applied to it.  */
 
 static tree
-ifnonnull (tree test, tree result)
+ifnonnull (tree test, tree result, tsubst_flags_t complain)
 {
   return build3 (COND_EXPR, TREE_TYPE (result),
 		 build2 (EQ_EXPR, boolean_type_node, test,
-			 cp_convert (TREE_TYPE (test), nullptr_node)),
-		 cp_convert (TREE_TYPE (result), nullptr_node),
+			 cp_convert (TREE_TYPE (test), nullptr_node,
+				     complain)),
+		 cp_convert (TREE_TYPE (result), nullptr_node, complain),
 		 result);
 }
 
@@ -596,7 +598,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
       /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
       expr = convert_to_reference (exprtype, expr, CONV_IMPLICIT,
-				   LOOKUP_NORMAL, NULL_TREE);
+				   LOOKUP_NORMAL, NULL_TREE, complain);
     }
 
   /* The dynamic_cast operator shall not cast away constness.  */
@@ -644,7 +646,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  expr1 = build_headof (expr);
 	  if (TREE_TYPE (expr1) != type)
 	    expr1 = build1 (NOP_EXPR, type, expr1);
-	  return ifnonnull (expr, expr1);
+	  return ifnonnull (expr, expr1, complain);
 	}
       else
 	{
@@ -752,12 +754,12 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	      neq = cp_truthvalue_conversion (result);
 	      return cp_convert (type,
 				 build3 (COND_EXPR, TREE_TYPE (result),
-					 neq, result, bad));
+					 neq, result, bad), complain);
 	    }
 
 	  /* Now back to the type we want from a void*.  */
-	  result = cp_convert (type, result);
-	  return ifnonnull (expr, result);
+	  result = cp_convert (type, result, complain);
+	  return ifnonnull (expr, result, complain);
 	}
     }
   else
