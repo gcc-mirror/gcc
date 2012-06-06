@@ -52,15 +52,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
 
-enum partition_kind { PKIND_NORMAL, PKIND_MEMSET };
+enum partition_kind { PKIND_NORMAL, PKIND_MEMSET, PKIND_MEMCPY };
 
 typedef struct partition_s
 {
   bitmap stmts;
   bool has_writes;
   enum partition_kind kind;
-  /* Main statement a kind != PKIND_NORMAL partition is about.  */
-  gimple main_stmt;
+  /* data-references a kind != PKIND_NORMAL partition is about.  */
+  data_reference_p main_dr;
+  data_reference_p secondary_dr;
 } *partition_t;
 
 DEF_VEC_P (partition_t);
@@ -313,51 +314,25 @@ generate_loops_for_partition (struct loop *loop, partition_t partition,
   free (bbs);
 }
 
-/* Build the size argument for a memset call.  */
+/* Build the size argument for a memory operation call.  */
 
-static inline tree
-build_size_arg_loc (location_t loc, tree nb_iter, tree op,
-		    gimple_seq *stmt_list)
+static tree
+build_size_arg_loc (location_t loc, data_reference_p dr, tree nb_iter)
 {
-  gimple_seq stmts;
-  tree x = fold_build2_loc (loc, MULT_EXPR, size_type_node,
-			    fold_convert_loc (loc, size_type_node, nb_iter),
-			    fold_convert_loc (loc, size_type_node,
-					      TYPE_SIZE_UNIT (TREE_TYPE (op))));
-  x = force_gimple_operand (x, &stmts, true, NULL);
-  gimple_seq_add_seq (stmt_list, stmts);
-
-  return x;
+  tree size;
+  size = fold_build2_loc (loc, MULT_EXPR, sizetype,
+			  fold_convert_loc (loc, sizetype, nb_iter),
+			  TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr))));
+  return fold_convert_loc (loc, size_type_node, size);
 }
 
-/* Generate a call to memset for PARTITION in LOOP.  */
+/* Build an address argument for a memory operation call.  */
 
-static void
-generate_memset_builtin (struct loop *loop, struct graph *rdg,
-			 partition_t partition)
+static tree
+build_addr_arg_loc (location_t loc, data_reference_p dr, tree nb_bytes)
 {
-  gimple_stmt_iterator gsi;
-  gimple stmt, fn_call;
-  tree op0, nb_iter, mem, fn, addr_base, nb_bytes;
-  gimple_seq stmt_list = NULL, stmts;
-  struct data_reference *dr = XCNEW (struct data_reference);
-  location_t loc;
-  tree val;
+  tree addr_base;
 
-  stmt = partition->main_stmt;
-  loc = gimple_location (stmt);
-  op0 = gimple_assign_lhs (stmt);
-  if (gimple_bb (stmt) == loop->latch)
-    nb_iter = number_of_latch_executions (loop);
-  else
-    nb_iter = number_of_exit_cond_executions (loop);
-
-  /* The new statements will be placed before LOOP.  */
-  gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
-
-  dr = VEC_index (data_reference_p,
-		  RDG_DATAREFS (rdg, rdg_vertex_for_stmt (rdg, stmt)), 0);
-  nb_bytes = build_size_arg_loc (loc, nb_iter, op0, &stmt_list);
   addr_base = size_binop_loc (loc, PLUS_EXPR, DR_OFFSET (dr), DR_INIT (dr));
   addr_base = fold_convert_loc (loc, sizetype, addr_base);
 
@@ -367,13 +342,39 @@ generate_memset_builtin (struct loop *loop, struct graph *rdg,
       addr_base = size_binop_loc (loc, MINUS_EXPR, addr_base,
 				  fold_convert_loc (loc, sizetype, nb_bytes));
       addr_base = size_binop_loc (loc, PLUS_EXPR, addr_base,
-				  TYPE_SIZE_UNIT (TREE_TYPE (op0)));
+				  TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr))));
     }
 
-  addr_base = fold_build_pointer_plus_loc (loc,
-					   DR_BASE_ADDRESS (dr), addr_base);
-  mem = force_gimple_operand (addr_base, &stmts, true, NULL);
-  gimple_seq_add_seq (&stmt_list, stmts);
+  return fold_build_pointer_plus_loc (loc, DR_BASE_ADDRESS (dr), addr_base);
+}
+
+/* Generate a call to memset for PARTITION in LOOP.  */
+
+static void
+generate_memset_builtin (struct loop *loop, partition_t partition)
+{
+  gimple_stmt_iterator gsi;
+  gimple stmt, fn_call;
+  tree nb_iter, mem, fn, nb_bytes;
+  location_t loc;
+  tree val;
+
+  stmt = DR_STMT (partition->main_dr);
+  loc = gimple_location (stmt);
+  if (gimple_bb (stmt) == loop->latch)
+    nb_iter = number_of_latch_executions (loop);
+  else
+    nb_iter = number_of_exit_cond_executions (loop);
+
+  /* The new statements will be placed before LOOP.  */
+  gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
+
+  nb_bytes = build_size_arg_loc (loc, partition->main_dr, nb_iter);
+  nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
+				       false, GSI_CONTINUE_LINKING);
+  mem = build_addr_arg_loc (loc, partition->main_dr, nb_bytes);
+  mem = force_gimple_operand_gsi (&gsi, mem, true, NULL_TREE,
+				  false, GSI_CONTINUE_LINKING);
 
   /* This exactly matches the pattern recognition in classify_partition.  */
   val = gimple_assign_rhs1 (stmt);
@@ -393,15 +394,14 @@ generate_memset_builtin (struct loop *loop, struct graph *rdg,
 	  tree tem = create_tmp_reg (integer_type_node, NULL);
 	  tem = make_ssa_name (tem, NULL);
 	  cstmt = gimple_build_assign_with_ops (NOP_EXPR, tem, val, NULL_TREE);
-	  gimple_seq_add_stmt (&stmt_list, cstmt);
+	  gsi_insert_after (&gsi, cstmt, GSI_CONTINUE_LINKING);
 	  val = tem;
 	}
     }
 
   fn = build_fold_addr_expr (builtin_decl_implicit (BUILT_IN_MEMSET));
   fn_call = gimple_build_call (fn, 3, mem, val, nb_bytes);
-  gimple_seq_add_stmt (&stmt_list, fn_call);
-  gsi_insert_seq_after (&gsi, stmt_list, GSI_CONTINUE_LINKING);
+  gsi_insert_after (&gsi, fn_call, GSI_CONTINUE_LINKING);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -412,6 +412,54 @@ generate_memset_builtin (struct loop *loop, struct graph *rdg,
 	fprintf (dump_file, " minus one\n");
       else
 	fprintf (dump_file, "\n");
+    }
+}
+
+/* Generate a call to memcpy for PARTITION in LOOP.  */
+
+static void
+generate_memcpy_builtin (struct loop *loop, partition_t partition)
+{
+  gimple_stmt_iterator gsi;
+  gimple stmt, fn_call;
+  tree nb_iter, dest, src, fn, nb_bytes;
+  location_t loc;
+  enum built_in_function kind;
+
+  stmt = DR_STMT (partition->main_dr);
+  loc = gimple_location (stmt);
+  if (gimple_bb (stmt) == loop->latch)
+    nb_iter = number_of_latch_executions (loop);
+  else
+    nb_iter = number_of_exit_cond_executions (loop);
+
+  /* The new statements will be placed before LOOP.  */
+  gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
+
+  nb_bytes = build_size_arg_loc (loc, partition->main_dr, nb_iter);
+  nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
+				       false, GSI_CONTINUE_LINKING);
+  dest = build_addr_arg_loc (loc, partition->main_dr, nb_bytes);
+  src = build_addr_arg_loc (loc, partition->secondary_dr, nb_bytes);
+  if (ptr_derefs_may_alias_p (dest, src))
+    kind = BUILT_IN_MEMMOVE;
+  else
+    kind = BUILT_IN_MEMCPY;
+
+  dest = force_gimple_operand_gsi (&gsi, dest, true, NULL_TREE,
+				   false, GSI_CONTINUE_LINKING);
+  src = force_gimple_operand_gsi (&gsi, src, true, NULL_TREE,
+				  false, GSI_CONTINUE_LINKING);
+  fn = build_fold_addr_expr (builtin_decl_implicit (kind));
+  fn_call = gimple_build_call (fn, 3, dest, src, nb_bytes);
+  gsi_insert_after (&gsi, fn_call, GSI_CONTINUE_LINKING);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      if (kind == BUILT_IN_MEMCPY)
+	fprintf (dump_file, "generated memcpy\n");
+      else
+	fprintf (dump_file, "generated memmove\n");
     }
 }
 
@@ -466,13 +514,21 @@ destroy_loop (struct loop *loop)
 /* Generates code for PARTITION.  */
 
 static void
-generate_code_for_partition (struct loop *loop, struct graph *rdg,
+generate_code_for_partition (struct loop *loop,
 			     partition_t partition, bool copy_p)
 {
   switch (partition->kind)
     {
     case PKIND_MEMSET:
-      generate_memset_builtin (loop, rdg, partition);
+      generate_memset_builtin (loop, partition);
+      /* If this is the last partition for which we generate code, we have
+	 to destroy the loop.  */
+      if (!copy_p)
+	destroy_loop (loop);
+      break;
+
+    case PKIND_MEMCPY:
+      generate_memcpy_builtin (loop, partition);
       /* If this is the last partition for which we generate code, we have
 	 to destroy the loop.  */
       if (!copy_p)
@@ -849,9 +905,11 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
   bitmap_iterator bi;
   unsigned i;
   tree nb_iter;
+  data_reference_p single_load, single_store;
 
   partition->kind = PKIND_NORMAL;
-  partition->main_stmt = NULL;
+  partition->main_dr = NULL;
+  partition->secondary_dr = NULL;
 
   if (!flag_tree_loop_distribute_patterns)
     return;
@@ -880,10 +938,14 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 	}
     }
 
-  /* Detect memset.  */
+  /* Detect memset and memcpy.  */
+  single_load = NULL;
+  single_store = NULL;
   EXECUTE_IF_SET_IN_BITMAP (partition->stmts, 0, i, bi)
     {
       gimple stmt = RDG_STMT (rdg, i);
+      data_reference_p dr;
+      unsigned j;
 
       if (gimple_code (stmt) == GIMPLE_PHI)
 	continue;
@@ -892,41 +954,68 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
       if (!gimple_vuse (stmt))
 	continue;
 
-      /* Exactly one store.  */
-      if (gimple_assign_single_p (stmt)
-	  && !is_gimple_reg (gimple_assign_lhs (stmt)))
-	{
-	  tree rhs;
-	  if (partition->main_stmt != NULL)
-	    return;
-	  partition->main_stmt = stmt;
-	  rhs = gimple_assign_rhs1 (stmt);
-	  if (!(integer_zerop (rhs)
-		|| integer_all_onesp (rhs)
-		|| real_zerop (rhs)
-		|| (TREE_CODE (rhs) == CONSTRUCTOR
-		    && !TREE_CLOBBER_P (rhs))
-		|| (INTEGRAL_TYPE_P (TREE_TYPE (rhs))
-		    && (TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)))
-			== TYPE_MODE (unsigned_char_type_node)))))
-	    return;
-	  if (TREE_CODE (rhs) == SSA_NAME
-	      && !SSA_NAME_IS_DEFAULT_DEF (rhs)
-	      && flow_bb_inside_loop_p
-		   (loop, gimple_bb (SSA_NAME_DEF_STMT (rhs))))
-	    return;
-	  if (VEC_length (data_reference_p, RDG_DATAREFS (rdg, i)) != 1)
-	    return;
-	  if (!adjacent_store_dr_p (VEC_index (data_reference_p,
-					       RDG_DATAREFS (rdg, i), 0)))
-	    return;
-	}
-      else
+      /* Otherwise just regular loads/stores.  */
+      if (!gimple_assign_single_p (stmt))
 	return;
+
+      /* But exactly one store and/or load.  */
+      for (j = 0;
+	   VEC_iterate (data_reference_p, RDG_DATAREFS (rdg, i), j, dr); ++j)
+	{
+	  if (DR_IS_READ (dr))
+	    {
+	      if (single_load != NULL)
+		return;
+	      single_load = dr;
+	    }
+	  else
+	    {
+	      if (single_store != NULL)
+		return;
+	      single_store = dr;
+	    }
+	}
     }
 
-  if (partition->main_stmt != NULL)
-    partition->kind = PKIND_MEMSET;
+  if (single_store && !single_load)
+    {
+      gimple stmt = DR_STMT (single_store);
+      tree rhs = gimple_assign_rhs1 (stmt);
+      if (!(integer_zerop (rhs)
+	    || integer_all_onesp (rhs)
+	    || real_zerop (rhs)
+	    || (TREE_CODE (rhs) == CONSTRUCTOR
+		&& !TREE_CLOBBER_P (rhs))
+	    || (INTEGRAL_TYPE_P (TREE_TYPE (rhs))
+		&& (TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)))
+		    == TYPE_MODE (unsigned_char_type_node)))))
+	return;
+      if (TREE_CODE (rhs) == SSA_NAME
+	  && !SSA_NAME_IS_DEFAULT_DEF (rhs)
+	  && flow_bb_inside_loop_p (loop, gimple_bb (SSA_NAME_DEF_STMT (rhs))))
+	return;
+      if (!adjacent_dr_p (single_store))
+	return;
+      partition->kind = PKIND_MEMSET;
+      partition->main_dr = single_store;
+    }
+  else if (single_store && single_load)
+    {
+      gimple store = DR_STMT (single_store);
+      gimple load = DR_STMT (single_load);
+      /* Direct aggregate copy or via an SSA name temporary.  */
+      if (load != store
+	  && gimple_assign_lhs (load) != gimple_assign_rhs1 (store))
+	return;
+      if (!adjacent_dr_p (single_store)
+	  || !adjacent_dr_p (single_load)
+	  || !operand_equal_p (DR_STEP (single_store),
+			       DR_STEP (single_load), 0))
+	return;
+      partition->kind = PKIND_MEMCPY;
+      partition->main_dr = single_store;
+      partition->secondary_dr = single_load;
+    }
 }
 
 /* For a data reference REF, return the declaration of its base
@@ -1259,7 +1348,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
     dump_rdg_partitions (dump_file, partitions);
 
   FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
-    generate_code_for_partition (loop, rdg, partition, i < nbp - 1);
+    generate_code_for_partition (loop, partition, i < nbp - 1);
 
  ldist_done:
 
@@ -1391,22 +1480,6 @@ tree_loop_distribution (void)
 	      if (!gimple_assign_single_p (stmt)
 		  || is_gimple_reg (gimple_assign_lhs (stmt)))
 		continue;
-
-	      /* If we are only performing pattern detection restrict
-		 what we try to distribute to stores from constants.  */
-	      if (!flag_tree_loop_distribution)
-		{
-		  tree rhs = gimple_assign_rhs1 (stmt);
-		  if (!is_gimple_min_invariant (rhs)
-		      && TREE_CODE (rhs) != CONSTRUCTOR
-		      && TREE_CODE (rhs) != SSA_NAME)
-		    continue;
-		  if (TREE_CODE (rhs) == SSA_NAME
-		      && !SSA_NAME_IS_DEFAULT_DEF (rhs)
-		      && flow_bb_inside_loop_p
-			   (loop, gimple_bb (SSA_NAME_DEF_STMT (rhs))))
-		    continue;
-		}
 
 	      VEC_safe_push (gimple, heap, work_list, stmt);
 	    }
