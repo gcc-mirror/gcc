@@ -1,3 +1,9 @@
+2012-06-06  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/32380
+	* gfortran.dg/vect/pr32380.f: Adjust number of expected vectorized
+	loops.
+
 2012-06-06  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/52841
