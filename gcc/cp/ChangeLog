@@ -60,6 +60,11 @@
 	* call.c (build_conditional_expr_1): Use OPT_Wenum_compare
 	to control enumeral mismatch in conditional expression too.
 
+2012-06-04   Sterling Augustine  <saugustine@google.com>
+
+	* cp-tree.h: Declare decl_as_dwarf_string, lang_decl_dwarf_name.
+	* cp-lang.c (cxx_dwarf_name): Call them.
+
 2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* semantics.c: Do not include output.h.
