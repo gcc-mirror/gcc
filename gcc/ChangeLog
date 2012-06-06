@@ -1,3 +1,7 @@
+2012-06-06  Edmar Wienskoski  <edmar@freescale.com>
+
+	* config/rs6000/rs6000-tables.opt: Regenerated.
+
 2012-06-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53081
