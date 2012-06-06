@@ -762,7 +762,7 @@ Allow the arguments of the '?' operator to have different types
 
 fconserve-space
 C++ ObjC++ Var(flag_conserve_space)
-Reduce the size of object files
+Does nothing.  Preserved for backward compatibility.
 
 fconstant-string-class=
 ObjC ObjC++ Joined MissingArgError(no class name specified with %qs)

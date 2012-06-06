@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "decl.h"
 #include "intl.h"
-#include "output.h" /* for have_global_bss_p */
 #include "toplev.h"
 #include "hashtab.h"
 #include "tm_p.h"
@@ -4527,18 +4526,6 @@ start_decl (const cp_declarator *declarator,
     decl = push_template_decl (decl);
   if (decl == error_mark_node)
     return error_mark_node;
-
-  /* Tell the back end to use or not use .common as appropriate.  If we say
-     -fconserve-space, we want this to save .data space, at the expense of
-     wrong semantics.  If we say -fno-conserve-space, we want this to
-     produce errors about redefs; to do this we force variables into the
-     data segment.  */
-  if (flag_conserve_space
-      && TREE_CODE (decl) == VAR_DECL
-      && TREE_PUBLIC (decl)
-      && !DECL_THREAD_LOCAL_P (decl)
-      && !have_global_bss_p ())
-    DECL_COMMON (decl) = 1;
 
   if (TREE_CODE (decl) == VAR_DECL
       && DECL_NAMESPACE_SCOPE_P (decl) && !TREE_PUBLIC (decl) && !was_public
