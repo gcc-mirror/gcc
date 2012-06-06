@@ -615,11 +615,8 @@ bool rdg_defs_used_in_other_loops_p (struct graph *, int);
    with a stride equal to its unit type size.  */
 
 static inline bool
-adjacent_store_dr_p (struct data_reference *dr)
+adjacent_dr_p (struct data_reference *dr)
 {
-  if (!DR_IS_WRITE (dr))
-    return false;
-
   /* If this is a bitfield store bail out.  */
   if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
       && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))

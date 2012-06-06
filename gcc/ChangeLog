@@ -1,3 +1,23 @@
+2012-06-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53081
+	* tree-data-ref.h (adjacent_store_dr_p): Rename to ...
+	(adjacent_dr_p): ... this and make it work for reads, too.
+	* tree-loop-distribution.c (enum partition_kind): Add PKIND_MEMCPY.
+	(struct partition_s): Change main_stmt to main_dr, add
+	secondary_dr member.
+	(build_size_arg_loc): Change to date data-reference and not
+	gimplify here.
+	(build_addr_arg_loc): New function split out from ...
+	(generate_memset_builtin): ... here.  Use it and simplify.
+	(generate_memcpy_builtin): New function.
+	(generate_code_for_partition): Adjust.
+	(classify_partition): Streamline pattern detection.  Detect
+	memcpy.
+	(ldist_gen): Adjust.
+	(tree_loop_distribution): Adjust seed statements for memcpy
+	recognition.
+
 2012-06-06  Matt Turner  <mattst88@gmail.com>
 
 	* config/arm/mmintrin.h (_mm_empty): New.
