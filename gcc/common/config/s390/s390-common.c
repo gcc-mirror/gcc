@@ -51,11 +51,8 @@ static const struct default_options s390_option_optimization_table[] =
   {
     { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
 
-    /* Enable -fsched-pressure using -fsched-pressure-algorithm=model
-       by default when optimizing.  */
+    /* Enable -fsched-pressure by default when optimizing.  */
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fsched_pressure_algorithm_,
-      NULL, SCHED_PRESSURE_MODEL },
 
     /* ??? There are apparently still problems with -fcaller-saves.  */
     { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },

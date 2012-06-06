@@ -1,3 +1,16 @@
+2012-06-06  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* doc/invoke.texi (sched-pressure-algorithm): Document new --param.
+	* common.opt (fsched-pressure-algorithm=): Remove.
+	* flag-types.h (sched_pressure_algorithm): Move to...
+	* sched-int.h (sched_pressure_algorithm): ...here.
+	* params.def (sched-pressure-algorithm): New param.
+	* haifa-sched.c (sched_init): Use it to initialize sched_pressure.
+	* common/config/s390/s390-common.c (s390_option_optimization_table):
+	Remove OPT_fsched_pressure_algorithm_ entry.
+	* config/s390/s390.c (s390_option_override): Set a default value for
+	PARAM_SCHED_PRESSURE_ALGORITHM.
+
 2012-06-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/53487

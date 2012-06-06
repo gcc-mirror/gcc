@@ -37,6 +37,14 @@ along with GCC; see the file COPYING3.  If not see
 enum sched_pass_id_t { SCHED_PASS_UNKNOWN, SCHED_RGN_PASS, SCHED_EBB_PASS,
 		       SCHED_SMS_PASS, SCHED_SEL_PASS };
 
+/* The algorithm used to implement -fsched-pressure.  */
+enum sched_pressure_algorithm
+{
+  SCHED_PRESSURE_NONE,
+  SCHED_PRESSURE_WEIGHTED,
+  SCHED_PRESSURE_MODEL
+};
+
 typedef VEC (basic_block, heap) *bb_vec_t;
 typedef VEC (rtx, heap) *insn_vec_t;
 typedef VEC (rtx, heap) *rtx_vec_t;
