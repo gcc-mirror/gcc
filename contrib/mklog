@@ -29,7 +29,7 @@
 # Change these settings to reflect your profile.
 $username = $ENV{'USER'};
 $name = `finger $username | grep -o 'Name: .*'`;
-@n = split(/:/, $name);
+@n = split(/: /, $name);
 $name = @n[1]; chop($name);
 $addr = $username . "\@my.domain.org";
 $date = `date +%Y-%m-%d`; chop ($date);

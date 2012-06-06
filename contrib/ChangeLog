@@ -1,3 +1,7 @@
+2012-05-31  Marek Polacek  <polacek@redhat.com>
+
+       * mklog: Prevent printing three spaces after the date.
+
 2012-06-04   Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management/validate_failures.py (GetResults):
