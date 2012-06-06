@@ -32,6 +32,12 @@ typedef int __v2si __attribute__ ((vector_size (8)));
 typedef short __v4hi __attribute__ ((vector_size (8)));
 typedef char __v8qi __attribute__ ((vector_size (8)));
 
+/* Provided for source compatibility with MMX.  */
+extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_empty (void)
+{
+}
+
 /* "Convert" __m64 and __int64 into each other.  */
 static __inline __m64 
 _mm_cvtsi64_m64 (__int64 __i)
@@ -1115,6 +1121,7 @@ _m_from_int (int __a)
   return (__m64)__a;
 }
 
+#define _m_empty _mm_empty
 #define _m_packsswb _mm_packs_pi16
 #define _m_packssdw _mm_packs_pi32
 #define _m_packuswb _mm_packs_pu16
