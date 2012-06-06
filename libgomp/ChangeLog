@@ -1,3 +1,9 @@
+2012-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/52993
+	* config/linux/lock.c (gomp_init_nest_lock_25): Fix up last
+	argument to memset call.
+
 2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
