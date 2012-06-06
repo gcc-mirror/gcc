@@ -1,3 +1,8 @@
+2012-06-06  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/52841
+	* g++.dg/cpp0x/pr52841.C: New testcase.
+
 2012-06-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53081

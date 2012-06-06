@@ -15061,6 +15061,9 @@ cp_parser_alias_declaration (cp_parser* parser)
 
   cp_parser_require (parser, CPP_EQ, RT_EQ);
 
+  if (cp_parser_error_occurred (parser))
+    return error_mark_node;
+
   /* Now we are going to parse the type-id of the declaration.  */
 
   /*
