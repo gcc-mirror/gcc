@@ -366,7 +366,7 @@ build_base_path (enum tree_code code,
   /* Now that we've saved expr, build the real null test.  */
   if (null_test)
     {
-      tree zero = cp_convert (TREE_TYPE (expr), nullptr_node);
+      tree zero = cp_convert (TREE_TYPE (expr), nullptr_node, complain);
       null_test = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
 			       expr, zero);
     }

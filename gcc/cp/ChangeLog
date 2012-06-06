@@ -1,3 +1,48 @@
+2012-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53567
+	* typeck.c (cp_perform_integral_promotions): New, like
+	perform_integral_promotions but also takes a tsubst_flags_t parameter.
+	(pointer_diff): Add tsubst_flags_t parameter.
+	(decay_conversion, cp_default_conversion, cp_build_array_ref,
+	cp_build_binary_op, cp_build_unary_op, build_static_cast_1,
+	build_reinterpret_cast_1, cp_build_modify_expr,
+	convert_for_assignment): Adjust.
+	* optimize.c (build_delete_destructor_body): Adjust.
+	* init.c (expand_virtual_init, expand_default_init, build_new_1,
+	build_new, build_vec_delete_1, build_vec_init, build_delete): Adjust.
+	(construct_virtual_base): Adjust LOOKUP_COMPLAIN -> 0.
+	* class.c (build_base_path): Adjust.
+	* decl.c (compute_array_index_type, finish_destructor_body): Likewise.
+	* method.c (synthesized_method_walk): Adjust flag and complain.
+	* rtti.c (ifnonnull): Add tsubst_flags_t parameter.
+	(build_typeid, build_dynamic_cast_1): Adjust.
+	* except.c (initialize_handler_parm): Likewise.
+	* typeck2.c (process_init_constructor_record): Likewise.
+	* pt.c (tsubst_friend_class): Don't change flags.
+	* semantics.c (finish_goto_stmt, handle_omp_for_class_iterator,
+	finish_static_assert): Likewise.
+	* parser.c (cp_parser_lookup_name): Just pass 0 as flags to
+	lookup_name_real.
+	* call.c (build_op_delete_call): Add tsubst_flags_t parameter.
+	(convert_like_real, convert_arg_to_ellipsis, convert_for_arg_passing):
+	Adjust.
+	(standard_conversion): Adjust LOOKUP_COMPLAIN -> 0.
+	(implicit_conversion): Mask out tf_error with a FIXME.
+	(build_user_type_conversion_1, build_new_op_1, build_over_call): Use
+	complain & tf_error instead of flags & LOOKUP_COMPLAIN.
+	* cvt.c (cp_convert_to_pointer, convert_to_pointer_force,
+	build_up_reference, convert_to_reference, cp_convert,
+	cp_convert_and_check, ocp_convert, convert_force): Add tsubst_flags_t
+	parameter.
+	(convert_to_reference, ocp_convert): Use complain & tf_error instead
+	of flags & LOOKUP_COMPLAIN.
+	(convert_force): Adjust LOOKUP_COMPLAIN -> 0.
+	* name-lookup.c (identifier_type_value_1, lookup_qualified_name,
+	lookup_name_real, lookup_function_nonclass, lookup_name,
+	lookup_name_prefer_type): Adjust LOOKUP_COMPLAIN -> 0.
+	* cp-tree.h: Adjust prototypes; remove LOOKUP_COMPLAIN.
+
 2012-06-06  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* decl.c: Do not include output.h.
