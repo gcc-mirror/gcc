@@ -1,3 +1,7 @@
+2012-06-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* g++.old-deja/g++.brendan/array1.C: Remove dg-options.
+
 2012-06-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/avx-os-support.h (XCR_XFEATURE_ENABLED_MASK): New.

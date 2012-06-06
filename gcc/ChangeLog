@@ -1,3 +1,7 @@
+2012-06-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/invoke.texi (fconserve-space): Remove documentation.
+
 2012-06-06  Edmar Wienskoski  <edmar@freescale.com>
 
 	* config/rs6000/rs6000-tables.opt: Regenerated.

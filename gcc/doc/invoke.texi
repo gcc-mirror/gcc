@@ -182,7 +182,7 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control  -fcheck-new @gol
--fconserve-space  -fconstexpr-depth=@var{n}  -ffriend-injection @gol
+-fconstexpr-depth=@var{n}  -ffriend-injection @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -ffor-scope  -fno-for-scope  -fno-gnu-keywords @gol
@@ -1946,18 +1946,6 @@ return value even without this option.  In all other cases, when
 @code{operator new} has a non-empty exception specification, memory
 exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @samp{new (nothrow)}.
-
-@item -fconserve-space
-@opindex fconserve-space
-Put uninitialized or run-time-initialized global variables into the
-common segment, as C does.  This saves space in the executable at the
-cost of not diagnosing duplicate definitions.  If you compile with this
-flag and your program mysteriously crashes after @code{main()} has
-completed, you may have an object that is being destroyed twice because
-two definitions are merged.
-
-This option is no longer useful on most targets, now that support has
-been added for putting variables into BSS without making them common.
 
 @item -fconstexpr-depth=@var{n}
 @opindex fconstexpr-depth

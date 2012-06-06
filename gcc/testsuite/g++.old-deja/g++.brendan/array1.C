@@ -1,5 +1,4 @@
 // { dg-do assemble  }
-// { dg-options "-fconserve-space -fcommon" }
 // GROUPS passed array-bindings
 
 extern "C" int printf (const char *, ...);
