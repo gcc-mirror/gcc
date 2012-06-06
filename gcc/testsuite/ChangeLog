@@ -1,3 +1,11 @@
+2012-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-os-support.h (XCR_XFEATURE_ENABLED_MASK): New.
+	(XSTATE_FP): Ditto.
+	(XSTATE_SSE): Ditto.
+	(XSTATE_YMM): Ditto.
+	(avx_os_support): Use new defines.
+
 2012-06-06  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/32380
@@ -181,7 +189,7 @@
 	arm32 to targets.
 	* gcc.dg/vect/slp-perm-8.c (main): Prevent vectorization
 	of the initialization loop.
-        (dg-final): Adjust the expected number of vectorized loops depending
+	(dg-final): Adjust the expected number of vectorized loops depending
 	on vect_char_mult target selector.
 
 2012-05-31  Hans-Peter Nilsson  <hp@axis.com>
@@ -1113,7 +1121,7 @@
 	* gcc.target/cris/peep2-andu2.c: Tweak expected assembly
 	code to match current output and cover new peephole2 pattern.
 
-2012-04-27   Ollie Wild  <aaw@google.com>
+2012-04-27  Ollie Wild  <aaw@google.com>
 
 	* g++.dg/cpp0x/Wliteral-suffix.c: New test.
 
