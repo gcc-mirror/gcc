@@ -4998,6 +4998,7 @@ extern tree* decl_cloned_function_p		(const_tree, bool);
 extern void clone_function_decl			(tree, int);
 extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);
+extern void insert_late_enum_def_into_classtype_sorted_fields (tree, tree);
 
 /* in cvt.c */
 extern tree convert_to_reference		(tree, tree, int, int, tree,

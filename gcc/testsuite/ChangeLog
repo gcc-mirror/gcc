@@ -1,3 +1,8 @@
+2012-06-07  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/51214
+	* g++.dg/cpp0x/forw_enum11.C: New.
+
 2012-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53567
