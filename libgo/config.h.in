@@ -21,6 +21,9 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* Define to 1 if you have the `dl_iterate_phdr' function. */
+#undef HAVE_DL_ITERATE_PHDR
+
 /* Define to 1 if you have the `epoll_create1' function. */
 #undef HAVE_EPOLL_CREATE1
 
@@ -285,9 +288,6 @@
 
 /* Define to 1 if you have the `wait4' function. */
 #undef HAVE_WAIT4
-
-/* Define to 1 if you have the `_dl_get_tls_static_info' function. */
-#undef HAVE__DL_GET_TLS_STATIC_INFO
 
 /* Define if the C++ compiler is configured for setjmp/longjmp exceptions. */
 #undef LIBGO_SJLJ_EXCEPTIONS
