@@ -8,6 +8,11 @@
 #include <unistd.h>
 
 #include "config.h"
+
+#ifdef HAVE_DL_ITERATE_PHDR
+#include <link.h>
+#endif
+
 #include "runtime.h"
 #include "arch.h"
 #include "defs.h"
@@ -36,12 +41,12 @@ extern void __splitstack_block_signals_context (void *context[10], int *,
 
 #endif
 
+#ifndef PTHREAD_STACK_MIN
+# define PTHREAD_STACK_MIN 8192
+#endif
+
 #if defined(USING_SPLIT_STACK) && defined(LINKER_SUPPORTS_SPLIT_STACK)
-# ifdef PTHREAD_STACK_MIN
-#  define StackMin PTHREAD_STACK_MIN
-# else
-#  define StackMin 8192
-# endif
+# define StackMin PTHREAD_STACK_MIN
 #else
 # define StackMin 2 * 1024 * 1024
 #endif
@@ -137,6 +142,46 @@ runtime_m(void)
 }
 
 int32	runtime_gcwaiting;
+
+// The static TLS size.  See runtime_newm.
+static int tlssize;
+
+#ifdef HAVE_DL_ITERATE_PHDR
+
+// Called via dl_iterate_phdr.
+
+static int
+addtls(struct dl_phdr_info* info, size_t size __attribute__ ((unused)), void *data)
+{
+	size_t *total = (size_t *)data;
+	unsigned int i;
+
+	for(i = 0; i < info->dlpi_phnum; ++i) {
+		if(info->dlpi_phdr[i].p_type == PT_TLS)
+			*total += info->dlpi_phdr[i].p_memsz;
+	}
+	return 0;
+}
+
+// Set the total TLS size.
+
+static void
+inittlssize()
+{
+	size_t total = 0;
+
+	dl_iterate_phdr(addtls, (void *)&total);
+	tlssize = total;
+}
+
+#else
+
+static void
+inittlssize()
+{
+}
+
+#endif
 
 // Go scheduler
 //
@@ -393,6 +438,7 @@ runtime_schedinit(void)
 	g->m = m;
 
 	initcontext();
+	inittlssize();
 
 	m->nomemprof++;
 	runtime_mallocinit();
@@ -1116,34 +1162,15 @@ runtime_newm(void)
 	if(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0)
 		runtime_throw("pthread_attr_setdetachstate");
 
-#ifndef PTHREAD_STACK_MIN
-#define PTHREAD_STACK_MIN 8192
-#endif
-
 	stacksize = PTHREAD_STACK_MIN;
 
-#if 0
-#ifdef HAVE__DL_GET_TLS_STATIC_INFO
-	{
-		/* On GNU/Linux the static TLS size is taken out of
-		   the stack size, and we get an error or a crash if
-		   there is not enough stack space left.  Add it back
-		   in if we can, in case the program uses a lot of TLS
-		   space.  */
-#ifndef internal_function
-#ifdef __i386__
-#define internal_function __attribute__ ((regparm (3), stdcall))
-#else
-#define internal_function
-#endif
-#endif
-		extern void _dl_get_tls_static_info(size_t*, size_t*) internal_function;
-		size_t tlssize, tlsalign;
-		_dl_get_tls_static_info(&tlssize, &tlsalign);
-		stacksize += tlssize;
-	}
-#endif
-#endif
+	// With glibc before version 2.16 the static TLS size is taken
+	// out of the stack size, and we get an error or a crash if
+	// there is not enough stack space left.  Add it back in if we
+	// can, in case the program uses a lot of TLS space.  FIXME:
+	// This can be disabled in glibc 2.16 and later, if the bug is
+	// indeed fixed then.
+	stacksize += tlssize;
 
 	if(pthread_attr_setstacksize(&attr, stacksize) != 0)
 		runtime_throw("pthread_attr_setstacksize");
