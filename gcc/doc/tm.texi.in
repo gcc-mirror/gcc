@@ -10077,6 +10077,8 @@ unloaded. The default is to return false.
 
 @hook TARGET_CXX_ADJUST_CLASS_AT_DEFINITION
 
+@hook TARGET_CXX_DECL_MANGLING_CONTEXT
+
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces
