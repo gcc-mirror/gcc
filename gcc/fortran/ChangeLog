@@ -1,7 +1,14 @@
 2012-06-07  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/52861
-	* frontend-passes (empty_string):  Add prototype.
+	* frontend-passes.c (optimize_assignment):  Don't set the
+	length of an empty string for deferred-length character
+	variables.
+
+2012-06-07  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52861
+	* frontend-passes.c (empty_string):  Add prototype.
 	(optimize_assignment):  Set the length of an empty string
 	constant to zero.
 
