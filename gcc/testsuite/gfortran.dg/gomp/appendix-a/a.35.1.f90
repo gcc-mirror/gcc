@@ -10,7 +10,7 @@
 !$OMP DO
           DO I = 1, N
 	     ! incorrect nesting of loop regions
-!$OMP DO     ! { dg-warning "may not be closely nested" }
+!$OMP DO     ! { dg-error "may not be closely nested" }
              DO J = 1, N
                 CALL WORK(I,J)
              END DO
