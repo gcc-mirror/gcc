@@ -1,3 +1,11 @@
+2012-06-07  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* genhooks.c (main): Set progname.
+	(emit_documentation): Remove variable found_start, always bail out
+	when a place is missing.
+	* doc/tm.texi.in (C++ ABI): Add @hook
+	TARGET_CXX_DECL_MANGLING_CONTEXT.
+
 2012-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/53580

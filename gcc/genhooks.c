@@ -1,6 +1,6 @@
 /* Process target.def to create initialization macros definition in
    target-hooks-def.h and documentation in target-hooks.texi.
-   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -120,7 +120,6 @@ emit_documentation (const char *in_fname)
   char buf[1000];
   htab_t start_hooks = htab_create (99, s_hook_hash, s_hook_eq_p, (htab_del) 0);
   FILE *f;
-  bool found_start = false;
 
   /* Enter all the start hooks in start_hooks.  */
   f = fopen (in_fname, "r");
@@ -164,9 +163,8 @@ emit_documentation (const char *in_fname)
 	  if (shp->pos >= 0)
 	    fatal ("Duplicate hook %s\n", sh.name);
 	  shp->pos = i;
-	  found_start = true;
 	}
-      else if (!found_start)
+      else
 	fatal ("No place specified to document hook %s\n", sh.name);
       free (sh.name);
     }
@@ -341,6 +339,8 @@ emit_init_macros (const char *docname)
 int
 main (int argc, char **argv)
 {
+  progname = "genhooks";
+
   if (argc >= 3)
     emit_documentation (argv[2]);
   else
