@@ -1,3 +1,17 @@
+2012-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/53580
+	* omp-low.c (scan_omp): Change first argument to
+	gimple_seq *, call walk_gimple_seq_mod instead of
+	walk_gimple_seq.
+	(scan_sharing_clauses, scan_omp_parallel, scan_omp_task,
+	scan_omp_for, scan_omp_sections, scan_omp_single,
+	execute_lower_omp): Adjust callers.
+	(scan_omp_1_stmt): Likewise.  If check_omp_nesting_restrictions
+	returns false, replace stmt with GIMPLE_NOP.
+	(check_omp_nesting_restrictions): Instead of issuing warnings,
+	issue errors and return false if any errors were reported.
+
 2012-06-06  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/invoke.texi (fconserve-space): Remove documentation.

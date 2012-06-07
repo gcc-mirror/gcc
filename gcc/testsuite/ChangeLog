@@ -1,3 +1,14 @@
+2012-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/53580
+	* gcc.dg/gomp/nesting-1.c: Expect errors rather than warnings.
+	* gcc.dg/gomp/critical-4.c: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.1.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.3.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.4.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.6.f90: Likewise.
+	* c-c++-common/gomp/pr53580.c: New test.
+
 2012-06-07  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/51214

@@ -131,7 +131,7 @@ static int taskreg_nesting_level;
 struct omp_region *root_omp_region;
 static bitmap task_shared_vars;
 
-static void scan_omp (gimple_seq, omp_context *);
+static void scan_omp (gimple_seq *, omp_context *);
 static tree scan_omp_1_op (tree *, int *, void *);
 
 #define WALK_SUBSTMTS  \
@@ -1533,12 +1533,12 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 	  && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
 	{
-	  scan_omp (OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c), ctx);
-	  scan_omp (OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c), ctx);
+	  scan_omp (&OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c), ctx);
+	  scan_omp (&OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c), ctx);
 	}
       else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
 	       && OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (c))
-	scan_omp (OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (c), ctx);
+	scan_omp (&OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (c), ctx);
 }
 
 /* Create a new name for omp child function.  Returns an identifier.  */
@@ -1663,7 +1663,7 @@ scan_omp_parallel (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   gimple_omp_parallel_set_child_fn (stmt, ctx->cb.dst_fn);
 
   scan_sharing_clauses (gimple_omp_parallel_clauses (stmt), ctx);
-  scan_omp (gimple_omp_body (stmt), ctx);
+  scan_omp (gimple_omp_body_ptr (stmt), ctx);
 
   if (TYPE_FIELDS (ctx->record_type) == NULL)
     ctx->record_type = ctx->receiver_decl = NULL;
@@ -1720,7 +1720,7 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
       create_omp_child_function (ctx, true);
     }
 
-  scan_omp (gimple_omp_body (stmt), ctx);
+  scan_omp (gimple_omp_body_ptr (stmt), ctx);
 
   if (TYPE_FIELDS (ctx->record_type) == NULL)
     {
@@ -1773,7 +1773,7 @@ scan_omp_for (gimple stmt, omp_context *outer_ctx)
 
   scan_sharing_clauses (gimple_omp_for_clauses (stmt), ctx);
 
-  scan_omp (gimple_omp_for_pre_body (stmt), ctx);
+  scan_omp (gimple_omp_for_pre_body_ptr (stmt), ctx);
   for (i = 0; i < gimple_omp_for_collapse (stmt); i++)
     {
       scan_omp_op (gimple_omp_for_index_ptr (stmt, i), ctx);
@@ -1781,7 +1781,7 @@ scan_omp_for (gimple stmt, omp_context *outer_ctx)
       scan_omp_op (gimple_omp_for_final_ptr (stmt, i), ctx);
       scan_omp_op (gimple_omp_for_incr_ptr (stmt, i), ctx);
     }
-  scan_omp (gimple_omp_body (stmt), ctx);
+  scan_omp (gimple_omp_body_ptr (stmt), ctx);
 }
 
 /* Scan an OpenMP sections directive.  */
@@ -1793,7 +1793,7 @@ scan_omp_sections (gimple stmt, omp_context *outer_ctx)
 
   ctx = new_omp_context (stmt, outer_ctx);
   scan_sharing_clauses (gimple_omp_sections_clauses (stmt), ctx);
-  scan_omp (gimple_omp_body (stmt), ctx);
+  scan_omp (gimple_omp_body_ptr (stmt), ctx);
 }
 
 /* Scan an OpenMP single directive.  */
@@ -1813,7 +1813,7 @@ scan_omp_single (gimple stmt, omp_context *outer_ctx)
   TYPE_NAME (ctx->record_type) = name;
 
   scan_sharing_clauses (gimple_omp_single_clauses (stmt), ctx);
-  scan_omp (gimple_omp_body (stmt), ctx);
+  scan_omp (gimple_omp_body_ptr (stmt), ctx);
 
   if (TYPE_FIELDS (ctx->record_type) == NULL)
     ctx->record_type = NULL;
@@ -1823,8 +1823,8 @@ scan_omp_single (gimple stmt, omp_context *outer_ctx)
 
 
 /* Check OpenMP nesting restrictions.  */
-static void
-check_omp_nesting_restrictions (gimple  stmt, omp_context *ctx)
+static bool
+check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 {
   switch (gimple_code (stmt))
     {
@@ -1843,17 +1843,19 @@ check_omp_nesting_restrictions (gimple  stmt, omp_context *ctx)
 	  case GIMPLE_OMP_TASK:
 	    if (is_gimple_call (stmt))
 	      {
-		warning (0, "barrier region may not be closely nested inside "
-			    "of work-sharing, critical, ordered, master or "
-			    "explicit task region");
-		return;
+		error_at (gimple_location (stmt),
+			  "barrier region may not be closely nested inside "
+			  "of work-sharing, critical, ordered, master or "
+			  "explicit task region");
+		return false;
 	      }
-	    warning (0, "work-sharing region may not be closely nested inside "
-			"of work-sharing, critical, ordered, master or explicit "
-			"task region");
-	    return;
+	    error_at (gimple_location (stmt),
+		      "work-sharing region may not be closely nested inside "
+		      "of work-sharing, critical, ordered, master or explicit "
+		      "task region");
+	    return false;
 	  case GIMPLE_OMP_PARALLEL:
-	    return;
+	    return true;
 	  default:
 	    break;
 	  }
@@ -1866,11 +1868,12 @@ check_omp_nesting_restrictions (gimple  stmt, omp_context *ctx)
 	  case GIMPLE_OMP_SECTIONS:
 	  case GIMPLE_OMP_SINGLE:
 	  case GIMPLE_OMP_TASK:
-	    warning (0, "master region may not be closely nested inside "
-			"of work-sharing or explicit task region");
-	    return;
+	    error_at (gimple_location (stmt),
+		      "master region may not be closely nested inside "
+		      "of work-sharing or explicit task region");
+	    return false;
 	  case GIMPLE_OMP_PARALLEL:
-	    return;
+	    return true;
 	  default:
 	    break;
 	  }
@@ -1881,17 +1884,22 @@ check_omp_nesting_restrictions (gimple  stmt, omp_context *ctx)
 	  {
 	  case GIMPLE_OMP_CRITICAL:
 	  case GIMPLE_OMP_TASK:
-	    warning (0, "ordered region may not be closely nested inside "
-			"of critical or explicit task region");
-	    return;
+	    error_at (gimple_location (stmt),
+		      "ordered region may not be closely nested inside "
+		      "of critical or explicit task region");
+	    return false;
 	  case GIMPLE_OMP_FOR:
 	    if (find_omp_clause (gimple_omp_for_clauses (ctx->stmt),
 				 OMP_CLAUSE_ORDERED) == NULL)
-	      warning (0, "ordered region must be closely nested inside "
+	      {
+		error_at (gimple_location (stmt),
+			  "ordered region must be closely nested inside "
 			  "a loop region with an ordered clause");
-	    return;
+		return false;
+	      }
+	    return true;
 	  case GIMPLE_OMP_PARALLEL:
-	    return;
+	    return true;
 	  default:
 	    break;
 	  }
@@ -1902,14 +1910,16 @@ check_omp_nesting_restrictions (gimple  stmt, omp_context *ctx)
 	    && (gimple_omp_critical_name (stmt)
 		== gimple_omp_critical_name (ctx->stmt)))
 	  {
-	    warning (0, "critical region may not be nested inside a critical "
-			"region with the same name");
-	    return;
+	    error_at (gimple_location (stmt),
+		      "critical region may not be nested inside a critical "
+		      "region with the same name");
+	    return false;
 	  }
       break;
     default:
       break;
     }
+  return true;
 }
 
 
@@ -1980,14 +1990,20 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
   /* Check the OpenMP nesting restrictions.  */
   if (ctx != NULL)
     {
+      bool remove = false;
       if (is_gimple_omp (stmt))
-	check_omp_nesting_restrictions (stmt, ctx);
+	remove = !check_omp_nesting_restrictions (stmt, ctx);
       else if (is_gimple_call (stmt))
 	{
 	  tree fndecl = gimple_call_fndecl (stmt);
 	  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
 	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_GOMP_BARRIER)
-	    check_omp_nesting_restrictions (stmt, ctx);
+	    remove = !check_omp_nesting_restrictions (stmt, ctx);
+	}
+      if (remove)
+	{
+	  stmt = gimple_build_nop ();
+	  gsi_replace (gsi, stmt, false);
 	}
     }
 
@@ -2024,7 +2040,7 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_CRITICAL:
       ctx = new_omp_context (stmt, ctx);
-      scan_omp (gimple_omp_body (stmt), ctx);
+      scan_omp (gimple_omp_body_ptr (stmt), ctx);
       break;
 
     case GIMPLE_BIND:
@@ -2051,7 +2067,7 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
    clauses found during the scan.  */
 
 static void
-scan_omp (gimple_seq body, omp_context *ctx)
+scan_omp (gimple_seq *body_p, omp_context *ctx)
 {
   location_t saved_location;
   struct walk_stmt_info wi;
@@ -2061,7 +2077,7 @@ scan_omp (gimple_seq body, omp_context *ctx)
   wi.want_locations = true;
 
   saved_location = input_location;
-  walk_gimple_seq (body, scan_omp_1_stmt, scan_omp_1_op, &wi);
+  walk_gimple_seq_mod (body_p, scan_omp_1_stmt, scan_omp_1_op, &wi);
   input_location = saved_location;
 }
 
@@ -6919,7 +6935,7 @@ execute_lower_omp (void)
 				 delete_omp_context);
 
   body = gimple_body (current_function_decl);
-  scan_omp (body, NULL);
+  scan_omp (&body, NULL);
   gcc_assert (taskreg_nesting_level == 0);
 
   if (all_contexts->root)
