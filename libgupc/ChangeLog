@@ -1,3 +1,31 @@
+2012-06-06  Nenad Vukicevic  <nenad@intrepid.com>
+	
+	Add backtrace support for UPC SMP run-time.
+	* configure.ac: Added UPC backtrace configuration
+	options (--enable-upc-backtrace, --enable-upc-backtrace-gdb,
+	--with-upc-backtrace-gdb, --enable-upc-backtrace-signal,
+	--with_upc-backtrace-signal). Fix the check for 'gettime' to
+	save/restore libraries on the check line.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.am (AM_CPPFLAGS): Add include path for bfd.h.
+	(UPC_RUNTIME_SRC): Add new source files for backtrace.
+	(UPC_BACKTRACE_SUP): New.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* configure.tgt (LIBS): Added options for linking with libbfd,
+	libdl. Added -export-dynamic if -rdynamic option is supported.
+	* smp/upc_backtrace.h: New. Backtrace API.
+	* smp/upc_backtrace.c: New. Backtrace support functions.
+	* smp/upc_backtrace_sup.c: New.  Source file/line search support
+	functions.
+	* smp/upc_main.c (__upc_fatal): Added call to backtrace.
+	(__upc_monitor_threads): Added code to continue monitoring threads
+	if the wait() was interrupted by a signal (e.g. backtrace request
+	signal).
+	* smp/upc_sysdep.h (__upc_create_temp_file): Add prototype.
+	* smp/upc_sysdep.c (__upc_create_temp_file): Made public.
+
 2012-05-19  Gary Funck  <gary@intrepid.com>
 
 	* smp/upc_main.c (__upc_per_thread_init):
@@ -25,7 +53,6 @@
 
 	Add memory fence to the low level lock support routines
 	that are called for multiple places in the run-time.
-
 	* smp/upc_sysdep.c (__upc_acquire_lock): Add a memory fence
 	once lock is acquired.
 	(__upc_try_acquire_lock): Add a memory fence is lock is

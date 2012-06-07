@@ -277,8 +277,8 @@ __upc_release_lock (lock)
    created temporary file.
    [see: http://www.linux.com/howtos/Secure-Programs-HOWTO/avoid-race.shtml]  */
 
-static int
-__upc_create_temp_file (char *tag, char *tmp_fname,
+int
+__upc_create_temp_file (const char *tag, char *tmp_fname,
                         const char **err_msg)
 {
   const char *tmpdir = NULL;

@@ -32,6 +32,12 @@
 
 //begin gupcr_config_h
 
+/* Define path to preferred GDB for backtrace. */
+#undef GUPCR_BACKTRACE_GDB
+
+/* Define to preferred signal for UPC backtrace. */
+#undef GUPCR_BACKTRACE_SIGNAL
+
 /* Define if UPC GUM debug server is supported */
 #undef GUPCR_HAVE_GUM_DEBUG
 
@@ -137,6 +143,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Use BFD library for improved backtrace. */
+#undef HAVE_LIBBFD
+
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
@@ -237,6 +246,15 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if UPC backtrace is enabled. */
+#undef HAVE_UPC_BACKTRACE
+
+/* Define to 1 if UPC backtrace with GDB is enabled. */
+#undef HAVE_UPC_BACKTRACE_GDB
+
+/* Define to 1 if UPC backtrace signal is enabled. */
+#undef HAVE_UPC_BACKTRACE_SIGNAL
 
 /* Define to 1 if UPC link script is supported. */
 #undef HAVE_UPC_LINK_SCRIPT

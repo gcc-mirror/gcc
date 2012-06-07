@@ -116,6 +116,8 @@ extern void __upc_release_lock (os_lock_p);
 
 extern os_heap_p __upc_create_runtime_heap (size_t, const char **);
 extern void *__upc_runtime_alloc (size_t, os_heap_p *, const char **);
+extern int __upc_create_temp_file (const char *tag, char *tmp_fname, 
+				   const char **err_msg);
 extern int __upc_create_global_mem_file (char *tmp_fname, const char **err_msg);
 extern char *__upc_strsignal (int);
 

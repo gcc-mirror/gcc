@@ -59,6 +59,7 @@ vpath % $(strip $(search_path))
 
 AM_CPPFLAGS += $(addprefix -I, $(search_path))
 AM_CPPFLAGS += $(addprefix -isystem, '.')
+AM_CPPFLAGS += @bfdinc@
 AM_CFLAGS += $(XCFLAGS)
 AM_UPCFLAGS += $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
@@ -103,12 +104,19 @@ if LIBGUPC_NUMA
 else
   UPC_NUMA_SUP = smp/upc_numa_stub.c
 endif
-
+UPC_BACKTRACE_SUP =
+if LIBGUPC_BACKTRACE
+  UPC_BACKTRACE_SUP += smp/upc_backtrace.h smp/upc_backtrace.c
+  if LIBGUPC_BACKTRACE_SUP
+    UPC_BACKTRACE_SUP += smp/upc_backtrace_sup.c
+  endif
+endif
 
 UPC_RUNTIME_SRC += smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 	smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
 	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.c \
-	smp/upc_config.h smp/upc_debug.h \
+	$(UPC_BACKTRACE_SUP) smp/upc_config.h \
+	smp/upc_debug.h \
 	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
 	smp/upc_lib.h smp/upc_lock.c smp/upc_main.c smp/upc_mem.c \
 	smp/upc_mem.h smp/upc_numa.h $(UPC_NUMA_SUP) smp/upc_pgm_info.c \

@@ -95,6 +95,15 @@ LIBS="-lm $LIBS"
 if test "${upc_numa}" = "yes"; then
   LIBS="-lnuma $LIBS"
 fi
+if test "x${have_rdynamic}" != "x"; then
+  LIBS="-export-dynamic $LIBS"
+fi
+if test "x${bfdlibs}" != "x"; then
+  LIBS="$bfdlibs $LIBS"
+fi
+if test "${have_bfd}" = "yes"; then
+  LIBS="-lbfd -ldl $LIBS"
+fi
 libgupc_spec="%{!fupc-pthreads*:-lgupc;:-lgupc_pt -lpthread}"
 if test "$enable_upc_link_script" = yes; then
   libgupc_spec="-T gupc.ld%s ${libgupc_spec}"

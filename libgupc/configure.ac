@@ -324,9 +324,11 @@ AC_LINK_IFELSE(
 # in if it still doesn't give us the function we want.
 if test $ac_cv_func_clock_gettime = no; then
   AC_CHECK_LIB(rt, clock_gettime,
-    [LIBS="-lrt $LIBS"
+    [saved_LIBS="$LIBS"
+     LIBS="-lrt $LIBS"
      AC_DEFINE(HAVE_CLOCK_GETTIME, 1,
-	       [Define to 1 if you have the `clock_gettime' function.])])
+	       [Define to 1 if you have the `clock_gettime' function.])
+     LIBS=$saved_LIBS])
 fi
 
 # See if we support thread-local storage.
@@ -599,6 +601,175 @@ if test "$upc_runtime_model" = "smp"; then
   # Use the generic (reference implementation)
   use_generic_collectives="yes"
 
+  AC_MSG_CHECKING([for UPC backtrace support])
+  AC_ARG_ENABLE(upc-backtrace,
+  [AS_HELP_STRING([--enable-upc-backtrace],
+                  [enable UPC thread backtrace;
+                   enable UPC thread to report its stack frame
+  		   on the run-time catastrophic events or per the
+		   user request.])],
+  [
+    case $enableval in
+    yes | no) ;;
+    *)
+      AC_MSG_ERROR([--enable-upc-backtrace accepts only yes or no.])
+    esac
+    upc_backtrace=$enableval
+  ],
+  [
+    upc_backtrace=yes
+  ])
+  AC_MSG_RESULT($upc_backtrace)
+  if test "$upc_backtrace" = yes; then
+    AC_DEFINE(HAVE_UPC_BACKTRACE, 1,
+      [Define to 1 if UPC backtrace is enabled.])
+  fi
+
+  AC_MSG_CHECKING([for UPC backtrace GDB support])
+  AC_ARG_ENABLE(upc-backtrace-gdb,
+  [AS_HELP_STRING([--enable-upc-backtrace-gdb],
+	 	  [enable the use of GDB for UPC thread backtrace 
+		   [default='yes']])],
+  [
+    case "$enableval" in
+    yes | no) ;;
+    *)
+      AC_MSG_ERROR([--enable-upc-backtrace-gdb accepts only yes or no.])
+    esac
+  ],
+  [
+    enable_upc_backtrace_gdb=yes
+  ])
+  AC_MSG_RESULT([$enable_upc_backtrace_gdb])
+  if test "$enable_upc_backtrace_gdb" = yes; then
+    AC_DEFINE(HAVE_UPC_BACKTRACE_GDB, 1,
+      [Define to 1 if UPC backtrace with GDB is enabled.])
+
+    # Check for user specified GDB
+    AC_MSG_CHECKING([for UPC backtrace GDB to use])
+    AC_ARG_WITH(upc-backtrace-gdb,
+      [AS_HELP_STRING([--with-upc-backtrace-gdb=GDB],
+      [specify which GDB to use for UPC backtrace
+      [default='gdb']])],
+    [
+      upc_backtrace_gdb=$withval
+    ],
+    [
+      upc_backtrace_gdb=gdb
+    ])
+    AC_PATH_PROGS(PATH_TO_GDB, $GDB $upc_backtrace_gdb, , /usr/bin:${PATH})
+    if test -n "$PATH_TO_GDB"; then
+      AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_GDB, "$PATH_TO_GDB",
+        [Define path to preferred GDB for backtrace.])
+    else
+      AC_MSG_ERROR(
+        [Cannot find gdb. Try the correct --with-upc-backtrace-gdb 
+         option or disable GDB for backtrace with 
+         --disable-upc-backtrace option).])
+    fi
+    AC_MSG_RESULT([$PATH_TO_GDB])
+  fi
+
+  AC_MSG_CHECKING([for UPC backtrace signal support])
+  AC_ARG_ENABLE(upc-backtrace-signal,
+  [AS_HELP_STRING([--enable-upc-backtrace-signal],
+	 	  [enable/disable signal support for backtrace 
+		   [default='yes']])],
+  [
+    case "$enableval" in
+    yes | no) ;;
+    *)
+      AC_MSG_ERROR([--enable-upc-backtrace-signal accepts only yes or no.])
+    esac
+  ],
+  [
+    enable_upc_backtrace_signal=yes
+  ])
+  AC_MSG_RESULT([$enable_upc_backtrace_signal])
+  if test "$enable_upc_backtrace_signal" = yes; then
+    AC_DEFINE(HAVE_UPC_BACKTRACE_SIGNAL, 1,
+      [Define to 1 if UPC backtrace signal is enabled.])
+
+    # Check for user specified signal name/number
+    AC_MSG_CHECKING([for UPC backtrace signal name/number])
+    AC_ARG_WITH(upc-backtrace-signal,
+      [AS_HELP_STRING([--with-upc-backtrace-signal=SIGNAL],
+      [specify the signal to be used for backtrace
+      [default='SIGUSR1']])],
+      [
+        upc_backtrace_signal=$withval
+      ],
+      [
+        upc_backtrace_signal=SIGUSR1
+      ])
+    AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_SIGNAL, $upc_backtrace_signal,
+      [Define to preferred signal for UPC backtrace.])
+    AC_MSG_RESULT([$upc_backtrace_signal])
+  fi
+
+  # UPC source file/line backtrace requires BFD library
+  if test "x$with_bfd" != x; then
+    bfdlibs="-L$with_bfd/lib $bfdlibs"
+    bfdinc="-I$with_bfd/include $bfdinc"
+  fi
+  if test "x$with_bfd_include" != x; then
+    bfdinc="-I$with_bfd_include $bfdinc"
+  fi
+  if test "x$with_bfd_lib" != x; then
+    bfdlibs="-L$with_bfd_lib $bfdlibs"
+  fi
+
+  have_bfd=yes
+  saved_CFLAGS="$CFLAGS"
+  saved_LIBS="$LIBS"
+  CFLAGS="$CFLAGS $bfdinc"
+  LIBS="$LIBS -lbfd -ldl"
+  AC_MSG_CHECKING([for the libbfd])
+  AC_TRY_LINK([
+	#include <bfd.h>
+	bfd_error_type error;
+	void foo () { error = bfd_get_error (); }
+	],[ ], 
+    [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_bfd=no ])
+  CFLAGS="$saved_CFLAGS"
+  LIBS="$saved_LIBS"
+
+  if test "$have_bfd" = "yes"; then
+    AC_DEFINE(HAVE_LIBBFD, 1,
+      [Use BFD library for improved backtrace.])
+  fi
+
+  # Check for "-rdynamic" for UPC backtrace
+  case "${host}" in
+    *-*-darwin*)
+      if test x$build = x$host; then
+        export_sym_check="nm${exeext} -g"
+      elif test x$host = x$target; then
+        export_sym_check="$gcc_cv_nm -g"
+      else
+        export_sym_check=
+      fi
+    ;;
+    *)
+      if test x$build = x$host; then
+        export_sym_check="objdump${exeext} -T"
+      elif test x$host = x$target; then
+        export_sym_check="$gcc_cv_objdump -T"
+      else
+        export_sym_check=
+      fi
+    ;;
+  esac
+  AC_MSG_CHECKING([for -rdynamic])
+  if test "x$export_sym_check" != x; then
+    echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
+    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest > /dev/null 2>&1
+    if $export_sym_check conftest | grep foobar > /dev/null; then
+      have_rdynamic=yes
+    fi
+  fi
+  AC_MSG_RESULT([$have_rdynamic])
+
 fi #### End: SMP runtime configuration
 
 # Get target configury.
@@ -608,6 +779,7 @@ fi #### End: SMP runtime configuration
 # It also sets 'upc_crtstuff=yes' if upc-crtstuff needs
 # to be compiled.
 AC_SUBST(config_path)
+AC_SUBST(bfdinc)
 AC_SUBST(XCFLAGS)
 AC_SUBST(XLDFLAGS)
 AC_SUBST(link_upc_spec)
@@ -637,6 +809,8 @@ AM_CONDITIONAL(LIBGUPC_PTHREADS, [test "$targ_runtime_pthreads" = "yes"])
 AM_CONDITIONAL(LIBGUPC_AFFINITY, [test "$upc_affinity" = "yes"])
 AM_CONDITIONAL(LIBGUPC_NUMA, [test "$upc_numa" = "yes"])
 AM_CONDITIONAL(LIBGUPC_GUM, [test "$upc_gum_debug" = "yes"])
+AM_CONDITIONAL(LIBGUPC_BACKTRACE, [test "$upc_backtrace" = "yes"])
+AM_CONDITIONAL(LIBGUPC_BACKTRACE_SUP, [test "$have_bfd" = "yes"])
 
 AH_TOP(
 [/* Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.

@@ -1,5 +1,5 @@
 /* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+   2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
@@ -35,6 +35,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "upc_debug.h"
 #include "gasp_upc.h"
 #include "upc_pupc.h"
+#if HAVE_UPC_BACKTRACE
+#include "upc_backtrace.h"
+#endif
 
 /* user's main program */
 extern int GUPCR_MAIN (int argc, char *argv[]);
@@ -734,8 +737,10 @@ __upc_monitor_threads (void)
   int global_exit_invoked;
   exit_status = -1;
   global_exit_invoked = 0;
-  while ((pid = wait (&wait_status)) > 0)
+  while ((pid = wait (&wait_status)) > 0 || errno == EINTR)
     {
+      if (errno == EINTR)
+	continue;
       thread_id = __upc_get_thread_id (pid);
       if (!global_exit_invoked && WIFEXITED (wait_status))
 	{
@@ -1057,6 +1062,9 @@ __upc_fatal (const char *msg)
     }
   fflush (0);
   __upc_notify_debugger_of_abort (msg);
+#if HAVE_UPC_BACKTRACE
+  __upc_fatal_backtrace ();
+#endif
   abort ();
 }
 
@@ -1081,6 +1089,11 @@ GUPCR_START (int argc, char *argv[])
       abort ();
     }
   __upc_info = u;
+
+#if HAVE_UPC_BACKTRACE
+  /* Initialize backtrace support. */
+  __upc_backtrace_init (__upc_pgm_name);
+#endif
 
   /* Initialize UPC runtime locks.  We do this after __upc_info
      has been allocated and initialized, because __upc_init_lock
