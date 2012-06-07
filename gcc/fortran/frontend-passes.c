@@ -740,8 +740,10 @@ optimize_assignment (gfc_code * c)
       /* Optimize away a = trim(b), where a is a character variable.  */
       remove_trim (rhs);
 
-      /* Replace a = '   ' by a = '' to optimize away a memcpy.  */
-      if (empty_string(rhs))
+      /* Replace a = '   ' by a = '' to optimize away a memcpy, but only
+	 for strings with non-deferred length (otherwise we would
+	 reallocate the length.  */
+      if (empty_string(rhs) && ! lhs->ts.deferred)
 	rhs->value.character.length = 0;
     }
 
