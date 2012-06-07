@@ -35,8 +35,8 @@ runtime_printtrace (uintptr *pcbuf, int32 c)
       if (__go_file_line (pcbuf[i], &fn, &file, &line)
 	  && runtime_showframe (fn.__data))
 	{
-	  runtime_printf ("%s\n", fn.__data);
-	  runtime_printf ("\t%s:%d\n", file.__data, line);
+	  runtime_printf ("%S\n", fn);
+	  runtime_printf ("\t%S:%d\n", file, line);
 	}
     }
 }
