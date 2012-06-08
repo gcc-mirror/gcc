@@ -6986,6 +6986,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	}
     }
 
+  /* Check for F08:C628.  */
   if (allocatable == 0 && pointer == 0)
     {
       gfc_error ("Allocate-object at %L must be ALLOCATABLE or a POINTER",
