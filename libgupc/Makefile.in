@@ -44,10 +44,9 @@ target_triplet = @target@
 @LIBGUPC_SMP_RUNTIME_TRUE@              gen-inline-libgupc.pl \
 @LIBGUPC_SMP_RUNTIME_TRUE@              gen-upc-ld-script.pl
 
-@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__append_3 = smp/upc_backtrace.h \
-@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_backtrace.c \
-@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_backtrace_sup.c
-@LIBGUPC_SMP_RUNTIME_TRUE@am__append_4 = smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
+@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__append_3 = smp/upc_backtrace.h smp/upc_backtrace.c
+@LIBGUPC_BACKTRACE_SUP_TRUE@@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__append_4 = smp/upc_backtrace_sup.c
+@LIBGUPC_SMP_RUNTIME_TRUE@am__append_5 = smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(UPC_BACKTRACE_SUP) smp/upc_config.h \
@@ -58,12 +57,12 @@ target_triplet = @target@
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_pts.h smp/upc_pupc.c smp/upc_pupc.h smp/upc_sup.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_sync.h smp/upc_sysdep.c smp/upc_sysdep.h smp/upc_vm.c
 
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__append_5 = $(UPC_COLLECTIVES_SRC)
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__append_6 = gen-upc-coll-reduce.pl \
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__append_6 = $(UPC_COLLECTIVES_SRC)
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__append_7 = gen-upc-coll-reduce.pl \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@             upc_coll_prefix_reduce.in \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@             upc_coll_reduce.in
 
-@LIBGUPC_LINK_SCRIPT_TRUE@am__append_7 = $(UPC_LINK_SCRIPT)
+@LIBGUPC_LINK_SCRIPT_TRUE@am__append_8 = $(UPC_LINK_SCRIPT)
 @LIBGUPC_PTHREADS_FALSE@libgupc_pt_la_DEPENDENCIES =
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(libsubinclude_HEADERS) \
@@ -141,27 +140,28 @@ am__libgupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 	collectives/upc_coll_scatter.upc collectives/upc_coll_sort.upc
 @LIBGUPC_AFFINITY_FALSE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_1 = upc_affinity_stub.lo
 @LIBGUPC_AFFINITY_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_1 = upc_affinity.lo
-@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_2 = upc_backtrace.lo \
-@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@	upc_backtrace_sup.lo
-@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_3 = $(am__objects_2)
-@LIBGUPC_GUM_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_4 =  \
+@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_2 = upc_backtrace.lo
+@LIBGUPC_BACKTRACE_SUP_TRUE@@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_3 = upc_backtrace_sup.lo
+@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_4 = $(am__objects_2) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_3)
+@LIBGUPC_GUM_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_5 =  \
 @LIBGUPC_GUM_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@	upc_gum.lo
-@LIBGUPC_NUMA_FALSE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_5 = upc_numa_stub.lo
-@LIBGUPC_NUMA_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_5 =  \
+@LIBGUPC_NUMA_FALSE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_6 = upc_numa_stub.lo
+@LIBGUPC_NUMA_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_6 =  \
 @LIBGUPC_NUMA_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@	upc_numa.lo
-@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_6 = upc_access.lo upc_accessg.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_7 = upc_access.lo upc_accessg.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_addr.lo $(am__objects_1) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_allocg.lo upc_alloc.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_barrier.lo $(am__objects_3) \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_gasp.lo $(am__objects_4) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_barrier.lo $(am__objects_4) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_gasp.lo $(am__objects_5) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_libg.lo upc_lock.lo upc_main.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_mem.lo $(am__objects_5) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_mem.lo $(am__objects_6) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_pgm_info.lo upc_pupc.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_sysdep.lo upc_vm.lo
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_7 =  \
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_8 =  \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	upc_coll_prefix_reduce.lo
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_8 = upc_coll_reduce.lo
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_9 =  \
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_9 = upc_coll_reduce.lo
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_10 =  \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	upc_coll_broadcast.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	upc_coll_err.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	upc_coll_exchange.lo \
@@ -169,59 +169,60 @@ am__libgupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	upc_coll_gather.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	upc_coll_init.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	upc_coll_permute.lo \
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@	$(am__objects_7) \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	$(am__objects_8) \
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@	$(am__objects_9) \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	upc_coll_scatter.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	upc_coll_sort.lo
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_10 = $(am__objects_9)
-am__objects_11 = $(am__objects_6) $(am__objects_10)
-am_libgupc_la_OBJECTS = $(am__objects_11)
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_11 = $(am__objects_10)
+am__objects_12 = $(am__objects_7) $(am__objects_11)
+am_libgupc_la_OBJECTS = $(am__objects_12)
 libgupc_la_OBJECTS = $(am_libgupc_la_OBJECTS)
-@LIBGUPC_AFFINITY_FALSE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_12 = libgupc_pt_la-upc_affinity_stub.lo
-@LIBGUPC_AFFINITY_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_12 = libgupc_pt_la-upc_affinity.lo
-@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_13 = libgupc_pt_la-upc_backtrace.lo \
-@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_backtrace_sup.lo
-@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_14 = $(am__objects_13)
-@LIBGUPC_GUM_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_15 = libgupc_pt_la-upc_gum.lo
-@LIBGUPC_NUMA_FALSE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_16 = libgupc_pt_la-upc_numa_stub.lo
-@LIBGUPC_NUMA_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_16 = libgupc_pt_la-upc_numa.lo
-@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_17 =  \
+@LIBGUPC_AFFINITY_FALSE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_13 = libgupc_pt_la-upc_affinity_stub.lo
+@LIBGUPC_AFFINITY_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_13 = libgupc_pt_la-upc_affinity.lo
+@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_14 = libgupc_pt_la-upc_backtrace.lo
+@LIBGUPC_BACKTRACE_SUP_TRUE@@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_15 = libgupc_pt_la-upc_backtrace_sup.lo
+@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_16 = $(am__objects_14) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_15)
+@LIBGUPC_GUM_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_17 = libgupc_pt_la-upc_gum.lo
+@LIBGUPC_NUMA_FALSE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_18 = libgupc_pt_la-upc_numa_stub.lo
+@LIBGUPC_NUMA_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_18 = libgupc_pt_la-upc_numa.lo
+@LIBGUPC_SMP_RUNTIME_TRUE@am__objects_19 =  \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_access.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_accessg.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_addr.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_12) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_13) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_allocg.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_alloc.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_barrier.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_14) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_16) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_gasp.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_15) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_17) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_libg.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_lock.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_main.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_mem.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_16) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_18) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_pgm_info.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_pupc.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_sysdep.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_vm.lo
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_18 = libgupc_pt_la-upc_coll_prefix_reduce.lo
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_19 = libgupc_pt_la-upc_coll_reduce.lo
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_20 = libgupc_pt_la-upc_coll_broadcast.lo \
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_20 = libgupc_pt_la-upc_coll_prefix_reduce.lo
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_21 = libgupc_pt_la-upc_coll_reduce.lo
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_22 = libgupc_pt_la-upc_coll_broadcast.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	libgupc_pt_la-upc_coll_err.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	libgupc_pt_la-upc_coll_exchange.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	libgupc_pt_la-upc_coll_gather_all.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	libgupc_pt_la-upc_coll_gather.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	libgupc_pt_la-upc_coll_init.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	libgupc_pt_la-upc_coll_permute.lo \
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@	$(am__objects_18) \
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@	$(am__objects_19) \
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@	$(am__objects_20) \
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@	$(am__objects_21) \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	libgupc_pt_la-upc_coll_scatter.lo \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	libgupc_pt_la-upc_coll_sort.lo
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_21 = $(am__objects_20)
-am__objects_22 = $(am__objects_17) $(am__objects_21)
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_23 = $(am__objects_22)
+am__objects_24 = $(am__objects_19) $(am__objects_23)
 @LIBGUPC_PTHREADS_TRUE@nodist_libgupc_pt_la_OBJECTS =  \
-@LIBGUPC_PTHREADS_TRUE@	$(am__objects_22)
+@LIBGUPC_PTHREADS_TRUE@	$(am__objects_24)
 libgupc_pt_la_OBJECTS = $(nodist_libgupc_pt_la_OBJECTS)
 @LIBGUPC_PTHREADS_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am_libgupc_pt_la_rpath =  \
 @LIBGUPC_PTHREADS_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@	-rpath \
@@ -493,9 +494,9 @@ AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 
 ### Explicit build rules
 LIBGUPC_SRCDIR = $(top_srcdir)/$(targ_runtime_dir)
-EXTRA_DIST = $(am__append_2) $(am__append_6)
+EXTRA_DIST = $(am__append_2) $(am__append_7)
 MOSTLYCLEANFILES = 
-UPC_RUNTIME_SRC = $(am__append_4) $(am__append_5)
+UPC_RUNTIME_SRC = $(am__append_5) $(am__append_6)
 @LIBGUPC_PTHREADS_FALSE@@LIBGUPC_SMP_RUNTIME_TRUE@libgupc_pt = 
 @LIBGUPC_PTHREADS_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@libgupc_pt = libgupc_pt.la
 @LIBGUPC_AFFINITY_FALSE@@LIBGUPC_SMP_RUNTIME_TRUE@UPC_AFFINITY_SUP = smp/upc_affinity_stub.c
@@ -509,7 +510,8 @@ UPC_RUNTIME_SRC = $(am__append_4) $(am__append_5)
 @LIBGUPC_GUM_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@UPC_GUM_SUP = smp/upc_gum.c
 @LIBGUPC_NUMA_FALSE@@LIBGUPC_SMP_RUNTIME_TRUE@UPC_NUMA_SUP = smp/upc_numa_stub.c
 @LIBGUPC_NUMA_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@UPC_NUMA_SUP = smp/upc_numa.c
-@LIBGUPC_SMP_RUNTIME_TRUE@UPC_BACKTRACE_SUP = $(am__append_3)
+@LIBGUPC_SMP_RUNTIME_TRUE@UPC_BACKTRACE_SUP = $(am__append_3) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__append_4)
 @LIBGUPC_SMP_RUNTIME_TRUE@UPC_RUNTIME_SRC_INLINE = config.h smp/upc_access.c smp/upc_access.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@        smp/upc_config.h smp/upc_defs.h smp/upc_mem.h smp/upc_pts.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@        smp/upc_sup.h smp/upc_sync.h
@@ -531,7 +533,7 @@ UPC_RUNTIME_SRC = $(am__append_4) $(am__append_5)
 toolexeclib_LTLIBRARIES = libgupc.la $(libgupc_pt)
 nodist_toolexeclib_HEADERS = upc-crtbegin.spec libgupc.spec \
 	upc-crtend.spec $(UPC_LINK_SCRIPT)
-BUILT_SOURCES = gcc-upc-lib.h $(am__append_7)
+BUILT_SOURCES = gcc-upc-lib.h $(am__append_8)
 @LIBGUPC_LINK_SCRIPT_FALSE@UPC_LINK_SCRIPT = 
 @LIBGUPC_LINK_SCRIPT_TRUE@UPC_LINK_SCRIPT = gupc.ld
 libgupc_la_SOURCES = $(UPC_RUNTIME_SRC)
@@ -2018,8 +2020,6 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 
 
 vpath % $(strip $(search_path))
-@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@  if LIBGUPC_BACKTRACE_SUP
-@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@  endif
 
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@@MAINTAINER_MODE_TRUE@$(UPC_COLL_PREFIX_REDUCE_UPC): gen-upc-coll-reduce.pl \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@@MAINTAINER_MODE_TRUE@                               upc_coll_prefix_reduce.in 

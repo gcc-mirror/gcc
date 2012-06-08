@@ -1,4 +1,8 @@
-2012-06-06  Nenad Vukicevic  <nenad@intrepid.com>
+2012-06-09  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* Makefile.am: Removed indented spaces on if/endif.
+
+2012-06-08  Nenad Vukicevic  <nenad@intrepid.com>
 	
 	Add backtrace support for UPC SMP run-time.
 	* configure.ac: Added UPC backtrace configuration
