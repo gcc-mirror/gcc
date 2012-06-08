@@ -9419,12 +9419,20 @@ avr_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
     return false;
 }
 
-/* Worker function for CASE_VALUES_THRESHOLD.  */
+
+/* Implement `CASE_VALUES_THRESHOLD'.  */
+/* Supply the default for --param case-values-threshold=0  */
 
 static unsigned int
 avr_case_values_threshold (void)
 {
-  return (!AVR_HAVE_JMP_CALL || TARGET_CALL_PROLOGUES) ? 8 : 17;
+  /* The exact break-even point between a jump table and an if-else tree
+     depends on several factors not available here like, e.g. if 8-bit
+     comparisons can be used in the if-else tree or not, on the
+     range of the case values, if the case value can be reused, on the
+     register allocation, etc.  '7' appears to be a good choice.  */
+     
+  return 7;
 }
 
 
