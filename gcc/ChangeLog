@@ -1,3 +1,7 @@
+2012-06-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_case_values_threshold): Return 7.
+
 2012-06-07  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* genhooks.c (main): Set progname.
