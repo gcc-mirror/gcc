@@ -3533,6 +3533,28 @@ gfc_match_allocate (void)
 	    }
 	}
 
+      /* Check for F08:C628.  */
+      sym = tail->expr->symtree->n.sym;
+      b1 = !(tail->expr->ref
+	     && (tail->expr->ref->type == REF_COMPONENT
+		 || tail->expr->ref->type == REF_ARRAY));
+      if (sym && sym->ts.type == BT_CLASS && sym->attr.class_ok)
+	b2 = !(CLASS_DATA (sym)->attr.allocatable
+	       || CLASS_DATA (sym)->attr.class_pointer);
+      else
+	b2 = sym && !(sym->attr.allocatable || sym->attr.pointer
+		      || sym->attr.proc_pointer);
+      b3 = sym && sym->ns && sym->ns->proc_name
+	   && (sym->ns->proc_name->attr.allocatable
+	       || sym->ns->proc_name->attr.pointer
+	       || sym->ns->proc_name->attr.proc_pointer);
+      if (b1 && b2 && !b3)
+	{
+	  gfc_error ("Allocate-object at %L is neither a data pointer "
+		     "nor an allocatable variable", &tail->expr->where);
+	  goto cleanup;
+	}
+
       /* The ALLOCATE statement had an optional typespec.  Check the
 	 constraints.  */
       if (ts.type != BT_UNKNOWN)
@@ -3557,28 +3579,6 @@ gfc_match_allocate (void)
 
       if (tail->expr->ts.type == BT_DERIVED)
 	tail->expr->ts.u.derived = gfc_use_derived (tail->expr->ts.u.derived);
-
-      /* FIXME: disable the checking on derived types and arrays.  */
-      sym = tail->expr->symtree->n.sym;
-      b1 = !(tail->expr->ref
-	   && (tail->expr->ref->type == REF_COMPONENT
-		|| tail->expr->ref->type == REF_ARRAY));
-      if (sym && sym->ts.type == BT_CLASS && sym->attr.class_ok)
-	b2 = !(CLASS_DATA (sym)->attr.allocatable
-	       || CLASS_DATA (sym)->attr.class_pointer);
-      else
-	b2 = sym && !(sym->attr.allocatable || sym->attr.pointer
-		      || sym->attr.proc_pointer);
-      b3 = sym && sym->ns && sym->ns->proc_name
-	   && (sym->ns->proc_name->attr.allocatable
-		|| sym->ns->proc_name->attr.pointer
-		|| sym->ns->proc_name->attr.proc_pointer);
-      if (b1 && b2 && !b3)
-	{
-	  gfc_error ("Allocate-object at %L is neither a nonprocedure pointer "
-		     "nor an allocatable variable", &tail->expr->where);
-	  goto cleanup;
-	}
 
       if (gfc_peek_ascii_char () == '(' && !sym->attr.dimension)
 	{

@@ -1,3 +1,10 @@
+2012-06-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/52552
+	* match.c (gfc_match_allocate): Modify order of checks. Change wording
+	of error message. Remove FIXME note.
+	* resolve.c (resolve_allocate_expr): Add a comment.
+
 2012-06-07  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/52861
