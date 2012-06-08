@@ -768,7 +768,7 @@
 	* config/cris/cris.h (CC1_SPEC): Pass through all -march=
 	and -mcpu= options.
 	(ASM_SPEC): Ditto, not just -march=v32, but translate non-v10,
-	non-v32 into --march=v0_v0_v10.
+	non-v32 into --march=v0_v10.
 
 2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
