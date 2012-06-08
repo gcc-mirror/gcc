@@ -205,6 +205,10 @@ DW_FORM (DW_FORM_ref_sig8, 0x20)
 /* Extensions for Fission.  See http://gcc.gnu.org/wiki/DebugFission.  */
 DW_FORM (DW_FORM_GNU_addr_index, 0x1f01)
 DW_FORM (DW_FORM_GNU_str_index, 0x1f02)
+/* Extensions for DWZ multifile.
+   See http://www.dwarfstd.org/ShowIssue.php?issue=120604.1&type=open .  */
+DW_FORM (DW_FORM_GNU_ref_alt, 0x1f20)
+DW_FORM (DW_FORM_GNU_strp_alt, 0x1f21)
 DW_END_FORM
 
 DW_FIRST_AT (DW_AT_sibling, 0x01)
