@@ -1,3 +1,17 @@
+2012-06-09  Richard Henderson  <rth@redhat.com>
+
+	PR c++/53602
+	* cfgcleanup.c (execute_jump): Rename from rest_of_handle_jump2.
+	(pass_jump): Rename from pass_jump2.
+	(execute_jump2, pass_jump2): New.
+	* combine-stack-adj.c (rest_of_handle_stack_adjustments): Don't
+	perform cfg cleanup here.  Move the test of PUSH_ROUNDING
+	and ACCUMULATE_OUTGOING_ARGS test...
+	(gate_handle_stack_adjustments): ... here.
+	* passes.c (init_optimization_passes): Update for pass_jump2 rename.
+	Place new pass_jump2 after pass_stack_adjustments.
+	* tree-pass.h (pass_jump): Declare.
+
 2012-06-09  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* simplify-rtx.c (simplify_const_binary_operation): Fixed shift
