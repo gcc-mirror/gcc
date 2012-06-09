@@ -1,3 +1,21 @@
+2012-06-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/32/sfp-machine.h (__gcc_CMPtype, CMPtype,
+	_FP_KEEPNANFRACP, _FP_CHOOSENAN, FP_EX_INVALID, FP_EX_DENORM,
+	FP_EX_DIVZERO, FP_EX_OVERFLOW, FP_EX_UNDERFLOW, FP_EX_INEXACT,
+	FP_HANDLE_EXCEPTIONS, FP_RND_NEAREST, FP_RND_ZERO, FP_RND_PINF,
+	FP_RND_MINF, _FP_DEXL_EX, FP_INIT_ROUNDMODE, FP_ROUNDMODE,
+	__LITTLE_ENDIAN, __BIG_ENDIAN, strong_alias): Move ...
+	* config/i386/64/sfp-machine: ... (delete here) ...
+	* config/i386/sfp-machine.h: ... to here.
+	(FP_EX_MASK): New.
+	(__sfp_handle_exceptions): New function declaration.
+	(FP_HANDLE_EXCEPTIONS): Use __sfp_handle_exceptions.
+	* config/i386/sfp-exceptions.c: New.
+	* config/i386/t-softfp: New.
+	* config.host (i[34567]86-*-* and x86_64-*-* soft-fp targets): Add
+	i386/t-softfp to tmake_file.
+
 2012-06-03  David S. Miller  <davem@davemloft.net>
 
 	* longlong.h [SPARC] (sub_ddmmss): Fix thinko in previous 64-bit
