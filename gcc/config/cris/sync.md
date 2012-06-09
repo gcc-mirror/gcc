@@ -88,14 +88,16 @@
    (atomic_op:BWD (match_dup 0) (match_dup 1))]
   ""
 {
+  enum memmodel mmodel = (enum memmodel) INTVAL (operands[3]);
+
   if (<MODE>mode != QImode && TARGET_TRAP_UNALIGNED_ATOMIC)
     cris_emit_trap_for_misalignment (operands[1]);
 
-  expand_mem_thread_fence (INTVAL (operands[3]));
+  expand_mem_thread_fence (mmodel);
   emit_insn (gen_cris_atomic_fetch_<atomic_op_name><mode>_1 (operands[0],
 							     operands[1],
 							     operands[2]));
-  expand_mem_thread_fence (INTVAL (operands[3]));
+  expand_mem_thread_fence (mmodel);
   DONE;
 })
 
@@ -189,16 +191,18 @@
    (match_operand 7)]
   ""
 {
+  enum memmodel mmodel = (enum memmodel) INTVAL (operands[6]);
+
   if (<MODE>mode != QImode && TARGET_TRAP_UNALIGNED_ATOMIC)
     cris_emit_trap_for_misalignment (operands[2]);
 
-  expand_mem_thread_fence (INTVAL (operands[6]));
+  expand_mem_thread_fence (mmodel);
   emit_insn (gen_cris_atomic_compare_and_swap<mode>_1 (operands[0],
 						       operands[1],
 						       operands[2],
 						       operands[3],
 						       operands[4]));
-  expand_mem_thread_fence (INTVAL (operands[6]));
+  expand_mem_thread_fence (mmodel);
   DONE;
 })
 
