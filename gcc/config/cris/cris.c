@@ -1929,7 +1929,7 @@ cris_simple_epilogue (void)
 void
 cris_emit_trap_for_misalignment (rtx mem)
 {
-  rtx addr, reg, ok_label, and, jmp;
+  rtx addr, reg, ok_label, andop, jmp;
   int natural_alignment;
   gcc_assert (MEM_P (mem));
 
@@ -1941,8 +1941,8 @@ cris_emit_trap_for_misalignment (rtx mem)
   /* This will yield a btstq without a separate register used, usually -
      with the exception for PRE hoisting the "and" but not the branch
      around the trap: see gcc.dg/target/cris/sync-3s.c.  */
-  and = gen_rtx_AND (Pmode, reg, GEN_INT (natural_alignment - 1));
-  emit_cmp_and_jump_insns (force_reg (SImode, and), const0_rtx, EQ,
+  andop = gen_rtx_AND (Pmode, reg, GEN_INT (natural_alignment - 1));
+  emit_cmp_and_jump_insns (force_reg (SImode, andop), const0_rtx, EQ,
 			   NULL_RTX, Pmode, 1, ok_label);
   jmp = get_last_insn ();
   gcc_assert (JUMP_P (jmp));
