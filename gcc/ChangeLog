@@ -1,3 +1,9 @@
+2012-06-08  Richard Henderson  <rth@redhat.com>
+
+        PR c++/53602
+        * combine-stack-adj.c (force_move_args_size_note): Add ARGS_SIZE
+        note to a clobber insn when no other insn is available.
+
 2012-06-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_case_values_threshold): Return 7.

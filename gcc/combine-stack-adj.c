@@ -1,7 +1,7 @@
 /* Combine stack adjustments.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
    1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -414,9 +414,10 @@ force_move_args_size_note (basic_block bb, rtx prev, rtx insn)
     {
       /* ??? We *must* have a place, lest we ICE on the lost adjustment.
 	 Options are: dummy clobber insn, nop, or prevent the removal of
-	 the sp += 0 insn.  Defer that decision until we can prove this
-	 can actually happen.  */
-      gcc_unreachable ();
+	 the sp += 0 insn.  */
+      /* TODO: Find another way to indicate to the dwarf2 code that we
+	 have not in fact lost an adjustment.  */
+      test = emit_insn_before (gen_rtx_CLOBBER (VOIDmode, const0_rtx), insn);
     }
   add_reg_note (test, REG_ARGS_SIZE, XEXP (note, 0));
 }
