@@ -1,5 +1,11 @@
 2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/array1.ads: New test.
+	* gnat.dg/specs/array2.ads: Likewise.
+	* gnat.dg/array22.adb: Likewise.
+
+2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/constant4.adb: New test.
 	* gnat.dg/constant4_pkg.ads: New helper.
 

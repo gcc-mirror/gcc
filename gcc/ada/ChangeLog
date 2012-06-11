@@ -1,5 +1,20 @@
 2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Convert GNU_SIZE
+	to units before invoking allocatable_size_p on it.
+	Remove orphaned comment.  Do not use ssize_int.
+	<E_Record_Subtype>: Traverse list in original order.  Minor tweak.
+	(allocatable_size_p): Adjust and simplify.
+	(build_subst_list): Use consistent terminology throughout.
+	(build_variant_list): Likewise.  Traverse list in original order.
+	(create_field_decl_from): Likewise.
+	(copy_and_substitute_in_size): Likewise.
+	(create_variant_part_from): Add comment about field list order.
+	* gcc-interface/utils.c (build_vms_descriptor): Do not use ssize_int.
+	* gcc-interface/utils2.c (build_allocator): Likewise.
+
+2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Identifier_to_gnu): Test Is_Elementary_Type
 	instead of Is_Scalar_Type for a constant with an address clause.
 	Do not return the underlying constant for a constant used by reference
