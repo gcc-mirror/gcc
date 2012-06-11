@@ -1,3 +1,8 @@
+2012-06-11  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/53616
+	* g++.dg/ext/pr53605.C: New testcase.
+
 2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/array1.ads: New test.
