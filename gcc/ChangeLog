@@ -1,3 +1,17 @@
+2012-06-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53511
+	* config/sh/sh.md (fmasf4): New expander.
+	(*macsf3): Rename to fmasf4_i.  Adapt to fma pattern.
+	(mac_media): Rename to fmasf4_media.  Adapt to fma pattern.
+	* config/sh/sh.opt (mfused-madd): Remove.
+	* config/sh/sh.c (sh_option_override): Remove mfused-madd handling.
+	(builtin_description bdesc): Remove __builtin_sh_media_FMAC_S.
+	* config.gcc (sh[123456789lbe]*-*-* | sh-*-*): Add fused-madd.opt
+	as extra options.
+	* doc/invoke.texi (SH Options): Update mfused-madd and mno-fused-madd
+	descriptions.
+
 2012-06-11  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2cfi.c (scan_trace): Handle annulled branch-taken delay slots.

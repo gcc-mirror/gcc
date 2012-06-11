@@ -257,10 +257,6 @@ mfixed-range=
 Target RejectNegative Joined Var(sh_fixed_range_str)
 Specify range of registers to make fixed
 
-mfused-madd
-Target Var(TARGET_FMAC)
-Enable the use of the fused floating point multiply-accumulate operation
-
 mgettrcost=
 Target RejectNegative Joined UInteger Var(sh_gettrcost) Init(-1)
 Cost to assume for gettr insn

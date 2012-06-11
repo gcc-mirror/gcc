@@ -10329,6 +10329,9 @@ label:
   "fmul.s	%1, %2, %0"
   [(set_attr "type" "fparith_media")])
 
+;; FIXME: These fmac combine pass assisting specifics are obsolete since 
+;;	  we now use the FMA patterns, which do not depend on the combine
+;;	  pass anymore.
 ;; Unfortunately, the combiner is unable to cope with the USE of the FPSCR
 ;; register in feeding fp instructions.  Thus, in order to generate fmac,
 ;; we start out with a mulsf pattern that does not depend on fpscr.
@@ -10359,25 +10362,41 @@ label:
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
 
-(define_insn "mac_media"
-  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%f")
-			  (match_operand:SF 2 "fp_arith_reg_operand" "f"))
-		 (match_operand:SF 3 "fp_arith_reg_operand" "0")))]
-  "TARGET_SHMEDIA_FPU && TARGET_FMAC"
-  "fmac.s %1, %2, %0"
-  [(set_attr "type" "fparith_media")])
+;; FMA (fused multiply-add) patterns
+(define_expand "fmasf4"
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
+	(fma:SF (match_operand:SF 1 "fp_arith_reg_operand" "")
+		(match_operand:SF 2 "fp_arith_reg_operand" "")
+		(match_operand:SF 3 "fp_arith_reg_operand" "")))]
+  "TARGET_SH2E || TARGET_SHMEDIA_FPU"
+{
+  if (TARGET_SH2E)
+    {
+      emit_sf_insn (gen_fmasf4_i (operands[0], operands[1], operands[2],
+				  operands[3], get_fpscr_rtx ()));
+      DONE;
+    }
+})
 
-(define_insn "*macsf3"
+(define_insn "fmasf4_i"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%w")
-			  (match_operand:SF 2 "fp_arith_reg_operand" "f"))
-		 (match_operand:SF 3 "arith_reg_operand" "0")))
+	(fma:SF (match_operand:SF 1 "fp_arith_reg_operand" "w")
+		(match_operand:SF 2 "fp_arith_reg_operand" "f")
+		(match_operand:SF 3 "fp_arith_reg_operand" "0")))
    (use (match_operand:PSI 4 "fpscr_operand" "c"))]
-  "TARGET_SH2E && TARGET_FMAC"
-  "fmac	fr0,%2,%0"
+  "TARGET_SH2E"
+  "fmac	%1,%2,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
+
+(define_insn "fmasf4_media"
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(fma:SF (match_operand:SF 1 "fp_arith_reg_operand" "f")
+		(match_operand:SF 2 "fp_arith_reg_operand" "f")
+		(match_operand:SF 3 "fp_arith_reg_operand" "0")))]
+  "TARGET_SHMEDIA_FPU"
+  "fmac.s %1, %2, %0"
+  [(set_attr "type" "fparith_media")])
 
 (define_expand "divsf3"
   [(set (match_operand:SF 0 "arith_reg_operand" "")
