@@ -1,3 +1,9 @@
+2012-06-11  Roland McGrath  <mcgrathr@google.com>
+
+	* gthr-posix.h [neither FreeBSD nor Solaris] (__gthread_active_p):
+	If __GLIBC__ is defined, refer to __pthread_key_create instead of
+	pthread_cancel.
+
 2012-06-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/32/sfp-machine.h (__gcc_CMPtype, CMPtype,
