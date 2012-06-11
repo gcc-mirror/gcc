@@ -1,3 +1,13 @@
+2012-06-11  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (aliases_everything_p): Remove.
+	(DIFFERENT_ALIAS_SETS_P): Likewise.
+	(true_dependence_1): Use mems_in_disjoint_alias_sets_p directly.
+	Do not use aliases_everything_p or special-case ANDs.  Do not
+	special-case BLKmode moves.
+	(may_alias_p): Likewise.  Handle BLKmode similar like everywhere
+	- for SCATCH only.  
+
 2012-06-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	Fix CRIS build errors with --enable-build-with-cxx.
