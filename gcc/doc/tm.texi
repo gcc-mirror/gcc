@@ -5529,8 +5529,10 @@ The code of the hook should not alter the substructure of
 @var{x}.  If it transforms @var{x} into a more legitimate form, it
 should return the new @var{x}.
 
-It is not necessary for this hook to come up with a legitimate address.
-The compiler has standard ways of doing so in all cases.  In fact, it
+It is not necessary for this hook to come up with a legitimate address,
+with the exception of native TLS addresses (@pxref{Emulated TLS}).
+The compiler has standard ways of doing so in all cases.  In fact, if
+the target supports only emulated TLS, it
 is safe to omit this hook or make it return @var{x} if it cannot find
 a valid way to legitimize the address.  But often a machine-dependent
 strategy can generate better code.
