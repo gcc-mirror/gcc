@@ -1,3 +1,10 @@
+2012-06-11  Mike Stump  <mikestump@comcast.net>
+
+	* emit-rtl.c (init_emit_once): Iterate through the
+	MODE_PARTIAL_INT modes with MIN_MODE_PARTIAL_INT and
+	MAX_MODE_PARTIAL_INT, as GET_MODE_WIDER_MODE doesn't step through
+	all the MIN_MODE_PARTIAL_INT modes anymore.
+
 2012-06-12  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* gcc/config/mips/mips-tables.opt (xlp): Fix merge typo.

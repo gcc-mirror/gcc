@@ -5699,9 +5699,9 @@ init_emit_once (void)
 	   mode = GET_MODE_WIDER_MODE (mode))
 	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
 
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_PARTIAL_INT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      for (mode = MIN_MODE_PARTIAL_INT;
+	   mode <= MAX_MODE_PARTIAL_INT;
+	   mode = (enum machine_mode)((int)(mode) + 1))
 	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
     }
 
@@ -5712,9 +5712,9 @@ init_emit_once (void)
        mode = GET_MODE_WIDER_MODE (mode))
     const_tiny_rtx[3][(int) mode] = constm1_rtx;
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_PARTIAL_INT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  for (mode = MIN_MODE_PARTIAL_INT;
+       mode <= MAX_MODE_PARTIAL_INT;
+       mode = (enum machine_mode)((int)(mode) + 1))
     const_tiny_rtx[3][(int) mode] = constm1_rtx;
       
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_INT);
