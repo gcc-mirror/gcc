@@ -1,3 +1,7 @@
+2012-06-11  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_trampoline_init): Split large constants.
+
 2012-06-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/tm.texi.in (Addressing Modes) <TARGET_LEGITIMIZE_ADDRESS>:
