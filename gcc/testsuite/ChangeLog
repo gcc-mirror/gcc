@@ -6,7 +6,7 @@
 
 2012-06-11  Richard Guenther  <rguenther@suse.de>
 
-	PR c++/53616
+	PR c++/53605
 	* g++.dg/ext/pr53605.C: New testcase.
 
 2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>

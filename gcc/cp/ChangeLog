@@ -1,6 +1,6 @@
 2012-06-11  Richard Guenther  <rguenther@suse.de>
 
-	PR c++/53616
+	PR c++/53605
 	* mangle.c (write_array_type): Use double-ints for array domain
 	arithmetic.
 
