@@ -452,13 +452,15 @@
 2012-06-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53512
-	* sh.opt (mfsca, mfsrra): New options.
-	* sh.md (rsqrtsf2): Use TARGET_FPU_ANY and TARGET_FSRRA	condition.
+	* config/sh/sh.opt (mfsca, mfsrra): New options.
+	* config/sh/sh.md (rsqrtsf2): Use TARGET_FPU_ANY and TARGET_FSRRA
+	condition.
 	(fsca): Use TARGET_FPU_ANY and TARGET_FSCA condition.
 	(sinssf2, cossf2): Fold expanders to ...
 	(sincossf3): ... this new expander.  Use TARGET_FPU_ANY and
 	TARGET_FSCA condition.
-	* sh.c (sh_option_override): Handle TARGET_FSRRA and TARGET_FSCA.
+	* config/sh/sh.c (sh_option_override): Handle TARGET_FSRRA and
+	TARGET_FSCA.
 	* doc/invoke.texi (SH Options): Add descriptions for -mfsca,
 	-mno-fsca, -mfsrra, -mno-fsrra.
 
@@ -501,7 +503,8 @@
 	* varasm.c (output_constructor_bitfield): Likewise.
 	* tree-vrp.c (register_edge_assert_for_2): Likewise.
 	* double-int.c (rshift_double, lshift_double): Likewise.
-	* double-int.h (double_int_fits_in_uhwi_p, double_int, double_int): Likewise.
+	* double-int.h (double_int_fits_in_uhwi_p, double_int, double_int):
+	Likewise.
 	* simplify-rtx.c (mode_signbit_p)
 	(simplify_const_unary_operation, simplify_binary_operation_1)
 	(simplify_immed_subreg): Likewise.
