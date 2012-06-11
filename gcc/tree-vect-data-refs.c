@@ -2844,11 +2844,26 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
     }
   else
     {
+      gimple_stmt_iterator gsi;
+
       bb = BB_VINFO_BB (bb_vinfo);
-      res = compute_data_dependences_for_bb (bb, true,
-					     &BB_VINFO_DATAREFS (bb_vinfo),
-					     &BB_VINFO_DDRS (bb_vinfo));
-      if (!res)
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  if (!find_data_references_in_stmt (NULL, stmt,
+					     &BB_VINFO_DATAREFS (bb_vinfo)))
+	    {
+	      /* Mark the rest of the basic-block as unvectorizable.  */
+	      for (; !gsi_end_p (gsi); gsi_next (&gsi))
+		{
+		  stmt = gsi_stmt (gsi);
+		  STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)) = false;
+		}
+	      break;
+	    }
+	}
+      if (!compute_all_dependences (BB_VINFO_DATAREFS (bb_vinfo),
+				    &BB_VINFO_DDRS (bb_vinfo), NULL, true))
 	{
 	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	    fprintf (vect_dump, "not vectorized: basic block contains function"

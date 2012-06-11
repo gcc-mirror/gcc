@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "decl.h"
 #include "intl.h"
-#include "output.h"
 #include "toplev.h"
 #include "hashtab.h"
 #include "tm_p.h"
@@ -4528,18 +4527,6 @@ start_decl (const cp_declarator *declarator,
   if (decl == error_mark_node)
     return error_mark_node;
 
-  /* Tell the back end to use or not use .common as appropriate.  If we say
-     -fconserve-space, we want this to save .data space, at the expense of
-     wrong semantics.  If we say -fno-conserve-space, we want this to
-     produce errors about redefs; to do this we force variables into the
-     data segment.  */
-  if (flag_conserve_space
-      && TREE_CODE (decl) == VAR_DECL
-      && TREE_PUBLIC (decl)
-      && !DECL_THREAD_LOCAL_P (decl)
-      && !have_global_bss_p ())
-    DECL_COMMON (decl) = 1;
-
   if (TREE_CODE (decl) == VAR_DECL
       && DECL_NAMESPACE_SCOPE_P (decl) && !TREE_PUBLIC (decl) && !was_public
       && !DECL_THIS_STATIC (decl) && !DECL_ARTIFICIAL (decl))
@@ -8104,9 +8091,10 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
       processing_template_decl = 0;
       itype = cp_build_binary_op (input_location,
 				  MINUS_EXPR,
-				  cp_convert (ssizetype, size),
-				  cp_convert (ssizetype, integer_one_node),
-				  tf_warning_or_error);
+				  cp_convert (ssizetype, size, complain),
+				  cp_convert (ssizetype, integer_one_node,
+					      complain),
+				  complain);
       itype = fold (itype);
       processing_template_decl = saved_processing_template_decl;
 
@@ -12396,6 +12384,12 @@ finish_enum_value_list (tree enumtype)
   for (t = TYPE_MAIN_VARIANT (enumtype); t; t = TYPE_NEXT_VARIANT (t))
     TYPE_VALUES (t) = TYPE_VALUES (enumtype);
 
+  if (current_class_type
+      && COMPLETE_TYPE_P (current_class_type)
+      && UNSCOPED_ENUM_P (enumtype))
+    insert_late_enum_def_into_classtype_sorted_fields (enumtype,
+						       current_class_type);
+
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (enumtype, namespace_bindings_p ());
 }
@@ -13290,11 +13284,12 @@ finish_destructor_body (void)
       an implicit definition), non-placement operator delete shall
       be looked up in the scope of the destructor's class and if
       found shall be accessible and unambiguous.  */
-      exprstmt = build_op_delete_call(DELETE_EXPR, current_class_ptr,
-				      virtual_size,
-				      /*global_p=*/false,
-				      /*placement=*/NULL_TREE,
-				      /*alloc_fn=*/NULL_TREE);
+      exprstmt = build_op_delete_call (DELETE_EXPR, current_class_ptr,
+				       virtual_size,
+				       /*global_p=*/false,
+				       /*placement=*/NULL_TREE,
+				       /*alloc_fn=*/NULL_TREE,
+				       tf_warning_or_error);
 
       if_stmt = begin_if_stmt ();
       finish_if_stmt_cond (build2 (BIT_AND_EXPR, integer_type_node,

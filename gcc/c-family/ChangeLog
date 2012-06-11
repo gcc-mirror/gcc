@@ -1,3 +1,24 @@
+2012-06-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c.opt (fconserve-space): Turn into a no-op.
+
+2012-06-04   Sterling Augustine  <saugustine@google.com>
+
+	* c-pretty-print.h (pp_c_flag_gnu_v3): New enumerator.
+	* c-pretty-print.c (pp_c_specifier_qualifier_list): Check it at
+	both the start and end of the function.
+
+2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-common.c: Do not include output.h.
+	* c-pragma.c: Likewise.
+
+2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* error.c (dump_decl): Check pp_c_flag_gnu_v3.
+	(decl_as_dwarf_string, lang_decl_dwarf_name): New functions.
+	(lang_decl_name): Handle namespace decls.
+
 2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-ada-spec.c: Do not include output.h.

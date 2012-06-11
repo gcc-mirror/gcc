@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "cp-tree.h"
 #include "decl.h"
-#include "output.h"
 #include "toplev.h"
 #include "timevar.h"
 #include "cpplib.h"

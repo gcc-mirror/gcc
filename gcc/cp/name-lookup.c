@@ -1854,7 +1854,7 @@ identifier_type_value_1 (tree id)
     return REAL_IDENTIFIER_TYPE_VALUE (id);
   /* Have to search for it. It must be on the global level, now.
      Ask lookup_name not to return non-types.  */
-  id = lookup_name_real (id, 2, 1, /*block_p=*/true, 0, LOOKUP_COMPLAIN);
+  id = lookup_name_real (id, 2, 1, /*block_p=*/true, 0, 0);
   if (id)
     return TREE_TYPE (id);
   return NULL_TREE;
@@ -4345,7 +4345,6 @@ lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
     {
       struct scope_binding binding = EMPTY_SCOPE_BINDING;
 
-      flags |= LOOKUP_COMPLAIN;
       if (is_type_p)
 	flags |= LOOKUP_PREFER_TYPES;
       if (qualified_lookup_using_namespace (name, scope, &binding, flags))
@@ -4772,7 +4771,7 @@ lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
 tree
 lookup_name_nonclass (tree name)
 {
-  return lookup_name_real (name, 0, 1, /*block_p=*/true, 0, LOOKUP_COMPLAIN);
+  return lookup_name_real (name, 0, 1, /*block_p=*/true, 0, 0);
 }
 
 tree
@@ -4780,22 +4779,20 @@ lookup_function_nonclass (tree name, VEC(tree,gc) *args, bool block_p)
 {
   return
     lookup_arg_dependent (name,
-			  lookup_name_real (name, 0, 1, block_p, 0,
-					    LOOKUP_COMPLAIN),
+			  lookup_name_real (name, 0, 1, block_p, 0, 0),
 			  args, false);
 }
 
 tree
 lookup_name (tree name)
 {
-  return lookup_name_real (name, 0, 0, /*block_p=*/true, 0, LOOKUP_COMPLAIN);
+  return lookup_name_real (name, 0, 0, /*block_p=*/true, 0, 0);
 }
 
 tree
 lookup_name_prefer_type (tree name, int prefer_type)
 {
-  return lookup_name_real (name, prefer_type, 0, /*block_p=*/true,
-			   0, LOOKUP_COMPLAIN);
+  return lookup_name_real (name, prefer_type, 0, /*block_p=*/true, 0, 0);
 }
 
 /* Look up NAME for type used in elaborated name specifier in

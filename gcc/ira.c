@@ -903,6 +903,45 @@ setup_pressure_classes (void)
   setup_stack_reg_pressure_class ();
 }
 
+/* Set up IRA_UNIFORM_CLASS_P.  Uniform class is a register class
+   whose register move cost between any registers of the class is the
+   same as for all its subclasses.  We use the data to speed up the
+   2nd pass of calculations of allocno costs.  */
+static void
+setup_uniform_class_p (void)
+{
+  int i, cl, cl2, m;
+
+  for (cl = 0; cl < N_REG_CLASSES; cl++)
+    {
+      ira_uniform_class_p[cl] = false;
+      if (ira_class_hard_regs_num[cl] == 0)
+	continue;
+      /* We can not use alloc_reg_class_subclasses here because move
+	 cost hooks does not take into account that some registers are
+	 unavailable for the subtarget.  E.g. for i686, INT_SSE_REGS
+	 is element of alloc_reg_class_subclasses for GENERAL_REGS
+	 because SSE regs are unavailable.  */
+      for (i = 0; (cl2 = reg_class_subclasses[cl][i]) != LIM_REG_CLASSES; i++)
+	{
+	  if (ira_class_hard_regs_num[cl2] == 0)
+	    continue;
+      	  for (m = 0; m < NUM_MACHINE_MODES; m++)
+	    if (contains_reg_of_mode[cl][m] && contains_reg_of_mode[cl2][m])
+	      {
+		ira_init_register_move_cost_if_necessary ((enum machine_mode) m);
+		if (ira_register_move_cost[m][cl][cl]
+		    != ira_register_move_cost[m][cl2][cl2])
+		  break;
+	      }
+	  if (m < NUM_MACHINE_MODES)
+	    break;
+	}
+      if (cl2 == LIM_REG_CLASSES)
+	ira_uniform_class_p[cl] = true;
+    }
+}
+
 /* Set up IRA_ALLOCNO_CLASSES, IRA_ALLOCNO_CLASSES_NUM,
    IRA_IMPORTANT_CLASSES, and IRA_IMPORTANT_CLASSES_NUM.
 
@@ -1008,6 +1047,7 @@ setup_allocno_and_important_classes (void)
   for (j = 0; j < ira_allocno_classes_num; j++)
     ira_reg_allocno_class_p[ira_allocno_classes[j]] = true;
   setup_pressure_classes ();
+  setup_uniform_class_p ();
 }
 
 /* Setup translation in CLASS_TRANSLATE of all classes into a class
@@ -1292,10 +1332,27 @@ setup_reg_class_relations (void)
     }
 }
 
-/* Output all possible allocno classes and the translation map into
-   file F.  */
+/* Output all unifrom and important classes into file F.  */
 static void
-print_classes (FILE *f, bool pressure_p)
+print_unform_and_important_classes (FILE *f)
+{
+  static const char *const reg_class_names[] = REG_CLASS_NAMES;
+  int i, cl;
+
+  fprintf (f, "Uniform classes:\n");
+  for (cl = 0; cl < N_REG_CLASSES; cl++)
+    if (ira_uniform_class_p[cl])
+      fprintf (f, " %s", reg_class_names[cl]);
+  fprintf (f, "\nImportant classes:\n");
+  for (i = 0; i < ira_important_classes_num; i++)
+    fprintf (f, " %s", reg_class_names[ira_important_classes[i]]);
+  fprintf (f, "\n");
+}
+
+/* Output all possible allocno or pressure classes and their
+   translation map into file F.  */
+static void
+print_translated_classes (FILE *f, bool pressure_p)
 {
   int classes_num = (pressure_p
 		     ? ira_pressure_classes_num : ira_allocno_classes_num);
@@ -1321,8 +1378,9 @@ print_classes (FILE *f, bool pressure_p)
 void
 ira_debug_allocno_classes (void)
 {
-  print_classes (stderr, false);
-  print_classes (stderr, true);
+  print_unform_and_important_classes (stderr);
+  print_translated_classes (stderr, false);
+  print_translated_classes (stderr, true);
 }
 
 /* Set up different arrays concerning class subsets, allocno and

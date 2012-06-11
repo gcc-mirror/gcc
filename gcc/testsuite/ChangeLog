@@ -1,3 +1,150 @@
+2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/constant4.adb: New test.
+	* gnat.dg/constant4_pkg.ads: New helper.
+
+2012-06-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/52552
+	* gfortran.dg/allocate_alloc_opt_1.f90: Modified.
+	* gfortran.dg/allocate_class_1.f90: Modified.
+	* gfortran.dg/allocate_with_typespec_4.f90: Modified.
+	* gfortran.dg/allocate_class_2.f90: New.
+
+2012-06-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/53535
+	* gcc.dg/pr46647.c: xfail for cris-* and crisv32-*.
+
+2012-06-07  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52861
+	* gfortran.dg/string_assign_2.f90:  New test case.
+
+2012-06-07  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52861
+	* gfortran.dg/string_assign_1.f90:  New test case.
+
+2012-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/53580
+	* gcc.dg/gomp/nesting-1.c: Expect errors rather than warnings.
+	* gcc.dg/gomp/critical-4.c: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.1.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.3.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.4.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.6.f90: Likewise.
+	* c-c++-common/gomp/pr53580.c: New test.
+
+2012-06-07  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/51214
+	* g++.dg/cpp0x/forw_enum11.C: New.
+
+2012-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53567
+	* g++.dg/cpp0x/alias-decl-19.C: New.
+
+2012-06-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* g++.old-deja/g++.brendan/array1.C: Remove dg-options.
+
+2012-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-os-support.h (XCR_XFEATURE_ENABLED_MASK): New.
+	(XSTATE_FP): Ditto.
+	(XSTATE_SSE): Ditto.
+	(XSTATE_YMM): Ditto.
+	(avx_os_support): Use new defines.
+
+2012-06-06  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/32380
+	* gfortran.dg/vect/pr32380.f: Adjust number of expected vectorized
+	loops.
+
+2012-06-06  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/52841
+	* g++.dg/cpp0x/pr52841.C: New testcase.
+
+2012-06-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53081
+	* gcc.dg/tree-ssa/ldist-20.c: New testcase.
+	* gcc.dg/tree-ssa/loop-19.c: Add -fno-tree-loop-distribute-patterns.
+
+2012-06-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr53487.c: New test.
+
+2012-06-05  Pat Haugen <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/lhs-1.c: Use parm instead of stack space.
+
+2012-06-05  Edmar Wienskoski  <edmar@freescale.com>
+
+	* gcc.dg/tree-ssa/vector-3.c: Adjust regular expression.
+
+2012-06-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30442
+	* gcc.dg/vect/bb-slp-30.c: New testcase.
+
+2012-06-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53081
+	* gcc.dg/tree-ssa/ldist-19.c: New testcase.
+	* gcc.c-torture/execute/builtins/builtins.exp: Always pass
+	-fno-tree-loop-distribute-patterns.
+
+2012-06-05  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/savres.c: Add -mdynamic-no-pic for darwin.
+	Check static chain in nested funcs.
+
+2012-06-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50619
+	* gfortran.dg/init_flag_10.f90: New.
+
+2012-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53524
+	* g++.dg/warn/Wenum-compare-no-2: New.
+
+2012-06-04  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/53463
+	* g++.dg/cpp/limits.C: New test.
+	* g++.dg/parse/error19.C: Adjust.
+	* g++.dg/warn/Wconversion-real-integer2.C: Likewise.
+	* g++.dg/warn/pr35635.C: Likewise.
+	* g++.old-deja/g++.pt/assign1.C: Likewise.
+
+2012-06-04  Edmar Wienskoski  <edmar@freescale.com>
+
+	PR target/53559
+	* gcc.target/powerpc/cell_builtin_1.c: New test case.
+	* gcc.target/powerpc/cell_builtin_2.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_3.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_4.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_5.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_6.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_7.c: Ditto.
+	* gcc.target/powerpc/cell_builtin_8.c: Ditto.
+
+2012-06-04  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/debug/dwarf2/nested-3.C: Allow for | comments.
+
+2012-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53550
+	* gcc.dg/pr53550.c: New test.
+
 2012-06-04  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ldist-11.c: Enable -ftree-loop-distribute-patterns.
@@ -95,7 +242,7 @@
 	arm32 to targets.
 	* gcc.dg/vect/slp-perm-8.c (main): Prevent vectorization
 	of the initialization loop.
-        (dg-final): Adjust the expected number of vectorized loops depending
+	(dg-final): Adjust the expected number of vectorized loops depending
 	on vect_char_mult target selector.
 
 2012-05-31  Hans-Peter Nilsson  <hp@axis.com>
@@ -1027,7 +1174,7 @@
 	* gcc.target/cris/peep2-andu2.c: Tweak expected assembly
 	code to match current output and cover new peephole2 pattern.
 
-2012-04-27   Ollie Wild  <aaw@google.com>
+2012-04-27  Ollie Wild  <aaw@google.com>
 
 	* g++.dg/cpp0x/Wliteral-suffix.c: New test.
 

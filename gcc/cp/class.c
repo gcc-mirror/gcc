@@ -139,6 +139,7 @@ static void build_vtbl_initializer (tree, tree, tree, tree, int *,
 				    VEC(constructor_elt,gc) **);
 static int count_fields (tree);
 static int add_fields_to_record_type (tree, struct sorted_fields_type*, int);
+static void insert_into_classtype_sorted_fields (tree, tree, int);
 static bool check_bitfield_decl (tree);
 static void check_field_decl (tree, tree, int *, int *, int *);
 static void check_field_decls (tree, tree *, int *, int *);
@@ -366,7 +367,7 @@ build_base_path (enum tree_code code,
   /* Now that we've saved expr, build the real null test.  */
   if (null_test)
     {
-      tree zero = cp_convert (TREE_TYPE (expr), nullptr_node);
+      tree zero = cp_convert (TREE_TYPE (expr), nullptr_node, complain);
       null_test = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
 			       expr, zero);
     }
@@ -2832,8 +2833,9 @@ add_implicitly_declared_members (tree t,
   declare_virt_assop_and_dtor (t);
 }
 
-/* Subroutine of finish_struct_1.  Recursively count the number of fields
-   in TYPE, including anonymous union members.  */
+/* Subroutine of insert_into_classtype_sorted_fields.  Recursively
+   count the number of fields in TYPE, including anonymous union
+   members.  */
 
 static int
 count_fields (tree fields)
@@ -2850,8 +2852,9 @@ count_fields (tree fields)
   return n_fields;
 }
 
-/* Subroutine of finish_struct_1.  Recursively add all the fields in the
-   TREE_LIST FIELDS to the SORTED_FIELDS_TYPE elts, starting at offset IDX.  */
+/* Subroutine of insert_into_classtype_sorted_fields.  Recursively add
+   all the fields in the TREE_LIST FIELDS to the SORTED_FIELDS_TYPE
+   elts, starting at offset IDX.  */
 
 static int
 add_fields_to_record_type (tree fields, struct sorted_fields_type *field_vec, int idx)
@@ -2864,6 +2867,20 @@ add_fields_to_record_type (tree fields, struct sorted_fields_type *field_vec, in
       else
 	field_vec->elts[idx++] = x;
     }
+  return idx;
+}
+
+/* Add all of the enum values of ENUMTYPE, to the FIELD_VEC elts,
+   starting at offset IDX.  */
+
+static int
+add_enum_fields_to_record_type (tree enumtype,
+				struct sorted_fields_type *field_vec,
+				int idx)
+{
+  tree values;
+  for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
+      field_vec->elts[idx++] = TREE_VALUE (values);
   return idx;
 }
 
@@ -5994,7 +6011,6 @@ finish_struct_1 (tree t)
   tree x;
   /* A TREE_LIST.  The TREE_VALUE of each node is a FUNCTION_DECL.  */
   tree virtuals = NULL_TREE;
-  int n_fields = 0;
 
   if (COMPLETE_TYPE_P (t))
     {
@@ -6112,15 +6128,7 @@ finish_struct_1 (tree t)
      ultimately as the search bores through the inheritance
      hierarchy), and we want this failure to occur quickly.  */
 
-  n_fields = count_fields (TYPE_FIELDS (t));
-  if (n_fields > 7)
-    {
-      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
-      add_fields_to_record_type (TYPE_FIELDS (t), field_vec, 0);
-      qsort (field_vec->elts, n_fields, sizeof (tree),
-	     field_decl_cmp);
-      CLASSTYPE_SORTED_FIELDS (t) = field_vec;
-    }
+  insert_into_classtype_sorted_fields (TYPE_FIELDS (t), t, 8);
 
   /* Complain if one of the field types requires lower visibility.  */
   constrain_class_visibility (t);
@@ -6190,6 +6198,45 @@ finish_struct_1 (tree t)
 	    }
 	  TYPE_TRANSPARENT_AGGR (t) = 0;
 	}
+    }
+}
+
+/* Insert FIELDS into T for the sorted case if the FIELDS count is
+   equal to THRESHOLD or greater than THRESHOLD.  */
+
+static void 
+insert_into_classtype_sorted_fields (tree fields, tree t, int threshold)
+{
+  int n_fields = count_fields (fields);
+  if (n_fields >= threshold)
+    {
+      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
+      add_fields_to_record_type (fields, field_vec, 0);
+      qsort (field_vec->elts, n_fields, sizeof (tree), field_decl_cmp);
+      CLASSTYPE_SORTED_FIELDS (t) = field_vec;
+    }
+}
+
+/* Insert lately defined enum ENUMTYPE into T for the sorted case.  */
+
+void
+insert_late_enum_def_into_classtype_sorted_fields (tree enumtype, tree t)
+{
+  struct sorted_fields_type *sorted_fields = CLASSTYPE_SORTED_FIELDS (t);
+  if (sorted_fields)
+    {
+      int i;
+      int n_fields
+	= list_length (TYPE_VALUES (enumtype)) + sorted_fields->len;
+      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
+      
+      for (i = 0; i < sorted_fields->len; ++i)
+	field_vec->elts[i] = sorted_fields->elts[i];
+
+      add_enum_fields_to_record_type (enumtype, field_vec,
+				      sorted_fields->len);
+      qsort (field_vec->elts, n_fields, sizeof (tree), field_decl_cmp);
+      CLASSTYPE_SORTED_FIELDS (t) = field_vec;
     }
 }
 

@@ -1019,7 +1019,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      order-of-elaboration issue here.  */
   gnu_result_type = get_unpadded_type (gnat_temp_type);
 
-  /* If this is a non-imported scalar constant with an address clause,
+  /* If this is a non-imported elementary constant with an address clause,
      retrieve the value instead of a pointer to be dereferenced unless
      an lvalue is required.  This is generally more efficient and actually
      required if this is a static expression because it might be used
@@ -1028,7 +1028,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      volatile-ness short-circuit here since Volatile constants must be
      imported per C.6.  */
   if (Ekind (gnat_temp) == E_Constant
-      && Is_Scalar_Type (gnat_temp_type)
+      && Is_Elementary_Type (gnat_temp_type)
       && !Is_Imported (gnat_temp)
       && Present (Address_Clause (gnat_temp)))
     {
@@ -1080,7 +1080,10 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	  = convert (build_pointer_type (gnu_result_type), gnu_result);
 
       /* If it's a CONST_DECL, return the underlying constant like below.  */
-      else if (TREE_CODE (gnu_result) == CONST_DECL)
+      else if (TREE_CODE (gnu_result) == CONST_DECL
+	       && !(DECL_CONST_ADDRESS_P (gnu_result)
+		    && lvalue_required_p (gnat_node, gnu_result_type, true,
+					  true, false)))
 	gnu_result = DECL_INITIAL (gnu_result);
 
       /* If it's a renaming pointer and we are at the right binding level,

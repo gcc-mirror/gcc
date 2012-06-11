@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "toplev.h"
 #include "flags.h"
-#include "output.h"
 #include "timevar.h"
 #include "diagnostic.h"
 #include "cgraph.h"
@@ -565,7 +564,8 @@ finish_goto_stmt (tree destination)
       destination = mark_rvalue_use (destination);
       if (!processing_template_decl)
 	{
-	  destination = cp_convert (ptr_type_node, destination);
+	  destination = cp_convert (ptr_type_node, destination,
+				    tf_warning_or_error);
 	  if (error_operand_p (destination))
 	    return NULL_TREE;
 	}
@@ -4527,7 +4527,8 @@ handle_omp_for_class_iterator (int i, location_t locus, tree declv, tree initv,
 		  if (error_operand_p (iter_incr))
 		    return true;
 		  incr = TREE_OPERAND (rhs, 1);
-		  incr = cp_convert (TREE_TYPE (diff), incr);
+		  incr = cp_convert (TREE_TYPE (diff), incr,
+				     tf_warning_or_error);
 		  if (TREE_CODE (rhs) == MINUS_EXPR)
 		    {
 		      incr = build1 (NEGATE_EXPR, TREE_TYPE (diff), incr);
@@ -4582,7 +4583,7 @@ handle_omp_for_class_iterator (int i, location_t locus, tree declv, tree initv,
       return true;
     }
 
-  incr = cp_convert (TREE_TYPE (diff), incr);
+  incr = cp_convert (TREE_TYPE (diff), incr, tf_warning_or_error);
   for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
 	&& OMP_CLAUSE_DECL (c) == iter)
@@ -5131,7 +5132,7 @@ finish_static_assert (tree condition, tree message, location_t location,
 
   /* Fold the expression and convert it to a boolean value. */
   condition = fold_non_dependent_expr (condition);
-  condition = cp_convert (boolean_type_node, condition);
+  condition = cp_convert (boolean_type_node, condition, tf_warning_or_error);
   condition = maybe_constant_value (condition);
 
   if (TREE_CODE (condition) == INTEGER_CST && !integer_zerop (condition))

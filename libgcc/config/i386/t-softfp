@@ -1,0 +1,1 @@
+LIB2ADD += $(srcdir)/config/i386/sfp-exceptions.c

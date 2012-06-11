@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "cp-tree.h"
 #include "flags.h"
-#include "output.h"
 #include "diagnostic-core.h"
 
 static tree
@@ -1265,7 +1264,7 @@ process_init_constructor_record (tree type, tree init,
 
       /* If this is a bitfield, now convert to the lowered type.  */
       if (type != TREE_TYPE (field))
-	next = cp_convert_and_check (TREE_TYPE (field), next);
+	next = cp_convert_and_check (TREE_TYPE (field), next, complain);
       flags |= picflag_from_initializer (next);
       CONSTRUCTOR_APPEND_ELT (v, field, next);
     }

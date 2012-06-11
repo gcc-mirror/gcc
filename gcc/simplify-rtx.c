@@ -3653,7 +3653,10 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	    unsigned HOST_WIDE_INT cnt;
 
 	    if (SHIFT_COUNT_TRUNCATED)
-	      o1 = double_int_zext (o1, GET_MODE_PRECISION (mode));
+	      {
+		o1.high = 0; 
+		o1.low &= GET_MODE_PRECISION (mode) - 1;
+	      }
 
 	    if (!double_int_fits_in_uhwi_p (o1)
 	        || double_int_to_uhwi (o1) >= GET_MODE_PRECISION (mode))

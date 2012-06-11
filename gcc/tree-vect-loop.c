@@ -4211,7 +4211,7 @@ vect_finalize_reduction:
               orig_name = PHI_RESULT (exit_phi);
               FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, orig_name)
                 {
-                  stmt_vec_info use_stmt_vinfo = vinfo_for_stmt (use_stmt);
+                  stmt_vec_info use_stmt_vinfo;
                   stmt_vec_info new_phi_vinfo;
                   tree vect_phi_init, preheader_arg, vect_phi_res, init_def;
                   basic_block bb = gimple_bb (use_stmt);
@@ -4221,11 +4221,13 @@ vect_finalize_reduction:
                      node.  */
                   if (gimple_code (use_stmt) != GIMPLE_PHI
                       || gimple_phi_num_args (use_stmt) != 2
-                      || !use_stmt_vinfo
-                      || STMT_VINFO_DEF_TYPE (use_stmt_vinfo)
-                          != vect_double_reduction_def
                       || bb->loop_father != outer_loop)
                     continue;
+                  use_stmt_vinfo = vinfo_for_stmt (use_stmt);
+                  if (!use_stmt_vinfo
+                      || STMT_VINFO_DEF_TYPE (use_stmt_vinfo)
+                          != vect_double_reduction_def)
+		    continue;
 
                   /* Create vector phi node for double reduction:
                      vs1 = phi <vs0, vs2>

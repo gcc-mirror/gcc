@@ -13,10 +13,9 @@ typedef union {
   };
 } words;
 
-unsigned int f (double d)
+unsigned int f (double d, words *u)
 {
-  words u;
-  u.val = d;
-  return u.w2;
+  u->val = d;
+  return u->w2;
 }
 

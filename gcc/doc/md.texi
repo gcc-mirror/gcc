@@ -4795,6 +4795,22 @@ corresponds to the C data type @code{double} and the @code{sinf}
 built-in function uses the mode which corresponds to the C data
 type @code{float}.
 
+@cindex @code{sincos@var{m}3} instruction pattern
+@item @samp{sincos@var{m}3}
+Store the sine of operand 2 into operand 0 and the cosine of
+operand 2 into operand 1.
+
+The @code{sin} and @code{cos} built-in functions of C always use the
+mode which corresponds to the C data type @code{double} and the
+@code{sinf} and @code{cosf} built-in function use the mode which
+corresponds to the C data type @code{float}.
+Targets that can calculate the sine and cosine simultaneously can
+implement this pattern as opposed to implementing individual
+@code{sin@var{m}2} and @code{cos@var{m}2} patterns.  The @code{sin}
+and @code{cos} built-in functions will then be expanded to the
+@code{sincos@var{m}3} pattern, with one of the output values
+left unused.
+
 @cindex @code{exp@var{m}2} instruction pattern
 @item @samp{exp@var{m}2}
 Store the exponential of operand 1 into operand 0.

@@ -1515,7 +1515,7 @@ init_optimization_passes (void)
       struct opt_pass **p = &pass_rest_of_compilation.pass.sub;
       NEXT_PASS (pass_instantiate_virtual_regs);
       NEXT_PASS (pass_into_cfg_layout_mode);
-      NEXT_PASS (pass_jump2);
+      NEXT_PASS (pass_jump);
       NEXT_PASS (pass_lower_subreg);
       NEXT_PASS (pass_df_initialize_opt);
       NEXT_PASS (pass_cse);
@@ -1577,6 +1577,7 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_thread_prologue_and_epilogue);
 	  NEXT_PASS (pass_rtl_dse2);
 	  NEXT_PASS (pass_stack_adjustments);
+	  NEXT_PASS (pass_jump2);
 	  NEXT_PASS (pass_peephole2);
 	  NEXT_PASS (pass_if_after_reload);
 	  NEXT_PASS (pass_regrename);

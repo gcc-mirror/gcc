@@ -21,7 +21,7 @@ subroutine not_an_f03_intrinsic
    allocate(real*8 :: y(1))       ! { dg-error "Invalid type-spec at" }
    allocate(real*4 :: x8)         ! { dg-error "Invalid type-spec at" }
    allocate(real*4 :: y8(1))      ! { dg-error "Invalid type-spec at" }
-   allocate(double complex :: d1) ! { dg-error "neither a nonprocedure pointer nor an allocatable" }
+   allocate(double complex :: d1) ! { dg-error "neither a data pointer nor an allocatable" }
    allocate(real_type :: b)
    allocate(real_type :: c(1))
 

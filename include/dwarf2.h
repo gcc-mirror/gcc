@@ -333,6 +333,11 @@ enum dwarf_macro_record_type
     DW_MACRO_GNU_define_indirect = 5,
     DW_MACRO_GNU_undef_indirect = 6,
     DW_MACRO_GNU_transparent_include = 7,
+    /* Extensions for DWZ multifile.
+       See http://www.dwarfstd.org/ShowIssue.php?issue=120604.1&type=open .  */
+    DW_MACRO_GNU_define_indirect_alt = 8,
+    DW_MACRO_GNU_undef_indirect_alt = 9,
+    DW_MACRO_GNU_transparent_include_alt = 10,
     DW_MACRO_GNU_lo_user = 0xe0,
     DW_MACRO_GNU_hi_user = 0xff
   };

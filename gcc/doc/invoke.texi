@@ -182,7 +182,7 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control  -fcheck-new @gol
--fconserve-space  -fconstexpr-depth=@var{n}  -ffriend-injection @gol
+-fconstexpr-depth=@var{n}  -ffriend-injection @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -ffor-scope  -fno-for-scope  -fno-gnu-keywords @gol
@@ -1946,18 +1946,6 @@ return value even without this option.  In all other cases, when
 @code{operator new} has a non-empty exception specification, memory
 exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @samp{new (nothrow)}.
-
-@item -fconserve-space
-@opindex fconserve-space
-Put uninitialized or run-time-initialized global variables into the
-common segment, as C does.  This saves space in the executable at the
-cost of not diagnosing duplicate definitions.  If you compile with this
-flag and your program mysteriously crashes after @code{main()} has
-completed, you may have an object that is being destroyed twice because
-two definitions are merged.
-
-This option is no longer useful on most targets, now that support has
-been added for putting variables into BSS without making them common.
 
 @item -fconstexpr-depth=@var{n}
 @opindex fconstexpr-depth
@@ -4297,9 +4285,10 @@ while} statement.  This warning is also enabled by @option{-Wextra}.
 @item -Wenum-compare
 @opindex Wenum-compare
 @opindex Wno-enum-compare
-Warn about a comparison between values of different enumerated types. In C++
-this warning is enabled by default.  In C this warning is enabled by
-@option{-Wall}.
+Warn about a comparison between values of different enumerated types.
+In C++ enumeral mismatches in conditional expressions are also
+diagnosed and the warning is enabled by default.  In C this warning is 
+enabled by @option{-Wall}.
 
 @item -Wjump-misses-init @r{(C, Objective-C only)}
 @opindex Wjump-misses-init
@@ -9349,6 +9338,17 @@ Set the maximum number of instructions executed in parallel in
 reassociated tree. This parameter overrides target dependent
 heuristics used by default if has non zero value.
 
+@item sched-pressure-algorithm
+Choose between the two available implementations of
+@option{-fsched-pressure}.  Algorithm 1 is the original implementation
+and is the more likely to prevent instructions from being reordered.
+Algorithm 2 was designed to be a compromise between the relatively
+conservative approach taken by algorithm 1 and the rather aggressive
+approach taken by the default scheduler.  It relies more heavily on
+having a regular register file and accurate register pressure classes.
+See @file{haifa-sched.c} in the GCC sources for more details.
+
+The default choice depends on the target.
 @end table
 @end table
 
@@ -16629,11 +16629,13 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{603e}, @samp{604}, @samp{604e}, @samp{620}, @samp{630}, @samp{740},
 @samp{7400}, @samp{7450}, @samp{750}, @samp{801}, @samp{821}, @samp{823},
 @samp{860}, @samp{970}, @samp{8540}, @samp{a2}, @samp{e300c2},
-@samp{e300c3}, @samp{e500mc}, @samp{e500mc64}, @samp{ec603e}, @samp{G3},
-@samp{G4}, @samp{G5}, @samp{titan}, @samp{power}, @samp{power2}, @samp{power3},
-@samp{power4}, @samp{power5}, @samp{power5+}, @samp{power6}, @samp{power6x},
-@samp{power7}, @samp{common}, @samp{powerpc}, @samp{powerpc64}, @samp{rios},
-@samp{rios1}, @samp{rios2}, @samp{rsc}, and @samp{rs64}.
+@samp{e300c3}, @samp{e500mc}, @samp{e500mc64}, @samp{e5500},
+@samp{e6500}, @samp{ec603e}, @samp{G3}, @samp{G4}, @samp{G5},
+@samp{titan}, @samp{power}, @samp{power2}, @samp{power3},
+@samp{power4}, @samp{power5}, @samp{power5+}, @samp{power6},
+@samp{power6x}, @samp{power7}, @samp{common}, @samp{powerpc},
+@samp{powerpc64}, @samp{rios}, @samp{rios1}, @samp{rios2}, @samp{rsc},
+and @samp{rs64}.
 
 @option{-mcpu=common} selects a completely generic processor.  Code
 generated under this option runs on any POWER or PowerPC processor.

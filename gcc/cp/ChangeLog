@@ -1,3 +1,96 @@
+2012-06-07  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/51214
+	* cp-tree.h (insert_late_enum_def_into_classtype_sorted_fields):
+	Declare.
+	* class.c (insert_into_classtype_sorted_fields): New.
+	(add_enum_fields_to_record_type): New.
+	(count_fields): Adjust the comment.
+	(add_fields_to_record_type): Likewise.
+	(finish_struct_1): Move the code that inserts the fields for the
+	sorted case, into insert_into_classtype_sorted_fields, and call
+	it.
+	(insert_late_enum_def_into_classtype_sorted_fields): Define.
+	* decl.c (finish_enum_value_list): Call
+	insert_late_enum_def_into_classtype_sorted_fields if a late enum
+	definition is encountered.
+
+2012-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53567
+	* typeck.c (cp_perform_integral_promotions): New, like
+	perform_integral_promotions but also takes a tsubst_flags_t parameter.
+	(pointer_diff): Add tsubst_flags_t parameter.
+	(decay_conversion, cp_default_conversion, cp_build_array_ref,
+	cp_build_binary_op, cp_build_unary_op, build_static_cast_1,
+	build_reinterpret_cast_1, cp_build_modify_expr,
+	convert_for_assignment): Adjust.
+	* optimize.c (build_delete_destructor_body): Adjust.
+	* init.c (expand_virtual_init, expand_default_init, build_new_1,
+	build_new, build_vec_delete_1, build_vec_init, build_delete): Adjust.
+	(construct_virtual_base): Adjust LOOKUP_COMPLAIN -> 0.
+	* class.c (build_base_path): Adjust.
+	* decl.c (compute_array_index_type, finish_destructor_body): Likewise.
+	* method.c (synthesized_method_walk): Adjust flag and complain.
+	* rtti.c (ifnonnull): Add tsubst_flags_t parameter.
+	(build_typeid, build_dynamic_cast_1): Adjust.
+	* except.c (initialize_handler_parm): Likewise.
+	* typeck2.c (process_init_constructor_record): Likewise.
+	* pt.c (tsubst_friend_class): Don't change flags.
+	* semantics.c (finish_goto_stmt, handle_omp_for_class_iterator,
+	finish_static_assert): Likewise.
+	* parser.c (cp_parser_lookup_name): Just pass 0 as flags to
+	lookup_name_real.
+	* call.c (build_op_delete_call): Add tsubst_flags_t parameter.
+	(convert_like_real, convert_arg_to_ellipsis, convert_for_arg_passing):
+	Adjust.
+	(standard_conversion): Adjust LOOKUP_COMPLAIN -> 0.
+	(implicit_conversion): Mask out tf_error with a FIXME.
+	(build_user_type_conversion_1, build_new_op_1, build_over_call): Use
+	complain & tf_error instead of flags & LOOKUP_COMPLAIN.
+	* cvt.c (cp_convert_to_pointer, convert_to_pointer_force,
+	build_up_reference, convert_to_reference, cp_convert,
+	cp_convert_and_check, ocp_convert, convert_force): Add tsubst_flags_t
+	parameter.
+	(convert_to_reference, ocp_convert): Use complain & tf_error instead
+	of flags & LOOKUP_COMPLAIN.
+	(convert_force): Adjust LOOKUP_COMPLAIN -> 0.
+	* name-lookup.c (identifier_type_value_1, lookup_qualified_name,
+	lookup_name_real, lookup_function_nonclass, lookup_name,
+	lookup_name_prefer_type): Adjust LOOKUP_COMPLAIN -> 0.
+	* cp-tree.h: Adjust prototypes; remove LOOKUP_COMPLAIN.
+
+2012-06-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* decl.c: Do not include output.h.
+	(start_decl): Remove code for flag_conserve_space.
+
+2012-06-06  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/52841
+	* parser.c (cp_parser_alias_declaration): Return earlier
+	if an error occured.
+
+2012-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53524
+	* call.c (build_conditional_expr_1): Use OPT_Wenum_compare
+	to control enumeral mismatch in conditional expression too.
+
+2012-06-04   Sterling Augustine  <saugustine@google.com>
+
+	* cp-tree.h: Declare decl_as_dwarf_string, lang_decl_dwarf_name.
+	* cp-lang.c (cxx_dwarf_name): Call them.
+
+2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* semantics.c: Do not include output.h.
+	* decl2.c: Likewise.
+	* friend.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+	* Make-lang.in: Fix dependencies.
+
 2012-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52973

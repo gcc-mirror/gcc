@@ -1,3 +1,9 @@
+2012-06-04  Robert Mason  <rbmj@verizon.net>
+	    Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53456
+	* intrinsics/time_1.h (gf_cputime): Fix typo in clock_gettime branch.
+
 2012-06-01  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsics/chmod.c (chmod_func): On MinGW, don't set is_dir and

@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "flags.h"
 #include "basic-block.h"
-#include "output.h"
 #include "reload.h"
 #include "target.h"
 #include "timevar.h"

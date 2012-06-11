@@ -4371,16 +4371,13 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
    behaviors relevant to them.  */
 /* Check for access violations.  */
 #define LOOKUP_PROTECT (1 << 0)
-/* Complain if no suitable member function matching the arguments is
-   found.  */
-#define LOOKUP_COMPLAIN (1 << 1)
-#define LOOKUP_NORMAL (LOOKUP_PROTECT | LOOKUP_COMPLAIN)
+#define LOOKUP_NORMAL (LOOKUP_PROTECT)
 /* Even if the function found by lookup is a virtual function, it
    should be called directly.  */
-#define LOOKUP_NONVIRTUAL (1 << 2)
+#define LOOKUP_NONVIRTUAL (1 << 1)
 /* Non-converting (i.e., "explicit") constructors are not tried.  This flag
    indicates that we are not performing direct-initialization.  */
-#define LOOKUP_ONLYCONVERTING (1 << 3)
+#define LOOKUP_ONLYCONVERTING (1 << 2)
 #define LOOKUP_IMPLICIT (LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING)
 /* If a temporary is created, it should be created so that it lives
    as long as the current variable bindings; otherwise it only lives
@@ -4388,20 +4385,20 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
    direct-initialization in cases where other parts of the compiler
    have already generated a temporary, such as reference
    initialization and the catch parameter.  */
-#define DIRECT_BIND (1 << 4)
+#define DIRECT_BIND (1 << 3)
 /* We're performing a user-defined conversion, so more user-defined
    conversions are not permitted (only built-in conversions).  */
-#define LOOKUP_NO_CONVERSION (1 << 5)
+#define LOOKUP_NO_CONVERSION (1 << 4)
 /* The user has explicitly called a destructor.  (Therefore, we do
    not need to check that the object is non-NULL before calling the
    destructor.)  */
-#define LOOKUP_DESTRUCTOR (1 << 6)
+#define LOOKUP_DESTRUCTOR (1 << 5)
 /* Do not permit references to bind to temporaries.  */
-#define LOOKUP_NO_TEMP_BIND (1 << 7)
+#define LOOKUP_NO_TEMP_BIND (1 << 6)
 /* Do not accept objects, and possibly namespaces.  */
-#define LOOKUP_PREFER_TYPES (1 << 8)
+#define LOOKUP_PREFER_TYPES (1 << 7)
 /* Do not accept objects, and possibly types.   */
-#define LOOKUP_PREFER_NAMESPACES (1 << 9)
+#define LOOKUP_PREFER_NAMESPACES (1 << 8)
 /* Accept types or namespaces.  */
 #define LOOKUP_PREFER_BOTH (LOOKUP_PREFER_TYPES | LOOKUP_PREFER_NAMESPACES)
 /* Return friend declarations and un-declared builtin functions.
@@ -4894,7 +4891,9 @@ extern tree build_new_op			(location_t, enum tree_code,
 						 tsubst_flags_t);
 extern tree build_op_call			(tree, VEC(tree,gc) **,
 						 tsubst_flags_t);
-extern tree build_op_delete_call		(enum tree_code, tree, tree, bool, tree, tree);
+extern tree build_op_delete_call		(enum tree_code, tree, tree,
+						 bool, tree, tree,
+						 tsubst_flags_t);
 extern bool can_convert				(tree, tree, tsubst_flags_t);
 extern bool can_convert_arg			(tree, tree, tree, int,
 						 tsubst_flags_t);
@@ -4999,18 +4998,22 @@ extern tree* decl_cloned_function_p		(const_tree, bool);
 extern void clone_function_decl			(tree, int);
 extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);
+extern void insert_late_enum_def_into_classtype_sorted_fields (tree, tree);
 
 /* in cvt.c */
-extern tree convert_to_reference		(tree, tree, int, int, tree);
+extern tree convert_to_reference		(tree, tree, int, int, tree,
+						 tsubst_flags_t);
 extern tree convert_from_reference		(tree);
 extern tree force_rvalue			(tree, tsubst_flags_t);
-extern tree ocp_convert				(tree, tree, int, int);
-extern tree cp_convert				(tree, tree);
-extern tree cp_convert_and_check                (tree, tree);
+extern tree ocp_convert				(tree, tree, int, int,
+						 tsubst_flags_t);
+extern tree cp_convert				(tree, tree, tsubst_flags_t);
+extern tree cp_convert_and_check                (tree, tree, tsubst_flags_t);
 extern tree cp_fold_convert			(tree, tree);
 extern tree convert_to_void			(tree, impl_conv_void,
                                  		 tsubst_flags_t);
-extern tree convert_force			(tree, tree, int);
+extern tree convert_force			(tree, tree, int,
+						 tsubst_flags_t);
 extern tree build_expr_type_conversion		(int, tree, bool);
 extern tree type_promotes_to			(tree);
 extern tree perform_qualification_conversions	(tree, tree);
@@ -5169,8 +5172,10 @@ extern const char *type_as_string		(tree, int);
 extern const char *type_as_string_translate	(tree, int);
 extern const char *decl_as_string		(tree, int);
 extern const char *decl_as_string_translate	(tree, int);
+extern const char *decl_as_dwarf_string		(tree, int);
 extern const char *expr_as_string		(tree, int);
 extern const char *lang_decl_name		(tree, int, bool);
+extern const char *lang_decl_dwarf_name		(tree, int, bool);
 extern const char *language_to_string		(enum languages);
 extern const char *class_key_or_enum_as_string	(tree);
 extern void print_instantiation_context		(void);
@@ -5899,6 +5904,7 @@ extern void check_template_keyword		(tree);
 extern bool check_raw_literal_operator		(const_tree decl);
 extern bool check_literal_operator_args		(const_tree, bool *, bool *);
 extern void maybe_warn_about_useless_cast       (tree, tree, tsubst_flags_t);
+extern tree cp_perform_integral_promotions      (tree, tsubst_flags_t);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);

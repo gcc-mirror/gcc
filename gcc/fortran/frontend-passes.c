@@ -1,5 +1,5 @@
 /* Pass manager for Fortran front end.
-   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Thomas König.
 
 This file is part of GCC.
@@ -37,6 +37,7 @@ static bool optimize_comparison (gfc_expr *, gfc_intrinsic_op);
 static bool optimize_trim (gfc_expr *);
 static bool optimize_lexical_comparison (gfc_expr *);
 static void optimize_minmaxloc (gfc_expr **);
+static bool empty_string (gfc_expr *e);
 
 /* How deep we are inside an argument list.  */
 
@@ -734,10 +735,17 @@ optimize_assignment (gfc_code * c)
   lhs = c->expr1;
   rhs = c->expr2;
 
-  /* Optimize away a = trim(b), where a is a character variable.  */
-
   if (lhs->ts.type == BT_CHARACTER)
-    remove_trim (rhs);
+    {
+      /* Optimize away a = trim(b), where a is a character variable.  */
+      remove_trim (rhs);
+
+      /* Replace a = '   ' by a = '' to optimize away a memcpy, but only
+	 for strings with non-deferred length (otherwise we would
+	 reallocate the length.  */
+      if (empty_string(rhs) && ! lhs->ts.deferred)
+	rhs->value.character.length = 0;
+    }
 
   if (lhs->rank > 0 && gfc_check_dependency (lhs, rhs, true) == 0)
     optimize_binop_array_assignment (c, &rhs, false);

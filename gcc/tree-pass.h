@@ -484,6 +484,7 @@ extern struct rtl_opt_pass pass_expand;
 extern struct rtl_opt_pass pass_instantiate_virtual_regs;
 extern struct rtl_opt_pass pass_rtl_fwprop;
 extern struct rtl_opt_pass pass_rtl_fwprop_addr;
+extern struct rtl_opt_pass pass_jump;
 extern struct rtl_opt_pass pass_jump2;
 extern struct rtl_opt_pass pass_lower_subreg;
 extern struct rtl_opt_pass pass_cse;

@@ -331,7 +331,6 @@ linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
 	  num_tokens * sizeof (source_location));
 
   LINEMAPS_MACRO_CACHE (set) = LINEMAPS_MACRO_USED (set) - 1;
-  set->max_column_hint = 0;
 
   return map;
 }
@@ -755,13 +754,35 @@ linemap_location_in_system_header_p (struct line_maps *set,
 {
   const struct line_map *map = NULL;
 
-  location =
-    linemap_resolve_location (set, location, LRK_SPELLING_LOCATION, &map);
-
   if (location < RESERVED_LOCATION_COUNT)
     return false;
 
-  return LINEMAP_SYSP (map);
+  /* Let's look at where the token for LOCATION comes from.  */
+  while (true)
+    {
+      map = linemap_lookup (set, location);
+      if (map != NULL)
+	{
+	  if (!linemap_macro_expansion_map_p (map))
+	    /* It's a normal token.  */
+	    return LINEMAP_SYSP (map);
+	  else
+	    {
+	      /* It's a token resulting from a macro expansion.  */
+	      source_location loc =
+		linemap_macro_map_loc_unwind_toward_spelling (map, location);
+	      if (loc < RESERVED_LOCATION_COUNT)
+		/* This token might come from a built-in macro.  Let's
+		   look at where that macro got expanded.  */
+		location = linemap_macro_map_loc_to_exp_point (map, location);
+	      else
+		location = loc;
+	    }
+	}
+      else
+	break;
+    }
+  return false;
 }
 
 /* Return TRUE if LOCATION is a source code location of a token coming

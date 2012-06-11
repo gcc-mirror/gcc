@@ -1,3 +1,29 @@
+2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Test Is_Elementary_Type
+	instead of Is_Scalar_Type for a constant with an address clause.
+	Do not return the underlying constant for a constant used by reference
+	if it holds the address of a constant and an lvalue is required.
+
+2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not specifically deal
+	with external constants wrt force_global here...
+	<E_Constant>: ...but here instead.
+	* gcc-interface/utils.c (gnat_pushdecl): Do not put external DECLs onto
+	the list of global DECLs.
+
+2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Translate the Esize on
+	entry only for elementary types and abort if it is too large.
+	<E_Record_Type>: Make sure the Esize is known before using it.
+
+2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc-interface/utils2.c: Do not include output.h.
+	* gcc-interface/Make-lang.in: Fix dependencies.
+
 2012-05-29  Michael Matz  <matz@suse.de>
 
 	* gcc-interface/utils.c (create_var_decl_1): Don't call expand_decl.

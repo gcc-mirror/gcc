@@ -1,3 +1,16 @@
+2012-06-04  Dimitrios Apostolou <jimis@gmx.net>
+
+	* line-map.c (linemap_enter_macro): Don't zero max_column_hint in
+	every macro. This improves performance by reducing the number of
+	reallocations when track-macro-expansion is on.
+
+2012-06-04  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/53463
+	* line-map.c (linemap_location_in_system_header_p): For built-in
+	macro tokens, check the first expansion point location that is not
+	for a token coming from a built-in macro.
+
 2012-05-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* directives.c: Fix typos.

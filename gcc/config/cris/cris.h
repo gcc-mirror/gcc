@@ -186,7 +186,7 @@ extern int cris_cpu_version;
 #define MAYBE_AS_NO_MUL_BUG_ABORT
 #endif
 
-/* Override previous definitions (linux.h).  */
+/* Override previous definitions (../linux.h).  */
 #undef ASM_SPEC
 #define ASM_SPEC \
  MAYBE_AS_NO_MUL_BUG_ABORT \

@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "flags.h"
 #include "function.h"
-#include "output.h"
 #include "ggc.h"
 #include "diagnostic-core.h"
 #include "target.h"

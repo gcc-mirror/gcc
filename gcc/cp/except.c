@@ -424,7 +424,8 @@ initialize_handler_parm (tree decl, tree exp)
       && TYPE_PTR_P (TREE_TYPE (init_type)))
     exp = cp_build_addr_expr (exp, tf_warning_or_error);
 
-  exp = ocp_convert (init_type, exp, CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
+  exp = ocp_convert (init_type, exp, CONV_IMPLICIT|CONV_FORCE_TEMP, 0,
+		     tf_warning_or_error);
 
   init = convert_from_reference (exp);
 
@@ -435,7 +436,8 @@ initialize_handler_parm (tree decl, tree exp)
       /* Generate the copy constructor call directly so we can wrap it.
 	 See also expand_default_init.  */
       init = ocp_convert (TREE_TYPE (decl), init,
-			  CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
+			  CONV_IMPLICIT|CONV_FORCE_TEMP, 0,
+			  tf_warning_or_error);
       /* Force cleanups now to avoid nesting problems with the
 	 MUST_NOT_THROW_EXPR.  */
       init = fold_build_cleanup_point_expr (TREE_TYPE (init), init);

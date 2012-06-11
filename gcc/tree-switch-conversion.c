@@ -89,7 +89,6 @@ eight) times the number of the actual switch branches. */
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
 #include "tree-ssa-operands.h"
-#include "output.h"
 #include "input.h"
 #include "tree-pass.h"
 #include "gimple-pretty-print.h"

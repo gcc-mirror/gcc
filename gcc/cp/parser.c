@@ -7481,6 +7481,7 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
 	  if (assignment_operator != ERROR_MARK)
 	    {
 	      bool non_constant_p;
+	      location_t saved_input_location;
 
 	      /* Parse the right-hand side of the assignment.  */
 	      tree rhs = cp_parser_initializer_clause (parser, &non_constant_p);
@@ -7493,11 +7494,15 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
 	      if (cp_parser_non_integral_constant_expression (parser,
 							      NIC_ASSIGNMENT))
 		return error_mark_node;
-	      /* Build the assignment expression.  */
+	      /* Build the assignment expression.  Its default
+		 location is the location of the '=' token.  */
+	      saved_input_location = input_location;
+	      input_location = loc;
 	      expr = build_x_modify_expr (loc, expr,
 					  assignment_operator,
 					  rhs,
 					  tf_warning_or_error);
+	      input_location = saved_input_location;
 	    }
 	}
     }
@@ -15056,6 +15061,9 @@ cp_parser_alias_declaration (cp_parser* parser)
 
   cp_parser_require (parser, CPP_EQ, RT_EQ);
 
+  if (cp_parser_error_occurred (parser))
+    return error_mark_node;
+
   /* Now we are going to parse the type-id of the declaration.  */
 
   /*
@@ -20312,12 +20320,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 		       tree *ambiguous_decls,
 		       location_t name_location)
 {
-  int flags = 0;
   tree decl;
   tree object_type = parser->context->object_type;
-
-  if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
-    flags |= LOOKUP_COMPLAIN;
 
   /* Assume that the lookup will be unambiguous.  */
   if (ambiguous_decls)
@@ -20490,7 +20494,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       /* Look it up in the enclosing context, too.  */
       decl = lookup_name_real (name, tag_type != none_type,
 			       /*nonclass=*/0,
-			       /*block_p=*/true, is_namespace, flags);
+			       /*block_p=*/true, is_namespace, 0);
       parser->object_scope = object_type;
       parser->qualifying_scope = NULL_TREE;
       if (object_decl)
@@ -20500,7 +20504,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
     {
       decl = lookup_name_real (name, tag_type != none_type,
 			       /*nonclass=*/0,
-			       /*block_p=*/true, is_namespace, flags);
+			       /*block_p=*/true, is_namespace, 0);
       parser->qualifying_scope = NULL_TREE;
       parser->object_scope = NULL_TREE;
     }

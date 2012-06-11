@@ -15,7 +15,7 @@ void
 foo2 (void)
 {
   #pragma omp critical
-  #pragma omp critical		/* { dg-warning "with the same name" } */
+  #pragma omp critical		/* { dg-error "with the same name" } */
     bar (0);
 }
 
@@ -23,6 +23,6 @@ void
 foo3 (void)
 {
   #pragma omp critical(foo)
-  #pragma omp critical(foo)	/* { dg-warning "with the same name" } */
+  #pragma omp critical(foo)	/* { dg-error "with the same name" } */
     bar (0);
 }

@@ -2628,8 +2628,9 @@ class Named_type : public Type
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
       location_(location), named_btype_(NULL), dependencies_(),
       is_visible_(true), is_error_(false), is_placeholder_(false),
-      is_converted_(false), is_circular_(false), seen_(false),
-      seen_in_compare_is_identity_(false), seen_in_get_backend_(false)
+      is_converted_(false), is_circular_(false), is_verified_(false),
+      seen_(false), seen_in_compare_is_identity_(false),
+      seen_in_get_backend_(false)
   { }
 
   // Return the associated Named_object.  This holds the actual name.
@@ -2908,6 +2909,8 @@ class Named_type : public Type
   // Whether this is a pointer or function type which refers to the
   // type itself.
   bool is_circular_;
+  // Whether this type has been verified.
+  bool is_verified_;
   // In a recursive operation such as has_hidden_fields, this flag is
   // used to prevent infinite recursion when a type refers to itself.
   // This is mutable because it is always reset to false when the

@@ -1228,16 +1228,9 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
   scope = push_scope (ctype);
 
-  if (diag)
-    {
-      flags = LOOKUP_NORMAL|LOOKUP_SPECULATIVE|LOOKUP_DEFAULTED;
-      complain = tf_warning_or_error;
-    }
-  else
-    {
-      flags = LOOKUP_PROTECT|LOOKUP_SPECULATIVE|LOOKUP_DEFAULTED;
-      complain = tf_none;
-    }
+  flags = LOOKUP_NORMAL|LOOKUP_SPECULATIVE|LOOKUP_DEFAULTED;
+
+  complain = diag ? tf_warning_or_error : tf_none;
 
   if (const_p)
     quals = TYPE_QUAL_CONST;

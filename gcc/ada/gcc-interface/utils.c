@@ -572,14 +572,14 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   if (!(TREE_CODE (decl) == TYPE_DECL
         && TREE_CODE (TREE_TYPE (decl)) == UNCONSTRAINED_ARRAY_TYPE))
     {
-      if (global_bindings_p ())
+      if (DECL_EXTERNAL (decl))
 	{
-	  VEC_safe_push (tree, gc, global_decls, decl);
-
 	  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
 	    VEC_safe_push (tree, gc, builtin_decls, decl);
 	}
-      else if (!DECL_EXTERNAL (decl))
+      else if (global_bindings_p ())
+	VEC_safe_push (tree, gc, global_decls, decl);
+      else
 	{
 	  DECL_CHAIN (decl) = BLOCK_VARS (current_binding_level->block);
 	  BLOCK_VARS (current_binding_level->block) = decl;

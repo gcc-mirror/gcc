@@ -1,3 +1,335 @@
+2012-06-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	Fix CRIS build errors with --enable-build-with-cxx.
+	* config/cris/cris.c (cris_emit_trap_for_misalignment): Rename
+	variable "and" to "andop".
+	* config/cris/sync.md ("atomic_fetch_<atomic_op_name><mode>"): Use
+	temporary variable for memory model, passing C++-type-correct
+	parameter type to expand_mem_thread_fence.
+	("atomic_compare_and_swap<mode>"): Ditto.
+
+2012-06-09  Richard Henderson  <rth@redhat.com>
+
+	PR c++/53602
+	* cfgcleanup.c (execute_jump): Rename from rest_of_handle_jump2.
+	(pass_jump): Rename from pass_jump2.
+	(execute_jump2, pass_jump2): New.
+	* combine-stack-adj.c (rest_of_handle_stack_adjustments): Don't
+	perform cfg cleanup here.  Move the test of PUSH_ROUNDING
+	and ACCUMULATE_OUTGOING_ARGS test...
+	(gate_handle_stack_adjustments): ... here.
+	* passes.c (init_optimization_passes): Update for pass_jump2 rename.
+	Place new pass_jump2 after pass_stack_adjustments.
+	* tree-pass.h (pass_jump): Declare.
+
+2012-06-09  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* simplify-rtx.c (simplify_const_binary_operation): Fixed shift
+	count trucation.
+
+2012-06-08  Richard Henderson  <rth@redhat.com>
+
+        PR c++/53602
+        * combine-stack-adj.c (force_move_args_size_note): Add ARGS_SIZE
+        note to a clobber insn when no other insn is available.
+
+2012-06-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_case_values_threshold): Return 7.
+
+2012-06-07  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* genhooks.c (main): Set progname.
+	(emit_documentation): Remove variable found_start, always bail out
+	when a place is missing.
+	* doc/tm.texi.in (C++ ABI): Add @hook
+	TARGET_CXX_DECL_MANGLING_CONTEXT.
+
+2012-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/53580
+	* omp-low.c (scan_omp): Change first argument to
+	gimple_seq *, call walk_gimple_seq_mod instead of
+	walk_gimple_seq.
+	(scan_sharing_clauses, scan_omp_parallel, scan_omp_task,
+	scan_omp_for, scan_omp_sections, scan_omp_single,
+	execute_lower_omp): Adjust callers.
+	(scan_omp_1_stmt): Likewise.  If check_omp_nesting_restrictions
+	returns false, replace stmt with GIMPLE_NOP.
+	(check_omp_nesting_restrictions): Instead of issuing warnings,
+	issue errors and return false if any errors were reported.
+
+2012-06-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/invoke.texi (fconserve-space): Remove documentation.
+
+2012-06-06  Edmar Wienskoski  <edmar@freescale.com>
+
+	* config/rs6000/rs6000-tables.opt: Regenerated.
+
+2012-06-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53081
+	* tree-data-ref.h (adjacent_store_dr_p): Rename to ...
+	(adjacent_dr_p): ... this and make it work for reads, too.
+	* tree-loop-distribution.c (enum partition_kind): Add PKIND_MEMCPY.
+	(struct partition_s): Change main_stmt to main_dr, add
+	secondary_dr member.
+	(build_size_arg_loc): Change to date data-reference and not
+	gimplify here.
+	(build_addr_arg_loc): New function split out from ...
+	(generate_memset_builtin): ... here.  Use it and simplify.
+	(generate_memcpy_builtin): New function.
+	(generate_code_for_partition): Adjust.
+	(classify_partition): Streamline pattern detection.  Detect
+	memcpy.
+	(ldist_gen): Adjust.
+	(tree_loop_distribution): Adjust seed statements for memcpy
+	recognition.
+
+2012-06-06  Matt Turner  <mattst88@gmail.com>
+
+	* config/arm/mmintrin.h (_mm_empty): New.
+	 (_m_empty): New.
+
+2012-06-06  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* doc/invoke.texi (sched-pressure-algorithm): Document new --param.
+	* common.opt (fsched-pressure-algorithm=): Remove.
+	* flag-types.h (sched_pressure_algorithm): Move to...
+	* sched-int.h (sched_pressure_algorithm): ...here.
+	* params.def (sched-pressure-algorithm): New param.
+	* haifa-sched.c (sched_init): Use it to initialize sched_pressure.
+	* common/config/s390/s390-common.c (s390_option_optimization_table):
+	Remove OPT_fsched_pressure_algorithm_ entry.
+	* config/s390/s390.c (s390_option_override): Set a default value for
+	PARAM_SCHED_PRESSURE_ALGORITHM.
+
+2012-06-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/53487
+	* config/rs6000/rs6000.c (rs6000_generate_compare): If we are
+	doing an unsigned compare, make sure the second argument is not a
+	negative constant.
+	(rs6000_emit_cmove): Don't allow floating point comparisons when
+	generating ISEL moves.
+
+2012-06-05  Edmar Wienskoski  <edmar@freescale.com>
+
+	* config/rs6000/e5500.md: New file.
+	* config/rs6000/e6500.md: New file.
+	* config/rs6000/rs6000.c (processor_costs): Add new costs for
+	e5500 and e6500.
+	(rs6000_option_override_internal): Altivec and Spe options not
+	allowed with e5500. Spe options not allowed with e6500. Increase
+	move inline limit for e5500 and e6500. Disable string instructions
+	for e5500 and e6500. Enable branch targets alignment for e5500 and
+	e6500. Initialize rs6000_cost for e5500 and e6500.
+	(rs6000_adjust_cost): Add extra scheduling cycles between compare
+	and brnach for e5500 and e6500.
+	(rs6000_issue_rate): Set issue rate for e5500 and e6500.
+	* config/rs6000/rs6000-cpus.def: Add cpu definitions for e5500 and
+	e6500.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add e5500 and e6500.
+	* config/rs6000/rs6000.md (define_attr "cpu"): Add ppce5500 and
+	ppce6500.
+	Include e5500.md and e6500.md.
+	* config/rs6000/rs6000-opt.h (processor_type): Add
+	PROCESSOR_PPCE5500 and PROCESSOR_PPCE6500.
+	* config.gcc (cpu_is_64bit): Add new cores e5500, e6500.
+	(powerpc*-*-*): Add new cores e5500, e6500.
+	* doc/invoke.texi: (item -mcpu): Add e5500 and e6500 to list of cpus.
+
+2012-06-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Fix last
+	change.
+
+2012-06-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53575
+	* config.gcc: Select x32 run-time library if --with-abi={x32|mx32}
+	is used for x86_64-*-*.
+
+2012-06-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30442
+	* tree-vect-data-refs.c (vect_analyze_data_refs): For basic-block
+	vectorization stop analysis at the first stmt we cannot compute
+	a data-reference for instead of giving up completely.
+
+2012-06-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (struct partition_s): Add has_writes
+	member.
+	(partition_alloc): Initialize it.
+	(partition_has_writes): New function.
+	(rdg_flag_uses): Adjust.
+	(rdg_flag_vertex): Likewise.
+	(rdg_flag_vertex_and_dependent): Likewise.
+	(rdg_flag_loop_exits): Likewise.
+	(build_rdg_partition_for_component): Likewise.
+	(rdg_build_partitions): Likewise.
+
+2012-06-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53081
+	* tree-loop-distribution.c (generate_memset_builtin): Handle all
+	kinds of byte-sized stores.
+	(classify_partition): Likewise.
+	(tree_loop_distribution): Adjust seed statements used for
+	!flag_tree_loop_distribution.
+
+2012-06-05  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (ptr_regno_for_savres): Comment.
+	(rs6000_emit_prologue): Ensure register used for inline saves
+	of vector regs is not the static chain register.  Revise comment.
+
+2012-06-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* doc/md.texi (Standard Pattern Names For Generation): Document
+	sincos pattern.
+
+2012-06-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/53555
+	* config/i386/i386.c (ix86_sched_reorder) Skip debug insns.
+
+2012-06-04  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (is_unit_die): New.
+	(copy_declaration_context, copy_ancestor_tree): Use it.
+	(copy_decls_walk): Likewise.
+
+2012-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53524
+	* doc/invoke.texi (Wenum-compare): Update documentation.
+
+2012-06-04  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/53463
+	* parser.c (cp_parser_assignment_expression): Use the location
+	for the '=' as the default location for the expression.
+
+2012-06-04  Edmar Wienskoski  <edmar@freescale.com>
+
+	PR target/53559
+	* config/rs6000/altivec.md (altivec_stvlx): Change machine mode of
+	operands.
+	(altivec_stvlxl): Ditto.
+	(altivec_stvrx): Ditto.
+	(altivec_stvrxl): Ditto.
+
+2012-06-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-int.h (struct target_ira_int): Add member
+	x_ira_uniform_class_p.
+	(ira_uniform_class_p): New macro.
+
+	* ira.c (setup_uniform_class_p): New function.
+	(setup_allocno_and_important_classes): Call the function.
+	(print_unform_and_important_classes): New function.
+	(print_classes): Rename to print_translated_classes.
+	(ira_debug_allocno_classes): Add call of
+	print_unform_and_important_classes.
+
+	* ira-costs.c (setup_regno_cost_classes_by_aclass): Use uniform
+	classes instead of pressure classes.
+
+2012-06-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/47530
+	* trans-mem.c (expand_block_edges): Do not skip the first
+	statement when resetting the BB.
+
+2012-06-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-data-ref.c (stores_from_loop): Remove.
+	(stmt_with_adjacent_zero_store_dr_p): Likewise.
+	(stores_zero_from_loop): Likewise.
+	* tree-data-ref.h (stores_from_loop, stores_zero_from_loop,
+	stmt_with_adjacent_zero_store_dr_p, stride_of_unit_type_p): Remove.
+	(adjacent_store_dr_p): New function.
+	* tree-loop-distribution.c (generate_memset_builtin): Pass
+	the RDG, use the already available data-reference.
+	(generate_code_for_partition): Pass down RDG.
+	(classify_partition): Inline parts of the former
+	stmt_with_adjacent_zero_store_dr_p here and use adjacent_store_dr_p.
+	(ldist_gen): Remember if there was any detected builtin and
+	do less work if not and flag_tree_loop_distribution is not set.
+	(tree_loop_distribution): Inline and fuse stores_from_loop
+	and stores_zero_from_loop here.
+
+2012-06-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53471
+	* dwarf2out.c (dwarf2out_finish): If generating LTO do not
+	create new assembler names.
+
+2012-06-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-data-ref.c (struct rdg_vertex_info): Remove.
+	(rdg_vertex_for_stmt): Simplify using gimple_uid.
+	(create_rdg_vertices): Pass loop argument, remove stmt to RDG index
+	hashtable.   Record stmt data-references.
+	(hash_stmt_vertex_info): Remove.
+	(eq_stmt_vertex_info): Likewise.
+	(hash_stmt_vertex_del): Likewise.
+	(build_empty_rdg): Simplify.
+	(build_rdg): Adjust.
+	(free_rdg): Likewise.
+	(ref_base_address): Remove.
+	(have_similar_memory_accesses): Likewise.
+	* tree-data-ref.h (create_rdg_vertices): Remove.
+	(struct rdg_vertex): Add datarefs member.
+	(RDGV_DATAREFS): New define.
+	(RDG_DATAREFS): Likewise.
+	(have_similar_memory_accesses): Remove.
+	(rdg_has_similar_memory_accesses): Likewise.
+	* tree-loop-distribution.c (ref_base_address): Re-implement here.
+	(similar_memory_accesses): Re-implement using existing data-references.
+	(tree_loop_distribution): Initialize stmt uids for the stmt to
+	RDG index mapping.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Only
+	access stmt vinfo for stmts in loop.
+
+2012-06-04  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/53461
+	* config/m68k/m68k.md ("tablejump"): Fix check for
+	CASE_VECTOR_PC_RELATIVE.
+
+2012-06-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* output.h (merge_weak, assemble_alias,
+	initializer_constant_valid_p,
+	initializer_constant_valid_for_bitfield_p): Move protos from here...
+	* tree.h: ... to here.
+	* cgraphclones.c: Do not include output.h.
+	* gimplify.c: Likewise.
+	* reload.c: Likewise.
+	* recog.c: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+	* Makefile.in: Fix dependencies.
+
+2012-06-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/46261
+	* config/avr/avr-stdint.h: New file.
+	* config.gcc (avr-*-*,tm_file): Use avr/avr-stdint.h instead of
+	newlib-stdint.h
+
+2012-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53550
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): If type
+	is POINTER_TYPE_P, use sizetype as step type instead of type.
+
 2012-06-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-data-ref.c (have_similar_memory_accesses_1): Remove.
@@ -475,7 +807,7 @@
 	* config/cris/cris.h (CC1_SPEC): Pass through all -march=
 	and -mcpu= options.
 	(ASM_SPEC): Ditto, not just -march=v32, but translate non-v10,
-	non-v32 into --march=v0_v0_v10.
+	non-v32 into --march=v0_v10.
 
 2012-05-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
