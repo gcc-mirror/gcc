@@ -1,5 +1,11 @@
 2012-06-11  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/53470
+	* tree.c (free_lang_data_in_type): Do not clear TYPE_CONTEXT but
+	replace it with the first non-BLOCK context.
+
+2012-06-11  Richard Guenther  <rguenther@suse.de>
+
 	* alias.c (aliases_everything_p): Remove.
 	(DIFFERENT_ALIAS_SETS_P): Likewise.
 	(true_dependence_1): Use mems_in_disjoint_alias_sets_p directly.
