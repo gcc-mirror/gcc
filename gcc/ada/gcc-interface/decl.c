@@ -348,12 +348,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
      another compilation unit) public entities, show we are at global level
      for the purpose of computing scopes.  Don't do this for components or
      discriminants since the relevant test is whether or not the record is
-     being defined.  Don't do this for constants either as we'll look into
-     their defining expression in the local context.  */
+     being defined.  */
   if (!definition
       && kind != E_Component
       && kind != E_Discriminant
-      && kind != E_Constant
       && Is_Public (gnat_entity)
       && !Is_Statically_Allocated (gnat_entity))
     force_global++, this_global = true;
@@ -424,6 +422,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     != N_Allocator)
 	{
 	  bool went_into_elab_proc = false;
+	  int save_force_global = force_global;
 
 	  /* The expression may contain N_Expression_With_Actions nodes and
 	     thus object declarations from other units.  In this case, even
@@ -436,11 +435,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      current_function_decl = get_elaboration_procedure ();
 	      went_into_elab_proc = true;
 	    }
+	  force_global = 0;
 	  gnat_pushlevel ();
 
 	  gnu_expr = gnat_to_gnu (Expression (Declaration_Node (gnat_entity)));
 
 	  gnat_zaplevel ();
+	  force_global = save_force_global;
 	  if (went_into_elab_proc)
 	    current_function_decl = NULL_TREE;
 	}
