@@ -1,3 +1,9 @@
+2012-06-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/tm.texi.in (Addressing Modes) <TARGET_LEGITIMIZE_ADDRESS>:
+	Mention that this hook needs to be defined for native TLS.
+	* doc/tm.texi: Regenerate.
+
 2012-06-11  Mike Stump  <mikestump@comcast.net>
 
 	* emit-rtl.c (init_emit_once): Iterate through the
