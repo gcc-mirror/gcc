@@ -1,3 +1,10 @@
+2012-06-11  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_sync_long_long_runtime): Use
+	check_effective_target_lp64 instead of
+	check_effective_target_powerpc64 for powerpc targets.
+
 2012-06-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53511
