@@ -878,13 +878,6 @@ sh_option_override (void)
 
   if (flag_unsafe_math_optimizations)
     {
-      /* Enable fmac insn for "a * b + c" SFmode calculations when -ffast-math
-	 is enabled and -mno-fused-madd is not specified by the user.
-	 The fmac insn can't be enabled by default due to the implied
-	 FMA semantics.   See also PR target/29100.  */
-      if (global_options_set.x_TARGET_FMAC == 0)
-	TARGET_FMAC = 1;
-
       /* Enable fsca insn for SH4A if not otherwise specified by the user.  */
       if (global_options_set.x_TARGET_FSCA == 0 && TARGET_SH4A_FP)
 	TARGET_FSCA = 1;
@@ -11231,7 +11224,6 @@ static struct builtin_description bdesc[] =
   { CODE_FOR_fsina_s,	"__builtin_sh_media_FSINA_S", SH_BLTIN_SISF, 0 },
   { CODE_FOR_fipr,	"__builtin_sh_media_FIPR_S", SH_BLTIN_3, 0 },
   { CODE_FOR_ftrv,	"__builtin_sh_media_FTRV_S", SH_BLTIN_3, 0 },
-  { CODE_FOR_mac_media,	"__builtin_sh_media_FMAC_S", SH_BLTIN_3, 0 },
   { CODE_FOR_sqrtdf2,	"__builtin_sh_media_FSQRT_D", SH_BLTIN_2, 0 },
   { CODE_FOR_sqrtsf2,	"__builtin_sh_media_FSQRT_S", SH_BLTIN_2, 0 },
   { CODE_FOR_fsrra_s,	"__builtin_sh_media_FSRRA_S", SH_BLTIN_2, 0 },

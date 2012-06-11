@@ -449,6 +449,7 @@ s390*-*-*)
 sh[123456789lbe]*-*-* | sh-*-*)
 	cpu_type=sh
 	need_64bit_hwint=yes
+	extra_options="${extra_options} fused-madd.opt"
 	;;
 v850*-*-*)
 	cpu_type=v850
