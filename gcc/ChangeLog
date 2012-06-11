@@ -1,3 +1,7 @@
+2012-06-11  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2cfi.c (scan_trace): Handle annulled branch-taken delay slots.
+
 2012-06-11  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in (GNATLIBCFLAGS_FOR_C): Remove $(PIC_FLAG_FOR_TARGET).

@@ -2429,18 +2429,20 @@ scan_trace (dw_trace_info *trace)
 
 	      elt = XVECEXP (pat, 0, 1);
 
-	      /* If ELT is an instruction from target of an annulled branch,
-		 the effects are for the target only and so the args_size
-		 and CFA along the current path shouldn't change.  */
 	      if (INSN_FROM_TARGET_P (elt))
 		{
 		  HOST_WIDE_INT restore_args_size;
 		  cfi_vec save_row_reg_save;
 
+		  /* If ELT is an instruction from target of an annulled
+		     branch, the effects are for the target only and so
+		     the args_size and CFA along the current path
+		     shouldn't change.  */
 		  add_cfi_insn = NULL;
 		  restore_args_size = cur_trace->end_true_args_size;
 		  cur_cfa = &cur_row->cfa;
-		  save_row_reg_save = VEC_copy (dw_cfi_ref, gc, cur_row->reg_save);
+		  save_row_reg_save
+		    = VEC_copy (dw_cfi_ref, gc, cur_row->reg_save);
 
 		  scan_insn_after (elt);
 
@@ -2453,8 +2455,20 @@ scan_trace (dw_trace_info *trace)
 		  cur_row->cfa = this_cfa;
 		  cur_row->reg_save = save_row_reg_save;
 		  cur_cfa = &this_cfa;
-		  continue;
 		}
+	      else
+		{
+		  /* If ELT is a annulled branch-taken instruction (i.e.
+		     executed only when branch is not taken), the args_size
+		     and CFA should not change through the jump.  */
+		  create_trace_edges (control);
+
+		  /* Update and continue with the trace.  */
+		  add_cfi_insn = insn;
+		  scan_insn_after (elt);
+		  def_cfa_1 (&this_cfa);
+		}
+	      continue;
 	    }
 
 	  /* The insns in the delay slot should all be considered to happen
