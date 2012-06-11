@@ -1,3 +1,7 @@
+2012-06-12  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc/config/mips/mips-tables.opt (xlp): Fix merge typo.
+
 2012-06-11  Roland McGrath  <mcgrathr@google.com>
 
 	* dwarf2out.c (const_ok_for_output_1): Detect a TLS UNSPEC using
