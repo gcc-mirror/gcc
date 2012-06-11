@@ -377,11 +377,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	prepend_attributes (First_Subtype (Base_Type (gnat_entity)),
 			    &attr_list);
 
-      /* Compute a default value for the size of the type.  */
-      if (Known_Esize (gnat_entity)
-	  && UI_Is_In_Int_Range (Esize (gnat_entity)))
+      /* Compute a default value for the size of an elementary type.  */
+      if (Known_Esize (gnat_entity) && Is_Elementary_Type (gnat_entity))
 	{
 	  unsigned int max_esize;
+
+	  gcc_assert (UI_Is_In_Int_Range (Esize (gnat_entity)));
 	  esize = UI_To_Int (Esize (gnat_entity));
 
 	  if (IN (kind, Float_Kind))
@@ -2948,14 +2949,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (Known_Alignment (gnat_entity))
 	  TYPE_ALIGN (gnu_type)
 	    = validate_alignment (Alignment (gnat_entity), gnat_entity, 0);
-	else if (Is_Atomic (gnat_entity))
-	  TYPE_ALIGN (gnu_type)
-	    = esize >= BITS_PER_WORD ? BITS_PER_WORD : ceil_pow2 (esize);
+	else if (Is_Atomic (gnat_entity) && Known_Esize (gnat_entity))
+	  {
+	    unsigned int size = UI_To_Int (Esize (gnat_entity));
+	    TYPE_ALIGN (gnu_type)
+	      = size >= BITS_PER_WORD ? BITS_PER_WORD : ceil_pow2 (size);
+	  }
 	/* If a type needs strict alignment, the minimum size will be the
 	   type size instead of the RM size (see validate_size).  Cap the
 	   alignment, lest it causes this type size to become too large.  */
-	else if (Strict_Alignment (gnat_entity)
-		 && Known_RM_Size (gnat_entity))
+	else if (Strict_Alignment (gnat_entity) && Known_RM_Size (gnat_entity))
 	  {
 	    unsigned int raw_size = UI_To_Int (RM_Size (gnat_entity));
 	    unsigned int raw_align = raw_size & -raw_size;
