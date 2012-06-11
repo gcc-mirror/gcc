@@ -1,5 +1,13 @@
 2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not specifically deal
+	with external constants wrt force_global here...
+	<E_Constant>: ...but here instead.
+	* gcc-interface/utils.c (gnat_pushdecl): Do not put external DECLs onto
+	the list of global DECLs.
+
+2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Translate the Esize on
 	entry only for elementary types and abort if it is too large.
 	<E_Record_Type>: Make sure the Esize is known before using it.

@@ -1,3 +1,8 @@
+2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/constant4.adb: New test.
+	* gnat.dg/constant4_pkg.ads: New helper.
+
 2012-06-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/52552
