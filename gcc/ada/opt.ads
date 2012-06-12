@@ -735,9 +735,10 @@ package Opt is
 
    Inline_Level : Nat := 0;
    --  GNAT
-   --  Set to indicate the inlining level: 0 means that an appropriate value
-   --  is to be computed by the compiler, 1 is for moderate inlining across
-   --  modules and 2 for full inlining across modules.
+   --  Set to indicate the inlining level: 0 means that an appropriate value is
+   --  to be computed by the compiler based on the optimization level (-gnatn),
+   --  1 is for moderate inlining across modules (-gnatn1) and 2 for full
+   --  inlining across modules (-gnatn2).
 
    Interface_Library_Unit : Boolean := False;
    --  GNATBIND
