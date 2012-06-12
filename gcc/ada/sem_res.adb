@@ -853,9 +853,11 @@ package body Sem_Res is
                      Prev (Nod);
                   end loop;
 
-                  --  If no raise statement, give warning
+                  --  If no raise statement, give warning. We look at the
+                  --  original node, because in the case of "raise ... with
+                  --  ...", the node has been transformed into a call.
 
-                  exit when Nkind (Nod) /= N_Raise_Statement
+                  exit when Nkind (Original_Node (Nod)) /= N_Raise_Statement
                     and then
                       (Nkind (Nod) not in N_Raise_xxx_Error
                         or else Present (Condition (Nod)));

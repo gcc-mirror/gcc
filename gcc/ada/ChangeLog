@@ -1,3 +1,39 @@
+2012-06-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Create_Finalizer): Add the
+	exception reraise mechanism at the very end of the finalizer
+	statements. This placement ensures that all objects are finalized,
+	the secondary stack mark released and aborts undeferred before
+	propagating an exception.
+
+2012-06-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Remove_Unit_From_Visibility): if the unit is a
+	wrapper package. remove from visibility the original subprogram
+	instance.
+
+2012-06-12  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Process_Convention): Generate reference to entity
+	exported to foreign language. Needed for GPS navigation.
+	* xref_lib.adb (Parse_Identifier_Info): Parse exported entities.
+	* lib-xref (Output_References): Output exported entities.
+
+2012-06-12  Pascal Obry  <obry@adacore.com>
+
+	* prj-attr.adb: Add install package and corresponding attributes.
+	* snames.ads-tmpl (Name_Active): New constant.
+	(Name_Exec_Subdir): Likewise.
+	(Name_Install): Likewise.
+	(Name_Lib_Subdir): Likewise.
+	(Name_Project_Subdir): Likewise.
+	(Name_Sources_Subdir): Likewise.
+
+2012-06-12  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Check_Infinite_Recursion):
+	Suppress spurious warning on recursion after "raise with ...".
+
 2012-06-12  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Unchecked_Union): Do
