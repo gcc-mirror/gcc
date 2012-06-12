@@ -538,6 +538,7 @@ package body Xref_Lib is
 
          when 'h' => return "interface";
          when 'g' => return "macro";
+         when 'G' => return "function macro";
          when 'J' => return "class";
          when 'K' => return "package";
          when 'k' => return "generic package";
