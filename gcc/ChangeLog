@@ -1,3 +1,12 @@
+2012-06-12  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/sh/sh.c (output_stack_adjust): Remove !epilogue_p
+	condition for generating REG_FRAME_RELATED_EXPR note.
+	(pop): Add code for generating REG_CFA_RESTORE,
+	REG_CFA_ADJUST_CFA notes. Set RTX_FRAME_RELATED_P to 1.
+	(sh_expand_epilogue): Use frame_insn() for FP to SP move.
+	Set 'frame_p' of calls to output_stack_adjust() to 'true'.
+
 2012-06-11  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (HWI_HEX2): Add missing shift.
