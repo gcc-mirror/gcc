@@ -1,5 +1,16 @@
 2012-06-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.dg/torture/stackalign/stackalign.exp: Combine stack
+	alignment torture options with usual torture options.
+	* gcc.dg/torture/stackalign/alloca-2.c: Use dg-additional-options
+	instead of dg-options.
+	* gcc.dg/torture/stackalign/alloca-3.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-4.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-5.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-6.c: Likewise.
+	* gcc.dg/torture/stackalign/push-1.c: Likewise.
+	* gcc.dg/torture/stackalign/vararg-3.c: Likewise.
+
 	* gcc.target/arm/di-longlong64-sync-withhelpers.c: Add comments
 	to checks for multiple messages reported for one line of source code.
 	* gcc.target/arm/di-longlong64-sync-withldrexd.c: Likewise.
