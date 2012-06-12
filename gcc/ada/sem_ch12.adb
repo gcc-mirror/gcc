@@ -9450,6 +9450,7 @@ package body Sem_Ch12 is
             end if;
 
             if Is_Entity_Name (Actual)
+              and then not Is_Overloaded (Actual)
               and then not Has_Untagged_Inc
             then
                F := First_Formal (Entity (Actual));

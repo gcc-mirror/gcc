@@ -1,3 +1,9 @@
+2012-06-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Formal_Subprogram): Do not apply
+	AI05-296 if the actual is overloaded. In this case The rule must
+	be applied after resolution, in Analyze_Subprogram_Renaming.
+
 2012-06-12  Robert Dewar  <dewar@adacore.com>
 
 	* stringt.adb: Minor reformatting.
