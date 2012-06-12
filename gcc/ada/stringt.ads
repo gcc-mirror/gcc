@@ -63,12 +63,13 @@ package Stringt is
    --  Unlock internal tables, in case back end needs to modify them
 
    procedure Mark;
-   --  Take a snapshot of the internal tables
+   --  Take a snapshot of the internal tables. Used in conjunction with Release
+   --  when computing temporary string values that need not be preserved.
 
    procedure Release;
    --  Restore the internal tables to the situation when Mark was last called.
-   --  Mark and Release are used when getting checksums of sources in minimal
-   --  recompilation mode, to reduce memory usage.
+   --  If Release is called with no prior call to Mark, the entire string table
+   --  is cleared to its initial (empty) setting.
 
    procedure Start_String;
    --  Sets up for storing a new string in the table. To store a string, a
