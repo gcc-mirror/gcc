@@ -1,5 +1,19 @@
 2012-06-12  Robert Dewar  <dewar@adacore.com>
 
+        * gcc-interface/Make-lang.in: Update dependencies.
+	* sem_ch9.ads, einfo.adb, einfo.ads, sem_prag.adb, freeze.adb,
+	sem_util.adb, sem_ch13.adb, sem_ch13.ads, exp_ch3.adb: Add comments.
+	Minor reformatting.
+
+2012-06-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Formal_Subprogram): Remove code that
+	implements AI05-0296, because the actual may be overloaded.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): and move it here,
+	to be applied once the actual subprogram is properly resolved.
+
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
 	* switch-c.adb, a-exexpr-gcc.adb: Minor reformatting.
 
 2012-06-12  Vincent Pucci  <pucci@adacore.com>

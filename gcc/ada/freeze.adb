@@ -1324,6 +1324,7 @@ package body Freeze is
             --  for a description of how we handle aspect visibility).
 
             elsif Has_Delayed_Aspects (E) then
+
                --  Retrieve the visibility to the discriminants in order to
                --  analyze properly the aspects.
 

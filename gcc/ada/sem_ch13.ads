@@ -309,6 +309,5 @@ package Sem_Ch13 is
    --  Again, ASN is the N_Aspect_Specification node for the aspect.
 
    procedure Evaluate_Aspects_At_Freeze_Point (E : Entity_Id);
-   --  This routines evaluates all the delayed aspects for entity E at freezing
-   --  point.
+   --  Evaluates all the delayed aspects for entity E at freezing point
 end Sem_Ch13;

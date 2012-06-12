@@ -2259,6 +2259,7 @@ package body Sem_Util is
             end if;
 
             if Wmsg then
+
                --  Check whether the context is an Init_Proc
 
                if Inside_Init_Proc then
