@@ -1,5 +1,43 @@
 2012-06-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.dg/20031223-1.c: Add comments to check for multiple
+	messages reported for one line of source code.
+	* gcc.dg/Wconversion-integer.c: Likewise.
+	* gcc.dg/Wfatal-2.c: Likewise.
+	* gcc.dg/Wfatal.c: Likewise.
+	* gcc.dg/Wobjsize-1.c: Likewise.
+	* gcc.dg/c99-vla-jump-1.c: Likewise.
+	* gcc.dg/c99-vla-jump-2.c: Likewise.
+	* gcc.dg/c99-vla-jump-3.c: Likewise.
+	* gcc.dg/c99-vla-jump-4.c: Likewise.
+	* gcc.dg/c99-vla-jump-5.c: Likewise.
+	* gcc.dg/decl-9.c: Likewise.
+	* gcc.dg/declspec-10.c: Likewise.
+	* gcc.dg/declspec-18.c: Likewise.
+	* gcc.dg/mtune.c: Likewise.
+	* gcc.dg/parser-pr28152-2.c: Likewise.
+	* gcc.dg/parser-pr28152.c: Likewise.
+	* gcc.dg/pr14475.c: Likewise.
+	* gcc.dg/pr27953.c: Likewise.
+	* gcc.dg/pr28322-3.c: Likewise.
+	* gcc.dg/pr30457.c: Likewise.
+	* gcc.dg/pr30551-2.c: Likewise.
+	* gcc.dg/pr30551-3.c: Likewise.
+	* gcc.dg/pr30551-4.c: Likewise.
+	* gcc.dg/pr30551-5.c: Likewise.
+	* gcc.dg/pr30551-6.c: Likewise.
+	* gcc.dg/pr30551.c: Likewise.
+	* gcc.dg/pr45461.c: Likewise.
+	* gcc.dg/pr48552-1.c: Likewise.
+	* gcc.dg/pr48552-2.c: Likewise.
+	* gcc.dg/redecl-1.c: Likewise.
+	* gcc.dg/transparent-union-3.c: Likewise.
+	* gcc.dg/utf-dflt.c: Likewise.
+	* gcc.dg/utf-dflt2.c: Likewise.
+	* gcc.dg/vla-8.c: Likewise.
+	* gcc.dg/vla-init-1.c: Likewise.
+	* gcc.dg/wtr-int-type-1.c: Likewise.
+
 	* c-c++-common/raw-string-3.c: Add comments to checks for multiple
 	messages reported for for one line of source code.
 	* c-c++-common/raw-string-5.c: Likewise.

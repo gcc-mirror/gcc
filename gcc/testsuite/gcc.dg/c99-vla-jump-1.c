@@ -305,5 +305,5 @@ void fa287 (int n) { { int b[n]; { int c[n]; 0;} { int d[n]; 0;} ; int e[n]; 0;}
 void fa288 (int n) { { int b[n]; { int c[n]; 0;} { int d[n]; 0;} ; int e[n]; 0;}; { int f[n]; { int g[n]; 0;}; { int h[n]; 0;}; ; int i[n]; 0;}; ; int j[n]; 0;a: goto a;  }
 
 /* Match extra informative notes.  */
-/* { dg-message "note: label '\[^\n'\]*' defined here" "note: expected" { target *-*-* } 0 } */
-/* { dg-message "note: '\[^\n'\]*' declared here" "note: expected" { target *-*-* } 0 } */
+/* { dg-message "note: label '\[^\n'\]*' defined here" "note: defined" { target *-*-* } 0 } */
+/* { dg-message "note: '\[^\n'\]*' declared here" "note: declared" { target *-*-* } 0 } */

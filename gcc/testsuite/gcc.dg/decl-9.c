@@ -21,7 +21,7 @@ int f2()
 {
 b: a: ; /* { dg-bogus "a label can only be part of a statement" } */
 c: d e; /* { dg-error "a label can only be part of a statement" } */
-/* { dg-error "unknown type name 'd'" "" { target *-*-* } 23 } */
+/* { dg-error "unknown type name 'd'" "unknown type name" { target *-*-* } 23 } */
    ;
 }
 
