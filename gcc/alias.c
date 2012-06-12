@@ -156,7 +156,7 @@ static rtx find_base_value (rtx);
 static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
 static int insert_subset_children (splay_tree_node, void*);
 static alias_set_entry get_alias_set_entry (alias_set_type);
-static bool nonoverlapping_component_refs_p (const_tree, const_tree);
+static bool nonoverlapping_component_refs_p (const_rtx, const_rtx);
 static tree decl_for_component_ref (tree);
 static int write_dependence_p (const_rtx, const_rtx, int);
 
@@ -2181,11 +2181,15 @@ read_dependence (const_rtx mem, const_rtx x)
    overlap for any pair of objects.  */
 
 static bool
-nonoverlapping_component_refs_p (const_tree x, const_tree y)
+nonoverlapping_component_refs_p (const_rtx rtlx, const_rtx rtly)
 {
+  const_tree x = MEM_EXPR (rtlx), y = MEM_EXPR (rtly);
   const_tree fieldx, fieldy, typex, typey, orig_y;
 
-  if (!flag_strict_aliasing)
+  if (!flag_strict_aliasing
+      || !x || !y
+      || TREE_CODE (x) != COMPONENT_REF
+      || TREE_CODE (y) != COMPONENT_REF)
     return false;
 
   do
@@ -2303,13 +2307,6 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
       || (expry == get_spill_slot_decl (false)
 	  && ! MEM_OFFSET_KNOWN_P (y)))
     return 0;
-
-  /* If both are field references, we may be able to determine something.  */
-  if (TREE_CODE (exprx) == COMPONENT_REF
-      && TREE_CODE (expry) == COMPONENT_REF
-      && nonoverlapping_component_refs_p (exprx, expry))
-    return 1;
-
 
   /* If the field reference test failed, look at the DECLs involved.  */
   moffsetx_known_p = MEM_OFFSET_KNOWN_P (x);
@@ -2514,6 +2511,9 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
     return 0;
 
   if (nonoverlapping_memrefs_p (mem, x, false))
+    return 0;
+
+  if (nonoverlapping_component_refs_p (mem, x))
     return 0;
 
   return rtx_refs_may_alias_p (x, mem, true);
