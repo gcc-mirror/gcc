@@ -2671,7 +2671,7 @@ package Einfo is
 --       appropriate external name for use by the linker.
 
 --    Is_Protected_Record_Type (synthesized)
---       Applies to all entities, true if Is_Concurrent_Record_Type
+--       Applies to all entities, true if Is_Concurrent_Record_Type is true and
 --       Corresponding_Concurrent_Type is a protected type.
 
 --    Is_Pure (Flag44)

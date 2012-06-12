@@ -4327,10 +4327,47 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         Requires_Hooking : constant Boolean :=
-                              Nkind_In (N, N_Function_Call,
-                                           N_Procedure_Call_Statement);
+         function Requires_Hooking return Boolean;
+         --  Determine whether the context requires transient variable export
+         --  to the outer finalizer. This scenario arises when the context may
+         --  raise an exception.
 
+         ----------------------
+         -- Requires_Hooking --
+         ----------------------
+
+         function Requires_Hooking return Boolean is
+            function Is_Subprogram_Call (Nod : Node_Id) return Boolean;
+            --  Determine whether a particular node is a procedure of function
+            --  call.
+
+            ------------------------
+            -- Is_Subprogram_Call --
+            ------------------------
+
+            function Is_Subprogram_Call (Nod : Node_Id) return Boolean is
+            begin
+               return
+                 Nkind_In (Nod, N_Function_Call, N_Procedure_Call_Statement);
+            end Is_Subprogram_Call;
+
+         --  Start of processing for Requires_Hooking
+
+         begin
+            --  The context is either a procedure or function call or an object
+            --  declaration initialized by such a call. In all these cases, the
+            --  calls are assumed to raise an exception.
+
+            return
+              Is_Subprogram_Call (N)
+                or else
+                  (Nkind (N) = N_Object_Declaration
+                     and then Is_Subprogram_Call (Expression (N)));
+         end Requires_Hooking;
+
+         --  Local variables
+
+         Must_Hook : constant Boolean := Requires_Hooking;
          Built     : Boolean := False;
          Desig_Typ : Entity_Id;
          Fin_Block : Node_Id;
@@ -4395,7 +4432,7 @@ package body Exp_Ch7 is
                --  enclosing sequence of statements where their corresponding
                --  "hooks" are picked up by the finalization machinery.
 
-               if Requires_Hooking then
+               if Must_Hook then
                   declare
                      Expr   : Node_Id;
                      Ptr_Id : Entity_Id;
@@ -4470,7 +4507,7 @@ package body Exp_Ch7 is
                --  Generate:
                --    Temp := null;
 
-               if Requires_Hooking then
+               if Must_Hook then
                   Append_To (Stmts,
                     Make_Assignment_Statement (Loc,
                       Name       => New_Reference_To (Temp_Id, Loc),
