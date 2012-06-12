@@ -732,6 +732,16 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Inline_Active := True;
 
+               --  There may be a digit appended to the switch
+
+               if Ptr <= Max then
+                  C := Switch_Chars (Ptr);
+                  if C = '1' or C = '2' then
+                     Ptr := Ptr + 1;
+                     Inline_Level := Character'Pos (C) - Character'Pos ('0');
+                  end if;
+               end if;
+
             --  Processing for N switch
 
             when 'N' =>

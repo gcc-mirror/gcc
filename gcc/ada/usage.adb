@@ -298,7 +298,7 @@ begin
 
    --  Line for -gnatn switch
 
-   Write_Switch_Char ("n");
+   Write_Switch_Char ("n[d]");
    Write_Line ("Enable pragma Inline (both within and across units)");
 
    --  Line for -gnatN switch

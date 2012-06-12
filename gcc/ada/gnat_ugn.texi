@@ -4302,11 +4302,15 @@ reaches this limit, then a message is output and the compilation
 is abandoned. The equal sign here is optional. A value of zero
 means that no limit applies.
 
-@item -gnatn
+@item -gnatn[12]
 @cindex @option{-gnatn} (@command{gcc})
-Activate inlining for subprograms for which
-pragma @code{Inline} is specified. This inlining is performed
-by the GCC back-end.
+Activate inlining for subprograms for which pragma @code{Inline} is
+specified. This inlining is performed by the GCC back-end. An optional
+digit sets the inlining level: 1 for moderate inlining across modules,
+which is a good compromise between compilation times and performances
+at run time, and 2 for full inlining across modules, which may bring
+about longer compilation times. If no inlining level is specified,
+the compiler will pick it based on the optimization level.
 
 @item -gnatN
 @cindex @option{-gnatN} (@command{gcc})

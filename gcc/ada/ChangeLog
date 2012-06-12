@@ -1,3 +1,22 @@
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb: Minor reformatting.
+
+2012-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* opt.ads (Inline_Level): New variable.
+	* gnat1drv.adb (Adjust_Global_Switches): Set it based on optimization
+	level if it has not been set by the user.
+	* switch-c.adb (Scan_Front_End_Switches): Accept -gnatn1 and -gnatn2
+	and set Inline_Level accordingly.
+	* inline.adb (Add_Inlined_Body): Declate new Inline_Level_Type type.
+	(Must_Inline): Return Inline_Level_T instead of Boolean to indicate
+	whether the package of the inlined subprogram must be compiled.
+	If Inline_Level is set to 1, only compile packages of subprograms
+	directly called from the main unit.
+	* usage.adb (Usage): Adjust line for -gnatn switch.
+	* gnat_ugn.texi (Switches for gcc): Document -gnatn1 and -gnatn2.
+
 2012-06-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Instantiate_Formal_Subprogram): Do not apply
