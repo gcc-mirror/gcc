@@ -92,16 +92,6 @@
 
 	* dwarf2cfi.c (scan_trace): Handle annulled branch-taken delay slots.
 
-2012-06-11  Olivier Hainque  <hainque@adacore.com>
-
-	* Makefile.in (GNATLIBCFLAGS_FOR_C): Remove $(PIC_FLAG_FOR_TARGET).
-	(gnatlib-shared-default): Add $(PIC_FLAG_FOR_TARGET) to
-	GNATLIBCFLAGS_FOR_C passed to gnatlib.
-	(gnatlib-shared-win32): Likewise.
-	(gnatlib-shared-darwin): Likewise.
-	(gnatlib-shared-dual-win32): Pass PIC_FLAG_FOR_TARGET to
-	gnatlib-shared-win32.
-
 2012-06-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53470
