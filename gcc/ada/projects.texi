@@ -2265,18 +2265,10 @@ them independently. An aggregate project does not have these
 limitations and can aggregate two project trees that have common
 sources.
 
-@smallexample
-Aggregate projects can group projects with duplicate file names
-@end smallexample
-
-This scenario is particularly useful in environment like VxWorks 653
+This scenario is particularly useful in environments like VxWorks 653
 where the applications running in the multiple partitions can be built
 in parallel through a single gprbuild command. This also works nicely
 with Annex E.
-
-@smallexample
-   Aggregate projects can be used to build multiple partitions
-@end smallexample
 
 @c ---------------------------------------------
 @node Define a build environment
