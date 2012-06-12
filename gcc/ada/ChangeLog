@@ -1,3 +1,15 @@
+2012-06-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Build_Explicit_Dereference): If the expression
+	is an entity, ensure that the type of the expression is the same
+	as that of the entity.
+
+2012-06-12  Pat Rogers  <rogers@adacore.com>
+
+	* projects.texi: Corrected instances of the word "build" that
+	should be "built" instead. Other similar changes and minor
+	punctuation changes.
+
 2012-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_util.adb (Is_Atomic_Object): Return true for an atomic

@@ -1013,6 +1013,16 @@ package body Sem_Util is
    is
       Loc : constant Source_Ptr := Sloc (Expr);
    begin
+
+      --  An entity of a type with implicit dereference is overloaded with
+      --  both interpretations: with and without the dereference. Now that
+      --  the dereference is made explicit, set the type of the node properly,
+      --  to prevent anomalies in the backend.
+
+      if Is_Entity_Name (Expr) then
+         Set_Etype (Expr, Etype (Entity (Expr)));
+      end if;
+
       Set_Is_Overloaded (Expr, False);
       Rewrite (Expr,
         Make_Explicit_Dereference (Loc,
