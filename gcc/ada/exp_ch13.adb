@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -165,14 +165,30 @@ package body Exp_Ch13 is
 
             --  If the type is a task type, then assign the value of the
             --  storage size to the Size variable associated with the task.
-            --    task_typeZ := expression
+            --  Insert the assignment right after the declaration of the Size
+            --  variable.
+
+            --  Generate:
+
+            --  task_typeZ := expression
 
             if Ekind (Ent) = E_Task_Type then
-               Insert_Action (N,
-                 Make_Assignment_Statement (Loc,
-                   Name => New_Reference_To (Storage_Size_Variable (Ent), Loc),
-                   Expression =>
-                     Convert_To (RTE (RE_Size_Type), Expression (N))));
+               declare
+                  Assign : Node_Id;
+
+               begin
+                  Assign :=
+                    Make_Assignment_Statement (Loc,
+                      Name =>
+                        New_Reference_To (Storage_Size_Variable (Ent), Loc),
+                      Expression =>
+                        Convert_To (RTE (RE_Size_Type), Expression (N)));
+
+                  Insert_After
+                    (Parent (Storage_Size_Variable (Entity (N))), Assign);
+
+                  Analyze (Assign);
+               end;
 
             --  For Storage_Size for an access type, create a variable to hold
             --  the value of the specified size with name typeV and expand an

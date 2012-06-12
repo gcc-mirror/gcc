@@ -736,7 +736,8 @@ package body Switch.C is
 
                if Ptr <= Max then
                   C := Switch_Chars (Ptr);
-                  if C = '1' or C = '2' then
+
+                  if C in '1' .. '2' then
                      Ptr := Ptr + 1;
                      Inline_Level := Character'Pos (C) - Character'Pos ('0');
                   end if;

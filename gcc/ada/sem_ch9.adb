@@ -111,10 +111,6 @@ package body Sem_Ch9 is
    --  Find entity in corresponding task or protected declaration. Use full
    --  view if first declaration was for an incomplete type.
 
-   procedure Install_Declarations (Spec : Entity_Id);
-   --  Utility to make visible in corresponding body the entities defined in
-   --  task, protected type declaration, or entry declaration.
-
    -------------------------------------
    -- Allows_Lock_Free_Implementation --
    -------------------------------------
@@ -2983,4 +2979,91 @@ package body Sem_Ch9 is
       end loop;
    end Install_Declarations;
 
+   ---------------------------
+   -- Install_Discriminants --
+   ---------------------------
+
+   procedure Install_Discriminants (E : Entity_Id) is
+      Disc : Entity_Id;
+      Prev : Entity_Id;
+   begin
+      Disc := First_Discriminant (E);
+      while Present (Disc) loop
+         Prev := Current_Entity (Disc);
+         Set_Current_Entity (Disc);
+         Set_Is_Immediately_Visible (Disc);
+         Set_Homonym (Disc, Prev);
+         Next_Discriminant (Disc);
+      end loop;
+   end Install_Discriminants;
+
+   ------------------------------------------
+   -- Push_Scope_And_Install_Discriminants --
+   ------------------------------------------
+
+   procedure Push_Scope_And_Install_Discriminants (E : Entity_Id) is
+   begin
+      if Has_Discriminants (E) then
+         Push_Scope (E);
+         Install_Discriminants (E);
+      end if;
+   end Push_Scope_And_Install_Discriminants;
+
+   -----------------------------
+   -- Uninstall_Discriminants --
+   -----------------------------
+
+   procedure Uninstall_Discriminants (E : Entity_Id) is
+      Disc  : Entity_Id;
+      Prev  : Entity_Id;
+      Outer : Entity_Id;
+
+   begin
+      Disc := First_Discriminant (E);
+      while Present (Disc) loop
+         if Disc /= Current_Entity (Disc) then
+            Prev := Current_Entity (Disc);
+            while Present (Prev)
+              and then Present (Homonym (Prev))
+              and then Homonym (Prev) /= Disc
+            loop
+               Prev := Homonym (Prev);
+            end loop;
+         else
+            Prev := Empty;
+         end if;
+
+         Set_Is_Immediately_Visible (Disc, False);
+
+         Outer := Homonym (Disc);
+         while Present (Outer) and then Scope (Outer) = E loop
+            Outer := Homonym (Outer);
+         end loop;
+
+         --  Reset homonym link of other entities, but do not modify link
+         --  between entities in current scope, so that the back-end can have
+         --  a proper count of local overloadings.
+
+         if No (Prev) then
+            Set_Name_Entity_Id (Chars (Disc), Outer);
+
+         elsif Scope (Prev) /= Scope (Disc) then
+            Set_Homonym (Prev,  Outer);
+         end if;
+
+         Next_Discriminant (Disc);
+      end loop;
+   end Uninstall_Discriminants;
+
+   -------------------------------------------
+   -- Uninstall_Discriminants_And_Pop_Scope --
+   -------------------------------------------
+
+   procedure Uninstall_Discriminants_And_Pop_Scope (E : Entity_Id) is
+   begin
+      if Has_Discriminants (E) then
+         Uninstall_Discriminants (E);
+         Pop_Scope;
+      end if;
+   end Uninstall_Discriminants_And_Pop_Scope;
 end Sem_Ch9;

@@ -395,15 +395,6 @@ package body Exp_Ch9 is
    --  the scope of Context_Id and Context_Decls is the declarative list of
    --  Context.
 
-   function Find_Task_Or_Protected_Pragma
-     (T : Node_Id;
-      P : Name_Id) return Node_Id;
-   --  Searches the task or protected definition T for the first occurrence
-   --  of the pragma whose name is given by P. The caller has ensured that
-   --  the pragma is present in the task definition. A special case is that
-   --  when P is Name_uPriority, the call will also find Interrupt_Priority.
-   --  ??? Should be implemented with the rep item chain mechanism.
-
    function Index_Object (Spec_Id : Entity_Id) return Entity_Id;
    --  Given a subprogram identifier, return the entity which is associated
    --  with the protection entry index in the Protected_Body_Subprogram or the
@@ -11279,30 +11270,30 @@ package body Exp_Ch9 is
    --  in the pragma, and is used to override the task stack size otherwise
    --  associated with the task type.
 
-   --  The _Priority field is present only if a Priority or Interrupt_Priority
-   --  pragma appears in the task definition. The expression captures the
-   --  argument that was present in the pragma, and is used to provide the Size
-   --  parameter to the call to Create_Task.
+   --  The _Priority field is always present. It will be filled at the freeze
+   --  point, when the record init proc is built, to capture the expression of
+   --  a Priority pragma, attribute definition clause or aspect specification
+   --  (see Build_Record_Init_Proc in Exp_Ch3).
 
    --  The _Task_Info field is present only if a Task_Info pragma appears in
    --  the task definition. The expression captures the argument that was
    --  present in the pragma, and is used to provide the Task_Image parameter
    --  to the call to Create_Task.
 
-   --  The _CPU field is present only if a CPU pragma appears in the task
-   --  definition. The expression captures the argument that was present in
-   --  the pragma, and is used to provide the CPU parameter to the call to
-   --  Create_Task.
+   --  The _CPU field is always present. It will be filled at the freeze point,
+   --  when the record init proc is built, to capture the expression of a CPU
+   --  pragma, attribute definition clause or aspect specification (see
+   --  Build_Record_Init_Proc in Exp_Ch3).
 
    --  The _Relative_Deadline field is present only if a Relative_Deadline
    --  pragma appears in the task definition. The expression captures the
    --  argument that was present in the pragma, and is used to provide the
    --  Relative_Deadline parameter to the call to Create_Task.
 
-   --  The _Domain field is present only if a Dispatching_Domain pragma or
-   --  aspect appears in the task definition. The expression captures the
-   --  argument that was present in the pragma or aspect, and is used to
-   --  provide the Dispatching_Domain parameter to the call to Create_Task.
+   --  The _Domain field is always present. It will be filled at the freeze
+   --  point, when the record init proc is built, to capture the expression of
+   --  a Dispatching_Domain pragma, attribute definition clause or aspect
+   --  specification (see Build_Record_Init_Proc in Exp_Ch3).
 
    --  When a task is declared, an instance of the task value record is
    --  created. The elaboration of this declaration creates the correct bounds
@@ -11336,20 +11327,64 @@ package body Exp_Ch9 is
 
    procedure Expand_N_Task_Type_Declaration (N : Node_Id) is
       Loc     : constant Source_Ptr := Sloc (N);
+      TaskId  : constant Entity_Id  := Defining_Identifier (N);
       Tasktyp : constant Entity_Id  := Etype (Defining_Identifier (N));
       Tasknm  : constant Name_Id    := Chars (Tasktyp);
       Taskdef : constant Node_Id    := Task_Definition (N);
 
+      Body_Decl  : Node_Id;
+      Cdecls     : List_Id;
+      Decl_Stack : Node_Id;
+      Elab_Decl  : Node_Id;
+      Ent_Stack  : Entity_Id;
       Proc_Spec  : Node_Id;
       Rec_Decl   : Node_Id;
       Rec_Ent    : Entity_Id;
-      Cdecls     : List_Id;
-      Elab_Decl  : Node_Id;
-      Size_Decl  : Node_Id;
-      Body_Decl  : Node_Id;
+      Size_Decl  : Entity_Id;
       Task_Size  : Node_Id;
-      Ent_Stack  : Entity_Id;
-      Decl_Stack : Node_Id;
+
+      function Get_Relative_Deadline_Pragma (T : Node_Id) return Node_Id;
+      --  Searches the task definition T for the first occurrence of the pragma
+      --  Relative Deadline. The caller has ensured that the pragma is present
+      --  in the task definition. Note that this routine cannot be implemented
+      --  with the Rep Item chain mechanism since Relative_Deadline pragmas are
+      --  not chained because their expansion into a procedure call statement
+      --  would cause a break in the chain.
+
+      ----------------------------------
+      -- Get_Relative_Deadline_Pragma --
+      ----------------------------------
+
+      function Get_Relative_Deadline_Pragma (T : Node_Id) return Node_Id is
+         N : Node_Id;
+
+      begin
+         N := First (Visible_Declarations (T));
+         while Present (N) loop
+            if Nkind (N) = N_Pragma
+              and then Pragma_Name (N) = Name_Relative_Deadline
+            then
+               return N;
+            end if;
+
+            Next (N);
+         end loop;
+
+         N := First (Private_Declarations (T));
+         while Present (N) loop
+            if Nkind (N) = N_Pragma
+              and then Pragma_Name (N) = Name_Relative_Deadline
+            then
+               return N;
+            end if;
+
+            Next (N);
+         end loop;
+
+         raise Program_Error;
+      end Get_Relative_Deadline_Pragma;
+
+   --  Start of processing for Expand_N_Task_Type_Declaration
 
    begin
       --  If already expanded, nothing to do
@@ -11378,6 +11413,7 @@ package body Exp_Ch9 is
           Aliased_Present      => True,
           Object_Definition    => New_Reference_To (Standard_Boolean, Loc),
           Expression           => New_Reference_To (Standard_False, Loc));
+
       Insert_After (N, Elab_Decl);
 
       --  Next create the declaration of the size variable (tasknmZ)
@@ -11392,8 +11428,7 @@ package body Exp_Ch9 is
           Is_Static_Expression
             (Expression
                (First (Pragma_Argument_Associations
-                         (Find_Task_Or_Protected_Pragma
-                            (Taskdef, Name_Storage_Size)))))
+                         (Get_Rep_Pragma (TaskId, Name_Storage_Size)))))
       then
          Size_Decl :=
            Make_Object_Declaration (Loc,
@@ -11403,8 +11438,8 @@ package body Exp_Ch9 is
                Convert_To (RTE (RE_Size_Type),
                  Relocate_Node
                    (Expression (First (Pragma_Argument_Associations
-                                         (Find_Task_Or_Protected_Pragma
-                                            (Taskdef, Name_Storage_Size)))))));
+                                         (Get_Rep_Pragma
+                                            (TaskId, Name_Storage_Size)))))));
 
       else
          Size_Decl :=
@@ -11472,8 +11507,7 @@ package body Exp_Ch9 is
                Expr_N : constant Node_Id :=
                           Expression (First (
                             Pragma_Argument_Associations (
-                              Find_Task_Or_Protected_Pragma
-                                (Taskdef, Name_Storage_Size))));
+                              Get_Rep_Pragma (TaskId, Name_Storage_Size))));
                Etyp   : constant Entity_Id := Etype (Expr_N);
                P      : constant Node_Id   := Parent (Expr_N);
 
@@ -11532,51 +11566,19 @@ package body Exp_Ch9 is
 
       Collect_Entry_Families (Loc, Cdecls, Size_Decl, Tasktyp);
 
-      --  Add the _Priority component if a Priority pragma is present
+      --  Add the _Priority component with no expression
 
-      if Present (Taskdef) and then Has_Pragma_Priority (Taskdef) then
-         declare
-            Prag : constant Node_Id :=
-                     Find_Task_Or_Protected_Pragma (Taskdef, Name_Priority);
-            Expr : Node_Id;
+      Append_To (Cdecls,
+        Make_Component_Declaration (Loc,
+          Defining_Identifier  =>
+            Make_Defining_Identifier (Loc, Name_uPriority),
+          Component_Definition =>
+            Make_Component_Definition (Loc,
+              Aliased_Present    => False,
+              Subtype_Indication =>
+                New_Reference_To (Standard_Integer, Loc))));
 
-         begin
-            Expr := First (Pragma_Argument_Associations (Prag));
-
-            if Nkind (Expr) = N_Pragma_Argument_Association then
-               Expr := Expression (Expr);
-            end if;
-
-            Expr := New_Copy_Tree (Expr);
-
-            --  Add conversion to proper type to do range check if required
-            --  Note that for runtime units, we allow out of range interrupt
-            --  priority values to be used in a priority pragma. This is for
-            --  the benefit of some versions of System.Interrupts which use
-            --  a special server task with maximum interrupt priority.
-
-            if Pragma_Name (Prag) = Name_Priority
-              and then not GNAT_Mode
-            then
-               Rewrite (Expr, Convert_To (RTE (RE_Priority), Expr));
-            else
-               Rewrite (Expr, Convert_To (RTE (RE_Any_Priority), Expr));
-            end if;
-
-            Append_To (Cdecls,
-              Make_Component_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, Name_uPriority),
-                Component_Definition =>
-                  Make_Component_Definition (Loc,
-                    Aliased_Present    => False,
-                    Subtype_Indication => New_Reference_To (Standard_Integer,
-                                                            Loc)),
-                Expression => Expr));
-         end;
-      end if;
-
-      --  Add the _Task_Size component if a Storage_Size pragma is present
+      --  Add the _Size component if a Storage_Size pragma is present
 
       if Present (Taskdef)
         and then Has_Storage_Size_Pragma (Taskdef)
@@ -11589,21 +11591,20 @@ package body Exp_Ch9 is
              Component_Definition =>
                Make_Component_Definition (Loc,
                  Aliased_Present    => False,
-                 Subtype_Indication => New_Reference_To (RTE (RE_Size_Type),
-                                                         Loc)),
+                 Subtype_Indication =>
+                   New_Reference_To (RTE (RE_Size_Type), Loc)),
 
              Expression =>
                Convert_To (RTE (RE_Size_Type),
                  Relocate_Node (
                    Expression (First (
                      Pragma_Argument_Associations (
-                       Find_Task_Or_Protected_Pragma
-                         (Taskdef, Name_Storage_Size))))))));
+                       Get_Rep_Pragma (TaskId, Name_Storage_Size))))))));
       end if;
 
       --  Add the _Task_Info component if a Task_Info pragma is present
 
-      if Present (Taskdef) and then Has_Task_Info_Pragma (Taskdef) then
+      if Has_Rep_Pragma_For_Entity (TaskId, Name_Task_Info) then
          Append_To (Cdecls,
            Make_Component_Declaration (Loc,
              Defining_Identifier =>
@@ -11618,30 +11619,21 @@ package body Exp_Ch9 is
              Expression => New_Copy (
                Expression (First (
                  Pragma_Argument_Associations (
-                   Find_Task_Or_Protected_Pragma
-                     (Taskdef, Name_Task_Info)))))));
+                   Get_Rep_Pragma_For_Entity (TaskId, Name_Task_Info)))))));
       end if;
 
-      --  Add the _CPU component if a CPU pragma is present
+      --  Add the _CPU component with no expression
 
-      if Present (Taskdef) and then Has_Pragma_CPU (Taskdef) then
-         Append_To (Cdecls,
-           Make_Component_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uCPU),
+      Append_To (Cdecls,
+        Make_Component_Declaration (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uCPU),
 
-             Component_Definition =>
-               Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
-                 Subtype_Indication =>
-                   New_Reference_To (RTE (RE_CPU_Range), Loc)),
-
-             Expression => New_Copy (
-               Expression (First (
-                 Pragma_Argument_Associations (
-                   Find_Task_Or_Protected_Pragma
-                     (Taskdef, Name_CPU)))))));
-      end if;
+          Component_Definition =>
+            Make_Component_Definition (Loc,
+              Aliased_Present    => False,
+              Subtype_Indication =>
+                New_Reference_To (RTE (RE_CPU_Range), Loc))));
 
       --  Add the _Relative_Deadline component if a Relative_Deadline pragma is
       --  present. If we are using a restricted run time this component will
@@ -11667,19 +11659,14 @@ package body Exp_Ch9 is
                  Relocate_Node (
                    Expression (First (
                      Pragma_Argument_Associations (
-                       Find_Task_Or_Protected_Pragma
-                         (Taskdef, Name_Relative_Deadline))))))));
+                       Get_Relative_Deadline_Pragma (Taskdef))))))));
       end if;
 
-      --  Add the _Dispatching_Domain component if a Dispatching_Domain pragma
-      --  or aspect is present. If we are using a restricted run time this
-      --  component will not be added (dispatching domains are not allowed by
-      --  the Ravenscar profile).
+      --  Add the _Dispatching_Domain component with no expression. If we are
+      --  using a restricted run time this component will not be added
+      --  (dispatching domains are not allowed by the Ravenscar profile).
 
-      if not Restricted_Profile
-        and then Present (Taskdef)
-        and then Has_Pragma_Dispatching_Domain (Taskdef)
-      then
+      if not Restricted_Profile then
          Append_To (Cdecls,
            Make_Component_Declaration (Loc,
              Defining_Identifier  =>
@@ -11690,16 +11677,7 @@ package body Exp_Ch9 is
                  Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Reference_To
-                     (RTE (RE_Dispatching_Domain_Access), Loc)),
-
-             Expression           =>
-               Unchecked_Convert_To (RTE (RE_Dispatching_Domain_Access),
-                 Relocate_Node
-                   (Expression
-                      (First
-                         (Pragma_Argument_Associations
-                            (Find_Task_Or_Protected_Pragma
-                               (Taskdef, Name_Dispatching_Domain))))))));
+                     (RTE (RE_Dispatching_Domain_Access), Loc))));
       end if;
 
       Insert_After (Size_Decl, Rec_Decl);
@@ -12750,60 +12728,6 @@ package body Exp_Ch9 is
       return S;
    end Find_Master_Scope;
 
-   -----------------------------------
-   -- Find_Task_Or_Protected_Pragma --
-   -----------------------------------
-
-   function Find_Task_Or_Protected_Pragma
-     (T : Node_Id;
-      P : Name_Id) return Node_Id
-   is
-      N : Node_Id;
-
-   begin
-      N := First (Visible_Declarations (T));
-      while Present (N) loop
-         if Nkind (N) = N_Pragma then
-            if Pragma_Name (N) = P then
-               return N;
-
-            elsif P = Name_Priority
-              and then Pragma_Name (N) = Name_Interrupt_Priority
-            then
-               return N;
-
-            else
-               Next (N);
-            end if;
-
-         else
-            Next (N);
-         end if;
-      end loop;
-
-      N := First (Private_Declarations (T));
-      while Present (N) loop
-         if Nkind (N) = N_Pragma then
-            if Pragma_Name (N) = P then
-               return N;
-
-            elsif P = Name_Priority
-              and then Pragma_Name (N) = Name_Interrupt_Priority
-            then
-               return N;
-
-            else
-               Next (N);
-            end if;
-
-         else
-            Next (N);
-         end if;
-      end loop;
-
-      raise Program_Error;
-   end Find_Task_Or_Protected_Pragma;
-
    -------------------------------
    -- First_Protected_Operation --
    -------------------------------
@@ -13362,7 +13286,6 @@ package body Exp_Ch9 is
    is
       Loc         : constant Source_Ptr := Sloc (Protect_Rec);
       P_Arr       : Entity_Id;
-      Pdef        : Node_Id;
       Pdec        : Node_Id;
       Ptyp        : constant Node_Id :=
                       Corresponding_Concurrent_Type (Protect_Rec);
@@ -13392,10 +13315,6 @@ package body Exp_Ch9 is
          Next (Pdec);
       end loop;
 
-      --  Now we can find the object definition from this declaration
-
-      Pdef := Protected_Definition (Pdec);
-
       --  Build the parameter list for the call. Note that _Init is the name
       --  of the formal for the object to be initialized, which is the task
       --  value record itself.
@@ -13418,24 +13337,34 @@ package body Exp_Ch9 is
              Attribute_Name => Name_Unchecked_Access));
 
          --  Priority parameter. Set to Unspecified_Priority unless there is a
-         --  priority pragma, in which case we take the value from the pragma,
-         --  or there is an interrupt pragma and no priority pragma, and we
-         --  set the ceiling to Interrupt_Priority'Last, an implementation-
-         --  defined value, see D.3(10).
+         --  priority clause, in which case we take the value from the
+         --  pragma/attribute definition clause, or there is an interrupt
+         --  clause and no priority clause, and we set the ceiling to
+         --  Interrupt_Priority'Last, an implementation defined value,
+         --  see D.3(10).
 
-         if Present (Pdef)
-           and then Has_Pragma_Priority (Pdef)
-         then
+         if Has_Rep_Item (Ptyp, Name_Priority) then
             declare
-               Prio : constant Node_Id :=
-                        Expression
-                          (First
-                             (Pragma_Argument_Associations
-                                (Find_Task_Or_Protected_Pragma
-                                   (Pdef, Name_Priority))));
+               Prio_Clause : constant Node_Id :=
+                               Get_Rep_Item (Ptyp, Name_Priority);
+
+               Prio : Node_Id;
                Temp : Entity_Id;
 
             begin
+               --  Pragma Priority
+
+               if Nkind (Prio_Clause) = N_Pragma then
+                  Prio :=
+                    Expression
+                     (First (Pragma_Argument_Associations (Prio_Clause)));
+
+               --  Attribute definition clause Priority
+
+               else
+                  Prio := Expression (Prio_Clause);
+               end if;
+
                --  If priority is a static expression, then we can duplicate it
                --  with no problem and simply append it to the argument list.
 
@@ -13738,9 +13667,9 @@ package body Exp_Ch9 is
       Args := New_List;
 
       --  Priority parameter. Set to Unspecified_Priority unless there is a
-      --  priority pragma, in which case we take the value from the pragma.
+      --  priority rep item, in which case we take the value from the rep item.
 
-      if Present (Tdef) and then Has_Pragma_Priority (Tdef) then
+      if Has_Rep_Item (Ttyp, Name_Priority) then
          Append_To (Args,
            Make_Selected_Component (Loc,
              Prefix        => Make_Identifier (Loc, Name_uInit),
@@ -13795,9 +13724,7 @@ package body Exp_Ch9 is
       --  Task_Info parameter. Set to Unspecified_Task_Info unless there is a
       --  Task_Info pragma, in which case we take the value from the pragma.
 
-      if Present (Tdef)
-        and then Has_Task_Info_Pragma (Tdef)
-      then
+      if Has_Rep_Pragma_For_Entity (Ttyp, Name_Task_Info) then
          Append_To (Args,
            Make_Selected_Component (Loc,
              Prefix        => Make_Identifier (Loc, Name_uInit),
@@ -13808,18 +13735,17 @@ package body Exp_Ch9 is
            New_Reference_To (RTE (RE_Unspecified_Task_Info), Loc));
       end if;
 
-      --  CPU parameter. Set to Unspecified_CPU unless there is a CPU pragma,
-      --  in which case we take the value from the pragma. The parameter is
+      --  CPU parameter. Set to Unspecified_CPU unless there is a CPU rep item,
+      --  in which case we take the value from the rep item. The parameter is
       --  passed as an Integer because in the case of unspecified CPU the
       --  value is not in the range of CPU_Range.
 
-      if Present (Tdef) and then Has_Pragma_CPU (Tdef) then
+      if Has_Rep_Item (Ttyp, Name_CPU) then
          Append_To (Args,
            Convert_To (Standard_Integer,
              Make_Selected_Component (Loc,
                Prefix        => Make_Identifier (Loc, Name_uInit),
                Selector_Name => Make_Identifier (Loc, Name_uCPU))));
-
       else
          Append_To (Args,
            New_Reference_To (RTE (RE_Unspecified_CPU), Loc));
@@ -13836,7 +13762,9 @@ package body Exp_Ch9 is
 
          --  Case where pragma Relative_Deadline applies: use given value
 
-         if Present (Tdef) and then Has_Relative_Deadline_Pragma (Tdef) then
+         if Present (Tdef)
+           and then Has_Relative_Deadline_Pragma (Tdef)
+         then
             Append_To (Args,
               Make_Selected_Component (Loc,
                 Prefix        =>
@@ -13851,18 +13779,17 @@ package body Exp_Ch9 is
               New_Reference_To (RTE (RE_Time_Span_Zero), Loc));
          end if;
 
-         --  Dispatching_Domain parameter. If no Dispatching_Domain pragma or
-         --  aspect is present, then the dispatching domain is null. If a
-         --  pragma or aspect is present, then the dispatching domain is taken
-         --  from the _Dispatching_Domain field of the task value record,
-         --  which was set from the pragma value. Note that this parameter
-         --  must not be generated for the restricted profiles since Ravenscar
-         --  does not allow dispatching domains.
+         --  Dispatching_Domain parameter. If no Dispatching_Domain rep item is
+         --  present, then the dispatching domain is null. If a rep item is
+         --  present, then the dispatching domain is taken from the
+         --  _Dispatching_Domain field of the task value record, which was set
+         --  from the rep item value. Note that this parameter must not be
+         --  generated for the restricted profiles since Ravenscar does not
+         --  allow dispatching domains.
 
-         --  Case where pragma or aspect Dispatching_Domain applies: use given
-         --  value.
+         --  Case where Dispatching_Domain rep item applies: use given value
 
-         if Present (Tdef) and then Has_Pragma_Dispatching_Domain (Tdef) then
+         if Has_Rep_Item (Ttyp, Name_Dispatching_Domain) then
             Append_To (Args,
               Make_Selected_Component (Loc,
                 Prefix        =>
@@ -13980,18 +13907,16 @@ package body Exp_Ch9 is
       --  init call unless there is a Task_Name pragma, in which case we take
       --  the value from the pragma.
 
-      if Present (Tdef)
-        and then Has_Task_Name_Pragma (Tdef)
-      then
+      if Has_Rep_Pragma_For_Entity (Ttyp, Name_Task_Name) then
          --  Copy expression in full, because it may be dynamic and have
          --  side effects.
 
          Append_To (Args,
            New_Copy_Tree
-             (Expression (First
-                           (Pragma_Argument_Associations
-                             (Find_Task_Or_Protected_Pragma
-                               (Tdef, Name_Task_Name))))));
+             (Expression
+               (First
+                 (Pragma_Argument_Associations
+                   (Get_Rep_Pragma_For_Entity (Ttyp, Name_Task_Name))))));
 
       else
          Append_To (Args, Make_Identifier (Loc, Name_uTask_Name));

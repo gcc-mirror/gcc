@@ -54,6 +54,25 @@ package Sem_Ch9  is
    procedure Analyze_Timed_Entry_Call                   (N : Node_Id);
    procedure Analyze_Triggering_Alternative             (N : Node_Id);
 
+   procedure Install_Declarations (Spec : Entity_Id);
+   --  Utility to make visible in corresponding body the entities defined in
+   --  task, protected type declaration, or entry declaration.
+
+   procedure Install_Discriminants (E : Entity_Id);
+   --  Utility to make visible the discriminants of type entity E
+
+   procedure Push_Scope_And_Install_Discriminants (E : Entity_Id);
+   --  Utility that pushes the scope E and makes visible the discriminants of
+   --  type entity E if E has discriminants.
+
+   procedure Uninstall_Discriminants (E : Entity_Id);
+   --  Utility that removes the visibility to the discriminants of type entity
+   --  E.
+
+   procedure Uninstall_Discriminants_And_Pop_Scope (E : Entity_Id);
+   --  Utility that removes the visibility to the discriminants of type entity
+   --  E and pop the scope stack if E has discriminants.
+
    ------------------------------
    -- Lock Free Data Structure --
    ------------------------------

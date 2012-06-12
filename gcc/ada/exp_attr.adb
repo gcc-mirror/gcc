@@ -831,11 +831,17 @@ package body Exp_Attr is
 
       --  Attributes related to Ada 2012 iterators (placeholder ???)
 
-      when Attribute_Constant_Indexing    => null;
-      when Attribute_Default_Iterator     => null;
-      when Attribute_Implicit_Dereference => null;
-      when Attribute_Iterator_Element     => null;
-      when Attribute_Variable_Indexing    => null;
+      when Attribute_Constant_Indexing    |
+           Attribute_Default_Iterator     |
+           Attribute_Implicit_Dereference |
+           Attribute_Iterator_Element     |
+           Attribute_Variable_Indexing    => null;
+
+      --  Attributes related to Ada 2012 aspects
+
+      when Attribute_CPU                |
+           Attribute_Dispatching_Domain |
+           Attribute_Interrupt_Priority => null;
 
       ------------
       -- Access --
