@@ -7416,6 +7416,7 @@ package body Sem_Ch6 is
             --  The following is too permissive. A more precise test should
             --  check that the generic actual is an ancestor subtype of the
             --  other ???.
+
             --  See code in Find_Corresponding_Spec that applies an additional
             --  filter to handle accidental amiguities in instances.
 
@@ -8164,19 +8165,17 @@ package body Sem_Ch6 is
 
       begin
          if Ekind (E) = E_Function
-           and then Is_Generic_Actual_Type (Etype (E))
-           /= Is_Generic_Actual_Type (Etype (Designator))
+           and then Is_Generic_Actual_Type (Etype (E)) /=
+                    Is_Generic_Actual_Type (Etype (Designator))
          then
             return True;
          end if;
 
          F1 := First_Formal (Designator);
          F2 := First_Formal (E);
-
          while Present (F1) loop
-            if
-              Is_Generic_Actual_Type (Etype (F1))
-              /= Is_Generic_Actual_Type (Etype (F2))
+            if Is_Generic_Actual_Type (Etype (F1)) /=
+               Is_Generic_Actual_Type (Etype (F2))
             then
                return True;
             end if;
@@ -8202,7 +8201,7 @@ package body Sem_Ch6 is
          if Scope (E) = Current_Scope then
             if Current_Scope = Standard_Standard
               or else (Ekind (E) = Ekind (Designator)
-                         and then Type_Conformant (E, Designator))
+                        and then Type_Conformant (E, Designator))
             then
                --  Within an instantiation, we know that spec and body are
                --  subtype conformant, because they were subtype conformant in

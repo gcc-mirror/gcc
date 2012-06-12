@@ -2483,13 +2483,6 @@ package body Sem_Prag is
          Comp  : Node_Id;
 
       begin
-         if not Is_Non_Empty_List (Component_Items (Clist)) then
-            Error_Msg_N
-              ("Unchecked_Union may not have empty component list",
-               Variant);
-            return;
-         end if;
-
          Comp := First (Component_Items (Clist));
          while Present (Comp) loop
             Check_Component (Comp, UU_Typ, In_Variant_Part => True);
