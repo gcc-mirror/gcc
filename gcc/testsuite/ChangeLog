@@ -1,3 +1,7 @@
+2012-06-12  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/torture/alias-1.c: New test.
+
 2012-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/53589
