@@ -1,5 +1,19 @@
 2012-06-12  Robert Dewar  <dewar@adacore.com>
 
+	* a-direct.adb: Minor reformatting.
+
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add missing documentation for -gnatw.v and
+	-gnatw.V.
+
+2012-06-12  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch7.adb, sem_prag.adb, sem_ch12.adb, sem_ch4.adb,
+	sem_ch13.adb: Minor rewording of error messages for unchecked unions.
+
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
 	* lib-xref.ads: Minor reformatting.
 
 2012-06-12  Pascal Obry  <obry@adacore.com>
