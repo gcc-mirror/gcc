@@ -1838,15 +1838,6 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	      /* ??? Any reason the field size would be different than
 		 the size we got from the type?  */
 	    }
-
-	  /* If this is an indirect reference, record it.  */
-	  else if (TREE_CODE (t) == MEM_REF)
-	    {
-	      attrs.expr = t;
-	      attrs.offset_known_p = true;
-	      attrs.offset = 0;
-	      apply_bitpos = bitpos;
-	    }
 	}
 
       /* If this is an indirect reference, record it.  */
