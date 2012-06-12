@@ -949,6 +949,33 @@ package body Sem_Ch13 is
                      end if;
 
                      goto Continue;
+
+                  elsif A_Id = Aspect_Import
+                    or else A_Id = Aspect_Export
+                  then
+
+                     --  Verify that there is an aspect Convention that will
+                     --  incorporate the Import/Export aspect, and eventual
+                     --  Link/External names.
+
+                     declare
+                        A : Node_Id;
+
+                     begin
+                        A := First (L);
+                        while Present (A) loop
+                           exit when Chars (Identifier (A)) = Name_Convention;
+                           Next (A);
+                        end loop;
+
+                        if No (A) then
+                           Error_Msg_N
+                             ("missing Convention aspect for Export/Import",
+                                 Aspect);
+                        end if;
+                     end;
+
+                     goto Continue;
                   end if;
 
                   --  For all other aspects we just create a matching pragma
@@ -1168,13 +1195,73 @@ package body Sem_Ch13 is
                --  the second argument is a local name referring to the entity,
                --  and the first argument is the aspect definition expression.
 
-               when Aspect_Convention =>
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Argument_Associations =>
-                        New_List (Relocate_Node (Expr), Ent),
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Chars (Id)));
+               when Aspect_Convention  =>
+
+                  --  The aspect may be part of the specification of an import
+                  --  or export pragma. Scan the aspect list to gather the
+                  --  other components, if any. The name of the generated
+                  --  pragma is one of Convention/Import/Export.
+
+                  declare
+                     P_Name   : Name_Id;
+                     A_Name   : Name_Id;
+                     A        : Node_Id;
+                     Arg_List : List_Id;
+                     Found    : Boolean;
+                     L_Assoc  : Node_Id;
+                     E_Assoc  : Node_Id;
+
+                  begin
+                     P_Name   := Chars (Id);
+                     Found    := False;
+                     Arg_List := New_List;
+                     L_Assoc  := Empty;
+                     E_Assoc  := Empty;
+
+                     A := First (L);
+                     while Present (A) loop
+                        A_Name := Chars (Identifier (A));
+
+                        if A_Name = Name_Import
+                          or else A_Name = Name_Export
+                        then
+                           if Found then
+                              Error_Msg_N ("conflicting", A);
+                           else
+                              Found := True;
+                           end if;
+
+                           P_Name := A_Name;
+
+                        elsif A_Name = Name_Link_Name then
+                           L_Assoc := Make_Pragma_Argument_Association (Loc,
+                              Chars => A_Name,
+                              Expression => Relocate_Node (Expression (A)));
+
+                        elsif A_Name = Name_External_Name then
+                           E_Assoc := Make_Pragma_Argument_Association (Loc,
+                              Chars => A_Name,
+                              Expression => Relocate_Node (Expression (A)));
+                        end if;
+
+                        Next (A);
+                     end loop;
+
+                     Arg_List := New_List (Relocate_Node (Expr), Ent);
+                     if Present (L_Assoc) then
+                        Append_To (Arg_List, L_Assoc);
+                     end if;
+
+                     if Present (E_Assoc) then
+                        Append_To (Arg_List, E_Assoc);
+                     end if;
+
+                     Aitem :=
+                       Make_Pragma (Loc,
+                         Pragma_Argument_Associations => Arg_List,
+                         Pragma_Identifier            =>
+                            Make_Identifier (Loc, P_Name));
+                  end;
 
                when Aspect_Warnings =>
 
@@ -1570,13 +1657,33 @@ package body Sem_Ch13 is
                   Analyze_Aspect_Dimension_System (N, Id, Expr);
                   goto Continue;
 
-               --  Placeholders for new aspects without corresponding pragmas
+               when Aspect_External_Name |
+                    Aspect_Link_Name     =>
 
-               when Aspect_External_Name =>
-                  null;
+                  --  Verify that there is an Import/Export aspect defined for
+                  --  the entity. The processing of that aspect in turn checks
+                  --  that there is a Convention aspect declared. The pragma is
+                  --  constructed when processing the Convention aspect.
 
-               when Aspect_Link_Name =>
-                  null;
+                  declare
+                     A : Node_Id;
+
+                  begin
+                     A := First (L);
+                     while Present (A) loop
+                        exit when Chars (Identifier (A)) = Name_Export
+                          or else Chars (Identifier (A)) = Name_Import;
+                        Next (A);
+                     end loop;
+
+                     if No (A) then
+                        Error_Msg_N
+                          ("Missing Import/Export for Link/External name",
+                               Aspect);
+                     end if;
+                  end;
+
+                  goto Continue;
             end case;
 
             --  If a delay is required, we delay the freeze (not much point in

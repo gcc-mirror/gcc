@@ -1,3 +1,21 @@
+2012-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Is_Atomic_Object): Return true for an atomic
+	component as well as a prefix which is an atomic component.
+
+2012-06-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Import_Or_Interface): revert previous
+	patch. The processing of interfacing aspects now generates a
+	proper Ada 2005 pragma.
+	* sem_prag.adb (Analyze_Pragma, cases Pragma_Export and
+	Pragma_Import): revert previous patch.	The processing of
+	interfacing aspects now generates a proper Ada 2005 pragma.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): generate proper
+	pragam for aspects Convention, Import and Export. Scan list
+	of aspects to collect link name and external name if present,
+	and verify that a complete pragma can be generated.
+
 2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Convert GNU_SIZE

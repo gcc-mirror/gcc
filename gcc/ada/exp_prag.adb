@@ -531,14 +531,7 @@ package body Exp_Prag is
       Init_Call : Node_Id;
 
    begin
-      --  If the pragma comes from an aspect, the entity is its first argument.
-
-      if Present (Corresponding_Aspect (N)) then
-         Def_Id := Entity (Arg1 (N));
-      else
-         Def_Id := Entity (Arg2 (N));
-      end if;
-
+      Def_Id := Entity (Arg2 (N));
       if Ekind (Def_Id) = E_Variable then
 
          --  Find generated initialization call for object, if any
