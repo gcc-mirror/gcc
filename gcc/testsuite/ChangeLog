@@ -1,4 +1,17 @@
-2012-06-07  Jason Merrill  <jason@redhat.com>
+2012-06-12  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/cpp/include2a.c: Add comments to checks for multiple
+	messages reported for one line of source code.
+	* gcc.dg/cpp/pr30786.c: Likewise.
+	* gcc.dg/cpp/pr28709.c: Likewise.
+	* gcc.dg/cpp/missing-header-MD.c: Likewise.
+	* gcc.dg/cpp/macspace2.c: Likewise.
+	* gcc.dg/cpp/missing-header-1.c: Likewise.
+	* gcc.dg/cpp/missing-header-MMD.c: Likewise.
+	* gcc.dg/cpp/missing-sysheader-MD.c: Likewise.
+	* gcc.dg/cpp/missing-sysheader-MMD.c: Likewise.
+
+2012-06-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53599
 	* g++.dg/template/local7.C: New.
