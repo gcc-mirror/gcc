@@ -6337,7 +6337,9 @@ finish_struct (tree t, tree attributes)
   else
     error ("trying to finish struct, but kicked out due to previous parse errors");
 
-  if (processing_template_decl && at_function_scope_p ())
+  if (processing_template_decl && at_function_scope_p ()
+      /* Lambdas are defined by the LAMBDA_EXPR.  */
+      && !LAMBDA_TYPE_P (t))
     add_stmt (build_min (TAG_DEFN, t));
 
   return t;

@@ -770,7 +770,9 @@ finish_static_data_member_decl (tree decl,
   if (! processing_template_decl)
     VEC_safe_push (tree, gc, pending_statics, decl);
 
-  if (LOCAL_CLASS_P (current_class_type))
+  if (LOCAL_CLASS_P (current_class_type)
+      /* We already complained about the template definition.  */
+      && !DECL_TEMPLATE_INSTANTIATION (decl))
     permerror (input_location, "local class %q#T shall not have static data member %q#D",
 	       current_class_type, decl);
 

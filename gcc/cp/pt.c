@@ -13123,7 +13123,21 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case TAG_DEFN:
-      tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
+      tmp = tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
+      if (CLASS_TYPE_P (tmp))
+	{
+	  /* Local classes are not independent templates; they are
+	     instantiated along with their containing function.  And this
+	     way we don't have to deal with pushing out of one local class
+	     to instantiate a member of another local class.  */
+	  tree fn;
+	  /* Closures are handled by the LAMBDA_EXPR.  */
+	  gcc_assert (!LAMBDA_TYPE_P (TREE_TYPE (t)));
+	  complete_type (tmp);
+	  for (fn = TYPE_METHODS (tmp); fn; fn = DECL_CHAIN (fn))
+	    if (!DECL_ARTIFICIAL (fn))
+	      instantiate_decl (fn, /*defer_ok*/0, /*expl_inst_class*/false);
+	}
       break;
 
     case STATIC_ASSERT:
