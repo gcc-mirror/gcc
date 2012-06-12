@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -832,7 +832,7 @@ package body Sem_Aux is
    ----------------------
 
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id is
-         D : constant Node_Id := Declaration_Node (Typ);
+      D : constant Node_Id := Original_Node (Declaration_Node (Typ));
 
    begin
       --  If we have a subtype declaration, get the ancestor subtype
@@ -859,6 +859,15 @@ package body Sem_Aux is
                return Entity (Subtype_Mark (SI));
             end if;
          end;
+
+      --  If derived type and private type, get the full view to find who we
+      --  are derived from.
+
+      elsif Is_Derived_Type (Typ)
+        and then Is_Private_Type (Typ)
+        and then Present (Full_View (Typ))
+      then
+         return Nearest_Ancestor (Full_View (Typ));
 
       --  Otherwise, nothing useful to return, return Empty
 

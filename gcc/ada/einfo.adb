@@ -35,6 +35,7 @@ pragma Style_Checks (All_Checks);
 with Atree;    use Atree;
 with Nlists;   use Nlists;
 with Output;   use Output;
+with Sem_Aux;  use Sem_Aux;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 
@@ -283,7 +284,6 @@ package body Einfo is
    --    Checks_May_Be_Suppressed        Flag31
    --    Kill_Elaboration_Checks         Flag32
    --    Kill_Range_Checks               Flag33
-   --    Kill_Tag_Checks                 Flag34
    --    Is_Class_Wide_Equivalent_Type   Flag35
    --    Referenced_As_LHS               Flag36
    --    Is_Known_Non_Null               Flag37
@@ -526,6 +526,7 @@ package body Einfo is
    --    Has_Anonymous_Master            Flag253
    --    Is_Implementation_Defined       Flag254
 
+   --    (unused)                        Flag34
    --    (unused)                        Flag201
 
    -----------------------
@@ -2210,11 +2211,6 @@ package body Einfo is
       return Flag33 (Id);
    end Kill_Range_Checks;
 
-   function Kill_Tag_Checks (Id : E) return B is
-   begin
-      return Flag34 (Id);
-   end Kill_Tag_Checks;
-
    function Known_To_Have_Preelab_Init (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
@@ -2781,7 +2777,7 @@ package body Einfo is
    function Universal_Aliasing (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
-      return Flag216 (Base_Type (Id));
+      return Flag216 (Implementation_Base_Type (Id));
    end Universal_Aliasing;
 
    function Unset_Reference (Id : E) return N is
@@ -4760,11 +4756,6 @@ package body Einfo is
       Set_Flag33 (Id, V);
    end Set_Kill_Range_Checks;
 
-   procedure Set_Kill_Tag_Checks (Id : E; V : B := True) is
-   begin
-      Set_Flag34 (Id, V);
-   end Set_Kill_Tag_Checks;
-
    procedure Set_Known_To_Have_Preelab_Init (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Type (Id));
@@ -5988,6 +5979,44 @@ package body Einfo is
       return Empty;
    end Get_Attribute_Definition_Clause;
 
+   ------------------
+   -- Get_Rep_Item --
+   ------------------
+
+   function Get_Rep_Item
+     (E   : Entity_Id;
+      Nam : Name_Id) return Node_Id
+   is
+      N     : Node_Id;
+      N_Nam : Name_Id := No_Name;
+
+   begin
+      N := First_Rep_Item (E);
+
+      while Present (N) loop
+         if Nkind (N) = N_Pragma then
+            N_Nam := Pragma_Name (N);
+
+         elsif Nkind (N) = N_Attribute_Definition_Clause then
+            N_Nam := Chars (N);
+
+         elsif Nkind (N) = N_Aspect_Specification then
+            N_Nam := Chars (Identifier (N));
+         end if;
+
+         if N_Nam = Nam
+           or else (Nam = Name_Priority
+                     and then N_Nam = Name_Interrupt_Priority)
+         then
+            return N;
+         end if;
+
+         Next_Rep_Item (N);
+      end loop;
+
+      return Empty;
+   end Get_Rep_Item;
+
    -------------------
    -- Get_Full_View --
    -------------------
@@ -6036,28 +6065,47 @@ package body Einfo is
      (E   : Entity_Id;
       Nam : Name_Id) return Node_Id
    is
+      Par : constant Entity_Id := Nearest_Ancestor (E);
+      --  In case of a derived type or subtype, this node represents the parent
+      --  type of type E.
+
       N   : Node_Id;
-      Arg : Node_Id;
 
    begin
       N := First_Rep_Item (E);
       while Present (N) loop
-         if Nkind (N) = N_Pragma and then Pragma_Name (N) = Nam then
-            Arg := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
+         if Nkind (N) = N_Pragma
+           and then
+             (Pragma_Name (N) = Nam
+               or else (Nam = Name_Priority
+                         and then Pragma_Name (N) = Name_Interrupt_Priority))
+         then
+            --  Return N if the pragma doesn't appear in the Rep_Item chain of
+            --  the parent.
 
-            if Is_Entity_Name (Arg) and then Entity (Arg) = E then
+            if No (Par) then
+               return N;
+
+            elsif not Present_In_Rep_Item (Par, N) then
                return N;
             end if;
 
          elsif Nkind (N) = N_Attribute_Definition_Clause
-           and then Chars (N) = Nam
            and then Entity (N) = E
+           and then
+             (Chars (N) = Nam
+                or else (Nam = Name_Priority
+                          and then Chars (N) = Name_Interrupt_Priority))
          then
             return N;
 
          elsif Nkind (N) = N_Aspect_Specification
-           and then Chars (Identifier (N)) = Nam
            and then Entity (N) = E
+           and then
+             (Chars (Identifier (N)) = Nam
+                or else (Nam = Name_Priority
+                          and then Chars (Identifier (N)) =
+                                     Name_Interrupt_Priority))
          then
             return N;
          end if;
@@ -6078,7 +6126,12 @@ package body Einfo is
    begin
       N := First_Rep_Item (E);
       while Present (N) loop
-         if Nkind (N) = N_Pragma and then Pragma_Name (N) = Nam then
+         if Nkind (N) = N_Pragma
+           and then
+             (Pragma_Name (N) = Nam
+               or else (Nam = Name_Interrupt_Priority
+                         and then Pragma_Name (N) = Name_Priority))
+         then
             return N;
          end if;
 
@@ -6087,6 +6140,30 @@ package body Einfo is
 
       return Empty;
    end Get_Rep_Pragma;
+
+   -------------------------------
+   -- Get_Rep_Pragma_For_Entity --
+   -------------------------------
+
+   function Get_Rep_Pragma_For_Entity
+     (E : Entity_Id; Nam : Name_Id) return Node_Id
+   is
+      Par : constant Entity_Id := Nearest_Ancestor (E);
+      --  In case of a derived type or subtype, this node represents the parent
+      --  type of type E.
+
+      Prag : constant Node_Id := Get_Rep_Pragma (E, Nam);
+
+   begin
+      if No (Par) then
+         return Prag;
+
+      elsif not Present_In_Rep_Item (Par, Prag) then
+         return Prag;
+      end if;
+
+      return Empty;
+   end Get_Rep_Pragma_For_Entity;
 
    ------------------------
    -- Has_Attach_Handler --
@@ -6111,18 +6188,6 @@ package body Einfo is
 
       return False;
    end Has_Attach_Handler;
-
-   -------------------------------------
-   -- Has_Attribute_Definition_Clause --
-   -------------------------------------
-
-   function Has_Attribute_Definition_Clause
-     (E  : Entity_Id;
-      Id : Attribute_Id) return Boolean
-   is
-   begin
-      return Present (Get_Attribute_Definition_Clause (E, Id));
-   end Has_Attribute_Definition_Clause;
 
    -----------------
    -- Has_Entries --
@@ -6185,6 +6250,15 @@ package body Einfo is
       return False;
    end Has_Interrupt_Handler;
 
+   ------------------
+   -- Has_Rep_Item --
+   ------------------
+
+   function Has_Rep_Item (E : Entity_Id; Nam : Name_Id) return Boolean is
+   begin
+      return Present (Get_Rep_Item (E, Nam));
+   end Has_Rep_Item;
+
    --------------------
    -- Has_Rep_Pragma --
    --------------------
@@ -6193,6 +6267,17 @@ package body Einfo is
    begin
       return Present (Get_Rep_Pragma (E, Nam));
    end Has_Rep_Pragma;
+
+   -------------------------------
+   -- Has_Rep_Pragma_For_Entity --
+   -------------------------------
+
+   function Has_Rep_Pragma_For_Entity
+     (E : Entity_Id; Nam : Name_Id) return Boolean
+   is
+   begin
+      return Present (Get_Rep_Pragma_For_Entity (E, Nam));
+   end Has_Rep_Pragma_For_Entity;
 
    --------------------
    -- Has_Unmodified --
@@ -6972,6 +7057,27 @@ package body Einfo is
       return Ekind (Id);
    end Parameter_Mode;
 
+   -------------------------
+   -- Present_In_Rep_Item --
+   -------------------------
+
+   function Present_In_Rep_Item (E : Entity_Id; N : Node_Id) return Boolean is
+      Ritem : Node_Id;
+
+   begin
+      Ritem := First_Rep_Item (E);
+
+      while Present (Ritem) loop
+         if Ritem = N then
+            return True;
+         end if;
+
+         Next_Rep_Item (Ritem);
+      end loop;
+
+      return False;
+   end Present_In_Rep_Item;
+
    --------------------------
    -- Primitive_Operations --
    --------------------------
@@ -7654,7 +7760,6 @@ package body Einfo is
       W ("Itype_Printed",                   Flag202 (Id));
       W ("Kill_Elaboration_Checks",         Flag32  (Id));
       W ("Kill_Range_Checks",               Flag33  (Id));
-      W ("Kill_Tag_Checks",                 Flag34  (Id));
       W ("Known_To_Have_Preelab_Init",      Flag207 (Id));
       W ("Low_Bound_Tested",                Flag205 (Id));
       W ("Machine_Radix_10",                Flag84  (Id));

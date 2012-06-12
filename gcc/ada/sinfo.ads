@@ -1149,16 +1149,6 @@ package Sinfo is
    --    generate elaboration code, and non-preelaborated packages which do
    --    not generate elaboration code.
 
-   --  Has_Pragma_CPU (Flag14-Sem)
-   --    A flag present in N_Subprogram_Body and N_Task_Definition nodes to
-   --    flag the presence of a CPU pragma in the declaration sequence (public
-   --    or private in the task case).
-
-   --  Has_Pragma_Dispatching_Domain (Flag15-Sem)
-   --    A flag present in N_Task_Definition nodes to flag the presence of a
-   --    Dispatching_Domain pragma in the declaration sequence (public or
-   --    private in the task case).
-
    --  Has_Pragma_Suppress_All (Flag14-Sem)
    --    This flag is set in an N_Compilation_Unit node if the Suppress_All
    --    pragma appears anywhere in the unit. This accommodates the rather
@@ -1167,12 +1157,6 @@ package Sinfo is
    --    allow it anywhere at all, and consider it equivalent to a pragma
    --    Suppress (All_Checks) appearing at the start of the configuration
    --    pragmas for the unit.
-
-   --  Has_Pragma_Priority (Flag6-Sem)
-   --    A flag present in N_Subprogram_Body, N_Task_Definition and
-   --    N_Protected_Definition nodes to flag the presence of either a Priority
-   --    or Interrupt_Priority pragma in the declaration sequence (public or
-   --    private in the task and protected cases)
 
    --  Has_Private_View (Flag11-Sem)
    --    A flag present in generic nodes that have an entity, to indicate that
@@ -1193,14 +1177,6 @@ package Sinfo is
    --  Has_Storage_Size_Pragma (Flag5-Sem)
    --    A flag present in an N_Task_Definition node to flag the presence of a
    --    Storage_Size pragma.
-
-   --  Has_Task_Info_Pragma (Flag7-Sem)
-   --    A flag present in an N_Task_Definition node to flag the presence of a
-   --    Task_Info pragma. Used to detect duplicate pragmas.
-
-   --  Has_Task_Name_Pragma (Flag8-Sem)
-   --    A flag present in N_Task_Definition nodes to flag the presence of a
-   --    Task_Name pragma in the declaration sequence for the task.
 
    --  Has_Wide_Character (Flag11-Sem)
    --    Present in string literals, set if any wide character (i.e. character
@@ -4619,13 +4595,11 @@ package Sinfo is
       --  Acts_As_Spec (Flag4-Sem)
       --  Bad_Is_Detected (Flag15) used only by parser
       --  Do_Storage_Check (Flag17-Sem)
-      --  Has_Pragma_Priority (Flag6-Sem)
       --  Is_Protected_Subprogram_Body (Flag7-Sem)
       --  Is_Entry_Barrier_Function (Flag8-Sem)
       --  Is_Task_Master (Flag5-Sem)
       --  Was_Originally_Stub (Flag13-Sem)
       --  Has_Relative_Deadline_Pragma (Flag9-Sem)
-      --  Has_Pragma_CPU (Flag14-Sem)
 
       -------------------------
       -- Expression Function --
@@ -5109,13 +5083,8 @@ package Sinfo is
       --  Visible_Declarations (List2)
       --  Private_Declarations (List3) (set to No_List if no private part)
       --  End_Label (Node4)
-      --  Has_Pragma_Priority (Flag6-Sem)
       --  Has_Storage_Size_Pragma (Flag5-Sem)
-      --  Has_Task_Info_Pragma (Flag7-Sem)
-      --  Has_Task_Name_Pragma (Flag8-Sem)
       --  Has_Relative_Deadline_Pragma (Flag9-Sem)
-      --  Has_Pragma_CPU (Flag14-Sem)
-      --  Has_Pragma_Dispatching_Domain (Flag15-Sem)
 
       --------------------
       -- 9.1  Task Item --
@@ -5200,7 +5169,6 @@ package Sinfo is
       --  Visible_Declarations (List2)
       --  Private_Declarations (List3) (set to No_List if no private part)
       --  End_Label (Node4)
-      --  Has_Pragma_Priority (Flag6-Sem)
 
       ------------------------------------------
       -- 9.4  Protected Operation Declaration --
@@ -8566,15 +8534,6 @@ package Sinfo is
    function Has_No_Elaboration_Code
      (N : Node_Id) return Boolean;    -- Flag17
 
-   function Has_Pragma_CPU
-     (N : Node_Id) return Boolean;    -- Flag14
-
-   function Has_Pragma_Dispatching_Domain
-     (N : Node_Id) return Boolean;    -- Flag15
-
-   function Has_Pragma_Priority
-     (N : Node_Id) return Boolean;    -- Flag6
-
    function Has_Pragma_Suppress_All
      (N : Node_Id) return Boolean;    -- Flag14
 
@@ -8589,12 +8548,6 @@ package Sinfo is
 
    function Has_Storage_Size_Pragma
      (N : Node_Id) return Boolean;    -- Flag5
-
-   function Has_Task_Info_Pragma
-     (N : Node_Id) return Boolean;    -- Flag7
-
-   function Has_Task_Name_Pragma
-     (N : Node_Id) return Boolean;    -- Flag8
 
    function Has_Wide_Character
      (N : Node_Id) return Boolean;    -- Flag11
@@ -9556,15 +9509,6 @@ package Sinfo is
    procedure Set_Has_No_Elaboration_Code
      (N : Node_Id; Val : Boolean := True);    -- Flag17
 
-   procedure Set_Has_Pragma_CPU
-     (N : Node_Id; Val : Boolean := True);    -- Flag14
-
-   procedure Set_Has_Pragma_Dispatching_Domain
-     (N : Node_Id; Val : Boolean := True);    -- Flag15
-
-   procedure Set_Has_Pragma_Priority
-     (N : Node_Id; Val : Boolean := True);    -- Flag6
-
    procedure Set_Has_Pragma_Suppress_All
      (N : Node_Id; Val : Boolean := True);    -- Flag14
 
@@ -9579,12 +9523,6 @@ package Sinfo is
 
    procedure Set_Has_Storage_Size_Pragma
      (N : Node_Id; Val : Boolean := True);    -- Flag5
-
-   procedure Set_Has_Task_Info_Pragma
-     (N : Node_Id; Val : Boolean := True);    -- Flag7
-
-   procedure Set_Has_Task_Name_Pragma
-     (N : Node_Id; Val : Boolean := True);    -- Flag8
 
    procedure Set_Has_Wide_Character
      (N : Node_Id; Val : Boolean := True);    -- Flag11
@@ -11990,15 +11928,10 @@ package Sinfo is
    pragma Inline (Has_Local_Raise);
    pragma Inline (Has_Self_Reference);
    pragma Inline (Has_No_Elaboration_Code);
-   pragma Inline (Has_Pragma_CPU);
-   pragma Inline (Has_Pragma_Dispatching_Domain);
-   pragma Inline (Has_Pragma_Priority);
    pragma Inline (Has_Pragma_Suppress_All);
    pragma Inline (Has_Private_View);
    pragma Inline (Has_Relative_Deadline_Pragma);
    pragma Inline (Has_Storage_Size_Pragma);
-   pragma Inline (Has_Task_Info_Pragma);
-   pragma Inline (Has_Task_Name_Pragma);
    pragma Inline (Has_Wide_Character);
    pragma Inline (Has_Wide_Wide_Character);
    pragma Inline (Header_Size_Added);
@@ -12316,15 +12249,10 @@ package Sinfo is
    pragma Inline (Set_Has_Local_Raise);
    pragma Inline (Set_Has_Dynamic_Range_Check);
    pragma Inline (Set_Has_No_Elaboration_Code);
-   pragma Inline (Set_Has_Pragma_CPU);
-   pragma Inline (Set_Has_Pragma_Dispatching_Domain);
-   pragma Inline (Set_Has_Pragma_Priority);
    pragma Inline (Set_Has_Pragma_Suppress_All);
    pragma Inline (Set_Has_Private_View);
    pragma Inline (Set_Has_Relative_Deadline_Pragma);
    pragma Inline (Set_Has_Storage_Size_Pragma);
-   pragma Inline (Set_Has_Task_Info_Pragma);
-   pragma Inline (Set_Has_Task_Name_Pragma);
    pragma Inline (Set_Has_Wide_Character);
    pragma Inline (Set_Has_Wide_Wide_Character);
    pragma Inline (Set_Header_Size_Added);

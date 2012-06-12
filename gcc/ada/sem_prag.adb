@@ -571,10 +571,9 @@ package body Sem_Prag is
       --  error message for bad placement is given.
 
       procedure Check_Duplicate_Pragma (E : Entity_Id);
-      --  Check if a pragma of the same name as the current pragma is already
+      --  Check if a rep item of the same name as the current pragma is already
       --  chained as a rep pragma to the given entity. If so give a message
       --  about the duplicate, and then raise Pragma_Exit so does not return.
-      --  Also checks for delayed aspect specification node in the chain.
 
       procedure Check_Duplicated_Export_Name (Nam : Node_Id);
       --  Nam is an N_String_Literal node containing the external name set by
@@ -1598,7 +1597,8 @@ package body Sem_Prag is
       ----------------------------
 
       procedure Check_Duplicate_Pragma (E : Entity_Id) is
-         P : Node_Id;
+         Id : Entity_Id := E;
+         P  : Node_Id;
 
       begin
          --  Nothing to do if this pragma comes from an aspect specification,
@@ -1610,7 +1610,8 @@ package body Sem_Prag is
          end if;
 
          --  Otherwise current pragma may duplicate previous pragma or a
-         --  previously given aspect specification for the same pragma.
+         --  previously given aspect specification or attribute definition
+         --  clause for the same pragma.
 
          P := Get_Rep_Item_For_Entity (E, Pragma_Name (N));
 
@@ -1618,12 +1619,25 @@ package body Sem_Prag is
             Error_Msg_Name_1 := Pragma_Name (N);
             Error_Msg_Sloc := Sloc (P);
 
+            --  For a single protected or a single task object, the error is
+            --  issued on the original entity.
+
+            if Ekind (Id) = E_Task_Type
+              or else Ekind (Id) = E_Protected_Type
+            then
+               Id := Defining_Identifier (Original_Node (Parent (Id)));
+            end if;
+
             if Nkind (P) = N_Aspect_Specification
               or else From_Aspect_Specification (P)
             then
-               Error_Msg_NE ("aspect% for & previously given#", N, E);
+               Error_Msg_NE ("aspect% for & previously given#", N, Id);
+
+            elsif Nkind (P) = N_Pragma then
+               Error_Msg_NE ("pragma% for & duplicates pragma#", N, Id);
+
             else
-               Error_Msg_NE ("pragma% for & duplicates pragma#", N, E);
+               Error_Msg_NE ("pragma% for & duplicates clause#", N, Id);
             end if;
 
             raise Pragma_Exit;
@@ -2917,7 +2931,7 @@ package body Sem_Prag is
       end Pragma_Misplaced;
 
       ------------------------------------
-      -- Process Atomic_Shared_Volatile --
+      -- Process_Atomic_Shared_Volatile --
       ------------------------------------
 
       procedure Process_Atomic_Shared_Volatile is
@@ -6597,6 +6611,7 @@ package body Sem_Prag is
                end if;
 
                Set_Is_Ada_2005_Only (Entity (E_Id));
+               Record_Rep_Item (Entity (E_Id), N);
 
             else
                Check_Arg_Count (0);
@@ -6644,6 +6659,7 @@ package body Sem_Prag is
                end if;
 
                Set_Is_Ada_2012_Only (Entity (E_Id));
+               Record_Rep_Item (Entity (E_Id), N);
 
             else
                Check_Arg_Count (0);
@@ -7149,6 +7165,7 @@ package body Sem_Prag is
                Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
             end if;
          end Atomic_Components;
+
          --------------------
          -- Attach_Handler --
          --------------------
@@ -7931,6 +7948,7 @@ package body Sem_Prag is
          when Pragma_CPU => CPU : declare
             P   : constant Node_Id := Parent (N);
             Arg : Node_Id;
+            Ent : Entity_Id;
 
          begin
             Ada_2012_Pragma;
@@ -7944,6 +7962,12 @@ package body Sem_Prag is
 
                Arg := Get_Pragma_Arg (Arg1);
                Analyze_And_Resolve (Arg, Any_Integer);
+
+               Ent := Defining_Unit_Name (Specification (P));
+
+               if Nkind (Ent) = N_Defining_Program_Unit_Name then
+                  Ent := Defining_Identifier (Ent);
+               end if;
 
                --  Must be static
 
@@ -7984,6 +8008,7 @@ package body Sem_Prag is
 
             elsif Nkind (P) = N_Task_Definition then
                Arg := Get_Pragma_Arg (Arg1);
+               Ent := Defining_Identifier (Parent (P));
 
                --  The expression must be analyzed in the special manner
                --  described in "Handling of Default and Per-Object
@@ -7997,15 +8022,12 @@ package body Sem_Prag is
                Pragma_Misplaced;
             end if;
 
-            if Has_Pragma_CPU (P) then
-               Error_Pragma ("duplicate pragma% not allowed");
-            else
-               Set_Has_Pragma_CPU (P, True);
+            --  Check duplicate pragma before we chain the pragma in the Rep
+            --  Item chain of Ent.
 
-               if Nkind (P) = N_Task_Definition then
-                  Record_Rep_Item (Defining_Identifier (Parent (P)), N);
-               end if;
-            end if;
+            Check_Duplicate_Pragma (Ent);
+
+            Record_Rep_Item (Ent, N);
          end CPU;
 
          -----------
@@ -8249,6 +8271,8 @@ package body Sem_Prag is
                     or else Ekind (E) = E_Exception
                   then
                      Set_Discard_Names (E);
+                     Record_Rep_Item (E, N);
+
                   else
                      Error_Pragma_Arg
                        ("inappropriate entity for pragma%", Arg1);
@@ -8267,6 +8291,7 @@ package body Sem_Prag is
          when Pragma_Dispatching_Domain => Dispatching_Domain : declare
             P   : constant Node_Id := Parent (N);
             Arg : Node_Id;
+            Ent : Entity_Id;
 
          begin
             Ada_2012_Pragma;
@@ -8282,6 +8307,7 @@ package body Sem_Prag is
 
             if Nkind (P) = N_Task_Definition then
                Arg := Get_Pragma_Arg (Arg1);
+               Ent := Defining_Identifier (Parent (P));
 
                --  The expression must be analyzed in the special manner
                --  described in "Handling of Default and Per-Object
@@ -8289,20 +8315,17 @@ package body Sem_Prag is
 
                Preanalyze_Spec_Expression (Arg, RTE (RE_Dispatching_Domain));
 
+               --  Check duplicate pragma before we chain the pragma in the Rep
+               --  Item chain of Ent.
+
+               Check_Duplicate_Pragma (Ent);
+
+               Record_Rep_Item (Ent, N);
+
             --  Anything else is incorrect
 
             else
                Pragma_Misplaced;
-            end if;
-
-            if Has_Pragma_Dispatching_Domain (P) then
-               Error_Pragma ("duplicate pragma% not allowed");
-            else
-               Set_Has_Pragma_Dispatching_Domain (P, True);
-
-               if Nkind (P) = N_Task_Definition then
-                  Record_Rep_Item (Defining_Identifier (Parent (P)), N);
-               end if;
             end if;
          end Dispatching_Domain;
 
@@ -10235,6 +10258,7 @@ package body Sem_Prag is
          when Pragma_Interrupt_Priority => Interrupt_Priority : declare
             P   : constant Node_Id := Parent (N);
             Arg : Node_Id;
+            Ent : Entity_Id;
 
          begin
             Check_Ada_83_Warning;
@@ -10255,12 +10279,15 @@ package body Sem_Prag is
                Pragma_Misplaced;
                return;
 
-            elsif Has_Pragma_Priority (P) then
-               Error_Pragma ("duplicate pragma% not allowed");
-
             else
-               Set_Has_Pragma_Priority (P, True);
-               Record_Rep_Item (Defining_Identifier (Parent (P)), N);
+               Ent := Defining_Identifier (Parent (P));
+
+               --  Check duplicate pragma before we chain the pragma in the Rep
+               --  Item chain of Ent.
+
+               Check_Duplicate_Pragma (Ent);
+
+               Record_Rep_Item (Ent, N);
             end if;
          end Interrupt_Priority;
 
@@ -12295,6 +12322,7 @@ package body Sem_Prag is
          when Pragma_Priority => Priority : declare
             P   : constant Node_Id := Parent (N);
             Arg : Node_Id;
+            Ent : Entity_Id;
 
          begin
             Check_No_Identifiers;
@@ -12304,6 +12332,12 @@ package body Sem_Prag is
 
             if Nkind (P) = N_Subprogram_Body then
                Check_In_Main_Program;
+
+               Ent := Defining_Unit_Name (Specification (P));
+
+               if Nkind (Ent) = N_Defining_Program_Unit_Name then
+                  Ent := Defining_Identifier (Ent);
+               end if;
 
                Arg := Get_Pragma_Arg (Arg1);
                Analyze_And_Resolve (Arg, Standard_Integer);
@@ -12356,6 +12390,7 @@ package body Sem_Prag is
 
             elsif Nkind_In (P, N_Protected_Definition, N_Task_Definition) then
                Arg := Get_Pragma_Arg (Arg1);
+               Ent := Defining_Identifier (Parent (P));
 
                --  The expression must be analyzed in the special manner
                --  described in "Handling of Default and Per-Object
@@ -12373,16 +12408,12 @@ package body Sem_Prag is
                Pragma_Misplaced;
             end if;
 
-            if Has_Pragma_Priority (P) then
-               Error_Pragma ("duplicate pragma% not allowed");
-            else
-               Set_Has_Pragma_Priority (P, True);
+            --  Check duplicate pragma before we chain the pragma in the Rep
+            --  Item chain of Ent.
 
-               if Nkind_In (P, N_Protected_Definition, N_Task_Definition) then
-                  Record_Rep_Item (Defining_Identifier (Parent (P)), N);
-                  --  exp_ch9 should use this ???
-               end if;
-            end if;
+            Check_Duplicate_Pragma (Ent);
+
+            Record_Rep_Item (Ent, N);
          end Priority;
 
          -----------------------------------
@@ -12968,26 +12999,24 @@ package body Sem_Prag is
             if Nkind (P) = N_Subprogram_Body then
                Check_In_Main_Program;
 
-            --  Tasks
+            --  Only Task and subprogram cases allowed
 
-            elsif Nkind (P) = N_Task_Definition then
-               null;
-
-            --  Anything else is incorrect
-
-            else
+            elsif Nkind (P) /= N_Task_Definition then
                Pragma_Misplaced;
             end if;
 
+            --  Check duplicate pragma before we set the corresponding flag
+
             if Has_Relative_Deadline_Pragma (P) then
                Error_Pragma ("duplicate pragma% not allowed");
-            else
-               Set_Has_Relative_Deadline_Pragma (P, True);
-
-               if Nkind (P) = N_Task_Definition then
-                  Record_Rep_Item (Defining_Identifier (Parent (P)), N);
-               end if;
             end if;
+
+            --  Set Has_Relative_Deadline_Pragma only for tasks. Note that
+            --  Relative_Deadline pragma node cannot be inserted in the Rep
+            --  Item chain of Ent since it is rewritten by the expander as a
+            --  procedure call statement that will break the chain.
+
+            Set_Has_Relative_Deadline_Pragma (P, True);
          end Relative_Deadline;
 
          ------------------------
@@ -13458,7 +13487,6 @@ package body Sem_Prag is
                end if;
 
                Record_Rep_Item (Defining_Identifier (Parent (P)), N);
-               --  ???  exp_ch9 should use this!
             end if;
          end Storage_Size;
 
@@ -13877,7 +13905,8 @@ package body Sem_Prag is
          --  pragma Task_Info (EXPRESSION);
 
          when Pragma_Task_Info => Task_Info : declare
-            P : constant Node_Id := Parent (N);
+            P   : constant Node_Id := Parent (N);
+            Ent : Entity_Id;
 
          begin
             GNAT_Pragma;
@@ -13896,11 +13925,13 @@ package body Sem_Prag is
                return;
             end if;
 
-            if Has_Task_Info_Pragma (P) then
-               Error_Pragma ("duplicate pragma% not allowed");
-            else
-               Set_Has_Task_Info_Pragma (P, True);
-            end if;
+            Ent := Defining_Identifier (Parent (P));
+
+            --  Check duplicate pragma before we chain the pragma in the Rep
+            --  Item chain of Ent.
+
+            Check_Duplicate_Pragma (Ent);
+            Record_Rep_Item (Ent, N);
          end Task_Info;
 
          ---------------
@@ -13912,6 +13943,7 @@ package body Sem_Prag is
          when Pragma_Task_Name => Task_Name : declare
             P   : constant Node_Id := Parent (N);
             Arg : Node_Id;
+            Ent : Entity_Id;
 
          begin
             Check_No_Identifiers;
@@ -13930,12 +13962,13 @@ package body Sem_Prag is
                Pragma_Misplaced;
             end if;
 
-            if Has_Task_Name_Pragma (P) then
-               Error_Pragma ("duplicate pragma% not allowed");
-            else
-               Set_Has_Task_Name_Pragma (P, True);
-               Record_Rep_Item (Defining_Identifier (Parent (P)), N);
-            end if;
+            Ent := Defining_Identifier (Parent (P));
+
+            --  Check duplicate pragma before we chain the pragma in the Rep
+            --  Item chain of Ent.
+
+            Check_Duplicate_Pragma (Ent);
+            Record_Rep_Item (Ent, N);
          end Task_Name;
 
          ------------------
@@ -14143,6 +14176,7 @@ package body Sem_Prag is
             Check_Arg_Is_Local_Name (Arg1);
 
             Find_Type (Type_Id);
+
             Typ := Entity (Type_Id);
 
             if Typ = Any_Type
@@ -14287,6 +14321,7 @@ package body Sem_Prag is
             end if;
 
             Set_Universal_Aliasing (Implementation_Base_Type (E_Id));
+            Record_Rep_Item (E_Id, N);
          end Universal_Alias;
 
          --------------------

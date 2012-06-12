@@ -1,3 +1,98 @@
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
+	* switch-c.adb, a-exexpr-gcc.adb: Minor reformatting.
+
+2012-06-12  Vincent Pucci  <pucci@adacore.com>
+
+	* checks.adb (Tag_Checks_Suppressed): Remove Kill_Tag_Checks check.
+	* einfo.adb (Universal_Aliasing): Apply to the implementation
+	base type instead of the base type.
+	(Get_Rep_Item_For_Entity):
+	Return a pragma if the pragma node is not present in the Rep
+	Item chain of the parent.
+	(Kill_Tag_Checks): Removed (unused flag).
+	(Set_Kill_Tag_Checks): Removed.
+	(Get_First_Rep_Item): New routine.
+	(Get_Rep_Pragma_For_Entity): New routine.
+	(Has_Rep_Item): New routine.
+	(Has_Rep_Pragma_For_Entity): New routine.
+	(Present_In_Rep_Item): New routine.
+	* einfo.ads (Kill_Tag_Checks): Removed.
+	(Set_Kill_Tag_Checks): Removed.
+	(Get_First_Rep_Item): New routine.
+	(Get_Rep_Pragma_For_Entity): New routine.
+	(Has_Rep_Item): New routine.
+	(Has_Rep_Pragma_For_Entity): New routine.
+	(Present_In_Rep_Item): New routine.
+	* exp_attr.adb, sem_attr.adb: Attribute_CPU,
+	Attribute_Dispatching_Domain and Attribute_Interrupt_Priority
+	case added.
+	* exp_ch13.adb (Expand_N_Attribute_Definition_Clause): For
+	attribute Storage_Size, insert the new assignement statement
+	after the Size variable declaration.
+	* exp_ch3.adb (Build_Init_Statements): Fill the CPU,
+	Dispatching_Domain, Priority and Size components with the Rep
+	Item expression (if any).
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration): _CPU,
+	_Priority, _Domain fields are always present in the
+	corresponding record type.
+	(Find_Task_Or_Protected_Pragma): Removed.
+	(Get_Relative_Deadline_Pragma): New routine.
+	(Make_Initialize_Protection): Find_Task_Or_Protected_Pragma removed.
+	(Make_Task_Create_Call): Check CPU, Size or
+	Dispatching_Domain Rep Item is present using new routine Has_Rep_Item.
+	* freeze.adb (Freeze_All): Push_Scope_And_Install_Discriminants
+	and Uninstall_Discriminants_And_Pop_Scope calls added.
+	(Freeze_Entity): Evaluate_Aspects_At_Freeze_Point call added.
+	* sem_aux.adb (Nearest_Ancestor): Retrieve the nearest ancestor
+	for private derived types.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Clean-up
+	and reordering. Delay analysis for all aspects (except some
+	peculiar cases).
+	(Analyze_Attribute_Definition_Clause):
+	Attribute_CPU, Attribute_Dispatching_Domain,
+	Interrupt_Priority and Attribute_Priority cases added.
+	(Analyze_Freeze_Entity): Push_Scope_And_Install_Discriminants
+	and Uninstall_Discriminants_And_Pop_Scope calls added.
+	(Check_Aspect_At_Freeze_Point): Reordering and clean-up.
+	(Duplicate_Clause): Issue an explicit error msg when the current
+	clause duplicates an aspect specification, an attribute definition
+	clause or a pragma.
+	(Evaluate_Aspects_At_Freeze_Point): New routine.
+	* sem_ch13.ads (Evaluate_Aspects_At_Freeze_Point): New routine.
+	* sem_ch9.adb, sem_ch9.ads (Install_Discriminants): New routine.
+	(Push_Scope_And_Install_Discriminants): New routine.
+	(Uninstall_Discriminants): New routine.
+	(Uninstall_Discriminants_And_Pop_Scope): New routine.
+	* sem_prag.adb (Check_Duplicate_Pragma): Issue an explicit error
+	msg when the current pragma duplicates an aspect specification,
+	an attribute definition clause or a pragma.
+	(Analyze_Pragma): Remove use of flags Has_Pragma_CPU,
+	Has_Pragma_Priority and Has_Pragma_Dispatching_Domain.
+	* sem_util.adb (Compile_Time_Constraint_Error): Don't complain
+	about the type if the corresponding concurrent type doesn't come
+	from source.
+	* sinfo.adb, sinfo.ads (Has_Pragma_CPU): Removed.
+	(Has_Pragma_Dispatching_Domain): Removed.
+	(Has_Pragma_Priority): Removed.
+	(Has_Task_Info_Pragma): Removed.
+	(Has_Task_Name_Pragma): Removed.
+	(Set_Has_Pragma_CPU): Removed.
+	(Set_Has_Pragma_Dispatching_Domain): Removed.
+	(Set_Has_Pragma_Priority): Removed.
+	(Set_Has_Task_Info_Pragma): Removed.
+	(Set_Has_Task_Name_Pragma): Removed.
+	* snames.adb-tmpl (Get_Pragma_Id): Pragma_CPU,
+	Pragma_Dispatching_Domain and Pragma_Interrupt_Priority added.
+	(Is_Pragma_Name): Name_CPU, Name_Dispatching_Domain and
+	Name_Interrupt_Priority added.
+	* snames.ads-tmpl: Name_Dispatching_Domain, Name_CPU
+	and Name_Interrupt_Priority moved to the list of
+	Attribute_Name. Attribute_CPU, Attribute_Dispatching_Domain and
+	Attribute_Interrupt_Priority added.  Pragma_Dispatching_Domain,
+	Pragma_CPU and Pragma_Interrupt_Priority moved to the end of
+	the Pragma_Name list.
+
 2012-06-12  Arnaud Charlet  <charlet@adacore.com>
 
 	* xref_lib.adb (Get_Full_Type): Add support for 'G'.

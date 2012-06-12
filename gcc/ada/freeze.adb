@@ -49,6 +49,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch9;  use Sem_Ch9;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
@@ -1323,6 +1324,11 @@ package body Freeze is
             --  for a description of how we handle aspect visibility).
 
             elsif Has_Delayed_Aspects (E) then
+               --  Retrieve the visibility to the discriminants in order to
+               --  analyze properly the aspects.
+
+               Push_Scope_And_Install_Discriminants (E);
+
                declare
                   Ritem : Node_Id;
 
@@ -1339,6 +1345,8 @@ package body Freeze is
                      Ritem := Next_Rep_Item (Ritem);
                   end loop;
                end;
+
+               Uninstall_Discriminants_And_Pop_Scope (E);
             end if;
 
             --  If an incomplete type is still not frozen, this may be a
@@ -1536,6 +1544,10 @@ package body Freeze is
       procedure Add_To_Result (N : Node_Id);
       --  N is a freezing action to be appended to the Result
 
+      function After_Last_Declaration return Boolean;
+      --  If Loc is a freeze_entity that appears after the last declaration
+      --  in the scope, inhibit error messages on late completion.
+
       procedure Check_Current_Instance (Comp_Decl : Node_Id);
       --  Check that an Access or Unchecked_Access attribute with a prefix
       --  which is the current instance type can only be applied when the type
@@ -1545,10 +1557,6 @@ package body Freeze is
       --  Give warning for modulus of 8, 16, 32, or 64 given as an explicit
       --  integer literal without an explicit corresponding size clause. The
       --  caller has checked that Utype is a modular integer type.
-
-      function After_Last_Declaration return Boolean;
-      --  If Loc is a freeze_entity that appears after the last declaration
-      --  in the scope, inhibit error messages on late completion.
 
       procedure Freeze_Record_Type (Rec : Entity_Id);
       --  Freeze each component, handle some representation clauses, and freeze
@@ -2513,39 +2521,15 @@ package body Freeze is
          end;
       end if;
 
-      --  Deal with delayed aspect specifications. The analysis of the aspect
-      --  is required to be delayed to the freeze point, so we evaluate the
-      --  pragma or attribute definition clause in the tree at this point.
+      --  Deal with delayed aspect specifications. The analysis of the
+      --  aspect is required to be delayed to the freeze point, so we
+      --  evaluate the pragma or attribute definition clause in the tree at
+      --  this point. We also analyze the aspect specification node at the
+      --  freeze point when the aspect doesn't correspond to
+      --  pragma/attribute definition clause.
 
       if Has_Delayed_Aspects (E) then
-         declare
-            Ritem : Node_Id;
-            Aitem : Node_Id;
-
-         begin
-            --  Look for aspect specification entries for this entity
-
-            Ritem := First_Rep_Item (E);
-            while Present (Ritem) loop
-               if Nkind (Ritem) = N_Aspect_Specification
-                 and then Entity (Ritem) = E
-                 and then Is_Delayed_Aspect (Ritem)
-                 and then Scope (E) = Current_Scope
-               then
-                  Aitem := Aspect_Rep_Item (Ritem);
-
-                  --  Skip if this is an aspect with no corresponding pragma
-                  --  or attribute definition node (such as Default_Value).
-
-                  if Present (Aitem) then
-                     Set_Parent (Aitem, Ritem);
-                     Analyze (Aitem);
-                  end if;
-               end if;
-
-               Next_Rep_Item (Ritem);
-            end loop;
-         end;
+         Evaluate_Aspects_At_Freeze_Point (E);
       end if;
 
       --  Here to freeze the entity
@@ -2555,7 +2539,6 @@ package body Freeze is
       --  Case of entity being frozen is other than a type
 
       if not Is_Type (E) then
-
          --  If entity is exported or imported and does not have an external
          --  name, now is the time to provide the appropriate default name.
          --  Skip this if the entity is stubbed, since we don't need a name

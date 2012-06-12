@@ -2259,10 +2259,35 @@ package body Sem_Util is
             end if;
 
             if Wmsg then
+               --  Check whether the context is an Init_Proc
+
                if Inside_Init_Proc then
-                  Error_Msg_NEL
-                    ("\?& will be raised for objects of this type",
-                     N, Standard_Constraint_Error, Eloc);
+                  declare
+                     Conc_Typ : constant Entity_Id :=
+                                  Corresponding_Concurrent_Type
+                                    (Entity (Parameter_Type (First
+                                      (Parameter_Specifications
+                                        (Parent (Current_Scope))))));
+
+                  begin
+                     --  Don't complain if the corresponding concurrent type
+                     --  doesn't come from source (i.e. a single task/protected
+                     --  object).
+
+                     if Present (Conc_Typ)
+                       and then not Comes_From_Source (Conc_Typ)
+                     then
+                        Error_Msg_NEL
+                          ("\?& will be raised at run time",
+                           N, Standard_Constraint_Error, Eloc);
+
+                     else
+                        Error_Msg_NEL
+                          ("\?& will be raised for objects of this type",
+                           N, Standard_Constraint_Error, Eloc);
+                     end if;
+                  end;
+
                else
                   Error_Msg_NEL
                     ("\?& will be raised at run time",

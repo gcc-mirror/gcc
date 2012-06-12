@@ -109,9 +109,10 @@ package body Exception_Propagation is
       Private1 : Unwind_Word;
       Private2 : Unwind_Word;
 
-      --  Usual exception structure has only 2 private fields, but the SEH
-      --  one has 6.  To avoid makeing this file more complex, we use 6 fields
-      --  on all platforms, wasting a few bytes on some.
+      --  Usual exception structure has only two private fields, but the SEH
+      --  one has six. To avoid makeing this file more complex, we use six
+      --  fields on all platforms, wasting a few bytes on some.
+
       Private3 : Unwind_Word;
       Private4 : Unwind_Word;
       Private5 : Unwind_Word;
@@ -481,9 +482,9 @@ package body Exception_Propagation is
 
       GCC_Exception :=
         new GNAT_GCC_Exception'
-          (Header     => (Class => GNAT_Exception_Class,
+          (Header     => (Class   => GNAT_Exception_Class,
                           Cleanup => GNAT_GCC_Exception_Cleanup'Address,
-                          others => 0),
+                          others  => 0),
            Occurrence => Excep.all);
 
       --  Propagate it

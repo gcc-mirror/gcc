@@ -729,11 +729,11 @@ package Einfo is
 --       declared the entity. Normally this is just the Parent of the entity.
 --       One exception arises with child units, where the parent of the entity
 --       is a selected component/defining program unit name. Another exception
---       is that if the entity is an incomplete type that has been completed,
---       then we obtain the declaration node denoted by the full type, i.e. the
---       full type declaration node. Also note that for subprograms, this
---       returns the {function,procedure}_specification, not the subprogram_
---       declaration.
+--       is that if the entity is an incomplete type that has been completed or
+--       a private type, then we obtain the declaration node denoted by the
+--       full type, i.e. the full type declaration node. Also note that for
+--       subprograms, this returns the {function,procedure}_specification, not
+--       the subprogram_declaration.
 
 --    Default_Aspect_Component_Value (Node19)
 --       Present in array types. Holds the static value specified in a
@@ -2907,13 +2907,6 @@ package Einfo is
 --       This is currently only used in one odd situation in Sem_Ch3 for
 --       record types, and it would be good to get rid of it???
 
---    Kill_Tag_Checks (Flag34)
---       Present in all entities. Set by the expander to kill elaboration
---       checks which are known not to be needed. Equivalent in effect to
---       the use of pragma Suppress (Tag_Checks) for that entity except
---       that the result is permanent and cannot be undone by a subsequent
---       pragma Unsuppress.
-
 --    Known_To_Have_Preelab_Init (Flag207)
 --       Present in all type and subtype entities. If set, then the type is
 --       known to have preelaborable initialization. In the case of a partial
@@ -4852,7 +4845,6 @@ package Einfo is
    --    Is_VMS_Exception                    (Flag133)
    --    Kill_Elaboration_Checks             (Flag32)
    --    Kill_Range_Checks                   (Flag33)
-   --    Kill_Tag_Checks                     (Flag34)
    --    Low_Bound_Tested                    (Flag205)
    --    Materialize_Entity                  (Flag168)
    --    Needs_Debug_Info                    (Flag147)
@@ -6310,7 +6302,6 @@ package Einfo is
    function Itype_Printed                       (Id : E) return B;
    function Kill_Elaboration_Checks             (Id : E) return B;
    function Kill_Range_Checks                   (Id : E) return B;
-   function Kill_Tag_Checks                     (Id : E) return B;
    function Known_To_Have_Preelab_Init          (Id : E) return B;
    function Last_Assignment                     (Id : E) return N;
    function Last_Entity                         (Id : E) return E;
@@ -6907,7 +6898,6 @@ package Einfo is
    procedure Set_Itype_Printed                   (Id : E; V : B := True);
    procedure Set_Kill_Elaboration_Checks         (Id : E; V : B := True);
    procedure Set_Kill_Range_Checks               (Id : E; V : B := True);
-   procedure Set_Kill_Tag_Checks                 (Id : E; V : B := True);
    procedure Set_Known_To_Have_Preelab_Init      (Id : E; V : B := True);
    procedure Set_Last_Assignment                 (Id : E; V : N);
    procedure Set_Last_Entity                     (Id : E; V : E);
@@ -7200,15 +7190,25 @@ package Einfo is
    --  value returned is the N_Attribute_Definition_Clause node, otherwise
    --  Empty is returned.
 
+   function Get_Rep_Item
+     (E   : Entity_Id;
+      Nam : Name_Id) return Node_Id;
+   --  Searches the Rep_Item chain for a given entity E, for the first
+   --  occurrence of a rep item (pragma, attribute definition clause, or aspect
+   --  specification) whose name matches the given name. If one is found, it is
+   --  returned, otherwise Empty is returned. A special case is that when Nam
+   --  is Name_Priority, the call will also find Interrupt_Priority.
+
    function Get_Rep_Item_For_Entity
      (E   : Entity_Id;
       Nam : Name_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for an instance of a
    --  rep item (pragma, attribute definition clause, or aspect specification)
    --  whose name matches the given name. If one is found, it is returned,
-   --  otherwise Empty is returned. Unlike the other Get routines for the
-   --  Rep_Item chain, this only returns items whose entity matches E (it
-   --  does not return items from the parent chain).
+   --  otherwise Empty is returned. This routine only returns items whose
+   --  entity matches E (it does not return items from the parent chain). A
+   --  special case is that when Nam is Name_Priority, the call will also find
+   --  Interrupt_Priority.
 
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record
@@ -7218,19 +7218,33 @@ package Einfo is
    function Get_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Node_Id;
    --  Searches the Rep_Item chain for the given entity E, for an instance
    --  a representation pragma with the given name Nam. If found then the
-   --  value returned is the N_Pragma node, otherwise Empty is returned.
+   --  value returned is the N_Pragma node, otherwise Empty is returned. A
+   --  special case is that when Nam is Name_Priority, the call will also find
+   --  Interrupt_Priority.
+
+   function Get_Rep_Pragma_For_Entity
+     (E : Entity_Id; Nam : Name_Id) return Node_Id;
+   --  Same as Get_Rep_Pragma except that this routine returns a pragma that
+   --  doesn't appear in the Rep Item chain of the parent of E (if any).
+
+   function Has_Rep_Item (E : Entity_Id; Nam : Name_Id) return Boolean;
+   --  Searches the Rep_Item chain for the given entity E, for an instance
+   --  of rep item with the given name Nam. If found then True is returned,
+   --  otherwise False indicates that no matching entry was found.
 
    function Has_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Boolean;
    --  Searches the Rep_Item chain for the given entity E, for an instance
    --  of representation pragma with the given name Nam. If found then True
    --  is returned, otherwise False indicates that no matching entry was found.
 
-   function Has_Attribute_Definition_Clause
-     (E  : Entity_Id;
-      Id : Attribute_Id) return Boolean;
-   --  Searches the Rep_Item chain for a given entity E, for an instance of an
-   --  attribute definition clause with the given attribute Id. If found, True
-   --  is returned, otherwise False indicates that no matching entry was found.
+   function Has_Rep_Pragma_For_Entity
+     (E : Entity_Id; Nam : Name_Id) return Boolean;
+   --  Same as Has_Rep_Pragma except that this routine doesn't return True if
+   --  the representation pragma is also present in the Rep Item chain of the
+   --  parent of E (if any).
+
+   function Present_In_Rep_Item (E : Entity_Id; N : Node_Id) return Boolean;
+   --  Return True if N is present in the Rep_Item chain for a given entity E
 
    procedure Record_Rep_Item (E : Entity_Id; N : Node_Id);
    --  N is the node for a representation pragma, representation clause, an
@@ -7650,7 +7664,6 @@ package Einfo is
    pragma Inline (Itype_Printed);
    pragma Inline (Kill_Elaboration_Checks);
    pragma Inline (Kill_Range_Checks);
-   pragma Inline (Kill_Tag_Checks);
    pragma Inline (Known_To_Have_Preelab_Init);
    pragma Inline (Last_Assignment);
    pragma Inline (Last_Entity);
@@ -8056,7 +8069,6 @@ package Einfo is
    pragma Inline (Set_Itype_Printed);
    pragma Inline (Set_Kill_Elaboration_Checks);
    pragma Inline (Set_Kill_Range_Checks);
-   pragma Inline (Set_Kill_Tag_Checks);
    pragma Inline (Set_Known_To_Have_Preelab_Init);
    pragma Inline (Set_Last_Assignment);
    pragma Inline (Set_Last_Entity);
