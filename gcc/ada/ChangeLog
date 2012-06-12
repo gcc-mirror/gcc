@@ -1,3 +1,27 @@
+2012-06-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* projects.texi: Remove comments.
+
+2012-06-12  Thomas Quinot  <quinot@adacore.com>
+
+	* back_end.adb (Scan_Back_End_Switches): Treat -fdump-scos as
+	synonym of -gnateS.
+	(gnat_post_options): Disable gimple-based SCO generator.
+	* gnat_ugn.texi: Document that -gnateS is an obsolete synonym
+	of -fdump-scos.
+
+2012-06-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Different_Generic_Profile): new predicate for
+	Find_Corresponding_Spec, to handle a rare case of accidental
+	overloading in an instance, when the profile of a subprogram body
+	that depends on a formal type becomes compatible with that of
+	a homonym whose profile in the generic mentions the actual type.
+
+2012-06-12  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat1drv.adb: Minor reformatting.
+
 2012-06-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Build_Explicit_Dereference): If the expression

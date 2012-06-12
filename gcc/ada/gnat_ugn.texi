@@ -4045,6 +4045,13 @@ Makes the compiler output callgraph information for the program, on a
 per-file basis.  The information is generated in the VCG format.  It can
 be decorated with stack-usage per-node information.
 
+@item -fdump-scos
+@cindex @option{-fdump-scos} (@command{gcc})
+Generate SCO (Source Coverage Obligation) information in the ALI file.
+This information is used by advanced coverage tools. See unit @file{SCOs}
+in the compiler sources for details in files @file{scos.ads} and
+@file{scos.adb}.
+
 @item ^-g^/DEBUG^
 @cindex @option{^-g^/DEBUG^} (@command{gcc})
 Generate debugging information. This information is stored in the object
@@ -4201,12 +4208,10 @@ example a Pure unit cannot WITH a Preelaborate unit. If this switch is used,
 these errors become warnings (which can be ignored, or suppressed in the usual
 manner). This can be useful in some specialized circumstances such as the
 temporary use of special test software.
+
 @item -gnateS
 @cindex @option{-gnateS} (@command{gcc})
-Generate SCO (Source Coverage Obligation) information in the ALI
-file. This information is used by advanced coverage tools. See
-unit @file{SCOs} in the compiler sources for details in files
-@file{scos.ads} and @file{scos.adb}.
+Synonym of @option{-fdump-scos}, kept for backards compatibility.
 
 @item -gnatE
 @cindex @option{-gnatE} (@command{gcc})
