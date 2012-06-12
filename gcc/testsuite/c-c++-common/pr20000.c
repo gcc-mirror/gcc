@@ -9,8 +9,8 @@ void h(void) __attribute__((noreturn));
 
 
 int g(void) {
-  return 1; /* { dg-warning "function declared 'noreturn' has a 'return' statement" } */
-}           /* { dg-warning "'noreturn' function does return" "" { target *-*-* } 12 } */
+  return 1; /* { dg-warning "function declared 'noreturn' has a 'return' statement" "has return" } */
+}           /* { dg-warning "'noreturn' function does return" "does return" { target *-*-* } 12 } */
 
 int g2(void) {
   h();
@@ -24,8 +24,8 @@ int vg(void);
 int vg2(void); /* { dg-bogus ".noreturn. function returns non-void value" } */
 
 int vg(void) {
-  return 1; /* { dg-warning "function declared 'noreturn' has a 'return' statement" "" { target c } 27 } */
-}           /* { dg-warning "'noreturn' function does return" "" { target c } 27  } */
+  return 1; /* { dg-warning "function declared 'noreturn' has a 'return' statement" "has return" { target c } 27 } */
+}           /* { dg-warning "'noreturn' function does return" "does return" { target c } 27  } */
 
 int vg2(void) {
   h();
