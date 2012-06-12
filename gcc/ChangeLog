@@ -1,3 +1,10 @@
+2012-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53589
+	* cfgrtl.c (force_nonfallthru_and_redirect): Do asm_goto_edge
+	discovery even when e->dest != target.  If any LABEL_REF points
+	to e->dest label, redirect it to target's label.
+
 2012-06-12  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/sh/sh.c (output_stack_adjust): Remove !epilogue_p

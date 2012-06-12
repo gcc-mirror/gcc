@@ -1,3 +1,8 @@
+2012-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53589
+	* gcc.dg/torture/pr53589.c: New test.
+
 2012-06-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/50749
