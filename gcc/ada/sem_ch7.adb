@@ -533,7 +533,7 @@ package body Sem_Ch7 is
                begin
                   --  Check name of procedure or function calls
 
-                  if Nkind_In (N, N_Procedure_Call_Statement, N_Function_Call)
+                  if Nkind (N) in N_Subprogram_Call
                     and then Is_Entity_Name (Name (N))
                   then
                      return Abandon;

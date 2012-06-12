@@ -1,3 +1,34 @@
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_dist.adb, exp_ch7.adb, sem_type.adb, exp_attr.adb,
+	sinfo.ads, sem_ch7.adb, exp_alfa.adb, sem_scil.adb, sem_ch12.adb,
+	sem_util.adb, sem_res.adb, sem_attr.adb, sem_elab.adb, exp_ch6.adb,
+	sem_ch4.adb, sem_warn.adb, scil_ll.adb, exp_cg.adb: Minor code
+	reorganization.
+
+2012-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-tasini.ads: Minor fix in comment.
+
+2012-06-12  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Warn on record with
+	Scalar_Storage_Order if there is no placed component.
+
+2012-06-12  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb: Minor comment fix.
+
+2012-06-12  Vincent Celier  <celier@adacore.com>
+
+	* ali-util.adb (Time_Stamp_Mismatch): In minimal recompilation
+	mode, use Stringt Mark and Release to avoid growing the Stringt
+	internal tables uselessly.
+	* stringt.adb (Strings_Last): New global variable
+	(String_Chars_Last): New global variable.
+	(Mark, Release): New procedures.
+	* stringt.ads (Mark, Release) New procedures.
+
 2012-06-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Process_Transient_Objects): Renamed constant

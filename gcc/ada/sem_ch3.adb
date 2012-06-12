@@ -4341,7 +4341,8 @@ package body Sem_Ch3 is
             when E_Incomplete_Type =>
                if Ada_Version >= Ada_2005 then
 
-                  --  A subtype of an incomplete type can be explicitly tagged
+                  --  In Ada 2005 an incomplete type can be explicitly tagged:
+                  --  propagate indication.
 
                   Set_Ekind              (Id, E_Incomplete_Subtype);
                   Set_Is_Tagged_Type     (Id, Is_Tagged_Type (T));

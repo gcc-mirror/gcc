@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@ with Scans;   use Scans;
 with Scng;
 with Sinput.C;
 with Snames;  use Snames;
+with Stringt;
 with Styleg;
 
 package body ALI.Util is
@@ -476,6 +477,8 @@ package body ALI.Util is
             --  ??? It is probably worth updating the ALI file with a new
             --  field to avoid recomputing it each time.
 
+            Stringt.Mark;
+
             if Checksums_Match
                  (Get_File_Checksum (Sdep.Table (D).Sfile),
                   Source.Table (Src).Checksum)
@@ -490,6 +493,8 @@ package body ALI.Util is
 
                Sdep.Table (D).Stamp := Source.Table (Src).Stamp;
             end if;
+
+            Stringt.Release;
 
          end if;
 

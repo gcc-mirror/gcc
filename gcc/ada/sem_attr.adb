@@ -3849,8 +3849,7 @@ package body Sem_Attr is
 
          --  Case of attribute used as actual for subprogram (positional)
 
-         elsif Nkind_In (Parnt, N_Procedure_Call_Statement,
-                                N_Function_Call)
+         elsif Nkind (Parnt) in N_Subprogram_Call
             and then Is_Entity_Name (Name (Parnt))
          then
             Must_Be_Imported (Entity (Name (Parnt)));
@@ -3858,8 +3857,7 @@ package body Sem_Attr is
          --  Case of attribute used as actual for subprogram (named)
 
          elsif Nkind (Parnt) = N_Parameter_Association
-           and then Nkind_In (GParnt, N_Procedure_Call_Statement,
-                                      N_Function_Call)
+           and then Nkind (GParnt) in N_Subprogram_Call
            and then Is_Entity_Name (Name (GParnt))
          then
             Must_Be_Imported (Entity (Name (GParnt)));

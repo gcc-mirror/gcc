@@ -3271,7 +3271,7 @@ package body Exp_Ch6 is
       --  Ada 2005 (AI-251): If some formal is a class-wide interface, expand
       --  it to point to the correct secondary virtual table
 
-      if Nkind_In (Call_Node, N_Function_Call, N_Procedure_Call_Statement)
+      if Nkind (Call_Node) in N_Subprogram_Call
         and then CW_Interface_Formals_Present
       then
          Expand_Interface_Actuals (Call_Node);
@@ -3285,7 +3285,7 @@ package body Exp_Ch6 is
       --  back-ends directly handle the generation of dispatching calls and
       --  would have to undo any expansion to an indirect call.
 
-      if Nkind_In (Call_Node, N_Function_Call, N_Procedure_Call_Statement)
+      if Nkind (Call_Node) in N_Subprogram_Call
         and then Present (Controlling_Argument (Call_Node))
       then
          declare
@@ -3868,13 +3868,14 @@ package body Exp_Ch6 is
          --  intermediate result after its use.
 
          elsif Is_Build_In_Place_Function_Call (Call_Node)
-           and then Nkind_In (Parent (Call_Node), N_Attribute_Reference,
-                                          N_Function_Call,
-                                          N_Indexed_Component,
-                                          N_Object_Renaming_Declaration,
-                                          N_Procedure_Call_Statement,
-                                          N_Selected_Component,
-                                          N_Slice)
+           and then
+             Nkind_In (Parent (Call_Node), N_Attribute_Reference,
+                                           N_Function_Call,
+                                           N_Indexed_Component,
+                                           N_Object_Renaming_Declaration,
+                                           N_Procedure_Call_Statement,
+                                           N_Selected_Component,
+                                           N_Slice)
          then
             Establish_Transient_Scope (Call_Node, Sec_Stack => True);
          end if;
