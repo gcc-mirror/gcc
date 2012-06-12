@@ -14186,18 +14186,23 @@ package body Sem_Prag is
                Tdef  := Type_Definition (Declaration_Node (Typ));
                Clist := Component_List (Tdef);
 
+               --  Check presence of component list and variant part
+
+               if No (Clist) or else No (Variant_Part (Clist)) then
+                  Error_Msg_N
+                    ("Unchecked_Union must have variant part", Tdef);
+                  return;
+               end if;
+
+               --  Check components
+
                Comp := First (Component_Items (Clist));
                while Present (Comp) loop
                   Check_Component (Comp, Typ);
                   Next (Comp);
                end loop;
 
-               if No (Clist) or else No (Variant_Part (Clist)) then
-                  Error_Msg_N
-                    ("Unchecked_Union must have variant part",
-                     Tdef);
-                  return;
-               end if;
+               --  Check variant part
 
                Vpart := Variant_Part (Clist);
 

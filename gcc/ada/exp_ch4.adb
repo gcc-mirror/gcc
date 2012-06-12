@@ -10048,11 +10048,12 @@ package body Exp_Ch4 is
       --------------------------------
 
       function Prefix_Is_Formal_Parameter (N : Node_Id) return Boolean is
-         Sel_Comp : Node_Id := N;
+         Sel_Comp : Node_Id;
 
       begin
          --  Move to the left-most prefix by climbing up the tree
 
+         Sel_Comp := N;
          while Present (Parent (Sel_Comp))
            and then Nkind (Parent (Sel_Comp)) = N_Selected_Component
          loop
@@ -10065,20 +10066,12 @@ package body Exp_Ch4 is
    --  Start of processing for Has_Inferable_Discriminants
 
    begin
-      --  For identifiers and indexed components, it is sufficient to have a
-      --  constrained Unchecked_Union nominal subtype.
-
-      if Nkind_In (N, N_Identifier, N_Indexed_Component) then
-         return Is_Unchecked_Union (Base_Type (Etype (N)))
-                  and then
-                Is_Constrained (Etype (N));
-
       --  For selected components, the subtype of the selector must be a
       --  constrained Unchecked_Union. If the component is subject to a
       --  per-object constraint, then the enclosing object must have inferable
       --  discriminants.
 
-      elsif Nkind (N) = N_Selected_Component then
+      if Nkind (N) = N_Selected_Component then
          if Has_Per_Object_Constraint (Entity (Selector_Name (N))) then
 
             --  A small hack. If we have a per-object constrained selected
@@ -10087,19 +10080,20 @@ package body Exp_Ch4 is
 
             if Prefix_Is_Formal_Parameter (N) then
                return True;
-            end if;
 
             --  Otherwise, check the enclosing object and the selector
 
-            return Has_Inferable_Discriminants (Prefix (N))
-                     and then
-                   Has_Inferable_Discriminants (Selector_Name (N));
-         end if;
+            else
+               return Has_Inferable_Discriminants (Prefix (N))
+                 and then Has_Inferable_Discriminants (Selector_Name (N));
+            end if;
 
          --  The call to Has_Inferable_Discriminants will determine whether
          --  the selector has a constrained Unchecked_Union nominal type.
 
-         return Has_Inferable_Discriminants (Selector_Name (N));
+         else
+            return Has_Inferable_Discriminants (Selector_Name (N));
+         end if;
 
       --  A qualified expression has inferable discriminants if its subtype
       --  mark is a constrained Unchecked_Union subtype.
@@ -10107,9 +10101,14 @@ package body Exp_Ch4 is
       elsif Nkind (N) = N_Qualified_Expression then
          return Is_Unchecked_Union (Etype (Subtype_Mark (N)))
            and then Is_Constrained (Etype (Subtype_Mark (N)));
-      end if;
 
-      return False;
+      --  For all other names, it is sufficient to have a constrained
+      --  Unchecked_Union nominal subtype.
+
+      else
+         return Is_Unchecked_Union (Base_Type (Etype (N)))
+           and then Is_Constrained (Etype (N));
+      end if;
    end Has_Inferable_Discriminants;
 
    -------------------------------
