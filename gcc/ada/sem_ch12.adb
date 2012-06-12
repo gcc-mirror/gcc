@@ -9457,7 +9457,7 @@ package body Sem_Ch12 is
                   Freeze_Before (Instantiation_Node, Etype (F));
 
                   if Is_Incomplete_Or_Private_Type (Etype (F))
-                    and then No (Full_View (Etype (F)))
+                    and then No (Underlying_Type (Etype (F)))
                     and then not Is_Generic_Type (Etype (F))
                   then
                      Error_Msg_NE

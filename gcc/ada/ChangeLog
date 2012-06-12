@@ -1,5 +1,17 @@
 2012-06-12  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch12.adb: Small adjustment.
+
+2012-06-12  Vincent Celier  <celier@adacore.com>
+
+	* vms_cmds.ads (Command_Type): New enumeration value Test
+	* vms_conv.adb (Initialize): Add component at index Test in
+	Command_List
+	* vms_data.ads (Test_Switches): New global variable for the
+	switches of gnattest, currently empty.
+
+2012-06-12  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb (Analyze_Subtype_Declaration): if an incomplete
 	type is tagged, so is a subtype of it.
 	* sem_ch12.adb (Validate_Actual_Subprogram): implement AI05-0296,

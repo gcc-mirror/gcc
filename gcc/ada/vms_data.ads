@@ -7167,6 +7167,13 @@ package VMS_Data is
                        S_Sync_Output   'Access);
 
    ----------------------------
+   -- Switches for GNAT TEST --
+   ----------------------------
+
+   Test_Switches : aliased constant Switches :=
+     (1 .. 0 => null);
+
+   ----------------------------
    -- Switches for GNAT XREF --
    ----------------------------
 
