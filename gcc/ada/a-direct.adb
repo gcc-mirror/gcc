@@ -31,20 +31,20 @@
 
 with Ada.Calendar;               use Ada.Calendar;
 with Ada.Calendar.Formatting;    use Ada.Calendar.Formatting;
+with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
-with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Fixed;
+with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
+with System;              use System;
 with System.CRTL;         use System.CRTL;
+with System.File_IO;      use System.File_IO;
 with System.OS_Constants; use System.OS_Constants;
 with System.OS_Lib;       use System.OS_Lib;
 with System.Regexp;       use System.Regexp;
-with System.File_IO;      use System.File_IO;
-with System;              use System;
 
 package body Ada.Directories is
 
@@ -561,7 +561,9 @@ package body Ada.Directories is
       if not Is_Valid_Path_Name (Name) then
          raise Name_Error with "invalid path name """ & Name & '"';
 
-      elsif not Is_Regular_File (Name) then
+      elsif not Is_Regular_File (Name)
+        and then not Is_Symbolic_Link (Name)
+      then
          raise Name_Error with "file """ & Name & """ does not exist";
 
       else

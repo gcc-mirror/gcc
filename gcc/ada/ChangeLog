@@ -1,5 +1,15 @@
 2012-06-12  Robert Dewar  <dewar@adacore.com>
 
+	* lib-xref.ads: Minor reformatting.
+
+2012-06-12  Pascal Obry  <obry@adacore.com>
+
+	* a-direct.adb (Delete_File): Delete symbolic links silently
+	instead of raising the Name_Error exception when the symbolic
+	link is pointing to a non existent file.
+
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
 	* xref_lib.adb, sem_ch13.adb, lib-xref.adb: Minor reformatting.
 
 2012-06-12  Javier Miranda  <miranda@adacore.com>
