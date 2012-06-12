@@ -1,3 +1,14 @@
+2012-06-11  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.target/i386/builtin_target.c (vendor_signatures): New enum.
+	(check_intel_cpu_model): New function.
+	(check_amd_cpu_model): New function.
+	(check_features): New function.
+	(__get_cpuid_output): New function.
+	(check_detailed): New function.
+	(fn1): Rename to quick_check.
+	(main): Update to call quick_check and call check_detailed.
+
 2012-06-11  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp
