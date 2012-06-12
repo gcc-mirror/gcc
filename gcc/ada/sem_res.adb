@@ -2144,9 +2144,7 @@ package body Sem_Res is
                      --  of the arguments is Any_Type, and if so, suppress
                      --  the message, since it is a cascaded error.
 
-                     if Nkind_In (N, N_Function_Call,
-                                     N_Procedure_Call_Statement)
-                     then
+                     if Nkind (N) in N_Subprogram_Call then
                         declare
                            A : Node_Id;
                            E : Node_Id;
@@ -2212,8 +2210,7 @@ package body Sem_Res is
                              ("\\possible interpretation#!", N);
                         end if;
 
-                        if Nkind_In
-                             (N, N_Procedure_Call_Statement, N_Function_Call)
+                        if Nkind (N) in N_Subprogram_Call
                           and then Present (Parameter_Associations (N))
                         then
                            Report_Ambiguous_Argument;
@@ -2360,7 +2357,7 @@ package body Sem_Res is
                --  For procedure or function calls, set the type of the name,
                --  and also the entity pointer for the prefix.
 
-               elsif Nkind_In (N, N_Procedure_Call_Statement, N_Function_Call)
+               elsif Nkind (N) in N_Subprogram_Call
                  and then Is_Entity_Name (Name (N))
                then
                   Set_Etype  (Name (N), Expr_Type);
@@ -2990,8 +2987,7 @@ package body Sem_Res is
 
          if not Warn_On_Parameter_Order
            or else No (Parameter_Associations (N))
-           or else not Nkind_In (Original_Node (N), N_Procedure_Call_Statement,
-                                                    N_Function_Call)
+           or else Nkind (Original_Node (N)) not in N_Subprogram_Call
            or else not Comes_From_Source (N)
          then
             return;
@@ -4223,11 +4219,9 @@ package body Sem_Res is
          Par : constant Node_Id := Parent (N);
 
       begin
-         return
-           Nkind_In (Par, N_Function_Call,
-                          N_Procedure_Call_Statement)
-             and then Is_Entity_Name (Name (Par))
-             and then Is_Dispatching_Operation (Entity (Name (Par)));
+         return Nkind (Par) in N_Subprogram_Call
+           and then Is_Entity_Name (Name (Par))
+           and then Is_Dispatching_Operation (Entity (Name (Par)));
       end In_Dispatching_Context;
 
    --  Start of processing for Resolve_Allocator
@@ -7749,9 +7743,7 @@ package body Sem_Res is
          --  In the common case of a call which uses an explicitly null value
          --  for an access parameter, give specialized error message.
 
-         if Nkind_In (Parent (N), N_Procedure_Call_Statement,
-                                  N_Function_Call)
-         then
+         if Nkind (Parent (N)) in N_Subprogram_Call then
             Error_Msg_N
               ("null is not allowed as argument for an access parameter", N);
 

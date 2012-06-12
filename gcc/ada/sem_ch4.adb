@@ -2299,7 +2299,7 @@ package body Sem_Ch4 is
 
       Analyze (P);
 
-      if Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement) then
+      if Nkind (N) in N_Subprogram_Call then
 
          --  If P is an explicit dereference whose prefix is of a
          --  remote access-to-subprogram type, then N has already
@@ -6736,9 +6736,7 @@ package body Sem_Ch4 is
      (N : Node_Id; CW_Test_Only : Boolean := False) return Boolean
    is
       K              : constant Node_Kind  := Nkind (Parent (N));
-      Is_Subprg_Call : constant Boolean    := Nkind_In
-                                               (K, N_Procedure_Call_Statement,
-                                                   N_Function_Call);
+      Is_Subprg_Call : constant Boolean    := K in N_Subprogram_Call;
       Loc            : constant Source_Ptr := Sloc (N);
       Obj            : constant Node_Id    := Prefix (N);
 
@@ -7087,8 +7085,7 @@ package body Sem_Ch4 is
          --  Common case covering 1) Call to a procedure and 2) Call to a
          --  function that has some additional actuals.
 
-         if Nkind_In (Parent_Node, N_Function_Call,
-                                   N_Procedure_Call_Statement)
+         if Nkind (Parent_Node) in N_Subprogram_Call
 
             --  N is a selected component node containing the name of the
             --  subprogram. If N is not the name of the parent node we must

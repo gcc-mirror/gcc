@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,7 +62,7 @@ package System.Tasking.Initialization is
    -- Abort Defer/Undefer --
    -------------------------
 
-   --  Defer_Abort defers the affects of low-level abort and priority change
+   --  Defer_Abort defers the effects of low-level abort and priority change
    --  in the calling task until a matching Undefer_Abort call is executed.
 
    --  Undefer_Abort DOES MORE than just undo the effects of one call to

@@ -4337,32 +4337,14 @@ package body Exp_Ch7 is
          ----------------------
 
          function Requires_Hooking return Boolean is
-            function Is_Subprogram_Call (Nod : Node_Id) return Boolean;
-            --  Determine whether a particular node is a procedure of function
-            --  call.
-
-            ------------------------
-            -- Is_Subprogram_Call --
-            ------------------------
-
-            function Is_Subprogram_Call (Nod : Node_Id) return Boolean is
-            begin
-               return
-                 Nkind_In (Nod, N_Function_Call, N_Procedure_Call_Statement);
-            end Is_Subprogram_Call;
-
-         --  Start of processing for Requires_Hooking
-
          begin
             --  The context is either a procedure or function call or an object
-            --  declaration initialized by such a call. In all these cases, the
-            --  calls are assumed to raise an exception.
+            --  declaration initialized by a function call. In all these cases,
+            --  the calls might raise an exception.
 
-            return
-              Is_Subprogram_Call (N)
-                or else
-                  (Nkind (N) = N_Object_Declaration
-                     and then Is_Subprogram_Call (Expression (N)));
+            return Nkind (N) in N_Subprogram_Call
+               or else (Nkind (N) = N_Object_Declaration
+                         and then Nkind (Expression (N)) = N_Function_Call);
          end Requires_Hooking;
 
          --  Local variables

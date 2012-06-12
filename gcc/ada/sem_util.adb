@@ -3747,7 +3747,7 @@ package body Sem_Util is
       then
          Call := Parent (Parnt);
 
-      elsif Nkind_In (Parnt, N_Procedure_Call_Statement, N_Function_Call) then
+      elsif Nkind (Parnt) in N_Subprogram_Call then
          Call := Parnt;
 
       else
@@ -6604,7 +6604,7 @@ package body Sem_Util is
          when N_Parameter_Association =>
             return N = Explicit_Actual_Parameter (Parent (N));
 
-         when N_Function_Call | N_Procedure_Call_Statement =>
+         when N_Subprogram_Call =>
             return Is_List_Member (N)
               and then
                 List_Containing (N) = Parameter_Associations (Parent (N));
@@ -8127,9 +8127,8 @@ package body Sem_Util is
 
    function Is_Remote_Call (N : Node_Id) return Boolean is
    begin
-      if Nkind (N) /= N_Procedure_Call_Statement
-        and then Nkind (N) /= N_Function_Call
-      then
+      if Nkind (N) not in N_Subprogram_Call then
+
          --  An entry call cannot be remote
 
          return False;
@@ -9328,9 +9327,8 @@ package body Sem_Util is
          --  In older versions of Ada function call arguments are never
          --  lvalues. In Ada 2012 functions can have in-out parameters.
 
-         when N_Function_Call            |
-              N_Procedure_Call_Statement |
-              N_Entry_Call_Statement     |
+         when N_Subprogram_Call      |
+              N_Entry_Call_Statement |
               N_Accept_Statement
          =>
             if Nkind (P) = N_Function_Call and then Ada_Version < Ada_2012 then

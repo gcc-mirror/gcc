@@ -421,7 +421,7 @@ package body Exp_Attr is
             Par := Parent (Par);
          end if;
 
-         if Nkind_In (Par, N_Procedure_Call_Statement, N_Function_Call)
+         if Nkind (Par) in N_Subprogram_Call
             and then Is_Entity_Name (Name (Par))
          then
             Subp := Entity (Name (Par));

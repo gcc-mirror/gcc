@@ -7649,11 +7649,17 @@ package Sinfo is
       N_Conditional_Expression,
       N_Explicit_Dereference,
       N_Expression_With_Actions,
+
+      --  N_Subexpr, N_Has_Etype, N_Subprogram_Call
+
       N_Function_Call,
+      N_Procedure_Call_Statement,
+
+      --  N_Subexpr, N_Has_Etype
+
       N_Indexed_Component,
       N_Integer_Literal,
       N_Null,
-      N_Procedure_Call_Statement,
       N_Qualified_Expression,
       N_Quantified_Expression,
 
@@ -8066,6 +8072,10 @@ package Sinfo is
    --  N_Procedure_Call_Statement which is considered to be a subexpression
    --  (since overloading is possible, so it needs to go through the normal
    --  overloading resolution for expressions).
+
+   subtype N_Subprogram_Call is Node_Kind range
+      N_Function_Call ..
+      N_Procedure_Call_Statement;
 
    subtype N_Subprogram_Instantiation is Node_Kind range
      N_Function_Instantiation ..

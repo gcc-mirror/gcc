@@ -2129,22 +2129,32 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         --  Check compatibility of Scalar_Storage_Order with Bit_Order, if the
-         --  former is specified.
-
          ADC := Get_Attribute_Definition_Clause
                   (Rec, Attribute_Scalar_Storage_Order);
 
-         if Present (ADC)
-           and then Reverse_Bit_Order (Rec) /= Reverse_Storage_Order (Rec)
-         then
-            --  Note: report error on Rec, not on ADC, as ADC may apply to
-            --  an ancestor type.
+         if Present (ADC) then
 
-            Error_Msg_Sloc := Sloc (ADC);
-            Error_Msg_N
-              ("scalar storage order for& specified# inconsistent with "
-               & "bit order", Rec);
+            --  Check compatibility of Scalar_Storage_Order with Bit_Order, if
+            --  the former is specified.
+
+            if Reverse_Bit_Order (Rec) /= Reverse_Storage_Order (Rec) then
+
+               --  Note: report error on Rec, not on ADC, as ADC may apply to
+               --  an ancestor type.
+
+               Error_Msg_Sloc := Sloc (ADC);
+               Error_Msg_N
+                 ("scalar storage order for& specified# inconsistent with "
+                  & "bit order", Rec);
+            end if;
+
+            --  Warn if there is a Scalar_Storage_Order but no component clause
+
+            if not Placed_Component then
+               Error_Msg_N
+                 ("?scalar storage order specified but no component clause",
+                  ADC);
+            end if;
          end if;
 
          --  Deal with Bit_Order aspect specifying a non-default bit order
@@ -2153,7 +2163,7 @@ package body Freeze is
             if not Placed_Component then
                ADC :=
                  Get_Attribute_Definition_Clause (Rec, Attribute_Bit_Order);
-               Error_Msg_N ("?Bit_Order specification has no effect", ADC);
+               Error_Msg_N ("?bit order specification has no effect", ADC);
                Error_Msg_N
                  ("\?since no component clauses were specified", ADC);
 
@@ -2188,8 +2198,8 @@ package body Freeze is
 
          if Is_Base_Type (Rec) and then Convention (Rec) = Convention_Ada then
             if (Has_Discriminants (Rec) and then Debug_Flag_Dot_V)
-                  or else
-               (not Has_Discriminants (Rec) and then Debug_Flag_Dot_R)
+                 or else
+                   (not Has_Discriminants (Rec) and then Debug_Flag_Dot_R)
             then
                Set_OK_To_Reorder_Components (Rec);
             end if;

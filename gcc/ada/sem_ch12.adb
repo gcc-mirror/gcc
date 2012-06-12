@@ -13578,9 +13578,7 @@ package body Sem_Ch12 is
                      --  information on aggregates in instances.
 
                      if Nkind (N2) = Nkind (N)
-                       and then
-                         Nkind_In (Parent (N2), N_Procedure_Call_Statement,
-                                                N_Function_Call)
+                       and then Nkind (Parent (N2)) in N_Subprogram_Call
                        and then Comes_From_Source (Typ)
                      then
                         if Is_Immediately_Visible (Scope (Typ)) then

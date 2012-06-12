@@ -545,8 +545,7 @@ package body Sem_Elab is
       --  If the call is known to be within a local Suppress Elaboration
       --  pragma, nothing to check. This can happen in task bodies.
 
-      if (Nkind (N) = N_Function_Call
-           or else Nkind (N) = N_Procedure_Call_Statement)
+      if Nkind (N) in N_Subprogram_Call
         and then No_Elaboration_Check (N)
       then
          return;
@@ -990,9 +989,7 @@ package body Sem_Elab is
                --  which can happen if the body enclosing the call appears
                --  itself in a call whose elaboration check is delayed.
 
-               if Nkind_In (N, N_Function_Call,
-                               N_Procedure_Call_Statement)
-               then
+               if Nkind (N) in N_Subprogram_Call then
                   Set_No_Elaboration_Check (N);
                end if;
             end if;
@@ -1184,8 +1181,7 @@ package body Sem_Elab is
       --  Nothing to do if this is not a call or attribute reference (happens
       --  in some error conditions, and in some cases where rewriting occurs).
 
-      elsif Nkind (N) /= N_Function_Call
-        and then Nkind (N) /= N_Procedure_Call_Statement
+      elsif Nkind (N) not in N_Subprogram_Call
         and then Nkind (N) /= N_Attribute_Reference
       then
          return;
@@ -1510,8 +1506,7 @@ package body Sem_Elab is
                Func : Entity_Id;
 
             begin
-               if (Nkind (Nod) = N_Function_Call
-                    or else Nkind (Nod) = N_Procedure_Call_Statement)
+               if Nkind (Nod) in N_Subprogram_Call
                  and then Is_Entity_Name (Name (Nod))
                then
                   Func := Entity (Name (Nod));

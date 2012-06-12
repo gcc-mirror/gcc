@@ -242,7 +242,7 @@ package body Sem_Dist is
       Par : Node_Id;
 
    begin
-      if Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
+      if Nkind (N) in N_Subprogram_Call
         and then Nkind (Name (N)) in N_Has_Entity
         and then Is_Remote_Call_Interface (Entity (Name (N)))
         and then Has_All_Calls_Remote (Scope (Entity (Name (N))))
