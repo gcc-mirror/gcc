@@ -1103,8 +1103,8 @@ package body Xref_Lib is
                Ptr := Ptr + 1;
             end if;
 
-            --  Imported entities might special indication as to their external
-            --  name:
+            --  Imported entities may have an indication specifying information
+            --  about the corresponding external name:
             --    5U14*Foo2 5>20 6b<c,myfoo2>22   # Imported entity
             --    5U14*Foo2 5>20 6i<c,myfoo2>22   # Exported entity
 
