@@ -1,3 +1,19 @@
+2012-06-12  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* opts.c: Add -fhoist-adjacent-loads to -O2 and above.
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Add argument to forward
+	declaration.
+	(hoist_adjacent_loads, gate_hoist_loads): New forward declarations.
+	(tree_ssa_phiopt): Call gate_hoist_loads.
+	(tree_ssa_cs_elim): Add parm to tree_ssa_phiopt_worker call.
+	(tree_ssa_phiopt_worker): Add do_hoist_loads to formal arg list; call
+	hoist_adjacent_loads.
+	(local_mem_dependence): New function.
+	(hoist_adjacent_loads): Likewise.
+	(gate_hoist_loads): Likewise.
+	* common.opt (fhoist-adjacent-loads): New switch.
+	* Makefile.in (tree-ssa-phiopt.o): Added dependencies.
+
 2012-06-12  Michael Matz  <matz@suse.de>
 
 	* alias.c (nonoverlapping_component_refs_p): Take two rtx arguments.
