@@ -1,3 +1,8 @@
+2012-06-12  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/sync.md (atomic_load, atomic_store): Use INT1 mode
+	iterator instead of INT.
+	
 2012-06-12  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* opts.c: Add -fhoist-adjacent-loads to -O2 and above.
