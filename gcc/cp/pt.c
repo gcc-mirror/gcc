@@ -12887,6 +12887,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		    DECL_CONTEXT (decl) = current_function_decl;
 		    insert_capture_proxy (decl);
 		  }
+		else if (DECL_IMPLICIT_TYPEDEF_P (t))
+		  /* We already did a pushtag.  */;
 		else
 		  {
 		    int const_init = false;
@@ -12930,9 +12932,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	      }
 	  }
 
-	/* A DECL_EXPR can also be used as an expression, in the condition
-	   clause of an if/for/while construct.  */
-	return decl;
+	break;
       }
 
     case FOR_STMT:
@@ -13340,6 +13340,15 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case NONTYPE_ARGUMENT_PACK:
       error ("use %<...%> to expand argument pack");
       return error_mark_node;
+
+    case COMPOUND_EXPR:
+      tmp = RECUR (TREE_OPERAND (t, 0));
+      if (tmp == NULL_TREE)
+	/* If the first operand was a statement, we're done with it.  */
+	return RECUR (TREE_OPERAND (t, 1));
+      return build_x_compound_expr (EXPR_LOCATION (t), tmp,
+				    RECUR (TREE_OPERAND (t, 1)),
+				    complain);
 
     default:
       gcc_assert (!STATEMENT_CODE_P (TREE_CODE (t)));
