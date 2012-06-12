@@ -70,7 +70,7 @@ package body Stringt is
    --  when Start_String is called with a parameter that is the last string
    --  currently allocated in the table.
 
-   Strings_Last : String_Id := First_String_Id;
+   Strings_Last      : String_Id := First_String_Id;
    String_Chars_Last : Int := 0;
    --  Strings_Last and String_Chars_Last are used by procedure Mark and
    --  Release to get a snapshot of the tables and to restore them to their

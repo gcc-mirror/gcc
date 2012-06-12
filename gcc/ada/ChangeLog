@@ -1,5 +1,34 @@
 2012-06-12  Robert Dewar  <dewar@adacore.com>
 
+	* stringt.adb: Minor reformatting.
+
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
+	* ali-util.adb, stringt.ads: Minor reformatting.
+
+2012-06-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Process_Declarations): Handle the case where
+	the original context has been wrapped in a block to avoid
+	interference between exception handlers and At_End handlers.
+	(Wrap_HSS_In_Block): Mark the block which contains the original
+	statements of the context as being a finalization wrapper.
+	* sinfo.adb (Is_Finalization_Wrapper): New routine.
+	(Set_Is_Finalization_Wrapper): New routine.
+
+	* sinfo.ads: Add new attribute Is_Finalization_Wrapper applicable
+	to block statemnts.
+	(Is_Finalization_Wrapper): New routine with corresponding pragma Inline.
+	(Set_Is_Finalization_Wrapper): New routine with corresponding pragma
+	Inline.
+
+2012-06-12  Steve Baird  <baird@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): No longer need to set
+	Exception_Extra_Info in CodePeer_Mode.
+
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
 	* sem_dist.adb, exp_ch7.adb, sem_type.adb, exp_attr.adb,
 	sinfo.ads, sem_ch7.adb, exp_alfa.adb, sem_scil.adb, sem_ch12.adb,
 	sem_util.adb, sem_res.adb, sem_attr.adb, sem_elab.adb, exp_ch6.adb,

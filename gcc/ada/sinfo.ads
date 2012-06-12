@@ -1310,6 +1310,12 @@ package Sinfo is
    --    actuals to support a build-in-place style of call have been added to
    --    the call.
 
+   --  Is_Finalization_Wrapper (Flag9-Sem);
+   --    This flag is present in N_Block_Statement nodes. It is set when the
+   --    block acts as a wrapper of a handled construct which has controlled
+   --    objects. The wrapper prevents interference between exception handlers
+   --    and At_End handlers.
+
    --  Is_In_Discriminant_Check (Flag11-Sem)
    --    This flag is present in a selected component, and is used to indicate
    --    that the reference occurs within a discriminant check. The
@@ -4331,6 +4337,7 @@ package Sinfo is
       --  Is_Task_Allocation_Block (Flag6)
       --  Is_Asynchronous_Call_Block (Flag7)
       --  Exception_Junk (Flag8-Sem)
+      --  Is_Finalization_Wrapper (Flag9-Sem)
 
       -------------------------
       -- 5.7  Exit Statement --
@@ -8670,6 +8677,9 @@ package Sinfo is
    function Is_Expanded_Build_In_Place_Call
      (N : Node_Id) return Boolean;    -- Flag11
 
+   function Is_Finalization_Wrapper
+     (N : Node_Id) return Boolean;    -- Flag9
+
    function Is_Folded_In_Parser
      (N : Node_Id) return Boolean;    -- Flag4
 
@@ -9656,6 +9666,9 @@ package Sinfo is
 
    procedure Set_Is_Expanded_Build_In_Place_Call
      (N : Node_Id; Val : Boolean := True);    -- Flag11
+
+   procedure Set_Is_Finalization_Wrapper
+     (N : Node_Id; Val : Boolean := True);    -- Flag9
 
    procedure Set_Is_Folded_In_Parser
      (N : Node_Id; Val : Boolean := True);    -- Flag4
@@ -12014,6 +12027,7 @@ package Sinfo is
    pragma Inline (Is_Elsif);
    pragma Inline (Is_Entry_Barrier_Function);
    pragma Inline (Is_Expanded_Build_In_Place_Call);
+   pragma Inline (Is_Finalization_Wrapper);
    pragma Inline (Is_Folded_In_Parser);
    pragma Inline (Is_In_Discriminant_Check);
    pragma Inline (Is_Machine_Number);
@@ -12338,6 +12352,7 @@ package Sinfo is
    pragma Inline (Set_Is_Elsif);
    pragma Inline (Set_Is_Entry_Barrier_Function);
    pragma Inline (Set_Is_Expanded_Build_In_Place_Call);
+   pragma Inline (Set_Is_Finalization_Wrapper);
    pragma Inline (Set_Is_Folded_In_Parser);
    pragma Inline (Set_Is_In_Discriminant_Check);
    pragma Inline (Set_Is_Machine_Number);

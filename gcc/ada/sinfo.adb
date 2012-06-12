@@ -1806,6 +1806,14 @@ package body Sinfo is
       return Flag11 (N);
    end Is_Expanded_Build_In_Place_Call;
 
+   function Is_Finalization_Wrapper
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Block_Statement);
+      return Flag9 (N);
+   end Is_Finalization_Wrapper;
+
    function Is_Folded_In_Parser
       (N : Node_Id) return Boolean is
    begin
@@ -4901,6 +4909,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Function_Call);
       Set_Flag11 (N, Val);
    end Set_Is_Expanded_Build_In_Place_Call;
+
+   procedure Set_Is_Finalization_Wrapper
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Block_Statement);
+      Set_Flag9 (N, Val);
+   end Set_Is_Finalization_Wrapper;
 
    procedure Set_Is_Folded_In_Parser
       (N : Node_Id; Val : Boolean := True) is

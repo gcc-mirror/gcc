@@ -2094,6 +2094,22 @@ package body Exp_Ch7 is
                then
                   Last_Top_Level_Ctrl_Construct := Decl;
                end if;
+
+            --  Handle the case where the original context has been wrapped in
+            --  a block to avoid interference between exception handlers and
+            --  At_End handlers. Treat the block as transparent and process its
+            --  contents.
+
+            elsif Nkind (Decl) = N_Block_Statement
+              and then Is_Finalization_Wrapper (Decl)
+            then
+               if Present (Handled_Statement_Sequence (Decl)) then
+                  Process_Declarations
+                    (Statements (Handled_Statement_Sequence (Decl)),
+                     Preprocess);
+               end if;
+
+               Process_Declarations (Declarations (Decl), Preprocess);
             end if;
 
             Prev_Non_Pragma (Decl);
@@ -3695,6 +3711,11 @@ package body Exp_Ch7 is
          Block :=
            Make_Block_Statement (Loc,
              Handled_Statement_Sequence => HSS);
+
+         --  Signal the finalization machinery that this particular block
+         --  contains the original context.
+
+         Set_Is_Finalization_Wrapper (Block);
 
          Set_Handled_Statement_Sequence (N,
            Make_Handled_Sequence_Of_Statements (Loc, New_List (Block)));
