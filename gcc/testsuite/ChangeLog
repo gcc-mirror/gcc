@@ -1,5 +1,8 @@
 2012-06-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.c-torture/compile/sync-1.c: Add comments to checks for multiple
+	messages reported for one line of source code.
+
 	* gcc.dg/20031223-1.c: Add comments to check for multiple
 	messages reported for one line of source code.
 	* gcc.dg/Wconversion-integer.c: Likewise.
