@@ -150,6 +150,7 @@ GCC_4.3.0 {
 
 GCC_4.8.0 {
   __cpu_model
+  __cpu_indicator_init
 }
 %else
 GCC_4.4.0 {
@@ -190,5 +191,6 @@ GCC_4.5.0 {
 
 GCC_4.8.0 {
   __cpu_model
+  __cpu_indicator_init
 }
 %endif

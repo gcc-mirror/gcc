@@ -1,3 +1,9 @@
+2012-06-11  Sriraman Tallam  <tmsriram@google.com>
+
+	* config/i386/libgcc-bsd.ver: Version symbol __cpu_indicator_init.
+	* config/i386/libgcc-sol2.ver: Ditto.
+	* config/i386/libgcc-glibc.ver: Ditto.
+
 2012-06-11  Roland McGrath  <mcgrathr@google.com>
 
 	* gthr-posix.h [neither FreeBSD nor Solaris] (__gthread_active_p):
