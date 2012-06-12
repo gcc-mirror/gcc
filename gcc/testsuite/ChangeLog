@@ -1,5 +1,12 @@
 2012-06-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* c-c++-common/raw-string-3.c: Add comments to checks for multiple
+	messages reported for for one line of source code.
+	* c-c++-common/raw-string-5.c: Likewise.
+	* c-c++-common/raw-string-4.c: Likewise.
+	* c-c++-common/raw-string-6.c: Likewise.
+	* c-c++-common/pr20000.c: Likewise.
+
 	* gcc.dg/cpp/include2a.c: Add comments to checks for multiple
 	messages reported for one line of source code.
 	* gcc.dg/cpp/pr30786.c: Likewise.
