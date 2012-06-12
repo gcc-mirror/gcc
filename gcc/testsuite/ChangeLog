@@ -1,3 +1,8 @@
+2012-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53599
+	* g++.dg/template/local7.C: New.
+
 2012-06-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53511

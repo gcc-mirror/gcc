@@ -5796,7 +5796,16 @@ pushtag_1 (tree name, tree type, tag_scope scope)
 	 class.)  */
       if (TYPE_CONTEXT (type)
 	  && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL)
-	VEC_safe_push (tree, gc, local_classes, type);
+	{
+	  if (processing_template_decl)
+	    {
+	      /* Push a DECL_EXPR so we call pushtag at the right time in
+		 template instantiation rather than in some nested context.  */
+	      add_decl_expr (decl);
+	    }
+	  else
+	    VEC_safe_push (tree, gc, local_classes, type);
+	}
     }
   if (b->kind == sk_class
       && !COMPLETE_TYPE_P (current_class_type))
