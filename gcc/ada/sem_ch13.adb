@@ -4481,7 +4481,7 @@ package body Sem_Ch13 is
                     and then Is_Unchecked_Union (Rectype)
                   then
                      Error_Msg_N
-                       ("cannot reference discriminant of Unchecked_Union",
+                       ("cannot reference discriminant of unchecked union",
                         Component_Name (CC));
 
                   elsif Present (Component_Clause (Comp)) then

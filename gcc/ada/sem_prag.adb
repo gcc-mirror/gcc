@@ -1408,15 +1408,15 @@ package body Sem_Prag is
            and then Is_Generic_Type (Typ)
          then
             Error_Msg_N
-              ("component of Unchecked_Union cannot be of generic type", Comp);
+              ("component of unchecked union cannot be of generic type", Comp);
 
          elsif Needs_Finalization (Typ) then
             Error_Msg_N
-              ("component of Unchecked_Union cannot be controlled", Comp);
+              ("component of unchecked union cannot be controlled", Comp);
 
          elsif Has_Task (Typ) then
             Error_Msg_N
-              ("component of Unchecked_Union cannot have tasks", Comp);
+              ("component of unchecked union cannot have tasks", Comp);
          end if;
       end Check_Component;
 
@@ -14164,16 +14164,16 @@ package body Sem_Prag is
             --  the relevant type declaration at an appropriate point.
 
             if not Is_Record_Type (Typ) then
-               Error_Msg_N ("Unchecked_Union must be record type", Typ);
+               Error_Msg_N ("unchecked union must be record type", Typ);
                return;
 
             elsif Is_Tagged_Type (Typ) then
-               Error_Msg_N ("Unchecked_Union must not be tagged", Typ);
+               Error_Msg_N ("unchecked union must not be tagged", Typ);
                return;
 
             elsif not Has_Discriminants (Typ) then
                Error_Msg_N
-                ("Unchecked_Union must have one discriminant", Typ);
+                ("unchecked union must have one discriminant", Typ);
                return;
 
             --  Note: in previous versions of GNAT we used to check for limited
@@ -14187,7 +14187,7 @@ package body Sem_Prag is
                while Present (Discr) loop
                   if No (Discriminant_Default_Value (Discr)) then
                      Error_Msg_N
-                       ("Unchecked_Union discriminant must have default value",
+                       ("unchecked union discriminant must have default value",
                         Discr);
                   end if;
 
@@ -14201,7 +14201,7 @@ package body Sem_Prag is
 
                if No (Clist) or else No (Variant_Part (Clist)) then
                   Error_Msg_N
-                    ("Unchecked_Union must have variant part", Tdef);
+                    ("unchecked union must have variant part", Tdef);
                   return;
                end if;
 

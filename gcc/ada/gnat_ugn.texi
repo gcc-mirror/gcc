@@ -5806,6 +5806,24 @@ then the following code:
 will suppress warnings on subsequent statements that access components
 of variable Tab.
 
+@item -gnatw.v
+@emph{Activate info messages for non-default bit order.}
+@cindex @option{-gnatw.v} (@command{gcc})
+@cindex bit order warnings
+This switch activates messages (labeled "info", they are not warnings,
+just informational messages) about the effects of non-default bit-order
+on records to which a component clause is applied. The effect of specifying
+non-default bit ordering is a bit subtle (and changed with Ada 2005), so
+these messages, which are given by default, are useful in understanding the
+exact consequences of using this feature. These messages
+can also be turned on using @option{-gnatwa}
+
+@item -gnatw.V
+@emph{Suppress info messages for non-default bit order.}
+@cindex @option{-gnatw.V} (@command{gcc})
+This switch suppresses information messages for the effects of specifying
+non-default bit order on record components with component clauses.
+
 @item -gnatww
 @emph{Activate warnings on wrong low bound assumption.}
 @cindex @option{-gnatww} (@command{gcc})

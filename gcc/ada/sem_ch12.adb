@@ -11442,7 +11442,7 @@ package body Sem_Ch12 is
             then
                null;
             else
-               Error_Msg_N ("Unchecked_Union cannot be the actual for a" &
+               Error_Msg_N ("unchecked union cannot be the actual for a" &
                  " discriminated formal type", Act_T);
 
             end if;
