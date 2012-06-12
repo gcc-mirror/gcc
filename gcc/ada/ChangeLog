@@ -1,5 +1,9 @@
 2012-06-12  Robert Dewar  <dewar@adacore.com>
 
+	* switch-c.adb, inline.adb, usage.adb, opt.ads: Minor reformatting.
+
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch12.adb: Minor reformatting.
 
 2012-06-12  Eric Botcazou  <ebotcazou@adacore.com>

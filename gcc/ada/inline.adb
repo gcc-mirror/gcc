@@ -295,6 +295,7 @@ package body Inline is
               and then Is_Inlined (Scop)
             then
                Add_Call (E, Scop);
+
                if Inline_Level = 1 then
                   return Inline_Call;
                else

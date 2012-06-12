@@ -732,7 +732,7 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Inline_Active := True;
 
-               --  There may be a digit appended to the switch
+               --  There may be a digit (1 or 2) appended to the switch
 
                if Ptr <= Max then
                   C := Switch_Chars (Ptr);
