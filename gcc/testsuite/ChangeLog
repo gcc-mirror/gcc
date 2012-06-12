@@ -1,5 +1,9 @@
 2012-06-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/di-longlong64-sync-withhelpers.c: Add comments
+	to checks for multiple messages reported for one line of source code.
+	* gcc.target/arm/di-longlong64-sync-withldrexd.c: Likewise.
+
 	* gcc.c-torture/compile/sync-1.c: Add comments to checks for multiple
 	messages reported for one line of source code.
 
