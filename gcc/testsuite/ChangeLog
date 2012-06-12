@@ -1,3 +1,10 @@
+2012-06-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53511
+	* gcc.target/sh/pr51340-1.c: Delete obsolete test case.
+	* gcc.target/sh/pr51340-2.c: Likewise.
+	* gcc.target/sh/pr51340-3.c: Likewise.
+	
 2012-06-12  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/torture/alias-1.c: New test.
