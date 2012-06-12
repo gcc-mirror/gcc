@@ -1490,20 +1490,6 @@ package body Exp_Ch7 is
 
             Append_To (Finalizer_Stmts, Label);
 
-            --  The local exception does not need to be reraised for library-
-            --  level finalizers. Generate:
-            --
-            --    if Raised and then not Abort then
-            --       Raise_From_Controlled_Operation (E);
-            --    end if;
-
-            if not For_Package
-              and then Exceptions_OK
-            then
-               Append_To (Finalizer_Stmts,
-                 Build_Raise_Statement (Finalizer_Data));
-            end if;
-
             --  Create the jump block which controls the finalization flow
             --  depending on the value of the state counter.
 
@@ -1570,6 +1556,22 @@ package body Exp_Ch7 is
                 Name => New_Reference_To (RTE (RE_Abort_Undefer), Loc)));
          end if;
 
+         --  The local exception does not need to be reraised for library-level
+         --  finalizers. Note that this action must be carried out after object
+         --  clean up, secondary stack release and abort undeferral. Generate:
+
+         --    if Raised and then not Abort then
+         --       Raise_From_Controlled_Operation (E);
+         --    end if;
+
+         if Has_Ctrl_Objs
+           and then Exceptions_OK
+           and then not For_Package
+         then
+            Append_To (Finalizer_Stmts,
+              Build_Raise_Statement (Finalizer_Data));
+         end if;
+
          --  Generate:
          --    procedure Fin_Id is
          --       Abort  : constant Boolean := Triggered_By_Abort;
@@ -1590,6 +1592,7 @@ package body Exp_Ch7 is
          --       <finalization statements>  --  Added if Has_Ctrl_Objs
          --       <stack release>            --  Added if Mark_Id exists
          --       Abort_Undefer;             --  Added if abort is allowed
+         --       <exception propagation>    --  Added if Has_Ctrl_Objs
          --    end Fin_Id;
 
          --  Create the body of the finalizer

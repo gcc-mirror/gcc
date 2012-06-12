@@ -6211,6 +6211,13 @@ package body Sem_Ch10 is
 
       Set_Is_Potentially_Use_Visible (Unit_Name, False);
       Set_Is_Immediately_Visible     (Unit_Name, False);
+
+      --  If the unit is a wrapper package, the subprogram instance is
+      --  what must be removed from visibility.
+
+      if Is_Wrapper_Package (Unit_Name) then
+         Set_Is_Immediately_Visible (Current_Entity (Unit_Name), False);
+      end if;
    end Remove_Unit_From_Visibility;
 
    --------

@@ -1099,6 +1099,7 @@ package Snames is
 
    --  The names with the -- GB annotation are only used in gprbuild.
 
+   Name_Active                             : constant Name_Id := N + $;
    Name_Aggregate                          : constant Name_Id := N + $;
    Name_Archive_Builder                    : constant Name_Id := N + $;
    Name_Archive_Builder_Append_Option      : constant Name_Id := N + $;
@@ -1130,6 +1131,7 @@ package Snames is
    Name_Excluded_Source_Files              : constant Name_Id := N + $;
    Name_Excluded_Source_List_File          : constant Name_Id := N + $;
    Name_Exec_Dir                           : constant Name_Id := N + $;
+   Name_Exec_Subdir                        : constant Name_Id := N + $;
    Name_Executable                         : constant Name_Id := N + $;
    Name_Executable_Suffix                  : constant Name_Id := N + $;
    Name_Extends                            : constant Name_Id := N + $;
@@ -1151,11 +1153,13 @@ package Snames is
    Name_Include_Path                       : constant Name_Id := N + $;
    Name_Include_Path_File                  : constant Name_Id := N + $;
    Name_Inherit_Source_Path                : constant Name_Id := N + $;
+   Name_Install                            : constant Name_Id := N + $;
    Name_Languages                          : constant Name_Id := N + $;
    Name_Language_Kind                      : constant Name_Id := N + $;
    Name_Leading_Library_Options            : constant Name_Id := N + $;
    Name_Leading_Required_Switches          : constant Name_Id := N + $;
    Name_Leading_Switches                   : constant Name_Id := N + $;
+   Name_Lib_Subdir                         : constant Name_Id := N + $;
    Name_Library                            : constant Name_Id := N + $;
    Name_Library_Ali_Dir                    : constant Name_Id := N + $;
    Name_Library_Auto_Init                  : constant Name_Id := N + $;
@@ -1216,6 +1220,7 @@ package Snames is
    Name_Project_Dir                        : constant Name_Id := N + $;
    Name_Project_Files                      : constant Name_Id := N + $;
    Name_Project_Path                       : constant Name_Id := N + $;
+   Name_Project_Subdir                     : constant Name_Id := N + $;
    Name_Response_File_Format               : constant Name_Id := N + $;
    Name_Response_File_Switches             : constant Name_Id := N + $;
    Name_Roots                              : constant Name_Id := N + $; -- GB
@@ -1232,6 +1237,7 @@ package Snames is
    Name_Source_File_Switches               : constant Name_Id := N + $;
    Name_Source_Files                       : constant Name_Id := N + $;
    Name_Source_List_File                   : constant Name_Id := N + $;
+   Name_Sources_Subdir                     : constant Name_Id := N + $;
    Name_Spec                               : constant Name_Id := N + $;
    Name_Spec_Suffix                        : constant Name_Id := N + $;
    Name_Specification                      : constant Name_Id := N + $;
