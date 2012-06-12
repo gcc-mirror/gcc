@@ -1,3 +1,14 @@
+2012-06-12  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Unchecked_Union): Do
+	not crash on illegal unchecked union that is a null record.
+
+2012-06-12  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Has_Inferable_Discriminants): Reorganize code to
+	treat implicit dereferences with a constrained unchecked union
+	nominal subtype as having inferable discriminants. 
+
 2012-06-12  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb: Minor reformatting.
