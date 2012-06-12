@@ -1,3 +1,13 @@
+2012-06-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): if an incomplete
+	type is tagged, so is a subtype of it.
+	* sem_ch12.adb (Validate_Actual_Subprogram): implement AI05-0296,
+	concerning freeze rules in the presence of formal incomplete
+	types: a formal abstract subprogram cannot have an incomplete
+	controlling type, and the profile of the actual subprogram does
+	not freeze if it includes an incomplete untagged type.
+
 2012-06-12  Robert Dewar  <dewar@adacore.com>
 
 	* a-direct.adb: Minor reformatting.
