@@ -1,3 +1,23 @@
+2012-06-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50749
+	* gcc.target/sh/pr50749-sf-postinc-2.c: New.
+	* gcc.target/sh/pr50749-sf-postinc-4.c: New.
+	* gcc.target/sh/pr50749-qihisi-postinc-2.c: New.
+	* gcc.target/sh/pr50749-qihisi-postinc-4.c: New.
+	* gcc.target/sh/pr50749-sf-predec-2.c: New.
+	* gcc.target/sh/pr50749-sf-predec-4.c: New.
+	* gcc.target/sh/pr50749-qihisi-predec-1.c: New.
+	* gcc.target/sh/pr50749-qihisi-predec-3.c: New.
+	* gcc.target/sh/pr50749-sf-postinc-1.c: New.
+	* gcc.target/sh/pr50749-sf-postinc-3.c: New.
+	* gcc.target/sh/pr50749-qihisi-postinc-1.c: New.
+	* gcc.target/sh/pr50749-qihisi-postinc-3.c: New.
+	* gcc.target/sh/pr50749-sf-predec-1.c: New.
+	* gcc.target/sh/pr50749-sf-predec-3.c: New.
+	* gcc.target/sh/pr50749-qihisi-predec-2.c: New.
+	* gcc.target/sh/pr50749-qihisi-predec-4.c: New.
+
 2012-06-11  Sriraman Tallam  <tmsriram@google.com>
 
 	* gcc.target/i386/builtin_target.c (vendor_signatures): New enum.
