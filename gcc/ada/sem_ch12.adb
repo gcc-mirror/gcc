@@ -9449,7 +9449,8 @@ package body Sem_Ch12 is
                Has_Untagged_Inc := True;
             end if;
 
-            --  Add comments for following code???
+            --  This is a temporary implementation. Most of this code has
+            --  to be moved to sem_ch8, and will be commented then ???
 
             if Is_Entity_Name (Actual)
               and then not Is_Overloaded (Actual)

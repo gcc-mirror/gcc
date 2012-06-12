@@ -1,3 +1,19 @@
+2012-06-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* xref_lib.adb (Get_Full_Type): Add support for 'G'.
+
+2012-06-12  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb (Unwind_Exception): Add 4 more private fields.
+
+2012-06-12  Fedor Rybin  <frybin@adacore.com>
+
+	* gnat_ugn.texi: Update doc on gnattest.
+
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb: Add comments.
+
 2012-06-12  Robert Dewar  <dewar@adacore.com>
 
 	* switch-c.adb, inline.adb, usage.adb, opt.ads: Minor reformatting.
