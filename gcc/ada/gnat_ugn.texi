@@ -10618,13 +10618,13 @@ Any one of the following applies: @code{pragma Inline} is applied to the
 subprogram and the @option{^-gnatn^/INLINE^} switch is specified; the
 subprogram is local to the unit and called once from within it; the
 subprogram is small and optimization level @option{-O2} is specified;
-optimization level @option{-O3}) is specified.
+optimization level @option{-O3} is specified.
 @end itemize
 
 @noindent
 Calls to subprograms in @code{with}'ed units are normally not inlined.
 To achieve actual inlining (that is, replacement of the call by the code
-in the body of the subprogram), the following conditions must all be true.
+in the body of the subprogram), the following conditions must all be true:
 
 @itemize @bullet
 @item

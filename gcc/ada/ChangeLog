@@ -1,3 +1,16 @@
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb: Minor reformatting.
+
+2012-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Couple of minor corrections.
+
+2012-06-12  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb (Check_Variant): An empty component list is not
+	illegal in an unchecked union variant.
+
 2012-06-12  Gary Dismukes  <dismukes@adacore.com>
 
 	* projects.texi: Remove comments.
