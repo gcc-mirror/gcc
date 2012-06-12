@@ -30,5 +30,5 @@ void foo2(int n) {
 }
 
 /* Match extra informative notes.  */
-/* { dg-message "note: label '\[^\n'\]*' defined here" "note: expected" { target *-*-* } 0 } */
-/* { dg-message "note: '\[^\n'\]*' declared here" "note: expected" { target *-*-* } 0 } */
+/* { dg-message "note: label '\[^\n'\]*' defined here" "defined" { target *-*-* } 0 } */
+/* { dg-message "note: '\[^\n'\]*' declared here" "declared" { target *-*-* } 0 } */

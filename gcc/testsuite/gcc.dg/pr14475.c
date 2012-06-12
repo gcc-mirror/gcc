@@ -3,8 +3,8 @@
 
 struct tree_common
 {
-  enum tree_code code : 8; /* { dg-error "ISO C forbids forward references to" "" } */
-  /* { dg-error "type of bit-field .code. is a GCC extension" "" { target *-*-* } 6 } */
-  /* { dg-warning "narrower than values of its type" "" { target *-*-* } 6 } */
-  /* { dg-error "incomplete type" "" { target *-*-* } 6 } */
+  enum tree_code code : 8; /* { dg-error "ISO C forbids forward references to" "forward ref" } */
+  /* { dg-error "type of bit-field .code. is a GCC extension" "extension" { target *-*-* } 6 } */
+  /* { dg-warning "narrower than values of its type" "narrower" { target *-*-* } 6 } */
+  /* { dg-error "incomplete type" "incomplete" { target *-*-* } 6 } */
 };

@@ -11,5 +11,5 @@ int main(int argc, char **argv)
 }
 
 /* { dg-warning "will always overflow destination buffer" "" { target *-*-* } 6 } */
-/* { dg-message "file included" "" { target *-*-* } 0 } */
-/* { dg-message "inlined from" "" { target *-*-* } 0 } */
+/* { dg-message "file included" "included" { target *-*-* } 0 } */
+/* { dg-message "inlined from" "inlined" { target *-*-* } 0 } */
