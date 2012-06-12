@@ -1622,9 +1622,7 @@ package body Sem_Prag is
             --  For a single protected or a single task object, the error is
             --  issued on the original entity.
 
-            if Ekind (Id) = E_Task_Type
-              or else Ekind (Id) = E_Protected_Type
-            then
+            if Ekind_In (Id, E_Task_Type, E_Protected_Type) then
                Id := Defining_Identifier (Original_Node (Parent (Id)));
             end if;
 

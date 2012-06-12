@@ -9419,63 +9419,6 @@ package body Sem_Ch12 is
          end;
       end if;
 
-      --  In Ada 2012, enforce the (RM 13.14(10.2/3)) freezing rule concerning
-      --  formal incomplete types: a callable entity freezes its profile,
-      --  unless it has an incomplete untagged formal.
-
-      if Ada_Version >= Ada_2012 then
-         declare
-            F : Entity_Id;
-            Has_Untagged_Inc : Boolean;
-
-         begin
-            F := First_Formal (Analyzed_S);
-            Has_Untagged_Inc := False;
-            while Present (F) loop
-               if Ekind (Etype (F)) = E_Incomplete_Type
-                 and then not Is_Tagged_Type (Etype (F))
-               then
-                  Has_Untagged_Inc := True;
-                  exit;
-               end if;
-
-               F := Next_Formal (F);
-            end loop;
-
-            if Ekind (Analyzed_S) = E_Function
-              and then Ekind (Etype (Analyzed_S)) = E_Incomplete_Type
-              and then not Is_Tagged_Type (Etype (F))
-            then
-               Has_Untagged_Inc := True;
-            end if;
-
-            --  This is a temporary implementation. Most of this code has
-            --  to be moved to sem_ch8, and will be commented then ???
-
-            if Is_Entity_Name (Actual)
-              and then not Is_Overloaded (Actual)
-              and then not Has_Untagged_Inc
-            then
-               F := First_Formal (Entity (Actual));
-               while Present (F) loop
-                  Freeze_Before (Instantiation_Node, Etype (F));
-
-                  if Is_Incomplete_Or_Private_Type (Etype (F))
-                    and then No (Underlying_Type (Etype (F)))
-                    and then not Is_Generic_Type (Etype (F))
-                  then
-                     Error_Msg_NE
-                       ("type& must be frozen before this point",
-                          Instantiation_Node, Etype (F));
-                     Abandon_Instantiation (Instantiation_Node);
-                  end if;
-
-                  F := Next_Formal (F);
-               end loop;
-            end if;
-         end;
-      end if;
-
       return Decl_Node;
    end Instantiate_Formal_Subprogram;
 

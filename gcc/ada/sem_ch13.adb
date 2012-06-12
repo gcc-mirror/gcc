@@ -762,7 +762,6 @@ package body Sem_Ch13 is
 
                begin
                   A := First (L);
-
                   while Present (A) loop
                      exit when Chars (Identifier (A)) = Name_Export
                        or else Chars (Identifier (A)) = Name_Import;
@@ -795,7 +794,6 @@ package body Sem_Ch13 is
 
                   begin
                      Disc := First_Discriminant (E);
-
                      while Present (Disc) loop
                         if Chars (Expr) = Chars (Disc)
                           and then Ekind (Etype (Disc)) =
@@ -1451,9 +1449,7 @@ package body Sem_Ch13 is
 
                      goto Continue;
 
-                  elsif A_Id = Aspect_Import
-                    or else A_Id = Aspect_Export
-                  then
+                  elsif A_Id = Aspect_Import or else A_Id = Aspect_Export then
 
                      --  Verify that there is an aspect Convention that will
                      --  incorporate the Import/Export aspect, and eventual
@@ -6152,8 +6148,8 @@ package body Sem_Ch13 is
       --  Case of stream attributes, just have to compare entities
 
       elsif A_Id = Aspect_Input  or else
-         A_Id = Aspect_Output or else
-         A_Id = Aspect_Read   or else
+         A_Id = Aspect_Output    or else
+         A_Id = Aspect_Read      or else
          A_Id = Aspect_Write
       then
          Analyze (End_Decl_Expr);
@@ -6231,7 +6227,7 @@ package body Sem_Ch13 is
 
       A_Id : constant Aspect_Id := Get_Aspect_Id (Chars (Ident));
 
-      T    : Entity_Id := Empty;
+      T : Entity_Id := Empty;
       --  Type required for preanalyze call
 
    begin
@@ -6255,7 +6251,7 @@ package body Sem_Ch13 is
          when No_Aspect =>
             raise Program_Error;
 
-         --  Aspects taking an optional boolean argument.
+         --  Aspects taking an optional boolean argument
 
          when Boolean_Aspects      |
               Library_Unit_Aspects =>
@@ -6332,23 +6328,23 @@ package body Sem_Ch13 is
          --  Special case, the expression of these aspects is just an entity
          --  that does not need any resolution, so just analyze.
 
-         when Aspect_Input           |
-              Aspect_Output          |
-              Aspect_Read            |
-              Aspect_Suppress        |
-              Aspect_Unsuppress      |
-              Aspect_Warnings        |
-              Aspect_Write           =>
+         when Aspect_Input      |
+              Aspect_Output     |
+              Aspect_Read       |
+              Aspect_Suppress   |
+              Aspect_Unsuppress |
+              Aspect_Warnings   |
+              Aspect_Write      =>
             Analyze (Expression (ASN));
             return;
 
          --  Same for Iterator aspects, where the expression is a function
          --  name. Legality rules are checked separately.
 
-         when Aspect_Constant_Indexing    |
-              Aspect_Default_Iterator     |
-              Aspect_Iterator_Element     |
-              Aspect_Variable_Indexing    =>
+         when Aspect_Constant_Indexing |
+              Aspect_Default_Iterator  |
+              Aspect_Iterator_Element  |
+              Aspect_Variable_Indexing =>
             Analyze (Expression (ASN));
             return;
 
@@ -7599,14 +7595,13 @@ package body Sem_Ch13 is
       Ritem : Node_Id;
 
       procedure Analyze_Aspect_Default_Value (ASN : Node_Id);
-      --  This routine analyzes an Aspect_Default_Value or
-      --  Aspect_Default_Component_Value denoted by the aspect specification
-      --  node ASN.
+      --  This routine analyzes an Aspect_Default_[Component_]Value denoted by
+      --  the aspect specification node ASN.
 
       procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id);
       --  Given an aspect specification node ASN whose expression is an
-      --  optional Boolean, this routines creates the corresponding pragma at
-      --  the freezing point.
+      --  optional Boolean, this routines creates the corresponding pragma
+      --  at the freezing point.
 
       ----------------------------------
       -- Analyze_Aspect_Default_Value --

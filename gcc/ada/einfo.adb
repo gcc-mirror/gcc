@@ -35,7 +35,7 @@ pragma Style_Checks (All_Checks);
 with Atree;    use Atree;
 with Nlists;   use Nlists;
 with Output;   use Output;
-with Sem_Aux;  use Sem_Aux;
+with Sem_Aux;  use Sem_Aux;   -- wrong dependency ???
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 
@@ -5992,14 +5992,11 @@ package body Einfo is
 
    begin
       N := First_Rep_Item (E);
-
       while Present (N) loop
          if Nkind (N) = N_Pragma then
             N_Nam := Pragma_Name (N);
-
          elsif Nkind (N) = N_Attribute_Definition_Clause then
             N_Nam := Chars (N);
-
          elsif Nkind (N) = N_Aspect_Specification then
             N_Nam := Chars (Identifier (N));
          end if;

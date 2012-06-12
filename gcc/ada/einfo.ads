@@ -3851,7 +3851,7 @@ package Einfo is
 --       entity which may or may not be a type, with the intent that if it is a
 --       type, its underlying type is taken.
 
---    Universal_Aliasing (Flag216) [base type only]
+--    Universal_Aliasing (Flag216) [implementation base type only]
 --       Present in all type entities. Set to direct the back-end to avoid
 --       any optimizations based on type-based alias analysis for this type.
 --       Indicates that objects of this type can alias objects of any other
@@ -4941,7 +4941,7 @@ package Einfo is
    --    Strict_Alignment                    (Flag145)  (base type only)
    --    Suppress_Initialization             (Flag105)
    --    Treat_As_Volatile                   (Flag41)
-   --    Universal_Aliasing                  (Flag216)  (base type only)
+   --    Universal_Aliasing                  (Flag216)  (impl base type only)
 
    --    Alignment_Clause                    (synth)
    --    Base_Type                           (synth)
@@ -7190,6 +7190,9 @@ package Einfo is
    --  value returned is the N_Attribute_Definition_Clause node, otherwise
    --  Empty is returned.
 
+   --  What is difference between following two, and why are they named
+   --  the way they are ???
+
    function Get_Rep_Item
      (E   : Entity_Id;
       Nam : Name_Id) return Node_Id;
@@ -7215,6 +7218,9 @@ package Einfo is
    --  representation clause, and if found, returns it. Returns Empty
    --  if no such clause is found.
 
+   --  I still don't get it, if the first one returns stuff from the parent
+   --  it should say so, and it doesn't, and the names make no sense ???
+
    function Get_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Node_Id;
    --  Searches the Rep_Item chain for the given entity E, for an instance
    --  a representation pragma with the given name Nam. If found then the
@@ -7231,6 +7237,8 @@ package Einfo is
    --  Searches the Rep_Item chain for the given entity E, for an instance
    --  of rep item with the given name Nam. If found then True is returned,
    --  otherwise False indicates that no matching entry was found.
+
+   --  Again, the following two have bizarre names, and unclear specs ???
 
    function Has_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Boolean;
    --  Searches the Rep_Item chain for the given entity E, for an instance

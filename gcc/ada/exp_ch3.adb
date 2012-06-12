@@ -2642,9 +2642,9 @@ package body Exp_Ch3 is
 
                elsif Ekind (Scope (Id)) = E_Record_Type
                  and then Present (Corresponding_Concurrent_Type (Scope (Id)))
-                 and then (Chars (Id) = Name_uCPU
-                            or else Chars (Id) = Name_uDispatching_Domain
-                            or else Chars (Id) = Name_uPriority)
+                 and then (Chars (Id) = Name_uCPU                or else
+                           Chars (Id) = Name_uDispatching_Domain or else
+                           Chars (Id) = Name_uPriority)
                then
                   declare
                      Exp   : Node_Id;
@@ -2671,6 +2671,7 @@ package body Exp_Ch3 is
                          (Corresponding_Concurrent_Type (Scope (Id)), Nam);
 
                      if Present (Ritem) then
+
                         --  Pragma case
 
                         if Nkind (Ritem) = N_Pragma then
