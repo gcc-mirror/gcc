@@ -1676,7 +1676,7 @@ to_vms_file_spec (char *filespec)
 }
 
 #else
-#define VMS_EPOCH_OFFSET 35067168000000000
+#define VMS_EPOCH_OFFSET 35067168000000000LL
 #define VMS_GRANULARITY_FACTOR 10000000
 #endif
 
