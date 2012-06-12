@@ -1,3 +1,12 @@
+2012-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53599
+	* g++.dg/template/local7.C: New.
+
+	Revert:
+	PR c++/53137
+	* g++.dg/cpp0x/lambda/lambda-template5.C: New.
+
 2012-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53524
