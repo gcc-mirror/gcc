@@ -11,6 +11,6 @@
 
 /* These error is No such file or directory, just once.  However, this
    message is locale-dependent, so don't test for it.  */
-/* { dg-error "silly" "" { target *-*-* } 0 } */
-/* { dg-error "missing" "" { target *-*-* } 0 } */
-/* { dg-message "terminated" "" { target *-*-* } 0 } */
+/* { dg-error "silly" "silly" { target *-*-* } 0 } */
+/* { dg-error "missing" "missing" { target *-*-* } 0 } */
+/* { dg-message "terminated" "terminated" { target *-*-* } 0 } */
