@@ -366,7 +366,7 @@ package Lib.Xref is
    --              of the current file.
 
    --              a reference (e.g. a call) at line 8 column 4 of the
-   --              of the current file.
+   --              current file.
 
    --              the END line of the body has an explicit reference to
    --              the name of the procedure at line 12, column 13.
