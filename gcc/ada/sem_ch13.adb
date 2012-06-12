@@ -950,14 +950,11 @@ package body Sem_Ch13 is
 
                      goto Continue;
 
-                  elsif A_Id = Aspect_Import
-                    or else A_Id = Aspect_Export
-                  then
+                  --  For Import/Export, Verify that there is an aspect
+                  --  Convention that will incorporate the Import/Export
+                  --  aspect, and eventual Link/External names.
 
-                     --  Verify that there is an aspect Convention that will
-                     --  incorporate the Import/Export aspect, and eventual
-                     --  Link/External names.
-
+                  elsif A_Id = Aspect_Import or else A_Id = Aspect_Export then
                      declare
                         A : Node_Id;
 
@@ -1218,36 +1215,56 @@ package body Sem_Ch13 is
                      L_Assoc  := Empty;
                      E_Assoc  := Empty;
 
+                     --  Loop to look for Import/Export/Link_Name/External_Name
+
                      A := First (L);
                      while Present (A) loop
                         A_Name := Chars (Identifier (A));
 
+                        --  Import/Export
+
                         if A_Name = Name_Import
-                          or else A_Name = Name_Export
+                             or else
+                           A_Name = Name_Export
                         then
+                           --  Forbid duplicates, at most one can appear
+
                            if Found then
-                              Error_Msg_N ("conflicting", A);
+                              Error_Msg_Name_1 := A_Name;
+                              Error_Msg_Name_2 := P_Name;
+                              Error_Msg_N
+                                ("% aspect conflicts with previous % aspect",
+                                 A);
                            else
                               Found := True;
                            end if;
 
+                           --  Record name of pragma to generate
+
                            P_Name := A_Name;
+
+                        --  Capture Link_Name
 
                         elsif A_Name = Name_Link_Name then
                            L_Assoc := Make_Pragma_Argument_Association (Loc,
-                              Chars => A_Name,
+                              Chars      => A_Name,
                               Expression => Relocate_Node (Expression (A)));
+
+                        --  Capture External_Name
 
                         elsif A_Name = Name_External_Name then
                            E_Assoc := Make_Pragma_Argument_Association (Loc,
-                              Chars => A_Name,
+                              Chars      => A_Name,
                               Expression => Relocate_Node (Expression (A)));
                         end if;
 
                         Next (A);
                      end loop;
 
+                     --  Construct pragma
+
                      Arg_List := New_List (Relocate_Node (Expr), Ent);
+
                      if Present (L_Assoc) then
                         Append_To (Arg_List, L_Assoc);
                      end if;

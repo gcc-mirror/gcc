@@ -1,3 +1,11 @@
+2012-06-12  Robert Dewar  <dewar@adacore.com>
+
+	* xref_lib.adb, sem_ch13.adb, lib-xref.adb: Minor reformatting.
+
+2012-06-12  Javier Miranda  <miranda@adacore.com>
+
+	* lib-xref.ads Adding missing documentation.
+
 2012-06-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Create_Finalizer): Add the

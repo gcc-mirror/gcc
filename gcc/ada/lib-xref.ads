@@ -565,21 +565,34 @@ package Lib.Xref is
    --    y     abstract function               entry or entry family
    --    z     generic formal parameter        (unused)
 
-   --------------------------------------
-   -- Handling of Imported Subprograms --
-   --------------------------------------
+   ---------------------------------------------------
+   -- Handling of Imported and Exported Subprograms --
+   ---------------------------------------------------
 
    --  If a pragma Import or Interface applies to a subprogram, the pragma is
    --  the completion of the subprogram. This is noted in the ALI file by
    --  making the occurrence of the subprogram in the pragma into a body
    --  reference ('b') and by including the external name of the subprogram and
    --  its language, bracketed by '<' and '>' in that reference. For example:
-   --
-   --     3U13*elsewhere 4b<c,there>21
-   --
-   --  indicates that procedure elsewhere, declared at line 3, has a pragma
+
+   --     3U13*imported_proc 4b<c,there>21
+
+   --  indicates that procedure imported_proc, declared at line 3, has a pragma
    --  Import at line 4, that its body is in C, and that the link name as given
    --  in the pragma is "there".
+
+   --  If a pragma Export applies to a subprogram exported to a foreign
+   --  language (ie. the pragma has convention different from Ada), then the
+   --  pragma is annotated in the ALI file by making the occurrence of the
+   --  subprogram in the pragma into an implicit reference ('i') and by
+   --  including the external name of the subprogram and its language,
+   --  bracketed by '<' and '>' in that reference. For example:
+
+   --     3U13*exported_proc 4i<c,here>21
+
+   --  indicates that procedure exported_proc, declared at line 3, has a pragma
+   --  Export at line 4, that its body is exported to C, and that the link name
+   --  as given in the pragma is "here".
 
    ----------------------
    -- Alfa Information --

@@ -2443,7 +2443,7 @@ package body Lib.Xref is
 
                      if Is_Overloadable (XE.Key.Ent) then
                         if (Is_Imported (XE.Key.Ent) and then XE.Key.Typ = 'b')
-                          or else
+                             or else
                            (Is_Exported (XE.Key.Ent) and then XE.Key.Typ = 'i')
                         then
                            Output_Import_Export_Info (XE.Key.Ent);
