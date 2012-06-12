@@ -1,5 +1,8 @@
 2012-06-11  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (HWI_HEX2): Add missing shift.
+	* vmsdbgout.c (VMS_EPOCH_OFFSET): Add LL suffix.
+
 	* config/alpha/alpha.c (alpha_trampoline_init): Split large constants.
 
 2012-06-12  Hans-Peter Nilsson  <hp@axis.com>

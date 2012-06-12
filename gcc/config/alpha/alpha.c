@@ -5451,7 +5451,7 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   chain_value = convert_memory_address (Pmode, chain_value);
 #endif
 
-#define HWI_HEX2(X,Y)	(((HOST_WIDE_INT)0x ## X ## u) | 0x ## Y ## u)
+#define HWI_HEX2(X,Y)	(((HOST_WIDE_INT)0x ## X ## u << 32) | 0x ## Y ## u)
 
   if (TARGET_ABI_OPEN_VMS)
     {
