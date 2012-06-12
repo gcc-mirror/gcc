@@ -1,3 +1,10 @@
+2012-06-12  Richard Guenther  <rguenther@suse.de>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Remove dead code.
+	* alias.c (ao_ref_from_mem): MEM_EXPR is conservative, MEM_OFFSET
+	and MEM_SIZE only refines it.  Reflect that and be less conservative
+	if either of the latter is not known.
+
 2012-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/53589

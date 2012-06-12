@@ -326,17 +326,11 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 
   ref->ref_alias_set = MEM_ALIAS_SET (mem);
 
-  /* If MEM_OFFSET or MEM_SIZE are unknown we have to punt.
-     Keep points-to related information though.  */
+  /* If MEM_OFFSET or MEM_SIZE are unknown what we got from MEM_EXPR
+     is conservative, so trust it.  */
   if (!MEM_OFFSET_KNOWN_P (mem)
       || !MEM_SIZE_KNOWN_P (mem))
-    {
-      ref->ref = NULL_TREE;
-      ref->offset = 0;
-      ref->size = -1;
-      ref->max_size = -1;
-      return true;
-    }
+    return true;
 
   /* If the base decl is a parameter we can have negative MEM_OFFSET in
      case of promoted subregs on bigendian targets.  Trust the MEM_EXPR
@@ -344,6 +338,9 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   if (MEM_OFFSET (mem) < 0
       && (MEM_SIZE (mem) + MEM_OFFSET (mem)) * BITS_PER_UNIT == ref->size)
     return true;
+
+  /* Otherwise continue and refine size and offset we got from analyzing
+     MEM_EXPR by using MEM_SIZE and MEM_OFFSET.  */
 
   ref->offset += MEM_OFFSET (mem) * BITS_PER_UNIT;
   ref->size = MEM_SIZE (mem) * BITS_PER_UNIT;
