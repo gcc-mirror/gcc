@@ -1,3 +1,17 @@
+2012-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/53532
+	PR c/51034
+	PR c/53196
+	* gcc.dg/pr53532.c: New test.
+	* gcc.dg/c99-complit-2.c: Add two new dg-error directives,
+	adjust line numbers.
+	* gcc.dg/noncompile/950825-1.c: Expect incomplete type error message.
+	* gcc.dg/Wcxx-compat-8.c: Likewise.
+	* gcc.dg/pr51034.c: New test.
+	* gcc.dg/pr53196-1.c: New test.
+	* gcc.dg/pr53196-2.c: New test.
+
 2012-06-12  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.dg/torture/stackalign/stackalign.exp: Combine stack

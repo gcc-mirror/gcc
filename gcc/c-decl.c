@@ -4637,7 +4637,10 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const)
     }
 
   if (type == error_mark_node || !COMPLETE_TYPE_P (type))
-    return error_mark_node;
+    {
+      c_incomplete_type_error (NULL_TREE, type);
+      return error_mark_node;
+    }
 
   stmt = build_stmt (DECL_SOURCE_LOCATION (decl), DECL_EXPR, decl);
   complit = build1 (COMPOUND_LITERAL_EXPR, type, stmt);

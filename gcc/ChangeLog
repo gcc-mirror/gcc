@@ -1,3 +1,11 @@
+2012-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/53532
+	PR c/51034
+	PR c/53196
+	* c-decl.c (build_compound_literal): Call c_incomplete_type_error
+	if type isn't complete.
+
 2012-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/ia64/sync.md (fetchop_name): Change ior attribute to "or".
