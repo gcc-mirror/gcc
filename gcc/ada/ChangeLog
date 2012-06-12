@@ -1,3 +1,11 @@
+2012-06-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Process_Transient_Objects): Renamed constant
+	Requires_Hooking to Must_Hook and replace all occurrences of the name.
+	(Requires_Hooking): New routine. Detect all contexts that require
+	transient variable export to the outer finalizer due to a potential
+	exception.
+
 2012-06-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb: Small adjustment.
