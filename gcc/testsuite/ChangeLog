@@ -1,3 +1,8 @@
+2012-06-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53597
+	* gfortran.dg/save_4.f90: New.
+
 2012-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/53532
