@@ -1,11 +1,11 @@
 2012-06-13  Uros Bizjak  <ubizjak@gmail.com>
 
-       * config/ia64/sfp-machine.h (__sfp_handle_exceptions): New
-       function declaration.
-       (FP_HANDLE_EXCEPTIONS): Use __sfp_handle_exceptions.
-       (FP_RND_MASK): New.
-       * config/ia64/sfp-exceptions.c: New.
-       * config/ia64/t-softfp (LIB2ADD): Add sfp-exceptions.c.
+	* config/ia64/sfp-machine.h (__sfp_handle_exceptions): New
+	function declaration.
+	(FP_HANDLE_EXCEPTIONS): Use __sfp_handle_exceptions.
+	(FP_RND_MASK): New.
+	* config/ia64/sfp-exceptions.c: New.
+	* config/ia64/t-softfp (LIB2ADD): Add sfp-exceptions.c.
 
 2012-06-13  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -164,7 +164,7 @@
 	* longlong.h: Use a URL instead of an FSF postal address.
 	Replace spaces with tab.
 
-2012-05-08   Teresa Johnson  <tejohnson@google.com>
+2012-05-08  Teresa Johnson  <tejohnson@google.com>
 
 	* libgcov.c (gcov_clear, __gcov_reset): New functions.
 	(__gcov_dump): Ditto.
@@ -373,8 +373,8 @@
 
 2012-03-11  Michael Hope  <michael.hope@linaro.org>
 
-       * longlong.h [ARM] (add_ssaaaa, sub_ddmmss, umul_ppmm): Enable
-       for Thumb-2.
+	* longlong.h [ARM] (add_ssaaaa, sub_ddmmss, umul_ppmm): Enable
+	for Thumb-2.
 
 2012-03-07  Walter Lee  <walt@tilera.com>
 
