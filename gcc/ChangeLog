@@ -1,5 +1,19 @@
 2012-06-13  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/47624
+	* var-tracking.c (loc_exp_dep_pool): New.
+	(vt_emit_notes): Create and release the pool.
+	(compute_bb_dataflow): Use value-based locations in MO_VAL_SET.
+	(emit_notes_in_bb): Likewise.
+	(loc_exp_dep_insert): Deal with NOT_ONEPART vars.
+	(notify_dependents_of_changed_value): Likewise.
+	(notify_dependents_of_resolved_value): Check that NOT_ONEPART
+	variables don't have a VAR_LOC_DEP_LST.
+	(emit_note_insn_var_location): Expand NOT_ONEPART locs that are
+	VALUEs or MEMs of VALUEs.
+
+2012-06-13  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/52983
 	PR debug/48866
 	* dce.c (word_dce_process_block): Insert debug temps only if the
