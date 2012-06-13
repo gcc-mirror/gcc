@@ -1,3 +1,11 @@
+2012-06-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53647
+	* config/i386/i386.c (ix86_tune_cost): New variable.
+	(ix86_option_override_internal): Set ix86_tune_cost.  Use
+	ix86_tune_cost for simultaneous_prefetches, prefetch_block,
+	l1_cache_size and l2_cache_size.
+
 2012-06-13  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (vrp_meet): Properly meet equivalent ranges.
