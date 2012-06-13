@@ -857,8 +857,9 @@ word_dce_process_block (basic_block bb, bool redo_out)
 	   anything in local_live.  */
 	if (marked_insn_p (insn))
 	  df_word_lr_simulate_uses (insn, local_live);
-
-	if (debug.used && !bitmap_empty_p (debug.used))
+	/* Insert debug temps for dead REGs used in subsequent debug
+	   insns.  */
+	else if (debug.used && !bitmap_empty_p (debug.used))
 	  {
 	    df_ref *def_rec;
 
@@ -939,18 +940,13 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 	/* The insn is needed if there is someone who uses the output.  */
 	if (!needed)
 	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	    {
-	      dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
-				      DEBUG_TEMP_BEFORE_WITH_VALUE);
-
-	      if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
-		  || bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
-		{
-		  needed = true;
-		  mark_insn (insn, true);
-		  break;
-		}
-	    }
+	    if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
+		|| bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
+	      {
+		needed = true;
+		mark_insn (insn, true);
+		break;
+	      }
 
 	/* No matter if the instruction is needed or not, we remove
 	   any regno in the defs from the live set.  */
@@ -960,6 +956,12 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 	   anything in local_live.  */
 	if (needed)
 	  df_simulate_uses (insn, local_live);
+	/* Insert debug temps for dead REGs used in subsequent debug
+	   insns.  */
+	else if (debug.used && !bitmap_empty_p (debug.used))
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
+				    DEBUG_TEMP_BEFORE_WITH_VALUE);
       }
 
   dead_debug_finish (&debug, NULL);
