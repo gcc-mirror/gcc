@@ -1,13 +1,13 @@
-2012-06-11  Olivier Hainque  <hainque@adacore.com>
+2012-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gcc-interface/Makefile.in (GNATLIBCFLAGS_FOR_C): Remove
-	$(PIC_FLAG_FOR_TARGET).
-	(gnatlib-shared-default): Add $(PIC_FLAG_FOR_TARGET) to
-	GNATLIBCFLAGS_FOR_C passed to gnatlib.
-	(gnatlib-shared-win32): Likewise.
-	(gnatlib-shared-darwin): Likewise.
-	(gnatlib-shared-dual-win32): Pass PIC_FLAG_FOR_TARGET to
-	gnatlib-shared-win32.
+	Revert
+	2012-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (Has_Thiscall_Convention): New macro.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Test it to set the thiscall
+	calling convention
+	(get_minimal_subprog_decl): Likewise.
+	(gnat_first_param_is_class): New predicate.
 
 2012-06-12  Robert Dewar  <dewar@adacore.com>
 
@@ -398,6 +398,17 @@
 	pragam for aspects Convention, Import and Export. Scan list
 	of aspects to collect link name and external name if present,
 	and verify that a complete pragma can be generated.
+
+2012-06-11  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/Makefile.in (GNATLIBCFLAGS_FOR_C): Remove
+	$(PIC_FLAG_FOR_TARGET).
+	(gnatlib-shared-default): Add $(PIC_FLAG_FOR_TARGET) to
+	GNATLIBCFLAGS_FOR_C passed to gnatlib.
+	(gnatlib-shared-win32): Likewise.
+	(gnatlib-shared-darwin): Likewise.
+	(gnatlib-shared-dual-win32): Pass PIC_FLAG_FOR_TARGET to
+	gnatlib-shared-win32.
 
 2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
