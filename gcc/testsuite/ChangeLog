@@ -1,3 +1,9 @@
+2012-06-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/tree-ssa/ivopts-2.C: Adjust for coalescing.
+	* gcc.dg/tree-ssa/forwprop-11.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-1.c: Likewise.
+
 2012-06-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53643
