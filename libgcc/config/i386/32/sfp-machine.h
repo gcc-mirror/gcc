@@ -65,7 +65,7 @@
 	     "g" ((USItype) (y0)))
 
 
-#define _FP_MUL_MEAT_Q(R,X,Y)					\
+#define _FP_MUL_MEAT_Q(R,X,Y)				\
   _FP_MUL_MEAT_4_wide(_FP_WFRACBITS_Q,R,X,Y,umul_ppmm)
 
 #define _FP_DIV_MEAT_Q(R,X,Y)   _FP_DIV_MEAT_4_udiv(Q,R,X,Y)
@@ -76,7 +76,3 @@
    16byte since soft-fp emulation is done in 16byte.  */
 #define _FP_NANFRAC_E		_FP_QNANBIT_E, 0, 0, 0
 #define _FP_NANFRAC_Q		_FP_QNANBIT_Q, 0, 0, 0
-#define _FP_NANSIGN_S		1
-#define _FP_NANSIGN_D		1
-#define _FP_NANSIGN_E		1
-#define _FP_NANSIGN_Q		1
