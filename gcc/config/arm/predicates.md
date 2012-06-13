@@ -1,5 +1,5 @@
 ;; Predicate definitions for ARM and Thumb
-;; Copyright (C) 2004, 2007, 2008, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2007, 2008, 2010, 2012 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -493,6 +493,11 @@
   (and (match_code "const_int")
        (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)) < 64")))
 
+;; iWMMXt predicates
+
+(define_predicate "imm_or_reg_operand"
+  (ior (match_operand 0 "immediate_operand")
+       (match_operand 0 "register_operand")))
 
 ;; Neon predicates
 

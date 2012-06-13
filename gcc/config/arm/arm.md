@@ -62,6 +62,7 @@
 ;; UNSPEC Usage:
 ;; Note: sin and cos are no-longer used.
 ;; Unspec enumerators for Neon are defined in neon.md.
+;; Unspec enumerators for iwmmxt2 are defined in iwmmxt2.md
 
 (define_c_enum "unspec" [
   UNSPEC_SIN            ; `sin' operation (MODE_FLOAT):
@@ -98,8 +99,7 @@
   UNSPEC_WMACSZ         ; Used by the intrinsic form of the iWMMXt WMACSZ instruction.
   UNSPEC_WMACUZ         ; Used by the intrinsic form of the iWMMXt WMACUZ instruction.
   UNSPEC_CLRDI          ; Used by the intrinsic form of the iWMMXt CLRDI instruction.
-  UNSPEC_WMADDS         ; Used by the intrinsic form of the iWMMXt WMADDS instruction.
-  UNSPEC_WMADDU         ; Used by the intrinsic form of the iWMMXt WMADDU instruction.
+  UNSPEC_WALIGNI        ; Used by the intrinsic form of the iWMMXt WALIGN instruction.
   UNSPEC_TLS            ; A symbol that has been treated properly for TLS usage.
   UNSPEC_PIC_LABEL      ; A label used for PIC access that does not appear in the
                         ; instruction stream.
@@ -197,7 +197,7 @@
 ; for ARM or Thumb-2 with arm_arch6, and nov6 for ARM without
 ; arm_arch6.  This attribute is used to compute attribute "enabled",
 ; use type "any" to enable an alternative in all cases.
-(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,onlya8,neon_onlya8,nota8,neon_nota8"
+(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,onlya8,neon_onlya8,nota8,neon_nota8,iwmmxt,iwmmxt2"
   (const_string "any"))
 
 (define_attr "arch_enabled" "no,yes"
@@ -248,7 +248,12 @@
 	 (and (eq_attr "arch" "neon_nota8")
 	      (not (eq_attr "tune" "cortexa8"))
 	      (match_test "TARGET_NEON"))
+	 (const_string "yes")
+
+	 (and (eq_attr "arch" "iwmmxt2")
+	      (match_test "TARGET_REALLY_IWMMXT2"))
 	 (const_string "yes")]
+
 	(const_string "no")))
 
 ; Allows an insn to disable certain alternatives for reasons other than
@@ -361,6 +366,10 @@
 	       (eq_attr "insn" "smlalxy,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
 	       (const_string "yes")
 	       (const_string "no")))
+
+; wtype for WMMX insn scheduling purposes.
+(define_attr "wtype"
+        "none,wor,wxor,wand,wandn,wmov,tmcrr,tmrrc,wldr,wstr,tmcr,tmrc,wadd,wsub,wmul,wmac,wavg2,tinsr,textrm,wshufh,wcmpeq,wcmpgt,wmax,wmin,wpack,wunpckih,wunpckil,wunpckeh,wunpckel,wror,wsra,wsrl,wsll,wmadd,tmia,tmiaph,tmiaxy,tbcst,tmovmsk,wacc,waligni,walignr,tandc,textrc,torc,torvsc,wsad,wabs,wabsdiff,waddsubhx,wsubaddhx,wavg4,wmulw,wqmulm,wqmulwm,waddbhus,wqmiaxy,wmiaxy,wmiawxy,wmerge" (const_string "none"))
 
 ; Load scheduling, set from the arm_ld_sched variable
 ; initialized by arm_option_override()
@@ -538,6 +547,7 @@
 	  (const_string "yes")
 	  (const_string "no"))))
 
+(include "marvell-f-iwmmxt.md")
 (include "arm-generic.md")
 (include "arm926ejs.md")
 (include "arm1020e.md")
