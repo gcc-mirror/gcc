@@ -1,5 +1,9 @@
 2012-06-13  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/scanasm.exp (scan-assembler, scan-assembler-not, scan-hidden,
+	scan-not-hiddent, scan-file, scan-file-not, scan-stack-usage,
+	scan-stack-usage-not): Don't strip torture options from test name.
+
 	* lib/scandump.exp (scan-dump-times): Use printable version of
 	regexp in test summary line.
 
