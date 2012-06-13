@@ -1874,6 +1874,10 @@ struct processor_costs generic32_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
+/* Set by -mtune.  */
+const struct processor_costs *ix86_tune_cost = &pentium_cost;
+
+/* Set by -mtune or -Os.  */
 const struct processor_costs *ix86_cost = &pentium_cost;
 
 /* Processor feature/optimization bitmasks.  */
@@ -3546,10 +3550,11 @@ ix86_option_override_internal (bool main_args_p)
 	flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
     }
 
+  ix86_tune_cost = processor_target_table[ix86_tune].cost;
   if (optimize_size)
     ix86_cost = &ix86_size_cost;
   else
-    ix86_cost = processor_target_table[ix86_tune].cost;
+    ix86_cost = ix86_tune_cost;
 
   /* Arrange to set up i386_stack_locals for all functions.  */
   init_machine_status = ix86_init_machine_status;
@@ -3794,16 +3799,19 @@ ix86_option_override_internal (bool main_args_p)
     flag_schedule_insns_after_reload = flag_schedule_insns = 0;
 
   maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			 ix86_cost->simultaneous_prefetches,
+			 ix86_tune_cost->simultaneous_prefetches,
 			 global_options.x_param_values,
 			 global_options_set.x_param_values);
-  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE, ix86_cost->prefetch_block,
+  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
+			 ix86_tune_cost->prefetch_block,
 			 global_options.x_param_values,
 			 global_options_set.x_param_values);
-  maybe_set_param_value (PARAM_L1_CACHE_SIZE, ix86_cost->l1_cache_size,
+  maybe_set_param_value (PARAM_L1_CACHE_SIZE,
+			 ix86_tune_cost->l1_cache_size,
 			 global_options.x_param_values,
 			 global_options_set.x_param_values);
-  maybe_set_param_value (PARAM_L2_CACHE_SIZE, ix86_cost->l2_cache_size,
+  maybe_set_param_value (PARAM_L2_CACHE_SIZE,
+			 ix86_tune_cost->l2_cache_size,
 			 global_options.x_param_values,
 			 global_options_set.x_param_values);
 
