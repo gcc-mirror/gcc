@@ -1,5 +1,14 @@
 2012-06-13  Uros Bizjak  <ubizjak@gmail.com>
 
+       * config/ia64/sfp-machine.h (__sfp_handle_exceptions): New
+       function declaration.
+       (FP_HANDLE_EXCEPTIONS): Use __sfp_handle_exceptions.
+       (FP_RND_MASK): New.
+       * config/ia64/sfp-exceptions.c: New.
+       * config/ia64/t-softfp (LIB2ADD): Add sfp-exceptions.c.
+
+2012-06-13  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/32/sfp-machine.h (_FP_NANSIGN_S, _FP_NANSIGN_D,
 	_FP_NANSIGN_E, _FP_NANSIGN_Q): Move ...
 	* config/i386/64/sfp-machine: ... (delete here) ...
