@@ -5451,8 +5451,6 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   chain_value = convert_memory_address (Pmode, chain_value);
 #endif
 
-#define HWI_HEX2(X,Y)	(((HOST_WIDE_INT)0x ## X ## u << 32) | 0x ## Y ## u)
-
   if (TARGET_ABI_OPEN_VMS)
     {
       const char *fnname;
@@ -5471,7 +5469,8 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	 the VMS calling standard. This is stored in the first quadword.  */
       word1 = force_reg (DImode, gen_const_mem (DImode, fnaddr));
       word1 = expand_and (DImode, word1,
-			  GEN_INT (HWI_HEX2(ffff0fff,0000fff0)), NULL);
+			  GEN_INT (HOST_WIDE_INT_C (0xffff0fff0000fff0)),
+			  NULL);
     }
   else
     {
@@ -5482,11 +5481,9 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	    nop
 	 We don't bother setting the HINT field of the jump; the nop
 	 is merely there for padding.  */
-      word1 = GEN_INT (HWI_HEX2 (a77b0010,a43b0018));
-      word2 = GEN_INT (HWI_HEX2 (47ff041f,6bfb0000));
+      word1 = GEN_INT (HOST_WIDE_INT_C (0xa77b0010a43b0018));
+      word2 = GEN_INT (HOST_WIDE_INT_C (0x47ff041f6bfb0000));
     }
-
-#undef HWI_HEX2
 
   /* Store the first two words, as computed above.  */
   mem = adjust_address (m_tramp, DImode, 0);
