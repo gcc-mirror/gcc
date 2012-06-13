@@ -1976,12 +1976,14 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
 /* Determine whether we should attempt to hoist adjacent loads out of
    diamond patterns in pass_phiopt.  Always hoist loads if
    -fhoist-adjacent-loads is specified and the target machine has
-   a conditional move instruction.  */
+   both a conditional move instruction and a defined cache line size.  */
 
 static bool
 gate_hoist_loads (void)
 {
-  return (flag_hoist_adjacent_loads == 1 && HAVE_conditional_move);
+  return (flag_hoist_adjacent_loads == 1
+	  && PARAM_VALUE (PARAM_L1_CACHE_LINE_SIZE)
+	  && HAVE_conditional_move);
 }
 
 /* Always do these optimizations if we have SSA
