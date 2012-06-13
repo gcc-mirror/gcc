@@ -265,9 +265,9 @@
 
 2012-06-08  Richard Henderson  <rth@redhat.com>
 
-        PR c++/53602
-        * combine-stack-adj.c (force_move_args_size_note): Add ARGS_SIZE
-        note to a clobber insn when no other insn is available.
+	PR c++/53602
+	* combine-stack-adj.c (force_move_args_size_note): Add ARGS_SIZE
+	note to a clobber insn when no other insn is available.
 
 2012-06-08  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -278,15 +278,13 @@
 	* genhooks.c (main): Set progname.
 	(emit_documentation): Remove variable found_start, always bail out
 	when a place is missing.
-	* doc/tm.texi.in (C++ ABI): Add @hook
-	TARGET_CXX_DECL_MANGLING_CONTEXT.
+	* doc/tm.texi.in (C++ ABI): Add @hook TARGET_CXX_DECL_MANGLING_CONTEXT.
 
 2012-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/53580
-	* omp-low.c (scan_omp): Change first argument to
-	gimple_seq *, call walk_gimple_seq_mod instead of
-	walk_gimple_seq.
+	* omp-low.c (scan_omp): Change first argument to gimple_seq *,
+	call walk_gimple_seq_mod instead of walk_gimple_seq.
 	(scan_sharing_clauses, scan_omp_parallel, scan_omp_task,
 	scan_omp_for, scan_omp_sections, scan_omp_single,
 	execute_lower_omp): Adjust callers.
@@ -317,8 +315,7 @@
 	(generate_memset_builtin): ... here.  Use it and simplify.
 	(generate_memcpy_builtin): New function.
 	(generate_code_for_partition): Adjust.
-	(classify_partition): Streamline pattern detection.  Detect
-	memcpy.
+	(classify_partition): Streamline pattern detection.  Detect memcpy.
 	(ldist_gen): Adjust.
 	(tree_loop_distribution): Adjust seed statements for memcpy
 	recognition.
@@ -326,7 +323,7 @@
 2012-06-06  Matt Turner  <mattst88@gmail.com>
 
 	* config/arm/mmintrin.h (_mm_empty): New.
-	 (_m_empty): New.
+	(_m_empty): New.
 
 2012-06-06  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
@@ -378,8 +375,7 @@
 
 2012-06-05  Richard Guenther  <rguenther@suse.de>
 
-	* tree-vect-data-refs.c (vect_analyze_data_refs): Fix last
-	change.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Fix last change.
 
 2012-06-05  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -396,8 +392,7 @@
 
 2012-06-05  Richard Guenther  <rguenther@suse.de>
 
-	* tree-loop-distribution.c (struct partition_s): Add has_writes
-	member.
+	* tree-loop-distribution.c (struct partition_s): Add has_writes member.
 	(partition_alloc): Initialize it.
 	(partition_has_writes): New function.
 	(rdg_flag_uses): Adjust.
@@ -460,8 +455,7 @@
 
 2012-06-04  Vladimir Makarov  <vmakarov@redhat.com>
 
-	* ira-int.h (struct target_ira_int): Add member
-	x_ira_uniform_class_p.
+	* ira-int.h (struct target_ira_int): Add member x_ira_uniform_class_p.
 	(ira_uniform_class_p): New macro.
 
 	* ira.c (setup_uniform_class_p): New function.
@@ -577,8 +571,7 @@
 	(fuse_partitions_with_similar_memory_accesses): Inline ...
 	(ldist_gen): ... here.  Fuse all non-builtin partitions if
 	-ftree-loop-distribution is not enabled.  Properly return
-	the number of created partitions.  Do not update SSA form here
-	but ...
+	the number of created partitions.  Do not update SSA form here but ...
 	(tree_loop_distribution): ... once here for the whole function.
 	Only walk innermost loops, constrain loops we consider here
 	further.  Do not call remove_similar_memory_refs.
@@ -678,8 +671,8 @@
 
 2012-06-02  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	* expmed.c (expand_mult, choose_multiplier): Change "2 *
-	HOST_BITS_PER_WIDE_INT" to "HOST_BITS_PER_DOUBLE_INT".
+	* expmed.c (expand_mult, choose_multiplier): Change
+	"2 * HOST_BITS_PER_WIDE_INT" to "HOST_BITS_PER_DOUBLE_INT".
 	* expr.c (convert_modes): Likewise.
 	* explow.c (plus_constant): Likewise.
 	* fixed-value.c (fixed_saturate1, fixed_saturate2)
@@ -758,7 +751,7 @@
 	to partition classification.
 
 2012-06-01  Manuel López-Ibáñez  <manu@gcc.gnu.org>
-            Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/50134
 	* doc/invoke.texi (Warning Options): Explain purpose and differences
@@ -962,15 +955,15 @@
 
 2012-05-31   Diego Novillo  <dnovillo@google.com>
 
-       * configure.ac (CXX_FOR_BUILD): Define and substitute.
-       (BUILD_CXXFLAGS): Define and substitute.
-       * Makefile.in (BUILD_CXXFLAGS): Define.
-       (CXX_FOR_BUILD): Define.
-       (COMPILER_FOR_BUILD): Set to CXX_FOR_BUILD if building with C++.
-       (LINKER_FOR_BUILD): Likewise.
-       (BUILD_COMPILERFLAGS): Set to BUILD_CXXFLAGS if building with C++.
-       (BUILD_LINKERFLAGS): Likewise.
-       * configure: Regenerate.
+	* configure.ac (CXX_FOR_BUILD): Define and substitute.
+	(BUILD_CXXFLAGS): Define and substitute.
+	* Makefile.in (BUILD_CXXFLAGS): Define.
+	(CXX_FOR_BUILD): Define.
+	(COMPILER_FOR_BUILD): Set to CXX_FOR_BUILD if building with C++.
+	(LINKER_FOR_BUILD): Likewise.
+	(BUILD_COMPILERFLAGS): Set to BUILD_CXXFLAGS if building with C++.
+	(BUILD_LINKERFLAGS): Likewise.
+	* configure: Regenerate.
 
 2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -995,7 +988,7 @@
 	* config/avr/t-avr: Correct avr-mmcu.texi dependencies.
 	(s-avr-mmcu-texi): Don't sed on gen-avr-mmcu-texi output.
 	* doc/avr-mmcu.texi (svn:eol-style): Set to native.
-	
+
 2012-05-31  Richard Guenther  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (struct partition_s): New struct,
@@ -1012,9 +1005,9 @@
 
 2012-05-31  Georg-Johann Lay  <avr@gjlay.de>
 
-	* config/avr/gen-avr-mmcu-texi.c: Sort MCUs. 
+	* config/avr/gen-avr-mmcu-texi.c: Sort MCUs.
 	* doc/avr-mmcu.texi: Regenerate.
-	
+
 2012-05-31  Richard Guenther  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (stmt_has_scalar_dependences_outside_loop):
