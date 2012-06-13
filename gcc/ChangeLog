@@ -1,5 +1,17 @@
 2012-06-13  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/49888
+	* var-tracking.c: Include alias.h.
+	(overlapping_mems): New struct.
+	(drop_overlapping_mem_locs): New.
+	(clobber_overlapping_mems): New.
+	(var_mem_delete_and_set, var_mem_delete): Call it.
+	(val_bind): Likewise, but only if modified.
+	(compute_bb_dataflow, emit_notes_in_bb): Call it on MEMs.
+	* Makefile.in (var-tracking.o): Depend in $(ALIAS_H).
+
+2012-06-13  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/47624
 	* var-tracking.c (loc_exp_dep_pool): New.
 	(vt_emit_notes): Create and release the pool.
