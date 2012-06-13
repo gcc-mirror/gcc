@@ -6914,93 +6914,166 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
       return;
     }
 
-  if (vr0->type == VR_RANGE && vr1->type == VR_RANGE)
+  if (vr0->type == vr1->type
+      && compare_values (vr0->min, vr1->min) == 0
+      && compare_values (vr0->max, vr1->max) == 0)
+    {
+      /* If the value-ranges are identical just insersect
+	 their equivalencies.  */
+    }
+  else if (vr0->type == VR_RANGE && vr1->type == VR_RANGE)
     {
       int cmp;
       tree min, max;
 
-      /* Compute the convex hull of the ranges.  The lower limit of
-         the new range is the minimum of the two ranges.  If they
-	 cannot be compared, then give up.  */
-      cmp = compare_values (vr0->min, vr1->min);
-      if (cmp == 0 || cmp == 1)
-        min = vr1->min;
-      else if (cmp == -1)
-        min = vr0->min;
-      else
-	goto give_up;
-
-      /* Similarly, the upper limit of the new range is the maximum
-         of the two ranges.  If they cannot be compared, then
-	 give up.  */
-      cmp = compare_values (vr0->max, vr1->max);
-      if (cmp == 0 || cmp == -1)
-        max = vr1->max;
-      else if (cmp == 1)
-        max = vr0->max;
-      else
-	goto give_up;
-
-      /* Check for useless ranges.  */
-      if (INTEGRAL_TYPE_P (TREE_TYPE (min))
-	  && ((vrp_val_is_min (min) || is_overflow_infinity (min))
-	      && (vrp_val_is_max (max) || is_overflow_infinity (max))))
-	goto give_up;
-
-      /* The resulting set of equivalences is the intersection of
-	 the two sets.  */
-      if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
-        bitmap_and_into (vr0->equiv, vr1->equiv);
-      else if (vr0->equiv && !vr1->equiv)
-        bitmap_clear (vr0->equiv);
-
-      set_value_range (vr0, vr0->type, min, max, vr0->equiv);
-    }
-  else if (vr0->type == VR_ANTI_RANGE && vr1->type == VR_ANTI_RANGE)
-    {
-      /* Two anti-ranges meet only if their complements intersect.
-         Only handle the case of identical ranges.  */
-      if (compare_values (vr0->min, vr1->min) == 0
-	  && compare_values (vr0->max, vr1->max) == 0
-	  && compare_values (vr0->min, vr0->max) == 0)
+      /* If the two ranges represent an anti-range produce a
+	 VR_RANGE with swapped min/max and let the range canonicalization
+	 fix things up.  */
+      if (vrp_val_is_min (vr0->min) && !is_overflow_infinity (vr0->min)
+	  && vrp_val_is_max (vr1->max) && !is_overflow_infinity (vr1->max)
+	  && TREE_CODE (vr1->min) == INTEGER_CST
+	  && TREE_CODE (vr0->max) == INTEGER_CST
+	  && compare_values (vr0->max, vr1->min) == -1)
 	{
-	  /* The resulting set of equivalences is the intersection of
-	     the two sets.  */
-	  if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
-	    bitmap_and_into (vr0->equiv, vr1->equiv);
-	  else if (vr0->equiv && !vr1->equiv)
-	    bitmap_clear (vr0->equiv);
+	  min = vr1->min;
+	  max = vr0->max;
 	}
+      else if (vrp_val_is_min (vr1->min) && !is_overflow_infinity (vr1->min)
+	       && vrp_val_is_max (vr0->max) && !is_overflow_infinity (vr0->max)
+	       && TREE_CODE (vr1->max) == INTEGER_CST
+	       && TREE_CODE (vr0->min) == INTEGER_CST
+	       && compare_values (vr1->max, vr0->min) == -1)
+	{
+	  max = vr1->max;
+	  min = vr0->min;
+	}
+      /* Otherwise compute the convex hull of the ranges.  The lower limit of
+	 the new range is the minimum of the two ranges.  If they
+	 cannot be compared, then give up.  */
       else
-	goto give_up;
+	{
+	  cmp = compare_values (vr0->min, vr1->min);
+	  if (cmp == 0 || cmp == 1)
+	    min = vr1->min;
+	  else if (cmp == -1)
+	    min = vr0->min;
+	  else
+	    goto give_up;
+
+	  /* Similarly, the upper limit of the new range is the maximum
+	     of the two ranges.  If they cannot be compared, then
+	     give up.  */
+	  cmp = compare_values (vr0->max, vr1->max);
+	  if (cmp == 0 || cmp == -1)
+	    max = vr1->max;
+	  else if (cmp == 1)
+	    max = vr0->max;
+	  else
+	    goto give_up;
+
+	  /* Check for useless ranges.  */
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (min))
+	      && ((vrp_val_is_min (min) || is_overflow_infinity (min))
+		  && (vrp_val_is_max (max) || is_overflow_infinity (max))))
+	    goto give_up;
+	}
+
+      set_and_canonicalize_value_range (vr0, vr0->type, min, max, vr0->equiv);
     }
   else if (vr0->type == VR_ANTI_RANGE || vr1->type == VR_ANTI_RANGE)
     {
-      /* For a numeric range [VAL1, VAL2] and an anti-range ~[VAL3, VAL4],
-         only handle the case where the ranges have an empty intersection.
-	 The result of the meet operation is the anti-range.  */
-      if (!symbolic_range_p (vr0)
-	  && !symbolic_range_p (vr1)
-	  && !value_ranges_intersect_p (vr0, vr1))
-	{
-	  /* Copy most of VR1 into VR0.  Don't copy VR1's equivalence
-	     set.  We need to compute the intersection of the two
-	     equivalence sets.  */
-	  if (vr1->type == VR_ANTI_RANGE)
-	    set_value_range (vr0, vr1->type, vr1->min, vr1->max, vr0->equiv);
+      if (symbolic_range_p (vr0)
+	  || symbolic_range_p (vr1))
+	goto give_up;
 
-	  /* The resulting set of equivalences is the intersection of
-	     the two sets.  */
-	  if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
-	    bitmap_and_into (vr0->equiv, vr1->equiv);
-	  else if (vr0->equiv && !vr1->equiv)
-	    bitmap_clear (vr0->equiv);
+      /* [] is vr0, () is vr1 in the following classification comments.  */
+      if (operand_less_p (vr0->max, vr1->min) == 1
+	  || operand_less_p (vr1->max, vr0->min) == 1)
+	{
+	  /* [ ] ( ) or ( ) [ ]
+	     If the ranges have an empty intersection, result of the meet
+	     operation is the anti-range or if both are anti-ranges
+	     it covers all.  */
+	  if (vr0->type == VR_ANTI_RANGE
+	      && vr1->type == VR_ANTI_RANGE)
+	    goto give_up;
+	  else if (vr1->type == VR_ANTI_RANGE)
+	    set_value_range (vr0, vr1->type, vr1->min, vr1->max, vr0->equiv);
+	}
+      else if (operand_less_p (vr1->max, vr0->max) == 1
+	       && operand_less_p (vr0->min, vr1->min) == 1)
+	{
+	  /* [ (  ) ]
+	     Arbitrarily choose the left or inner gap.  */
+	  if (vr0->type == VR_ANTI_RANGE
+	      && vr1->type == VR_ANTI_RANGE)
+	    set_value_range (vr0, vr1->type, vr1->min, vr1->max, vr0->equiv);
+	  else if (vr0->type == VR_ANTI_RANGE)
+	    set_and_canonicalize_value_range (vr0, vr0->type, vr0->min,
+		      int_const_binop (MINUS_EXPR, vr1->min, integer_one_node),
+					      vr0->equiv);
+	  else
+	    goto give_up;
+	}
+      else if (operand_less_p (vr0->max, vr1->max) == 1
+	       && operand_less_p (vr1->min, vr0->min) == 1)
+	{
+	  /* ( [  ] )
+	     Arbitrarily choose the left or inner gap.  */
+	  if (vr0->type == VR_ANTI_RANGE
+	      && vr1->type == VR_ANTI_RANGE)
+	    /* Nothing to do.  */;
+	  else if (vr1->type == VR_ANTI_RANGE)
+	    set_and_canonicalize_value_range (vr0, vr1->type, vr1->min,
+		      int_const_binop (MINUS_EXPR, vr0->min, integer_one_node),
+					      vr0->equiv);
+	  else
+	    goto give_up;
+	}
+      else if (operand_less_p (vr1->min, vr0->max) == 1
+	       && operand_less_p (vr0->max, vr1->max) == 1)
+	{
+	  /* [  ( ]  ) */
+	  if (vr0->type == VR_ANTI_RANGE
+	      && vr1->type == VR_ANTI_RANGE)
+	    set_value_range (vr0, vr0->type, vr1->min, vr0->max, vr0->equiv);
+	  else if (vr0->type == VR_ANTI_RANGE)
+	    set_and_canonicalize_value_range (vr0, vr0->type, vr0->min,
+		      int_const_binop (MINUS_EXPR, vr1->min, integer_one_node),
+					      vr0->equiv);
+	  else
+	    set_and_canonicalize_value_range (vr0, vr1->type,
+		      int_const_binop (PLUS_EXPR, vr0->max, integer_one_node),
+					      vr1->max, vr0->equiv);
+	}
+      else if (operand_less_p (vr0->min, vr1->max) == 1
+	       && operand_less_p (vr1->max, vr0->max) == 1)
+	{
+	  /* (  [ )  ] */
+	  if (vr0->type == VR_ANTI_RANGE
+	      && vr1->type == VR_ANTI_RANGE)
+	    set_value_range (vr0, vr1->type, vr0->min, vr1->max, vr0->equiv);
+	  else if (vr0->type == VR_ANTI_RANGE)
+	    set_and_canonicalize_value_range (vr0, vr0->type,
+		      int_const_binop (PLUS_EXPR, vr1->max, integer_one_node),
+					      vr0->max, vr0->equiv);
+	  else
+	    set_and_canonicalize_value_range (vr0, vr1->type, vr1->min,
+		      int_const_binop (MINUS_EXPR, vr0->min, integer_one_node),
+					      vr0->equiv);
 	}
       else
 	goto give_up;
     }
   else
     gcc_unreachable ();
+
+  /* The resulting set of equivalences is always the intersection of
+     the two sets.  Above we always left the equivalency set of vr0 as-is.  */
+  if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
+    bitmap_and_into (vr0->equiv, vr1->equiv);
+  else if (vr0->equiv && !vr1->equiv)
+    bitmap_clear (vr0->equiv);
 
   return;
 
