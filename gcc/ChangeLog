@@ -1,5 +1,14 @@
 2012-06-13  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/52983
+	PR debug/48866
+	* dce.c (word_dce_process_block): Insert debug temps only if the
+	insn is not marked.
+	(dce_process_block): Likewise, and if debug.used is not empty,
+	and only after iterating over all DEFs that might mark the insn.
+
+2012-06-13  Alexandre Oliva  <aoliva@redhat.com>
+
 	* common.opt (ftree-coalesce-inlined-vars): New.
 	(ftree-coalesce-vars): New.
 	* doc/invoke.texi: Document them.
