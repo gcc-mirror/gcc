@@ -1,3 +1,36 @@
+2012-06-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* read-rtl.c (mapping): Remove index field.  Add current_value field.
+	Define heap vectors.
+	(iterator_group): Fix long line.  Remove num_builtins field and
+	uses_iterator fields.  Make apply_iterator take a void * parameter.
+	(iterator_use, atttribute_use): New structures.
+	(iterator_traverse_data, BELLWETHER_CODE, bellwether_codes): Delete.
+	(current_iterators, iterator_uses, attribute_uses): New variables.
+	(uses_mode_iterator_p, uses_code_iterator_p): Delete.
+	(apply_mode_iterator, apply_code_iterator): Take a void * parameter.
+	(map_attr_string, apply_iterator_to_string): Remove iterator
+	and value parameters.  Look through all current iterator values
+	for a matching attribute.
+	(mode_attr_index, apply_mode_maps): Delete.
+	(apply_iterator_to_rtx): Replace with...
+	(copy_rtx_for_iterators): ...this new function.
+	(uses_iterator_p, apply_iterator_traverse): Delete.
+	(apply_attribute_uses, add_current_iterators, apply_iterators): New
+	functions.
+	(add_mapping): Remove index field.  Set current_value field.
+	(initialize_iterators): Don't set num_builtins and uses_iterator_p
+	fields.
+	(find_iterator): Delete.
+	(record_iterator_use, record_attribute_use): New functions.
+	(record_potential_iterator_use): New function.
+	(check_code_iterator): Remove handling of bellwether codes.
+	(read_rtx): Remove mode maps.  Truncate iterator and attribute uses.
+	(read_rtx_code, read_nested_rtx, read_rtx_variadic): Remove mode_maps
+	parameter.  Use the first code iterator value instead of the
+	bellwether_codes array.  Use record_potential_iterator_use
+	for modes.
+
 2012-06-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53568
