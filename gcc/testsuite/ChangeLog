@@ -1,5 +1,9 @@
 2012-06-13  Janis Johnson  <janisjo@codesourcery.com>
 
+	PR testsuite/20771
+	* lib/dg-pch.exp (dg-flags-pch): Add flags to make compile lines in
+	test summary unique.
+
 	* lib/scanasm.exp (scan-assembler, scan-assembler-not, scan-hidden,
 	scan-not-hiddent, scan-file, scan-file-not, scan-stack-usage,
 	scan-stack-usage-not): Don't strip torture options from test name.
