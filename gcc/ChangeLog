@@ -1,3 +1,10 @@
+2012-06-13  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_meet): Properly meet equivalent ranges.
+	Handle meeting two VR_RANGE to an VR_ANTI_RANGE.  Implement
+	all possible meetings of VR_RANGE with VR_ANTI_RANGE and
+	VR_ANTI_RANGE with VR_ANTI_RANGE.
+
 2012-06-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config.gcc (unsupported): Move obsoleted FPA-based configurations
