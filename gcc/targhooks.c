@@ -499,9 +499,11 @@ default_builtin_vectorized_conversion (unsigned int code ATTRIBUTE_UNUSED,
 
 int
 default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
-                                    tree vectype ATTRIBUTE_UNUSED,
+                                    tree vectype,
                                     int misalign ATTRIBUTE_UNUSED)
 {
+  unsigned elements;
+
   switch (type_of_cost)
     {
       case scalar_stmt:
@@ -523,6 +525,10 @@ default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case cond_branch_taken:
         return 3;
+
+      case vec_construct:
+	elements = TYPE_VECTOR_SUBPARTS (vectype);
+	return elements / 2 + 1;
 
       default:
         gcc_unreachable ();

@@ -36072,9 +36072,11 @@ static const struct attribute_spec ix86_attribute_table[] =
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
 static int
 ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
-                                 tree vectype ATTRIBUTE_UNUSED,
+                                 tree vectype,
                                  int misalign ATTRIBUTE_UNUSED)
 {
+  unsigned elements;
+
   switch (type_of_cost)
     {
       case scalar_stmt:
@@ -36114,6 +36116,10 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       case vec_perm:
       case vec_promote_demote:
         return ix86_cost->vec_stmt_cost;
+
+      case vec_construct:
+	elements = TYPE_VECTOR_SUBPARTS (vectype);
+	return elements / 2 + 1;
 
       default:
         gcc_unreachable ();

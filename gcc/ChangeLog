@@ -1,3 +1,16 @@
+2012-06-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* targhooks.c (default_builtin_vectorized_conversion): Handle
+	vec_construct, using vectype to base cost on subparts.
+	* target.h (enum vect_cost_for_stmt): Add vec_construct.
+	* tree-vect-stmts.c (vect_model_load_cost): Use vec_construct
+	instead of scalar_to-vec.
+	* config/spu/spu.c (spu_builtin_vectorization_cost): Handle
+	vec_construct in same way as default for now.
+	* config/i386/i386.c (ix86_builtin_vectorization_cost): Likewise.
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost):
+	Handle vec_construct, including special case for 32-bit loads.
+
 2012-06-13  Xinyu Qi <xyqi@marvell.com>
 
 	* config/arm/arm.c (FL_IWMMXT2): New define.
