@@ -11,5 +11,5 @@ int f(int *a)
   return *c + t;
 }
 
-/* { dg-final { scan-tree-dump "Replaced \\\*c_\[^\n\].*with t_" "fre1" } } */
+/* { dg-final { scan-tree-dump "Replaced \\\*\[ac\]_\[^\n\].*with t_" "fre1" } } */
 /* { dg-final { cleanup-tree-dump "fre1" } } */

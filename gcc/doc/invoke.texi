@@ -405,7 +405,8 @@ Objective-C and Objective-C++ Dialects}.
 -fsplit-ivs-in-unroller -fsplit-wide-types -fstack-protector @gol
 -fstack-protector-all -fstrict-aliasing -fstrict-overflow @gol
 -fthread-jumps -ftracer -ftree-bit-ccp @gol
--ftree-builtin-call-dce -ftree-ccp -ftree-ch -ftree-copy-prop @gol
+-ftree-builtin-call-dce -ftree-ccp -ftree-ch @gol
+-ftree-coalesce-inline-vars -ftree-coalesce-vars -ftree-copy-prop @gol
 -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse @gol
 -ftree-forwprop -ftree-fre -ftree-loop-if-convert @gol
 -ftree-loop-if-convert-stores -ftree-loop-im @gol
@@ -7489,6 +7490,24 @@ Perform copy renaming on trees.  This pass attempts to rename compiler
 temporaries to other variables at copy locations, usually resulting in
 variable names which more closely resemble the original variables.  This flag
 is enabled by default at @option{-O} and higher.
+
+@item -ftree-coalesce-inlined-vars
+Tell the copyrename pass (see @option{-ftree-copyrename}) to attempt to
+combine small user-defined variables too, but only if they were inlined
+from other functions.  It is a more limited form of
+@option{-ftree-coalesce-vars}.  This may harm debug information of such
+inlined variables, but it will keep variables of the inlined-into
+function apart from each other, such that they are more likely to
+contain the expected values in a debugging session.  This was the
+default in GCC versions older than 4.7.
+
+@item -ftree-coalesce-vars
+Tell the copyrename pass (see @option{-ftree-copyrename}) to attempt to
+combine small user-defined variables too, instead of just compiler
+temporaries.  This may severely limit the ability to debug an optimized
+program compiled with @option{-fno-var-tracking-assignments}.  In the
+negated form, this flag prevents SSA coalescing of user variables,
+including inlined ones.  This option is enabled by default.
 
 @item -ftree-ter
 @opindex ftree-ter
