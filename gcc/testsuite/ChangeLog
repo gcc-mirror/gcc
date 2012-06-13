@@ -1,5 +1,8 @@
 2012-06-13  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/scandump.exp (scan-dump-times): Use printable version of
+	regexp in test summary line.
+
 	* gcc.dg/di-longlong64-sync-1.c: Add comments to checks for multiple
 	messages reported for one line of source code.
 	* gcc.dg/format/few-1.c: Likewise.
