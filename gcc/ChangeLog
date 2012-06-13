@@ -1,3 +1,24 @@
+2012-06-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (unsupported): Move obsoleted FPA-based configurations
+	here from ...
+	(obsolete): ... here.
+	(arm*-*-freebsd*): Remove.
+	(arm*-*-linux*): Only accept EABI variants.  Simplify logic.
+	(arm*-*-uclinux*): Likewise.
+	(arm*-*-ecos-elf): Remove.
+	(arm*-*-rtems*): Remove.
+	(arm*-*-elf): Remove.
+	(arm*-wince-pe*): Remove.
+	(arm, --with-fpu): Remove support for fpa and Maverick variants.
+	* arm/ecos-elf.h: Delete.
+	* arm/t-strongarm-elf: Delete.
+	* arm/rtems-elf.h: Delete.
+	* arm/wince-pe.h: Delete.
+	* arm/pe.c: Delete.
+	* arm/pe.h: Delete.
+	* arm/t-wince-pe: Delete.
+
 2012-06-13  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/53647
