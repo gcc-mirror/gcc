@@ -50,14 +50,16 @@ proc dg-flags-pch { subdir test otherflags options suffix } {
 	    # Ensure that the PCH file is used, not the original header.
 	    file_on_host delete "$bname$suffix"
 
-	    dg-test -keep-output $test "$otherflags $flags -I." ""
+	    # The flags "-Dwith_PCH" and "-Dwithout_PCH" are to distinguish the
+	    # two compiles in test summary lines.
+	    dg-test -keep-output $test "$otherflags $flags -I. -Dwith_PCH" ""
 	    file_on_host delete "$bname$suffix.gch"
 	    if { !$have_errs } {
 		if { [ file_on_host exists "$bname.s" ] } {
 		    remote_upload host "$bname.s" "$bname.s-gch"
 		    remote_download host "$bname.s-gch"
 		    gcc_copy_files "[file rootname $test]${suffix}s" "$bname$suffix"
-		    dg-test -keep-output $test "$otherflags $flags -I." ""
+		    dg-test -keep-output $test "$otherflags $flags -I. -Dwithout_PCH" ""
 		    remote_upload host "$bname.s"
 		    set tmp [ diff "$bname.s" "$bname.s-gch" ]
 		    if { $tmp == 0 } {
