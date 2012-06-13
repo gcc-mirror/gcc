@@ -115,6 +115,7 @@
 #include "pointer-set.h"
 #include "recog.h"
 #include "tm_p.h"
+#include "alias.h"
 
 /* var-tracking.c assumes that tree code with the same value as VALUE rtx code
    has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
@@ -1954,6 +1955,111 @@ var_regno_delete (dataflow_set *set, int regno)
   *reg = NULL;
 }
 
+/* Hold parameters for the hashtab traversal function
+   drop_overlapping_mem_locs, see below.  */
+
+struct overlapping_mems
+{
+  dataflow_set *set;
+  rtx loc, addr;
+};
+
+/* Remove all MEMs that overlap with COMS->LOC from the location list
+   of a hash table entry for a value.  COMS->ADDR must be a
+   canonicalized form of COMS->LOC's address, and COMS->LOC must be
+   canonicalized itself.  */
+
+static int
+drop_overlapping_mem_locs (void **slot, void *data)
+{
+  struct overlapping_mems *coms = (struct overlapping_mems *)data;
+  dataflow_set *set = coms->set;
+  rtx mloc = coms->loc, addr = coms->addr;
+  variable var = (variable) *slot;
+
+  if (var->onepart == ONEPART_VALUE)
+    {
+      location_chain loc, *locp;
+      bool changed = false;
+      rtx cur_loc;
+
+      gcc_assert (var->n_var_parts == 1);
+
+      if (shared_var_p (var, set->vars))
+	{
+	  for (loc = var->var_part[0].loc_chain; loc; loc = loc->next)
+	    if (GET_CODE (loc->loc) == MEM
+		&& canon_true_dependence (mloc, GET_MODE (mloc), addr,
+					  loc->loc, NULL))
+	      break;
+
+	  if (!loc)
+	    return 1;
+
+	  slot = unshare_variable (set, slot, var, VAR_INIT_STATUS_UNKNOWN);
+	  var = (variable)*slot;
+	  gcc_assert (var->n_var_parts == 1);
+	}
+
+      if (VAR_LOC_1PAUX (var))
+	cur_loc = VAR_LOC_FROM (var);
+      else
+	cur_loc = var->var_part[0].cur_loc;
+
+      for (locp = &var->var_part[0].loc_chain, loc = *locp;
+	   loc; loc = *locp)
+	{
+	  if (GET_CODE (loc->loc) != MEM
+	      || !canon_true_dependence (mloc, GET_MODE (mloc), addr,
+					 loc->loc, NULL))
+	    {
+	      locp = &loc->next;
+	      continue;
+	    }
+
+	  *locp = loc->next;
+	  /* If we have deleted the location which was last emitted
+	     we have to emit new location so add the variable to set
+	     of changed variables.  */
+	  if (cur_loc == loc->loc)
+	    {
+	      changed = true;
+	      var->var_part[0].cur_loc = NULL;
+	      if (VAR_LOC_1PAUX (var))
+		VAR_LOC_FROM (var) = NULL;
+	    }
+	  pool_free (loc_chain_pool, loc);
+	}
+
+      if (!var->var_part[0].loc_chain)
+	{
+	  var->n_var_parts--;
+	  changed = true;
+	}
+      if (changed)
+	variable_was_changed (var, set);
+    }
+
+  return 1;
+}
+
+/* Remove from SET all VALUE bindings to MEMs that overlap with LOC.  */
+
+static void
+clobber_overlapping_mems (dataflow_set *set, rtx loc)
+{
+  struct overlapping_mems coms;
+
+  coms.set = set;
+  coms.loc = canon_rtx (loc);
+  coms.addr = canon_rtx (get_addr (XEXP (loc, 0)));
+
+  set->traversed_vars = set->vars;
+  htab_traverse (shared_hash_htab (set->vars),
+		 drop_overlapping_mem_locs, &coms);
+  set->traversed_vars = NULL;
+}
+
 /* Set the location of DV, OFFSET as the MEM LOC.  */
 
 static void
@@ -1996,6 +2102,7 @@ var_mem_delete_and_set (dataflow_set *set, rtx loc, bool modify,
   tree decl = MEM_EXPR (loc);
   HOST_WIDE_INT offset = INT_MEM_OFFSET (loc);
 
+  clobber_overlapping_mems (set, loc);
   decl = var_debug_decl (decl);
 
   if (initialized == VAR_INIT_STATUS_UNKNOWN)
@@ -2016,6 +2123,7 @@ var_mem_delete (dataflow_set *set, rtx loc, bool clobber)
   tree decl = MEM_EXPR (loc);
   HOST_WIDE_INT offset = INT_MEM_OFFSET (loc);
 
+  clobber_overlapping_mems (set, loc);
   decl = var_debug_decl (decl);
   if (clobber)
     clobber_variable_part (set, NULL, dv_from_decl (decl), offset, NULL);
@@ -2058,6 +2166,9 @@ val_bind (dataflow_set *set, rtx val, rtx loc, bool modified)
   else if (MEM_P (loc))
     {
       struct elt_loc_list *l = CSELIB_VAL_PTR (val)->locs;
+
+      if (modified)
+	clobber_overlapping_mems (set, loc);
 
       if (l && GET_CODE (l->loc) == VALUE)
 	l = canonical_cselib_val (CSELIB_VAL_PTR (l->loc))->locs;
@@ -6371,6 +6482,8 @@ compute_bb_dataflow (basic_block bb)
 		}
 	      else if (REG_P (uloc))
 		var_regno_delete (out, REGNO (uloc));
+	      else if (MEM_P (uloc))
+		clobber_overlapping_mems (out, uloc);
 
 	      val_store (out, val, dstv, insn, true);
 	    }
@@ -8870,6 +8983,8 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 		}
 	      else if (REG_P (uloc))
 		var_regno_delete (set, REGNO (uloc));
+	      else if (MEM_P (uloc))
+		clobber_overlapping_mems (set, uloc);
 
 	      val_store (set, val, dstv, insn, true);
 
