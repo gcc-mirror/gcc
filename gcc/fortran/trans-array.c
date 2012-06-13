@@ -7318,9 +7318,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
   if ((POINTER_TYPE_P (decl_type) && rank != 0)
 	|| (TREE_CODE (decl_type) == REFERENCE_TYPE && rank == 0))
-
-    decl = build_fold_indirect_ref_loc (input_location,
-				    decl);
+    decl = build_fold_indirect_ref_loc (input_location, decl);
 
   /* Just in case in gets dereferenced.  */
   decl_type = TREE_TYPE (decl);
@@ -7328,7 +7326,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
   /* If this an array of derived types with allocatable components
      build a loop and recursively call this function.  */
   if (TREE_CODE (decl_type) == ARRAY_TYPE
-	|| GFC_DESCRIPTOR_TYPE_P (decl_type))
+      || (GFC_DESCRIPTOR_TYPE_P (decl_type) && rank != 0))
     {
       tmp = gfc_conv_array_data (decl);
       var = build_fold_indirect_ref_loc (input_location,

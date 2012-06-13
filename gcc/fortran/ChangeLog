@@ -1,5 +1,12 @@
 2012-06-13  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/53643
+	* trans-decl.c (init_intent_out_dt): Fix for polymorphic arrays.
+	* trans-array.c (structure_alloc_comps): Don't loop for
+	scalar coarrays.
+
+2012-06-13  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/53597
 	* decl.c (match_attr_spec): Only mark module variables
 	as SAVE_IMPLICIT for Fortran 2008 and later.
