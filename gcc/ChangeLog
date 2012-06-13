@@ -1,3 +1,112 @@
+2012-06-13  Xinyu Qi <xyqi@marvell.com>
+
+	* config/arm/arm.c (FL_IWMMXT2): New define.
+	(arm_arch_iwmmxt2): New variable.
+	(arm_option_override): Enable use of iWMMXt with VFP.
+	Disable use of iWMMXt with NEON. Disable use of iWMMXt under
+	Thumb mode. Set arm_arch_iwmmxt2.
+	(arm_expand_binop_builtin): Accept VOIDmode op.
+	(enum arm_builtins): Revise built-in fcode.
+	(IWMMXT2_BUILTIN): New define.
+	(IWMMXT2_BUILTIN2): Likewise.
+	(iwmmx2_mbuiltin): Likewise.
+	(builtin_description bdesc_2arg): Revise built in declaration.
+	(builtin_description bdesc_1arg): Likewise.
+	(arm_init_iwmmxt_builtins): Revise built in initialization.
+	(arm_expand_builtin): Revise built in expansion.
+	(arm_output_iwmmxt_shift_immediate): New function.
+	(arm_output_iwmmxt_tinsr): Likewise.
+	* config/arm/arm-protos.h (arm_output_iwmmxt_shift_immediate): Declare.
+	(arm_output_iwmmxt_tinsr): Likewise.
+	* config/arm/iwmmxt.md (WCGR0, WCGR1, WCGR2, WCGR3): New constant.
+	(iwmmxt_psadbw, iwmmxt_walign, iwmmxt_tmrc, iwmmxt_tmcr): Delete.
+	(rorv4hi3, rorv2si3, rordi3): Likewise.
+	(rorv4hi3_di, rorv2si3_di, rordi3_di): Likewise.
+	(ashrv4hi3_di, ashrv2si3_di, ashrdi3_di): Likewise.
+	(lshrv4hi3_di, lshrv2si3_di, lshrdi3_di): Likewise.
+	(ashlv4hi3_di, ashlv2si3_di, ashldi3_di): Likewise.
+	(iwmmxt_tbcstqi, iwmmxt_tbcsthi, iwmmxt_tbcstsi): Likewise
+	(*iwmmxt_clrv8qi, *iwmmxt_clrv4hi, *iwmmxt_clrv2si): Likewise.
+	(tbcstv8qi, tbcstv4hi, tbsctv2si): New pattern.
+	(iwmmxt_clrv8qi, iwmmxt_clrv4hi, iwmmxt_clrv2si): Likewise.
+	(*and<mode>3_iwmmxt, *ior<mode>3_iwmmxt, *xor<mode>3_iwmmxt): Likewise.
+	(ror<mode>3, ror<mode>3_di): Likewise.
+	(ashr<mode>3_di, lshr<mode>3_di, ashl<mode>3_di): Likewise.
+	(ashli<mode>3_iwmmxt, iwmmxt_waligni, iwmmxt_walignr): Likewise.
+	(iwmmxt_walignr0, iwmmxt_walignr1): Likewise.
+	(iwmmxt_walignr2, iwmmxt_walignr3): Likewise.
+	(iwmmxt_setwcgr0, iwmmxt_setwcgr1): Likewise.
+	(iwmmxt_setwcgr2, iwmmxt_setwcgr3): Likewise.
+	(iwmmxt_getwcgr0, iwmmxt_getwcgr1): Likewise.
+	(iwmmxt_getwcgr2, iwmmxt_getwcgr3): Likewise.
+	(All instruction patterns): Add wtype attribute.
+	(*iwmmxt_arm_movdi, *iwmmxt_movsi_insn): iWMMXt coexist with vfp.
+	(iwmmxt_uavgrndv8qi3, iwmmxt_uavgrndv4hi3): Revise the pattern.
+	(iwmmxt_uavgv8qi3, iwmmxt_uavgv4hi3): Likewise.
+	(ashr<mode>3_iwmmxt, ashl<mode>3_iwmmxt, lshr<mode>3_iwmmxt): Likewise.
+	(iwmmxt_tinsrb, iwmmxt_tinsrh, iwmmxt_tinsrw):Likewise.
+	(eqv8qi3, eqv4hi3, eqv2si3, gtuv8qi3): Likewise.
+	(gtuv4hi3, gtuv2si3, gtv8qi3, gtv4hi3, gtv2si3): Likewise.
+	(iwmmxt_wunpckihh, iwmmxt_wunpckihw, iwmmxt_wunpckilh): Likewise.
+	(iwmmxt_wunpckilw, iwmmxt_wunpckehub, iwmmxt_wunpckehuh): Likewise.
+	(iwmmxt_wunpckehuw, iwmmxt_wunpckehsb, iwmmxt_wunpckehsh): Likewise.
+	(iwmmxt_wunpckehsw, iwmmxt_wunpckelub, iwmmxt_wunpckeluh): Likewise.
+	(iwmmxt_wunpckeluw, iwmmxt_wunpckelsb, iwmmxt_wunpckelsh): Likewise.
+	(iwmmxt_wunpckelsw, iwmmxt_wmadds, iwmmxt_wmaddu): Likewise.
+	(iwmmxt_wsadb, iwmmxt_wsadh, iwmmxt_wsadbz, iwmmxt_wsadhz): Likewise.
+	(iwmmxt2.md): Include.
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define __IWMMXT2__.
+	(TARGET_IWMMXT2): New define.
+	(TARGET_REALLY_IWMMXT2): Likewise.
+	(arm_arch_iwmmxt2): Declare.
+	* config/arm/mmintrin.h: Use __IWMMXT__ to enable iWMMXt intrinsics.
+	Use __IWMMXT2__ to enable iWMMXt2 intrinsics.
+	Use C name-mangling for intrinsics.
+	(__v8qi): Redefine.
+	(_mm_cvtsi32_si64, _mm_andnot_si64, _mm_sad_pu8): Revise.
+	(_mm_sad_pu16, _mm_align_si64, _mm_setwcx, _mm_getwcx): Likewise.
+	(_m_from_int): Likewise.
+	(_mm_sada_pu8, _mm_sada_pu16): New intrinsic.
+	(_mm_alignr0_si64, _mm_alignr1_si64, _mm_alignr2_si64): Likewise.
+	(_mm_alignr3_si64, _mm_tandcb, _mm_tandch, _mm_tandcw): Likewise.
+	(_mm_textrcb, _mm_textrch, _mm_textrcw, _mm_torcb): Likewise.
+	(_mm_torch, _mm_torcw, _mm_tbcst_pi8, _mm_tbcst_pi16): Likewise.
+	(_mm_tbcst_pi32): Likewise.
+	(_mm_abs_pi8, _mm_abs_pi16, _mm_abs_pi32): New iWMMXt2 intrinsic.
+	(_mm_addsubhx_pi16, _mm_absdiff_pu8, _mm_absdiff_pu16): Likewise.
+	(_mm_absdiff_pu32, _mm_addc_pu16, _mm_addc_pu32): Likewise.
+	(_mm_avg4_pu8, _mm_avg4r_pu8, _mm_maddx_pi16, _mm_maddx_pu16): Likewise.
+	(_mm_msub_pi16, _mm_msub_pu16, _mm_mulhi_pi32): Likewise.
+	(_mm_mulhi_pu32, _mm_mulhir_pi16, _mm_mulhir_pi32): Likewise.
+	(_mm_mulhir_pu16, _mm_mulhir_pu32, _mm_mullo_pi32): Likewise.
+	(_mm_qmulm_pi16, _mm_qmulm_pi32, _mm_qmulmr_pi16): Likewise.
+	(_mm_qmulmr_pi32, _mm_subaddhx_pi16, _mm_addbhusl_pu8): Likewise.
+	(_mm_addbhusm_pu8, _mm_qmiabb_pi32, _mm_qmiabbn_pi32): Likewise.
+	(_mm_qmiabt_pi32, _mm_qmiabtn_pi32, _mm_qmiatb_pi32): Likewise.
+	(_mm_qmiatbn_pi32, _mm_qmiatt_pi32, _mm_qmiattn_pi32): Likewise.
+	(_mm_wmiabb_si64, _mm_wmiabbn_si64, _mm_wmiabt_si64): Likewise.
+	(_mm_wmiabtn_si64, _mm_wmiatb_si64, _mm_wmiatbn_si64): Likewise.
+	(_mm_wmiatt_si64, _mm_wmiattn_si64, _mm_wmiawbb_si64): Likewise.
+	(_mm_wmiawbbn_si64, _mm_wmiawbt_si64, _mm_wmiawbtn_si64): Likewise.
+	(_mm_wmiawtb_si64, _mm_wmiawtbn_si64, _mm_wmiawtt_si64): Likewise.
+	(_mm_wmiawttn_si64, _mm_merge_si64): Likewise.
+	(_mm_torvscb, _mm_torvsch, _mm_torvscw): Likewise.
+	(_m_to_int): New define.
+	* config/arm/arm-cores.def (iwmmxt2): Add FL_IWMMXT2.
+	* config/arm/arm-arches.def (iwmmxt2): Likewise.
+	* config/arm/t-arm (MD_INCLUDES): Add marvell-f-iwmmxt.md and
+	iwmmxt2.md.
+	* config/arm/arm.md (marvell-f-iwmmxt.md): Include.
+	(arch): Add "iwmmxt2".
+	(arch_enabled): Handle "iwmmxt2".
+	(wtype): New attribute.
+	(UNSPEC_WMADDS, UNSPEC_WMADDU): Delete.
+	(UNSPEC_WALIGNI): New unspec.
+	* config/arm/predicates.md (imm_or_reg_operand): New predicate.
+	* config/arm/iterators.md (VMMX2): New mode_iterator.
+	* config/arm/marvell-f-iwmmxt.md: New file.
+	* config/arm/iwmmxt2.md: New file.
+
 2012-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/53532

@@ -97,6 +97,8 @@ extern char arm_arch_name[];
 	  builtin_define ("__XSCALE__");		\
 	if (arm_arch_iwmmxt)				\
 	  builtin_define ("__IWMMXT__");		\
+	if (arm_arch_iwmmxt2)				\
+	  builtin_define ("__IWMMXT2__");		\
 	if (TARGET_AAPCS_BASED)				\
 	  {						\
 	    if (arm_pcs_default == ARM_PCS_AAPCS_VFP)	\
@@ -194,7 +196,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_MAVERICK		(arm_fpu_desc->model == ARM_FP_MODEL_MAVERICK)
 #define TARGET_VFP		(arm_fpu_desc->model == ARM_FP_MODEL_VFP)
 #define TARGET_IWMMXT			(arm_arch_iwmmxt)
+#define TARGET_IWMMXT2			(arm_arch_iwmmxt2)
 #define TARGET_REALLY_IWMMXT		(TARGET_IWMMXT && TARGET_32BIT)
+#define TARGET_REALLY_IWMMXT2		(TARGET_IWMMXT2 && TARGET_32BIT)
 #define TARGET_IWMMXT_ABI (TARGET_32BIT && arm_abi == ARM_ABI_IWMMXT)
 #define TARGET_ARM                      (! TARGET_THUMB)
 #define TARGET_EITHER			1 /* (TARGET_ARM | TARGET_THUMB) */
@@ -409,6 +413,9 @@ extern int arm_arch_cirrus;
 
 /* Nonzero if this chip supports Intel XScale with Wireless MMX technology.  */
 extern int arm_arch_iwmmxt;
+
+/* Nonzero if this chip supports Intel Wireless MMX2 technology.  */
+extern int arm_arch_iwmmxt2;
 
 /* Nonzero if this chip is an XScale.  */
 extern int arm_arch_xscale;

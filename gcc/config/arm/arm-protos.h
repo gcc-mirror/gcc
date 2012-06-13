@@ -159,6 +159,8 @@ extern const char *vfp_output_fstmd (rtx *);
 extern void arm_set_return_address (rtx, rtx);
 extern int arm_eliminable_register (rtx);
 extern const char *arm_output_shift(rtx *, int);
+extern const char *arm_output_iwmmxt_shift_immediate (const char *, rtx *, bool);
+extern const char *arm_output_iwmmxt_tinsr (rtx *);
 extern unsigned int arm_sync_loop_insns (rtx , rtx *);
 extern int arm_attr_length_push_multi(rtx, rtx);
 extern void arm_expand_compare_and_swap (rtx op[]);
