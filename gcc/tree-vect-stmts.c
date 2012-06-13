@@ -1031,11 +1031,13 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
   /* The loads themselves.  */
   if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
     {
-      /* N scalar loads plus gathering them into a vector.
-         ???  scalar_to_vec isn't the cost for that.  */
+      /* N scalar loads plus gathering them into a vector.  */
+      tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       inside_cost += (vect_get_stmt_cost (scalar_load) * ncopies
-		      * TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info)));
-      inside_cost += ncopies * vect_get_stmt_cost (scalar_to_vec);
+		      * TYPE_VECTOR_SUBPARTS (vectype));
+      inside_cost += ncopies
+	* targetm.vectorize.builtin_vectorization_cost (vec_construct,
+							vectype, 0);
     }
   else
     vect_get_load_cost (first_dr, ncopies,

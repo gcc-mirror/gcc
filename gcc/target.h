@@ -146,7 +146,8 @@ enum vect_cost_for_stmt
   cond_branch_not_taken,
   cond_branch_taken,
   vec_perm,
-  vec_promote_demote
+  vec_promote_demote,
+  vec_construct
 };
 
 /* The target structure.  This holds all the backend hooks.  */
