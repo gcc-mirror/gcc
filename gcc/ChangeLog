@@ -1,5 +1,11 @@
 2012-06-13  Bill Schmidt  <wschmidt@linux.ibm.com>
 
+	PR tree-optimization/53647
+	* tree-ssa-phiopt.c (gate_hoist_loads): Skip transformation for
+	targets with no defined cache line size.
+
+2012-06-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+
 	* targhooks.c (default_builtin_vectorized_conversion): Handle
 	vec_construct, using vectype to base cost on subparts.
 	* target.h (enum vect_cost_for_stmt): Add vec_construct.
