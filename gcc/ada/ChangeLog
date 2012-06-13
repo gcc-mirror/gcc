@@ -1,3 +1,14 @@
+2012-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Revert
+	2012-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (Has_Thiscall_Convention): New macro.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Test it to set the thiscall
+	calling convention
+	(get_minimal_subprog_decl): Likewise.
+	(gnat_first_param_is_class): New predicate.
+
 2012-06-12  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/Makefile.in (GNATLIBCFLAGS_FOR_C): Remove
