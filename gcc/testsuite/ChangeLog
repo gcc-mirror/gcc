@@ -1,3 +1,12 @@
+2012-06-13  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/di-longlong64-sync-1.c: Add comments to checks for multiple
+	messages reported for one line of source code.
+	* gcc.dg/format/few-1.c: Likewise.
+	* gcc.dg/ia64-sync-2.c: Likewise.
+	* gcc.dg/sync-2.c: Likewise.
+	* gcc.dg/noncompile/pr44517.c: Likewise.
+
 2012-06-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/49888
