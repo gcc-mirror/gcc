@@ -1,3 +1,7 @@
+2012-06-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/ia64/sync.md (fetchop_name): Change ior attribute to "or".
+
 2012-06-13  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/sync.md (atomic_load, atomic_store): Use INT1 mode
@@ -72,33 +76,33 @@
 	Backport from mainline
 	2012-04-03  Eric Botcazou  <ebotcazou@adacore.com>
 
-        * expr.c (get_bit_range): Add OFFSET parameter and adjust BITPOS.
-        Change type of BITOFFSET to signed.  Make sure the lower bound of
-        the computed range is non-negative by adjusting OFFSET and BITPOS.
-        (expand_assignment): Adjust call to get_bit_range.
+	* expr.c (get_bit_range): Add OFFSET parameter and adjust BITPOS.
+	Change type of BITOFFSET to signed.  Make sure the lower bound of
+	the computed range is non-negative by adjusting OFFSET and BITPOS.
+	(expand_assignment): Adjust call to get_bit_range.
 
 	2012-03-27  Eric Botcazou  <ebotcazou@adacore.com>
 
-        * expr.c (get_bit_range): Return the null range if the enclosing record
-        is part of a larger bit field.
+	* expr.c (get_bit_range): Return the null range if the enclosing record
+	is part of a larger bit field.
 
 	2012-03-20  Richard Guenther  <rguenther@suse.de>
 
-        * stor-layout.c (finish_bitfield_representative): Fallback
-        to conservative maximum size if the padding up to the next
-        field cannot be computed as a constant.
-        (finish_bitfield_layout): If we cannot compute the distance
-        between the start of the bitfield representative and the
-        bitfield member start a new representative.
-        * expr.c (get_bit_range): The distance between the start of
-        the bitfield representative and the bitfield member is zero
-        if the field offsets are not constants.
+	* stor-layout.c (finish_bitfield_representative): Fallback
+	to conservative maximum size if the padding up to the next
+	field cannot be computed as a constant.
+	(finish_bitfield_layout): If we cannot compute the distance
+	between the start of the bitfield representative and the
+	bitfield member start a new representative.
+	* expr.c (get_bit_range): The distance between the start of
+	the bitfield representative and the bitfield member is zero
+	if the field offsets are not constants.
 
 	2012-03-16  Richard Guenther  <rguenther@suse.de>
 
-        * stor-layout.c (finish_bitfield_representative): Fall back
-        to the conservative maximum size if we cannot compute the
-        size of the tail padding.
+	* stor-layout.c (finish_bitfield_representative): Fall back
+	to the conservative maximum size if we cannot compute the
+	size of the tail padding.
 
 	2012-03-14  Richard Guenther  <rguenther@suse.de>
 
@@ -229,7 +233,7 @@
 2012-05-28  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	Backport from mainline
-        2012-05-28  Richard Guenther  <rguenther@suse.de>
+	2012-05-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53438
 	* tree-sra.c (analyze_access_subtree): Correct bitfield exclusion.
@@ -275,14 +279,14 @@
 2012-05-25  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Backport from mainline
-        2012-03-12  Richard Guenther  <rguenther@suse.de>
+	2012-03-12  Richard Guenther  <rguenther@suse.de>
 	* config/arm/arm.c (neon_dereference_pointer): Do not call
 	covert during RTL expansion.
 
 2012-05-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
-        2012-05-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	2012-05-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/53385
 	* config/rs6000/rs6000.c (print_operand): Revise code that unsafely
