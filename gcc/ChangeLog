@@ -1,3 +1,9 @@
+2012-06-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53568
+	* config/sh/sh.md (bswapsi2): New expander.
+	(swapbsi2): New insn.
+
 2012-06-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/53647
