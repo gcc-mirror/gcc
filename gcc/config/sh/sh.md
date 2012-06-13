@@ -4529,6 +4529,38 @@ label:
   emit_label_after (skip_neg_label, emit_insn (gen_negc (high_dst, high_src)));
   DONE;
 })
+
+(define_expand "bswapsi2"
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(bswap:SI (match_operand:SI 1 "arith_reg_operand" "")))]
+  "TARGET_SH1"
+{
+  if (! can_create_pseudo_p ())
+    FAIL;
+  else
+    {
+      rtx tmp0 = gen_reg_rtx (SImode);
+      rtx tmp1 = gen_reg_rtx (SImode);
+
+      emit_insn (gen_swapbsi2 (tmp0, operands[1]));
+      emit_insn (gen_rotlsi3_16 (tmp1, tmp0));
+      emit_insn (gen_swapbsi2 (operands[0], tmp1));
+      DONE;
+    }
+})
+
+(define_insn "swapbsi2"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ior:SI (and:SI (match_operand:SI 1 "arith_reg_operand" "r")
+			(const_int 4294901760))
+		(ior:SI (and:SI (ashift:SI (match_dup 1) (const_int 8))
+				(const_int 65280))
+			(and:SI (ashiftrt:SI (match_dup 1) (const_int 8))
+				(const_int 255)))))]
+  "TARGET_SH1"
+  "swap.b	%1,%0"
+  [(set_attr "type" "arith")])
+
 
 ;; -------------------------------------------------------------------------
 ;; Zero extension instructions
