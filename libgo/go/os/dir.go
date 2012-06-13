@@ -42,7 +42,11 @@ func (file *File) readdirnames(n int) (names []string, err error) {
 	if file.dirinfo == nil {
 		file.dirinfo = new(dirInfo)
 		file.dirinfo.buf = make([]byte, elen)
-		file.dirinfo.dir = libc_opendir(syscall.StringBytePtr(file.name))
+		p := syscall.StringBytePtr(file.name)
+		syscall.Entersyscall()
+		r := libc_opendir(p)
+		syscall.Exitsyscall()
+		file.dirinfo.dir = r
 	}
 
 	entry_dirent := unsafe.Pointer(&file.dirinfo.buf[0]).(*syscall.Dirent)
@@ -62,7 +66,10 @@ func (file *File) readdirnames(n int) (names []string, err error) {
 
 	for n != 0 {
 		var result *syscall.Dirent
-		i := libc_readdir_r(dir, entry_dirent, &result)
+		pr := &result
+		syscall.Entersyscall()
+		i := libc_readdir_r(dir, entry_dirent, pr)
+		syscall.Exitsyscall()
 		if i != 0 {
 			return names, NewSyscallError("readdir_r", i)
 		}
