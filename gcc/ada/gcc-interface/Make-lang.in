@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU Ada (GNAT).
 #   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-#   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+#   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 #   Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -78,6 +78,10 @@ ADA_FLAGS_TO_PASS = \
 	"INSTALL=$(INSTALL)" 			\
 	"INSTALL_DATA=$(INSTALL_DATA)"		\
 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)"
+
+# List of Ada tools to build and install
+ADA_TOOLS=gnatbind gnatchop gnat gnatkr gnatlink gnatls gnatmake \
+          gnatname gnatprep gnatxref gnatfind gnatclean gnatsym
 
 # Say how to compile Ada programs.
 .SUFFIXES: .ada .adb .ads
@@ -586,58 +590,12 @@ gnatlib_and_tools: gnatlib gnattools
 # Build hooks:
 
 ada.all.cross:
-	-if [ -f gnatbind$(exeext) ] ; \
-	then \
-	  $(MV) gnatbind$(exeext)  gnatbind-cross$(exeext); \
-	fi
-	-if [ -f gnatchop$(exeext) ] ; \
-	then \
-	  $(MV) gnatchop$(exeext)   gnatchop-cross$(exeext); \
-	fi
-	-if [ -f gnat$(exeext) ] ; \
-	then \
-	   $(MV) gnat$(exeext)  gnat-cross$(exeext); \
-	fi
-	-if [ -f gnatkr$(exeext) ] ; \
-	then \
-	  $(MV) gnatkr$(exeext)    gnatkr-cross$(exeext); \
-	fi
-	-if [ -f gnatlink$(exeext) ] ; \
-	then \
-	   $(MV) gnatlink$(exeext)  gnatlink-cross$(exeext); \
-	fi
-	-if [ -f gnatls$(exeext) ] ; \
-	then \
-	  $(MV) gnatls$(exeext)    gnatls-cross$(exeext); \
-	fi
-	-if [ -f gnatmake$(exeext) ] ; \
-	then \
-	   $(MV) gnatmake$(exeext)  gnatmake-cross$(exeext); \
-	fi
-	-if [ -f gnatname$(exeext) ] ; \
-	then \
-	   $(MV) gnatname$(exeext)  gnatname-cross$(exeext); \
-	fi
-	-if [ -f gnatprep$(exeext) ] ; \
-	then \
-	   $(MV) gnatprep$(exeext)  gnatprep-cross$(exeext); \
-	fi
-	-if [ -f gnatxref$(exeext) ] ; \
-	then \
-	   $(MV) gnatxref$(exeext)  gnatxref-cross$(exeext); \
-	fi
-	-if [ -f gnatfind$(exeext) ] ; \
-	then \
-	   $(MV) gnatfind$(exeext)  gnatfind-cross$(exeext); \
-	fi
-	-if [ -f gnatclean$(exeext) ] ; \
-	then \
-	   $(MV) gnatclean$(exeext)  gnatclean-cross$(exeext); \
-	fi
-	-if [ -f gnatsym$(exeext) ] ; \
-	then \
-	   $(MV) gnatsym$(exeext)  gnatsym-cross$(exeext); \
-	fi
+	for tool in $(ADA_TOOLS) ; do \
+	  if [ -f $$tool$(exeext) ] ; \
+	  then \
+	    $(MV) $$tool$(exeext) $$tool-cross$(exeext); \
+	  fi; \
+	done
 
 ada.start.encap:
 ada.rest.encap:
@@ -756,205 +714,33 @@ doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 # Install hooks:
 # gnat1 is installed elsewhere as part of $(COMPILERS).
 
-# Install the binder program as $(target_noncanonical)-gnatbind
-# and also as either gnatbind (if native) or $(tooldir)/bin/gnatbind
-# likewise for gnatf, gnatchop, and gnatlink, gnatkr, gnatmake, gnat,
-# gnatprep, gnatls, gnatxref, gnatfind, gnatname, gnatclean,
-# gnatsym
+# Install the binder program as gnatbind (native) or $(prefix)gnatbind
+# (cross). $(prefix) comes from the --program-prefix configure option,
+# or from the --target option if the former is not specified.
+# Do the same for the rest of the Ada tools (gnatchop, gnat, gnatkr,
+# gnatlink, gnatls, gnatmake, gnatname, gnatprep, gnatxref, gnatfind,
+# gnatclean, gnatsym).
+# gnatsym is only built on some platforms, including VMS.
+# gnatdll is only used on Windows.
+# vxaddr2line is only used for cross VxWorks ports (it calls the underlying
+# cross addr2line).
 ada.install-common:
 	$(MKDIR) $(DESTDIR)$(bindir)
 	-if [ -f gnat1$(exeext) ] ; \
-	 then \
-	  if [ -f gnatbind-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatbind$(exeext); \
-	    $(INSTALL_PROGRAM) gnatbind-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatbind$(exeext); \
-	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
-	      rm -f $(DESTDIR)$(tooldir)/bin/gnatbind$(exeext); \
-	      $(INSTALL_PROGRAM) gnatbind-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatbind$(exeext); \
-	    fi; \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatbind$(exeext); \
-	    $(INSTALL_PROGRAM) gnatbind$(exeext) $(DESTDIR)$(bindir)/gnatbind$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
 	then \
-	  if [ -f gnatchop-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatchop$(exeext); \
-	    $(INSTALL_PROGRAM) gnatchop-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatchop$(exeext); \
-	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
-	       rm -f $(DESTDIR)$(tooldir)/bin/gnatchop$(exeext); \
-	       $(INSTALL_PROGRAM) gnatchop-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatchop$(exeext); \
+	  for tool in $(ADA_TOOLS) ; do \
+	    if [ -f $$tool-cross$(exeext) ] ; \
+	    then \
+	      install_name=`echo $$tool|sed '$(program_transform_name)'`$(exeext); \
+	      $(RM) $(DESTDIR)$(bindir)/$$install_name; \
+	      $(INSTALL_PROGRAM) $$tool-cross$(exeext) $(DESTDIR)$(bindir)/$$install_name; \
+	    else \
+	      $(RM) $(DESTDIR)$(bindir)/$$tool$(exeext); \
+	      $(INSTALL_PROGRAM) $$tool$(exeext) $(DESTDIR)$(bindir)/$$tool$(exeext); \
 	    fi ; \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatchop$(exeext); \
-	    $(INSTALL_PROGRAM) gnatchop$(exeext) $(DESTDIR)$(bindir)/gnatchop$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnat-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnat$(exeext); \
-	    $(INSTALL_PROGRAM) gnat-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnat$(exeext); \
-	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
-	       rm -f $(DESTDIR)$(tooldir)/bin/gnat$(exeext); \
-	       $(INSTALL_PROGRAM) gnat-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnat$(exeext); \
-	    fi; \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnat$(exeext); \
-	    $(INSTALL_PROGRAM) gnat$(exeext) $(DESTDIR)$(bindir)/gnat$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnatkr-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatkr$(exeext); \
-	    $(INSTALL_PROGRAM) gnatkr-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatkr$(exeext); \
-	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
-	       rm -f $(DESTDIR)$(tooldir)/bin/gnatkr$(exeext); \
-	       $(INSTALL_PROGRAM) gnatkr-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatkr$(exeext); \
-	    fi; \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatkr$(exeext); \
-	    $(INSTALL_PROGRAM) gnatkr$(exeext) $(DESTDIR)$(bindir)/gnatkr$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnatlink-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatlink$(exeext); \
-	    $(INSTALL_PROGRAM) gnatlink-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatlink$(exeext); \
-	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
-	       rm -f $(DESTDIR)$(tooldir)/bin/gnatlink$(exeext); \
-	       $(INSTALL_PROGRAM) gnatlink-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatlink$(exeext); \
-	    fi; \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatlink$(exeext); \
-	    $(INSTALL_PROGRAM) gnatlink$(exeext) $(DESTDIR)$(bindir)/gnatlink$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnatls-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatls$(exeext); \
-	    $(INSTALL_PROGRAM) gnatls-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatls$(exeext); \
-	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
-	       rm -f $(DESTDIR)$(tooldir)/bin/gnatls$(exeext); \
-	       $(INSTALL_PROGRAM) gnatls-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatls$(exeext); \
-	    fi; \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatls$(exeext); \
-	    $(INSTALL_PROGRAM) gnatls$(exeext) $(DESTDIR)$(bindir)/gnatls$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnatmake-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatmake$(exeext); \
-	    $(INSTALL_PROGRAM) gnatmake-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatmake$(exeext); \
-	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
-	       rm -f $(DESTDIR)$(tooldir)/bin/gnatmake$(exeext); \
-	       $(INSTALL_PROGRAM) gnatmake-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatmake$(exeext); \
-	    fi; \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatmake$(exeext); \
-	    $(INSTALL_PROGRAM) gnatmake$(exeext) $(DESTDIR)$(bindir)/gnatmake$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnatname-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatname$(exeext); \
-	    $(INSTALL_PROGRAM) gnatname-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatname$(exeext); \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatname$(exeext); \
-	    $(INSTALL_PROGRAM) gnatname$(exeext) $(DESTDIR)$(bindir)/gnatname$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnatprep-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatprep$(exeext); \
-	    $(INSTALL_PROGRAM) gnatprep-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatprep$(exeext); \
-	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
-	       rm -f $(DESTDIR)$(tooldir)/bin/gnatprep$(exeext); \
-	       $(INSTALL_PROGRAM) gnatprep-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatprep$(exeext); \
-	    fi; \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatprep$(exeext); \
-	    $(INSTALL_PROGRAM) gnatprep$(exeext) $(DESTDIR)$(bindir)/gnatprep$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnatxref-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatxref$(exeext); \
-	    $(INSTALL_PROGRAM) gnatxref-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatxref$(exeext); \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatxref$(exeext); \
-	    $(INSTALL_PROGRAM) gnatxref$(exeext) $(DESTDIR)$(bindir)/gnatxref$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnatfind-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatfind$(exeext); \
-	    $(INSTALL_PROGRAM) gnatfind-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatfind$(exeext); \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatfind$(exeext); \
-	    $(INSTALL_PROGRAM) gnatfind$(exeext) $(DESTDIR)$(bindir)/gnatfind$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnatclean-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatclean$(exeext); \
-	    $(INSTALL_PROGRAM) gnatclean-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatclean$(exeext); \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatclean$(exeext); \
-	    $(INSTALL_PROGRAM) gnatclean$(exeext) $(DESTDIR)$(bindir)/gnatclean$(exeext); \
-	  fi ; \
-	fi
-#
-# Gnatsym is only built on some platforms, including VMS
-#
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gnatsym-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatsym$(exeext); \
-	    $(INSTALL_PROGRAM) gnatsym-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatsym$(exeext); \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatsym$(exeext); \
-	    $(INSTALL_PROGRAM) gnatsym$(exeext) $(DESTDIR)$(bindir)/gnatsym$(exeext); \
-	  fi ; \
-	fi
-#
-# Gnatdll is only used on Windows.
-#
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	    $(RM) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
-	    $(INSTALL_PROGRAM) gnatdll$(exeext) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
-	fi
-#
-# vxaddr2line is only used for cross ports (it calls the underlying cross
-# addr2line).
-#
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
+	  done; \
+	  $(RM) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
+	  $(INSTALL_PROGRAM) gnatdll$(exeext) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
 	  if [ -f vxaddr2line$(exeext) ] ; \
 	  then \
 	    $(RM) $(DESTDIR)$(bindir)/vxaddr2line$(exeext); \
@@ -980,50 +766,12 @@ ada.install-man:
 ada.install-plugin:
 
 ada.uninstall:
-	-$(RM) $(DESTDIR)$(bindir)/gnatbind$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatchop$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnat$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatfind$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatdll$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatkr$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatlink$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatls$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatmake$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatname$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatprep$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatxref$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatclean$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatsym$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatbind$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatchop$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnat$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatfind$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatdll$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatkr$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatlink$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatls$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatmake$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatname$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatprep$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatxref$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatclean$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatsym$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatbind$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatchop$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnat$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatfind$(exeext)
+	for tool in $(ADA_TOOLS) ; do \
+	  install_name=`echo $$tool|sed '$(program_transform_name)'`$(exeext); \
+	  -$(RM) $(DESTDIR)$(bindir)/$$install_name; \
+	done
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatdll$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatkr$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatlink$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatls$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatmake$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatname$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatprep$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatxref$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatclean$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatsym$(exeext)
-# Gnatchop is only used on VMS
-	-$(RM) $(DESTDIR)$(bindir)/gnatchop$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/vxaddr2line$(exeext)
 
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
@@ -2833,8 +2581,8 @@ ada/lib.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads ada/a-uncdea.ads \
    ada/fname.ads ada/gnat.ads ada/g-byorma.ads ada/g-hesorg.ads \
    ada/g-hesorg.adb ada/hostparm.ads ada/interfac.ads ada/lib.ads \
    ada/lib.adb ada/lib-list.adb ada/lib-sort.adb ada/namet.ads \
-   ada/namet.adb ada/nlists.ads ada/opt.ads ada/output.ads ada/scans.ads \
-   ada/sinfo.ads ada/sinfo.adb ada/sinput.ads ada/sinput.adb \
+   ada/namet.adb ada/nlists.ads ada/nlists.adb ada/opt.ads ada/output.ads \
+   ada/scans.ads ada/sinfo.ads ada/sinfo.adb ada/sinput.ads ada/sinput.adb \
    ada/snames.ads ada/stand.ads ada/stringt.ads ada/system.ads \
    ada/s-exctab.ads ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads \
    ada/s-parame.ads ada/s-secsta.ads ada/s-stalib.ads ada/s-stoele.ads \
@@ -3590,21 +3338,21 @@ ada/sem_ch13.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/rtsfind.ads ada/rtsfind.adb ada/scans.ads ada/sem.ads \
    ada/sem_attr.ads ada/sem_aux.ads ada/sem_cat.ads ada/sem_ch13.ads \
    ada/sem_ch13.adb ada/sem_ch3.ads ada/sem_ch6.ads ada/sem_ch7.ads \
-   ada/sem_ch8.ads ada/sem_dim.ads ada/sem_disp.ads ada/sem_dist.ads \
-   ada/sem_eval.ads ada/sem_eval.adb ada/sem_prag.ads ada/sem_res.ads \
-   ada/sem_type.ads ada/sem_util.ads ada/sem_util.adb ada/sem_warn.ads \
-   ada/sinfo.ads ada/sinfo.adb ada/sinput.ads ada/snames.ads ada/stand.ads \
-   ada/stringt.ads ada/style.ads ada/styleg.ads ada/styleg.adb \
-   ada/stylesw.ads ada/system.ads ada/s-exctab.ads ada/s-exctab.adb \
-   ada/s-htable.ads ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads \
-   ada/s-parame.ads ada/s-rident.ads ada/s-secsta.ads ada/s-soflin.ads \
-   ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb \
-   ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads \
-   ada/table.ads ada/table.adb ada/targparm.ads ada/tbuild.ads \
-   ada/tbuild.adb ada/tree_io.ads ada/ttypes.ads ada/types.ads \
-   ada/uintp.ads ada/uintp.adb ada/uname.ads ada/unchconv.ads \
-   ada/unchdeal.ads ada/urealp.ads ada/urealp.adb ada/validsw.ads \
-   ada/warnsw.ads ada/widechar.ads 
+   ada/sem_ch8.ads ada/sem_ch9.ads ada/sem_dim.ads ada/sem_disp.ads \
+   ada/sem_dist.ads ada/sem_eval.ads ada/sem_eval.adb ada/sem_prag.ads \
+   ada/sem_res.ads ada/sem_type.ads ada/sem_util.ads ada/sem_util.adb \
+   ada/sem_warn.ads ada/sinfo.ads ada/sinfo.adb ada/sinput.ads \
+   ada/snames.ads ada/stand.ads ada/stringt.ads ada/style.ads \
+   ada/styleg.ads ada/styleg.adb ada/stylesw.ads ada/system.ads \
+   ada/s-exctab.ads ada/s-exctab.adb ada/s-htable.ads ada/s-imenne.ads \
+   ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads ada/s-rident.ads \
+   ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads \
+   ada/s-stoele.ads ada/s-stoele.adb ada/s-string.ads ada/s-traent.ads \
+   ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
+   ada/targparm.ads ada/tbuild.ads ada/tbuild.adb ada/tree_io.ads \
+   ada/ttypes.ads ada/types.ads ada/uintp.ads ada/uintp.adb ada/uname.ads \
+   ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads ada/urealp.adb \
+   ada/validsw.ads ada/warnsw.ads ada/widechar.ads 
 
 ada/sem_ch2.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
@@ -3828,40 +3576,39 @@ ada/sem_ch8.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads ada/widechar.ads 
 
 ada/sem_ch9.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
-   ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/aspects.adb \
-   ada/atree.ads ada/atree.adb ada/casing.ads ada/checks.ads \
-   ada/checks.adb ada/csets.ads ada/debug.ads ada/debug_a.ads \
-   ada/einfo.ads ada/einfo.adb ada/elists.ads ada/err_vars.ads \
-   ada/errout.ads ada/erroutc.ads ada/eval_fat.ads ada/exp_ch11.ads \
-   ada/exp_ch2.ads ada/exp_ch4.ads ada/exp_ch6.ads ada/exp_ch7.ads \
-   ada/exp_ch9.ads ada/exp_disp.ads ada/exp_pakd.ads ada/exp_tss.ads \
-   ada/exp_util.ads ada/expander.ads ada/fname.ads ada/fname-uf.ads \
-   ada/freeze.ads ada/get_targ.ads ada/gnat.ads ada/g-htable.ads \
-   ada/gnatvsn.ads ada/hostparm.ads ada/inline.ads ada/itypes.ads \
-   ada/layout.ads ada/lib.ads ada/lib-load.ads ada/lib-util.ads \
-   ada/lib-xref.ads ada/namet.ads ada/nlists.ads ada/nlists.adb \
-   ada/nmake.ads ada/nmake.adb ada/opt.ads ada/opt.adb ada/output.ads \
-   ada/put_alfa.ads ada/restrict.ads ada/restrict.adb ada/rident.ads \
-   ada/rtsfind.ads ada/scans.ads ada/sem.ads ada/sem.adb ada/sem_aggr.ads \
-   ada/sem_attr.ads ada/sem_aux.ads ada/sem_cat.ads ada/sem_ch10.ads \
-   ada/sem_ch11.ads ada/sem_ch12.ads ada/sem_ch13.ads ada/sem_ch2.ads \
-   ada/sem_ch3.ads ada/sem_ch4.ads ada/sem_ch5.ads ada/sem_ch6.ads \
-   ada/sem_ch7.ads ada/sem_ch8.ads ada/sem_ch9.ads ada/sem_ch9.adb \
-   ada/sem_dim.ads ada/sem_disp.ads ada/sem_dist.ads ada/sem_elab.ads \
-   ada/sem_elim.ads ada/sem_eval.ads ada/sem_intr.ads ada/sem_prag.ads \
-   ada/sem_res.ads ada/sem_res.adb ada/sem_type.ads ada/sem_util.ads \
-   ada/sem_util.adb ada/sem_warn.ads ada/sinfo.ads ada/sinfo.adb \
-   ada/sinfo-cn.ads ada/sinput.ads ada/snames.ads ada/sprint.ads \
-   ada/stand.ads ada/stringt.ads ada/style.ads ada/styleg.ads \
-   ada/styleg.adb ada/stylesw.ads ada/system.ads ada/s-exctab.ads \
-   ada/s-htable.ads ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads \
-   ada/s-parame.ads ada/s-rident.ads ada/s-secsta.ads ada/s-soflin.ads \
-   ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb \
-   ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads \
-   ada/table.ads ada/table.adb ada/targparm.ads ada/tbuild.ads \
-   ada/tree_io.ads ada/ttypes.ads ada/types.ads ada/uintp.ads \
-   ada/uintp.adb ada/uname.ads ada/unchconv.ads ada/unchdeal.ads \
-   ada/urealp.ads ada/validsw.ads 
+   ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
+   ada/atree.adb ada/casing.ads ada/checks.ads ada/checks.adb \
+   ada/csets.ads ada/debug.ads ada/debug_a.ads ada/einfo.ads ada/einfo.adb \
+   ada/elists.ads ada/err_vars.ads ada/errout.ads ada/erroutc.ads \
+   ada/eval_fat.ads ada/exp_ch11.ads ada/exp_ch2.ads ada/exp_ch4.ads \
+   ada/exp_ch6.ads ada/exp_ch7.ads ada/exp_ch9.ads ada/exp_disp.ads \
+   ada/exp_pakd.ads ada/exp_tss.ads ada/exp_util.ads ada/expander.ads \
+   ada/fname.ads ada/fname-uf.ads ada/freeze.ads ada/get_targ.ads \
+   ada/gnat.ads ada/g-htable.ads ada/gnatvsn.ads ada/hostparm.ads \
+   ada/inline.ads ada/itypes.ads ada/layout.ads ada/lib.ads \
+   ada/lib-load.ads ada/lib-util.ads ada/lib-xref.ads ada/namet.ads \
+   ada/nlists.ads ada/nlists.adb ada/nmake.ads ada/nmake.adb ada/opt.ads \
+   ada/opt.adb ada/output.ads ada/put_alfa.ads ada/restrict.ads \
+   ada/restrict.adb ada/rident.ads ada/rtsfind.ads ada/scans.ads \
+   ada/sem.ads ada/sem.adb ada/sem_aggr.ads ada/sem_attr.ads \
+   ada/sem_aux.ads ada/sem_cat.ads ada/sem_ch10.ads ada/sem_ch11.ads \
+   ada/sem_ch12.ads ada/sem_ch13.ads ada/sem_ch2.ads ada/sem_ch3.ads \
+   ada/sem_ch4.ads ada/sem_ch5.ads ada/sem_ch6.ads ada/sem_ch7.ads \
+   ada/sem_ch8.ads ada/sem_ch9.ads ada/sem_ch9.adb ada/sem_dim.ads \
+   ada/sem_disp.ads ada/sem_dist.ads ada/sem_elab.ads ada/sem_elim.ads \
+   ada/sem_eval.ads ada/sem_intr.ads ada/sem_prag.ads ada/sem_res.ads \
+   ada/sem_res.adb ada/sem_type.ads ada/sem_util.ads ada/sem_util.adb \
+   ada/sem_warn.ads ada/sinfo.ads ada/sinfo.adb ada/sinfo-cn.ads \
+   ada/sinput.ads ada/snames.ads ada/sprint.ads ada/stand.ads \
+   ada/stringt.ads ada/style.ads ada/styleg.ads ada/styleg.adb \
+   ada/stylesw.ads ada/system.ads ada/s-exctab.ads ada/s-htable.ads \
+   ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads \
+   ada/s-rident.ads ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads \
+   ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb ada/s-string.ads \
+   ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads \
+   ada/table.adb ada/targparm.ads ada/tbuild.ads ada/tree_io.ads \
+   ada/ttypes.ads ada/types.ads ada/uintp.ads ada/uintp.adb ada/uname.ads \
+   ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads ada/validsw.ads 
 
 ada/sem_dim.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
@@ -3869,23 +3616,22 @@ ada/sem_dim.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/einfo.adb ada/elists.ads ada/err_vars.ads ada/errout.ads \
    ada/erroutc.ads ada/exp_dist.ads ada/exp_tss.ads ada/fname.ads \
    ada/fname-uf.ads ada/gnat.ads ada/g-hesorg.ads ada/g-htable.ads \
-   ada/hostparm.ads ada/interfac.ads ada/lib.ads ada/lib.adb \
-   ada/lib-list.adb ada/lib-load.ads ada/lib-sort.adb ada/namet.ads \
-   ada/namet.adb ada/nlists.ads ada/nlists.adb ada/nmake.ads ada/nmake.adb \
-   ada/opt.ads ada/output.ads ada/restrict.ads ada/rident.ads \
-   ada/rtsfind.ads ada/rtsfind.adb ada/sem.ads ada/sem_aux.ads \
-   ada/sem_ch7.ads ada/sem_dim.ads ada/sem_dim.adb ada/sem_dist.ads \
-   ada/sem_eval.ads ada/sem_res.ads ada/sem_util.ads ada/sinfo.ads \
-   ada/sinfo.adb ada/sinput.ads ada/snames.ads ada/stand.ads \
-   ada/stringt.ads ada/stringt.adb ada/system.ads ada/s-exctab.ads \
-   ada/s-htable.ads ada/s-htable.adb ada/s-imenne.ads ada/s-memory.ads \
-   ada/s-os_lib.ads ada/s-parame.ads ada/s-rident.ads ada/s-secsta.ads \
-   ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads \
-   ada/s-stoele.adb ada/s-strhas.ads ada/s-string.ads ada/s-traent.ads \
-   ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
-   ada/tbuild.ads ada/tbuild.adb ada/tree_io.ads ada/types.ads \
-   ada/uintp.ads ada/uname.ads ada/unchconv.ads ada/unchdeal.ads \
-   ada/urealp.ads ada/widechar.ads 
+   ada/hostparm.ads ada/lib.ads ada/lib.adb ada/lib-list.adb \
+   ada/lib-load.ads ada/lib-sort.adb ada/namet.ads ada/nlists.ads \
+   ada/nlists.adb ada/nmake.ads ada/nmake.adb ada/opt.ads ada/output.ads \
+   ada/restrict.ads ada/rident.ads ada/rtsfind.ads ada/rtsfind.adb \
+   ada/sem.ads ada/sem_aux.ads ada/sem_ch7.ads ada/sem_dim.ads \
+   ada/sem_dim.adb ada/sem_dist.ads ada/sem_eval.ads ada/sem_res.ads \
+   ada/sem_util.ads ada/sinfo.ads ada/sinfo.adb ada/sinput.ads \
+   ada/snames.ads ada/stand.ads ada/stringt.ads ada/stringt.adb \
+   ada/system.ads ada/s-exctab.ads ada/s-htable.ads ada/s-htable.adb \
+   ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads \
+   ada/s-rident.ads ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads \
+   ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb ada/s-strhas.ads \
+   ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads \
+   ada/table.ads ada/table.adb ada/tbuild.ads ada/tbuild.adb \
+   ada/tree_io.ads ada/types.ads ada/uintp.ads ada/uname.ads \
+   ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads ada/widechar.ads 
 
 ada/sem_disp.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
