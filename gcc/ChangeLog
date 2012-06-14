@@ -1,3 +1,31 @@
+2012-06-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/52558
+
+	Backport from mainline:
+	2012-05-21  Aldy Hernandez  <aldyh@redhat.com>
+	* gimple.h (gimple_set_in_transaction): Remove.
+	(gimple_in_transaction): Look in BB instead.
+	(gimple_statement_base): Remove in_transaction field.
+	* basic-block.h (enum bb_flags): Add BB_IN_TRANSACTION.
+	* trans-mem.c (compute_transaction_bits): Place transaction bit
+	information into basic blocks.
+
+	2012-05-31  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/52558
+	* cfg.c (alloc_aux_for_edge): Fix comment.
+	(alloc_aux_for_edge): Remove static.
+	* basic-block.h (alloc_aux_for_edge): Protoize.
+	* tree-ssa-loop-im.c (execute_sm_if_changed): New.
+	(execute_sm_if_changed_flag): New.
+	(execute_sm_if_changed_flag_set): New.
+	(execute_sm): Do not generate data races unless requested.
+	(tree_ssa_lim_initialize): Call alloc_aux_for_edges.
+	(tree_ssa_lim_finalize): Call free_aux_for_edges.
+	* gimple.h (block_in_transaction): New.
+	(gimple_in_transaction): Use block_in_transaction.
+
 2012-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

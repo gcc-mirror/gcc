@@ -2442,12 +2442,14 @@ compute_transaction_bits (void)
   struct tm_region *region;
   VEC (basic_block, heap) *queue;
   unsigned int i;
-  gimple_stmt_iterator gsi;
   basic_block bb;
 
   /* ?? Perhaps we need to abstract gate_tm_init further, because we
      certainly don't need it to calculate CDI_DOMINATOR info.  */
   gate_tm_init ();
+
+  FOR_EACH_BB (bb)
+    bb->flags &= ~BB_IN_TRANSACTION;
 
   for (region = all_tm_regions; region; region = region->next)
     {
@@ -2457,11 +2459,7 @@ compute_transaction_bits (void)
 				    NULL,
 				    /*stop_at_irr_p=*/true);
       for (i = 0; VEC_iterate (basic_block, queue, i, bb); ++i)
-	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	  {
-	    gimple stmt = gsi_stmt (gsi);
-	    gimple_set_in_transaction (stmt, true);
-	  }
+	bb->flags |= BB_IN_TRANSACTION;
       VEC_free (basic_block, heap, queue);
     }
 
