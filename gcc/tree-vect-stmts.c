@@ -727,48 +727,6 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 }
 
 
-/* Get cost by calling cost target builtin.  */
-
-static inline
-int vect_get_stmt_cost (enum vect_cost_for_stmt type_of_cost)
-{
-  tree dummy_type = NULL;
-  int dummy = 0;
-
-  return targetm.vectorize.builtin_vectorization_cost (type_of_cost,
-                                                       dummy_type, dummy);
-}
-
-
-/* Get cost for STMT.  */
-
-int
-cost_for_stmt (gimple stmt)
-{
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
-  switch (STMT_VINFO_TYPE (stmt_info))
-  {
-  case load_vec_info_type:
-    return vect_get_stmt_cost (scalar_load);
-  case store_vec_info_type:
-    return vect_get_stmt_cost (scalar_store);
-  case op_vec_info_type:
-  case condition_vec_info_type:
-  case assignment_vec_info_type:
-  case reduc_vec_info_type:
-  case induc_vec_info_type:
-  case type_promotion_vec_info_type:
-  case type_demotion_vec_info_type:
-  case type_conversion_vec_info_type:
-  case call_vec_info_type:
-    return vect_get_stmt_cost (scalar_stmt);
-  case undef_vec_info_type:
-  default:
-    gcc_unreachable ();
-  }
-}
-
 /* Function vect_model_simple_cost.
 
    Models cost for simple operations, i.e. those that only emit ncopies of a

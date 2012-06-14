@@ -965,7 +965,7 @@ GIMPLE_STREAMER_H = gimple-streamer.h $(LTO_STREAMER_H) $(BASIC_BLOCK_H) \
 TREE_STREAMER_H = tree-streamer.h $(TREE_H) $(LTO_STREAMER_H) \
 		  $(STREAMER_HOOKS_H)
 STREAMER_HOOKS_H = streamer-hooks.h $(TREE_H)
-TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H)
+TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H) $(TARGET_H)
 IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H) alloc-pool.h
 GSTAB_H = gstab.h stab.def
 BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h

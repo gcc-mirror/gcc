@@ -1,3 +1,25 @@
+2012-06-14  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* tree-vectorizer.h (vect_get_stmt_cost): Move from tree-vect-stmts.c.
+	(cost_for_stmt): Remove decl.
+	(vect_get_single_scalar_iteration_cost): Correct typo in name.
+	* tree-vect-loop.c (vect_get_cost): Remove.
+	(vect_get_single_scalar_iteration_cost): Correct typo in name; use
+	vect_get_stmt_cost rather than vect_get_cost.
+	(vect_get_known_peeling_cost): Use vect_get_stmt_cost rather than
+	vect_get_cost.
+	(vect_estimate_min_profitable_iters): Correct typo in call to
+	vect_get_single_scalar_iteration_cost; use vect_get_stmt_cost rather
+	than vect_get_cost.
+	(vect_model_reduction_cost): Use vect_get_stmt_cost rather than
+	vect_get_cost.
+	(vect_model_induction_cost): Likewise.
+	* tree-vect-data-refs.c (vect_peeling_hash_get_lowest_cost): Correct
+	typo in call to vect_get_single_scalar_iteration_cost.
+	* tree-vect-stmts.c (vect_get_stmt_cost): Move to tree-vectorizer.h.
+	(cost_for_stmt): Remove unnecessary function.
+	* Makefile.in (TREE_VECTORIZER_H): Update dependencies.
+
 2012-06-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.opt (mfp=2, mfp=3, mfpe, mfpe=2, mfpe=3): Delete options.

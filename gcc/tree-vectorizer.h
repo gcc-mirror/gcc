@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_VECTORIZER_H
 
 #include "tree-data-ref.h"
+#include "target.h"
 
 typedef source_location LOC;
 #define UNKNOWN_LOC UNKNOWN_LOCATION
@@ -769,6 +770,18 @@ vect_pow2 (int x)
   return res;
 }
 
+/* Get cost by calling cost target builtin.  */
+
+static inline
+int vect_get_stmt_cost (enum vect_cost_for_stmt type_of_cost)
+{
+  tree dummy_type = NULL;
+  int dummy = 0;
+
+  return targetm.vectorize.builtin_vectorization_cost (type_of_cost,
+                                                       dummy_type, dummy);
+}
+
 /*-----------------------------------------------------------------*/
 /* Info on data references alignment.                              */
 /*-----------------------------------------------------------------*/
@@ -843,7 +856,6 @@ extern void vect_model_load_cost (stmt_vec_info, int, bool, slp_tree);
 extern void vect_finish_stmt_generation (gimple, gimple,
                                          gimple_stmt_iterator *);
 extern bool vect_mark_stmts_to_be_vectorized (loop_vec_info);
-extern int cost_for_stmt (gimple);
 extern tree vect_get_vec_def_for_operand (tree, gimple, tree *);
 extern tree vect_init_vector (gimple, tree, tree,
                               gimple_stmt_iterator *);
@@ -919,7 +931,7 @@ extern int vect_estimate_min_profitable_iters (loop_vec_info);
 extern tree get_initial_def_for_reduction (gimple, tree, tree *);
 extern int vect_min_worthwhile_factor (enum tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *, int);
-extern int vect_get_single_scalar_iteraion_cost (loop_vec_info);
+extern int vect_get_single_scalar_iteration_cost (loop_vec_info);
 
 /* In tree-vect-slp.c.  */
 extern void vect_free_slp_instance (slp_instance);
