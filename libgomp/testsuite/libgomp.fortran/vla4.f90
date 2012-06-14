@@ -10,6 +10,10 @@ contains
 
   subroutine foo (c, d, e, f, g, h, i, j, k, n)
     use omp_lib
+    interface
+      subroutine GOMP_barrier () bind(c, name="GOMP_barrier")
+      end subroutine
+    end interface
     integer :: n
     character (len = *) :: c
     character (len = n) :: d
@@ -94,7 +98,7 @@ contains
     forall (p = 1:2, q = 3:7, r = 1:7) u(p, q, r) = 30 - x - p + q - 2 * r
     forall (p = 1:5, q = 3:7, p + q .le. 8) v(p, q) = w(1:7)
     forall (p = 1:5, q = 3:7, p + q .gt. 8) v(p, q) = w(20:26)
-!$omp barrier		! { dg-warning "may not be closely nested" }
+    call GOMP_barrier
     y = ''
     if (x .eq. 0) y = '0'
     if (x .eq. 1) y = '1'
