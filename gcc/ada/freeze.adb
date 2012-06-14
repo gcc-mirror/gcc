@@ -4698,13 +4698,15 @@ package body Freeze is
             Id := Defining_Unit_Name (Specification (P));
 
             if Nkind (Id) = N_Defining_Identifier
-              and then (Is_Init_Proc (Id)              or else
-                        Is_TSS (Id, TSS_Stream_Input)  or else
-                        Is_TSS (Id, TSS_Stream_Output) or else
-                        Is_TSS (Id, TSS_Stream_Read)   or else
-                        Is_TSS (Id, TSS_Stream_Write)  or else
+              and then (Is_Init_Proc (Id)                    or else
+                        Is_TSS (Id, TSS_Stream_Input)        or else
+                        Is_TSS (Id, TSS_Stream_Output)       or else
+                        Is_TSS (Id, TSS_Stream_Read)         or else
+                        Is_TSS (Id, TSS_Stream_Write)        or else
                         Nkind (Original_Node (P)) =
-                          N_Subprogram_Renaming_Declaration)
+                          N_Subprogram_Renaming_Declaration  or else
+                        Nkind (Original_Node (P)) =
+                          N_Expression_Function)
             then
                return True;
             else
@@ -5091,9 +5093,9 @@ package body Freeze is
         or else Ekind (Current_Scope) = E_Void
       then
          declare
-            N            : constant Node_Id    := Current_Scope;
-            Freeze_Nodes : List_Id             := No_List;
-            Pos          : Int                 := Scope_Stack.Last;
+            N            : constant Node_Id := Current_Scope;
+            Freeze_Nodes : List_Id          := No_List;
+            Pos          : Int              := Scope_Stack.Last;
 
          begin
             if Present (Desig_Typ) then
@@ -5109,13 +5111,18 @@ package body Freeze is
             end if;
 
             --  The current scope may be that of a constrained component of
-            --  an enclosing record declaration, which is above the current
-            --  scope in the scope stack.
+            --  an enclosing record declaration, or of a loop of an enclosing
+            --  quantified expression, which is above the current scope in the
+            --  scope stack. Indeed in the context of a quantified expression,
+            --  a scope is created and pushed above the current scope in order
+            --  to emulate the loop-like behavior of the quantified expression.
             --  If the expression is within a top-level pragma, as for a pre-
             --  condition on a library-level subprogram, nothing to do.
 
             if not Is_Compilation_Unit (Current_Scope)
-              and then Is_Record_Type (Scope (Current_Scope))
+              and then (Is_Record_Type (Scope (Current_Scope))
+                         or else Nkind (Parent (Current_Scope)) =
+                                   N_Quantified_Expression)
             then
                Pos := Pos - 1;
             end if;

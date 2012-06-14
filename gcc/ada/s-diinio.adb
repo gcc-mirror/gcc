@@ -38,40 +38,72 @@ package body System.Dim.Integer_IO is
    ---------
 
    procedure Put
-     (File    : File_Type;
-      Item    : Num_Dim_Integer;
-      Width   : Field       := Default_Width;
-      Base    : Number_Base := Default_Base;
-      Symbols : String      := "")
+     (File   : File_Type;
+      Item   : Num_Dim_Integer;
+      Width  : Field       := Default_Width;
+      Base   : Number_Base := Default_Base;
+      Symbol : String      := "")
 
    is
    begin
       Num_Dim_Integer_IO.Put (File, Item, Width, Base);
-      Ada.Text_IO.Put (File, Symbols);
+      Ada.Text_IO.Put (File, Symbol);
    end Put;
 
    procedure Put
-     (Item    : Num_Dim_Integer;
-      Width   : Field       := Default_Width;
-      Base    : Number_Base := Default_Base;
-      Symbols : String      := "")
+     (Item   : Num_Dim_Integer;
+      Width  : Field       := Default_Width;
+      Base   : Number_Base := Default_Base;
+      Symbol : String      := "")
 
    is
    begin
       Num_Dim_Integer_IO.Put (Item, Width, Base);
-      Ada.Text_IO.Put (Symbols);
+      Ada.Text_IO.Put (Symbol);
    end Put;
 
    procedure Put
-     (To      : out String;
-      Item    : Num_Dim_Integer;
-      Base    : Number_Base := Default_Base;
-      Symbols : String      := "")
+     (To     : out String;
+      Item   : Num_Dim_Integer;
+      Base   : Number_Base := Default_Base;
+      Symbol : String      := "")
 
    is
    begin
       Num_Dim_Integer_IO.Put (To, Item, Base);
-      To := To & Symbols;
+      To := To & Symbol;
    end Put;
 
+   ----------------
+   -- Put_Dim_Of --
+   ----------------
+
+   pragma Warnings (Off);
+   --  kill warnings on unreferenced formals
+
+   procedure Put_Dim_Of
+     (File   : File_Type;
+      Item   : Num_Dim_Integer;
+      Symbol : String := "")
+   is
+   begin
+      Ada.Text_IO.Put (File, Symbol);
+   end Put_Dim_Of;
+
+   procedure Put_Dim_Of
+     (Item   : Num_Dim_Integer;
+      Symbol : String := "")
+   is
+   begin
+      Ada.Text_IO.Put (Symbol);
+   end Put_Dim_Of;
+
+   procedure Put_Dim_Of
+     (To     : out String;
+      Item   : Num_Dim_Integer;
+      Symbol : String := "")
+   is
+   begin
+      To := Symbol;
+   end Put_Dim_Of;
 end System.Dim.Integer_IO;

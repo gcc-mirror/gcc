@@ -31,33 +31,63 @@
 
 --  This package provides output routines for float dimensioned types. All Put
 --  routines are modelled after those in package Ada.Text_IO.Float_IO with the
---  addition of an extra default parameter.
+--  addition of an extra default parameter. All Put_Dim_Of routines
+--  output the dimension of Item in a symbolic manner.
 
 --  Parameter Symbol may be used in the following manner (all the examples are
---  based on the MKS system of units as defined in package System.Dim.Mks):
+--  based on the MKS system of units defined in package System.Dim.Mks):
+
+--    type Mks_Type is new Long_Long_Float
+--      with
+--       Dimension_System => (
+--        (Unit_Name => Meter,    Unit_Symbol => 'm',   Dim_Symbol => 'L'),
+--        (Unit_Name => Kilogram, Unit_Symbol => "kg",  Dim_Symbol => 'M'),
+--        (Unit_Name => Second,   Unit_Symbol => 's',   Dim_Symbol => 'T'),
+--        (Unit_Name => Ampere,   Unit_Symbol => 'A',   Dim_Symbol => 'I'),
+--        (Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => "Θ"),
+--        (Unit_Name => Mole,     Unit_Symbol => "mol", Dim_Symbol => 'N'),
+--        (Unit_Name => Candela,  Unit_Symbol => "cd",  Dim_Symbol => 'J'));
 
 --  Case 1. A value is supplied for Symbol
 
---    The string appears as a suffix of Item
+--   * Put        : The string appears as a suffix of Item
+
+--   * Put_Dim_Of : The string appears alone
 
 --      Obj : Mks_Type := 2.6;
 --      Put (Obj, 1, 1, 0, " dimensionless");
+--      Put_Dim_Of (Obj, "dimensionless");
 
---      The corresponding output is: 2.6 dimensionless
+--      The corresponding outputs are:
+--      $2.6 dimensionless
+--      $dimensionless
 
 --  Case 2. No value is supplied for Symbol and Item is dimensionless
 
---    Item appears without a suffix
+--   * Put        : Item appears without a suffix
+
+--   * Put_Dim_Of : the output is []
 
 --      Obj : Mks_Type := 2.6;
 --      Put (Obj, 1, 1, 0);
+--      Put_Dim_Of (Obj);
 
---      The corresponding output is: 2.6
+--      The corresponding outputs are:
+--      $2.6
+--      $[]
 
 --  Case 3. No value is supplied for Symbol and Item has a dimension
 
---    If the type of Item is a dimensioned subtype whose symbolic name is not
---    empty, then the symbolic name appears as a suffix.
+--   * Put        : If the type of Item is a dimensioned subtype whose
+--                  symbol is not empty, then the symbol appears as a suffix.
+--                  Otherwise, a new string is created and appears as a
+--                  suffix of Item. This string results in the successive
+--                  concatenations between each unit symbol raised by its
+--                  corresponding dimension power from the dimensions of Item.
+
+--   * Put_Dim_Of : The output is a new string resulting in the successive
+--                  concatenations between each dimension symbol raised by its
+--                  corresponding dimension power from the dimensions of Item.
 
 --      subtype Length is Mks_Type
 --        with
@@ -67,29 +97,33 @@
 
 --      Obj : Length := 2.3 * dm;
 --      Put (Obj, 1, 2, 0);
+--      Put_Dim_Of (Obj);
 
---      The corresponding output is: 0.23 m
-
---    Otherwise, a new string is created and appears as a suffix of Item.
---    This string results in the successive concatanations between each
---    dimension symbolic name raised by its corresponding dimension power from
---    the dimensions of Item.
+--      The corresponding outputs are:
+--      $0.23 m
+--      $[L]
 
 --      subtype Random is Mks_Type
 --        with
---         Dimension => ("",
---         Meter =>   3,
---         Candela => -1,
---         others =>  0);
+--         Dimension => (
+--           Meter =>   3,
+--           Candela => -1,
+--           others =>  0);
 
 --      Obj : Random := 5.0;
 --      Put (Obj);
+--      Put_Dim_Of (Obj);
 
---      The corresponding output is: 5.0 m**3.cd**(-1)
+--      The corresponding outputs are:
+--      $5.0 m**3.cd**(-1)
+--      $[l**3.J**(-1)]
 
 --      Put (3.3 * km * dm * min, 5, 1, 0);
+--      Put_Dim_Of (3.3 * km * dm * min);
 
---      The corresponding output is: 19800.0 m**2.s
+--      The corresponding outputs are:
+--      $19800.0 m**2.s
+--      $[L**2.T]
 
 with Ada.Text_IO; use Ada.Text_IO;
 
@@ -103,27 +137,42 @@ package System.Dim.Float_IO is
    Default_Exp  : Field := 3;
 
    procedure Put
-     (File    : File_Type;
-      Item    : Num_Dim_Float;
-      Fore    : Field  := Default_Fore;
-      Aft     : Field  := Default_Aft;
-      Exp     : Field  := Default_Exp;
-      Symbols : String := "");
+     (File   : File_Type;
+      Item   : Num_Dim_Float;
+      Fore   : Field  := Default_Fore;
+      Aft    : Field  := Default_Aft;
+      Exp    : Field  := Default_Exp;
+      Symbol : String := "");
 
    procedure Put
-     (Item    : Num_Dim_Float;
-      Fore    : Field  := Default_Fore;
-      Aft     : Field  := Default_Aft;
-      Exp     : Field  := Default_Exp;
-      Symbols : String := "");
+     (Item   : Num_Dim_Float;
+      Fore   : Field  := Default_Fore;
+      Aft    : Field  := Default_Aft;
+      Exp    : Field  := Default_Exp;
+      Symbol : String := "");
 
    procedure Put
-     (To      : out String;
-      Item    : Num_Dim_Float;
-      Aft     : Field  := Default_Aft;
-      Exp     : Field  := Default_Exp;
-      Symbols : String := "");
+     (To     : out String;
+      Item   : Num_Dim_Float;
+      Aft    : Field  := Default_Aft;
+      Exp    : Field  := Default_Exp;
+      Symbol : String := "");
+
+   procedure Put_Dim_Of
+     (File   : File_Type;
+      Item   : Num_Dim_Float;
+      Symbol : String := "");
+
+   procedure Put_Dim_Of
+     (Item   : Num_Dim_Float;
+      Symbol : String := "");
+
+   procedure Put_Dim_Of
+     (To     : out String;
+      Item   : Num_Dim_Float;
+      Symbol : String := "");
 
    pragma Inline (Put);
+   pragma Inline (Put_Dim_Of);
 
 end System.Dim.Float_IO;
