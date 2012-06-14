@@ -1446,6 +1446,12 @@ h8300_print_operand (FILE *file, rtx x, int code)
 
   switch (code)
     {
+    case 'C':
+      if (h8300_constant_length (x) == 2)
+       fprintf (file, ":16");
+      else
+       fprintf (file, ":32");
+      return;
     case 'E':
       switch (GET_CODE (x))
 	{

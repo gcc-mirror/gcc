@@ -70,7 +70,7 @@ for s in QI HI; do
 	(plus:$d (zero_extend:$d $operand)
 		 (match_operand:$d 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/b.l @(%o2,$src),%S0"
+  "mova/b.l @(%o2%C2,$src),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -114,7 +114,7 @@ EOF
 			   (const_int $amount))
 		 (match_operand:$d 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/$opsize.l @(%o2,$src),%S0"
+  "mova/$opsize.l @(%o2%C2,$src),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -143,7 +143,7 @@ EOF
 			   (const_int $amount))
 		 (match_operand:$d 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/$opsize.l @(%o2,$src),%S0"
+  "mova/$opsize.l @(%o2%C2,$src),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -184,7 +184,7 @@ EOF
 			 (const_int $mask))
 		 (match_operand:$d 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/$opsize.l @(%o2,$src),%S0"
+  "mova/$opsize.l @(%o2%C2,$src),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
