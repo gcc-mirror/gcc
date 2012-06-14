@@ -6,8 +6,7 @@
 
 2012-06-14  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (*zero_extendsidi2): Mark movd alternatives
-	SSE2 only.  Remove x,x alternative.
+	* config/i386/i386.md (*zero_extendsidi2): Remove x,x alternative.
 	(*zero_extendsidi2_rex64): Ditto.
 
 2012-06-14  Jakub Jelinek  <jakub@redhat.com>
