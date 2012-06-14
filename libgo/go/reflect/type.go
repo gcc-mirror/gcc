@@ -444,7 +444,7 @@ func (t *commonType) String() string {
 	r := make([]byte, len(s))
 	j := 0
 	for i := 0; i < len(s); i++ {
-		if s[i] == '"' {
+		if s[i] == '\t' {
 			q = !q
 		} else if !q {
 			r[j] = s[i]

@@ -8340,16 +8340,16 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
       // -fgo-pkgpath was introduced.  When -fgo-pkgpath is specified,
       // we use it to make a unique reflection string, so that the
       // type canonicalization in the reflect package will work.  In
-      // order to be compatible with the gc compiler, we quote the
-      // package path, so that the reflect methods can discard it.
+      // order to be compatible with the gc compiler, we put tabs into
+      // the package path, so that the reflect methods can discard it.
       const Package* package = this->named_object_->package();
       if (gogo->pkgpath_from_option())
 	{
-	  ret->push_back('"');
+	  ret->push_back('\t');
 	  ret->append(package != NULL
 		      ? package->pkgpath_symbol()
 		      : gogo->pkgpath_symbol());
-	  ret->push_back('"');
+	  ret->push_back('\t');
 	}
       ret->append(package != NULL
 		  ? package->package_name()
