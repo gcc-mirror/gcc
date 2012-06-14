@@ -458,19 +458,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     volatile _RC_t _M_ref_count;
 
     // Constructor
+#if defined __GTHREAD_MUTEX_INIT && defined __GXX_EXPERIMENTAL_CXX0X__
+    __gthread_mutex_t _M_ref_count_lock = __GTHREAD_MUTEX_INIT;
+#else
     __gthread_mutex_t _M_ref_count_lock;
+#endif
 
     _Refcount_Base(_RC_t __n) : _M_ref_count(__n), _M_ref_count_lock()
     {
 #ifdef __GTHREAD_MUTEX_INIT
+# ifndef __GXX_EXPERIMENTAL_CXX0X__
       __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
       _M_ref_count_lock = __tmp;
+# endif
 #elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
       __GTHREAD_MUTEX_INIT_FUNCTION (&_M_ref_count_lock);
 #else
 #error __GTHREAD_MUTEX_INIT or __GTHREAD_MUTEX_INIT_FUNCTION should be defined by gthr.h abstraction layer, report problem to libstdc++@gcc.gnu.org.
 #endif
     }
+
+#ifndef __GTHREAD_MUTEX_INIT
+    ~_Refcount_Base()
+    { __gthread_mutex_destroy(&_M_ref_count_lock); }
+#endif
 
     void
     _M_incr()
