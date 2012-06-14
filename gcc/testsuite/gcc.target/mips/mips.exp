@@ -839,6 +839,8 @@ proc mips-dg-finish {} {
 #            |                           |
 #         -mdsp                       -mno-dsp
 #            |                           |
+#         -msynci                     -mno-synci
+#            |                           |
 #            +-- gp, abi & arch ---------+
 #
 # For these purposes, the "gp", "abi" & "arch" option groups are treated
@@ -987,6 +989,7 @@ proc mips-dg-options { args } {
 	#   - the DSP ASE
 	if { $isa_rev < 2
 	     && (($gp_size == 32 && [mips_have_test_option_p options "-mfp64"])
+		 || [mips_have_test_option_p options "-msynci"]
 		 || [mips_have_test_option_p options "-mdsp"]
 		 || [mips_have_test_option_p options "-mdspr2"]) } {
 	    if { $gp_size == 32 } {
@@ -1150,6 +1153,7 @@ proc mips-dg-options { args } {
 		mips_make_test_option options "-mfp32"
 	    }
 	    mips_make_test_option options "-mno-dsp"
+	    mips_make_test_option options "-mno-synci"
 	}
 	unset arch
 	unset isa
