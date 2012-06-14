@@ -1,3 +1,26 @@
+2012-06-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch9.adb: Minor reformatting.
+
+2012-06-14  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Warn about useless bit order
+	specification [when there's no component clause] regardless
+	of whether the specified bit order is reversed or not.
+
+2012-06-14  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c (__gnat_personality_seh0): New function.
+
+2012-06-14  Tristan Gingold  <gingold@adacore.com>
+
+	* gnatname.adb (Gnatname): Make sure that dynamic table
+	argument_data is initialized.
+
+2012-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aux.adb: Minor code reorganization.
+
 2012-06-14  Vincent Pucci  <pucci@adacore.com>
 
 	* einfo.adb einfo.ads (Get_Rep_Item): Removed.
