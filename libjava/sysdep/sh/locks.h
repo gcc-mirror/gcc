@@ -14,45 +14,11 @@ details.  */
 typedef size_t obj_addr_t;	/* Integer type big enough for object	*/
 				/* address.				*/
 
-static unsigned char __cas_lock = 0;
-
-inline static void
-__cas_start_atomic (void)
-{
-  unsigned int val;
-
-  do
-    __asm__ __volatile__ ("tas.b @%1; movt %0"
-			  : "=r" (val)
-			  : "r" (&__cas_lock)
-			  : "memory");
-  while (val == 0);
-}
-
-inline static void
-__cas_end_atomic (void)
-{
-  __asm__ __volatile__ (" " : : : "memory");
-  __cas_lock = 0;
-}
-
 inline static bool
 compare_and_swap (volatile obj_addr_t *addr, obj_addr_t old,
 		  obj_addr_t new_val)
 {
-  bool ret;
-
-  __cas_start_atomic ();
-  if (*addr != old)
-    ret = false;
-  else
-    {
-      *addr = new_val;
-      ret = true;
-    }
-  __cas_end_atomic ();
-
-  return ret;
+  return __sync_bool_compare_and_swap (addr, old, new_val);
 }
 
 inline static void
