@@ -1,3 +1,9 @@
+2012-06-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53597
+	* decl.c (match_attr_spec): Only mark module variables
+	as SAVE_IMPLICIT for Fortran 2008 and later.
+
 2012-06-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50619
