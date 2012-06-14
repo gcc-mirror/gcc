@@ -124,7 +124,7 @@ package body Einfo is
    --    Extra_Formal                    Node15
    --    Lit_Indexes                     Node15
    --    Related_Instance                Node15
-   --    Return_Flag_Or_Transient_Decl   Node15
+   --    Status_Flag_Or_Transient_Decl   Node15
    --    Scale_Value                     Uint15
    --    Storage_Size_Variable           Node15
    --    String_Literal_Low_Bound        Node15
@@ -2579,12 +2579,6 @@ package body Einfo is
       return Flag213 (Id);
    end Requires_Overriding;
 
-   function Return_Flag_Or_Transient_Decl (Id : E) return N is
-   begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
-      return Node15 (Id);
-   end Return_Flag_Or_Transient_Decl;
-
    function Return_Present (Id : E) return B is
    begin
       return Flag54 (Id);
@@ -2683,6 +2677,12 @@ package body Einfo is
       pragma Assert (Is_Discrete_Type (Id));
       return List25 (Id);
    end Static_Predicate;
+
+   function Status_Flag_Or_Transient_Decl (Id : E) return N is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      return Node15 (Id);
+   end Status_Flag_Or_Transient_Decl;
 
    function Storage_Size_Variable (Id : E) return E is
    begin
@@ -5138,12 +5138,6 @@ package body Einfo is
       Set_Flag213 (Id, V);
    end Set_Requires_Overriding;
 
-   procedure Set_Return_Flag_Or_Transient_Decl (Id : E; V : E) is
-   begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
-      Set_Node15 (Id, V);
-   end Set_Return_Flag_Or_Transient_Decl;
-
    procedure Set_Return_Present (Id : E; V : B := True) is
    begin
       Set_Flag54 (Id, V);
@@ -5249,6 +5243,12 @@ package body Einfo is
           and then Has_Predicates (Id));
       Set_List25 (Id, V);
    end Set_Static_Predicate;
+
+   procedure Set_Status_Flag_Or_Transient_Decl (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      Set_Node15 (Id, V);
+   end Set_Status_Flag_Or_Transient_Decl;
 
    procedure Set_Storage_Size_Variable (Id : E; V : E) is
    begin
@@ -8238,12 +8238,12 @@ package body Einfo is
               E_Package_Body                               =>
             Write_Str ("Related_Instance");
 
-         when E_Constant                                   |
-              E_Variable                                   =>
-            Write_Str ("Return_Flag_Or_Transient_Decl");
-
          when Decimal_Fixed_Point_Kind                     =>
             Write_Str ("Scale_Value");
+
+         when E_Constant                                   |
+              E_Variable                                   =>
+            Write_Str ("Status_Flag_Or_Transient_Decl");
 
          when Access_Kind                                  |
               Task_Kind                                    =>
