@@ -1,5 +1,13 @@
 2012-06-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/53270
+	* include/ext/concurrence.h (__mutex, __recursive_mutex, __cond): Use
+	NSDMI in C++11 mode.
+	* include/ext/rope (_Refcount_Base): Likewise. Destroy mutex in
+	destructor when initialized by function.
+
+2012-06-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/53648
 	* include/std/tuple (__empty_not_final): Do not use EBO for tuples.
 	* testsuite/20_util/tuple/53648.cc: New.
