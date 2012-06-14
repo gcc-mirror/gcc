@@ -4685,8 +4685,12 @@ package body Sem_Eval is
             return False;
 
          else
-            Pred1 := Get_Rep_Item_For_Entity (T1, Name_Static_Predicate);
-            Pred2 := Get_Rep_Item_For_Entity (T2, Name_Static_Predicate);
+            Pred1 :=
+              Get_Rep_Item
+                (T1, Name_Static_Predicate, Check_Parents => False);
+            Pred2 :=
+              Get_Rep_Item
+                (T2, Name_Static_Predicate, Check_Parents => False);
 
             --  Subtypes statically match if the predicate comes from the
             --  same declaration, which can only happen if one is a subtype

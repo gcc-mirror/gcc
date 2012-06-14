@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Namet;  use Namet;
 with Snames; use Snames;
 with Types;  use Types;
 with Uintp;  use Uintp;
@@ -7189,66 +7188,10 @@ package Einfo is
    --  value returned is the N_Attribute_Definition_Clause node, otherwise
    --  Empty is returned.
 
-   --  What is difference between following two, and why are they named
-   --  the way they are ???
-
-   function Get_Rep_Item
-     (E   : Entity_Id;
-      Nam : Name_Id) return Node_Id;
-   --  Searches the Rep_Item chain for a given entity E, for the first
-   --  occurrence of a rep item (pragma, attribute definition clause, or aspect
-   --  specification) whose name matches the given name. If one is found, it is
-   --  returned, otherwise Empty is returned. A special case is that when Nam
-   --  is Name_Priority, the call will also find Interrupt_Priority.
-
-   function Get_Rep_Item_For_Entity
-     (E   : Entity_Id;
-      Nam : Name_Id) return Node_Id;
-   --  Searches the Rep_Item chain for a given entity E, for an instance of a
-   --  rep item (pragma, attribute definition clause, or aspect specification)
-   --  whose name matches the given name. If one is found, it is returned,
-   --  otherwise Empty is returned. This routine only returns items whose
-   --  entity matches E (it does not return items from the parent chain). A
-   --  special case is that when Nam is Name_Priority, the call will also find
-   --  Interrupt_Priority.
-
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record
    --  representation clause, and if found, returns it. Returns Empty
    --  if no such clause is found.
-
-   --  I still don't get it, if the first one returns stuff from the parent
-   --  it should say so, and it doesn't, and the names make no sense ???
-
-   function Get_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Node_Id;
-   --  Searches the Rep_Item chain for the given entity E, for an instance
-   --  a representation pragma with the given name Nam. If found then the
-   --  value returned is the N_Pragma node, otherwise Empty is returned. A
-   --  special case is that when Nam is Name_Priority, the call will also find
-   --  Interrupt_Priority.
-
-   function Get_Rep_Pragma_For_Entity
-     (E : Entity_Id; Nam : Name_Id) return Node_Id;
-   --  Same as Get_Rep_Pragma except that this routine returns a pragma that
-   --  doesn't appear in the Rep Item chain of the parent of E (if any).
-
-   function Has_Rep_Item (E : Entity_Id; Nam : Name_Id) return Boolean;
-   --  Searches the Rep_Item chain for the given entity E, for an instance
-   --  of rep item with the given name Nam. If found then True is returned,
-   --  otherwise False indicates that no matching entry was found.
-
-   --  Again, the following two have bizarre names, and unclear specs ???
-
-   function Has_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Boolean;
-   --  Searches the Rep_Item chain for the given entity E, for an instance
-   --  of representation pragma with the given name Nam. If found then True
-   --  is returned, otherwise False indicates that no matching entry was found.
-
-   function Has_Rep_Pragma_For_Entity
-     (E : Entity_Id; Nam : Name_Id) return Boolean;
-   --  Same as Has_Rep_Pragma except that this routine doesn't return True if
-   --  the representation pragma is also present in the Rep Item chain of the
-   --  parent of E (if any).
 
    function Present_In_Rep_Item (E : Entity_Id; N : Node_Id) return Boolean;
    --  Return True if N is present in the Rep_Item chain for a given entity E
