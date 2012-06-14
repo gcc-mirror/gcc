@@ -8337,14 +8337,23 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
     {
       // We handle -fgo-prefix and -fgo-pkgpath differently here for
       // compatibility with how the compiler worked before
-      // -fgo-pkgpath was introduced.
+      // -fgo-pkgpath was introduced.  When -fgo-pkgpath is specified,
+      // we use it to make a unique reflection string, so that the
+      // type canonicalization in the reflect package will work.  In
+      // order to be compatible with the gc compiler, we put tabs into
+      // the package path, so that the reflect methods can discard it.
       const Package* package = this->named_object_->package();
       if (gogo->pkgpath_from_option())
-	ret->append(package != NULL ? package->pkgpath() : gogo->pkgpath());
-      else
-	ret->append(package != NULL
-		    ? package->package_name()
-		    : gogo->package_name());
+	{
+	  ret->push_back('\t');
+	  ret->append(package != NULL
+		      ? package->pkgpath_symbol()
+		      : gogo->pkgpath_symbol());
+	  ret->push_back('\t');
+	}
+      ret->append(package != NULL
+		  ? package->package_name()
+		  : gogo->package_name());
       ret->push_back('.');
     }
   if (this->in_function_ != NULL)
