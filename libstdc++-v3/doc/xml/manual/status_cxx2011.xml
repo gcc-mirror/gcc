@@ -1037,7 +1037,7 @@ particular release.
       <entry>20.12.4</entry>
       <entry>Scoped allocator adaptor members</entry>
       <entry>Partial</entry>
-      <entry/>
+      <entry>Missing std::pair piecewise construction.</entry>
     </row>
     <row>
       <entry>20.12.5</entry>
@@ -1231,10 +1231,12 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.4.1</entry>
       <entry>The <code>ctype</code> category</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>codecvt&lt;char16_t></code> and
+             <code>codecvt&lt;char32_t></code></entry>
     </row>
     <row>
       <entry>22.4.2</entry>
@@ -2314,10 +2316,9 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>29.8</entry>
       <entry>Fences</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
