@@ -1,6 +1,13 @@
 2012-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53589
+	* cfgrtl.c (force_nonfallthru_and_redirect): Do asm_goto_edge
+	discovery even when e->dest != target.  If any LABEL_REF points
+	to e->dest label, redirect it to target's label.
+
 	2012-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/53580
