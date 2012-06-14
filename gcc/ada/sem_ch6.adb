@@ -5503,6 +5503,18 @@ package body Sem_Ch6 is
             end if;
          end if;
 
+         --  Ada 2012:  mode conformance also requires that formal parameters
+         --  be both aliased, or neither.
+
+         if Ctype >= Mode_Conformant
+           and then Ada_Version >= Ada_2012
+         then
+            if Is_Aliased (Old_Formal) /= Is_Aliased (New_Formal) then
+               Conformance_Error
+                 ("\aliased parameter mismatch!", New_Formal);
+            end if;
+         end if;
+
          if Ctype = Fully_Conformant then
 
             --  Names must match. Error message is more accurate if we do

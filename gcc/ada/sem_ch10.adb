@@ -1261,7 +1261,6 @@ package body Sem_Ch10 is
         and then Warn_On_Obsolescent_Feature
         and then Nkind (Unit_Node) not in N_Generic_Instantiation
       then
-
          --  Push current compilation unit as scope, so that the test for
          --  being within an obsolescent unit will work correctly. The check
          --  is not performed within an instantiation, because the warning

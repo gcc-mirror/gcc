@@ -370,7 +370,7 @@ package body Ada.Containers.Ordered_Maps is
    end Constant_Reference;
 
    function Constant_Reference
-     (Container : Map;
+     (Container : aliased Map;
       Key       : Key_Type) return Constant_Reference_Type
    is
       Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);

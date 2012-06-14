@@ -3569,6 +3569,19 @@ package body Sem_Attr is
          Check_Array_Type;
          Set_Etype (N, Universal_Integer);
 
+      ---------------
+      -- Lock_Free --
+      ---------------
+
+      when Attribute_Lock_Free =>
+         Check_E0;
+         Set_Etype (N, Standard_Boolean);
+
+         if not Is_Protected_Type (P_Type) then
+            Error_Attr_P
+              ("prefix of % attribute must be a protected object");
+         end if;
+
       -------------
       -- Machine --
       -------------
@@ -6766,6 +6779,15 @@ package body Sem_Attr is
               Ureal_2 ** (4 * Mantissa) * (Ureal_1 - Ureal_2 ** (-Mantissa)),
               True);
          end if;
+
+      ---------------
+      -- Lock_Free --
+      ---------------
+
+      --  Lock_Free attribute is a Boolean, thus no need to fold here.
+
+      when Attribute_Lock_Free =>
+         null;
 
       ----------
       -- Last --

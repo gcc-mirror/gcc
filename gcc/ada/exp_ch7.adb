@@ -1892,14 +1892,13 @@ package body Exp_Ch7 is
                then
                   Processing_Actions (Has_No_Init => True);
 
-               --  Processing for intermediate results of conditional
-               --  expressions where one of the alternatives uses a controlled
-               --  function call.
+               --  Process intermediate results of conditional expression with
+               --  one of the alternatives using a controlled function call.
 
                elsif Is_Access_Type (Obj_Typ)
                  and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
                  and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                            N_Defining_Identifier
+                                                       N_Defining_Identifier
                  and then Present (Expr)
                  and then Nkind (Expr) = N_Null
                then
@@ -2728,7 +2727,7 @@ package body Exp_Ch7 is
                --    end if;
 
                if Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                    N_Object_Declaration
+                                                      N_Object_Declaration
                then
                   Fin_Stmts := New_List (
                     Make_If_Statement (Loc,
@@ -2736,12 +2735,11 @@ package body Exp_Ch7 is
                         Make_Op_Ne (Loc,
                           Left_Opnd  => New_Reference_To (Obj_Id, Loc),
                           Right_Opnd => Make_Null (Loc)),
-
                       Then_Statements => Fin_Stmts));
 
-               --  Return objects use a flag to aid their potential
-               --  finalization when the enclosing function fails to return
-               --  properly. Generate:
+               --  Return objects use a flag to aid in processing their
+               --  potential finalization when the enclosing function fails
+               --  to return properly. Generate:
 
                --    if not Flag then
                --       <object finalization statements>

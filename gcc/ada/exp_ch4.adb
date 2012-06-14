@@ -4277,8 +4277,7 @@ package body Exp_Ch4 is
       --  is a finalization flag created to service expression Expr.
 
       function Is_Controlled_Function_Call (Expr : Node_Id) return Boolean;
-      --  Determine whether an expression is a rewritten controlled function
-      --  call.
+      --  Determine if expression Expr is a rewritten controlled function call
 
       ------------------------
       -- Create_Alternative --
@@ -4431,7 +4430,8 @@ package body Exp_Ch4 is
             --  handling.
 
             if Is_Controlled_Function_Call (Thenx)
-              or else Is_Controlled_Function_Call (Elsex)
+                 or else
+               Is_Controlled_Function_Call (Elsex)
             then
                Flag_Id := Make_Temporary (Loc, 'F');
 

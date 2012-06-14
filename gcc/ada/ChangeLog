@@ -1,3 +1,44 @@
+2012-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb, exp_util.adb, sem_aux.ads, exp_ch9.adb,
+	sem_ch10.adb, freeze.adb, sem_util.adb, exp_ch4.adb,
+	s-taprop-dummy.adb: Minor reformatting.
+
+2012-06-14  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Lock_Free
+	attribute case added.
+	* par-prag.adb (Prag): Lock_Free pragma case added.
+	* sem_attr.adb (Analyze_Attribute_Reference): Lock_Free attribute
+	case added.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Record_Rep_Item
+	call added for Aspect_Lock_Free.
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): New Lock_Free
+	error messages for subprogram bodies.
+	(Lock_Free_Disabled): New routine.
+	(Analyze_Protected_Body): Call to Lock_Free_Disabled added.
+	* sem_prag.adb (Analyze_Pragma): Lock_Free pragma case added.
+	* snames.adb-tmpl (Get_Pragma_Id): Name_Lock_Free case added.
+	(Is_Pragma_Name): Name_Lock_Free case added.
+	* snames.ads-tmpl: Attribute_Lock_Free and Pragma_Lock_Free added.
+
+2012-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-coorma.adb, a-cborma.adb, a-cbhama.adb, a-ciorma.adb: Add missing
+	aliased keyword.
+
+2012-06-14  Bob Duff  <duff@adacore.com>
+
+	* lib.ads, lib.adb, sem.adb (Write_Unit_Info): Move this
+	procedure from Sem body to Lib spec, so it can be used for
+	debugging elsewhere.
+
+2012-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Conformance): Add Ada 2012 check on mode
+	conformance: "aliased" must apply to both or neither formal
+	parameters.
+
 2012-06-14  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch9.adb: Minor reformatting.
