@@ -4267,19 +4267,83 @@ package body Exp_Ch4 is
    --  Deal with limited types and condition actions
 
    procedure Expand_N_Conditional_Expression (N : Node_Id) is
+      function Create_Alternative
+        (Loc     : Source_Ptr;
+         Temp_Id : Entity_Id;
+         Flag_Id : Entity_Id;
+         Expr    : Node_Id) return List_Id;
+      --  Build the statements of a "then" or "else" conditional expression
+      --  alternative. Temp_Id is the conditional expression result, Flag_Id
+      --  is a finalization flag created to service expression Expr.
+
+      function Is_Controlled_Function_Call (Expr : Node_Id) return Boolean;
+      --  Determine whether an expression is a rewritten controlled function
+      --  call.
+
+      ------------------------
+      -- Create_Alternative --
+      ------------------------
+
+      function Create_Alternative
+        (Loc     : Source_Ptr;
+         Temp_Id : Entity_Id;
+         Flag_Id : Entity_Id;
+         Expr    : Node_Id) return List_Id
+      is
+         Result : constant List_Id := New_List;
+
+      begin
+         --  Generate:
+         --    Fnn := True;
+
+         if Present (Flag_Id)
+           and then not Is_Controlled_Function_Call (Expr)
+         then
+            Append_To (Result,
+              Make_Assignment_Statement (Loc,
+                Name       => New_Reference_To (Flag_Id, Loc),
+                Expression => New_Reference_To (Standard_True, Loc)));
+         end if;
+
+         --  Generate:
+         --    Cnn := <expr>'Unrestricted_Access;
+
+         Append_To (Result,
+           Make_Assignment_Statement (Loc,
+             Name       => New_Reference_To (Temp_Id, Loc),
+             Expression =>
+               Make_Attribute_Reference (Loc,
+                 Prefix         => Relocate_Node (Expr),
+                 Attribute_Name => Name_Unrestricted_Access)));
+
+         return Result;
+      end Create_Alternative;
+
+      ---------------------------------
+      -- Is_Controlled_Function_Call --
+      ---------------------------------
+
+      function Is_Controlled_Function_Call (Expr : Node_Id) return Boolean is
+      begin
+         return
+           Nkind (Original_Node (Expr)) = N_Function_Call
+             and then Needs_Finalization (Etype (Expr));
+      end Is_Controlled_Function_Call;
+
+      --  Local variables
+
       Loc    : constant Source_Ptr := Sloc (N);
       Cond   : constant Node_Id    := First (Expressions (N));
       Thenx  : constant Node_Id    := Next (Cond);
       Elsex  : constant Node_Id    := Next (Thenx);
       Typ    : constant Entity_Id  := Etype (N);
 
+      Actions : List_Id;
       Cnn     : Entity_Id;
       Decl    : Node_Id;
+      Expr    : Node_Id;
       New_If  : Node_Id;
       New_N   : Node_Id;
-      P_Decl  : Node_Id;
-      Expr    : Node_Id;
-      Actions : List_Id;
 
    begin
       --  Fold at compile time if condition known. We have already folded
@@ -4354,48 +4418,69 @@ package body Exp_Ch4 is
       if Is_By_Reference_Type (Typ)
         and then not Back_End_Handles_Limited_Types
       then
-         Cnn := Make_Temporary (Loc, 'C', N);
+         declare
+            Flag_Id : Entity_Id;
+            Ptr_Typ : Entity_Id;
 
-         P_Decl :=
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Temporary (Loc, 'A'),
-             Type_Definition =>
-               Make_Access_To_Object_Definition (Loc,
-                 All_Present        => True,
-                 Subtype_Indication => New_Reference_To (Typ, Loc)));
+         begin
+            Flag_Id := Empty;
 
-         Insert_Action (N, P_Decl);
+            --  At least one of the conditional expression alternatives uses a
+            --  controlled function to provide the result. Create a status flag
+            --  to signal the finalization machinery that Cnn needs special
+            --  handling.
 
-         Decl :=
-            Make_Object_Declaration (Loc,
-              Defining_Identifier => Cnn,
-              Object_Definition   =>
-                   New_Occurrence_Of (Defining_Identifier (P_Decl), Loc));
+            if Is_Controlled_Function_Call (Thenx)
+              or else Is_Controlled_Function_Call (Elsex)
+            then
+               Flag_Id := Make_Temporary (Loc, 'F');
 
-         New_If :=
-           Make_Implicit_If_Statement (N,
-             Condition => Relocate_Node (Cond),
+               Insert_Action (N,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Flag_Id,
+                   Object_Definition   =>
+                     New_Reference_To (Standard_Boolean, Loc),
+                   Expression          =>
+                     New_Reference_To (Standard_False, Loc)));
+            end if;
 
-             Then_Statements => New_List (
-               Make_Assignment_Statement (Sloc (Thenx),
-                 Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                 Expression =>
-                   Make_Attribute_Reference (Loc,
-                     Attribute_Name => Name_Unrestricted_Access,
-                     Prefix         =>  Relocate_Node (Thenx)))),
+            --  Generate:
+            --    type Ann is access all Typ;
 
-             Else_Statements => New_List (
-               Make_Assignment_Statement (Sloc (Elsex),
-                 Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                 Expression =>
-                   Make_Attribute_Reference (Loc,
-                     Attribute_Name => Name_Unrestricted_Access,
-                     Prefix         => Relocate_Node (Elsex)))));
+            Ptr_Typ := Make_Temporary (Loc, 'A');
 
-         New_N :=
-           Make_Explicit_Dereference (Loc,
-             Prefix => New_Occurrence_Of (Cnn, Loc));
+            Insert_Action (N,
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Ptr_Typ,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present        => True,
+                    Subtype_Indication => New_Reference_To (Typ, Loc))));
+
+            --  Generate:
+            --    Cnn : Ann;
+
+            Cnn := Make_Temporary (Loc, 'C', N);
+            Set_Ekind (Cnn, E_Variable);
+            Set_Status_Flag_Or_Transient_Decl (Cnn, Flag_Id);
+
+            Decl :=
+               Make_Object_Declaration (Loc,
+                 Defining_Identifier => Cnn,
+                 Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
+
+            New_If :=
+              Make_Implicit_If_Statement (N,
+                Condition       => Relocate_Node (Cond),
+                Then_Statements =>
+                  Create_Alternative (Sloc (Thenx), Cnn, Flag_Id, Thenx),
+                Else_Statements =>
+                  Create_Alternative (Sloc (Elsex), Cnn, Flag_Id, Elsex));
+
+            New_N :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Occurrence_Of (Cnn, Loc));
+         end;
 
       --  For other types, we only need to expand if there are other actions
       --  associated with either branch.
@@ -4632,7 +4717,7 @@ package body Exp_Ch4 is
          --  transient declaration out of the Actions list. This signals the
          --  machinery in Build_Finalizer to recognize this special case.
 
-         Set_Return_Flag_Or_Transient_Decl (Temp_Id, Decl);
+         Set_Status_Flag_Or_Transient_Decl (Temp_Id, Decl);
 
          --  Step 3: Hook the transient object to the temporary
 

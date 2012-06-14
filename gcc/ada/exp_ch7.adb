@@ -1884,11 +1884,24 @@ package body Exp_Ch7 is
                --  transients declared inside an Expression_With_Actions.
 
                elsif Is_Access_Type (Obj_Typ)
-                 and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
-                 and then Nkind (Return_Flag_Or_Transient_Decl (Obj_Id)) =
+                 and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
+                 and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
                                    N_Object_Declaration
                  and then Is_Finalizable_Transient
-                            (Return_Flag_Or_Transient_Decl (Obj_Id), Decl)
+                            (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
+               then
+                  Processing_Actions (Has_No_Init => True);
+
+               --  Processing for intermediate results of conditional
+               --  expressions where one of the alternatives uses a controlled
+               --  function call.
+
+               elsif Is_Access_Type (Obj_Typ)
+                 and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
+                 and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
+                            N_Defining_Identifier
+                 and then Present (Expr)
+                 and then Nkind (Expr) = N_Null
                then
                   Processing_Actions (Has_No_Init => True);
 
@@ -1954,7 +1967,7 @@ package body Exp_Ch7 is
 
                elsif Needs_Finalization (Obj_Typ)
                  and then Is_Return_Object (Obj_Id)
-                 and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
+                 and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
                then
                   Processing_Actions (Has_No_Init => True);
 
@@ -2685,27 +2698,8 @@ package body Exp_Ch7 is
             end if;
 
             if Ekind_In (Obj_Id, E_Constant, E_Variable)
-              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
+              and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
             then
-               --  Return objects use a flag to aid their potential
-               --  finalization when the enclosing function fails to return
-               --  properly. Generate:
-
-               --    if not Flag then
-               --       <object finalization statements>
-               --    end if;
-
-               if Is_Return_Object (Obj_Id) then
-                  Fin_Stmts := New_List (
-                    Make_If_Statement (Loc,
-                      Condition     =>
-                        Make_Op_Not (Loc,
-                          Right_Opnd =>
-                            New_Reference_To
-                              (Return_Flag_Or_Transient_Decl (Obj_Id), Loc)),
-
-                    Then_Statements => Fin_Stmts));
-
                --  Temporaries created for the purpose of "exporting" a
                --  controlled transient out of an Expression_With_Actions (EWA)
                --  need guards. The following illustrates the usage of such
@@ -2733,11 +2727,9 @@ package body Exp_Ch7 is
                --       <object finalization statements>
                --    end if;
 
-               else
-                  pragma Assert
-                    (Nkind (Return_Flag_Or_Transient_Decl (Obj_Id)) =
-                       N_Object_Declaration);
-
+               if Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
+                    N_Object_Declaration
+               then
                   Fin_Stmts := New_List (
                     Make_If_Statement (Loc,
                       Condition       =>
@@ -2746,6 +2738,25 @@ package body Exp_Ch7 is
                           Right_Opnd => Make_Null (Loc)),
 
                       Then_Statements => Fin_Stmts));
+
+               --  Return objects use a flag to aid their potential
+               --  finalization when the enclosing function fails to return
+               --  properly. Generate:
+
+               --    if not Flag then
+               --       <object finalization statements>
+               --    end if;
+
+               else
+                  Fin_Stmts := New_List (
+                    Make_If_Statement (Loc,
+                      Condition     =>
+                        Make_Op_Not (Loc,
+                          Right_Opnd =>
+                            New_Reference_To
+                              (Status_Flag_Or_Transient_Decl (Obj_Id), Loc)),
+
+                    Then_Statements => Fin_Stmts));
                end if;
             end if;
          end if;
@@ -4475,7 +4486,7 @@ package body Exp_Ch7 is
                      --  the machinery in Build_Finalizer to recognize this
                      --  special case.
 
-                     Set_Return_Flag_Or_Transient_Decl (Temp_Id, Stmt);
+                     Set_Status_Flag_Or_Transient_Decl (Temp_Id, Stmt);
 
                      --  Step 3: Hook the transient object to the temporary
 

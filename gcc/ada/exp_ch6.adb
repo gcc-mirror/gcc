@@ -4031,6 +4031,42 @@ package body Exp_Ch6 is
    -------------------------------
 
    procedure Expand_Ctrl_Function_Call (N : Node_Id) is
+      function Enclosing_Context return Node_Id;
+      --  Find the enclosing context where the function call appears
+
+      -----------------------
+      -- Enclosing_Context --
+      -----------------------
+
+      function Enclosing_Context return Node_Id is
+         Context : Node_Id;
+
+      begin
+         Context := Parent (N);
+         while Present (Context) loop
+
+            if Nkind (Context) = N_Conditional_Expression then
+               exit;
+
+            --  Stop the search when reaching any statement because we have
+            --  gone too far up the tree.
+
+            elsif Nkind (Context) = N_Procedure_Call_Statement
+              or else Nkind (Context) in N_Statement_Other_Than_Procedure_Call
+            then
+               exit;
+            end if;
+
+            Context := Parent (Context);
+         end loop;
+
+         return Context;
+      end Enclosing_Context;
+
+      --  Local variables
+
+      Context : constant Node_Id := Enclosing_Context;
+
    begin
       --  Optimization, if the returned value (which is on the sec-stack) is
       --  returned again, no need to copy/readjust/finalize, we can just pass
@@ -4051,6 +4087,18 @@ package body Exp_Ch6 is
       --  the function using 'reference.
 
       Remove_Side_Effects (N);
+
+      --  The function call is part of a conditional expression alternative.
+      --  The temporary result must live as long as the conditional expression
+      --  itself, otherwise it will be finalized too early. Mark the transient
+      --  as processed to avoid untimely finalization.
+
+      if Present (Context)
+        and then Nkind (Context) = N_Conditional_Expression
+        and then Nkind (N) = N_Explicit_Dereference
+      then
+         Set_Is_Processed_Transient (Entity (Prefix (N)));
+      end if;
    end Expand_Ctrl_Function_Call;
 
    -------------------------
@@ -5503,7 +5551,7 @@ package body Exp_Ch6 is
             --  Create a flag to track the function state
 
             Flag_Id := Make_Temporary (Loc, 'F');
-            Set_Return_Flag_Or_Transient_Decl (Ret_Obj_Id, Flag_Id);
+            Set_Status_Flag_Or_Transient_Decl (Ret_Obj_Id, Flag_Id);
 
             --  Insert the flag at the beginning of the function declarations,
             --  generate:
@@ -5582,7 +5630,7 @@ package body Exp_Ch6 is
          then
             declare
                Flag_Id : constant Entity_Id :=
-                           Return_Flag_Or_Transient_Decl (Ret_Obj_Id);
+                           Status_Flag_Or_Transient_Decl (Ret_Obj_Id);
 
             begin
                --  Generate:

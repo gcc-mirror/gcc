@@ -1,3 +1,56 @@
+2012-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Object_Reference): in Ada 2012, qualified
+	expressions are valid names.
+
+2012-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_Compilation_Unit): If the unit is an
+	instantiation do not emit warnings for obsolescent units. The
+	warnings belong on the corresponding generic.
+
+2012-06-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Update the usage of Node15.
+	(Return_Flag_Or_Transient_Decl): Removed.
+	(Set_Return_Flag_Or_Transient_Decl): Removed.
+	(Set_Status_Flag_Or_Transient_Decl): New routine.
+	(Status_Flag_Or_Transient_Decl): New routine.
+	(Write_Field15_Name): Update the output for variables and constants.
+	* einfo.ads: Remove attribute
+	Return_Flag_Or_Transient_Decl along with occurrences in nodes.
+	(Return_Flag_Or_Transient_Decl): Removed along with pragma Inline.
+	(Set_Return_Flag_Or_Transient_Decl): Removed along with pragma Inline.
+	(Set_Status_Flag_Or_Transient_Decl): New routine along with pragma
+	Inline.
+	(Status_Flag_Or_Transient_Decl): New routine along with pragma Inline.
+	* exp_ch4.adb (Create_Alternative): New routine.
+	(Expand_N_Conditional_Expression): Handle the case
+	where at least one of the conditional expression
+	alternatives prodices a controlled temporary by means of a function
+	call.
+	(Is_Controlled_Function_Call): New routine.
+	(Process_Transient_Object): Update the call to
+	Set_Return_Flag_Or_Transient_Decl.
+	* exp_ch6.adb (Enclosing_Context): New routine.
+	(Expand_N_Extended_Return_Statement): Update all calls to
+	Set_Return_Flag_Or_Transient_Decl.
+	(Expand_Ctrl_Function_Call): Prohibit the finalization of a controlled
+	function result when the context is a conditional expression.
+	* exp_ch7.adb (Process_Declarations): Update all calls to
+	Return_Flag_Or_Transient_Decl. Add processing for intermediate
+	results of conditional expressions where one of the alternatives
+	uses a controlled function call.
+	(Process_Object_Declaration): Update all calls to
+	Return_Flag_Or_Transient_Decl and rearrange the logic to process
+	"hook" objects first.
+	(Process_Transient_Objects): Update the call to
+	Set_Return_Flag_Or_Transient_Decl.
+	* exp_util.adb (Requires_Cleanup_Actions (List_Id, Boolean,
+	Boolean)): Update all calls to Return_Flag_Or_Transient_Decl. Add
+	detection for intermediate results of conditional expressions
+	where one of the alternatives uses a controlled function call.
+
 2012-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Revert

@@ -1257,10 +1257,15 @@ package body Sem_Ch10 is
       --  know if the with'ing unit is itself obsolescent (which suppresses
       --  the warnings).
 
-      if not GNAT_Mode and then Warn_On_Obsolescent_Feature then
+      if not GNAT_Mode
+        and then Warn_On_Obsolescent_Feature
+        and then Nkind (Unit_Node) not in N_Generic_Instantiation
+      then
 
          --  Push current compilation unit as scope, so that the test for
-         --  being within an obsolescent unit will work correctly.
+         --  being within an obsolescent unit will work correctly. The check
+         --  is not performed within an instantiation, because the warning
+         --  will have been emitted in the corresponding generic unit.
 
          Push_Scope (Defining_Entity (Unit_Node));
 
