@@ -1,3 +1,8 @@
+2012-06-14  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vrp.h: New testcase.
+	* gcc.dg/tree-ssa/vrp68.c: Likewise.
+
 2012-06-13  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/53621
