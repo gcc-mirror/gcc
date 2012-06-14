@@ -1,3 +1,12 @@
+2012-06-14  Jose Ruiz  <ruiz@adacore.com>
+
+	* gcc-interface/Make-lang.in (ada.install-common, ada.uninstall):
+	Use the prefix specified with the --program-prefix configure option
+	to determine the install name of the Ada tools.
+	(ada.all.cross): Use a for loop to iterate over the set of Ada tools
+	instead of duplicate the same processing.
+	Update dependencies.
+
 2012-06-14  Vincent Pucci  <pucci@adacore.com>
 
 	* exp_ch6.adb (Expand_Call): Expand_Put_Call_With_Dimension_Symbol
