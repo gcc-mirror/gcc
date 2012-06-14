@@ -76,6 +76,8 @@ struct value_range_d
 
 typedef struct value_range_d value_range_t;
 
+#define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }
+
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
 static sbitmap *live;
@@ -2216,6 +2218,54 @@ zero_nonzero_bits_from_vr (value_range_t *vr,
   return true;
 }
 
+/* Create two value-ranges in *VR0 and *VR1 from the anti-range *AR
+   so that *VR0 U *VR1 == *AR.  Returns true if that is possible,
+   false otherwise.  If *AR can be represented with a single range
+   *VR1 will be VR_UNDEFINED.  */
+
+static bool
+ranges_from_anti_range (value_range_t *ar,
+			value_range_t *vr0, value_range_t *vr1)
+{
+  tree type = TREE_TYPE (ar->min);
+
+  vr0->type = VR_UNDEFINED;
+  vr1->type = VR_UNDEFINED;
+
+  if (ar->type != VR_ANTI_RANGE
+      || TREE_CODE (ar->min) != INTEGER_CST
+      || TREE_CODE (ar->max) != INTEGER_CST
+      || !vrp_val_min (type)
+      || !vrp_val_max (type))
+    return false;
+
+  if (!vrp_val_is_min (ar->min))
+    {
+      vr0->type = VR_RANGE;
+      vr0->min = vrp_val_min (type);
+      vr0->max
+	= double_int_to_tree (type,
+			      double_int_sub (tree_to_double_int (ar->min),
+					      double_int_one));
+    }
+  if (!vrp_val_is_max (ar->max))
+    {
+      vr1->type = VR_RANGE;
+      vr1->min
+	= double_int_to_tree (type,
+			      double_int_add (tree_to_double_int (ar->max),
+					      double_int_one));
+      vr1->max = vrp_val_max (type);
+    }
+  if (vr0->type == VR_UNDEFINED)
+    {
+      *vr0 = *vr1;
+      vr1->type = VR_UNDEFINED;
+    }
+
+  return vr0->type != VR_UNDEFINED;
+}
+
 /* Helper to extract a value-range *VR for a multiplicative operation
    *VR0 CODE *VR1.  */
 
@@ -2379,6 +2429,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 				  value_range_t *vr0_, value_range_t *vr1_)
 {
   value_range_t vr0 = *vr0_, vr1 = *vr1_;
+  value_range_t vrtem0 = VR_INITIALIZER, vrtem1 = VR_INITIALIZER;
   enum value_range_type type;
   tree min = NULL_TREE, max = NULL_TREE;
   int cmp;
@@ -2428,6 +2479,36 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
     set_value_range_to_varying (&vr0);
   else if (vr1.type == VR_UNDEFINED)
     set_value_range_to_varying (&vr1);
+
+  /* Now canonicalize anti-ranges to ranges when they are not symbolic
+     and express ~[] op X as ([]' op X) U ([]'' op X).  */
+  if (vr0.type == VR_ANTI_RANGE
+      && ranges_from_anti_range (&vr0, &vrtem0, &vrtem1))
+    {
+      extract_range_from_binary_expr_1 (vr, code, expr_type, &vrtem0, vr1_);
+      if (vrtem1.type != VR_UNDEFINED)
+	{
+	  value_range_t vrres = VR_INITIALIZER;
+	  extract_range_from_binary_expr_1 (&vrres, code, expr_type,
+					    &vrtem1, vr1_);
+	  vrp_meet (vr, &vrres);
+	}
+      return;
+    }
+  /* Likewise for X op ~[].  */
+  if (vr1.type == VR_ANTI_RANGE
+      && ranges_from_anti_range (&vr1, &vrtem0, &vrtem1))
+    {
+      extract_range_from_binary_expr_1 (vr, code, expr_type, vr0_, &vrtem0);
+      if (vrtem1.type != VR_UNDEFINED)
+	{
+	  value_range_t vrres = VR_INITIALIZER;
+	  extract_range_from_binary_expr_1 (&vrres, code, expr_type,
+					    vr0_, &vrtem1);
+	  vrp_meet (vr, &vrres);
+	}
+      return;
+    }
 
   /* The type of the resulting value range defaults to VR0.TYPE.  */
   type = vr0.type;
@@ -2616,7 +2697,8 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       /* We can map shifts by constants to MULT_EXPR handling.  */
       if (range_int_cst_singleton_p (&vr1))
 	{
-	  value_range_t vr1p = { VR_RANGE, NULL_TREE, NULL_TREE, NULL };
+	  value_range_t vr1p = VR_INITIALIZER;
+	  vr1p.type = VR_RANGE;
 	  vr1p.min
 	    = double_int_to_tree (expr_type,
 				  double_int_lshift (double_int_one,
@@ -2920,8 +3002,8 @@ extract_range_from_binary_expr (value_range_t *vr,
 				enum tree_code code,
 				tree expr_type, tree op0, tree op1)
 {
-  value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
-  value_range_t vr1 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+  value_range_t vr0 = VR_INITIALIZER;
+  value_range_t vr1 = VR_INITIALIZER;
 
   /* Get value ranges for each operand.  For constant operands, create
      a new value range with the operand to simplify processing.  */
@@ -2951,7 +3033,7 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 				 enum tree_code code, tree type,
 				 value_range_t *vr0_, tree op0_type)
 {
-  value_range_t vr0 = *vr0_;
+  value_range_t vr0 = *vr0_, vrtem0 = VR_INITIALIZER, vrtem1 = VR_INITIALIZER;
 
   /* VRP only operates on integral and pointer types.  */
   if (!(INTEGRAL_TYPE_P (op0_type)
@@ -2967,6 +3049,49 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
   if (vr0.type == VR_UNDEFINED)
     {
       set_value_range_to_undefined (vr);
+      return;
+    }
+
+  /* Handle operations that we express in terms of others.  */
+  if (code == PAREN_EXPR)
+    {
+      /* PAREN_EXPR is a simple copy.  */
+      copy_value_range (vr, &vr0);
+      return;
+    }
+  else if (code == NEGATE_EXPR)
+    {
+      /* -X is simply 0 - X, so re-use existing code that also handles
+         anti-ranges fine.  */
+      value_range_t zero = VR_INITIALIZER;
+      set_value_range_to_value (&zero, build_int_cst (type, 0), NULL);
+      extract_range_from_binary_expr_1 (vr, MINUS_EXPR, type, &zero, &vr0);
+      return;
+    }
+  else if (code == BIT_NOT_EXPR)
+    {
+      /* ~X is simply -1 - X, so re-use existing code that also handles
+         anti-ranges fine.  */
+      value_range_t minusone = VR_INITIALIZER;
+      set_value_range_to_value (&minusone, build_int_cst (type, -1), NULL);
+      extract_range_from_binary_expr_1 (vr, MINUS_EXPR,
+					type, &minusone, &vr0);
+      return;
+    }
+
+  /* Now canonicalize anti-ranges to ranges when they are not symbolic
+     and express op ~[]  as (op []') U (op []'').  */
+  if (vr0.type == VR_ANTI_RANGE
+      && ranges_from_anti_range (&vr0, &vrtem0, &vrtem1))
+    {
+      extract_range_from_unary_expr_1 (vr, code, type, &vrtem0, op0_type);
+      if (vrtem1.type != VR_UNDEFINED)
+	{
+	  value_range_t vrres = VR_INITIALIZER;
+	  extract_range_from_unary_expr_1 (&vrres, code, type,
+					   &vrtem1, op0_type);
+	  vrp_meet (vr, &vrres);
+	}
       return;
     }
 
@@ -3044,15 +3169,6 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 	}
 
       set_value_range_to_varying (vr);
-      return;
-    }
-  else if (code == NEGATE_EXPR)
-    {
-      /* -X is simply 0 - X, so re-use existing code that also handles
-         anti-ranges fine.  */
-      value_range_t zero = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
-      set_value_range_to_value (&zero, build_int_cst (type, 0), NULL);
-      extract_range_from_binary_expr_1 (vr, MINUS_EXPR, type, &zero, &vr0);
       return;
     }
   else if (code == ABS_EXPR)
@@ -3208,21 +3324,6 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 	set_value_range (vr, vr0.type, min, max, NULL);
       return;
     }
-  else if (code == BIT_NOT_EXPR)
-    {
-      /* ~X is simply -1 - X, so re-use existing code that also handles
-         anti-ranges fine.  */
-      value_range_t minusone = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
-      set_value_range_to_value (&minusone, build_int_cst (type, -1), NULL);
-      extract_range_from_binary_expr_1 (vr, MINUS_EXPR,
-					type, &minusone, &vr0);
-      return;
-    }
-  else if (code == PAREN_EXPR)
-    {
-      copy_value_range (vr, &vr0);
-      return;
-    }
 
   /* For unhandled operations fall back to varying.  */
   set_value_range_to_varying (vr);
@@ -3238,7 +3339,7 @@ static void
 extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 			       tree type, tree op0)
 {
-  value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+  value_range_t vr0 = VR_INITIALIZER;
 
   /* Get value ranges for the operand.  For constant operands, create
      a new value range with the operand to simplify processing.  */
@@ -3260,8 +3361,8 @@ static void
 extract_range_from_cond_expr (value_range_t *vr, gimple stmt)
 {
   tree op0, op1;
-  value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
-  value_range_t vr1 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+  value_range_t vr0 = VR_INITIALIZER;
+  value_range_t vr1 = VR_INITIALIZER;
 
   /* Get value ranges for each operand.  For constant operands, create
      a new value range with the operand to simplify processing.  */
@@ -3464,7 +3565,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
 	 the number of latch executions is the correct thing to use.  */
       if (max_loop_iterations (loop, &nit))
 	{
-	  value_range_t maxvr = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+	  value_range_t maxvr = VR_INITIALIZER;
 	  double_int dtmp;
 	  bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (step));
 	  int overflow = 0;
@@ -6123,7 +6224,7 @@ vrp_visit_assignment_or_call (gimple stmt, tree *output_p)
 	   && TYPE_MAX_VALUE (TREE_TYPE (lhs)))
 	  || POINTER_TYPE_P (TREE_TYPE (lhs))))
     {
-      value_range_t new_vr = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+      value_range_t new_vr = VR_INITIALIZER;
 
       /* Try folding the statement to a constant first.  */
       tree tem = gimple_fold_stmt_to_constant (stmt, vrp_valueize);
@@ -7112,7 +7213,7 @@ vrp_visit_phi_node (gimple phi)
   size_t i;
   tree lhs = PHI_RESULT (phi);
   value_range_t *lhs_vr = get_value_range (lhs);
-  value_range_t vr_result = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+  value_range_t vr_result = VR_INITIALIZER;
   bool first = true;
   int edges, old_edges;
   struct loop *l;
@@ -7493,8 +7594,8 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
   tree op = NULL_TREE;
-  value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
-  value_range_t vr1 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+  value_range_t vr0 = VR_INITIALIZER;
+  value_range_t vr1 = VR_INITIALIZER;
   double_int may_be_nonzero0, may_be_nonzero1;
   double_int must_be_nonzero0, must_be_nonzero1;
   double_int mask;

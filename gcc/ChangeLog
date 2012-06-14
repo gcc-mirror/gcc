@@ -1,3 +1,16 @@
+2012-06-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (VR_INITIALIZER): New define.
+	(ranges_from_anti_range): New function.
+	(extract_range_from_binary_expr_1): Decompose operations on
+	VR_ANTI_RANGEs to operations on VR_RANGE.
+	(extract_range_from_unary_expr_1): Likewise.
+	(extract_range_from_binary_expr_1, extract_range_from_binary_expr,
+	extract_range_from_unary_expr_1, extract_range_from_unary_expr,
+	extract_range_from_cond_expr, adjust_range_with_scev,
+	vrp_visit_assignment_or_call, vrp_visit_phi_node,
+	simplify_bit_ops_using_ranges): Use VR_INITIALIZER.
+
 2012-06-13  Richard Henderson  <rth@redhat.com>
 
 	* hwint.h (HOST_WIDEST_INT_C): New.
