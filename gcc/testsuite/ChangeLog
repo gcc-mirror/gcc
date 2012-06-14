@@ -1,3 +1,8 @@
+2012-06-13  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/53621
+	* gcc.dg/stack-usage-1.c: Force -fomit-frame-pointer on SH.
+
 2012-06-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50619

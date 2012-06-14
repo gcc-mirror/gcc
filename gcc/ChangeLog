@@ -1,3 +1,10 @@
+2012-06-12  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/53621
+	* config/sh/sh.c (sh_option_override): Don't force
+	 flag_omit_frame_pointer and maccumulate_outgoing_args.
+	* config/sh/sh.opt (maccumulate-outgoing-args): Init as Var.
+
 2012-06-05  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
