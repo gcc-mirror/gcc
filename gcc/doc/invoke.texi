@@ -480,7 +480,7 @@ Objective-C and Objective-C++ Dialects}.
 -mapcs-reentrant  -mno-apcs-reentrant @gol
 -msched-prolog  -mno-sched-prolog @gol
 -mlittle-endian  -mbig-endian  -mwords-little-endian @gol
--mfloat-abi=@var{name}  -mfpe @gol
+-mfloat-abi=@var{name} @gol
 -mfp16-format=@var{name}
 -mthumb-interwork  -mno-thumb-interwork @gol
 -mcpu=@var{name}  -march=@var{name}  -mfpu=@var{name}  @gol
@@ -10842,20 +10842,12 @@ Linux, and not all architectures are recognized.  If the auto-detect is
 unsuccessful the option has no effect.
 
 @item -mfpu=@var{name}
-@itemx -mfpe=@var{number}
-@itemx -mfp=@var{number}
 @opindex mfpu
-@opindex mfpe
-@opindex mfp
 This specifies what floating-point hardware (or hardware emulation) is
-available on the target.  Permissible names are: @samp{fpa}, @samp{fpe2},
-@samp{fpe3}, @samp{maverick}, @samp{vfp}, @samp{vfpv3}, @samp{vfpv3-fp16},
-@samp{vfpv3-d16}, @samp{vfpv3-d16-fp16}, @samp{vfpv3xd}, @samp{vfpv3xd-fp16},
-@samp{neon}, @samp{neon-fp16}, @samp{vfpv4}, @samp{vfpv4-d16},
-@samp{fpv4-sp-d16} and @samp{neon-vfpv4}.
-@option{-mfp} and @option{-mfpe} are synonyms for
-@option{-mfpu}=@samp{fpe}@var{number}, for compatibility with older versions
-of GCC@.
+available on the target.  Permissible names are: @samp{vfp}, @samp{vfpv3},
+@samp{vfpv3-fp16}, @samp{vfpv3-d16}, @samp{vfpv3-d16-fp16}, @samp{vfpv3xd},
+@samp{vfpv3xd-fp16}, @samp{neon}, @samp{neon-fp16}, @samp{vfpv4},
+@samp{vfpv4-d16}, @samp{fpv4-sp-d16} and @samp{neon-vfpv4}.
 
 If @option{-msoft-float} is specified this specifies the format of
 floating-point values.

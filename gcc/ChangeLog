@@ -1,3 +1,10 @@
+2012-06-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.opt (mfp=2, mfp=3, mfpe, mfpe=2, mfpe=3): Delete options.
+        * arm-fpus.def (fpa, fpe2, fpe3, maverick): Delete FPU types.
+	* arm-tables.opt: Regenerated.
+        * doc/invoke.texi: Remove references to deleted options.
+
 2012-06-14  Sandeep Kumar Singh  <Sandeep.Singh2@kpitcummins.com>
 
 	* config/h8300/genmova.sh: Modified to add offset bits of 
