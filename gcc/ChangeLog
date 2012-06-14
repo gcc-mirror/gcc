@@ -1,3 +1,8 @@
+2012-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/53639
+	* config/i386/i386.md (*anddi_1 into *andsi_1_zext splitter): New.
+
 2012-06-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_cirrus_insn_p): Delete.
