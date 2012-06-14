@@ -117,14 +117,15 @@ package body Sem_Dim is
    No_Symbols : constant Symbol_Array := (others => No_String);
 
    type System_Type is record
-      Type_Decl : Node_Id;
-      Names     : Name_Array;
-      Symbols   : Symbol_Array;
-      Count     : Dimension_Position;
+      Type_Decl    : Node_Id;
+      Unit_Names   : Name_Array;
+      Unit_Symbols : Symbol_Array;
+      Dim_Symbols  : Symbol_Array;
+      Count        : Dimension_Position;
    end record;
 
    Null_System : constant System_Type :=
-                   (Empty, No_Names, No_Symbols, Invalid_Position);
+                   (Empty, No_Names, No_Symbols, No_Symbols, Invalid_Position);
 
    subtype System_Id is Nat;
 
@@ -290,8 +291,8 @@ package body Sem_Dim is
    --  Return the dimension vector of node N
 
    function Dimensions_Msg_Of (N : Node_Id) return String;
-   --  Given a node, return "has dimension" followed by the dimension vector of
-   --  N or "is dimensionless" if N is dimensionless.
+   --  Given a node, return "has dimension" followed by the dimension symbols
+   --  of N or "is dimensionless" if N is dimensionless.
 
    procedure Eval_Op_Expon_With_Rational_Exponent
      (N              : Node_Id;
@@ -304,11 +305,21 @@ package body Sem_Dim is
    function Exists (Sys : System_Type) return Boolean;
    --  Returns True iff Sys does not denote the null system
 
-   function From_Dimension_To_String_Of_Symbols
+   function From_Dim_To_Str_Of_Dim_Symbols
+     (Dims         : Dimension_Type;
+      System       : System_Type;
+      In_Error_Msg : Boolean := False) return String_Id;
+   --  Given a dimension vector and a dimension system, return the proper
+   --  string of dimension symbols. If In_Error_Msg is True (i.e. the String_Id
+   --  will be used to issue an error message) then this routine has a special
+   --  handling for the insertion character asterisk * which must be precede by
+   --  a quote ' to to be placed literally into the message.
+
+   function From_Dim_To_Str_Of_Unit_Symbols
      (Dims   : Dimension_Type;
       System : System_Type) return String_Id;
    --  Given a dimension vector and a dimension system, return the proper
-   --  string of symbols.
+   --  string of unit symbols.
 
    function Is_Dim_IO_Package_Entity (E : Entity_Id) return Boolean;
    --  Return True if E is the package entity of System.Dim.Float_IO or
@@ -403,6 +414,7 @@ package body Sem_Dim is
       return Reduce (Rational'(Numerator =>   L.Numerator * R.Denominator,
                                Denominator => L.Denominator * R.Numerator));
    end "/";
+
    -----------
    -- "abs" --
    -----------
@@ -417,15 +429,27 @@ package body Sem_Dim is
    -- Analyze_Aspect_Dimension --
    ------------------------------
 
-   --  with Dimension => DIMENSION_FOR_SUBTYPE
-   --  DIMENSION_FOR_SUBTYPE ::= (DIMENSION_STRING, DIMENSION_RATIONALS)
-   --  DIMENSION_RATIONALS ::=
-   --    RATIONAL,  {, RATIONAL}
-   --  | RATIONAL {, RATIONAL}, others => RATIONAL
+   --  with Dimension => (
+   --       [Symbol =>] SYMBOL,
+   --                   DIMENSION_VALUE
+   --    [,             DIMENSION_VALUE]
+   --    [,             DIMENSION_VALUE]
+   --    [,             DIMENSION_VALUE]
+   --    [,             DIMENSION_VALUE]
+   --    [,             DIMENSION_VALUE]
+   --    [,             DIMENSION_VALUE]);
+   --
+   --  SYMBOL ::= STRING_LITERAL | CHARACTER_LITERAL
+
+   --  DIMENSION_VALUE ::=
+   --    RATIONAL
+   --  | others => RATIONAL
    --  | DISCRETE_CHOICE_LIST => RATIONAL
+
    --  RATIONAL ::= [-] NUMERAL [/ NUMERAL]
 
-   --  (see Analyze_Aspect_Dimension_System for DIMENSION_STRING grammar)
+   --  Note that when the dimensioned type is an integer type, then any
+   --  dimension value must be an integer literal.
 
    procedure Analyze_Aspect_Dimension
      (N    : Node_Id;
@@ -446,11 +470,6 @@ package body Sem_Dim is
       --  Given an expression with denotes a rational number, read the number
       --  and associate it with Position in Dimensions.
 
-      function Has_Compile_Time_Known_Expressions
-        (Aggr : Node_Id) return Boolean;
-      --  Determine whether aggregate Aggr contains only expressions that are
-      --  known at compile time.
-
       function Position_In_System
         (Id     : Node_Id;
          System : System_Type) return Dimension_Position;
@@ -466,59 +485,25 @@ package body Sem_Dim is
          Position : Dimension_Position)
       is
       begin
+         --  Integer case
+
          if Is_Integer_Type (Def_Id) then
-            Dimensions (Position) := +Whole (UI_To_Int (Expr_Value (Expr)));
+            --  Dimension value must be an integer literal
+
+            if Nkind (Expr) = N_Integer_Literal then
+               Dimensions (Position) := +Whole (UI_To_Int (Intval (Expr)));
+            else
+               Error_Msg_N ("integer literal expected", Expr);
+            end if;
+
+         --  Float case
+
          else
             Dimensions (Position) := Create_Rational_From (Expr, True);
          end if;
 
          Processed (Position) := True;
       end Extract_Power;
-
-      ----------------------------------------
-      -- Has_Compile_Time_Known_Expressions --
-      ----------------------------------------
-
-      function Has_Compile_Time_Known_Expressions
-        (Aggr : Node_Id) return Boolean
-      is
-         Comp : Node_Id;
-         Expr : Node_Id;
-
-      begin
-         Expr := First (Expressions (Aggr));
-         if Present (Expr) then
-
-            --  The first expression within the aggregate describes the
-            --  symbolic name of a dimension, skip it.
-
-            Next (Expr);
-            while Present (Expr) loop
-               Analyze_And_Resolve (Expr);
-
-               if not Compile_Time_Known_Value (Expr) then
-                  return False;
-               end if;
-
-               Next (Expr);
-            end loop;
-         end if;
-
-         Comp := First (Component_Associations (Aggr));
-         while Present (Comp) loop
-            Expr := Expression (Comp);
-
-            Analyze_And_Resolve (Expr);
-
-            if not Compile_Time_Known_Value (Expr) then
-               return False;
-            end if;
-
-            Next (Comp);
-         end loop;
-
-         return True;
-      end Has_Compile_Time_Known_Expressions;
 
       ------------------------
       -- Position_In_System --
@@ -531,8 +516,8 @@ package body Sem_Dim is
          Dimension_Name : constant Name_Id := Chars (Id);
 
       begin
-         for Position in System.Names'Range loop
-            if Dimension_Name = System.Names (Position) then
+         for Position in System.Unit_Names'Range loop
+            if Dimension_Name = System.Unit_Names (Position) then
                return Position;
             end if;
          end loop;
@@ -550,15 +535,16 @@ package body Sem_Dim is
       Others_Seen    : Boolean := False;
       Position       : Nat := 0;
       Sub_Ind        : Node_Id;
-      Symbol         : String_Id;
-      Symbol_Decl    : Node_Id;
+      Symbol         : String_Id := No_String;
+      Symbol_Expr    : Node_Id;
       System         : System_Type;
       Typ            : Entity_Id;
 
       Errors_Count : Nat;
       --  Errors_Count is a count of errors detected by the compiler so far
-      --  just before the extraction of names and values in the aggregate
-      --  (Step 3).
+      --  just before the extraction of symbol, names and values in the
+      --  aggregate
+      --  (Step 2).
       --
       --  At the end of the analysis, there is a check to verify that this
       --  count equals to Serious_Errors_Detected i.e. no erros have been
@@ -585,18 +571,6 @@ package body Sem_Dim is
          return;
       end if;
 
-      if Nkind (Aggr) /= N_Aggregate then
-         Error_Msg_N ("aggregate expected", Aggr);
-         return;
-      end if;
-
-      --  Each expression in dimension aggregate must be known at compile time
-
-      if not Has_Compile_Time_Known_Expressions (Aggr) then
-         Error_Msg_N ("values of aggregate must be static", Aggr);
-         return;
-      end if;
-
       --  The dimension declarations are useless if the parent type does not
       --  declare a valid system.
 
@@ -606,30 +580,88 @@ package body Sem_Dim is
          return;
       end if;
 
-      --  STEP 2: Structural verification of the dimension aggregate
-
-      --  The first entry in the aggregate is the symbolic representation of
-      --  the dimension.
-
-      Symbol_Decl := First (Expressions (Aggr));
-
-      if No (Symbol_Decl)
-        or else not Nkind_In (Symbol_Decl, N_Character_Literal,
-                                           N_String_Literal)
-      then
-         Error_Msg_N ("first argument must be character or string", Aggr);
+      if Nkind (Aggr) /= N_Aggregate then
+         Error_Msg_N ("aggregate expected", Aggr);
          return;
       end if;
 
-      --  STEP 3: Name and value extraction
+      --  STEP 2: Symbol, Names and values extraction
 
       --  Get the number of errors detected by the compiler so far
 
       Errors_Count := Serious_Errors_Detected;
 
+      --  STEP 2a: Symbol extraction
+
+      --  The first entry in the aggregate may be the symbolic representation
+      --  of the quantity.
+
+      --  Positional symbol argument
+
+      Symbol_Expr := First (Expressions (Aggr));
+
+      --  Named symbol argument
+
+      if No (Symbol_Expr)
+        or else not Nkind_In (Symbol_Expr, N_Character_Literal,
+                                           N_String_Literal)
+      then
+         Symbol_Expr := Empty;
+
+         --  Component associations present
+
+         if Present (Component_Associations (Aggr)) then
+            Assoc  := First (Component_Associations (Aggr));
+            Choice := First (Choices (Assoc));
+
+            if No (Next (Choice))
+              and then Nkind (Choice) = N_Identifier
+            then
+               --  Symbol component association is present
+
+               if Chars (Choice) = Name_Symbol then
+                  Num_Choices := Num_Choices + 1;
+                  Symbol_Expr := Expression (Assoc);
+
+                  --  Verify symbol expression is a string or a character
+
+                  if not Nkind_In (Symbol_Expr, N_Character_Literal,
+                                                N_String_Literal)
+                  then
+                     Symbol_Expr := Empty;
+                     Error_Msg_N ("symbol expression must be character or " &
+                                  "string",
+                                  Symbol_Expr);
+                  end if;
+
+               --  Special error if no Symbol choice but expression is string
+               --  or character.
+
+               elsif Nkind_In (Expression (Assoc), N_Character_Literal,
+                                                   N_String_Literal)
+               then
+                  Num_Choices := Num_Choices + 1;
+                  Error_Msg_N ("optional component Symbol expected, found&",
+                               Choice);
+               end if;
+            end if;
+         end if;
+      end if;
+
+      --  STEP 2b: Names and values extraction
+
       --  Positional elements
 
-      Expr := Next (Symbol_Decl);
+      Expr := First (Expressions (Aggr));
+
+      --  Skip the symbol expression when present
+
+      if Present (Symbol_Expr)
+        and then Num_Choices = 0
+      then
+         Expr := Next (Expr);
+      end if;
+
       Position := Low_Position_Bound;
       while Present (Expr) loop
          if Position > High_Position_Bound then
@@ -649,9 +681,17 @@ package body Sem_Dim is
       --  Named elements
 
       Assoc := First (Component_Associations (Aggr));
+
+      --  Skip the symbol association when present
+
+      if Num_Choices = 1 then
+         Next (Assoc);
+      end if;
+
       while Present (Assoc) loop
          Expr   := Expression (Assoc);
          Choice := First (Choices (Assoc));
+
          while Present (Choice) loop
 
             --  Identifier case: NAME => EXPRESSION
@@ -747,43 +787,56 @@ package body Sem_Dim is
          Next (Assoc);
       end loop;
 
-      --  STEP 4: Consistency of system and dimensions
+      --  STEP 3: Consistency of system and dimensions
 
-      if Present (Next (Symbol_Decl))
+      if Present (First (Expressions (Aggr)))
+        and then (First (Expressions (Aggr)) /= Symbol_Expr
+                    or else Present (Next (Symbol_Expr)))
         and then (Num_Choices > 1
                    or else (Num_Choices = 1 and then not Others_Seen))
       then
          Error_Msg_N
            ("named associations cannot follow positional associations", Aggr);
+      end if;
 
-      elsif Num_Dimensions > System.Count then
+      if Num_Dimensions > System.Count then
          Error_Msg_N ("type& has more dimensions than system allows", Def_Id);
 
       elsif Num_Dimensions < System.Count and then not Others_Seen then
          Error_Msg_N ("type& has less dimensions than system allows", Def_Id);
       end if;
 
-      --  STEP 5: Dimension symbol extraction
+      --  STEP 4: Dimension symbol extraction
 
-      if Nkind (Symbol_Decl) = N_Character_Literal then
-         Start_String;
-         Store_String_Char (UI_To_CC (Char_Literal_Value (Symbol_Decl)));
-         Symbol := End_String;
+      if Present (Symbol_Expr) then
+         if Nkind (Symbol_Expr) = N_Character_Literal then
+            Start_String;
+            Store_String_Char (UI_To_CC (Char_Literal_Value (Symbol_Expr)));
+            Symbol := End_String;
 
-      else
-         Symbol := Strval (Symbol_Decl);
+         else
+            Symbol := Strval (Symbol_Expr);
+         end if;
+
+         if String_Length (Symbol) = 0 then
+            Error_Msg_N ("empty string not allowed here", Symbol_Expr);
+         end if;
       end if;
 
-      if String_Length (Symbol) = 0 and then not Exists (Dimensions) then
-         Error_Msg_N ("useless dimension declaration", Aggr);
-      end if;
-
-      --  STEP 6: Storage of extracted values
+      --  STEP 5: Storage of extracted values
 
       --  Check that no errors have been detected during the analysis
 
       if Errors_Count = Serious_Errors_Detected then
-         if String_Length (Symbol) /= 0 then
+         --  useless declaration
+
+         if Symbol = No_String
+           and then not Exists (Dimensions)
+         then
+            Error_Msg_N ("useless dimension declaration", Aggr);
+         end if;
+
+         if Symbol /= No_String then
             Set_Symbol (Def_Id, Symbol);
          end if;
 
@@ -797,19 +850,19 @@ package body Sem_Dim is
    -- Analyze_Aspect_Dimension_System --
    -------------------------------------
 
-   --  with Dimension_System => DIMENSION_PAIRS
+   --  with Dimension_System => (
+   --        DIMENSION
+   --     [, DIMENSION]
+   --     [, DIMENSION]
+   --     [, DIMENSION]
+   --     [, DIMENSION]
+   --     [, DIMENSION]
+   --     [, DIMENSION]);
 
-   --  DIMENSION_PAIRS ::=
-   --    (DIMENSION_PAIR
-   --      [, DIMENSION_PAIR]
-   --      [, DIMENSION_PAIR]
-   --      [, DIMENSION_PAIR]
-   --      [, DIMENSION_PAIR]
-   --      [, DIMENSION_PAIR]
-   --      [, DIMENSION_PAIR])
-   --  DIMENSION_PAIR ::= (DIMENSION_IDENTIFIER, DIMENSION_STRING)
-   --  DIMENSION_IDENTIFIER ::= IDENTIFIER
-   --  DIMENSION_STRING ::= STRING_LITERAL | CHARACTER_LITERAL
+   --  DIMENSION ::= (
+   --    [Unit_Name   =>] IDENTIFIER,
+   --    [Unit_Symbol =>] SYMBOL,
+   --    [Dim_Symbol  =>] SYMBOL)
 
    procedure Analyze_Aspect_Dimension_System
      (N    : Node_Id;
@@ -834,13 +887,17 @@ package body Sem_Dim is
 
       --  Local variables
 
-      Dim_Name     : Node_Id;
-      Dim_Pair     : Node_Id;
+      Assoc        : Node_Id;
+      Choice       : Node_Id;
+      Dim_Aggr     : Node_Id;
       Dim_Symbol   : Node_Id;
+      Dim_Symbols  : Symbol_Array := No_Symbols;
       Dim_System   : System_Type  := Null_System;
-      Names        : Name_Array   := No_Names;
       Position     : Nat := 0;
-      Symbols      : Symbol_Array := No_Symbols;
+      Unit_Name    : Node_Id;
+      Unit_Names   : Name_Array   := No_Names;
+      Unit_Symbol  : Node_Id;
+      Unit_Symbols : Symbol_Array := No_Symbols;
 
       Errors_Count : Nat;
       --  Errors_Count is a count of errors detected by the compiler so far
@@ -877,9 +934,9 @@ package body Sem_Dim is
 
       --  STEP 3: Name and Symbol extraction
 
-      Dim_Pair     := First (Expressions (Aggr));
+      Dim_Aggr     := First (Expressions (Aggr));
       Errors_Count := Serious_Errors_Detected;
-      while Present (Dim_Pair) loop
+      while Present (Dim_Aggr) loop
          Position := Position + 1;
 
          if Position > High_Position_Bound then
@@ -888,68 +945,163 @@ package body Sem_Dim is
             exit;
          end if;
 
-         if Nkind (Dim_Pair) /= N_Aggregate then
-            Error_Msg_N ("aggregate expected", Dim_Pair);
+         if Nkind (Dim_Aggr) /= N_Aggregate then
+            Error_Msg_N ("aggregate expected", Dim_Aggr);
 
          else
-            if Present (Component_Associations (Dim_Pair)) then
-               Error_Msg_N ("expected positional aggregate", Dim_Pair);
+            if Present (Component_Associations (Dim_Aggr))
+              and then Present (Expressions (Dim_Aggr))
+            then
+               Error_Msg_N ("mixed positional/named aggregate not allowed " &
+                            "here",
+                            Dim_Aggr);
+
+            --  Verify each dimension aggregate has three arguments
+
+            elsif List_Length (Component_Associations (Dim_Aggr)) /= 3
+              and then List_Length (Expressions (Dim_Aggr)) /= 3
+            then
+               Error_Msg_N
+                  ("three components expected in aggregate", Dim_Aggr);
 
             else
-               if List_Length (Expressions (Dim_Pair)) = 2 then
-                  Dim_Name := First (Expressions (Dim_Pair));
-                  Dim_Symbol := Next (Dim_Name);
+               --  Named dimension aggregate
 
-                  --  Check the first argument for each pair is a name
+               if Present (Component_Associations (Dim_Aggr)) then
+                  --  Check first argument denotes the unit name
 
-                  if Nkind (Dim_Name) = N_Identifier then
-                     Names (Position) := Chars (Dim_Name);
-                  else
-                     Error_Msg_N ("expected dimension name", Dim_Name);
-                  end if;
+                  Assoc     := First (Component_Associations (Dim_Aggr));
+                  Choice    := First (Choices (Assoc));
+                  Unit_Name := Expression (Assoc);
 
-                  --  Check the second argument for each pair is a string or a
-                  --  character.
-
-                  if not Nkind_In
-                           (Dim_Symbol,
-                              N_String_Literal,
-                              N_Character_Literal)
+                  if Present (Next (Choice))
+                    or else Nkind (Choice) /= N_Identifier
                   then
-                     Error_Msg_N ("expected dimension string or character",
-                                  Dim_Symbol);
+                     Error_Msg_NE ("wrong syntax for aspect&", Choice, Id);
 
-                  else
-                     --  String case
-
-                     if Nkind (Dim_Symbol) = N_String_Literal then
-                        Symbols (Position) := Strval (Dim_Symbol);
-
-                     --  Character case
-
-                     else
-                        Start_String;
-                        Store_String_Char
-                          (UI_To_CC (Char_Literal_Value (Dim_Symbol)));
-                        Symbols (Position) := End_String;
-                     end if;
-
-                     --  Verify that the string is not empty
-
-                     if String_Length (Symbols (Position)) = 0 then
-                        Error_Msg_N
-                          ("empty string not allowed here", Dim_Symbol);
-                     end if;
+                  elsif Chars (Choice) /= Name_Unit_Name then
+                     Error_Msg_N ("expected Unit_Name, found&", Choice);
                   end if;
+
+                  --  Check the second argument denotes the unit symbol
+
+                  Next (Assoc);
+                  Choice      := First (Choices (Assoc));
+                  Unit_Symbol := Expression (Assoc);
+
+                  if Present (Next (Choice))
+                    or else Nkind (Choice) /= N_Identifier
+                  then
+                     Error_Msg_NE ("wrong syntax for aspect&", Choice, Id);
+
+                  elsif Chars (Choice) /= Name_Unit_Symbol then
+                     Error_Msg_N ("expected Unit_Symbol, found&", Choice);
+                  end if;
+
+                  --  Check the third argument denotes the dimension symbol
+
+                  Next (Assoc);
+                  Choice     := First (Choices (Assoc));
+                  Dim_Symbol := Expression (Assoc);
+
+                  if Present (Next (Choice))
+                    or else Nkind (Choice) /= N_Identifier
+                  then
+                     Error_Msg_NE ("wrong syntax for aspect&", Choice, Id);
+
+                  elsif Chars (Choice) /= Name_Dim_Symbol then
+                     Error_Msg_N ("expected Dim_Symbol, found&", Choice);
+                  end if;
+
+               --  Positional dimension aggregate
 
                else
-                  Error_Msg_N
-                    ("two expressions expected in aggregate", Dim_Pair);
+                  Unit_Name   := First (Expressions (Dim_Aggr));
+                  Unit_Symbol := Next (Unit_Name);
+                  Dim_Symbol  := Next (Unit_Symbol);
+               end if;
+
+               --  Check the first argument for each dimension aggregate is
+               --  a name.
+
+               if Nkind (Unit_Name) = N_Identifier then
+                  Unit_Names (Position) := Chars (Unit_Name);
+               else
+                  Error_Msg_N ("expected unit name", Unit_Name);
+               end if;
+
+               --  Check the second argument for each dimension aggregate is
+               --  a string or a character.
+
+               if not Nkind_In
+                        (Unit_Symbol,
+                           N_String_Literal,
+                           N_Character_Literal)
+               then
+                  Error_Msg_N ("expected unit symbol (string or character)",
+                               Unit_Symbol);
+
+               else
+                  --  String case
+
+                  if Nkind (Unit_Symbol) = N_String_Literal then
+                     Unit_Symbols (Position) := Strval (Unit_Symbol);
+
+                  --  Character case
+
+                  else
+                     Start_String;
+                     Store_String_Char
+                       (UI_To_CC (Char_Literal_Value (Unit_Symbol)));
+                     Unit_Symbols (Position) := End_String;
+                  end if;
+
+                  --  Verify that the string is not empty
+
+                  if String_Length (Unit_Symbols (Position)) = 0 then
+                     Error_Msg_N
+                       ("empty string not allowed here", Unit_Symbol);
+                  end if;
+               end if;
+
+               --  Check the third argument for each dimension aggregate is
+               --  a string or a character.
+
+               if not Nkind_In
+                        (Dim_Symbol,
+                           N_String_Literal,
+                           N_Character_Literal)
+               then
+                  Error_Msg_N ("expected dimension symbol (string or " &
+                               "character)",
+                               Dim_Symbol);
+
+               else
+                  --  String case
+
+                  if Nkind (Dim_Symbol) = N_String_Literal then
+                     Dim_Symbols (Position) := Strval (Dim_Symbol);
+
+                  --  Character case
+
+                  else
+                     Start_String;
+                     Store_String_Char
+                       (UI_To_CC (Char_Literal_Value (Dim_Symbol)));
+                     Dim_Symbols (Position) := End_String;
+                  end if;
+
+                  --  Verify that the string is not empty
+
+                  if String_Length (Dim_Symbols (Position)) = 0 then
+                     Error_Msg_N
+                       ("empty string not allowed here", Dim_Symbol);
+                  end if;
                end if;
             end if;
          end if;
 
-         Next (Dim_Pair);
+         Next (Dim_Aggr);
       end loop;
 
       --  STEP 4: Storage of extracted values
@@ -957,10 +1109,11 @@ package body Sem_Dim is
       --  Check that no errors have been detected during the analysis
 
       if Errors_Count = Serious_Errors_Detected then
-         Dim_System.Type_Decl := N;
-         Dim_System.Names := Names;
-         Dim_System.Count := Position;
-         Dim_System.Symbols := Symbols;
+         Dim_System.Type_Decl    := N;
+         Dim_System.Unit_Names   := Unit_Names;
+         Dim_System.Unit_Symbols := Unit_Symbols;
+         Dim_System.Dim_Symbols  := Dim_Symbols;
+         Dim_System.Count        := Position;
          System_Table.Append (Dim_System);
       end if;
    end Analyze_Aspect_Dimension_System;
@@ -1822,7 +1975,7 @@ package body Sem_Dim is
       --  generate an error message.
 
       if Complain and then Result = No_Rational then
-         Error_Msg_N ("must be a rational", Expr);
+         Error_Msg_N ("rational expected", Expr);
       end if;
 
       return Result;
@@ -1846,61 +1999,6 @@ package body Sem_Dim is
       Dimensions_Msg : Name_Id;
       System         : System_Type;
 
-      procedure Add_Dimension_Vector_To_Buffer
-        (Dims   : Dimension_Type;
-         System : System_Type);
-      --  Given a Dims and System, add to Name_Buffer the string representation
-      --  of a dimension vector.
-
-      procedure Add_Whole_To_Buffer (W : Whole);
-      --  Add image of Whole to Name_Buffer
-
-      ------------------------------------
-      -- Add_Dimension_Vector_To_Buffer --
-      ------------------------------------
-
-      procedure Add_Dimension_Vector_To_Buffer
-        (Dims   : Dimension_Type;
-         System : System_Type)
-      is
-         Dim_Power : Rational;
-         First_Dim : Boolean := True;
-
-      begin
-         Add_Char_To_Name_Buffer ('(');
-
-         for Position in Dims_Of_N'First ..  System.Count loop
-            Dim_Power := Dims (Position);
-
-            if First_Dim then
-               First_Dim := False;
-            else
-               Add_Str_To_Name_Buffer (", ");
-            end if;
-
-            Add_Whole_To_Buffer (Dim_Power.Numerator);
-
-            if Dim_Power.Denominator /= 1 then
-               Add_Char_To_Name_Buffer ('/');
-               Add_Whole_To_Buffer (Dim_Power.Denominator);
-            end if;
-         end loop;
-
-         Add_Char_To_Name_Buffer (')');
-      end Add_Dimension_Vector_To_Buffer;
-
-      -------------------------
-      -- Add_Whole_To_Buffer --
-      -------------------------
-
-      procedure Add_Whole_To_Buffer (W : Whole) is
-      begin
-         UI_Image (UI_From_Int (Int (W)));
-         Add_Str_To_Name_Buffer (UI_Image_Buffer (1 .. UI_Image_Length));
-      end Add_Whole_To_Buffer;
-
-   --  Start of processing for Dimensions_Msg_Of
-
    begin
       --  Initialization of Name_Buffer
 
@@ -1908,8 +2006,9 @@ package body Sem_Dim is
 
       if Exists (Dims_Of_N) then
          System := System_Of (Base_Type (Etype (N)));
-         Add_Str_To_Name_Buffer ("has dimensions ");
-         Add_Dimension_Vector_To_Buffer (Dims_Of_N, System);
+         Add_Str_To_Name_Buffer ("has dimension ");
+         Add_String_To_Name_Buffer
+           (From_Dim_To_Str_Of_Dim_Symbols (Dims_Of_N, System, True));
       else
          Add_Str_To_Name_Buffer ("is dimensionless");
       end if;
@@ -2014,7 +2113,7 @@ package body Sem_Dim is
 
          --  subtype T is Btyp_Of_L
          --    with
-         --      Dimension => ("",
+         --      Dimension => (
          --        Dims_Of_N (1).Numerator / Dims_Of_N (1).Denominator,
          --        Dims_Of_N (2).Numerator / Dims_Of_N (2).Denominator,
          --        ...
@@ -2025,7 +2124,6 @@ package body Sem_Dim is
 
          New_Aspects  := Empty_List;
          List_Of_Dims := New_List;
-         Append (Make_String_Literal (Loc, ""), List_Of_Dims);
 
          for Position in Dims_Of_N'First ..  System.Count loop
             Dim_Power := Dims_Of_N (Position);
@@ -2133,41 +2231,61 @@ package body Sem_Dim is
       return Sys /= Null_System;
    end Exists;
 
-   -------------------------------------------
-   -- Expand_Put_Call_With_Dimension_Symbol --
-   -------------------------------------------
+   ---------------------------------
+   -- Expand_Put_Call_With_Symbol --
+   ---------------------------------
 
-   --  For procedure Put defined in System.Dim.Float_IO/System.Dim.Integer_IO,
-   --  the default string parameter must be rewritten to include the dimension
-   --  symbols in the output of a dimensioned object.
+   --  For procedure Put (resp. Put_Dim_Of) defined in
+   --  System.Dim.Float_IO/System.Dim.Integer_IO, the default string parameter
+   --  must be rewritten to include the unit symbols (resp. dimension symbols)
+   --  in the output of a dimensioned object. Note that if a value is already
+   --  supplied for parameter Symbol, this routine doesn't do anything.
 
-   --  Case 1: the parameter is a variable
+   --  Case 1. Item is dimensionless
 
-   --  The default string parameter is replaced by the symbol defined in the
-   --  aspect Dimension of the subtype. For instance to output a speed:
+   --   * Put        : Item appears without a suffix
 
-   --  subtype Force is Mks_Type
-   --    with
-   --      Dimension => ("N",
-   --        Meter =>    1,
-   --        Kilogram => 1,
-   --        Second =>   -2,
-   --        others =>   0);
-   --  F : Force := 2.1 * m * kg * s**(-2);
-   --  Put (F);
-   --  > 2.1 N
+   --   * Put_Dim_Of : the output is []
 
-   --  Case 2: the parameter is an expression
+   --      Obj : Mks_Type := 2.6;
+   --      Put (Obj, 1, 1, 0);
+   --      Put_Dim_Of (Obj);
 
-   --  In this case we call the procedure Expand_Put_Call_With_Dimension_Symbol
-   --  that creates the string of symbols (for instance "m.s**(-1)") and
-   --  rewrites the default string parameter of Put with the corresponding
-   --  the String_Id. For instance:
+   --      The corresponding outputs are:
+   --      $2.6
+   --      $[]
 
-   --  Put (2.1 * m * kg * s**(-2));
-   --  > 2.1 m.kg.s**(-2)
+   --  Case 2. Item has a dimension
 
-   procedure Expand_Put_Call_With_Dimension_Symbol (N : Node_Id) is
+   --   * Put        : If the type of Item is a dimensioned subtype whose
+   --                  symbol is not empty, then the symbol appears as a
+   --                  suffix. Otherwise, a new string is created and appears
+   --                  as a suffix of Item. This string results in the
+   --                  successive concatanations between each unit symbol
+   --                  raised by its corresponding dimension power from the
+   --                  dimensions of Item.
+
+   --   * Put_Dim_Of : The output is a new string resulting in the successive
+   --                  concatanations between each dimension symbol raised by
+   --                  its corresponding dimension power from the dimensions of
+   --                  Item.
+
+   --      subtype Random is Mks_Type
+   --        with
+   --         Dimension => (
+   --           Meter =>   3,
+   --           Candela => -1,
+   --           others =>  0);
+
+   --      Obj : Random := 5.0;
+   --      Put (Obj);
+   --      Put_Dim_Of (Obj);
+
+   --      The corresponding outputs are:
+   --      $5.0 m**3.cd**(-1)
+   --      $[l**3.J**(-1)]
+
+   procedure Expand_Put_Call_With_Symbol (N : Node_Id) is
       Actuals        : constant List_Id := Parameter_Associations (N);
       Loc            : constant Source_Ptr := Sloc (N);
       Name_Call      : constant Node_Id := Name (N);
@@ -2178,7 +2296,12 @@ package body Sem_Dim is
       New_Str_Lit    : Node_Id := Empty;
       System         : System_Type;
 
-      function Has_Dimension_Symbols return Boolean;
+      Is_Put_Dim_Of : Boolean := False;
+      --  This flag is used in order to differentiate routines Put and
+      --  Put_Dim_Of. Set to True if the procedure is one of the Put_Dim_Of
+      --  defined in System.Dim.Float_IO or System.Dim.Integer_IO.
+
+      function Has_Symbols return Boolean;
       --  Return True if the current Put call already has a parameter
       --  association for parameter "Symbols" with the correct string of
       --  symbols.
@@ -2189,13 +2312,13 @@ package body Sem_Dim is
       --  System.Dim.Integer_IO.
 
       function Item_Actual return Node_Id;
-      --  Return the item actual parameter node in the put call
+      --  Return the item actual parameter node in the output call
 
-      ---------------------------
-      -- Has_Dimension_Symbols --
-      ---------------------------
+      -----------------
+      -- Has_Symbols --
+      -----------------
 
-      function Has_Dimension_Symbols return Boolean is
+      function Has_Symbols return Boolean is
          Actual : Node_Id;
 
       begin
@@ -2205,7 +2328,7 @@ package body Sem_Dim is
 
          while Present (Actual) loop
             if Nkind (Actual) = N_Parameter_Association
-              and then Chars (Selector_Name (Actual)) = Name_Symbols
+              and then Chars (Selector_Name (Actual)) = Name_Symbol
             then
 
                --  return True if the actual comes from source or if the string
@@ -2225,7 +2348,7 @@ package body Sem_Dim is
          --  one.
 
          return Nkind (Last (Actuals)) = N_String_Literal;
-      end Has_Dimension_Symbols;
+      end Has_Symbols;
 
       ---------------------------
       -- Is_Procedure_Put_Call --
@@ -2236,8 +2359,9 @@ package body Sem_Dim is
          Loc : Source_Ptr;
 
       begin
-         --  There are three different Put routines in each generic dim IO
-         --  package. Verify the current procedure call is one of them.
+         --  There are three different Put (resp. Put_Dim_Of) routines in each
+         --  generic dim IO package. Verify the current procedure call is one
+         --  of them.
 
          if Is_Entity_Name (Name_Call) then
             Ent := Entity (Name_Call);
@@ -2250,14 +2374,22 @@ package body Sem_Dim is
 
             Loc := Sloc (Ent);
 
-            --  Check the name of the entity subprogram is Put and verify this
-            --  entity is located in either System.Dim.Float_IO or
-            --  System.Dim.Integer_IO.
+            --  Check the name of the entity subprogram is Put (resp.
+            --  Put_Dim_Of) and verify this entity is located in either
+            --  System.Dim.Float_IO or System.Dim.Integer_IO.
 
-            return Chars (Ent) = Name_Put
-              and then Loc > No_Location
+            if Loc > No_Location
               and then Is_Dim_IO_Package_Entity
-                         (Cunit_Entity (Get_Source_Unit (Loc)));
+                         (Cunit_Entity (Get_Source_Unit (Loc)))
+            then
+               if Chars (Ent) = Name_Put_Dim_Of then
+                  Is_Put_Dim_Of := True;
+                  return True;
+
+               elsif Chars (Ent) = Name_Put then
+                  return True;
+               end if;
+            end if;
          end if;
 
          return False;
@@ -2298,36 +2430,61 @@ package body Sem_Dim is
          end if;
       end Item_Actual;
 
-   --  Start of processing for Expand_Put_Call_With_Dimension_Symbol
+   --  Start of processing for Expand_Put_Call_With_Symbol
 
    begin
-      if Is_Procedure_Put_Call and then not Has_Dimension_Symbols then
+      if Is_Procedure_Put_Call and then not Has_Symbols then
          Actual := Item_Actual;
          Dims_Of_Actual := Dimensions_Of (Actual);
          Etyp := Etype (Actual);
 
-         --  Add the symbol as a suffix of the value if the subtype has a
-         --  dimension symbol or if the parameter is not dimensionless.
+         --  Put_Dim_Of case
 
-         if Symbol_Of (Etyp) /= No_String then
-            Start_String;
+         if Is_Put_Dim_Of then
+            --  Check that the item is not dimensionless
 
-            --  Put a space between the value and the dimension
+            --  Create the new String_Literal with the new String_Id generated
+            --  by the routine From_Dim_To_Str_Of_Dim_Symbols.
 
-            Store_String_Char (' ');
-            Store_String_Chars (Symbol_Of (Etyp));
-            New_Str_Lit := Make_String_Literal (Loc, End_String);
+            if Exists (Dims_Of_Actual) then
+               System := System_Of (Base_Type (Etyp));
+               New_Str_Lit :=
+                 Make_String_Literal (Loc,
+                   From_Dim_To_Str_Of_Dim_Symbols (Dims_Of_Actual, System));
 
-         --  Check that the item is not dimensionless
+            --  If dimensionless, the output is []
 
-         --  Create the new String_Literal with the new String_Id generated by
-         --  the routine From_Dimension_To_String.
+            else
+               New_Str_Lit :=
+                 Make_String_Literal (Loc, "[]");
+            end if;
 
-         elsif Exists (Dims_Of_Actual) then
-            System := System_Of (Base_Type (Etyp));
-            New_Str_Lit :=
-              Make_String_Literal (Loc,
-                From_Dimension_To_String_Of_Symbols (Dims_Of_Actual, System));
+         --  Put case
+
+         else
+            --  Add the symbol as a suffix of the value if the subtype has a
+            --  unit symbol or if the parameter is not dimensionless.
+
+            if Symbol_Of (Etyp) /= No_String then
+               Start_String;
+
+               --  Put a space between the value and the dimension
+
+               Store_String_Char (' ');
+               Store_String_Chars (Symbol_Of (Etyp));
+               New_Str_Lit := Make_String_Literal (Loc, End_String);
+
+            --  Check that the item is not dimensionless
+
+            --  Create the new String_Literal with the new String_Id generated
+            --  by the routine From_Dim_To_Str_Of_Unit_Symbols.
+
+            elsif Exists (Dims_Of_Actual) then
+               System := System_Of (Base_Type (Etyp));
+               New_Str_Lit :=
+                 Make_String_Literal (Loc,
+                   From_Dim_To_Str_Of_Unit_Symbols (Dims_Of_Actual, System));
+            end if;
          end if;
 
          if Present (New_Str_Lit) then
@@ -2341,7 +2498,7 @@ package body Sem_Dim is
                --  parameter association.
 
                if Nkind (Actual) = N_Parameter_Association
-                 and then Chars (Selector_Name (Actual)) /= Name_Symbols
+                 and then Chars (Selector_Name (Actual)) /= Name_Symbol
                then
                   Append_To (New_Actuals,
                      Make_Parameter_Association (Loc,
@@ -2360,7 +2517,7 @@ package body Sem_Dim is
 
             Append_To (New_Actuals,
               Make_Parameter_Association (Loc,
-                Selector_Name => Make_Identifier (Loc, Name_Symbols),
+                Selector_Name => Make_Identifier (Loc, Name_Symbol),
                 Explicit_Actual_Parameter => New_Str_Lit));
 
             --  Rewrite and analyze the procedure call
@@ -2373,22 +2530,133 @@ package body Sem_Dim is
             Analyze (N);
          end if;
       end if;
-   end Expand_Put_Call_With_Dimension_Symbol;
+   end Expand_Put_Call_With_Symbol;
 
-   -----------------------------------------
-   -- From_Dimension_To_String_Of_Symbols --
-   -----------------------------------------
+   ------------------------------------
+   -- From_Dim_To_Str_Of_Dim_Symbols --
+   ------------------------------------
 
    --  Given a dimension vector and the corresponding dimension system,
-   --  create a String_Id to output the dimension symbols corresponding to
-   --  the dimensions Dims.
+   --  create a String_Id to output the dimension symbols corresponding to the
+   --  dimensions Dims. If In_Error_Msg is True, there is a special handling
+   --  for character asterisk * which is an insertion character in error
+   --  messages.
 
-   function From_Dimension_To_String_Of_Symbols
+   function From_Dim_To_Str_Of_Dim_Symbols
+     (Dims         : Dimension_Type;
+      System       : System_Type;
+      In_Error_Msg : Boolean := False) return String_Id
+   is
+      Dim_Power : Rational;
+      First_Dim : Boolean := True;
+
+      procedure Store_String_Oexpon;
+      --  Store the expon operator symbol "**" to the string. In error
+      --  messages, asterisk * is a special character and must be precede by a
+      --  quote ' to be placed literally into the message.
+
+      -------------------------
+      -- Store_String_Oexpon --
+      -------------------------
+
+      procedure Store_String_Oexpon is
+      begin
+         if In_Error_Msg then
+            Store_String_Chars ("'*'*");
+
+         else
+            Store_String_Chars ("**");
+         end if;
+      end Store_String_Oexpon;
+
+   --  Start of processing for From_Dim_To_Str_Of_Dim_Symbols
+
+   begin
+      --  Initialization of the new String_Id
+
+      Start_String;
+
+      --  Store the dimension symbols inside boxes
+
+      Store_String_Char ('[');
+
+      for Position in Dimension_Type'Range loop
+         Dim_Power := Dims (Position);
+         if Dim_Power /= Zero then
+
+            if First_Dim then
+               First_Dim := False;
+            else
+               Store_String_Char ('.');
+            end if;
+
+            Store_String_Chars (System.Dim_Symbols (Position));
+
+            --  Positive dimension case
+
+            if Dim_Power.Numerator > 0 then
+               --  Integer case
+
+               if Dim_Power.Denominator = 1 then
+                  if Dim_Power.Numerator /= 1 then
+                     Store_String_Oexpon;
+                     Store_String_Int (Int (Dim_Power.Numerator));
+                  end if;
+
+               --  Rational case when denominator /= 1
+
+               else
+                  Store_String_Oexpon;
+                  Store_String_Char ('(');
+                  Store_String_Int (Int (Dim_Power.Numerator));
+                  Store_String_Char ('/');
+                  Store_String_Int (Int (Dim_Power.Denominator));
+                  Store_String_Char (')');
+               end if;
+
+            --  Negative dimension case
+
+            else
+               Store_String_Oexpon;
+               Store_String_Char ('(');
+               Store_String_Char ('-');
+               Store_String_Int (Int (-Dim_Power.Numerator));
+
+               --  Integer case
+
+               if Dim_Power.Denominator = 1 then
+                  Store_String_Char (')');
+
+               --  Rational case when denominator /= 1
+
+               else
+                  Store_String_Char ('/');
+                  Store_String_Int (Int (Dim_Power.Denominator));
+                  Store_String_Char (')');
+               end if;
+            end if;
+         end if;
+      end loop;
+
+      Store_String_Char (']');
+
+      return End_String;
+   end From_Dim_To_Str_Of_Dim_Symbols;
+
+   -------------------------------------
+   -- From_Dim_To_Str_Of_Unit_Symbols --
+   -------------------------------------
+
+   --  Given a dimension vector and the corresponding dimension system,
+   --  create a String_Id to output the unit symbols corresponding to the
+   --  dimensions Dims.
+
+   function From_Dim_To_Str_Of_Unit_Symbols
      (Dims   : Dimension_Type;
       System : System_Type) return String_Id
    is
-      Dimension_Power     : Rational;
-      First_Symbol_In_Str : Boolean := True;
+      Dim_Power : Rational;
+      First_Dim : Boolean := True;
 
    begin
       --  Initialization of the new String_Id
@@ -2400,31 +2668,26 @@ package body Sem_Dim is
       Store_String_Char (' ');
 
       for Position in Dimension_Type'Range loop
-         Dimension_Power := Dims (Position);
-         if Dimension_Power /= Zero then
+         Dim_Power := Dims (Position);
+         if Dim_Power /= Zero then
 
-            if First_Symbol_In_Str then
-               First_Symbol_In_Str := False;
+            if First_Dim then
+               First_Dim := False;
             else
                Store_String_Char ('.');
             end if;
 
+            Store_String_Chars (System.Unit_Symbols (Position));
+
             --  Positive dimension case
 
-            if Dimension_Power.Numerator > 0 then
-               if System.Symbols (Position) = No_String then
-                  Store_String_Chars
-                    (Get_Name_String (System.Names (Position)));
-               else
-                  Store_String_Chars (System.Symbols (Position));
-               end if;
-
+            if Dim_Power.Numerator > 0 then
                --  Integer case
 
-               if Dimension_Power.Denominator = 1 then
-                  if Dimension_Power.Numerator /= 1 then
+               if Dim_Power.Denominator = 1 then
+                  if Dim_Power.Numerator /= 1 then
                      Store_String_Chars ("**");
-                     Store_String_Int (Int (Dimension_Power.Numerator));
+                     Store_String_Int (Int (Dim_Power.Numerator));
                   end if;
 
                --  Rational case when denominator /= 1
@@ -2432,37 +2695,30 @@ package body Sem_Dim is
                else
                   Store_String_Chars ("**");
                   Store_String_Char ('(');
-                  Store_String_Int (Int (Dimension_Power.Numerator));
+                  Store_String_Int (Int (Dim_Power.Numerator));
                   Store_String_Char ('/');
-                  Store_String_Int (Int (Dimension_Power.Denominator));
+                  Store_String_Int (Int (Dim_Power.Denominator));
                   Store_String_Char (')');
                end if;
 
             --  Negative dimension case
 
             else
-               if System.Symbols (Position) = No_String then
-                  Store_String_Chars
-                    (Get_Name_String (System.Names (Position)));
-               else
-                  Store_String_Chars (System.Symbols (Position));
-               end if;
-
                Store_String_Chars ("**");
                Store_String_Char ('(');
                Store_String_Char ('-');
-               Store_String_Int (Int (-Dimension_Power.Numerator));
+               Store_String_Int (Int (-Dim_Power.Numerator));
 
                --  Integer case
 
-               if Dimension_Power.Denominator = 1 then
+               if Dim_Power.Denominator = 1 then
                   Store_String_Char (')');
 
                --  Rational case when denominator /= 1
 
                else
                   Store_String_Char ('/');
-                  Store_String_Int (Int (Dimension_Power.Denominator));
+                  Store_String_Int (Int (Dim_Power.Denominator));
                   Store_String_Char (')');
                end if;
             end if;
@@ -2470,7 +2726,7 @@ package body Sem_Dim is
       end loop;
 
       return End_String;
-   end From_Dimension_To_String_Of_Symbols;
+   end From_Dim_To_Str_Of_Unit_Symbols;
 
    ---------
    -- GCD --
@@ -2700,5 +2956,4 @@ package body Sem_Dim is
 
       return Null_System;
    end System_Of;
-
 end Sem_Dim;

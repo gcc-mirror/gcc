@@ -1,3 +1,76 @@
+2012-06-14  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Expand_Put_Call_With_Dimension_Symbol
+	call replaced by Expand_Put_Call_With_Symbol call.
+	* sem_dim.adb: New fields Unit_Names, Unit_Symbols
+	and Dim_Symbols for record type System_Type.
+	(From_Dimension_To_String_Of_Symbols): Removed.
+	(From_Dim_To_Str_Of_Dim_Symbols): Renames previous
+	routine From_Dimension_To_String_Of_Symbols.
+	(From_Dim_To_Str_Of_Unit_Symbols): New routine.
+	(Analyze_Aspect_Dimension): argument Symbol in aspect
+	Dimension aggregate is optional. Named association implemented.
+	(Has_Compile_Time_Known_Expressions): Removed.
+	(Analyze_Aspect_Dimension_System): New
+	component Dim_Symbol in each Dimension aggregate in
+	aspect Dimension_System. Named associations implemented.
+	(Add_Dimension_Vector_To_Buffer): Removed.
+	(Add_Whole_To_Buffer): Removed.
+	(Expand_Put_Call_With_Dimension_Symbol.): Removed.
+	(Expand_Put_Call_With_Symbol): Renames previous routine
+	Expand_Put_Call_With_Dimension_Symbol.
+	(Has_Dimension_Symbols): Removed.
+	(Has_Symbols): Renames previous routine
+	Has_Dimension_Symbols.	(Store_String_Oexpon): New routine.
+	* sem_dim.ads (Expand_Put_Call_With_Dimension_Symbol.): Removed.
+	(Expand_Put_Call_With_Symbol): Renames previous routine
+	Expand_Put_Call_With_Dimension_Symbol.
+	* s-diflio.adb, s-diinio.adb (Put): Symbol renames Symbols.
+	(Put_Dim_Of): New routines.
+	* s-diflio.ads, s-diinio.ads: documentation updated.
+	(Put): Symbol renames Symbols.
+	(Put_Dim_Of): New routines.
+	* s-dim.ads: documentation updated.
+	* s-dimmks.ads: dimensioned type and subtypes updated.
+	* snames.ads-tmpl: Name_Dim_Symbol, Name_Put_Dim_Of, Name_Symbol,
+	and Name_Unit_Symbol added. Name_Symbols removed.
+
+2012-06-14  Vincent Pucci  <pucci@adacore.com>
+
+	* freeze.adb (In_Exp_Body): Expression function case added.
+	(Freeze_Expression): Insert the Freeze_Nodes
+	list before the correct current scope in case of a quantified
+	expression.
+
+2012-06-14  Pascal Obry  <obry@adacore.com>
+
+	* projects.texi: Document the Install package for gprinstall.
+2012-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elim.adb (Check_For_Eliminated_Subprogram): Do not check within
+	a default expression.
+	* sem_res.adb (Resolve_Call): simplify code.
+
+2012-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_case.adb (Check, Issue_Msg): within an instance, non-other
+	values in a variant part or a case expression do not have to
+	belong to the actual subtype.
+
+2012-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): If parent is
+	an interface type, check whether it is itself a previous formal
+	already instantiated in the current list of actuals.
+
+2012-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): The
+	expression for a stream attribute is a name that may be overloaded
+	with other declarations. To determine whether it matches the
+	aspect at the freeze point, it is necessary to verify that one
+	of its interpretations matches.
+
 2012-06-14  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch7.adb, exp_util.adb, sem_aux.ads, exp_ch9.adb,

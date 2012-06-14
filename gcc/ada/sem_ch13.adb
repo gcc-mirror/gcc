@@ -6136,7 +6136,11 @@ package body Sem_Ch13 is
       if A_Id = Aspect_Synchronization then
          return;
 
-      --  Case of stream attributes, just have to compare entities
+      --  Case of stream attributes, just have to compare entities. However,
+      --  the expression is just a name (possibly overloaded), and there may
+      --  be stream operations declared for unrelated types, so we just need
+      --  to verify that one of these interpretations is the one available at
+      --  at the freeze point.
 
       elsif A_Id = Aspect_Input  or else
          A_Id = Aspect_Output    or else
@@ -6144,7 +6148,29 @@ package body Sem_Ch13 is
          A_Id = Aspect_Write
       then
          Analyze (End_Decl_Expr);
-         Err := Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
+
+         if not Is_Overloaded (End_Decl_Expr) then
+            Err := Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
+
+         else
+            Err := True;
+
+            declare
+               Index : Interp_Index;
+               It    : Interp;
+
+            begin
+               Get_First_Interp (End_Decl_Expr, Index, It);
+               while Present (It.Typ) loop
+                  if It.Nam = Entity (Freeze_Expr) then
+                     Err := False;
+                     exit;
+                  end if;
+
+                  Get_Next_Interp (Index, It);
+               end loop;
+            end;
+         end if;
 
       elsif A_Id = Aspect_Variable_Indexing or else
             A_Id = Aspect_Constant_Indexing or else

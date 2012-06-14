@@ -226,6 +226,7 @@ should contain the following code:
 * Executable File Names::
 * Avoid Duplication With Variables::
 * Naming Schemes::
+* Installation::
 @end menu
 
 @c ---------------------------------------------
@@ -1022,6 +1023,54 @@ For example, the following package models the DEC Ada file naming rules:
 (Note that @code{Casing} is @code{"lowercase"} because GNAT gets the file
 names in lower case)
 @end ifset
+
+@c ---------------------------------------------
+@node Installation
+@subsection Installation
+@c ---------------------------------------------
+
+@noindent
+After building an application or a library it is often required to
+install it into the development environment. This installation is
+required if the library is to be used by another application for
+example. The @code{gprinstall} tool provide an easy way to install
+libraries, executable or object code generated durting the build. The
+@b{Install} package can be used to change the default locations.
+
+The following attributes can be defined in package @code{Install}:
+
+@table @asis
+
+@item @b{Active}
+
+Whether the project is to be installed, values are @code{true}
+(default) or @code{false}.
+
+@item @b{Prefix}:
+@cindex @code{Prefix}
+
+Root directory for the installation.
+
+@item @b{Exec_Subdir}
+
+Subdirectory of @b{Prefix} where executables are to be
+installed. Default is @b{bin}.
+
+@item @b{Lib_Subdir}
+
+Subdirectory of @b{Prefix} where directory with the library or object
+files is to be installed. Default is @b{lib}.
+
+@item @b{Sources_Subdir}
+
+Subdirectory of @b{Prefix} where directory with sources is to be
+installed. Default is @b{include}.
+
+@item @b{Project_Subdir}
+
+Subdirectory of @b{Prefix} where the installed project is to be
+installed. Default is @b{share/gpr}.
+@end table
 
 @c ---------------------------------------------
 @node Organizing Projects into Subsystems
@@ -3039,6 +3088,9 @@ The following packages are currently supported in project files
   This package specifies the options used when starting an integrated
   development environment, for instance @command{GPS} or @command{Gnatbench}.
   @xref{The Development Environments}.
+@item Install
+  This package specifies the options used when installing a project
+  with @command{gprinstall}. @xref{Installation}.
 @item Linker
   This package specifies the options used by the linker.
   @xref{Main Subprograms}.

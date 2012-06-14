@@ -5839,14 +5839,11 @@ package body Sem_Res is
          Check_Restriction (No_Relative_Delay, N);
       end if;
 
-      --  Issue an error for a call to an eliminated subprogram. We skip this
-      --  in a spec expression, e.g. a call in a default parameter value, since
-      --  we are not really doing a call at this time. That's important because
-      --  the spec expression may itself belong to an eliminated subprogram.
+      --  Issue an error for a call to an eliminated subprogram.
+      --  The routine will not perform the check if the call appears within
+      --  a default expression.
 
-      if not In_Spec_Expression then
-         Check_For_Eliminated_Subprogram (Subp, Nam);
-      end if;
+      Check_For_Eliminated_Subprogram (Subp, Nam);
 
       --  In formal mode, the primitive operations of a tagged type or type
       --  extension do not include functions that return the tagged type.
