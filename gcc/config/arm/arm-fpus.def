@@ -27,10 +27,6 @@
 
    genopt.sh assumes no whitespace up to the first "," in each entry.  */
 
-ARM_FPU("fpa",		ARM_FP_MODEL_FPA, 0, VFP_NONE, false, false)
-ARM_FPU("fpe2",		ARM_FP_MODEL_FPA, 2, VFP_NONE, false, false)
-ARM_FPU("fpe3",		ARM_FP_MODEL_FPA, 3, VFP_NONE, false, false)
-ARM_FPU("maverick",	ARM_FP_MODEL_MAVERICK, 0, VFP_NONE, false, false)
 ARM_FPU("vfp",		ARM_FP_MODEL_VFP, 2, VFP_REG_D16, false, false)
 ARM_FPU("vfpv3",	ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false)
 ARM_FPU("vfpv3-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, true)

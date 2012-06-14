@@ -126,12 +126,6 @@ Enum(float_abi_type) String(softfp) Value(ARM_FLOAT_ABI_SOFTFP)
 EnumValue
 Enum(float_abi_type) String(hard) Value(ARM_FLOAT_ABI_HARD)
 
-mfp=2
-Target RejectNegative Undocumented Alias(mfpu=, fpe2)
-
-mfp=3
-Target RejectNegative Undocumented Alias(mfpu=, fpe3)
-
 mfp16-format=
 Target RejectNegative Joined Enum(arm_fp16_format_type) Var(arm_fp16_format) Init(ARM_FP16_FORMAT_NONE)
 Specify the __fp16 floating-point format
@@ -148,16 +142,6 @@ Enum(arm_fp16_format_type) String(ieee) Value(ARM_FP16_FORMAT_IEEE)
 
 EnumValue
 Enum(arm_fp16_format_type) String(alternative) Value(ARM_FP16_FORMAT_ALTERNATIVE)
-
-;; Now ignored.
-mfpe
-Target RejectNegative Mask(FPE) Undocumented
-
-mfpe=2
-Target RejectNegative Undocumented Alias(mfpu=, fpe2)
-
-mfpe=3
-Target RejectNegative Undocumented Alias(mfpu=, fpe3)
 
 mfpu=
 Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index)
