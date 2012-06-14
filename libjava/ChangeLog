@@ -1,3 +1,9 @@
+2012-06-14  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* sysdep/sh/locks.h (__cas_lock): Remove.
+	(__cas_start_atomic, __cas_end_atomic): Likewise.
+	(compare_and_swap): Call __sync_bool_compare_and_swap.
+
 2012-05-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/52700
