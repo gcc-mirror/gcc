@@ -13668,7 +13668,7 @@ package body Exp_Ch9 is
       Args := New_List;
 
       --  Priority parameter. Set to Unspecified_Priority unless there is a
-      --  priority rep item, in which case we take the value from the rep item.
+      --  Priority rep item, in which case we take the value from the rep item.
 
       if Has_Rep_Item (Ttyp, Name_Priority) then
          Append_To (Args,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -575,7 +575,15 @@ begin
    --  Initialize tables
 
    Arguments.Set_Last (0);
-   Arguments.Increment_Last;
+   declare
+      New_Arguments : Argument_Data;
+      pragma Warnings (Off, New_Arguments);
+      --  Declaring this defaulted initialized object ensures
+      --  that the new allocated component of table Arguments
+      --  is correctly initialized.
+   begin
+      Arguments.Append (New_Arguments);
+   end;
    Patterns.Init (Arguments.Table (1).Directories);
    Patterns.Set_Last (Arguments.Table (1).Directories, 0);
    Patterns.Init (Arguments.Table (1).Name_Patterns);

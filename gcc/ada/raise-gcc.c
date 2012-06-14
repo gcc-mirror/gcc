@@ -1026,6 +1026,8 @@ extern void __gnat_notify_unhandled_exception (void);
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
 #define PERSONALITY_FUNCTION    __gnat_personality_sj0
+#elif defined(__SEH__)
+#define PERSONALITY_FUNCTION    __gnat_personality_imp
 #else
 #define PERSONALITY_FUNCTION    __gnat_personality_v0
 #endif
@@ -1061,6 +1063,9 @@ typedef int version_arg_t;
 typedef _Unwind_Action phases_arg_t;
 #endif
 
+#ifdef __SEH__
+static
+#endif
 _Unwind_Reason_Code
 PERSONALITY_FUNCTION (version_arg_t, phases_arg_t,
                       _Unwind_Exception_Class, _Unwind_Exception *,
@@ -1208,6 +1213,16 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
 
 #endif /* __USING_SJLJ_EXCEPTIONS__ */
 
+#ifdef __SEH__
+EXCEPTION_DISPOSITION
+__gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
+			 PCONTEXT ms_orig_context,
+			 PDISPATCHER_CONTEXT ms_disp)
+{
+  return _GCC_specific_handler (ms_exc, this_frame, ms_orig_context,
+				ms_disp, __gnat_personality_imp);
+}
+#endif /* SEH */
 #else
 /* ! IN_RTS  */
 

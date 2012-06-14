@@ -464,10 +464,7 @@ package body Sem_Aux is
                 or else (Nam = Name_Priority
                           and then Chars (N) = Name_Interrupt_Priority))
          then
-            if Check_Parents then
-               return N;
-
-            elsif Entity (N) = E then
+            if Check_Parents or else Entity (N) = E then
                return N;
             end if;
 
@@ -524,10 +521,7 @@ package body Sem_Aux is
                   --  This node represents the parent type of type E (if any)
 
                begin
-                  if No (Par) then
-                     return N;
-
-                  elsif not Present_In_Rep_Item (Par, N) then
+                  if No (Par) or else not Present_In_Rep_Item (Par, N) then
                      return N;
                   end if;
                end;
