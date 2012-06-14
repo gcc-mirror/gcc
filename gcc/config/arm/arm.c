@@ -167,8 +167,6 @@ static int arm_address_cost (rtx, bool);
 static int arm_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 static int arm_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool arm_memory_load_p (rtx);
-static bool arm_cirrus_insn_p (rtx);
-static void cirrus_reorg (rtx);
 static void arm_init_builtins (void);
 static void arm_init_iwmmxt_builtins (void);
 static rtx safe_vector_operand (rtx, enum machine_mode);
@@ -9821,144 +9819,6 @@ arm_memory_load_p (rtx insn)
 	  || note_invalid_constants (insn, -1, false));
 }
 
-/* Return TRUE if INSN is a Cirrus instruction.  */
-static bool
-arm_cirrus_insn_p (rtx insn)
-{
-  enum attr_cirrus attr;
-
-  /* get_attr cannot accept USE or CLOBBER.  */
-  if (!insn
-      || GET_CODE (insn) != INSN
-      || GET_CODE (PATTERN (insn)) == USE
-      || GET_CODE (PATTERN (insn)) == CLOBBER)
-    return 0;
-
-  attr = get_attr_cirrus (insn);
-
-  return attr != CIRRUS_NOT;
-}
-
-/* Cirrus reorg for invalid instruction combinations.  */
-static void
-cirrus_reorg (rtx first)
-{
-  enum attr_cirrus attr;
-  rtx body = PATTERN (first);
-  rtx t;
-  int nops;
-
-  /* Any branch must be followed by 2 non Cirrus instructions.  */
-  if (GET_CODE (first) == JUMP_INSN && GET_CODE (body) != RETURN)
-    {
-      nops = 0;
-      t = next_nonnote_insn (first);
-
-      if (arm_cirrus_insn_p (t))
-	++ nops;
-
-      if (arm_cirrus_insn_p (next_nonnote_insn (t)))
-	++ nops;
-
-      while (nops --)
-	emit_insn_after (gen_nop (), first);
-
-      return;
-    }
-
-  /* (float (blah)) is in parallel with a clobber.  */
-  if (GET_CODE (body) == PARALLEL && XVECLEN (body, 0) > 0)
-    body = XVECEXP (body, 0, 0);
-
-  if (GET_CODE (body) == SET)
-    {
-      rtx lhs = XEXP (body, 0), rhs = XEXP (body, 1);
-
-      /* cfldrd, cfldr64, cfstrd, cfstr64 must
-	 be followed by a non Cirrus insn.  */
-      if (get_attr_cirrus (first) == CIRRUS_DOUBLE)
-	{
-	  if (arm_cirrus_insn_p (next_nonnote_insn (first)))
-	    emit_insn_after (gen_nop (), first);
-
-	  return;
-	}
-      else if (arm_memory_load_p (first))
-	{
-	  unsigned int arm_regno;
-
-	  /* Any ldr/cfmvdlr, ldr/cfmvdhr, ldr/cfmvsr, ldr/cfmv64lr,
-	     ldr/cfmv64hr combination where the Rd field is the same
-	     in both instructions must be split with a non Cirrus
-	     insn.  Example:
-
-	     ldr r0, blah
-	     nop
-	     cfmvsr mvf0, r0.  */
-
-	  /* Get Arm register number for ldr insn.  */
-	  if (GET_CODE (lhs) == REG)
-	    arm_regno = REGNO (lhs);
-	  else
-	    {
-	      gcc_assert (GET_CODE (rhs) == REG);
-	      arm_regno = REGNO (rhs);
-	    }
-
-	  /* Next insn.  */
-	  first = next_nonnote_insn (first);
-
-	  if (! arm_cirrus_insn_p (first))
-	    return;
-
-	  body = PATTERN (first);
-
-          /* (float (blah)) is in parallel with a clobber.  */
-          if (GET_CODE (body) == PARALLEL && XVECLEN (body, 0))
-	    body = XVECEXP (body, 0, 0);
-
-	  if (GET_CODE (body) == FLOAT)
-	    body = XEXP (body, 0);
-
-	  if (get_attr_cirrus (first) == CIRRUS_MOVE
-	      && GET_CODE (XEXP (body, 1)) == REG
-	      && arm_regno == REGNO (XEXP (body, 1)))
-	    emit_insn_after (gen_nop (), first);
-
-	  return;
-	}
-    }
-
-  /* get_attr cannot accept USE or CLOBBER.  */
-  if (!first
-      || GET_CODE (first) != INSN
-      || GET_CODE (PATTERN (first)) == USE
-      || GET_CODE (PATTERN (first)) == CLOBBER)
-    return;
-
-  attr = get_attr_cirrus (first);
-
-  /* Any coprocessor compare instruction (cfcmps, cfcmpd, ...)
-     must be followed by a non-coprocessor instruction.  */
-  if (attr == CIRRUS_COMPARE)
-    {
-      nops = 0;
-
-      t = next_nonnote_insn (first);
-
-      if (arm_cirrus_insn_p (t))
-	++ nops;
-
-      if (arm_cirrus_insn_p (next_nonnote_insn (t)))
-	++ nops;
-
-      while (nops --)
-	emit_insn_after (gen_nop (), first);
-
-      return;
-    }
-}
-
 /* Return TRUE if X references a SYMBOL_REF.  */
 int
 symbol_mentioned_p (rtx x)
@@ -13698,12 +13558,6 @@ arm_reorg (void)
   /* Scan all the insns and record the operands that will need fixing.  */
   for (insn = next_nonnote_insn (insn); insn; insn = next_nonnote_insn (insn))
     {
-      if (TARGET_CIRRUS_FIX_INVALID_INSNS
-          && (arm_cirrus_insn_p (insn)
-	      || GET_CODE (insn) == JUMP_INSN
-	      || arm_memory_load_p (insn)))
-	cirrus_reorg (insn);
-
       if (GET_CODE (insn) == BARRIER)
 	push_minipool_barrier (insn, address);
       else if (INSN_P (insn))
@@ -18983,18 +18837,6 @@ arm_final_prescan_insn (rtx insn)
 	      if (!(GET_CODE (scanbody) == SET
 		    || GET_CODE (scanbody) == PARALLEL)
 		  || get_attr_conds (this_insn) != CONDS_NOCOND)
-		fail = TRUE;
-
-	      /* A conditional cirrus instruction must be followed by
-		 a non Cirrus instruction.  However, since we
-		 conditionalize instructions in this function and by
-		 the time we get here we can't add instructions
-		 (nops), because shorten_branches() has already been
-		 called, we will disable conditionalizing Cirrus
-		 instructions to be safe.  */
-	      if (GET_CODE (scanbody) != USE
-		  && GET_CODE (scanbody) != CLOBBER
-		  && get_attr_cirrus (this_insn) != CIRRUS_NOT)
 		fail = TRUE;
 	      break;
 

@@ -1,3 +1,26 @@
+2012-06-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_cirrus_insn_p): Delete.
+	(cirrus_reorg): Delete.
+	(arm_reorg): Don't call cirrus_reorg.
+	(arm_final_prescan_insn_p): Don't check for cirrus insns.
+	* arm.md (define_attr "type"): Remove mav_farith and mav_dmult.
+	(adddi3, subdi3): Remove Maverick support.
+	(arm_adddi3): Likewise.
+	(adddi_sesidi_di, adddi_zesidi_di): Likewise.
+	(addsf3, adddf3): Likewise.
+	(subsf3, subdf3): Likewise.
+	(mulsf3, muldf3): Likewise.
+	(ashldi3, ashrdi3, lshrdi3): Likewise.
+	(floatsisf2, floatsidf2): Likewise.
+	(fix_truncsfsi2, fix_truncdfsi2): Likewise.
+	(arm_movdi, thumb1_movdi_insn): Likewise.
+	(arm_cmpdi_insn): Likewise.
+	(cirrus_cmpsf, cirrus_cmpdf, cirrus_cmpdi): Likewise.
+	(cirrus.md): Don't include.
+	* cirrus.md: Delete file.
+	* t-arm (MD_INCLUDES): Remove cirrus.md.
+
 2012-06-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (function_possibly_abstracted_p): New static function.
