@@ -1,3 +1,7 @@
+2012-06-14  Release Manager
+
+	* GCC 4.7.1 released.
+
 2012-06-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/ia64/sync.md (fetchop_name): Change ior attribute to "or".
