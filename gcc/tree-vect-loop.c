@@ -1201,19 +1201,6 @@ vect_analyze_loop_form (struct loop *loop)
 }
 
 
-/* Get cost by calling cost target builtin.  */
-
-static inline int
-vect_get_cost (enum vect_cost_for_stmt type_of_cost)
-{
-  tree dummy_type = NULL;
-  int dummy = 0;
-
-  return targetm.vectorize.builtin_vectorization_cost (type_of_cost,
-                                                       dummy_type, dummy);
-}
-
- 
 /* Function vect_analyze_loop_operations.
 
    Scan the loop stmts and make sure they are all vectorizable.  */
@@ -2385,7 +2372,7 @@ vect_force_simple_reduction (loop_vec_info loop_info, gimple phi,
 
 /* Calculate the cost of one scalar iteration of the loop.  */
 int
-vect_get_single_scalar_iteraion_cost (loop_vec_info loop_vinfo)
+vect_get_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
@@ -2434,12 +2421,12 @@ vect_get_single_scalar_iteraion_cost (loop_vec_info loop_vinfo)
           if (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt)))
             {
               if (DR_IS_READ (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt))))
-               stmt_cost = vect_get_cost (scalar_load);
+               stmt_cost = vect_get_stmt_cost (scalar_load);
              else
-               stmt_cost = vect_get_cost (scalar_store);
+               stmt_cost = vect_get_stmt_cost (scalar_store);
             }
           else
-            stmt_cost = vect_get_cost (scalar_stmt);
+            stmt_cost = vect_get_stmt_cost (scalar_stmt);
 
           scalar_single_iter_cost += stmt_cost * factor;
         }
@@ -2466,7 +2453,7 @@ vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
 
       /* If peeled iterations are known but number of scalar loop
          iterations are unknown, count a taken branch per peeled loop.  */
-      peel_guard_costs =  2 * vect_get_cost (cond_branch_taken);
+      peel_guard_costs =  2 * vect_get_stmt_cost (cond_branch_taken);
     }
   else
     {
@@ -2547,7 +2534,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
   if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
       || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
-    vec_outside_cost += vect_get_cost (cond_branch_taken); 
+    vec_outside_cost += vect_get_stmt_cost (cond_branch_taken); 
 
   /* Count statements in scalar loop.  Using this as scalar cost for a single
      iteration for now.
@@ -2618,7 +2605,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	}
     }
 
-  scalar_single_iter_cost = vect_get_single_scalar_iteraion_cost (loop_vinfo);
+  scalar_single_iter_cost = vect_get_single_scalar_iteration_cost (loop_vinfo);
 
   /* Add additional cost for the peeled instructions in prologue and epilogue
      loop.
@@ -2648,8 +2635,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
          branch per peeled loop. Even if scalar loop iterations are known,
          vector iterations are not known since peeled prologue iterations are
          not known. Hence guards remain the same.  */
-      peel_guard_costs +=  2 * (vect_get_cost (cond_branch_taken)
-                                + vect_get_cost (cond_branch_not_taken));
+      peel_guard_costs +=  2 * (vect_get_stmt_cost (cond_branch_taken)
+                                + vect_get_stmt_cost (cond_branch_not_taken));
       vec_outside_cost += (peel_iters_prologue * scalar_single_iter_cost)
                            + (peel_iters_epilogue * scalar_single_iter_cost)
                            + peel_guard_costs;
@@ -2722,16 +2709,16 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
       /* Cost model check occurs at versioning.  */
       if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
           || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
-	scalar_outside_cost += vect_get_cost (cond_branch_not_taken);
+	scalar_outside_cost += vect_get_stmt_cost (cond_branch_not_taken);
       else
 	{
 	  /* Cost model check occurs at prologue generation.  */
 	  if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
-	    scalar_outside_cost += 2 * vect_get_cost (cond_branch_taken)
-                                   + vect_get_cost (cond_branch_not_taken); 
+	    scalar_outside_cost += 2 * vect_get_stmt_cost (cond_branch_taken)
+	      + vect_get_stmt_cost (cond_branch_not_taken); 
 	  /* Cost model check occurs at epilogue generation.  */
 	  else
-	    scalar_outside_cost += 2 * vect_get_cost (cond_branch_taken); 
+	    scalar_outside_cost += 2 * vect_get_stmt_cost (cond_branch_taken); 
 	}
     }
 
@@ -2842,7 +2829,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 
   /* Cost of reduction op inside loop.  */
   STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) 
-    += ncopies * vect_get_cost (vector_stmt);
+    += ncopies * vect_get_stmt_cost (vector_stmt);
 
   stmt = STMT_VINFO_STMT (stmt_info);
 
@@ -2885,7 +2872,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
   code = gimple_assign_rhs_code (orig_stmt);
 
   /* Add in cost for initial definition.  */
-  outer_cost += vect_get_cost (scalar_to_vec);
+  outer_cost += vect_get_stmt_cost (scalar_to_vec);
 
   /* Determine cost of epilogue code.
 
@@ -2895,8 +2882,8 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
   if (!nested_in_vect_loop_p (loop, orig_stmt))
     {
       if (reduc_code != ERROR_MARK)
-	outer_cost += vect_get_cost (vector_stmt) 
-                      + vect_get_cost (vec_to_scalar); 
+	outer_cost += vect_get_stmt_cost (vector_stmt) 
+                      + vect_get_stmt_cost (vec_to_scalar); 
       else
 	{
 	  int vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
@@ -2914,13 +2901,13 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 	    /* Final reduction via vector shifts and the reduction operator. Also
 	       requires scalar extract.  */
 	    outer_cost += ((exact_log2(nelements) * 2) 
-              * vect_get_cost (vector_stmt) 
-  	      + vect_get_cost (vec_to_scalar));
+              * vect_get_stmt_cost (vector_stmt) 
+  	      + vect_get_stmt_cost (vec_to_scalar));
 	  else
 	    /* Use extracts and reduction op for final reduction.  For N elements,
                we have N extracts and N-1 reduction ops.  */
 	    outer_cost += ((nelements + nelements - 1) 
-              * vect_get_cost (vector_stmt));
+              * vect_get_stmt_cost (vector_stmt));
 	}
     }
 
@@ -2944,10 +2931,10 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
 {
   /* loop cost for vec_loop.  */
   STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) 
-    = ncopies * vect_get_cost (vector_stmt);
+    = ncopies * vect_get_stmt_cost (vector_stmt);
   /* prologue cost for vec_init and vec_step.  */
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info)  
-    = 2 * vect_get_cost (scalar_to_vec);
+    = 2 * vect_get_stmt_cost (scalar_to_vec);
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_induction_cost: inside_cost = %d, "
