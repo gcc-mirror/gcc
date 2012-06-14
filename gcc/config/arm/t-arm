@@ -46,7 +46,6 @@ MD_INCLUDES=	$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/fa626te.md \
 		$(srcdir)/config/arm/fa726te.md \
 		$(srcdir)/config/arm/fmp626.md \
-		$(srcdir)/config/arm/fpa.md \
 		$(srcdir)/config/arm/iterators.md \
 		$(srcdir)/config/arm/iwmmxt.md \
 		$(srcdir)/config/arm/iwmmxt2.md \

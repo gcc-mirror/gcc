@@ -1967,30 +1967,14 @@
   [(set (match_operand:SF 0 "s_register_operand" "")
 	(div:SF (match_operand:SF 1 "arm_float_rhs_operand" "")
 		(match_operand:SF 2 "arm_float_rhs_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "")
 
 (define_expand "divdf3"
   [(set (match_operand:DF 0 "s_register_operand" "")
 	(div:DF (match_operand:DF 1 "arm_float_rhs_operand" "")
 		(match_operand:DF 2 "arm_float_rhs_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP_DOUBLE)"
-  "")
-
-;; Modulo insns
-
-(define_expand "modsf3"
-  [(set (match_operand:SF 0 "s_register_operand" "")
-	(mod:SF (match_operand:SF 1 "s_register_operand" "")
-		(match_operand:SF 2 "arm_float_rhs_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPA"
-  "")
-
-(define_expand "moddf3"
-  [(set (match_operand:DF 0 "s_register_operand" "")
-	(mod:DF (match_operand:DF 1 "s_register_operand" "")
-		(match_operand:DF 2 "arm_float_rhs_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPA"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
 
 ;; Boolean and,ior,xor insns
@@ -4216,14 +4200,14 @@
 (define_expand "negsf2"
   [(set (match_operand:SF         0 "s_register_operand" "")
 	(neg:SF (match_operand:SF 1 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   ""
 )
 
 (define_expand "negdf2"
   [(set (match_operand:DF         0 "s_register_operand" "")
 	(neg:DF (match_operand:DF 1 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP_DOUBLE)"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
 
 ;; abssi2 doesn't really clobber the condition codes if a different register
@@ -4315,13 +4299,13 @@
 (define_expand "sqrtsf2"
   [(set (match_operand:SF 0 "s_register_operand" "")
 	(sqrt:SF (match_operand:SF 1 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "")
 
 (define_expand "sqrtdf2"
   [(set (match_operand:DF 0 "s_register_operand" "")
 	(sqrt:DF (match_operand:DF 1 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP_DOUBLE)"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
 
 (define_insn_and_split "one_cmpldi2"
@@ -6821,17 +6805,6 @@
    (set_attr "insn" "*,*,*,*,*,mov")
    (set_attr "pool_range" "*,*,*,1020,*,*")]
 )
-
-(define_expand "movxf"
-  [(set (match_operand:XF 0 "general_operand" "")
-	(match_operand:XF 1 "general_operand" ""))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPA"
-  "
-  if (GET_CODE (operands[0]) == MEM)
-    operands[1] = force_reg (XFmode, operands[1]);
-  "
-)
-
 
 
 ;; load- and store-multiple insns
@@ -8199,7 +8172,7 @@
 	(if_then_else:DF (match_operand 1 "expandable_comparison_operator" "")
 			 (match_operand:DF 2 "s_register_operand" "")
 			 (match_operand:DF 3 "arm_float_add_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP_DOUBLE)"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "
   {
     enum rtx_code code = GET_CODE (operands[1]);
@@ -11002,24 +10975,6 @@
   [(set_attr "length" "0")]
 )
 
-;; Similarly for the floating point registers
-(define_insn "*push_fp_multi"
-  [(match_parallel 2 "multi_register_push"
-    [(set (match_operand:BLK 0 "memory_operand" "=m")
-	  (unspec:BLK [(match_operand:XF 1 "f_register_operand" "")]
-		      UNSPEC_PUSH_MULT))])]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPA"
-  "*
-  {
-    char pattern[100];
-
-    sprintf (pattern, \"sfm%%(fd%%)\\t%%1, %d, [%%m0]!\", XVECLEN (operands[2], 0));
-    output_asm_insn (pattern, operands);
-    return \"\";
-  }"
-  [(set_attr "type" "f_fpa_store")]
-)
-
 ;; Special patterns for dealing with the constant pool
 
 (define_insn "align_4"
@@ -11451,8 +11406,6 @@
 
 ;; Load the load/store multiple patterns
 (include "ldmstm.md")
-;; Load the FPA co-processor patterns
-(include "fpa.md")
 ;; Load the Maverick co-processor patterns
 (include "cirrus.md")
 ;; Vector bits common to IWMMXT and Neon

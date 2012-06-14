@@ -1,3 +1,15 @@
+2012-06-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (divsf3, divdf3): Remove FPA support.
+	(negsf2, negdf2): Likewise.
+	(sqrtsf2, sqrtdf2): Likewise.
+	(movdfcc): Likewise.
+	(modsf3, moddf3, movxf): Delete.
+	(push_fp_multi): Delete.
+	(fpa.md): Don't include it.
+	* fpa.md: Delete file.
+	* t-arm (MD_INCLUDES): Remove fpa.md.
+
 2012-06-14  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* tree-vectorizer.h (vect_get_stmt_cost): Move from tree-vect-stmts.c.
