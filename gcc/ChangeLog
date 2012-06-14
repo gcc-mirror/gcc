@@ -1,3 +1,9 @@
+2012-06-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53568
+	* config/sh/sh.md: Add peephole for swapbsi2.
+	(*swapbisi2_and_shl8, *swapbhisi2): New insns and splits.
+
 2012-06-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*zero_extendsidi2): Mark movd alternatives
