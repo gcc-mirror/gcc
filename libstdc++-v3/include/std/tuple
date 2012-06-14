@@ -1,6 +1,7 @@
 // <tuple> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -201,10 +202,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void _M_swap(_Tuple_impl&) noexcept { /* no-op */ }
     };
 
+  template<typename _Tp>
+    struct __is_empty_non_tuple : is_empty<_Tp> { };
+
+  // Using EBO for elements that are tuples causes ambiguous base errors.
+  template<typename _El0, typename... _El>
+    struct __is_empty_non_tuple<tuple<_El0, _El...>> : false_type { };
+
   // Use the Empty Base-class Optimization for empty, non-final types.
   template<typename _Tp>
     using __empty_not_final
-      = typename conditional<__is_final(_Tp), false_type, is_empty<_Tp>>::type;
+    = typename conditional<__is_final(_Tp), false_type,
+			   __is_empty_non_tuple<_Tp>>::type;
 
   /**
    * Recursive tuple implementation. Here we store the @c Head element

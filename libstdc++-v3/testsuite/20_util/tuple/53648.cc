@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,30 +18,27 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.4.2.1 [tuple.cnstr] Allocator-extended constructors
+// libstdc++/53648
 
-#include <memory>
 #include <tuple>
+#include <type_traits>
 
-struct MyAlloc { };
+using std::tuple;
 
-struct Type
-{
-  typedef MyAlloc allocator_type; // uses_allocator<Type, MyAlloc> is true
+struct A { };
 
-  explicit Type(int) { }
+template class tuple<tuple<>>;
+template class tuple<tuple<tuple<>>>;
+template class tuple<A, tuple<A, tuple<A, tuple<A>>>>;
+template class tuple<tuple<tuple<A, A>, A>, A>;
 
-  Type(std::allocator_arg_t, MyAlloc) { }
-  Type(MyAlloc) { }
-};
+// Verify the following QoI properties are preserved
 
-void test01()
-{
-  using std::allocator_arg;
-  using std::tuple;
+static_assert( std::is_empty<tuple<>>::value, "tuple<> is empty" );
 
-  MyAlloc a;
+static_assert( std::is_empty<tuple<tuple<>>>::value,
+               "tuple<tuple<>> is empty" );
 
-  tuple<Type> t(allocator_arg, a, 1);
-}
-// { dg-error "no matching function" "" { target *-*-* } 113 }
+static_assert( sizeof(tuple<char, tuple<>>) == sizeof(char),
+               "tuple<> is eligible for EBO" );
+
