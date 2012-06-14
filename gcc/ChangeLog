@@ -1,3 +1,10 @@
+2012-06-14  Sandeep Kumar Singh  <Sandeep.Singh2@kpitcummins.com>
+
+	* config/h8300/genmova.sh: Modified to add offset bits of 
+	mova/Sz assembly instruction for memory access.
+	* config/h8300/h8300.c: Likewise.
+	* config/h8300/mova.md: Likewise.
+
 2012-06-12  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/53621
