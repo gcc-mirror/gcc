@@ -1,3 +1,8 @@
+2012-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/Makefile.in (gnatlib-shared-default): Append
+	$(PICFLAG_FOR_TARGET) to GNATLIBCFLAGS_FOR_C passed to submake.
+
 2012-06-14  Release Manager
 
 	* GCC 4.7.1 released.
