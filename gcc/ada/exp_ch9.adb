@@ -11604,7 +11604,7 @@ package body Exp_Ch9 is
 
       --  Add the _Task_Info component if a Task_Info pragma is present
 
-      if Has_Rep_Pragma_For_Entity (TaskId, Name_Task_Info) then
+      if Has_Rep_Pragma (TaskId, Name_Task_Info, Check_Parents => False) then
          Append_To (Cdecls,
            Make_Component_Declaration (Loc,
              Defining_Identifier =>
@@ -11619,7 +11619,8 @@ package body Exp_Ch9 is
              Expression => New_Copy (
                Expression (First (
                  Pragma_Argument_Associations (
-                   Get_Rep_Pragma_For_Entity (TaskId, Name_Task_Info)))))));
+                   Get_Rep_Pragma
+                     (TaskId, Name_Task_Info, Check_Parents => False)))))));
       end if;
 
       --  Add the _CPU component with no expression
@@ -13337,11 +13338,11 @@ package body Exp_Ch9 is
              Attribute_Name => Name_Unchecked_Access));
 
          --  Priority parameter. Set to Unspecified_Priority unless there is a
-         --  priority clause, in which case we take the value from the
-         --  pragma/attribute definition clause, or there is an interrupt
-         --  clause and no priority clause, and we set the ceiling to
-         --  Interrupt_Priority'Last, an implementation defined value,
-         --  see D.3(10).
+         --  Priority rep item, in which case we take the value from the pragma
+         --  or attribute definition clause, or there is an Interrupt_Priority
+         --  rep item and no Priority rep item, and we set the ceiling to
+         --  Interrupt_Priority'Last, an implementation-defined value, see
+         --  D.3(10).
 
          if Has_Rep_Item (Ptyp, Name_Priority) then
             declare
@@ -13724,7 +13725,7 @@ package body Exp_Ch9 is
       --  Task_Info parameter. Set to Unspecified_Task_Info unless there is a
       --  Task_Info pragma, in which case we take the value from the pragma.
 
-      if Has_Rep_Pragma_For_Entity (Ttyp, Name_Task_Info) then
+      if Has_Rep_Pragma (Ttyp, Name_Task_Info, Check_Parents => False) then
          Append_To (Args,
            Make_Selected_Component (Loc,
              Prefix        => Make_Identifier (Loc, Name_uInit),
@@ -13907,7 +13908,7 @@ package body Exp_Ch9 is
       --  init call unless there is a Task_Name pragma, in which case we take
       --  the value from the pragma.
 
-      if Has_Rep_Pragma_For_Entity (Ttyp, Name_Task_Name) then
+      if Has_Rep_Pragma (Ttyp, Name_Task_Name, Check_Parents => False) then
          --  Copy expression in full, because it may be dynamic and have
          --  side effects.
 
@@ -13916,7 +13917,8 @@ package body Exp_Ch9 is
              (Expression
                (First
                  (Pragma_Argument_Associations
-                   (Get_Rep_Pragma_For_Entity (Ttyp, Name_Task_Name))))));
+                   (Get_Rep_Pragma
+                     (Ttyp, Name_Task_Name, Check_Parents => False))))));
 
       else
          Append_To (Args, Make_Identifier (Loc, Name_uTask_Name));

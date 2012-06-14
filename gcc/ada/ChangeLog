@@ -1,3 +1,34 @@
+2012-06-14  Vincent Pucci  <pucci@adacore.com>
+
+	* einfo.adb einfo.ads (Get_Rep_Item): Removed.
+	(Get_Rep_Item_For_Entity): Removed.
+	(Get_Rep_Pragma): Removed.
+	(Get_Rep_Pragma_For_Entity): Removed.
+	(Has_Rep_Item): Removed.
+	(Has_Rep_Pragma): Removed.
+	(Has_Rep_Pragma_For_Entity): Removed.
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration):
+	Has_Rep_Pragma_For_Entity replaced by Has_Rep_Pragma
+	and Get_Rep_Pragma_For_Entity replaced by Get_Rep_Pragma.
+	(Make_Task_Create_Call): Has_Rep_Pragma_For_Entity replaced
+	by Has_Rep_Pragma and Get_Rep_Pragma_For_Entity replaced by
+	Get_Rep_Pragma.
+	* exp_intr.adb: Dependency to Sem_Aux added for call to Get_Rep_Pragma.
+	* sem_aux.adb (Get_Rep_Item): New routine.
+	(Get_Rep_Pragma): New routine.
+	(Has_Rep_Item): New routine.
+	(Has_Rep_Pragma): New routine.
+	(Nearest_Ancestor): Minor reformatting.
+	* sem_aux.ads (Get_Rep_Item): New routine.
+	(Get_Rep_Pragma): New routine.
+	(Has_Rep_Item): New routine.
+	(Has_Rep_Pragma): New routine.
+	* sem_ch13.adb (Duplicate_Clause): Restore original error messages.
+	* sem_eval.adb (Subtypes_Statically_Match): Get_Rep_Item_For_Entity
+	replaced by Get_Rep_Item.
+	* sem_prag.adb (Analyze_Pragma): Restore original error messages.
+	(Check_Duplicate_Pragma): Restore original error messages.
+
 2012-06-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Is_Object_Reference): in Ada 2012, qualified

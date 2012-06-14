@@ -2058,24 +2058,13 @@ package body Sem_Ch13 is
          --  previously given pragma or aspect specification for the same
          --  aspect.
 
-         A := Get_Rep_Item_For_Entity (U_Ent, Chars (N));
+         A := Get_Rep_Item (U_Ent, Chars (N), Check_Parents => False);
 
          if Present (A) then
             Error_Msg_Name_1 := Chars (N);
             Error_Msg_Sloc := Sloc (A);
 
-            if Nkind (A) = N_Aspect_Specification
-              or else From_Aspect_Specification (A)
-            then
-               Error_Msg_NE ("aspect% for & previously given#", N, U_Ent);
-
-            elsif Nkind (A) = N_Pragma then
-               Error_Msg_NE ("clause% for & duplicates pragma#", N, U_Ent);
-
-            else
-               Error_Msg_NE ("clause% for & duplicates clause#", N, U_Ent);
-            end if;
-
+            Error_Msg_NE ("aspect% for & previously given#", N, U_Ent);
             return True;
          end if;
 

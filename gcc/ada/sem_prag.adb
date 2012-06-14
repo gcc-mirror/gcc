@@ -1613,7 +1613,7 @@ package body Sem_Prag is
          --  previously given aspect specification or attribute definition
          --  clause for the same pragma.
 
-         P := Get_Rep_Item_For_Entity (E, Pragma_Name (N));
+         P := Get_Rep_Item (E, Pragma_Name (N), Check_Parents => False);
 
          if Present (P) then
             Error_Msg_Name_1 := Pragma_Name (N);
@@ -1630,12 +1630,8 @@ package body Sem_Prag is
               or else From_Aspect_Specification (P)
             then
                Error_Msg_NE ("aspect% for & previously given#", N, Id);
-
-            elsif Nkind (P) = N_Pragma then
-               Error_Msg_NE ("pragma% for & duplicates pragma#", N, Id);
-
             else
-               Error_Msg_NE ("pragma% for & duplicates clause#", N, Id);
+               Error_Msg_NE ("pragma% for & duplicates pragma#", N, Id);
             end if;
 
             raise Pragma_Exit;
@@ -8024,7 +8020,6 @@ package body Sem_Prag is
             --  Item chain of Ent.
 
             Check_Duplicate_Pragma (Ent);
-
             Record_Rep_Item (Ent, N);
          end CPU;
 
@@ -8317,7 +8312,6 @@ package body Sem_Prag is
                --  Item chain of Ent.
 
                Check_Duplicate_Pragma (Ent);
-
                Record_Rep_Item (Ent, N);
 
             --  Anything else is incorrect
@@ -10284,7 +10278,6 @@ package body Sem_Prag is
                --  Item chain of Ent.
 
                Check_Duplicate_Pragma (Ent);
-
                Record_Rep_Item (Ent, N);
             end if;
          end Interrupt_Priority;
@@ -12410,7 +12403,6 @@ package body Sem_Prag is
             --  Item chain of Ent.
 
             Check_Duplicate_Pragma (Ent);
-
             Record_Rep_Item (Ent, N);
          end Priority;
 
@@ -13928,7 +13920,12 @@ package body Sem_Prag is
             --  Check duplicate pragma before we chain the pragma in the Rep
             --  Item chain of Ent.
 
-            Check_Duplicate_Pragma (Ent);
+            if Has_Rep_Pragma
+                 (Ent, Name_Task_Info, Check_Parents => False)
+            then
+               Error_Pragma ("duplicate pragma% not allowed");
+            end if;
+
             Record_Rep_Item (Ent, N);
          end Task_Info;
 
@@ -13965,7 +13962,12 @@ package body Sem_Prag is
             --  Check duplicate pragma before we chain the pragma in the Rep
             --  Item chain of Ent.
 
-            Check_Duplicate_Pragma (Ent);
+            if Has_Rep_Pragma
+                 (Ent, Name_Task_Name, Check_Parents => False)
+            then
+               Error_Pragma ("duplicate pragma% not allowed");
+            end if;
+
             Record_Rep_Item (Ent, N);
          end Task_Name;
 
