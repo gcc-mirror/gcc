@@ -7745,14 +7745,13 @@ package body Sem_Util is
             when N_String_Literal =>
                return Is_Internally_Generated_Renaming (Parent (N));
 
-            --  AI05-0003:  in Ada 2012, a qualified expression is a name.
-            --  This allows disambiguation of function calls and the use of
-            --  aggregates in more contexts.
+            --  AI05-0003: In Ada 2012 a qualified expression is a name.
+            --  This allows disambiguation of function calls and the use
+            --  of aggregates in more contexts.
 
             when N_Qualified_Expression =>
                if Ada_Version <  Ada_2012 then
                   return False;
-
                else
                   return Is_Object_Reference (Expression (N))
                     or else Nkind (Expression (N)) = N_Aggregate;

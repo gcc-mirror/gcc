@@ -219,6 +219,8 @@ package body Snames is
          return Pragma_Interface;
       elsif N = Name_Interrupt_Priority then
          return Pragma_Interrupt_Priority;
+      elsif N = Name_Lock_Free then
+         return Pragma_Lock_Free;
       elsif N = Name_Priority then
          return Pragma_Priority;
       elsif N = Name_Relative_Deadline then
@@ -421,6 +423,7 @@ package body Snames is
         or else N = Name_Fast_Math
         or else N = Name_Interface
         or else N = Name_Interrupt_Priority
+        or else N = Name_Lock_Free
         or else N = Name_Relative_Deadline
         or else N = Name_Priority
         or else N = Name_Storage_Size

@@ -2168,8 +2168,7 @@ package body Freeze is
 
          --  Deal with Bit_Order aspect specifying a non-default bit order
 
-         ADC :=
-           Get_Attribute_Definition_Clause (Rec, Attribute_Bit_Order);
+         ADC := Get_Attribute_Definition_Clause (Rec, Attribute_Bit_Order);
 
          if Present (ADC) and then Base_Type (Rec) = Rec then
             if not Placed_Component then
@@ -2180,7 +2179,7 @@ package body Freeze is
             --  Here is where we do the processing for reversed bit order
 
             elsif Reverse_Bit_Order (Rec)
-                    and then not Reverse_Storage_Order (Rec)
+              and then not Reverse_Storage_Order (Rec)
             then
                Adjust_Record_For_Reverse_Bit_Order (Rec);
 

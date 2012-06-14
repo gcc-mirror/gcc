@@ -1445,6 +1445,8 @@ package body Sem_Ch13 is
                         then
                            Set_Uses_Lock_Free (E);
                         end if;
+
+                        Record_Rep_Item (E, Aspect);
                      end if;
 
                      goto Continue;

@@ -142,7 +142,6 @@ package Snames is
    Name_Dimension                      : constant Name_Id := N + $;
    Name_Dimension_System               : constant Name_Id := N + $;
    Name_Dynamic_Predicate              : constant Name_Id := N + $;
-   Name_Lock_Free                      : constant Name_Id := N + $;
    Name_Post                           : constant Name_Id := N + $;
    Name_Pre                            : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;
@@ -522,6 +521,12 @@ package Snames is
    Name_Linker_Options                 : constant Name_Id := N + $;
    Name_Linker_Section                 : constant Name_Id := N + $; -- GNAT
    Name_List                           : constant Name_Id := N + $;
+
+   --  Note: Lock_Free is not in this list because its name matches the name of
+   --  the corresponding attribute. However, it is included in the definition
+   --  of the type Pragma_Id, and the functions Get_Pragma_Id and Is_Pragma_Id
+   --  correctly recognize and process Lock_Free. Lock_Free is a GNAT pragma.
+
    Name_Machine_Attribute              : constant Name_Id := N + $; -- GNAT
    Name_Main                           : constant Name_Id := N + $; -- GNAT
    Name_Main_Storage                   : constant Name_Id := N + $; -- GNAT
@@ -810,6 +815,7 @@ package Snames is
    Name_Last_Valid                     : constant Name_Id := N + $; -- Ada 12
    Name_Leading_Part                   : constant Name_Id := N + $;
    Name_Length                         : constant Name_Id := N + $;
+   Name_Lock_Free                      : constant Name_Id := N + $; -- GNAT
    Name_Machine_Emax                   : constant Name_Id := N + $;
    Name_Machine_Emin                   : constant Name_Id := N + $;
    Name_Machine_Mantissa               : constant Name_Id := N + $;
@@ -1388,6 +1394,7 @@ package Snames is
       Attribute_Last_Valid,
       Attribute_Leading_Part,
       Attribute_Length,
+      Attribute_Lock_Free,
       Attribute_Machine_Emax,
       Attribute_Machine_Emin,
       Attribute_Machine_Mantissa,
@@ -1774,6 +1781,7 @@ package Snames is
       Pragma_Fast_Math,
       Pragma_Interface,
       Pragma_Interrupt_Priority,
+      Pragma_Lock_Free,
       Pragma_Priority,
       Pragma_Storage_Size,
       Pragma_Storage_Unit,
@@ -1853,8 +1861,8 @@ package Snames is
    function Is_Pragma_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized pragma. Note that
    --  pragmas AST_Entry, CPU, Dispatching_Domain, Fast_Math,
-   --  Interrupt_Priority, Priority, Storage_Size, and Storage_Unit are
-   --  recognized as pragmas by this function even though their names are
+   --  Interrupt_Priority, Lock_Free, Priority, Storage_Size, and Storage_Unit
+   --  are recognized as pragmas by this function even though their names are
    --  separate from the other pragma names. For this reason, clients should
    --  always use this function, rather than do range tests on Name_Id values.
 
@@ -1895,8 +1903,9 @@ package Snames is
    --  if N is not a name of a known (Ada defined or GNAT-specific) pragma.
    --  Note that the function also works correctly for names of pragmas that
    --  are not included in the main list of pragma Names (AST_Entry, CPU,
-   --  Dispatching_Domain, Interrupt_Priority, Priority, Storage_Size, and
-   --  Storage_Unit (e.g. Name_Storage_Size returns Pragma_Storage_Size).
+   --  Dispatching_Domain, Interrupt_Priority, Lock_Free, Priority,
+   --  Storage_Size, and Storage_Unit (e.g. Name_Storage_Size returns
+   --  Pragma_Storage_Size).
 
    function Get_Queuing_Policy_Id (N : Name_Id) return Queuing_Policy_Id;
    --  Returns Id of queuing policy corresponding to given name. It is an error

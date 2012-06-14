@@ -13342,7 +13342,7 @@ package body Exp_Ch9 is
          --  or attribute definition clause, or there is an Interrupt_Priority
          --  rep item and no Priority rep item, and we set the ceiling to
          --  Interrupt_Priority'Last, an implementation-defined value, see
-         --  D.3(10).
+         --  (RM D.3(10)).
 
          if Has_Rep_Item (Ptyp, Name_Priority) then
             declare

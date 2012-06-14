@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -263,16 +262,41 @@ package body Sem_Ch9 is
                begin
                   --  Function calls and attribute references must be static
 
-                  if Nkind_In (N, N_Attribute_Reference, N_Function_Call)
+                  if Nkind (N) = N_Attribute_Reference
                     and then not Is_Static_Expression (N)
                   then
+                     if Complain then
+                        Error_Msg_N
+                          ("non-static attribute reference not allowed",
+                           N);
+                     end if;
+
+                     return Abandon;
+
+                  elsif Nkind (N) = N_Function_Call
+                    and then not Is_Static_Expression (N)
+                  then
+                     if Complain then
+                        Error_Msg_N ("non-static function call not allowed",
+                                     N);
+                     end if;
+
                      return Abandon;
 
                   --  Loop statements and procedure calls are prohibited
 
-                  elsif Nkind_In (N, N_Loop_Statement,
-                                     N_Procedure_Call_Statement)
-                  then
+                  elsif Nkind (N) = N_Loop_Statement then
+                     if Complain then
+                        Error_Msg_N ("loop not allowed", N);
+                     end if;
+
+                     return Abandon;
+
+                  elsif Nkind (N) = N_Procedure_Call_Statement then
+                     if Complain then
+                        Error_Msg_N ("procedure call not allowed", N);
+                     end if;
+
                      return Abandon;
 
                   --  References
@@ -295,6 +319,12 @@ package body Sem_Ch9 is
                           and then not Scope_Within_Or_Same (Scope (Id),
                                          Protected_Body_Subprogram (Sub_Id))
                         then
+                           if Complain then
+                              Error_Msg_NE
+                                ("reference to global variable& not allowed",
+                                 N, Id);
+                           end if;
+
                            return Abandon;
 
                         --  Prohibit non-scalar out parameters (scalar
@@ -305,6 +335,12 @@ package body Sem_Ch9 is
                           and then not Is_Elementary_Type (Etype (Id))
                           and then Scope_Within_Or_Same (Scope (Id), Sub_Id)
                         then
+                           if Complain then
+                              Error_Msg_NE
+                                ("non-elementary out parameter& not allowed",
+                                 N, Id);
+                           end if;
+
                            return Abandon;
 
                         --  A protected subprogram may reference only one
@@ -327,6 +363,13 @@ package body Sem_Ch9 is
                                  --  body.
 
                                  elsif Comp /= Id then
+                                    if Complain then
+                                       Error_Msg_N
+                                         ("only one protected component " &
+                                          "allowed",
+                                          N);
+                                    end if;
+
                                     return Abandon;
                                  end if;
                               end if;
@@ -352,6 +395,13 @@ package body Sem_Ch9 is
                                  --  body.
 
                                  elsif Comp /= Prival_Link (Id) then
+                                    if Complain then
+                                       Error_Msg_N
+                                         ("only one protected component " &
+                                          "allowed",
+                                          N);
+                                    end if;
+
                                     return Abandon;
                                  end if;
                               end if;
@@ -1375,7 +1425,6 @@ package body Sem_Ch9 is
 
    procedure Analyze_Protected_Body (N : Node_Id) is
       Body_Id : constant Entity_Id := Defining_Identifier (N);
-      Aspect  : Node_Id;
       Last_E  : Entity_Id;
 
       Spec_Id : Entity_Id;
@@ -1389,6 +1438,50 @@ package body Sem_Ch9 is
       --  involved, and is the entity used for cross-reference purposes (it
       --  differs from Spec_Id in the case of a single protected object, since
       --  Spec_Id is set to the protected type in this case).
+
+      function Lock_Free_Disabled return Boolean;
+      --  This routine returns False if the protected object has a Lock_Free
+      --  aspect specification or a Lock_Free pragma that turns off the
+      --  lock-free implementation (e.g. whose expression is False).
+
+      ------------------------
+      -- Lock_Free_Disabled --
+      ------------------------
+
+      function Lock_Free_Disabled return Boolean is
+         Ritem : constant Node_Id :=
+                   Get_Rep_Item
+                     (Spec_Id, Name_Lock_Free, Check_Parents => False);
+
+      begin
+         if Present (Ritem) then
+            --  Pragma with one argument
+
+            if Nkind (Ritem) = N_Pragma
+              and then Present (Pragma_Argument_Associations (Ritem))
+            then
+               return
+                 Is_False (Static_Boolean
+                  (Expression (First (Pragma_Argument_Associations (Ritem)))));
+
+            --  Aspect Specification with expression present
+
+            elsif Nkind (Ritem) = N_Aspect_Specification
+              and then Present (Expression (Ritem))
+            then
+               return Is_False (Static_Boolean (Expression (Ritem)));
+
+            --  Otherwise, return False
+
+            else
+               return False;
+            end if;
+         end if;
+
+         return False;
+      end Lock_Free_Disabled;
+
+   --  Start of processing for Analyze_Protected_Body
 
    begin
       Tasking_Used := True;
@@ -1450,37 +1543,21 @@ package body Sem_Ch9 is
       Process_End_Label (N, 't', Ref_Id);
       End_Scope;
 
-      --  Turn on/off the lock-free implementation for the protected object
-
-      --  Look for a Lock_Free aspect with a False expression that disables the
-      --  lock-free implementation.
-
-      Aspect := First (Aspect_Specifications (Parent (Spec_Id)));
-
-      while Present (Aspect) loop
-         if Get_Aspect_Id (Chars (Identifier (Aspect))) = Aspect_Lock_Free
-           and then Present (Expression (Aspect))
-           and then Entity (Expression (Aspect)) = Standard_False
-         then
-            return;
-         end if;
-
-         Next (Aspect);
-      end loop;
-
-      --  When a Lock_Free aspect forces the lock-free implementation, verify
-      --  the protected body meets all the restrictions, otherwise
-      --  Allows_Lock_Free_Implementation issues an error message.
+      --  When a Lock_Free aspect specification/pragma forces the lock-free
+      --  implementation, verify the protected body meets all the restrictions,
+      --  otherwise Allows_Lock_Free_Implementation issues an error message.
 
       if Uses_Lock_Free (Spec_Id) then
          if not Allows_Lock_Free_Implementation (N, Complain => True) then
             return;
          end if;
 
-      --  In other cases, check both the protected declaration and body satisfy
-      --  the lock-free restrictions.
+      --  In other cases, if there is no aspect specification/pragma that
+      --  disables the lock-free implementation, check both the protected
+      --  declaration and body satisfy the lock-free restrictions.
 
-      elsif Allows_Lock_Free_Implementation (Parent (Spec_Id))
+      elsif not Lock_Free_Disabled
+        and then Allows_Lock_Free_Implementation (Parent (Spec_Id))
         and then Allows_Lock_Free_Implementation (N)
       then
          Set_Uses_Lock_Free (Spec_Id);

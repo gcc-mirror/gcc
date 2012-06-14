@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -220,7 +220,7 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    end Constant_Reference;
 
    function Constant_Reference
-     (Container : Map;
+     (Container : aliased Map;
       Key       : Key_Type) return Constant_Reference_Type
    is
       Node : constant Count_Type := Key_Ops.Find (Container, Key);
