@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstack-usage" } */
+/* { dg-options "-fstack-usage -fomit-frame-pointer" { target { sh-*-* } } } */
 
 /* This is aimed at testing basic support for -fstack-usage in the back-ends.
    See the SPARC back-end for example (grep flag_stack_usage_info in sparc.c).
