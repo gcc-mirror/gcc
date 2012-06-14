@@ -1,3 +1,8 @@
+2012-06-14  Richard Guenther  <rguenther@suse.de>
+
+	* BASE-VER: Set to 4.7.2.
+	* DEV-PHASE: Set to prerelease.
+
 2012-06-12  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/53621
