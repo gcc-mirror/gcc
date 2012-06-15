@@ -1,3 +1,7 @@
+2012-06-15  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/sync.md (atomic_fetch_<fetchop_name><mode>): Fix typo.
+
 2012-06-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (note_invalid_constants): Don't return a result.
