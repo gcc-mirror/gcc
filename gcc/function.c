@@ -571,6 +571,7 @@ struct GTY(()) temp_slot {
 /* A table of addresses that represent a stack slot.  The table is a mapping
    from address RTXen to a temp slot.  */
 static GTY((param_is(struct temp_slot_address_entry))) htab_t temp_slot_address_table;
+static size_t n_temp_slots_in_use;
 
 /* Entry for the above hash table.  */
 struct GTY(()) temp_slot_address_entry {
@@ -647,6 +648,7 @@ make_slot_available (struct temp_slot *temp)
   insert_slot_to_list (temp, &avail_temp_slots);
   temp->in_use = 0;
   temp->level = -1;
+  n_temp_slots_in_use--;
 }
 
 /* Compute the hash value for an address -> temp slot mapping.
@@ -699,7 +701,7 @@ remove_unused_temp_slot_addresses_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   const struct temp_slot_address_entry *t;
   t = (const struct temp_slot_address_entry *) *slot;
   if (! t->temp_slot->in_use)
-    *slot = NULL;
+    htab_clear_slot (temp_slot_address_table, slot);
   return 1;
 }
 
@@ -707,9 +709,13 @@ remove_unused_temp_slot_addresses_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 static void
 remove_unused_temp_slot_addresses (void)
 {
-  htab_traverse (temp_slot_address_table,
-		 remove_unused_temp_slot_addresses_1,
-		 NULL);
+  /* Use quicker clearing if there aren't any active temp slots.  */
+  if (n_temp_slots_in_use)
+    htab_traverse (temp_slot_address_table,
+		   remove_unused_temp_slot_addresses_1,
+		   NULL);
+  else
+    htab_empty (temp_slot_address_table);
 }
 
 /* Find the temp slot corresponding to the object at address X.  */
@@ -901,6 +907,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
   p->in_use = 1;
   p->type = type;
   p->level = temp_slot_level;
+  n_temp_slots_in_use++;
 
   pp = temp_slots_at_level (p->level);
   insert_slot_to_list (p, pp);
@@ -1212,6 +1219,7 @@ init_temp_slots (void)
   avail_temp_slots = 0;
   used_temp_slots = 0;
   temp_slot_level = 0;
+  n_temp_slots_in_use = 0;
 
   /* Set up the table to map addresses to temp slots.  */
   if (! temp_slot_address_table)
@@ -4496,7 +4504,6 @@ allocate_struct_function (tree fndecl, bool abstract_p)
       /* ??? This could be set on a per-function basis by the front-end
          but is this worth the hassle?  */
       cfun->can_throw_non_call_exceptions = flag_non_call_exceptions;
-      cfun->can_delete_dead_exceptions = flag_delete_dead_exceptions;
     }
 }
 
