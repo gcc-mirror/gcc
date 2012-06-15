@@ -628,6 +628,14 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   location_t loc = gimple_location (gsi_stmt (*gsi));
   unsigned i;
 
+  if (TREE_CODE (mask) == SSA_NAME)
+    {
+      gimple def_stmt = SSA_NAME_DEF_STMT (mask);
+      if (is_gimple_assign (def_stmt)
+	  && gimple_assign_rhs_code (def_stmt) == VECTOR_CST)
+	mask = gimple_assign_rhs1 (def_stmt);
+    }
+
   if (TREE_CODE (mask) == VECTOR_CST)
     {
       unsigned char *sel_int = XALLOCAVEC (unsigned char, elements);
@@ -637,7 +645,11 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 		      & (2 * elements - 1));
 
       if (can_vec_perm_p (TYPE_MODE (vect_type), false, sel_int))
-	return;
+	{
+	  gimple_assign_set_rhs3 (stmt, mask);
+	  update_stmt (stmt);
+	  return;
+	}
     }
   else if (can_vec_perm_p (TYPE_MODE (vect_type), true, NULL))
     return;

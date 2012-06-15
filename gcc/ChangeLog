@@ -1,3 +1,8 @@
+2012-06-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* tree-vect-generic.c (lower_vec_perm): Propagate vector constants
+	into VEC_PERM_EXPR.
+
 2012-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-patterns.c (vect_pattern_recog): Don't unnecessarily
