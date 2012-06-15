@@ -5361,7 +5361,9 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
 
      Pattern statement needs to be analyzed instead of the original statement
      if the original statement is not relevant.  Otherwise, we analyze both
-     statements.  */
+     statements.  In basic blocks we are called from some SLP instance
+     traversal, don't analyze pattern stmts instead, the pattern stmts
+     already will be part of SLP instance.  */
 
   pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
   if (!STMT_VINFO_RELEVANT_P (stmt_info)
@@ -5390,6 +5392,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
         }
     }
   else if (STMT_VINFO_IN_PATTERN_P (stmt_info)
+	   && node == NULL
            && pattern_stmt
            && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
                || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
@@ -5406,6 +5409,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
    }
 
   if (is_pattern_stmt_p (stmt_info)
+      && node == NULL
       && (pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info)))
     {
       gimple_stmt_iterator si;
