@@ -1,3 +1,26 @@
+2012-06-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR c++/51033
+	* c-c++-common/torture/vshuf-16.inc: Move from gcc.c-torture/execute/.
+	* c-c++-common/torture/vshuf-2.inc: Likewise.
+	* c-c++-common/torture/vshuf-4.inc: Likewise.
+	* c-c++-common/torture/vshuf-8.inc: Likewise.
+	* c-c++-common/torture/vshuf-main.inc: Likewise.
+	* c-c++-common/torture/vshuf-v16hi.c: Likewise.
+	* c-c++-common/torture/vshuf-v16qi.c: Likewise.
+	* c-c++-common/torture/vshuf-v2df.c: Likewise.
+	* c-c++-common/torture/vshuf-v2di.c: Likewise.
+	* c-c++-common/torture/vshuf-v2sf.c: Likewise.
+	* c-c++-common/torture/vshuf-v2si.c: Likewise.
+	* c-c++-common/torture/vshuf-v4df.c: Likewise.
+	* c-c++-common/torture/vshuf-v4di.c: Likewise.
+	* c-c++-common/torture/vshuf-v4hi.c: Likewise.
+	* c-c++-common/torture/vshuf-v4sf.c: Likewise.
+	* c-c++-common/torture/vshuf-v4si.c: Likewise.
+	* c-c++-common/torture/vshuf-v8hi.c: Likewise.
+	* c-c++-common/torture/vshuf-v8qi.c: Likewise.
+	* c-c++-common/torture/vshuf-v8si.c: Likewise.
+
 2012-06-15  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/tree-ssa/vector-4.c: New test.

@@ -1,3 +1,9 @@
+2012-06-15  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/51033
+	* c-typeck.c (c_build_vec_perm_expr): Move to c-family/c-common.c.
+        * c-tree.h (c_build_vec_perm_expr): Move to c-family/c-common.h.
+
 2012-06-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_default_expand_builtin): New function.

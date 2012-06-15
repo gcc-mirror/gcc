@@ -5622,6 +5622,7 @@ bool
 literal_type_p (tree t)
 {
   if (SCALAR_TYPE_P (t)
+      || TREE_CODE (t) == VECTOR_TYPE
       || TREE_CODE (t) == REFERENCE_TYPE)
     return true;
   if (CLASS_TYPE_P (t))
@@ -8505,6 +8506,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       return true;
 
     case FMA_EXPR:
+    case VEC_PERM_EXPR:
      for (i = 0; i < 3; ++i)
       if (!potential_constant_expression_1 (TREE_OPERAND (t, i),
 					    true, flags))
