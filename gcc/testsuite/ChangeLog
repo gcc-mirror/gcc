@@ -1,5 +1,9 @@
 2012-06-15  Michael Matz  <matz@suse.de>
 
+	* gcc.dg/tree-ssa/vector-4.c: New test.
+
+2012-06-15  Michael Matz  <matz@suse.de>
+
 	* gcc.dg/debug/dwarf2/inline3.c: Adjust.
 	* gcc.dg/tree-ssa/foldstring-1.c: Adjust.
 

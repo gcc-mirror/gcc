@@ -3796,15 +3796,29 @@ rhs_predicate_for (tree lhs)
 
 static enum gimplify_status
 gimplify_compound_literal_expr (tree *expr_p, gimple_seq *pre_p,
+				bool (*gimple_test_f) (tree),
 				fallback_t fallback)
 {
   tree decl_s = COMPOUND_LITERAL_EXPR_DECL_EXPR (*expr_p);
   tree decl = DECL_EXPR_DECL (decl_s);
+  tree init = DECL_INITIAL (decl);
   /* Mark the decl as addressable if the compound literal
      expression is addressable now, otherwise it is marked too late
      after we gimplify the initialization expression.  */
   if (TREE_ADDRESSABLE (*expr_p))
     TREE_ADDRESSABLE (decl) = 1;
+  /* Otherwise, if we don't need an lvalue and have a literal directly
+     substitute it.  Check if it matches the gimple predicate, as
+     otherwise we'd generate a new temporary, and we can as well just
+     use the decl we already have.  */
+  else if (!TREE_ADDRESSABLE (decl)
+	   && init
+	   && (fallback & fb_lvalue) == 0
+	   && gimple_test_f (init))
+    {
+      *expr_p = init;
+      return GS_OK;
+    }
 
   /* Preliminarily mark non-addressed complex variables as eligible
      for promotion to gimple registers.  We'll transform their uses
@@ -7121,7 +7135,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 
 	case COMPOUND_LITERAL_EXPR:
-	  ret = gimplify_compound_literal_expr (expr_p, pre_p, fallback);
+	  ret = gimplify_compound_literal_expr (expr_p, pre_p,
+						gimple_test_f, fallback);
 	  break;
 
 	case MODIFY_EXPR:
