@@ -1,3 +1,32 @@
+2012-06-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (addsf3, adddf3): Use s_register_operand.
+	(subsf3, subdf3): Likewise.
+	(mulsf3, muldf3): Likewise.
+	(difsf3, divdf3): Likewise.
+	(movsfcc, movdfcc): Likewise.
+	* predicates.md (f_register_operand): Delete.
+	(arm_float_rhs_operand): Delete.
+	(arm_float_add_operand): Delete.
+	(arm_float_compare_operand): Use s_register_operand when
+	there's no VFP.
+	(cirrus_register_operand): Delete.
+	(cirrus_fp_register): Delete.
+	(cirrus_shift_const): Delete.
+	(cmpdi_operand): Remove Maverick support.
+	* constraints.md (f, v, H): Delete constraints.
+	(G): Update documentation.
+	* arm.c (fp_consts_inited): Convert to bool.
+	(strings_fp): Delete.
+	(values_fp): Delete.
+	(value_fp0): New variable.
+	(init_fp_table): Simplify logic.
+	(arm_const_double_rtx): Likewise.
+	(fp_immediate_constant): Likewise.
+	(fp_const_from_val): Likewise.
+	(neg_const_double_rtx_ok_for_fpa): Delete.
+	* doc/md.texi (ARM constraints): Update documentation.
+
 2012-06-15  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	PR tree-optimization/53636

@@ -19,14 +19,16 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;; The following register constraints have been used:
-;; - in ARM/Thumb-2 state: f, t, v, w, x, y, z
+;; - in ARM/Thumb-2 state: t, w, x, y, z
 ;; - in Thumb state: h, b
 ;; - in both states: l, c, k
 ;; In ARM state, 'l' is an alias for 'r'
+;; 'f' and 'v' were previously used for FPA and MAVERICK registers.
 
 ;; The following normal constraints have been used:
-;; in ARM/Thumb-2 state: G, H, I, j, J, K, L, M
+;; in ARM/Thumb-2 state: G, I, j, J, K, L, M
 ;; in Thumb-1 state: I, J, K, L, M, N, O
+;; 'H' was previously used for FPA.
 
 ;; The following multi-letter normal constraints have been used:
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dn, Dl, DL, Dv, Dy, Di, Dt, Dz
@@ -39,14 +41,8 @@
 ;; in Thumb state: Uu, Uw
 
 
-(define_register_constraint "f" "TARGET_ARM ? FPA_REGS : NO_REGS"
- "Legacy FPA registers @code{f0}-@code{f7}.")
-
 (define_register_constraint "t" "TARGET_32BIT ? VFP_LO_REGS : NO_REGS"
  "The VFP registers @code{s0}-@code{s31}.")
-
-(define_register_constraint "v" "TARGET_ARM ? CIRRUS_REGS : NO_REGS"
- "The Cirrus Maverick co-processor registers.")
 
 (define_register_constraint "w"
   "TARGET_32BIT ? (TARGET_VFPD32 ? VFP_REGS : VFP_LO_REGS) : NO_REGS"
@@ -213,14 +209,9 @@
        (match_test "TARGET_THUMB2 && ival >= 0 && ival <= 255")))
 
 (define_constraint "G"
- "In ARM/Thumb-2 state a valid FPA immediate constant."
+ "In ARM/Thumb-2 state the floating-point constant 0."
  (and (match_code "const_double")
       (match_test "TARGET_32BIT && arm_const_double_rtx (op)")))
-
-(define_constraint "H"
- "In ARM/Thumb-2 state a valid FPA immediate constant when negated."
- (and (match_code "const_double")
-      (match_test "TARGET_32BIT && neg_const_double_rtx_ok_for_fpa (op)")))
 
 (define_constraint "Dz"
  "@internal
