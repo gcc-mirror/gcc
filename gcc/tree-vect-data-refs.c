@@ -861,6 +861,24 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 	}
     }
 
+  /* Similarly, if we're doing basic-block vectorization, we can only use
+     base and misalignment information relative to an innermost loop if the
+     misalignment stays the same throughout the execution of the loop.
+     As above, this is the case if the stride of the dataref evenly divides
+     by the vector size.  */
+  if (!loop)
+    {
+      tree step = DR_STEP (dr);
+      HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
+
+      if (dr_step % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0)
+	{
+	  if (vect_print_dump_info (REPORT_ALIGNMENT))
+	    fprintf (vect_dump, "SLP: step doesn't divide the vector-size.");
+	  misalign = NULL_TREE;
+	}
+    }
+
   base = build_fold_indirect_ref (base_addr);
   alignment = ssize_int (TYPE_ALIGN (vectype)/BITS_PER_UNIT);
 

@@ -1,3 +1,8 @@
+2012-06-15  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	PR tree-optimization/53636
+	* gcc.target/arm/pr53636.c: New test.
+
 2012-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51581
