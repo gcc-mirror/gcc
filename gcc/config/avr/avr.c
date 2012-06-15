@@ -10329,8 +10329,8 @@ avr_init_builtin_int24 (void)
   tree int24_type  = make_signed_type (GET_MODE_BITSIZE (PSImode));
   tree uint24_type = make_unsigned_type (GET_MODE_BITSIZE (PSImode));
 
-  (*lang_hooks.types.register_builtin_type) (int24_type, "__int24");
-  (*lang_hooks.types.register_builtin_type) (uint24_type, "__uint24");
+  lang_hooks.types.register_builtin_type (int24_type, "__int24");
+  lang_hooks.types.register_builtin_type (uint24_type, "__uint24");
 }
 
 
@@ -10397,170 +10397,64 @@ avr_init_builtins (void)
 }
 
 
-/* Subroutine of avr_expand_builtin to take care of unop insns.  */
+/* Subroutine of avr_expand_builtin to expand vanilla builtins
+   with non-void result and 1 ... 3 arguments.  */
 
 static rtx
-avr_expand_unop_builtin (enum insn_code icode, tree exp,
-                         rtx target)
+avr_default_expand_builtin (enum insn_code icode, tree exp, rtx target)
 {
-  rtx pat;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-  enum machine_mode op0mode = GET_MODE (op0);
+  rtx pat, xop[3];
+  int n, n_args = call_expr_nargs (exp);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
 
-  if (! target
+  gcc_assert (n_args >= 1 && n_args <= 3);
+              
+  if (target == NULL_RTX
       || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+      || !insn_data[icode].operand[0].predicate (target, tmode))
     {
       target = gen_reg_rtx (tmode);
     }
 
-  if (op0mode == SImode && mode0 == HImode)
+  for (n = 0; n < n_args; n++)
     {
-      op0mode = HImode;
-      op0 = gen_lowpart (HImode, op0);
-    }
+      tree arg = CALL_EXPR_ARG (exp, n);
+      rtx op = expand_expr (arg, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+      enum machine_mode opmode = GET_MODE (op);
+      enum machine_mode mode = insn_data[icode].operand[n+1].mode;
+
+      if ((opmode == SImode || opmode == VOIDmode) && mode == HImode)
+        {
+          opmode = HImode;
+          op = gen_lowpart (HImode, op);
+        }
+
+      /* In case the insn wants input operands in modes different from
+         the result, abort.  */
   
-  gcc_assert (op0mode == mode0 || op0mode == VOIDmode);
+      gcc_assert (opmode == mode || opmode == VOIDmode);
 
-  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
+      if (!insn_data[icode].operand[n+1].predicate (op, mode))
+        op = copy_to_mode_reg (mode, op);
 
-  pat = GEN_FCN (icode) (target, op0);
-  if (! pat)
-    return 0;
-  
-  emit_insn (pat);
-  
-  return target;
-}
-
-
-/* Subroutine of avr_expand_builtin to take care of binop insns.  */
-
-static rtx
-avr_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
-{
-  rtx pat;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  tree arg1 = CALL_EXPR_ARG (exp, 1);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-  enum machine_mode op0mode = GET_MODE (op0);
-  enum machine_mode op1mode = GET_MODE (op1);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
-
-  if (! target
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    {
-      target = gen_reg_rtx (tmode);
+      xop[n] = op;
     }
 
-  if ((op0mode == SImode || op0mode == VOIDmode) && mode0 == HImode)
+  switch (n_args)
     {
-      op0mode = HImode;
-      op0 = gen_lowpart (HImode, op0);
+    case 1: pat = GEN_FCN (icode) (target, xop[0]); break;
+    case 2: pat = GEN_FCN (icode) (target, xop[0], xop[1]); break;
+    case 3: pat = GEN_FCN (icode) (target, xop[0], xop[1], xop[2]); break;
+
+    default:
+      gcc_unreachable();
     }
   
-  if ((op1mode == SImode || op1mode == VOIDmode) && mode1 == HImode)
-    {
-      op1mode = HImode;
-      op1 = gen_lowpart (HImode, op1);
-    }
-  
-  /* In case the insn wants input operands in modes different from
-     the result, abort.  */
-  
-  gcc_assert ((op0mode == mode0 || op0mode == VOIDmode)
-              && (op1mode == mode1 || op1mode == VOIDmode));
-
-  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-  
-  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
-
-  pat = GEN_FCN (icode) (target, op0, op1);
-  
-  if (! pat)
-    return 0;
+  if (pat == NULL_RTX)
+    return NULL_RTX;
 
   emit_insn (pat);
-  return target;
-}
 
-/* Subroutine of avr_expand_builtin to take care of 3-operand insns.  */
-
-static rtx
-avr_expand_triop_builtin (enum insn_code icode, tree exp, rtx target)
-{
-  rtx pat;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  tree arg1 = CALL_EXPR_ARG (exp, 1);
-  tree arg2 = CALL_EXPR_ARG (exp, 2);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-  rtx op2 = expand_expr (arg2, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-  enum machine_mode op0mode = GET_MODE (op0);
-  enum machine_mode op1mode = GET_MODE (op1);
-  enum machine_mode op2mode = GET_MODE (op2);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
-  enum machine_mode mode2 = insn_data[icode].operand[3].mode;
-
-  if (! target
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    {
-      target = gen_reg_rtx (tmode);
-    }
-
-  if ((op0mode == SImode || op0mode == VOIDmode) && mode0 == HImode)
-    {
-      op0mode = HImode;
-      op0 = gen_lowpart (HImode, op0);
-    }
-  
-  if ((op1mode == SImode || op1mode == VOIDmode) && mode1 == HImode)
-    {
-      op1mode = HImode;
-      op1 = gen_lowpart (HImode, op1);
-    }
-  
-  if ((op2mode == SImode || op2mode == VOIDmode) && mode2 == HImode)
-    {
-      op2mode = HImode;
-      op2 = gen_lowpart (HImode, op2);
-    }
-  
-  /* In case the insn wants input operands in modes different from
-     the result, abort.  */
-  
-  gcc_assert ((op0mode == mode0 || op0mode == VOIDmode)
-              && (op1mode == mode1 || op1mode == VOIDmode)
-              && (op2mode == mode2 || op2mode == VOIDmode));
-
-  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-  
-  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
-
-  if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
-    op2 = copy_to_mode_reg (mode2, op2);
-
-  pat = GEN_FCN (icode) (target, op0, op1, op2);
-  
-  if (! pat)
-    return 0;
-
-  emit_insn (pat);
   return target;
 }
 
@@ -10579,7 +10473,7 @@ avr_expand_builtin (tree exp, rtx target,
                     int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  const char* bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+  const char *bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
   unsigned int id = DECL_FUNCTION_CODE (fndecl);
   const struct avr_builtin_description *d = &avr_bdesc[id];
   tree arg0;
@@ -10603,7 +10497,7 @@ avr_expand_builtin (tree exp, rtx target,
         else
           avr_expand_delay_cycles (op0);
 
-        return 0;
+        return NULL_RTX;
       }
 
     case AVR_BUILTIN_INSERT_BITS:
@@ -10621,24 +10515,16 @@ avr_expand_builtin (tree exp, rtx target,
     }
 
   /* No special treatment needed: vanilla expand.  */
-  
-  switch (d->n_args)
+
+  gcc_assert (d->n_args == call_expr_nargs (exp));
+
+  if (d->n_args == 0)
     {
-    case 0:
       emit_insn ((GEN_FCN (d->icode)) (target));
-      return 0;
-      
-    case 1:
-      return avr_expand_unop_builtin (d->icode, exp, target);
-      
-    case 2:
-      return avr_expand_binop_builtin (d->icode, exp, target);
-      
-    case 3:
-      return avr_expand_triop_builtin (d->icode, exp, target);
+      return NULL_RTX;
     }
-  
-  gcc_unreachable ();
+
+  return avr_default_expand_builtin (d->icode, exp, target);
 }
 
 

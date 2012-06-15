@@ -1,3 +1,11 @@
+2012-06-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_default_expand_builtin): New function.
+	(avr_expand_builtin): Use it.
+	(avr_expand_unop_builtin): Remove.
+	(avr_expand_binop_builtin): Remove.
+	(avr_expand_triop_builtin): Remove.
+
 2012-06-15  Michael Matz  <matz@suse.de>
 
 	PR middle-end/38474
