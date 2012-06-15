@@ -2983,7 +2983,7 @@ void
 vect_pattern_recog (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 {
   struct loop *loop;
-  basic_block *bbs, bb;
+  basic_block *bbs;
   unsigned int nbbs;
   gimple_stmt_iterator si;
   unsigned int i, j;
@@ -3002,10 +3002,8 @@ vect_pattern_recog (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
     }
   else
     {
-      bb = BB_VINFO_BB (bb_vinfo);
+      bbs = &BB_VINFO_BB (bb_vinfo);
       nbbs = 1;
-      bbs = XNEW (basic_block);
-      bbs[0] = bb;
     }
 
   /* Scan through the loop stmts, applying the pattern recognition
@@ -3031,6 +3029,4 @@ vect_pattern_recog (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
     }
 
   VEC_free (gimple, heap, stmts_to_replace);
-  if (bb_vinfo)
-    free (bbs);
 }
