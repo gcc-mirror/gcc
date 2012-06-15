@@ -1,5 +1,8 @@
 2012-06-15  Janis Johnson  <janosjo@codesourcery.com>
 
+	* g++.dg/torture/stackalign/stackalign.exp: Combine stack
+	alignment torture options with usual torture options.
+
 	* g++.dg/cpp0x/auto27.C: Add comments to checks for multiple
 	messages reported for one line of source code.
 	* g++.dg/cpp0x/constexpr-decl.C: Likewise.
