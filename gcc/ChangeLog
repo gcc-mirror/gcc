@@ -1,3 +1,11 @@
+2012-06-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	Backport from mainline:
+
+	2012-05-31  Aldy Hernandez  <aldyh@redhat.com>
+	* tree-ssa-loop-im.c (execute_sm): Do not check flag_tm.
+	* gimple.h (block_in_transaction): Check for flag_tm.
+
 2012-06-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/52558
