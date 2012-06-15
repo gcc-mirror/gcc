@@ -5448,6 +5448,44 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
       }
       break;
 
+    case RID_BUILTIN_SHUFFLE:
+      {
+	VEC(tree,gc)* vec;
+	unsigned int i;
+	tree p;
+	location_t loc = token->location;
+
+	cp_lexer_consume_token (parser->lexer);
+	vec = cp_parser_parenthesized_expression_list (parser, non_attr,
+		    /*cast_p=*/false, /*allow_expansion_p=*/true,
+		    /*non_constant_p=*/NULL);
+	if (vec == NULL)
+	  return error_mark_node;
+
+	FOR_EACH_VEC_ELT (tree, vec, i, p)
+	  mark_exp_read (p);
+
+	if (VEC_length (tree, vec) == 2)
+	  return
+	    c_build_vec_perm_expr
+	    (loc, VEC_index (tree, vec, 0),
+	     NULL_TREE, VEC_index (tree, vec, 1));
+
+	else if (VEC_length (tree, vec) == 3)
+	  return
+	    c_build_vec_perm_expr
+	    (loc, VEC_index (tree, vec, 0),
+	     VEC_index (tree, vec, 1),
+	     VEC_index (tree, vec, 2));
+	else
+	{
+	  error_at (loc, "wrong number of arguments to "
+	      "%<__builtin_shuffle%>");
+	  return error_mark_node;
+	}
+	break;
+      }
+
     default:
       {
 	tree type;

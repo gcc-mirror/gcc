@@ -1,3 +1,10 @@
+2012-06-15  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/51033
+	* semantics.c (literal_type_p): Handle VECTOR_TYPE.
+        (potential_constant_expression_1): Handle VEC_PERM_EXPR.
+        * parser.c (cp_parser_postfix_expression): Handle RID_BUILTIN_SHUFFLE.
+
 2012-06-09  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_expr) [TAG_DEFN]: Instantiate local class.
