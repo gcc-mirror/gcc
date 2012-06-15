@@ -1,3 +1,11 @@
+2012-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/53592
+	* gcc-interface/gigi.h (maybe_vector_array): Make static inline.
+	* gcc-interface/utils.c (maybe_vector_array): Delete.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Indexed_Component>: Mark the
+	array object as addressable if it has vector type and is on the LHS.
+
 2012-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/Makefile.in (gnatlib-shared-default): Append

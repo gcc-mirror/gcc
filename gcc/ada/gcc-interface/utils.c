@@ -4474,20 +4474,6 @@ maybe_unconstrained_array (tree exp)
 
   return exp;
 }
-
-/* If EXP's type is a VECTOR_TYPE, return EXP converted to the associated
-   TYPE_REPRESENTATIVE_ARRAY.  */
-
-tree
-maybe_vector_array (tree exp)
-{
-  tree etype = TREE_TYPE (exp);
-
-  if (VECTOR_TYPE_P (etype))
-    exp = convert (TYPE_REPRESENTATIVE_ARRAY (etype), exp);
-
-  return exp;
-}
 
 /* Return true if EXPR is an expression that can be folded as an operand
    of a VIEW_CONVERT_EXPR.  See ada-tree.h for a complete rationale.  */
