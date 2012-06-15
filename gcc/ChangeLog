@@ -1,3 +1,9 @@
+2012-06-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (set_and_canonicalize_value_range): Use canonical
+	predicates to set VR_UNDEFINED and VR_VARYING.  Drop a case
+	we assert for in set_value_range to VR_VARYING.
+
 2012-06-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (addsf3, adddf3): Use s_register_operand.
