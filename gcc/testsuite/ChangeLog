@@ -1,3 +1,46 @@
+2012-06-15  Janis Johnson  <janosjo@codesourcery.com>
+
+	* g++.dg/cpp0x/auto27.C: Add comments to checks for multiple
+	messages reported for one line of source code.
+	* g++.dg/cpp0x/constexpr-decl.C: Likewise.
+	* g++.dg/cpp0x/decltype2.C: Likewise.
+	* g++.dg/cpp0x/decltype3.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-syntax1.C: Likewise.
+	* g++.dg/cpp0x/regress/error-recovery1.C: Likewise.
+	* g++.dg/cpp0x/static_assert3.C: Likewise.
+	* g++.dg/cpp0x/udlit-cpp98-neg.C: Likewise.
+	* g++.dg/cpp0x/udlit-shadow-neg.C: Likewise.
+	* g++.dg/cpp0x/union1.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex10.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex14.C: Likewise.
+	* g++.dg/cpp0x/variadic2.C: Likewise.
+	* g++.dg/cpp0x/variadic20.C: Likewise.
+	* g++.dg/cpp0x/variadic74.C: Likewise.
+	* g++.dg/diagnostic/bitfld2.C: Likewise.
+	* g++.dg/ext/attrib44.C: Likewise.
+	* g++.dg/ext/no-asm-1.C: Likewise.
+	* g++.dg/other/error34.C: Likewise.
+	* g++.dg/parse/crash46.C: Likewise.
+	* g++.dg/parse/error10.C: Likewise.
+	* g++.dg/parse/error2.C: Likewise.
+	* g++.dg/parse/error3.C: Likewise.
+	* g++.dg/parse/error36.C: Likewise.
+	* g++.dg/parse/error8.C: Likewise.
+	* g++.dg/parse/error9.C: Likewise.
+	* g++.dg/parse/parser-pr28152-2.C: Likewise.
+	* g++.dg/parse/parser-pr28152.C: Likewise.
+	* g++.dg/parse/template25.C: Likewise.
+	* g++.dg/parse/typename11.C: Likewise.
+	* g++.dg/tc1/dr147.C: Likewise.
+	* g++.dg/template/deduce3.C: Likewise.
+	* g++.dg/template/koenig9.C: Likewise.
+	* g++.dg/template/pr23510.C: Likewise.
+	* g++.dg/warn/pr12242.C: Likewise.
+	* g++.dg/warn/pr30551-2.C: Likewise.
+	* g++.dg/warn/pr30551.C: Likewise.
+	* g++.old-deja/g++.other/typename1.C: Likewise.
+	* g++.old-deja/g++.pt/niklas01a.C: Likewise.
+
 2012-06-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR c++/51033
