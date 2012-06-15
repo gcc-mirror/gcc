@@ -1,5 +1,17 @@
 2012-06-15  Michael Matz  <matz@suse.de>
 
+	PR middle-end/38474
+	* cfgexpand.c (add_alias_set_conflicts): Remove.
+	(expand_used_vars): Don't call it.
+	(aggregate_contains_union_type): Remove.
+	* function.c (n_temp_slots_in_use): New static data.
+	(make_slot_available, assign_stack_temp_for_type): Update it.
+	(init_temp_slots): Zero it.
+	(remove_unused_temp_slot_addresses): Use it for quicker removal.
+	(remove_unused_temp_slot_addresses_1): Use htab_clear_slot.
+
+2012-06-15  Michael Matz  <matz@suse.de>
+
 	* gimplify.c (gimplify_compound_literal_expr): Take gimple_test_f
 	argument, don't emit assign statement if value is directly usable.
 	(gimplify_expr): Adjust.
@@ -190,9 +202,9 @@
 2012-06-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.opt (mfp=2, mfp=3, mfpe, mfpe=2, mfpe=3): Delete options.
-        * arm-fpus.def (fpa, fpe2, fpe3, maverick): Delete FPU types.
+	* arm-fpus.def (fpa, fpe2, fpe3, maverick): Delete FPU types.
 	* arm-tables.opt: Regenerated.
-        * doc/invoke.texi: Remove references to deleted options.
+	* doc/invoke.texi: Remove references to deleted options.
 
 2012-06-14  Sandeep Kumar Singh  <Sandeep.Singh2@kpitcummins.com>
 
