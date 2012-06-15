@@ -1,3 +1,12 @@
+2012-06-15  Walter Lee <walt@tilera.com>
+
+	Backport from mainline:
+        2012-06-15  Walter Lee  <walt@tilera.com>
+	* config/tilegx/sync.md (atomic_fetch_<fetchop_name><mode>):
+          Fix typo.
+        2012-06-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
+	* config/tilegx/sync.md (atomic_fetch_sub<mode>): Fix typo.
+
 2012-06-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	Backport from mainline:
