@@ -1,3 +1,18 @@
+2012-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51581
+	* expr.h (choose_multiplier): New prototype.
+	* expmed.c (choose_multiplier): No longer static.
+	Change multiplier_ptr from rtx * to UHWI *.
+	(expand_divmod): Adjust callers.
+	* tree-vect-patterns.c (vect_recog_sdivmod_pow2_pattern):
+	Renamed to...
+	(vect_recog_divmod_pattern): ... this.  Pass bb_vinfo as last
+	argument to new_stmt_vec_info.  Attempt to optimize also divisions
+	by non-pow2 constants if integer vector division isn't supported.
+	* tree-vect-stmts.c (vect_analyze_stmt): If node != NULL,
+	don't look at pattern stmts and sequences.
+
 2012-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/53590

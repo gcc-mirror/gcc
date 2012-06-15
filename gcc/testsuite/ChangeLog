@@ -1,3 +1,17 @@
+2012-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51581
+	* gcc.c-torture/execute/pr51581-1.c: New test.
+	* gcc.c-torture/execute/pr51581-2.c: New test.
+	* gcc.dg/vect/pr51581-1.c: New test.
+	* gcc.dg/vect/pr51581-2.c: New test.
+	* gcc.dg/vect/pr51581-3.c: New test.
+	* gcc.target/i386/avx-pr51581-1.c: New test.
+	* gcc.target/i386/avx-pr51581-2.c: New test.
+	* gcc.target/i386/avx2-pr51581-1.c: New test.
+	* gcc.target/i386/avx2-pr51581-2.c: New test.
+	* gcc.dg/vect/slp-26.c (main1): Divide by 0x8031 instead of 3.
+
 2012-06-15  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/execute/20120615-1.c: New testcase.
