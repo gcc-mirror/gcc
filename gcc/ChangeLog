@@ -1,3 +1,13 @@
+2012-06-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (note_invalid_constants): Don't return a result.
+	(arm_memory_load_p): Delete function.
+	(arm_const_double_rtx): Delete iterator variable i;
+	(fp_immediate_constant): Likewise.
+	(fp_const_from_val): Likewise.
+
+	* arm.c (arm_init_iwmmxt_builtins): Delete void_ftype_void.
+
 2012-06-15  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/51033
