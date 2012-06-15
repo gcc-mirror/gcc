@@ -1,5 +1,8 @@
 2012-06-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-vect-patterns.c (vect_pattern_recog): Don't unnecessarily
+	allocate and free bbs array for the SLP case.
+
 	PR tree-optimization/51581
 	* expr.h (choose_multiplier): New prototype.
 	* expmed.c (choose_multiplier): No longer static.
