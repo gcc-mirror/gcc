@@ -1653,21 +1653,13 @@ table heading for each architecture is the definitive reference for
 the meanings of that architecture's constraints.
 
 @table @emph
-@item ARM family---@file{config/arm/arm.h}
+@item ARM family---@file{config/arm/constraints.md}
 @table @code
-@item f
-Floating-point register
-
 @item w
 VFP floating-point register
 
-@item F
-One of the floating-point constants 0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0
-or 10.0
-
 @item G
-Floating-point constant that would satisfy the constraint @samp{F} if it
-were negated
+The floating-point constant 0.0
 
 @item I
 Integer that is valid as an immediate operand in a data processing

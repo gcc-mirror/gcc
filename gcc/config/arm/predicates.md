@@ -60,19 +60,6 @@
 	      || REGNO (op) >= FIRST_PSEUDO_REGISTER));
 })
 
-(define_predicate "f_register_operand"
-  (match_code "reg,subreg")
-{
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-
-  /* We don't consider registers whose class is NO_REGS
-     to be a register operand.  */
-  return (GET_CODE (op) == REG
-	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
-	      || REGNO_REG_CLASS (REGNO (op)) == FPA_REGS));
-})
-
 (define_predicate "vfp_register_operand"
   (match_code "reg,subreg")
 {
@@ -189,18 +176,6 @@
 			 || (GET_CODE (op) == REG
 			     && REGNO (op) >= FIRST_PSEUDO_REGISTER)))")))
 
-;; True for valid operands for the rhs of an floating point insns.
-;;   Allows regs or certain consts on FPA, just regs for everything else.
-(define_predicate "arm_float_rhs_operand"
-  (ior (match_operand 0 "s_register_operand")
-       (and (match_code "const_double")
-	    (match_test "TARGET_FPA && arm_const_double_rtx (op)"))))
-
-(define_predicate "arm_float_add_operand"
-  (ior (match_operand 0 "arm_float_rhs_operand")
-       (and (match_code "const_double")
-	    (match_test "TARGET_FPA && neg_const_double_rtx_ok_for_fpa (op)"))))
-
 (define_predicate "vfp_compare_operand"
   (ior (match_operand 0 "s_register_operand")
        (and (match_code "const_double")
@@ -209,7 +184,7 @@
 (define_predicate "arm_float_compare_operand"
   (if_then_else (match_test "TARGET_VFP")
 		(match_operand 0 "vfp_compare_operand")
-		(match_operand 0 "arm_float_rhs_operand")))
+		(match_operand 0 "s_register_operand")))
 
 ;; True for valid index operands.
 (define_predicate "index_operand"
@@ -464,36 +439,8 @@
 
 ;;-------------------------------------------------------------------------
 ;;
-;; MAVERICK predicates
-;;
-
-(define_predicate "cirrus_register_operand"
-  (match_code "reg,subreg")
-{
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-
-  return (GET_CODE (op) == REG
-	  && (REGNO_REG_CLASS (REGNO (op)) == CIRRUS_REGS
-	      || REGNO_REG_CLASS (REGNO (op)) == GENERAL_REGS));
-})
-
-(define_predicate "cirrus_fp_register"
-  (match_code "reg,subreg")
-{
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-
-  return (GET_CODE (op) == REG
-	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
-	      || REGNO_REG_CLASS (REGNO (op)) == CIRRUS_REGS));
-})
-
-(define_predicate "cirrus_shift_const"
-  (and (match_code "const_int")
-       (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)) < 64")))
-
 ;; iWMMXt predicates
+;;
 
 (define_predicate "imm_or_reg_operand"
   (ior (match_operand 0 "immediate_operand")
@@ -563,11 +510,8 @@
 ;; Predicates for named expanders that overlap multiple ISAs.
 
 (define_predicate "cmpdi_operand"
-  (if_then_else (match_test "TARGET_HARD_FLOAT && TARGET_MAVERICK")
-		(and (match_test "TARGET_ARM")
-		     (match_operand 0 "cirrus_fp_register"))
-		(and (match_test "TARGET_32BIT")
-		     (match_operand 0 "arm_di_operand"))))
+  (and (match_test "TARGET_32BIT")
+       (match_operand 0 "arm_di_operand")))
 
 ;; True if the operand is memory reference suitable for a ldrex/strex.
 (define_predicate "arm_sync_memory_operand"
