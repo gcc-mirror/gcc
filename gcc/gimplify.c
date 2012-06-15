@@ -4772,6 +4772,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   enum gimplify_status ret = GS_UNHANDLED;
   gimple assign;
   location_t loc = EXPR_LOCATION (*expr_p);
+  gimple_stmt_iterator gsi;
 
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
@@ -4912,8 +4913,6 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       gimple_set_location (assign, EXPR_LOCATION (*expr_p));
     }
 
-  gimplify_seq_add_stmt (pre_p, assign);
-
   if (gimplify_ctxp->into_ssa && is_gimple_reg (*to_p))
     {
       /* If we've somehow already got an SSA_NAME on the LHS, then
@@ -4922,6 +4921,10 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       *to_p = make_ssa_name (*to_p, assign);
       gimple_set_lhs (assign, *to_p);
     }
+
+  gimplify_seq_add_stmt (pre_p, assign);
+  gsi = gsi_last (*pre_p);
+  fold_stmt (&gsi);
 
   if (want_value)
     {
