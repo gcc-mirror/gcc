@@ -615,6 +615,10 @@ struct GTY(()) function {
      exceptions.  */
   unsigned int can_throw_non_call_exceptions : 1;
 
+  /* Nonzero if instructions that may throw exceptions but don't otherwise
+     contribute to the execution of the program can be deleted.  */
+  unsigned int can_delete_dead_exceptions : 1;
+
   /* Fields below this point are not set for abstract functions; see
      allocate_struct_function.  */
 

@@ -272,8 +272,10 @@ static void
 mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
 {
   /* With non-call exceptions, we have to assume that all statements could
-     throw.  If a statement may throw, it is inherently necessary.  */
-  if (cfun->can_throw_non_call_exceptions && stmt_could_throw_p (stmt))
+     throw.  If a statement could throw, it can be deemed necessary.  */
+  if (cfun->can_throw_non_call_exceptions
+      && !cfun->can_delete_dead_exceptions
+      && stmt_could_throw_p (stmt))
     {
       mark_stmt_necessary (stmt, true);
       return;

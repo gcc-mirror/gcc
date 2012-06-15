@@ -1,3 +1,27 @@
+2012-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/53590
+	* common.opt (-fdelete-dead-exceptions): New switch.
+	* doc/invoke.texi (Code Gen Options): Document it.
+	* cse.c (count_reg_usage) <CALL_INSN>: Use !insn_nothrow_p in lieu of
+	insn_could_throw_p predicate.  Do not skip an insn that could throw
+	if dead exceptions can be deleted.
+	(insn_live_p): Likewise, do not return true in that case.
+	* dce.c (can_alter_cfg): New flag.
+	(deletable_insn_p): Do not return false for an insn that can throw if
+	the CFG can be altered and dead exceptions can be deleted.
+	(init_dce): Set can_alter_cfg to false for fast DCE, true otherwise.
+	* dse.c (scan_insn): Use !insn_nothrow_p in lieu of insn_could_throw_
+	predicate. Do not preserve an insn that could throw if dead exceptions
+	can be deleted.
+	* function.h (struct function): Add can_delete_dead_exceptions flag.
+	* function.c (allocate_struct_function): Set it.
+	* lto-streamer-in.c (input_struct_function_base): Stream it.
+	* lto-streamer-out.c (input_struct_function_base): Likewise.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Do not mark a
+	statement that could throw as necessary if dead exceptions can be
+	deleted.
+
 2012-06-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/tilegx/sync.md (atomic_fetch_sub<mode>): Fix typo.
