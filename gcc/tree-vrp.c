@@ -386,6 +386,18 @@ nonnull_arg_p (const_tree arg)
 }
 
 
+/* Set value range VR to VR_UNDEFINED.  */
+
+static inline void
+set_value_range_to_undefined (value_range_t *vr)
+{
+  vr->type = VR_UNDEFINED;
+  vr->min = vr->max = NULL_TREE;
+  if (vr->equiv)
+    bitmap_clear (vr->equiv);
+}
+
+
 /* Set value range VR to VR_VARYING.  */
 
 static inline void
@@ -463,10 +475,20 @@ static void
 set_and_canonicalize_value_range (value_range_t *vr, enum value_range_type t,
 				  tree min, tree max, bitmap equiv)
 {
-  /* Nothing to canonicalize for symbolic or unknown or varying ranges.  */
-  if ((t != VR_RANGE
-       && t != VR_ANTI_RANGE)
-      || TREE_CODE (min) != INTEGER_CST
+  /* Use the canonical setters for VR_UNDEFINED and VR_VARYING.  */
+  if (t == VR_UNDEFINED)
+    {
+      set_value_range_to_undefined (vr);
+      return;
+    }
+  else if (t == VR_VARYING)
+    {
+      set_value_range_to_varying (vr);
+      return;
+    }
+
+  /* Nothing to canonicalize for symbolic ranges.  */
+  if (TREE_CODE (min) != INTEGER_CST
       || TREE_CODE (max) != INTEGER_CST)
     {
       set_value_range (vr, t, min, max, equiv);
@@ -502,7 +524,8 @@ set_and_canonicalize_value_range (value_range_t *vr, enum value_range_type t,
 
       if (is_min && is_max)
 	{
-	  /* We cannot deal with empty ranges, drop to varying.  */
+	  /* We cannot deal with empty ranges, drop to varying.
+	     ???  This could be VR_UNDEFINED instead.  */
 	  set_value_range_to_varying (vr);
 	  return;
 	}
@@ -523,6 +546,15 @@ set_and_canonicalize_value_range (value_range_t *vr, enum value_range_type t,
 	  min = vrp_val_min (TREE_TYPE (min));
 	  t = VR_RANGE;
         }
+    }
+
+  /* Drop [-INF(OVF), +INF(OVF)] to varying.  */
+  if (needs_overflow_infinity (TREE_TYPE (min))
+      && is_overflow_infinity (min)
+      && is_overflow_infinity (max))
+    {
+      set_value_range_to_varying (vr);
+      return;
     }
 
   set_value_range (vr, t, min, max, equiv);
@@ -605,18 +637,6 @@ set_value_range_to_truthvalue (value_range_t *vr, tree type)
     set_value_range (vr, VR_RANGE,
 		     build_int_cst (type, 0), build_int_cst (type, 1),
 		     vr->equiv);
-}
-
-
-/* Set value range VR to VR_UNDEFINED.  */
-
-static inline void
-set_value_range_to_undefined (value_range_t *vr)
-{
-  vr->type = VR_UNDEFINED;
-  vr->min = vr->max = NULL_TREE;
-  if (vr->equiv)
-    bitmap_clear (vr->equiv);
 }
 
 
