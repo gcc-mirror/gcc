@@ -1,3 +1,8 @@
+2012-06-15  Michael Matz  <matz@suse.de>
+
+	* gimplify.c (gimplify_modify_expr): Fold generated statements.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Check flag_ltrans.
+
 2012-06-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (set_and_canonicalize_value_range): Use canonical
