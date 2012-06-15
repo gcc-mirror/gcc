@@ -1,5 +1,11 @@
 2012-06-15  Janis Johnson  <janosjo@codesourcery.com>
 
+	* lib/gcov.exp (verify-lines, verify-branches, verify-calls): Use
+	testname that includes flags, passed in as new argument, in
+	pass/fail messages.
+	(run_gcov): Get testname from dg-test, use it in pass/fail messages
+	and pass it to verify-* procedures.
+
 	* g++.dg/torture/stackalign/stackalign.exp: Combine stack
 	alignment torture options with usual torture options.
 
