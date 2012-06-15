@@ -11,7 +11,7 @@
 2012-06-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*zero_extendsidi2): Remove x,x alternative.
-	(*zero_extendsidi2_rex64): Ditto.
+	(*zero_extendsidi2_rex64): Ditto.  Remove isa attribute.
 
 2012-06-14  Jakub Jelinek  <jakub@redhat.com>
 
