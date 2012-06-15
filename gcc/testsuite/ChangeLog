@@ -1,3 +1,7 @@
+2012-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect8.ad[sb]: New test.
+
 2012-06-14  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/vrp.h: New testcase.
