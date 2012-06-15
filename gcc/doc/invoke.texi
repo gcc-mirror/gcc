@@ -975,7 +975,7 @@ See S/390 and zSeries Options.
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{-fcall-saved-@var{reg}  -fcall-used-@var{reg} @gol
 -ffixed-@var{reg}  -fexceptions @gol
--fnon-call-exceptions  -funwind-tables @gol
+-fnon-call-exceptions  -fdelete-dead-exceptions  -funwind-tables @gol
 -fasynchronous-unwind-tables @gol
 -finhibit-size-directive  -finstrument-functions @gol
 -finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{} @gol
@@ -19316,6 +19316,14 @@ not exist everywhere.  Moreover, it only allows @emph{trapping}
 instructions to throw exceptions, i.e.@: memory references or floating-point
 instructions.  It does not allow exceptions to be thrown from
 arbitrary signal handlers such as @code{SIGALRM}.
+
+@item -fdelete-dead-exceptions
+@opindex fdelete-dead-exceptions
+Consider that instructions that may throw exceptions but don't otherwise
+contribute to the execution of the program can be optimized away.
+This option is enabled by default for the Ada front end, as permitted by
+the Ada language specification.
+Optimization passes that cause dead exceptions to be removed are enabled independently at different optimization levels.
 
 @item -funwind-tables
 @opindex funwind-tables

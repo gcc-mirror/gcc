@@ -803,6 +803,7 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
   fn->returns_pcc_struct = bp_unpack_value (&bp, 1);
   fn->returns_struct = bp_unpack_value (&bp, 1);
   fn->can_throw_non_call_exceptions = bp_unpack_value (&bp, 1);
+  fn->can_delete_dead_exceptions = bp_unpack_value (&bp, 1);
   fn->always_inline_functions_inlined = bp_unpack_value (&bp, 1);
   fn->after_inlining = bp_unpack_value (&bp, 1);
   fn->stdarg = bp_unpack_value (&bp, 1);
