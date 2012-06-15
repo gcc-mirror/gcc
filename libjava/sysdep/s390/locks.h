@@ -1,6 +1,6 @@
 // locks.h - Thread synchronization primitives. S/390 implementation.
 
-/* Copyright (C) 2002  Free Software Foundation
+/* Copyright (C) 2002-2012  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -22,21 +22,7 @@ inline static bool
 compare_and_swap(volatile obj_addr_t *addr,
 		 obj_addr_t old, obj_addr_t new_val) 
 {
-  int result;
-
-  __asm__ __volatile__ (
-#ifndef __s390x__
-    "       cs  %1,%2,0(%3)\n"
-#else
-    "       csg %1,%2,0(%3)\n"
-#endif
-    "       ipm %0\n"
-    "       srl %0,28\n"
-    : "=&d" (result), "+d" (old)
-    : "d" (new_val), "a" (addr)
-    : "cc", "memory");
-
-  return result == 0;
+  return __sync_bool_compare_and_swap (addr, old, new_val);
 }
 
 // Set *addr to new_val with release semantics, i.e. making sure
@@ -45,7 +31,7 @@ compare_and_swap(volatile obj_addr_t *addr,
 inline static void
 release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
 {
-  __asm__ __volatile__("bcr 15,0" : : : "memory");
+  __sync_synchronize ();
   *(addr) = new_val;
 }
 
@@ -64,7 +50,7 @@ compare_and_swap_release(volatile obj_addr_t *addr,
 inline static void
 read_barrier()
 {
-  __asm__ __volatile__("bcr 15,0" : : : "memory");
+  __sync_synchronize ();
 }
 
 // Ensure that prior stores to memory are completed with respect to other
@@ -72,6 +58,6 @@ read_barrier()
 inline static void
 write_barrier()
 {
-  __asm__ __volatile__("bcr 15,0" : : : "memory");
+  __sync_synchronize ();
 }
 #endif
