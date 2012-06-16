@@ -7452,7 +7452,7 @@ pa_attr_length_millicode_call (rtx insn)
     return 24;
   else
     {
-      if (!TARGET_LONG_CALLS && distance < 240000)
+      if (!TARGET_LONG_CALLS && distance < MAX_PCREL17F_OFFSET)
 	return 8;
 
       if (TARGET_LONG_ABS_CALL && !flag_pic)
@@ -7665,7 +7665,7 @@ pa_attr_length_call (rtx insn, int sibcall)
   /* pc-relative branch.  */
   if (!TARGET_LONG_CALLS
       && ((TARGET_PA_20 && !sibcall && distance < 7600000)
-	  || distance < 240000))
+	  || distance < MAX_PCREL17F_OFFSET))
     length += 8;
 
   /* 64-bit plabel sequence.  */
@@ -8024,7 +8024,7 @@ pa_attr_length_indirect_call (rtx insn)
   if (TARGET_FAST_INDIRECT_CALLS
       || (!TARGET_PORTABLE_RUNTIME
 	  && ((TARGET_PA_20 && !TARGET_SOM && distance < 7600000)
-	      || distance < 240000)))
+	      || distance < MAX_PCREL17F_OFFSET)))
     return 8;
 
   if (flag_pic)
