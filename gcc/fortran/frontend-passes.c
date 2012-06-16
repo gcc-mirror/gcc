@@ -735,15 +735,13 @@ optimize_assignment (gfc_code * c)
   lhs = c->expr1;
   rhs = c->expr2;
 
-  if (lhs->ts.type == BT_CHARACTER)
+  if (lhs->ts.type == BT_CHARACTER && !lhs->ts.deferred)
     {
-      /* Optimize away a = trim(b), where a is a character variable.  */
+      /* Optimize  a = trim(b)  to  a = b.  */
       remove_trim (rhs);
 
-      /* Replace a = '   ' by a = '' to optimize away a memcpy, but only
-	 for strings with non-deferred length (otherwise we would
-	 reallocate the length.  */
-      if (empty_string(rhs) && ! lhs->ts.deferred)
+      /* Replace a = '   ' by a = '' to optimize away a memcpy.  */
+      if (empty_string(rhs))
 	rhs->value.character.length = 0;
     }
 
@@ -1171,7 +1169,7 @@ optimize_trim (gfc_expr *e)
 
   ref->u.ss.start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
 
-  /* Build the function call to len_trim(x, gfc_defaul_integer_kind).  */
+  /* Build the function call to len_trim(x, gfc_default_integer_kind).  */
 
   fcn = get_len_trim_call (gfc_copy_expr (e), gfc_default_integer_kind);
 

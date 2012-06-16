@@ -6891,7 +6891,6 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   stmtblock_t body;
   bool l_is_temp;
   bool scalar_to_array;
-  bool def_clen_func;
   tree string_length;
   int n;
 
@@ -7010,13 +7009,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      otherwise the character length of the result is not known.
      NOTE: This relies on having the exact dependence of the length type
      parameter available to the caller; gfortran saves it in the .mod files. */
-  def_clen_func = (expr2->expr_type == EXPR_FUNCTION
-		   || expr2->expr_type == EXPR_COMPCALL
-		   || expr2->expr_type == EXPR_PPC);
-  if (gfc_option.flag_realloc_lhs
-	&& expr2->ts.type == BT_CHARACTER
-	&& (def_clen_func || expr2->expr_type == EXPR_OP)
-	&& expr1->ts.deferred)
+  if (gfc_option.flag_realloc_lhs && expr2->ts.type == BT_CHARACTER
+      && expr1->ts.deferred)
     gfc_add_block_to_block (&block, &rse.pre);
 
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
