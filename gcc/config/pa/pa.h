@@ -1563,3 +1563,12 @@ do { 									\
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS true
 #endif
+
+/* The maximum offset in bytes for a PA 1.X pc-relative call to the
+   head of the preceding stub table.  The selected offsets have been
+   chosen so that approximately one call stub is allocated for every
+   86.7 instructions.  A long branch stub is two instructions when
+   not generating PIC code.  For HP-UX and ELF targets, PIC stubs are
+   seven and four instructions, respectively.  */  
+#define MAX_PCREL17F_OFFSET \
+  (flag_pic ? (TARGET_HPUX ? 198164 : 221312) : 240000)
