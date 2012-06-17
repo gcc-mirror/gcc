@@ -1638,9 +1638,6 @@ extern int currently_expanding_to_rtl;
 
 /* Generally useful functions.  */
 
-/* In expmed.c */
-extern int ceil_log2 (unsigned HOST_WIDE_INT);
-
 /* In explow.c */
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, enum machine_mode);
 extern rtx plus_constant (enum machine_mode, rtx, HOST_WIDE_INT);

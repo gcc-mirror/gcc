@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"	/* FIXME: Only for ceil_log2, of all things...  */
 #include "ggc.h"
 #include "basic-block.h"
 #include "tree-flow.h"

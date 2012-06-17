@@ -3267,14 +3267,6 @@ expand_widening_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 		       unsignedp, OPTAB_LIB_WIDEN);
 }
 
-/* Return the smallest n such that 2**n >= X.  */
-
-int
-ceil_log2 (unsigned HOST_WIDE_INT x)
-{
-  return floor_log2 (x - 1) + 1;
-}
-
 /* Choose a minimal N + 1 bit approximation to 1/D that can be used to
    replace division by D, and put the least significant N bits of the result
    in *MULTIPLIER_PTR and return the most significant bit.
