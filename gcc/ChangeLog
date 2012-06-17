@@ -1,3 +1,14 @@
+2012-06-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/cris/cris.h (TARGET_ELF): Remove.
+	(FORCE_EH_FRAME_INFO_IN_DATA_SECTION): Remove.
+	(CRIS_ASM_OUTPUT_ALIGNED_DECL_COMMON): Simpify using TARGET_ELF==1.
+	(LOCAL_LABEL_PREFIX): Likewise.
+	* config/cris/cris.c (cris_target_asm_named_section): Remove.
+	(cris_option_override): Simpify using TARGET_ELF==1.
+	(cris_file_start): Likewise.
+	* config/cris/cris-protos.h (cris_target_asm_named_section): Remove.
+
 2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (vcvtph2ps): Fix vec_select selector.
