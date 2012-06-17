@@ -22,8 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_CFGLOOP_H
 
 #include "basic-block.h"
-/* For rtx_code.  */
-#include "rtl.h"
 #include "vecprim.h"
 #include "double-int.h"
 
@@ -44,6 +42,14 @@ enum lpt_dec
 struct GTY (()) lpt_decision {
   enum lpt_dec decision;
   unsigned times;
+};
+
+/* The type of extend applied to an IV.  */
+enum iv_extend_code
+{
+  IV_SIGN_EXTEND,
+  IV_ZERO_EXTEND,
+  IV_UNKNOWN_EXTEND
 };
 
 /* The structure describing a bound on number of iterations of a loop.  */
@@ -342,8 +348,9 @@ struct rtx_iv
      see the description above).  */
   rtx base, step;
 
-  /* The type of extend applied to it (SIGN_EXTEND, ZERO_EXTEND or UNKNOWN).  */
-  enum rtx_code extend;
+  /* The type of extend applied to it (IV_SIGN_EXTEND, IV_ZERO_EXTEND,
+     or IV_UNKNOWN_EXTEND).  */
+  enum iv_extend_code extend;
 
   /* Operations applied in the extended mode.  */
   rtx delta, mult;

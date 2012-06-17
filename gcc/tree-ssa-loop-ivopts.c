@@ -78,7 +78,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "ggc.h"
 #include "insn-config.h"
-#include "recog.h"
 #include "pointer-set.h"
 #include "hashtab.h"
 #include "tree-chrec.h"
@@ -101,6 +100,7 @@ along with GCC; see the file COPYING3.  If not see
    cost of different addressing modes.  This should be moved to a TBD
    interface between the GIMPLE and RTL worlds.  */
 #include "expr.h"
+#include "recog.h"
 
 /* The infinite cost.  */
 #define INFTY 10000000

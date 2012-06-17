@@ -1,5 +1,32 @@
 2012-06-17  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* cfgloop.h: Do not include rtl.h.
+	(enum iv_extend_code): New.
+	(struct rtx_iv): Use iv_extend_code instead of rtx_code.
+	* Makefile.in (CFGLOOP_H): Do not depend on RTL_H.
+	* loop-iv.c (iv_extend_to_rtx_code): New function to translate
+	an IV_EXTEND_CODE to an RTX_CODE.
+	(dump_iv_info): Update for rtx_iv field type change.
+	(iv_constant): Likewise.
+	(iv_subreg): Likewise.
+	(iv_extend): Likewise.
+	(iv_neg): Likewise.
+	(iv_add): Likewise.
+	(iv_mult): Likewise.
+	(iv_shift): Likewise.
+	(get_biv_step_1): Likewise.
+	(get_biv_step): Likewise.
+	(iv_analyze_biv): Likewise.
+	(get_iv_value): Likewise.
+	(shorten_into_mode): Likewise.
+	(canonicalize_iv_subregs): Likewise.
+	* sese.c (sese_build_liveouts): Use MAY_HAVE_DEBUG_STMTS instead
+	of MAY_HAVE_DEBUG_INSNS.
+	* tree-ssa-loop-ivopts.c: Include recog.h after expr.h.
+	* tree-ssa-loop-prefetch.c: Likewise.
+
+2012-06-17  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* expmed.c (ceil_log2): Move from here...
 	* hwint.c: ... to here for older GCCs...
 	* hwint.h: ... and here for newer GCCs.
