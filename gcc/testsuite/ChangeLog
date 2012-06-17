@@ -1,10 +1,14 @@
+2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr33329.c (f): Increase tabs array to 1024.
+
 2012-06-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53691
 	PR fortran/53685
 	* gfortran.dg/transfer_check_3.f90: New.
 
-2012-06-06  Uros Bizjak  <ubizjak@gmail.com>
+2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/vrp68.c: Fix scan-tree-dump-times argument order.
 
