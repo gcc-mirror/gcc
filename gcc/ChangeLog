@@ -1,5 +1,81 @@
 2012-06-17  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* cfglayout.h: Remove.
+	* cfglayout.c: Remove.
+	* function.h (struct function): Remove x_last_location field.
+	* function.c: Do not include cfglayout.h.
+	(expand_function_start): Do not call no-op force_next_line_note.
+	(expand_function_end): Likewise.
+	* cfgrtl.c: Do not include cfglayout.h.  Include gt-cfgrtl.h.
+	(unlink_insn_chain): Moved here from cfglayout.c.
+	(skip_insns_after_block, label_for_bb, record_effective_endpoints,
+	into_cfg_layout_mode, outof_cfg_layout_mode,
+	pass_into_cfg_layout_mode, pass_outof_cfg_layout_mode,
+	relink_block_chain, fixup_reorder_chain, verify_insn_chain,
+	fixup_fallthru_exit_predecessor, force_one_exit_fallthru,
+	cfg_layout_can_duplicate_bb_p, duplicate_insn_chain,
+	cfg_layout_duplicate_bb, cfg_layout_initialize, break_superblocks,
+	cfg_layout_finalize): Likewise.
+	(rtl_can_remove_branch_p): Likewise.
+	* rtl.h (insn_scope): Move prototype from cfglayout.h here.
+	(duplicate_insn_chain): Likewise.
+	(force_next_line_note): Remove prototype.
+	* emit-rtl.c: Do not include tree-flow.h, egad.  Include vecprim.h.
+	(last_location): Remove #define to emit.x_last_location.
+	(force_next_line_note): Remove no-op function.
+	(init_emit): Don't set x_last_location.
+	(block_locators_locs, block_locators_blocks, locations_locators_locs,
+	locations_locators_vals, prologue_locator, epilogue_locator,
+	curr_location, last_location, curr_block, last_block, curr_rtl_loc):
+	Move POD to here from cfglayout.c.
+	(insn_locators_alloc, insn_locators_finalize, insn_locators_free,
+	set_curr_insn_source_location, get_curr_insn_source_location,
+	set_curr_insn_block, get_curr_insn_block, curr_insn_locator,
+	locator_scope, insn_scope, locator_location, locator_line, insn_line,
+	locator_file, insn_file, locator_eq): Move to here from cfglayout.c.
+	* cfghooks.h: Remove double-include protection.
+	(can_copy_bbs_p, copy_bbs): Move prototypes from cfglayout.h to here.
+	* cfghooks.c (can_copy_bbs_p, copy_bbs): Move to here from cfglayout.c.
+	* final.c: Do not include cfglayout.h.
+	(choose_inner_scope, change_scope): Move to here from cfglayout.c.
+	(reemit_insn_block_notes): Likewise.  Make static.
+	* tree-flow.h (tree_could_trap_p, operation_could_trap_helper_p,
+	operation_could_trap_p, tree_could_throw_p): Move from here...
+	* tree.h: ... to here.
+	* gengtype.c (open_base_files): Remove cfglayout.h from the list.
+	* profile.c: Do not include cfghooks.h.
+	* cfgloopmanip.c: Do not include cfglayout.h and cfghooks.h.
+	* modulo-sched.c: Likewise.
+	* loop-unswitch.c: Do not include cfglayout.h.
+	* sched-ebb.c: Likewise.
+	* tracer.c: Likewise.
+	* ddg.c: Likewise.
+	* tree-vect-loop-manip.c: Likewise.
+	* loop-init.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* hw-doloop.c: Likewise.
+	* loop-unroll.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* bb-reorder.c: Likewise.
+	* sched-rgn.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* config/alpha/alpha.c: Likewise.
+	* config/spu/spu.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/c6x/c6x.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/score/score.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* Makefile.in (CFGAYOUT_H): Remove, and fixup users.
+	* config/rs6000/t-rs6000 (rs6000.o): Do not depend on cfglayout.h.
+	* config/spu/t-spu-elf (spu.o: $): Likewise.
+	* config/sparc/t-sparc (sparc.o): Do not depend on CFGLAYOUT_H.
+
+2012-06-17  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* cfgloop.h: Do not include rtl.h.
 	(enum iv_extend_code): New.
 	(struct rtx_iv): Use iv_extend_code instead of rtx_code.
