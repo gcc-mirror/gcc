@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "target.h"
 #include "common/common-target.h"
-#include "cfglayout.h"
 #include "gimple.h"
 #include "tree-pass.h"
 #include "predict.h"
@@ -4852,9 +4851,6 @@ expand_function_start (tree subr)
   /* If we are doing generic stack checking, the probe should go here.  */
   if (flag_stack_check == GENERIC_STACK_CHECK)
     stack_check_probe_note = emit_note (NOTE_INSN_DELETED);
-
-  /* Make sure there is a line number after the function entry setup code.  */
-  force_next_line_note ();
 }
 
 /* Undo the effects of init_dummy_function_start.  */
@@ -4999,7 +4995,6 @@ expand_function_end (void)
 
   /* Output a linenumber for the end of the function.
      SDB depends on this.  */
-  force_next_line_note ();
   set_curr_insn_source_location (input_location);
 
   /* Before the return label (if any), clobber the return

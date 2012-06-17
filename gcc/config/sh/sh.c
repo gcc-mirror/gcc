@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "basic-block.h"
 #include "df.h"
-#include "cfglayout.h"
 #include "intl.h"
 #include "sched-int.h"
 #include "params.h"

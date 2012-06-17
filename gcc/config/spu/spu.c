@@ -43,7 +43,6 @@
 #include "target-def.h"
 #include "langhooks.h"
 #include "reload.h"
-#include "cfglayout.h"
 #include "sched-int.h"
 #include "params.h"
 #include "machmode.h"

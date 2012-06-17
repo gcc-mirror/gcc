@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "sched-int.h"
 #include "target.h"
-#include "cfglayout.h"
 #include "cfgloop.h"
 #include "sbitmap.h"
 #include "expr.h"

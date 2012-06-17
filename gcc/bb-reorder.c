@@ -74,7 +74,6 @@
 #include "flags.h"
 #include "timevar.h"
 #include "output.h"
-#include "cfglayout.h"
 #include "fibheap.h"
 #include "target.h"
 #include "function.h"

@@ -19,8 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_CFGHOOKS_H
-#define GCC_CFGHOOKS_H
+/* Only basic-block.h includes this.  */
 
 struct cfg_hooks
 {
@@ -185,6 +184,14 @@ extern void lv_adjust_loop_header_phi (basic_block, basic_block, basic_block,
 extern void lv_add_condition_to_bb (basic_block, basic_block, basic_block,
 				    void *);
 
+extern bool can_copy_bbs_p (basic_block *, unsigned);
+extern void copy_bbs (basic_block *, unsigned, basic_block *,
+		      edge *, unsigned, edge *, struct loop *,
+		      basic_block);
+
+extern void cfg_layout_initialize (unsigned int);
+extern void cfg_layout_finalize (void);
+
 /* Hooks containers.  */
 extern struct cfg_hooks gimple_cfg_hooks;
 extern struct cfg_hooks rtl_cfg_hooks;
@@ -198,4 +205,3 @@ extern void gimple_register_cfg_hooks (void);
 extern struct cfg_hooks get_cfg_hooks (void);
 extern void set_cfg_hooks (struct cfg_hooks);
 
-#endif  /* GCC_CFGHOOKS_H */

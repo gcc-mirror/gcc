@@ -46,7 +46,6 @@
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"
-#include "cfglayout.h"
 #include "df.h"
 #include "opts.h"
 

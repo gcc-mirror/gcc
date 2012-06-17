@@ -1563,7 +1563,7 @@ open_base_files (void)
       "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
       "tree-flow.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
-      "cfglayout.h", "except.h", "output.h", "gimple.h", "cfgloop.h",
+      "except.h", "output.h", "gimple.h", "cfgloop.h",
       "target.h", "ipa-prop.h", "lto-streamer.h", "target-globals.h",
       "ipa-inline.h", "dwarf2out.h", NULL
     };
