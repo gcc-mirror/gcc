@@ -72,7 +72,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "targhooks.h"
 #include "debug.h"
 #include "expr.h"
-#include "cfglayout.h" /* for reemit_insn_block_notes */
 #include "tree-pass.h"
 #include "tree-flow.h"
 #include "timevar.h"
@@ -1513,6 +1512,114 @@ dwarf2_debug_info_emitted_p (tree decl)
     return false;
 
   return true;
+}
+
+/* Return scope resulting from combination of S1 and S2.  */
+static tree
+choose_inner_scope (tree s1, tree s2)
+{
+   if (!s1)
+     return s2;
+   if (!s2)
+     return s1;
+   if (BLOCK_NUMBER (s1) > BLOCK_NUMBER (s2))
+     return s1;
+   return s2;
+}
+
+/* Emit lexical block notes needed to change scope from S1 to S2.  */
+
+static void
+change_scope (rtx orig_insn, tree s1, tree s2)
+{
+  rtx insn = orig_insn;
+  tree com = NULL_TREE;
+  tree ts1 = s1, ts2 = s2;
+  tree s;
+
+  while (ts1 != ts2)
+    {
+      gcc_assert (ts1 && ts2);
+      if (BLOCK_NUMBER (ts1) > BLOCK_NUMBER (ts2))
+	ts1 = BLOCK_SUPERCONTEXT (ts1);
+      else if (BLOCK_NUMBER (ts1) < BLOCK_NUMBER (ts2))
+	ts2 = BLOCK_SUPERCONTEXT (ts2);
+      else
+	{
+	  ts1 = BLOCK_SUPERCONTEXT (ts1);
+	  ts2 = BLOCK_SUPERCONTEXT (ts2);
+	}
+    }
+  com = ts1;
+
+  /* Close scopes.  */
+  s = s1;
+  while (s != com)
+    {
+      rtx note = emit_note_before (NOTE_INSN_BLOCK_END, insn);
+      NOTE_BLOCK (note) = s;
+      s = BLOCK_SUPERCONTEXT (s);
+    }
+
+  /* Open scopes.  */
+  s = s2;
+  while (s != com)
+    {
+      insn = emit_note_before (NOTE_INSN_BLOCK_BEG, insn);
+      NOTE_BLOCK (insn) = s;
+      s = BLOCK_SUPERCONTEXT (s);
+    }
+}
+
+/* Rebuild all the NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes based
+   on the scope tree and the newly reordered instructions.  */
+
+static void
+reemit_insn_block_notes (void)
+{
+  tree cur_block = DECL_INITIAL (cfun->decl);
+  rtx insn, note;
+
+  insn = get_insns ();
+  if (!active_insn_p (insn))
+    insn = next_active_insn (insn);
+  for (; insn; insn = next_active_insn (insn))
+    {
+      tree this_block;
+
+      /* Avoid putting scope notes between jump table and its label.  */
+      if (JUMP_TABLE_DATA_P (insn))
+	continue;
+
+      this_block = insn_scope (insn);
+      /* For sequences compute scope resulting from merging all scopes
+	 of instructions nested inside.  */
+      if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	{
+	  int i;
+	  rtx body = PATTERN (insn);
+
+	  this_block = NULL;
+	  for (i = 0; i < XVECLEN (body, 0); i++)
+	    this_block = choose_inner_scope (this_block,
+					     insn_scope (XVECEXP (body, 0, i)));
+	}
+      if (! this_block)
+	continue;
+
+      if (this_block != cur_block)
+	{
+	  change_scope (insn, cur_block, this_block);
+	  cur_block = this_block;
+	}
+    }
+
+  /* change_scope emits before the insn, not after.  */
+  note = emit_note (NOTE_INSN_DELETED);
+  change_scope (note, cur_block, DECL_INITIAL (cfun->decl));
+  delete_insn (note);
+
+  reorder_blocks ();
 }
 
 /* Output assembler code for the start of a function,

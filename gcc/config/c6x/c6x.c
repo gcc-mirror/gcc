@@ -43,7 +43,6 @@
 #include "function.h"
 #include "diagnostic-core.h"
 #include "cgraph.h"
-#include "cfglayout.h"
 #include "langhooks.h"
 #include "target.h"
 #include "target-def.h"

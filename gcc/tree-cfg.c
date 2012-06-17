@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "except.h"
 #include "cfgloop.h"
-#include "cfglayout.h" /* for can_copy_bbs_p and copy_bbs */
 #include "tree-ssa-propagate.h"
 #include "value-prof.h"
 #include "pointer-set.h"

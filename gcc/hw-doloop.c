@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tm_p.h"
 #include "df.h"
-#include "cfglayout.h"
 #include "cfgloop.h"
 #include "recog.h"
 #include "target.h"

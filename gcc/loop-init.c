@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "basic-block.h"
 #include "cfgloop.h"
-#include "cfglayout.h"
 #include "tree-pass.h"
 #include "timevar.h"
 #include "flags.h"

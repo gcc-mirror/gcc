@@ -1799,7 +1799,7 @@ extern rtx skip_consecutive_labels (rtx);
 extern rtx next_cc0_user (rtx);
 extern rtx prev_cc0_setter (rtx);
 
-/* In cfglayout.c  */
+/* In emit-rtl.c  */
 extern int insn_line (const_rtx);
 extern const char * insn_file (const_rtx);
 extern location_t locator_location (int);
@@ -1807,6 +1807,7 @@ extern int locator_line (int);
 extern const char * locator_file (int);
 extern bool locator_eq (int, int);
 extern int prologue_locator, epilogue_locator;
+extern tree insn_scope (const_rtx);
 
 /* In jump.c */
 extern enum rtx_code reverse_condition (enum rtx_code);
@@ -2420,7 +2421,6 @@ extern void reorder_insns (rtx, rtx, rtx);
 extern void reorder_insns_nobb (rtx, rtx, rtx);
 extern int get_max_insn_count (void);
 extern int in_sequence_p (void);
-extern void force_next_line_note (void);
 extern void init_emit (void);
 extern void init_emit_regs (void);
 extern void init_emit_once (void);
@@ -2509,6 +2509,7 @@ extern int fixup_args_size_notes (rtx, rtx, int);
 
 /* In cfgrtl.c */
 extern void print_rtl_with_bb (FILE *, const_rtx);
+extern rtx duplicate_insn_chain (rtx, rtx);
 
 /* In cfg.c.  */
 extern void dump_reg_info (FILE *);
