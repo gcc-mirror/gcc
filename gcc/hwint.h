@@ -185,6 +185,9 @@ extern int exact_log2                  (unsigned HOST_WIDE_INT);
 /* Return floor of log2, with -1 for zero.  */
 extern int floor_log2                  (unsigned HOST_WIDE_INT);
 
+/* Return the smallest n such that 2**n >= X.  */
+extern int ceil_log2			(unsigned HOST_WIDE_INT);
+
 #else /* GCC_VERSION >= 3004 */
 
 /* For convenience, define 0 -> word_size.  */
@@ -232,6 +235,12 @@ static inline int
 floor_log2 (unsigned HOST_WIDE_INT x)
 {
   return HOST_BITS_PER_WIDE_INT - 1 - clz_hwi (x);
+}
+
+static inline int
+ceil_log2 (unsigned HOST_WIDE_INT x)
+{
+  return floor_log2 (x - 1) + 1;
 }
 
 static inline int

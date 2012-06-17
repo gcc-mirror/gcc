@@ -1,5 +1,15 @@
 2012-06-17  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* expmed.c (ceil_log2): Move from here...
+	* hwint.c: ... to here for older GCCs...
+	* hwint.h: ... and here for newer GCCs.
+	* rtl.h (ceil_log2): Remove prototype.
+
+	* tree-phinodes.c: Do not include rtl.h.
+	* Makefile.in (tree-phinodes.o): Do not depend on RTL_H.
+
+2012-06-17  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* config/cris/cris.h (TARGET_ELF): Remove.
 	(FORCE_EH_FRAME_INFO_IN_DATA_SECTION): Remove.
 	(CRIS_ASM_OUTPUT_ALIGNED_DECL_COMMON): Simpify using TARGET_ELF==1.
