@@ -19,6 +19,6 @@ int main() { }
    merging [1, 5] with ~[0, 6] so the first VRP pass can only eliminate
    the ~[0, 0] check as redundant.  */
 
-/* { dg-final { scan-tree-dump-times "vrp1" 0 "link_error" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "vrp1" 1 "link_error" } } */
+/* { dg-final { scan-tree-dump-times "link_error" 0 "vrp1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "link_error" 1 "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
