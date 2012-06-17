@@ -2359,19 +2359,6 @@ cris_reg_overlap_mentioned_p (rtx x, rtx in)
   return reg_overlap_mentioned_p (x, in);
 }
 
-/* The TARGET_ASM_NAMED_SECTION worker.
-   We just dispatch to the functions for ELF and a.out.  */
-
-void
-cris_target_asm_named_section (const char *name, unsigned int flags,
-			       tree decl)
-{
-  if (! TARGET_ELF)
-    default_no_named_section (name, flags, decl);
-  else
-    default_elf_asm_named_section (name, flags, decl);
-}
-
 /* Return TRUE iff X is a CONST valid for e.g. indexing.
    ANY_OPERAND is 0 if X is in a CALL_P insn or movsi, 1
    elsewhere.  */
@@ -2634,12 +2621,6 @@ cris_option_override (void)
       flag_no_function_cse = 1;
     }
 
-  if (write_symbols == DWARF2_DEBUG && ! TARGET_ELF)
-    {
-      warning (0, "that particular -g option is invalid with -maout and -melinux");
-      write_symbols = DBX_DEBUG;
-    }
-
   /* Set the per-function-data initializer.  */
   init_machine_status = cris_init_machine_status;
 }
@@ -2696,16 +2677,13 @@ cris_asm_output_mi_thunk (FILE *stream,
 
    NO_APP *only at file start* means faster assembly.  It also means
    comments are not allowed.  In some cases comments will be output
-   for debugging purposes.  Make sure they are allowed then.
-
-   We want a .file directive only if TARGET_ELF.  */
+   for debugging purposes.  Make sure they are allowed then.  */
 static void
 cris_file_start (void)
 {
   /* These expressions can vary at run time, so we cannot put
      them into TARGET_INITIALIZER.  */
   targetm.asm_file_start_app_off = !(TARGET_PDEBUG || flag_print_asm_name);
-  targetm.asm_file_start_file_directive = TARGET_ELF;
 
   default_file_start ();
 }

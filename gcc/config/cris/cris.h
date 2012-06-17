@@ -33,9 +33,9 @@ along with GCC; see the file COPYING3.  If not see
    the section-comment is present.  */
 
 /* Note that other header files (e.g. config/elfos.h, config/linux.h,
-   config/cris/linux.h and config/cris/aout.h) are responsible for lots of
-   settings not repeated below.  This file contains general CRIS
-   definitions and definitions for the cris-*-elf subtarget.  */
+   and config/cris/linux.h) are responsible for lots of settings not
+   repeated below.  This file contains general CRIS definitions
+   and definitions for the cris-*-elf subtarget.  */
 
 /* We don't want to use gcc_assert for everything, as that can be
    compiled out.  */
@@ -92,8 +92,7 @@ extern int cris_cpu_version;
 
 /* Node: Driver */
 
-/* Also provide canonical vN definitions when user specifies an alias.
-   Note that -melf overrides -maout.  */
+/* Also provide canonical vN definitions when user specifies an alias.  */
 
 #define CPP_SPEC \
  "%{mtune=*:-D__tune_%* %{mtune=v*:-D__CRIS_arch_tune=%*}\
@@ -204,11 +203,7 @@ extern int cris_cpu_version;
    "emulation" unless a linker script is provided (-T*), but I don't know
    how to do that if either of -Ttext, -Tdata or -Tbss is given but no
    linker script, as is usually the case.  Leave it to the user for the
-   time being.
-
-   Note that -melf overrides -maout except that a.out-compiled libraries
-   are linked in (multilibbing).  We'd need some %s-variant that
-   checked for existence of some specific file.  */
+   time being.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
  "%{v:--verbose}\
@@ -265,9 +260,6 @@ extern int cris_cpu_version;
       builtin_assert ("machine=cris");		\
     }						\
   while (0)
-
-/* Previously controlled by target_flags.  */
-#define TARGET_ELF 1
 
 /* Previously controlled by target_flags.  Note that this is *not* set
    for -melinux.  */
@@ -825,8 +817,6 @@ struct cum_args {int regs;};
 
 #define DATA_SECTION_ASM_OP "\t.data"
 
-#define FORCE_EH_FRAME_INFO_IN_DATA_SECTION (! TARGET_ELF)
-
 /* The jump table is immediately connected to the preceding insn.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
@@ -878,7 +868,7 @@ enum cris_pic_symbol_type
    are used on the object files.  Since ".global ... .lcomm ..." works, we
    use that.  Use .._ALIGNED_COMMON, since gcc whines when we only have
    ..._COMMON, and we prefer to whine ourselves; BIGGEST_ALIGNMENT is not
-   the one to check.  This done for a.out only.  */
+   the one to check.  */
 /* FIXME: I suspect a bug in gcc with alignment.  Do not warn until
    investigated; it mucks up the testsuite results.  */
 #define CRIS_ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN, LOCAL) \
@@ -893,29 +883,15 @@ enum cris_pic_symbol_type
       else if (align_ < 1)						\
 	align_ = 1;							\
 									\
-      if (TARGET_ELF)							\
+      if (LOCAL)							\
 	{								\
-	  if (LOCAL)							\
-	    {								\
-	      fprintf ((FILE), "%s", LOCAL_ASM_OP);			\
-	      assemble_name ((FILE), (NAME));				\
-	      fprintf ((FILE), "\n");					\
-	    }								\
-	  fprintf ((FILE), "%s", COMMON_ASM_OP);			\
+	  fprintf ((FILE), "%s", LOCAL_ASM_OP);				\
 	  assemble_name ((FILE), (NAME));				\
-	  fprintf ((FILE), ",%u,%u\n", (int)(SIZE), align_);		\
+	  fprintf ((FILE), "\n");					\
 	}								\
-      else								\
-	{								\
-	  /* We can't tell a one-only or weak COMM from a "global	\
-	     COMM" so just make all non-locals weak.  */		\
-	  if (! (LOCAL))						\
-	    ASM_WEAKEN_LABEL (FILE, NAME);				\
-	  fputs ("\t.lcomm ", (FILE));					\
-	  assemble_name ((FILE), (NAME));				\
-	  fprintf ((FILE), ",%u\n",					\
-		   ((int)(SIZE) + (align_ - 1)) & ~(align_ - 1));	\
-	}								\
+      fprintf ((FILE), "%s", COMMON_ASM_OP);				\
+      assemble_name ((FILE), (NAME));					\
+      fprintf ((FILE), ",%u,%u\n", (int)(SIZE), align_);		\
     }									\
   while (0)
 
@@ -963,7 +939,7 @@ enum cris_pic_symbol_type
 #define DBR_OUTPUT_SEQEND(FILE) \
   fprintf (FILE, "\n")
 
-#define LOCAL_LABEL_PREFIX (TARGET_ELF ? "." : "")
+#define LOCAL_LABEL_PREFIX "."
 
 /* cppinit.c initializes a const array from this, so it must be constant,
    can't have it different based on options.  Luckily, the prefix is
