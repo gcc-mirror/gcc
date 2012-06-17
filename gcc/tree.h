@@ -5709,6 +5709,13 @@ extern tree initializer_constant_valid_p (tree, tree);
    an element of a "constant" initializer.  */
 extern bool initializer_constant_valid_for_bitfield_p (tree);
 
+/* Whether a constructor CTOR is a valid static constant initializer if all
+   its elements are.  This used to be internal to initializer_constant_valid_p
+   and has been exposed to let other functions like categorize_ctor_elements
+   evaluate the property while walking a constructor for other purposes.  */
+
+extern bool constructor_static_from_elts_p (const_tree);
+
 /* In stmt.c */
 extern void expand_computed_goto (tree);
 extern bool parse_output_constraint (const char **, int, int, int,

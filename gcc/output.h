@@ -132,10 +132,6 @@ extern int sprint_ul (char *, unsigned long);
 extern void asm_fprintf (FILE *file, const char *p, ...)
      ATTRIBUTE_ASM_FPRINTF(2, 3);
 
-/* Split up a CONST_DOUBLE or integer constant rtx into two rtx's for single
-   words.  */
-extern void split_double (rtx, rtx *, rtx *);
-
 /* Return nonzero if this function has no function calls.  */
 extern int leaf_function_p (void);
 
@@ -291,13 +287,6 @@ extern void output_shared_constant_pool (void);
 extern void output_object_blocks (void);
 
 extern void output_quoted_string (FILE *, const char *);
-
-/* Whether a constructor CTOR is a valid static constant initializer if all
-   its elements are.  This used to be internal to initializer_constant_valid_p
-   and has been exposed to let other functions like categorize_ctor_elements
-   evaluate the property while walking a constructor for other purposes.  */
-
-extern bool constructor_static_from_elts_p (const_tree);
 
 /* Output assembler code for constant EXP to FILE, with no label.
    This includes the pseudo-op such as ".int" or ".byte", and a newline.
