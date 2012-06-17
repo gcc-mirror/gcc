@@ -1,9 +1,13 @@
+2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (vcvtph2ps): Fix vec_select selector.
+
 2012-06-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/53590
 	* tree-inline.c (initialize_cfun): Copy can_delete_dead_exceptions.
 
-2012-06-15   Easwaran Raman  <eraman@google.com>
+2012-06-15  Easwaran Raman  <eraman@google.com>
 
 	* passes.c (init_optimization_passes): Remove pass_call_cdce
 	from its current position and insert after pass_dce.
@@ -115,8 +119,7 @@
 	* expmed.c (choose_multiplier): No longer static.
 	Change multiplier_ptr from rtx * to UHWI *.
 	(expand_divmod): Adjust callers.
-	* tree-vect-patterns.c (vect_recog_sdivmod_pow2_pattern):
-	Renamed to...
+	* tree-vect-patterns.c (vect_recog_sdivmod_pow2_pattern): Renamed to...
 	(vect_recog_divmod_pattern): ... this.  Pass bb_vinfo as last
 	argument to new_stmt_vec_info.  Attempt to optimize also divisions
 	by non-pow2 constants if integer vector division isn't supported.
