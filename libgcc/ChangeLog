@@ -1,3 +1,9 @@
+2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Use
+	__builtin_expect when checking for exceptions.
+	* config/ia64/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Ditto.
+
 2012-06-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/ia64/sfp-machine.h (__sfp_handle_exceptions): New

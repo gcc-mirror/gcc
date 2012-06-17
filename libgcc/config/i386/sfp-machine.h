@@ -51,7 +51,7 @@ void __sfp_handle_exceptions (int);
 
 #define FP_HANDLE_EXCEPTIONS			\
   do {						\
-    if (_fex)					\
+    if (__builtin_expect (_fex, 0))		\
       __sfp_handle_exceptions (_fex);		\
   } while (0);
 
