@@ -12052,7 +12052,7 @@
 	  (unspec:V8SF [(match_operand:V8HI 1 "register_operand" "x")]
 		       UNSPEC_VCVTPH2PS)
 	  (parallel [(const_int 0) (const_int 1)
-		     (const_int 1) (const_int 2)])))]
+		     (const_int 2) (const_int 3)])))]
   "TARGET_F16C"
   "vcvtph2ps\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")

@@ -1,3 +1,10 @@
+2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (vcvtph2ps): Fix vec_select selector.
+
 2012-06-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline:
@@ -58,7 +65,7 @@
 2012-05-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
-        2012-05-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	2012-05-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/53385
 	* config/rs6000/rs6000.c (print_operand): Revise code that unsafely
@@ -89,8 +96,7 @@
 	2012-04-12  Richard Guenther  <rguenther@suse.de>
 
 	PR c/52862
-	* convert.c (convert_to_pointer): Remove special-casing of
-	zero.
+	* convert.c (convert_to_pointer): Remove special-casing of zero.
 
 2012-05-21  Joseph Myers  <joseph@codesourcery.com>
 
