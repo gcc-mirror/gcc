@@ -304,7 +304,7 @@ sese_build_liveouts (sese region, bitmap liveouts)
 
   FOR_EACH_BB (bb)
     sese_build_liveouts_bb (region, liveouts, bb);
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_STMTS)
     FOR_EACH_BB (bb)
       sese_reset_debug_liveouts_bb (region, liveouts, bb);
 }

@@ -112,6 +112,22 @@ static htab_t bivs;
 
 static bool iv_analyze_op (rtx, rtx, struct rtx_iv *);
 
+/* Return the RTX code corresponding to the IV extend code EXTEND.  */
+static inline enum rtx_code
+iv_extend_to_rtx_code (enum iv_extend_code extend)
+{
+  switch (extend)
+    {
+    case IV_SIGN_EXTEND:
+      return SIGN_EXTEND;
+    case IV_ZERO_EXTEND:
+      return ZERO_EXTEND;
+    case IV_UNKNOWN_EXTEND:
+      return UNKNOWN;
+    }
+  gcc_unreachable ();
+}
+
 /* Dumps information about IV to FILE.  */
 
 extern void dump_iv_info (FILE *, struct rtx_iv *);
@@ -139,7 +155,7 @@ dump_iv_info (FILE *file, struct rtx_iv *iv)
 
   if (iv->mode != iv->extend_mode)
     fprintf (file, " %s to %s",
-	     rtx_name[iv->extend],
+	     rtx_name[iv_extend_to_rtx_code (iv->extend)],
 	     GET_MODE_NAME (iv->extend_mode));
 
   if (iv->mult != const1_rtx)
@@ -390,7 +406,7 @@ iv_constant (struct rtx_iv *iv, rtx cst, enum machine_mode mode)
   iv->base = cst;
   iv->step = const0_rtx;
   iv->first_special = false;
-  iv->extend = UNKNOWN;
+  iv->extend = IV_UNKNOWN_EXTEND;
   iv->extend_mode = iv->mode;
   iv->delta = const0_rtx;
   iv->mult = const1_rtx;
@@ -411,7 +427,7 @@ iv_subreg (struct rtx_iv *iv, enum machine_mode mode)
       val = lowpart_subreg (mode, val, iv->extend_mode);
 
       iv->base = val;
-      iv->extend = UNKNOWN;
+      iv->extend = IV_UNKNOWN_EXTEND;
       iv->mode = iv->extend_mode = mode;
       iv->delta = const0_rtx;
       iv->mult = const1_rtx;
@@ -424,7 +440,7 @@ iv_subreg (struct rtx_iv *iv, enum machine_mode mode)
   if (GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (iv->mode))
     return false;
 
-  iv->extend = UNKNOWN;
+  iv->extend = IV_UNKNOWN_EXTEND;
   iv->mode = mode;
 
   iv->base = simplify_gen_binary (PLUS, iv->extend_mode, iv->delta,
@@ -441,17 +457,17 @@ iv_subreg (struct rtx_iv *iv, enum machine_mode mode)
 /* Evaluates application of EXTEND to MODE on IV.  */
 
 static bool
-iv_extend (struct rtx_iv *iv, enum rtx_code extend, enum machine_mode mode)
+iv_extend (struct rtx_iv *iv, enum iv_extend_code extend, enum machine_mode mode)
 {
   /* If iv is invariant, just calculate the new value.  */
   if (iv->step == const0_rtx
       && !iv->first_special)
     {
       rtx val = get_iv_value (iv, const0_rtx);
-      val = simplify_gen_unary (extend, mode, val, iv->extend_mode);
-
+      val = simplify_gen_unary (iv_extend_to_rtx_code (extend), mode,
+				val, iv->extend_mode);
       iv->base = val;
-      iv->extend = UNKNOWN;
+      iv->extend = IV_UNKNOWN_EXTEND;
       iv->mode = iv->extend_mode = mode;
       iv->delta = const0_rtx;
       iv->mult = const1_rtx;
@@ -461,7 +477,7 @@ iv_extend (struct rtx_iv *iv, enum rtx_code extend, enum machine_mode mode)
   if (mode != iv->extend_mode)
     return false;
 
-  if (iv->extend != UNKNOWN
+  if (iv->extend != IV_UNKNOWN_EXTEND
       && iv->extend != extend)
     return false;
 
@@ -475,7 +491,7 @@ iv_extend (struct rtx_iv *iv, enum rtx_code extend, enum machine_mode mode)
 static bool
 iv_neg (struct rtx_iv *iv)
 {
-  if (iv->extend == UNKNOWN)
+  if (iv->extend == IV_UNKNOWN_EXTEND)
     {
       iv->base = simplify_gen_unary (NEG, iv->extend_mode,
 				     iv->base, iv->extend_mode);
@@ -502,7 +518,7 @@ iv_add (struct rtx_iv *iv0, struct rtx_iv *iv1, enum rtx_code op)
   rtx arg;
 
   /* Extend the constant to extend_mode of the other operand if necessary.  */
-  if (iv0->extend == UNKNOWN
+  if (iv0->extend == IV_UNKNOWN_EXTEND
       && iv0->mode == iv0->extend_mode
       && iv0->step == const0_rtx
       && GET_MODE_SIZE (iv0->extend_mode) < GET_MODE_SIZE (iv1->extend_mode))
@@ -511,7 +527,7 @@ iv_add (struct rtx_iv *iv0, struct rtx_iv *iv1, enum rtx_code op)
       iv0->base = simplify_gen_unary (ZERO_EXTEND, iv0->extend_mode,
 				      iv0->base, iv0->mode);
     }
-  if (iv1->extend == UNKNOWN
+  if (iv1->extend == IV_UNKNOWN_EXTEND
       && iv1->mode == iv1->extend_mode
       && iv1->step == const0_rtx
       && GET_MODE_SIZE (iv1->extend_mode) < GET_MODE_SIZE (iv0->extend_mode))
@@ -525,7 +541,8 @@ iv_add (struct rtx_iv *iv0, struct rtx_iv *iv1, enum rtx_code op)
   if (mode != iv1->extend_mode)
     return false;
 
-  if (iv0->extend == UNKNOWN && iv1->extend == UNKNOWN)
+  if (iv0->extend == IV_UNKNOWN_EXTEND
+      && iv1->extend == IV_UNKNOWN_EXTEND)
     {
       if (iv0->mode != iv1->mode)
 	return false;
@@ -537,7 +554,7 @@ iv_add (struct rtx_iv *iv0, struct rtx_iv *iv1, enum rtx_code op)
     }
 
   /* Handle addition of constant.  */
-  if (iv1->extend == UNKNOWN
+  if (iv1->extend == IV_UNKNOWN_EXTEND
       && iv1->mode == mode
       && iv1->step == const0_rtx)
     {
@@ -545,7 +562,7 @@ iv_add (struct rtx_iv *iv0, struct rtx_iv *iv1, enum rtx_code op)
       return true;
     }
 
-  if (iv0->extend == UNKNOWN
+  if (iv0->extend == IV_UNKNOWN_EXTEND
       && iv0->mode == mode
       && iv0->step == const0_rtx)
     {
@@ -573,7 +590,7 @@ iv_mult (struct rtx_iv *iv, rtx mby)
       && GET_MODE (mby) != mode)
     return false;
 
-  if (iv->extend == UNKNOWN)
+  if (iv->extend == IV_UNKNOWN_EXTEND)
     {
       iv->base = simplify_gen_binary (MULT, mode, iv->base, mby);
       iv->step = simplify_gen_binary (MULT, mode, iv->step, mby);
@@ -598,7 +615,7 @@ iv_shift (struct rtx_iv *iv, rtx mby)
       && GET_MODE (mby) != mode)
     return false;
 
-  if (iv->extend == UNKNOWN)
+  if (iv->extend == IV_UNKNOWN_EXTEND)
     {
       iv->base = simplify_gen_binary (ASHIFT, mode, iv->base, mby);
       iv->step = simplify_gen_binary (ASHIFT, mode, iv->step, mby);
@@ -619,7 +636,7 @@ iv_shift (struct rtx_iv *iv, rtx mby)
 static bool
 get_biv_step_1 (df_ref def, rtx reg,
 		rtx *inner_step, enum machine_mode *inner_mode,
-		enum rtx_code *extend, enum machine_mode outer_mode,
+		enum iv_extend_code *extend, enum machine_mode outer_mode,
 		rtx *outer_step)
 {
   rtx set, rhs, op0 = NULL_RTX, op1 = NULL_RTX;
@@ -719,7 +736,7 @@ get_biv_step_1 (df_ref def, rtx reg,
 	return false;
 
       *inner_step = const0_rtx;
-      *extend = UNKNOWN;
+      *extend = IV_UNKNOWN_EXTEND;
       *inner_mode = outer_mode;
       *outer_step = const0_rtx;
     }
@@ -739,7 +756,7 @@ get_biv_step_1 (df_ref def, rtx reg,
       *inner_step = simplify_gen_binary (PLUS, outer_mode,
 					 *inner_step, *outer_step);
       *outer_step = const0_rtx;
-      *extend = UNKNOWN;
+      *extend = IV_UNKNOWN_EXTEND;
     }
 
   switch (code)
@@ -763,10 +780,10 @@ get_biv_step_1 (df_ref def, rtx reg,
     case SIGN_EXTEND:
     case ZERO_EXTEND:
       gcc_assert (GET_MODE (op0) == *inner_mode
-		  && *extend == UNKNOWN
+		  && *extend == IV_UNKNOWN_EXTEND
 		  && *outer_step == const0_rtx);
 
-      *extend = code;
+      *extend = (code == SIGN_EXTEND) ? IV_SIGN_EXTEND : IV_ZERO_EXTEND;
       break;
 
     default:
@@ -785,7 +802,7 @@ get_biv_step_1 (df_ref def, rtx reg,
 
 static bool
 get_biv_step (df_ref last_def, rtx reg, rtx *inner_step,
-	      enum machine_mode *inner_mode, enum rtx_code *extend,
+	      enum machine_mode *inner_mode, enum iv_extend_code *extend,
 	      enum machine_mode *outer_mode, rtx *outer_step)
 {
   *outer_mode = GET_MODE (reg);
@@ -795,7 +812,7 @@ get_biv_step (df_ref last_def, rtx reg, rtx *inner_step,
 		       outer_step))
     return false;
 
-  gcc_assert ((*inner_mode == *outer_mode) != (*extend != UNKNOWN));
+  gcc_assert ((*inner_mode == *outer_mode) != (*extend != IV_UNKNOWN_EXTEND));
   gcc_assert (*inner_mode != *outer_mode || *outer_step == const0_rtx);
 
   return true;
@@ -849,7 +866,7 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
 {
   rtx inner_step, outer_step;
   enum machine_mode inner_mode, outer_mode;
-  enum rtx_code extend;
+  enum iv_extend_code extend;
   df_ref last_def;
 
   if (dump_file)
@@ -1006,8 +1023,12 @@ iv_analyze_expr (rtx insn, rtx rhs, enum machine_mode mode, struct rtx_iv *iv)
   switch (code)
     {
     case SIGN_EXTEND:
+      if (!iv_extend (&iv0, IV_SIGN_EXTEND, mode))
+	return false;
+      break;
+
     case ZERO_EXTEND:
-      if (!iv_extend (&iv0, code, mode))
+      if (!iv_extend (&iv0, IV_ZERO_EXTEND, mode))
 	return false;
       break;
 
@@ -1249,10 +1270,11 @@ get_iv_value (struct rtx_iv *iv, rtx iteration)
 
   val = lowpart_subreg (iv->mode, val, iv->extend_mode);
 
-  if (iv->extend == UNKNOWN)
+  if (iv->extend == IV_UNKNOWN_EXTEND)
     return val;
 
-  val = simplify_gen_unary (iv->extend, iv->extend_mode, val, iv->mode);
+  val = simplify_gen_unary (iv_extend_to_rtx_code (iv->extend),
+			    iv->extend_mode, val, iv->mode);
   val = simplify_gen_binary (PLUS, iv->extend_mode, iv->delta,
 			     simplify_gen_binary (MULT, iv->extend_mode,
 						  iv->mult, val));
@@ -2071,7 +2093,7 @@ shorten_into_mode (struct rtx_iv *iv, enum machine_mode mode,
     }
 
   iv->mode = mode;
-  iv->extend = signed_p ? SIGN_EXTEND : ZERO_EXTEND;
+  iv->extend = signed_p ? IV_SIGN_EXTEND : IV_ZERO_EXTEND;
 }
 
 /* Transforms IV0 and IV1 compared by COND so that they are both compared as
@@ -2097,31 +2119,31 @@ canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
     {
       case LE:
       case LT:
-	if (iv0->extend == ZERO_EXTEND
-	    || iv1->extend == ZERO_EXTEND)
+	if (iv0->extend == IV_ZERO_EXTEND
+	    || iv1->extend == IV_ZERO_EXTEND)
 	  return false;
 	signed_p = true;
 	break;
 
       case LEU:
       case LTU:
-	if (iv0->extend == SIGN_EXTEND
-	    || iv1->extend == SIGN_EXTEND)
+	if (iv0->extend == IV_SIGN_EXTEND
+	    || iv1->extend == IV_SIGN_EXTEND)
 	  return false;
 	signed_p = false;
 	break;
 
       case NE:
-	if (iv0->extend != UNKNOWN
-	    && iv1->extend != UNKNOWN
+	if (iv0->extend != IV_UNKNOWN_EXTEND
+	    && iv1->extend != IV_UNKNOWN_EXTEND
 	    && iv0->extend != iv1->extend)
 	  return false;
 
 	signed_p = false;
-	if (iv0->extend != UNKNOWN)
-	  signed_p = iv0->extend == SIGN_EXTEND;
-	if (iv1->extend != UNKNOWN)
-	  signed_p = iv1->extend == SIGN_EXTEND;
+	if (iv0->extend != IV_UNKNOWN_EXTEND)
+	  signed_p = iv0->extend == IV_SIGN_EXTEND;
+	if (iv1->extend != IV_UNKNOWN_EXTEND)
+	  signed_p = iv1->extend == IV_SIGN_EXTEND;
 	break;
 
       default:
