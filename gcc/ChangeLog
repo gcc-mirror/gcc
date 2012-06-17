@@ -1,5 +1,15 @@
 2012-06-17  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* output.h (split_double): Move prototype to rtl.h.
+	(constructor_static_from_elts_p): Move prototype to tree.c.
+	* rtl.h (split_double): Moved here from output.h.
+	* tree.h (constructor_static_from_elts_p): Moved here from output.h.
+	* final.c (split_double): Move from here ...
+	* rtlanal.c (split_double): ... to here.
+	* expr.c: Do not include output.h.
+
+2012-06-17  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* cfglayout.h: Remove.
 	* cfglayout.c: Remove.
 	* function.h (struct function): Remove x_last_location field.

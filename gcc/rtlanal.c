@@ -5293,3 +5293,147 @@ get_address_mode (rtx mem)
     return mode;
   return targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
 }
+
+/* Split up a CONST_DOUBLE or integer constant rtx
+   into two rtx's for single words,
+   storing in *FIRST the word that comes first in memory in the target
+   and in *SECOND the other.  */
+
+void
+split_double (rtx value, rtx *first, rtx *second)
+{
+  if (CONST_INT_P (value))
+    {
+      if (HOST_BITS_PER_WIDE_INT >= (2 * BITS_PER_WORD))
+	{
+	  /* In this case the CONST_INT holds both target words.
+	     Extract the bits from it into two word-sized pieces.
+	     Sign extend each half to HOST_WIDE_INT.  */
+	  unsigned HOST_WIDE_INT low, high;
+	  unsigned HOST_WIDE_INT mask, sign_bit, sign_extend;
+	  unsigned bits_per_word = BITS_PER_WORD;
+
+	  /* Set sign_bit to the most significant bit of a word.  */
+	  sign_bit = 1;
+	  sign_bit <<= bits_per_word - 1;
+
+	  /* Set mask so that all bits of the word are set.  We could
+	     have used 1 << BITS_PER_WORD instead of basing the
+	     calculation on sign_bit.  However, on machines where
+	     HOST_BITS_PER_WIDE_INT == BITS_PER_WORD, it could cause a
+	     compiler warning, even though the code would never be
+	     executed.  */
+	  mask = sign_bit << 1;
+	  mask--;
+
+	  /* Set sign_extend as any remaining bits.  */
+	  sign_extend = ~mask;
+
+	  /* Pick the lower word and sign-extend it.  */
+	  low = INTVAL (value);
+	  low &= mask;
+	  if (low & sign_bit)
+	    low |= sign_extend;
+
+	  /* Pick the higher word, shifted to the least significant
+	     bits, and sign-extend it.  */
+	  high = INTVAL (value);
+	  high >>= bits_per_word - 1;
+	  high >>= 1;
+	  high &= mask;
+	  if (high & sign_bit)
+	    high |= sign_extend;
+
+	  /* Store the words in the target machine order.  */
+	  if (WORDS_BIG_ENDIAN)
+	    {
+	      *first = GEN_INT (high);
+	      *second = GEN_INT (low);
+	    }
+	  else
+	    {
+	      *first = GEN_INT (low);
+	      *second = GEN_INT (high);
+	    }
+	}
+      else
+	{
+	  /* The rule for using CONST_INT for a wider mode
+	     is that we regard the value as signed.
+	     So sign-extend it.  */
+	  rtx high = (INTVAL (value) < 0 ? constm1_rtx : const0_rtx);
+	  if (WORDS_BIG_ENDIAN)
+	    {
+	      *first = high;
+	      *second = value;
+	    }
+	  else
+	    {
+	      *first = value;
+	      *second = high;
+	    }
+	}
+    }
+  else if (GET_CODE (value) != CONST_DOUBLE)
+    {
+      if (WORDS_BIG_ENDIAN)
+	{
+	  *first = const0_rtx;
+	  *second = value;
+	}
+      else
+	{
+	  *first = value;
+	  *second = const0_rtx;
+	}
+    }
+  else if (GET_MODE (value) == VOIDmode
+	   /* This is the old way we did CONST_DOUBLE integers.  */
+	   || GET_MODE_CLASS (GET_MODE (value)) == MODE_INT)
+    {
+      /* In an integer, the words are defined as most and least significant.
+	 So order them by the target's convention.  */
+      if (WORDS_BIG_ENDIAN)
+	{
+	  *first = GEN_INT (CONST_DOUBLE_HIGH (value));
+	  *second = GEN_INT (CONST_DOUBLE_LOW (value));
+	}
+      else
+	{
+	  *first = GEN_INT (CONST_DOUBLE_LOW (value));
+	  *second = GEN_INT (CONST_DOUBLE_HIGH (value));
+	}
+    }
+  else
+    {
+      REAL_VALUE_TYPE r;
+      long l[2];
+      REAL_VALUE_FROM_CONST_DOUBLE (r, value);
+
+      /* Note, this converts the REAL_VALUE_TYPE to the target's
+	 format, splits up the floating point double and outputs
+	 exactly 32 bits of it into each of l[0] and l[1] --
+	 not necessarily BITS_PER_WORD bits.  */
+      REAL_VALUE_TO_TARGET_DOUBLE (r, l);
+
+      /* If 32 bits is an entire word for the target, but not for the host,
+	 then sign-extend on the host so that the number will look the same
+	 way on the host that it would on the target.  See for instance
+	 simplify_unary_operation.  The #if is needed to avoid compiler
+	 warnings.  */
+
+#if HOST_BITS_PER_LONG > 32
+      if (BITS_PER_WORD < HOST_BITS_PER_LONG && BITS_PER_WORD == 32)
+	{
+	  if (l[0] & ((long) 1 << 31))
+	    l[0] |= ((long) (-1) << 32);
+	  if (l[1] & ((long) 1 << 31))
+	    l[1] |= ((long) (-1) << 32);
+	}
+#endif
+
+      *first = GEN_INT (l[0]);
+      *second = GEN_INT (l[1]);
+    }
+}
+
