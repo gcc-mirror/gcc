@@ -28,7 +28,6 @@ extern int use_return_insn (int, rtx);
 extern enum reg_class arm_regno_class (int);
 extern void arm_load_pic_register (unsigned long);
 extern int arm_volatile_func (void);
-extern const char *arm_output_epilogue (rtx);
 extern void arm_expand_prologue (void);
 extern void arm_expand_epilogue (bool);
 extern void thumb2_expand_return (void);

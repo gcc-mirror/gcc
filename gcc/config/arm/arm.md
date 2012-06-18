@@ -10619,11 +10619,8 @@
 
 (define_insn "*epilogue_insns"
   [(unspec_volatile [(return)] VUNSPEC_EPILOGUE)]
-  "TARGET_EITHER"
+  "TARGET_THUMB1"
   "*
-  if (TARGET_32BIT)
-    return arm_output_epilogue (NULL);
-  else /* TARGET_THUMB1 */
     return thumb1_unexpanded_epilogue ();
   "
   ; Length is absolute worst case
