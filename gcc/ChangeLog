@@ -1,6 +1,16 @@
+2012-06-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/53700
+
+	Backport from mainline
+	2012-03-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-color.c (setup_left_conflict_sizes_p): Process all
+	conflicting objects.
+
 2012-06-18  Venkataramanan Kumar <venkataramanan.kumar@amd.com>
 
-	Backport from mainline 
+	Backport from mainline
 	2012-05-09 Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52908
