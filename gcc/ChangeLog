@@ -2,6 +2,13 @@
             Sameera Deshpande  <sameera.deshpande@arm.com>
             Greta Yorsh  <greta.yorsh@arm.com>
 
+        * config/arm/arm.c (arm_expand_epilogue_apcs_frame): New function.
+        * config/arm/arm.md (arm_addsi3) Add an alternative.
+
+2012-06-18  Ian Bolton  <ian.bolton@arm.com>
+            Sameera Deshpande  <sameera.deshpande@arm.com>
+            Greta Yorsh  <greta.yorsh@arm.com>
+
         * config/arm/arm.md (vfp_pop_multiple_with_writeback) New
 	define_insn.
         * config/arm/predicates.md (pop_multiple_fp) New special predicate.
