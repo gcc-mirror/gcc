@@ -1,3 +1,9 @@
+2012-06-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/53698
+	* expr.c (expand_expr_addr_expr_1): Convert to tmode before
+	performing an addition.
+
 2012-06-17  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* output.h (split_double): Move prototype to rtl.h.

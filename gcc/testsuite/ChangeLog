@@ -1,3 +1,8 @@
+2012-06-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/53698
+	* gcc.target/i386/pr53698.c: New test.
+
 2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr33329.c (f): Increase tabs array to 1024.
