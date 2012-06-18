@@ -9048,7 +9048,6 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   lab_false = create_artificial_label (UNKNOWN_LOCATION);
   lab_over = create_artificial_label (UNKNOWN_LOCATION);
   addr = create_tmp_var (ptr_type_node, "addr");
-  mark_sym_for_renaming (addr);
 
   t = fold_convert (TREE_TYPE (reg), size_int (max_reg));
   t = build2 (GT_EXPR, boolean_type_node, reg, t);
