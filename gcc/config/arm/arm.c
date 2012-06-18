@@ -10080,6 +10080,12 @@ ldm_stm_operation_p (rtx op, bool load, enum machine_mode mode,
   if (!REG_P (addr))
     return false;
 
+  /* Don't allow SP to be loaded unless it is also the base register. It
+     guarantees that SP is reset correctly when an LDM instruction
+     is interruptted. Otherwise, we might end up with a corrupt stack.  */
+  if (load && (REGNO (reg) == SP_REGNUM) && (REGNO (addr) != SP_REGNUM))
+    return false;
+
   for (; i < count; i++)
     {
       elt = XVECEXP (op, 0, i);
@@ -10103,6 +10109,10 @@ ldm_stm_operation_p (rtx op, bool load, enum machine_mode mode,
           || (consecutive
               && (REGNO (reg) !=
                   (unsigned int) (first_regno + regs_per_val * (i - base))))
+          /* Don't allow SP to be loaded unless it is also the base register. It
+             guarantees that SP is reset correctly when an LDM instruction
+             is interrupted. Otherwise, we might end up with a corrupt stack.  */
+          || (load && (REGNO (reg) == SP_REGNUM) && (REGNO (addr) != SP_REGNUM))
           || !MEM_P (mem)
           || GET_MODE (mem) != mode
           || ((GET_CODE (XEXP (mem, 0)) != PLUS
