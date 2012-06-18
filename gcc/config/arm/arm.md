@@ -8505,8 +8505,20 @@
 
 (define_expand "return"
   [(return)]
-  "TARGET_32BIT && USE_RETURN_INSN (FALSE)"
-  "")
+  "(TARGET_ARM || (TARGET_THUMB2
+                   && ARM_FUNC_TYPE (arm_current_func_type ()) == ARM_FT_NORMAL
+                   && !IS_STACKALIGN (arm_current_func_type ())))
+    && USE_RETURN_INSN (FALSE)"
+  "
+  {
+    if (TARGET_THUMB2)
+      {
+        thumb2_expand_return ();
+        DONE;
+      }
+  }
+  "
+)
 
 ;; Often the return insn will be the same as loading from memory, so set attr
 (define_insn "*arm_return"
