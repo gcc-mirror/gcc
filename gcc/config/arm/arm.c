@@ -23320,6 +23320,159 @@ thumb1_expand_epilogue (void)
     emit_use (gen_rtx_REG (SImode, LR_REGNUM));
 }
 
+/* Epilogue code for APCS frame.  */
+static void
+arm_expand_epilogue_apcs_frame (bool really_return)
+{
+  unsigned long func_type;
+  unsigned long saved_regs_mask;
+  int num_regs = 0;
+  int i;
+  int floats_from_frame = 0;
+  arm_stack_offsets *offsets;
+
+  gcc_assert (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM);
+  func_type = arm_current_func_type ();
+
+  /* Get frame offsets for ARM.  */
+  offsets = arm_get_frame_offsets ();
+  saved_regs_mask = offsets->saved_regs_mask;
+
+  /* Find the offset of the floating-point save area in the frame.  */
+  floats_from_frame = offsets->saved_args - offsets->frame;
+
+  /* Compute how many core registers saved and how far away the floats are.  */
+  for (i = 0; i <= LAST_ARM_REGNUM; i++)
+    if (saved_regs_mask & (1 << i))
+      {
+        num_regs++;
+        floats_from_frame += 4;
+      }
+
+  if (TARGET_HARD_FLOAT && TARGET_VFP)
+    {
+      int start_reg;
+
+      /* The offset is from IP_REGNUM.  */
+      int saved_size = arm_get_vfp_saved_size ();
+      if (saved_size > 0)
+        {
+          floats_from_frame += saved_size;
+          emit_insn (gen_addsi3 (gen_rtx_REG (SImode, IP_REGNUM),
+                                 hard_frame_pointer_rtx,
+                                 GEN_INT (-floats_from_frame)));
+        }
+
+      /* Generate VFP register multi-pop.  */
+      start_reg = FIRST_VFP_REGNUM;
+
+      for (i = FIRST_VFP_REGNUM; i < LAST_VFP_REGNUM; i += 2)
+        /* Look for a case where a reg does not need restoring.  */
+        if ((!df_regs_ever_live_p (i) || call_used_regs[i])
+            && (!df_regs_ever_live_p (i + 1)
+                || call_used_regs[i + 1]))
+          {
+            if (start_reg != i)
+              arm_emit_vfp_multi_reg_pop (start_reg,
+                                          (i - start_reg) / 2,
+                                          gen_rtx_REG (SImode,
+                                                       IP_REGNUM));
+            start_reg = i + 2;
+          }
+
+      /* Restore the remaining regs that we have discovered (or possibly
+         even all of them, if the conditional in the for loop never
+         fired).  */
+      if (start_reg != i)
+        arm_emit_vfp_multi_reg_pop (start_reg,
+                                    (i - start_reg) / 2,
+                                    gen_rtx_REG (SImode, IP_REGNUM));
+    }
+
+  if (TARGET_IWMMXT)
+    {
+      /* The frame pointer is guaranteed to be non-double-word aligned, as
+         it is set to double-word-aligned old_stack_pointer - 4.  */
+      rtx insn;
+      int lrm_count = (num_regs % 2) ? (num_regs + 2) : (num_regs + 1);
+
+      for (i = LAST_IWMMXT_REGNUM; i >= FIRST_IWMMXT_REGNUM; i--)
+        if (df_regs_ever_live_p (i) && !call_used_regs[i])
+          {
+            rtx addr = gen_frame_mem (V2SImode,
+                                 plus_constant (Pmode, hard_frame_pointer_rtx,
+                                                - lrm_count * 4));
+            insn = emit_insn (gen_movsi (gen_rtx_REG (V2SImode, i), addr));
+            REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
+                                               gen_rtx_REG (V2SImode, i),
+                                               NULL_RTX);
+            lrm_count += 2;
+          }
+    }
+
+  /* saved_regs_mask should contain IP which contains old stack pointer
+     at the time of activation creation.  Since SP and IP are adjacent registers,
+     we can restore the value directly into SP.  */
+  gcc_assert (saved_regs_mask & (1 << IP_REGNUM));
+  saved_regs_mask &= ~(1 << IP_REGNUM);
+  saved_regs_mask |= (1 << SP_REGNUM);
+
+  /* There are two registers left in saved_regs_mask - LR and PC.  We
+     only need to restore LR (the return address), but to
+     save time we can load it directly into PC, unless we need a
+     special function exit sequence, or we are not really returning.  */
+  if (really_return
+      && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
+      && !crtl->calls_eh_return)
+    /* Delete LR from the register mask, so that LR on
+       the stack is loaded into the PC in the register mask.  */
+    saved_regs_mask &= ~(1 << LR_REGNUM);
+  else
+    saved_regs_mask &= ~(1 << PC_REGNUM);
+
+  num_regs = bit_count (saved_regs_mask);
+  if ((offsets->outgoing_args != (1 + num_regs)) || cfun->calls_alloca)
+    {
+      /* Unwind the stack to just below the saved registers.  */
+      emit_insn (gen_addsi3 (stack_pointer_rtx,
+                             hard_frame_pointer_rtx,
+                             GEN_INT (- 4 * num_regs)));
+    }
+
+  arm_emit_multi_reg_pop (saved_regs_mask);
+
+  if (IS_INTERRUPT (func_type))
+    {
+      /* Interrupt handlers will have pushed the
+         IP onto the stack, so restore it now.  */
+      rtx insn;
+      rtx addr = gen_rtx_MEM (SImode,
+                              gen_rtx_POST_INC (SImode,
+                              stack_pointer_rtx));
+      set_mem_alias_set (addr, get_frame_alias_set ());
+      insn = emit_insn (gen_movsi (gen_rtx_REG (SImode, IP_REGNUM), addr));
+      REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
+                                         gen_rtx_REG (SImode, IP_REGNUM),
+                                         NULL_RTX);
+    }
+
+  if (!really_return || (saved_regs_mask & (1 << PC_REGNUM)))
+    return;
+
+  if (crtl->calls_eh_return)
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+               stack_pointer_rtx,
+               GEN_INT (ARM_EH_STACKADJ_REGNUM)));
+
+  if (IS_STACKALIGN (func_type))
+    /* Restore the original stack pointer.  Before prologue, the stack was
+       realigned and the original stack pointer saved in r0.  For details,
+       see comment in arm_expand_prologue.  */
+    emit_insn (gen_movsi (stack_pointer_rtx, gen_rtx_REG (SImode, 0)));
+
+  emit_jump_insn (simple_return_rtx);
+}
+
 /* Implementation of insn prologue_thumb1_interwork.  This is the first
    "instruction" of a function called in ARM mode.  Swap to thumb mode.  */
 
