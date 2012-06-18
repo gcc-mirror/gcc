@@ -1,7 +1,12 @@
-2012-06-18  Joey Ye <Joey.Ye@arm.com>
-            Greta Yorsh  <Greta.Yorsh@arm.com>
+2012-06-18  Tobias Burnus  <burnus@net-b.de>
 
-        * gcc.target/arm/epilog-1.c: New test.
+	PR fortran/53526
+	* gfortran.dg/coarray_27.f90: New.
+
+2012-06-18  Joey Ye <Joey.Ye@arm.com>
+	    Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.target/arm/epilog-1.c: New test.
 
 2012-06-18  Richard Guenther  <rguenther@suse.de>
 
