@@ -368,6 +368,14 @@
                                  /*return_pc=*/false);
 })
 
+(define_special_predicate "pop_multiple_return"
+  (match_code "parallel")
+{
+ return ldm_stm_operation_p (op, /*load=*/true, SImode,
+                                 /*consecutive=*/false,
+                                 /*return_pc=*/true);
+})
+
 (define_special_predicate "multi_register_push"
   (match_code "parallel")
 {
