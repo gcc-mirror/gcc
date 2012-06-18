@@ -1,3 +1,10 @@
+2012-06-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_assert): Split out range
+	intersecting code.
+	(intersect_ranges): New function.
+	(vrp_intersect_ranges): Likewise.
+
 2012-06-18  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_gimplify_va_arg): Revert change from

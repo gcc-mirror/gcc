@@ -95,6 +95,7 @@ live_on_edge (edge e, tree name)
 static int compare_values (tree val1, tree val2);
 static int compare_values_warnv (tree val1, tree val2, bool *);
 static void vrp_meet (value_range_t *, value_range_t *);
+static void vrp_intersect_ranges (value_range_t *, value_range_t *);
 static tree vrp_evaluate_conditional_warnv_with_ops (enum tree_code,
 						     tree, tree, bool, bool *,
 						     bool *);
@@ -1515,7 +1516,7 @@ static void
 extract_range_from_assert (value_range_t *vr_p, tree expr)
 {
   tree var, cond, limit, min, max, type;
-  value_range_t *var_vr, *limit_vr;
+  value_range_t *limit_vr;
   enum tree_code cond_code;
 
   var = ASSERT_EXPR_VAR (expr);
@@ -1777,238 +1778,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
   else
     gcc_unreachable ();
 
-  /* If VAR already had a known range, it may happen that the new
-     range we have computed and VAR's range are not compatible.  For
-     instance,
-
-	if (p_5 == NULL)
-	  p_6 = ASSERT_EXPR <p_5, p_5 == NULL>;
-	  x_7 = p_6->fld;
-	  p_8 = ASSERT_EXPR <p_6, p_6 != NULL>;
-
-     While the above comes from a faulty program, it will cause an ICE
-     later because p_8 and p_6 will have incompatible ranges and at
-     the same time will be considered equivalent.  A similar situation
-     would arise from
-
-     	if (i_5 > 10)
-	  i_6 = ASSERT_EXPR <i_5, i_5 > 10>;
-	  if (i_5 < 5)
-	    i_7 = ASSERT_EXPR <i_6, i_6 < 5>;
-
-     Again i_6 and i_7 will have incompatible ranges.  It would be
-     pointless to try and do anything with i_7's range because
-     anything dominated by 'if (i_5 < 5)' will be optimized away.
-     Note, due to the wa in which simulation proceeds, the statement
-     i_7 = ASSERT_EXPR <...> we would never be visited because the
-     conditional 'if (i_5 < 5)' always evaluates to false.  However,
-     this extra check does not hurt and may protect against future
-     changes to VRP that may get into a situation similar to the
-     NULL pointer dereference example.
-
-     Note that these compatibility tests are only needed when dealing
-     with ranges or a mix of range and anti-range.  If VAR_VR and VR_P
-     are both anti-ranges, they will always be compatible, because two
-     anti-ranges will always have a non-empty intersection.  */
-
-  var_vr = get_value_range (var);
-
-  /* We may need to make adjustments when VR_P and VAR_VR are numeric
-     ranges or anti-ranges.  */
-  if (vr_p->type == VR_VARYING
-      || vr_p->type == VR_UNDEFINED
-      || var_vr->type == VR_VARYING
-      || var_vr->type == VR_UNDEFINED
-      || symbolic_range_p (vr_p)
-      || symbolic_range_p (var_vr))
-    return;
-
-  if (var_vr->type == VR_RANGE && vr_p->type == VR_RANGE)
-    {
-      /* If the two ranges have a non-empty intersection, we can
-	 refine the resulting range.  Since the assert expression
-	 creates an equivalency and at the same time it asserts a
-	 predicate, we can take the intersection of the two ranges to
-	 get better precision.  */
-      if (value_ranges_intersect_p (var_vr, vr_p))
-	{
-	  /* Use the larger of the two minimums.  */
-	  if (compare_values (vr_p->min, var_vr->min) == -1)
-	    min = var_vr->min;
-	  else
-	    min = vr_p->min;
-
-	  /* Use the smaller of the two maximums.  */
-	  if (compare_values (vr_p->max, var_vr->max) == 1)
-	    max = var_vr->max;
-	  else
-	    max = vr_p->max;
-
-	  set_value_range (vr_p, vr_p->type, min, max, vr_p->equiv);
-	}
-      else
-	{
-	  /* The two ranges do not intersect, set the new range to
-	     VARYING, because we will not be able to do anything
-	     meaningful with it.  */
-	  set_value_range_to_varying (vr_p);
-	}
-    }
-  else if ((var_vr->type == VR_RANGE && vr_p->type == VR_ANTI_RANGE)
-           || (var_vr->type == VR_ANTI_RANGE && vr_p->type == VR_RANGE))
-    {
-      /* A range and an anti-range will cancel each other only if
-	 their ends are the same.  For instance, in the example above,
-	 p_8's range ~[0, 0] and p_6's range [0, 0] are incompatible,
-	 so VR_P should be set to VR_VARYING.  */
-      if (compare_values (var_vr->min, vr_p->min) == 0
-	  && compare_values (var_vr->max, vr_p->max) == 0)
-	set_value_range_to_varying (vr_p);
-      else
-	{
-	  tree min, max, anti_min, anti_max, real_min, real_max;
-	  int cmp;
-
-	  /* We want to compute the logical AND of the two ranges;
-	     there are three cases to consider.
-
-
-	     1. The VR_ANTI_RANGE range is completely within the
-		VR_RANGE and the endpoints of the ranges are
-		different.  In that case the resulting range
-		should be whichever range is more precise.
-		Typically that will be the VR_RANGE.
-
-	     2. The VR_ANTI_RANGE is completely disjoint from
-		the VR_RANGE.  In this case the resulting range
-		should be the VR_RANGE.
-
-	     3. There is some overlap between the VR_ANTI_RANGE
-		and the VR_RANGE.
-
-		3a. If the high limit of the VR_ANTI_RANGE resides
-		    within the VR_RANGE, then the result is a new
-		    VR_RANGE starting at the high limit of the
-		    VR_ANTI_RANGE + 1 and extending to the
-		    high limit of the original VR_RANGE.
-
-		3b. If the low limit of the VR_ANTI_RANGE resides
-		    within the VR_RANGE, then the result is a new
-		    VR_RANGE starting at the low limit of the original
-		    VR_RANGE and extending to the low limit of the
-		    VR_ANTI_RANGE - 1.  */
-	  if (vr_p->type == VR_ANTI_RANGE)
-	    {
-	      anti_min = vr_p->min;
-	      anti_max = vr_p->max;
-	      real_min = var_vr->min;
-	      real_max = var_vr->max;
-	    }
-	  else
-	    {
-	      anti_min = var_vr->min;
-	      anti_max = var_vr->max;
-	      real_min = vr_p->min;
-	      real_max = vr_p->max;
-	    }
-
-
-	  /* Case 1, VR_ANTI_RANGE completely within VR_RANGE,
-	     not including any endpoints.  */
-	  if (compare_values (anti_max, real_max) == -1
-	      && compare_values (anti_min, real_min) == 1)
-	    {
-	      /* If the range is covering the whole valid range of
-		 the type keep the anti-range.  */
-	      if (!vrp_val_is_min (real_min)
-		  || !vrp_val_is_max (real_max))
-	        set_value_range (vr_p, VR_RANGE, real_min,
-				 real_max, vr_p->equiv);
-	    }
-	  /* Case 2, VR_ANTI_RANGE completely disjoint from
-	     VR_RANGE.  */
-	  else if (compare_values (anti_min, real_max) == 1
-		   || compare_values (anti_max, real_min) == -1)
-	    {
-	      set_value_range (vr_p, VR_RANGE, real_min,
-			       real_max, vr_p->equiv);
-	    }
-	  /* Case 3a, the anti-range extends into the low
-	     part of the real range.  Thus creating a new
-	     low for the real range.  */
-	  else if (((cmp = compare_values (anti_max, real_min)) == 1
-		    || cmp == 0)
-		   && compare_values (anti_max, real_max) == -1)
-	    {
-	      gcc_assert (!is_positive_overflow_infinity (anti_max));
-	      if (needs_overflow_infinity (TREE_TYPE (anti_max))
-		  && vrp_val_is_max (anti_max))
-		{
-		  if (!supports_overflow_infinity (TREE_TYPE (var_vr->min)))
-		    {
-		      set_value_range_to_varying (vr_p);
-		      return;
-		    }
-		  min = positive_overflow_infinity (TREE_TYPE (var_vr->min));
-		}
-	      else if (!POINTER_TYPE_P (TREE_TYPE (var_vr->min)))
-		{
-		  if (TYPE_PRECISION (TREE_TYPE (var_vr->min)) == 1
-		      && !TYPE_UNSIGNED (TREE_TYPE (var_vr->min)))
-		    min = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
-				       anti_max,
-				       build_int_cst (TREE_TYPE (var_vr->min),
-						      -1));
-		  else
-		    min = fold_build2 (PLUS_EXPR, TREE_TYPE (var_vr->min),
-				       anti_max,
-				       build_int_cst (TREE_TYPE (var_vr->min),
-						      1));
-		}
-	      else
-		min = fold_build_pointer_plus_hwi (anti_max, 1);
-	      max = real_max;
-	      set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
-	    }
-	  /* Case 3b, the anti-range extends into the high
-	     part of the real range.  Thus creating a new
-	     higher for the real range.  */
-	  else if (compare_values (anti_min, real_min) == 1
-		   && ((cmp = compare_values (anti_min, real_max)) == -1
-		       || cmp == 0))
-	    {
-	      gcc_assert (!is_negative_overflow_infinity (anti_min));
-	      if (needs_overflow_infinity (TREE_TYPE (anti_min))
-		  && vrp_val_is_min (anti_min))
-		{
-		  if (!supports_overflow_infinity (TREE_TYPE (var_vr->min)))
-		    {
-		      set_value_range_to_varying (vr_p);
-		      return;
-		    }
-		  max = negative_overflow_infinity (TREE_TYPE (var_vr->min));
-		}
-	      else if (!POINTER_TYPE_P (TREE_TYPE (var_vr->min)))
-		{
-		  if (TYPE_PRECISION (TREE_TYPE (var_vr->min)) == 1
-		      && !TYPE_UNSIGNED (TREE_TYPE (var_vr->min)))
-		    max = fold_build2 (PLUS_EXPR, TREE_TYPE (var_vr->min),
-				       anti_min,
-				       build_int_cst (TREE_TYPE (var_vr->min),
-						      -1));
-		  else
-		    max = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
-				       anti_min,
-				       build_int_cst (TREE_TYPE (var_vr->min),
-						      1));
-		}
-	      else
-		max = fold_build_pointer_plus_hwi (anti_min, -1);
-	      min = real_min;
-	      set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
-	    }
-	}
-    }
+  /* Finally intersect the new range with what we already know about var.  */
+  vrp_intersect_ranges (vr_p, get_value_range (var));
 }
 
 
@@ -6999,6 +6770,238 @@ vrp_visit_stmt (gimple stmt, edge *taken_edge_p, tree *output_p)
   return SSA_PROP_VARYING;
 }
 
+/* Intersect the two value-ranges { *VR0TYPE, *VR0MIN, *VR0MAX } and
+   { VR1TYPE, VR0MIN, VR0MAX } and store the result
+   in { *VR0TYPE, *VR0MIN, *VR0MAX }.  This may not be the smallest
+   possible such range.  The resulting range is not canonicalized.  */
+
+static void
+intersect_ranges (enum value_range_type *vr0type,
+		  tree *vr0min, tree *vr0max,
+		  enum value_range_type vr1type,
+		  tree vr1min, tree vr1max)
+{
+  /* [] is vr0, () is vr1 in the following classification comments.  */
+  if (operand_less_p (*vr0max, vr1min) == 1
+      || operand_less_p (vr1max, *vr0min) == 1)
+    {
+      /* [ ] ( ) or ( ) [ ]
+	 If the ranges have an empty intersection, the result of the
+	 intersect operation is the range for intersecting an
+	 anti-range with a range or empty when intersecting two ranges.
+	 For intersecting two anti-ranges simply choose vr0.  */
+      if (*vr0type == VR_RANGE
+	  && vr1type == VR_ANTI_RANGE)
+	;
+      else if (*vr0type == VR_ANTI_RANGE
+	       && vr1type == VR_RANGE)
+	{
+	  *vr0type = vr1type;
+	  *vr0min = vr1min;
+	  *vr0max = vr1max;
+	}
+      else if (*vr0type == VR_RANGE
+	       && vr1type == VR_RANGE)
+	{
+	  *vr0type = VR_UNDEFINED;
+	  *vr0min = NULL_TREE;
+	  *vr0max = NULL_TREE;
+	}
+      else if (*vr0type == VR_ANTI_RANGE
+	       && vr1type == VR_ANTI_RANGE)
+	{
+	  /* Take VR0.  */
+	}
+    }
+  else if (operand_less_p (vr1max, *vr0max) == 1
+	   && operand_less_p (*vr0min, vr1min) == 1)
+    {
+      /* [ (  ) ]  */
+      if (*vr0type == VR_RANGE)
+	{
+	  /* If the outer is a range choose the inner one.
+	     ???  If the inner is an anti-range this arbitrarily chooses
+	     the anti-range.  */
+	  *vr0type = vr1type;
+	  *vr0min = vr1min;
+	  *vr0max = vr1max;
+	}
+      else if (*vr0type == VR_ANTI_RANGE
+	       && vr1type == VR_ANTI_RANGE)
+	/* If both are anti-ranges the result is the outer one.  */
+	;
+      else if (*vr0type == VR_ANTI_RANGE
+	       && vr1type == VR_RANGE)
+	{
+	  /* The intersection is empty.  */
+	  *vr0type = VR_UNDEFINED;
+	  *vr0min = NULL_TREE;
+	  *vr0max = NULL_TREE;
+	}
+      else
+	gcc_unreachable ();
+    }
+  else if (operand_less_p (*vr0max, vr1max) == 1
+	   && operand_less_p (vr1min, *vr0min) == 1)
+    {
+      /* ( [  ] )  */
+      if (vr1type == VR_RANGE)
+	/* If the outer is a range, choose the inner one.
+	   ???  If the inner is an anti-range this arbitrarily chooses
+	   the anti-range.  */
+	;
+      else if (*vr0type == VR_ANTI_RANGE
+	       && vr1type == VR_ANTI_RANGE)
+	{
+	  /* If both are anti-ranges the result is the outer one.  */
+	  *vr0type = vr1type;
+	  *vr0min = vr1min;
+	  *vr0max = vr1max;
+	}
+      else if (vr1type == VR_ANTI_RANGE
+	       && *vr0type == VR_RANGE)
+	{
+	  /* The intersection is empty.  */
+	  *vr0type = VR_UNDEFINED;
+	  *vr0min = NULL_TREE;
+	  *vr0max = NULL_TREE;
+	}
+      else
+	gcc_unreachable ();
+    }
+  else if ((operand_less_p (vr1min, *vr0max) == 1
+	    || operand_equal_p (vr1min, *vr0max, 0))
+	   && (operand_less_p (*vr0min, vr1min) == 1
+	       || operand_equal_p (*vr0min, vr1min, 0)))
+    {
+      /* [  (  ]  ) */
+      if (*vr0type == VR_ANTI_RANGE
+	  && vr1type == VR_ANTI_RANGE)
+	*vr0max = vr1max;
+      else if (*vr0type == VR_RANGE
+	       && vr1type == VR_RANGE)
+	*vr0min = vr1min;
+      else if (*vr0type == VR_RANGE
+	       && vr1type == VR_ANTI_RANGE)
+	{
+	  if (TREE_CODE (vr1min) == INTEGER_CST)
+	    *vr0max = int_const_binop (MINUS_EXPR, vr1min,
+				       integer_one_node);
+	  else
+	    *vr0max = vr1min;
+	}
+      else if (*vr0type == VR_ANTI_RANGE
+	       && vr1type == VR_RANGE)
+	{
+	  *vr0type = VR_RANGE;
+	  if (TREE_CODE (*vr0max) == INTEGER_CST)
+	    *vr0min = int_const_binop (PLUS_EXPR, *vr0max,
+				       integer_one_node);
+	  else
+	    *vr0min = *vr0max;
+	  *vr0max = vr1max;
+	}
+      else
+	gcc_unreachable ();
+    }
+  else if ((operand_less_p (*vr0min, vr1max) == 1
+	    || operand_equal_p (*vr0min, vr1max, 0))
+	   && (operand_less_p (vr1min, *vr0min) == 1
+	       || operand_equal_p (vr1min, *vr0min, 0)))
+    {
+      /* (  [  )  ] */
+      if (*vr0type == VR_ANTI_RANGE
+	  && vr1type == VR_ANTI_RANGE)
+	*vr0min = vr1min;
+      else if (*vr0type == VR_RANGE
+	       && vr1type == VR_RANGE)
+	*vr0max = vr1max;
+      else if (*vr0type == VR_RANGE
+	       && vr1type == VR_ANTI_RANGE)
+	{
+	  if (TREE_CODE (vr1max) == INTEGER_CST)
+	    *vr0min = int_const_binop (PLUS_EXPR, vr1max,
+				       integer_one_node);
+	  else
+	    *vr0min = vr1max;
+	}
+      else if (*vr0type == VR_ANTI_RANGE
+	       && vr1type == VR_RANGE)
+	{
+	  *vr0type = VR_RANGE;
+	  if (TREE_CODE (*vr0min) == INTEGER_CST)
+	    *vr0max = int_const_binop (MINUS_EXPR, *vr0min,
+				       integer_one_node);
+	  else
+	    *vr0max = *vr0min;
+	  *vr0min = vr1min;
+	}
+      else
+	gcc_unreachable ();
+    }
+
+  /* As a fallback simply use { *VRTYPE, *VR0MIN, *VR0MAX } as
+     result for the intersection.  That's always a conservative
+     correct estimate.  */
+
+  return;
+}
+
+
+/* Intersect the two value-ranges *VR0 and *VR1 and store the result
+   in *VR0.  This may not be the smallest possible such range.  */
+
+static void
+vrp_intersect_ranges (value_range_t *vr0, value_range_t *vr1)
+{
+  value_range_t saved;
+
+  /* If either range is VR_VARYING the other one wins.  */
+  if (vr1->type == VR_VARYING)
+    return;
+  if (vr0->type == VR_VARYING)
+    {
+      copy_value_range (vr0, vr1);
+      return;
+    }
+
+  /* When either range is VR_UNDEFINED the resulting range is
+     VR_UNDEFINED, too.  */
+  if (vr0->type == VR_UNDEFINED)
+    return;
+  if (vr1->type == VR_UNDEFINED)
+    {
+      set_value_range_to_undefined (vr0);
+      return;
+    }
+
+  /* Save the original vr0 so we can return it as conservative intersection
+     result when our worker turns things to varying.  */
+  saved = *vr0;
+  intersect_ranges (&vr0->type, &vr0->min, &vr0->max,
+		    vr1->type, vr1->min, vr1->max);
+  /* Make sure to canonicalize the result though as the inversion of a
+     VR_RANGE can still be a VR_RANGE.  */
+  set_and_canonicalize_value_range (vr0, vr0->type,
+				    vr0->min, vr0->max, vr0->equiv);
+  /* If that failed, use the saved original VR0.  */
+  if (vr0->type == VR_VARYING)
+    {
+      *vr0 = saved;
+      return;
+    }
+  /* If the result is VR_UNDEFINED there is no need to mess with
+     the equivalencies.  */
+  if (vr0->type == VR_UNDEFINED)
+    return;
+
+  /* The resulting set of equivalences for range intersection is the union of
+     the two sets.  */
+  if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
+    bitmap_ior_into (vr0->equiv, vr1->equiv);
+  else if (vr1->equiv && !vr0->equiv)
+    bitmap_copy (vr0->equiv, vr1->equiv);
+}
 
 /* Meet operation for value ranges.  Given two value ranges VR0 and
    VR1, store in VR0 a range that contains both VR0 and VR1.  This
