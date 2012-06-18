@@ -1,3 +1,9 @@
+2012-06-18  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR tree-optimization/53703
+	* tree-ssa-phiopt.c (hoist_adjacent_loads): Skip virtual phis;
+	correctly set bb_for_def[12].
+
 2012-06-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/vax/vax.h (VMS_TARGET): Remove.
