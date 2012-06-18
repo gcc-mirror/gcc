@@ -1316,6 +1316,32 @@ trans_num_images (gfc_se * se)
 }
 
 
+static void
+gfc_conv_intrinsic_rank (gfc_se *se, gfc_expr *expr)
+{
+  gfc_se argse;
+  gfc_ss *ss;
+  tree dtype, tmp;
+
+  ss = gfc_walk_expr (expr->value.function.actual->expr);
+  gcc_assert (ss != gfc_ss_terminator);
+  gfc_init_se (&argse, NULL);
+  argse.data_not_needed = 1;
+  argse.want_pointer = 1;
+
+  gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
+  gfc_add_block_to_block (&se->pre, &argse.pre);
+  gfc_add_block_to_block (&se->post, &argse.post);
+  argse.expr = build_fold_indirect_ref_loc (input_location, argse.expr);
+  argse.expr = build_fold_indirect_ref_loc (input_location, argse.expr);
+  dtype = gfc_conv_descriptor_dtype (argse.expr);
+  tmp = build_int_cst (TREE_TYPE (dtype), GFC_DTYPE_RANK_MASK);
+  tmp = fold_build2_loc (input_location, BIT_AND_EXPR, TREE_TYPE (dtype),
+			 dtype, tmp);
+  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
+}
+
+
 /* Evaluate a single upper or lower bound.  */
 /* TODO: bound intrinsic generates way too much unnecessary code.  */
 
@@ -6708,6 +6734,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_PRODUCT:
       gfc_conv_intrinsic_arith (se, expr, MULT_EXPR, false);
+      break;
+
+    case GFC_ISYM_RANK:
+      gfc_conv_intrinsic_rank (se, expr);
       break;
 
     case GFC_ISYM_RRSPACING:

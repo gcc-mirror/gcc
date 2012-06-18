@@ -1,5 +1,13 @@
 2012-06-18  Tobias Burnus  <burnus@net-b.de>
 
+	* intrinsic.h (gfc_resolve_rank): New prototype.
+	* intrinsic.c (add_functions): Use gfc_resolve_rank.
+	* iresolve.c (add_functions): New function.
+	* trans-intrinsic.c (gfc_conv_intrinsic_rank): New function.
+	(gfc_conv_intrinsic_function): Call it.
+
+2012-06-18  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/53692
 	* trans-array.c (set_loop_bounds): Don't scalarize via absent
 	optional arrays.

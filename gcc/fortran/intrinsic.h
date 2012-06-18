@@ -486,6 +486,7 @@ void gfc_resolve_long (gfc_expr *, gfc_expr *);
 void gfc_resolve_ior (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_iparity (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_isatty (gfc_expr *, gfc_expr *);
+void gfc_resolve_rank (gfc_expr *, gfc_expr *);
 void gfc_resolve_rshift (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_lshift (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ishft (gfc_expr *, gfc_expr *, gfc_expr *);

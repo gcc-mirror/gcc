@@ -2006,6 +2006,15 @@ gfc_resolve_product (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
 
 
 void
+gfc_resolve_rank (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_default_integer_kind;
+  f->value.function.name = gfc_get_string ("__rank");
+}
+
+
+void
 gfc_resolve_real (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 {
   f->ts.type = BT_REAL;

@@ -2434,7 +2434,7 @@ add_functions (void)
   make_generic ("range", GFC_ISYM_RANGE, GFC_STD_F95);
 
   add_sym_1 ("rank", GFC_ISYM_RANK, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di,
-	     GFC_STD_F2008_TS, gfc_check_rank, gfc_simplify_rank, NULL,
+	     GFC_STD_F2008_TS, gfc_check_rank, gfc_simplify_rank, gfc_resolve_rank,
 	     a, BT_REAL, dr, REQUIRED);
   make_generic ("rank", GFC_ISYM_RANK, GFC_STD_F2008_TS);
 
