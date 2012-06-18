@@ -8895,6 +8895,7 @@ facilities to make this process easier.
 @menu
 * Mode Iterators::         Generating variations of patterns for different modes.
 * Code Iterators::         Doing the same for codes.
+* Int Iterators::          Doing the same for integers.
 @end menu
 
 @node Mode Iterators
@@ -9164,6 +9165,83 @@ This is equivalent to:
 @})
 
 @dots{}
+@end smallexample
+
+@node Int Iterators
+@subsection Int Iterators
+@cindex int iterators in @file{.md} files
+@findex define_int_iterator
+@findex define_int_attr
+
+Int iterators operate in a similar way to code iterators.  @xref{Code Iterators}.
+
+The construct:
+
+@smallexample
+(define_int_iterator @var{name} [(@var{int1} "@var{cond1}") @dots{} (@var{intn} "@var{condn}")])
+@end smallexample
+
+defines a pseudo integer constant @var{name} that can be instantiated as
+@var{inti} if condition @var{condi} is true.  Each @var{int}
+must have the same rtx format.  @xref{RTL Classes}. Int iterators can appear
+in only those rtx fields that have 'i' as the specifier. This means that
+each @var{int} has to be a constant defined using define_constant or
+define_c_enum.
+
+As with mode and code iterators, each pattern that uses @var{name} will be
+expanded @var{n} times, once with all uses of @var{name} replaced by
+@var{int1}, once with all uses replaced by @var{int2}, and so on.
+@xref{Defining Mode Iterators}.
+
+It is possible to define attributes for ints as well as for codes and modes.
+Attributes are defined using:
+
+@smallexample
+(define_int_attr @var{name} [(@var{int1} "@var{value1}") @dots{} (@var{intn} "@var{valuen}")])
+@end smallexample
+
+Here's an example of int iterators in action, taken from the ARM port:
+
+@smallexample
+(define_int_iterator QABSNEG [UNSPEC_VQABS UNSPEC_VQNEG])
+
+(define_int_attr absneg [(UNSPEC_VQABS "abs") (UNSPEC_VQNEG "neg")])
+
+(define_insn "neon_vq<absneg><mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
+	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
+		       (match_operand:SI 2 "immediate_operand" "i")]
+		      QABSNEG))]
+  "TARGET_NEON"
+  "vq<absneg>.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
+  [(set_attr "neon_type" "neon_vqneg_vqabs")]
+)
+
+@end smallexample
+
+This is equivalent to:
+
+@smallexample
+(define_insn "neon_vqabs<mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
+	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
+		       (match_operand:SI 2 "immediate_operand" "i")]
+		      UNSPEC_VQABS))]
+  "TARGET_NEON"
+  "vqabs.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
+  [(set_attr "neon_type" "neon_vqneg_vqabs")]
+)
+
+(define_insn "neon_vqneg<mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
+	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
+		       (match_operand:SI 2 "immediate_operand" "i")]
+		      UNSPEC_VQNEG))]
+  "TARGET_NEON"
+  "vqneg.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
+  [(set_attr "neon_type" "neon_vqneg_vqabs")]
+)
+
 @end smallexample
 
 @end ifset
