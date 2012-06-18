@@ -35,8 +35,6 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#define VMS_TARGET 0
-
 /* Use -J option for long branch support with Unix assembler.  */
 
 #define ASM_SPEC "-J"

@@ -1,3 +1,7 @@
+2012-06-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/vax/vax.h (VMS_TARGET): Remove.
+
 2012-06-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (extract_range_from_assert): Split out range
