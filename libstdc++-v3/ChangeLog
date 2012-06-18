@@ -1,3 +1,10 @@
+2012-06-18  Jörg Sonnenberger <joerg@britannica.bec.de>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/53678
+	* config/os/bsd/netbsd/ctype_base.h: Check for _CTYPE_U.
+	* testsuite/22_locale/ctype_base/53678.cc: New.
+
 2012-06-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/53578

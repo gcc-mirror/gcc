@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2000, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2009, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,8 +31,6 @@
 //   anoncvs@anoncvs.netbsd.org:/cvsroot/basesrc/include/ctype.h
 // See www.netbsd.org for details of access.
   
-#include <sys/param.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -47,7 +45,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // on the mask type. Because of this, we don't use an enum.
     typedef unsigned char      	mask;
 
-#if __NetBSD_Version__ < 599004100
+#ifndef _CTYPE_U
     static const mask upper    	= _U;
     static const mask lower 	= _L;
     static const mask alpha 	= _U | _L;
