@@ -1,3 +1,8 @@
+2012-06-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53693
+	* g++.dg/torture/pr53693.C: New testcase.
+
 2012-06-18  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/53703
