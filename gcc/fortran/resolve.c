@@ -1957,7 +1957,6 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 		       "ELEMENTAL procedure unless there is a non-optional "
 		       "argument with the same rank (12.4.1.5)",
 		       arg->expr->symtree->n.sym->name, &arg->expr->where);
-	  return FAILURE;
 	}
     }
 
