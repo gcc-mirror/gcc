@@ -23265,6 +23265,52 @@ thumb1_expand_prologue (void)
     cfun->machine->lr_save_eliminated = 0;
 }
 
+/* Generate pattern *pop_multiple_with_stack_update_and_return if single
+   POP instruction can be generated.  LR should be replaced by PC.  All
+   the checks required are already done by  USE_RETURN_INSN ().  Hence,
+   all we really need to check here is if single register is to be
+   returned, or multiple register return.  */
+void
+thumb2_expand_return (void)
+{
+  int i, num_regs;
+  unsigned long saved_regs_mask;
+  arm_stack_offsets *offsets;
+
+  offsets = arm_get_frame_offsets ();
+  saved_regs_mask = offsets->saved_regs_mask;
+
+  for (i = 0, num_regs = 0; i <= LAST_ARM_REGNUM; i++)
+    if (saved_regs_mask & (1 << i))
+      num_regs++;
+
+  if (saved_regs_mask)
+    {
+      if (num_regs == 1)
+        {
+          rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+          rtx reg = gen_rtx_REG (SImode, PC_REGNUM);
+          rtx addr = gen_rtx_MEM (SImode,
+                                  gen_rtx_POST_INC (SImode,
+                                                    stack_pointer_rtx));
+          set_mem_alias_set (addr, get_frame_alias_set ());
+          XVECEXP (par, 0, 0) = ret_rtx;
+          XVECEXP (par, 0, 1) = gen_rtx_SET (SImode, reg, addr);
+          RTX_FRAME_RELATED_P (XVECEXP (par, 0, 1)) = 1;
+          emit_jump_insn (par);
+        }
+      else
+        {
+          saved_regs_mask &= ~ (1 << LR_REGNUM);
+          saved_regs_mask |=   (1 << PC_REGNUM);
+          arm_emit_multi_reg_pop (saved_regs_mask);
+        }
+    }
+  else
+    {
+      emit_jump_insn (simple_return_rtx);
+    }
+}
 
 void
 thumb1_expand_epilogue (void)
