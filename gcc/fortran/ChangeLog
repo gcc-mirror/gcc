@@ -1,6 +1,11 @@
 2012-06-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53526
+	* trans-intrinsic.c (conv_intrinsic_move_alloc): Handle coarrays.
+
+2012-06-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53526
 	* check.c (gfc_check_move_alloc): Reject coindexed actual arguments
 	and those with different corank.
 
