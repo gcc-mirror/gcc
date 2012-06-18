@@ -2,6 +2,16 @@
             Sameera Deshpande  <sameera.deshpande@arm.com>
             Greta Yorsh  <greta.yorsh@arm.com>
 
+        * config/arm/arm-protos.h (arm_output_epilogue): Remove.
+        * config/arm/arm.c (print_multi_reg): Remove.
+        (vfp_output_fldmd): Likewise.
+        (arm_output_epilogue): Likewise.
+        * config/arm/arm.md (epilogue_insns): Update condition and code.
+
+2012-06-18  Ian Bolton  <ian.bolton@arm.com>
+            Sameera Deshpande  <sameera.deshpande@arm.com>
+            Greta Yorsh  <greta.yorsh@arm.com>
+
         * config/arm/arm-protos.h (thumb2_expand_return): New declaration.
         * config/arm/arm.c (thumb2_expand_return): New function.
         * config/arm/arm.md (return): Update condition and code.
