@@ -13739,6 +13739,83 @@ vfp_output_fldmd (FILE * stream, unsigned int base, int reg, int count)
 }
 
 
+/* OPERANDS[0] is the entire list of insns that constitute pop,
+   OPERANDS[1] is the base register, RETURN_PC is true iff return insn
+   is in the list, UPDATE is true iff the list contains explicit
+   update of base register.  */
+void
+arm_output_multireg_pop (rtx *operands, bool return_pc, rtx cond, bool reverse,
+                         bool update)
+{
+  int i;
+  char pattern[100];
+  int offset;
+  const char *conditional;
+  int num_saves = XVECLEN (operands[0], 0);
+  unsigned int regno;
+  unsigned int regno_base = REGNO (operands[1]);
+
+  offset = 0;
+  offset += update ? 1 : 0;
+  offset += return_pc ? 1 : 0;
+
+  /* Is the base register in the list?  */
+  for (i = offset; i < num_saves; i++)
+    {
+      regno = REGNO (XEXP (XVECEXP (operands[0], 0, i), 0));
+      /* If SP is in the list, then the base register must be SP.  */
+      gcc_assert ((regno != SP_REGNUM) || (regno_base == SP_REGNUM));
+      /* If base register is in the list, there must be no explicit update.  */
+      if (regno == regno_base)
+        gcc_assert (!update);
+    }
+
+  conditional = reverse ? "%?%D0" : "%?%d0";
+  if ((regno_base == SP_REGNUM) && TARGET_UNIFIED_ASM)
+    {
+      /* Output pop (not stmfd) because it has a shorter encoding.  */
+      gcc_assert (update);
+      sprintf (pattern, "pop%s\t{", conditional);
+    }
+  else
+    {
+      /* Output ldmfd when the base register is SP, otherwise output ldmia.
+         It's just a convention, their semantics are identical.  */
+      if (regno_base == SP_REGNUM)
+        sprintf (pattern, "ldm%sfd\t", conditional);
+      else if (TARGET_UNIFIED_ASM)
+        sprintf (pattern, "ldmia%s\t", conditional);
+      else
+        sprintf (pattern, "ldm%sia\t", conditional);
+
+      strcat (pattern, reg_names[regno_base]);
+      if (update)
+        strcat (pattern, "!, {");
+      else
+        strcat (pattern, ", {");
+    }
+
+  /* Output the first destination register.  */
+  strcat (pattern,
+          reg_names[REGNO (XEXP (XVECEXP (operands[0], 0, offset), 0))]);
+
+  /* Output the rest of the destination registers.  */
+  for (i = offset + 1; i < num_saves; i++)
+    {
+      strcat (pattern, ", ");
+      strcat (pattern,
+              reg_names[REGNO (XEXP (XVECEXP (operands[0], 0, i), 0))]);
+    }
+
+  strcat (pattern, "}");
+
+  if (IS_INTERRUPT (arm_current_func_type ()) && return_pc)
+    strcat (pattern, "^");
+
+  output_asm_insn (pattern, &cond);
+}
+
+
 /* Output the assembly for a store multiple.  */
 
 const char *
@@ -16384,6 +16461,87 @@ emit_multi_reg_push (unsigned long mask)
   add_reg_note (par, REG_FRAME_RELATED_EXPR, dwarf);
 
   return par;
+}
+
+/* Generate and emit an insn pattern that we will recognize as a pop_multi.
+   SAVED_REGS_MASK shows which registers need to be restored.
+
+   Unfortunately, since this insn does not reflect very well the actual
+   semantics of the operation, we need to annotate the insn for the benefit
+   of DWARF2 frame unwind information.  */
+static void
+arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
+{
+  int num_regs = 0;
+  int i, j;
+  rtx par;
+  rtx dwarf = NULL_RTX;
+  rtx tmp, reg;
+  bool return_in_pc;
+  int offset_adj;
+  int emit_update;
+
+  return_in_pc = (saved_regs_mask & (1 << PC_REGNUM)) ? true : false;
+  offset_adj = return_in_pc ? 1 : 0;
+  for (i = 0; i <= LAST_ARM_REGNUM; i++)
+    if (saved_regs_mask & (1 << i))
+      num_regs++;
+
+  gcc_assert (num_regs && num_regs <= 16);
+
+  /* If SP is in reglist, then we don't emit SP update insn.  */
+  emit_update = (saved_regs_mask & (1 << SP_REGNUM)) ? 0 : 1;
+
+  /* The parallel needs to hold num_regs SETs
+     and one SET for the stack update.  */
+  par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs + emit_update + offset_adj));
+
+  if (return_in_pc)
+    {
+      tmp = ret_rtx;
+      XVECEXP (par, 0, 0) = tmp;
+    }
+
+  if (emit_update)
+    {
+      /* Increment the stack pointer, based on there being
+         num_regs 4-byte registers to restore.  */
+      tmp = gen_rtx_SET (VOIDmode,
+                         stack_pointer_rtx,
+                         plus_constant (Pmode,
+                                        stack_pointer_rtx,
+                                        4 * num_regs));
+      RTX_FRAME_RELATED_P (tmp) = 1;
+      XVECEXP (par, 0, offset_adj) = tmp;
+    }
+
+  /* Now restore every reg, which may include PC.  */
+  for (j = 0, i = 0; j < num_regs; i++)
+    if (saved_regs_mask & (1 << i))
+      {
+        reg = gen_rtx_REG (SImode, i);
+        tmp = gen_rtx_SET (VOIDmode,
+                           reg,
+                           gen_frame_mem
+                           (SImode,
+                            plus_constant (Pmode, stack_pointer_rtx, 4 * j)));
+        RTX_FRAME_RELATED_P (tmp) = 1;
+        XVECEXP (par, 0, j + emit_update + offset_adj) = tmp;
+
+        /* We need to maintain a sequence for DWARF info too.  As dwarf info
+           should not have PC, skip PC.  */
+        if (i != PC_REGNUM)
+          dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+
+        j++;
+      }
+
+  if (return_in_pc)
+    par = emit_jump_insn (par);
+  else
+    par = emit_insn (par);
+
+  REG_NOTES (par) = dwarf;
 }
 
 /* Calculate the size of the return value that is passed in registers.  */
