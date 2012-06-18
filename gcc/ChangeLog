@@ -1,3 +1,8 @@
+2012-06-18  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.c (ldm_stm_operation_p): Require SP
+	as base register for loads if SP is in the register list.
+
 2012-06-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53693
