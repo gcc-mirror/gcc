@@ -1,3 +1,12 @@
+2012-06-16  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	Back port from mainline
+	2012-05-09 Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52908
+	* gcc.target/i386/xop-imul32widen-vector.c: Update scan-assembler
+	directive to Scan for vpmuldq, not vpmacsdql.
+
 2012-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/vect8.ad[sb]: New test.

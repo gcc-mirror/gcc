@@ -5722,11 +5722,15 @@
 
   if (TARGET_XOP)
     {
+      rtx t3 = gen_reg_rtx (V2DImode);
+
       emit_insn (gen_sse2_pshufd_1 (t1, op1, GEN_INT (0), GEN_INT (2),
 				    GEN_INT (1), GEN_INT (3)));
       emit_insn (gen_sse2_pshufd_1 (t2, op2, GEN_INT (0), GEN_INT (2),
 				    GEN_INT (1), GEN_INT (3)));
-      emit_insn (gen_xop_mulv2div2di3_high (operands[0], t1, t2));
+      emit_move_insn (t3, CONST0_RTX (V2DImode));
+
+      emit_insn (gen_xop_pmacsdqh (operands[0], t1, t2, t3));
       DONE;
     }
 
@@ -5751,11 +5755,15 @@
 
   if (TARGET_XOP)
     {
+      rtx t3 = gen_reg_rtx (V2DImode);
+
       emit_insn (gen_sse2_pshufd_1 (t1, op1, GEN_INT (0), GEN_INT (2),
 				    GEN_INT (1), GEN_INT (3)));
       emit_insn (gen_sse2_pshufd_1 (t2, op2, GEN_INT (0), GEN_INT (2),
 				    GEN_INT (1), GEN_INT (3)));
-      emit_insn (gen_xop_mulv2div2di3_low (operands[0], t1, t2));
+      emit_move_insn (t3, CONST0_RTX (V2DImode));
+
+      emit_insn (gen_xop_pmacsdql (operands[0], t1, t2, t3));
       DONE;
     }
 
@@ -10422,12 +10430,12 @@
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
 	    (match_operand:V4SI 1 "nonimmediate_operand" "%x")
-	    (parallel [(const_int 1)
-		       (const_int 3)])))
-	  (vec_select:V2SI
+            (parallel [(const_int 0)
+                       (const_int 2)])))
+	   (vec_select:V2SI
 	   (match_operand:V4SI 2 "nonimmediate_operand" "xm")
-	   (parallel [(const_int 1)
-		      (const_int 3)])))
+	   (parallel [(const_int 0)
+		      (const_int 2)])))
 	 (match_operand:V2DI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacssdql\t{%3, %2, %1, %0|%0, %1, %2, %3}"
@@ -10441,13 +10449,13 @@
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
 	    (match_operand:V4SI 1 "nonimmediate_operand" "%x")
-	    (parallel [(const_int 0)
-		       (const_int 2)])))
+	    (parallel [(const_int 1)
+		       (const_int 3)])))
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
 	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
-	    (parallel [(const_int 0)
-		       (const_int 2)]))))
+	    (parallel [(const_int 1)
+		       (const_int 3)]))))
 	 (match_operand:V2DI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacssdqh\t{%3, %2, %1, %0|%0, %1, %2, %3}"
@@ -10461,59 +10469,17 @@
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
 	    (match_operand:V4SI 1 "nonimmediate_operand" "%x")
-	    (parallel [(const_int 1)
-		       (const_int 3)])))
+	    (parallel [(const_int 0)
+		       (const_int 2)])))
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
 	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
-	    (parallel [(const_int 1)
-		       (const_int 3)]))))
+	    (parallel [(const_int 0)
+		       (const_int 2)]))))
 	 (match_operand:V2DI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacsdql\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
-   (set_attr "mode" "TI")])
-
-;; We don't have a straight 32-bit parallel multiply and extend on XOP, so
-;; fake it with a multiply/add.  In general, we expect the define_split to
-;; occur before register allocation, so we have to handle the corner case where
-;; the target is the same as operands 1/2
-(define_insn_and_split "xop_mulv2div2di3_low"
-  [(set (match_operand:V2DI 0 "register_operand" "=&x")
-	(mult:V2DI
-	  (sign_extend:V2DI
-	    (vec_select:V2SI
-	      (match_operand:V4SI 1 "register_operand" "%x")
-	      (parallel [(const_int 1)
-			 (const_int 3)])))
-	  (sign_extend:V2DI
-	    (vec_select:V2SI
-	      (match_operand:V4SI 2 "nonimmediate_operand" "xm")
-	      (parallel [(const_int 1)
-			 (const_int 3)])))))]
-  "TARGET_XOP"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0)
-	(match_dup 3))
-   (set (match_dup 0)
-	(plus:V2DI
-	 (mult:V2DI
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_dup 1)
-	    (parallel [(const_int 1)
-		       (const_int 3)])))
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_dup 2)
-	    (parallel [(const_int 1)
-		       (const_int 3)]))))
-	 (match_dup 0)))]
-{
-  operands[3] = CONST0_RTX (V2DImode);
-}
-  [(set_attr "type" "ssemul")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_pmacsdqh"
@@ -10523,59 +10489,17 @@
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
 	    (match_operand:V4SI 1 "nonimmediate_operand" "%x")
-	    (parallel [(const_int 0)
-		       (const_int 2)])))
+	    (parallel [(const_int 1)
+		       (const_int 3)])))
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
 	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
-	    (parallel [(const_int 0)
-		       (const_int 2)]))))
+	    (parallel [(const_int 1)
+		       (const_int 3)]))))
 	 (match_operand:V2DI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacsdqh\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
-   (set_attr "mode" "TI")])
-
-;; We don't have a straight 32-bit parallel multiply and extend on XOP, so
-;; fake it with a multiply/add.  In general, we expect the define_split to
-;; occur before register allocation, so we have to handle the corner case where
-;; the target is the same as either operands[1] or operands[2]
-(define_insn_and_split "xop_mulv2div2di3_high"
-  [(set (match_operand:V2DI 0 "register_operand" "=&x")
-	(mult:V2DI
-	  (sign_extend:V2DI
-	    (vec_select:V2SI
-	      (match_operand:V4SI 1 "register_operand" "%x")
-	      (parallel [(const_int 0)
-			 (const_int 2)])))
-	  (sign_extend:V2DI
-	    (vec_select:V2SI
-	      (match_operand:V4SI 2 "nonimmediate_operand" "xm")
-	      (parallel [(const_int 0)
-			 (const_int 2)])))))]
-  "TARGET_XOP"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0)
-	(match_dup 3))
-   (set (match_dup 0)
-	(plus:V2DI
-	 (mult:V2DI
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_dup 1)
-	    (parallel [(const_int 0)
-		       (const_int 2)])))
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_dup 2)
-	    (parallel [(const_int 0)
-		       (const_int 2)]))))
-	 (match_dup 0)))]
-{
-  operands[3] = CONST0_RTX (V2DImode);
-}
-  [(set_attr "type" "ssemul")
    (set_attr "mode" "TI")])
 
 ;; XOP parallel integer multiply/add instructions for the intrinisics

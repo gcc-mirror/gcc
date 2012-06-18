@@ -1,3 +1,18 @@
+2012-06-18  Venkataramanan Kumar <venkataramanan.kumar@amd.com>
+
+	Backport from mainline 
+	2012-05-09 Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52908
+	* config/i386/sse.md (vec_widen_smult_hi_v4si): Expand using
+	xop_pmacsdqh insn pattern instead of xop_mulv2div2di3_high.
+	(vec_widen_smult_lo_v4si): Expand using xop_pmacsdql insn pattern
+	instead of xop_mulv2div2di3_low.
+	(xop_p<macs>dql): Fix vec_select selector.
+	(xop_p<macs>dqh): Ditto.
+	(xop_mulv2div2di3_low): Remove insn_and_split pattern.
+	(xop_mulv2div2di3_high): Ditto.
+
 2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
