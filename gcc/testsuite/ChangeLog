@@ -1,5 +1,10 @@
 2012-06-18  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/53692
+	* gfortran.dg/elemental_optional_args_6.f90: New.
+
+2012-06-18  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/53526
 	* gfortran.dg/coarray_lib_move_alloc_1.f90: New.
 	* gfortran.dg/coarray/move_alloc_1.f90

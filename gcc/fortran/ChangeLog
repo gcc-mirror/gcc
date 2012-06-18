@@ -1,5 +1,13 @@
 2012-06-18  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/53692
+	* trans-array.c (set_loop_bounds): Don't scalarize via absent
+	optional arrays.
+	* resolve.c (resolve_elemental_actual): Don't stop resolving after printing
+	a warning.
+
+2012-06-18  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/53526
 	* trans-intrinsic.c (conv_intrinsic_move_alloc): Handle coarrays.
 

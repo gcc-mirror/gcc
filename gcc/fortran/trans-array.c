@@ -4337,6 +4337,7 @@ set_loop_bounds (gfc_loopinfo *loop)
   bool dynamic[GFC_MAX_DIMENSIONS];
   mpz_t *cshape;
   mpz_t i;
+  bool nonoptional_arr;
 
   loopspec = loop->specloop;
 
@@ -4345,6 +4346,18 @@ set_loop_bounds (gfc_loopinfo *loop)
     {
       loopspec[n] = NULL;
       dynamic[n] = false;
+
+      /* If there are both optional and nonoptional array arguments, scalarize
+	 over the nonoptional; otherwise, it does not matter as then all
+	 (optional) arrays have to be present per F2008, 125.2.12p3(6).  */
+
+      nonoptional_arr = false;
+
+      for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
+	if (ss->info->type != GFC_SS_SCALAR && ss->info->type != GFC_SS_TEMP
+	    && ss->info->type != GFC_SS_REFERENCE && !ss->info->can_be_null_ref)
+	  nonoptional_arr = true;
+
       /* We use one SS term, and use that to determine the bounds of the
 	 loop for this dimension.  We try to pick the simplest term.  */
       for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
@@ -4354,7 +4367,8 @@ set_loop_bounds (gfc_loopinfo *loop)
 	  ss_type = ss->info->type;
 	  if (ss_type == GFC_SS_SCALAR
 	      || ss_type == GFC_SS_TEMP
-	      || ss_type == GFC_SS_REFERENCE)
+	      || ss_type == GFC_SS_REFERENCE
+	      || (ss->info->can_be_null_ref && nonoptional_arr))
 	    continue;
 
 	  info = &ss->info->data.array;
