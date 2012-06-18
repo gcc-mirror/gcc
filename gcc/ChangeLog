@@ -1,3 +1,16 @@
+2012-06-18  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* doc/md.texi: Document int iterators.
+	* read-rtl.c (ints): New iterator group.
+	(find_int): Int iterator group callback.
+	(apply_int_iterator): Likewise.
+	(apply_iterators): Traverse int iterator table and add all the used
+	iterators to list.
+	(initialize_iterators): Initialize data structures and callbacks for int
+	iterators.
+	(read_rtx): Parse and read mappings for int iterators.
+	(read_rtx_code): Record int iterator usage.
+
 2012-06-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/53698

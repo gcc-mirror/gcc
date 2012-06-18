@@ -114,7 +114,7 @@ static rtx read_nested_rtx (void);
 static rtx read_rtx_variadic (rtx);
 
 /* The mode and code iterator structures.  */
-static struct iterator_group modes, codes;
+static struct iterator_group modes, codes, ints;
 
 /* All iterators used in the current rtx.  */
 static VEC (mapping_ptr, heap) *current_iterators;
@@ -163,6 +163,25 @@ static void
 apply_code_iterator (void *loc, int code)
 {
   PUT_CODE ((rtx) loc, (enum rtx_code) code);
+}
+
+/* Implementations of the iterator_group callbacks for ints.  */
+
+/* Since GCC does not construct a table of valid constants,
+   we have to accept any int as valid.  No cross-checking can
+   be done.  */
+
+static int
+find_int (const char *name)
+{
+  validate_const_int (name);
+  return atoi (name);
+}
+
+static void
+apply_int_iterator (void *loc, int value)
+{
+  *(int *)loc = value;
 }
 
 /* Map attribute string P to its current value.  Return null if the attribute
@@ -412,6 +431,7 @@ apply_iterators (rtx original, rtx *queue)
      definition order within each group.  */
   htab_traverse (modes.iterators, add_current_iterators, NULL);
   htab_traverse (codes.iterators, add_current_iterators, NULL);
+  htab_traverse (ints.iterators, add_current_iterators, NULL);
   gcc_assert (!VEC_empty (mapping_ptr, current_iterators));
 
   for (;;)
@@ -517,6 +537,12 @@ initialize_iterators (void)
 				 leading_string_eq_p, 0);
   codes.find_builtin = find_code;
   codes.apply_iterator = apply_code_iterator;
+
+  ints.attrs = htab_create (13, leading_string_hash, leading_string_eq_p, 0);
+  ints.iterators = htab_create (13, leading_string_hash,
+				 leading_string_eq_p, 0);
+  ints.find_builtin = find_int;
+  ints.apply_iterator = apply_int_iterator;
 
   lower = add_mapping (&modes, modes.attrs, "mode");
   upper = add_mapping (&modes, modes.attrs, "MODE");
@@ -827,6 +853,16 @@ read_rtx (const char *rtx_name, rtx *x)
       check_code_iterator (read_mapping (&codes, codes.iterators));
       return false;
     }
+  if (strcmp (rtx_name, "define_int_attr") == 0)
+    {
+      read_mapping (&ints, ints.attrs);
+      return false;
+    }
+  if (strcmp (rtx_name, "define_int_iterator") == 0)
+    {
+      read_mapping (&ints, ints.iterators);
+      return false;
+    }
 
   apply_iterators (read_rtx_code (rtx_name), &queue_head);
   VEC_truncate (iterator_use, iterator_uses, 0);
@@ -850,7 +886,6 @@ read_rtx_code (const char *code_name)
   struct md_name name;
   rtx return_rtx;
   int c;
-  int tmp_int;
   HOST_WIDE_INT tmp_wide;
 
   /* Linked list structure for making RTXs: */
@@ -1026,10 +1061,10 @@ read_rtx_code (const char *code_name)
 
       case 'i':
       case 'n':
+	/* Can be an iterator or an integer constant.  */
 	read_name (&name);
-	validate_const_int (name.string);
-	tmp_int = atoi (name.string);
-	XINT (return_rtx, i) = tmp_int;
+	record_potential_iterator_use (&ints, &XINT (return_rtx, i),
+				       name.string);
 	break;
 
       default:
