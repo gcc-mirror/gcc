@@ -1,68 +1,67 @@
 2012-06-18  Ian Bolton  <ian.bolton@arm.com>
-            Sameera Deshpande  <sameera.deshpande@arm.com>
-            Greta Yorsh  <greta.yorsh@arm.com>
+	    Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh  <greta.yorsh@arm.com>
 
-        * config/arm/arm-protos.h (arm_output_epilogue): Remove.
-        * config/arm/arm.c (print_multi_reg): Remove.
-        (vfp_output_fldmd): Likewise.
-        (arm_output_epilogue): Likewise.
-        * config/arm/arm.md (epilogue_insns): Update condition and code.
-
-2012-06-18  Ian Bolton  <ian.bolton@arm.com>
-            Sameera Deshpande  <sameera.deshpande@arm.com>
-            Greta Yorsh  <greta.yorsh@arm.com>
-
-        * config/arm/arm-protos.h (thumb2_expand_return): New declaration.
-        * config/arm/arm.c (thumb2_expand_return): New function.
-        * config/arm/arm.md (return): Update condition and code.
+	* config/arm/arm-protos.h (arm_output_epilogue): Remove.
+	* config/arm/arm.c (print_multi_reg): Remove.
+	(vfp_output_fldmd): Likewise.
+	(arm_output_epilogue): Likewise.
+	* config/arm/arm.md (epilogue_insns): Update condition and code.
 
 2012-06-18  Ian Bolton  <ian.bolton@arm.com>
-            Sameera Deshpande  <sameera.deshpande@arm.com>
-            Greta Yorsh  <greta.yorsh@arm.com>
+	    Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh  <greta.yorsh@arm.com>
 
-        * config/arm/arm-protos.h (output_return_instruction): New parameter and
-	int to bool change of parameter types.
-        * config/arm/arm.c (output_return_instruction): Likewise.
-        * config/arm/arm.md (arm_simple_return): New pattern.
-        (arm_return, cond_return, cond_return_inverted): Add new arguments.
-        * config/arm/thumb2.md (thumb2_return): Update condition and code.
+	* config/arm/arm-protos.h (thumb2_expand_return): New declaration.
+	* config/arm/arm.c (thumb2_expand_return): New function.
+	* config/arm/arm.md (return): Update condition and code.
 
 2012-06-18  Ian Bolton  <ian.bolton@arm.com>
-            Sameera Deshpande  <sameera.deshpande@arm.com>
-            Greta Yorsh  <greta.yorsh@arm.com>
+	    Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh  <greta.yorsh@arm.com>
 
-        * config/arm/arm-protos.h (arm_expand_epilogue): New declaration.
-        * config/arm/arm.c (arm_expand_epilogue): New function.
-        * config/arm/arm.md (epilogue): Update condition and code.
-        (sibcall_epilogue): Likewise.
-
-2012-06-18  Ian Bolton  <ian.bolton@arm.com>
-            Sameera Deshpande  <sameera.deshpande@arm.com>
-            Greta Yorsh  <greta.yorsh@arm.com>
-
-        * config/arm/arm.c (arm_expand_epilogue_apcs_frame): New function.
-        * config/arm/arm.md (arm_addsi3) Add an alternative.
+	* config/arm/arm-protos.h (output_return_instruction): New parameter
+	and int to bool change of parameter types.
+	* config/arm/arm.c (output_return_instruction): Likewise.
+	* config/arm/arm.md (arm_simple_return): New pattern.
+	(arm_return, cond_return, cond_return_inverted): Add new arguments.
+	* config/arm/thumb2.md (thumb2_return): Update condition and code.
 
 2012-06-18  Ian Bolton  <ian.bolton@arm.com>
-            Sameera Deshpande  <sameera.deshpande@arm.com>
-            Greta Yorsh  <greta.yorsh@arm.com>
+	    Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh  <greta.yorsh@arm.com>
 
-        * config/arm/arm.md (vfp_pop_multiple_with_writeback) New
-	define_insn.
-        * config/arm/predicates.md (pop_multiple_fp) New special predicate.
-        * config/arm/arm.c (arm_emit_vfp_multi_reg_pop): New function.
+	* config/arm/arm-protos.h (arm_expand_epilogue): New declaration.
+	* config/arm/arm.c (arm_expand_epilogue): New function.
+	* config/arm/arm.md (epilogue): Update condition and code.
+	(sibcall_epilogue): Likewise.
 
 2012-06-18  Ian Bolton  <ian.bolton@arm.com>
-            Sameera Deshpande  <sameera.deshpande@arm.com>
-            Greta Yorsh  <greta.yorsh@arm.com>
+	    Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh  <greta.yorsh@arm.com>
 
-        * config/arm/arm.md (load_multiple_with_writeback) New define_insn.
-        (load_multiple, pop_multiple_with_writeback_and_return) Likewise.
-        (pop_multiple_with_return, ldr_with_return) Likewise.
-        * config/arm/predicates.md (pop_multiple_return) New special predicate.
-        * config/arm/arm-protos.h (arm_output_multireg_pop) New declaration.
-        * config/arm/arm.c (arm_output_multireg_pop) New function.
-        (arm_emit_multi_reg_pop): New function.
+	* config/arm/arm.c (arm_expand_epilogue_apcs_frame): New function.
+	* config/arm/arm.md (arm_addsi3) Add an alternative.
+
+2012-06-18  Ian Bolton  <ian.bolton@arm.com>
+	    Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh  <greta.yorsh@arm.com>
+
+	* config/arm/arm.md (vfp_pop_multiple_with_writeback) New define_insn.
+	* config/arm/predicates.md (pop_multiple_fp) New special predicate.
+	* config/arm/arm.c (arm_emit_vfp_multi_reg_pop): New function.
+
+2012-06-18  Ian Bolton  <ian.bolton@arm.com>
+	    Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh  <greta.yorsh@arm.com>
+
+	* config/arm/arm.md (load_multiple_with_writeback) New define_insn.
+	(load_multiple, pop_multiple_with_writeback_and_return) Likewise.
+	(pop_multiple_with_return, ldr_with_return) Likewise.
+	* config/arm/predicates.md (pop_multiple_return) New special predicate.
+	* config/arm/arm-protos.h (arm_output_multireg_pop) New declaration.
+	* config/arm/arm.c (arm_output_multireg_pop) New function.
+	(arm_emit_multi_reg_pop): New function.
 
 2012-06-18  Greta Yorsh  <Greta.Yorsh@arm.com>
 
@@ -105,8 +104,8 @@
 	(apply_int_iterator): Likewise.
 	(apply_iterators): Traverse int iterator table and add all the used
 	iterators to list.
-	(initialize_iterators): Initialize data structures and callbacks for int
-	iterators.
+	(initialize_iterators): Initialize data structures and callbacks for
+	int iterators.
 	(read_rtx): Parse and read mappings for int iterators.
 	(read_rtx_code): Record int iterator usage.
 
