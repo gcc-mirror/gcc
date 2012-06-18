@@ -1,3 +1,7 @@
+2012-06-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* decl.c (finish_function): Remove code conditional on VMS_TARGET.
+
 2012-06-15  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/51033
