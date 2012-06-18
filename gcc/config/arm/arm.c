@@ -23473,6 +23473,241 @@ arm_expand_epilogue_apcs_frame (bool really_return)
   emit_jump_insn (simple_return_rtx);
 }
 
+/* Generate RTL to represent ARM epilogue.  Really_return is true if the
+   function is not a sibcall.  */
+void
+arm_expand_epilogue (bool really_return)
+{
+  unsigned long func_type;
+  unsigned long saved_regs_mask;
+  int num_regs = 0;
+  int i;
+  int amount;
+  int floats_from_frame = 0;
+  arm_stack_offsets *offsets;
+
+  func_type = arm_current_func_type ();
+
+  /* Naked functions don't have epilogue.  Hence, generate return pattern, and
+     let output_return_instruction take care of instruction emition if any.  */
+  if (IS_NAKED (func_type)
+      || (IS_VOLATILE (func_type) && TARGET_ABORT_NORETURN))
+    {
+      emit_jump_insn (simple_return_rtx);
+      return;
+    }
+
+  /* If we are throwing an exception, then we really must be doing a
+     return, so we can't tail-call.  */
+  gcc_assert (!crtl->calls_eh_return || really_return);
+
+  if (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
+    {
+      arm_expand_epilogue_apcs_frame (really_return);
+      return;
+    }
+
+  /* Get frame offsets for ARM.  */
+  offsets = arm_get_frame_offsets ();
+  saved_regs_mask = offsets->saved_regs_mask;
+
+  /* Find offset of floating point register from frame pointer.
+     The initialization is done in this way to take care of frame pointer
+     and static-chain register, if stored.  */
+  floats_from_frame = offsets->saved_args - offsets->frame;
+  /* Compute how many registers saved and how far away the floats will be.  */
+  for (i = 0; i <= LAST_ARM_REGNUM; i++)
+    if (saved_regs_mask & (1 << i))
+      {
+        num_regs++;
+        floats_from_frame += 4;
+      }
+
+  if (frame_pointer_needed)
+    {
+      /* Restore stack pointer if necessary.  */
+      if (TARGET_ARM)
+        {
+          /* In ARM mode, frame pointer points to first saved register.
+             Restore stack pointer to last saved register.  */
+          amount = offsets->frame - offsets->saved_regs;
+
+          /* Force out any pending memory operations that reference stacked data
+             before stack de-allocation occurs.  */
+          emit_insn (gen_blockage ());
+          emit_insn (gen_addsi3 (stack_pointer_rtx,
+                                 hard_frame_pointer_rtx,
+                                 GEN_INT (amount)));
+
+          /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is not
+             deleted.  */
+          emit_insn (gen_prologue_use (stack_pointer_rtx));
+        }
+      else
+        {
+          /* In Thumb-2 mode, the frame pointer points to the last saved
+             register.  */
+          amount = offsets->locals_base - offsets->saved_regs;
+          if (amount)
+            emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
+                                   hard_frame_pointer_rtx,
+                                   GEN_INT (amount)));
+
+          /* Force out any pending memory operations that reference stacked data
+             before stack de-allocation occurs.  */
+          emit_insn (gen_blockage ());
+          emit_insn (gen_movsi (stack_pointer_rtx, hard_frame_pointer_rtx));
+          /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is not
+             deleted.  */
+          emit_insn (gen_prologue_use (stack_pointer_rtx));
+        }
+    }
+  else
+    {
+      /* Pop off outgoing args and local frame to adjust stack pointer to
+         last saved register.  */
+      amount = offsets->outgoing_args - offsets->saved_regs;
+      if (amount)
+        {
+          /* Force out any pending memory operations that reference stacked data
+             before stack de-allocation occurs.  */
+          emit_insn (gen_blockage ());
+          emit_insn (gen_addsi3 (stack_pointer_rtx,
+                                 stack_pointer_rtx,
+                                 GEN_INT (amount)));
+          /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is
+             not deleted.  */
+          emit_insn (gen_prologue_use (stack_pointer_rtx));
+        }
+    }
+
+  if (TARGET_HARD_FLOAT && TARGET_VFP)
+    {
+      /* Generate VFP register multi-pop.  */
+      int end_reg = LAST_VFP_REGNUM + 1;
+
+      /* Scan the registers in reverse order.  We need to match
+         any groupings made in the prologue and generate matching
+         vldm operations.  The need to match groups is because,
+         unlike pop, vldm can only do consecutive regs.  */
+      for (i = LAST_VFP_REGNUM - 1; i >= FIRST_VFP_REGNUM; i -= 2)
+        /* Look for a case where a reg does not need restoring.  */
+        if ((!df_regs_ever_live_p (i) || call_used_regs[i])
+            && (!df_regs_ever_live_p (i + 1)
+                || call_used_regs[i + 1]))
+          {
+            /* Restore the regs discovered so far (from reg+2 to
+               end_reg).  */
+            if (end_reg > i + 2)
+              arm_emit_vfp_multi_reg_pop (i + 2,
+                                          (end_reg - (i + 2)) / 2,
+                                          stack_pointer_rtx);
+            end_reg = i;
+          }
+
+      /* Restore the remaining regs that we have discovered (or possibly
+         even all of them, if the conditional in the for loop never
+         fired).  */
+      if (end_reg > i + 2)
+        arm_emit_vfp_multi_reg_pop (i + 2,
+                                    (end_reg - (i + 2)) / 2,
+                                    stack_pointer_rtx);
+    }
+
+  if (TARGET_IWMMXT)
+    for (i = FIRST_IWMMXT_REGNUM; i <= LAST_IWMMXT_REGNUM; i++)
+      if (df_regs_ever_live_p (i) && !call_used_regs[i])
+        {
+          rtx insn;
+          rtx addr = gen_rtx_MEM (V2SImode,
+                                  gen_rtx_POST_INC (SImode,
+                                                    stack_pointer_rtx));
+          set_mem_alias_set (addr, get_frame_alias_set ());
+          insn = emit_insn (gen_movsi (gen_rtx_REG (V2SImode, i), addr));
+          REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
+                                             gen_rtx_REG (V2SImode, i),
+                                             NULL_RTX);
+        }
+
+  if (saved_regs_mask)
+    {
+      rtx insn;
+      bool return_in_pc = false;
+
+      if (ARM_FUNC_TYPE (func_type) != ARM_FT_INTERWORKED
+          && (TARGET_ARM || ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL)
+          && !IS_STACKALIGN (func_type)
+          && really_return
+          && crtl->args.pretend_args_size == 0
+          && saved_regs_mask & (1 << LR_REGNUM)
+          && !crtl->calls_eh_return)
+        {
+          saved_regs_mask &= ~(1 << LR_REGNUM);
+          saved_regs_mask |= (1 << PC_REGNUM);
+          return_in_pc = true;
+        }
+
+      if (num_regs == 1 && (!IS_INTERRUPT (func_type) || !return_in_pc))
+        {
+          for (i = 0; i <= LAST_ARM_REGNUM; i++)
+            if (saved_regs_mask & (1 << i))
+              {
+                rtx addr = gen_rtx_MEM (SImode,
+                                        gen_rtx_POST_INC (SImode,
+                                                          stack_pointer_rtx));
+                set_mem_alias_set (addr, get_frame_alias_set ());
+
+                if (i == PC_REGNUM)
+                  {
+                    insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+                    XVECEXP (insn, 0, 0) = ret_rtx;
+                    XVECEXP (insn, 0, 1) = gen_rtx_SET (SImode,
+                                                        gen_rtx_REG (SImode, i),
+                                                        addr);
+                    RTX_FRAME_RELATED_P (XVECEXP (insn, 0, 1)) = 1;
+                    insn = emit_jump_insn (insn);
+                  }
+                else
+                  {
+                    insn = emit_insn (gen_movsi (gen_rtx_REG (SImode, i),
+                                                 addr));
+                    REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
+                                                       gen_rtx_REG (SImode, i),
+                                                       NULL_RTX);
+                  }
+              }
+        }
+      else
+        {
+          arm_emit_multi_reg_pop (saved_regs_mask);
+        }
+
+      if (return_in_pc == true)
+        return;
+    }
+
+  if (crtl->args.pretend_args_size)
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+                           stack_pointer_rtx,
+                           GEN_INT (crtl->args.pretend_args_size)));
+
+  if (!really_return)
+    return;
+
+  if (crtl->calls_eh_return)
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+                           stack_pointer_rtx,
+                           gen_rtx_REG (SImode, ARM_EH_STACKADJ_REGNUM)));
+
+  if (IS_STACKALIGN (func_type))
+    /* Restore the original stack pointer.  Before prologue, the stack was
+       realigned and the original stack pointer saved in r0.  For details,
+       see comment in arm_expand_prologue.  */
+    emit_insn (gen_movsi (stack_pointer_rtx, gen_rtx_REG (SImode, 0)));
+
+  emit_jump_insn (simple_return_rtx);
+}
+
 /* Implementation of insn prologue_thumb1_interwork.  This is the first
    "instruction" of a function called in ARM mode.  Swap to thumb mode.  */
 

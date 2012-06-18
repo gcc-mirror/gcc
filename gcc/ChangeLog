@@ -2,6 +2,15 @@
             Sameera Deshpande  <sameera.deshpande@arm.com>
             Greta Yorsh  <greta.yorsh@arm.com>
 
+        * config/arm/arm-protos.h (arm_expand_epilogue): New declaration.
+        * config/arm/arm.c (arm_expand_epilogue): New function.
+        * config/arm/arm.md (epilogue): Update condition and code.
+        (sibcall_epilogue): Likewise.
+
+2012-06-18  Ian Bolton  <ian.bolton@arm.com>
+            Sameera Deshpande  <sameera.deshpande@arm.com>
+            Greta Yorsh  <greta.yorsh@arm.com>
+
         * config/arm/arm.c (arm_expand_epilogue_apcs_frame): New function.
         * config/arm/arm.md (arm_addsi3) Add an alternative.
 
