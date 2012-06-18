@@ -7243,6 +7243,7 @@ conv_intrinsic_move_alloc (gfc_code *code)
   gfc_se from_se, to_se;
   gfc_ss *from_ss, *to_ss;
   tree tmp;
+  bool coarray;
 
   gfc_start_block (&block);
 
@@ -7254,8 +7255,9 @@ conv_intrinsic_move_alloc (gfc_code *code)
 
   gcc_assert (from_expr->ts.type != BT_CLASS
 	      || to_expr->ts.type == BT_CLASS);
+  coarray = gfc_get_corank (from_expr) != 0;
 
-  if (from_expr->rank == 0)
+  if (from_expr->rank == 0 && !coarray)
     {
       if (from_expr->ts.type != BT_CLASS)
 	from_expr2 = from_expr;
@@ -7366,15 +7368,50 @@ conv_intrinsic_move_alloc (gfc_code *code)
     }
 
   /* Deallocate "to".  */
-  to_ss = gfc_walk_expr (to_expr);
-  from_ss = gfc_walk_expr (from_expr);
+  if (from_expr->rank != 0)
+    {
+      to_ss = gfc_walk_expr (to_expr);
+      from_ss = gfc_walk_expr (from_expr);
+    }
+  else
+    {
+      to_ss = walk_coarray (to_expr);
+      from_ss = walk_coarray (from_expr);
+    }
   gfc_conv_expr_descriptor (&to_se, to_expr, to_ss);
   gfc_conv_expr_descriptor (&from_se, from_expr, from_ss);
 
-  tmp = gfc_conv_descriptor_data_get (to_se.expr);
-  tmp = gfc_deallocate_with_status (tmp, NULL_TREE, NULL_TREE, NULL_TREE,
-				    NULL_TREE, true, to_expr, false);
-  gfc_add_expr_to_block (&block, tmp);
+  /* For coarrays, call SYNC ALL if TO is already deallocated as MOVE_ALLOC
+     is an image control "statement", cf. IR F08/0040 in 12-006A.  */
+  if (coarray && gfc_option.coarray == GFC_FCOARRAY_LIB)
+    {
+      tree cond;
+
+      tmp = gfc_deallocate_with_status (to_se.expr, NULL_TREE, NULL_TREE,
+					NULL_TREE, NULL_TREE, true, to_expr,
+					true);
+      gfc_add_expr_to_block (&block, tmp);
+
+      tmp = gfc_conv_descriptor_data_get (to_se.expr);
+      cond = fold_build2_loc (input_location, EQ_EXPR,
+			      boolean_type_node, tmp,
+			      fold_convert (TREE_TYPE (tmp),
+					    null_pointer_node));
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,
+				 3, null_pointer_node, null_pointer_node,
+				 build_int_cst (integer_type_node, 0));
+
+      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond,
+			     tmp, build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&block, tmp);
+    }
+  else
+    {
+      tmp = gfc_conv_descriptor_data_get (to_se.expr);
+      tmp = gfc_deallocate_with_status (tmp, NULL_TREE, NULL_TREE, NULL_TREE,
+					NULL_TREE, true, to_expr, false);
+      gfc_add_expr_to_block (&block, tmp);
+    }
 
   /* Move the pointer and update the array descriptor data.  */
   gfc_add_modify_loc (input_location, &block, to_se.expr, from_se.expr);
