@@ -8519,7 +8519,7 @@
         arm_ccfsm_state += 2;
         return \"\";
       }
-    return output_return_instruction (const_true_rtx, TRUE, FALSE);
+    return output_return_instruction (const_true_rtx, true, false, false);
   }"
   [(set_attr "type" "load1")
    (set_attr "length" "12")
@@ -8540,7 +8540,7 @@
         arm_ccfsm_state += 2;
         return \"\";
       }
-    return output_return_instruction (operands[0], TRUE, FALSE);
+    return output_return_instruction (operands[0], true, false, false);
   }"
   [(set_attr "conds" "use")
    (set_attr "length" "12")
@@ -8561,11 +8561,28 @@
         arm_ccfsm_state += 2;
         return \"\";
       }
-    return output_return_instruction (operands[0], TRUE, TRUE);
+    return output_return_instruction (operands[0], true, true, false);
   }"
   [(set_attr "conds" "use")
    (set_attr "length" "12")
    (set_attr "type" "load1")]
+)
+
+(define_insn "*arm_simple_return"
+  [(simple_return)]
+  "TARGET_ARM"
+  "*
+  {
+    if (arm_ccfsm_state == 2)
+      {
+        arm_ccfsm_state += 2;
+        return \"\";
+      }
+    return output_return_instruction (const_true_rtx, true, false, true);
+  }"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")
+   (set_attr "predicable" "yes")]
 )
 
 ;; Generate a sequence of instructions to determine if the processor is

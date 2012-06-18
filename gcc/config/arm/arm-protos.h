@@ -148,7 +148,7 @@ extern int arm_address_offset_is_imm (rtx);
 extern const char *output_add_immediate (rtx *);
 extern const char *arithmetic_instr (rtx, int);
 extern void output_ascii_pseudo_op (FILE *, const unsigned char *, int);
-extern const char *output_return_instruction (rtx, int, int);
+extern const char *output_return_instruction (rtx, bool, bool, bool);
 extern void arm_poke_function_name (FILE *, const char *);
 extern void arm_final_prescan_insn (rtx);
 extern int arm_debugger_arg_offset (int, rtx);

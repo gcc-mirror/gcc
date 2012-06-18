@@ -2,6 +2,17 @@
             Sameera Deshpande  <sameera.deshpande@arm.com>
             Greta Yorsh  <greta.yorsh@arm.com>
 
+        * config/arm/arm-protos.h (output_return_instruction): New parameter and
+	int to bool change of parameter types.
+        * config/arm/arm.c (output_return_instruction): Likewise.
+        * config/arm/arm.md (arm_simple_return): New pattern.
+        (arm_return, cond_return, cond_return_inverted): Add new arguments.
+        * config/arm/thumb2.md (thumb2_return): Update condition and code.
+
+2012-06-18  Ian Bolton  <ian.bolton@arm.com>
+            Sameera Deshpande  <sameera.deshpande@arm.com>
+            Greta Yorsh  <greta.yorsh@arm.com>
+
         * config/arm/arm-protos.h (arm_expand_epilogue): New declaration.
         * config/arm/arm.c (arm_expand_epilogue): New function.
         * config/arm/arm.md (epilogue): Update condition and code.
