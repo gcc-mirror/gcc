@@ -1,3 +1,40 @@
+2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Use
+	__builtin_expect when checking for exceptions.
+	* config/ia64/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Ditto.
+
+2012-06-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/ia64/sfp-machine.h (__sfp_handle_exceptions): New
+	function declaration.
+	(FP_HANDLE_EXCEPTIONS): Use __sfp_handle_exceptions.
+	(FP_RND_MASK): New.
+	* config/ia64/sfp-exceptions.c: New.
+	* config/ia64/t-softfp (LIB2ADD): Add sfp-exceptions.c.
+
+2012-06-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/32/sfp-machine.h (_FP_NANSIGN_S, _FP_NANSIGN_D,
+	_FP_NANSIGN_E, _FP_NANSIGN_Q): Move ...
+	* config/i386/64/sfp-machine: ... (delete here) ...
+	* config/i386/sfp-machine.h: ... to here.
+	(FP_EX_MASK): Remove.
+	(FP_RND_MASK): New.
+	(FP_INIT_ROUNDMODE): Declare asm as volatile.
+
+2012-06-11  Sriraman Tallam  <tmsriram@google.com>
+
+	* config/i386/libgcc-bsd.ver: Version symbol __cpu_indicator_init.
+	* config/i386/libgcc-sol2.ver: Ditto.
+	* config/i386/libgcc-glibc.ver: Ditto.
+
+2012-06-11  Roland McGrath  <mcgrathr@google.com>
+
+	* gthr-posix.h [neither FreeBSD nor Solaris] (__gthread_active_p):
+	If __GLIBC__ is defined, refer to __pthread_key_create instead of
+	pthread_cancel.
+
 2012-06-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/32/sfp-machine.h (__gcc_CMPtype, CMPtype,
@@ -133,7 +170,7 @@
 	* longlong.h: Use a URL instead of an FSF postal address.
 	Replace spaces with tab.
 
-2012-05-08   Teresa Johnson  <tejohnson@google.com>
+2012-05-08  Teresa Johnson  <tejohnson@google.com>
 
 	* libgcov.c (gcov_clear, __gcov_reset): New functions.
 	(__gcov_dump): Ditto.
@@ -342,8 +379,8 @@
 
 2012-03-11  Michael Hope  <michael.hope@linaro.org>
 
-       * longlong.h [ARM] (add_ssaaaa, sub_ddmmss, umul_ppmm): Enable
-       for Thumb-2.
+	* longlong.h [ARM] (add_ssaaaa, sub_ddmmss, umul_ppmm): Enable
+	for Thumb-2.
 
 2012-03-07  Walter Lee  <walt@tilera.com>
 

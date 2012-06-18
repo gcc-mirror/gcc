@@ -23,7 +23,7 @@
 			   (const_int 2))
 		 (match_operand:QI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -33,7 +33,7 @@
 			   (const_int 1))
 		 (match_operand:QI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -43,7 +43,7 @@
 			   (const_int 4))
 		 (match_operand:QI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -53,7 +53,7 @@
 			   (const_int 2))
 		 (match_operand:QI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -62,7 +62,7 @@
 	(plus:HI (zero_extend:HI (match_operand:QI 1 "h8300_dst_operand" "0,rQ"))
 		 (match_operand:HI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/b.l @(%o2,%X1.b),%S0"
+  "mova/b.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -81,7 +81,7 @@
 			   (const_int 2))
 		 (match_operand:HI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -102,7 +102,7 @@
 			 (const_int 510))
 		 (match_operand:HI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -123,7 +123,7 @@
 			 (const_int 510))
 		 (match_operand:HI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -142,7 +142,7 @@
 			   (const_int 1))
 		 (match_operand:HI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -163,7 +163,7 @@
 			 (const_int 510))
 		 (match_operand:HI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -184,7 +184,7 @@
 			 (const_int 510))
 		 (match_operand:HI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -203,7 +203,7 @@
 			   (const_int 4))
 		 (match_operand:HI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -224,7 +224,7 @@
 			 (const_int 1020))
 		 (match_operand:HI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -245,7 +245,7 @@
 			 (const_int 1020))
 		 (match_operand:HI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -264,7 +264,7 @@
 			   (const_int 2))
 		 (match_operand:HI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -285,7 +285,7 @@
 			 (const_int 1020))
 		 (match_operand:HI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -306,7 +306,7 @@
 			 (const_int 1020))
 		 (match_operand:HI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -315,7 +315,7 @@
 	(plus:SI (zero_extend:SI (match_operand:QI 1 "h8300_dst_operand" "0,rQ"))
 		 (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/b.l @(%o2,%X1.b),%S0"
+  "mova/b.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -334,7 +334,7 @@
 			   (const_int 2))
 		 (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -355,7 +355,7 @@
 			 (const_int 510))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -376,7 +376,7 @@
 			 (const_int 510))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -395,7 +395,7 @@
 			   (const_int 1))
 		 (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -416,7 +416,7 @@
 			 (const_int 510))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -437,7 +437,7 @@
 			 (const_int 510))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%X1.b),%S0"
+  "mova/w.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -456,7 +456,7 @@
 			   (const_int 4))
 		 (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -477,7 +477,7 @@
 			 (const_int 1020))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -498,7 +498,7 @@
 			 (const_int 1020))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -517,7 +517,7 @@
 			   (const_int 2))
 		 (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -538,7 +538,7 @@
 			 (const_int 1020))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -559,7 +559,7 @@
 			 (const_int 1020))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%X1.b),%S0"
+  "mova/l.l @(%o2%C2,%X1.b),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -569,7 +569,7 @@
 			   (const_int 2))
 		 (match_operand:HI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%T1.w),%S0"
+  "mova/w.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -579,7 +579,7 @@
 			   (const_int 1))
 		 (match_operand:HI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%T1.w),%S0"
+  "mova/w.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -589,7 +589,7 @@
 			   (const_int 4))
 		 (match_operand:HI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%T1.w),%S0"
+  "mova/l.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -599,7 +599,7 @@
 			   (const_int 2))
 		 (match_operand:HI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%T1.w),%S0"
+  "mova/l.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -608,7 +608,7 @@
 	(plus:SI (zero_extend:SI (match_operand:HI 1 "h8300_dst_operand" "0,rQ"))
 		 (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/b.l @(%o2,%T1.w),%S0"
+  "mova/b.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -627,7 +627,7 @@
 			   (const_int 2))
 		 (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%T1.w),%S0"
+  "mova/w.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -648,7 +648,7 @@
 			 (const_int 131070))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%T1.w),%S0"
+  "mova/w.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -669,7 +669,7 @@
 			 (const_int 131070))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%T1.w),%S0"
+  "mova/w.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -688,7 +688,7 @@
 			   (const_int 1))
 		 (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%T1.w),%S0"
+  "mova/w.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -709,7 +709,7 @@
 			 (const_int 131070))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%T1.w),%S0"
+  "mova/w.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -730,7 +730,7 @@
 			 (const_int 131070))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/w.l @(%o2,%T1.w),%S0"
+  "mova/w.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -749,7 +749,7 @@
 			   (const_int 4))
 		 (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%T1.w),%S0"
+  "mova/l.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -770,7 +770,7 @@
 			 (const_int 262140))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%T1.w),%S0"
+  "mova/l.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -791,7 +791,7 @@
 			 (const_int 262140))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%T1.w),%S0"
+  "mova/l.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -810,7 +810,7 @@
 			   (const_int 2))
 		 (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%T1.w),%S0"
+  "mova/l.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -831,7 +831,7 @@
 			 (const_int 262140))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%T1.w),%S0"
+  "mova/l.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 
@@ -852,7 +852,7 @@
 			 (const_int 262140))
 		 (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
-  "mova/l.l @(%o2,%T1.w),%S0"
+  "mova/l.l @(%o2%C2,%T1.w),%S0"
   [(set_attr "length_table" "mova")
    (set_attr "cc" "none")])
 

@@ -1,6 +1,6 @@
 # Rules common to all arm targets
 #
-# Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010, 2011
+# Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
 # Free Software Foundation, Inc.
 #
 # This file is part of GCC.
@@ -29,7 +29,6 @@ MD_INCLUDES=	$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/arm-fixed.md \
 		$(srcdir)/config/arm/arm-generic.md \
 		$(srcdir)/config/arm/arm-tune.md \
-		$(srcdir)/config/arm/cirrus.md \
 		$(srcdir)/config/arm/constraints.md \
 		$(srcdir)/config/arm/cortex-a15.md \
 		$(srcdir)/config/arm/cortex-a5.md \
@@ -46,10 +45,11 @@ MD_INCLUDES=	$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/fa626te.md \
 		$(srcdir)/config/arm/fa726te.md \
 		$(srcdir)/config/arm/fmp626.md \
-		$(srcdir)/config/arm/fpa.md \
 		$(srcdir)/config/arm/iterators.md \
 		$(srcdir)/config/arm/iwmmxt.md \
+		$(srcdir)/config/arm/iwmmxt2.md \
 		$(srcdir)/config/arm/ldmstm.md \
+		$(srcdir)/config/arm/marvell-f-iwmmxt.md \
 		$(srcdir)/config/arm/neon.md \
 		$(srcdir)/config/arm/predicates.md \
 		$(srcdir)/config/arm/sync.md \

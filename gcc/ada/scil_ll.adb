@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2010, Free Software Foundation, Inc.           --
+--          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,8 +117,7 @@ package body SCIL_LL is
                null;
 
             when N_SCIL_Dispatching_Call =>
-               pragma Assert (Nkind_In (N, N_Function_Call,
-                                           N_Procedure_Call_Statement));
+               pragma Assert (Nkind (N) in N_Subprogram_Call);
                null;
 
             when N_SCIL_Membership_Test =>

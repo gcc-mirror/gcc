@@ -1,4 +1,4 @@
-# Copyright (C) 2008, 2010
+# Copyright (C) 2008, 2010, 2012
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -18,33 +18,53 @@
 # This harness is for tests that should be run at all optimisation levels.
 
 load_lib gcc-dg.exp
+load_lib torture-options.exp
 
-set additional_flags ""
-if { [check_effective_target_automatic_stack_alignment] } then {
-    lappend additional_flags "-mstackrealign"
-    lappend additional_flags "-mpreferred-stack-boundary=5"
-}
-if { [istarget i?86*-*-*] || [istarget x86_64-*-*] } then {
-    lappend additional_flags "-mno-mmx"
-}
+global DG_TORTURE_OPTIONS LTO_TORTURE_OPTIONS
 
 dg-init
+torture-init
 
-gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] $additional_flags
+# default_flags are replaced by a dg-options test directive, or appended
+# to by using dg-additional-options.  Use default_flags for options that
+# are used in all of the torture sets to limit the amount of noise in
+# test summaries.
+set default_flags ""
+
+# torture_flags are combined with other torture options and do not
+# affect options specified within a test.
+set torture_flags ""
+
+set stackalign_options [list]
+if { [check_effective_target_automatic_stack_alignment] } then {
+    append default_flags " -mstackrealign"
+    append default_flags " -mpreferred-stack-boundary=5"
+}
+if { [istarget i?86*-*-*] || [istarget x86_64-*-*] } then {
+    append default_flags " -mno-mmx"
+}
+lappend stackalign_options [join $torture_flags]
+
 if { [check_effective_target_fpic] } then {
-    set pic_additional_flags $additional_flags
-    lappend pic_additional_flags "-fpic"
-    gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] $pic_additional_flags
+    set pic_torture_flags $torture_flags
+    append pic_torture_flags " -fpic"
+    lappend stackalign_options [join $pic_torture_flags]
 }
 
 if { [check_effective_target_automatic_stack_alignment] } then {
-    lappend additional_flags "-mforce-drap"
-    gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] $additional_flags
+    append torture_flags " -mforce-drap"
+    lappend stackalign_options [join $torture_flags]
     if { [check_effective_target_fpic] } then {
-	set pic_additional_flags $additional_flags
-	lappend pic_additional_flags "-fpic"
-	gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] $pic_additional_flags
+	set pic_torture_flags $torture_flags
+	append pic_torture_flags " -fpic"
+	lappend stackalign_options [join $pic_torture_flags]
     }
 }
 
+# Combine stackalign options with the usual torture optimization flags.
+set-torture-options [concat $DG_TORTURE_OPTIONS $LTO_TORTURE_OPTIONS] $stackalign_options
+
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] "$default_flags"
+
+torture-finish
 dg-finish

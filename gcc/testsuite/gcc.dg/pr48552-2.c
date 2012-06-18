@@ -7,15 +7,15 @@ struct S;
 void
 f1 (void *x)
 {
-  __asm ("" : : "r" (*x));	/* { dg-warning "dereferencing" } */
-}				/* { dg-error "invalid use of void expression" "" { target *-*-* } 10 } */
+  __asm ("" : : "r" (*x));	/* { dg-warning "dereferencing" "deref" } */
+}				/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } 10 } */
 
 void
 f2 (void *x)
 {
-  __asm ("" : "=r" (*x));	/* { dg-warning "dereferencing" } */
-}				/* { dg-error "invalid use of void expression" "" { target *-*-* } 16 } */
-				/* { dg-error "invalid lvalue in asm output 0" "" { target *-*-* } 16 } */
+  __asm ("" : "=r" (*x));	/* { dg-warning "dereferencing" "deref" } */
+}				/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } 16 } */
+				/* { dg-error "invalid lvalue in asm output 0" "invalid lvalue" { target *-*-* } 16 } */
 void
 f3 (void *x)
 {
@@ -31,15 +31,15 @@ f4 (void *x)
 void
 f5 (void *x)
 {
-  __asm ("" : : "g" (*x));	/* { dg-warning "dereferencing" } */
-}				/* { dg-error "invalid use of void expression" "" { target *-*-* } 34 } */
+  __asm ("" : : "g" (*x));	/* { dg-warning "dereferencing" "deref" } */
+}				/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } 34 } */
 
 void
 f6 (void *x)
 {
-  __asm ("" : "=g" (*x));	/* { dg-warning "dereferencing" } */
-}				/* { dg-error "invalid use of void expression" "" { target *-*-* } 40 } */
-				/* { dg-error "invalid lvalue in asm output 0" "" { target *-*-* } 40 } */
+  __asm ("" : "=g" (*x));	/* { dg-warning "dereferencing" "deref" } */
+}				/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } 40 } */
+				/* { dg-error "invalid lvalue in asm output 0" "invalid lvalue" { target *-*-* } 40 } */
 void
 f7 (struct S *x)
 {
@@ -49,5 +49,5 @@ f7 (struct S *x)
 void
 f8 (struct S *x)
 {
-  __asm ("" : "=r" (*x));	/* { dg-error "dereferencing pointer to incomplete type" } */
-}				/* { dg-error "invalid lvalue in asm output 0" "" { target *-*-* } 52 } */
+  __asm ("" : "=r" (*x));	/* { dg-error "dereferencing pointer to incomplete type" "incomplete" } */
+}				/* { dg-error "invalid lvalue in asm output 0" "invalid lvalue" { target *-*-* } 52 } */

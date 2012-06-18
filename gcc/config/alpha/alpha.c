@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "langhooks.h"
 #include "splay-tree.h"
-#include "cfglayout.h"
 #include "gimple.h"
 #include "tree-flow.h"
 #include "tree-stdarg.h"
@@ -5468,7 +5467,9 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	 the function's procedure descriptor with certain fields zeroed IAW
 	 the VMS calling standard. This is stored in the first quadword.  */
       word1 = force_reg (DImode, gen_const_mem (DImode, fnaddr));
-      word1 = expand_and (DImode, word1, GEN_INT (0xffff0fff0000fff0), NULL);
+      word1 = expand_and (DImode, word1,
+			  GEN_INT (HOST_WIDE_INT_C (0xffff0fff0000fff0)),
+			  NULL);
     }
   else
     {
@@ -5479,8 +5480,8 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	    nop
 	 We don't bother setting the HINT field of the jump; the nop
 	 is merely there for padding.  */
-      word1 = GEN_INT (0xa77b0010a43b0018);
-      word2 = GEN_INT (0x47ff041f6bfb0000);
+      word1 = GEN_INT (HOST_WIDE_INT_C (0xa77b0010a43b0018));
+      word2 = GEN_INT (HOST_WIDE_INT_C (0x47ff041f6bfb0000));
     }
 
   /* Store the first two words, as computed above.  */

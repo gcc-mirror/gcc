@@ -1,4 +1,30 @@
-2012-06-07  Fabien Chêne  <fabien@gcc.gnu.org>
+2012-06-15  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/51033
+	* semantics.c (literal_type_p): Handle VECTOR_TYPE.
+        (potential_constant_expression_1): Handle VEC_PERM_EXPR.
+        * parser.c (cp_parser_postfix_expression): Handle RID_BUILTIN_SHUFFLE.
+
+2012-06-09  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_expr) [TAG_DEFN]: Instantiate local class.
+	* class.c (finish_struct): Don't add a TAG_DEFN for a lambda.
+	* decl2.c (finish_static_data_member_decl): Avoid redundant error.
+
+	PR c++/53599
+	* name-lookup.c (pushtag_1): Add a DECL_EXPR for a local class.
+	* semantics.c (finish_cond): Build a COMPOUND_EXPR.
+	* pt.c (tsubst_expr) [COMPOUND_EXPR]: Handle.
+	[DECL_EXPR]: Don't call cp_finish_decl for an implicit typedef.
+	Don't return the decl.
+
+2012-06-11  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/53605
+	* mangle.c (write_array_type): Use double-ints for array domain
+	arithmetic.
+
+2012-06-07  Fabien ChÃªne  <fabien@gcc.gnu.org>
 
 	PR c++/51214
 	* cp-tree.h (insert_late_enum_def_into_classtype_sorted_fields):
@@ -65,7 +91,7 @@
 	* decl.c: Do not include output.h.
 	(start_decl): Remove code for flag_conserve_space.
 
-2012-06-06  Fabien Chêne  <fabien@gcc.gnu.org>
+2012-06-06  Fabien ChÃªne  <fabien@gcc.gnu.org>
 
 	PR c++/52841
 	* parser.c (cp_parser_alias_declaration): Return earlier

@@ -12,6 +12,6 @@ int
 operator"" _Q(const char *, std::size_t)	// { dg-warning "user-defined literals only available with" }
 { return 42; }
 
-int x = "Hello"_Q;	// { dg-error "invalid conversion from" }
+int x = "Hello"_Q;	// { dg-error "invalid conversion from" "invalid" }
 
-// { dg-error "expected" "" { target *-*-* } 15 }
+// { dg-error "expected" "expected" { target *-*-* } 15 }

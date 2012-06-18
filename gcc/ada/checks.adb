@@ -7378,12 +7378,10 @@ package body Checks is
 
    function Tag_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      if Present (E) then
-         if Kill_Tag_Checks (E) then
-            return True;
-         elsif Checks_May_Be_Suppressed (E) then
-            return Is_Check_Suppressed (E, Tag_Check);
-         end if;
+      if Present (E)
+        and then Checks_May_Be_Suppressed (E)
+      then
+         return Is_Check_Suppressed (E, Tag_Check);
       end if;
 
       return Scope_Suppress (Tag_Check);

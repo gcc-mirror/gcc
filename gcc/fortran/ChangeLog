@@ -1,3 +1,32 @@
+2012-06-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53691
+	PR fortran/53685
+	* check.c (gfc_calculate_transfer_sizes): Return if
+	SIZE= is not constant or source-size cannot be determined.
+
+2012-06-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53642
+	PR fortran/45170
+	* frontend-passes.c (optimize_assignment): Don't remove RHS's
+	trim when assigning to a deferred-length string.
+	* trans-expr.c (gfc_trans_assignment_1): Ensure that the RHS string
+	length is evaluated before the deferred-length LHS is reallocated.
+
+2012-06-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53643
+	* trans-decl.c (init_intent_out_dt): Fix for polymorphic arrays.
+	* trans-array.c (structure_alloc_comps): Don't loop for
+	scalar coarrays.
+
+2012-06-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53597
+	* decl.c (match_attr_spec): Only mark module variables
+	as SAVE_IMPLICIT for Fortran 2008 and later.
+
 2012-06-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/52552

@@ -3,8 +3,8 @@
 /* { dg-options "" } */
 
 #include "nonexistent.h"
-/* { dg-message "nonexistent.h" "" { target *-*-* } 0 } */
-/* { dg-message "terminated" "" { target *-*-* } 0 } */
+/* { dg-message "nonexistent.h" "nonexistent.h" { target *-*-* } 0 } */
+/* { dg-message "terminated" "terminated" { target *-*-* } 0 } */
 
 /* This declaration should not receive any diagnostic.  */
 foo bar;

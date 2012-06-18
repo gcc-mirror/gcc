@@ -202,7 +202,7 @@ Target RejectNegative Condition(SUPPORT_SH5_32MEDIA_NOFPU)
 Generate FPU-less SHcompact code
 
 maccumulate-outgoing-args
-Target Report Mask(ACCUMULATE_OUTGOING_ARGS)
+Target Report Var(TARGET_ACCUMULATE_OUTGOING_ARGS) Init(1)
 Reserve space for outgoing arguments in the function prologue
 
 madjust-unroll
@@ -256,10 +256,6 @@ Enable the use of 64-bit floating point registers in fmov instructions.  See -md
 mfixed-range=
 Target RejectNegative Joined Var(sh_fixed_range_str)
 Specify range of registers to make fixed
-
-mfused-madd
-Target Var(TARGET_FMAC)
-Enable the use of the fused floating point multiply-accumulate operation
 
 mgettrcost=
 Target RejectNegative Joined UInteger Var(sh_gettrcost) Init(-1)

@@ -243,6 +243,13 @@ extern rtx emit_store_flag (rtx, enum rtx_code, rtx, rtx, enum machine_mode,
 /* Like emit_store_flag, but always succeeds.  */
 extern rtx emit_store_flag_force (rtx, enum rtx_code, rtx, rtx,
 				  enum machine_mode, int, int);
+
+/* Choose a minimal N + 1 bit approximation to 1/D that can be used to
+   replace division by D, and put the least significant N bits of the result
+   in *MULTIPLIER_PTR and return the most significant bit.  */
+extern unsigned HOST_WIDE_INT choose_multiplier (unsigned HOST_WIDE_INT, int,
+						 int, unsigned HOST_WIDE_INT *,
+						 int *, int *);
 
 /* Functions from builtins.c:  */
 extern rtx expand_builtin (tree, rtx, rtx, enum machine_mode, int);

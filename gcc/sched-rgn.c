@@ -60,7 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "except.h"
 #include "recog.h"
-#include "cfglayout.h"
 #include "params.h"
 #include "sched-int.h"
 #include "sel-sched.h"

@@ -115,6 +115,7 @@
 #include "pointer-set.h"
 #include "recog.h"
 #include "tm_p.h"
+#include "alias.h"
 
 /* var-tracking.c assumes that tree code with the same value as VALUE rtx code
    has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
@@ -472,6 +473,9 @@ static alloc_pool loc_chain_pool;
 
 /* Alloc pool for struct shared_hash_def.  */
 static alloc_pool shared_hash_pool;
+
+/* Alloc pool for struct loc_exp_dep_s for NOT_ONEPART variables.  */
+static alloc_pool loc_exp_dep_pool;
 
 /* Changed variables, notes will be emitted for them.  */
 static htab_t changed_variables;
@@ -1951,6 +1955,111 @@ var_regno_delete (dataflow_set *set, int regno)
   *reg = NULL;
 }
 
+/* Hold parameters for the hashtab traversal function
+   drop_overlapping_mem_locs, see below.  */
+
+struct overlapping_mems
+{
+  dataflow_set *set;
+  rtx loc, addr;
+};
+
+/* Remove all MEMs that overlap with COMS->LOC from the location list
+   of a hash table entry for a value.  COMS->ADDR must be a
+   canonicalized form of COMS->LOC's address, and COMS->LOC must be
+   canonicalized itself.  */
+
+static int
+drop_overlapping_mem_locs (void **slot, void *data)
+{
+  struct overlapping_mems *coms = (struct overlapping_mems *)data;
+  dataflow_set *set = coms->set;
+  rtx mloc = coms->loc, addr = coms->addr;
+  variable var = (variable) *slot;
+
+  if (var->onepart == ONEPART_VALUE)
+    {
+      location_chain loc, *locp;
+      bool changed = false;
+      rtx cur_loc;
+
+      gcc_assert (var->n_var_parts == 1);
+
+      if (shared_var_p (var, set->vars))
+	{
+	  for (loc = var->var_part[0].loc_chain; loc; loc = loc->next)
+	    if (GET_CODE (loc->loc) == MEM
+		&& canon_true_dependence (mloc, GET_MODE (mloc), addr,
+					  loc->loc, NULL))
+	      break;
+
+	  if (!loc)
+	    return 1;
+
+	  slot = unshare_variable (set, slot, var, VAR_INIT_STATUS_UNKNOWN);
+	  var = (variable)*slot;
+	  gcc_assert (var->n_var_parts == 1);
+	}
+
+      if (VAR_LOC_1PAUX (var))
+	cur_loc = VAR_LOC_FROM (var);
+      else
+	cur_loc = var->var_part[0].cur_loc;
+
+      for (locp = &var->var_part[0].loc_chain, loc = *locp;
+	   loc; loc = *locp)
+	{
+	  if (GET_CODE (loc->loc) != MEM
+	      || !canon_true_dependence (mloc, GET_MODE (mloc), addr,
+					 loc->loc, NULL))
+	    {
+	      locp = &loc->next;
+	      continue;
+	    }
+
+	  *locp = loc->next;
+	  /* If we have deleted the location which was last emitted
+	     we have to emit new location so add the variable to set
+	     of changed variables.  */
+	  if (cur_loc == loc->loc)
+	    {
+	      changed = true;
+	      var->var_part[0].cur_loc = NULL;
+	      if (VAR_LOC_1PAUX (var))
+		VAR_LOC_FROM (var) = NULL;
+	    }
+	  pool_free (loc_chain_pool, loc);
+	}
+
+      if (!var->var_part[0].loc_chain)
+	{
+	  var->n_var_parts--;
+	  changed = true;
+	}
+      if (changed)
+	variable_was_changed (var, set);
+    }
+
+  return 1;
+}
+
+/* Remove from SET all VALUE bindings to MEMs that overlap with LOC.  */
+
+static void
+clobber_overlapping_mems (dataflow_set *set, rtx loc)
+{
+  struct overlapping_mems coms;
+
+  coms.set = set;
+  coms.loc = canon_rtx (loc);
+  coms.addr = canon_rtx (get_addr (XEXP (loc, 0)));
+
+  set->traversed_vars = set->vars;
+  htab_traverse (shared_hash_htab (set->vars),
+		 drop_overlapping_mem_locs, &coms);
+  set->traversed_vars = NULL;
+}
+
 /* Set the location of DV, OFFSET as the MEM LOC.  */
 
 static void
@@ -1993,6 +2102,7 @@ var_mem_delete_and_set (dataflow_set *set, rtx loc, bool modify,
   tree decl = MEM_EXPR (loc);
   HOST_WIDE_INT offset = INT_MEM_OFFSET (loc);
 
+  clobber_overlapping_mems (set, loc);
   decl = var_debug_decl (decl);
 
   if (initialized == VAR_INIT_STATUS_UNKNOWN)
@@ -2013,6 +2123,7 @@ var_mem_delete (dataflow_set *set, rtx loc, bool clobber)
   tree decl = MEM_EXPR (loc);
   HOST_WIDE_INT offset = INT_MEM_OFFSET (loc);
 
+  clobber_overlapping_mems (set, loc);
   decl = var_debug_decl (decl);
   if (clobber)
     clobber_variable_part (set, NULL, dv_from_decl (decl), offset, NULL);
@@ -2055,6 +2166,9 @@ val_bind (dataflow_set *set, rtx val, rtx loc, bool modified)
   else if (MEM_P (loc))
     {
       struct elt_loc_list *l = CSELIB_VAL_PTR (val)->locs;
+
+      if (modified)
+	clobber_overlapping_mems (set, loc);
 
       if (l && GET_CODE (l->loc) == VALUE)
 	l = canonical_cselib_val (CSELIB_VAL_PTR (l->loc))->locs;
@@ -6273,29 +6387,41 @@ compute_bb_dataflow (basic_block bb)
 	    {
 	      rtx loc = mo->u.loc;
 	      rtx val, vloc, uloc;
+	      rtx dstv, srcv;
 
 	      vloc = loc;
 	      uloc = XEXP (vloc, 1);
 	      val = XEXP (vloc, 0);
 	      vloc = uloc;
 
+	      if (GET_CODE (uloc) == SET)
+		{
+		  dstv = SET_DEST (uloc);
+		  srcv = SET_SRC (uloc);
+		}
+	      else
+		{
+		  dstv = uloc;
+		  srcv = NULL;
+		}
+
 	      if (GET_CODE (val) == CONCAT)
 		{
-		  vloc = XEXP (val, 1);
+		  dstv = vloc = XEXP (val, 1);
 		  val = XEXP (val, 0);
 		}
 
 	      if (GET_CODE (vloc) == SET)
 		{
-		  rtx vsrc = SET_SRC (vloc);
+		  srcv = SET_SRC (vloc);
 
-		  gcc_assert (val != vsrc);
+		  gcc_assert (val != srcv);
 		  gcc_assert (vloc == uloc || VAL_NEEDS_RESOLUTION (loc));
 
-		  vloc = SET_DEST (vloc);
+		  dstv = vloc = SET_DEST (vloc);
 
 		  if (VAL_NEEDS_RESOLUTION (loc))
-		    val_resolve (out, val, vsrc, insn);
+		    val_resolve (out, val, srcv, insn);
 		}
 	      else if (VAL_NEEDS_RESOLUTION (loc))
 		{
@@ -6311,45 +6437,55 @@ compute_bb_dataflow (basic_block bb)
 		      if (REG_P (uloc))
 			var_reg_delete (out, uloc, true);
 		      else if (MEM_P (uloc))
-			var_mem_delete (out, uloc, true);
+			{
+			  gcc_assert (MEM_P (dstv));
+			  gcc_assert (MEM_ATTRS (dstv) == MEM_ATTRS (uloc));
+			  var_mem_delete (out, dstv, true);
+			}
 		    }
 		  else
 		    {
 		      bool copied_p = VAL_EXPR_IS_COPIED (loc);
-		      rtx set_src = NULL;
+		      rtx src = NULL, dst = uloc;
 		      enum var_init_status status = VAR_INIT_STATUS_INITIALIZED;
 
 		      if (GET_CODE (uloc) == SET)
 			{
-			  set_src = SET_SRC (uloc);
-			  uloc = SET_DEST (uloc);
+			  src = SET_SRC (uloc);
+			  dst = SET_DEST (uloc);
 			}
 
 		      if (copied_p)
 			{
 			  if (flag_var_tracking_uninit)
 			    {
-			      status = find_src_status (in, set_src);
+			      status = find_src_status (in, src);
 
 			      if (status == VAR_INIT_STATUS_UNKNOWN)
-				status = find_src_status (out, set_src);
+				status = find_src_status (out, src);
 			    }
 
-			  set_src = find_src_set_src (in, set_src);
+			  src = find_src_set_src (in, src);
 			}
 
-		      if (REG_P (uloc))
-			var_reg_delete_and_set (out, uloc, !copied_p,
-						status, set_src);
-		      else if (MEM_P (uloc))
-			var_mem_delete_and_set (out, uloc, !copied_p,
-						status, set_src);
+		      if (REG_P (dst))
+			var_reg_delete_and_set (out, dst, !copied_p,
+						status, srcv);
+		      else if (MEM_P (dst))
+			{
+			  gcc_assert (MEM_P (dstv));
+			  gcc_assert (MEM_ATTRS (dstv) == MEM_ATTRS (dst));
+			  var_mem_delete_and_set (out, dstv, !copied_p,
+						  status, srcv);
+			}
 		    }
 		}
 	      else if (REG_P (uloc))
 		var_regno_delete (out, REGNO (uloc));
+	      else if (MEM_P (uloc))
+		clobber_overlapping_mems (out, uloc);
 
-	      val_store (out, val, vloc, insn, true);
+	      val_store (out, val, dstv, insn, true);
 	    }
 	    break;
 
@@ -7591,8 +7727,13 @@ loc_exp_insert_dep (variable var, rtx x, htab_t vars)
   if (VAR_LOC_DEP_LST (xvar) && VAR_LOC_DEP_LST (xvar)->dv == var->dv)
     return;
 
-  VEC_quick_push (loc_exp_dep, VAR_LOC_DEP_VEC (var), NULL);
-  led = VEC_last (loc_exp_dep, VAR_LOC_DEP_VEC (var));
+  if (var->onepart == NOT_ONEPART)
+    led = (loc_exp_dep *) pool_alloc (loc_exp_dep_pool);
+  else
+    {
+      VEC_quick_push (loc_exp_dep, VAR_LOC_DEP_VEC (var), NULL);
+      led = VEC_last (loc_exp_dep, VAR_LOC_DEP_VEC (var));
+    }
   led->dv = var->dv;
   led->value = x;
 
@@ -7668,8 +7809,12 @@ notify_dependents_of_resolved_value (variable ivar, htab_t vars)
 
 	  gcc_checking_assert (dv_changed_p (dv));
 	}
-      else if (!dv_changed_p (dv))
-	continue;
+      else
+	{
+	  gcc_checking_assert (dv_onepart_p (dv) != NOT_ONEPART);
+	  if (!dv_changed_p (dv))
+	    continue;
+      }
 
       var = (variable) htab_find_with_hash (vars, dv, dv_htab_hash (dv));
 
@@ -8124,11 +8269,23 @@ emit_note_insn_var_location (void **varp, void *data)
 	  else if (last_limit > VAR_PART_OFFSET (var, i))
 	    continue;
 	  offset = VAR_PART_OFFSET (var, i);
-	  if (!var->var_part[i].cur_loc)
+	  loc2 = var->var_part[i].cur_loc;
+	  if (loc2 && GET_CODE (loc2) == MEM
+	      && GET_CODE (XEXP (loc2, 0)) == VALUE)
+	    {
+	      rtx depval = XEXP (loc2, 0);
+
+	      loc2 = vt_expand_loc (loc2, vars);
+
+	      if (loc2)
+		loc_exp_insert_dep (var, depval, vars);
+	    }
+	  if (!loc2)
 	    {
 	      complete = false;
 	      continue;
 	    }
+	  gcc_checking_assert (GET_CODE (loc2) != VALUE);
 	  for (lc = var->var_part[i].loc_chain; lc; lc = lc->next)
 	    if (var->var_part[i].cur_loc == lc->loc)
 	      {
@@ -8136,7 +8293,6 @@ emit_note_insn_var_location (void **varp, void *data)
 		break;
 	      }
 	  gcc_assert (lc);
-	  loc2 = var->var_part[i].cur_loc;
 	}
 
       offsets[n_var_parts] = offset;
@@ -8350,7 +8506,6 @@ notify_dependents_of_changed_value (rtx val, htab_t htab,
   while ((led = VAR_LOC_DEP_LST (var)))
     {
       decl_or_value ldv = led->dv;
-      void **islot;
       variable ivar;
 
       /* Deactivate and remove the backlink, as it was “used up”.  It
@@ -8375,13 +8530,34 @@ notify_dependents_of_changed_value (rtx val, htab_t htab,
 	  VEC_safe_push (rtx, stack, *changed_values_stack, dv_as_rtx (ldv));
 	  break;
 
-	default:
-	  islot = htab_find_slot_with_hash (htab, ldv, dv_htab_hash (ldv),
-					    NO_INSERT);
-	  ivar = (variable) *islot;
+	case ONEPART_VDECL:
+	  ivar = (variable) htab_find_with_hash (htab, ldv, dv_htab_hash (ldv));
 	  gcc_checking_assert (!VAR_LOC_DEP_LST (ivar));
 	  variable_was_changed (ivar, NULL);
 	  break;
+
+	case NOT_ONEPART:
+	  pool_free (loc_exp_dep_pool, led);
+	  ivar = (variable) htab_find_with_hash (htab, ldv, dv_htab_hash (ldv));
+	  if (ivar)
+	    {
+	      int i = ivar->n_var_parts;
+	      while (i--)
+		{
+		  rtx loc = ivar->var_part[i].cur_loc;
+
+		  if (loc && GET_CODE (loc) == MEM
+		      && XEXP (loc, 0) == val)
+		    {
+		      variable_was_changed (ivar, NULL);
+		      break;
+		    }
+		}
+	    }
+	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
     }
 }
@@ -8718,29 +8894,41 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 	    {
 	      rtx loc = mo->u.loc;
 	      rtx val, vloc, uloc;
+	      rtx dstv, srcv;
 
 	      vloc = loc;
 	      uloc = XEXP (vloc, 1);
 	      val = XEXP (vloc, 0);
 	      vloc = uloc;
 
+	      if (GET_CODE (uloc) == SET)
+		{
+		  dstv = SET_DEST (uloc);
+		  srcv = SET_SRC (uloc);
+		}
+	      else
+		{
+		  dstv = uloc;
+		  srcv = NULL;
+		}
+
 	      if (GET_CODE (val) == CONCAT)
 		{
-		  vloc = XEXP (val, 1);
+		  dstv = vloc = XEXP (val, 1);
 		  val = XEXP (val, 0);
 		}
 
 	      if (GET_CODE (vloc) == SET)
 		{
-		  rtx vsrc = SET_SRC (vloc);
+		  srcv = SET_SRC (vloc);
 
-		  gcc_assert (val != vsrc);
+		  gcc_assert (val != srcv);
 		  gcc_assert (vloc == uloc || VAL_NEEDS_RESOLUTION (loc));
 
-		  vloc = SET_DEST (vloc);
+		  dstv = vloc = SET_DEST (vloc);
 
 		  if (VAL_NEEDS_RESOLUTION (loc))
-		    val_resolve (set, val, vsrc, insn);
+		    val_resolve (set, val, srcv, insn);
 		}
 	      else if (VAL_NEEDS_RESOLUTION (loc))
 		{
@@ -8756,39 +8944,49 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 		      if (REG_P (uloc))
 			var_reg_delete (set, uloc, true);
 		      else if (MEM_P (uloc))
-			var_mem_delete (set, uloc, true);
+			{
+			  gcc_assert (MEM_P (dstv));
+			  gcc_assert (MEM_ATTRS (dstv) == MEM_ATTRS (uloc));
+			  var_mem_delete (set, dstv, true);
+			}
 		    }
 		  else
 		    {
 		      bool copied_p = VAL_EXPR_IS_COPIED (loc);
-		      rtx set_src = NULL;
+		      rtx src = NULL, dst = uloc;
 		      enum var_init_status status = VAR_INIT_STATUS_INITIALIZED;
 
 		      if (GET_CODE (uloc) == SET)
 			{
-			  set_src = SET_SRC (uloc);
-			  uloc = SET_DEST (uloc);
+			  src = SET_SRC (uloc);
+			  dst = SET_DEST (uloc);
 			}
 
 		      if (copied_p)
 			{
-			  status = find_src_status (set, set_src);
+			  status = find_src_status (set, src);
 
-			  set_src = find_src_set_src (set, set_src);
+			  src = find_src_set_src (set, src);
 			}
 
-		      if (REG_P (uloc))
-			var_reg_delete_and_set (set, uloc, !copied_p,
-						status, set_src);
-		      else if (MEM_P (uloc))
-			var_mem_delete_and_set (set, uloc, !copied_p,
-						status, set_src);
+		      if (REG_P (dst))
+			var_reg_delete_and_set (set, dst, !copied_p,
+						status, srcv);
+		      else if (MEM_P (dst))
+			{
+			  gcc_assert (MEM_P (dstv));
+			  gcc_assert (MEM_ATTRS (dstv) == MEM_ATTRS (dst));
+			  var_mem_delete_and_set (set, dstv, !copied_p,
+						  status, srcv);
+			}
 		    }
 		}
 	      else if (REG_P (uloc))
 		var_regno_delete (set, REGNO (uloc));
+	      else if (MEM_P (uloc))
+		clobber_overlapping_mems (set, uloc);
 
-	      val_store (set, val, vloc, insn, true);
+	      val_store (set, val, dstv, insn, true);
 
 	      emit_notes_for_changes (next_insn, EMIT_NOTE_BEFORE_INSN,
 				      set->vars);
@@ -8897,9 +9095,13 @@ vt_emit_notes (void)
   emit_notes = true;
 
   if (MAY_HAVE_DEBUG_INSNS)
-    dropped_values = htab_create (cselib_get_next_uid () * 2,
-				  variable_htab_hash, variable_htab_eq,
-				  variable_htab_free);
+    {
+      dropped_values = htab_create (cselib_get_next_uid () * 2,
+				    variable_htab_hash, variable_htab_eq,
+				    variable_htab_free);
+      loc_exp_dep_pool = create_alloc_pool ("loc_exp_dep pool",
+					    sizeof (loc_exp_dep), 64);
+    }
 
   dataflow_set_init (&cur);
 
@@ -8924,7 +9126,11 @@ vt_emit_notes (void)
   dataflow_set_destroy (&cur);
 
   if (MAY_HAVE_DEBUG_INSNS)
-    htab_delete (dropped_values);
+    {
+      free_alloc_pool (loc_exp_dep_pool);
+      loc_exp_dep_pool = NULL;
+      htab_delete (dropped_values);
+    }
 
   emit_notes = false;
 }

@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Namet;  use Namet;
 with Snames; use Snames;
 with Types;  use Types;
 with Uintp;  use Uintp;
@@ -729,11 +728,11 @@ package Einfo is
 --       declared the entity. Normally this is just the Parent of the entity.
 --       One exception arises with child units, where the parent of the entity
 --       is a selected component/defining program unit name. Another exception
---       is that if the entity is an incomplete type that has been completed,
---       then we obtain the declaration node denoted by the full type, i.e. the
---       full type declaration node. Also note that for subprograms, this
---       returns the {function,procedure}_specification, not the subprogram_
---       declaration.
+--       is that if the entity is an incomplete type that has been completed or
+--       a private type, then we obtain the declaration node denoted by the
+--       full type, i.e. the full type declaration node. Also note that for
+--       subprograms, this returns the {function,procedure}_specification, not
+--       the subprogram_declaration.
 
 --    Default_Aspect_Component_Value (Node19)
 --       Present in array types. Holds the static value specified in a
@@ -2671,7 +2670,7 @@ package Einfo is
 --       appropriate external name for use by the linker.
 
 --    Is_Protected_Record_Type (synthesized)
---       Applies to all entities, true if Is_Concurrent_Record_Type
+--       Applies to all entities, true if Is_Concurrent_Record_Type is true and
 --       Corresponding_Concurrent_Type is a protected type.
 
 --    Is_Pure (Flag44)
@@ -2906,13 +2905,6 @@ package Einfo is
 --       permanent and cannot be undone by a subsequent pragma Unsuppress.
 --       This is currently only used in one odd situation in Sem_Ch3 for
 --       record types, and it would be good to get rid of it???
-
---    Kill_Tag_Checks (Flag34)
---       Present in all entities. Set by the expander to kill elaboration
---       checks which are known not to be needed. Equivalent in effect to
---       the use of pragma Suppress (Tag_Checks) for that entity except
---       that the result is permanent and cannot be undone by a subsequent
---       pragma Unsuppress.
 
 --    Known_To_Have_Preelab_Init (Flag207)
 --       Present in all type and subtype entities. If set, then the type is
@@ -3515,15 +3507,6 @@ package Einfo is
 --       is True only for implicitly declare subprograms; it is not set on the
 --       parent type's subprogram. See also Is_Abstract_Subprogram.
 
---    Return_Flag_Or_Transient_Decl (Node15)
---       Applies to variables and constants. Set for objects which act as the
---       return value of an extended return statement. The node contains the
---       entity of a locally declared flag which controls the finalization of
---       the return object should the function fail. Also set for access-to-
---       controlled objects used to provide a hook to controlled transients
---       declared inside an Expression_With_Actions. The node contains the
---       object declaration of the controlled transient.
-
 --    Return_Present (Flag54)
 --       Present in function and generic function entities. Set if the
 --       function contains a return statement (used for error checking).
@@ -3694,6 +3677,14 @@ package Einfo is
 --       type of the subtype. Note that all entries are static and have values
 --       within the subtype range.
 
+--    Status_Flag_Or_Transient_Decl (Node15)
+--       Present in variables and constants. Applies to objects that require
+--       special treatment by the finalization machinery. Such examples are
+--       extended return results, conditional expression results and objects
+--       inside N_Expression_With_Actions nodes. The attribute contains the
+--       entity of a flag which specifies particular behavior over a region
+--       of code or the declaration of a "hook" object.
+
 --    Storage_Size_Variable (Node15) [implementation base type only]
 --       Present in access types and task type entities. This flag is set
 --       if a valid and effective pragma Storage_Size applies to the base
@@ -3858,7 +3849,7 @@ package Einfo is
 --       entity which may or may not be a type, with the intent that if it is a
 --       type, its underlying type is taken.
 
---    Universal_Aliasing (Flag216) [base type only]
+--    Universal_Aliasing (Flag216) [implementation base type only]
 --       Present in all type entities. Set to direct the back-end to avoid
 --       any optimizations based on type-based alias analysis for this type.
 --       Indicates that objects of this type can alias objects of any other
@@ -4852,7 +4843,6 @@ package Einfo is
    --    Is_VMS_Exception                    (Flag133)
    --    Kill_Elaboration_Checks             (Flag32)
    --    Kill_Range_Checks                   (Flag33)
-   --    Kill_Tag_Checks                     (Flag34)
    --    Low_Bound_Tested                    (Flag205)
    --    Materialize_Entity                  (Flag168)
    --    Needs_Debug_Info                    (Flag147)
@@ -4949,7 +4939,7 @@ package Einfo is
    --    Strict_Alignment                    (Flag145)  (base type only)
    --    Suppress_Initialization             (Flag105)
    --    Treat_As_Volatile                   (Flag41)
-   --    Universal_Aliasing                  (Flag216)  (base type only)
+   --    Universal_Aliasing                  (Flag216)  (impl base type only)
 
    --    Alignment_Clause                    (synth)
    --    Base_Type                           (synth)
@@ -5094,7 +5084,7 @@ package Einfo is
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)   (constants only)
    --    Alignment                           (Uint14)
-   --    Return_Flag_Or_Transient_Decl       (Node15)   (constants only)
+   --    Status_Flag_Or_Transient_Decl       (Node15)   (constants only)
    --    Actual_Subtype                      (Node17)
    --    Renamed_Object                      (Node18)
    --    Size_Check_Code                     (Node19)   (constants only)
@@ -5755,7 +5745,7 @@ package Einfo is
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)
    --    Alignment                           (Uint14)
-   --    Return_Flag_Or_Transient_Decl       (Node15)   (transient object only)
+   --    Status_Flag_Or_Transient_Decl       (Node15)   (transient object only)
    --    Unset_Reference                     (Node16)
    --    Actual_Subtype                      (Node17)
    --    Renamed_Object                      (Node18)
@@ -6310,7 +6300,6 @@ package Einfo is
    function Itype_Printed                       (Id : E) return B;
    function Kill_Elaboration_Checks             (Id : E) return B;
    function Kill_Range_Checks                   (Id : E) return B;
-   function Kill_Tag_Checks                     (Id : E) return B;
    function Known_To_Have_Preelab_Init          (Id : E) return B;
    function Last_Assignment                     (Id : E) return N;
    function Last_Entity                         (Id : E) return E;
@@ -6376,7 +6365,6 @@ package Einfo is
    function Renaming_Map                        (Id : E) return U;
    function Requires_Overriding                 (Id : E) return B;
    function Return_Applies_To                   (Id : E) return N;
-   function Return_Flag_Or_Transient_Decl       (Id : E) return E;
    function Return_Present                      (Id : E) return B;
    function Returns_By_Ref                      (Id : E) return B;
    function Reverse_Bit_Order                   (Id : E) return B;
@@ -6395,6 +6383,7 @@ package Einfo is
    function Static_Elaboration_Desired          (Id : E) return B;
    function Static_Initialization               (Id : E) return N;
    function Static_Predicate                    (Id : E) return S;
+   function Status_Flag_Or_Transient_Decl       (Id : E) return E;
    function Storage_Size_Variable               (Id : E) return E;
    function Stored_Constraint                   (Id : E) return L;
    function Strict_Alignment                    (Id : E) return B;
@@ -6907,7 +6896,6 @@ package Einfo is
    procedure Set_Itype_Printed                   (Id : E; V : B := True);
    procedure Set_Kill_Elaboration_Checks         (Id : E; V : B := True);
    procedure Set_Kill_Range_Checks               (Id : E; V : B := True);
-   procedure Set_Kill_Tag_Checks                 (Id : E; V : B := True);
    procedure Set_Known_To_Have_Preelab_Init      (Id : E; V : B := True);
    procedure Set_Last_Assignment                 (Id : E; V : N);
    procedure Set_Last_Entity                     (Id : E; V : E);
@@ -6973,7 +6961,6 @@ package Einfo is
    procedure Set_Renaming_Map                    (Id : E; V : U);
    procedure Set_Requires_Overriding             (Id : E; V : B := True);
    procedure Set_Return_Applies_To               (Id : E; V : N);
-   procedure Set_Return_Flag_Or_Transient_Decl   (Id : E; V : E);
    procedure Set_Return_Present                  (Id : E; V : B := True);
    procedure Set_Returns_By_Ref                  (Id : E; V : B := True);
    procedure Set_Reverse_Bit_Order               (Id : E; V : B := True);
@@ -6992,6 +6979,7 @@ package Einfo is
    procedure Set_Static_Elaboration_Desired      (Id : E; V : B);
    procedure Set_Static_Initialization           (Id : E; V : N);
    procedure Set_Static_Predicate                (Id : E; V : S);
+   procedure Set_Status_Flag_Or_Transient_Decl   (Id : E; V : E);
    procedure Set_Storage_Size_Variable           (Id : E; V : E);
    procedure Set_Stored_Constraint               (Id : E; V : L);
    procedure Set_Strict_Alignment                (Id : E; V : B := True);
@@ -7200,37 +7188,13 @@ package Einfo is
    --  value returned is the N_Attribute_Definition_Clause node, otherwise
    --  Empty is returned.
 
-   function Get_Rep_Item_For_Entity
-     (E   : Entity_Id;
-      Nam : Name_Id) return Node_Id;
-   --  Searches the Rep_Item chain for a given entity E, for an instance of a
-   --  rep item (pragma, attribute definition clause, or aspect specification)
-   --  whose name matches the given name. If one is found, it is returned,
-   --  otherwise Empty is returned. Unlike the other Get routines for the
-   --  Rep_Item chain, this only returns items whose entity matches E (it
-   --  does not return items from the parent chain).
-
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record
    --  representation clause, and if found, returns it. Returns Empty
    --  if no such clause is found.
 
-   function Get_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Node_Id;
-   --  Searches the Rep_Item chain for the given entity E, for an instance
-   --  a representation pragma with the given name Nam. If found then the
-   --  value returned is the N_Pragma node, otherwise Empty is returned.
-
-   function Has_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Boolean;
-   --  Searches the Rep_Item chain for the given entity E, for an instance
-   --  of representation pragma with the given name Nam. If found then True
-   --  is returned, otherwise False indicates that no matching entry was found.
-
-   function Has_Attribute_Definition_Clause
-     (E  : Entity_Id;
-      Id : Attribute_Id) return Boolean;
-   --  Searches the Rep_Item chain for a given entity E, for an instance of an
-   --  attribute definition clause with the given attribute Id. If found, True
-   --  is returned, otherwise False indicates that no matching entry was found.
+   function Present_In_Rep_Item (E : Entity_Id; N : Node_Id) return Boolean;
+   --  Return True if N is present in the Rep_Item chain for a given entity E
 
    procedure Record_Rep_Item (E : Entity_Id; N : Node_Id);
    --  N is the node for a representation pragma, representation clause, an
@@ -7650,7 +7614,6 @@ package Einfo is
    pragma Inline (Itype_Printed);
    pragma Inline (Kill_Elaboration_Checks);
    pragma Inline (Kill_Range_Checks);
-   pragma Inline (Kill_Tag_Checks);
    pragma Inline (Known_To_Have_Preelab_Init);
    pragma Inline (Last_Assignment);
    pragma Inline (Last_Entity);
@@ -7719,7 +7682,6 @@ package Einfo is
    pragma Inline (Renaming_Map);
    pragma Inline (Requires_Overriding);
    pragma Inline (Return_Applies_To);
-   pragma Inline (Return_Flag_Or_Transient_Decl);
    pragma Inline (Return_Present);
    pragma Inline (Returns_By_Ref);
    pragma Inline (Reverse_Bit_Order);
@@ -7738,6 +7700,7 @@ package Einfo is
    pragma Inline (Static_Elaboration_Desired);
    pragma Inline (Static_Initialization);
    pragma Inline (Static_Predicate);
+   pragma Inline (Status_Flag_Or_Transient_Decl);
    pragma Inline (Storage_Size_Variable);
    pragma Inline (Stored_Constraint);
    pragma Inline (Strict_Alignment);
@@ -8056,7 +8019,6 @@ package Einfo is
    pragma Inline (Set_Itype_Printed);
    pragma Inline (Set_Kill_Elaboration_Checks);
    pragma Inline (Set_Kill_Range_Checks);
-   pragma Inline (Set_Kill_Tag_Checks);
    pragma Inline (Set_Known_To_Have_Preelab_Init);
    pragma Inline (Set_Last_Assignment);
    pragma Inline (Set_Last_Entity);
@@ -8122,7 +8084,6 @@ package Einfo is
    pragma Inline (Set_Renaming_Map);
    pragma Inline (Set_Requires_Overriding);
    pragma Inline (Set_Return_Applies_To);
-   pragma Inline (Set_Return_Flag_Or_Transient_Decl);
    pragma Inline (Set_Return_Present);
    pragma Inline (Set_Returns_By_Ref);
    pragma Inline (Set_Reverse_Bit_Order);
@@ -8141,6 +8102,7 @@ package Einfo is
    pragma Inline (Set_Static_Elaboration_Desired);
    pragma Inline (Set_Static_Initialization);
    pragma Inline (Set_Static_Predicate);
+   pragma Inline (Set_Status_Flag_Or_Transient_Decl);
    pragma Inline (Set_Storage_Size_Variable);
    pragma Inline (Set_Stored_Constraint);
    pragma Inline (Set_Strict_Alignment);

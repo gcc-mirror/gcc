@@ -1,3 +1,10 @@
+2012-06-15  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/51033
+	* c-common.h (c_build_vec_perm_expr): Move decl here.
+	* c-common.c (c_build_vec_perm_expr): Move definition
+	here.
+
 2012-06-06  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c.opt (fconserve-space): Turn into a no-op.

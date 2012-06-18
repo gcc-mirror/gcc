@@ -62,6 +62,7 @@
 ;; UNSPEC Usage:
 ;; Note: sin and cos are no-longer used.
 ;; Unspec enumerators for Neon are defined in neon.md.
+;; Unspec enumerators for iwmmxt2 are defined in iwmmxt2.md
 
 (define_c_enum "unspec" [
   UNSPEC_SIN            ; `sin' operation (MODE_FLOAT):
@@ -98,8 +99,7 @@
   UNSPEC_WMACSZ         ; Used by the intrinsic form of the iWMMXt WMACSZ instruction.
   UNSPEC_WMACUZ         ; Used by the intrinsic form of the iWMMXt WMACUZ instruction.
   UNSPEC_CLRDI          ; Used by the intrinsic form of the iWMMXt CLRDI instruction.
-  UNSPEC_WMADDS         ; Used by the intrinsic form of the iWMMXt WMADDS instruction.
-  UNSPEC_WMADDU         ; Used by the intrinsic form of the iWMMXt WMADDU instruction.
+  UNSPEC_WALIGNI        ; Used by the intrinsic form of the iWMMXt WALIGN instruction.
   UNSPEC_TLS            ; A symbol that has been treated properly for TLS usage.
   UNSPEC_PIC_LABEL      ; A label used for PIC access that does not appear in the
                         ; instruction stream.
@@ -197,7 +197,7 @@
 ; for ARM or Thumb-2 with arm_arch6, and nov6 for ARM without
 ; arm_arch6.  This attribute is used to compute attribute "enabled",
 ; use type "any" to enable an alternative in all cases.
-(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,onlya8,neon_onlya8,nota8,neon_nota8"
+(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,onlya8,neon_onlya8,nota8,neon_nota8,iwmmxt,iwmmxt2"
   (const_string "any"))
 
 (define_attr "arch_enabled" "no,yes"
@@ -248,7 +248,12 @@
 	 (and (eq_attr "arch" "neon_nota8")
 	      (not (eq_attr "tune" "cortexa8"))
 	      (match_test "TARGET_NEON"))
+	 (const_string "yes")
+
+	 (and (eq_attr "arch" "iwmmxt2")
+	      (match_test "TARGET_REALLY_IWMMXT2"))
 	 (const_string "yes")]
+
 	(const_string "no")))
 
 ; Allows an insn to disable certain alternatives for reasons other than
@@ -343,13 +348,10 @@
 ; store2	store 2 words
 ; store3	store 3 words
 ; store4	store 4 (or more) words
-;  Additions for Cirrus Maverick co-processor:
-; mav_farith	Floating point arithmetic (4 cycle)
-; mav_dmult	Double multiplies (7 cycle)
 ;
 
 (define_attr "type"
-	"alu,alu_shift,alu_shift_reg,mult,block,float,fdivx,fdivd,fdivs,fmul,fmuls,fmuld,fmacs,fmacd,ffmul,farith,ffarith,f_flag,float_em,f_fpa_load,f_fpa_store,f_loads,f_loadd,f_stores,f_stored,f_mem_r,r_mem_f,f_2_r,r_2_f,f_cvt,branch,call,load_byte,load1,load2,load3,load4,store1,store2,store3,store4,mav_farith,mav_dmult,fconsts,fconstd,fadds,faddd,ffariths,ffarithd,fcmps,fcmpd,fcpys"
+	"alu,alu_shift,alu_shift_reg,mult,block,float,fdivx,fdivd,fdivs,fmul,fmuls,fmuld,fmacs,fmacd,ffmul,farith,ffarith,f_flag,float_em,f_fpa_load,f_fpa_store,f_loads,f_loadd,f_stores,f_stored,f_mem_r,r_mem_f,f_2_r,r_2_f,f_cvt,branch,call,load_byte,load1,load2,load3,load4,store1,store2,store3,store4,fconsts,fconstd,fadds,faddd,ffariths,ffarithd,fcmps,fcmpd,fcpys"
 	(if_then_else 
 	 (eq_attr "insn" "smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
 	 (const_string "mult")
@@ -361,6 +363,10 @@
 	       (eq_attr "insn" "smlalxy,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
 	       (const_string "yes")
 	       (const_string "no")))
+
+; wtype for WMMX insn scheduling purposes.
+(define_attr "wtype"
+        "none,wor,wxor,wand,wandn,wmov,tmcrr,tmrrc,wldr,wstr,tmcr,tmrc,wadd,wsub,wmul,wmac,wavg2,tinsr,textrm,wshufh,wcmpeq,wcmpgt,wmax,wmin,wpack,wunpckih,wunpckil,wunpckeh,wunpckel,wror,wsra,wsrl,wsll,wmadd,tmia,tmiaph,tmiaxy,tbcst,tmovmsk,wacc,waligni,walignr,tandc,textrc,torc,torvsc,wsad,wabs,wabsdiff,waddsubhx,wsubaddhx,wavg4,wmulw,wqmulm,wqmulwm,waddbhus,wqmiaxy,wmiaxy,wmiawxy,wmerge" (const_string "none"))
 
 ; Load scheduling, set from the arm_ld_sched variable
 ; initialized by arm_option_override()
@@ -538,6 +544,7 @@
 	  (const_string "yes")
 	  (const_string "no"))))
 
+(include "marvell-f-iwmmxt.md")
 (include "arm-generic.md")
 (include "arm926ejs.md")
 (include "arm1020e.md")
@@ -567,8 +574,6 @@
 ;; Note: For DImode insns, there is normally no reason why operands should
 ;; not be in the same register, what we don't want is for something being
 ;; written to partially overlap something that is an input.
-;; Cirrus 64bit additions should not be split because we have a native
-;; 64bit addition instructions.
 
 (define_expand "adddi3"
  [(parallel
@@ -578,16 +583,6 @@
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
   "
-  if (TARGET_HARD_FLOAT && TARGET_MAVERICK)
-    {
-      if (!cirrus_fp_register (operands[0], DImode))
-        operands[0] = force_reg (DImode, operands[0]);
-      if (!cirrus_fp_register (operands[1], DImode))
-        operands[1] = force_reg (DImode, operands[1]);
-      emit_insn (gen_cirrus_adddi3 (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-
   if (TARGET_THUMB1)
     {
       if (GET_CODE (operands[1]) != REG)
@@ -614,7 +609,7 @@
 	(plus:DI (match_operand:DI 1 "s_register_operand" "%0, 0")
 		 (match_operand:DI 2 "s_register_operand" "r,  0")))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_MAVERICK) && !TARGET_NEON"
+  "TARGET_32BIT && !TARGET_NEON"
   "#"
   "TARGET_32BIT && reload_completed
    && ! (TARGET_NEON && IS_VFP_REGNUM (REGNO (operands[0])))"
@@ -643,7 +638,7 @@
 		  (match_operand:SI 2 "s_register_operand" "r,r"))
 		 (match_operand:DI 1 "s_register_operand" "0,r")))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_MAVERICK)"
+  "TARGET_32BIT"
   "#"
   "TARGET_32BIT && reload_completed"
   [(parallel [(set (reg:CC_C CC_REGNUM)
@@ -672,7 +667,7 @@
 		  (match_operand:SI 2 "s_register_operand" "r,r"))
 		 (match_operand:DI 1 "s_register_operand" "0,r")))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_MAVERICK)"
+  "TARGET_32BIT"
   "#"
   "TARGET_32BIT && reload_completed"
   [(parallel [(set (reg:CC_C CC_REGNUM)
@@ -1065,23 +1060,17 @@
 (define_expand "addsf3"
   [(set (match_operand:SF          0 "s_register_operand" "")
 	(plus:SF (match_operand:SF 1 "s_register_operand" "")
-		 (match_operand:SF 2 "arm_float_add_operand" "")))]
+		 (match_operand:SF 2 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
   "
-  if (TARGET_MAVERICK
-      && !cirrus_fp_register (operands[2], SFmode))
-    operands[2] = force_reg (SFmode, operands[2]);
 ")
 
 (define_expand "adddf3"
   [(set (match_operand:DF          0 "s_register_operand" "")
 	(plus:DF (match_operand:DF 1 "s_register_operand" "")
-		 (match_operand:DF 2 "arm_float_add_operand" "")))]
+		 (match_operand:DF 2 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && !TARGET_VFP_SINGLE"
   "
-  if (TARGET_MAVERICK
-      && !cirrus_fp_register (operands[2], DFmode))
-    operands[2] = force_reg (DFmode, operands[2]);
 ")
 
 (define_expand "subdi3"
@@ -1092,15 +1081,6 @@
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
   "
-  if (TARGET_HARD_FLOAT && TARGET_MAVERICK
-      && TARGET_32BIT
-      && cirrus_fp_register (operands[0], DImode)
-      && cirrus_fp_register (operands[1], DImode))
-    {
-      emit_insn (gen_cirrus_subdi3 (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-
   if (TARGET_THUMB1)
     {
       if (GET_CODE (operands[1]) != REG)
@@ -1311,32 +1291,18 @@
 
 (define_expand "subsf3"
   [(set (match_operand:SF           0 "s_register_operand" "")
-	(minus:SF (match_operand:SF 1 "arm_float_rhs_operand" "")
-		  (match_operand:SF 2 "arm_float_rhs_operand" "")))]
+	(minus:SF (match_operand:SF 1 "s_register_operand" "")
+		  (match_operand:SF 2 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
   "
-  if (TARGET_MAVERICK)
-    {
-      if (!cirrus_fp_register (operands[1], SFmode))
-        operands[1] = force_reg (SFmode, operands[1]);
-      if (!cirrus_fp_register (operands[2], SFmode))
-        operands[2] = force_reg (SFmode, operands[2]);
-    }
 ")
 
 (define_expand "subdf3"
   [(set (match_operand:DF           0 "s_register_operand" "")
-	(minus:DF (match_operand:DF 1 "arm_float_rhs_operand" "")
-		  (match_operand:DF 2 "arm_float_rhs_operand" "")))]
+	(minus:DF (match_operand:DF 1 "s_register_operand" "")
+		  (match_operand:DF 2 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && !TARGET_VFP_SINGLE"
   "
-  if (TARGET_MAVERICK)
-    {
-       if (!cirrus_fp_register (operands[1], DFmode))
-         operands[1] = force_reg (DFmode, operands[1]);
-       if (!cirrus_fp_register (operands[2], DFmode))
-         operands[2] = force_reg (DFmode, operands[2]);
-    }
 ")
 
 
@@ -1932,55 +1898,33 @@
 (define_expand "mulsf3"
   [(set (match_operand:SF          0 "s_register_operand" "")
 	(mult:SF (match_operand:SF 1 "s_register_operand" "")
-		 (match_operand:SF 2 "arm_float_rhs_operand" "")))]
+		 (match_operand:SF 2 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
   "
-  if (TARGET_MAVERICK
-      && !cirrus_fp_register (operands[2], SFmode))
-    operands[2] = force_reg (SFmode, operands[2]);
 ")
 
 (define_expand "muldf3"
   [(set (match_operand:DF          0 "s_register_operand" "")
 	(mult:DF (match_operand:DF 1 "s_register_operand" "")
-		 (match_operand:DF 2 "arm_float_rhs_operand" "")))]
+		 (match_operand:DF 2 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && !TARGET_VFP_SINGLE"
   "
-  if (TARGET_MAVERICK
-      && !cirrus_fp_register (operands[2], DFmode))
-    operands[2] = force_reg (DFmode, operands[2]);
 ")
 
 ;; Division insns
 
 (define_expand "divsf3"
   [(set (match_operand:SF 0 "s_register_operand" "")
-	(div:SF (match_operand:SF 1 "arm_float_rhs_operand" "")
-		(match_operand:SF 2 "arm_float_rhs_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
+	(div:SF (match_operand:SF 1 "s_register_operand" "")
+		(match_operand:SF 2 "s_register_operand" "")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "")
 
 (define_expand "divdf3"
   [(set (match_operand:DF 0 "s_register_operand" "")
-	(div:DF (match_operand:DF 1 "arm_float_rhs_operand" "")
-		(match_operand:DF 2 "arm_float_rhs_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP_DOUBLE)"
-  "")
-
-;; Modulo insns
-
-(define_expand "modsf3"
-  [(set (match_operand:SF 0 "s_register_operand" "")
-	(mod:SF (match_operand:SF 1 "s_register_operand" "")
-		(match_operand:SF 2 "arm_float_rhs_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPA"
-  "")
-
-(define_expand "moddf3"
-  [(set (match_operand:DF 0 "s_register_operand" "")
-	(mod:DF (match_operand:DF 1 "s_register_operand" "")
-		(match_operand:DF 2 "arm_float_rhs_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPA"
+	(div:DF (match_operand:DF 1 "s_register_operand" "")
+		(match_operand:DF 2 "s_register_operand" "")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
 
 ;; Boolean and,ior,xor insns
@@ -3520,8 +3464,7 @@
                    (match_operand:SI 2 "reg_or_int_operand" "")))]
   "TARGET_32BIT"
   "
-  if (!CONST_INT_P (operands[2])
-      && (TARGET_REALLY_IWMMXT || (TARGET_HARD_FLOAT && TARGET_MAVERICK)))
+  if (!CONST_INT_P (operands[2]) && TARGET_REALLY_IWMMXT)
     ; /* No special preparation statements; expand pattern as above.  */
   else
     {
@@ -3595,8 +3538,7 @@
                      (match_operand:SI 2 "reg_or_int_operand" "")))]
   "TARGET_32BIT"
   "
-  if (!CONST_INT_P (operands[2])
-      && (TARGET_REALLY_IWMMXT || (TARGET_HARD_FLOAT && TARGET_MAVERICK)))
+  if (!CONST_INT_P (operands[2]) && TARGET_REALLY_IWMMXT)
     ; /* No special preparation statements; expand pattern as above.  */
   else
     {
@@ -3668,8 +3610,7 @@
                      (match_operand:SI 2 "reg_or_int_operand" "")))]
   "TARGET_32BIT"
   "
-  if (!CONST_INT_P (operands[2])
-      && (TARGET_REALLY_IWMMXT || (TARGET_HARD_FLOAT && TARGET_MAVERICK)))
+  if (!CONST_INT_P (operands[2]) && TARGET_REALLY_IWMMXT)
     ; /* No special preparation statements; expand pattern as above.  */
   else
     {
@@ -4206,14 +4147,14 @@
 (define_expand "negsf2"
   [(set (match_operand:SF         0 "s_register_operand" "")
 	(neg:SF (match_operand:SF 1 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   ""
 )
 
 (define_expand "negdf2"
   [(set (match_operand:DF         0 "s_register_operand" "")
 	(neg:DF (match_operand:DF 1 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP_DOUBLE)"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
 
 ;; abssi2 doesn't really clobber the condition codes if a different register
@@ -4305,13 +4246,13 @@
 (define_expand "sqrtsf2"
   [(set (match_operand:SF 0 "s_register_operand" "")
 	(sqrt:SF (match_operand:SF 1 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "")
 
 (define_expand "sqrtdf2"
   [(set (match_operand:DF 0 "s_register_operand" "")
 	(sqrt:DF (match_operand:DF 1 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP_DOUBLE)"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
 
 (define_insn_and_split "one_cmpldi2"
@@ -4423,11 +4364,6 @@
 	(float:SF (match_operand:SI 1 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
   "
-  if (TARGET_MAVERICK)
-    {
-      emit_insn (gen_cirrus_floatsisf2 (operands[0], operands[1]));
-      DONE;
-    }
 ")
 
 (define_expand "floatsidf2"
@@ -4435,11 +4371,6 @@
 	(float:DF (match_operand:SI 1 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && !TARGET_VFP_SINGLE"
   "
-  if (TARGET_MAVERICK)
-    {
-      emit_insn (gen_cirrus_floatsidf2 (operands[0], operands[1]));
-      DONE;
-    }
 ")
 
 (define_expand "fix_trunchfsi2"
@@ -4471,15 +4402,6 @@
 	(fix:SI (fix:SF (match_operand:SF 1 "s_register_operand"  ""))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
   "
-  if (TARGET_MAVERICK)
-    {
-      if (!cirrus_fp_register (operands[0], SImode))
-        operands[0] = force_reg (SImode, operands[0]);
-      if (!cirrus_fp_register (operands[1], SFmode))
-        operands[1] = force_reg (SFmode, operands[0]);
-      emit_insn (gen_cirrus_truncsfsi2 (operands[0], operands[1]));
-      DONE;
-    }
 ")
 
 (define_expand "fix_truncdfsi2"
@@ -4487,13 +4409,6 @@
 	(fix:SI (fix:DF (match_operand:DF 1 "s_register_operand"  ""))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && !TARGET_VFP_SINGLE"
   "
-  if (TARGET_MAVERICK)
-    {
-      if (!cirrus_fp_register (operands[1], DFmode))
-        operands[1] = force_reg (DFmode, operands[0]);
-      emit_insn (gen_cirrus_truncdfsi2 (operands[0], operands[1]));
-      DONE;
-    }
 ")
 
 ;; Truncation insns
@@ -5347,7 +5262,7 @@
   [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, r, r, m")
 	(match_operand:DI 1 "di_operand"              "rDa,Db,Dc,mi,r"))]
   "TARGET_32BIT
-   && !(TARGET_HARD_FLOAT && (TARGET_MAVERICK || TARGET_VFP))
+   && !(TARGET_HARD_FLOAT && TARGET_VFP)
    && !TARGET_IWMMXT
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
@@ -5469,7 +5384,6 @@
   [(set (match_operand:DI 0 "nonimmediate_operand" "=l,l,l,l,>,l, m,*r")
 	(match_operand:DI 1 "general_operand"      "l, I,J,>,l,mi,l,*r"))]
   "TARGET_THUMB1
-   && !(TARGET_HARD_FLOAT && TARGET_MAVERICK)
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
   "*
@@ -6811,17 +6725,6 @@
    (set_attr "insn" "*,*,*,*,*,mov")
    (set_attr "pool_range" "*,*,*,1020,*,*")]
 )
-
-(define_expand "movxf"
-  [(set (match_operand:XF 0 "general_operand" "")
-	(match_operand:XF 1 "general_operand" ""))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPA"
-  "
-  if (GET_CODE (operands[0]) == MEM)
-    operands[1] = force_reg (XFmode, operands[1]);
-  "
-)
-
 
 
 ;; load- and store-multiple insns
@@ -7681,7 +7584,7 @@
 	(compare:CC_NCV (match_operand:DI 0 "s_register_operand" "r")
 			(match_operand:DI 1 "arm_di_operand"	   "rDi")))
    (clobber (match_scratch:SI 2 "=r"))]
-  "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_MAVERICK)"
+  "TARGET_32BIT"
   "cmp\\t%Q0, %Q1\;sbcs\\t%2, %R0, %R1"
   [(set_attr "conds" "set")
    (set_attr "length" "8")]
@@ -7716,38 +7619,6 @@
   "orr\\t%1, %Q0, %R0"
   [(set_attr "conds" "set")
    (set_attr "length" "2")]
-)
-
-;; Cirrus SF compare instruction
-(define_insn "*cirrus_cmpsf"
-  [(set (reg:CCFP CC_REGNUM)
-	(compare:CCFP (match_operand:SF 0 "cirrus_fp_register" "v")
-		      (match_operand:SF 1 "cirrus_fp_register" "v")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK"
-  "cfcmps%?\\tr15, %V0, %V1"
-  [(set_attr "type"   "mav_farith")
-   (set_attr "cirrus" "compare")]
-)
-
-;; Cirrus DF compare instruction
-(define_insn "*cirrus_cmpdf"
-  [(set (reg:CCFP CC_REGNUM)
-	(compare:CCFP (match_operand:DF 0 "cirrus_fp_register" "v")
-		      (match_operand:DF 1 "cirrus_fp_register" "v")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK"
-  "cfcmpd%?\\tr15, %V0, %V1"
-  [(set_attr "type"   "mav_farith")
-   (set_attr "cirrus" "compare")]
-)
-
-(define_insn "*cirrus_cmpdi"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_operand:DI 0 "cirrus_fp_register" "v")
-		    (match_operand:DI 1 "cirrus_fp_register" "v")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK"
-  "cfcmp64%?\\tr15, %V0, %V1"
-  [(set_attr "type"   "mav_farith")
-   (set_attr "cirrus" "compare")]
 )
 
 ; This insn allows redundant compares to be removed by cse, nothing should
@@ -8166,7 +8037,7 @@
   [(set (match_operand:SF 0 "s_register_operand" "")
 	(if_then_else:SF (match_operand 1 "expandable_comparison_operator" "")
 			 (match_operand:SF 2 "s_register_operand" "")
-			 (match_operand:SF 3 "arm_float_add_operand" "")))]
+			 (match_operand:SF 3 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
   "
   {
@@ -8188,8 +8059,8 @@
   [(set (match_operand:DF 0 "s_register_operand" "")
 	(if_then_else:DF (match_operand 1 "expandable_comparison_operator" "")
 			 (match_operand:DF 2 "s_register_operand" "")
-			 (match_operand:DF 3 "arm_float_add_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP_DOUBLE)"
+			 (match_operand:DF 3 "s_register_operand" "")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "
   {
     enum rtx_code code = GET_CODE (operands[1]);
@@ -10992,24 +10863,6 @@
   [(set_attr "length" "0")]
 )
 
-;; Similarly for the floating point registers
-(define_insn "*push_fp_multi"
-  [(match_parallel 2 "multi_register_push"
-    [(set (match_operand:BLK 0 "memory_operand" "=m")
-	  (unspec:BLK [(match_operand:XF 1 "f_register_operand" "")]
-		      UNSPEC_PUSH_MULT))])]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPA"
-  "*
-  {
-    char pattern[100];
-
-    sprintf (pattern, \"sfm%%(fd%%)\\t%%1, %d, [%%m0]!\", XVECLEN (operands[2], 0));
-    output_asm_insn (pattern, operands);
-    return \"\";
-  }"
-  [(set_attr "type" "f_fpa_store")]
-)
-
 ;; Special patterns for dealing with the constant pool
 
 (define_insn "align_4"
@@ -11441,10 +11294,6 @@
 
 ;; Load the load/store multiple patterns
 (include "ldmstm.md")
-;; Load the FPA co-processor patterns
-(include "fpa.md")
-;; Load the Maverick co-processor patterns
-(include "cirrus.md")
 ;; Vector bits common to IWMMXT and Neon
 (include "vec-common.md")
 ;; Load the Intel Wireless Multimedia Extension patterns

@@ -351,6 +351,16 @@ package body Prj.Attr is
    "SVvcs_log_check#" &
    "SVdocumentation_dir#" &
 
+   --  package Install
+
+   "Pinstall#" &
+   "SVprefix#" &
+   "SVsources_subdir#" &
+   "SVexec_subdir#" &
+   "SVlib_subdir#" &
+   "SVproject_subdir#" &
+   "SVactive#" &
+
    --  package Stack
 
    "Pstack#" &

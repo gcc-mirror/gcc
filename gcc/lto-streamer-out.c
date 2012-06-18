@@ -761,6 +761,7 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp_pack_value (&bp, fn->returns_pcc_struct, 1);
   bp_pack_value (&bp, fn->returns_struct, 1);
   bp_pack_value (&bp, fn->can_throw_non_call_exceptions, 1);
+  bp_pack_value (&bp, fn->can_delete_dead_exceptions, 1);
   bp_pack_value (&bp, fn->always_inline_functions_inlined, 1);
   bp_pack_value (&bp, fn->after_inlining, 1);
   bp_pack_value (&bp, fn->stdarg, 1);

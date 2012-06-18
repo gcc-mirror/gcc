@@ -4529,6 +4529,113 @@ label:
   emit_label_after (skip_neg_label, emit_insn (gen_negc (high_dst, high_src)));
   DONE;
 })
+
+(define_expand "bswapsi2"
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(bswap:SI (match_operand:SI 1 "arith_reg_operand" "")))]
+  "TARGET_SH1"
+{
+  if (! can_create_pseudo_p ())
+    FAIL;
+  else
+    {
+      rtx tmp0 = gen_reg_rtx (SImode);
+      rtx tmp1 = gen_reg_rtx (SImode);
+
+      emit_insn (gen_swapbsi2 (tmp0, operands[1]));
+      emit_insn (gen_rotlsi3_16 (tmp1, tmp0));
+      emit_insn (gen_swapbsi2 (operands[0], tmp1));
+      DONE;
+    }
+})
+
+(define_insn "swapbsi2"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ior:SI (and:SI (match_operand:SI 1 "arith_reg_operand" "r")
+			(const_int 4294901760))
+		(ior:SI (and:SI (ashift:SI (match_dup 1) (const_int 8))
+				(const_int 65280))
+			(and:SI (ashiftrt:SI (match_dup 1) (const_int 8))
+				(const_int 255)))))]
+  "TARGET_SH1"
+  "swap.b	%1,%0"
+  [(set_attr "type" "arith")])
+
+;; The *swapbisi2_and_shl8 pattern helps the combine pass simplifying
+;; partial byte swap expressions such as...
+;;   ((x & 0xFF) << 8) | ((x >> 8) & 0xFF).
+;; ...which are currently not handled by the tree optimizers.
+;; The combine pass will not initially try to combine the full expression,
+;; but only some sub-expressions.  In such a case the *swapbisi2_and_shl8
+;; pattern acts as an intermediate pattern that will eventually lead combine
+;; to the swapbsi2 pattern above.
+;; As a side effect this also improves code that does (x & 0xFF) << 8
+;; or (x << 8) & 0xFF00.
+(define_insn_and_split "*swapbisi2_and_shl8"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ior:SI (and:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand" "r")
+				   (const_int 8))
+			(const_int 65280))
+		(match_operand:SI 2 "arith_reg_operand" "r")))]
+  "TARGET_SH1 && ! reload_in_progress && ! reload_completed"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  rtx tmp0 = gen_reg_rtx (SImode);
+  rtx tmp1 = gen_reg_rtx (SImode);
+
+  emit_insn (gen_zero_extendqisi2 (tmp0, gen_lowpart (QImode, operands[1])));
+  emit_insn (gen_swapbsi2 (tmp1, tmp0));
+  emit_insn (gen_iorsi3 (operands[0], tmp1, operands[2]));
+  DONE;
+})
+
+;; The *swapbhisi2 pattern is, like the *swapbisi2_and_shl8 pattern, another
+;; intermediate pattern that will help the combine pass arriving at swapbsi2.
+(define_insn_and_split "*swapbhisi2"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ior:SI (and:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand" "r")
+				   (const_int 8))
+			(const_int 65280))
+		(zero_extract:SI (match_dup 1) (const_int 8) (const_int 8))))]
+  "TARGET_SH1 && ! reload_in_progress && ! reload_completed"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  rtx tmp = gen_reg_rtx (SImode);
+
+  emit_insn (gen_zero_extendhisi2 (tmp, gen_lowpart (HImode, operands[1])));
+  emit_insn (gen_swapbsi2 (operands[0], tmp));
+  DONE;
+})
+
+;; In some cases the swapbsi2 pattern might leave a sequence such as...
+;;   swap.b  r4,r4
+;;   mov     r4,r0
+;;
+;; which can be simplified to...
+;;   swap.b  r4,r0
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(ior:SI (and:SI (match_operand:SI 1 "arith_reg_operand" "")
+			(const_int 4294901760))
+		(ior:SI (and:SI (ashift:SI (match_dup 1) (const_int 8))
+				(const_int 65280))
+			(and:SI (ashiftrt:SI (match_dup 1) (const_int 8))
+				(const_int 255)))))
+   (set (match_operand:SI 2 "arith_reg_dest" "")
+	(match_dup 0))]
+  "TARGET_SH1 && peep2_reg_dead_p (2, operands[0])"
+  [(set (match_dup 2)
+	(ior:SI (and:SI (match_operand:SI 1 "arith_reg_operand" "")
+			(const_int 4294901760))
+		(ior:SI (and:SI (ashift:SI (match_dup 1) (const_int 8))
+				(const_int 65280))
+			(and:SI (ashiftrt:SI (match_dup 1) (const_int 8))
+				(const_int 255)))))])
+
 
 ;; -------------------------------------------------------------------------
 ;; Zero extension instructions
@@ -10329,6 +10436,9 @@ label:
   "fmul.s	%1, %2, %0"
   [(set_attr "type" "fparith_media")])
 
+;; FIXME: These fmac combine pass assisting specifics are obsolete since 
+;;	  we now use the FMA patterns, which do not depend on the combine
+;;	  pass anymore.
 ;; Unfortunately, the combiner is unable to cope with the USE of the FPSCR
 ;; register in feeding fp instructions.  Thus, in order to generate fmac,
 ;; we start out with a mulsf pattern that does not depend on fpscr.
@@ -10359,25 +10469,41 @@ label:
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
 
-(define_insn "mac_media"
-  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%f")
-			  (match_operand:SF 2 "fp_arith_reg_operand" "f"))
-		 (match_operand:SF 3 "fp_arith_reg_operand" "0")))]
-  "TARGET_SHMEDIA_FPU && TARGET_FMAC"
-  "fmac.s %1, %2, %0"
-  [(set_attr "type" "fparith_media")])
+;; FMA (fused multiply-add) patterns
+(define_expand "fmasf4"
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
+	(fma:SF (match_operand:SF 1 "fp_arith_reg_operand" "")
+		(match_operand:SF 2 "fp_arith_reg_operand" "")
+		(match_operand:SF 3 "fp_arith_reg_operand" "")))]
+  "TARGET_SH2E || TARGET_SHMEDIA_FPU"
+{
+  if (TARGET_SH2E)
+    {
+      emit_sf_insn (gen_fmasf4_i (operands[0], operands[1], operands[2],
+				  operands[3], get_fpscr_rtx ()));
+      DONE;
+    }
+})
 
-(define_insn "*macsf3"
+(define_insn "fmasf4_i"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%w")
-			  (match_operand:SF 2 "fp_arith_reg_operand" "f"))
-		 (match_operand:SF 3 "arith_reg_operand" "0")))
+	(fma:SF (match_operand:SF 1 "fp_arith_reg_operand" "w")
+		(match_operand:SF 2 "fp_arith_reg_operand" "f")
+		(match_operand:SF 3 "fp_arith_reg_operand" "0")))
    (use (match_operand:PSI 4 "fpscr_operand" "c"))]
-  "TARGET_SH2E && TARGET_FMAC"
-  "fmac	fr0,%2,%0"
+  "TARGET_SH2E"
+  "fmac	%1,%2,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
+
+(define_insn "fmasf4_media"
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(fma:SF (match_operand:SF 1 "fp_arith_reg_operand" "f")
+		(match_operand:SF 2 "fp_arith_reg_operand" "f")
+		(match_operand:SF 3 "fp_arith_reg_operand" "0")))]
+  "TARGET_SHMEDIA_FPU"
+  "fmac.s %1, %2, %0"
+  [(set_attr "type" "fparith_media")])
 
 (define_expand "divsf3"
   [(set (match_operand:SF 0 "arith_reg_operand" "")

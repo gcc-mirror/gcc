@@ -1161,3 +1161,124 @@ lv_add_condition_to_bb (basic_block first, basic_block second,
   gcc_assert (cfg_hooks->lv_add_condition_to_bb);
   cfg_hooks->lv_add_condition_to_bb (first, second, new_block, cond);
 }
+
+/* Checks whether all N blocks in BBS array can be copied.  */
+bool
+can_copy_bbs_p (basic_block *bbs, unsigned n)
+{
+  unsigned i;
+  edge e;
+  int ret = true;
+
+  for (i = 0; i < n; i++)
+    bbs[i]->flags |= BB_DUPLICATED;
+
+  for (i = 0; i < n; i++)
+    {
+      /* In case we should redirect abnormal edge during duplication, fail.  */
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
+	if ((e->flags & EDGE_ABNORMAL)
+	    && (e->dest->flags & BB_DUPLICATED))
+	  {
+	    ret = false;
+	    goto end;
+	  }
+
+      if (!can_duplicate_block_p (bbs[i]))
+	{
+	  ret = false;
+	  break;
+	}
+    }
+
+end:
+  for (i = 0; i < n; i++)
+    bbs[i]->flags &= ~BB_DUPLICATED;
+
+  return ret;
+}
+
+/* Duplicates N basic blocks stored in array BBS.  Newly created basic blocks
+   are placed into array NEW_BBS in the same order.  Edges from basic blocks
+   in BBS are also duplicated and copies of those of them
+   that lead into BBS are redirected to appropriate newly created block.  The
+   function assigns bbs into loops (copy of basic block bb is assigned to
+   bb->loop_father->copy loop, so this must be set up correctly in advance)
+   and updates dominators locally (LOOPS structure that contains the information
+   about dominators is passed to enable this).
+
+   BASE is the superloop to that basic block belongs; if its header or latch
+   is copied, we do not set the new blocks as header or latch.
+
+   Created copies of N_EDGES edges in array EDGES are stored in array NEW_EDGES,
+   also in the same order.
+
+   Newly created basic blocks are put after the basic block AFTER in the
+   instruction stream, and the order of the blocks in BBS array is preserved.  */
+
+void
+copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
+	  edge *edges, unsigned num_edges, edge *new_edges,
+	  struct loop *base, basic_block after)
+{
+  unsigned i, j;
+  basic_block bb, new_bb, dom_bb;
+  edge e;
+
+  /* Duplicate bbs, update dominators, assign bbs to loops.  */
+  for (i = 0; i < n; i++)
+    {
+      /* Duplicate.  */
+      bb = bbs[i];
+      new_bb = new_bbs[i] = duplicate_block (bb, NULL, after);
+      after = new_bb;
+      bb->flags |= BB_DUPLICATED;
+      /* Possibly set loop header.  */
+      if (bb->loop_father->header == bb && bb->loop_father != base)
+	new_bb->loop_father->header = new_bb;
+      /* Or latch.  */
+      if (bb->loop_father->latch == bb && bb->loop_father != base)
+	new_bb->loop_father->latch = new_bb;
+    }
+
+  /* Set dominators.  */
+  for (i = 0; i < n; i++)
+    {
+      bb = bbs[i];
+      new_bb = new_bbs[i];
+
+      dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+      if (dom_bb->flags & BB_DUPLICATED)
+	{
+	  dom_bb = get_bb_copy (dom_bb);
+	  set_immediate_dominator (CDI_DOMINATORS, new_bb, dom_bb);
+	}
+    }
+
+  /* Redirect edges.  */
+  for (j = 0; j < num_edges; j++)
+    new_edges[j] = NULL;
+  for (i = 0; i < n; i++)
+    {
+      edge_iterator ei;
+      new_bb = new_bbs[i];
+      bb = bbs[i];
+
+      FOR_EACH_EDGE (e, ei, new_bb->succs)
+	{
+	  for (j = 0; j < num_edges; j++)
+	    if (edges[j] && edges[j]->src == bb && edges[j]->dest == e->dest)
+	      new_edges[j] = e;
+
+	  if (!(e->dest->flags & BB_DUPLICATED))
+	    continue;
+	  redirect_edge_and_branch_force (e, get_bb_copy (e->dest));
+	}
+    }
+
+  /* Clear information about duplicates.  */
+  for (i = 0; i < n; i++)
+    bbs[i]->flags &= ~BB_DUPLICATED;
+}
+

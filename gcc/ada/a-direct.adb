@@ -31,20 +31,20 @@
 
 with Ada.Calendar;               use Ada.Calendar;
 with Ada.Calendar.Formatting;    use Ada.Calendar.Formatting;
+with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
-with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Fixed;
+with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
+with System;              use System;
 with System.CRTL;         use System.CRTL;
+with System.File_IO;      use System.File_IO;
 with System.OS_Constants; use System.OS_Constants;
 with System.OS_Lib;       use System.OS_Lib;
 with System.Regexp;       use System.Regexp;
-with System.File_IO;      use System.File_IO;
-with System;              use System;
 
 package body Ada.Directories is
 
@@ -56,6 +56,7 @@ package body Ada.Directories is
    --  opendir routine.
 
    No_Dir : constant Dir_Type_Value := Dir_Type_Value (Null_Address);
+   --  Null directory value
 
    Dir_Separator : constant Character;
    pragma Import (C, Dir_Separator, "__gnat_dir_separator");
@@ -232,13 +233,14 @@ package body Ada.Directories is
             elsif Norm = "/"
               or else
                 (Windows
-                 and then
-                   (Norm = "\"
-                    or else
-                      (Norm'Length = 3
-                        and then Norm (Norm'Last - 1 .. Norm'Last) = ":\"
-                        and then (Norm (Norm'First) in 'a' .. 'z'
-                                   or else Norm (Norm'First) in 'A' .. 'Z'))))
+                  and then
+                    (Norm = "\"
+                      or else
+                        (Norm'Length = 3
+                          and then Norm (Norm'Last - 1 .. Norm'Last) = ":\"
+                          and then (Norm (Norm'First) in 'a' .. 'z'
+                                     or else
+                                       Norm (Norm'First) in 'A' .. 'Z'))))
             then
                raise Use_Error with
                  "directory """ & Name & """ has no containing directory";
@@ -349,16 +351,12 @@ package body Ada.Directories is
 
                if V1 = 0 then
                   Mode := Overwrite;
-
                elsif Formstr (V1 .. V2) = "copy" then
                   Mode := Copy;
-
                elsif Formstr (V1 .. V2) = "overwrite" then
                   Mode := Overwrite;
-
                elsif Formstr (V1 .. V2) = "append" then
                   Mode := Append;
-
                else
                   raise Use_Error with "invalid Form";
                end if;
@@ -367,16 +365,12 @@ package body Ada.Directories is
 
                if V1 = 0 then
                   Preserve := None;
-
                elsif Formstr (V1 .. V2) = "timestamps" then
                   Preserve := Time_Stamps;
-
                elsif Formstr (V1 .. V2) = "all_attributes" then
                   Preserve := Full;
-
                elsif Formstr (V1 .. V2) = "no_attributes" then
                   Preserve := None;
-
                else
                   raise Use_Error with "invalid Form";
                end if;
@@ -535,10 +529,11 @@ package body Ada.Directories is
       elsif not Is_Directory (Directory) then
          raise Name_Error with '"' & Directory & """ not a directory";
 
+      --  Do the deletion, checking for error
+
       else
          declare
             C_Dir_Name : constant String := Directory & ASCII.NUL;
-
          begin
             if rmdir (C_Dir_Name) /= 0 then
                raise Use_Error with
@@ -561,7 +556,9 @@ package body Ada.Directories is
       if not Is_Valid_Path_Name (Name) then
          raise Name_Error with "invalid path name """ & Name & '"';
 
-      elsif not Is_Regular_File (Name) then
+      elsif not Is_Regular_File (Name)
+        and then not Is_Symbolic_Link (Name)
+      then
          raise Name_Error with "file """ & Name & """ does not exist";
 
       else
@@ -595,8 +592,8 @@ package body Ada.Directories is
 
       else
          Set_Directory (Directory);
-         Start_Search (Search, Directory => ".", Pattern => "");
 
+         Start_Search (Search, Directory => ".", Pattern => "");
          while More_Entries (Search) loop
             Get_Next_Entry (Search, Dir_Ent);
 
@@ -847,8 +844,8 @@ package body Ada.Directories is
          --  Use System.OS_Lib.Normalize_Pathname
 
          declare
-            --  We need to resolve links because of A.16(47), since we must not
-            --  return alternative names for files.
+            --  We need to resolve links because of (RM A.16(47)), which says
+            --  we must not return alternative names for files.
 
             Value : constant String := Normalize_Pathname (Name);
             subtype Result is String (1 .. Value'Length);
@@ -917,6 +914,8 @@ package body Ada.Directories is
 
       if not File_Exists (Name) then
          raise Name_Error with "file """ & Name & """ does not exist";
+
+      --  If OK, return appropriate kind
 
       elsif Is_Regular_File (Name) then
          return Ordinary_File;
@@ -1057,9 +1056,9 @@ package body Ada.Directories is
            "new name """ & New_Name
            & """ designates a file that already exists";
 
-      else
-         --  Do actual rename using System.OS_Lib.Rename_File
+      --  Do actual rename using System.OS_Lib.Rename_File
 
+      else
          Rename_File (Old_Name, New_Name, Success);
 
          if not Success then
@@ -1098,7 +1097,6 @@ package body Ada.Directories is
 
    begin
       Start_Search (Srch, Directory, Pattern, Filter);
-
       while More_Entries (Srch) loop
          Get_Next_Entry (Srch, Directory_Entry);
          Process (Directory_Entry);

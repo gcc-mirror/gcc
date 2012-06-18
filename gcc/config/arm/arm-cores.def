@@ -1,5 +1,5 @@
 /* ARM CPU Cores
-   Copyright (C) 2003, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2005, 2006, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Written by CodeSourcery, LLC
 
@@ -105,7 +105,7 @@ ARM_CORE("arm1020e",      arm1020e,	5TE,				 FL_LDSCHED, fastmul)
 ARM_CORE("arm1022e",      arm1022e,	5TE,				 FL_LDSCHED, fastmul)
 ARM_CORE("xscale",        xscale,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE, xscale)
 ARM_CORE("iwmmxt",        iwmmxt,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_IWMMXT, xscale)
-ARM_CORE("iwmmxt2",       iwmmxt2,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_IWMMXT, xscale)
+ARM_CORE("iwmmxt2",       iwmmxt2,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_IWMMXT | FL_IWMMXT2, xscale)
 ARM_CORE("fa606te",       fa606te,      5TE,                             FL_LDSCHED, 9e)
 ARM_CORE("fa626te",       fa626te,      5TE,                             FL_LDSCHED, 9e)
 ARM_CORE("fmp626",        fmp626,       5TE,                             FL_LDSCHED, 9e)

@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-pass.h"
 #include "insn-config.h"
-#include "recog.h"
 #include "hashtab.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
@@ -47,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
    between the GIMPLE and RTL worlds.  */
 #include "expr.h"
 #include "optabs.h"
+#include "recog.h"
 
 /* This pass inserts prefetch instructions to optimize cache usage during
    accesses to arrays in loops.  It processes loops sequentially and:

@@ -7179,11 +7179,23 @@ package body Exp_Util is
             --  transients declared inside an Expression_With_Actions.
 
             elsif Is_Access_Type (Obj_Typ)
-              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
-              and then Nkind (Return_Flag_Or_Transient_Decl (Obj_Id)) =
-                         N_Object_Declaration
+              and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
+              and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
+                                                      N_Object_Declaration
               and then Is_Finalizable_Transient
-                         (Return_Flag_Or_Transient_Decl (Obj_Id), Decl)
+                         (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
+            then
+               return True;
+
+            --  Processing for intermediate results of conditional expressions
+            --  where one of the alternatives uses a controlled function call.
+
+            elsif Is_Access_Type (Obj_Typ)
+              and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
+              and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
+                         N_Defining_Identifier
+              and then Present (Expr)
+              and then Nkind (Expr) = N_Null
             then
                return True;
 
@@ -7218,7 +7230,7 @@ package body Exp_Util is
 
             elsif Needs_Finalization (Obj_Typ)
               and then Is_Return_Object (Obj_Id)
-              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
+              and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
             then
                return True;
 

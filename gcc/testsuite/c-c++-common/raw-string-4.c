@@ -3,16 +3,16 @@
 // { dg-options "-std=gnu99" { target c } }
 // { dg-options "-std=c++0x" { target c++ } }
 
-const int	i0	= R'a';	// { dg-error "was not declared|undeclared" }
-		// { dg-error "expected ',' or ';'" "" { target c } 6 }
-const int	i1	= uR'a';	// { dg-error "was not declared|undeclared" }
-		// { dg-error "expected ',' or ';'" "" { target c } 8 }
-const int	i2	= UR'a';	// { dg-error "was not declared|undeclared" }
-		// { dg-error "expected ',' or ';'" "" { target c } 10 }
-const int	i3	= u8R'a';	// { dg-error "was not declared|undeclared" }
-		// { dg-error "expected ',' or ';'" "" { target c } 12 }
-const int	i4	= LR'a';	// { dg-error "was not declared|undeclared" }
-		// { dg-error "expected ',' or ';'" "" { target c } 14 }
+const int	i0	= R'a';	// { dg-error "was not declared|undeclared" "undeclared" }
+		// { dg-error "expected ',' or ';'" "expected" { target c } 6 }
+const int	i1	= uR'a';	// { dg-error "was not declared|undeclared" "undeclared" }
+		// { dg-error "expected ',' or ';'" "expected" { target c } 8 }
+const int	i2	= UR'a';	// { dg-error "was not declared|undeclared" "undeclared" }
+		// { dg-error "expected ',' or ';'" "expected" { target c } 10 }
+const int	i3	= u8R'a';	// { dg-error "was not declared|undeclared" "undeclared" }
+		// { dg-error "expected ',' or ';'" "expected" { target c } 12 }
+const int	i4	= LR'a';	// { dg-error "was not declared|undeclared" "undeclared" }
+		// { dg-error "expected ',' or ';'" "expected" { target c } 14 }
 
 #define R	1 +
 #define uR	2 +

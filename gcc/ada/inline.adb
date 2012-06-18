@@ -229,7 +229,13 @@ package body Inline is
 
    procedure Add_Inlined_Body (E : Entity_Id) is
 
-      function Must_Inline return Boolean;
+      type Inline_Level_Type is (Dont_Inline, Inline_Call, Inline_Package);
+      --  Level of inlining for the call: Dont_Inline means no inlining,
+      --  Inline_Call means that only the call is considered for inlining,
+      --  Inline_Package means that the call is considered for inlining and
+      --  its package compiled and scanned for more inlining opportunities.
+
+      function Must_Inline return Inline_Level_Type;
       --  Inlining is only done if the call statement N is in the main unit,
       --  or within the body of another inlined subprogram.
 
@@ -237,7 +243,7 @@ package body Inline is
       -- Must_Inline --
       -----------------
 
-      function Must_Inline return Boolean is
+      function Must_Inline return Inline_Level_Type is
          Scop : Entity_Id;
          Comp : Node_Id;
 
@@ -251,7 +257,7 @@ package body Inline is
          --  trouble to try to inline at this level.
 
          if Scop = Standard_Standard then
-            return False;
+            return Dont_Inline;
          end if;
 
          --  Otherwise lookup scope stack to outer scope
@@ -267,14 +273,19 @@ package body Inline is
             Comp := Parent (Comp);
          end loop;
 
+         --  If the call is in the main unit, inline the call and compile the
+         --  package of the subprogram to find more calls to be inlined.
+
          if Comp = Cunit (Main_Unit)
            or else Comp = Library_Unit (Cunit (Main_Unit))
          then
             Add_Call (E);
-            return True;
+            return Inline_Package;
          end if;
 
-         --  Call is not in main unit. See if it's in some inlined subprogram
+         --  The call is not in the main unit. See if it is in some inlined
+         --  subprogram. If so, inline the call and, if the inlining level is
+         --  set to 1, stop there; otherwise also compile the package as above.
 
          Scop := Current_Scope;
          while Scope (Scop) /= Standard_Standard
@@ -284,14 +295,21 @@ package body Inline is
               and then Is_Inlined (Scop)
             then
                Add_Call (E, Scop);
-               return True;
+
+               if Inline_Level = 1 then
+                  return Inline_Call;
+               else
+                  return Inline_Package;
+               end if;
             end if;
 
             Scop := Scope (Scop);
          end loop;
 
-         return False;
+         return Dont_Inline;
       end Must_Inline;
+
+      Level : Inline_Level_Type;
 
    --  Start of processing for Add_Inlined_Body
 
@@ -309,11 +327,15 @@ package body Inline is
       --  no enclosing package to retrieve. In this case, it is the body of
       --  the function that will have to be loaded.
 
-      if not Is_Abstract_Subprogram (E)
-        and then not Is_Nested (E)
-        and then Convention (E) /= Convention_Protected
-        and then Must_Inline
+      if Is_Abstract_Subprogram (E)
+        or else Is_Nested (E)
+        or else Convention (E) = Convention_Protected
       then
+         return;
+      end if;
+
+      Level := Must_Inline;
+      if Level /= Dont_Inline then
          declare
             Pack : constant Entity_Id := Get_Code_Unit_Entity (E);
 
@@ -339,7 +361,8 @@ package body Inline is
                --  declares the type, and that body is visible to the back end.
                --  Do not inline it either if it is in the main unit.
 
-               elsif not Is_Inlined (Pack)
+               elsif Level = Inline_Package
+                 and then not Is_Inlined (Pack)
                  and then Comes_From_Source (E)
                  and then not In_Main_Unit_Or_Subunit (Pack)
                then

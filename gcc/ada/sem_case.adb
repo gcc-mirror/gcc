@@ -159,6 +159,15 @@ package body Sem_Case is
          Msg_Sloc : constant Source_Ptr := Sloc (Case_Node);
 
       begin
+         --  AI05-0188 : within an instance the non-others choices do not
+         --  have to belong to the actual subtype.
+
+         if Ada_Version >= Ada_2012
+           and then In_Instance
+         then
+            return;
+         end if;
+
          --  In some situations, we call this with a null range, and
          --  obviously we don't want to complain in this case!
 
@@ -716,6 +725,14 @@ package body Sem_Case is
               or else Raises_Constraint_Error (Hi)
             then
                Raises_CE := True;
+               return;
+
+            --  AI05-0188 : within an instance the non-others choices do not
+            --  have to belong to the actual subtype.
+
+            elsif Ada_Version >= Ada_2012
+              and then In_Instance
+            then
                return;
 
             --  Otherwise we have an OK static choice

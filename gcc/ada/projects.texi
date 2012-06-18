@@ -226,6 +226,7 @@ should contain the following code:
 * Executable File Names::
 * Avoid Duplication With Variables::
 * Naming Schemes::
+* Installation::
 @end menu
 
 @c ---------------------------------------------
@@ -1024,6 +1025,54 @@ names in lower case)
 @end ifset
 
 @c ---------------------------------------------
+@node Installation
+@subsection Installation
+@c ---------------------------------------------
+
+@noindent
+After building an application or a library it is often required to
+install it into the development environment. This installation is
+required if the library is to be used by another application for
+example. The @code{gprinstall} tool provide an easy way to install
+libraries, executable or object code generated durting the build. The
+@b{Install} package can be used to change the default locations.
+
+The following attributes can be defined in package @code{Install}:
+
+@table @asis
+
+@item @b{Active}
+
+Whether the project is to be installed, values are @code{true}
+(default) or @code{false}.
+
+@item @b{Prefix}:
+@cindex @code{Prefix}
+
+Root directory for the installation.
+
+@item @b{Exec_Subdir}
+
+Subdirectory of @b{Prefix} where executables are to be
+installed. Default is @b{bin}.
+
+@item @b{Lib_Subdir}
+
+Subdirectory of @b{Prefix} where directory with the library or object
+files is to be installed. Default is @b{lib}.
+
+@item @b{Sources_Subdir}
+
+Subdirectory of @b{Prefix} where directory with sources is to be
+installed. Default is @b{include}.
+
+@item @b{Project_Subdir}
+
+Subdirectory of @b{Prefix} where the installed project is to be
+installed. Default is @b{share/gpr}.
+@end table
+
+@c ---------------------------------------------
 @node Organizing Projects into Subsystems
 @section Organizing Projects into Subsystems
 @c ---------------------------------------------
@@ -1339,7 +1388,7 @@ Here is a list of commonly used global attributes:
 @cindex @code{Global_Configuration_Pragmas}
   This attribute points to a file that contains configuration pragmas
   to use when building executables. These pragmas apply for all
-  executables build from this project hierarchy. As we have seen before,
+  executables built from this project hierarchy. As we have seen before,
   additional pragmas can be specified on a per-project basis by setting the
   @code{Compiler.Local_Configuration_Pragmas} attribute.
 
@@ -1565,7 +1614,7 @@ Other library-related attributes can be used to change the defaults:
 @cindex @code{Library_Kind}
   The value of this attribute must be either @code{"static"}, @code{"dynamic"} or
   @code{"relocatable"} (the latter is a synonym for dynamic). It indicates
-  which kind of library should be build (the default is to build a
+  which kind of library should be built (the default is to build a
   static library, that is an archive of object files that can potentially
   be linked into a static executable). When the library is set to be dynamic,
   a separate image is created that will be loaded independently, usually
@@ -1580,7 +1629,7 @@ Other library-related attributes can be used to change the defaults:
   use two different object directories, since in some cases some extra code
   needs to be generated for the latter. For such cases, one can
   either define two different project files, or a single one which uses scenarios
-  to indicate at the various kinds of library to be build and their
+  to indicate the various kinds of library to be built and their
   corresponding object_dir.
 
 @cindex @code{Library_ALI_Dir}
@@ -1937,7 +1986,7 @@ During development of a large system, it is sometimes necessary to use
 modified versions of some of the source files, without changing the original
 sources. This can be achieved through the @b{project extension} facility.
 
-Suppose for instance that our example @code{Build} project is build every night
+Suppose for instance that our example @code{Build} project is built every night
 for the whole team, in some shared directory. A developer usually need to work
 on a small part of the system, and might not want to have a copy of all the
 sources and all the object files (mostly because that would require too much
@@ -2169,7 +2218,7 @@ impacted by the changes in @code{A1} and @code{C1}.
 Aggregate projects are an extension of the project paradigm, and are
 meant to solve a few specific use cases that cannot be solved directly
 using standard projects. This section will go over a few of these use
-cases to try and explain what you can use aggregate projects for.
+cases to try to explain what you can use aggregate projects for.
 
 @menu
 * Building all main programs from a single project tree::
@@ -2205,11 +2254,11 @@ this will only rebuild the main programs of project A, not those of the
 imported projects B and C. Therefore you have to spawn several
 gnatmake commands, one per project, to build all executables.
 This is a little inconvenient, but more importantly is inefficient
-(since gnatmake needs to do duplicate work to ensure that sources are
+because gnatmake needs to do duplicate work to ensure that sources are
 up-to-date, and cannot easily compile things in parallel when using
-the -j switch).
+the -j switch.
 
-Also libraries are always rebuild when building a project.
+Also libraries are always rebuilt when building a project.
 
 You could therefore define an aggregate project Agg that groups A, B
 and C. Then, when you build with
@@ -2227,9 +2276,9 @@ this will build all mains from A, B and C.
 @end smallexample
 
 If B or C do not define any main program (through their Main
-attribute), all their sources are build. When you do not group them
+attribute), all their sources are built. When you do not group them
 in the aggregate project, only those sources that are needed by A
-will be build.
+will be built.
 
 If you add a main to a project P not already explicitly referenced in the
 aggregate project, you will need to add "p.gpr" in the list of project
@@ -2242,7 +2291,7 @@ building the aggregate project.
 @c ---------------------------------------------------------
 
 One other case is when you have multiple applications and libraries
-that are build independently from each other (but they can be build in
+that are built independently from each other (but can be built in
 parallel). For instance, you have a project tree rooted at A, and
 another one (which might share some subprojects) rooted at B.
 
@@ -2262,21 +2311,13 @@ than through a common subproject, and have no source files with a
 common basename, you could create a project C that imports A and
 B. But these restrictions are often too strong, and one has to build
 them independently. An aggregate project does not have these
-limitations, and can aggregate two project trees that have common
+limitations and can aggregate two project trees that have common
 sources.
 
-@smallexample
-Aggregate projects can group projects with duplicate file names
-@end smallexample
-
-This scenario is particularly useful in environment like VxWork 653
-where the applications running in the multiple partitions can be build
+This scenario is particularly useful in environments like VxWorks 653
+where the applications running in the multiple partitions can be built
 in parallel through a single gprbuild command. This also works nicely
 with Annex E.
-
-@smallexample
-   Aggregate projects can be used to build multiple partitions
-@end smallexample
 
 @c ---------------------------------------------
 @node Define a build environment
@@ -2293,7 +2334,7 @@ with some projects, this might make the command line too long, and on
 all systems often make it hard to read.
 
 An aggregate project can be used to set the environment for all
-projects build through that aggregate. One of the nice aspects is that
+projects built through that aggregate. One of the nice aspects is that
 you can put the aggregate project under configuration management, and
 make sure all your user have a consistent environment when
 building. The syntax looks like
@@ -2547,7 +2588,7 @@ project (i.e. the one specified on the command line to gprbuild or
 natmake), and ignored in other aggregate projects. It is invalid
 in standard projects.
 The goal is to have a consistent value in all
-projects that are build through the aggregate, which would not
+projects that are built through the aggregate, which would not
 be the case in the diamond case: A groups the aggregate
 projects B and C, which both (either directly or indirectly)
 build the project P. If B and C could set different values for
@@ -2675,7 +2716,7 @@ Projects can locally add to those by using the
 
 @end table
 
-For projects that are build through the aggregate, the package Builder
+For projects that are built through the aggregate, the package Builder
 is ignored, except for the Executable attribute which specifies the
 name of the executables resulting from the link of the main programs, and
 for the Executable_Suffix.
@@ -3047,6 +3088,9 @@ The following packages are currently supported in project files
   This package specifies the options used when starting an integrated
   development environment, for instance @command{GPS} or @command{Gnatbench}.
   @xref{The Development Environments}.
+@item Install
+  This package specifies the options used when installing a project
+  with @command{gprinstall}. @xref{Installation}.
 @item Linker
   This package specifies the options used by the linker.
   @xref{Main Subprograms}.

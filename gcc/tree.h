@@ -5371,6 +5371,12 @@ extern void expand_return (tree);
 /* In tree-eh.c */
 extern void using_eh_for_cleanups (void);
 
+extern bool tree_could_trap_p (tree);
+extern bool operation_could_trap_helper_p (enum tree_code, bool, bool, bool,
+					   bool, tree, bool *);
+extern bool operation_could_trap_p (enum tree_code, bool, bool, tree);
+extern bool tree_could_throw_p (tree);
+
 /* Compare and hash for any structure which begins with a canonical
    pointer.  Assumes all pointers are interchangeable, which is sort
    of already assumed by gcc elsewhere IIRC.  */
@@ -5861,6 +5867,13 @@ extern tree initializer_constant_valid_p (tree, tree);
    for use in initializing a static bit-field; one that can be
    an element of a "constant" initializer.  */
 extern bool initializer_constant_valid_for_bitfield_p (tree);
+
+/* Whether a constructor CTOR is a valid static constant initializer if all
+   its elements are.  This used to be internal to initializer_constant_valid_p
+   and has been exposed to let other functions like categorize_ctor_elements
+   evaluate the property while walking a constructor for other purposes.  */
+
+extern bool constructor_static_from_elts_p (const_tree);
 
 /* In stmt.c */
 extern void expand_computed_goto (tree);

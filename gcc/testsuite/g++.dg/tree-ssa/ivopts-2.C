@@ -7,5 +7,5 @@ void test (int *b, int *e, int stride)
       *p = 1;
   }
 
-/* { dg-final { scan-tree-dump-times "PHI <p" 1 "ivopts"} } */
+/* { dg-final { scan-tree-dump-times "PHI <\[pb\]" 1 "ivopts"} } */
 /* { dg-final { cleanup-tree-dump "ivopts" } } */

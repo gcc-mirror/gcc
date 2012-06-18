@@ -1,7 +1,7 @@
 /* PR c/44517: Improve diagnostic for misspelled typename in function declaration. */
 int f1(int x, pid_t y, long z, in t) {
-/* { dg-error "unknown type name 'pid_t'" "" { target *-*-* } 2 } */
-/* { dg-error "unknown type name 'in'" "" { target *-*-* } 2 } */
+/* { dg-error "unknown type name 'pid_t'" "pid_t" { target *-*-* } 2 } */
+/* { dg-error "unknown type name 'in'" "in" { target *-*-* } 2 } */
   return x + y + z + t;
 }
 

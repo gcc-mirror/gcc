@@ -51,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "hashtab.h"
 #include "langhooks.h"
-#include "cfglayout.h"
 #include "gimple.h"
 #include "intl.h"
 #include "df.h"

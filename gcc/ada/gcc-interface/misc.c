@@ -167,6 +167,9 @@ gnat_init_options_struct (struct gcc_options *opts)
 {
   /* Uninitialized really means uninitialized in Ada.  */
   opts->x_flag_zero_initialized_in_bss = 0;
+
+  /* We can delete dead instructions that may throw exceptions in Ada.  */
+  opts->x_flag_delete_dead_exceptions = 1;
 }
 
 /* Initialize for option processing.  */

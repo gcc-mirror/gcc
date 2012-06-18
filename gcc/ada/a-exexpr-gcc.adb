@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,6 +108,15 @@ package body Exception_Propagation is
       Cleanup  : System.Address;
       Private1 : Unwind_Word;
       Private2 : Unwind_Word;
+
+      --  Usual exception structure has only two private fields, but the SEH
+      --  one has six. To avoid makeing this file more complex, we use six
+      --  fields on all platforms, wasting a few bytes on some.
+
+      Private3 : Unwind_Word;
+      Private4 : Unwind_Word;
+      Private5 : Unwind_Word;
+      Private6 : Unwind_Word;
    end record;
    pragma Convention (C, Unwind_Exception);
    --  Map the GCC struct used for exception handling
@@ -473,10 +482,9 @@ package body Exception_Propagation is
 
       GCC_Exception :=
         new GNAT_GCC_Exception'
-          (Header     => (Class => GNAT_Exception_Class,
+          (Header     => (Class   => GNAT_Exception_Class,
                           Cleanup => GNAT_GCC_Exception_Cleanup'Address,
-                          Private1 => 0,
-                          Private2 => 0),
+                          others  => 0),
            Occurrence => Excep.all);
 
       --  Propagate it

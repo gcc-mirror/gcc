@@ -8,8 +8,8 @@ class tuple3;
 template<typename T1, typename T2, typename... Rest>
 struct two_or_more {}; // { dg-error "provided for" }
 
-typedef two_or_more<int> bad; // { dg-error "2 or more" }
-// { dg-error "invalid type" "" { target *-*-* } 11 }
+typedef two_or_more<int> bad; // { dg-error "2 or more" "2 or more" }
+// { dg-error "invalid type" "invalid type" { target *-*-* } 11 }
 
 void f()
 {

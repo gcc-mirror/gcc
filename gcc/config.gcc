@@ -245,18 +245,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- # Avoid special cases that are not obsolete
-   arm*-*-*eabi*			\
- )
-     ;;
-   arm*-*-ecos-elf			\
- | arm*-*-elf				\
- | arm*-*-freebsd*			\
- | arm*-*-linux*			\
- | arm*-*-rtems*			\
- | arm*-*-uclinux*			\
- | arm*-wince-pe*			\
- | score-*				\
+   score-*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -271,7 +260,18 @@ esac
 # it would otherwise be caught by a more permissive pattern.  The list
 # should be in alphabetical order.
 case ${target} in
-   i[34567]86-go32-*			\
+ # Avoid special cases that are not obsolete
+   arm*-*-*eabi*			\
+ )
+	;;
+   arm*-wince-pe*			\
+ | arm*-*-ecos-elf			\
+ | arm*-*-elf				\
+ | arm*-*-freebsd*			\
+ | arm*-*-linux*			\
+ | arm*-*-rtems*			\
+ | arm*-*-uclinux*			\
+ | i[34567]86-go32-*			\
  | i[34567]86-*-go32*			\
  | m68k-*-uclinuxoldabi*		\
  | mips64orion*-*-rtems*		\
@@ -449,6 +449,7 @@ s390*-*-*)
 sh[123456789lbe]*-*-* | sh-*-*)
 	cpu_type=sh
 	need_64bit_hwint=yes
+	extra_options="${extra_options} fused-madd.opt"
 	;;
 v850*-*-*)
 	cpu_type=v850
@@ -817,66 +818,44 @@ arm-wrs-vxworks)
 	extra_options="${extra_options} arm/vxworks.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
 	;;
-arm*-*-freebsd*)
-	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h arm/aout.h arm/freebsd.h arm/arm.h"
-	tmake_file="${tmake_file} arm/t-arm arm/t-strongarm-elf"
-	;;
 arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h arm/arm.h arm/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} arm/t-arm"
 	;;
-arm*-*-linux*)			# ARM GNU/Linux with ELF
+arm*-*-linux-*eabi*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
 	case $target in
 	arm*b-*-linux*)
-		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
-		;;
+	    tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+	    ;;
 	esac
-	tmake_file="${tmake_file} arm/t-arm"
+	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
+	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h arm/arm.h"
+	# Define multilib configuration for arm-linux-androideabi.
 	case ${target} in
-	arm*-*-linux-*eabi)
-	    tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h"
-	    tmake_file="$tmake_file arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
-	    # Define multilib configuration for arm-linux-androideabi.
-	    case ${target} in
-	    *-androideabi)
-		tmake_file="$tmake_file arm/t-linux-androideabi"
-		;;
-	    esac
-  	    # The BPABI long long divmod functions return a 128-bit value in
-	    # registers r0-r3.  Correctly modeling that requires the use of
-	    # TImode.
-	    need_64bit_hwint=yes
-	    # The EABI requires the use of __cxa_atexit.
-	    default_use_cxa_atexit=yes
-	    ;;
-	*)
-	    tmake_file="$tmake_file arm/t-linux"
+	*-androideabi)
+	    tmake_file="$tmake_file arm/t-linux-androideabi"
 	    ;;
 	esac
+  	# The BPABI long long divmod functions return a 128-bit value in
+	# registers r0-r3.  Correctly modeling that requires the use of
+	# TImode.
+	need_64bit_hwint=yes
+	# The EABI requires the use of __cxa_atexit.
+	default_use_cxa_atexit=yes
 	with_tls=${with_tls:-gnu}
-	tm_file="$tm_file arm/aout.h arm/arm.h"
 	;;
-arm*-*-uclinux*)		# ARM ucLinux
+arm*-*-uclinux*eabi*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h glibc-stdint.h"
-	tmake_file="arm/t-arm arm/t-arm-elf"
-	case ${target} in
-	arm*-*-uclinux*eabi)
-	    tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h"
-	    tmake_file="$tmake_file arm/t-bpabi"
-  	    # The BPABI long long divmod functions return a 128-bit value in
-	    # registers r0-r3.  Correctly modeling that requires the use of
-	    # TImode.
-	    need_64bit_hwint=yes
-	    # The EABI requires the use of __cxa_atexit.
-	    default_use_cxa_atexit=yes
-	esac
-	tm_file="$tm_file arm/aout.h arm/arm.h"
-	;;
-arm*-*-ecos-elf)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/ecos-elf.h"
-	tmake_file="arm/t-arm arm/t-arm-elf"
+	tmake_file="arm/t-arm arm/t-arm-elf arm/t-bpabi"
+	tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h arm/aout.h arm/arm.h"
+	# The BPABI long long divmod functions return a 128-bit value in
+	# registers r0-r3.  Correctly modeling that requires the use of
+	# TImode.
+	need_64bit_hwint=yes
+	# The EABI requires the use of __cxa_atexit.
+	default_use_cxa_atexit=yes
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
 	# The BPABI long long divmod functions return a 128-bit value in
@@ -904,20 +883,6 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
 	  ;;
 	esac
 	tm_file="${tm_file} arm/aout.h arm/arm.h"
-	;;
-arm*-*-rtems*)
-	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/rtems-elf.h rtems.h newlib-stdint.h"
-	tmake_file="arm/t-arm arm/t-arm-elf t-rtems arm/t-rtems"
-	;;
-arm*-*-elf)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
-	tmake_file="arm/t-arm arm/t-arm-elf"
-	;;
-arm*-wince-pe*)
-	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h arm/pe.h arm/wince-pe.h"
-	tmake_file="arm/t-arm arm/t-wince-pe"
-	extra_options="${extra_options} arm/pe.opt"
-	extra_objs="pe.o"
 	;;
 avr-*-rtems*)
 	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
@@ -3046,14 +3011,6 @@ case "${target}" in
 		| vfpv3xd-fp16 | neon | neon-fp16 | vfpv4 | vfpv4-d16 \
 		| fpv4-sp-d16 | neon-vfpv4)
 			# OK
-			;;
-		fpa | fpe2 | fpe3 | maverick)
-    			if test "x$enable_obsolete" != xyes; then
-			    echo "*** Configuration option --with-fpu=${with_fpu} is obsolete." >&2
-			    echo "*** Specify --enable-obsolete to build it anyway." >&2
-      			    echo "*** Support will be REMOVED in the next major release of GCC." >&2
-      			    exit 1
-			fi
 			;;
 		*)
 			echo "Unknown fpu used in --with-fpu=$with_fpu" 2>&1

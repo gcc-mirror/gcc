@@ -116,13 +116,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // matches a recursive mutex with a member 'actual'
     template<typename _Rm>
-      static typename enable_if<sizeof(&_Rm::actual), void>::type
+      static typename enable_if<(bool)sizeof(&_Rm::actual), void>::type
       _S_destroy(_Rm* __mx)
       { __gthread_mutex_destroy(&__mx->actual); }
 
     // matches a gthr-win32.h recursive mutex
     template<typename _Rm>
-      static typename enable_if<sizeof(&_Rm::sema), void>::type
+      static typename enable_if<(bool)sizeof(&_Rm::sema), void>::type
       _S_destroy(_Rm* __mx)
       {
         __gthread_mutex_t __tmp;

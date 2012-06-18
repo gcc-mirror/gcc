@@ -2215,6 +2215,14 @@ package body Sem_Attr is
            Attribute_Variable_Indexing    =>
          Error_Msg_N ("illegal attribute", N);
 
+      --  Attributes related to Ada 2012 aspects. Attribute definition clause
+      --  exists for these, but they cannot be queried.
+
+      when Attribute_CPU                |
+           Attribute_Dispatching_Domain |
+           Attribute_Interrupt_Priority =>
+         Error_Msg_N ("illegal attribute", N);
+
       ------------------
       -- Abort_Signal --
       ------------------
@@ -3561,6 +3569,19 @@ package body Sem_Attr is
          Check_Array_Type;
          Set_Etype (N, Universal_Integer);
 
+      ---------------
+      -- Lock_Free --
+      ---------------
+
+      when Attribute_Lock_Free =>
+         Check_E0;
+         Set_Etype (N, Standard_Boolean);
+
+         if not Is_Protected_Type (P_Type) then
+            Error_Attr_P
+              ("prefix of % attribute must be a protected object");
+         end if;
+
       -------------
       -- Machine --
       -------------
@@ -3849,8 +3870,7 @@ package body Sem_Attr is
 
          --  Case of attribute used as actual for subprogram (positional)
 
-         elsif Nkind_In (Parnt, N_Procedure_Call_Statement,
-                                N_Function_Call)
+         elsif Nkind (Parnt) in N_Subprogram_Call
             and then Is_Entity_Name (Name (Parnt))
          then
             Must_Be_Imported (Entity (Name (Parnt)));
@@ -3858,8 +3878,7 @@ package body Sem_Attr is
          --  Case of attribute used as actual for subprogram (named)
 
          elsif Nkind (Parnt) = N_Parameter_Association
-           and then Nkind_In (GParnt, N_Procedure_Call_Statement,
-                                      N_Function_Call)
+           and then Nkind (GParnt) in N_Subprogram_Call
            and then Is_Entity_Name (Name (GParnt))
          then
             Must_Be_Imported (Entity (Name (GParnt)));
@@ -6288,11 +6307,17 @@ package body Sem_Attr is
 
          --  Attributes related to Ada 2012 iterators (placeholder ???)
 
-         when Attribute_Constant_Indexing    => null;
-         when Attribute_Default_Iterator     => null;
-         when Attribute_Implicit_Dereference => null;
-         when Attribute_Iterator_Element     => null;
-         when Attribute_Variable_Indexing    => null;
+         when Attribute_Constant_Indexing    |
+              Attribute_Default_Iterator     |
+              Attribute_Implicit_Dereference |
+              Attribute_Iterator_Element     |
+              Attribute_Variable_Indexing    => null;
+
+         --  Atributes related to Ada 2012 aspects
+
+         when Attribute_CPU                |
+              Attribute_Dispatching_Domain |
+              Attribute_Interrupt_Priority => null;
 
       --------------
       -- Adjacent --
@@ -6754,6 +6779,15 @@ package body Sem_Attr is
               Ureal_2 ** (4 * Mantissa) * (Ureal_1 - Ureal_2 ** (-Mantissa)),
               True);
          end if;
+
+      ---------------
+      -- Lock_Free --
+      ---------------
+
+      --  Lock_Free attribute is a Boolean, thus no need to fold here.
+
+      when Attribute_Lock_Free =>
+         null;
 
       ----------
       -- Last --

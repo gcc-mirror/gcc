@@ -599,7 +599,6 @@ static void invalidate_from_clobbers (rtx);
 static void invalidate_from_sets_and_clobbers (rtx);
 static rtx cse_process_notes (rtx, rtx, bool *);
 static void cse_extended_basic_block (struct cse_basic_block_data *);
-static void count_reg_usage (rtx, int *, rtx, int);
 static int check_for_label_ref (rtx *, void *);
 extern void dump_class (struct table_elt*);
 static void get_cse_reg_info_1 (unsigned int regno);
@@ -6692,10 +6691,11 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
     case CALL_INSN:
     case INSN:
     case JUMP_INSN:
-      /* We expect dest to be NULL_RTX here.  If the insn may trap,
+      /* We expect dest to be NULL_RTX here.  If the insn may throw,
 	 or if it cannot be deleted due to side-effects, mark this fact
 	 by setting DEST to pc_rtx.  */
-      if (insn_could_throw_p (x) || side_effects_p (PATTERN (x)))
+      if ((!cfun->can_delete_dead_exceptions && !insn_nothrow_p (x))
+	  || side_effects_p (PATTERN (x)))
 	dest = pc_rtx;
       if (code == CALL_INSN)
 	count_reg_usage (CALL_INSN_FUNCTION_USAGE (x), counts, dest, incr);
@@ -6800,7 +6800,7 @@ static bool
 insn_live_p (rtx insn, int *counts)
 {
   int i;
-  if (insn_could_throw_p (insn))
+  if (!cfun->can_delete_dead_exceptions && !insn_nothrow_p (insn))
     return true;
   else if (GET_CODE (PATTERN (insn)) == SET)
     return set_live_p (PATTERN (insn), insn, counts);

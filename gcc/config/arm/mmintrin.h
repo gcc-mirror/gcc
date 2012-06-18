@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2009, 2012 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -24,13 +24,23 @@
 #ifndef _MMINTRIN_H_INCLUDED
 #define _MMINTRIN_H_INCLUDED
 
+#ifndef __IWMMXT__
+#error mmintrin.h included without enabling WMMX/WMMX2 instructions (e.g. -march=iwmmxt or -march=iwmmxt2)
+#endif
+
+
+#if defined __cplusplus
+extern "C" {
+/* Intrinsics use C name-mangling.  */
+#endif /* __cplusplus */
+
 /* The data type intended for user use.  */
 typedef unsigned long long __m64, __int64;
 
 /* Internal data types for implementing the intrinsics.  */
 typedef int __v2si __attribute__ ((vector_size (8)));
 typedef short __v4hi __attribute__ ((vector_size (8)));
-typedef char __v8qi __attribute__ ((vector_size (8)));
+typedef signed char __v8qi __attribute__ ((vector_size (8)));
 
 /* Provided for source compatibility with MMX.  */
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -39,7 +49,7 @@ _mm_empty (void)
 }
 
 /* "Convert" __m64 and __int64 into each other.  */
-static __inline __m64 
+static __inline __m64
 _mm_cvtsi64_m64 (__int64 __i)
 {
   return __i;
@@ -60,7 +70,7 @@ _mm_cvtsi64_si32 (__int64 __i)
 static __inline __int64
 _mm_cvtsi32_si64 (int __i)
 {
-  return __i;
+  return (__i & 0xffffffff);
 }
 
 /* Pack the four 16-bit values from M1 into the lower four 8-bit values of
@@ -609,7 +619,7 @@ _mm_and_si64 (__m64 __m1, __m64 __m2)
 static __inline __m64
 _mm_andnot_si64 (__m64 __m1, __m64 __m2)
 {
-  return __builtin_arm_wandn (__m1, __m2);
+  return __builtin_arm_wandn (__m2, __m1);
 }
 
 /* Bit-wise inclusive OR the 64-bit values in M1 and M2.  */
@@ -941,7 +951,13 @@ _mm_avg2_pu16 (__m64 __A, __m64 __B)
 static __inline __m64
 _mm_sad_pu8 (__m64 __A, __m64 __B)
 {
-  return (__m64) __builtin_arm_wsadb ((__v8qi)__A, (__v8qi)__B);
+  return (__m64) __builtin_arm_wsadbz ((__v8qi)__A, (__v8qi)__B);
+}
+
+static __inline __m64
+_mm_sada_pu8 (__m64 __A, __m64 __B, __m64 __C)
+{
+  return (__m64) __builtin_arm_wsadb ((__v2si)__A, (__v8qi)__B, (__v8qi)__C);
 }
 
 /* Compute the sum of the absolute differences of the unsigned 16-bit
@@ -950,8 +966,15 @@ _mm_sad_pu8 (__m64 __A, __m64 __B)
 static __inline __m64
 _mm_sad_pu16 (__m64 __A, __m64 __B)
 {
-  return (__m64) __builtin_arm_wsadh ((__v4hi)__A, (__v4hi)__B);
+  return (__m64) __builtin_arm_wsadhz ((__v4hi)__A, (__v4hi)__B);
 }
+
+static __inline __m64
+_mm_sada_pu16 (__m64 __A, __m64 __B, __m64 __C)
+{
+  return (__m64) __builtin_arm_wsadh ((__v2si)__A, (__v4hi)__B, (__v4hi)__C);
+}
+
 
 /* Compute the sum of the absolute differences of the unsigned 8-bit
    values in A and B.  Return the value in the lower 16-bit word; the
@@ -971,11 +994,8 @@ _mm_sadz_pu16 (__m64 __A, __m64 __B)
   return (__m64) __builtin_arm_wsadhz ((__v4hi)__A, (__v4hi)__B);
 }
 
-static __inline __m64
-_mm_align_si64 (__m64 __A, __m64 __B, int __C)
-{
-  return (__m64) __builtin_arm_walign ((__v8qi)__A, (__v8qi)__B, __C);
-}
+#define _mm_align_si64(__A,__B, N) \
+  (__m64) __builtin_arm_walign ((__v8qi) (__A),(__v8qi) (__B), (N))
 
 /* Creates a 64-bit zero.  */
 static __inline __m64
@@ -993,42 +1013,76 @@ _mm_setwcx (const int __value, const int __regno)
 {
   switch (__regno)
     {
-    case 0:  __builtin_arm_setwcx (__value, 0); break;
-    case 1:  __builtin_arm_setwcx (__value, 1); break;
-    case 2:  __builtin_arm_setwcx (__value, 2); break;
-    case 3:  __builtin_arm_setwcx (__value, 3); break;
-    case 8:  __builtin_arm_setwcx (__value, 8); break;
-    case 9:  __builtin_arm_setwcx (__value, 9); break;
-    case 10: __builtin_arm_setwcx (__value, 10); break;
-    case 11: __builtin_arm_setwcx (__value, 11); break;
-    default: break;
+    case 0:
+      __asm __volatile ("tmcr wcid, %0" :: "r"(__value));
+      break;
+    case 1:
+      __asm __volatile ("tmcr wcon, %0" :: "r"(__value));
+      break;
+    case 2:
+      __asm __volatile ("tmcr wcssf, %0" :: "r"(__value));
+      break;
+    case 3:
+      __asm __volatile ("tmcr wcasf, %0" :: "r"(__value));
+      break;
+    case 8:
+      __builtin_arm_setwcgr0 (__value);
+      break;
+    case 9:
+      __builtin_arm_setwcgr1 (__value);
+      break;
+    case 10:
+      __builtin_arm_setwcgr2 (__value);
+      break;
+    case 11:
+      __builtin_arm_setwcgr3 (__value);
+      break;
+    default:
+      break;
     }
 }
 
 static __inline int
 _mm_getwcx (const int __regno)
 {
+  int __value;
   switch (__regno)
     {
-    case 0:  return __builtin_arm_getwcx (0);
-    case 1:  return __builtin_arm_getwcx (1);
-    case 2:  return __builtin_arm_getwcx (2);
-    case 3:  return __builtin_arm_getwcx (3);
-    case 8:  return __builtin_arm_getwcx (8);
-    case 9:  return __builtin_arm_getwcx (9);
-    case 10: return __builtin_arm_getwcx (10);
-    case 11: return __builtin_arm_getwcx (11);
-    default: return 0;
+    case 0:
+      __asm __volatile ("tmrc %0, wcid" : "=r"(__value));
+      break;
+    case 1:
+      __asm __volatile ("tmrc %0, wcon" : "=r"(__value));
+      break;
+    case 2:
+      __asm __volatile ("tmrc %0, wcssf" : "=r"(__value));
+      break;
+    case 3:
+      __asm __volatile ("tmrc %0, wcasf" : "=r"(__value));
+      break;
+    case 8:
+      return __builtin_arm_getwcgr0 ();
+    case 9:
+      return __builtin_arm_getwcgr1 ();
+    case 10:
+      return __builtin_arm_getwcgr2 ();
+    case 11:
+      return __builtin_arm_getwcgr3 ();
+    default:
+      break;
     }
+  return __value;
 }
 
 /* Creates a vector of two 32-bit values; I0 is least significant.  */
 static __inline __m64
 _mm_set_pi32 (int __i1, int __i0)
 {
-  union {
+  union
+  {
     __m64 __q;
-    struct {
+    struct
+    {
       unsigned int __i0;
       unsigned int __i1;
     } __s;
@@ -1044,10 +1098,10 @@ _mm_set_pi32 (int __i1, int __i0)
 static __inline __m64
 _mm_set_pi16 (short __w3, short __w2, short __w1, short __w0)
 {
-  unsigned int __i1 = (unsigned short)__w3 << 16 | (unsigned short)__w2;
-  unsigned int __i0 = (unsigned short)__w1 << 16 | (unsigned short)__w0;
+  unsigned int __i1 = (unsigned short) __w3 << 16 | (unsigned short) __w2;
+  unsigned int __i0 = (unsigned short) __w1 << 16 | (unsigned short) __w0;
+
   return _mm_set_pi32 (__i1, __i0);
-		       
 }
 
 /* Creates a vector of eight 8-bit values; B0 is least significant.  */
@@ -1114,11 +1168,526 @@ _mm_set1_pi8 (char __b)
   return _mm_set1_pi32 (__i);
 }
 
-/* Convert an integer to a __m64 object.  */
+#ifdef __IWMMXT2__
 static __inline __m64
-_m_from_int (int __a)
+_mm_abs_pi8 (__m64 m1)
 {
-  return (__m64)__a;
+  return (__m64) __builtin_arm_wabsb ((__v8qi)m1);
+}
+
+static __inline __m64
+_mm_abs_pi16 (__m64 m1)
+{
+  return (__m64) __builtin_arm_wabsh ((__v4hi)m1);
+
+}
+
+static __inline __m64
+_mm_abs_pi32 (__m64 m1)
+{
+  return (__m64) __builtin_arm_wabsw ((__v2si)m1);
+
+}
+
+static __inline __m64
+_mm_addsubhx_pi16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_waddsubhx ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_absdiff_pu8 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wabsdiffb ((__v8qi)a, (__v8qi)b);
+}
+
+static __inline __m64
+_mm_absdiff_pu16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wabsdiffh ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_absdiff_pu32 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wabsdiffw ((__v2si)a, (__v2si)b);
+}
+
+static __inline __m64
+_mm_addc_pu16 (__m64 a, __m64 b)
+{
+  __m64 result;
+  __asm__ __volatile__ ("waddhc	%0, %1, %2" : "=y" (result) : "y" (a),  "y" (b));
+  return result;
+}
+
+static __inline __m64
+_mm_addc_pu32 (__m64 a, __m64 b)
+{
+  __m64 result;
+  __asm__ __volatile__ ("waddwc	%0, %1, %2" : "=y" (result) : "y" (a),  "y" (b));
+  return result;
+}
+
+static __inline __m64
+_mm_avg4_pu8 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wavg4 ((__v8qi)a, (__v8qi)b);
+}
+
+static __inline __m64
+_mm_avg4r_pu8 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wavg4r ((__v8qi)a, (__v8qi)b);
+}
+
+static __inline __m64
+_mm_maddx_pi16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmaddsx ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_maddx_pu16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmaddux ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_msub_pi16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmaddsn ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_msub_pu16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmaddun ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_mulhi_pi32 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmulwsm ((__v2si)a, (__v2si)b);
+}
+
+static __inline __m64
+_mm_mulhi_pu32 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmulwum ((__v2si)a, (__v2si)b);
+}
+
+static __inline __m64
+_mm_mulhir_pi16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmulsmr ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_mulhir_pi32 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmulwsmr ((__v2si)a, (__v2si)b);
+}
+
+static __inline __m64
+_mm_mulhir_pu16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmulumr ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_mulhir_pu32 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmulwumr ((__v2si)a, (__v2si)b);
+}
+
+static __inline __m64
+_mm_mullo_pi32 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wmulwl ((__v2si)a, (__v2si)b);
+}
+
+static __inline __m64
+_mm_qmulm_pi16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wqmulm ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_qmulm_pi32 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wqmulwm ((__v2si)a, (__v2si)b);
+}
+
+static __inline __m64
+_mm_qmulmr_pi16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wqmulmr ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_qmulmr_pi32 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wqmulwmr ((__v2si)a, (__v2si)b);
+}
+
+static __inline __m64
+_mm_subaddhx_pi16 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_wsubaddhx ((__v4hi)a, (__v4hi)b);
+}
+
+static __inline __m64
+_mm_addbhusl_pu8 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_waddbhusl ((__v4hi)a, (__v8qi)b);
+}
+
+static __inline __m64
+_mm_addbhusm_pu8 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_waddbhusm ((__v4hi)a, (__v8qi)b);
+}
+
+#define _mm_qmiabb_pi32(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wqmiabb ((__v2si)_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_qmiabbn_pi32(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wqmiabbn ((__v2si)_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_qmiabt_pi32(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wqmiabt ((__v2si)_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_qmiabtn_pi32(acc, m1, m2) \
+  ({\
+   __m64 _acc=acc;\
+   __m64 _m1=m1;\
+   __m64 _m2=m2;\
+   _acc = (__m64) __builtin_arm_wqmiabtn ((__v2si)_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_qmiatb_pi32(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wqmiatb ((__v2si)_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_qmiatbn_pi32(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wqmiatbn ((__v2si)_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_qmiatt_pi32(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wqmiatt ((__v2si)_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_qmiattn_pi32(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wqmiattn ((__v2si)_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiabb_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiabb (_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiabbn_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiabbn (_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiabt_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiabt (_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiabtn_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiabtn (_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiatb_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiatb (_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiatbn_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiatbn (_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiatt_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiatt (_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiattn_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiattn (_acc, (__v4hi)_m1, (__v4hi)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiawbb_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiawbb (_acc, (__v2si)_m1, (__v2si)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiawbbn_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiawbbn (_acc, (__v2si)_m1, (__v2si)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiawbt_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiawbt (_acc, (__v2si)_m1, (__v2si)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiawbtn_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiawbtn (_acc, (__v2si)_m1, (__v2si)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiawtb_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiawtb (_acc, (__v2si)_m1, (__v2si)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiawtbn_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiawtbn (_acc, (__v2si)_m1, (__v2si)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiawtt_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiawtt (_acc, (__v2si)_m1, (__v2si)_m2);\
+   _acc;\
+   })
+
+#define _mm_wmiawttn_si64(acc, m1, m2) \
+  ({\
+   __m64 _acc = acc;\
+   __m64 _m1 = m1;\
+   __m64 _m2 = m2;\
+   _acc = (__m64) __builtin_arm_wmiawttn (_acc, (__v2si)_m1, (__v2si)_m2);\
+   _acc;\
+   })
+
+/* The third arguments should be an immediate.  */
+#define _mm_merge_si64(a, b, n) \
+  ({\
+   __m64 result;\
+   result = (__m64) __builtin_arm_wmerge ((__m64) (a), (__m64) (b), (n));\
+   result;\
+   })
+#endif  /* __IWMMXT2__ */
+
+static __inline __m64
+_mm_alignr0_si64 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_walignr0 ((__v8qi) a, (__v8qi) b);
+}
+
+static __inline __m64
+_mm_alignr1_si64 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_walignr1 ((__v8qi) a, (__v8qi) b);
+}
+
+static __inline __m64
+_mm_alignr2_si64 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_walignr2 ((__v8qi) a, (__v8qi) b);
+}
+
+static __inline __m64
+_mm_alignr3_si64 (__m64 a, __m64 b)
+{
+  return (__m64) __builtin_arm_walignr3 ((__v8qi) a, (__v8qi) b);
+}
+
+static __inline void
+_mm_tandcb ()
+{
+  __asm __volatile ("tandcb r15");
+}
+
+static __inline void
+_mm_tandch ()
+{
+  __asm __volatile ("tandch r15");
+}
+
+static __inline void
+_mm_tandcw ()
+{
+  __asm __volatile ("tandcw r15");
+}
+
+#define _mm_textrcb(n) \
+  ({\
+   __asm__ __volatile__ (\
+     "textrcb r15, %0" : : "i" (n));\
+   })
+
+#define _mm_textrch(n) \
+  ({\
+   __asm__ __volatile__ (\
+     "textrch r15, %0" : : "i" (n));\
+   })
+
+#define _mm_textrcw(n) \
+  ({\
+   __asm__ __volatile__ (\
+     "textrcw r15, %0" : : "i" (n));\
+   })
+
+static __inline void
+_mm_torcb ()
+{
+  __asm __volatile ("torcb r15");
+}
+
+static __inline void
+_mm_torch ()
+{
+  __asm __volatile ("torch r15");
+}
+
+static __inline void
+_mm_torcw ()
+{
+  __asm __volatile ("torcw r15");
+}
+
+#ifdef __IWMMXT2__
+static __inline void
+_mm_torvscb ()
+{
+  __asm __volatile ("torvscb r15");
+}
+
+static __inline void
+_mm_torvsch ()
+{
+  __asm __volatile ("torvsch r15");
+}
+
+static __inline void
+_mm_torvscw ()
+{
+  __asm __volatile ("torvscw r15");
+}
+#endif
+
+static __inline __m64
+_mm_tbcst_pi8 (int value)
+{
+  return (__m64) __builtin_arm_tbcstb ((signed char) value);
+}
+
+static __inline __m64
+_mm_tbcst_pi16 (int value)
+{
+  return (__m64) __builtin_arm_tbcsth ((short) value);
+}
+
+static __inline __m64
+_mm_tbcst_pi32 (int value)
+{
+  return (__m64) __builtin_arm_tbcstw (value);
 }
 
 #define _m_empty _mm_empty
@@ -1257,5 +1826,11 @@ _m_from_int (int __a)
 #define _m_paligniq _mm_align_si64
 #define _m_cvt_si2pi _mm_cvtsi64_m64
 #define _m_cvt_pi2si _mm_cvtm64_si64
+#define _m_from_int _mm_cvtsi32_si64
+#define _m_to_int _mm_cvtsi64_si32
 
+#if defined __cplusplus
+}; /* End "C" */
+#endif /* __cplusplus */
+#endif /* __IWMMXT__ */
 #endif /* _MMINTRIN_H_INCLUDED */

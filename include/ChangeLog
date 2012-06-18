@@ -1,3 +1,7 @@
+2012-06-12  Rafael Ávila de Espíndola <respindola@mozilla.com>
+
+	* plugin-api.h (ld_plugin_output_file_type): Add LDPO_PIE.
+
 2012-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.def (DW_FORM_GNU_ref_alt, DW_FORM_GNU_strp_alt): New

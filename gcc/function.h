@@ -70,10 +70,6 @@ struct GTY(()) emit_status {
      --param min-nondebug-insn-uid=<value> is given with nonzero value.  */
   int x_cur_debug_insn_uid;
 
-  /* Location the last line-number NOTE emitted.
-     This is used to avoid generating duplicates.  */
-  location_t x_last_location;
-
   /* The length of the regno_pointer_align, regno_decl, and x_regno_reg_rtx
      vectors.  Since these vectors are needed during the expansion phase when
      the total number of registers in the function is not yet known, the
@@ -614,6 +610,10 @@ struct GTY(()) function {
   /* Nonzero if function being compiled can throw synchronous non-call
      exceptions.  */
   unsigned int can_throw_non_call_exceptions : 1;
+
+  /* Nonzero if instructions that may throw exceptions but don't otherwise
+     contribute to the execution of the program can be deleted.  */
+  unsigned int can_delete_dead_exceptions : 1;
 
   /* Fields below this point are not set for abstract functions; see
      allocate_struct_function.  */

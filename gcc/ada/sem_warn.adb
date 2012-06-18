@@ -511,9 +511,8 @@ package body Sem_Warn is
 
             --  Call to subprogram
 
-         elsif Nkind (N) = N_Procedure_Call_Statement
-           or else Nkind (N) = N_Function_Call
-         then
+         elsif Nkind (N) in N_Subprogram_Call then
+
             --  If subprogram is within the scope of the entity we are dealing
             --  with as the loop variable, then it could modify this parameter,
             --  so we abandon in this case. In the case of a subprogram that is
@@ -3282,7 +3281,7 @@ package body Sem_Warn is
 
       --  Exclude calls rewritten as enumeration literals
 
-      if not Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement) then
+      if Nkind (N) not in N_Subprogram_Call then
          return;
       end if;
 

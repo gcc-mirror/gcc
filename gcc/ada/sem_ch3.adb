@@ -4340,11 +4340,16 @@ package body Sem_Ch3 is
 
             when E_Incomplete_Type =>
                if Ada_Version >= Ada_2005 then
-                  Set_Ekind (Id, E_Incomplete_Subtype);
 
-                  --  Ada 2005 (AI-412): Decorate an incomplete subtype
-                  --  of an incomplete type visible through a limited
-                  --  with clause.
+                  --  In Ada 2005 an incomplete type can be explicitly tagged:
+                  --  propagate indication.
+
+                  Set_Ekind              (Id, E_Incomplete_Subtype);
+                  Set_Is_Tagged_Type     (Id, Is_Tagged_Type (T));
+                  Set_Private_Dependents (Id, New_Elmt_List);
+
+                  --  Ada 2005 (AI-412): Decorate an incomplete subtype of an
+                  --  incomplete type visible through a limited with clause.
 
                   if From_With_Type (T)
                     and then Present (Non_Limited_View (T))

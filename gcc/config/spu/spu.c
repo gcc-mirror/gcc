@@ -43,7 +43,6 @@
 #include "target-def.h"
 #include "langhooks.h"
 #include "reload.h"
-#include "cfglayout.h"
 #include "sched-int.h"
 #include "params.h"
 #include "machmode.h"
@@ -6908,9 +6907,11 @@ spu_builtin_mask_for_load (void)
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
 static int 
 spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
-                                tree vectype ATTRIBUTE_UNUSED,
+                                tree vectype,
                                 int misalign ATTRIBUTE_UNUSED)
 {
+  unsigned elements;
+
   switch (type_of_cost)
     {
       case scalar_stmt:
@@ -6936,6 +6937,10 @@ spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case cond_branch_taken:
         return 6;
+
+      case vec_construct:
+	elements = TYPE_VECTOR_SUBPARTS (vectype);
+	return elements / 2 + 1;
 
       default:
         gcc_unreachable ();

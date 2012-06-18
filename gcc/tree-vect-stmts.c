@@ -727,48 +727,6 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 }
 
 
-/* Get cost by calling cost target builtin.  */
-
-static inline
-int vect_get_stmt_cost (enum vect_cost_for_stmt type_of_cost)
-{
-  tree dummy_type = NULL;
-  int dummy = 0;
-
-  return targetm.vectorize.builtin_vectorization_cost (type_of_cost,
-                                                       dummy_type, dummy);
-}
-
-
-/* Get cost for STMT.  */
-
-int
-cost_for_stmt (gimple stmt)
-{
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
-  switch (STMT_VINFO_TYPE (stmt_info))
-  {
-  case load_vec_info_type:
-    return vect_get_stmt_cost (scalar_load);
-  case store_vec_info_type:
-    return vect_get_stmt_cost (scalar_store);
-  case op_vec_info_type:
-  case condition_vec_info_type:
-  case assignment_vec_info_type:
-  case reduc_vec_info_type:
-  case induc_vec_info_type:
-  case type_promotion_vec_info_type:
-  case type_demotion_vec_info_type:
-  case type_conversion_vec_info_type:
-  case call_vec_info_type:
-    return vect_get_stmt_cost (scalar_stmt);
-  case undef_vec_info_type:
-  default:
-    gcc_unreachable ();
-  }
-}
-
 /* Function vect_model_simple_cost.
 
    Models cost for simple operations, i.e. those that only emit ncopies of a
@@ -1031,11 +989,13 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
   /* The loads themselves.  */
   if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
     {
-      /* N scalar loads plus gathering them into a vector.
-         ???  scalar_to_vec isn't the cost for that.  */
+      /* N scalar loads plus gathering them into a vector.  */
+      tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       inside_cost += (vect_get_stmt_cost (scalar_load) * ncopies
-		      * TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info)));
-      inside_cost += ncopies * vect_get_stmt_cost (scalar_to_vec);
+		      * TYPE_VECTOR_SUBPARTS (vectype));
+      inside_cost += ncopies
+	* targetm.vectorize.builtin_vectorization_cost (vec_construct,
+							vectype, 0);
     }
   else
     vect_get_load_cost (first_dr, ncopies,
@@ -5401,7 +5361,9 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
 
      Pattern statement needs to be analyzed instead of the original statement
      if the original statement is not relevant.  Otherwise, we analyze both
-     statements.  */
+     statements.  In basic blocks we are called from some SLP instance
+     traversal, don't analyze pattern stmts instead, the pattern stmts
+     already will be part of SLP instance.  */
 
   pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
   if (!STMT_VINFO_RELEVANT_P (stmt_info)
@@ -5430,6 +5392,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
         }
     }
   else if (STMT_VINFO_IN_PATTERN_P (stmt_info)
+	   && node == NULL
            && pattern_stmt
            && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
                || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
@@ -5446,6 +5409,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
    }
 
   if (is_pattern_stmt_p (stmt_info)
+      && node == NULL
       && (pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info)))
     {
       gimple_stmt_iterator si;

@@ -61,19 +61,21 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   struct cgraph_node *node;
   symtab_node snode;
 
-  /* We will later output the initializer, so we can reffer to it.
+  /* We will later output the initializer, so we can refer to it.
      So we are concerned only when DECL comes from initializer of
      external var.  */
   if (!from_decl
       || TREE_CODE (from_decl) != VAR_DECL
       || !DECL_EXTERNAL (from_decl)
-      || (symtab_get_node (from_decl)->symbol.in_other_partition))
+      || (flag_ltrans
+	  && symtab_get_node (from_decl)->symbol.in_other_partition))
     return true;
-  /* We are concerned ony about static/external vars and functions.  */
+  /* We are concerned only about static/external vars and functions.  */
   if ((!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
       || (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL))
     return true;
-  /* Weakrefs have somewhat confusing DECL_EXTERNAL flag set; they are always safe.  */
+  /* Weakrefs have somewhat confusing DECL_EXTERNAL flag set; they
+     are always safe.  */
   if (DECL_EXTERNAL (decl)
       && lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     return true;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -237,7 +237,7 @@ package Sem_Ch13 is
    --  The visibility of aspects is tricky. First, the visibility is delayed
    --  to the freeze point. This is not too complicated, what we do is simply
    --  to leave the aspect "laying in wait" for the freeze point, and at that
-   --  point materialize and analye the corresponding attribute definition
+   --  point materialize and analyze the corresponding attribute definition
    --  clause or pragma. There is some special processing for preconditions
    --  and postonditions, where the pragmas themselves deal with the required
    --  delay, but basically the approach is the same, delay analysis of the
@@ -307,4 +307,7 @@ package Sem_Ch13 is
    --  Performs the processing described above at the freeze all point, and
    --  issues appropriate error messages if the visibility has indeed changed.
    --  Again, ASN is the N_Aspect_Specification node for the aspect.
+
+   procedure Evaluate_Aspects_At_Freeze_Point (E : Entity_Id);
+   --  Evaluates all the delayed aspects for entity E at freezing point
 end Sem_Ch13;

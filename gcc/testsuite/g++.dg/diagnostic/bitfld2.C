@@ -3,7 +3,7 @@
 
 template<int> struct A
 {
-  struct {} : 2;   // { dg-error "expected ';' after struct" }
+  struct {} : 2;   // { dg-error "expected ';' after struct" "expected" }
 };
-// { dg-error "ISO C.. forbids declaration" "" { target *-*-* } 6 }
-// { dg-error "ISO C.. prohibits anonymous" "" { target *-*-* } 6 }
+// { dg-error "ISO C.. forbids declaration" "declaration" { target *-*-* } 6 }
+// { dg-error "ISO C.. prohibits anonymous" "anonymous" { target *-*-* } 6 }

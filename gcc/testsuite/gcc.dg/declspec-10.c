@@ -44,4 +44,4 @@ void i (void) { auto void y (void) {} } /* { dg-warning "ISO C forbids nested fu
 
 inline int main (void) { return 0; } /* { dg-warning "cannot inline function 'main'" } */
 
-/* { dg-message "error: register name not specified for 'y'" "" { target *-*-* } 19 } */
+/* { dg-message "error: register name not specified for 'y'" "not specified" { target *-*-* } 19 } */

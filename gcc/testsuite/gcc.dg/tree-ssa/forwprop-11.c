@@ -16,5 +16,5 @@ int g(int *p, int n)
   return q[-1];
 }
 
-/* { dg-final { scan-tree-dump-times "= MEM\\\[\\\(int \\\*\\\)a_.. \\\+ 4B\\\];" 2 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "= MEM\\\[\\\(int \\\*\\\)\[ap\]_.. \\\+ 4B\\\];" 2 "forwprop1" } } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */

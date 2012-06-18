@@ -156,8 +156,7 @@ static rtx find_base_value (rtx);
 static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
 static int insert_subset_children (splay_tree_node, void*);
 static alias_set_entry get_alias_set_entry (alias_set_type);
-static int aliases_everything_p (const_rtx);
-static bool nonoverlapping_component_refs_p (const_tree, const_tree);
+static bool nonoverlapping_component_refs_p (const_rtx, const_rtx);
 static tree decl_for_component_ref (tree);
 static int write_dependence_p (const_rtx, const_rtx, int);
 
@@ -167,13 +166,6 @@ static void memory_modified_1 (rtx, const_rtx, void *);
 
 /* Returns the size in bytes of the mode of X.  */
 #define SIZE_FOR_MODE(X) (GET_MODE_SIZE (GET_MODE (X)))
-
-/* Returns nonzero if MEM1 and MEM2 do not alias because they are in
-   different alias sets.  We ignore alias sets in functions making use
-   of variable arguments because the va_arg macros on some systems are
-   not legal ANSI C.  */
-#define DIFFERENT_ALIAS_SETS_P(MEM1, MEM2)			\
-  mems_in_disjoint_alias_sets_p (MEM1, MEM2)
 
 /* Cap the number of passes we make over the insns propagating alias
    information through set chains.   10 is a completely arbitrary choice.  */
@@ -334,17 +326,11 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 
   ref->ref_alias_set = MEM_ALIAS_SET (mem);
 
-  /* If MEM_OFFSET or MEM_SIZE are unknown we have to punt.
-     Keep points-to related information though.  */
+  /* If MEM_OFFSET or MEM_SIZE are unknown what we got from MEM_EXPR
+     is conservative, so trust it.  */
   if (!MEM_OFFSET_KNOWN_P (mem)
       || !MEM_SIZE_KNOWN_P (mem))
-    {
-      ref->ref = NULL_TREE;
-      ref->offset = 0;
-      ref->size = -1;
-      ref->max_size = -1;
-      return true;
-    }
+    return true;
 
   /* If the base decl is a parameter we can have negative MEM_OFFSET in
      case of promoted subregs on bigendian targets.  Trust the MEM_EXPR
@@ -352,6 +338,9 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   if (MEM_OFFSET (mem) < 0
       && (MEM_SIZE (mem) + MEM_OFFSET (mem)) * BITS_PER_UNIT == ref->size)
     return true;
+
+  /* Otherwise continue and refine size and offset we got from analyzing
+     MEM_EXPR by using MEM_SIZE and MEM_OFFSET.  */
 
   ref->offset += MEM_OFFSET (mem) * BITS_PER_UNIT;
   ref->size = MEM_SIZE (mem) * BITS_PER_UNIT;
@@ -2188,29 +2177,19 @@ read_dependence (const_rtx mem, const_rtx x)
   return MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem);
 }
 
-/* Returns nonzero if something about the mode or address format MEM1
-   indicates that it might well alias *anything*.  */
-
-static int
-aliases_everything_p (const_rtx mem)
-{
-  if (GET_CODE (XEXP (mem, 0)) == AND)
-    /* If the address is an AND, it's very hard to know at what it is
-       actually pointing.  */
-    return 1;
-
-  return 0;
-}
-
 /* Return true if we can determine that the fields referenced cannot
    overlap for any pair of objects.  */
 
 static bool
-nonoverlapping_component_refs_p (const_tree x, const_tree y)
+nonoverlapping_component_refs_p (const_rtx rtlx, const_rtx rtly)
 {
+  const_tree x = MEM_EXPR (rtlx), y = MEM_EXPR (rtly);
   const_tree fieldx, fieldy, typex, typey, orig_y;
 
-  if (!flag_strict_aliasing)
+  if (!flag_strict_aliasing
+      || !x || !y
+      || TREE_CODE (x) != COMPONENT_REF
+      || TREE_CODE (y) != COMPONENT_REF)
     return false;
 
   do
@@ -2328,13 +2307,6 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
       || (expry == get_spill_slot_decl (false)
 	  && ! MEM_OFFSET_KNOWN_P (y)))
     return 0;
-
-  /* If both are field references, we may be able to determine something.  */
-  if (TREE_CODE (exprx) == COMPONENT_REF
-      && TREE_CODE (expry) == COMPONENT_REF
-      && nonoverlapping_component_refs_p (exprx, expry))
-    return 1;
-
 
   /* If the field reference test failed, look at the DECLs involved.  */
   moffsetx_known_p = MEM_OFFSET_KNOWN_P (x);
@@ -2535,24 +2507,14 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 				 SIZE_FOR_MODE (x), x_addr, 0)) != -1)
     return ret;
 
-  if (DIFFERENT_ALIAS_SETS_P (x, mem))
+  if (mems_in_disjoint_alias_sets_p (x, mem))
     return 0;
 
   if (nonoverlapping_memrefs_p (mem, x, false))
     return 0;
 
-  if (aliases_everything_p (x))
-    return 1;
-
-  /* We cannot use aliases_everything_p to test MEM, since we must look
-     at MEM_ADDR, rather than XEXP (mem, 0).  */
-  if (GET_CODE (mem_addr) == AND)
-    return 1;
-
-  /* ??? In true_dependence we also allow BLKmode to alias anything.  Why
-     don't we do this in anti_dependence and output_dependence?  */
-  if (mem_mode == BLKmode || GET_MODE (x) == BLKmode)
-    return 1;
+  if (nonoverlapping_component_refs_p (mem, x))
+    return 0;
 
   return rtx_refs_may_alias_p (x, mem, true);
 }
@@ -2680,10 +2642,12 @@ may_alias_p (const_rtx mem, const_rtx x)
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
 
-  /* ??? In true_dependence we also allow BLKmode to alias anything. */
-  if (GET_MODE (mem) == BLKmode || GET_MODE (x) == BLKmode)
+  /* (mem:BLK (scratch)) is a special mechanism to conflict with everything.
+     This is used in epilogue deallocation functions.  */
+  if (GET_MODE (x) == BLKmode && GET_CODE (XEXP (x, 0)) == SCRATCH)
     return 1;
-    
+  if (GET_MODE (mem) == BLKmode && GET_CODE (XEXP (mem, 0)) == SCRATCH)
+    return 1;
   if (MEM_ALIAS_SET (x) == ALIAS_SET_MEMORY_BARRIER
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
     return 1;
@@ -2721,14 +2685,6 @@ may_alias_p (const_rtx mem, const_rtx x)
 
   if (nonoverlapping_memrefs_p (mem, x, true))
     return 0;
-
-  if (aliases_everything_p (x))
-    return 1;
-
-  /* We cannot use aliases_everything_p to test MEM, since we must look
-     at MEM_ADDR, rather than XEXP (mem, 0).  */
-  if (GET_CODE (mem_addr) == AND)
-    return 1;
 
   /* TBAA not valid for loop_invarint */
   return rtx_refs_may_alias_p (x, mem, false);

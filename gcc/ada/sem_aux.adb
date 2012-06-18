@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@
 
 with Atree;  use Atree;
 with Einfo;  use Einfo;
-with Namet;  use Namet;
 with Sinfo;  use Sinfo;
 with Snames; use Snames;
 with Stand;  use Stand;
@@ -417,6 +416,149 @@ package body Sem_Aux is
 
       return Empty;
    end First_Tag_Component;
+
+   ------------------
+   -- Get_Rep_Item --
+   ------------------
+
+   function Get_Rep_Item
+     (E             : Entity_Id;
+      Nam           : Name_Id;
+      Check_Parents : Boolean := True) return Node_Id
+   is
+      N : Node_Id;
+
+   begin
+      N := First_Rep_Item (E);
+      while Present (N) loop
+         if Nkind (N) = N_Pragma
+           and then
+             (Pragma_Name (N) = Nam
+               or else (Nam = Name_Priority
+                         and then Pragma_Name (N) = Name_Interrupt_Priority))
+         then
+            if Check_Parents then
+               return N;
+
+            --  If Check_Parents is False, return N if the pragma doesn't
+            --  appear in the Rep_Item chain of the parent.
+
+            else
+               declare
+                  Par : constant Entity_Id := Nearest_Ancestor (E);
+                  --  This node represents the parent type of type E (if any)
+
+               begin
+                  if No (Par) then
+                     return N;
+
+                  elsif not Present_In_Rep_Item (Par, N) then
+                     return N;
+                  end if;
+               end;
+            end if;
+
+         elsif Nkind (N) = N_Attribute_Definition_Clause
+           and then
+             (Chars (N) = Nam
+                or else (Nam = Name_Priority
+                          and then Chars (N) = Name_Interrupt_Priority))
+         then
+            if Check_Parents or else Entity (N) = E then
+               return N;
+            end if;
+
+         elsif Nkind (N) = N_Aspect_Specification
+           and then
+             (Chars (Identifier (N)) = Nam
+                or else (Nam = Name_Priority
+                          and then Chars (Identifier (N)) =
+                                     Name_Interrupt_Priority))
+         then
+            if Check_Parents then
+               return N;
+
+            elsif Entity (N) = E then
+               return N;
+            end if;
+         end if;
+
+         Next_Rep_Item (N);
+      end loop;
+
+      return Empty;
+   end Get_Rep_Item;
+
+   --------------------
+   -- Get_Rep_Pragma --
+   --------------------
+
+   function Get_Rep_Pragma
+     (E             : Entity_Id;
+      Nam           : Name_Id;
+      Check_Parents : Boolean := True) return Node_Id
+   is
+      N : Node_Id;
+
+   begin
+      N := First_Rep_Item (E);
+      while Present (N) loop
+         if Nkind (N) = N_Pragma
+           and then
+             (Pragma_Name (N) = Nam
+               or else (Nam = Name_Interrupt_Priority
+                         and then Pragma_Name (N) = Name_Priority))
+         then
+            if Check_Parents then
+               return N;
+
+            --  If Check_Parents is False, return N if the pragma doesn't
+            --  appear in the Rep_Item chain of the parent.
+
+            else
+               declare
+                  Par : constant Entity_Id := Nearest_Ancestor (E);
+                  --  This node represents the parent type of type E (if any)
+
+               begin
+                  if No (Par) or else not Present_In_Rep_Item (Par, N) then
+                     return N;
+                  end if;
+               end;
+            end if;
+         end if;
+
+         Next_Rep_Item (N);
+      end loop;
+
+      return Empty;
+   end Get_Rep_Pragma;
+
+   ------------------
+   -- Has_Rep_Item --
+   ------------------
+
+   function Has_Rep_Item
+     (E             : Entity_Id;
+      Nam           : Name_Id;
+      Check_Parents : Boolean := True) return Boolean
+   is
+   begin
+      return Present (Get_Rep_Item (E, Nam, Check_Parents));
+   end Has_Rep_Item;
+
+   --------------------
+   -- Has_Rep_Pragma --
+   --------------------
+
+   function Has_Rep_Pragma
+     (E             : Entity_Id;
+      Nam           : Name_Id;
+      Check_Parents : Boolean := True) return Boolean
+   is
+   begin
+      return Present (Get_Rep_Pragma (E, Nam, Check_Parents));
+   end Has_Rep_Pragma;
 
    -------------------------------
    -- Initialization_Suppressed --
@@ -832,7 +974,7 @@ package body Sem_Aux is
    ----------------------
 
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id is
-         D : constant Node_Id := Declaration_Node (Typ);
+      D : constant Node_Id := Declaration_Node (Typ);
 
    begin
       --  If we have a subtype declaration, get the ancestor subtype
@@ -859,6 +1001,15 @@ package body Sem_Aux is
                return Entity (Subtype_Mark (SI));
             end if;
          end;
+
+      --  If derived type and private type, get the full view to find who we
+      --  are derived from.
+
+      elsif Is_Derived_Type (Typ)
+        and then Is_Private_Type (Typ)
+        and then Present (Full_View (Typ))
+      then
+         return Nearest_Ancestor (Full_View (Typ));
 
       --  Otherwise, nothing useful to return, return Empty
 

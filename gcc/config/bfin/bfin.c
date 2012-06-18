@@ -51,7 +51,6 @@
 #include "tm-constrs.h"
 #include "gt-bfin.h"
 #include "basic-block.h"
-#include "cfglayout.h"
 #include "timevar.h"
 #include "df.h"
 #include "sel-sched.h"

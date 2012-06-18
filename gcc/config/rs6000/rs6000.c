@@ -52,7 +52,6 @@
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "reload.h"
-#include "cfglayout.h"
 #include "cfgloop.h"
 #include "sched-int.h"
 #include "gimple.h"
@@ -3405,6 +3404,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
                                    tree vectype, int misalign)
 {
   unsigned elements;
+  tree elem_type;
 
   switch (type_of_cost)
     {
@@ -3503,6 +3503,18 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
           gcc_unreachable ();
 
         return 2;
+
+      case vec_construct:
+	elements = TYPE_VECTOR_SUBPARTS (vectype);
+	elem_type = TREE_TYPE (vectype);
+	/* 32-bit vectors loaded into registers are stored as double
+	   precision, so we need n/2 converts in addition to the usual
+	   n/2 merges to construct a vector of short floats from them.  */
+	if (SCALAR_FLOAT_TYPE_P (elem_type)
+	    && TYPE_PRECISION (elem_type) == 32)
+	  return elements + 1;
+	else
+	  return elements / 2 + 1;
 
       default:
         gcc_unreachable ();

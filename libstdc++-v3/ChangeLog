@@ -1,3 +1,30 @@
+2012-06-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/53578
+	* include/ext/concurrence.h (__recursive_mutex::_S_destroy): Fix
+	narrowing conversion.
+	* include/std/mutex (__recursive_mutex_base::_S_destroy): Likewise.
+
+2012-06-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/53270
+	* include/ext/concurrence.h (__mutex, __recursive_mutex, __cond): Use
+	NSDMI in C++11 mode.
+	* include/ext/rope (_Refcount_Base): Likewise. Destroy mutex in
+	destructor when initialized by function.
+
+2012-06-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/53648
+	* include/std/tuple (__empty_not_final): Do not use EBO for tuples.
+	* testsuite/20_util/tuple/53648.cc: New.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error line
+	number.
+
+2012-06-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Correct C++11 status table.
+
 2012-06-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Correct C++11 status table.

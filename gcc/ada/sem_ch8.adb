@@ -1688,6 +1688,11 @@ package body Sem_Ch8 is
       --    have one. Otherwise the subtype of Sub's return profile must
       --    exclude null.
 
+      procedure Freeze_Actual_Profile;
+      --  In Ada 2012, enforce the freezing rule concerning formal incomplete
+      --  types: a callable entity freezes its profile, unless it has an
+      --  incomplete untagged formal (RM 13.14(10.2/3)).
+
       function Original_Subprogram (Subp : Entity_Id) return Entity_Id;
       --  Find renamed entity when the declaration is a renaming_as_body and
       --  the renamed entity may itself be a renaming_as_body. Used to enforce
@@ -1924,6 +1929,57 @@ package body Sem_Ch8 is
                Result_Definition (Parent (Sub)));
          end if;
       end Check_Null_Exclusion;
+
+      ---------------------------
+      -- Freeze_Actual_Profile --
+      ---------------------------
+
+      procedure Freeze_Actual_Profile is
+         F                  : Entity_Id;
+         Has_Untagged_Inc   : Boolean;
+         Instantiation_Node : constant Node_Id := Parent (N);
+
+      begin
+         if Ada_Version >= Ada_2012 then
+            F := First_Formal (Formal_Spec);
+            Has_Untagged_Inc := False;
+            while Present (F) loop
+               if Ekind (Etype (F)) = E_Incomplete_Type
+                 and then not Is_Tagged_Type (Etype (F))
+               then
+                  Has_Untagged_Inc := True;
+                  exit;
+               end if;
+
+               F := Next_Formal (F);
+            end loop;
+
+            if Ekind (Formal_Spec) = E_Function
+              and then Ekind (Etype (Formal_Spec)) = E_Incomplete_Type
+              and then not Is_Tagged_Type (Etype (F))
+            then
+               Has_Untagged_Inc := True;
+            end if;
+
+            if not Has_Untagged_Inc then
+               F := First_Formal (Old_S);
+               while Present (F) loop
+                  Freeze_Before (Instantiation_Node, Etype (F));
+
+                  if Is_Incomplete_Or_Private_Type (Etype (F))
+                    and then No (Underlying_Type (Etype (F)))
+                    and then not Is_Generic_Type (Etype (F))
+                  then
+                     Error_Msg_NE
+                       ("type& must be frozen before this point",
+                          Instantiation_Node, Etype (F));
+                  end if;
+
+                  F := Next_Formal (F);
+               end loop;
+            end if;
+         end if;
+      end Freeze_Actual_Profile;
 
       ---------------------------
       -- Has_Class_Wide_Actual --
@@ -2702,6 +2758,7 @@ package body Sem_Ch8 is
 
          if Is_Actual then
             Freeze_Before (N, Old_S);
+            Freeze_Actual_Profile;
             Set_Has_Delayed_Freeze (New_S, False);
             Freeze_Before (N, New_S);
 

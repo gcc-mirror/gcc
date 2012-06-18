@@ -2389,7 +2389,7 @@ package body Exp_Ch6 is
         and then Nkind (Call_Node) = N_Procedure_Call_Statement
         and then Present (Parameter_Associations (Call_Node))
       then
-         Expand_Put_Call_With_Dimension_Symbol (Call_Node);
+         Expand_Put_Call_With_Symbol (Call_Node);
       end if;
 
       --  Remove the dimensions of every parameters in call
@@ -3271,7 +3271,7 @@ package body Exp_Ch6 is
       --  Ada 2005 (AI-251): If some formal is a class-wide interface, expand
       --  it to point to the correct secondary virtual table
 
-      if Nkind_In (Call_Node, N_Function_Call, N_Procedure_Call_Statement)
+      if Nkind (Call_Node) in N_Subprogram_Call
         and then CW_Interface_Formals_Present
       then
          Expand_Interface_Actuals (Call_Node);
@@ -3285,7 +3285,7 @@ package body Exp_Ch6 is
       --  back-ends directly handle the generation of dispatching calls and
       --  would have to undo any expansion to an indirect call.
 
-      if Nkind_In (Call_Node, N_Function_Call, N_Procedure_Call_Statement)
+      if Nkind (Call_Node) in N_Subprogram_Call
         and then Present (Controlling_Argument (Call_Node))
       then
          declare
@@ -3868,13 +3868,14 @@ package body Exp_Ch6 is
          --  intermediate result after its use.
 
          elsif Is_Build_In_Place_Function_Call (Call_Node)
-           and then Nkind_In (Parent (Call_Node), N_Attribute_Reference,
-                                          N_Function_Call,
-                                          N_Indexed_Component,
-                                          N_Object_Renaming_Declaration,
-                                          N_Procedure_Call_Statement,
-                                          N_Selected_Component,
-                                          N_Slice)
+           and then
+             Nkind_In (Parent (Call_Node), N_Attribute_Reference,
+                                           N_Function_Call,
+                                           N_Indexed_Component,
+                                           N_Object_Renaming_Declaration,
+                                           N_Procedure_Call_Statement,
+                                           N_Selected_Component,
+                                           N_Slice)
          then
             Establish_Transient_Scope (Call_Node, Sec_Stack => True);
          end if;
@@ -4030,6 +4031,42 @@ package body Exp_Ch6 is
    -------------------------------
 
    procedure Expand_Ctrl_Function_Call (N : Node_Id) is
+      function Enclosing_Context return Node_Id;
+      --  Find the enclosing context where the function call appears
+
+      -----------------------
+      -- Enclosing_Context --
+      -----------------------
+
+      function Enclosing_Context return Node_Id is
+         Context : Node_Id;
+
+      begin
+         Context := Parent (N);
+         while Present (Context) loop
+
+            if Nkind (Context) = N_Conditional_Expression then
+               exit;
+
+            --  Stop the search when reaching any statement because we have
+            --  gone too far up the tree.
+
+            elsif Nkind (Context) = N_Procedure_Call_Statement
+              or else Nkind (Context) in N_Statement_Other_Than_Procedure_Call
+            then
+               exit;
+            end if;
+
+            Context := Parent (Context);
+         end loop;
+
+         return Context;
+      end Enclosing_Context;
+
+      --  Local variables
+
+      Context : constant Node_Id := Enclosing_Context;
+
    begin
       --  Optimization, if the returned value (which is on the sec-stack) is
       --  returned again, no need to copy/readjust/finalize, we can just pass
@@ -4050,6 +4087,18 @@ package body Exp_Ch6 is
       --  the function using 'reference.
 
       Remove_Side_Effects (N);
+
+      --  The function call is part of a conditional expression alternative.
+      --  The temporary result must live as long as the conditional expression
+      --  itself, otherwise it will be finalized too early. Mark the transient
+      --  as processed to avoid untimely finalization.
+
+      if Present (Context)
+        and then Nkind (Context) = N_Conditional_Expression
+        and then Nkind (N) = N_Explicit_Dereference
+      then
+         Set_Is_Processed_Transient (Entity (Prefix (N)));
+      end if;
    end Expand_Ctrl_Function_Call;
 
    -------------------------
@@ -5502,7 +5551,7 @@ package body Exp_Ch6 is
             --  Create a flag to track the function state
 
             Flag_Id := Make_Temporary (Loc, 'F');
-            Set_Return_Flag_Or_Transient_Decl (Ret_Obj_Id, Flag_Id);
+            Set_Status_Flag_Or_Transient_Decl (Ret_Obj_Id, Flag_Id);
 
             --  Insert the flag at the beginning of the function declarations,
             --  generate:
@@ -5581,7 +5630,7 @@ package body Exp_Ch6 is
          then
             declare
                Flag_Id : constant Entity_Id :=
-                           Return_Flag_Or_Transient_Decl (Ret_Obj_Id);
+                           Status_Flag_Or_Transient_Decl (Ret_Obj_Id);
 
             begin
                --  Generate:

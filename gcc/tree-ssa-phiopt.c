@@ -37,9 +37,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-data-ref.h"
 #include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
+#include "insn-config.h"
+#include "expr.h"
+#include "optabs.h"
+
+#ifndef HAVE_conditional_move
+#define HAVE_conditional_move (0)
+#endif
 
 static unsigned int tree_ssa_phiopt (void);
-static unsigned int tree_ssa_phiopt_worker (bool);
+static unsigned int tree_ssa_phiopt_worker (bool, bool);
 static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, gimple, tree, tree);
 static int value_replacement (basic_block, basic_block,
@@ -53,6 +61,9 @@ static bool cond_store_replacement (basic_block, basic_block, edge, edge,
 static bool cond_if_else_store_replacement (basic_block, basic_block, basic_block);
 static struct pointer_set_t * get_non_trapping (void);
 static void replace_phi_edge_with_variable (basic_block, edge, gimple, tree);
+static void hoist_adjacent_loads (basic_block, basic_block,
+				  basic_block, basic_block);
+static bool gate_hoist_loads (void);
 
 /* This pass tries to replaces an if-then-else block with an
    assignment.  We have four kinds of transformations.  Some of these
@@ -138,12 +149,56 @@ static void replace_phi_edge_with_variable (basic_block, edge, gimple, tree);
      bb2:
        x = PHI <x' (bb0), ...>;
 
-   A similar transformation is done for MAX_EXPR.  */
+   A similar transformation is done for MAX_EXPR.
+
+
+   This pass also performs a fifth transformation of a slightly different
+   flavor.
+
+   Adjacent Load Hoisting
+   ----------------------
+   
+   This transformation replaces
+
+     bb0:
+       if (...) goto bb2; else goto bb1;
+     bb1:
+       x1 = (<expr>).field1;
+       goto bb3;
+     bb2:
+       x2 = (<expr>).field2;
+     bb3:
+       # x = PHI <x1, x2>;
+
+   with
+
+     bb0:
+       x1 = (<expr>).field1;
+       x2 = (<expr>).field2;
+       if (...) goto bb2; else goto bb1;
+     bb1:
+       goto bb3;
+     bb2:
+     bb3:
+       # x = PHI <x1, x2>;
+
+   The purpose of this transformation is to enable generation of conditional
+   move instructions such as Intel CMOVE or PowerPC ISEL.  Because one of
+   the loads is speculative, the transformation is restricted to very
+   specific cases to avoid introducing a page fault.  We are looking for
+   the common idiom:
+
+     if (...)
+       x = y->left;
+     else
+       x = y->right;
+
+   where left and right are typically adjacent pointers in a tree structure.  */
 
 static unsigned int
 tree_ssa_phiopt (void)
 {
-  return tree_ssa_phiopt_worker (false);
+  return tree_ssa_phiopt_worker (false, gate_hoist_loads ());
 }
 
 /* This pass tries to transform conditional stores into unconditional
@@ -190,7 +245,7 @@ tree_ssa_phiopt (void)
 static unsigned int
 tree_ssa_cs_elim (void)
 {
-  return tree_ssa_phiopt_worker (true);
+  return tree_ssa_phiopt_worker (true, false);
 }
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
@@ -227,9 +282,11 @@ static tree condstoretemp;
 /* The core routine of conditional store replacement and normal
    phi optimizations.  Both share much of the infrastructure in how
    to match applicable basic block patterns.  DO_STORE_ELIM is true
-   when we want to do conditional store replacement, false otherwise.  */
+   when we want to do conditional store replacement, false otherwise.
+   DO_HOIST_LOADS is true when we want to hoist adjacent loads out 
+   of diamond control flow patterns, false otherwise.  */
 static unsigned int
-tree_ssa_phiopt_worker (bool do_store_elim)
+tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 {
   basic_block bb;
   basic_block *bb_order;
@@ -310,6 +367,25 @@ tree_ssa_phiopt_worker (bool do_store_elim)
 	    continue;
 	  if (cond_if_else_store_replacement (bb1, bb2, bb3))
 	    cfgchanged = true;
+	  continue;
+	}
+      else if (do_hoist_loads
+		 && EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest)
+	{
+	  basic_block bb3 = EDGE_SUCC (bb1, 0)->dest;
+
+	  if (!FLOAT_TYPE_P (TREE_TYPE (gimple_cond_lhs (cond_stmt)))
+	      && single_succ_p (bb1)
+	      && single_succ_p (bb2)
+	      && single_pred_p (bb1)
+	      && single_pred_p (bb2)
+	      && EDGE_COUNT (bb->succs) == 2
+	      && EDGE_COUNT (bb3->preds) == 2
+	      /* If one edge or the other is dominant, a conditional move
+		 is likely to perform worse than the well-predicted branch.  */
+	      && !predictable_edge_p (EDGE_SUCC (bb, 0))
+	      && !predictable_edge_p (EDGE_SUCC (bb, 1)))
+	    hoist_adjacent_loads (bb, bb1, bb2, bb3);
 	  continue;
 	}
       else
@@ -1705,6 +1781,209 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
   VEC_free (gimple, heap, else_stores);
 
   return ok;
+}
+
+/* Return TRUE if STMT has a VUSE whose corresponding VDEF is in BB.  */
+
+static bool
+local_mem_dependence (gimple stmt, basic_block bb)
+{
+  tree vuse = gimple_vuse (stmt);
+  gimple def;
+
+  if (!vuse)
+    return false;
+
+  def = SSA_NAME_DEF_STMT (vuse);
+  return (def && gimple_bb (def) == bb);
+}
+
+/* Given a "diamond" control-flow pattern where BB0 tests a condition,
+   BB1 and BB2 are "then" and "else" blocks dependent on this test,
+   and BB3 rejoins control flow following BB1 and BB2, look for 
+   opportunities to hoist loads as follows.  If BB3 contains a PHI of
+   two loads, one each occurring in BB1 and BB2, and the loads are
+   provably of adjacent fields in the same structure, then move both
+   loads into BB0.  Of course this can only be done if there are no
+   dependencies preventing such motion.
+
+   One of the hoisted loads will always be speculative, so the
+   transformation is currently conservative:
+
+    - The fields must be strictly adjacent.
+    - The two fields must occupy a single memory block that is
+      guaranteed to not cross a page boundary.
+
+    The last is difficult to prove, as such memory blocks should be
+    aligned on the minimum of the stack alignment boundary and the
+    alignment guaranteed by heap allocation interfaces.  Thus we rely
+    on a parameter for the alignment value.
+
+    Provided a good value is used for the last case, the first
+    restriction could possibly be relaxed.  */
+
+static void
+hoist_adjacent_loads (basic_block bb0, basic_block bb1,
+		      basic_block bb2, basic_block bb3)
+{
+  int param_align = PARAM_VALUE (PARAM_L1_CACHE_LINE_SIZE);
+  unsigned param_align_bits = (unsigned) (param_align * BITS_PER_UNIT);
+  gimple_stmt_iterator gsi;
+
+  /* Walk the phis in bb3 looking for an opportunity.  We are looking
+     for phis of two SSA names, one each of which is defined in bb1 and
+     bb2.  */
+  for (gsi = gsi_start_phis (bb3); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple phi_stmt = gsi_stmt (gsi);
+      gimple def1, def2, defswap;
+      tree arg1, arg2, ref1, ref2, field1, field2, fieldswap;
+      tree tree_offset1, tree_offset2, tree_size2, next;
+      int offset1, offset2, size2;
+      unsigned align1;
+      gimple_stmt_iterator gsi2;
+      basic_block bb_for_def1, bb_for_def2;
+
+      if (gimple_phi_num_args (phi_stmt) != 2)
+	continue;
+
+      arg1 = gimple_phi_arg_def (phi_stmt, 0);
+      arg2 = gimple_phi_arg_def (phi_stmt, 1);
+      
+      if (TREE_CODE (arg1) != SSA_NAME
+	  || TREE_CODE (arg2) != SSA_NAME
+	  || SSA_NAME_IS_DEFAULT_DEF (arg1)
+	  || SSA_NAME_IS_DEFAULT_DEF (arg2))
+	continue;
+
+      def1 = SSA_NAME_DEF_STMT (arg1);
+      def2 = SSA_NAME_DEF_STMT (arg2);
+
+      if ((gimple_bb (def1) != bb1 || gimple_bb (def2) != bb2)
+	  && (gimple_bb (def2) != bb1 || gimple_bb (def1) != bb2))
+	continue;
+
+      /* Check the mode of the arguments to be sure a conditional move
+	 can be generated for it.  */
+      if (!optab_handler (cmov_optab, TYPE_MODE (TREE_TYPE (arg1))))
+	continue;
+
+      /* Both statements must be assignments whose RHS is a COMPONENT_REF.  */
+      if (!gimple_assign_single_p (def1)
+	  || !gimple_assign_single_p (def2))
+	continue;
+
+      ref1 = gimple_assign_rhs1 (def1);
+      ref2 = gimple_assign_rhs1 (def2);
+
+      if (TREE_CODE (ref1) != COMPONENT_REF
+	  || TREE_CODE (ref2) != COMPONENT_REF)
+	continue;
+
+      /* The zeroth operand of the two component references must be
+	 identical.  It is not sufficient to compare get_base_address of
+	 the two references, because this could allow for different
+	 elements of the same array in the two trees.  It is not safe to
+	 assume that the existence of one array element implies the
+	 existence of a different one.  */
+      if (!operand_equal_p (TREE_OPERAND (ref1, 0), TREE_OPERAND (ref2, 0), 0))
+	continue;
+
+      field1 = TREE_OPERAND (ref1, 1);
+      field2 = TREE_OPERAND (ref2, 1);
+
+      /* Check for field adjacency, and ensure field1 comes first.  */
+      for (next = DECL_CHAIN (field1);
+	   next && TREE_CODE (next) != FIELD_DECL;
+	   next = DECL_CHAIN (next))
+	;
+
+      if (next != field2)
+	{
+	  for (next = DECL_CHAIN (field2);
+	       next && TREE_CODE (next) != FIELD_DECL;
+	       next = DECL_CHAIN (next))
+	    ;
+
+	  if (next != field1)
+	    continue;
+
+	  fieldswap = field1;
+	  field1 = field2;
+	  field2 = fieldswap;
+	  defswap = def1;
+	  def1 = def2;
+	  def2 = defswap;
+	  /* Don't swap bb1 and bb2 as we may have more than one
+	     phi to process successfully.  */
+	  bb_for_def1 = bb2;
+	  bb_for_def2 = bb1;
+	}
+      else
+	{
+	  bb_for_def1 = bb1;
+	  bb_for_def2 = bb2;
+	}
+
+      /* Check for proper alignment of the first field.  */
+      tree_offset1 = bit_position (field1);
+      tree_offset2 = bit_position (field2);
+      tree_size2 = DECL_SIZE (field2);
+
+      if (!host_integerp (tree_offset1, 1)
+	  || !host_integerp (tree_offset2, 1)
+	  || !host_integerp (tree_size2, 1))
+	continue;
+
+      offset1 = TREE_INT_CST_LOW (tree_offset1);
+      offset2 = TREE_INT_CST_LOW (tree_offset2);
+      size2 = TREE_INT_CST_LOW (tree_size2);
+      align1 = DECL_ALIGN (field1) % param_align_bits;
+
+      if (offset1 % BITS_PER_UNIT != 0)
+	continue;
+
+      /* For profitability, the two field references should fit within
+	 a single cache line.  */
+      if (align1 + offset2 - offset1 + size2 > param_align_bits)
+	continue;
+
+      /* The two expressions cannot be dependent upon vdefs defined
+	 in bb1/bb2.  */
+      if (local_mem_dependence (def1, bb_for_def1)
+	  || local_mem_dependence (def2, bb_for_def2))
+	continue;
+
+      /* The conditions are satisfied; hoist the loads from bb1 and bb2 into
+	 bb0.  We hoist the first one first so that a cache miss is handled
+         efficiently regardless of hardware cache-fill policy.  */
+      gsi2 = gsi_for_stmt (def1);
+      gsi_move_to_bb_end (&gsi2, bb0);
+      gsi2 = gsi_for_stmt (def2);
+      gsi_move_to_bb_end (&gsi2, bb0);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file,
+		   "\nHoisting adjacent loads from %d and %d into %d: \n",
+		   bb_for_def1->index, bb_for_def2->index, bb0->index);
+	  print_gimple_stmt (dump_file, def1, 0, TDF_VOPS|TDF_MEMSYMS);
+	  print_gimple_stmt (dump_file, def2, 0, TDF_VOPS|TDF_MEMSYMS);
+	}
+    }
+}
+
+/* Determine whether we should attempt to hoist adjacent loads out of
+   diamond patterns in pass_phiopt.  Always hoist loads if
+   -fhoist-adjacent-loads is specified and the target machine has
+   both a conditional move instruction and a defined cache line size.  */
+
+static bool
+gate_hoist_loads (void)
+{
+  return (flag_hoist_adjacent_loads == 1
+	  && PARAM_VALUE (PARAM_L1_CACHE_LINE_SIZE)
+	  && HAVE_conditional_move);
 }
 
 /* Always do these optimizations if we have SSA

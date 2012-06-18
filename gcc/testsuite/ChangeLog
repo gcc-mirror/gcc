@@ -1,3 +1,360 @@
+2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr33329.c (f): Increase tabs array to 1024.
+
+2012-06-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53691
+	PR fortran/53685
+	* gfortran.dg/transfer_check_3.f90: New.
+
+2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/vrp68.c: Fix scan-tree-dump-times argument order.
+
+2012-06-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53642
+	PR fortran/45170
+	* gfortran.dg/deferred_type_param_8.f90: New.
+
+2012-06-15  Janis Johnson  <janosjo@codesourcery.com>
+
+	* lib/gcov.exp (verify-lines, verify-branches, verify-calls): Use
+	testname that includes flags, passed in as new argument, in
+	pass/fail messages.
+	(run_gcov): Get testname from dg-test, use it in pass/fail messages
+	and pass it to verify-* procedures.
+
+	* g++.dg/torture/stackalign/stackalign.exp: Combine stack
+	alignment torture options with usual torture options.
+
+	* g++.dg/cpp0x/auto27.C: Add comments to checks for multiple
+	messages reported for one line of source code.
+	* g++.dg/cpp0x/constexpr-decl.C: Likewise.
+	* g++.dg/cpp0x/decltype2.C: Likewise.
+	* g++.dg/cpp0x/decltype3.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-syntax1.C: Likewise.
+	* g++.dg/cpp0x/regress/error-recovery1.C: Likewise.
+	* g++.dg/cpp0x/static_assert3.C: Likewise.
+	* g++.dg/cpp0x/udlit-cpp98-neg.C: Likewise.
+	* g++.dg/cpp0x/udlit-shadow-neg.C: Likewise.
+	* g++.dg/cpp0x/union1.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex10.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex14.C: Likewise.
+	* g++.dg/cpp0x/variadic2.C: Likewise.
+	* g++.dg/cpp0x/variadic20.C: Likewise.
+	* g++.dg/cpp0x/variadic74.C: Likewise.
+	* g++.dg/diagnostic/bitfld2.C: Likewise.
+	* g++.dg/ext/attrib44.C: Likewise.
+	* g++.dg/ext/no-asm-1.C: Likewise.
+	* g++.dg/other/error34.C: Likewise.
+	* g++.dg/parse/crash46.C: Likewise.
+	* g++.dg/parse/error10.C: Likewise.
+	* g++.dg/parse/error2.C: Likewise.
+	* g++.dg/parse/error3.C: Likewise.
+	* g++.dg/parse/error36.C: Likewise.
+	* g++.dg/parse/error8.C: Likewise.
+	* g++.dg/parse/error9.C: Likewise.
+	* g++.dg/parse/parser-pr28152-2.C: Likewise.
+	* g++.dg/parse/parser-pr28152.C: Likewise.
+	* g++.dg/parse/template25.C: Likewise.
+	* g++.dg/parse/typename11.C: Likewise.
+	* g++.dg/tc1/dr147.C: Likewise.
+	* g++.dg/template/deduce3.C: Likewise.
+	* g++.dg/template/koenig9.C: Likewise.
+	* g++.dg/template/pr23510.C: Likewise.
+	* g++.dg/warn/pr12242.C: Likewise.
+	* g++.dg/warn/pr30551-2.C: Likewise.
+	* g++.dg/warn/pr30551.C: Likewise.
+	* g++.old-deja/g++.other/typename1.C: Likewise.
+	* g++.old-deja/g++.pt/niklas01a.C: Likewise.
+
+2012-06-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR c++/51033
+	* c-c++-common/torture/vshuf-16.inc: Move from gcc.c-torture/execute/.
+	* c-c++-common/torture/vshuf-2.inc: Likewise.
+	* c-c++-common/torture/vshuf-4.inc: Likewise.
+	* c-c++-common/torture/vshuf-8.inc: Likewise.
+	* c-c++-common/torture/vshuf-main.inc: Likewise.
+	* c-c++-common/torture/vshuf-v16hi.c: Likewise.
+	* c-c++-common/torture/vshuf-v16qi.c: Likewise.
+	* c-c++-common/torture/vshuf-v2df.c: Likewise.
+	* c-c++-common/torture/vshuf-v2di.c: Likewise.
+	* c-c++-common/torture/vshuf-v2sf.c: Likewise.
+	* c-c++-common/torture/vshuf-v2si.c: Likewise.
+	* c-c++-common/torture/vshuf-v4df.c: Likewise.
+	* c-c++-common/torture/vshuf-v4di.c: Likewise.
+	* c-c++-common/torture/vshuf-v4hi.c: Likewise.
+	* c-c++-common/torture/vshuf-v4sf.c: Likewise.
+	* c-c++-common/torture/vshuf-v4si.c: Likewise.
+	* c-c++-common/torture/vshuf-v8hi.c: Likewise.
+	* c-c++-common/torture/vshuf-v8qi.c: Likewise.
+	* c-c++-common/torture/vshuf-v8si.c: Likewise.
+
+2012-06-15  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/tree-ssa/vector-4.c: New test.
+
+2012-06-15  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/debug/dwarf2/inline3.c: Adjust.
+	* gcc.dg/tree-ssa/foldstring-1.c: Adjust.
+
+2012-06-15  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	PR tree-optimization/53636
+	* gcc.target/arm/pr53636.c: New test.
+
+2012-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51581
+	* gcc.c-torture/execute/pr51581-1.c: New test.
+	* gcc.c-torture/execute/pr51581-2.c: New test.
+	* gcc.dg/vect/pr51581-1.c: New test.
+	* gcc.dg/vect/pr51581-2.c: New test.
+	* gcc.dg/vect/pr51581-3.c: New test.
+	* gcc.target/i386/avx-pr51581-1.c: New test.
+	* gcc.target/i386/avx-pr51581-2.c: New test.
+	* gcc.target/i386/avx2-pr51581-1.c: New test.
+	* gcc.target/i386/avx2-pr51581-2.c: New test.
+	* gcc.dg/vect/slp-26.c (main1): Divide by 0x8031 instead of 3.
+
+2012-06-15  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/20120615-1.c: New testcase.
+
+2012-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect8.ad[sb]: New test.
+
+2012-06-14  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vrp.h: New testcase.
+	* gcc.dg/tree-ssa/vrp68.c: Likewise.
+
+2012-06-13  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/53621
+	* gcc.dg/stack-usage-1.c: Force -fomit-frame-pointer on SH.
+
+2012-06-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips.exp (mips-dg-options): Handle -msynci.
+
+2012-06-13  Janis Johnson  <janisjo@codesourcery.com>
+
+	PR testsuite/20771
+	* lib/dg-pch.exp (dg-flags-pch): Add flags to make compile lines in
+	test summary unique.
+
+	* lib/scanasm.exp (scan-assembler, scan-assembler-not, scan-hidden,
+	scan-not-hiddent, scan-file, scan-file-not, scan-stack-usage,
+	scan-stack-usage-not): Don't strip torture options from test name.
+
+	* lib/scandump.exp (scan-dump-times): Use printable version of
+	regexp in test summary line.
+
+	* gcc.dg/di-longlong64-sync-1.c: Add comments to checks for multiple
+	messages reported for one line of source code.
+	* gcc.dg/format/few-1.c: Likewise.
+	* gcc.dg/ia64-sync-2.c: Likewise.
+	* gcc.dg/sync-2.c: Likewise.
+	* gcc.dg/noncompile/pr44517.c: Likewise.
+
+2012-06-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/49888
+	* gcc.dg/guality/pr49888.c: New.
+
+2012-06-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/tree-ssa/ivopts-2.C: Adjust for coalescing.
+	* gcc.dg/tree-ssa/forwprop-11.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-1.c: Likewise.
+
+2012-06-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53643
+	* gfortran.dg/intent_out_7.f90: New.
+
+2012-06-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53597
+	* gfortran.dg/save_4.f90: New.
+
+2012-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/53532
+	PR c/51034
+	PR c/53196
+	* gcc.dg/pr53532.c: New test.
+	* gcc.dg/c99-complit-2.c: Add two new dg-error directives,
+	adjust line numbers.
+	* gcc.dg/noncompile/950825-1.c: Expect incomplete type error message.
+	* gcc.dg/Wcxx-compat-8.c: Likewise.
+	* gcc.dg/pr51034.c: New test.
+	* gcc.dg/pr53196-1.c: New test.
+	* gcc.dg/pr53196-2.c: New test.
+
+2012-06-12  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/torture/stackalign/stackalign.exp: Combine stack
+	alignment torture options with usual torture options.
+	* gcc.dg/torture/stackalign/alloca-2.c: Use dg-additional-options
+	instead of dg-options.
+	* gcc.dg/torture/stackalign/alloca-3.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-4.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-5.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-6.c: Likewise.
+	* gcc.dg/torture/stackalign/push-1.c: Likewise.
+	* gcc.dg/torture/stackalign/vararg-3.c: Likewise.
+
+	* gcc.target/arm/di-longlong64-sync-withhelpers.c: Add comments
+	to checks for multiple messages reported for one line of source code.
+	* gcc.target/arm/di-longlong64-sync-withldrexd.c: Likewise.
+
+	* gcc.c-torture/compile/sync-1.c: Add comments to checks for multiple
+	messages reported for one line of source code.
+
+	* gcc.dg/20031223-1.c: Add comments to check for multiple
+	messages reported for one line of source code.
+	* gcc.dg/Wconversion-integer.c: Likewise.
+	* gcc.dg/Wfatal-2.c: Likewise.
+	* gcc.dg/Wfatal.c: Likewise.
+	* gcc.dg/Wobjsize-1.c: Likewise.
+	* gcc.dg/c99-vla-jump-1.c: Likewise.
+	* gcc.dg/c99-vla-jump-2.c: Likewise.
+	* gcc.dg/c99-vla-jump-3.c: Likewise.
+	* gcc.dg/c99-vla-jump-4.c: Likewise.
+	* gcc.dg/c99-vla-jump-5.c: Likewise.
+	* gcc.dg/decl-9.c: Likewise.
+	* gcc.dg/declspec-10.c: Likewise.
+	* gcc.dg/declspec-18.c: Likewise.
+	* gcc.dg/mtune.c: Likewise.
+	* gcc.dg/parser-pr28152-2.c: Likewise.
+	* gcc.dg/parser-pr28152.c: Likewise.
+	* gcc.dg/pr14475.c: Likewise.
+	* gcc.dg/pr27953.c: Likewise.
+	* gcc.dg/pr28322-3.c: Likewise.
+	* gcc.dg/pr30457.c: Likewise.
+	* gcc.dg/pr30551-2.c: Likewise.
+	* gcc.dg/pr30551-3.c: Likewise.
+	* gcc.dg/pr30551-4.c: Likewise.
+	* gcc.dg/pr30551-5.c: Likewise.
+	* gcc.dg/pr30551-6.c: Likewise.
+	* gcc.dg/pr30551.c: Likewise.
+	* gcc.dg/pr45461.c: Likewise.
+	* gcc.dg/pr48552-1.c: Likewise.
+	* gcc.dg/pr48552-2.c: Likewise.
+	* gcc.dg/redecl-1.c: Likewise.
+	* gcc.dg/transparent-union-3.c: Likewise.
+	* gcc.dg/utf-dflt.c: Likewise.
+	* gcc.dg/utf-dflt2.c: Likewise.
+	* gcc.dg/vla-8.c: Likewise.
+	* gcc.dg/vla-init-1.c: Likewise.
+	* gcc.dg/wtr-int-type-1.c: Likewise.
+
+	* c-c++-common/raw-string-3.c: Add comments to checks for multiple
+	messages reported for for one line of source code.
+	* c-c++-common/raw-string-5.c: Likewise.
+	* c-c++-common/raw-string-4.c: Likewise.
+	* c-c++-common/raw-string-6.c: Likewise.
+	* c-c++-common/pr20000.c: Likewise.
+
+	* gcc.dg/cpp/include2a.c: Add comments to checks for multiple
+	messages reported for one line of source code.
+	* gcc.dg/cpp/pr30786.c: Likewise.
+	* gcc.dg/cpp/pr28709.c: Likewise.
+	* gcc.dg/cpp/missing-header-MD.c: Likewise.
+	* gcc.dg/cpp/macspace2.c: Likewise.
+	* gcc.dg/cpp/missing-header-1.c: Likewise.
+	* gcc.dg/cpp/missing-header-MMD.c: Likewise.
+	* gcc.dg/cpp/missing-sysheader-MD.c: Likewise.
+	* gcc.dg/cpp/missing-sysheader-MMD.c: Likewise.
+
+2012-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53599
+	* g++.dg/template/local7.C: New.
+
+2012-06-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53511
+	* gcc.target/sh/pr51340-1.c: Delete obsolete test case.
+	* gcc.target/sh/pr51340-2.c: Likewise.
+	* gcc.target/sh/pr51340-3.c: Likewise.
+
+2012-06-12  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/torture/alias-1.c: New test.
+
+2012-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53589
+	* gcc.dg/torture/pr53589.c: New test.
+
+2012-06-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50749
+	* gcc.target/sh/pr50749-sf-postinc-2.c: New.
+	* gcc.target/sh/pr50749-sf-postinc-4.c: New.
+	* gcc.target/sh/pr50749-qihisi-postinc-2.c: New.
+	* gcc.target/sh/pr50749-qihisi-postinc-4.c: New.
+	* gcc.target/sh/pr50749-sf-predec-2.c: New.
+	* gcc.target/sh/pr50749-sf-predec-4.c: New.
+	* gcc.target/sh/pr50749-qihisi-predec-1.c: New.
+	* gcc.target/sh/pr50749-qihisi-predec-3.c: New.
+	* gcc.target/sh/pr50749-sf-postinc-1.c: New.
+	* gcc.target/sh/pr50749-sf-postinc-3.c: New.
+	* gcc.target/sh/pr50749-qihisi-postinc-1.c: New.
+	* gcc.target/sh/pr50749-qihisi-postinc-3.c: New.
+	* gcc.target/sh/pr50749-sf-predec-1.c: New.
+	* gcc.target/sh/pr50749-sf-predec-3.c: New.
+	* gcc.target/sh/pr50749-qihisi-predec-2.c: New.
+	* gcc.target/sh/pr50749-qihisi-predec-4.c: New.
+
+2012-06-11  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.target/i386/builtin_target.c (vendor_signatures): New enum.
+	(check_intel_cpu_model): New function.
+	(check_amd_cpu_model): New function.
+	(check_features): New function.
+	(__get_cpuid_output): New function.
+	(check_detailed): New function.
+	(fn1): Rename to quick_check.
+	(main): Update to call quick_check and call check_detailed.
+
+2012-06-11  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_sync_long_long_runtime): Use
+	check_effective_target_lp64 instead of
+	check_effective_target_powerpc64 for powerpc targets.
+
+2012-06-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53511
+	* gcc.target/sh/pr53511-1.c: New.
+
+2012-06-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53470
+	* g++.dg/lto/pr53470_0.C: New testcase.
+	* gcc.dg/lto/pr53470_0.c: Likewise.
+
+2012-06-11  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/53605
+	* g++.dg/ext/pr53605.C: New testcase.
+
+2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/array1.ads: New test.
+	* gnat.dg/specs/array2.ads: Likewise.
+	* gnat.dg/array22.adb: Likewise.
+
 2012-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/constant4.adb: New test.

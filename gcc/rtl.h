@@ -1226,6 +1226,7 @@ extern unsigned int num_sign_bit_copies (const_rtx, enum machine_mode);
 extern bool constant_pool_constant_p (rtx);
 extern bool truncated_to_mode (enum machine_mode, const_rtx);
 extern int low_bitmask_len (enum machine_mode, unsigned HOST_WIDE_INT);
+extern void split_double (rtx, rtx *, rtx *);
 
 #ifndef GENERATOR_FILE
 /* Return the cost of SET X.  SPEED_P is true if optimizing for speed
@@ -1638,9 +1639,6 @@ extern int currently_expanding_to_rtl;
 
 /* Generally useful functions.  */
 
-/* In expmed.c */
-extern int ceil_log2 (unsigned HOST_WIDE_INT);
-
 /* In explow.c */
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, enum machine_mode);
 extern rtx plus_constant (enum machine_mode, rtx, HOST_WIDE_INT);
@@ -1802,7 +1800,7 @@ extern rtx skip_consecutive_labels (rtx);
 extern rtx next_cc0_user (rtx);
 extern rtx prev_cc0_setter (rtx);
 
-/* In cfglayout.c  */
+/* In emit-rtl.c  */
 extern int insn_line (const_rtx);
 extern const char * insn_file (const_rtx);
 extern location_t locator_location (int);
@@ -1810,6 +1808,7 @@ extern int locator_line (int);
 extern const char * locator_file (int);
 extern bool locator_eq (int, int);
 extern int prologue_locator, epilogue_locator;
+extern tree insn_scope (const_rtx);
 
 /* In jump.c */
 extern enum rtx_code reverse_condition (enum rtx_code);
@@ -2423,7 +2422,6 @@ extern void reorder_insns (rtx, rtx, rtx);
 extern void reorder_insns_nobb (rtx, rtx, rtx);
 extern int get_max_insn_count (void);
 extern int in_sequence_p (void);
-extern void force_next_line_note (void);
 extern void init_emit (void);
 extern void init_emit_regs (void);
 extern void init_emit_once (void);
@@ -2512,6 +2510,7 @@ extern int fixup_args_size_notes (rtx, rtx, int);
 
 /* In cfgrtl.c */
 extern void print_rtl_with_bb (FILE *, const_rtx);
+extern rtx duplicate_insn_chain (rtx, rtx);
 
 /* In cfg.c.  */
 extern void dump_reg_info (FILE *);

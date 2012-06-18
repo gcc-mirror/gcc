@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,8 +87,7 @@ package body Exp_Alfa is
               N_Subprogram_Body     =>
             Qualify_Entity_Names (N);
 
-         when N_Function_Call            |
-              N_Procedure_Call_Statement =>
+         when N_Subprogram_Call     =>
             Expand_Alfa_Call (N);
 
          when N_Expanded_Name |

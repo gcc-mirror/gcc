@@ -1,5 +1,5 @@
 /* HOST_WIDE_INT definitions for the GNU compiler.
-   Copyright (C) 1998, 2002, 2004, 2008, 2009, 2010
+   Copyright (C) 1998, 2002, 2004, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -60,19 +60,24 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 #if HOST_BITS_PER_LONG >= 64 || !defined NEED_64BIT_HOST_WIDE_INT
 #   define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
 #   define HOST_WIDE_INT long
+#   define HOST_WIDE_INT_C(X) X ## L
 #else
 # if HOST_BITS_PER_LONGLONG >= 64
 #   define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONGLONG
 #   define HOST_WIDE_INT long long
+#   define HOST_WIDE_INT_C(X) X ## LL
 # else
 #  if HOST_BITS_PER___INT64 >= 64
 #   define HOST_BITS_PER_WIDE_INT HOST_BITS_PER___INT64
 #   define HOST_WIDE_INT __int64
+#   define HOST_WIDE_INT_C(X) X ## i64
 #  else
     #error "Unable to find a suitable type for HOST_WIDE_INT"
 #  endif
 # endif
 #endif
+
+#define HOST_WIDE_INT_1 HOST_WIDE_INT_C(1)
 
 /* This is a magic identifier which allows GCC to figure out the type
    of HOST_WIDE_INT for %wd specifier checks.  You must issue this
@@ -84,7 +89,6 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
 # define HOST_WIDE_INT_PRINT HOST_LONG_FORMAT
 # define HOST_WIDE_INT_PRINT_C "L"
-# define HOST_WIDE_INT_1 1L
   /* 'long' might be 32 or 64 bits, and the number of leading zeroes
      must be tweaked accordingly.  */
 # if HOST_BITS_PER_WIDE_INT == 64
@@ -97,7 +101,6 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 #else
 # define HOST_WIDE_INT_PRINT HOST_LONG_LONG_FORMAT
 # define HOST_WIDE_INT_PRINT_C "LL"
-# define HOST_WIDE_INT_1 1LL
   /* We can assume that 'long long' is at least 64 bits.  */
 # define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
     "0x%" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x"
@@ -122,14 +125,17 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 # define HOST_WIDEST_INT_PRINT_UNSIGNED	      HOST_WIDE_INT_PRINT_UNSIGNED
 # define HOST_WIDEST_INT_PRINT_HEX	      HOST_WIDE_INT_PRINT_HEX
 # define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     HOST_WIDE_INT_PRINT_DOUBLE_HEX
+# define HOST_WIDEST_INT_C(X)		      HOST_WIDE_INT(X)
 #else
 # if HOST_BITS_PER_LONGLONG >= 64
 #  define HOST_BITS_PER_WIDEST_INT	      HOST_BITS_PER_LONGLONG
 #  define HOST_WIDEST_INT		      long long
+#  define HOST_WIDEST_INT_C(X)		      X ## LL
 # else
 #  if HOST_BITS_PER___INT64 >= 64
 #   define HOST_BITS_PER_WIDEST_INT	      HOST_BITS_PER___INT64
 #   define HOST_WIDEST_INT		      __int64
+#   define HOST_WIDEST_INT_C(X)		      X ## i64
 #  else
     #error "This line should be impossible to reach"
 #  endif
@@ -179,6 +185,9 @@ extern int exact_log2                  (unsigned HOST_WIDE_INT);
 /* Return floor of log2, with -1 for zero.  */
 extern int floor_log2                  (unsigned HOST_WIDE_INT);
 
+/* Return the smallest n such that 2**n >= X.  */
+extern int ceil_log2			(unsigned HOST_WIDE_INT);
+
 #else /* GCC_VERSION >= 3004 */
 
 /* For convenience, define 0 -> word_size.  */
@@ -226,6 +235,12 @@ static inline int
 floor_log2 (unsigned HOST_WIDE_INT x)
 {
   return HOST_BITS_PER_WIDE_INT - 1 - clz_hwi (x);
+}
+
+static inline int
+ceil_log2 (unsigned HOST_WIDE_INT x)
+{
+  return floor_log2 (x - 1) + 1;
 }
 
 static inline int

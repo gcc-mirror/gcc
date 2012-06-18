@@ -1490,20 +1490,6 @@ package body Exp_Ch7 is
 
             Append_To (Finalizer_Stmts, Label);
 
-            --  The local exception does not need to be reraised for library-
-            --  level finalizers. Generate:
-            --
-            --    if Raised and then not Abort then
-            --       Raise_From_Controlled_Operation (E);
-            --    end if;
-
-            if not For_Package
-              and then Exceptions_OK
-            then
-               Append_To (Finalizer_Stmts,
-                 Build_Raise_Statement (Finalizer_Data));
-            end if;
-
             --  Create the jump block which controls the finalization flow
             --  depending on the value of the state counter.
 
@@ -1570,6 +1556,22 @@ package body Exp_Ch7 is
                 Name => New_Reference_To (RTE (RE_Abort_Undefer), Loc)));
          end if;
 
+         --  The local exception does not need to be reraised for library-level
+         --  finalizers. Note that this action must be carried out after object
+         --  clean up, secondary stack release and abort undeferral. Generate:
+
+         --    if Raised and then not Abort then
+         --       Raise_From_Controlled_Operation (E);
+         --    end if;
+
+         if Has_Ctrl_Objs
+           and then Exceptions_OK
+           and then not For_Package
+         then
+            Append_To (Finalizer_Stmts,
+              Build_Raise_Statement (Finalizer_Data));
+         end if;
+
          --  Generate:
          --    procedure Fin_Id is
          --       Abort  : constant Boolean := Triggered_By_Abort;
@@ -1590,6 +1592,7 @@ package body Exp_Ch7 is
          --       <finalization statements>  --  Added if Has_Ctrl_Objs
          --       <stack release>            --  Added if Mark_Id exists
          --       Abort_Undefer;             --  Added if abort is allowed
+         --       <exception propagation>    --  Added if Has_Ctrl_Objs
          --    end Fin_Id;
 
          --  Create the body of the finalizer
@@ -1881,11 +1884,23 @@ package body Exp_Ch7 is
                --  transients declared inside an Expression_With_Actions.
 
                elsif Is_Access_Type (Obj_Typ)
-                 and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
-                 and then Nkind (Return_Flag_Or_Transient_Decl (Obj_Id)) =
+                 and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
+                 and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
                                    N_Object_Declaration
                  and then Is_Finalizable_Transient
-                            (Return_Flag_Or_Transient_Decl (Obj_Id), Decl)
+                            (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
+               then
+                  Processing_Actions (Has_No_Init => True);
+
+               --  Process intermediate results of conditional expression with
+               --  one of the alternatives using a controlled function call.
+
+               elsif Is_Access_Type (Obj_Typ)
+                 and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
+                 and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
+                                                       N_Defining_Identifier
+                 and then Present (Expr)
+                 and then Nkind (Expr) = N_Null
                then
                   Processing_Actions (Has_No_Init => True);
 
@@ -1951,7 +1966,7 @@ package body Exp_Ch7 is
 
                elsif Needs_Finalization (Obj_Typ)
                  and then Is_Return_Object (Obj_Id)
-                 and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
+                 and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
                then
                   Processing_Actions (Has_No_Init => True);
 
@@ -2091,6 +2106,22 @@ package body Exp_Ch7 is
                then
                   Last_Top_Level_Ctrl_Construct := Decl;
                end if;
+
+            --  Handle the case where the original context has been wrapped in
+            --  a block to avoid interference between exception handlers and
+            --  At_End handlers. Treat the block as transparent and process its
+            --  contents.
+
+            elsif Nkind (Decl) = N_Block_Statement
+              and then Is_Finalization_Wrapper (Decl)
+            then
+               if Present (Handled_Statement_Sequence (Decl)) then
+                  Process_Declarations
+                    (Statements (Handled_Statement_Sequence (Decl)),
+                     Preprocess);
+               end if;
+
+               Process_Declarations (Declarations (Decl), Preprocess);
             end if;
 
             Prev_Non_Pragma (Decl);
@@ -2666,27 +2697,8 @@ package body Exp_Ch7 is
             end if;
 
             if Ekind_In (Obj_Id, E_Constant, E_Variable)
-              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
+              and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
             then
-               --  Return objects use a flag to aid their potential
-               --  finalization when the enclosing function fails to return
-               --  properly. Generate:
-
-               --    if not Flag then
-               --       <object finalization statements>
-               --    end if;
-
-               if Is_Return_Object (Obj_Id) then
-                  Fin_Stmts := New_List (
-                    Make_If_Statement (Loc,
-                      Condition     =>
-                        Make_Op_Not (Loc,
-                          Right_Opnd =>
-                            New_Reference_To
-                              (Return_Flag_Or_Transient_Decl (Obj_Id), Loc)),
-
-                    Then_Statements => Fin_Stmts));
-
                --  Temporaries created for the purpose of "exporting" a
                --  controlled transient out of an Expression_With_Actions (EWA)
                --  need guards. The following illustrates the usage of such
@@ -2714,19 +2726,35 @@ package body Exp_Ch7 is
                --       <object finalization statements>
                --    end if;
 
-               else
-                  pragma Assert
-                    (Nkind (Return_Flag_Or_Transient_Decl (Obj_Id)) =
-                       N_Object_Declaration);
-
+               if Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
+                                                      N_Object_Declaration
+               then
                   Fin_Stmts := New_List (
                     Make_If_Statement (Loc,
                       Condition       =>
                         Make_Op_Ne (Loc,
                           Left_Opnd  => New_Reference_To (Obj_Id, Loc),
                           Right_Opnd => Make_Null (Loc)),
-
                       Then_Statements => Fin_Stmts));
+
+               --  Return objects use a flag to aid in processing their
+               --  potential finalization when the enclosing function fails
+               --  to return properly. Generate:
+
+               --    if not Flag then
+               --       <object finalization statements>
+               --    end if;
+
+               else
+                  Fin_Stmts := New_List (
+                    Make_If_Statement (Loc,
+                      Condition     =>
+                        Make_Op_Not (Loc,
+                          Right_Opnd =>
+                            New_Reference_To
+                              (Status_Flag_Or_Transient_Decl (Obj_Id), Loc)),
+
+                    Then_Statements => Fin_Stmts));
                end if;
             end if;
          end if;
@@ -3693,6 +3721,11 @@ package body Exp_Ch7 is
            Make_Block_Statement (Loc,
              Handled_Statement_Sequence => HSS);
 
+         --  Signal the finalization machinery that this particular block
+         --  contains the original context.
+
+         Set_Is_Finalization_Wrapper (Block);
+
          Set_Handled_Statement_Sequence (N,
            Make_Handled_Sequence_Of_Statements (Loc, New_List (Block)));
          HSS := Handled_Statement_Sequence (N);
@@ -4324,10 +4357,29 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         Requires_Hooking : constant Boolean :=
-                              Nkind_In (N, N_Function_Call,
-                                           N_Procedure_Call_Statement);
+         function Requires_Hooking return Boolean;
+         --  Determine whether the context requires transient variable export
+         --  to the outer finalizer. This scenario arises when the context may
+         --  raise an exception.
 
+         ----------------------
+         -- Requires_Hooking --
+         ----------------------
+
+         function Requires_Hooking return Boolean is
+         begin
+            --  The context is either a procedure or function call or an object
+            --  declaration initialized by a function call. In all these cases,
+            --  the calls might raise an exception.
+
+            return Nkind (N) in N_Subprogram_Call
+               or else (Nkind (N) = N_Object_Declaration
+                         and then Nkind (Expression (N)) = N_Function_Call);
+         end Requires_Hooking;
+
+         --  Local variables
+
+         Must_Hook : constant Boolean := Requires_Hooking;
          Built     : Boolean := False;
          Desig_Typ : Entity_Id;
          Fin_Block : Node_Id;
@@ -4392,7 +4444,7 @@ package body Exp_Ch7 is
                --  enclosing sequence of statements where their corresponding
                --  "hooks" are picked up by the finalization machinery.
 
-               if Requires_Hooking then
+               if Must_Hook then
                   declare
                      Expr   : Node_Id;
                      Ptr_Id : Entity_Id;
@@ -4432,7 +4484,7 @@ package body Exp_Ch7 is
                      --  the machinery in Build_Finalizer to recognize this
                      --  special case.
 
-                     Set_Return_Flag_Or_Transient_Decl (Temp_Id, Stmt);
+                     Set_Status_Flag_Or_Transient_Decl (Temp_Id, Stmt);
 
                      --  Step 3: Hook the transient object to the temporary
 
@@ -4467,7 +4519,7 @@ package body Exp_Ch7 is
                --  Generate:
                --    Temp := null;
 
-               if Requires_Hooking then
+               if Must_Hook then
                   Append_To (Stmts,
                     Make_Assignment_Statement (Loc,
                       Name       => New_Reference_To (Temp_Id, Loc),

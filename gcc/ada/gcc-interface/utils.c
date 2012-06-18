@@ -3601,7 +3601,7 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 			     record_type, size_int (klass), field_list);
   field_list
     = make_descriptor_field ("MBMO", gnat_type_for_size (32, 1),
-			     record_type, ssize_int (-1), field_list);
+			     record_type, size_int (-1), field_list);
   field_list
     = make_descriptor_field ("LENGTH", gnat_type_for_size (64, 1),
 			     record_type,
@@ -5146,20 +5146,6 @@ maybe_unconstrained_array (tree exp)
     default:
       break;
     }
-
-  return exp;
-}
-
-/* If EXP's type is a VECTOR_TYPE, return EXP converted to the associated
-   TYPE_REPRESENTATIVE_ARRAY.  */
-
-tree
-maybe_vector_array (tree exp)
-{
-  tree etype = TREE_TYPE (exp);
-
-  if (VECTOR_TYPE_P (etype))
-    exp = convert (TYPE_REPRESENTATIVE_ARRAY (etype), exp);
 
   return exp;
 }

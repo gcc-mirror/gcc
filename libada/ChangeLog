@@ -1,3 +1,7 @@
+2012-06-11  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (GNATLIBCFLAGS_FOR_C): Remove $(PICFLAG).
+
 2012-01-22  Douglas B Rupp  <rupp@gnat.com>
 
 	* configure: Regenerate.

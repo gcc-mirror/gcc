@@ -51,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"
-#include "cfglayout.h"
 #include "sched-int.h"
 #include "gimple.h"
 #include "bitmap.h"

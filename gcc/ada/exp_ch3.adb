@@ -2636,6 +2636,100 @@ package body Exp_Ch3 is
                      Actions := Build_Assignment (Id, Expression (Decl));
                   end if;
 
+               --  CPU, Dispatching_Domain, Priority and Size components are
+               --  filled with the corresponding rep item expression of the
+               --  concurrent type (if any).
+
+               elsif Ekind (Scope (Id)) = E_Record_Type
+                 and then Present (Corresponding_Concurrent_Type (Scope (Id)))
+                 and then (Chars (Id) = Name_uCPU                or else
+                           Chars (Id) = Name_uDispatching_Domain or else
+                           Chars (Id) = Name_uPriority)
+               then
+                  declare
+                     Exp   : Node_Id;
+                     Nam   : Name_Id;
+                     Ritem : Node_Id;
+
+                  begin
+                     if Chars (Id) = Name_uCPU then
+                        Nam := Name_CPU;
+
+                     elsif Chars (Id) = Name_uDispatching_Domain then
+                        Nam := Name_Dispatching_Domain;
+
+                     elsif Chars (Id) = Name_uPriority then
+                        Nam := Name_Priority;
+                     end if;
+
+                     --  Get the Rep Item (aspect specification, attribute
+                     --  definition clause or pragma) of the corresponding
+                     --  concurrent type.
+
+                     Ritem :=
+                       Get_Rep_Item
+                         (Corresponding_Concurrent_Type (Scope (Id)), Nam);
+
+                     if Present (Ritem) then
+
+                        --  Pragma case
+
+                        if Nkind (Ritem) = N_Pragma then
+                           Exp := First (Pragma_Argument_Associations (Ritem));
+
+                           if Nkind (Exp) = N_Pragma_Argument_Association then
+                              Exp := Expression (Exp);
+                           end if;
+
+                           --  Conversion for Priority expression
+
+                           if Nam = Name_Priority then
+                              if Pragma_Name (Ritem) = Name_Priority
+                                and then not GNAT_Mode
+                              then
+                                 Exp := Convert_To (RTE (RE_Priority), Exp);
+                              else
+                                 Exp :=
+                                   Convert_To (RTE (RE_Any_Priority), Exp);
+                              end if;
+                           end if;
+
+                        --  Aspect/Attribute definition clause case
+
+                        else
+                           Exp := Expression (Ritem);
+
+                           --  Conversion for Priority expression
+
+                           if Nam = Name_Priority then
+                              if Chars (Ritem) = Name_Priority
+                                and then not GNAT_Mode
+                              then
+                                 Exp := Convert_To (RTE (RE_Priority), Exp);
+                              else
+                                 Exp :=
+                                   Convert_To (RTE (RE_Any_Priority), Exp);
+                              end if;
+                           end if;
+                        end if;
+
+                        --  Conversion for Dispatching_Domain value
+
+                        if Nam = Name_Dispatching_Domain then
+                           Exp :=
+                             Unchecked_Convert_To
+                               (RTE (RE_Dispatching_Domain_Access), Exp);
+                        end if;
+
+                        Actions := Build_Assignment (Id, Exp);
+
+                     --  Nothing needed if no Rep Item
+
+                     else
+                        Actions := No_List;
+                     end if;
+                  end;
+
                --  Composite component with its own Init_Proc
 
                elsif not Is_Interface (Typ)
