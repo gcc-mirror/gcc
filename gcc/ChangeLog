@@ -1,3 +1,8 @@
+2012-06-18  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_gimplify_va_arg): Revert change from
+	r187965.
+
 2012-06-18  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* doc/md.texi: Document int iterators.
