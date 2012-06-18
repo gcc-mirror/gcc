@@ -16544,6 +16544,76 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
   REG_NOTES (par) = dwarf;
 }
 
+/* Generate and emit an insn pattern that we will recognize as a pop_multi
+   of NUM_REGS consecutive VFP regs, starting at FIRST_REG.
+
+   Unfortunately, since this insn does not reflect very well the actual
+   semantics of the operation, we need to annotate the insn for the benefit
+   of DWARF2 frame unwind information.  */
+static void
+arm_emit_vfp_multi_reg_pop (int first_reg, int num_regs, rtx base_reg)
+{
+  int i, j;
+  rtx par;
+  rtx dwarf = NULL_RTX;
+  rtx tmp, reg;
+
+  gcc_assert (num_regs && num_regs <= 32);
+
+    /* Workaround ARM10 VFPr1 bug.  */
+  if (num_regs == 2 && !arm_arch6)
+    {
+      if (first_reg == 15)
+        first_reg--;
+
+      num_regs++;
+    }
+
+  /* We can emit at most 16 D-registers in a single pop_multi instruction, and
+     there could be up to 32 D-registers to restore.
+     If there are more than 16 D-registers, make two recursive calls,
+     each of which emits one pop_multi instruction.  */
+  if (num_regs > 16)
+    {
+      arm_emit_vfp_multi_reg_pop (first_reg, 16, base_reg);
+      arm_emit_vfp_multi_reg_pop (first_reg + 16, num_regs - 16, base_reg);
+      return;
+    }
+
+  /* The parallel needs to hold num_regs SETs
+     and one SET for the stack update.  */
+  par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs + 1));
+
+  /* Increment the stack pointer, based on there being
+     num_regs 8-byte registers to restore.  */
+  tmp = gen_rtx_SET (VOIDmode,
+                     base_reg,
+                     plus_constant (Pmode, base_reg, 8 * num_regs));
+  RTX_FRAME_RELATED_P (tmp) = 1;
+  XVECEXP (par, 0, 0) = tmp;
+
+  /* Now show every reg that will be restored, using a SET for each.  */
+  for (j = 0, i=first_reg; j < num_regs; i += 2)
+    {
+      reg = gen_rtx_REG (DFmode, i);
+
+      tmp = gen_rtx_SET (VOIDmode,
+                         reg,
+                         gen_frame_mem
+                         (DFmode,
+                          plus_constant (Pmode, base_reg, 8 * j)));
+      RTX_FRAME_RELATED_P (tmp) = 1;
+      XVECEXP (par, 0, j + 1) = tmp;
+
+      dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+
+      j++;
+    }
+
+  par = emit_insn (par);
+  REG_NOTES (par) = dwarf;
+}
+
 /* Calculate the size of the return value that is passed in registers.  */
 static unsigned
 arm_size_return_regs (void)

@@ -2,6 +2,15 @@
             Sameera Deshpande  <sameera.deshpande@arm.com>
             Greta Yorsh  <greta.yorsh@arm.com>
 
+        * config/arm/arm.md (vfp_pop_multiple_with_writeback) New
+	define_insn.
+        * config/arm/predicates.md (pop_multiple_fp) New special predicate.
+        * config/arm/arm.c (arm_emit_vfp_multi_reg_pop): New function.
+
+2012-06-18  Ian Bolton  <ian.bolton@arm.com>
+            Sameera Deshpande  <sameera.deshpande@arm.com>
+            Greta Yorsh  <greta.yorsh@arm.com>
+
         * config/arm/arm.md (load_multiple_with_writeback) New define_insn.
         (load_multiple, pop_multiple_with_writeback_and_return) Likewise.
         (pop_multiple_with_return, ldr_with_return) Likewise.

@@ -10946,6 +10946,41 @@
   [(set_attr "type" "load1")
    (set_attr "predicable" "yes")]
 )
+;; Pop for floating point registers (as used in epilogue RTL)
+(define_insn "*vfp_pop_multiple_with_writeback"
+  [(match_parallel 0 "pop_multiple_fp"
+    [(set (match_operand:SI 1 "s_register_operand" "+rk")
+          (plus:SI (match_dup 1)
+                   (match_operand:SI 2 "const_int_operand" "I")))
+     (set (match_operand:DF 3 "arm_hard_register_operand" "")
+          (mem:DF (match_dup 1)))])]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
+  "*
+  {
+    int num_regs = XVECLEN (operands[0], 0);
+    char pattern[100];
+    rtx op_list[2];
+    strcpy (pattern, \"fldmfdd\\t\");
+    strcat (pattern, reg_names[REGNO (SET_DEST (XVECEXP (operands[0], 0, 0)))]);
+    strcat (pattern, \"!, {\");
+    op_list[0] = XEXP (XVECEXP (operands[0], 0, 1), 0);
+    strcat (pattern, \"%P0\");
+    if ((num_regs - 1) > 1)
+      {
+        strcat (pattern, \"-%P1\");
+        op_list [1] = XEXP (XVECEXP (operands[0], 0, num_regs - 1), 0);
+      }
+
+    strcat (pattern, \"}\");
+    output_asm_insn (pattern, op_list);
+    return \"\";
+  }
+  "
+  [(set_attr "type" "load4")
+   (set_attr "conds" "unconditional")
+   (set_attr "predicable" "no")]
+)
+
 ;; Special patterns for dealing with the constant pool
 
 (define_insn "align_4"
