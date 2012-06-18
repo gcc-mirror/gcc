@@ -1,3 +1,9 @@
+2012-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53712
+	* config/i386/sse.md (*sse4_2_pcmpestr_unaligned): New.
+	(*sse4_2_pcmpistr_unaligned): New.
+
 2012-06-18  Ian Bolton  <ian.bolton@arm.com>
 	    Sameera Deshpande  <sameera.deshpande@arm.com>
 	    Greta Yorsh  <greta.yorsh@arm.com>

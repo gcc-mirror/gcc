@@ -9679,6 +9679,68 @@
    (set_attr "memory" "none,load")
    (set_attr "mode" "TI")])
 
+(define_insn_and_split "*sse4_2_pcmpestr_unaligned"
+  [(set (match_operand:SI 0 "register_operand" "=c")
+	(unspec:SI
+	  [(match_operand:V16QI 2 "reg_not_xmm0_operand" "x")
+	   (match_operand:SI 3 "register_operand" "a")
+	   (unspec:V16QI
+	     [(match_operand:V16QI 4 "memory_operand" "m")]
+	     UNSPEC_MOVU)
+	   (match_operand:SI 5 "register_operand" "d")
+	   (match_operand:SI 6 "const_0_to_255_operand" "n")]
+	  UNSPEC_PCMPESTR))
+   (set (match_operand:V16QI 1 "register_operand" "=Yz")
+	(unspec:V16QI
+	  [(match_dup 2)
+	   (match_dup 3)
+	   (unspec:V16QI [(match_dup 4)] UNSPEC_MOVU)
+	   (match_dup 5)
+	   (match_dup 6)]
+	  UNSPEC_PCMPESTR))
+   (set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_dup 2)
+	   (match_dup 3)
+	   (unspec:V16QI [(match_dup 4)] UNSPEC_MOVU)
+	   (match_dup 5)
+	   (match_dup 6)]
+	  UNSPEC_PCMPESTR))]
+  "TARGET_SSE4_2
+   && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  int ecx = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[0]));
+  int xmm0 = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[1]));
+  int flags = !find_regno_note (curr_insn, REG_UNUSED, FLAGS_REG);
+
+  if (ecx)
+    emit_insn (gen_sse4_2_pcmpestri (operands[0], operands[2],
+				     operands[3], operands[4],
+				     operands[5], operands[6]));
+  if (xmm0)
+    emit_insn (gen_sse4_2_pcmpestrm (operands[1], operands[2],
+				     operands[3], operands[4],
+				     operands[5], operands[6]));
+  if (flags && !(ecx || xmm0))
+    emit_insn (gen_sse4_2_pcmpestr_cconly (NULL, NULL,
+					   operands[2], operands[3],
+					   operands[4], operands[5],
+					   operands[6]));
+  if (!(flags || ecx || xmm0))
+    emit_note (NOTE_INSN_DELETED);
+
+  DONE;
+}
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "memory" "load")
+   (set_attr "mode" "TI")])
+
 (define_insn "sse4_2_pcmpestri"
   [(set (match_operand:SI 0 "register_operand" "=c,c")
 	(unspec:SI
@@ -9807,6 +9869,59 @@
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "memory" "none,load")
+   (set_attr "mode" "TI")])
+
+(define_insn_and_split "*sse4_2_pcmpistr_unaligned"
+  [(set (match_operand:SI 0 "register_operand" "=c")
+	(unspec:SI
+	  [(match_operand:V16QI 2 "reg_not_xmm0_operand" "x")
+	   (unspec:V16QI
+	     [(match_operand:V16QI 3 "memory_operand" "m")]
+	     UNSPEC_MOVU)
+	   (match_operand:SI 4 "const_0_to_255_operand" "n")]
+	  UNSPEC_PCMPISTR))
+   (set (match_operand:V16QI 1 "register_operand" "=Yz")
+	(unspec:V16QI
+	  [(match_dup 2)
+	   (unspec:V16QI [(match_dup 3)] UNSPEC_MOVU)
+	   (match_dup 4)]
+	  UNSPEC_PCMPISTR))
+   (set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_dup 2)
+	   (unspec:V16QI [(match_dup 3)] UNSPEC_MOVU)
+	   (match_dup 4)]
+	  UNSPEC_PCMPISTR))]
+  "TARGET_SSE4_2
+   && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  int ecx = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[0]));
+  int xmm0 = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[1]));
+  int flags = !find_regno_note (curr_insn, REG_UNUSED, FLAGS_REG);
+
+  if (ecx)
+    emit_insn (gen_sse4_2_pcmpistri (operands[0], operands[2],
+				     operands[3], operands[4]));
+  if (xmm0)
+    emit_insn (gen_sse4_2_pcmpistrm (operands[1], operands[2],
+				     operands[3], operands[4]));
+  if (flags && !(ecx || xmm0))
+    emit_insn (gen_sse4_2_pcmpistr_cconly (NULL, NULL,
+					   operands[2], operands[3],
+					   operands[4]));
+  if (!(flags || ecx || xmm0))
+    emit_note (NOTE_INSN_DELETED);
+
+  DONE;
+}
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "memory" "load")
    (set_attr "mode" "TI")])
 
 (define_insn "sse4_2_pcmpistri"
