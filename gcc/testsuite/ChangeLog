@@ -1,3 +1,8 @@
+2012-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53712
+	* gcc.target/i386/pr53712.c: New test.
+
 2012-06-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53692
