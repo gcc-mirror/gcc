@@ -1,3 +1,7 @@
+2012-06-18  David Edelshn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix52.h (TARGET_EXTRA_BUILTINS): Define as 0.
+
 2012-06-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53712
