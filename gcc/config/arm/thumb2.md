@@ -635,17 +635,12 @@
    (set_attr "length" "20")]
 )
 
-;; Note: this is not predicable, to avoid issues with linker-generated
-;; interworking stubs.
 (define_insn "*thumb2_return"
-  [(return)]
-  "TARGET_THUMB2 && USE_RETURN_INSN (FALSE)"
-  "*
-  {
-    return output_return_instruction (const_true_rtx, TRUE, FALSE);
-  }"
-  [(set_attr "type" "load1")
-   (set_attr "length" "12")]
+  [(simple_return)]
+  "TARGET_THUMB2"
+  "* return output_return_instruction (const_true_rtx, true, false, true);"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")]
 )
 
 (define_insn_and_split "thumb2_eh_return"

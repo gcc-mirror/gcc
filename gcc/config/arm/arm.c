@@ -15516,9 +15516,11 @@ arm_get_vfp_saved_size (void)
 
 
 /* Generate a function exit sequence.  If REALLY_RETURN is false, then do
-   everything bar the final return instruction.  */
+   everything bar the final return instruction.  If simple_return is true,
+   then do not output epilogue, because it has already been emitted in RTL.  */
 const char *
-output_return_instruction (rtx operand, int really_return, int reverse)
+output_return_instruction (rtx operand, bool really_return, bool reverse,
+                           bool simple_return)
 {
   char conditional[10];
   char instr[100];
@@ -15561,7 +15563,7 @@ output_return_instruction (rtx operand, int really_return, int reverse)
   offsets = arm_get_frame_offsets ();
   live_regs_mask = offsets->saved_regs_mask;
 
-  if (live_regs_mask)
+  if (!simple_return && live_regs_mask)
     {
       const char * return_reg;
 
@@ -15689,7 +15691,7 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 	{
 	  /* The return has already been handled
 	     by loading the LR into the PC.  */
-	  really_return = 0;
+          return "";
 	}
     }
 
