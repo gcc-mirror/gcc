@@ -427,6 +427,15 @@ DEFHOOK
  void, (rtx x),
  default_asm_output_anchor)
 
+DEFHOOK
+(output_ident,
+ "Output a string based on @var{name}, suitable for the @samp{#ident} \
+ directive, or the equivalent directive or pragma in non-C-family languages. \
+ If this hook is not defined, nothing is output for the @samp{#ident} \
+ directive.",
+ void, (const char *name),
+ hook_void_constcharptr)
+
 /* Output a DTP-relative reference to a TLS symbol.  */
 DEFHOOK
 (output_dwarf_dtprel,

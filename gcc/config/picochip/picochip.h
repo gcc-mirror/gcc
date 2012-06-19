@@ -488,7 +488,8 @@ do {                                                                         \
 #define ASM_APP_ON "// High-level ASM start\n"
 #define ASM_APP_OFF "// High-level ASM end\n"
 
-#define ASM_OUTPUT_IDENT(STREAM,STRING) fprintf(STREAM, ".ident %s\n", STRING)
+#undef TARGET_ASM_OUTPUT_IDENT
+#define TARGET_ASM_OUTPUT_IDENT default_asm_output_ident_directive
 
 /* Output of Data  */
 

@@ -1,3 +1,9 @@
+2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-lex.c: Do not include output.h.
+	(cb_ident): Try to put out .ident with targetm.asm_out.output_ident.
+	Remove uses of ASM_OUTPUT_IDENT.
+
 2012-06-15  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/51033

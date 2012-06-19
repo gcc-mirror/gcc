@@ -1,3 +1,52 @@
+2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* target.def (output_ident): New hook.
+	* targhooks.h (default_asm_output_ident_directive): Add prototype.
+	* varasm.c (assemble_asm): Only prefix a tab if the string does not
+	already start with one.
+	(default_asm_output_ident_directive): New function to emit
+	.ident as a top-level asm node while parsing, or directly to
+	asm_out_file after parsing.
+	* toplev.c (compile_file): Print a GCC .ident with
+	targetm.asm_out.output_ident.
+	* doc/tm.texi.in (ASM_OUTPUT_IDENT): Remove documentation for macro.
+	(TARGET_ASM_OUTPUT_IDENT): Add @hook for this.
+	* doc/tm.texi: Update.
+
+	* config/elfos.h (ASM_OUTPUT_IDENT, IDENT_ASM_OP): Remove.
+	(TARGET_ASM_OUTPUT_IDENT): Define.
+	* config/i386/djgpp.h (IDENT_ASM_OP): Remove.
+	* config/i386/gas.h (ASM_OUTPUT_IDENT): Remove.
+	* config/arm/aout.h (ASM_OUTPUT_IDENT): Remove.
+	* config/sparc/sparc.h (IDENT_ASM_OP): Remove.
+	(TARGET_ASM_OUTPUT_IDENT): Define.
+	* config/picochip/picochip.h (IDENT_ASM_OP): Remove.
+	(TARGET_ASM_OUTPUT_IDENT): Define.
+
+	* config/cris/cris-protos.h (cris_asm_output_ident): Add prototype.
+	* config/cris/cris.c (cris_asm_output_ident): New function.
+	* config/cris/cris.h (ASM_OUTPUT_IDENT, IDENT_ASM_OP): Remove.
+
+	* config/microblaze/microblaze-protos.h (microblaze_asm_output_ident):
+	Add prototype.
+	* config/microblaze/microblaze.c: Include cgraph.h for add_asm_node.
+	(microblaze_asm_output_ident): Rewrite to work similar to
+	default_asm_output_ident_directive for front-end .idents.
+	* config/microblaze/microblaze.h (ASM_OUTPUT_IDENT): Remove.
+	(TARGET_ASM_OUTPUT_IDENT): Define.
+
+	* config/mips/mips.h (ASM_OUTPUT_IDENT): Remove.
+	* config/mips/sde.h (IDENT_ASM_OP, ASM_OUTPUT_IDENT): Remove.
+
+	* config/rx/rx.c: Include cgraph.h for add_asm_node.
+	(rx_asm_output_ident): New function, similar to
+	default_asm_output_ident_directive, but handle AS100 syntax also, so
+	that #ident also works for rx in AS100 syntax.
+	(TARGET_ASM_OUTPUT_IDENT): Define.
+	* config/rx/rx.h (IDENT_ASM_OP): Remove.
+
+	* Makefile.in: Fix dependencies for c-family/c-lex.o.
+
 2012-06-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (FIST_ROUNDING): New int iterator.

@@ -48,7 +48,7 @@ extern int microblaze_regno_ok_for_base_p (int, int);
 extern HOST_WIDE_INT microblaze_initial_elimination_offset (int, int);
 extern void microblaze_declare_object (FILE *, const char *, const char *,
    const char *, int);
-extern void microblaze_asm_output_ident (FILE *, const char *);
+extern void microblaze_asm_output_ident (const char *);
 #endif  /* RTX_CODE */
 
 /* Declare functions in microblaze-c.c.  */

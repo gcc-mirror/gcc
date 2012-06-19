@@ -178,3 +178,6 @@ extern enum machine_mode default_get_reg_raw_mode(int);
 
 extern void *default_get_pch_validity (size_t *);
 extern const char *default_pch_valid_p (const void *, size_t);
+
+extern void default_asm_output_ident_directive (const char*);
+

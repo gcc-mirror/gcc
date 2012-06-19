@@ -36,6 +36,7 @@
 #include "gimple.h"
 #include "bitmap.h"
 #include "cgraph.h"
+#include "target.h"
 
 #include "ada.h"
 #include "adadecode.h"
@@ -647,12 +648,9 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   VEC_safe_push (tree, gc, gnu_program_error_label_stack, NULL_TREE);
 
   /* Process any Pragma Ident for the main unit.  */
-#ifdef ASM_OUTPUT_IDENT
   if (Present (Ident_String (Main_Unit)))
-    ASM_OUTPUT_IDENT
-      (asm_out_file,
-       TREE_STRING_POINTER (gnat_to_gnu (Ident_String (Main_Unit))));
-#endif
+    targetm.asm_out.output_ident
+      (TREE_STRING_POINTER (gnat_to_gnu (Ident_String (Main_Unit))));
 
   /* If we are using the GCC exception mechanism, let GCC know.  */
   if (Exception_Mechanism == Back_End_Exceptions)

@@ -842,12 +842,11 @@ enum cris_pic_symbol_type
 /* Node: File Framework */
 
 /* We don't want an .ident for gcc.  To avoid that but still support
-   #ident, we override ASM_OUTPUT_IDENT and, since the gcc .ident is its
-   only use besides ASM_OUTPUT_IDENT, undef IDENT_ASM_OP from elfos.h.  */
-#undef IDENT_ASM_OP
-#undef ASM_OUTPUT_IDENT
-#define ASM_OUTPUT_IDENT(FILE, NAME) \
-  fprintf (FILE, "%s\"%s\"\n", "\t.ident\t", NAME);
+   #ident, we override TARGET_ASM_OUTPUT_IDENT and, since the gcc .ident
+   is its only use besides front-end .ident directives, we return if
+   the state if the cgraph is not CGRAPH_STATE_PARSING.  */
+#undef TARGET_ASM_OUTPUT_IDENT
+#define TARGET_ASM_OUTPUT_IDENT cris_asm_output_ident
 
 #define ASM_APP_ON "#APP\n"
 
