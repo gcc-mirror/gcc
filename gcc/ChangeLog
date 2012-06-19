@@ -1,5 +1,14 @@
 2012-06-19  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386-protos.h (ix86_expand_sse2_mulv4si3): Declare.
+	* config/i386/i386.c (ix86_expand_sse2_mulv4si3): New.
+	* config/i386/predicates.md (nonimmediate_or_const_vector_operand): New.
+	* config/i386/sse.md (sse2_mulv4si3): Delete.
+	(mul<VI4_AVX2>3): Use ix86_expand_sse2_mulv4si3 and
+	nonimmediate_or_const_vector_operand.
+
+2012-06-19  Richard Henderson  <rth@redhat.com>
+
 	* expmed.c (struct init_expmed_rtl): Split ...
 	(init_expmed_one_mode): ... out of ...
 	(init_expmed): ... here.  Initialize integer vector modes also.
