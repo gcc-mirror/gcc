@@ -1,5 +1,5 @@
 ;; e500 SPE description
-;; Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2011, 2012
 ;; Free Software Foundation, Inc.
 ;; Contributed by Aldy Hernandez (aldy@quesejoda.com)
 
@@ -2329,7 +2329,7 @@
   "evmergehi %0,%1,%1\;mr %L0,%1\;evmergehi %Y0,%L1,%L1\;mr %Z0,%L1"
   [(set_attr "length" "16")])
 
-(define_insn "*mov_si<mode>_e500_subreg0"
+(define_insn "mov_si<mode>_e500_subreg0"
   [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r,&r") 0)
 	(match_operand:SI 1 "input_operand" "r,m"))]
   "(TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
@@ -2338,6 +2338,24 @@
    evmergelo %0,%1,%0
    evmergelohi %0,%0,%0\;{l%U1%X1|lwz%U1%X1} %0,%1\;evmergelohi %0,%0,%0"
   [(set_attr "length" "4,12")])
+
+(define_insn_and_split "*mov_si<mode>_e500_subreg0_elf_low"
+  [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 0)
+	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
+		   (match_operand 2 "" "")))]
+  "((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
+   && TARGET_ELF && !TARGET_64BIT && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(pc)]
+{
+  rtx tmp = gen_reg_rtx (SImode);
+  emit_insn (gen_elf_low (tmp, operands[1], operands[2]));
+  emit_insn (gen_mov_si<mode>_e500_subreg0 (operands[0], tmp));
+  DONE;
+}
+  [(set_attr "length" "8")])
 
 ;; ??? Could use evstwwe for memory stores in some cases, depending on
 ;; the offset.
@@ -2359,6 +2377,15 @@
   "@
    mr %0,%1
    {l%U1%X1|lwz%U1%X1} %0,%1")
+
+(define_insn "*mov_si<mode>_e500_subreg4_elf_low"
+  [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 4)
+	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
+		   (match_operand 2 "" "")))]
+  "((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
+   && TARGET_ELF && !TARGET_64BIT"
+  "{ai|addic} %0,%1,%K2")
 
 (define_insn "*mov_si<mode>_e500_subreg4_2"
   [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
