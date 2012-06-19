@@ -421,6 +421,57 @@ timevar_cond_stop (timevar_id_t timevar, bool running)
 }
 
 
+/* Validate that phase times are consistent.  */
+
+static void
+validate_phases (FILE *fp)
+{
+  unsigned int /* timevar_id_t */ id;
+  struct timevar_time_def *total = &timevars[TV_TOTAL].elapsed;
+  double phase_user = 0.0;
+  double phase_sys = 0.0;
+  double phase_wall = 0.0;
+  unsigned phase_ggc_mem = 0;
+  static char phase_prefix[] = "phase ";
+  const double tolerance = 1.000001;  /* One part in a million.  */
+
+  for (id = 0; id < (unsigned int) TIMEVAR_LAST; ++id)
+    {
+      struct timevar_def *tv = &timevars[(timevar_id_t) id];
+
+      /* Don't evaluate timing variables that were never used.  */
+      if (!tv->used)
+	continue;
+
+      if (strncmp (tv->name, phase_prefix, sizeof phase_prefix - 1) == 0)
+	{
+	  phase_user += tv->elapsed.user;
+	  phase_sys += tv->elapsed.sys;
+	  phase_wall += tv->elapsed.wall;
+	  phase_ggc_mem += tv->elapsed.ggc_mem;
+	}
+    }
+
+  if (phase_user > total->user * tolerance
+      || phase_sys > total->sys * tolerance
+      || phase_wall > total->wall * tolerance
+      || phase_ggc_mem > total->ggc_mem * tolerance)
+    {
+
+      fprintf (fp, "Timing error: total of phase timers exceeds total time.\n");
+      if (phase_user > total->user)
+	fprintf (fp, "user    %24.18e > %24.18e\n", phase_user, total->user);
+      if (phase_sys > total->sys)
+	fprintf (fp, "sys     %24.18e > %24.18e\n", phase_sys, total->sys);
+      if (phase_wall > total->wall)
+	fprintf (fp, "wall    %24.18e > %24.18e\n", phase_wall, total->wall);
+      if (phase_ggc_mem > total->ggc_mem)
+	fprintf (fp, "ggc_mem %24u > %24u\n", phase_ggc_mem, total->ggc_mem);
+      gcc_unreachable ();
+    }
+}
+
+
 /* Summarize timing variables to FP.  The timing variable TV_TOTAL has
    a special meaning -- it's considered to be the total elapsed time,
    for normalizing the others, and is displayed last.  */
@@ -535,6 +586,8 @@ timevar_print (FILE *fp)
 
 #endif /* defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME)
 	  || defined (HAVE_WALL_TIME) */
+
+  validate_phases (fp);
 }
 
 /* Prints a message to stderr stating that time elapsed in STR is

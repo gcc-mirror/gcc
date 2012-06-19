@@ -1935,7 +1935,8 @@ materialize_cgraph (void)
 static void
 do_whole_program_analysis (void)
 {
-  timevar_start (TV_PHASE_CGRAPH);
+  timevar_start (TV_PHASE_OPT_GEN);
+
   /* Note that since we are in WPA mode, materialize_cgraph will not
      actually read in all the function bodies.  It only materializes
      the decls and cgraph nodes so that analysis can be performed.  */
@@ -1979,23 +1980,27 @@ do_whole_program_analysis (void)
   else
     lto_balanced_map ();
 
+  timevar_stop (TV_PHASE_OPT_GEN);
+  timevar_start (TV_PHASE_STREAM_OUT);
+
   if (!quiet_flag)
     {
       fprintf (stderr, "\nStreaming out");
       fflush (stderr);
     }
   lto_wpa_write_files ();
-  ggc_collect ();
   if (!quiet_flag)
     fprintf (stderr, "\n");
 
+  timevar_stop (TV_PHASE_STREAM_OUT);
+
+  ggc_collect ();
   if (post_ipa_mem_report)
     {
       fprintf (stderr, "Memory consumption after IPA\n");
       dump_memory_report (false);
     }
 
-  timevar_stop (TV_PHASE_CGRAPH);
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report)
     print_lto_report ();
@@ -2075,12 +2080,27 @@ lto_init (void)
 void
 lto_main (void)
 {
+  /* LTO is called as a front end, even though it is not a front end.
+     Because it is called as a front end, TV_PHASE_PARSING and
+     TV_PARSE_GLOBAL are active, and we need to turn them off while
+     doing LTO.  Later we turn them back on so they are active up in
+     toplev.c.  */
+  timevar_pop (TV_PARSE_GLOBAL);
+  timevar_stop (TV_PHASE_PARSING);
+
+  timevar_start (TV_PHASE_SETUP);
+
   /* Initialize the LTO front end.  */
   lto_init ();
+
+  timevar_stop (TV_PHASE_SETUP);
+  timevar_start (TV_PHASE_STREAM_IN);
 
   /* Read all the symbols and call graph from all the files in the
      command line.  */
   read_cgraph_and_symbols (num_in_fnames, in_fnames);
+
+  timevar_stop (TV_PHASE_STREAM_IN);
 
   if (!seen_error ())
     {
@@ -2091,13 +2111,15 @@ lto_main (void)
 	do_whole_program_analysis ();
       else
 	{
+	  timevar_start (TV_PHASE_OPT_GEN);
+
 	  materialize_cgraph ();
 
 	  /* Let the middle end know that we have read and merged all of
 	     the input files.  */ 
-	  timevar_start (TV_PHASE_CGRAPH);
 	  compile ();
-	  timevar_stop (TV_PHASE_CGRAPH);
+
+	  timevar_stop (TV_PHASE_OPT_GEN);
 
 	  /* FIXME lto, if the processes spawned by WPA fail, we miss
 	     the chance to print WPA's report, so WPA will call
@@ -2108,6 +2130,10 @@ lto_main (void)
 	    print_lto_report ();
 	}
     }
+
+  /* Here we make LTO pretend to be a parser.  */
+  timevar_start (TV_PHASE_PARSING);
+  timevar_push (TV_PARSE_GLOBAL);
 }
 
 #include "gt-lto-lto.h"

@@ -33,13 +33,17 @@
 
 /* The total execution time.  */
 DEFTIMEVAR (TV_TOTAL                 , "total time")
+/* The compiler phases.  These must be mutually exclusive.
+   Ideally, they would sum to near the total time.  */
 DEFTIMEVAR (TV_PHASE_SETUP           , "phase setup")
 DEFTIMEVAR (TV_PHASE_PARSING         , "phase parsing")
 DEFTIMEVAR (TV_PHASE_DEFERRED        , "phase lang. deferred")
-DEFTIMEVAR (TV_PHASE_CGRAPH          , "phase cgraph")
+DEFTIMEVAR (TV_PHASE_OPT_GEN         , "phase opt and generate")
 DEFTIMEVAR (TV_PHASE_DBGINFO         , "phase debug info")
 DEFTIMEVAR (TV_PHASE_CHECK_DBGINFO   , "phase check & debug info")
-DEFTIMEVAR (TV_PHASE_GENERATE        , "phase generate")
+DEFTIMEVAR (TV_PHASE_LATE_ASM        , "phase last asm")
+DEFTIMEVAR (TV_PHASE_STREAM_IN       , "phase stream in")
+DEFTIMEVAR (TV_PHASE_STREAM_OUT      , "phase stream out")
 DEFTIMEVAR (TV_PHASE_FINALIZE        , "phase finalize")
 
 /* Concurrent timers, indicated by "|".  */

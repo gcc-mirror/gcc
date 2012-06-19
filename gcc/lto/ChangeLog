@@ -1,3 +1,15 @@
+2012-06-18  Lawrence Crowl  <crowl@google.com>
+
+        * lto.c (do_whole_program_analysis):  Rename use of TV_PHASE_CGRAPH to
+	TV_PHASE_OPT_GEN.  Use new timevar TV_PHASE_STREAM_OUT around the call
+	to lto_wpa_write_files.
+	(lto_main):  Rename use of TV_PHASE_CGRAPH to TV_PHASE_OPT_GEN.  Move
+	start of TV_PHASE_OPT_GEN to include call to materialize_cgraph.  Use
+	TV_PHASE_SETUP for the call to lto_init.  Use new timevar
+	TV_PHASE_STREAM_IN around the call to read_cgraph_and_symbols.
+	Turn TV_PHASE_PARSING off then back on again, because LTO is pretending
+	to be a front end, but is not one.
+
 2012-05-18  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_materialize_constructors_and_inits): Remove.

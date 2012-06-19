@@ -317,15 +317,15 @@ write_global_declarations (void)
   check_global_declarations (vec, len);
   timevar_stop (TV_PHASE_DEFERRED);
 
-  timevar_start (TV_PHASE_CGRAPH);
+  timevar_start (TV_PHASE_OPT_GEN);
   /* This lang hook is dual-purposed, and also finalizes the
      compilation unit.  */
   finalize_compilation_unit ();
-  timevar_stop (TV_PHASE_CGRAPH);
+  timevar_stop (TV_PHASE_OPT_GEN);
 
-  timevar_start (TV_PHASE_CHECK_DBGINFO);
+  timevar_start (TV_PHASE_DBGINFO);
   emit_debug_global_declarations (vec, len);
-  timevar_stop (TV_PHASE_CHECK_DBGINFO);
+  timevar_stop (TV_PHASE_DBGINFO);
 
   /* Clean up.  */
   free (vec);
