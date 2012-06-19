@@ -59,7 +59,21 @@ DEFHOOK
  common-format string object when the target provides one.",
  tree, (tree string),
  NULL)
- 
+
+DEFHOOK
+(objc_declare_unresolved_class_reference,
+ "Declare that Objective C class @var{classname} is referenced\
+  by the current TU.",
+ void, (const char *classname),
+ NULL)
+
+DEFHOOK
+(objc_declare_class_definition,
+ "Declare that Objective C class @var{classname} is defined\
+  by the current TU.",
+ void, (const char *classname),
+ NULL)
+
 DEFHOOK
 (string_object_ref_type_p,
  "If a target implements string objects then this hook should return\
