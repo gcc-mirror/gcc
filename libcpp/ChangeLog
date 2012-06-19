@@ -1,3 +1,8 @@
+2011-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lex.c (search_line_sse42): Use __builtin_ia32_loaddqu and
+	__builtin_ia32_pcmpestri128 instead of asm.
+
 2012-06-04  Dimitrios Apostolou <jimis@gmx.net>
 
 	* line-map.c (linemap_enter_macro): Don't zero max_column_hint in

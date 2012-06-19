@@ -427,6 +427,8 @@ search_line_sse42 (const uchar *s, const uchar *end)
   /* Check for unaligned input.  */
   if (si & 15)
     {
+      v16qi sv;
+
       if (__builtin_expect (end - s < 16, 0)
 	  && __builtin_expect ((si & 0xfff) > 0xff0, 0))
 	{
@@ -439,8 +441,9 @@ search_line_sse42 (const uchar *s, const uchar *end)
 
       /* ??? The builtin doesn't understand that the PCMPESTRI read from
 	 memory need not be aligned.  */
-      __asm ("%vpcmpestri $0, (%1), %2"
-	     : "=c"(index) : "r"(s), "x"(search), "a"(4), "d"(16));
+      sv = __builtin_ia32_loaddqu ((const char *) s);
+      index = __builtin_ia32_pcmpestri128 (search, 4, sv, 16, 0);
+
       if (__builtin_expect (index < 16, 0))
 	goto found;
 
