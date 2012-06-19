@@ -1,3 +1,13 @@
+2012-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (FRNDINT_ROUNDING): New int iterator.
+	(rounding): New int attribute.
+	(ROUNDING): Ditto.
+	(frndintxf2_<rounding>): Macroize insn from
+	frndintxf2_{floor,ceil,trunc} using FRNDINT_ROUNDING int iterator.
+	(frndintxf2_<rounding>_i387): Macroize insn from
+	frndintxf2_{floor,ceil,trunc}_i387 using FRNDINT_ROUNDING int iterator.
+
 2012-06-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (union_ranges): New function.
@@ -335,7 +345,7 @@
 
 	PR c++/51033
 	* c-typeck.c (c_build_vec_perm_expr): Move to c-family/c-common.c.
-        * c-tree.h (c_build_vec_perm_expr): Move to c-family/c-common.h.
+	* c-tree.h (c_build_vec_perm_expr): Move to c-family/c-common.h.
 
 2012-06-15  Georg-Johann Lay  <avr@gjlay.de>
 
