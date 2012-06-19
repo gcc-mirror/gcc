@@ -19,7 +19,7 @@ start_after=
 
 # Skip some objects unconditionally; make sure each name in this list is
 # surrounded by spaces.
-skip=" crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o crtfastmath.o crtprec64.o crtprec80.o crtprec32.o "
+skip=" crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o crtfastmath.o crtprec64.o crtprec80.o crtprec32.o ecrti.o ecrtn.o ncrti.o ncrtn.o "
 
 # Files which show up as dependencies other than through unconditional #include.
 # This is an egrep pattern.
@@ -34,7 +34,7 @@ hidden_dep_files='(BASE-VER|DATESTAMP|DEV-PHASE|Makefile|xcoffout\.h|basic-block
 set -e
 st=0
 
-if test -f c-common.o; then :; else
+if test -f c-family/c-common.o; then :; else
   echo "$0: rerun in an up to date build-tree/gcc directory" >&2
   exit 1
 fi

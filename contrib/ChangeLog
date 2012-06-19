@@ -1,3 +1,8 @@
+2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* check_makefile_deps.sh: Look for c-common.o in c-family/.
+	Add a few more crt* files to the list of files to skip.
+
 2012-05-31  Marek Polacek  <polacek@redhat.com>
 
        * mklog: Prevent printing three spaces after the date.
