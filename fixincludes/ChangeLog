@@ -1,3 +1,13 @@
+2012-06-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_mutex_initializer_1): New fix.
+	(aix_cond_initializer_1): New fix.
+	(aix_rwlock_initializer): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/pthread.h [AIX_MUTEX_INITIALIZER_1_CHECK]: New.
+	[AIX_COND_INITIALIZER_1_CHECK]: New.
+	[AIX_RWLOCK_INITIALIZER_1_CHECK]: New.
+
 2012-05-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac: Use GCC_AC_FUNC_MMAP_BLACKLIST instead of
@@ -17,7 +27,7 @@
 	* inclhack.def (aix_malloc): New.
 	* fixincl.x: Regenerate.
 	* tests/base/malloc.h [AIX_MALLOC_CHECK]: New.
-	
+
 2012-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR other/52626
@@ -454,7 +464,7 @@
 
 	* inclhack.def (aix_complex): New fix.
 	* fixincl.x: Regenerate.
-	
+
 2009-08-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* inclhack.def (hpux_inttype_int_least8_t): Also apply on hpux10*.
@@ -902,7 +912,7 @@
 
 	* fixincludes/mkfixinc.sh: Add "*-*-vxworks*" to the list of
 	targets for which a no-op fixer is appropriate.
-	
+
 2006-11-07  Richard Guenther  <rguenther@suse.de>
 
 	* inclhack.def (glibc_c99_inline_2): Adjust for glibc 2.3
@@ -988,7 +998,7 @@
 
 	* inclhack.def (solaris_once_init_1): New.
 	* tests/base/pthread.h: Adjust for new fix.
-	
+
 	* fixincl.x: Regenerate.
 
 2006-07-17  Roger Sayle  <roger@eyesopen.com>

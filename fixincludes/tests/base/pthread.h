@@ -23,6 +23,27 @@
 #endif  /* AIX_ONCE_INIT_2_CHECK */
 
 
+#if defined( AIX_MUTEX_INITIALIZER_1_CHECK )
+#define PTHREAD_MUTEX_INITIALIZER \
+{{ \
+
+#endif  /* AIX_MUTEX_INITIALIZER_1_CHECK */
+
+
+#if defined( AIX_COND_INITIALIZER_1_CHECK )
+#define PTHREAD_COND_INITIALIZER \
+{{ \
+
+#endif  /* AIX_COND_INITIALIZER_1_CHECK */
+
+
+#if defined( AIX_RWLOCK_INITIALIZER_1_CHECK )
+#define PTHREAD_RWLOCK_INITIALIZER \
+{{ \
+
+#endif  /* AIX_RWLOCK_INITIALIZER_1_CHECK */
+
+
 #if defined( AIX_PTHREAD_CHECK )
 #define PTHREAD_MUTEX_INITIALIZER \
 {...init stuff...}
