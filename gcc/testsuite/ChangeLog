@@ -1,3 +1,7 @@
+2012-06-19  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vrp68.c: Adjust testcase.
+
 2012-06-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53712
