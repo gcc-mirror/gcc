@@ -4019,11 +4019,11 @@ cp_write_global_declarations (void)
   candidates = collect_candidates_for_java_method_aliases ();
 
   timevar_stop (TV_PHASE_DEFERRED);
-  timevar_start (TV_PHASE_CGRAPH);
+  timevar_start (TV_PHASE_OPT_GEN);
 
   finalize_compilation_unit ();
 
-  timevar_stop (TV_PHASE_CGRAPH);
+  timevar_stop (TV_PHASE_OPT_GEN);
   timevar_start (TV_PHASE_CHECK_DBGINFO);
 
   /* Now, issue warnings about static, but not defined, functions,
