@@ -11,7 +11,7 @@ void f (void)
     {
       int i;
       for (i = 0; i < 1024; i++)
-	tabs[i] = i * 2;
+	tabs[i] = i * 12345;
       g (tabs);
     }
 }
