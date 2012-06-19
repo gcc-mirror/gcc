@@ -1,3 +1,10 @@
+2012-06-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53708
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Preserve
+	user-supplied alignment and alignment of decls with the used
+	attribute.
+
 2012-06-18  Lawrence Crowl  <crowl@google.com>
 
 	* timevar.def (TV_PHASE_GENERATE): Rename to TV_PHASE_LATE_ASM.
