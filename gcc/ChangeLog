@@ -1,3 +1,11 @@
+2012-06-18  Joey Ye  <joey.ye@arm.com>
+
+	Backported from mainline
+	2011-10-14  David Alan Gilbert  <david.gilbert@linaro.org>
+
+	PR target/48126
+	* config/arm/arm.c (arm_output_sync_loop): Move label before barrier.
+
 2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
