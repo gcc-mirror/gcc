@@ -46,4 +46,10 @@
 # undef _GLIBCXX_HAVE_GETS
 #endif
 
+#if defined(__hppa__) && defined(__GXX_EXPERIMENTAL_CXX0X__)
+# define _GTHREAD_USE_MUTEX_INIT_FUNC
+# define _GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC
+# define _GTHREAD_USE_COND_INIT_FUNC
+#endif
+
 #endif
