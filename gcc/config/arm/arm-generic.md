@@ -38,19 +38,11 @@
 ;
 ; The write_blockage unit models (partially), the fact that reads will stall
 ; until the write buffer empties.
-; The f_mem_r and r_mem_f could also block, but they are to the stack,
-; so we don't model them here
 (define_cpu_unit "write_blockage" "arm")
 
 ;; Core
 ;
 (define_cpu_unit "core" "arm")
-
-(define_insn_reservation "r_mem_f_wbuf" 5
-  (and (eq_attr "generic_sched" "yes")
-       (and (eq_attr "model_wbuf" "yes")
-	    (eq_attr "type" "r_mem_f")))
-  "core+write_buf*3")
 
 (define_insn_reservation "store_wbuf" 5
   (and (eq_attr "generic_sched" "yes")

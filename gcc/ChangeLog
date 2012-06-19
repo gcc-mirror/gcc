@@ -1,3 +1,11 @@
+2012-06-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (enum unspec): Delete UNSPEC_SIN and UNSPEC_COS.
+	(attr type): Remove fmul, ffmul, farith, ffarith, float_em
+	f_fpa_load, f_fpa_store, f_mem_r, r_mem_f.
+	(attr write_conflict, attr core_cycles): Update.
+	* arm-generic.md (r_mem_f_wbuf): Delete reservation.
+
 2012-06-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (intersect_ranges): Handle more cases.

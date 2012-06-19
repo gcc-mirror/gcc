@@ -65,12 +65,6 @@
 ;; Unspec enumerators for iwmmxt2 are defined in iwmmxt2.md
 
 (define_c_enum "unspec" [
-  UNSPEC_SIN            ; `sin' operation (MODE_FLOAT):
-                        ;   operand 0 is the result,
-                        ;   operand 1 the parameter.
-  UNPSEC_COS            ; `cos' operation (MODE_FLOAT):
-                        ;   operand 0 is the result,
-                        ;   operand 1 the parameter.
   UNSPEC_PUSH_MULT      ; `push multiple' operation:
                         ;   operand 0 is the first register,
                         ;   subsequent registers are in parallel (use ...)
@@ -321,21 +315,11 @@
 ; float		a floating point arithmetic operation (subject to expansion)
 ; fdivd		DFmode floating point division
 ; fdivs		SFmode floating point division
-; fmul		Floating point multiply
-; ffmul		Fast floating point multiply
-; farith	Floating point arithmetic (4 cycle)
-; ffarith	Fast floating point arithmetic (2 cycle)
-; float_em	a floating point arithmetic operation that is normally emulated
-;		even on a machine with an fpa.
-; f_fpa_load	a floating point load from memory. Only for the FPA.
-; f_fpa_store	a floating point store to memory. Only for the FPA.
 ; f_load[sd]	A single/double load from memory. Used for VFP unit.
 ; f_store[sd]	A single/double store to memory. Used for VFP unit.
 ; f_flag	a transfer of co-processor flags to the CPSR
-; f_mem_r	a transfer of a floating point register to a real reg via mem
-; r_mem_f	the reverse of f_mem_r
-; f_2_r		fast transfer float to arm (no memory needed)
-; r_2_f		fast transfer arm to float
+; f_2_r		transfer float to core (no memory needed)
+; r_2_f		transfer core to float
 ; f_cvt		convert floating<->integral
 ; branch	a branch
 ; call		a subroutine call
@@ -351,18 +335,59 @@
 ;
 
 (define_attr "type"
-	"alu,alu_shift,alu_shift_reg,mult,block,float,fdivx,fdivd,fdivs,fmul,fmuls,fmuld,fmacs,fmacd,ffmul,farith,ffarith,f_flag,float_em,f_fpa_load,f_fpa_store,f_loads,f_loadd,f_stores,f_stored,f_mem_r,r_mem_f,f_2_r,r_2_f,f_cvt,branch,call,load_byte,load1,load2,load3,load4,store1,store2,store3,store4,fconsts,fconstd,fadds,faddd,ffariths,ffarithd,fcmps,fcmpd,fcpys"
-	(if_then_else 
-	 (eq_attr "insn" "smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
-	 (const_string "mult")
-	 (const_string "alu")))
+ "alu,\
+  alu_shift,\
+  alu_shift_reg,\
+  mult,\
+  block,\
+  float,\
+  fdivd,\
+  fdivs,\
+  fmuls,\
+  fmuld,\
+  fmacs,\
+  fmacd,\
+  f_flag,\
+  f_loads,\
+  f_loadd,\
+  f_stores,\
+  f_stored,\
+  f_2_r,\
+  r_2_f,\
+  f_cvt,\
+  branch,\
+  call,\
+  load_byte,\
+  load1,\
+  load2,\
+  load3,\
+  load4,\
+  store1,\
+  store2,\
+  store3,\
+  store4,\
+  fconsts,\
+  fconstd,\
+  fadds,\
+  faddd,\
+  ffariths,\
+  ffarithd,\
+  fcmps,\
+  fcmpd,\
+  fcpys"
+ (if_then_else 
+    (eq_attr "insn" "smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,\
+	     	     umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
+    (const_string "mult")
+    (const_string "alu")))
 
 ; Is this an (integer side) multiply with a 64-bit result?
 (define_attr "mul64" "no,yes"
-	     (if_then_else
-	       (eq_attr "insn" "smlalxy,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
-	       (const_string "yes")
-	       (const_string "no")))
+  (if_then_else
+    (eq_attr "insn"
+     "smlalxy,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
+    (const_string "yes")
+    (const_string "no")))
 
 ; wtype for WMMX insn scheduling purposes.
 (define_attr "wtype"
@@ -486,7 +511,7 @@
 ; to stall the processor.  Used with model_wbuf above.
 (define_attr "write_conflict" "no,yes"
   (if_then_else (eq_attr "type"
-		 "block,float_em,f_fpa_load,f_fpa_store,f_mem_r,r_mem_f,call,load1")
+		 "block,call,load1")
 		(const_string "yes")
 		(const_string "no")))
 
@@ -494,7 +519,7 @@
 ; than one on the main cpu execution unit.
 (define_attr "core_cycles" "single,multi"
   (if_then_else (eq_attr "type"
-		 "alu,alu_shift,float,fdivx,fdivd,fdivs,fmul,ffmul,farith,ffarith")
+		 "alu,alu_shift,float,fdivd,fdivs")
 		(const_string "single")
 	        (const_string "multi")))
 
