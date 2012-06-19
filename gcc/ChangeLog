@@ -1,3 +1,23 @@
+2012-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (FIST_ROUNDING): New int iterator.
+	(rounding): Handle UNSPEC_FIST_{FLOOR,CEIL}.
+	(ROUNDING): Ditto.
+	(*fist<mode>2_<rounding>_1): Macroize insn from
+	*fist<mode>2_{floor,ceil}_1 using FIST_ROUNDING int iterator.
+	(fistdi2_<rounding>): Macroize insn from
+	fistdi2_{floor,ceil} using FIST_ROUNDING int iterator.
+	(fistdi2_<rounding>_with_temp and splitters): Macroize insn and
+	corresponding splitters from fistdi2_{floor,ceil} and corresponding
+	splitters using FIST_ROUNDING int iterator.
+	(fist<mode>2_<rounding>): Macroize insn from
+	fist<mode>2_{floor,ceil} using FIST_ROUNDING int iterator.
+	(fist<mode>2_<rounding>_with_temp and splitters): Macroize insn and
+	corresponding splitters from fist<mode>2_{floor,ceil} and corresponding
+	splitters using FIST_ROUNDING int iterator.
+	(l<rounding>xf<mode>2): Macroize expander from l{floor,ceil}xf<mode>2
+	using FIST_ROUNDING int iterator.
+
 2012-06-19  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386-protos.h (ix86_expand_sse2_mulv4si3): Declare.
