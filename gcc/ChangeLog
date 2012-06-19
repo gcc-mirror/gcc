@@ -1,3 +1,8 @@
+2012-06-19  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_rtx_costs): Handle CONST_VECTOR, and
+	integral vector modes.
+
 2012-06-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (FRNDINT_ROUNDING): New int iterator.

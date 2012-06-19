@@ -31990,13 +31990,16 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
 	    break;
 	  case 0:
 	  case -1:
-	    /* Start with (MEM (SYMBOL_REF)), since that's where
-	       it'll probably end up.  Add a penalty for size.  */
-	    *total = (COSTS_N_INSNS (1)
-		      + (flag_pic != 0 && !TARGET_64BIT)
-		      + (mode == SFmode ? 0 : mode == DFmode ? 1 : 2));
 	    break;
 	  }
+      /* FALLTHRU */
+
+    case CONST_VECTOR:
+      /* Start with (MEM (SYMBOL_REF)), since that's where
+	 it'll probably end up.  Add a penalty for size.  */
+      *total = (COSTS_N_INSNS (1)
+		+ (flag_pic != 0 && !TARGET_64BIT)
+		+ (mode == SFmode ? 0 : mode == DFmode ? 1 : 2));
       return true;
 
     case ZERO_EXTEND:
@@ -32016,8 +32019,9 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
       return false;
 
     case ASHIFT:
-      if (CONST_INT_P (XEXP (x, 1))
-	  && (GET_MODE (XEXP (x, 0)) != DImode || TARGET_64BIT))
+      if (SCALAR_INT_MODE_P (mode)
+	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD
+	  && CONST_INT_P (XEXP (x, 1)))
 	{
 	  HOST_WIDE_INT value = INTVAL (XEXP (x, 1));
 	  if (value == 1)
@@ -32038,7 +32042,15 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
     case ASHIFTRT:
     case LSHIFTRT:
     case ROTATERT:
-      if (!TARGET_64BIT && GET_MODE (XEXP (x, 0)) == DImode)
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  /* ??? Should be SSE vector operation cost.  */
+	  /* At least for published AMD latencies, this really is the same
+	     as the latency for a simple fpu operation like fabs.  */
+	  *total = cost->fabs;
+	  return false;
+	}
+      if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	{
 	  if (CONST_INT_P (XEXP (x, 1)))
 	    {
@@ -32107,6 +32119,16 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
 	  *total = cost->fmul;
 	  return false;
 	}
+      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  /* Without sse4.1, we don't have PMULLD; it's emulated with 7
+	     insns, including two PMULUDQ.  */
+	  if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
+	    *total = cost->fmul * 2 + cost->fabs * 5;
+	  else
+	    *total = cost->fmul;
+	  return false;
+	}
       else
 	{
 	  rtx op0 = XEXP (x, 0);
@@ -32171,7 +32193,7 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
 
     case PLUS:
       if (GET_MODE_CLASS (mode) == MODE_INT
-	       && GET_MODE_BITSIZE (mode) <= GET_MODE_BITSIZE (Pmode))
+	  && GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PLUS
 	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
@@ -32271,6 +32293,14 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
       /* FALLTHRU */
 
     case NOT:
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  /* ??? Should be SSE vector operation cost.  */
+	  /* At least for published AMD latencies, this really is the same
+	     as the latency for a simple fpu operation like fabs.  */
+	  *total = cost->fabs;
+	  return false;
+	}
       if (!TARGET_64BIT && mode == DImode)
 	*total = cost->add * 2;
       else
@@ -32331,7 +32361,7 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
       /* ??? Assume all of these vector manipulation patterns are
 	 recognizable.  In which case they all pretty much have the
 	 same cost.  */
-     *total = COSTS_N_INSNS (1);
+     *total = cost->fabs;
      return true;
 
     default:
