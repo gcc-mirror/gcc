@@ -1,3 +1,10 @@
+2012-06-19  Joey Ye  <joey.ye@arm.com>
+
+	Backported from mainline
+	2011-10-14  David Alan Gilbert  <david.gilbert@linaro.org>
+
+	* config/arm/arm.h (TARGET_HAVE_DMB_MCR): MCR Not available in Thumb1.
+
 2012-06-18  Joey Ye  <joey.ye@arm.com>
 
 	Backported from mainline

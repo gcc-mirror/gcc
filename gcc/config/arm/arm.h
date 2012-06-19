@@ -294,7 +294,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_HAVE_DMB		(arm_arch7)
 
 /* Nonzero if this chip implements a memory barrier via CP15.  */
-#define TARGET_HAVE_DMB_MCR	(arm_arch6k && ! TARGET_HAVE_DMB)
+#define TARGET_HAVE_DMB_MCR	(arm_arch6 && ! TARGET_HAVE_DMB \
+				 && ! TARGET_THUMB1)
 
 /* Nonzero if this chip implements a memory barrier instruction.  */
 #define TARGET_HAVE_MEMORY_BARRIER (TARGET_HAVE_DMB || TARGET_HAVE_DMB_MCR)
