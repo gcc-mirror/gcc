@@ -1014,7 +1014,7 @@ ada/targtyps.o : ada/gcc-interface/targtyps.c $(CONFIG_H) $(SYSTEM_H) \
 
 ada/trans.o : ada/gcc-interface/trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FLAGS_H) output.h tree-iterator.h $(GIMPLE_H) \
-   $(BITMAP_H) $(CGRAPH_H) ada/gcc-interface/ada.h ada/adadecode.h \
+   $(BITMAP_H) $(CGRAPH_H) $(TARGET_H) ada/gcc-interface/ada.h ada/adadecode.h \
    ada/types.h ada/atree.h ada/elists.h ada/namet.h ada/nlists.h ada/snames.h \
    ada/stringt.h ada/uintp.h ada/urealp.h ada/fe.h ada/sinfo.h ada/einfo.h \
    ada/gcc-interface/gadaint.h $(ADA_TREE_H) ada/gcc-interface/gigi.h \

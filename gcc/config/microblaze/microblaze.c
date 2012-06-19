@@ -47,6 +47,7 @@
 #include "df.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
+#include "cgraph.h"
 
 #define MICROBLAZE_VERSION_COMPARE(VA,VB) strcasecmp (VA, VB)
 
@@ -2736,16 +2737,28 @@ microblaze_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 		       GEN_INT (8));
 }
 
-/* Put string into .sdata2 if below threashold.  */
+/* Queue an .ident string in the queue of top-level asm statements.
+   If the string size is below the threshold, put it into .sdata2.
+   If the front-end is done, we must be being called from toplev.c.
+   In that case, do nothing.  */
 void 
-microblaze_asm_output_ident (FILE *file ATTRIBUTE_UNUSED, const char *string)
+microblaze_asm_output_ident (const char *string)
 {
-  int size = strlen (string) + 1;
+  const char *section_asm_op;
+  int size;
+  char *buf;
+
+  if (cgraph_state != CGRAPH_STATE_PARSING)
+    return;
+
+  size = strlen (string) + 1;
   if (size <= microblaze_section_threshold)
-    switch_to_section (sdata2_section);
+    section_asm_op = SDATA2_SECTION_ASM_OP;
   else
-    switch_to_section (readonly_data_section);
-  assemble_string (string, size);
+    section_asm_op = READONLY_DATA_SECTION_ASM_OP;
+
+  buf = ACONCAT ((section_asm_op, "\n\t.ascii \"", string, "\\0\"\n", NULL));
+  add_asm_node (build_string (strlen (buf), buf));
 }
 
 static void

@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree.h"
 #include "input.h"
-#include "output.h" /* for asm_out_file */
 #include "c-common.h"
 #include "flags.h"
 #include "timevar.h"
@@ -165,18 +164,16 @@ cb_ident (cpp_reader * ARG_UNUSED (pfile),
 	  unsigned int ARG_UNUSED (line),
 	  const cpp_string * ARG_UNUSED (str))
 {
-#ifdef ASM_OUTPUT_IDENT
   if (!flag_no_ident)
     {
       /* Convert escapes in the string.  */
       cpp_string cstr = { 0, 0 };
       if (cpp_interpret_string (pfile, str, 1, &cstr, CPP_STRING))
 	{
-	  ASM_OUTPUT_IDENT (asm_out_file, (const char *) cstr.text);
+	  targetm.asm_out.output_ident ((const char *) cstr.text);
 	  free (CONST_CAST (unsigned char *, cstr.text));
 	}
     }
-#endif
 }
 
 /* Called at the start of every non-empty line.  TOKEN is the first

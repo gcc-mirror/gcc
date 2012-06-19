@@ -2467,6 +2467,22 @@ cris_legitimate_pic_operand (rtx x)
   return cris_valid_pic_const (x, true);
 }
 
+/* Queue an .ident string in the queue of top-level asm statements.
+   If the front-end is done, we must be being called from toplev.c.
+   In that case, do nothing.  */
+void 
+cris_asm_output_ident (const char *string)
+{
+  const char *section_asm_op;
+  int size;
+  char *buf;
+
+  if (cgraph_state != CGRAPH_STATE_PARSING)
+    return;
+
+  default_asm_output_ident_directive (string);
+}
+
 /* The ASM_OUTPUT_CASE_END worker.  */
 
 void
@@ -2517,6 +2533,10 @@ cris_asm_output_case_end (FILE *stream, int num, rtx table)
 static void
 cris_option_override (void)
 {
+  /* We don't want an .ident for gcc.
+     It isn't really clear anymore why not.  */
+  flag_no_gcc_ident = true;
+
   if (cris_max_stackframe_str)
     {
       cris_max_stackframe = atoi (cris_max_stackframe_str);
