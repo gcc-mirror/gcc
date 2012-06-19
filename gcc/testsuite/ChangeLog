@@ -1,3 +1,8 @@
+2012-06-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c-torture/compile/vector-5.c,
+	gcc.c-torture/compile/vector-6.c: New tests.
+
 2012-06-19  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/pr33329.c: Change multiplier constant to 12345.
