@@ -1,5 +1,11 @@
 2012-06-19  Richard Guenther  <rguenther@suse.de>
 
+	* tree-vrp.c (intersect_ranges): Handle more cases.
+	(vrp_intersect_ranges): Dump what we intersect and call ...
+	(vrp_intersect_ranges_1): ... this.
+
+2012-06-19  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53708
 	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Preserve
 	user-supplied alignment and alignment of decls with the used
