@@ -1,3 +1,9 @@
+2012-06-19  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (union_ranges): New function.
+	(vrp_meet_1): Use union_ranges.
+	(vrp_meet): Dump what we union and call vrp_meet_1.
+
 2012-06-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (enum unspec): Delete UNSPEC_SIN and UNSPEC_COS.
