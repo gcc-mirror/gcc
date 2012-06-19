@@ -2,7 +2,7 @@
    and shifts, multiplies and divides to rtl instructions.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -93,43 +93,112 @@ static rtx expand_sdiv_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 #define gen_extzv(a,b,c,d) NULL_RTX
 #endif
 
-void
-init_expmed (void)
+struct init_expmed_rtl
 {
-  struct
-  {
-    struct rtx_def reg;		rtunion reg_fld[2];
-    struct rtx_def plus;	rtunion plus_fld1;
-    struct rtx_def neg;
-    struct rtx_def mult;	rtunion mult_fld1;
-    struct rtx_def sdiv;	rtunion sdiv_fld1;
-    struct rtx_def udiv;	rtunion udiv_fld1;
-    struct rtx_def zext;
-    struct rtx_def sdiv_32;	rtunion sdiv_32_fld1;
-    struct rtx_def smod_32;	rtunion smod_32_fld1;
-    struct rtx_def wide_mult;	rtunion wide_mult_fld1;
-    struct rtx_def wide_lshr;	rtunion wide_lshr_fld1;
-    struct rtx_def wide_trunc;
-    struct rtx_def shift;	rtunion shift_fld1;
-    struct rtx_def shift_mult;	rtunion shift_mult_fld1;
-    struct rtx_def shift_add;	rtunion shift_add_fld1;
-    struct rtx_def shift_sub0;	rtunion shift_sub0_fld1;
-    struct rtx_def shift_sub1;	rtunion shift_sub1_fld1;
-  } all;
+  struct rtx_def reg;		rtunion reg_fld[2];
+  struct rtx_def plus;	rtunion plus_fld1;
+  struct rtx_def neg;
+  struct rtx_def mult;	rtunion mult_fld1;
+  struct rtx_def sdiv;	rtunion sdiv_fld1;
+  struct rtx_def udiv;	rtunion udiv_fld1;
+  struct rtx_def zext;
+  struct rtx_def sdiv_32;	rtunion sdiv_32_fld1;
+  struct rtx_def smod_32;	rtunion smod_32_fld1;
+  struct rtx_def wide_mult;	rtunion wide_mult_fld1;
+  struct rtx_def wide_lshr;	rtunion wide_lshr_fld1;
+  struct rtx_def wide_trunc;
+  struct rtx_def shift;	rtunion shift_fld1;
+  struct rtx_def shift_mult;	rtunion shift_mult_fld1;
+  struct rtx_def shift_add;	rtunion shift_add_fld1;
+  struct rtx_def shift_sub0;	rtunion shift_sub0_fld1;
+  struct rtx_def shift_sub1;	rtunion shift_sub1_fld1;
 
   rtx pow2[MAX_BITS_PER_WORD];
   rtx cint[MAX_BITS_PER_WORD];
-  int m, n;
-  enum machine_mode mode, wider_mode;
-  int speed;
+};
 
+static void
+init_expmed_one_mode (struct init_expmed_rtl *all,
+		      enum machine_mode mode, int speed)
+{
+  int m, n, mode_bitsize;
 
+  mode_bitsize = GET_MODE_UNIT_BITSIZE (mode);
+
+  PUT_MODE (&all->reg, mode);
+  PUT_MODE (&all->plus, mode);
+  PUT_MODE (&all->neg, mode);
+  PUT_MODE (&all->mult, mode);
+  PUT_MODE (&all->sdiv, mode);
+  PUT_MODE (&all->udiv, mode);
+  PUT_MODE (&all->sdiv_32, mode);
+  PUT_MODE (&all->smod_32, mode);
+  PUT_MODE (&all->wide_trunc, mode);
+  PUT_MODE (&all->shift, mode);
+  PUT_MODE (&all->shift_mult, mode);
+  PUT_MODE (&all->shift_add, mode);
+  PUT_MODE (&all->shift_sub0, mode);
+  PUT_MODE (&all->shift_sub1, mode);
+
+  add_cost[speed][mode] = set_src_cost (&all->plus, speed);
+  neg_cost[speed][mode] = set_src_cost (&all->neg, speed);
+  mul_cost[speed][mode] = set_src_cost (&all->mult, speed);
+  sdiv_cost[speed][mode] = set_src_cost (&all->sdiv, speed);
+  udiv_cost[speed][mode] = set_src_cost (&all->udiv, speed);
+
+  sdiv_pow2_cheap[speed][mode] = (set_src_cost (&all->sdiv_32, speed)
+			          <= 2 * add_cost[speed][mode]);
+  smod_pow2_cheap[speed][mode] = (set_src_cost (&all->smod_32, speed)
+			          <= 4 * add_cost[speed][mode]);
+
+  shift_cost[speed][mode][0] = 0;
+  shiftadd_cost[speed][mode][0] = shiftsub0_cost[speed][mode][0]
+    = shiftsub1_cost[speed][mode][0] = add_cost[speed][mode];
+
+  n = MIN (MAX_BITS_PER_WORD, mode_bitsize);
+  for (m = 1; m < n; m++)
+    {
+      XEXP (&all->shift, 1) = all->cint[m];
+      XEXP (&all->shift_mult, 1) = all->pow2[m];
+
+      shift_cost[speed][mode][m] = set_src_cost (&all->shift, speed);
+      shiftadd_cost[speed][mode][m] = set_src_cost (&all->shift_add, speed);
+      shiftsub0_cost[speed][mode][m] = set_src_cost (&all->shift_sub0, speed);
+      shiftsub1_cost[speed][mode][m] = set_src_cost (&all->shift_sub1, speed);
+    }
+
+  if (SCALAR_INT_MODE_P (mode))
+    {
+      enum machine_mode wider_mode = GET_MODE_WIDER_MODE (mode);
+
+      if (wider_mode != VOIDmode)
+	{
+	  PUT_MODE (&all->zext, wider_mode);
+	  PUT_MODE (&all->wide_mult, wider_mode);
+	  PUT_MODE (&all->wide_lshr, wider_mode);
+	  XEXP (&all->wide_lshr, 1) = GEN_INT (mode_bitsize);
+
+	  mul_widen_cost[speed][wider_mode]
+	    = set_src_cost (&all->wide_mult, speed);
+	  mul_highpart_cost[speed][mode]
+	    = set_src_cost (&all->wide_trunc, speed);
+	}
+    }
+}
+
+void
+init_expmed (void)
+{
+  struct init_expmed_rtl all;
+  enum machine_mode mode;
+  int m, speed;
+
+  memset (&all, 0, sizeof all);
   for (m = 1; m < MAX_BITS_PER_WORD; m++)
     {
-      pow2[m] = GEN_INT ((HOST_WIDE_INT) 1 << m);
-      cint[m] = GEN_INT (m);
+      all.pow2[m] = GEN_INT ((HOST_WIDE_INT) 1 << m);
+      all.cint[m] = GEN_INT (m);
     }
-  memset (&all, 0, sizeof all);
 
   PUT_CODE (&all.reg, REG);
   /* Avoid using hard regs in ways which may be unsupported.  */
@@ -156,7 +225,7 @@ init_expmed (void)
 
   PUT_CODE (&all.sdiv_32, DIV);
   XEXP (&all.sdiv_32, 0) = &all.reg;
-  XEXP (&all.sdiv_32, 1) = 32 < MAX_BITS_PER_WORD ? cint[32] : GEN_INT (32);
+  XEXP (&all.sdiv_32, 1) = 32 < MAX_BITS_PER_WORD ? all.cint[32] : GEN_INT (32);
 
   PUT_CODE (&all.smod_32, MOD);
   XEXP (&all.smod_32, 0) = &all.reg;
@@ -201,67 +270,14 @@ init_expmed (void)
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 	   mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
-	{
-	  PUT_MODE (&all.reg, mode);
-	  PUT_MODE (&all.plus, mode);
-	  PUT_MODE (&all.neg, mode);
-	  PUT_MODE (&all.mult, mode);
-	  PUT_MODE (&all.sdiv, mode);
-	  PUT_MODE (&all.udiv, mode);
-	  PUT_MODE (&all.sdiv_32, mode);
-	  PUT_MODE (&all.smod_32, mode);
-	  PUT_MODE (&all.wide_trunc, mode);
-	  PUT_MODE (&all.shift, mode);
-	  PUT_MODE (&all.shift_mult, mode);
-	  PUT_MODE (&all.shift_add, mode);
-	  PUT_MODE (&all.shift_sub0, mode);
-	  PUT_MODE (&all.shift_sub1, mode);
+	init_expmed_one_mode (&all, mode, speed);
 
-	  add_cost[speed][mode] = set_src_cost (&all.plus, speed);
-	  neg_cost[speed][mode] = set_src_cost (&all.neg, speed);
-	  mul_cost[speed][mode] = set_src_cost (&all.mult, speed);
-	  sdiv_cost[speed][mode] = set_src_cost (&all.sdiv, speed);
-	  udiv_cost[speed][mode] = set_src_cost (&all.udiv, speed);
-
-	  sdiv_pow2_cheap[speed][mode] = (set_src_cost (&all.sdiv_32, speed)
-				          <= 2 * add_cost[speed][mode]);
-	  smod_pow2_cheap[speed][mode] = (set_src_cost (&all.smod_32, speed)
-				          <= 4 * add_cost[speed][mode]);
-
-	  wider_mode = GET_MODE_WIDER_MODE (mode);
-	  if (wider_mode != VOIDmode)
-	    {
-	      PUT_MODE (&all.zext, wider_mode);
-	      PUT_MODE (&all.wide_mult, wider_mode);
-	      PUT_MODE (&all.wide_lshr, wider_mode);
-	      XEXP (&all.wide_lshr, 1) = GEN_INT (GET_MODE_BITSIZE (mode));
-
-	      mul_widen_cost[speed][wider_mode]
-	        = set_src_cost (&all.wide_mult, speed);
-	      mul_highpart_cost[speed][mode]
-	        = set_src_cost (&all.wide_trunc, speed);
-	    }
-
-	  shift_cost[speed][mode][0] = 0;
-	  shiftadd_cost[speed][mode][0] = shiftsub0_cost[speed][mode][0]
-	    = shiftsub1_cost[speed][mode][0] = add_cost[speed][mode];
-
-	  n = MIN (MAX_BITS_PER_WORD, GET_MODE_BITSIZE (mode));
-	  for (m = 1; m < n; m++)
-	    {
-	      XEXP (&all.shift, 1) = cint[m];
-	      XEXP (&all.shift_mult, 1) = pow2[m];
-
-	      shift_cost[speed][mode][m] = set_src_cost (&all.shift, speed);
-	      shiftadd_cost[speed][mode][m] = set_src_cost (&all.shift_add,
-							    speed);
-	      shiftsub0_cost[speed][mode][m] = set_src_cost (&all.shift_sub0,
-							     speed);
-	      shiftsub1_cost[speed][mode][m] = set_src_cost (&all.shift_sub1,
-							     speed);
-	    }
-	}
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_INT);
+	   mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	init_expmed_one_mode (&all, mode, speed);
     }
+
   if (alg_hash_used_p)
     memset (alg_hash, 0, sizeof (alg_hash));
   else
@@ -2385,11 +2401,11 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   int op_cost, op_latency;
   unsigned HOST_WIDE_INT orig_t = t;
   unsigned HOST_WIDE_INT q;
-  int maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (mode));
-  int hash_index;
+  int maxm, hash_index;
   bool cache_hit = false;
   enum alg_code cache_alg = alg_zero;
   bool speed = optimize_insn_for_speed_p ();
+  enum machine_mode imode;
 
   /* Indicate that no algorithm is yet found.  If no algorithm
      is found, this value will be returned and indicate failure.  */
@@ -2400,8 +2416,15 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       || (cost_limit->cost == 0 && cost_limit->latency <= 0))
     return;
 
+  /* Be prepared for vector modes.  */
+  imode = GET_MODE_INNER (mode);
+  if (imode == VOIDmode)
+    imode = mode;
+
+  maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (imode));
+
   /* Restrict the bits of "t" to the multiplication's mode.  */
-  t &= GET_MODE_MASK (mode);
+  t &= GET_MODE_MASK (imode);
 
   /* t == 1 can be done in zero cost.  */
   if (t == 1)
@@ -2632,7 +2655,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	  op_cost = shiftsub1_cost[speed][mode][m];
 	  new_limit.cost = best_cost.cost - op_cost;
 	  new_limit.latency = best_cost.latency - op_cost;
-	  synth_mult (alg_in, (unsigned HOST_WIDE_INT) (-orig_t + 1) >> m, &new_limit, mode);
+	  synth_mult (alg_in, (unsigned HOST_WIDE_INT) (-orig_t + 1) >> m,
+		      &new_limit, mode);
 
 	  alg_in->cost.cost += op_cost;
 	  alg_in->cost.latency += op_cost;
@@ -2871,7 +2895,7 @@ choose_mult_variant (enum machine_mode mode, HOST_WIDE_INT val,
   /* Ensure that mult_cost provides a reasonable upper bound.
      Any constant multiplication can be performed with less
      than 2 * bits additions.  */
-  op_cost = 2 * GET_MODE_BITSIZE (mode) * add_cost[speed][mode];
+  op_cost = 2 * GET_MODE_UNIT_BITSIZE (mode) * add_cost[speed][mode];
   if (mult_cost > op_cost)
     mult_cost = op_cost;
 
@@ -2882,7 +2906,7 @@ choose_mult_variant (enum machine_mode mode, HOST_WIDE_INT val,
 
   /* This works only if the inverted value actually fits in an
      `unsigned int' */
-  if (HOST_BITS_PER_INT >= GET_MODE_BITSIZE (mode))
+  if (HOST_BITS_PER_INT >= GET_MODE_UNIT_BITSIZE (mode))
     {
       op_cost = neg_cost[speed][mode];
       if (MULT_COST_LESS (&alg->cost, mult_cost))
@@ -2949,7 +2973,7 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
 
   if (alg->op[0] == alg_zero)
     {
-      accum = copy_to_mode_reg (mode, const0_rtx);
+      accum = copy_to_mode_reg (mode, CONST0_RTX (mode));
       val_so_far = 0;
     }
   else if (alg->op[0] == alg_m)
@@ -3029,24 +3053,25 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
 	  gcc_unreachable ();
 	}
 
-      /* Write a REG_EQUAL note on the last insn so that we can cse
-	 multiplication sequences.  Note that if ACCUM is a SUBREG,
-	 we've set the inner register and must properly indicate
-	 that.  */
-
-      tem = op0, nmode = mode;
-      accum_inner = accum;
-      if (GET_CODE (accum) == SUBREG)
+      if (SCALAR_INT_MODE_P (mode))
 	{
-	  accum_inner = SUBREG_REG (accum);
-	  nmode = GET_MODE (accum_inner);
-	  tem = gen_lowpart (nmode, op0);
-	}
+	  /* Write a REG_EQUAL note on the last insn so that we can cse
+	     multiplication sequences.  Note that if ACCUM is a SUBREG,
+	     we've set the inner register and must properly indicate that.  */
+          tem = op0, nmode = mode;
+          accum_inner = accum;
+          if (GET_CODE (accum) == SUBREG)
+	    {
+	      accum_inner = SUBREG_REG (accum);
+	      nmode = GET_MODE (accum_inner);
+	      tem = gen_lowpart (nmode, op0);
+	    }
 
-      insn = get_last_insn ();
-      set_dst_reg_note (insn, REG_EQUAL,
-			gen_rtx_MULT (nmode, tem, GEN_INT (val_so_far)),
-			accum_inner);
+          insn = get_last_insn ();
+          set_dst_reg_note (insn, REG_EQUAL,
+			    gen_rtx_MULT (nmode, tem, GEN_INT (val_so_far)),
+			    accum_inner);
+	}
     }
 
   if (variant == negate_variant)
@@ -3062,8 +3087,11 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
 
   /* Compare only the bits of val and val_so_far that are significant
      in the result mode, to avoid sign-/zero-extension confusion.  */
-  val &= GET_MODE_MASK (mode);
-  val_so_far &= GET_MODE_MASK (mode);
+  nmode = GET_MODE_INNER (mode);
+  if (nmode == VOIDmode)
+    nmode = mode;
+  val &= GET_MODE_MASK (nmode);
+  val_so_far &= GET_MODE_MASK (nmode);
   gcc_assert (val == val_so_far);
 
   return accum;
@@ -3083,29 +3111,51 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 {
   enum mult_variant variant;
   struct algorithm algorithm;
+  rtx scalar_op1;
   int max_cost;
   bool speed = optimize_insn_for_speed_p ();
+  bool do_trapv = flag_trapv && SCALAR_INT_MODE_P (mode) && !unsignedp;
 
-  /* Handling const0_rtx here allows us to use zero as a rogue value for
-     coeff below.  */
-  if (op1 == const0_rtx)
-    return const0_rtx;
-  if (op1 == const1_rtx)
-    return op0;
-  if (op1 == constm1_rtx)
-    return expand_unop (mode,
-			GET_MODE_CLASS (mode) == MODE_INT
-			&& !unsignedp && flag_trapv
-			? negv_optab : neg_optab,
-			op0, target, 0);
-
-  /* These are the operations that are potentially turned into a sequence
-     of shifts and additions.  */
-  if (SCALAR_INT_MODE_P (mode)
-      && (unsignedp || !flag_trapv))
+  if (CONSTANT_P (op0))
     {
-      HOST_WIDE_INT coeff = 0;
-      rtx fake_reg = gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1);
+      rtx temp = op0;
+      op0 = op1;
+      op1 = temp;
+    }
+
+  /* For vectors, there are several simplifications that can be made if
+     all elements of the vector constant are identical.  */
+  scalar_op1 = op1;
+  if (GET_CODE (op1) == CONST_VECTOR)
+    {
+      int i, n = CONST_VECTOR_NUNITS (op1);
+      scalar_op1 = CONST_VECTOR_ELT (op1, 0);
+      for (i = 1; i < n; ++i)
+	if (!rtx_equal_p (scalar_op1, CONST_VECTOR_ELT (op1, i)))
+	  goto skip_scalar;
+    }
+
+  if (INTEGRAL_MODE_P (mode))
+    {
+      rtx fake_reg;
+      HOST_WIDE_INT coeff;
+      bool is_neg;
+      int mode_bitsize;
+
+      if (op1 == CONST0_RTX (mode))
+	return op1;
+      if (op1 == CONST1_RTX (mode))
+	return op0;
+      if (op1 == CONSTM1_RTX (mode))
+	return expand_unop (mode, do_trapv ? negv_optab : neg_optab,
+			    op0, target, 0);
+
+      if (do_trapv)
+	goto skip_synth;
+
+      /* These are the operations that are potentially turned into
+	 a sequence of shifts and additions.  */
+      mode_bitsize = GET_MODE_UNIT_BITSIZE (mode);
 
       /* synth_mult does an `unsigned int' multiply.  As long as the mode is
 	 less than or equal in size to `unsigned int' this doesn't matter.
@@ -3114,86 +3164,86 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	 any truncation.  This means that multiplying by negative values does
 	 not work; results are off by 2^32 on a 32 bit machine.  */
 
-      if (CONST_INT_P (op1))
+      if (CONST_INT_P (scalar_op1))
 	{
-	  /* Attempt to handle multiplication of DImode values by negative
-	     coefficients, by performing the multiplication by a positive
-	     multiplier and then inverting the result.  */
-	  if (INTVAL (op1) < 0
-	      && GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
-	    {
-	      /* Its safe to use -INTVAL (op1) even for INT_MIN, as the
-		 result is interpreted as an unsigned coefficient.
-		 Exclude cost of op0 from max_cost to match the cost
-		 calculation of the synth_mult.  */
-	      max_cost = (set_src_cost (gen_rtx_MULT (mode, fake_reg, op1),
-					speed)
-			  - neg_cost[speed][mode]);
-	      if (max_cost > 0
-		  && choose_mult_variant (mode, -INTVAL (op1), &algorithm,
-					  &variant, max_cost))
-		{
-		  rtx temp = expand_mult_const (mode, op0, -INTVAL (op1),
-						NULL_RTX, &algorithm,
-						variant);
-		  return expand_unop (mode, neg_optab, temp, target, 0);
-		}
-	    }
-	  else coeff = INTVAL (op1);
+	  coeff = INTVAL (scalar_op1);
+	  is_neg = coeff < 0;
 	}
-      else if (GET_CODE (op1) == CONST_DOUBLE)
+      else if (CONST_DOUBLE_P (scalar_op1))
 	{
 	  /* If we are multiplying in DImode, it may still be a win
 	     to try to work with shifts and adds.  */
-	  if (CONST_DOUBLE_HIGH (op1) == 0
-	      && CONST_DOUBLE_LOW (op1) > 0)
-	    coeff = CONST_DOUBLE_LOW (op1);
-	  else if (CONST_DOUBLE_LOW (op1) == 0
-		   && EXACT_POWER_OF_2_OR_ZERO_P (CONST_DOUBLE_HIGH (op1)))
+	  if (CONST_DOUBLE_HIGH (scalar_op1) == 0
+	      && CONST_DOUBLE_LOW (scalar_op1) > 0)
 	    {
-	      int shift = floor_log2 (CONST_DOUBLE_HIGH (op1))
-			  + HOST_BITS_PER_WIDE_INT;
-	      if (shift < HOST_BITS_PER_DOUBLE_INT - 1
-		  || GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_DOUBLE_INT)
-		return expand_shift (LSHIFT_EXPR, mode, op0,
-				     shift, target, unsignedp);
+	      coeff = CONST_DOUBLE_LOW (scalar_op1);
+	      is_neg = false;
+	    }
+	  else if (CONST_DOUBLE_LOW (scalar_op1) == 0)
+	    {
+	      coeff = CONST_DOUBLE_HIGH (scalar_op1);
+	      if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))
+		{
+		  int shift = floor_log2 (coeff) + HOST_BITS_PER_WIDE_INT;
+		  if (shift < HOST_BITS_PER_DOUBLE_INT - 1
+		      || mode_bitsize <= HOST_BITS_PER_DOUBLE_INT)
+		    return expand_shift (LSHIFT_EXPR, mode, op0,
+					 shift, target, unsignedp);
+		}
+	      goto skip_synth;
 	    }
 	}
+      else
+	goto skip_synth;
 
       /* We used to test optimize here, on the grounds that it's better to
 	 produce a smaller program when -O is not used.  But this causes
 	 such a terrible slowdown sometimes that it seems better to always
 	 use synth_mult.  */
-      if (coeff != 0)
+
+      /* Special case powers of two.  */
+      if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))
+	return expand_shift (LSHIFT_EXPR, mode, op0,
+			     floor_log2 (coeff), target, unsignedp);
+
+      fake_reg = gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1);
+
+      /* Attempt to handle multiplication of DImode values by negative
+	 coefficients, by performing the multiplication by a positive
+	 multiplier and then inverting the result.  */
+      /* ??? How is this not slightly redundant with the neg variant?  */
+      if (is_neg && mode_bitsize > HOST_BITS_PER_WIDE_INT)
 	{
-	  /* Special case powers of two.  */
-	  if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))
-	    return expand_shift (LSHIFT_EXPR, mode, op0,
-				 floor_log2 (coeff), target, unsignedp);
-
-	  /* Exclude cost of op0 from max_cost to match the cost
+	  /* Its safe to use -coeff even for INT_MIN, as the
+	     result is interpreted as an unsigned coefficient.
+	     Exclude cost of op0 from max_cost to match the cost
 	     calculation of the synth_mult.  */
-	  max_cost = set_src_cost (gen_rtx_MULT (mode, fake_reg, op1), speed);
-	  if (choose_mult_variant (mode, coeff, &algorithm, &variant,
-				   max_cost))
-	    return expand_mult_const (mode, op0, coeff, target,
-				      &algorithm, variant);
+	  max_cost = (set_src_cost (gen_rtx_MULT (mode, fake_reg, op1), speed)
+		      - neg_cost[speed][mode]);
+	  if (max_cost > 0
+	      && choose_mult_variant (mode, -coeff, &algorithm,
+				      &variant, max_cost))
+	    {
+	      rtx temp = expand_mult_const (mode, op0, -coeff, NULL_RTX,
+					    &algorithm, variant);
+	      return expand_unop (mode, neg_optab, temp, target, 0);
+	    }
 	}
-    }
 
-  if (GET_CODE (op0) == CONST_DOUBLE)
-    {
-      rtx temp = op0;
-      op0 = op1;
-      op1 = temp;
+      /* Exclude cost of op0 from max_cost to match the cost
+	 calculation of the synth_mult.  */
+      max_cost = set_src_cost (gen_rtx_MULT (mode, fake_reg, op1), speed);
+      if (choose_mult_variant (mode, coeff, &algorithm, &variant, max_cost))
+	return expand_mult_const (mode, op0, coeff, target,
+				  &algorithm, variant);
     }
+ skip_synth:
 
   /* Expand x*2.0 as x+x.  */
-  if (GET_CODE (op1) == CONST_DOUBLE
-      && SCALAR_FLOAT_MODE_P (mode))
+  if (GET_CODE (scalar_op1) == CONST_DOUBLE && FLOAT_MODE_P (mode))
     {
       REAL_VALUE_TYPE d;
-      REAL_VALUE_FROM_CONST_DOUBLE (d, op1);
+      REAL_VALUE_FROM_CONST_DOUBLE (d, scalar_op1);
 
       if (REAL_VALUES_EQUAL (d, dconst2))
 	{
@@ -3202,13 +3252,11 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 			       target, unsignedp, OPTAB_LIB_WIDEN);
 	}
     }
+ skip_scalar:
 
   /* This used to use umul_optab if unsigned, but for non-widening multiply
      there is no difference between signed and unsigned.  */
-  op0 = expand_binop (mode,
-		      ! unsignedp
-		      && flag_trapv && (GET_MODE_CLASS(mode) == MODE_INT)
-		      ? smulv_optab : smul_optab,
+  op0 = expand_binop (mode, do_trapv ? smulv_optab : smul_optab,
 		      op0, op1, target, unsignedp, OPTAB_LIB_WIDEN);
   gcc_assert (op0);
   return op0;
