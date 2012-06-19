@@ -1,3 +1,9 @@
+2012-06-19  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c: Include params.h.
+	(alpha_option_override): Initialize PARAM_L1_CACHE_LINE_SIZE,
+	PARAM_L1_CACHE_SIZE, PARAM_L2_CACHE_SIZE for the cpu tuning.
+
 2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/tm.texi.in (TARGET_OBJC_DECLARE_UNRESOLVED_CLASS_REFERENCE,
