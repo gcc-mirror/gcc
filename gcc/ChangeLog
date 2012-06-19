@@ -1,5 +1,20 @@
 2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* doc/tm.texi.in (TARGET_OBJC_DECLARE_UNRESOLVED_CLASS_REFERENCE,
+	TARGET_OBJC_DECLARE_CLASS_DEFINITION): Add @hooks.
+	(ASM_DECLARE_CLASS_REFERENCE, ASM_DECLARE_UNRESOLVED_REFERENCE):
+	Remove.
+	* doc/tm.texi: Regenerate.
+	* config/darwin.h (ASM_OUTPUT_LABELREF): Remove special case for
+	.objc_class_name_*.
+	* config/darwin-c.c: Include target.h.
+	(darwin_objc_declare_unresolved_class_reference): New function.
+	(darwin_objc_declare_class_definition): New function.
+	(TARGET_OBJC_DECLARE_UNRESOLVED_CLASS_REFERENCE): Define.
+	(TARGET_OBJC_DECLARE_CLASS_DEFINITION): Define.
+
+2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* target.def (output_ident): New hook.
 	* targhooks.h (default_asm_output_ident_directive): Add prototype.
 	* varasm.c (assemble_asm): Only prefix a tab if the string does not
