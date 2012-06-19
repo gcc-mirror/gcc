@@ -397,7 +397,9 @@ fix = {
 };
 
 /*
- *  pthread.h on AIX defines PTHREAD_ONCE_INIT without enough braces.
+ *  pthread.h on AIX defines PTHREAD_ONCE_INIT, PTHREAD_MUTEX_INITIALIZER,
+ *  PTHREAD_COND_INITIALIZER and PTHREAD_RWLOCK_INITIALIZER without enough
+ *  braces.
  */
 fix = {
     hackname  = aix_once_init_1;
@@ -423,6 +425,45 @@ fix = {
 		"}}\n";
     test_text = "	0 \\\\\n"
 		"}\n";
+};
+
+fix = {
+    hackname  = aix_mutex_initializer_1;
+    mach      = "*-*-aix*";
+    files     = "pthread.h";
+    select    = "#define[ \t]PTHREAD_MUTEX_INITIALIZER \\\\\n"
+		"\\{ \\\\\n";
+    c_fix     = format;
+    c_fix_arg = "#define PTHREAD_MUTEX_INITIALIZER \\\n"
+		"{{ \\\n";
+    test_text = "#define PTHREAD_MUTEX_INITIALIZER \\\\\n"
+		"{ \\\\\n";
+};
+
+fix = {
+    hackname  = aix_cond_initializer_1;
+    mach      = "*-*-aix*";
+    files     = "pthread.h";
+    select    = "#define[ \t]PTHREAD_COND_INITIALIZER \\\\\n"
+		"\\{ \\\\\n";
+    c_fix     = format;
+    c_fix_arg = "#define PTHREAD_COND_INITIALIZER \\\n"
+		"{{ \\\n";
+    test_text = "#define PTHREAD_COND_INITIALIZER \\\\\n"
+		"{ \\\\\n";
+};
+
+fix = {
+    hackname  = aix_rwlock_initializer_1;
+    mach      = "*-*-aix*";
+    files     = "pthread.h";
+    select    = "#define[ \t]PTHREAD_RWLOCK_INITIALIZER \\\\\n"
+		"\\{ \\\\\n";
+    c_fix     = format;
+    c_fix_arg = "#define PTHREAD_RWLOCK_INITIALIZER \\\n"
+		"{{ \\\n";
+    test_text = "#define PTHREAD_RWLOCK_INITIALIZER \\\\\n"
+		"{ \\\\\n";
 };
 
 /*
