@@ -6781,9 +6781,31 @@ intersect_ranges (enum value_range_type *vr0type,
 		  enum value_range_type vr1type,
 		  tree vr1min, tree vr1max)
 {
+  bool mineq = operand_equal_p (*vr0min, vr1min, 0);
+  bool maxeq = operand_equal_p (*vr0max, vr1max, 0);
+
   /* [] is vr0, () is vr1 in the following classification comments.  */
-  if (operand_less_p (*vr0max, vr1min) == 1
-      || operand_less_p (vr1max, *vr0min) == 1)
+  if (mineq && maxeq)
+    {
+      /* [(  )] */
+      if (*vr0type == vr1type)
+	/* Nothing to do for equal ranges.  */
+	;
+      else if ((*vr0type == VR_RANGE
+		&& vr1type == VR_ANTI_RANGE)
+	       || (*vr0type == VR_ANTI_RANGE
+		   && vr1type == VR_RANGE))
+	{
+	  /* For anti-range with range intersection the result is empty.  */
+	  *vr0type = VR_UNDEFINED;
+	  *vr0min = NULL_TREE;
+	  *vr0max = NULL_TREE;
+	}
+      else
+	gcc_unreachable ();
+    }
+  else if (operand_less_p (*vr0max, vr1min) == 1
+	   || operand_less_p (vr1max, *vr0min) == 1)
     {
       /* [ ] ( ) or ( ) [ ]
 	 If the ranges have an empty intersection, the result of the
@@ -6813,18 +6835,47 @@ intersect_ranges (enum value_range_type *vr0type,
 	  /* Take VR0.  */
 	}
     }
-  else if (operand_less_p (vr1max, *vr0max) == 1
-	   && operand_less_p (*vr0min, vr1min) == 1)
+  else if ((maxeq || operand_less_p (vr1max, *vr0max) == 1)
+	   && (mineq || operand_less_p (*vr0min, vr1min) == 1))
     {
-      /* [ (  ) ]  */
-      if (*vr0type == VR_RANGE)
+      /* [ (  ) ] or [(  ) ] or [ (  )] */
+      if (*vr0type == VR_RANGE
+	  && vr1type == VR_RANGE)
 	{
-	  /* If the outer is a range choose the inner one.
-	     ???  If the inner is an anti-range this arbitrarily chooses
-	     the anti-range.  */
+	  /* If both are ranges the result is the inner one.  */
 	  *vr0type = vr1type;
 	  *vr0min = vr1min;
 	  *vr0max = vr1max;
+	}
+      else if (*vr0type == VR_RANGE
+	       && vr1type == VR_ANTI_RANGE)
+	{
+	  /* Choose the right gap if the left one is empty.  */
+	  if (mineq)
+	    {
+	      if (TREE_CODE (vr1max) == INTEGER_CST)
+		*vr0min = int_const_binop (PLUS_EXPR, vr1max, integer_one_node);
+	      else
+		*vr0min = vr1max;
+	    }
+	  /* Choose the left gap if the right one is empty.  */
+	  else if (maxeq)
+	    {
+	      if (TREE_CODE (vr1min) == INTEGER_CST)
+		*vr0max = int_const_binop (MINUS_EXPR, vr1min,
+					   integer_one_node);
+	      else
+		*vr0max = vr1min;
+	    }
+	  /* Choose the anti-range if the range is effectively varying.  */
+	  else if (vrp_val_is_min (*vr0min)
+		   && vrp_val_is_max (*vr0max))
+	    {
+	      *vr0type = vr1type;
+	      *vr0min = vr1min;
+	      *vr0max = vr1max;
+	    }
+	  /* Else choose the range.  */
 	}
       else if (*vr0type == VR_ANTI_RANGE
 	       && vr1type == VR_ANTI_RANGE)
@@ -6841,15 +6892,51 @@ intersect_ranges (enum value_range_type *vr0type,
       else
 	gcc_unreachable ();
     }
-  else if (operand_less_p (*vr0max, vr1max) == 1
-	   && operand_less_p (vr1min, *vr0min) == 1)
+  else if ((maxeq || operand_less_p (*vr0max, vr1max) == 1)
+	   && (mineq || operand_less_p (vr1min, *vr0min) == 1))
     {
-      /* ( [  ] )  */
-      if (vr1type == VR_RANGE)
-	/* If the outer is a range, choose the inner one.
-	   ???  If the inner is an anti-range this arbitrarily chooses
-	   the anti-range.  */
+      /* ( [  ] ) or ([  ] ) or ( [  ]) */
+      if (*vr0type == VR_RANGE
+	  && vr1type == VR_RANGE)
+	/* Choose the inner range.  */
 	;
+      else if (*vr0type == VR_ANTI_RANGE
+	       && vr1type == VR_RANGE)
+	{
+	  /* Choose the right gap if the left is empty.  */
+	  if (mineq)
+	    {
+	      *vr0type = VR_RANGE;
+	      if (TREE_CODE (*vr0max) == INTEGER_CST)
+		*vr0min = int_const_binop (PLUS_EXPR, *vr0max,
+					   integer_one_node);
+	      else
+		*vr0min = *vr0max;
+	      *vr0max = vr1max;
+	    }
+	  /* Choose the left gap if the right is empty.  */
+	  else if (maxeq)
+	    {
+	      *vr0type = VR_RANGE;
+	      if (TREE_CODE (*vr0min) == INTEGER_CST)
+		*vr0max = int_const_binop (MINUS_EXPR, *vr0min,
+					   integer_one_node);
+	      else
+		*vr0max = *vr0min;
+	      *vr0min = vr1min;
+	    }
+	  /* Choose the anti-range if the range is effectively varying.  */
+	  else if (vrp_val_is_min (vr1min)
+		   && vrp_val_is_max (vr1max))
+	    ;
+	  /* Else choose the range.  */
+	  else
+	    {
+	      *vr0type = vr1type;
+	      *vr0min = vr1min;
+	      *vr0max = vr1max;
+	    }
+	}
       else if (*vr0type == VR_ANTI_RANGE
 	       && vr1type == VR_ANTI_RANGE)
 	{
@@ -6871,10 +6958,9 @@ intersect_ranges (enum value_range_type *vr0type,
     }
   else if ((operand_less_p (vr1min, *vr0max) == 1
 	    || operand_equal_p (vr1min, *vr0max, 0))
-	   && (operand_less_p (*vr0min, vr1min) == 1
-	       || operand_equal_p (*vr0min, vr1min, 0)))
+	   && operand_less_p (*vr0min, vr1min) == 1)
     {
-      /* [  (  ]  ) */
+      /* [  (  ]  ) or [  ](  ) */
       if (*vr0type == VR_ANTI_RANGE
 	  && vr1type == VR_ANTI_RANGE)
 	*vr0max = vr1max;
@@ -6906,10 +6992,9 @@ intersect_ranges (enum value_range_type *vr0type,
     }
   else if ((operand_less_p (*vr0min, vr1max) == 1
 	    || operand_equal_p (*vr0min, vr1max, 0))
-	   && (operand_less_p (vr1min, *vr0min) == 1
-	       || operand_equal_p (vr1min, *vr0min, 0)))
+	   && operand_less_p (vr1min, *vr0min) == 1)
     {
-      /* (  [  )  ] */
+      /* (  [  )  ] or (  )[  ] */
       if (*vr0type == VR_ANTI_RANGE
 	  && vr1type == VR_ANTI_RANGE)
 	*vr0min = vr1min;
@@ -6952,7 +7037,7 @@ intersect_ranges (enum value_range_type *vr0type,
    in *VR0.  This may not be the smallest possible such range.  */
 
 static void
-vrp_intersect_ranges (value_range_t *vr0, value_range_t *vr1)
+vrp_intersect_ranges_1 (value_range_t *vr0, value_range_t *vr1)
 {
   value_range_t saved;
 
@@ -7001,6 +7086,26 @@ vrp_intersect_ranges (value_range_t *vr0, value_range_t *vr1)
     bitmap_ior_into (vr0->equiv, vr1->equiv);
   else if (vr1->equiv && !vr0->equiv)
     bitmap_copy (vr0->equiv, vr1->equiv);
+}
+
+static void
+vrp_intersect_ranges (value_range_t *vr0, value_range_t *vr1)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Intersecting\n  ");
+      dump_value_range (dump_file, vr0);
+      fprintf (dump_file, "\nand\n  ");
+      dump_value_range (dump_file, vr1);
+      fprintf (dump_file, "\n");
+    }
+  vrp_intersect_ranges_1 (vr0, vr1);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "to\n  ");
+      dump_value_range (dump_file, vr0);
+      fprintf (dump_file, "\n");
+    }
 }
 
 /* Meet operation for value ranges.  Given two value ranges VR0 and
