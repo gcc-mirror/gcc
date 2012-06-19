@@ -222,6 +222,7 @@ extern void ix86_expand_reduc (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 
 extern void ix86_expand_vec_extract_even_odd (rtx, rtx, rtx, unsigned);
 extern bool ix86_expand_pinsr (rtx *);
+extern void ix86_expand_sse2_mulv4si3 (rtx, rtx, rtx);
 
 /* In i386-c.c  */
 extern void ix86_target_macros (void);

@@ -38438,6 +38438,82 @@ ix86_expand_vec_extract_even_odd (rtx targ, rtx op0, rtx op1, unsigned odd)
   expand_vec_perm_even_odd_1 (&d, odd);
 }
 
+void
+ix86_expand_sse2_mulv4si3 (rtx op0, rtx op1, rtx op2)
+{
+  rtx op1_m1, op1_m2;
+  rtx op2_m1, op2_m2;
+  rtx res_1, res_2;
+
+  /* Shift both input vectors down one element, so that elements 3
+     and 1 are now in the slots for elements 2 and 0.  For K8, at
+     least, this is faster than using a shuffle.  */
+  op1_m1 = op1 = force_reg (V4SImode, op1);
+  op1_m2 = gen_reg_rtx (V4SImode);
+  emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, op1_m2),
+				 gen_lowpart (V1TImode, op1),
+				 GEN_INT (32)));
+
+  if (GET_CODE (op2) == CONST_VECTOR)
+    {
+      rtvec v;
+
+      /* Constant propagate the vector shift, leaving the dont-care
+	 vector elements as zero.  */
+      v = rtvec_alloc (4);
+      RTVEC_ELT (v, 0) = CONST_VECTOR_ELT (op2, 0);
+      RTVEC_ELT (v, 2) = CONST_VECTOR_ELT (op2, 2);
+      RTVEC_ELT (v, 1) = const0_rtx;
+      RTVEC_ELT (v, 3) = const0_rtx;
+      op2_m1 = gen_rtx_CONST_VECTOR (V4SImode, v);
+      op2_m1 = force_reg (V4SImode, op2_m1);
+
+      v = rtvec_alloc (4);
+      RTVEC_ELT (v, 0) = CONST_VECTOR_ELT (op2, 1);
+      RTVEC_ELT (v, 2) = CONST_VECTOR_ELT (op2, 3);
+      RTVEC_ELT (v, 1) = const0_rtx;
+      RTVEC_ELT (v, 3) = const0_rtx;
+      op2_m2 = gen_rtx_CONST_VECTOR (V4SImode, v);
+      op2_m2 = force_reg (V4SImode, op2_m2);
+    }
+  else
+    {
+      op2_m1 = op2 = force_reg (V4SImode, op2);
+      op2_m2 = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, op2_m2),
+				     gen_lowpart (V1TImode, op2),
+				     GEN_INT (32)));
+    }
+
+  /* Widening multiply of elements 0+2, and 1+3.  */
+  res_1 = gen_reg_rtx (V4SImode);
+  res_2 = gen_reg_rtx (V4SImode);
+  emit_insn (gen_sse2_umulv2siv2di3 (gen_lowpart (V2DImode, res_1),
+				     op1_m1, op2_m1));
+  emit_insn (gen_sse2_umulv2siv2di3 (gen_lowpart (V2DImode, res_2),
+				     op1_m2, op2_m2));
+
+  /* Move the results in element 2 down to element 1; we don't care
+     what goes in elements 2 and 3.  Then we can merge the parts
+     back together with an interleave.
+
+     Note that two other sequences were tried:
+     (1) Use interleaves at the start instead of psrldq, which allows
+     us to use a single shufps to merge things back at the end.
+     (2) Use shufps here to combine the two vectors, then pshufd to
+     put the elements in the correct order.
+     In both cases the cost of the reformatting stall was too high
+     and the overall sequence slower.  */
+
+  emit_insn (gen_sse2_pshufd_1 (res_1, res_1, const0_rtx, const2_rtx,
+				const0_rtx, const0_rtx));
+  emit_insn (gen_sse2_pshufd_1 (res_2, res_2, const0_rtx, const2_rtx,
+				const0_rtx, const0_rtx));
+  res_1 = emit_insn (gen_vec_interleave_lowv4si (op0, res_1, res_2));
+
+  set_unique_reg_note (res_1, REG_EQUAL, gen_rtx_MULT (V4SImode, op1, op2));
+}
+
 /* Expand an insert into a vector register through pinsr insn.
    Return true if successful.  */
 

@@ -816,6 +816,13 @@
   return false;
 })
 
+;; Return true when OP is a nonimmediate or a vector constant.  Note
+;; that most vector constants are not legitimate operands, so we need
+;; to special-case this.
+(define_predicate "nonimmediate_or_const_vector_operand"
+  (ior (match_code "const_vector")
+       (match_operand 0 "nonimmediate_operand")))
+
 ;; Return true if OP is a register or a zero.
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "register_operand")
