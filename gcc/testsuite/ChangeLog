@@ -1,3 +1,8 @@
+2012-06-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.dg/stack-usage-1.c: Remove dg-options line for sh targets
+	and add __sh__ case.
+
 2012-06-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53651
