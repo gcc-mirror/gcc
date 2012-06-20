@@ -4,6 +4,25 @@
 
 2012-06-20  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (SINCOS): New int iterator.
+	(sincos): New int attribute.
+	(*<sincos>xf2_i387): Macroize insn from *{sin,cos}xf2_i387 using
+	SINCOS int iterator.
+	(*<sincos>_extend<mode>xf2_i387): Macroize insn from
+	*{sin,cos}_extend<mode>xf2_i387 using SINCOS int iterator.
+
+2012-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (RDFSGSBASE): New int iterator.
+	(WRFSGSBASE): Ditto.
+	(fsgs): New int attribute.
+	(rd<fsgs>base<mode>): Macroize insn from rd<fsgs>base<mode> using
+	RDFSGSBASE int iterator.
+	(wr<fsgs>base<mode>): Macroize insn from wr<fsgs>base<mode> using
+	WRFSGSBASE int iterator.
+
+2012-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (<rounding_insn><mode>2): Macroize expander
 	from {floor,ceil,btrunc}<mode>2 using FIST_ROUNDING int iterator.
 	(l<rounding_insn><MODEF:mode><SWI48:mode>2): Macroize expander
@@ -38,7 +57,7 @@
 	* config/i386/i386.md (IEEE_MAXMIN): New int iterator.
 	(ieee_maxmin): New int attribute.
 	(*ieee_s<ieee_maxmin><mode>3): Macroize insn from
-	*ieee_s{max,min}<mode>3 using IEEE_MAXMIN mode iterator.
+	*ieee_s{max,min}<mode>3 using IEEE_MAXMIN int iterator.
 
 2012-06-20  Steven Bosscher  <steven@gcc.gnu.org>
 
