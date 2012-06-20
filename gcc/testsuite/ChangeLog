@@ -1,6 +1,15 @@
 2012-06-20  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2012-05-21  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/53418
+	* gcc.c-torture/compile/pr53418-1.c,
+	gcc.c-torture/compile/pr53418-2.c: New tests.
+
+2012-06-20  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2010-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46985
