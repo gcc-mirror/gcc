@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "df.h"
 #include "opts.h"
+#include "cgraph.h"
 
 /* Usable when we have an amount to add or subtract, and want the
    optimal size of the insn.  */
@@ -2533,10 +2534,6 @@ cris_asm_output_case_end (FILE *stream, int num, rtx table)
 static void
 cris_option_override (void)
 {
-  /* We don't want an .ident for gcc.
-     It isn't really clear anymore why not.  */
-  flag_no_gcc_ident = true;
-
   if (cris_max_stackframe_str)
     {
       cris_max_stackframe = atoi (cris_max_stackframe_str);
