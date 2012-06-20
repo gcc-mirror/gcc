@@ -45,7 +45,6 @@
 #include "cgraph.h"
 #include "ggc.h"
 #include "except.h"
-#include "c-family/c-pragma.h"	/* ??? */
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -23580,6 +23579,23 @@ arm_asm_output_labelref (FILE *stream, const char *name)
     asm_fprintf (stream, "%U%s", name);
 }
 
+/* This function is used to emit an EABI tag and its associated value.
+   We emit the numerical value of the tag in case the assembler does not
+   support textual tags.  (Eg gas prior to 2.20).  If requested we include
+   the tag name in a comment so that anyone reading the assembler output
+   will know which tag is being set.
+
+   This function is not static because arm-c.c needs it too.  */
+
+void
+arm_emit_eabi_attribute (const char *name, int num, int val)
+{
+  asm_fprintf (asm_out_file, "\t.eabi_attribute %d, %d", num, val);
+  if (flag_verbose_asm || flag_debug_asm)
+    asm_fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, name);
+  asm_fprintf (asm_out_file, "\n");
+}
+
 static void
 arm_file_start (void)
 {
@@ -23611,9 +23627,9 @@ arm_file_start (void)
 	  if (arm_fpu_desc->model == ARM_FP_MODEL_VFP)
 	    {
 	      if (TARGET_HARD_FLOAT)
-		EMIT_EABI_ATTRIBUTE (Tag_ABI_HardFP_use, 27, 3);
+		arm_emit_eabi_attribute ("Tag_ABI_HardFP_use", 27, 3);
 	      if (TARGET_HARD_FLOAT_ABI)
-		EMIT_EABI_ATTRIBUTE (Tag_ABI_VFP_args, 28, 1);
+		arm_emit_eabi_attribute ("Tag_ABI_VFP_args", 28, 1);
 	    }
 	}
       asm_fprintf (asm_out_file, "\t.fpu %s\n", fpu_name);
@@ -23623,22 +23639,23 @@ arm_file_start (void)
 	 Conservatively record the setting that would have been used.  */
 
       if (flag_rounding_math)
-	EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_rounding, 19, 1);
+	arm_emit_eabi_attribute ("Tag_ABI_FP_rounding", 19, 1);
 
       if (!flag_unsafe_math_optimizations)
 	{
-	  EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_denormal, 20, 1);
-	  EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_exceptions, 21, 1);
+	  arm_emit_eabi_attribute ("Tag_ABI_FP_denormal", 20, 1);
+	  arm_emit_eabi_attribute ("Tag_ABI_FP_exceptions", 21, 1);
 	}
       if (flag_signaling_nans)
-	EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_user_exceptions, 22, 1);
+	arm_emit_eabi_attribute ("Tag_ABI_FP_user_exceptions", 22, 1);
 
-      EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_number_model, 23,
+      arm_emit_eabi_attribute ("Tag_ABI_FP_number_model", 23,
 			   flag_finite_math_only ? 1 : 3);
 
-      EMIT_EABI_ATTRIBUTE (Tag_ABI_align8_needed, 24, 1);
-      EMIT_EABI_ATTRIBUTE (Tag_ABI_align8_preserved, 25, 1);
-      EMIT_EABI_ATTRIBUTE (Tag_ABI_enum_size, 26, flag_short_enums ? 1 : 2);
+      arm_emit_eabi_attribute ("Tag_ABI_align8_needed", 24, 1);
+      arm_emit_eabi_attribute ("Tag_ABI_align8_preserved", 25, 1);
+      arm_emit_eabi_attribute ("Tag_ABI_enum_size", 26,
+			       flag_short_enums ? 1 : 2);
 
       /* Tag_ABI_optimization_goals.  */
       if (optimize_size)
@@ -23649,12 +23666,14 @@ arm_file_start (void)
 	val = 1;
       else
 	val = 6;
-      EMIT_EABI_ATTRIBUTE (Tag_ABI_optimization_goals, 30, val);
+      arm_emit_eabi_attribute ("Tag_ABI_optimization_goals", 30, val);
 
-      EMIT_EABI_ATTRIBUTE (Tag_CPU_unaligned_access, 34, unaligned_access);
+      arm_emit_eabi_attribute ("Tag_CPU_unaligned_access", 34,
+			       unaligned_access);
 
       if (arm_fp16_format)
-	EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_16bit_format, 38, (int) arm_fp16_format);
+	arm_emit_eabi_attribute ("Tag_ABI_FP_16bit_format", 38,
+			     (int) arm_fp16_format);
 
       if (arm_lang_output_object_attributes_hook)
 	arm_lang_output_object_attributes_hook();

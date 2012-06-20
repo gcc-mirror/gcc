@@ -22,7 +22,6 @@
 #include "tm.h"
 #include "tm_p.h"
 #include "tree.h"
-#include "output.h"
 #include "c-family/c-common.h"
 
 /* Output C specific EABI object attributes.  These can not be done in
@@ -31,8 +30,8 @@
 static void
 arm_output_c_attributes (void)
 {
-  EMIT_EABI_ATTRIBUTE (Tag_ABI_PCS_wchar_t, 18,
-		       (int)(TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT));
+  int wchar_size = (int)(TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT);
+  arm_emit_eabi_attribute ("Tag_ABI_PCS_wchar_t", 18, wchar_size);
 }
 
 

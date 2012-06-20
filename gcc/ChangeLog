@@ -1,3 +1,15 @@
+2012-06-20  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/arm/arm.h (EMIT_EABI_ATTRIBUTE): Remove.
+	* config/arm/arm.c: Do not include c-pragma.h.
+	(arm_emit_eabi_attribute): New function based on EMIT_EABI_ATTRIBUTE.
+	(arm_file_start): Replace uses of EMIT_EABI_ATTRIBUTE with calls
+	to arm_emit_eabi_attribute.
+	* arm-c.c: Do not include output.h.
+	(arm_output_c_attributes): Replace use of EMIT_EABI_ATTRIBUTE with a
+	call to arm_emit_eabi_attribute.
+	* config/arm/arm-protos.h (arm_emit_eabi_attribute): Prototype it.
+
 2012-06-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p):
