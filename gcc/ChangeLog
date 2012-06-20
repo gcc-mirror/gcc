@@ -1,3 +1,8 @@
+2012-06-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p):
+	Allow adjusting alignment of user-aligned decls again.
+
 2012-06-20  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/rl78/rl78-c.c: Remove unnecessary includes.
