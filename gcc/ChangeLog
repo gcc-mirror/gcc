@@ -1,3 +1,25 @@
+2012-06-20  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2010-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46985
+	* tree-scalar-evolution.c (instantiate_scev_r): If chrec is NULL,
+	return it immediately.
+
+	2011-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/47780
+	* cfgexpand.c (expand_debug_expr) <case SSA_NAME>: Call copy_rtx to
+	avoid invalid rtx sharing.
+
+	2011-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/47903
+	* real.c (real_arithmetic) <case PLUS_EXPR, MINUS_EXPR,
+	MULT_EXPR, RDIV_EXPR>: Clear padding bits in *r first if
+	r isn't op0 nor op1.
+
 2012-06-04  Edmar Wienskoski  <edmar@freescale.com>
 
 	* config/rs6000/altivec.md (altivec_stvlx): Change machine mode of

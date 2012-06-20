@@ -1,3 +1,16 @@
+2012-06-20  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2010-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46985
+	* gfortran.dg/pr46985.f90: New test.
+
+	2011-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/47780
+	* gcc.target/i386/pr47780.c: New test.
+
 2012-06-04  Edmar Wienskoski  <edmar@freescale.com>
 
 	* gcc.target/powerpc/cell_builtin_1.c: New test case.
