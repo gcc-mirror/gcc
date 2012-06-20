@@ -1,3 +1,20 @@
+2012-06-19  Tom de Vries  <vries@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/mips/mips.c (mips_emit_pre_atomic_barrier_p,)
+	(mips_emit_post_atomic_barrier_p): New static functions.
+	(mips_process_sync_loop): Use them.  Emit sync memory barriers in
+	accordance with memory model semantics.  Add return of CMP result for
+	compare_and_swap.
+	* config/mips/mips.md: Update comment.
+	(sync_cmp): New attribute.
+	(sync_memmodel): New attribute replacing sync_release_barrier.
+	* config/mips/sync.md (UNSPEC_ATOMIC_COMPARE_AND_SWAP,)
+	(UNSPEC_ATOMIC_EXCHANGE, UNSPEC_ATOMIC_FETCH_OP): New constants.
+	(sync_lock_test_and_set, test_and_set_12): Update.
+	(atomic_compare_and_swap, atomic_exchange, atomic_exchange_llsc,)
+	(atomic_fetch_add, atomic_fetch_add_llsc): New patterns.
+
 2012-06-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/spe.md (*mov_si<mode>_e500_subreg0): Rename to
