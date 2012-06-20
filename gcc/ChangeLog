@@ -1,3 +1,7 @@
+2012-06-20  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h: Poison ASM_OUTPUT_IDENT and IDENT_ASM_OP.
+
 2012-06-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/30318
