@@ -36,7 +36,7 @@ compare_and_swap (volatile obj_addr_t *addr,
 inline static void
 release_set (volatile obj_addr_t *addr, obj_addr_t new_val)
 {
-  __atomic_store_n(addr, val, __ATOMIC_RELEASE);
+  __atomic_store_n(addr, new_val, __ATOMIC_RELEASE);
 }
 
 
