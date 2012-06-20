@@ -1,4 +1,17 @@
 2012-06-19  Tom de Vries  <vries@codesourcery.com>
+            Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/mips/constraints.md (ZR): New constraint.
+	* config/mips/predicates.md (mem_noofs_operand): New predicate.
+	* config/mips/mips.c (mips_print_operand): Handle new print modifier.
+        * config/mips/mips.h (TARGET_XLP): Define.
+	(TARGET_SYNC_AFTER_SC): Update.
+	(ISA_HAS_SWAP, ISA_HAS_LDADD): Define.
+	* config/mips/sync.md (atomic_exchange, atomic_fetch_add): Use
+	XLP-specific swap and ldadd patterns.
+	(atomic_exchange_swap, atomic_fetch_add_ldadd): New patterns.
+
+2012-06-19  Tom de Vries  <vries@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/mips/mips.c (mips_emit_pre_atomic_barrier_p,)

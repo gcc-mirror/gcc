@@ -370,3 +370,7 @@
 (define_predicate "small_data_pattern"
   (and (match_code "set,parallel,unspec,unspec_volatile,prefetch")
        (match_test "mips_small_data_pattern_p (op)")))
+
+(define_predicate "mem_noofs_operand"
+  (and (match_code "mem")
+       (match_code "reg" "0")))
