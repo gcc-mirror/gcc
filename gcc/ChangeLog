@@ -1,3 +1,9 @@
+2012-06-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53470
+	* tree.c (free_lang_data_in_type): Do not clear TYPE_CONTEXT but
+	replace it with the first non-BLOCK context.
+
 2012-06-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/53700

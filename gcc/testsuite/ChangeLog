@@ -1,3 +1,9 @@
+2012-06-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53470
+	* g++.dg/lto/pr53470_0.C: New testcase.
+	* gcc.dg/lto/pr53470_0.c: Likewise.
+
 2012-06-19  Jason Merrill  <jason@redhat.com>
 
 	Reapply:

@@ -4517,11 +4517,17 @@ free_lang_data_in_type (tree type)
   free_lang_data_in_one_sizepos (&TYPE_SIZE (type));
   free_lang_data_in_one_sizepos (&TYPE_SIZE_UNIT (type));
 
-  if (debug_info_level < DINFO_LEVEL_TERSE
-      || (TYPE_CONTEXT (type)
-	  && TREE_CODE (TYPE_CONTEXT (type)) != FUNCTION_DECL
-	  && TREE_CODE (TYPE_CONTEXT (type)) != NAMESPACE_DECL))
-    TYPE_CONTEXT (type) = NULL_TREE;
+  if (TYPE_CONTEXT (type)
+      && TREE_CODE (TYPE_CONTEXT (type)) == BLOCK)
+    {
+      tree ctx = TYPE_CONTEXT (type);
+      do
+	{
+	  ctx = BLOCK_SUPERCONTEXT (ctx);
+	}
+      while (ctx && TREE_CODE (ctx) == BLOCK);
+      TYPE_CONTEXT (type) = ctx;
+    }
 }
 
 
