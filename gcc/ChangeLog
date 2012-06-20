@@ -1,5 +1,15 @@
 2012-06-19  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	* emit-rtl.c (need_atomic_barrier_p): New function.
+	* emit-rtl.h (need_atomic_barrier_p): Declare it.
+	* config/alpha/alpha.c (alpha_{pre,post}_atomic_barrier): Use it.
+	* config/arm/arm.c (arm_{pre,post}_atomic_barrier): Use it.
+	* config/tilegx/tilegx.c (tile_{pre,post}_atomic_barrier): Use it.
+	* config/mips/mips.c (mips_{pre,post}_atomic_barrier_p): Remove.
+	(mips_process_sync_loop): Use generic version instead.
+
+2012-06-19  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	* config/mips/mips.c (mips_process_sync_loop): Emit cmp result only if
 	it is used.
 

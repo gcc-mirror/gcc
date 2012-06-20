@@ -11982,45 +11982,6 @@ mips_sync_insn2_template (enum attr_sync_insn2 type)
   gcc_unreachable ();
 }
 
-/* Subroutines of the mips_process_sync_loop.
-   Emit barriers as needed for the memory MODEL.  */
-
-static bool
-mips_emit_pre_atomic_barrier_p (enum memmodel model)
-{
-  switch (model)
-    {
-    case MEMMODEL_RELAXED:
-    case MEMMODEL_CONSUME:
-    case MEMMODEL_ACQUIRE:
-      return false;
-    case MEMMODEL_RELEASE:
-    case MEMMODEL_ACQ_REL:
-    case MEMMODEL_SEQ_CST:
-      return true;
-    default:
-      gcc_unreachable ();
-    }
-}
-
-static bool
-mips_emit_post_atomic_barrier_p (enum memmodel model)
-{
-  switch (model)
-    {
-    case MEMMODEL_RELAXED:
-    case MEMMODEL_CONSUME:
-    case MEMMODEL_RELEASE:
-      return false;
-    case MEMMODEL_ACQUIRE:
-    case MEMMODEL_ACQ_REL:
-    case MEMMODEL_SEQ_CST:
-      return true;
-    default:
-      gcc_unreachable ();
-    }
-}
-
 /* OPERANDS are the operands to a sync loop instruction and INDEX is
    the value of the one of the sync_* attributes.  Return the operand
    referred to by the attribute, or DEFAULT_VALUE if the insn doesn't
@@ -12093,7 +12054,7 @@ mips_process_sync_loop (rtx insn, rtx *operands)
   mips_multi_start ();
 
   /* Output the release side of the memory barrier.  */
-  if (mips_emit_pre_atomic_barrier_p (model))
+  if (need_atomic_barrier_p (model, true))
     {
       if (required_oldval == 0 && TARGET_OCTEON)
 	{
@@ -12206,7 +12167,7 @@ mips_process_sync_loop (rtx insn, rtx *operands)
     mips_multi_add_insn ("li\t%0,1", cmp, NULL);
 
   /* Output the acquire side of the memory barrier.  */
-  if (TARGET_SYNC_AFTER_SC && mips_emit_post_atomic_barrier_p (model))
+  if (TARGET_SYNC_AFTER_SC && need_atomic_barrier_p (model, false))
     mips_multi_add_insn ("sync", NULL);
 
   /* Output the exit label, if needed.  */
