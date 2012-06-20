@@ -1,5 +1,9 @@
 2012-06-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53651
+	* name-lookup.c (constructor_name_p): Don't try to look at the
+	name of a DECLTYPE_TYPE.
+
 	Reapply:
 	PR c++/53137
 	* pt.c (instantiate_class_template_1): Set LAMBDA_EXPR_THIS_CAPTURE.

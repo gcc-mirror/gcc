@@ -1,5 +1,8 @@
 2012-06-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53651
+	* g++.dg/cpp0x/decltype37.C: New.
+
 	PR c++/52637
 	* g++.dg/debug/localclass1.C: New.
 
