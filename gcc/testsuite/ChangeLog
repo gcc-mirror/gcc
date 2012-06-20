@@ -1,5 +1,9 @@
 2012-06-19  Jason Merrill  <jason@redhat.com>
 
+	Reapply:
+	PR c++/53137
+	* g++.dg/cpp0x/lambda/lambda-template5.C: New.
+
 	PR c++/53599
 	* g++.dg/template/local7.C: New.
 

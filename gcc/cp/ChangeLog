@@ -1,5 +1,11 @@
 2012-06-19  Jason Merrill  <jason@redhat.com>
 
+	Reapply:
+	PR c++/53137
+	* pt.c (instantiate_class_template_1): Set LAMBDA_EXPR_THIS_CAPTURE.
+	(instantiate_decl): Don't push_to_top_level for local class methods.
+	(instantiate_class_template_1): Or for local classes.
+
 	PR c++/53599
 	* pt.c (lookup_template_class_1): Use ts_global.
 
