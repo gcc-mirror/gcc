@@ -1,3 +1,11 @@
+2012-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (<rounding_insn><mode>2): Macroize expander
+	from {floor,ceil,btrunc}<mode>2 using FIST_ROUNDING int iterator.
+	(l<rounding_insn><MODEF:mode><SWI48:mode>2): Macroize expander
+	from l{floor,ceil}<MODEF:mode><SWI48:mode>2 using FIST_ROUNDING
+	int iterator.
+
 2012-06-20  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* system.h: Poison ASM_OUTPUT_IDENT and IDENT_ASM_OP.
