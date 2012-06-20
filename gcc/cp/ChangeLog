@@ -1,3 +1,8 @@
+2012-06-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53599
+	* pt.c (lookup_template_class_1): Use ts_global.
+
 2012-06-14  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
