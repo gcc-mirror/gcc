@@ -11976,6 +11976,45 @@ mips_sync_insn2_template (enum attr_sync_insn2 type)
   gcc_unreachable ();
 }
 
+/* Subroutines of the mips_process_sync_loop.
+   Emit barriers as needed for the memory MODEL.  */
+
+static bool
+mips_emit_pre_atomic_barrier_p (enum memmodel model)
+{
+  switch (model)
+    {
+    case MEMMODEL_RELAXED:
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_ACQUIRE:
+      return false;
+    case MEMMODEL_RELEASE:
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+      return true;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static bool
+mips_emit_post_atomic_barrier_p (enum memmodel model)
+{
+  switch (model)
+    {
+    case MEMMODEL_RELAXED:
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_RELEASE:
+      return false;
+    case MEMMODEL_ACQUIRE:
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+      return true;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* OPERANDS are the operands to a sync loop instruction and INDEX is
    the value of the one of the sync_* attributes.  Return the operand
    referred to by the attribute, or DEFAULT_VALUE if the insn doesn't
@@ -11996,11 +12035,13 @@ static void
 mips_process_sync_loop (rtx insn, rtx *operands)
 {
   rtx at, mem, oldval, newval, inclusive_mask, exclusive_mask;
-  rtx required_oldval, insn1_op2, tmp1, tmp2, tmp3;
+  rtx required_oldval, insn1_op2, tmp1, tmp2, tmp3, cmp;
   unsigned int tmp3_insn;
   enum attr_sync_insn1 insn1;
   enum attr_sync_insn2 insn2;
   bool is_64bit_p;
+  int memmodel_attr;
+  enum memmodel model;
 
   /* Read an operand from the sync_WHAT attribute and store it in
      variable WHAT.  DEFAULT is the default value if no attribute
@@ -12017,6 +12058,7 @@ mips_process_sync_loop (rtx insn, rtx *operands)
   /* Read the other attributes.  */
   at = gen_rtx_REG (GET_MODE (mem), AT_REGNUM);
   READ_OPERAND (oldval, at);
+  READ_OPERAND (cmp, 0);
   READ_OPERAND (newval, at);
   READ_OPERAND (inclusive_mask, 0);
   READ_OPERAND (exclusive_mask, 0);
@@ -12025,10 +12067,23 @@ mips_process_sync_loop (rtx insn, rtx *operands)
   insn1 = get_attr_sync_insn1 (insn);
   insn2 = get_attr_sync_insn2 (insn);
 
+  memmodel_attr = get_attr_sync_memmodel (insn);
+  switch (memmodel_attr)
+    {
+    case 10:
+      model = MEMMODEL_ACQ_REL;
+      break;
+    case 11:
+      model = MEMMODEL_ACQUIRE;
+      break;
+    default:
+      model = INTVAL (operands[memmodel_attr]);
+    }
+
   mips_multi_start ();
 
   /* Output the release side of the memory barrier.  */
-  if (get_attr_sync_release_barrier (insn) == SYNC_RELEASE_BARRIER_YES)
+  if (mips_emit_pre_atomic_barrier_p (model))
     {
       if (required_oldval == 0 && TARGET_OCTEON)
 	{
@@ -12066,6 +12121,10 @@ mips_process_sync_loop (rtx insn, rtx *operands)
 	  tmp1 = at;
 	}
       mips_multi_add_insn ("bne\t%0,%z1,2f", tmp1, required_oldval, NULL);
+
+      /* CMP = 0 [delay slot].  */
+      if (cmp)
+        mips_multi_add_insn ("li\t%0,0", cmp, NULL);
     }
 
   /* $TMP1 = OLDVAL & EXCLUSIVE_MASK.  */
@@ -12129,11 +12188,15 @@ mips_process_sync_loop (rtx insn, rtx *operands)
       mips_multi_copy_insn (tmp3_insn);
       mips_multi_set_operand (mips_multi_last_index (), 0, newval);
     }
-  else
+  else if (!(required_oldval && cmp))
     mips_multi_add_insn ("nop", NULL);
 
+  /* CMP = 1 -- either standalone or in a delay slot.  */
+  if (required_oldval && cmp)
+    mips_multi_add_insn ("li\t%0,1", cmp, NULL);
+
   /* Output the acquire side of the memory barrier.  */
-  if (TARGET_SYNC_AFTER_SC)
+  if (TARGET_SYNC_AFTER_SC && mips_emit_post_atomic_barrier_p (model))
     mips_multi_add_insn ("sync", NULL);
 
   /* Output the exit label, if needed.  */
