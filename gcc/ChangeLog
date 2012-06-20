@@ -1,3 +1,7 @@
+2012-06-20  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+
+	* tree.h (DECL_SOURCE_COLUMN): New accessor.
+
 2012-06-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (<rounding_insn><mode>2): Macroize expander
