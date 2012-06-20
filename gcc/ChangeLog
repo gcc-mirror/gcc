@@ -1,5 +1,9 @@
 2012-06-20  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* config/rl78/rl78-c.c: Remove unnecessary includes.
+
+2012-06-20  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* config/cris/cris.c: Include cgraph.h.
 	(cris_option_override): Do not set non-existing flag_no_gcc_ident.
 
