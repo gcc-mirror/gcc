@@ -260,4 +260,6 @@ extern bool arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 
 extern bool arm_autoinc_modes_ok_p (enum machine_mode, enum arm_auto_incmodes);
 
+extern void arm_emit_eabi_attribute (const char *, int, int);
+
 #endif /* ! GCC_ARM_PROTOS_H */
