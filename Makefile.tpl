@@ -1415,6 +1415,20 @@ check-target-libmudflap-c++:
 
 @endif target-libmudflap
 
+@if target-libgomp
+.PHONY: check-target-libgomp-c++
+check-target-libgomp-c++:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) c++.exp" check-target-libgomp
+
+@endif target-libgomp
+
+@if target-libitm
+.PHONY: check-target-libitm-c++
+check-target-libitm-c++:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) c++.exp" check-target-libitm
+
+@endif target-libitm
+
 # ----------
 # GCC module
 # ----------

@@ -41116,6 +41116,20 @@ check-target-libmudflap-c++:
 
 @endif target-libmudflap
 
+@if target-libgomp
+.PHONY: check-target-libgomp-c++
+check-target-libgomp-c++:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) c++.exp" check-target-libgomp
+
+@endif target-libgomp
+
+@if target-libitm
+.PHONY: check-target-libitm-c++
+check-target-libitm-c++:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) c++.exp" check-target-libitm
+
+@endif target-libitm
+
 # ----------
 # GCC module
 # ----------
@@ -41150,7 +41164,7 @@ check-gcc-c++:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++);
-check-c++: check-gcc-c++ check-target-libstdc++-v3 check-target-libmudflap-c++
+check-c++: check-gcc-c++ check-target-libstdc++-v3 check-target-libmudflap-c++ check-target-libitm-c++ check-target-libgomp-c++
 
 .PHONY: check-gcc-fortran check-fortran
 check-gcc-fortran:

@@ -1,3 +1,10 @@
+2012-06-20  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.tpl (check-target-libgomp-c++): New.
+	(check-target-libitm-c++): New.
+	* Makefile.def (c++): Add them.
+	* Makefile.in: Regenerate.
+
 2012-05-29  Edmar Wienskoski  <edmar@freescale.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
