@@ -1,3 +1,8 @@
+2012-06-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30318
+	* gcc.dg/tree-ssa/vrp69.c: New testcase.
+
 2012-06-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	* g++.dg/debug/dwarf2/nested-3.C: Add ARM comment character to regexp.

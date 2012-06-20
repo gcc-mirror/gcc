@@ -844,9 +844,7 @@ range_int_cst_p (value_range_t *vr)
 {
   return (vr->type == VR_RANGE
 	  && TREE_CODE (vr->max) == INTEGER_CST
-	  && TREE_CODE (vr->min) == INTEGER_CST
-	  && !TREE_OVERFLOW (vr->max)
-	  && !TREE_OVERFLOW (vr->min));
+	  && TREE_CODE (vr->min) == INTEGER_CST);
 }
 
 /* Return true if VR is a INTEGER_CST singleton.  */
@@ -855,6 +853,8 @@ static inline bool
 range_int_cst_singleton_p (value_range_t *vr)
 {
   return (range_int_cst_p (vr)
+	  && !TREE_OVERFLOW (vr->min)
+	  && !TREE_OVERFLOW (vr->max)
 	  && tree_int_cst_equal (vr->min, vr->max));
 }
 
@@ -1970,7 +1970,9 @@ zero_nonzero_bits_from_vr (value_range_t *vr,
 {
   *may_be_nonzero = double_int_minus_one;
   *must_be_nonzero = double_int_zero;
-  if (!range_int_cst_p (vr))
+  if (!range_int_cst_p (vr)
+      || TREE_OVERFLOW (vr->min)
+      || TREE_OVERFLOW (vr->max))
     return false;
 
   if (range_int_cst_singleton_p (vr))
@@ -2376,38 +2378,160 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
      range and see what we end up with.  */
   if (code == PLUS_EXPR)
     {
-      /* If we have a PLUS_EXPR with two VR_ANTI_RANGEs, drop to
-	 VR_VARYING.  It would take more effort to compute a precise
-	 range for such a case.  For example, if we have op0 == 1 and
-	 op1 == -1 with their ranges both being ~[0,0], we would have
-	 op0 + op1 == 0, so we cannot claim that the sum is in ~[0,0].
-	 Note that we are guaranteed to have vr0.type == vr1.type at
-	 this point.  */
-      if (vr0.type == VR_ANTI_RANGE)
+      /* If we have a PLUS_EXPR with two VR_RANGE integer constant
+         ranges compute the precise range for such case if possible.  */
+      if (range_int_cst_p (&vr0)
+	  && range_int_cst_p (&vr1)
+	  /* We attempt to do infinite precision signed integer arithmetic,
+	     thus we need two more bits than the possibly unsigned inputs.  */
+	  && TYPE_PRECISION (expr_type) < HOST_BITS_PER_DOUBLE_INT - 1)
 	{
+	  double_int min0 = tree_to_double_int (vr0.min);
+	  double_int max0 = tree_to_double_int (vr0.max);
+	  double_int min1 = tree_to_double_int (vr1.min);
+	  double_int max1 = tree_to_double_int (vr1.max);
+	  bool uns = TYPE_UNSIGNED (expr_type);
+	  double_int type_min
+	    = double_int_min_value (TYPE_PRECISION (expr_type), uns);
+	  double_int type_max
+	    = double_int_max_value (TYPE_PRECISION (expr_type), uns);
+	  double_int dmin, dmax;
+
+	  dmin = double_int_add (min0, min1);
+	  dmax = double_int_add (max0, max1);
+
+	  if (TYPE_OVERFLOW_WRAPS (expr_type))
+	    {
+	      /* If overflow wraps, truncate the values and adjust the
+		 range kind and bounds appropriately.  */
+	      double_int tmin
+		= double_int_ext (dmin, TYPE_PRECISION (expr_type), uns);
+	      double_int tmax
+		= double_int_ext (dmax, TYPE_PRECISION (expr_type), uns);
+	      gcc_assert (double_int_scmp (dmin, dmax) <= 0);
+	      if ((double_int_scmp (dmin, type_min) == -1
+		   && double_int_scmp (dmax, type_min) == -1)
+		  || (double_int_scmp (dmin, type_max) == 1
+		      && double_int_scmp (dmax, type_max) == 1)
+		  || (double_int_scmp (type_min, dmin) <= 0
+		      && double_int_scmp (dmax, type_max) <= 0))
+		{
+		  /* No overflow or both overflow or underflow.  The
+		     range kind stays VR_RANGE.  */
+		  min = double_int_to_tree (expr_type, tmin);
+		  max = double_int_to_tree (expr_type, tmax);
+		}
+	      else if (double_int_scmp (dmin, type_min) == -1
+		       && double_int_scmp (dmax, type_max) == 1)
+		{
+		  /* Underflow and overflow, drop to VR_VARYING.  */
+		  set_value_range_to_varying (vr);
+		  return;
+		}
+	      else
+		{
+		  /* Min underflow or max overflow.  The range kind
+		     changes to VR_ANTI_RANGE.  */
+		  double_int tem = tmin;
+		  gcc_assert ((double_int_scmp (dmin, type_min) == -1
+			       && double_int_scmp (dmax, type_min) >= 0
+			       && double_int_scmp (dmax, type_max) <= 0)
+			      || (double_int_scmp (dmax, type_max) == 1
+				  && double_int_scmp (dmin, type_min) >= 0
+				  && double_int_scmp (dmin, type_max) <= 0));
+		  type = VR_ANTI_RANGE;
+		  tmin = double_int_add (tmax, double_int_one);
+		  tmax = double_int_add (tem, double_int_minus_one);
+		  /* If the anti-range would cover nothing, drop to varying.
+		     Likewise if the anti-range bounds are outside of the
+		     types values.  */
+		  if (double_int_cmp (tmin, tmax, uns) > 0
+		      || double_int_cmp (tmin, type_min, uns) < 0
+		      || double_int_cmp (tmax, type_max, uns) > 0)
+		    {
+		      set_value_range_to_varying (vr);
+		      return;
+		    }
+		  min = double_int_to_tree (expr_type, tmin);
+		  max = double_int_to_tree (expr_type, tmax);
+		}
+	    }
+	  else
+	    {
+	      /* For non-wrapping arithmetic look at possibly smaller
+		 value-ranges of the type.  */
+	      if (vrp_val_min (expr_type))
+		type_min = tree_to_double_int (vrp_val_min (expr_type));
+	      if (vrp_val_max (expr_type))
+		type_max = tree_to_double_int (vrp_val_max (expr_type));
+
+	      /* If overflow does not wrap, saturate to the types min/max
+	         value.  */
+	      if (double_int_scmp (dmin, type_min) == -1)
+		{
+		  if (needs_overflow_infinity (expr_type)
+		      && supports_overflow_infinity (expr_type))
+		    min = negative_overflow_infinity (expr_type);
+		  else
+		    min = double_int_to_tree (expr_type, type_min);
+		}
+	      else if (double_int_scmp (dmin, type_max) == 1)
+		{
+		  if (needs_overflow_infinity (expr_type)
+		      && supports_overflow_infinity (expr_type))
+		    min = positive_overflow_infinity (expr_type);
+		  else
+		    min = double_int_to_tree (expr_type, type_max);
+		}
+	      else
+		min = double_int_to_tree (expr_type, dmin);
+
+	      if (double_int_scmp (dmax, type_min) == -1)
+		{
+		  if (needs_overflow_infinity (expr_type)
+		      && supports_overflow_infinity (expr_type))
+		    max = negative_overflow_infinity (expr_type);
+		  else
+		    max = double_int_to_tree (expr_type, type_min);
+		}
+	      else if (double_int_scmp (dmax, type_max) == 1)
+		{
+		  if (needs_overflow_infinity (expr_type)
+		      && supports_overflow_infinity (expr_type))
+		    max = positive_overflow_infinity (expr_type);
+		  else
+		    max = double_int_to_tree (expr_type, type_max);
+		}
+	      else
+		max = double_int_to_tree (expr_type, dmax);
+	    }
+	  if (needs_overflow_infinity (expr_type)
+	      && supports_overflow_infinity (expr_type))
+	    {
+	      if (is_negative_overflow_infinity (vr0.min)
+		  || is_negative_overflow_infinity (vr1.min))
+		min = negative_overflow_infinity (expr_type);
+	      if (is_positive_overflow_infinity (vr0.max)
+		  || is_positive_overflow_infinity (vr1.max))
+		max = positive_overflow_infinity (expr_type);
+	    }
+	}
+      else
+	{
+	  /* For other cases, for example if we have a PLUS_EXPR with two
+	     VR_ANTI_RANGEs, drop to VR_VARYING.  It would take more effort
+	     to compute a precise range for such a case.
+	     ???  General even mixed range kind operations can be expressed
+	     by for example transforming ~[3, 5] + [1, 2] to range-only
+	     operations and a union primitive:
+	       [-INF, 2] + [1, 2]  U  [5, +INF] + [1, 2]
+	           [-INF+1, 4]     U    [6, +INF(OVF)]
+	     though usually the union is not exactly representable with
+	     a single range or anti-range as the above is
+		 [-INF+1, +INF(OVF)] intersected with ~[5, 5]
+	     but one could use a scheme similar to equivalences for this. */
 	  set_value_range_to_varying (vr);
 	  return;
-	}
-
-      /* For operations that make the resulting range directly
-	 proportional to the original ranges, apply the operation to
-	 the same end of each range.  */
-      min = vrp_int_const_binop (code, vr0.min, vr1.min);
-      max = vrp_int_const_binop (code, vr0.max, vr1.max);
-
-      /* If both additions overflowed the range kind is still correct.
-	 This happens regularly with subtracting something in unsigned
-	 arithmetic.
-         ???  See PR30318 for all the cases we do not handle.  */
-      if ((TREE_OVERFLOW (min) && !is_overflow_infinity (min))
-	  && (TREE_OVERFLOW (max) && !is_overflow_infinity (max)))
-	{
-	  min = build_int_cst_wide (TREE_TYPE (min),
-				    TREE_INT_CST_LOW (min),
-				    TREE_INT_CST_HIGH (min));
-	  max = build_int_cst_wide (TREE_TYPE (max),
-				    TREE_INT_CST_LOW (max),
-				    TREE_INT_CST_HIGH (max));
 	}
     }
   else if (code == MIN_EXPR
@@ -7067,8 +7191,7 @@ intersect_ranges (enum value_range_type *vr0type,
       /* [ ] ( ) or ( ) [ ]
 	 If the ranges have an empty intersection, the result of the
 	 intersect operation is the range for intersecting an
-	 anti-range with a range or empty when intersecting two ranges.
-	 For intersecting two anti-ranges simply choose vr0.  */
+	 anti-range with a range or empty when intersecting two ranges.  */
       if (*vr0type == VR_RANGE
 	  && vr1type == VR_ANTI_RANGE)
 	;
@@ -7089,7 +7212,20 @@ intersect_ranges (enum value_range_type *vr0type,
       else if (*vr0type == VR_ANTI_RANGE
 	       && vr1type == VR_ANTI_RANGE)
 	{
-	  /* Take VR0.  */
+	  /* If the anti-ranges are adjacent to each other merge them.  */
+	  if (TREE_CODE (*vr0max) == INTEGER_CST
+	      && TREE_CODE (vr1min) == INTEGER_CST
+	      && operand_less_p (*vr0max, vr1min) == 1
+	      && integer_onep (int_const_binop (MINUS_EXPR,
+						vr1min, *vr0max)))
+	    *vr0max = vr1max;
+	  else if (TREE_CODE (vr1max) == INTEGER_CST
+		   && TREE_CODE (*vr0min) == INTEGER_CST
+		   && operand_less_p (vr1max, *vr0min) == 1
+		   && integer_onep (int_const_binop (MINUS_EXPR,
+						     *vr0min, vr1max)))
+	    *vr0min = vr1min;
+	  /* Else arbitrarily take VR0.  */
 	}
     }
   else if ((maxeq || operand_less_p (vr1max, *vr0max) == 1)

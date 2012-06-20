@@ -1,3 +1,15 @@
+2012-06-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30318
+	* tree-vrp.c (range_int_cst_p): Do not reject overflowed
+	constants here.
+	(range_int_cst_singleton_p): But explicitely here.
+	(zero_nonzero_bits_from_vr): And here.
+	(extract_range_from_binary_expr_1): Re-implement PLUS_EXPR
+	to cover all cases we can perform arbitrary precision
+	arithmetic with double-ints.
+	(intersect_ranges): Handle adjacent anti-ranges.
+
 2012-06-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (rounding_insn): New int attribute.
