@@ -1,3 +1,7 @@
+2012-06-16 Ville Voutilainen <ville.voutilainen@gmail.com>
+
+        * g++.dg/cpp0x/override4.C: New.
+
 2012-06-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53651

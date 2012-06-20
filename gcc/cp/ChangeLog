@@ -1,3 +1,8 @@
+2012-06-16 Ville Voutilainen <ville.voutilainen@gmail.com>
+
+	* parser.c (cp_parser_direct_declarator): Move virt-specifier
+	parsing after late-specified return type parsing.
+
 2012-06-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53651
