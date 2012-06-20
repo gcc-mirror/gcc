@@ -607,8 +607,22 @@
    (match_operand:GPR 1 "memory_operand")
    (match_operand:GPR 2 "arith_operand")
    (match_operand:SI 3 "const_int_operand")]
-  "GENERATE_LL_SC"
+  "GENERATE_LL_SC || ISA_HAS_SWAP"
 {
+  if (ISA_HAS_SWAP)
+    {
+      if (!mem_noofs_operand (operands[1], <MODE>mode))
+        {
+	  rtx addr;
+
+	  addr = force_reg (Pmode, XEXP (operands[1], 0));
+	  operands[1] = replace_equiv_address (operands[1], addr);
+	}
+      operands[2] = force_reg (<MODE>mode, operands[2]);
+      emit_insn (gen_atomic_exchange<mode>_swap (operands[0], operands[1],
+						 operands[2]));
+    }
+  else
     emit_insn (gen_atomic_exchange<mode>_llsc (operands[0], operands[1],
 					       operands[2], operands[3]));
   DONE;
@@ -623,7 +637,7 @@
 	 UNSPEC_ATOMIC_EXCHANGE))
    (unspec_volatile:GPR [(match_operand:SI 3 "const_int_operand")]
     UNSPEC_ATOMIC_EXCHANGE)]
-  "GENERATE_LL_SC"
+  "GENERATE_LL_SC && !ISA_HAS_SWAP"
   { return mips_output_sync_loop (insn, operands); }
   [(set_attr "sync_insn1" "li,move")
    (set_attr "sync_oldval" "0")
@@ -631,13 +645,38 @@
    (set_attr "sync_insn1_op2" "2")
    (set_attr "sync_memmodel" "3")])
 
+;; XLP issues implicit sync for SWAP/LDADD, so no need for an explicit one.
+(define_insn "atomic_exchange<mode>_swap"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(unspec_volatile:GPR [(match_operand:GPR 1 "mem_noofs_operand" "+ZR")]
+	 UNSPEC_ATOMIC_EXCHANGE))
+   (set (match_dup 1)
+	(unspec_volatile:GPR [(match_operand:GPR 2 "register_operand" "0")]
+	 UNSPEC_ATOMIC_EXCHANGE))]
+  "ISA_HAS_SWAP"
+  "swap<size>\t%0,%b1")
+
 (define_expand "atomic_fetch_add<mode>"
   [(match_operand:GPR 0 "register_operand")
    (match_operand:GPR 1 "memory_operand")
    (match_operand:GPR 2 "arith_operand")
    (match_operand:SI 3 "const_int_operand")]
-  "GENERATE_LL_SC"
+  "GENERATE_LL_SC || ISA_HAS_LDADD"
 {
+  if (ISA_HAS_LDADD)
+    {
+      if (!mem_noofs_operand (operands[1], <MODE>mode))
+        {
+	  rtx addr;
+
+	  addr = force_reg (Pmode, XEXP (operands[1], 0));
+	  operands[1] = replace_equiv_address (operands[1], addr);
+	}
+      operands[2] = force_reg (<MODE>mode, operands[2]);
+      emit_insn (gen_atomic_fetch_add<mode>_ldadd (operands[0], operands[1],
+						   operands[2]));
+    }
+  else
     emit_insn (gen_atomic_fetch_add<mode>_llsc (operands[0], operands[1],
 						operands[2], operands[3]));
   DONE;
@@ -654,10 +693,23 @@
 	 UNSPEC_ATOMIC_FETCH_OP))
    (unspec_volatile:GPR [(match_operand:SI 3 "const_int_operand")]
     UNSPEC_ATOMIC_FETCH_OP)]
-  "GENERATE_LL_SC"
+  "GENERATE_LL_SC && !ISA_HAS_LDADD"
   { return mips_output_sync_loop (insn, operands); }
   [(set_attr "sync_insn1" "addiu,addu")
    (set_attr "sync_oldval" "0")
    (set_attr "sync_mem" "1")
    (set_attr "sync_insn1_op2" "2")
    (set_attr "sync_memmodel" "3")])
+
+;; XLP issues implicit sync for SWAP/LDADD, so no need for an explicit one.
+(define_insn "atomic_fetch_add<mode>_ldadd"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(unspec_volatile:GPR [(match_operand:GPR 1 "mem_noofs_operand" "+ZR")]
+	 UNSPEC_ATOMIC_FETCH_OP))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+	 [(plus:GPR (match_dup 1)
+		    (match_operand:GPR 2 "register_operand" "0"))]
+	 UNSPEC_ATOMIC_FETCH_OP))]
+  "ISA_HAS_LDADD"
+  "ldadd<size>\t%0,%b1")

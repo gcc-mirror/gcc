@@ -7806,7 +7806,8 @@ mips_print_operand_punct_valid_p (unsigned char code)
    'D'	Print the second part of a double-word register or memory operand.
    'L'	Print the low-order register in a double-word register operand.
    'M'	Print high-order register in a double-word register operand.
-   'z'	Print $0 if OP is zero, otherwise print OP normally.  */
+   'z'	Print $0 if OP is zero, otherwise print OP normally.
+   'b'	Print the address of a memory operand, without offset.  */
 
 static void
 mips_print_operand (FILE *file, rtx op, int letter)
@@ -7935,6 +7936,11 @@ mips_print_operand (FILE *file, rtx op, int letter)
 	case MEM:
 	  if (letter == 'D')
 	    output_address (plus_constant (Pmode, XEXP (op, 0), 4));
+	  else if (letter == 'b')
+	    {
+	      gcc_assert (REG_P (XEXP (op, 0)));
+	      mips_print_operand (file, XEXP (op, 0), 0);
+	    }
 	  else if (letter && letter != 'z')
 	    output_operand_lossage ("invalid use of '%%%c'", letter);
 	  else
