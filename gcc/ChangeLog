@@ -1,3 +1,9 @@
+2012-06-21  Michael Matz  <matz@suse.de>
+
+	PR middle-end/53688
+	* builtins.c (get_memory_rtx): Always build an all-aliasing MEM_REF
+	with correct size.
+
 2012-06-21  Richard Guenther  <rguenther@suse.de>
 
 	* tree-inline.c (estimate_num_insns): Estimate call cost for
