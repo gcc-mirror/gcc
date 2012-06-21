@@ -1252,7 +1252,6 @@ get_memory_rtx (tree exp, tree len)
 {
   tree orig_exp = exp;
   rtx addr, mem;
-  HOST_WIDE_INT off;
 
   /* When EXP is not resolved SAVE_EXPR, MEM_ATTRS can be still derived
      from its expression, for expr->a.b only <variable>.a.b is recorded.  */
@@ -1263,120 +1262,38 @@ get_memory_rtx (tree exp, tree len)
   mem = gen_rtx_MEM (BLKmode, memory_address (BLKmode, addr));
 
   /* Get an expression we can use to find the attributes to assign to MEM.
-     If it is an ADDR_EXPR, use the operand.  Otherwise, dereference it if
-     we can.  First remove any nops.  */
+     First remove any nops.  */
   while (CONVERT_EXPR_P (exp)
 	 && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
     exp = TREE_OPERAND (exp, 0);
 
-  off = 0;
-  if (TREE_CODE (exp) == POINTER_PLUS_EXPR
-      && TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
-      && host_integerp (TREE_OPERAND (exp, 1), 0)
-      && (off = tree_low_cst (TREE_OPERAND (exp, 1), 0)) > 0)
-    exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-  else if (TREE_CODE (exp) == ADDR_EXPR)
-    exp = TREE_OPERAND (exp, 0);
-  else if (POINTER_TYPE_P (TREE_TYPE (exp)))
-    exp = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (exp)), exp);
-  else
-    exp = NULL;
+  /* Build a MEM_REF representing the whole accessed area as a byte blob,
+     (as builtin stringops may alias with anything).  */
+  exp = fold_build2 (MEM_REF,
+		     build_array_type (char_type_node,
+				       build_range_type (sizetype,
+							 size_one_node, len)),
+		     exp, build_int_cst (ptr_type_node, 0));
 
-  /* Honor attributes derived from exp, except for the alias set
-     (as builtin stringops may alias with anything) and the size
-     (as stringops may access multiple array elements).  */
-  if (exp)
+  /* If the MEM_REF has no acceptable address, try to get the base object
+     from the original address we got, and build an all-aliasing
+     unknown-sized access to that one.  */
+  if (is_gimple_mem_ref_addr (TREE_OPERAND (exp, 0)))
+    set_mem_attributes (mem, exp, 0);
+  else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
+	   && (exp = get_base_address (TREE_OPERAND (TREE_OPERAND (exp, 0),
+						     0))))
     {
+      exp = build_fold_addr_expr (exp);
+      exp = fold_build2 (MEM_REF,
+			 build_array_type (char_type_node,
+					   build_range_type (sizetype,
+							     size_zero_node,
+							     NULL)),
+			 exp, build_int_cst (ptr_type_node, 0));
       set_mem_attributes (mem, exp, 0);
-
-      if (off)
-	mem = adjust_automodify_address_nv (mem, BLKmode, NULL, off);
-
-      /* Allow the string and memory builtins to overflow from one
-	 field into another, see http://gcc.gnu.org/PR23561.
-	 Thus avoid COMPONENT_REFs in MEM_EXPR unless we know the whole
-	 memory accessed by the string or memory builtin will fit
-	 within the field.  */
-      if (MEM_EXPR (mem) && TREE_CODE (MEM_EXPR (mem)) == COMPONENT_REF)
-	{
-	  tree mem_expr = MEM_EXPR (mem);
-	  HOST_WIDE_INT offset = -1, length = -1;
-	  tree inner = exp;
-
-	  while (TREE_CODE (inner) == ARRAY_REF
-		 || CONVERT_EXPR_P (inner)
-		 || TREE_CODE (inner) == VIEW_CONVERT_EXPR
-		 || TREE_CODE (inner) == SAVE_EXPR)
-	    inner = TREE_OPERAND (inner, 0);
-
-	  gcc_assert (TREE_CODE (inner) == COMPONENT_REF);
-
-	  if (MEM_OFFSET_KNOWN_P (mem))
-	    offset = MEM_OFFSET (mem);
-
-	  if (offset >= 0 && len && host_integerp (len, 0))
-	    length = tree_low_cst (len, 0);
-
-	  while (TREE_CODE (inner) == COMPONENT_REF)
-	    {
-	      tree field = TREE_OPERAND (inner, 1);
-	      gcc_assert (TREE_CODE (mem_expr) == COMPONENT_REF);
-	      gcc_assert (field == TREE_OPERAND (mem_expr, 1));
-
-	      /* Bitfields are generally not byte-addressable.  */
-	      gcc_assert (!DECL_BIT_FIELD (field)
-			  || ((tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
-			       % BITS_PER_UNIT) == 0
-			      && host_integerp (DECL_SIZE (field), 0)
-			      && (TREE_INT_CST_LOW (DECL_SIZE (field))
-				  % BITS_PER_UNIT) == 0));
-
-	      /* If we can prove that the memory starting at XEXP (mem, 0) and
-		 ending at XEXP (mem, 0) + LENGTH will fit into this field, we
-		 can keep the COMPONENT_REF in MEM_EXPR.  But be careful with
-		 fields without DECL_SIZE_UNIT like flexible array members.  */
-	      if (length >= 0
-		  && DECL_SIZE_UNIT (field)
-		  && host_integerp (DECL_SIZE_UNIT (field), 0))
-		{
-		  HOST_WIDE_INT size
-		    = TREE_INT_CST_LOW (DECL_SIZE_UNIT (field));
-		  if (offset <= size
-		      && length <= size
-		      && offset + length <= size)
-		    break;
-		}
-
-	      if (offset >= 0
-		  && host_integerp (DECL_FIELD_OFFSET (field), 0))
-		offset += TREE_INT_CST_LOW (DECL_FIELD_OFFSET (field))
-			  + tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
-			    / BITS_PER_UNIT;
-	      else
-		{
-		  offset = -1;
-		  length = -1;
-		}
-
-	      mem_expr = TREE_OPERAND (mem_expr, 0);
-	      inner = TREE_OPERAND (inner, 0);
-	    }
-
-	  if (mem_expr == NULL)
-	    offset = -1;
-	  if (mem_expr != MEM_EXPR (mem))
-	    {
-	      set_mem_expr (mem, mem_expr);
-	      if (offset >= 0)
-		set_mem_offset (mem, offset);
-	      else
-		clear_mem_offset (mem);
-	    }
-	}
-      set_mem_alias_set (mem, 0);
-      clear_mem_size (mem);
     }
-
+  set_mem_alias_set (mem, 0);
   return mem;
 }
 
