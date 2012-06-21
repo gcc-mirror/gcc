@@ -27,13 +27,7 @@
 #include "c-family/c-common.h"
 #include "diagnostic-core.h"
 #include "cpplib.h"
-#include "hard-reg-set.h"
-#include "output.h"
 #include "m32c-protos.h"
-#include "function.h"
-#define MAX_RECOG_OPERANDS 10
-#include "reload.h"
-#include "target.h"
 
 /* Implements the "GCC memregs" pragma.  This pragma takes only an
    integer, and is semantically identical to the -memregs= command
