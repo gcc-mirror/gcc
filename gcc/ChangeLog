@@ -1,3 +1,26 @@
+2012-06-21   Sterling Augustine  <saugustine@google.com>
+        Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (is_cu_die, is_namespace_die, is_class_die,
+	add_AT_pubnames, add_enumerator_pubname, want_pubnames): New functions.
+	(comdat_type_struct): New field 'skeleton_die'.
+	(breakout_comdat_types): Update it.
+	(add_pubname): Rework logic.  Call is_class_die, is_cu_die and
+	is_namespace_die.  Fix minor style violation.  Call want_pubnames.
+	(add_pubname_string): Call want_pubnames.
+	(add_pubtype): Rework logic for calculating type name.  Call
+	is_namespace_die.  Call want_pubnames.
+	(output_pubnames): Move conditional logic deciding when to produce the
+	section from dwarf2out_finish.  Use new skeleton_die field.
+	(base_type_die): Call add_pubtype.
+	(gen_enumeration_type_die): Unconditionally call add_pubtype.
+	(gen_subprogram_die): Adjust calls to add_pubname.
+	(gen_namespace_die): Call add_pubname_string.
+	(dwarf2out_finish): Call add_AT_pubnames; Move logic on when to
+	produce pubnames and pubtypes sections to output_pubnames.
+	(common.opt): New option '-gpubnames'.
+	(invoke.texi): Document it.
+
 2012-06-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/m32c/m32c-pragma.c: Remove unnecessary includes.
