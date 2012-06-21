@@ -1,3 +1,8 @@
+2012-06-21  Meador Inge  <meadori@codesourcery.com>
+
+	PR c/53702
+	* gcc.dg/Wunused-local-typedefs.c: New testcase.
+
 2012-06-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* testsuite/gcc.dg/pch/ident-1.c: New test.

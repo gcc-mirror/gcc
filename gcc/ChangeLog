@@ -1,3 +1,12 @@
+2012-06-21  Meador Inge  <meadori@codesourcery.com>
+
+	PR c/53702
+	* c-decl.c (c_push_function_context): Restore the behavior to reuse
+	the language function allocated for -Wunused-local-typedefs.
+	(c_pop_function_context): If necessary, clear the language function
+	created in c_push_function_context.  Always clear out the
+	x_cur_stmt_list field of the restored language function.
+
 2012-06-21   Sterling Augustine  <saugustine@google.com>
         Cary Coutant  <ccoutant@google.com>
 
