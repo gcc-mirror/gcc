@@ -2480,7 +2480,7 @@ gfc_resolve_ftell (gfc_expr *f, gfc_expr *u)
   gfc_clear_ts (&ts);
 
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_index_integer_kind;
+  f->ts.kind = gfc_intio_kind;
   if (u->ts.kind != gfc_c_int_kind)
     {
       ts.type = BT_INTEGER;
@@ -2490,7 +2490,7 @@ gfc_resolve_ftell (gfc_expr *f, gfc_expr *u)
       gfc_convert_type (u, &ts, 2);
     }
 
-  f->value.function.name = gfc_get_string (PREFIX ("ftell"));
+  f->value.function.name = gfc_get_string (PREFIX ("ftell2"));
 }
 
 
