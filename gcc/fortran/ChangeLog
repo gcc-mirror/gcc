@@ -1,3 +1,9 @@
+2012-06-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/39654
+	* iresolve.c (gfc_resolve_ftell): Fix result kind and use new
+	library function.
+
 2012-06-18  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsic.h (gfc_resolve_rank): New prototype.
