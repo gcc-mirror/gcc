@@ -1,3 +1,8 @@
+2012-06-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* testsuite/gcc.dg/pch/ident-1.c: New test.
+	* testsuite/gcc.dg/pch/ident-1.hs: Header file for new test.
+
 2012-06-21  Michael Matz  <matz@suse.de>
 
 	PR middle-end/53688

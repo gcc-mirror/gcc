@@ -1100,7 +1100,13 @@ c_common_init (void)
   cpp_init_iconv (parse_in);
 
   if (version_flag)
-    c_common_print_pch_checksum (stderr);
+    {
+      int i;
+      fputs ("Compiler executable checksum: ", stderr);
+      for (i = 0; i < 16; i++)
+	fprintf (stderr, "%02x", executable_checksum[i]);
+      putc ('\n', stderr);
+    }
 
   /* Has to wait until now so that cpplib has its hash table.  */
   init_pragma ();
