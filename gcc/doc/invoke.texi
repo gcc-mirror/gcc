@@ -4795,6 +4795,10 @@ most expressive format available (DWARF 2, stabs, or the native format
 if neither of those are supported), including GDB extensions if at all
 possible.
 
+@item -gpubnames
+@opindex gpubnames
+Generate dwarf .debug_pubnames and .debug_pubtypes sections.
+
 @item -gstabs
 @opindex gstabs
 Produce debugging information in stabs format (if that is supported),
