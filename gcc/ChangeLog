@@ -1,5 +1,9 @@
 2012-06-21  Alexandre Oliva  <aoliva@redhat.com>
 
+	* ddg.c (build_intra_loop_deps): Discard deps of nondebug on debug.
+
+2012-06-21  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/53682
 	* cselib.c (promote_debug_loc): Don't crash on NULL argument.
 
