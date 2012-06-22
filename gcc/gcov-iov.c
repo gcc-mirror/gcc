@@ -19,8 +19,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "bconfig.h"
+#include "system.h"
 
 /* Command line arguments are the base GCC version and the development
    phase (the latter may be an empty string).  */

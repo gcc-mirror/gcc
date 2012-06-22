@@ -1,3 +1,7 @@
+2012-06-22  Richard Guenther  <rguenther@suse.de>
+
+	* gcov-iov.c: Include bconfig.h and system.h.
+
 2012-06-22  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* doc/include/texinfo.tex: Update to version 2012-06-05.14.
