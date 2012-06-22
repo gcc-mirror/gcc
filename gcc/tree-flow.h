@@ -858,6 +858,9 @@ void warn_function_noreturn (tree);
 /* In tree-ssa-ter.c  */
 bool stmt_is_replaceable_p (gimple);
 
+/* In tree-parloops.c  */
+bool parallelized_function_p (tree);
+
 #include "tree-flow-inline.h"
 
 void swap_tree_operands (gimple, tree *, tree *);
