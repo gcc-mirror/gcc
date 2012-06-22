@@ -9448,9 +9448,6 @@ vt_init_cfa_base (void)
 				 VOIDmode, get_insns ());
   preserve_value (val);
   cselib_preserve_cfa_base_value (val, REGNO (cfa_base_rtx));
-  var_reg_decl_set (&VTI (ENTRY_BLOCK_PTR)->out, cfa_base_rtx,
-		    VAR_INIT_STATUS_INITIALIZED, dv_from_value (val->val_rtx),
-		    0, NULL_RTX, INSERT);
 }
 
 /* Allocate and initialize the data structures for variable tracking
