@@ -1,3 +1,10 @@
+2012-06-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47710
+	PR fortran/53328
+	* gfortran.dg/typebound_generic_12.f03: New.
+	* gfortran.dg/typebound_generic_13.f03: New.
+
 2012-06-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto15.ad[sb]: New test.
