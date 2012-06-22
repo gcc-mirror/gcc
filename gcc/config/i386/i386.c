@@ -3664,7 +3664,7 @@ ix86_option_override_internal (bool main_args_p)
   ix86_preferred_stack_boundary = PREFERRED_STACK_BOUNDARY_DEFAULT;
   if (global_options_set.x_ix86_preferred_stack_boundary_arg)
     {
-      int min = (TARGET_64BIT ? 4 : 2);
+      int min = (TARGET_64BIT ? (TARGET_SSE ? 4 : 3) : 2);
       int max = (TARGET_SEH ? 4 : 12);
 
       if (ix86_preferred_stack_boundary_arg < min

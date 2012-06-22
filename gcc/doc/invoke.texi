@@ -13577,6 +13577,12 @@ Attempt to keep the stack boundary aligned to a 2 raised to @var{num}
 byte boundary.  If @option{-mpreferred-stack-boundary} is not specified,
 the default is 4 (16 bytes or 128 bits).
 
+@strong{Warning:} When generating code for the x86-64 architecture with
+SSE extensions disabled, @option{-mpreferred-stack-boundary=3} can be
+used to keep the stack boundary aligned to 8 byte boundary.  You must
+build all modules with @option{-mpreferred-stack-boundary=3}, including
+any libraries.  This includes the system libraries and startup modules.
+
 @item -mincoming-stack-boundary=@var{num}
 @opindex mincoming-stack-boundary
 Assume the incoming stack is aligned to a 2 raised to @var{num} byte

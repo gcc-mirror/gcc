@@ -1,3 +1,14 @@
+2012-06-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53383
+	* doc/invoke.texi: Add a warning for -mpreferred-stack-boundary=3.
+
+	* config/i386/i386.c (ix86_option_override_internal): Allow
+	-mpreferred-stack-boundary=3 for 64-bit if SSE is disabled.
+
+	* config/i386/i386.h (MIN_STACK_BOUNDARY): Set to 64 for 64-bit
+	if SSE is disabled.
+
 2012-06-22  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* double-int.c (double_int_multiple_of): New function.
