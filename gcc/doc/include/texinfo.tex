@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2012-05-16.16}
+\def\texinfoversion{2012-06-05.14}
 %
 % Copyright 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
 % 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
@@ -1117,7 +1117,7 @@ where each line of input produces a line of output.}
 % #1 is a control sequence in which to do the replacements,
 % which we \xdef.
 \def\txiescapepdf#1{%
-  \ifx\pdfescapestring\relax
+  \ifx\pdfescapestring\thisisundefined
     % No primitive available; should we give a warning or log?
     % Many times it won't matter.
   \else
