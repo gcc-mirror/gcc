@@ -708,7 +708,7 @@ enum target_cpu_default
 #define MAIN_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
 
 /* Minimum stack boundary.  */
-#define MIN_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
+#define MIN_STACK_BOUNDARY (TARGET_64BIT ? (TARGET_SSE ? 128 : 64) : 32)
 
 /* Boundary (in *bits*) on which the stack pointer prefers to be
    aligned; the compiler cannot rely on having this alignment.  */
