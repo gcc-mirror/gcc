@@ -458,11 +458,8 @@ remove_unused_scope_block_p (tree scope, bitmap global_unused_vars)
       else if (TREE_CODE (*t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (*t))
 	unused = false;
 
-      /* Remove everything we don't generate debug info for.
-	 Don't remove larger vars though, because BLOCK_VARS are
-	 used also during expansion to determine which variables
-	 might share stack space.  */
-      else if (DECL_IGNORED_P (*t) && is_gimple_reg (*t))
+      /* Remove everything we don't generate debug info for.  */
+      else if (DECL_IGNORED_P (*t))
 	{
 	  *t = DECL_CHAIN (*t);
 	  next = t;

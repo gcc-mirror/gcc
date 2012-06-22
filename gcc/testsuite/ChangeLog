@@ -1,3 +1,7 @@
+2012-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto15.ad[sb]: New test.
+
 2012-06-21  Meador Inge  <meadori@codesourcery.com>
 
 	PR c/53702

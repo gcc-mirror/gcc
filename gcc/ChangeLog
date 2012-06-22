@@ -1,3 +1,8 @@
+2012-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-live.c (remove_unused_scope_block_p): Remove again
+	DECL_IGNORED_P non-reg vars even if they are used.
+
 2012-06-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/53671
@@ -48,7 +53,7 @@
 	x_cur_stmt_list field of the restored language function.
 
 2012-06-21   Sterling Augustine  <saugustine@google.com>
-        Cary Coutant  <ccoutant@google.com>
+             Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (is_cu_die, is_namespace_die, is_class_die,
 	add_AT_pubnames, add_enumerator_pubname, want_pubnames): New functions.
