@@ -1,5 +1,11 @@
 2012-06-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR debug/53704
+	* dwarf2out.c (gen_compile_unit_die): Use DW_LANG_Fortran90 as language
+	for GNU Fortran if in strict DWARF2 mode.
+
+2012-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree-ssa-live.c (remove_unused_scope_block_p): Remove again
 	DECL_IGNORED_P non-reg vars even if they are used.
 
