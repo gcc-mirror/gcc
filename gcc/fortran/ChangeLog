@@ -1,3 +1,13 @@
+2012-06-22  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2012-06-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53691
+	PR fortran/53685
+	* check.c (gfc_calculate_transfer_sizes): Return if
+	SIZE= is not constant or source-size cannot be determined.
+
 2012-06-14  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline
