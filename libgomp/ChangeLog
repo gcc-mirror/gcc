@@ -1,3 +1,11 @@
+2012-06-22  Richard Guenther  <rguenther@suse.de>
+
+	Merge from graphite branch
+	2012-01-13  Tobias Grosser  <tobias@grosser.es>
+
+	* testsuite/libgomp.graphite/force-parallel-1.c: Adjust.
+	* testsuite/libgomp.graphite/force-parallel-2.c: Likewise.
+
 2012-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/53580

@@ -1,3 +1,17 @@
+2012-06-22  Richard Guenther  <rguenther@suse.de>
+
+	Merge from graphite branch
+	2011-08-10  Sebastian Pop <sebpop@gmail.com>
+    
+	* graphite-sese-to-poly.c (build_scop_drs): Fix memory leak.
+
+	2012-01-13  Tobias Grosser  <tobias@grosser.es>
+
+	* tree-flow.h (parallelized_function_p): Declare.
+	* tree-parloops.c (parallelized_function_p): Export.
+	* graphite.c (graphite_transform_loops): Do not run graphite on
+	already parallel functions.
+
 2012-06-22  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_pre_atomic_barrier): Pass in and
