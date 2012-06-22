@@ -1,3 +1,7 @@
+2012-06-22  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/include/texinfo.tex: Update to version 2012-06-05.14.
+
 2012-06-22  Richard Guenther  <rguenther@suse.de>
 
 	PR gcov-profile/53744
