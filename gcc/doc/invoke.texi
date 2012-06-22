@@ -13579,9 +13579,18 @@ the default is 4 (16 bytes or 128 bits).
 
 @strong{Warning:} When generating code for the x86-64 architecture with
 SSE extensions disabled, @option{-mpreferred-stack-boundary=3} can be
-used to keep the stack boundary aligned to 8 byte boundary.  You must
-build all modules with @option{-mpreferred-stack-boundary=3}, including
-any libraries.  This includes the system libraries and startup modules.
+used to keep the stack boundary aligned to 8 byte boundary.  Since
+x86-64 ABI require 16 byte stack alignment, this is ABI incompatible and
+intended to be used in controlled environment where stack space is
+important limitation.  This option will lead to wrong code when functions
+compiled with 16 byte stack alignment (such as functions from a standard
+library) are called with misaligned stack.  In this case, SSE
+instructions may lead to misaligned memory access traps.  In addition,
+variable arguments will be handled incorrectly for 16 byte aligned
+objects (including x87 long double and __int128), leading to wrong
+results.  You must build all modules with
+@option{-mpreferred-stack-boundary=3}, including any libraries.  This
+includes the system libraries and startup modules.
 
 @item -mincoming-stack-boundary=@var{num}
 @opindex mincoming-stack-boundary

@@ -1,5 +1,9 @@
 2012-06-22  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* doc/invoke.texi: Update -mpreferred-stack-boundary=3 warning.
+
+2012-06-22  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/53383
 	* doc/invoke.texi: Add a warning for -mpreferred-stack-boundary=3.
 
