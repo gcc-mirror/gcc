@@ -16527,9 +16527,19 @@ emit_store_conditional (enum machine_mode mode, rtx res, rtx mem, rtx val)
 
 /* Expand barriers before and after a load_locked/store_cond sequence.  */
 
-static void
-rs6000_pre_atomic_barrier (enum memmodel model)
+static rtx
+rs6000_pre_atomic_barrier (rtx mem, enum memmodel model)
 {
+  rtx addr = XEXP (mem, 0);
+  int strict_p = (reload_in_progress || reload_completed);
+
+  if (!legitimate_indirect_address_p (addr, strict_p)
+      && !legitimate_indexed_address_p (addr, strict_p))
+    {
+      addr = force_reg (Pmode, addr);
+      mem = replace_equiv_address_nv (mem, addr);
+    }
+
   switch (model)
     {
     case MEMMODEL_RELAXED:
@@ -16546,6 +16556,7 @@ rs6000_pre_atomic_barrier (enum memmodel model)
     default:
       gcc_unreachable ();
     }
+  return mem;
 }
 
 static void
@@ -16684,7 +16695,7 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
   else if (reg_overlap_mentioned_p (retval, oldval))
     oldval = copy_to_reg (oldval);
 
-  rs6000_pre_atomic_barrier (mod_s);
+  mem = rs6000_pre_atomic_barrier (mem, mod_s);
 
   label1 = NULL_RTX;
   if (!is_weak)
@@ -16769,7 +16780,7 @@ rs6000_expand_atomic_exchange (rtx operands[])
       mode = SImode;
     }
 
-  rs6000_pre_atomic_barrier (model);
+  mem = rs6000_pre_atomic_barrier (mem, model);
 
   label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
   emit_label (XEXP (label, 0));
@@ -16853,7 +16864,7 @@ rs6000_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
       mode = SImode;
     }
 
-  rs6000_pre_atomic_barrier (model);
+  mem = rs6000_pre_atomic_barrier (mem, model);
 
   label = gen_label_rtx ();
   emit_label (label);
