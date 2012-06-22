@@ -1,5 +1,12 @@
 2012-06-21  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/53671
+	PR debug/49888
+	* alias.c (memrefs_conflict_p): Improve handling of AND for
+	alignment.
+
+2012-06-21  Alexandre Oliva  <aoliva@redhat.com>
+
 	* ddg.c (build_intra_loop_deps): Discard deps of nondebug on debug.
 
 2012-06-21  Alexandre Oliva  <aoliva@redhat.com>
