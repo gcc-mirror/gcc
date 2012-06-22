@@ -1,3 +1,8 @@
+2012-06-22  Richard Guenther  <rguenther@suse.de>
+
+	PR gcov-profile/53744
+	* gcov-iov.c (main): Treat "" and "prerelease" the same.
+
 2012-06-20  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
