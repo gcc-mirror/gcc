@@ -531,7 +531,15 @@ build_intra_loop_deps (ddg_ptr g)
 
       FOR_EACH_DEP (dest_node->insn, SD_LIST_BACK, sd_it, dep)
 	{
-	  ddg_node_ptr src_node = get_node_of_insn (g, DEP_PRO (dep));
+	  rtx src_insn = DEP_PRO (dep);
+	  ddg_node_ptr src_node;
+
+	  /* Don't add dependencies on debug insns to non-debug insns
+	     to avoid codegen differences between -g and -g0.  */
+	  if (DEBUG_INSN_P (src_insn) && !DEBUG_INSN_P (dest_node->insn))
+	    continue;
+
+	  src_node = get_node_of_insn (g, src_insn);
 
 	  if (!src_node)
 	    continue;
