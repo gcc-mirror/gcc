@@ -1,3 +1,47 @@
+2012-06-22  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* double-int.c (double_int_multiple_of): New function.
+	* double-int.h (double_int_multiple_of): New decl.
+	* tree-ssa-loop-ivopts.c (add_cost, zero_cost): Remove undefs.
+	(mbc_entry_hash): New forward decl.
+	(mbc_entry_eq): Likewise.
+	(zero_cost): Change to no_cost.
+	(mult_costs): New static var.
+	(cost_tables_exist): Likewise.
+	(initialize_costs): New function.
+	(finalize_costs): Likewise.
+	(tree_ssa_iv_optimize_init): Call initialize_costs.
+	(add_cost): Change to add_regs_cost; distinguish costs by speed.
+	(multiply_regs_cost): New function.
+	(add_const_cost): Likewise.
+	(extend_or_trunc_reg_cost): Likewise.
+	(negate_reg_cost): Likewise.
+	(multiply_by_cost): Change to multiply_by_const_cost; distinguish
+	costs by speed.
+	(get_address_cost): Change add_cost to add_regs_cost; change
+	multiply_by_cost to multiply_by_const_cost.
+	(force_expr_to_var_cost): Change zero_cost to no_cost; change
+	add_cost to add_regs_cost; change multiply_by_cost to
+	multiply_by_const_cost.
+	(split_cost): Change zero_cost to no_cost.
+	(ptr_difference_cost): Likewise.
+	(difference_cost): Change zero_cost to no_cost; change multiply_by_cost
+	to multiply_by_const_cost.
+	(get_computation_cost_at): Change add_cost to add_regs_cost; change
+	multiply_by_cost to multiply_by_const_cost.
+	(determine_use_iv_cost_generic): Change zero_cost to no_cost.
+	(determine_iv_cost): Change add_cost to add_regs_cost.
+	(iv_ca_new): Change zero_cost to no_cost.
+	(tree_ssa_iv_optimize_finalize): Call finalize_costs.
+	* tree-ssa-address.c (most_expensive_mult_to_index): Change
+	multiply_by_cost to multiply_by_const_cost.
+	* tree-flow.h (multiply_by_cost): Change to multiply_by_const_cost.
+	(add_regs_cost): New decl.
+	(multiply_regs_cost): Likewise.
+	(add_const_cost): Likewise.
+	(extend_or_trunc_reg_cost): Likewise.
+	(negate_reg_cost): Likewise.
+
 2012-06-22  Richard Guenther  <rguenther@suse.de>
 
 	Merge from graphite branch

@@ -150,6 +150,8 @@ double_int double_int_divmod (double_int, double_int, bool, unsigned, double_int
 double_int double_int_sdivmod (double_int, double_int, unsigned, double_int *);
 double_int double_int_udivmod (double_int, double_int, unsigned, double_int *);
 
+bool double_int_multiple_of (double_int, double_int, bool, double_int *);
+
 double_int double_int_setbit (double_int, unsigned);
 int double_int_ctz (double_int);
 
