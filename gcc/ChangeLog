@@ -2,6 +2,16 @@
 
 	PR debug/53671
 	PR debug/49888
+	* var-tracking.c (vt_get_canonicalize_base): New.
+	(vt_canonicalize_addr, vt_stack_offset_p): New.
+	(vt_canon_true_dep): New.
+	(drop_overlapping_mem_locs): Use vt_canon_true_dep.
+	(clobber_overlaping_mems): Use vt_canonicalize_addr.
+
+2012-06-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/53671
+	PR debug/49888
 	* var-tracking.c (vt_initialize): Record initial offset between
 	arg pointer and stack pointer.
 
