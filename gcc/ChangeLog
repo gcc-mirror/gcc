@@ -1,3 +1,15 @@
+2012-06-22  Edmar Wienskoski  <edmar@freescale.com>
+
+	* config/rs6000/rs6000.md (define_attr "type"): New type popcnt.
+	(popcntb<mode>2): Add attribute type popcnt.
+	(popcntd<mode>2): Ditto.
+	* config/rs6000/power4.md (define_insn_reservation): Add type popcnt.
+	* config/rs6000/power5.md (define_insn_reservation): Ditto.
+	* config/rs6000/power7.md (define_insn_reservation): Ditto.
+	* config/rs6000/476.md (define_insn_reservation): Ditto.
+	* config/rs6000/power6.md (define_insn_reservation): New
+	reservation for popcnt instructions.
+
 2012-06-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/invoke.texi: Update -mpreferred-stack-boundary=3 warning.
