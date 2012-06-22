@@ -1,5 +1,9 @@
 2012-06-22  Richard Guenther  <rguenther@suse.de>
 
+	* gcov-iov.c: Include bconfig.h and system.h.
+
+2012-06-22  Richard Guenther  <rguenther@suse.de>
+
 	PR gcov-profile/53744
 	* gcov-iov.c (main): Treat "" and "prerelease" the same.
 
