@@ -9504,6 +9504,41 @@ vt_initialize (void)
       valvar_pool = NULL;
     }
 
+  if (MAY_HAVE_DEBUG_INSNS)
+    {
+      rtx reg, expr;
+      int ofst;
+      cselib_val *val;
+
+#ifdef FRAME_POINTER_CFA_OFFSET
+      reg = frame_pointer_rtx;
+      ofst = FRAME_POINTER_CFA_OFFSET (current_function_decl);
+#else
+      reg = arg_pointer_rtx;
+      ofst = ARG_POINTER_CFA_OFFSET (current_function_decl);
+#endif
+
+      ofst -= INCOMING_FRAME_SP_OFFSET;
+
+      val = cselib_lookup_from_insn (reg, GET_MODE (reg), 1,
+				     VOIDmode, get_insns ());
+      preserve_value (val);
+      cselib_preserve_cfa_base_value (val, REGNO (reg));
+      expr = plus_constant (GET_MODE (stack_pointer_rtx),
+			    stack_pointer_rtx, -ofst);
+      cselib_add_permanent_equiv (val, expr, get_insns ());
+
+      if (ofst)
+	{
+	  val = cselib_lookup_from_insn (stack_pointer_rtx,
+					 GET_MODE (stack_pointer_rtx), 1,
+					 VOIDmode, get_insns ());
+	  preserve_value (val);
+	  expr = plus_constant (GET_MODE (reg), reg, ofst);
+	  cselib_add_permanent_equiv (val, expr, get_insns ());
+	}
+    }
+
   /* In order to factor out the adjustments made to the stack pointer or to
      the hard frame pointer and thus be able to use DW_OP_fbreg operations
      instead of individual location lists, we're going to rewrite MEMs based
