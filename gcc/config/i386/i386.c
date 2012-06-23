@@ -20187,10 +20187,10 @@ ix86_expand_vec_perm (rtx operands[])
    true if we want the N/2 high elements, else the low elements.  */
 
 void
-ix86_expand_sse_unpack (rtx operands[2], bool unsigned_p, bool high_p)
+ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 {
-  enum machine_mode imode = GET_MODE (operands[1]);
-  rtx tmp, dest;
+  enum machine_mode imode = GET_MODE (src);
+  rtx tmp;
 
   if (TARGET_SSE4_1)
     {
@@ -20252,20 +20252,20 @@ ix86_expand_sse_unpack (rtx operands[2], bool unsigned_p, bool high_p)
       if (GET_MODE_SIZE (imode) == 32)
 	{
 	  tmp = gen_reg_rtx (halfmode);
-	  emit_insn (extract (tmp, operands[1]));
+	  emit_insn (extract (tmp, src));
 	}
       else if (high_p)
 	{
 	  /* Shift higher 8 bytes to lower 8 bytes.  */
 	  tmp = gen_reg_rtx (imode);
 	  emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, tmp),
-					 gen_lowpart (V1TImode, operands[1]),
+					 gen_lowpart (V1TImode, src),
 					 GEN_INT (64)));
 	}
       else
-	tmp = operands[1];
+	tmp = src;
 
-      emit_insn (unpack (operands[0], tmp));
+      emit_insn (unpack (dest, tmp));
     }
   else
     {
@@ -20295,15 +20295,13 @@ ix86_expand_sse_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 	  gcc_unreachable ();
 	}
 
-      dest = gen_lowpart (imode, operands[0]);
-
       if (unsigned_p)
 	tmp = force_reg (imode, CONST0_RTX (imode));
       else
 	tmp = ix86_expand_sse_cmp (gen_reg_rtx (imode), GT, CONST0_RTX (imode),
-				   operands[1], pc_rtx, pc_rtx);
+				   src, pc_rtx, pc_rtx);
 
-      emit_insn (unpack (dest, operands[1], tmp));
+      emit_insn (unpack (gen_lowpart (imode, dest), src, tmp));
     }
 }
 
