@@ -1,3 +1,10 @@
+2012-06-23  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (mul<VI1_AVX2>3): Change from insn_and_split to
+	pure expander; move expansion code ...
+	* config/i386/i386.c (ix86_expand_vecop_qihi): ... here.  New function.
+	* config/i386/i386-protos.h: Update.
+
 2012-06-22  Edmar Wienskoski  <edmar@freescale.com>
 
 	* config/rs6000/rs6000.md (define_attr "type"): New type popcnt.
