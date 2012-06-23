@@ -1,5 +1,13 @@
 2012-06-23  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_sse_unpack): Split operands[]
+	parameter into src and dest.
+	* config/i386/sse.md (vec_unpacku_hi_<V124_AVX2>): Update call.
+	(vec_unpacks_hi_<V124_AVX2>): Likewise.
+	(vec_unpacku_lo_<V124_AVX2>): Likewise.
+	(vec_unpacks_lo_<V124_AVX2>): Likewise.
+	* config/i386/i386-protos.h: Update.
+
 	* config/i386/sse.md (mul<VI1_AVX2>3): Change from insn_and_split to
 	pure expander; move expansion code ...
 	* config/i386/i386.c (ix86_expand_vecop_qihi): ... here.  New function.
