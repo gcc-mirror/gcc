@@ -5213,70 +5213,13 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_insn_and_split "mul<mode>3"
+(define_expand "mul<mode>3"
   [(set (match_operand:VI1_AVX2 0 "register_operand")
 	(mult:VI1_AVX2 (match_operand:VI1_AVX2 1 "register_operand")
 		       (match_operand:VI1_AVX2 2 "register_operand")))]
-  "TARGET_SSE2
-   && can_create_pseudo_p ()"
-  "#"
-  "&& 1"
-  [(const_int 0)]
+  "TARGET_SSE2"
 {
-  rtx t[6];
-  int i;
-  enum machine_mode mulmode = <sseunpackmode>mode;
-
-  for (i = 0; i < 6; ++i)
-    t[i] = gen_reg_rtx (<MODE>mode);
-
-  /* Unpack data such that we've got a source byte in each low byte of
-     each word.  We don't care what goes into the high byte of each word.
-     Rather than trying to get zero in there, most convenient is to let
-     it be a copy of the low byte.  */
-  emit_insn (gen_<vec_avx2>_interleave_high<mode> (t[0], operands[1],
-						   operands[1]));
-  emit_insn (gen_<vec_avx2>_interleave_high<mode> (t[1], operands[2],
-						   operands[2]));
-  emit_insn (gen_<vec_avx2>_interleave_low<mode> (t[2], operands[1],
-						  operands[1]));
-  emit_insn (gen_<vec_avx2>_interleave_low<mode> (t[3], operands[2],
-						  operands[2]));
-
-  /* Multiply words.  The end-of-line annotations here give a picture of what
-     the output of that instruction looks like.  Dot means don't care; the
-     letters are the bytes of the result with A being the most significant.  */
-  emit_insn (gen_rtx_SET (VOIDmode, gen_lowpart (mulmode, t[4]),
-			  gen_rtx_MULT (mulmode,	/* .A.B.C.D.E.F.G.H */
-					gen_lowpart (mulmode, t[0]),
-					gen_lowpart (mulmode, t[1]))));
-  emit_insn (gen_rtx_SET (VOIDmode, gen_lowpart (mulmode, t[5]),
-			  gen_rtx_MULT (mulmode,	/* .I.J.K.L.M.N.O.P */
-					gen_lowpart (mulmode, t[2]),
-					gen_lowpart (mulmode, t[3]))));
-
-  /* Extract the even bytes and merge them back together.  */
-  if (<MODE>mode == V16QImode)
-    ix86_expand_vec_extract_even_odd (operands[0], t[5], t[4], 0);
-  else
-    {
-      /* Since avx2_interleave_{low,high}v32qi used above aren't cross-lane,
-	 this can't be normal even extraction, but one where additionally
-	 the second and third quarter are swapped.  That is even one insn
-	 shorter than even extraction.  */
-      rtvec v = rtvec_alloc (32);
-      for (i = 0; i < 32; ++i)
-	RTVEC_ELT (v, i)
-	  = GEN_INT (i * 2 + ((i & 24) == 8 ? 16 : (i & 24) == 16 ? -16 : 0));
-      t[0] = operands[0];
-      t[1] = t[5];
-      t[2] = t[4];
-      t[3] = gen_rtx_CONST_VECTOR (<MODE>mode, v);
-      ix86_expand_vec_perm_const (t);
-    }
-
-  set_unique_reg_note (get_last_insn (), REG_EQUAL,
-		       gen_rtx_MULT (<MODE>mode, operands[1], operands[2]));
+  ix86_expand_vecop_qihi (MULT, operands[0], operands[1], operands[2]);
   DONE;
 })
 

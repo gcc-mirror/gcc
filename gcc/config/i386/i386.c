@@ -38438,6 +38438,91 @@ ix86_expand_vec_extract_even_odd (rtx targ, rtx op0, rtx op1, unsigned odd)
   expand_vec_perm_even_odd_1 (&d, odd);
 }
 
+/* Expand a vector operation CODE for a V*QImode in terms of the
+   same operation on V*HImode.  */
+
+void
+ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
+{
+  enum machine_mode qimode = GET_MODE (dest);
+  enum machine_mode himode;
+  rtx (*gen_il) (rtx, rtx, rtx);
+  rtx (*gen_ih) (rtx, rtx, rtx);
+  rtx op1_l, op1_h, op2_l, op2_h, res_l, res_h;
+  struct expand_vec_perm_d d;
+  bool ok;
+  int i;
+
+  if (qimode == V16QImode)
+    {
+      himode = V8HImode;
+      gen_il = gen_vec_interleave_lowv16qi;
+      gen_ih = gen_vec_interleave_highv16qi;
+    }
+  else if (qimode == V32QImode)
+    {
+      himode = V16HImode;
+      gen_il = gen_avx2_interleave_lowv32qi;
+      gen_ih = gen_avx2_interleave_highv32qi;
+    }
+  else
+    gcc_unreachable ();
+
+  /* Unpack data such that we've got a source byte in each low byte of
+     each word.  We don't care what goes into the high byte of each word.
+     Rather than trying to get zero in there, most convenient is to let
+     it be a copy of the low byte.  */
+  op1_l = gen_reg_rtx (qimode);
+  op1_h = gen_reg_rtx (qimode);
+  emit_insn (gen_il (op1_l, op1, op1));
+  emit_insn (gen_ih (op1_h, op1, op1));
+
+  op2_l = gen_reg_rtx (qimode);
+  op2_h = gen_reg_rtx (qimode);
+  emit_insn (gen_il (op2_l, op2, op2));
+  emit_insn (gen_ih (op2_h, op2, op2));
+
+  /* Perform the operation.  */
+  res_l = expand_simple_binop (himode, code, gen_lowpart (himode, op1_l),
+			       gen_lowpart (himode, op2_l), NULL_RTX,
+			       1, OPTAB_DIRECT);
+  res_h = expand_simple_binop (himode, code, gen_lowpart (himode, op1_h),
+			       gen_lowpart (himode, op2_h), NULL_RTX,
+			       1, OPTAB_DIRECT);
+  gcc_assert (res_l && res_h);
+
+  /* Merge the data back into the right place.  */
+  d.target = dest;
+  d.op0 = gen_lowpart (qimode, res_l);
+  d.op1 = gen_lowpart (qimode, res_h);
+  d.vmode = qimode;
+  d.nelt = GET_MODE_NUNITS (qimode);
+  d.one_operand_p = false;
+  d.testing_p = false;
+
+  if (qimode == V16QImode)
+    {
+      /* For SSE2, we used an full interleave, so the desired
+	 results are in the even elements.  */
+      for (i = 0; i < 16; ++i)
+	d.perm[i] = i * 2;
+    }
+  else
+    {
+      /* For AVX, the interleave used above was not cross-lane.  So the
+	 extraction is evens but with the second and third quarter swapped.
+	 Happily, that is even one insn shorter than even extraction.  */
+      for (i = 0; i < 32; ++i)
+	d.perm[i] = i * 2 + ((i & 24) == 8 ? 16 : (i & 24) == 16 ? -16 : 0);
+    }
+
+  ok = ix86_expand_vec_perm_const_1 (&d);
+  gcc_assert (ok);
+
+  set_unique_reg_note (get_last_insn (), REG_EQUAL,
+		       gen_rtx_fmt_ee (code, qimode, op1, op2));
+}
+
 void
 ix86_expand_sse2_mulv4si3 (rtx op0, rtx op1, rtx op2)
 {
