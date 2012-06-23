@@ -31938,9 +31938,10 @@ ix86_set_reg_reg_cost (enum machine_mode mode)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
+ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 		bool speed)
 {
+  enum rtx_code code = (enum rtx_code) code_i;
   enum rtx_code outer_code = (enum rtx_code) outer_code_i;
   enum machine_mode mode = GET_MODE (x);
   const struct processor_costs *cost = speed ? ix86_cost : &ix86_size_cost;
@@ -32045,7 +32046,31 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
 	  /* ??? Should be SSE vector operation cost.  */
 	  /* At least for published AMD latencies, this really is the same
 	     as the latency for a simple fpu operation like fabs.  */
-	  *total = cost->fabs;
+	  /* V*QImode is emulated with 1-11 insns.  */
+	  if (mode == V16QImode || mode == V32QImode)
+	    {
+	      int count;
+	      if (TARGET_XOP && mode == V16QImode)
+		{
+		  /* For XOP we use vpshab, which requires a broadcast of the
+		     value to the variable shift insn.  For constants this
+		     means a V16Q const in mem; even when we can perform the
+		     shift with one insn set the cost to prefer paddb.  */
+		  if (CONSTANT_P (XEXP (x, 1)))
+		    {
+		      *total = (cost->fabs
+				+ rtx_cost (XEXP (x, 0), code, 0, speed)
+				+ (speed ? 2 : COSTS_N_BYTES (16)));
+		      return true;
+		    }
+		  count = 3;
+		}
+	      else
+		count = TARGET_SSSE3 ? 7 : 11;
+	      *total = cost->fabs * count;
+	    }
+	  else
+	    *total = cost->fabs;
 	  return false;
 	}
       if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
@@ -32119,9 +32144,15 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
 	}
       else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
 	{
+	  /* V*QImode is emulated with 7-13 insns.  */
+	  if (mode == V16QImode || mode == V32QImode)
+	    {
+	      int extra = TARGET_XOP ? 5 : TARGET_SSSE3 ? 6 : 11;
+	      *total = cost->fmul * 2 + cost->fabs * extra;
+	    }
 	  /* Without sse4.1, we don't have PMULLD; it's emulated with 7
 	     insns, including two PMULUDQ.  */
-	  if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
+	  else if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
 	    *total = cost->fmul * 2 + cost->fabs * 5;
 	  else
 	    *total = cost->fmul;
@@ -38448,44 +38479,66 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   rtx (*gen_ih) (rtx, rtx, rtx);
   rtx op1_l, op1_h, op2_l, op2_h, res_l, res_h;
   struct expand_vec_perm_d d;
-  bool ok;
+  bool ok, full_interleave;
+  bool uns_p = false;
   int i;
 
-  if (qimode == V16QImode)
+  switch (qimode)
     {
+    case V16QImode:
       himode = V8HImode;
       gen_il = gen_vec_interleave_lowv16qi;
       gen_ih = gen_vec_interleave_highv16qi;
-    }
-  else if (qimode == V32QImode)
-    {
+      break;
+    case V32QImode:
       himode = V16HImode;
       gen_il = gen_avx2_interleave_lowv32qi;
       gen_ih = gen_avx2_interleave_highv32qi;
+      break;
+    default:
+      gcc_unreachable ();
     }
-  else
-    gcc_unreachable ();
 
-  /* Unpack data such that we've got a source byte in each low byte of
-     each word.  We don't care what goes into the high byte of each word.
-     Rather than trying to get zero in there, most convenient is to let
-     it be a copy of the low byte.  */
-  op1_l = gen_reg_rtx (qimode);
-  op1_h = gen_reg_rtx (qimode);
-  emit_insn (gen_il (op1_l, op1, op1));
-  emit_insn (gen_ih (op1_h, op1, op1));
+  op2_l = op2_h = op2;
+  switch (code)
+    {
+    case MULT:
+      /* Unpack data such that we've got a source byte in each low byte of
+	 each word.  We don't care what goes into the high byte of each word.
+	 Rather than trying to get zero in there, most convenient is to let
+	 it be a copy of the low byte.  */
+      op2_l = gen_reg_rtx (qimode);
+      op2_h = gen_reg_rtx (qimode);
+      emit_insn (gen_il (op2_l, op2, op2));
+      emit_insn (gen_ih (op2_h, op2, op2));
+      /* FALLTHRU */
 
-  op2_l = gen_reg_rtx (qimode);
-  op2_h = gen_reg_rtx (qimode);
-  emit_insn (gen_il (op2_l, op2, op2));
-  emit_insn (gen_ih (op2_h, op2, op2));
+      op1_l = gen_reg_rtx (qimode);
+      op1_h = gen_reg_rtx (qimode);
+      emit_insn (gen_il (op1_l, op1, op1));
+      emit_insn (gen_ih (op1_h, op1, op1));
+      full_interleave = qimode == V16QImode;
+      break;
+
+    case ASHIFT:
+    case LSHIFTRT:
+      uns_p = true;
+      /* FALLTHRU */
+    case ASHIFTRT:
+      op1_l = gen_reg_rtx (himode);
+      op1_h = gen_reg_rtx (himode);
+      ix86_expand_sse_unpack (op1_l, op1, uns_p, false);
+      ix86_expand_sse_unpack (op1_h, op1, uns_p, true);
+      full_interleave = true;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   /* Perform the operation.  */
-  res_l = expand_simple_binop (himode, code, gen_lowpart (himode, op1_l),
-			       gen_lowpart (himode, op2_l), NULL_RTX,
+  res_l = expand_simple_binop (himode, code, op1_l, op2_l, NULL_RTX,
 			       1, OPTAB_DIRECT);
-  res_h = expand_simple_binop (himode, code, gen_lowpart (himode, op1_h),
-			       gen_lowpart (himode, op2_h), NULL_RTX,
+  res_h = expand_simple_binop (himode, code, op1_h, op2_h, NULL_RTX,
 			       1, OPTAB_DIRECT);
   gcc_assert (res_l && res_h);
 
@@ -38498,11 +38551,11 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   d.one_operand_p = false;
   d.testing_p = false;
 
-  if (qimode == V16QImode)
+  if (full_interleave)
     {
       /* For SSE2, we used an full interleave, so the desired
 	 results are in the even elements.  */
-      for (i = 0; i < 16; ++i)
+      for (i = 0; i < 32; ++i)
 	d.perm[i] = i * 2;
     }
   else

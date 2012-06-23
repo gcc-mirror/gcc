@@ -10550,60 +10550,42 @@
    (set_attr "prefix_extra" "2")
    (set_attr "mode" "TI")])
 
-;; SSE2 doesn't have some shift variants, so define versions for XOP
-(define_expand "ashlv16qi3"
-  [(set (match_operand:V16QI 0 "register_operand")
-	(ashift:V16QI
-	  (match_operand:V16QI 1 "register_operand")
+(define_expand "<shift_insn><mode>3"
+  [(set (match_operand:VI1_AVX2 0 "register_operand")
+	(any_shift:VI1_AVX2
+	  (match_operand:VI1_AVX2 1 "register_operand")
 	  (match_operand:SI 2 "nonmemory_operand")))]
-  "TARGET_XOP"
+  "TARGET_SSE2"
 {
-  rtx reg = gen_reg_rtx (V16QImode);
-  rtx par;
-  int i;
+  if (TARGET_XOP && <MODE>mode == V16QImode)
+    {
+      bool negate = false;
+      rtx (*gen) (rtx, rtx, rtx);
+      rtx tmp, par;
+      int i;
 
-  par = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
-  for (i = 0; i < 16; i++)
-    XVECEXP (par, 0, i) = operands[2];
+      if (<CODE> != ASHIFT)
+	{
+	  if (CONST_INT_P (operands[2]))
+	    operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  else
+	    negate = true;
+	}
+      par = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
+      for (i = 0; i < 16; i++)
+        XVECEXP (par, 0, i) = operands[2];
 
-  emit_insn (gen_vec_initv16qi (reg, par));
-  emit_insn (gen_xop_shav16qi3 (operands[0], operands[1], reg));
-  DONE;
-})
+      tmp = gen_reg_rtx (V16QImode);
+      emit_insn (gen_vec_initv16qi (tmp, par));
 
-(define_expand "<shift_insn>v16qi3"
-  [(set (match_operand:V16QI 0 "register_operand")
-	(any_shiftrt:V16QI
-	  (match_operand:V16QI 1 "register_operand")
-	  (match_operand:SI 2 "nonmemory_operand")))]
-  "TARGET_XOP"
-{
-  rtx reg = gen_reg_rtx (V16QImode);
-  rtx par;
-  bool negate = false;
-  rtx (*shift_insn)(rtx, rtx, rtx);
-  int i;
+      if (negate)
+	emit_insn (gen_negv16qi2 (tmp, tmp));
 
-  if (CONST_INT_P (operands[2]))
-    operands[2] = GEN_INT (-INTVAL (operands[2]));
+      gen = (<CODE> == LSHIFTRT ? gen_xop_shlv16qi3 : gen_xop_shav16qi3);
+      emit_insn (gen (operands[0], operands[1], tmp));
+    }
   else
-    negate = true;
-
-  par = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
-  for (i = 0; i < 16; i++)
-    XVECEXP (par, 0, i) = operands[2];
-
-  emit_insn (gen_vec_initv16qi (reg, par));
-
-  if (negate)
-    emit_insn (gen_negv16qi2 (reg, reg));
-
-  if (<CODE> == LSHIFTRT)
-    shift_insn = gen_xop_shlv16qi3;
-  else
-    shift_insn = gen_xop_shav16qi3;
-
-  emit_insn (shift_insn (operands[0], operands[1], reg));
+    ix86_expand_vecop_qihi (<CODE>, operands[0], operands[1], operands[2]);
   DONE;
 })
 
