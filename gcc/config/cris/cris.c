@@ -4098,7 +4098,7 @@ cris_md_asm_clobbers (tree outputs, tree inputs, tree in_clobbers)
 bool
 cris_frame_pointer_required (void)
 {
-  return !current_function_sp_is_unchanging;
+  return !crtl->sp_is_unchanging;
 }
 
 /* Implement TARGET_ASM_TRAMPOLINE_TEMPLATE.

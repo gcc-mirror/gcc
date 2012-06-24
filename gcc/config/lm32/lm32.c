@@ -460,7 +460,7 @@ lm32_compute_frame_size (int size)
 	  callee_size += UNITS_PER_WORD;
 	}
     }
-  if (df_regs_ever_live_p (RA_REGNUM) || !current_function_is_leaf
+  if (df_regs_ever_live_p (RA_REGNUM) || crtl->is_leaf!
       || !optimize)
     {
       reg_save_mask |= 1 << RA_REGNUM;

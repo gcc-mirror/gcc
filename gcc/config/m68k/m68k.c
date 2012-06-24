@@ -882,7 +882,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
       if (df_regs_ever_live_p (regno))
 	return true;
 
-      if (!current_function_is_leaf && call_used_regs[regno])
+      if (!crtl->is_leaf && call_used_regs[regno])
 	return true;
     }
 
@@ -1142,12 +1142,11 @@ m68k_expand_epilogue (bool sibcall_p)
   big = false;
   restore_from_sp = false;
 
-  /* FIXME : current_function_is_leaf below is too strong.
+  /* FIXME : crtl->is_leaf below is too strong.
      What we really need to know there is if there could be pending
      stack adjustment needed at that point.  */
   restore_from_sp = (!frame_pointer_needed
-		     || (!cfun->calls_alloca
-			 && current_function_is_leaf));
+		     || (!cfun->calls_alloca && crtl->is_leaf));
 
   /* fsize_with_regs is the size we need to adjust the sp when
      popping the frame.  */

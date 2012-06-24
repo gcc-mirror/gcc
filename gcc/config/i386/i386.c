@@ -8562,7 +8562,7 @@ ix86_frame_pointer_required (void)
      turns off the frame pointer by default.  Turn it back on now if
      we've not got a leaf function.  */
   if (TARGET_OMIT_LEAF_FRAME_POINTER
-      && (!current_function_is_leaf
+      && (!crtl->is_leaf
 	  || ix86_current_function_calls_tls_descriptor))
     return true;
 
@@ -8809,7 +8809,7 @@ gen_pop (rtx arg)
 static unsigned int
 ix86_select_alt_pic_regnum (void)
 {
-  if (current_function_is_leaf
+  if (crtl->is_leaf
       && !crtl->profile
       && !ix86_current_function_calls_tls_descriptor)
     {
@@ -8973,7 +8973,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   /* 64-bit MS ABI seem to require stack alignment to be always 16 except for
      function prologues and leaf.  */
   if ((TARGET_64BIT_MS_ABI && preferred_alignment < 16)
-      && (!current_function_is_leaf || cfun->calls_alloca != 0
+      && (!crtl->is_leaf || cfun->calls_alloca != 0
           || ix86_current_function_calls_tls_descriptor))
     {
       preferred_alignment = 16;
@@ -9078,7 +9078,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   if (stack_realign_fp
       || offset != frame->sse_reg_save_offset
       || size != 0
-      || !current_function_is_leaf
+      || !crtl->is_leaf
       || cfun->calls_alloca
       || ix86_current_function_calls_tls_descriptor)
     offset = (offset + stack_alignment_needed - 1) & -stack_alignment_needed;
@@ -9094,7 +9094,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
      expander assumes that last crtl->outgoing_args_size
      of stack frame are unused.  */
   if (ACCUMULATE_OUTGOING_ARGS
-      && (!current_function_is_leaf || cfun->calls_alloca
+      && (!crtl->is_leaf || cfun->calls_alloca
 	  || ix86_current_function_calls_tls_descriptor))
     {
       offset += crtl->outgoing_args_size;
@@ -9105,7 +9105,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
 
   /* Align stack boundary.  Only needed if we're calling another function
      or using alloca.  */
-  if (!current_function_is_leaf || cfun->calls_alloca
+  if (!crtl->is_leaf || cfun->calls_alloca
       || ix86_current_function_calls_tls_descriptor)
     offset = (offset + preferred_alignment - 1) & -preferred_alignment;
 
@@ -9120,8 +9120,8 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
     frame->save_regs_using_mov = false;
 
   if (ix86_using_red_zone ()
-      && current_function_sp_is_unchanging
-      && current_function_is_leaf
+      && crtl->sp_is_unchanging
+      && crtl->is_leaf
       && !ix86_current_function_calls_tls_descriptor)
     {
       frame->red_zone_size = to_allocate;
@@ -10062,7 +10062,7 @@ ix86_finalize_stack_realign_flags (void)
     = (crtl->parm_stack_boundary > ix86_incoming_stack_boundary
        ? crtl->parm_stack_boundary : ix86_incoming_stack_boundary);
   unsigned int stack_realign = (incoming_stack_boundary
-				< (current_function_is_leaf
+				< (crtl->is_leaf
 				   ? crtl->max_used_stack_slot_alignment
 				   : crtl->stack_alignment_needed));
 
@@ -10081,9 +10081,9 @@ ix86_finalize_stack_realign_flags (void)
   if (stack_realign
       && !crtl->need_drap
       && frame_pointer_needed
-      && current_function_is_leaf
+      && crtl->is_leaf
       && flag_omit_frame_pointer
-      && current_function_sp_is_unchanging
+      && crtl->sp_is_unchanging
       && !ix86_current_function_calls_tls_descriptor
       && !crtl->accesses_prior_frames
       && !cfun->calls_alloca
@@ -10792,7 +10792,7 @@ ix86_expand_epilogue (int style)
   ix86_compute_frame_layout (&frame);
 
   m->fs.sp_valid = (!frame_pointer_needed
-		    || (current_function_sp_is_unchanging
+		    || (crtl->sp_is_unchanging
 			&& !stack_realign_fp));
   gcc_assert (!m->fs.sp_valid
 	      || m->fs.sp_offset == frame.stack_pointer_offset);

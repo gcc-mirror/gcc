@@ -2537,7 +2537,7 @@ must_reload_pic_reg_p (void)
 
   i = cgraph_local_info (current_function_decl);
 
-  if ((crtl->uses_pic_offset_table || !current_function_is_leaf) && !i->local)
+  if ((crtl->uses_pic_offset_table || !crtl->is_leaf) && !i->local)
     return true;
   return false;
 }
@@ -2551,7 +2551,7 @@ c6x_save_reg (unsigned int regno)
 	   && !fixed_regs[regno])
 	  || (regno == RETURN_ADDR_REGNO
 	      && (df_regs_ever_live_p (regno)
-		  || !current_function_is_leaf))
+		  || !crtl->is_leaf))
 	  || (regno == PIC_OFFSET_TABLE_REGNUM && must_reload_pic_reg_p ()));
 }
 
@@ -2642,7 +2642,7 @@ c6x_compute_frame_layout (struct c6x_frame *frame)
     offset += frame->nregs * 4;
 
   if (offset == 0 && size == 0 && crtl->outgoing_args_size == 0
-      && !current_function_is_leaf)
+      && !crtl->is_leaf)
     /* Don't use the bottom of the caller's frame if we have no
        allocation of our own and call other functions.  */
     frame->padding0 = frame->padding1 = 4;

@@ -17670,7 +17670,7 @@ rs6000_stack_info (void)
 				 - info_ptr->first_altivec_reg_save);
 
   /* Does this function call anything?  */
-  info_ptr->calls_p = (! current_function_is_leaf
+  info_ptr->calls_p = (! crtl->is_leaf 
 		       || cfun->machine->ra_needs_full_frame);
 
   /* Determine if we need to save the condition code registers.  */

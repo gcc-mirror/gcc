@@ -323,7 +323,7 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 #ifdef LEAF_REGISTERS
 	/* We can't use a non-leaf register if we're in a
 	   leaf function.  */
-	|| (current_function_is_leaf
+	|| (crtl->is_leaf
 	    && !LEAF_REGISTERS[new_reg + i])
 #endif
 #ifdef HARD_REGNO_RENAME_OK

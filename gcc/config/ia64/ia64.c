@@ -2547,7 +2547,7 @@ find_gr_spill (enum ia64_frame_regs r, int try_locals)
       if (regno >= LOC_REG (0) && regno < LOC_REG (80 - frame_pointer_needed)
 	  && current_frame_info.n_local_regs < regno - LOC_REG (0) + 1)
         current_frame_info.n_local_regs = regno - LOC_REG (0) + 1;
-      else if (current_function_is_leaf 
+      else if (crtl->is_leaf
                && regno >= GR_REG (1) && regno <= GR_REG (31))
         current_frame_info.gr_used_mask |= 1 << regno;
 
@@ -2556,7 +2556,7 @@ find_gr_spill (enum ia64_frame_regs r, int try_locals)
 
   /* If this is a leaf function, first try an otherwise unused
      call-clobbered register.  */
-  if (current_function_is_leaf)
+  if (crtl->is_leaf)
     {
       for (regno = GR_REG (1); regno <= GR_REG (31); regno++)
 	if (! df_regs_ever_live_p (regno)
@@ -2770,7 +2770,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
 	}
     }
 
-  if (! current_function_is_leaf)
+  if (! crtl->is_leaf)
     {
       /* Emit a save of BR0 if we call other functions.  Do this even
 	 if this function doesn't return, as EH depends on this to be
@@ -2922,7 +2922,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
   /* We always use the 16-byte scratch area provided by the caller, but
      if we are a leaf function, there's no one to which we need to provide
      a scratch area.  */
-  if (current_function_is_leaf)
+  if (crtl->is_leaf)
     total_size = MAX (0, total_size - 16);
 
   current_frame_info.total_size = total_size;
@@ -2939,7 +2939,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
 bool
 ia64_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
-  return (to == BR_REG (0) ? current_function_is_leaf : true);
+  return (to == BR_REG (0) ? crtl->is_leaf : true);
 }
 
 /* Compute the initial difference between the specified pair of registers.  */
@@ -2956,7 +2956,7 @@ ia64_initial_elimination_offset (int from, int to)
       switch (to)
 	{
 	case HARD_FRAME_POINTER_REGNUM:
-	  if (current_function_is_leaf)
+	  if (crtl->is_leaf)
 	    offset = -current_frame_info.total_size;
 	  else
 	    offset = -(current_frame_info.total_size
@@ -2964,7 +2964,7 @@ ia64_initial_elimination_offset (int from, int to)
 	  break;
 
 	case STACK_POINTER_REGNUM:
-	  if (current_function_is_leaf)
+	  if (crtl->is_leaf)
 	    offset = 0;
 	  else
 	    offset = 16 + crtl->outgoing_args_size;

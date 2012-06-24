@@ -1136,7 +1136,7 @@ picochip_can_eliminate_link_sp_save (void)
     accesses become wrong. This wouldnt happen only if we were not using the
     stack at all. The following conditions ensures that.*/
 
-  return (current_function_is_leaf &&
+  return (crtl->is_leaf &&
           !df_regs_ever_live_p(LINK_REGNUM) &&
           !df_regs_ever_live_p(STACK_POINTER_REGNUM) &&
           (picochip_special_save_area_byte_offset() == 0) &&
@@ -1816,7 +1816,7 @@ picochip_output_frame_debug (FILE * file)
 {
   int i = 0;
 
-  if (current_function_is_leaf)
+  if (crtl->is_leaf)
     fprintf (file, "\t\t// Leaf function\n");
   else
     fprintf (file, "\t\t// Non-leaf function\n");

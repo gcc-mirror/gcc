@@ -6883,7 +6883,7 @@ sh_media_register_for_return (void)
   int regno;
   int tr0_used;
 
-  if (! current_function_is_leaf)
+  if (! crtl->is_leaf)
     return -1;
   if (lookup_attribute ("interrupt_handler",
 			DECL_ATTRIBUTES (current_function_decl)))
@@ -10477,7 +10477,7 @@ sh_allocate_initial_value (rtx hard_reg)
 
   if (REGNO (hard_reg) == (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG))
     {
-      if (current_function_is_leaf
+      if (crtl->is_leaf
 	  && ! sh_pr_n_sets ()
 	  && ! (TARGET_SHCOMPACT
 		&& ((crtl->args.info.call_cookie
@@ -11763,7 +11763,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   reload_completed = 1;
   epilogue_completed = 1;
-  current_function_uses_only_leaf_regs = 1;
+  crtl->uses_only_leaf_regs = 1;
 
   emit_note (NOTE_INSN_PROLOGUE_END);
 

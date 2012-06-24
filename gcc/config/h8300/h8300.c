@@ -480,7 +480,7 @@ byte_reg (rtx x, int b)
 	  handlers.  */							\
        || (h8300_current_function_interrupt_function_p ()		\
 	   && call_used_regs[regno]					\
-	   && !current_function_is_leaf)))
+	   && !crtl->is_leaf)))
 
 /* We use this to wrap all emitted insns in the prologue.  */
 static rtx

@@ -1653,7 +1653,7 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
     dwarf2out_begin_prologue (0, NULL);
 
 #ifdef LEAF_REG_REMAP
-  if (current_function_uses_only_leaf_regs)
+  if (crtl->uses_only_leaf_regs)
     leaf_renumber_regs (first);
 #endif
 
