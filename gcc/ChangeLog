@@ -1,3 +1,11 @@
+2012-06-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h: Poison ASM_BYTE_OP and ASM_OUTPUT_BYTE.
+	* vmsdbgout: Do not undefine it if defined.
+	Rename local ASM_BYTE_OP definition to VMS_ASM_BYTE_OP.
+	* config/microblaze/microblaze/h: Do no define ASM_BYTE_OP.
+	* config/mep/mep.h: Do not define ASM_OUTPUT_BYTE.
+
 2012-06-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_process_sync_loop): Add missing
