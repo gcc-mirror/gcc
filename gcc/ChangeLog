@@ -1,3 +1,8 @@
+2012-06-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_process_sync_loop): Add missing
+	enum cast.
+
 2012-06-23  Richard Henderson  <rth@redhat.com>
 
 	PR target/53749
