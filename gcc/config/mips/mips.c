@@ -12048,7 +12048,7 @@ mips_process_sync_loop (rtx insn, rtx *operands)
       model = MEMMODEL_ACQUIRE;
       break;
     default:
-      model = INTVAL (operands[memmodel_attr]);
+      model = (enum memmodel) INTVAL (operands[memmodel_attr]);
     }
 
   mips_multi_start ();
