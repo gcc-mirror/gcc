@@ -229,10 +229,7 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
 #endif
 #define UNALIGNED_DOUBLE_INT_ASM_OP	".quad"
 
-#ifdef ASM_BYTE_OP
-#undef ASM_BYTE_OP
-#endif
-#define ASM_BYTE_OP	".byte"
+#define VMS_ASM_BYTE_OP	".byte"
 
 #define NUMBYTES(I) ((I) < 256 ? 1 : (I) < 65536 ? 2 : 4)
 
@@ -247,7 +244,7 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
 #define UNALIGNED_OFFSET_ASM_OP(OFFSET) \
   (NUMBYTES(OFFSET) == 4 \
    ? UNALIGNED_LONG_ASM_OP \
-   : (NUMBYTES(OFFSET) == 2 ? UNALIGNED_SHORT_ASM_OP : ASM_BYTE_OP))
+   : (NUMBYTES(OFFSET) == 2 ? UNALIGNED_SHORT_ASM_OP : VMS_ASM_BYTE_OP))
 #endif
 
 /* Definitions of defaults for formats and names of various special
@@ -336,7 +333,7 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 #ifndef ASM_OUTPUT_DEBUG_DATA1
 #define ASM_OUTPUT_DEBUG_DATA1(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t%#x", ASM_BYTE_OP, (unsigned char) VALUE)
+  fprintf ((FILE), "\t%s\t%#x", VMS_ASM_BYTE_OP, (unsigned char) VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_DATA2
