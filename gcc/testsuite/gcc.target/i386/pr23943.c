@@ -4,7 +4,7 @@
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fPIC" } */
 
-typedef long unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 
 extern size_t strlen (__const char *__s)
     __attribute__ ((__nothrow__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
