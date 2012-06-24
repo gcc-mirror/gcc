@@ -470,7 +470,7 @@ struct GTY(()) machine_function
 
   /* True if the current function is leaf and uses only leaf regs,
      so that the SPARC leaf function optimization can be applied.
-     Private version of current_function_uses_only_leaf_regs, see
+     Private version of crtl->uses_only_leaf_regs, see
      sparc_expand_prologue for the rationale.  */
   int leaf_function_p;
 
@@ -4558,8 +4558,7 @@ sparc_initial_elimination_offset (int to)
   int offset;
 
   if (to == STACK_POINTER_REGNUM)
-    offset = sparc_compute_frame_size (get_frame_size (),
-				       current_function_is_leaf);
+    offset = sparc_compute_frame_size (get_frame_size (), crtl->is_leaf);
   else
     offset = 0;
 
@@ -4983,7 +4982,7 @@ sparc_expand_prologue (void)
   HOST_WIDE_INT size;
   rtx insn;
 
-  /* Compute a snapshot of current_function_uses_only_leaf_regs.  Relying
+  /* Compute a snapshot of crtl->uses_only_leaf_regs.  Relying
      on the final value of the flag means deferring the prologue/epilogue
      expansion until just before the second scheduling pass, which is too
      late to emit multiple epilogues or return insns.
@@ -5006,7 +5005,7 @@ sparc_expand_prologue (void)
      example, the regrename pass has special provisions to not rename to
      non-leaf registers in a leaf function.  */
   sparc_leaf_function_p
-    = optimize > 0 && current_function_is_leaf && only_leaf_regs_used ();
+    = optimize > 0 && crtl->is_leaf && only_leaf_regs_used ();
 
   size = sparc_compute_frame_size (get_frame_size(), sparc_leaf_function_p);
 
@@ -5108,7 +5107,7 @@ sparc_flat_expand_prologue (void)
   HOST_WIDE_INT size;
   rtx insn;
 
-  sparc_leaf_function_p = optimize > 0 && current_function_is_leaf;
+  sparc_leaf_function_p = optimize > 0 && crtl->is_leaf;
 
   size = sparc_compute_frame_size (get_frame_size(), sparc_leaf_function_p);
 
@@ -5219,7 +5218,7 @@ sparc_asm_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
   /* Check that the assumption we made in sparc_expand_prologue is valid.  */
   if (!TARGET_FLAT)
-    gcc_assert (sparc_leaf_function_p == current_function_uses_only_leaf_regs);
+    gcc_assert (sparc_leaf_function_p == crtl->uses_only_leaf_regs);
 
   sparc_output_scratch_registers (file);
 }
@@ -10488,7 +10487,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       /* We will emit a regular sibcall below, so we need to instruct
 	 output_sibcall that we are in a leaf function.  */
-      sparc_leaf_function_p = current_function_uses_only_leaf_regs = 1;
+      sparc_leaf_function_p = crtl->uses_only_leaf_regs = 1;
 
       /* This will cause final.c to invoke leaf_renumber_regs so we
 	 must behave as if we were in a not-yet-leafified function.  */
@@ -10498,7 +10497,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       /* We will emit the sibcall manually below, so we will need to
 	 manually spill non-leaf registers.  */
-      sparc_leaf_function_p = current_function_uses_only_leaf_regs = 0;
+      sparc_leaf_function_p = crtl->uses_only_leaf_regs = 0;
 
       /* We really are in a leaf function.  */
       int_arg_first = SPARC_OUTGOING_INT_ARG_FIRST;
@@ -11284,7 +11283,7 @@ sparc_frame_pointer_required (void)
     return false;
 
   /* Otherwise, the frame pointer is required if the function isn't leaf.  */
-  return !(current_function_is_leaf && only_leaf_regs_used ());
+  return !(crtl->is_leaf && only_leaf_regs_used ());
 }
 
 /* The way this is structured, we can't eliminate SFP in favor of SP

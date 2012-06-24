@@ -440,6 +440,22 @@ struct GTY(()) rtl_data {
   /* True if we performed shrink-wrapping for the current function.  */
   bool shrink_wrapped;
 
+  /* Nonzero if function being compiled doesn't modify the stack pointer
+     (ignoring the prologue and epilogue).  This is only valid after
+     pass_stack_ptr_mod has run.  */
+  bool sp_is_unchanging;
+
+  /* Nonzero if function being compiled doesn't contain any calls
+     (ignoring the prologue and epilogue).  This is set prior to
+     local register allocation and is valid for the remaining
+     compiler passes.  */
+  bool is_leaf;
+
+  /* Nonzero if the function being compiled is a leaf function which only
+     uses leaf registers.  This is valid after reload (specifically after
+     sched2) and is useful only if the port defines LEAF_REGISTERS.  */
+  bool uses_only_leaf_regs;
+
   /* Like regs_ever_live, but 1 if a reg is set or clobbered from an
      asm.  Unlike regs_ever_live, elements of this array corresponding
      to eliminable regs (like the frame pointer) are set if an asm

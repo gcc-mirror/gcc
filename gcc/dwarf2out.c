@@ -9696,7 +9696,7 @@ dbx_reg_number (const_rtx rtl)
   gcc_assert (regno < FIRST_PSEUDO_REGISTER);
 
 #ifdef LEAF_REG_REMAP
-  if (current_function_uses_only_leaf_regs)
+  if (crtl->uses_only_leaf_regs)
     {
       int leaf_reg = LEAF_REG_REMAP (regno);
       if (leaf_reg != -1)
@@ -9802,7 +9802,7 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
 
   reg = REGNO (rtl);
 #ifdef LEAF_REG_REMAP
-  if (current_function_uses_only_leaf_regs)
+  if (crtl->uses_only_leaf_regs)
     {
       int leaf_reg = LEAF_REG_REMAP (reg);
       if (leaf_reg != -1)

@@ -1,5 +1,119 @@
 2012-06-24  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* output.h: (current_function_is_leaf,
+	current_function_sp_is_unchanging,
+	current_function_uses_only_leaf_regs): Remove.
+	* function.c (current_function_is_leaf,
+	current_function_sp_is_unchanging,
+	current_function_uses_only_leaf_regs): Remove.
+	(rest_of_handle_check_leaf_regs): Set crtl->uses_only_leaf_regs
+	instead of current_function_uses_only_leaf_regs.
+	* function.h (struct rtl_data): New fields sp_is_unchanging,
+	is_leaf, uses_only_leaf_regs.
+	* resource.c (init_resource_info): Replace current_function_is_leaf,
+	current_function_sp_is_unchanging, and
+	current_function_uses_only_leaf_regs with new crtl fields.
+	* sdbout.c (sdbout_symbol): Likewise.
+	* df-core.c (rest_of_handle_df_initialize): Likewise.
+	* ira.c (ira): Likewise.
+	* final.c (final_start_function): Likewise.
+	* reorg.c (fill_simple_delay_slots): Likewise.
+	* regrename.c (check_new_reg_p): Likewise.
+	* stack-ptr-mod.c (notice_stack_pointer_modification_1): Likewise.
+	(notice_stack_pointer_modification): Likewise.
+	* dbxout.c (dbxout_symbol): Likewise.
+	(dbxout_parms): Likewise.
+	* sel-sched.c (init_regs_for_mode): Likewise.
+	* dwarf2out.c (dbx_reg_number): Likewise.
+	(multiple_reg_loc_descriptor): Likewise.
+	* config/i386/i386.c (ix86_frame_pointer_required): Likewise.
+	(gen_pop): Likewise.
+	(ix86_select_alt_pic_regnum): Likewise.
+	(ix86_compute_frame_layout): Likewise.
+	(ix86_finalize_stack_realign_flags): Likewise.
+	(ix86_expand_epilogue): Likewise.
+	* config/rs6000/rs6000.c (rs6000_stack_info): Likewise.
+	* config/h8300/h8300.c (byte_reg): Likewise.
+	* config/c6x/c6x.c (must_reload_pic_reg_p): Likewise.
+	(c6x_save_reg): Likewise.
+	(c6x_compute_frame_layout): Likewise.
+	* config/pa/pa.c (pa_compute_frame_size): Likewise.
+	(pa_output_function_prologue): Likewise.
+	* config/stormy16/stormy16.c (struct xstormy16_stack_layout): Likewise.
+	* config/sparc/sparc.md (attr "leaf_function"): Likewise.
+	* config/sparc/sparc.c (sparc_initial_elimination_offset): Likewise.
+	(sparc_expand_prologue): Likewise.
+	(sparc_flat_expand_prologue): Likewise.
+	(sparc_asm_function_prologue): Likewise.
+	(sparc_output_mi_thunk): Likewise.
+	(sparc_frame_pointer_required): Likewise.
+	* config/epiphany/epiphany.c (epiphany_compute_function_type):
+	Likewise.
+	(epiphany_compute_frame_size): Likewise.
+	* config/lm32/lm32.c (lm32_compute_frame_size): Likewise.
+	* config/cris/cris.c (cris_md_asm_clobbers): Likewise.
+	(cris_frame_pointer_required): Likewise.
+	* config/tilepro/tilepro.c (emit_sp_adjust): Likewise.
+	(tilepro_current_function_is_leaf): Likewise.
+	* config/arm/arm.c (arm_compute_save_reg0_reg12_mask): Likewise.
+	* config/pdp11/pdp11.c (pdp11_expand_epilogue): Likewise.
+	* config/ia64/ia64.c (find_gr_spill): Likewise.
+	(ia64_compute_frame_size): Likewise.
+	(ia64_can_eliminate): Likewise.
+	(ia64_initial_elimination_offset): Likewise.
+	* config/m68k/m68k.c (m68k_save_reg): Likewise.
+	(m68k_expand_epilogue): Likewise.
+	* config/rx/rx.c (rx_get_stack_layout): Likewise.
+	* config/tilegx/tilegx.c (tilegx_current_function_is_leaf): Likewise.
+	* config/picochip/picochip.c (picochip_can_eliminate_link_sp_save):
+	Likewise.
+	(picochip_output_frame_debug): Likewise.
+	* config/sh/sh.c (sh_media_register_for_return): Likewise.
+	(sh_allocate_initial_value): Likewise.
+	(sh_output_mi_thunk): Likewise.
+	* config/microblaze/microblaze.c (microblaze_must_save_register):
+	Likewise.
+	(compute_frame_size): Likewise.
+	(microblaze_initial_elimination_offset): Likewise.
+	(microblaze_expand_prologue): Likewise.
+	(microblaze_expand_epilogue): Likewise.
+	* config/frv/frv.c (frv_expand_epilogue): Likewise.
+	(frv_frame_pointer_required): Likewise.
+	* config/spu/spu.c (get_pic_reg): Likewise.
+	(direct_return): Likewise.
+	(spu_expand_prologue): Likewise.
+	(spu_expand_epilogue): Likewise.
+	(spu_initial_elimination_offset): Likewise.
+	* config/mips/mips.c (mips_global_pointer): Likewise.
+	(mips_cfun_might_clobber_call_saved_reg_p): Likewise.
+	(mips_compute_frame_info): Likewise.
+	* config/mep/mep.c (mep_interrupt_saved_reg): Likewise.
+	(mep_reload_pointer): Likewise.
+	* config/rl78/rl78.c (need_to_save): Likewise.
+	* config/cr16/cr16.c (cr16_compute_save_regs): Likewise.
+	* config/score/score.c (score_compute_frame_size): Likewise.
+	(score_function_prologue): Likewise.
+	* config/bfin/bfin.c (must_save_p): Likewise.
+	(expand_prologue_reg_save): Likewise.
+	(expand_epilogue_reg_restore): Likewise.
+	(bfin_frame_pointer_required): Likewise.
+	(n_regs_saved_by_prologue): Likewise.
+	(add_to_reg): Likewise.
+	(expand_interrupt_handler_prologue): Likewise.
+	(expand_interrupt_handler_epilogue): Likewise.
+	(bfin_expand_prologue): Likewise.
+	* config/avr/avr.c (avr_regs_to_save): Likewise.
+	(avr_prologue_setup_frame): Likewise.
+	(expand_epilogue): Likewise.
+	* config/s390/s390.c (s390_regs_ever_clobbered): Likewise.
+	(s390_register_info): Likewise.
+	(s390_frame_info): Likewise.
+	(s390_init_frame_layout): Likewise.
+	(s390_emit_prologue): Likewise.
+
+
+2012-06-24  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* system.h: Poison ASM_BYTE_OP and ASM_OUTPUT_BYTE.
 	* vmsdbgout: Do not undefine it if defined.
 	Rename local ASM_BYTE_OP definition to VMS_ASM_BYTE_OP.
@@ -2181,7 +2295,7 @@
 	* doc/invoke.texi (AVR Options): Ditto.  And document related
 	built-in macros.
 
-2012-05-31   Diego Novillo  <dnovillo@google.com>
+2012-05-31  Diego Novillo  <dnovillo@google.com>
 
 	* configure.ac (CXX_FOR_BUILD): Define and substitute.
 	(BUILD_CXXFLAGS): Define and substitute.

@@ -312,7 +312,7 @@ score_compute_frame_size (HOST_WIDE_INT size)
   f->var_size = SCORE_STACK_ALIGN (size);
   f->args_size = crtl->outgoing_args_size;
   f->cprestore_size = flag_pic ? UNITS_PER_WORD : 0;
-  if (f->var_size == 0 && current_function_is_leaf)
+  if (f->var_size == 0 && crtl->is_leaf)
     f->args_size = f->cprestore_size = 0;
 
   if (f->args_size == 0 && cfun->calls_alloca)
@@ -643,7 +643,7 @@ score_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
                 ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM]),
                tsize,
                reg_names[RA_REGNUM],
-               current_function_is_leaf ? 1 : 0,
+               crtl->is_leaf ? 1 : 0,
                f->var_size,
                f->num_gp,
                f->args_size,

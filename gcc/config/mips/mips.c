@@ -9219,7 +9219,7 @@ mips_global_pointer (void)
 
   /* If the global pointer is call-saved, try to use a call-clobbered
      alternative.  */
-  if (TARGET_CALL_SAVED_GP && current_function_is_leaf)
+  if (TARGET_CALL_SAVED_GP && crtl->is_leaf)
     for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
       if (!df_regs_ever_live_p (regno)
 	  && call_really_used_regs[regno]
@@ -9446,7 +9446,7 @@ mips_cfun_might_clobber_call_saved_reg_p (unsigned int regno)
   /* If REGNO is ordinarily call-clobbered, we must assume that any
      called function could modify it.  */
   if (cfun->machine->interrupt_handler_p
-      && !current_function_is_leaf
+      && !crtl->is_leaf
       && mips_interrupt_extra_call_saved_reg_p (regno))
     return true;
 
@@ -9589,7 +9589,7 @@ mips_compute_frame_info (void)
      slot.  This area isn't needed in leaf functions, but if the
      target-independent frame size is nonzero, we have already committed to
      allocating these in STARTING_FRAME_OFFSET for !FRAME_GROWS_DOWNWARD.  */
-  if ((size == 0 || FRAME_GROWS_DOWNWARD) && current_function_is_leaf)
+  if ((size == 0 || FRAME_GROWS_DOWNWARD) && crtl->is_leaf)
     {
       /* The MIPS 3.0 linker does not like functions that dynamically
 	 allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it

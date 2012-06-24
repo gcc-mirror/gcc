@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "langhooks.h"
 #include "rtlhooks-def.h"
-#include "output.h"
 #include "emit-rtl.h"
 
 #ifdef INSN_SCHEDULING
@@ -1140,7 +1139,7 @@ init_regs_for_mode (enum machine_mode mode)
 #ifdef LEAF_REGISTERS
             /* We can't use a non-leaf register if we're in a
                leaf function.  */
-            || (current_function_is_leaf
+            || (crtl->is_leaf
                 && !LEAF_REGISTERS[cur_reg + i])
 #endif
             )

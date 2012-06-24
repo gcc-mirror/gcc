@@ -1478,7 +1478,7 @@ microblaze_must_save_register (int regno)
   if (frame_pointer_needed && (regno == HARD_FRAME_POINTER_REGNUM))
     return 1;
 
-  if (!current_function_is_leaf)
+  if (!crtl->is_leaf)
     {
       if (regno == MB_ABI_SUB_RETURN_ADDR_REGNUM)
 	return 1;
@@ -1603,7 +1603,7 @@ compute_frame_size (HOST_WIDE_INT size)
 
   /* No space to be allocated for link register in leaf functions with no other
      stack requirements.  */
-  if (total_size == 0 && current_function_is_leaf)
+  if (total_size == 0 && crtl->is_leaf)
     link_debug_size = 0;
   else
     link_debug_size = UNITS_PER_WORD;
@@ -1664,7 +1664,7 @@ microblaze_initial_elimination_offset (int from, int to)
 	gcc_unreachable ();
       break;
     case RETURN_ADDRESS_POINTER_REGNUM:
-      if (current_function_is_leaf)
+      if (crtl->is_leaf)
 	offset = 0;
       else
 	offset = current_frame_info.gp_offset +
@@ -2354,7 +2354,7 @@ microblaze_expand_prologue (void)
 	RTX_FRAME_RELATED_P (insn) = 1;
 
       /* Handle SUB_RETURN_ADDR_REGNUM specially at first.  */
-      if (!current_function_is_leaf || interrupt_handler)
+      if (!crtl->is_leaf || interrupt_handler)
 	{
 	  mem_rtx = gen_rtx_MEM (SImode,
 				 gen_rtx_PLUS (Pmode, stack_pointer_rtx,
@@ -2459,7 +2459,7 @@ microblaze_expand_epilogue (void)
          a load-use stall cycle  :)   This is also important to handle alloca. 
          (See comments for if (frame_pointer_needed) below.  */
 
-      if (!current_function_is_leaf || interrupt_handler)
+      if (!crtl->is_leaf || interrupt_handler)
 	{
 	  mem_rtx =
 	    gen_rtx_MEM (SImode,

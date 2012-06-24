@@ -1761,7 +1761,7 @@ get_pic_reg (void)
      "switch back" to using pic_offset_table_rtx.  */
   if (!cfun->machine->pic_reg)
     {
-      if (current_function_is_leaf && !df_regs_ever_live_p (LAST_ARG_REGNUM))
+      if (crtl->is_leaf && !df_regs_ever_live_p (LAST_ARG_REGNUM))
 	cfun->machine->pic_reg = gen_rtx_REG (SImode, LAST_ARG_REGNUM);
       else
 	cfun->machine->pic_reg = pic_offset_table_rtx;
@@ -1963,7 +1963,7 @@ direct_return (void)
 	      + get_frame_size ()
 	      + crtl->outgoing_args_size
 	      + crtl->args.pretend_args_size == 0)
-	  && current_function_is_leaf)
+	  && crtl->is_leaf)
 	return 1;
     }
   return 0;
@@ -2023,13 +2023,13 @@ spu_expand_prologue (void)
     + crtl->outgoing_args_size
     + crtl->args.pretend_args_size;
 
-  if (!current_function_is_leaf
+  if (!crtl->is_leaf
       || cfun->calls_alloca || total_size > 0)
     total_size += STACK_POINTER_OFFSET;
 
   /* Save this first because code after this might use the link
      register as a scratch register. */
-  if (!current_function_is_leaf)
+  if (!crtl->is_leaf)
     {
       insn = frame_emit_store (LINK_REGISTER_REGNUM, sp_reg, 16);
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -2136,7 +2136,7 @@ spu_expand_epilogue (bool sibcall_p)
     + crtl->outgoing_args_size
     + crtl->args.pretend_args_size;
 
-  if (!current_function_is_leaf
+  if (!crtl->is_leaf
       || cfun->calls_alloca || total_size > 0)
     total_size += STACK_POINTER_OFFSET;
 
@@ -2160,7 +2160,7 @@ spu_expand_epilogue (bool sibcall_p)
 	}
     }
 
-  if (!current_function_is_leaf)
+  if (!crtl->is_leaf)
     frame_emit_load (LINK_REGISTER_REGNUM, sp_reg, 16);
 
   if (!sibcall_p)
@@ -4055,7 +4055,7 @@ spu_initial_elimination_offset (int from, int to)
 {
   int saved_regs_size = spu_saved_regs_size ();
   int sp_offset = 0;
-  if (!current_function_is_leaf || crtl->outgoing_args_size
+  if (!crtl->is_leaf || crtl->outgoing_args_size
       || get_frame_size () || saved_regs_size)
     sp_offset = STACK_POINTER_OFFSET;
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
