@@ -1,3 +1,11 @@
+2012-06-25  Florian Weimer  <fweimer@redhat.com>
+
+	* init.c (build_new_1): Warn about (T[N]) for variable N, and
+	reject T[M][N].
+
+	* parser.c (cp_parser_direct_new_declarator): Accept non-constant
+	expressions.  Handled now in build_new_1.
+
 2012-06-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53202
