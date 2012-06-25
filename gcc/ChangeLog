@@ -1,3 +1,9 @@
+2012-06-25  Christophe Lyon  <christophe.lyon@st.com>
+
+	* config/arm/neon.md (UNSPEC_VLD1_DUP): Remove.
+	(neon_vld1_dup): Restrict to VQ operands.
+	(neon_vld1_dupv2di): New, fixes vld1q_dup_s64.
+
 2012-06-25  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
             James Greenhalgh  <james.greenhalgh@arm.com>
 

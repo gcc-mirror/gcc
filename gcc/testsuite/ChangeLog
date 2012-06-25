@@ -1,3 +1,7 @@
+2012-06-25  Christophe Lyon  <christophe.lyon@st.com>
+
+	* gcc.target/arm/neon-vld1_dupQ.c: New.
+
 2012-06-25  Florian Weimer  <fweimer@redhat.com>
 
 	* g++.dg/init/new35.C: New.
