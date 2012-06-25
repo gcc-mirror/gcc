@@ -45,7 +45,6 @@
   UNSPEC_VHADD
   UNSPEC_VHSUB
   UNSPEC_VLD1
-  UNSPEC_VLD1_DUP
   UNSPEC_VLD1_LANE
   UNSPEC_VLD2
   UNSPEC_VLD2_DUP
@@ -4381,8 +4380,7 @@
 
 (define_insn "neon_vld1_dup<mode>"
   [(set (match_operand:VDX 0 "s_register_operand" "=w")
-        (unspec:VDX [(match_operand:<V_elem> 1 "neon_struct_operand" "Um")]
-                    UNSPEC_VLD1_DUP))]
+        (vec_duplicate:VDX (match_operand:<V_elem> 1 "neon_struct_operand" "Um")))]
   "TARGET_NEON"
 {
   if (GET_MODE_NUNITS (<MODE>mode) > 1)
@@ -4397,20 +4395,30 @@
 )
 
 (define_insn "neon_vld1_dup<mode>"
-  [(set (match_operand:VQX 0 "s_register_operand" "=w")
-        (unspec:VQX [(match_operand:<V_elem> 1 "neon_struct_operand" "Um")]
-                    UNSPEC_VLD1_DUP))]
+  [(set (match_operand:VQ 0 "s_register_operand" "=w")
+        (vec_duplicate:VQ (match_operand:<V_elem> 1 "neon_struct_operand" "Um")))]
   "TARGET_NEON"
 {
-  if (GET_MODE_NUNITS (<MODE>mode) > 2)
-    return "vld1.<V_sz_elem>\t{%e0[], %f0[]}, %A1";
-  else
-    return "vld1.<V_sz_elem>\t%h0, %A1";
+  return "vld1.<V_sz_elem>\t{%e0[], %f0[]}, %A1";
 }
-  [(set (attr "neon_type")
-      (if_then_else (gt (const_string "<V_mode_nunits>") (const_string "1"))
-                    (const_string "neon_vld2_2_regs_vld1_vld2_all_lanes")
-                    (const_string "neon_vld1_1_2_regs")))]
+  [(set_attr "neon_type" "neon_vld2_2_regs_vld1_vld2_all_lanes")]
+)
+
+(define_insn_and_split "neon_vld1_dupv2di"
+   [(set (match_operand:V2DI 0 "s_register_operand" "=w")
+    (vec_duplicate:V2DI (match_operand:DI 1 "neon_struct_operand" "Um")))]
+   "TARGET_NEON"
+   "#"
+   "&& reload_completed"
+   [(const_int 0)]
+   {
+    rtx tmprtx = gen_lowpart (DImode, operands[0]);
+    emit_insn (gen_neon_vld1_dupdi (tmprtx, operands[1]));
+    emit_move_insn (gen_highpart (DImode, operands[0]), tmprtx );
+    DONE;
+    }
+  [(set_attr "length" "8")
+   (set_attr "neon_type" "neon_vld2_2_regs_vld1_vld2_all_lanes")]
 )
 
 (define_expand "vec_store_lanes<mode><mode>"
