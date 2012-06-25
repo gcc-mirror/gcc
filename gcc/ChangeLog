@@ -1,3 +1,16 @@
+2012-06-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR debug/53740
+	* df.h (dead_debug_add): Remove third argument.
+	* df-problems.c (dead_debug_add): Likewise.  Use the REGNO of the
+	REG that we want to replace instead.
+	(dead_debug_insert_temp): Use the REGNO of the reg that we want
+	to replace instead of DF_REF_REGNO.  Require there to always be
+	at least one such use.  Check for cases where the same location
+	has more than df_ref associated with it.
+	(df_note_bb_compute): Remove third dead_debug_add argument.
+	* dce.c (word_dce_process_block): Likewise.
+
 2012-06-25  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/v850/v850.c: Remove redundant extern declarations for

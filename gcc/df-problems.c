@@ -3165,10 +3165,10 @@ dead_debug_finish (struct dead_debug *debug, bitmap used)
     }
 }
 
-/* Add USE to DEBUG.  It must be a dead reference to UREGNO in a debug
+/* Add USE to DEBUG.  It must be a dead reference to a register in a debug
    insn.  Create a bitmap for DEBUG as needed.  */
 void
-dead_debug_add (struct dead_debug *debug, df_ref use, unsigned int uregno)
+dead_debug_add (struct dead_debug *debug, df_ref use)
 {
   struct dead_debug_use *newddu = XNEW (struct dead_debug_use);
 
@@ -3179,7 +3179,7 @@ dead_debug_add (struct dead_debug *debug, df_ref use, unsigned int uregno)
   if (!debug->used)
     debug->used = BITMAP_ALLOC (NULL);
 
-  bitmap_set_bit (debug->used, uregno);
+  bitmap_set_bit (debug->used, REGNO (*DF_REF_REAL_LOC (use)));
 }
 
 /* If UREGNO is referenced by any entry in DEBUG, emit a debug insn
@@ -3201,6 +3201,7 @@ dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
   rtx breg;
   rtx dval;
   rtx bind;
+  rtx cur_reg;
 
   if (!debug->used || !bitmap_clear_bit (debug->used, uregno))
     return 0;
@@ -3209,7 +3210,8 @@ dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
      the widest referenced mode.  */
   while ((cur = *tailp))
     {
-      if (DF_REF_REGNO (cur->use) == uregno)
+      cur_reg = *DF_REF_REAL_LOC (cur->use);
+      if (REGNO (cur_reg) == uregno)
 	{
 	  *usesp = cur;
 	  usesp = &cur->next;
@@ -3217,19 +3219,11 @@ dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
 	  cur->next = NULL;
 	  if (!reg
 	      || (GET_MODE_BITSIZE (GET_MODE (reg))
-		  < GET_MODE_BITSIZE (GET_MODE (*DF_REF_REAL_LOC (cur->use)))))
-	    reg = *DF_REF_REAL_LOC (cur->use);
+		  < GET_MODE_BITSIZE (GET_MODE (cur_reg))))
+	    reg = cur_reg;
 	}
       else
 	tailp = &(*tailp)->next;
-    }
-
-  /* We may have dangling bits in debug->used for registers that were part
-     of a multi-register use, one component of which has been reset.  */
-  if (reg == NULL)
-    {
-      gcc_checking_assert (!uses);
-      return 0;
     }
 
   gcc_checking_assert (uses);
@@ -3340,15 +3334,21 @@ dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
   /* Adjust all uses.  */
   while ((cur = uses))
     {
-      if (GET_MODE (*DF_REF_REAL_LOC (cur->use)) == GET_MODE (reg))
-	*DF_REF_REAL_LOC (cur->use) = dval;
-      else
-	*DF_REF_REAL_LOC (cur->use)
-	  = gen_lowpart_SUBREG (GET_MODE (*DF_REF_REAL_LOC (cur->use)), dval);
-      /* ??? Should we simplify subreg of subreg?  */
-      if (debug->to_rescan == NULL)
-	debug->to_rescan = BITMAP_ALLOC (NULL);
-      bitmap_set_bit (debug->to_rescan, INSN_UID (DF_REF_INSN (cur->use)));
+      /* If the reference spans multiple hard registers, we'll have
+	 a use for each one.  Only change each reference once.  */
+      cur_reg = *DF_REF_REAL_LOC (cur->use);
+      if (REG_P (cur_reg))
+	{
+	  if (GET_MODE (cur_reg) == GET_MODE (reg))
+	    *DF_REF_REAL_LOC (cur->use) = dval;
+      	  else
+	    *DF_REF_REAL_LOC (cur->use)
+	      = gen_lowpart_SUBREG (GET_MODE (cur_reg), dval);
+	  /* ??? Should we simplify subreg of subreg?  */
+	  if (debug->to_rescan == NULL)
+	    debug->to_rescan = BITMAP_ALLOC (NULL);
+	  bitmap_set_bit (debug->to_rescan, INSN_UID (DF_REF_INSN (cur->use)));
+        }
       uses = cur->next;
       XDELETE (cur);
     }
@@ -3547,7 +3547,7 @@ df_note_bb_compute (unsigned int bb_index,
 			 debug insns either.  */
 		      if (!bitmap_bit_p (artificial_uses, uregno)
 			  && !df_ignore_stack_reg (uregno))
-			dead_debug_add (&debug, use, uregno);
+			dead_debug_add (&debug, use);
 		      continue;
 		    }
 		  break;

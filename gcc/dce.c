@@ -848,7 +848,7 @@ word_dce_process_block (basic_block bb, bool redo_out)
 		  == 2 * UNITS_PER_WORD)
 	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (*use_rec))
 	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (*use_rec) + 1))
-	    dead_debug_add (&debug, *use_rec, DF_REF_REGNO (*use_rec));
+	    dead_debug_add (&debug, *use_rec);
       }
     else if (INSN_P (insn))
       {
@@ -938,7 +938,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 	for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
 	  if (!bitmap_bit_p (local_live, DF_REF_REGNO (*use_rec))
 	      && !bitmap_bit_p (au, DF_REF_REGNO (*use_rec)))
-	    dead_debug_add (&debug, *use_rec, DF_REF_REGNO (*use_rec));
+	    dead_debug_add (&debug, *use_rec);
       }
     else if (INSN_P (insn))
       {
