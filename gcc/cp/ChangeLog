@@ -1,3 +1,10 @@
+2012-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53594
+	* class.c (check_bases_and_members): Avoid -Wuninitialized
+	diagnostics for non-static const members or references if they
+	use NSDMI.
+
 2012-06-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53651

@@ -1,3 +1,8 @@
+2012-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53594
+	* g++.dg/cpp0x/nsdmi7.C: New test.
+
 2012-06-22  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline
