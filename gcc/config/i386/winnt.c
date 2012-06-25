@@ -829,22 +829,6 @@ i386_pe_seh_end_prologue (FILE *f)
     return;
   seh = cfun->machine->seh;
 
-  /* Emit an assembler directive to set up the frame pointer.  Always do
-     this last.  The documentation talks about doing this "before" any
-     other code that uses offsets, but (experimentally) that's after we
-     emit the codes in reverse order (handled by the assembler).  */
-  if (seh->cfa_reg != stack_pointer_rtx)
-    {
-      HOST_WIDE_INT offset = seh->sp_offset - seh->cfa_offset;
-
-      gcc_assert ((offset & 15) == 0);
-      gcc_assert (IN_RANGE (offset, 0, 240));
-
-      fputs ("\t.seh_setframe\t", f);
-      print_reg (seh->cfa_reg, 0, f);
-      fprintf (f, ", " HOST_WIDE_INT_PRINT_DEC "\n", offset);
-    }
-
   XDELETE (seh);
   cfun->machine->seh = NULL;
 
@@ -915,7 +899,10 @@ seh_emit_stackalloc (FILE *f, struct seh_frame_state *seh,
     seh->cfa_offset += offset;
   seh->sp_offset += offset;
 
-  fprintf (f, "\t.seh_stackalloc\t" HOST_WIDE_INT_PRINT_DEC "\n", offset);
+  /* Do not output the stackalloc in that case (it won't work as there is no
+     encoding for very large frame size).  */
+  if (offset < SEH_MAX_FRAME_SIZE)
+    fprintf (f, "\t.seh_stackalloc\t" HOST_WIDE_INT_PRINT_DEC "\n", offset);
 }
 
 /* Process REG_CFA_ADJUST_CFA for SEH.  */
@@ -948,8 +935,19 @@ seh_cfa_adjust_cfa (FILE *f, struct seh_frame_state *seh, rtx pat)
     seh_emit_stackalloc (f, seh, reg_offset);
   else if (dest_regno == HARD_FRAME_POINTER_REGNUM)
     {
+      HOST_WIDE_INT offset;
+
       seh->cfa_reg = dest;
       seh->cfa_offset -= reg_offset;
+
+      offset = seh->sp_offset - seh->cfa_offset;
+
+      gcc_assert ((offset & 15) == 0);
+      gcc_assert (IN_RANGE (offset, 0, 240));
+
+      fputs ("\t.seh_setframe\t", f);
+      print_reg (seh->cfa_reg, 0, f);
+      fprintf (f, ", " HOST_WIDE_INT_PRINT_DEC "\n", offset);
     }
   else
     gcc_unreachable ();
