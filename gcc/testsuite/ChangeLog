@@ -1,5 +1,8 @@
 2012-06-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/53759
+	* gcc.target/i386/pr53759.c: New test.
+
 	PR c++/53594
 	* g++.dg/cpp0x/nsdmi7.C: New test.
 

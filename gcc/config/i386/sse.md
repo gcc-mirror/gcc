@@ -3744,7 +3744,7 @@
 (define_insn "sse_loadlps"
   [(set (match_operand:V4SF 0 "nonimmediate_operand"     "=x,x,x,x,m")
 	(vec_concat:V4SF
-	  (match_operand:V2SF 2 "nonimmediate_operand"   " 0,x,m,x,x")
+	  (match_operand:V2SF 2 "nonimmediate_operand"   " 0,x,m,m,x")
 	  (vec_select:V2SF
 	    (match_operand:V4SF 1 "nonimmediate_operand" " x,x,0,x,0")
 	    (parallel [(const_int 2) (const_int 3)]))))]

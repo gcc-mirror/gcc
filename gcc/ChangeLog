@@ -1,3 +1,9 @@
+2012-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/53759
+	* config/i386/sse.md (sse_loadlps): Use x m x constraints instead
+	of x x x in the vmovlps load alternative.
+
 2012-06-22  Richard Guenther  <rguenther@suse.de>
 
 	* gcov-iov.c: Include bconfig.h and system.h.
