@@ -66,6 +66,10 @@ include it in @code{libc}.
 @item libada
 The Ada runtime library.
 
+@item libatomic
+The runtime support library for atomic operations (e.g. for @code{__sync}
+and @code{__atomic}).
+
 @item libcpp
 The C preprocessor library.
 
@@ -94,6 +98,9 @@ generally useful data structures and algorithms.  @xref{Top, ,
 Introduction, libiberty, @sc{gnu} libiberty}, for more information
 about this library.
 
+@item libitm
+The runtime support library for transactional memory.
+
 @item libjava
 The Java runtime library.
 
@@ -103,6 +110,9 @@ dereferencing operations.
 
 @item libobjc
 The Objective-C and Objective-C++ runtime library.
+
+@item libquadmath
+The runtime support library for quad-precision math operations.
 
 @item libssp
 The Stack protector runtime library.

@@ -2430,9 +2430,6 @@ construct_save_jarl (rtx op)
   return buff;
 }
 
-extern tree last_assemble_variable_decl;
-extern int size_directive_output;
-
 /* A version of asm_output_aligned_bss() that copes with the special
    data areas of the v850.  */
 void
