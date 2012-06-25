@@ -1,3 +1,10 @@
+2012-06-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53202
+	* semantics.c (build_data_member_initialization): Always keep
+	initializer for empty base.
+	(cxx_eval_bare_aggregate): Discard it here.
+
 2012-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/53594
