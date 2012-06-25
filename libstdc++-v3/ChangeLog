@@ -1,3 +1,7 @@
+2012-06-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Change COMPACT_LATEX to NO.
+
 2012-06-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/28_regex/algorithms/02_match: To...
