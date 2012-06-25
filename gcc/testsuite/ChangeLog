@@ -1,3 +1,8 @@
+2012-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53594
+	* g++.dg/cpp0x/nsdmi7.C: New test.
+
 2012-06-24  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.target/i386/pr23943.c (size_t): Use compatible type-definition

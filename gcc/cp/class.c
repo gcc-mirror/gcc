@@ -5122,7 +5122,8 @@ check_bases_and_members (tree t)
 	{
 	  tree type;
 
-	  if (TREE_CODE (field) != FIELD_DECL)
+	  if (TREE_CODE (field) != FIELD_DECL
+	      || DECL_INITIAL (field) != NULL_TREE)
 	    continue;
 
 	  type = TREE_TYPE (field);
