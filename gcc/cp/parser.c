@@ -6883,41 +6883,34 @@ cp_parser_direct_new_declarator (cp_parser* parser)
   while (true)
     {
       tree expression;
+      cp_token *token;
 
       /* Look for the opening `['.  */
       cp_parser_require (parser, CPP_OPEN_SQUARE, RT_OPEN_SQUARE);
-      /* The first expression is not required to be constant.  */
-      if (!declarator)
+
+      token = cp_lexer_peek_token (parser->lexer);
+      expression = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+      /* The standard requires that the expression have integral
+	 type.  DR 74 adds enumeration types.  We believe that the
+	 real intent is that these expressions be handled like the
+	 expression in a `switch' condition, which also allows
+	 classes with a single conversion to integral or
+	 enumeration type.  */
+      if (!processing_template_decl)
 	{
-	  cp_token *token = cp_lexer_peek_token (parser->lexer);
-	  expression = cp_parser_expression (parser, /*cast_p=*/false, NULL);
-	  /* The standard requires that the expression have integral
-	     type.  DR 74 adds enumeration types.  We believe that the
-	     real intent is that these expressions be handled like the
-	     expression in a `switch' condition, which also allows
-	     classes with a single conversion to integral or
-	     enumeration type.  */
-	  if (!processing_template_decl)
+	  expression
+	    = build_expr_type_conversion (WANT_INT | WANT_ENUM,
+					  expression,
+					  /*complain=*/true);
+	  if (!expression)
 	    {
-	      expression
-		= build_expr_type_conversion (WANT_INT | WANT_ENUM,
-					      expression,
-					      /*complain=*/true);
-	      if (!expression)
-		{
-		  error_at (token->location,
-			    "expression in new-declarator must have integral "
-			    "or enumeration type");
-		  expression = error_mark_node;
-		}
+	      error_at (token->location,
+			"expression in new-declarator must have integral "
+			"or enumeration type");
+	      expression = error_mark_node;
 	    }
 	}
-      /* But all the other expressions must be.  */
-      else
-	expression
-	  = cp_parser_constant_expression (parser,
-					   /*allow_non_constant=*/false,
-					   NULL);
+
       /* Look for the closing `]'.  */
       cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
 
