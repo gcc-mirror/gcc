@@ -5708,6 +5708,20 @@
   DONE;
 })
 
+(define_expand "vec_widen_<s>mult_odd_<mode>"
+  [(match_operand:<sseunpackmode> 0 "register_operand")
+   (any_extend:<sseunpackmode>
+     (match_operand:VI124_AVX2 1 "register_operand"))
+   (match_operand:VI124_AVX2 2 "register_operand")]
+  ; Note that SSE2 does not have signed SI multiply
+  "TARGET_AVX || TARGET_XOP || TARGET_SSE4_1
+   || (TARGET_SSE2 && (<u_bool> || <MODE>mode != V4SImode))"
+{
+  ix86_expand_mul_widen_evenodd (operands[0], operands[1], operands[2],
+				 <u_bool>, true);
+  DONE;
+})
+
 (define_expand "sdot_prod<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (match_operand:VI2_AVX2 1 "register_operand")
