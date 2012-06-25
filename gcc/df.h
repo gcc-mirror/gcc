@@ -1138,7 +1138,7 @@ enum debug_temp_where
 
 extern void dead_debug_init (struct dead_debug *, bitmap);
 extern void dead_debug_finish (struct dead_debug *, bitmap);
-extern void dead_debug_add (struct dead_debug *, df_ref, unsigned int);
+extern void dead_debug_add (struct dead_debug *, df_ref);
 extern int dead_debug_insert_temp (struct dead_debug *,
 				   unsigned int uregno, rtx insn,
 				   enum debug_temp_where);
