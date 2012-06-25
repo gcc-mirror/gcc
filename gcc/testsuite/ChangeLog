@@ -1,3 +1,7 @@
+2012-06-25  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/pr53749.c: New.
+
 2012-06-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52988
