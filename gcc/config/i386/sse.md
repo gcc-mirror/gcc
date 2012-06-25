@@ -5737,64 +5737,18 @@
   DONE;
 })
 
-(define_code_attr sse2_sse4_1
-   [(zero_extend "sse2") (sign_extend "sse4_1")])
-
-(define_expand "<s>dot_prodv4si"
+;; Normally we use widen_mul_even/odd, but combine can't quite get it all
+;; back together when madd is available.
+(define_expand "sdot_prodv4si"
   [(match_operand:V2DI 0 "register_operand")
-   (any_extend:V2DI (match_operand:V4SI 1 "register_operand"))
+   (match_operand:V4SI 1 "register_operand")
    (match_operand:V4SI 2 "register_operand")
    (match_operand:V2DI 3 "register_operand")]
-  "<CODE> == ZERO_EXTEND ? TARGET_SSE2 : TARGET_SSE4_1"
+  "TARGET_XOP"
 {
-  rtx t1, t2, t3, t4;
-
-  t1 = gen_reg_rtx (V2DImode);
-  emit_insn (gen_<sse2_sse4_1>_<u>mulv2siv2di3 (t1, operands[1], operands[2]));
-  emit_insn (gen_addv2di3 (t1, t1, operands[3]));
-
-  t2 = gen_reg_rtx (V4SImode);
-  t3 = gen_reg_rtx (V4SImode);
-  emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, t2),
-				 gen_lowpart (V1TImode, operands[1]),
-				 GEN_INT (32)));
-  emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, t3),
-				 gen_lowpart (V1TImode, operands[2]),
-				 GEN_INT (32)));
-
-  t4 = gen_reg_rtx (V2DImode);
-  emit_insn (gen_<sse2_sse4_1>_<u>mulv2siv2di3 (t4, t2, t3));
-
-  emit_insn (gen_addv2di3 (operands[0], t1, t4));
-  DONE;
-})
-
-(define_expand "<s>dot_prodv8si"
-  [(match_operand:V4DI 0 "register_operand")
-   (any_extend:V4DI (match_operand:V8SI 1 "register_operand"))
-   (match_operand:V8SI 2 "register_operand")
-   (match_operand:V4DI 3 "register_operand")]
-  "TARGET_AVX2"
-{
-  rtx t1, t2, t3, t4;
-
-  t1 = gen_reg_rtx (V4DImode);
-  emit_insn (gen_avx2_<u>mulv4siv4di3 (t1, operands[1], operands[2]));
-  emit_insn (gen_addv4di3 (t1, t1, operands[3]));
-
-  t2 = gen_reg_rtx (V8SImode);
-  t3 = gen_reg_rtx (V8SImode);
-  emit_insn (gen_avx2_lshrv2ti3 (gen_lowpart (V2TImode, t2),
-				 gen_lowpart (V2TImode, operands[1]),
-				 GEN_INT (32)));
-  emit_insn (gen_avx2_lshrv2ti3 (gen_lowpart (V2TImode, t3),
-				 gen_lowpart (V2TImode, operands[2]),
-				 GEN_INT (32)));
-
-  t4 = gen_reg_rtx (V4DImode);
-  emit_insn (gen_avx2_<u>mulv4siv4di3 (t4, t2, t3));
-
-  emit_insn (gen_addv4di3 (operands[0], t1, t4));
+  rtx t = gen_reg_rtx (V2DImode);
+  emit_insn (gen_xop_pmacsdqh (t, operands[1], operands[2], operands[3]));
+  emit_insn (gen_xop_pmacsdql (operands[0], operands[1], operands[2], t));
   DONE;
 })
 
