@@ -3498,7 +3498,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	}
 
       if (s1 && s2 && !gfc_compare_interfaces (s1, s2, name, 0, 1,
-					       err, sizeof(err)))
+					       err, sizeof(err), NULL, NULL))
 	{
 	  gfc_error ("Interface mismatch in procedure pointer assignment "
 		     "at %L: %s", &rvalue->where, err);

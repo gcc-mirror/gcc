@@ -865,6 +865,26 @@ double_int_umod (double_int a, double_int b, unsigned code)
   return double_int_mod (a, b, true, code);
 }
 
+/* Return TRUE iff PRODUCT is an integral multiple of FACTOR, and return
+   the multiple in *MULTIPLE.  Otherwise return FALSE and leave *MULTIPLE
+   unchanged.  */
+
+bool
+double_int_multiple_of (double_int product, double_int factor,
+			bool unsigned_p, double_int *multiple)
+{
+  double_int remainder;
+  double_int quotient = double_int_divmod (product, factor, unsigned_p,
+					   TRUNC_DIV_EXPR, &remainder);
+  if (double_int_zero_p (remainder))
+    {
+      *multiple = quotient;
+      return true;
+    }
+
+  return false;
+}
+
 /* Set BITPOS bit in A.  */
 double_int
 double_int_setbit (double_int a, unsigned bitpos)

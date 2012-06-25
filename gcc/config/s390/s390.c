@@ -7124,7 +7124,7 @@ s390_regs_ever_clobbered (int *regs_ever_clobbered)
 
   /* For non-leaf functions we have to consider all call clobbered regs to be
      clobbered.  */
-  if (!current_function_is_leaf)
+  if (!crtl->is_leaf)
     {
       for (i = 0; i < 16; i++)
 	regs_ever_clobbered[i] = call_really_used_regs[i];
@@ -7248,7 +7248,7 @@ s390_register_info (int clobbered_regs[])
         && REGNO (cfun->machine->base_reg) == BASE_REGNUM);
 
   clobbered_regs[RETURN_REGNUM]
-    |= (!current_function_is_leaf
+    |= (!crtl->is_leaf
 	|| TARGET_TPF_PROFILING
 	|| cfun->machine->split_branches_pending_p
 	|| cfun_frame_layout.save_return_addr_p
@@ -7256,7 +7256,7 @@ s390_register_info (int clobbered_regs[])
 	|| cfun->stdarg);
 
   clobbered_regs[STACK_POINTER_REGNUM]
-    |= (!current_function_is_leaf
+    |= (!crtl->is_leaf
 	|| TARGET_TPF_PROFILING
 	|| cfun_save_high_fprs_p
 	|| get_frame_size () > 0
@@ -7432,7 +7432,7 @@ s390_frame_info (void)
 	= cfun_frame_layout.f0_offset - cfun_gprs_save_area_size;
     }
 
-  if (current_function_is_leaf
+  if (crtl->is_leaf
       && !TARGET_TPF_PROFILING
       && cfun_frame_layout.frame_size == 0
       && !cfun_save_high_fprs_p
@@ -7507,7 +7507,7 @@ s390_init_frame_layout (void)
 	 as base register to avoid save/restore overhead.  */
       if (!base_used)
 	cfun->machine->base_reg = NULL_RTX;
-      else if (current_function_is_leaf && !df_regs_ever_live_p (5))
+      else if (crtl->is_leaf && !df_regs_ever_live_p (5))
 	cfun->machine->base_reg = gen_rtx_REG (Pmode, 5);
       else
 	cfun->machine->base_reg = gen_rtx_REG (Pmode, BASE_REGNUM);
@@ -7978,7 +7978,7 @@ s390_emit_prologue (void)
      See below for why TPF must use the register 1.  */
 
   if (!has_hard_reg_initial_val (Pmode, RETURN_REGNUM)
-      && !current_function_is_leaf
+      && !crtl->is_leaf
       && !TARGET_TPF_PROFILING)
     temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
   else
@@ -9048,7 +9048,6 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   lab_false = create_artificial_label (UNKNOWN_LOCATION);
   lab_over = create_artificial_label (UNKNOWN_LOCATION);
   addr = create_tmp_var (ptr_type_node, "addr");
-  mark_sym_for_renaming (addr);
 
   t = fold_convert (TREE_TYPE (reg), size_int (max_reg));
   t = build2 (GT_EXPR, boolean_type_node, reg, t);

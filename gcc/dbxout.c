@@ -2948,7 +2948,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 
       decl_rtl = eliminate_regs (decl_rtl, VOIDmode, NULL_RTX);
 #ifdef LEAF_REG_REMAP
-      if (current_function_uses_only_leaf_regs)
+      if (crtl->uses_only_leaf_regs)
 	leaf_renumber_regs_insn (decl_rtl);
 #endif
 
@@ -3454,7 +3454,7 @@ dbxout_parms (tree parms)
 	SET_DECL_RTL (parms,
 		      eliminate_regs (DECL_RTL (parms), VOIDmode, NULL_RTX));
 #ifdef LEAF_REG_REMAP
-	if (current_function_uses_only_leaf_regs)
+	if (crtl->uses_only_leaf_regs)
 	  {
 	    leaf_renumber_regs_insn (DECL_INCOMING_RTL (parms));
 	    leaf_renumber_regs_insn (DECL_RTL (parms));

@@ -1895,7 +1895,7 @@ frv_expand_epilogue (bool emit_return)
 
   /* Restore the stack pointer to its original value if alloca or the like
      is used.  */
-  if (! current_function_sp_is_unchanging)
+  if (! crtl->sp_is_unchanging)
     emit_insn (gen_addsi3 (sp, fp, frv_frame_offset_rtx (-fp_offset)));
 
   /* Restore the callee-saved registers that were used in this function.  */
@@ -2064,9 +2064,9 @@ frv_frame_pointer_required (void)
   /* If we forgoing the usual linkage requirements, we only need
      a frame pointer if the stack pointer might change.  */
   if (!TARGET_LINKED_FP)
-    return !current_function_sp_is_unchanging;
+    return !crtl->sp_is_unchanging;
 
-  if (! current_function_is_leaf)
+  if (! crtl->is_leaf)
     return true;
 
   if (get_frame_size () != 0)
@@ -2075,7 +2075,7 @@ frv_frame_pointer_required (void)
   if (cfun->stdarg)
     return true;
 
-  if (!current_function_sp_is_unchanging)
+  if (!crtl->sp_is_unchanging)
     return true;
 
   if (!TARGET_FDPIC && flag_pic && crtl->uses_pic_offset_table)

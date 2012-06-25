@@ -2021,7 +2021,7 @@ c-family/c-gimplify.o : c-family/c-gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) 
 
 c-family/c-lex.o : c-family/c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(TREE_H) $(FIXED_VALUE_H) debug.h $(C_COMMON_H) $(SPLAY_TREE_H) \
-	$(C_PRAGMA_H) $(INPUT_H) intl.h $(FLAGS_H) output.h \
+	$(C_PRAGMA_H) $(INPUT_H) intl.h $(FLAGS_H) \
 	$(CPPLIB_H) $(TARGET_H) $(TIMEVAR_H)
 
 c-family/c-omp.o : c-family/c-omp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \

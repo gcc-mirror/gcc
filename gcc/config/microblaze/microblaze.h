@@ -696,8 +696,8 @@ do {									\
 #define ASCII_DATA_ASM_OP		"\t.ascii\t"
 #define STRING_ASM_OP			"\t.asciz\t"
 
-#define ASM_OUTPUT_IDENT(FILE, STRING)					\
-  microblaze_asm_output_ident (FILE, STRING)
+#undef TARGET_ASM_OUTPUT_IDENT
+#define TARGET_ASM_OUTPUT_IDENT microblaze_asm_output_ident
 
 /* Default to -G 8 */
 #ifndef MICROBLAZE_DEFAULT_GVALUE
@@ -742,8 +742,6 @@ extern int save_volatiles;
 #define UNALIGNED_SHORT_ASM_OP          ".data16"
 #define UNALIGNED_INT_ASM_OP            ".data32"
 #define UNALIGNED_DOUBLE_INT_ASM_OP     ".data8"
-
-#define ASM_BYTE_OP                     ".data8"
 
 /* The following #defines are used in the headers files. Always retain these.  */
 

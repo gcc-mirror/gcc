@@ -31,10 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef DATA_SECTION_ASM_OP
 #define DATA_SECTION_ASM_OP "\t.section .data"
 
-/* Define the name of the .ident op.  */
-#undef IDENT_ASM_OP
-#define IDENT_ASM_OP "\t.ident\t"
-
 /* Enable alias attribute support.  */
 #ifndef SET_ASM_OP
 #define SET_ASM_OP "\t.set\t"

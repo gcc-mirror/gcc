@@ -2006,6 +2006,15 @@ gfc_resolve_product (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
 
 
 void
+gfc_resolve_rank (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_default_integer_kind;
+  f->value.function.name = gfc_get_string ("__rank");
+}
+
+
+void
 gfc_resolve_real (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 {
   f->ts.type = BT_REAL;
@@ -2471,7 +2480,7 @@ gfc_resolve_ftell (gfc_expr *f, gfc_expr *u)
   gfc_clear_ts (&ts);
 
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_index_integer_kind;
+  f->ts.kind = gfc_intio_kind;
   if (u->ts.kind != gfc_c_int_kind)
     {
       ts.type = BT_INTEGER;
@@ -2481,7 +2490,7 @@ gfc_resolve_ftell (gfc_expr *f, gfc_expr *u)
       gfc_convert_type (u, &ts, 2);
     }
 
-  f->value.function.name = gfc_get_string (PREFIX ("ftell"));
+  f->value.function.name = gfc_get_string (PREFIX ("ftell2"));
 }
 
 

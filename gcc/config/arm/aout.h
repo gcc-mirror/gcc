@@ -366,12 +366,6 @@
   asm_output_aligned_bss (STREAM, DECL, NAME, SIZE, ALIGN)
 #endif
 
-/* Output a #ident directive.  */
-#ifndef ASM_OUTPUT_IDENT
-#define ASM_OUTPUT_IDENT(STREAM,STRING)  \
-  asm_fprintf (STREAM, "%@ - - - ident %s\n", STRING)
-#endif
-     
 #ifndef ASM_COMMENT_START
 #define ASM_COMMENT_START 	"@"
 #endif

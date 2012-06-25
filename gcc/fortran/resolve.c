@@ -1152,7 +1152,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	    }
 
 	  if (s2 && !gfc_compare_interfaces (comp->ts.interface, s2, name, 0, 1,
-					     err, sizeof (err)))
+					     err, sizeof (err), NULL, NULL))
 	    {
 	      gfc_error ("Interface mismatch for procedure-pointer component "
 			 "'%s' in structure constructor at %L: %s",
@@ -1957,7 +1957,6 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 		       "ELEMENTAL procedure unless there is a non-optional "
 		       "argument with the same rank (12.4.1.5)",
 		       arg->expr->symtree->n.sym->name, &arg->expr->where);
-	  return FAILURE;
 	}
     }
 
@@ -11021,8 +11020,8 @@ static gfc_try
 check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
 			     const char* generic_name, locus where)
 {
-  gfc_symbol* sym1;
-  gfc_symbol* sym2;
+  gfc_symbol *sym1, *sym2;
+  const char *pass1, *pass2;
 
   gcc_assert (t1->specific && t2->specific);
   gcc_assert (!t1->specific->is_generic);
@@ -11046,8 +11045,20 @@ check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
     }
 
   /* Compare the interfaces.  */
+  if (t1->specific->nopass)
+    pass1 = NULL;
+  else if (t1->specific->pass_arg)
+    pass1 = t1->specific->pass_arg;
+  else
+    pass1 = t1->specific->u.specific->n.sym->formal->sym->name;
+  if (t2->specific->nopass)
+    pass2 = NULL;
+  else if (t2->specific->pass_arg)
+    pass2 = t2->specific->pass_arg;
+  else
+    pass2 = t2->specific->u.specific->n.sym->formal->sym->name;  
   if (gfc_compare_interfaces (sym1, sym2, sym2->name, !t1->is_operator, 0,
-			      NULL, 0))
+			      NULL, 0, pass1, pass2))
     {
       gfc_error ("'%s' and '%s' for GENERIC '%s' at %L are ambiguous",
 		 sym1->name, sym2->name, generic_name, &where);

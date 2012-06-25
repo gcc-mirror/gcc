@@ -1,3 +1,10 @@
+2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc-interface/trans.c: Include target.h.
+	(gigi): Try to put out .ident with targetm.asm_out.output_ident.
+	Remove uses of ASM_OUTPUT_IDENT.
+	* gcc-interface/Make-lang.in: Fix dependencies.
+
 2012-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/53592

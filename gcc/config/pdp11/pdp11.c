@@ -337,7 +337,7 @@ pdp11_expand_epilogue (void)
     }
 
   /* If possible, restore registers via pops.  */
-  if (!frame_pointer_needed || current_function_sp_is_unchanging)
+  if (!frame_pointer_needed || crtl->sp_is_unchanging)
     {
       /* Restore registers via pops.  */
 

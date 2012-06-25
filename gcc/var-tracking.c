@@ -1955,6 +1955,144 @@ var_regno_delete (dataflow_set *set, int regno)
   *reg = NULL;
 }
 
+/* Strip constant offsets and alignments off of LOC.  Return the base
+   expression.  */
+
+static rtx
+vt_get_canonicalize_base (rtx loc)
+{
+  while ((GET_CODE (loc) == PLUS
+	  || GET_CODE (loc) == AND)
+	 && GET_CODE (XEXP (loc, 1)) == CONST_INT
+	 && (GET_CODE (loc) != AND
+	     || INTVAL (XEXP (loc, 1)) < 0))
+    loc = XEXP (loc, 0);
+
+  return loc;
+}
+
+/* Canonicalize LOC using equivalences from SET in addition to those
+   in the cselib static table.  */
+
+static rtx
+vt_canonicalize_addr (dataflow_set *set, rtx oloc)
+{
+  HOST_WIDE_INT ofst = 0;
+  enum machine_mode mode = GET_MODE (oloc);
+  rtx loc = canon_rtx (get_addr (oloc));
+
+  /* Try to substitute a base VALUE for equivalent expressions as much
+     as possible.  The goal here is to expand stack-related addresses
+     to one of the stack base registers, so that we can compare
+     addresses for overlaps.  */
+  while (GET_CODE (vt_get_canonicalize_base (loc)) == VALUE)
+    {
+      rtx x;
+      decl_or_value dv;
+      variable var;
+      location_chain l;
+
+      while (GET_CODE (loc) == PLUS)
+	{
+	  ofst += INTVAL (XEXP (loc, 1));
+	  loc = XEXP (loc, 0);
+	  continue;
+	}
+
+      /* Alignment operations can't normally be combined, so just
+	 canonicalize the base and we're done.  We'll normally have
+	 only one stack alignment anyway.  */
+      if (GET_CODE (loc) == AND)
+	{
+	  x = vt_canonicalize_addr (set, XEXP (loc, 0));
+	  if (x != XEXP (loc, 0))
+	    loc = gen_rtx_AND (mode, x, XEXP (loc, 1));
+	  loc = canon_rtx (get_addr (loc));
+	  break;
+	}
+
+      x = canon_rtx (get_addr (loc));
+
+      /* We've made progress!  Start over.  */
+      if (x != loc || GET_CODE (x) != VALUE)
+	{
+	  loc = x;
+	  continue;
+	}
+
+      dv = dv_from_rtx (x);
+      var = (variable) htab_find_with_hash (shared_hash_htab (set->vars),
+					    dv, dv_htab_hash (dv));
+      if (!var)
+	break;
+
+      /* Look for an improved equivalent expression.  */
+      for (l = var->var_part[0].loc_chain; l; l = l->next)
+	{
+	  rtx base = vt_get_canonicalize_base (l->loc);
+	  if (GET_CODE (base) == REG
+	      || (GET_CODE (base) == VALUE
+		  && canon_value_cmp (base, loc)))
+	    {
+	      loc = l->loc;
+	      break;
+	    }
+	}
+
+      /* No luck with the dataflow set, so we're done.  */
+      if (!l)
+	break;
+    }
+
+  /* Add OFST back in.  */
+  if (ofst)
+    {
+      /* Don't build new RTL if we can help it.  */
+      if (GET_CODE (oloc) == PLUS
+	  && XEXP (oloc, 0) == loc
+	  && INTVAL (XEXP (oloc, 1)) == ofst)
+	return oloc;
+
+      loc = plus_constant (mode, loc, ofst);
+    }
+
+  return loc;
+}
+
+/* Return true iff ADDR has a stack register as the base address.  */
+
+static inline bool
+vt_stack_offset_p (rtx addr)
+{
+  rtx base = vt_get_canonicalize_base (addr);
+
+  if (GET_CODE (base) != REG)
+    return false;
+
+  return REGNO_PTR_FRAME_P (REGNO (base));
+}
+
+/* Return true iff there's a true dependence between MLOC and LOC.
+   MADDR must be a canonicalized version of MLOC's address.  */
+
+static inline bool
+vt_canon_true_dep (dataflow_set *set, rtx mloc, rtx maddr, rtx loc)
+{
+  if (GET_CODE (loc) != MEM)
+    return false;
+
+  if (!canon_true_dependence (mloc, GET_MODE (mloc), maddr, loc, NULL))
+    return false;
+
+  if (!MEM_EXPR (loc) && vt_stack_offset_p (maddr))
+    {
+      rtx addr = vt_canonicalize_addr (set, XEXP (loc, 0));
+      return canon_true_dependence (mloc, GET_MODE (mloc), maddr, loc, addr);
+    }
+
+  return true;
+}
+
 /* Hold parameters for the hashtab traversal function
    drop_overlapping_mem_locs, see below.  */
 
@@ -1988,9 +2126,7 @@ drop_overlapping_mem_locs (void **slot, void *data)
       if (shared_var_p (var, set->vars))
 	{
 	  for (loc = var->var_part[0].loc_chain; loc; loc = loc->next)
-	    if (GET_CODE (loc->loc) == MEM
-		&& canon_true_dependence (mloc, GET_MODE (mloc), addr,
-					  loc->loc, NULL))
+	    if (vt_canon_true_dep (set, mloc, addr, loc->loc))
 	      break;
 
 	  if (!loc)
@@ -2009,9 +2145,7 @@ drop_overlapping_mem_locs (void **slot, void *data)
       for (locp = &var->var_part[0].loc_chain, loc = *locp;
 	   loc; loc = *locp)
 	{
-	  if (GET_CODE (loc->loc) != MEM
-	      || !canon_true_dependence (mloc, GET_MODE (mloc), addr,
-					 loc->loc, NULL))
+	  if (!vt_canon_true_dep (set, mloc, addr, loc->loc))
 	    {
 	      locp = &loc->next;
 	      continue;
@@ -2052,7 +2186,7 @@ clobber_overlapping_mems (dataflow_set *set, rtx loc)
 
   coms.set = set;
   coms.loc = canon_rtx (loc);
-  coms.addr = canon_rtx (get_addr (XEXP (loc, 0)));
+  coms.addr = vt_canonicalize_addr (set, XEXP (loc, 0));
 
   set->traversed_vars = set->vars;
   htab_traverse (shared_hash_htab (set->vars),
@@ -9448,9 +9582,6 @@ vt_init_cfa_base (void)
 				 VOIDmode, get_insns ());
   preserve_value (val);
   cselib_preserve_cfa_base_value (val, REGNO (cfa_base_rtx));
-  var_reg_decl_set (&VTI (ENTRY_BLOCK_PTR)->out, cfa_base_rtx,
-		    VAR_INIT_STATUS_INITIALIZED, dv_from_value (val->val_rtx),
-		    0, NULL_RTX, INSERT);
 }
 
 /* Allocate and initialize the data structures for variable tracking
@@ -9505,6 +9636,41 @@ vt_initialize (void)
     {
       scratch_regs = NULL;
       valvar_pool = NULL;
+    }
+
+  if (MAY_HAVE_DEBUG_INSNS)
+    {
+      rtx reg, expr;
+      int ofst;
+      cselib_val *val;
+
+#ifdef FRAME_POINTER_CFA_OFFSET
+      reg = frame_pointer_rtx;
+      ofst = FRAME_POINTER_CFA_OFFSET (current_function_decl);
+#else
+      reg = arg_pointer_rtx;
+      ofst = ARG_POINTER_CFA_OFFSET (current_function_decl);
+#endif
+
+      ofst -= INCOMING_FRAME_SP_OFFSET;
+
+      val = cselib_lookup_from_insn (reg, GET_MODE (reg), 1,
+				     VOIDmode, get_insns ());
+      preserve_value (val);
+      cselib_preserve_cfa_base_value (val, REGNO (reg));
+      expr = plus_constant (GET_MODE (stack_pointer_rtx),
+			    stack_pointer_rtx, -ofst);
+      cselib_add_permanent_equiv (val, expr, get_insns ());
+
+      if (ofst)
+	{
+	  val = cselib_lookup_from_insn (stack_pointer_rtx,
+					 GET_MODE (stack_pointer_rtx), 1,
+					 VOIDmode, get_insns ());
+	  preserve_value (val);
+	  expr = plus_constant (GET_MODE (reg), reg, ofst);
+	  cselib_add_permanent_equiv (val, expr, get_insns ());
+	}
     }
 
   /* In order to factor out the adjustments made to the stack pointer or to

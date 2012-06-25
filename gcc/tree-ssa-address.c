@@ -556,7 +556,7 @@ most_expensive_mult_to_index (tree type, struct mem_address *parts,
 	  || !multiplier_allowed_in_address_p (coef, TYPE_MODE (type), as))
 	continue;
 
-      acost = multiply_by_cost (coef, address_mode, speed);
+      acost = multiply_by_const_cost (coef, address_mode, speed);
 
       if (acost > best_mult_cost)
 	{

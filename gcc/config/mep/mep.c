@@ -2522,16 +2522,16 @@ mep_interrupt_saved_reg (int r)
 	  || (r == RPB_REGNO || r == RPE_REGNO || r == RPC_REGNO || r == LP_REGNO)
 	  || IVC2_ISAVED_REG (r)))
     return true;
-  if (!current_function_is_leaf)
+  if (!crtl->is_leaf)
     /* Function calls mean we need to save $lp.  */
     if (r == LP_REGNO || IVC2_ISAVED_REG (r))
       return true;
-  if (!current_function_is_leaf || cfun->machine->doloop_tags > 0)
+  if (!crtl->is_leaf || cfun->machine->doloop_tags > 0)
     /* The interrupt handler might use these registers for repeat blocks,
        or it might call a function that does so.  */
     if (r == RPB_REGNO || r == RPE_REGNO || r == RPC_REGNO)
       return true;
-  if (current_function_is_leaf && call_used_regs[r] && !df_regs_ever_live_p(r))
+  if (crtl->is_leaf && call_used_regs[r] && !df_regs_ever_live_p(r))
     return false;
   /* Functions we call might clobber these.  */
   if (call_used_regs[r] && !fixed_regs[r])
@@ -2742,7 +2742,7 @@ mep_reload_pointer (int regno, const char *symbol)
 {
   rtx reg, sym;
 
-  if (!df_regs_ever_live_p(regno) && current_function_is_leaf)
+  if (!df_regs_ever_live_p(regno) && crtl->is_leaf)
     return;
 
   reg = gen_rtx_REG (SImode, regno);

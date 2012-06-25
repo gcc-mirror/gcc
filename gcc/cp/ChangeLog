@@ -1,3 +1,30 @@
+2012-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53594
+	* class.c (check_bases_and_members): Avoid -Wuninitialized
+	diagnostics for non-static const members or references if they
+	use NSDMI.
+
+2012-06-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* parser.c (cp_parser_direct_declarator): Move virt-specifier
+	parsing after late-specified return type parsing.
+
+2012-06-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53651
+	* name-lookup.c (constructor_name_p): Don't try to look at the
+	name of a DECLTYPE_TYPE.
+
+2012-06-18  Lawrence Crowl  <crowl@google.com>
+
+	* decl2.c (cp_write_global_declarations): Rename use of TV_PHASE_CGRAPH
+	to TV_PHASE_OPT_GEN.
+
+2012-06-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* decl.c (finish_function): Remove code conditional on VMS_TARGET.
+
 2012-06-15  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/51033

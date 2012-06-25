@@ -8761,9 +8761,11 @@ check_for_loop_decls (location_t loc, bool turn_off_iso_c99_error)
 void
 c_push_function_context (void)
 {
-  struct language_function *p;
-  p = ggc_alloc_language_function ();
-  cfun->language = p;
+  struct language_function *p = cfun->language;
+  /* cfun->language might have been already allocated by the use of
+     -Wunused-local-typedefs.  In that case, just re-use it.  */
+  if (p == NULL)
+    cfun->language = p = ggc_alloc_cleared_language_function ();
 
   p->base.x_stmt_tree = c_stmt_tree;
   c_stmt_tree.x_cur_stmt_list
@@ -8789,7 +8791,12 @@ c_pop_function_context (void)
 
   pop_function_context ();
   p = cfun->language;
-  cfun->language = NULL;
+
+  /* When -Wunused-local-typedefs is in effect, cfun->languages is
+     used to store data throughout the life time of the current cfun,
+     So don't deallocate it.  */
+  if (!warn_unused_local_typedefs)
+    cfun->language = NULL;
 
   if (DECL_STRUCT_FUNCTION (current_function_decl) == 0
       && DECL_SAVED_TREE (current_function_decl) == NULL_TREE)
@@ -8802,6 +8809,7 @@ c_pop_function_context (void)
     }
 
   c_stmt_tree = p->base.x_stmt_tree;
+  p->base.x_stmt_tree.x_cur_stmt_list = NULL;
   c_break_label = p->x_break_label;
   c_cont_label = p->x_cont_label;
   c_switch_stack = p->x_switch_stack;
@@ -10319,13 +10327,13 @@ c_write_global_declarations (void)
   c_write_global_declarations_1 (BLOCK_VARS (ext_block));
 
   timevar_stop (TV_PHASE_DEFERRED);
-  timevar_start (TV_PHASE_CGRAPH);
+  timevar_start (TV_PHASE_OPT_GEN);
 
   /* We're done parsing; proceed to optimize and emit assembly.
      FIXME: shouldn't be the front end's responsibility to call this.  */
   finalize_compilation_unit ();
 
-  timevar_stop (TV_PHASE_CGRAPH);
+  timevar_stop (TV_PHASE_OPT_GEN);
   timevar_start (TV_PHASE_DBGINFO);
 
   /* After cgraph has had a chance to emit everything that's going to

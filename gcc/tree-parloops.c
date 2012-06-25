@@ -1394,7 +1394,7 @@ static GTY(()) bitmap parallelized_functions;
 
 /* Returns true if FN was created by create_loop_fn.  */
 
-static bool
+bool
 parallelized_function_p (tree fn)
 {
   if (!parallelized_functions || !DECL_ARTIFICIAL (fn))

@@ -1,3 +1,13 @@
+2012-06-20  David Edelsohn  <dje.gcc@gmail.com>
+	    Alan Modra  <amodra@gmail.com>
+
+	* sysdep/powerpc/locks.h (compare_and_swap): Use GCC atomic
+	intrinsics.
+	(release_set): Same.
+	(compare_and_swap_release): Same.
+	(read_barrier): Same.
+	(write_barrier): Same.
+
 2012-06-15  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* sysdep/m68k/locks.h (compare_and_swap): Use

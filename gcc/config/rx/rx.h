@@ -602,10 +602,6 @@ typedef unsigned int CUMULATIVE_ARGS;
     }							\
   while (0)
 
-#undef  IDENT_ASM_OP
-#define IDENT_ASM_OP  (TARGET_AS100_SYNTAX \
-		       ? "\t.END\t; Built by: ": "\t.ident\t")
-
 /* For PIC put jump tables into the text section so that the offsets that
    they contain are always computed between two same-section symbols.  */
 #define JUMP_TABLES_IN_TEXT_SECTION	(TARGET_PID || flag_pic)

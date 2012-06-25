@@ -97,17 +97,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Use periods rather than dollar signs in special g++ assembler names.  */
 #define NO_DOLLAR_IN_LABEL
 
-/* Attach a special .ident directive to the end of the file to identify
-   the version of GCC which compiled this code.  */
-#undef IDENT_ASM_OP
-#define IDENT_ASM_OP "\t.ident\t"
-
-/* Output #ident string into the ELF .comment section, so it doesn't
-   form part of the load image, and so that it can be stripped.  */
-#undef ASM_OUTPUT_IDENT
-#define ASM_OUTPUT_IDENT(STREAM, STRING) \
-  fprintf (STREAM, "%s\"%s\"\n", IDENT_ASM_OP, STRING);
-
 /* Currently we don't support 128bit long doubles, so for now we force
    n32 to be 64bit.  */
 #undef LONG_DOUBLE_TYPE_SIZE

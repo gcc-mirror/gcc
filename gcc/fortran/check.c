@@ -1,5 +1,6 @@
 /* Check functions
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
@@ -2728,17 +2729,29 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
     return FAILURE;
   if (allocatable_check (from, 0) == FAILURE)
     return FAILURE;
+  if (gfc_is_coindexed (from))
+    {
+      gfc_error ("The FROM argument to MOVE_ALLOC at %L shall not be "
+		 "coindexed", &from->where);
+      return FAILURE;
+    }
 
   if (variable_check (to, 1, false) == FAILURE)
     return FAILURE;
   if (allocatable_check (to, 1) == FAILURE)
     return FAILURE;
+  if (gfc_is_coindexed (to))
+    {
+      gfc_error ("The TO argument to MOVE_ALLOC at %L shall not be "
+		 "coindexed", &to->where);
+      return FAILURE;
+    }
 
   if (from->ts.type == BT_CLASS && to->ts.type == BT_DERIVED)
     {
       gfc_error ("The TO arguments in MOVE_ALLOC at %L must be "
 		 "polymorphic if FROM is polymorphic",
-		 &from->where);
+		 &to->where);
       return FAILURE;
     }
 
@@ -2747,20 +2760,26 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
 
   if (to->rank != from->rank)
     {
-      gfc_error ("the '%s' and '%s' arguments of '%s' intrinsic at %L must "
-		 "have the same rank %d/%d", gfc_current_intrinsic_arg[0]->name,
-		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
-		 &to->where,  from->rank, to->rank);
+      gfc_error ("The FROM and TO arguments of the MOVE_ALLOC intrinsic at %L "
+		 "must have the same rank %d/%d", &to->where,  from->rank,
+		 to->rank);
+      return FAILURE;
+    }
+
+  /* IR F08/0040; cf. 12-006A.  */
+  if (gfc_get_corank (to) != gfc_get_corank (from))
+    {
+      gfc_error ("The FROM and TO arguments of the MOVE_ALLOC intrinsic at %L "
+		 "must have the same corank %d/%d", &to->where,
+		 gfc_get_corank (from), gfc_get_corank (to));
       return FAILURE;
     }
 
   if (to->ts.kind != from->ts.kind)
     {
-      gfc_error ("the '%s' and '%s' arguments of '%s' intrinsic at %L must "
-		 "be of the same kind %d/%d",
-		 gfc_current_intrinsic_arg[0]->name,
-		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
-		 &to->where, from->ts.kind, to->ts.kind);
+      gfc_error ("The FROM and TO arguments of the MOVE_ALLOC intrinsic at %L"
+		 " must be of the same kind %d/%d", &to->where, from->ts.kind,
+		 to->ts.kind);
       return FAILURE;
     }
 

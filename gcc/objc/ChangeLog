@@ -1,3 +1,11 @@
+2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* objc-next-runtime-abi-01.c: Do not include tm.h and output.h.
+	Include c-family/c-target.h.
+	(handle_next_class_ref): Rewrite to emit top-level asm statements.
+	(handle_next_impent): Likewise.
+	* objc/Make-lang.in: Fix dependencies for objc-next-runtime-abi-01.o.
+
 2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* objc-act.c: Do not include output.h.

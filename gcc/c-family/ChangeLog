@@ -1,3 +1,34 @@
+2012-06-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-common.h (c_common_print_pch_checksum): Remove.
+	* c-pch.c: Do not include output.h.
+	(CHECK_NO_ASM_OUT_DURING_PCH): Define and add FIXME.
+	(asm_out_file): Define iff CHECK_NO_ASM_OUT_DURING_PCH isdefined.
+	(asm_file_startpos): Define iff CHECK_NO_ASM_OUT_DURING_PCH is defined.
+	(struct c_pch_header): Remove.
+	(get_ident): Update gpch version.
+	(pch_init): Do not print executable_checksum to asm_out_file.
+	Do not fail if there is no asm_out_file to read back from.  Set
+	asm_file_startpos only if CHECK_NO_ASM_OUT_DURING_PCH is defined.
+	(c_common_write_pch): Verify that nothing was written to asm_out_file
+	since pch_init was called.  Do not write a c_pch_header, and do not
+	copy from asm_out_file to the PCH.
+	(c_common_read_pch): Do not read a c_pch_header, and do not restore
+	the content of asm_out_file from the PCH.
+	(c_common_print_pch_checksum): Remove.
+	* c-opts.c (c_common_init): Print out executable_checksum directly.
+
+2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-target.def (objc_declare_unresolved_class_reference,
+	objc_declare_class_definition): Add new hooks.
+
+2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-lex.c: Do not include output.h.
+	(cb_ident): Try to put out .ident with targetm.asm_out.output_ident.
+	Remove uses of ASM_OUTPUT_IDENT.
+
 2012-06-15  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/51033

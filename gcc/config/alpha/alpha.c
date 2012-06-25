@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "libfuncs.h"
 #include "opts.h"
+#include "params.h"
 
 /* Specify which cpu to schedule for.  */
 enum processor_type alpha_tune;
@@ -224,24 +225,40 @@ alpha_option_override (void)
     const char *const name;
     const enum processor_type processor;
     const int flags;
+    const unsigned short line_size; /* in bytes */
+    const unsigned short l1_size;   /* in kb.  */
+    const unsigned short l2_size;   /* in kb.  */
   } cpu_table[] = {
-    { "ev4",	PROCESSOR_EV4, 0 },
-    { "ev45",	PROCESSOR_EV4, 0 },
-    { "21064",	PROCESSOR_EV4, 0 },
-    { "ev5",	PROCESSOR_EV5, 0 },
-    { "21164",	PROCESSOR_EV5, 0 },
-    { "ev56",	PROCESSOR_EV5, MASK_BWX },
-    { "21164a",	PROCESSOR_EV5, MASK_BWX },
-    { "pca56",	PROCESSOR_EV5, MASK_BWX|MASK_MAX },
-    { "21164PC",PROCESSOR_EV5, MASK_BWX|MASK_MAX },
-    { "21164pc",PROCESSOR_EV5, MASK_BWX|MASK_MAX },
-    { "ev6",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX },
-    { "21264",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX },
-    { "ev67",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX },
-    { "21264a",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX }
+    /* EV4/LCA45 had 8k L1 caches; EV45 had 16k L1 caches.
+       EV4/EV45 had 128k to 16M 32-byte direct Bcache.  LCA45
+       had 64k to 8M 8-byte direct Bcache.  */
+    { "ev4",	PROCESSOR_EV4, 0, 32, 8, 8*1024 },
+    { "21064",	PROCESSOR_EV4, 0, 32, 8, 8*1024 },
+    { "ev45",	PROCESSOR_EV4, 0, 32, 16, 16*1024 },
+
+    /* EV5 or EV56 had 8k 32 byte L1, 96k 32 or 64 byte L2,
+       and 1M to 16M 64 byte L3 (not modeled).
+       PCA56 had 16k 64-byte cache; PCA57 had 32k Icache.
+       PCA56 had 8k 64-byte cache; PCA57 had 16k Dcache.  */
+    { "ev5",	PROCESSOR_EV5, 0, 32, 8, 96 },
+    { "21164",	PROCESSOR_EV5, 0, 32, 8, 96 },
+    { "ev56",	PROCESSOR_EV5, MASK_BWX, 32, 8, 96 },
+    { "21164a",	PROCESSOR_EV5, MASK_BWX, 32, 8, 96 },
+    { "pca56",	PROCESSOR_EV5, MASK_BWX|MASK_MAX, 64, 16, 4*1024 },
+    { "21164PC",PROCESSOR_EV5, MASK_BWX|MASK_MAX, 64, 16, 4*1024 },
+    { "21164pc",PROCESSOR_EV5, MASK_BWX|MASK_MAX, 64, 16, 4*1024 },
+
+    /* EV6 had 64k 64 byte L1, 1M to 16M Bcache.  */
+    { "ev6",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX, 64, 64, 16*1024 },
+    { "21264",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX, 64, 64, 16*1024 },
+    { "ev67",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX,
+      64, 64, 16*1024 },
+    { "21264a",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX,
+      64, 64, 16*1024 }
   };
 
   int const ct_size = ARRAY_SIZE (cpu_table);
+  int line_size = 0, l1_size = 0, l2_size = 0;
   int i;
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
@@ -314,9 +331,12 @@ alpha_option_override (void)
       for (i = 0; i < ct_size; i++)
 	if (! strcmp (alpha_cpu_string, cpu_table [i].name))
 	  {
-	    alpha_tune = alpha_cpu = cpu_table [i].processor;
+	    alpha_tune = alpha_cpu = cpu_table[i].processor;
+	    line_size = cpu_table[i].line_size;
+	    l1_size = cpu_table[i].l1_size;
+	    l2_size = cpu_table[i].l2_size;
 	    target_flags &= ~ (MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX);
-	    target_flags |= cpu_table [i].flags;
+	    target_flags |= cpu_table[i].flags;
 	    break;
 	  }
       if (i == ct_size)
@@ -328,12 +348,28 @@ alpha_option_override (void)
       for (i = 0; i < ct_size; i++)
 	if (! strcmp (alpha_tune_string, cpu_table [i].name))
 	  {
-	    alpha_tune = cpu_table [i].processor;
+	    alpha_tune = cpu_table[i].processor;
+	    line_size = cpu_table[i].line_size;
+	    l1_size = cpu_table[i].l1_size;
+	    l2_size = cpu_table[i].l2_size;
 	    break;
 	  }
       if (i == ct_size)
 	error ("bad value %qs for -mtune switch", alpha_tune_string);
     }
+
+  if (line_size)
+    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE, line_size,
+			   global_options.x_param_values,
+			   global_options_set.x_param_values);
+  if (l1_size)
+    maybe_set_param_value (PARAM_L1_CACHE_SIZE, l1_size,
+			   global_options.x_param_values,
+			   global_options_set.x_param_values);
+  if (l2_size)
+    maybe_set_param_value (PARAM_L2_CACHE_SIZE, l2_size,
+			   global_options.x_param_values,
+			   global_options_set.x_param_values);
 
   /* Do some sanity checks on the above options.  */
 
@@ -4226,39 +4262,15 @@ emit_store_conditional (enum machine_mode mode, rtx res, rtx mem, rtx val)
 static void
 alpha_pre_atomic_barrier (enum memmodel model)
 {
-  switch (model)
-    {
-    case MEMMODEL_RELAXED:
-    case MEMMODEL_CONSUME:
-    case MEMMODEL_ACQUIRE:
-      break;
-    case MEMMODEL_RELEASE:
-    case MEMMODEL_ACQ_REL:
-    case MEMMODEL_SEQ_CST:
-      emit_insn (gen_memory_barrier ());
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  if (need_atomic_barrier_p (model, true))
+    emit_insn (gen_memory_barrier ());
 }
 
 static void
 alpha_post_atomic_barrier (enum memmodel model)
 {
-  switch (model)
-    {
-    case MEMMODEL_RELAXED:
-    case MEMMODEL_CONSUME:
-    case MEMMODEL_RELEASE:
-      break;
-    case MEMMODEL_ACQUIRE:
-    case MEMMODEL_ACQ_REL:
-    case MEMMODEL_SEQ_CST:
-      emit_insn (gen_memory_barrier ());
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  if (need_atomic_barrier_p (model, false))
+    emit_insn (gen_memory_barrier ());
 }
 
 /* A subroutine of the atomic operation splitters.  Emit an insxl

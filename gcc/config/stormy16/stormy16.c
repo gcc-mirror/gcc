@@ -917,7 +917,7 @@ struct xstormy16_stack_layout
   ((df_regs_ever_live_p (REGNUM) && ! call_used_regs[REGNUM])		\
    || (IFUN && ! fixed_regs[REGNUM] && call_used_regs[REGNUM]		\
        && (REGNUM != CARRY_REGNUM)					\
-       && (df_regs_ever_live_p (REGNUM) || ! current_function_is_leaf)))
+       && (df_regs_ever_live_p (REGNUM) || ! crtl->is_leaf)))
 
 /* Compute the stack layout.  */
 

@@ -658,7 +658,7 @@ avr_regs_to_save (HARD_REG_SET *set)
       if (fixed_regs[reg])
         continue;
 
-      if ((int_or_sig_p && !current_function_is_leaf && call_used_regs[reg])
+      if ((int_or_sig_p && !crtl->is_leaf && call_used_regs[reg])
           || (df_regs_ever_live_p (reg)
               && (int_or_sig_p || !call_used_regs[reg])
               /* Don't record frame pointer registers here.  They are treated
@@ -1010,7 +1010,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
 
           gcc_assert (frame_pointer_needed
                       || !isr_p
-                      || !current_function_is_leaf);
+                      || !crtl->is_leaf);
           
           fp = my_fp = (frame_pointer_needed
                         ? frame_pointer_rtx
@@ -1358,7 +1358,7 @@ expand_epilogue (bool sibcall_p)
 
       gcc_assert (frame_pointer_needed
                   || !isr_p
-                  || !current_function_is_leaf);
+                  || !crtl->is_leaf);
       
       fp = my_fp = (frame_pointer_needed
                     ? frame_pointer_rtx

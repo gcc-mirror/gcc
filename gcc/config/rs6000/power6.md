@@ -216,6 +216,11 @@
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
+(define_insn_reservation "power6-popcnt" 1
+  (and (eq_attr "type" "popcnt")
+       (eq_attr "cpu" "power6"))
+  "FXU_power6")
+
 (define_insn_reservation "power6-insert" 1
   (and (eq_attr "type" "insert_word")
        (eq_attr "cpu" "power6"))

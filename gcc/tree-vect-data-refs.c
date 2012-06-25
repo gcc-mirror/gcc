@@ -4731,6 +4731,11 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   if (TREE_ASM_WRITTEN (decl))
     return false;
 
+  /* Do not override the alignment as specified by the ABI when the used
+     attribute is set.  */
+  if (DECL_PRESERVE_P (decl))
+    return false;
+
   if (TREE_STATIC (decl))
     return (alignment <= MAX_OFILE_ALIGNMENT);
   else

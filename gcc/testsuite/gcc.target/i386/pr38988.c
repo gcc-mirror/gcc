@@ -3,7 +3,7 @@
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fpic -mcmodel=large" } */
 
-typedef long unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 typedef void (*func_ptr) (void);
 
 static func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) };

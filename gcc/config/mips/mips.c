@@ -7806,7 +7806,8 @@ mips_print_operand_punct_valid_p (unsigned char code)
    'D'	Print the second part of a double-word register or memory operand.
    'L'	Print the low-order register in a double-word register operand.
    'M'	Print high-order register in a double-word register operand.
-   'z'	Print $0 if OP is zero, otherwise print OP normally.  */
+   'z'	Print $0 if OP is zero, otherwise print OP normally.
+   'b'	Print the address of a memory operand, without offset.  */
 
 static void
 mips_print_operand (FILE *file, rtx op, int letter)
@@ -7935,6 +7936,11 @@ mips_print_operand (FILE *file, rtx op, int letter)
 	case MEM:
 	  if (letter == 'D')
 	    output_address (plus_constant (Pmode, XEXP (op, 0), 4));
+	  else if (letter == 'b')
+	    {
+	      gcc_assert (REG_P (XEXP (op, 0)));
+	      mips_print_operand (file, XEXP (op, 0), 0);
+	    }
 	  else if (letter && letter != 'z')
 	    output_operand_lossage ("invalid use of '%%%c'", letter);
 	  else
@@ -9213,7 +9219,7 @@ mips_global_pointer (void)
 
   /* If the global pointer is call-saved, try to use a call-clobbered
      alternative.  */
-  if (TARGET_CALL_SAVED_GP && current_function_is_leaf)
+  if (TARGET_CALL_SAVED_GP && crtl->is_leaf)
     for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
       if (!df_regs_ever_live_p (regno)
 	  && call_really_used_regs[regno]
@@ -9440,7 +9446,7 @@ mips_cfun_might_clobber_call_saved_reg_p (unsigned int regno)
   /* If REGNO is ordinarily call-clobbered, we must assume that any
      called function could modify it.  */
   if (cfun->machine->interrupt_handler_p
-      && !current_function_is_leaf
+      && !crtl->is_leaf
       && mips_interrupt_extra_call_saved_reg_p (regno))
     return true;
 
@@ -9583,7 +9589,7 @@ mips_compute_frame_info (void)
      slot.  This area isn't needed in leaf functions, but if the
      target-independent frame size is nonzero, we have already committed to
      allocating these in STARTING_FRAME_OFFSET for !FRAME_GROWS_DOWNWARD.  */
-  if ((size == 0 || FRAME_GROWS_DOWNWARD) && current_function_is_leaf)
+  if ((size == 0 || FRAME_GROWS_DOWNWARD) && crtl->is_leaf)
     {
       /* The MIPS 3.0 linker does not like functions that dynamically
 	 allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
@@ -11996,11 +12002,13 @@ static void
 mips_process_sync_loop (rtx insn, rtx *operands)
 {
   rtx at, mem, oldval, newval, inclusive_mask, exclusive_mask;
-  rtx required_oldval, insn1_op2, tmp1, tmp2, tmp3;
+  rtx required_oldval, insn1_op2, tmp1, tmp2, tmp3, cmp;
   unsigned int tmp3_insn;
   enum attr_sync_insn1 insn1;
   enum attr_sync_insn2 insn2;
   bool is_64bit_p;
+  int memmodel_attr;
+  enum memmodel model;
 
   /* Read an operand from the sync_WHAT attribute and store it in
      variable WHAT.  DEFAULT is the default value if no attribute
@@ -12017,6 +12025,7 @@ mips_process_sync_loop (rtx insn, rtx *operands)
   /* Read the other attributes.  */
   at = gen_rtx_REG (GET_MODE (mem), AT_REGNUM);
   READ_OPERAND (oldval, at);
+  READ_OPERAND (cmp, 0);
   READ_OPERAND (newval, at);
   READ_OPERAND (inclusive_mask, 0);
   READ_OPERAND (exclusive_mask, 0);
@@ -12025,10 +12034,27 @@ mips_process_sync_loop (rtx insn, rtx *operands)
   insn1 = get_attr_sync_insn1 (insn);
   insn2 = get_attr_sync_insn2 (insn);
 
+  /* Don't bother setting CMP result that is never used.  */
+  if (cmp && find_reg_note (insn, REG_UNUSED, cmp))
+    cmp = 0;
+
+  memmodel_attr = get_attr_sync_memmodel (insn);
+  switch (memmodel_attr)
+    {
+    case 10:
+      model = MEMMODEL_ACQ_REL;
+      break;
+    case 11:
+      model = MEMMODEL_ACQUIRE;
+      break;
+    default:
+      model = (enum memmodel) INTVAL (operands[memmodel_attr]);
+    }
+
   mips_multi_start ();
 
   /* Output the release side of the memory barrier.  */
-  if (get_attr_sync_release_barrier (insn) == SYNC_RELEASE_BARRIER_YES)
+  if (need_atomic_barrier_p (model, true))
     {
       if (required_oldval == 0 && TARGET_OCTEON)
 	{
@@ -12066,6 +12092,10 @@ mips_process_sync_loop (rtx insn, rtx *operands)
 	  tmp1 = at;
 	}
       mips_multi_add_insn ("bne\t%0,%z1,2f", tmp1, required_oldval, NULL);
+
+      /* CMP = 0 [delay slot].  */
+      if (cmp)
+        mips_multi_add_insn ("li\t%0,0", cmp, NULL);
     }
 
   /* $TMP1 = OLDVAL & EXCLUSIVE_MASK.  */
@@ -12129,11 +12159,15 @@ mips_process_sync_loop (rtx insn, rtx *operands)
       mips_multi_copy_insn (tmp3_insn);
       mips_multi_set_operand (mips_multi_last_index (), 0, newval);
     }
-  else
+  else if (!(required_oldval && cmp))
     mips_multi_add_insn ("nop", NULL);
 
+  /* CMP = 1 -- either standalone or in a delay slot.  */
+  if (required_oldval && cmp)
+    mips_multi_add_insn ("li\t%0,1", cmp, NULL);
+
   /* Output the acquire side of the memory barrier.  */
-  if (TARGET_SYNC_AFTER_SC)
+  if (TARGET_SYNC_AFTER_SC && need_atomic_barrier_p (model, false))
     mips_multi_add_insn ("sync", NULL);
 
   /* Output the exit label, if needed.  */

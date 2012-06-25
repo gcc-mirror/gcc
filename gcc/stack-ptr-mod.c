@@ -46,7 +46,7 @@ notice_stack_pointer_modification_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
       || (MEM_P (x)
 	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == RTX_AUTOINC
 	  && XEXP (XEXP (x, 0), 0) == stack_pointer_rtx))
-    current_function_sp_is_unchanging = 0;
+    crtl->sp_is_unchanging = 0;
 }
 
 static void
@@ -57,8 +57,8 @@ notice_stack_pointer_modification (void)
 
   /* Assume that the stack pointer is unchanging if alloca hasn't
      been used.  */
-  current_function_sp_is_unchanging = !cfun->calls_alloca;
-  if (current_function_sp_is_unchanging)
+  crtl->sp_is_unchanging = !cfun->calls_alloca;
+  if (crtl->sp_is_unchanging)
     FOR_EACH_BB (bb)
       FOR_BB_INSNS (bb, insn)
         {
@@ -68,7 +68,7 @@ notice_stack_pointer_modification (void)
 	      note_stores (PATTERN (insn),
 			   notice_stack_pointer_modification_1,
 			   NULL);
-	      if (! current_function_sp_is_unchanging)
+	      if (! crtl->sp_is_unchanging)
 		return;
 	    }
 	}
@@ -76,7 +76,7 @@ notice_stack_pointer_modification (void)
   /* The value coming into this pass was 0, and the exit block uses
      are based on this.  If the value is now 1, we need to redo the
      exit block uses.  */
-  if (df && current_function_sp_is_unchanging)
+  if (df && crtl->sp_is_unchanging)
     df_update_exit_block_uses ();
 }
 

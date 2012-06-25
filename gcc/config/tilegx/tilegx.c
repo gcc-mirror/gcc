@@ -2593,20 +2593,8 @@ tilegx_expand_tablejump (rtx op0, rtx op1)
 void
 tilegx_pre_atomic_barrier (enum memmodel model)
 {
-  switch (model)
-    {
-    case MEMMODEL_RELAXED:
-    case MEMMODEL_CONSUME:
-    case MEMMODEL_ACQUIRE:
-      break;
-    case MEMMODEL_RELEASE:
-    case MEMMODEL_ACQ_REL:
-    case MEMMODEL_SEQ_CST:
-      emit_insn (gen_memory_barrier ());
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  if (need_atomic_barrier_p (model, true))
+    emit_insn (gen_memory_barrier ());
 }
 
 
@@ -2614,20 +2602,8 @@ tilegx_pre_atomic_barrier (enum memmodel model)
 void
 tilegx_post_atomic_barrier (enum memmodel model)
 {
-  switch (model)
-    {
-    case MEMMODEL_RELAXED:
-    case MEMMODEL_CONSUME:
-    case MEMMODEL_RELEASE:
-      break;
-    case MEMMODEL_ACQUIRE:
-    case MEMMODEL_ACQ_REL:
-    case MEMMODEL_SEQ_CST:
-      emit_insn (gen_memory_barrier ());
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  if (need_atomic_barrier_p (model, false))
+    emit_insn (gen_memory_barrier ());
 }
 
 
@@ -3699,7 +3675,7 @@ emit_sp_adjust (int offset, int *next_scratch_regno, bool frame_related,
 static bool
 tilegx_current_function_is_leaf (void)
 {
-  return current_function_is_leaf && !cfun->machine->calls_tls_get_addr;
+  return crtl->is_leaf && !cfun->machine->calls_tls_get_addr;
 }
 
 

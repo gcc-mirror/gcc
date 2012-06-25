@@ -708,7 +708,7 @@ enum target_cpu_default
 #define MAIN_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
 
 /* Minimum stack boundary.  */
-#define MIN_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
+#define MIN_STACK_BOUNDARY (TARGET_64BIT ? (TARGET_SSE ? 128 : 64) : 32)
 
 /* Boundary (in *bits*) on which the stack pointer prefers to be
    aligned; the compiler cannot rely on having this alignment.  */
@@ -728,6 +728,18 @@ enum target_cpu_default
 
 /* Boundary (in *bits*) on which the incoming stack is aligned.  */
 #define INCOMING_STACK_BOUNDARY ix86_incoming_stack_boundary
+
+/* According to Windows x64 software convention, the maximum stack allocatable
+   in the prologue is 4G - 8 bytes.  Furthermore, there is a limited set of
+   instructions allowed to adjust the stack pointer in the epilog, forcing the
+   use of frame pointer for frames larger than 2 GB.  This theorical limit
+   is reduced by 256, an over-estimated upper bound for the stack use by the
+   prologue.
+   We define only one threshold for both the prolog and the epilog.  When the
+   frame size is larger than this threshold, we allocate the area to save SSE
+   regs, then save them, and then allocate the remaining.  There is no SEH
+   unwind info for this later allocation.  */
+#define SEH_MAX_FRAME_SIZE ((2U << 30) - 256)
 
 /* Target OS keeps a vector-aligned (128-bit, 16-byte) stack.  This is
    mandatory for the 64-bit ABI, and may or may not be true for other

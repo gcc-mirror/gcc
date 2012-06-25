@@ -253,6 +253,11 @@ graphite_transform_loops (void)
   VEC (scop_p, heap) *scops = NULL;
   htab_t bb_pbb_mapping;
 
+  /* If a function is parallel it was most probably already run through graphite
+     once. No need to run again.  */
+  if (parallelized_function_p (cfun->decl))
+    return;
+
   if (!graphite_initialize ())
     return;
 

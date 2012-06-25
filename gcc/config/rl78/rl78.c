@@ -382,7 +382,7 @@ need_to_save (int regno)
 	return 1; /* don't know what devirt will need */
       if (regno > 23)
 	return 0; /* don't need to save interrupt registers */
-      if (current_function_is_leaf)
+      if (crtl->is_leaf)
 	{
 	  return df_regs_ever_live_p (regno);
 	}

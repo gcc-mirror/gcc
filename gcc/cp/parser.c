@@ -16102,11 +16102,12 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  /* And the exception-specification.  */
 		  exception_specification
 		    = cp_parser_exception_specification_opt (parser);
-		  /* Parse the virt-specifier-seq.  */
-		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
 
 		  late_return = (cp_parser_late_return_type_opt
 				 (parser, member_p ? cv_quals : -1));
+
+		  /* Parse the virt-specifier-seq.  */
+		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
 
 		  /* Create the function-declarator.  */
 		  declarator = make_call_declarator (declarator,

@@ -2097,25 +2097,32 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	break;
       }
 
-  /* Treat an access through an AND (e.g. a subword access on an Alpha)
-     as an access with indeterminate size.  Assume that references
-     besides AND are aligned, so if the size of the other reference is
-     at least as large as the alignment, assume no other overlap.  */
+  /* Deal with alignment ANDs by adjusting offset and size so as to
+     cover the maximum range, without taking any previously known
+     alignment into account.  */
   if (GET_CODE (x) == AND && CONST_INT_P (XEXP (x, 1)))
     {
-      if (GET_CODE (y) == AND || ysize < -INTVAL (XEXP (x, 1)))
-	xsize = -1;
-      return memrefs_conflict_p (xsize, canon_rtx (XEXP (x, 0)), ysize, y, c);
+      HOST_WIDE_INT sc = INTVAL (XEXP (x, 1));
+      unsigned HOST_WIDE_INT uc = sc;
+      if (xsize > 0 && sc < 0 && -uc == (uc & -uc))
+	{
+	  xsize -= sc + 1;
+	  c -= sc;
+	  return memrefs_conflict_p (xsize, canon_rtx (XEXP (x, 0)),
+				     ysize, y, c);
+	}
     }
   if (GET_CODE (y) == AND && CONST_INT_P (XEXP (y, 1)))
     {
-      /* ??? If we are indexing far enough into the array/structure, we
-	 may yet be able to determine that we can not overlap.  But we
-	 also need to that we are far enough from the end not to overlap
-	 a following reference, so we do nothing with that for now.  */
-      if (GET_CODE (x) == AND || xsize < -INTVAL (XEXP (y, 1)))
-	ysize = -1;
-      return memrefs_conflict_p (xsize, x, ysize, canon_rtx (XEXP (y, 0)), c);
+      HOST_WIDE_INT sc = INTVAL (XEXP (y, 1));
+      unsigned HOST_WIDE_INT uc = sc;
+      if (ysize > 0 && sc < 0 && -uc == (uc & -uc))
+	{
+	  ysize -= sc + 1;
+	  c += sc;
+	  return memrefs_conflict_p (xsize, x,
+				     ysize, canon_rtx (XEXP (y, 0)), c);
+	}
     }
 
   if (CONSTANT_P (x))

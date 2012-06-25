@@ -3611,12 +3611,15 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	  }
 
 	cost = node ? weights->call_cost : weights->indirect_call_cost;
-	if (gimple_call_lhs (stmt))
-	  cost += estimate_move_cost (TREE_TYPE (gimple_call_lhs (stmt)));
-	for (i = 0; i < gimple_call_num_args (stmt); i++)
+	if (!gimple_call_tail_p (stmt))
 	  {
-	    tree arg = gimple_call_arg (stmt, i);
-	    cost += estimate_move_cost (TREE_TYPE (arg));
+	    if (gimple_call_lhs (stmt))
+	      cost += estimate_move_cost (TREE_TYPE (gimple_call_lhs (stmt)));
+	    for (i = 0; i < gimple_call_num_args (stmt); i++)
+	      {
+		tree arg = gimple_call_arg (stmt, i);
+		cost += estimate_move_cost (TREE_TYPE (arg));
+	      }
 	  }
 	break;
       }

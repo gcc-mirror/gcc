@@ -1,3 +1,7 @@
+2012-06-18  Doug Evans  <dje@google.com>
+
+	* dwarf2.def (DW_OP): Add DW_OP_GNU_const_index.
+
 2012-06-12  Rafael Ávila de Espíndola <respindola@mozilla.com>
 
 	* plugin-api.h (ld_plugin_output_file_type): Add LDPO_PIE.

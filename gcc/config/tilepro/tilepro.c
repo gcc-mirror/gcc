@@ -3377,7 +3377,7 @@ emit_sp_adjust (int offset, int *next_scratch_regno, bool frame_related,
 static bool
 tilepro_current_function_is_leaf (void)
 {
-  return current_function_is_leaf && !cfun->machine->calls_tls_get_addr;
+  return crtl->is_leaf && !cfun->machine->calls_tls_get_addr;
 }
 
 

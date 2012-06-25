@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "df.h"
 #include "opts.h"
+#include "cgraph.h"
 
 /* Usable when we have an amount to add or subtract, and want the
    optimal size of the insn.  */
@@ -2467,6 +2468,22 @@ cris_legitimate_pic_operand (rtx x)
   return cris_valid_pic_const (x, true);
 }
 
+/* Queue an .ident string in the queue of top-level asm statements.
+   If the front-end is done, we must be being called from toplev.c.
+   In that case, do nothing.  */
+void 
+cris_asm_output_ident (const char *string)
+{
+  const char *section_asm_op;
+  int size;
+  char *buf;
+
+  if (cgraph_state != CGRAPH_STATE_PARSING)
+    return;
+
+  default_asm_output_ident_directive (string);
+}
+
 /* The ASM_OUTPUT_CASE_END worker.  */
 
 void
@@ -4081,7 +4098,7 @@ cris_md_asm_clobbers (tree outputs, tree inputs, tree in_clobbers)
 bool
 cris_frame_pointer_required (void)
 {
-  return !current_function_sp_is_unchanging;
+  return !crtl->sp_is_unchanging;
 }
 
 /* Implement TARGET_ASM_TRAMPOLINE_TEMPLATE.

@@ -385,7 +385,6 @@ are write-only operations.
 #include "recog.h"
 #include "function.h"
 #include "regs.h"
-#include "output.h"
 #include "alloc-pool.h"
 #include "flags.h"
 #include "hard-reg-set.h"
@@ -711,7 +710,7 @@ rest_of_handle_df_initialize (void)
 
   /* Set this to a conservative value.  Stack_ptr_mod will compute it
      correctly later.  */
-  current_function_sp_is_unchanging = 0;
+  crtl->sp_is_unchanging = 0;
 
   df_scan_add_problem ();
   df_scan_alloc (NULL);

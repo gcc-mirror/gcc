@@ -52,6 +52,7 @@
 #include "target-def.h"
 #include "langhooks.h"
 #include "opts.h"
+#include "cgraph.h"
 
 static unsigned int rx_gp_base_regnum_val = INVALID_REGNUM;
 static unsigned int rx_pid_base_regnum_val = INVALID_REGNUM;
@@ -1381,7 +1382,7 @@ rx_get_stack_layout (unsigned int * lowest,
 	      be used in (non-interrupt aware) routines called from this one.  */
 	   || (call_used_regs[reg]
 	       && is_interrupt_func (NULL_TREE)
-	       && ! current_function_is_leaf))
+	       && ! crtl->is_leaf))
 	  && (! call_used_regs[reg]
 	      /* Even call clobbered registered must
 		 be pushed inside interrupt handlers.  */

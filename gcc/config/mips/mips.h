@@ -223,6 +223,7 @@ struct mips_cpu_info {
 #define TARGET_SB1                  (mips_arch == PROCESSOR_SB1		\
 				     || mips_arch == PROCESSOR_SB1A)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
+#define TARGET_XLP                  (mips_arch == PROCESSOR_XLP)
 
 /* Scheduling target defines.  */
 #define TUNE_20KC		    (mips_tune == PROCESSOR_20KC)
@@ -311,7 +312,7 @@ struct mips_cpu_info {
    stores.  It does not tell anything about ordering of loads and
    stores prior to and following the SC, only about the SC itself and
    those loads and stores follow it.  */
-#define TARGET_SYNC_AFTER_SC (!TARGET_OCTEON)
+#define TARGET_SYNC_AFTER_SC (!TARGET_OCTEON && !TARGET_XLP)
 
 /* Define preprocessor macros for the -march and -mtune options.
    PREFIX is either _MIPS_ARCH or _MIPS_TUNE, INFO is the selected
@@ -1053,6 +1054,9 @@ struct mips_cpu_info {
   (target_flags_explicit & MASK_LLSC	\
    ? TARGET_LLSC && !TARGET_MIPS16	\
    : ISA_HAS_LL_SC)
+
+#define ISA_HAS_SWAP (TARGET_XLP)
+#define ISA_HAS_LDADD (TARGET_XLP)
 
 /* ISA includes the baddu instruction.  */
 #define ISA_HAS_BADDU		(TARGET_OCTEON && !TARGET_MIPS16)
@@ -2674,15 +2678,6 @@ do {									\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII mips_output_ascii
 
-/* Output #ident as a in the read-only data section.  */
-#undef  ASM_OUTPUT_IDENT
-#define ASM_OUTPUT_IDENT(FILE, STRING)					\
-{									\
-  const char *p = STRING;						\
-  int size = strlen (p) + 1;						\
-  switch_to_section (readonly_data_section);				\
-  assemble_string (p, size);						\
-}
 
 /* Default to -G 8 */
 #ifndef MIPS_DEFAULT_GVALUE

@@ -52,6 +52,7 @@ extern void cris_order_for_addsi3 (rtx *, int);
 extern void cris_emit_trap_for_misalignment (rtx);
 #endif /* RTX_CODE */
 extern void cris_asm_output_label_ref (FILE *, char *);
+extern void cris_asm_output_ident (const char *);
 extern void cris_expand_prologue (void);
 extern void cris_expand_epilogue (void);
 extern void cris_expand_return (bool);

@@ -23,17 +23,8 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "c-family/c-pragma.h"
 #include "c-family/c-common.h"
-#include "diagnostic-core.h"
-#include "cpplib.h"
-#include "hard-reg-set.h"
-#include "output.h"
 #include "rl78-protos.h"
-#include "function.h"
-#define MAX_RECOG_OPERANDS 10
-#include "reload.h"
-#include "target.h"
 
 /* Implements REGISTER_TARGET_PRAGMAS.  */
 void

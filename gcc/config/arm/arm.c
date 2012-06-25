@@ -45,7 +45,6 @@
 #include "cgraph.h"
 #include "ggc.h"
 #include "except.h"
-#include "c-family/c-pragma.h"	/* ??? */
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -10080,6 +10079,12 @@ ldm_stm_operation_p (rtx op, bool load, enum machine_mode mode,
   if (!REG_P (addr))
     return false;
 
+  /* Don't allow SP to be loaded unless it is also the base register. It
+     guarantees that SP is reset correctly when an LDM instruction
+     is interruptted. Otherwise, we might end up with a corrupt stack.  */
+  if (load && (REGNO (reg) == SP_REGNUM) && (REGNO (addr) != SP_REGNUM))
+    return false;
+
   for (; i < count; i++)
     {
       elt = XVECEXP (op, 0, i);
@@ -10103,6 +10108,10 @@ ldm_stm_operation_p (rtx op, bool load, enum machine_mode mode,
           || (consecutive
               && (REGNO (reg) !=
                   (unsigned int) (first_regno + regs_per_val * (i - base))))
+          /* Don't allow SP to be loaded unless it is also the base register. It
+             guarantees that SP is reset correctly when an LDM instruction
+             is interrupted. Otherwise, we might end up with a corrupt stack.  */
+          || (load && (REGNO (reg) == SP_REGNUM) && (REGNO (addr) != SP_REGNUM))
           || !MEM_P (mem)
           || GET_MODE (mem) != mode
           || ((GET_CODE (XEXP (mem, 0)) != PLUS
@@ -13649,83 +13658,80 @@ fp_const_from_val (REAL_VALUE_TYPE *r)
   return "0";
 }
 
-/* Output the operands of a LDM/STM instruction to STREAM.
-   MASK is the ARM register set mask of which only bits 0-15 are important.
-   REG is the base register, either the frame pointer or the stack pointer,
-   INSTR is the possibly suffixed load or store instruction.
-   RFE is nonzero if the instruction should also copy spsr to cpsr.  */
-
-static void
-print_multi_reg (FILE *stream, const char *instr, unsigned reg,
-		 unsigned long mask, int rfe)
-{
-  unsigned i;
-  bool not_first = FALSE;
-
-  gcc_assert (!rfe || (mask & (1 << PC_REGNUM)));
-  fputc ('\t', stream);
-  asm_fprintf (stream, instr, reg);
-  fputc ('{', stream);
-
-  for (i = 0; i <= LAST_ARM_REGNUM; i++)
-    if (mask & (1 << i))
-      {
-	if (not_first)
-	  fprintf (stream, ", ");
-
-	asm_fprintf (stream, "%r", i);
-	not_first = TRUE;
-      }
-
-  if (rfe)
-    fprintf (stream, "}^\n");
-  else
-    fprintf (stream, "}\n");
-}
-
-
-/* Output a FLDMD instruction to STREAM.
-   BASE if the register containing the address.
-   REG and COUNT specify the register range.
-   Extra registers may be added to avoid hardware bugs.
-
-   We output FLDMD even for ARMv5 VFP implementations.  Although
-   FLDMD is technically not supported until ARMv6, it is believed
-   that all VFP implementations support its use in this context.  */
-
-static void
-vfp_output_fldmd (FILE * stream, unsigned int base, int reg, int count)
+/* OPERANDS[0] is the entire list of insns that constitute pop,
+   OPERANDS[1] is the base register, RETURN_PC is true iff return insn
+   is in the list, UPDATE is true iff the list contains explicit
+   update of base register.  */
+void
+arm_output_multireg_pop (rtx *operands, bool return_pc, rtx cond, bool reverse,
+                         bool update)
 {
   int i;
+  char pattern[100];
+  int offset;
+  const char *conditional;
+  int num_saves = XVECLEN (operands[0], 0);
+  unsigned int regno;
+  unsigned int regno_base = REGNO (operands[1]);
 
-  /* Workaround ARM10 VFPr1 bug.  */
-  if (count == 2 && !arm_arch6)
+  offset = 0;
+  offset += update ? 1 : 0;
+  offset += return_pc ? 1 : 0;
+
+  /* Is the base register in the list?  */
+  for (i = offset; i < num_saves; i++)
     {
-      if (reg == 15)
-	reg--;
-      count++;
+      regno = REGNO (XEXP (XVECEXP (operands[0], 0, i), 0));
+      /* If SP is in the list, then the base register must be SP.  */
+      gcc_assert ((regno != SP_REGNUM) || (regno_base == SP_REGNUM));
+      /* If base register is in the list, there must be no explicit update.  */
+      if (regno == regno_base)
+        gcc_assert (!update);
     }
 
-  /* FLDMD may not load more than 16 doubleword registers at a time. Split the
-     load into multiple parts if we have to handle more than 16 registers.  */
-  if (count > 16)
+  conditional = reverse ? "%?%D0" : "%?%d0";
+  if ((regno_base == SP_REGNUM) && TARGET_UNIFIED_ASM)
     {
-      vfp_output_fldmd (stream, base, reg, 16);
-      vfp_output_fldmd (stream, base, reg + 16, count - 16);
-      return;
+      /* Output pop (not stmfd) because it has a shorter encoding.  */
+      gcc_assert (update);
+      sprintf (pattern, "pop%s\t{", conditional);
+    }
+  else
+    {
+      /* Output ldmfd when the base register is SP, otherwise output ldmia.
+         It's just a convention, their semantics are identical.  */
+      if (regno_base == SP_REGNUM)
+        sprintf (pattern, "ldm%sfd\t", conditional);
+      else if (TARGET_UNIFIED_ASM)
+        sprintf (pattern, "ldmia%s\t", conditional);
+      else
+        sprintf (pattern, "ldm%sia\t", conditional);
+
+      strcat (pattern, reg_names[regno_base]);
+      if (update)
+        strcat (pattern, "!, {");
+      else
+        strcat (pattern, ", {");
     }
 
-  fputc ('\t', stream);
-  asm_fprintf (stream, "fldmfdd\t%r!, {", base);
+  /* Output the first destination register.  */
+  strcat (pattern,
+          reg_names[REGNO (XEXP (XVECEXP (operands[0], 0, offset), 0))]);
 
-  for (i = reg; i < reg + count; i++)
+  /* Output the rest of the destination registers.  */
+  for (i = offset + 1; i < num_saves; i++)
     {
-      if (i > reg)
-	fputs (", ", stream);
-      asm_fprintf (stream, "d%d", i);
+      strcat (pattern, ", ");
+      strcat (pattern,
+              reg_names[REGNO (XEXP (XVECEXP (operands[0], 0, i), 0))]);
     }
-  fputs ("}\n", stream);
 
+  strcat (pattern, "}");
+
+  if (IS_INTERRUPT (arm_current_func_type ()) && return_pc)
+    strcat (pattern, "^");
+
+  output_asm_insn (pattern, &cond);
 }
 
 
@@ -15141,7 +15147,7 @@ arm_compute_save_reg0_reg12_mask (void)
 
       for (reg = 0; reg <= max_reg; reg++)
 	if (df_regs_ever_live_p (reg)
-	    || (! current_function_is_leaf && call_used_regs[reg]))
+	    || (! crtl->is_leaf && call_used_regs[reg]))
 	  save_reg_mask |= (1 << reg);
 
       /* Also save the pic base register if necessary.  */
@@ -15429,9 +15435,11 @@ arm_get_vfp_saved_size (void)
 
 
 /* Generate a function exit sequence.  If REALLY_RETURN is false, then do
-   everything bar the final return instruction.  */
+   everything bar the final return instruction.  If simple_return is true,
+   then do not output epilogue, because it has already been emitted in RTL.  */
 const char *
-output_return_instruction (rtx operand, int really_return, int reverse)
+output_return_instruction (rtx operand, bool really_return, bool reverse,
+                           bool simple_return)
 {
   char conditional[10];
   char instr[100];
@@ -15474,7 +15482,7 @@ output_return_instruction (rtx operand, int really_return, int reverse)
   offsets = arm_get_frame_offsets ();
   live_regs_mask = offsets->saved_regs_mask;
 
-  if (live_regs_mask)
+  if (!simple_return && live_regs_mask)
     {
       const char * return_reg;
 
@@ -15602,7 +15610,7 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 	{
 	  /* The return has already been handled
 	     by loading the LR into the PC.  */
-	  really_return = 0;
+          return "";
 	}
     }
 
@@ -15742,451 +15750,6 @@ arm_output_function_prologue (FILE *f, HOST_WIDE_INT frame_size)
   if (crtl->calls_eh_return)
     asm_fprintf (f, "\t@ Calls __builtin_eh_return.\n");
 
-}
-
-const char *
-arm_output_epilogue (rtx sibling)
-{
-  int reg;
-  unsigned long saved_regs_mask;
-  unsigned long func_type;
-  /* Floats_offset is the offset from the "virtual" frame.  In an APCS
-     frame that is $fp + 4 for a non-variadic function.  */
-  int floats_offset = 0;
-  rtx operands[3];
-  FILE * f = asm_out_file;
-  unsigned int lrm_count = 0;
-  int really_return = (sibling == NULL);
-  int start_reg;
-  arm_stack_offsets *offsets;
-
-  /* If we have already generated the return instruction
-     then it is futile to generate anything else.  */
-  if (use_return_insn (FALSE, sibling) &&
-      (cfun->machine->return_used_this_function != 0))
-    return "";
-
-  func_type = arm_current_func_type ();
-
-  if (IS_NAKED (func_type))
-    /* Naked functions don't have epilogues.  */
-    return "";
-
-  if (IS_VOLATILE (func_type) && TARGET_ABORT_NORETURN)
-    {
-      rtx op;
-
-      /* A volatile function should never return.  Call abort.  */
-      op = gen_rtx_SYMBOL_REF (Pmode, NEED_PLT_RELOC ? "abort(PLT)" : "abort");
-      assemble_external_libcall (op);
-      output_asm_insn ("bl\t%a0", &op);
-
-      return "";
-    }
-
-  /* If we are throwing an exception, then we really must be doing a
-     return, so we can't tail-call.  */
-  gcc_assert (!crtl->calls_eh_return || really_return);
-
-  offsets = arm_get_frame_offsets ();
-  saved_regs_mask = offsets->saved_regs_mask;
-
-  if (TARGET_IWMMXT)
-    lrm_count = bit_count (saved_regs_mask);
-
-  floats_offset = offsets->saved_args;
-  /* Compute how far away the floats will be.  */
-  for (reg = 0; reg <= LAST_ARM_REGNUM; reg++)
-    if (saved_regs_mask & (1 << reg))
-      floats_offset += 4;
-
-  if (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
-    {
-      /* This variable is for the Virtual Frame Pointer, not VFP regs.  */
-      int vfp_offset = offsets->frame;
-
-      if (TARGET_FPA_EMU2)
-	{
-	  for (reg = LAST_FPA_REGNUM; reg >= FIRST_FPA_REGNUM; reg--)
-	    if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
-	      {
-		floats_offset += 12;
-		asm_fprintf (f, "\tldfe\t%r, [%r, #-%d]\n",
-			     reg, FP_REGNUM, floats_offset - vfp_offset);
-	      }
-	}
-      else
-	{
-	  start_reg = LAST_FPA_REGNUM;
-
-	  for (reg = LAST_FPA_REGNUM; reg >= FIRST_FPA_REGNUM; reg--)
-	    {
-	      if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
-		{
-		  floats_offset += 12;
-
-		  /* We can't unstack more than four registers at once.  */
-		  if (start_reg - reg == 3)
-		    {
-		      asm_fprintf (f, "\tlfm\t%r, 4, [%r, #-%d]\n",
-			           reg, FP_REGNUM, floats_offset - vfp_offset);
-		      start_reg = reg - 1;
-		    }
-		}
-	      else
-		{
-		  if (reg != start_reg)
-		    asm_fprintf (f, "\tlfm\t%r, %d, [%r, #-%d]\n",
-				 reg + 1, start_reg - reg,
-				 FP_REGNUM, floats_offset - vfp_offset);
-		  start_reg = reg - 1;
-		}
-	    }
-
-	  /* Just in case the last register checked also needs unstacking.  */
-	  if (reg != start_reg)
-	    asm_fprintf (f, "\tlfm\t%r, %d, [%r, #-%d]\n",
-			 reg + 1, start_reg - reg,
-			 FP_REGNUM, floats_offset - vfp_offset);
-	}
-
-      if (TARGET_HARD_FLOAT && TARGET_VFP)
-	{
-	  int saved_size;
-
-	  /* The fldmd insns do not have base+offset addressing
-             modes, so we use IP to hold the address.  */
-	  saved_size = arm_get_vfp_saved_size ();
-
-	  if (saved_size > 0)
-	    {
-	      floats_offset += saved_size;
-	      asm_fprintf (f, "\tsub\t%r, %r, #%d\n", IP_REGNUM,
-			   FP_REGNUM, floats_offset - vfp_offset);
-	    }
-	  start_reg = FIRST_VFP_REGNUM;
-	  for (reg = FIRST_VFP_REGNUM; reg < LAST_VFP_REGNUM; reg += 2)
-	    {
-	      if ((!df_regs_ever_live_p (reg) || call_used_regs[reg])
-		  && (!df_regs_ever_live_p (reg + 1) || call_used_regs[reg + 1]))
-		{
-		  if (start_reg != reg)
-		    vfp_output_fldmd (f, IP_REGNUM,
-				      (start_reg - FIRST_VFP_REGNUM) / 2,
-				      (reg - start_reg) / 2);
-		  start_reg = reg + 2;
-		}
-	    }
-	  if (start_reg != reg)
-	    vfp_output_fldmd (f, IP_REGNUM,
-			      (start_reg - FIRST_VFP_REGNUM) / 2,
-			      (reg - start_reg) / 2);
-	}
-
-      if (TARGET_IWMMXT)
-	{
-	  /* The frame pointer is guaranteed to be non-double-word aligned.
-	     This is because it is set to (old_stack_pointer - 4) and the
-	     old_stack_pointer was double word aligned.  Thus the offset to
-	     the iWMMXt registers to be loaded must also be non-double-word
-	     sized, so that the resultant address *is* double-word aligned.
-	     We can ignore floats_offset since that was already included in
-	     the live_regs_mask.  */
-	  lrm_count += (lrm_count % 2 ? 2 : 1);
-
-	  for (reg = LAST_IWMMXT_REGNUM; reg >= FIRST_IWMMXT_REGNUM; reg--)
-	    if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
-	      {
-		asm_fprintf (f, "\twldrd\t%r, [%r, #-%d]\n",
-			     reg, FP_REGNUM, lrm_count * 4);
-		lrm_count += 2;
-	      }
-	}
-
-      /* saved_regs_mask should contain the IP, which at the time of stack
-	 frame generation actually contains the old stack pointer.  So a
-	 quick way to unwind the stack is just pop the IP register directly
-	 into the stack pointer.  */
-      gcc_assert (saved_regs_mask & (1 << IP_REGNUM));
-      saved_regs_mask &= ~ (1 << IP_REGNUM);
-      saved_regs_mask |=   (1 << SP_REGNUM);
-
-      /* There are two registers left in saved_regs_mask - LR and PC.  We
-	 only need to restore the LR register (the return address), but to
-	 save time we can load it directly into the PC, unless we need a
-	 special function exit sequence, or we are not really returning.  */
-      if (really_return
-	  && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
-	  && !crtl->calls_eh_return)
-	/* Delete the LR from the register mask, so that the LR on
-	   the stack is loaded into the PC in the register mask.  */
-	saved_regs_mask &= ~ (1 << LR_REGNUM);
-      else
-	saved_regs_mask &= ~ (1 << PC_REGNUM);
-
-      /* We must use SP as the base register, because SP is one of the
-         registers being restored.  If an interrupt or page fault
-         happens in the ldm instruction, the SP might or might not
-         have been restored.  That would be bad, as then SP will no
-         longer indicate the safe area of stack, and we can get stack
-         corruption.  Using SP as the base register means that it will
-         be reset correctly to the original value, should an interrupt
-         occur.  If the stack pointer already points at the right
-         place, then omit the subtraction.  */
-      if (offsets->outgoing_args != (1 + (int) bit_count (saved_regs_mask))
-	  || cfun->calls_alloca)
-	asm_fprintf (f, "\tsub\t%r, %r, #%d\n", SP_REGNUM, FP_REGNUM,
-		     4 * bit_count (saved_regs_mask));
-      print_multi_reg (f, "ldmfd\t%r, ", SP_REGNUM, saved_regs_mask, 0);
-
-      if (IS_INTERRUPT (func_type))
-	/* Interrupt handlers will have pushed the
-	   IP onto the stack, so restore it now.  */
-	print_multi_reg (f, "ldmfd\t%r!, ", SP_REGNUM, 1 << IP_REGNUM, 0);
-    }
-  else
-    {
-      /* This branch is executed for ARM mode (non-apcs frames) and
-	 Thumb-2 mode. Frame layout is essentially the same for those
-	 cases, except that in ARM mode frame pointer points to the
-	 first saved register, while in Thumb-2 mode the frame pointer points
-	 to the last saved register.
-
-	 It is possible to make frame pointer point to last saved
-	 register in both cases, and remove some conditionals below.
-	 That means that fp setup in prologue would be just "mov fp, sp"
-	 and sp restore in epilogue would be just "mov sp, fp", whereas
-	 now we have to use add/sub in those cases. However, the value
-	 of that would be marginal, as both mov and add/sub are 32-bit
-	 in ARM mode, and it would require extra conditionals
-	 in arm_expand_prologue to distinguish ARM-apcs-frame case
-	 (where frame pointer is required to point at first register)
-	 and ARM-non-apcs-frame. Therefore, such change is postponed
-	 until real need arise.  */
-      unsigned HOST_WIDE_INT amount;
-      int rfe;
-      /* Restore stack pointer if necessary.  */
-      if (TARGET_ARM && frame_pointer_needed)
-	{
-	  operands[0] = stack_pointer_rtx;
-	  operands[1] = hard_frame_pointer_rtx;
-
-	  operands[2] = GEN_INT (offsets->frame - offsets->saved_regs);
-	  output_add_immediate (operands);
-	}
-      else
-	{
-	  if (frame_pointer_needed)
-	    {
-	      /* For Thumb-2 restore sp from the frame pointer.
-		 Operand restrictions mean we have to incrememnt FP, then copy
-		 to SP.  */
-	      amount = offsets->locals_base - offsets->saved_regs;
-	      operands[0] = hard_frame_pointer_rtx;
-	    }
-	  else
-	    {
-	      unsigned long count;
-	      operands[0] = stack_pointer_rtx;
-	      amount = offsets->outgoing_args - offsets->saved_regs;
-	      /* pop call clobbered registers if it avoids a
-	         separate stack adjustment.  */
-	      count = offsets->saved_regs - offsets->saved_args;
-	      if (optimize_size
-		  && count != 0
-		  && !crtl->calls_eh_return
-		  && bit_count(saved_regs_mask) * 4 == count
-		  && !IS_INTERRUPT (func_type)
-		  && !IS_STACKALIGN (func_type)
-		  && !crtl->tail_call_emit)
-		{
-		  unsigned long mask;
-                  /* Preserve return values, of any size.  */
-		  mask = (1 << ((arm_size_return_regs() + 3) / 4)) - 1;
-		  mask ^= 0xf;
-		  mask &= ~saved_regs_mask;
-		  reg = 0;
-		  while (bit_count (mask) * 4 > amount)
-		    {
-		      while ((mask & (1 << reg)) == 0)
-			reg++;
-		      mask &= ~(1 << reg);
-		    }
-		  if (bit_count (mask) * 4 == amount) {
-		      amount = 0;
-		      saved_regs_mask |= mask;
-		  }
-		}
-	    }
-
-	  if (amount)
-	    {
-	      operands[1] = operands[0];
-	      operands[2] = GEN_INT (amount);
-	      output_add_immediate (operands);
-	    }
-	  if (frame_pointer_needed)
-	    asm_fprintf (f, "\tmov\t%r, %r\n",
-			 SP_REGNUM, HARD_FRAME_POINTER_REGNUM);
-	}
-
-      if (TARGET_FPA_EMU2)
-	{
-	  for (reg = FIRST_FPA_REGNUM; reg <= LAST_FPA_REGNUM; reg++)
-	    if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
-	      asm_fprintf (f, "\tldfe\t%r, [%r], #12\n",
-			   reg, SP_REGNUM);
-	}
-      else
-	{
-	  start_reg = FIRST_FPA_REGNUM;
-
-	  for (reg = FIRST_FPA_REGNUM; reg <= LAST_FPA_REGNUM; reg++)
-	    {
-	      if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
-		{
-		  if (reg - start_reg == 3)
-		    {
-		      asm_fprintf (f, "\tlfmfd\t%r, 4, [%r]!\n",
-				   start_reg, SP_REGNUM);
-		      start_reg = reg + 1;
-		    }
-		}
-	      else
-		{
-		  if (reg != start_reg)
-		    asm_fprintf (f, "\tlfmfd\t%r, %d, [%r]!\n",
-				 start_reg, reg - start_reg,
-				 SP_REGNUM);
-
-		  start_reg = reg + 1;
-		}
-	    }
-
-	  /* Just in case the last register checked also needs unstacking.  */
-	  if (reg != start_reg)
-	    asm_fprintf (f, "\tlfmfd\t%r, %d, [%r]!\n",
-			 start_reg, reg - start_reg, SP_REGNUM);
-	}
-
-      if (TARGET_HARD_FLOAT && TARGET_VFP)
-	{
-	  int end_reg = LAST_VFP_REGNUM + 1;
-
-	  /* Scan the registers in reverse order.  We need to match
-	     any groupings made in the prologue and generate matching
-	     pop operations.  */
-	  for (reg = LAST_VFP_REGNUM - 1; reg >= FIRST_VFP_REGNUM; reg -= 2)
-	    {
-	      if ((!df_regs_ever_live_p (reg) || call_used_regs[reg])
-		  && (!df_regs_ever_live_p (reg + 1)
-		      || call_used_regs[reg + 1]))
-		{
-		  if (end_reg > reg + 2)
-		    vfp_output_fldmd (f, SP_REGNUM,
-				      (reg + 2 - FIRST_VFP_REGNUM) / 2,
-				      (end_reg - (reg + 2)) / 2);
-		  end_reg = reg;
-		}
-	    }
-	  if (end_reg > reg + 2)
-	    vfp_output_fldmd (f, SP_REGNUM, 0,
-			      (end_reg - (reg + 2)) / 2);
-	}
-
-      if (TARGET_IWMMXT)
-	for (reg = FIRST_IWMMXT_REGNUM; reg <= LAST_IWMMXT_REGNUM; reg++)
-	  if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
-	    asm_fprintf (f, "\twldrd\t%r, [%r], #8\n", reg, SP_REGNUM);
-
-      /* If we can, restore the LR into the PC.  */
-      if (ARM_FUNC_TYPE (func_type) != ARM_FT_INTERWORKED
-	  && (TARGET_ARM || ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL)
-	  && !IS_STACKALIGN (func_type)
-	  && really_return
-	  && crtl->args.pretend_args_size == 0
-	  && saved_regs_mask & (1 << LR_REGNUM)
-	  && !crtl->calls_eh_return)
-	{
-	  saved_regs_mask &= ~ (1 << LR_REGNUM);
-	  saved_regs_mask |=   (1 << PC_REGNUM);
-	  rfe = IS_INTERRUPT (func_type);
-	}
-      else
-	rfe = 0;
-
-      /* Load the registers off the stack.  If we only have one register
-	 to load use the LDR instruction - it is faster.  For Thumb-2
-	 always use pop and the assembler will pick the best instruction.*/
-      if (TARGET_ARM && saved_regs_mask == (1 << LR_REGNUM)
-	  && !IS_INTERRUPT(func_type))
-	{
-	  asm_fprintf (f, "\tldr\t%r, [%r], #4\n", LR_REGNUM, SP_REGNUM);
-	}
-      else if (saved_regs_mask)
-	{
-	  if (saved_regs_mask & (1 << SP_REGNUM))
-	    /* Note - write back to the stack register is not enabled
-	       (i.e. "ldmfd sp!...").  We know that the stack pointer is
-	       in the list of registers and if we add writeback the
-	       instruction becomes UNPREDICTABLE.  */
-	    print_multi_reg (f, "ldmfd\t%r, ", SP_REGNUM, saved_regs_mask,
-			     rfe);
-	  else if (TARGET_ARM)
-	    print_multi_reg (f, "ldmfd\t%r!, ", SP_REGNUM, saved_regs_mask,
-			     rfe);
-	  else
-	    print_multi_reg (f, "pop\t", SP_REGNUM, saved_regs_mask, 0);
-	}
-
-      if (crtl->args.pretend_args_size)
-	{
-	  /* Unwind the pre-pushed regs.  */
-	  operands[0] = operands[1] = stack_pointer_rtx;
-	  operands[2] = GEN_INT (crtl->args.pretend_args_size);
-	  output_add_immediate (operands);
-	}
-    }
-
-  /* We may have already restored PC directly from the stack.  */
-  if (!really_return || saved_regs_mask & (1 << PC_REGNUM))
-    return "";
-
-  /* Stack adjustment for exception handler.  */
-  if (crtl->calls_eh_return)
-    asm_fprintf (f, "\tadd\t%r, %r, %r\n", SP_REGNUM, SP_REGNUM,
-		 ARM_EH_STACKADJ_REGNUM);
-
-  /* Generate the return instruction.  */
-  switch ((int) ARM_FUNC_TYPE (func_type))
-    {
-    case ARM_FT_ISR:
-    case ARM_FT_FIQ:
-      asm_fprintf (f, "\tsubs\t%r, %r, #4\n", PC_REGNUM, LR_REGNUM);
-      break;
-
-    case ARM_FT_EXCEPTION:
-      asm_fprintf (f, "\tmovs\t%r, %r\n", PC_REGNUM, LR_REGNUM);
-      break;
-
-    case ARM_FT_INTERWORKED:
-      asm_fprintf (f, "\tbx\t%r\n", LR_REGNUM);
-      break;
-
-    default:
-      if (IS_STACKALIGN (func_type))
-	{
-	  /* See comment in arm_expand_prologue.  */
-	  asm_fprintf (f, "\tmov\t%r, %r\n", SP_REGNUM, 0);
-	}
-      if (arm_arch5 || arm_arch4t)
-	asm_fprintf (f, "\tbx\t%r\n", LR_REGNUM);
-      else
-	asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, LR_REGNUM);
-      break;
-    }
-
-  return "";
 }
 
 static void
@@ -16374,6 +15937,157 @@ emit_multi_reg_push (unsigned long mask)
   add_reg_note (par, REG_FRAME_RELATED_EXPR, dwarf);
 
   return par;
+}
+
+/* Generate and emit an insn pattern that we will recognize as a pop_multi.
+   SAVED_REGS_MASK shows which registers need to be restored.
+
+   Unfortunately, since this insn does not reflect very well the actual
+   semantics of the operation, we need to annotate the insn for the benefit
+   of DWARF2 frame unwind information.  */
+static void
+arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
+{
+  int num_regs = 0;
+  int i, j;
+  rtx par;
+  rtx dwarf = NULL_RTX;
+  rtx tmp, reg;
+  bool return_in_pc;
+  int offset_adj;
+  int emit_update;
+
+  return_in_pc = (saved_regs_mask & (1 << PC_REGNUM)) ? true : false;
+  offset_adj = return_in_pc ? 1 : 0;
+  for (i = 0; i <= LAST_ARM_REGNUM; i++)
+    if (saved_regs_mask & (1 << i))
+      num_regs++;
+
+  gcc_assert (num_regs && num_regs <= 16);
+
+  /* If SP is in reglist, then we don't emit SP update insn.  */
+  emit_update = (saved_regs_mask & (1 << SP_REGNUM)) ? 0 : 1;
+
+  /* The parallel needs to hold num_regs SETs
+     and one SET for the stack update.  */
+  par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs + emit_update + offset_adj));
+
+  if (return_in_pc)
+    {
+      tmp = ret_rtx;
+      XVECEXP (par, 0, 0) = tmp;
+    }
+
+  if (emit_update)
+    {
+      /* Increment the stack pointer, based on there being
+         num_regs 4-byte registers to restore.  */
+      tmp = gen_rtx_SET (VOIDmode,
+                         stack_pointer_rtx,
+                         plus_constant (Pmode,
+                                        stack_pointer_rtx,
+                                        4 * num_regs));
+      RTX_FRAME_RELATED_P (tmp) = 1;
+      XVECEXP (par, 0, offset_adj) = tmp;
+    }
+
+  /* Now restore every reg, which may include PC.  */
+  for (j = 0, i = 0; j < num_regs; i++)
+    if (saved_regs_mask & (1 << i))
+      {
+        reg = gen_rtx_REG (SImode, i);
+        tmp = gen_rtx_SET (VOIDmode,
+                           reg,
+                           gen_frame_mem
+                           (SImode,
+                            plus_constant (Pmode, stack_pointer_rtx, 4 * j)));
+        RTX_FRAME_RELATED_P (tmp) = 1;
+        XVECEXP (par, 0, j + emit_update + offset_adj) = tmp;
+
+        /* We need to maintain a sequence for DWARF info too.  As dwarf info
+           should not have PC, skip PC.  */
+        if (i != PC_REGNUM)
+          dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+
+        j++;
+      }
+
+  if (return_in_pc)
+    par = emit_jump_insn (par);
+  else
+    par = emit_insn (par);
+
+  REG_NOTES (par) = dwarf;
+}
+
+/* Generate and emit an insn pattern that we will recognize as a pop_multi
+   of NUM_REGS consecutive VFP regs, starting at FIRST_REG.
+
+   Unfortunately, since this insn does not reflect very well the actual
+   semantics of the operation, we need to annotate the insn for the benefit
+   of DWARF2 frame unwind information.  */
+static void
+arm_emit_vfp_multi_reg_pop (int first_reg, int num_regs, rtx base_reg)
+{
+  int i, j;
+  rtx par;
+  rtx dwarf = NULL_RTX;
+  rtx tmp, reg;
+
+  gcc_assert (num_regs && num_regs <= 32);
+
+    /* Workaround ARM10 VFPr1 bug.  */
+  if (num_regs == 2 && !arm_arch6)
+    {
+      if (first_reg == 15)
+        first_reg--;
+
+      num_regs++;
+    }
+
+  /* We can emit at most 16 D-registers in a single pop_multi instruction, and
+     there could be up to 32 D-registers to restore.
+     If there are more than 16 D-registers, make two recursive calls,
+     each of which emits one pop_multi instruction.  */
+  if (num_regs > 16)
+    {
+      arm_emit_vfp_multi_reg_pop (first_reg, 16, base_reg);
+      arm_emit_vfp_multi_reg_pop (first_reg + 16, num_regs - 16, base_reg);
+      return;
+    }
+
+  /* The parallel needs to hold num_regs SETs
+     and one SET for the stack update.  */
+  par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs + 1));
+
+  /* Increment the stack pointer, based on there being
+     num_regs 8-byte registers to restore.  */
+  tmp = gen_rtx_SET (VOIDmode,
+                     base_reg,
+                     plus_constant (Pmode, base_reg, 8 * num_regs));
+  RTX_FRAME_RELATED_P (tmp) = 1;
+  XVECEXP (par, 0, 0) = tmp;
+
+  /* Now show every reg that will be restored, using a SET for each.  */
+  for (j = 0, i=first_reg; j < num_regs; i += 2)
+    {
+      reg = gen_rtx_REG (DFmode, i);
+
+      tmp = gen_rtx_SET (VOIDmode,
+                         reg,
+                         gen_frame_mem
+                         (DFmode,
+                          plus_constant (Pmode, base_reg, 8 * j)));
+      RTX_FRAME_RELATED_P (tmp) = 1;
+      XVECEXP (par, 0, j + 1) = tmp;
+
+      dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+
+      j++;
+    }
+
+  par = emit_insn (par);
+  REG_NOTES (par) = dwarf;
 }
 
 /* Calculate the size of the return value that is passed in registers.  */
@@ -23025,6 +22739,52 @@ thumb1_expand_prologue (void)
     cfun->machine->lr_save_eliminated = 0;
 }
 
+/* Generate pattern *pop_multiple_with_stack_update_and_return if single
+   POP instruction can be generated.  LR should be replaced by PC.  All
+   the checks required are already done by  USE_RETURN_INSN ().  Hence,
+   all we really need to check here is if single register is to be
+   returned, or multiple register return.  */
+void
+thumb2_expand_return (void)
+{
+  int i, num_regs;
+  unsigned long saved_regs_mask;
+  arm_stack_offsets *offsets;
+
+  offsets = arm_get_frame_offsets ();
+  saved_regs_mask = offsets->saved_regs_mask;
+
+  for (i = 0, num_regs = 0; i <= LAST_ARM_REGNUM; i++)
+    if (saved_regs_mask & (1 << i))
+      num_regs++;
+
+  if (saved_regs_mask)
+    {
+      if (num_regs == 1)
+        {
+          rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+          rtx reg = gen_rtx_REG (SImode, PC_REGNUM);
+          rtx addr = gen_rtx_MEM (SImode,
+                                  gen_rtx_POST_INC (SImode,
+                                                    stack_pointer_rtx));
+          set_mem_alias_set (addr, get_frame_alias_set ());
+          XVECEXP (par, 0, 0) = ret_rtx;
+          XVECEXP (par, 0, 1) = gen_rtx_SET (SImode, reg, addr);
+          RTX_FRAME_RELATED_P (XVECEXP (par, 0, 1)) = 1;
+          emit_jump_insn (par);
+        }
+      else
+        {
+          saved_regs_mask &= ~ (1 << LR_REGNUM);
+          saved_regs_mask |=   (1 << PC_REGNUM);
+          arm_emit_multi_reg_pop (saved_regs_mask);
+        }
+    }
+  else
+    {
+      emit_jump_insn (simple_return_rtx);
+    }
+}
 
 void
 thumb1_expand_epilogue (void)
@@ -23080,6 +22840,394 @@ thumb1_expand_epilogue (void)
 
   if (! df_regs_ever_live_p (LR_REGNUM))
     emit_use (gen_rtx_REG (SImode, LR_REGNUM));
+}
+
+/* Epilogue code for APCS frame.  */
+static void
+arm_expand_epilogue_apcs_frame (bool really_return)
+{
+  unsigned long func_type;
+  unsigned long saved_regs_mask;
+  int num_regs = 0;
+  int i;
+  int floats_from_frame = 0;
+  arm_stack_offsets *offsets;
+
+  gcc_assert (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM);
+  func_type = arm_current_func_type ();
+
+  /* Get frame offsets for ARM.  */
+  offsets = arm_get_frame_offsets ();
+  saved_regs_mask = offsets->saved_regs_mask;
+
+  /* Find the offset of the floating-point save area in the frame.  */
+  floats_from_frame = offsets->saved_args - offsets->frame;
+
+  /* Compute how many core registers saved and how far away the floats are.  */
+  for (i = 0; i <= LAST_ARM_REGNUM; i++)
+    if (saved_regs_mask & (1 << i))
+      {
+        num_regs++;
+        floats_from_frame += 4;
+      }
+
+  if (TARGET_HARD_FLOAT && TARGET_VFP)
+    {
+      int start_reg;
+
+      /* The offset is from IP_REGNUM.  */
+      int saved_size = arm_get_vfp_saved_size ();
+      if (saved_size > 0)
+        {
+          floats_from_frame += saved_size;
+          emit_insn (gen_addsi3 (gen_rtx_REG (SImode, IP_REGNUM),
+                                 hard_frame_pointer_rtx,
+                                 GEN_INT (-floats_from_frame)));
+        }
+
+      /* Generate VFP register multi-pop.  */
+      start_reg = FIRST_VFP_REGNUM;
+
+      for (i = FIRST_VFP_REGNUM; i < LAST_VFP_REGNUM; i += 2)
+        /* Look for a case where a reg does not need restoring.  */
+        if ((!df_regs_ever_live_p (i) || call_used_regs[i])
+            && (!df_regs_ever_live_p (i + 1)
+                || call_used_regs[i + 1]))
+          {
+            if (start_reg != i)
+              arm_emit_vfp_multi_reg_pop (start_reg,
+                                          (i - start_reg) / 2,
+                                          gen_rtx_REG (SImode,
+                                                       IP_REGNUM));
+            start_reg = i + 2;
+          }
+
+      /* Restore the remaining regs that we have discovered (or possibly
+         even all of them, if the conditional in the for loop never
+         fired).  */
+      if (start_reg != i)
+        arm_emit_vfp_multi_reg_pop (start_reg,
+                                    (i - start_reg) / 2,
+                                    gen_rtx_REG (SImode, IP_REGNUM));
+    }
+
+  if (TARGET_IWMMXT)
+    {
+      /* The frame pointer is guaranteed to be non-double-word aligned, as
+         it is set to double-word-aligned old_stack_pointer - 4.  */
+      rtx insn;
+      int lrm_count = (num_regs % 2) ? (num_regs + 2) : (num_regs + 1);
+
+      for (i = LAST_IWMMXT_REGNUM; i >= FIRST_IWMMXT_REGNUM; i--)
+        if (df_regs_ever_live_p (i) && !call_used_regs[i])
+          {
+            rtx addr = gen_frame_mem (V2SImode,
+                                 plus_constant (Pmode, hard_frame_pointer_rtx,
+                                                - lrm_count * 4));
+            insn = emit_insn (gen_movsi (gen_rtx_REG (V2SImode, i), addr));
+            REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
+                                               gen_rtx_REG (V2SImode, i),
+                                               NULL_RTX);
+            lrm_count += 2;
+          }
+    }
+
+  /* saved_regs_mask should contain IP which contains old stack pointer
+     at the time of activation creation.  Since SP and IP are adjacent registers,
+     we can restore the value directly into SP.  */
+  gcc_assert (saved_regs_mask & (1 << IP_REGNUM));
+  saved_regs_mask &= ~(1 << IP_REGNUM);
+  saved_regs_mask |= (1 << SP_REGNUM);
+
+  /* There are two registers left in saved_regs_mask - LR and PC.  We
+     only need to restore LR (the return address), but to
+     save time we can load it directly into PC, unless we need a
+     special function exit sequence, or we are not really returning.  */
+  if (really_return
+      && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
+      && !crtl->calls_eh_return)
+    /* Delete LR from the register mask, so that LR on
+       the stack is loaded into the PC in the register mask.  */
+    saved_regs_mask &= ~(1 << LR_REGNUM);
+  else
+    saved_regs_mask &= ~(1 << PC_REGNUM);
+
+  num_regs = bit_count (saved_regs_mask);
+  if ((offsets->outgoing_args != (1 + num_regs)) || cfun->calls_alloca)
+    {
+      /* Unwind the stack to just below the saved registers.  */
+      emit_insn (gen_addsi3 (stack_pointer_rtx,
+                             hard_frame_pointer_rtx,
+                             GEN_INT (- 4 * num_regs)));
+    }
+
+  arm_emit_multi_reg_pop (saved_regs_mask);
+
+  if (IS_INTERRUPT (func_type))
+    {
+      /* Interrupt handlers will have pushed the
+         IP onto the stack, so restore it now.  */
+      rtx insn;
+      rtx addr = gen_rtx_MEM (SImode,
+                              gen_rtx_POST_INC (SImode,
+                              stack_pointer_rtx));
+      set_mem_alias_set (addr, get_frame_alias_set ());
+      insn = emit_insn (gen_movsi (gen_rtx_REG (SImode, IP_REGNUM), addr));
+      REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
+                                         gen_rtx_REG (SImode, IP_REGNUM),
+                                         NULL_RTX);
+    }
+
+  if (!really_return || (saved_regs_mask & (1 << PC_REGNUM)))
+    return;
+
+  if (crtl->calls_eh_return)
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+               stack_pointer_rtx,
+               GEN_INT (ARM_EH_STACKADJ_REGNUM)));
+
+  if (IS_STACKALIGN (func_type))
+    /* Restore the original stack pointer.  Before prologue, the stack was
+       realigned and the original stack pointer saved in r0.  For details,
+       see comment in arm_expand_prologue.  */
+    emit_insn (gen_movsi (stack_pointer_rtx, gen_rtx_REG (SImode, 0)));
+
+  emit_jump_insn (simple_return_rtx);
+}
+
+/* Generate RTL to represent ARM epilogue.  Really_return is true if the
+   function is not a sibcall.  */
+void
+arm_expand_epilogue (bool really_return)
+{
+  unsigned long func_type;
+  unsigned long saved_regs_mask;
+  int num_regs = 0;
+  int i;
+  int amount;
+  int floats_from_frame = 0;
+  arm_stack_offsets *offsets;
+
+  func_type = arm_current_func_type ();
+
+  /* Naked functions don't have epilogue.  Hence, generate return pattern, and
+     let output_return_instruction take care of instruction emition if any.  */
+  if (IS_NAKED (func_type)
+      || (IS_VOLATILE (func_type) && TARGET_ABORT_NORETURN))
+    {
+      emit_jump_insn (simple_return_rtx);
+      return;
+    }
+
+  /* If we are throwing an exception, then we really must be doing a
+     return, so we can't tail-call.  */
+  gcc_assert (!crtl->calls_eh_return || really_return);
+
+  if (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
+    {
+      arm_expand_epilogue_apcs_frame (really_return);
+      return;
+    }
+
+  /* Get frame offsets for ARM.  */
+  offsets = arm_get_frame_offsets ();
+  saved_regs_mask = offsets->saved_regs_mask;
+
+  /* Find offset of floating point register from frame pointer.
+     The initialization is done in this way to take care of frame pointer
+     and static-chain register, if stored.  */
+  floats_from_frame = offsets->saved_args - offsets->frame;
+  /* Compute how many registers saved and how far away the floats will be.  */
+  for (i = 0; i <= LAST_ARM_REGNUM; i++)
+    if (saved_regs_mask & (1 << i))
+      {
+        num_regs++;
+        floats_from_frame += 4;
+      }
+
+  if (frame_pointer_needed)
+    {
+      /* Restore stack pointer if necessary.  */
+      if (TARGET_ARM)
+        {
+          /* In ARM mode, frame pointer points to first saved register.
+             Restore stack pointer to last saved register.  */
+          amount = offsets->frame - offsets->saved_regs;
+
+          /* Force out any pending memory operations that reference stacked data
+             before stack de-allocation occurs.  */
+          emit_insn (gen_blockage ());
+          emit_insn (gen_addsi3 (stack_pointer_rtx,
+                                 hard_frame_pointer_rtx,
+                                 GEN_INT (amount)));
+
+          /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is not
+             deleted.  */
+          emit_insn (gen_prologue_use (stack_pointer_rtx));
+        }
+      else
+        {
+          /* In Thumb-2 mode, the frame pointer points to the last saved
+             register.  */
+          amount = offsets->locals_base - offsets->saved_regs;
+          if (amount)
+            emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
+                                   hard_frame_pointer_rtx,
+                                   GEN_INT (amount)));
+
+          /* Force out any pending memory operations that reference stacked data
+             before stack de-allocation occurs.  */
+          emit_insn (gen_blockage ());
+          emit_insn (gen_movsi (stack_pointer_rtx, hard_frame_pointer_rtx));
+          /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is not
+             deleted.  */
+          emit_insn (gen_prologue_use (stack_pointer_rtx));
+        }
+    }
+  else
+    {
+      /* Pop off outgoing args and local frame to adjust stack pointer to
+         last saved register.  */
+      amount = offsets->outgoing_args - offsets->saved_regs;
+      if (amount)
+        {
+          /* Force out any pending memory operations that reference stacked data
+             before stack de-allocation occurs.  */
+          emit_insn (gen_blockage ());
+          emit_insn (gen_addsi3 (stack_pointer_rtx,
+                                 stack_pointer_rtx,
+                                 GEN_INT (amount)));
+          /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is
+             not deleted.  */
+          emit_insn (gen_prologue_use (stack_pointer_rtx));
+        }
+    }
+
+  if (TARGET_HARD_FLOAT && TARGET_VFP)
+    {
+      /* Generate VFP register multi-pop.  */
+      int end_reg = LAST_VFP_REGNUM + 1;
+
+      /* Scan the registers in reverse order.  We need to match
+         any groupings made in the prologue and generate matching
+         vldm operations.  The need to match groups is because,
+         unlike pop, vldm can only do consecutive regs.  */
+      for (i = LAST_VFP_REGNUM - 1; i >= FIRST_VFP_REGNUM; i -= 2)
+        /* Look for a case where a reg does not need restoring.  */
+        if ((!df_regs_ever_live_p (i) || call_used_regs[i])
+            && (!df_regs_ever_live_p (i + 1)
+                || call_used_regs[i + 1]))
+          {
+            /* Restore the regs discovered so far (from reg+2 to
+               end_reg).  */
+            if (end_reg > i + 2)
+              arm_emit_vfp_multi_reg_pop (i + 2,
+                                          (end_reg - (i + 2)) / 2,
+                                          stack_pointer_rtx);
+            end_reg = i;
+          }
+
+      /* Restore the remaining regs that we have discovered (or possibly
+         even all of them, if the conditional in the for loop never
+         fired).  */
+      if (end_reg > i + 2)
+        arm_emit_vfp_multi_reg_pop (i + 2,
+                                    (end_reg - (i + 2)) / 2,
+                                    stack_pointer_rtx);
+    }
+
+  if (TARGET_IWMMXT)
+    for (i = FIRST_IWMMXT_REGNUM; i <= LAST_IWMMXT_REGNUM; i++)
+      if (df_regs_ever_live_p (i) && !call_used_regs[i])
+        {
+          rtx insn;
+          rtx addr = gen_rtx_MEM (V2SImode,
+                                  gen_rtx_POST_INC (SImode,
+                                                    stack_pointer_rtx));
+          set_mem_alias_set (addr, get_frame_alias_set ());
+          insn = emit_insn (gen_movsi (gen_rtx_REG (V2SImode, i), addr));
+          REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
+                                             gen_rtx_REG (V2SImode, i),
+                                             NULL_RTX);
+        }
+
+  if (saved_regs_mask)
+    {
+      rtx insn;
+      bool return_in_pc = false;
+
+      if (ARM_FUNC_TYPE (func_type) != ARM_FT_INTERWORKED
+          && (TARGET_ARM || ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL)
+          && !IS_STACKALIGN (func_type)
+          && really_return
+          && crtl->args.pretend_args_size == 0
+          && saved_regs_mask & (1 << LR_REGNUM)
+          && !crtl->calls_eh_return)
+        {
+          saved_regs_mask &= ~(1 << LR_REGNUM);
+          saved_regs_mask |= (1 << PC_REGNUM);
+          return_in_pc = true;
+        }
+
+      if (num_regs == 1 && (!IS_INTERRUPT (func_type) || !return_in_pc))
+        {
+          for (i = 0; i <= LAST_ARM_REGNUM; i++)
+            if (saved_regs_mask & (1 << i))
+              {
+                rtx addr = gen_rtx_MEM (SImode,
+                                        gen_rtx_POST_INC (SImode,
+                                                          stack_pointer_rtx));
+                set_mem_alias_set (addr, get_frame_alias_set ());
+
+                if (i == PC_REGNUM)
+                  {
+                    insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+                    XVECEXP (insn, 0, 0) = ret_rtx;
+                    XVECEXP (insn, 0, 1) = gen_rtx_SET (SImode,
+                                                        gen_rtx_REG (SImode, i),
+                                                        addr);
+                    RTX_FRAME_RELATED_P (XVECEXP (insn, 0, 1)) = 1;
+                    insn = emit_jump_insn (insn);
+                  }
+                else
+                  {
+                    insn = emit_insn (gen_movsi (gen_rtx_REG (SImode, i),
+                                                 addr));
+                    REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
+                                                       gen_rtx_REG (SImode, i),
+                                                       NULL_RTX);
+                  }
+              }
+        }
+      else
+        {
+          arm_emit_multi_reg_pop (saved_regs_mask);
+        }
+
+      if (return_in_pc == true)
+        return;
+    }
+
+  if (crtl->args.pretend_args_size)
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+                           stack_pointer_rtx,
+                           GEN_INT (crtl->args.pretend_args_size)));
+
+  if (!really_return)
+    return;
+
+  if (crtl->calls_eh_return)
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+                           stack_pointer_rtx,
+                           gen_rtx_REG (SImode, ARM_EH_STACKADJ_REGNUM)));
+
+  if (IS_STACKALIGN (func_type))
+    /* Restore the original stack pointer.  Before prologue, the stack was
+       realigned and the original stack pointer saved in r0.  For details,
+       see comment in arm_expand_prologue.  */
+    emit_insn (gen_movsi (stack_pointer_rtx, gen_rtx_REG (SImode, 0)));
+
+  emit_jump_insn (simple_return_rtx);
 }
 
 /* Implementation of insn prologue_thumb1_interwork.  This is the first
@@ -23431,6 +23579,23 @@ arm_asm_output_labelref (FILE *stream, const char *name)
     asm_fprintf (stream, "%U%s", name);
 }
 
+/* This function is used to emit an EABI tag and its associated value.
+   We emit the numerical value of the tag in case the assembler does not
+   support textual tags.  (Eg gas prior to 2.20).  If requested we include
+   the tag name in a comment so that anyone reading the assembler output
+   will know which tag is being set.
+
+   This function is not static because arm-c.c needs it too.  */
+
+void
+arm_emit_eabi_attribute (const char *name, int num, int val)
+{
+  asm_fprintf (asm_out_file, "\t.eabi_attribute %d, %d", num, val);
+  if (flag_verbose_asm || flag_debug_asm)
+    asm_fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, name);
+  asm_fprintf (asm_out_file, "\n");
+}
+
 static void
 arm_file_start (void)
 {
@@ -23462,9 +23627,9 @@ arm_file_start (void)
 	  if (arm_fpu_desc->model == ARM_FP_MODEL_VFP)
 	    {
 	      if (TARGET_HARD_FLOAT)
-		EMIT_EABI_ATTRIBUTE (Tag_ABI_HardFP_use, 27, 3);
+		arm_emit_eabi_attribute ("Tag_ABI_HardFP_use", 27, 3);
 	      if (TARGET_HARD_FLOAT_ABI)
-		EMIT_EABI_ATTRIBUTE (Tag_ABI_VFP_args, 28, 1);
+		arm_emit_eabi_attribute ("Tag_ABI_VFP_args", 28, 1);
 	    }
 	}
       asm_fprintf (asm_out_file, "\t.fpu %s\n", fpu_name);
@@ -23474,22 +23639,23 @@ arm_file_start (void)
 	 Conservatively record the setting that would have been used.  */
 
       if (flag_rounding_math)
-	EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_rounding, 19, 1);
+	arm_emit_eabi_attribute ("Tag_ABI_FP_rounding", 19, 1);
 
       if (!flag_unsafe_math_optimizations)
 	{
-	  EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_denormal, 20, 1);
-	  EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_exceptions, 21, 1);
+	  arm_emit_eabi_attribute ("Tag_ABI_FP_denormal", 20, 1);
+	  arm_emit_eabi_attribute ("Tag_ABI_FP_exceptions", 21, 1);
 	}
       if (flag_signaling_nans)
-	EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_user_exceptions, 22, 1);
+	arm_emit_eabi_attribute ("Tag_ABI_FP_user_exceptions", 22, 1);
 
-      EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_number_model, 23,
+      arm_emit_eabi_attribute ("Tag_ABI_FP_number_model", 23,
 			   flag_finite_math_only ? 1 : 3);
 
-      EMIT_EABI_ATTRIBUTE (Tag_ABI_align8_needed, 24, 1);
-      EMIT_EABI_ATTRIBUTE (Tag_ABI_align8_preserved, 25, 1);
-      EMIT_EABI_ATTRIBUTE (Tag_ABI_enum_size, 26, flag_short_enums ? 1 : 2);
+      arm_emit_eabi_attribute ("Tag_ABI_align8_needed", 24, 1);
+      arm_emit_eabi_attribute ("Tag_ABI_align8_preserved", 25, 1);
+      arm_emit_eabi_attribute ("Tag_ABI_enum_size", 26,
+			       flag_short_enums ? 1 : 2);
 
       /* Tag_ABI_optimization_goals.  */
       if (optimize_size)
@@ -23500,12 +23666,14 @@ arm_file_start (void)
 	val = 1;
       else
 	val = 6;
-      EMIT_EABI_ATTRIBUTE (Tag_ABI_optimization_goals, 30, val);
+      arm_emit_eabi_attribute ("Tag_ABI_optimization_goals", 30, val);
 
-      EMIT_EABI_ATTRIBUTE (Tag_CPU_unaligned_access, 34, unaligned_access);
+      arm_emit_eabi_attribute ("Tag_CPU_unaligned_access", 34,
+			       unaligned_access);
 
       if (arm_fp16_format)
-	EMIT_EABI_ATTRIBUTE (Tag_ABI_FP_16bit_format, 38, (int) arm_fp16_format);
+	arm_emit_eabi_attribute ("Tag_ABI_FP_16bit_format", 38,
+			     (int) arm_fp16_format);
 
       if (arm_lang_output_object_attributes_hook)
 	arm_lang_output_object_attributes_hook();
@@ -25423,39 +25591,15 @@ vfp3_const_double_for_fract_bits (rtx operand)
 static void
 arm_pre_atomic_barrier (enum memmodel model)
 {
-  switch (model)
-    {
-    case MEMMODEL_RELAXED:
-    case MEMMODEL_CONSUME:
-    case MEMMODEL_ACQUIRE:
-      break;
-    case MEMMODEL_RELEASE:
-    case MEMMODEL_ACQ_REL:
-    case MEMMODEL_SEQ_CST:
-      emit_insn (gen_memory_barrier ());
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  if (need_atomic_barrier_p (model, true))
+    emit_insn (gen_memory_barrier ());
 }
 
 static void
 arm_post_atomic_barrier (enum memmodel model)
 {
-  switch (model)
-    {
-    case MEMMODEL_RELAXED:
-    case MEMMODEL_CONSUME:
-    case MEMMODEL_RELEASE:
-      break;
-    case MEMMODEL_ACQUIRE:
-    case MEMMODEL_ACQ_REL:
-    case MEMMODEL_SEQ_CST:
-      emit_insn (gen_memory_barrier ());
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  if (need_atomic_barrier_p (model, false))
+    emit_insn (gen_memory_barrier ());
 }
 
 /* Emit the load-exclusive and store-exclusive instructions.  */

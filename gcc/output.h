@@ -1,5 +1,5 @@
-/* Declarations for insn-output.c.  These functions are defined in recog.c,
-   final.c, and varasm.c.
+/* Declarations for insn-output.c and other code to write to asm_out_file.
+   These functions are defined in final.c, and varasm.c.
    Copyright (C) 1987, 1991, 1994, 1997, 1998, 1999, 2000, 2001, 2002,
    2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
@@ -324,25 +324,6 @@ extern const char *first_global_object_name;
 
 /* The first weak object in the file.  */
 extern const char *weak_global_object_name;
-
-/* Nonzero if function being compiled doesn't contain any calls
-   (ignoring the prologue and epilogue).  This is set prior to
-   local register allocation and is valid for the remaining
-   compiler passes.  */
-
-extern int current_function_is_leaf;
-
-/* Nonzero if function being compiled doesn't modify the stack pointer
-   (ignoring the prologue and epilogue).  This is only valid after
-   pass_stack_ptr_mod has run.  */
-
-extern int current_function_sp_is_unchanging;
-
-/* Nonzero if the function being compiled is a leaf function which only
-   uses leaf registers.  This is valid after reload (specifically after
-   sched2) and is useful only if the port defines LEAF_REGISTERS.  */
-
-extern int current_function_uses_only_leaf_regs;
 
 /* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */
 extern rtx current_insn_predicate;

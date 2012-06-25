@@ -1166,7 +1166,7 @@ init_resource_info (rtx epilogue_insn)
   if (!(frame_pointer_needed
 	&& EXIT_IGNORE_STACK
 	&& epilogue_insn
-	&& !current_function_sp_is_unchanging))
+	&& !crtl->sp_is_unchanging))
     SET_HARD_REG_BIT (end_of_function_needs.regs, STACK_POINTER_REGNUM);
 
   if (crtl->return_rtx != 0)
