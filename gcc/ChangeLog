@@ -1,3 +1,24 @@
+2012-06-25  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+            James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Add new built-ins.
+	(TARGET_FMA): New macro.
+	(TARGET_ARM_QBIT, TARGET_ARM_SAT): Likewise.
+	(TARGET_ARM_ARCH): Likewise.
+	(TARGET_ARM_ARCH_ISA_THUMB): Likewise.
+	(TARGET_V6M, TARGET_V7M): Likewise.
+	(TARGET_ARM_ARCH_PROFILE): Likewise.
+	(TARGET_ARM_FEATURE_LDREX): Likewise.
+	(TARGET_ARM_FP, TARGET_NEON_FP): Likewise.
+	(ARM_MIN_ENUM_SIZE): Likewise.
+	* config/arm/arm.c (arm_file_start): Refactor appropriately.
+	(base_architecture): New enumeration.
+	(arm_base_arch): New global variable.
+	(processors): Add field base_arch.
+	(ARM_ARCH, ARM_CORE): Adjust accordingly.
+	(arm_option_override): Add initialization of arm_base_arch.
+	* doc/cpp.texi (system-specific predefined macros.): Change.
+
 2012-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/53759

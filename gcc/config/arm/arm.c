@@ -717,6 +717,10 @@ static unsigned long insn_flags = 0;
    be used.  */
 static unsigned long tune_flags = 0;
 
+/* The highest ARM architecture version supported by the
+   target.  */
+enum base_architecture arm_base_arch = BASE_ARCH_0;
+
 /* The following are used in the arm.md file as equivalents to bits
    in the above two flag variables.  */
 
@@ -854,6 +858,7 @@ struct processors
   const char *const name;
   enum processor_type core;
   const char *arch;
+  enum base_architecture base_arch;
   const unsigned long flags;
   const struct tune_params *const tune;
 };
@@ -989,10 +994,11 @@ static const struct processors all_cores[] =
 {
   /* ARM Cores */
 #define ARM_CORE(NAME, IDENT, ARCH, FLAGS, COSTS) \
-  {NAME, IDENT, #ARCH, FLAGS | FL_FOR_ARCH##ARCH, &arm_##COSTS##_tune},
+  {NAME, IDENT, #ARCH, BASE_ARCH_##ARCH,	  \
+    FLAGS | FL_FOR_ARCH##ARCH, &arm_##COSTS##_tune},
 #include "arm-cores.def"
 #undef ARM_CORE
-  {NULL, arm_none, NULL, 0, NULL}
+  {NULL, arm_none, NULL, BASE_ARCH_0, 0, NULL}
 };
 
 static const struct processors all_architectures[] =
@@ -1002,10 +1008,10 @@ static const struct processors all_architectures[] =
      from the core.  */
 
 #define ARM_ARCH(NAME, CORE, ARCH, FLAGS) \
-  {NAME, CORE, #ARCH, FLAGS, NULL},
+  {NAME, CORE, #ARCH, BASE_ARCH_##ARCH, FLAGS, NULL},
 #include "arm-arches.def"
 #undef ARM_ARCH
-  {NULL, arm_none, NULL, 0 , NULL}
+  {NULL, arm_none, NULL, BASE_ARCH_0, 0, NULL}
 };
 
 
@@ -1621,6 +1627,7 @@ arm_option_override (void)
 
   sprintf (arm_arch_name, "__ARM_ARCH_%s__", arm_selected_cpu->arch);
   insn_flags = arm_selected_cpu->flags;
+  arm_base_arch = arm_selected_cpu->base_arch;
 
   arm_tune = arm_selected_tune->core;
   tune_flags = arm_selected_tune->flags;
