@@ -638,3 +638,68 @@ func TestAnonymous(t *testing.T) {
 		t.Fatal("Unmarshal: did set T.Y")
 	}
 }
+
+// Test that the empty string doesn't panic decoding when ,string is specified
+// Issue 3450
+func TestEmptyString(t *testing.T) {
+	type T2 struct {
+		Number1 int `json:",string"`
+		Number2 int `json:",string"`
+	}
+	data := `{"Number1":"1", "Number2":""}`
+	dec := NewDecoder(strings.NewReader(data))
+	var t2 T2
+	err := dec.Decode(&t2)
+	if err == nil {
+		t.Fatal("Decode: did not return error")
+	}
+	if t2.Number1 != 1 {
+		t.Fatal("Decode: did not set Number1")
+	}
+}
+
+func intp(x int) *int {
+	p := new(int)
+	*p = x
+	return p
+}
+
+func intpp(x *int) **int {
+	pp := new(*int)
+	*pp = x
+	return pp
+}
+
+var interfaceSetTests = []struct {
+	pre  interface{}
+	json string
+	post interface{}
+}{
+	{"foo", `"bar"`, "bar"},
+	{"foo", `2`, 2.0},
+	{"foo", `true`, true},
+	{"foo", `null`, nil},
+
+	{nil, `null`, nil},
+	{new(int), `null`, nil},
+	{(*int)(nil), `null`, nil},
+	{new(*int), `null`, new(*int)},
+	{(**int)(nil), `null`, nil},
+	{intp(1), `null`, nil},
+	{intpp(nil), `null`, intpp(nil)},
+	{intpp(intp(1)), `null`, intpp(nil)},
+}
+
+func TestInterfaceSet(t *testing.T) {
+	for _, tt := range interfaceSetTests {
+		b := struct{ X interface{} }{tt.pre}
+		blob := `{"X":` + tt.json + `}`
+		if err := Unmarshal([]byte(blob), &b); err != nil {
+			t.Errorf("Unmarshal %#q: %v", blob, err)
+			continue
+		}
+		if !reflect.DeepEqual(b.X, tt.post) {
+			t.Errorf("Unmarshal %#q into %#v: X=%#v, want %#v", blob, tt.pre, b.X, tt.post)
+		}
+	}
+}

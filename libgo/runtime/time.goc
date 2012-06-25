@@ -61,15 +61,21 @@ ready(int64 now, Eface e)
 void
 runtime_tsleep(int64 ns)
 {
+	G* g;
 	Timer t;
 
-	if(ns <= 0)
+	g = runtime_g();
+
+	if(ns <= 0) {
+		g->status = Grunning;
+		g->waitreason = nil;
 		return;
+	}
 
 	t.when = runtime_nanotime() + ns;
 	t.period = 0;
 	t.f = ready;
-	t.arg.__object = runtime_g();
+	t.arg.__object = g;
 	addtimer(&t);
 	runtime_gosched();
 }
