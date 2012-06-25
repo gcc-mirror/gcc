@@ -8961,6 +8961,14 @@ should use the @code{setjmp}/@code{longjmp} functions from the C library
 instead of the @code{__builtin_setjmp}/@code{__builtin_longjmp} machinery.
 @end defmac
 
+@defmac JMP_BUF_SIZE
+This macro has no effect unless @code{DONT_USE_BUILTIN_SETJMP} is also
+defined.  Define this macro if the default size of @code{jmp_buf} buffer
+for the @code{setjmp}/@code{longjmp}-based exception handling mechanism
+is not large enough, or if it is much too large.
+The default size is @code{FIRST_PSEUDO_REGISTER * sizeof(void *)}.
+@end defmac
+
 @defmac DWARF_CIE_DATA_ALIGNMENT
 This macro need only be defined if the target might save registers in the
 function prologue at an offset to the stack pointer that is not aligned to

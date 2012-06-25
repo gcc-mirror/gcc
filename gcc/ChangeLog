@@ -1,3 +1,18 @@
+2012-06-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/v850/v850.c: Remove redundant extern declarations for
+	last_assemble_variable_decl and size_directive_output.
+
+	* doc/tm.texi.in: Document JMP_BUF_SIZE.
+	* doc/tm.texi: Regenerate.
+	* config/sparc/sparc.h (JMP_BUF_SIZE): Do not define.
+	* config/pa/pa.h (JMP_BUF_SIZE): Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+
+	* config/picochip/picochip.c: Do not define DONT_USE_BUILTIN_SETJMP.
+
+	* doc/sourcebuild.texi: Add missing subdirectories.
+
 2012-06-25  Tristan Gingold  <gingold@adacore.com>
 
 	* config/i386/i386.h: Fix typo.

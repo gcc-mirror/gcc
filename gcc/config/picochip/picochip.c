@@ -303,8 +303,6 @@ static char picochip_get_vliw_alu_id (void);
    usually requires a scratch register. */
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD picochip_secondary_reload
-#undef DONT_USE_BUILTIN_SETJMP
-#define DONT_USE_BUILTIN_SETJMP 1
 
 /* How Large Values are Returned  */
 
