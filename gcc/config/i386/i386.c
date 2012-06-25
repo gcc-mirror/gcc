@@ -32101,7 +32101,7 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 	  /* V*QImode is emulated with 1-11 insns.  */
 	  if (mode == V16QImode || mode == V32QImode)
 	    {
-	      int count;
+	      int count = 11;
 	      if (TARGET_XOP && mode == V16QImode)
 		{
 		  /* For XOP we use vpshab, which requires a broadcast of the
@@ -32117,8 +32117,8 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 		    }
 		  count = 3;
 		}
-	      else
-		count = TARGET_SSSE3 ? 7 : 11;
+	      else if (TARGET_SSSE3)
+		count = 7;
 	      *total = cost->fabs * count;
 	    }
 	  else
@@ -32199,7 +32199,11 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 	  /* V*QImode is emulated with 7-13 insns.  */
 	  if (mode == V16QImode || mode == V32QImode)
 	    {
-	      int extra = TARGET_XOP ? 5 : TARGET_SSSE3 ? 6 : 11;
+	      int extra = 11;
+	      if (TARGET_XOP && mode == V16QImode)
+		extra = 5;
+	      else if (TARGET_SSSE3)
+		extra = 6;
 	      *total = cost->fmul * 2 + cost->fabs * extra;
 	    }
 	  /* Without sse4.1, we don't have PMULLD; it's emulated with 7
@@ -38519,6 +38523,34 @@ ix86_expand_vec_extract_even_odd (rtx targ, rtx op0, rtx op1, unsigned odd)
   expand_vec_perm_even_odd_1 (&d, odd);
 }
 
+static void
+ix86_expand_vec_interleave (rtx targ, rtx op0, rtx op1, bool high_p)
+{
+  struct expand_vec_perm_d d;
+  unsigned i, nelt, base;
+  bool ok;
+
+  d.target = targ;
+  d.op0 = op0;
+  d.op1 = op1;
+  d.vmode = GET_MODE (targ);
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.one_operand_p = false;
+  d.testing_p = false;
+
+  base = high_p ? nelt / 2 : 0;
+  for (i = 0; i < nelt / 2; ++i)
+    {
+      d.perm[i * 2] = i + base;
+      d.perm[i * 2 + 1] = i + base + nelt;
+    }
+
+  /* Note that for AVX this isn't one instruction.  */
+  ok = ix86_expand_vec_perm_const_1 (&d);
+  gcc_assert (ok);
+}
+
+
 /* Expand a vector operation CODE for a V*QImode in terms of the
    same operation on V*HImode.  */
 
@@ -38627,59 +38659,148 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 }
 
 void
-ix86_expand_sse2_mulv4si3 (rtx op0, rtx op1, rtx op2)
+ix86_expand_mul_widen_evenodd (rtx dest, rtx op1, rtx op2,
+			       bool uns_p, bool odd_p)
 {
-  rtx op1_m1, op1_m2;
-  rtx op2_m1, op2_m2;
-  rtx res_1, res_2;
+  enum machine_mode mode = GET_MODE (op1);
+  rtx x;
 
-  /* Shift both input vectors down one element, so that elements 3
-     and 1 are now in the slots for elements 2 and 0.  For K8, at
-     least, this is faster than using a shuffle.  */
-  op1_m1 = op1 = force_reg (V4SImode, op1);
-  op1_m2 = gen_reg_rtx (V4SImode);
-  emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, op1_m2),
-				 gen_lowpart (V1TImode, op1),
-				 GEN_INT (32)));
+  /* We only play even/odd games with vectors of SImode.  */
+  gcc_assert (mode == V4SImode || mode == V8SImode);
 
-  if (GET_CODE (op2) == CONST_VECTOR)
+  /* If we're looking for the odd results, shift those members down to
+     the even slots.  For some cpus this is faster than a PSHUFD.  */
+  if (odd_p)
     {
-      rtvec v;
+      enum machine_mode wmode = GET_MODE (dest);
 
-      /* Constant propagate the vector shift, leaving the dont-care
-	 vector elements as zero.  */
-      v = rtvec_alloc (4);
-      RTVEC_ELT (v, 0) = CONST_VECTOR_ELT (op2, 0);
-      RTVEC_ELT (v, 2) = CONST_VECTOR_ELT (op2, 2);
-      RTVEC_ELT (v, 1) = const0_rtx;
-      RTVEC_ELT (v, 3) = const0_rtx;
-      op2_m1 = gen_rtx_CONST_VECTOR (V4SImode, v);
-      op2_m1 = force_reg (V4SImode, op2_m1);
+      op1 = expand_binop (wmode, lshr_optab, gen_lowpart (wmode, op1),
+			  GEN_INT (GET_MODE_UNIT_BITSIZE (mode)), NULL,
+			  1, OPTAB_DIRECT);
+      op2 = expand_binop (wmode, lshr_optab, gen_lowpart (wmode, op2),
+			  GEN_INT (GET_MODE_UNIT_BITSIZE (mode)), NULL,
+			  1, OPTAB_DIRECT);
+      op1 = gen_lowpart (mode, op1);
+      op2 = gen_lowpart (mode, op2);
+    }
 
-      v = rtvec_alloc (4);
-      RTVEC_ELT (v, 0) = CONST_VECTOR_ELT (op2, 1);
-      RTVEC_ELT (v, 2) = CONST_VECTOR_ELT (op2, 3);
-      RTVEC_ELT (v, 1) = const0_rtx;
-      RTVEC_ELT (v, 3) = const0_rtx;
-      op2_m2 = gen_rtx_CONST_VECTOR (V4SImode, v);
-      op2_m2 = force_reg (V4SImode, op2_m2);
+  if (mode == V8SImode)
+    {
+      if (uns_p)
+	x = gen_avx2_umulv4siv4di3 (dest, op1, op2);
+      else
+	x = gen_avx2_mulv4siv4di3 (dest, op1, op2);
+    }
+  else if (uns_p)
+    x = gen_sse2_umulv2siv2di3 (dest, op1, op2);
+  else if (TARGET_SSE4_1)
+    x = gen_sse4_1_mulv2siv2di3 (dest, op1, op2);
+  else if (TARGET_XOP)
+    {
+      x = force_reg (V2DImode, CONST0_RTX (V2DImode));
+      x = gen_xop_pmacsdql (dest, op1, op2, x);
     }
   else
-    {
-      op2_m1 = op2 = force_reg (V4SImode, op2);
-      op2_m2 = gen_reg_rtx (V4SImode);
-      emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, op2_m2),
-				     gen_lowpart (V1TImode, op2),
-				     GEN_INT (32)));
-    }
+    gcc_unreachable ();
+  emit_insn (x);
+}
 
-  /* Widening multiply of elements 0+2, and 1+3.  */
+void
+ix86_expand_mul_widen_hilo (rtx dest, rtx op1, rtx op2,
+			    bool uns_p, bool high_p)
+{
+  enum machine_mode wmode = GET_MODE (dest);
+  enum machine_mode mode = GET_MODE (op1);
+  rtx t1, t2, t3, t4, mask;
+
+  switch (mode)
+    {
+    case V4SImode:
+      t1 = gen_reg_rtx (mode);
+      t2 = gen_reg_rtx (mode);
+      if (TARGET_XOP && !uns_p)
+	{
+	  /* With XOP, we have pmacsdqh, aka mul_widen_odd.  In this case,
+	     shuffle the elements once so that all elements are in the right
+	     place for immediate use: { A C B D }.  */
+	  emit_insn (gen_sse2_pshufd_1 (t1, op1, const0_rtx, const2_rtx,
+					const1_rtx, GEN_INT (3)));
+	  emit_insn (gen_sse2_pshufd_1 (t2, op2, const0_rtx, const2_rtx,
+					const1_rtx, GEN_INT (3)));
+	}
+      else
+	{
+	  /* Put the elements into place for the multiply.  */
+	  ix86_expand_vec_interleave (t1, op1, op1, high_p);
+	  ix86_expand_vec_interleave (t2, op2, op2, high_p);
+	  high_p = false;
+	}
+      ix86_expand_mul_widen_evenodd (dest, t1, t2, uns_p, high_p);
+      break;
+
+    case V8SImode:
+      /* Shuffle the elements between the lanes.  After this we
+	 have { A B E F | C D G H } for each operand.  */
+      t1 = gen_reg_rtx (V4DImode);
+      t2 = gen_reg_rtx (V4DImode);
+      emit_insn (gen_avx2_permv4di_1 (t1, gen_lowpart (V4DImode, op1),
+				      const0_rtx, const2_rtx,
+				      const1_rtx, GEN_INT (3)));
+      emit_insn (gen_avx2_permv4di_1 (t2, gen_lowpart (V4DImode, op2),
+				      const0_rtx, const2_rtx,
+				      const1_rtx, GEN_INT (3)));
+
+      /* Shuffle the elements within the lanes.  After this we
+	 have { A A B B | C C D D } or { E E F F | G G H H }.  */
+      t3 = gen_reg_rtx (V8SImode);
+      t4 = gen_reg_rtx (V8SImode);
+      mask = GEN_INT (high_p
+		      ? 2 + (2 << 2) + (3 << 4) + (3 << 6)
+		      : 0 + (0 << 2) + (1 << 4) + (1 << 6));
+      emit_insn (gen_avx2_pshufdv3 (t3, gen_lowpart (V8SImode, t1), mask));
+      emit_insn (gen_avx2_pshufdv3 (t4, gen_lowpart (V8SImode, t2), mask));
+
+      ix86_expand_mul_widen_evenodd (dest, t3, t4, uns_p, false);
+      break;
+
+    case V8HImode:
+    case V16HImode:
+      t1 = expand_binop (mode, smul_optab, op1, op2, NULL_RTX,
+			 uns_p, OPTAB_DIRECT);
+      t2 = expand_binop (mode,
+			 uns_p ? umul_highpart_optab : smul_highpart_optab,
+			 op1, op2, NULL_RTX, uns_p, OPTAB_DIRECT);
+      gcc_assert (t1 && t2);
+
+      ix86_expand_vec_interleave (gen_lowpart (mode, dest), t1, t2, high_p);
+      break;
+
+    case V16QImode:
+    case V32QImode:
+      t1 = gen_reg_rtx (wmode);
+      t2 = gen_reg_rtx (wmode);
+      ix86_expand_sse_unpack (t1, op1, uns_p, high_p);
+      ix86_expand_sse_unpack (t2, op2, uns_p, high_p);
+
+      emit_insn (gen_rtx_SET (VOIDmode, dest, gen_rtx_MULT (wmode, t1, t2)));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+void
+ix86_expand_sse2_mulv4si3 (rtx op0, rtx op1, rtx op2)
+{
+  rtx res_1, res_2;
+
   res_1 = gen_reg_rtx (V4SImode);
   res_2 = gen_reg_rtx (V4SImode);
-  emit_insn (gen_sse2_umulv2siv2di3 (gen_lowpart (V2DImode, res_1),
-				     op1_m1, op2_m1));
-  emit_insn (gen_sse2_umulv2siv2di3 (gen_lowpart (V2DImode, res_2),
-				     op1_m2, op2_m2));
+  ix86_expand_mul_widen_evenodd (gen_lowpart (V2DImode, res_1),
+				 op1, op2, true, false);
+  ix86_expand_mul_widen_evenodd (gen_lowpart (V2DImode, res_2),
+				 op1, op2, true, true);
 
   /* Move the results in element 2 down to element 1; we don't care
      what goes in elements 2 and 3.  Then we can merge the parts

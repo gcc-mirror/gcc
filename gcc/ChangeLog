@@ -1,3 +1,28 @@
+2012-06-25  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_rtx_costs) [MULT]: Only apply XOP cost
+	to V16QImode.
+	(ix86_expand_vec_interleave): New.
+	(ix86_expand_mul_widen_evenodd): New.
+	(ix86_expand_mul_widen_hilo): New.
+	(ix86_expand_sse2_mulv4si3): Use ix86_expand_mul_widen_evenodd.
+	* config/i386/i386.md (u_bool) New code attr.
+	* config/i386/predicates.md
+	(nonimmediate_or_const_vector_operand): Remove.
+	* config/i386/sse.md (mul<VI4_AVX2>3): Don't use it; don't test
+	both AVX and SSE4_1.
+	(vec_widen<s>mult_hi_<VI2_AVX2>): Remove.
+	(vec_widen<s>mult_lo_<VI2_AVX2>): Remove.
+	(vec_widen<s>mult_hi_v8si): Remove.
+	(vec_widen<s>mult_lo_v8si): Remove.
+	(vec_widen_smult_hi_v4si): Remove.
+	(vec_widen_smult_lo_v4si): Remove.
+	(vec_widen_umult_hi_v4si): Remove.
+	(vec_widen_umult_lo_v4si): Remove.
+	(vec_widen_<s>mult_hi_<VI124_AVX2>): New.
+	(vec_widen_<s>mult_lo_<VI124_AVX2>): New.
+	* config/i386/i386-protos.h: Update.
+
 2012-06-25  Christophe Lyon  <christophe.lyon@st.com>
 
 	* config/arm/neon.md (UNSPEC_VLD1_DUP): Remove.

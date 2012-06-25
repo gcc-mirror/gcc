@@ -5555,10 +5555,10 @@
   [(set (match_operand:VI4_AVX2 0 "register_operand")
 	(mult:VI4_AVX2
 	  (match_operand:VI4_AVX2 1 "nonimmediate_operand")
-	  (match_operand:VI4_AVX2 2 "nonimmediate_or_const_vector_operand")))]
+	  (match_operand:VI4_AVX2 2 "nonimmediate_operand")))]
   "TARGET_SSE2"
 {
-  if (TARGET_SSE4_1 || TARGET_AVX)
+  if (TARGET_SSE4_1)
     {
       if (CONSTANT_P (operands[2]))
 	operands[2] = force_const_mem (<MODE>mode, operands[2]);
@@ -5677,198 +5677,28 @@
 (define_expand "vec_widen_<s>mult_hi_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (any_extend:<sseunpackmode>
-     (match_operand:VI2_AVX2 1 "register_operand"))
-   (match_operand:VI2_AVX2 2 "register_operand")]
-  "TARGET_SSE2"
+     (match_operand:VI124_AVX2 1 "register_operand"))
+   (match_operand:VI124_AVX2 2 "register_operand")]
+  ; Note that SSE2 does not have signed SI multiply
+  "TARGET_XOP || TARGET_SSE4_1
+   || (TARGET_SSE2 && (<u_bool> || <MODE>mode != V4SImode))"
 {
-  rtx op1, op2, t1, t2, dest;
-
-  op1 = operands[1];
-  op2 = operands[2];
-  t1 = gen_reg_rtx (<MODE>mode);
-  t2 = gen_reg_rtx (<MODE>mode);
-  dest = gen_lowpart (<MODE>mode, operands[0]);
-
-  emit_insn (gen_mul<mode>3 (t1, op1, op2));
-  emit_insn (gen_<s>mul<mode>3_highpart (t2, op1, op2));
-  emit_insn (gen_vec_interleave_high<mode> (dest, t1, t2));
+  ix86_expand_mul_widen_hilo (operands[0], operands[1], operands[2],
+			      <u_bool>, true);
   DONE;
 })
 
 (define_expand "vec_widen_<s>mult_lo_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (any_extend:<sseunpackmode>
-     (match_operand:VI2_AVX2 1 "register_operand"))
-   (match_operand:VI2_AVX2 2 "register_operand")]
-  "TARGET_SSE2"
+     (match_operand:VI124_AVX2 1 "register_operand"))
+   (match_operand:VI124_AVX2 2 "register_operand")]
+  ; Note that SSE2 does not have signed SI multiply
+  "TARGET_XOP || TARGET_SSE4_1
+   || (TARGET_SSE2 && (<u_bool> || <MODE>mode != V4SImode))"
 {
-  rtx op1, op2, t1, t2, dest;
-
-  op1 = operands[1];
-  op2 = operands[2];
-  t1 = gen_reg_rtx (<MODE>mode);
-  t2 = gen_reg_rtx (<MODE>mode);
-  dest = gen_lowpart (<MODE>mode, operands[0]);
-
-  emit_insn (gen_mul<mode>3 (t1, op1, op2));
-  emit_insn (gen_<s>mul<mode>3_highpart (t2, op1, op2));
-  emit_insn (gen_vec_interleave_low<mode> (dest, t1, t2));
-  DONE;
-})
-
-(define_expand "vec_widen_<s>mult_hi_v8si"
-  [(match_operand:V4DI 0 "register_operand")
-   (any_extend:V4DI (match_operand:V8SI 1 "nonimmediate_operand"))
-   (match_operand:V8SI 2 "nonimmediate_operand")]
-  "TARGET_AVX2"
-{
-  rtx t1, t2, t3, t4;
-
-  t1 = gen_reg_rtx (V4DImode);
-  t2 = gen_reg_rtx (V4DImode);
-  t3 = gen_reg_rtx (V8SImode);
-  t4 = gen_reg_rtx (V8SImode);
-  emit_insn (gen_avx2_permv4di_1 (t1, gen_lowpart (V4DImode, operands[1]),
-				  const0_rtx, const2_rtx,
-				  const1_rtx, GEN_INT (3)));
-  emit_insn (gen_avx2_permv4di_1 (t2, gen_lowpart (V4DImode, operands[2]),
-				  const0_rtx, const2_rtx,
-				  const1_rtx, GEN_INT (3)));
-  emit_insn (gen_avx2_pshufdv3 (t3, gen_lowpart (V8SImode, t1),
-				GEN_INT (2 + (2 << 2) + (3 << 4) + (3 << 6))));
-  emit_insn (gen_avx2_pshufdv3 (t4, gen_lowpart (V8SImode, t2),
-				GEN_INT (2 + (2 << 2) + (3 << 4) + (3 << 6))));
-  emit_insn (gen_avx2_<u>mulv4siv4di3 (operands[0], t3, t4));
-  DONE;
-})
-
-(define_expand "vec_widen_<s>mult_lo_v8si"
-  [(match_operand:V4DI 0 "register_operand")
-   (any_extend:V4DI (match_operand:V8SI 1 "nonimmediate_operand"))
-   (match_operand:V8SI 2 "nonimmediate_operand")]
-  "TARGET_AVX2"
-{
-  rtx t1, t2, t3, t4;
-
-  t1 = gen_reg_rtx (V4DImode);
-  t2 = gen_reg_rtx (V4DImode);
-  t3 = gen_reg_rtx (V8SImode);
-  t4 = gen_reg_rtx (V8SImode);
-  emit_insn (gen_avx2_permv4di_1 (t1, gen_lowpart (V4DImode, operands[1]),
-				  const0_rtx, const2_rtx,
-				  const1_rtx, GEN_INT (3)));
-  emit_insn (gen_avx2_permv4di_1 (t2,  gen_lowpart (V4DImode, operands[2]),
-				  const0_rtx, const2_rtx,
-				  const1_rtx, GEN_INT (3)));
-  emit_insn (gen_avx2_pshufdv3 (t3, gen_lowpart (V8SImode, t1),
-				GEN_INT (0 + (0 << 2) + (1 << 4) + (1 << 6))));
-  emit_insn (gen_avx2_pshufdv3 (t4, gen_lowpart (V8SImode, t2),
-				GEN_INT (0 + (0 << 2) + (1 << 4) + (1 << 6))));
-  emit_insn (gen_avx2_<u>mulv4siv4di3 (operands[0], t3, t4));
-  DONE;
-})
-
-(define_expand "vec_widen_smult_hi_v4si"
-  [(match_operand:V2DI 0 "register_operand")
-   (match_operand:V4SI 1 "register_operand")
-   (match_operand:V4SI 2 "register_operand")]
-  "TARGET_SSE4_1"
-{
-  rtx op1, op2, t1, t2;
-
-  op1 = operands[1];
-  op2 = operands[2];
-  t1 = gen_reg_rtx (V4SImode);
-  t2 = gen_reg_rtx (V4SImode);
-
-  if (TARGET_XOP)
-    {
-      rtx t3 = gen_reg_rtx (V2DImode);
-
-      emit_insn (gen_sse2_pshufd_1 (t1, op1, GEN_INT (0), GEN_INT (2),
-				    GEN_INT (1), GEN_INT (3)));
-      emit_insn (gen_sse2_pshufd_1 (t2, op2, GEN_INT (0), GEN_INT (2),
-				    GEN_INT (1), GEN_INT (3)));
-      emit_move_insn (t3, CONST0_RTX (V2DImode));
-
-      emit_insn (gen_xop_pmacsdqh (operands[0], t1, t2, t3));
-      DONE;
-    }
-
-  emit_insn (gen_vec_interleave_highv4si (t1, op1, op1));
-  emit_insn (gen_vec_interleave_highv4si (t2, op2, op2));
-  emit_insn (gen_sse4_1_mulv2siv2di3 (operands[0], t1, t2));
-  DONE;
-})
-
-(define_expand "vec_widen_smult_lo_v4si"
-  [(match_operand:V2DI 0 "register_operand")
-   (match_operand:V4SI 1 "register_operand")
-   (match_operand:V4SI 2 "register_operand")]
-  "TARGET_SSE4_1"
-{
-  rtx op1, op2, t1, t2;
-
-  op1 = operands[1];
-  op2 = operands[2];
-  t1 = gen_reg_rtx (V4SImode);
-  t2 = gen_reg_rtx (V4SImode);
-
-  if (TARGET_XOP)
-    {
-      rtx t3 = gen_reg_rtx (V2DImode);
-
-      emit_insn (gen_sse2_pshufd_1 (t1, op1, GEN_INT (0), GEN_INT (2),
-				    GEN_INT (1), GEN_INT (3)));
-      emit_insn (gen_sse2_pshufd_1 (t2, op2, GEN_INT (0), GEN_INT (2),
-				    GEN_INT (1), GEN_INT (3)));
-      emit_move_insn (t3, CONST0_RTX (V2DImode));
-
-      emit_insn (gen_xop_pmacsdql (operands[0], t1, t2, t3));
-      DONE;
-    }
-
-  emit_insn (gen_vec_interleave_lowv4si (t1, op1, op1));
-  emit_insn (gen_vec_interleave_lowv4si (t2, op2, op2));
-  emit_insn (gen_sse4_1_mulv2siv2di3 (operands[0], t1, t2));
-  DONE;
-})
-
-(define_expand "vec_widen_umult_hi_v4si"
-  [(match_operand:V2DI 0 "register_operand")
-   (match_operand:V4SI 1 "register_operand")
-   (match_operand:V4SI 2 "register_operand")]
-  "TARGET_SSE2"
-{
-  rtx op1, op2, t1, t2;
-
-  op1 = operands[1];
-  op2 = operands[2];
-  t1 = gen_reg_rtx (V4SImode);
-  t2 = gen_reg_rtx (V4SImode);
-
-  emit_insn (gen_vec_interleave_highv4si (t1, op1, op1));
-  emit_insn (gen_vec_interleave_highv4si (t2, op2, op2));
-  emit_insn (gen_sse2_umulv2siv2di3 (operands[0], t1, t2));
-  DONE;
-})
-
-(define_expand "vec_widen_umult_lo_v4si"
-  [(match_operand:V2DI 0 "register_operand")
-   (match_operand:V4SI 1 "register_operand")
-   (match_operand:V4SI 2 "register_operand")]
-  "TARGET_SSE2"
-{
-  rtx op1, op2, t1, t2;
-
-  op1 = operands[1];
-  op2 = operands[2];
-  t1 = gen_reg_rtx (V4SImode);
-  t2 = gen_reg_rtx (V4SImode);
-
-  emit_insn (gen_vec_interleave_lowv4si (t1, op1, op1));
-  emit_insn (gen_vec_interleave_lowv4si (t2, op2, op2));
-  emit_insn (gen_sse2_umulv2siv2di3 (operands[0], t1, t2));
+  ix86_expand_mul_widen_hilo (operands[0], operands[1], operands[2],
+			      <u_bool>, false);
   DONE;
 })
 
