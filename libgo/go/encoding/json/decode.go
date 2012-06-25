@@ -273,9 +273,14 @@ func (d *decodeState) indirect(v reflect.Value, decodingNull bool) (Unmarshaler,
 			_, isUnmarshaler = v.Interface().(Unmarshaler)
 		}
 
+		// Load value from interface, but only if the result will be
+		// usefully addressable.
 		if iv := v; iv.Kind() == reflect.Interface && !iv.IsNil() {
-			v = iv.Elem()
-			continue
+			e := iv.Elem()
+			if e.Kind() == reflect.Ptr && !e.IsNil() && (!decodingNull || e.Elem().Kind() == reflect.Ptr) {
+				v = e
+				continue
+			}
 		}
 
 		pv := v
@@ -588,6 +593,11 @@ func (d *decodeState) literal(v reflect.Value) {
 // produce more helpful error messages.
 func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool) {
 	// Check for unmarshaler.
+	if len(item) == 0 {
+		//Empty string given
+		d.saveError(fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal %q into %v", item, v.Type()))
+		return
+	}
 	wantptr := item[0] == 'n' // null
 	unmarshaler, pv := d.indirect(v, wantptr)
 	if unmarshaler != nil {

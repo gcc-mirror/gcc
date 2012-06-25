@@ -168,6 +168,7 @@ __go_free(void *v)
 		c->local_by_size[sizeclass].nfree++;
 		runtime_MCache_Free(c, v, sizeclass, size);
 	}
+	c->local_nfree++;
 	c->local_alloc -= size;
 	if(prof)
 		runtime_MProf_Free(v, size);

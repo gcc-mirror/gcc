@@ -150,8 +150,7 @@ runtime_addfinalizer(void *p, void (*f)(void*), const struct __go_func_type *ft)
 	tab = TAB(p);
 	runtime_lock(tab);
 	if(f == nil) {
-		if(lookfintab(tab, p, true, nil))
-			runtime_setblockspecial(p, false);
+		lookfintab(tab, p, true, nil);
 		runtime_unlock(tab);
 		return true;
 	}
