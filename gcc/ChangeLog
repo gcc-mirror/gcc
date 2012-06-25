@@ -467,7 +467,7 @@
 	(gen_namespace_die): Call add_pubname_string.
 	(dwarf2out_finish): Call add_AT_pubnames; Move logic on when to
 	produce pubnames and pubtypes sections to output_pubnames.
-	* common.opt: New option '-gpubnames'.
+	* common.opt (-gpubnames): New option.
 	* doc/invoke.texi: Document it.
 
 2012-06-21  Steven Bosscher  <steven@gcc.gnu.org>
