@@ -736,7 +736,7 @@ enum target_cpu_default
    is reduced by 256, an over-estimated upper bound for the stack use by the
    prologue.
    We define only one threshold for both the prolog and the epilog.  When the
-   frame size is larger than this threshold, we allocate the are to save SSE
+   frame size is larger than this threshold, we allocate the area to save SSE
    regs, then save them, and then allocate the remaining.  There is no SEH
    unwind info for this later allocation.  */
 #define SEH_MAX_FRAME_SIZE ((2U << 30) - 256)

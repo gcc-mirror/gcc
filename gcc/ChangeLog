@@ -1,5 +1,9 @@
 2012-06-25  Tristan Gingold  <gingold@adacore.com>
 
+	* config/i386/i386.h: Fix typo.
+
+2012-06-25  Tristan Gingold  <gingold@adacore.com>
+
 	* config/i386/winnt.c (i386_pe_seh_end_prologue): Move code to ...
 	(seh_cfa_adjust_cfa): ... that function.
 	(seh_emit_stackalloc): Do not emit out of range values.
