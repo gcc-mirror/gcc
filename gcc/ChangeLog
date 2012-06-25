@@ -1,5 +1,11 @@
 2012-06-25  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/sse.md (sse2_sse4_1): Remove code attr.
+	(<s>dot_prodv4si, <s>dot_prodv8si): Remove
+	(sdot_prodv4si): New; handle only XOP.
+
+2012-06-25  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386-builtin-types.def (V4UDI, V8USI): New.
 	(V2UDI_FUNC_V4USI_V4USI): New.
 	(V4UDI_FUNC_V8USI_V8USI): New.
