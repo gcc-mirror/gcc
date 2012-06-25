@@ -5838,12 +5838,9 @@ build_data_member_initialization (tree t, VEC(constructor_elt,gc) **vec)
 	member = op;
       else
 	{
-	  /* We don't put out anything for an empty base.  */
+	  /* This is an initializer for an empty base; keep it for now so
+	     we can check it in cxx_eval_bare_aggregate.  */
 	  gcc_assert (is_empty_class (TREE_TYPE (TREE_TYPE (member))));
-	  /* But if the initializer isn't constexpr, leave it in so we
-	     complain later.  */
-	  if (potential_constant_expression (init))
-	    return true;
 	}
     }
   if (TREE_CODE (member) == ADDR_EXPR)
@@ -7063,6 +7060,12 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
 	     initialization into the previous initialization.  */
 	  constructor_elt *inner = base_field_constructor_elt (n, ce->index);
 	  inner->value = elt;
+	}
+      else if (TREE_CODE (ce->index) == NOP_EXPR)
+	{
+	  /* This is an initializer for an empty base; now that we've
+	     checked that it's constant, we can ignore it.  */
+	  gcc_assert (is_empty_class (TREE_TYPE (TREE_TYPE (ce->index))));
 	}
       else
 	CONSTRUCTOR_APPEND_ELT (n, ce->index, elt);
