@@ -1,5 +1,8 @@
 2012-06-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52988
+	* g++.dg/cpp0x/nullptr28.C: New.
+
 	PR c++/53202
 	* g++.dg/cpp0x/constexpr-tuple.C: New.
 

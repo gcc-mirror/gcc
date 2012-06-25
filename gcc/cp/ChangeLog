@@ -1,5 +1,9 @@
 2012-06-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52988
+	* typeck.c (decay_conversion): Don't discard side-effects from
+	expressions of nullptr_t.
+
 	PR c++/53202
 	* semantics.c (build_data_member_initialization): Always keep
 	initializer for empty base.
