@@ -64,8 +64,6 @@ if ![info exists PROFOPT_OPTIONS] {
 	{ -Os } ]
 }
 
-set prof_option_list $PROFOPT_OPTIONS
-
 #
 # profopt-cleanup -- remove profiling or performance results files.
 #
@@ -215,7 +213,7 @@ proc profopt-get-options { src } {
 #
 proc profopt-execute { src } {
     global srcdir tmpdir
-    global prof_option_list
+    global PROFOPT_OPTIONS
     global tool profile_option feedback_option prof_ext perf_ext perf_delta
     global generate_final_code use_final_code
     global verbose
@@ -226,6 +224,12 @@ proc profopt-execute { src } {
     if ![info exists feedback_option] {
         error "No feedback option specified for second compile."
     }
+
+    # Use the default option list or one defined for a set of tests.
+    if ![info exists PROFOPT_OPTIONS] {
+         error "PROFOPT_OPTIONS is not defined"
+    }
+    set prof_option_list $PROFOPT_OPTIONS
 
     regsub "(?q)$srcdir/" $src "" testcase
     # If we couldn't rip $srcdir out of `src' then just do the best we can.

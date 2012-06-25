@@ -1,3 +1,14 @@
+2012-06-25  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/profopt.exp: Make prof_option_list local to profopt-execute.
+	* g++.dg/tree-prof/tree-prof.exp (PROFOPT_OPTIONS): Define after
+	including profopt.opt; save and restore existing value.
+	* g++.dg/bprob/bprob.exp: Likewise.
+	* gcc.dg/matrix/matrix.exp: Likewise.
+	* gcc.dg/tree-prof/tree-prof.exp: Likewise.
+	* gcc.misc-tests/bprob.exp: Likewise; also replace formerly-ignored
+	PROFOPT_OPTIONS.
+
 2012-06-25  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/pr53749.c: New.
