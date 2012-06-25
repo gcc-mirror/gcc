@@ -5564,6 +5564,12 @@
 	operands[2] = force_const_mem (<MODE>mode, operands[2]);
       ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
     }
+  else if (TARGET_XOP)
+    {
+      rtx z = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
+      emit_insn (gen_xop_pmacsdd (operands[0], operands[1], operands[2], z));
+      DONE;
+    }
   else
     {
       ix86_expand_sse2_mulv4si3 (operands[0], operands[1], operands[2]);
