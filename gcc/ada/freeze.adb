@@ -2525,14 +2525,14 @@ package body Freeze is
       end if;
 
       --  Deal with delayed aspect specifications. The analysis of the
-      --  aspect is required to be delayed to the freeze point, so we
-      --  evaluate the pragma or attribute definition clause in the tree at
+      --  aspect is required to be delayed to the freeze point, thus we
+      --  analyze the pragma or attribute definition clause in the tree at
       --  this point. We also analyze the aspect specification node at the
       --  freeze point when the aspect doesn't correspond to
       --  pragma/attribute definition clause.
 
       if Has_Delayed_Aspects (E) then
-         Evaluate_Aspects_At_Freeze_Point (E);
+         Analyze_Aspects_At_Freeze_Point (E);
       end if;
 
       --  Here to freeze the entity

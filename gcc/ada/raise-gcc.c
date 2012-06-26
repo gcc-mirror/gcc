@@ -439,9 +439,9 @@ db_phases (int phases)
      |
      +--> __gnat_personality_v0 (context, exception)
 	   |
-	   +--> get_region_descriptor_for (context)
+	   +--> get_region_description_for (context)
 	   |
-	   +--> get_action_descriptor_for (context, exception, region)
+	   +--> get_action_description_for (context, exception, region)
 	   |       |
 	   |       +--> get_call_site_action_for (context, region)
 	   |            (one version for each underlying scheme)
@@ -1019,7 +1019,6 @@ setup_to_install (_Unwind_Context *uw_context,
    automatic backtraces upon exception raise, as provided through the
    GNAT.Traceback facilities.  */
 extern void __gnat_notify_handled_exception (void);
-extern void __gnat_notify_unhandled_exception (void);
 
 /* Below is the eh personality routine per se. We currently assume that only
    GNU-Ada exceptions are met.  */

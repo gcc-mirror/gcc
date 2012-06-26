@@ -3905,10 +3905,95 @@ package body Sem_Attr is
       -- Old --
       ---------
 
-      when Attribute_Old =>
+      when Attribute_Old => Old : declare
+         CS : Entity_Id;
+         --  The enclosing scope, excluding loops for quantified expressions.
+         --  During analysis, it is the postcondition subprogram. During
+         --  pre-analysis, it is the scope of the subprogram declaration.
 
-         --  The attribute reference is a primary. If expressions follow, the
-         --  attribute reference is an indexable object, so rewrite the node
+         Prag : Node_Id;
+         --  During pre-analysis, Prag is the enclosing pragma node if any
+
+      begin
+         --  Find enclosing scopes, excluding loops
+
+         CS := Current_Scope;
+         while Ekind (CS) = E_Loop loop
+            CS := Scope (CS);
+         end loop;
+
+         --  If we are in Spec_Expression mode, this should be the prescan of
+         --  the postcondition (or contract case, or test case) pragma.
+
+         if In_Spec_Expression then
+
+            --  Check in postcondition or Ensures clause
+
+            Prag := N;
+            while not Nkind_In (Prag, N_Pragma,
+                                N_Function_Specification,
+                                N_Procedure_Specification,
+                                N_Subprogram_Body)
+            loop
+               Prag := Parent (Prag);
+            end loop;
+
+            if Nkind (Prag) /= N_Pragma then
+               Error_Attr ("% attribute can only appear in postcondition", P);
+
+            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Case
+                    or else
+                  Get_Pragma_Id (Prag) = Pragma_Test_Case
+            then
+               declare
+                  Arg_Ens : constant Node_Id :=
+                              Get_Ensures_From_CTC_Pragma (Prag);
+                  Arg     : Node_Id;
+
+               begin
+                  Arg := N;
+                  while Arg /= Prag and Arg /= Arg_Ens loop
+                     Arg := Parent (Arg);
+                  end loop;
+
+                  if Arg /= Arg_Ens then
+                     if Get_Pragma_Id (Prag) = Pragma_Contract_Case then
+                        Error_Attr
+                          ("% attribute misplaced inside contract case", P);
+                     else
+                        Error_Attr
+                          ("% attribute misplaced inside test case", P);
+                     end if;
+                  end if;
+               end;
+
+            elsif Get_Pragma_Id (Prag) /= Pragma_Postcondition then
+               Error_Attr ("% attribute can only appear in postcondition", P);
+            end if;
+
+         --  Body case, where we must be inside a generated _Postcondition
+         --  procedure, or else the attribute use is definitely misplaced. The
+         --  postcondition itself may have generated transient scopes, and is
+         --  not necessarily the current one.
+
+         else
+            while Present (CS) and then CS /= Standard_Standard loop
+               if Chars (CS) = Name_uPostconditions then
+                  exit;
+               else
+                  CS := Scope (CS);
+               end if;
+            end loop;
+
+            if Chars (CS) /= Name_uPostconditions then
+               Error_Attr ("% attribute can only appear in postcondition", P);
+            end if;
+         end if;
+
+         --  Either the attribute reference is generated for a Requires
+         --  clause, in which case no expressions follow, or it is a
+         --  primary. In that case, if expressions follow, the attribute
+         --  reference is an indexable object, so rewrite the node
          --  accordingly.
 
          if Present (E1) then
@@ -3926,16 +4011,12 @@ package body Sem_Attr is
 
          Check_E0;
 
-         --  Prefix has not been analyzed yet, and its full analysis will take
-         --  place during expansion (see below).
+         --  Prefix has not been analyzed yet, and its full analysis will
+         --  take place during expansion (see below).
 
          Preanalyze_And_Resolve (P);
          P_Type := Etype (P);
          Set_Etype (N, P_Type);
-
-         if No (Current_Subprogram) then
-            Error_Attr ("attribute % can only appear within subprogram", N);
-         end if;
 
          if Is_Limited_Type (P_Type) then
             Error_Attr ("attribute % cannot apply to limited objects", P);
@@ -3948,77 +4029,14 @@ package body Sem_Attr is
               ("?attribute Old applied to constant has no effect", P);
          end if;
 
-         --  Check that the expression does not refer to local entities
-
-         Check_Local : declare
-            Subp : Entity_Id := Current_Subprogram;
-
-            function Process (N : Node_Id) return Traverse_Result;
-            --  Check that N does not contain references to local variables or
-            --  other local entities of Subp.
-
-            -------------
-            -- Process --
-            -------------
-
-            function Process (N : Node_Id) return Traverse_Result is
-            begin
-               if Is_Entity_Name (N)
-                 and then Present (Entity (N))
-                 and then not Is_Formal (Entity (N))
-                 and then Enclosing_Subprogram (Entity (N)) = Subp
-               then
-                  Error_Msg_Node_1 := Entity (N);
-                  Error_Attr
-                    ("attribute % cannot refer to local variable&", N);
-               end if;
-
-               return OK;
-            end Process;
-
-            procedure Check_No_Local is new Traverse_Proc;
-
-         --  Start of processing for Check_Local
-
-         begin
-            Check_No_Local (P);
-
-            if In_Parameter_Specification (P) then
-
-               --  We have additional restrictions on using 'Old in parameter
-               --  specifications.
-
-               if Present (Enclosing_Subprogram (Current_Subprogram)) then
-
-                  --  Check that there is no reference to the enclosing
-                  --  subprogram local variables. Otherwise, we might end up
-                  --  being called from the enclosing subprogram and thus using
-                  --  'Old on a local variable which is not defined at entry
-                  --  time.
-
-                  Subp := Enclosing_Subprogram (Current_Subprogram);
-                  Check_No_Local (P);
-
-               else
-                  --  We must prevent default expression of library-level
-                  --  subprogram from using 'Old, as the subprogram may be
-                  --  used in elaboration code for which there is no enclosing
-                  --  subprogram.
-
-                  Error_Attr
-                    ("attribute % can only appear within subprogram", N);
-               end if;
-            end if;
-         end Check_Local;
-
          --  The attribute appears within a pre/postcondition, but refers to
-         --  an entity in the enclosing subprogram. If it is a component of a
-         --  formal its expansion might generate actual subtypes that may be
-         --  referenced in an inner context, and which must be elaborated
-         --  within the subprogram itself. As a result we create a declaration
-         --  for it and insert it at the start of the enclosing subprogram
-         --  This is properly an expansion activity but it has to be performed
-         --  now to prevent out-of-order issues.
+         --  an entity in the enclosing subprogram. If it is a component of
+         --  a formal its expansion might generate actual subtypes that may
+         --  be referenced in an inner context, and which must be elaborated
+         --  within the subprogram itself. As a result we create a
+         --  declaration for it and insert it at the start of the enclosing
+         --  subprogram. This is properly an expansion activity but it has
+         --  to be performed now to prevent out-of-order issues.
 
          if Nkind (P) = N_Selected_Component
            and then Has_Discriminants (Etype (Prefix (P)))
@@ -4028,6 +4046,7 @@ package body Sem_Attr is
             Set_Etype (P, P_Type);
             Expand (N);
          end if;
+      end Old;
 
       ----------------------
       -- Overlaps_Storage --
@@ -4261,9 +4280,9 @@ package body Sem_Attr is
          end if;
 
          --  If we are in the scope of a function and in Spec_Expression mode,
-         --  this is likely the prescan of the postcondition pragma, and we
-         --  just set the proper type. If there is an error it will be caught
-         --  when the real Analyze call is done.
+         --  this is likely the prescan of the postcondition (or contract case,
+         --  or test case) pragma, and we just set the proper type. If there is
+         --  an error it will be caught when the real Analyze call is done.
 
          if Ekind (CS) = E_Function
            and then In_Spec_Expression
@@ -4278,7 +4297,7 @@ package body Sem_Attr is
                Error_Attr;
             end if;
 
-            --  Check in postcondition of function
+            --  Check in postcondition or Ensures clause of function
 
             Prag := N;
             while not Nkind_In (Prag, N_Pragma,
@@ -4352,8 +4371,8 @@ package body Sem_Attr is
             end if;
 
          --  Body case, where we must be inside a generated _Postcondition
-         --  procedure, and the prefix must be on the scope stack, or else
-         --  the attribute use is definitely misplaced. The condition itself
+         --  procedure, and the prefix must be on the scope stack, or else the
+         --  attribute use is definitely misplaced. The postcondition itself
          --  may have generated transient scopes, and is not necessarily the
          --  current one.
 

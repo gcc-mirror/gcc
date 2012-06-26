@@ -299,6 +299,9 @@ package Sem_Ch13 is
 
    --  Quite an awkward procedure, but this is an awkard requirement!
 
+   procedure Analyze_Aspects_At_Freeze_Point (E : Entity_Id);
+   --  Analyze all the delayed aspects for entity E at freezing point
+
    procedure Check_Aspect_At_Freeze_Point (ASN : Node_Id);
    --  Performs the processing described above at the freeze point, ASN is the
    --  N_Aspect_Specification node for the aspect.
@@ -307,7 +310,4 @@ package Sem_Ch13 is
    --  Performs the processing described above at the freeze all point, and
    --  issues appropriate error messages if the visibility has indeed changed.
    --  Again, ASN is the N_Aspect_Specification node for the aspect.
-
-   procedure Evaluate_Aspects_At_Freeze_Point (E : Entity_Id);
-   --  Evaluates all the delayed aspects for entity E at freezing point
 end Sem_Ch13;

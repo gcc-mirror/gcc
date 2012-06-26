@@ -265,7 +265,6 @@ Implementation Defined Attributes
 * Mechanism_Code::
 * Null_Parameter::
 * Object_Size::
-* Old::
 * Passed_By_Reference::
 * Pool_Address::
 * Range_Length::
@@ -6016,7 +6015,6 @@ consideration, you should minimize the use of these attributes.
 * Mechanism_Code::
 * Null_Parameter::
 * Object_Size::
-* Old::
 * Passed_By_Reference::
 * Pool_Address::
 * Range_Length::
@@ -6626,53 +6624,6 @@ will have a size of 40 (that is @code{Rec'Size} will be 40).  The
 alignment will be 4, because of the
 integer field, and so the default size of record objects for this type
 will be 64 (8 bytes).
-
-@node Old
-@unnumberedsec Old
-@cindex Capturing Old values
-@cindex Postconditions
-@noindent
-The attribute Prefix'Old can be used within a
-subprogram body or within a precondition or
-postcondition pragma. The effect is to
-refer to the value of the prefix on entry. So for
-example if you have an argument of a record type X called Arg1,
-you can refer to Arg1.Field'Old which yields the value of
-Arg1.Field on entry. The implementation simply involves generating
-an object declaration which captures the value on entry.
-The prefix must denote an object of a nonlimited type (since limited types
-cannot be copied to capture their values) and it must not reference a local
-variable (since local variables do not exist at subprogram entry time). Note
-that the variable introduced by a quantified expression is a local variable.
-The following example shows the use of 'Old to implement
-a test of a postcondition:
-
-@smallexample @c ada
-with Old_Pkg;
-procedure Old is
-begin
-   Old_Pkg.Incr;
-end Old;
-
-package Old_Pkg is
-   procedure Incr;
-end Old_Pkg;
-
-package body Old_Pkg is
-   Count : Natural := 0;
-
-   procedure Incr is
-   begin
-      ... code manipulating the value of Count
-
-      pragma Assert (Count = Count'Old + 1);
-   end Incr;
-end Old_Pkg;
-@end smallexample
-
-@noindent
-Note that it is allowed to apply 'Old to a constant entity, but this will
-result in a warning, since the old and new values will always be the same.
 
 @node Passed_By_Reference
 @unnumberedsec Passed_By_Reference
