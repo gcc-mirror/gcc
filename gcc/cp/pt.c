@@ -10497,7 +10497,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
               DECL_CHAIN (prev_r) = r;
           }
 
-	if (DECL_CHAIN (t))
+	/* If cp_unevaluated_operand is set, we're just looking for a
+	   single dummy parameter, so don't keep going.  */
+	if (DECL_CHAIN (t) && !cp_unevaluated_operand)
 	  DECL_CHAIN (r) = tsubst (DECL_CHAIN (t), args,
 				   complain, DECL_CHAIN (t));
 
@@ -12078,8 +12080,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       if (r == NULL_TREE)
 	{
-	  tree c;
-
 	  /* We get here for a use of 'this' in an NSDMI.  */
 	  if (DECL_NAME (t) == this_identifier
 	      && at_function_scope_p ()
@@ -12090,12 +12090,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     declaration (such as in a late-specified return type).  Just
 	     make a dummy decl, since it's only used for its type.  */
 	  gcc_assert (cp_unevaluated_operand != 0);
-	  /* We copy T because want to tsubst the PARM_DECL only,
-	     not the following PARM_DECLs that are chained to T.  */
-	  c = copy_node (t);
-	  r = tsubst_decl (c, args, complain);
-	  if (r == NULL_TREE)
-	    return error_mark_node;
+	  r = tsubst_decl (t, args, complain);
 	  /* Give it the template pattern as its context; its true context
 	     hasn't been instantiated yet and this is good enough for
 	     mangling.  */

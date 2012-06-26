@@ -1,3 +1,10 @@
+2012-06-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53498
+	PR c++/53305
+	* g++.dg/cpp0x/decltype38.C: New.
+	* g++.dg/cpp0x/variadic132.C: Remove dg-error.
+
 2012-06-25  Janis Johnson  <janisjo@codesourcery.com>
 
 	* lib/target-supports-dg.exp (testname-for-summary): New.

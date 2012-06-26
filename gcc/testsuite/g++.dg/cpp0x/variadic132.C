@@ -9,11 +9,11 @@ struct funct
   int operator()(argTs...);
 };
 
-template<class...> class test;
+template<class...> struct test;
 
 template<template <class...> class tp,
 	 class... arg1Ts, class... arg2Ts>
-class test<tp<arg1Ts...>, tp<arg2Ts...>>
+struct test<tp<arg1Ts...>, tp<arg2Ts...>>
 {
   template<class func, class...arg3Ts>
     auto test2(func fun, arg1Ts... arg1s, arg3Ts... arg3s)
@@ -23,5 +23,5 @@ class test<tp<arg1Ts...>, tp<arg2Ts...>>
 int main()
 {
   test<tuple<>, tuple<char,int>> t2;
-  t2.test2(funct(), 'a', 2);  // { dg-error "no matching function" }
+  t2.test2(funct(), 'a', 2);
 }
