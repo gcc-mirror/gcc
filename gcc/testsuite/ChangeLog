@@ -1,3 +1,8 @@
+2012-06-26  Matt Turner  <mattst88@gmail.com>
+
+	PR target/35294
+	* gcc.target/arm/mmx-2.c: New.
+
 2012-06-26  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/53752

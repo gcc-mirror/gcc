@@ -1,3 +1,22 @@
+2012-06-26  Matt Turner  <mattst88@gmail.com>
+
+	* doc/extend.texi (__builtin_arm_tinsrb): Add missing second
+	parameter.
+	(__builtin_arm_tinsrh): Likewise.
+	(__builtin_arm_tinsrw): Likewise.
+	(__builtin_arm_wsadb): Add missing v2si parameter.
+	(__builtin_arm_wsadh): Likewise.
+	(__builtin_arm_getwcx): Delete.
+	(__builtin_arm_setwcx): Delete.
+	(__builtin_arm_getwcgr0): Add.
+	(__builtin_arm_getwcgr1): Add.
+	(__builtin_arm_getwcgr2): Add.
+	(__builtin_arm_getwcgr3): Add.
+	(__builtin_arm_setwcgr0): Add.
+	(__builtin_arm_setwcgr1): Add.
+	(__builtin_arm_setwcgr2): Add.
+	(__builtin_arm_setwcgr3): Add.
+
 2012-06-26  Richard Guenther  <rguenther@suse.de>
 
 	Revert
