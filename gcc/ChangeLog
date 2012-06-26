@@ -1,3 +1,15 @@
+2012-06-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* tree-pass.h (pass_strength_reduction): New decl.
+	* tree-ssa-loop-ivopts.c (initialize_costs): Make non-static.
+	(finalize_costs): Likewise.
+	* timevar.def (TV_TREE_SLSR): New timevar.
+	* gimple-ssa-strength-reduction.c: New.
+	* tree-flow.h (initialize_costs): New decl.
+	(finalize_costs): Likewise.
+	* Makefile.in (tree-ssa-strength-reduction.o): New dependencies.
+	* passes.c (init_optimization_passes): Add pass_strength_reduction.
+
 2012-06-26  Matt Turner  <mattst88@gmail.com>
 
 	* doc/extend.texi (__builtin_arm_tinsrb): Add missing second
