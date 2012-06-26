@@ -1,3 +1,8 @@
+2012-06-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* var-tracking.c (vt_add_function_parameter): Use a preserved
+	VALUE for the MEM address of an incoming parameter.
+
 2012-06-26  Sterling Augustine <saugustine@google.com>
 
 	* dwarf2out.c (output_pubnames): Add check for DW_TAG_enumerator.

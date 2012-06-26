@@ -9454,6 +9454,17 @@ vt_add_function_parameter (tree parm)
 			     VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
 	  dv = dv_from_value (val->val_rtx);
 	}
+
+      if (MEM_P (incoming))
+	{
+	  val = cselib_lookup_from_insn (XEXP (incoming, 0), mode, true,
+					 VOIDmode, get_insns ());
+	  if (val)
+	    {
+	      preserve_value (val);
+	      incoming = replace_equiv_address_nv (incoming, val->val_rtx);
+	    }
+	}
     }
 
   if (REG_P (incoming))
