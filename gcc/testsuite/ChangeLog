@@ -1,3 +1,8 @@
+2012-06-26  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/scandump.exp (scan-dump, scan-dump-not, scan-dump-dem,
+	scan-dump-dem-not): Use printable pattern in test name.
+
 2012-06-26  Sterling Augustine  <saugustine@google.com>
 	    Dominique Dhumieres  <dominiq@lps.ens.fr>
 
