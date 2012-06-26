@@ -1,3 +1,9 @@
+2012-06-26  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/53752
+	* mangle.c (write_array_type): Truncate the number-of-elements
+	result.
+
 2012-06-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53498
