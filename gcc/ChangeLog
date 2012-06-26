@@ -1,3 +1,8 @@
+2012-06-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/rl78/rl78.h: Do not undefine DONT_USE_BUILTIN_SETJMP.
+	Do not define JMP_BUF_SIZE.
+
 2012-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53748
