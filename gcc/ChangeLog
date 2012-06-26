@@ -1,3 +1,8 @@
+2012-06-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/53682
+	* cselib.c (promote_debug_loc): Don't crash on NULL argument.
+
 2012-06-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md (simple_return): Use the simple_return rtx.
