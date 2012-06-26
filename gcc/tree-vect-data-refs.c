@@ -1094,6 +1094,9 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       gimple stmt = DR_STMT (dr);
       stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
+      if (!STMT_VINFO_RELEVANT_P (stmt_info))
+	continue;
+
       /* For interleaving, only the alignment of the first access matters. 
          Skip statements marked as not vectorizable.  */
       if ((STMT_VINFO_GROUPED_ACCESS (stmt_info)
@@ -1213,17 +1216,11 @@ vect_get_data_access_cost (struct data_reference *dr,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   int ncopies = vf / nunits;
-  bool supportable_dr_alignment = vect_supportable_dr_alignment (dr, true);
 
-  if (!supportable_dr_alignment)
-    *inside_cost = VECT_MAX_COST;
+  if (DR_IS_READ (dr))
+    vect_get_load_cost (dr, ncopies, true, inside_cost, outside_cost);
   else
-    {
-      if (DR_IS_READ (dr))
-        vect_get_load_cost (dr, ncopies, true, inside_cost, outside_cost);
-      else
-        vect_get_store_cost (dr, ncopies, inside_cost);
-    }
+    vect_get_store_cost (dr, ncopies, inside_cost);
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_get_data_access_cost: inside_cost = %d, "
@@ -1537,7 +1534,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
 
-      if (!STMT_VINFO_RELEVANT (stmt_info))
+      if (!STMT_VINFO_RELEVANT_P (stmt_info))
 	continue;
 
       /* For interleaving, only the alignment of the first access
