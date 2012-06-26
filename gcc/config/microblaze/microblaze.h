@@ -738,11 +738,6 @@ extern int save_volatiles;
 
 #define INTERRUPT_HANDLER_NAME "_interrupt_handler"
 
-/* These #define added for C++.  */
-#define UNALIGNED_SHORT_ASM_OP          ".data16"
-#define UNALIGNED_INT_ASM_OP            ".data32"
-#define UNALIGNED_DOUBLE_INT_ASM_OP     ".data8"
-
 /* The following #defines are used in the headers files. Always retain these.  */
 
 /* Added for declaring size at the end of the function.  */

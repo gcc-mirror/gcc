@@ -3420,8 +3420,8 @@ the installation in a consistent way, you can use conditionals to detect
 an inconsistency and report it with @samp{#error}.  For example,
 
 @smallexample
-#if !defined(UNALIGNED_INT_ASM_OP) && defined(DWARF2_DEBUGGING_INFO)
-#error "DWARF2_DEBUGGING_INFO requires UNALIGNED_INT_ASM_OP."
+#if !defined(FOO) && defined(BAR)
+#error "BAR requires FOO."
 #endif
 @end smallexample
 

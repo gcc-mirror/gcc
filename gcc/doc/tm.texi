@@ -8905,8 +8905,8 @@ that it does not contain any extraneous set bits in it.
 Define this macro to 0 if your target supports DWARF 2 frame unwind
 information, but it does not yet work with exception handling.
 Otherwise, if your target supports this information (if it defines
-@code{INCOMING_RETURN_ADDR_RTX} and either @code{UNALIGNED_INT_ASM_OP}
-or @code{OBJECT_FORMAT_ELF}), GCC will provide a default definition of 1.
+@code{INCOMING_RETURN_ADDR_RTX} and @code{OBJECT_FORMAT_ELF}),
+GCC will provide a default definition of 1.
 @end defmac
 
 @deftypefn {Common Target Hook} {enum unwind_info_type} TARGET_EXCEPT_UNWIND_INFO (struct gcc_options *@var{opts})

@@ -206,28 +206,11 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
 };
 
 /* Definitions of defaults for assembler-dependent names of various
-   pseudo-ops and section names.
-   Theses may be overridden in the tm.h file (if necessary) for a particular
-   assembler.  */
-#ifdef UNALIGNED_SHORT_ASM_OP
-#undef UNALIGNED_SHORT_ASM_OP
-#endif
-#define UNALIGNED_SHORT_ASM_OP	".word"
-
-#ifdef UNALIGNED_INT_ASM_OP
-#undef UNALIGNED_INT_ASM_OP
-#endif
-#define UNALIGNED_INT_ASM_OP	".long"
-
-#ifdef UNALIGNED_LONG_ASM_OP
-#undef UNALIGNED_LONG_ASM_OP
-#endif
-#define UNALIGNED_LONG_ASM_OP	".long"
-
-#ifdef UNALIGNED_DOUBLE_INT_ASM_OP
-#undef UNALIGNED_DOUBLE_INT_ASM_OP
-#endif
-#define UNALIGNED_DOUBLE_INT_ASM_OP	".quad"
+   pseudo-ops and section names.  */
+#define VMS_UNALIGNED_SHORT_ASM_OP	".word"
+#define VMS_UNALIGNED_INT_ASM_OP	".long"
+#define VMS_UNALIGNED_LONG_ASM_OP	".long"
+#define VMS_UNALIGNED_DOUBLE_INT_ASM_OP	".quad"
 
 #define VMS_ASM_BYTE_OP	".byte"
 
@@ -237,14 +220,14 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
 
 #ifndef UNALIGNED_PTR_ASM_OP
 #define UNALIGNED_PTR_ASM_OP \
-  (PTR_SIZE == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP : UNALIGNED_INT_ASM_OP)
+  (PTR_SIZE == 8 ? VMS_UNALIGNED_DOUBLE_INT_ASM_OP : VMS_UNALIGNED_INT_ASM_OP)
 #endif
 
 #ifndef UNALIGNED_OFFSET_ASM_OP
 #define UNALIGNED_OFFSET_ASM_OP(OFFSET) \
   (NUMBYTES(OFFSET) == 4 \
-   ? UNALIGNED_LONG_ASM_OP \
-   : (NUMBYTES(OFFSET) == 2 ? UNALIGNED_SHORT_ASM_OP : VMS_ASM_BYTE_OP))
+   ? VMS_UNALIGNED_LONG_ASM_OP \
+   : (NUMBYTES(OFFSET) == 2 ? VMS_UNALIGNED_SHORT_ASM_OP : VMS_ASM_BYTE_OP))
 #endif
 
 /* Definitions of defaults for formats and names of various special
@@ -284,7 +267,7 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #define ASM_OUTPUT_DEBUG_DELTA2(FILE,LABEL1,LABEL2)			 \
   do									 \
     {									 \
-      fprintf ((FILE), "\t%s\t", UNALIGNED_SHORT_ASM_OP);		 \
+      fprintf ((FILE), "\t%s\t", VMS_UNALIGNED_SHORT_ASM_OP);		 \
       assemble_name (FILE, LABEL1);					 \
       fprintf (FILE, "-");						 \
       assemble_name (FILE, LABEL2);					 \
@@ -296,7 +279,7 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #define ASM_OUTPUT_DEBUG_DELTA4(FILE,LABEL1,LABEL2)			 \
   do									 \
     {									 \
-      fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);			 \
+      fprintf ((FILE), "\t%s\t", VMS_UNALIGNED_INT_ASM_OP);		 \
       assemble_name (FILE, LABEL1);					 \
       fprintf (FILE, "-");						 \
       assemble_name (FILE, LABEL2);					 \
@@ -338,13 +321,14 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 #ifndef ASM_OUTPUT_DEBUG_DATA2
 #define ASM_OUTPUT_DEBUG_DATA2(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t%#x", UNALIGNED_SHORT_ASM_OP, \
+  fprintf ((FILE), "\t%s\t%#x", VMS_UNALIGNED_SHORT_ASM_OP, \
 	   (unsigned short) VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_DATA4
 #define ASM_OUTPUT_DEBUG_DATA4(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t%#lx", UNALIGNED_INT_ASM_OP, (unsigned long) VALUE)
+  fprintf ((FILE), "\t%s\t%#lx", VMS_UNALIGNED_INT_ASM_OP, \
+	   (unsigned long) VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_DATA
@@ -360,7 +344,7 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 #ifndef ASM_OUTPUT_DEBUG_DATA8
 #define ASM_OUTPUT_DEBUG_DATA8(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t%#llx", UNALIGNED_DOUBLE_INT_ASM_OP, \
+  fprintf ((FILE), "\t%s\t%#llx", VMS_UNALIGNED_DOUBLE_INT_ASM_OP, \
                                  (unsigned long long) VALUE)
 #endif
 

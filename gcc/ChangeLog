@@ -1,3 +1,19 @@
+2012-06-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
+	UNALIGNED_LONG_ASM_OP, UNALIGNED_DOUBLE_INT_ASM_OP): Poison.
+	* vmsdbgout.c (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
+	UNALIGNED_LONG_ASM_OP, UNALIGNED_DOUBLE_INT_ASM_OP): Rename to
+	VMS_UNALIGNED_SHORT_ASM_OP, VMS_UNALIGNED_INT_ASM_OP,
+	VMS_UNALIGNED_LONG_ASM_OP, and VMS_UNALIGNED_DOUBLE_INT_ASM_OP.
+	* config/microblaze/microblaze.h (UNALIGNED_SHORT_ASM_OP,
+	UNALIGNED_INT_ASM_OP, UNALIGNED_DOUBLE_INT_ASM_OP): Do not define.
+	* doc/tm.texi.in: Remove UNALIGNED_INT_ASM_OP reference from the
+	documentation.
+	* doc/tm.texi: Regenerate.
+	* doc/cpp.texi: Make example for #error generic.
+	* config/frv/frv.h: Fix example text to match tm.texi.
+
 2012-06-26  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* tree-pass.h (pass_strength_reduction): New decl.
