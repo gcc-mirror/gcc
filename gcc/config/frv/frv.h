@@ -1519,9 +1519,6 @@ __asm__("\n"								\
 #define REVERSIBLE_CC_MODE(MODE) \
   ((MODE) == CCmode || (MODE) == CC_UNSmode || (MODE) == CC_NZmode)
 
-/* Frv CCR_MODE's are not reversible.  */
-#define REVERSE_CONDEXEC_PREDICATES_P(x,y)      0
-
 
 /* Describing Relative Costs of Operations.  */
 
