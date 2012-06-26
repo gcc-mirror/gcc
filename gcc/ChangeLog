@@ -1,3 +1,11 @@
+2012-06-26  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	2012-06-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (estimate_num_insns): Estimate call cost for
+	tailcalls properly.
+
 2012-06-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR other/33190
