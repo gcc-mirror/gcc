@@ -1,5 +1,20 @@
 2012-06-25  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/target-supports-dg.exp (testname-for-summary): New.
+	* lib/profopt.exp (profopt_execute): Define testname_with_flags.
+	* lib/gcc-dg.exp (cleanup-coverage-files, cleanup-repo-notes,
+	cleanup-stack-usage, cleanup-dump, cleanup-saved-temps, scan-module,
+	scan-module-absence, output-exists, output-exists-not: Use
+	testname-for-summary.
+	(dg-test): Clean up testname_with_flags.
+	* lib/scanasm.exp (scan-assembler, scan-assembler-not, scan-hidden,
+	scan-not-hidden, scan-file, scan-file-not, scan-stack-usage,
+	scan-stack-usage-not, scan-assembler-times, scan-assembler-dem,
+	scan-assembler-dem-not, object-size: Use testname-for-summary.
+	* lib/gcov.exp (run-gcov): Likewise.
+	* lib/scandump.exp (scan-dump, scan-dump-times, scan-dump-not,
+	scan-dump-dem, scan-dump-dem-note): Likewise.
+
 	* lib/profopt.exp: Make prof_option_list local to profopt-execute.
 	* g++.dg/tree-prof/tree-prof.exp (PROFOPT_OPTIONS): Define after
 	including profopt.opt; save and restore existing value.

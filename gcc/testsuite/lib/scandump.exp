@@ -45,10 +45,7 @@ proc scan-dump { args } {
         }
     }
 
-    # This assumes that we are three frames down from dg-test, and that
-    # it still stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new DejaGnu release.
-    upvar 3 name testcase
+    set testcase [testname-for-summary]
 
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump $suf \"[lindex $args 1]\""
@@ -88,11 +85,7 @@ proc scan-dump-times { args } {
 	}
     }
 
-    # This assumes that we are three frames down from dg-test, and that
-    # it still stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new DejaGnu release.
-    upvar 3 name testcase
-
+    set testcase [testname-for-summary]
     set suf [dump-suffix [lindex $args 3]]
     set printable_pattern [make_pattern_printable [lindex $args 1]]
     set testname "$testcase scan-[lindex $args 0]-dump-times $suf \"$printable_pattern\" [lindex $args 2]"
@@ -132,11 +125,7 @@ proc scan-dump-not { args } {
 	}
     }
 
-    # This assumes that we are three frames down from dg-test, and that
-    # it still stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new DejaGnu release.
-    upvar 3 name testcase
-
+    set testcase [testname-for-summary]
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump-not $suf \"[lindex $args 1]\""
     set src [file tail [lindex $testcase 0]]
@@ -188,7 +177,7 @@ proc scan-dump-dem { args } {
 	verbose -log "c++filt is $cxxfilt"
     }
 
-    upvar 3 name testcase
+    set testcase [testname-for-summary]
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump-dem $suf \"[lindex $args 1]\""
     set src [file tail [lindex $testcase 0]]
@@ -239,8 +228,7 @@ proc scan-dump-dem-not { args } {
 	verbose -log "c++filt is $cxxfilt"
     }
 
-    upvar 3 name testcase
-
+    set testcase [testname-for-summary]
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump-dem-not $suf \"[lindex $args 1]\""
     set src [file tail [lindex $testcase 0]]
