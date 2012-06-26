@@ -810,6 +810,8 @@ bool expr_invariant_in_loop_p (struct loop *, tree);
 bool stmt_invariant_in_loop_p (struct loop *, gimple);
 bool multiplier_allowed_in_address_p (HOST_WIDE_INT, enum machine_mode,
 				      addr_space_t);
+void initialize_costs (void);
+void finalize_costs (void);
 unsigned multiply_by_const_cost (HOST_WIDE_INT, enum machine_mode, bool);
 unsigned add_regs_cost (enum machine_mode, bool);
 unsigned multiply_regs_cost (enum machine_mode, bool);
