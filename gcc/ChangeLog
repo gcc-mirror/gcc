@@ -1,3 +1,8 @@
+2012-06-26  Sterling Augustine <saugustine@google.com>
+
+        * dwarf2out.c (output_pubnames): Add check for DW_TAG_enumerator.
+        (prune_unused_types): Likewise.
+
 2012-06-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* system.h (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
