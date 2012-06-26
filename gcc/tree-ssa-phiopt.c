@@ -615,8 +615,12 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
   bool neg;
 
   /* FIXME: Gimplification of complex type is too hard for now.  */
-  if (TREE_CODE (TREE_TYPE (arg0)) == COMPLEX_TYPE
-      || TREE_CODE (TREE_TYPE (arg1)) == COMPLEX_TYPE)
+  /* We aren't prepared to handle vectors either (and it is a question
+     if it would be worthwhile anyway).  */
+  if (!(INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	|| POINTER_TYPE_P (TREE_TYPE (arg0)))
+      || !(INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+	   || POINTER_TYPE_P (TREE_TYPE (arg1))))
     return false;
 
   /* The PHI arguments have the constants 0 and 1, or 0 and -1, then
