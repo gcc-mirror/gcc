@@ -464,13 +464,6 @@ extern GTY(()) int darwin_ms_struct;
    links to, so there's no need for weak-ness for that.  */
 #define GTHREAD_USE_WEAK 0
 
-/* The Darwin linker imposes two limitations on common symbols: they
-   can't have hidden visibility, and they can't appear in dylibs.  As
-   a consequence, we should never use common symbols to represent
-   vague linkage. */
-#undef USE_COMMON_FOR_ONE_ONLY
-#define USE_COMMON_FOR_ONE_ONLY 0
-
 /* The Darwin linker doesn't want coalesced symbols to appear in
    a static archive's table of contents. */
 #undef TARGET_WEAK_NOT_IN_ARCHIVE_TOC
