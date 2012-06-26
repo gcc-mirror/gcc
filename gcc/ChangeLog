@@ -1,3 +1,7 @@
+2012-06-26  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (simple_return): Use the simple_return rtx.
+
 2012-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/53759
