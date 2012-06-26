@@ -433,10 +433,7 @@ proc cleanup-profile-file { } {
 
 # Remove compiler-generated coverage files for the current test.
 proc cleanup-coverage-files { } {
-    # This assumes that we are two frames down from dg-test or some other proc
-    # that stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new DejaGnu release.
-    upvar 2 name testcase
+    set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set testcase [lindex $testcase 0]
     remove-build-file "[file rootname [file tail $testcase]].gc??"
@@ -451,10 +448,7 @@ proc cleanup-coverage-files { } {
 
 # Remove compiler-generated files from -repo for the current test.
 proc cleanup-repo-files { } {
-    # This assumes that we are two frames down from dg-test or some other proc
-    # that stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new DejaGnu release.
-    upvar 2 name testcase
+    set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set testcase [lindex $testcase 0]
     remove-build-file "[file rootname [file tail $testcase]].o"
@@ -492,10 +486,7 @@ proc cleanup-ipa-dump { suffix } {
 
 # Remove a stack usage file for the current test.
 proc cleanup-stack-usage { } {
-    # This assumes that we are two frames down from dg-test or some other proc
-    # that stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new DejaGnu release.
-    upvar 2 name testcase
+    set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set testcase [lindex $testcase 0]
     remove-build-file "[file rootname [file tail $testcase]].su"
@@ -510,10 +501,7 @@ proc cleanup-stack-usage { } {
 
 # Remove all dump files with the provided suffix.
 proc cleanup-dump { suffix } {
-    # This assumes that we are three frames down from dg-test or some other
-    # proc that stores the filename of the testcase in a local variable
-    # "name".  A cleaner solution would require a new DejaGnu release.
-    upvar 3 name testcase
+    set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set src [file tail [lindex $testcase 0]]
     remove-build-file "[file tail $src].$suffix"
@@ -550,10 +538,7 @@ proc cleanup-saved-temps { args } {
 	}
     }
 
-    # This assumes that we are two frames down from dg-test or some other proc
-    # that stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new DejaGnu release.
-    upvar 2 name testcase
+    set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set testcase [lindex $testcase 0]
     foreach suffix $suffixes {
@@ -584,7 +569,7 @@ proc scan-module { args } {
     set text [read $fd]
     close $fd
 
-    upvar 2 name testcase
+    set testcase [testname-for-summary]
     if [regexp -- [lindex $args 1] $text] {
       pass "$testcase scan-module [lindex $args 1]"
     } else {
@@ -602,7 +587,7 @@ proc scan-module-absence { args } {
     set text [read $fd]
     close $fd
 
-    upvar 2 name testcase
+    set testcase [testname-for-summary]
     if [regexp -- [lindex $args 1] $text] {
       fail "$testcase scan-module [lindex $args 1]"
     } else {
@@ -622,8 +607,8 @@ proc output-exists { args } {
 	}
     }
 
-    # Access variables from gcc-dg-test-1.
-    upvar 2 name testcase
+    set testcase [testname-for-summary]
+    # Access variable from gcc-dg-test-1.
     upvar 2 output_file output_file
 
     if [file exists $output_file] {
@@ -645,8 +630,8 @@ proc output-exists-not { args } {
 	}
     }
 
-    # Access variables from gcc-dg-test-1.
-    upvar 2 name testcase
+    set testcase [testname-for-summary]
+    # Access variable from gcc-dg-test-1.
     upvar 2 output_file output_file
 
     if [file exists $output_file] {
@@ -674,6 +659,7 @@ if { [info procs saved-dg-test] == [list] } {
 	global errorInfo
 	global compiler_conditional_xfail_data
 	global shouldfail
+	global testname_with_flags
 
 	if { [ catch { eval saved-dg-test $args } errmsg ] } {
 	    set saved_info $errorInfo
@@ -683,6 +669,9 @@ if { [info procs saved-dg-test] == [list] } {
 	    set shouldfail 0
 	    if [info exists compiler_conditional_xfail_data] {
 		unset compiler_conditional_xfail_data
+	    }
+	    if [info exists testname_with_flags] {
+		unset testname_with_flags
 	    }
 	    unset_timeout_vars
 	    error $errmsg $saved_info
@@ -694,6 +683,9 @@ if { [info procs saved-dg-test] == [list] } {
 	unset_timeout_vars
 	if [info exists compiler_conditional_xfail_data] {
 	    unset compiler_conditional_xfail_data
+	}
+	if [info exists testname_with_flags] {
+	    unset testname_with_flags
 	}
     }
 }
