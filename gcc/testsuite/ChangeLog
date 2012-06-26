@@ -1,5 +1,10 @@
 2012-06-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53498
+	PR c++/53305
+	* g++.dg/cpp0x/decltype38.C: New.
+	* g++.dg/cpp0x/variadic132.C: New.
+
 	PR c++/52988
 	* g++.dg/cpp0x/nullptr28.C: New.
 

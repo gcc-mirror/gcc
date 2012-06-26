@@ -9393,7 +9393,9 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 		 late-specified return type).  Even if it exists, it might
 		 have the wrong value for a recursive call.  Just make a
 		 dummy decl, since it's only used for its type.  */
-	      arg_pack = tsubst_decl (parm_pack, args, complain);
+	      /* Copy before tsubsting so that we don't recurse into any
+		 later PARM_DECLs.  */
+	      arg_pack = tsubst_decl (copy_node (parm_pack), args, complain);
 	      if (arg_pack && FUNCTION_PARAMETER_PACK_P (arg_pack))
 		/* Partial instantiation of the parm_pack, we can't build
 		   up an argument pack yet.  */

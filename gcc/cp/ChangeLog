@@ -1,5 +1,9 @@
 2012-06-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53498
+	PR c++/53305
+	* pt.c (tsubst_pack_expansion): Copy before dummy tsubst.
+
 	PR c++/52988
 	* typeck.c (decay_conversion): Don't discard side-effects from
 	expressions of nullptr_t.
