@@ -11270,30 +11270,36 @@ package body Exp_Ch9 is
    --  in the pragma, and is used to override the task stack size otherwise
    --  associated with the task type.
 
-   --  The _Priority field is always present. It will be filled at the freeze
-   --  point, when the record init proc is built, to capture the expression of
-   --  a Priority pragma, attribute definition clause or aspect specification
-   --  (see Build_Record_Init_Proc in Exp_Ch3).
+   --  The _Priority field is present only if the task entity has a Priority or
+   --  Interrupt_Priority rep item (pragma, aspect specification or attribute
+   --  definition clause). It will be filled at the freeze point, when the
+   --  record init proc is built, to capture the expression of the rep item
+   --  (see Build_Record_Init_Proc in Exp_Ch3). Note that it cannot be filled
+   --  here since aspect evaluations are delayed till the freeze point.
 
    --  The _Task_Info field is present only if a Task_Info pragma appears in
    --  the task definition. The expression captures the argument that was
    --  present in the pragma, and is used to provide the Task_Image parameter
    --  to the call to Create_Task.
 
-   --  The _CPU field is always present. It will be filled at the freeze point,
-   --  when the record init proc is built, to capture the expression of a CPU
-   --  pragma, attribute definition clause or aspect specification (see
-   --  Build_Record_Init_Proc in Exp_Ch3).
+   --  The _CPU field is present only if the task entity has a CPU rep item
+   --  (pragma, aspect specification or attribute definition clause). It will
+   --  be filled at the freeze point, when the record init proc is built, to
+   --  capture the expression of the rep item (see Build_Record_Init_Proc in
+   --  Exp_Ch3). Note that it cannot be filled here since aspect evaluations
+   --  are delayed till the freeze point.
 
    --  The _Relative_Deadline field is present only if a Relative_Deadline
    --  pragma appears in the task definition. The expression captures the
    --  argument that was present in the pragma, and is used to provide the
    --  Relative_Deadline parameter to the call to Create_Task.
 
-   --  The _Domain field is always present. It will be filled at the freeze
-   --  point, when the record init proc is built, to capture the expression of
-   --  a Dispatching_Domain pragma, attribute definition clause or aspect
-   --  specification (see Build_Record_Init_Proc in Exp_Ch3).
+   --  The _Domain field is present only if the task entity has a
+   --  Dispatching_Domain rep item (pragma, aspect specification or attribute
+   --  definition clause). It will be filled at the freeze point, when the
+   --  record init proc is built, to capture the expression of the rep item
+   --  (see Build_Record_Init_Proc in Exp_Ch3). Note that it cannot be filled
+   --  here since aspect evaluations are delayed till the freeze point.
 
    --  When a task is declared, an instance of the task value record is
    --  created. The elaboration of this declaration creates the correct bounds
@@ -11566,17 +11572,20 @@ package body Exp_Ch9 is
 
       Collect_Entry_Families (Loc, Cdecls, Size_Decl, Tasktyp);
 
-      --  Add the _Priority component with no expression
+      --  Add the _Priority component if a Interrupt_Priority or Priority rep
+      --  item is present.
 
-      Append_To (Cdecls,
-        Make_Component_Declaration (Loc,
-          Defining_Identifier  =>
-            Make_Defining_Identifier (Loc, Name_uPriority),
-          Component_Definition =>
-            Make_Component_Definition (Loc,
-              Aliased_Present    => False,
-              Subtype_Indication =>
-                New_Reference_To (Standard_Integer, Loc))));
+      if Has_Rep_Item (TaskId, Name_Priority, Check_Parents => False) then
+         Append_To (Cdecls,
+           Make_Component_Declaration (Loc,
+             Defining_Identifier  =>
+               Make_Defining_Identifier (Loc, Name_uPriority),
+             Component_Definition =>
+               Make_Component_Definition (Loc,
+                 Aliased_Present    => False,
+                 Subtype_Indication =>
+                   New_Reference_To (Standard_Integer, Loc))));
+      end if;
 
       --  Add the _Size component if a Storage_Size pragma is present
 
@@ -11623,18 +11632,20 @@ package body Exp_Ch9 is
                      (TaskId, Name_Task_Info, Check_Parents => False)))))));
       end if;
 
-      --  Add the _CPU component with no expression
+      --  Add the _CPU component if a CPU rep item is present
 
-      Append_To (Cdecls,
-        Make_Component_Declaration (Loc,
-          Defining_Identifier =>
-            Make_Defining_Identifier (Loc, Name_uCPU),
+      if Has_Rep_Item (TaskId, Name_CPU, Check_Parents => False) then
+         Append_To (Cdecls,
+           Make_Component_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier (Loc, Name_uCPU),
 
-          Component_Definition =>
-            Make_Component_Definition (Loc,
-              Aliased_Present    => False,
-              Subtype_Indication =>
-                New_Reference_To (RTE (RE_CPU_Range), Loc))));
+             Component_Definition =>
+               Make_Component_Definition (Loc,
+                 Aliased_Present    => False,
+                 Subtype_Indication =>
+                   New_Reference_To (RTE (RE_CPU_Range), Loc))));
+      end if;
 
       --  Add the _Relative_Deadline component if a Relative_Deadline pragma is
       --  present. If we are using a restricted run time this component will
@@ -11663,11 +11674,16 @@ package body Exp_Ch9 is
                        Get_Relative_Deadline_Pragma (Taskdef))))))));
       end if;
 
-      --  Add the _Dispatching_Domain component with no expression. If we are
-      --  using a restricted run time this component will not be added
-      --  (dispatching domains are not allowed by the Ravenscar profile).
+      --  Add the _Dispatching_Domain component if a Dispatching_Domain rep
+      --  item is present. If we are using a restricted run time this component
+      --  will not be added (dispatching domains are not allowed by the
+      --  Ravenscar profile).
 
-      if not Restricted_Profile then
+      if not Restricted_Profile
+        and then
+          Has_Rep_Item
+            (TaskId, Name_Dispatching_Domain, Check_Parents => False)
+      then
          Append_To (Cdecls,
            Make_Component_Declaration (Loc,
              Defining_Identifier  =>
@@ -13344,10 +13360,11 @@ package body Exp_Ch9 is
          --  Interrupt_Priority'Last, an implementation-defined value, see
          --  (RM D.3(10)).
 
-         if Has_Rep_Item (Ptyp, Name_Priority) then
+         if Has_Rep_Item (Ptyp, Name_Priority, Check_Parents => False) then
             declare
                Prio_Clause : constant Node_Id :=
-                               Get_Rep_Item (Ptyp, Name_Priority);
+                               Get_Rep_Item
+                                 (Ptyp, Name_Priority, Check_Parents => False);
 
                Prio : Node_Id;
                Temp : Entity_Id;
@@ -13670,7 +13687,7 @@ package body Exp_Ch9 is
       --  Priority parameter. Set to Unspecified_Priority unless there is a
       --  Priority rep item, in which case we take the value from the rep item.
 
-      if Has_Rep_Item (Ttyp, Name_Priority) then
+      if Has_Rep_Item (Ttyp, Name_Priority, Check_Parents => False) then
          Append_To (Args,
            Make_Selected_Component (Loc,
              Prefix        => Make_Identifier (Loc, Name_uInit),
@@ -13741,7 +13758,7 @@ package body Exp_Ch9 is
       --  passed as an Integer because in the case of unspecified CPU the
       --  value is not in the range of CPU_Range.
 
-      if Has_Rep_Item (Ttyp, Name_CPU) then
+      if Has_Rep_Item (Ttyp, Name_CPU, Check_Parents => False) then
          Append_To (Args,
            Convert_To (Standard_Integer,
              Make_Selected_Component (Loc,
@@ -13790,7 +13807,9 @@ package body Exp_Ch9 is
 
          --  Case where Dispatching_Domain rep item applies: use given value
 
-         if Has_Rep_Item (Ttyp, Name_Dispatching_Domain) then
+         if Has_Rep_Item
+              (Ttyp, Name_Dispatching_Domain, Check_Parents => False)
+         then
             Append_To (Args,
               Make_Selected_Component (Loc,
                 Prefix        =>

@@ -682,6 +682,227 @@ package body Sem_Ch13 is
       end if;
    end Alignment_Check_For_Size_Change;
 
+   -------------------------------------
+   -- Analyze_Aspects_At_Freeze_Point --
+   -------------------------------------
+
+   procedure Analyze_Aspects_At_Freeze_Point (E : Entity_Id) is
+      ASN   : Node_Id;
+      A_Id  : Aspect_Id;
+      Ritem : Node_Id;
+
+      procedure Analyze_Aspect_Default_Value (ASN : Node_Id);
+      --  This routine analyzes an Aspect_Default_[Component_]Value denoted by
+      --  the aspect specification node ASN.
+
+      procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id);
+      --  Given an aspect specification node ASN whose expression is an
+      --  optional Boolean, this routines creates the corresponding pragma
+      --  at the freezing point.
+
+      ----------------------------------
+      -- Analyze_Aspect_Default_Value --
+      ----------------------------------
+
+      procedure Analyze_Aspect_Default_Value (ASN : Node_Id) is
+         Ent  : constant Entity_Id := Entity (ASN);
+         Expr : constant Node_Id   := Expression (ASN);
+         Id   : constant Node_Id   := Identifier (ASN);
+
+      begin
+         Error_Msg_Name_1 := Chars (Id);
+
+         if not Is_Type (Ent) then
+            Error_Msg_N ("aspect% can only apply to a type", Id);
+            return;
+
+         elsif not Is_First_Subtype (Ent) then
+            Error_Msg_N ("aspect% cannot apply to subtype", Id);
+            return;
+
+         elsif A_Id = Aspect_Default_Value
+           and then not Is_Scalar_Type (Ent)
+         then
+            Error_Msg_N ("aspect% can only be applied to scalar type", Id);
+            return;
+
+         elsif A_Id = Aspect_Default_Component_Value then
+            if not Is_Array_Type (Ent) then
+               Error_Msg_N ("aspect% can only be applied to array type", Id);
+               return;
+
+            elsif not Is_Scalar_Type (Component_Type (Ent)) then
+               Error_Msg_N ("aspect% requires scalar components", Id);
+               return;
+            end if;
+         end if;
+
+         Set_Has_Default_Aspect (Base_Type (Ent));
+
+         if Is_Scalar_Type (Ent) then
+            Set_Default_Aspect_Value (Ent, Expr);
+         else
+            Set_Default_Aspect_Component_Value (Ent, Expr);
+         end if;
+      end Analyze_Aspect_Default_Value;
+
+      -------------------------------------
+      -- Make_Pragma_From_Boolean_Aspect --
+      -------------------------------------
+
+      procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id) is
+         Ident  : constant Node_Id    := Identifier (ASN);
+         A_Name : constant Name_Id    := Chars (Ident);
+         A_Id   : constant Aspect_Id  := Get_Aspect_Id (A_Name);
+         Ent    : constant Entity_Id  := Entity (ASN);
+         Expr   : constant Node_Id    := Expression (ASN);
+         Loc    : constant Source_Ptr := Sloc (ASN);
+
+         Prag : Node_Id;
+
+         procedure Check_False_Aspect_For_Derived_Type;
+         --  This procedure checks for the case of a false aspect for a derived
+         --  type, which improperly tries to cancel an aspect inherited from
+         --  the parent.
+
+         -----------------------------------------
+         -- Check_False_Aspect_For_Derived_Type --
+         -----------------------------------------
+
+         procedure Check_False_Aspect_For_Derived_Type is
+            Par : Node_Id;
+
+         begin
+            --  We are only checking derived types
+
+            if not Is_Derived_Type (E) then
+               return;
+            end if;
+
+            Par := Nearest_Ancestor (E);
+
+            case A_Id is
+               when Aspect_Atomic | Aspect_Shared =>
+                  if not Is_Atomic (Par) then
+                     return;
+                  end if;
+
+               when Aspect_Atomic_Components =>
+                  if not Has_Atomic_Components (Par) then
+                     return;
+                  end if;
+
+               when Aspect_Discard_Names =>
+                  if not Discard_Names (Par) then
+                     return;
+                  end if;
+
+               when Aspect_Pack =>
+                  if not Is_Packed (Par) then
+                     return;
+                  end if;
+
+               when Aspect_Unchecked_Union =>
+                  if not Is_Unchecked_Union (Par) then
+                     return;
+                  end if;
+
+               when Aspect_Volatile =>
+                  if not Is_Volatile (Par) then
+                     return;
+                  end if;
+
+               when Aspect_Volatile_Components =>
+                  if not Has_Volatile_Components (Par) then
+                     return;
+                  end if;
+
+               when others =>
+                  return;
+            end case;
+
+            --  Fall through means we are canceling an inherited aspect
+
+            Error_Msg_Name_1 := A_Name;
+            Error_Msg_NE ("derived type& inherits aspect%, cannot cancel",
+                          Expr,
+                          E);
+
+         end Check_False_Aspect_For_Derived_Type;
+
+      --  Start of processing for Make_Pragma_From_Boolean_Aspect
+
+      begin
+         if Is_False (Static_Boolean (Expr)) then
+            Check_False_Aspect_For_Derived_Type;
+
+         else
+            Prag :=
+              Make_Pragma (Loc,
+                Pragma_Argument_Associations => New_List (
+                  New_Occurrence_Of (Ent, Sloc (Ident))),
+                Pragma_Identifier            =>
+                  Make_Identifier (Sloc (Ident), Chars (Ident)));
+
+            Set_From_Aspect_Specification (Prag, True);
+            Set_Corresponding_Aspect (Prag, ASN);
+            Set_Aspect_Rep_Item (ASN, Prag);
+            Set_Is_Delayed_Aspect (Prag);
+            Set_Parent (Prag, ASN);
+         end if;
+
+      end Make_Pragma_From_Boolean_Aspect;
+
+   --  Start of processing for Analyze_Aspects_At_Freeze_Point
+
+   begin
+      --  Must be declared in current scope. This is need for a generic
+      --  context.
+
+      if Scope (E) /= Current_Scope then
+         return;
+      end if;
+
+      --  Look for aspect specification entries for this entity
+
+      ASN := First_Rep_Item (E);
+
+      while Present (ASN) loop
+         if Nkind (ASN) = N_Aspect_Specification
+           and then Entity (ASN) = E
+           and then Is_Delayed_Aspect (ASN)
+         then
+            A_Id := Get_Aspect_Id (Chars (Identifier (ASN)));
+
+            case A_Id is
+               --  For aspects whose expression is an optional Boolean, make
+               --  the corresponding pragma at the freezing point.
+
+               when Boolean_Aspects      |
+                    Library_Unit_Aspects =>
+                  Make_Pragma_From_Boolean_Aspect (ASN);
+
+               --  Special handling for aspects that don't correspond to
+               --  pragmas/attributes.
+
+               when Aspect_Default_Value           |
+                    Aspect_Default_Component_Value =>
+                  Analyze_Aspect_Default_Value (ASN);
+
+               when others => null;
+            end case;
+
+            Ritem := Aspect_Rep_Item (ASN);
+
+            if Present (Ritem) then
+               Analyze (Ritem);
+            end if;
+         end if;
+
+         Next_Rep_Item (ASN);
+      end loop;
+   end Analyze_Aspects_At_Freeze_Point;
+
    -----------------------------------
    -- Analyze_Aspect_Specifications --
    -----------------------------------
@@ -1199,7 +1420,6 @@ package body Sem_Ch13 is
                   --  declaration. We do not have to worry about delay issues
                   --  since the pragma processing takes care of this.
 
-                  Set_Is_Delayed_Aspect (Aspect);
                   Delay_Required := False;
 
                --  Case 3 : Aspects that don't correspond to pragma/attribute
@@ -7601,226 +7821,6 @@ package body Sem_Ch13 is
          end if;
       end if;
    end Check_Size;
-
-   --------------------------------------
-   -- Evaluate_Aspects_At_Freeze_Point --
-   --------------------------------------
-
-   procedure Evaluate_Aspects_At_Freeze_Point (E : Entity_Id) is
-      ASN   : Node_Id;
-      A_Id  : Aspect_Id;
-      Ritem : Node_Id;
-
-      procedure Analyze_Aspect_Default_Value (ASN : Node_Id);
-      --  This routine analyzes an Aspect_Default_[Component_]Value denoted by
-      --  the aspect specification node ASN.
-
-      procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id);
-      --  Given an aspect specification node ASN whose expression is an
-      --  optional Boolean, this routines creates the corresponding pragma
-      --  at the freezing point.
-
-      ----------------------------------
-      -- Analyze_Aspect_Default_Value --
-      ----------------------------------
-
-      procedure Analyze_Aspect_Default_Value (ASN : Node_Id) is
-         Ent  : constant Entity_Id := Entity (ASN);
-         Expr : constant Node_Id   := Expression (ASN);
-         Id   : constant Node_Id   := Identifier (ASN);
-
-      begin
-         Error_Msg_Name_1 := Chars (Id);
-
-         if not Is_Type (Ent) then
-            Error_Msg_N ("aspect% can only apply to a type", Id);
-            return;
-
-         elsif not Is_First_Subtype (Ent) then
-            Error_Msg_N ("aspect% cannot apply to subtype", Id);
-            return;
-
-         elsif A_Id = Aspect_Default_Value
-           and then not Is_Scalar_Type (Ent)
-         then
-            Error_Msg_N ("aspect% can only be applied to scalar type", Id);
-            return;
-
-         elsif A_Id = Aspect_Default_Component_Value then
-            if not Is_Array_Type (Ent) then
-               Error_Msg_N ("aspect% can only be applied to array type", Id);
-               return;
-
-            elsif not Is_Scalar_Type (Component_Type (Ent)) then
-               Error_Msg_N ("aspect% requires scalar components", Id);
-               return;
-            end if;
-         end if;
-
-         Set_Has_Default_Aspect (Base_Type (Ent));
-
-         if Is_Scalar_Type (Ent) then
-            Set_Default_Aspect_Value (Ent, Expr);
-         else
-            Set_Default_Aspect_Component_Value (Ent, Expr);
-         end if;
-      end Analyze_Aspect_Default_Value;
-
-      -------------------------------------
-      -- Make_Pragma_From_Boolean_Aspect --
-      -------------------------------------
-
-      procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id) is
-         Ident  : constant Node_Id    := Identifier (ASN);
-         A_Name : constant Name_Id    := Chars (Ident);
-         A_Id   : constant Aspect_Id  := Get_Aspect_Id (A_Name);
-         Ent    : constant Entity_Id  := Entity (ASN);
-         Expr   : constant Node_Id    := Expression (ASN);
-         Loc    : constant Source_Ptr := Sloc (ASN);
-
-         Prag : Node_Id;
-
-         procedure Check_False_Aspect_For_Derived_Type;
-         --  This procedure checks for the case of a false aspect for a derived
-         --  type, which improperly tries to cancel an aspect inherited from
-         --  the parent.
-
-         -----------------------------------------
-         -- Check_False_Aspect_For_Derived_Type --
-         -----------------------------------------
-
-         procedure Check_False_Aspect_For_Derived_Type is
-            Par : Node_Id;
-
-         begin
-            --  We are only checking derived types
-
-            if not Is_Derived_Type (E) then
-               return;
-            end if;
-
-            Par := Nearest_Ancestor (E);
-
-            case A_Id is
-               when Aspect_Atomic | Aspect_Shared =>
-                  if not Is_Atomic (Par) then
-                     return;
-                  end if;
-
-               when Aspect_Atomic_Components =>
-                  if not Has_Atomic_Components (Par) then
-                     return;
-                  end if;
-
-               when Aspect_Discard_Names =>
-                  if not Discard_Names (Par) then
-                     return;
-                  end if;
-
-               when Aspect_Pack =>
-                  if not Is_Packed (Par) then
-                     return;
-                  end if;
-
-               when Aspect_Unchecked_Union =>
-                  if not Is_Unchecked_Union (Par) then
-                     return;
-                  end if;
-
-               when Aspect_Volatile =>
-                  if not Is_Volatile (Par) then
-                     return;
-                  end if;
-
-               when Aspect_Volatile_Components =>
-                  if not Has_Volatile_Components (Par) then
-                     return;
-                  end if;
-
-               when others =>
-                  return;
-            end case;
-
-            --  Fall through means we are canceling an inherited aspect
-
-            Error_Msg_Name_1 := A_Name;
-            Error_Msg_NE ("derived type& inherits aspect%, cannot cancel",
-                          Expr,
-                          E);
-
-         end Check_False_Aspect_For_Derived_Type;
-
-      --  Start of processing for Make_Pragma_From_Boolean_Aspect
-
-      begin
-         if Is_False (Static_Boolean (Expr)) then
-            Check_False_Aspect_For_Derived_Type;
-
-         else
-            Prag :=
-              Make_Pragma (Loc,
-                Pragma_Argument_Associations => New_List (
-                  New_Occurrence_Of (Ent, Sloc (Ident))),
-                Pragma_Identifier            =>
-                  Make_Identifier (Sloc (Ident), Chars (Ident)));
-
-            Set_From_Aspect_Specification (Prag, True);
-            Set_Corresponding_Aspect (Prag, ASN);
-            Set_Aspect_Rep_Item (ASN, Prag);
-            Set_Is_Delayed_Aspect (Prag);
-            Set_Parent (Prag, ASN);
-         end if;
-
-      end Make_Pragma_From_Boolean_Aspect;
-
-   --  Start of processing for Evaluate_Aspects_At_Freeze_Point
-
-   begin
-      --  Must be declared in current scope
-
-      if Scope (E) /= Current_Scope then
-         return;
-      end if;
-
-      --  Look for aspect specification entries for this entity
-
-      ASN := First_Rep_Item (E);
-
-      while Present (ASN) loop
-         if Nkind (ASN) = N_Aspect_Specification
-           and then Entity (ASN) = E
-           and then Is_Delayed_Aspect (ASN)
-         then
-            A_Id := Get_Aspect_Id (Chars (Identifier (ASN)));
-
-            case A_Id is
-               --  For aspects whose expression is an optional Boolean, make
-               --  the corresponding pragma at the freezing point.
-
-               when Boolean_Aspects      |
-                    Library_Unit_Aspects =>
-                  Make_Pragma_From_Boolean_Aspect (ASN);
-
-               --  Special handling for aspects that don't correspond to
-               --  pragmas/attributes.
-
-               when Aspect_Default_Value           |
-                    Aspect_Default_Component_Value =>
-                  Analyze_Aspect_Default_Value (ASN);
-
-               when others => null;
-            end case;
-
-            Ritem := Aspect_Rep_Item (ASN);
-
-            if Present (Ritem) then
-               Analyze (Ritem);
-            end if;
-         end if;
-
-         Next_Rep_Item (ASN);
-      end loop;
-   end Evaluate_Aspects_At_Freeze_Point;
 
    -------------------------
    -- Get_Alignment_Value --

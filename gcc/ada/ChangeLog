@@ -1,3 +1,35 @@
+2012-06-26  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Statements): Don't check the parents
+	in the Rep Item Chain of the task for aspects Interrupt_Priority,
+	Priority, CPU and Dispatching_Domain.
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration): fields _Priority,
+	_CPU and _Domain are present in the corresponding record type
+	only if the task entity has a pragma, attribute definition
+	clause or aspect specification.
+	(Make_Initialize_Protection): Don't check the parents in the Rep Item
+	Chain of the task for aspects Interrupt_Priority, Priority, CPU and
+	Dispatching_Domain.
+	* freeze.adb (Freeze_Entity): Use of Evaluate_Aspects_At_Freeze_Point
+	call replaced by Analyze_Aspects_At_Freeze_Point.
+	* sem_ch13.adb, sem_ch13.ads (Analyze_Aspects_At_Freeze_Point):
+	Renaming of Evaluate_Aspects_At_Freeze_Point.
+
+2012-06-26  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Detect if 'Old is used outside a
+	postcondition, and issue an error in such a case.
+
+2012-06-26  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Minor editing.
+
+2012-06-26  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c: Minor cleanup: remove unused prototype.
+	* seh_init.c: Do not create an image wide unwind info to catch
+	SEH when SEH unwind info are emitted by the compiler.
+
 2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcc-interface/trans.c: Include target.h.
