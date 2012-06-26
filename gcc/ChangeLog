@@ -1,3 +1,9 @@
+2012-06-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h (USE_COMMON_FOR_ONE_ONLY): Poison.
+	* defaults.h (USE_COMMON_FOR_ONE_ONLY): Do not provide default.
+	* config/darwin.h (USE_COMMON_FOR_ONE_ONLY): Do not define.
+
 2012-06-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* var-tracking.c (vt_add_function_parameter): Use a preserved
