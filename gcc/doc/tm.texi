@@ -6414,6 +6414,12 @@ Define this macro if it is as good or better to call a constant
 function address than to call an address kept in a register.
 @end defmac
 
+@defmac LOGICAL_OP_NON_SHORT_CIRCUIT
+Define this macro if a non-short-circuit operation produced by
+@samp{fold_range_test ()} is optimal.  This macro defaults to true if
+@code{BRANCH_COST} is greater than or equal to the value 2.
+@end defmac
+
 @deftypefn {Target Hook} bool TARGET_RTX_COSTS (rtx @var{x}, int @var{code}, int @var{outer_code}, int @var{opno}, int *@var{total}, bool @var{speed})
 This target hook describes the relative costs of RTL expressions.
 

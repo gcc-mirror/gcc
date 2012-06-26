@@ -1,6 +1,12 @@
 2012-06-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR other/33190
+	* doc/tm.texi.in: Document LOGICAL_OP_NON_SHORT_CIRCUIT.
+	* doc/tm.texi: Regenerate.
+
+2012-06-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR other/33190
 	* config/mips/mips.h: Do not define ALL_COP_ADDITIONAL_REGISTER_NAMES.
 	* config/frv/frv.h: Do not define REVERSE_CONDEXEC_PREDICATES_P.
 	* doc/tm.texi.in: Remove documentation for unused target macros
