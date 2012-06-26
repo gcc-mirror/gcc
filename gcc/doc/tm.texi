@@ -3426,8 +3426,8 @@ This macro allows the target to add operating system specific code to the
 call-frame unwinder to handle the IA-64 @code{.unwabi} unwinding directive,
 usually used for signal or interrupt frames.
 
-This macro is called from @code{uw_update_context} in @file{unwind-ia64.c}.
-@var{context} is an @code{_Unwind_Context};
+This macro is called from @code{uw_update_context} in libgcc's
+@file{unwind-ia64.c}.  @var{context} is an @code{_Unwind_Context};
 @var{fs} is an @code{_Unwind_FrameState}.  Examine @code{fs->unwabi}
 for the abi and context in the @code{.unwabi} directive.  If the
 @code{.unwabi} directive can be handled, the register save addresses should
@@ -6134,20 +6134,6 @@ There is one macro that may need to be defined for targets
 supporting conditional execution, independent of how they
 represent conditional branches.
 
-@defmac REVERSE_CONDEXEC_PREDICATES_P (@var{op1}, @var{op2})
-A C expression that returns true if the conditional execution predicate
-@var{op1}, a comparison operation, is the inverse of @var{op2} and vice
-versa.  Define this to return 0 if the target has conditional execution
-predicates that cannot be reversed safely.  There is no need to validate
-that the arguments of op1 and op2 are the same, this is done separately.
-If no expansion is specified, this macro is defined as follows:
-
-@smallexample
-#define REVERSE_CONDEXEC_PREDICATES_P (x, y) \
-   (GET_CODE ((x)) == reversed_comparison_code ((y), NULL))
-@end smallexample
-@end defmac
-
 @node Costs
 @section Describing Relative Costs of Operations
 @cindex costs of instructions
@@ -6426,12 +6412,6 @@ thing to use for a given mode.  Defaults to the value of
 @defmac NO_FUNCTION_CSE
 Define this macro if it is as good or better to call a constant
 function address than to call an address kept in a register.
-@end defmac
-
-@defmac RANGE_TEST_NON_SHORT_CIRCUIT
-Define this macro if a non-short-circuit operation produced by
-@samp{fold_range_test ()} is optimal.  This macro defaults to true if
-@code{BRANCH_COST} is greater than or equal to the value 2.
 @end defmac
 
 @deftypefn {Target Hook} bool TARGET_RTX_COSTS (rtx @var{x}, int @var{code}, int @var{outer_code}, int @var{opno}, int *@var{total}, bool @var{speed})
@@ -9345,22 +9325,6 @@ number for a type number.
 @c prevent bad page break with this line
 These are hooks for DBX format.
 
-@defmac DBX_OUTPUT_LBRAC (@var{stream}, @var{name})
-Define this macro to say how to output to @var{stream} the debugging
-information for the start of a scope level for variable names.  The
-argument @var{name} is the name of an assembler symbol (for use with
-@code{assemble_name}) whose value is the address where the scope begins.
-@end defmac
-
-@defmac DBX_OUTPUT_RBRAC (@var{stream}, @var{name})
-Like @code{DBX_OUTPUT_LBRAC}, but for the end of a scope level.
-@end defmac
-
-@defmac DBX_OUTPUT_NFUN (@var{stream}, @var{lscope_label}, @var{decl})
-Define this macro if the target machine requires special handling to
-output an @code{N_FUN} entry for the function @var{decl}.
-@end defmac
-
 @defmac DBX_OUTPUT_SOURCE_LINE (@var{stream}, @var{line}, @var{counter})
 A C statement to output DBX debugging information before code for line
 number @var{line} of the current source file to the stdio stream
@@ -9682,13 +9646,6 @@ Returns the negative of the floating point value @var{x}.
 
 @deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_ABS (REAL_VALUE_TYPE @var{x})
 Returns the absolute value of @var{x}.
-@end deftypefn
-
-@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_TRUNCATE (REAL_VALUE_TYPE @var{mode}, enum machine_mode @var{x})
-Truncates the floating point value @var{x} to fit in @var{mode}.  The
-return value is still a full-size @code{REAL_VALUE_TYPE}, but it has an
-appropriate bit pattern to be output as a floating constant whose
-precision accords with mode @var{mode}.
 @end deftypefn
 
 @deftypefn Macro void REAL_VALUE_TO_INT (HOST_WIDE_INT @var{low}, HOST_WIDE_INT @var{high}, REAL_VALUE_TYPE @var{x})
@@ -10057,15 +10014,6 @@ floating-point support; they are not included in this mechanism.
 
 There is one macro used in defining the MIPS coprocessor interface which
 you may want to override in subtargets; it is described below.
-
-@defmac ALL_COP_ADDITIONAL_REGISTER_NAMES
-A comma-separated list (with leading comma) of pairs describing the
-alternate names of coprocessor registers.  The format of each entry should be
-@smallexample
-@{ @var{alternatename}, @var{register_number}@}
-@end smallexample
-Default: empty.
-@end defmac
 
 @node PCH Target
 @section Parameters for Precompiled Header Validity Checking
