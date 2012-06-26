@@ -3836,8 +3836,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   /* Set input_location here so we get the right instantiation context
      if we call instantiate_decl from inlinable_function_p.  */
   saved_location = input_location;
-  if (gimple_has_location (stmt))
-    input_location = gimple_location (stmt);
+  input_location = gimple_location (stmt);
 
   /* From here on, we're only interested in CALL_EXPRs.  */
   if (gimple_code (stmt) != GIMPLE_CALL)
