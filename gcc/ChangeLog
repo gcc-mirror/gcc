@@ -1,3 +1,9 @@
+2012-06-26  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/53572
+	* cgraph.h (varpool_can_remove_if_no_refs): Fix handling of
+	used symbols.
+
 2012-06-26  Dehao Chen  <dehao@google.com>
 
 	* tree-inline.c: (expand_call_inline): Ensure that lexical block's
