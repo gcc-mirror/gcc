@@ -1,5 +1,11 @@
 2012-06-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53498
+	PR c++/53305
+	* pt.c (tsubst_decl) [PARM_DECL]: Don't recurse into DECL_CHAIN
+	if cp_unevaluated_operand is set.
+	(tsubst_copy) [PARM_DECL]: Don't copy before tsubsting.
+
 	PR c++/52988
 	* typeck.c (decay_conversion): Don't discard side-effects from
 	expressions of nullptr_t.
