@@ -32293,6 +32293,14 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 		extra = 6;
 	      *total = cost->fmul * 2 + cost->fabs * extra;
 	    }
+	  /* V*DImode is emulated with 5-8 insns.  */
+	  else if (mode == V2DImode || mode == V4DImode)
+	    {
+	      if (TARGET_XOP && mode == V2DImode)
+		*total = cost->fmul * 2 + cost->fabs * 3;
+	      else
+		*total = cost->fmul * 3 + cost->fabs * 5;
+	    }
 	  /* Without sse4.1, we don't have PMULLD; it's emulated with 7
 	     insns, including two PMULUDQ.  */
 	  else if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
@@ -38913,6 +38921,88 @@ ix86_expand_sse2_mulv4si3 (rtx op0, rtx op1, rtx op2)
   res_1 = emit_insn (gen_vec_interleave_lowv4si (op0, res_1, res_2));
 
   set_unique_reg_note (res_1, REG_EQUAL, gen_rtx_MULT (V4SImode, op1, op2));
+}
+
+void
+ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
+{
+  enum machine_mode mode = GET_MODE (op0);
+  rtx t1, t2, t3, t4, t5, t6;
+
+  if (TARGET_XOP && mode == V2DImode)
+    {
+      /* op1: A,B,C,D, op2: E,F,G,H */
+      op1 = gen_lowpart (V4SImode, op1);
+      op2 = gen_lowpart (V4SImode, op2);
+
+      t1 = gen_reg_rtx (V4SImode);
+      t2 = gen_reg_rtx (V4SImode);
+      t3 = gen_reg_rtx (V2DImode);
+      t4 = gen_reg_rtx (V2DImode);
+
+      /* t1: B,A,D,C */
+      emit_insn (gen_sse2_pshufd_1 (t1, op1,
+				    GEN_INT (1),
+				    GEN_INT (0),
+				    GEN_INT (3),
+				    GEN_INT (2)));
+
+      /* t2: (B*E),(A*F),(D*G),(C*H) */
+      emit_insn (gen_mulv4si3 (t2, t1, op2));
+
+      /* t3: (B*E)+(A*F), (D*G)+(C*H) */
+      emit_insn (gen_xop_phadddq (t3, t2));
+
+      /* t4: ((B*E)+(A*F))<<32, ((D*G)+(C*H))<<32 */
+      emit_insn (gen_ashlv2di3 (t4, t3, GEN_INT (32)));
+
+      /* op0: (((B*E)+(A*F))<<32)+(B*F), (((D*G)+(C*H))<<32)+(D*H) */
+      emit_insn (gen_xop_pmacsdql (op0, op1, op2, t4));
+    }
+  else
+    {
+      enum machine_mode nmode;
+      rtx (*umul) (rtx, rtx, rtx);
+
+      if (mode == V2DImode)
+	{
+	  umul = gen_sse2_umulv2siv2di3;
+	  nmode = V4SImode;
+	}
+      else if (mode == V4DImode)
+	{
+	  umul = gen_avx2_umulv4siv4di3;
+	  nmode = V8SImode;
+	}
+      else
+	gcc_unreachable ();
+
+
+      /* Multiply low parts.  */
+      t1 = gen_reg_rtx (mode);
+      emit_insn (umul (t1, gen_lowpart (nmode, op1), gen_lowpart (nmode, op2)));
+
+      /* Shift input vectors right 32 bits so we can multiply high parts.  */
+      t6 = GEN_INT (32);
+      t2 = expand_binop (mode, lshr_optab, op1, t6, NULL, 1, OPTAB_DIRECT);
+      t3 = expand_binop (mode, lshr_optab, op2, t6, NULL, 1, OPTAB_DIRECT);
+
+      /* Multiply high parts by low parts.  */
+      t4 = gen_reg_rtx (mode);
+      t5 = gen_reg_rtx (mode);
+      emit_insn (umul (t4, gen_lowpart (nmode, t2), gen_lowpart (nmode, op2)));
+      emit_insn (umul (t5, gen_lowpart (nmode, t3), gen_lowpart (nmode, op1)));
+
+      /* Combine and shift the highparts back.  */
+      t4 = expand_binop (mode, add_optab, t4, t5, t4, 1, OPTAB_DIRECT);
+      t4 = expand_binop (mode, ashl_optab, t4, t6, t4, 1, OPTAB_DIRECT);
+
+      /* Combine high and low parts.  */
+      force_expand_binop (mode, add_optab, t1, t4, op0, 1, OPTAB_DIRECT);
+    }
+
+  set_unique_reg_note (get_last_insn (), REG_EQUAL,
+		       gen_rtx_MULT (mode, op1, op2));
 }
 
 /* Expand an insert into a vector register through pinsr insn.
