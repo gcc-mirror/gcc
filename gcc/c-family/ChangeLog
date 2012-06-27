@@ -1,3 +1,8 @@
+2012-06-27  Kai Tietz  <ktietz@redhat.com>
+
+	PR preprocessor/37215
+	* c-ppoutput.c (preprocess_file): Check for nonempty buffer.
+
 2012-06-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-common.h (c_common_print_pch_checksum): Remove.
