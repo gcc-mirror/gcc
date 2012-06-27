@@ -1,3 +1,13 @@
+2012-06-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53563
+	* parser.c (cp_parser_template_id): Add tag_type parm.
+	(cp_parser_template_name): Likewise.
+	(cp_parser_id_expression, cp_parser_unqualified_id): Adjust.
+	(cp_parser_pseudo_destructor_name, cp_parser_type_name): Adjust.
+	(cp_parser_simple_type_specifier, cp_parser_class_name): Adjust.
+	(cp_parser_elaborated_type_specifier, cp_parser_class_head): Adjust.
+
 2012-06-27  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR C++/51033

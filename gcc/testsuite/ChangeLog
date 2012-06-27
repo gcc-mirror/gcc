@@ -1,3 +1,9 @@
+2012-06-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53563
+	* g++.dg/parse/template27.C: New.
+	* g++.dg/template/crash74.C: Adjust expected output.
+
 2012-06-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41951
