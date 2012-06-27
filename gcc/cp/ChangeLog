@@ -1,3 +1,20 @@
+2012-06-27  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/51214
+	* cp-tree.h (insert_late_enum_def_into_classtype_sorted_fields):
+	Declare.
+	* class.c (insert_into_classtype_sorted_fields): New.
+	(add_enum_fields_to_record_type): New.
+	(count_fields): Adjust the comment.
+	(add_fields_to_record_type): Likewise.
+	(finish_struct_1): Move the code that inserts the fields for the
+	sorted case, into insert_into_classtype_sorted_fields, and call
+	it.
+	(insert_late_enum_def_into_classtype_sorted_fields): Define.
+	* decl.c (finish_enum_value_list): Call
+	insert_late_enum_def_into_classtype_sorted_fields if a late enum
+	definition is encountered.
+
 2012-06-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53498
