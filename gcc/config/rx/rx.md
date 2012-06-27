@@ -348,7 +348,7 @@
 )
 
 (define_insn "simple_return"
-  [(return)]
+  [(simple_return)]
   ""
   "rts"
   [(set_attr "length" "1")
