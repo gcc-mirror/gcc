@@ -1,3 +1,9 @@
+2012-06-27  Kai Tietz  <ktietz@redhat.com>
+
+	Merged from trunk
+	PR preprocessor/37215
+	* c-ppoutput.c (preprocess_file): Check for nonempty buffer.
+
 2012-06-14  Release Manager
 
 	* GCC 4.7.1 released.
