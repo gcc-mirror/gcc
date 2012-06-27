@@ -1,3 +1,8 @@
+2012-06-27  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (comparesi3_extend): Remove = modifier from
+	input operand.
+
 2012-06-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/53682
