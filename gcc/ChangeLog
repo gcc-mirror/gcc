@@ -1,5 +1,20 @@
 2012-06-27  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (alpha_dimode_u): New.
+	(alpha_init_builtins): Initialize it, and use it.
+	(alpha_fold_builtin_cmpbge): Use alpha_dimode_u.
+	(alpha_fold_builtin_zapnot, alpha_fold_builtin_insxx): Likewise.
+	(alpha_fold_vector_minmax, alpha_fold_builtin_perr): Likewise.
+	(alpha_fold_builtin_pklb, alpha_fold_builtin_pkwb): Likewise.
+	(alpha_fold_builtin_unpkbl, alpha_fold_builtin_unpkbw): Likewise.
+	(alpha_fold_builtin_cttz, alpha_fold_builtin_ctlz): Likewise.
+	(alpha_fold_builtin_ctpop): Likewise.
+	(alpha_fold_builtin_umulh): Remove.
+	(alpha_fold_builtin): Use MULT_HIGHPART_EXPR for UMULH; fix
+	typo in MAX_ARGS check.
+
+2012-06-27  Richard Henderson  <rth@redhat.com>
+
 	* tree.def (MULT_HIGHPART_EXPR): New.
 	* cfgexpand.c (expand_debug_expr): Ignore it.
 	* expr.c (expand_expr_real_2): Handle it.

@@ -6461,6 +6461,7 @@ static struct alpha_builtin_def const two_arg_builtins[] = {
   { "__builtin_alpha_perr",	ALPHA_BUILTIN_PERR,	MASK_MAX, true }
 };
 
+static GTY(()) tree alpha_dimode_u;
 static GTY(()) tree alpha_v8qi_u;
 static GTY(()) tree alpha_v8qi_s;
 static GTY(()) tree alpha_v4hi_u;
@@ -6514,25 +6515,23 @@ alpha_add_builtins (const struct alpha_builtin_def *p, size_t count,
 static void
 alpha_init_builtins (void)
 {
-  tree dimode_integer_type_node;
   tree ftype;
 
-  dimode_integer_type_node = lang_hooks.types.type_for_mode (DImode, 0);
+  alpha_dimode_u = lang_hooks.types.type_for_mode (DImode, 1);
+  alpha_v8qi_u = build_vector_type (unsigned_intQI_type_node, 8);
+  alpha_v8qi_s = build_vector_type (intQI_type_node, 8);
+  alpha_v4hi_u = build_vector_type (unsigned_intHI_type_node, 4);
+  alpha_v4hi_s = build_vector_type (intHI_type_node, 4);
 
-  ftype = build_function_type_list (dimode_integer_type_node, NULL_TREE);
-  alpha_add_builtins (zero_arg_builtins, ARRAY_SIZE (zero_arg_builtins),
-		      ftype);
+  ftype = build_function_type_list (alpha_dimode_u, NULL_TREE);
+  alpha_add_builtins (zero_arg_builtins, ARRAY_SIZE (zero_arg_builtins), ftype);
 
-  ftype = build_function_type_list (dimode_integer_type_node,
-				    dimode_integer_type_node, NULL_TREE);
-  alpha_add_builtins (one_arg_builtins, ARRAY_SIZE (one_arg_builtins),
-		      ftype);
+  ftype = build_function_type_list (alpha_dimode_u, alpha_dimode_u, NULL_TREE);
+  alpha_add_builtins (one_arg_builtins, ARRAY_SIZE (one_arg_builtins), ftype);
 
-  ftype = build_function_type_list (dimode_integer_type_node,
-				    dimode_integer_type_node,
-				    dimode_integer_type_node, NULL_TREE);
-  alpha_add_builtins (two_arg_builtins, ARRAY_SIZE (two_arg_builtins),
-		      ftype);
+  ftype = build_function_type_list (alpha_dimode_u, alpha_dimode_u,
+				    alpha_dimode_u, NULL_TREE);
+  alpha_add_builtins (two_arg_builtins, ARRAY_SIZE (two_arg_builtins), ftype);
 
   ftype = build_function_type_list (ptr_type_node, NULL_TREE);
   alpha_builtin_function ("__builtin_thread_pointer", ftype,
@@ -6558,11 +6557,6 @@ alpha_init_builtins (void)
 
       vms_patch_builtins ();
     }
-
-  alpha_v8qi_u = build_vector_type (unsigned_intQI_type_node, 8);
-  alpha_v8qi_s = build_vector_type (intQI_type_node, 8);
-  alpha_v4hi_u = build_vector_type (unsigned_intHI_type_node, 4);
-  alpha_v4hi_s = build_vector_type (intHI_type_node, 4);
 }
 
 /* Expand an expression EXP that calls a built-in function,
@@ -6675,10 +6669,10 @@ alpha_fold_builtin_cmpbge (unsigned HOST_WIDE_INT opint[], long op_const)
 	  if (c0 >= c1)
 	    val |= 1 << i;
 	}
-      return build_int_cst (long_integer_type_node, val);
+      return build_int_cst (alpha_dimode_u, val);
     }
   else if (op_const == 2 && opint[1] == 0)
-    return build_int_cst (long_integer_type_node, 0xff);
+    return build_int_cst (alpha_dimode_u, 0xff);
   return NULL;
 }
 
@@ -6705,14 +6699,14 @@ alpha_fold_builtin_zapnot (tree *op, unsigned HOST_WIDE_INT opint[],
 	  mask |= (unsigned HOST_WIDE_INT)0xff << (i * 8);
 
       if (op_const & 1)
-	return build_int_cst (long_integer_type_node, opint[0] & mask);
+	return build_int_cst (alpha_dimode_u, opint[0] & mask);
 
       if (op)
-	return fold_build2 (BIT_AND_EXPR, long_integer_type_node, op[0],
-			    build_int_cst (long_integer_type_node, mask));
+	return fold_build2 (BIT_AND_EXPR, alpha_dimode_u, op[0],
+			    build_int_cst (alpha_dimode_u, mask));
     }
   else if ((op_const & 1) && opint[0] == 0)
-    return build_int_cst (long_integer_type_node, 0);
+    return build_int_cst (alpha_dimode_u, 0);
   return NULL;
 }
 
@@ -6762,7 +6756,7 @@ alpha_fold_builtin_insxx (tree op[], unsigned HOST_WIDE_INT opint[],
 			  bool is_high)
 {
   if ((op_const & 1) && opint[0] == 0)
-    return build_int_cst (long_integer_type_node, 0);
+    return build_int_cst (alpha_dimode_u, 0);
 
   if (op_const & 2)
     {
@@ -6821,43 +6815,12 @@ alpha_fold_builtin_mskxx (tree op[], unsigned HOST_WIDE_INT opint[],
 }
 
 static tree
-alpha_fold_builtin_umulh (unsigned HOST_WIDE_INT opint[], long op_const)
-{
-  switch (op_const)
-    {
-    case 3:
-      {
-	unsigned HOST_WIDE_INT l;
-	HOST_WIDE_INT h;
-
-	mul_double (opint[0], 0, opint[1], 0, &l, &h);
-
-#if HOST_BITS_PER_WIDE_INT > 64
-# error fixme
-#endif
-
-	return build_int_cst (long_integer_type_node, h);
-      }
-
-    case 1:
-      opint[1] = opint[0];
-      /* FALLTHRU */
-    case 2:
-      /* Note that (X*1) >> 64 == 0.  */
-      if (opint[1] == 0 || opint[1] == 1)
-	return build_int_cst (long_integer_type_node, 0);
-      break;
-    }
-  return NULL;
-}
-
-static tree
 alpha_fold_vector_minmax (enum tree_code code, tree op[], tree vtype)
 {
   tree op0 = fold_convert (vtype, op[0]);
   tree op1 = fold_convert (vtype, op[1]);
   tree val = fold_build2 (code, vtype, op0, op1);
-  return fold_build1 (VIEW_CONVERT_EXPR, long_integer_type_node, val);
+  return fold_build1 (VIEW_CONVERT_EXPR, alpha_dimode_u, val);
 }
 
 static tree
@@ -6879,7 +6842,7 @@ alpha_fold_builtin_perr (unsigned HOST_WIDE_INT opint[], long op_const)
 	temp += b - a;
     }
 
-  return build_int_cst (long_integer_type_node, temp);
+  return build_int_cst (alpha_dimode_u, temp);
 }
 
 static tree
@@ -6893,7 +6856,7 @@ alpha_fold_builtin_pklb (unsigned HOST_WIDE_INT opint[], long op_const)
   temp = opint[0] & 0xff;
   temp |= (opint[0] >> 24) & 0xff00;
 
-  return build_int_cst (long_integer_type_node, temp);
+  return build_int_cst (alpha_dimode_u, temp);
 }
 
 static tree
@@ -6909,7 +6872,7 @@ alpha_fold_builtin_pkwb (unsigned HOST_WIDE_INT opint[], long op_const)
   temp |= (opint[0] >> 16) & 0xff0000;
   temp |= (opint[0] >> 24) & 0xff000000;
 
-  return build_int_cst (long_integer_type_node, temp);
+  return build_int_cst (alpha_dimode_u, temp);
 }
 
 static tree
@@ -6923,7 +6886,7 @@ alpha_fold_builtin_unpkbl (unsigned HOST_WIDE_INT opint[], long op_const)
   temp = opint[0] & 0xff;
   temp |= (opint[0] & 0xff00) << 24;
 
-  return build_int_cst (long_integer_type_node, temp);
+  return build_int_cst (alpha_dimode_u, temp);
 }
 
 static tree
@@ -6939,7 +6902,7 @@ alpha_fold_builtin_unpkbw (unsigned HOST_WIDE_INT opint[], long op_const)
   temp |= (opint[0] & 0x00ff0000) << 16;
   temp |= (opint[0] & 0xff000000) << 24;
 
-  return build_int_cst (long_integer_type_node, temp);
+  return build_int_cst (alpha_dimode_u, temp);
 }
 
 static tree
@@ -6955,7 +6918,7 @@ alpha_fold_builtin_cttz (unsigned HOST_WIDE_INT opint[], long op_const)
   else
     temp = exact_log2 (opint[0] & -opint[0]);
 
-  return build_int_cst (long_integer_type_node, temp);
+  return build_int_cst (alpha_dimode_u, temp);
 }
 
 static tree
@@ -6971,7 +6934,7 @@ alpha_fold_builtin_ctlz (unsigned HOST_WIDE_INT opint[], long op_const)
   else
     temp = 64 - floor_log2 (opint[0]) - 1;
 
-  return build_int_cst (long_integer_type_node, temp);
+  return build_int_cst (alpha_dimode_u, temp);
 }
 
 static tree
@@ -6987,7 +6950,7 @@ alpha_fold_builtin_ctpop (unsigned HOST_WIDE_INT opint[], long op_const)
   while (op)
     temp++, op &= op - 1;
 
-  return build_int_cst (long_integer_type_node, temp);
+  return build_int_cst (alpha_dimode_u, temp);
 }
 
 /* Fold one of our builtin functions.  */
@@ -7000,7 +6963,7 @@ alpha_fold_builtin (tree fndecl, int n_args, tree *op,
   long op_const = 0;
   int i;
 
-  if (n_args >= MAX_ARGS)
+  if (n_args > MAX_ARGS)
     return NULL;
 
   for (i = 0; i < n_args; i++)
@@ -7068,7 +7031,7 @@ alpha_fold_builtin (tree fndecl, int n_args, tree *op,
       return alpha_fold_builtin_mskxx (op, opint, op_const, 0xff, true);
 
     case ALPHA_BUILTIN_UMULH:
-      return alpha_fold_builtin_umulh (opint, op_const);
+      return fold_build2 (MULT_HIGHPART_EXPR, alpha_dimode_u, op[0], op[1]);
 
     case ALPHA_BUILTIN_ZAP:
       opint[1] ^= 0xff;
