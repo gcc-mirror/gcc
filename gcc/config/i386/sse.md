@@ -5607,9 +5607,7 @@
    (any_extend:<sseunpackmode>
      (match_operand:VI124_AVX2 1 "register_operand"))
    (match_operand:VI124_AVX2 2 "register_operand")]
-  ; Note that SSE2 does not have signed SI multiply
-  "TARGET_XOP || TARGET_SSE4_1
-   || (TARGET_SSE2 && (<u_bool> || <MODE>mode != V4SImode))"
+  "TARGET_SSE2"
 {
   ix86_expand_mul_widen_hilo (operands[0], operands[1], operands[2],
 			      <u_bool>, true);
@@ -5621,23 +5619,32 @@
    (any_extend:<sseunpackmode>
      (match_operand:VI124_AVX2 1 "register_operand"))
    (match_operand:VI124_AVX2 2 "register_operand")]
-  ; Note that SSE2 does not have signed SI multiply
-  "TARGET_XOP || TARGET_SSE4_1
-   || (TARGET_SSE2 && (<u_bool> || <MODE>mode != V4SImode))"
+  "TARGET_SSE2"
 {
   ix86_expand_mul_widen_hilo (operands[0], operands[1], operands[2],
 			      <u_bool>, false);
   DONE;
 })
 
+;; Most widen_<s>mult_even_<mode> can be handled directly from other
+;; named patterns, but signed V4SI needs special help for plain SSE2.
+(define_expand "vec_widen_smult_even_v4si"
+  [(match_operand:V2DI 0 "register_operand")
+   (match_operand:V4SI 1 "register_operand")
+   (match_operand:V4SI 2 "register_operand")]
+  "TARGET_SSE2"
+{
+  ix86_expand_mul_widen_evenodd (operands[0], operands[1], operands[2],
+				 false, false);
+  DONE;
+})
+
 (define_expand "vec_widen_<s>mult_odd_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (any_extend:<sseunpackmode>
-     (match_operand:VI124_AVX2 1 "register_operand"))
-   (match_operand:VI124_AVX2 2 "register_operand")]
-  ; Note that SSE2 does not have signed SI multiply
-  "TARGET_AVX || TARGET_XOP || TARGET_SSE4_1
-   || (TARGET_SSE2 && (<u_bool> || <MODE>mode != V4SImode))"
+     (match_operand:VI4_AVX2 1 "register_operand"))
+   (match_operand:VI4_AVX2 2 "register_operand")]
+  "TARGET_SSE2"
 {
   ix86_expand_mul_widen_evenodd (operands[0], operands[1], operands[2],
 				 <u_bool>, true);
