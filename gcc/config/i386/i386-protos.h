@@ -227,6 +227,7 @@ extern bool ix86_expand_pinsr (rtx *);
 extern void ix86_expand_mul_widen_evenodd (rtx, rtx, rtx, bool, bool);
 extern void ix86_expand_mul_widen_hilo (rtx, rtx, rtx, bool, bool);
 extern void ix86_expand_sse2_mulv4si3 (rtx, rtx, rtx);
+extern void ix86_expand_sse2_mulvxdi3 (rtx, rtx, rtx);
 
 /* In i386-c.c  */
 extern void ix86_target_macros (void);
