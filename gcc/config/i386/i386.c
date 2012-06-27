@@ -32102,24 +32102,38 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 
     case CONST_DOUBLE:
       if (mode == VOIDmode)
-	*total = 0;
-      else
-	switch (standard_80387_constant_p (x))
-	  {
-	  case 1: /* 0.0 */
-	    *total = 1;
-	    break;
-	  default: /* Other constants */
-	    *total = 2;
-	    break;
-	  case 0:
-	  case -1:
-	    break;
-	  }
-      /* FALLTHRU */
-
+	{
+	  *total = 0;
+	  return true;
+	}
+      switch (standard_80387_constant_p (x))
+	{
+	case 1: /* 0.0 */
+	  *total = 1;
+	  return true;
+	default: /* Other constants */
+	  *total = 2;
+	  return true;
+	case 0:
+	case -1:
+	  break;
+	}
+      if (SSE_FLOAT_MODE_P (mode))
+	{
     case CONST_VECTOR:
-      /* Start with (MEM (SYMBOL_REF)), since that's where
+	  switch (standard_sse_constant_p (x))
+	    {
+	    case 0:
+	      break;
+	    case 1:  /* 0: xor eliminates false dependency */
+	      *total = 0;
+	      return true;
+	    default: /* -1: cmp contains false dependency */
+	      *total = 1;
+	      return true;
+	    }
+	}
+      /* Fall back to (MEM (SYMBOL_REF)), since that's where
 	 it'll probably end up.  Add a penalty for size.  */
       *total = (COSTS_N_INSNS (1)
 		+ (flag_pic != 0 && !TARGET_64BIT)
