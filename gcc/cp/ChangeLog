@@ -1,5 +1,11 @@
 2012-06-27  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_check_for_invalid_template_id): tag_type parm.
+	(cp_parser_simple_type_specifier, cp_parser_class_head): Adjust.
+	(cp_parser_elaborated_type_specifier): Adjust.
+	* decl.c (duplicate_decls): Return error_mark_node on template
+	mismatch.
+
 	PR c++/53563
 	* parser.c (cp_parser_template_id): Add tag_type parm.
 	(cp_parser_template_name): Likewise.

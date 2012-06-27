@@ -1,5 +1,9 @@
 2012-06-27  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/override2.C: Adjust.
+	* g++.dg/template/error5.C: Adjust.
+	* g++.dg/parse/crash28.C: Adjust.
+
 	PR c++/53563
 	* g++.dg/parse/template27.C: New.
 	* g++.dg/template/crash74.C: Adjust expected output.
