@@ -1,5 +1,11 @@
 2012-06-26  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_rtx_costs): Use standard_sse_constant_p
+	and don't fall thru from standard_80387_constant_p to the memory
+	fallback,
+
+2012-06-26  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (bdesc_args): Update.  Change
 	IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V4SI to OPTION_MASK_ISA_SSE2.
 	(IX86_BUILTIN_VEC_WIDEN_SMUL_EVEN_V4SI): New.
