@@ -3415,7 +3415,7 @@ expand_debug_expr (tree exp)
     case VEC_PERM_EXPR:
       return NULL;
 
-   /* Misc codes.  */
+    /* Misc codes.  */
     case ADDR_SPACE_CONVERT_EXPR:
     case FIXED_CONVERT_EXPR:
     case OBJ_TYPE_REF:
@@ -3464,6 +3464,10 @@ expand_debug_expr (tree exp)
 	  else
 	    return simplify_gen_binary (MINUS, mode, op2, op0);
 	}
+      return NULL;
+
+    case MULT_HIGHPART_EXPR:
+      /* ??? Similar to the above.  */
       return NULL;
 
     case WIDEN_SUM_EXPR:

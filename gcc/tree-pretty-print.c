@@ -1612,6 +1612,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case WIDEN_SUM_EXPR:
     case WIDEN_MULT_EXPR:
     case MULT_EXPR:
+    case MULT_HIGHPART_EXPR:
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
@@ -2674,6 +2675,7 @@ op_code_prio (enum tree_code code)
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
     case MULT_EXPR:
+    case MULT_HIGHPART_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:
@@ -2851,6 +2853,9 @@ op_symbol_code (enum tree_code code)
 
     case WIDEN_MULT_EXPR:
       return "w*";
+
+    case MULT_HIGHPART_EXPR:
+      return "h*";
 
     case NEGATE_EXPR:
     case MINUS_EXPR:

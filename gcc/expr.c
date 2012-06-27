@@ -8551,6 +8551,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       return expand_divmod (0, code, mode, op0, op1, target, unsignedp);
 
     case RDIV_EXPR:
+    case MULT_HIGHPART_EXPR:
       goto binop;
 
     case TRUNC_MOD_EXPR:

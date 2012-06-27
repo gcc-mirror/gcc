@@ -1,5 +1,19 @@
 2012-06-27  Richard Henderson  <rth@redhat.com>
 
+	* tree.def (MULT_HIGHPART_EXPR): New.
+	* cfgexpand.c (expand_debug_expr): Ignore it.
+	* expr.c (expand_expr_real_2): Handle it.
+	* fold-const.c (int_const_binop_1): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	* tree-cfg.c (verify_gimple_assign_binary): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	(op_code_prio, op_symbol_code): Likewise.
+	* tree.c (commutative_tree_code): Likewise.  Also handle
+	WIDEN_MULT_EXPR, VEC_WIDEN_MULT_HI_EXPR, VEC_WIDEN_MULT_LO_EXPR.
+
+2012-06-27  Richard Henderson  <rth@redhat.com>
+
 	PR target/53749
 	* config/i386/i386.c (ix86_rtx_costs): Fix typo vs UNITS_PER_WORD
 	in 2012-06-23 change.  Adjust two other DImode tests as well.
