@@ -1,3 +1,14 @@
+2012-06-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41951
+	PR fortran/49591
+	* interface.c (check_new_interface): Rename, add 'loc' argument,
+	make non-static.
+	(gfc_add_interface): Rename 'check_new_interface'
+	* gfortran.h (gfc_check_new_interface): Add prototype.
+	* resolve.c (resolve_typebound_intrinsic_op): Add typebound operator
+	targets to non-typebound operator list.
+
 2012-06-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47710

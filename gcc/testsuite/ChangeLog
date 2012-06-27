@@ -1,3 +1,9 @@
+2012-06-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41951
+	PR fortran/49591
+	* gfortran.dg/typebound_operator_16.f03: New.
+
 2012-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/sse4_1-pmuldq.c (TEST): Initialize
