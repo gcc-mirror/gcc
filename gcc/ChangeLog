@@ -1,3 +1,9 @@
+2012-06-27  Richard Henderson  <rth@redhat.com>
+
+	PR target/53749
+	* config/i386/i386.c (ix86_rtx_costs): Fix typo vs UNITS_PER_WORD
+	in 2012-06-23 change.  Adjust two other DImode tests as well.
+
 2012-06-27  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md (comparesi3_extend): Remove = modifier from

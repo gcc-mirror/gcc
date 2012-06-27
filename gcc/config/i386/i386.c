@@ -32210,9 +32210,8 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 	    }
 	  else
 	    *total = cost->fabs;
-	  return false;
 	}
-      if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	{
 	  if (CONST_INT_P (XEXP (x, 1)))
 	    {
@@ -32441,7 +32440,7 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
     case AND:
     case IOR:
     case XOR:
-      if (!TARGET_64BIT && mode == DImode)
+      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	{
 	  *total = (cost->add * 2
 		    + (rtx_cost (XEXP (x, 0), outer_code, opno, speed)
@@ -32479,9 +32478,8 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 	  /* At least for published AMD latencies, this really is the same
 	     as the latency for a simple fpu operation like fabs.  */
 	  *total = cost->fabs;
-	  return false;
 	}
-      if (!TARGET_64BIT && mode == DImode)
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	*total = cost->add * 2;
       else
 	*total = cost->add;
