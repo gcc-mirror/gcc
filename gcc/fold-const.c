@@ -999,6 +999,16 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
 			     &res.low, &res.high);
       break;
 
+    case MULT_HIGHPART_EXPR:
+      /* ??? Need quad precision, or an additional shift operand
+	 to the multiply primitive, to handle very large highparts.  */
+      if (TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT)
+	return NULL_TREE;
+      tmp = double_int_mul (op1, op2);
+      res = double_int_rshift (tmp, TYPE_PRECISION (type),
+			       TYPE_PRECISION (type), !uns);
+      break;
+
     case TRUNC_DIV_EXPR:
     case FLOOR_DIV_EXPR: case CEIL_DIV_EXPR:
     case EXACT_DIV_EXPR:
