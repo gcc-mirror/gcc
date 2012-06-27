@@ -3551,8 +3551,8 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
    the given interface list.  Ambiguity isn't checked yet since module
    procedures can be present without interfaces.  */
 
-static gfc_try
-check_new_interface (gfc_interface *base, gfc_symbol *new_sym)
+gfc_try
+gfc_check_new_interface (gfc_interface *base, gfc_symbol *new_sym, locus loc)
 {
   gfc_interface *ip;
 
@@ -3560,8 +3560,8 @@ check_new_interface (gfc_interface *base, gfc_symbol *new_sym)
     {
       if (ip->sym == new_sym)
 	{
-	  gfc_error ("Entity '%s' at %C is already present in the interface",
-		     new_sym->name);
+	  gfc_error ("Entity '%s' at %L is already present in the interface",
+		     new_sym->name, &loc);
 	  return FAILURE;
 	}
     }
@@ -3591,48 +3591,61 @@ gfc_add_interface (gfc_symbol *new_sym)
 	  {
 	    case INTRINSIC_EQ:
 	    case INTRINSIC_EQ_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_EQ], new_sym) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_EQ_OS], new_sym) == FAILURE)
+	      if (gfc_check_new_interface (ns->op[INTRINSIC_EQ], new_sym,
+					   gfc_current_locus) == FAILURE
+	          || gfc_check_new_interface (ns->op[INTRINSIC_EQ_OS], new_sym,
+					      gfc_current_locus) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    case INTRINSIC_NE:
 	    case INTRINSIC_NE_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_NE], new_sym) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_NE_OS], new_sym) == FAILURE)
+	      if (gfc_check_new_interface (ns->op[INTRINSIC_NE], new_sym,
+					   gfc_current_locus) == FAILURE
+	          || gfc_check_new_interface (ns->op[INTRINSIC_NE_OS], new_sym,
+					      gfc_current_locus) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    case INTRINSIC_GT:
 	    case INTRINSIC_GT_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_GT], new_sym) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_GT_OS], new_sym) == FAILURE)
+	      if (gfc_check_new_interface (ns->op[INTRINSIC_GT], new_sym,
+					   gfc_current_locus) == FAILURE
+	          || gfc_check_new_interface (ns->op[INTRINSIC_GT_OS], new_sym,
+					      gfc_current_locus) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    case INTRINSIC_GE:
 	    case INTRINSIC_GE_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_GE], new_sym) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_GE_OS], new_sym) == FAILURE)
+	      if (gfc_check_new_interface (ns->op[INTRINSIC_GE], new_sym,
+					   gfc_current_locus) == FAILURE
+	          || gfc_check_new_interface (ns->op[INTRINSIC_GE_OS], new_sym,
+					      gfc_current_locus) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    case INTRINSIC_LT:
 	    case INTRINSIC_LT_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_LT], new_sym) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_LT_OS], new_sym) == FAILURE)
+	      if (gfc_check_new_interface (ns->op[INTRINSIC_LT], new_sym,
+					   gfc_current_locus) == FAILURE
+	          || gfc_check_new_interface (ns->op[INTRINSIC_LT_OS], new_sym,
+					      gfc_current_locus) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    case INTRINSIC_LE:
 	    case INTRINSIC_LE_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_LE], new_sym) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_LE_OS], new_sym) == FAILURE)
+	      if (gfc_check_new_interface (ns->op[INTRINSIC_LE], new_sym,
+					   gfc_current_locus) == FAILURE
+	          || gfc_check_new_interface (ns->op[INTRINSIC_LE_OS], new_sym,
+					      gfc_current_locus) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    default:
-	      if (check_new_interface (ns->op[current_interface.op], new_sym) == FAILURE)
+	      if (gfc_check_new_interface (ns->op[current_interface.op], new_sym,
+					   gfc_current_locus) == FAILURE)
 		return FAILURE;
 	  }
 
@@ -3646,7 +3659,8 @@ gfc_add_interface (gfc_symbol *new_sym)
 	  if (sym == NULL)
 	    continue;
 
-	  if (check_new_interface (sym->generic, new_sym) == FAILURE)
+	  if (gfc_check_new_interface (sym->generic, new_sym, gfc_current_locus)
+	      == FAILURE)
 	    return FAILURE;
 	}
 
@@ -3654,8 +3668,8 @@ gfc_add_interface (gfc_symbol *new_sym)
       break;
 
     case INTERFACE_USER_OP:
-      if (check_new_interface (current_interface.uop->op, new_sym)
-	  == FAILURE)
+      if (gfc_check_new_interface (current_interface.uop->op, new_sym,
+				   gfc_current_locus) == FAILURE)
 	return FAILURE;
 
       head = &current_interface.uop->op;

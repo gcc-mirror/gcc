@@ -2851,6 +2851,7 @@ gfc_symbol *gfc_search_interface (gfc_interface *, int,
 match gfc_extend_expr (gfc_expr *);
 void gfc_free_formal_arglist (gfc_formal_arglist *);
 gfc_try gfc_extend_assign (gfc_code *, gfc_namespace *);
+gfc_try gfc_check_new_interface (gfc_interface *, gfc_symbol *, locus);
 gfc_try gfc_add_interface (gfc_symbol *);
 gfc_interface *gfc_current_interface_head (void);
 void gfc_set_current_interface_head (gfc_interface *);
