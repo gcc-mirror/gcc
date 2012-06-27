@@ -1,3 +1,10 @@
+2012-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53774
+	* tree-ssa-reassoc.c (get_rank): All default defs have
+	precomputed rank.
+	(init_reassoc): Precompute rank for all SSA default defs.
+
 2012-06-27  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md (simple_return): Use the simple_return rtx.
