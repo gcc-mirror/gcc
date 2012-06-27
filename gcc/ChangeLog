@@ -1,5 +1,16 @@
 2012-06-27  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/53676
+	* tree-chrec.c (chrec_convert_1): Represent truncation to
+	a type with undefined overflow as truncation to an unsigned
+	type converted to the type with undefined overflow.
+	* tree-scalar-evolution.c (interpret_rhs_expr): For computing
+	the scalar evolution of a truncated widened operation avoid
+	looking at the non-existing evolution of the widened operation
+	result.
+
+2012-06-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53774
 	* tree-ssa-reassoc.c (get_rank): All default defs have
 	precomputed rank.
