@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,11 +30,16 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace __regex
+namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // Base class for, um, automata.  Could be an NFA or a DFA.  Your choice.
+  /**
+   * @addtogroup regex-detail
+   * @{
+   */
+
+  /// Base class for, um, automata.  Could be an NFA or a DFA.  Your choice.
   class _Automaton
   {
   public:
@@ -53,11 +58,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   };
 
-  // Generic shared pointer to an automaton.  
+  /// Generic shared pointer to an automaton.  
   typedef std::shared_ptr<_Automaton> _AutomatonPtr;
 
-  // Operation codes that define the type of transitions within the base NFA
-  // that represents the regular expression.
+  /// Operation codes that define the type of transitions within the base NFA
+  /// that represents the regular expression.
   enum _Opcode
   {
       _S_opcode_unknown       =   0,
@@ -68,16 +73,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_opcode_accept        = 255
   };
 
-  // Provides a generic facade for a templated match_results.
+  /// Provides a generic facade for a templated match_results.
   struct _Results
   {
     virtual void _M_set_pos(int __i, int __j, const _PatternCursor& __p) = 0;
     virtual void _M_set_matched(int __i, bool __is_matched) = 0;
   };
 
-  // Tags current state (for subexpr begin/end).
+  /// Tags current state (for subexpr begin/end).
   typedef std::function<void (const _PatternCursor&, _Results&)> _Tagger;
 
+  /// Start state tag.
   template<typename _FwdIterT, typename _TraitsT>
     struct _StartTagger
     {
@@ -93,6 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       int       _M_index;
     };
 
+  /// End state tag.
   template<typename _FwdIterT, typename _TraitsT>
     struct _EndTagger
     {
@@ -108,15 +115,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       int       _M_index;
       _FwdIterT _M_pos;
     };
-  // Indicates if current state matches cursor current.
+
+  /// Indicates if current state matches cursor current.
   typedef std::function<bool (const _PatternCursor&)> _Matcher;
 
-  // Matches any character
+  /// Matches any character
   inline bool
   _AnyMatcher(const _PatternCursor&)
   { return true; }
 
-  // Matches a single character
+  /// Matches a single character
   template<typename _InIterT, typename _TraitsT>
     struct _CharMatcher
     {
@@ -139,7 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       char_type       _M_c;
     };
 
-  // Matches a character range (bracket expression)
+  /// Matches a character range (bracket expression)
   template<typename _InIterT, typename _TraitsT>
     struct _RangeMatcher
     {
@@ -183,20 +191,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool            _M_is_non_matching;
     };
 
-  // Identifies a state in the NFA.
+  /// Identifies a state in the NFA.
   typedef int _StateIdT;
 
-  // The special case in which a state identifier is not an index.
+  /// The special case in which a state identifier is not an index.
   static const _StateIdT _S_invalid_state_id  = -1;
 
 
-  // An individual state in an NFA
-  //
-  // In this case a "state" is an entry in the NFA definition coupled with its
-  // outgoing transition(s).  All states have a single outgoing transition,
-  // except for accepting states (which have no outgoing transitions) and alt
-  // states, which have two outgoing transitions.
-  //
+  /**
+   * @brief struct _State
+   *
+   * An individual state in an NFA
+   *
+   * In this case a "state" is an entry in the NFA definition coupled
+   * with its outgoing transition(s).  All states have a single outgoing
+   * transition, except for accepting states (which have no outgoing
+   * transitions) and alt states, which have two outgoing transitions.
+   */
   struct _State
   {
     typedef int  _OpcodeT;
@@ -236,22 +247,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   
-  // The Grep Matcher works on sets of states.  Here are sets of states.
+  /// The Grep Matcher works on sets of states.  Here are sets of states.
   typedef std::set<_StateIdT> _StateSet;
 
- // A collection of all states making up an NFA
-  //
-  // An NFA is a 4-tuple M = (K, S, s, F), where
-  //    K is a finite set of states,
-  //    S is the alphabet of the NFA,
-  //    s is the initial state,
-  //    F is a set of final (accepting) states.
-  //
-  // This NFA class is templated on S, a type that will hold values of the
-  // underlying alphabet (without regard to semantics of that alphabet).  The
-  // other elements of the tuple are generated during construction of the NFA
-  // and are available through accessor member functions.
-  //
+  /**
+   * @brief struct _Nfa
+   *
+   * A collection of all states making up an NFA.
+   *
+   * An NFA is a 4-tuple M = (K, S, s, F), where
+   *    K is a finite set of states,
+   *    S is the alphabet of the NFA,
+   *    s is the initial state,
+   *    F is a set of final (accepting) states.
+   *
+   * This NFA class is templated on S, a type that will hold values of the
+   * underlying alphabet (without regard to semantics of that alphabet).  The
+   * other elements of the tuple are generated during construction of the NFA
+   * and are available through accessor member functions.
+   */
   class _Nfa
   : public _Automaton, public std::vector<_State>
   {
@@ -260,7 +274,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef unsigned int                        _SizeT;
     typedef regex_constants::syntax_option_type _FlagT;
 
-  public:
     _Nfa(_FlagT __f)
     : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0)
     { }
@@ -309,7 +322,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _StateIdT
     _M_insert_subexpr_begin(const _Tagger& __t)
     {
-      this->push_back(_StateT(_S_opcode_subexpr_begin, _M_subexpr_count++, __t));
+      this->push_back(_StateT(_S_opcode_subexpr_begin, _M_subexpr_count++,
+			      __t));
       return this->size()-1;
     }
 
@@ -332,9 +346,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _SizeT     _M_subexpr_count;
   };
 
-  // Describes a sequence of one or more %_State, its current start and end(s).
-  //
-  // This structure contains fragments of an NFA during construction.
+  /// Describes a sequence of one or more %_State, its current start
+  /// and end(s).  This structure contains fragments of an NFA during
+  /// construction.
   class _StateSeq
   {
   public:
@@ -392,8 +406,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   };
 
+ //@} regex-detail
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace __regex
+} // namespace __detail
 } // namespace std
 
 #include <bits/regex_nfa.tcc>

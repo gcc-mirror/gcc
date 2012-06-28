@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,13 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+/**
+ * @defgroup regex Regular Expressions
+ *
+ * A facility for performing regular expression pattern matching.
+ * @{
+ */
+
 /**
  * @namespace std::regex_constants
  * @brief ISO C++-0x entities sub namespace for regex.
@@ -76,14 +83,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Specifies that the matching of regular expressions against a character
    * sequence shall be performed without regard to case.
    */
-  static constexpr syntax_option_type icase      = 1 << _S_icase;
+  constexpr syntax_option_type icase      = 1 << _S_icase;
 
   /**
    * Specifies that when a regular expression is matched against a character
    * container sequence, no sub-expression matches are to be stored in the
    * supplied match_results structure.
    */
-  static constexpr syntax_option_type nosubs     = 1 << _S_nosubs;
+  constexpr syntax_option_type nosubs     = 1 << _S_nosubs;
 
   /**
    * Specifies that the regular expression engine should pay more attention to
@@ -91,13 +98,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * speed with which regular expression objects are constructed. Otherwise
    * it has no detectable effect on the program output.
    */
-  static constexpr syntax_option_type optimize   = 1 << _S_optimize;
+  constexpr syntax_option_type optimize   = 1 << _S_optimize;
 
   /**
    * Specifies that character ranges of the form [a-b] should be locale
    * sensitive.
    */
-  static constexpr syntax_option_type collate    = 1 << _S_collate;
+  constexpr syntax_option_type collate    = 1 << _S_collate;
 
   /**
    * Specifies that the grammar recognized by the regular expression engine is
@@ -107,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * in the PERL scripting language but extended with elements found in the
    * POSIX regular expression grammar.
    */
-  static constexpr syntax_option_type ECMAScript = 1 << _S_ECMAScript;
+  constexpr syntax_option_type ECMAScript = 1 << _S_ECMAScript;
 
   /**
    * Specifies that the grammar recognized by the regular expression engine is
@@ -116,7 +123,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Headers, Section 9, Regular Expressions [IEEE, Information Technology --
    * Portable Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
    */
-  static constexpr syntax_option_type basic      = 1 << _S_basic;
+  constexpr syntax_option_type basic      = 1 << _S_basic;
 
   /**
    * Specifies that the grammar recognized by the regular expression engine is
@@ -124,7 +131,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Portable Operating System Interface (POSIX), Base Definitions and Headers,
    * Section 9, Regular Expressions.
    */
-  static constexpr syntax_option_type extended   = 1 << _S_extended;
+  constexpr syntax_option_type extended   = 1 << _S_extended;
 
   /**
    * Specifies that the grammar recognized by the regular expression engine is
@@ -134,7 +141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * \\\\, \\a, \\b, \\f, \\n, \\r, \\t , \\v, \\&apos;, &apos;,
    * and \\ddd (where ddd is one, two, or three octal digits).  
    */
-  static constexpr syntax_option_type awk        = 1 << _S_awk;
+  constexpr syntax_option_type awk        = 1 << _S_awk;
 
   /**
    * Specifies that the grammar recognized by the regular expression engine is
@@ -142,7 +149,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * identical to syntax_option_type basic, except that newlines are treated
    * as whitespace.
    */
-  static constexpr syntax_option_type grep       = 1 << _S_grep;
+  constexpr syntax_option_type grep       = 1 << _S_grep;
 
   /**
    * Specifies that the grammar recognized by the regular expression engine is
@@ -150,7 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * IEEE Std 1003.1-2001.  This option is identical to syntax_option_type 
    * extended, except that newlines are treated as whitespace.
    */
-  static constexpr syntax_option_type egrep      = 1 << _S_egrep;
+  constexpr syntax_option_type egrep      = 1 << _S_egrep;
 
   //@}
 
@@ -193,56 +200,56 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * The default matching rules.
    */
-  static constexpr match_flag_type match_default     = 0;
+  constexpr match_flag_type match_default     = 0;
 
   /**
    * The first character in the sequence [first, last) is treated as though it
    * is not at the beginning of a line, so the character (^) in the regular
    * expression shall not match [first, first).
    */
-  static constexpr match_flag_type match_not_bol     = 1 << _S_not_bol;
+  constexpr match_flag_type match_not_bol     = 1 << _S_not_bol;
 
   /**
    * The last character in the sequence [first, last) is treated as though it
    * is not at the end of a line, so the character ($) in the regular
    * expression shall not match [last, last).
    */
-  static constexpr match_flag_type match_not_eol     = 1 << _S_not_eol;
+  constexpr match_flag_type match_not_eol     = 1 << _S_not_eol;
    
   /**
    * The expression \\b is not matched against the sub-sequence
    * [first,first).
    */
-  static constexpr match_flag_type match_not_bow     = 1 << _S_not_bow;
+  constexpr match_flag_type match_not_bow     = 1 << _S_not_bow;
    
   /**
    * The expression \\b should not be matched against the sub-sequence
    * [last,last).
    */
-  static constexpr match_flag_type match_not_eow     = 1 << _S_not_eow;
+  constexpr match_flag_type match_not_eow     = 1 << _S_not_eow;
    
   /**
    * If more than one match is possible then any match is an acceptable
    * result.
    */
-  static constexpr match_flag_type match_any         = 1 << _S_any;
+  constexpr match_flag_type match_any         = 1 << _S_any;
    
   /**
    * The expression does not match an empty sequence.
    */
-  static constexpr match_flag_type match_not_null    = 1 << _S_not_null;
+  constexpr match_flag_type match_not_null    = 1 << _S_not_null;
    
   /**
    * The expression only matches a sub-sequence that begins at first .
    */
-  static constexpr match_flag_type match_continuous  = 1 << _S_continuous;
+  constexpr match_flag_type match_continuous  = 1 << _S_continuous;
    
   /**
    * --first is a valid iterator position.  When this flag is set then the
    * flags match_not_bol and match_not_bow are ignored by the regular
    * expression algorithms 28.11 and iterators 28.12.
    */
-  static constexpr match_flag_type match_prev_avail  = 1 << _S_prev_avail;
+  constexpr match_flag_type match_prev_avail  = 1 << _S_prev_avail;
 
   /**
    * When a regular expression match is to be replaced by a new string, the
@@ -270,7 +277,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *         undefined, use the empty string instead. If
    *         nn > match_results::size(), the result is implementation-defined.
    */
-  static constexpr match_flag_type format_default    = 0;
+  constexpr match_flag_type format_default    = 0;
 
   /**
    * When a regular expression match is to be replaced by a new string, the
@@ -278,24 +285,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * in IEEE Std 1003.1- 2001 [IEEE, Information Technology -- Portable
    * Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
    */
-  static constexpr match_flag_type format_sed        = 1 << _S_sed;
+  constexpr match_flag_type format_sed        = 1 << _S_sed;
 
   /**
    * During a search and replace operation, sections of the character
    * container sequence being searched that do not match the regular
    * expression shall not be copied to the output string.
    */
-  static constexpr match_flag_type format_no_copy    = 1 << _S_no_copy;
+  constexpr match_flag_type format_no_copy    = 1 << _S_no_copy;
 
   /**
    * When specified during a search and replace operation, only the first
    * occurrence of the regular expression shall be replaced.
    */
-  static constexpr match_flag_type format_first_only = 1 << _S_first_only;
+  constexpr match_flag_type format_first_only = 1 << _S_first_only;
 
   //@}
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace regex_constants
-} // namespace
+
+/* @} */ // group regex
+} // namespace std
 

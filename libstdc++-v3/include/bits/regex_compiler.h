@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,10 +30,16 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace __regex
+namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /**
+   * @addtogroup regex-detail
+   * @{
+   */
+
+  /// Base class for scanner.
   struct _Scanner_base
   {
     typedef unsigned int _StateT;
@@ -45,16 +51,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     virtual ~_Scanner_base() { };
   };
 
-  //
-  // @brief Scans an input range for regex tokens.
-  //
-  // The %_Scanner class interprets the regular expression pattern in the input
-  // range passed to its constructor as a sequence of parse tokens passed to
-  // the regular expression compiler.  The sequence of tokens provided depends
-  // on the flag settings passed to the constructor:  different regular
-  // expression grammars will interpret the same input pattern in
-  // syntactically different ways.
-  //
+  /**
+   * @brief struct _Scanner. Scans an input range for regex tokens.
+   *
+   * The %_Scanner class interprets the regular expression pattern in
+   * the input range passed to its constructor as a sequence of parse
+   * tokens passed to the regular expression compiler.  The sequence
+   * of tokens provided depends on the flag settings passed to the
+   * constructor: different regular expression grammars will interpret
+   * the same input pattern in syntactically different ways.
+   */
   template<typename _InputIterator>
     class _Scanner: public _Scanner_base
     {
@@ -65,7 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef regex_constants::syntax_option_type                   _FlagT;
       typedef const std::ctype<_CharT>                              _CtypeT;
 
-      // Token types returned from the scanner.
+      /// Token types returned from the scanner.
       enum _TokenT
       {
 	_S_token_anychar,
@@ -99,7 +105,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_token_unknown
       };
 
-    public:
       _Scanner(_IteratorT __begin, _IteratorT __end, _FlagT __flags,
 	       std::locale __loc)
       : _M_current(__begin) , _M_end(__end) , _M_flags(__flags),
@@ -141,7 +146,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_eat_collsymbol();
 
-    private:
       _IteratorT  _M_current;
       _IteratorT  _M_end;
       _FlagT      _M_flags;
@@ -625,7 +629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
-  // Builds an NFA from an input iterator interval.
+  /// Builds an NFA from an input iterator interval.
   template<typename _InIter, typename _TraitsT>
     class _Compiler
     {
@@ -635,7 +639,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef std::basic_string<_CharT>                          _StringT;
       typedef regex_constants::syntax_option_type                _FlagT;
 
-    public:
       _Compiler(const _InIter& __b, const _InIter& __e,
 		_TraitsT& __traits, _FlagT __flags);
 
@@ -704,7 +707,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       int
       _M_cur_int_value(int __radix);
 
-    private:
       _TraitsT&      _M_traits;
       _ScannerT      _M_scanner;
       _StringT       _M_cur_value;
@@ -1102,8 +1104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return _AutomatonPtr(new _Nfa(_Compiler<_InIter, _TraitsT>(__b, __e, __t,
                                         __f)._M_nfa())); }
 
+ //@} regex-detail
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace __regex
+} // namespace __detail
 } // namespace std
-
-/* vim: set ts=8 sw=2 sts=2: */
