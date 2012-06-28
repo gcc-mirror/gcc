@@ -864,9 +864,12 @@ word_dce_process_block (basic_block bb, bool redo_out)
 	   anything in local_live.  */
 	if (marked_insn_p (insn))
 	  df_word_lr_simulate_uses (insn, local_live);
+
 	/* Insert debug temps for dead REGs used in subsequent debug
-	   insns.  */
-	else if (debug.used && !bitmap_empty_p (debug.used))
+	   insns.  We may have to emit a debug temp even if the insn
+	   was marked, in case the debug use was after the point of
+	   death.  */
+	if (debug.used && !bitmap_empty_p (debug.used))
 	  {
 	    df_ref *def_rec;
 
@@ -963,9 +966,12 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 	   anything in local_live.  */
 	if (needed)
 	  df_simulate_uses (insn, local_live);
+
 	/* Insert debug temps for dead REGs used in subsequent debug
-	   insns.  */
-	else if (debug.used && !bitmap_empty_p (debug.used))
+	   insns.  We may have to emit a debug temp even if the insn
+	   was marked, in case the debug use was after the point of
+	   death.  */
+	if (debug.used && !bitmap_empty_p (debug.used))
 	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
 	    dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
 				    DEBUG_TEMP_BEFORE_WITH_VALUE);
