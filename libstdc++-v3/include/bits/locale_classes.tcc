@@ -1,6 +1,7 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -89,6 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Test for the presence of a facet.
+   *  @ingroup locales
    *
    *  has_facet tests the locale argument for the presence of the facet type
    *  provided as the template parameter.  Facets derived from the facet
@@ -114,6 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Return a facet.
+   *  @ingroup locales
    *
    *  use_facet looks for and returns a reference to a facet of type Facet
    *  where Facet is the template parameter.  If has_facet(locale) is true,

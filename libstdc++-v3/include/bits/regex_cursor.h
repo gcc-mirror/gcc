@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,11 +30,17 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace __regex
+namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // ABC for pattern matching
+  /**
+   *  @defgroup regex-detail Base and Implementation Classes
+   *  @ingroup regex
+   *  @{
+   */
+
+  /// ABC for pattern matching
   struct _PatternCursor
   {
     virtual ~_PatternCursor() { };
@@ -42,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     virtual bool _M_at_end() const = 0;
   };
 
-  // Provides a cursor into the specific target string.
+  /// Provides a cursor into the specific target string.
   template<typename _FwdIterT>
     class _SpecializedCursor
     : public _PatternCursor
@@ -88,6 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __cursor(const _FwdIterT& __b, const _FwdIterT __e)
     { return _SpecializedCursor<_FwdIterT>(__b, __e); }
 
+ //@} regex-detail
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace __regex
+} // namespace __detail
 } // namespace

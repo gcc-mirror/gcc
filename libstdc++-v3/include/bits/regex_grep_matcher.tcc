@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,26 +35,26 @@ namespace std _GLIBCXX_VISIBILITY(default)
 namespace
 {
   // A stack of states used in evaluating the NFA.
-  typedef std::stack<std::__regex::_StateIdT,
-                     std::vector<std::__regex::_StateIdT>
+  typedef std::stack<std::__detail::_StateIdT,
+                     std::vector<std::__detail::_StateIdT>
 		     > _StateStack;
 
   // Obtains the next state set given the current state set __s and the current
   // input character.
-  inline std::__regex::_StateSet
-  __move(const std::__regex::_PatternCursor& __p,
-         const std::__regex::_Nfa& __nfa,
-         const std::__regex::_StateSet& __s)
+  inline std::__detail::_StateSet
+  __move(const std::__detail::_PatternCursor& __p,
+         const std::__detail::_Nfa& __nfa,
+         const std::__detail::_StateSet& __s)
   {
-    std::__regex::_StateSet __m;
-    for (std::__regex::_StateSet::const_iterator __i = __s.begin();
+    std::__detail::_StateSet __m;
+    for (std::__detail::_StateSet::const_iterator __i = __s.begin();
 	 __i != __s.end(); ++__i)
       {
-	if (*__i == std::__regex::_S_invalid_state_id)
+	if (*__i == std::__detail::_S_invalid_state_id)
 	  continue;
 
-	const std::__regex::_State& __state = __nfa[*__i];
-	if (__state._M_opcode == std::__regex::_S_opcode_match
+	const std::__detail::_State& __state = __nfa[*__i];
+	if (__state._M_opcode == std::__detail::_S_opcode_match
 	    && __state._M_matches(__p))
 	  __m.insert(__state._M_next);
       }
@@ -63,13 +63,13 @@ namespace
 
   // returns true if (__s intersect __t) is not empty
   inline bool
-  __includes_some(const std::__regex::_StateSet& __s,
-                  const std::__regex::_StateSet& __t)
+  __includes_some(const std::__detail::_StateSet& __s,
+                  const std::__detail::_StateSet& __t)
   {
     if (__s.size() > 0 && __t.size() > 0)
       {
-	std::__regex::_StateSet::const_iterator __first = __s.begin();
-	std::__regex::_StateSet::const_iterator __second = __t.begin();
+	std::__detail::_StateSet::const_iterator __first = __s.begin();
+	std::__detail::_StateSet::const_iterator __second = __t.begin();
 	while (__first != __s.end() && __second != __t.end())
 	  {
 	    if (*__first < *__second)
@@ -86,9 +86,9 @@ namespace
   // If an identified state __u is not already in the current state set __e,
   // insert it and push it on the current state stack __s.
   inline void
-  __add_visited_state(const std::__regex::_StateIdT __u,
+  __add_visited_state(const std::__detail::_StateIdT __u,
                       _StateStack&                  __s,
-                      std::__regex::_StateSet&      __e)
+                      std::__detail::_StateSet&      __e)
   {
     if (__e.count(__u) == 0)
       {
@@ -99,7 +99,7 @@ namespace
 
 } // anonymous namespace
 
-namespace __regex
+namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		regex_constants::match_flag_type __flags)
   : _M_nfa(static_pointer_cast<_Nfa>(__nfa)), _M_pattern(__p), _M_results(__r)
   {
-    __regex::_StateSet __t = this->_M_e_closure(_M_nfa->_M_start());
+    __detail::_StateSet __t = this->_M_e_closure(_M_nfa->_M_start());
     for (; !_M_pattern._M_at_end(); _M_pattern._M_next())
       __t = this->_M_e_closure(__move(_M_pattern, *_M_nfa, __t));
 
@@ -175,5 +175,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace __regex
+} // namespace __detail
 } // namespace

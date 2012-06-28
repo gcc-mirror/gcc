@@ -1,3 +1,22 @@
+2012-06-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/c++config: Remove __regex nested namespace.
+	* include/bits/regex_compiler.h: Change __regex to
+	__detail. Adjust doxygen markup, add regex-details group.
+	* include/bits/regex_constants.h: Same.
+	* include/bits/regex_cursor.h: Same.
+	* include/bits/regex_error.h: Same.
+	* include/bits/regex_grep_matcher.h: Same.
+	* include/bits/regex_grep_matcher.tcc: Same.
+	* include/bits/regex_nfa.h: Same.
+	* include/bits/regex_nfa.tcc: Same.
+	* include/bits/regex.h: Same. Remove static from global constants.
+
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust line numbers.
+
+	* include/bits/locale_classes.tcc: Add use_facet, has_facet to
+	locales group.
+
 2012-06-25  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/tr2/bool_set (count, size, num_blocks, empty, max_size):

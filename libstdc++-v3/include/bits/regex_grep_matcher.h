@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,11 +40,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
   
-namespace __regex
+namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // A _Results facade specialized for wrapping a templated match_results.
+  /**
+   *  @defgroup regex-detail Base and Implementation Classes
+   *  @ingroup regex
+   *  @{
+   */
+
+  /// A _Results facade specialized for wrapping a templated match_results.
   template<typename _FwdIterT, typename _Alloc>
     class _SpecializedResults
     : public _Results
@@ -95,12 +101,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_results.at(__i).second = __c._M_pos()+1;
     }
 
-  // A stack of states used in evaluating the NFA.
+  /// A stack of states used in evaluating the NFA.
   typedef std::stack<_StateIdT, std::vector<_StateIdT> > _StateStack;
 
-  // Executes a regular expression NFA/DFA over a range using a variant of
-  // the parallel execution algorithm featured in the grep utility, modified
-  // to use Laurikari tags.
+  /// Executes a regular expression NFA/DFA over a range using a
+  /// variant of the parallel execution algorithm featured in the grep
+  /// utility, modified to use Laurikari tags.
   class _Grep_matcher
   {
   public:
@@ -119,14 +125,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _StateSet
     _M_e_closure(_StateStack& __stack, const _StateSet& __s);
 
-  private:
     const std::shared_ptr<_Nfa>        _M_nfa;
     _PatternCursor&                    _M_pattern;
     _Results&                          _M_results;
   };
 
+ //@} regex-detail
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace __regex
-} // namespace
+} // namespace __detail
+} // namespace std
 
 #include <bits/regex_grep_matcher.tcc>
