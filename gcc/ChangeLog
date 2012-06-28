@@ -1,3 +1,8 @@
+2012-06-28  OLivier Hainque  <hainque@adacore.com>
+
+	* expr.c (convert_move): Latch mem integer inputs into a
+	register before expanding a multi-instructions sequence.
+
 2012-06-28  Alexandre Oliva  <aoliva@redhat.com>,
             Uros Bizjak  <ubizjak@gmail.com>,
             Jakub Jelinek  <jakub@redhat.com>
