@@ -1,3 +1,8 @@
+2012-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53645
+	* gcc.c-torture/execute/pr53645.c: New test.
+
 2012-06-28  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/deep_old.adb, gnat.dg/old_errors.adb: Removed, obsolete.

@@ -1971,7 +1971,7 @@ vect_recog_divmod_pattern (VEC (gimple, heap) **stmts,
   else
     {
       unsigned HOST_WIDE_INT ml;
-      int lgup, post_shift;
+      int post_shift;
       HOST_WIDE_INT d = tree_low_cst (oprnd1, 0);
       unsigned HOST_WIDE_INT abs_d;
       bool add = false;
@@ -2008,7 +2008,7 @@ vect_recog_divmod_pattern (VEC (gimple, heap) **stmts,
 	/* This case is not handled correctly below.  */
 	return NULL;
 
-      choose_multiplier (abs_d, prec, prec - 1, &ml, &post_shift, &lgup);
+      choose_multiplier (abs_d, prec, prec - 1, &ml, &post_shift, &dummy_int);
       if (ml >= (unsigned HOST_WIDE_INT) 1 << (prec - 1))
 	{
 	  add = true;
