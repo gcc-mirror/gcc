@@ -402,10 +402,8 @@ enum reg_class {
 
 #define REGNO_OK_FOR_INDEX_P(NUM) 0
 
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)                    \
-  (((REGNO) < 18 && (REGNO) + GET_MODE_SIZE (MODE) > 18)               \
-   || ((REGNO) < REG_Y && (REGNO) + GET_MODE_SIZE (MODE) > REG_Y)      \
-   || ((REGNO) < REG_Z && (REGNO) + GET_MODE_SIZE (MODE) > REG_Z))
+#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)     \
+  avr_hard_regno_call_part_clobbered (REGNO, MODE)
 
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
