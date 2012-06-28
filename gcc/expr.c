@@ -520,10 +520,13 @@ convert_move (rtx to, rtx from, int unsignedp)
       /* No special multiword conversion insn; do it by hand.  */
       start_sequence ();
 
-      /* Since we will turn this into a no conflict block, we must ensure
-	 that the source does not overlap the target.  */
+      /* Since we will turn this into a no conflict block, we must ensure the
+         the source does not overlap the target so force it into an isolated
+         register when maybe so.  Likewise for any MEM input, since the
+         conversion sequence might require several references to it and we
+         must ensure we're getting the same value every time.  */
 
-      if (reg_overlap_mentioned_p (to, from))
+      if (MEM_P (from) || reg_overlap_mentioned_p (to, from))
 	from = force_reg (from_mode, from);
 
       /* Get a copy of FROM widened to a word, if necessary.  */
