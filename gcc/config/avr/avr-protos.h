@@ -47,6 +47,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 #endif /* TREE_CODE */
 
 #ifdef RTX_CODE
+extern int avr_hard_regno_call_part_clobbered (unsigned, enum machine_mode);
 extern const char *output_movqi (rtx insn, rtx operands[], int *l);
 extern const char *output_movhi (rtx insn, rtx operands[], int *l);
 extern const char *output_movsisf (rtx insn, rtx operands[], int *l);
