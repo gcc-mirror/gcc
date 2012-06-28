@@ -1235,6 +1235,7 @@ the byte offset of the field, but should not be used directly; call
 @tindex PLUS_EXPR
 @tindex MINUS_EXPR
 @tindex MULT_EXPR
+@tindex MULT_HIGHPART_EXPR
 @tindex RDIV_EXPR
 @tindex TRUNC_DIV_EXPR
 @tindex FLOOR_DIV_EXPR
@@ -1432,6 +1433,11 @@ one operand is of floating type and the other is of integral type.
 
 The behavior of these operations on signed arithmetic overflow is
 controlled by the @code{flag_wrapv} and @code{flag_trapv} variables.
+
+@item MULT_HIGHPART_EXPR
+This node represents the ``high-part'' of a widening multiplication.
+For an integral type with @var{b} bits of precision, the result is
+the most significant @var{b} bits of the full @math{2@var{b}} product.
 
 @item RDIV_EXPR
 This node represents a floating point division operation.

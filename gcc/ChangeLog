@@ -1,3 +1,7 @@
+2012-06-28  Richard Henderson  <rth@redhat.com>
+
+	* doc/generic.texi (MULT_HIGHPART_EXPR): Document it.
+
 2012-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51581
