@@ -8890,6 +8890,28 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
 }
 
 
+/* Implement `HARD_REGNO_CALL_PART_CLOBBERED'.  */
+
+int
+avr_hard_regno_call_part_clobbered (unsigned regno, enum machine_mode mode)
+{
+  /* FIXME: This hook gets called with MODE:REGNO combinations that don't
+        represent valid hard registers like, e.g. HI:29.  Returning TRUE
+        for such registers can lead to performance degradation as mentioned
+        in PR53595.  Thus, report invalid hard registers as FALSE.  */
+  
+  if (!avr_hard_regno_mode_ok (regno, mode))
+    return 0;
+  
+  /* Return true if any of the following boundaries is crossed:
+     17/18, 27/28 and 29/30.  */
+  
+  return ((regno < 18 && regno + GET_MODE_SIZE (mode) > 18)
+          || (regno < REG_Y && regno + GET_MODE_SIZE (mode) > REG_Y)
+          || (regno < REG_Z && regno + GET_MODE_SIZE (mode) > REG_Z));
+}
+
+
 /* Implement `MODE_CODE_BASE_REG_CLASS'.  */
 
 enum reg_class

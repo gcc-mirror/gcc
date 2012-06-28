@@ -1,3 +1,13 @@
+2012-06-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-06-28 mainline r189049
+
+	PR 53595
+	* config/avr/avr.c (avr_hard_regno_call_part_clobbered): New.
+	* config/avr/avr-protos.h (avr_hard_regno_call_part_clobbered): New.
+	* config/avr/avr.h (HARD_REGNO_CALL_PART_CLOBBERED): Forward to
+	avr_hard_regno_call_part_clobbered.
+
 2012-06-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53790
