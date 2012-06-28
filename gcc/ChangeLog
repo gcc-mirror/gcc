@@ -1,3 +1,10 @@
+2012-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53645
+	* tree-vect-generic.c (expand_vector_divmod): Use MULT_HIGHPART_EXPR
+	instead of VEC_WIDEN_MULT_{HI,LO}_EXPR followed by VEC_PERM_EXPR
+	if possible.
+
 2012-06-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR 53595

@@ -455,7 +455,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   unsigned HOST_WIDE_INT mask = GET_MODE_MASK (TYPE_MODE (TREE_TYPE (type)));
   optab op;
   tree *vec;
-  unsigned char *sel;
+  unsigned char *sel = NULL;
   tree cur_op, mhi, mlo, mulcst, perm_mask, wider_type, tem;
 
   if (prec > HOST_BITS_PER_WIDE_INT)
@@ -744,26 +744,34 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   if (mode == -2 || BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
     return NULL_TREE;
 
-  op = optab_for_tree_code (VEC_WIDEN_MULT_LO_EXPR, type, optab_default);
-  if (op == NULL
-      || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
-    return NULL_TREE;
-  op = optab_for_tree_code (VEC_WIDEN_MULT_HI_EXPR, type, optab_default);
-  if (op == NULL
-      || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
-    return NULL_TREE;
-  sel = XALLOCAVEC (unsigned char, nunits);
-  for (i = 0; i < nunits; i++)
-    sel[i] = 2 * i + (BYTES_BIG_ENDIAN ? 0 : 1);
-  if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
-    return NULL_TREE;
-  wider_type
-    = build_vector_type (build_nonstandard_integer_type (prec * 2, unsignedp),
-			 nunits / 2);
-  if (GET_MODE_CLASS (TYPE_MODE (wider_type)) != MODE_VECTOR_INT
-      || GET_MODE_BITSIZE (TYPE_MODE (wider_type))
-	 != GET_MODE_BITSIZE (TYPE_MODE (type)))
-    return NULL_TREE;
+  op = optab_for_tree_code (MULT_HIGHPART_EXPR, type, optab_default);
+  if (op != NULL
+      && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
+    wider_type = NULL_TREE;
+  else
+    {
+      op = optab_for_tree_code (VEC_WIDEN_MULT_LO_EXPR, type, optab_default);
+      if (op == NULL
+	  || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+	return NULL_TREE;
+      op = optab_for_tree_code (VEC_WIDEN_MULT_HI_EXPR, type, optab_default);
+      if (op == NULL
+	  || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+	return NULL_TREE;
+      sel = XALLOCAVEC (unsigned char, nunits);
+      for (i = 0; i < nunits; i++)
+	sel[i] = 2 * i + (BYTES_BIG_ENDIAN ? 0 : 1);
+      if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
+	return NULL_TREE;
+      wider_type
+	= build_vector_type (build_nonstandard_integer_type (prec * 2,
+							     unsignedp),
+			     nunits / 2);
+      if (GET_MODE_CLASS (TYPE_MODE (wider_type)) != MODE_VECTOR_INT
+	  || GET_MODE_BITSIZE (TYPE_MODE (wider_type))
+	     != GET_MODE_BITSIZE (TYPE_MODE (type)))
+	return NULL_TREE;
+    }
 
   cur_op = op0;
 
@@ -772,7 +780,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
     case 0:
       gcc_assert (unsignedp);
       /* t1 = oprnd0 >> pre_shift;
-	 t2 = (type) (t1 w* ml >> prec);
+	 t2 = t1 h* ml;
 	 q = t2 >> post_shift;  */
       cur_op = add_rshift (gsi, type, cur_op, pre_shifts);
       if (cur_op == NULL_TREE)
@@ -801,30 +809,37 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   for (i = 0; i < nunits; i++)
     vec[i] = build_int_cst (TREE_TYPE (type), mulc[i]);
   mulcst = build_vector (type, vec);
-  for (i = 0; i < nunits; i++)
-    vec[i] = build_int_cst (TREE_TYPE (type), sel[i]);
-  perm_mask = build_vector (type, vec);
-  mhi = gimplify_build2 (gsi, VEC_WIDEN_MULT_HI_EXPR, wider_type,
-			 cur_op, mulcst);
-  mhi = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, mhi);
-  mlo = gimplify_build2 (gsi, VEC_WIDEN_MULT_LO_EXPR, wider_type,
-			 cur_op, mulcst);
-  mlo = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, mlo);
-  if (BYTES_BIG_ENDIAN)
-    cur_op = gimplify_build3 (gsi, VEC_PERM_EXPR, type, mhi, mlo, perm_mask);
+  if (wider_type == NULL_TREE)
+    cur_op = gimplify_build2 (gsi, MULT_HIGHPART_EXPR, type, cur_op, mulcst);
   else
-    cur_op = gimplify_build3 (gsi, VEC_PERM_EXPR, type, mlo, mhi, perm_mask);
+    {
+      for (i = 0; i < nunits; i++)
+	vec[i] = build_int_cst (TREE_TYPE (type), sel[i]);
+      perm_mask = build_vector (type, vec);
+      mhi = gimplify_build2 (gsi, VEC_WIDEN_MULT_HI_EXPR, wider_type,
+			     cur_op, mulcst);
+      mhi = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, mhi);
+      mlo = gimplify_build2 (gsi, VEC_WIDEN_MULT_LO_EXPR, wider_type,
+			     cur_op, mulcst);
+      mlo = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, mlo);
+      if (BYTES_BIG_ENDIAN)
+	cur_op = gimplify_build3 (gsi, VEC_PERM_EXPR, type, mhi, mlo,
+				  perm_mask);
+      else
+	cur_op = gimplify_build3 (gsi, VEC_PERM_EXPR, type, mlo, mhi,
+				  perm_mask);
+    }
 
   switch (mode)
     {
     case 0:
       /* t1 = oprnd0 >> pre_shift;
-	 t2 = (type) (t1 w* ml >> prec);
+	 t2 = t1 h* ml;
 	 q = t2 >> post_shift;  */
       cur_op = add_rshift (gsi, type, cur_op, post_shifts);
       break;
     case 1:
-      /* t1 = (type) (oprnd0 w* ml >> prec);
+      /* t1 = oprnd0 h* ml;
 	 t2 = oprnd0 - t1;
 	 t3 = t2 >> 1;
 	 t4 = t1 + t3;
@@ -848,7 +863,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
     case 3:
     case 4:
     case 5:
-      /* t1 = (type) (oprnd0 w* ml >> prec);
+      /* t1 = oprnd0 h* ml;
 	 t2 = t1; [ iff (mode & 2) != 0 ]
 	 t2 = t1 + oprnd0; [ iff (mode & 2) == 0 ]
 	 t3 = t2 >> post_shift;
