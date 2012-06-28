@@ -1,3 +1,8 @@
+2012-06-28  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/include/gpl.texi: Remove.
+	* doc/sourcebuild.texi (Texinfo Manuals): Don't mention gpl.texi.
+
 2012-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53645
