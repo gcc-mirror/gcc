@@ -6690,11 +6690,11 @@ if test "x$CFLAGS_FOR_TARGET" = x; then
   CFLAGS_FOR_TARGET=$CFLAGS
   case " $CFLAGS " in
     *" -O2 "*) ;;
-    *) CFLAGS_FOR_TARGET="-O2 $CFLAGS" ;;
+    *) CFLAGS_FOR_TARGET="-O2 $CFLAGS_FOR_TARGET" ;;
   esac
   case " $CFLAGS " in
     *" -g "* | *" -g3 "*) ;;
-    *) CFLAGS_FOR_TARGET="-g $CFLAGS" ;;
+    *) CFLAGS_FOR_TARGET="-g $CFLAGS_FOR_TARGET" ;;
   esac
 fi
 
@@ -6703,11 +6703,11 @@ if test "x$CXXFLAGS_FOR_TARGET" = x; then
   CXXFLAGS_FOR_TARGET=$CXXFLAGS
   case " $CXXFLAGS " in
     *" -O2 "*) ;;
-    *) CXXFLAGS_FOR_TARGET="-O2 $CXXFLAGS" ;;
+    *) CXXFLAGS_FOR_TARGET="-O2 $CXXFLAGS_FOR_TARGET" ;;
   esac
   case " $CXXFLAGS " in
     *" -g "* | *" -g3 "*) ;;
-    *) CXXFLAGS_FOR_TARGET="-g $CXXFLAGS" ;;
+    *) CXXFLAGS_FOR_TARGET="-g $CXXFLAGS_FOR_TARGET" ;;
   esac
 fi
 
