@@ -1,3 +1,10 @@
+2012-06-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/53671
+	PR debug/49888
+	* gcc.dg/guality/pr49888.c: Account for the possibility that
+	the variable is optimized out at the first test.
+
 2012-06-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/override2.C: Adjust.
