@@ -1,3 +1,7 @@
+2012-06-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/deep_old.adb, gnat.dg/old_errors.adb: Removed, obsolete.
+
 2012-06-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/53671
