@@ -1,3 +1,8 @@
+2012-06-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53790
+	* gcc.dg/torture/pr53790.c: New testcase.
+
 2012-06-27  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/51214

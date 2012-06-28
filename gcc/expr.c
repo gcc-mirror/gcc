@@ -9657,6 +9657,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	orig_op0 = op0
 	  = expand_expr (tem,
 			 (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
+			  && COMPLETE_TYPE_P (TREE_TYPE (tem))
 			  && (TREE_CODE (TYPE_SIZE (TREE_TYPE (tem)))
 			      != INTEGER_CST)
 			  && modifier != EXPAND_STACK_PARM
