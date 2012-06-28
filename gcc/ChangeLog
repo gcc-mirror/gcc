@@ -1,3 +1,13 @@
+2012-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53645
+	* tree-vect-generic.c (add_rshift): New function.
+	(expand_vector_divmod): New function.
+	(expand_vector_operation): Use it for vector integer
+	TRUNC_{DIV,MOD}_EXPR by VECTOR_CST.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Replace
+	unused lguup variable with dummy_int.
+
 2012-06-28  OLivier Hainque  <hainque@adacore.com>
 
 	* expr.c (convert_move): Latch mem integer inputs into a
