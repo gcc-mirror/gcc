@@ -1,3 +1,8 @@
+2012-06-28  Kai Tietz  <ktietz@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-52672.C (ul_ptr): Use SIZE_TYPE instead of
+	hard-coded 'unsigned long'.
+
 2012-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51581
