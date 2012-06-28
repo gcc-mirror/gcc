@@ -1,3 +1,15 @@
+2012-06-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/53740
+	PR debug/52983
+	PR debug/48866
+	* dce.c (word_dce_process_block): Check whether inserting debug
+	temps are needed even for needed insns.
+	(dce_process_block): Likewise.
+	* df-problems.c (dead_debug_add): Add comment about multi-regs.
+	(dead_debug_insert_temp): Likewise.  Don't subreg when we're
+	setting fewer regs than a multi-reg requires.
+
 2012-06-27  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_dimode_u): New.

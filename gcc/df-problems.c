@@ -3179,6 +3179,9 @@ dead_debug_add (struct dead_debug *debug, df_ref use, unsigned int uregno)
   if (!debug->used)
     debug->used = BITMAP_ALLOC (NULL);
 
+  /* ??? If we dealt with split multi-registers below, we should set
+     all registers for the used mode in case of hardware
+     registers.  */
   bitmap_set_bit (debug->used, uregno);
 }
 
@@ -3268,6 +3271,15 @@ dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
 	{
 	  /* Hmm...  Something's fishy, we should be setting REG here.  */
 	  if (REGNO (dest) != REGNO (reg))
+	    breg = NULL;
+	  /* If we're not overwriting all the hardware registers that
+	     setting REG in its mode would, we won't know what to bind
+	     the debug temp to.  ??? We could bind the debug_expr to a
+	     CONCAT or PARALLEL with the split multi-registers, and
+	     replace them as we found the corresponding sets.  */
+	  else if (REGNO (reg) < FIRST_PSEUDO_REGISTER
+		   && (hard_regno_nregs[REGNO (reg)][GET_MODE (reg)]
+		       != hard_regno_nregs[REGNO (reg)][GET_MODE (dest)]))
 	    breg = NULL;
 	  /* Ok, it's the same (hardware) REG, but with a different
 	     mode, so SUBREG it.  */
