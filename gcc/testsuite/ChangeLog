@@ -1,5 +1,8 @@
 2012-06-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/51581
+	* gcc.dg/vect/pr51581-4.c: New test.
+
 	PR tree-optimization/53645
 	* gcc.c-torture/execute/pr53645-2.c: New test.
 
