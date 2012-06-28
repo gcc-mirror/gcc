@@ -9260,11 +9260,7 @@ vt_emit_notes (void)
   dataflow_set_destroy (&cur);
 
   if (MAY_HAVE_DEBUG_INSNS)
-    {
-      free_alloc_pool (loc_exp_dep_pool);
-      loc_exp_dep_pool = NULL;
-      htab_delete (dropped_values);
-    }
+    htab_delete (dropped_values);
 
   emit_notes = false;
 }
@@ -9974,6 +9970,9 @@ vt_finalize (void)
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
+      if (loc_exp_dep_pool)
+	free_alloc_pool (loc_exp_dep_pool);
+      loc_exp_dep_pool = NULL;
       free_alloc_pool (valvar_pool);
       VEC_free (rtx, heap, preserved_values);
       cselib_finish ();

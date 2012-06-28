@@ -1,3 +1,12 @@
+2012-06-28  Alexandre Oliva  <aoliva@redhat.com>,
+            Uros Bizjak  <ubizjak@gmail.com>,
+            Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/53706
+	PR debug/47624
+	* var-tracking.c (vt_emit_notes): Release loc_exp_dep_pool...
+	(vt_finalize): ... here instead, if needed.
+
 2012-06-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/53740
