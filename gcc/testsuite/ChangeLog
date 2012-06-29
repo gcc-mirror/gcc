@@ -1,5 +1,11 @@
 2012-06-28  Janis Johnson  <janisjo@codesourcery.com>
 
+	* g++.dg/template/error46.C: Add missing comment to dg-message.
+	* g++.dg/template/crash107.C: Likewise.
+	* g++.dg/template/error47.C: Likewise.
+	* g++.dg/template/crash108.C: Likewise.
+	* g++.dg/overload/operator5.C: Likewise.
+
 	* gcc.dg/Wstrict-aliasing-converted-assigned.c: Fix syntax
 	errors in dg-message directives, add comments.
 
