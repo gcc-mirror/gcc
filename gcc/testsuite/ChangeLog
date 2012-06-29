@@ -1,3 +1,9 @@
+2012-06-29  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	Backport from mainline.
+	2012-05-30  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+	* gcc.target/arm/neon-vrev.c: New.
+
 2012-06-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53790

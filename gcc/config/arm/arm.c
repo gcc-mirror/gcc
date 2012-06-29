@@ -25270,10 +25270,18 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
       return false;
     }
 
-  for (i = 0; i < nelt; i += diff)
+  for (i = 0; i < nelt ; i += diff + 1)
     for (j = 0; j <= diff; j += 1)
-      if (d->perm[i + j] != i + diff - j)
-	return false;
+      {
+	/* This is guaranteed to be true as the value of diff
+	   is 7, 3, 1 and we should have enough elements in the
+	   queue to generate this. Getting a vector mask with a
+	   value of diff other than these values implies that
+	   something is wrong by the time we get here.  */
+	gcc_assert (i + j < nelt);
+	if (d->perm[i + j] != i + diff - j)
+	  return false;
+      }
 
   /* Success! */
   if (d->testing_p)
