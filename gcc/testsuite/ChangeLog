@@ -1,5 +1,7 @@
 2012-06-28  Janis Johnson  <janisjo@codesourcery.com>
 
+	* g++.dg/cpp0x/nullptr19.c: Remove exta directives on same line.
+
 	* g++.dg/template/error46.C: Add missing comment to dg-message.
 	* g++.dg/template/crash107.C: Likewise.
 	* g++.dg/template/error47.C: Likewise.
