@@ -10871,15 +10871,10 @@ can be found in the @code{struct ce_if_block} structure that is pointed
 to by @var{ce_info}.
 @end defmac
 
-@defmac IFCVT_INIT_EXTRA_FIELDS (@var{ce_info})
-A C expression to initialize any extra fields in a @code{struct ce_if_block}
-structure, which are defined by the @code{IFCVT_EXTRA_FIELDS} macro.
-@end defmac
-
-@defmac IFCVT_EXTRA_FIELDS
-If defined, it should expand to a set of field declarations that will be
-added to the @code{struct ce_if_block} structure.  These should be initialized
-by the @code{IFCVT_INIT_EXTRA_FIELDS} macro.
+@defmac IFCVT_MACHDEP_INIT (@var{ce_info})
+A C expression to initialize any machine specific data for if-conversion
+of the if-block in the @code{struct ce_if_block} structure that is pointed
+to by @var{ce_info}.
 @end defmac
 
 @deftypefn {Target Hook} void TARGET_MACHINE_DEPENDENT_REORG (void)

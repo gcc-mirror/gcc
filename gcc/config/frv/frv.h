@@ -1975,8 +1975,8 @@ frv_ifcvt_modify_multiple_tests (CE_INFO, BB, &TRUE_EXPR, &FALSE_EXPR)
    information CE_INFO.  */
 #define IFCVT_MODIFY_CANCEL(CE_INFO) frv_ifcvt_modify_cancel (CE_INFO)
 
-/* Initialize the extra fields provided by IFCVT_EXTRA_FIELDS.  */
-#define IFCVT_INIT_EXTRA_FIELDS(CE_INFO) frv_ifcvt_init_extra_fields (CE_INFO)
+/* Initialize the machine-specific static data for if-conversion.  */
+#define IFCVT_MACHDEP_INIT(CE_INFO) frv_ifcvt_machdep_init (CE_INFO)
 
 /* The definition of the following macro results in that the 2nd jump
    optimization (after the 2nd insn scheduling) is minimal.  It is

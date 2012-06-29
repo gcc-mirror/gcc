@@ -662,9 +662,6 @@ struct_field_seq (void)
   do
     {
       ty = type (&opts, true);
-      /* Another piece of the IFCVT_EXTRA_FIELDS special case, see type().  */
-      if (!ty && token () == '}')
-	break;
 
       if (!ty || token () == ':')
 	{
