@@ -1,3 +1,8 @@
+2012-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-eh.c (lower_try_finally_switch): Really put the location of the
+	last statement of the finally block onto the switch.
+
 2012-06-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/53539
