@@ -1,5 +1,10 @@
 2012-06-29  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/47061
+	* gcc.dg/tree-ssa/vrp71.c: New testcase.
+
+2012-06-29  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/37541
 	* gcc.dg/tree-ssa/pr37508.c: Adjust and un-XFAIL.
 
