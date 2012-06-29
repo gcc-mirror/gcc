@@ -1,3 +1,8 @@
+2012-06-28  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/Wstrict-aliasing-converted-assigned.c: Fix syntax
+	errors in dg-message directives, add comments.
+
 2012-06-28  Kai Tietz  <ktietz@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-52672.C (ul_ptr): Use SIZE_TYPE instead of
