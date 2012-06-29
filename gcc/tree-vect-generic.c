@@ -457,7 +457,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   optab op;
   tree *vec;
   unsigned char *sel = NULL;
-  tree cur_op, mhi, mlo, mulcst, perm_mask, wider_type, tem, decl_e, decl_o;
+  tree cur_op, m1, m2, mulcst, perm_mask, wider_type, tem, decl_e, decl_o;
 
   if (prec > HOST_BITS_PER_WIDE_INT)
     return NULL_TREE;
@@ -843,35 +843,32 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  gimple call;
 
 	  call = gimple_build_call (decl_e, 2, cur_op, mulcst);
-	  mhi = create_tmp_reg (wider_type, NULL);
-	  add_referenced_var (mhi);
-	  mhi = make_ssa_name (mhi, call);
-	  gimple_call_set_lhs (call, mhi);
+	  m1 = create_tmp_reg (wider_type, NULL);
+	  add_referenced_var (m1);
+	  m1 = make_ssa_name (m1, call);
+	  gimple_call_set_lhs (call, m1);
 	  gsi_insert_seq_before (gsi, call, GSI_SAME_STMT);
 
 	  call = gimple_build_call (decl_o, 2, cur_op, mulcst);
-	  mlo = create_tmp_reg (wider_type, NULL);
-	  add_referenced_var (mlo);
-	  mlo = make_ssa_name (mlo, call);
-	  gimple_call_set_lhs (call, mlo);
+	  m2 = create_tmp_reg (wider_type, NULL);
+	  add_referenced_var (m2);
+	  m2 = make_ssa_name (m2, call);
+	  gimple_call_set_lhs (call, m2);
 	  gsi_insert_seq_before (gsi, call, GSI_SAME_STMT);
 	}
       else
 	{
-	  mhi = gimplify_build2 (gsi, VEC_WIDEN_MULT_HI_EXPR, wider_type,
-				 cur_op, mulcst);
-	  mlo = gimplify_build2 (gsi, VEC_WIDEN_MULT_LO_EXPR, wider_type,
-				 cur_op, mulcst);
+	  m1 = gimplify_build2 (gsi, BYTES_BIG_ENDIAN ? VEC_WIDEN_MULT_HI_EXPR
+						      : VEC_WIDEN_MULT_LO_EXPR,
+				wider_type, cur_op, mulcst);
+	  m2 = gimplify_build2 (gsi, BYTES_BIG_ENDIAN ? VEC_WIDEN_MULT_LO_EXPR
+						      : VEC_WIDEN_MULT_HI_EXPR,
+				wider_type, cur_op, mulcst);
 	}
 
-      mhi = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, mhi);
-      mlo = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, mlo);
-      if (BYTES_BIG_ENDIAN)
-	cur_op = gimplify_build3 (gsi, VEC_PERM_EXPR, type, mhi, mlo,
-				  perm_mask);
-      else
-	cur_op = gimplify_build3 (gsi, VEC_PERM_EXPR, type, mlo, mhi,
-				  perm_mask);
+      m1 = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, m1);
+      m2 = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, m2);
+      cur_op = gimplify_build3 (gsi, VEC_PERM_EXPR, type, m1, m2, perm_mask);
     }
 
   switch (mode)

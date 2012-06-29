@@ -1,3 +1,9 @@
+2012-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-generic.c (expand_vector_divmod): For even/odd
+	widening multiply, put even always as first argument to
+	VEC_PERM_EXPR.
+
 2012-06-29  Richard Henderson  <rth@redhat.com>
 
 	* tree-vect-generic.c: Include target.h.
