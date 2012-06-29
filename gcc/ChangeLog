@@ -1,3 +1,9 @@
+2012-06-29  Sterling Augustine  <saugustine@google.com>
+
+	* dwarf2out.c (add_pubname): Add comment.
+	(add_pubtype): Fix indentation.
+	(gen_enumeration_type_die): Likewise.
+
 2012-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-generic.c (expand_vector_divmod): For even/odd
