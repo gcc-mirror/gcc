@@ -91,3 +91,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_THREAD_SPLIT_STACK_OFFSET \
   (TARGET_64BIT ? (TARGET_X32 ? 0x40 : 0x70) : 0x30)
 #endif
+
+#undef WCHAR_TYPE
+#define WCHAR_TYPE (TARGET_LP64 ? "int" : "long int")
