@@ -1,3 +1,8 @@
+2012-06-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52589
+	* gcc.dg/tree-ssa/vrp70.c: New testcase.
+
 2012-06-28  Janis Johnson  <janisjo@codesourcery.com>
 
 	* g++.dg/cpp0x/nullptr19.c: Remove exta directives on same line.
