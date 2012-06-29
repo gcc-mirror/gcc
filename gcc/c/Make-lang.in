@@ -1,0 +1,196 @@
+# Top level -*- makefile -*- fragment for GNU C - C language.
+# Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+# 2005, 2007, 2008, 2009, 2010, 2011, 2012
+# Free Software Foundation, Inc.
+
+#This file is part of GCC.
+
+#GCC is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 3, or (at your option)
+#any later version.
+
+#GCC is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file provides the language dependent support in the main Makefile.
+# Each language makefile fragment must provide the following targets:
+#
+# foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.install-common, foo.install-man, foo.install-info, foo.install-pdf,
+# foo.install-html, foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
+# foo.mostlyclean, foo.clean, foo.distclean,
+# foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
+#
+# where `foo' is the name of the language.
+#
+# It should also provide rules for:
+#
+# - making any compiler driver (eg: gcc)
+# - the compiler proper (eg: cc1)
+# - define the names for selecting the language in LANGUAGES.
+
+#
+# Define the names for selecting c in LANGUAGES.
+c: cc1$(exeext)
+
+# Tell GNU make to ignore these if they exist.
+.PHONY: c gcc
+
+# The C front end driver.  This is different from the drivers for other
+# front ends, because there is no C language specific driver (i.e. nothing
+# is to cc1 as e.g. g++ is to cc1plus, or gfortran is to f951).
+c/gccspec.o: c/gccspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
+    $(OPTS_H)
+	(SHLIB='$(SHLIB)'; \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
+  $(DRIVER_DEFINES) \
+  -c $(srcdir)/c/gccspec.c $(OUTPUT_OPTION))
+
+# The C compiler itself.
+
+# Language-specific object files for C and Objective C.
+C_AND_OBJC_OBJS = attribs.o c/c-errors.o c/c-decl.o c/c-typeck.o \
+  c/c-convert.o c/c-aux-info.o c/c-objc-common.o c/c-parser.o \
+  $(C_COMMON_OBJS) $(C_TARGET_OBJS)
+
+# Language-specific object files for C.
+C_OBJS = c/c-lang.o c-family/stub-objc.o $(C_AND_OBJC_OBJS)
+c_OBJS = $(C_OBJS) cc1-checksum.o c/gccspec.o
+
+# Use strict warnings for this front end.
+c-warn = $(STRICT_WARN)
+
+# compute checksum over all object files and the options
+cc1-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+	$(C_OBJS) $(BACKEND) $(LIBDEPS) 
+	build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
+                     checksum-options > cc1-checksum.c.tmp && 		 \
+	$(srcdir)/../move-if-change cc1-checksum.c.tmp cc1-checksum.c
+
+cc1-checksum.o : cc1-checksum.c $(CONFIG_H) $(SYSTEM_H)
+
+cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
+	  cc1-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+#
+# Build hooks:
+
+c.info:
+c.dvi:
+c.pdf:
+c.html:
+c.install-info:
+c.install-pdf:
+c.install-html:
+c.all.cross:
+c.start.encap:
+c.rest.encap:
+c.srcinfo:
+c.srcextra: gengtype-lex.c
+	-cp -p $^ $(srcdir)
+c.tags: force
+	cd $(srcdir)/c; etags -o TAGS.sub *.c *.h; \
+	etags --include TAGS.sub --include ../TAGS.sub
+c.man:
+c.srcman:
+
+# List of targets that can use the generic check- rule and its // variant.
+lang_checks += check-gcc
+lang_checks_parallelized += check-gcc
+
+# 'make check' in gcc/ looks for check-c.  Redirect it to check-gcc.
+check-c : check-gcc
+
+#
+# Install hooks:
+# cc1 is installed elsewhere as part of $(COMPILERS).
+
+c.install-common:
+c.install-man:
+c.install-plugin:
+c.uninstall:
+
+#
+# Clean hooks:
+# A lot of the ancillary files are deleted by the main makefile.
+# We just have to delete files specific to us.
+
+c.mostlyclean:
+	-rm -f cc1$(exeext)
+	-rm -f c/*$(objext)
+	-rm -f c/*$(coverageexts)
+c.clean:
+c.distclean:
+	-rm -f c/config.status c/Makefile
+c.maintainer-clean:
+#
+# Stage hooks:
+# The main makefile has already created stage?/cp.
+
+c.stage1: stage1-start
+	-mv c/*$(objext) stage1/c
+c.stage2: stage2-start
+	-mv c/*$(objext) stage2/c
+c.stage3: stage3-start
+	-mv c/*$(objext) stage3/c
+c.stage4: stage4-start
+	-mv c/*$(objext) stage4/c
+c.stageprofile: stageprofile-start
+	-mv c/*$(objext) stageprofile/c
+c.stagefeedback: stagefeedback-start
+	-mv c/*$(objext) stagefeedback/c
+
+#
+# .o: .h dependencies.
+# C language specific files.
+C_TREE_H = c/c-tree.h $(C_COMMON_H) $(DIAGNOSTIC_H)
+c/c-aux-info.o : c/c-aux-info.c  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+	$(C_TREE_H) $(TREE_H) $(FLAGS_H)
+
+c/c-convert.o : c/c-convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+	$(TREE_H) $(C_TREE_H) $(FLAGS_H) $(C_COMMON_H) convert.h \
+	langhooks.h $(TARGET_H)
+
+c/c-decl.o : c/c-decl.c c/c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+	$(TREE_H) $(C_TREE_H) $(GGC_H) $(TARGET_H) $(FLAGS_H) $(FUNCTION_H) \
+	output.h debug.h toplev.h intl.h $(TM_P_H) $(TREE_INLINE_H) \
+	$(TIMEVAR_H) $(OPTS_H) $(C_PRAGMA_H) gt-c-c-decl.h $(CGRAPH_H) \
+	$(HASHTAB_H) $(LANGHOOKS_DEF_H) \
+	$(TREE_DUMP_H) $(C_COMMON_H) $(CPPLIB_H) $(DIAGNOSTIC_CORE_H) \
+	$(INPUT_H) langhooks.h pointer-set.h tree-iterator.h \
+	$(PLUGIN_H) c-family/c-ada-spec.h c-family/c-objc.h
+
+c/c-errors.o: c/c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+	$(C_TREE_H) $(FLAGS_H) $(DIAGNOSTIC_H) $(TM_P_H)
+
+c/c-lang.o : c/c-lang.c c/c-objc-common.h \
+	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+	$(C_TREE_H) $(DIAGNOSTIC_CORE_H) \
+	langhooks.h $(LANGHOOKS_DEF_H) $(C_COMMON_H) gtype-c.h \
+	$(C_PRAGMA_H) $(TREE_INLINE_H)
+
+c/c-objc-common.o : c/c-objc-common.c c/c-objc-common.h \
+	$(CONFIG_H) $(SYSTEM_H) coretypes.h \
+	$(TREE_H) $(C_TREE_H) $(FLAGS_H) $(DIAGNOSTIC_H) \
+	langhooks.h $(GGC_H) $(C_PRETTY_PRINT_H) intl.h \
+	$(TREE_PRETTY_PRINT_H)
+
+c/c-parser.o : c/c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+	$(TM_H) $(TREE_H) $(C_TREE_H) $(C_COMMON_H) $(C_PRAGMA_H) $(CPPLIB_H) \
+	$(GGC_H) $(TIMEVAR_H) $(INPUT_H) $(FLAGS_H) \
+	gt-c-c-parser.h langhooks.h \
+	$(VEC_H) $(TARGET_H) $(CGRAPH_H) $(PLUGIN_H) \
+	c-family/c-objc.h
+
+c/c-typeck.o : c/c-typeck.c c/c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+	$(TREE_H) $(C_TREE_H) $(TARGET_H) $(FLAGS_H) intl.h \
+	langhooks.h tree-iterator.h $(BITMAP_H) $(GIMPLE_H) \
+	c-family/c-objc.h
+

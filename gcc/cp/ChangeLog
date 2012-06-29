@@ -1,3 +1,7 @@
+2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Make-lang.in: Remove tree-mudflap.o from CXX_AND_OBJCXX_OBJS.
+
 2012-06-27  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_check_for_invalid_template_id): tag_type parm.

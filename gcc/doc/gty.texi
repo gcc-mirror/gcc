@@ -491,7 +491,7 @@ For files shared by all front ends, add the filename to the
 @item
 For files that are part of one front end, add the filename to the
 @code{gtfiles} variable defined in the appropriate
-@file{config-lang.in}.  For C, the file is @file{c-config-lang.in}.
+@file{config-lang.in}.
 Headers should appear before non-headers in this list.
 
 @item

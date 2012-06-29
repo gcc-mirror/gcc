@@ -1,0 +1,25 @@
+2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Make-lang.in: New file, rules migrated from gcc/Makefile.in
+	and add language Makefile hooks.
+	* config-lang.in: New file.
+	* c-config-lang.in: Moved from gcc/config-lang.in to here, and
+	add the required "normal" config-lang.in rules.
+	* c-lang.h: Moved from gcc/ to here.
+	* c-tree.h: Likewise.
+	* c-objc-common.c: Likewise.
+	* c-objc-common.h: Likewise.
+	* c-typeck.c: Likewise.
+	* c-convert.c: Likewise.
+	* c-lang.c: Likewise.
+	* c-aux-info.c: Likewise.
+	* c-errors.c: Likewise.
+	* gccspec.c: Likewise.
+	* c-decl.c: Likewise.  Include gt-c-c-decl.h, not gt-c-decl.h.
+	* c-parser.c: Likewise.  Include gt-c-c-parser.h, not gt-c-parser.h.
+
+Copyright (C) 2012 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

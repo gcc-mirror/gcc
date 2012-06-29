@@ -1,5 +1,17 @@
 2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* configure.ac: Remove special gtfiles case for C.
+	* configure: Regenerate.
+	* Makefile.in: Remove C front-end hooks and build hooks that
+	will be picked up from c/Make-lang.in now.
+	Add tree-mudflap to C_COMMON_OBJS.
+	* gengtype.c (files_rules): Adjust gt-files for c/c-decl.c.
+	* config/vms/vms.c: Look for c-tree.h in c/.
+	* doc/gty.texi: Remove reference to c-config-lang.in.
+	* doc/sourcebuild.texi: Document the c/ subdirectory.
+
+2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* system.h (CASE_USE_BIT_TESTS): Poison.
 	* stmt.c (CASE_USE_BIT_TESTS): Fold away into its only user ...
 	(expand_switch_using_bit_tests_p): ...here.
