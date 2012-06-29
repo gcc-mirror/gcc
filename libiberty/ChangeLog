@@ -1,3 +1,8 @@
+2012-06-29  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* copying-lib.texi (Library Copying): Don't use @heading inside
+	@enumerate.
+
 2012-05-22  Tom Tromey  <tromey@redhat.com>
 
 	http://sourceware.org/bugzilla/show_bug.cgi?id=14065
