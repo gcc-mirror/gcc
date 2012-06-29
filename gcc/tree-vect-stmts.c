@@ -3504,14 +3504,19 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 	    {
 	      decl1 = NULL_TREE;
 	      decl2 = NULL_TREE;
-	      optab = optab_for_tree_code (VEC_WIDEN_MULT_HI_EXPR,
+	      optab = optab_for_tree_code (VEC_WIDEN_MULT_LO_EXPR,
 					   vectype, optab_default);
 	      optab2 = optab_for_tree_code (VEC_WIDEN_MULT_HI_EXPR,
 					    vectype, optab_default);
 	      if (optab != NULL
 		  && optab2 != NULL
 		  && optab_handler (optab, vec_mode) != CODE_FOR_nothing
-		  && optab_handler (optab2, vec_mode) != CODE_FOR_nothing)
+		  && optab_handler (optab2, vec_mode) != CODE_FOR_nothing
+		  && insn_data[optab_handler (optab, vec_mode)].operand[0].mode
+		     == TYPE_MODE (wide_vectype)
+		  && insn_data[optab_handler (optab2,
+					      vec_mode)].operand[0].mode
+		     == TYPE_MODE (wide_vectype))
 		{
 		  for (i = 0; i < nunits_in; i++)
 		    sel[i] = !BYTES_BIG_ENDIAN + 2 * i;
