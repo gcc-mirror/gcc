@@ -168,10 +168,11 @@ The @file{gcc} directory contains the following subdirectories:
 @item @var{language}
 Subdirectories for various languages.  Directories containing a file
 @file{config-lang.in} are language subdirectories.  The contents of
-the subdirectories @file{cp} (for C++), @file{lto} (for LTO),
-@file{objc} (for Objective-C) and @file{objcp} (for Objective-C++) are
-documented in this manual (@pxref{Passes, , Passes and Files of the
-Compiler}); those for other languages are not.  @xref{Front End, ,
+the subdirectories @file{c} (for C), @file{cp} (for C++),
+@file{objc} (for Objective-C), @file{objcp} (for Objective-C++),
+and @file{lto} (for LTO) are documented in this
+manual (@pxref{Passes, , Passes and Files of the Compiler});
+those for other languages are not.  @xref{Front End, ,
 Anatomy of a Language Front End}, for details of the files in these
 directories.
 
@@ -483,7 +484,7 @@ why isn't this part of this manual or of the GCC Coding Conventions?
 @end table
 
 FIXME: document such files in subdirectories, at least @file{config},
-@file{cp}, @file{objc}, @file{testsuite}.
+@file{c}, @file{cp}, @file{objc}, @file{testsuite}.
 
 @node Front End
 @subsection Anatomy of a Language Front End
@@ -615,10 +616,9 @@ codes.
 @node Front End Config
 @subsubsection The Front End @file{config-lang.in} File
 
-Each language subdirectory contains a @file{config-lang.in} file.  In
-addition the main directory contains @file{c-config-lang.in}, which
-contains limited information for the C language.  This file is a shell
-script that may define some variables describing the language:
+Each language subdirectory contains a @file{config-lang.in} file.
+This file is a shell script that may define some variables describing
+the language:
 
 @table @code
 @item language

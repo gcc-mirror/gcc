@@ -1816,8 +1816,11 @@ if test -d ${srcdir}/gcc; then
 
         case ,${enable_languages}, in
           *,${language},*)
-            # Language was explicitly selected; include it.
-            add_this_lang=yes
+            # Language was explicitly selected; include it
+	    # unless it is C, which is enabled by default.
+	    if test "$language" != "c"; then
+	      add_this_lang=yes
+	    fi
             ;;
           *,all,*)
             # 'all' was selected, select it if it is a default language

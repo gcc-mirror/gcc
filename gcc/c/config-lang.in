@@ -1,5 +1,6 @@
 # Top level configure fragment for GNU C - C language.
-# Copyright (C) 1994, 1995, 1997, 1998, 2000, 2001, 2002, 2005, 2007, 2010
+# Copyright (C) 1994, 1995, 1997, 1998, 2000, 2001, 2002, 2005, 2007,
+# 2010, 2012
 # Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -18,9 +19,16 @@
 #along with GCC; see the file COPYING3.  If not see
 #<http://www.gnu.org/licenses/>.
 
-# This file c-config-lang.c is a special pseudo config-lang.in file
-# for the language C. It has limited use, specifically to record the
-# files used by C that have garbage collection GTY macros in them
-# which therefore need to be scanned by gengtype.c.
+# Configure looks for the existence of this file to auto-config each language.
+# We define several parameters used by configure:
+#
+# language	- name of language as it would appear in $(LANGUAGES)
+# compilers	- value to add to $(COMPILERS)
 
-gtfiles="\$(srcdir)/c-lang.c \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-objc.h \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-pragma.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-parser.c \$(srcdir)/c-lang.h"
+language="c"
+
+compilers="cc1\$(exeext)"
+
+target_libs=
+
+gtfiles="\$(srcdir)/c/c-lang.c \$(srcdir)/c/c-tree.h \$(srcdir)/c/c-decl.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-objc.h \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-pragma.c \$(srcdir)/c/c-objc-common.c \$(srcdir)/c/c-parser.c \$(srcdir)/c/c-lang.h"

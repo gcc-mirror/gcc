@@ -10837,4 +10837,4 @@ c_parse_file (void)
   the_parser = NULL;
 }
 
-#include "gt-c-parser.h"
+#include "gt-c-c-parser.h"

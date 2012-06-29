@@ -25,15 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "c-tree.h"
+#include "c/c-tree.h"
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 #include "ggc.h"
 #include "objc-act.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "c-objc-common.h"
-#include "c-lang.h"
+#include "c/c-objc-common.h"
+#include "c/c-lang.h"
 
 enum c_language_kind c_language = clk_objc;
 

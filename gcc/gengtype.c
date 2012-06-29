@@ -1786,12 +1786,12 @@ struct file_rule_st files_rules[] = {
     REG_EXTENDED, NULL_REGEX,
     "gt-c-family-$3.h", "c-family/$3.h", NULL_FRULACT},
 
-  /* Both c-lang.h & c-tree.h gives gt-c-decl.h for c-decl.c !  */
-  { DIR_PREFIX_REGEX "c-lang\\.h$",
-    REG_EXTENDED, NULL_REGEX, "gt-c-decl.h", "c-decl.c", NULL_FRULACT},
+  /* Both c-lang.h & c-tree.h gives gt-c-c-decl.h for c-decl.c !  */
+  { DIR_PREFIX_REGEX "c/c-lang\\.h$",
+    REG_EXTENDED, NULL_REGEX, "gt-c-c-decl.h", "c/c-decl.c", NULL_FRULACT},
 
-  { DIR_PREFIX_REGEX "c-tree\\.h$",
-    REG_EXTENDED, NULL_REGEX, "gt-c-decl.h", "c-decl.c", NULL_FRULACT},
+  { DIR_PREFIX_REGEX "c/c-tree\\.h$",
+    REG_EXTENDED, NULL_REGEX, "gt-c-c-decl.h", "c/c-decl.c", NULL_FRULACT},
 
   /* cp/cp-tree.h gives gt-cp-tree.h for cp/tree.c !  */
   { DIR_PREFIX_REGEX "cp/cp-tree\\.h$",

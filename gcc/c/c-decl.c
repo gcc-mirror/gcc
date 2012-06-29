@@ -10152,4 +10152,4 @@ c_register_addr_space (const char *word, addr_space_t as)
   ridpointers [rid] = id;
 }
 
-#include "gt-c-decl.h"
+#include "gt-c-c-decl.h"

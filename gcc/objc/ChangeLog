@@ -1,3 +1,16 @@
+2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Make-ang.in: Adjust for move of C front-end files.
+	* config-lang.in: Likewise.
+	* objc-encoding.c: Look for cp-tree.h in cp/, and for c-tree.h
+	and c-lang.h in c/.
+	* objc-runtime-shared-support.c: Likewise.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-gnu-runtime-abi-01.c: Likewise.
+	* objc-act.c: Likewise.
+	* objc-lang.c: Likewise.
+
 2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* objc-next-runtime-abi-01.c: Do not include tm.h and output.h.

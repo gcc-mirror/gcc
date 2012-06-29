@@ -4838,11 +4838,6 @@ changequote([,])dnl
 	esac
 done
 
-# Pick up gtfiles for c
-gtfiles=
-. ${srcdir}/c-config-lang.in
-all_gtfiles="$all_gtfiles [[c]] $gtfiles"
-
 check_languages=
 for language in $all_selected_languages
 do
