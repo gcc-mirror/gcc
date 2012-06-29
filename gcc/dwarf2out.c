@@ -8168,6 +8168,11 @@ add_pubname (tree decl, dw_die_ref die)
   if (!want_pubnames ())
     return;
 
+  /* Don't add items to the table when we expect that the consumer will have
+     just read the enclosing die.  For example, if the consumer is looking at a
+     class_member, it will either be inside the class already, or will have just
+     looked up the class to find the member.  Either way, searching the class is
+     faster than searching the index.  */
   if ((TREE_PUBLIC (decl) && !is_class_die (die->die_parent))
       || is_cu_die (die->die_parent) || is_namespace_die (die->die_parent))
     {
@@ -8212,11 +8217,11 @@ add_pubtype (tree decl, dw_die_ref die)
 
       scope = TYPE_P (decl) ? TYPE_CONTEXT (decl) : NULL;
       if (scope && TREE_CODE (scope) == NAMESPACE_DECL)
-	    {
+        {
           scope_name = lang_hooks.dwarf_name (scope, 1);
           if (scope_name != NULL && scope_name[0] != '\0')
             scope_name = concat (scope_name, sep, NULL);
-	      else
+          else
             scope_name = "";
 	}
 
@@ -8231,8 +8236,8 @@ add_pubtype (tree decl, dw_die_ref die)
         {
           e.die = die;
           e.name = concat (scope_name, name, NULL);
-	VEC_safe_push (pubname_entry, gc, pubtype_table, &e);
-    }
+          VEC_safe_push (pubname_entry, gc, pubtype_table, &e);
+        }
 
       /* Although it might be more consistent to add the pubinfo for the
          enumerators as their dies are created, they should only be added if the
@@ -16282,7 +16287,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
   else
     add_AT_flag (type_die, DW_AT_declaration, 1);
 
-    add_pubtype (type, type_die);
+  add_pubtype (type, type_die);
 
   return type_die;
 }
