@@ -1,3 +1,9 @@
+2012-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (vectorizable_operation): Check both
+	VEC_WIDEN_MULT_LO_EXPR and VEC_WIDEN_MULT_HI_EXPR optabs.
+	Verify that operand[0]'s mode is TYPE_MODE (wide_vectype).
+
 2012-06-28  Richard Henderson  <rth@redhat.com>
 
 	* doc/generic.texi (MULT_HIGHPART_EXPR): Document it.
