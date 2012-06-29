@@ -3255,8 +3255,8 @@ find_if_header (basic_block test_bb, int pass)
   ce_info.else_bb = else_edge->dest;
   ce_info.pass = pass;
 
-#ifdef IFCVT_INIT_EXTRA_FIELDS
-  IFCVT_INIT_EXTRA_FIELDS (&ce_info);
+#ifdef IFCVT_MACHDEP_INIT
+  IFCVT_MACHDEP_INIT (&ce_info);
 #endif
 
   if (!reload_completed

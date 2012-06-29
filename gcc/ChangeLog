@@ -1,3 +1,20 @@
+2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h (IFCVT_EXTRA_FIELDS): Poison.
+	(IFCVT_INIT_EXTRA_FIELDS): Poison.
+	* basic-block.h (struct ce_if_block): Remove IFCVT_EXTRA_FIELDS.
+	* ifcvt.c (find_if_header): Use IFCVT_MACHDEP_INIT instead of
+	IFCVT_INIT_EXTRA_FIELDS.
+	* gengtype-parse.c (struct_field_seq): Remove obsolete comment.
+	* config/frv/frv.h (IFCVT_INIT_EXTRA_FIELDS): Rename to
+	IFCVT_MACHDEP_INIT.
+	* config/frv/frv.c (frv_ifcvt_init_extra_fields): Rename to
+	frv_ifcvt_machdep_init.
+	* doc/tm.texi.in (IFCVT_INIT_EXTRA_FIELDS, IFCVT_EXTRA_FIELDS):
+	Remove documentation.
+	(IFCVT_MACHDEP_INIT): Document.
+	* doc/tm.texi: Regenerate.
+
 2012-06-29  Nick Clifton  <nickc@redhat.com>
 
 	* config/lm32/lm32.c (lm32_compute_frame_size): Fix typo.

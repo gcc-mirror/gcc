@@ -498,11 +498,6 @@ typedef struct ce_if_block
   int num_then_insns;			/* # of insns in THEN block.  */
   int num_else_insns;			/* # of insns in ELSE block.  */
   int pass;				/* Pass number.  */
-
-#ifdef IFCVT_EXTRA_FIELDS
-  IFCVT_EXTRA_FIELDS			/* Any machine dependent fields.  */
-#endif
-
 } ce_if_block_t;
 
 /* This structure maintains an edge list vector.  */
