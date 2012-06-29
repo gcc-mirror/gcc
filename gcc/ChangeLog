@@ -1,5 +1,13 @@
 2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* system.h (CASE_USE_BIT_TESTS): Poison.
+	* stmt.c (CASE_USE_BIT_TESTS): Fold away into its only user ...
+	(expand_switch_using_bit_tests_p): ...here.
+	* doc/tm.texi.in (CASE_USE_BIT_TESTS): Remove documentation.
+	* doc/tm.texi (CASE_USE_BIT_TESTS): Regenerate.
+
+2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* system.h (IFCVT_EXTRA_FIELDS): Poison.
 	(IFCVT_INIT_EXTRA_FIELDS): Poison.
 	* basic-block.h (struct ce_if_block): Remove IFCVT_EXTRA_FIELDS.

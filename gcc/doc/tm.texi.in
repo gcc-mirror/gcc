@@ -10180,16 +10180,6 @@ The default is four for machines with a @code{casesi} instruction and
 five otherwise.  This is best for most machines.
 @end deftypefn
 
-@defmac CASE_USE_BIT_TESTS
-Define this macro to be a C expression to indicate whether C switch
-statements may be implemented by a sequence of bit tests.  This is
-advantageous on processors that can efficiently implement left shift
-of 1 by the number of bits held in a register, but inappropriate on
-targets that would require a loop.  By default, this macro returns
-@code{true} if the target defines an @code{ashlsi3} pattern, and
-@code{false} otherwise.
-@end defmac
-
 @defmac WORD_REGISTER_OPERATIONS
 Define this macro if operations between registers with integral mode
 smaller than a word are always performed on the entire register.

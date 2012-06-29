@@ -1722,13 +1722,6 @@ add_case_node (struct case_node *head, tree type, tree low, tree high,
 /* Maximum number of case bit tests.  */
 #define MAX_CASE_BIT_TESTS  3
 
-/* By default, enable case bit tests on targets with ashlsi3.  */
-#ifndef CASE_USE_BIT_TESTS
-#define CASE_USE_BIT_TESTS  (optab_handler (ashl_optab, word_mode) \
-			     != CODE_FOR_nothing)
-#endif
-
-
 /* A case_bit_test represents a set of case nodes that may be
    selected from using a bit-wise comparison.  HI and LO hold
    the integer to be tested against, LABEL contains the label
@@ -1888,8 +1881,10 @@ bool
 expand_switch_using_bit_tests_p (tree index_expr, tree range,
 				 unsigned int uniq, unsigned int count)
 {
-  return (CASE_USE_BIT_TESTS
-	  && ! TREE_CONSTANT (index_expr)
+  if (optab_handler (ashl_optab, word_mode) == CODE_FOR_nothing)
+    return false;
+ 
+  return (! TREE_CONSTANT (index_expr)
 	  && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
 	  && compare_tree_int (range, 0) > 0
 	  && lshift_cheap_p ()
