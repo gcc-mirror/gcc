@@ -5170,6 +5170,7 @@ inlined_function_outer_scope_p (const_tree block)
 /* In tree.c */
 extern unsigned crc32_string (unsigned, const char *);
 extern unsigned crc32_byte (unsigned, char);
+extern unsigned crc32_unsigned (unsigned, unsigned);
 extern void clean_symbol_name (char *);
 extern tree get_file_function_name (const char *);
 extern tree get_callee_fndecl (const_tree);

@@ -1,3 +1,17 @@
+2012-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	* coverage.c (bbg_file_stamp): New.
+	(read_counts_file): Merge incoming stamp with bbg_file_stamp.
+	(build_info): Write bbg_file_stamp.
+	(coverage_init): Initialize bbg_file_stamp.  Read counts file
+	before writing graph header.
+	(coverage_finish): Don't unlink the data file if we can generate a
+	unique file stamp.
+	* tree.h (crc32_unsigned): Declare.
+	* tree.c (crc32_unsigned_bits): New, broken out of ...
+	(crc32_byte): ... here.  Use it.
+	(crc32_unsigned): New.
+
 2012-06-29   Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (add_pubname_string): Don't check for want_pubnames.
