@@ -8152,14 +8152,11 @@ dwarf2_name (tree decl, int scope)
 static void
 add_pubname_string (const char *str, dw_die_ref die)
 {
-  if (want_pubnames ())
-    {
-      pubname_entry e;
+  pubname_entry e;
 
-      e.die = die;
-      e.name = xstrdup (str);
-      VEC_safe_push (pubname_entry, gc, pubname_table, &e);
-    }
+  e.die = die;
+  e.name = xstrdup (str);
+  VEC_safe_push (pubname_entry, gc, pubname_table, &e);
 }
 
 static void
@@ -17146,7 +17143,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		  add_AT_lbl_id (seg_die, DW_AT_high_pc,
 				 fde->dw_fde_second_end);
 		  add_name_attribute (seg_die, name);
-		  add_pubname_string (name, seg_die);
+		  if (want_pubnames ())
+		    add_pubname_string (name, seg_die);
 		}
 	    }
 	  else
@@ -17571,7 +17569,8 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	    }
           else if (DECL_EXTERNAL (decl))
 	    add_AT_flag (com_die, DW_AT_declaration, 1);
-	  add_pubname_string (cnam, com_die); /* ??? needed? */
+	  if (want_pubnames ())
+	    add_pubname_string (cnam, com_die); /* ??? needed? */
 	  com_die->decl_id = DECL_UID (com_decl);
 	  slot = htab_find_slot (common_block_die_table, com_die, INSERT);
 	  *slot = (void *) com_die;
@@ -19197,7 +19196,8 @@ gen_namespace_die (tree decl, dw_die_ref context_die)
       equate_decl_number_to_die (decl, namespace_die);
     }
   /* Bypass dwarf2_name's check for DECL_NAMELESS.  */
-  add_pubname_string (lang_hooks.dwarf_name (decl, 1), namespace_die);
+  if (want_pubnames ())
+    add_pubname_string (lang_hooks.dwarf_name (decl, 1), namespace_die);
 }
 
 /* Generate Dwarf debug information for a decl described by DECL.
