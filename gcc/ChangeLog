@@ -1,3 +1,10 @@
+2012-06-29   Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (add_pubname_string): Don't check for want_pubnames.
+	(gen_subprogram_die): Don't add pubname if want_pubnames is false.
+	(gen_variable_die): Likewise.
+	(gen_namespace_die): Likewise.
+
 2012-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-eh.c (lower_try_finally_switch): Really put the location of the
