@@ -101,6 +101,9 @@ static GTY(()) tree gcov_fn_info_ptr_type;
    we're not writing to the notes file.  */
 static char *bbg_file_name;
 
+/* File stamp for graph file.  */
+static unsigned bbg_file_stamp;
+
 /* Name of the count data file.  */
 static char *da_file_name;
 
@@ -205,8 +208,9 @@ read_counts_file (void)
       return;
     }
 
-  /* Read and discard the stamp.  */
-  gcov_read_unsigned ();
+  /* Read the stamp, used for creating a generation count.  */
+  tag = gcov_read_unsigned ();
+  bbg_file_stamp = crc32_unsigned (bbg_file_stamp, tag);
 
   counts_hash = htab_create (10,
 			     htab_counts_entry_hash, htab_counts_entry_eq,
@@ -905,7 +909,7 @@ build_info (tree info_type, tree fn_ary)
   /* stamp */
   CONSTRUCTOR_APPEND_ELT (v1, info_fields,
 			  build_int_cstu (TREE_TYPE (info_fields),
-					  local_tick));
+					  bbg_file_stamp));
   info_fields = DECL_CHAIN (info_fields);
 
   /* Filename */
@@ -1101,6 +1105,11 @@ coverage_init (const char *filename)
   memcpy (da_file_name + prefix_len, filename, len);
   strcpy (da_file_name + prefix_len + len, GCOV_DATA_SUFFIX);
 
+  bbg_file_stamp = local_tick;
+  
+  if (flag_branch_probabilities)
+    read_counts_file ();
+
   /* Name of bbg file.  */
   if (flag_test_coverage && !flag_compare_debug)
     {
@@ -1117,12 +1126,9 @@ coverage_init (const char *filename)
 	{
 	  gcov_write_unsigned (GCOV_NOTE_MAGIC);
 	  gcov_write_unsigned (GCOV_VERSION);
-	  gcov_write_unsigned (local_tick);
+	  gcov_write_unsigned (bbg_file_stamp);
 	}
     }
-
-  if (flag_branch_probabilities)
-    read_counts_file ();
 }
 
 /* Performs file-level cleanup.  Close graph file, generate coverage
@@ -1133,10 +1139,11 @@ coverage_finish (void)
 {
   if (bbg_file_name && gcov_close ())
     unlink (bbg_file_name);
-  
-  if (!local_tick || local_tick == (unsigned)-1)
-    /* Only remove the da file, if we cannot stamp it.  If we can
-       stamp it, libgcov will DTRT.  */
+
+  if (!flag_branch_probabilities && flag_test_coverage
+      && (!local_tick || local_tick == (unsigned)-1))
+    /* Only remove the da file, if we're emitting coverage code and
+       cannot uniquely stamp it.  If we can stamp it, libgcov will DTRT.  */
     unlink (da_file_name);
 
   if (coverage_obj_init ())
