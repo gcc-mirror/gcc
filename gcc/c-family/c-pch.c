@@ -169,9 +169,6 @@ pch_init (void)
 void
 c_common_write_pch (void)
 {
-  char *buf;
-  long written;
-
   timevar_push (TV_PCH_SAVE);
 
   targetm.prepare_pch_save ();
