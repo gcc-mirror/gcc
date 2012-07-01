@@ -1,3 +1,7 @@
+2012-07-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-pch.c (c_common_write_pch): Remove unused variables.
+
 2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cppspec.c: Moved from gcc/ to here.
