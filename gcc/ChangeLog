@@ -1,3 +1,16 @@
+2012-07-01  Wei Guozhi  <carrot@google.com>
+
+	PR target/53447
+	* config/arm/arm-protos.h (const_ok_for_dimode_op): New prototype.
+	* config/arm/arm.c (const_ok_for_dimode_op): New function.
+	* config/arm/constraints.md (Dd): New constraint.
+	* config/arm/predicates.md (arm_adddi_operand): New predicate.
+	* config/arm/arm.md (adddi3): Extend it to handle constants.
+	(arm_adddi3): Likewise.
+	(addsi3_carryin_<optab>): Extend it to handle sbc case.
+	(addsi3_carryin_alt2_<optab>): Likewise.
+	* config/arm/neon.md (adddi3_neon): Extend it to handle constants.
+
 2012-06-30  Nathan Sidwell  <nathan@acm.org>
 
 	* coverage.c (bbg_file_stamp): New.
