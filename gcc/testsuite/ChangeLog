@@ -1,3 +1,11 @@
+2012-07-01  Wei Guozhi  <carrot@google.com>
+
+	PR target/53447
+	* gcc.target/arm/pr53447-1.c: New testcase.
+	* gcc.target/arm/pr53447-2.c: New testcase.
+	* gcc.target/arm/pr53447-3.c: New testcase.
+	* gcc.target/arm/pr53447-4.c: New testcase.
+
 2012-06-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47061

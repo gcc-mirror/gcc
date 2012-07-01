@@ -604,7 +604,7 @@
  [(parallel
    [(set (match_operand:DI           0 "s_register_operand" "")
 	  (plus:DI (match_operand:DI 1 "s_register_operand" "")
-	           (match_operand:DI 2 "s_register_operand" "")))
+	           (match_operand:DI 2 "arm_adddi_operand"  "")))
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
   "
@@ -630,9 +630,9 @@
 )
 
 (define_insn_and_split "*arm_adddi3"
-  [(set (match_operand:DI          0 "s_register_operand" "=&r,&r")
-	(plus:DI (match_operand:DI 1 "s_register_operand" "%0, 0")
-		 (match_operand:DI 2 "s_register_operand" "r,  0")))
+  [(set (match_operand:DI          0 "s_register_operand" "=&r,&r,&r,&r,&r")
+	(plus:DI (match_operand:DI 1 "s_register_operand" "%0, 0, r, 0, r")
+		 (match_operand:DI 2 "arm_adddi_operand"  "r,  0, r, Dd, Dd")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && !TARGET_NEON"
   "#"
@@ -650,7 +650,7 @@
     operands[0] = gen_lowpart (SImode, operands[0]);
     operands[4] = gen_highpart (SImode, operands[1]);
     operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[5] = gen_highpart (SImode, operands[2]);
+    operands[5] = gen_highpart_mode (SImode, DImode, operands[2]);
     operands[2] = gen_lowpart (SImode, operands[2]);
   }"
   [(set_attr "conds" "clob")
@@ -1001,22 +1001,26 @@
 )
 
 (define_insn "*addsi3_carryin_<optab>"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "%r")
-			  (match_operand:SI 2 "arm_rhs_operand" "rI"))
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(plus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "%r,r")
+			  (match_operand:SI 2 "arm_not_operand" "rI,K"))
 		 (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))))]
   "TARGET_32BIT"
-  "adc%?\\t%0, %1, %2"
+  "@
+   adc%?\\t%0, %1, %2
+   sbc%?\\t%0, %1, #%B2"
   [(set_attr "conds" "use")]
 )
 
 (define_insn "*addsi3_carryin_alt2_<optab>"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(plus:SI (plus:SI (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))
-			  (match_operand:SI 1 "s_register_operand" "%r"))
-		 (match_operand:SI 2 "arm_rhs_operand" "rI")))]
+			  (match_operand:SI 1 "s_register_operand" "%r,r"))
+		 (match_operand:SI 2 "arm_rhs_operand" "rI,K")))]
   "TARGET_32BIT"
-  "adc%?\\t%0, %1, %2"
+  "@
+   adc%?\\t%0, %1, %2
+   sbc%?\\t%0, %1, #%B2"
   [(set_attr "conds" "use")]
 )
 

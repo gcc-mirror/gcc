@@ -587,9 +587,9 @@
 )
 
 (define_insn "adddi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r,?w")
-        (plus:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,w")
-                 (match_operand:DI 2 "s_register_operand" "w,r,0,w")))
+  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r,?w,?&r,?&r,?&r")
+        (plus:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,w,r,0,r")
+                 (match_operand:DI 2 "arm_adddi_operand"     "w,r,0,w,r,Dd,Dd")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_NEON"
 {
@@ -599,13 +599,16 @@
     case 3: return "vadd.i64\t%P0, %P1, %P2";
     case 1: return "#";
     case 2: return "#";
+    case 4: return "#";
+    case 5: return "#";
+    case 6: return "#";
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "neon_type" "neon_int_1,*,*,neon_int_1")
-   (set_attr "conds" "*,clob,clob,*")
-   (set_attr "length" "*,8,8,*")
-   (set_attr "arch" "nota8,*,*,onlya8")]
+  [(set_attr "neon_type" "neon_int_1,*,*,neon_int_1,*,*,*")
+   (set_attr "conds" "*,clob,clob,*,clob,clob,clob")
+   (set_attr "length" "*,8,8,*,8,8,8")
+   (set_attr "arch" "nota8,*,*,onlya8,*,*,*")]
 )
 
 (define_insn "*sub<mode>3_neon"
