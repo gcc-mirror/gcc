@@ -198,7 +198,7 @@
 	* g++.dg/cpp0x/regress/debug-debug7.C: Update diagnostics.
 
 2012-06-25  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
-            James Greenhalgh  <james.greenhalgh@arm.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/arm/ftest-support-arm.h New testcase.
 	* gcc.target/arm/ftest-support-thumb.h Likewise.

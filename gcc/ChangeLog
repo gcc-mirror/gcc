@@ -148,9 +148,9 @@
 	* expr.c (convert_move): Latch mem integer inputs into a
 	register before expanding a multi-instructions sequence.
 
-2012-06-28  Alexandre Oliva  <aoliva@redhat.com>,
-            Uros Bizjak  <ubizjak@gmail.com>,
-            Jakub Jelinek  <jakub@redhat.com>
+2012-06-28  Alexandre Oliva  <aoliva@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/53706
 	PR debug/47624
@@ -235,7 +235,7 @@
 
 	* config/i386/i386.c (ix86_rtx_costs): Use standard_sse_constant_p
 	and don't fall thru from standard_80387_constant_p to the memory
-	fallback,
+	fallback.
 
 2012-06-26  Richard Henderson  <rth@redhat.com>
 
@@ -305,8 +305,7 @@
 
 2012-06-26  Matt Turner  <mattst88@gmail.com>
 
-	* doc/extend.texi (__builtin_arm_tinsrb): Add missing second
-	parameter.
+	* doc/extend.texi (__builtin_arm_tinsrb): Add missing second parameter.
 	(__builtin_arm_tinsrh): Likewise.
 	(__builtin_arm_tinsrw): Likewise.
 	(__builtin_arm_wsadb): Add missing v2si parameter.
@@ -454,7 +453,7 @@
 	(neon_vld1_dupv2di): New, fixes vld1q_dup_s64.
 
 2012-06-25  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
-            James Greenhalgh  <james.greenhalgh@arm.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Add new built-ins.
 	(TARGET_FMA): New macro.
@@ -650,8 +649,7 @@
 
 2012-06-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
-	* config/mips/mips.c (mips_process_sync_loop): Add missing
-	enum cast.
+	* config/mips/mips.c (mips_process_sync_loop): Add missing enum cast.
 
 2012-06-23  Richard Henderson  <rth@redhat.com>
 
@@ -753,7 +751,7 @@
 
 	Merge from graphite branch
 	2011-08-10  Sebastian Pop <sebpop@gmail.com>
-    
+
 	* graphite-sese-to-poly.c (build_scop_drs): Fix memory leak.
 
 	2012-01-13  Tobias Grosser  <tobias@grosser.es>
@@ -821,8 +819,7 @@
 
 	PR debug/53671
 	PR debug/49888
-	* alias.c (memrefs_conflict_p): Improve handling of AND for
-	alignment.
+	* alias.c (memrefs_conflict_p): Improve handling of AND for alignment.
 
 2012-06-21  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -842,8 +839,8 @@
 	created in c_push_function_context.  Always clear out the
 	x_cur_stmt_list field of the restored language function.
 
-2012-06-21   Sterling Augustine  <saugustine@google.com>
-             Cary Coutant  <ccoutant@google.com>
+2012-06-21  Sterling Augustine  <saugustine@google.com>
+	    Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (is_cu_die, is_namespace_die, is_class_die,
 	add_AT_pubnames, add_enumerator_pubname, want_pubnames): New functions.
@@ -2373,7 +2370,7 @@
 	* tree-data-ref.c (struct rdg_vertex_info): Remove.
 	(rdg_vertex_for_stmt): Simplify using gimple_uid.
 	(create_rdg_vertices): Pass loop argument, remove stmt to RDG index
-	hashtable.   Record stmt data-references.
+	hashtable.  Record stmt data-references.
 	(hash_stmt_vertex_info): Remove.
 	(eq_stmt_vertex_info): Likewise.
 	(hash_stmt_vertex_del): Likewise.
@@ -4132,7 +4129,7 @@
 	(enable_warning_as_error): Do not special case Wuninitialized.
 	* optc-gen.awk: Add sanity checks.
 
-2012-05-17  Jan Hubicka   <jh@suse.cz>
+2012-05-17  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-reference.c (is_proper_for_analysis): Do not check flags
 	that might change as result of global optimization.
