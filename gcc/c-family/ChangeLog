@@ -53,7 +53,7 @@
 
 	* c.opt (fconserve-space): Turn into a no-op.
 
-2012-06-04   Sterling Augustine  <saugustine@google.com>
+2012-06-04  Sterling Augustine  <saugustine@google.com>
 
 	* c-pretty-print.h (pp_c_flag_gnu_v3): New enumerator.
 	* c-pretty-print.c (pp_c_specifier_qualifier_list): Check it at
@@ -200,7 +200,7 @@
 	Wmissing-format-attribute with Wsuggest-attribute=format.
 	(check_function_format): Likewise.
 
-2012-04-27   Ollie Wild  <aaw@google.com>
+2012-04-27  Ollie Wild  <aaw@google.com>
 
 	* c-common.c: Add CPP_W_LITERAL_SUFFIX mapping.
 	* c-opts.c (c_common_handle_option): Handle OPT_Wliteral_suffix.
@@ -375,13 +375,13 @@
 2011-11-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR c/51256
-	* c-common.c (get_atomic_generic_size): Check for various error 
+	* c-common.c (get_atomic_generic_size): Check for various error
 	conditions
-	(resolve_overloaded_atomic_exchange, 
-	resolve_overloaded_atomic_compare_exchange, 
+	(resolve_overloaded_atomic_exchange,
+	resolve_overloaded_atomic_compare_exchange,
 	resolve_overloaded_atomic_load, resolve_overloaded_atomic_store): Return
 	error_mark_node for error conditions.
-	
+
 2011-11-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51010
@@ -432,16 +432,16 @@
 	Merged from cxx-mem-model.
 
 	* c-cppbuiltin.c (c_cpp_builtins): Test both atomic and sync patterns.
-	* c-common.c (sync_resolve_params, sync_resolve_return): Only tweak 
+	* c-common.c (sync_resolve_params, sync_resolve_return): Only tweak
 	parameters that are the same type size.
 	(get_atomic_generic_size): New.  Find size of generic
 	atomic function parameters and do typechecking.
 	(add_atomic_size_parameter): New.  Insert size into parameter list.
 	(resolve_overloaded_atomic_exchange): Restructure __atomic_exchange to
 	either __atomic_exchange_n or external library call.
-	(resolve_overloaded_atomic_compare_exchange): Restructure 
+	(resolve_overloaded_atomic_compare_exchange): Restructure
 	__atomic_compare_exchange to either _n variant or external library call.
-	(resolve_overloaded_atomic_load): Restructure __atomic_load to either 
+	(resolve_overloaded_atomic_load): Restructure __atomic_load to either
 	__atomic_load_n or an external library call.
 	(resolve_overloaded_atomic_store): Restructure __atomic_store to either
 	__atomic_store_n or an external library call.
@@ -526,7 +526,7 @@
 
 	PR bootstrap/50760
 	* c-lex.c (fe_file_change): Use LINEMAP_SYSP when
-    	!NO_IMPLICIT_EXTERN_C.
+	!NO_IMPLICIT_EXTERN_C.
 
 2011-10-17  Michael Spertus  <mike_spertus@symantec.com>
 
@@ -604,11 +604,11 @@
 	PR c++/33255 - Support -Wunused-local-typedefs warning
 	* c-common.h (struct c_language_function::local_typedefs): New
 	field.
-    	(record_locally_defined_typedef, maybe_record_typedef_use)
-    	(maybe_warn_unused_local_typedefs): Declare new functions.
+	(record_locally_defined_typedef, maybe_record_typedef_use)
+	(maybe_warn_unused_local_typedefs): Declare new functions.
 	* c-common.c (record_locally_defined_typedef)
-    	(maybe_record_typedef_use)
-    	(maybe_warn_unused_local_typedefs): Define new functions.
+	(maybe_record_typedef_use)
+	(maybe_warn_unused_local_typedefs): Define new functions.
 	* c.opt: Declare new -Wunused-local-typedefs flag.
 
 2011-09-06  Eric Botcazou  <ebotcazou@adacore.com>
@@ -680,7 +680,7 @@
 2011-07-25  Romain Geissler  <romain.geissler@gmail.com>
 
 	* c-pretty-print.h: Search c-common.h in c-family.
-	
+
 2011-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49793
@@ -806,7 +806,7 @@
 
 	PR debug/49130
 	* c-pretty-print.c (pp_c_integer_constant): Consider the canonical
-    	type when using pointer comparison to compare types.
+	type when using pointer comparison to compare types.
 
 2011-06-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -956,7 +956,7 @@
 
 	* c-objc.h (objc_build_message_expr): Updated prototype.
 	* stub-objc.c (objc_build_message_expr): Likewise.
-	
+
 2011-04-12  Martin Jambor  <mjambor@suse.cz>
 
 	* c-gimplify.c (c_genericize): Call cgraph_get_create_node instead
@@ -1113,7 +1113,7 @@
 	not error.
 
 2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	PR objc/47075
 	* c-objc.h (objc_finish_message_expr): Added argument to
 	prototype.
@@ -1126,7 +1126,7 @@
 2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-objc.h (objc_maybe_warn_exceptions): New.
-	* stub-objc.c (objc_maybe_warn_exceptions): New.	
+	* stub-objc.c (objc_maybe_warn_exceptions): New.
 
 2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
 
@@ -1153,7 +1153,7 @@
 	* stub-objc.c (objc_finish_function): New.
 	(objc_non_volatilized_type): Removed.
 	(objc_type_quals_match): Removed.
-	
+
 2010-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.h (parse_optimize_options): Declare.
@@ -1230,7 +1230,7 @@
 
 	* c-common.h (objc_declare_protocols): Added additional argument.
 	* stub-objc.c (objc_declare_protocol): Same change.
-	
+
 2010-11-18  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c/33193
@@ -1310,7 +1310,7 @@
 	* c-format.c (format_type): New type gcc_objc_string_format_type.
 	(valid_stringptr_type_p): New.
 	(handle_format_arg_attribute): Use valid_stringptr_type_p ().
-	(check_format_string): Pass expected type, use 
+	(check_format_string): Pass expected type, use
 	valid_stringptr_type_p (), check that the format string types are
 	consistent with the format specification.
 	(decode_format_attr): Warn if NSString is used outside objective-c.
@@ -1327,7 +1327,7 @@
 
 2010-11-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Fixed using the Objective-C 2.0 dot-syntax with class names.	
+	Fixed using the Objective-C 2.0 dot-syntax with class names.
 	* c-common.h (objc_build_class_component_ref): New.
 	* stub-objc.c (objc_build_class_component_ref): New.
 
@@ -1368,7 +1368,7 @@
 	objc_maybe_build_component_ref.
 	(objc_build_setter_call): Renamed to objc_maybe_build_modify_expr.
 	(objc_is_property_ref): New.
-	
+
 2010-10-29  Arnaud Charlet  <charlet@adacore.com>
 	    Matthew Gingell  <gingell@adacore.com>
 
@@ -1397,7 +1397,7 @@
 	* stub-objc.c (objc_add_property_declaration): Added additional
 	arguments.
 	(objc_set_property_attr): Removed.
-	
+
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-common.h (objc_add_property_variable): Renamed to
@@ -1432,7 +1432,7 @@
 	(objc_write_global_declarations): New.
 	* c-opts.c (c_common_parse_file): Do not call finish_file.
 	* stub-objc.c (objc_write_global_declarations): New.
-	
+
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented parsing @synthesize and @dynamic for
@@ -1443,7 +1443,7 @@
 	* c-common.c (c_common_reswords): Add synthesize and dynamic.
 	* stub-objc.c (objc_add_synthesize_declaration): New.
 	(objc_add_dynamic_declaration): New.
-	
+
 2010-10-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/46041
@@ -1458,7 +1458,7 @@
 
 	2005-11-08  Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4330422
+	Radar 4330422
 	* c-common.h (objc_non_volatilized_type): New declaration
 	* stub-objc.c (objc_non_volatilized_type): New stub.
 
@@ -1468,7 +1468,7 @@
 
 	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4133425
+	Radar 4133425
 	* c-common.h (objc_diagnose_private_ivar): New decl.
 	* stub-objc.c (objc_diagnose_private_ivar): New stub.
 
@@ -1568,7 +1568,7 @@
 	objective-c keywords.
 	(objc_set_method_opt): New declaration.
 	* stub-objc.c (objc_set_method_opt): New stub.
-	
+
 2010-09-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (handle_optimize_attribute): Pass &global_options to
@@ -1586,8 +1586,8 @@
 
 2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Merge from 'apple/trunk' branch on FSF servers.	
-	
+	Merge from 'apple/trunk' branch on FSF servers.
+
 	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4281748
@@ -1619,7 +1619,7 @@
 
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* c-common.h (objc_add_method_declaration): Adjust prototype to 
+	* c-common.h (objc_add_method_declaration): Adjust prototype to
 	include attributes.
 	(objc_start_method_definition): Likewise.
 	(objc_build_keyword_decl): Likewise.
@@ -1643,11 +1643,11 @@
 
 2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Merge from 'apple/trunk' branch on FSF servers.	
+	Merge from 'apple/trunk' branch on FSF servers.
 
 	2005-12-15  Fariborz Jahanian <fjahanian@apple.com>
 
-	Radar 4229905	
+	Radar 4229905
 	* c-common.h (objc_have_common_type): New declaration.
 	* stub-objc.c (objc_have_common_type): New stub.
 
@@ -1655,7 +1655,7 @@
 
 	Radar 4154928
 	* c-common.h (objc_common_type): New prototype.
-	* stub-objc.c (objc_common_type): New stub.	
+	* stub-objc.c (objc_common_type): New stub.
 
 2010-09-24  Jan Hubicka  <jh@suse.cz>
 
@@ -1901,8 +1901,8 @@
 
 2010-06-24  Andi Kleen  <ak@linux.intel.com>
 
-        * c-common.c (warn_for_omitted_condop): New.
-        * c-common.h (warn_for_omitted_condop): Add prototype.
+	* c-common.c (warn_for_omitted_condop): New.
+	* c-common.h (warn_for_omitted_condop): Add prototype.
 
 2010-06-21  Joseph Myers  <joseph@codesourcery.com>
 
@@ -1948,7 +1948,7 @@
 
 2010-06-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-        * c-common.c (conversion_warning): Warn at expression
+	* c-common.c (conversion_warning): Warn at expression
 	location.
 
 2010-06-10  Joseph Myers  <joseph@codesourcery.com>
@@ -2014,7 +2014,7 @@
 
 2010-06-05  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* c-common.c: Moved to here from parent directory. 
+	* c-common.c: Moved to here from parent directory.
 	* c-common.def: Likewise.
 	* c-common.h: Likewise.
 	* c-cppbuiltin.c: Likewise.
