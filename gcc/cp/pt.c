@@ -12128,7 +12128,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	   When we instantiate f<7>::S::g(), say, lookup_name is not
 	   clever enough to find f<7>::a.  */
 	enum_type
-	  = tsubst_aggr_type (TREE_TYPE (t), args, complain, in_decl,
+	  = tsubst_aggr_type (DECL_CONTEXT (t), args, complain, in_decl,
 			      /*entering_scope=*/0);
 
 	for (v = TYPE_VALUES (enum_type);
@@ -14384,17 +14384,6 @@ tsubst_copy_and_build (tree t,
 
 	return stmt_expr;
       }
-
-    case CONST_DECL:
-      t = tsubst_copy (t, args, complain, in_decl);
-      /* As in finish_id_expression, we resolve enumeration constants
-	 to their underlying values.  */
-      if (TREE_CODE (t) == CONST_DECL && !processing_template_decl)
-	{
-	  used_types_insert (TREE_TYPE (t));
-	  return DECL_INITIAL (t);
-	}
-      return t;
 
     case LAMBDA_EXPR:
       {

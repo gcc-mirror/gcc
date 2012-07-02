@@ -1,3 +1,8 @@
+2012-07-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53524
+	* c-common.c (get_priority): Call default_conversion.
+
 2012-07-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* c-pch.c (c_common_write_pch): Remove unused variables.

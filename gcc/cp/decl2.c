@@ -4205,6 +4205,10 @@ mark_used (tree decl)
   if (DECL_CLONED_FUNCTION_P (decl))
     TREE_USED (DECL_CLONED_FUNCTION (decl)) = 1;
 
+  /* Mark enumeration types as used.  */
+  if (TREE_CODE (decl) == CONST_DECL)
+    used_types_insert (DECL_CONTEXT (decl));
+
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DELETED_FN (decl))
     {

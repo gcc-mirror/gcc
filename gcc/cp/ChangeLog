@@ -1,3 +1,23 @@
+2012-07-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53524
+	* call.c (build_conditional_expr_1): Don't warn about comparison of
+	two enumerators before their enumeration is complete.
+	(build_new_op_1): Call decay_conversion before warn_logical_operator.
+	* decl.c (build_enumerator): Set DECL_CONTEXT of an enumerator to
+	its enumeration.
+	* decl2.c (mark_used): Call used_types_insert for enums.
+	* semantics.c (finish_id_expression): Don't decay CONST_DECL.
+	(finish_member_declaration): Don't change DECL_CONTEXT of enumerators.
+	* class.c (check_field_decls): Don't change DECL_CONTEXT of enums.
+	* typeck.c (convert_for_assignment): Don't decay CONST_DECL.
+	(build_class_member_access_expr): Look through unscoped enums.
+	* search.c (context_for_name_lookup): Look through unscoped enums.
+	* pt.c (tsubst_copy_and_build): Don't decay CONST_DECL.
+	(tsubst_copy): Use DECL_CONTEXT to find the enumeration.
+	* tree.c (decl_linkage): Likewise.
+	* cvt.c (ocp_convert): Check decayed expr for enum range warning.
+
 2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Make-lang.in: Remove tree-mudflap.o from CXX_AND_OBJCXX_OBJS.
