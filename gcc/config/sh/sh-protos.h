@@ -109,6 +109,7 @@ extern bool sh_vector_mode_supported_p (enum machine_mode);
 #endif /* RTX_CODE */
 
 extern const char *output_jump_label_table (void);
+extern rtx get_t_reg_rtx (void);
 extern rtx get_fpscr_rtx (void);
 extern int sh_media_register_for_return (void);
 extern void sh_expand_prologue (void);

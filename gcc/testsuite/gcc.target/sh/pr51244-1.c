@@ -4,7 +4,7 @@
 /* { dg-do compile { target "sh*-*-*" } } */
 /* { dg-options "-O1 -mbranch-cost=2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
-/* { dg-final { scan-assembler-not "tst|negc|extu" } } */
+/* { dg-final { scan-assembler-not "movt|tst|negc|extu" } } */
 
 int
 testfunc_00 (int a, int b, int c, int d)

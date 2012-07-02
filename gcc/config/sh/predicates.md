@@ -898,3 +898,42 @@
 	    (match_test "mode != HImode")
 	    (match_test "TARGET_SH4A_ARCH"))))
 
+;; A predicate describing the T bit register in any form.
+(define_predicate "t_reg_operand"
+  (match_code "reg,subreg,sign_extend,zero_extend")
+{
+  switch (GET_CODE (op))
+    {
+      case REG:
+	return REGNO (op) == T_REG;
+
+      case SUBREG:
+	return REGNO (SUBREG_REG (op)) == T_REG;
+
+      case ZERO_EXTEND:
+      case SIGN_EXTEND:
+	return GET_CODE (XEXP (op, 0)) == SUBREG
+	       && REGNO (SUBREG_REG (XEXP (op, 0))) == T_REG;
+
+      default:
+	return 0;
+    }
+})
+
+;; A predicate describing a negated T bit register.
+(define_predicate "negt_reg_operand"
+  (match_code "subreg,xor")
+{
+  switch (GET_CODE (op))
+    {
+      case XOR:
+	return t_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)))
+	       && satisfies_constraint_M (XEXP (op, 1));
+
+      case SUBREG:
+	return negt_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)));
+
+      default:
+	return 0;
+    }
+})
