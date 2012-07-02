@@ -1,5 +1,8 @@
 2012-07-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53821
+	* g++.dg/cpp0x/lambda/lambda-template6.C: New.
+
 	PR c++/53524
 	* g++.dg/template/enum7.C: New.
 	* g++.dg/other/ptrmem10.C: Adjust.
