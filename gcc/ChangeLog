@@ -1,3 +1,22 @@
+2012-07-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* stmt.c (emit_case_bit_tests): Remove.
+	(expand_case): Remove expand_switch_using_bit_tests_p code.
+	* tree-switch-conversion.c (hoist_edge_and_branch_if_true): New.
+	(MAX_CASE_BIT_TESTS): Moved from stmt.c to here.
+	(lshift_cheap_p): Likewise.
+	(expand_switch_using_bit_tests_p): Likewise.
+	(struct case_bit_test): Likewise.
+	(case_bit_test_cmp): Likewise.
+	(emit_case_bit_tests): New implementation for GIMPLE.
+	(gen_inbound_check): Do not release post-dominator info here.
+	(process_switch): Reorder code.  Expand as bit tests if it
+	looks like a win.
+	(do_switchconv): Release post-dominator info here if something
+	changed.
+	(struct gimple_opt_pass): Verify more.
+	* tree.h (expand_switch_using_bit_tests_p): Remove prototype.
+
 2012-07-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/38474

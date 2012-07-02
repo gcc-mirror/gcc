@@ -13,7 +13,10 @@ const char *foo (int i)
     case 7: p = "abc"; break;
     case 2:
     case 8: p = "def"; break;
-    default: p = "ghi"; break;
+    case 9: p = "ghi"; break;
+    case 5: p = "jkl"; break;
+    case 3: p = "mno"; break;
+    default: p = "prq"; break;
     }
   return p;
 }
