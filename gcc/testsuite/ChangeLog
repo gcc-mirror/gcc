@@ -1,3 +1,11 @@
+2012-07-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53524
+	* g++.dg/template/enum7.C: New.
+	* g++.dg/other/ptrmem10.C: Adjust.
+	* g++.dg/other/ptrmem11.C: Adjust.
+	* g++.dg/cpp0x/scoped_enum.C: Adjust.
+
 2012-07-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/pr36881.c: Fix test case to not expand as bit tests.
