@@ -1,3 +1,70 @@
+2012-07-02  Richard Guenther  <rguenther@suse.de>
+
+	Merge from graphite branch
+	2011-07-21  Tobias Grosser  <tobias@grosser.es>
+    
+	* Makefile.in (graphite-clast-to-gimple.o, graphite-cloog-util.o):
+	Remove graphite-cloog-util.h.
+	* graphite-clast-to-gimple.c (gcc_type_for_iv_of_clast_loop,
+	build_iv_mapping, translate_clast_user, translate_clast,
+	free_scattering, initialize_cloog_names, build_cloog_prog,
+	create_params_index): Do not use old compatibility functions.
+	(clast_name_to_index, set_cloog_options): Remove code for legacy cloog.
+	* graphite-cloog-util.c (openscop_print_cloog_matrix): Do not use old
+	compatibility functions.
+	(new_Cloog_Scattering_from_ppl_Polyhedron): Remove code for legacy
+	cloog.
+	* graphite-cloog-util.h: Remove include of graphite-cloog-util.h.
+	* graphite.c (graphite.c): Do not call outdated cloog_initialize() and
+	cloog_finalize().
+	* graphite-cloog-compat.h: Remove.
+
+	2011-08-09  Tobias Grosser <tobias@grosser.es>
+
+	* graphite-clast-to-gimple.c (new_clast_name_index): Store a copy
+	of the string, no just a reference.
+	(clast_name_index): Add a new field, that specifies if we need to free
+	the name.
+	(free_clast_name_index): If necessary, free the name string.
+	(clast_name_index_elt_info): Calculate the hash based on the string
+	content, not the memory location it is stored in.
+	(clast_name_to_level): Specify that we do not need to free the name.
+	(clast_name_to_index): Dito.
+	(clast_name_to_lb_ub): Dito.
+	(eq_clast_name_indexes): Compare the strings, not their base pointers.
+	(free_scattering): Removed.
+	(initialize_cloog_names): Renamed to add_names_to_union_domain().
+	(add_names_to_union_domain): Changed to work on a union_domain,
+	instead of a CloogNames structure.
+	(build_cloog_prog): Removed.
+	(build_cloog_union_domain): New.
+	(generate_cloog_input): New.
+	(scop_to_clast): Use CloogInput instead of CloogProgram.
+	(print_generated_program): Adapt to new scop_to_clast() and do not
+	print the CloogProgram any more.
+	(create_params_index): Removed, functionality integrated in
+	add_names_to_union_domain().
+	(gloog): Adapt to new scop_to_clast().
+	* graphite-clast-to-gimple.h (scop_to_clast): Remove.
+
+	2012-01-11  Tobias Grosser <tobias@grosser.es>
+    
+	* graphite-clast-to-gimple.c (clast_name_to_index,
+	clast_name_to_lb_ub, clast_name_to_gcc): Change types.
+	(clast_to_gcc_expression): Add clast_expr_name as a new
+	case. Do not assume a clast_expr_term points always to a
+	clast_expr_name.
+	(type_for_clast_term): Do not assume a clast_expr_term points always to
+	a clast_expr_name.
+	(type_for_clast_name): New.
+	(type_for_clast_expr): Add clast_expr_name as a new case.
+
+	2011-08-03  Sebastian Pop <sebpop@gmail.com>
+
+	* graphite-cloog-util.c (new_Cloog_Domain_from_ppl_Polyhedron,
+	new_Cloog_Scattering_from_ppl_Polyhedron,
+	new_Cloog_Domain_from_ppl_Pointset_Powerset): Remove ATTRIBUTE_UNUSED.
+
 2012-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53645

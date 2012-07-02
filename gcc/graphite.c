@@ -209,7 +209,6 @@ graphite_initialize (void)
   gcc_assert (ppl_initialized == 0);
 
   cloog_state = cloog_state_malloc ();
-  cloog_initialize ();
 
   if (dump_file && dump_flags)
     dump_function_to_file (current_function_decl, dump_file, dump_flags);
@@ -233,7 +232,6 @@ graphite_finalize (bool need_cfg_cleanup_p)
     }
 
   cloog_state_free (cloog_state);
-  cloog_finalize ();
   ppl_finalize ();
   free_original_copy_tables ();
 

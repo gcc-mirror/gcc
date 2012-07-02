@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ppl_c.h"
 #include "cloog/cloog.h"
 #include "graphite-cloog-util.h"
-#include "graphite-cloog-compat.h"
 
 /* Counts the number of constraints in PCS.  */
 
@@ -237,7 +236,7 @@ new_C_Polyhedron_from_Cloog_Matrix (ppl_Polyhedron_t *ph,
 
 CloogDomain *
 new_Cloog_Domain_from_ppl_Polyhedron (ppl_const_Polyhedron_t ph, int nb_params,
-                                      CloogState *state ATTRIBUTE_UNUSED)
+                                      CloogState *state)
 {
   CloogMatrix *mat = new_Cloog_Matrix_from_ppl_Polyhedron (ph);
   CloogDomain *res = cloog_domain_from_cloog_matrix (state, mat, nb_params);
@@ -249,11 +248,10 @@ new_Cloog_Domain_from_ppl_Polyhedron (ppl_const_Polyhedron_t ph, int nb_params,
 
 CloogScattering *
 new_Cloog_Scattering_from_ppl_Polyhedron (ppl_const_Polyhedron_t ph,
-                                          int nb_params ATTRIBUTE_UNUSED,
-                                          int nb_scatt ATTRIBUTE_UNUSED,
-                                          CloogState *state ATTRIBUTE_UNUSED)
+                                          int nb_params,
+                                          int nb_scatt,
+                                          CloogState *state)
 {
-#ifdef CLOOG_ORG
   CloogMatrix *mat = new_Cloog_Matrix_from_ppl_Polyhedron (ph);
   CloogScattering *res = cloog_scattering_from_cloog_matrix (state, mat,
                                                              nb_scatt,
@@ -261,9 +259,6 @@ new_Cloog_Scattering_from_ppl_Polyhedron (ppl_const_Polyhedron_t ph,
 
   cloog_matrix_free (mat);
   return res;
-#else
-  return new_Cloog_Domain_from_ppl_Polyhedron (ph, nb_params, state);
-#endif
 }
 
 /* Creates a CloogDomain from a pointset powerset PS.  */
@@ -271,7 +266,7 @@ new_Cloog_Scattering_from_ppl_Polyhedron (ppl_const_Polyhedron_t ph,
 CloogDomain *
 new_Cloog_Domain_from_ppl_Pointset_Powerset
   (ppl_Pointset_Powerset_C_Polyhedron_t ps, int nb_params,
-   CloogState *state ATTRIBUTE_UNUSED)
+   CloogState *state)
 {
   CloogDomain *res = NULL;
   ppl_Pointset_Powerset_C_Polyhedron_iterator_t it, end;
@@ -314,14 +309,14 @@ openscop_print_cloog_matrix (FILE *file, CloogMatrix *mat,
 			     int output, int input, int locals,
 			     int params)
 {
-  int i, j;
+  unsigned i, j;
 
-  fprintf (file, "%d %d %d %d %d %d \n", cloog_matrix_nrows (mat),
-	   cloog_matrix_ncolumns (mat), output, input, locals, params);
+  fprintf (file, "%d %d %d %d %d %d \n", mat->NbRows,
+	   mat->NbColumns, output, input, locals, params);
 
-  for (i = 0; i < cloog_matrix_nrows (mat); i++)
+  for (i = 0; i < mat->NbRows; i++)
     {
-      for (j = 0; j < cloog_matrix_ncolumns (mat); j++)
+      for (j = 0; j < mat->NbColumns; j++)
         if (j == 0)
 	  fprintf (file, "%ld ", mpz_get_si (mat->p[i][j]));
         else
