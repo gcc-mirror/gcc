@@ -912,8 +912,8 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
       || is_global_var (base))
     return;
 
-  if (detect_type_change (op, base, call, jfunc, offset)
-      || !TYPE_BINFO (TREE_TYPE (base)))
+  if (!TYPE_BINFO (TREE_TYPE (base))
+      || detect_type_change (op, base, call, jfunc, offset))
     return;
 
   ipa_set_jf_known_type (jfunc, offset, TREE_TYPE (base), TREE_TYPE (op));
