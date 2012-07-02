@@ -1,3 +1,12 @@
+2012-07-02  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline.
+	2012-07-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/38474
+	* ipa-prop.c (compute_known_type_jump_func): Put BINFO check before a
+	dynamic type change check.
+
 2012-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-eh.c (lower_try_finally_switch): Really put the location of the
