@@ -1,3 +1,9 @@
+2012-07-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53821
+	* semantics.c (maybe_add_lambda_conv_op): Don't set
+	DECL_INTERFACE_KNOWN.
+
 2012-06-27  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/51214

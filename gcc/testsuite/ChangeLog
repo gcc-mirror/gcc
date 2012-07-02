@@ -1,3 +1,8 @@
+2012-07-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53821
+	* g++.dg/cpp0x/lambda/lambda-template6.C: New.
+
 2012-06-29  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Backport from mainline.
