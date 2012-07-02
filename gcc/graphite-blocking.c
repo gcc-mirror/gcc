@@ -1,7 +1,7 @@
 /* Heuristics and transform for loop blocking and strip mining on
    polyhedral representation.
 
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Pranav Garg  <pranav.garg2107@gmail.com>.
 
@@ -20,7 +20,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
 #include "config.h"
+
+#ifdef HAVE_cloog
+#include <isl/set.h>
+#include <isl/map.h>
+#include <isl/union_map.h>
+#include <isl/constraint.h>
+#include <cloog/cloog.h>
+#include <cloog/isl/domain.h>
+#endif
+
 #include "system.h"
 #include "coretypes.h"
 #include "tree-flow.h"
@@ -31,8 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sese.h"
 
 #ifdef HAVE_cloog
-#include "ppl_c.h"
-#include "graphite-ppl.h"
 #include "graphite-poly.h"
 
 
@@ -92,65 +101,39 @@ along with GCC; see the file COPYING3.  If not see
 static void
 pbb_strip_mine_time_depth (poly_bb_p pbb, int time_depth, int stride)
 {
-  ppl_dimension_type iter, dim, strip;
-  ppl_Polyhedron_t res = PBB_TRANSFORMED_SCATTERING (pbb);
+  isl_space *d;
+  isl_constraint *c;
+  int iter, strip;
   /* STRIP is the dimension that iterates with stride STRIDE.  */
   /* ITER is the dimension that enumerates single iterations inside
      one strip that has at most STRIDE iterations.  */
   strip = time_depth;
   iter = strip + 2;
 
-  psct_add_scattering_dimension (pbb, strip);
-  psct_add_scattering_dimension (pbb, strip + 1);
-
-  ppl_Polyhedron_space_dimension (res, &dim);
+  pbb->transformed = isl_map_insert_dims (pbb->transformed, isl_dim_out,
+					  strip, 2);
 
   /* Lower bound of the striped loop.  */
-  {
-    ppl_Constraint_t new_cstr;
-    ppl_Linear_Expression_t expr;
-
-    ppl_new_Linear_Expression_with_dimension (&expr, dim);
-    ppl_set_coef (expr, strip, -1 * stride);
-    ppl_set_coef (expr, iter, 1);
-
-    ppl_new_Constraint (&new_cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-    ppl_delete_Linear_Expression (expr);
-    ppl_Polyhedron_add_constraint (res, new_cstr);
-    ppl_delete_Constraint (new_cstr);
-  }
+  d = isl_map_get_space (pbb->transformed);
+  c = isl_inequality_alloc (isl_local_space_from_space (d));
+  c = isl_constraint_set_coefficient_si (c, isl_dim_out, strip, -stride);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_out, iter, 1);
+  pbb->transformed = isl_map_add_constraint (pbb->transformed, c);
 
   /* Upper bound of the striped loop.  */
-  {
-    ppl_Constraint_t new_cstr;
-    ppl_Linear_Expression_t expr;
-
-    ppl_new_Linear_Expression_with_dimension (&expr, dim);
-    ppl_set_coef (expr, strip, stride);
-    ppl_set_coef (expr, iter, -1);
-    ppl_set_inhomogeneous (expr, stride - 1);
-
-    ppl_new_Constraint (&new_cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-    ppl_delete_Linear_Expression (expr);
-    ppl_Polyhedron_add_constraint (res, new_cstr);
-    ppl_delete_Constraint (new_cstr);
-  }
+  d = isl_map_get_space (pbb->transformed);
+  c = isl_inequality_alloc (isl_local_space_from_space (d));
+  c = isl_constraint_set_coefficient_si (c, isl_dim_out, strip, stride);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_out, iter, -1);
+  c = isl_constraint_set_constant_si (c, stride - 1);
+  pbb->transformed = isl_map_add_constraint (pbb->transformed, c);
 
   /* Static scheduling for ITER level.
      This is mandatory to keep the 2d + 1 canonical scheduling format.  */
-  {
-    ppl_Constraint_t new_cstr;
-    ppl_Linear_Expression_t expr;
-
-    ppl_new_Linear_Expression_with_dimension (&expr, dim);
-    ppl_set_coef (expr, strip + 1, 1);
-    ppl_set_inhomogeneous (expr, 0);
-
-    ppl_new_Constraint (&new_cstr, expr, PPL_CONSTRAINT_TYPE_EQUAL);
-    ppl_delete_Linear_Expression (expr);
-    ppl_Polyhedron_add_constraint (res, new_cstr);
-    ppl_delete_Constraint (new_cstr);
-  }
+  d = isl_map_get_space (pbb->transformed);
+  c = isl_equality_alloc (isl_local_space_from_space (d));
+  c = isl_constraint_set_coefficient_si (c, isl_dim_out, strip + 1, 1);
+  pbb->transformed = isl_map_add_constraint (pbb->transformed, c);
 }
 
 /* Returns true when strip mining with STRIDE of the loop LST is

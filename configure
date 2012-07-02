@@ -646,8 +646,8 @@ stage1_languages
 extra_host_libiberty_configure_flags
 clooginc
 clooglibs
-pplinc
-ppllibs
+islinc
+isllibs
 poststage1_ldflags
 poststage1_libs
 stage1_libs
@@ -770,10 +770,10 @@ with_stage1_ldflags
 with_stage1_libs
 with_boot_libs
 with_boot_ldflags
-with_ppl
-with_ppl_include
-with_ppl_lib
-enable_ppl_version_check
+with_isl
+with_isl_include
+with_isl_lib
+enable_isl_version_check
 with_cloog
 with_cloog_include
 with_cloog_lib
@@ -1473,8 +1473,8 @@ Optional Features:
   --enable-build-with-cxx build with C++ compiler instead of C compiler
   --enable-build-poststage1-with-cxx
                           build stages 2 and 3 with C++, not C
-  --disable-ppl-version-check
-                          disable check for PPL version
+  --disable-isl-version-check
+                          disable check for ISL version
   --disable-cloog-version-check
                           disable check for CLooG version
   --enable-lto            enable link time optimization support
@@ -1526,12 +1526,12 @@ Optional Packages:
   --with-boot-libs=LIBS   libraries for stage2 and later
   --with-boot-ldflags=FLAGS
                           linker flags for stage2 and later
-  --with-ppl=PATH         specify prefix directory for the installed PPL
+  --with-isl=PATH         Specify prefix directory for the installed ISL
                           package. Equivalent to
-                          --with-ppl-include=PATH/include plus
-                          --with-ppl-lib=PATH/lib
-  --with-ppl-include=PATH specify directory for installed PPL include files
-  --with-ppl-lib=PATH     specify directory for the installed PPL library
+                          --with-isl-include=PATH/include plus
+                          --with-isl-lib=PATH/lib
+  --with-isl-include=PATH Specify directory for installed ISL include files
+  --with-isl-lib=PATH     Specify the directory for the installed ISL library
   --with-cloog=PATH       Specify prefix directory for the installed CLooG-PPL
                           package. Equivalent to
                           --with-cloog-include=PATH/include plus
@@ -1816,6 +1816,48 @@ fi
   return $ac_retval
 
 } # ac_fn_c_try_link
+
+# ac_fn_c_try_run LINENO
+# ----------------------
+# Try to link conftest.$ac_ext, and return whether this succeeded. Assumes
+# that executables *can* be run.
+ac_fn_c_try_run ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+$as_echo "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && { ac_try='./conftest$ac_exeext'
+  { { case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+$as_echo "$ac_try_echo"; } >&5
+  (eval "$ac_try") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }; then :
+  ac_retval=0
+else
+  $as_echo "$as_me: program exited with status $ac_status" >&5
+       $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+       ac_retval=$ac_status
+fi
+  rm -rf conftest.dSYM conftest_ipa8_conftest.oo
+  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
+  return $ac_retval
+
+} # ac_fn_c_try_run
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -2662,7 +2704,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr mpc ppl cloog libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -5581,158 +5623,156 @@ fi
 
 
 
-# Check for PPL
-ppllibs=
-pplinc=
-pwllib=
+# Check for ISL
 
 
-# Check whether --with-ppl was given.
-if test "${with_ppl+set}" = set; then :
-  withval=$with_ppl;
+# Check whether --with-isl was given.
+if test "${with_isl+set}" = set; then :
+  withval=$with_isl;
 fi
 
 
-# Check whether --with-ppl-include was given.
-if test "${with_ppl_include+set}" = set; then :
-  withval=$with_ppl_include;
+# Check whether --with-isl-include was given.
+if test "${with_isl_include+set}" = set; then :
+  withval=$with_isl_include;
 fi
 
 
-# Check whether --with-ppl-lib was given.
-if test "${with_ppl_lib+set}" = set; then :
-  withval=$with_ppl_lib;
+# Check whether --with-isl-lib was given.
+if test "${with_isl_lib+set}" = set; then :
+  withval=$with_isl_lib;
 fi
 
 
-# Check whether --enable-ppl-version-check was given.
-if test "${enable_ppl_version_check+set}" = set; then :
-  enableval=$enable_ppl_version_check;
+  # Check whether --enable-isl-version-check was given.
+if test "${enable_isl_version_check+set}" = set; then :
+  enableval=$enable_isl_version_check; ENABLE_ISL_CHECK=$enableval
+else
+  ENABLE_ISL_CHECK=yes
 fi
 
 
-case $with_ppl in
-  yes | no | "")
-    ;;
-  *)
-    ppllibs="-L$with_ppl/lib"
-    pplinc="-I$with_ppl/include $pplinc"
-    if test -d "$with_ppl/lib" && test -d "$with_ppl/include"; then
-      with_ppl=yes
-    else
-      as_fn_error "cannot find directories \"$with_ppl/lib\" or \"$with_ppl/include\"" "$LINENO" 5
-    fi
-    ;;
-esac
-
-if test x"$with_ppl_include" != x; then
-  pplinc="-I$with_ppl_include $pplinc"
-  with_ppl=yes
-fi
-
-if test "x$with_ppl_lib" != x; then
-  ppllibs="-L$with_ppl_lib"
-  with_ppl=yes
-fi
-
-if test x"$with_ppl$with_ppl_include$with_ppl_lib" = x && test -d ${srcdir}/ppl; then
-  if test x"$enable_watchdog" = xyes; then
-    pwllib="-lpwl"
+  # Initialize isllibs and islinc.
+  case $with_isl in
+    no)
+      isllibs=
+      islinc=
+      ;;
+    "" | yes)
+      ;;
+    *)
+      isllibs="-L$with_isl/lib"
+      islinc="-I$with_isl/include"
+      ;;
+  esac
+  if test "x${with_isl_include}" != x ; then
+    islinc="-I$with_isl_include"
   fi
-  ppllibs='-L$$r/$(HOST_SUBDIR)/ppl/interfaces/C/'"$lt_cv_objdir"' -L$$r/$(HOST_SUBDIR)/ppl/src/'"$lt_cv_objdir"
-  pplinc='-I$$r/$(HOST_SUBDIR)/ppl/src -I$$r/$(HOST_SUBDIR)/ppl/interfaces/C '
-  enable_ppl_version_check=no
-  with_ppl=yes
-fi
+  if test "x${with_isl_lib}" != x; then
+    isllibs="-L$with_isl_lib"
+  fi
+        if test "x${islinc}" = x && test "x${isllibs}" = x \
+     && test -d ${srcdir}/isl; then
+    isllibs='-L$$r/$(HOST_SUBDIR)/isl/'"$lt_cv_objdir"' '
+    islinc='-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include'
+    ENABLE_ISL_CHECK=no
+  fi
 
-if test "x$with_ppl" != xno; then
-  if test "x$pwllib" = x; then
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS $ppllibs -lstdc++ -lm"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PWL_handle_timeout in -lpwl" >&5
-$as_echo_n "checking for PWL_handle_timeout in -lpwl... " >&6; }
-if test "${ac_cv_lib_pwl_PWL_handle_timeout+set}" = set; then :
+  isllibs="${isllibs} -lisl"
+
+
+
+
+
+if test "x$with_isl" != "xno"; then
+
+  if test "${ENABLE_ISL_CHECK}" = yes ; then
+    _isl_saved_CFLAGS=$CFLAGS
+    _isl_saved_LDFLAGS=$LDFLAGS
+
+    CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
+    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs} -lisl"
+    echo $CFLAGS
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.10 of ISL" >&5
+$as_echo_n "checking for version 0.10 of ISL... " >&6; }
+if test "${gcc_cv_isl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpwl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error "cannot run test program while cross compiling
+See \`config.log' for more details." "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char PWL_handle_timeout ();
+#include <isl/version.h>
+   #include <string.h>
 int
 main ()
 {
-return PWL_handle_timeout ();
+int main()
+   {
+     if (strncmp (isl_version (), "isl-0.10", strlen ("isl-0.10")) != 0)
+       return 1;
+     return 0;
+   }
   ;
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_pwl_PWL_handle_timeout=yes
+if ac_fn_c_try_run "$LINENO"; then :
+  gcc_cv_isl=yes
 else
-  ac_cv_lib_pwl_PWL_handle_timeout=no
+  gcc_cv_isl=no
 fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pwl_PWL_handle_timeout" >&5
-$as_echo "$ac_cv_lib_pwl_PWL_handle_timeout" >&6; }
-if test "x$ac_cv_lib_pwl_PWL_handle_timeout" = x""yes; then :
-  pwllib="-lpwl"
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
-    LIBS="$saved_LIBS"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_isl" >&5
+$as_echo "$gcc_cv_isl" >&6; }
+
+    CFLAGS=$_isl_saved_CFLAGS
+    LDFLAGS=$_isl_saved_LDFLAGS
   fi
 
-  ppllibs="$ppllibs -lppl_c -lppl $pwllib -lgmpxx"
 
-  if test "$enable_ppl_version_check" != no; then
-    saved_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $pplinc $gmpinc"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.11 (revision 0 or later) of PPL" >&5
-$as_echo_n "checking for version 0.11 (revision 0 or later) of PPL... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "ppl_c.h"
-int
-main ()
-{
 
-    #if PPL_VERSION_MAJOR != 0 || PPL_VERSION_MINOR < 11
-    choke me
-    #endif
 
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }; ppllibs= ; pplinc= ; with_ppl=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    CFLAGS="$saved_CFLAGS"
+
+
+
+  if test "x${with_isl}" = xno; then
+    graphite_requested=no
+  elif test "x${with_isl}" != x \
+    || test "x${with_isl_include}" != x \
+    || test "x${with_isl_lib}" != x ; then
+    graphite_requested=yes
+  else
+    graphite_requested=no
   fi
+
+
+
+  if test "${gcc_cv_isl}" = no ; then
+    isllibs=
+    islinc=
+  fi
+
+  if test "${graphite_requested}" = yes \
+    && test "x${isllibs}" = x \
+    && test "x${islinc}" = x ; then
+
+    as_fn_error "Unable to find a usable ISL.  See config.log for details." "$LINENO" 5
+  fi
+
+
 fi
-
-# Flags needed for PPL
-
-
-
 
 # Check for CLOOG
-
 
 
 # Check whether --with-cloog was given.
@@ -5780,98 +5820,21 @@ fi
   if test "x${with_cloog_lib}" != x; then
     clooglibs="-L$with_cloog_lib"
   fi
-
-
-
-
-
-if test "x$with_ppl" = "xno"; then
-
-
-
-  if test "x${with_cloog}" = xno; then
-    graphite_requested=no
-  elif test "x${with_cloog}" != x \
-    || test "x${with_cloog_include}" != x \
-    || test "x${with_cloog_lib}" != x ; then
-    graphite_requested=yes
-  else
-    graphite_requested=no
+      if test "x${clooginc}" == x && test "x${clooglibs}" == x \
+     && test -d ${srcdir}/cloog; then
+     echo FooBar
+     clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
+     clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -I'${srcdir}'/cloog/include '
   fi
 
+  clooginc="-DCLOOG_INT_GMP ${clooginc}"
+  clooglibs="${clooglibs} -lcloog-isl ${isllibs}"
 
-  if test "${graphite_requested}" = yes; then
-    as_fn_error "Unable to find a usable PPL.  See config.log for details." "$LINENO" 5
-  fi
-  with_cloog=no
-fi
-if test "x${with_cloog}" = x && test "x${with_cloog_include}" = x \
-  && test "x${with_cloog_lib}" = x && test -d ${srcdir}/cloog; then
-  clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
-  clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include '
-fi
+
+
+
+
 if test "x$with_cloog" != "xno"; then
-
-
-
-  _cloog_saved_CFLAGS=$CFLAGS
-  _cloog_saved_CPPFLAGS=$CPPFLAGS
-  _cloog_saved_LDFLAGS=$LDFLAGS
-  _cloog_saved_LIBS=$LIBS
-
-  _cloogorginc="-DCLOOG_INT_GMP"
-
-    CFLAGS="${CFLAGS} ${clooginc} ${gmpinc}"
-  CPPFLAGS="${CPPFLAGS} ${_cloogorginc}"
-  LDFLAGS="${LDFLAGS} ${clooglibs}"
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for installed CLooG ISL" >&5
-$as_echo_n "checking for installed CLooG ISL... " >&6; }
-if test "${gcc_cv_cloog_type+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  LIBS="-lcloog-isl ${_cloog_saved_LIBS}"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "cloog/cloog.h"
-int
-main ()
-{
-cloog_version ()
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_cloog_type="ISL"
-else
-  gcc_cv_cloog_type=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog_type" >&5
-$as_echo "$gcc_cv_cloog_type" >&6; }
-
-  case $gcc_cv_cloog_type in
-    "ISL")
-      clooginc="${clooginc} ${_cloogorginc}"
-      clooglibs="${clooglibs} -lcloog-isl -lisl"
-      cloog_org=yes
-      ;;
-    *)
-      clooglibs=
-      clooginc=
-      cloog_org=
-      ;;
-  esac
-
-  LIBS=$_cloog_saved_LIBS
-  CFLAGS=$_cloog_saved_CFLAGS
-  CPPFLAGS=$_cloog_saved_CPPFLAGS
-  LDFLAGS=$_cloog_saved_LDFLAGS
-
-
 
 
 
@@ -5879,8 +5842,8 @@ $as_echo "$gcc_cv_cloog_type" >&6; }
     _cloog_saved_CFLAGS=$CFLAGS
     _cloog_saved_LDFLAGS=$LDFLAGS
 
-    CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${pplinc} ${gmpinc}"
-    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${ppllibs}"
+    CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${islinc} ${gmpinc}"
+    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${isllibs} ${gmplib}"
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.17.0 of CLooG" >&5
 $as_echo_n "checking for version 0.17.0 of CLooG... " >&6; }
@@ -5889,7 +5852,7 @@ if test "${gcc_cv_cloog+set}" = set; then :
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include "cloog/cloog.h"
+#include "cloog/version.h"
 int
 main ()
 {
@@ -7081,7 +7044,7 @@ do
 
 
     case $lib in
-    mpc | mpfr | gmp | ppl | cloog)
+    mpc | mpfr | gmp | cloog)
       # If we're processing --with-$lib, --with-$lib-include or
       # --with-$lib-lib, for one of the libs above, and target is
       # different from host, don't pass the current argument to any
@@ -14330,9 +14293,6 @@ compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
 case "$target" in
   hppa*64*-*-hpux*) ;;
   hppa*-*-hpux*) compare_exclusions="gcc/cc*-checksum\$(objext) | */libgcc/lib2funcs* | gcc/ada/*tools/*" ;;
-esac
-case " $configdirs " in
-*" ppl "*) compare_exclusions="$compare_exclusions | ppl/src/ppl-config.o" ;;
 esac
 
 

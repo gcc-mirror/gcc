@@ -1,3 +1,11 @@
+2012-07-02  Richard Guenther  <rguenther@suse.de>
+	Michael Matz  <matz@suse.de>
+	Tobias Grosser <tobias@grosser.es>
+	Sebastian Pop <sebpop@gmail.com>
+
+	* cloog.m4: Set up to work against ISL only.
+	* isl.m4: New file.
+
 2012-05-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* mt-sde: Fix typos.

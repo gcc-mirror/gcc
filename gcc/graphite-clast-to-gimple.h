@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GRAPHITE_CLAST_TO_GIMPLE_H
 #define GCC_GRAPHITE_CLAST_TO_GIMPLE_H
 
-#include "graphite-cloog-util.h"
-
 extern CloogState *cloog_state;
 
 /* Data structure for CLooG program representation.  */

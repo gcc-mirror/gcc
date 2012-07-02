@@ -325,9 +325,8 @@ ZLIBINC = @zlibinc@
 GMPLIBS = @GMPLIBS@
 GMPINC = @GMPINC@
 
-# How to find PPL
-PPLLIBS = @PPLLIBS@
-PPLINC = @PPLINC@
+# How to find ISL
+ISLINC = @ISLINC@
 
 # How to find CLOOG
 CLOOGLIBS = @CLOOGLIBS@
@@ -954,7 +953,6 @@ REAL_H = real.h $(MACHMODE_H)
 IRA_INT_H = ira.h ira-int.h $(CFGLOOP_H) alloc-pool.h
 DBGCNT_H = dbgcnt.h dbgcnt.def
 EBITMAP_H = ebitmap.h sbitmap.h
-GRAPHITE_PPL_H = graphite-ppl.h $(TREE_H)
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) vecprim.h $(TREE_H) $(GIMPLE_H) \
 		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h
@@ -1027,7 +1025,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 # and the system's installed libraries.
 LIBS = @LIBS@ libcommon.a $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY) \
 	$(LIBDECNUMBER) $(HOST_LIBS)
-BACKENDLIBS = $(CLOOGLIBS) $(PPLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
+BACKENDLIBS = $(CLOOGLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
 	$(ZLIB)
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
@@ -1059,7 +1057,7 @@ BUILD_ERRORS = build/errors.o
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
 	   $(CPPINC) $(GMPINC) $(DECNUMINC) \
-	   $(PPLINC) $(CLOOGINC)
+	   $(CLOOGINC) $(ISLINC)
 
 .c.o:
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $< $(OUTPUT_OPTION)
@@ -1248,11 +1246,9 @@ OBJS = \
 	graphite.o \
 	graphite-blocking.o \
 	graphite-clast-to-gimple.o \
-	graphite-cloog-util.o \
 	graphite-dependences.o \
 	graphite-interchange.o \
 	graphite-poly.o \
-	graphite-ppl.o \
 	graphite-scop-detection.o \
 	graphite-sese-to-poly.o \
 	gtype-desc.o \
@@ -2539,37 +2535,30 @@ sese.o : sese.c sese.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_PRETTY_PRINT_H
    $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(TREE_PASS_H) value-prof.h
 graphite.o : graphite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_CORE_H) \
    $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h \
-   $(DBGCNT_H) $(GRAPHITE_PPL_H) graphite-poly.h graphite-scop-detection.h \
+   $(DBGCNT_H) graphite-poly.h graphite-scop-detection.h \
    graphite-clast-to-gimple.h graphite-sese-to-poly.h
 graphite-blocking.o : graphite-blocking.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
-   sese.h $(GRAPHITE_PPL_H) graphite-poly.h
+   sese.h graphite-poly.h
 graphite-clast-to-gimple.o : graphite-clast-to-gimple.c $(CONFIG_H) \
    $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \
-   $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h graphite-cloog-util.h \
-   $(GRAPHITE_PPL_H) graphite-poly.h graphite-clast-to-gimple.h \
-   graphite-dependences.h
-graphite-cloog-util.o : graphite-cloog-util.c $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h graphite-cloog-util.h
+   $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h \
+   graphite-poly.h graphite-clast-to-gimple.h
 graphite-dependences.o : graphite-dependences.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
-   sese.h $(GRAPHITE_PPL_H) graphite-poly.h graphite-dependences.h \
-   graphite-cloog-util.h
+   sese.h graphite-poly.h
 graphite-interchange.o : graphite-interchange.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
-   sese.h $(GRAPHITE_PPL_H) graphite-poly.h
+   sese.h graphite-poly.h
 graphite-poly.o : graphite-poly.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(GIMPLE_PRETTY_PRINT_H) \
-   $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h $(GRAPHITE_PPL_H) graphite-poly.h \
-   graphite-dependences.h graphite-cloog-util.h
-graphite-ppl.o : graphite-ppl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   graphite-cloog-util.h $(GRAPHITE_PPL_H)
+   $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h graphite-poly.h
 graphite-scop-detection.o : graphite-scop-detection.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(TREE_PASS_H) \
-   sese.h $(GRAPHITE_PPL_H) graphite-poly.h graphite-scop-detection.h
+   sese.h graphite-poly.h graphite-scop-detection.h
 graphite-sese-to-poly.o : graphite-sese-to-poly.c $(CONFIG_H) \
    $(SYSTEM_H) coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) \
-   $(TREE_DATA_REF_H) domwalk.h sese.h $(GRAPHITE_PPL_H) graphite-poly.h \
+   $(TREE_DATA_REF_H) domwalk.h sese.h graphite-poly.h \
    graphite-sese-to-poly.h
 tree-vect-loop.o: tree-vect-loop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) \

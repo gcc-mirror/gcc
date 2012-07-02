@@ -63,6 +63,17 @@ AC_DEFUN([CLOOG_INIT_FLAGS],
   if test "x${with_cloog_lib}" != x; then
     clooglibs="-L$with_cloog_lib"
   fi
+  dnl If no --with-cloog flag was specified and there is in-tree ClooG
+  dnl source, set up flags to use that.
+  if test "x${clooginc}" == x && test "x${clooglibs}" == x \
+     && test -d ${srcdir}/cloog; then
+     echo FooBar
+     clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
+     clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -I'${srcdir}'/cloog/include '
+  fi
+
+  clooginc="-DCLOOG_INT_GMP ${clooginc}"
+  clooglibs="${clooglibs} -lcloog-isl ${isllibs}"
 
   dnl Flags needed for CLOOG
   AC_SUBST(clooglibs)
@@ -89,63 +100,11 @@ AC_DEFUN([CLOOG_REQUESTED],
 ]
 )
 
-# _CLOOG_ORG_PROG_ISL ()
-# ------------------
-# Helper for detecting CLooG.org's ISL backend.
-m4_define([_CLOOG_ORG_PROG_ISL],[AC_LANG_PROGRAM(
-  [#include "cloog/cloog.h" ],
-  [cloog_version ()])])
-
-# CLOOG_FIND_FLAGS ()
-# ------------------
-# Detect the used CLooG-backend and set clooginc/clooglibs/cloog_org.
-# Only look for the CLooG backend type specified in --enable-cloog-backend
-AC_DEFUN([CLOOG_FIND_FLAGS],
-[
-  AC_REQUIRE([CLOOG_INIT_FLAGS])
-
-  _cloog_saved_CFLAGS=$CFLAGS
-  _cloog_saved_CPPFLAGS=$CPPFLAGS
-  _cloog_saved_LDFLAGS=$LDFLAGS
-  _cloog_saved_LIBS=$LIBS
-
-  _cloogorginc="-DCLOOG_INT_GMP"
- 
-  dnl clooglibs & clooginc may have been initialized by CLOOG_INIT_FLAGS.
-  CFLAGS="${CFLAGS} ${clooginc} ${gmpinc}"
-  CPPFLAGS="${CPPFLAGS} ${_cloogorginc}"
-  LDFLAGS="${LDFLAGS} ${clooglibs}"
-
-  AC_CACHE_CHECK([for installed CLooG ISL], [gcc_cv_cloog_type],
-    [LIBS="-lcloog-isl ${_cloog_saved_LIBS}"
-    AC_LINK_IFELSE([_CLOOG_ORG_PROG_ISL], [gcc_cv_cloog_type="ISL"],
-		   [gcc_cv_cloog_type=no])])
-
-  case $gcc_cv_cloog_type in
-    "ISL")
-      clooginc="${clooginc} ${_cloogorginc}"
-      clooglibs="${clooglibs} -lcloog-isl -lisl"
-      cloog_org=yes
-      ;;
-    *)
-      clooglibs=
-      clooginc=
-      cloog_org=
-      ;;
-  esac
-
-  LIBS=$_cloog_saved_LIBS
-  CFLAGS=$_cloog_saved_CFLAGS
-  CPPFLAGS=$_cloog_saved_CPPFLAGS
-  LDFLAGS=$_cloog_saved_LDFLAGS
-]
-)
-
 # _CLOOG_CHECK_CT_PROG(MAJOR, MINOR, REVISION)
 # --------------------------------------------
 # Helper for verifying CLooG's compile time version.
 m4_define([_CLOOG_CHECK_CT_PROG],[AC_LANG_PROGRAM(
-  [#include "cloog/cloog.h"],
+  [#include "cloog/version.h"],
   [#if CLOOG_VERSION_MAJOR != $1 \
     || CLOOG_VERSION_MINOR != $2 \
     || CLOOG_VERSION_REVISION < $3
@@ -158,14 +117,14 @@ m4_define([_CLOOG_CHECK_CT_PROG],[AC_LANG_PROGRAM(
 # REVISION.
 AC_DEFUN([CLOOG_CHECK_VERSION],
 [
-  AC_REQUIRE([CLOOG_FIND_FLAGS])
+  AC_REQUIRE([CLOOG_INIT_FLAGS])
 
   if test "${ENABLE_CLOOG_CHECK}" = yes ; then
     _cloog_saved_CFLAGS=$CFLAGS
     _cloog_saved_LDFLAGS=$LDFLAGS
 
-    CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${pplinc} ${gmpinc}"
-    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${ppllibs}"
+    CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${islinc} ${gmpinc}"
+    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${isllibs} ${gmplib}"
 
     AC_CACHE_CHECK([for version $1.$2.$3 of CLooG],
       [gcc_cv_cloog],
