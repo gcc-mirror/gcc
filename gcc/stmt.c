@@ -107,9 +107,6 @@ static bool check_unique_operand_names (tree, tree, tree);
 static char *resolve_operand_name_1 (char *, tree, tree, tree);
 static void expand_null_return_1 (void);
 static void expand_value_return (rtx);
-static bool lshift_cheap_p (void);
-static int case_bit_test_cmp (const void *, const void *);
-static void emit_case_bit_tests (tree, tree, tree, tree, case_node_ptr, rtx);
 static void balance_case_nodes (case_node_ptr *, case_node_ptr);
 static int node_has_low_bound (case_node_ptr, tree);
 static int node_has_high_bound (case_node_ptr, tree);
@@ -1719,151 +1716,6 @@ add_case_node (struct case_node *head, tree type, tree low, tree high,
   return r;
 }
 
-/* Maximum number of case bit tests.  */
-#define MAX_CASE_BIT_TESTS  3
-
-/* A case_bit_test represents a set of case nodes that may be
-   selected from using a bit-wise comparison.  HI and LO hold
-   the integer to be tested against, LABEL contains the label
-   to jump to upon success and BITS counts the number of case
-   nodes handled by this test, typically the number of bits
-   set in HI:LO.  */
-
-struct case_bit_test
-{
-  HOST_WIDE_INT hi;
-  HOST_WIDE_INT lo;
-  rtx label;
-  int bits;
-};
-
-/* Determine whether "1 << x" is relatively cheap in word_mode.  */
-
-static
-bool lshift_cheap_p (void)
-{
-  static bool init[2] = {false, false};
-  static bool cheap[2] = {true, true};
-
-  bool speed_p = optimize_insn_for_speed_p ();
-
-  if (!init[speed_p])
-    {
-      rtx reg = gen_rtx_REG (word_mode, 10000);
-      int cost = set_src_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg),
-			       speed_p);
-      cheap[speed_p] = cost < COSTS_N_INSNS (3);
-      init[speed_p] = true;
-    }
-
-  return cheap[speed_p];
-}
-
-/* Comparison function for qsort to order bit tests by decreasing
-   number of case nodes, i.e. the node with the most cases gets
-   tested first.  */
-
-static int
-case_bit_test_cmp (const void *p1, const void *p2)
-{
-  const struct case_bit_test *const d1 = (const struct case_bit_test *) p1;
-  const struct case_bit_test *const d2 = (const struct case_bit_test *) p2;
-
-  if (d2->bits != d1->bits)
-    return d2->bits - d1->bits;
-
-  /* Stabilize the sort.  */
-  return CODE_LABEL_NUMBER (d2->label) - CODE_LABEL_NUMBER (d1->label);
-}
-
-/*  Expand a switch statement by a short sequence of bit-wise
-    comparisons.  "switch(x)" is effectively converted into
-    "if ((1 << (x-MINVAL)) & CST)" where CST and MINVAL are
-    integer constants.
-
-    INDEX_EXPR is the value being switched on, which is of
-    type INDEX_TYPE.  MINVAL is the lowest case value of in
-    the case nodes, of INDEX_TYPE type, and RANGE is highest
-    value minus MINVAL, also of type INDEX_TYPE.  NODES is
-    the set of case nodes, and DEFAULT_LABEL is the label to
-    branch to should none of the cases match.
-
-    There *MUST* be MAX_CASE_BIT_TESTS or less unique case
-    node targets.  */
-
-static void
-emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
-		     tree range, case_node_ptr nodes, rtx default_label)
-{
-  struct case_bit_test test[MAX_CASE_BIT_TESTS];
-  enum machine_mode mode;
-  rtx expr, index, label;
-  unsigned int i,j,lo,hi;
-  struct case_node *n;
-  unsigned int count;
-
-  count = 0;
-  for (n = nodes; n; n = n->right)
-    {
-      label = label_rtx (n->code_label);
-      for (i = 0; i < count; i++)
-	if (label == test[i].label)
-	  break;
-
-      if (i == count)
-	{
-	  gcc_assert (count < MAX_CASE_BIT_TESTS);
-	  test[i].hi = 0;
-	  test[i].lo = 0;
-	  test[i].label = label;
-	  test[i].bits = 1;
-	  count++;
-	}
-      else
-        test[i].bits++;
-
-      lo = tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
-				      n->low, minval), 1);
-      hi = tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
-				      n->high, minval), 1);
-      for (j = lo; j <= hi; j++)
-        if (j >= HOST_BITS_PER_WIDE_INT)
-	  test[i].hi |= (HOST_WIDE_INT) 1 << (j - HOST_BITS_PER_INT);
-	else
-	  test[i].lo |= (HOST_WIDE_INT) 1 << j;
-    }
-
-  qsort (test, count, sizeof(*test), case_bit_test_cmp);
-
-  index_expr = fold_build2 (MINUS_EXPR, index_type,
-			    fold_convert (index_type, index_expr),
-			    fold_convert (index_type, minval));
-  index = expand_normal (index_expr);
-  do_pending_stack_adjust ();
-
-  mode = TYPE_MODE (index_type);
-  expr = expand_normal (range);
-  if (default_label)
-    emit_cmp_and_jump_insns (index, expr, GTU, NULL_RTX, mode, 1,
-			     default_label);
-
-  index = convert_to_mode (word_mode, index, 0);
-  index = expand_binop (word_mode, ashl_optab, const1_rtx,
-			index, NULL_RTX, 1, OPTAB_WIDEN);
-
-  for (i = 0; i < count; i++)
-    {
-      expr = immed_double_const (test[i].lo, test[i].hi, word_mode);
-      expr = expand_binop (word_mode, and_optab, index, expr,
-			   NULL_RTX, 1, OPTAB_WIDEN);
-      emit_cmp_and_jump_insns (expr, const0_rtx, NE, NULL_RTX,
-			       word_mode, 1, test[i].label);
-    }
-
-  if (default_label)
-    emit_jump (default_label);
-}
-
 #ifndef HAVE_casesi
 #define HAVE_casesi 0
 #endif
@@ -1871,27 +1723,6 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
 #ifndef HAVE_tablejump
 #define HAVE_tablejump 0
 #endif
-
-/* Return true if a switch should be expanded as a bit test.
-   INDEX_EXPR is the index expression, RANGE is the difference between
-   highest and lowest case, UNIQ is number of unique case node targets
-   not counting the default case and COUNT is the number of comparisons
-   needed, not counting the default case.  */
-bool
-expand_switch_using_bit_tests_p (tree index_expr, tree range,
-				 unsigned int uniq, unsigned int count)
-{
-  if (optab_handler (ashl_optab, word_mode) == CODE_FOR_nothing)
-    return false;
- 
-  return (! TREE_CONSTANT (index_expr)
-	  && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
-	  && compare_tree_int (range, 0) > 0
-	  && lshift_cheap_p ()
-	  && ((uniq == 1 && count >= 3)
-	      || (uniq == 2 && count >= 5)
-	      || (uniq == 3 && count >= 6)));
-}
 
 /* Return the smallest number of different values for which it is best to use a
    jump-table instead of a tree of conditional branches.  */
@@ -2035,40 +1866,22 @@ expand_case (gimple stmt)
       /* Compute span of values.  */
       range = fold_build2 (MINUS_EXPR, index_type, maxval, minval);
 
-      /* Try implementing this switch statement by a short sequence of
-	 bit-wise comparisons.  However, we let the binary-tree case
-	 below handle constant index expressions.  */
-      if (expand_switch_using_bit_tests_p (index_expr, range, uniq, count))
-	{
-	  /* Optimize the case where all the case values fit in a
-	     word without having to subtract MINVAL.  In this case,
-	     we can optimize away the subtraction.  */
-	  if (compare_tree_int (minval, 0) > 0
-	      && compare_tree_int (maxval, GET_MODE_BITSIZE (word_mode)) < 0)
-	    {
-	      minval = build_int_cst (index_type, 0);
-	      range = maxval;
-	    }
-	  emit_case_bit_tests (index_type, index_expr, minval, range,
-			       case_list, default_label);
-	}
-
       /* If range of values is much bigger than number of values,
 	 make a sequence of conditional branches instead of a dispatch.
 	 If the switch-index is a constant, do it this way
 	 because we can optimize it.  */
 
-      else if (count < case_values_threshold ()
-	       || compare_tree_int (range,
-				    (optimize_insn_for_size_p () ? 3 : 10) * count) > 0
-	       /* RANGE may be signed, and really large ranges will show up
-		  as negative numbers.  */
-	       || compare_tree_int (range, 0) < 0
-	       || !flag_jump_tables
-	       || TREE_CONSTANT (index_expr)
-	       /* If neither casesi or tablejump is available, we can
-		  only go this way.  */
-	       || (!HAVE_casesi && !HAVE_tablejump))
+      if (count < case_values_threshold ()
+	  || compare_tree_int (range,
+			       (optimize_insn_for_size_p () ? 3 : 10) * count) > 0
+	  /* RANGE may be signed, and really large ranges will show up
+	     as negative numbers.  */
+	  || compare_tree_int (range, 0) < 0
+	  || !flag_jump_tables
+	  || TREE_CONSTANT (index_expr)
+	  /* If neither casesi or tablejump is available, we can
+	     only go this way.  */
+	  || (!HAVE_casesi && !HAVE_tablejump))
 	{
 	  index = expand_normal (index_expr);
 

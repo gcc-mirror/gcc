@@ -1,7 +1,7 @@
-/* Switch Conversion converts variable initializations based on switch
-   statements to initializations from a static array.
-   Copyright (C) 2006, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
-   Contributed by Martin Jambor <jamborm@suse.cz>
+/* Lower GIMPLE_SWITCH expressions to something more efficient than
+   a jump table.
+   Copyright (C) 2006, 2008, 2009, 2010, 2011, 2012
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,6 +20,458 @@ along with GCC; see the file COPYING3.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
+/* This file handles the lowering of GIMPLE_SWITCH to an indexed
+   load, or a series of bit-test-and-branch expressions.  */
+
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
+#include "line-map.h"
+#include "params.h"
+#include "flags.h"
+#include "tree.h"
+#include "basic-block.h"
+#include "tree-flow.h"
+#include "tree-flow-inline.h"
+#include "tree-ssa-operands.h"
+#include "tree-pass.h"
+#include "gimple-pretty-print.h"
+#include "tree-dump.h"
+#include "timevar.h"
+#include "langhooks.h"
+
+/* Need to include expr.h and optabs.h for lshift_cheap_p.  */
+#include "expr.h"
+#include "optabs.h"
+
+/* Maximum number of case bit tests.
+   FIXME: This should be derived from PARAM_CASE_VALUES_THRESHOLD and
+	  targetm.case_values_threshold(), or be its own param.  */
+#define MAX_CASE_BIT_TESTS  3
+
+/* Split the basic block at the statement pointed to by GSIP, and insert
+   a branch to the target basic block of E_TRUE conditional on tree
+   expression COND.
+
+   It is assumed that there is already an edge from the to-be-split
+   basic block to E_TRUE->dest block.  This edge is removed, and the
+   profile information on the edge is re-used for the new conditional
+   jump.
+   
+   The CFG is updated.  The dominator tree will not be valid after
+   this transformation, but the immediate dominators are updated if
+   UPDATE_DOMINATORS is true.
+   
+   Returns the newly created basic block.  */
+
+static basic_block
+hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
+			       tree cond, edge e_true,
+			       bool update_dominators)
+{
+  tree tmp;
+  gimple cond_stmt;
+  edge e_false;
+  basic_block new_bb, split_bb = gsi_bb (*gsip);
+  bool dominated_e_true = false;
+
+  gcc_assert (e_true->src == split_bb);
+
+  if (update_dominators
+      && get_immediate_dominator (CDI_DOMINATORS, e_true->dest) == split_bb)
+    dominated_e_true = true;
+
+  tmp = force_gimple_operand_gsi (gsip, cond, /*simple=*/true, NULL,
+				  /*before=*/true, GSI_SAME_STMT);
+  cond_stmt = gimple_build_cond_from_tree (tmp, NULL_TREE, NULL_TREE);
+  gsi_insert_before (gsip, cond_stmt, GSI_SAME_STMT);
+
+  e_false = split_block (split_bb, cond_stmt);
+  new_bb = e_false->dest;
+  redirect_edge_pred (e_true, split_bb);
+
+  e_true->flags &= ~EDGE_FALLTHRU;
+  e_true->flags |= EDGE_TRUE_VALUE;
+
+  e_false->flags &= ~EDGE_FALLTHRU;
+  e_false->flags |= EDGE_FALSE_VALUE;
+  e_false->probability = REG_BR_PROB_BASE - e_true->probability;
+  e_false->count = split_bb->count - e_true->count;
+  new_bb->count = e_false->count;
+
+  if (update_dominators)
+    {
+      if (dominated_e_true)
+	set_immediate_dominator (CDI_DOMINATORS, e_true->dest, split_bb);
+      set_immediate_dominator (CDI_DOMINATORS, e_false->dest, split_bb);
+    }
+
+  return new_bb;
+}
+
+
+/* Determine whether "1 << x" is relatively cheap in word_mode.  */
+/* FIXME: This is the function that we need rtl.h and optabs.h for.
+   This function (and similar RTL-related cost code in e.g. IVOPTS) should
+   be moved to some kind of interface file for GIMPLE/RTL interactions.  */
+static bool
+lshift_cheap_p (void)
+{
+  /* FIXME: This should be made target dependent via this "this_target"
+     mechanism, similar to e.g. can_copy_init_p in gcse.c.  */
+  static bool init[2] = {false, false};
+  static bool cheap[2] = {true, true};
+  bool speed_p;
+
+  /* If the targer has no lshift in word_mode, the operation will most
+     probably not be cheap.  ??? Does GCC even work for such targets?  */
+  if (optab_handler (ashl_optab, word_mode) == CODE_FOR_nothing)
+    return false;
+
+  speed_p = optimize_insn_for_speed_p ();
+
+  if (!init[speed_p])
+    {
+      rtx reg = gen_raw_REG (word_mode, 10000);
+      int cost = set_src_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg),
+			       speed_p);
+      cheap[speed_p] = cost < COSTS_N_INSNS (MAX_CASE_BIT_TESTS);
+      init[speed_p] = true;
+    }
+
+  return cheap[speed_p];
+}
+
+/* Return true if a switch should be expanded as a bit test.
+   RANGE is the difference between highest and lowest case.
+   UNIQ is number of unique case node targets, not counting the default case.
+   COUNT is the number of comparisons needed, not counting the default case.  */
+
+static bool
+expand_switch_using_bit_tests_p (tree range,
+				 unsigned int uniq,
+				 unsigned int count)
+{
+  return (((uniq == 1 && count >= 3)
+	   || (uniq == 2 && count >= 5)
+	   || (uniq == 3 && count >= 6))
+	  && lshift_cheap_p ()
+	  && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
+	  && compare_tree_int (range, 0) > 0);
+}
+
+/* Implement switch statements with bit tests
+
+A GIMPLE switch statement can be expanded to a short sequence of bit-wise
+comparisons.  "switch(x)" is converted into "if ((1 << (x-MINVAL)) & CST)"
+where CST and MINVAL are integer constants.  This is better than a series
+of compare-and-banch insns in some cases,  e.g. we can implement:
+
+	if ((x==4) || (x==6) || (x==9) || (x==11))
+
+as a single bit test:
+
+	if ((1<<x) & ((1<<4)|(1<<6)|(1<<9)|(1<<11)))
+
+This transformation is only applied if the number of case targets is small,
+if CST constains at least 3 bits, and "x << 1" is cheap.  The bit tests are
+performed in "word_mode".
+
+The following example shows the code the transformation generates:
+
+	int bar(int x)
+	{
+		switch (x)
+		{
+		case '0':  case '1':  case '2':  case '3':  case '4':
+		case '5':  case '6':  case '7':  case '8':  case '9':
+		case 'A':  case 'B':  case 'C':  case 'D':  case 'E':
+		case 'F':
+			return 1;
+		}
+		return 0;
+	}
+
+==>
+
+	bar (int x)
+	{
+		tmp1 = x - 48;
+		if (tmp1 > (70 - 48)) goto L2;
+		tmp2 = 1 << tmp1;
+		tmp3 = 0b11111100000001111111111;
+		if ((tmp2 & tmp3) != 0) goto L1 ; else goto L2;
+	L1:
+		return 1;
+	L2:
+		return 0;
+	}
+
+TODO: There are still some improvements to this transformation that could
+be implemented:
+
+* A narrower mode than word_mode could be used if that is cheaper, e.g.
+  for x86_64 where a narrower-mode shift may result in smaller code.
+
+* The compounded constant could be shifted rather than the one.  The
+  test would be either on the sign bit or on the least significant bit,
+  depending on the direction of the shift.  On some machines, the test
+  for the branch would be free if the bit to test is already set by the
+  shift operation.
+
+This transformation was contributed by Roger Sayle, see this e-mail:
+   http://gcc.gnu.org/ml/gcc-patches/2003-01/msg01950.html
+*/
+
+/* A case_bit_test represents a set of case nodes that may be
+   selected from using a bit-wise comparison.  HI and LO hold
+   the integer to be tested against, TARGET_EDGE contains the
+   edge to the basic block to jump to upon success and BITS
+   counts the number of case nodes handled by this test,
+   typically the number of bits set in HI:LO.  The LABEL field
+   is used to quickly identify all cases in this set without
+   looking at label_to_block for every case label.  */
+
+struct case_bit_test
+{
+  HOST_WIDE_INT hi;
+  HOST_WIDE_INT lo;
+  edge target_edge;
+  tree label;
+  int bits;
+};
+
+/* Comparison function for qsort to order bit tests by decreasing
+   probability of execution.  Our best guess comes from a measured
+   profile.  If the profile counts are equal, break even on the
+   number of case nodes, i.e. the node with the most cases gets
+   tested first.
+
+   TODO: Actually this currently runs before a profile is available.
+   Therefore the case-as-bit-tests transformation should be done
+   later in the pass pipeline, or something along the lines of
+   "Efficient and effective branch reordering using profile data"
+   (Yang et. al., 2002) should be implemented (although, how good
+   is a paper is called "Efficient and effective ..." when the
+   latter is implied by the former, but oh well...).  */
+
+static int
+case_bit_test_cmp (const void *p1, const void *p2)
+{
+  const struct case_bit_test *const d1 = (const struct case_bit_test *) p1;
+  const struct case_bit_test *const d2 = (const struct case_bit_test *) p2;
+
+  if (d2->target_edge->count != d1->target_edge->count)
+    return d2->target_edge->count - d1->target_edge->count;
+  if (d2->bits != d1->bits)
+    return d2->bits - d1->bits;
+
+  /* Stabilize the sort.  */
+  return LABEL_DECL_UID (d2->label) - LABEL_DECL_UID (d1->label);
+}
+
+/*  Expand a switch statement by a short sequence of bit-wise
+    comparisons.  "switch(x)" is effectively converted into
+    "if ((1 << (x-MINVAL)) & CST)" where CST and MINVAL are
+    integer constants.
+
+    INDEX_EXPR is the value being switched on.
+
+    MINVAL is the lowest case value of in the case nodes,
+    and RANGE is highest value minus MINVAL.  MINVAL and RANGE
+    are not guaranteed to be of the same type as INDEX_EXPR
+    (the gimplifier doesn't change the type of case label values,
+    and MINVAL and RANGE are derived from those values).
+
+    There *MUST* be MAX_CASE_BIT_TESTS or less unique case
+    node targets.  */
+
+static void
+emit_case_bit_tests (gimple swtch, tree index_expr,
+		     tree minval, tree range)
+{
+  struct case_bit_test test[MAX_CASE_BIT_TESTS];
+  unsigned int i, j, k;
+  unsigned int count;
+
+  basic_block switch_bb = gimple_bb (swtch);
+  basic_block default_bb, new_default_bb, new_bb;
+  edge default_edge;
+  bool update_dom = dom_info_available_p (CDI_DOMINATORS);
+
+  VEC (basic_block, heap) *bbs_to_fix_dom = NULL;
+
+  tree index_type = TREE_TYPE (index_expr);
+  tree unsigned_index_type = unsigned_type_for (index_type);
+  unsigned int branch_num = gimple_switch_num_labels (swtch);
+
+  gimple_stmt_iterator gsi;
+  gimple shift_stmt;
+
+  tree idx, tmp, csui;
+  tree word_type_node = lang_hooks.types.type_for_mode (word_mode, 1);
+  tree word_mode_zero = fold_convert (word_type_node, integer_zero_node);
+  tree word_mode_one = fold_convert (word_type_node, integer_one_node);
+
+  memset (&test, 0, sizeof (test));
+
+  /* Get the edge for the default case.  */
+  tmp = gimple_switch_label (swtch, 0);
+  default_bb = label_to_block (CASE_LABEL (tmp));
+  default_edge = find_edge (switch_bb, default_bb);
+
+  /* Go through all case labels, and collect the case labels, profile
+     counts, and other information we need to build the branch tests.  */
+  count = 0;
+  for (i = 1; i < branch_num; i++)
+    {
+      unsigned int lo, hi;
+      tree cs = gimple_switch_label (swtch, i);
+      tree label = CASE_LABEL (cs);
+      for (k = 0; k < count; k++)
+	if (label == test[k].label)
+	  break;
+
+      if (k == count)
+	{
+	  edge e = find_edge (switch_bb, label_to_block (label));
+	  gcc_assert (e);
+	  gcc_checking_assert (count < MAX_CASE_BIT_TESTS);
+	  test[k].hi = 0;
+	  test[k].lo = 0;
+	  test[k].target_edge = e;
+	  test[k].label = label;
+	  test[k].bits = 1;
+	  count++;
+	}
+      else
+        test[k].bits++;
+
+      lo = tree_low_cst (int_const_binop (MINUS_EXPR,
+					  CASE_LOW (cs), minval),
+			 1);
+      if (CASE_HIGH (cs) == NULL_TREE)
+	hi = lo;
+      else
+	hi = tree_low_cst (int_const_binop (MINUS_EXPR, 
+					    CASE_HIGH (cs), minval),
+			   1);
+
+      for (j = lo; j <= hi; j++)
+        if (j >= HOST_BITS_PER_WIDE_INT)
+	  test[k].hi |= (HOST_WIDE_INT) 1 << (j - HOST_BITS_PER_INT);
+	else
+	  test[k].lo |= (HOST_WIDE_INT) 1 << j;
+    }
+
+  qsort (test, count, sizeof(*test), case_bit_test_cmp);
+
+  /* We generate two jumps to the default case label.
+     Split the default edge, so that we don't have to do any PHI node
+     updating.  */
+  new_default_bb = split_edge (default_edge);
+
+  if (update_dom)
+    {
+      bbs_to_fix_dom = VEC_alloc (basic_block, heap, 10);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, switch_bb);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, default_bb);
+      VEC_quick_push (basic_block, bbs_to_fix_dom, new_default_bb);
+    }
+
+  /* Now build the test-and-branch code.  */
+
+  gsi = gsi_last_bb (switch_bb);
+
+  /* idx = (unsigned) (x - minval) */
+  idx = fold_build2 (MINUS_EXPR, index_type, index_expr,
+		     fold_convert (index_type, minval));
+  idx = fold_convert (unsigned_index_type, idx);
+  idx = force_gimple_operand_gsi (&gsi, idx,
+				  /*simple=*/true, NULL_TREE,
+				  /*before=*/true, GSI_SAME_STMT);
+
+  /* if (idx > range) goto default */
+  range = force_gimple_operand_gsi (&gsi,
+				    fold_convert (unsigned_index_type, range),
+				    /*simple=*/true, NULL_TREE,
+				    /*before=*/true, GSI_SAME_STMT);
+  tmp = fold_build2 (GT_EXPR, boolean_type_node, idx, range);
+  new_bb = hoist_edge_and_branch_if_true (&gsi, tmp, default_edge, update_dom);
+  if (update_dom)
+    VEC_quick_push (basic_block, bbs_to_fix_dom, new_bb);
+  gcc_assert (gimple_bb (swtch) == new_bb);
+  gsi = gsi_last_bb (new_bb);
+
+  /* Any blocks dominated by the GIMPLE_SWITCH, but that are not successors
+     of NEW_BB, are still immediately dominated by SWITCH_BB.  Make it so.  */
+  if (update_dom)
+    {
+      VEC (basic_block, heap) *dom_bbs;
+      basic_block dom_son;
+
+      dom_bbs = get_dominated_by (CDI_DOMINATORS, new_bb);
+      FOR_EACH_VEC_ELT (basic_block, dom_bbs, i, dom_son)
+	{
+	  edge e = find_edge (new_bb, dom_son);
+	  if (e && single_pred_p (e->dest))
+	    continue;
+	  set_immediate_dominator (CDI_DOMINATORS, dom_son, switch_bb);
+	  VEC_safe_push (basic_block, heap, bbs_to_fix_dom, dom_son);
+	}
+      VEC_free (basic_block, heap, dom_bbs);
+    }
+
+  /* csui = (1 << (word_mode) idx) */
+  tmp = create_tmp_var (word_type_node, "csui");
+  add_referenced_var (tmp);
+  csui = make_ssa_name (tmp, NULL);
+  tmp = fold_build2 (LSHIFT_EXPR, word_type_node, word_mode_one,
+		     fold_convert (word_type_node, idx));
+  tmp = force_gimple_operand_gsi (&gsi, tmp,
+				  /*simple=*/false, NULL_TREE,
+				  /*before=*/true, GSI_SAME_STMT);
+  shift_stmt = gimple_build_assign (csui, tmp);
+  SSA_NAME_DEF_STMT (csui) = shift_stmt;
+  gsi_insert_before (&gsi, shift_stmt, GSI_SAME_STMT);
+  update_stmt (shift_stmt);
+
+  /* for each unique set of cases:
+        if (const & csui) goto target  */
+  for (k = 0; k < count; k++)
+    {
+      tmp = build_int_cst_wide (word_type_node, test[k].lo, test[k].hi);
+      tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
+      tmp = force_gimple_operand_gsi (&gsi, tmp,
+				      /*simple=*/true, NULL_TREE,
+				      /*before=*/true, GSI_SAME_STMT);
+      tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp, word_mode_zero);
+      new_bb = hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_edge,
+					      update_dom);
+      if (update_dom)
+	VEC_safe_push (basic_block, heap, bbs_to_fix_dom, new_bb);
+      gcc_assert (gimple_bb (swtch) == new_bb);
+      gsi = gsi_last_bb (new_bb);
+    }
+
+  /* We should have removed all edges now.  */
+  gcc_assert (EDGE_COUNT (gsi_bb (gsi)->succs) == 0);
+
+  /* If nothing matched, go to the default label.  */
+  make_edge (gsi_bb (gsi), new_default_bb, EDGE_FALLTHRU);
+
+  /* The GIMPLE_SWITCH is now redundant.  */
+  gsi_remove (&gsi, true);
+
+  if (update_dom)
+    {
+      /* Fix up the dominator tree.  */
+      iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
+      VEC_free (basic_block, heap, bbs_to_fix_dom);
+    }
+}
+
 /*
      Switch initialization conversion
 
@@ -75,26 +527,10 @@ is changed into:
 
 There are further constraints.  Specifically, the range of values across all
 case labels must not be bigger than SWITCH_CONVERSION_BRANCH_RATIO (default
-eight) times the number of the actual switch branches. */
+eight) times the number of the actual switch branches.
 
-#include "config.h"
-#include "system.h"
-#include "coretypes.h"
-#include "tm.h"
-#include "line-map.h"
-#include "params.h"
-#include "flags.h"
-#include "tree.h"
-#include "basic-block.h"
-#include "tree-flow.h"
-#include "tree-flow-inline.h"
-#include "tree-ssa-operands.h"
-#include "input.h"
-#include "tree-pass.h"
-#include "gimple-pretty-print.h"
-#include "tree-dump.h"
-#include "timevar.h"
-#include "langhooks.h"
+This transformation was contributed by Martin Jambor, see this e-mail:
+   http://gcc.gnu.org/ml/gcc-patches/2008-07/msg00011.html  */
 
 /* The main structure of the pass.  */
 struct switch_conv_info
@@ -799,13 +1235,6 @@ gen_inbound_check (gimple swtch, struct switch_conv_info *info)
 
   gcc_assert (info->default_values);
 
-  /* Make no effort to update the post-dominator tree.  It is actually not
-     that hard for the transformations we have performed, but it is not
-     supported by iterate_fix_dominators.
-     Freeing post-dominance info is dome early to avoid pointless work in
-     create_basic_block, which is called when we split SWITCH_BB.  */
-  free_dominance_info (CDI_POST_DOMINATORS);
-
   bb0 = gimple_bb (swtch);
 
   tidx = gimple_assign_lhs (info->arr_ref_first);
@@ -885,7 +1314,7 @@ gen_inbound_check (gimple swtch, struct switch_conv_info *info)
 
       set_immediate_dominator (CDI_DOMINATORS, bb1, bb0);
       set_immediate_dominator (CDI_DOMINATORS, bb2, bb0);
-      if (! get_immediate_dominator(CDI_DOMINATORS, bbf))
+      if (! get_immediate_dominator (CDI_DOMINATORS, bbf))
 	/* If bbD was the immediate dominator ...  */
 	set_immediate_dominator (CDI_DOMINATORS, bbf, bb0);
 
@@ -920,16 +1349,29 @@ process_switch (gimple swtch)
      during gimplification).  */
   gcc_checking_assert (TREE_TYPE (info.index_expr) != error_mark_node);
 
+  /* A switch on a constant should have been optimized in tree-cfg-cleanup.  */
+  gcc_checking_assert (! TREE_CONSTANT (info.index_expr));
+
+  if (info.uniq <= MAX_CASE_BIT_TESTS)
+    {
+      if (expand_switch_using_bit_tests_p (info.range_size,
+					   info.uniq, info.count))
+	{
+	  if (dump_file)
+	    fputs ("  expanding as bit test is preferable\n", dump_file);
+	  emit_case_bit_tests (swtch, info.index_expr,
+			       info.range_min, info.range_size);
+	  return NULL;
+	}
+
+      if (info.uniq <= 2)
+	/* This will be expanded as a decision tree in stmt.c:expand_case.  */
+	return "  expanding as jumps is preferable";
+    }
+
   /* If there is no common successor, we cannot do the transformation.  */
   if (! info.final_bb)
     return "no common successor to all case label target blocks found";
-
-  if (info.uniq <= 2)
-    {
-      if (expand_switch_using_bit_tests_p (info.index_expr, info.range_size,
-					   info.uniq, info.count))
-	return "expanding as bit test is preferable";
-    }
 
   /* Check the case label values are within reasonable range:  */
   if (!check_range (&info))
@@ -999,6 +1441,11 @@ do_switchconv (void)
 		fputs ("Switch converted\n", dump_file);
 		fputs ("--------------------------------\n", dump_file);
 	      }
+
+	    /* Make no effort to update the post-dominator tree.  It is actually not
+	       that hard for the transformations we have performed, but it is not
+	       supported by iterate_fix_dominators.  */
+	    free_dominance_info (CDI_POST_DOMINATORS);
 	  }
 	else
 	  {
@@ -1039,6 +1486,8 @@ struct gimple_opt_pass pass_convert_switch =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_update_ssa 
-  | TODO_ggc_collect | TODO_verify_ssa  /* todo_flags_finish */
+  | TODO_ggc_collect | TODO_verify_ssa
+  | TODO_verify_stmts
+  | TODO_verify_flow			/* todo_flags_finish */
  }
 };
