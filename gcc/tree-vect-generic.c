@@ -768,7 +768,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	{
 	  for (i = 0; i < nunits; i++)
 	    sel[i] = !BYTES_BIG_ENDIAN + (i & ~1) + ((i & 1) ? nunits : 0);
-	  if (!can_vec_perm_p (TYPE_MODE (wider_type), false, sel))
+	  if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
 	    decl_e = decl_o = NULL_TREE;
 	}
       else

@@ -1,3 +1,9 @@
+2012-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53645
+	* tree-vect-generic.c (expand_vector_divmod): Use TYPE_MODE (type)
+	instead of TYPE_MODE (wider_type) as can_vec_perm_p argument.
+
 2012-07-01  Wei Guozhi  <carrot@google.com>
 
 	PR target/53447
