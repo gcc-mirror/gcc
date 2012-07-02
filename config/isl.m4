@@ -107,12 +107,9 @@ AC_DEFUN([ISL_REQUESTED],
 m4_define([_ISL_CHECK_CT_PROG],[AC_LANG_PROGRAM(
   [#include <isl/version.h>
    #include <string.h>],
-  [int main()
-   {
-     if (strncmp (isl_version (), "isl-0.10", strlen ("isl-$1.$2")) != 0)
-       return 1;
-     return 0;
-   }])])
+  [if (strncmp (isl_version (), "isl-$1.$2", strlen ("isl-$1.$2")) != 0)
+     return 1;
+   ])])
 
 # ISL_CHECK_VERSION ISL_CHECK_VERSION (MAJOR, MINOR)
 # ----------------------------------------------------------------

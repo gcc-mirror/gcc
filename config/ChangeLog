@@ -1,4 +1,9 @@
 2012-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* isl.m4 (_ISL_CHECK_CT_PROG): Omit main function header/footer.
+	Fix version test. 
+
+2012-07-02  Richard Guenther  <rguenther@suse.de>
 	Michael Matz  <matz@suse.de>
 	Tobias Grosser <tobias@grosser.es>
 	Sebastian Pop <sebpop@gmail.com>

@@ -5712,12 +5712,9 @@ else
 int
 main ()
 {
-int main()
-   {
-     if (strncmp (isl_version (), "isl-0.10", strlen ("isl-0.10")) != 0)
-       return 1;
-     return 0;
-   }
+if (strncmp (isl_version (), "isl-0.10", strlen ("isl-0.10")) != 0)
+     return 1;
+
   ;
   return 0;
 }
