@@ -1,3 +1,9 @@
+2012-07-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/38474
+	* ipa-prop.c (compute_known_type_jump_func): Put BINFO check before a
+	dynamic type change check.
+
 2012-07-02  Richard Guenther  <rguenther@suse.de>
 	Michael Matz  <matz@suse.de>
 	Tobias Grosser <tobias@grosser.es>
