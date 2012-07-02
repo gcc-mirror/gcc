@@ -1,3 +1,23 @@
+2012-07-02  Richard Guenther  <rguenther@suse.de>
+
+	Merge from graphite branch
+	2011-07-21  Tobias Grosser  <tobias@grosser.es>
+    
+	* configure: Regenerated.
+	* config/cloog.m4: Remove support for CLooG-ppl and CLooG-parma,
+	both cloog.org and legacy versions. The only supported version will
+	be CLooG with the isl backend.
+
+	2011-07-21  Tobias Grosser  <tobias@grosser.es>
+    
+	* configure: Regenerated.
+	* configure.ac: Require cloog isl 0.17.0
+
+	2011-07-21  Tobias Grosser  <tobias@grosser.es>
+    
+	* configure: Regenerated.
+	* config/cloog.m4: Do not define CLOOG_ORG
+
 2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* configure.ac: Skip C if explicitly selected.

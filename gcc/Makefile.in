@@ -2548,9 +2548,9 @@ graphite-clast-to-gimple.o : graphite-clast-to-gimple.c $(CONFIG_H) \
    $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \
    $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h graphite-cloog-util.h \
    $(GRAPHITE_PPL_H) graphite-poly.h graphite-clast-to-gimple.h \
-   graphite-dependences.h graphite-cloog-compat.h
+   graphite-dependences.h
 graphite-cloog-util.o : graphite-cloog-util.c $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h graphite-cloog-util.h graphite-cloog-compat.h
+   coretypes.h graphite-cloog-util.h
 graphite-dependences.o : graphite-dependences.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
    sese.h $(GRAPHITE_PPL_H) graphite-poly.h graphite-dependences.h \

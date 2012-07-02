@@ -777,7 +777,6 @@ enable_ppl_version_check
 with_cloog
 with_cloog_include
 with_cloog_lib
-enable_cloog_backend
 enable_cloog_version_check
 enable_lto
 enable_stage1_languages
@@ -1476,9 +1475,6 @@ Optional Features:
                           build stages 2 and 3 with C++, not C
   --disable-ppl-version-check
                           disable check for PPL version
-  --enable-cloog-backend[=BACKEND]
-                          set the CLooG BACKEND used to either isl, ppl or
-                          ppl-legacy (default)
   --disable-cloog-version-check
                           disable check for CLooG version
   --enable-lto            enable link time optimization support
@@ -5757,19 +5753,6 @@ if test "${with_cloog_lib+set}" = set; then :
 fi
 
 
-  # Check whether --enable-cloog-backend was given.
-if test "${enable_cloog_backend+set}" = set; then :
-  enableval=$enable_cloog_backend;  if   test "x${enableval}" = "xisl"; then
-	cloog_backend=isl
-      elif test "x${enableval}" = "xppl"; then
-	cloog_backend=ppl
-      else
-	cloog_backend=ppl-legacy
-      fi
-else
-  cloog_backend=ppl-legacy
-fi
-
   # Check whether --enable-cloog-version-check was given.
 if test "${enable_cloog_version_check+set}" = set; then :
   enableval=$enable_cloog_version_check; ENABLE_CLOOG_CHECK=$enableval
@@ -5836,54 +5819,19 @@ if test "x$with_cloog" != "xno"; then
   _cloog_saved_LDFLAGS=$LDFLAGS
   _cloog_saved_LIBS=$LIBS
 
-  _cloogorginc="-DCLOOG_INT_GMP -DCLOOG_ORG"
+  _cloogorginc="-DCLOOG_INT_GMP"
 
     CFLAGS="${CFLAGS} ${clooginc} ${gmpinc}"
   CPPFLAGS="${CPPFLAGS} ${_cloogorginc}"
   LDFLAGS="${LDFLAGS} ${clooglibs}"
 
-  case $cloog_backend in
-    "ppl-legacy")
-    CFLAGS="${CFLAGS} ${pplinc}"
-    LDFLAGS="${LDFLAGS} ${ppllibs}"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for installed CLooG PPL Legacy" >&5
-$as_echo_n "checking for installed CLooG PPL Legacy... " >&6; }
-if test "${gcc_cv_cloog_type+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  LIBS="-lcloog ${_cloog_saved_LIBS}"
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "cloog/cloog.h"
-int
-main ()
-{
-#ifndef CLOOG_PPL_BACKEND
-    choke me
-   #endif
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_cloog_type="PPL Legacy"
-else
-  gcc_cv_cloog_type=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog_type" >&5
-$as_echo "$gcc_cv_cloog_type" >&6; }
-    ;;
-    "isl")
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for installed CLooG ISL" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for installed CLooG ISL" >&5
 $as_echo_n "checking for installed CLooG ISL... " >&6; }
 if test "${gcc_cv_cloog_type+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   LIBS="-lcloog-isl ${_cloog_saved_LIBS}"
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "cloog/cloog.h"
 int
@@ -5904,57 +5852,11 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog_type" >&5
 $as_echo "$gcc_cv_cloog_type" >&6; }
-    ;;
-    "ppl")
-    CFLAGS="${CFLAGS} ${pplinc}"
-    LDFLAGS="${LDFLAGS} ${ppllibs}"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for installed CLooG PPL" >&5
-$as_echo_n "checking for installed CLooG PPL... " >&6; }
-if test "${gcc_cv_cloog_type+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  LIBS="-lcloog-ppl ${_cloog_saved_LIBS}"
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "cloog/cloog.h"
-   #include "cloog/ppl/cloog.h"
-int
-main ()
-{
-cloog_version ()
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_cloog_type="PPL"
-else
-  gcc_cv_cloog_type=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog_type" >&5
-$as_echo "$gcc_cv_cloog_type" >&6; }
-    ;;
-    *)
-      gcc_cv_cloog_type=""
-  esac
 
   case $gcc_cv_cloog_type in
-    "PPL Legacy")
-      clooginc="${clooginc}"
-      clooglibs="${clooglibs} -lcloog"
-      cloog_org=no
-      ;;
     "ISL")
       clooginc="${clooginc} ${_cloogorginc}"
       clooglibs="${clooglibs} -lcloog-isl -lisl"
-      cloog_org=yes
-      ;;
-    "PPL")
-      clooginc="${clooginc} ${_cloogorginc}"
-      clooglibs="${clooglibs} -lcloog-ppl"
       cloog_org=yes
       ;;
     *)
@@ -5980,10 +5882,9 @@ $as_echo "$gcc_cv_cloog_type" >&6; }
     CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${pplinc} ${gmpinc}"
     LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${ppllibs}"
 
-    if test "${cloog_org}" = yes ; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.16.1 of CLooG" >&5
-$as_echo_n "checking for version 0.16.1 of CLooG... " >&6; }
-if test "${gcc_cv_cloog_ct_0_14_0+set}" = set; then :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.17.0 of CLooG" >&5
+$as_echo_n "checking for version 0.17.0 of CLooG... " >&6; }
+if test "${gcc_cv_cloog+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -5993,8 +5894,8 @@ int
 main ()
 {
 #if CLOOG_VERSION_MAJOR != 0 \
-    || CLOOG_VERSION_MINOR != 16 \
-    || CLOOG_VERSION_REVISION < 1
+    || CLOOG_VERSION_MINOR != 17 \
+    || CLOOG_VERSION_REVISION < 0
     choke me
    #endif
   ;
@@ -6002,65 +5903,14 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  gcc_cv_cloog_ct_0_14_0=yes
+  gcc_cv_cloog=yes
 else
-  gcc_cv_cloog_ct_0_14_0=no
+  gcc_cv_cloog=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog_ct_0_14_0" >&5
-$as_echo "$gcc_cv_cloog_ct_0_14_0" >&6; }
-    elif test "${cloog_org}" = no ; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.15.5 (or later revision) of CLooG" >&5
-$as_echo_n "checking for version 0.15.5 (or later revision) of CLooG... " >&6; }
-if test "${gcc_cv_cloog_ct_0_15_5+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "cloog/cloog.h"
-int
-main ()
-{
-#if CLOOG_VERSION_MAJOR != 0 \
-    || CLOOG_VERSION_MINOR != 15 \
-    || CLOOG_VERSION_REVISION < 5
-    choke me
-   #endif
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "cloog/cloog.h"
-int
-main ()
-{
-#if CLOOG_VERSION_MAJOR != 0 \
-    || CLOOG_VERSION_MINOR != 15 \
-    || CLOOG_VERSION_REVISION < 9
-    choke me
-   #endif
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  gcc_cv_cloog_ct_0_15_5=yes
-else
-  gcc_cv_cloog_ct_0_15_5="buggy but acceptable"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-else
-  gcc_cv_cloog_ct_0_15_5=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog_ct_0_15_5" >&5
-$as_echo "$gcc_cv_cloog_ct_0_15_5" >&6; }
-    fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog" >&5
+$as_echo "$gcc_cv_cloog" >&6; }
 
     CFLAGS=$_cloog_saved_CFLAGS
     LDFLAGS=$_cloog_saved_LDFLAGS
@@ -6084,9 +5934,7 @@ $as_echo "$gcc_cv_cloog_ct_0_15_5" >&6; }
 
 
 
-  if test "${gcc_cv_cloog_ct_0_14_0}" = no \
-    || test "${gcc_cv_cloog_rt_0_14_0}" = no \
-    || test "${gcc_cv_cloog_ct_0_15_5}" = no; then
+  if test "${gcc_cv_cloog}" = no ; then
     clooglibs=
     clooginc=
   fi

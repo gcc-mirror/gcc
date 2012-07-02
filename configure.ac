@@ -1623,7 +1623,7 @@ if test "x$with_cloog" != "xno"; then
   dnl
   dnl If we use CLooG-Legacy, the provided version information is
   dnl ignored.
-  CLOOG_CHECK_VERSION(0,16,1)
+  CLOOG_CHECK_VERSION(0,17,0)
 
   dnl Only execute fail-action, if CLooG has been requested.
   CLOOG_IF_FAILED([
