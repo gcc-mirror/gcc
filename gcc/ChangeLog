@@ -1,3 +1,21 @@
+2012-07-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/predicates.md (t_reg_operand, negt_reg_operand): New
+	predicates.
+	* config/sh/sh-protos.h (get_t_reg_rtx): New prototype.
+	* config/sh/sh.c (get_t_reg_rtx): New function.  Use it when invoking
+	gen_branch_true and gen_branch_false.
+	* config/sh/sh.md: Use get_t_reg_rtx when invoking gen_branch_true and
+	gen_branch_false.
+	(branch_true, branch_false): Use t_reg_operand predicate.
+	(*branch_true, *branch_false): Delete.
+	(movt): Use t_reg_operand predicate.
+	(*negnegt): Use negt_reg_operand predicate and fold little and big
+	endian variants.
+	(*movtt): Use t_reg_operand and fold little and big endian variants.
+	(*movt_qi): Delete.
+
 2012-07-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* stmt.c (emit_case_bit_tests): Remove.
