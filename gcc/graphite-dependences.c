@@ -1,5 +1,5 @@
 /* Data dependence analysis for Graphite.
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Konrad Trifunovic <konrad.trifunovic@inria.fr>.
 
@@ -20,6 +20,17 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+
+#ifdef HAVE_cloog
+#include <isl/set.h>
+#include <isl/map.h>
+#include <isl/union_map.h>
+#include <isl/flow.h>
+#include <isl/constraint.h>
+#include <cloog/cloog.h>
+#include <cloog/isl/domain.h>
+#endif
+
 #include "system.h"
 #include "coretypes.h"
 #include "tree-flow.h"
@@ -31,904 +42,556 @@ along with GCC; see the file COPYING3.  If not see
 #include "sese.h"
 
 #ifdef HAVE_cloog
-#include "ppl_c.h"
-#include "graphite-ppl.h"
 #include "graphite-poly.h"
-#include "graphite-dependences.h"
-#include "graphite-cloog-util.h"
 
-/* Comparison function for poly_ddr hash table.  */
+/* Add the constraints from the set S to the domain of MAP.  */
 
-int
-eq_poly_ddr_p (const void *pddr1, const void *pddr2)
+static isl_map *
+constrain_domain (isl_map *map, isl_set *s)
 {
-  const struct poly_ddr *p1 = (const struct poly_ddr *) pddr1;
-  const struct poly_ddr *p2 = (const struct poly_ddr *) pddr2;
+  isl_space *d = isl_map_get_space (map);
+  isl_id *id = isl_space_get_tuple_id (d, isl_dim_in);
 
-  return (PDDR_SOURCE (p1) == PDDR_SOURCE (p2)
-          && PDDR_SINK (p1) == PDDR_SINK (p2));
+  s = isl_set_set_tuple_id (s, id);
+  isl_space_free (d);
+  return isl_map_intersect_domain (map, s);
 }
 
-/* Hash function for poly_ddr hashtable.  */
+/* Constrain pdr->accesses with pdr->extent and pbb->domain.  */
 
-hashval_t
-hash_poly_ddr_p (const void *pddr)
+static isl_map *
+add_pdr_constraints (poly_dr_p pdr, poly_bb_p pbb)
 {
-  const struct poly_ddr *p = (const struct poly_ddr *) pddr;
-
-  return (hashval_t) ((long) PDDR_SOURCE (p) + (long) PDDR_SINK (p));
+  isl_map *x = isl_map_intersect_range (isl_map_copy (pdr->accesses),
+					isl_set_copy (pdr->extent));
+  x = constrain_domain (x, isl_set_copy (pbb->domain));
+  return x;
 }
 
-/* Returns true when PDDR has no dependence.  */
+/* Returns all the memory reads in SCOP.  */
 
-static bool
-pddr_is_empty (poly_ddr_p pddr)
-{
-  if (!pddr)
-    return true;
-
-  gcc_assert (PDDR_KIND (pddr) != unknown_dependence);
-
-  return PDDR_KIND (pddr) == no_dependence ? true : false;
-}
-
-/* Prints to FILE the layout of the dependence polyhedron of PDDR:
-
-   T1|I1|T2|I2|S1|S2|G
-
-   with
-   | T1 and T2 the scattering dimensions for PDDR_SOURCE and PDDR_SINK
-   | I1 and I2 the iteration domains
-   | S1 and S2 the subscripts
-   | G the global parameters.  */
-
-static void
-print_dependence_polyhedron_layout (FILE *file, poly_ddr_p pddr)
-{
-  poly_dr_p pdr1 = PDDR_SOURCE (pddr);
-  poly_dr_p pdr2 = PDDR_SINK (pddr);
-  poly_bb_p pbb1 = PDR_PBB (pdr1);
-  poly_bb_p pbb2 = PDR_PBB (pdr2);
-
-  graphite_dim_t i;
-  graphite_dim_t tdim1 = PDDR_ORIGINAL_SCATTERING_P (pddr) ?
-    pbb_nb_scattering_orig (pbb1) : pbb_nb_scattering_transform (pbb1);
-  graphite_dim_t tdim2 = PDDR_ORIGINAL_SCATTERING_P (pddr) ?
-    pbb_nb_scattering_orig (pbb2) : pbb_nb_scattering_transform (pbb2);
-  graphite_dim_t idim1 = pbb_dim_iter_domain (pbb1);
-  graphite_dim_t idim2 = pbb_dim_iter_domain (pbb2);
-  graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
-  graphite_dim_t sdim2 = PDR_NB_SUBSCRIPTS (pdr2) + 1;
-  graphite_dim_t gdim = scop_nb_params (PBB_SCOP (pbb1));
-
-  fprintf (file, "#  eq");
-
-  for (i = 0; i < tdim1; i++)
-    fprintf (file, "   t1_%d", (int) i);
-  for (i = 0; i < idim1; i++)
-    fprintf (file, "   i1_%d", (int) i);
-  for (i = 0; i < tdim2; i++)
-    fprintf (file, "   t2_%d", (int) i);
-  for (i = 0; i < idim2; i++)
-    fprintf (file, "   i2_%d", (int) i);
-  for (i = 0; i < sdim1; i++)
-    fprintf (file, "   s1_%d", (int) i);
-  for (i = 0; i < sdim2; i++)
-    fprintf (file, "   s2_%d", (int) i);
-  for (i = 0; i < gdim; i++)
-    fprintf (file, "    g_%d", (int) i);
-
-  fprintf (file, "    cst\n");
-}
-
-/* Prints to FILE the poly_ddr_p PDDR.  */
-
-void
-print_pddr (FILE *file, poly_ddr_p pddr)
-{
-  fprintf (file, "pddr (kind: ");
-
-  if (PDDR_KIND (pddr) == unknown_dependence)
-    fprintf (file, "unknown_dependence");
-  else if (PDDR_KIND (pddr) == no_dependence)
-    fprintf (file, "no_dependence");
-  else if (PDDR_KIND (pddr) == has_dependence)
-    fprintf (file, "has_dependence");
-
-  fprintf (file, "\n  source ");
-  print_pdr (file, PDDR_SOURCE (pddr), 2);
-
-  fprintf (file, "\n  sink ");
-  print_pdr (file, PDDR_SINK (pddr), 2);
-
-  if (PDDR_KIND (pddr) == has_dependence)
-    {
-      fprintf (file, "\n  dependence polyhedron (\n");
-      print_dependence_polyhedron_layout (file, pddr);
-      ppl_print_powerset_matrix (file, PDDR_DDP (pddr));
-      ppl_io_fprint_Pointset_Powerset_C_Polyhedron (file, PDDR_DDP (pddr));
-      fprintf (file, ")\n");
-    }
-
-  fprintf (file, ")\n");
-}
-
-/* Prints to STDERR the poly_ddr_p PDDR.  */
-
-DEBUG_FUNCTION void
-debug_pddr (poly_ddr_p pddr)
-{
-  print_pddr (stderr, pddr);
-}
-
-
-/* Remove all the dimensions except alias information at dimension
-   ALIAS_DIM.  */
-
-static void
-build_alias_set_powerset (ppl_Pointset_Powerset_C_Polyhedron_t alias_powerset,
-			  ppl_dimension_type alias_dim)
-{
-  ppl_dimension_type *ds;
-  ppl_dimension_type access_dim;
-  unsigned i, pos;
-
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (alias_powerset,
-						      &access_dim);
-  ds = XNEWVEC (ppl_dimension_type, access_dim - 1);
-  gcc_assert (alias_dim < access_dim);
-
-  for (pos = 0, i = 0; i < access_dim; i++)
-    if (i != alias_dim)
-      ds[pos++] = i;
-
-  ppl_Pointset_Powerset_C_Polyhedron_remove_space_dimensions (alias_powerset,
-							      ds,
-							      access_dim - 1);
-  free (ds);
-}
-
-/* Return true when PDR1 and PDR2 may alias.  */
-
-static bool
-poly_drs_may_alias_p (poly_dr_p pdr1, poly_dr_p pdr2)
-{
-  ppl_Pointset_Powerset_C_Polyhedron_t alias_powerset1, alias_powerset2;
-  ppl_Pointset_Powerset_C_Polyhedron_t accesses1 = PDR_ACCESSES (pdr1);
-  ppl_Pointset_Powerset_C_Polyhedron_t accesses2 = PDR_ACCESSES (pdr2);
-  ppl_dimension_type alias_dim1 = pdr_alias_set_dim (pdr1);
-  ppl_dimension_type alias_dim2 = pdr_alias_set_dim (pdr2);
-  int empty_p;
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&alias_powerset1, accesses1);
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&alias_powerset2, accesses2);
-
-  build_alias_set_powerset (alias_powerset1, alias_dim1);
-  build_alias_set_powerset (alias_powerset2, alias_dim2);
-
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
-    (alias_powerset1, alias_powerset2);
-
-  empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (alias_powerset1);
-
-  ppl_delete_Pointset_Powerset_C_Polyhedron (alias_powerset1);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (alias_powerset2);
-
-  return !empty_p;
-}
-
-/* Swap [cut0, ..., cut1] to the end of DR: "a CUT0 b CUT1 c" is
-   transformed into "a CUT0 c CUT1' b"
-
-   Add NB0 zeros before "a":  "00...0 a CUT0 c CUT1' b"
-   Add NB1 zeros between "a" and "c":  "00...0 a 00...0 c CUT1' b"
-   Add DIM - NB0 - NB1 - PDIM zeros between "c" and "b":
-   "00...0 a 00...0 c 00...0 b".  */
-
-static ppl_Pointset_Powerset_C_Polyhedron_t
-map_dr_into_dep_poly (graphite_dim_t dim,
-		      ppl_Pointset_Powerset_C_Polyhedron_t dr,
-		      graphite_dim_t cut0, graphite_dim_t cut1,
-		      graphite_dim_t nb0, graphite_dim_t nb1)
-{
-  ppl_dimension_type pdim;
-  ppl_dimension_type *map;
-  ppl_Pointset_Powerset_C_Polyhedron_t res;
-  ppl_dimension_type i;
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&res, dr);
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (res, &pdim);
-
-  map = (ppl_dimension_type *) XNEWVEC (ppl_dimension_type, pdim);
-
-  /* First mapping: move 'g' vector to right position.  */
-  for (i = 0; i < cut0; i++)
-    map[i] = i;
-
-  for (i = cut0; i < cut1; i++)
-    map[i] = pdim - cut1 + i;
-
-  for (i = cut1; i < pdim; i++)
-    map[i] = cut0 + i - cut1;
-
-  ppl_Pointset_Powerset_C_Polyhedron_map_space_dimensions (res, map, pdim);
-  free (map);
-
-  /* After swapping 's' and 'g' vectors, we have to update a new cut.  */
-  cut1 = pdim - cut1 + cut0;
-
-  ppl_insert_dimensions_pointset (res, 0, nb0);
-  ppl_insert_dimensions_pointset (res, nb0 + cut0, nb1);
-  ppl_insert_dimensions_pointset (res, nb0 + nb1 + cut1,
-				  dim - nb0 - nb1 - pdim);
-
-  return res;
-}
-
-/* Builds subscript equality constraints.  */
-
-static ppl_Pointset_Powerset_C_Polyhedron_t
-dr_equality_constraints (graphite_dim_t dim,
-		         graphite_dim_t pos, graphite_dim_t nb_subscripts)
-{
-  ppl_Polyhedron_t eqs;
-  ppl_Pointset_Powerset_C_Polyhedron_t res;
-  graphite_dim_t i;
-
-  ppl_new_C_Polyhedron_from_space_dimension (&eqs, dim, 0);
-
-  for (i = 0; i < nb_subscripts; i++)
-    {
-      ppl_Constraint_t cstr
-	= ppl_build_relation (dim, pos + i, pos + i + nb_subscripts,
-			      0, PPL_CONSTRAINT_TYPE_EQUAL);
-      ppl_Polyhedron_add_constraint (eqs, cstr);
-      ppl_delete_Constraint (cstr);
-    }
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&res, eqs);
-  ppl_delete_Polyhedron (eqs);
-  return res;
-}
-
-/* Builds scheduling inequality constraints: when DIRECTION is
-   1 builds a GE constraint,
-   0 builds an EQ constraint,
-   -1 builds a LE constraint.
-   DIM is the dimension of the scheduling space.
-   POS and POS + OFFSET are the dimensions that are related.  */
-
-static ppl_Pointset_Powerset_C_Polyhedron_t
-build_pairwise_scheduling (graphite_dim_t dim,
-			   graphite_dim_t pos,
-			   graphite_dim_t offset,
-			   int direction)
-{
-  ppl_Pointset_Powerset_C_Polyhedron_t res;
-  ppl_Polyhedron_t equalities;
-  ppl_Constraint_t cstr;
-  graphite_dim_t a = pos;
-  graphite_dim_t b = pos + offset;
-
-  ppl_new_C_Polyhedron_from_space_dimension (&equalities, dim, 0);
-
-  switch (direction)
-    {
-    case 1:
-      /* Builds "a + 1 <= b.  */
-      cstr = ppl_build_relation (dim, a, b, 1,
-				 PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
-      break;
-
-    case 0:
-      /* Builds "a = b.  */
-      cstr = ppl_build_relation (dim, a, b, 0,
-				 PPL_CONSTRAINT_TYPE_EQUAL);
-      break;
-
-    case -1:
-      /* Builds "a >= b + 1.  */
-      cstr = ppl_build_relation (dim, a, b, -1,
-				 PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  ppl_Polyhedron_add_constraint (equalities, cstr);
-  ppl_delete_Constraint (cstr);
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&res, equalities);
-  ppl_delete_Polyhedron (equalities);
-  return res;
-}
-
-/* Add to a non empty polyhedron BAG the precedence constraints for
-   the lexicographical comparison of time vectors in BAG following the
-   lexicographical order.  DIM is the dimension of the polyhedron BAG.
-   TDIM is the number of loops common to the two statements that are
-   compared lexicographically, i.e. the number of loops containing
-   both statements.  OFFSET is the number of dimensions needed to
-   represent the first statement, i.e. dimT1 + dimI1 in the layout of
-   the BAG polyhedron: T1|I1|T2|I2|S1|S2|G.  When DIRECTION is set to
-   1, compute the direct dependence from PDR1 to PDR2, and when
-   DIRECTION is -1, compute the reversed dependence relation, from
-   PDR2 to PDR1.  */
-
-static ppl_Pointset_Powerset_C_Polyhedron_t
-build_lexicographical_constraint (ppl_Pointset_Powerset_C_Polyhedron_t bag,
-				  graphite_dim_t dim,
-				  graphite_dim_t tdim,
-				  graphite_dim_t offset,
-				  int direction)
-{
-  graphite_dim_t i;
-  ppl_Pointset_Powerset_C_Polyhedron_t res, lex;
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&res, dim, 1);
-
-  lex = build_pairwise_scheduling (dim, 0, offset, direction);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (lex, bag);
-
-  if (!ppl_powerset_is_empty (lex))
-    ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (res, lex);
-
-  ppl_delete_Pointset_Powerset_C_Polyhedron (lex);
-
-  for (i = 0; i < tdim - 1; i++)
-    {
-      ppl_Pointset_Powerset_C_Polyhedron_t sceq;
-
-      sceq = build_pairwise_scheduling (dim, i, offset, 0);
-      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (bag, sceq);
-      ppl_delete_Pointset_Powerset_C_Polyhedron (sceq);
-
-      if (ppl_powerset_is_empty (bag))
-	break;
-
-      lex = build_pairwise_scheduling (dim, i + 1, offset, direction);
-      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (lex, bag);
-
-      if (!ppl_powerset_is_empty (lex))
-	ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (res, lex);
-
-      ppl_delete_Pointset_Powerset_C_Polyhedron (lex);
-    }
-
-  return res;
-}
-
-/* Build the dependence polyhedron for data references PDR1 and PDR2.
-   The layout of the dependence polyhedron is:
-
-   T1|I1|T2|I2|S1|S2|G
-
-   with
-   | T1 and T2 the scattering dimensions for PDR1 and PDR2
-   | I1 and I2 the iteration domains
-   | S1 and S2 the subscripts
-   | G the global parameters.
-
-   When DIRECTION is set to 1, compute the direct dependence from PDR1
-   to PDR2, and when DIRECTION is -1, compute the reversed dependence
-   relation, from PDR2 to PDR1.  */
-
-static ppl_Pointset_Powerset_C_Polyhedron_t
-dependence_polyhedron (poly_dr_p pdr1, poly_dr_p pdr2,
-		       int direction, bool original_scattering_p)
-{
-  poly_bb_p pbb1 = PDR_PBB (pdr1);
-  poly_bb_p pbb2 = PDR_PBB (pdr2);
-  scop_p scop = PBB_SCOP (pbb1);
-  graphite_dim_t tdim1 = original_scattering_p ?
-    pbb_nb_scattering_orig (pbb1) : pbb_nb_scattering_transform (pbb1);
-  graphite_dim_t tdim2 = original_scattering_p ?
-    pbb_nb_scattering_orig (pbb2) : pbb_nb_scattering_transform (pbb2);
-  graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb1);
-  graphite_dim_t ddim2 = pbb_dim_iter_domain (pbb2);
-  graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
-  graphite_dim_t sdim2 = PDR_NB_SUBSCRIPTS (pdr2) + 1;
-  graphite_dim_t gdim = scop_nb_params (scop);
-  graphite_dim_t dim1 = pdr_dim (pdr1);
-  graphite_dim_t dim2 = pdr_dim (pdr2);
-  graphite_dim_t dim = tdim1 + tdim2 + dim1 + dim2 - gdim;
-  ppl_Pointset_Powerset_C_Polyhedron_t res;
-  ppl_Pointset_Powerset_C_Polyhedron_t idr1, idr2;
-  ppl_Pointset_Powerset_C_Polyhedron_t sc1, sc2, dreq;
-  ppl_Pointset_Powerset_C_Polyhedron_t lex;
-
-  gcc_assert (PBB_SCOP (pbb1) == PBB_SCOP (pbb2));
-
-  combine_context_id_scat (&sc1, pbb1, original_scattering_p);
-  combine_context_id_scat (&sc2, pbb2, original_scattering_p);
-
-  ppl_insert_dimensions_pointset (sc1, tdim1 + ddim1,
-				  tdim2 + ddim2 + sdim1 + sdim2);
-
-  ppl_insert_dimensions_pointset (sc2, 0, tdim1 + ddim1);
-  ppl_insert_dimensions_pointset (sc2, tdim1 + ddim1 + tdim2 + ddim2,
-				  sdim1 + sdim2);
-
-  idr1 = map_dr_into_dep_poly (dim, PDR_ACCESSES (pdr1), ddim1, ddim1 + gdim,
-			       tdim1, tdim2 + ddim2);
-  idr2 = map_dr_into_dep_poly (dim, PDR_ACCESSES (pdr2), ddim2, ddim2 + gdim,
-			       tdim1 + ddim1 + tdim2, sdim1);
-
-  /* Now add the subscript equalities.  */
-  dreq = dr_equality_constraints (dim, tdim1 + ddim1 + tdim2 + ddim2, sdim1);
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&res, dim, 0);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, sc1);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, sc2);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, idr1);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, idr2);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, dreq);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (sc1);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (sc2);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (idr1);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (idr2);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (dreq);
-
-  if (ppl_powerset_is_empty (res))
-    return NULL;
-
-  lex = build_lexicographical_constraint (res, dim, MIN (tdim1, tdim2),
-					  tdim1 + ddim1, direction);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (res);
-
-  return lex;
-}
-
-/* Build the dependence polyhedron for data references PDR1 and PDR2.
-   If possible use already cached information.
-
-   When DIRECTION is set to 1, compute the direct dependence from PDR1
-   to PDR2, and when DIRECTION is -1, compute the reversed dependence
-   relation, from PDR2 to PDR1.  */
-
-static poly_ddr_p
-new_poly_ddr (poly_dr_p pdr1, poly_dr_p pdr2,
-	      int direction, bool original_scattering_p)
-{
-  PTR *x = NULL;
-  poly_ddr_p res;
-  bool may_alias;
-
-  /* Return the PDDR from the cache if it already has been computed.  */
-  if (original_scattering_p)
-    {
-      struct poly_ddr tmp;
-      scop_p scop = PBB_SCOP (PDR_PBB (pdr1));
-
-      tmp.source = pdr1;
-      tmp.sink = pdr2;
-      x = htab_find_slot (SCOP_ORIGINAL_PDDRS (scop),
-                          &tmp, INSERT);
-
-      if (x && *x)
-	return (poly_ddr_p) *x;
-    }
-
-  res = XNEW (struct poly_ddr);
-  PDDR_SOURCE (res) = pdr1;
-  PDDR_SINK (res) = pdr2;
-  PDDR_DDP (res) = NULL;
-  PDDR_ORIGINAL_SCATTERING_P (res) = original_scattering_p;
-  PDDR_KIND (res) = unknown_dependence;
-
-  may_alias = poly_drs_may_alias_p (pdr1, pdr2);
-
-  if (!(pdr_read_p (pdr1) && pdr_read_p (pdr2))
-      && PDR_BASE_OBJECT_SET (pdr1) != PDR_BASE_OBJECT_SET (pdr2)
-      && may_alias)
-    PDDR_KIND (res) = unknown_dependence;
-
-  else if (!(pdr_read_p (pdr1) && pdr_read_p (pdr2))
-	   && same_pdr_p (pdr1, pdr2)
-	   && may_alias)
-    {
-      PDDR_DDP (res) = dependence_polyhedron (pdr1, pdr2, direction,
-					      original_scattering_p);
-      if (PDDR_DDP (res))
-	PDDR_KIND (res) = has_dependence;
-      else
-	PDDR_KIND (res) = no_dependence;
-    }
-  else
-    PDDR_KIND (res) = no_dependence;
-
-  if (original_scattering_p)
-    *x = res;
-
-  return res;
-}
-
-/* Free the data dependence relation poly_ddr_p P.  */
-
-void
-free_poly_ddr (void *p)
-{
-  poly_ddr_p pddr = (poly_ddr_p) p;
-  ppl_delete_Pointset_Powerset_C_Polyhedron (PDDR_DDP (pddr));
-  free (pddr);
-}
-
-/* Return true when the data dependence relation between the data
-   references PDR1 belonging to PBB1 and PDR2 is part of a
-   reduction.  */
-
-static inline bool
-reduction_dr_1 (poly_bb_p pbb1, poly_dr_p pdr1, poly_dr_p pdr2)
-{
-  int i;
-  poly_dr_p pdr;
-
-  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), i, pdr)
-    if (PDR_TYPE (pdr) == PDR_WRITE
-	&& same_pdr_p (pdr, pdr1) && same_pdr_p (pdr, pdr2))
-      return true;
-
-  return false;
-}
-
-/* Return true when the data dependence relation between the data
-   references PDR1 belonging to PBB1 and PDR2 belonging to PBB2 is
-   part of a reduction.  */
-
-static inline bool
-reduction_dr_p (poly_dr_p pdr1, poly_dr_p pdr2)
-{
-  poly_bb_p pbb1 = PDR_PBB (pdr1);
-  poly_bb_p pbb2 = PDR_PBB (pdr2);
-
-  if (PBB_IS_REDUCTION (pbb1))
-    return reduction_dr_1 (pbb1, pdr1, pdr2);
-
-  if (PBB_IS_REDUCTION (pbb2))
-    return reduction_dr_1 (pbb2, pdr2, pdr1);
-
-  return false;
-}
-
-/* Returns true when the PBB_TRANSFORMED_SCATTERING functions of PBB1
-   and PBB2 respect the data dependences of PBB_ORIGINAL_SCATTERING
-   functions.  */
-
-static bool
-graphite_legal_transform_dr (poly_dr_p pdr1, poly_dr_p pdr2)
-{
-  ppl_Pointset_Powerset_C_Polyhedron_t po, pt;
-  graphite_dim_t ddim1, otdim1, otdim2, ttdim1, ttdim2;
-  ppl_Pointset_Powerset_C_Polyhedron_t po_temp;
-  ppl_dimension_type pdim;
-  bool is_empty_p;
-  poly_ddr_p opddr, tpddr;
-  poly_bb_p pbb1, pbb2;
-
-  if (reduction_dr_p (pdr1, pdr2))
-    return true;
-
-  /* We build the reverse dependence relation for the transformed
-     scattering, such that when we intersect it with the original PO,
-     we get an empty intersection when the transform is legal:
-     i.e. the transform should reverse no dependences, and so PT, the
-     reversed transformed PDDR, should have no constraint from PO.  */
-  opddr = new_poly_ddr (pdr1, pdr2, 1, true);
-
-  if (PDDR_KIND (opddr) == unknown_dependence)
-    return false;
-
-    /* There are no dependences between PDR1 and PDR2 in the original
-       version of the program, or after the transform, so the
-       transform is legal.  */
-  if (pddr_is_empty (opddr))
-    return true;
-
-  tpddr = new_poly_ddr (pdr1, pdr2, -1, false);
-
-  if (PDDR_KIND (tpddr) == unknown_dependence)
-    {
-      free_poly_ddr (tpddr);
-      return false;
-    }
-
-  if (pddr_is_empty (tpddr))
-    {
-      free_poly_ddr (tpddr);
-      return true;
-    }
-
-  po = PDDR_DDP (opddr);
-  pt = PDDR_DDP (tpddr);
-
-  /* Copy PO into PO_TEMP, such that PO is not destroyed.  PO is
-     stored in a cache and should not be modified or freed.  */
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &pdim);
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&po_temp,
-							       pdim, 0);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (po_temp, po);
-
-  /* Extend PO and PT to have the same dimensions.  */
-  pbb1 = PDR_PBB (pdr1);
-  pbb2 = PDR_PBB (pdr2);
-  ddim1 = pbb_dim_iter_domain (pbb1);
-  otdim1 = pbb_nb_scattering_orig (pbb1);
-  otdim2 = pbb_nb_scattering_orig (pbb2);
-  ttdim1 = pbb_nb_scattering_transform (pbb1);
-  ttdim2 = pbb_nb_scattering_transform (pbb2);
-  ppl_insert_dimensions_pointset (po_temp, otdim1, ttdim1);
-  ppl_insert_dimensions_pointset (po_temp, otdim1 + ttdim1 + ddim1 + otdim2,
-				  ttdim2);
-  ppl_insert_dimensions_pointset (pt, 0, otdim1);
-  ppl_insert_dimensions_pointset (pt, otdim1 + ttdim1 + ddim1, otdim2);
-
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (po_temp, pt);
-  is_empty_p = ppl_powerset_is_empty (po_temp);
-
-  ppl_delete_Pointset_Powerset_C_Polyhedron (po_temp);
-  free_poly_ddr (tpddr);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\nloop carries dependency.\n");
-
-  return is_empty_p;
-}
-
-/* Return true when the data dependence relation for PBB1 and PBB2 is
-   part of a reduction.  */
-
-static inline bool
-reduction_ddr_p (poly_bb_p pbb1, poly_bb_p pbb2)
-{
-  return pbb1 == pbb2 && PBB_IS_REDUCTION (pbb1);
-}
-
-/* Iterates over the data references of PBB1 and PBB2 and detect
-   whether the transformed schedule is correct.  */
-
-static bool
-graphite_legal_transform_bb (poly_bb_p pbb1, poly_bb_p pbb2)
+static isl_union_map *
+scop_get_reads (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
 {
   int i, j;
-  poly_dr_p pdr1, pdr2;
+  poly_bb_p pbb;
+  poly_dr_p pdr;
+  isl_space *space = isl_set_get_space (scop->context);
+  isl_union_map *res = isl_union_map_empty (space);
 
-  if (!PBB_PDR_DUPLICATES_REMOVED (pbb1))
-    pbb_remove_duplicate_pdrs (pbb1);
+  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+    {
+      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+	if (pdr_read_p (pdr))
+	  res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+    }
 
-  if (!PBB_PDR_DUPLICATES_REMOVED (pbb2))
-    pbb_remove_duplicate_pdrs (pbb2);
-
-  if (reduction_ddr_p (pbb1, pbb2))
-    return true;
-
-  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), i, pdr1)
-    FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), j, pdr2)
-      if (!graphite_legal_transform_dr (pdr1, pdr2))
-	return false;
-
-  return true;
+  return res;
 }
 
-/* Iterates over the SCOP and detect whether the transformed schedule
-   is correct.  */
+/* Returns all the memory must writes in SCOP.  */
+
+static isl_union_map *
+scop_get_must_writes (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
+{
+  int i, j;
+  poly_bb_p pbb;
+  poly_dr_p pdr;
+  isl_space *space = isl_set_get_space (scop->context);
+  isl_union_map *res = isl_union_map_empty (space);
+
+  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+    {
+      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+	if (pdr_write_p (pdr))
+	  res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+    }
+
+  return res;
+}
+
+/* Returns all the memory may writes in SCOP.  */
+
+static isl_union_map *
+scop_get_may_writes (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
+{
+  int i, j;
+  poly_bb_p pbb;
+  poly_dr_p pdr;
+  isl_space *space = isl_set_get_space (scop->context);
+  isl_union_map *res = isl_union_map_empty (space);
+
+  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+    {
+      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+	if (pdr_may_write_p (pdr))
+	  res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+    }
+
+  return res;
+}
+
+/* Returns all the original schedules in SCOP.  */
+
+static isl_union_map *
+scop_get_original_schedule (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
+{
+  int i;
+  poly_bb_p pbb;
+  isl_space *space = isl_set_get_space (scop->context);
+  isl_union_map *res = isl_union_map_empty (space);
+
+  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+    {
+      res = isl_union_map_add_map
+	(res, constrain_domain (isl_map_copy (pbb->schedule),
+				isl_set_copy (pbb->domain)));
+    }
+
+  return res;
+}
+
+/* Returns all the transformed schedules in SCOP.  */
+
+static isl_union_map *
+scop_get_transformed_schedule (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
+{
+  int i;
+  poly_bb_p pbb;
+  isl_space *space = isl_set_get_space (scop->context);
+  isl_union_map *res = isl_union_map_empty (space);
+
+  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+    {
+      res = isl_union_map_add_map
+	(res, constrain_domain (isl_map_copy (pbb->transformed),
+				isl_set_copy (pbb->domain)));
+    }
+
+  return res;
+}
+
+/* Helper function used on each MAP of a isl_union_map.  Computes the
+   maximal output dimension.  */
+
+static int
+max_number_of_out_dimensions (__isl_take isl_map *map, void *user)
+{
+  int global_max = *((int *) user);
+  isl_space *space = isl_map_get_space (map);
+  int nb_out = isl_space_dim (space, isl_dim_out);
+
+  if (global_max < nb_out)
+    *((int *) user) = nb_out;
+
+  isl_map_free (map);
+  isl_space_free (space);
+  return 0;
+}
+
+/* Extends the output dimension of MAP to MAX dimensions.  */
+
+static __isl_give isl_map *
+extend_map (__isl_take isl_map *map, int max)
+{
+  isl_space *space = isl_map_get_space (map);
+  int n = isl_space_dim (space, isl_dim_out);
+
+  isl_space_free (space);
+  return isl_map_add_dims (map, isl_dim_out, max - n);
+}
+
+/* Structure used to pass parameters to extend_schedule_1.  */
+
+struct extend_schedule_str {
+  int max;
+  isl_union_map *umap;
+};
+
+/* Helper function for extend_schedule.  */
+
+static int
+extend_schedule_1 (__isl_take isl_map *map, void *user)
+{
+  struct extend_schedule_str *str = (struct extend_schedule_str *) user;
+  str->umap = isl_union_map_add_map (str->umap, extend_map (map, str->max));
+  return 0;
+}
+
+/* Return a relation that has uniform output dimensions.  */
+
+__isl_give isl_union_map *
+extend_schedule (__isl_take isl_union_map *x)
+{
+  int max = 0;
+  int res;
+  struct extend_schedule_str str;
+
+  res = isl_union_map_foreach_map (x, max_number_of_out_dimensions, (void *) &max);
+  gcc_assert (res == 0);
+
+  str.max = max;
+  str.umap = isl_union_map_empty (isl_union_map_get_space (x));
+  res = isl_union_map_foreach_map (x, extend_schedule_1, (void *) &str);
+  gcc_assert (res == 0);
+
+  isl_union_map_free (x);
+  return str.umap;
+}
+
+/* Applies SCHEDULE to the in and out dimensions of the dependences
+   DEPS and return the resulting relation.  */
+
+static isl_map *
+apply_schedule_on_deps (__isl_keep isl_union_map *schedule,
+			__isl_keep isl_union_map *deps)
+{
+  isl_map *x;
+  isl_union_map *ux, *trans;
+
+  trans = isl_union_map_copy (schedule);
+  trans = extend_schedule (trans);
+  ux = isl_union_map_copy (deps);
+  ux = isl_union_map_apply_domain (ux, isl_union_map_copy (trans));
+  ux = isl_union_map_apply_range (ux, trans);
+  x = isl_map_from_union_map (ux);
+
+  return x;
+}
+
+/* Return true when SCHEDULE does not violate the data DEPS: that is
+   when the intersection of LEX with the DEPS transformed by SCHEDULE
+   is empty.  LEX is the relation in which the outputs occur before
+   the inputs.  */
+
+static bool
+no_violations (__isl_keep isl_union_map *schedule,
+	       __isl_keep isl_union_map *deps)
+{
+  bool res;
+  isl_space *space;
+  isl_map *lex, *x;
+
+  if (isl_union_map_is_empty (deps))
+    return true;
+
+  x = apply_schedule_on_deps (schedule, deps);
+  space = isl_map_get_space (x);
+  space = isl_space_range (space);
+  lex = isl_map_lex_ge (space);
+  x = isl_map_intersect (x, lex);
+  res = isl_map_is_empty (x);
+
+  isl_map_free (x);
+  return res;
+}
+
+/* Return true when DEPS is non empty and the intersection of LEX with
+   the DEPS transformed by SCHEDULE is non empty.  LEX is the relation
+   in which all the inputs before DEPTH occur at the same time as the
+   output, and the input at DEPTH occurs before output.  */
+
+static bool
+carries_deps (__isl_keep isl_union_map *schedule,
+	      __isl_keep isl_union_map *deps,
+	      int depth)
+{
+  bool res;
+  int idx, i;
+  isl_space *space;
+  isl_map *lex, *x;
+  isl_constraint *ineq;
+
+  if (isl_union_map_is_empty (deps))
+    return false;
+
+  x = apply_schedule_on_deps (schedule, deps);
+  space = isl_map_get_space (x);
+  space = isl_space_range (space);
+  lex = isl_map_lex_le (space);
+  space = isl_map_get_space (x);
+  ineq = isl_inequality_alloc (isl_local_space_from_space (space));
+
+  idx = 2 * depth + 1;
+  for (i = 0; i < idx; i++)
+    lex = isl_map_equate (lex, isl_dim_in, i, isl_dim_out, i);
+
+  /* in + 1 <= out  */
+  ineq = isl_constraint_set_coefficient_si (ineq, isl_dim_out, idx, 1);
+  ineq = isl_constraint_set_coefficient_si (ineq, isl_dim_in, idx, -1);
+  ineq = isl_constraint_set_constant_si (ineq, -1);
+  lex = isl_map_add_constraint (lex, ineq);
+  x = isl_map_intersect (x, lex);
+  res = !isl_map_is_empty (x);
+
+  isl_map_free (x);
+  return res;
+}
+
+/* Subtract from the RAW, WAR, and WAW dependences those relations
+   that have been marked as belonging to an associative commutative
+   reduction.  */
+
+static void
+subtract_commutative_associative_deps (scop_p scop,
+				       VEC (poly_bb_p, heap) *pbbs,
+				       isl_union_map *original,
+				       isl_union_map **must_raw,
+				       isl_union_map **may_raw,
+				       isl_union_map **must_raw_no_source,
+				       isl_union_map **may_raw_no_source,
+				       isl_union_map **must_war,
+				       isl_union_map **may_war,
+				       isl_union_map **must_war_no_source,
+				       isl_union_map **may_war_no_source,
+				       isl_union_map **must_waw,
+				       isl_union_map **may_waw,
+				       isl_union_map **must_waw_no_source,
+				       isl_union_map **may_waw_no_source)
+{
+  int i, j;
+  poly_bb_p pbb;
+  poly_dr_p pdr;
+  isl_space *space = isl_set_get_space (scop->context);
+
+  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+    if (PBB_IS_REDUCTION (pbb))
+      {
+	int res;
+	isl_union_map *r = isl_union_map_empty (isl_space_copy (space));
+	isl_union_map *must_w = isl_union_map_empty (isl_space_copy (space));
+	isl_union_map *may_w = isl_union_map_empty (isl_space_copy (space));
+	isl_union_map *all_w;
+	isl_union_map *empty;
+	isl_union_map *x_must_raw;
+	isl_union_map *x_may_raw;
+	isl_union_map *x_must_raw_no_source;
+	isl_union_map *x_may_raw_no_source;
+	isl_union_map *x_must_war;
+	isl_union_map *x_may_war;
+	isl_union_map *x_must_war_no_source;
+	isl_union_map *x_may_war_no_source;
+	isl_union_map *x_must_waw;
+	isl_union_map *x_may_waw;
+	isl_union_map *x_must_waw_no_source;
+	isl_union_map *x_may_waw_no_source;
+
+	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+	  if (pdr_read_p (pdr))
+	    r = isl_union_map_add_map (r, add_pdr_constraints (pdr, pbb));
+
+	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+	  if (pdr_write_p (pdr))
+	    must_w = isl_union_map_add_map (must_w,
+					    add_pdr_constraints (pdr, pbb));
+
+	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+	  if (pdr_may_write_p (pdr))
+	    may_w = isl_union_map_add_map (may_w,
+					   add_pdr_constraints (pdr, pbb));
+
+	all_w = isl_union_map_union
+	  (isl_union_map_copy (must_w), isl_union_map_copy (may_w));
+	empty = isl_union_map_empty (isl_union_map_get_space (all_w));
+
+	res = isl_union_map_compute_flow (isl_union_map_copy (r),
+					  isl_union_map_copy (must_w),
+					  isl_union_map_copy (may_w),
+					  isl_union_map_copy (original),
+					  &x_must_raw, &x_may_raw,
+					  &x_must_raw_no_source,
+					  &x_may_raw_no_source);
+	gcc_assert (res == 0);
+	res = isl_union_map_compute_flow (isl_union_map_copy (all_w),
+					  r, empty,
+					  isl_union_map_copy (original),
+					  &x_must_war, &x_may_war,
+					  &x_must_war_no_source,
+					  &x_may_war_no_source);
+	gcc_assert (res == 0);
+	res = isl_union_map_compute_flow (all_w, must_w, may_w,
+					  isl_union_map_copy (original),
+					  &x_must_waw, &x_may_waw,
+					  &x_must_waw_no_source,
+					  &x_may_waw_no_source);
+	gcc_assert (res == 0);
+
+	*must_raw = isl_union_map_subtract (*must_raw, x_must_raw);
+	*may_raw = isl_union_map_subtract (*may_raw, x_may_raw);
+	*must_raw_no_source = isl_union_map_subtract (*must_raw_no_source,
+						      x_must_raw_no_source);
+	*may_raw_no_source = isl_union_map_subtract (*may_raw_no_source,
+						     x_may_raw_no_source);
+	*must_war = isl_union_map_subtract (*must_war, x_must_war);
+	*may_war = isl_union_map_subtract (*may_war, x_may_war);
+	*must_war_no_source = isl_union_map_subtract (*must_war_no_source,
+						      x_must_war_no_source);
+	*may_war_no_source = isl_union_map_subtract (*may_war_no_source,
+						     x_may_war_no_source);
+	*must_waw = isl_union_map_subtract (*must_waw, x_must_waw);
+	*may_waw = isl_union_map_subtract (*may_waw, x_may_waw);
+	*must_waw_no_source = isl_union_map_subtract (*must_waw_no_source,
+						      x_must_waw_no_source);
+	*may_waw_no_source = isl_union_map_subtract (*may_waw_no_source,
+						     x_may_waw_no_source);
+      }
+
+  isl_union_map_free (original);
+  isl_space_free (space);
+}
+
+/* Compute the original data dependences in SCOP for all the reads and
+   writes in PBBS.  */
+
+static void
+compute_deps (scop_p scop, VEC (poly_bb_p, heap) *pbbs,
+	      isl_union_map **must_raw,
+	      isl_union_map **may_raw,
+	      isl_union_map **must_raw_no_source,
+	      isl_union_map **may_raw_no_source,
+	      isl_union_map **must_war,
+	      isl_union_map **may_war,
+	      isl_union_map **must_war_no_source,
+	      isl_union_map **may_war_no_source,
+	      isl_union_map **must_waw,
+	      isl_union_map **may_waw,
+	      isl_union_map **must_waw_no_source,
+	      isl_union_map **may_waw_no_source)
+{
+  isl_union_map *reads = scop_get_reads (scop, pbbs);
+  isl_union_map *must_writes = scop_get_must_writes (scop, pbbs);
+  isl_union_map *may_writes = scop_get_may_writes (scop, pbbs);
+  isl_union_map *all_writes = isl_union_map_union
+    (isl_union_map_copy (must_writes), isl_union_map_copy (may_writes));
+  isl_space *space = isl_union_map_get_space (all_writes);
+  isl_union_map *empty = isl_union_map_empty (space);
+  isl_union_map *original = scop_get_original_schedule (scop, pbbs);
+  int res;
+
+  res = isl_union_map_compute_flow (isl_union_map_copy (reads),
+				    isl_union_map_copy (must_writes),
+				    isl_union_map_copy (may_writes),
+				    isl_union_map_copy (original),
+				    must_raw, may_raw, must_raw_no_source,
+				    may_raw_no_source);
+  gcc_assert (res == 0);
+  res = isl_union_map_compute_flow (isl_union_map_copy (all_writes),
+				    reads, empty,
+				    isl_union_map_copy (original),
+				    must_war, may_war, must_war_no_source,
+				    may_war_no_source);
+  gcc_assert (res == 0);
+  res = isl_union_map_compute_flow (all_writes, must_writes, may_writes,
+				    isl_union_map_copy (original),
+				    must_waw, may_waw, must_waw_no_source,
+				    may_waw_no_source);
+  gcc_assert (res == 0);
+
+  subtract_commutative_associative_deps
+    (scop, pbbs, original,
+     must_raw, may_raw, must_raw_no_source, may_raw_no_source,
+     must_war, may_war, must_war_no_source, may_war_no_source,
+     must_waw, may_waw, must_waw_no_source, may_waw_no_source);
+}
+
+/* Given a TRANSFORM, check whether it respects the original
+   dependences in SCOP.  Returns true when TRANSFORM is a safe
+   transformation.  */
+
+static bool
+transform_is_safe (scop_p scop, isl_union_map *transform)
+{
+  bool res;
+
+  if (!scop->must_raw)
+    compute_deps (scop, SCOP_BBS (scop),
+		  &scop->must_raw, &scop->may_raw,
+		  &scop->must_raw_no_source, &scop->may_raw_no_source,
+		  &scop->must_war, &scop->may_war,
+		  &scop->must_war_no_source, &scop->may_war_no_source,
+		  &scop->must_waw, &scop->may_waw,
+		  &scop->must_waw_no_source, &scop->may_waw_no_source);
+
+  res = (no_violations (transform, scop->must_raw)
+	 && no_violations (transform, scop->may_raw)
+	 && no_violations (transform, scop->must_war)
+	 && no_violations (transform, scop->may_war)
+	 && no_violations (transform, scop->must_waw)
+	 && no_violations (transform, scop->may_waw));
+
+  isl_union_map_free (transform);
+  return res;
+}
+
+/* Return true when the SCOP transformed schedule is correct.  */
 
 bool
 graphite_legal_transform (scop_p scop)
 {
-  int i, j;
-  poly_bb_p pbb1, pbb2;
+  int res;
+  isl_union_map *transform;
 
   timevar_push (TV_GRAPHITE_DATA_DEPS);
-
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb1)
-    FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
-      if (!graphite_legal_transform_bb (pbb1, pbb2))
-	{
-	  timevar_pop (TV_GRAPHITE_DATA_DEPS);
-	  return false;
-	}
-
+  transform = scop_get_transformed_schedule (scop, SCOP_BBS (scop));
+  res = transform_is_safe (scop, transform);
   timevar_pop (TV_GRAPHITE_DATA_DEPS);
-  return true;
+
+  return res;
 }
 
-/* Returns TRUE when the dependence polyhedron between PDR1 and
-   PDR2 represents a loop carried dependence at level LEVEL.  */
+/* Return true when the loop at DEPTH carries dependences.  BODY is
+   the body of the loop.  */
 
 static bool
-graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
-				     int level)
+loop_level_carries_dependences (scop_p scop, VEC (poly_bb_p, heap) *body,
+				int depth)
 {
-  ppl_Pointset_Powerset_C_Polyhedron_t po;
-  ppl_Pointset_Powerset_C_Polyhedron_t eqpp;
-  poly_bb_p pbb = PDR_PBB (pdr1);
-  graphite_dim_t tdim1 = pbb_nb_scattering_transform (pbb);
-  graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb);
-  ppl_dimension_type dim;
-  bool empty_p;
-  poly_ddr_p pddr = new_poly_ddr (pdr1, pdr2, 1, false);
-  graphite_dim_t pos;
+  isl_union_map *transform = scop_get_transformed_schedule (scop, body);
+  isl_union_map *must_raw, *may_raw;
+  isl_union_map *must_war, *may_war;
+  isl_union_map *must_waw, *may_waw;
+  int res;
 
-  if (PDDR_KIND (pddr) == unknown_dependence)
-    {
-      free_poly_ddr (pddr);
-      return true;
-    }
+  compute_deps (scop, body,
+		&must_raw, &may_raw, NULL, NULL,
+		&must_war, &may_war, NULL, NULL,
+		&must_waw, &may_waw, NULL, NULL);
 
-  if (pddr_is_empty (pddr))
-    {
-      free_poly_ddr (pddr);
-      return false;
-    }
+  res = (carries_deps (transform, must_raw, depth)
+	 || carries_deps (transform, may_raw, depth)
+	 || carries_deps (transform, must_war, depth)
+	 || carries_deps (transform, may_war, depth)
+	 || carries_deps (transform, must_waw, depth)
+	 || carries_deps (transform, may_waw, depth));
 
-  po = PDDR_DDP (pddr);
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &dim);
-  pos = psct_dynamic_dim (pbb, level);
-  eqpp = build_pairwise_scheduling (dim, pos, tdim1 + ddim1, 1);
-
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (eqpp, po);
-  empty_p = ppl_powerset_is_empty (eqpp);
-
-  ppl_delete_Pointset_Powerset_C_Polyhedron (eqpp);
-  free_poly_ddr (pddr);
-
-  return !empty_p;
+  isl_union_map_free (transform);
+  isl_union_map_free (must_raw);
+  isl_union_map_free (may_raw);
+  isl_union_map_free (must_war);
+  isl_union_map_free (may_war);
+  isl_union_map_free (must_waw);
+  isl_union_map_free (may_waw);
+  return res;
 }
 
-/* Check data dependency between PBB1 and PBB2 at level LEVEL.  */
+/* Returns true when the loop L at level DEPTH is parallel.
+   BB_PBB_MAPPING is a map between a basic_block and its related
+   poly_bb_p.  */
 
 bool
-dependency_between_pbbs_p (poly_bb_p pbb1, poly_bb_p pbb2, int level)
+loop_is_parallel_p (loop_p loop, htab_t bb_pbb_mapping, int depth)
 {
-  int i, j;
-  poly_dr_p pdr1, pdr2;
+  bool dependences;
+  scop_p scop;
+  VEC (poly_bb_p, heap) *body = VEC_alloc (poly_bb_p, heap, 3);
 
   timevar_push (TV_GRAPHITE_DATA_DEPS);
-
-  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), i, pdr1)
-    FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), j, pdr2)
-      if (graphite_carried_dependence_level_k (pdr1, pdr2, level))
-	{
-	  timevar_pop (TV_GRAPHITE_DATA_DEPS);
-	  return true;
-	}
-
+  scop = get_loop_body_pbbs (loop, bb_pbb_mapping, &body);
+  dependences = loop_level_carries_dependences (scop, body, depth);
+  VEC_free (poly_bb_p, heap, body);
   timevar_pop (TV_GRAPHITE_DATA_DEPS);
-  return false;
-}
 
-/* When ORIG is true, pretty print to FILE all the original data
-   dependences of SCoP in DOT format, otherwise print the transformed
-   data deps.  */
-
-static void
-dot_deps_stmt_2 (FILE *file, scop_p scop, bool orig)
-{
-  int i, j, k, l;
-  poly_bb_p pbb1, pbb2;
-  poly_dr_p pdr1, pdr2;
-
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb1)
-    FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
-      {
-	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), k, pdr1)
-	  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), l, pdr2)
-	    {
-	      poly_ddr_p pddr = new_poly_ddr (pdr1, pdr2, 1, orig);
-
-	      if (!pddr_is_empty (pddr))
-		{
-		  fprintf (file, orig ? "OS%d -> OS%d\n" : "TS%d -> TS%d\n",
-			   pbb_index (pbb1), pbb_index (pbb2));
-
-		  free_poly_ddr (pddr);
-		  goto done;
-		}
-
-	      free_poly_ddr (pddr);
-	    }
-      done:;
-      }
-}
-
-/* Pretty print to FILE all the data dependences of SCoP in DOT
-   format.  */
-
-static void
-dot_deps_stmt_1 (FILE *file, scop_p scop)
-{
-  fputs ("digraph all {\n", file);
-
-  dot_deps_stmt_2 (file, scop, true);
-  dot_deps_stmt_2 (file, scop, false);
-
-  fputs ("}\n\n", file);
-}
-
-/* When ORIG is true, pretty print to FILE all the original data
-   dependences of SCoP in DOT format, otherwise print the transformed
-   data deps.  */
-
-static void
-dot_deps_2 (FILE *file, scop_p scop, bool orig)
-{
-  int i, j, k, l;
-  poly_bb_p pbb1, pbb2;
-  poly_dr_p pdr1, pdr2;
-
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb1)
-    FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
-      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), k, pdr1)
-	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), l, pdr2)
-          {
-	    poly_ddr_p pddr = new_poly_ddr (pdr1, pdr2, 1, orig);
-
-	    if (!pddr_is_empty (pddr))
-	      fprintf (file, orig
-		       ? "OS%d_D%d -> OS%d_D%d\n" : "TS%d_D%d -> TS%d_D%d\n",
-		       pbb_index (pbb1), PDR_ID (pdr1),
-		       pbb_index (pbb2), PDR_ID (pdr2));
-
-	    free_poly_ddr (pddr);
-	  }
-}
-
-/* Pretty print to FILE all the data dependences of SCoP in DOT
-   format.  */
-
-static void
-dot_deps_1 (FILE *file, scop_p scop)
-{
-  fputs ("digraph all {\n", file);
-
-  dot_deps_2 (file, scop, true);
-  dot_deps_2 (file, scop, false);
-
-  fputs ("}\n\n", file);
-}
-
-/* Display all the data dependences in SCoP using dotty.  */
-
-DEBUG_FUNCTION void
-dot_deps (scop_p scop)
-{
-  /* When debugging, enable the following code.  This cannot be used
-     in production compilers because it calls "system".  */
-#if 0
-  FILE *stream = fopen ("/tmp/scopdeps.dot", "w");
-  gcc_assert (stream);
-
-  dot_deps_1 (stream, scop);
-  fclose (stream);
-
-  system ("dotty /tmp/scopdeps.dot &");
-#else
-  dot_deps_1 (stderr, scop);
-#endif
-}
-
-/* Display all the statement dependences in SCoP using dotty.  */
-
-DEBUG_FUNCTION void
-dot_deps_stmt (scop_p scop)
-{
-  /* When debugging, enable the following code.  This cannot be used
-     in production compilers because it calls "system".  */
-#if 0
-  FILE *stream = fopen ("/tmp/scopdeps.dot", "w");
-  gcc_assert (stream);
-
-  dot_deps_stmt_1 (stream, scop);
-  fclose (stream);
-
-  system ("dotty /tmp/scopdeps.dot &");
-#else
-  dot_deps_stmt_1 (stderr, scop);
-#endif
+  return !dependences;
 }
 
 #endif

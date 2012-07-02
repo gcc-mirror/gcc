@@ -1,4 +1,35 @@
 2012-07-02  Richard Guenther  <rguenther@suse.de>
+	Michael Matz  <matz@suse.de>
+	Tobias Grosser <tobias@grosser.es>
+	Sebastian Pop <sebpop@gmail.com>
+
+	* Makefile.in: Remove PPL flags in favor of ISL ones.
+	(BACKENDLIBS): Remove PPL libs.
+	(INCLUDES): Remove PPL includes in favor of ISL ones.
+	(graphite-clast-to-gimple.o): Remove graphite-dependences.h and
+	graphite-cloog-compat.h dependencies.
+	(graphite-dependences.o): Likewise.
+	(graphite-poly.o): Likewise.
+	* configure.ac: Declare ISL vars instead of PPL ones.
+	* configure: Regenerated.
+	* doc/install.texi: Replace PPL requirement documentation
+	with ISL one.
+	* graphite-blocking.c: Remove PPL code, add ISL equivalent.
+	* graphite-clast-to-gimple.c: Likewise.
+	* graphite-dependences.c: Likewise.
+	* graphite-interchange.c: Likewise.
+	* graphite-poly.h: Likewise.
+	* graphite-poly.c: Likewise.
+	* graphite-sese-to-poly.c: Likewise.
+	* graphite.c: Likewise.
+	* graphite-scop-detection.c: Re-arrange includes.
+	* graphite-cloog-util.c: Remove.
+	* graphite-cloog-util.h: Likewise.
+	* graphite-ppl.h: Likewise.
+	* graphite-ppl.c: Likewise.
+	* graphite-dependences.h: Likewise.
+
+2012-07-02  Richard Guenther  <rguenther@suse.de>
 
 	Merge from graphite branch
 	2011-07-21  Tobias Grosser  <tobias@grosser.es>

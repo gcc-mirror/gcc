@@ -1,4 +1,18 @@
 2012-07-02  Richard Guenther  <rguenther@suse.de>
+	Michael Matz  <matz@suse.de>
+	Tobias Grosser <tobias@grosser.es>
+	Sebastian Pop <sebpop@gmail.com>
+
+	* Makefile.def: Add ISL host module, remove PPL host module.
+	Adjust ClooG host module to use the proper ISL.
+	* Makefile.tpl: Pass ISL include flags instead of PPL ones.
+	* configure.ac: Include config/isl.m4.  Add ISL host library,
+	remove PPL.  Remove PPL configury, add ISL configury, adjust
+	ClooG configury.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2012-07-02  Richard Guenther  <rguenther@suse.de>
 
 	Merge from graphite branch
 	2011-07-21  Tobias Grosser  <tobias@grosser.es>

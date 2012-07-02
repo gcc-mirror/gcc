@@ -1,7 +1,7 @@
 /* Interchange heuristics and transform for loop interchange on
    polyhedral representation.
 
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Harsha Jagasia <harsha.jagasia@amd.com>.
 
@@ -20,7 +20,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
 #include "config.h"
+
+#ifdef HAVE_cloog
+#include <isl/aff.h>
+#include <isl/set.h>
+#include <isl/map.h>
+#include <isl/union_map.h>
+#include <isl/ilp.h>
+#include <cloog/cloog.h>
+#include <cloog/isl/domain.h>
+#endif
+
 #include "system.h"
 #include "coretypes.h"
 #include "tree-flow.h"
@@ -32,10 +44,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "sese.h"
 
 #ifdef HAVE_cloog
-#include "ppl_c.h"
-#include "graphite-ppl.h"
 #include "graphite-poly.h"
 
+/* XXX isl rewrite following comment */
 /* Builds a linear expression, of dimension DIM, representing PDR's
    memory access:
 
@@ -53,86 +64,89 @@ along with GCC; see the file COPYING3.  If not see
    where the expression itself is:
    c_0 * s_0 + c_1 * s_1 + ... c_n * s_n.  */
 
-static ppl_Linear_Expression_t
-build_linearized_memory_access (ppl_dimension_type offset, poly_dr_p pdr)
+static isl_constraint *
+build_linearized_memory_access (isl_map *map, poly_dr_p pdr)
 {
-  ppl_Linear_Expression_t res;
-  ppl_Linear_Expression_t le;
-  ppl_dimension_type i;
-  ppl_dimension_type first = pdr_subscript_dim (pdr, 0);
-  ppl_dimension_type last = pdr_subscript_dim (pdr, PDR_NB_SUBSCRIPTS (pdr));
-  mpz_t size, sub_size;
-  graphite_dim_t dim = offset + pdr_dim (pdr);
+  isl_constraint *res;
+  isl_local_space *ls = isl_local_space_from_space (isl_map_get_space (map));
+  unsigned offset, nsubs;
+  int i;
+  isl_int size, subsize;
 
-  ppl_new_Linear_Expression_with_dimension (&res, dim);
+  res = isl_equality_alloc (ls);
+  isl_int_init (size);
+  isl_int_set_ui (size, 1);
+  isl_int_init (subsize);
+  isl_int_set_ui (subsize, 1);
 
-  mpz_init (size);
-  mpz_set_si (size, 1);
-  mpz_init (sub_size);
-  mpz_set_si (sub_size, 1);
-
-  for (i = last - 1; i >= first; i--)
+  nsubs = isl_set_dim (pdr->extent, isl_dim_set);
+  /* -1 for the already included L dimension.  */
+  offset = isl_map_dim (map, isl_dim_out) - 1 - nsubs;
+  res = isl_constraint_set_coefficient_si (res, isl_dim_out, offset + nsubs, -1);
+  /* Go through all subscripts from last to first.  First dimension
+     is the alias set, ignore it.  */
+  for (i = nsubs - 1; i >= 1; i--)
     {
-      ppl_set_coef_gmp (res, i + offset, size);
+      isl_space *dc;
+      isl_aff *aff;
 
-      ppl_new_Linear_Expression_with_dimension (&le, dim - offset);
-      ppl_set_coef (le, i, 1);
-      ppl_max_for_le_pointset (PDR_ACCESSES (pdr), le, sub_size);
-      mpz_mul (size, size, sub_size);
-      ppl_delete_Linear_Expression (le);
+      res = isl_constraint_set_coefficient (res, isl_dim_out, offset + i, size);
+
+      dc = isl_set_get_space (pdr->extent);
+      aff = isl_aff_zero_on_domain (isl_local_space_from_space (dc));
+      aff = isl_aff_set_coefficient_si (aff, isl_dim_in, i, 1);
+      isl_set_max (pdr->extent, aff, &subsize);
+      isl_aff_free (aff);
+      isl_int_mul (size, size, subsize);
     }
 
-  mpz_clear (sub_size);
-  mpz_clear (size);
+  isl_int_clear (subsize);
+  isl_int_clear (size);
+
   return res;
 }
 
-/* Builds a partial difference equations and inserts them
-   into pointset powerset polyhedron P.  Polyhedron is assumed
-   to have the format: T|I|T'|I'|G|S|S'|l1|l2.
-
-   TIME_DEPTH is the time dimension w.r.t. which we are
-   differentiating.
-   OFFSET represents the number of dimensions between
-   columns t_{time_depth} and t'_{time_depth}.
-   DIM_SCTR is the number of scattering dimensions.  It is
-   essentially the dimensionality of the T vector.
-
-   The following equations are inserted into the polyhedron P:
-    | t_1 = t_1'
-    | ...
-    | t_{time_depth-1} = t'_{time_depth-1}
-    | t_{time_depth} = t'_{time_depth} + 1
-    | t_{time_depth+1} = t'_{time_depth + 1}
-    | ...
-    | t_{dim_sctr} = t'_{dim_sctr}.  */
+/* Set STRIDE to the stride of PDR in memory by advancing by one in
+   the loop at DEPTH.  */
 
 static void
-build_partial_difference (ppl_Pointset_Powerset_C_Polyhedron_t *p,
-                          ppl_dimension_type time_depth,
-                          ppl_dimension_type offset,
-                          ppl_dimension_type dim_sctr)
+pdr_stride_in_loop (mpz_t stride, graphite_dim_t depth, poly_dr_p pdr)
 {
-  ppl_Constraint_t new_cstr;
-  ppl_Linear_Expression_t le;
-  ppl_dimension_type i;
-  ppl_dimension_type dim;
-  ppl_Pointset_Powerset_C_Polyhedron_t temp;
+  poly_bb_p pbb = PDR_PBB (pdr);
+  isl_map *map;
+  isl_set *set;
+  isl_aff *aff;
+  isl_space *dc;
+  isl_constraint *lma, *c;
+  isl_int islstride;
+  graphite_dim_t time_depth;
+  unsigned offset, nt;
+  unsigned i;
+  /* XXX isl rewrite following comments.  */
+  /* Builds a partial difference equations and inserts them
+     into pointset powerset polyhedron P.  Polyhedron is assumed
+     to have the format: T|I|T'|I'|G|S|S'|l1|l2.
+
+     TIME_DEPTH is the time dimension w.r.t. which we are
+     differentiating.
+     OFFSET represents the number of dimensions between
+     columns t_{time_depth} and t'_{time_depth}.
+     DIM_SCTR is the number of scattering dimensions.  It is
+     essentially the dimensionality of the T vector.
+
+     The following equations are inserted into the polyhedron P:
+     | t_1 = t_1'
+     | ...
+     | t_{time_depth-1} = t'_{time_depth-1}
+     | t_{time_depth} = t'_{time_depth} + 1
+     | t_{time_depth+1} = t'_{time_depth + 1}
+     | ...
+     | t_{dim_sctr} = t'_{dim_sctr}.  */
 
   /* Add the equality: t_{time_depth} = t'_{time_depth} + 1.
      This is the core part of this alogrithm, since this
      constraint asks for the memory access stride (difference)
      between two consecutive points in time dimensions.  */
-
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (*p, &dim);
-  ppl_new_Linear_Expression_with_dimension (&le, dim);
-  ppl_set_coef (le, time_depth, 1);
-  ppl_set_coef (le, time_depth + offset, -1);
-  ppl_set_inhomogeneous (le, 1);
-  ppl_new_Constraint (&new_cstr, le, PPL_CONSTRAINT_TYPE_EQUAL);
-  ppl_Pointset_Powerset_C_Polyhedron_add_constraint (*p, new_cstr);
-  ppl_delete_Linear_Expression (le);
-  ppl_delete_Constraint (new_cstr);
 
   /* Add equalities:
      | t1 = t1'
@@ -149,156 +163,80 @@ build_partial_difference (ppl_Pointset_Powerset_C_Polyhedron_t *p,
      is stripmined dimension, and the other dimension corresponds
      to the point loop inside stripmined dimension.  */
 
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron (&temp, *p);
+  /* pdr->accesses:    [P1..nb_param,I1..nb_domain]->[a,S1..nb_subscript]
+          ??? [P] not used for PDRs?
+     pdr->extent:      [a,S1..nb_subscript]
+     pbb->domain:      [P1..nb_param,I1..nb_domain]
+     pbb->transformed: [P1..nb_param,I1..nb_domain]->[T1..Tnb_sctr]
+          [T] includes local vars (currently unused)
+     
+     First we create [P,I] -> [T,a,S].  */
+  
+  map = isl_map_flat_range_product (isl_map_copy (pbb->transformed),
+				    isl_map_copy (pdr->accesses));
+  /* Add a dimension for L: [P,I] -> [T,a,S,L].*/
+  map = isl_map_add_dims (map, isl_dim_out, 1);
+  /* Build a constraint for "lma[S] - L == 0", effectively calculating
+     L in terms of subscripts.  */
+  lma = build_linearized_memory_access (map, pdr);
+  /* And add it to the map, so we now have:
+     [P,I] -> [T,a,S,L] : lma([S]) == L.  */
+  map = isl_map_add_constraint (map, lma);
 
-  for (i = 0; i < dim_sctr; i++)
+  /* Then we create  [P,I,P',I'] -> [T,a,S,L,T',a',S',L'].  */
+  map = isl_map_flat_product (map, isl_map_copy (map));
+
+  /* Now add the equality T[time_depth] == T'[time_depth]+1.  This will
+     force L' to be the linear address at T[time_depth] + 1. */
+  time_depth = psct_dynamic_dim (pbb, depth);
+  /* Length of [a,S] plus [L] ...  */
+  offset = 1 + isl_map_dim (pdr->accesses, isl_dim_out);
+  /* ... plus [T].  */
+  offset += isl_map_dim (pbb->transformed, isl_dim_out);
+
+  c = isl_equality_alloc (isl_local_space_from_space (isl_map_get_space (map)));
+  c = isl_constraint_set_coefficient_si (c, isl_dim_out, time_depth, 1);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_out,
+					 offset + time_depth, -1);
+  c = isl_constraint_set_constant_si (c, 1);
+  map = isl_map_add_constraint (map, c);
+
+  /* Now we equate most of the T/T' elements (making PITaSL nearly
+     the same is (PITaSL)', except for one dimension, namely for 'depth'
+     (an index into [I]), after translating to index into [T].  Take care
+     to not produce an empty map, which indicates we wanted to equate
+     two dimensions that are already coupled via the above time_depth
+     dimension.  Happens with strip mining where several scatter dimension
+     are interdependend.  */
+  /* Length of [T].  */
+  nt = pbb_nb_scattering_transform (pbb) + pbb_nb_local_vars (pbb);
+  for (i = 0; i < nt; i++)
     if (i != time_depth)
       {
-        ppl_new_Linear_Expression_with_dimension (&le, dim);
-        ppl_set_coef (le, i, 1);
-        ppl_set_coef (le, i + offset, -1);
-        ppl_new_Constraint (&new_cstr, le, PPL_CONSTRAINT_TYPE_EQUAL);
-        ppl_Pointset_Powerset_C_Polyhedron_add_constraint (temp, new_cstr);
-
-        if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (temp))
-          {
-            ppl_delete_Pointset_Powerset_C_Polyhedron (temp);
-            ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron (&temp, *p);
-          }
-        else
-          ppl_Pointset_Powerset_C_Polyhedron_add_constraint (*p, new_cstr);
-        ppl_delete_Linear_Expression (le);
-        ppl_delete_Constraint (new_cstr);
+	isl_map *temp = isl_map_equate (isl_map_copy (map),
+					isl_dim_out, i,
+					isl_dim_out, offset + i);
+	if (isl_map_is_empty (temp))
+	  isl_map_free (temp);
+	else
+	  {
+	    isl_map_free (map);
+	    map = temp;
+	  }
       }
 
-  ppl_delete_Pointset_Powerset_C_Polyhedron (temp);
-}
-
-
-/* Set STRIDE to the stride of PDR in memory by advancing by one in
-   the loop at DEPTH.  */
-
-static void
-pdr_stride_in_loop (mpz_t stride, graphite_dim_t depth, poly_dr_p pdr)
-{
-  ppl_dimension_type time_depth;
-  ppl_Linear_Expression_t le, lma;
-  ppl_Constraint_t new_cstr;
-  ppl_dimension_type i, *map;
-  ppl_Pointset_Powerset_C_Polyhedron_t p1, p2, sctr;
-  graphite_dim_t nb_subscripts = PDR_NB_SUBSCRIPTS (pdr) + 1;
-  poly_bb_p pbb = PDR_PBB (pdr);
-  ppl_dimension_type offset = pbb_nb_scattering_transform (pbb)
-                              + pbb_nb_local_vars (pbb)
-                              + pbb_dim_iter_domain (pbb);
-  ppl_dimension_type offsetg = offset + pbb_nb_params (pbb);
-  ppl_dimension_type dim_sctr = pbb_nb_scattering_transform (pbb)
-                                + pbb_nb_local_vars (pbb);
-  ppl_dimension_type dim_L1 = offset + offsetg + 2 * nb_subscripts;
-  ppl_dimension_type dim_L2 = offset + offsetg + 2 * nb_subscripts + 1;
-  ppl_dimension_type new_dim = offset + offsetg + 2 * nb_subscripts + 2;
-
-  /* The resulting polyhedron should have the following format:
-     T|I|T'|I'|G|S|S'|l1|l2
-     where:
-     | T = t_1..t_{dim_sctr}
-     | I = i_1..i_{dim_iter_domain}
-     | T'= t'_1..t'_{dim_sctr}
-     | I'= i'_1..i'_{dim_iter_domain}
-     | G = g_1..g_{nb_params}
-     | S = s_1..s_{nb_subscripts}
-     | S'= s'_1..s'_{nb_subscripts}
-     | l1 and l2 are scalars.
-
-     Some invariants:
-     offset = dim_sctr + dim_iter_domain + nb_local_vars
-     offsetg = dim_sctr + dim_iter_domain + nb_local_vars + nb_params.  */
-
-  /* Construct the T|I|0|0|G|0|0|0|0 part.  */
-  {
-    ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-      (&sctr, PBB_TRANSFORMED_SCATTERING (pbb));
-    ppl_Pointset_Powerset_C_Polyhedron_add_space_dimensions_and_embed
-      (sctr, 2 * nb_subscripts + 2);
-    ppl_insert_dimensions_pointset (sctr, offset, offset);
-  }
-
-  /* Construct the 0|I|0|0|G|S|0|0|0 part.  */
-  {
-    ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-      (&p1, PDR_ACCESSES (pdr));
-    ppl_Pointset_Powerset_C_Polyhedron_add_space_dimensions_and_embed
-      (p1, nb_subscripts + 2);
-    ppl_insert_dimensions_pointset (p1, 0, dim_sctr);
-    ppl_insert_dimensions_pointset (p1, offset, offset);
-  }
-
-  /* Construct the 0|0|0|0|0|S|0|l1|0 part.  */
-  {
-    lma = build_linearized_memory_access (offset + dim_sctr, pdr);
-    ppl_set_coef (lma, dim_L1, -1);
-    ppl_new_Constraint (&new_cstr, lma, PPL_CONSTRAINT_TYPE_EQUAL);
-    ppl_Pointset_Powerset_C_Polyhedron_add_constraint (p1, new_cstr);
-    ppl_delete_Linear_Expression (lma);
-    ppl_delete_Constraint (new_cstr);
-  }
-
-  /* Now intersect all the parts to get the polyhedron P1:
-     T|I|0|0|G|0|0|0 |0
-     0|I|0|0|G|S|0|0 |0
-     0|0|0|0|0|S|0|l1|0
-     ------------------
-     T|I|0|0|G|S|0|l1|0.  */
-
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (p1, sctr);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (sctr);
-
-  /* Build P2, which would have the following form:
-     0|0|T'|I'|G|0|S'|0|l2
-
-     P2 is built, by remapping the P1 polyhedron:
-     T|I|0|0|G|S|0|l1|0
-
-     using the following mapping:
-     T->T'
-     I->I'
-     S->S'
-     l1->l2.  */
-  {
-    ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-      (&p2, p1);
-
-    map = ppl_new_id_map (new_dim);
-
-    /* TI -> T'I'.  */
-    for (i = 0; i < offset; i++)
-      ppl_interchange (map, i, i + offset);
-
-    /* l1 -> l2.  */
-    ppl_interchange (map, dim_L1, dim_L2);
-
-    /* S -> S'.  */
-    for (i = 0; i < nb_subscripts; i++)
-      ppl_interchange (map, offset + offsetg + i,
-		       offset + offsetg + nb_subscripts + i);
-
-    ppl_Pointset_Powerset_C_Polyhedron_map_space_dimensions (p2, map, new_dim);
-    free (map);
-  }
-
-  time_depth = psct_dynamic_dim (pbb, depth);
-
-  /* P1 = P1 inter P2.  */
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (p1, p2);
-  build_partial_difference (&p1, time_depth, offset, dim_sctr);
-
-  /* Maximise the expression L2 - L1.  */
-  {
-    ppl_new_Linear_Expression_with_dimension (&le, new_dim);
-    ppl_set_coef (le, dim_L2, 1);
-    ppl_set_coef (le, dim_L1, -1);
-    ppl_max_for_le_pointset (p1, le, stride);
-  }
+  /* Now maximize the expression L' - L.  */
+  set = isl_map_range (map);
+  dc = isl_set_get_space (set);
+  aff = isl_aff_zero_on_domain (isl_local_space_from_space (dc));
+  aff = isl_aff_set_coefficient_si (aff, isl_dim_in, offset - 1, -1);
+  aff = isl_aff_set_coefficient_si (aff, isl_dim_in, offset + offset - 1, 1);
+  isl_int_init (islstride);
+  isl_set_max (set, aff, &islstride);
+  isl_int_get_gmp (islstride, stride);
+  isl_int_clear (islstride);
+  isl_aff_free (aff);
+  isl_set_free (set);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -312,12 +250,7 @@ pdr_stride_in_loop (mpz_t stride, graphite_dim_t depth, poly_dr_p pdr)
       mp_get_memory_functions (NULL, NULL, &gmp_free);
       (*gmp_free) (str, strlen (str) + 1);
     }
-
-  ppl_delete_Pointset_Powerset_C_Polyhedron (p1);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (p2);
-  ppl_delete_Linear_Expression (le);
 }
-
 
 /* Sets STRIDES to the sum of all the strides of the data references
    accessed in LOOP at DEPTH.  */
@@ -475,23 +408,23 @@ static void
 pbb_interchange_loop_depths (graphite_dim_t depth1, graphite_dim_t depth2,
 			     poly_bb_p pbb)
 {
-  ppl_dimension_type i, dim;
-  ppl_dimension_type *map;
-  ppl_Polyhedron_t poly = PBB_TRANSFORMED_SCATTERING (pbb);
-  ppl_dimension_type dim1 = psct_dynamic_dim (pbb, depth1);
-  ppl_dimension_type dim2 = psct_dynamic_dim (pbb, depth2);
+  unsigned i;
+  unsigned dim1 = psct_dynamic_dim (pbb, depth1);
+  unsigned dim2 = psct_dynamic_dim (pbb, depth2);
+  isl_space *d = isl_map_get_space (pbb->transformed);
+  isl_space *d1 = isl_space_range (d);
+  unsigned n = isl_space_dim (d1, isl_dim_out);
+  isl_space *d2 = isl_space_add_dims (d1, isl_dim_in, n);
+  isl_map *x = isl_map_universe (d2);
 
-  ppl_Polyhedron_space_dimension (poly, &dim);
-  map = (ppl_dimension_type *) XNEWVEC (ppl_dimension_type, dim);
+  x = isl_map_equate (x, isl_dim_in, dim1, isl_dim_out, dim2);
+  x = isl_map_equate (x, isl_dim_in, dim2, isl_dim_out, dim1);
 
-  for (i = 0; i < dim; i++)
-    map[i] = i;
+  for (i = 0; i < n; i++)
+    if (i != dim1 && i != dim2)
+      x = isl_map_equate (x, isl_dim_in, i, isl_dim_out, i);
 
-  map[dim1] = dim2;
-  map[dim2] = dim1;
-
-  ppl_Polyhedron_map_space_dimensions (poly, map, dim);
-  free (map);
+  pbb->transformed = isl_map_apply_range (pbb->transformed, x);
 }
 
 /* Apply the interchange of loops at depths DEPTH1 and DEPTH2 to all

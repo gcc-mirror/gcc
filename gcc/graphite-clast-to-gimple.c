@@ -19,6 +19,19 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+
+#ifdef HAVE_cloog
+#include <isl/set.h>
+#include <isl/map.h>
+#include <isl/union_map.h>
+#include <isl/list.h>
+#include <isl/constraint.h>
+#include <isl/ilp.h>
+#include <isl/aff.h>
+#include <cloog/cloog.h>
+#include <cloog/isl/domain.h>
+#endif
+
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic-core.h"
@@ -32,18 +45,55 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef HAVE_cloog
 #include "cloog/cloog.h"
-#include "ppl_c.h"
-#include "graphite-cloog-util.h"
-#include "graphite-ppl.h"
 #include "graphite-poly.h"
 #include "graphite-clast-to-gimple.h"
-#include "graphite-dependences.h"
 
 typedef const struct clast_expr *clast_name_p;
 
 #ifndef CLOOG_LANGUAGE_C
 #define CLOOG_LANGUAGE_C LANGUAGE_C
 #endif
+
+
+/* Converts a GMP constant VAL to a tree and returns it.  */
+
+static tree
+gmp_cst_to_tree (tree type, mpz_t val)
+{
+  tree t = type ? type : integer_type_node;
+  mpz_t tmp;
+  double_int di;
+
+  mpz_init (tmp);
+  mpz_set (tmp, val);
+  di = mpz_get_double_int (t, tmp, true);
+  mpz_clear (tmp);
+
+  return double_int_to_tree (t, di);
+}
+
+/* Sets RES to the min of V1 and V2.  */
+
+static void
+value_min (mpz_t res, mpz_t v1, mpz_t v2)
+{
+  if (mpz_cmp (v1, v2) < 0)
+    mpz_set (res, v1);
+  else
+    mpz_set (res, v2);
+}
+
+/* Sets RES to the max of V1 and V2.  */
+
+static void
+value_max (mpz_t res, mpz_t v1, mpz_t v2)
+{
+  if (mpz_cmp (v1, v2) < 0)
+    mpz_set (res, v2);
+  else
+    mpz_set (res, v1);
+}
+
 
 /* This flag is set when an error occurred during the translation of
    CLAST to Gimple.  */
@@ -695,23 +745,18 @@ type_for_clast_expr (struct clast_expr *e, ivs_params_p ip, mpz_t bound_one,
   return NULL_TREE;
 }
 
-/* Returns the type for the equation CLEQ.  */
+/* Returns true if the clast expression E is a constant with VALUE.  */
 
-static tree
-type_for_clast_eq (struct clast_equation *cleq, ivs_params_p ip)
+static bool
+clast_expr_const_value_p (struct clast_expr *e, int value)
 {
-  mpz_t bound_one, bound_two;
-  tree l, r;
-
-  mpz_init (bound_one);
-  mpz_init (bound_two);
-
-  l = type_for_clast_expr (cleq->LHS, ip, bound_one, bound_two);
-  r = type_for_clast_expr (cleq->RHS, ip, bound_one, bound_two);
-
-  mpz_clear (bound_one);
-  mpz_clear (bound_two);
-  return max_precision_type (l, r);
+  struct clast_term *t;
+  if (e->type != clast_expr_term)
+    return false;
+  t = (struct clast_term *)e;
+  if (t->var)
+    return false;
+  return 0 == mpz_cmp_si (t->val, value);
 }
 
 /* Translates a clast equation CLEQ to a tree.  */
@@ -721,18 +766,48 @@ graphite_translate_clast_equation (struct clast_equation *cleq,
 				   ivs_params_p ip)
 {
   enum tree_code comp;
-  tree type = type_for_clast_eq (cleq, ip);
-  tree lhs = clast_to_gcc_expression (type, cleq->LHS, ip);
-  tree rhs = clast_to_gcc_expression (type, cleq->RHS, ip);
+  tree type, lhs, rhs, ltype, rtype;
+  mpz_t bound_one, bound_two;
+  struct clast_expr *clhs, *crhs;
 
+  clhs = cleq->LHS;
+  crhs = cleq->RHS;
   if (cleq->sign == 0)
     comp = EQ_EXPR;
-
   else if (cleq->sign > 0)
     comp = GE_EXPR;
-
   else
     comp = LE_EXPR;
+
+  /* Special cases to reduce range of arguments to hopefully
+     don't need types with larger precision than the input.  */
+  if (crhs->type == clast_expr_red
+      && comp != EQ_EXPR)
+    {
+      struct clast_reduction *r = (struct clast_reduction *) crhs;
+      /* X >= A+1 --> X > A and
+         X <= A-1 --> X < A  */
+      if (r->n == 2
+	  && r->type == clast_red_sum
+	  && clast_expr_const_value_p (r->elts[1], comp == GE_EXPR ? 1 : -1))
+	{
+	  crhs = r->elts[0];
+	  comp = comp == GE_EXPR ? GT_EXPR : LT_EXPR;
+	}
+    }
+
+  mpz_init (bound_one);
+  mpz_init (bound_two);
+
+  ltype = type_for_clast_expr (clhs, ip, bound_one, bound_two);
+  rtype = type_for_clast_expr (crhs, ip, bound_one, bound_two);
+
+  mpz_clear (bound_one);
+  mpz_clear (bound_two);
+  type = max_precision_type (ltype, rtype);
+
+  lhs = clast_to_gcc_expression (type, clhs, ip);
+  rhs = clast_to_gcc_expression (type, crhs, ip);
 
   return fold_build2 (comp, boolean_type_node, lhs, rhs);
 }
@@ -776,87 +851,59 @@ graphite_create_new_guard (edge entry_edge, struct clast_guard *stmt,
 static void
 compute_bounds_for_param (scop_p scop, int param, mpz_t low, mpz_t up)
 {
-  ppl_Linear_Expression_t le;
+  isl_int v;
+  isl_aff *aff = isl_aff_zero_on_domain
+    (isl_local_space_from_space (isl_set_get_space (scop->context)));
 
-  /* Prepare the linear expression corresponding to the parameter that
-     we want to maximize/minimize.  */
-  ppl_new_Linear_Expression_with_dimension (&le, scop_nb_params (scop));
-  ppl_set_coef (le, param, 1);
+  aff = isl_aff_add_coefficient_si (aff, isl_dim_param, param, 1);
 
-  ppl_max_for_le_pointset (SCOP_CONTEXT (scop), le, up);
-  ppl_min_for_le_pointset (SCOP_CONTEXT (scop), le, low);
-  ppl_delete_Linear_Expression (le);
+  isl_int_init (v);
+  isl_set_min (scop->context, aff, &v);
+  isl_int_get_gmp (v, low);
+  isl_set_max (scop->context, aff, &v);
+  isl_int_get_gmp (v, up);
+  isl_int_clear (v);
+  isl_aff_free (aff);
 }
 
 /* Compute the lower bound LOW and upper bound UP for the induction
-   variable at LEVEL for the statement PBB, based on the transformed
-   scattering of PBB: T|I|G|Cst, with T the scattering transform, I
-   the iteration domain, and G the context parameters.  */
+   variable of loop LOOP.
+
+   FIXME: This one is not entirely correct, as min/max expressions in the
+	  calculation can yield to incorrect results. To be completely
+	  correct, we need to evaluate each subexpression generated by
+          CLooG. CLooG does not yet support this, so this is as good as
+	  it can be. */
 
 static void
-compute_bounds_for_level (poly_bb_p pbb, int level, mpz_t low, mpz_t up)
+compute_bounds_for_loop (struct clast_for *loop, mpz_t low, mpz_t up)
 {
-  ppl_Pointset_Powerset_C_Polyhedron_t ps;
-  ppl_Linear_Expression_t le;
+  isl_set *domain;
+  isl_aff *dimension;
+  isl_local_space *local_space;
+  isl_int isl_value;
+  enum isl_lp_result lp_result;
 
-  combine_context_id_scat (&ps, pbb, false);
+  domain = isl_set_copy (isl_set_from_cloog_domain (loop->domain));
+  local_space = isl_local_space_from_space (isl_set_get_space (domain));
+  dimension = isl_aff_zero_on_domain (local_space);
+  dimension = isl_aff_add_coefficient_si (dimension, isl_dim_in,
+					  isl_set_dim (domain, isl_dim_set) - 1,
+					  1);
 
-  /* Prepare the linear expression corresponding to the level that we
-     want to maximize/minimize.  */
-  {
-    ppl_dimension_type dim = pbb_nb_scattering_transform (pbb)
-      + pbb_dim_iter_domain (pbb) + pbb_nb_params (pbb);
+  isl_int_init (isl_value);
 
-    ppl_new_Linear_Expression_with_dimension (&le, dim);
-    ppl_set_coef (le, psct_dynamic_dim (pbb, level), 1);
-  }
+  lp_result = isl_set_min (domain, dimension, &isl_value);
+  assert (lp_result == isl_lp_ok);
+  isl_int_get_gmp (isl_value, low);
 
-  ppl_max_for_le_pointset (ps, le, up);
-  ppl_min_for_le_pointset (ps, le, low);
-  ppl_delete_Linear_Expression (le);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (ps);
-}
+  lp_result = isl_set_max (domain, dimension, &isl_value);
+  assert (lp_result == isl_lp_ok);
+  isl_int_get_gmp (isl_value, up);
 
-/* Walks a CLAST and returns the first statement in the body of a
-   loop.
-
-   FIXME: This function should not be used to get a PBB in the STMT
-   loop in order to find out the iteration domain of the loop: the
-   counter example from Tobias is:
-
-   | for (i = 0; i < 100; i++)
-   |   {
-   |     if (i == 0)
-   |       S1;
-   |     S2;
-   |   }
-
-   This function would return S1 whose iteration domain contains only
-   one point "i = 0", whereas the iteration domain of S2 has 100 points.
-
-   This should be implemented using some functionality existing in
-   CLooG-ISL.  */
-
-static struct clast_user_stmt *
-clast_get_body_of_loop (struct clast_stmt *stmt)
-{
-  if (!stmt
-      || CLAST_STMT_IS_A (stmt, stmt_user))
-    return (struct clast_user_stmt *) stmt;
-
-  if (CLAST_STMT_IS_A (stmt, stmt_for))
-    return clast_get_body_of_loop (((struct clast_for *) stmt)->body);
-
-  if (CLAST_STMT_IS_A (stmt, stmt_guard))
-    return clast_get_body_of_loop (((struct clast_guard *) stmt)->then);
-
-  if (CLAST_STMT_IS_A (stmt, stmt_block))
-    return clast_get_body_of_loop (((struct clast_block *) stmt)->body);
-
-  if (CLAST_STMT_IS_A (stmt, stmt_ass))
-    return clast_get_body_of_loop (stmt->next);
-
-  gcc_unreachable ();
+  isl_int_clear (isl_value);
+  isl_set_free (domain);
+  isl_aff_free (dimension);
 }
 
 /* Returns the type for the induction variable for the loop translated
@@ -895,10 +942,6 @@ graphite_create_new_loop (edge entry_edge, struct clast_for *stmt,
 {
   mpz_t low, up;
 
-  struct clast_user_stmt *body
-    = clast_get_body_of_loop ((struct clast_stmt *) stmt);
-  poly_bb_p pbb = (poly_bb_p) body->statement->usr;
-
   tree stride = gmp_cst_to_tree (type, stmt->stride);
   tree ivvar = create_tmp_var (type, "graphite_IV");
   tree iv, iv_after_increment;
@@ -910,7 +953,7 @@ graphite_create_new_loop (edge entry_edge, struct clast_for *stmt,
 
   mpz_init (low);
   mpz_init (up);
-  compute_bounds_for_level (pbb, level, low, up);
+  compute_bounds_for_loop (stmt, low, up);
   save_clast_name_index (ip->newivs_index, stmt->iterator,
 			 VEC_length (tree, *(ip->newivs)), level, low, up);
   mpz_clear (low);
@@ -982,7 +1025,7 @@ mark_bb_with_pbb (poly_bb_p pbb, basic_block bb, htab_t bb_pbb_mapping)
 
 /* Find BB's related poly_bb_p in hash table BB_PBB_MAPPING.  */
 
-static poly_bb_p
+poly_bb_p
 find_pbb_via_hash (htab_t bb_pbb_mapping, basic_block bb)
 {
   bb_pbb_def tmp;
@@ -997,41 +1040,32 @@ find_pbb_via_hash (htab_t bb_pbb_mapping, basic_block bb)
   return NULL;
 }
 
-/* Check data dependency in LOOP at level LEVEL.
-   BB_PBB_MAPPING is a basic_block and it's related poly_bb_p
-   mapping.  */
+/* Return the scop of the loop and initialize PBBS the set of
+   poly_bb_p that belong to the LOOP.  BB_PBB_MAPPING is a map created
+   by the CLAST code generator between a generated basic_block and its
+   related poly_bb_p.  */
 
-static bool
-dependency_in_loop_p (loop_p loop, htab_t bb_pbb_mapping, int level)
+scop_p
+get_loop_body_pbbs (loop_p loop, htab_t bb_pbb_mapping,
+		    VEC (poly_bb_p, heap) **pbbs)
 {
-  unsigned i,j;
+  unsigned i;
   basic_block *bbs = get_loop_body_in_dom_order (loop);
+  scop_p scop = NULL;
 
   for (i = 0; i < loop->num_nodes; i++)
     {
-      poly_bb_p pbb1 = find_pbb_via_hash (bb_pbb_mapping, bbs[i]);
+      poly_bb_p pbb = find_pbb_via_hash (bb_pbb_mapping, bbs[i]);
 
-      if (pbb1 == NULL)
-       continue;
+      if (pbb == NULL)
+	continue;
 
-      for (j = 0; j < loop->num_nodes; j++)
-       {
-	 poly_bb_p pbb2 = find_pbb_via_hash (bb_pbb_mapping, bbs[j]);
-
-	 if (pbb2 == NULL)
-	   continue;
-
-	 if (dependency_between_pbbs_p (pbb1, pbb2, level))
-	   {
-	     free (bbs);
-	     return true;
-	   }
-       }
+      scop = PBB_SCOP (pbb);
+      VEC_safe_push (poly_bb_p, heap, *pbbs, pbb);
     }
 
   free (bbs);
-
-  return false;
+  return scop;
 }
 
 /* Translates a clast user statement STMT to gimple.
@@ -1138,7 +1172,7 @@ translate_clast_for_loop (loop_p context_loop, struct clast_for *stmt,
   set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
 
   if (flag_loop_parallelize_all
-      && !dependency_in_loop_p (loop, bb_pbb_mapping, level))
+      && loop_is_parallel_p (loop, bb_pbb_mapping, level))
     loop->can_be_parallel = true;
 
   return last_e;
@@ -1358,14 +1392,52 @@ init_cloog_input_file (int scop_number)
   return graphite_out_file;
 }
 
+/* Extend the scattering to NEW_DIMS scattering dimensions.  */
+
+static
+isl_map *extend_scattering(isl_map *scattering, int new_dims)
+{
+  int old_dims, i;
+  isl_space *space;
+  isl_basic_map *change_scattering;
+  isl_map *change_scattering_map;
+
+  old_dims = isl_map_dim (scattering, isl_dim_out);
+
+  space = isl_space_alloc (isl_map_get_ctx (scattering), 0, old_dims, new_dims);
+  change_scattering = isl_basic_map_universe (isl_space_copy (space));
+
+  for (i = 0; i < old_dims; i++)
+    {
+      isl_constraint *c;
+      c = isl_equality_alloc
+	(isl_local_space_from_space (isl_space_copy (space)));
+      isl_constraint_set_coefficient_si (c, isl_dim_in, i, 1);
+      isl_constraint_set_coefficient_si (c, isl_dim_out, i, -1);
+      change_scattering = isl_basic_map_add_constraint (change_scattering, c);
+    }
+
+  for (i = old_dims; i < new_dims; i++)
+    {
+      isl_constraint *c;
+      c = isl_equality_alloc
+	(isl_local_space_from_space (isl_space_copy (space)));
+      isl_constraint_set_coefficient_si (c, isl_dim_out, i, 1);
+      change_scattering = isl_basic_map_add_constraint (change_scattering, c);
+    }
+
+  change_scattering_map = isl_map_from_basic_map (change_scattering);
+  change_scattering_map = isl_map_align_params (change_scattering_map, space);
+  return isl_map_apply_range (scattering, change_scattering_map);
+}
+
 /* Build cloog union domain for SCoP.  */
 
 static CloogUnionDomain *
-build_cloog_union_domain (scop_p scop)
+build_cloog_union_domain (scop_p scop, int nb_scattering_dims)
 {
   int i;
   poly_bb_p pbb;
-
   CloogUnionDomain *union_domain =
     cloog_union_domain_alloc (scop_nb_params (scop));
 
@@ -1376,16 +1448,12 @@ build_cloog_union_domain (scop_p scop)
 
       /* Dead code elimination: when the domain of a PBB is empty,
 	 don't generate code for the PBB.  */
-      if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (PBB_DOMAIN (pbb)))
+      if (isl_set_is_empty(pbb->domain))
 	continue;
 
-      domain = new_Cloog_Domain_from_ppl_Pointset_Powerset (PBB_DOMAIN (pbb),
-							    scop_nb_params (scop),
-							    cloog_state);
-
-      scattering = new_Cloog_Scattering_from_ppl_Polyhedron
-	(PBB_TRANSFORMED_SCATTERING (pbb), scop_nb_params (scop),
-	 pbb_nb_scattering_transform (pbb), cloog_state);
+      domain = cloog_domain_from_isl_set(isl_set_copy(pbb->domain));
+      scattering = cloog_scattering_from_isl_map(extend_scattering(isl_map_copy(pbb->transformed),
+						 nb_scattering_dims));
 
       union_domain = cloog_union_domain_add_domain (union_domain, "", domain,
 						    scattering, pbb);
@@ -1422,6 +1490,11 @@ set_cloog_options (void)
        A  */
   options->strides = 1;
 
+  /* We want the clast to provide the iteration domains of the executed loops.
+     This allows us to derive minimal/maximal values for the induction
+     variables.  */
+  options->save_domains = 1;
+
   /* Disable optimizations and make cloog generate source code closer to the
      input.  This is useful for debugging,  but later we want the optimized
      code.
@@ -1456,20 +1529,38 @@ debug_clast_stmt (struct clast_stmt *stmt)
   print_clast_stmt (stderr, stmt);
 }
 
+/* Get the maximal number of scattering dimensions in the scop SCOP.  */
+
+static
+int get_max_scattering_dimensions (scop_p scop)
+{
+  int i;
+  poly_bb_p pbb;
+  int scattering_dims = 0;
+
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
+    {
+      int pbb_scatt_dims = isl_map_dim (pbb->transformed, isl_dim_out);
+      if (pbb_scatt_dims > scattering_dims)
+	scattering_dims = pbb_scatt_dims;
+    }
+
+  return scattering_dims;
+}
+
 static CloogInput *
 generate_cloog_input (scop_p scop, htab_t params_index)
 {
   CloogUnionDomain *union_domain;
   CloogInput *cloog_input;
   CloogDomain *context;
+  int nb_scattering_dims = get_max_scattering_dimensions (scop);
 
-  int nb_scattering_dims = unify_scattering_dimensions (scop);
-  union_domain = build_cloog_union_domain (scop);
+  union_domain = build_cloog_union_domain (scop, nb_scattering_dims);
   union_domain = add_names_to_union_domain (scop, union_domain,
 					    nb_scattering_dims,
 					    params_index);
-  context = new_Cloog_Domain_from_ppl_Pointset_Powerset
-    (SCOP_CONTEXT (scop), scop_nb_params (scop), cloog_state);
+  context = cloog_domain_from_isl_set (isl_set_copy (scop->context));
 
   cloog_input = cloog_input_alloc (context, union_domain);
 

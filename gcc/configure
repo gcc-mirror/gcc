@@ -604,8 +604,8 @@ enable_plugin
 pluginlibs
 CLOOGINC
 CLOOGLIBS
-PPLINC
-PPLLIBS
+ISLINC
+ISLLIBS
 GMPINC
 GMPLIBS
 target_cpu_default
@@ -934,8 +934,8 @@ CPP
 CXXCPP
 GMPLIBS
 GMPINC
-PPLLIBS
-PPLINC
+ISLLIBS
+ISLINC
 CLOOGLIBS
 CLOOGINC'
 
@@ -1687,8 +1687,8 @@ Some influential environment variables:
   CXXCPP      C++ preprocessor
   GMPLIBS     How to link GMP
   GMPINC      How to find GMP include files
-  PPLLIBS     How to link PPL
-  PPLINC      How to find PPL include files
+  ISLLIBS     How to link ISL
+  ISLINC      How to find ISL include files
   CLOOGLIBS   How to link CLOOG
   CLOOGINC    How to find CLOOG include files
 

@@ -28,6 +28,7 @@ m4_include([ltoptions.m4])
 m4_include([ltsugar.m4])
 m4_include([ltversion.m4])
 m4_include([lt~obsolete.m4])
+m4_include([config/isl.m4])
 m4_include([config/cloog.m4])
 
 AC_INIT(move-if-change)
@@ -132,7 +133,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr mpc ppl cloog libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -1517,107 +1518,23 @@ AC_ARG_WITH(boot-ldflags,
  fi])
 AC_SUBST(poststage1_ldflags)
 
-# Check for PPL
-ppllibs=
-pplinc=
-pwllib=
+# Check for ISL
+dnl Provide configure switches and initialize islinc & isllibs
+dnl with user input.
+ISL_INIT_FLAGS
+if test "x$with_isl" != "xno"; then
+  dnl The minimal version of ISL required for Graphite.
+  ISL_CHECK_VERSION(0,10)
 
-AC_ARG_WITH(ppl,
-[AS_HELP_STRING([--with-ppl=PATH],
-		[specify prefix directory for the installed PPL package.
-		 Equivalent to --with-ppl-include=PATH/include
-		 plus --with-ppl-lib=PATH/lib])])
-AC_ARG_WITH(ppl-include,
-[AS_HELP_STRING([--with-ppl-include=PATH],
-		[specify directory for installed PPL include files])])
-AC_ARG_WITH(ppl-lib,
-[AS_HELP_STRING([--with-ppl-lib=PATH],
-		[specify directory for the installed PPL library])])
-
-AC_ARG_ENABLE(ppl-version-check,
-[AS_HELP_STRING([--disable-ppl-version-check],
-		[disable check for PPL version])])
-
-case $with_ppl in
-  yes | no | "")
-    ;;
-  *)
-    ppllibs="-L$with_ppl/lib"
-    pplinc="-I$with_ppl/include $pplinc"
-    if test -d "$with_ppl/lib" && test -d "$with_ppl/include"; then
-      with_ppl=yes
-    else
-      AC_MSG_ERROR([cannot find directories "$with_ppl/lib" or "$with_ppl/include"])
-    fi
-    ;;
-esac
-
-if test x"$with_ppl_include" != x; then
-  pplinc="-I$with_ppl_include $pplinc"
-  with_ppl=yes
+  dnl Only execute fail-action, if ISL has been requested.
+  ISL_IF_FAILED([
+    AC_MSG_ERROR([Unable to find a usable ISL.  See config.log for details.])])
 fi
-
-if test "x$with_ppl_lib" != x; then
-  ppllibs="-L$with_ppl_lib"
-  with_ppl=yes
-fi
-
-if test x"$with_ppl$with_ppl_include$with_ppl_lib" = x && test -d ${srcdir}/ppl; then
-  if test x"$enable_watchdog" = xyes; then
-    pwllib="-lpwl"
-  fi
-  ppllibs='-L$$r/$(HOST_SUBDIR)/ppl/interfaces/C/'"$lt_cv_objdir"' -L$$r/$(HOST_SUBDIR)/ppl/src/'"$lt_cv_objdir"
-  pplinc='-I$$r/$(HOST_SUBDIR)/ppl/src -I$$r/$(HOST_SUBDIR)/ppl/interfaces/C '
-  enable_ppl_version_check=no
-  with_ppl=yes
-fi
-
-if test "x$with_ppl" != xno; then
-  if test "x$pwllib" = x; then
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS $ppllibs -lstdc++ -lm"
-    AC_CHECK_LIB(pwl, PWL_handle_timeout, [pwllib="-lpwl"])
-    LIBS="$saved_LIBS"
-  fi
-
-  ppllibs="$ppllibs -lppl_c -lppl $pwllib -lgmpxx"
-
-  if test "$enable_ppl_version_check" != no; then
-    saved_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $pplinc $gmpinc"
-    AC_MSG_CHECKING([for version 0.11 (revision 0 or later) of PPL])
-    AC_TRY_COMPILE([#include "ppl_c.h"],[
-    #if PPL_VERSION_MAJOR != 0 || PPL_VERSION_MINOR < 11
-    choke me
-    #endif
-    ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); ppllibs= ; pplinc= ; with_ppl=no ])
-    CFLAGS="$saved_CFLAGS"
-  fi
-fi
-
-# Flags needed for PPL
-AC_SUBST(ppllibs)
-AC_SUBST(pplinc)
-
 
 # Check for CLOOG
-
 dnl Provide configure switches and initialize clooginc & clooglibs
 dnl with user input.
 CLOOG_INIT_FLAGS
-if test "x$with_ppl" = "xno"; then
-  dnl Only execute fail-action, if CLooG has been requested.
-  CLOOG_REQUESTED([graphite_requested=yes], [graphite_requested=no])
-  if test "${graphite_requested}" = yes; then
-    AC_MSG_ERROR([Unable to find a usable PPL.  See config.log for details.])
-  fi
-  with_cloog=no
-fi
-if test "x${with_cloog}" = x && test "x${with_cloog_include}" = x \
-  && test "x${with_cloog_lib}" = x && test -d ${srcdir}/cloog; then
-  clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
-  clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include '
-fi
 if test "x$with_cloog" != "xno"; then
   dnl The minimal version of CLooG required for Graphite.
   dnl
@@ -2684,7 +2601,7 @@ changequote(,)
 changequote([,])
 
     case $lib in
-    mpc | mpfr | gmp | ppl | cloog)
+    mpc | mpfr | gmp | cloog)
       # If we're processing --with-$lib, --with-$lib-include or
       # --with-$lib-lib, for one of the libs above, and target is
       # different from host, don't pass the current argument to any
@@ -3265,9 +3182,6 @@ compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
 case "$target" in
   hppa*64*-*-hpux*) ;;
   hppa*-*-hpux*) compare_exclusions="gcc/cc*-checksum\$(objext) | */libgcc/lib2funcs* | gcc/ada/*tools/*" ;;
-esac
-case " $configdirs " in
-*" ppl "*) compare_exclusions="$compare_exclusions | ppl/src/ppl-config.o" ;;
 esac
 AC_SUBST(compare_exclusions)
 
