@@ -1,3 +1,8 @@
+2012-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* crontab: Disable snapshots from gcc-4_5-branch.
+	* update_version_svn: Ingore gcc-4_5-branch.
+
 2012-03-23  Richard Guenther  <rguenther@suse.de>
 
 	* crontab: Enable snapshots from gcc-4_7-branch.
