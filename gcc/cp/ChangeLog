@@ -1,5 +1,9 @@
 2012-07-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53821
+	* semantics.c (maybe_add_lambda_conv_op): Don't set
+	DECL_INTERFACE_KNOWN.
+
 	PR c++/53524
 	* call.c (build_conditional_expr_1): Don't warn about comparison of
 	two enumerators before their enumeration is complete.
