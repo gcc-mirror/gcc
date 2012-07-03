@@ -1,3 +1,9 @@
+2012-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53812
+	* semantics.c (finish_goto_stmt): Surround computed goto argument
+	with CLEANUP_POINT_EXPR if needed.
+
 2012-07-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53619
