@@ -1,3 +1,8 @@
+2012-07-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53816
+	* g++.dg/template/ref6.C: New.
+
 2012-07-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53568
