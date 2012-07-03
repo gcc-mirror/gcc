@@ -1,7 +1,7 @@
 // List implementation (out of line) -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-// 2011 Free Software Foundation, Inc.
+// 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -139,14 +139,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     list<_Tp, _Alloc>::
     resize(size_type __new_size)
     {
-      if (__new_size > size())
-	_M_default_append(__new_size - size());
-      else if (__new_size < size())
-	{
-	  iterator __i = begin();
-	  std::advance(__i, __new_size);
-	  erase(__i, end());
-	}
+      iterator __i = begin();
+      size_type __len = 0;
+      for (; __i != end() && __len < __new_size; ++__i, ++__len)
+        ;
+      if (__len == __new_size)
+        erase(__i, end());
+      else                          // __i == end()
+	_M_default_append(__new_size - __len);
     }
 
   template<typename _Tp, typename _Alloc>
@@ -154,14 +154,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     list<_Tp, _Alloc>::
     resize(size_type __new_size, const value_type& __x)
     {
-      if (__new_size > size())
-	insert(end(), __new_size - size(), __x);
-      else if (__new_size < size())
-	{
-	  iterator __i = begin();
-	  std::advance(__i, __new_size);
-	  erase(__i, end());
-	}
+      iterator __i = begin();
+      size_type __len = 0;
+      for (; __i != end() && __len < __new_size; ++__i, ++__len)
+        ;
+      if (__len == __new_size)
+        erase(__i, end());
+      else                          // __i == end()
+        insert(end(), __new_size - __len, __x);
     }
 #else
   template<typename _Tp, typename _Alloc>
@@ -312,11 +312,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      ++__first1;
 	  if (__first2 != __last2)
 	    _M_transfer(__last1, __first2, __last2);
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	  this->_M_impl._M_size += __x.size();
-	  __x._M_impl._M_size = 0;
-#endif
 	}
     }
 
@@ -351,11 +346,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		++__first1;
 	    if (__first2 != __last2)
 	      _M_transfer(__last1, __first2, __last2);
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	    this->_M_impl._M_size += __x.size();
-	    __x._M_impl._M_size = 0;
-#endif
 	  }
       }
 

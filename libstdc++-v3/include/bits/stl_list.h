@@ -1,7 +1,7 @@
 // List implementation -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-// 2011 Free Software Foundation, Inc.
+// 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -313,27 +313,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	__detail::_List_node_base _M_node;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	size_t                    _M_size;
-#endif
-
 	_List_impl()
 	: _Node_alloc_type(), _M_node()
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	, _M_size(0)
-#endif
 	{ }
 
 	_List_impl(const _Node_alloc_type& __a)
 	: _Node_alloc_type(__a), _M_node()
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	, _M_size(0)
-#endif
 	{ }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 	_List_impl(_Node_alloc_type&& __a)
-	: _Node_alloc_type(std::move(__a)), _M_node(), _M_size(0)
+	: _Node_alloc_type(std::move(__a)), _M_node()
 	{ }
 #endif
       };
@@ -342,23 +332,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       _List_node<_Tp>*
       _M_get_node()
-      {
-	_List_node<_Tp>* __tmp = _M_impl._Node_alloc_type::allocate(1);
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	++_M_impl._M_size;
-#endif	
-	return __tmp;
-      }
+      { return _M_impl._Node_alloc_type::allocate(1); }
 
       void
       _M_put_node(_List_node<_Tp>* __p)
-      {
-	_M_impl._Node_alloc_type::deallocate(__p, 1);
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	--_M_impl._M_size;
-#endif
-      }
-      
+      { _M_impl._Node_alloc_type::deallocate(__p, 1); }
+
   public:
       typedef _Alloc allocator_type;
 
@@ -392,7 +371,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	_M_init();
 	__detail::_List_node_base::swap(_M_impl._M_node, __x._M_impl._M_node);
-	std::swap(_M_impl._M_size, __x._M_impl._M_size);
       }
 #endif
 
@@ -874,13 +852,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**  Returns the number of elements in the %list.  */
       size_type
       size() const _GLIBCXX_NOEXCEPT
-      {
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	return this->_M_impl._M_size;
-#else
-	return std::distance(begin(), end());
-#endif
-      }
+      { return std::distance(begin(), end()); }
 
       /**  Returns the size() of the largest possible %list.  */
       size_type
@@ -1215,9 +1187,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	__detail::_List_node_base::swap(this->_M_impl._M_node, 
 					__x._M_impl._M_node);
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	std::swap(this->_M_impl._M_size, __x._M_impl._M_size);
-#endif
 
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 431. Swapping containers with unequal allocators.
@@ -1262,11 +1231,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    _M_check_equal_allocators(__x);
 
 	    this->_M_transfer(__position, __x.begin(), __x.end());
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	    this->_M_impl._M_size += __x.size();
-	    __x._M_impl._M_size = 0;
-#endif
 	  }
       }
 
@@ -1298,14 +1262,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  return;
 
 	if (this != &__x)
-	  {
-	    _M_check_equal_allocators(__x);
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	    ++this->_M_impl._M_size;
-	    --__x._M_impl._M_size;
-#endif
-	  }
+	  _M_check_equal_allocators(__x);
 
 	this->_M_transfer(__position, __i, __j);
       }
@@ -1340,15 +1297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	if (__first != __last)
 	  {
 	    if (this != &__x)
-	      {
-		_M_check_equal_allocators(__x);
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-		const size_type __size = std::distance(__first, __last);
-		this->_M_impl._M_size += __size;
-		__x._M_impl._M_size -= __size;
-#endif
-	      }
+	      _M_check_equal_allocators(__x);
 
 	    this->_M_transfer(__position, __first, __last);
 	  }
@@ -1624,10 +1573,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     inline bool
     operator==(const list<_Tp, _Alloc>& __x, const list<_Tp, _Alloc>& __y)
     {
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      return (__x.size() == __y.size()
-	      && std::equal(__x.begin(), __x.end(), __y.begin()));
-#else
       typedef typename list<_Tp, _Alloc>::const_iterator const_iterator;
       const_iterator __end1 = __x.end();
       const_iterator __end2 = __y.end();
@@ -1640,7 +1585,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  ++__i2;
 	}
       return __i1 == __end1 && __i2 == __end2;
-#endif
     }
 
   /**
