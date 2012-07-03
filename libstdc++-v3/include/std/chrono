@@ -1,6 +1,6 @@
 // <chrono> -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -174,8 +174,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
       {
 	typedef typename _ToDur::period				__to_period;
 	typedef typename _ToDur::rep				__to_rep;
-	typedef ratio_divide<_Period, __to_period> 		__r_div;
-	typedef typename __r_div::type 				__cf;
+	typedef ratio_divide<_Period, __to_period> 		__cf;
 	typedef typename common_type<__to_rep, _Rep, intmax_t>::type
 	  							__cr;
 	typedef  __duration_cast_impl<_ToDur, __cf, __cr,
@@ -242,7 +241,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 	template<typename _Rep2, typename _Period2, typename = typename
 	       enable_if<treat_as_floating_point<rep>::value
-			 || (ratio_divide<_Period2, period>::type::den == 1
+			 || (ratio_divide<_Period2, period>::den == 1
 			     && !treat_as_floating_point<_Rep2>::value)>::type>
 	  constexpr duration(const duration<_Rep2, _Period2>& __d)
 	  : __r(duration_cast<duration>(__d).count()) { }

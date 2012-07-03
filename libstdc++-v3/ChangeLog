@@ -1,3 +1,16 @@
+2012-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/53840
+	* include/std/ratio (ratio_multiply, ratio_divide, ratio_add,
+	ratio_subtract): Use template aliases.
+	* include/std/chrono (duration<>::duration(const duration<>&),
+	duration_cast): Adjust.
+	* testsuite/20_util/ratio/operations/53840.cc: New.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+
 2012-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:

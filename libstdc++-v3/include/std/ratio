@@ -1,6 +1,6 @@
 // ratio -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the 
@@ -282,9 +282,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<intmax_t _Num, intmax_t _Den>
     constexpr intmax_t ratio<_Num, _Den>::den;
 
-  /// ratio_multiply
   template<typename _R1, typename _R2>
-    struct ratio_multiply
+    struct __ratio_multiply
     {
     private:
       static const intmax_t __gcd1 =
@@ -304,18 +303,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _R1, typename _R2>
-    constexpr intmax_t ratio_multiply<_R1, _R2>::num;
+    constexpr intmax_t __ratio_multiply<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
-    constexpr intmax_t ratio_multiply<_R1, _R2>::den;
+    constexpr intmax_t __ratio_multiply<_R1, _R2>::den;
 
-  /// ratio_divide
+  /// ratio_multiply
   template<typename _R1, typename _R2>
-    struct ratio_divide
+    using ratio_multiply = typename __ratio_multiply<_R1, _R2>::type;
+
+  template<typename _R1, typename _R2>
+    struct __ratio_divide
     {
       static_assert(_R2::num != 0, "division by 0");
 
-      typedef typename ratio_multiply<
+      typedef typename __ratio_multiply<
         _R1,
         ratio<_R2::den, _R2::num>>::type type;
 
@@ -324,10 +326,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _R1, typename _R2>
-    constexpr intmax_t ratio_divide<_R1, _R2>::num;
+    constexpr intmax_t __ratio_divide<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
-    constexpr intmax_t ratio_divide<_R1, _R2>::den;
+    constexpr intmax_t __ratio_divide<_R1, _R2>::den;
+
+  /// ratio_divide
+  template<typename _R1, typename _R2>
+    using ratio_divide = typename __ratio_divide<_R1, _R2>::type;
 
   /// ratio_equal
   template<typename _R1, typename _R2>
@@ -464,9 +470,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef ratio<__n_final::__quot_lo, __d_final::__lo> type;
     };
 
-  /// ratio_add
   template<typename _R1, typename _R2>
-    struct ratio_add
+    struct __ratio_add
     {
       typedef typename __ratio_add_impl<_R1, _R2>::type type;
       static constexpr intmax_t num = type::num;
@@ -474,16 +479,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _R1, typename _R2>
-    constexpr intmax_t ratio_add<_R1, _R2>::num;
+    constexpr intmax_t __ratio_add<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
-    constexpr intmax_t ratio_add<_R1, _R2>::den;
+    constexpr intmax_t __ratio_add<_R1, _R2>::den;
 
-  /// ratio_subtract
+  /// ratio_add
   template<typename _R1, typename _R2>
-    struct ratio_subtract
+    using ratio_add = typename __ratio_add<_R1, _R2>::type;
+
+  template<typename _R1, typename _R2>
+    struct __ratio_subtract
     {
-      typedef typename ratio_add<
+      typedef typename __ratio_add<
         _R1,
         ratio<-_R2::num, _R2::den>>::type type;
 
@@ -492,11 +500,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _R1, typename _R2>
-    constexpr intmax_t ratio_subtract<_R1, _R2>::num;
+    constexpr intmax_t __ratio_subtract<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
-    constexpr intmax_t ratio_subtract<_R1, _R2>::den;
+    constexpr intmax_t __ratio_subtract<_R1, _R2>::den;
 
+  /// ratio_subtract
+  template<typename _R1, typename _R2>
+    using ratio_subtract = typename __ratio_subtract<_R1, _R2>::type;
 
 
   typedef ratio<1,       1000000000000000000> atto;
