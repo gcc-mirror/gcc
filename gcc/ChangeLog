@@ -1,3 +1,9 @@
+2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53811
+	* config/i386/i386.c (x86_output_mi_thunk): Check if fnaddr satisfies
+	sibcall_insn_operand.  Move it to a temporary register if not.
+
 2012-07-03  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/28896
