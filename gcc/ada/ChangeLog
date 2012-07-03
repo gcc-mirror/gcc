@@ -1,5 +1,10 @@
 2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Call_to_gnu): Robustify test for function case
+	if the CICO mechanism is used.
+
+2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (build_simple_component_ref): Do not look
 	through an extension if the type contains a placeholder.
 
