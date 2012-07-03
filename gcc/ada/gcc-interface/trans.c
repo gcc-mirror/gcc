@@ -1424,6 +1424,15 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	    TREE_NO_TRAMPOLINE (gnu_expr) = TREE_CONSTANT (gnu_expr) = 1;
 	}
 
+      /* For 'Access, issue an error message if the prefix is a C++ method
+	 since it can use a special calling convention on some platforms,
+	 which cannot be propagated to the access type.  */
+      else if (attribute == Attr_Access
+	       && Nkind (Prefix (gnat_node)) == N_Identifier
+	       && is_cplusplus_method (Entity (Prefix (gnat_node))))
+	post_error ("access to C++ constructor or member function not allowed",
+		    gnat_node);
+
       /* For other address attributes applied to a nested function,
 	 find an inner ADDR_EXPR and annotate it so that we can issue
 	 a useful warning with -Wtrampolines.  */

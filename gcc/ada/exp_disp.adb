@@ -803,6 +803,11 @@ package body Exp_Disp is
       Subp_Ptr_Typ := Create_Itype (E_Access_Subprogram_Type, Call_Node);
       Set_Etype          (Subp_Typ, Res_Typ);
       Set_Returns_By_Ref (Subp_Typ, Returns_By_Ref (Subp));
+      Set_Convention     (Subp_Typ, Convention (Subp));
+
+      --  Notify gigi that the designated type is a dispatching primitive
+
+      Set_Is_Dispatch_Table_Entity (Subp_Typ);
 
       --  Create a new list of parameters which is a copy of the old formal
       --  list including the creation of a new set of matching entities.
@@ -1850,6 +1855,7 @@ package body Exp_Disp is
 
       Thunk_Id := Make_Temporary (Loc, 'T');
       Set_Is_Thunk (Thunk_Id);
+      Set_Convention (Thunk_Id, Convention (Prim));
 
       --  Procedure case
 
@@ -8468,8 +8474,9 @@ package body Exp_Disp is
 
                Set_Init_Proc (Typ, Init);
                Set_Is_Imported    (Init);
+               Set_Is_Constructor (Init);
                Set_Interface_Name (Init, Interface_Name (E));
-               Set_Convention     (Init, Convention_C);
+               Set_Convention     (Init, Convention_CPP);
                Set_Is_Public      (Init);
                Set_Has_Completion (Init);
             end if;
@@ -8562,8 +8569,9 @@ package body Exp_Disp is
                   Parameter_Specifications => Parms));
 
             Set_Is_Imported    (Constructor_Id);
+            Set_Is_Constructor (Constructor_Id);
             Set_Interface_Name (Constructor_Id, Interface_Name (E));
-            Set_Convention     (Constructor_Id, Convention_C);
+            Set_Convention     (Constructor_Id, Convention_CPP);
             Set_Is_Public      (Constructor_Id);
             Set_Has_Completion (Constructor_Id);
 

@@ -1,5 +1,24 @@
 2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_disp.adb (Expand_Dispatching_Call): Propagate the convention on
+	the designated subprogram type and also set Is_Dispatch_Table_Entity.
+	(Expand_Interface_Thunk): Propagate the convention on the thunk.
+	(Set_CPP_Constructors_Old): Set Is_Constructor and Convention_CPP on
+	the internal view of the constructors.
+	(Set_CPP_Constructors): Likewise.
+	* sem_prag.adb (Analyze_Pragma) <Pragma_CPP_Constructor>: Set the
+	convention on the function.
+	* gcc-interface/gigi.h (is_cplusplus_method): Declare.
+	* gcc-interface/decl.c (Has_Thiscall_Convention): New macro.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Test it to set the `thiscall'
+	calling convention
+	(get_minimal_subprog_decl): Likewise.
+	(is_cplusplus_method): New predicate.
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Access>: Issue an
+	error on access to C++ constructor or member function.
+
+2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (gnat_pushdecl): Set TYPE_CONTEXT for types
 	attached to a TYPE_DECL.
 
