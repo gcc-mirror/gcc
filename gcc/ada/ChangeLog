@@ -1,5 +1,10 @@
 2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (build_simple_component_ref): Do not look
+	through an extension if the type contains a placeholder.
+
+2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_disp.adb (Expand_Dispatching_Call): Propagate the convention on
 	the designated subprogram type and also set Is_Dispatch_Table_Entity.
 	(Expand_Interface_Thunk): Propagate the convention on the thunk.
