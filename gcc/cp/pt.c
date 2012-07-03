@@ -20215,6 +20215,10 @@ build_non_dependent_expr (tree expr)
   if (BRACE_ENCLOSED_INITIALIZER_P (expr))
     return expr;
 
+  /* Don't wrap a dummy object, we need to be able to test for it.  */
+  if (is_dummy_object (expr))
+    return expr;
+
   if (TREE_CODE (expr) == COND_EXPR)
     return build3 (COND_EXPR,
 		   TREE_TYPE (expr),
