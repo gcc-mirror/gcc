@@ -1,5 +1,12 @@
 2012-07-03  Richard Guenther  <rguenther@suse.de>
 
+	* Makfile.def (isl): Remove not necessary extra_exports and
+	extra_make_flags.
+	(cloog): Use $$CPPFLAGS instead of ${CPPFLAGS}.
+	* Makefile.in: Regenerated.
+
+2012-07-03  Richard Guenther  <rguenther@suse.de>
+
 	* Makefile.def (cloog): Add V=1 to extra_make_flags.
 	* configure.ac: If either the ISL or the CLooG check failed
 	do not try to build in-tree versions.

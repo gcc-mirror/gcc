@@ -13029,7 +13029,7 @@ configure-isl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/isl/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
-	$(HOST_EXPORTS) CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	$(HOST_EXPORTS)  \
 	echo Configuring in $(HOST_SUBDIR)/isl; \
 	cd "$(HOST_SUBDIR)/isl" || exit 1; \
 	case $(srcdir) in \
@@ -13061,7 +13061,7 @@ configure-stage1-isl:
 	$(HOST_EXPORTS) \
 	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage 1 in $(HOST_SUBDIR)/isl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
 	cd $(HOST_SUBDIR)/isl || exit 1; \
@@ -13094,7 +13094,7 @@ configure-stage2-isl:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/isl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
 	cd $(HOST_SUBDIR)/isl || exit 1; \
@@ -13128,7 +13128,7 @@ configure-stage3-isl:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/isl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
 	cd $(HOST_SUBDIR)/isl || exit 1; \
@@ -13162,7 +13162,7 @@ configure-stage4-isl:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/isl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
 	cd $(HOST_SUBDIR)/isl || exit 1; \
@@ -13196,7 +13196,7 @@ configure-stageprofile-isl:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage profile in $(HOST_SUBDIR)/isl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
 	cd $(HOST_SUBDIR)/isl || exit 1; \
@@ -13230,7 +13230,7 @@ configure-stagefeedback-isl:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/isl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
 	cd $(HOST_SUBDIR)/isl || exit 1; \
@@ -13264,9 +13264,9 @@ maybe-all-isl: all-isl
 all-isl: configure-isl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/isl && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
 		$(TARGET-isl))
 @endif isl
 
@@ -13285,7 +13285,7 @@ all-stage1-isl: configure-stage1-isl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE1_TFLAGS)"; \
-	$(HOST_EXPORTS) CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	$(HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
@@ -13294,7 +13294,7 @@ all-stage1-isl: configure-stage1-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)  CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS)   \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-isl)
 
@@ -13309,7 +13309,7 @@ clean-stage1-isl:
 	fi; \
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" clean
+		 clean
 @endif isl-bootstrap
 
 
@@ -13327,7 +13327,7 @@ all-stage2-isl: configure-stage2-isl
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE2_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
@@ -13336,7 +13336,7 @@ all-stage2-isl: configure-stage2-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE2_TFLAGS)" \
 		$(TARGET-stage2-isl)
 
@@ -13352,7 +13352,7 @@ clean-stage2-isl:
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" clean
+		 clean
 @endif isl-bootstrap
 
 
@@ -13370,7 +13370,7 @@ all-stage3-isl: configure-stage3-isl
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE3_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
@@ -13379,7 +13379,7 @@ all-stage3-isl: configure-stage3-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE3_TFLAGS)" \
 		$(TARGET-stage3-isl)
 
@@ -13395,7 +13395,7 @@ clean-stage3-isl:
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" clean
+		 clean
 @endif isl-bootstrap
 
 
@@ -13413,7 +13413,7 @@ all-stage4-isl: configure-stage4-isl
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE4_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
@@ -13422,7 +13422,7 @@ all-stage4-isl: configure-stage4-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE4_TFLAGS)" \
 		$(TARGET-stage4-isl)
 
@@ -13438,7 +13438,7 @@ clean-stage4-isl:
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" clean
+		 clean
 @endif isl-bootstrap
 
 
@@ -13456,7 +13456,7 @@ all-stageprofile-isl: configure-stageprofile-isl
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEprofile_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
@@ -13465,7 +13465,7 @@ all-stageprofile-isl: configure-stageprofile-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGEprofile_TFLAGS)" \
 		$(TARGET-stageprofile-isl)
 
@@ -13481,7 +13481,7 @@ clean-stageprofile-isl:
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" clean
+		 clean
 @endif isl-bootstrap
 
 
@@ -13499,7 +13499,7 @@ all-stagefeedback-isl: configure-stagefeedback-isl
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
@@ -13508,7 +13508,7 @@ all-stagefeedback-isl: configure-stagefeedback-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGEfeedback_TFLAGS)" \
 		$(TARGET-stagefeedback-isl)
 
@@ -13524,7 +13524,7 @@ clean-stagefeedback-isl:
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" clean
+		 clean
 @endif isl-bootstrap
 
 
@@ -13542,7 +13542,7 @@ check-isl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/isl && \
-	  $(MAKE) $(FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" check)
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif isl
 
@@ -13577,7 +13577,7 @@ info-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing info in isl" ; \
@@ -13602,7 +13602,7 @@ dvi-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing dvi in isl" ; \
@@ -13627,7 +13627,7 @@ pdf-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing pdf in isl" ; \
@@ -13652,7 +13652,7 @@ html-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing html in isl" ; \
@@ -13677,7 +13677,7 @@ TAGS-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing TAGS in isl" ; \
@@ -13703,7 +13703,7 @@ install-info-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-info in isl" ; \
@@ -13729,7 +13729,7 @@ install-pdf-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-pdf in isl" ; \
@@ -13755,7 +13755,7 @@ install-html-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-html in isl" ; \
@@ -13780,7 +13780,7 @@ installcheck-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing installcheck in isl" ; \
@@ -13804,7 +13804,7 @@ mostlyclean-isl:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing mostlyclean in isl" ; \
@@ -13828,7 +13828,7 @@ clean-isl:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing clean in isl" ; \
@@ -13852,7 +13852,7 @@ distclean-isl:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing distclean in isl" ; \
@@ -13876,7 +13876,7 @@ maintainer-clean-isl:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing maintainer-clean in isl" ; \
@@ -13904,7 +13904,7 @@ configure-cloog:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/cloog/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
-	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring in $(HOST_SUBDIR)/cloog; \
 	cd "$(HOST_SUBDIR)/cloog" || exit 1; \
 	case $(srcdir) in \
@@ -13936,7 +13936,7 @@ configure-stage1-cloog:
 	$(HOST_EXPORTS) \
 	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 1 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -13969,7 +13969,7 @@ configure-stage2-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14003,7 +14003,7 @@ configure-stage3-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14037,7 +14037,7 @@ configure-stage4-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14071,7 +14071,7 @@ configure-stageprofile-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage profile in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14105,7 +14105,7 @@ configure-stagefeedback-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14139,9 +14139,9 @@ maybe-all-cloog: all-cloog
 all-cloog: configure-cloog
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		$(TARGET-cloog))
 @endif cloog
 
@@ -14160,7 +14160,7 @@ all-stage1-cloog: configure-stage1-cloog
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE1_TFLAGS)"; \
-	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
@@ -14169,7 +14169,7 @@ all-stage1-cloog: configure-stage1-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)  CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 \
+		$(EXTRA_HOST_FLAGS)  CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-cloog)
 
@@ -14184,7 +14184,7 @@ clean-stage1-cloog:
 	fi; \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14202,7 +14202,7 @@ all-stage2-cloog: configure-stage2-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE2_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
@@ -14211,7 +14211,7 @@ all-stage2-cloog: configure-stage2-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGE2_TFLAGS)" \
 		$(TARGET-stage2-cloog)
 
@@ -14227,7 +14227,7 @@ clean-stage2-cloog:
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14245,7 +14245,7 @@ all-stage3-cloog: configure-stage3-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE3_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
@@ -14254,7 +14254,7 @@ all-stage3-cloog: configure-stage3-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGE3_TFLAGS)" \
 		$(TARGET-stage3-cloog)
 
@@ -14270,7 +14270,7 @@ clean-stage3-cloog:
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14288,7 +14288,7 @@ all-stage4-cloog: configure-stage4-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE4_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
@@ -14297,7 +14297,7 @@ all-stage4-cloog: configure-stage4-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGE4_TFLAGS)" \
 		$(TARGET-stage4-cloog)
 
@@ -14313,7 +14313,7 @@ clean-stage4-cloog:
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14331,7 +14331,7 @@ all-stageprofile-cloog: configure-stageprofile-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEprofile_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
@@ -14340,7 +14340,7 @@ all-stageprofile-cloog: configure-stageprofile-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGEprofile_TFLAGS)" \
 		$(TARGET-stageprofile-cloog)
 
@@ -14356,7 +14356,7 @@ clean-stageprofile-cloog:
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14374,7 +14374,7 @@ all-stagefeedback-cloog: configure-stagefeedback-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include ${CPPFLAGS}"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
@@ -14383,7 +14383,7 @@ all-stagefeedback-cloog: configure-stagefeedback-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGEfeedback_TFLAGS)" \
 		$(TARGET-stagefeedback-cloog)
 
@@ -14399,7 +14399,7 @@ clean-stagefeedback-cloog:
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14417,7 +14417,7 @@ check-cloog:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1 check)
+	  $(MAKE) $(FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 check)
 
 @endif cloog
 
@@ -14452,7 +14452,7 @@ info-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing info in cloog" ; \
@@ -14477,7 +14477,7 @@ dvi-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing dvi in cloog" ; \
@@ -14502,7 +14502,7 @@ pdf-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing pdf in cloog" ; \
@@ -14527,7 +14527,7 @@ html-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing html in cloog" ; \
@@ -14552,7 +14552,7 @@ TAGS-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing TAGS in cloog" ; \
@@ -14578,7 +14578,7 @@ install-info-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-info in cloog" ; \
@@ -14604,7 +14604,7 @@ install-pdf-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-pdf in cloog" ; \
@@ -14630,7 +14630,7 @@ install-html-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-html in cloog" ; \
@@ -14655,7 +14655,7 @@ installcheck-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing installcheck in cloog" ; \
@@ -14679,7 +14679,7 @@ mostlyclean-cloog:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing mostlyclean in cloog" ; \
@@ -14703,7 +14703,7 @@ clean-cloog:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing clean in cloog" ; \
@@ -14727,7 +14727,7 @@ distclean-cloog:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing distclean in cloog" ; \
@@ -14751,7 +14751,7 @@ maintainer-clean-cloog:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS}" LDFLAGS="$$LDFLAGS" V=1; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing maintainer-clean in cloog" ; \
