@@ -3113,12 +3113,55 @@ label:
 ;; Logical operations
 ;; -------------------------------------------------------------------------
 
-(define_insn "*andsi3_compact"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=z,r")
-	(and:SI (match_operand:SI 1 "arith_reg_operand" "%0,0")
-		(match_operand:SI 2 "logical_operand" "K08,r")))]
+(define_expand "andsi3"
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(and:SI (match_operand:SI 1 "logical_reg_operand" "")
+		(match_operand:SI 2 "logical_and_operand" "")))]
+  ""
+{
+  /* If it is possible to turn the and insn into a zero extension
+     already, redundant zero extensions will be folded, which results
+     in better code.  
+     Ideally the splitter of *andsi_compact would be enough, if reundant
+     zero extensions were detected after the combine pass, which does not
+     happen at the moment.  */
+  if (TARGET_SH1)
+    {
+      if (satisfies_constraint_Jmb (operands[2]))
+	{
+	  emit_insn (gen_zero_extendqisi2 (operands[0],
+					   gen_lowpart (QImode, operands[1])));
+	  DONE;
+	}
+      else if (satisfies_constraint_Jmw (operands[2]))
+	{
+	  emit_insn (gen_zero_extendhisi2 (operands[0],
+					   gen_lowpart (HImode, operands[1])));
+	  DONE;
+	}
+    }
+})
+
+(define_insn_and_split "*andsi_compact"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r,z,r")
+	(and:SI (match_operand:SI 1 "arith_reg_operand" "%r,r,0,0")
+		(match_operand:SI 2 "logical_and_operand" "Jmb,Jmw,K08,r")))]
   "TARGET_SH1"
-  "and	%2,%0"
+  "@
+	extu.b	%1,%0
+	extu.w	%1,%0
+	and	%2,%0
+	and	%2,%0"
+  "&& 1"
+ [(set (match_dup 0) (zero_extend:SI (match_dup 1)))]
+{
+  if (satisfies_constraint_Jmb (operands[2]))
+    operands[1] = gen_lowpart (QImode, operands[1]);
+  else if (satisfies_constraint_Jmw (operands[2]))
+    operands[1] = gen_lowpart (HImode, operands[1]);
+  else
+    FAIL;
+}
   [(set_attr "type" "arith")])
 
 (define_insn "*andsi3_media"
@@ -3138,24 +3181,6 @@ label:
   "TARGET_SH2A && satisfies_constraint_Psz (operands[2])"
   "bclr\\t%W2,%0"
   [(set_attr "type" "arith")])
-
-;; If the constant is 255, then emit an extu.b instruction instead of an
-;; and, since that will give better code.
-
-(define_expand "andsi3"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(and:SI (match_operand:SI 1 "logical_reg_operand" "")
-		(match_operand:SI 2 "logical_operand" "")))]
-  ""
-{
-  if (TARGET_SH1
-      && CONST_INT_P (operands[2]) && INTVAL (operands[2]) == 255)
-    {
-      emit_insn (gen_zero_extendqisi2 (operands[0],
-				       gen_lowpart (QImode, operands[1])));
-      DONE;
-    }
-})
 
 (define_insn_and_split "anddi3"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r,r,r")
