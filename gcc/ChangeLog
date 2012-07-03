@@ -1,5 +1,10 @@
 2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_option_override_internal): Fix wrong
+	code model string in the error message.
+
+2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/53811
 	* config/i386/i386.c (x86_output_mi_thunk): Check if fnaddr satisfies
 	sibcall_insn_operand.  Move it to a temporary register if not.
