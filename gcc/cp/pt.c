@@ -8027,6 +8027,23 @@ uses_template_parms (tree t)
   return dependent_p;
 }
 
+/* Returns true iff current_function_decl is an incompletely instantiated
+   template.  Useful instead of processing_template_decl because the latter
+   is set to 0 during fold_non_dependent_expr.  */
+
+bool
+in_template_function (void)
+{
+  tree fn = current_function_decl;
+  bool ret;
+  ++processing_template_decl;
+  ret = (fn && DECL_LANG_SPECIFIC (fn)
+	 && DECL_TEMPLATE_INFO (fn)
+	 && any_dependent_template_arguments_p (DECL_TI_ARGS (fn)));
+  --processing_template_decl;
+  return ret;
+}
+
 /* Returns true if T depends on any template parameter with level LEVEL.  */
 
 int

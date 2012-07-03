@@ -1,5 +1,8 @@
 2012-07-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53619
+	* g++.dg/cpp0x/lambda/lambda-this5.C: New.
+
 	PR c++/53783
 	* g++.dg/cpp0x/lambda/lambda-template7.C: New.
 

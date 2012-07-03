@@ -1,5 +1,10 @@
 2012-07-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53619
+	* pt.c (in_template_function): New.
+	* cp-tree.h: Declare it.
+	* class.c (build_base_path, resolves_to_fixed_type_p): Use it.
+
 	PR c++/53783
 	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Use tsubst
 	for LAMBDA_EXPR_EXTRA_SCOPE.
