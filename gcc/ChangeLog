@@ -1,3 +1,8 @@
+2012-07-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53826
+	* tree.c (build_zero_cst): Handle NULLPTR_TYPE.
+
 2012-07-03  Nick Clifton  <nickc@redhat.com>
 
 	* config/mep/mep.c (mep_reorg_regmove): Use

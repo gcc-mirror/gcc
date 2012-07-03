@@ -1640,7 +1640,7 @@ build_zero_cst (tree type)
     {
     case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
     case POINTER_TYPE: case REFERENCE_TYPE:
-    case OFFSET_TYPE:
+    case OFFSET_TYPE: case NULLPTR_TYPE:
       return build_int_cst (type, 0);
 
     case REAL_TYPE:
