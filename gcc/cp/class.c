@@ -6479,7 +6479,11 @@ resolves_to_fixed_type_p (tree instance, int* nonnull)
   int cdtorp = 0;
   tree fixed;
 
-  if (processing_template_decl)
+  /* processing_template_decl can be false in a template if we're in
+     fold_non_dependent_expr, but we still want to suppress this check.  */
+  if (processing_template_decl
+      || (current_function_decl
+	  && uses_template_parms (current_function_decl)))
     {
       /* In a template we only care about the type of the result.  */
       if (nonnull)
