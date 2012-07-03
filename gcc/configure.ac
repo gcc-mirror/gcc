@@ -3641,6 +3641,10 @@ foo:	nop
     gcc_GAS_CHECK_FEATURE([rep and lock prefix],
         gcc_cv_as_ix86_rep_lock_prefix,,,
 	[rep movsl
+	 rep ret
+	 rep nop
+	 rep bsf %ecx, %eax
+	 rep bsr %ecx, %eax
 	 lock addl %edi, (%eax,%esi)
 	 lock orl $0, (%esp)],,
         [AC_DEFINE(HAVE_AS_IX86_REP_LOCK_PREFIX, 1,

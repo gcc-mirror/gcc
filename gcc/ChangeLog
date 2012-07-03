@@ -1,3 +1,12 @@
+2012-07-03  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.ac (HAVE_AS_IX86_REP_LOCK_PREFIX): Also require that the
+	assembler accept 'rep bsf ...', 'rep bsr ...', 'rep ret' and 'rep nop'.
+	* configure: Regenerated.
+	* config/i386/i386.md (simple_return_internal_long): Use %;
+	(ctz<mode>2): Likewise.
+	(*pause): Likewise.
+
 2012-07-02  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244
@@ -30,8 +39,7 @@
 	(gen_inbound_check): Do not release post-dominator info here.
 	(process_switch): Reorder code.  Expand as bit tests if it
 	looks like a win.
-	(do_switchconv): Release post-dominator info here if something
-	changed.
+	(do_switchconv): Release post-dominator info here if something changed.
 	(struct gimple_opt_pass): Verify more.
 	* tree.h (expand_switch_using_bit_tests_p): Remove prototype.
 
@@ -42,9 +50,9 @@
 	dynamic type change check.
 
 2012-07-02  Richard Guenther  <rguenther@suse.de>
-	Michael Matz  <matz@suse.de>
-	Tobias Grosser <tobias@grosser.es>
-	Sebastian Pop <sebpop@gmail.com>
+	    Michael Matz  <matz@suse.de>
+	    Tobias Grosser <tobias@grosser.es>
+	    Sebastian Pop <sebpop@gmail.com>
 
 	* Makefile.in: Remove PPL flags in favor of ISL ones.
 	(BACKENDLIBS): Remove PPL libs.
@@ -55,8 +63,7 @@
 	(graphite-poly.o): Likewise.
 	* configure.ac: Declare ISL vars instead of PPL ones.
 	* configure: Regenerated.
-	* doc/install.texi: Replace PPL requirement documentation
-	with ISL one.
+	* doc/install.texi: Replace PPL requirement documentation with ISL one.
 	* graphite-blocking.c: Remove PPL code, add ISL equivalent.
 	* graphite-clast-to-gimple.c: Likewise.
 	* graphite-dependences.c: Likewise.
@@ -76,7 +83,7 @@
 
 	Merge from graphite branch
 	2011-07-21  Tobias Grosser  <tobias@grosser.es>
-    
+
 	* Makefile.in (graphite-clast-to-gimple.o, graphite-cloog-util.o):
 	Remove graphite-cloog-util.h.
 	* graphite-clast-to-gimple.c (gcc_type_for_iv_of_clast_loop,
@@ -122,7 +129,7 @@
 	* graphite-clast-to-gimple.h (scop_to_clast): Remove.
 
 	2012-01-11  Tobias Grosser <tobias@grosser.es>
-    
+
 	* graphite-clast-to-gimple.c (clast_name_to_index,
 	clast_name_to_lb_ub, clast_name_to_gcc): Change types.
 	(clast_to_gcc_expression): Add clast_expr_name as a new
@@ -172,7 +179,7 @@
 	(crc32_byte): ... here.  Use it.
 	(crc32_unsigned): New.
 
-2012-06-29   Cary Coutant  <ccoutant@google.com>
+2012-06-29  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (add_pubname_string): Don't check for want_pubnames.
 	(gen_subprogram_die): Don't add pubname if want_pubnames is false.
@@ -199,8 +206,7 @@
 2012-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-generic.c (expand_vector_divmod): For even/odd
-	widening multiply, put even always as first argument to
-	VEC_PERM_EXPR.
+	widening multiply, put even always as first argument to VEC_PERM_EXPR.
 
 2012-06-29  Richard Henderson  <rth@redhat.com>
 

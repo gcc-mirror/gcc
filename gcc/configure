@@ -24790,6 +24790,10 @@ else
   gcc_cv_as_ix86_rep_lock_prefix=no
   if test x$gcc_cv_as != x; then
     $as_echo 'rep movsl
+	 rep ret
+	 rep nop
+	 rep bsf %ecx, %eax
+	 rep bsr %ecx, %eax
 	 lock addl %edi, (%eax,%esi)
 	 lock orl $0, (%esp)' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
