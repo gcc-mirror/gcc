@@ -1,3 +1,13 @@
+2012-07-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/predicates.md (logical_and_operand): New predicate.
+	* config/sh/constraints.md (Jmb, Jmw): New constraints.
+	* config/sh/sh.md (andsi3): Move expander above insns.  Add handling
+	of 0xFFFF constant.  Use logical_and_operand predicate and
+	satisfies_constraint_Jmb, satisfies_constraint_Jmw.
+	(*andsi3_compact): Make it an insn_and_split.  Use
+	logical_and_operand predicate.  Add Jmb,Jmw alternatives.
+
 2012-07-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53826

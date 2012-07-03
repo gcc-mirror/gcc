@@ -574,6 +574,21 @@
   return 0;
 })
 
+;; Like logical_operand but allows additional constant values which can be
+;; done with zero extensions.  Used for the second operand of and insns.
+(define_predicate "logical_and_operand"
+  (match_code "subreg,reg,const_int")
+{
+  if (logical_operand (op, mode))
+    return 1;
+
+  if (! TARGET_SHMEDIA
+      && (satisfies_constraint_Jmb (op) || satisfies_constraint_Jmw (op)))
+    return 1;
+
+  return 0;
+})
+
 ;; TODO: Add a comment here.
 
 (define_predicate "logical_operator"
