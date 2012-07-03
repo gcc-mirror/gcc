@@ -5822,7 +5822,6 @@ fi
   fi
       if test "x${clooginc}" == x && test "x${clooglibs}" == x \
      && test -d ${srcdir}/cloog; then
-     echo FooBar
      clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
      clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -I'${srcdir}'/cloog/include '
   fi
@@ -5834,7 +5833,10 @@ fi
 
 
 
-if test "x$with_cloog" != "xno"; then
+if test "x$isllibs" = x && test "x$islinc" = x; then
+  clooglibs=
+  clooginc=
+elif test "x$with_cloog" != "xno"; then
 
 
 
@@ -5910,6 +5912,12 @@ $as_echo "$gcc_cv_cloog" >&6; }
   fi
 
 
+fi
+
+# If either the ISL or the CLooG check failed, disable builds of in-tree
+# variants of both
+if test "x$clooglibs" = x && test "x$clooginc" = x; then
+  noconfigdirs="$noconfigdirs cloog isl"
 fi
 
 # Check for LTO support.
