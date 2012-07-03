@@ -67,7 +67,6 @@ AC_DEFUN([CLOOG_INIT_FLAGS],
   dnl source, set up flags to use that.
   if test "x${clooginc}" == x && test "x${clooglibs}" == x \
      && test -d ${srcdir}/cloog; then
-     echo FooBar
      clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
      clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -I'${srcdir}'/cloog/include '
   fi
