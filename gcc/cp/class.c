@@ -325,8 +325,7 @@ build_base_path (enum tree_code code,
      up properly yet, and the value doesn't matter there either; we're just
      interested in the result of overload resolution.  */
   if (cp_unevaluated_operand != 0
-      || (current_function_decl
-	  && uses_template_parms (current_function_decl)))
+      || in_template_function ())
     {
       expr = build_nop (ptr_target_type, expr);
       if (!want_pointer)
@@ -6523,8 +6522,7 @@ resolves_to_fixed_type_p (tree instance, int* nonnull)
 
   /* processing_template_decl can be false in a template if we're in
      fold_non_dependent_expr, but we still want to suppress this check.  */
-  if (current_function_decl
-      && uses_template_parms (current_function_decl))
+  if (in_template_function ())
     {
       /* In a template we only care about the type of the result.  */
       if (nonnull)
