@@ -1,3 +1,7 @@
+2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr37.ad[sb]: New test.
+
 2012-07-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* g++.dg/other/packed1.C: Remove SH from xfail list.
