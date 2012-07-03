@@ -50,19 +50,23 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-/* Convention_Stdcall should be processed in a specific way on 32 bits
-   Windows targets only.  The macro below is a helper to avoid having to
-   check for a Windows specific attribute throughout this unit.  */
+/* "stdcall" and "thiscall" conventions should be processed in a specific way
+   on 32-bit x86/Windows only.  The macros below are helpers to avoid having
+   to check for a Windows specific attribute throughout this unit.  */
 
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
 #ifdef TARGET_64BIT
 #define Has_Stdcall_Convention(E) \
   (!TARGET_64BIT && Convention (E) == Convention_Stdcall)
+#define Has_Thiscall_Convention(E) \
+  (!TARGET_64BIT && is_cplusplus_method (E))
 #else
 #define Has_Stdcall_Convention(E) (Convention (E) == Convention_Stdcall)
+#define Has_Thiscall_Convention(E) (is_cplusplus_method (E))
 #endif
 #else
 #define Has_Stdcall_Convention(E) 0
+#define Has_Thiscall_Convention(E) 0
 #endif
 
 /* Stack realignment is necessary for functions with foreign conventions when
@@ -4413,6 +4417,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("stdcall"), NULL_TREE,
 	     gnat_entity);
+	else if (Has_Thiscall_Convention (gnat_entity))
+	  prepend_one_attribute_to
+	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
+	     get_identifier ("thiscall"), NULL_TREE,
+	     gnat_entity);
 
 	/* If we should request stack realignment for a foreign convention
 	   subprogram, do so.  Note that this applies to task entry points in
@@ -5276,6 +5285,10 @@ get_minimal_subprog_decl (Entity_Id gnat_entity)
     prepend_one_attribute_to (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 			      get_identifier ("stdcall"), NULL_TREE,
 			      gnat_entity);
+  else if (Has_Thiscall_Convention (gnat_entity))
+    prepend_one_attribute_to (&attr_list, ATTR_MACHINE_ATTRIBUTE,
+			      get_identifier ("thiscall"), NULL_TREE,
+			      gnat_entity);
 
   if (No (Interface_Name (gnat_entity)) && gnu_ext_name == gnu_entity_name)
     gnu_ext_name = NULL_TREE;
@@ -5283,6 +5296,39 @@ get_minimal_subprog_decl (Entity_Id gnat_entity)
   return
     create_subprog_decl (gnu_entity_name, gnu_ext_name, void_ftype, NULL_TREE,
 			 false, true, true, true, attr_list, gnat_entity);
+}
+
+/* Return whether the E_Subprogram_Type/E_Function/E_Procedure GNAT_ENTITY is
+   a C++ imported method or equivalent.
+
+   We use the predicate on 32-bit x86/Windows to find out whether we need to
+   use the "thiscall" calling convention for GNAT_ENTITY.  This convention is
+   used for C++ methods (functions with METHOD_TYPE) by the back-end.  */
+
+bool
+is_cplusplus_method (Entity_Id gnat_entity)
+{
+  if (Convention (gnat_entity) != Convention_CPP)
+    return False;
+
+  /* This is the main case: C++ method imported as a primitive operation.  */
+  if (Is_Dispatching_Operation (gnat_entity))
+    return True;
+
+  /* A thunk needs to be handled like its associated primitive operation.  */
+  if (Is_Subprogram (gnat_entity) && Is_Thunk (gnat_entity))
+    return True;
+
+  /* C++ classes with no virtual functions can be imported as limited
+     record types, but we need to return true for the constructors.  */
+  if (Is_Constructor (gnat_entity))
+    return True;
+
+  /* This is set on the E_Subprogram_Type built for a dispatching call.  */
+  if (Is_Dispatch_Table_Entity (gnat_entity))
+    return True;
+
+  return False;
 }
 
 /* Finalize the processing of From_With_Type incomplete types.  */
