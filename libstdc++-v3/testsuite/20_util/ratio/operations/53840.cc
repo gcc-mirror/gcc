@@ -1,9 +1,8 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
-// 2008-07-31 Chris Fairles <chris.fairles@gmail.com>
+// { dg-do compile }
 
-// Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2012 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,21 +15,13 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a copy of the GNU General Public License along
-// with this library; see the file COPYING3.  If not see
+// You should have received a copy of the GNU General Public License
+// along with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
-
 
 #include <chrono>
 
-void test01()
-{
-  // Check if period is a ratio
-  typedef int rep_type;
-  typedef int period_type;
-  typedef std::chrono::duration<rep_type, period_type> test_type;
-  test_type d;			// { dg-error "required from here" }
-}
-
-// { dg-error "must be a specialization of ratio" "" { target *-*-* } 226 }
-// { dg-prune-output "not a member" }
+std::chrono::duration<long, std::ratio_divide<std::kilo, std::milli>>   d1;
+std::chrono::duration<long, std::ratio_multiply<std::kilo, std::milli>> d2;
+std::chrono::duration<long, std::ratio_add<std::kilo, std::milli>>      d3;
+std::chrono::duration<long, std::ratio_subtract<std::kilo, std::milli>> d4;
