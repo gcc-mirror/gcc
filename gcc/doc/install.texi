@@ -376,6 +376,10 @@ Necessary to build GCC with the Graphite loop optimizations.  It can be
 downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/} as
 @file{cloog-0.17.0.tar.gz}.  The @option{--with-cloog} configure option should
 be used if CLooG is not installed in your default library search path.
+CLooG needs to be built against ISL 0.10, not its included copy of ISL
+which is too old.  Use @option{--with-isl=system} to direct CLooG to pick
+up an already installed ISL.  CLooG needs to be configured to use GMP
+internally, use @option{--with-bits=gmp} to direct it to do that.
 
 @end table
 
