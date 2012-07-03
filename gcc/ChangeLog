@@ -1,3 +1,7 @@
+2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/xmmintrin.h (_mm_sfence): Use __builtin_ia32_pause.
+
 2012-07-03  Roland McGrath  <mcgrathr@google.com>
 
 	* configure.ac (HAVE_AS_IX86_REP_LOCK_PREFIX): Also require that the
