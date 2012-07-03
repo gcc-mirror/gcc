@@ -571,6 +571,9 @@ finish_goto_stmt (tree destination)
 				    tf_warning_or_error);
 	  if (error_operand_p (destination))
 	    return NULL_TREE;
+	  destination
+	    = fold_build_cleanup_point_expr (TREE_TYPE (destination),
+					     destination);
 	}
     }
 
