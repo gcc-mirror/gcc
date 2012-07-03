@@ -143,5 +143,5 @@ futex_wake (int *addr, int count)
 static inline void
 cpu_relax (void)
 {
-  __asm volatile ("rep; nop" : : : "memory");
+  __builtin_ia32_pause ();
 }
