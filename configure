@@ -5689,9 +5689,11 @@ if test "x$with_isl" != "xno"; then
   if test "${ENABLE_ISL_CHECK}" = yes ; then
     _isl_saved_CFLAGS=$CFLAGS
     _isl_saved_LDFLAGS=$LDFLAGS
+    _isl_saved_LIBS=$LIBS
 
     CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
-    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs} -lisl"
+    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
+    LIBS="${_isl_saved_LIBS} -lisl"
     echo $CFLAGS
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.10 of ISL" >&5
@@ -5734,6 +5736,7 @@ $as_echo "$gcc_cv_isl" >&6; }
 
     CFLAGS=$_isl_saved_CFLAGS
     LDFLAGS=$_isl_saved_LDFLAGS
+    LIBS=$_isl_saved_LIBS
   fi
 
 

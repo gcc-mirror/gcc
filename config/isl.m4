@@ -120,9 +120,11 @@ AC_DEFUN([ISL_CHECK_VERSION],
   if test "${ENABLE_ISL_CHECK}" = yes ; then
     _isl_saved_CFLAGS=$CFLAGS
     _isl_saved_LDFLAGS=$LDFLAGS
+    _isl_saved_LIBS=$LIBS
 
     CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
-    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs} -lisl"
+    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
+    LIBS="${_isl_saved_LIBS} -lisl"
     echo $CFLAGS
 
     AC_CACHE_CHECK([for version $1.$2 of ISL],
@@ -133,6 +135,7 @@ AC_DEFUN([ISL_CHECK_VERSION],
 
     CFLAGS=$_isl_saved_CFLAGS
     LDFLAGS=$_isl_saved_LDFLAGS
+    LIBS=$_isl_saved_LIBS
   fi
 ]
 )

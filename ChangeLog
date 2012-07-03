@@ -1,3 +1,7 @@
+2012-07-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure: Regenerate.
+
 2012-07-02  Janis Johnson  <janisjo@codesourcery.com>
 
 	* MAINTAINERS (Various Maintainers): Add myself as testsuite
