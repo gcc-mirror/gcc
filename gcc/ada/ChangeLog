@@ -1,3 +1,8 @@
+2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_pushdecl): Set TYPE_CONTEXT for types
+	attached to a TYPE_DECL.
+
 2012-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/53592

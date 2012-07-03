@@ -581,6 +581,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	      if (TREE_CODE (t) == POINTER_TYPE)
 		TYPE_NEXT_PTR_TO (t) = tt;
 	      TYPE_NAME (tt) = DECL_NAME (decl);
+	      TYPE_CONTEXT (tt) = DECL_CONTEXT (decl);
 	      TYPE_STUB_DECL (tt) = TYPE_STUB_DECL (t);
 	      DECL_ORIGINAL_TYPE (decl) = tt;
 	    }
@@ -590,6 +591,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	  /* We need a variant for the placeholder machinery to work.  */
 	  tree tt = build_variant_type_copy (t);
 	  TYPE_NAME (tt) = decl;
+	  TYPE_CONTEXT (tt) = DECL_CONTEXT (decl);
 	  TREE_USED (tt) = TREE_USED (t);
 	  TREE_TYPE (decl) = tt;
 	  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
@@ -609,7 +611,10 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
       if (t)
 	for (t = TYPE_MAIN_VARIANT (t); t; t = TYPE_NEXT_VARIANT (t))
 	  if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
-	    TYPE_NAME (t) = decl;
+	    {
+	      TYPE_NAME (t) = decl;
+	      TYPE_CONTEXT (t) = DECL_CONTEXT (decl);
+	    }
     }
 }
 
