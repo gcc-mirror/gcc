@@ -1,3 +1,9 @@
+2012-07-03  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/28896
+	* config/m68k/m68k.c (m68k_option_override): Reset stack_limit_rtx
+	if !TARGET_68020.
+
 2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/xmmintrin.h (_mm_sfence): Use __builtin_ia32_pause.
