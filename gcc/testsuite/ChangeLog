@@ -1,5 +1,9 @@
 2012-07-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53788
+	* g++.dg/cpp0x/decltype39.C: New.
+	* g++.dg/diagnostic/method1.C: Adjust.
+
 	PR c++/53816
 	* g++.dg/template/ref6.C: New.
 
