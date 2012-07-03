@@ -1,5 +1,9 @@
 2012-07-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53783
+	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Use tsubst
+	for LAMBDA_EXPR_EXTRA_SCOPE.
+
 	PR c++/53788
 	* pt.c (build_non_dependent_expr): Don't wrap a dummy object.
 
