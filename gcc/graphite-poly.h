@@ -409,6 +409,7 @@ extern int scop_do_interchange (scop_p);
 extern int scop_do_strip_mine (scop_p, int);
 extern bool scop_do_block (scop_p);
 extern bool flatten_all_loops (scop_p);
+extern bool optimize_isl(scop_p);
 extern void pbb_number_of_iterations_at_time (poly_bb_p, graphite_dim_t, mpz_t);
 extern void debug_gmp_value (mpz_t);
 
@@ -1548,5 +1549,21 @@ scop_p get_loop_body_pbbs (loop_p, htab_t, VEC (poly_bb_p, heap) **);
 isl_map *reverse_loop_at_level (poly_bb_p, int);
 isl_union_map *reverse_loop_for_pbbs (scop_p, VEC (poly_bb_p, heap) *, int);
 __isl_give isl_union_map *extend_schedule (__isl_take isl_union_map *);
+
+
+void
+compute_deps (scop_p scop, VEC (poly_bb_p, heap) *pbbs,
+	      isl_union_map **must_raw,
+	      isl_union_map **may_raw,
+	      isl_union_map **must_raw_no_source,
+	      isl_union_map **may_raw_no_source,
+	      isl_union_map **must_war,
+	      isl_union_map **may_war,
+	      isl_union_map **must_war_no_source,
+	      isl_union_map **may_war_no_source,
+	      isl_union_map **must_waw,
+	      isl_union_map **may_waw,
+	      isl_union_map **must_waw_no_source,
+	      isl_union_map **may_waw_no_source);
 
 #endif

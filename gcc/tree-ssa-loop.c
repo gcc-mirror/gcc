@@ -265,7 +265,8 @@ gate_graphite_transforms (void)
       || flag_loop_interchange
       || flag_loop_strip_mine
       || flag_graphite_identity
-      || flag_loop_parallelize_all)
+      || flag_loop_parallelize_all
+      || flag_loop_optimize_isl)
     flag_graphite = 1;
 
   return flag_graphite != 0;

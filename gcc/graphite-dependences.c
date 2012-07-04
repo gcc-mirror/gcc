@@ -443,7 +443,7 @@ subtract_commutative_associative_deps (scop_p scop,
 /* Compute the original data dependences in SCOP for all the reads and
    writes in PBBS.  */
 
-static void
+void
 compute_deps (scop_p scop, VEC (poly_bb_p, heap) *pbbs,
 	      isl_union_map **must_raw,
 	      isl_union_map **may_raw,

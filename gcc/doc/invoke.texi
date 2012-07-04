@@ -373,7 +373,7 @@ Objective-C and Objective-C++ Dialects}.
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
--floop-block -floop-interchange -floop-strip-mine @gol
+-floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
 -floop-parallelize-all -flto -flto-compression-level @gol
 -flto-partition=@var{alg} -flto-report -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
@@ -7366,6 +7366,13 @@ the polyhedral representation and transform it back to gimple.  Using
 GIMPLE -> GRAPHITE -> GIMPLE transformation.  Some minimal optimizations
 are also performed by the code generator CLooG, like index splitting and
 dead code elimination in loops.
+
+@item -floop-nest-optimize
+@opindex floop-nest-optimize
+Enable the ISL based loop nest optimizer.  This is a generic loop nest
+optimizer based on the Pluto optimization algorithms.  It calculates a loop
+structure optimized for data-locality and parallelism.  This option
+is experimental.
 
 @item -floop-parallelize-all
 @opindex floop-parallelize-all

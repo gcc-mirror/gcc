@@ -250,6 +250,11 @@ apply_poly_transforms (scop_p scop)
 	transform_done |= scop_do_interchange (scop);
     }
 
+  /* This pass needs to be run at the final stage, as it does not
+     update the lst.  */
+  if (flag_loop_optimize_isl)
+    transform_done |= optimize_isl (scop);
+
   return transform_done;
 }
 
