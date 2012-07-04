@@ -1248,6 +1248,7 @@ OBJS = \
 	graphite-clast-to-gimple.o \
 	graphite-dependences.o \
 	graphite-interchange.o \
+	graphite-optimize-isl.o \
 	graphite-poly.o \
 	graphite-scop-detection.o \
 	graphite-sese-to-poly.o \
@@ -2560,6 +2561,9 @@ graphite-sese-to-poly.o : graphite-sese-to-poly.c $(CONFIG_H) \
    $(SYSTEM_H) coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) \
    $(TREE_DATA_REF_H) domwalk.h sese.h graphite-poly.h \
    graphite-sese-to-poly.h
+graphite-optimize-isl.o : graphite-optimize-isl.c $(CONFIG_H) $(SYSTEM_H) \
+    coretypes.h $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(SCEV_H) \
+    $(TREE_DUMP_H) sese.h graphite-poly.h
 tree-vect-loop.o: tree-vect-loop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) \
    $(TREE_DUMP_H) $(CFGLOOP_H) $(EXPR_H) $(RECOG_H) $(OPTABS_H) \

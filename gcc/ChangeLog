@@ -1,3 +1,18 @@
+2012-07-04  Tobias Grosser <tobias@grosser.es>
+	Michael Matz  <matz@suse.de>
+
+	* Makefile.in (OBJS): Add graphite-optimize-isl.o.
+	(graphite-optimize-isl.o): Add dependencies.
+	* common.opt (floop-nest-optimize): New flag.
+	* doc/invoke.texi (floop-nest-optimize): Document.
+	* graphite-dependences.c (compute_deps): Export.
+	* graphite-poly.h (compute_deps): Declare.
+	* graphite-optimize-isl.c: New file.
+	* graphite-poly.c (apply_poly_transforms): Run the loop
+	nest optimizer.
+	* tree-ssa-loop.c (gate_graphite_transforms): Enable graphite
+	if -floop-nest-optimize is enabled.
+
 2012-07-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/predicates.md (logical_and_operand): New predicate.

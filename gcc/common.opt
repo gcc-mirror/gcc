@@ -1219,6 +1219,10 @@ floop-flatten
 Common Ignore
 Does nothing. Preserved for backward compatibility.
 
+floop-nest-optimize
+Common Report Var(flag_loop_optimize_isl) Optimization
+Enable the ISL based loop nest optimizer
+
 fstrict-volatile-bitfields
 Common Report Var(flag_strict_volatile_bitfields) Init(-1)
 Force bitfield accesses to match their type width
